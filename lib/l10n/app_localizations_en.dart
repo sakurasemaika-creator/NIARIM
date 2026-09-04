@@ -3963,6 +3963,15 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
+  String get saveTreeSlotWriteTooltip => 'Save to this slot';
+
+  @override
+  String get saveTreeSlotLoadTooltip => 'Load from this slot';
+
+  @override
+  String get saveTreeSlotDeleteTooltip => 'Delete this slot';
+
+  @override
   String saveTreeSlotSaveDialogTitle(int n) {
     return 'Save to slot $n';
   }
@@ -4294,7 +4303,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get layerPanelDeselectAll => 'Deselect all';
 
   @override
-  String get layerPanelNewLayerButton => 'New layer';
+  String get layerPanelNewLayerButton => 'Normal layer';
 
   @override
   String get layerPanelNewFolderButton => 'New folder';
@@ -4336,7 +4345,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get layerPanelClippingBadge => 'Clipping';
 
   @override
-  String get layerPanelAddTooltip => 'Add';
+  String get layerPanelAddTooltip => 'Add other';
 
   @override
   String get layerPanelAutofillMarkTooltip =>

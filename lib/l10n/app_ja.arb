@@ -1844,6 +1844,9 @@
       }
     }
   },
+  "saveTreeSlotWriteTooltip": "このスロットへ保存",
+  "saveTreeSlotLoadTooltip": "このスロットから読み込む",
+  "saveTreeSlotDeleteTooltip": "このスロットを削除",
   "saveTreeSlotSaveDialogTitle": "スロット {n} に保存",
   "@saveTreeSlotSaveDialogTitle": {
     "placeholders": {
@@ -2030,7 +2033,7 @@
   "layerPanelSearchHint": "レイヤー名で検索",
   "layerPanelSelectAll": "全選択",
   "layerPanelDeselectAll": "全解除",
-  "layerPanelNewLayerButton": "新規レイヤー",
+  "layerPanelNewLayerButton": "通常レイヤー",
   "layerPanelNewFolderButton": "新規フォルダ",
   "layerPanelImportImageButton": "画像読み込み",
   "layerPanelDefaultLayerName": "レイヤー{n}",
@@ -2082,7 +2085,7 @@
     }
   },
   "layerPanelClippingBadge": "クリッピング",
-  "layerPanelAddTooltip": "追加",
+  "layerPanelAddTooltip": "その他追加",
   "layerPanelAutofillMarkTooltip": "線画が更新されました。タップすると自動塗りを最新の状態に更新できます。",
   "layerPanelRangeAllFrames": "全フレーム",
   "layerPanelRangeCurrentScene": "現在シーン",

@@ -1560,6 +1560,9 @@
       }
     }
   },
+  "saveTreeSlotWriteTooltip": "이 슬롯에 저장",
+  "saveTreeSlotLoadTooltip": "이 슬롯에서 불러오기",
+  "saveTreeSlotDeleteTooltip": "이 슬롯 삭제",
   "saveTreeSlotSaveDialogTitle": "슬롯 {n}에 저장",
   "@saveTreeSlotSaveDialogTitle": {
     "placeholders": {
@@ -1746,7 +1749,7 @@
   "layerPanelSearchHint": "레이어 이름으로 검색",
   "layerPanelSelectAll": "전체 선택",
   "layerPanelDeselectAll": "전체 해제",
-  "layerPanelNewLayerButton": "새 레이어",
+  "layerPanelNewLayerButton": "일반 레이어",
   "layerPanelNewFolderButton": "새 폴더",
   "layerPanelImportImageButton": "이미지 불러오기",
   "layerPanelDefaultLayerName": "레이어{n}",
@@ -1798,7 +1801,7 @@
     }
   },
   "layerPanelClippingBadge": "클리핑",
-  "layerPanelAddTooltip": "추가",
+  "layerPanelAddTooltip": "기타 추가",
   "layerPanelAutofillMarkTooltip": "선화가 업데이트되었습니다. 탭하면 자동 채색을 최신 상태로 업데이트할 수 있습니다.",
   "layerPanelRangeAllFrames": "전체 프레임",
   "layerPanelRangeCurrentScene": "현재 씬",

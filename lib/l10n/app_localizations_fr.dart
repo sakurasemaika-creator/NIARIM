@@ -4020,6 +4020,15 @@ class AppLocalizationsFr extends AppLocalizations {
   }
 
   @override
+  String get saveTreeSlotWriteTooltip => 'Enregistrer dans cet emplacement';
+
+  @override
+  String get saveTreeSlotLoadTooltip => 'Charger cet emplacement';
+
+  @override
+  String get saveTreeSlotDeleteTooltip => 'Supprimer cet emplacement';
+
+  @override
   String saveTreeSlotSaveDialogTitle(int n) {
     return 'Enregistrer dans l\'emplacement $n';
   }
@@ -4362,7 +4371,7 @@ class AppLocalizationsFr extends AppLocalizations {
   String get layerPanelDeselectAll => 'Tout désélectionner';
 
   @override
-  String get layerPanelNewLayerButton => 'Nouveau calque';
+  String get layerPanelNewLayerButton => 'Calque normal';
 
   @override
   String get layerPanelNewFolderButton => 'Nouveau dossier';
@@ -4404,7 +4413,7 @@ class AppLocalizationsFr extends AppLocalizations {
   String get layerPanelClippingBadge => 'Écrêtage';
 
   @override
-  String get layerPanelAddTooltip => 'Ajouter';
+  String get layerPanelAddTooltip => 'Autre calque';
 
   @override
   String get layerPanelAutofillMarkTooltip =>

@@ -3851,6 +3851,15 @@ class AppLocalizationsKo extends AppLocalizations {
   }
 
   @override
+  String get saveTreeSlotWriteTooltip => '이 슬롯에 저장';
+
+  @override
+  String get saveTreeSlotLoadTooltip => '이 슬롯에서 불러오기';
+
+  @override
+  String get saveTreeSlotDeleteTooltip => '이 슬롯 삭제';
+
+  @override
   String saveTreeSlotSaveDialogTitle(int n) {
     return '슬롯 $n에 저장';
   }
@@ -4169,7 +4178,7 @@ class AppLocalizationsKo extends AppLocalizations {
   String get layerPanelDeselectAll => '전체 해제';
 
   @override
-  String get layerPanelNewLayerButton => '새 레이어';
+  String get layerPanelNewLayerButton => '일반 레이어';
 
   @override
   String get layerPanelNewFolderButton => '새 폴더';
@@ -4211,7 +4220,7 @@ class AppLocalizationsKo extends AppLocalizations {
   String get layerPanelClippingBadge => '클리핑';
 
   @override
-  String get layerPanelAddTooltip => '추가';
+  String get layerPanelAddTooltip => '기타 추가';
 
   @override
   String get layerPanelAutofillMarkTooltip =>

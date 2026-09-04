@@ -20,7 +20,6 @@ import '../../widgets/help_button.dart';
 import '../../widgets/responsive.dart';
 import 'save_tree_screen.dart';
 import '../../config/font_fallback.dart';
-import '../../widgets/scrollable_sheet_body.dart';
 
 export 'save_tree_screen.dart' show SaveTreeEntryMode, parseSaveTreeEntryMode;
 
@@ -87,8 +86,19 @@ class _GameStyleSlotScreen extends StatelessWidget {
                   return _GameSaveSlotTile(
                     slotIndex: slotIndex,
                     node: node,
-                    onTap: () =>
-                        _handleSlotTap(context, saveService, slotIndex, node),
+                    // ペン＝書き込み、本＝読み込み、ゴミ箱＝削除。
+                    // 3つを全スロットへ常に出し、使えない操作は無効化して
+                    // 見せる（空スロットは読み込み・削除ができない、
+                    // クイックセーブ経由では読み込みを行わない）。
+                    onWrite: () =>
+                        _writeToSlot(context, saveService, slotIndex, node),
+                    onLoad:
+                        node == null || entryMode == SaveTreeEntryMode.quickSave
+                        ? null
+                        : () => _confirmAndRestore(context, saveService, node),
+                    onDelete: node == null
+                        ? null
+                        : () => _deleteSlot(context, saveService, node),
                   );
                 },
               ),
@@ -99,7 +109,9 @@ class _GameStyleSlotScreen extends StatelessWidget {
     );
   }
 
-  Future<void> _handleSlotTap(
+  /// ペン（書き込み）。空スロットはそのまま保存ダイアログ、既存データが
+  /// あるスロットは上書き確認を挟む。
+  Future<void> _writeToSlot(
     BuildContext context,
     SaveTreeService saveService,
     int slotIndex,
@@ -109,81 +121,37 @@ class _GameStyleSlotScreen extends StatelessWidget {
       _showSaveDialog(context, saveService, slotIndex, null);
       return;
     }
-
     final l10n = AppLocalizations.of(context)!;
-    final action = await showModalBottomSheet<_SlotAction>(
+    final ok = await showDialog<bool>(
       context: context,
-      showDragHandle: true,
-      builder: (sheetContext) => ScrollableSheetBody(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            ListTile(
-              leading: const Icon(Icons.save_outlined),
-              title: Text(l10n.saveTreeOverwriteAction),
-              onTap: () => Navigator.pop(sheetContext, _SlotAction.overwrite),
-            ),
-            if (entryMode != SaveTreeEntryMode.quickSave)
-              ListTile(
-                leading: const Icon(Icons.restore),
-                title: Text(l10n.saveTreeRestoreAction),
-                onTap: () => Navigator.pop(sheetContext, _SlotAction.load),
-              ),
-            ListTile(
-              leading: Icon(
-                Icons.delete_outline,
-                color: Theme.of(sheetContext).colorScheme.error,
-              ),
-              title: Text(
-                l10n.commonDelete,
-                style: TextStyle(
-                  color: Theme.of(sheetContext).colorScheme.error,
-                ),
-              ),
-              onTap: () => Navigator.pop(sheetContext, _SlotAction.delete),
-            ),
-            ListTile(
-              leading: const Icon(Icons.close),
-              title: Text(l10n.commonCancel),
-              onTap: () => Navigator.pop(sheetContext),
-            ),
-          ],
-        ),
+      builder: (ctx) => AlertDialog(
+        title: Text(l10n.saveTreeOverwriteAction),
+        content: Text(l10n.saveTreeOverwriteConfirmBody),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: Text(l10n.commonCancel),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.pop(ctx, true),
+            child: Text(l10n.commonOk),
+          ),
+        ],
       ),
     );
-
-    if (!context.mounted || action == null) return;
-    switch (action) {
-      case _SlotAction.overwrite:
-        final ok = await showDialog<bool>(
-          context: context,
-          builder: (ctx) => AlertDialog(
-            title: Text(l10n.saveTreeOverwriteAction),
-            content: Text(l10n.saveTreeOverwriteConfirmBody),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.pop(ctx, false),
-                child: Text(l10n.commonCancel),
-              ),
-              FilledButton(
-                onPressed: () => Navigator.pop(ctx, true),
-                child: Text(l10n.commonOk),
-              ),
-            ],
-          ),
-        );
-        if (ok == true && context.mounted) {
-          _showSaveDialog(context, saveService, slotIndex, node);
-        }
-        break;
-      case _SlotAction.load:
-        await _confirmAndRestore(context, saveService, node);
-        break;
-      case _SlotAction.delete:
-        if (!await confirmDelete(context, itemName: node.comment)) return;
-        await saveService.deleteNode(projectId, node.id);
-        break;
+    if (ok == true && context.mounted) {
+      _showSaveDialog(context, saveService, slotIndex, node);
     }
+  }
+
+  /// ゴミ箱（削除）。
+  Future<void> _deleteSlot(
+    BuildContext context,
+    SaveTreeService saveService,
+    SaveNode node,
+  ) async {
+    if (!await confirmDelete(context, itemName: node.comment)) return;
+    await saveService.deleteNode(projectId, node.id);
   }
 
   void _showSaveDialog(
@@ -365,17 +333,33 @@ class _GameStyleSlotScreen extends StatelessWidget {
   }
 }
 
-enum _SlotAction { overwrite, load, delete }
-
+/// セーブスロット1件ぶんの行。
+///
+/// 以前は行をタップするとボトムシートが開き、その中の
+/// 「上書きする／復元／削除」を選ぶ形だった。操作が2段になるうえ、
+/// どのスロットに対する操作なのかがシートの中では分からなくなるため、
+/// **各スロットの行に3つのボタンを直接置く**形へ変更した。
+/// ペン＝セーブデータの書き込み、本＝読み込み、ゴミ箱＝削除。
 class _GameSaveSlotTile extends StatelessWidget {
   final int slotIndex;
   final SaveNode? node;
-  final VoidCallback onTap;
+
+  /// ペン（このスロットへ保存）。空スロットでも押せる。
+  final VoidCallback onWrite;
+
+  /// 本（このスロットから読み込む）。空スロット・クイックセーブ経由では
+  /// nullを渡して無効表示にする。
+  final VoidCallback? onLoad;
+
+  /// ゴミ箱（このスロットを削除）。空スロットではnull。
+  final VoidCallback? onDelete;
 
   const _GameSaveSlotTile({
     required this.slotIndex,
     required this.node,
-    required this.onTap,
+    required this.onWrite,
+    required this.onLoad,
+    required this.onDelete,
   });
 
   @override
@@ -397,7 +381,10 @@ class _GameSaveSlotTile extends StatelessWidget {
         borderRadius: BorderRadius.circular(14),
         clipBehavior: Clip.antiAlias,
         child: InkWell(
-          onTap: onTap,
+          // 行全体のタップは主操作（＝ペンと同じ書き込み）に割り当てる。
+          // ボタンが小さい端末でも押しやすくするための補助で、
+          // 既存データがある場合はペンと同じく上書き確認を挟む。
+          onTap: onWrite,
           child: Container(
             constraints: const BoxConstraints(minHeight: 82),
             decoration: BoxDecoration(
@@ -453,15 +440,68 @@ class _GameSaveSlotTile extends StatelessWidget {
                     ],
                   ),
                 ),
-                const SizedBox(width: 8),
-                Icon(
-                  hasData ? Icons.chevron_right : Icons.add_circle_outline,
-                  color: hasData ? scheme.onSurfaceVariant : scheme.primary,
+                const SizedBox(width: 4),
+                // ペン＝書き込み、本＝読み込み、ゴミ箱＝削除。
+                // 3つとも全スロットに出し、使えないものは無効表示にする
+                // （`test/save_slot_action_buttons_test.dart`が監視）。
+                _SlotActionButton(
+                  icon: Icons.edit,
+                  tooltip: l10n.saveTreeSlotWriteTooltip,
+                  color: scheme.primary,
+                  onPressed: onWrite,
+                ),
+                _SlotActionButton(
+                  icon: Icons.menu_book,
+                  tooltip: l10n.saveTreeSlotLoadTooltip,
+                  color: scheme.onSurfaceVariant,
+                  onPressed: onLoad,
+                ),
+                _SlotActionButton(
+                  icon: Icons.delete_outline,
+                  tooltip: l10n.saveTreeSlotDeleteTooltip,
+                  color: scheme.error,
+                  onPressed: onDelete,
                 ),
               ],
             ),
           ),
         ),
+      ),
+    );
+  }
+}
+
+/// セーブスロット行に並ぶ小さな操作ボタン。
+///
+/// 標準の`IconButton`は48dpのタップ判定を確保するため、3つ並べると
+/// 行の右側だけで150dp近くを占め、スロット名やサムネイルが押し出される。
+/// 判定を確保しつつ幅を抑えるため、密度を詰めたうえで固定幅にしている。
+class _SlotActionButton extends StatelessWidget {
+  final IconData icon;
+  final String tooltip;
+  final Color color;
+  final VoidCallback? onPressed;
+
+  const _SlotActionButton({
+    required this.icon,
+    required this.tooltip,
+    required this.color,
+    required this.onPressed,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final enabled = onPressed != null;
+    return IconButton(
+      tooltip: tooltip,
+      onPressed: onPressed,
+      visualDensity: VisualDensity.compact,
+      padding: const EdgeInsets.all(6),
+      constraints: const BoxConstraints(minWidth: 40, minHeight: 40),
+      iconSize: 22,
+      icon: Icon(
+        icon,
+        color: enabled ? color : Theme.of(context).disabledColor,
       ),
     );
   }

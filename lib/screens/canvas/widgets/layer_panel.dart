@@ -70,6 +70,50 @@ class LayerPanel extends StatefulWidget {
 }
 
 class _LayerPanelState extends State<LayerPanel> {
+  /// レイヤーパネル上部のショートカットボタン用スタイル。
+  /// 既定の`TextButton`は最小高さ40dp・タップ判定48dpを確保するため、
+  /// この段だけでレイヤー1行ぶん近い高さを取ってしまう。中身
+  /// （アイコン14px＋11ptラベル）の実寸まで詰めて段を半分にする。
+  static final ButtonStyle _shortcutButtonStyle = TextButton.styleFrom(
+    minimumSize: Size.zero,
+    padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 3),
+    tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+  );
+
+  /// レイヤーパネル上部のショートカットボタン1つぶん。
+  /// 4ボタンをExpandedで等分するため、標準的な端末幅（360dp、パネルは
+  /// 約250dp）では1ボタンあたり約58dpしか無い。日本語ラベルは
+  /// 折り返さず省略記号で止める（`test/layer_panel_action_row_test.dart`が
+  /// 縦積みへの逆戻りを監視）。
+  Widget _shortcutButton({
+    required IconData icon,
+    required String label,
+    required VoidCallback onPressed,
+  }) {
+    return Expanded(
+      child: TextButton(
+        style: _shortcutButtonStyle,
+        onPressed: onPressed,
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(icon, size: 13),
+            const SizedBox(width: 3),
+            Flexible(
+              child: Text(
+                label,
+                style: const TextStyle(fontSize: 10),
+                maxLines: 1,
+                softWrap: false,
+                overflow: TextOverflow.ellipsis,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
   int _selectedIndex = 0;
   // widget.currentLayerIdに基づく_selectedIndexの初回同期が済んだか
   // （毎buildで探索し直すと、ユーザーがパネル内で選択を変えた直後の
@@ -318,93 +362,47 @@ class _LayerPanelState extends State<LayerPanel> {
               ),
             ),
           const Divider(height: 1),
-          // 上部ショートカットボタン
+          // 上部ショートカットボタン。
+          // `TextButton.icon`は既定で高さ40dp・タップ判定48dpを確保し、
+          // さらにアイコンとラベルの間に8dpの固定の隙間を入れる。4つ並べる
+          // だけで段が約48dp（レイヤー1行ぶんに近い高さ）を占めるうえ、
+          // パネル幅（約250dp）を4等分した約58dpからその隙間が引かれ、
+          // 日本語ラベルが2文字も出ない。実寸に合わせて詰めた自前の
+          // Rowにして、段の高さをおおよそ半分にしている。
           Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
             child: Row(
               children: [
-                Expanded(
-                  child: TextButton.icon(
-                    icon: const Icon(Icons.add, size: 14),
-                    label: Text(
-                      l10n.layerPanelNewLayerButton,
-                      style: const TextStyle(fontSize: 11),
-                      // 4ボタンをExpandedで等分するため、標準的な端末幅
-                      // （360dp、パネルは約250dp）では1ボタンあたり約60dpしか
-                      // 無く、日本語ラベルは1文字ずつ縦に折り返して読めない
-                      // 塊になる。折り返さず省略記号で止める
-                      // （`test/layer_panel_action_row_test.dart`が監視）。
-                      maxLines: 1,
-                      softWrap: false,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                    onPressed: () => _addLayer(
-                      context,
-                      model.LayerType.normal,
-                      (n) => l10n.layerPanelDefaultLayerName(n),
-                    ),
+                _shortcutButton(
+                  icon: Icons.add,
+                  label: l10n.layerPanelNewLayerButton,
+                  onPressed: () => _addLayer(
+                    context,
+                    model.LayerType.normal,
+                    (n) => l10n.layerPanelDefaultLayerName(n),
                   ),
                 ),
-                Expanded(
-                  child: TextButton.icon(
-                    icon: const Icon(Icons.folder, size: 14),
-                    label: Text(
-                      l10n.layerPanelNewFolderButton,
-                      style: const TextStyle(fontSize: 11),
-                      // 4ボタンをExpandedで等分するため、標準的な端末幅
-                      // （360dp、パネルは約250dp）では1ボタンあたり約60dpしか
-                      // 無く、日本語ラベルは1文字ずつ縦に折り返して読めない
-                      // 塊になる。折り返さず省略記号で止める
-                      // （`test/layer_panel_action_row_test.dart`が監視）。
-                      maxLines: 1,
-                      softWrap: false,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                    onPressed: () => _addLayer(
-                      context,
-                      model.LayerType.folder,
-                      (n) => l10n.layerPanelDefaultFolderName(n),
-                    ),
+                _shortcutButton(
+                  icon: Icons.folder,
+                  label: l10n.layerPanelNewFolderButton,
+                  onPressed: () => _addLayer(
+                    context,
+                    model.LayerType.folder,
+                    (n) => l10n.layerPanelDefaultFolderName(n),
                   ),
                 ),
-                // 「追加」ボタン（共通レイヤー・自動塗り線画・自動塗りレイヤー等の
-                // その他種別）。新規フォルダと画像読み込みの間に配置。
-                // 新規レイヤーボタンとアイコンが被らないようlibrary_addを使用。
-                Expanded(
-                  child: TextButton.icon(
-                    icon: const Icon(Icons.library_add, size: 14),
-                    label: Text(
-                      l10n.layerPanelAddTooltip,
-                      style: const TextStyle(fontSize: 11),
-                      // 4ボタンをExpandedで等分するため、標準的な端末幅
-                      // （360dp、パネルは約250dp）では1ボタンあたり約60dpしか
-                      // 無く、日本語ラベルは1文字ずつ縦に折り返して読めない
-                      // 塊になる。折り返さず省略記号で止める
-                      // （`test/layer_panel_action_row_test.dart`が監視）。
-                      maxLines: 1,
-                      softWrap: false,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                    onPressed: () => _showAddLayerMenu(context),
-                  ),
+                // 共通レイヤー・自動塗り線画・自動塗りレイヤー等の
+                // その他種別を選ぶメニュー。新規レイヤーボタンとアイコンが
+                // 被らないようlibrary_addを使用。
+                _shortcutButton(
+                  icon: Icons.library_add,
+                  label: l10n.layerPanelAddTooltip,
+                  onPressed: () => _showAddLayerMenu(context),
                 ),
-                Expanded(
-                  child: TextButton.icon(
-                    icon: const Icon(Icons.photo, size: 14),
-                    label: Text(
-                      l10n.layerPanelImportImageButton,
-                      style: const TextStyle(fontSize: 11),
-                      // 4ボタンをExpandedで等分するため、標準的な端末幅
-                      // （360dp、パネルは約250dp）では1ボタンあたり約60dpしか
-                      // 無く、日本語ラベルは1文字ずつ縦に折り返して読めない
-                      // 塊になる。折り返さず省略記号で止める
-                      // （`test/layer_panel_action_row_test.dart`が監視）。
-                      maxLines: 1,
-                      softWrap: false,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                    onPressed: () => _importImage(context),
-                  ),
+                _shortcutButton(
+                  icon: Icons.photo,
+                  label: l10n.layerPanelImportImageButton,
+                  onPressed: () => _importImage(context),
                 ),
               ],
             ),
@@ -439,6 +437,16 @@ class _LayerPanelState extends State<LayerPanel> {
                   key: ValueKey(layer.id),
                   selected: isSelected,
                   dense: true,
+                  // レイヤーパネルは幅が約250dpしか無い。ListTileの既定
+                  // （左右24dpずつの余白＋タイトル前16dpの隙間）のままだと、
+                  // leading（目・種別・サムネイル）とtrailing（更新マーク・
+                  // 三点・結合・ゴミ箱・ドラッグハンドル）に挟まれた
+                  // レイヤー名の領域が30dpほどしか残らず、名前がほぼ
+                  // 省略記号だけになってしまう。余白を詰めて名前へ回す。
+                  contentPadding: const EdgeInsets.symmetric(horizontal: 6),
+                  horizontalTitleGap: 6,
+                  minLeadingWidth: 0,
+                  minVerticalPadding: 0,
                   leading: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
@@ -512,8 +520,16 @@ class _LayerPanelState extends State<LayerPanel> {
                       ),
                     ],
                   ),
+                  // ListTileのleading（目・種別アイコン・サムネイル）と
+                  // trailing（更新マーク・三点・結合・ゴミ箱・ハンドル）で
+                  // 幅を取られ、パネル幅約250dpだと名前に約50dpしか残らない。
+                  // 折り返しを許すと日本語名が**1文字ずつ縦に積まれて**
+                  // 行の高さが3倍になり読めなくなるため、必ず1行で省略する。
                   title: Text(
                     layer.name,
+                    maxLines: 1,
+                    softWrap: false,
+                    overflow: TextOverflow.ellipsis,
                     style: const TextStyle(
                       fontSize: 12,
                       fontFamily: 'Kuramubon',
@@ -523,6 +539,9 @@ class _LayerPanelState extends State<LayerPanel> {
                   subtitle: layer.type == model.LayerType.common
                       ? Text(
                           _rangeSummary(l10n, layer),
+                          maxLines: 1,
+                          softWrap: false,
+                          overflow: TextOverflow.ellipsis,
                           style: TextStyle(
                             fontSize: 9,
                             color: ThemeService.activeColorScheme.primary,
@@ -531,6 +550,9 @@ class _LayerPanelState extends State<LayerPanel> {
                       : layer.hasClipping
                       ? Text(
                           l10n.layerPanelClippingBadge,
+                          maxLines: 1,
+                          softWrap: false,
+                          overflow: TextOverflow.ellipsis,
                           style: TextStyle(
                             fontSize: 9,
                             color: Theme.of(context).colorScheme.primary,

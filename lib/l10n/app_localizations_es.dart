@@ -4016,6 +4016,15 @@ class AppLocalizationsEs extends AppLocalizations {
   }
 
   @override
+  String get saveTreeSlotWriteTooltip => 'Guardar en esta ranura';
+
+  @override
+  String get saveTreeSlotLoadTooltip => 'Cargar desde esta ranura';
+
+  @override
+  String get saveTreeSlotDeleteTooltip => 'Eliminar esta ranura';
+
+  @override
   String saveTreeSlotSaveDialogTitle(int n) {
     return 'Guardar en la ranura $n';
   }
@@ -4355,7 +4364,7 @@ class AppLocalizationsEs extends AppLocalizations {
   String get layerPanelDeselectAll => 'Deseleccionar todo';
 
   @override
-  String get layerPanelNewLayerButton => 'Nueva capa';
+  String get layerPanelNewLayerButton => 'Capa normal';
 
   @override
   String get layerPanelNewFolderButton => 'Nueva carpeta';
@@ -4397,7 +4406,7 @@ class AppLocalizationsEs extends AppLocalizations {
   String get layerPanelClippingBadge => 'Recorte';
 
   @override
-  String get layerPanelAddTooltip => 'Añadir';
+  String get layerPanelAddTooltip => 'Añadir otro';
 
   @override
   String get layerPanelAutofillMarkTooltip =>

@@ -1560,6 +1560,9 @@
       }
     }
   },
+  "saveTreeSlotWriteTooltip": "儲存到此存檔位",
+  "saveTreeSlotLoadTooltip": "從此存檔位讀取",
+  "saveTreeSlotDeleteTooltip": "刪除此存檔位",
   "saveTreeSlotSaveDialogTitle": "儲存到儲存槽 {n}",
   "@saveTreeSlotSaveDialogTitle": {
     "placeholders": {
@@ -1746,7 +1749,7 @@
   "layerPanelSearchHint": "依圖層名稱搜尋",
   "layerPanelSelectAll": "全選",
   "layerPanelDeselectAll": "取消全選",
-  "layerPanelNewLayerButton": "新增圖層",
+  "layerPanelNewLayerButton": "一般圖層",
   "layerPanelNewFolderButton": "新增資料夾",
   "layerPanelImportImageButton": "匯入圖片",
   "layerPanelDefaultLayerName": "圖層{n}",
@@ -1798,7 +1801,7 @@
     }
   },
   "layerPanelClippingBadge": "剪裁",
-  "layerPanelAddTooltip": "新增",
+  "layerPanelAddTooltip": "新增其他",
   "layerPanelAutofillMarkTooltip": "線稿已更新。點一下即可將自動上色更新為最新狀態。",
   "layerPanelRangeAllFrames": "全部影格",
   "layerPanelRangeCurrentScene": "目前場景",

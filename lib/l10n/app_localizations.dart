@@ -7085,6 +7085,24 @@ abstract class AppLocalizations {
   /// **'保存に失敗しました。空き容量などを確認してもう一度お試しください（{error}）'**
   String saveTreeSaveFailedSnackbar(String error);
 
+  /// No description provided for @saveTreeSlotWriteTooltip.
+  ///
+  /// In ja, this message translates to:
+  /// **'このスロットへ保存'**
+  String get saveTreeSlotWriteTooltip;
+
+  /// No description provided for @saveTreeSlotLoadTooltip.
+  ///
+  /// In ja, this message translates to:
+  /// **'このスロットから読み込む'**
+  String get saveTreeSlotLoadTooltip;
+
+  /// No description provided for @saveTreeSlotDeleteTooltip.
+  ///
+  /// In ja, this message translates to:
+  /// **'このスロットを削除'**
+  String get saveTreeSlotDeleteTooltip;
+
   /// No description provided for @saveTreeSlotSaveDialogTitle.
   ///
   /// In ja, this message translates to:
@@ -7664,7 +7682,7 @@ abstract class AppLocalizations {
   /// No description provided for @layerPanelNewLayerButton.
   ///
   /// In ja, this message translates to:
-  /// **'新規レイヤー'**
+  /// **'通常レイヤー'**
   String get layerPanelNewLayerButton;
 
   /// No description provided for @layerPanelNewFolderButton.
@@ -7724,7 +7742,7 @@ abstract class AppLocalizations {
   /// No description provided for @layerPanelAddTooltip.
   ///
   /// In ja, this message translates to:
-  /// **'追加'**
+  /// **'その他追加'**
   String get layerPanelAddTooltip;
 
   /// No description provided for @layerPanelAutofillMarkTooltip.

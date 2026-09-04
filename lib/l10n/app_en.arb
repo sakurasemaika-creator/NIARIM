@@ -1560,6 +1560,9 @@
       }
     }
   },
+  "saveTreeSlotWriteTooltip": "Save to this slot",
+  "saveTreeSlotLoadTooltip": "Load from this slot",
+  "saveTreeSlotDeleteTooltip": "Delete this slot",
   "saveTreeSlotSaveDialogTitle": "Save to slot {n}",
   "@saveTreeSlotSaveDialogTitle": {
     "placeholders": {
@@ -1746,7 +1749,7 @@
   "layerPanelSearchHint": "Search by layer name",
   "layerPanelSelectAll": "Select all",
   "layerPanelDeselectAll": "Deselect all",
-  "layerPanelNewLayerButton": "New layer",
+  "layerPanelNewLayerButton": "Normal layer",
   "layerPanelNewFolderButton": "New folder",
   "layerPanelImportImageButton": "Import image",
   "layerPanelDefaultLayerName": "Layer{n}",
@@ -1798,7 +1801,7 @@
     }
   },
   "layerPanelClippingBadge": "Clipping",
-  "layerPanelAddTooltip": "Add",
+  "layerPanelAddTooltip": "Add other",
   "layerPanelAutofillMarkTooltip": "The lineart was updated. Tap to bring the auto-fill up to date.",
   "layerPanelRangeAllFrames": "All frames",
   "layerPanelRangeCurrentScene": "Current scene",

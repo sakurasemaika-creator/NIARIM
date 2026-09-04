@@ -1560,6 +1560,9 @@
       }
     }
   },
+  "saveTreeSlotWriteTooltip": "Guardar en esta ranura",
+  "saveTreeSlotLoadTooltip": "Cargar desde esta ranura",
+  "saveTreeSlotDeleteTooltip": "Eliminar esta ranura",
   "saveTreeSlotSaveDialogTitle": "Guardar en la ranura {n}",
   "@saveTreeSlotSaveDialogTitle": {
     "placeholders": {
@@ -1746,7 +1749,7 @@
   "layerPanelSearchHint": "Buscar por nombre de capa",
   "layerPanelSelectAll": "Seleccionar todo",
   "layerPanelDeselectAll": "Deseleccionar todo",
-  "layerPanelNewLayerButton": "Nueva capa",
+  "layerPanelNewLayerButton": "Capa normal",
   "layerPanelNewFolderButton": "Nueva carpeta",
   "layerPanelImportImageButton": "Importar imagen",
   "layerPanelDefaultLayerName": "Capa{n}",
@@ -1798,7 +1801,7 @@
     }
   },
   "layerPanelClippingBadge": "Recorte",
-  "layerPanelAddTooltip": "Añadir",
+  "layerPanelAddTooltip": "Añadir otro",
   "layerPanelAutofillMarkTooltip": "El dibujo de líneas se actualizó. Toca para poner al día el relleno automático.",
   "layerPanelRangeAllFrames": "Todos los fotogramas",
   "layerPanelRangeCurrentScene": "Escena actual",

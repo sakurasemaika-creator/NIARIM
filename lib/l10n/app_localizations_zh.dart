@@ -3817,6 +3817,15 @@ class AppLocalizationsZh extends AppLocalizations {
   }
 
   @override
+  String get saveTreeSlotWriteTooltip => '保存到此存档位';
+
+  @override
+  String get saveTreeSlotLoadTooltip => '从此存档位读取';
+
+  @override
+  String get saveTreeSlotDeleteTooltip => '删除此存档位';
+
+  @override
   String saveTreeSlotSaveDialogTitle(int n) {
     return '保存到存储槽 $n';
   }
@@ -4132,7 +4141,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get layerPanelDeselectAll => '取消全选';
 
   @override
-  String get layerPanelNewLayerButton => '新建图层';
+  String get layerPanelNewLayerButton => '普通图层';
 
   @override
   String get layerPanelNewFolderButton => '新建文件夹';
@@ -4174,7 +4183,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get layerPanelClippingBadge => '裁剪';
 
   @override
-  String get layerPanelAddTooltip => '添加';
+  String get layerPanelAddTooltip => '添加其他';
 
   @override
   String get layerPanelAutofillMarkTooltip => '线稿已更新。点按可将自动上色更新为最新状态。';
@@ -9796,6 +9805,15 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   }
 
   @override
+  String get saveTreeSlotWriteTooltip => '儲存到此存檔位';
+
+  @override
+  String get saveTreeSlotLoadTooltip => '從此存檔位讀取';
+
+  @override
+  String get saveTreeSlotDeleteTooltip => '刪除此存檔位';
+
+  @override
   String saveTreeSlotSaveDialogTitle(int n) {
     return '儲存到儲存槽 $n';
   }
@@ -10111,7 +10129,7 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get layerPanelDeselectAll => '取消全選';
 
   @override
-  String get layerPanelNewLayerButton => '新增圖層';
+  String get layerPanelNewLayerButton => '一般圖層';
 
   @override
   String get layerPanelNewFolderButton => '新增資料夾';
@@ -10153,7 +10171,7 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get layerPanelClippingBadge => '剪裁';
 
   @override
-  String get layerPanelAddTooltip => '新增';
+  String get layerPanelAddTooltip => '新增其他';
 
   @override
   String get layerPanelAutofillMarkTooltip => '線稿已更新。點一下即可將自動上色更新為最新狀態。';

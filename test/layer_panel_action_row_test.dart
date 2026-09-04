@@ -110,5 +110,29 @@ void main() {
       );
     }
     expect(checked, 4, reason: '4つのボタンラベルが見つからない');
+
+    // レイヤー名も同じ理由で縦積みになっていた（既定名「レイヤー1」が
+    // 1文字ずつ4行に積まれ、行の高さが3倍になっていた）。ListTileの
+    // leading/trailingに幅を取られて名前へ約30dpしか残らないのが原因。
+    // 余白を詰めたうえで1行に省略する形にしてある。
+    final layerName = l10n.layerPanelDefaultLayerName(1);
+    final nameFinder = find.text(layerName);
+    expect(nameFinder, findsOneWidget, reason: 'レイヤー名が見つからない');
+    final nameSize = tester.getSize(nameFinder);
+    expect(
+      nameSize.height,
+      lessThan(26),
+      reason:
+          'レイヤー名が${nameSize.height.toStringAsFixed(0)}pxの高さになっている'
+          '（縦に折り返している）',
+    );
+    // 省略記号だらけにならず、名前が読める幅を確保できていること。
+    expect(
+      nameSize.width,
+      greaterThan(40),
+      reason:
+          'レイヤー名の表示幅が${nameSize.width.toStringAsFixed(0)}pxしかない'
+          '（アイコン群に押し出されて名前がほぼ省略記号になる）',
+    );
   });
 }

@@ -3832,6 +3832,15 @@ class AppLocalizationsJa extends AppLocalizations {
   }
 
   @override
+  String get saveTreeSlotWriteTooltip => 'このスロットへ保存';
+
+  @override
+  String get saveTreeSlotLoadTooltip => 'このスロットから読み込む';
+
+  @override
+  String get saveTreeSlotDeleteTooltip => 'このスロットを削除';
+
+  @override
   String saveTreeSlotSaveDialogTitle(int n) {
     return 'スロット $n に保存';
   }
@@ -4150,7 +4159,7 @@ class AppLocalizationsJa extends AppLocalizations {
   String get layerPanelDeselectAll => '全解除';
 
   @override
-  String get layerPanelNewLayerButton => '新規レイヤー';
+  String get layerPanelNewLayerButton => '通常レイヤー';
 
   @override
   String get layerPanelNewFolderButton => '新規フォルダ';
@@ -4192,7 +4201,7 @@ class AppLocalizationsJa extends AppLocalizations {
   String get layerPanelClippingBadge => 'クリッピング';
 
   @override
-  String get layerPanelAddTooltip => '追加';
+  String get layerPanelAddTooltip => 'その他追加';
 
   @override
   String get layerPanelAutofillMarkTooltip =>

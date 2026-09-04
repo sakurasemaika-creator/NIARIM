@@ -19,10 +19,12 @@ import 'package:niarim/screens/canvas/widgets/ruler_panel.dart';
 import 'package:niarim/screens/canvas/widgets/toolbar_widget.dart';
 import 'package:niarim/screens/canvas/widgets/panel_close_bar.dart';
 import 'package:niarim/services/project_service.dart';
+import 'package:niarim/services/theme_service.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'helpers/first_use_tooltips.dart';
+import 'helpers/load_app_fonts.dart';
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
@@ -75,17 +77,10 @@ void main() {
     addTearDown(tester.view.resetPhysicalSize);
     addTearDown(tester.view.resetDevicePixelRatio);
 
-    await tester.runAsync(() async {
-      final loaders = <FontLoader>[
-        FontLoader('HakkouMincho')
-          ..addFont(rootBundle.load('assets/fonts/HakkouMincho.ttf')),
-        FontLoader('Kuramubon')
-          ..addFont(rootBundle.load('assets/fonts/Kuramubon.otf')),
-        FontLoader('NotoSerifJP')
-          ..addFont(rootBundle.load('assets/fonts/NotoSerifJP.ttf')),
-      ];
-      await Future.wait(loaders.map((e) => e.load()));
-    });
+    // 同梱フォントに加えてMaterialアイコンも読み込む。アイコンを
+    // 読み込まないと、撮ったPNGのアイコンが全て豆腐（□）になり
+    // 「どのボタンがどう並んでいるか」を目視できない。
+    await loadAppFonts(tester);
 
     final providers = await tester.runAsync(buildAppProviders);
     final providerList = providers!;
@@ -99,17 +94,24 @@ void main() {
         key: rootKey,
         child: MultiProvider(
           providers: providerList,
-          child: MaterialApp(
-            locale: const Locale('ja'),
-            localizationsDelegates: AppLocalizations.localizationsDelegates,
-            supportedLocales: AppLocalizations.supportedLocales,
-            home: StatefulBuilder(
-              builder: (context, setState) {
-                ps ??= context.read<ProjectService>();
-                rebuildHost = setState;
-                if (projectId == null) return const SizedBox.expand();
-                return CanvasScreen(projectId: projectId);
-              },
+          child: Builder(
+            builder: (themeContext) => MaterialApp(
+              // アプリ本体のテーマを必ず適用する。付けないとFlutter既定の
+              // テーマ（Roboto・M3の既定配色）で描かれてしまい、**同梱
+              // フォントも配色も本番と違うPNG**が撮れる。実際に日本語の
+              // ボタンラベルが全て豆腐（□）になっていた。
+              theme: themeContext.watch<ThemeService>().themeData,
+              locale: const Locale('ja'),
+              localizationsDelegates: AppLocalizations.localizationsDelegates,
+              supportedLocales: AppLocalizations.supportedLocales,
+              home: StatefulBuilder(
+                builder: (context, setState) {
+                  ps ??= context.read<ProjectService>();
+                  rebuildHost = setState;
+                  if (projectId == null) return const SizedBox.expand();
+                  return CanvasScreen(projectId: projectId);
+                },
+              ),
             ),
           ),
         ),

@@ -1560,6 +1560,9 @@
       }
     }
   },
+  "saveTreeSlotWriteTooltip": "保存到此存档位",
+  "saveTreeSlotLoadTooltip": "从此存档位读取",
+  "saveTreeSlotDeleteTooltip": "删除此存档位",
   "saveTreeSlotSaveDialogTitle": "保存到存储槽 {n}",
   "@saveTreeSlotSaveDialogTitle": {
     "placeholders": {
@@ -1746,7 +1749,7 @@
   "layerPanelSearchHint": "按图层名称搜索",
   "layerPanelSelectAll": "全选",
   "layerPanelDeselectAll": "取消全选",
-  "layerPanelNewLayerButton": "新建图层",
+  "layerPanelNewLayerButton": "普通图层",
   "layerPanelNewFolderButton": "新建文件夹",
   "layerPanelImportImageButton": "导入图片",
   "layerPanelDefaultLayerName": "图层{n}",
@@ -1798,7 +1801,7 @@
     }
   },
   "layerPanelClippingBadge": "裁剪",
-  "layerPanelAddTooltip": "添加",
+  "layerPanelAddTooltip": "添加其他",
   "layerPanelAutofillMarkTooltip": "线稿已更新。点按可将自动上色更新为最新状态。",
   "layerPanelRangeAllFrames": "全部帧",
   "layerPanelRangeCurrentScene": "当前场景",

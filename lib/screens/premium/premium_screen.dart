@@ -451,6 +451,13 @@ class PremiumScreen extends StatelessWidget {
         side: BorderSide(color: scheme.outlineVariant.withValues(alpha: 0.4)),
       ),
       child: Table(
+        // セルの高さは既定（top）だと**各セルが自分の中身ぶんしか高さを
+        // 持たない**ため、機能名が2行に折り返した行だけ、他の列の背景色が
+        // 行の下端まで届かず白い帯が残る（実際に「アニメ制作・描画機能」の
+        // 行で発生していた）。intrinsicHeightにすると全セルが行内で最も
+        // 高いセルと同じ高さになり、背景が必ず行いっぱいに塗られる。
+        // fillは「全セルがfillだと行の高さが0になる」ため使わないこと。
+        defaultVerticalAlignment: TableCellVerticalAlignment.intrinsicHeight,
         border: TableBorder(
           horizontalInside: BorderSide(
             color: scheme.outlineVariant.withValues(alpha: 0.4),
@@ -466,7 +473,8 @@ class PremiumScreen extends StatelessWidget {
             children: [
               Container(
                 color: scheme.surfaceContainerHighest,
-                padding: const EdgeInsets.fromLTRB(12, 22, 12, 12),
+                padding: const EdgeInsets.all(12),
+                alignment: Alignment.centerLeft,
                 child: Text(
                   l10n.premiumComparisonFeature,
                   style: TextStyle(
@@ -479,7 +487,8 @@ class PremiumScreen extends StatelessWidget {
               ),
               Container(
                 color: scheme.surfaceContainerHighest,
-                padding: const EdgeInsets.fromLTRB(12, 22, 12, 12),
+                padding: const EdgeInsets.all(12),
+                alignment: Alignment.center,
                 child: Text(
                   l10n.premiumComparisonFree,
                   textAlign: TextAlign.center,
@@ -527,6 +536,7 @@ class PremiumScreen extends StatelessWidget {
                 Container(
                   color: zebra,
                   padding: const EdgeInsets.all(12),
+                  alignment: Alignment.centerLeft,
                   child: Text(
                     item.$1,
                     style: TextStyle(fontSize: 12, color: scheme.onSurface),

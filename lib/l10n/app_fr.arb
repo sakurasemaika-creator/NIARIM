@@ -1560,6 +1560,9 @@
       }
     }
   },
+  "saveTreeSlotWriteTooltip": "Enregistrer dans cet emplacement",
+  "saveTreeSlotLoadTooltip": "Charger cet emplacement",
+  "saveTreeSlotDeleteTooltip": "Supprimer cet emplacement",
   "saveTreeSlotSaveDialogTitle": "Enregistrer dans l'emplacement {n}",
   "@saveTreeSlotSaveDialogTitle": {
     "placeholders": {
@@ -1746,7 +1749,7 @@
   "layerPanelSearchHint": "Rechercher par nom de calque",
   "layerPanelSelectAll": "Tout sélectionner",
   "layerPanelDeselectAll": "Tout désélectionner",
-  "layerPanelNewLayerButton": "Nouveau calque",
+  "layerPanelNewLayerButton": "Calque normal",
   "layerPanelNewFolderButton": "Nouveau dossier",
   "layerPanelImportImageButton": "Importer une image",
   "layerPanelDefaultLayerName": "Calque{n}",
@@ -1798,7 +1801,7 @@
     }
   },
   "layerPanelClippingBadge": "Écrêtage",
-  "layerPanelAddTooltip": "Ajouter",
+  "layerPanelAddTooltip": "Autre calque",
   "layerPanelAutofillMarkTooltip": "Le dessin au trait a été mis à jour. Touchez pour actualiser le remplissage automatique.",
   "layerPanelRangeAllFrames": "Toutes les images",
   "layerPanelRangeCurrentScene": "Scène actuelle",
