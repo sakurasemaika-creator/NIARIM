@@ -8,21 +8,24 @@ import 'package:shared_preferences/shared_preferences.dart';
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
-  test('fresh install includes glitter and lame presets with distinct behavior', () async {
-    SharedPreferences.setMockInitialValues({});
-    final service = BrushService();
-    await service.init();
+  test(
+    'fresh install includes glitter and lame presets with distinct behavior',
+    () async {
+      SharedPreferences.setMockInitialValues({});
+      final service = BrushService();
+      await service.init();
 
-    final glitter = service.brushes.singleWhere((b) => b.id == 'Brush0016');
-    final lame = service.brushes.singleWhere((b) => b.id == 'Brush0017');
+      final glitter = service.brushes.singleWhere((b) => b.id == 'Brush0016');
+      final lame = service.brushes.singleWhere((b) => b.id == 'Brush0017');
 
-    expect(glitter.name, 'グリッターペン');
-    expect(lame.name, 'ラメペン');
-    expect(glitter.scatter, greaterThan(lame.scatter));
-    expect(glitter.size, greaterThan(lame.size));
-    expect(lame.density, greaterThan(glitter.density));
-    expect(lame.spacing, lessThan(glitter.spacing));
-  });
+      expect(glitter.name, 'グリッターペン');
+      expect(lame.name, 'ラメペン');
+      expect(glitter.scatter, greaterThan(lame.scatter));
+      expect(glitter.size, greaterThan(lame.size));
+      expect(lame.density, greaterThan(glitter.density));
+      expect(lame.spacing, lessThan(glitter.spacing));
+    },
+  );
 
   test('existing saved brush list is migrated with both new presets', () async {
     const oldBrush = Brush(
