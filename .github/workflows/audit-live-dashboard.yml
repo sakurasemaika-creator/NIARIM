@@ -23,6 +23,7 @@ on:
       - 'Build APK'
       - 'Implement Background Acclimation V2'
       - 'One-shot Background Acclimation V2'
+      - 'Final HEAD Release Gate'
     types: [requested, in_progress, completed]
 
 permissions:
@@ -43,6 +44,11 @@ jobs:
       - uses: actions/checkout@v4
         with:
           ref: dev_branch
+      # GitHubのActions一覧APIはcompletedイベント直後だけ旧statusを返すことがある。
+      # 数秒待ってから再取得し、完了済みRunを「実行中」に残さない。
+      - name: Allow completed state to settle
+        if: github.event_name == 'workflow_run' && github.event.action == 'completed'
+        run: sleep 8
       - name: Update dashboard once
         env:
           GH_TOKEN: ${{ github.token }}
