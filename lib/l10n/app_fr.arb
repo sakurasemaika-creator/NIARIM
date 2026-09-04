@@ -74,7 +74,7 @@
   "settingsBucketTitle": "Pot de peinture",
   "settingsBucketSubtitle": "Tolérance, extension, sous les traits",
   "settingsThemeTitle": "Thème et apparence",
-  "settingsThemeSubtitle": "Réglages de thème, espace de travail",
+  "settingsThemeSubtitle": "Couleurs du thème, texte et fond",
   "settingsWatermarkTitle": "Filigrane",
   "settingsWatermarkSubtitle": "Filigrane personnalisé",
   "settingsTransferTitle": "Transfert",
@@ -137,6 +137,8 @@
       }
     }
   },
+  "gestureActionUndo": "Annuler",
+  "gestureActionRedo": "Rétablir",
   "gestureActionEyedropper": "Pipette",
   "gestureActionPanTool": "Outil main",
   "gestureActionEraserToggle": "Basculer la gomme",

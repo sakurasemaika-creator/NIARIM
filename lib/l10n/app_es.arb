@@ -74,7 +74,7 @@
   "settingsBucketTitle": "Cubo de pintura",
   "settingsBucketSubtitle": "Tolerancia, expansión, bajo las líneas",
   "settingsThemeTitle": "Tema y apariencia",
-  "settingsThemeSubtitle": "Ajustes de tema, espacio de trabajo",
+  "settingsThemeSubtitle": "Colores del tema, texto y fondo",
   "settingsWatermarkTitle": "Marca de agua",
   "settingsWatermarkSubtitle": "Marca de agua personalizada",
   "settingsTransferTitle": "Transferencia",
@@ -137,6 +137,8 @@
       }
     }
   },
+  "gestureActionUndo": "Deshacer",
+  "gestureActionRedo": "Rehacer",
   "gestureActionEyedropper": "Cuentagotas",
   "gestureActionPanTool": "Herramienta de mano",
   "gestureActionEraserToggle": "Alternar goma de borrar",

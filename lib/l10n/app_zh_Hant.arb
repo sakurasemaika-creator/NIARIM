@@ -74,7 +74,7 @@
   "settingsBucketTitle": "油漆桶填色",
   "settingsBucketSubtitle": "容差・擴張・潛入線稿下方",
   "settingsThemeTitle": "主題・外觀",
-  "settingsThemeSubtitle": "主題設定・工作區",
+  "settingsThemeSubtitle": "主題配色・文字色・背景色",
   "settingsWatermarkTitle": "浮水印",
   "settingsWatermarkSubtitle": "自訂浮水印",
   "settingsTransferTitle": "資料轉移",
@@ -137,6 +137,8 @@
       }
     }
   },
+  "gestureActionUndo": "復原",
+  "gestureActionRedo": "取消復原",
   "gestureActionEyedropper": "滴管",
   "gestureActionPanTool": "手形工具",
   "gestureActionEraserToggle": "切換橡皮擦",

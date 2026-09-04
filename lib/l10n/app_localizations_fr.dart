@@ -255,7 +255,7 @@ class AppLocalizationsFr extends AppLocalizations {
   String get settingsThemeTitle => 'Thème et apparence';
 
   @override
-  String get settingsThemeSubtitle => 'Réglages de thème, espace de travail';
+  String get settingsThemeSubtitle => 'Couleurs du thème, texte et fond';
 
   @override
   String get settingsWatermarkTitle => 'Filigrane';
@@ -393,6 +393,12 @@ class AppLocalizationsFr extends AppLocalizations {
   String gestureHoldEyedropperSecondsValue(String seconds) {
     return '$seconds s';
   }
+
+  @override
+  String get gestureActionUndo => 'Annuler';
+
+  @override
+  String get gestureActionRedo => 'Rétablir';
 
   @override
   String get gestureActionEyedropper => 'Pipette';

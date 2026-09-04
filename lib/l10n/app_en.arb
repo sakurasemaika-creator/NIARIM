@@ -74,7 +74,7 @@
   "settingsBucketTitle": "Bucket Fill",
   "settingsBucketSubtitle": "Tolerance, expand, fill under lines",
   "settingsThemeTitle": "Theme & Appearance",
-  "settingsThemeSubtitle": "Theme settings, workspace",
+  "settingsThemeSubtitle": "Theme colors, text and background",
   "settingsWatermarkTitle": "Watermark",
   "settingsWatermarkSubtitle": "Custom watermark",
   "settingsTransferTitle": "Transfer",
@@ -137,6 +137,8 @@
       }
     }
   },
+  "gestureActionUndo": "Undo",
+  "gestureActionRedo": "Redo",
   "gestureActionEyedropper": "Eyedropper",
   "gestureActionPanTool": "Pan Tool",
   "gestureActionEraserToggle": "Toggle Eraser",

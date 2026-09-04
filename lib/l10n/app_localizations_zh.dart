@@ -246,7 +246,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get settingsThemeTitle => '主题・外观';
 
   @override
-  String get settingsThemeSubtitle => '主题设置・工作区';
+  String get settingsThemeSubtitle => '主题配色・文字色・背景色';
 
   @override
   String get settingsWatermarkTitle => '水印';
@@ -379,6 +379,12 @@ class AppLocalizationsZh extends AppLocalizations {
   String gestureHoldEyedropperSecondsValue(String seconds) {
     return '$seconds秒';
   }
+
+  @override
+  String get gestureActionUndo => '撤销';
+
+  @override
+  String get gestureActionRedo => '重做';
 
   @override
   String get gestureActionEyedropper => '吸管';
@@ -6235,7 +6241,7 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get settingsThemeTitle => '主題・外觀';
 
   @override
-  String get settingsThemeSubtitle => '主題設定・工作區';
+  String get settingsThemeSubtitle => '主題配色・文字色・背景色';
 
   @override
   String get settingsWatermarkTitle => '浮水印';
@@ -6368,6 +6374,12 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String gestureHoldEyedropperSecondsValue(String seconds) {
     return '$seconds秒';
   }
+
+  @override
+  String get gestureActionUndo => '復原';
+
+  @override
+  String get gestureActionRedo => '取消復原';
 
   @override
   String get gestureActionEyedropper => '滴管';

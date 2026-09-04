@@ -217,8 +217,11 @@ class PenSettingsScreen extends StatelessWidget {
   String _actionLabel(BuildContext context, GestureAction action) {
     final l10n = AppLocalizations.of(context)!;
     return switch (action) {
-      GestureAction.undo => 'Undo',
-      GestureAction.redo => 'Redo',
+      // 訳文を使う。ここだけ英語のままだと、日本語UIの一覧に
+      // 「Undo」「Redo」だけ英語で並ぶ
+      // （build/all-route-screenshots/16_settings_gestures.png で発覚）。
+      GestureAction.undo => l10n.gestureActionUndo,
+      GestureAction.redo => l10n.gestureActionRedo,
       GestureAction.eyedropper => l10n.gestureActionEyedropper,
       GestureAction.eraserToggle => l10n.gestureActionEraserToggle,
       GestureAction.nextTool => l10n.gestureActionNextTool,

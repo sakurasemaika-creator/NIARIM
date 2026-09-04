@@ -54,12 +54,13 @@ void main() {
       reason: 'シートを開いた時点でレイアウト例外（オーバーフロー）が出ている',
     );
 
-    // 先頭の選択肢は見えている。
-    expect(find.text('Undo'), findsWidgets);
+    // 先頭の選択肢は見えている（表示名は訳文。以前ここだけ英語の
+    // 'Undo'を直書きしていたのを、l10n経由へ直した）。
+    final l10n = await AppLocalizations.delegate.load(const Locale('ja'));
+    expect(find.text(l10n.gestureActionUndo), findsWidgets);
 
     // 最後の選択肢まで実際にスクロールして到達できる
     // （オーバーフローで潰れていると到達できない）。
-    final l10n = await AppLocalizations.delegate.load(const Locale('ja'));
     await tester.scrollUntilVisible(
       find.text(l10n.gestureActionNone),
       120,

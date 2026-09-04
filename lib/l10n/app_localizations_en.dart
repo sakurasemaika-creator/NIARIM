@@ -252,7 +252,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get settingsThemeTitle => 'Theme & Appearance';
 
   @override
-  String get settingsThemeSubtitle => 'Theme settings, workspace';
+  String get settingsThemeSubtitle => 'Theme colors, text and background';
 
   @override
   String get settingsWatermarkTitle => 'Watermark';
@@ -389,6 +389,12 @@ class AppLocalizationsEn extends AppLocalizations {
   String gestureHoldEyedropperSecondsValue(String seconds) {
     return '${seconds}s';
   }
+
+  @override
+  String get gestureActionUndo => 'Undo';
+
+  @override
+  String get gestureActionRedo => 'Redo';
 
   @override
   String get gestureActionEyedropper => 'Eyedropper';

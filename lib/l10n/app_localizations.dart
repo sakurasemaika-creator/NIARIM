@@ -554,7 +554,7 @@ abstract class AppLocalizations {
   /// No description provided for @settingsThemeSubtitle.
   ///
   /// In ja, this message translates to:
-  /// **'テーマ設定・ワークスペース'**
+  /// **'テーマ配色・文字色・背景色'**
   String get settingsThemeSubtitle;
 
   /// No description provided for @settingsWatermarkTitle.
@@ -802,6 +802,18 @@ abstract class AppLocalizations {
   /// In ja, this message translates to:
   /// **'{seconds}秒'**
   String gestureHoldEyedropperSecondsValue(String seconds);
+
+  /// No description provided for @gestureActionUndo.
+  ///
+  /// In ja, this message translates to:
+  /// **'取り消し（Undo）'**
+  String get gestureActionUndo;
+
+  /// No description provided for @gestureActionRedo.
+  ///
+  /// In ja, this message translates to:
+  /// **'やり直し（Redo）'**
+  String get gestureActionRedo;
 
   /// No description provided for @gestureActionEyedropper.
   ///

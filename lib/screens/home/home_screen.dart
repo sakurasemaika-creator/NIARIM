@@ -1003,12 +1003,20 @@ class _SharedScreenState extends State<SharedScreen> {
     final l10n = AppLocalizations.of(context)!;
     return Scaffold(
       appBar: AppBar(
-        title: SortModeControl(
-          sortByName: _sortByName,
-          sortAscending: _sortAscending,
-          onSortByNameChanged: _setSortByName,
-          onToggleDirection: _toggleSortDirection,
-        ),
+        // タイトル欄を並び替えコントロールで潰さない。ハンバーガー
+        // メニューから開くこの2画面は見た目がほとんど同じなので、
+        // 画面名が出ていないと「共有」と「ゴミ箱」のどちらを見ているのか
+        // 分からなくなる（build/all-route-screenshots/31_shared.png で発覚）。
+        title: Text(l10n.homeTabShared),
+        actions: [
+          SortModeControl(
+            sortByName: _sortByName,
+            sortAscending: _sortAscending,
+            onSortByNameChanged: _setSortByName,
+            onToggleDirection: _toggleSortDirection,
+          ),
+          const SizedBox(width: 4),
+        ],
       ),
       body: Column(
         children: [
@@ -1096,14 +1104,23 @@ class _TrashScreenState extends State<TrashScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return Scaffold(
       appBar: AppBar(
-        title: SortModeControl(
-          sortByName: _sortByName,
-          sortAscending: _sortAscending,
-          onSortByNameChanged: _setSortByName,
-          onToggleDirection: _toggleSortDirection,
-        ),
+        // タイトル欄を並び替えコントロールで潰さない。ハンバーガー
+        // メニューから開くこの2画面は見た目がほとんど同じなので、
+        // 画面名が出ていないと「共有」と「ゴミ箱」のどちらを見ているのか
+        // 分からなくなる（build/all-route-screenshots/31_shared.png で発覚）。
+        title: Text(l10n.homeTabTrash),
+        actions: [
+          SortModeControl(
+            sortByName: _sortByName,
+            sortAscending: _sortAscending,
+            onSortByNameChanged: _setSortByName,
+            onToggleDirection: _toggleSortDirection,
+          ),
+          const SizedBox(width: 4),
+        ],
       ),
       body: _TrashTab(sortMode: _sortMode),
     );

@@ -126,7 +126,7 @@
   "settingsBucketTitle": "バケツ塗り",
   "settingsBucketSubtitle": "許容誤差・拡張・線の下まで潜る",
   "settingsThemeTitle": "テーマ・外観",
-  "settingsThemeSubtitle": "テーマ設定・ワークスペース",
+  "settingsThemeSubtitle": "テーマ配色・文字色・背景色",
   "settingsWatermarkTitle": "ウォーターマーク",
   "settingsWatermarkSubtitle": "カスタムウォーターマーク",
   "settingsTransferTitle": "引き継ぎ",
@@ -196,6 +196,8 @@
       }
     }
   },
+  "gestureActionUndo": "取り消し（Undo）",
+  "gestureActionRedo": "やり直し（Redo）",
   "gestureActionEyedropper": "スポイト",
   "gestureActionPanTool": "手のひらツール",
   "gestureActionEraserToggle": "消しゴム切替",

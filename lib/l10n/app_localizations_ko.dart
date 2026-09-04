@@ -246,7 +246,7 @@ class AppLocalizationsKo extends AppLocalizations {
   String get settingsThemeTitle => '테마・외관';
 
   @override
-  String get settingsThemeSubtitle => '테마 설정・작업 공간';
+  String get settingsThemeSubtitle => '테마 배색・글자색・배경색';
 
   @override
   String get settingsWatermarkTitle => '워터마크';
@@ -380,6 +380,12 @@ class AppLocalizationsKo extends AppLocalizations {
   String gestureHoldEyedropperSecondsValue(String seconds) {
     return '$seconds초';
   }
+
+  @override
+  String get gestureActionUndo => '실행 취소';
+
+  @override
+  String get gestureActionRedo => '다시 실행';
 
   @override
   String get gestureActionEyedropper => '스포이드';

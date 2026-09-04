@@ -74,7 +74,7 @@
   "settingsBucketTitle": "페인트 통 채우기",
   "settingsBucketSubtitle": "허용 오차・확장・선 아래로 파고들기",
   "settingsThemeTitle": "테마・외관",
-  "settingsThemeSubtitle": "테마 설정・작업 공간",
+  "settingsThemeSubtitle": "테마 배색・글자색・배경색",
   "settingsWatermarkTitle": "워터마크",
   "settingsWatermarkSubtitle": "커스텀 워터마크",
   "settingsTransferTitle": "데이터 이전",
@@ -137,6 +137,8 @@
       }
     }
   },
+  "gestureActionUndo": "실행 취소",
+  "gestureActionRedo": "다시 실행",
   "gestureActionEyedropper": "스포이드",
   "gestureActionPanTool": "손 도구",
   "gestureActionEraserToggle": "지우개 전환",
