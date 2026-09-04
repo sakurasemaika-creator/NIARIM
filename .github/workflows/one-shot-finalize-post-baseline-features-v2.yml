@@ -1,0 +1,58 @@
+name: One-shot Finalize Post-baseline Features V2
+
+on:
+  push:
+    branches: [dev_branch]
+    paths:
+      - '.github/workflows/one-shot-finalize-post-baseline-features-v2.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  implement-and-verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          ref: dev_branch
+          fetch-depth: 0
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+      - run: flutter pub get
+      - name: Prepare patch script for current source
+        shell: bash
+        run: |
+          python3 -c "from pathlib import Path; p=Path('.github/scripts/finalize_post_baseline_features.py'); s=p.read_text(); old='    if text.count(old) != 1:\\n        raise SystemExit(f\\\"{path}: expected exactly one match, found {text.count(old)}\\\\n--- OLD ---\\\\n{old[:500]}\\\")\\n    p.write_text(text.replace(old, new, 1))\\n'; new='    count = text.count(old)\\n    if count != 1:\\n        ambiguous = \\\"    final l10n = AppLocalizations.of(context)!;\\\\n    showDialog(\\\\n\\\"\\n        if path == \\\"lib/screens/canvas/canvas_screen.dart\\\" and old == ambiguous:\\n            marker = \\\"  void _showTextInputDialog(\\\\n\\\"\\n            start = text.find(marker)\\n            if start < 0 or old not in text[start:]:\\n                raise SystemExit(f\\\"{path}: scoped text dialog anchor not found\\\")\\n            p.write_text(text[:start] + text[start:].replace(old, new, 1))\\n            return\\n        raise SystemExit(f\\\"{path}: expected exactly one match, found {count}\\\\n--- OLD ---\\\\n{old[:500]}\\\")\\n    p.write_text(text.replace(old, new, 1))\\n'; assert old in s; p.write_text(s.replace(old,new,1))"
+      - name: Apply remaining feature fixes
+        run: python3 .github/scripts/finalize_post_baseline_features.py
+      - name: Add required color picker close callback
+        shell: bash
+        run: |
+          python3 -c "from pathlib import Path; p=Path('lib/screens/canvas/canvas_screen.dart'); s=p.read_text(); needle='                Navigator.of(pickerContext).pop();\\n              },\\n            ),'; repl='                Navigator.of(pickerContext).pop();\\n              },\\n              onClose: () => Navigator.of(pickerContext).pop(),\\n            ),'; assert s.count(needle)==1, s.count(needle); p.write_text(s.replace(needle,repl,1))"
+      - name: Regenerate localization
+        run: flutter gen-l10n
+      - name: Format changed Dart files
+        run: dart format lib/models/layer.dart lib/engine/niapro_serializer.dart lib/screens/timeline/timeline_screen.dart lib/screens/canvas/canvas_screen.dart test/post_baseline_remaining_contract_test.dart
+      - name: Analyze production code
+        run: flutter analyze lib
+      - name: Remaining feature contract tests
+        run: flutter test test/post_baseline_remaining_contract_test.dart --reporter expanded
+      - name: Existing strict regressions
+        run: |
+          flutter test test/final_remaining_strict_evidence_test.dart --reporter expanded
+          flutter test test/time_change_strict_evidence_test.dart --reporter expanded
+      - name: Commit implementation
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add lib test
+          if git diff --cached --quiet; then
+            echo 'No implementation changes to commit'
+          else
+            git commit -m 'fix: finalize video volume and text eyedropper'
+            git push origin HEAD:dev_branch
+          fi
