@@ -1360,7 +1360,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get helpEffectFilterDesc =>
-      'A visual effect (blur, color correction, glow, pixelate, etc.) you can apply to a scene or frame. Use it when you want to adjust the overall look of the screen as a directorial touch, without changing the hand-drawn artwork itself. Pixelate also lets you choose a color mode (no limit, specify colors, specify color count, or choose from a palette). Multiple effect filters can be stacked, and they\'re applied in the order they appear on the timeline. Dragging to reorder the filter list also changes the order they\'re actually applied on screen. An effect filter that applies film-grain-like noise, changing it frame by frame. Strength, amount (how dense the noise is), and grain size can all be adjusted with sliders. Returning to the same frame reproduces the same grain (no flicker while scrubbing), while playback makes the grain appear to move. An effect filter that renders rain falling across the screen. Intensity (drop count), speed, drop size, and wind angle can all be adjusted with sliders. Each drop keeps falling at a steady speed as the frame advances, giving natural-looking rain motion.';
+      'A visual effect (blur, color correction, glow, pixel art, etc.) you can apply to a scene or frame. Use it when you want to adjust the overall look of the screen as a directorial touch, without changing the hand-drawn artwork itself. Pixel art also lets you choose a color mode (no limit, specify colors, specify color count, or choose from a palette). Multiple effect filters can be stacked, and they\'re applied in the order they appear on the timeline. Dragging to reorder the filter list also changes the order they\'re actually applied on screen. An effect filter that applies film-grain-like noise, changing it frame by frame. Strength, amount (how dense the noise is), and grain size can all be adjusted with sliders. Returning to the same frame reproduces the same grain (no flicker while scrubbing), while playback makes the grain appear to move. An effect filter that renders rain falling across the screen. Intensity (drop count), speed, drop size, and wind angle can all be adjusted with sliders. Each drop keeps falling at a steady speed as the frame advances, giving natural-looking rain motion.';
 
   @override
   String get helpEndCardTitle => 'End Card (End Logo)';
@@ -1416,10 +1416,10 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get helpTransferDesc =>
-      'A feature for transferring your entire app environment — settings, materials, brushes, autofill settings, theme, palettes (color picker and pixel art), and more — to another device all at once. You can choose individual items to transfer with checkboxes. If you want to hand over an individual project, use \"Share (.niashare)\" instead.';
+      'A feature for transferring your entire app environment — settings, materials, brushes, autofill settings, theme, palettes (color picker and pixel-art), and more — to another device all at once. You can choose individual items to transfer with checkboxes, and optionally include in-progress projects too (selected projects are transferred whole, including their materials and fonts). If you just want to hand over a single project, you can also use \"Share (.niashare)\".';
 
   @override
-  String get helpVideoExportTitle => 'Video Export (MP4, WebM, GIF)';
+  String get helpVideoExportTitle => 'Video Export (MP4, WebM, GIF, AVI)';
 
   @override
   String get helpVideoExportDesc =>
@@ -1489,7 +1489,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get helpToneFillDesc =>
-      'Switching the bucket tool\'s setting from solid fill to tone fill lets you fill with a chosen halftone or line-pattern tone. Pixel-mode-only checker and grid patterns are also available, for fills that fit a pixel-art texture.';
+      'Switching the bucket tool\'s setting from solid fill to tone fill lets you fill with a chosen halftone or line-pattern tone. Pixel-mode-only checker and grid patterns are also available, for fills that fit a pixel-art texture. Great for frills, knitwear, tights, and other fine patterns that are tedious to draw by hand. You can also create and add your own custom tones, or share them with other users.';
 
   @override
   String get helpPixelModeTitle => 'Pixel mode';
@@ -1686,7 +1686,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get helpDrawingFilterDesc =>
-      'Filters applied directly to the selected layer (as opposed to effect filters, which apply across the whole timeline or a scene, draw filters work per layer). Includes blur, sharpen, unsharp mask, tone curve, levels, vignette, noise, retro anime, CRT, anime style, outline, and pixelate. Outline doesn\'t rewrite the original layer — it draws just the outlined result onto a new layer. Pixelate also lets you choose a color mode (no limit, specify colors, specify color count, or choose from a palette).';
+      'Filters applied directly to the selected layer (as opposed to effect filters, which apply across the whole timeline or a scene, draw filters work per layer). Includes blur, sharpen, unsharp mask, tone curve, levels, vignette, noise, retro anime, CRT, anime style, outline, pixel art, and a lens-distortion filter. Outline doesn\'t rewrite the original layer — it draws just the outlined result onto a new layer. The lens-distortion filter applies a localized warp, like looking through a strong eyeglass lens, only to the area painted on the selection layer. Pixel art also lets you choose a color mode (no limit, specify colors, specify color count, or choose from a palette).';
 
   @override
   String get helpLayerKeyframeTitle => 'Layer keyframes (per-part animation)';
