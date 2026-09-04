@@ -1,0 +1,41 @@
+name: One-shot Post-baseline Inspect
+
+on:
+  push:
+    branches: [dev_branch]
+    paths:
+      - '.github/workflows/one-shot-post-baseline-inspect.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  inspect:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - name: Locate text color and eyedropper implementation
+        run: |
+          echo '=== TEXT / OUTLINE COLOR / EYEDROPPER ==='
+          grep -RniE 'eyedrop|スポイト|textColor|text.*color|outlineColor|strokeColor|縁取り|カラーチップ' lib test --include='*.dart' | head -n 300 || true
+      - name: Locate timeline video volume implementation
+        run: |
+          echo '=== VIDEO CLIP VOLUME ==='
+          grep -RniE 'volume|音量|_videoClips|trackType.*video|video.*clip' lib test --include='*.dart' | head -n 400 || true
+      - name: Locate Android home widget implementation and tests
+        run: |
+          echo '=== HOME WIDGET ==='
+          grep -RniE 'AppWidget|home.?widget|onAppWidgetOptionsChanged|widget.*size|shortcut' lib android test --include='*.dart' --include='*.kt' --include='*.xml' | head -n 400 || true
+      - name: Verify targeted existing tests compile/run
+        run: |
+          if ! command -v flutter >/dev/null 2>&1; then
+            echo 'Flutter unavailable on runner; source inspection still valid.'
+            exit 0
+          fi
+          flutter pub get
+          flutter test \
+            test/home_widget_artwork_picker_test.dart \
+            test/home_widget_cell_size_test.dart \
+            test/home_widget_service_test.dart \
+            test/home_widget_shortcut_design_test.dart
