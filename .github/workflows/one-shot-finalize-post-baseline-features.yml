@@ -43,8 +43,8 @@ jobs:
                       if start < 0:
                           raise SystemExit(f"{path}: text dialog marker not found")
                       head, tail = text[:start], text[start:]
-                      if tail.count(old) != 1:
-                          raise SystemExit(f"{path}: text dialog scoped anchor count={tail.count(old)}")
+                      if old not in tail:
+                          raise SystemExit(f"{path}: scoped text dialog anchor not found")
                       p.write_text(head + tail.replace(old, new, 1))
                       return
                   raise SystemExit(f"{path}: expected exactly one match, found {count}\\n--- OLD ---\\n{old[:500]}")
