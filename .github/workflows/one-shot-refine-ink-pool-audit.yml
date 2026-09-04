@@ -4,7 +4,7 @@ on:
   push:
     branches: [dev_branch]
     paths:
-      - '.github/scripts/refine_ink_pool_audit.py'
+      - '.github/scripts/refine_ink_pool_centerline.py'
       - '.github/workflows/one-shot-refine-ink-pool-audit.yml'
 
 permissions:
@@ -25,7 +25,7 @@ jobs:
           cache: true
       - run: flutter pub get
       - name: Refine ink pooling behavior and audit
-        run: python3 .github/scripts/refine_ink_pool_audit.py
+        run: python3 .github/scripts/refine_ink_pool_centerline.py
       - name: Regenerate localization
         run: flutter gen-l10n
       - name: Format
@@ -48,6 +48,6 @@ jobs:
           if git diff --cached --quiet; then
             echo 'No changes to commit'
           else
-            git commit -m 'fix: refine ink pooling taper and localization'
+            git commit -m 'fix: make ink pooling taper follow branch centerlines'
             git push origin HEAD:dev_branch
           fi
