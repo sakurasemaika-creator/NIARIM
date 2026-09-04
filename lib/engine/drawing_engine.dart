@@ -1,6 +1,7 @@
 import 'dart:math' as math;
 import 'dart:typed_data';
 import 'dart:ui' as ui;
+
 import '../models/brush.dart';
 import 'brush_texture_cache.dart';
 import 'tile_manager.dart';
@@ -321,6 +322,14 @@ class DrawingEngine {
     final alphaInt = (opacity * 255).round().clamp(0, 255);
     if (alphaInt == 0) return;
 
+    // グリッターペンは大きな六角形フレークとして描画する。粒ごとに向きを
+    // ランダム化し、同じ向きの六角形が機械的に並ぶ見た目を避ける。
+    // ラメペンを含む他ブラシは従来どおり円形スタンプのまま。
+    final isGlitterHexagon = brush.id == 'Brush0016';
+    final particleRotation = isGlitterHexagon
+        ? _scatterRng.nextDouble() * math.pi * 2.0
+        : 0.0;
+
     // 傾き変形：カリグラフィーブラシ（ペン先角度固定）の場合は、実際の
     // スタイラス傾きに関わらず常に固定角度へ扁平化したペン先を使う。
     var tilt = brush.calligraphyAngle != null
@@ -367,6 +376,8 @@ class DrawingEngine {
       stylusTiltMagnitude: stylusTiltMagnitude,
       edgeJitter: brush.edgeJitter,
       edgeJitterStrength: brush.edgeJitterStrength,
+      hexagon: isGlitterHexagon,
+      particleRotation: particleRotation,
     );
   }
 
@@ -383,6 +394,8 @@ class DrawingEngine {
     double stylusTiltMagnitude = 0.0,
     bool edgeJitter = false,
     int edgeJitterStrength = 50,
+    bool hexagon = false,
+    double particleRotation = 0.0,
   }) {
     final r = currentColor.r;
     final g = currentColor.g;
@@ -458,6 +471,21 @@ class DrawingEngine {
                 final texIdx = (texY * brushTextureSize + texX) * 4;
                 pixelAlpha = customTexture[texIdx + 3] / 255.0;
               }
+            } else if (hexagon) {
+              // グリッターフレーク：正六角形。傾き変形後のローカル座標を
+              // 粒固有の角度だけ回転し、六角形の符号付き近似距離でAAする。
+              final cosH = math.cos(-particleRotation);
+              final sinH = math.sin(-particleRotation);
+              final hx = ux * cosH - uy * sinH;
+              final hy = ux * sinH + uy * cosH;
+              final ax = hx.abs();
+              final ay = hy.abs();
+              const sqrt3 = 1.7320508075688772;
+              final hexDist = math.max(
+                ay / (sqrt3 / 2.0),
+                (sqrt3 * ax + ay) / sqrt3,
+              );
+              pixelAlpha = (radius + 0.5 - hexDist).clamp(0.0, 1.0);
             } else if (pixelMode) {
               // ピクセルモード：エッジをシャープに（アンチエイリアス無し）
               pixelAlpha = dist <= radius ? 1.0 : 0.0;

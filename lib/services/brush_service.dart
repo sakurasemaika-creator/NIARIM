@@ -354,6 +354,55 @@ class BrushService extends ChangeNotifier {
       mixingRate: 0,
       tags: [AssetTagKeys.lineArt, AssetTagKeys.taper],
     ),
+    // グリッターペン：大きめの輝点を広く散らす装飾用ペン。
+    // 粒を独立して見せるため間隔と散布を大きめにし、わずかなぼかしで
+    // 強い反射光のようなきらめきを作る。
+    const Brush(
+      id: 'Brush0016',
+      name: 'グリッターペン',
+      size: 14,
+      opacity: 90,
+      spacing: 18,
+      blurRadius: 0,
+      stabilization: false,
+      stabilizationStrength: 0,
+      pixelMode: false,
+      pressureMode: PressureMode.opacity,
+      pressureStrength: 35,
+      fadeMode: FadeMode.off,
+      strokeDecay: false,
+      mixingMode: BrushMixingMode.off,
+      mixingRate: 0,
+      density: 1.2,
+      scatter: 0.9,
+      edgeJitter: false,
+      edgeJitterStrength: 0,
+      tags: [AssetTagKeys.effect, AssetTagKeys.decoration],
+    ),
+    // ラメペン：グリッターより細かい粒を高密度で線に沿わせるペン。
+    // 散布幅を抑え、細かな反射粒が連続してきらめく質感にする。
+    const Brush(
+      id: 'Brush0017',
+      name: 'ラメペン',
+      size: 5,
+      opacity: 76,
+      spacing: 4,
+      blurRadius: 1,
+      stabilization: true,
+      stabilizationStrength: 20,
+      pixelMode: false,
+      pressureMode: PressureMode.opacity,
+      pressureStrength: 25,
+      fadeMode: FadeMode.off,
+      strokeDecay: false,
+      mixingMode: BrushMixingMode.off,
+      mixingRate: 0,
+      density: 2.8,
+      scatter: 0.45,
+      edgeJitter: true,
+      edgeJitterStrength: 30,
+      tags: [AssetTagKeys.effect, AssetTagKeys.decoration],
+    ),
   ];
 
   Future<void> init() async {
@@ -750,9 +799,9 @@ class BrushService extends ChangeNotifier {
     final archive = ZipDecoder().decodeBytes(bytes);
     final dataFile = archive.findFile(_bundleDataFile);
     if (dataFile == null) throw const FormatException('data.json not found');
-    final json =
-        jsonDecode(utf8.decode(dataFile.content as List<int>))
-            as Map<String, dynamic>;
+    final json = jsonDecode(
+      utf8.decode(dataFile.content as List<int>),
+    ) as Map<String, dynamic>;
     final imported = Brush.fromJson(json);
     final id = 'Brush${DateTime.now().millisecondsSinceEpoch}';
     final imageFile = archive.files

@@ -1,0 +1,47 @@
+name: One-shot Glitter Actual Capture
+on:
+  push:
+    branches: [dev_branch]
+    paths:
+      - 'lib/engine/drawing_engine.dart'
+      - 'lib/services/brush_service.dart'
+      - 'test/visual/glitter_lame_render_capture_test.dart'
+      - 'tool/patch_glitter_hexagon.py'
+      - '.github/workflows/one-shot-glitter-actual-capture.yml'
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  capture:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+      - name: Apply glitter hexagon implementation and preset tuning
+        run: python3 tool/patch_glitter_hexagon.py
+      - name: Format focused files
+        run: dart format lib/engine/drawing_engine.dart lib/services/brush_service.dart test/visual/glitter_lame_render_capture_test.dart
+      - run: flutter pub get
+      - name: Static analysis
+        run: flutter analyze lib/engine/drawing_engine.dart lib/services/brush_service.dart test/visual/glitter_lame_render_capture_test.dart
+      - name: Execute actual DrawingEngine capture
+        run: flutter test test/visual/glitter_lame_render_capture_test.dart
+      - uses: actions/upload-artifact@v4
+        with:
+          name: glitter-lame-captures
+          path: build/glitter_visual/*.png
+          if-no-files-found: error
+      - name: Commit implementation and preset tuning
+        run: |
+          if git diff --quiet -- lib/engine/drawing_engine.dart lib/services/brush_service.dart test/visual/glitter_lame_render_capture_test.dart; then
+            echo 'No implementation diff to commit.'
+            exit 0
+          fi
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add lib/engine/drawing_engine.dart lib/services/brush_service.dart test/visual/glitter_lame_render_capture_test.dart
+          git commit -m 'fix: sharpen glitter hexagonal flakes'
+          git push origin HEAD:dev_branch

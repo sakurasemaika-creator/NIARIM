@@ -1,11 +1,14 @@
 import 'package:niarim/services/theme_service.dart';
+
 import 'dart:convert';
 import 'dart:io';
 import 'dart:typed_data';
+
 import 'package:flutter/material.dart' hide MaterialType;
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import 'package:share_plus/share_plus.dart';
+
 import '../../../engine/niapro_serializer.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../../models/material_asset.dart';
@@ -100,6 +103,9 @@ class ProjectListWidget extends StatelessWidget {
   final List<Project>? projects; // nullの場合はServiceから取得
   final bool showFavoritesOnly;
   final String searchQuery;
+  // When true, searchQuery is matched against project tags instead of names.
+  // Folders intentionally do not participate because they have no tags.
+  final bool searchByTag;
   // 現在開いているフォルダ（nullはルート直下、フォルダ階層）
   final String? currentFolderId;
   final ValueChanged<String> onOpenFolder;
@@ -131,6 +137,7 @@ class ProjectListWidget extends StatelessWidget {
     this.projects,
     this.showFavoritesOnly = false,
     this.searchQuery = '',
+    this.searchByTag = false,
     this.onPickProject,
     this.showEmptyCreateHint = true,
   });
@@ -156,20 +163,35 @@ class ProjectListWidget extends StatelessWidget {
     final projectService = context.watch<ProjectService>();
     final source = projects ?? projectService.projects;
     final allFolders = projectService.folders;
-    final query = searchQuery.trim().toLowerCase();
+    final rawQuery = searchQuery.trim().toLowerCase();
+    // Accept both `tag` and `#tag` input in tag mode.
+    final query = searchByTag && rawQuery.startsWith('#')
+        ? rawQuery.substring(1).trimLeft()
+        : rawQuery;
 
     List<_Entry> entries;
     if (query.isNotEmpty) {
-      // 検索時はフォルダ階層を無視して全体から名前一致するものを表示する
-      // （検索対象：プロジェクト名 / フォルダ名）。
-      entries = [
-        ...allFolders
-            .where((f) => f.name.toLowerCase().contains(query))
-            .map((f) => _Entry.folder(f)),
-        ...source
-            .where((p) => p.name.toLowerCase().contains(query))
-            .map((p) => _Entry.project(p)),
-      ];
+      // Search ignores folder hierarchy and scans all projects. Keyword mode
+      // keeps the existing project/folder-name behavior; tag mode returns only
+      // projects whose saved tags contain the query.
+      if (searchByTag) {
+        entries = source
+            .where(
+              (p) =>
+                  p.tags.any((tag) => tag.trim().toLowerCase().contains(query)),
+            )
+            .map((p) => _Entry.project(p))
+            .toList();
+      } else {
+        entries = [
+          ...allFolders
+              .where((f) => f.name.toLowerCase().contains(query))
+              .map((f) => _Entry.folder(f)),
+          ...source
+              .where((p) => p.name.toLowerCase().contains(query))
+              .map((p) => _Entry.project(p)),
+        ];
+      }
     } else {
       entries = [
         ...allFolders

@@ -1,0 +1,20 @@
+name: One-shot Glitter Capture Run
+on:
+  push:
+    branches: [dev_branch]
+    paths: ['.github/workflows/one-shot-glitter-capture-run.yml']
+jobs:
+  capture:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - uses: subosito/flutter-action@v2
+        with: {channel: stable, cache: true}
+      - run: flutter pub get
+      - run: flutter analyze test/visual/glitter_lame_render_capture_test.dart
+      - run: flutter test test/visual/glitter_lame_render_capture_test.dart
+      - uses: actions/upload-artifact@v4
+        with:
+          name: glitter-lame-captures
+          path: artifacts/glitter-render-audit/*.png
+          if-no-files-found: error

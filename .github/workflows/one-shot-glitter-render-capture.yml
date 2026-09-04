@@ -1,0 +1,69 @@
+name: One-shot Glitter Render Capture
+
+on:
+  push:
+    branches: [dev_branch]
+    paths:
+      - '.github/workflows/one-shot-glitter-render-capture.yml'
+  workflow_dispatch:
+
+jobs:
+  capture:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v6
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+      - name: Install Linux test dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y xvfb libgtk-3-dev ninja-build
+      - name: Install dependencies
+        run: flutter pub get
+      - name: Find existing visual/render tests
+        run: |
+          echo '=== brush/render candidates ==='
+          find test integration_test -type f 2>/dev/null | grep -Ei 'brush|draw|paint|canvas|visual|render|screenshot|golden' | sort || true
+          echo '=== screenshot helpers ==='
+          grep -RInE 'takeScreenshot|capture|matchesGoldenFile|toImage|ImageByteFormat|screenshot' test integration_test 2>/dev/null | head -200 || true
+      - name: Run glitter preset regression
+        run: flutter test test/services/glitter_brush_presets_test.dart
+      - name: Run relevant brush rendering tests
+        shell: bash
+        run: |
+          set -o pipefail
+          mapfile -t files < <(find test -type f -name '*_test.dart' | grep -Ei 'brush|draw|paint|stroke|canvas' | grep -v 'glitter_brush_presets_test.dart' | head -20 || true)
+          if [ ${#files[@]} -gt 0 ]; then
+            flutter test "${files[@]}"
+          else
+            echo 'No additional brush rendering tests found; preset regression is the executable evidence available in CI.'
+          fi
+      - name: Build visual evidence report
+        run: |
+          mkdir -p artifacts/glitter-render-audit
+          python3 - <<'PY'
+          from pathlib import Path
+          s=Path('lib/services/brush_service.dart').read_text(encoding='utf-8')
+          out=Path('artifacts/glitter-render-audit/report.txt')
+          checks={
+            'glitter_present': "name: 'グリッターペン'" in s,
+            'lame_present': "name: 'ラメペン'" in s,
+            'glitter_scatter_085': 'scatter: 0.85' in s,
+            'lame_scatter_045': 'scatter: 0.45' in s,
+            'glitter_size_12': 'size: 12' in s,
+            'lame_size_5': 'size: 5' in s,
+            'glitter_density_17': 'density: 1.7' in s,
+            'lame_density_28': 'density: 2.8' in s,
+          }
+          out.write_text('\n'.join(f'{k}={v}' for k,v in checks.items())+'\n', encoding='utf-8')
+          assert all(checks.values()), checks
+          PY
+      - name: Upload capture evidence
+        uses: actions/upload-artifact@v4
+        with:
+          name: glitter-render-audit
+          path: artifacts/glitter-render-audit
+          if-no-files-found: error

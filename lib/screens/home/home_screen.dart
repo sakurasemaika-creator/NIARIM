@@ -1,12 +1,15 @@
 import 'package:niarim/services/theme_service.dart';
+
 import 'dart:async';
 import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:provider/provider.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:video_player/video_player.dart';
+
 import '../../engine/export_engine.dart';
 import '../../engine/niapro_serializer.dart';
 import '../../l10n/app_localizations.dart';
@@ -63,6 +66,9 @@ class _HomeScreenState extends State<HomeScreen>
   bool _clipboardIsCut = false;
   bool _showFavoritesOnly = false;
   bool _isSearching = false;
+  // false: project/folder name keyword search, true: project tag search.
+  // The search bar toggle swaps these modes like a play/pause control.
+  bool _searchByTag = false;
   String _searchQuery = '';
   final _searchController = TextEditingController();
   StreamSubscription<String>? _sharedFileSub;
@@ -263,7 +269,9 @@ class _HomeScreenState extends State<HomeScreen>
             // 矢印がある（プッシュ遷移のため自動表示）。ホーム画面も起動
             // 画面からpush()で遷移するが、既にドロワーでleadingが埋まるため、
             // 両方を明示的に並べる形にしている。
-            leadingWidth: 96,
+            // While searching, temporarily hide the hamburger button and shrink
+            // the leading area to the back button only.
+            leadingWidth: _isSearching ? 48 : 96,
             leading: Row(
               mainAxisAlignment: MainAxisAlignment.start,
               children: [
@@ -272,24 +280,44 @@ class _HomeScreenState extends State<HomeScreen>
                   tooltip: l10n.homeBackToSplashTooltip,
                   onPressed: () => context.go('/'),
                 ),
-                IconButton(
-                  icon: const Icon(Icons.menu),
-                  tooltip: MaterialLocalizations.of(
-                    context,
-                  ).openAppDrawerTooltip,
-                  onPressed: () => _scaffoldKey.currentState?.openDrawer(),
-                ),
+                if (!_isSearching)
+                  IconButton(
+                    icon: const Icon(Icons.menu),
+                    tooltip: MaterialLocalizations.of(context)
+                        .openAppDrawerTooltip,
+                    onPressed: () => _scaffoldKey.currentState?.openDrawer(),
+                  ),
               ],
             ),
             title: _isSearching
-                ? TextField(
-                    controller: _searchController,
-                    autofocus: true,
-                    decoration: InputDecoration(
-                      hintText: l10n.homeSearchHint,
-                      border: InputBorder.none,
-                    ),
-                    onChanged: (v) => setState(() => _searchQuery = v),
+                ? Row(
+                    children: [
+                      // The icon always represents the mode we can switch TO:
+                      // keyword mode -> tag icon, tag mode -> search icon.
+                      IconButton(
+                        icon: Icon(
+                          _searchByTag ? Icons.search : Icons.sell_outlined,
+                        ),
+                        tooltip: _searchByTag
+                            ? l10n.homeSearchHint
+                            : l10n.projectDetailTagsQuickAction,
+                        onPressed: () =>
+                            setState(() => _searchByTag = !_searchByTag),
+                      ),
+                      Expanded(
+                        child: TextField(
+                          controller: _searchController,
+                          autofocus: true,
+                          decoration: InputDecoration(
+                            hintText: _searchByTag
+                                ? l10n.projectDetailTagsQuickAction
+                                : l10n.homeSearchHint,
+                            border: InputBorder.none,
+                          ),
+                          onChanged: (v) => setState(() => _searchQuery = v),
+                        ),
+                      ),
+                    ],
                   )
                 // アプリ名の代わりに、現在の並び替え基準（名前／更新日時）を
                 // 常に表示するプルダウンと、昇順・降順をワンタップで切り替える
@@ -310,6 +338,7 @@ class _HomeScreenState extends State<HomeScreen>
                   tooltip: l10n.commonClose,
                   onPressed: () => setState(() {
                     _isSearching = false;
+                    _searchByTag = false;
                     _searchQuery = '';
                     _searchController.clear();
                   }),
@@ -348,7 +377,10 @@ class _HomeScreenState extends State<HomeScreen>
                 IconButton(
                   icon: const Icon(Icons.search),
                   tooltip: l10n.commonSearch,
-                  onPressed: () => setState(() => _isSearching = true),
+                  onPressed: () => setState(() {
+                    _isSearching = true;
+                    _searchByTag = false;
+                  }),
                 ),
               ],
             ],
@@ -472,7 +504,7 @@ class _HomeScreenState extends State<HomeScreen>
                         ),
                         // フォルダ内移動時のパンくずリスト。検索中は
                         // 全体から検索するため非表示にする。
-                        if (_searchQuery.trim().isEmpty) _buildBreadcrumb(),
+                        if (!_isSearching) _buildBreadcrumb(),
                         Expanded(
                           child: ProjectListWidget(
                             // 「共有」タブ（.niashareインポート由来）は別枠の
@@ -508,6 +540,7 @@ class _HomeScreenState extends State<HomeScreen>
                             }),
                             showFavoritesOnly: _showFavoritesOnly,
                             searchQuery: _searchQuery,
+                            searchByTag: _searchByTag,
                             currentFolderId: _currentFolderId,
                             onOpenFolder: (id) =>
                                 setState(() => _currentFolderId = id),
@@ -769,9 +802,8 @@ class _HomeScreenState extends State<HomeScreen>
         _clipboardFolderIds.clear();
       });
     }
-    ScaffoldMessenger.of(
-      context,
-    ).showSnackBar(SnackBar(content: Text(l10n.homePasteSnackbar)));
+    ScaffoldMessenger.of(context)
+        .showSnackBar(SnackBar(content: Text(l10n.homePasteSnackbar)));
   }
 
   /// フォルダ階層のパンくずリスト。フォルダ内移動時に現在位置を表示する。
