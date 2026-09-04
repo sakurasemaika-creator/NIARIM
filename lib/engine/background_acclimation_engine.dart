@@ -73,8 +73,7 @@ class _SectorAccumulator {
     final mean = meanLuminance;
     final variance = math.max(0.0, luminanceSq / weight - mean * mean);
     // 輝度が激しく散っている方向を「巨大な白壁＝光源」と誤認しにくくする。
-    return (1.0 - math.sqrt(variance).clamp(0.0, 0.5) * 1.5)
-        .clamp(0.0, 1.0);
+    return (1.0 - math.sqrt(variance).clamp(0.0, 0.5) * 1.5).clamp(0.0, 1.0);
   }
 }
 
@@ -98,7 +97,8 @@ class BackgroundAcclimationEngine {
     int height,
     FilterDef filter,
   ) {
-    if (width <= 0 || height <= 0 ||
+    if (width <= 0 ||
+        height <= 0 ||
         subject.length < width * height * 4 ||
         background.length < width * height * 4) {
       return _fallback(filter);
@@ -141,9 +141,10 @@ class BackgroundAcclimationEngine {
     final cx = sx / opaqueCount;
     final cy = sy / opaqueCount;
     final subjectSpan = math.max(maxX - minX + 1, maxY - minY + 1);
-    final band = filter.bgBlendSamplingBand
-        .round()
-        .clamp(4, math.max(4, math.min(120, subjectSpan)));
+    final band = filter.bgBlendSamplingBand.round().clamp(
+      4,
+      math.max(4, math.min(120, subjectSpan)),
+    );
     final sectors = List.generate(sectorCount, (_) => _SectorAccumulator());
     final ambient = _SectorAccumulator();
     final lower = _SectorAccumulator();
@@ -196,7 +197,8 @@ class BackgroundAcclimationEngine {
       final area = math.log(1 + s.samples) / math.log(128);
       final chroma = _chroma(s.color);
       // 白〜暖色の直射もネオンのような高彩度光も拾えるよう、色の強さを少量加点。
-      final score = s.meanLuminance * 0.68 +
+      final score =
+          s.meanLuminance * 0.68 +
           s.consistency * 0.16 +
           area.clamp(0.0, 1.0) * 0.10 +
           chroma * 0.06;
@@ -214,9 +216,9 @@ class BackgroundAcclimationEngine {
     final primaryColor = filter.bgBlendLightColor == -1
         ? sectors[best].color
         : filter.bgBlendLightColor;
-    final ambientColor = filter.bgBlendAmbientColor == -1
-        ? ambient.color
-        : filter.bgBlendAmbientColor;
+    final ambientColor = filter.bgBlendAmbientColor != -1
+        ? filter.bgBlendAmbientColor
+        : (filter.bgBlendColor != -1 ? filter.bgBlendColor : ambient.color);
 
     final opposite = (best + sectorCount ~/ 2) % sectorCount;
     final shadowAcc = _SectorAccumulator();
@@ -319,7 +321,8 @@ class BackgroundAcclimationEngine {
           dist[p] = 0;
           continue;
         }
-        final boundary = x == 0 ||
+        final boundary =
+            x == 0 ||
             y == 0 ||
             x == width - 1 ||
             y == height - 1 ||
@@ -365,24 +368,31 @@ class BackgroundAcclimationEngine {
     final global = (filter.bgBlendStrength / 100).clamp(0.0, 1.0);
     final lightStrength = (filter.bgBlendLightStrength / 100).clamp(0.0, 1.0);
     final shadowStrength = (filter.bgBlendShadowStrength / 100).clamp(0.0, 1.0);
-    final ambientStrength = (filter.bgBlendAmbientStrength / 100).clamp(0.0, 1.0);
-    final reflectionStrength =
-        (filter.bgBlendReflectionStrength / 100).clamp(0.0, 1.0);
+    final ambientStrength = (filter.bgBlendAmbientStrength / 100).clamp(
+      0.0,
+      1.0,
+    );
+    final reflectionStrength = (filter.bgBlendReflectionStrength / 100).clamp(
+      0.0,
+      1.0,
+    );
     final bleedStrength = (filter.bgBlendColorBleed / 100).clamp(0.0, 1.0);
-    final secondaryStrength =
-        (filter.bgBlendSecondaryStrength / 100).clamp(0.0, 1.0);
-    final materialProtection =
-        (filter.bgBlendMaterialProtection / 100).clamp(0.0, 1.0);
+    final secondaryStrength = (filter.bgBlendSecondaryStrength / 100).clamp(
+      0.0,
+      1.0,
+    );
+    final materialProtection = (filter.bgBlendMaterialProtection / 100).clamp(
+      0.0,
+      1.0,
+    );
 
     final primaryRad = env.primaryDirectionDegrees * math.pi / 180.0;
     final lx = math.cos(primaryRad);
     final ly = math.sin(primaryRad);
-    final secondaryVectors = env.secondaryLights
-        .map((l) {
-          final rad = l.directionDegrees * math.pi / 180.0;
-          return (math.cos(rad), math.sin(rad), l);
-        })
-        .toList();
+    final secondaryVectors = env.secondaryLights.map((l) {
+      final rad = l.directionDegrees * math.pi / 180.0;
+      return (math.cos(rad), math.sin(rad), l);
+    }).toList();
 
     int alphaAt(int x, int y) {
       if (x < 0 || y < 0 || x >= width || y >= height) return 0;
@@ -420,9 +430,16 @@ class BackgroundAcclimationEngine {
         final originalChroma = _rgbChroma(r, g, b);
 
         // 環境光は対象全体へごく弱く。中央まで均一に強く染めない。
-        final ambientAmount = global * ambientStrength *
+        final ambientAmount =
+            global *
+            ambientStrength *
             (0.22 + edgeFalloff * 0.30) *
-            _materialFactor(originalLuma, originalChroma, materialProtection, false);
+            _materialFactor(
+              originalLuma,
+              originalChroma,
+              materialProtection,
+              false,
+            );
         (r, g, b) = _blendProtected(
           r,
           g,
@@ -434,8 +451,17 @@ class BackgroundAcclimationEngine {
           false,
         );
 
-        final lightAmount = global * lightStrength * facingLight * edgeFalloff *
-            _materialFactor(originalLuma, originalChroma, materialProtection, true);
+        final lightAmount =
+            global *
+            lightStrength *
+            facingLight *
+            edgeFalloff *
+            _materialFactor(
+              originalLuma,
+              originalChroma,
+              materialProtection,
+              true,
+            );
         (r, g, b) = _blendProtected(
           r,
           g,
@@ -450,8 +476,13 @@ class BackgroundAcclimationEngine {
         for (final entry in secondaryVectors) {
           final facing = math.max(0.0, nx * entry.$1 + ny * entry.$2);
           if (facing <= 0) continue;
-          final amount = global * secondaryStrength * entry.$3.score *
-              facing * edgeFalloff * 0.72;
+          final amount =
+              global *
+              secondaryStrength *
+              entry.$3.score *
+              facing *
+              edgeFalloff *
+              0.72;
           (r, g, b) = _blendProtected(
             r,
             g,
@@ -464,8 +495,17 @@ class BackgroundAcclimationEngine {
           );
         }
 
-        final shadowAmount = global * shadowStrength * facingShadow * edgeFalloff *
-            _materialFactor(originalLuma, originalChroma, materialProtection, false);
+        final shadowAmount =
+            global *
+            shadowStrength *
+            facingShadow *
+            edgeFalloff *
+            _materialFactor(
+              originalLuma,
+              originalChroma,
+              materialProtection,
+              false,
+            );
         (r, g, b) = _blendProtected(
           r,
           g,
@@ -479,8 +519,8 @@ class BackgroundAcclimationEngine {
 
         // 画面下から来る反射光。下向きの輪郭法線ほど強くする。
         final reflectionFacing = math.max(0.0, ny);
-        final reflectionAmount = global * reflectionStrength * reflectionFacing *
-            edgeFalloff * 0.72;
+        final reflectionAmount =
+            global * reflectionStrength * reflectionFacing * edgeFalloff * 0.72;
         (r, g, b) = _blendProtected(
           r,
           g,
@@ -495,13 +535,20 @@ class BackgroundAcclimationEngine {
         // 輪郭直近の背景色を局所的な色移りとして加える。近傍の実色を使うため
         // 「足元は地面色」などの意味認識を決め打ちしない。
         if (bleedStrength > 0 && edgeFalloff > 0.05 && nlen > 0.001) {
-          final sampleDistance = math.max(2.0, math.min(filter.bgBlendSamplingBand, 18.0));
+          final sampleDistance = math.max(
+            2.0,
+            math.min(filter.bgBlendSamplingBand, 18.0),
+          );
           final bx = (x + nx * sampleDistance).round();
           final by = (y + ny * sampleDistance).round();
           if (bx >= 0 && by >= 0 && bx < width && by < height) {
             final bi = (by * width + bx) * 4;
             if (background[bi + 3] >= 16) {
-              final localColor = _argb(background[bi], background[bi + 1], background[bi + 2]);
+              final localColor = _argb(
+                background[bi],
+                background[bi + 1],
+                background[bi + 2],
+              );
               final amount = global * bleedStrength * edgeFalloff * 0.36;
               (r, g, b) = _blendProtected(
                 r,
@@ -531,10 +578,18 @@ class BackgroundAcclimationEngine {
     final direction = filter.bgBlendDirection;
     return BackgroundAcclimationAnalysis(
       primaryDirectionDegrees: direction,
-      primaryColor: filter.bgBlendLightColor == -1 ? _lighten(base, 0.18) : filter.bgBlendLightColor,
-      ambientColor: filter.bgBlendAmbientColor == -1 ? base : filter.bgBlendAmbientColor,
-      shadowColor: filter.bgBlendShadowColor == -1 ? _darkenPreserveHue(base, 0.25) : filter.bgBlendShadowColor,
-      reflectionColor: filter.bgBlendReflectionColor == -1 ? base : filter.bgBlendReflectionColor,
+      primaryColor: filter.bgBlendLightColor == -1
+          ? _lighten(base, 0.18)
+          : filter.bgBlendLightColor,
+      ambientColor: filter.bgBlendAmbientColor == -1
+          ? base
+          : filter.bgBlendAmbientColor,
+      shadowColor: filter.bgBlendShadowColor == -1
+          ? _darkenPreserveHue(base, 0.25)
+          : filter.bgBlendShadowColor,
+      reflectionColor: filter.bgBlendReflectionColor == -1
+          ? base
+          : filter.bgBlendReflectionColor,
       secondaryLights: const [],
       confidence: 0,
     );
@@ -548,7 +603,9 @@ class BackgroundAcclimationEngine {
   ) {
     if (protection <= 0) return 1;
     // 白は増光を抑え、黒は輝度上昇を抑え、高彩度色は元の色相を守る。
-    final highlightGuard = isLight ? (1.0 - math.max(0.0, (luma - 0.70) / 0.30) * 0.78) : 1.0;
+    final highlightGuard = isLight
+        ? (1.0 - math.max(0.0, (luma - 0.70) / 0.30) * 0.78)
+        : 1.0;
     final blackGuard = isLight ? (0.72 + luma * 0.28) : (0.82 + luma * 0.18);
     final chromaGuard = 1.0 - chroma * 0.34;
     final guarded = highlightGuard * blackGuard * chromaGuard;
@@ -601,16 +658,17 @@ class BackgroundAcclimationEngine {
   }
 
   static double _chroma(int color) => _rgbChroma(
-        ((color >> 16) & 0xFF).toDouble(),
-        ((color >> 8) & 0xFF).toDouble(),
-        (color & 0xFF).toDouble(),
-      );
+    ((color >> 16) & 0xFF).toDouble(),
+    ((color >> 8) & 0xFF).toDouble(),
+    (color & 0xFF).toDouble(),
+  );
 
-  static int _argb(int r, int g, int b) =>
-      0xFF000000 |
-      (r.clamp(0, 255) << 16) |
-      (g.clamp(0, 255) << 8) |
-      b.clamp(0, 255);
+  static int _argb(int r, int g, int b) {
+    final rr = r < 0 ? 0 : (r > 255 ? 255 : r);
+    final gg = g < 0 ? 0 : (g > 255 ? 255 : g);
+    final bb = b < 0 ? 0 : (b > 255 ? 255 : b);
+    return 0xFF000000 | (rr << 16) | (gg << 8) | bb;
+  }
 
   static int _lighten(int color, double amount) {
     final r = (color >> 16) & 0xFF;

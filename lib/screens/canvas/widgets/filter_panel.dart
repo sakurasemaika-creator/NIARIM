@@ -7,6 +7,7 @@ import 'package:flutter/foundation.dart' show compute;
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../../engine/filter_engine.dart';
+import '../../../engine/background_acclimation_engine.dart';
 import '../../../engine/layer_compositor.dart';
 import '../../../engine/tile_manager.dart';
 import '../../../l10n/app_localizations.dart';
@@ -79,6 +80,8 @@ class _FilterPanelState extends State<FilterPanel> {
   // _autoBlendColorArgbへ保持する（ユーザーがカラーチップで手動指定
   // していない間、プレビュー・本適用の両方でこの色を使う）。
   int? _autoBlendColorArgb;
+  Uint8List? _previewBackgroundBytes;
+  BackgroundAcclimationAnalysis? _lastBgBlendAnalysis;
 
   Widget _canvasEyedropperButton(
     BuildContext context,
@@ -219,6 +222,7 @@ class _FilterPanelState extends State<FilterPanel> {
     _previewBase = bytes;
     _previewW = pw;
     _previewH = ph;
+    _previewBackgroundBytes = otherBytes;
     _autoBlendColorArgb = otherBytes == null
         ? null
         : FilterEngine.mostFrequentOpaqueColor(otherBytes);
@@ -1200,6 +1204,194 @@ class _FilterPanelState extends State<FilterPanel> {
                               bgBlendBlur: v,
                             ),
                           ),
+                          SwitchListTile.adaptive(
+                            dense: true,
+                            contentPadding: EdgeInsets.zero,
+                            title: const Text(
+                              '光源方向を自動推定',
+                              style: TextStyle(fontSize: 11),
+                            ),
+                            subtitle: const Text(
+                              'OFF時は上の「向き」を手動方向として使用',
+                              style: TextStyle(fontSize: 9),
+                            ),
+                            value: current.bgBlendAutoLight,
+                            onChanged: (v) {
+                              filterService.updateFilterParams(
+                                current.id,
+                                bgBlendAutoLight: v,
+                              );
+                              _updatePreview();
+                            },
+                          ),
+                          _paramSlider(
+                            filterService,
+                            '馴染み強度',
+                            current.bgBlendStrength,
+                            0,
+                            100,
+                            (v) => filterService.updateFilterParams(
+                              current.id,
+                              bgBlendStrength: v,
+                            ),
+                          ),
+                          _paramSlider(
+                            filterService,
+                            '主光源の強さ',
+                            current.bgBlendLightStrength,
+                            0,
+                            100,
+                            (v) => filterService.updateFilterParams(
+                              current.id,
+                              bgBlendLightStrength: v,
+                            ),
+                          ),
+                          _paramSlider(
+                            filterService,
+                            '影の強さ',
+                            current.bgBlendShadowStrength,
+                            0,
+                            100,
+                            (v) => filterService.updateFilterParams(
+                              current.id,
+                              bgBlendShadowStrength: v,
+                            ),
+                          ),
+                          _paramSlider(
+                            filterService,
+                            '環境光',
+                            current.bgBlendAmbientStrength,
+                            0,
+                            100,
+                            (v) => filterService.updateFilterParams(
+                              current.id,
+                              bgBlendAmbientStrength: v,
+                            ),
+                          ),
+                          _paramSlider(
+                            filterService,
+                            '下方反射光',
+                            current.bgBlendReflectionStrength,
+                            0,
+                            100,
+                            (v) => filterService.updateFilterParams(
+                              current.id,
+                              bgBlendReflectionStrength: v,
+                            ),
+                          ),
+                          _paramSlider(
+                            filterService,
+                            '局所的な色移り',
+                            current.bgBlendColorBleed,
+                            0,
+                            100,
+                            (v) => filterService.updateFilterParams(
+                              current.id,
+                              bgBlendColorBleed: v,
+                            ),
+                          ),
+                          _paramSlider(
+                            filterService,
+                            '光の柔らかさ',
+                            current.bgBlendSoftness,
+                            0,
+                            100,
+                            (v) => filterService.updateFilterParams(
+                              current.id,
+                              bgBlendSoftness: v,
+                            ),
+                          ),
+                          _paramSlider(
+                            filterService,
+                            '副光源',
+                            current.bgBlendSecondaryStrength,
+                            0,
+                            100,
+                            (v) => filterService.updateFilterParams(
+                              current.id,
+                              bgBlendSecondaryStrength: v,
+                            ),
+                          ),
+                          _paramSlider(
+                            filterService,
+                            '素材保護',
+                            current.bgBlendMaterialProtection,
+                            0,
+                            100,
+                            (v) => filterService.updateFilterParams(
+                              current.id,
+                              bgBlendMaterialProtection: v,
+                            ),
+                          ),
+                          _paramSlider(
+                            filterService,
+                            '環境サンプリング帯',
+                            current.bgBlendSamplingBand,
+                            4,
+                            120,
+                            (v) => filterService.updateFilterParams(
+                              current.id,
+                              bgBlendSamplingBand: v,
+                            ),
+                          ),
+                          _bgBlendColorControl(
+                            filterService,
+                            '主光源色',
+                            current.bgBlendLightColor,
+                            _lastBgBlendAnalysis?.primaryColor ??
+                                _resolvedBgBlendColor(current),
+                            (v) => filterService.updateFilterParams(
+                              current.id,
+                              bgBlendLightColor: v,
+                            ),
+                          ),
+                          _bgBlendColorControl(
+                            filterService,
+                            '環境光色',
+                            current.bgBlendAmbientColor,
+                            _lastBgBlendAnalysis?.ambientColor ??
+                                _resolvedBgBlendColor(current),
+                            (v) => filterService.updateFilterParams(
+                              current.id,
+                              bgBlendAmbientColor: v,
+                            ),
+                          ),
+                          _bgBlendColorControl(
+                            filterService,
+                            '影側の環境色',
+                            current.bgBlendShadowColor,
+                            _lastBgBlendAnalysis?.shadowColor ?? 0xFF404040,
+                            (v) => filterService.updateFilterParams(
+                              current.id,
+                              bgBlendShadowColor: v,
+                            ),
+                          ),
+                          _bgBlendColorControl(
+                            filterService,
+                            '下方反射色',
+                            current.bgBlendReflectionColor,
+                            _lastBgBlendAnalysis?.reflectionColor ??
+                                _resolvedBgBlendColor(current),
+                            (v) => filterService.updateFilterParams(
+                              current.id,
+                              bgBlendReflectionColor: v,
+                            ),
+                          ),
+                          SwitchListTile.adaptive(
+                            dense: true,
+                            contentPadding: EdgeInsets.zero,
+                            title: const Text(
+                              '解析情報を表示',
+                              style: TextStyle(fontSize: 11),
+                            ),
+                            value: current.bgBlendShowAnalysis,
+                            onChanged: (v) => filterService.updateFilterParams(
+                              current.id,
+                              bgBlendShowAnalysis: v,
+                            ),
+                          ),
+                          if (current.bgBlendShowAnalysis)
+                            _bgBlendAnalysisCard(),
                         ],
                       ],
                     ),
@@ -1233,6 +1425,125 @@ class _FilterPanelState extends State<FilterPanel> {
             ],
           ),
         ),
+      ),
+    );
+  }
+
+  Widget _bgBlendColorControl(
+    FilterService service,
+    String label,
+    int value,
+    int autoColor,
+    ValueChanged<int> onChanged,
+  ) {
+    final shown = value == -1 ? autoColor : value;
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 2),
+      child: Row(
+        children: [
+          Expanded(child: Text(label, style: const TextStyle(fontSize: 11))),
+          GestureDetector(
+            onTap: () => showDialog(
+              context: context,
+              builder: (ctx) => Dialog(
+                backgroundColor: Colors.transparent,
+                child: ColorPickerPanel(
+                  currentColor: Color(shown),
+                  onColorChanged: (c) {
+                    onChanged(c.toARGB32());
+                    _updatePreview();
+                  },
+                  onClose: () => Navigator.of(ctx).pop(),
+                ),
+              ),
+            ),
+            child: Container(
+              width: 24,
+              height: 24,
+              decoration: BoxDecoration(
+                color: Color(shown),
+                border: Border.all(
+                  color: ThemeService.activeColorScheme.onSurfaceVariant,
+                ),
+                borderRadius: BorderRadius.circular(4),
+              ),
+            ),
+          ),
+          const SizedBox(width: 4),
+          TextButton(
+            onPressed: value == -1
+                ? null
+                : () {
+                    onChanged(-1);
+                    _updatePreview();
+                  },
+            child: const Text('自動', style: TextStyle(fontSize: 10)),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _bgBlendAnalysisCard() {
+    final a = _lastBgBlendAnalysis;
+    if (a == null) {
+      return const Padding(
+        padding: EdgeInsets.symmetric(vertical: 4),
+        child: Text('背景解析待ち', style: TextStyle(fontSize: 10)),
+      );
+    }
+    Widget dot(int color) => Container(
+      width: 14,
+      height: 14,
+      margin: const EdgeInsets.only(right: 3),
+      decoration: BoxDecoration(
+        color: Color(color),
+        shape: BoxShape.circle,
+        border: Border.all(
+          color: ThemeService.activeColorScheme.onSurfaceVariant,
+        ),
+      ),
+    );
+    return Container(
+      width: double.infinity,
+      margin: const EdgeInsets.symmetric(vertical: 4),
+      padding: const EdgeInsets.all(6),
+      decoration: BoxDecoration(
+        border: Border.all(
+          color: ThemeService.activeColorScheme.outlineVariant,
+        ),
+        borderRadius: BorderRadius.circular(6),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            '推定光源 ${a.primaryDirectionDegrees.toStringAsFixed(0)}°  信頼度 ${(a.confidence * 100).round()}%',
+            style: const TextStyle(fontSize: 10, fontWeight: FontWeight.w600),
+          ),
+          const SizedBox(height: 4),
+          Row(
+            children: [
+              dot(a.primaryColor),
+              const Text('光 ', style: TextStyle(fontSize: 9)),
+              dot(a.ambientColor),
+              const Text('環境 ', style: TextStyle(fontSize: 9)),
+              dot(a.shadowColor),
+              const Text('影 ', style: TextStyle(fontSize: 9)),
+              dot(a.reflectionColor),
+              const Text('反射', style: TextStyle(fontSize: 9)),
+            ],
+          ),
+          if (a.secondaryLights.isNotEmpty) ...[
+            const SizedBox(height: 3),
+            Row(
+              children: [
+                const Text('副光源 ', style: TextStyle(fontSize: 9)),
+                ...a.secondaryLights.map((l) => dot(l.color)),
+              ],
+            ),
+          ],
+        ],
       ),
     );
   }
@@ -1725,17 +2036,27 @@ class _FilterPanelState extends State<FilterPanel> {
           centerWidthPx: filter.inkPoolCenterWidth * _previewScale,
         );
       case FilterKind.backgroundBlend:
-        // lensDistortionのlensCenterOffsetと同じ理由で、長さ・ぼかし半径
-        // （いずれもフル解像度px単位で保存）を_previewScaleで縮小プレビュー用に
-        // 換算する（向きは角度なので換算不要）。
-        return _engine.applyBackgroundBlend(
+        final background = _previewBackgroundBytes;
+        if (background == null) return Uint8List.fromList(data);
+        final previewFilter = filter.copyWith(
+          bgBlendLength: filter.bgBlendLength * _previewScale,
+          bgBlendSamplingBand: filter.bgBlendSamplingBand * _previewScale,
+        );
+        final analysis = BackgroundAcclimationEngine.analyze(
           data,
+          background,
           width,
           height,
-          _resolvedBgBlendColor(filter),
-          filter.bgBlendDirection,
-          filter.bgBlendLength * _previewScale,
-          filter.bgBlendBlur * _previewScale,
+          previewFilter,
+        );
+        _lastBgBlendAnalysis = analysis;
+        return BackgroundAcclimationEngine.apply(
+          data,
+          background,
+          width,
+          height,
+          previewFilter,
+          analysis: analysis,
         );
     }
   }
@@ -1885,17 +2206,9 @@ class _FilterPanelState extends State<FilterPanel> {
         maskData = maskByteData?.buffer.asUint8List();
       }
     }
-    // 背景馴染ませフィルター用：このフレームの選択レイヤー以外を全てフル
-    // 解像度で合成し、最頻色を自動検出する（ユーザーが手動指定していない
-    // 場合のみ使う）。大量処理（複数フレーム一括適用）ではフレームごとに
-    // 周囲のレイヤー内容が変わり得るため、プレビュー時の自動検出結果
-    // （_autoBlendColorArgb）を使い回さず、フレームごとに都度検出し直す。
-    // isolateへ渡すFilterDefのbgBlendColorへ解決済みの具体色を書き込んで
-    // おくことで、applyDrawFilterInIsolate側は常に確定済みの色だけを
-    // 扱えばよくなる（-1＝自動、を意識する必要がない）。
-    var effectiveFilter = filter;
-    if (filter.kind == FilterKind.backgroundBlend &&
-        filter.bgBlendColor == -1) {
+    // 背景馴染ませv2：対象外の表示中レイヤーをRGBAのまま渡し、
+    // 代表1色へ潰さず方向別に環境を解析する。
+    if (filter.kind == FilterKind.backgroundBlend) {
       final allLayers = ps.layersOf(
         widget.projectId,
         widget.sceneId,
@@ -1914,12 +2227,9 @@ class _FilterPanelState extends State<FilterPanel> {
         format: ui.ImageByteFormat.rawRgba,
       );
       otherImg.dispose();
-      final otherBytes = otherByteData?.buffer.asUint8List();
-      final autoColor = otherBytes == null
-          ? null
-          : FilterEngine.mostFrequentOpaqueColor(otherBytes);
-      effectiveFilter = filter.copyWith(bgBlendColor: autoColor ?? 0xFF808080);
+      maskData = otherByteData?.buffer.asUint8List();
     }
+    final effectiveFilter = filter;
     // 低スペック端末でのUIスレッドブロックを避けるため、本適用（フル解像度）は
     // バックグラウンドisolateで実行する。プレビュー（縮小画像）は_runFilterのまま
     // メインisolateで即時処理する（isolate起動コストの方が高くつくため）。

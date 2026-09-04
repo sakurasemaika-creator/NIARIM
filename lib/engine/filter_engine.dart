@@ -4,6 +4,7 @@ import 'dart:ui' as ui;
 import '../models/effect_filter_instance.dart';
 import '../models/filter_def.dart';
 import '../models/pixel_color_mode.dart';
+import 'background_acclimation_engine.dart';
 
 /// 描画フィルターの本適用（低スペック端末でのUIスレッドブロック防止のため
 /// compute()経由でバックグラウンドisolate実行する想定のトップレベル関数）。
@@ -156,18 +157,13 @@ Uint8List applyDrawFilterInIsolate(
       saturation: filter.hologramSaturation,
       preset: filter.hologramPreset,
     ),
-    // 背景馴染ませ：呼び出し側（filter_panel.dart）がこの呼び出し前に
-    // bgBlendColorを常に確定済みの具体色へ解決してから渡す
-    // （-1＝自動のままここへ来ることは無い想定だが、念のため
-    // フォールバック色を用意しておく）。
-    FilterKind.backgroundBlend => engine.applyBackgroundBlend(
+    // 背景馴染ませv2：maskDataは対象外の表示中レイヤーを合成した背景RGBA。
+    FilterKind.backgroundBlend => BackgroundAcclimationEngine.apply(
       data,
+      maskData,
       width,
       height,
-      filter.bgBlendColor == -1 ? 0xFF808080 : filter.bgBlendColor,
-      filter.bgBlendDirection,
-      filter.bgBlendLength,
-      filter.bgBlendBlur,
+      filter,
     ),
     // 墨溜まりの本適用は参照レイヤーを書き換えず、墨溜まり部分だけを
     // 新規レイヤーへ描くため透明背景の出力レイヤーを返す。
