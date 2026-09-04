@@ -184,33 +184,22 @@ class FilterDef {
   final double bgBlendDirection;
   final double bgBlendLength;
   final double bgBlendBlur;
-  // 環境光エンジン（`background_acclimation_engine.dart`）が使う拡張。
-  // 背景の実色から光源方向・環境光・影・照り返しを推定して被写体へ乗せる。
-  //
-  // 色の4つは[bgBlendColor]と同じく**-1が「自動」の番兵値**で、その場合は
-  // エンジンが背景から推定した色を使う。強さの7つは0〜100（%）で、
-  // エンジン側が/100して0〜1へ落とす。
-  //
-  // [bgBlendAutoLight]がtrueなら光源方向も背景から推定する（falseなら
-  // [bgBlendDirection]をそのまま使う）。[bgBlendSamplingBand]は輪郭から
-  // 何px外側までを背景として拾うか（エンジン側で4〜120へclamp）。
-  // [bgBlendMaterialProtection]は素材感を保つ度合いで、大きいほど元の
-  // 明暗・彩度を残す。
   final bool bgBlendAutoLight;
-  final double bgBlendSamplingBand;
   final double bgBlendStrength;
-  final double bgBlendSoftness;
-  final int bgBlendLightColor;
   final double bgBlendLightStrength;
-  final int bgBlendShadowColor;
   final double bgBlendShadowStrength;
-  final int bgBlendAmbientColor;
   final double bgBlendAmbientStrength;
-  final int bgBlendReflectionColor;
   final double bgBlendReflectionStrength;
   final double bgBlendColorBleed;
+  final double bgBlendSoftness;
   final double bgBlendSecondaryStrength;
   final double bgBlendMaterialProtection;
+  final double bgBlendSamplingBand;
+  final int bgBlendLightColor;
+  final int bgBlendAmbientColor;
+  final int bgBlendShadowColor;
+  final int bgBlendReflectionColor;
+  final bool bgBlendShowAnalysis;
   // 墨溜まり（inkPoolのみ使用）：指定色で、90度以下の線の交差/鋭角部を
   // 中央から端へ向かって1pxまでテーパーさせる。
   final int inkPoolColor;
@@ -250,20 +239,21 @@ class FilterDef {
     this.bgBlendLength = 20,
     this.bgBlendBlur = 6,
     this.bgBlendAutoLight = true,
-    this.bgBlendSamplingBand = 24,
-    this.bgBlendStrength = 60,
-    this.bgBlendSoftness = 50,
+    this.bgBlendStrength = 70,
+    this.bgBlendLightStrength = 65,
+    this.bgBlendShadowStrength = 45,
+    this.bgBlendAmbientStrength = 18,
+    this.bgBlendReflectionStrength = 22,
+    this.bgBlendColorBleed = 35,
+    this.bgBlendSoftness = 55,
+    this.bgBlendSecondaryStrength = 35,
+    this.bgBlendMaterialProtection = 75,
+    this.bgBlendSamplingBand = 28,
     this.bgBlendLightColor = -1,
-    this.bgBlendLightStrength = 55,
-    this.bgBlendShadowColor = -1,
-    this.bgBlendShadowStrength = 55,
     this.bgBlendAmbientColor = -1,
-    this.bgBlendAmbientStrength = 35,
+    this.bgBlendShadowColor = -1,
     this.bgBlendReflectionColor = -1,
-    this.bgBlendReflectionStrength = 30,
-    this.bgBlendColorBleed = 25,
-    this.bgBlendSecondaryStrength = 20,
-    this.bgBlendMaterialProtection = 50,
+    this.bgBlendShowAnalysis = true,
     this.inkPoolColor = 0xFF000000,
     this.inkPoolRange = 12,
     this.inkPoolCenterWidth = 6,
@@ -302,20 +292,21 @@ class FilterDef {
     double? bgBlendLength,
     double? bgBlendBlur,
     bool? bgBlendAutoLight,
-    double? bgBlendSamplingBand,
     double? bgBlendStrength,
-    double? bgBlendSoftness,
-    int? bgBlendLightColor,
     double? bgBlendLightStrength,
-    int? bgBlendShadowColor,
     double? bgBlendShadowStrength,
-    int? bgBlendAmbientColor,
     double? bgBlendAmbientStrength,
-    int? bgBlendReflectionColor,
     double? bgBlendReflectionStrength,
     double? bgBlendColorBleed,
+    double? bgBlendSoftness,
     double? bgBlendSecondaryStrength,
     double? bgBlendMaterialProtection,
+    double? bgBlendSamplingBand,
+    int? bgBlendLightColor,
+    int? bgBlendAmbientColor,
+    int? bgBlendShadowColor,
+    int? bgBlendReflectionColor,
+    bool? bgBlendShowAnalysis,
     int? inkPoolColor,
     double? inkPoolRange,
     double? inkPoolCenterWidth,
@@ -353,26 +344,27 @@ class FilterDef {
       bgBlendLength: bgBlendLength ?? this.bgBlendLength,
       bgBlendBlur: bgBlendBlur ?? this.bgBlendBlur,
       bgBlendAutoLight: bgBlendAutoLight ?? this.bgBlendAutoLight,
-      bgBlendSamplingBand: bgBlendSamplingBand ?? this.bgBlendSamplingBand,
       bgBlendStrength: bgBlendStrength ?? this.bgBlendStrength,
-      bgBlendSoftness: bgBlendSoftness ?? this.bgBlendSoftness,
-      bgBlendLightColor: bgBlendLightColor ?? this.bgBlendLightColor,
       bgBlendLightStrength: bgBlendLightStrength ?? this.bgBlendLightStrength,
-      bgBlendShadowColor: bgBlendShadowColor ?? this.bgBlendShadowColor,
       bgBlendShadowStrength:
           bgBlendShadowStrength ?? this.bgBlendShadowStrength,
-      bgBlendAmbientColor: bgBlendAmbientColor ?? this.bgBlendAmbientColor,
       bgBlendAmbientStrength:
           bgBlendAmbientStrength ?? this.bgBlendAmbientStrength,
-      bgBlendReflectionColor:
-          bgBlendReflectionColor ?? this.bgBlendReflectionColor,
       bgBlendReflectionStrength:
           bgBlendReflectionStrength ?? this.bgBlendReflectionStrength,
       bgBlendColorBleed: bgBlendColorBleed ?? this.bgBlendColorBleed,
+      bgBlendSoftness: bgBlendSoftness ?? this.bgBlendSoftness,
       bgBlendSecondaryStrength:
           bgBlendSecondaryStrength ?? this.bgBlendSecondaryStrength,
       bgBlendMaterialProtection:
           bgBlendMaterialProtection ?? this.bgBlendMaterialProtection,
+      bgBlendSamplingBand: bgBlendSamplingBand ?? this.bgBlendSamplingBand,
+      bgBlendLightColor: bgBlendLightColor ?? this.bgBlendLightColor,
+      bgBlendAmbientColor: bgBlendAmbientColor ?? this.bgBlendAmbientColor,
+      bgBlendShadowColor: bgBlendShadowColor ?? this.bgBlendShadowColor,
+      bgBlendReflectionColor:
+          bgBlendReflectionColor ?? this.bgBlendReflectionColor,
+      bgBlendShowAnalysis: bgBlendShowAnalysis ?? this.bgBlendShowAnalysis,
       inkPoolColor: inkPoolColor ?? this.inkPoolColor,
       inkPoolRange: inkPoolRange ?? this.inkPoolRange,
       inkPoolCenterWidth: inkPoolCenterWidth ?? this.inkPoolCenterWidth,
@@ -412,20 +404,21 @@ class FilterDef {
     'bgBlendLength': bgBlendLength,
     'bgBlendBlur': bgBlendBlur,
     'bgBlendAutoLight': bgBlendAutoLight,
-    'bgBlendSamplingBand': bgBlendSamplingBand,
     'bgBlendStrength': bgBlendStrength,
-    'bgBlendSoftness': bgBlendSoftness,
-    'bgBlendLightColor': bgBlendLightColor,
     'bgBlendLightStrength': bgBlendLightStrength,
-    'bgBlendShadowColor': bgBlendShadowColor,
     'bgBlendShadowStrength': bgBlendShadowStrength,
-    'bgBlendAmbientColor': bgBlendAmbientColor,
     'bgBlendAmbientStrength': bgBlendAmbientStrength,
-    'bgBlendReflectionColor': bgBlendReflectionColor,
     'bgBlendReflectionStrength': bgBlendReflectionStrength,
     'bgBlendColorBleed': bgBlendColorBleed,
+    'bgBlendSoftness': bgBlendSoftness,
     'bgBlendSecondaryStrength': bgBlendSecondaryStrength,
     'bgBlendMaterialProtection': bgBlendMaterialProtection,
+    'bgBlendSamplingBand': bgBlendSamplingBand,
+    'bgBlendLightColor': bgBlendLightColor,
+    'bgBlendAmbientColor': bgBlendAmbientColor,
+    'bgBlendShadowColor': bgBlendShadowColor,
+    'bgBlendReflectionColor': bgBlendReflectionColor,
+    'bgBlendShowAnalysis': bgBlendShowAnalysis,
     'inkPoolColor': inkPoolColor,
     'inkPoolRange': inkPoolRange,
     'inkPoolCenterWidth': inkPoolCenterWidth,
@@ -480,25 +473,26 @@ class FilterDef {
     bgBlendLength: (j['bgBlendLength'] as num?)?.toDouble() ?? 20,
     bgBlendBlur: (j['bgBlendBlur'] as num?)?.toDouble() ?? 6,
     bgBlendAutoLight: j['bgBlendAutoLight'] as bool? ?? true,
-    bgBlendSamplingBand: (j['bgBlendSamplingBand'] as num?)?.toDouble() ?? 24,
-    bgBlendStrength: (j['bgBlendStrength'] as num?)?.toDouble() ?? 60,
-    bgBlendSoftness: (j['bgBlendSoftness'] as num?)?.toDouble() ?? 50,
-    bgBlendLightColor: j['bgBlendLightColor'] as int? ?? -1,
-    bgBlendLightStrength: (j['bgBlendLightStrength'] as num?)?.toDouble() ?? 55,
-    bgBlendShadowColor: j['bgBlendShadowColor'] as int? ?? -1,
+    bgBlendStrength: (j['bgBlendStrength'] as num?)?.toDouble() ?? 70,
+    bgBlendLightStrength: (j['bgBlendLightStrength'] as num?)?.toDouble() ?? 65,
     bgBlendShadowStrength:
-        (j['bgBlendShadowStrength'] as num?)?.toDouble() ?? 55,
-    bgBlendAmbientColor: j['bgBlendAmbientColor'] as int? ?? -1,
+        (j['bgBlendShadowStrength'] as num?)?.toDouble() ?? 45,
     bgBlendAmbientStrength:
-        (j['bgBlendAmbientStrength'] as num?)?.toDouble() ?? 35,
-    bgBlendReflectionColor: j['bgBlendReflectionColor'] as int? ?? -1,
+        (j['bgBlendAmbientStrength'] as num?)?.toDouble() ?? 18,
     bgBlendReflectionStrength:
-        (j['bgBlendReflectionStrength'] as num?)?.toDouble() ?? 30,
-    bgBlendColorBleed: (j['bgBlendColorBleed'] as num?)?.toDouble() ?? 25,
+        (j['bgBlendReflectionStrength'] as num?)?.toDouble() ?? 22,
+    bgBlendColorBleed: (j['bgBlendColorBleed'] as num?)?.toDouble() ?? 35,
+    bgBlendSoftness: (j['bgBlendSoftness'] as num?)?.toDouble() ?? 55,
     bgBlendSecondaryStrength:
-        (j['bgBlendSecondaryStrength'] as num?)?.toDouble() ?? 20,
+        (j['bgBlendSecondaryStrength'] as num?)?.toDouble() ?? 35,
     bgBlendMaterialProtection:
-        (j['bgBlendMaterialProtection'] as num?)?.toDouble() ?? 50,
+        (j['bgBlendMaterialProtection'] as num?)?.toDouble() ?? 75,
+    bgBlendSamplingBand: (j['bgBlendSamplingBand'] as num?)?.toDouble() ?? 28,
+    bgBlendLightColor: j['bgBlendLightColor'] as int? ?? -1,
+    bgBlendAmbientColor: j['bgBlendAmbientColor'] as int? ?? -1,
+    bgBlendShadowColor: j['bgBlendShadowColor'] as int? ?? -1,
+    bgBlendReflectionColor: j['bgBlendReflectionColor'] as int? ?? -1,
+    bgBlendShowAnalysis: j['bgBlendShowAnalysis'] as bool? ?? true,
     inkPoolColor: j['inkPoolColor'] as int? ?? 0xFF000000,
     inkPoolRange: (j['inkPoolRange'] as num?)?.toDouble() ?? 12,
     inkPoolCenterWidth: (j['inkPoolCenterWidth'] as num?)?.toDouble() ?? 6,

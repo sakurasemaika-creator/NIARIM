@@ -17,6 +17,19 @@ RETIRED_WORKFLOWS = {
     '.github/workflows/one-shot-close-blockers-and-full-suite.yml',
     '.github/workflows/one-shot-ruler-post-stabilization-fix-v3.yml',
 }
+POST_WORKFLOW_MAP = {
+    '墨溜まりフィルター（描画/演出）': [
+        'one-shot-add-ink-pool-filter.yml',
+        'one-shot-refine-ink-pool-audit.yml',
+    ],
+    '縁取り/墨溜まりフィルターのキャンバススポイト': [
+        'one-shot-filter-canvas-eyedropper.yml',
+    ],
+    '背景馴染ませフィルターの環境光/影推定改善': [
+        'implement-background-acclimation-v2.yml',
+        'one-shot-background-acclimation-v2.yml',
+    ],
+}
 
 
 def req(path, method='GET', data=None):
@@ -61,8 +74,6 @@ def run_state(r, head):
     if not r:
         return '—'
     running = r.get('status') in ACTIVE_STATUSES
-    if running and r.get('head_sha') and r.get('head_sha') != head:
-        return '⚪ 旧HEADで実行中（参考）'
     if running:
         return '🟡 実行中'
     conclusion = r.get('conclusion')
@@ -77,6 +88,26 @@ def run_state(r, head):
 
 def latest_for(runs, paths):
     return next((r for r in runs if any((r.get('path') or '').endswith(p) for p in paths)), None)
+
+
+def post_status(item, runs, head):
+    paths = item.get('workflows') or POST_WORKFLOW_MAP.get(item.get('name'), [])
+    if not paths:
+        return item.get('status', 'pending'), None
+    related = [r for r in runs if any((r.get('path') or '').endswith(p) for p in paths)]
+    if not related:
+        return item.get('status', 'pending'), None
+    active_related = next((r for r in related if r.get('status') in ACTIVE_STATUSES), None)
+    if active_related:
+        return 'in_progress', active_related
+    current_head = next((r for r in related if r.get('head_sha') == head), None)
+    chosen = current_head or related[0]
+    conclusion = chosen.get('conclusion')
+    if conclusion == 'success':
+        return 'completed', chosen
+    if conclusion in ('failure', 'timed_out', 'cancelled', 'action_required', 'startup_failure'):
+        return 'blocked', chosen
+    return item.get('status', 'pending'), chosen
 
 
 manifest = load_json('audit-dashboard/feature-audit-manifest.json')
@@ -106,7 +137,7 @@ eligible_features = [
 excluded = len(all_features) - len(eligible_features)
 
 # 既存67機能は一度67/67まで完了済み。古い途中manifestのfalse値で
-# 完了済みベースラインを巻き戻さない。追加変更分はcurrent-taskで別管理する。
+# 完了済みベースラインを巻き戻さない。追加変更分は別枠で自動追跡する。
 baseline_completed = bool(current.get('baseline_completed'))
 baseline_total = int(current.get('baseline_total') or len(eligible_features))
 if baseline_completed:
@@ -119,16 +150,33 @@ else:
 baseline_pct = round(baseline_done * 100 / baseline_total) if baseline_total else 0
 remaining_baseline = max(baseline_total - baseline_done, 0)
 post_items = current.get('post_baseline_items') or []
-post_open = [i for i in post_items if i.get('status') not in ('completed', 'done', 'success')]
+post_effective = [(item, *post_status(item, audit_runs, head)) for item in post_items]
+post_open = [item for item, status, _ in post_effective if status not in ('completed', 'done', 'success')]
 
 now = datetime.now(JST).strftime('%Y-%m-%d %H:%M:%S JST')
 running = [r for r in audit_runs if r.get('status') in ACTIVE_STATUSES]
-active = [r for r in running if not r.get('head_sha') or r.get('head_sha') == head]
-superseded_active = [r for r in running if r.get('head_sha') and r.get('head_sha') != head]
+current_head_running = [r for r in running if not r.get('head_sha') or r.get('head_sha') == head]
+prior_head_running = [r for r in running if r.get('head_sha') and r.get('head_sha') != head]
 latest_activity = to_jst(audit_runs[0].get('updated_at')) if audit_runs else '—'
 
+# 実行中Workflowのジョブ名まで読む。ダッシュボード用pushがHEADを進めても、
+# 同じdev_branchで継続中の本作業を「旧HEADだから無関係」と隠さない。
+active_jobs = []
+for r in running[:8]:
+    try:
+        jobs = req(f"/repos/{REPO}/actions/runs/{r['id']}/jobs?per_page=100").get('jobs', [])
+        for j in jobs:
+            if j.get('status') in ACTIVE_STATUSES:
+                j['_run_id'] = r.get('id')
+                active_jobs.append(j)
+    except Exception:
+        pass
+
+live_title = active_jobs[0].get('name') if active_jobs else (
+    running[0].get('name') if running else current.get('title')
+)
 current_declared = current.get('status')
-if current_declared == 'in_progress' or active:
+if running or current_declared == 'in_progress':
     effective_status = 'in_progress'
 elif not baseline_completed and remaining_baseline:
     effective_status = 'blocked'
@@ -143,13 +191,13 @@ status_label = {'in_progress': '作業中', 'blocked': '監査停止・復旧が
 L = [
     '# NIARIM Audit Live Dashboard',
     '',
-    f'> **更新方式:** `dev_branch` の全push・主要監査Actionの開始/完了時に自動更新  ·  **ダッシュボード最終更新:** `{now}`',
+    f'> **更新方式:** `dev_branch` の全push・主要Actionの開始/実行中/完了イベントで自動更新  ·  **ダッシュボード最終更新:** `{now}`',
     '',
     f'**Branch:** `{BRANCH}`  ·  **HEAD:** [`{head[:10]}`](https://github.com/{REPO}/commit/{head})',
     '',
     '## 🔎 現在の作業',
     '',
-    f'### {status_icon} {status_label} — {esc(current.get("title"))}',
+    f'### {status_icon} {status_label} — {esc(live_title)}',
     '',
     esc(current.get('detail')),
     '',
@@ -159,19 +207,23 @@ L = [
     '',
 ]
 
-if active:
-    L += ['**現在HEADで実行中の処理:**']
-    for r in active:
-        L.append(f'- 🟡 [{esc(r.get("name") or r.get("display_title"))}]({r.get("html_url")})')
+if running:
+    L += ['**現在実行中の処理:**']
+    for r in running[:8]:
+        head_note = '' if not r.get('head_sha') or r.get('head_sha') == head else f' — 開始HEAD `{(r.get("head_sha") or "")[:10]}`'
+        L.append(f'- 🟡 [{esc(r.get("name") or r.get("display_title"))}]({r.get("html_url")}){head_note}')
+        for j in active_jobs:
+            if j.get('_run_id') == r.get('id'):
+                L.append(f'  - ▶️ **{esc(j.get("name"))}**')
     L.append('')
 else:
-    L += ['**現在HEADで実行中の処理:** なし', '']
+    L += ['**現在実行中の処理:** なし', '']
 
-if superseded_active:
-    L += ['**旧HEADで継続中の処理（参考・現在作業には不採用）:**']
-    for r in superseded_active[:5]:
-        L.append(f'- ⚪ [{esc(r.get("name") or r.get("display_title"))}]({r.get("html_url")}) — `{(r.get("head_sha") or "")[:10]}`')
-    L.append('')
+if prior_head_running:
+    L += [
+        '> ダッシュボード更新などでHEADが進んだ後も、同じ `dev_branch` で開始済みの本作業は完了まで現在作業として追跡します。',
+        '',
+    ]
 
 L += [
     '## ✅ 既存67機能の確定ベースライン',
@@ -182,7 +234,7 @@ L += [
 ]
 if baseline_completed:
     L += [
-        '> 既存67機能は過去の最終ゲートで100%完了済みです。古い途中manifestの `final_pass=false` は履歴情報として残っていても、この確定ベースラインを73%へ巻き戻しません。',
+        '> 既存67機能は過去の最終ゲートで100%完了済みです。古い途中manifestの `final_pass=false` は履歴情報として残っていても、この確定ベースラインを巻き戻しません。',
         f'> 確定日時: `{esc(current.get("baseline_completed_at_jst") or "過去監査完了時")}`',
         '',
     ]
@@ -194,8 +246,11 @@ if post_items:
         'completed': '🟢 完了', 'done': '🟢 完了', 'success': '🟢 完了',
         'in_progress': '🟡 監査/作業中', 'pending': '⚪ 未確定', 'blocked': '🔴 要対応'
     }
-    for item in post_items:
-        L.append(f'| {esc(item.get("name"))} | {icons.get(item.get("status"), esc(item.get("status")))} |')
+    for item, item_status, item_run in post_effective:
+        label = icons.get(item_status, esc(item_status))
+        if item_run:
+            label = f'[{label}]({item_run.get("html_url")})'
+        L.append(f'| {esc(item.get("name"))} | {label} |')
     L.append('')
 else:
     L += ['追加変更項目なし', '']
@@ -244,7 +299,7 @@ L += [
     '',
     '## 自動監査・ビルド処理の状態',
     '',
-    '> 同じWorkflowの古い実行は重ねて表示しません。旧HEADのrunは参考表示に分離します。',
+    '> 同じWorkflowの古い実行は重ねて表示しません。',
     '',
     '| 状態 | 処理名 | 最新実行 |',
     '|---|---|---|',
@@ -259,4 +314,4 @@ L += [
 ]
 
 req(f'/repos/{REPO}/issues/{ISSUE}', method='PATCH', data={'body': '\n'.join(L)})
-print(f'updated baseline={baseline_done}/{baseline_total}; post_open={len(post_open)}; head={head[:10]} at {now}')
+print(f'updated baseline={baseline_done}/{baseline_total}; post_open={len(post_open)}; running={len(running)}; head={head[:10]} at {now}')

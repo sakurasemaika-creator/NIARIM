@@ -1,0 +1,47 @@
+name: Implement Background Acclimation V2
+
+on:
+  push:
+    branches: [dev_branch]
+    paths:
+      - '.github/workflows/implement-background-acclimation-v2.yml'
+
+permissions:
+  contents: write
+  actions: read
+  issues: write
+
+concurrency:
+  group: implement-background-acclimation-v2
+  cancel-in-progress: true
+
+jobs:
+  implement:
+    name: 背景馴染ませv2を実装して専用テスト
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: dev_branch
+          fetch-depth: 0
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+      - run: flutter pub get
+      - name: v2統合パッチを適用
+        run: python3 .github/scripts/implement_background_acclimation_v2.py
+      - name: 変更ファイルを整形
+        run: dart format lib/engine/background_acclimation_engine.dart lib/engine/filter_engine.dart lib/models/filter_def.dart lib/services/filter_service.dart lib/screens/canvas/widgets/filter_panel.dart test/background_acclimation_v2_test.dart
+      - name: 専用テスト
+        run: flutter test test/background_acclimation_v2_test.dart --reporter expanded
+      - name: dev_branchへ実装を反映
+        shell: bash
+        run: |
+          git config user.name "NIARIM Implementation Bot"
+          git config user.email "actions@users.noreply.github.com"
+          git add lib/engine/background_acclimation_engine.dart lib/engine/filter_engine.dart lib/models/filter_def.dart lib/services/filter_service.dart lib/screens/canvas/widgets/filter_panel.dart test/background_acclimation_v2_test.dart
+          git commit -m "背景馴染ませを環境光推定v2へ全面強化"
+          git pull --rebase origin dev_branch
+          git push origin HEAD:dev_branch
