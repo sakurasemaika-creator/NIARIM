@@ -1,0 +1,66 @@
+name: One-shot Filter Canvas Eyedropper
+
+on:
+  push:
+    branches: [dev_branch]
+    paths:
+      - '.github/scripts/add_filter_canvas_eyedropper.py'
+      - '.github/workflows/one-shot-filter-canvas-eyedropper.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  patch-and-verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          ref: dev_branch
+          fetch-depth: 0
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+      - run: flutter pub get
+      - name: Apply filter canvas eyedropper
+        run: python3 .github/scripts/add_filter_canvas_eyedropper.py
+      - name: Regenerate localization
+        run: flutter gen-l10n
+      - name: Format changed Dart files
+        run: dart format lib/screens/canvas/canvas_screen.dart lib/screens/canvas/widgets/canvas_area.dart lib/screens/canvas/widgets/filter_panel.dart
+      - name: Source contract checks
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          canvas = Path('lib/screens/canvas/widgets/canvas_area.dart').read_text()
+          screen = Path('lib/screens/canvas/canvas_screen.dart').read_text()
+          panel = Path('lib/screens/canvas/widgets/filter_panel.dart').read_text()
+          assert 'final buffer = await _flattenVisibleLayers();' in canvas
+          assert 'if (widget.filterEyedropperActive)' in canvas
+          assert 'filterEyedropperActive:' in screen
+          assert 'inkPoolColor: color.toARGB32()' in screen
+          assert 'outlineColor: color.toARGB32()' in screen
+          assert 'FilterColorEyedropperTarget.inkPool' in panel
+          assert 'FilterColorEyedropperTarget.outline' in panel
+          assert 'Icons.colorize' in panel
+          print('source contracts passed')
+          PY
+      - name: Analyze production code
+        run: flutter analyze lib
+      - name: Filter and ink pooling regressions
+        run: |
+          flutter test test/ink_pool_filter_test.dart --reporter expanded
+          if [ -f test/niarim_unique_visual_evidence_v3_test.dart ]; then flutter test test/niarim_unique_visual_evidence_v3_test.dart --reporter expanded; fi
+      - name: Commit implementation
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add lib
+          if git diff --cached --quiet; then
+            echo 'No changes to commit'
+          else
+            git commit -m 'feat: add canvas eyedropper for filter colors'
+            git push origin HEAD:dev_branch
+          fi
