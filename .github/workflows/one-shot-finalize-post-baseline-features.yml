@@ -24,13 +24,16 @@ jobs:
           cache: true
       - run: flutter pub get
       - name: Make text-dialog patch anchor unique
-        run: python3 -c "from pathlib import Path; p=Path('lib/screens/canvas/canvas_screen.dart'); s=p.read_text(); marker='  void _showTextInputDialog(\n'; start=s.index(marker); old='    final l10n = AppLocalizations.of(context)!;\n    showDialog(\n'; guard='    final l10n = AppLocalizations.of(context)!;\n    // __post_baseline_anchor_guard__\n    showDialog(\n'; before=s[:start]; after=s[start:]; assert before.count(old)==1 and after.count(old)>=1; p.write_text(before.replace(old,guard,1)+after)"
+        run: >-
+          python3 -c "from pathlib import Path; p=Path('lib/screens/canvas/canvas_screen.dart'); s=p.read_text(); marker='  void _showTextInputDialog(\n'; start=s.index(marker); old='    final l10n = AppLocalizations.of(context)!;\n    showDialog(\n'; guard='    final l10n = AppLocalizations.of(context)!;\n    // __post_baseline_anchor_guard__\n    showDialog(\n'; before=s[:start]; after=s[start:]; assert before.count(old)==1 and after.count(old)>=1; p.write_text(before.replace(old,guard,1)+after)"
       - name: Apply remaining feature fixes
         run: python3 .github/scripts/finalize_post_baseline_features.py
       - name: Remove temporary anchor guard
-        run: python3 -c "from pathlib import Path; p=Path('lib/screens/canvas/canvas_screen.dart'); s=p.read_text(); s=s.replace('    // __post_baseline_anchor_guard__\n','',1); p.write_text(s)"
+        run: >-
+          python3 -c "from pathlib import Path; p=Path('lib/screens/canvas/canvas_screen.dart'); s=p.read_text(); s=s.replace('    // __post_baseline_anchor_guard__\n','',1); p.write_text(s)"
       - name: Add required color picker close callback
-        run: python3 -c "from pathlib import Path; p=Path('lib/screens/canvas/canvas_screen.dart'); s=p.read_text(); needle='                Navigator.of(pickerContext).pop();\n              },\n            ),'; repl='                Navigator.of(pickerContext).pop();\n              },\n              onClose: () => Navigator.of(pickerContext).pop(),\n            ),'; assert s.count(needle)==1, s.count(needle); p.write_text(s.replace(needle,repl,1))"
+        run: >-
+          python3 -c "from pathlib import Path; p=Path('lib/screens/canvas/canvas_screen.dart'); s=p.read_text(); needle='                Navigator.of(pickerContext).pop();\n              },\n            ),'; repl='                Navigator.of(pickerContext).pop();\n              },\n              onClose: () => Navigator.of(pickerContext).pop(),\n            ),'; assert s.count(needle)==1, s.count(needle); p.write_text(s.replace(needle,repl,1))"
       - name: Regenerate localization
         run: flutter gen-l10n
       - name: Format changed Dart files
