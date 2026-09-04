@@ -1,13 +1,10 @@
 import 'package:niarim/services/theme_service.dart';
-
 import 'dart:io';
 import 'dart:math' as math;
 import 'dart:ui' as ui;
-
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:file_picker/file_picker.dart';
-
 import '../../../engine/autofill_batch_runner.dart';
 import '../../../engine/autofill_engine.dart' as autofill;
 import '../../../engine/layer_keyframe_engine.dart';
@@ -2188,7 +2185,9 @@ class _LayerPanelState extends State<LayerPanel> {
             ),
           ),
         ),
-        actions: [],
+        actions: [
+          
+        ],
       ),
     );
   }
@@ -2269,7 +2268,9 @@ class _LayerPanelState extends State<LayerPanel> {
             ],
           ),
         ),
-        actions: [],
+        actions: [
+          
+        ],
       ),
     );
   }
@@ -2571,7 +2572,9 @@ class _LayerPanelState extends State<LayerPanel> {
         ),
         title: Text(l10n.layerPanelAutofillUpdateHelpTitle),
         content: Text(l10n.layerPanelAutofillUpdateHelpBody),
-        actions: [],
+        actions: [
+          
+        ],
       ),
     );
   }

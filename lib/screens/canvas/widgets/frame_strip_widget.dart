@@ -1,9 +1,7 @@
 import 'dart:ui' as ui;
-
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
-
 import '../../../engine/layer_compositor.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../../services/premium_service.dart';
@@ -131,7 +129,9 @@ class _FrameStripWidgetState extends State<FrameStripWidget> {
               ? l10n.timelineDurationLimitBodyPremium
               : l10n.timelineDurationLimitBodyFree,
         ),
-        actions: [],
+        actions: [
+          
+        ],
       ),
     );
     return false;

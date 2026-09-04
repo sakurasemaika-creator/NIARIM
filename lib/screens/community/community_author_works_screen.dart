@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-
 import '../../l10n/app_localizations.dart';
 import '../../models/community_work.dart';
 import '../../services/community_preview_service.dart';
@@ -120,9 +119,9 @@ class _CommunityAuthorWorksScreenState extends State<CommunityAuthorWorksScreen>
                         child: Text(
                           emptyMessage,
                           style: TextStyle(
-                            color: Theme.of(dialogContext)
-                                .colorScheme
-                                .onSurfaceVariant,
+                            color: Theme.of(
+                              dialogContext,
+                            ).colorScheme.onSurfaceVariant,
                           ),
                         ),
                       )
@@ -131,9 +130,9 @@ class _CommunityAuthorWorksScreenState extends State<CommunityAuthorWorksScreen>
                         itemCount: names.length,
                         itemBuilder: (_, i) => ListTile(
                           leading: CircleAvatar(
-                            backgroundColor: Theme.of(dialogContext)
-                                .colorScheme
-                                .primaryContainer,
+                            backgroundColor: Theme.of(
+                              dialogContext,
+                            ).colorScheme.primaryContainer,
                             child: Text(names[i].substring(0, 1)),
                           ),
                           title: Text(names[i]),
@@ -147,16 +146,18 @@ class _CommunityAuthorWorksScreenState extends State<CommunityAuthorWorksScreen>
                     footerNote,
                     style: TextStyle(
                       fontSize: 12,
-                      color: Theme.of(dialogContext)
-                          .colorScheme
-                          .onSurfaceVariant,
+                      color: Theme.of(
+                        dialogContext,
+                      ).colorScheme.onSurfaceVariant,
                     ),
                   ),
                 ),
             ],
           ),
         ),
-        actions: [],
+        actions: [
+          
+        ],
       ),
     );
   }

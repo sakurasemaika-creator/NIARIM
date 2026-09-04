@@ -1,7 +1,6 @@
 import 'package:niarim/services/theme_service.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-
 import '../../engine/undo_manager.dart';
 import '../../l10n/app_localizations.dart';
 import '../../services/performance_service.dart';
@@ -177,9 +176,9 @@ class _PerformanceSettingsScreenState extends State<PerformanceSettingsScreen> {
                                   vertical: 2,
                                 ),
                                 decoration: BoxDecoration(
-                                  color: Theme.of(context)
-                                      .colorScheme
-                                      .primaryContainer,
+                                  color: Theme.of(
+                                    context,
+                                  ).colorScheme.primaryContainer,
                                   borderRadius: BorderRadius.circular(12),
                                 ),
                                 child: Text(
@@ -189,9 +188,9 @@ class _PerformanceSettingsScreenState extends State<PerformanceSettingsScreen> {
                                     fontWeight: FontWeight.bold,
                                     fontFamily: 'Kuramubon',
                                     fontFamilyFallback: kHeadingFontFallback,
-                                    color: Theme.of(context)
-                                        .colorScheme
-                                        .onPrimaryContainer,
+                                    color: Theme.of(
+                                      context,
+                                    ).colorScheme.onPrimaryContainer,
                                   ),
                                 ),
                               ),
@@ -478,7 +477,9 @@ class _PerformanceSettingsScreenState extends State<PerformanceSettingsScreen> {
                 .toList(),
           ),
         ),
-        actions: [],
+        actions: [
+          
+        ],
       ),
     );
   }
@@ -529,7 +530,9 @@ class _PerformanceSettingsScreenState extends State<PerformanceSettingsScreen> {
                 .toList(),
           ),
         ),
-        actions: [],
+        actions: [
+          
+        ],
       ),
     );
   }

@@ -2,7 +2,6 @@ import 'package:niarim/services/theme_service.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
-
 import '../../services/autosave_service.dart';
 import '../../services/project_service.dart';
 import '../../services/brush_service.dart';
@@ -891,9 +890,9 @@ class _CanvasScreenState extends State<CanvasScreen> {
                                           borderRadius: BorderRadius.circular(
                                             10,
                                           ),
-                                          color: Theme.of(context)
-                                              .colorScheme
-                                              .inverseSurface,
+                                          color: Theme.of(
+                                            context,
+                                          ).colorScheme.inverseSurface,
                                           child: Padding(
                                             padding: const EdgeInsets.symmetric(
                                               horizontal: 14,
@@ -1137,8 +1136,9 @@ class _CanvasScreenState extends State<CanvasScreen> {
                           size: 22,
                           // 色固定をやめ、テーマの文字色と連動させる（CanvasIconButton・
                           // ToolbarWidgetの色連動と同じ方針）。
-                          color: Theme.of(context).colorScheme.onSurface
-                              .withValues(alpha: 0.7),
+                          color: Theme.of(
+                            context,
+                          ).colorScheme.onSurface.withValues(alpha: 0.7),
                         ),
                       ),
                     ),
@@ -2798,7 +2798,9 @@ class _CanvasScreenState extends State<CanvasScreen> {
             ],
           ),
         ),
-        actions: [],
+        actions: [
+          
+        ],
       ),
     );
   }

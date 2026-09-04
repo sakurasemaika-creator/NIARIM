@@ -2,7 +2,6 @@ import 'package:niarim/services/theme_service.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:qr_flutter/qr_flutter.dart';
-
 import '../l10n/app_localizations.dart';
 
 /// QRコードの信頼性が確保できるとみなす文字数のおおよその上限。
@@ -29,18 +28,18 @@ class QrShareDialog extends StatelessWidget {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     return AlertDialog(
-      // popup-standard-close: compact top-right close affordance.
-      iconPadding: const EdgeInsets.fromLTRB(0, 4, 4, 0),
-      icon: Align(
-        alignment: Alignment.centerRight,
-        child: IconButton(
-          visualDensity: VisualDensity.compact,
-          iconSize: 18,
-          tooltip: MaterialLocalizations.of(context).closeButtonTooltip,
-          onPressed: () => Navigator.of(context, rootNavigator: true).pop(),
-          icon: const Icon(Icons.close),
+        // popup-standard-close: compact top-right close affordance.
+        iconPadding: const EdgeInsets.fromLTRB(0, 4, 4, 0),
+        icon: Align(
+          alignment: Alignment.centerRight,
+          child: IconButton(
+            visualDensity: VisualDensity.compact,
+            iconSize: 18,
+            tooltip: MaterialLocalizations.of(context).closeButtonTooltip,
+            onPressed: () => Navigator.of(context, rootNavigator: true).pop(),
+            icon: const Icon(Icons.close),
+          ),
         ),
-      ),
       title: Text(title),
       content: SingleChildScrollView(
         child: Column(
@@ -78,6 +77,7 @@ class QrShareDialog extends StatelessWidget {
           icon: const Icon(Icons.copy_outlined),
           label: Text(l10n.qrShareCopyButton),
         ),
+        
       ],
     );
   }
