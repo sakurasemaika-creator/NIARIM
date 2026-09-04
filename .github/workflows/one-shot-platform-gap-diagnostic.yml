@@ -1,0 +1,33 @@
+name: One-shot Platform Gap Diagnostic
+
+on:
+  push:
+    branches: [dev_branch]
+    paths:
+      - '.github/workflows/one-shot-platform-gap-diagnostic.yml'
+
+jobs:
+  diagnose:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          ref: dev_branch
+      - name: Remaining manifest false items
+        run: |
+          python3 - <<'PY'
+          import json
+          d=json.load(open('audit-dashboard/feature-audit-manifest.json'))
+          for x in d['features']:
+            if not x.get('final_pass',False):
+              print('FALSE',x.get('id'),x.get('name'),'device=',x.get('device_required'), 'reason=',x.get('recheck_reason',''))
+          PY
+      - name: Stylus and pointer implementation
+        run: |
+          grep -RInE 'stylus|PointerDeviceKind|PointerEvent|pressure|pressureMin|pressureMax|tilt|orientation' lib test | head -300 || true
+      - name: Font and material import implementation
+        run: |
+          grep -RInE 'FilePicker|file_picker|pickFiles|FontService|font.*import|material.*import|share_plus|Share\.|receive|shared.*file|import.*material' lib test | head -400 || true
+      - name: Premium implementation and tests
+        run: |
+          grep -RInE 'InAppPurchase|in_app_purchase|premium|Premium|purchase|restore|billing|entitlement|ad.*remove' lib test | head -500 || true
