@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'dart:math' as math;
 import 'dart:ui' as ui;
 
 import 'package:flutter/material.dart';
@@ -36,8 +37,14 @@ import 'home_widget_service.dart';
 /// - 背景はcolors[0]→colors[1]の左上→右下グラデーション
 /// - 影はelevation 4相当（影色はcolors[0]の50%）
 /// - アイコン60px、ラベル18px太字、サブラベル12px（どちらもKuramubon）
+///
+/// ## 縦横比
+///
+/// ホーム画面のマス目は正方形とは限らないため、[ShortcutWidgetShape]の
+/// 3通り（正方形・横長・縦長）を焼いておき、ネイティブ側が実際のマスに
+/// 近いものを選ぶ。横長だけはアイコンと文字を横並びにする。
 class ShortcutWidgetDesign {
-  /// 起動画面のボタンと同じ論理サイズ。
+  /// 起動画面のボタンと同じ論理サイズ（正方形のときの一辺）。
   static const double tileSize = 150;
   static const double cornerRadius = 24;
   static const double horizontalPadding = 14;
@@ -47,10 +54,20 @@ class ShortcutWidgetDesign {
   static const double subLabelSize = 12;
   static const double gapAfterIcon = 12;
 
+  /// 横長・縦長のときの長辺（短辺は[tileSize]のまま）。
+  static const double longSide = 300;
+
   /// 影がにじむぶんの余白（この幅だけ画像の外周を空ける）。
   static const double shadowMargin = 10;
 
   const ShortcutWidgetDesign._();
+
+  /// [shape]のタイルの論理サイズ。
+  static Size tileSizeOf(ShortcutWidgetShape shape) => switch (shape) {
+    ShortcutWidgetShape.square => const Size(tileSize, tileSize),
+    ShortcutWidgetShape.wide => const Size(longSide, tileSize),
+    ShortcutWidgetShape.tall => const Size(tileSize, longSide),
+  };
 }
 
 /// [kind]のショートカットウィジェット画像を描いてPNGのパスを返す。
@@ -69,6 +86,7 @@ Future<String?> saveShortcutWidgetImage({
   String? subLabel,
   required List<Color> colors,
   required Color foreground,
+  ShortcutWidgetShape shape = ShortcutWidgetShape.square,
   double scale = 3,
 }) async {
   final image = await renderShortcutWidgetImage(
@@ -77,6 +95,7 @@ Future<String?> saveShortcutWidgetImage({
     subLabel: subLabel,
     colors: colors,
     foreground: foreground,
+    shape: shape,
     scale: scale,
   );
   final byteData = await image.toByteData(format: ui.ImageByteFormat.png);
@@ -85,8 +104,11 @@ Future<String?> saveShortcutWidgetImage({
   if (bytes == null) return null;
 
   final dir = await getTemporaryDirectory();
-  // 種類ごとに固定のファイル名へ上書きするので、古い画像が溜まらない。
-  final file = File('${dir.path}/home_widget_shortcut_${kind.name}.png');
+  // 種類・縦横比ごとに固定のファイル名へ上書きするので、古い画像が
+  // 溜まらない。
+  final file = File(
+    '${dir.path}/home_widget_shortcut_${kind.name}_${shape.name}.png',
+  );
   await file.writeAsBytes(bytes, flush: true);
   return file.path;
 }
@@ -99,17 +121,18 @@ Future<ui.Image> renderShortcutWidgetImage({
   String? subLabel,
   required List<Color> colors,
   required Color foreground,
+  ShortcutWidgetShape shape = ShortcutWidgetShape.square,
   double scale = 3,
 }) async {
-  const d = ShortcutWidgetDesign.tileSize;
   const margin = ShortcutWidgetDesign.shadowMargin;
-  final side = ((d + margin * 2) * scale).round();
+  final size = ShortcutWidgetDesign.tileSizeOf(shape);
+  final horizontal = shape == ShortcutWidgetShape.wide;
 
   final recorder = ui.PictureRecorder();
   final canvas = Canvas(recorder);
   canvas.scale(scale);
 
-  final tile = Rect.fromLTWH(margin, margin, d, d);
+  final tile = Rect.fromLTWH(margin, margin, size.width, size.height);
   final rrect = RRect.fromRectAndRadius(
     tile,
     const Radius.circular(ShortcutWidgetDesign.cornerRadius),
@@ -133,7 +156,6 @@ Future<ui.Image> renderShortcutWidgetImage({
       ]),
   );
 
-  // アイコン・ラベル・サブラベルを縦に積んで、タイルの中央へ置く。
   final iconPainter = _painter(
     String.fromCharCode(icon.codePoint),
     TextStyle(
@@ -144,6 +166,15 @@ Future<ui.Image> renderShortcutWidgetImage({
       height: 1,
     ),
   );
+
+  // 横並びのときは、アイコンと余白を引いた残りが文字の使える幅になる。
+  final textWidth = horizontal
+      ? size.width -
+            ShortcutWidgetDesign.horizontalPadding * 2 -
+            iconPainter.width -
+            ShortcutWidgetDesign.gapAfterIcon
+      : size.width - ShortcutWidgetDesign.horizontalPadding * 2;
+
   final labelPainter = _painter(
     label,
     TextStyle(
@@ -153,7 +184,7 @@ Future<ui.Image> renderShortcutWidgetImage({
       fontFamily: 'Kuramubon',
       fontFamilyFallback: kHeadingFontFallback,
     ),
-    maxWidth: d - ShortcutWidgetDesign.horizontalPadding * 2,
+    maxWidth: textWidth,
     maxLines: subLabel == null ? 2 : 1,
   );
   final subPainter = subLabel == null
@@ -166,26 +197,57 @@ Future<ui.Image> renderShortcutWidgetImage({
             fontFamily: 'Kuramubon',
             fontFamilyFallback: kHeadingFontFallback,
           ),
-          maxWidth: d - ShortcutWidgetDesign.horizontalPadding * 2,
+          maxWidth: textWidth,
           maxLines: 1,
         );
 
-  final totalHeight =
-      iconPainter.height +
-      ShortcutWidgetDesign.gapAfterIcon +
-      labelPainter.height +
-      (subPainter?.height ?? 0);
-  var y = tile.top + (d - totalHeight) / 2;
-  for (final painter in [iconPainter, labelPainter, subPainter]) {
-    if (painter == null) continue;
-    painter.paint(canvas, Offset(tile.left + (d - painter.width) / 2, y));
-    y +=
-        painter.height +
-        (painter == iconPainter ? ShortcutWidgetDesign.gapAfterIcon : 0);
+  final textPainters = [labelPainter, ?subPainter];
+  final textHeight = textPainters.fold<double>(0, (a, p) => a + p.height);
+
+  if (horizontal) {
+    // アイコン｜文字（縦積み）を横に並べ、まとめてタイルの中央へ置く。
+    final textBlockWidth = textPainters.fold<double>(
+      0,
+      (a, p) => math.max(a, p.width),
+    );
+    final groupWidth =
+        iconPainter.width + ShortcutWidgetDesign.gapAfterIcon + textBlockWidth;
+    final left = tile.left + (size.width - groupWidth) / 2;
+    iconPainter.paint(
+      canvas,
+      Offset(left, tile.top + (size.height - iconPainter.height) / 2),
+    );
+    final textLeft =
+        left + iconPainter.width + ShortcutWidgetDesign.gapAfterIcon;
+    var y = tile.top + (size.height - textHeight) / 2;
+    for (final painter in textPainters) {
+      painter.paint(
+        canvas,
+        Offset(textLeft + (textBlockWidth - painter.width) / 2, y),
+      );
+      y += painter.height;
+    }
+  } else {
+    // アイコン・ラベル・サブラベルを縦に積んで、タイルの中央へ置く。
+    final totalHeight =
+        iconPainter.height + ShortcutWidgetDesign.gapAfterIcon + textHeight;
+    var y = tile.top + (size.height - totalHeight) / 2;
+    for (final painter in [iconPainter, ...textPainters]) {
+      painter.paint(
+        canvas,
+        Offset(tile.left + (size.width - painter.width) / 2, y),
+      );
+      y +=
+          painter.height +
+          (painter == iconPainter ? ShortcutWidgetDesign.gapAfterIcon : 0);
+    }
   }
 
   final picture = recorder.endRecording();
-  final image = await picture.toImage(side, side);
+  final image = await picture.toImage(
+    ((size.width + margin * 2) * scale).round(),
+    ((size.height + margin * 2) * scale).round(),
+  );
   picture.dispose();
   return image;
 }

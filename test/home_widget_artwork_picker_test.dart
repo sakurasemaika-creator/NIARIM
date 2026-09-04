@@ -338,13 +338,14 @@ void main() {
     // pop()の遷移アニメーションが完全に終わり、ポップされた2画面が
     // ツリーから外れるまで十分待ってから検証する（push直後の前画面同様、
     // pop直後もアニメーション完了までは前画面がツリーに残り得るため）。
-    // なお確定処理はpopの前にウィジェットの画像（作品のフレーム＋
-    // ショートカット2種の意匠）を実際にPNGへ焼く。これは`toImage`と
-    // ファイル書き込みという**本物の非同期処理**なので、FakeAsyncのまま
-    // pumpを重ねても進まない。settleがrunAsyncで実時間を渡しているので
-    // 回数を多めに取る。
+    // なお確定処理はpopの前にウィジェットの画像（作品のフレーム1枚＋
+    // ショートカット2種×縦横比3通り＝計7枚）を実際にPNGへ焼く。これは
+    // `toImage`とファイル書き込みという**本物の非同期処理**なので、
+    // FakeAsyncのままpumpを重ねても進まない。settleがrunAsyncで実時間を
+    // 渡しているので回数を多めに取る（枚数を増やすとここも足りなくなり、
+    // 「popし終えていない前画面のTextまで見つかる」形で落ちる）。
     await tester.tap(find.text(l10n.widgetArtworkFramePickerConfirmButton));
-    await settle(rounds: 40);
+    await settle(rounds: 100);
     await capture('settings_after_pick');
 
     final widgets = liveContext().read<HomeWidgetService>();

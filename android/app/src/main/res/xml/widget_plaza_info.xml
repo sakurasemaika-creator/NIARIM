@@ -1,9 +1,10 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <!--
-  意匠は正方形のPNG（shortcut_widget_renderer.dart）をfitCenterで出す方式
-  なので、既定の置かれ方も正方形（2x2マス）に寄せておく。横長・縦長のマスへ
-  リサイズされても中央に正方形のまま収まる（切れたり歪んだりはしない）が、
-  余白が増えるだけなので既定では正方形にする。
+  意匠はアプリが焼いたPNG（shortcut_widget_renderer.dart）をfitCenterで
+  出す方式。**正方形・横長・縦長の3通りを焼いてあり**、ネイティブ側
+  （NiarimWidgetProviders.kt の imageKeyFor）が実際に置かれたマスの縦横比に
+  近いものを選ぶ。横長のマスではアイコンと文字が横並びの意匠になる。
+  既定の置かれ方は正方形（2x2マス）だが、横長にも縦長にもリサイズできる。
 
   minWidth 110dp は Android のマス目換算式（70*n-30）で2マス相当。
   minResize* を同値で明示して、文字が潰れる大きさまで縮められないようにする。

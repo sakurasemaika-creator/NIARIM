@@ -142,6 +142,8 @@ abstract class ShortcutWidgetProvider : AppWidgetProvider() {
     abstract val colorKey: String
     abstract val foregroundKey: String
     abstract val imageKey: String
+    abstract val wideImageKey: String
+    abstract val tallImageKey: String
     abstract val routeKey: String
     abstract val fallbackRoute: String
     abstract val labelResId: Int
@@ -155,8 +157,11 @@ abstract class ShortcutWidgetProvider : AppWidgetProvider() {
         val background = prefColor(context, colorKey, FALLBACK_BACKGROUND)
         val foreground = prefColor(context, foregroundKey, FALLBACK_FOREGROUND)
         val route = prefString(context, routeKey, fallbackRoute)
-        val design = decodeWidgetBitmap(prefString(context, imageKey))
         for (id in appWidgetIds) {
+            // 意匠は正方形・横長・縦長の3通りが焼かれている。実際に置かれた
+            // マスの縦横比に近いものを選ぶと、fitCenterでも余白が最小になる。
+            val design =
+                decodeWidgetBitmap(prefString(context, imageKeyFor(context, appWidgetManager, id)))
             val views = RemoteViews(context.packageName, R.layout.widget_shortcut)
             if (design != null) {
                 // 画像自体が角丸・グラデーション・影を持つので、土台は
@@ -178,6 +183,58 @@ abstract class ShortcutWidgetProvider : AppWidgetProvider() {
             appWidgetManager.updateAppWidget(id, views)
         }
     }
+
+    /**
+     * リサイズされたら意匠を選び直す。
+     *
+     * `onUpdate`はリサイズでは呼ばれない（`updatePeriodMillis`と明示的な 更新要求のときだけ）ため、これが無いと横長へ広げても正方形の画像が
+     * 中央に小さく残ったままになる。
+     */
+    override fun onAppWidgetOptionsChanged(
+        context: Context,
+        appWidgetManager: AppWidgetManager,
+        appWidgetId: Int,
+        newOptions: android.os.Bundle,
+    ) {
+        super.onAppWidgetOptionsChanged(context, appWidgetManager, appWidgetId, newOptions)
+        onUpdate(context, appWidgetManager, intArrayOf(appWidgetId))
+    }
+
+    /**
+     * このウィジェットが今どのくらいの縦横比で置かれているかから、読むべき 画像のキーを決める。
+     *
+     * `getAppWidgetOptions()`は縦向き・横向きそれぞれの想定サイズを返す
+     * （縦向きでは幅がMIN_WIDTH・高さがMAX_HEIGHT、横向きでは幅がMAX_WIDTH・ 高さがMIN_HEIGHT）ので、今の画面の向きに合う組を使う。値が取れない
+     * 端末・ランチャーでは正方形へ倒す。
+     */
+    private fun imageKeyFor(
+        context: Context,
+        appWidgetManager: AppWidgetManager,
+        appWidgetId: Int,
+    ): String {
+        val options = appWidgetManager.getAppWidgetOptions(appWidgetId)
+        val landscape =
+            context.resources.configuration.orientation ==
+                android.content.res.Configuration.ORIENTATION_LANDSCAPE
+        val width =
+            options.getInt(
+                if (landscape) AppWidgetManager.OPTION_APPWIDGET_MAX_WIDTH
+                else AppWidgetManager.OPTION_APPWIDGET_MIN_WIDTH
+            )
+        val height =
+            options.getInt(
+                if (landscape) AppWidgetManager.OPTION_APPWIDGET_MIN_HEIGHT
+                else AppWidgetManager.OPTION_APPWIDGET_MAX_HEIGHT
+            )
+        if (width <= 0 || height <= 0) return imageKey
+        val ratio = width.toFloat() / height.toFloat()
+        // 正方形(1.0)と横長(2.0)・縦長(0.5)の対数中点で切り替える。
+        return when {
+            ratio >= 1.41f -> wideImageKey
+            ratio <= 0.71f -> tallImageKey
+            else -> imageKey
+        }
+    }
 }
 
 /** ワンタップで「作品をつくる」へ。 */
@@ -185,6 +242,8 @@ class NiarimCreateWidgetProvider : ShortcutWidgetProvider() {
     override val colorKey = "backgroundColor_create"
     override val foregroundKey = "foregroundColor_create"
     override val imageKey = "shortcutImage_create"
+    override val wideImageKey = "shortcutImageWide_create"
+    override val tallImageKey = "shortcutImageTall_create"
     override val routeKey = "routeCreate"
     override val fallbackRoute = "/new-project"
     override val labelResId = R.string.widget_create_label
@@ -196,6 +255,8 @@ class NiarimPlazaWidgetProvider : ShortcutWidgetProvider() {
     override val colorKey = "backgroundColor_plaza"
     override val foregroundKey = "foregroundColor_plaza"
     override val imageKey = "shortcutImage_plaza"
+    override val wideImageKey = "shortcutImageWide_plaza"
+    override val tallImageKey = "shortcutImageTall_plaza"
     override val routeKey = "routePlaza"
     override val fallbackRoute = "/community"
     override val labelResId = R.string.widget_plaza_label

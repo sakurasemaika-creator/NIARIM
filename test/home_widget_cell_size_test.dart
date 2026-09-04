@@ -18,12 +18,14 @@ import 'helpers/color_channels.dart';
 ///
 /// この開発環境にはAndroid端末もエミュレータも（KVMも）無いため、ランチャー
 /// そのもののスクリーンショットは撮れない。ただしウィジェットの表示は
-/// - アプリが焼いた正方形のPNG（`shortcut_widget_renderer.dart`）
+/// - アプリが焼いた3通り（正方形・横長・縦長）のPNG
+///   （`shortcut_widget_renderer.dart`）
 /// - それを`ImageView`の`scaleType="fitCenter"`で表示するだけのレイアウト
 ///   （`widget_shortcut.xml`）
 /// という2要素しかないので、**`BoxFit.contain`＋実際のマス目寸法**という
 /// 同じ条件で再現でき、
 /// - 極端に横長／縦長のマスでも意匠が切れず中央に収まるか
+/// - マスの縦横比に応じて正しい意匠（横長なら横並びのもの）が選ばれるか
 /// - 小さいマスでも文字が潰れず読めるか
 /// - Android 12以降のウィジェットホストが施す角丸マスクで意匠が欠けないか
 /// は機械的に確認できる。
@@ -114,15 +116,21 @@ void main() {
     final l10n = lookupAppLocalizations(const Locale('ja'));
 
     for (final kind in const [HomeWidgetKind.create, HomeWidgetKind.plaza]) {
-      final design = (await tester.runAsync(
-        () => renderShortcutWidgetImage(
-          icon: shortcutWidgetIcon(kind),
-          label: shortcutWidgetLabel(l10n, kind),
-          subLabel: shortcutWidgetSubLabel(l10n, kind),
-          colors: shortcutWidgetColors(widgets, kind),
-          foreground: shortcutWidgetForeground(widgets, theme, kind),
-        ),
-      ))!;
+      // 縦横比ごとの意匠を焼いておき、マスに応じて使い分ける
+      // （実機ではKotlinの`imageKeyFor`が同じ規則で選ぶ）。
+      final designs = <ShortcutWidgetShape, ui.Image>{};
+      for (final shape in ShortcutWidgetShape.values) {
+        designs[shape] = (await tester.runAsync(
+          () => renderShortcutWidgetImage(
+            icon: shortcutWidgetIcon(kind),
+            label: shortcutWidgetLabel(l10n, kind),
+            subLabel: shortcutWidgetSubLabel(l10n, kind),
+            colors: shortcutWidgetColors(widgets, kind),
+            foreground: shortcutWidgetForeground(widgets, theme, kind),
+            shape: shape,
+          ),
+        ))!;
+      }
 
       // 宣言した下限そのもの（＝ユーザーが縮められる限界）も必ず見る。
       final minW = dimenOf(
@@ -142,6 +150,9 @@ void main() {
       for (final cell in sizes) {
         final hostW = cell.w;
         final hostH = cell.h;
+        final shape = shortcutWidgetShapeFor(hostW, hostH);
+        final design = designs[shape]!;
+        final logical = ShortcutWidgetDesign.tileSizeOf(shape);
 
         // ネイティブ側と同じ条件で置く：ホストの角丸でマスクし、
         // 余白の内側へ fitCenter（= BoxFit.contain）で入れる。
@@ -196,7 +207,7 @@ void main() {
           await tester.runAsync(() async {
             out.createSync(recursive: true);
             await File(
-              '${out.path}/${kind.name}_${cell.name}.png',
+              '${out.path}/${kind.name}_${cell.name}_${shape.name}.png',
             ).writeAsBytes(bytes);
           });
         }
@@ -215,11 +226,11 @@ void main() {
           );
         }
 
-        // 1. 意匠は必ず正方形のまま（縦横比が保たれ、切れていない）。
-        //    fitCenterなので短辺いっぱい・長辺は余白になる。
+        // 1. 選ばれた意匠の縦横比が保たれている（切れも歪みもない）。
+        //    fitCenterなので、はみ出す側の辺いっぱい・もう一方は余白になる。
         expect(
-          (drawW - drawH).abs(),
-          lessThan(1.0),
+          (drawW / drawH) - (design.width / design.height),
+          closeTo(0, 0.01),
           reason: '${kind.name}/${cell.name}: 縦横比が崩れている',
         );
         expect(
@@ -236,15 +247,14 @@ void main() {
         // 2. ホストの角丸マスクで意匠が欠けていない。
         //    タイル本体は意匠PNGの中央部（外周は影用の余白）にあるので、
         //    そこがマスクの内側に収まっていることを確認する。
-        const marginRatio =
-            ShortcutWidgetDesign.shadowMargin /
-            (ShortcutWidgetDesign.tileSize +
-                ShortcutWidgetDesign.shadowMargin * 2);
+        const shadow = ShortcutWidgetDesign.shadowMargin;
+        final marginRatioX = shadow / (logical.width + shadow * 2);
+        final marginRatioY = shadow / (logical.height + shadow * 2);
         final tileRect = Rect.fromLTRB(
-          dst.left + drawW * marginRatio,
-          dst.top + drawH * marginRatio,
-          dst.right - drawW * marginRatio,
-          dst.bottom - drawH * marginRatio,
+          dst.left + drawW * marginRatioX,
+          dst.top + drawH * marginRatioY,
+          dst.right - drawW * marginRatioX,
+          dst.bottom - drawH * marginRatioY,
         );
         for (final corner in [
           tileRect.topLeft,
@@ -289,14 +299,12 @@ void main() {
               'アイコン・文字が潰れて見えなくなっている（前景画素$fgHits）',
         );
 
-        // 4. ラベルの実効フォントサイズ。意匠は論理170px幅
-        //    （タイル150＋影用の余白10×2）で描いてあり、その中でラベルは
-        //    18px。縮小率を掛けた実効サイズが小さすぎないことを確かめる。
+        // 4. ラベルの実効フォントサイズ。意匠はタイルの論理幅＋影用の
+        //    余白10×2で描いてあり、その中でラベルは18px。縮小率を掛けた
+        //    実効サイズが小さすぎないことを確かめる。
         final effectiveLabelPx =
             ShortcutWidgetDesign.labelSize *
-            (drawW /
-                (ShortcutWidgetDesign.tileSize +
-                    ShortcutWidgetDesign.shadowMargin * 2));
+            (drawW / (logical.width + shadow * 2));
         expect(
           effectiveLabelPx,
           greaterThanOrEqualTo(9.0),
@@ -307,7 +315,34 @@ void main() {
 
         shot.dispose();
       }
-      design.dispose();
+      for (final image in designs.values) {
+        image.dispose();
+      }
     }
+  });
+
+  test('縦横比の判定がKotlin側（imageKeyFor）と一致している', () {
+    // 実機で実際に意匠を選ぶのはKotlin側なので、Dartのしきい値と
+    // ずれていたらテストが守っている前提が崩れる。ソースから直接読む。
+    final kotlin = File(
+      'android/app/src/main/kotlin/com/niarim/niarim/'
+      'NiarimWidgetProviders.kt',
+    ).readAsStringSync();
+    final wide = RegExp(r'ratio >= ([0-9.]+)f').firstMatch(kotlin);
+    final tall = RegExp(r'ratio <= ([0-9.]+)f').firstMatch(kotlin);
+    expect(wide, isNotNull, reason: 'Kotlin側に横長のしきい値が見つからない');
+    expect(tall, isNotNull, reason: 'Kotlin側に縦長のしきい値が見つからない');
+    expect(double.parse(wide!.group(1)!), kShortcutWidgetWideRatio);
+    expect(double.parse(tall!.group(1)!), kShortcutWidgetTallRatio);
+
+    // 代表的なマス目で選ばれる意匠。
+    expect(shortcutWidgetShapeFor(140, 140), ShortcutWidgetShape.square);
+    expect(shortcutWidgetShapeFor(280, 140), ShortcutWidgetShape.wide);
+    expect(shortcutWidgetShapeFor(140, 280), ShortcutWidgetShape.tall);
+    // 3x2 は正方形寄り（1.5）なので横長を選ぶ、2x3 は縦長。
+    expect(shortcutWidgetShapeFor(210, 140), ShortcutWidgetShape.wide);
+    expect(shortcutWidgetShapeFor(140, 210), ShortcutWidgetShape.tall);
+    // 値が取れないときは正方形へ倒す（Kotlin側と同じ）。
+    expect(shortcutWidgetShapeFor(0, 0), ShortcutWidgetShape.square);
   });
 }

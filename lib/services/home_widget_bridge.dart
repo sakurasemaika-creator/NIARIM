@@ -56,7 +56,7 @@ class HomeWidgetBridge {
     required int themeForegroundColor,
     String? thumbnailPath,
     String? projectName,
-    Map<HomeWidgetKind, String>? shortcutImagePaths,
+    Map<HomeWidgetKind, Map<ShortcutWidgetShape, String>>? shortcutImagePaths,
   }) async {
     final payload = service.widgetPayload(
       themeColor: themeColor,

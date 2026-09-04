@@ -15,6 +15,52 @@ enum HomeWidgetKind {
   plaza,
 }
 
+/// ショートカットウィジェットの意匠を焼く縦横比。
+///
+/// ホーム画面のマス目は正方形とは限らず、ユーザーが横長にも縦長にも
+/// リサイズできる。1枚の正方形画像を`fitCenter`で出すと、横長のマスでは
+/// 左右に、縦長のマスでは上下に大きな余白ができてしまうため、
+/// **3通りの縦横比であらかじめ焼いておき**、ネイティブ側が実際に置かれた
+/// マスの縦横比に近いものを選ぶ（`NiarimWidgetProviders.kt`）。
+///
+/// [wide]だけはアイコンと文字を**横並び**にする（縦並びのまま横へ伸ばすと
+/// 中央に細長い余白が空くだけになるため）。[tall]は[square]と同じ縦並びで、
+/// 背景のタイルだけが縦に伸びる。
+enum ShortcutWidgetShape {
+  /// 正方形（2x2マス相当）。既定。
+  square,
+
+  /// 横長（4x2マス相当）。アイコンと文字を横並びにする。
+  wide,
+
+  /// 縦長（2x4マス相当）。
+  tall,
+}
+
+/// [ShortcutWidgetShape.wide]へ切り替える縦横比の下限。
+///
+/// 正方形(1.0)と横長(2.0)の対数中点＝√2。同様に[kShortcutWidgetTallRatio]は
+/// 正方形と縦長(0.5)の対数中点＝1/√2。
+const double kShortcutWidgetWideRatio = 1.41;
+
+/// [ShortcutWidgetShape.tall]へ切り替える縦横比の上限。
+const double kShortcutWidgetTallRatio = 0.71;
+
+/// 実際に置かれたマスの寸法（単位は問わない）から、使う意匠の縦横比を選ぶ。
+///
+/// **ネイティブ側（`NiarimWidgetProviders.kt`の`imageKeyFor`）と同じ判定に
+/// してあること**。実機ではKotlin側の実装が使われ、こちらはテストと
+/// 将来のiOS実装のために同じ規則をDartでも持っている
+/// （一致は`test/home_widget_cell_size_test.dart`が
+/// Kotlinのソースを読んで機械的に検証する）。
+ShortcutWidgetShape shortcutWidgetShapeFor(double width, double height) {
+  if (width <= 0 || height <= 0) return ShortcutWidgetShape.square;
+  final ratio = width / height;
+  if (ratio >= kShortcutWidgetWideRatio) return ShortcutWidgetShape.wide;
+  if (ratio <= kShortcutWidgetTallRatio) return ShortcutWidgetShape.tall;
+  return ShortcutWidgetShape.square;
+}
+
 /// ウィジェットのタップで開くアプリ内のルート。
 ///
 /// ネイティブ側（AppWidgetProvider）はこの文字列をPendingIntentのextraへ
@@ -213,8 +259,17 @@ class HomeWidgetService extends ChangeNotifier {
 
   /// ショートカットウィジェット（作品をつくる／作品広場）の意匠を焼いた
   /// PNGのパスを渡すキー（Kotlin側と一致させること）。
-  static String shortcutImageKey(HomeWidgetKind kind) =>
-      'shortcutImage_${kind.name}';
+  ///
+  /// 縦横比ごとに別のキーを使う。ネイティブ側は実際に置かれたマスの
+  /// 縦横比から1つを選んで読む。
+  static String shortcutImageKey(
+    HomeWidgetKind kind, [
+    ShortcutWidgetShape shape = ShortcutWidgetShape.square,
+  ]) => switch (shape) {
+    ShortcutWidgetShape.square => 'shortcutImage_${kind.name}',
+    ShortcutWidgetShape.wide => 'shortcutImageWide_${kind.name}',
+    ShortcutWidgetShape.tall => 'shortcutImageTall_${kind.name}',
+  };
 
   /// ネイティブ側へ渡す値をまとめる。
   ///
@@ -227,21 +282,23 @@ class HomeWidgetService extends ChangeNotifier {
   ///
   /// [shortcutImagePaths]は「作品をつくる」「作品広場」ウィジェットの意匠を
   /// 起動画面のボタンと同じデザインで焼いたPNGのパス
-  /// （`shortcut_widget_renderer.dart`が用意する）。ネイティブ側はこれが
-  /// あればそのまま表示し、無ければアイコン＋ラベルの簡易表示へ倒す。
+  /// （`shortcut_widget_renderer.dart`が用意する）。種類ごとに
+  /// [ShortcutWidgetShape]の3通りを渡し、ネイティブ側が実際のマスの
+  /// 縦横比に近いものを選ぶ。1枚も無ければアイコン＋ラベルの簡易表示へ倒す。
   Map<String, Object?> widgetPayload({
     required int themeColor,
     required int themeForegroundColor,
     String? thumbnailPath,
     String? projectName,
-    Map<HomeWidgetKind, String>? shortcutImagePaths,
+    Map<HomeWidgetKind, Map<ShortcutWidgetShape, String>>? shortcutImagePaths,
   }) => {
     for (final kind in HomeWidgetKind.values)
       backgroundColorKey(kind): _backgroundColors[kind] ?? themeColor,
     for (final kind in HomeWidgetKind.values)
       foregroundColorKey(kind): _foregroundColors[kind] ?? themeForegroundColor,
     for (final kind in HomeWidgetKind.values)
-      shortcutImageKey(kind): shortcutImagePaths?[kind] ?? '',
+      for (final shape in ShortcutWidgetShape.values)
+        shortcutImageKey(kind, shape): shortcutImagePaths?[kind]?[shape] ?? '',
     'projectId': _projectId ?? '',
     'projectName': projectName ?? '',
     'thumbnailPath': thumbnailPath ?? '',

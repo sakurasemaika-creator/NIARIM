@@ -21,7 +21,7 @@ import 'theme_service.dart';
 ///
 /// あわせて「作品をつくる」「作品広場」ウィジェットの意匠も、起動画面の
 /// 2つの導線ボタンと同じデザインでPNGへ焼き直す
-/// （`shortcut_widget_renderer.dart`）。文言・アイコン・配色は
+/// （`shortcut_widget_renderer.dart`。正方形・横長・縦長の3通り）。文言・アイコン・配色は
 /// `splash_screen.dart`の`_SplashActionButton`の呼び出し側と1対1で
 /// 対応させてあるので、片方を変えたらもう片方も変えること。
 ///
@@ -47,17 +47,23 @@ Future<void> refreshHomeWidgets({
           frameIndex: widgets.frameIndex,
         );
 
-  final shortcutImagePaths = <HomeWidgetKind, String>{};
+  // 置かれたマスの縦横比はユーザーが自由に変えられるので、3通りを焼いて
+  // 渡し、ネイティブ側に選ばせる（`NiarimWidgetProviders.kt`）。
+  final shortcutImagePaths =
+      <HomeWidgetKind, Map<ShortcutWidgetShape, String>>{};
   for (final kind in const [HomeWidgetKind.create, HomeWidgetKind.plaza]) {
-    final path = await saveShortcutWidgetImage(
-      kind: kind,
-      icon: shortcutWidgetIcon(kind),
-      label: shortcutWidgetLabel(l10n, kind),
-      subLabel: shortcutWidgetSubLabel(l10n, kind),
-      colors: shortcutWidgetColors(widgets, kind),
-      foreground: shortcutWidgetForeground(widgets, theme, kind),
-    );
-    if (path != null) shortcutImagePaths[kind] = path;
+    for (final shape in ShortcutWidgetShape.values) {
+      final path = await saveShortcutWidgetImage(
+        kind: kind,
+        icon: shortcutWidgetIcon(kind),
+        label: shortcutWidgetLabel(l10n, kind),
+        subLabel: shortcutWidgetSubLabel(l10n, kind),
+        colors: shortcutWidgetColors(widgets, kind),
+        foreground: shortcutWidgetForeground(widgets, theme, kind),
+        shape: shape,
+      );
+      if (path != null) (shortcutImagePaths[kind] ??= {})[shape] = path;
+    }
   }
 
   await HomeWidgetBridge().update(
