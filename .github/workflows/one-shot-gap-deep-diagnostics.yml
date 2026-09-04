@@ -72,7 +72,7 @@ jobs:
         if: always()
         uses: actions/upload-artifact@v6
         with:
-          name: gap-deep-diagnostics
+          name: gap-deep-diagnostics-latest-head
           path: |
             build/gap-deep-logs/*.log
             build/functional-visual/*.png
@@ -92,3 +92,4 @@ jobs:
       - name: Fail if any deep audit failed or timed out
         if: steps.b33.outcome != 'success' || steps.b34.outcome != 'success' || steps.b35.outcome != 'success' || steps.b36.outcome != 'success' || steps.b37.outcome != 'success' || steps.b38.outcome != 'success'
         run: exit 1
+# Audit trigger revision 2: latest HEAD final audit.
