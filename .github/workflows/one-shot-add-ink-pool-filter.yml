@@ -26,6 +26,18 @@ jobs:
       - run: flutter pub get
       - name: Apply ink pooling implementation
         run: python3 .github/scripts/add_ink_pool_filter.py
+      - name: Fix generated analyzer style
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          p=Path('lib/engine/filter_engine.dart')
+          s=p.read_text(encoding='utf-8')
+          old='''              if (ox * ox + oy * oy <= radius * radius + 0.35) put(x + ox, y + oy);'''
+          new='''              if (ox * ox + oy * oy <= radius * radius + 0.35) {\n                put(x + ox, y + oy);\n              }'''
+          if old not in s:
+              raise SystemExit('generated ink-pool lint pattern not found')
+          p.write_text(s.replace(old,new,1),encoding='utf-8')
+          PY
       - name: Regenerate localization
         run: flutter gen-l10n
       - name: Format changed Dart files
