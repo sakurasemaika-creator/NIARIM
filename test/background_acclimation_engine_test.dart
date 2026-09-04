@@ -7,11 +7,11 @@ import 'package:niarim/models/filter_def.dart';
 
 /// 環境光エンジン（背景馴染ませの拡張）が、実際に呼んで動くことを検証する。
 ///
-/// このエンジンは`FilterDef`へ15個のフィールドを追加する前提で書かれていたが、
-/// モデル側の変更が入っていなかったため`flutter analyze`が29 errorsになり、
-/// **APKビルドが静的解析の段階で落ちる状態**だった。フィールドを足して
-/// コンパイルを通しただけでは「本当に動くか」は分からないので、
-/// まだUIから呼ばれていない今のうちに、ここで直接叩いて確かめる。
+/// エンジンが先にpushされ`FilterDef`側の15フィールドが後追いだった期間、
+/// `flutter analyze`が29 errorsになり**APKビルドが静的解析の段階で落ちて**
+/// いた（その後、上流の「環境光推定v2」でモデル側が揃った）。
+/// コンパイルが通ることと実際に動くことは別なので、エンジンの不変条件
+/// （alphaを触らない・強さ0で無変更・強さと変化量が単調）を直接叩いて確かめる。
 
 /// 左上が明るく右下が暗い背景。光源が左上（135度付近）にあるように見える。
 Uint8List _background(int w, int h) {
@@ -279,7 +279,7 @@ void main() {
       ..removeWhere((k, v) => k.startsWith('bgBlend') && k != 'bgBlendColor');
     final migrated = FilterDef.fromJson(legacy);
     expect(migrated.bgBlendAutoLight, isTrue);
-    expect(migrated.bgBlendStrength, 60);
-    expect(migrated.bgBlendMaterialProtection, 50);
+    expect(migrated.bgBlendStrength, 70);
+    expect(migrated.bgBlendMaterialProtection, 75);
   });
 }

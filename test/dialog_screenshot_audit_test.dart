@@ -9,6 +9,12 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:niarim/app.dart';
 import 'package:niarim/app_bootstrap.dart';
 import 'package:niarim/router.dart';
+import 'package:niarim/screens/canvas/widgets/brush_panel.dart';
+import 'package:niarim/screens/canvas/widgets/filter_panel.dart';
+import 'package:niarim/screens/canvas/widgets/layer_panel.dart';
+import 'package:niarim/screens/canvas/widgets/onion_skin_panel.dart';
+import 'package:niarim/screens/canvas/widgets/panel_close_bar.dart';
+import 'package:niarim/screens/canvas/widgets/quick_tool_panel.dart';
 import 'package:niarim/services/project_service.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -152,7 +158,11 @@ void main() {
     for (final f in out.listSync()) {
       f.deleteSync(recursive: true);
     }
+    // アプリ側の問題（例外・PNGが撮れない）はfailures、監査側が到達
+    // できなかっただけのものはgapsへ分ける。後者でテストを落とすと
+    // 「アプリが壊れている」と誤読されるため。
     final failures = <String>[];
+    final gaps = <String>[];
     final index = <String>[];
 
     Future<bool> capture(String name) async {
@@ -244,8 +254,19 @@ void main() {
 
     /// [routeName]の画面上の操作要素を順に押し、モーダルが開いたら焼く。
     final diag = <String>[];
-    Future<void> sweep(String routeName, {int maxSteps = 40}) async {
-      final tried = <String>{};
+
+    /// [within]を渡すと、その型のウィジェットの配下にある操作要素だけを
+    /// 対象にする。キャンバスのパネルのように「開いた状態を作ってから
+    /// その中だけを掃く」ために使う（画面全体を対象にすると、木構造で
+    /// 後ろにいるツールバーのボタンを押して画面ごと離脱してしまう）。
+    Future<void> sweep(
+      String routeName,
+      String reentryRoute, {
+      int maxSteps = 150,
+      Type? within,
+      Set<String>? sharedTried,
+    }) async {
+      final tried = sharedTried ?? <String>{};
       final baseBarriers = barrierCount();
       var shot = 0;
       var taps = 0;
@@ -254,31 +275,41 @@ void main() {
       for (var step = 0; step < maxSteps; step++) {
         Element? target;
         var label = '';
+        var targetId = '';
         var i = 0;
+        // **木構造で最後の未試行**を選ぶ。キャンバスのレイヤーパネル等は
+        // オーバーレイとして後から描かれる＝木の後方にいるため、先頭から
+        // 選ぶとツールバーのボタンばかり押してパネルの中身まで到達できず、
+        // layer_panel（14箇所）・filter_panel（8箇所）等のダイアログが
+        // 1枚も撮れなかった。
         for (final e in tester.allElements) {
           final w = e.widget;
           if (!tapCandidateTypes.contains(w.runtimeType)) continue;
           final route = ModalRoute.of(e);
           if (route == null || !route.isCurrent) continue;
           var hasAncestor = false;
+          var insideScope = within == null;
           e.visitAncestorElements((a) {
             if (tapCandidateTypes.contains(a.widget.runtimeType)) {
               hasAncestor = true;
-              return false;
+            }
+            if (within != null && a.widget.runtimeType == within) {
+              insideScope = true;
             }
             return true;
           });
-          if (hasAncestor) continue;
+          if (hasAncestor || !insideScope) continue;
           final l = textOf(e) ?? iconOf(e) ?? '';
           if (skipLabels.any((s) => l.contains(s))) continue;
           final id = '${w.runtimeType}:${l.isEmpty ? '#$i' : l}';
           i++;
-          if (tried.add(id)) {
+          if (!tried.contains(id)) {
             target = e;
+            targetId = id;
             label = l.isEmpty ? w.runtimeType.toString() : l;
-            break;
           }
         }
+        if (target != null) tried.add(targetId);
         if (target == null) {
           stop = '候補切れ(${tried.length}件試行)';
           break;
@@ -324,8 +355,15 @@ void main() {
             guard++;
           }
           if (barrierCount() > baseBarriers) {
-            stop = '"$label"を閉じられず打ち切り';
-            break;
+            // popで閉じ切れないモーダルに当たったら、そのルートへ入り直して
+            // 続行する（1件で打ち切ると以降のダイアログが全部撮れなくなる）。
+            appRouter.go(reentryRoute);
+            await settle(rounds: 4);
+            tester.takeException();
+            if (barrierCount() > baseBarriers) {
+              stop = '"$label"を閉じられず打ち切り';
+              break;
+            }
           }
         }
       }
@@ -394,16 +432,151 @@ void main() {
         appRouter.go(entry.route);
         await settle();
         tester.takeException();
-        await sweep(entry.name);
+        await sweep(entry.name, entry.route);
       } catch (e) {
         failures.add('${entry.name}: 巡回に失敗: $e');
       }
     }
 
+    // ── キャンバスのパネル内部を個別に掃く ───────────────────────────
+    // ツールバーのボタンは「押すとパネルが開く」ものと「押すと画面ごと
+    // 離脱する」もの（タイムラインへ移動等）が混在していて、汎用スイープ
+    // だと後者を踏んで1タップで終わってしまう（診断で canvas: タップ1件と
+    // 出ていた）。パネルを1つずつ開き、**そのパネルの配下だけ**を対象に
+    // 掃くことで、layer_panel（14箇所）・filter_panel（8箇所）等の
+    // ダイアログへ到達させる。
+    Future<void> closeOpenPanel() async {
+      final bar = find.byType(PanelCenterCloseBar);
+      if (bar.evaluate().isEmpty) return;
+      try {
+        await tester.tap(bar.first, warnIfMissed: false);
+      } catch (_) {
+        return;
+      }
+      await settle(rounds: 3);
+      tester.takeException();
+    }
+
+    Future<void> sweepPanel(IconData icon, Type panelType, String name) async {
+      appRouter.go('/canvas/${project.id}');
+      await settle();
+      tester.takeException();
+      await closeOpenPanel();
+
+      final control = find.byIcon(icon);
+      if (control.evaluate().isEmpty) {
+        gaps.add('canvas/$name: ツールバーにアイコン${icon.codePoint}が無い');
+        return;
+      }
+      // ツールバーは横スクロールする。表示範囲の外だとタップがヒット
+      // テストに当たらず「押したのに開かない」形で失敗する。
+      try {
+        await tester.ensureVisible(control.first);
+        await tester.pump(const Duration(milliseconds: 120));
+      } on StateError {
+        // Scrollableの外（オーバーレイ上のボタン等）はそのままでよい。
+      }
+      try {
+        await tester.tap(control.first, warnIfMissed: false);
+      } catch (_) {
+        return;
+      }
+      await settle();
+      tester.takeException();
+      if (find.byType(panelType).evaluate().isEmpty) {
+        gaps.add('canvas/$name: パネルが開かなかった');
+        return;
+      }
+      await sweep('canvas_$name', '/canvas/${project.id}', within: panelType);
+    }
+
+    // オニオンスキンと演出フィルターのパネルは**ツールバーではなく
+    // 設定シート（歯車）の中のListTile**から開く。ツールバーのアイコンを
+    // 探しても見つからない（Icons.loopはクイックツールで、これを
+    // オニオンスキンだと思って叩くと別のパネルが開く）。
+    Future<void> sweepPanelViaSettingsSheet(
+      IconData tileIcon,
+      Type panelType,
+      String name,
+    ) async {
+      appRouter.go('/canvas/${project.id}');
+      await settle();
+      tester.takeException();
+      await closeOpenPanel();
+
+      final gear = find.byIcon(Icons.settings);
+      if (gear.evaluate().isEmpty) {
+        gaps.add('canvas/$name: 設定シートの歯車が見つからない');
+        return;
+      }
+      try {
+        await tester.ensureVisible(gear.first);
+        await tester.pump(const Duration(milliseconds: 120));
+      } on StateError {
+        // Scrollableの外ならそのままでよい。
+      }
+      await tester.tap(gear.first, warnIfMissed: false);
+      await settle();
+      tester.takeException();
+
+      final tile = find.byIcon(tileIcon);
+      if (tile.evaluate().isEmpty) {
+        gaps.add('canvas/$name: 設定シートに該当項目が無い');
+        return;
+      }
+      // 設定シートは縦に長く、下の項目は画面外にある。
+      try {
+        await tester.ensureVisible(tile.last);
+        await tester.pump(const Duration(milliseconds: 120));
+      } on StateError {
+        // 同上。
+      }
+      await tester.tap(tile.last, warnIfMissed: false);
+      await settle();
+      tester.takeException();
+      if (find.byType(panelType).evaluate().isEmpty) {
+        gaps.add('canvas/$name: パネルが開かなかった');
+        return;
+      }
+      await sweep('canvas_$name', '/canvas/${project.id}', within: panelType);
+    }
+
+    for (final entry in <({IconData icon, Type type, String name})>[
+      (icon: Icons.layers, type: LayerPanel, name: 'layer'),
+      (icon: Icons.tune, type: BrushPanel, name: 'brush'),
+      (icon: Icons.loop, type: QuickToolPanel, name: 'quicktool'),
+    ]) {
+      try {
+        await sweepPanel(entry.icon, entry.type, entry.name);
+      } catch (e) {
+        failures.add('canvas/${entry.name}: 巡回に失敗: $e');
+      }
+    }
+    for (final entry in <({IconData icon, Type type, String name})>[
+      (icon: Icons.layers_outlined, type: OnionSkinPanel, name: 'onion'),
+      (icon: Icons.blur_on, type: FilterPanel, name: 'filter'),
+    ]) {
+      try {
+        await sweepPanelViaSettingsSheet(entry.icon, entry.type, entry.name);
+      } catch (e) {
+        failures.add('canvas/${entry.name}: 巡回に失敗: $e');
+      }
+    }
+
     await tester.runAsync(
-      () => File(
-        '${out.path}/_index.txt',
-      ).writeAsString('${index.length}件のモーダルを撮影\n\n${index.join('\n')}\n'),
+      () => File('${out.path}/_index.txt').writeAsString(
+        '${index.length}件のモーダルを撮影\n\n'
+        '${diag.join('\n')}\n\n'
+        '${index.join('\n')}\n',
+      ),
+    );
+    await tester.runAsync(
+      () => File('${out.path}/_gaps.txt').writeAsString(
+        gaps.isEmpty
+            ? '到達できなかった箇所は無し\n'
+            : '監査が到達できなかった箇所（アプリの不具合ではない）\n\n'
+                  '${gaps.join('\n')}\n',
+      ),
     );
     await tester.runAsync(
       () => File(

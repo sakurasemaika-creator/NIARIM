@@ -326,6 +326,14 @@ class _LayerPanelState extends State<LayerPanel> {
                     label: Text(
                       l10n.layerPanelNewLayerButton,
                       style: const TextStyle(fontSize: 11),
+                      // 4ボタンをExpandedで等分するため、標準的な端末幅
+                      // （360dp、パネルは約250dp）では1ボタンあたり約60dpしか
+                      // 無く、日本語ラベルは1文字ずつ縦に折り返して読めない
+                      // 塊になる。折り返さず省略記号で止める
+                      // （`test/layer_panel_action_row_test.dart`が監視）。
+                      maxLines: 1,
+                      softWrap: false,
+                      overflow: TextOverflow.ellipsis,
                     ),
                     onPressed: () => _addLayer(
                       context,
@@ -340,6 +348,14 @@ class _LayerPanelState extends State<LayerPanel> {
                     label: Text(
                       l10n.layerPanelNewFolderButton,
                       style: const TextStyle(fontSize: 11),
+                      // 4ボタンをExpandedで等分するため、標準的な端末幅
+                      // （360dp、パネルは約250dp）では1ボタンあたり約60dpしか
+                      // 無く、日本語ラベルは1文字ずつ縦に折り返して読めない
+                      // 塊になる。折り返さず省略記号で止める
+                      // （`test/layer_panel_action_row_test.dart`が監視）。
+                      maxLines: 1,
+                      softWrap: false,
+                      overflow: TextOverflow.ellipsis,
                     ),
                     onPressed: () => _addLayer(
                       context,
@@ -357,6 +373,14 @@ class _LayerPanelState extends State<LayerPanel> {
                     label: Text(
                       l10n.layerPanelAddTooltip,
                       style: const TextStyle(fontSize: 11),
+                      // 4ボタンをExpandedで等分するため、標準的な端末幅
+                      // （360dp、パネルは約250dp）では1ボタンあたり約60dpしか
+                      // 無く、日本語ラベルは1文字ずつ縦に折り返して読めない
+                      // 塊になる。折り返さず省略記号で止める
+                      // （`test/layer_panel_action_row_test.dart`が監視）。
+                      maxLines: 1,
+                      softWrap: false,
+                      overflow: TextOverflow.ellipsis,
                     ),
                     onPressed: () => _showAddLayerMenu(context),
                   ),
@@ -367,6 +391,14 @@ class _LayerPanelState extends State<LayerPanel> {
                     label: Text(
                       l10n.layerPanelImportImageButton,
                       style: const TextStyle(fontSize: 11),
+                      // 4ボタンをExpandedで等分するため、標準的な端末幅
+                      // （360dp、パネルは約250dp）では1ボタンあたり約60dpしか
+                      // 無く、日本語ラベルは1文字ずつ縦に折り返して読めない
+                      // 塊になる。折り返さず省略記号で止める
+                      // （`test/layer_panel_action_row_test.dart`が監視）。
+                      maxLines: 1,
+                      softWrap: false,
+                      overflow: TextOverflow.ellipsis,
                     ),
                     onPressed: () => _importImage(context),
                   ),
