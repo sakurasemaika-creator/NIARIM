@@ -38,7 +38,7 @@
    `test/helpers/color_channels.dart`の`.red8`/`.green8`/`.blue8`/
    `.alpha8`を使う。テスト内のデバッグ出力は`print`ではなく
    `debugPrint`を使う）
-3. `flutter test`（ベースライン：**634 tests**、全成功。うち大半は
+3. `flutter test`（ベースライン：**635 tests**、全成功。うち大半は
    `test/app_smoke_test.dart`の自律スモークテスト。詳細は後述）
 4. **コード変更後は`dart format lib test tool`をかける**。
    リポジトリ全体を一度フォーマッタに通してあるので（コミット
@@ -440,6 +440,14 @@ FONT_LICENSES.txt`への本文・著作権表示の追記、`license_screen.dart
   assetのフォントを読めないため、ネイティブ側だけでは再現できない。
   ネイティブ（`widget_shortcut.xml`）は受け取った画像を`fitCenter`で出す
   だけで、画像が無いときだけアイコン＋ラベルの簡易表示へ倒す。
+  意匠は**正方形・横長・縦長の3通り**を焼いてあり、Kotlin側の
+  `imageKeyFor()`が`getAppWidgetOptions()`から読んだマスの縦横比で
+  選ぶ（横長だけアイコンと文字が横並び）。**`onUpdate`はリサイズでは
+  呼ばれない**ので、`onAppWidgetOptionsChanged`を実装しないと横長へ
+  広げても正方形の画像が中央に残ったままになる。判定のしきい値はDart側の
+  `shortcutWidgetShapeFor()`と二重管理になるが、
+  `test/home_widget_cell_size_test.dart`がKotlinのソースから実際に値を
+  読んで一致を検証しているので、片方だけ変えると落ちる。
   **起動画面のボタンのデザインを変えたら、レンダラー側の定数
   （`ShortcutWidgetDesign`）も必ず一緒に変えること**。一致は
   `test/home_widget_shortcut_design_test.dart`が、本物の起動画面を
