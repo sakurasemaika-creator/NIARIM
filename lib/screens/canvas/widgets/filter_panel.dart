@@ -24,6 +24,8 @@ import 'color_picker_panel.dart';
 import 'panel_close_bar.dart';
 import '../../../config/font_fallback.dart';
 
+enum FilterColorEyedropperTarget { inkPool, outline }
+
 /// 描画フィルターパネル。
 /// フィルターの選択・パラメータ調整・プレビュー・適用を行う。
 /// [bulkFrameIndices]が指定された場合は「大量処理」として、指定した全フレームの
@@ -36,6 +38,8 @@ class FilterPanel extends StatefulWidget {
   final int frameIndex;
   final Set<int>? bulkFrameIndices;
   final VoidCallback onClose;
+  final ValueChanged<FilterColorEyedropperTarget>? onStartCanvasEyedropper;
+  final FilterColorEyedropperTarget? activeCanvasEyedropperTarget;
 
   const FilterPanel({
     super.key,
@@ -45,6 +49,8 @@ class FilterPanel extends StatefulWidget {
     required this.frameIndex,
     this.bulkFrameIndices,
     required this.onClose,
+    this.onStartCanvasEyedropper,
+    this.activeCanvasEyedropperTarget,
   });
 
   @override
@@ -73,6 +79,28 @@ class _FilterPanelState extends State<FilterPanel> {
   // _autoBlendColorArgbへ保持する（ユーザーがカラーチップで手動指定
   // していない間、プレビュー・本適用の両方でこの色を使う）。
   int? _autoBlendColorArgb;
+
+  Widget _canvasEyedropperButton(
+    BuildContext context,
+    FilterColorEyedropperTarget target,
+  ) {
+    final active = widget.activeCanvasEyedropperTarget == target;
+    final l10n = AppLocalizations.of(context)!;
+    return IconButton(
+      icon: const Icon(Icons.colorize, size: 18),
+      tooltip: l10n.filterCanvasEyedropperTooltip,
+      visualDensity: VisualDensity.compact,
+      style: IconButton.styleFrom(
+        backgroundColor: active
+            ? Theme.of(context).colorScheme.primaryContainer
+            : null,
+        foregroundColor: active
+            ? Theme.of(context).colorScheme.onPrimaryContainer
+            : null,
+      ),
+      onPressed: () => widget.onStartCanvasEyedropper?.call(target),
+    );
+  }
 
   @override
   void initState() {
@@ -637,6 +665,62 @@ class _FilterPanelState extends State<FilterPanel> {
                             decimals: 2,
                           ),
                         ],
+                        if (current.kind == FilterKind.inkPool) ...[
+                          Padding(
+                            padding: const EdgeInsets.symmetric(vertical: 2),
+                            child: Row(
+                              children: [
+                                Text(
+                                  l10n.filterInkPoolColor,
+                                  style: const TextStyle(fontSize: 11),
+                                ),
+                                const SizedBox(width: 8),
+                                GestureDetector(
+                                  onTap: () =>
+                                      _pickInkPoolColor(filterService, current),
+                                  child: Container(
+                                    width: 24,
+                                    height: 24,
+                                    decoration: BoxDecoration(
+                                      color: Color(current.inkPoolColor),
+                                      border: Border.all(
+                                        color: ThemeService
+                                            .activeColorScheme
+                                            .onSurfaceVariant,
+                                      ),
+                                      borderRadius: BorderRadius.circular(4),
+                                    ),
+                                  ),
+                                ),
+                                const SizedBox(width: 2),
+                                _canvasEyedropperButton(
+                                  context,
+                                  FilterColorEyedropperTarget.inkPool,
+                                ),
+                              ],
+                            ),
+                          ),
+                          _integerStepperSlider(
+                            l10n.filterInkPoolRange,
+                            current.inkPoolRange.round(),
+                            1,
+                            80,
+                            (v) => filterService.updateFilterParams(
+                              current.id,
+                              inkPoolRange: v.toDouble(),
+                            ),
+                          ),
+                          _integerStepperSlider(
+                            l10n.filterInkPoolCenterWidth,
+                            current.inkPoolCenterWidth.round(),
+                            1,
+                            60,
+                            (v) => filterService.updateFilterParams(
+                              current.id,
+                              inkPoolCenterWidth: v.toDouble(),
+                            ),
+                          ),
+                        ],
                         if (current.kind == FilterKind.outline) ...[
                           Padding(
                             padding: const EdgeInsets.symmetric(vertical: 2),
@@ -663,6 +747,11 @@ class _FilterPanelState extends State<FilterPanel> {
                                       borderRadius: BorderRadius.circular(4),
                                     ),
                                   ),
+                                ),
+                                const SizedBox(width: 2),
+                                _canvasEyedropperButton(
+                                  context,
+                                  FilterColorEyedropperTarget.outline,
                                 ),
                               ],
                             ),
@@ -1183,6 +1272,26 @@ class _FilterPanelState extends State<FilterPanel> {
     );
   }
 
+  void _pickInkPoolColor(FilterService filterService, FilterDef current) {
+    showDialog(
+      context: context,
+      builder: (ctx) => Dialog(
+        backgroundColor: Colors.transparent,
+        child: ColorPickerPanel(
+          currentColor: Color(current.inkPoolColor),
+          onColorChanged: (c) {
+            filterService.updateFilterParams(
+              current.id,
+              inkPoolColor: c.toARGB32(),
+            );
+            _updatePreview();
+          },
+          onClose: () => Navigator.of(ctx).pop(),
+        ),
+      ),
+    );
+  }
+
   /// 周辺減光の減光先の色を選ぶ（縁取り色と同じくアプリ標準の
   /// ColorPickerPanelを流用。黒以外を選べば、暗くする代わりに指定色を
   /// 周辺へかぶせる演出にできる）。
@@ -1385,6 +1494,53 @@ class _FilterPanelState extends State<FilterPanel> {
     );
   }
 
+  Widget _integerStepperSlider(
+    String label,
+    int value,
+    int min,
+    int max,
+    ValueChanged<int> onChanged,
+  ) {
+    void change(int next) {
+      onChanged(next.clamp(min, max));
+      _updatePreview();
+    }
+
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 2),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text('$label: ${value}px', style: const TextStyle(fontSize: 11)),
+          Row(
+            children: [
+              IconButton(
+                visualDensity: VisualDensity.compact,
+                icon: const Icon(Icons.remove_rounded, size: 18),
+                onPressed: value > min ? () => change(value - 1) : null,
+              ),
+              Expanded(
+                child: SteppedSlider(
+                  value: value.toDouble().clamp(min.toDouble(), max.toDouble()),
+                  min: min.toDouble(),
+                  max: max.toDouble(),
+                  divisions: max - min,
+                  label: '${value}px',
+                  onChanged: (v) => change(v.round()),
+                ),
+              ),
+              IconButton(
+                visualDensity: VisualDensity.compact,
+                icon: const Icon(Icons.add_rounded, size: 18),
+                onPressed: value < max ? () => change(value + 1) : null,
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
   /// フィルターの表示名を多言語対応で返す（初期実装フィルターは
   /// 種別ごとに1つずつの固定セットで、ユーザーが新規フィルターを追加できる
   /// UIは無いため、kindから一意に決まる）。永続化される[FilterDef.name]
@@ -1412,6 +1568,7 @@ class _FilterPanelState extends State<FilterPanel> {
         FilterKind.pixelate => l10n.filterNamePixelate,
         FilterKind.auroraHologram => l10n.filterNameAuroraHologram,
         FilterKind.backgroundBlend => l10n.filterNameBackgroundBlend,
+        FilterKind.inkPool => l10n.filterNameInkPool,
       };
 
   /// [FilterDef]の種別・パラメータに応じてFilterEngineの各メソッドへ振り分ける
@@ -1558,6 +1715,15 @@ class _FilterPanelState extends State<FilterPanel> {
           saturation: filter.hologramSaturation,
           preset: filter.hologramPreset,
         );
+      case FilterKind.inkPool:
+        return _engine.applyInkPoolComposite(
+          data,
+          width,
+          height,
+          color: filter.inkPoolColor,
+          rangePx: filter.inkPoolRange * _previewScale,
+          centerWidthPx: filter.inkPoolCenterWidth * _previewScale,
+        );
       case FilterKind.backgroundBlend:
         // lensDistortionのlensCenterOffsetと同じ理由で、長さ・ぼかし半径
         // （いずれもフル解像度px単位で保存）を_previewScaleで縮小プレビュー用に
@@ -1627,6 +1793,8 @@ class _FilterPanelState extends State<FilterPanel> {
         return Icons.auto_awesome_mosaic;
       case FilterKind.backgroundBlend:
         return Icons.wb_twilight;
+      case FilterKind.inkPool:
+        return Icons.gesture_rounded;
     }
   }
 
@@ -1678,7 +1846,8 @@ class _FilterPanelState extends State<FilterPanel> {
   }) async {
     // BuildContextをasyncギャップ（await）をまたいで参照しないよう、
     // 縁取りフィルターの新規レイヤー命名に使うl10nはawaitの前に取得しておく。
-    final l10n = filter.kind == FilterKind.outline
+    final l10n =
+        filter.kind == FilterKind.outline || filter.kind == FilterKind.inkPool
         ? AppLocalizations.of(context)!
         : null;
     final key = ps.tileKeyFor(
@@ -1774,6 +1943,18 @@ class _FilterPanelState extends State<FilterPanel> {
         l10n!,
       );
     }
+    if (filter.kind == FilterKind.inkPool) {
+      return _applyInkPoolToNewLayer(
+        ps,
+        tm,
+        layerId,
+        filter,
+        frameIndex,
+        result,
+        outlineLayerId,
+        l10n!,
+      );
+    }
 
     tm.replaceLayerPixels(key, result);
 
@@ -1850,6 +2031,58 @@ class _FilterPanelState extends State<FilterPanel> {
       created.id,
     );
     tm.replaceLayerPixels(newKey, ringData);
+    ps.updateLayer(
+      projectId: widget.projectId,
+      sceneId: widget.sceneId,
+      frameIndex: frameIndex,
+      layer: created,
+    );
+    return created.id;
+  }
+
+  Future<String> _applyInkPoolToNewLayer(
+    ProjectService ps,
+    TileManager tm,
+    String sourceLayerId,
+    FilterDef filter,
+    int frameIndex,
+    Uint8List inkData,
+    String? inkLayerId,
+    AppLocalizations l10n,
+  ) async {
+    final sourceLayer = ps
+        .layersOf(widget.projectId, widget.sceneId, frameIndex)
+        .where((l) => l.id == sourceLayerId)
+        .firstOrNull;
+    final sourceName = sourceLayer?.name ?? _filterDisplayName(l10n, filter);
+    final created = ps.addLayer(
+      projectId: widget.projectId,
+      sceneId: widget.sceneId,
+      frameIndex: frameIndex,
+      type: model.LayerType.normal,
+      name: l10n.filterInkPoolLayerNameSuffix(sourceName),
+      id: inkLayerId,
+    );
+    final layers = ps.layersOf(widget.projectId, widget.sceneId, frameIndex);
+    final createdIdx = layers.indexWhere((l) => l.id == created.id);
+    final sourceIdx = layers.indexWhere((l) => l.id == sourceLayerId);
+    final targetIdx = sourceIdx < 0 ? createdIdx : sourceIdx + 1;
+    if (createdIdx >= 0 && targetIdx >= 0 && createdIdx != targetIdx) {
+      ps.reorderLayer(
+        projectId: widget.projectId,
+        sceneId: widget.sceneId,
+        frameIndex: frameIndex,
+        oldIndex: createdIdx,
+        newIndex: targetIdx,
+      );
+    }
+    final newKey = ps.tileKeyFor(
+      widget.projectId,
+      widget.sceneId,
+      frameIndex,
+      created.id,
+    );
+    tm.replaceLayerPixels(newKey, inkData);
     ps.updateLayer(
       projectId: widget.projectId,
       sceneId: widget.sceneId,

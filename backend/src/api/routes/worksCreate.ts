@@ -1,15 +1,19 @@
-import type { APIGatewayProxyEventV2 } from 'aws-lambda';
-import { GetCommand, PutCommand } from '@aws-sdk/lib-dynamodb';
-import { ddb, tableName, Keys } from '../../lib/dynamo';
-import { authenticate, cacheChannelInfo, getUser } from '../../lib/auth';
-import { reservePostQuota, releasePostQuota } from '../../lib/quota';
-import { getVideoSnippet, getOwnChannelInfo, verifyVideoOwnership } from '../../lib/youtube';
-import { computeRankingScore } from '../../lib/ranking';
-import { badRequest, conflict, created, forbidden } from '../../lib/response';
-import { parseJsonObject } from '../../lib/request';
-import type { WorkItem } from '../../lib/types';
-import { TABLE_ITEM_TYPE } from '../../lib/types';
-import { toPublicWork } from './_publicWork';
+import type { APIGatewayProxyEventV2 } from "aws-lambda";
+import { GetCommand, PutCommand } from "@aws-sdk/lib-dynamodb";
+import { ddb, tableName, Keys } from "../../lib/dynamo";
+import { authenticate, cacheChannelInfo, getUser } from "../../lib/auth";
+import { reservePostQuota, releasePostQuota } from "../../lib/quota";
+import {
+  getVideoSnippet,
+  getOwnChannelInfo,
+  verifyVideoOwnership,
+} from "../../lib/youtube";
+import { computeRankingScore } from "../../lib/ranking";
+import { badRequest, conflict, created, forbidden } from "../../lib/response";
+import { parseJsonObject } from "../../lib/request";
+import type { WorkItem } from "../../lib/types";
+import { TABLE_ITEM_TYPE } from "../../lib/types";
+import { toPublicWork } from "./_publicWork";
 
 interface CreateWorkRequestBody {
   youtubeVideoId: string;
@@ -30,13 +34,17 @@ interface CreateWorkRequestBody {
  * 完了後の登録依頼のみを扱う。
  */
 export async function createWork(event: APIGatewayProxyEventV2) {
-  const auth = await authenticate(event.headers['authorization'] ?? event.headers['Authorization']);
+  const auth = await authenticate(
+    event.headers["authorization"] ?? event.headers["Authorization"],
+  );
 
   const body = parseBody(event.body);
 
   const user = await getUser(auth.niarimUserId);
   if (!user?.youtubeChannelId) {
-    forbidden('YouTubeチャンネルとの連携が完了していません（3章の連携フローを先に行ってください）');
+    forbidden(
+      "YouTubeチャンネルとの連携が完了していません（3章の連携フローを先に行ってください）",
+    );
   }
 
   // ③④⑤ 投稿枠の原子的な予約（未満の場合のみ枠を確保。上限超過は409）。
@@ -44,9 +52,12 @@ export async function createWork(event: APIGatewayProxyEventV2) {
 
   try {
     // ⑥ videoId所有者検証（クライアントの自己申告を信用しない、6章）。
-    const snippet = await getVideoSnippet(body.youtubeVideoId, body.youtubeAccessToken);
+    const snippet = await getVideoSnippet(
+      body.youtubeVideoId,
+      body.youtubeAccessToken,
+    );
     if (!snippet) {
-      badRequest('指定されたYouTube動画が見つかりません', 'VIDEO_NOT_FOUND');
+      badRequest("指定されたYouTube動画が見つかりません", "VIDEO_NOT_FOUND");
     }
     const verification = verifyVideoOwnership(snippet, user.youtubeChannelId);
     if (!verification.ok) {
@@ -68,7 +79,11 @@ export async function createWork(event: APIGatewayProxyEventV2) {
     // 二重登録にならない。
     const now = new Date().toISOString();
     const isVisible = true; // 新規投稿は既定でNIARIM側も公開（13章）
-    const rankingScore = computeRankingScore({ viewCount: 0, likeCount: 0, commentCount: 0 });
+    const rankingScore = computeRankingScore({
+      viewCount: 0,
+      likeCount: 0,
+      commentCount: 0,
+    });
 
     const work: WorkItem = {
       itemType: TABLE_ITEM_TYPE.Work,
@@ -77,8 +92,9 @@ export async function createWork(event: APIGatewayProxyEventV2) {
       authorId: auth.niarimUserId,
       youtubeChannelId: snippet.channelId,
       youtubeVideoId: body.youtubeVideoId,
-      channelName: channelInfo?.channelName ?? user.channelName ?? '',
-      channelAvatarUrl: channelInfo?.channelAvatarUrl ?? user.channelAvatarUrl ?? '',
+      channelName: channelInfo?.channelName ?? user.channelName ?? "",
+      channelAvatarUrl:
+        channelInfo?.channelAvatarUrl ?? user.channelAvatarUrl ?? "",
       channelInfoCachedAt: now,
       title: snippet.title,
       postedAt: now,
@@ -98,15 +114,15 @@ export async function createWork(event: APIGatewayProxyEventV2) {
       tags: [],
       lockedTags: [],
       createdAt: now,
-      gsi1pk: isVisible ? 'RANKING#ALL' : undefined,
+      gsi1pk: isVisible ? "RANKING#ALL" : undefined,
       gsi1sk: isVisible ? rankingScore : undefined,
-      gsi2pk: isVisible ? 'BOOKMARK_RANKING' : undefined,
+      gsi2pk: isVisible ? "BOOKMARK_RANKING" : undefined,
       gsi2sk: isVisible ? 0 : undefined,
       gsi3pk: isVisible ? `AUTHOR#${auth.niarimUserId}` : undefined,
       gsi3sk: isVisible ? now : undefined,
       gsi3AllPk: `AUTHOR#${auth.niarimUserId}`,
       gsi3AllSk: now,
-      gsi4pk: isVisible ? 'LATEST' : undefined,
+      gsi4pk: isVisible ? "LATEST" : undefined,
       gsi4sk: isVisible ? now : undefined,
     };
 
@@ -114,10 +130,19 @@ export async function createWork(event: APIGatewayProxyEventV2) {
     // 二重登録にはならない。ただし他人のNIARIM User IDで既登録済みの
     // videoIdを奪う形の上書きは防ぐ（authorIdが一致する場合のみ許可）。
     const existing = await ddb.send(
-      new GetCommand({ TableName: tableName(), Key: Keys.work(body.youtubeVideoId) }),
+      new GetCommand({
+        TableName: tableName(),
+        Key: Keys.work(body.youtubeVideoId),
+      }),
     );
-    if (existing.Item && (existing.Item as WorkItem).authorId !== auth.niarimUserId) {
-      conflict('この動画は既に別のユーザーによってNIARIMへ登録されています', 'VIDEO_ALREADY_REGISTERED');
+    if (
+      existing.Item &&
+      (existing.Item as WorkItem).authorId !== auth.niarimUserId
+    ) {
+      conflict(
+        "この動画は既に別のユーザーによってNIARIMへ登録されています",
+        "VIDEO_ALREADY_REGISTERED",
+      );
     }
 
     await ddb.send(new PutCommand({ TableName: tableName(), Item: work }));
@@ -132,16 +157,21 @@ export async function createWork(event: APIGatewayProxyEventV2) {
 
 function parseBody(raw: string | undefined): CreateWorkRequestBody {
   const body = parseJsonObject(raw);
-  if (typeof body.youtubeVideoId !== 'string' ||
-      !/^[A-Za-z0-9_-]{11}$/.test(body.youtubeVideoId)) {
-    badRequest('youtubeVideoIdの形式が不正です');
+  if (
+    typeof body.youtubeVideoId !== "string" ||
+    !/^[A-Za-z0-9_-]{11}$/.test(body.youtubeVideoId)
+  ) {
+    badRequest("youtubeVideoIdの形式が不正です");
   }
-  if (typeof body.youtubeAccessToken !== 'string' ||
-      body.youtubeAccessToken.length === 0 || body.youtubeAccessToken.length > 4096) {
-    badRequest('youtubeAccessTokenは必須です');
+  if (
+    typeof body.youtubeAccessToken !== "string" ||
+    body.youtubeAccessToken.length === 0 ||
+    body.youtubeAccessToken.length > 4096
+  ) {
+    badRequest("youtubeAccessTokenは必須です");
   }
-  if (body.isShort !== undefined && typeof body.isShort !== 'boolean') {
-    badRequest('isShortは真偽値である必要があります');
+  if (body.isShort !== undefined && typeof body.isShort !== "boolean") {
+    badRequest("isShortは真偽値である必要があります");
   }
   return {
     youtubeVideoId: body.youtubeVideoId,

@@ -64,6 +64,7 @@ void main() {
       FilterKind.pixelate,
       FilterKind.auroraHologram,
       FilterKind.backgroundBlend,
+      FilterKind.inkPool,
     ];
     expect(FilterKind.values, allKinds);
 
@@ -116,6 +117,12 @@ void main() {
         bgBlendDirection: 45,
         bgBlendLength: 3,
         bgBlendBlur: 2,
+        // 墨溜まりは線の交差・鋭角部だけを太らせるフィルターなので、
+        // 12x12の監査用入力（中央8x8の不透明矩形＝4つの直角がある）でも
+        // 変化が出るよう、範囲と中央太さを入力サイズに合わせて小さく取る。
+        inkPoolColor: 0xFF102030,
+        inkPoolRange: 4,
+        inkPoolCenterWidth: 2,
       );
       final out = applyDrawFilterInIsolate((source, w, h, def, mask));
       expect(out, hasLength(source.length), reason: '${kind.name} output size');

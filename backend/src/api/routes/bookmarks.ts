@@ -1,13 +1,18 @@
-import type { APIGatewayProxyEventV2 } from 'aws-lambda';
-import { GetCommand, QueryCommand, TransactWriteCommand, UpdateCommand } from '@aws-sdk/lib-dynamodb';
-import { TransactionCanceledException } from '@aws-sdk/client-dynamodb';
-import { ddb, tableName, Keys } from '../../lib/dynamo';
-import { authenticate, tryAuthenticate, getUser } from '../../lib/auth';
-import { badRequest, forbidden, notFound, ok } from '../../lib/response';
-import { parseJsonObject } from '../../lib/request';
-import type { BookmarkItem, WorkItem } from '../../lib/types';
-import { TABLE_ITEM_TYPE } from '../../lib/types';
-import { toPublicWork } from './_publicWork';
+import type { APIGatewayProxyEventV2 } from "aws-lambda";
+import {
+  GetCommand,
+  QueryCommand,
+  TransactWriteCommand,
+  UpdateCommand,
+} from "@aws-sdk/lib-dynamodb";
+import { TransactionCanceledException } from "@aws-sdk/client-dynamodb";
+import { ddb, tableName, Keys } from "../../lib/dynamo";
+import { authenticate, tryAuthenticate, getUser } from "../../lib/auth";
+import { badRequest, forbidden, notFound, ok } from "../../lib/response";
+import { parseJsonObject } from "../../lib/request";
+import type { BookmarkItem, WorkItem } from "../../lib/types";
+import { TABLE_ITEM_TYPE } from "../../lib/types";
+import { toPublicWork } from "./_publicWork";
 
 /**
  * `POST /works/{id}/bookmark`（8.5節）。ブックマーク/解除の操作ごとに
@@ -16,8 +21,13 @@ import { toPublicWork } from './_publicWork';
  * （ConditionExpression）により、同一ユーザーが同じ作品を二重に
  * ブックマークしてカウントがずれることを防ぐ。
  */
-export async function toggleBookmark(event: APIGatewayProxyEventV2, workId: string) {
-  const auth = await authenticate(event.headers['authorization'] ?? event.headers['Authorization']);
+export async function toggleBookmark(
+  event: APIGatewayProxyEventV2,
+  workId: string,
+) {
+  const auth = await authenticate(
+    event.headers["authorization"] ?? event.headers["Authorization"],
+  );
   const bookmarkKey = Keys.bookmark(auth.niarimUserId, workId);
   const workKey = Keys.work(workId);
 
@@ -26,7 +36,7 @@ export async function toggleBookmark(event: APIGatewayProxyEventV2, workId: stri
     ddb.send(new GetCommand({ TableName: tableName(), Key: workKey })),
   ]);
   const work = existingWork.Item as WorkItem | undefined;
-  if (!work) notFound('作品が見つかりません');
+  if (!work) notFound("作品が見つかりません");
   const isVisible = Boolean(work.gsi2pk);
 
   const now = new Date().toISOString();
@@ -41,7 +51,7 @@ export async function toggleBookmark(event: APIGatewayProxyEventV2, workId: stri
               Delete: {
                 TableName: tableName(),
                 Key: bookmarkKey,
-                ConditionExpression: 'attribute_exists(pk)',
+                ConditionExpression: "attribute_exists(pk)",
               },
             },
             {
@@ -49,10 +59,10 @@ export async function toggleBookmark(event: APIGatewayProxyEventV2, workId: stri
                 TableName: tableName(),
                 Key: workKey,
                 UpdateExpression: isVisible
-                  ? 'ADD bookmarkCount :minus, gsi2sk :minus'
-                  : 'ADD bookmarkCount :minus',
-                ConditionExpression: 'bookmarkCount > :zero',
-                ExpressionAttributeValues: { ':minus': -1, ':zero': 0 },
+                  ? "ADD bookmarkCount :minus, gsi2sk :minus"
+                  : "ADD bookmarkCount :minus",
+                ConditionExpression: "bookmarkCount > :zero",
+                ExpressionAttributeValues: { ":minus": -1, ":zero": 0 },
               },
             },
           ],
@@ -75,7 +85,7 @@ export async function toggleBookmark(event: APIGatewayProxyEventV2, workId: stri
               Put: {
                 TableName: tableName(),
                 Item: bookmark,
-                ConditionExpression: 'attribute_not_exists(pk)',
+                ConditionExpression: "attribute_not_exists(pk)",
               },
             },
             {
@@ -83,9 +93,9 @@ export async function toggleBookmark(event: APIGatewayProxyEventV2, workId: stri
                 TableName: tableName(),
                 Key: workKey,
                 UpdateExpression: isVisible
-                  ? 'ADD bookmarkCount :plus, gsi2sk :plus'
-                  : 'ADD bookmarkCount :plus',
-                ExpressionAttributeValues: { ':plus': 1 },
+                  ? "ADD bookmarkCount :plus, gsi2sk :plus"
+                  : "ADD bookmarkCount :plus",
+                ExpressionAttributeValues: { ":plus": 1 },
               },
             },
           ],
@@ -111,28 +121,41 @@ const bookmarksVisibilityDefault = false;
  * `GET /users/{id}/bookmarks`（8.5節・21.2節）。非公開の場合は403で
  * 拒否する。本人自身が見る場合は公開設定に関わらず常に見られる。
  */
-export async function getUserBookmarks(event: APIGatewayProxyEventV2, targetUserId: string) {
-  const caller = await tryAuthenticate(event.headers['authorization'] ?? event.headers['Authorization']);
+export async function getUserBookmarks(
+  event: APIGatewayProxyEventV2,
+  targetUserId: string,
+) {
+  const caller = await tryAuthenticate(
+    event.headers["authorization"] ?? event.headers["Authorization"],
+  );
   const isSelf = caller?.niarimUserId === targetUserId;
 
   if (!isSelf) {
     const targetUser = await getUser(targetUserId);
     const isPublic = targetUser?.bookmarksPublic ?? bookmarksVisibilityDefault;
-    if (!isPublic) forbidden('このユーザーはブックマーク一覧を公開していません');
+    if (!isPublic)
+      forbidden("このユーザーはブックマーク一覧を公開していません");
   }
 
   const result = await ddb.send(
     new QueryCommand({
       TableName: tableName(),
-      KeyConditionExpression: 'pk = :pk AND begins_with(sk, :prefix)',
-      ExpressionAttributeValues: { ':pk': `USER#${targetUserId}`, ':prefix': 'BOOKMARK#' },
+      KeyConditionExpression: "pk = :pk AND begins_with(sk, :prefix)",
+      ExpressionAttributeValues: {
+        ":pk": `USER#${targetUserId}`,
+        ":prefix": "BOOKMARK#",
+      },
       ScanIndexForward: false,
     }),
   );
   const bookmarks = (result.Items ?? []) as BookmarkItem[];
 
   const works = await Promise.all(
-    bookmarks.map((b) => ddb.send(new GetCommand({ TableName: tableName(), Key: Keys.work(b.workId) }))),
+    bookmarks.map((b) =>
+      ddb.send(
+        new GetCommand({ TableName: tableName(), Key: Keys.work(b.workId) }),
+      ),
+    ),
   );
   const publicWorks = works
     .map((w) => w.Item as WorkItem | undefined)
@@ -143,18 +166,24 @@ export async function getUserBookmarks(event: APIGatewayProxyEventV2, targetUser
 }
 
 /** `PATCH /users/{id}/bookmarks-visibility`（8.5節）。本人のみ変更可。 */
-export async function updateBookmarksVisibility(event: APIGatewayProxyEventV2, targetUserId: string) {
-  const auth = await authenticate(event.headers['authorization'] ?? event.headers['Authorization']);
-  if (auth.niarimUserId !== targetUserId) forbidden('本人のみ変更できます');
+export async function updateBookmarksVisibility(
+  event: APIGatewayProxyEventV2,
+  targetUserId: string,
+) {
+  const auth = await authenticate(
+    event.headers["authorization"] ?? event.headers["Authorization"],
+  );
+  if (auth.niarimUserId !== targetUserId) forbidden("本人のみ変更できます");
 
   const body = parseJsonObject(event.body, { allowEmpty: true });
-  if (typeof body.public !== 'boolean') badRequest('publicは真偽値で指定してください');
+  if (typeof body.public !== "boolean")
+    badRequest("publicは真偽値で指定してください");
   await ddb.send(
     new UpdateCommand({
       TableName: tableName(),
       Key: Keys.user(targetUserId),
-      UpdateExpression: 'SET bookmarksPublic = :v',
-      ExpressionAttributeValues: { ':v': body.public },
+      UpdateExpression: "SET bookmarksPublic = :v",
+      ExpressionAttributeValues: { ":v": body.public },
     }),
   );
   return ok({ bookmarksPublic: body.public });
@@ -174,26 +203,35 @@ export async function updateBookmarksVisibility(event: APIGatewayProxyEventV2, t
  * 総数（`totalCount`）には数えるため、作者は「何人にブックマークされたか」
  * は分かる。呼び出し本人は公開設定に関わらず自分自身を見られる。
  */
-export async function getWorkBookmarkers(event: APIGatewayProxyEventV2, workId: string) {
-  const caller = await tryAuthenticate(event.headers['authorization'] ?? event.headers['Authorization']);
+export async function getWorkBookmarkers(
+  event: APIGatewayProxyEventV2,
+  workId: string,
+) {
+  const caller = await tryAuthenticate(
+    event.headers["authorization"] ?? event.headers["Authorization"],
+  );
 
-  const workResult = await ddb.send(new GetCommand({ TableName: tableName(), Key: Keys.work(workId) }));
+  const workResult = await ddb.send(
+    new GetCommand({ TableName: tableName(), Key: Keys.work(workId) }),
+  );
   const work = workResult.Item as WorkItem | undefined;
-  if (!work) notFound('作品が見つかりません');
+  if (!work) notFound("作品が見つかりません");
 
   const result = await ddb.send(
     new QueryCommand({
       TableName: tableName(),
-      IndexName: 'GSI5',
-      KeyConditionExpression: 'gsi5pk = :pk',
-      ExpressionAttributeValues: { ':pk': `WORKBOOKMARKS#${workId}` },
+      IndexName: "GSI5",
+      KeyConditionExpression: "gsi5pk = :pk",
+      ExpressionAttributeValues: { ":pk": `WORKBOOKMARKS#${workId}` },
       ScanIndexForward: false, // 新しい順
       Limit: BOOKMARKERS_PAGE_LIMIT,
     }),
   );
   const bookmarks = (result.Items ?? []) as BookmarkItem[];
 
-  const users = await Promise.all(bookmarks.map((b) => getUser(b.niarimUserId)));
+  const users = await Promise.all(
+    bookmarks.map((b) => getUser(b.niarimUserId)),
+  );
   const visible = bookmarks
     .map((bookmark, i) => ({ bookmark, user: users[i] }))
     .filter(({ bookmark, user }) => {

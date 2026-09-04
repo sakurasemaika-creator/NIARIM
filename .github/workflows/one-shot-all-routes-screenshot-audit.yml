@@ -5,7 +5,7 @@ on:
     branches:
       - dev_branch
     paths:
-      - '.github/workflows/one-shot-all-routes-screenshot-audit.yml'
+      - ".github/workflows/one-shot-all-routes-screenshot-audit.yml"
 
 jobs:
   audit:

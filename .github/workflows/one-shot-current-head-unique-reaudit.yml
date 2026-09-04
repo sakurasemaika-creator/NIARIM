@@ -1,0 +1,130 @@
+name: One-shot Current HEAD Unique Reaudit
+
+on:
+  push:
+    branches: [dev_branch]
+    paths:
+      - '.github/workflows/one-shot-current-head-unique-reaudit.yml'
+      - 'test/niarim_unique_feature_strict_evidence_v2_test.dart'
+      - 'test/niarim_unique_visual_evidence_v3_test.dart'
+      - 'test/ink_pool_filter_test.dart'
+
+jobs:
+  verify-current-head:
+    runs-on: ubuntu-latest
+    timeout-minutes: 55
+    steps:
+      - uses: actions/checkout@v6
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+      - run: flutter pub get
+      - name: Regenerate l10n for latest ARB changes
+        id: l10n
+        continue-on-error: true
+        run: flutter gen-l10n
+      - name: Analyze production app code on latest HEAD
+        id: analyze
+        continue-on-error: true
+        run: flutter analyze lib
+      - name: NIARIM unique feature strict visual evidence v2
+        id: unique
+        continue-on-error: true
+        run: flutter test test/niarim_unique_feature_strict_evidence_v2_test.dart --reporter expanded
+      - name: Ink pooling core strict tests
+        id: ink
+        continue-on-error: true
+        run: flutter test test/ink_pool_filter_test.dart --reporter expanded
+      - name: NIARIM unique visual evidence v3 — face lens and ink pooling
+        id: uniquev3
+        continue-on-error: true
+        run: flutter test test/niarim_unique_visual_evidence_v3_test.dart --reporter expanded
+      - name: Time-change strict evidence on latest HEAD
+        id: timechange
+        continue-on-error: true
+        run: flutter test test/time_change_strict_evidence_test.dart --reporter expanded
+      - name: Previous strict regression pack
+        id: strict
+        continue-on-error: true
+        run: flutter test test/final_remaining_strict_evidence_test.dart --reporter expanded
+      - name: Recent home-widget service regression
+        id: widget
+        continue-on-error: true
+        run: |
+          if [ -f test/home_widget_service_test.dart ]; then flutter test test/home_widget_service_test.dart --reporter expanded; fi
+      - name: Frame-strip and premium regressions
+        id: regressions
+        continue-on-error: true
+        run: |
+          if [ -f test/frame_strip_widget_test.dart ]; then flutter test test/frame_strip_widget_test.dart --reporter expanded; fi
+          if [ -f test/premium_screen_test.dart ]; then flutter test test/premium_screen_test.dart --reporter expanded; fi
+      - name: Full production-router screenshot audit
+        id: routes
+        continue-on-error: true
+        run: flutter test test/all_routes_screenshot_audit_test.dart --reporter expanded
+      - name: Theme hardcoded-color census
+        if: always()
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          import re
+          roots=[Path('lib/screens'),Path('lib/widgets')]
+          pats=[r'Colors\.(black|white|grey|gray|amber|pink|red|blue|green|orange|purple|yellow|brown|cyan|teal|indigo|lime)\b',r'Color\(0x[0-9A-Fa-f]{8}\)']
+          hits=[]
+          for root in roots:
+            if not root.exists(): continue
+            for p in root.rglob('*.dart'):
+              for n,line in enumerate(p.read_text(encoding='utf-8').splitlines(),1):
+                if any(re.search(x,line) for x in pats): hits.append(f'{p}:{n}:{line.strip()}')
+          Path('build').mkdir(exist_ok=True)
+          Path('build/current-head-ui-fixed-colors.txt').write_text('\n'.join(hits),encoding='utf-8')
+          print('\n'.join(hits)); print('FIXED_UI_COLOR_HITS=',len(hits))
+          PY
+      - name: Standard emoji census
+        id: emoji
+        if: always()
+        continue-on-error: true
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          import re
+          rx=re.compile(r'[\U0001F000-\U0001FAFF\u2600-\u27BF]')
+          hits=[]
+          for root in [Path('lib/screens'),Path('lib/widgets')]:
+            if not root.exists(): continue
+            for p in root.rglob('*.dart'):
+              for n,line in enumerate(p.read_text(encoding='utf-8').splitlines(),1):
+                if rx.search(line): hits.append(f'{p}:{n}:{line.strip()}')
+          Path('build/current-head-emoji-ui-literals.txt').write_text('\n'.join(hits),encoding='utf-8')
+          print('\n'.join(hits)); print('EMOJI_UI_HITS=',len(hits))
+          if hits: raise SystemExit('Standard emoji/symbol literals remain in UI code')
+          PY
+      - name: Upload latest-head evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: current-head-unique-reaudit-v4
+          path: |
+            build/niarim-unique-strict-v2/**
+            build/niarim-unique-visual-v3/**
+            build/time-change-strict/**
+            build/final-remaining-strict/**
+            build/all-route-screenshots/**
+            build/current-head-ui-fixed-colors.txt
+            build/current-head-emoji-ui-literals.txt
+          if-no-files-found: warn
+      - name: Final gate
+        if: always()
+        run: |
+          test '${{ steps.l10n.outcome }}' = 'success'
+          test '${{ steps.analyze.outcome }}' = 'success'
+          test '${{ steps.unique.outcome }}' = 'success'
+          test '${{ steps.ink.outcome }}' = 'success'
+          test '${{ steps.uniquev3.outcome }}' = 'success'
+          test '${{ steps.timechange.outcome }}' = 'success'
+          test '${{ steps.strict.outcome }}' = 'success'
+          test '${{ steps.widget.outcome }}' = 'success'
+          test '${{ steps.regressions.outcome }}' = 'success'
+          test '${{ steps.routes.outcome }}' = 'success'
+          test '${{ steps.emoji.outcome }}' = 'success'

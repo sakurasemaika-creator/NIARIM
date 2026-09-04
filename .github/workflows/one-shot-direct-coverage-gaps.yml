@@ -5,7 +5,7 @@ on:
     branches:
       - dev_branch
     paths:
-      - '.github/workflows/one-shot-direct-coverage-gaps.yml'
+      - ".github/workflows/one-shot-direct-coverage-gaps.yml"
 
 jobs:
   gaps:
@@ -63,5 +63,4 @@ jobs:
           name: direct-coverage-gaps
           path: build/direct_coverage_gaps.md
           retention-days: 7
-
 # Audit trigger revision 3: rescan after 458-test baseline.

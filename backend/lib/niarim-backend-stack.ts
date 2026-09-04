@@ -1,11 +1,17 @@
-import { Duration, RemovalPolicy, Stack, StackProps, CfnOutput } from 'aws-cdk-lib';
-import { Construct } from 'constructs';
-import * as dynamodb from 'aws-cdk-lib/aws-dynamodb';
-import * as lambda from 'aws-cdk-lib/aws-lambda';
-import { NodejsFunction } from 'aws-cdk-lib/aws-lambda-nodejs';
-import * as events from 'aws-cdk-lib/aws-events';
-import * as targets from 'aws-cdk-lib/aws-events-targets';
-import * as path from 'path';
+import {
+  Duration,
+  RemovalPolicy,
+  Stack,
+  StackProps,
+  CfnOutput,
+} from "aws-cdk-lib";
+import { Construct } from "constructs";
+import * as dynamodb from "aws-cdk-lib/aws-dynamodb";
+import * as lambda from "aws-cdk-lib/aws-lambda";
+import { NodejsFunction } from "aws-cdk-lib/aws-lambda-nodejs";
+import * as events from "aws-cdk-lib/aws-events";
+import * as targets from "aws-cdk-lib/aws-events-targets";
+import * as path from "path";
 
 /**
  * NIARIM作品広場バックエンド（`29_動画投稿・ランキング機能仕様.md` 16章）。
@@ -74,23 +80,23 @@ export class NiarimBackendStack extends Stack {
 
     assertCapacityWithinFreeTier();
 
-    const table = new dynamodb.Table(this, 'NiarimTable', {
-      tableName: 'niarim-table',
-      partitionKey: { name: 'pk', type: dynamodb.AttributeType.STRING },
-      sortKey: { name: 'sk', type: dynamodb.AttributeType.STRING },
+    const table = new dynamodb.Table(this, "NiarimTable", {
+      tableName: "niarim-table",
+      partitionKey: { name: "pk", type: dynamodb.AttributeType.STRING },
+      sortKey: { name: "sk", type: dynamodb.AttributeType.STRING },
       billingMode: dynamodb.BillingMode.PROVISIONED,
       readCapacity: CAPACITY_PLAN.table.read,
       writeCapacity: CAPACITY_PLAN.table.write,
-      timeToLiveAttribute: 'ttl', // DailyCounterItem・FollowNotificationItem共通
+      timeToLiveAttribute: "ttl", // DailyCounterItem・FollowNotificationItem共通
       removalPolicy: RemovalPolicy.RETAIN, // 誤ってスタックを消しても作品データを失わない
       pointInTimeRecoverySpecification: { pointInTimeRecoveryEnabled: false }, // 追加コスト回避（$0方針）
     });
 
     // GSI1：ランキング表示（8.2節）。gsi1pk="RANKING#ALL"固定パーティション。
     table.addGlobalSecondaryIndex({
-      indexName: 'GSI1',
-      partitionKey: { name: 'gsi1pk', type: dynamodb.AttributeType.STRING },
-      sortKey: { name: 'gsi1sk', type: dynamodb.AttributeType.NUMBER },
+      indexName: "GSI1",
+      partitionKey: { name: "gsi1pk", type: dynamodb.AttributeType.STRING },
+      sortKey: { name: "gsi1sk", type: dynamodb.AttributeType.NUMBER },
       projectionType: dynamodb.ProjectionType.ALL,
       readCapacity: CAPACITY_PLAN.gsi1RankingIndex.read,
       writeCapacity: CAPACITY_PLAN.gsi1RankingIndex.write,
@@ -98,9 +104,9 @@ export class NiarimBackendStack extends Stack {
 
     // GSI2：ブックマーク数ランキング（8.5節）。
     table.addGlobalSecondaryIndex({
-      indexName: 'GSI2',
-      partitionKey: { name: 'gsi2pk', type: dynamodb.AttributeType.STRING },
-      sortKey: { name: 'gsi2sk', type: dynamodb.AttributeType.NUMBER },
+      indexName: "GSI2",
+      partitionKey: { name: "gsi2pk", type: dynamodb.AttributeType.STRING },
+      sortKey: { name: "gsi2sk", type: dynamodb.AttributeType.NUMBER },
       projectionType: dynamodb.ProjectionType.ALL,
       readCapacity: CAPACITY_PLAN.gsi2BookmarkRankingIndex.read,
       writeCapacity: CAPACITY_PLAN.gsi2BookmarkRankingIndex.write,
@@ -108,9 +114,9 @@ export class NiarimBackendStack extends Stack {
 
     // GSI3：作者別作品一覧（可視のみ、8.4節）。
     table.addGlobalSecondaryIndex({
-      indexName: 'GSI3',
-      partitionKey: { name: 'gsi3pk', type: dynamodb.AttributeType.STRING },
-      sortKey: { name: 'gsi3sk', type: dynamodb.AttributeType.STRING },
+      indexName: "GSI3",
+      partitionKey: { name: "gsi3pk", type: dynamodb.AttributeType.STRING },
+      sortKey: { name: "gsi3sk", type: dynamodb.AttributeType.STRING },
       projectionType: dynamodb.ProjectionType.ALL,
       readCapacity: CAPACITY_PLAN.gsi3AuthorWorksIndex.read,
       writeCapacity: CAPACITY_PLAN.gsi3AuthorWorksIndex.write,
@@ -118,9 +124,9 @@ export class NiarimBackendStack extends Stack {
 
     // GSI3AllStates：投稿者本人が自分の非公開作品も含めて見るための全件版。
     table.addGlobalSecondaryIndex({
-      indexName: 'GSI3AllStates',
-      partitionKey: { name: 'gsi3AllPk', type: dynamodb.AttributeType.STRING },
-      sortKey: { name: 'gsi3AllSk', type: dynamodb.AttributeType.STRING },
+      indexName: "GSI3AllStates",
+      partitionKey: { name: "gsi3AllPk", type: dynamodb.AttributeType.STRING },
+      sortKey: { name: "gsi3AllSk", type: dynamodb.AttributeType.STRING },
       projectionType: dynamodb.ProjectionType.ALL,
       readCapacity: CAPACITY_PLAN.gsi3AllAuthorWorksIndex.read,
       writeCapacity: CAPACITY_PLAN.gsi3AllAuthorWorksIndex.write,
@@ -128,9 +134,9 @@ export class NiarimBackendStack extends Stack {
 
     // GSI4：新着表示（可視のみ、8.3節）。
     table.addGlobalSecondaryIndex({
-      indexName: 'GSI4',
-      partitionKey: { name: 'gsi4pk', type: dynamodb.AttributeType.STRING },
-      sortKey: { name: 'gsi4sk', type: dynamodb.AttributeType.STRING },
+      indexName: "GSI4",
+      partitionKey: { name: "gsi4pk", type: dynamodb.AttributeType.STRING },
+      sortKey: { name: "gsi4sk", type: dynamodb.AttributeType.STRING },
       projectionType: dynamodb.ProjectionType.ALL,
       readCapacity: CAPACITY_PLAN.gsi4LatestIndex.read,
       writeCapacity: CAPACITY_PLAN.gsi4LatestIndex.write,
@@ -138,9 +144,9 @@ export class NiarimBackendStack extends Stack {
 
     // GSI7：通報の対応状況一覧・レート制限チェック用（9章・20章）。
     table.addGlobalSecondaryIndex({
-      indexName: 'GSI7',
-      partitionKey: { name: 'gsi7pk', type: dynamodb.AttributeType.STRING },
-      sortKey: { name: 'gsi7sk', type: dynamodb.AttributeType.STRING },
+      indexName: "GSI7",
+      partitionKey: { name: "gsi7pk", type: dynamodb.AttributeType.STRING },
+      sortKey: { name: "gsi7sk", type: dynamodb.AttributeType.STRING },
       projectionType: dynamodb.ProjectionType.ALL,
       readCapacity: CAPACITY_PLAN.gsi7ReportStatusIndex.read,
       writeCapacity: CAPACITY_PLAN.gsi7ReportStatusIndex.write,
@@ -149,15 +155,15 @@ export class NiarimBackendStack extends Stack {
     // GSI5：被ブックマーク一覧（21.1節）。`GET /works/{id}/bookmarkers`が
     // `WORKBOOKMARKS#{workId}`をブックマーク日時の降順で引く。
     table.addGlobalSecondaryIndex({
-      indexName: 'GSI5',
-      partitionKey: { name: 'gsi5pk', type: dynamodb.AttributeType.STRING },
-      sortKey: { name: 'gsi5sk', type: dynamodb.AttributeType.STRING },
+      indexName: "GSI5",
+      partitionKey: { name: "gsi5pk", type: dynamodb.AttributeType.STRING },
+      sortKey: { name: "gsi5sk", type: dynamodb.AttributeType.STRING },
       // 一覧に必要なのはブックマークしたユーザーIDと日時だけ。ALLだと
       // BookmarkItem全体が複製されてストレージと書き込み容量を余計に
       // 使うため、KEYS_ONLYに近い最小構成にする（niarimUserIdは
       // pkから復元できるが、明示的に持たせた方が読み側が簡潔になる）。
       projectionType: dynamodb.ProjectionType.INCLUDE,
-      nonKeyAttributes: ['niarimUserId', 'workId', 'bookmarkedAt', 'itemType'],
+      nonKeyAttributes: ["niarimUserId", "workId", "bookmarkedAt", "itemType"],
       readCapacity: CAPACITY_PLAN.gsi5WorkBookmarksIndex.read,
       writeCapacity: CAPACITY_PLAN.gsi5WorkBookmarksIndex.write,
     });
@@ -166,21 +172,23 @@ export class NiarimBackendStack extends Stack {
       TABLE_NAME: table.tableName,
       // 【要設定】15章のOAuth審査で確定するOAuthクライアントID。
       // cdk.context.jsonまたは `-c googleClientId=...` で上書きする。
-      GOOGLE_CLIENT_ID: this.node.tryGetContext('googleClientId') ?? 'REPLACE_ME',
+      GOOGLE_CLIENT_ID:
+        this.node.tryGetContext("googleClientId") ?? "REPLACE_ME",
       // 【要設定】22.7節のプッシュ通知（FCM HTTP v1）用。Firebaseコンソール
       // で発行したサービスアカウントJSONをそのまま渡す。
       // `-c fcmServiceAccountJson="$(cat service-account.json)"` の形。
       // 未設定（REPLACE_ME）ならプッシュ送信は行わず、アプリ内通知一覧
       // （方式A）だけが動く（src/lib/push.ts参照）。
-      FCM_SERVICE_ACCOUNT_JSON: this.node.tryGetContext('fcmServiceAccountJson') ?? 'REPLACE_ME',
+      FCM_SERVICE_ACCOUNT_JSON:
+        this.node.tryGetContext("fcmServiceAccountJson") ?? "REPLACE_ME",
       // サービスアカウントJSONのproject_idと異なる場合のみ指定する。
-      FCM_PROJECT_ID: this.node.tryGetContext('fcmProjectId') ?? '',
+      FCM_PROJECT_ID: this.node.tryGetContext("fcmProjectId") ?? "",
     };
 
-    const apiFunction = new NodejsFunction(this, 'ApiFunction', {
-      functionName: 'niarim-api',
-      entry: path.join(__dirname, '../src/api/handler.ts'),
-      handler: 'handler',
+    const apiFunction = new NodejsFunction(this, "ApiFunction", {
+      functionName: "niarim-api",
+      entry: path.join(__dirname, "../src/api/handler.ts"),
+      handler: "handler",
       runtime: lambda.Runtime.NODEJS_22_X,
       memorySize: 256,
       timeout: Duration.seconds(10),
@@ -197,10 +205,10 @@ export class NiarimBackendStack extends Stack {
       authType: lambda.FunctionUrlAuthType.NONE,
     });
 
-    const batchFunction = new NodejsFunction(this, 'StatsUpdateFunction', {
-      functionName: 'niarim-stats-update',
-      entry: path.join(__dirname, '../src/batch/statsUpdate.ts'),
-      handler: 'handler',
+    const batchFunction = new NodejsFunction(this, "StatsUpdateFunction", {
+      functionName: "niarim-stats-update",
+      entry: path.join(__dirname, "../src/batch/statsUpdate.ts"),
+      handler: "handler",
       runtime: lambda.Runtime.NODEJS_22_X,
       memorySize: 512,
       // 1ページ分の処理（YouTube API呼び出し＋DynamoDB更新）に十分な
@@ -213,8 +221,9 @@ export class NiarimBackendStack extends Stack {
         // Secrets Managerは月額課金が発生するため、$0方針に合わせて
         // Lambda環境変数（AWS管理キーで暗号化済み）に留めている。
         // より強固な秘匿が必要な場合はSecrets Managerへの切り替えを検討。
-        YOUTUBE_API_KEY: this.node.tryGetContext('youtubeApiKey') ?? 'REPLACE_ME',
-        SELF_FUNCTION_NAME: 'niarim-stats-update',
+        YOUTUBE_API_KEY:
+          this.node.tryGetContext("youtubeApiKey") ?? "REPLACE_ME",
+        SELF_FUNCTION_NAME: "niarim-stats-update",
       },
       bundling: { minify: true, sourceMap: false },
     });
@@ -225,13 +234,17 @@ export class NiarimBackendStack extends Stack {
     // EventBridge Scheduler：更新サイクルの開始のみをトリガーする
     // （8.1節）。既定は1日2回（14章：作品数が増えてきたら1日2回を基本）。
     // cron式はUTC。JSTの9時・21時に相当するよう0時・12時UTCで実行する。
-    new events.Rule(this, 'StatsUpdateSchedule', {
-      ruleName: 'niarim-stats-update-schedule',
-      schedule: events.Schedule.expression('cron(0 0,12 * * ? *)'),
-      targets: [new targets.LambdaFunction(batchFunction, { event: events.RuleTargetInput.fromObject({}) })],
+    new events.Rule(this, "StatsUpdateSchedule", {
+      ruleName: "niarim-stats-update-schedule",
+      schedule: events.Schedule.expression("cron(0 0,12 * * ? *)"),
+      targets: [
+        new targets.LambdaFunction(batchFunction, {
+          event: events.RuleTargetInput.fromObject({}),
+        }),
+      ],
     });
 
-    new CfnOutput(this, 'ApiFunctionUrl', { value: functionUrl.url });
-    new CfnOutput(this, 'TableName', { value: table.tableName });
+    new CfnOutput(this, "ApiFunctionUrl", { value: functionUrl.url });
+    new CfnOutput(this, "TableName", { value: table.tableName });
   }
 }

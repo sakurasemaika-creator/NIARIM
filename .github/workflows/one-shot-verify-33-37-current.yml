@@ -5,7 +5,7 @@ on:
     branches:
       - dev_branch
     paths:
-      - '.github/workflows/one-shot-verify-33-37-current.yml'
+      - ".github/workflows/one-shot-verify-33-37-current.yml"
 
 permissions:
   contents: write

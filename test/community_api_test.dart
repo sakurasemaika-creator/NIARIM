@@ -470,8 +470,11 @@ void main() {
   test('全メソッドがbackendのルーティング表に実在する', () async {
     // handler.tsの route('METHOD', '/path', ...) を読み取る。
     final handler = File('backend/src/api/handler.ts').readAsStringSync();
+    // Prettierを通すとシングルクォートがダブルクォートへ変わるので、
+    // どちらでも読めるようにしておく（片方だけ見ていると、書式を整えただけで
+    // 「ルートが1本も読めない」と誤検知する）。
     final declared = RegExp(
-      r"route\('([A-Z]+)',\s*'([^']+)'",
+      r"""route\(\s*['"]([A-Z]+)['"],\s*['"]([^'"]+)['"]""",
     ).allMatches(handler).map((m) => '${m.group(1)} ${m.group(2)}').toSet();
     expect(declared, isNotEmpty, reason: 'handler.tsからルートを読めていない');
 

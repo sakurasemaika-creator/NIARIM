@@ -7004,6 +7004,7 @@ class _EffectFilterSheet extends StatelessWidget {
         EffectFilterType.fisheye => l10n.filterNameFisheye,
         EffectFilterType.pixelate => l10n.filterNamePixelate,
         EffectFilterType.auroraHologram => l10n.filterNameAuroraHologram,
+        EffectFilterType.inkPool => l10n.filterNameInkPool,
       };
 
   static const _typeIcons = {
@@ -7025,6 +7026,7 @@ class _EffectFilterSheet extends StatelessWidget {
     EffectFilterType.fisheye: Icons.panorama_fish_eye,
     EffectFilterType.pixelate: Icons.grid_view,
     EffectFilterType.auroraHologram: Icons.auto_awesome_mosaic,
+    EffectFilterType.inkPool: Icons.gesture_rounded,
   };
 
   @override
@@ -7271,6 +7273,8 @@ class _EffectFilterSheet extends StatelessWidget {
                   ..._pixelateParams(context, l10n, e)
                 else if (e.type == EffectFilterType.auroraHologram)
                   ..._auroraHologramParams(context, l10n, e)
+                else if (e.type == EffectFilterType.inkPool)
+                  ..._inkPoolParams(context, l10n, e)
                 else
                   ..._strengthParam(context, l10n, e),
               ],
@@ -7620,6 +7624,107 @@ class _EffectFilterSheet extends StatelessWidget {
     );
   }
 
+  List<Widget> _inkPoolParams(
+    BuildContext context,
+    AppLocalizations l10n,
+    EffectFilterInstance e,
+  ) {
+    Widget stepRow(
+      String label,
+      double value,
+      int min,
+      int max,
+      ValueChanged<double> onChanged,
+    ) {
+      final v = value.round().clamp(min, max);
+      void change(int next) => onChanged(next.clamp(min, max).toDouble());
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text('$label: ${v}px', style: const TextStyle(fontSize: 11)),
+          Row(
+            children: [
+              IconButton(
+                visualDensity: VisualDensity.compact,
+                icon: const Icon(Icons.remove_rounded, size: 18),
+                onPressed: v > min ? () => change(v - 1) : null,
+              ),
+              Expanded(
+                child: SteppedSlider(
+                  value: v.toDouble(),
+                  min: min.toDouble(),
+                  max: max.toDouble(),
+                  divisions: max - min,
+                  label: '${v}px',
+                  onChanged: (n) => change(n.round()),
+                ),
+              ),
+              IconButton(
+                visualDensity: VisualDensity.compact,
+                icon: const Icon(Icons.add_rounded, size: 18),
+                onPressed: v < max ? () => change(v + 1) : null,
+              ),
+            ],
+          ),
+        ],
+      );
+    }
+
+    return [
+      Padding(
+        padding: const EdgeInsets.symmetric(vertical: 4),
+        child: Row(
+          children: [
+            Text(l10n.filterInkPoolColor, style: const TextStyle(fontSize: 11)),
+            const SizedBox(width: 8),
+            GestureDetector(
+              onTap: () => _pickInkPoolEffectColor(context, e),
+              child: Container(
+                width: 24,
+                height: 24,
+                decoration: BoxDecoration(
+                  color: e.fadeColor,
+                  border: Border.all(
+                    color: Theme.of(context).colorScheme.outline,
+                  ),
+                  borderRadius: BorderRadius.circular(4),
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+      stepRow(
+        l10n.filterInkPoolRange,
+        e.param1,
+        1,
+        80,
+        (v) => _update(context, e.copyWith(param1: v)),
+      ),
+      stepRow(
+        l10n.filterInkPoolCenterWidth,
+        e.param2,
+        1,
+        60,
+        (v) => _update(context, e.copyWith(param2: v)),
+      ),
+    ];
+  }
+
+  void _pickInkPoolEffectColor(BuildContext context, EffectFilterInstance e) {
+    showDialog(
+      context: context,
+      builder: (ctx) => Dialog(
+        backgroundColor: Colors.transparent,
+        child: ColorPickerPanel(
+          currentColor: e.fadeColor,
+          onColorChanged: (c) => _update(context, e.copyWith(fadeColor: c)),
+          onClose: () => Navigator.of(ctx).pop(),
+        ),
+      ),
+    );
+  }
+
   /// 二値化のパラメータ（閾値スライダーのみ。0〜255）。
   List<Widget> _thresholdParams(
     BuildContext context,
@@ -7829,6 +7934,7 @@ class _EffectFilterSheet extends StatelessWidget {
                             // オーロラホログラムのparam1はフィルター強度
                             // （0〜100）なので、効果がはっきり見える60から始める。
                             EffectFilterType.auroraHologram => 60.0,
+                            EffectFilterType.inkPool => 12.0,
                             _ => 5.0,
                           },
                           // ドット絵のparam2は色数（2〜32）なので既定8から始める。
@@ -7842,6 +7948,8 @@ class _EffectFilterSheet extends StatelessWidget {
                               ? 8.0
                               : type == EffectFilterType.auroraHologram
                               ? 0.0
+                              : type == EffectFilterType.inkPool
+                              ? 6.0
                               : 50.0,
                           // オーロラホログラムのparam3は彩度（-100〜100）なので
                           // 既定0（変化なし）から始める。

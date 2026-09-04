@@ -4,8 +4,8 @@ on:
   push:
     branches: [dev_branch]
     paths:
-      - 'audit-dashboard/**'
-      - '.github/workflows/**'
+      - "audit-dashboard/**"
+      - ".github/workflows/**"
   workflow_dispatch:
   workflow_run:
     workflows:
@@ -16,6 +16,7 @@ on:
       - 'One-shot Canvas Panel Screenshot Audit'
       - 'One-shot Current Coverage Census'
       - 'One-shot Known Scope Reaudit'
+      - 'One-shot Current HEAD Unique Reaudit'
     types: [requested, completed]
 
 permissions:
@@ -40,6 +41,6 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
           REPO: ${{ github.repository }}
-          ISSUE_NUMBER: '3'
+          ISSUE_NUMBER: "3"
           BRANCH: dev_branch
         run: python3 audit-dashboard/update_dashboard.py

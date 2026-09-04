@@ -4,10 +4,10 @@ on:
   push:
     branches: [dev_branch]
     paths:
-      - '.github/workflows/one-shot-resume-real-operation-audit.yml'
-      - 'test/functional_audit_batch29_test.dart'
-      - 'test/functional_audit_batch30_test.dart'
-      - 'test/functional_audit_batch31_test.dart'
+      - ".github/workflows/one-shot-resume-real-operation-audit.yml"
+      - "test/functional_audit_batch29_test.dart"
+      - "test/functional_audit_batch30_test.dart"
+      - "test/functional_audit_batch31_test.dart"
 
 permissions:
   contents: read

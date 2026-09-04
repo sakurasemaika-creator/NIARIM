@@ -5,7 +5,7 @@ on:
     branches:
       - dev_branch
     paths:
-      - '.github/workflows/one-shot-commit-batch33-only.yml'
+      - ".github/workflows/one-shot-commit-batch33-only.yml"
 
 permissions:
   contents: write

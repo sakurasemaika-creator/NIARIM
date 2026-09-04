@@ -85,29 +85,29 @@ backend/
 
 ## 実装したAPIエンドポイント
 
-| メソッド | パス | 対応する仕様書の節 | 認証 |
-|---|---|---|---|
-| GET | `/ranking/{period}` | 8.2節（`period=all`／`yearly`／`monthly`／`weekly`／`daily`）／`period=bookmarks`は8.5節 | 不要 |
-| GET | `/works/latest` | 8.3節・8.6節（`q`で検索） | 不要 |
-| GET | `/users/{id}/works` | 8.4節 | 任意（本人なら非公開作品も含む） |
-| GET | `/works/{id}/bookmarkers` | 21.1節（被ブックマーク一覧） | 任意（非公開設定のユーザーは除外） |
-| POST | `/works` | 6章・12章・17章 | 必須 |
-| PATCH | `/works/{id}` | 13章 | 必須（投稿者本人） |
-| DELETE | `/works/{id}` | 13章 | 必須（投稿者本人） |
-| PATCH | `/works/{id}/tags` | 8.7節 | 必須（追加/削除は誰でも、ロックは投稿者本人） |
-| POST | `/reports` | 9章 | 必須 |
-| POST | `/blocks` | 9章 | 必須 |
-| POST | `/works/{id}/bookmark` | 8.5節 | 必須 |
-| GET | `/users/{id}/bookmarks` | 8.5節・21.2節 | 任意（非公開なら本人のみ） |
-| PATCH | `/users/{id}/bookmarks-visibility` | 8.5節 | 必須（本人のみ） |
-| POST | `/works/{id}/repost` | 8.5bis節 | 必須 |
-| POST | `/users/{id}/follow` | 22.5節 | 必須 |
-| GET | `/users/{id}/followers` | 22.5節・22.7節 | 任意（非公開なら本人のみ、22.7節のフィルタ適用） |
-| GET | `/users/{id}/following` | 22.5節 | 任意（非公開なら本人のみ） |
-| PATCH | `/users/{id}/follow-visibility` | 22.5節 | 必須（本人のみ） |
-| GET | `/users/{id}/notifications` | 22.6節 | 必須（本人のみ） |
-| POST | `/users/{id}/notifications/mark-read` | 22.6節 | 必須（本人のみ） |
-| PUT | `/users/{id}/push-token` | 22.7節（FCM端末トークン登録／解除） | 必須（本人のみ） |
+| メソッド | パス                                  | 対応する仕様書の節                                                                       | 認証                                             |
+| -------- | ------------------------------------- | ---------------------------------------------------------------------------------------- | ------------------------------------------------ |
+| GET      | `/ranking/{period}`                   | 8.2節（`period=all`／`yearly`／`monthly`／`weekly`／`daily`）／`period=bookmarks`は8.5節 | 不要                                             |
+| GET      | `/works/latest`                       | 8.3節・8.6節（`q`で検索）                                                                | 不要                                             |
+| GET      | `/users/{id}/works`                   | 8.4節                                                                                    | 任意（本人なら非公開作品も含む）                 |
+| GET      | `/works/{id}/bookmarkers`             | 21.1節（被ブックマーク一覧）                                                             | 任意（非公開設定のユーザーは除外）               |
+| POST     | `/works`                              | 6章・12章・17章                                                                          | 必須                                             |
+| PATCH    | `/works/{id}`                         | 13章                                                                                     | 必須（投稿者本人）                               |
+| DELETE   | `/works/{id}`                         | 13章                                                                                     | 必須（投稿者本人）                               |
+| PATCH    | `/works/{id}/tags`                    | 8.7節                                                                                    | 必須（追加/削除は誰でも、ロックは投稿者本人）    |
+| POST     | `/reports`                            | 9章                                                                                      | 必須                                             |
+| POST     | `/blocks`                             | 9章                                                                                      | 必須                                             |
+| POST     | `/works/{id}/bookmark`                | 8.5節                                                                                    | 必須                                             |
+| GET      | `/users/{id}/bookmarks`               | 8.5節・21.2節                                                                            | 任意（非公開なら本人のみ）                       |
+| PATCH    | `/users/{id}/bookmarks-visibility`    | 8.5節                                                                                    | 必須（本人のみ）                                 |
+| POST     | `/works/{id}/repost`                  | 8.5bis節                                                                                 | 必須                                             |
+| POST     | `/users/{id}/follow`                  | 22.5節                                                                                   | 必須                                             |
+| GET      | `/users/{id}/followers`               | 22.5節・22.7節                                                                           | 任意（非公開なら本人のみ、22.7節のフィルタ適用） |
+| GET      | `/users/{id}/following`               | 22.5節                                                                                   | 任意（非公開なら本人のみ）                       |
+| PATCH    | `/users/{id}/follow-visibility`       | 22.5節                                                                                   | 必須（本人のみ）                                 |
+| GET      | `/users/{id}/notifications`           | 22.6節                                                                                   | 必須（本人のみ）                                 |
+| POST     | `/users/{id}/notifications/mark-read` | 22.6節                                                                                   | 必須（本人のみ）                                 |
+| PUT      | `/users/{id}/push-token`              | 22.7節（FCM端末トークン登録／解除）                                                      | 必須（本人のみ）                                 |
 
 ## 未実装・既知の制約（デプロイ前に把握しておくべきこと）
 
@@ -159,12 +159,12 @@ backend/
 
 ## $0運用の内訳（実測ではなく設計上の見積もり）
 
-| リソース | Always Free枠 | このスタックでの使用量 |
-|---|---|---|
-| DynamoDB | 25 GB・25 RCU・25 WCU | テーブル15+GSI6本合計10 = 25 RCU/WCU、ストレージは5章の見積もりで50万作品時約1GB |
-| Lambda | 月100万リクエスト＋40万GB秒 | APIリクエスト数・バッチ実行頻度に依存。想定ユーザー数の初期段階では十分収まる |
-| EventBridge Scheduler | 低頻度実行はごく低コスト | 1日2回の定期実行のみ |
-| Lambda Function URL | 追加費用なし | - |
+| リソース              | Always Free枠               | このスタックでの使用量                                                           |
+| --------------------- | --------------------------- | -------------------------------------------------------------------------------- |
+| DynamoDB              | 25 GB・25 RCU・25 WCU       | テーブル15+GSI6本合計10 = 25 RCU/WCU、ストレージは5章の見積もりで50万作品時約1GB |
+| Lambda                | 月100万リクエスト＋40万GB秒 | APIリクエスト数・バッチ実行頻度に依存。想定ユーザー数の初期段階では十分収まる    |
+| EventBridge Scheduler | 低頻度実行はごく低コスト    | 1日2回の定期実行のみ                                                             |
+| Lambda Function URL   | 追加費用なし                | -                                                                                |
 
 将来的にAlways Free枠を超えた場合の対応は`29_動画投稿・ランキング機能
 仕様.md` 11.2節の段階的引き上げ方針を参照してください。

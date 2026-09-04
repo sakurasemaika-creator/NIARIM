@@ -5,7 +5,7 @@ on:
     branches:
       - dev_branch
     paths:
-      - '.github/workflows/one-shot-timeline-overflow-fix.yml'
+      - ".github/workflows/one-shot-timeline-overflow-fix.yml"
 
 permissions:
   contents: write

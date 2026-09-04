@@ -465,7 +465,7 @@
   "helpCameraKeyframeTitle": "Camera Keyframe",
   "helpCameraKeyframeDesc": "Records the camera's position, zoom level, and rotation at a specific point on the timeline. Since the values are automatically interpolated smoothly between keyframes, you can easily add camera work such as panning or zooming in/out.",
   "helpEffectFilterTitle": "Effect Filter",
-  "helpEffectFilterDesc": "A visual effect (blur, color correction, glow, pixelate, etc.) you can apply to a scene or frame. Use it when you want to adjust the overall look of the screen as a directorial touch, without changing the hand-drawn artwork itself. Pixelate also lets you choose a color mode (no limit, specify colors, specify color count, or choose from a palette). Multiple effect filters can be stacked, and they're applied in the order they appear on the timeline. Dragging to reorder the filter list also changes the order they're actually applied on screen. An effect filter that applies film-grain-like noise, changing it frame by frame. Strength, amount (how dense the noise is), and grain size can all be adjusted with sliders. Returning to the same frame reproduces the same grain (no flicker while scrubbing), while playback makes the grain appear to move. An effect filter that renders rain falling across the screen. Intensity (drop count), speed, drop size, and wind angle can all be adjusted with sliders. Each drop keeps falling at a steady speed as the frame advances, giving natural-looking rain motion.",
+  "helpEffectFilterDesc": "A visual effect (blur, color correction, glow, pixel art, etc.) you can apply to a scene or frame. Use it when you want to adjust the overall look of the screen as a directorial touch, without changing the hand-drawn artwork itself. Pixel art also lets you choose a color mode (no limit, specify colors, specify color count, or choose from a palette). Multiple effect filters can be stacked, and they're applied in the order they appear on the timeline. Dragging to reorder the filter list also changes the order they're actually applied on screen. An effect filter that applies film-grain-like noise, changing it frame by frame. Strength, amount (how dense the noise is), and grain size can all be adjusted with sliders. Returning to the same frame reproduces the same grain (no flicker while scrubbing), while playback makes the grain appear to move. An effect filter that renders rain falling across the screen. Intensity (drop count), speed, drop size, and wind angle can all be adjusted with sliders. Each drop keeps falling at a steady speed as the frame advances, giving natural-looking rain motion.",
   "helpEndCardTitle": "End Card (End Logo)",
   "helpEndCardDesc": "A short video (about 5 seconds) with the NIARIM logo, automatically added to the end of the main content when exporting a video. The free version cannot hide or remove it, but Premium members can turn it on/off, change its length, or replace it.",
   "helpAutoSaveTitle": "Auto Save",
@@ -481,8 +481,8 @@
   "helpShareTitle": "Share (.niashare)",
   "helpShareDesc": "A dedicated file format for handing a project to someone else (or to another device of your own). When the recipient opens this file, it's duplicated and added to their own project list. The original .niashare file itself is not changed.",
   "helpTransferTitle": "Transfer (.niatra)",
-  "helpTransferDesc": "A feature for transferring your entire app environment — settings, materials, brushes, autofill settings, theme, palettes (color picker and pixel art), and more — to another device all at once. You can choose individual items to transfer with checkboxes. If you want to hand over an individual project, use \"Share (.niashare)\" instead.",
-  "helpVideoExportTitle": "Video Export (MP4, WebM, GIF)",
+  "helpTransferDesc": "A feature for transferring your entire app environment — settings, materials, brushes, autofill settings, theme, palettes (color picker and pixel-art), and more — to another device all at once. You can choose individual items to transfer with checkboxes, and optionally include in-progress projects too (selected projects are transferred whole, including their materials and fonts). If you just want to hand over a single project, you can also use \"Share (.niashare)\".",
+  "helpVideoExportTitle": "Video Export (MP4, WebM, GIF, AVI)",
   "helpVideoExportDesc": "Exports your work as a standard MP4 video. The free version has a length limit (90 seconds) and automatically adds an end card (app logo) at the end of the video. A video format that can be exported while keeping the alpha channel (the transparent parts of the background). Transparent playback only works in compatible playback environments. Good for layering as material in other apps. Exports as an animated GIF. Since it loops automatically, it works well for casual sharing on social media. If compatibility matters most, you can also export as AVI (Motion JPEG). It uses a codec chosen to be safe on patents and licensing, but it doesn't support the alpha channel (transparency), and in-app preview may not work on every device (you can still play it in an external player via Share in that case). Free accounts are capped at a 90-second project length (Premium accounts get 2 hours). If adding or duplicating frames would push you past the limit, a warning dialog appears the moment you tap the button, so you never actually go over 90 seconds.",
   "helpTransparentWebmTitle": "Transparent WebM",
   "helpCommunityTitle": "Work Plaza",
@@ -502,7 +502,7 @@
   "helpStampToolTitle": "Stamp tool",
   "helpStampToolDesc": "Places a pre-registered image onto the canvas like a brush. Reuse speed lines, background patterns, and small props without redrawing them each time. With pixel mode on, stamped images are processed with mosaic downsampling plus color reduction for a pixel-art look. The stamp panel lets you adjust the rotation angle and size of the stamp you're placing. Varying the direction and size of the same stamp keeps speed lines and small props from looking monotonous.",
   "helpToneFillTitle": "Screentone fill",
-  "helpToneFillDesc": "Switching the bucket tool's setting from solid fill to screentone fill lets you fill with a chosen halftone or line-pattern screentone. Pixel-mode-only checker and grid patterns are also available, for fills that fit a pixel-art texture.",
+  "helpToneFillDesc": "Switching the bucket tool's setting from solid fill to screentone fill lets you fill with a chosen halftone or line-pattern screentone. Pixel-mode-only checker and grid patterns are also available, for fills that fit a pixel-art texture. Great for frills, knitwear, tights, and other fine patterns that are tedious to draw by hand. You can also create and add your own custom screentones, or share them with other users.",
   "helpPixelModeTitle": "Pixel mode",
   "helpPixelModeDesc": "A setting available on brushes, fonts, and stamps individually. Turning it on strips anti-aliasing for crisp, pixel-art-style edges. Use it when you want a deliberately old-game feel or a low-resolution look. You can choose from four color modes — no color limit, specify colors, specify color count, or choose from a palette — including a dedicated pixel-art palette.",
   "helpHomeScreenTitle": "Home screen",
@@ -558,7 +558,7 @@
   "helpExportScreenTitle": "Export screen",
   "helpExportScreenDesc": "Shows progress while exporting a video or image, and lets you cancel partway through. How long it takes depends on your device's performance.",
   "helpDrawingFilterTitle": "Draw filters",
-  "helpDrawingFilterDesc": "Filters applied directly to the selected layer (as opposed to effect filters, which apply across the whole timeline or a scene, draw filters work per layer). Includes blur, sharpen, unsharp mask, tone curve, levels, vignette, noise, retro anime, CRT, anime style, outline, and pixelate. Outline doesn't rewrite the original layer — it draws just the outlined result onto a new layer. Pixelate also lets you choose a color mode (no limit, specify colors, specify color count, or choose from a palette).",
+  "helpDrawingFilterDesc": "Filters applied directly to the selected layer (as opposed to effect filters, which apply across the whole timeline or a scene, draw filters work per layer). Includes blur, sharpen, unsharp mask, tone curve, levels, vignette, noise, retro anime, CRT, anime style, outline, pixel art, and a lens-distortion filter. Outline doesn't rewrite the original layer — it draws just the outlined result onto a new layer. The lens-distortion filter applies a localized warp, like looking through a strong eyeglass lens, only to the area painted on the selection layer. Pixel art also lets you choose a color mode (no limit, specify colors, specify color count, or choose from a palette).",
   "helpLayerKeyframeTitle": "Layer keyframes (per-part animation)",
   "helpLayerKeyframeDesc": "Set each layer's position, scale, and rotation per frame, with the keyframes interpolated automatically. Where camera keyframes move the whole screen, this moves an individual layer only. Since each autofill part is generated as its own separate layer, this works directly for per-part animation — moving just an arm, opening and closing just a mouth, and so on. Each keyframe can also be given its own easing — Linear, Ease in, Ease out, Ease in and out, or Bounce — controlling how it transitions into the next keyframe, so motion doesn't have to stay at a flat, constant speed. Set it up from the \"Animation (keyframes)\" entry in each layer's three-dot menu in the layer panel. The layer's artwork itself doesn't change — it's a non-destructive transform of where it's displayed. This only affects the timeline's display (preview / export) and has no effect on actual drawing in canvas mode.",
   "helpLayerGroupTitle": "Layer groups (moving multiple parts together)",
@@ -2615,5 +2615,20 @@
   "toolbarFingerSubtoolWarp": "Warp",
   "brushSettingsEdgeJitterTitle": "Edge jitter",
   "brushSettingsEdgeJitterSubtitle": "Slightly roughens the edge to mimic ink bleeding",
-  "brushSettingsEdgeJitterStrengthLabel": "Jitter strength"
+  "brushSettingsEdgeJitterStrengthLabel": "Jitter strength",
+  "filterNameInkPool": "Ink Pooling",
+  "filterInkPoolColor": "Color",
+  "filterInkPoolRange": "Range",
+  "filterInkPoolCenterWidth": "Center width",
+  "filterInkPoolLayerNameSuffix": "{name} Ink Pooling",
+  "@filterInkPoolLayerNameSuffix": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "filterCanvasEyedropperTooltip": "Pick color from canvas",
+  "filterInkPoolEyedropperHint": "Tap the canvas to choose the ink pooling color",
+  "filterOutlineEyedropperHint": "Tap the canvas to choose the outline color"
 }

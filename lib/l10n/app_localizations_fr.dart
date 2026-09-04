@@ -1379,7 +1379,7 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get helpEffectFilterDesc =>
-      'Un effet visuel (flou, correction des couleurs, lueur, pixellisation, etc.) que vous pouvez appliquer à une scène ou une image. Utilisez-le lorsque vous voulez ajuster l\'apparence globale de l\'écran comme une touche de mise en scène, sans changer le dessin fait main lui-même. La pixellisation permet aussi de choisir un mode de couleur (sans limite, couleurs spécifiées, nombre de couleurs spécifié, ou choix depuis une palette). Plusieurs filtres d\'effet peuvent être superposés, et ils s\'appliquent dans l\'ordre où ils apparaissent sur la timeline. Glisser pour réorganiser la liste des filtres change aussi l\'ordre réellement appliqué à l\'écran. Un filtre d\'effet qui applique un bruit façon grain de pellicule, en le faisant changer image par image. Intensité, quantité (densité du bruit) et taille du grain se règlent avec des curseurs. Revenir à la même image reproduit le même grain (pas de scintillement en scrubbing), tandis que la lecture donne l\'impression que le grain bouge. Un filtre d\'effet qui fait tomber de la pluie à l\'écran. Intensité (nombre de gouttes), vitesse, taille des gouttes et angle du vent se règlent avec des curseurs. Chaque goutte continue de tomber à une vitesse constante à mesure que l\'image avance, pour un mouvement de pluie naturel.';
+      'Un effet visuel (flou, correction des couleurs, lueur, pixellisation, etc.) que vous pouvez appliquer à une scène ou une image. Utilisez-le lorsque vous voulez ajuster l\'apparence globale de l\'écran comme une touche de mise en scène, sans changer le dessin fait main lui-même. Le filtre pixel art permet aussi de choisir un mode de couleur (sans limite, couleurs spécifiées, nombre de couleurs spécifié, ou choix depuis une palette). Plusieurs filtres d\'effet peuvent être superposés, et ils s\'appliquent dans l\'ordre où ils apparaissent sur la timeline. Glisser pour réorganiser la liste des filtres change aussi l\'ordre réellement appliqué à l\'écran. Un filtre d\'effet qui applique un bruit façon grain de pellicule, en le faisant changer image par image. Intensité, quantité (densité du bruit) et taille du grain se règlent avec des curseurs. Revenir à la même image reproduit le même grain (pas de scintillement en scrubbing), tandis que la lecture donne l\'impression que le grain bouge. Un filtre d\'effet qui fait tomber de la pluie à l\'écran. Intensité (nombre de gouttes), vitesse, taille des gouttes et angle du vent se règlent avec des curseurs. Chaque goutte continue de tomber à une vitesse constante à mesure que l\'image avance, pour un mouvement de pluie naturel.';
 
   @override
   String get helpEndCardTitle => 'EndCard (logo de fin)';
@@ -1435,10 +1435,10 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get helpTransferDesc =>
-      'Une fonctionnalité permettant de transférer tout l’environnement de l’application — réglages, matériaux, pinceaux, réglages de remplissage automatique, thème, palettes (sélecteur de couleurs et pixel art), et plus — vers un autre appareil en une seule fois. Vous pouvez choisir les éléments individuels à transférer avec des cases à cocher. Si vous voulez remettre un projet individuel, utilisez plutôt « Partage (.niashare) ».';
+      'Une fonctionnalité permettant de transférer tout l’environnement de l’application — réglages, matériaux, pinceaux, réglages de remplissage automatique, thème, palettes (sélecteur de couleurs et pixel art), et plus — vers un autre appareil en une seule fois. Vous pouvez choisir les éléments individuels à transférer avec des cases à cocher, et inclure en option des projets en cours (les projets sélectionnés sont transférés en entier, avec leurs matériaux et polices). Si vous voulez seulement remettre un projet individuel, vous pouvez aussi utiliser « Partage (.niashare) ».';
 
   @override
-  String get helpVideoExportTitle => 'Export vidéo (MP4, WebM, GIF)';
+  String get helpVideoExportTitle => 'Export vidéo (MP4, WebM, GIF, AVI)';
 
   @override
   String get helpVideoExportDesc =>
@@ -1510,7 +1510,7 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get helpToneFillDesc =>
-      'Passer le réglage de l\'outil seau du remplissage uni au remplissage en trame permet de remplir avec une trame de demi-teintes ou de lignes choisie. Des trames en damier et en grille réservées au mode pixel sont aussi disponibles, pour des remplissages assortis à une texture pixel art.';
+      'Passer le réglage de l\'outil seau du remplissage uni au remplissage en trame permet de remplir avec une trame de demi-teintes ou de lignes choisie. Des trames en damier et en grille réservées au mode pixel sont aussi disponibles, pour des remplissages assortis à une texture pixel art. Idéal pour les volants, le tricot, les collants et autres motifs fins fastidieux à dessiner à la main. Vous pouvez aussi créer et ajouter vos propres trames personnalisées, ou les partager avec d\'autres utilisateurs.';
 
   @override
   String get helpPixelModeTitle => 'Mode pixel';
@@ -1708,7 +1708,7 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get helpDrawingFilterDesc =>
-      'Filtres appliqués directement au calque sélectionné (contrairement aux filtres d\'effet, qui s\'appliquent à toute la timeline ou à une scène, les filtres de dessin agissent par calque). Comprend flou, netteté, masque flou, courbe de tons, niveaux, vignettage, bruit, anime rétro, tube cathodique, style anime, contour et pixellisation. Le contour ne réécrit pas le calque d\'origine : il dessine seulement le résultat contourné sur un nouveau calque. La pixellisation permet aussi de choisir un mode de couleur (sans limite, couleurs spécifiées, nombre de couleurs spécifié, ou choix depuis une palette).';
+      'Filtres appliqués directement au calque sélectionné (contrairement aux filtres d\'effet, qui s\'appliquent à toute la timeline ou à une scène, les filtres de dessin agissent par calque). Comprend flou, netteté, masque flou, courbe de tons, niveaux, vignettage, bruit, anime rétro, tube cathodique, style anime, contour, un filtre pixel art et un filtre de distorsion optique. Le contour ne réécrit pas le calque d\'origine : il dessine seulement le résultat contourné sur un nouveau calque. Le filtre de distorsion optique applique une déformation localisée, comme à travers un verre de lunettes à forte correction, uniquement sur la zone peinte sur le calque de sélection. Le filtre pixel art permet aussi de choisir un mode de couleur (sans limite, couleurs spécifiées, nombre de couleurs spécifié, ou choix depuis une palette).';
 
   @override
   String get helpLayerKeyframeTitle =>
@@ -6320,4 +6320,33 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get brushSettingsEdgeJitterStrengthLabel => 'Intensité';
+
+  @override
+  String get filterNameInkPool => '墨溜まり';
+
+  @override
+  String get filterInkPoolColor => '色';
+
+  @override
+  String get filterInkPoolRange => '範囲';
+
+  @override
+  String get filterInkPoolCenterWidth => '中央の太さ';
+
+  @override
+  String filterInkPoolLayerNameSuffix(String name) {
+    return '$name 墨溜まり';
+  }
+
+  @override
+  String get filterCanvasEyedropperTooltip =>
+      'Choisir une couleur sur la toile';
+
+  @override
+  String get filterInkPoolEyedropperHint =>
+      'Touchez la toile pour choisir la couleur de l’accumulation d’encre';
+
+  @override
+  String get filterOutlineEyedropperHint =>
+      'Touchez la toile pour choisir la couleur du contour';
 }

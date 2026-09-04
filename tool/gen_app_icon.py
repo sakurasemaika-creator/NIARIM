@@ -46,7 +46,12 @@ OUT_DIR = os.path.join(REPO_ROOT, "assets/icon")
 
 CANVAS = 1024
 RENDER_SIZE = 2048  # SVGを白抜きでレンダリングする際の解像度
-ACCENT = (255, 92, 122, 255)  # 0xFFFF5C7A コーラルピンク（既定テーマのアクセントカラー）
+ACCENT = (
+    255,
+    92,
+    122,
+    255,
+)  # 0xFFFF5C7A コーラルピンク（既定テーマのアクセントカラー）
 
 
 def _find_chromium_executable() -> str | None:
@@ -89,7 +94,8 @@ svg{{width:{RENDER_SIZE}px;height:{RENDER_SIZE}px;display:block;}}
         with sync_playwright() as p:
             browser = p.chromium.launch(executable_path=_find_chromium_executable())
             page = browser.new_page(
-                viewport={"width": RENDER_SIZE, "height": RENDER_SIZE}, device_scale_factor=1
+                viewport={"width": RENDER_SIZE, "height": RENDER_SIZE},
+                device_scale_factor=1,
             )
             page.goto("file://" + os.path.abspath(html_path))
             png_bytes = page.locator("svg").screenshot(omit_background=True)

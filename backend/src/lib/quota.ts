@@ -1,8 +1,17 @@
-import { ConditionalCheckFailedException, TransactionCanceledException } from '@aws-sdk/client-dynamodb';
-import { TransactWriteCommand, UpdateCommand } from '@aws-sdk/lib-dynamodb';
-import { ddb, tableName, Keys, GLOBAL_COUNTER_USER_ID, todayYyyymmdd } from './dynamo';
-import type { MembershipTier } from './types';
-import { conflict } from './response';
+import {
+  ConditionalCheckFailedException,
+  TransactionCanceledException,
+} from "@aws-sdk/client-dynamodb";
+import { TransactWriteCommand, UpdateCommand } from "@aws-sdk/lib-dynamodb";
+import {
+  ddb,
+  tableName,
+  Keys,
+  GLOBAL_COUNTER_USER_ID,
+  todayYyyymmdd,
+} from "./dynamo";
+import type { MembershipTier } from "./types";
+import { conflict } from "./response";
 
 /** 11.1節の初期仕様。 */
 export const DAILY_POST_LIMIT_PER_USER: Record<MembershipTier, number> = {
@@ -32,7 +41,10 @@ function counterTtl(now: Date): number {
  * 上限に達している場合は409を投げる（呼び出し元でuser-facingな
  * 「本日の公開上限に達しました」メッセージへ変換する。11.3節）。
  */
-export async function reservePostQuota(niarimUserId: string, tier: MembershipTier): Promise<void> {
+export async function reservePostQuota(
+  niarimUserId: string,
+  tier: MembershipTier,
+): Promise<void> {
   const now = new Date();
   const date = todayYyyymmdd(now);
   const userLimit = DAILY_POST_LIMIT_PER_USER[tier];
@@ -50,16 +62,16 @@ export async function reservePostQuota(niarimUserId: string, tier: MembershipTie
               TableName: tableName(),
               Key: userKey,
               UpdateExpression:
-                'SET niarimUserId = :uid, #d = :date, itemType = :type, ttl = :ttl ADD #c :one',
-              ConditionExpression: 'attribute_not_exists(#c) OR #c < :limit',
-              ExpressionAttributeNames: { '#c': 'count', '#d': 'date' },
+                "SET niarimUserId = :uid, #d = :date, itemType = :type, ttl = :ttl ADD #c :one",
+              ConditionExpression: "attribute_not_exists(#c) OR #c < :limit",
+              ExpressionAttributeNames: { "#c": "count", "#d": "date" },
               ExpressionAttributeValues: {
-                ':one': 1,
-                ':limit': userLimit,
-                ':uid': niarimUserId,
-                ':date': date,
-                ':type': 'DAILY_COUNTER',
-                ':ttl': ttl,
+                ":one": 1,
+                ":limit": userLimit,
+                ":uid": niarimUserId,
+                ":date": date,
+                ":type": "DAILY_COUNTER",
+                ":ttl": ttl,
               },
             },
           },
@@ -68,16 +80,16 @@ export async function reservePostQuota(niarimUserId: string, tier: MembershipTie
               TableName: tableName(),
               Key: globalKey,
               UpdateExpression:
-                'SET niarimUserId = :uid, #d = :date, itemType = :type, ttl = :ttl ADD #c :one',
-              ConditionExpression: 'attribute_not_exists(#c) OR #c < :limit',
-              ExpressionAttributeNames: { '#c': 'count', '#d': 'date' },
+                "SET niarimUserId = :uid, #d = :date, itemType = :type, ttl = :ttl ADD #c :one",
+              ConditionExpression: "attribute_not_exists(#c) OR #c < :limit",
+              ExpressionAttributeNames: { "#c": "count", "#d": "date" },
               ExpressionAttributeValues: {
-                ':one': 1,
-                ':limit': DAILY_POST_LIMIT_GLOBAL,
-                ':uid': GLOBAL_COUNTER_USER_ID,
-                ':date': date,
-                ':type': 'DAILY_COUNTER',
-                ':ttl': ttl,
+                ":one": 1,
+                ":limit": DAILY_POST_LIMIT_GLOBAL,
+                ":uid": GLOBAL_COUNTER_USER_ID,
+                ":date": date,
+                ":type": "DAILY_COUNTER",
+                ":ttl": ttl,
               },
             },
           },
@@ -85,8 +97,14 @@ export async function reservePostQuota(niarimUserId: string, tier: MembershipTie
       }),
     );
   } catch (err) {
-    if (err instanceof TransactionCanceledException || err instanceof ConditionalCheckFailedException) {
-      conflict('本日の投稿上限に達しています。日をまたぐと投稿できるようになります。', 'POST_QUOTA_EXCEEDED');
+    if (
+      err instanceof TransactionCanceledException ||
+      err instanceof ConditionalCheckFailedException
+    ) {
+      conflict(
+        "本日の投稿上限に達しています。日をまたぐと投稿できるようになります。",
+        "POST_QUOTA_EXCEEDED",
+      );
     }
     throw err;
   }
@@ -112,10 +130,10 @@ export async function releasePostQuota(niarimUserId: string): Promise<void> {
           new UpdateCommand({
             TableName: tableName(),
             Key: key,
-            UpdateExpression: 'ADD #c :minusOne',
-            ConditionExpression: 'attribute_exists(#c) AND #c > :zero',
-            ExpressionAttributeNames: { '#c': 'count' },
-            ExpressionAttributeValues: { ':minusOne': -1, ':zero': 0 },
+            UpdateExpression: "ADD #c :minusOne",
+            ConditionExpression: "attribute_exists(#c) AND #c > :zero",
+            ExpressionAttributeNames: { "#c": "count" },
+            ExpressionAttributeValues: { ":minusOne": -1, ":zero": 0 },
           }),
         )
         .catch((err: unknown) => {

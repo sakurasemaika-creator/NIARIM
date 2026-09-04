@@ -1,4 +1,4 @@
-import type { WorkItem } from '../../lib/types';
+import type { WorkItem } from "../../lib/types";
 
 /**
  * 作品アイテムからクライアントへ公開してよいフィールドだけを抜き出す。

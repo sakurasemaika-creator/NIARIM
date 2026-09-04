@@ -5,7 +5,7 @@ on:
     branches:
       - dev_branch
     paths:
-      - '.github/workflows/one-shot-direct-service-coverage.yml'
+      - ".github/workflows/one-shot-direct-service-coverage.yml"
 
 jobs:
   verify:

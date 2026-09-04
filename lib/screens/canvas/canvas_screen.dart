@@ -8,6 +8,7 @@ import '../../services/brush_service.dart';
 import '../../services/font_service.dart';
 import '../../services/material_service.dart';
 import '../../services/performance_service.dart';
+import '../../services/filter_service.dart';
 import '../../services/quick_tool_service.dart';
 import '../../services/settings_service.dart';
 import '../../services/shortcut_service.dart';
@@ -94,6 +95,7 @@ class _CanvasScreenState extends State<CanvasScreen> {
   bool _showFilterPanel = false;
   bool _showQuickToolPanel = false;
   bool _showColorAdjustPanel = false;
+  FilterColorEyedropperTarget? _filterColorEyedropperTarget;
 
   // ─── レイヤー全体の自由変形・メッシュ変形（新機能） ────────────────────
   // 実際の格子点ドラッグ・ワーププレビューはCanvasArea側で完結させ、
@@ -238,6 +240,47 @@ class _CanvasScreenState extends State<CanvasScreen> {
     _closeAllOverlayPanels();
     _showFilterPanel = next;
   });
+
+  void _toggleFilterColorEyedropper(FilterColorEyedropperTarget target) {
+    setState(() {
+      _filterColorEyedropperTarget = _filterColorEyedropperTarget == target
+          ? null
+          : target;
+    });
+  }
+
+  void _handleCanvasEyedropper(Color color) {
+    final target = _filterColorEyedropperTarget;
+    if (target != null) {
+      final filterService = context.read<FilterService>();
+      final current = filterService.currentFilter;
+      if (current != null) {
+        switch (target) {
+          case FilterColorEyedropperTarget.inkPool:
+            filterService.updateFilterParams(
+              current.id,
+              inkPoolColor: color.toARGB32(),
+            );
+          case FilterColorEyedropperTarget.outline:
+            filterService.updateFilterParams(
+              current.id,
+              outlineColor: color.toARGB32(),
+            );
+        }
+      }
+      setState(() => _filterColorEyedropperTarget = null);
+      return;
+    }
+    setState(() => _currentColor = color);
+    context.read<BrushService>().setCurrentColor(color);
+  }
+
+  String _filterEyedropperHint(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    return _filterColorEyedropperTarget == FilterColorEyedropperTarget.inkPool
+        ? l10n.filterInkPoolEyedropperHint
+        : l10n.filterOutlineEyedropperHint;
+  }
 
   /// 背景切替（白/プロジェクト背景色 ⟷ 透過、
   /// キャンバス上部バーの「設定/編集」メニューへ集約）。
@@ -775,12 +818,9 @@ class _CanvasScreenState extends State<CanvasScreen> {
                                   onTapForText: _currentTool == DrawingTool.text
                                       ? onCanvasTapForText
                                       : null,
-                                  onEyedropper: (color) {
-                                    setState(() => _currentColor = color);
-                                    context
-                                        .read<BrushService>()
-                                        .setCurrentColor(color);
-                                  },
+                                  onEyedropper: _handleCanvasEyedropper,
+                                  filterEyedropperActive:
+                                      _filterColorEyedropperTarget != null,
                                   project: project,
                                   background: _canvasBackground,
                                   currentLayerId: _currentLayerId,
@@ -820,6 +860,57 @@ class _CanvasScreenState extends State<CanvasScreen> {
                                     setState(() => _hasActiveSelection = v);
                                   },
                                 ),
+                                if (_filterColorEyedropperTarget != null)
+                                  Positioned(
+                                    top: 12,
+                                    left: 12,
+                                    right: 12,
+                                    child: IgnorePointer(
+                                      child: Center(
+                                        child: Material(
+                                          elevation: 4,
+                                          borderRadius: BorderRadius.circular(
+                                            10,
+                                          ),
+                                          color: Theme.of(
+                                            context,
+                                          ).colorScheme.inverseSurface,
+                                          child: Padding(
+                                            padding: const EdgeInsets.symmetric(
+                                              horizontal: 14,
+                                              vertical: 9,
+                                            ),
+                                            child: Row(
+                                              mainAxisSize: MainAxisSize.min,
+                                              children: [
+                                                Icon(
+                                                  Icons.colorize,
+                                                  size: 18,
+                                                  color: Theme.of(context)
+                                                      .colorScheme
+                                                      .onInverseSurface,
+                                                ),
+                                                const SizedBox(width: 8),
+                                                Flexible(
+                                                  child: Text(
+                                                    _filterEyedropperHint(
+                                                      context,
+                                                    ),
+                                                    style: TextStyle(
+                                                      fontSize: 12,
+                                                      color: Theme.of(context)
+                                                          .colorScheme
+                                                          .onInverseSurface,
+                                                    ),
+                                                  ),
+                                                ),
+                                              ],
+                                            ),
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                  ),
                                 if (_isSelectionToolActive)
                                   Positioned(
                                     left: 12,
@@ -1466,6 +1557,8 @@ class _CanvasScreenState extends State<CanvasScreen> {
     layerId: _currentLayerId,
     frameIndex: _currentFrame,
     bulkFrameIndices: _filterBulkFrames,
+    activeCanvasEyedropperTarget: _filterColorEyedropperTarget,
+    onStartCanvasEyedropper: _toggleFilterColorEyedropper,
     onClose: () => setState(() {
       _showFilterPanel = false;
       _filterBulkFrames = null;

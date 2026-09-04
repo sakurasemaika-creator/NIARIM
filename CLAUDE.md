@@ -38,7 +38,7 @@
    `test/helpers/color_channels.dart`の`.red8`/`.green8`/`.blue8`/
    `.alpha8`を使う。テスト内のデバッグ出力は`print`ではなく
    `debugPrint`を使う）
-3. `flutter test`（ベースライン：**614 tests**、全成功。うち大半は
+3. `flutter test`（ベースライン：**634 tests**、全成功。うち大半は
    `test/app_smoke_test.dart`の自律スモークテスト。詳細は後述）
 4. **コード変更後は`dart format lib test tool`をかける**。
    リポジトリ全体を一度フォーマッタに通してあるので（コミット
@@ -59,6 +59,29 @@
    コミットメッセージには経緯を書いてよい。
 7. 大きめの作業が終わったら`docs/AI設計書/12_実装チェックリスト.md`へ
    追記し、必要ならこのファイルや`28_継続タスク（未着手一覧）.md`も更新する。
+
+### 書式チェック（フォーマッターの設定に癖があるので注意）
+
+リポジトリ全体を各種フォーマッターに通してある。**呼び出し方を間違えると
+「整形されていない」と誤検知して、全ファイルを別の流儀へ書き換えてしまう**
+ので、必ず次の指定で使うこと。
+
+- Dart：`dart format lib test tool`
+- Markdown・YAML・JSON・HTML：Prettier 3.8.1（設定ファイルは置いていない
+  ので既定のまま）
+- **ARB（`lib/l10n/*.arb`）：Prettierに`--parser json`を渡す**。
+  拡張子から推論できず「No parser could be inferred」になる。
+- **XML・plist：`@prettier/plugin-xml` 3.4.2**を`--plugin`で明示的に渡す。
+- Python：Ruff（`ruff format` / `ruff check`）
+- **Kotlin：ktfmt 0.64の`--kotlinlang-style`**。既定（Facebookスタイル）や
+  `--google-style`を使うと既存ファイルが全部書き換わる。
+- **C/C++：clang-formatの`--style=Google`**。既定のLLVMスタイルだと
+  `windows/runner/`配下に差分が出る。
+
+なお`dart fix --apply --code=curly_braces_in_flow_control_structures`と
+`dart format`は、**入れ子のforに対しては互いに打ち消し合って収束しない**
+（fixが波括弧を足す→formatが1行へ畳む→lintが再発）。入れ子forの外側は
+手で波括弧を付けること。
 
 ### APKビルド（GitHub Actions）
 
@@ -144,7 +167,7 @@
   見出し用の字抜けは埋まらない（和集合ではなく積集合で判定する）。
 - **同梱フォントを増やしたらライセンス登録も3箇所必要**：`assets/fonts/`
   配下は`showLicensePage`に自動収集されない。`assets/licenses/
-  FONT_LICENSES.txt`への本文・著作権表示の追記、`license_screen.dart`の
+FONT_LICENSES.txt`への本文・著作権表示の追記、`license_screen.dart`の
   クレジット、`main.dart`の`_registerBundledFontLicenses()`の
   パッケージ名一覧、の3つを揃えること（`test/font_license_test.dart`が
   監視）。太さ固定やサブセット化はOFL上の「改変版」にあたるので、その旨と
@@ -244,12 +267,12 @@
   - `ui.decodeImageFromPixels()`のコールバック
   - `ImageDescriptor`→`instantiateCodec`→`getNextFrame`（PNGエンコード）
   - `File`の読み書き
-  症状は「何も起きない」か「10分のタイムアウトでハング」で、原因が
-  分かりにくい。実際に`functional_audit_batch20_test.dart`が
-  **追加以来一度も通っていなかった**（PNG保存でハング＋選択範囲の切り取りが
-  完了しない）。待つ側は`await tester.runAsync(() => Future.delayed(d));`
-  してから`await tester.pump();`する形にすること。ジェスチャー自体は
-  runAsyncの外で駆動する（runAsyncはネストできない）。
+    症状は「何も起きない」か「10分のタイムアウトでハング」で、原因が
+    分かりにくい。実際に`functional_audit_batch20_test.dart`が
+    **追加以来一度も通っていなかった**（PNG保存でハング＋選択範囲の切り取りが
+    完了しない）。待つ側は`await tester.runAsync(() => Future.delayed(d));`
+    してから`await tester.pump();`する形にすること。ジェスチャー自体は
+    runAsyncの外で駆動する（runAsyncはネストできない）。
 - **`CanvasArea`をテストへ直接載せるときは、Providerを6つ揃える**：
   `ProjectService`・`UndoManager`に加えて`SettingsService`・`ThemeService`・
   `BrushService`・`ToneService`・`StampService`・`PerformanceService`を
@@ -258,7 +281,7 @@
   `buildAppProviders()`を使うのが早い（非同期なので`tester.runAsync`で呼ぶ）。
 - **キャンバス左右端32pxは「画面端ダブルタップ（前/次フレーム）」専用ゾーン**：
   touch/stylusのポインターは、このゾーンだと`_onPointerDown`へ渡らず
-  描画・選択が始まらない。ゾーンは**幅が32*3 = 96px未満のときだけ**無効化
+  描画・選択が始まらない。ゾーンは**幅が32\*3 = 96px未満のときだけ**無効化
   される（96ちょうどは有効）ので、幅96pxのキャンバスでは左右32pxずつ＝
   **幅の3分の2が描画不能**になる。実端末の全画面ではまず起きないが、
   PC/DeXでドッキングパネルを極端に狭くした場合と、テストで小さい
@@ -311,7 +334,7 @@
   `cacheWidth`を必ず指定する**：指定しないと保存されている解像度のまま
   デコードされて画像キャッシュに載る。セーブノードのサムネイルは長辺
   200pxで保存しているが、一覧での表示は40〜58px。`cacheWidth:
-  (size * MediaQuery.devicePixelRatioOf(context)).round()`のように
+(size * MediaQuery.devicePixelRatioOf(context)).round()`のように
   表示画素数へ落とすこと。
 - **`SliverMultiBoxAdaptorElement`の「見えている子」は描画範囲ぶんだけ**：
   `ListView.builder`はcacheExtent（既定250px）ぶん先の子も**生成・レイアウト
@@ -433,11 +456,11 @@
      に備え、起動画面の右上へ**テーマ色を一切使わない固定色**の
      リセットボタンを条件付きで出す（`splash_screen.dart`の
      `_ThemeRescueButton`）
-  しきい値`kMinReadableContrast`は**1.4**。組み込み28プリセットの最小値が
-  約1.75（水色のアクセント色に白抜き文字）なので、WCAGのAA基準
-  （4.5／大きい文字3.0）を使うと**既定テーマ自体が弾かれる**。
-  組み込みテーマが全て通ることは`test/theme_contrast_rescue_test.dart`が
-  検証しているので、しきい値を上げるときは必ずこのテストを見ること。
+     しきい値`kMinReadableContrast`は**1.4**。組み込み28プリセットの最小値が
+     約1.75（水色のアクセント色に白抜き文字）なので、WCAGのAA基準
+     （4.5／大きい文字3.0）を使うと**既定テーマ自体が弾かれる**。
+     組み込みテーマが全て通ることは`test/theme_contrast_rescue_test.dart`が
+     検証しているので、しきい値を上げるときは必ずこのテストを見ること。
 - **ホーム画面ウィジェットのPendingIntentは`requestCode`を必ず変えること**：
   `NiarimWidgetProviders.kt`の3種のウィジェット（作品／作品をつくる／
   作品広場）は同じ`MainActivity`を起動するIntentを使うため、
@@ -476,7 +499,7 @@
 
 1. **収益化タイマーが2027年1月1日で止まっている**（判断のみ、外部サービス
    不要）：`lib/config/monetization_gate.dart`の`kMonetizationEnabledFrom =
-   DateTime(2027, 1, 1)`により、この日時に達するまで広告SDK（AdMob）・
+DateTime(2027, 1, 1)`により、この日時に達するまで広告SDK（AdMob）・
    アプリ内課金（in_app_purchase）が一切初期化・接続されず、代わりに
    全ユーザーへプレミアム機能が無料開放される「リリース記念キャンペーン」
    状態になっている（税務上の都合、`PremiumService`・`AdvertisingService`
@@ -503,15 +526,15 @@
    - リポジトリ側の反映：`android/`直下に`key.properties`を作る
      （`android/.gitignore`に`key.properties`・`**/*.keystore`・
      `**/*.jks`が既に入っているため、追加の除外設定は不要）。内容は
-     ```properties
+     `properties
      storeFile=/absolute/path/to/niarim-release.keystore
      storePassword=<keystore用パスワード>
      keyAlias=niarim
      keyPassword=<key用パスワード>
-     ```
+     `
      を書く。`android/app/build.gradle.kts`（現状`signingConfigs`ブロックが
      無く、33行目付近の`release { signingConfig =
-     signingConfigs.getByName("debug") }`がTODOのまま）に、
+signingConfigs.getByName("debug") }`がTODOのまま）に、
      `key.properties`を読み込む`signingConfigs.create("release")`を追加し、
      `release`ブロックの`signingConfig`をそれに差し替える（標準的な
      FlutterプロジェクトのGradle Kotlin DSLでのkeystore設定パターンに

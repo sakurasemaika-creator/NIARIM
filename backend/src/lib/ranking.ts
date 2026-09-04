@@ -13,24 +13,41 @@ export function computeRankingScore(input: {
   commentCount: number;
 }): number {
   const { viewCount, likeCount, commentCount } = input;
-  return Math.max(0, viewCount) + Math.max(0, likeCount) * 5 + Math.max(0, commentCount) * 2;
+  return (
+    Math.max(0, viewCount) +
+    Math.max(0, likeCount) * 5 +
+    Math.max(0, commentCount) * 2
+  );
 }
 
 /**
  * ランキング期間（1章冒頭・8章・14章）。
  */
-export const RANKING_PERIODS = ['all', 'yearly', 'monthly', 'weekly', 'daily'] as const;
+export const RANKING_PERIODS = [
+  "all",
+  "yearly",
+  "monthly",
+  "weekly",
+  "daily",
+] as const;
 export type RankingPeriod = (typeof RANKING_PERIODS)[number];
 
 /** 期間別（累計を除く）ランキング。統計スナップショットの差分で求める。 */
-export const DELTA_RANKING_PERIODS = ['yearly', 'monthly', 'weekly', 'daily'] as const;
+export const DELTA_RANKING_PERIODS = [
+  "yearly",
+  "monthly",
+  "weekly",
+  "daily",
+] as const;
 export type DeltaRankingPeriod = (typeof DELTA_RANKING_PERIODS)[number];
 
 export function isRankingPeriod(period: string): period is RankingPeriod {
   return (RANKING_PERIODS as readonly string[]).includes(period);
 }
 
-export function isDeltaRankingPeriod(period: string): period is DeltaRankingPeriod {
+export function isDeltaRankingPeriod(
+  period: string,
+): period is DeltaRankingPeriod {
   return (DELTA_RANKING_PERIODS as readonly string[]).includes(period);
 }
 
@@ -69,29 +86,36 @@ export type StatsWindows = Partial<Record<DeltaRankingPeriod, StatsSnapshot>>;
  * 日=YYYYMMDD。窓が変わった瞬間に全作品のスナップショットが順次
  * 取り直され、その期間のランキングが0から積み上がる。
  */
-export function currentWindowId(period: DeltaRankingPeriod, now: Date = new Date()): string {
+export function currentWindowId(
+  period: DeltaRankingPeriod,
+  now: Date = new Date(),
+): string {
   const iso = now.toISOString();
   switch (period) {
-    case 'yearly':
+    case "yearly":
       return iso.slice(0, 4);
-    case 'monthly':
-      return iso.slice(0, 7).replace('-', '');
-    case 'weekly':
+    case "monthly":
+      return iso.slice(0, 7).replace("-", "");
+    case "weekly":
       return isoWeekId(now);
-    case 'daily':
-      return iso.slice(0, 10).replace(/-/g, '');
+    case "daily":
+      return iso.slice(0, 10).replace(/-/g, "");
   }
 }
 
 /** ISO 8601の「年-週番号」（例：2026W36）。週の始まりは月曜。 */
 export function isoWeekId(now: Date): string {
-  const d = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()));
+  const d = new Date(
+    Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()),
+  );
   // ISO週：木曜日が属する年をその週の年とする。
   const dayNum = d.getUTCDay() || 7; // 月=1 … 日=7
   d.setUTCDate(d.getUTCDate() + 4 - dayNum);
   const yearStart = new Date(Date.UTC(d.getUTCFullYear(), 0, 1));
-  const week = Math.ceil(((d.getTime() - yearStart.getTime()) / 86_400_000 + 1) / 7);
-  return `${d.getUTCFullYear()}W${String(week).padStart(2, '0')}`;
+  const week = Math.ceil(
+    ((d.getTime() - yearStart.getTime()) / 86_400_000 + 1) / 7,
+  );
+  return `${d.getUTCFullYear()}W${String(week).padStart(2, "0")}`;
 }
 
 export interface StatsTriple {
@@ -126,7 +150,10 @@ export function rollStatsWindows(
  * 重み付けで合成する。統計が減ることは通常ないが、YouTube側で高評価が
  * 取り消される等で負になり得るため0で下限を切る。
  */
-export function computePeriodScore(current: StatsTriple, snapshot: StatsSnapshot | undefined): number {
+export function computePeriodScore(
+  current: StatsTriple,
+  snapshot: StatsSnapshot | undefined,
+): number {
   if (!snapshot) return 0;
   return computeRankingScore({
     viewCount: current.viewCount - snapshot.viewCount,
@@ -152,7 +179,7 @@ export function insertIntoTopList(
 ): RankingSnapshotEntry[] {
   if (entry.score <= 0) return list;
   const merged = [...list.filter((e) => e.workId !== entry.workId), entry];
-  merged.sort((a, b) => (b.score - a.score) || a.workId.localeCompare(b.workId));
+  merged.sort((a, b) => b.score - a.score || a.workId.localeCompare(b.workId));
   return merged.slice(0, limit);
 }
 

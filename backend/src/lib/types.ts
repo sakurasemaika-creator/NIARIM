@@ -25,34 +25,38 @@
  *   おり、GSIを使わずどちらの向きのクエリもO(1)のPK/SK Queryで済む。
  */
 
-import type { RankingSnapshotEntry, StatsWindows } from './ranking';
+import type { RankingSnapshotEntry, StatsWindows } from "./ranking";
 
 export const TABLE_ITEM_TYPE = {
-  Work: 'WORK',
-  User: 'USER',
-  GoogleSubLookup: 'GOOGLE_SUB_LOOKUP',
-  Bookmark: 'BOOKMARK',
-  Repost: 'REPOST',
-  FollowerRecord: 'FOLLOWER_RECORD',
-  FollowingRecord: 'FOLLOWING_RECORD',
-  Report: 'REPORT',
-  Block: 'BLOCK',
-  FollowNotification: 'FOLLOW_NOTIFICATION',
-  DailyCounter: 'DAILY_COUNTER',
-  ReportCounter: 'REPORT_COUNTER',
-  DeviceToken: 'DEVICE_TOKEN',
-  RankingSnapshot: 'RANKING_SNAPSHOT',
-  BatchState: 'BATCH_STATE',
+  Work: "WORK",
+  User: "USER",
+  GoogleSubLookup: "GOOGLE_SUB_LOOKUP",
+  Bookmark: "BOOKMARK",
+  Repost: "REPOST",
+  FollowerRecord: "FOLLOWER_RECORD",
+  FollowingRecord: "FOLLOWING_RECORD",
+  Report: "REPORT",
+  Block: "BLOCK",
+  FollowNotification: "FOLLOW_NOTIFICATION",
+  DailyCounter: "DAILY_COUNTER",
+  ReportCounter: "REPORT_COUNTER",
+  DeviceToken: "DEVICE_TOKEN",
+  RankingSnapshot: "RANKING_SNAPSHOT",
+  BatchState: "BATCH_STATE",
 } as const;
 
 /** YouTube側の公開状態（13章の判定表に対応）。 */
-export type YoutubePrivacyStatus = 'public' | 'unlisted' | 'private' | 'deleted';
+export type YoutubePrivacyStatus =
+  | "public"
+  | "unlisted"
+  | "private"
+  | "deleted";
 
 /** 通報の対応状況（9章）。 */
-export type ReportStatus = 'pending' | 'reviewing' | 'resolved';
+export type ReportStatus = "pending" | "reviewing" | "resolved";
 
 /** 会員種別（11章の投稿上限に影響）。 */
-export type MembershipTier = 'free' | 'premium';
+export type MembershipTier = "free" | "premium";
 
 /**
  * 作品アイテム（5章のメタデータ表に対応）。
@@ -337,7 +341,7 @@ export interface DeviceTokenItem {
   sk: string;
   niarimUserId: string;
   token: string;
-  platform: 'android' | 'ios';
+  platform: "android" | "ios";
   updatedAt: string;
   ttl: number; // 長期間更新されない端末は自動失効させる（180日）
 }

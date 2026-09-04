@@ -17,17 +17,14 @@ import java.io.File
  *
  * ## なぜ静止画なのか
  *
- * ウィジェットは`RemoteViews`で描画され、使えるのはImageView/TextView等の
- * 限られた部品だけで、**動画再生もWebViewも一切できない**。そのため
- * 「作品を動かして見せる」ことは原理的に不可能で、フレーム1枚の静止画を
- * 出してタップでアプリを開く形にしている。
+ * ウィジェットは`RemoteViews`で描画され、使えるのはImageView/TextView等の 限られた部品だけで、**動画再生もWebViewも一切できない**。そのため
+ * 「作品を動かして見せる」ことは原理的に不可能で、フレーム1枚の静止画を 出してタップでアプリを開く形にしている。
  *
  * ## 設定値の受け取り方
  *
  * Flutter側（home_widgetパッケージ）が書いた`SharedPreferences`を読む。
  * home_widgetはアプリ本体の`FlutterSharedPreferences`ではなく
- * **`HomeWidgetPreferences`という専用のプリファレンス**へ、Dartで渡した
- * キーそのままで保存する（`flutter.`接頭辞は付かない）。
+ * **`HomeWidgetPreferences`という専用のプリファレンス**へ、Dartで渡した キーそのままで保存する（`flutter.`接頭辞は付かない）。
  */
 internal const val PREFS_NAME = "HomeWidgetPreferences"
 
@@ -40,11 +37,9 @@ internal fun prefString(context: Context, key: String, fallback: String = ""): S
 /**
  * 色（ARGB）を読む。
  *
- * **Dartのintは32bitに収まらないとlongとして保存される**。ARGBは不透明色
- * なら必ず0x80000000以上（例：0xFFFF5C7A = 4294925434）になり、Int32の
- * 範囲を超えるため、home_widgetは`putLong`で書く。`getInt`だけで読むと
- * 常にClassCastExceptionになり、**背景色の設定が一度も反映されない**。
- * longとintの両方を見て、下位32bitをそのままARGBとして解釈する。
+ * **Dartのintは32bitに収まらないとlongとして保存される**。ARGBは不透明色 なら必ず0x80000000以上（例：0xFFFF5C7A =
+ * 4294925434）になり、Int32の 範囲を超えるため、home_widgetは`putLong`で書く。`getInt`だけで読むと
+ * 常にClassCastExceptionになり、**背景色の設定が一度も反映されない**。 longとintの両方を見て、下位32bitをそのままARGBとして解釈する。
  */
 internal fun prefColor(context: Context, key: String, fallback: Int): Int {
     val p = prefs(context)
@@ -63,18 +58,18 @@ internal fun prefColor(context: Context, key: String, fallback: Int): Int {
  * ウィジェットのタップで開くアプリ内ルートを、MainActivityへextraで渡す。
  *
  * ルート文字列はDart側（`home_widget_service.dart`の`homeWidgetRoute`）が
- * 決めて`SharedPreferences`へ書いたものをそのまま使う。ネイティブ側で
- * ルートを組み立てるとDartと二重管理になり、片方の変更に気付けないため。
+ * 決めて`SharedPreferences`へ書いたものをそのまま使う。ネイティブ側で ルートを組み立てるとDartと二重管理になり、片方の変更に気付けないため。
  */
 internal fun launchIntent(context: Context, route: String): PendingIntent {
-    val intent = Intent(context, MainActivity::class.java).apply {
-        action = Intent.ACTION_MAIN
-        flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP
-        putExtra(WIDGET_ROUTE_EXTRA, route)
-        // extraだけが違う同一Intentは既存のPendingIntentが再利用されて
-        // しまうため、ルートごとに別のrequestCodeを与えて取り違えを防ぐ。
-        data = android.net.Uri.parse("niarim://widget$route")
-    }
+    val intent =
+        Intent(context, MainActivity::class.java).apply {
+            action = Intent.ACTION_MAIN
+            flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP
+            putExtra(WIDGET_ROUTE_EXTRA, route)
+            // extraだけが違う同一Intentは既存のPendingIntentが再利用されて
+            // しまうため、ルートごとに別のrequestCodeを与えて取り違えを防ぐ。
+            data = android.net.Uri.parse("niarim://widget$route")
+        }
     return PendingIntent.getActivity(
         context,
         route.hashCode(),
@@ -88,16 +83,11 @@ const val WIDGET_ROUTE_EXTRA = "niarim_widget_route"
 /** アプリのテーマ既定色（テーマ追従が読めなかった場合の保険）。 */
 internal const val FALLBACK_BACKGROUND = 0xFFFF5C7A.toInt()
 
-/**
- * アイコン・文字の既定色。既定テーマの「メニュー背景色」＝白で、
- * アクセント色の背景の上でいちばん読みやすい。
- */
+/** アイコン・文字の既定色。既定テーマの「メニュー背景色」＝白で、 アクセント色の背景の上でいちばん読みやすい。 */
 internal const val FALLBACK_FOREGROUND = 0xFFFFFFFF.toInt()
 
 /**
- * アプリが書き出したPNGを読む。パスが空・ファイルが無い・デコードに失敗
- * （書き込み途中のファイルを読んだ等）のいずれでもnullを返し、呼び出し側で
- * フォールバック表示へ倒せるようにする。
+ * アプリが書き出したPNGを読む。パスが空・ファイルが無い・デコードに失敗 （書き込み途中のファイルを読んだ等）のいずれでもnullを返し、呼び出し側で フォールバック表示へ倒せるようにする。
  */
 internal fun decodeWidgetBitmap(path: String): Bitmap? {
     if (path.isEmpty()) return null
@@ -113,8 +103,7 @@ class NiarimArtworkWidgetProvider : AppWidgetProvider() {
         appWidgetManager: AppWidgetManager,
         appWidgetIds: IntArray,
     ) {
-        val background =
-            prefColor(context, "backgroundColor_artwork", FALLBACK_BACKGROUND)
+        val background = prefColor(context, "backgroundColor_artwork", FALLBACK_BACKGROUND)
         val route = prefString(context, "routeArtwork", "/")
         val name = prefString(context, "projectName")
         val thumbnail = prefString(context, "thumbnailPath")
@@ -138,21 +127,16 @@ class NiarimArtworkWidgetProvider : AppWidgetProvider() {
  *
  * ## 見た目はアプリ側が焼いた画像
  *
- * 「起動画面にある2つのボタンと同じデザイン」（角丸＋2色グラデーション＋
- * 影＋Materialアイコン＋見出しフォントKuramubon）は、`RemoteViews`では
- * どれも指定できない。`setBackgroundColor`は単色しか受け付けず、
- * `GradientDrawable`はリソースに静的に書いた色しか使えず、`setTypeface`は
- * assetのフォントを読めない。そのため意匠はアプリ側
- * （`shortcut_widget_renderer.dart`）が1枚のPNGへ焼き、ここではその画像を
+ * 「起動画面にある2つのボタンと同じデザイン」（角丸＋2色グラデーション＋ 影＋Materialアイコン＋見出しフォントKuramubon）は、`RemoteViews`では
+ * どれも指定できない。`setBackgroundColor`は単色しか受け付けず、 `GradientDrawable`はリソースに静的に書いた色しか使えず、`setTypeface`は
+ * assetのフォントを読めない。そのため意匠はアプリ側 （`shortcut_widget_renderer.dart`）が1枚のPNGへ焼き、ここではその画像を
  * `fitCenter`で出すだけにしている。
  *
- * 画像がまだ無いとき（アプリを一度も起動せずにウィジェットを置いた等）は、
- * 従来どおりアイコン＋ラベル＋単色背景へ倒す。
+ * 画像がまだ無いとき（アプリを一度も起動せずにウィジェットを置いた等）は、 従来どおりアイコン＋ラベル＋単色背景へ倒す。
  *
- * **privateにしないこと**。サブクラスはマニフェストの`<receiver>`から
- * クラス名で参照されるため必ずpublicで、Kotlinは「publicなサブクラスが
- * private/internalな親クラスを露出する」ことを禁じている
- * （`'public' subclass exposes its 'private-in-file' supertype`）。
+ * **privateにしないこと**。サブクラスはマニフェストの`<receiver>`から クラス名で参照されるため必ずpublicで、Kotlinは「publicなサブクラスが
+ * private/internalな親クラスを露出する」ことを禁じている （`'public' subclass exposes its 'private-in-file'
+ * supertype`）。
  */
 abstract class ShortcutWidgetProvider : AppWidgetProvider() {
     abstract val colorKey: String

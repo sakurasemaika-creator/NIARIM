@@ -1,4 +1,4 @@
-import type { APIGatewayProxyStructuredResultV2 } from 'aws-lambda';
+import type { APIGatewayProxyStructuredResultV2 } from "aws-lambda";
 
 /**
  * Lambda Function URLのレスポンス組み立てヘルパー。16章のとおり
@@ -12,14 +12,14 @@ export function json(
   return {
     statusCode,
     headers: {
-      'content-type': 'application/json; charset=utf-8',
+      "content-type": "application/json; charset=utf-8",
       // Worker内部のエラー詳細を漏らさない・キャッシュさせない、程度の
       // 最低限のセキュリティヘッダー。
-      'x-content-type-options': 'nosniff',
-      'cache-control': 'no-store',
-      'content-security-policy': "default-src 'none'; frame-ancestors 'none'",
-      'referrer-policy': 'no-referrer',
-      'strict-transport-security': 'max-age=31536000; includeSubDomains',
+      "x-content-type-options": "nosniff",
+      "cache-control": "no-store",
+      "content-security-policy": "default-src 'none'; frame-ancestors 'none'",
+      "referrer-policy": "no-referrer",
+      "strict-transport-security": "max-age=31536000; includeSubDomains",
     },
     body: JSON.stringify(body),
   };
@@ -51,31 +51,35 @@ export function badRequest(message: string, code?: string): never {
   throw new ApiError(400, message, code);
 }
 
-export function unauthorized(message = '認証が必要です'): never {
-  throw new ApiError(401, message, 'UNAUTHORIZED');
+export function unauthorized(message = "認証が必要です"): never {
+  throw new ApiError(401, message, "UNAUTHORIZED");
 }
 
-export function forbidden(message = 'この操作は許可されていません'): never {
-  throw new ApiError(403, message, 'FORBIDDEN');
+export function forbidden(message = "この操作は許可されていません"): never {
+  throw new ApiError(403, message, "FORBIDDEN");
 }
 
-export function notFound(message = '見つかりません'): never {
-  throw new ApiError(404, message, 'NOT_FOUND');
+export function notFound(message = "見つかりません"): never {
+  throw new ApiError(404, message, "NOT_FOUND");
 }
 
 export function conflict(message: string, code?: string): never {
   throw new ApiError(409, message, code);
 }
 
-export function payloadTooLarge(message = 'リクエストボディが大きすぎます'): never {
-  throw new ApiError(413, message, 'PAYLOAD_TOO_LARGE');
+export function payloadTooLarge(
+  message = "リクエストボディが大きすぎます",
+): never {
+  throw new ApiError(413, message, "PAYLOAD_TOO_LARGE");
 }
 
-export function errorToResponse(err: unknown): APIGatewayProxyStructuredResultV2 {
+export function errorToResponse(
+  err: unknown,
+): APIGatewayProxyStructuredResultV2 {
   if (err instanceof ApiError) {
     return json(err.statusCode, { error: err.message, code: err.code });
   }
   // Worker内部のエラー詳細をレスポンスに含めない（CloudWatch Logsにのみ出す）。
   console.error(err);
-  return json(500, { error: '内部エラーが発生しました' });
+  return json(500, { error: "内部エラーが発生しました" });
 }

@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8" ?>
 <!--
   意匠は正方形のPNG（shortcut_widget_renderer.dart）をfitCenterで出す方式
   なので、既定の置かれ方も正方形（2x2マス）に寄せておく。横長・縦長のマスへ
@@ -10,16 +10,18 @@
   （110dp で意匠内のラベルは実効10px前後。これ以上小さいと読めない。
   test/home_widget_cell_size_test.dart がこの下限で可読性を検証している）
 -->
-<appwidget-provider xmlns:android="http://schemas.android.com/apk/res/android"
-    android:minWidth="110dp"
-    android:minHeight="110dp"
-    android:minResizeWidth="110dp"
-    android:minResizeHeight="110dp"
-    android:targetCellWidth="2"
-    android:targetCellHeight="2"
-    android:updatePeriodMillis="0"
-    android:initialLayout="@layout/widget_shortcut"
-    android:resizeMode="horizontal|vertical"
-    android:previewLayout="@layout/widget_shortcut"
-    android:description="@string/widget_create_picker"
-    android:widgetCategory="home_screen" />
+<appwidget-provider
+  xmlns:android="http://schemas.android.com/apk/res/android"
+  android:minWidth="110dp"
+  android:minHeight="110dp"
+  android:minResizeWidth="110dp"
+  android:minResizeHeight="110dp"
+  android:targetCellWidth="2"
+  android:targetCellHeight="2"
+  android:updatePeriodMillis="0"
+  android:initialLayout="@layout/widget_shortcut"
+  android:resizeMode="horizontal|vertical"
+  android:previewLayout="@layout/widget_shortcut"
+  android:description="@string/widget_create_picker"
+  android:widgetCategory="home_screen"
+/>

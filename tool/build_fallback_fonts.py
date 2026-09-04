@@ -30,6 +30,7 @@ UIの文言（lib/l10n/*.arb）を増やしたあとは、このスクリプト�
 フォントで表示されて見た目が揃わなくなる。
 test/font_coverage_test.dart がその取りこぼしを検出する。
 """
+
 import json
 import pathlib
 import re
@@ -37,15 +38,15 @@ import subprocess
 import sys
 
 REPO = pathlib.Path(__file__).resolve().parent.parent
-L10N = REPO / 'lib' / 'l10n'
-OUT = REPO / 'assets' / 'fonts'
+L10N = REPO / "lib" / "l10n"
+OUT = REPO / "assets" / "fonts"
 
 # 生成するフォント： (出力名, 元フォント, 太さ)
 TARGETS = [
-    ('NotoSerifKRSubset', 'NotoSerifKR.ttf', 400),
-    ('NotoSerifSCSubset', 'NotoSerifSC.ttf', 400),
-    ('NotoSansKRBlackSubset', 'NotoSansKR.ttf', 900),
-    ('NotoSansSCBlackSubset', 'NotoSansSC.ttf', 900),
+    ("NotoSerifKRSubset", "NotoSerifKR.ttf", 400),
+    ("NotoSerifSCSubset", "NotoSerifSC.ttf", 400),
+    ("NotoSansKRBlackSubset", "NotoSansKR.ttf", 900),
+    ("NotoSansSCBlackSubset", "NotoSansSC.ttf", 900),
 ]
 
 
@@ -57,15 +58,15 @@ def required_chars() -> set:
     システムフォントが受け持つ（今と同じ挙動のため後退は無い）。
     """
     chars = set()
-    for path in sorted(L10N.glob('app_*.arb')):
-        data = json.loads(path.read_text(encoding='utf-8'))
+    for path in sorted(L10N.glob("app_*.arb")):
+        data = json.loads(path.read_text(encoding="utf-8"))
         for key, value in data.items():
-            if key.startswith('@') or not isinstance(value, str):
+            if key.startswith("@") or not isinstance(value, str):
                 continue
             # {count}のようなプレースホルダーは実文字ではないので除く
-            chars.update(re.sub(r'\{[^}]*\}', '', value))
+            chars.update(re.sub(r"\{[^}]*\}", "", value))
     chars.update(chr(c) for c in range(0x20, 0x7F))
-    chars.update('、。「」『』（）〜・…—‐±×÷％＋－／：；！？　')
+    chars.update("、。「」『』（）〜・…—‐±×÷％＋－／：；！？　")
     return {c for c in chars if c.strip()}
 
 
@@ -74,39 +75,46 @@ def build(src_dir: pathlib.Path) -> int:
     from fontTools.varLib import instancer
 
     chars = required_chars()
-    text = ''.join(sorted(chars))
-    print(f'UIに出る文字：{len(chars)}字')
+    text = "".join(sorted(chars))
+    print(f"UIに出る文字：{len(chars)}字")
     OUT.mkdir(parents=True, exist_ok=True)
 
     for out_name, src_name, weight in TARGETS:
         src = src_dir / src_name
         if not src.exists():
-            print(f'  × {src} が無い（上記URLから取得してください）')
+            print(f"  × {src} が無い（上記URLから取得してください）")
             return 1
         # 可変フォントを目的の太さで固定してからサブセット化する。
         font = ttLib.TTFont(src)
-        instancer.instantiateVariableFont(font, {'wght': weight}, inplace=True)
-        tmp = src_dir / f'_{out_name}_instance.ttf'
+        instancer.instantiateVariableFont(font, {"wght": weight}, inplace=True)
+        tmp = src_dir / f"_{out_name}_instance.ttf"
         font.save(tmp)
         font.close()
 
-        dest = OUT / f'{out_name}.ttf'
+        dest = OUT / f"{out_name}.ttf"
         subprocess.run(
-            [sys.executable, '-m', 'fontTools.subset', str(tmp),
-             f'--text={text}',
-             f'--output-file={dest}',
-             '--layout-features=*',
-             '--no-hinting',
-             '--desubroutinize'],
+            [
+                sys.executable,
+                "-m",
+                "fontTools.subset",
+                str(tmp),
+                f"--text={text}",
+                f"--output-file={dest}",
+                "--layout-features=*",
+                "--no-hinting",
+                "--desubroutinize",
+            ],
             check=True,
         )
         tmp.unlink()
-        print(f'  ○ {dest.name}: {dest.stat().st_size // 1024}KB '
-              f'（{src_name} を wght={weight} で固定）')
+        print(
+            f"  ○ {dest.name}: {dest.stat().st_size // 1024}KB "
+            f"（{src_name} を wght={weight} で固定）"
+        )
     return 0
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     if len(sys.argv) != 2:
         print(__doc__)
         sys.exit(1)

@@ -5,7 +5,7 @@ on:
     branches:
       - dev_branch
     paths:
-      - '.github/workflows/one-shot-widget-audit-async-fix.yml'
+      - ".github/workflows/one-shot-widget-audit-async-fix.yml"
 
 permissions:
   contents: write

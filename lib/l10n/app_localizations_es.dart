@@ -1384,7 +1384,7 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get helpEffectFilterDesc =>
-      'Un efecto visual (desenfoque, corrección de color, resplandor, pixelado, etc.) que puedes aplicar a una escena o fotograma. Úsalo cuando quieras ajustar el aspecto general de la pantalla como un toque de dirección, sin cambiar el dibujo hecho a mano en sí. El pixelado también permite elegir un modo de color (sin límite, especificar colores, especificar el número de colores o elegir desde una paleta). Se pueden apilar varios filtros de efecto, y se aplican en el orden en que aparecen en la línea de tiempo. Arrastrar para reordenar la lista de filtros también cambia el orden en que se aplican realmente en pantalla. Un filtro de efecto que aplica un ruido tipo grano de película, cambiándolo fotograma a fotograma. La intensidad, la cantidad (densidad del ruido) y el tamaño del grano se pueden ajustar con controles deslizantes. Volver al mismo fotograma reproduce el mismo grano (sin parpadeo al desplazarte), mientras que al reproducir el grano parece moverse. Un filtro de efecto que muestra lluvia cayendo por la pantalla. La intensidad (número de gotas), la velocidad, el tamaño de gota y el ángulo del viento se pueden ajustar con controles deslizantes. Cada gota sigue cayendo a velocidad constante conforme avanza el fotograma, dando un movimiento de lluvia natural.';
+      'Un efecto visual (desenfoque, corrección de color, resplandor, pixelado, etc.) que puedes aplicar a una escena o fotograma. Úsalo cuando quieras ajustar el aspecto general de la pantalla como un toque de dirección, sin cambiar el dibujo hecho a mano en sí. El filtro de pixel art también permite elegir un modo de color (sin límite, especificar colores, especificar el número de colores o elegir desde una paleta). Se pueden apilar varios filtros de efecto, y se aplican en el orden en que aparecen en la línea de tiempo. Arrastrar para reordenar la lista de filtros también cambia el orden en que se aplican realmente en pantalla. Un filtro de efecto que aplica un ruido tipo grano de película, cambiándolo fotograma a fotograma. La intensidad, la cantidad (densidad del ruido) y el tamaño del grano se pueden ajustar con controles deslizantes. Volver al mismo fotograma reproduce el mismo grano (sin parpadeo al desplazarte), mientras que al reproducir el grano parece moverse. Un filtro de efecto que muestra lluvia cayendo por la pantalla. La intensidad (número de gotas), la velocidad, el tamaño de gota y el ángulo del viento se pueden ajustar con controles deslizantes. Cada gota sigue cayendo a velocidad constante conforme avanza el fotograma, dando un movimiento de lluvia natural.';
 
   @override
   String get helpEndCardTitle => 'EndCard (logotipo final)';
@@ -1440,10 +1440,11 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get helpTransferDesc =>
-      'Una función para transferir todo el entorno de la aplicación —ajustes, materiales, pinceles, ajustes de relleno automático, tema, paletas (selector de color y arte de píxeles) y más— a otro dispositivo de una sola vez. Puedes elegir elementos individuales para transferir con casillas de verificación. Si quieres entregar un proyecto individual, usa \"Compartir (.niashare)\" en su lugar.';
+      'Una función para transferir todo el entorno de la aplicación —ajustes, materiales, pinceles, ajustes de relleno automático, tema, paletas (selector de color y pixel art) y más— a otro dispositivo de una sola vez. Puedes elegir elementos individuales para transferir con casillas de verificación, e incluir opcionalmente proyectos en curso (los proyectos seleccionados se transfieren completos, con sus materiales y fuentes). Si solo quieres entregar un proyecto individual, también puedes usar \"Compartir (.niashare)\".';
 
   @override
-  String get helpVideoExportTitle => 'Exportación de vídeo (MP4, WebM, GIF)';
+  String get helpVideoExportTitle =>
+      'Exportación de vídeo (MP4, WebM, GIF, AVI)';
 
   @override
   String get helpVideoExportDesc =>
@@ -1515,7 +1516,7 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get helpToneFillDesc =>
-      'Cambiar el ajuste de la herramienta de cubo de relleno sólido a relleno con tramas permite rellenar con una trama de semitonos o líneas elegida. También hay tramas de damero y cuadrícula exclusivas del modo píxel, para rellenos que combinan con una textura pixel art.';
+      'Cambiar el ajuste de la herramienta de cubo de relleno sólido a relleno con tramas permite rellenar con una trama de semitonos o líneas elegida. También hay tramas de damero y cuadrícula exclusivas del modo píxel, para rellenos que combinan con una textura pixel art. Ideal para volantes, tejidos de punto, medias y otros patrones finos tediosos de dibujar a mano. También puedes crear y añadir tus propias tramas personalizadas, o compartirlas con otros usuarios.';
 
   @override
   String get helpPixelModeTitle => 'Modo píxel';
@@ -1713,7 +1714,7 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get helpDrawingFilterDesc =>
-      'Filtros aplicados directamente a la capa seleccionada (a diferencia de los filtros de efecto, que se aplican a toda la línea de tiempo o a una escena, los filtros de dibujo actúan por capa). Incluyen desenfoque, nitidez, máscara de enfoque, curva de tonos, niveles, viñeteado, ruido, anime retro, TRC, estilo anime, contorno y pixelado. El contorno no reescribe la capa original: dibuja solo el resultado contorneado en una capa nueva. El pixelado también permite elegir un modo de color (sin límite, especificar colores, especificar el número de colores o elegir desde una paleta).';
+      'Filtros aplicados directamente a la capa seleccionada (a diferencia de los filtros de efecto, que se aplican a toda la línea de tiempo o a una escena, los filtros de dibujo actúan por capa). Incluyen desenfoque, nitidez, máscara de enfoque, curva de tonos, niveles, viñeteado, ruido, anime retro, TRC, estilo anime, contorno, un filtro de pixel art y un filtro de distorsión óptica. El contorno no reescribe la capa original: dibuja solo el resultado contorneado en una capa nueva. El filtro de distorsión óptica aplica una deformación localizada, como a través de un cristal de gafas de gran graduación, únicamente al área pintada en la capa de selección. El filtro de pixel art también permite elegir un modo de color (sin límite, especificar colores, especificar el número de colores o elegir desde una paleta).';
 
   @override
   String get helpLayerKeyframeTitle =>
@@ -6312,4 +6313,32 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get brushSettingsEdgeJitterStrengthLabel => 'Intensidad';
+
+  @override
+  String get filterNameInkPool => '墨溜まり';
+
+  @override
+  String get filterInkPoolColor => '色';
+
+  @override
+  String get filterInkPoolRange => '範囲';
+
+  @override
+  String get filterInkPoolCenterWidth => '中央の太さ';
+
+  @override
+  String filterInkPoolLayerNameSuffix(String name) {
+    return '$name 墨溜まり';
+  }
+
+  @override
+  String get filterCanvasEyedropperTooltip => 'Elegir color del lienzo';
+
+  @override
+  String get filterInkPoolEyedropperHint =>
+      'Toca el lienzo para elegir el color de acumulación de tinta';
+
+  @override
+  String get filterOutlineEyedropperHint =>
+      'Toca el lienzo para elegir el color del contorno';
 }

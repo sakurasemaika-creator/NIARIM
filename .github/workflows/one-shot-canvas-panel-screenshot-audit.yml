@@ -4,8 +4,8 @@ on:
   push:
     branches: [dev_branch]
     paths:
-      - '.github/workflows/one-shot-canvas-panel-screenshot-audit.yml'
-      - 'test/canvas_panel_screenshot_audit_test.dart'
+      - ".github/workflows/one-shot-canvas-panel-screenshot-audit.yml"
+      - "test/canvas_panel_screenshot_audit_test.dart"
 
 permissions:
   contents: read

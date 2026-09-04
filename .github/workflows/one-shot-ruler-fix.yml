@@ -5,7 +5,7 @@ on:
     branches:
       - dev_branch
     paths:
-      - '.github/workflows/one-shot-ruler-fix.yml'
+      - ".github/workflows/one-shot-ruler-fix.yml"
 
 permissions:
   contents: write

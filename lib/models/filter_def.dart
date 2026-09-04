@@ -75,6 +75,9 @@ enum FilterKind {
   pixelate,
   auroraHologram,
   backgroundBlend,
+
+  /// 線の交差・90度以下の鋭角部だけを局所的に太らせる「墨溜まり」。
+  inkPool,
 }
 
 /// トーンカーブのプリセット形状。
@@ -181,6 +184,11 @@ class FilterDef {
   final double bgBlendDirection;
   final double bgBlendLength;
   final double bgBlendBlur;
+  // 墨溜まり（inkPoolのみ使用）：指定色で、90度以下の線の交差/鋭角部を
+  // 中央から端へ向かって1pxまでテーパーさせる。
+  final int inkPoolColor;
+  final double inkPoolRange;
+  final double inkPoolCenterWidth;
 
   const FilterDef({
     required this.id,
@@ -214,6 +222,9 @@ class FilterDef {
     this.bgBlendDirection = 315,
     this.bgBlendLength = 20,
     this.bgBlendBlur = 6,
+    this.inkPoolColor = 0xFF000000,
+    this.inkPoolRange = 12,
+    this.inkPoolCenterWidth = 6,
   });
 
   FilterDef copyWith({
@@ -248,6 +259,9 @@ class FilterDef {
     double? bgBlendDirection,
     double? bgBlendLength,
     double? bgBlendBlur,
+    int? inkPoolColor,
+    double? inkPoolRange,
+    double? inkPoolCenterWidth,
   }) {
     return FilterDef(
       id: id ?? this.id,
@@ -281,6 +295,9 @@ class FilterDef {
       bgBlendDirection: bgBlendDirection ?? this.bgBlendDirection,
       bgBlendLength: bgBlendLength ?? this.bgBlendLength,
       bgBlendBlur: bgBlendBlur ?? this.bgBlendBlur,
+      inkPoolColor: inkPoolColor ?? this.inkPoolColor,
+      inkPoolRange: inkPoolRange ?? this.inkPoolRange,
+      inkPoolCenterWidth: inkPoolCenterWidth ?? this.inkPoolCenterWidth,
     );
   }
 
@@ -316,6 +333,9 @@ class FilterDef {
     'bgBlendDirection': bgBlendDirection,
     'bgBlendLength': bgBlendLength,
     'bgBlendBlur': bgBlendBlur,
+    'inkPoolColor': inkPoolColor,
+    'inkPoolRange': inkPoolRange,
+    'inkPoolCenterWidth': inkPoolCenterWidth,
   };
 
   factory FilterDef.fromJson(Map<String, dynamic> j) => FilterDef(
@@ -366,5 +386,8 @@ class FilterDef {
     bgBlendDirection: (j['bgBlendDirection'] as num?)?.toDouble() ?? 315,
     bgBlendLength: (j['bgBlendLength'] as num?)?.toDouble() ?? 20,
     bgBlendBlur: (j['bgBlendBlur'] as num?)?.toDouble() ?? 6,
+    inkPoolColor: j['inkPoolColor'] as int? ?? 0xFF000000,
+    inkPoolRange: (j['inkPoolRange'] as num?)?.toDouble() ?? 12,
+    inkPoolCenterWidth: (j['inkPoolCenterWidth'] as num?)?.toDouble() ?? 6,
   );
 }

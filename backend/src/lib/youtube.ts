@@ -17,7 +17,7 @@
  * 実装であり、実際のAPI呼び出しで検証していない）。
  */
 
-const API_BASE = 'https://www.googleapis.com/youtube/v3';
+const API_BASE = "https://www.googleapis.com/youtube/v3";
 
 export interface YoutubeVideoSnippet {
   id: string;
@@ -25,7 +25,7 @@ export interface YoutubeVideoSnippet {
   publishedAt: string; // ISO8601
   title: string;
   thumbnailUrl: string;
-  privacyStatus: 'public' | 'unlisted' | 'private';
+  privacyStatus: "public" | "unlisted" | "private";
 }
 
 export interface YoutubeVideoStats {
@@ -33,7 +33,7 @@ export interface YoutubeVideoStats {
   viewCount: number;
   likeCount: number;
   commentCount: number;
-  privacyStatus: 'public' | 'unlisted' | 'private';
+  privacyStatus: "public" | "unlisted" | "private";
 }
 
 async function callYoutubeApi<T>(
@@ -48,8 +48,10 @@ async function callYoutubeApi<T>(
     headers: { Authorization: `Bearer ${accessToken}` },
   });
   if (!res.ok) {
-    const body = await res.text().catch(() => '');
-    throw new Error(`YouTube API呼び出しに失敗しました（${path}, status=${res.status}）: ${body}`);
+    const body = await res.text().catch(() => "");
+    throw new Error(
+      `YouTube API呼び出しに失敗しました（${path}, status=${res.status}）: ${body}`,
+    );
   }
   return (await res.json()) as T;
 }
@@ -65,10 +67,15 @@ export async function getVideoSnippet(
   const data = await callYoutubeApi<{
     items: Array<{
       id: string;
-      snippet: { channelId: string; publishedAt: string; title: string; thumbnails: { high?: { url: string }; default: { url: string } } };
-      status: { privacyStatus: 'public' | 'unlisted' | 'private' };
+      snippet: {
+        channelId: string;
+        publishedAt: string;
+        title: string;
+        thumbnails: { high?: { url: string }; default: { url: string } };
+      };
+      status: { privacyStatus: "public" | "unlisted" | "private" };
     }>;
-  }>('videos', { part: 'snippet,status', id: videoId }, accessToken);
+  }>("videos", { part: "snippet,status", id: videoId }, accessToken);
 
   const item = data.items[0];
   if (!item) return null;
@@ -77,7 +84,8 @@ export async function getVideoSnippet(
     channelId: item.snippet.channelId,
     publishedAt: item.snippet.publishedAt,
     title: item.snippet.title,
-    thumbnailUrl: item.snippet.thumbnails.high?.url ?? item.snippet.thumbnails.default.url,
+    thumbnailUrl:
+      item.snippet.thumbnails.high?.url ?? item.snippet.thumbnails.default.url,
     privacyStatus: item.status.privacyStatus,
   };
 }
@@ -100,19 +108,25 @@ export async function batchGetVideoStats(
   if (videoIds.length === 0) return new Map();
 
   const url = new URL(`${API_BASE}/videos/batchGetStats`);
-  url.searchParams.set('id', videoIds.join(','));
-  url.searchParams.set('key', apiKey);
+  url.searchParams.set("id", videoIds.join(","));
+  url.searchParams.set("key", apiKey);
 
   const res = await fetch(url);
   if (!res.ok) {
-    const body = await res.text().catch(() => '');
-    throw new Error(`videos.batchGetStats呼び出しに失敗しました（status=${res.status}）: ${body}`);
+    const body = await res.text().catch(() => "");
+    throw new Error(
+      `videos.batchGetStats呼び出しに失敗しました（status=${res.status}）: ${body}`,
+    );
   }
   const data = (await res.json()) as {
     items: Array<{
       id: string;
-      statistics: { viewCount: string; likeCount?: string; commentCount?: string };
-      status?: { privacyStatus: 'public' | 'unlisted' | 'private' };
+      statistics: {
+        viewCount: string;
+        likeCount?: string;
+        commentCount?: string;
+      };
+      status?: { privacyStatus: "public" | "unlisted" | "private" };
     }>;
   };
 
@@ -123,23 +137,28 @@ export async function batchGetVideoStats(
       viewCount: Number(item.statistics.viewCount ?? 0),
       likeCount: Number(item.statistics.likeCount ?? 0),
       commentCount: Number(item.statistics.commentCount ?? 0),
-      privacyStatus: item.status?.privacyStatus ?? 'public',
+      privacyStatus: item.status?.privacyStatus ?? "public",
     });
   }
   return result;
 }
 
 /** `videos.delete`（13章：ユーザーが希望した場合のYouTube側削除）。 */
-export async function deleteVideo(videoId: string, accessToken: string): Promise<void> {
+export async function deleteVideo(
+  videoId: string,
+  accessToken: string,
+): Promise<void> {
   const url = new URL(`${API_BASE}/videos`);
-  url.searchParams.set('id', videoId);
+  url.searchParams.set("id", videoId);
   const res = await fetch(url, {
-    method: 'DELETE',
+    method: "DELETE",
     headers: { Authorization: `Bearer ${accessToken}` },
   });
   if (!res.ok && res.status !== 404) {
-    const body = await res.text().catch(() => '');
-    throw new Error(`videos.deleteに失敗しました（status=${res.status}）: ${body}`);
+    const body = await res.text().catch(() => "");
+    throw new Error(
+      `videos.deleteに失敗しました（status=${res.status}）: ${body}`,
+    );
   }
 }
 
@@ -154,10 +173,15 @@ export interface YoutubeChannelInfo {
  * 取得。連携時・投稿時にのみ呼び、結果をUserItemへキャッシュする。
  * 23.2節のとおり閲覧のたびには呼ばない）。
  */
-export async function getOwnChannelInfo(accessToken: string): Promise<YoutubeChannelInfo | null> {
+export async function getOwnChannelInfo(
+  accessToken: string,
+): Promise<YoutubeChannelInfo | null> {
   const data = await callYoutubeApi<{
-    items: Array<{ id: string; snippet: { title: string; thumbnails: { default: { url: string } } } }>;
-  }>('channels', { part: 'snippet', mine: 'true' }, accessToken);
+    items: Array<{
+      id: string;
+      snippet: { title: string; thumbnails: { default: { url: string } } };
+    }>;
+  }>("channels", { part: "snippet", mine: "true" }, accessToken);
 
   const item = data.items[0];
   if (!item) return null;
@@ -179,12 +203,23 @@ export function verifyVideoOwnership(
   maxAgeMinutes = 15,
 ): { ok: true } | { ok: false; reason: string } {
   if (snippet.channelId !== expectedChannelId) {
-    return { ok: false, reason: 'この動画は連携済みチャンネルの投稿ではありません' };
+    return {
+      ok: false,
+      reason: "この動画は連携済みチャンネルの投稿ではありません",
+    };
   }
   const publishedAt = new Date(snippet.publishedAt).getTime();
   const ageMs = now.getTime() - publishedAt;
-  if (Number.isNaN(publishedAt) || ageMs < 0 || ageMs > maxAgeMinutes * 60 * 1000) {
-    return { ok: false, reason: '投稿直後の動画ではないため登録できません（過去動画の使い回し防止）' };
+  if (
+    Number.isNaN(publishedAt) ||
+    ageMs < 0 ||
+    ageMs > maxAgeMinutes * 60 * 1000
+  ) {
+    return {
+      ok: false,
+      reason:
+        "投稿直後の動画ではないため登録できません（過去動画の使い回し防止）",
+    };
   }
   return { ok: true };
 }

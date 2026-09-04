@@ -1,15 +1,19 @@
-import { describe, expect, it } from 'vitest';
-import { authenticate } from '../src/lib/auth';
+import { describe, expect, it } from "vitest";
+import { authenticate } from "../src/lib/auth";
 
-describe('authentication input limits', () => {
-  it('rejects an oversized bearer token before external verification', async () => {
-    await expect(authenticate(`Bearer ${'a'.repeat(8193)}`)).rejects.toMatchObject({
+describe("authentication input limits", () => {
+  it("rejects an oversized bearer token before external verification", async () => {
+    await expect(
+      authenticate(`Bearer ${"a".repeat(8193)}`),
+    ).rejects.toMatchObject({
       statusCode: 401,
-      code: 'UNAUTHORIZED',
+      code: "UNAUTHORIZED",
     });
   });
 
-  it('rejects an empty bearer token', async () => {
-    await expect(authenticate('Bearer ')).rejects.toMatchObject({ statusCode: 401 });
+  it("rejects an empty bearer token", async () => {
+    await expect(authenticate("Bearer ")).rejects.toMatchObject({
+      statusCode: 401,
+    });
   });
 });

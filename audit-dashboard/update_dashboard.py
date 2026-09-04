@@ -20,8 +20,17 @@ def req(path, method='GET', data=None):
     with urllib.request.urlopen(r,timeout=30) as x:return json.load(x)
 
 def load_json(path):
-    o=req(f'/repos/{REPO}/contents/{path}?ref={BRANCH}')
-    return json.loads(base64.b64decode(o['content']).decode())
+    o = req(f"/repos/{REPO}/contents/{path}?ref={BRANCH}")
+    return json.loads(base64.b64decode(o["content"]).decode())
+
+
+def esc(v):
+    return str(v or "").replace("|", "\\|").replace("\n", " ")
+
+
+def yes(v):
+    return "✅" if v else "—"
+
 
 def esc(v): return str(v or '').replace('|','\\|').replace('\n',' ')
 def yes(v): return '✅' if v else '—'

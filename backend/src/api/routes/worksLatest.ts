@@ -1,9 +1,9 @@
-import type { APIGatewayProxyEventV2 } from 'aws-lambda';
-import { QueryCommand } from '@aws-sdk/lib-dynamodb';
-import { ddb, tableName } from '../../lib/dynamo';
-import { ok } from '../../lib/response';
-import type { WorkItem } from '../../lib/types';
-import { toPublicWork } from './_publicWork';
+import type { APIGatewayProxyEventV2 } from "aws-lambda";
+import { QueryCommand } from "@aws-sdk/lib-dynamodb";
+import { ddb, tableName } from "../../lib/dynamo";
+import { ok } from "../../lib/response";
+import type { WorkItem } from "../../lib/types";
+import { toPublicWork } from "./_publicWork";
 
 const DEFAULT_LIMIT = 50;
 const MAX_LIMIT = 100;
@@ -24,9 +24,9 @@ export async function getLatestWorks(event: APIGatewayProxyEventV2) {
   const result = await ddb.send(
     new QueryCommand({
       TableName: tableName(),
-      IndexName: 'GSI4',
-      KeyConditionExpression: 'gsi4pk = :pk',
-      ExpressionAttributeValues: { ':pk': 'LATEST' },
+      IndexName: "GSI4",
+      KeyConditionExpression: "gsi4pk = :pk",
+      ExpressionAttributeValues: { ":pk": "LATEST" },
       ScanIndexForward: false, // 新着順（postedAt降順）
       Limit: query ? undefined : limit, // 検索時はフィルタ後に件数を絞るためLimitを付けない
     }),
@@ -35,7 +35,9 @@ export async function getLatestWorks(event: APIGatewayProxyEventV2) {
   let works = (result.Items ?? []) as WorkItem[];
   if (query) {
     works = works.filter(
-      (w) => w.title.toLowerCase().includes(query) || w.channelName.toLowerCase().includes(query),
+      (w) =>
+        w.title.toLowerCase().includes(query) ||
+        w.channelName.toLowerCase().includes(query),
     );
     works = works.slice(0, limit);
   }

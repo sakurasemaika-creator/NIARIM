@@ -22,6 +22,7 @@
   （本スクリプトには含まない。大量リクエストになるため必要な時のみ
   別途 `xargs -P` 等で確認する）。
 """
+
 import json
 import os
 import re
@@ -51,12 +52,25 @@ OUTPUT_PATH = os.path.join(REPO_ROOT, "assets", "font_catalog", "font_catalog.js
 def run(cmd, cwd=None, input_bytes=None, check=True):
     proc = subprocess.run(cmd, cwd=cwd, input=input_bytes, capture_output=True)
     if check and proc.returncode != 0:
-        raise RuntimeError(f"command failed: {cmd}\n{proc.stderr.decode(errors='replace')}")
+        raise RuntimeError(
+            f"command failed: {cmd}\n{proc.stderr.decode(errors='replace')}"
+        )
     return proc
 
 
 def clone_treeless(workdir):
-    run(["git", "clone", "--filter=blob:none", "--no-checkout", "--depth", "1", REPO_URL, workdir])
+    run(
+        [
+            "git",
+            "clone",
+            "--filter=blob:none",
+            "--no-checkout",
+            "--depth",
+            "1",
+            REPO_URL,
+            workdir,
+        ]
+    )
     run(["git", "config", "gc.auto", "0"], cwd=workdir)
 
 
@@ -78,9 +92,18 @@ def batch_fetch(workdir, shas):
     （checkout単位で自動的に行われる逐次フェッチより大幅に高速）。"""
     input_data = ("\n".join(shas) + "\n").encode("utf-8")
     run(
-        ["git", "-c", "fetch.negotiationAlgorithm=noop", "fetch", "origin",
-         "--no-tags", "--no-write-fetch-head", "--recurse-submodules=no",
-         "--filter=blob:none", "--stdin"],
+        [
+            "git",
+            "-c",
+            "fetch.negotiationAlgorithm=noop",
+            "fetch",
+            "origin",
+            "--no-tags",
+            "--no-write-fetch-head",
+            "--recurse-submodules=no",
+            "--filter=blob:none",
+            "--stdin",
+        ],
         cwd=workdir,
         input_bytes=input_data,
     )
@@ -98,7 +121,9 @@ def batch_read_blobs(workdir, sha_list):
         assert header[0] == sha, f"sha mismatch: {header[0]} != {sha}"
         size = int(header[2])
         content_start = nl + 1
-        result[sha] = out[content_start:content_start + size].decode("utf-8", errors="replace")
+        result[sha] = out[content_start : content_start + size].decode(
+            "utf-8", errors="replace"
+        )
         pos = content_start + size + 1
     return result
 
@@ -117,15 +142,20 @@ def parse_metadata(text):
         filename_m = re.search(r'filename:\s*"([^"]*)"', b)
         if not filename_m:
             continue
-        entries.append({
-            "style": style_m.group(1) if style_m else "normal",
-            "weight": int(weight_m.group(1)) if weight_m else 400,
-            "filename": filename_m.group(1),
-        })
+        entries.append(
+            {
+                "style": style_m.group(1) if style_m else "normal",
+                "weight": int(weight_m.group(1)) if weight_m else 400,
+                "filename": filename_m.group(1),
+            }
+        )
     if not entries:
         return None
 
-    chosen = next((e for e in entries if e["weight"] == 400 and e["style"] == "normal"), entries[0])
+    chosen = next(
+        (e for e in entries if e["weight"] == 400 and e["style"] == "normal"),
+        entries[0],
+    )
     return {"name": name, "category": category, "filename": chosen["filename"]}
 
 
@@ -159,14 +189,16 @@ def main():
                 f"https://raw.githubusercontent.com/google/fonts/main/"
                 f"{license_dir}/{family_dir}/{quote(parsed['filename'])}"
             )
-            catalog.append({
-                "id": f"dlfont_{family_dir}",
-                "displayName": parsed["name"],
-                "fileName": parsed["filename"],
-                "sourceUrl": source_url,
-                "category": parsed["category"],
-                "license": LICENSE_NAMES[license_dir],
-            })
+            catalog.append(
+                {
+                    "id": f"dlfont_{family_dir}",
+                    "displayName": parsed["name"],
+                    "fileName": parsed["filename"],
+                    "sourceUrl": source_url,
+                    "category": parsed["category"],
+                    "license": LICENSE_NAMES[license_dir],
+                }
+            )
 
         catalog.sort(key=lambda e: e["displayName"])
         print(f"Catalog entries: {len(catalog)}, skipped: {len(skipped)}")
@@ -179,6 +211,7 @@ def main():
         print(f"Wrote {OUTPUT_PATH}")
 
         from collections import Counter
+
         print("Category counts:", dict(Counter(e["category"] for e in catalog)))
     finally:
         shutil.rmtree(workdir, ignore_errors=True)
