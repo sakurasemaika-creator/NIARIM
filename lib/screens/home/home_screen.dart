@@ -283,8 +283,9 @@ class _HomeScreenState extends State<HomeScreen>
                 if (!_isSearching)
                   IconButton(
                     icon: const Icon(Icons.menu),
-                    tooltip: MaterialLocalizations.of(context)
-                        .openAppDrawerTooltip,
+                    tooltip: MaterialLocalizations.of(
+                      context,
+                    ).openAppDrawerTooltip,
                     onPressed: () => _scaffoldKey.currentState?.openDrawer(),
                   ),
               ],
@@ -802,8 +803,9 @@ class _HomeScreenState extends State<HomeScreen>
         _clipboardFolderIds.clear();
       });
     }
-    ScaffoldMessenger.of(context)
-        .showSnackBar(SnackBar(content: Text(l10n.homePasteSnackbar)));
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(SnackBar(content: Text(l10n.homePasteSnackbar)));
   }
 
   /// フォルダ階層のパンくずリスト。フォルダ内移動時に現在位置を表示する。
