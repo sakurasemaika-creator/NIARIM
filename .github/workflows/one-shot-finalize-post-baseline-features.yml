@@ -4,7 +4,6 @@ on:
   push:
     branches: [dev_branch]
     paths:
-      - '.github/scripts/finalize_post_baseline_features.py'
       - '.github/workflows/one-shot-finalize-post-baseline-features.yml'
 
 permissions:
@@ -24,67 +23,14 @@ jobs:
           channel: stable
           cache: true
       - run: flutter pub get
-      - name: Scope ambiguous text-dialog patch anchor
-        run: |
-          python3 - <<'PY'
-          from pathlib import Path
-          p = Path('.github/scripts/finalize_post_baseline_features.py')
-          s = p.read_text()
-          old = '''    if text.count(old) != 1:
-                  raise SystemExit(f"{path}: expected exactly one match, found {text.count(old)}\\n--- OLD ---\\n{old[:500]}")
-              p.write_text(text.replace(old, new, 1))
-          '''
-          new = '''    count = text.count(old)
-              if count != 1:
-                  ambiguous_text_anchor = "    final l10n = AppLocalizations.of(context)!;\\n    showDialog(\\n"
-                  if path == 'lib/screens/canvas/canvas_screen.dart' and old == ambiguous_text_anchor:
-                      marker = "  void _showTextInputDialog(\\n"
-                      start = text.find(marker)
-                      if start < 0:
-                          raise SystemExit(f"{path}: text dialog marker not found")
-                      head, tail = text[:start], text[start:]
-                      if old not in tail:
-                          raise SystemExit(f"{path}: scoped text dialog anchor not found")
-                      p.write_text(head + tail.replace(old, new, 1))
-                      return
-                  raise SystemExit(f"{path}: expected exactly one match, found {count}\\n--- OLD ---\\n{old[:500]}")
-              p.write_text(text.replace(old, new, 1))
-          '''
-          if old not in s:
-              raise SystemExit('replace_once helper anchor not found')
-          p.write_text(s.replace(old, new, 1))
-          PY
+      - name: Make text-dialog patch anchor unique
+        run: python3 -c "from pathlib import Path; p=Path('lib/screens/canvas/canvas_screen.dart'); s=p.read_text(); marker='  void _showTextInputDialog(\n'; start=s.index(marker); old='    final l10n = AppLocalizations.of(context)!;\n    showDialog(\n'; guard='    final l10n = AppLocalizations.of(context)!;\n    // __post_baseline_anchor_guard__\n    showDialog(\n'; before=s[:start]; after=s[start:]; assert before.count(old)==1 and after.count(old)>=1; p.write_text(before.replace(old,guard,1)+after)"
       - name: Apply remaining feature fixes
         run: python3 .github/scripts/finalize_post_baseline_features.py
-      - name: Complete ColorPickerPanel contract
-        run: |
-          python3 - <<'PY'
-          from pathlib import Path
-          p = Path('lib/screens/canvas/canvas_screen.dart')
-          s = p.read_text()
-          old = '''              onColorChanged: (picked) {
-                onChanged(picked.toARGB32());
-                Navigator.of(pickerContext).pop();
-              },
-            ),
-          ),
-        ),
-      );
-'''
-          new = '''              onColorChanged: (picked) {
-                onChanged(picked.toARGB32());
-                Navigator.of(pickerContext).pop();
-              },
-              onClose: () => Navigator.of(pickerContext).pop(),
-            ),
-          ),
-        ),
-      );
-'''
-          if s.count(old) != 1:
-              raise SystemExit(f'ColorPickerPanel patch count={s.count(old)}')
-          p.write_text(s.replace(old, new, 1))
-          PY
+      - name: Remove temporary anchor guard
+        run: python3 -c "from pathlib import Path; p=Path('lib/screens/canvas/canvas_screen.dart'); s=p.read_text(); s=s.replace('    // __post_baseline_anchor_guard__\n','',1); p.write_text(s)"
+      - name: Add required color picker close callback
+        run: python3 -c "from pathlib import Path; p=Path('lib/screens/canvas/canvas_screen.dart'); s=p.read_text(); needle='                Navigator.of(pickerContext).pop();\n              },\n            ),'; repl='                Navigator.of(pickerContext).pop();\n              },\n              onClose: () => Navigator.of(pickerContext).pop(),\n            ),'; assert s.count(needle)==1, s.count(needle); p.write_text(s.replace(needle,repl,1))"
       - name: Regenerate localization
         run: flutter gen-l10n
       - name: Format changed Dart files
