@@ -1,7 +1,7 @@
-import { ConditionalCheckFailedException } from '@aws-sdk/client-dynamodb';
-import { UpdateCommand } from '@aws-sdk/lib-dynamodb';
-import { ddb, tableName, Keys } from './dynamo';
-import { conflict } from './response';
+import { ConditionalCheckFailedException } from "@aws-sdk/client-dynamodb";
+import { UpdateCommand } from "@aws-sdk/lib-dynamodb";
+import { ddb, tableName, Keys } from "./dynamo";
+import { conflict } from "./response";
 
 /**
  * 通報レート制限（20章）の本格実装。
@@ -34,13 +34,15 @@ export const REPORT_MAX_PER_DAY = 20;
  * 1回で済む）。
  */
 export function reportWindowId(now: Date = new Date()): string {
-  const bucket = Math.floor(now.getTime() / (REPORT_WINDOW_MINUTES * 60 * 1000));
+  const bucket = Math.floor(
+    now.getTime() / (REPORT_WINDOW_MINUTES * 60 * 1000),
+  );
   return `W${bucket}`;
 }
 
 /** 日単位の窓ID（UTC基準）。 */
 export function reportDayWindowId(now: Date = new Date()): string {
-  return `D${now.toISOString().slice(0, 10).replace(/-/g, '')}`;
+  return `D${now.toISOString().slice(0, 10).replace(/-/g, "")}`;
 }
 
 function ttlSeconds(now: Date, windowMinutes: number): number {
@@ -57,7 +59,10 @@ function ttlSeconds(now: Date, windowMinutes: number): number {
  * （逆にロールバックすると、日次上限に達したユーザーが短期窓を無限に
  * 叩けてしまい、UpdateItemの書き込み量が青天井になる）。
  */
-export async function reserveReportQuota(reporterId: string, now: Date = new Date()): Promise<void> {
+export async function reserveReportQuota(
+  reporterId: string,
+  now: Date = new Date(),
+): Promise<void> {
   await incrementOrReject(
     reporterId,
     reportWindowId(now),
@@ -84,24 +89,24 @@ async function incrementOrReject(
         TableName: tableName(),
         Key: Keys.reportCounter(reporterId, windowId),
         UpdateExpression:
-          'SET itemType = :type, reporterId = :rid, windowId = :wid, ttl = :ttl ADD #c :one',
-        ConditionExpression: 'attribute_not_exists(#c) OR #c < :limit',
-        ExpressionAttributeNames: { '#c': 'count' },
+          "SET itemType = :type, reporterId = :rid, windowId = :wid, ttl = :ttl ADD #c :one",
+        ConditionExpression: "attribute_not_exists(#c) OR #c < :limit",
+        ExpressionAttributeNames: { "#c": "count" },
         ExpressionAttributeValues: {
-          ':one': 1,
-          ':limit': limit,
-          ':type': 'REPORT_COUNTER',
-          ':rid': reporterId,
-          ':wid': windowId,
-          ':ttl': ttl,
+          ":one": 1,
+          ":limit": limit,
+          ":type": "REPORT_COUNTER",
+          ":rid": reporterId,
+          ":wid": windowId,
+          ":ttl": ttl,
         },
       }),
     );
   } catch (err) {
     if (err instanceof ConditionalCheckFailedException) {
       conflict(
-        '通報が短時間に集中しています。しばらく時間をおいてから再度お試しください。',
-        'REPORT_RATE_LIMITED',
+        "通報が短時間に集中しています。しばらく時間をおいてから再度お試しください。",
+        "REPORT_RATE_LIMITED",
       );
     }
     throw err;

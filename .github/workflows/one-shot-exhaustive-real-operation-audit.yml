@@ -5,7 +5,7 @@ on:
     branches:
       - dev_branch
     paths:
-      - '.github/workflows/one-shot-exhaustive-real-operation-audit.yml'
+      - ".github/workflows/one-shot-exhaustive-real-operation-audit.yml"
 
 jobs:
   exhaustive:

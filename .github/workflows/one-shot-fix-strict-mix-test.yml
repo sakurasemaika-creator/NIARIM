@@ -4,7 +4,7 @@ on:
   push:
     branches: [dev_branch]
     paths:
-      - '.github/workflows/one-shot-fix-strict-mix-test.yml'
+      - ".github/workflows/one-shot-fix-strict-mix-test.yml"
 
 permissions:
   contents: write

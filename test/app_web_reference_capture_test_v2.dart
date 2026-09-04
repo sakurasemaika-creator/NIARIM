@@ -240,26 +240,30 @@ void main() {
     consumeKnownTimelineOverflow(tester);
   }
 
-  testWidgets('Web比較基準v2: Canvas / Layer / OnionSkin', (tester) async {
-    await createProjectAndOpenCanvas(tester);
-    await capture(tester, '01_canvas_default');
+  testWidgets(
+    'Web比較基準v2: Canvas / Layer / OnionSkin',
+    (tester) async {
+      await createProjectAndOpenCanvas(tester);
+      await capture(tester, '01_canvas_default');
 
-    await tapToolbarControl(tester, 'レイヤー');
-    expectClean(tester, 'レイヤーパネルを開く');
-    await capture(tester, '02_canvas_layer_panel');
-    await closeOverlay(tester);
+      await tapToolbarControl(tester, 'レイヤー');
+      expectClean(tester, 'レイヤーパネルを開く');
+      await capture(tester, '02_canvas_layer_panel');
+      await closeOverlay(tester);
 
-    final settingsEdit = find.byTooltip('設定/編集', skipOffstage: false);
-    expect(settingsEdit, findsWidgets);
-    await tester.tap(settingsEdit.last, warnIfMissed: false);
-    await tester.pump(const Duration(milliseconds: 350));
-    final onion = find.text('オニオンスキン', skipOffstage: false);
-    expect(onion, findsWidgets);
-    await tester.tap(onion.last, warnIfMissed: false);
-    await tester.pump(const Duration(milliseconds: 350));
-    expectClean(tester, 'オニオンスキンを開く');
-    await capture(tester, '03_canvas_onion_skin');
-  }, timeout: const Timeout(Duration(seconds: 180)));
+      final settingsEdit = find.byTooltip('設定/編集', skipOffstage: false);
+      expect(settingsEdit, findsWidgets);
+      await tester.tap(settingsEdit.last, warnIfMissed: false);
+      await tester.pump(const Duration(milliseconds: 350));
+      final onion = find.text('オニオンスキン', skipOffstage: false);
+      expect(onion, findsWidgets);
+      await tester.tap(onion.last, warnIfMissed: false);
+      await tester.pump(const Duration(milliseconds: 350));
+      expectClean(tester, 'オニオンスキンを開く');
+      await capture(tester, '03_canvas_onion_skin');
+    },
+    timeout: const Timeout(Duration(seconds: 180)),
+  );
 
   testWidgets('Web比較基準v2: Timeline / Audio編集', (tester) async {
     final ids = await createProjectAndOpenCanvas(tester);

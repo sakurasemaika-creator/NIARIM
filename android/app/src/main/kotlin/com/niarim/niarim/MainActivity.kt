@@ -5,15 +5,14 @@ import android.net.Uri
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
-import java.io.ByteArrayOutputStream
 import io.flutter.embedding.android.FlutterActivity
 import io.flutter.embedding.engine.FlutterEngine
 import io.flutter.plugin.common.MethodChannel
+import java.io.ByteArrayOutputStream
 import kotlin.concurrent.thread
 
 /**
- * .niashare受信フロー（仕様書06）：
- * 他アプリ/ファイラーから.niashareファイルをタップして開いた際、
+ * .niashare受信フロー（仕様書06）： 他アプリ/ファイラーから.niashareファイルをタップして開いた際、
  * IntentのデータURIをMethodChannel経由でFlutter側（ShareIntentService）へ渡す。
  */
 class MainActivity : FlutterActivity() {
@@ -84,13 +83,29 @@ class MainActivity : FlutterActivity() {
                         val width = call.argument<Int>("width")
                         val height = call.argument<Int>("height")
                         val outputPath = call.argument<String>("outputPath")
-                        if (framePaths == null || fps == null || width == null || height == null || outputPath == null) {
-                            result.error("INVALID_ARGS", "framePaths/fps/width/height/outputPathが不足しています", null)
+                        if (
+                            framePaths == null ||
+                                fps == null ||
+                                width == null ||
+                                height == null ||
+                                outputPath == null
+                        ) {
+                            result.error(
+                                "INVALID_ARGS",
+                                "framePaths/fps/width/height/outputPathが不足しています",
+                                null,
+                            )
                             return@setMethodCallHandler
                         }
                         thread(name = "hw-video-encoder") {
                             try {
-                                HardwareVideoEncoder.encode(framePaths, fps, width, height, outputPath)
+                                HardwareVideoEncoder.encode(
+                                    framePaths,
+                                    fps,
+                                    width,
+                                    height,
+                                    outputPath,
+                                )
                                 mainHandler.post { result.success(null) }
                             } catch (e: Exception) {
                                 mainHandler.post { result.error("ENCODE_FAILED", e.message, null) }
@@ -140,8 +155,9 @@ class MainActivity : FlutterActivity() {
         if (uri.scheme != "content" && uri.scheme != "file") {
             throw IllegalArgumentException("unsupported URI scheme")
         }
-        val stream = contentResolver.openInputStream(uri)
-            ?: throw IllegalArgumentException("input stream unavailable")
+        val stream =
+            contentResolver.openInputStream(uri)
+                ?: throw IllegalArgumentException("input stream unavailable")
         return stream.use { input ->
             val output = ByteArrayOutputStream()
             val buffer = ByteArray(64 * 1024)

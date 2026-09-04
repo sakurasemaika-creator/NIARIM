@@ -1,11 +1,15 @@
-import { randomUUID } from 'node:crypto';
-import { OAuth2Client } from 'google-auth-library';
-import { TransactionCanceledException } from '@aws-sdk/client-dynamodb';
-import { GetCommand, TransactWriteCommand, UpdateCommand } from '@aws-sdk/lib-dynamodb';
-import { ddb, tableName, Keys } from './dynamo';
-import type { GoogleSubLookupItem, MembershipTier, UserItem } from './types';
-import { TABLE_ITEM_TYPE } from './types';
-import { unauthorized } from './response';
+import { randomUUID } from "node:crypto";
+import { OAuth2Client } from "google-auth-library";
+import { TransactionCanceledException } from "@aws-sdk/client-dynamodb";
+import {
+  GetCommand,
+  TransactWriteCommand,
+  UpdateCommand,
+} from "@aws-sdk/lib-dynamodb";
+import { ddb, tableName, Keys } from "./dynamo";
+import type { GoogleSubLookupItem, MembershipTier, UserItem } from "./types";
+import { TABLE_ITEM_TYPE } from "./types";
+import { unauthorized } from "./response";
 
 /**
  * Google IDトークンの検証＋NIARIM User IDの発行・再利用（4章）。
@@ -25,30 +29,40 @@ export interface AuthenticatedUser {
   membershipTier: MembershipTier;
 }
 
-export async function authenticate(authorizationHeader: string | undefined): Promise<AuthenticatedUser> {
-  if (!authorizationHeader?.startsWith('Bearer ')) {
-    unauthorized('Authorizationヘッダーが不正です');
+export async function authenticate(
+  authorizationHeader: string | undefined,
+): Promise<AuthenticatedUser> {
+  if (!authorizationHeader?.startsWith("Bearer ")) {
+    unauthorized("Authorizationヘッダーが不正です");
   }
-  const idToken = authorizationHeader.slice('Bearer '.length);
+  const idToken = authorizationHeader.slice("Bearer ".length);
   if (!idToken || idToken.length > 8192 || /[\r\n]/.test(idToken)) {
-    unauthorized('Authorizationヘッダーが不正です');
+    unauthorized("Authorizationヘッダーが不正です");
   }
 
   const clientId = process.env.GOOGLE_CLIENT_ID;
-  if (!clientId) throw new Error('GOOGLE_CLIENT_ID環境変数が設定されていません');
+  if (!clientId)
+    throw new Error("GOOGLE_CLIENT_ID環境変数が設定されていません");
 
   let sub: string;
   try {
-    const ticket = await oauthClient.verifyIdToken({ idToken, audience: clientId });
+    const ticket = await oauthClient.verifyIdToken({
+      idToken,
+      audience: clientId,
+    });
     const payload = ticket.getPayload();
-    if (!payload?.sub) unauthorized('IDトークンの検証に失敗しました');
+    if (!payload?.sub) unauthorized("IDトークンの検証に失敗しました");
     sub = payload.sub;
   } catch {
-    unauthorized('IDトークンの検証に失敗しました');
+    unauthorized("IDトークンの検証に失敗しました");
   }
 
   const user = await findOrCreateUser(sub);
-  return { niarimUserId: user.niarimUserId, googleSub: sub, membershipTier: user.membershipTier };
+  return {
+    niarimUserId: user.niarimUserId,
+    googleSub: sub,
+    membershipTier: user.membershipTier,
+  };
 }
 
 /**
@@ -80,7 +94,7 @@ async function findOrCreateUser(sub: string): Promise<UserItem> {
     ...Keys.user(niarimUserId),
     niarimUserId,
     googleSub: sub,
-    membershipTier: 'free',
+    membershipTier: "free",
     bookmarksPublic: false,
     followersPublic: false,
     followerCount: 0,
@@ -109,7 +123,7 @@ async function findOrCreateUser(sub: string): Promise<UserItem> {
             Put: {
               TableName: tableName(),
               Item: newLookup,
-              ConditionExpression: 'attribute_not_exists(pk)',
+              ConditionExpression: "attribute_not_exists(pk)",
             },
           },
           { Put: { TableName: tableName(), Item: newUser } },
@@ -151,25 +165,29 @@ async function resolveExistingUser(sub: string): Promise<UserItem | undefined> {
 }
 
 function generateNiarimUserId(): string {
-  return `N${randomUUID().replace(/-/g, '')}`;
+  return `N${randomUUID().replace(/-/g, "")}`;
 }
 
 /** 23章：投稿・連携時にYouTubeチャンネル情報をUserItemへキャッシュする。 */
 export async function cacheChannelInfo(
   niarimUserId: string,
-  info: { youtubeChannelId: string; channelName: string; channelAvatarUrl: string },
+  info: {
+    youtubeChannelId: string;
+    channelName: string;
+    channelAvatarUrl: string;
+  },
 ): Promise<void> {
   await ddb.send(
     new UpdateCommand({
       TableName: tableName(),
       Key: Keys.user(niarimUserId),
       UpdateExpression:
-        'SET youtubeChannelId = :cid, channelName = :name, channelAvatarUrl = :avatar, channelInfoCachedAt = :now',
+        "SET youtubeChannelId = :cid, channelName = :name, channelAvatarUrl = :avatar, channelInfoCachedAt = :now",
       ExpressionAttributeValues: {
-        ':cid': info.youtubeChannelId,
-        ':name': info.channelName,
-        ':avatar': info.channelAvatarUrl,
-        ':now': new Date().toISOString(),
+        ":cid": info.youtubeChannelId,
+        ":name": info.channelName,
+        ":avatar": info.channelAvatarUrl,
+        ":now": new Date().toISOString(),
       },
     }),
   );
@@ -192,7 +210,11 @@ export async function tryAuthenticate(
   }
 }
 
-export async function getUser(niarimUserId: string): Promise<UserItem | undefined> {
-  const result = await ddb.send(new GetCommand({ TableName: tableName(), Key: Keys.user(niarimUserId) }));
+export async function getUser(
+  niarimUserId: string,
+): Promise<UserItem | undefined> {
+  const result = await ddb.send(
+    new GetCommand({ TableName: tableName(), Key: Keys.user(niarimUserId) }),
+  );
   return result.Item as UserItem | undefined;
 }

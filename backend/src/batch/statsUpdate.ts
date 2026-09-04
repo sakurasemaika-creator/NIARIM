@@ -1,7 +1,7 @@
-import { LambdaClient, InvokeCommand } from '@aws-sdk/client-lambda';
-import { PutCommand, ScanCommand, UpdateCommand } from '@aws-sdk/lib-dynamodb';
-import { ddb, tableName, Keys } from '../lib/dynamo';
-import { batchGetVideoStats } from '../lib/youtube';
+import { LambdaClient, InvokeCommand } from "@aws-sdk/client-lambda";
+import { PutCommand, ScanCommand, UpdateCommand } from "@aws-sdk/lib-dynamodb";
+import { ddb, tableName, Keys } from "../lib/dynamo";
+import { batchGetVideoStats } from "../lib/youtube";
 import {
   computePeriodScore,
   computeRankingScore,
@@ -12,9 +12,9 @@ import {
   RANKING_TOP_LIMIT,
   type DeltaRankingPeriod,
   type RankingSnapshotEntry,
-} from '../lib/ranking';
-import type { RankingSnapshotItem, WorkItem } from '../lib/types';
-import { TABLE_ITEM_TYPE } from '../lib/types';
+} from "../lib/ranking";
+import type { RankingSnapshotItem, WorkItem } from "../lib/types";
+import { TABLE_ITEM_TYPE } from "../lib/types";
 
 /**
  * 統計更新バッチ（8.1節）。EventBridge Schedulerが更新サイクルの開始
@@ -59,17 +59,19 @@ function emptyTopLists(): TopLists {
 export async function handler(event: BatchPayload = {}): Promise<void> {
   const pageIndex = event.pageIndex ?? 0;
   if (pageIndex >= MAX_PAGES) {
-    console.error(`統計更新バッチが最大反復回数（${MAX_PAGES}）に達したため中断します。`);
+    console.error(
+      `統計更新バッチが最大反復回数（${MAX_PAGES}）に達したため中断します。`,
+    );
     return;
   }
 
-  const apiKey = requireEnv('YOUTUBE_API_KEY');
+  const apiKey = requireEnv("YOUTUBE_API_KEY");
 
   const scanResult = await ddb.send(
     new ScanCommand({
       TableName: tableName(),
-      FilterExpression: 'itemType = :type',
-      ExpressionAttributeValues: { ':type': 'WORK' },
+      FilterExpression: "itemType = :type",
+      ExpressionAttributeValues: { ":type": "WORK" },
       Limit: PAGE_SIZE,
       ExclusiveStartKey: event.lastEvaluatedKey as never,
     }),
@@ -100,17 +102,22 @@ export async function handler(event: BatchPayload = {}): Promise<void> {
     new UpdateCommand({
       TableName: tableName(),
       Key: Keys.batchState(),
-      UpdateExpression: 'SET itemType = :type, lastCompletedAt = :now, inProgress = :false',
+      UpdateExpression:
+        "SET itemType = :type, lastCompletedAt = :now, inProgress = :false",
       ExpressionAttributeValues: {
-        ':type': 'BATCH_STATE',
-        ':now': new Date().toISOString(),
-        ':false': false,
+        ":type": "BATCH_STATE",
+        ":now": new Date().toISOString(),
+        ":false": false,
       },
     }),
   );
 }
 
-async function processPage(works: WorkItem[], apiKey: string, topLists: TopLists): Promise<void> {
+async function processPage(
+  works: WorkItem[],
+  apiKey: string,
+  topLists: TopLists,
+): Promise<void> {
   if (works.length === 0) return;
 
   // videos.batchGetStatsの1回あたり件数上限は【要確認】（youtube.ts参照）。
@@ -122,14 +129,23 @@ async function processPage(works: WorkItem[], apiKey: string, topLists: TopLists
       apiKey,
     );
     await Promise.all(
-      workChunk.map((work) => updateWorkStats(work, stats.get(work.youtubeVideoId), topLists)),
+      workChunk.map((work) =>
+        updateWorkStats(work, stats.get(work.youtubeVideoId), topLists),
+      ),
     );
   }
 }
 
 async function updateWorkStats(
   work: WorkItem,
-  stats: { viewCount: number; likeCount: number; commentCount: number; privacyStatus: 'public' | 'unlisted' | 'private' } | undefined,
+  stats:
+    | {
+        viewCount: number;
+        likeCount: number;
+        commentCount: number;
+        privacyStatus: "public" | "unlisted" | "private";
+      }
+    | undefined,
   topLists: TopLists,
 ): Promise<void> {
   const nowDate = new Date();
@@ -137,30 +153,35 @@ async function updateWorkStats(
 
   // videos.batchGetStatsで取得できなかった動画はYouTube側で削除済みと
   // みなす（13章の状態表）。
-  const youtubePrivacyStatus = stats ? stats.privacyStatus : 'deleted';
+  const youtubePrivacyStatus = stats ? stats.privacyStatus : "deleted";
   const viewCount = stats?.viewCount ?? work.viewCount;
   const likeCount = stats?.likeCount ?? work.likeCount;
   const commentCount = stats?.commentCount ?? work.commentCount;
-  const rankingScore = computeRankingScore({ viewCount, likeCount, commentCount });
+  const rankingScore = computeRankingScore({
+    viewCount,
+    likeCount,
+    commentCount,
+  });
 
   // 13章：非公開(private)・削除済み(deleted)は強制非表示。それ以外
   // （public/unlisted）は、NIARIM側のisNiarimPublished設定どおりに表示。
-  const forcedHidden = youtubePrivacyStatus === 'private' || youtubePrivacyStatus === 'deleted';
+  const forcedHidden =
+    youtubePrivacyStatus === "private" || youtubePrivacyStatus === "deleted";
   const isVisible = work.isNiarimPublished && !forcedHidden;
 
   const setParts = [
-    'viewCount = :view',
-    'likeCount = :like',
-    'commentCount = :comment',
-    'lastFetchedAt = :now',
-    'youtubePrivacyStatus = :status',
+    "viewCount = :view",
+    "likeCount = :like",
+    "commentCount = :comment",
+    "lastFetchedAt = :now",
+    "youtubePrivacyStatus = :status",
   ];
   const values: Record<string, unknown> = {
-    ':view': viewCount,
-    ':like': likeCount,
-    ':comment': commentCount,
-    ':now': now,
-    ':status': youtubePrivacyStatus,
+    ":view": viewCount,
+    ":like": likeCount,
+    ":comment": commentCount,
+    ":now": now,
+    ":status": youtubePrivacyStatus,
   };
   const removes: string[] = [];
 
@@ -168,8 +189,8 @@ async function updateWorkStats(
   // 窓が変わっていなければ基準点は据え置かれ、期間中スコアが積み上がる。
   const current = { viewCount, likeCount, commentCount };
   const statsWindows = rollStatsWindows(work.statsWindows, current, nowDate);
-  setParts.push('statsWindows = :windows');
-  values[':windows'] = statsWindows;
+  setParts.push("statsWindows = :windows");
+  values[":windows"] = statsWindows;
 
   // 非表示の作品は期間別ランキングにも載せない（累計と同じ扱い）。
   if (isVisible) {
@@ -185,27 +206,39 @@ async function updateWorkStats(
 
   if (isVisible) {
     setParts.push(
-      'rankingScore = :score',
-      'gsi1pk = :rankPk',
-      'gsi1sk = :score',
-      'gsi2pk = :bmPk',
-      'gsi2sk = :bm',
-      'gsi3pk = :authorPk',
-      'gsi3sk = :postedAt',
-      'gsi4pk = :latestPk',
-      'gsi4sk = :postedAt',
+      "rankingScore = :score",
+      "gsi1pk = :rankPk",
+      "gsi1sk = :score",
+      "gsi2pk = :bmPk",
+      "gsi2sk = :bm",
+      "gsi3pk = :authorPk",
+      "gsi3sk = :postedAt",
+      "gsi4pk = :latestPk",
+      "gsi4sk = :postedAt",
     );
-    values[':score'] = rankingScore;
-    values[':bmPk'] = 'BOOKMARK_RANKING';
-    values[':bm'] = work.bookmarkCount;
-    values[':authorPk'] = `AUTHOR#${work.authorId}`;
-    values[':postedAt'] = work.postedAt;
-    values[':latestPk'] = 'LATEST';
+    values[":score"] = rankingScore;
+    values[":bmPk"] = "BOOKMARK_RANKING";
+    values[":bm"] = work.bookmarkCount;
+    values[":authorPk"] = `AUTHOR#${work.authorId}`;
+    values[":postedAt"] = work.postedAt;
+    values[":latestPk"] = "LATEST";
   } else {
-    removes.push('rankingScore', 'gsi1pk', 'gsi1sk', 'gsi2pk', 'gsi2sk', 'gsi3pk', 'gsi3sk', 'gsi4pk', 'gsi4sk');
+    removes.push(
+      "rankingScore",
+      "gsi1pk",
+      "gsi1sk",
+      "gsi2pk",
+      "gsi2sk",
+      "gsi3pk",
+      "gsi3sk",
+      "gsi4pk",
+      "gsi4sk",
+    );
   }
 
-  const updateExpression = `SET ${setParts.join(', ')}` + (removes.length ? ` REMOVE ${removes.join(', ')}` : '');
+  const updateExpression =
+    `SET ${setParts.join(", ")}` +
+    (removes.length ? ` REMOVE ${removes.join(", ")}` : "");
 
   // rankingScoreの更新は「最新値で上書き」なので、Lambdaの非同期呼び出し
   // が失敗時に自動リトライされ同一ページが二重処理されても結果は壊れ
@@ -244,12 +277,12 @@ async function writeRankingSnapshots(topLists: TopLists): Promise<void> {
 }
 
 async function invokeSelfAsync(payload: BatchPayload): Promise<void> {
-  const functionName = requireEnv('SELF_FUNCTION_NAME');
+  const functionName = requireEnv("SELF_FUNCTION_NAME");
   const client = new LambdaClient({});
   await client.send(
     new InvokeCommand({
       FunctionName: functionName,
-      InvocationType: 'Event',
+      InvocationType: "Event",
       Payload: Buffer.from(JSON.stringify(payload)),
     }),
   );
@@ -257,7 +290,8 @@ async function invokeSelfAsync(payload: BatchPayload): Promise<void> {
 
 function chunk<T>(items: T[], size: number): T[][] {
   const result: T[][] = [];
-  for (let i = 0; i < items.length; i += size) result.push(items.slice(i, i + size));
+  for (let i = 0; i < items.length; i += size)
+    result.push(items.slice(i, i + size));
   return result;
 }
 

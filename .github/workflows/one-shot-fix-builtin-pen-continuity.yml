@@ -4,7 +4,7 @@ on:
   push:
     branches: [dev_branch]
     paths:
-      - '.github/workflows/one-shot-fix-builtin-pen-continuity.yml'
+      - ".github/workflows/one-shot-fix-builtin-pen-continuity.yml"
 
 permissions:
   contents: write

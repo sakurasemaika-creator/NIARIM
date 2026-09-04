@@ -1,10 +1,14 @@
-import type { APIGatewayProxyEventV2 } from 'aws-lambda';
-import { BatchGetCommand, GetCommand, QueryCommand } from '@aws-sdk/lib-dynamodb';
-import { ddb, tableName, Keys } from '../../lib/dynamo';
-import { ok, badRequest } from '../../lib/response';
-import { isDeltaRankingPeriod, isRankingPeriod } from '../../lib/ranking';
-import type { RankingSnapshotItem, WorkItem } from '../../lib/types';
-import { toPublicWork } from './_publicWork';
+import type { APIGatewayProxyEventV2 } from "aws-lambda";
+import {
+  BatchGetCommand,
+  GetCommand,
+  QueryCommand,
+} from "@aws-sdk/lib-dynamodb";
+import { ddb, tableName, Keys } from "../../lib/dynamo";
+import { ok, badRequest } from "../../lib/response";
+import { isDeltaRankingPeriod, isRankingPeriod } from "../../lib/ranking";
+import type { RankingSnapshotItem, WorkItem } from "../../lib/types";
+import { toPublicWork } from "./_publicWork";
 
 /**
  * `GET /ranking/{period}`（8.2節）。
@@ -19,15 +23,18 @@ import { toPublicWork } from './_publicWork';
 // eventは現状使っていないが、他のルートと引数の形を揃えておく
 // （router側が全ルートを同じシグネチャで呼び分けるため）。
 // eslint/tscの未使用検出を避けるためアンダースコア始まりにする。
-export async function getRanking(_event: APIGatewayProxyEventV2, period: string) {
-  if (period === 'bookmarks') return getBookmarkRanking();
-  if (period === 'all') return getAllTimeRanking();
+export async function getRanking(
+  _event: APIGatewayProxyEventV2,
+  period: string,
+) {
+  if (period === "bookmarks") return getBookmarkRanking();
+  if (period === "all") return getAllTimeRanking();
   if (isDeltaRankingPeriod(period)) return getPeriodRanking(period);
 
   if (!isRankingPeriod(period)) {
     badRequest(
       `periodが不正です（all/yearly/monthly/weekly/daily/bookmarksのいずれかを指定してください）: ${period}`,
-      'INVALID_RANKING_PERIOD',
+      "INVALID_RANKING_PERIOD",
     );
   }
   // isRankingPeriodを通ったのにここへ来ることは無いが、型を絞り切るため。
@@ -38,16 +45,16 @@ async function getAllTimeRanking() {
   const result = await ddb.send(
     new QueryCommand({
       TableName: tableName(),
-      IndexName: 'GSI1',
-      KeyConditionExpression: 'gsi1pk = :pk',
-      ExpressionAttributeValues: { ':pk': 'RANKING#ALL' },
+      IndexName: "GSI1",
+      KeyConditionExpression: "gsi1pk = :pk",
+      ExpressionAttributeValues: { ":pk": "RANKING#ALL" },
       ScanIndexForward: false, // rankingScore降順
       Limit: 50,
     }),
   );
 
   const works = (result.Items ?? []) as WorkItem[];
-  return ok({ period: 'all', works: works.map(toPublicWork) });
+  return ok({ period: "all", works: works.map(toPublicWork) });
 }
 
 /**
@@ -56,12 +63,20 @@ async function getAllTimeRanking() {
  */
 async function getPeriodRanking(period: string) {
   const snapshotResult = await ddb.send(
-    new GetCommand({ TableName: tableName(), Key: Keys.rankingSnapshot(period) }),
+    new GetCommand({
+      TableName: tableName(),
+      Key: Keys.rankingSnapshot(period),
+    }),
   );
   const snapshot = snapshotResult.Item as RankingSnapshotItem | undefined;
   const entries = snapshot?.entries ?? [];
   if (entries.length === 0) {
-    return ok({ period, works: [], computedAt: snapshot?.computedAt ?? null, windowId: snapshot?.windowId ?? null });
+    return ok({
+      period,
+      works: [],
+      computedAt: snapshot?.computedAt ?? null,
+      windowId: snapshot?.windowId ?? null,
+    });
   }
 
   const works = await batchGetWorks(entries.map((e) => e.workId));
@@ -87,13 +102,17 @@ async function batchGetWorks(workIds: string[]): Promise<WorkItem[]> {
   const found: WorkItem[] = [];
   for (let i = 0; i < workIds.length; i += 100) {
     const keys = workIds.slice(i, i + 100).map((id) => Keys.work(id));
-    let request: Record<string, { Keys: Record<string, unknown>[] }> | undefined = {
+    let request:
+      | Record<string, { Keys: Record<string, unknown>[] }>
+      | undefined = {
       [tableName()]: { Keys: keys },
     };
     // UnprocessedKeysが返る場合があるため、無くなるまで繰り返す。
     let guard = 0;
     while (request && Object.keys(request).length > 0 && guard++ < 5) {
-      const result: any = await ddb.send(new BatchGetCommand({ RequestItems: request as never }));
+      const result: any = await ddb.send(
+        new BatchGetCommand({ RequestItems: request as never }),
+      );
       found.push(...((result.Responses?.[tableName()] ?? []) as WorkItem[]));
       request = result.UnprocessedKeys;
     }
@@ -105,13 +124,13 @@ async function getBookmarkRanking() {
   const result = await ddb.send(
     new QueryCommand({
       TableName: tableName(),
-      IndexName: 'GSI2',
-      KeyConditionExpression: 'gsi2pk = :pk',
-      ExpressionAttributeValues: { ':pk': 'BOOKMARK_RANKING' },
+      IndexName: "GSI2",
+      KeyConditionExpression: "gsi2pk = :pk",
+      ExpressionAttributeValues: { ":pk": "BOOKMARK_RANKING" },
       ScanIndexForward: false, // bookmarkCount降順
       Limit: 50,
     }),
   );
   const works = (result.Items ?? []) as WorkItem[];
-  return ok({ period: 'bookmarks', works: works.map(toPublicWork) });
+  return ok({ period: "bookmarks", works: works.map(toPublicWork) });
 }

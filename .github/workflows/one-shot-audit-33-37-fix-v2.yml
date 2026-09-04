@@ -2,7 +2,7 @@ name: One-shot Audit 33 37 Fix V2
 on:
   push:
     branches: [dev_branch]
-    paths: ['.github/workflows/one-shot-audit-33-37-fix-v2.yml']
+    paths: [".github/workflows/one-shot-audit-33-37-fix-v2.yml"]
 permissions:
   contents: write
 jobs:

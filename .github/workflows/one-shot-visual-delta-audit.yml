@@ -5,7 +5,7 @@ on:
     branches:
       - dev_branch
     paths:
-      - '.github/workflows/one-shot-visual-delta-audit.yml'
+      - ".github/workflows/one-shot-visual-delta-audit.yml"
 
 jobs:
   visual-delta:

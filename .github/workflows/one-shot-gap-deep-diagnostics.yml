@@ -5,7 +5,7 @@ on:
     branches:
       - dev_branch
     paths:
-      - '.github/workflows/one-shot-gap-deep-diagnostics.yml'
+      - ".github/workflows/one-shot-gap-deep-diagnostics.yml"
 
 jobs:
   diagnostics:

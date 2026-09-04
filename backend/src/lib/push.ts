@@ -1,9 +1,9 @@
-import { createHash } from 'node:crypto';
-import { JWT } from 'google-auth-library';
-import { DeleteCommand, PutCommand, QueryCommand } from '@aws-sdk/lib-dynamodb';
-import { ddb, tableName, Keys } from './dynamo';
-import type { DeviceTokenItem } from './types';
-import { TABLE_ITEM_TYPE } from './types';
+import { createHash } from "node:crypto";
+import { JWT } from "google-auth-library";
+import { DeleteCommand, PutCommand, QueryCommand } from "@aws-sdk/lib-dynamodb";
+import { ddb, tableName, Keys } from "./dynamo";
+import type { DeviceTokenItem } from "./types";
+import { TABLE_ITEM_TYPE } from "./types";
 
 /**
  * 真のプッシュ通知（22.7節）。FCM HTTP v1 APIで端末へ直接送る。
@@ -32,18 +32,18 @@ import { TABLE_ITEM_TYPE } from './types';
  */
 
 const TOKEN_TTL_DAYS = 180;
-const FCM_SCOPE = 'https://www.googleapis.com/auth/firebase.messaging';
+const FCM_SCOPE = "https://www.googleapis.com/auth/firebase.messaging";
 
 /** トークン本体をキーに出さないためのハッシュ（types.tsのDeviceTokenItem参照）。 */
 export function hashDeviceToken(token: string): string {
-  return createHash('sha256').update(token).digest('hex').slice(0, 32);
+  return createHash("sha256").update(token).digest("hex").slice(0, 32);
 }
 
 /** 端末トークンを登録・更新する（同じ端末からの再登録は上書き）。 */
 export async function registerDeviceToken(
   niarimUserId: string,
   token: string,
-  platform: 'android' | 'ios',
+  platform: "android" | "ios",
 ): Promise<void> {
   const item: DeviceTokenItem = {
     itemType: TABLE_ITEM_TYPE.DeviceToken,
@@ -58,7 +58,10 @@ export async function registerDeviceToken(
 }
 
 /** 端末トークンを削除する（ログアウト・通知オフ時）。 */
-export async function unregisterDeviceToken(niarimUserId: string, token: string): Promise<void> {
+export async function unregisterDeviceToken(
+  niarimUserId: string,
+  token: string,
+): Promise<void> {
   await ddb.send(
     new DeleteCommand({
       TableName: tableName(),
@@ -67,12 +70,17 @@ export async function unregisterDeviceToken(niarimUserId: string, token: string)
   );
 }
 
-async function listDeviceTokens(niarimUserId: string): Promise<DeviceTokenItem[]> {
+async function listDeviceTokens(
+  niarimUserId: string,
+): Promise<DeviceTokenItem[]> {
   const result = await ddb.send(
     new QueryCommand({
       TableName: tableName(),
-      KeyConditionExpression: 'pk = :pk AND begins_with(sk, :prefix)',
-      ExpressionAttributeValues: { ':pk': `USER#${niarimUserId}`, ':prefix': 'DEVICE#' },
+      KeyConditionExpression: "pk = :pk AND begins_with(sk, :prefix)",
+      ExpressionAttributeValues: {
+        ":pk": `USER#${niarimUserId}`,
+        ":prefix": "DEVICE#",
+      },
     }),
   );
   return (result.Items ?? []) as DeviceTokenItem[];
@@ -93,19 +101,23 @@ let cachedProjectId: string | undefined;
  */
 function fcmClient(): { jwt: JWT; projectId: string } | undefined {
   const raw = process.env.FCM_SERVICE_ACCOUNT_JSON;
-  if (!raw || raw === 'REPLACE_ME') return undefined;
+  if (!raw || raw === "REPLACE_ME") return undefined;
 
   if (!cachedJwt || !cachedProjectId) {
     let account: ServiceAccount;
     try {
       account = JSON.parse(raw) as ServiceAccount;
     } catch {
-      console.error('FCM_SERVICE_ACCOUNT_JSONがJSONとして読めません。プッシュ通知は送信しません。');
+      console.error(
+        "FCM_SERVICE_ACCOUNT_JSONがJSONとして読めません。プッシュ通知は送信しません。",
+      );
       return undefined;
     }
     const projectId = process.env.FCM_PROJECT_ID || account.project_id;
     if (!account.client_email || !account.private_key || !projectId) {
-      console.error('FCMサービスアカウントに必要な項目が足りません。プッシュ通知は送信しません。');
+      console.error(
+        "FCMサービスアカウントに必要な項目が足りません。プッシュ通知は送信しません。",
+      );
       return undefined;
     }
     cachedJwt = new JWT({
@@ -132,7 +144,10 @@ export interface PushMessage {
  * 存在しない（UNREGISTERED / INVALID_ARGUMENT）」と返した端末は、次回
  * 以降の無駄な送信を避けるためテーブルから削除する。
  */
-export async function sendPushToUser(niarimUserId: string, message: PushMessage): Promise<void> {
+export async function sendPushToUser(
+  niarimUserId: string,
+  message: PushMessage,
+): Promise<void> {
   const client = fcmClient();
   if (!client) return;
 
@@ -140,7 +155,7 @@ export async function sendPushToUser(niarimUserId: string, message: PushMessage)
   try {
     tokens = await listDeviceTokens(niarimUserId);
   } catch (err) {
-    console.error('端末トークンの取得に失敗しました', err);
+    console.error("端末トークンの取得に失敗しました", err);
     return;
   }
   if (tokens.length === 0) return;
@@ -149,7 +164,7 @@ export async function sendPushToUser(niarimUserId: string, message: PushMessage)
   try {
     accessToken = (await client.jwt.getAccessToken()).token;
   } catch (err) {
-    console.error('FCMアクセストークンの取得に失敗しました', err);
+    console.error("FCMアクセストークンの取得に失敗しました", err);
     return;
   }
   if (!accessToken) return;
@@ -168,33 +183,43 @@ async function sendOne(
 ): Promise<void> {
   try {
     const response = await fetch(endpoint, {
-      method: 'POST',
+      method: "POST",
       headers: {
         Authorization: `Bearer ${accessToken}`,
-        'Content-Type': 'application/json',
+        "Content-Type": "application/json",
       },
       body: JSON.stringify({
         message: {
           token: device.token,
           notification: { title: message.title, body: message.body },
           ...(message.data ? { data: message.data } : {}),
-          android: { priority: 'HIGH' },
+          android: { priority: "HIGH" },
         },
       }),
     });
 
     if (response.ok) return;
 
-    const text = await response.text().catch(() => '');
+    const text = await response.text().catch(() => "");
     // 404 UNREGISTERED / 400 INVALID_ARGUMENT は「そのトークンは死んでいる」。
-    if (response.status === 404 || (response.status === 400 && text.includes('INVALID_ARGUMENT'))) {
+    if (
+      response.status === 404 ||
+      (response.status === 400 && text.includes("INVALID_ARGUMENT"))
+    ) {
       await ddb
-        .send(new DeleteCommand({ TableName: tableName(), Key: { pk: device.pk, sk: device.sk } }))
+        .send(
+          new DeleteCommand({
+            TableName: tableName(),
+            Key: { pk: device.pk, sk: device.sk },
+          }),
+        )
         .catch(() => undefined);
       return;
     }
-    console.error(`FCM送信に失敗しました（HTTP ${response.status}）: ${text.slice(0, 300)}`);
+    console.error(
+      `FCM送信に失敗しました（HTTP ${response.status}）: ${text.slice(0, 300)}`,
+    );
   } catch (err) {
-    console.error('FCM送信で例外が発生しました', err);
+    console.error("FCM送信で例外が発生しました", err);
   }
 }

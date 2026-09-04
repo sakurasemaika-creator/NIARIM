@@ -186,96 +186,104 @@ void main() {
     expect(find.byType(TimelineScreen), findsOneWidget);
   }
 
-  testWidgets('exact onion panel through production callbacks', (tester) async {
-    await canvas(tester);
+  testWidgets(
+    'exact onion panel through production callbacks',
+    (tester) async {
+      await canvas(tester);
 
-    final settings = find.byWidgetPredicate(
-      (widget) => widget is CanvasIconButton && widget.icon == Icons.settings,
-      skipOffstage: false,
-    );
-    expect(settings, findsWidgets);
-    final settingsButton = tester.widget<CanvasIconButton>(settings.last);
-    expect(settingsButton.onPressed, isNotNull);
-    settingsButton.onPressed!.call();
-    await tester.pump(const Duration(milliseconds: 350));
+      final settings = find.byWidgetPredicate(
+        (widget) => widget is CanvasIconButton && widget.icon == Icons.settings,
+        skipOffstage: false,
+      );
+      expect(settings, findsWidgets);
+      final settingsButton = tester.widget<CanvasIconButton>(settings.last);
+      expect(settingsButton.onPressed, isNotNull);
+      settingsButton.onPressed!.call();
+      await tester.pump(const Duration(milliseconds: 350));
 
-    final onionTileFinder = find.byWidgetPredicate((widget) {
-      if (widget is! ListTile) return false;
-      final leading = widget.leading;
-      return leading is Icon && leading.icon == Icons.layers_outlined;
-    }, skipOffstage: false);
-    expect(onionTileFinder, findsWidgets);
-    final onionTile = tester.widget<ListTile>(onionTileFinder.last);
-    expect(onionTile.onTap, isNotNull);
-    onionTile.onTap!.call();
-    await tester.pump(const Duration(milliseconds: 450));
-    clean(tester, 'open onion panel');
-    await shot(tester, '03_canvas_onion_panel');
-  }, timeout: const Timeout(Duration(seconds: 180)));
+      final onionTileFinder = find.byWidgetPredicate((widget) {
+        if (widget is! ListTile) return false;
+        final leading = widget.leading;
+        return leading is Icon && leading.icon == Icons.layers_outlined;
+      }, skipOffstage: false);
+      expect(onionTileFinder, findsWidgets);
+      final onionTile = tester.widget<ListTile>(onionTileFinder.last);
+      expect(onionTile.onTap, isNotNull);
+      onionTile.onTap!.call();
+      await tester.pump(const Duration(milliseconds: 450));
+      clean(tester, 'open onion panel');
+      await shot(tester, '03_canvas_onion_panel');
+    },
+    timeout: const Timeout(Duration(seconds: 180)),
+  );
 
-  testWidgets('exact export through production timeline menu callback', (
-    tester,
-  ) async {
-    final ids = await canvas(tester);
-    await openTimelineWithMountedRouter(tester, ids.projectId);
+  testWidgets(
+    'exact export through production timeline menu callback',
+    (tester) async {
+      final ids = await canvas(tester);
+      await openTimelineWithMountedRouter(tester, ids.projectId);
 
-    final menuFinder = find.byWidgetPredicate(
-      (widget) => widget is PopupMenuButton<String>,
-      skipOffstage: false,
-    );
-    expect(menuFinder, findsWidgets);
-    final menu = tester.widget<PopupMenuButton<String>>(menuFinder.last);
-    expect(menu.onSelected, isNotNull);
-    menu.onSelected!.call('export');
-    // 遷移アニメーションが終わるまで待つ。go()/push()直後の固定時間待ちだと、
-    // ExportScreenはツリーに入っていてもまだ遷移中でoffstage扱いのため、
-    // 既定でoffstageを除外するfind.textでは0件になる。見つかるまで刻む。
-    for (var i = 0; i < 20; i++) {
-      if (find.text('書き出し').evaluate().isNotEmpty) break;
-      await tester.pump(const Duration(milliseconds: 100));
-    }
-    clean(tester, 'timeline menu to export');
-    expect(find.text('書き出し'), findsWidgets);
-    await shot(tester, '07_export');
-  }, timeout: const Timeout(Duration(seconds: 180)));
+      final menuFinder = find.byWidgetPredicate(
+        (widget) => widget is PopupMenuButton<String>,
+        skipOffstage: false,
+      );
+      expect(menuFinder, findsWidgets);
+      final menu = tester.widget<PopupMenuButton<String>>(menuFinder.last);
+      expect(menu.onSelected, isNotNull);
+      menu.onSelected!.call('export');
+      // 遷移アニメーションが終わるまで待つ。go()/push()直後の固定時間待ちだと、
+      // ExportScreenはツリーに入っていてもまだ遷移中でoffstage扱いのため、
+      // 既定でoffstageを除外するfind.textでは0件になる。見つかるまで刻む。
+      for (var i = 0; i < 20; i++) {
+        if (find.text('書き出し').evaluate().isNotEmpty) break;
+        await tester.pump(const Duration(milliseconds: 100));
+      }
+      clean(tester, 'timeline menu to export');
+      expect(find.text('書き出し'), findsWidgets);
+      await shot(tester, '07_export');
+    },
+    timeout: const Timeout(Duration(seconds: 180)),
+  );
 
-  testWidgets('exact tree mode screen using real SaveTreeScreen rendering', (
-    tester,
-  ) async {
-    final ids = await canvas(tester);
-    final context = tester.element(find.byType(Scaffold).first);
-    final ps = context.read<ProjectService>();
-    final saves = context.read<SaveTreeService>();
-    saves.setTreeMode(true);
-    final project = ps.projects.firstWhere((p) => p.id == ids.projectId);
-    final scenes = ps.scenesOf(ids.projectId);
-    final tm = ps.tileManagerOf(ids.projectId);
-    final root = await saves.saveAsChild(
-      projectId: ids.projectId,
-      project: project,
-      scenes: scenes,
-      tileManager: tm,
-      comment: '保存 01',
-    );
-    final second = await saves.saveAsChild(
-      projectId: ids.projectId,
-      project: project,
-      scenes: scenes,
-      tileManager: tm,
-      parentId: root.id,
-      comment: '保存 02',
-    );
-    await saves.saveAsChild(
-      projectId: ids.projectId,
-      project: project,
-      scenes: scenes,
-      tileManager: tm,
-      parentId: second.id,
-      comment: '保存 03',
-    );
-    GoRouter.of(context).push('/save-tree/${ids.projectId}');
-    await tester.pump(const Duration(milliseconds: 750));
-    clean(tester, 'tree route');
-    await shot(tester, '06b_save_tree_mode');
-  }, timeout: const Timeout(Duration(seconds: 180)));
+  testWidgets(
+    'exact tree mode screen using real SaveTreeScreen rendering',
+    (tester) async {
+      final ids = await canvas(tester);
+      final context = tester.element(find.byType(Scaffold).first);
+      final ps = context.read<ProjectService>();
+      final saves = context.read<SaveTreeService>();
+      saves.setTreeMode(true);
+      final project = ps.projects.firstWhere((p) => p.id == ids.projectId);
+      final scenes = ps.scenesOf(ids.projectId);
+      final tm = ps.tileManagerOf(ids.projectId);
+      final root = await saves.saveAsChild(
+        projectId: ids.projectId,
+        project: project,
+        scenes: scenes,
+        tileManager: tm,
+        comment: '保存 01',
+      );
+      final second = await saves.saveAsChild(
+        projectId: ids.projectId,
+        project: project,
+        scenes: scenes,
+        tileManager: tm,
+        parentId: root.id,
+        comment: '保存 02',
+      );
+      await saves.saveAsChild(
+        projectId: ids.projectId,
+        project: project,
+        scenes: scenes,
+        tileManager: tm,
+        parentId: second.id,
+        comment: '保存 03',
+      );
+      GoRouter.of(context).push('/save-tree/${ids.projectId}');
+      await tester.pump(const Duration(milliseconds: 750));
+      clean(tester, 'tree route');
+      await shot(tester, '06b_save_tree_mode');
+    },
+    timeout: const Timeout(Duration(seconds: 180)),
+  );
 }

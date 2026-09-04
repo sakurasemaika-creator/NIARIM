@@ -2,7 +2,7 @@ name: One-shot Full Existing Suite V2
 on:
   push:
     branches: [dev_branch]
-    paths: ['.github/workflows/one-shot-full-existing-suite-v2.yml']
+    paths: [".github/workflows/one-shot-full-existing-suite-v2.yml"]
 jobs:
   analyze:
     runs-on: ubuntu-latest

@@ -4,8 +4,8 @@ on:
   push:
     branches: [dev_branch]
     paths:
-      - 'audit-dashboard/**'
-      - '.github/workflows/**'
+      - "audit-dashboard/**"
+      - ".github/workflows/**"
   workflow_dispatch:
   workflow_run:
     workflows:
@@ -41,6 +41,6 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
           REPO: ${{ github.repository }}
-          ISSUE_NUMBER: '3'
+          ISSUE_NUMBER: "3"
           BRANCH: dev_branch
         run: python3 audit-dashboard/update_dashboard.py

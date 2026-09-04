@@ -77,207 +77,211 @@ void main() {
         .setMockMethodCallHandler(pathProviderChannel, null);
   });
 
-  testWidgets('実CanvasScreenの主要オーバーレイパネルを実操作で開いてPNG保存する', (tester) async {
-    tester.view.physicalSize = const Size(960, 2160);
-    tester.view.devicePixelRatio = 3;
-    addTearDown(tester.view.resetPhysicalSize);
-    addTearDown(tester.view.resetDevicePixelRatio);
+  testWidgets(
+    '実CanvasScreenの主要オーバーレイパネルを実操作で開いてPNG保存する',
+    (tester) async {
+      tester.view.physicalSize = const Size(960, 2160);
+      tester.view.devicePixelRatio = 3;
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
 
-    await tester.runAsync(() async {
-      final loaders = <FontLoader>[
-        FontLoader('HakkouMincho')
-          ..addFont(rootBundle.load('assets/fonts/HakkouMincho.ttf')),
-        FontLoader('Kuramubon')
-          ..addFont(rootBundle.load('assets/fonts/Kuramubon.otf')),
-        FontLoader('NotoSerifJP')
-          ..addFont(rootBundle.load('assets/fonts/NotoSerifJP.ttf')),
-      ];
-      await Future.wait(loaders.map((e) => e.load()));
-    });
+      await tester.runAsync(() async {
+        final loaders = <FontLoader>[
+          FontLoader('HakkouMincho')
+            ..addFont(rootBundle.load('assets/fonts/HakkouMincho.ttf')),
+          FontLoader('Kuramubon')
+            ..addFont(rootBundle.load('assets/fonts/Kuramubon.otf')),
+          FontLoader('NotoSerifJP')
+            ..addFont(rootBundle.load('assets/fonts/NotoSerifJP.ttf')),
+        ];
+        await Future.wait(loaders.map((e) => e.load()));
+      });
 
-    final providers = await tester.runAsync(buildAppProviders);
-    final providerList = providers!;
-    ProjectService? ps;
-    StateSetter? rebuildHost;
-    String? projectId;
-    final rootKey = GlobalKey();
+      final providers = await tester.runAsync(buildAppProviders);
+      final providerList = providers!;
+      ProjectService? ps;
+      StateSetter? rebuildHost;
+      String? projectId;
+      final rootKey = GlobalKey();
 
-    await tester.pumpWidget(
-      RepaintBoundary(
-        key: rootKey,
-        child: MultiProvider(
-          providers: providerList,
-          child: MaterialApp(
-            locale: const Locale('ja'),
-            localizationsDelegates: AppLocalizations.localizationsDelegates,
-            supportedLocales: AppLocalizations.supportedLocales,
-            home: StatefulBuilder(
-              builder: (context, setState) {
-                ps ??= context.read<ProjectService>();
-                rebuildHost = setState;
-                if (projectId == null) return const SizedBox.expand();
-                return CanvasScreen(projectId: projectId);
-              },
+      await tester.pumpWidget(
+        RepaintBoundary(
+          key: rootKey,
+          child: MultiProvider(
+            providers: providerList,
+            child: MaterialApp(
+              locale: const Locale('ja'),
+              localizationsDelegates: AppLocalizations.localizationsDelegates,
+              supportedLocales: AppLocalizations.supportedLocales,
+              home: StatefulBuilder(
+                builder: (context, setState) {
+                  ps ??= context.read<ProjectService>();
+                  rebuildHost = setState;
+                  if (projectId == null) return const SizedBox.expand();
+                  return CanvasScreen(projectId: projectId);
+                },
+              ),
             ),
           ),
         ),
-      ),
-    );
-    await tester.pump();
-    expect(ps, isNotNull, reason: '本番ProviderツリーからProjectServiceを取得できること');
-
-    final project = (await tester.runAsync(
-      () => ps!.createProject(
-        name: 'panel-visual-audit',
-        fps: 24,
-        durationSeconds: 1,
-        backgroundColor: 0xFFFFFFFF,
-        exportWidth: 320,
-        exportHeight: 320,
-      ),
-    ))!;
-    projectId = project.id;
-    rebuildHost!(() {});
-    await tester.pump(const Duration(milliseconds: 1400));
-    _expectNoException(tester, 'CanvasScreen initial');
-
-    Future<void> capture(String file) async {
-      await tester.runAsync(() => _capture(rootKey, '${out.path}/$file.png'));
-    }
-
-    await capture('00_canvas_default');
-
-    // ツールバーは横スクロールするSingleChildScrollViewで、狭い画面
-    // （このテストは論理320px幅）では右側のボタンが表示範囲の外にある。
-    // 座標がビューポート外だとタップはヒットテストに当たらず、ボタンが
-    // 反応しないまま「パネルが開かない」という失敗になる（実際にこれで
-    // BrushPanelが0件になっていた）。タップ前に必ず可視位置へ送る。
-    Future<void> revealInToolbar(Finder finder) async {
-      try {
-        await tester.ensureVisible(finder);
-        await tester.pump(const Duration(milliseconds: 120));
-      } on StateError {
-        // Scrollableの中に無いコントロール（オーバーレイ上のボタン等）は
-        // スクロール不要なのでそのままタップする。
-      }
-    }
-
-    // オーバーレイパネルは画面左側へ縦いっぱいに開くため、この画面幅
-    // （論理320x720）ではツールバー（y=588..628）を覆ってしまう。開いた
-    // ままだと次のツールバー操作がパネル側に吸われてボタンが反応しない。
-    // 実際の操作と同じく、次を開く前に今開いているパネルを閉じる。
-    Future<void> closeOpenPanel() async {
-      final closeBar = find.byType(PanelCenterCloseBar);
-      if (closeBar.evaluate().isEmpty) return;
-      await tester.tap(closeBar.first);
-      await tester.pump(const Duration(milliseconds: 400));
-    }
-
-    // 設定シートは項目が縦に長く、この画面（論理320x720）では下の方の
-    // 項目が画面外にある。座標が画面外だとタップがヒットテストに当たらず、
-    // 項目が反応しないまま失敗する。シート内の項目も送ってからタップする。
-    Future<void> tapInSheet(Finder finder) async {
-      expect(finder, findsWidgets);
-      await revealInToolbar(finder.last);
-      await tester.tap(finder.last);
-    }
-
-    // 設定シートを開く。直前に開いたパネルがツールバーを覆っていると
-    // 歯車ボタンのタップがパネル側に吸われるため、必ず閉じてから開く。
-    Future<void> openSettingsSheet() async {
-      await closeOpenPanel();
-      await revealInToolbar(find.byIcon(Icons.settings).first);
-      await tester.tap(find.byIcon(Icons.settings).first);
-      await tester.pump(const Duration(milliseconds: 400));
-    }
-
-    Future<void> tapPanel({
-      required Finder control,
-      required Type panelType,
-      required String file,
-      bool longPress = false,
-    }) async {
-      await closeOpenPanel();
-      expect(control, findsWidgets, reason: '$file control exists');
-      await revealInToolbar(control.first);
-      if (longPress) {
-        await tester.longPress(control.first);
-      } else {
-        await tester.tap(control.first);
-      }
-      await tester.pump(const Duration(milliseconds: 500));
-      _expectNoException(tester, file);
-      expect(
-        find.byType(panelType),
-        findsOneWidget,
-        reason: '$file panel opened from real CanvasScreen control',
       );
-      await capture(file);
-    }
+      await tester.pump();
+      expect(ps, isNotNull, reason: '本番ProviderツリーからProjectServiceを取得できること');
 
-    final colorControl = find.descendant(
-      of: find.byType(ToolbarWidget),
-      matching: find.byWidgetPredicate(
-        (widget) => widget is GestureDetector && widget.child is Stack,
-        description: 'toolbar color GestureDetector',
-      ),
-    );
-    expect(colorControl, findsOneWidget);
-    await revealInToolbar(colorControl);
-    await tester.tap(colorControl);
-    await tester.pump(const Duration(milliseconds: 500));
-    _expectNoException(tester, 'color_picker');
-    expect(find.byType(ColorPickerPanel), findsOneWidget);
-    await capture('01_color_picker');
+      final project = (await tester.runAsync(
+        () => ps!.createProject(
+          name: 'panel-visual-audit',
+          fps: 24,
+          durationSeconds: 1,
+          backgroundColor: 0xFFFFFFFF,
+          exportWidth: 320,
+          exportHeight: 320,
+        ),
+      ))!;
+      projectId = project.id;
+      rebuildHost!(() {});
+      await tester.pump(const Duration(milliseconds: 1400));
+      _expectNoException(tester, 'CanvasScreen initial');
 
-    await tapPanel(
-      control: find.byIcon(Icons.tune),
-      panelType: BrushPanel,
-      file: '02_brush_panel',
-    );
-    expect(find.byType(ColorPickerPanel), findsNothing);
-    await tapPanel(
-      control: find.byIcon(Icons.layers),
-      panelType: LayerPanel,
-      file: '03_layer_panel',
-    );
-    await tapPanel(
-      control: find.byIcon(Icons.straighten),
-      panelType: RulerPanel,
-      file: '04_ruler_panel',
-    );
-    await tapPanel(
-      control: find.byIcon(Icons.loop),
-      panelType: QuickToolPanel,
-      file: '05_quick_tool_panel',
-      longPress: true,
-    );
+      Future<void> capture(String file) async {
+        await tester.runAsync(() => _capture(rootKey, '${out.path}/$file.png'));
+      }
 
-    await openSettingsSheet();
-    _expectNoException(tester, 'settings_edit_sheet');
-    expect(find.byType(BottomSheet), findsWidgets);
-    await capture('06_settings_edit_sheet');
+      await capture('00_canvas_default');
 
-    await tapInSheet(find.byIcon(Icons.layers_outlined));
-    await tester.pump(const Duration(milliseconds: 500));
-    _expectNoException(tester, 'onion_skin_panel');
-    expect(find.byType(OnionSkinPanel), findsOneWidget);
-    await capture('07_onion_skin_panel');
+      // ツールバーは横スクロールするSingleChildScrollViewで、狭い画面
+      // （このテストは論理320px幅）では右側のボタンが表示範囲の外にある。
+      // 座標がビューポート外だとタップはヒットテストに当たらず、ボタンが
+      // 反応しないまま「パネルが開かない」という失敗になる（実際にこれで
+      // BrushPanelが0件になっていた）。タップ前に必ず可視位置へ送る。
+      Future<void> revealInToolbar(Finder finder) async {
+        try {
+          await tester.ensureVisible(finder);
+          await tester.pump(const Duration(milliseconds: 120));
+        } on StateError {
+          // Scrollableの中に無いコントロール（オーバーレイ上のボタン等）は
+          // スクロール不要なのでそのままタップする。
+        }
+      }
 
-    await openSettingsSheet();
-    await tapInSheet(find.byIcon(Icons.blur_on));
-    await tester.pump(const Duration(milliseconds: 500));
-    _expectNoException(tester, 'filter_panel');
-    expect(find.byType(FilterPanel), findsOneWidget);
-    await capture('08_filter_panel');
+      // オーバーレイパネルは画面左側へ縦いっぱいに開くため、この画面幅
+      // （論理320x720）ではツールバー（y=588..628）を覆ってしまう。開いた
+      // ままだと次のツールバー操作がパネル側に吸われてボタンが反応しない。
+      // 実際の操作と同じく、次を開く前に今開いているパネルを閉じる。
+      Future<void> closeOpenPanel() async {
+        final closeBar = find.byType(PanelCenterCloseBar);
+        if (closeBar.evaluate().isEmpty) return;
+        await tester.tap(closeBar.first);
+        await tester.pump(const Duration(milliseconds: 400));
+      }
 
-    await openSettingsSheet();
-    await tapInSheet(find.byIcon(Icons.crop_free));
-    await tester.pump(const Duration(milliseconds: 500));
-    _expectNoException(tester, 'mesh_transform_panel');
-    expect(find.byType(MeshTransformPanel), findsOneWidget);
-    await capture('09_mesh_transform_panel');
-  }, timeout: const Timeout(Duration(minutes: 2)));
+      // 設定シートは項目が縦に長く、この画面（論理320x720）では下の方の
+      // 項目が画面外にある。座標が画面外だとタップがヒットテストに当たらず、
+      // 項目が反応しないまま失敗する。シート内の項目も送ってからタップする。
+      Future<void> tapInSheet(Finder finder) async {
+        expect(finder, findsWidgets);
+        await revealInToolbar(finder.last);
+        await tester.tap(finder.last);
+      }
+
+      // 設定シートを開く。直前に開いたパネルがツールバーを覆っていると
+      // 歯車ボタンのタップがパネル側に吸われるため、必ず閉じてから開く。
+      Future<void> openSettingsSheet() async {
+        await closeOpenPanel();
+        await revealInToolbar(find.byIcon(Icons.settings).first);
+        await tester.tap(find.byIcon(Icons.settings).first);
+        await tester.pump(const Duration(milliseconds: 400));
+      }
+
+      Future<void> tapPanel({
+        required Finder control,
+        required Type panelType,
+        required String file,
+        bool longPress = false,
+      }) async {
+        await closeOpenPanel();
+        expect(control, findsWidgets, reason: '$file control exists');
+        await revealInToolbar(control.first);
+        if (longPress) {
+          await tester.longPress(control.first);
+        } else {
+          await tester.tap(control.first);
+        }
+        await tester.pump(const Duration(milliseconds: 500));
+        _expectNoException(tester, file);
+        expect(
+          find.byType(panelType),
+          findsOneWidget,
+          reason: '$file panel opened from real CanvasScreen control',
+        );
+        await capture(file);
+      }
+
+      final colorControl = find.descendant(
+        of: find.byType(ToolbarWidget),
+        matching: find.byWidgetPredicate(
+          (widget) => widget is GestureDetector && widget.child is Stack,
+          description: 'toolbar color GestureDetector',
+        ),
+      );
+      expect(colorControl, findsOneWidget);
+      await revealInToolbar(colorControl);
+      await tester.tap(colorControl);
+      await tester.pump(const Duration(milliseconds: 500));
+      _expectNoException(tester, 'color_picker');
+      expect(find.byType(ColorPickerPanel), findsOneWidget);
+      await capture('01_color_picker');
+
+      await tapPanel(
+        control: find.byIcon(Icons.tune),
+        panelType: BrushPanel,
+        file: '02_brush_panel',
+      );
+      expect(find.byType(ColorPickerPanel), findsNothing);
+      await tapPanel(
+        control: find.byIcon(Icons.layers),
+        panelType: LayerPanel,
+        file: '03_layer_panel',
+      );
+      await tapPanel(
+        control: find.byIcon(Icons.straighten),
+        panelType: RulerPanel,
+        file: '04_ruler_panel',
+      );
+      await tapPanel(
+        control: find.byIcon(Icons.loop),
+        panelType: QuickToolPanel,
+        file: '05_quick_tool_panel',
+        longPress: true,
+      );
+
+      await openSettingsSheet();
+      _expectNoException(tester, 'settings_edit_sheet');
+      expect(find.byType(BottomSheet), findsWidgets);
+      await capture('06_settings_edit_sheet');
+
+      await tapInSheet(find.byIcon(Icons.layers_outlined));
+      await tester.pump(const Duration(milliseconds: 500));
+      _expectNoException(tester, 'onion_skin_panel');
+      expect(find.byType(OnionSkinPanel), findsOneWidget);
+      await capture('07_onion_skin_panel');
+
+      await openSettingsSheet();
+      await tapInSheet(find.byIcon(Icons.blur_on));
+      await tester.pump(const Duration(milliseconds: 500));
+      _expectNoException(tester, 'filter_panel');
+      expect(find.byType(FilterPanel), findsOneWidget);
+      await capture('08_filter_panel');
+
+      await openSettingsSheet();
+      await tapInSheet(find.byIcon(Icons.crop_free));
+      await tester.pump(const Duration(milliseconds: 500));
+      _expectNoException(tester, 'mesh_transform_panel');
+      expect(find.byType(MeshTransformPanel), findsOneWidget);
+      await capture('09_mesh_transform_panel');
+    },
+    timeout: const Timeout(Duration(minutes: 2)),
+  );
 }
 
 void _expectNoException(WidgetTester tester, String operation) {

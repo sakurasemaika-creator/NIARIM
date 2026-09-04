@@ -94,68 +94,72 @@ void main() {
   final out = Directory('build/visual-reaudit/export-camera');
   setUpAll(() => out.createSync(recursive: true));
 
-  test('ExportEngineのクロップ・移動・回転・ズーム・補間・fadeをPNGで再監査する', () async {
-    await _save(
-      _scenePixels(),
-      _dw,
-      _dh,
-      '${out.path}/00_drawing_area_source.png',
-    );
+  test(
+    'ExportEngineのクロップ・移動・回転・ズーム・補間・fadeをPNGで再監査する',
+    () async {
+      await _save(
+        _scenePixels(),
+        _dw,
+        _dh,
+        '${out.path}/00_drawing_area_source.png',
+      );
 
-    final crop = await _render();
-    await _save(crop, _ew, _eh, '${out.path}/01_center_crop.png');
+      final crop = await _render();
+      await _save(crop, _ew, _eh, '${out.path}/01_center_crop.png');
 
-    final moved = await _render(
-      camera: const [
-        CameraKeyframe(frameIndex: 0, x: 36, y: -18, zoom: 1, rotation: 0),
-      ],
-    );
-    await _save(moved, _ew, _eh, '${out.path}/02_camera_move_x36_y-18.png');
+      final moved = await _render(
+        camera: const [
+          CameraKeyframe(frameIndex: 0, x: 36, y: -18, zoom: 1, rotation: 0),
+        ],
+      );
+      await _save(moved, _ew, _eh, '${out.path}/02_camera_move_x36_y-18.png');
 
-    final rotated = await _render(
-      camera: const [CameraKeyframe(frameIndex: 0, rotation: 180)],
-    );
-    await _save(rotated, _ew, _eh, '${out.path}/03_camera_rotate_180.png');
+      final rotated = await _render(
+        camera: const [CameraKeyframe(frameIndex: 0, rotation: 180)],
+      );
+      await _save(rotated, _ew, _eh, '${out.path}/03_camera_rotate_180.png');
 
-    final zoomed = await _render(
-      camera: const [CameraKeyframe(frameIndex: 0, zoom: 2)],
-    );
-    await _save(zoomed, _ew, _eh, '${out.path}/04_camera_zoom_2x.png');
+      final zoomed = await _render(
+        camera: const [CameraKeyframe(frameIndex: 0, zoom: 2)],
+      );
+      await _save(zoomed, _ew, _eh, '${out.path}/04_camera_zoom_2x.png');
 
-    final interpolated = await _render(
-      frame: 5,
-      camera: const [
-        CameraKeyframe(frameIndex: 0, x: 0, y: 0, zoom: 1, rotation: 0),
-        CameraKeyframe(frameIndex: 10, x: 48, y: 28, zoom: 1, rotation: 0),
-      ],
-    );
-    await _save(
-      interpolated,
-      _ew,
-      _eh,
-      '${out.path}/05_camera_interpolate_50pct.png',
-    );
+      final interpolated = await _render(
+        frame: 5,
+        camera: const [
+          CameraKeyframe(frameIndex: 0, x: 0, y: 0, zoom: 1, rotation: 0),
+          CameraKeyframe(frameIndex: 10, x: 48, y: 28, zoom: 1, rotation: 0),
+        ],
+      );
+      await _save(
+        interpolated,
+        _ew,
+        _eh,
+        '${out.path}/05_camera_interpolate_50pct.png',
+      );
 
-    const fadeColor = Color.fromARGB(255, 230, 76, 30);
-    final faded = await _render(
-      frame: 5,
-      effects: const [
-        EffectFilterInstance(
-          id: 'fade-half',
-          type: EffectFilterType.fade,
-          startFrame: 0,
-          endFrame: 10,
-          fadeColor: fadeColor,
-        ),
-      ],
-    );
-    await _save(faded, _ew, _eh, '${out.path}/06_effect_fade_50pct.png');
+      const fadeColor = Color.fromARGB(255, 230, 76, 30);
+      final faded = await _render(
+        frame: 5,
+        effects: const [
+          EffectFilterInstance(
+            id: 'fade-half',
+            type: EffectFilterType.fade,
+            startFrame: 0,
+            endFrame: 10,
+            fadeColor: fadeColor,
+          ),
+        ],
+      );
+      await _save(faded, _ew, _eh, '${out.path}/06_effect_fade_50pct.png');
 
-    // Numeric guards only; visual acceptance is from the emitted PNG set.
-    expect(crop, isNot(orderedEquals(moved)));
-    expect(crop, isNot(orderedEquals(rotated)));
-    expect(crop, isNot(orderedEquals(zoomed)));
-    expect(crop, isNot(orderedEquals(interpolated)));
-    expect(crop, isNot(orderedEquals(faded)));
-  }, timeout: const Timeout(Duration(minutes: 2)));
+      // Numeric guards only; visual acceptance is from the emitted PNG set.
+      expect(crop, isNot(orderedEquals(moved)));
+      expect(crop, isNot(orderedEquals(rotated)));
+      expect(crop, isNot(orderedEquals(zoomed)));
+      expect(crop, isNot(orderedEquals(interpolated)));
+      expect(crop, isNot(orderedEquals(faded)));
+    },
+    timeout: const Timeout(Duration(minutes: 2)),
+  );
 }

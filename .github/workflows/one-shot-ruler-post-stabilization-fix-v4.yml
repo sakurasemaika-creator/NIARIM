@@ -5,7 +5,7 @@ on:
     branches:
       - dev_branch
     paths:
-      - '.github/workflows/one-shot-ruler-post-stabilization-fix-v4.yml'
+      - ".github/workflows/one-shot-ruler-post-stabilization-fix-v4.yml"
 
 permissions:
   contents: write

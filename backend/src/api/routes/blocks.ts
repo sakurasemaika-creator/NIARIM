@@ -1,11 +1,11 @@
-import type { APIGatewayProxyEventV2 } from 'aws-lambda';
-import { PutCommand } from '@aws-sdk/lib-dynamodb';
-import { ddb, tableName, Keys } from '../../lib/dynamo';
-import { authenticate } from '../../lib/auth';
-import { badRequest, created } from '../../lib/response';
-import { parseJsonObject } from '../../lib/request';
-import type { BlockItem } from '../../lib/types';
-import { TABLE_ITEM_TYPE } from '../../lib/types';
+import type { APIGatewayProxyEventV2 } from "aws-lambda";
+import { PutCommand } from "@aws-sdk/lib-dynamodb";
+import { ddb, tableName, Keys } from "../../lib/dynamo";
+import { authenticate } from "../../lib/auth";
+import { badRequest, created } from "../../lib/response";
+import { parseJsonObject } from "../../lib/request";
+import type { BlockItem } from "../../lib/types";
+import { TABLE_ITEM_TYPE } from "../../lib/types";
 
 interface CreateBlockRequestBody {
   blockedUserId: string;
@@ -25,11 +25,13 @@ interface CreateBlockRequestBody {
  * 通常少数のため一覧取得APIのレスポンスサイズへの影響は小さい）。
  */
 export async function createBlock(event: APIGatewayProxyEventV2) {
-  const auth = await authenticate(event.headers['authorization'] ?? event.headers['Authorization']);
+  const auth = await authenticate(
+    event.headers["authorization"] ?? event.headers["Authorization"],
+  );
   const body = parseBody(event.body);
 
   if (body.blockedUserId === auth.niarimUserId) {
-    badRequest('自分自身をブロックすることはできません');
+    badRequest("自分自身をブロックすることはできません");
   }
 
   const now = new Date().toISOString();
@@ -47,8 +49,11 @@ export async function createBlock(event: APIGatewayProxyEventV2) {
 
 function parseBody(raw: string | undefined): CreateBlockRequestBody {
   const body = parseJsonObject(raw);
-  if (typeof body.blockedUserId !== 'string' || !/^N[0-9a-f]{32}$/.test(body.blockedUserId)) {
-    badRequest('blockedUserIdの形式が不正です');
+  if (
+    typeof body.blockedUserId !== "string" ||
+    !/^N[0-9a-f]{32}$/.test(body.blockedUserId)
+  ) {
+    badRequest("blockedUserIdの形式が不正です");
   }
   return { blockedUserId: body.blockedUserId };
 }

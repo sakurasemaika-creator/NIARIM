@@ -41,92 +41,100 @@ bool _differs(Uint8List a, Uint8List b) {
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
-  test('all draw FilterKind values execute through production dispatcher', () {
-    const allKinds = <FilterKind>[
-      FilterKind.gaussianBlur,
-      FilterKind.lensBlur,
-      FilterKind.animeStyle,
-      FilterKind.outline,
-      FilterKind.toneCurve,
-      FilterKind.levels,
-      FilterKind.sharpen,
-      FilterKind.unsharpMask,
-      FilterKind.vignette,
-      FilterKind.noise,
-      FilterKind.retroAnime,
-      FilterKind.crt,
-      FilterKind.monochrome,
-      FilterKind.colorAdjust,
-      FilterKind.threshold,
-      FilterKind.fisheye,
-      FilterKind.chromaticAberration,
-      FilterKind.lensDistortion,
-      FilterKind.pixelate,
-      FilterKind.auroraHologram,
-      FilterKind.backgroundBlend,
-    ];
-    expect(FilterKind.values, allKinds);
+  test(
+    'all draw FilterKind values execute through production dispatcher',
+    () {
+      const allKinds = <FilterKind>[
+        FilterKind.gaussianBlur,
+        FilterKind.lensBlur,
+        FilterKind.animeStyle,
+        FilterKind.outline,
+        FilterKind.toneCurve,
+        FilterKind.levels,
+        FilterKind.sharpen,
+        FilterKind.unsharpMask,
+        FilterKind.vignette,
+        FilterKind.noise,
+        FilterKind.retroAnime,
+        FilterKind.crt,
+        FilterKind.monochrome,
+        FilterKind.colorAdjust,
+        FilterKind.threshold,
+        FilterKind.fisheye,
+        FilterKind.chromaticAberration,
+        FilterKind.lensDistortion,
+        FilterKind.pixelate,
+        FilterKind.auroraHologram,
+        FilterKind.backgroundBlend,
+      ];
+      expect(FilterKind.values, allKinds);
 
-    const w = 12;
-    const h = 12;
-    final source = _source(w, h);
-    final mask = _mask(w, h);
+      const w = 12;
+      const h = 12;
+      final source = _source(w, h);
+      final mask = _mask(w, h);
 
-    for (final kind in allKinds) {
-      final def = FilterDef(
-        id: 'audit_${kind.name}',
-        name: kind.name,
-        kind: kind,
-        strength: switch (kind) {
-          FilterKind.gaussianBlur ||
-          FilterKind.lensBlur ||
-          FilterKind.unsharpMask => 2,
-          FilterKind.pixelate => 3,
-          FilterKind.lensDistortion => 45,
-          _ => 60,
-        },
-        colorLevels: 4,
-        edgeStrength: 1.2,
-        inputBlack: 20,
-        inputWhite: 220,
-        outputBlack: 5,
-        outputWhite: 245,
-        toneCurvePreset: ToneCurvePreset.brighten,
-        outlineColor: 0xFFFF0000,
-        outlineWidth: 2,
-        vignetteColor: 0xFF102040,
-        caSaturation: 30,
-        caBrightness: 20,
-        caContrast: 25,
-        monochromeColor: 0xFF80C0FF,
-        thresholdValue: 110,
-        lensCenterOffsetX: 0.5,
-        lensCenterOffsetY: -0.5,
-        pixelColorMode: PixelColorMode.explicit,
-        pixelExplicitColors: const [
-          0xFF000000,
-          0xFFFFFFFF,
-          0xFFFF0000,
-          0xFF00FFFF,
-        ],
-        hologramBrightness: 10,
-        hologramSaturation: 20,
-        hologramPreset: AuroraHologramPreset.soapBubble,
-        bgBlendColor: 0xFF708090,
-        bgBlendDirection: 45,
-        bgBlendLength: 3,
-        bgBlendBlur: 2,
-      );
-      final out = applyDrawFilterInIsolate((source, w, h, def, mask));
-      expect(out, hasLength(source.length), reason: '${kind.name} output size');
-      expect(
-        _differs(source, out),
-        isTrue,
-        reason:
-            '${kind.name} should produce a visible pixel change for audit input',
-      );
-    }
-  }, timeout: const Timeout(Duration(seconds: 120)));
+      for (final kind in allKinds) {
+        final def = FilterDef(
+          id: 'audit_${kind.name}',
+          name: kind.name,
+          kind: kind,
+          strength: switch (kind) {
+            FilterKind.gaussianBlur ||
+            FilterKind.lensBlur ||
+            FilterKind.unsharpMask => 2,
+            FilterKind.pixelate => 3,
+            FilterKind.lensDistortion => 45,
+            _ => 60,
+          },
+          colorLevels: 4,
+          edgeStrength: 1.2,
+          inputBlack: 20,
+          inputWhite: 220,
+          outputBlack: 5,
+          outputWhite: 245,
+          toneCurvePreset: ToneCurvePreset.brighten,
+          outlineColor: 0xFFFF0000,
+          outlineWidth: 2,
+          vignetteColor: 0xFF102040,
+          caSaturation: 30,
+          caBrightness: 20,
+          caContrast: 25,
+          monochromeColor: 0xFF80C0FF,
+          thresholdValue: 110,
+          lensCenterOffsetX: 0.5,
+          lensCenterOffsetY: -0.5,
+          pixelColorMode: PixelColorMode.explicit,
+          pixelExplicitColors: const [
+            0xFF000000,
+            0xFFFFFFFF,
+            0xFFFF0000,
+            0xFF00FFFF,
+          ],
+          hologramBrightness: 10,
+          hologramSaturation: 20,
+          hologramPreset: AuroraHologramPreset.soapBubble,
+          bgBlendColor: 0xFF708090,
+          bgBlendDirection: 45,
+          bgBlendLength: 3,
+          bgBlendBlur: 2,
+        );
+        final out = applyDrawFilterInIsolate((source, w, h, def, mask));
+        expect(
+          out,
+          hasLength(source.length),
+          reason: '${kind.name} output size',
+        );
+        expect(
+          _differs(source, out),
+          isTrue,
+          reason:
+              '${kind.name} should produce a visible pixel change for audit input',
+        );
+      }
+    },
+    timeout: const Timeout(Duration(seconds: 120)),
+  );
 
   test('tone curve and hologram preset tables cover every preset', () {
     const tonePresets = <ToneCurvePreset>[

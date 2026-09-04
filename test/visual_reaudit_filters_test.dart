@@ -177,51 +177,59 @@ void main() {
   final out = Directory('build/visual-reaudit/filters');
   setUpAll(() => out.createSync(recursive: true));
 
-  test('全FilterKindを本番dispatcherで描画し見た目再監査用PNGを保存する', () async {
-    final source = _source();
-    final outlineSource = _outlineSource();
-    final mask = _mask();
-    await _save(source, '${out.path}/00_source.png');
-    await _save(outlineSource, '${out.path}/00_outline_source.png');
+  test(
+    '全FilterKindを本番dispatcherで描画し見た目再監査用PNGを保存する',
+    () async {
+      final source = _source();
+      final outlineSource = _outlineSource();
+      final mask = _mask();
+      await _save(source, '${out.path}/00_source.png');
+      await _save(outlineSource, '${out.path}/00_outline_source.png');
 
-    final kinds = FilterKind.values;
-    for (var i = 0; i < kinds.length; i++) {
-      final kind = kinds[i];
-      final input = kind == FilterKind.outline ? outlineSource : source;
-      final rendered = applyDrawFilterInIsolate((
-        input,
-        _w,
-        _h,
-        _def(kind),
-        mask,
-      ));
-      expect(rendered.length, input.length, reason: '${kind.name}: RGBA size');
+      final kinds = FilterKind.values;
+      for (var i = 0; i < kinds.length; i++) {
+        final kind = kinds[i];
+        final input = kind == FilterKind.outline ? outlineSource : source;
+        final rendered = applyDrawFilterInIsolate((
+          input,
+          _w,
+          _h,
+          _def(kind),
+          mask,
+        ));
+        expect(
+          rendered.length,
+          input.length,
+          reason: '${kind.name}: RGBA size',
+        );
 
-      // This is only a guard. Visual acceptance is done from the emitted PNG itself.
-      var changed = 0;
-      for (var p = 0; p < input.length; p += 4) {
-        if (input[p] != rendered[p] ||
-            input[p + 1] != rendered[p + 1] ||
-            input[p + 2] != rendered[p + 2] ||
-            input[p + 3] != rendered[p + 3]) {
-          changed++;
+        // This is only a guard. Visual acceptance is done from the emitted PNG itself.
+        var changed = 0;
+        for (var p = 0; p < input.length; p += 4) {
+          if (input[p] != rendered[p] ||
+              input[p + 1] != rendered[p + 1] ||
+              input[p + 2] != rendered[p + 2] ||
+              input[p + 3] != rendered[p + 3]) {
+            changed++;
+          }
         }
+        expect(
+          changed,
+          greaterThan(40),
+          reason: '${kind.name}: visible region must exist',
+        );
+        await _save(
+          rendered,
+          '${out.path}/${(i + 1).toString().padLeft(2, '0')}_${kind.name}.png',
+        );
       }
-      expect(
-        changed,
-        greaterThan(40),
-        reason: '${kind.name}: visible region must exist',
-      );
-      await _save(
-        rendered,
-        '${out.path}/${(i + 1).toString().padLeft(2, '0')}_${kind.name}.png',
-      );
-    }
 
-    expect(
-      kinds.length,
-      21,
-      reason: '新しいFilterKind追加時はVisual Audit対象を自動的に増やすこと',
-    );
-  }, timeout: const Timeout(Duration(minutes: 3)));
+      expect(
+        kinds.length,
+        21,
+        reason: '新しいFilterKind追加時はVisual Audit対象を自動的に増やすこと',
+      );
+    },
+    timeout: const Timeout(Duration(minutes: 3)),
+  );
 }

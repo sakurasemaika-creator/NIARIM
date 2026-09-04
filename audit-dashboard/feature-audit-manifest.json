@@ -13,9 +13,7 @@
       "visual": true,
       "final_pass": true,
       "device_required": false,
-      "workflows": [
-        "one-shot-resume-real-operation-audit.yml"
-      ]
+      "workflows": ["one-shot-resume-real-operation-audit.yml"]
     },
     {
       "id": "brush.gpen",
@@ -27,9 +25,7 @@
       "visual": true,
       "final_pass": true,
       "device_required": false,
-      "workflows": [
-        "one-shot-resume-real-operation-audit.yml"
-      ]
+      "workflows": ["one-shot-resume-real-operation-audit.yml"]
     },
     {
       "id": "brush.pencil",
@@ -41,9 +37,7 @@
       "visual": true,
       "final_pass": true,
       "device_required": false,
-      "workflows": [
-        "one-shot-resume-real-operation-audit.yml"
-      ]
+      "workflows": ["one-shot-resume-real-operation-audit.yml"]
     },
     {
       "id": "brush.airbrush",
@@ -55,9 +49,7 @@
       "visual": true,
       "final_pass": true,
       "device_required": false,
-      "workflows": [
-        "one-shot-resume-real-operation-audit.yml"
-      ]
+      "workflows": ["one-shot-resume-real-operation-audit.yml"]
     },
     {
       "id": "brush.marker",
@@ -69,9 +61,7 @@
       "visual": true,
       "final_pass": true,
       "device_required": false,
-      "workflows": [
-        "one-shot-resume-real-operation-audit.yml"
-      ]
+      "workflows": ["one-shot-resume-real-operation-audit.yml"]
     },
     {
       "id": "brush.pixel",
@@ -83,9 +73,7 @@
       "visual": true,
       "final_pass": true,
       "device_required": false,
-      "workflows": [
-        "one-shot-resume-real-operation-audit.yml"
-      ]
+      "workflows": ["one-shot-resume-real-operation-audit.yml"]
     },
     {
       "id": "brush.opacity",
@@ -215,9 +203,7 @@
       "visual": true,
       "final_pass": true,
       "device_required": false,
-      "workflows": [
-        "functional-visual.yml"
-      ]
+      "workflows": ["functional-visual.yml"]
     },
     {
       "id": "fill.bucket",
@@ -229,9 +215,7 @@
       "visual": true,
       "final_pass": true,
       "device_required": false,
-      "workflows": [
-        "functional-visual.yml"
-      ]
+      "workflows": ["functional-visual.yml"]
     },
     {
       "id": "selection.rect",
@@ -243,9 +227,7 @@
       "visual": true,
       "final_pass": true,
       "device_required": false,
-      "workflows": [
-        "one-shot-resume-real-operation-audit.yml"
-      ]
+      "workflows": ["one-shot-resume-real-operation-audit.yml"]
     },
     {
       "id": "selection.lasso",
@@ -257,9 +239,7 @@
       "visual": true,
       "final_pass": true,
       "device_required": false,
-      "workflows": [
-        "one-shot-resume-real-operation-audit.yml"
-      ]
+      "workflows": ["one-shot-resume-real-operation-audit.yml"]
     },
     {
       "id": "selection.magicwand",
@@ -271,9 +251,7 @@
       "visual": true,
       "final_pass": true,
       "device_required": false,
-      "workflows": [
-        "one-shot-resume-real-operation-audit.yml"
-      ]
+      "workflows": ["one-shot-resume-real-operation-audit.yml"]
     },
     {
       "id": "selection.rotate",
@@ -285,9 +263,7 @@
       "visual": true,
       "final_pass": true,
       "device_required": false,
-      "workflows": [
-        "one-shot-resume-real-operation-audit.yml"
-      ]
+      "workflows": ["one-shot-resume-real-operation-audit.yml"]
     },
     {
       "id": "selection.scale",
@@ -299,9 +275,7 @@
       "visual": true,
       "final_pass": true,
       "device_required": false,
-      "workflows": [
-        "one-shot-resume-real-operation-audit.yml"
-      ]
+      "workflows": ["one-shot-resume-real-operation-audit.yml"]
     },
     {
       "id": "ruler.line",
@@ -425,9 +399,7 @@
       "visual": true,
       "final_pass": true,
       "device_required": false,
-      "workflows": [
-        "functional-visual.yml"
-      ]
+      "workflows": ["functional-visual.yml"]
     },
     {
       "id": "shape.rect",
@@ -439,9 +411,7 @@
       "visual": true,
       "final_pass": true,
       "device_required": false,
-      "workflows": [
-        "functional-visual.yml"
-      ]
+      "workflows": ["functional-visual.yml"]
     },
     {
       "id": "shape.ellipse",
@@ -453,9 +423,7 @@
       "visual": true,
       "final_pass": true,
       "device_required": false,
-      "workflows": [
-        "functional-visual.yml"
-      ]
+      "workflows": ["functional-visual.yml"]
     },
     {
       "id": "effect.blur",
@@ -484,9 +452,7 @@
       "visual": true,
       "final_pass": true,
       "device_required": false,
-      "workflows": [
-        "one-shot-resume-real-operation-audit.yml"
-      ]
+      "workflows": ["one-shot-resume-real-operation-audit.yml"]
     },
     {
       "id": "tone.all",
@@ -583,9 +549,7 @@
       "visual": true,
       "final_pass": true,
       "device_required": false,
-      "workflows": [
-        "functional-visual.yml"
-      ]
+      "workflows": ["functional-visual.yml"]
     },
     {
       "id": "layer.blendmodes",
@@ -614,9 +578,7 @@
       "visual": true,
       "final_pass": true,
       "device_required": false,
-      "workflows": [
-        "one-shot-resume-real-operation-audit.yml"
-      ]
+      "workflows": ["one-shot-resume-real-operation-audit.yml"]
     },
     {
       "id": "layer.mesh",
@@ -645,9 +607,7 @@
       "visual": true,
       "final_pass": true,
       "device_required": false,
-      "workflows": [
-        "one-shot-visual-delta-audit.yml"
-      ]
+      "workflows": ["one-shot-visual-delta-audit.yml"]
     },
     {
       "id": "history.undo",
@@ -659,9 +619,7 @@
       "visual": true,
       "final_pass": true,
       "device_required": false,
-      "workflows": [
-        "one-shot-resume-real-operation-audit.yml"
-      ]
+      "workflows": ["one-shot-resume-real-operation-audit.yml"]
     },
     {
       "id": "history.redo",
@@ -673,9 +631,7 @@
       "visual": true,
       "final_pass": true,
       "device_required": false,
-      "workflows": [
-        "one-shot-resume-real-operation-audit.yml"
-      ]
+      "workflows": ["one-shot-resume-real-operation-audit.yml"]
     },
     {
       "id": "input.touch",
@@ -687,9 +643,7 @@
       "visual": false,
       "final_pass": false,
       "device_required": true,
-      "workflows": [
-        "one-shot-direct-engine-coverage.yml"
-      ]
+      "workflows": ["one-shot-direct-engine-coverage.yml"]
     },
     {
       "id": "input.stylus",
@@ -701,9 +655,7 @@
       "visual": false,
       "final_pass": false,
       "device_required": true,
-      "workflows": [
-        "one-shot-direct-engine-coverage.yml"
-      ]
+      "workflows": ["one-shot-direct-engine-coverage.yml"]
     },
     {
       "id": "animation.onion",
@@ -828,9 +780,7 @@
       "visual": true,
       "final_pass": true,
       "device_required": false,
-      "workflows": [
-        "functional-visual.yml"
-      ]
+      "workflows": ["functional-visual.yml"]
     },
     {
       "id": "text.vertical",
@@ -842,9 +792,7 @@
       "visual": true,
       "final_pass": true,
       "device_required": false,
-      "workflows": [
-        "functional-visual.yml"
-      ]
+      "workflows": ["functional-visual.yml"]
     },
     {
       "id": "text.ruby",
@@ -856,9 +804,7 @@
       "visual": true,
       "final_pass": true,
       "device_required": false,
-      "workflows": [
-        "functional-visual.yml"
-      ]
+      "workflows": ["functional-visual.yml"]
     },
     {
       "id": "text.outline",
@@ -870,9 +816,7 @@
       "visual": true,
       "final_pass": true,
       "device_required": false,
-      "workflows": [
-        "functional-visual.yml"
-      ]
+      "workflows": ["functional-visual.yml"]
     },
     {
       "id": "text.pixel",
@@ -884,9 +828,7 @@
       "visual": true,
       "final_pass": true,
       "device_required": false,
-      "workflows": [
-        "functional-visual.yml"
-      ]
+      "workflows": ["functional-visual.yml"]
     },
     {
       "id": "export.png",
@@ -898,9 +840,7 @@
       "visual": true,
       "final_pass": true,
       "device_required": false,
-      "workflows": [
-        "one-shot-visual-delta-audit.yml"
-      ]
+      "workflows": ["one-shot-visual-delta-audit.yml"]
     },
     {
       "id": "export.crop",
@@ -912,9 +852,7 @@
       "visual": true,
       "final_pass": true,
       "device_required": false,
-      "workflows": [
-        "one-shot-visual-delta-audit.yml"
-      ]
+      "workflows": ["one-shot-visual-delta-audit.yml"]
     },
     {
       "id": "save.project",
@@ -941,9 +879,7 @@
       "visual": true,
       "final_pass": true,
       "device_required": false,
-      "workflows": [
-        "one-shot-all-routes-screenshot-audit.yml"
-      ]
+      "workflows": ["one-shot-all-routes-screenshot-audit.yml"]
     },
     {
       "id": "ui.routes",
@@ -955,9 +891,7 @@
       "visual": true,
       "final_pass": true,
       "device_required": false,
-      "workflows": [
-        "one-shot-all-routes-screenshot-audit.yml"
-      ]
+      "workflows": ["one-shot-all-routes-screenshot-audit.yml"]
     },
     {
       "id": "ui.canvas_panels",
@@ -984,9 +918,7 @@
       "visual": true,
       "final_pass": true,
       "device_required": false,
-      "workflows": [
-        "one-shot-all-routes-screenshot-audit.yml"
-      ]
+      "workflows": ["one-shot-all-routes-screenshot-audit.yml"]
     },
     {
       "id": "ui.settings",
@@ -998,9 +930,7 @@
       "visual": true,
       "final_pass": true,
       "device_required": false,
-      "workflows": [
-        "one-shot-all-routes-screenshot-audit.yml"
-      ]
+      "workflows": ["one-shot-all-routes-screenshot-audit.yml"]
     },
     {
       "id": "ui.storage",
@@ -1012,9 +942,7 @@
       "visual": true,
       "final_pass": true,
       "device_required": false,
-      "workflows": [
-        "one-shot-all-routes-screenshot-audit.yml"
-      ]
+      "workflows": ["one-shot-all-routes-screenshot-audit.yml"]
     },
     {
       "id": "settings.persistence",
@@ -1041,9 +969,7 @@
       "visual": false,
       "final_pass": false,
       "device_required": true,
-      "workflows": [
-        "one-shot-direct-service-coverage.yml"
-      ]
+      "workflows": ["one-shot-direct-service-coverage.yml"]
     },
     {
       "id": "settings.toolbar",
@@ -1070,9 +996,7 @@
       "visual": false,
       "final_pass": false,
       "device_required": true,
-      "workflows": [
-        "one-shot-direct-service-coverage.yml"
-      ]
+      "workflows": ["one-shot-direct-service-coverage.yml"]
     },
     {
       "id": "material.import",
@@ -1096,9 +1020,7 @@
       "visual": false,
       "final_pass": false,
       "device_required": true,
-      "workflows": [
-        "one-shot-direct-service-coverage.yml"
-      ]
+      "workflows": ["one-shot-direct-service-coverage.yml"]
     },
     {
       "id": "community",
@@ -1110,9 +1032,7 @@
       "visual": false,
       "final_pass": false,
       "device_required": true,
-      "workflows": [
-        "one-shot-direct-service-coverage.yml"
-      ]
+      "workflows": ["one-shot-direct-service-coverage.yml"]
     }
   ]
 }

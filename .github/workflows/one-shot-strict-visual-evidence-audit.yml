@@ -4,8 +4,8 @@ on:
   push:
     branches: [dev_branch]
     paths:
-      - '.github/workflows/one-shot-strict-visual-evidence-audit.yml'
-      - 'test/strict_visual_evidence_audit_test.dart'
+      - ".github/workflows/one-shot-strict-visual-evidence-audit.yml"
+      - "test/strict_visual_evidence_audit_test.dart"
 
 permissions:
   contents: read

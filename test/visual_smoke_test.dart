@@ -140,100 +140,104 @@ void main() {
     await capture(tester, '03_home_default');
   }
 
-  testWidgets('320px幅の主要ホーム操作をスクリーンショット付きで巡回しoverflowしない', (tester) async {
-    await boot(tester);
-    await goHome(tester);
+  testWidgets(
+    '320px幅の主要ホーム操作をスクリーンショット付きで巡回しoverflowしない',
+    (tester) async {
+      await boot(tester);
+      await goHome(tester);
 
-    final down = find.byIcon(Icons.arrow_downward);
-    expect(down, findsOneWidget);
-    await tester.tap(down);
-    await tester.pump(const Duration(milliseconds: 250));
-    expectNoFlutterException(tester, '昇順/降順切り替え');
-    expect(find.byIcon(Icons.arrow_upward), findsOneWidget);
-    await capture(tester, '04_home_sort_ascending');
+      final down = find.byIcon(Icons.arrow_downward);
+      expect(down, findsOneWidget);
+      await tester.tap(down);
+      await tester.pump(const Duration(milliseconds: 250));
+      expectNoFlutterException(tester, '昇順/降順切り替え');
+      expect(find.byIcon(Icons.arrow_upward), findsOneWidget);
+      await capture(tester, '04_home_sort_ascending');
 
-    final sortPopup = find.byType(PopupMenuButton<bool>);
-    expect(sortPopup, findsWidgets);
-    await tester.tap(sortPopup.first);
-    await tester.pump(const Duration(milliseconds: 250));
-    expectNoFlutterException(tester, '並び替え基準メニュー表示');
-    await capture(tester, '05_home_sort_menu_open');
+      final sortPopup = find.byType(PopupMenuButton<bool>);
+      expect(sortPopup, findsWidgets);
+      await tester.tap(sortPopup.first);
+      await tester.pump(const Duration(milliseconds: 250));
+      expectNoFlutterException(tester, '並び替え基準メニュー表示');
+      await capture(tester, '05_home_sort_menu_open');
 
-    final nameItem = find.text('名前');
-    expect(nameItem, findsWidgets);
-    await tester.tap(nameItem.last);
-    await tester.pump(const Duration(milliseconds: 250));
-    expectNoFlutterException(tester, '名前順へ変更');
-    await capture(tester, '06_home_sort_by_name');
+      final nameItem = find.text('名前');
+      expect(nameItem, findsWidgets);
+      await tester.tap(nameItem.last);
+      await tester.pump(const Duration(milliseconds: 250));
+      expectNoFlutterException(tester, '名前順へ変更');
+      await capture(tester, '06_home_sort_by_name');
 
-    final viewMode = find.byIcon(Icons.view_module);
-    expect(viewMode, findsOneWidget);
-    await tester.tap(viewMode);
-    await tester.pump(const Duration(milliseconds: 250));
-    expectNoFlutterException(tester, '表示サイズメニュー表示');
-    await capture(tester, '07_home_view_mode_menu');
-    await tester.tapAt(const Offset(8, 220));
-    await tester.pump(const Duration(milliseconds: 250));
-    expectNoFlutterException(tester, '表示サイズメニューを閉じる');
+      final viewMode = find.byIcon(Icons.view_module);
+      expect(viewMode, findsOneWidget);
+      await tester.tap(viewMode);
+      await tester.pump(const Duration(milliseconds: 250));
+      expectNoFlutterException(tester, '表示サイズメニュー表示');
+      await capture(tester, '07_home_view_mode_menu');
+      await tester.tapAt(const Offset(8, 220));
+      await tester.pump(const Duration(milliseconds: 250));
+      expectNoFlutterException(tester, '表示サイズメニューを閉じる');
 
-    final search = find.byIcon(Icons.search);
-    expect(search, findsOneWidget);
-    await tester.tap(search);
-    await tester.pump(const Duration(milliseconds: 250));
-    expectNoFlutterException(tester, '検索モード開始');
-    await capture(tester, '08_home_search_empty');
-    await tester.enterText(
-      find.byType(TextField).first,
-      '非常に長い検索キーワードを入力してもレイアウトが壊れない確認用テキスト',
-    );
-    await tester.pump(const Duration(milliseconds: 250));
-    expectNoFlutterException(tester, '検索文字入力');
-    await capture(tester, '09_home_search_long_text');
+      final search = find.byIcon(Icons.search);
+      expect(search, findsOneWidget);
+      await tester.tap(search);
+      await tester.pump(const Duration(milliseconds: 250));
+      expectNoFlutterException(tester, '検索モード開始');
+      await capture(tester, '08_home_search_empty');
+      await tester.enterText(
+        find.byType(TextField).first,
+        '非常に長い検索キーワードを入力してもレイアウトが壊れない確認用テキスト',
+      );
+      await tester.pump(const Duration(milliseconds: 250));
+      expectNoFlutterException(tester, '検索文字入力');
+      await capture(tester, '09_home_search_long_text');
 
-    final closeSearch = find.byIcon(Icons.close);
-    expect(closeSearch, findsOneWidget);
-    await tester.tap(closeSearch);
-    await tester.pump(const Duration(milliseconds: 250));
-    expectNoFlutterException(tester, '検索モード終了');
+      final closeSearch = find.byIcon(Icons.close);
+      expect(closeSearch, findsOneWidget);
+      await tester.tap(closeSearch);
+      await tester.pump(const Duration(milliseconds: 250));
+      expectNoFlutterException(tester, '検索モード終了');
 
-    final menu = find.byIcon(Icons.menu);
-    expect(menu, findsOneWidget);
-    await tester.tap(menu);
-    await tester.pump(const Duration(milliseconds: 500));
-    expectNoFlutterException(tester, 'ホームドロワー表示');
-    await capture(tester, '10_home_drawer');
-    // Drawer自身のBuildContextから親Scaffoldを取得する。画面内の
-    // Scaffold.firstを使うとDrawer内部などの入れ子Scaffoldを掴む余地が
-    // あるため、HomeScreenのScaffoldを一意に特定できる経路を使う。
-    final drawer = find.byType(Drawer);
-    expect(drawer, findsOneWidget);
-    final homeScaffold = Scaffold.of(tester.element(drawer));
-    expect(homeScaffold.isDrawerOpen, isTrue);
-    homeScaffold.closeDrawer();
-    await tester.pump(const Duration(milliseconds: 500));
-    expect(homeScaffold.isDrawerOpen, isFalse);
-    expectNoFlutterException(tester, 'ホームドロワーを閉じる');
+      final menu = find.byIcon(Icons.menu);
+      expect(menu, findsOneWidget);
+      await tester.tap(menu);
+      await tester.pump(const Duration(milliseconds: 500));
+      expectNoFlutterException(tester, 'ホームドロワー表示');
+      await capture(tester, '10_home_drawer');
+      // Drawer自身のBuildContextから親Scaffoldを取得する。画面内の
+      // Scaffold.firstを使うとDrawer内部などの入れ子Scaffoldを掴む余地が
+      // あるため、HomeScreenのScaffoldを一意に特定できる経路を使う。
+      final drawer = find.byType(Drawer);
+      expect(drawer, findsOneWidget);
+      final homeScaffold = Scaffold.of(tester.element(drawer));
+      expect(homeScaffold.isDrawerOpen, isTrue);
+      homeScaffold.closeDrawer();
+      await tester.pump(const Duration(milliseconds: 500));
+      expect(homeScaffold.isDrawerOpen, isFalse);
+      expectNoFlutterException(tester, 'ホームドロワーを閉じる');
 
-    final worksTab = find.text('作品一覧');
-    expect(worksTab, findsWidgets);
-    await tester.tap(worksTab.first);
-    await tester.pump(const Duration(milliseconds: 300));
-    await tester.pump(const Duration(milliseconds: 300));
-    expectNoFlutterException(tester, '作品一覧タブ切り替え');
-    await capture(tester, '11_home_works_tab');
+      final worksTab = find.text('作品一覧');
+      expect(worksTab, findsWidgets);
+      await tester.tap(worksTab.first);
+      await tester.pump(const Duration(milliseconds: 300));
+      await tester.pump(const Duration(milliseconds: 300));
+      expectNoFlutterException(tester, '作品一覧タブ切り替え');
+      await capture(tester, '11_home_works_tab');
 
-    final scaffoldContext = tester.element(find.byType(Scaffold).first);
-    GoRouter.of(scaffoldContext).push('/new-project');
-    await tester.pump(const Duration(milliseconds: 350));
-    await tester.pump(const Duration(milliseconds: 350));
-    expectNoFlutterException(tester, '新規プロジェクト画面表示');
-    await capture(tester, '12_new_project');
+      final scaffoldContext = tester.element(find.byType(Scaffold).first);
+      GoRouter.of(scaffoldContext).push('/new-project');
+      await tester.pump(const Duration(milliseconds: 350));
+      await tester.pump(const Duration(milliseconds: 350));
+      expectNoFlutterException(tester, '新規プロジェクト画面表示');
+      await capture(tester, '12_new_project');
 
-    final currentScaffold = tester.element(find.byType(Scaffold).first);
-    GoRouter.of(currentScaffold).go('/settings');
-    await tester.pump(const Duration(milliseconds: 350));
-    await tester.pump(const Duration(milliseconds: 350));
-    expectNoFlutterException(tester, '設定一覧画面表示');
-    await capture(tester, '13_settings');
-  }, timeout: const Timeout(Duration(seconds: 180)));
+      final currentScaffold = tester.element(find.byType(Scaffold).first);
+      GoRouter.of(currentScaffold).go('/settings');
+      await tester.pump(const Duration(milliseconds: 350));
+      await tester.pump(const Duration(milliseconds: 350));
+      expectNoFlutterException(tester, '設定一覧画面表示');
+      await capture(tester, '13_settings');
+    },
+    timeout: const Timeout(Duration(seconds: 180)),
+  );
 }

@@ -252,97 +252,115 @@ void main() {
     consumeKnownTimelineOverflow(tester);
   }
 
-  testWidgets('Web比較基準: Canvas / Layer / OnionSkin を実操作で撮影', (tester) async {
-    await createProjectAndOpenCanvas(tester);
-    await capture(tester, '01_canvas_default');
-    await tapCanvasToolbarIcon(tester, Icons.layers);
-    expectClean(tester, 'レイヤーパネルを開く');
-    await capture(tester, '02_canvas_layer_panel');
-    await closeOverlayPanel(tester);
-    await tapReachable(tester, find.byTooltip('設定/編集', skipOffstage: false));
-    await tapReachable(tester, find.text('オニオンスキン', skipOffstage: false));
-    expectClean(tester, 'オニオンスキンを開く');
-    await capture(tester, '03_canvas_onion_skin');
-  }, timeout: const Timeout(Duration(seconds: 180)));
+  testWidgets(
+    'Web比較基準: Canvas / Layer / OnionSkin を実操作で撮影',
+    (tester) async {
+      await createProjectAndOpenCanvas(tester);
+      await capture(tester, '01_canvas_default');
+      await tapCanvasToolbarIcon(tester, Icons.layers);
+      expectClean(tester, 'レイヤーパネルを開く');
+      await capture(tester, '02_canvas_layer_panel');
+      await closeOverlayPanel(tester);
+      await tapReachable(tester, find.byTooltip('設定/編集', skipOffstage: false));
+      await tapReachable(tester, find.text('オニオンスキン', skipOffstage: false));
+      expectClean(tester, 'オニオンスキンを開く');
+      await capture(tester, '03_canvas_onion_skin');
+    },
+    timeout: const Timeout(Duration(seconds: 180)),
+  );
 
-  testWidgets('Web比較基準: Timeline / Audio編集を実操作で撮影', (tester) async {
-    final ids = await createProjectAndOpenCanvas(tester);
-    await openTimelineFromCanvas(tester);
-    await capture(tester, '04_timeline_default');
-    final ps = tester
-        .element(find.byType(Scaffold).first)
-        .read<ProjectService>();
-    ps.addAudioClip(
-      ids.$1,
-      ids.$2,
-      const AudioClip(
-        id: 'webref_audio',
-        label: '比較用音声',
-        startFrame: 0,
-        lengthFrames: 24,
-        volume: 0.72,
-        fadeIn: 0,
-        fadeOut: 0,
-      ),
-    );
-    await tester.pump(const Duration(milliseconds: 250));
-    GoRouter.of(
-      tester.element(find.byType(Scaffold).first),
-    ).go('/canvas/${ids.$1}');
-    await tester.pump(const Duration(milliseconds: 700));
-    await openTimelineFromCanvas(tester);
-    await tapReachable(tester, find.text('比較用音声', skipOffstage: false));
-    final postTapException = tester.takeException();
-    if (postTapException != null &&
-        !postTapException.toString().contains(
-          'RenderFlex overflowed by 24 pixels on the right',
-        )) {
-      fail('音声クリップ編集で例外: $postTapException');
-    }
-    await capture(tester, '05_timeline_audio_editor');
-  }, timeout: const Timeout(Duration(seconds: 180)));
-
-  testWidgets('Web比較基準: SaveSlot / Export を実操作で撮影', (tester) async {
-    final ids = await createProjectAndOpenCanvas(tester);
-    await tapCanvasToolbarIcon(tester, Icons.save_outlined);
-    await tester.pump(const Duration(milliseconds: 500));
-    expectClean(tester, 'Canvas→SaveSlot');
-    await capture(tester, '06_save_slot');
-    GoRouter.of(
-      tester.element(find.byType(Scaffold).first),
-    ).go('/canvas/${ids.$1}');
-    await tester.pump(const Duration(milliseconds: 700));
-    await openTimelineFromCanvas(tester);
-    await tapReachable(
-      tester,
-      find.byIcon(Icons.upload_file, skipOffstage: false),
-    );
-    await tester.pump(const Duration(milliseconds: 500));
-    final exportException = tester.takeException();
-    if (exportException != null &&
-        !exportException.toString().contains(
-          'RenderFlex overflowed by 24 pixels on the right',
-        )) {
-      fail('Timeline→Exportで例外: $exportException');
-    }
-    await capture(tester, '07_export');
-  }, timeout: const Timeout(Duration(seconds: 180)));
-
-  testWidgets('Web比較基準: Workspace設定を実アプリ経路で撮影', (tester) async {
-    await bootToHome(tester);
-    GoRouter.of(tester.element(find.byType(Scaffold).first)).push('/settings');
-    await tester.pump(const Duration(milliseconds: 650));
-    expectClean(tester, '設定画面');
-    final workspace = find.text('ワークスペース', skipOffstage: false);
-    if (workspace.evaluate().isNotEmpty) {
-      await tapReachable(tester, workspace);
-    } else {
+  testWidgets(
+    'Web比較基準: Timeline / Audio編集を実操作で撮影',
+    (tester) async {
+      final ids = await createProjectAndOpenCanvas(tester);
+      await openTimelineFromCanvas(tester);
+      await capture(tester, '04_timeline_default');
+      final ps = tester
+          .element(find.byType(Scaffold).first)
+          .read<ProjectService>();
+      ps.addAudioClip(
+        ids.$1,
+        ids.$2,
+        const AudioClip(
+          id: 'webref_audio',
+          label: '比較用音声',
+          startFrame: 0,
+          lengthFrames: 24,
+          volume: 0.72,
+          fadeIn: 0,
+          fadeOut: 0,
+        ),
+      );
+      await tester.pump(const Duration(milliseconds: 250));
       GoRouter.of(
         tester.element(find.byType(Scaffold).first),
-      ).push('/settings/workspace');
+      ).go('/canvas/${ids.$1}');
+      await tester.pump(const Duration(milliseconds: 700));
+      await openTimelineFromCanvas(tester);
+      await tapReachable(tester, find.text('比較用音声', skipOffstage: false));
+      final postTapException = tester.takeException();
+      if (postTapException != null &&
+          !postTapException.toString().contains(
+            'RenderFlex overflowed by 24 pixels on the right',
+          )) {
+        fail('音声クリップ編集で例外: $postTapException');
+      }
+      await capture(tester, '05_timeline_audio_editor');
+    },
+    timeout: const Timeout(Duration(seconds: 180)),
+  );
+
+  testWidgets(
+    'Web比較基準: SaveSlot / Export を実操作で撮影',
+    (tester) async {
+      final ids = await createProjectAndOpenCanvas(tester);
+      await tapCanvasToolbarIcon(tester, Icons.save_outlined);
       await tester.pump(const Duration(milliseconds: 500));
-    }
-    expectClean(tester, '設定→ワークスペース');
-    await capture(tester, '08_workspace');
-  }, timeout: const Timeout(Duration(seconds: 180)));
+      expectClean(tester, 'Canvas→SaveSlot');
+      await capture(tester, '06_save_slot');
+      GoRouter.of(
+        tester.element(find.byType(Scaffold).first),
+      ).go('/canvas/${ids.$1}');
+      await tester.pump(const Duration(milliseconds: 700));
+      await openTimelineFromCanvas(tester);
+      await tapReachable(
+        tester,
+        find.byIcon(Icons.upload_file, skipOffstage: false),
+      );
+      await tester.pump(const Duration(milliseconds: 500));
+      final exportException = tester.takeException();
+      if (exportException != null &&
+          !exportException.toString().contains(
+            'RenderFlex overflowed by 24 pixels on the right',
+          )) {
+        fail('Timeline→Exportで例外: $exportException');
+      }
+      await capture(tester, '07_export');
+    },
+    timeout: const Timeout(Duration(seconds: 180)),
+  );
+
+  testWidgets(
+    'Web比較基準: Workspace設定を実アプリ経路で撮影',
+    (tester) async {
+      await bootToHome(tester);
+      GoRouter.of(
+        tester.element(find.byType(Scaffold).first),
+      ).push('/settings');
+      await tester.pump(const Duration(milliseconds: 650));
+      expectClean(tester, '設定画面');
+      final workspace = find.text('ワークスペース', skipOffstage: false);
+      if (workspace.evaluate().isNotEmpty) {
+        await tapReachable(tester, workspace);
+      } else {
+        GoRouter.of(
+          tester.element(find.byType(Scaffold).first),
+        ).push('/settings/workspace');
+        await tester.pump(const Duration(milliseconds: 500));
+      }
+      expectClean(tester, '設定→ワークスペース');
+      await capture(tester, '08_workspace');
+    },
+    timeout: const Timeout(Duration(seconds: 180)),
+  );
 }
