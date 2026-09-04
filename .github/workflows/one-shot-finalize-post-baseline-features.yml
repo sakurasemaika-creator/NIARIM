@@ -23,7 +23,7 @@ jobs:
           channel: stable
           cache: true
       - run: flutter pub get
-      - name: Scope ambiguous patch helper to text dialog
+      - name: Prepare remaining feature patch
         run: |
           python3 - <<'PY'
           from pathlib import Path
@@ -50,28 +50,16 @@ jobs:
 
 
           '''
-          p.write_text(s[:start] + helper + s[end:])
+          s = s[:start] + helper + s[end:]
+          old = "                Navigator.of(pickerContext).pop();\\n              },\\n            ),\\n"
+          new = "                Navigator.of(pickerContext).pop();\\n              },\\n              onClose: () => Navigator.of(pickerContext).pop(),\\n            ),\\n"
+          count = s.count(old)
+          if count != 1:
+              raise SystemExit(f'ColorPickerPanel generator patch count={count}')
+          p.write_text(s.replace(old, new, 1))
           PY
       - name: Apply remaining feature fixes
         run: python3 .github/scripts/finalize_post_baseline_features.py
-      - name: Add required color picker close callback
-        run: |
-          python3 - <<'PY'
-          from pathlib import Path
-          p = Path('lib/screens/canvas/canvas_screen.dart')
-          s = p.read_text()
-          needle = '''                Navigator.of(pickerContext).pop();
-              },
-            ),'''
-          repl = '''                Navigator.of(pickerContext).pop();
-              },
-              onClose: () => Navigator.of(pickerContext).pop(),
-            ),'''
-          count = s.count(needle)
-          if count != 1:
-              raise SystemExit(f'ColorPickerPanel patch count={count}')
-          p.write_text(s.replace(needle, repl, 1))
-          PY
       - name: Regenerate localization
         run: flutter gen-l10n
       - name: Format changed Dart files
