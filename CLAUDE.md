@@ -85,7 +85,11 @@
 
 ### APKビルド（GitHub Actions）
 
-- `.github/workflows/build-apk.yml`は**手動実行のみ**（`workflow_dispatch`）。
+- `.github/workflows/build-apk.yml`は**手動実行のみ**（`workflow_dispatch`）で、
+  位置づけは**最終確認用**。細かな修正ごとに起動せず、対象テスト・
+  `flutter analyze`・必要な実キャプチャを先に済ませ、一連の追加修正が
+  すべて揃った最後に1回だけ起動すること。同一ブランチで多重起動すると
+  `concurrency`（`cancel-in-progress: true`）で古い実行が打ち切られる。
   APIやツール経由で`run_workflow`する場合、`build-type`の入力を省略すると
   既定値の**`debug`**になる（`release`ではない）点に注意。
 - 生成物はActions Artifacts（保持1日）に加え、GitHub Releaseへも上書き
