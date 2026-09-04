@@ -1,0 +1,38 @@
+name: One-shot Final Manifest Census
+
+on:
+  push:
+    branches: [dev_branch]
+    paths:
+      - '.github/workflows/one-shot-final-manifest-census.yml'
+
+jobs:
+  census:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          ref: dev_branch
+      - name: List incomplete feature-audit entries
+        run: |
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
+          p=Path('audit-dashboard/feature-audit-manifest.json')
+          data=json.loads(p.read_text(encoding='utf-8'))
+          items=data.get('features',[])
+          false=[x for x in items if not x.get('final_pass',False)]
+          device=[x for x in false if x.get('device_required',False)]
+          nond=[x for x in false if not x.get('device_required',False)]
+          lines=[f'TOTAL={len(items)}',f'FINAL_FALSE={len(false)}',f'NON_DEVICE_FALSE={len(nond)}',f'DEVICE_FALSE={len(device)}']
+          for x in false:
+            lines.append(f"FALSE|{x.get('id')}|{x.get('name')}|device={x.get('device_required',False)}|interaction={x.get('interaction')}|output={x.get('output')}|screenshot={x.get('screenshot')}|visual={x.get('visual')}")
+          Path('build').mkdir(exist_ok=True)
+          Path('build/final-manifest-census.txt').write_text('\n'.join(lines),encoding='utf-8')
+          print('\n'.join(lines))
+          PY
+      - uses: actions/upload-artifact@v4
+        with:
+          name: final-manifest-census
+          path: build/final-manifest-census.txt
+          retention-days: 3
