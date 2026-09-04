@@ -338,6 +338,11 @@ class CommunityWorkGrid extends StatelessWidget {
   final Map<String, int>? rankNumbers;
   final Map<String, String>? repostedByNames;
 
+  /// 一覧の下端に足す余白。フローティングボタン（「投稿する」）がある
+  /// 画面では、これが無いと**最終行のカードの下側がFABに永久に隠れる**
+  /// （どれだけスクロールしても出てこない）。
+  final double bottomPadding;
+
   const CommunityWorkGrid({
     super.key,
     required this.works,
@@ -347,6 +352,7 @@ class CommunityWorkGrid extends StatelessWidget {
     this.onTapAuthor,
     this.rankNumbers,
     this.repostedByNames,
+    this.bottomPadding = 12,
   });
 
   @override
@@ -355,7 +361,7 @@ class CommunityWorkGrid extends StatelessWidget {
       builder: (context, constraints) {
         final columns = (constraints.maxWidth / 200).floor().clamp(2, 6);
         return GridView.builder(
-          padding: const EdgeInsets.all(12),
+          padding: EdgeInsets.fromLTRB(12, 12, 12, bottomPadding),
           shrinkWrap: true,
           physics: const NeverScrollableScrollPhysics(),
           gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(

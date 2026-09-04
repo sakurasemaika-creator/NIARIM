@@ -415,6 +415,8 @@ class _CommunityScreenState extends State<CommunityScreen>
                     onToggleBookmark: (w) =>
                         communityService.toggleBookmark(w.id),
                     onTapAuthor: _openAuthorWorks,
+                    // 「投稿する」FABに最終行が隠れないよう下端に余白を取る。
+                    bottomPadding: 88,
                   ),
                 );
               },
@@ -495,6 +497,8 @@ class _CommunityScreenState extends State<CommunityScreen>
                             communityService.toggleBookmark(w.id),
                         onTapAuthor: _openAuthorWorks,
                         rankNumbers: rankNumbers,
+                        // 「投稿する」FABに最終行が隠れないよう下端に余白を取る。
+                        bottomPadding: 88,
                       );
                     },
                   ),
@@ -528,6 +532,8 @@ class _CommunityScreenState extends State<CommunityScreen>
                         communityService.toggleBookmark(w.id),
                     onTapAuthor: _openAuthorWorks,
                     repostedByNames: repostedByNames,
+                    // 「投稿する」FABに最終行が隠れないよう下端に余白を取る。
+                    bottomPadding: 88,
                   ),
                 );
               },
