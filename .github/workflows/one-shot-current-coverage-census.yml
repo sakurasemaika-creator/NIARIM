@@ -90,4 +90,4 @@ jobs:
       - name: Preserve strict suite result
         if: always() && steps.tests.outcome != 'success'
         run: exit 1
-# Audit trigger revision 6: provider-safe canvas panel audit and artifact-preserving census.
+# Audit trigger revision 7: latest HEAD final audit.
