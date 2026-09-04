@@ -1,7 +1,6 @@
 import 'package:niarim/services/theme_service.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-
 import '../../../l10n/app_localizations.dart';
 import '../../../services/brush_service.dart';
 import '../../../services/tone_service.dart';

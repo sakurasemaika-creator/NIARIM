@@ -1,7 +1,6 @@
 import 'package:niarim/services/theme_service.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-
 import '../../../l10n/app_localizations.dart';
 import '../../../models/quick_tool_entry.dart';
 import '../../../services/brush_service.dart';
@@ -70,9 +69,9 @@ class QuickToolPanel extends StatelessWidget {
                         child: Text(
                           l10n.quickToolEmpty,
                           style: TextStyle(
-                            color: Theme.of(context)
-                                .colorScheme
-                                .onSurfaceVariant,
+                            color: Theme.of(
+                              context,
+                            ).colorScheme.onSurfaceVariant,
                             fontSize: 12,
                           ),
                         ),

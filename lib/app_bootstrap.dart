@@ -1,6 +1,5 @@
 import 'package:provider/provider.dart';
 import 'package:provider/single_child_widget.dart';
-
 import 'engine/undo_manager.dart' as app_undo;
 import 'services/advertising_service.dart';
 import 'services/premium_service.dart';

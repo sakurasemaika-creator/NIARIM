@@ -1,6 +1,5 @@
 import 'dart:math' as math;
 import 'dart:typed_data';
-
 import '../models/autofill_gradient.dart';
 import '../models/autofill_preset.dart';
 

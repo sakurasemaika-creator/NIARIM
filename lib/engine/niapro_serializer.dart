@@ -2,11 +2,9 @@ import 'dart:convert';
 import 'dart:io';
 import 'dart:typed_data';
 import 'dart:ui' show Color, Offset, TextAlign;
-
 import 'package:archive/archive_io.dart';
 import 'package:flutter/foundation.dart' show debugPrint;
 import 'package:path_provider/path_provider.dart';
-
 import '../models/audio_clip.dart';
 import '../models/camera_keyframe.dart';
 import '../models/effect_filter_instance.dart';
@@ -163,8 +161,9 @@ class NiaproSerializer {
       await File('${materialsDir.path}/${entry.key}').writeAsBytes(entry.value);
     }
     if (data.materialsManifest != null) {
-      await File('${materialsDir.path}/materials.json')
-          .writeAsString(data.materialsManifest!);
+      await File(
+        '${materialsDir.path}/materials.json',
+      ).writeAsString(data.materialsManifest!);
     }
   }
 

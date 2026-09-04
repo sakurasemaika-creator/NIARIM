@@ -1,6 +1,5 @@
 import 'package:niarim/services/theme_service.dart';
 import 'package:flutter/material.dart';
-
 import '../../l10n/app_localizations.dart';
 import 'tip_diagrams.dart';
 import '../../config/font_fallback.dart';
@@ -24,10 +23,9 @@ class TipsScreen extends StatefulWidget {
 /// ペアへ平坦化して返す。Tips画面本体（[_TipsScreenState._buildCategories]）
 /// と同じ一覧を参照するため、内容を追加・変更してもここでの二重管理は不要。
 List<(String title, String description)> allTipEntries(AppLocalizations l10n) {
-  return _buildTipCategories(l10n)
-      .expand((c) => c.tips)
-      .map((t) => (t.title, t.description))
-      .toList();
+  return _buildTipCategories(
+    l10n,
+  ).expand((c) => c.tips).map((t) => (t.title, t.description)).toList();
 }
 
 class _TipsScreenState extends State<TipsScreen> {

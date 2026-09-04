@@ -1,10 +1,8 @@
 import 'dart:convert';
 import 'dart:io';
-
 import 'package:flutter/foundation.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-
 import '../models/workspace_preset.dart';
 
 /// ワークスペース（左利き設定・PC/DeXモード）を名前を付けて保存・読込・削除する

@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-
 import '../../../services/theme_service.dart';
 
 /// キャンバスモード内の常設ボタン共通スタイル：

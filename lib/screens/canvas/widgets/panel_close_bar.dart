@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-
 import '../../../l10n/app_localizations.dart';
 
 /// ツール詳細設定ポップアップ（ブラシ・カラーピッカー・フィルター・

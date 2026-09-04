@@ -1,6 +1,5 @@
 import 'dart:math';
 import 'dart:ui';
-
 import '../models/ruler.dart';
 
 class RulerEngine {

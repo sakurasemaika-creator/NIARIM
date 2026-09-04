@@ -1,5 +1,4 @@
 import 'dart:typed_data';
-
 import 'package:file_picker/file_picker.dart';
 // MaterialTypeはflutter/material.dart（Material widgetの描画種別）と
 // models/material_asset.dart（画像/動画/音声の素材種別）の双方に同名の型が
@@ -7,7 +6,6 @@ import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart' hide MaterialType;
 import 'package:provider/provider.dart';
 import 'package:share_plus/share_plus.dart';
-
 import '../../engine/niapro_serializer.dart';
 import '../../engine/niatra_asset_bundle.dart';
 import '../../engine/niatra_serializer.dart';
@@ -143,17 +141,17 @@ class _TransferScreenState extends State<TransferScreen> {
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(14),
                           ),
-                          color: Theme.of(context)
-                              .colorScheme
-                              .surfaceContainerLow,
+                          color: Theme.of(
+                            context,
+                          ).colorScheme.surfaceContainerLow,
                           child: Padding(
                             padding: const EdgeInsets.all(16),
                             child: Text(
                               l10n.transferProjectsEmpty,
                               style: TextStyle(
-                                color: Theme.of(context)
-                                    .colorScheme
-                                    .onSurfaceVariant,
+                                color: Theme.of(
+                                  context,
+                                ).colorScheme.onSurfaceVariant,
                               ),
                             ),
                           ),
@@ -171,9 +169,9 @@ class _TransferScreenState extends State<TransferScreen> {
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(14),
                         ),
-                        color: Theme.of(context)
-                            .colorScheme
-                            .surfaceContainerLow,
+                        color: Theme.of(
+                          context,
+                        ).colorScheme.surfaceContainerLow,
                         child: Column(
                           children: [
                             for (final p in projects) ...[

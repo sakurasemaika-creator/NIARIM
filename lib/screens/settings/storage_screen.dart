@@ -1,11 +1,9 @@
 import 'package:niarim/services/theme_service.dart';
-
 import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
-
 import '../../l10n/app_localizations.dart';
 import '../../services/material_service.dart';
 import '../../services/project_service.dart';

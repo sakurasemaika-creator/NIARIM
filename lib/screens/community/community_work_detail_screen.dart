@@ -1,7 +1,6 @@
 import 'package:niarim/services/theme_service.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-
 import '../../l10n/app_localizations.dart';
 import '../../models/community_work.dart';
 import '../../router.dart';
@@ -54,8 +53,9 @@ class _CommunityWorkDetailScreenState extends State<CommunityWorkDetailScreen> {
   }
 
   void _showComingSoonSnackbar(String message) {
-    ScaffoldMessenger.of(context)
-        .showSnackBar(SnackBar(content: Text(message)));
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(SnackBar(content: Text(message)));
   }
 
   void _showAddTagDialog(CommunityService communityService, String workId) {

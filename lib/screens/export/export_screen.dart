@@ -1,12 +1,9 @@
 import 'package:niarim/services/theme_service.dart';
-
 import 'dart:io';
-
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import 'package:share_plus/share_plus.dart';
-
 import '../../engine/export_engine.dart';
 import '../../l10n/app_localizations.dart';
 import '../../services/premium_service.dart';
@@ -406,8 +403,9 @@ class _ExportScreenState extends State<ExportScreen> {
 
   void _showCancelledSnackBar() {
     final l10n = AppLocalizations.of(context)!;
-    ScaffoldMessenger.of(context)
-        .showSnackBar(SnackBar(content: Text(l10n.exportCancelledSnackbar)));
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(SnackBar(content: Text(l10n.exportCancelledSnackbar)));
   }
 
   void _closeProgressDialog() {

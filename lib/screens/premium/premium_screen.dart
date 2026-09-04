@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-
 import '../../config/monetization_gate.dart';
 import '../../l10n/app_localizations.dart';
 import '../../services/premium_service.dart';

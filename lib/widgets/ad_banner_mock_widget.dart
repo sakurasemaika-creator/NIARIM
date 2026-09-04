@@ -1,6 +1,5 @@
 import 'package:niarim/services/theme_service.dart';
 import 'package:flutter/material.dart';
-
 import '../l10n/app_localizations.dart';
 
 /// SafeAreaの上端を除いた、横長広告専用領域の高さ。

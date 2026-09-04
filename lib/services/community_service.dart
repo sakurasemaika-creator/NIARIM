@@ -1,7 +1,5 @@
 import 'dart:math';
-
 import 'package:flutter/foundation.dart';
-
 import '../models/community_follow_notification.dart';
 import '../models/community_repost.dart';
 import '../models/community_work.dart';
@@ -317,10 +315,9 @@ class CommunityService extends ChangeNotifier {
       followerIdsOf(authorId).where(isFollowersPublic).toList();
 
   /// [authorId]の表示可能なフォロワー名一覧（[visibleFollowerIdsOf]参照）。
-  List<String> visibleFollowerNamesOf(String authorId) =>
-      visibleFollowerIdsOf(authorId)
-          .map((id) => authorNameOf(id) ?? id)
-          .toList();
+  List<String> visibleFollowerNamesOf(String authorId) => visibleFollowerIdsOf(
+    authorId,
+  ).map((id) => authorNameOf(id) ?? id).toList();
 
   /// [authorId]が誰をフォロー中かのID一覧。自分（kDummySelfAuthorId）に
   /// ついては実際にトグル操作した[_favoriteAuthorIds]をそのまま返す。

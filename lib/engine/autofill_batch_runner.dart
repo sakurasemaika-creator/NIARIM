@@ -1,8 +1,6 @@
 import 'dart:typed_data';
 import 'dart:ui' as ui;
-
 import 'package:flutter/foundation.dart' show compute;
-
 import '../models/autofill_preset.dart' show AutofillLineColorMode;
 import '../models/layer.dart';
 import '../services/autofill_preset_service.dart';
@@ -64,9 +62,9 @@ Future<AutofillBatchResult> runAutofillForLayer({
   Uint8List? existingBytes;
   if (hasExisting) {
     final img = await tileManager.compositeLayerToImage(autofillKey);
-    existingBytes = (await img.toByteData(format: ui.ImageByteFormat.rawRgba))!
-        .buffer
-        .asUint8List();
+    existingBytes = (await img.toByteData(
+      format: ui.ImageByteFormat.rawRgba,
+    ))!.buffer.asUint8List();
     img.dispose();
   }
 

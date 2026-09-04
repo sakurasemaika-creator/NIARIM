@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-
 import '../../../l10n/app_localizations.dart';
 import '../../../widgets/stepped_slider.dart';
 import 'panel_close_bar.dart';

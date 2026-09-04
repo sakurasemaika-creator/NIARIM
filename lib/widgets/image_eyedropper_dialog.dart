@@ -1,9 +1,7 @@
 import 'dart:io';
 import 'dart:typed_data';
 import 'dart:ui' as ui;
-
 import 'package:flutter/material.dart';
-
 import '../l10n/app_localizations.dart';
 
 /// 画像ファイルを表示し、タップした位置のピクセル色を取得するダイアログ
@@ -124,9 +122,9 @@ class _ImageEyedropperDialogState extends State<ImageEyedropperDialog> {
                           child: Container(
                             decoration: BoxDecoration(
                               border: Border.all(
-                                color: Theme.of(context)
-                                    .colorScheme
-                                    .outlineVariant,
+                                color: Theme.of(
+                                  context,
+                                ).colorScheme.outlineVariant,
                               ),
                             ),
                             // dart:ioのFileはWeb版で使えないため、常にバイト列

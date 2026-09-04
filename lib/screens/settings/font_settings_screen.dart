@@ -2,7 +2,6 @@ import 'package:niarim/services/theme_service.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-
 import '../../l10n/app_localizations.dart';
 import '../../models/font_asset.dart';
 import '../../services/font_service.dart';
@@ -97,9 +96,9 @@ class _DownloadedFontsTabState extends State<_DownloadedFontsTab>
                     hintText: l10n.fontDownloadedSearchHint,
                     prefixIcon: const Icon(Icons.search),
                     filled: true,
-                    fillColor: Theme.of(context)
-                        .colorScheme
-                        .surfaceContainerLow,
+                    fillColor: Theme.of(
+                      context,
+                    ).colorScheme.surfaceContainerLow,
                     isDense: true,
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(14),
@@ -177,9 +176,9 @@ class _DownloadedFontsTabState extends State<_DownloadedFontsTab>
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(14),
                         ),
-                        color: Theme.of(context)
-                            .colorScheme
-                            .surfaceContainerLow,
+                        color: Theme.of(
+                          context,
+                        ).colorScheme.surfaceContainerLow,
                         child: ListTile(
                           leading: CircleAvatar(
                             backgroundColor: scheme.primaryContainer,
@@ -397,8 +396,9 @@ class _ImportFontTab extends StatelessWidget {
       }
     } on FontCorruptedException {
       if (!context.mounted) return;
-      ScaffoldMessenger.of(context)
-          .showSnackBar(SnackBar(content: Text(l10n.fontCorruptedSnackbar)));
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(l10n.fontCorruptedSnackbar)));
     }
   }
 }

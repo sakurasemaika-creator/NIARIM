@@ -1,14 +1,11 @@
 import 'package:niarim/services/theme_service.dart';
-
 import 'dart:async';
 import 'dart:math' as math;
 import 'dart:typed_data';
 import 'dart:ui' as ui;
-
 import 'package:flutter/foundation.dart' show compute;
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-
 import '../../../engine/filter_engine.dart';
 import '../../../engine/background_acclimation_engine.dart';
 import '../../../engine/layer_compositor.dart';
@@ -1165,9 +1162,9 @@ class _FilterPanelState extends State<FilterPanel> {
                                       l10n.filterBackgroundBlendAutoLabel,
                                       style: TextStyle(
                                         fontSize: 10,
-                                        color: Theme.of(context)
-                                            .colorScheme
-                                            .onSurfaceVariant,
+                                        color: Theme.of(
+                                          context,
+                                        ).colorScheme.onSurfaceVariant,
                                       ),
                                     ),
                                   ),

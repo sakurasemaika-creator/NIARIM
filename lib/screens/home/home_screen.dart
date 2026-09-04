@@ -1,15 +1,12 @@
 import 'package:niarim/services/theme_service.dart';
-
 import 'dart:async';
 import 'dart:io';
-
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:provider/provider.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:video_player/video_player.dart';
-
 import '../../engine/export_engine.dart';
 import '../../engine/niapro_serializer.dart';
 import '../../l10n/app_localizations.dart';
@@ -277,8 +274,9 @@ class _HomeScreenState extends State<HomeScreen>
                 ),
                 IconButton(
                   icon: const Icon(Icons.menu),
-                  tooltip: MaterialLocalizations.of(context)
-                      .openAppDrawerTooltip,
+                  tooltip: MaterialLocalizations.of(
+                    context,
+                  ).openAppDrawerTooltip,
                   onPressed: () => _scaffoldKey.currentState?.openDrawer(),
                 ),
               ],
@@ -771,8 +769,9 @@ class _HomeScreenState extends State<HomeScreen>
         _clipboardFolderIds.clear();
       });
     }
-    ScaffoldMessenger.of(context)
-        .showSnackBar(SnackBar(content: Text(l10n.homePasteSnackbar)));
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(SnackBar(content: Text(l10n.homePasteSnackbar)));
   }
 
   /// フォルダ階層のパンくずリスト。フォルダ内移動時に現在位置を表示する。

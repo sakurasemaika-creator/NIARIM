@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
-
 import '../../l10n/app_localizations.dart';
 import '../../services/autofill_preset_service.dart';
 import '../../services/premium_service.dart';
@@ -91,8 +90,9 @@ class _NewProjectScreenState extends State<NewProjectScreen> {
   void didChangeDependencies() {
     super.didChangeDependencies();
     if (!_nameInitialized) {
-      _nameController.text = AppLocalizations.of(context)!
-          .newProjectDefaultName;
+      _nameController.text = AppLocalizations.of(
+        context,
+      )!.newProjectDefaultName;
       _nameInitialized = true;
     }
   }
@@ -505,9 +505,9 @@ class _NewProjectScreenState extends State<NewProjectScreen> {
                     aspectRatio: _exportWidth / _exportHeight,
                     child: DecoratedBox(
                       decoration: BoxDecoration(
-                        color: Theme.of(context)
-                            .colorScheme
-                            .surfaceContainerHighest,
+                        color: Theme.of(
+                          context,
+                        ).colorScheme.surfaceContainerHighest,
                         border: Border.all(
                           color: Theme.of(context).colorScheme.outline,
                         ),

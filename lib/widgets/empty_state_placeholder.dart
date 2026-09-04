@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-
 import '../config/font_fallback.dart';
 
 /// 一覧画面が空のときに表示する共通プレースホルダー。円形の色付き

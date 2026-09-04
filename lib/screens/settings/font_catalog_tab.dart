@@ -1,7 +1,6 @@
 import 'package:niarim/services/theme_service.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-
 import '../../l10n/app_localizations.dart';
 import '../../models/downloadable_font.dart';
 import '../../services/font_service.dart';
@@ -159,8 +158,9 @@ class _FontCatalogTabState extends State<FontCatalogTab>
       await context.read<FontService>().downloadCatalogFont(entry);
     } on FontDownloadException catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context)
-            .showSnackBar(SnackBar(content: Text(e.message)));
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(e.message)));
       }
     } finally {
       if (mounted) setState(() => _downloadingIds.remove(entry.id));

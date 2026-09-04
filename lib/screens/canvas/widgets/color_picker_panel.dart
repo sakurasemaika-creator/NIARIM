@@ -1,13 +1,10 @@
 import 'package:niarim/services/theme_service.dart';
-
 import 'dart:convert';
-
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'package:share_plus/share_plus.dart';
-
 import '../../../l10n/app_localizations.dart';
 import '../../../models/color_palette.dart';
 import '../../../services/palette_service.dart';

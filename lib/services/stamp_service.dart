@@ -1,11 +1,9 @@
 import 'dart:convert';
 import 'dart:io';
-
 import 'package:archive/archive_io.dart';
 import 'package:flutter/foundation.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-
 import '../models/asset_tags.dart';
 import '../models/stamp.dart';
 
@@ -420,9 +418,9 @@ class StampService extends ChangeNotifier {
     final archive = ZipDecoder().decodeBytes(bytes);
     final dataFile = archive.findFile(_bundleDataFile);
     if (dataFile == null) throw const FormatException('data.json not found');
-    final json = jsonDecode(
-      utf8.decode(dataFile.content as List<int>),
-    ) as Map<String, dynamic>;
+    final json =
+        jsonDecode(utf8.decode(dataFile.content as List<int>))
+            as Map<String, dynamic>;
     final imported = Stamp.fromJson(json);
     final id = 'Stamp${DateTime.now().millisecondsSinceEpoch}';
     final imageFile = archive.files

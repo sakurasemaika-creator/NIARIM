@@ -1,13 +1,10 @@
 import 'package:niarim/services/theme_service.dart';
-
 import 'dart:async';
 import 'dart:math' as math;
 import 'dart:typed_data';
 import 'dart:ui' as ui;
-
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-
 import '../../../engine/filter_engine.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../../models/effect_filter_instance.dart';
