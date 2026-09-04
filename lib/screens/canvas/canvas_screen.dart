@@ -96,6 +96,8 @@ class _CanvasScreenState extends State<CanvasScreen> {
   bool _showQuickToolPanel = false;
   bool _showColorAdjustPanel = false;
   FilterColorEyedropperTarget? _filterColorEyedropperTarget;
+  _TextColorEyedropperTarget? _textColorEyedropperTarget;
+  ValueChanged<Color>? _pendingTextColorEyedropper;
 
   // ─── レイヤー全体の自由変形・メッシュ変形（新機能） ────────────────────
   // 実際の格子点ドラッグ・ワーププレビューはCanvasArea側で完結させ、
@@ -250,6 +252,16 @@ class _CanvasScreenState extends State<CanvasScreen> {
   }
 
   void _handleCanvasEyedropper(Color color) {
+    final textTarget = _textColorEyedropperTarget;
+    final pendingText = _pendingTextColorEyedropper;
+    if (textTarget != null && pendingText != null) {
+      setState(() {
+        _textColorEyedropperTarget = null;
+        _pendingTextColorEyedropper = null;
+      });
+      pendingText(color);
+      return;
+    }
     final target = _filterColorEyedropperTarget;
     if (target != null) {
       final filterService = context.read<FilterService>();
@@ -275,8 +287,11 @@ class _CanvasScreenState extends State<CanvasScreen> {
     context.read<BrushService>().setCurrentColor(color);
   }
 
-  String _filterEyedropperHint(BuildContext context) {
+  String _activeColorEyedropperHint(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
+    if (_textColorEyedropperTarget != null) {
+      return l10n.filterCanvasEyedropperTooltip;
+    }
     return _filterColorEyedropperTarget == FilterColorEyedropperTarget.inkPool
         ? l10n.filterInkPoolEyedropperHint
         : l10n.filterOutlineEyedropperHint;
@@ -820,7 +835,8 @@ class _CanvasScreenState extends State<CanvasScreen> {
                                       : null,
                                   onEyedropper: _handleCanvasEyedropper,
                                   filterEyedropperActive:
-                                      _filterColorEyedropperTarget != null,
+                                      _filterColorEyedropperTarget != null ||
+                                      _textColorEyedropperTarget != null,
                                   project: project,
                                   background: _canvasBackground,
                                   currentLayerId: _currentLayerId,
@@ -860,7 +876,8 @@ class _CanvasScreenState extends State<CanvasScreen> {
                                     setState(() => _hasActiveSelection = v);
                                   },
                                 ),
-                                if (_filterColorEyedropperTarget != null)
+                                if (_filterColorEyedropperTarget != null ||
+                                    _textColorEyedropperTarget != null)
                                   Positioned(
                                     top: 12,
                                     left: 12,
@@ -893,7 +910,7 @@ class _CanvasScreenState extends State<CanvasScreen> {
                                                 const SizedBox(width: 8),
                                                 Flexible(
                                                   child: Text(
-                                                    _filterEyedropperHint(
+                                                    _activeColorEyedropperHint(
                                                       context,
                                                     ),
                                                     style: TextStyle(
@@ -2163,6 +2180,87 @@ class _CanvasScreenState extends State<CanvasScreen> {
         existing?.direction ?? model.TextWritingDirection.horizontal;
     final fontService = context.read<FontService>();
     final l10n = AppLocalizations.of(context)!;
+
+    model.TextObject textDraft() {
+      final base =
+          existing ??
+          model.TextObject(
+            id: '__text_color_draft__',
+            text: controller.text,
+            position: position,
+          );
+      return base.copyWith(
+        text: controller.text,
+        fontSize: fontSize,
+        color: Color(color),
+        isBold: isBold,
+        isItalic: isItalic,
+        fontFamily: fontFamily,
+        lineHeight: lineHeight,
+        letterSpacing: letterSpacing,
+        align: textAlign,
+        direction: direction,
+        outline: model.TextOutline(
+          enabled: outlineEnabled,
+          color: Color(outlineColor),
+          width: outlineWidth,
+        ),
+      );
+    }
+
+    void startTextCanvasEyedropper(
+      _TextColorEyedropperTarget target,
+      BuildContext dialogContext,
+    ) {
+      final draft = textDraft();
+      Navigator.of(dialogContext).pop();
+      setState(() {
+        _textColorEyedropperTarget = target;
+        _pendingTextColorEyedropper = (picked) {
+          final next = target == _TextColorEyedropperTarget.body
+              ? draft.copyWith(color: picked)
+              : draft.copyWith(
+                  outline: model.TextOutline(
+                    enabled: true,
+                    color: picked,
+                    width: draft.outline?.width ?? outlineWidth,
+                  ),
+                );
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            if (!mounted) return;
+            _showTextInputDialog(
+              position,
+              existingLayerId: existingLayerId,
+              existing: next,
+            );
+          });
+        };
+      });
+    }
+
+    Future<void> pickTextColor(
+      BuildContext dialogContext,
+      int current,
+      ValueChanged<int> onChanged,
+    ) async {
+      await showDialog<void>(
+        context: dialogContext,
+        builder: (pickerContext) => Dialog(
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 520, maxHeight: 720),
+            child: ColorPickerPanel(
+              currentColor: Color(current),
+              onColorChanged: (picked) {
+                onChanged(picked.toARGB32());
+                Navigator.of(pickerContext).pop();
+              },
+              onClose: () => Navigator.of(pickerContext).pop(),
+            ),
+          ),
+        ),
+      );
+    }
+
     showDialog(
       context: context,
       builder: (ctx) => DisposeOnUnmount(
@@ -2295,6 +2393,39 @@ class _CanvasScreenState extends State<CanvasScreen> {
                     ],
                   ),
                   const SizedBox(height: 8),
+                  Row(
+                    children: [
+                      GestureDetector(
+                        onTap: () => pickTextColor(
+                          ctx,
+                          color,
+                          (v) => setS(() => color = v),
+                        ),
+                        child: Container(
+                          width: 34,
+                          height: 34,
+                          decoration: BoxDecoration(
+                            color: Color(color),
+                            shape: BoxShape.circle,
+                            border: Border.all(
+                              color: Theme.of(ctx).colorScheme.outline,
+                              width: 2,
+                            ),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 6),
+                      IconButton(
+                        icon: const Icon(Icons.colorize),
+                        tooltip: l10n.toolbarItemEyedropper,
+                        onPressed: () => startTextCanvasEyedropper(
+                          _TextColorEyedropperTarget.body,
+                          ctx,
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 4),
                   Wrap(
                     spacing: 6,
                     children: _textColorPalette
@@ -2411,6 +2542,39 @@ class _CanvasScreenState extends State<CanvasScreen> {
                     onSelected: (v) => setS(() => outlineEnabled = v),
                   ),
                   if (outlineEnabled) ...[
+                    const SizedBox(height: 4),
+                    Row(
+                      children: [
+                        GestureDetector(
+                          onTap: () => pickTextColor(
+                            ctx,
+                            outlineColor,
+                            (v) => setS(() => outlineColor = v),
+                          ),
+                          child: Container(
+                            width: 30,
+                            height: 30,
+                            decoration: BoxDecoration(
+                              color: Color(outlineColor),
+                              shape: BoxShape.circle,
+                              border: Border.all(
+                                color: Theme.of(ctx).colorScheme.outline,
+                                width: 2,
+                              ),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 6),
+                        IconButton(
+                          icon: const Icon(Icons.colorize),
+                          tooltip: l10n.toolbarItemEyedropper,
+                          onPressed: () => startTextCanvasEyedropper(
+                            _TextColorEyedropperTarget.outline,
+                            ctx,
+                          ),
+                        ),
+                      ],
+                    ),
                     const SizedBox(height: 4),
                     Wrap(
                       spacing: 6,
@@ -2663,6 +2827,8 @@ class _ResizeHandle extends StatelessWidget {
     );
   }
 }
+
+enum _TextColorEyedropperTarget { body, outline }
 
 enum DrawingTool {
   pen,
