@@ -16,6 +16,7 @@ on:
       - 'One-shot Canvas Panel Screenshot Audit'
       - 'One-shot Current Coverage Census'
       - 'One-shot Known Scope Reaudit'
+      - 'One-shot Current HEAD Unique Reaudit'
     types: [requested, completed]
 
 permissions:
