@@ -15,14 +15,14 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v6
-      - name: Apply glitter hexagon implementation
-        run: python3 tool/patch_glitter_hexagon.py
-      - name: Format focused file
-        run: dart format lib/engine/drawing_engine.dart
       - uses: subosito/flutter-action@v2
         with:
           channel: stable
           cache: true
+      - name: Apply glitter hexagon implementation
+        run: python3 tool/patch_glitter_hexagon.py
+      - name: Format focused file
+        run: dart format lib/engine/drawing_engine.dart
       - run: flutter pub get
       - name: Static analysis
         run: flutter analyze lib/engine/drawing_engine.dart test/visual/glitter_lame_render_capture_test.dart
