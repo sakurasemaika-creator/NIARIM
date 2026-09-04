@@ -516,7 +516,20 @@ class ThemeService extends ChangeNotifier {
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(radius),
           ),
-          textStyle: const TextStyle(fontWeight: FontWeight.w700),
+          // AppBarのtitleTextStyleとまったく同じ罠。`styleFrom(textStyle:)`へ
+          // 素のTextStyle()を渡すと、それがラベル書式を丸ごと決めてしまい、
+          // ThemeData.fontFamily='HakkouMincho'は継承されない。その結果
+          // FilledButtonのラベルだけ端末標準フォント（Roboto等）で描かれ、
+          // 周囲の同梱フォントから明確に浮く。textTheme.labelLarge
+          // （本文フォント＋kBodyFontFallback適用済み）を土台にして、
+          // 太さだけ上書きする。
+          textStyle:
+              textTheme.labelLarge?.copyWith(fontWeight: FontWeight.w700) ??
+              const TextStyle(
+                fontFamily: 'HakkouMincho',
+                fontFamilyFallback: kBodyFontFallback,
+                fontWeight: FontWeight.w700,
+              ),
         ),
       ),
       outlinedButtonTheme: OutlinedButtonThemeData(

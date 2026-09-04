@@ -38,7 +38,7 @@
    `test/helpers/color_channels.dart`の`.red8`/`.green8`/`.blue8`/
    `.alpha8`を使う。テスト内のデバッグ出力は`print`ではなく
    `debugPrint`を使う）
-3. `flutter test`（ベースライン：**635 tests**、全成功。うち大半は
+3. `flutter test`（ベースライン：**639 tests**、全成功。うち大半は
    `test/app_smoke_test.dart`の自律スモークテスト。詳細は後述）
 4. **コード変更後は`dart format lib test tool`をかける**。
    リポジトリ全体を一度フォーマッタに通してあるので（コミット
@@ -117,7 +117,16 @@
   `ListTileThemeData.titleTextStyle`・`DialogThemeData.titleTextStyle`・
   `AppBarTheme.titleTextStyle`は、`textTheme`から自動継承されず、明示的に
   設定しないと見出し用フォント（Kuramubon）ではなく本文フォント
-  （HakkouMincho）にフォールバックする。`theme_service.dart`の
+  （HakkouMincho）にフォールバックする。
+  **`XxxButton.styleFrom(textStyle:)`はさらに悪く、素の`TextStyle()`を
+  渡すとそれがラベル書式を丸ごと決めてしまい、`ThemeData.fontFamily`すら
+  継承されない**（＝端末標準のRobotoで描かれ、同梱フォントの周囲から
+  明確に浮く）。`filledButtonTheme`が実際にこれで、
+  `TextStyle(fontWeight: w700)`とだけ書かれていたためアプリ内の
+  **全FilledButtonのラベル**が端末標準フォントになっていた。太さ等を
+  変えたいときは`textTheme.labelLarge?.copyWith(...)`のように
+  **textThemeを土台にして上書き**すること。
+  `test/theme_button_font_test.dart`がボタン系4テーマを機械的に見張っている。`theme_service.dart`の
   `listTileTheme`・`dialogTheme`は既に修正済みだが、新しくMaterialの
   テーマ系クラス（`XxxThemeData`）を触る／新設する際は同じ罠が無いか
   必ず確認すること。
@@ -425,6 +434,17 @@ FONT_LICENSES.txt`への本文・著作権表示の追記、`license_screen.dart
   冪等でないものもあるため、層としては一律で投げ直さない方針にしてある
   （`_sendWithRetry`の`retries`引数）。GETでも4xxは投げ直さない
   （何度やっても同じため）。
+- **ダイアログ・ボトムシートは「開いた状態」を撮って目視すること**：
+  ルート単位のスクショ監査は1ルート1状態しか撮らないため、
+  `showDialog`／`showModalBottomSheet`／`showMenu`（lib配下に204箇所）で
+  開く画面はほぼ検証されない。`test/dialog_screenshot_audit_test.dart`が
+  26ルートを巡回してモーダルを1枚ずつ`build/dialog-screenshots/`へ焼く
+  （中身はタップせず必ずpopで閉じるので、確認ダイアログでデータは壊れない）。
+  **テストが緑でも見た目の不具合は残る**：この監査で
+  「ジェスチャー選択シートが77pxオーバーフローして下の選択肢を選べない」
+  「FilledButtonのラベルが端末標準フォント」の2件が実際に見つかった。
+  なお`showModalBottomSheet`は既定で画面高の9/16までしか取らないので、
+  選択肢が7件を超えるシートは`SingleChildScrollView`で包むこと。
 - **アプリ内の文言に絵文字を混ぜない（アイコンで表す）**：意味を表す記号は
   すべてMaterialアイコン（`Icon(Icons.xxx)`）を使う。絵文字は端末・OS
   バージョン・フォント設定で字形も色も変わり、同梱フォント
