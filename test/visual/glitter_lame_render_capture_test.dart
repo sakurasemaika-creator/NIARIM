@@ -8,23 +8,47 @@ import 'package:niarim/engine/tile_manager.dart';
 import 'package:niarim/models/brush.dart';
 
 const _glitter = Brush(
-  id: 'Brush0016', name: 'グリッターペン', size: 12, opacity: 90,
-  spacing: 8, blurRadius: 6, stabilization: false,
-  stabilizationStrength: 0, pixelMode: false,
-  pressureMode: PressureMode.opacity, pressureStrength: 35,
-  fadeMode: FadeMode.off, strokeDecay: false,
-  mixingMode: BrushMixingMode.off, mixingRate: 0,
-  density: 1.7, scatter: 0.85, edgeJitter: true, edgeJitterStrength: 55,
+  id: 'Brush0016',
+  name: 'グリッターペン',
+  size: 14,
+  opacity: 90,
+  spacing: 18,
+  blurRadius: 0,
+  stabilization: false,
+  stabilizationStrength: 0,
+  pixelMode: false,
+  pressureMode: PressureMode.opacity,
+  pressureStrength: 35,
+  fadeMode: FadeMode.off,
+  strokeDecay: false,
+  mixingMode: BrushMixingMode.off,
+  mixingRate: 0,
+  density: 1.2,
+  scatter: 0.9,
+  edgeJitter: false,
+  edgeJitterStrength: 0,
 );
 
 const _lame = Brush(
-  id: 'Brush0017', name: 'ラメペン', size: 5, opacity: 76,
-  spacing: 4, blurRadius: 1, stabilization: true,
-  stabilizationStrength: 20, pixelMode: false,
-  pressureMode: PressureMode.opacity, pressureStrength: 25,
-  fadeMode: FadeMode.off, strokeDecay: false,
-  mixingMode: BrushMixingMode.off, mixingRate: 0,
-  density: 2.8, scatter: 0.45, edgeJitter: true, edgeJitterStrength: 30,
+  id: 'Brush0017',
+  name: 'ラメペン',
+  size: 5,
+  opacity: 76,
+  spacing: 4,
+  blurRadius: 1,
+  stabilization: true,
+  stabilizationStrength: 20,
+  pixelMode: false,
+  pressureMode: PressureMode.opacity,
+  pressureStrength: 25,
+  fadeMode: FadeMode.off,
+  strokeDecay: false,
+  mixingMode: BrushMixingMode.off,
+  mixingRate: 0,
+  density: 2.8,
+  scatter: 0.45,
+  edgeJitter: true,
+  edgeJitterStrength: 30,
 );
 
 Future<void> _capture(Brush brush, String name) async {
@@ -37,13 +61,19 @@ Future<void> _capture(Brush brush, String name) async {
   for (var row = 0; row < 4; row++) {
     final y = 72.0 + row * 72.0;
     engine.beginStroke(
-      StrokePoint(x: 55, y: y, pressure: 1, tiltX: 0, tiltY: 0), layer);
+      StrokePoint(x: 55, y: y, pressure: 1, tiltX: 0, tiltY: 0),
+      layer,
+    );
     for (var x = 65.0; x <= 585; x += 10) {
       final wave = row.isEven ? 10.0 : 5.0;
       engine.continueStroke(
         StrokePoint(
-          x: x, y: y + wave * math.sin(x / 45.0),
-          pressure: 1, tiltX: 0, tiltY: 0),
+          x: x,
+          y: y + wave * math.sin(x / 45.0),
+          pressure: 1,
+          tiltX: 0,
+          tiltY: 0,
+        ),
         layer,
       );
     }
@@ -63,8 +93,11 @@ Future<void> _capture(Brush brush, String name) async {
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
-  test('capture actual DrawingEngine output for glitter and lame presets', () async {
-    await _capture(_glitter, 'glitter_pen_actual');
-    await _capture(_lame, 'lame_pen_actual');
-  });
+  test(
+    'capture actual DrawingEngine output for glitter and lame presets',
+    () async {
+      await _capture(_glitter, 'glitter_pen_actual');
+      await _capture(_lame, 'lame_pen_actual');
+    },
+  );
 }
