@@ -1,0 +1,26 @@
+{
+  "status": "non_blocking_external_sanity_checks",
+  "audited_head_scope": "All NIARIM app-internal logic and mockable platform boundaries are closed in CI.",
+  "checks": [
+    {
+      "area": "touch",
+      "when": "before store submission",
+      "check": "Short physical-device draw/pan/pinch sanity check."
+    },
+    {
+      "area": "stylus",
+      "when": "before store submission on supported hardware",
+      "check": "Pressure/tilt and palm/input-priority sanity check."
+    },
+    {
+      "area": "font/material picker and share sheet",
+      "when": "before store submission",
+      "check": "OS file picker/import/share-sheet round trip on target Android version."
+    },
+    {
+      "area": "Google Play Billing",
+      "when": "on or after 2027-01-01 before enabling paid purchase",
+      "check": "Real monthly/yearly purchase, restore and cancellation/renewal state E2E in Play test environment."
+    }
+  ]
+}

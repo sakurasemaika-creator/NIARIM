@@ -1,0 +1,44 @@
+name: One-shot Post-baseline Inspect
+
+on:
+  push:
+    branches: [dev_branch]
+    paths:
+      - '.github/workflows/one-shot-post-baseline-inspect.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  inspect:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: dev_branch
+      - name: Locate text tool color controls and canvas eyedropper wiring
+        run: |
+          echo '=== TEXT TOOL TARGETS ==='
+          grep -RniE 'TextObject|textObject|ColorPickerPanel|eyedrop|スポイト|outline.*color|color.*outline' lib/screens lib/widgets test --include='*.dart' | grep -v '/l10n/' | head -n 500 || true
+      - name: Locate video-volume persistence path
+        run: |
+          echo '=== VIDEO VOLUME / LAYER SERIALIZATION ==='
+          grep -RniE 'sourceTrimStart|sourceTrimEnd|timelineVideo|videoOpacity|volume' lib/models lib/services lib/engine lib/screens/timeline test --include='*.dart' | head -n 700 || true
+      - name: Locate Android widget provider and sizing path
+        run: |
+          echo '=== HOME WIDGET PROVIDER ==='
+          grep -RniE 'AppWidgetProvider|onAppWidgetOptionsChanged|shortcutImageWide|shortcutImageTall|OPTION_APPWIDGET' android lib/services test --include='*.dart' --include='*.kt' --include='*.xml' | head -n 500 || true
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+      - run: flutter pub get
+      - name: Run current-HEAD home-widget dedicated tests
+        run: |
+          flutter test \
+            test/home_widget_artwork_picker_test.dart \
+            test/home_widget_cell_size_test.dart \
+            test/home_widget_service_test.dart \
+            test/home_widget_shortcut_design_test.dart \
+            --reporter expanded

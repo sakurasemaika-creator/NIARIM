@@ -35,7 +35,7 @@ class FrameStripWidget extends StatefulWidget {
 class _FrameStripWidgetState extends State<FrameStripWidget> {
   final Map<int, int> _refreshTick = {};
   final ScrollController _scrollController = ScrollController();
-  static const double _itemExtent = 48;
+  static const double _itemExtent = 50;
   @override
   void initState() {
     super.initState();
@@ -333,8 +333,9 @@ class _FrameStripWidgetState extends State<FrameStripWidget> {
                               onLongPress: () =>
                                   _showBatchAddDialog(context, service),
                               child: Container(
-                                width: 48,
-                                margin: const EdgeInsets.all(4),
+                                width: 50,
+                                height: 50,
+                                margin: const EdgeInsets.symmetric(vertical: 7),
                                 decoration: BoxDecoration(
                                   border: Border.all(color: scheme.outline),
                                   borderRadius: BorderRadius.circular(4),
@@ -372,8 +373,9 @@ class _FrameStripWidgetState extends State<FrameStripWidget> {
                                     hold,
                                   ),
                             child: Container(
-                              width: 48,
-                              margin: const EdgeInsets.symmetric(vertical: 4),
+                              width: 50,
+                              height: 50,
+                              margin: const EdgeInsets.symmetric(vertical: 7),
                               decoration: BoxDecoration(
                                 color: isSelected
                                     ? scheme.surfaceContainerHighest
@@ -453,8 +455,8 @@ class _FrameStripWidgetState extends State<FrameStripWidget> {
                       IgnorePointer(
                         child: Center(
                           child: Container(
-                            width: 48,
-                            height: 56,
+                            width: 50,
+                            height: 50,
                             decoration: BoxDecoration(
                               border: Border.all(
                                 color: context

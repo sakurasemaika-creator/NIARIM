@@ -837,7 +837,7 @@ class _TimelineScreenState extends State<TimelineScreen> {
       if (mounted) setState(() {});
     }
     if (!controller.value.isInitialized) return;
-    await controller.setVolume(clip.videoOpacity.clamp(0.0, 1.0));
+    await controller.setVolume(clip.volume.clamp(0.0, 1.0));
     final elapsedFrames = _currentFrame - clip.startFrame;
     final targetFrame = clip.useStart + elapsedFrames;
     final targetPos = Duration(
@@ -5459,6 +5459,9 @@ class _TimelineScreenState extends State<TimelineScreen> {
         rangeEnd: newStart + clip.lengthFrames,
         materialId: clip.materialId,
         opacity: (clip.videoOpacity * 100).round(),
+        videoVolume: clip.trackType == _ClipTrackType.video
+            ? clip.volume.clamp(0.0, 1.0)
+            : 1.0,
         sourceTrimStart: clip.trackType == _ClipTrackType.video
             ? clip.useStart
             : null,
@@ -5479,6 +5482,7 @@ class _TimelineScreenState extends State<TimelineScreen> {
       materialId: clip.materialId,
       useStart: clip.useStart,
       useEnd: clip.useEnd,
+      volume: clip.volume,
       videoOpacity: clip.videoOpacity,
       trackRow: targetRow,
     );
@@ -5774,6 +5778,7 @@ class _TimelineScreenState extends State<TimelineScreen> {
         frameIndex: home.frameIndex,
         layer: layer.copyWith(
           opacity: (clip.videoOpacity * 100).round(),
+          videoVolume: clip.volume.clamp(0.0, 1.0),
           sourceTrimStart: clip.useStart,
           sourceTrimEnd: clip.useEnd,
           // 表示開始位置・使用範囲（タイムライン上のドラッグ移動・
@@ -5857,6 +5862,9 @@ class _TimelineScreenState extends State<TimelineScreen> {
           materialId: layer.materialId,
           useStart: layer.sourceTrimStart ?? 0,
           useEnd: layer.sourceTrimEnd ?? (length - 1),
+          volume: layer.type == LayerType.timelineVideo
+              ? layer.videoVolume.clamp(0.0, 1.0)
+              : 1.0,
           videoOpacity: layer.opacity / 100.0,
           trackRow: layer.trackRow,
         );
@@ -8120,6 +8128,19 @@ class _ClipDetailSheetState extends State<_ClipDetailSheet> {
                   ),
                 ],
                 if (_c.trackType == _ClipTrackType.video) ...[
+                  _row(
+                    l10n.timelineClipVolumeLabel,
+                    _c.volume,
+                    0,
+                    1,
+                    100,
+                    (v) {
+                      _c.volume = v;
+                      _notify();
+                    },
+                    '${(_c.volume * 100).round()}%',
+                    step: 0.01,
+                  ),
                   _row(
                     l10n.layerPanelOpacityLabel,
                     _c.videoOpacity,

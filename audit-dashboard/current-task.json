@@ -1,9 +1,11 @@
 {
-  "status": "in_progress",
-  "title": "既存67機能は完了済み・追加変更分の差分監査を継続中",
-  "detail": "既存67機能は過去の最終ゲートで67/67=100%まで完了済みです。背景馴染ませフィルターは環境光推定v2へ全面強化し、主光源・副光源・環境光・影・下方反射・局所色移り・輪郭法線・距離減衰・素材保護・サンプリング帯を含む処理へ更新、専用テストまで成功してdev_branchへ反映済みです。さらに現在HEADでflutter analyze、墨溜まり専用回帰、全Flutter回帰、縁取り/墨溜まりスポイトのソース契約検証まで全て成功したため、この2項目も完了扱いに更新しました。現在はテキスト本体/縁取り色スポイト、動画クリップ音量、Androidホーム画面ウィジェット変更の差分監査を継続しています。",
-  "next": "残る3項目を現在HEADの対象テスト・ソース契約・必要な実キャプチャで確認し、未完項目を完了へ上げます。APKビルドは全追加修正の最後に1回だけ実行します。",
-  "updated_at_jst": "2026-09-04 15:10 JST",
+  "status": "completed",
+  "title": "最新HEAD最終監査 完了",
+  "detail": "最新HEAD基準の全Flutterスイート、strict visual、全ルートスクリーンショット、Deep diagnostics、機能別レンダリング、実機隣接ロジック監査まで全成功。feature-audit-manifestは全項目final_pass=trueへ同期済み。カバレッジは209 production files / 39,547 executable lines中20,880 hit lines = 52.80%。",
+  "next": "最新のUI差分（キャンバスフレームセル50x50統一）を含む最終HEADでFinal HEAD Release Gateを再実行し、静的解析・全Flutterスイート・release APKビルドを完了する。物理端末/OS UI/2027年以降の実課金E2Eはexternal-validation.jsonの非ブロッキング外部確認として分離済み。",
+  "updated_at_jst": "2026-09-04 17:45 JST",
+  "final_gate_triggered": true,
+  "final_gate_retargeted_to_latest_head": true,
   "next_check_jst": "",
   "baseline_completed": true,
   "baseline_total": 67,
@@ -11,9 +13,10 @@
   "post_baseline_items": [
     {"name": "墨溜まりフィルター（描画/演出）", "status": "completed"},
     {"name": "縁取り/墨溜まりフィルターのキャンバススポイト", "status": "completed"},
-    {"name": "テキスト本体/縁取り色のカラーチップ＋スポイト", "status": "pending"},
-    {"name": "動画クリップのタイムライン音量変更", "status": "pending"},
-    {"name": "Androidホーム画面ウィジェット差分", "status": "in_progress"},
-    {"name": "背景馴染ませフィルターの環境光/影推定改善", "status": "completed"}
+    {"name": "テキスト本体/縁取り色のカラーチップ＋スポイト", "status": "completed"},
+    {"name": "動画クリップのタイムライン音量変更", "status": "completed"},
+    {"name": "Androidホーム画面ウィジェット差分", "status": "completed"},
+    {"name": "背景馴染ませフィルターの環境光/影推定改善", "status": "completed"},
+    {"name": "キャンバスフレームセル50x50統一", "status": "pending_final_gate"}
   ]
 }

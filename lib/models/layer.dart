@@ -32,6 +32,9 @@ class Layer {
   // LayerType.timelineVideoでのみ使用する。
   final int? sourceTrimStart;
   final int? sourceTrimEnd;
+  // 動画素材の音量（0.0〜1.0）。不透明度とは独立して保持する。
+  // LayerType.timelineVideoでのみ使用する。
+  final double videoVolume;
 
   // ウォーターマークレイヤー（LayerType.watermark）が参照する登録済み
   // ウォーターマークID・角度・大きさ（配置後にタイムライン上でウォーター
@@ -75,6 +78,7 @@ class Layer {
     this.materialId,
     this.sourceTrimStart,
     this.sourceTrimEnd,
+    this.videoVolume = 1.0,
     this.watermarkAssetId,
     this.watermarkAngle = 0,
     this.watermarkScale = 0.25,
@@ -104,6 +108,7 @@ class Layer {
     Object? materialId = _sentinel,
     Object? sourceTrimStart = _sentinel,
     Object? sourceTrimEnd = _sentinel,
+    double? videoVolume,
     Object? watermarkAssetId = _sentinel,
     double? watermarkAngle,
     double? watermarkScale,
@@ -144,6 +149,7 @@ class Layer {
       sourceTrimEnd: sourceTrimEnd == _sentinel
           ? this.sourceTrimEnd
           : sourceTrimEnd as int?,
+      videoVolume: videoVolume ?? this.videoVolume,
       watermarkAssetId: watermarkAssetId == _sentinel
           ? this.watermarkAssetId
           : watermarkAssetId as String?,

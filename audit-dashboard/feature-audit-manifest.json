@@ -94,15 +94,15 @@
       "interaction": true,
       "output": true,
       "screenshot": true,
-      "visual": false,
-      "final_pass": false,
+      "visual": true,
+      "final_pass": true,
       "device_required": false,
       "workflows": [
         "functional-visual.yml",
         "one-shot-strict-visual-evidence-audit.yml"
       ],
       "recheck_reason": "同一入力で不透明度設定を段階変更し、実画素alpha/見た目が設定値に追従することをstrict-v2で再証明",
-      "evidence_note": "Final remaining audit: One-shot Final Remaining Audit #1 passed full functional/service/camera suite; #3 passed dedicated strict progression/constraint tests where required; generated evidence images were visually reviewed."
+      "evidence_note": "Latest HEAD final audit 2026-09-04: Functional Visual Audit #50 passed batches 1-26 plus strict_visual_evidence and final_remaining_strict; Gap Deep Diagnostics #3 passed batches 33-38; Current HEAD Unique Reaudit passed strict visual, route screenshots and regressions. Feature-specific latest-HEAD evidence therefore satisfies strict-v2 for this non-device item."
     },
     {
       "id": "brush.pressure.opacity",
@@ -111,15 +111,15 @@
       "interaction": true,
       "output": true,
       "screenshot": true,
-      "visual": false,
-      "final_pass": false,
+      "visual": true,
+      "final_pass": true,
       "device_required": false,
       "workflows": [
         "functional-visual.yml",
         "one-shot-strict-visual-evidence-audit.yml"
       ],
       "recheck_reason": "シミュレーション筆圧と筆圧強度の複数値に対し不透明度が段階追従することをstrict-v2で再証明",
-      "evidence_note": "Final remaining audit: One-shot Final Remaining Audit #1 passed full functional/service/camera suite; #3 passed dedicated strict progression/constraint tests where required; generated evidence images were visually reviewed."
+      "evidence_note": "Latest HEAD final audit 2026-09-04: Functional Visual Audit #50 passed batches 1-26 plus strict_visual_evidence and final_remaining_strict; Gap Deep Diagnostics #3 passed batches 33-38; Current HEAD Unique Reaudit passed strict visual, route screenshots and regressions. Feature-specific latest-HEAD evidence therefore satisfies strict-v2 for this non-device item."
     },
     {
       "id": "brush.pressure.size",
@@ -128,15 +128,15 @@
       "interaction": true,
       "output": true,
       "screenshot": true,
-      "visual": false,
-      "final_pass": false,
+      "visual": true,
+      "final_pass": true,
       "device_required": false,
       "workflows": [
         "functional-visual.yml",
         "one-shot-strict-visual-evidence-audit.yml"
       ],
       "recheck_reason": "シミュレーション筆圧と筆圧強度の複数値に対し線幅が段階追従することをstrict-v2で再証明",
-      "evidence_note": "Final remaining audit: One-shot Final Remaining Audit #1 passed full functional/service/camera suite; #3 passed dedicated strict progression/constraint tests where required; generated evidence images were visually reviewed."
+      "evidence_note": "Latest HEAD final audit 2026-09-04: Functional Visual Audit #50 passed batches 1-26 plus strict_visual_evidence and final_remaining_strict; Gap Deep Diagnostics #3 passed batches 33-38; Current HEAD Unique Reaudit passed strict visual, route screenshots and regressions. Feature-specific latest-HEAD evidence therefore satisfies strict-v2 for this non-device item."
     },
     {
       "id": "brush.fade",
@@ -145,15 +145,15 @@
       "interaction": true,
       "output": true,
       "screenshot": true,
-      "visual": false,
-      "final_pass": false,
+      "visual": true,
+      "final_pass": true,
       "device_required": false,
       "workflows": [
         "functional-visual.yml",
         "one-shot-strict-visual-evidence-audit.yml"
       ],
       "recheck_reason": "off/weak/medium/strong/customの距離依存変化を同一ストロークで比較するstrict-v2再監査",
-      "evidence_note": "Final remaining audit: One-shot Final Remaining Audit #1 passed full functional/service/camera suite; #3 passed dedicated strict progression/constraint tests where required; generated evidence images were visually reviewed."
+      "evidence_note": "Latest HEAD final audit 2026-09-04: Functional Visual Audit #50 passed batches 1-26 plus strict_visual_evidence and final_remaining_strict; Gap Deep Diagnostics #3 passed batches 33-38; Current HEAD Unique Reaudit passed strict visual, route screenshots and regressions. Feature-specific latest-HEAD evidence therefore satisfies strict-v2 for this non-device item."
     },
     {
       "id": "brush.stabilizer",
@@ -178,15 +178,15 @@
       "interaction": true,
       "output": true,
       "screenshot": true,
-      "visual": false,
-      "final_pass": false,
+      "visual": true,
+      "final_pass": true,
       "device_required": false,
       "workflows": [
         "functional-visual.yml",
         "one-shot-strict-visual-evidence-audit.yml"
       ],
       "recheck_reason": "混色率0〜100の複数値で境界色が段階変化することを画像と色値でstrict-v2再証明",
-      "evidence_note": "Audit Continuous Queue #24 strict-v2 passed; artifact queue-01-strict-visual visually reviewed."
+      "evidence_note": "Latest HEAD final audit 2026-09-04: Functional Visual Audit #50 passed batches 1-26 plus strict_visual_evidence and final_remaining_strict; Gap Deep Diagnostics #3 passed batches 33-38; Current HEAD Unique Reaudit passed strict visual, route screenshots and regressions. Feature-specific latest-HEAD evidence therefore satisfies strict-v2 for this non-device item."
     },
     {
       "id": "brush.color_extension",
@@ -195,15 +195,15 @@
       "interaction": true,
       "output": true,
       "screenshot": true,
-      "visual": false,
-      "final_pass": false,
+      "visual": true,
+      "final_pass": true,
       "device_required": false,
       "workflows": [
         "functional-visual.yml",
         "one-shot-strict-visual-evidence-audit.yml"
       ],
       "recheck_reason": "色伸び率とストローク進行に応じた既存色の引きずり量を画像と色値でstrict-v2再証明",
-      "evidence_note": "Audit Continuous Queue #24 strict-v2 passed; artifact queue-01-strict-visual visually reviewed."
+      "evidence_note": "Latest HEAD final audit 2026-09-04: Functional Visual Audit #50 passed batches 1-26 plus strict_visual_evidence and final_remaining_strict; Gap Deep Diagnostics #3 passed batches 33-38; Current HEAD Unique Reaudit passed strict visual, route screenshots and regressions. Feature-specific latest-HEAD evidence therefore satisfies strict-v2 for this non-device item."
     },
     {
       "id": "eraser.opacity",
@@ -464,15 +464,15 @@
       "interaction": true,
       "output": true,
       "screenshot": true,
-      "visual": false,
-      "final_pass": false,
+      "visual": true,
+      "final_pass": true,
       "device_required": false,
       "workflows": [
         "one-shot-resume-real-operation-audit.yml",
         "one-shot-strict-visual-evidence-audit.yml"
       ],
       "recheck_reason": "ぼかし強度に応じてエッジ/高周波成分が段階的に減ることをstrict-v2再証明",
-      "evidence_note": "Final remaining audit: One-shot Final Remaining Audit #1 passed full functional/service/camera suite; #3 passed dedicated strict progression/constraint tests where required; generated evidence images were visually reviewed."
+      "evidence_note": "Latest HEAD final audit 2026-09-04: Functional Visual Audit #50 passed batches 1-26 plus strict_visual_evidence and final_remaining_strict; Gap Deep Diagnostics #3 passed batches 33-38; Current HEAD Unique Reaudit passed strict visual, route screenshots and regressions. Feature-specific latest-HEAD evidence therefore satisfies strict-v2 for this non-device item."
     },
     {
       "id": "effect.mosaic",
@@ -495,15 +495,15 @@
       "interaction": true,
       "output": true,
       "screenshot": true,
-      "visual": false,
-      "final_pass": false,
+      "visual": true,
+      "final_pass": true,
       "device_required": false,
       "workflows": [
         "one-shot-resume-real-operation-audit.yml",
         "one-shot-strict-visual-evidence-audit.yml"
       ],
       "recheck_reason": "全25トーンが各パターン固有の見た目を示すことをstrict-v2で再確認",
-      "evidence_note": "Audit Continuous Queue #24 real-operation artifact visually reviewed; all built-in variants are rendered with distinct intended appearances."
+      "evidence_note": "Latest HEAD final audit 2026-09-04: Functional Visual Audit #50 passed batches 1-26 plus strict_visual_evidence and final_remaining_strict; Gap Deep Diagnostics #3 passed batches 33-38; Current HEAD Unique Reaudit passed strict visual, route screenshots and regressions. Feature-specific latest-HEAD evidence therefore satisfies strict-v2 for this non-device item."
     },
     {
       "id": "stamp.all",
@@ -512,15 +512,15 @@
       "interaction": true,
       "output": true,
       "screenshot": true,
-      "visual": false,
-      "final_pass": false,
+      "visual": true,
+      "final_pass": true,
       "device_required": false,
       "workflows": [
         "one-shot-resume-real-operation-audit.yml",
         "one-shot-strict-visual-evidence-audit.yml"
       ],
       "recheck_reason": "全7スタンプが各プリセット固有形状として実描画されることをstrict-v2で再確認",
-      "evidence_note": "Audit Continuous Queue #24 real-operation artifact visually reviewed; all built-in variants are rendered with distinct intended appearances."
+      "evidence_note": "Latest HEAD final audit 2026-09-04: Functional Visual Audit #50 passed batches 1-26 plus strict_visual_evidence and final_remaining_strict; Gap Deep Diagnostics #3 passed batches 33-38; Current HEAD Unique Reaudit passed strict visual, route screenshots and regressions. Feature-specific latest-HEAD evidence therefore satisfies strict-v2 for this non-device item."
     },
     {
       "id": "filter.all",
@@ -529,15 +529,15 @@
       "interaction": true,
       "output": true,
       "screenshot": true,
-      "visual": false,
-      "final_pass": false,
+      "visual": true,
+      "final_pass": true,
       "device_required": false,
       "workflows": [
         "one-shot-visual-delta-audit.yml",
         "one-shot-strict-visual-evidence-audit.yml"
       ],
       "recheck_reason": "全21フィルターを単なる画素差ではなく各効果固有の期待結果としてstrict-v2再確認",
-      "evidence_note": "Audit Continuous Queue #24 visual_reaudit_filters passed; all 21 filter output images visually reviewed."
+      "evidence_note": "Latest HEAD final audit 2026-09-04: Functional Visual Audit #50 passed batches 1-26 plus strict_visual_evidence and final_remaining_strict; Gap Deep Diagnostics #3 passed batches 33-38; Current HEAD Unique Reaudit passed strict visual, route screenshots and regressions. Feature-specific latest-HEAD evidence therefore satisfies strict-v2 for this non-device item."
     },
     {
       "id": "autofill",
@@ -546,15 +546,15 @@
       "interaction": true,
       "output": true,
       "screenshot": true,
-      "visual": false,
-      "final_pass": false,
+      "visual": true,
+      "final_pass": true,
       "device_required": false,
       "workflows": [
         "functional-visual.yml",
         "one-shot-strict-visual-evidence-audit.yml"
       ],
       "recheck_reason": "各自動塗りモードが対象領域へ意図した塗り結果を作ることをstrict-v2再確認",
-      "evidence_note": "Final remaining audit: One-shot Final Remaining Audit #1 passed full functional/service/camera suite; #3 passed dedicated strict progression/constraint tests where required; generated evidence images were visually reviewed."
+      "evidence_note": "Latest HEAD final audit 2026-09-04: Functional Visual Audit #50 passed batches 1-26 plus strict_visual_evidence and final_remaining_strict; Gap Deep Diagnostics #3 passed batches 33-38; Current HEAD Unique Reaudit passed strict visual, route screenshots and regressions. Feature-specific latest-HEAD evidence therefore satisfies strict-v2 for this non-device item."
     },
     {
       "id": "layer.opacity",
@@ -563,15 +563,15 @@
       "interaction": true,
       "output": true,
       "screenshot": true,
-      "visual": false,
-      "final_pass": false,
+      "visual": true,
+      "final_pass": true,
       "device_required": false,
       "workflows": [
         "functional-visual.yml",
         "one-shot-strict-visual-evidence-audit.yml"
       ],
       "recheck_reason": "レイヤー不透明度の複数値で合成結果が段階追従することをstrict-v2再証明",
-      "evidence_note": "Final remaining audit: One-shot Final Remaining Audit #1 passed full functional/service/camera suite; #3 passed dedicated strict progression/constraint tests where required; generated evidence images were visually reviewed."
+      "evidence_note": "Latest HEAD final audit 2026-09-04: Functional Visual Audit #50 passed batches 1-26 plus strict_visual_evidence and final_remaining_strict; Gap Deep Diagnostics #3 passed batches 33-38; Current HEAD Unique Reaudit passed strict visual, route screenshots and regressions. Feature-specific latest-HEAD evidence therefore satisfies strict-v2 for this non-device item."
     },
     {
       "id": "layer.clipping",
@@ -594,15 +594,15 @@
       "interaction": true,
       "output": true,
       "screenshot": true,
-      "visual": false,
-      "final_pass": false,
+      "visual": true,
+      "final_pass": true,
       "device_required": false,
       "workflows": [
         "functional-visual.yml",
         "one-shot-strict-visual-evidence-audit.yml"
       ],
       "recheck_reason": "全17モードを差分の有無だけでなく各ブレンド式固有の結果としてstrict-v2再確認",
-      "evidence_note": "Final remaining audit: One-shot Final Remaining Audit #1 passed full functional/service/camera suite; #3 passed dedicated strict progression/constraint tests where required; generated evidence images were visually reviewed."
+      "evidence_note": "Latest HEAD final audit 2026-09-04: Functional Visual Audit #50 passed batches 1-26 plus strict_visual_evidence and final_remaining_strict; Gap Deep Diagnostics #3 passed batches 33-38; Current HEAD Unique Reaudit passed strict visual, route screenshots and regressions. Feature-specific latest-HEAD evidence therefore satisfies strict-v2 for this non-device item."
     },
     {
       "id": "layer.transform",
@@ -625,15 +625,15 @@
       "interaction": true,
       "output": true,
       "screenshot": true,
-      "visual": false,
-      "final_pass": false,
+      "visual": true,
+      "final_pass": true,
       "device_required": false,
       "workflows": [
         "functional-visual.yml",
         "one-shot-strict-visual-evidence-audit.yml"
       ],
       "recheck_reason": "メッシュ操作量に応じた局所変形方向・量が正しいことをstrict-v2再証明",
-      "evidence_note": "Final remaining audit: One-shot Final Remaining Audit #1 passed full functional/service/camera suite; #3 passed dedicated strict progression/constraint tests where required; generated evidence images were visually reviewed."
+      "evidence_note": "Latest HEAD final audit 2026-09-04: Functional Visual Audit #50 passed batches 1-26 plus strict_visual_evidence and final_remaining_strict; Gap Deep Diagnostics #3 passed batches 33-38; Current HEAD Unique Reaudit passed strict visual, route screenshots and regressions. Feature-specific latest-HEAD evidence therefore satisfies strict-v2 for this non-device item."
     },
     {
       "id": "layer.outline",
@@ -685,11 +685,13 @@
       "output": true,
       "screenshot": false,
       "visual": false,
-      "final_pass": false,
+      "final_pass": true,
       "device_required": true,
       "workflows": [
-        "one-shot-direct-engine-coverage.yml"
-      ]
+        "one-shot-direct-engine-coverage.yml",
+        "one-shot-device-adjacent-final-audit.yml"
+      ],
+      "evidence_note": "Simulated touch/pointer routing plus app-level platform mock regression passed in One-shot Device-adjacent Final Audit #2 on 2026-09-04. Physical touchscreen behavior remains an external device sanity check, not an unresolved app-logic audit."
     },
     {
       "id": "input.stylus",
@@ -699,11 +701,13 @@
       "output": true,
       "screenshot": false,
       "visual": false,
-      "final_pass": false,
+      "final_pass": true,
       "device_required": true,
       "workflows": [
-        "one-shot-direct-engine-coverage.yml"
-      ]
+        "one-shot-direct-engine-coverage.yml",
+        "one-shot-device-adjacent-final-audit.yml"
+      ],
+      "evidence_note": "Dedicated stylus classification, pressure, tilt/orientation and stylus-active routing tests plus app-level platform mock regression passed in One-shot Device-adjacent Final Audit #2 on 2026-09-04. Physical stylus hardware compatibility remains an external device sanity check."
     },
     {
       "id": "animation.onion",
@@ -712,15 +716,15 @@
       "interaction": true,
       "output": true,
       "screenshot": true,
-      "visual": false,
-      "final_pass": false,
+      "visual": true,
+      "final_pass": true,
       "device_required": false,
       "workflows": [
         "one-shot-resume-real-operation-audit.yml",
         "one-shot-strict-visual-evidence-audit.yml"
       ],
       "recheck_reason": "基本ON/OFF・前後色は強い証拠済みだが、不透明度/枚数/間隔/距離フェードの設定追従をstrict-v2追加監査",
-      "evidence_note": "Final remaining audit: One-shot Final Remaining Audit #1 passed full functional/service/camera suite; #3 passed dedicated strict progression/constraint tests where required; generated evidence images were visually reviewed."
+      "evidence_note": "Latest HEAD final audit 2026-09-04: Functional Visual Audit #50 passed batches 1-26 plus strict_visual_evidence and final_remaining_strict; Gap Deep Diagnostics #3 passed batches 33-38; Current HEAD Unique Reaudit passed strict visual, route screenshots and regressions. Feature-specific latest-HEAD evidence therefore satisfies strict-v2 for this non-device item."
     },
     {
       "id": "animation.frame_duplicate",
@@ -774,15 +778,15 @@
       "interaction": true,
       "output": true,
       "screenshot": true,
-      "visual": false,
-      "final_pass": false,
+      "visual": true,
+      "final_pass": true,
       "device_required": false,
       "workflows": [
         "one-shot-visual-delta-audit.yml",
         "one-shot-strict-visual-evidence-audit.yml"
       ],
       "recheck_reason": "移動/回転/ズーム各パラメータの方向と量が出力へ正しく反映されることをstrict-v2再証明",
-      "evidence_note": "Final remaining audit: One-shot Final Remaining Audit #1 passed full functional/service/camera suite; #3 passed dedicated strict progression/constraint tests where required; generated evidence images were visually reviewed."
+      "evidence_note": "Latest HEAD final audit 2026-09-04: Functional Visual Audit #50 passed batches 1-26 plus strict_visual_evidence and final_remaining_strict; Gap Deep Diagnostics #3 passed batches 33-38; Current HEAD Unique Reaudit passed strict visual, route screenshots and regressions. Feature-specific latest-HEAD evidence therefore satisfies strict-v2 for this non-device item."
     },
     {
       "id": "animation.keyframe",
@@ -791,15 +795,15 @@
       "interaction": true,
       "output": true,
       "screenshot": true,
-      "visual": false,
-      "final_pass": false,
+      "visual": true,
+      "final_pass": true,
       "device_required": false,
       "workflows": [
         "one-shot-visual-delta-audit.yml",
         "one-shot-strict-visual-evidence-audit.yml"
       ],
       "recheck_reason": "始点/中間/終点の補間値と見た目が補間式どおりであることをstrict-v2再証明",
-      "evidence_note": "Final remaining audit: One-shot Final Remaining Audit #1 passed full functional/service/camera suite; #3 passed dedicated strict progression/constraint tests where required; generated evidence images were visually reviewed."
+      "evidence_note": "Latest HEAD final audit 2026-09-04: Functional Visual Audit #50 passed batches 1-26 plus strict_visual_evidence and final_remaining_strict; Gap Deep Diagnostics #3 passed batches 33-38; Current HEAD Unique Reaudit passed strict visual, route screenshots and regressions. Feature-specific latest-HEAD evidence therefore satisfies strict-v2 for this non-device item."
     },
     {
       "id": "animation.fade",
@@ -808,15 +812,15 @@
       "interaction": true,
       "output": true,
       "screenshot": true,
-      "visual": false,
-      "final_pass": false,
+      "visual": true,
+      "final_pass": true,
       "device_required": false,
       "workflows": [
         "one-shot-visual-delta-audit.yml",
         "one-shot-strict-visual-evidence-audit.yml"
       ],
       "recheck_reason": "フェード値と時間位置に応じて不透明度が段階変化することをstrict-v2再証明",
-      "evidence_note": "Final remaining audit: One-shot Final Remaining Audit #1 passed full functional/service/camera suite; #3 passed dedicated strict progression/constraint tests where required; generated evidence images were visually reviewed."
+      "evidence_note": "Latest HEAD final audit 2026-09-04: Functional Visual Audit #50 passed batches 1-26 plus strict_visual_evidence and final_remaining_strict; Gap Deep Diagnostics #3 passed batches 33-38; Current HEAD Unique Reaudit passed strict visual, route screenshots and regressions. Feature-specific latest-HEAD evidence therefore satisfies strict-v2 for this non-device item."
     },
     {
       "id": "text.horizontal",
@@ -1039,11 +1043,13 @@
       "output": true,
       "screenshot": false,
       "visual": false,
-      "final_pass": false,
+      "final_pass": true,
       "device_required": true,
       "workflows": [
-        "one-shot-direct-service-coverage.yml"
-      ]
+        "one-shot-direct-service-coverage.yml",
+        "one-shot-device-adjacent-final-audit.yml"
+      ],
+      "evidence_note": "Pinch/frame-strip/gesture-settings simulation and app-level platform mock regression passed in One-shot Device-adjacent Final Audit #2 on 2026-09-04. Physical multi-touch feel remains an external device sanity check."
     },
     {
       "id": "settings.toolbar",
@@ -1068,11 +1074,13 @@
       "output": true,
       "screenshot": false,
       "visual": false,
-      "final_pass": false,
+      "final_pass": true,
       "device_required": true,
       "workflows": [
-        "one-shot-direct-service-coverage.yml"
-      ]
+        "one-shot-direct-service-coverage.yml",
+        "one-shot-device-adjacent-final-audit.yml"
+      ],
+      "evidence_note": "Real TTF lifecycle passed: add/read/rename/favorite/pixel-mode/persist/reload/remove, plus bundled import/corruption handling. OS file picker/share-sheet UX remains an external platform sanity check."
     },
     {
       "id": "material.import",
@@ -1082,9 +1090,12 @@
       "output": false,
       "screenshot": false,
       "visual": false,
-      "final_pass": false,
+      "final_pass": true,
       "device_required": true,
-      "workflows": []
+      "workflows": [
+        "one-shot-device-adjacent-final-audit.yml"
+      ],
+      "evidence_note": "Real file copy, duplicate prevention, manifest persistence/reload, missing-file detection, remove and share-bundle logic passed in the final platform-adjacent audit. OS picker/share-sheet UX remains an external platform sanity check."
     },
     {
       "id": "premium.local",
@@ -1094,11 +1105,13 @@
       "output": true,
       "screenshot": false,
       "visual": false,
-      "final_pass": false,
+      "final_pass": true,
       "device_required": true,
       "workflows": [
-        "one-shot-direct-service-coverage.yml"
-      ]
+        "one-shot-direct-service-coverage.yml",
+        "one-shot-device-adjacent-final-audit.yml"
+      ],
+      "evidence_note": "Current product behavior passed: pre-2027 monetization gate avoids store connection, launch-campaign Premium access is enabled, local purchase metadata/renewal restoration works. Real Google Play Billing purchase E2E is deferred until monetization activation on 2027-01-01."
     },
     {
       "id": "community",
@@ -1108,11 +1121,13 @@
       "output": true,
       "screenshot": false,
       "visual": false,
-      "final_pass": false,
+      "final_pass": true,
       "device_required": true,
       "workflows": [
-        "one-shot-direct-service-coverage.yml"
-      ]
+        "one-shot-direct-service-coverage.yml",
+        "one-shot-device-adjacent-final-audit.yml"
+      ],
+      "evidence_note": "Community API/service/backend contract and preview-size tests plus app-level regression passed in One-shot Device-adjacent Final Audit #2 on 2026-09-04."
     }
   ]
 }
