@@ -2616,5 +2616,8 @@
         "type": "String"
       }
     }
-  }
+  },
+  "filterCanvasEyedropperTooltip": "Pick color from canvas",
+  "filterInkPoolEyedropperHint": "Tap the canvas to choose the ink pooling color",
+  "filterOutlineEyedropperHint": "Tap the canvas to choose the outline color"
 }

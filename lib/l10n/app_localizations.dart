@@ -10978,6 +10978,24 @@ abstract class AppLocalizations {
   /// In ja, this message translates to:
   /// **'{name} 墨溜まり'**
   String filterInkPoolLayerNameSuffix(String name);
+
+  /// No description provided for @filterCanvasEyedropperTooltip.
+  ///
+  /// In ja, this message translates to:
+  /// **'キャンバスから色を選択'**
+  String get filterCanvasEyedropperTooltip;
+
+  /// No description provided for @filterInkPoolEyedropperHint.
+  ///
+  /// In ja, this message translates to:
+  /// **'タップで墨溜まりの色を選択してください'**
+  String get filterInkPoolEyedropperHint;
+
+  /// No description provided for @filterOutlineEyedropperHint.
+  ///
+  /// In ja, this message translates to:
+  /// **'タップで縁取りの色を選択してください'**
+  String get filterOutlineEyedropperHint;
 }
 
 class _AppLocalizationsDelegate

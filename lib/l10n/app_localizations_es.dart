@@ -6292,4 +6292,15 @@ class AppLocalizationsEs extends AppLocalizations {
   String filterInkPoolLayerNameSuffix(String name) {
     return '$name 墨溜まり';
   }
+
+  @override
+  String get filterCanvasEyedropperTooltip => 'Elegir color del lienzo';
+
+  @override
+  String get filterInkPoolEyedropperHint =>
+      'Toca el lienzo para elegir el color de acumulación de tinta';
+
+  @override
+  String get filterOutlineEyedropperHint =>
+      'Toca el lienzo para elegir el color del contorno';
 }

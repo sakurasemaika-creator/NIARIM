@@ -24,6 +24,8 @@ import 'color_picker_panel.dart';
 import 'panel_close_bar.dart';
 import '../../../config/font_fallback.dart';
 
+enum FilterColorEyedropperTarget { inkPool, outline }
+
 /// 描画フィルターパネル。
 /// フィルターの選択・パラメータ調整・プレビュー・適用を行う。
 /// [bulkFrameIndices]が指定された場合は「大量処理」として、指定した全フレームの
@@ -36,6 +38,8 @@ class FilterPanel extends StatefulWidget {
   final int frameIndex;
   final Set<int>? bulkFrameIndices;
   final VoidCallback onClose;
+  final ValueChanged<FilterColorEyedropperTarget>? onStartCanvasEyedropper;
+  final FilterColorEyedropperTarget? activeCanvasEyedropperTarget;
 
   const FilterPanel({
     super.key,
@@ -45,6 +49,8 @@ class FilterPanel extends StatefulWidget {
     required this.frameIndex,
     this.bulkFrameIndices,
     required this.onClose,
+    this.onStartCanvasEyedropper,
+    this.activeCanvasEyedropperTarget,
   });
 
   @override
@@ -73,6 +79,28 @@ class _FilterPanelState extends State<FilterPanel> {
   // _autoBlendColorArgbへ保持する（ユーザーがカラーチップで手動指定
   // していない間、プレビュー・本適用の両方でこの色を使う）。
   int? _autoBlendColorArgb;
+
+  Widget _canvasEyedropperButton(
+    BuildContext context,
+    FilterColorEyedropperTarget target,
+  ) {
+    final active = widget.activeCanvasEyedropperTarget == target;
+    final l10n = AppLocalizations.of(context)!;
+    return IconButton(
+      icon: const Icon(Icons.colorize, size: 18),
+      tooltip: l10n.filterCanvasEyedropperTooltip,
+      visualDensity: VisualDensity.compact,
+      style: IconButton.styleFrom(
+        backgroundColor: active
+            ? Theme.of(context).colorScheme.primaryContainer
+            : null,
+        foregroundColor: active
+            ? Theme.of(context).colorScheme.onPrimaryContainer
+            : null,
+      ),
+      onPressed: () => widget.onStartCanvasEyedropper?.call(target),
+    );
+  }
 
   @override
   void initState() {
@@ -664,6 +692,11 @@ class _FilterPanelState extends State<FilterPanel> {
                                     ),
                                   ),
                                 ),
+                                const SizedBox(width: 2),
+                                _canvasEyedropperButton(
+                                  context,
+                                  FilterColorEyedropperTarget.inkPool,
+                                ),
                               ],
                             ),
                           ),
@@ -714,6 +747,11 @@ class _FilterPanelState extends State<FilterPanel> {
                                       borderRadius: BorderRadius.circular(4),
                                     ),
                                   ),
+                                ),
+                                const SizedBox(width: 2),
+                                _canvasEyedropperButton(
+                                  context,
+                                  FilterColorEyedropperTarget.outline,
                                 ),
                               ],
                             ),

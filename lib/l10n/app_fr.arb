@@ -2604,5 +2604,8 @@
   "toolbarFingerSubtoolWarp": "Déformer",
   "brushSettingsEdgeJitterTitle": "Bavure de bord",
   "brushSettingsEdgeJitterSubtitle": "Rend le bord légèrement irrégulier pour imiter le bavage de l'encre",
-  "brushSettingsEdgeJitterStrengthLabel": "Intensité"
+  "brushSettingsEdgeJitterStrengthLabel": "Intensité",
+  "filterCanvasEyedropperTooltip": "Choisir une couleur sur la toile",
+  "filterInkPoolEyedropperHint": "Touchez la toile pour choisir la couleur de l’accumulation d’encre",
+  "filterOutlineEyedropperHint": "Touchez la toile pour choisir la couleur du contour"
 }

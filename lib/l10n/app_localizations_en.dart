@@ -6183,4 +6183,15 @@ class AppLocalizationsEn extends AppLocalizations {
   String filterInkPoolLayerNameSuffix(String name) {
     return '$name Ink Pooling';
   }
+
+  @override
+  String get filterCanvasEyedropperTooltip => 'Pick color from canvas';
+
+  @override
+  String get filterInkPoolEyedropperHint =>
+      'Tap the canvas to choose the ink pooling color';
+
+  @override
+  String get filterOutlineEyedropperHint =>
+      'Tap the canvas to choose the outline color';
 }

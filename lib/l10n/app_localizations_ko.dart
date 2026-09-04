@@ -6007,4 +6007,13 @@ class AppLocalizationsKo extends AppLocalizations {
   String filterInkPoolLayerNameSuffix(String name) {
     return '$name 墨溜まり';
   }
+
+  @override
+  String get filterCanvasEyedropperTooltip => '캔버스에서 색상 선택';
+
+  @override
+  String get filterInkPoolEyedropperHint => '캔버스를 탭하여 먹물 고임 색상을 선택하세요';
+
+  @override
+  String get filterOutlineEyedropperHint => '캔버스를 탭하여 테두리 색상을 선택하세요';
 }

@@ -2604,5 +2604,8 @@
   "toolbarFingerSubtoolWarp": "弯曲",
   "brushSettingsEdgeJitterTitle": "边缘渗漏",
   "brushSettingsEdgeJitterSubtitle": "轻微粗糙化边缘，模拟墨水渗漏效果",
-  "brushSettingsEdgeJitterStrengthLabel": "渗漏强度"
+  "brushSettingsEdgeJitterStrengthLabel": "渗漏强度",
+  "filterCanvasEyedropperTooltip": "从画布选取颜色",
+  "filterInkPoolEyedropperHint": "点击画布选择积墨颜色",
+  "filterOutlineEyedropperHint": "点击画布选择描边颜色"
 }

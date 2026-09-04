@@ -5937,6 +5937,15 @@ class AppLocalizationsZh extends AppLocalizations {
   String filterInkPoolLayerNameSuffix(String name) {
     return '$name 墨溜まり';
   }
+
+  @override
+  String get filterCanvasEyedropperTooltip => '从画布选取颜色';
+
+  @override
+  String get filterInkPoolEyedropperHint => '点击画布选择积墨颜色';
+
+  @override
+  String get filterOutlineEyedropperHint => '点击画布选择描边颜色';
 }
 
 /// The translations for Chinese, using the Han script (`zh_Hant`).
@@ -11854,4 +11863,13 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get brushSettingsEdgeJitterStrengthLabel => '漸漫強度';
+
+  @override
+  String get filterCanvasEyedropperTooltip => '從畫布選取顏色';
+
+  @override
+  String get filterInkPoolEyedropperHint => '點擊畫布選擇積墨顏色';
+
+  @override
+  String get filterOutlineEyedropperHint => '點擊畫布選擇描邊顏色';
 }

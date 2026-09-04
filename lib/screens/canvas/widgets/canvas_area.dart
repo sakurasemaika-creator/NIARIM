@@ -82,6 +82,7 @@ Rect canvasDrawingRectFor(Size size, Project? project) {
 class CanvasArea extends StatefulWidget {
   final ValueChanged<Offset>? onTapForText;
   final ValueChanged<Color>? onEyedropper;
+  final bool filterEyedropperActive;
   final Project? project;
   final CanvasBackground background;
   final String? currentLayerId;
@@ -138,6 +139,7 @@ class CanvasArea extends StatefulWidget {
     super.key,
     this.onTapForText,
     this.onEyedropper,
+    this.filterEyedropperActive = false,
     this.project,
     this.background = CanvasBackground.white,
     this.currentLayerId,
@@ -784,6 +786,14 @@ class _CanvasAreaState extends State<CanvasArea> {
   void _onPointerDown(PointerEvent event) {
     final type = _inputHandler.classifyInput(event);
     final canvasPos = _canvasPosition(event.localPosition);
+
+    // フィルターパネルから起動した一時スポイト中は、現在選択中の描画
+    // ツールを変更せず、このタップを色取得だけに使う。_pickColor()は
+    // 表示中の全レイヤーを合成した見た目色を返す。
+    if (widget.filterEyedropperActive) {
+      _pickColor(canvasPos);
+      return;
+    }
 
     // 制作時間カウント：キャンバスへの操作のたびに無操作タイマーをリセットする
     if (widget.project != null) {

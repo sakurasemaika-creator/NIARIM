@@ -2604,5 +2604,8 @@
   "toolbarFingerSubtoolWarp": "Deformar",
   "brushSettingsEdgeJitterTitle": "Sangrado de borde",
   "brushSettingsEdgeJitterSubtitle": "Rugosidad leve en el borde para imitar el sangrado de tinta",
-  "brushSettingsEdgeJitterStrengthLabel": "Intensidad"
+  "brushSettingsEdgeJitterStrengthLabel": "Intensidad",
+  "filterCanvasEyedropperTooltip": "Elegir color del lienzo",
+  "filterInkPoolEyedropperHint": "Toca el lienzo para elegir el color de acumulación de tinta",
+  "filterOutlineEyedropperHint": "Toca el lienzo para elegir el color del contorno"
 }
