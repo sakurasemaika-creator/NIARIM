@@ -104,7 +104,7 @@ jobs:
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: current-head-unique-reaudit-v4
+          name: current-head-unique-reaudit-v5
           path: |
             build/niarim-unique-strict-v2/**
             build/niarim-unique-visual-v3/**
@@ -128,3 +128,4 @@ jobs:
           test '${{ steps.regressions.outcome }}' = 'success'
           test '${{ steps.routes.outcome }}' = 'success'
           test '${{ steps.emoji.outcome }}' = 'success'
+# Audit trigger revision 5: latest HEAD final audit.
