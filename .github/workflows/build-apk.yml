@@ -1,6 +1,8 @@
 name: Build APK
 
-# 手動実行のみ。GitHubの画面/アプリの「Actions」タブから「Run workflow」で起動する。
+# 最終確認用の手動Workflow。
+# 細かな修正ごとには起動せず、対象テスト・flutter analyze・必要な実キャプチャを先に完了し、
+# 一連の追加修正がすべて揃った最後に1回だけ起動する。
 on:
   workflow_dispatch:
     inputs:
@@ -12,6 +14,12 @@ on:
           - debug
           - release
         default: debug
+
+# 誤って同じブランチで複数回起動された場合は、古いビルドを継続して資源を消費しない。
+# 最新の手動実行だけを残す。
+concurrency:
+  group: build-apk-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
   build:
@@ -99,5 +107,5 @@ jobs:
           gh release create "$TAG" \
             "build/app/outputs/flutter-apk/app-${{ inputs.build-type }}.apk" \
             --title "NIARIM ${{ inputs.build-type }} 最新ビルド（実機確認用）" \
-            --notes "コミット ${{ github.sha }} からの自動ビルド。Actions Storage逼迫時の代替配布用のため、古いRelease履歴は残さず毎回上書きする。" \
+            --notes "コミット ${{ github.sha }} からの最終確認ビルド。Actions Storage逼迫時の代替配布用のため、古いRelease履歴は残さず毎回上書きする。" \
             --prerelease
