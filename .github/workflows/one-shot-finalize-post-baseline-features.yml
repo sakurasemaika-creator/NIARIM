@@ -1,0 +1,51 @@
+name: One-shot Finalize Post-baseline Features
+
+on:
+  push:
+    branches: [dev_branch]
+    paths:
+      - '.github/scripts/finalize_post_baseline_features.py'
+      - '.github/workflows/one-shot-finalize-post-baseline-features.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  implement-and-verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          ref: dev_branch
+          fetch-depth: 0
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+      - run: flutter pub get
+      - name: Apply remaining feature fixes
+        run: python3 .github/scripts/finalize_post_baseline_features.py
+      - name: Regenerate localization
+        run: flutter gen-l10n
+      - name: Format changed Dart files
+        run: dart format lib/models/layer.dart lib/engine/niapro_serializer.dart lib/screens/timeline/timeline_screen.dart lib/screens/canvas/canvas_screen.dart test/post_baseline_remaining_contract_test.dart
+      - name: Analyze production code
+        run: flutter analyze lib
+      - name: Remaining feature contract tests
+        run: flutter test test/post_baseline_remaining_contract_test.dart --reporter expanded
+      - name: Existing strict regressions
+        run: |
+          flutter test test/final_remaining_strict_evidence_test.dart --reporter expanded
+          flutter test test/time_change_strict_evidence_test.dart --reporter expanded
+      - name: Commit implementation
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add lib test
+          if git diff --cached --quiet; then
+            echo 'No implementation changes to commit'
+          else
+            git commit -m 'fix: finalize video volume and text eyedropper'
+            git push origin HEAD:dev_branch
+          fi
