@@ -19,15 +19,15 @@ jobs:
           channel: stable
           cache: true
       - run: flutter pub get
-      - name: Inventory device-adjacent tests
-        run: |
-          mkdir -p build/device-adjacent
-          find test -maxdepth 1 -type f -name '*_test.dart' | sort | grep -Ei '(gesture|pinch|touch|stylus|pointer|font|material|asset|import|premium|community|purchase|share)' | tee build/device-adjacent/test-inventory.txt || true
+      - name: Final platform-adjacent logic
+        run: flutter test test/platform_logic_final_audit_test.dart --reporter expanded
       - name: Gesture and touch simulation
         run: |
           flutter test test/canvas_pinch_gesture_test.dart --reporter expanded
           flutter test test/frame_strip_gesture_test.dart --reporter expanded
           flutter test test/gesture_settings_sheet_test.dart --reporter expanded
+      - name: Font real-file lifecycle
+        run: flutter test test/direct_service_coverage_batch09_test.dart --reporter expanded
       - name: Font and creative asset logic
         run: |
           flutter test test/font_coverage_test.dart --reporter expanded
@@ -42,30 +42,5 @@ jobs:
           flutter test test/community_service_test.dart --reporter expanded
           flutter test test/community_service_backend_test.dart --reporter expanded
           flutter test test/community_preview_size_test.dart --reporter expanded
-      - name: Dynamically verify extra device-adjacent tests if present
-        run: |
-          python3 - <<'PY'
-          from pathlib import Path
-          import re, subprocess, sys
-          rx=re.compile(r'(stylus|pointer|material|import|premium|purchase|share)',re.I)
-          skip={
-            'font_coverage_test.dart','font_fallback_test.dart','font_license_test.dart',
-            'creative_asset_persistence_test.dart','asset_tags_test.dart','asset_tag_l10n_test.dart',
-            'canvas_pinch_gesture_test.dart','frame_strip_gesture_test.dart','gesture_settings_sheet_test.dart',
-            'community_api_test.dart','community_service_test.dart','community_service_backend_test.dart','community_preview_size_test.dart',
-          }
-          files=[p for p in Path('test').glob('*_test.dart') if rx.search(p.name) and p.name not in skip]
-          print('EXTRA_TESTS=', [p.name for p in files])
-          for p in files:
-            r=subprocess.run(['flutter','test',str(p),'--reporter','expanded'])
-            if r.returncode:
-              sys.exit(r.returncode)
-          PY
-      - name: Upload inventory
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: device-adjacent-final-audit
-          path: build/device-adjacent/test-inventory.txt
-          if-no-files-found: warn
-          retention-days: 3
+      - name: Existing app-level platform mock regression
+        run: flutter test test/app_smoke_test.dart --reporter compact
