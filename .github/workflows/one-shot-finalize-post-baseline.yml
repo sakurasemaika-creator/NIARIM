@@ -6,6 +6,7 @@ on:
     paths:
       - '.github/workflows/one-shot-finalize-post-baseline.yml'
       - '.github/scripts/finalize_post_baseline_features.py'
+      - '.github/scripts/fix_finalize_patch_anchor.py'
 
 permissions:
   contents: write
@@ -28,6 +29,8 @@ jobs:
           channel: stable
           cache: true
       - run: flutter pub get
+      - name: Narrow text-dialog patch anchor
+        run: python3 .github/scripts/fix_finalize_patch_anchor.py
       - name: Apply remaining feature implementation
         run: python3 .github/scripts/finalize_post_baseline_features.py
       - name: Format changed Dart files
