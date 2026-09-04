@@ -24,6 +24,36 @@ jobs:
           channel: stable
           cache: true
       - run: flutter pub get
+      - name: Scope ambiguous text-dialog patch anchor
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          p = Path('.github/scripts/finalize_post_baseline_features.py')
+          s = p.read_text()
+          old = '''    if text.count(old) != 1:
+                  raise SystemExit(f"{path}: expected exactly one match, found {text.count(old)}\\n--- OLD ---\\n{old[:500]}")
+              p.write_text(text.replace(old, new, 1))
+          '''
+          new = '''    count = text.count(old)
+              if count != 1:
+                  ambiguous_text_anchor = "    final l10n = AppLocalizations.of(context)!;\\n    showDialog(\\n"
+                  if path == 'lib/screens/canvas/canvas_screen.dart' and old == ambiguous_text_anchor:
+                      marker = "  void _showTextInputDialog(\\n"
+                      start = text.find(marker)
+                      if start < 0:
+                          raise SystemExit(f"{path}: text dialog marker not found")
+                      head, tail = text[:start], text[start:]
+                      if tail.count(old) != 1:
+                          raise SystemExit(f"{path}: text dialog scoped anchor count={tail.count(old)}")
+                      p.write_text(head + tail.replace(old, new, 1))
+                      return
+                  raise SystemExit(f"{path}: expected exactly one match, found {count}\\n--- OLD ---\\n{old[:500]}")
+              p.write_text(text.replace(old, new, 1))
+          '''
+          if old not in s:
+              raise SystemExit('replace_once helper anchor not found')
+          p.write_text(s.replace(old, new, 1))
+          PY
       - name: Apply remaining feature fixes
         run: python3 .github/scripts/finalize_post_baseline_features.py
       - name: Regenerate localization
