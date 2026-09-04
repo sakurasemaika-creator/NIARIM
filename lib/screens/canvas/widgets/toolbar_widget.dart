@@ -181,6 +181,11 @@ class ToolbarWidget extends StatelessWidget {
           _buildToolItem(context, l10n, id),
       spacer,
       GestureDetector(
+        // 色見本はアイコンではなく色付きのContainerなので、テストから
+        // find.byIconで特定できない。カラーピッカーを開く監査
+        // （`test/dialog_screenshot_audit_test.dart`）が到達できるよう
+        // キーを付けてある。
+        key: const ValueKey('canvasColorSwatch'),
         onTap: isStampSelected
             ? () => ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(content: Text(l10n.toolbarStampColorLockedSnackbar)),

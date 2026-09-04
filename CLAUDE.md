@@ -38,7 +38,7 @@
    `test/helpers/color_channels.dart`の`.red8`/`.green8`/`.blue8`/
    `.alpha8`を使う。テスト内のデバッグ出力は`print`ではなく
    `debugPrint`を使う）
-3. `flutter test`（ベースライン：**639 tests**、全成功。うち大半は
+3. `flutter test`（ベースライン：**651 tests**、全成功。うち大半は
    `test/app_smoke_test.dart`の自律スモークテスト。詳細は後述）
 4. **コード変更後は`dart format lib test tool`をかける**。
    リポジトリ全体を一度フォーマッタに通してあるので（コミット
@@ -443,8 +443,14 @@ FONT_LICENSES.txt`への本文・著作権表示の追記、`license_screen.dart
   **テストが緑でも見た目の不具合は残る**：この監査で
   「ジェスチャー選択シートが77pxオーバーフローして下の選択肢を選べない」
   「FilledButtonのラベルが端末標準フォント」の2件が実際に見つかった。
-  なお`showModalBottomSheet`は既定で画面高の9/16までしか取らないので、
-  選択肢が7件を超えるシートは`SingleChildScrollView`で包むこと。
+  なお`showModalBottomSheet`は既定で画面高の9/16（360x760で約427dp）までしか
+  取らない。**件数が可変の一覧を出すシートは必ず
+  `lib/widgets/scrollable_sheet_body.dart`の`ScrollableSheetBody`で包むこと**
+  （SafeArea＋SingleChildScrollView）。包み忘れると下の項目が縞模様で潰れて
+  選べなくなる。クイックツールの「追加」がブラシ15件で**654px**
+  オーバーフローし、登録できるブラシが数件に限られていた。
+  `test/bottom_sheet_scrollable_test.dart`がソースを走査して再発を防ぐ。
+  「今は入りきる」は保証にならない（組み込みブラシは実際に後から増えた）。
 - **アプリ内の文言に絵文字を混ぜない（アイコンで表す）**：意味を表す記号は
   すべてMaterialアイコン（`Icon(Icons.xxx)`）を使う。絵文字は端末・OS
   バージョン・フォント設定で字形も色も変わり、同梱フォント

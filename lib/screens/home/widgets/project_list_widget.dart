@@ -15,6 +15,7 @@ import '../../../services/material_service.dart';
 import '../../../services/project_service.dart';
 import '../home_screen.dart';
 import '../../../config/font_fallback.dart';
+import '../../../widgets/scrollable_sheet_body.dart';
 
 /// 新規フォルダ作成ダイアログ（フォルダ名入力）。プロジェクト一覧画面の
 /// ＋ボタン（新規プロジェクト/新規フォルダ選択）・フォルダ移動ピッカーの
@@ -913,7 +914,7 @@ class ProjectListWidget extends StatelessWidget {
         .toList();
     showModalBottomSheet(
       context: context,
-      builder: (ctx) => SafeArea(
+      builder: (ctx) => ScrollableSheetBody(
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [

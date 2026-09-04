@@ -28,6 +28,7 @@ import '../../widgets/sort_mode_control.dart';
 import 'widgets/project_list_widget.dart';
 import 'widgets/home_drawer.dart';
 import '../../config/font_fallback.dart';
+import '../../widgets/scrollable_sheet_body.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -551,7 +552,7 @@ class _HomeScreenState extends State<HomeScreen>
     final l10n = AppLocalizations.of(context)!;
     showModalBottomSheet(
       context: context,
-      builder: (ctx) => SafeArea(
+      builder: (ctx) => ScrollableSheetBody(
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
@@ -1874,7 +1875,7 @@ class _WorkListItem extends StatelessWidget {
     final fileName = file.path.split(RegExp(r'[\\/]')).last;
     showModalBottomSheet(
       context: context,
-      builder: (ctx) => SafeArea(
+      builder: (ctx) => ScrollableSheetBody(
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [

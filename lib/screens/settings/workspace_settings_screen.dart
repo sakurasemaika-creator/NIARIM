@@ -23,6 +23,7 @@ import '../../widgets/qr_import_dialog.dart';
 import '../../widgets/qr_share_dialog.dart';
 import 'pc_workspace_layout_settings_screen.dart';
 import '../../config/font_fallback.dart';
+import '../../widgets/scrollable_sheet_body.dart';
 
 class WorkspaceSettingsScreen extends StatelessWidget {
   const WorkspaceSettingsScreen({super.key});
@@ -522,7 +523,7 @@ class WorkspaceSettingsScreen extends StatelessWidget {
     final l10n = AppLocalizations.of(context)!;
     showModalBottomSheet(
       context: context,
-      builder: (ctx) => SafeArea(
+      builder: (ctx) => ScrollableSheetBody(
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
@@ -674,7 +675,7 @@ class WorkspaceSettingsScreen extends StatelessWidget {
 
     showModalBottomSheet(
       context: context,
-      builder: (ctx) => SafeArea(
+      builder: (ctx) => ScrollableSheetBody(
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [

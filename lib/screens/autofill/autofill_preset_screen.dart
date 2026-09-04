@@ -26,6 +26,7 @@ import '../../widgets/square_image_crop_dialog.dart';
 import '../../widgets/tone_preview_thumb.dart';
 import '../canvas/widgets/color_picker_panel.dart';
 import '../../config/font_fallback.dart';
+import '../../widgets/scrollable_sheet_body.dart';
 
 class AutofillPresetScreen extends StatefulWidget {
   const AutofillPresetScreen({super.key});
@@ -275,7 +276,7 @@ class _AutofillPresetScreenState extends State<AutofillPresetScreen> {
     final l10n = AppLocalizations.of(context)!;
     showModalBottomSheet(
       context: context,
-      builder: (ctx) => SafeArea(
+      builder: (ctx) => ScrollableSheetBody(
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [

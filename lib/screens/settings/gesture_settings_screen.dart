@@ -1,5 +1,7 @@
 import 'package:niarim/services/theme_service.dart';
 import 'package:flutter/material.dart';
+
+import '../../widgets/scrollable_sheet_body.dart';
 import 'package:provider/provider.dart';
 import '../../l10n/app_localizations.dart';
 import '../../services/settings_service.dart';
@@ -192,34 +194,30 @@ class GestureSettingsScreen extends StatelessWidget {
       ),
       onTap: () => showModalBottomSheet(
         context: context,
-        builder: (ctx) => SafeArea(
-          // 選択肢は既定で9件あり、1件あたり約56dpなので約504dp必要になる。
-          // 一方`showModalBottomSheet`は既定で画面高の9/16（360x760の端末で
-          // 約427dp）までしか高さを取らないため、スクロールできないColumnの
-          // ままだと入りきらずRenderFlexがオーバーフローし、下の選択肢が
-          // 縞模様で潰れて選べなくなる。スクロール可能にして必ず全件へ
-          // 届くようにする（`test/gesture_settings_sheet_test.dart`が
-          // 実画面で全選択肢に到達できることを検証している）。
-          child: SingleChildScrollView(
-            // 選択状態と変更通知はRadioGroupがまとめて持つ
-            // （各ラジオのgroupValue/onChangedはFlutter 3.32で非推奨）。
-            child: RadioGroup<GestureAction>(
-              groupValue: current,
-              onChanged: (v) {
-                if (v != null) onChanged(v);
-                Navigator.pop(ctx);
-              },
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: choices
-                    .map(
-                      (action) => RadioListTile<GestureAction>(
-                        title: Text(_label(ctx, action)),
-                        value: action,
-                      ),
-                    )
-                    .toList(),
-              ),
+        // 選択肢は既定で9件あり、1件あたり約56dpなので約504dp必要になる。
+        // 一方`showModalBottomSheet`は既定で画面高の9/16（360x760の端末で
+        // 約427dp）までしか高さを取らないため、スクロールできないColumnの
+        // ままだと入りきらずRenderFlexがオーバーフローし、下の選択肢が
+        // 縞模様で潰れて選べなくなる（`ScrollableSheetBody`のdoc参照）。
+        builder: (ctx) => ScrollableSheetBody(
+          // 選択状態と変更通知はRadioGroupがまとめて持つ
+          // （各ラジオのgroupValue/onChangedはFlutter 3.32で非推奨）。
+          child: RadioGroup<GestureAction>(
+            groupValue: current,
+            onChanged: (v) {
+              if (v != null) onChanged(v);
+              Navigator.pop(ctx);
+            },
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: choices
+                  .map(
+                    (action) => RadioListTile<GestureAction>(
+                      title: Text(_label(ctx, action)),
+                      value: action,
+                    ),
+                  )
+                  .toList(),
             ),
           ),
         ),

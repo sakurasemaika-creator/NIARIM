@@ -60,6 +60,7 @@ import '../../widgets/responsive.dart';
 import '../../widgets/help_button.dart';
 import '../../config/font_fallback.dart';
 import '../../utils/reorder_index.dart';
+import '../../widgets/scrollable_sheet_body.dart';
 
 // タイムライントラッククリップ
 enum _ClipTrackType { audio, video, image }
@@ -1557,7 +1558,7 @@ class _TimelineScreenState extends State<TimelineScreen> {
     }
     showModalBottomSheet(
       context: context,
-      builder: (ctx) => SafeArea(
+      builder: (ctx) => ScrollableSheetBody(
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [

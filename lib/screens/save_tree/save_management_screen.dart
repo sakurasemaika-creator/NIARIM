@@ -20,6 +20,7 @@ import '../../widgets/help_button.dart';
 import '../../widgets/responsive.dart';
 import 'save_tree_screen.dart';
 import '../../config/font_fallback.dart';
+import '../../widgets/scrollable_sheet_body.dart';
 
 export 'save_tree_screen.dart' show SaveTreeEntryMode, parseSaveTreeEntryMode;
 
@@ -113,7 +114,7 @@ class _GameStyleSlotScreen extends StatelessWidget {
     final action = await showModalBottomSheet<_SlotAction>(
       context: context,
       showDragHandle: true,
-      builder: (sheetContext) => SafeArea(
+      builder: (sheetContext) => ScrollableSheetBody(
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [

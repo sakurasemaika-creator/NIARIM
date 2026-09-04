@@ -13,7 +13,11 @@ import 'package:niarim/screens/canvas/widgets/brush_panel.dart';
 import 'package:niarim/screens/canvas/widgets/filter_panel.dart';
 import 'package:niarim/screens/canvas/widgets/layer_panel.dart';
 import 'package:niarim/screens/canvas/widgets/onion_skin_panel.dart';
+import 'package:niarim/screens/canvas/widgets/color_picker_panel.dart';
 import 'package:niarim/screens/canvas/widgets/panel_close_bar.dart';
+import 'package:niarim/screens/canvas/widgets/pen_sub_tool_panel.dart';
+import 'package:niarim/screens/canvas/widgets/stamp_panel.dart';
+import 'package:niarim/screens/canvas/widgets/tone_panel.dart';
 import 'package:niarim/screens/canvas/widgets/quick_tool_panel.dart';
 import 'package:niarim/services/project_service.dart';
 import 'package:provider/provider.dart';
@@ -427,17 +431,10 @@ void main() {
       (name: 'tips', route: '/tips'),
     ];
 
-    for (final entry in routes) {
-      try {
-        appRouter.go(entry.route);
-        await settle();
-        tester.takeException();
-        await sweep(entry.name, entry.route);
-      } catch (e) {
-        failures.add('${entry.name}: 巡回に失敗: $e');
-      }
-    }
-
+    // キャンバスのパネル巡回は**設定画面より先**に走らせる。設定画面の
+    // 巡回はツールバーの項目表示/並び替えトグルも押すため、後に回すと
+    // ペンツールがツールバーから消えた状態で来てしまい、
+    // 「ツールバーにアイコンが無い」で到達できなくなる。
     // ── キャンバスのパネル内部を個別に掃く ───────────────────────────
     // ツールバーのボタンは「押すとパネルが開く」ものと「押すと画面ごと
     // 離脱する」もの（タイムラインへ移動等）が混在していて、汎用スイープ
@@ -457,12 +454,34 @@ void main() {
       tester.takeException();
     }
 
-    Future<void> sweepPanel(IconData icon, Type panelType, String name) async {
+    Future<void> resetCanvas() async {
+      // **一度キャンバスから離れてから入り直す**。パネルが開いたままだと、
+      // 狭い画面ではパネルがツールバーの位置に差し込まれてツールバー自体が
+      // ツリーから消える（`canvas_screen.dart`の
+      // `if (_showQuickToolPanel && !isDesktop)`等）。同じルートへgo()しても
+      // CanvasScreenのStateは作り直されないため、前の巡回で開いたパネルが
+      // 残り「ツールバーにアイコンが無い」形で次の巡回が失敗していた。
+      appRouter.go('/home');
+      await settle(rounds: 3);
       appRouter.go('/canvas/${project.id}');
       await settle();
       tester.takeException();
       await closeOpenPanel();
+    }
 
+    /// ツールバーの要素を可視位置へ送る（横スクロールで画面外だと
+    /// タップがヒットテストに当たらず「押したのに開かない」になる）。
+    Future<void> reveal(Finder finder) async {
+      try {
+        await tester.ensureVisible(finder);
+        await tester.pump(const Duration(milliseconds: 120));
+      } on StateError {
+        // Scrollableの外（オーバーレイ上のボタン等）はそのままでよい。
+      }
+    }
+
+    Future<void> sweepPanel(IconData icon, Type panelType, String name) async {
+      await resetCanvas();
       final control = find.byIcon(icon);
       if (control.evaluate().isEmpty) {
         gaps.add('canvas/$name: ツールバーにアイコン${icon.codePoint}が無い');
@@ -499,11 +518,7 @@ void main() {
       Type panelType,
       String name,
     ) async {
-      appRouter.go('/canvas/${project.id}');
-      await settle();
-      tester.takeException();
-      await closeOpenPanel();
-
+      await resetCanvas();
       final gear = find.byIcon(Icons.settings);
       if (gear.evaluate().isEmpty) {
         gaps.add('canvas/$name: 設定シートの歯車が見つからない');
@@ -541,10 +556,110 @@ void main() {
       await sweep('canvas_$name', '/canvas/${project.id}', within: panelType);
     }
 
+    /// **長押し**で開くパネル用。クイックツールは`Icons.loop`のタップが
+    /// 「次のツールへ切替」で、パネルが開くのは長押しのほう
+    /// （`onQuickToolLongPress`）。タップで開くと思って叩くと永遠に開かない。
+    Future<void> sweepPanelViaLongPress(
+      IconData icon,
+      Type panelType,
+      String name,
+    ) async {
+      await resetCanvas();
+      final control = find.byIcon(icon);
+      if (control.evaluate().isEmpty) {
+        gaps.add('canvas/$name: ツールバーにアイコン${icon.codePoint}が無い');
+        return;
+      }
+      await reveal(control.first);
+      await tester.longPress(control.first, warnIfMissed: false);
+      await settle();
+      tester.takeException();
+      if (find.byType(panelType).evaluate().isEmpty) {
+        gaps.add('canvas/$name: 長押しでもパネルが開かなかった');
+        return;
+      }
+      await sweep('canvas_$name', '/canvas/${project.id}', within: panelType);
+    }
+
+    /// カラーピッカーはツールバーの**色見本**（アイコンではなく色付きの
+    /// Container）から開くため、find.byIconでは特定できない。
+    /// `toolbar_widget.dart`側に付けたキーで掴む。
+    Future<void> sweepColorPicker() async {
+      await resetCanvas();
+      final swatch = find.byKey(const ValueKey('canvasColorSwatch'));
+      if (swatch.evaluate().isEmpty) {
+        gaps.add('canvas/color: 色見本が見つからない');
+        return;
+      }
+      await reveal(swatch.first);
+      await tester.tap(swatch.first, warnIfMissed: false);
+      await settle();
+      tester.takeException();
+      if (find.byType(ColorPickerPanel).evaluate().isEmpty) {
+        gaps.add('canvas/color: カラーピッカーが開かなかった');
+        return;
+      }
+      await sweep(
+        'canvas_color',
+        '/canvas/${project.id}',
+        within: ColorPickerPanel,
+      );
+    }
+
+    /// トーン・スタンプの管理パネルは**ペンの長押し→サブツールパネル→
+    /// タブ切替→管理ボタン（Icons.tune）**という3段階でしか開けない。
+    /// [tabIndex]は 0=ブラシ / 1=トーン / 2=スタンプ。
+    Future<void> sweepPenSubToolManaged(
+      int tabIndex,
+      Type panelType,
+      String name,
+    ) async {
+      await resetCanvas();
+      final pen = find.byIcon(Icons.brush);
+      if (pen.evaluate().isEmpty) {
+        gaps.add('canvas/$name: ペンツールが見つからない');
+        return;
+      }
+      await reveal(pen.first);
+      await tester.longPress(pen.first, warnIfMissed: false);
+      await settle();
+      tester.takeException();
+      if (find.byType(PenSubToolPanel).evaluate().isEmpty) {
+        gaps.add('canvas/$name: ペンサブツールパネルが開かなかった');
+        return;
+      }
+      // タブを切り替える（Tabウィジェットの並び順がそのまま
+      // 0=ブラシ / 1=トーン / 2=スタンプ）。
+      final tabs = find.descendant(
+        of: find.byType(PenSubToolPanel),
+        matching: find.byType(Tab),
+      );
+      if (tabs.evaluate().length > tabIndex) {
+        await tester.tap(tabs.at(tabIndex), warnIfMissed: false);
+        await settle();
+        tester.takeException();
+      }
+      final manage = find.descendant(
+        of: find.byType(PenSubToolPanel),
+        matching: find.byIcon(Icons.tune),
+      );
+      if (manage.evaluate().isEmpty) {
+        gaps.add('canvas/$name: 管理ボタンが見つからない');
+        return;
+      }
+      await tester.tap(manage.last, warnIfMissed: false);
+      await settle();
+      tester.takeException();
+      if (find.byType(panelType).evaluate().isEmpty) {
+        gaps.add('canvas/$name: 管理パネルが開かなかった');
+        return;
+      }
+      await sweep('canvas_$name', '/canvas/${project.id}', within: panelType);
+    }
+
     for (final entry in <({IconData icon, Type type, String name})>[
       (icon: Icons.layers, type: LayerPanel, name: 'layer'),
       (icon: Icons.tune, type: BrushPanel, name: 'brush'),
-      (icon: Icons.loop, type: QuickToolPanel, name: 'quicktool'),
     ]) {
       try {
         await sweepPanel(entry.icon, entry.type, entry.name);
@@ -562,6 +677,42 @@ void main() {
         failures.add('canvas/${entry.name}: 巡回に失敗: $e');
       }
     }
+    try {
+      await sweepPanelViaLongPress(Icons.loop, QuickToolPanel, 'quicktool');
+    } catch (e) {
+      failures.add('canvas/quicktool: 巡回に失敗: $e');
+    }
+    try {
+      await sweepPanelViaLongPress(Icons.brush, PenSubToolPanel, 'pensubtool');
+    } catch (e) {
+      failures.add('canvas/pensubtool: 巡回に失敗: $e');
+    }
+    try {
+      await sweepColorPicker();
+    } catch (e) {
+      failures.add('canvas/color: 巡回に失敗: $e');
+    }
+    for (final entry in <({int tab, Type type, String name})>[
+      (tab: 1, type: TonePanel, name: 'tone'),
+      (tab: 2, type: StampPanel, name: 'stamp'),
+    ]) {
+      try {
+        await sweepPenSubToolManaged(entry.tab, entry.type, entry.name);
+      } catch (e) {
+        failures.add('canvas/${entry.name}: 巡回に失敗: $e');
+      }
+    }
+
+    for (final entry in routes) {
+      try {
+        appRouter.go(entry.route);
+        await settle();
+        tester.takeException();
+        await sweep(entry.name, entry.route);
+      } catch (e) {
+        failures.add('${entry.name}: 巡回に失敗: $e');
+      }
+    }
 
     await tester.runAsync(
       () => File('${out.path}/_index.txt').writeAsString(
@@ -570,6 +721,7 @@ void main() {
         '${index.join('\n')}\n',
       ),
     );
+
     await tester.runAsync(
       () => File('${out.path}/_gaps.txt').writeAsString(
         gaps.isEmpty

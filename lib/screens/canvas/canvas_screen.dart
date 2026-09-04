@@ -49,6 +49,7 @@ import '../../models/canvas_dock_panel.dart';
 import '../../models/ruler.dart';
 import '../../widgets/responsive.dart';
 import '../../config/font_fallback.dart';
+import '../../widgets/scrollable_sheet_body.dart';
 
 class CanvasScreen extends StatefulWidget {
   final String projectId;
@@ -1639,7 +1640,7 @@ class _CanvasScreenState extends State<CanvasScreen> {
     if (project == null) return;
     showModalBottomSheet(
       context: context,
-      builder: (ctx) => SafeArea(
+      builder: (ctx) => ScrollableSheetBody(
         child: Padding(
           padding: const EdgeInsets.all(16),
           child: Column(

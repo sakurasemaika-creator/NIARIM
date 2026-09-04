@@ -11,6 +11,7 @@ import '../canvas_screen.dart' show DrawingTool;
 import 'panel_close_bar.dart';
 import '../../../config/font_fallback.dart';
 import '../../../utils/reorder_index.dart';
+import '../../../widgets/scrollable_sheet_body.dart';
 
 /// 早替えツール設定ポップアップ。
 /// ↺ボタンの長押しで表示する。ドラッグで順番変更・削除・追加ができる。
@@ -145,7 +146,7 @@ class QuickToolPanel extends StatelessWidget {
     final l10n = AppLocalizations.of(context)!;
     showModalBottomSheet(
       context: context,
-      builder: (ctx) => SafeArea(
+      builder: (ctx) => ScrollableSheetBody(
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [

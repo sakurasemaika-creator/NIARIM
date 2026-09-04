@@ -11,6 +11,7 @@ import '../../widgets/help_button.dart';
 import '../../widgets/responsive.dart';
 import '../../widgets/stepped_slider.dart';
 import '../../config/font_fallback.dart';
+import '../../widgets/scrollable_sheet_body.dart';
 
 /// キーボード・左手デバイス用ショートカットの設定画面。
 /// ツール選択（早替えツールと同じ粒度：ツール＋ブラシ＋太さ）と、
@@ -158,7 +159,7 @@ class ShortcutSettingsScreen extends StatelessWidget {
     final brushService = context.read<BrushService>();
     await showModalBottomSheet(
       context: context,
-      builder: (ctx) => SafeArea(
+      builder: (ctx) => ScrollableSheetBody(
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
@@ -217,7 +218,7 @@ class ShortcutSettingsScreen extends StatelessWidget {
     final l10n = AppLocalizations.of(context)!;
     showModalBottomSheet(
       context: context,
-      builder: (ctx) => SafeArea(
+      builder: (ctx) => ScrollableSheetBody(
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
@@ -361,7 +362,7 @@ class ShortcutSettingsScreen extends StatelessWidget {
     };
     showModalBottomSheet(
       context: context,
-      builder: (ctx) => SafeArea(
+      builder: (ctx) => ScrollableSheetBody(
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
