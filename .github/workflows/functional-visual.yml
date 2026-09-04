@@ -2,61 +2,54 @@ name: Functional Visual Audit
 
 on:
   workflow_dispatch:
+  push:
+    branches: [dev_branch]
+    paths:
+      - '.github/workflows/functional-visual.yml'
 
 jobs:
   functional-render:
     runs-on: ubuntu-latest
-    timeout-minutes: 25
+    timeout-minutes: 45
     permissions:
       contents: read
 
     steps:
       - name: リポジトリ取得
         uses: actions/checkout@v6
+        with:
+          ref: dev_branch
 
       - name: Flutter セットアップ
         uses: subosito/flutter-action@v2
         with:
           channel: stable
-          cache: false
+          cache: true
 
       - name: 依存関係取得
         run: flutter pub get
 
-      - name: 機能監査テスト
+      - name: 機能監査テスト 1-26
         run: |
           flutter test test/functional_render_real_async_test.dart --reporter expanded
-          flutter test test/functional_audit_batch2_test.dart --reporter expanded
-          flutter test test/functional_audit_batch3_test.dart --reporter expanded
-          flutter test test/functional_audit_batch4_test.dart --reporter expanded
-          flutter test test/functional_audit_batch5_test.dart --reporter expanded
-          flutter test test/functional_audit_batch6_test.dart --reporter expanded
-          flutter test test/functional_audit_batch7_test.dart --reporter expanded
-          flutter test test/functional_audit_batch8_test.dart --reporter expanded
-          flutter test test/functional_audit_batch9_test.dart --reporter expanded
-          flutter test test/functional_audit_batch10_test.dart --reporter expanded
-          flutter test test/functional_audit_batch11_test.dart --reporter expanded
-          flutter test test/functional_audit_batch12_test.dart --reporter expanded
-          flutter test test/functional_audit_batch13_test.dart --reporter expanded
-          flutter test test/functional_audit_batch14_test.dart --reporter expanded
-          flutter test test/functional_audit_batch15_test.dart --reporter expanded
-          flutter test test/functional_audit_batch16_test.dart --reporter expanded
-          flutter test test/functional_audit_batch17_test.dart --reporter expanded
-          flutter test test/functional_audit_batch18_test.dart --reporter expanded
-          flutter test test/functional_audit_batch19_test.dart --reporter expanded
-          flutter test test/functional_audit_batch20_test.dart --reporter expanded
-          flutter test test/functional_audit_batch21_test.dart --reporter expanded
-          flutter test test/functional_audit_batch22_test.dart --reporter expanded
-          flutter test test/functional_audit_batch23_test.dart --reporter expanded
-          flutter test test/functional_audit_batch24_test.dart --reporter expanded
-          flutter test test/functional_audit_batch25_test.dart --reporter expanded
-          flutter test test/functional_audit_batch26_test.dart --reporter expanded
+          for n in $(seq 2 26); do
+            flutter test "test/functional_audit_batch${n}_test.dart" --reporter expanded
+          done
+
+      - name: 最新HEAD strict evidence
+        run: |
+          flutter test test/strict_visual_evidence_audit_test.dart --reporter expanded
+          flutter test test/final_remaining_strict_evidence_test.dart --reporter expanded
 
       - name: 機能別レンダリング画像を保存
         if: always()
         uses: actions/upload-artifact@v6
         with:
-          name: functional-render-screenshots
-          path: build/functional-visual/*.png
+          name: functional-render-screenshots-latest-head
+          path: |
+            build/functional-visual/*.png
+            build/strict-visual-evidence/*.png
+            build/final-remaining-strict/*.png
           if-no-files-found: warn
-          retention-days: 3
+          retention-days: 7
+# Latest HEAD strict manifest evidence rerun.
