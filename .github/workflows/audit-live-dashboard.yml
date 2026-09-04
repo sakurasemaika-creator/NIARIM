@@ -21,7 +21,9 @@ on:
       - 'One-shot Refine Ink Pool Audit'
       - 'Visual Smoke Test'
       - 'Build APK'
-    types: [requested, completed]
+      - 'Implement Background Acclimation V2'
+      - 'One-shot Background Acclimation V2'
+    types: [requested, in_progress, completed]
 
 permissions:
   actions: read
