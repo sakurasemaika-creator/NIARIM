@@ -56,6 +56,35 @@ jobs:
           PY
       - name: Apply remaining feature fixes
         run: python3 .github/scripts/finalize_post_baseline_features.py
+      - name: Complete ColorPickerPanel contract
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          p = Path('lib/screens/canvas/canvas_screen.dart')
+          s = p.read_text()
+          old = '''              onColorChanged: (picked) {
+                onChanged(picked.toARGB32());
+                Navigator.of(pickerContext).pop();
+              },
+            ),
+          ),
+        ),
+      );
+'''
+          new = '''              onColorChanged: (picked) {
+                onChanged(picked.toARGB32());
+                Navigator.of(pickerContext).pop();
+              },
+              onClose: () => Navigator.of(pickerContext).pop(),
+            ),
+          ),
+        ),
+      );
+'''
+          if s.count(old) != 1:
+              raise SystemExit(f'ColorPickerPanel patch count={s.count(old)}')
+          p.write_text(s.replace(old, new, 1))
+          PY
       - name: Regenerate localization
         run: flutter gen-l10n
       - name: Format changed Dart files
