@@ -1,0 +1,48 @@
+name: One-shot Post-baseline Current Gate
+
+on:
+  push:
+    branches: [dev_branch]
+    paths:
+      - '.github/workflows/one-shot-post-baseline-current-gate.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  current-gate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          ref: dev_branch
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+      - run: flutter pub get
+      - name: Static analysis
+        run: flutter analyze --no-fatal-infos
+      - name: Ink pool focused regression
+        run: flutter test test/ink_pool_filter_test.dart --reporter expanded
+      - name: Full Flutter regression
+        run: flutter test --reporter compact
+      - name: Filter eyedropper source contracts
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          canvas = Path('lib/screens/canvas/widgets/canvas_area.dart').read_text()
+          screen = Path('lib/screens/canvas/canvas_screen.dart').read_text()
+          panel = Path('lib/screens/canvas/widgets/filter_panel.dart').read_text()
+          assert 'final buffer = await _flattenVisibleLayers();' in canvas
+          assert 'if (widget.filterEyedropperActive)' in canvas
+          assert 'filterEyedropperActive:' in screen
+          assert 'inkPoolColor: color.toARGB32()' in screen
+          assert 'outlineColor: color.toARGB32()' in screen
+          assert 'FilterColorEyedropperTarget.inkPool' in panel
+          assert 'FilterColorEyedropperTarget.outline' in panel
+          assert 'Icons.colorize' in panel
+          print('filter eyedropper source contracts passed')
+          PY
