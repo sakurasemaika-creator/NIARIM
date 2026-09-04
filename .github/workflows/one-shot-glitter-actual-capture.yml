@@ -31,7 +31,7 @@ jobs:
       - uses: actions/upload-artifact@v4
         with:
           name: glitter-lame-captures
-          path: artifacts/glitter-render-audit/*.png
+          path: build/glitter_visual/*.png
           if-no-files-found: error
       - name: Commit implementation
         run: |
