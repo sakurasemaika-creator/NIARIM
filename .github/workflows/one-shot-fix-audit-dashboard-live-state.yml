@@ -1,0 +1,36 @@
+name: One-shot Fix Audit Dashboard Live State
+
+on:
+  push:
+    branches: [dev_branch]
+    paths:
+      - '.github/workflows/one-shot-fix-audit-dashboard-live-state.yml'
+      - '.github/scripts/patch_dashboard_live_state.py'
+
+permissions:
+  contents: write
+
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: dev_branch
+          fetch-depth: 0
+      - run: python3 .github/scripts/patch_dashboard_live_state.py
+      - name: Validate Python and workflow text
+        run: |
+          python3 -m py_compile audit-dashboard/update_dashboard.py
+          grep -q "未完了・次工程待ち" audit-dashboard/update_dashboard.py
+          grep -q "One-shot Finalize Post-baseline Features" .github/workflows/audit-live-dashboard.yml
+      - name: Commit dashboard fix
+        run: |
+          git config user.name "NIARIM Audit Bot"
+          git config user.email "actions@users.noreply.github.com"
+          git add audit-dashboard/update_dashboard.py .github/workflows/audit-live-dashboard.yml
+          if git diff --cached --quiet; then exit 0; fi
+          git commit -m "fix: derive dashboard active state from Actions"
+          git pull --rebase origin dev_branch
+          git push origin HEAD:dev_branch
