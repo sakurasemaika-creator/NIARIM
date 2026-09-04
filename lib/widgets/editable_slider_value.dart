@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-
 import '../l10n/app_localizations.dart';
 
 /// スライダーの数値表示部分をタップすると、直接テキスト入力で値を変更

@@ -1,8 +1,6 @@
 import 'dart:typed_data';
 import 'dart:ui' as ui;
-
 import 'package:flutter/foundation.dart' show compute;
-
 import '../models/autofill_preset.dart' show AutofillLineColorMode;
 import '../models/layer.dart';
 import '../services/autofill_preset_service.dart';

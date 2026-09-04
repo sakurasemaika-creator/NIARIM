@@ -1,8 +1,6 @@
 import 'dart:math' as math;
-
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-
 import '../../../services/theme_service.dart';
 
 /// 正方形（彩度・明度）＋外側カラーサークル（色相）のタップ選択式カラー

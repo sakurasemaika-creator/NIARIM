@@ -1,13 +1,11 @@
 import 'dart:io';
 import 'dart:typed_data';
 import 'dart:ui' as ui;
-
 import 'package:ffmpeg_kit_flutter_new_video/ffmpeg_kit.dart';
 import 'package:ffmpeg_kit_flutter_new_video/return_code.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:image/image.dart' as img;
 import 'package:path_provider/path_provider.dart';
-
 import '../engine/camera_engine.dart';
 import '../engine/filter_engine.dart';
 import '../engine/layer_compositor.dart';

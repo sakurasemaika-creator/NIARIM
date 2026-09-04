@@ -1,5 +1,4 @@
 import 'dart:math';
-
 import 'package:intl/intl.dart';
 
 /// この画面には実際のログイン・ユーザー識別基盤（バックエンド未実装、

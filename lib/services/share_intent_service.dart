@@ -1,5 +1,4 @@
 import 'dart:async';
-
 import 'package:flutter/services.dart';
 
 /// .niashare のOSレベル受信（他アプリ/ファイラーからのタップで開く）を扱うサービス。

@@ -1,13 +1,10 @@
 import 'package:niarim/services/theme_service.dart';
-
 import 'dart:io';
 import 'dart:math' as math;
 import 'dart:typed_data';
 import 'dart:ui' as ui;
-
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-
 import '../../engine/layer_compositor.dart';
 import '../../engine/niapro_serializer.dart';
 import '../../l10n/app_localizations.dart';

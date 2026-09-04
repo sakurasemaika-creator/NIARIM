@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-
 import '../l10n/app_localizations.dart';
 import '../config/font_fallback.dart';
 

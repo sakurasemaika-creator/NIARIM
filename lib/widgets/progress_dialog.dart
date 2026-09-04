@@ -1,8 +1,6 @@
 import 'dart:async';
 import 'dart:math';
-
 import 'package:flutter/material.dart';
-
 import '../l10n/app_localizations.dart';
 import '../screens/tips/tips_screen.dart' show allTipEntries;
 import '../config/font_fallback.dart';

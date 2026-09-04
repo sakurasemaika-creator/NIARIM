@@ -1,8 +1,6 @@
 import 'dart:async';
-
 import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-
 import '../engine/niapro_serializer.dart';
 import '../engine/undo_manager.dart';
 import 'project_service.dart';

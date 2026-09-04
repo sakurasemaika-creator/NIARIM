@@ -1,5 +1,4 @@
 import 'dart:ui' as ui;
-
 import '../models/onion_skin_settings.dart';
 
 /// オニオンスキン描画エンジン

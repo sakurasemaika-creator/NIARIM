@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-
 import '../l10n/app_localizations.dart';
 import '../screens/canvas/widgets/color_picker_panel.dart';
 

@@ -1,7 +1,5 @@
 import 'dart:math';
-
 import 'package:flutter/foundation.dart';
-
 import '../models/community_follow_notification.dart';
 import '../models/community_repost.dart';
 import '../models/community_work.dart';
