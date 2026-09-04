@@ -136,6 +136,17 @@ void main() {
     _expectNoException(tester, 'CanvasScreen initial');
 
     Future<void> capture(String file) async {
+      // 読み込み中（ぐるぐる）のまま撮ると、その画面は目視監査に
+      // ならない。プレビューの生成などは本物の非同期処理なので、
+      // 待ちは必ずrunAsyncの中で行う（FakeAsyncの下ではpumpを何回
+      // 回しても完了しない）。
+      for (var i = 0; i < 12; i++) {
+        if (find.byType(CircularProgressIndicator).evaluate().isEmpty) break;
+        await tester.runAsync(
+          () => Future<void>.delayed(const Duration(milliseconds: 80)),
+        );
+        await tester.pump(const Duration(milliseconds: 50));
+      }
       await tester.runAsync(() => _capture(rootKey, '${out.path}/$file.png'));
     }
 
@@ -174,6 +185,15 @@ void main() {
       expect(finder, findsWidgets);
       await revealInToolbar(finder.last);
       await tester.tap(finder.last);
+      // シートは`Navigator.pop`で閉じるが、退場アニメーションが終わって
+      // ツリーから外れるまでに数フレームかかる。待たずに撮ると
+      // **開いたパネルの上にシートが被ったPNG**になり、肝心のパネルが
+      // ほとんど見えない（オニオンスキン・フィルター・メッシュ変形の
+      // 3枚が実際にそうなっていた）。シートが消えるまで進める。
+      for (var i = 0; i < 20; i++) {
+        if (find.byType(BottomSheet).evaluate().isEmpty) break;
+        await tester.pump(const Duration(milliseconds: 50));
+      }
     }
 
     // 設定シートを開く。直前に開いたパネルがツールバーを覆っていると
