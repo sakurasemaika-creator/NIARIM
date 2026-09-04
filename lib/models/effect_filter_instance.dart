@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart' show Color;
+
 import '../engine/filter_engine.dart' show EffectFilterType;
 import 'pixel_color_mode.dart';
 

@@ -1,5 +1,6 @@
 import 'package:niarim/services/theme_service.dart';
 import 'package:flutter/material.dart';
+
 import '../../../l10n/app_localizations.dart';
 import '../../../models/community_work.dart';
 import '../../../config/font_fallback.dart';
@@ -139,9 +140,8 @@ class CommunityWorkCard extends StatelessWidget {
                             ),
                             const SizedBox(width: 3),
                             Text(
-                              AppLocalizations.of(
-                                context,
-                              )!.communityVisibilityHiddenBadge,
+                              AppLocalizations.of(context)!
+                                  .communityVisibilityHiddenBadge,
                               style: TextStyle(
                                 color: ThemeService.activeColorScheme.onSurface,
                                 fontSize: 11,

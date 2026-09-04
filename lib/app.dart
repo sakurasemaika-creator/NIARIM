@@ -2,6 +2,7 @@ import 'package:flutter/gestures.dart' show PointerDeviceKind;
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:provider/provider.dart';
+
 import 'l10n/app_localizations.dart';
 import 'router.dart';
 import 'screens/community/widgets/community_floating_preview.dart';

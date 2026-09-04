@@ -40,9 +40,9 @@ class NiatraAssetBundle {
     final sourceArchive = ArchiveSecurity.decodeZip(original);
     final dataFile = sourceArchive.findFile(_dataFile);
     if (dataFile == null) throw const FormatException('data.json not found');
-    final data =
-        jsonDecode(utf8.decode(dataFile.content as List<int>))
-            as Map<String, dynamic>;
+    final data = jsonDecode(
+      utf8.decode(dataFile.content as List<int>),
+    ) as Map<String, dynamic>;
     data[_versionKey] = _version;
 
     final output = Archive();

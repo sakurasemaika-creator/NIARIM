@@ -1,7 +1,9 @@
 import 'dart:ui' as ui;
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
+
 import '../../../engine/layer_compositor.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../../services/premium_service.dart';
@@ -111,18 +113,25 @@ class _FrameStripWidgetState extends State<FrameStripWidget> {
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
+        // popup-standard-close: compact top-right close affordance.
+        iconPadding: const EdgeInsets.fromLTRB(0, 4, 4, 0),
+        icon: Align(
+          alignment: Alignment.centerRight,
+          child: IconButton(
+            visualDensity: VisualDensity.compact,
+            iconSize: 18,
+            tooltip: MaterialLocalizations.of(context).closeButtonTooltip,
+            onPressed: () => Navigator.of(context, rootNavigator: true).pop(),
+            icon: const Icon(Icons.close),
+          ),
+        ),
         title: Text(l10n.timelineDurationLimitTitle),
         content: Text(
           isPremium
               ? l10n.timelineDurationLimitBodyPremium
               : l10n.timelineDurationLimitBodyFree,
         ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx),
-            child: Text(l10n.commonClose),
-          ),
-        ],
+        actions: [],
       ),
     );
     return false;

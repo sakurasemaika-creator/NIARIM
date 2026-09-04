@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:provider/provider.dart';
+
 import '../../../l10n/app_localizations.dart';
 import '../../../models/toolbar_item.dart';
 import '../../../services/settings_service.dart';
@@ -499,9 +500,8 @@ class ToolbarWidget extends StatelessWidget {
                     ),
                     const Divider(height: 1),
                     Theme(
-                      data: Theme.of(
-                        ctx,
-                      ).copyWith(dividerColor: Colors.transparent),
+                      data: Theme.of(ctx)
+                          .copyWith(dividerColor: Colors.transparent),
                       child: ExpansionTile(
                         dense: true,
                         leading: const Icon(Icons.tune, size: 18),

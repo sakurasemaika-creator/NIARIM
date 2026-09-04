@@ -1,4 +1,5 @@
 import 'package:flutter/widgets.dart';
+
 import '../models/community_work.dart';
 
 /// コミュニティ画面のフローティング動画プレビューウィンドウの表示状態

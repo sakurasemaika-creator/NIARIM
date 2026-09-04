@@ -1,0 +1,56 @@
+name: One-shot Popup Close Audit
+
+on:
+  push:
+    branches: [dev_branch]
+    paths:
+      - '.github/workflows/one-shot-popup-close-audit.yml'
+      - '.github/scripts/standardize_popup_close.py'
+  workflow_dispatch:
+
+jobs:
+  patch-and-verify:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v6
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+      - name: Apply popup close standard
+        run: python3 .github/scripts/standardize_popup_close.py
+      - name: Format
+        run: dart format lib
+      - name: Install dependencies
+        run: flutter pub get
+      - name: Static analysis
+        run: flutter analyze lib
+      - name: Verify popup close contract
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          files=list(Path('lib').rglob('*.dart'))
+          joined='\n'.join(p.read_text(encoding='utf-8') for p in files)
+          n=joined.count('popup-standard-close')
+          print('STANDARD_CLOSE_COUNT',n)
+          assert n >= 5, n
+          premium=Path('lib/widgets/premium_lock_widget.dart').read_text(encoding='utf-8')
+          assert 'tooltip: MaterialLocalizations.of(context).closeButtonTooltip' in premium
+          assert 'child: Text(l10n.commonClose)' not in premium
+          # Deliberately non-dismissible progress/processing dialogs remain protected.
+          assert 'barrierDismissible: false' in joined
+          PY
+      - name: Commit implementation
+        shell: bash
+        run: |
+          if git diff --quiet; then
+            echo 'No implementation changes'; exit 1
+          fi
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add lib
+          git commit -m 'fix: move popup close controls to top right'
+          git push

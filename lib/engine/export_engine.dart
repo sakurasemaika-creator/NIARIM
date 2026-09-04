@@ -1,11 +1,13 @@
 import 'dart:io';
 import 'dart:typed_data';
 import 'dart:ui' as ui;
+
 import 'package:ffmpeg_kit_flutter_new_video/ffmpeg_kit.dart';
 import 'package:ffmpeg_kit_flutter_new_video/return_code.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:image/image.dart' as img;
 import 'package:path_provider/path_provider.dart';
+
 import '../engine/camera_engine.dart';
 import '../engine/filter_engine.dart';
 import '../engine/layer_compositor.dart';
@@ -20,8 +22,10 @@ import '../models/layer_keyframe.dart';
 import '../models/scene.dart';
 import '../services/hw_video_encoder.dart';
 
-typedef ExportProgressCallback =
-    void Function(int currentFrame, int totalFrames);
+typedef ExportProgressCallback = void Function(
+  int currentFrame,
+  int totalFrames,
+);
 
 /// 書き出し中のキャンセル要求を伝えるためのトークン（誤タップ対応の
 /// キャンセルボタン）。フレーム生成ループの各反復で

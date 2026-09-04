@@ -4,6 +4,7 @@ import 'package:niarim/services/theme_service.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+
 import '../config/font_fallback.dart';
 import '../l10n/app_localizations.dart';
 import '../services/first_use_tooltip_service.dart';
@@ -136,9 +137,8 @@ class _FirstUseTooltipState extends State<FirstUseTooltip> {
                         const SizedBox(height: 14),
                         Divider(
                           height: 1,
-                          color: Theme.of(
-                            ctx,
-                          ).colorScheme.onPrimary.withValues(alpha: 0.35),
+                          color: Theme.of(ctx).colorScheme.onPrimary
+                              .withValues(alpha: 0.35),
                         ),
                         const SizedBox(height: 12),
                         Text(
@@ -154,9 +154,8 @@ class _FirstUseTooltipState extends State<FirstUseTooltip> {
                         Text(
                           l10n.firstUseTipOperationGuideBody,
                           style: TextStyle(
-                            color: Theme.of(
-                              ctx,
-                            ).colorScheme.onPrimary.withValues(alpha: 0.92),
+                            color: Theme.of(ctx).colorScheme.onPrimary
+                                .withValues(alpha: 0.92),
                             fontSize: 15,
                             height: 1.5,
                             fontFamily: 'HakkouMincho',

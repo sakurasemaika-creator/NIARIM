@@ -1,6 +1,7 @@
 import 'dart:math' as math;
 import 'dart:typed_data';
 import 'dart:ui' as ui;
+
 import '../models/text_object.dart';
 
 /// ルビ注釈の記法：`{漢字|かんじ}`。縦書き・横書きの両方に対応する。

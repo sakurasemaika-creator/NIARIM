@@ -1,6 +1,7 @@
 import 'dart:math' as math;
 import 'dart:typed_data';
 import 'dart:ui' as ui;
+
 import '../models/brush.dart';
 import 'brush_texture_cache.dart';
 import 'tile_manager.dart';

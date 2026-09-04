@@ -1,6 +1,7 @@
 import 'package:niarim/services/theme_service.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+
 import '../../engine/undo_manager.dart';
 import '../../l10n/app_localizations.dart';
 import '../../services/performance_service.dart';
@@ -176,9 +177,9 @@ class _PerformanceSettingsScreenState extends State<PerformanceSettingsScreen> {
                                   vertical: 2,
                                 ),
                                 decoration: BoxDecoration(
-                                  color: Theme.of(
-                                    context,
-                                  ).colorScheme.primaryContainer,
+                                  color: Theme.of(context)
+                                      .colorScheme
+                                      .primaryContainer,
                                   borderRadius: BorderRadius.circular(12),
                                 ),
                                 child: Text(
@@ -188,9 +189,9 @@ class _PerformanceSettingsScreenState extends State<PerformanceSettingsScreen> {
                                     fontWeight: FontWeight.bold,
                                     fontFamily: 'Kuramubon',
                                     fontFamilyFallback: kHeadingFontFallback,
-                                    color: Theme.of(
-                                      context,
-                                    ).colorScheme.onPrimaryContainer,
+                                    color: Theme.of(context)
+                                        .colorScheme
+                                        .onPrimaryContainer,
                                   ),
                                 ),
                               ),
@@ -442,6 +443,18 @@ class _PerformanceSettingsScreenState extends State<PerformanceSettingsScreen> {
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
+        // popup-standard-close: compact top-right close affordance.
+        iconPadding: const EdgeInsets.fromLTRB(0, 4, 4, 0),
+        icon: Align(
+          alignment: Alignment.centerRight,
+          child: IconButton(
+            visualDensity: VisualDensity.compact,
+            iconSize: 18,
+            tooltip: MaterialLocalizations.of(context).closeButtonTooltip,
+            onPressed: () => Navigator.of(context, rootNavigator: true).pop(),
+            icon: const Icon(Icons.close),
+          ),
+        ),
         title: Text(l10n.perfSettingsUndoLimitTitle),
         // 選択状態と変更通知はRadioGroupがまとめて持つ
         // （各ラジオのgroupValue/onChangedはFlutter 3.32で非推奨）。
@@ -465,12 +478,7 @@ class _PerformanceSettingsScreenState extends State<PerformanceSettingsScreen> {
                 .toList(),
           ),
         ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx),
-            child: Text(l10n.commonClose),
-          ),
-        ],
+        actions: [],
       ),
     );
   }
@@ -489,6 +497,18 @@ class _PerformanceSettingsScreenState extends State<PerformanceSettingsScreen> {
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
+        // popup-standard-close: compact top-right close affordance.
+        iconPadding: const EdgeInsets.fromLTRB(0, 4, 4, 0),
+        icon: Align(
+          alignment: Alignment.centerRight,
+          child: IconButton(
+            visualDensity: VisualDensity.compact,
+            iconSize: 18,
+            tooltip: MaterialLocalizations.of(context).closeButtonTooltip,
+            onPressed: () => Navigator.of(context, rootNavigator: true).pop(),
+            icon: const Icon(Icons.close),
+          ),
+        ),
         title: Text(l10n.perfSettingsTrashAutoDeleteTitle),
         // 選択状態と変更通知はRadioGroupがまとめて持つ
         // （各ラジオのgroupValue/onChangedはFlutter 3.32で非推奨）。
@@ -509,12 +529,7 @@ class _PerformanceSettingsScreenState extends State<PerformanceSettingsScreen> {
                 .toList(),
           ),
         ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx),
-            child: Text(l10n.commonClose),
-          ),
-        ],
+        actions: [],
       ),
     );
   }
