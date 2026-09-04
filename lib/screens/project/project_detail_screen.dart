@@ -1,10 +1,12 @@
 import 'dart:async';
 import 'dart:typed_data';
 import 'dart:ui' as ui;
+
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import 'package:share_plus/share_plus.dart';
+
 import '../../engine/layer_compositor.dart';
 import '../../engine/niapro_serializer.dart';
 import '../../l10n/app_localizations.dart';
@@ -291,6 +293,34 @@ class _ProjectDetailScreenState extends State<ProjectDetailScreen> {
                   ),
                 ],
               ),
+              if (project.tags.isNotEmpty) ...[
+                const SizedBox(height: 24),
+                Padding(
+                  padding: const EdgeInsets.only(left: 4, bottom: 8),
+                  child: Text(
+                    l10n.projectDetailTagsQuickAction,
+                    style: TextStyle(
+                      fontSize: 13,
+                      fontWeight: FontWeight.w700,
+                      fontFamily: 'Kuramubon',
+                      fontFamilyFallback: kHeadingFontFallback,
+                      color: Theme.of(context).colorScheme.onSurfaceVariant,
+                    ),
+                  ),
+                ),
+                Wrap(
+                  spacing: 8,
+                  runSpacing: 8,
+                  children: project.tags
+                      .map(
+                        (tag) => Chip(
+                          avatar: const Icon(Icons.sell_outlined, size: 16),
+                          label: Text('#$tag'),
+                        ),
+                      )
+                      .toList(),
+                ),
+              ],
               const SizedBox(height: 24),
               Padding(
                 padding: const EdgeInsets.only(left: 4, bottom: 8),
