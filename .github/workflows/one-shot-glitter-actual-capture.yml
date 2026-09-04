@@ -4,6 +4,7 @@ on:
     branches: [dev_branch]
     paths:
       - 'lib/engine/drawing_engine.dart'
+      - 'lib/services/brush_service.dart'
       - 'test/visual/glitter_lame_render_capture_test.dart'
       - 'tool/patch_glitter_hexagon.py'
       - '.github/workflows/one-shot-glitter-actual-capture.yml'
@@ -19,13 +20,13 @@ jobs:
         with:
           channel: stable
           cache: true
-      - name: Apply glitter hexagon implementation
+      - name: Apply glitter hexagon implementation and preset tuning
         run: python3 tool/patch_glitter_hexagon.py
-      - name: Format focused file
-        run: dart format lib/engine/drawing_engine.dart
+      - name: Format focused files
+        run: dart format lib/engine/drawing_engine.dart lib/services/brush_service.dart test/visual/glitter_lame_render_capture_test.dart
       - run: flutter pub get
       - name: Static analysis
-        run: flutter analyze lib/engine/drawing_engine.dart test/visual/glitter_lame_render_capture_test.dart
+        run: flutter analyze lib/engine/drawing_engine.dart lib/services/brush_service.dart test/visual/glitter_lame_render_capture_test.dart
       - name: Execute actual DrawingEngine capture
         run: flutter test test/visual/glitter_lame_render_capture_test.dart
       - uses: actions/upload-artifact@v4
@@ -33,14 +34,14 @@ jobs:
           name: glitter-lame-captures
           path: build/glitter_visual/*.png
           if-no-files-found: error
-      - name: Commit implementation
+      - name: Commit implementation and preset tuning
         run: |
-          if git diff --quiet -- lib/engine/drawing_engine.dart; then
+          if git diff --quiet -- lib/engine/drawing_engine.dart lib/services/brush_service.dart test/visual/glitter_lame_render_capture_test.dart; then
             echo 'No implementation diff to commit.'
             exit 0
           fi
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          git add lib/engine/drawing_engine.dart
-          git commit -m 'feat: render glitter brush as hexagonal flakes'
+          git add lib/engine/drawing_engine.dart lib/services/brush_service.dart test/visual/glitter_lame_render_capture_test.dart
+          git commit -m 'fix: sharpen glitter hexagonal flakes'
           git push origin HEAD:dev_branch
