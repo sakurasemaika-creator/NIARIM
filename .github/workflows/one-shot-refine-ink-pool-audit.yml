@@ -26,6 +26,18 @@ jobs:
       - run: flutter pub get
       - name: Refine ink pooling behavior and audit
         run: python3 .github/scripts/refine_ink_pool_centerline.py
+      - name: Clean generated analyzer warning
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          p=Path('lib/engine/filter_engine.dart')
+          s=p.read_text(encoding='utf-8')
+          old='return bestX == null ? null : (x: bestX!, y: bestY!);'
+          new='return bestX == null ? null : (x: bestX, y: bestY!);'
+          if old not in s:
+              raise SystemExit('centerline null-promotion pattern not found')
+          p.write_text(s.replace(old,new,1),encoding='utf-8')
+          PY
       - name: Regenerate localization
         run: flutter gen-l10n
       - name: Format
