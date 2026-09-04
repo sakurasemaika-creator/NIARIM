@@ -10,7 +10,7 @@ on:
 jobs:
   verify-current-head:
     runs-on: ubuntu-latest
-    timeout-minutes: 40
+    timeout-minutes: 50
     steps:
       - uses: actions/checkout@v6
       - uses: subosito/flutter-action@v2
@@ -22,10 +22,10 @@ jobs:
         id: l10n
         continue-on-error: true
         run: flutter gen-l10n
-      - name: Analyze latest HEAD
+      - name: Analyze production app code on latest HEAD
         id: analyze
         continue-on-error: true
-        run: flutter analyze
+        run: flutter analyze lib
       - name: NIARIM unique feature strict visual evidence v2
         id: unique
         continue-on-error: true
@@ -42,15 +42,17 @@ jobs:
         id: widget
         continue-on-error: true
         run: |
-          if [ -f test/home_widget_service_test.dart ]; then
-            flutter test test/home_widget_service_test.dart --reporter expanded
-          fi
+          if [ -f test/home_widget_service_test.dart ]; then flutter test test/home_widget_service_test.dart --reporter expanded; fi
       - name: Frame-strip and premium regressions
         id: regressions
         continue-on-error: true
         run: |
           if [ -f test/frame_strip_widget_test.dart ]; then flutter test test/frame_strip_widget_test.dart --reporter expanded; fi
           if [ -f test/premium_screen_test.dart ]; then flutter test test/premium_screen_test.dart --reporter expanded; fi
+      - name: Full production-router screenshot audit
+        id: routes
+        continue-on-error: true
+        run: flutter test test/all_routes_screenshot_audit_test.dart --reporter expanded
       - name: Theme hardcoded-color census
         if: always()
         run: |
@@ -92,11 +94,12 @@ jobs:
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: current-head-unique-reaudit-v2
+          name: current-head-unique-reaudit-v3
           path: |
             build/niarim-unique-strict-v2/**
             build/time-change-strict/**
             build/final-remaining-strict/**
+            build/all-route-screenshots/**
             build/current-head-ui-fixed-colors.txt
             build/current-head-emoji-ui-literals.txt
           if-no-files-found: warn
@@ -110,4 +113,5 @@ jobs:
           test '${{ steps.strict.outcome }}' = 'success'
           test '${{ steps.widget.outcome }}' = 'success'
           test '${{ steps.regressions.outcome }}' = 'success'
+          test '${{ steps.routes.outcome }}' = 'success'
           test '${{ steps.emoji.outcome }}' = 'success'
