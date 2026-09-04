@@ -27,8 +27,22 @@ import 'package:shared_preferences/shared_preferences.dart';
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
-  /// フレーム一覧のコマ幅（`_FrameStripWidgetState._itemExtent`と同値）。
-  const itemExtent = 48.0;
+  /// フレーム一覧のコマ幅。
+  ///
+  /// **実装のソースから読む**。ここへ数値を直書きすると、コマ幅を変えた
+  /// ときにテストだけが古い値のまま落ちる（実際に上流の
+  /// 「ui: standardize canvas frame cells at 50x50」で48→50へ変わり、
+  /// 192を期待して200が返る形で落ちた）。吸着の計算はコマ幅に比例するので、
+  /// 値そのものではなく「コマ幅の整数倍に吸着すること」を検証したい。
+  final itemExtent = double.parse(
+    RegExp(r'static const double _itemExtent = ([0-9.]+)')
+        .firstMatch(
+          File(
+            'lib/screens/canvas/widgets/frame_strip_widget.dart',
+          ).readAsStringSync(),
+        )!
+        .group(1)!,
+  );
 
   /// path_providerのモック（ProjectServiceが保存でディスクを触るため）。
   void mockPathProvider() {
