@@ -1,0 +1,53 @@
+name: One-shot Refine Ink Pool Audit
+
+on:
+  push:
+    branches: [dev_branch]
+    paths:
+      - '.github/scripts/refine_ink_pool_audit.py'
+      - '.github/workflows/one-shot-refine-ink-pool-audit.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  refine-and-verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          ref: dev_branch
+          fetch-depth: 0
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+      - run: flutter pub get
+      - name: Refine ink pooling behavior and audit
+        run: python3 .github/scripts/refine_ink_pool_audit.py
+      - name: Regenerate localization
+        run: flutter gen-l10n
+      - name: Format
+        run: dart format lib/engine/filter_engine.dart test/niarim_unique_visual_evidence_v3_test.dart
+      - name: Analyze production code
+        run: flutter analyze lib
+      - name: Ink pooling core strict
+        run: flutter test test/ink_pool_filter_test.dart --reporter expanded
+      - name: Unique visual v3
+        run: flutter test test/niarim_unique_visual_evidence_v3_test.dart --reporter expanded
+      - name: Existing strict regressions
+        run: |
+          flutter test test/time_change_strict_evidence_test.dart --reporter expanded
+          flutter test test/final_remaining_strict_evidence_test.dart --reporter expanded
+      - name: Commit refinements
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add lib test
+          if git diff --cached --quiet; then
+            echo 'No changes to commit'
+          else
+            git commit -m 'fix: refine ink pooling taper and localization'
+            git push origin HEAD:dev_branch
+          fi
