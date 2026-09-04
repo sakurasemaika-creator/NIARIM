@@ -1,10 +1,13 @@
 import 'package:niarim/services/theme_service.dart';
+
 import 'dart:io';
 import 'dart:math' as math;
 import 'dart:ui' as ui;
+
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:file_picker/file_picker.dart';
+
 import '../../../engine/autofill_batch_runner.dart';
 import '../../../engine/autofill_engine.dart' as autofill;
 import '../../../engine/layer_keyframe_engine.dart';
@@ -2153,6 +2156,18 @@ class _LayerPanelState extends State<LayerPanel> {
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
+        // popup-standard-close: compact top-right close affordance.
+        iconPadding: const EdgeInsets.fromLTRB(0, 4, 4, 0),
+        icon: Align(
+          alignment: Alignment.centerRight,
+          child: IconButton(
+            visualDensity: VisualDensity.compact,
+            iconSize: 18,
+            tooltip: MaterialLocalizations.of(context).closeButtonTooltip,
+            onPressed: () => Navigator.of(context, rootNavigator: true).pop(),
+            icon: const Icon(Icons.close),
+          ),
+        ),
         title: Text(l10n.autofillPartBlendModeLabel),
         content: SizedBox(
           width: 280,
@@ -2173,12 +2188,7 @@ class _LayerPanelState extends State<LayerPanel> {
             ),
           ),
         ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx),
-            child: Text(l10n.commonClose),
-          ),
-        ],
+        actions: [],
       ),
     );
   }
@@ -2209,6 +2219,18 @@ class _LayerPanelState extends State<LayerPanel> {
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
+        // popup-standard-close: compact top-right close affordance.
+        iconPadding: const EdgeInsets.fromLTRB(0, 4, 4, 0),
+        icon: Align(
+          alignment: Alignment.centerRight,
+          child: IconButton(
+            visualDensity: VisualDensity.compact,
+            iconSize: 18,
+            tooltip: MaterialLocalizations.of(context).closeButtonTooltip,
+            onPressed: () => Navigator.of(context, rootNavigator: true).pop(),
+            icon: const Icon(Icons.close),
+          ),
+        ),
         title: Text(l10n.layerPanelHelpDialogTitle),
         content: SingleChildScrollView(
           child: Column(
@@ -2247,12 +2269,7 @@ class _LayerPanelState extends State<LayerPanel> {
             ],
           ),
         ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx),
-            child: Text(l10n.commonClose),
-          ),
-        ],
+        actions: [],
       ),
     );
   }
@@ -2540,14 +2557,21 @@ class _LayerPanelState extends State<LayerPanel> {
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
+        // popup-standard-close: compact top-right close affordance.
+        iconPadding: const EdgeInsets.fromLTRB(0, 4, 4, 0),
+        icon: Align(
+          alignment: Alignment.centerRight,
+          child: IconButton(
+            visualDensity: VisualDensity.compact,
+            iconSize: 18,
+            tooltip: MaterialLocalizations.of(context).closeButtonTooltip,
+            onPressed: () => Navigator.of(context, rootNavigator: true).pop(),
+            icon: const Icon(Icons.close),
+          ),
+        ),
         title: Text(l10n.layerPanelAutofillUpdateHelpTitle),
         content: Text(l10n.layerPanelAutofillUpdateHelpBody),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx),
-            child: Text(l10n.commonClose),
-          ),
-        ],
+        actions: [],
       ),
     );
   }

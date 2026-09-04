@@ -1,6 +1,8 @@
 import 'dart:convert';
+
 import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+
 import '../models/quick_tool_entry.dart';
 
 /// ツール早替え機能（「↺ ツール早替えボタン」）。

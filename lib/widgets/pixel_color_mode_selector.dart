@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+
 import '../l10n/app_localizations.dart';
 import '../models/pixel_color_mode.dart';
 import 'editable_slider_value.dart';

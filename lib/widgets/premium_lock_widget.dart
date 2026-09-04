@@ -2,6 +2,7 @@ import 'package:niarim/services/theme_service.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
+
 import '../l10n/app_localizations.dart';
 import '../services/premium_service.dart';
 import '../config/font_fallback.dart';
@@ -75,77 +76,83 @@ class _PremiumBannerDialog extends StatelessWidget {
     final l10n = AppLocalizations.of(context)!;
     return Dialog(
       insetPadding: const EdgeInsets.symmetric(horizontal: 24, vertical: 40),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
+      child: Stack(
         children: [
-          // Premium紹介バナー画像（タップでPremium登録画面へ）
-          GestureDetector(
-            onTap: onRegister,
-            child: ClipRRect(
-              borderRadius: const BorderRadius.vertical(
-                top: Radius.circular(12),
-              ),
-              child: Image.asset(
-                'assets/images/premium_banner.webp',
-                width: double.infinity,
-                fit: BoxFit.fitWidth,
-                errorBuilder: (context, error, stackTrace) => Container(
-                  height: 200,
-                  color: ThemeService.activeColorScheme.onSurfaceVariant,
-                  child: Center(
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Icon(
-                          Icons.star,
-                          color: ThemeService.activeColorScheme.tertiary,
-                          size: 48,
+          Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              // Premium紹介バナー画像（タップでPremium登録画面へ）
+              GestureDetector(
+                onTap: onRegister,
+                child: ClipRRect(
+                  borderRadius: const BorderRadius.vertical(
+                    top: Radius.circular(12),
+                  ),
+                  child: Image.asset(
+                    'assets/images/premium_banner.webp',
+                    width: double.infinity,
+                    fit: BoxFit.fitWidth,
+                    errorBuilder: (context, error, stackTrace) => Container(
+                      height: 200,
+                      color: ThemeService.activeColorScheme.onSurfaceVariant,
+                      child: Center(
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(
+                              Icons.star,
+                              color: ThemeService.activeColorScheme.tertiary,
+                              size: 48,
+                            ),
+                            SizedBox(height: 8),
+                            Text(
+                              'NIARIM Premium',
+                              style: TextStyle(
+                                fontSize: 18,
+                                fontWeight: FontWeight.bold,
+                                fontFamily: 'Kuramubon',
+                                fontFamilyFallback: kHeadingFontFallback,
+                              ),
+                            ),
+                            SizedBox(height: 4),
+                            Text(
+                              'premium_banner.webp',
+                              style: TextStyle(
+                                fontSize: 11,
+                                color: ThemeService
+                                    .activeColorScheme
+                                    .onSurfaceVariant,
+                              ),
+                            ),
+                          ],
                         ),
-                        SizedBox(height: 8),
-                        Text(
-                          'NIARIM Premium',
-                          style: TextStyle(
-                            fontSize: 18,
-                            fontWeight: FontWeight.bold,
-                            fontFamily: 'Kuramubon',
-                            fontFamilyFallback: kHeadingFontFallback,
-                          ),
-                        ),
-                        SizedBox(height: 4),
-                        Text(
-                          'premium_banner.webp',
-                          style: TextStyle(
-                            fontSize: 11,
-                            color:
-                                ThemeService.activeColorScheme.onSurfaceVariant,
-                          ),
-                        ),
-                      ],
+                      ),
                     ),
                   ),
                 ),
               ),
-            ),
-          ),
-          // ボタン行
-          Padding(
-            padding: const EdgeInsets.all(12),
-            child: Row(
-              children: [
-                Expanded(
-                  child: OutlinedButton(
-                    onPressed: onClose,
-                    child: Text(l10n.commonClose),
-                  ),
-                ),
-                const SizedBox(width: 12),
-                Expanded(
+              // Primary action only; closing is handled by the compact top-right X.
+              Padding(
+                padding: const EdgeInsets.all(12),
+                child: SizedBox(
+                  width: double.infinity,
                   child: FilledButton(
                     onPressed: onRegister,
                     child: Text(l10n.premiumBannerRegisterButton),
                   ),
                 ),
-              ],
+              ),
+            ],
+          ),
+          Positioned(
+            right: 4,
+            top: 4,
+            child: IconButton(
+              visualDensity: VisualDensity.compact,
+              iconSize: 18,
+              tooltip: MaterialLocalizations.of(context).closeButtonTooltip,
+              onPressed: onClose,
+              icon: const Icon(Icons.close),
             ),
           ),
         ],

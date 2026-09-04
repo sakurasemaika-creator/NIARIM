@@ -68,6 +68,6 @@ List<({Color a, Color b})> readabilityCriticalPairs(AppThemePreset preset) => [
 ];
 
 /// [preset]の全ての重要な組み合わせが[kMinReadableContrast]以上か。
-bool isThemeReadable(AppThemePreset preset) => readabilityCriticalPairs(
-  preset,
-).every((p) => contrastRatio(p.a, p.b) >= kMinReadableContrast);
+bool isThemeReadable(AppThemePreset preset) =>
+    readabilityCriticalPairs(preset)
+        .every((p) => contrastRatio(p.a, p.b) >= kMinReadableContrast);

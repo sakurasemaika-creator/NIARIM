@@ -126,9 +126,9 @@ class NiatraSerializer {
     final archive = ArchiveSecurity.decodeZip(bytes);
     final dataFile = archive.findFile(_dataFile);
     if (dataFile == null) throw const FormatException('data.json not found');
-    final data =
-        jsonDecode(utf8.decode(dataFile.content as List<int>))
-            as Map<String, dynamic>;
+    final data = jsonDecode(
+      utf8.decode(dataFile.content as List<int>),
+    ) as Map<String, dynamic>;
     return NiatraData(data, archive);
   }
 

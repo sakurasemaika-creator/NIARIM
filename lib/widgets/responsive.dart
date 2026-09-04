@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+
 import '../services/settings_service.dart';
 
 /// PC/DeXモードかどうかを判定する。ワークスペース設定で手動指定されていれば

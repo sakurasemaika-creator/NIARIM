@@ -1,4 +1,5 @@
 import 'package:google_mobile_ads/google_mobile_ads.dart';
+
 import 'advertising_service.dart';
 
 /// 広告プロバイダーの抽象化層。

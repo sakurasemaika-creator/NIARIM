@@ -1,6 +1,8 @@
 import 'dart:async';
+
 import 'package:flutter/foundation.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
+
 import '../config/monetization_gate.dart';
 import '../utils/runtime_platform.dart';
 import 'premium_service.dart';

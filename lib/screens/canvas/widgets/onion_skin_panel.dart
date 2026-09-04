@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+
 import '../../../l10n/app_localizations.dart';
 import '../../../models/onion_skin_settings.dart';
 import '../../../services/performance_service.dart';

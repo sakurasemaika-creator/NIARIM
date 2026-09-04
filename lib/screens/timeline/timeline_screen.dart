@@ -1,15 +1,19 @@
 import 'dart:async';
 import 'dart:io';
+
 import 'package:flutter/gestures.dart' show DragStartBehavior;
+
 import 'dart:math' as math;
 import 'dart:typed_data';
 import 'dart:ui' as ui;
+
 import 'package:audioplayers/audioplayers.dart' as ap;
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart' hide MaterialType;
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import 'package:video_player/video_player.dart';
+
 import '../../utils/immersive_mode.dart';
 import '../../services/shortcut_service.dart';
 import '../../models/shortcut_binding.dart';
@@ -1537,13 +1541,21 @@ class _TimelineScreenState extends State<TimelineScreen> {
       showDialog(
         context: context,
         builder: (ctx) => AlertDialog(
+          // popup-standard-close: compact top-right close affordance.
+          iconPadding: const EdgeInsets.fromLTRB(0, 4, 4, 0),
+          icon: Align(
+            alignment: Alignment.centerRight,
+            child: IconButton(
+              visualDensity: VisualDensity.compact,
+              iconSize: 18,
+              tooltip: MaterialLocalizations.of(context).closeButtonTooltip,
+              onPressed: () => Navigator.of(context, rootNavigator: true).pop(),
+              icon: const Icon(Icons.close),
+            ),
+          ),
           title: Text(l10n.timelineWatermarkNotRegisteredTitle),
           content: Text(l10n.timelineWatermarkNotRegisteredBody),
           actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(ctx),
-              child: Text(l10n.commonClose),
-            ),
             FilledButton(
               onPressed: () {
                 Navigator.pop(ctx);
@@ -2033,9 +2045,9 @@ class _TimelineScreenState extends State<TimelineScreen> {
                                 ),
                               ),
                               backgroundColor: isMoving
-                                  ? Theme.of(
-                                      context,
-                                    ).colorScheme.primaryContainer
+                                  ? Theme.of(context)
+                                        .colorScheme
+                                        .primaryContainer
                                   : null,
                             ),
                           );
@@ -2517,14 +2529,21 @@ class _TimelineScreenState extends State<TimelineScreen> {
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
+        // popup-standard-close: compact top-right close affordance.
+        iconPadding: const EdgeInsets.fromLTRB(0, 4, 4, 0),
+        icon: Align(
+          alignment: Alignment.centerRight,
+          child: IconButton(
+            visualDensity: VisualDensity.compact,
+            iconSize: 18,
+            tooltip: MaterialLocalizations.of(context).closeButtonTooltip,
+            onPressed: () => Navigator.of(context, rootNavigator: true).pop(),
+            icon: const Icon(Icons.close),
+          ),
+        ),
         title: Text(l10n.layerPanelAutofillUpdateHelpTitle),
         content: Text(l10n.timelineAutofillUpdateHelpBody),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx),
-            child: Text(l10n.commonClose),
-          ),
-        ],
+        actions: [],
       ),
     );
   }
@@ -2641,12 +2660,12 @@ class _TimelineScreenState extends State<TimelineScreen> {
                                             width: 3,
                                             height: 28,
                                             color: isActive
-                                                ? Theme.of(
-                                                    context,
-                                                  ).colorScheme.primary
-                                                : Theme.of(
-                                                    context,
-                                                  ).colorScheme.outline,
+                                                ? Theme.of(context)
+                                                      .colorScheme
+                                                      .primary
+                                                : Theme.of(context)
+                                                      .colorScheme
+                                                      .outline,
                                           ),
                                         ),
                                       );
@@ -2667,9 +2686,9 @@ class _TimelineScreenState extends State<TimelineScreen> {
                                         ),
                                         decoration: BoxDecoration(
                                           color: isMoving
-                                              ? Theme.of(
-                                                  context,
-                                                ).colorScheme.primaryContainer
+                                              ? Theme.of(context)
+                                                    .colorScheme
+                                                    .primaryContainer
                                               : ThemeService
                                                     .activeColorScheme
                                                     .onSurfaceVariant,
@@ -2688,9 +2707,9 @@ class _TimelineScreenState extends State<TimelineScreen> {
                                             style: TextStyle(
                                               fontSize: 9,
                                               color: isMoving
-                                                  ? Theme.of(
-                                                      context,
-                                                    ).colorScheme.primary
+                                                  ? Theme.of(context)
+                                                        .colorScheme
+                                                        .primary
                                                   : null,
                                             ),
                                           ),
@@ -2786,20 +2805,20 @@ class _TimelineScreenState extends State<TimelineScreen> {
                                         // 濃いグレーのままだと透明部分の見え方が実際の
                                         // キャンバス画面と一致しなかったため修正。
                                         color: isChecked
-                                            ? Theme.of(
-                                                context,
-                                              ).colorScheme.primaryContainer
+                                            ? Theme.of(context)
+                                                  .colorScheme
+                                                  .primaryContainer
                                             : ThemeService
                                                   .activeColorScheme
                                                   .onSurface,
                                         border: Border.all(
                                           color: isChecked
-                                              ? Theme.of(
-                                                  context,
-                                                ).colorScheme.primary
-                                              : Theme.of(
-                                                  context,
-                                                ).colorScheme.outlineVariant,
+                                              ? Theme.of(context)
+                                                    .colorScheme
+                                                    .primary
+                                              : Theme.of(context)
+                                                    .colorScheme
+                                                    .outlineVariant,
                                         ),
                                         borderRadius: BorderRadius.circular(3),
                                       ),
@@ -3021,18 +3040,25 @@ class _TimelineScreenState extends State<TimelineScreen> {
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
+        // popup-standard-close: compact top-right close affordance.
+        iconPadding: const EdgeInsets.fromLTRB(0, 4, 4, 0),
+        icon: Align(
+          alignment: Alignment.centerRight,
+          child: IconButton(
+            visualDensity: VisualDensity.compact,
+            iconSize: 18,
+            tooltip: MaterialLocalizations.of(context).closeButtonTooltip,
+            onPressed: () => Navigator.of(context, rootNavigator: true).pop(),
+            icon: const Icon(Icons.close),
+          ),
+        ),
         title: Text(l10n.timelineDurationLimitTitle),
         content: Text(
           isPremium
               ? l10n.timelineDurationLimitBodyPremium
               : l10n.timelineDurationLimitBodyFree,
         ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx),
-            child: Text(l10n.commonClose),
-          ),
-        ],
+        actions: [],
       ),
     );
     return false;
@@ -3916,9 +3942,9 @@ class _TimelineScreenState extends State<TimelineScreen> {
                                     decoration: BoxDecoration(
                                       border: Border(
                                         right: BorderSide(
-                                          color: Theme.of(
-                                            context,
-                                          ).colorScheme.outlineVariant,
+                                          color: Theme.of(context)
+                                              .colorScheme
+                                              .outlineVariant,
                                           width: 0.5,
                                         ),
                                       ),
@@ -4820,9 +4846,9 @@ class _TimelineScreenState extends State<TimelineScreen> {
                               decoration: BoxDecoration(
                                 border: Border(
                                   right: BorderSide(
-                                    color: Theme.of(
-                                      context,
-                                    ).colorScheme.outlineVariant,
+                                    color: Theme.of(context)
+                                        .colorScheme
+                                        .outlineVariant,
                                     width: 0.5,
                                   ),
                                 ),
