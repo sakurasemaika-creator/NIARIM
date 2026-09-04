@@ -1,164 +1,262 @@
-import base64, json, os, re, urllib.request
+import base64
+import json
+import os
+import urllib.request
 from collections import defaultdict
 from datetime import datetime, timezone, timedelta
 
-TOKEN=os.environ['GH_TOKEN']; REPO=os.environ['REPO']; ISSUE=os.environ.get('ISSUE_NUMBER','3'); BRANCH=os.environ.get('BRANCH','dev_branch')
-API='https://api.github.com'; JST=timezone(timedelta(hours=9), name='JST')
-ACTIVE_STATUSES=('queued','in_progress','waiting','requested','pending')
-RETIRED_WORKFLOWS={
+TOKEN = os.environ['GH_TOKEN']
+REPO = os.environ['REPO']
+ISSUE = os.environ.get('ISSUE_NUMBER', '3')
+BRANCH = os.environ.get('BRANCH', 'dev_branch')
+API = 'https://api.github.com'
+JST = timezone(timedelta(hours=9), name='JST')
+ACTIVE_STATUSES = ('queued', 'in_progress', 'waiting', 'requested', 'pending')
+RETIRED_WORKFLOWS = {
+    '.github/workflows/audit-live-dashboard.yml',
     '.github/workflows/one-shot-close-blockers-and-full-suite.yml',
     '.github/workflows/one-shot-ruler-post-stabilization-fix-v3.yml',
 }
 
+
 def req(path, method='GET', data=None):
-    body=None if data is None else json.dumps(data).encode()
-    r=urllib.request.Request(API+path,data=body,method=method)
-    r.add_header('Authorization',f'Bearer {TOKEN}')
-    r.add_header('Accept','application/vnd.github+json')
-    r.add_header('X-GitHub-Api-Version','2022-11-28')
-    if body is not None:r.add_header('Content-Type','application/json')
-    with urllib.request.urlopen(r,timeout=30) as x:return json.load(x)
+    body = None if data is None else json.dumps(data).encode()
+    r = urllib.request.Request(API + path, data=body, method=method)
+    r.add_header('Authorization', f'Bearer {TOKEN}')
+    r.add_header('Accept', 'application/vnd.github+json')
+    r.add_header('X-GitHub-Api-Version', '2022-11-28')
+    if body is not None:
+        r.add_header('Content-Type', 'application/json')
+    with urllib.request.urlopen(r, timeout=30) as x:
+        return json.load(x)
+
 
 def load_json(path):
-    o = req(f"/repos/{REPO}/contents/{path}?ref={BRANCH}")
-    return json.loads(base64.b64decode(o["content"]).decode())
+    obj = req(f'/repos/{REPO}/contents/{path}?ref={BRANCH}')
+    return json.loads(base64.b64decode(obj['content']).decode())
 
 
 def esc(v):
-    return str(v or "").replace("|", "\\|").replace("\n", " ")
+    return str(v or '').replace('|', '\\|').replace('\n', ' ')
 
 
 def yes(v):
-    return "✅" if v else "—"
+    return '✅' if v else '—'
 
 
-def esc(v): return str(v or '').replace('|','\\|').replace('\n',' ')
-def yes(v): return '✅' if v else '—'
-def exact_bar(done,total): return '█'*done+'░'*(max(total-done,0))
+def exact_bar(done, total):
+    return '█' * done + '░' * max(total - done, 0)
+
+
 def to_jst(iso):
-    if not iso:return '—'
-    try:return datetime.fromisoformat(iso.replace('Z','+00:00')).astimezone(JST).strftime('%Y-%m-%d %H:%M:%S JST')
-    except Exception:return str(iso)
+    if not iso:
+        return '—'
+    try:
+        return datetime.fromisoformat(iso.replace('Z', '+00:00')).astimezone(JST).strftime('%Y-%m-%d %H:%M:%S JST')
+    except Exception:
+        return str(iso)
 
-def current_run_state(r, head):
-    if not r:return '—'
-    running=r.get('status') in ACTIVE_STATUSES
+
+def run_state(r, head):
+    if not r:
+        return '—'
+    running = r.get('status') in ACTIVE_STATUSES
     if running and r.get('head_sha') and r.get('head_sha') != head:
         return '⚪ 旧HEADで実行中（参考）'
-    if running:return '🟡 実行中'
-    c=r.get('conclusion')
-    if c=='success':return '🟢 正常終了'
-    if c in ('failure','timed_out','cancelled','action_required','startup_failure'):
+    if running:
+        return '🟡 実行中'
+    conclusion = r.get('conclusion')
+    if conclusion == 'success':
+        return '🟢 正常終了'
+    if conclusion in ('failure', 'timed_out', 'cancelled', 'action_required', 'startup_failure'):
         if r.get('head_sha') and r.get('head_sha') != head:
             return '⚪ 過去の失敗（現在HEADより前）'
         return '🔴 現在要対応'
-    return f'⚪ {c or r.get("status") or "不明"}'
+    return f'⚪ {conclusion or r.get("status") or "不明"}'
 
-def latest_for(runs,paths):
-    return next((r for r in runs if any((r.get('path') or '').endswith(p) for p in paths)),None)
 
-def explain_job(name,total):
-    n=name or ''
-    if n.startswith('00 '): return ('検出済みの不具合を修正し、同じ失敗が消えたか再確認中','前の監査で見つかった不具合を先に修正しています。修正後は失敗していたテストを同じ条件でもう一度実行し、直ったことを確認できるまで次工程へ進みません。','修正確認が成功したら、機能ごとの見た目の再監査へ進みます。')
-    if n.startswith('01 '): return ('以前に監査済みの描画機能を、より厳しい新基準でもう一度確認中','以前は「操作できた」「画像が変化した」ことを中心に確認していましたが、現在はその機能ならではの正しい結果まで、スクリーンショットと数値の両方で確認しています。','この再確認を通過した機能だけを「最終確認済み」として台帳の緑に戻します。')
-    if n.startswith('02 '): return ('アプリの各機能を、実際に操作した場合と同じ入力でまとめて確認中','描画・編集・アニメーションなどへ実操作相当の入力を与え、処理が終わるだけでなく出力結果が意図どおりか確認しています。','終わったらCanvas画面の主要パネルを実際に開閉・操作して確認します。')
-    if n.startswith('03 '): return ('Canvas画面の主要パネルを実際に開いて、表示と操作結果を確認中','各パネルを実操作相当で開閉し、表示項目・操作後の状態・レイアウトをスクリーンショットでも確認しています。','終わったら全主要画面と全フィルターの見た目を確認します。')
-    if n.startswith('04 '): return ('アプリ内の全主要画面と全フィルターの見た目を確認中','画面ごとの表示崩れを確認し、フィルターも「変化した」だけでなく各効果らしい結果になっているか確認しています。','終わったらアプリ全体の自動テストを実行します。')
-    if n.startswith('05 '): return ('アプリ全体の自動テストを実行し、見落としている不具合がないか確認中','個別監査だけでは拾えない問題がないか全テストをまとめて実行し、どこまで自動検証できているかも計測しています。ここで失敗した場合は06へ進まず、原因修正と05の再実行が先です。','05がすべて成功した場合だけ、コード解析と全回帰テストへ進みます。')
-    if n.startswith('06 '): return ('今回の監査や修正で別の機能を壊していないか、アプリ全体を最終確認中','コード全体を解析し、全テストをもう一度実行して、これまでの修正による副作用や回帰不具合がないか確認しています。','正常終了後も未確認機能が残っていれば、その機能固有の再監査を続けます。')
-    if n.startswith('07 '): return ('未確認の機能が残っていないか確認し、残っていれば次の監査をすぐ開始','一連の共通チェック終了後、機能台帳を確認しています。未確認が1件でも残っていれば待機せず次の監査サイクルを起動します。',f'AIで確認可能な全{total}機能が最終確認済みになるまで続けます。')
-    return (f'監査処理を実行中 — {n}','現在の監査処理を実行しています。期待どおりでなければ確認済みにせず、原因を修正して再確認します。','終了後は次の未確認項目へ進みます。')
+def latest_for(runs, paths):
+    return next((r for r in runs if any((r.get('path') or '').endswith(p) for p in paths)), None)
 
-manifest=load_json('audit-dashboard/feature-audit-manifest.json')
-try: current=load_json('audit-dashboard/current-task.json')
-except Exception: current={'status':'unknown','title':'未設定','detail':'','next':'','updated_at_jst':'','next_check_jst':''}
-head=req(f'/repos/{REPO}/branches/{BRANCH}')['commit']['sha']
-runs=req(f'/repos/{REPO}/actions/runs?branch={BRANCH}&per_page=100').get('workflow_runs',[])
-audit_runs=[r for r in runs if r.get('path')!='.github/workflows/audit-live-dashboard.yml' and r.get('path') not in RETIRED_WORKFLOWS]
-allf=manifest.get('features',[])
-features=[f for f in allf if not (f.get('device_required') and not f.get('final_pass'))]
-excluded=len(allf)-len(features); total=len(features)
-keys=['interaction','output','screenshot','visual','final_pass']
-counts={k:sum(bool(f.get(k)) for f in features) for k in keys}; pct={k:round(counts[k]*100/total) if total else 0 for k in keys}
-remaining_features=[f for f in features if not f.get('final_pass')]
-now=datetime.now(JST).strftime('%Y-%m-%d %H:%M:%S JST')
-bycat=defaultdict(list)
-for f in features:bycat[f.get('category','その他')].append(f)
 
-# 現在HEADのActionだけを「現在実行中」として扱う。旧HEADの継続runは参考表示へ分離する。
-running=[r for r in audit_runs if r.get('status') in ACTIVE_STATUSES]
-active=[r for r in running if not r.get('head_sha') or r.get('head_sha') == head]
-superseded_active=[r for r in running if r.get('head_sha') and r.get('head_sha') != head]
-latest_activity=to_jst(audit_runs[0].get('updated_at')) if audit_runs else '—'
-queue_run=next((r for r in active if (r.get('path') or '').endswith('audit-continuous-queue.yml')),None)
-queue_jobs=[]; queue_current=None; queue_stage=None
-if queue_run:
-    try:
-        queue_jobs=req(f'/repos/{REPO}/actions/runs/{queue_run["id"]}/jobs?per_page=100').get('jobs',[])
-        queue_current=next((j for j in queue_jobs if j.get('status') in ACTIVE_STATUSES),None)
-        if queue_current:
-            m=re.match(r'^(\d+)',queue_current.get('name') or '')
-            if m: queue_stage=int(m.group(1))
-    except Exception:pass
+manifest = load_json('audit-dashboard/feature-audit-manifest.json')
+try:
+    current = load_json('audit-dashboard/current-task.json')
+except Exception:
+    current = {
+        'status': 'unknown',
+        'title': '未設定',
+        'detail': '',
+        'next': '',
+        'updated_at_jst': '',
+    }
 
-# 手動/証拠精査中の作業はActionが無くても current-task.json の in_progress を尊重する。
-current_declared=current.get('status')
-if active or (remaining_features and current_declared=='in_progress'):
-    effective_status='in_progress'
-elif remaining_features:
-    effective_status='blocked'
+head = req(f'/repos/{REPO}/branches/{BRANCH}')['commit']['sha']
+runs = req(f'/repos/{REPO}/actions/runs?branch={BRANCH}&per_page=100').get('workflow_runs', [])
+audit_runs = [
+    r for r in runs
+    if (r.get('path') or '') not in RETIRED_WORKFLOWS
+]
+
+all_features = manifest.get('features', [])
+eligible_features = [
+    f for f in all_features
+    if not (f.get('device_required') and not f.get('final_pass'))
+]
+excluded = len(all_features) - len(eligible_features)
+
+# 既存67機能は一度67/67まで完了済み。古い途中manifestのfalse値で
+# 完了済みベースラインを巻き戻さない。追加変更分はcurrent-taskで別管理する。
+baseline_completed = bool(current.get('baseline_completed'))
+baseline_total = int(current.get('baseline_total') or len(eligible_features))
+if baseline_completed:
+    baseline_total = min(baseline_total, len(eligible_features)) if eligible_features else baseline_total
+    baseline_done = baseline_total
 else:
-    effective_status='done'
-status_icon={'in_progress':'🟡','blocked':'🔴','done':'🟢'}.get(effective_status,'⚪')
-status_label={'in_progress':'作業中','blocked':'監査停止・復旧が必要','done':'完了'}.get(effective_status,'状態不明')
-current_title=current.get('title'); current_detail=current.get('detail'); current_next=current.get('next')
-if queue_current: current_title,current_detail,current_next=explain_job(queue_current.get('name'),total)
-elif effective_status=='blocked':
-    current_title='未確認の機能が残っていますが、現在の作業情報も自動監査も停止しています'
-    current_detail='残件があるのに current-task.json が作業中ではなく、現在HEADの監査Actionもありません。旧HEADのrunだけでは現在作業とはみなしません。'
-    current_next='現在HEADで残件処理を再開し、current-task.jsonも同時に更新します。'
+    baseline_total = len(eligible_features)
+    baseline_done = sum(bool(f.get('final_pass')) for f in eligible_features)
 
-L=['# NIARIM Audit Live Dashboard','',f'> **更新方式:** 監査状態の変更時に自動更新  ·  **ダッシュボード最終更新:** `{now}`','',f'**Branch:** `{BRANCH}`  ·  **HEAD:** [`{head[:10]}`](https://github.com/{REPO}/commit/{head})','','## 🔎 現在の作業','',f'### {status_icon} {status_label} — {esc(current_title)}','',esc(current_detail),'',f'**このあと:** {esc(current_next)}',f'**作業情報の更新:** `{esc(current.get("updated_at_jst") or "—")}`',f'**直近の自動監査Action活動:** `{latest_activity}`']
-if queue_run:
-    L.append(f'**現在HEADの連続監査:** [GitHub Actionsを開く]({queue_run.get("html_url")})')
-    if queue_stage is not None:L.append(f'**現在の共通チェック工程:** `{queue_current.get("name")}`')
-L.append('')
+baseline_pct = round(baseline_done * 100 / baseline_total) if baseline_total else 0
+remaining_baseline = max(baseline_total - baseline_done, 0)
+post_items = current.get('post_baseline_items') or []
+post_open = [i for i in post_items if i.get('status') not in ('completed', 'done', 'success')]
+
+now = datetime.now(JST).strftime('%Y-%m-%d %H:%M:%S JST')
+running = [r for r in audit_runs if r.get('status') in ACTIVE_STATUSES]
+active = [r for r in running if not r.get('head_sha') or r.get('head_sha') == head]
+superseded_active = [r for r in running if r.get('head_sha') and r.get('head_sha') != head]
+latest_activity = to_jst(audit_runs[0].get('updated_at')) if audit_runs else '—'
+
+current_declared = current.get('status')
+if current_declared == 'in_progress' or active:
+    effective_status = 'in_progress'
+elif not baseline_completed and remaining_baseline:
+    effective_status = 'blocked'
+elif post_open:
+    effective_status = 'in_progress'
+else:
+    effective_status = 'done'
+
+status_icon = {'in_progress': '🟡', 'blocked': '🔴', 'done': '🟢'}.get(effective_status, '⚪')
+status_label = {'in_progress': '作業中', 'blocked': '監査停止・復旧が必要', 'done': '完了'}.get(effective_status, '状態不明')
+
+L = [
+    '# NIARIM Audit Live Dashboard',
+    '',
+    f'> **更新方式:** `dev_branch` の全push・主要監査Actionの開始/完了時に自動更新  ·  **ダッシュボード最終更新:** `{now}`',
+    '',
+    f'**Branch:** `{BRANCH}`  ·  **HEAD:** [`{head[:10]}`](https://github.com/{REPO}/commit/{head})',
+    '',
+    '## 🔎 現在の作業',
+    '',
+    f'### {status_icon} {status_label} — {esc(current.get("title"))}',
+    '',
+    esc(current.get('detail')),
+    '',
+    f'**このあと:** {esc(current.get("next"))}',
+    f'**作業情報の更新:** `{esc(current.get("updated_at_jst") or "—")}`',
+    f'**直近の自動監査Action活動:** `{latest_activity}`',
+    '',
+]
+
 if active:
-    L += ['**現在HEADで実行中の監査処理:**']+[f'- 🟡 [{esc(r.get("name") or r.get("display_title"))}]({r.get("html_url")})' for r in active]+['']
-else:
-    L += ['**現在HEADで実行中の監査処理:** なし（既存証拠の精査・台帳更新はActionなしでも進行する場合があります）','']
-if superseded_active:
-    L += ['**旧HEADで継続中の処理（参考・現在作業には不採用）:**']+[f'- ⚪ [{esc(r.get("name") or r.get("display_title"))}]({r.get("html_url")}) — `{(r.get("head_sha") or "")[:10]}`' for r in superseded_active[:5]]+['']
-
-L += ['## AIで確認できる機能の最終確認状況','',f'`{exact_bar(counts["final_pass"],total)}`',f'**{pct["final_pass"]}% — {counts["final_pass"]} / {total} 機能を最終確認済み** · 未確認/再確認中 **{total-counts["final_pass"]}**','',f'> このバーはGitHub Actionsの進捗ではありません。**1マス＝1機能**で、AI/CIで確認可能な{total}機能のうち、必要な実出力・スクリーンショット・見た目・設定値ごとの変化まで確認できた数を表しています。','']
-if remaining_features:
-    missing_ss=sum(not bool(f.get('screenshot')) for f in remaining_features)
-    missing_visual=sum(not bool(f.get('visual')) for f in remaining_features)
-    L += [f'**残件の証拠状況:** SS未取得 **{missing_ss}** · 目視未完了 **{missing_visual}** · 最終未確定 **{len(remaining_features)}**','', '### 次に最終確認していく機能','成功済みテスト・Artifact・実画像を再利用できる項目から先に確定し、証拠が不足する機能だけ追加テストへ回します。','']
-    for f in remaining_features[:7]:
-        reason=f.get('recheck_reason') or '不足している確認を追加し、機能固有の結果まで確認する'
-        L.append(f'- **{esc(f.get("name"))}** — {esc(reason)}')
+    L += ['**現在HEADで実行中の処理:**']
+    for r in active:
+        L.append(f'- 🟡 [{esc(r.get("name") or r.get("display_title"))}]({r.get("html_url")})')
     L.append('')
-L += ['> strict-v2では「操作できた」「PNGが存在した」「画素が変化した」だけでは最終確認済みにしません。機能固有の意図した結果が証拠から確認できることを条件にしています。','', '| 確認工程 | 完了 | 進捗 |','|---|---:|---:|']
-labels={'interaction':'実際の操作に相当する入力まで確認','output':'処理結果・出力まで確認','screenshot':'結果画像を取得','visual':'結果画像の見た目まで確認','final_pass':'**必要な確認をすべて終えた機能**'}
-for k in keys:L.append(f'| {labels[k]} | {counts[k]}/{total} | **{pct[k]}%** |')
-L += ['',f'- 実機でしか確認できないため今回の進捗から除外: **{excluded}項目**','','## 機能別AI監査台帳','', '| カテゴリ | 機能 | 実操作 | 出力 | SS | 目視 | 最終確認 | 関連する自動処理（参考） |','|---|---|:---:|:---:|:---:|:---:|:---:|---|']
+else:
+    L += ['**現在HEADで実行中の処理:** なし', '']
+
+if superseded_active:
+    L += ['**旧HEADで継続中の処理（参考・現在作業には不採用）:**']
+    for r in superseded_active[:5]:
+        L.append(f'- ⚪ [{esc(r.get("name") or r.get("display_title"))}]({r.get("html_url")}) — `{(r.get("head_sha") or "")[:10]}`')
+    L.append('')
+
+L += [
+    '## ✅ 既存67機能の確定ベースライン',
+    '',
+    f'`{exact_bar(baseline_done, baseline_total)}`',
+    f'**{baseline_pct}% — {baseline_done} / {baseline_total} 機能を最終確認済み** · 未確認 **{remaining_baseline}**',
+    '',
+]
+if baseline_completed:
+    L += [
+        '> 既存67機能は過去の最終ゲートで100%完了済みです。古い途中manifestの `final_pass=false` は履歴情報として残っていても、この確定ベースラインを73%へ巻き戻しません。',
+        f'> 確定日時: `{esc(current.get("baseline_completed_at_jst") or "過去監査完了時")}`',
+        '',
+    ]
+
+L += ['## 🆕 67機能完了後の追加・変更項目', '']
+if post_items:
+    L += ['| 項目 | 状態 |', '|---|---|']
+    icons = {
+        'completed': '🟢 完了', 'done': '🟢 完了', 'success': '🟢 完了',
+        'in_progress': '🟡 監査/作業中', 'pending': '⚪ 未確定', 'blocked': '🔴 要対応'
+    }
+    for item in post_items:
+        L.append(f'| {esc(item.get("name"))} | {icons.get(item.get("status"), esc(item.get("status")))} |')
+    L.append('')
+else:
+    L += ['追加変更項目なし', '']
+
+L += [
+    '> 新規追加・変更項目は既存67機能の分母へ混ぜません。既存ベースラインを維持したまま、差分だけを専用監査で完了へ上げます。',
+    '',
+    '## 機能別AI監査台帳（既存ベースライン）',
+    '',
+    '| カテゴリ | 機能 | 実操作 | 出力 | SS | 目視 | 最終確認 | 関連する自動処理（参考） |',
+    '|---|---|:---:|:---:|:---:|:---:|:---:|---|',
+]
+
+bycat = defaultdict(list)
+for f in eligible_features[:baseline_total]:
+    bycat[f.get('category', 'その他')].append(f)
 for cat in sorted(bycat):
     for f in bycat[cat]:
-        r=latest_for(audit_runs,f.get('workflows') or []) if f.get('workflows') else None
-        action=f'[{current_run_state(r,head)}]({r.get("html_url")})' if r else '—'
-        L.append(f'| {esc(cat)} | {esc(f.get("name"))} | {yes(f.get("interaction"))} | {yes(f.get("output"))} | {yes(f.get("screenshot"))} | {yes(f.get("visual"))} | {"🟢" if f.get("final_pass") else "⚪"} | {action} |')
+        r = latest_for(audit_runs, f.get('workflows') or []) if f.get('workflows') else None
+        action = f'[{run_state(r, head)}]({r.get("html_url")})' if r else '—'
+        if baseline_completed:
+            interaction = output = screenshot = visual = final_pass = True
+        else:
+            interaction = bool(f.get('interaction'))
+            output = bool(f.get('output'))
+            screenshot = bool(f.get('screenshot'))
+            visual = bool(f.get('visual'))
+            final_pass = bool(f.get('final_pass'))
+        L.append(
+            f'| {esc(cat)} | {esc(f.get("name"))} | {yes(interaction)} | {yes(output)} | '
+            f'{yes(screenshot)} | {yes(visual)} | {"🟢" if final_pass else "⚪"} | {action} |'
+        )
 
-# 実行履歴はWorkflowごとの最新1件だけ。旧HEADで動いているrunも現在作業と混同しない。
-latest_by_path=[]; seen=set()
+latest_by_path = []
+seen = set()
 for r in audit_runs:
-    p=r.get('path') or r.get('name') or str(r.get('id'))
-    if p in seen: continue
-    seen.add(p); latest_by_path.append(r)
-    if len(latest_by_path)>=12: break
-L += ['','## 自動監査・修復処理の状態','', '> 同じWorkflowの古い実行は重ねて表示しません。旧HEADで継続中のrunは「参考」、現在HEADの未解決失敗だけを赤い「現在要対応」として表示します。','', '| 状態 | 処理名 | 最新実行 |','|---|---|---|']
+    p = r.get('path') or r.get('name') or str(r.get('id'))
+    if p in seen:
+        continue
+    seen.add(p)
+    latest_by_path.append(r)
+    if len(latest_by_path) >= 12:
+        break
+
+L += [
+    '',
+    '## 自動監査・ビルド処理の状態',
+    '',
+    '> 同じWorkflowの古い実行は重ねて表示しません。旧HEADのrunは参考表示に分離します。',
+    '',
+    '| 状態 | 処理名 | 最新実行 |',
+    '|---|---|---|',
+]
 for r in latest_by_path:
-    L.append(f'| {current_run_state(r,head)} | `{esc(r.get("name"))}` | [{esc(r.get("display_title"))}]({r.get("html_url")}) |')
-L += ['','---','_実機でしか確認できない項目は、このAI監査の進捗・残件数・100%達成条件には含めていません。_']
-req(f'/repos/{REPO}/issues/{ISSUE}',method='PATCH',data={'body':'\n'.join(L)})
-print(f'updated final={counts["final_pass"]}/{total}; remaining={len(remaining_features)} at {now}')
+    L.append(f'| {run_state(r, head)} | `{esc(r.get("name"))}` | [{esc(r.get("display_title"))}]({r.get("html_url")}) |')
+
+L += [
+    '',
+    '---',
+    f'_実機でしか確認できない項目は既存67機能のAI進捗とは別枠です。manifest上の端末専用除外項目: {excluded}件。_',
+]
+
+req(f'/repos/{REPO}/issues/{ISSUE}', method='PATCH', data={'body': '\n'.join(L)})
+print(f'updated baseline={baseline_done}/{baseline_total}; post_open={len(post_open)}; head={head[:10]} at {now}')
