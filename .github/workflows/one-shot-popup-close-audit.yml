@@ -1,0 +1,33 @@
+name: One-shot Popup Close Audit
+
+on:
+  push:
+    branches: [dev_branch]
+    paths: ['.github/workflows/one-shot-popup-close-audit.yml']
+  workflow_dispatch:
+
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - name: Inventory dialogs and sheets
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          import re
+          for p in Path('lib').rglob('*.dart'):
+              s=p.read_text(encoding='utf-8')
+              hits=[]
+              for pat in ['showDialog<','showDialog(','showGeneralDialog','showModalBottomSheet','AlertDialog(','Dialog(']:
+                  if pat in s: hits.append(f'{pat}:{s.count(pat)}')
+              if hits:
+                  false=s.count('barrierDismissible: false')
+                  close=s.count('Icons.close')+s.count('Icons.close_rounded')
+                  print(f'POPUP_FILE {p} | {" ".join(hits)} | barrierFalse={false} | closeIcons={close}')
+                  lines=s.splitlines()
+                  for i,line in enumerate(lines,1):
+                      if 'barrierDismissible:' in line or 'Icons.close' in line or 'showDialog' in line or 'showModalBottomSheet' in line:
+                          print(f'  L{i}: {line.strip()[:180]}')
+          PY
