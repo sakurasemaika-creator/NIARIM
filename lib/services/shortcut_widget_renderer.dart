@@ -206,9 +206,13 @@ Future<ui.Image> renderShortcutWidgetImage({
 
   if (horizontal) {
     // アイコン｜文字（縦積み）を横に並べ、まとめてタイルの中央へ置く。
+    // **折り返した行の`TextPainter.width`は`maxWidth`そのもの**になるため、
+    // それを文字の幅として使うと（実際の字面より広いぶん）アイコンが左へ
+    // 押し出され、アイコンと文字の間に大きな隙間が空く。実際に描かれる
+    // 行の幅（`computeLineMetrics`）で測る。
     final textBlockWidth = textPainters.fold<double>(
       0,
-      (a, p) => math.max(a, p.width),
+      (a, p) => math.max(a, _inkWidth(p)),
     );
     final groupWidth =
         iconPainter.width + ShortcutWidgetDesign.gapAfterIcon + textBlockWidth;
@@ -250,6 +254,16 @@ Future<ui.Image> renderShortcutWidgetImage({
   );
   picture.dispose();
   return image;
+}
+
+/// [painter]が実際に描く行のうち、いちばん広い行の幅。
+///
+/// 折り返しが起きると`TextPainter.width`は`layout`へ渡した`maxWidth`を
+/// そのまま返すので、字面の幅を知りたいときはこちらを使う。
+double _inkWidth(TextPainter painter) {
+  final lines = painter.computeLineMetrics();
+  if (lines.isEmpty) return painter.width;
+  return lines.fold<double>(0, (a, l) => math.max(a, l.width));
 }
 
 TextPainter _painter(
