@@ -22,6 +22,8 @@ import 'package:niarim/services/project_service.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import 'helpers/first_use_tooltips.dart';
+
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
   final out = Directory('build/visual-reaudit/canvas-panels');
@@ -47,17 +49,7 @@ void main() {
     // 吹き出し自体は別のテストで検証しており、ここはパネルの見た目を
     // 撮るテストなので出さない状態を前提にする。
     SharedPreferences.setMockInitialValues({
-      'first_use_tooltips_seen': <String>[
-        'autofill_mark',
-        'bucket_tool',
-        'pen_subtool_stamp',
-        'pen_subtool_tone',
-        'pen_tool',
-        'quick_tool',
-        'ruler_tool',
-        'text_tool',
-        'timeline_preview_fullscreen',
-      ],
+      firstUseTooltipsSeenKey: kAllFirstUseTooltipKeys,
     });
     TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
         .setMockMethodCallHandler(pathProviderChannel, (call) async {

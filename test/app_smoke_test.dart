@@ -7,6 +7,8 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+
+import 'helpers/first_use_tooltips.dart';
 import 'package:niarim/app.dart';
 import 'package:niarim/app_bootstrap.dart';
 import 'package:niarim/engine/export_engine.dart';
@@ -107,7 +109,12 @@ void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
   setUp(() {
-    SharedPreferences.setMockInitialValues({});
+    // 初回吹き出しは画面全体に透明バリアを敷き、直後の操作を吸ってしまう。
+    // 吹き出し自体は`first_use_tooltip_gesture_test.dart`で検証するので、
+    // ここでは全て表示済み（＝2回目以降の利用者）として扱う。
+    SharedPreferences.setMockInitialValues({
+      firstUseTooltipsSeenKey: kAllFirstUseTooltipKeys,
+    });
     // appRouterはモジュールレベルのシングルトンのため、前のテストケースで
     // 遷移した先のルートが残ったままになる。各テストを必ず起動画面から
     // 始められるよう、テストごとに明示的にリセットする。

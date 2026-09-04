@@ -23,6 +23,8 @@ import 'package:niarim/services/project_service.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import 'helpers/first_use_tooltips.dart';
+
 /// アプリ中のダイアログ・ボトムシート・ポップアップメニューを、
 /// **実際に開いて1枚ずつPNGへ焼く**監査。
 ///
@@ -66,17 +68,7 @@ void main() {
     // 全キーを表示済みにしておく（キーは
     // `grep -rho "tooltipKey: '[^']*'" lib/` で洗い出せる）。
     SharedPreferences.setMockInitialValues({
-      'first_use_tooltips_seen': <String>[
-        'autofill_mark',
-        'bucket_tool',
-        'pen_subtool_stamp',
-        'pen_subtool_tone',
-        'pen_tool',
-        'quick_tool',
-        'ruler_tool',
-        'text_tool',
-        'timeline_preview_fullscreen',
-      ],
+      firstUseTooltipsSeenKey: kAllFirstUseTooltipKeys,
     });
     FilePicker.platform = _FakeFilePicker();
     final tempDir = Directory.systemTemp.createTempSync('niarim_dialog_audit_');

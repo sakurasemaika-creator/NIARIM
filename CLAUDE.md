@@ -38,7 +38,7 @@
    `test/helpers/color_channels.dart`の`.red8`/`.green8`/`.blue8`/
    `.alpha8`を使う。テスト内のデバッグ出力は`print`ではなく
    `debugPrint`を使う）
-3. `flutter test`（ベースライン：**660 tests**、全成功。うち大半は
+3. `flutter test`（ベースライン：**666 tests**、全成功。うち大半は
    `test/app_smoke_test.dart`の自律スモークテスト。詳細は後述）
 4. **コード変更後は`dart format lib test tool`をかける**。
    リポジトリ全体を一度フォーマッタに通してあるので（コミット
@@ -326,9 +326,32 @@ FONT_LICENSES.txt`への本文・著作権表示の追記、`license_screen.dart
   出ている間はどこをタップしても閉じられるよう`Positioned.fill`の
   `GestureDetector`をOverlayへ置いている。そのため、吹き出しが出た直後の
   操作はバリアに吸われて何も起きない。ツールバーを操作するテストでは
-  `SharedPreferences.setMockInitialValues({'first_use_tooltips_seen': [...]})`
-  で全キーを表示済みにしておくこと（キーは`grep -rho "tooltipKey: '[^']*'" lib/`
-  で洗い出せる）。
+  `SharedPreferences.setMockInitialValues({firstUseTooltipsSeenKey:
+kAllFirstUseTooltipKeys})`で全キーを表示済みにしておくこと（一覧は
+  `test/helpers/first_use_tooltips.dart`。lib配下の実際の`tooltipKey:`と
+  一致していることを`test/first_use_tooltip_keys_test.dart`が見張っている
+  ので、吹き出しを増やしたらこのファイルにも足す）。
+- **タップを観測したいだけの親を`GestureDetector`で作らない（アリーナに
+  参加してしまう）**：`GestureDetector`のタップ認識はジェスチャーアリーナへ
+  参加するため、タップを扱う相手とは必ずどちらか一方しか勝てない。
+  アリーナは「ヒットテスト経路の内側から順に追加され、先に入った方が
+  勝つ」ので、
+  **子がタップを扱う場合は子が勝ち（＝親の`onTap`が一度も呼ばれない）**、
+  **親がタップを扱う場合は自分が勝つ（＝親の機能が動かなくなる）**。
+  `FirstUseTooltip`が実際にこれで、`GestureDetector(behavior: translucent,
+onTap: ...)`だったために
+  （1）lib配下8箇所の初回吹き出しが**一度も表示されていなかった**、
+  （2）`TabBar`が各タブを自前の`InkWell`で包む＝親側なので、ペンサブ
+  ツールパネルの**トーン・スタンプのタブがタップで切り替わらなかった**、
+  という二通りの壊れ方を同時に起こしていた。子の邪魔をせずタップを
+  観測したいときは、アリーナに参加しない`Listener`でポインターを見て、
+  「移動量が`kTouchSlop`以内」「離すまでに`kLongPressTimeout`が経過して
+  いない」で判定すること。なお**長押しの判定に
+  `PointerEvent.timeStamp`を使ってはいけない**：ウィジェットテストでは
+  常に0のまま（`TestGesture.up`の既定値）なので、テスト上は必ず
+  「短いタップ」に見えて検証できない。`Timer`なら実機では実時間、
+  テストではFakeAsyncの時計に従うので両方で正しく判定できる。
+  検証は`test/first_use_tooltip_gesture_test.dart`。
 - **`ListView(children: [...])`は「遅延している」ように見えて半分しか遅延
   していない**：`SliverChildListDelegate`はElementの生成（＝実際の
   レイアウト・描画・`Image`のデコード）は画面内ぶんだけに絞るが、

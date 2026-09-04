@@ -1,4 +1,7 @@
+import 'dart:async';
+
 import 'package:niarim/services/theme_service.dart';
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../config/font_fallback.dart';
@@ -41,6 +44,16 @@ class FirstUseTooltip extends StatefulWidget {
 class _FirstUseTooltipState extends State<FirstUseTooltip> {
   final GlobalKey _anchorKey = GlobalKey();
   OverlayEntry? _entry;
+  // タップ判定用（Listenerでポインターを直接観測する。理由はbuild参照）。
+  int? _pointer;
+  Offset? _downPosition;
+  // 長押し判定はTimerで行う。PointerEvent.timeStampはウィジェットテストでは
+  // 常に0のままなので（TestGesture.upの既定値）、時刻の差分で長押しを
+  // 判定するとテスト上は必ず「短いタップ」に見えてしまい検証できない。
+  // Timerなら実機では実時間、テストではFakeAsyncの時計に従うため両方で
+  // 同じ判定になる。
+  Timer? _longPressTimer;
+  bool _longPressElapsed = false;
 
   void _maybeShow() {
     if (!mounted) return;
@@ -187,6 +200,12 @@ class _FirstUseTooltipState extends State<FirstUseTooltip> {
     overlayState.insert(_entry!);
   }
 
+  void _resetPointer() {
+    _pointer = null;
+    _longPressTimer?.cancel();
+    _longPressTimer = null;
+  }
+
   void _dismiss() {
     _entry?.remove();
     _entry = null;
@@ -197,22 +216,55 @@ class _FirstUseTooltipState extends State<FirstUseTooltip> {
 
   @override
   void dispose() {
+    _longPressTimer?.cancel();
     _entry?.remove();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    // translucentにすることで、この検出用GestureDetectorが子ウィジェット
-    // 自体のタップ・長押し等のジェスチャー認識を妨げない。
-    // onTapDown（押した瞬間に無条件で発火し、後から長押し/ドラッグに
-    // 負けてもキャンセルされない）ではなく onTap を使うのがポイント：
-    // onTapは同じジェスチャーアリーナ内の長押し認識に「負けた」場合は
-    // 呼ばれないため、「長押しで機能を開くボタンは、長押し操作時に
-    // チュートリアル自体を表示しない」という要件を満たせる。
-    return GestureDetector(
+    // **GestureDetectorを使ってはならない**（過去に使っていて機能が丸ごと
+    // 死んでいた）。GestureDetectorのタップ認識はジェスチャーアリーナへ
+    // 参加するため、子・親のタップ認識と必ずどちらか一方しか勝てない。
+    // アリーナは「ヒットテスト経路の内側から順に追加され、先に入った方が
+    // 勝つ」ため、
+    //   - 子がタップを扱う場合（IconButton・InkWell等）＝子が勝ち、
+    //     吹き出しは**一度も表示されない**
+    //   - 親がタップを扱う場合（TabBarは各タブをInkWellで包むので親側）＝
+    //     吹き出し側が勝ち、**タブが切り替わらなくなる**
+    // という二通りの壊れ方をする（実際に前者で8箇所の吹き出しが全滅し、
+    // 後者でペンサブツールパネルのトーン・スタンプタブがタップで
+    // 切り替わらなくなっていた）。
+    //
+    // そこでアリーナに参加しないListenerでポインターを観測する。
+    // Listenerはヒットテスト経路上の全員へ配送されるので、子のタップも
+    // 親のタップも一切妨げない。タップかどうかは
+    // 「移動量がkTouchSlop以内」「離すまでにkLongPressTimeoutが経過して
+    // いない」で判定する。後者の条件により、「長押しで機能を開くボタンは
+    // 長押し操作時にチュートリアルを出さない」という要件も従来どおり
+    // 満たせる。
+    return Listener(
       behavior: HitTestBehavior.translucent,
-      onTap: _maybeShow,
+      onPointerDown: (event) {
+        _pointer = event.pointer;
+        _downPosition = event.position;
+        _longPressElapsed = false;
+        _longPressTimer?.cancel();
+        _longPressTimer = Timer(kLongPressTimeout, () {
+          _longPressElapsed = true;
+        });
+      },
+      onPointerUp: (event) {
+        if (event.pointer != _pointer) return;
+        _resetPointer();
+        final down = _downPosition;
+        if (down == null || _longPressElapsed) return;
+        if ((event.position - down).distance > kTouchSlop) return;
+        _maybeShow();
+      },
+      onPointerCancel: (event) {
+        if (event.pointer == _pointer) _resetPointer();
+      },
       child: KeyedSubtree(key: _anchorKey, child: widget.child),
     );
   }
