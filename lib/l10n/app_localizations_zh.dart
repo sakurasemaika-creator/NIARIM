@@ -5920,6 +5920,23 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get brushSettingsEdgeJitterStrengthLabel => '渗漏强度';
+
+  @override
+  String get filterNameInkPool => '墨溜まり';
+
+  @override
+  String get filterInkPoolColor => '色';
+
+  @override
+  String get filterInkPoolRange => '範囲';
+
+  @override
+  String get filterInkPoolCenterWidth => '中央の太さ';
+
+  @override
+  String filterInkPoolLayerNameSuffix(String name) {
+    return '$name 墨溜まり';
+  }
 }
 
 /// The translations for Chinese, using the Han script (`zh_Hant`).

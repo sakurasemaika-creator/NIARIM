@@ -6166,4 +6166,21 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get brushSettingsEdgeJitterStrengthLabel => 'Jitter strength';
+
+  @override
+  String get filterNameInkPool => 'Ink Pooling';
+
+  @override
+  String get filterInkPoolColor => 'Color';
+
+  @override
+  String get filterInkPoolRange => 'Range';
+
+  @override
+  String get filterInkPoolCenterWidth => 'Center width';
+
+  @override
+  String filterInkPoolLayerNameSuffix(String name) {
+    return '$name Ink Pooling';
+  }
 }

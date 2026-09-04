@@ -5961,4 +5961,21 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get brushSettingsEdgeJitterStrengthLabel => '滲み強度';
+
+  @override
+  String get filterNameInkPool => '墨溜まり';
+
+  @override
+  String get filterInkPoolColor => '色';
+
+  @override
+  String get filterInkPoolRange => '範囲';
+
+  @override
+  String get filterInkPoolCenterWidth => '中央の太さ';
+
+  @override
+  String filterInkPoolLayerNameSuffix(String name) {
+    return '$name 墨溜まり';
+  }
 }

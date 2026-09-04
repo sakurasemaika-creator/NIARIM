@@ -147,6 +147,14 @@ class FilterService extends ChangeNotifier {
       name: '背景馴染ませ',
       kind: FilterKind.backgroundBlend,
     ),
+    FilterDef(
+      id: 'Filter0021',
+      name: '墨溜まり',
+      kind: FilterKind.inkPool,
+      inkPoolColor: 0xFF000000,
+      inkPoolRange: 12,
+      inkPoolCenterWidth: 6,
+    ),
   ];
 
   Future<void> init() async {
@@ -218,6 +226,9 @@ class FilterService extends ChangeNotifier {
     double? bgBlendDirection,
     double? bgBlendLength,
     double? bgBlendBlur,
+    int? inkPoolColor,
+    double? inkPoolRange,
+    double? inkPoolCenterWidth,
   }) {
     final idx = _filters.indexWhere((f) => f.id == id);
     if (idx < 0) return;
@@ -249,6 +260,9 @@ class FilterService extends ChangeNotifier {
       bgBlendDirection: bgBlendDirection,
       bgBlendLength: bgBlendLength,
       bgBlendBlur: bgBlendBlur,
+      inkPoolColor: inkPoolColor,
+      inkPoolRange: inkPoolRange,
+      inkPoolCenterWidth: inkPoolCenterWidth,
     );
     notifyListeners();
     _persist();

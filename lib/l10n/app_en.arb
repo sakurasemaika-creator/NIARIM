@@ -2604,5 +2604,17 @@
   "toolbarFingerSubtoolWarp": "Warp",
   "brushSettingsEdgeJitterTitle": "Edge jitter",
   "brushSettingsEdgeJitterSubtitle": "Slightly roughens the edge to mimic ink bleeding",
-  "brushSettingsEdgeJitterStrengthLabel": "Jitter strength"
+  "brushSettingsEdgeJitterStrengthLabel": "Jitter strength",
+  "filterNameInkPool": "Ink Pooling",
+  "filterInkPoolColor": "Color",
+  "filterInkPoolRange": "Range",
+  "filterInkPoolCenterWidth": "Center width",
+  "filterInkPoolLayerNameSuffix": "{name} Ink Pooling",
+  "@filterInkPoolLayerNameSuffix": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  }
 }

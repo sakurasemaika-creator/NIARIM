@@ -2870,5 +2870,17 @@
   "toolbarFingerSubtoolWarp": "歪み",
   "brushSettingsEdgeJitterTitle": "ふち滲み",
   "brushSettingsEdgeJitterSubtitle": "ふちをわずかにがたがたさせてインクの滲みを再現する",
-  "brushSettingsEdgeJitterStrengthLabel": "滲み強度"
+  "brushSettingsEdgeJitterStrengthLabel": "滲み強度",
+  "filterNameInkPool": "墨溜まり",
+  "filterInkPoolColor": "色",
+  "filterInkPoolRange": "範囲",
+  "filterInkPoolCenterWidth": "中央の太さ",
+  "filterInkPoolLayerNameSuffix": "{name} 墨溜まり",
+  "@filterInkPoolLayerNameSuffix": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  }
 }

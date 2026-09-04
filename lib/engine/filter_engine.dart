@@ -169,6 +169,16 @@ Uint8List applyDrawFilterInIsolate(
       filter.bgBlendLength,
       filter.bgBlendBlur,
     ),
+    // 墨溜まりの本適用は参照レイヤーを書き換えず、墨溜まり部分だけを
+    // 新規レイヤーへ描くため透明背景の出力レイヤーを返す。
+    FilterKind.inkPool => engine.applyInkPoolLayer(
+      data,
+      width,
+      height,
+      color: filter.inkPoolColor,
+      rangePx: filter.inkPoolRange,
+      centerWidthPx: filter.inkPoolCenterWidth,
+    ),
   };
 }
 
@@ -489,6 +499,17 @@ class FilterEngine {
                 0,
                 AuroraHologramPreset.values.length - 1,
               )],
+        ),
+        // 墨溜まり：param1=範囲(px)、param2=鋭角中央の太さ(px)、
+        // fadeColorスロットを色として共用する。演出フィルターでは
+        // レイヤー追加を行わず、フレーム合成結果へ非破壊で重ねる。
+        EffectFilterType.inkPool => applyInkPoolComposite(
+          result,
+          width,
+          height,
+          color: e.fadeColor.toARGB32(),
+          rangePx: e.param1,
+          centerWidthPx: e.param2,
         ),
       };
     }
@@ -1751,6 +1772,218 @@ class FilterEngine {
     return result;
   }
 
+  /// 墨溜まりフィルターの「効果レイヤー」だけを生成する。
+  ///
+  /// 線画の不透明画素（全面不透明画像では暗い画素）を線として二値化し、各線上の
+  /// 点から一定半径の円周を36方向サンプリングする。滑らかな1本線なら円周上の
+  /// 方向クラスタはほぼ180°離れた2方向になるが、交差・折れ点では90°以下の
+  /// 方向対が現れる。その点だけを墨溜まり中心として採用する。
+  ///
+  /// 採用した中心から[rangePx]以内の元線に沿って局所的な太線を描き、中心の
+  /// 太さを[centerWidthPx]、範囲端を1pxとして線形にテーパーさせる。返り値は
+  /// 透明背景＋墨溜まり色だけなので、描画フィルターでは参照レイヤーの直下へ
+  /// そのまま新規レイヤーとして置ける。
+  Uint8List applyInkPoolLayer(
+    Uint8List data,
+    int width,
+    int height, {
+    required int color,
+    required double rangePx,
+    required double centerWidthPx,
+  }) {
+    final result = Uint8List(data.length);
+    if (width <= 2 || height <= 2 || data.length < width * height * 4) {
+      return result;
+    }
+    final range = rangePx.round().clamp(1, 80);
+    final centerWidth = centerWidthPx.round().clamp(1, 60);
+    const alphaThreshold = 24;
+    final pixels = width * height;
+    var opaque = 0;
+    for (var i = 3; i < data.length; i += 4) {
+      if (data[i] > alphaThreshold) opaque++;
+    }
+    final mostlyOpaque = opaque / pixels > 0.85;
+    final mask = Uint8List(pixels);
+    for (var p = 0; p < pixels; p++) {
+      final i = p * 4;
+      final a = data[i + 3];
+      if (a <= alphaThreshold) continue;
+      if (!mostlyOpaque) {
+        mask[p] = 1;
+      } else {
+        final lum = data[i] * 0.299 + data[i + 1] * 0.587 + data[i + 2] * 0.114;
+        if (lum < 210) mask[p] = 1;
+      }
+    }
+
+    const bins = 36;
+    final sampleRadius = math.max(4, math.min(12, centerWidth + 2));
+    if (width <= sampleRadius * 2 || height <= sampleRadius * 2) return result;
+
+    List<double> clusterCenters(List<bool> hits) {
+      if (!hits.any((v) => v) || hits.every((v) => v)) return const [];
+      var start = hits.indexWhere((v) => !v);
+      final centers = <double>[];
+      var inRun = false;
+      var sx = 0.0, sy = 0.0;
+      for (var step = 1; step <= bins; step++) {
+        final b = (start + step) % bins;
+        if (hits[b]) {
+          final a = 2 * math.pi * b / bins;
+          sx += math.cos(a);
+          sy += math.sin(a);
+          inRun = true;
+        } else if (inRun) {
+          centers.add(math.atan2(sy, sx));
+          sx = 0;
+          sy = 0;
+          inRun = false;
+        }
+      }
+      if (inRun) centers.add(math.atan2(sy, sx));
+      return centers;
+    }
+
+    final candidates = <({int x, int y, double score})>[];
+    for (var y = sampleRadius; y < height - sampleRadius; y++) {
+      for (var x = sampleRadius; x < width - sampleRadius; x++) {
+        if (mask[y * width + x] == 0) continue;
+        final hits = List<bool>.filled(bins, false);
+        for (var b = 0; b < bins; b++) {
+          final a = 2 * math.pi * b / bins;
+          final sx = (x + math.cos(a) * sampleRadius).round();
+          final sy = (y + math.sin(a) * sampleRadius).round();
+          // 1px線のアンチエイリアスや丸め誤差を吸収するため、サンプル点の
+          // 3x3近傍に線があればその方向を「枝あり」とする。
+          var hit = false;
+          for (var oy = -1; oy <= 1 && !hit; oy++) {
+            for (var ox = -1; ox <= 1; ox++) {
+              final nx = sx + ox, ny = sy + oy;
+              if (nx >= 0 &&
+                  nx < width &&
+                  ny >= 0 &&
+                  ny < height &&
+                  mask[ny * width + nx] != 0) {
+                hit = true;
+                break;
+              }
+            }
+          }
+          hits[b] = hit;
+        }
+        final centers = clusterCenters(hits);
+        if (centers.length < 2) continue;
+        var minSep = math.pi;
+        for (var i = 0; i < centers.length; i++) {
+          for (var j = i + 1; j < centers.length; j++) {
+            var d = (centers[i] - centers[j]).abs();
+            if (d > math.pi) d = 2 * math.pi - d;
+            if (d < minSep) minSep = d;
+          }
+        }
+        // 約5°の許容を持たせ、90°ジャストのラスタ線も確実に拾う。
+        if (minSep <= math.pi / 2 + 0.09) {
+          candidates.add((x: x, y: y, score: math.pi / 2 - minSep));
+        }
+      }
+    }
+    if (candidates.isEmpty) return result;
+    candidates.sort((a, b) => b.score.compareTo(a.score));
+    final seeds = <({int x, int y})>[];
+    final suppress = math.max(2, centerWidth ~/ 2);
+    final suppress2 = suppress * suppress;
+    for (final c in candidates) {
+      var near = false;
+      for (final s in seeds) {
+        final dx = c.x - s.x, dy = c.y - s.y;
+        if (dx * dx + dy * dy <= suppress2) {
+          near = true;
+          break;
+        }
+      }
+      if (!near) seeds.add((x: c.x, y: c.y));
+    }
+
+    final ca = (color >> 24) & 0xFF;
+    final cr = (color >> 16) & 0xFF;
+    final cg = (color >> 8) & 0xFF;
+    final cb = color & 0xFF;
+    void put(int x, int y) {
+      if (x < 0 || x >= width || y < 0 || y >= height) return;
+      final i = (y * width + x) * 4;
+      result[i] = cr;
+      result[i + 1] = cg;
+      result[i + 2] = cb;
+      result[i + 3] = ca;
+    }
+
+    for (final s in seeds) {
+      final minX = math.max(0, s.x - range);
+      final maxX = math.min(width - 1, s.x + range);
+      final minY = math.max(0, s.y - range);
+      final maxY = math.min(height - 1, s.y + range);
+      for (var y = minY; y <= maxY; y++) {
+        for (var x = minX; x <= maxX; x++) {
+          if (mask[y * width + x] == 0) continue;
+          final dx = x - s.x, dy = y - s.y;
+          final d = math.sqrt((dx * dx + dy * dy).toDouble());
+          if (d > range) continue;
+          final t = (d / range).clamp(0.0, 1.0);
+          final thickness = 1.0 + (centerWidth - 1) * (1.0 - t);
+          final radius = math.max(0.0, (thickness - 1.0) / 2.0);
+          final rr = math.max(0, radius.ceil());
+          for (var oy = -rr; oy <= rr; oy++) {
+            for (var ox = -rr; ox <= rr; ox++) {
+              if (ox * ox + oy * oy <= radius * radius + 0.35) {
+                put(x + ox, y + oy);
+              }
+            }
+          }
+          if (rr == 0) put(x, y);
+        }
+      }
+    }
+    return result;
+  }
+
+  /// 演出フィルター向け墨溜まり。上の効果レイヤーをフレーム合成結果へ
+  /// アルファ合成する。描画フィルター版と違いプロジェクトのレイヤー構造は
+  /// 変更せず、指定フレーム範囲でだけ非破壊に見える。
+  Uint8List applyInkPoolComposite(
+    Uint8List data,
+    int width,
+    int height, {
+    required int color,
+    required double rangePx,
+    required double centerWidthPx,
+  }) {
+    final ink = applyInkPoolLayer(
+      data,
+      width,
+      height,
+      color: color,
+      rangePx: rangePx,
+      centerWidthPx: centerWidthPx,
+    );
+    final out = Uint8List.fromList(data);
+    for (var i = 0; i < out.length; i += 4) {
+      final a = ink[i + 3] / 255.0;
+      if (a <= 0) continue;
+      out[i] = (ink[i] * a + out[i] * (1 - a)).round().clamp(0, 255);
+      out[i + 1] = (ink[i + 1] * a + out[i + 1] * (1 - a)).round().clamp(
+        0,
+        255,
+      );
+      out[i + 2] = (ink[i + 2] * a + out[i + 2] * (1 - a)).round().clamp(
+        0,
+        255,
+      );
+      out[i + 3] = math.max(out[i + 3], ink[i + 3]);
+    }
+    return out;
+  }
+
   Uint8List applyLevels(
     Uint8List data,
     int width,
@@ -1921,6 +2154,7 @@ enum EffectFilterType {
   fisheye,
   pixelate,
   auroraHologram,
+  inkPool,
 }
 
 enum DrawFilterType { animeBackground }

@@ -10948,6 +10948,36 @@ abstract class AppLocalizations {
   /// In ja, this message translates to:
   /// **'滲み強度'**
   String get brushSettingsEdgeJitterStrengthLabel;
+
+  /// No description provided for @filterNameInkPool.
+  ///
+  /// In ja, this message translates to:
+  /// **'墨溜まり'**
+  String get filterNameInkPool;
+
+  /// No description provided for @filterInkPoolColor.
+  ///
+  /// In ja, this message translates to:
+  /// **'色'**
+  String get filterInkPoolColor;
+
+  /// No description provided for @filterInkPoolRange.
+  ///
+  /// In ja, this message translates to:
+  /// **'範囲'**
+  String get filterInkPoolRange;
+
+  /// No description provided for @filterInkPoolCenterWidth.
+  ///
+  /// In ja, this message translates to:
+  /// **'中央の太さ'**
+  String get filterInkPoolCenterWidth;
+
+  /// No description provided for @filterInkPoolLayerNameSuffix.
+  ///
+  /// In ja, this message translates to:
+  /// **'{name} 墨溜まり'**
+  String filterInkPoolLayerNameSuffix(String name);
 }
 
 class _AppLocalizationsDelegate
