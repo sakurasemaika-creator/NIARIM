@@ -3222,8 +3222,12 @@ class _TimelineScreenState extends State<TimelineScreen> {
 
   Widget _buildTrackLabel(IconData icon, String label) {
     return Container(
-      width: 56,
-      padding: const EdgeInsets.symmetric(horizontal: 4),
+      // 56dpだとアイコン12＋間隔2＋左右の余白8を引いて文字に34dpしか
+      // 残らず、9ptの「フレーム」（約36px）が「フレ…」に切れていた。
+      // 実キャプチャ（build/all-route-screenshots/05_timeline.png）で
+      // 発覚。`test/timeline_track_label_test.dart`が再発を見張る。
+      width: 64,
+      padding: const EdgeInsets.symmetric(horizontal: 3),
       child: Row(
         children: [
           Icon(

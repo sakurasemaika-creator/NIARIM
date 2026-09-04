@@ -15,6 +15,8 @@ import 'package:niarim/services/project_service.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import 'helpers/load_app_fonts.dart';
+
 class _FakeFilePicker extends FilePicker {
   @override
   Future<FilePickerResult?> pickFiles({
@@ -54,45 +56,7 @@ void main() {
     addTearDown(tester.view.resetPhysicalSize);
     addTearDown(tester.view.resetDevicePixelRatio);
 
-    Future<void> loadFonts() async {
-      await tester.runAsync(() async {
-        final manifest = await AssetManifest.loadFromAssetBundle(rootBundle);
-        final assets = manifest.listAssets();
-
-        Future<void> loadFamily(String family, String needle) async {
-          final matches = assets.where((a) => a.contains(needle)).toList();
-          if (matches.isEmpty) return;
-          final loader = FontLoader(family)
-            ..addFont(rootBundle.load(matches.first));
-          await loader.load();
-        }
-
-        Future<void> loadSdkMaterialIcons() async {
-          final flutterRoot = Platform.environment['FLUTTER_ROOT'];
-          if (flutterRoot == null) return;
-          final file = File(
-            '$flutterRoot/bin/cache/artifacts/material_fonts/MaterialIcons-Regular.otf',
-          );
-          if (!file.existsSync()) return;
-          final data = ByteData.sublistView(
-            Uint8List.fromList(await file.readAsBytes()),
-          );
-          final loader = FontLoader('MaterialIcons')
-            ..addFont(Future<ByteData>.value(data));
-          await loader.load();
-        }
-
-        await Future.wait([
-          loadFamily('HakkouMincho', 'assets/fonts/HakkouMincho.ttf'),
-          loadFamily('Kuramubon', 'assets/fonts/Kuramubon.otf'),
-          loadFamily('NotoSerifJP', 'assets/fonts/NotoSerifJP.ttf'),
-          loadFamily('FontAwesomeSolid', 'fa-solid-900.ttf'),
-          loadFamily('FontAwesomeRegular', 'fa-regular-400.ttf'),
-          loadFamily('FontAwesomeBrands', 'fa-brands-400.ttf'),
-          loadSdkMaterialIcons(),
-        ]);
-      });
-    }
+    Future<void> loadFonts() => loadAppFonts(tester);
 
     /// 画面がまだ非同期の準備中かどうか。
     ///
@@ -147,6 +111,15 @@ void main() {
 
     Future<void> capture(String name) async {
       await settleRoute();
+      // 読み込み中（ぐるぐる）のまま撮ってしまうと、その画面は
+      // **一度も目視監査されない**（容量削減画面が実際にそうなっていた）。
+      // スピナーが消えるまで数回だけ待ってから撮る。ディスク走査などは
+      // 本物の非同期処理なので、待ちは必ずrunAsyncの中で行うこと
+      // （FakeAsyncの下ではpumpを何回回しても完了しない）。
+      for (var i = 0; i < 12; i++) {
+        if (find.byType(CircularProgressIndicator).evaluate().isEmpty) break;
+        await settleRoute();
+      }
       final exception = tester.takeException();
       if (exception != null) failures.add('$name: $exception');
       final boundary =

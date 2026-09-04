@@ -18,6 +18,38 @@ import '../../config/font_fallback.dart';
 /// グラフで可視化し、キャッシュ削除・未使用素材の一括削除（全プロジェクト
 /// 横断）・ゴミ箱を空にする・プロジェクト整理（作品一覧への案内）・
 /// 全データ削除（初期化）の各操作を提供する。
+/// テーマから、6分類ぶんの**互いに区別できる**色を作る。
+///
+/// 以前は`Theme.of(context).colorScheme`と`ThemeService.activeColorScheme`
+/// の両方から色を取っていたが、この2つは同じインスタンス（`themeData`の
+/// getterが代入している）なので、6色のうち2組が**まったく同じ色**に
+/// なっていた。実際に「プロジェクトデータ」と「キャッシュ」が同じ色で
+/// 描かれ、円グラフも凡例もどちらがどちらか分からなかった
+/// （`build/all-route-screenshots/32_storage.png`で発覚）。
+///
+/// さらにこのアプリのテーマは**primaryとsecondaryが同じ色**で、
+/// `ColorScheme`の役割をそのまま並べても区別できる6色にはならない。
+/// そこでアクセント色を起点に、色相を少しずつずらしつつ明度を等間隔に
+/// 振って作る。同系色のまま必ず見分けが付き、テーマを変えても
+/// 配色から浮かない。区別できることは
+/// `test/storage_chart_colors_test.dart`が組み込み28テーマ全てで検証する。
+List<Color> sliceColorsOf(ColorScheme scheme) {
+  final base = HSLColor.fromColor(scheme.primary);
+  const hueOffsets = <double>[0, 18, -18, 36, -36, 54];
+  return [
+    for (var i = 0; i < hueOffsets.length; i++)
+      base
+          .withHue((base.hue + hueOffsets[i] + 360) % 360)
+          // 明るい段ほど彩度を落とす。明度だけ上げて彩度を残すと、
+          // 淡いテーマの中に蛍光色のような1枚が混ざって浮く。
+          .withSaturation((base.saturation * (1.0 - 0.11 * i)).clamp(0.0, 1.0))
+          // 明度は0.085刻み。1段ぶんでRGBが20以上動くので、色相・彩度が
+          // 近いテーマでも必ず区別できる。
+          .withLightness(0.36 + 0.085 * i)
+          .toColor(),
+  ];
+}
+
 class StorageScreen extends StatefulWidget {
   const StorageScreen({super.key});
 
@@ -147,14 +179,16 @@ class _StorageScreenState extends State<StorageScreen> {
     StorageBreakdown breakdown,
   ) {
     final scheme = Theme.of(context).colorScheme;
-    final colors = [
-      scheme.primary,
-      scheme.secondary,
-      scheme.tertiary,
-      scheme.error,
-      ThemeService.activeColorScheme.secondary,
-      ThemeService.activeColorScheme.primary,
-    ];
+    // 6分類ぶんの**必ず違う色**を作る。
+    // 以前は5番目・6番目に`ThemeService.activeColorScheme`の
+    // secondary/primaryを使っていたが、これは`Theme.of(context)
+    // .colorScheme`と同一のインスタンス（`themeData`が代入している）
+    // なので、2番目・1番目と**まったく同じ色**になっていた。
+    // 実際に「プロジェクトデータ」と「キャッシュ」が同じ色で描かれ、
+    // 円グラフも凡例もどちらがどちらか分からない状態だった
+    // （build/all-route-screenshots/32_storage.png）。
+    // 5番目以降は基本4色の色相を回して作る。
+    final colors = sliceColorsOf(scheme);
     final entries = [
       (StorageCategory.materials, l10n.storageCategoryMaterials),
       (StorageCategory.projectData, l10n.storageCategoryProjectData),

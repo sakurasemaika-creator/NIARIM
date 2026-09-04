@@ -24,6 +24,7 @@ import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'helpers/first_use_tooltips.dart';
+import 'helpers/load_app_fonts.dart';
 
 /// アプリ中のダイアログ・ボトムシート・ポップアップメニューを、
 /// **実際に開いて1枚ずつPNGへ焼く**監査。
@@ -86,45 +87,7 @@ void main() {
     addTearDown(tester.view.resetPhysicalSize);
     addTearDown(tester.view.resetDevicePixelRatio);
 
-    Future<void> loadFonts() async {
-      await tester.runAsync(() async {
-        final manifest = await AssetManifest.loadFromAssetBundle(rootBundle);
-        final assets = manifest.listAssets();
-        Future<void> loadFamily(String family, String needle) async {
-          final matches = assets.where((a) => a.contains(needle)).toList();
-          if (matches.isEmpty) return;
-          final loader = FontLoader(family)
-            ..addFont(rootBundle.load(matches.first));
-          await loader.load();
-        }
-
-        Future<void> loadSdkMaterialIcons() async {
-          final flutterRoot = Platform.environment['FLUTTER_ROOT'];
-          if (flutterRoot == null) return;
-          final file = File(
-            '$flutterRoot/bin/cache/artifacts/material_fonts/'
-            'MaterialIcons-Regular.otf',
-          );
-          if (!file.existsSync()) return;
-          final data = ByteData.sublistView(
-            Uint8List.fromList(await file.readAsBytes()),
-          );
-          final loader = FontLoader('MaterialIcons')
-            ..addFont(Future<ByteData>.value(data));
-          await loader.load();
-        }
-
-        await Future.wait([
-          loadFamily('HakkouMincho', 'assets/fonts/HakkouMincho.ttf'),
-          loadFamily('Kuramubon', 'assets/fonts/Kuramubon.otf'),
-          loadFamily('NotoSerifJP', 'assets/fonts/NotoSerifJP.ttf'),
-          loadFamily('FontAwesomeSolid', 'fa-solid-900.ttf'),
-          loadFamily('FontAwesomeRegular', 'fa-regular-400.ttf'),
-          loadFamily('FontAwesomeBrands', 'fa-brands-400.ttf'),
-          loadSdkMaterialIcons(),
-        ]);
-      });
-    }
+    Future<void> loadFonts() => loadAppFonts(tester);
 
     Future<void> settle({int rounds = 6}) async {
       for (var i = 0; i < rounds; i++) {

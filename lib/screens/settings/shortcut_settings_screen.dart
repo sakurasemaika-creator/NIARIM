@@ -17,6 +17,37 @@ import '../../widgets/scrollable_sheet_body.dart';
 /// ツール選択（早替えツールと同じ粒度：ツール＋ブラシ＋太さ）と、
 /// Undo/Redoなどの主要操作の両方を、キー＋修飾キーの組み合わせへ
 /// 割り当てる。キャンバス・タイムライン両モードで共通の設定。
+/// 主要操作コマンドの表示名（表示言語に追従する）。
+///
+/// 既定のショートカット（Undo/Redo/全選択/コピー/切り取り/貼り付け）は、
+/// 初回起動時に英語のラベル（'Undo'等）を保存してしまうため、そのまま
+/// 表示すると**日本語UIの中に英語だけが並ぶ**
+/// （`build/all-route-screenshots/21_settings_shortcuts.png`で発覚）。
+/// 一覧では、既定のものはこの表の名前で表示する。
+Map<ShortcutCommand, String> shortcutCommandLabels(AppLocalizations l10n) => {
+  ShortcutCommand.undo: l10n.shortcutCommandUndo,
+  ShortcutCommand.redo: l10n.shortcutCommandRedo,
+  ShortcutCommand.toggleLayerPanel: l10n.shortcutCommandToggleLayerPanel,
+  ShortcutCommand.playPause: l10n.shortcutCommandPlayPause,
+  ShortcutCommand.previousFrame: l10n.shortcutCommandPreviousFrame,
+  ShortcutCommand.nextFrame: l10n.shortcutCommandNextFrame,
+  ShortcutCommand.selectAll: l10n.shortcutCommandSelectAll,
+  ShortcutCommand.copy: l10n.shortcutCommandCopy,
+  ShortcutCommand.cut: l10n.shortcutCommandCut,
+  ShortcutCommand.paste: l10n.shortcutCommandPaste,
+};
+
+/// 一覧に出すショートカット名。既定のもの（idが`default_`で始まる）は
+/// 保存済みの英語ラベルではなく、表示言語の名前を使う。
+/// 利用者が自分で追加したものは、付けた名前をそのまま出す。
+String shortcutDisplayLabel(AppLocalizations l10n, ShortcutBinding binding) {
+  final command = binding.command;
+  if (command == null || !binding.id.startsWith('default_')) {
+    return binding.label;
+  }
+  return shortcutCommandLabels(l10n)[command] ?? binding.label;
+}
+
 class ShortcutSettingsScreen extends StatelessWidget {
   const ShortcutSettingsScreen({super.key});
 
@@ -67,7 +98,7 @@ class ShortcutSettingsScreen extends StatelessWidget {
                           child: ListTile(
                             leading: _keyChip(context, b.comboLabel),
                             title: Text(
-                              b.label,
+                              shortcutDisplayLabel(l10n, b),
                               style: const TextStyle(
                                 fontFamily: 'Kuramubon',
                                 fontFamilyFallback: kHeadingFontFallback,
@@ -79,7 +110,7 @@ class ShortcutSettingsScreen extends StatelessWidget {
                               onPressed: () async {
                                 if (!await confirmDelete(
                                   context,
-                                  itemName: b.label,
+                                  itemName: shortcutDisplayLabel(l10n, b),
                                 )) {
                                   return;
                                 }
@@ -348,18 +379,7 @@ class ShortcutSettingsScreen extends StatelessWidget {
     _CapturedKey captured,
   ) {
     final l10n = AppLocalizations.of(context)!;
-    final commands = <ShortcutCommand, String>{
-      ShortcutCommand.undo: l10n.shortcutCommandUndo,
-      ShortcutCommand.redo: l10n.shortcutCommandRedo,
-      ShortcutCommand.toggleLayerPanel: l10n.shortcutCommandToggleLayerPanel,
-      ShortcutCommand.playPause: l10n.shortcutCommandPlayPause,
-      ShortcutCommand.previousFrame: l10n.shortcutCommandPreviousFrame,
-      ShortcutCommand.nextFrame: l10n.shortcutCommandNextFrame,
-      ShortcutCommand.selectAll: l10n.shortcutCommandSelectAll,
-      ShortcutCommand.copy: l10n.shortcutCommandCopy,
-      ShortcutCommand.cut: l10n.shortcutCommandCut,
-      ShortcutCommand.paste: l10n.shortcutCommandPaste,
-    };
+    final commands = shortcutCommandLabels(l10n);
     showModalBottomSheet(
       context: context,
       builder: (ctx) => ScrollableSheetBody(
