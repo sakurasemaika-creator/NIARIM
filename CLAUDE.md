@@ -38,7 +38,7 @@
    `test/helpers/color_channels.dart`の`.red8`/`.green8`/`.blue8`/
    `.alpha8`を使う。テスト内のデバッグ出力は`print`ではなく
    `debugPrint`を使う）
-3. `flutter test`（ベースライン：**666 tests**、全成功。うち大半は
+3. `flutter test`（ベースライン：**671 tests**、全成功。うち大半は
    `test/app_smoke_test.dart`の自律スモークテスト。詳細は後述）
 4. **コード変更後は`dart format lib test tool`をかける**。
    リポジトリ全体を一度フォーマッタに通してあるので（コミット
@@ -331,6 +331,20 @@ kAllFirstUseTooltipKeys})`で全キーを表示済みにしておくこと（一
   `test/helpers/first_use_tooltips.dart`。lib配下の実際の`tooltipKey:`と
   一致していることを`test/first_use_tooltip_keys_test.dart`が見張っている
   ので、吹き出しを増やしたらこのファイルにも足す）。
+- **`AlertDialog`の`icon:`スロットを「右上の×」置き場に使わない**：
+  `icon`が非nullだと、Flutterは**タイトルを強制的に中央寄せ**にする
+  （`dialog.dart`の
+  `textAlign: icon == null ? TextAlign.start : TextAlign.center`）。
+  ×だけのつもりで入れると、そのダイアログだけタイトルが中央寄せになり
+  他と不揃いになる。×は`title: Row(children: [Expanded(child: ...),
+IconButton(...)])`のようにタイトル行の右端へ置くこと。
+  あわせて、閉じるボタンを取り除いた跡の**空の`actions: []`は必ず消す**
+  （`AlertDialog`は空でもアクション領域ぶんの余白を描くため、下部に
+  無駄な空白が出る）。どちらも`test/popup_close_affordance_test.dart`が
+  ソースを走査して見張っている。
+  **画像の上に重なる×**（プレミアム誘導バナー等）は、絵柄しだいで
+  ほとんど見えなくなるため、`surface`/`onSurface`の組み合わせの下地を
+  必ず敷くこと。
 - **タップを観測したいだけの親を`GestureDetector`で作らない（アリーナに
   参加してしまう）**：`GestureDetector`のタップ認識はジェスチャーアリーナへ
   参加するため、タップを扱う相手とは必ずどちらか一方しか勝てない。

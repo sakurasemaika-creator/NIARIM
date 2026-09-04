@@ -143,17 +143,17 @@ class _TransferScreenState extends State<TransferScreen> {
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(14),
                           ),
-                          color: Theme.of(context)
-                              .colorScheme
-                              .surfaceContainerLow,
+                          color: Theme.of(
+                            context,
+                          ).colorScheme.surfaceContainerLow,
                           child: Padding(
                             padding: const EdgeInsets.all(16),
                             child: Text(
                               l10n.transferProjectsEmpty,
                               style: TextStyle(
-                                color: Theme.of(context)
-                                    .colorScheme
-                                    .onSurfaceVariant,
+                                color: Theme.of(
+                                  context,
+                                ).colorScheme.onSurfaceVariant,
                               ),
                             ),
                           ),
@@ -171,9 +171,9 @@ class _TransferScreenState extends State<TransferScreen> {
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(14),
                         ),
-                        color: Theme.of(context)
-                            .colorScheme
-                            .surfaceContainerLow,
+                        color: Theme.of(
+                          context,
+                        ).colorScheme.surfaceContainerLow,
                         child: Column(
                           children: [
                             for (final p in projects) ...[

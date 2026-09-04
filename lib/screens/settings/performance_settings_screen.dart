@@ -177,9 +177,9 @@ class _PerformanceSettingsScreenState extends State<PerformanceSettingsScreen> {
                                   vertical: 2,
                                 ),
                                 decoration: BoxDecoration(
-                                  color: Theme.of(context)
-                                      .colorScheme
-                                      .primaryContainer,
+                                  color: Theme.of(
+                                    context,
+                                  ).colorScheme.primaryContainer,
                                   borderRadius: BorderRadius.circular(12),
                                 ),
                                 child: Text(
@@ -189,9 +189,9 @@ class _PerformanceSettingsScreenState extends State<PerformanceSettingsScreen> {
                                     fontWeight: FontWeight.bold,
                                     fontFamily: 'Kuramubon',
                                     fontFamilyFallback: kHeadingFontFallback,
-                                    color: Theme.of(context)
-                                        .colorScheme
-                                        .onPrimaryContainer,
+                                    color: Theme.of(
+                                      context,
+                                    ).colorScheme.onPrimaryContainer,
                                   ),
                                 ),
                               ),
@@ -443,19 +443,23 @@ class _PerformanceSettingsScreenState extends State<PerformanceSettingsScreen> {
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
-        // popup-standard-close: compact top-right close affordance.
-        iconPadding: const EdgeInsets.fromLTRB(0, 4, 4, 0),
-        icon: Align(
-          alignment: Alignment.centerRight,
-          child: IconButton(
-            visualDensity: VisualDensity.compact,
-            iconSize: 18,
-            tooltip: MaterialLocalizations.of(context).closeButtonTooltip,
-            onPressed: () => Navigator.of(context, rootNavigator: true).pop(),
-            icon: const Icon(Icons.close),
-          ),
+        // popup-standard-close: タイトル行の右端へ寄せた閉じるボタン。
+        // AlertDialogの`icon:`スロットへ入れると、Flutterが
+        // タイトルを強制的に中央寄せにするため（dialog.dartの
+        // `textAlign: icon == null ? TextAlign.start : TextAlign.center`）、
+        // 他のダイアログと不揃いになる。タイトル行へ直接置くこと。
+        title: Row(
+          children: [
+            Expanded(child: Text(l10n.perfSettingsUndoLimitTitle)),
+            IconButton(
+              visualDensity: VisualDensity.compact,
+              iconSize: 18,
+              tooltip: MaterialLocalizations.of(context).closeButtonTooltip,
+              onPressed: () => Navigator.of(context, rootNavigator: true).pop(),
+              icon: const Icon(Icons.close),
+            ),
+          ],
         ),
-        title: Text(l10n.perfSettingsUndoLimitTitle),
         // 選択状態と変更通知はRadioGroupがまとめて持つ
         // （各ラジオのgroupValue/onChangedはFlutter 3.32で非推奨）。
         content: RadioGroup<int>(
@@ -478,7 +482,6 @@ class _PerformanceSettingsScreenState extends State<PerformanceSettingsScreen> {
                 .toList(),
           ),
         ),
-        actions: [],
       ),
     );
   }
@@ -497,19 +500,23 @@ class _PerformanceSettingsScreenState extends State<PerformanceSettingsScreen> {
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
-        // popup-standard-close: compact top-right close affordance.
-        iconPadding: const EdgeInsets.fromLTRB(0, 4, 4, 0),
-        icon: Align(
-          alignment: Alignment.centerRight,
-          child: IconButton(
-            visualDensity: VisualDensity.compact,
-            iconSize: 18,
-            tooltip: MaterialLocalizations.of(context).closeButtonTooltip,
-            onPressed: () => Navigator.of(context, rootNavigator: true).pop(),
-            icon: const Icon(Icons.close),
-          ),
+        // popup-standard-close: タイトル行の右端へ寄せた閉じるボタン。
+        // AlertDialogの`icon:`スロットへ入れると、Flutterが
+        // タイトルを強制的に中央寄せにするため（dialog.dartの
+        // `textAlign: icon == null ? TextAlign.start : TextAlign.center`）、
+        // 他のダイアログと不揃いになる。タイトル行へ直接置くこと。
+        title: Row(
+          children: [
+            Expanded(child: Text(l10n.perfSettingsTrashAutoDeleteTitle)),
+            IconButton(
+              visualDensity: VisualDensity.compact,
+              iconSize: 18,
+              tooltip: MaterialLocalizations.of(context).closeButtonTooltip,
+              onPressed: () => Navigator.of(context, rootNavigator: true).pop(),
+              icon: const Icon(Icons.close),
+            ),
+          ],
         ),
-        title: Text(l10n.perfSettingsTrashAutoDeleteTitle),
         // 選択状態と変更通知はRadioGroupがまとめて持つ
         // （各ラジオのgroupValue/onChangedはFlutter 3.32で非推奨）。
         content: RadioGroup<int>(
@@ -529,7 +536,6 @@ class _PerformanceSettingsScreenState extends State<PerformanceSettingsScreen> {
                 .toList(),
           ),
         ),
-        actions: [],
       ),
     );
   }

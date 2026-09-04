@@ -144,15 +144,29 @@ class _PremiumBannerDialog extends StatelessWidget {
               ),
             ],
           ),
+          // このダイアログの×は**バナー画像の上**に重なる。素のIconButtonだと
+          // 画像の絵柄しだいでほとんど見えなくなる（実際に、画像が読めない
+          // ときのプレースホルダー上でほぼ判別できない状態だった）。
+          // 画像に左右されないよう、surface/onSurfaceの組み合わせの丸い
+          // 下地を必ず敷く。
           Positioned(
             right: 4,
             top: 4,
-            child: IconButton(
-              visualDensity: VisualDensity.compact,
-              iconSize: 18,
-              tooltip: MaterialLocalizations.of(context).closeButtonTooltip,
-              onPressed: onClose,
-              icon: const Icon(Icons.close),
+            child: DecoratedBox(
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: ThemeService.activeColorScheme.surface.withValues(
+                  alpha: 0.85,
+                ),
+              ),
+              child: IconButton(
+                visualDensity: VisualDensity.compact,
+                iconSize: 18,
+                color: ThemeService.activeColorScheme.onSurface,
+                tooltip: MaterialLocalizations.of(context).closeButtonTooltip,
+                onPressed: onClose,
+                icon: const Icon(Icons.close),
+              ),
             ),
           ),
         ],

@@ -2075,7 +2075,12 @@ void main() {
     expect(find.byType(AlertDialog), findsOneWidget);
 
     // ダイアログを閉じる。
-    await tester.tap(find.widgetWithText(TextButton, '閉じる'));
+    await tester.tap(
+      find.descendant(
+        of: find.byType(AlertDialog),
+        matching: find.byIcon(Icons.close),
+      ),
+    );
     await tester.pump(const Duration(milliseconds: 300));
     expect(tester.takeException(), isNull, reason: 'フォロワー一覧ダイアログを閉じる操作で例外');
     expect(find.byType(AlertDialog), findsNothing);
@@ -2086,7 +2091,12 @@ void main() {
     expect(tester.takeException(), isNull, reason: 'フォロー中一覧ダイアログ表示で例外');
     expect(find.byType(AlertDialog), findsOneWidget);
 
-    await tester.tap(find.widgetWithText(TextButton, '閉じる'));
+    await tester.tap(
+      find.descendant(
+        of: find.byType(AlertDialog),
+        matching: find.byIcon(Icons.close),
+      ),
+    );
     await tester.pump(const Duration(milliseconds: 300));
     expect(tester.takeException(), isNull, reason: 'フォロー中一覧ダイアログを閉じる操作で例外');
     expect(find.byType(AlertDialog), findsNothing);

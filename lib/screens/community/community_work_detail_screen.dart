@@ -54,8 +54,9 @@ class _CommunityWorkDetailScreenState extends State<CommunityWorkDetailScreen> {
   }
 
   void _showComingSoonSnackbar(String message) {
-    ScaffoldMessenger.of(context)
-        .showSnackBar(SnackBar(content: Text(message)));
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(SnackBar(content: Text(message)));
   }
 
   void _showAddTagDialog(CommunityService communityService, String workId) {

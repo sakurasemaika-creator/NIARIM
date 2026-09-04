@@ -406,8 +406,9 @@ class _ExportScreenState extends State<ExportScreen> {
 
   void _showCancelledSnackBar() {
     final l10n = AppLocalizations.of(context)!;
-    ScaffoldMessenger.of(context)
-        .showSnackBar(SnackBar(content: Text(l10n.exportCancelledSnackbar)));
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(SnackBar(content: Text(l10n.exportCancelledSnackbar)));
   }
 
   void _closeProgressDialog() {

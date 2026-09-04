@@ -168,8 +168,9 @@ class WatermarkSettingsScreen extends StatelessWidget {
     }
     await service.addWatermark(result.files.first.path!);
     if (!context.mounted) return;
-    ScaffoldMessenger.of(context)
-        .showSnackBar(SnackBar(content: Text(l10n.watermarkAddedSnackbar)));
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(SnackBar(content: Text(l10n.watermarkAddedSnackbar)));
   }
 
   /// 文字ウォーターマークの新規作成・編集を兼ねるダイアログ。過去に作成
@@ -631,9 +632,9 @@ class _WatermarkTile extends StatelessWidget {
               child: asset.type == WatermarkAssetType.text
                   ? Container(
                       width: double.infinity,
-                      color: Theme.of(context)
-                          .colorScheme
-                          .surfaceContainerHighest,
+                      color: Theme.of(
+                        context,
+                      ).colorScheme.surfaceContainerHighest,
                       alignment: Alignment.center,
                       padding: const EdgeInsets.all(8),
                       child: Text(
@@ -663,16 +664,16 @@ class _WatermarkTile extends StatelessWidget {
                           return Center(
                             child: Icon(
                               Icons.broken_image,
-                              color: Theme.of(context)
-                                  .colorScheme
-                                  .onSurfaceVariant,
+                              color: Theme.of(
+                                context,
+                              ).colorScheme.onSurfaceVariant,
                             ),
                           );
                         }
                         return Container(
-                          color: Theme.of(context)
-                              .colorScheme
-                              .surfaceContainerHighest,
+                          color: Theme.of(
+                            context,
+                          ).colorScheme.surfaceContainerHighest,
                           child: Image.file(File(path), fit: BoxFit.contain),
                         );
                       },

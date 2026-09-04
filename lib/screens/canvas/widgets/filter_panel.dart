@@ -1165,9 +1165,9 @@ class _FilterPanelState extends State<FilterPanel> {
                                       l10n.filterBackgroundBlendAutoLabel,
                                       style: TextStyle(
                                         fontSize: 10,
-                                        color: Theme.of(context)
-                                            .colorScheme
-                                            .onSurfaceVariant,
+                                        color: Theme.of(
+                                          context,
+                                        ).colorScheme.onSurfaceVariant,
                                       ),
                                     ),
                                   ),

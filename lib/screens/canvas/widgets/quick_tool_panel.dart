@@ -70,9 +70,9 @@ class QuickToolPanel extends StatelessWidget {
                         child: Text(
                           l10n.quickToolEmpty,
                           style: TextStyle(
-                            color: Theme.of(context)
-                                .colorScheme
-                                .onSurfaceVariant,
+                            color: Theme.of(
+                              context,
+                            ).colorScheme.onSurfaceVariant,
                             fontSize: 12,
                           ),
                         ),

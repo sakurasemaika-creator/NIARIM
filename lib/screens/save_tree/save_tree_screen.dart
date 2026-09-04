@@ -865,8 +865,9 @@ class _TreeView extends StatelessWidget {
         Expanded(
           child: ListTile(
             selected: isSelected,
-            selectedTileColor: Theme.of(context).colorScheme.primaryContainer
-                .withValues(alpha: 0.3),
+            selectedTileColor: Theme.of(
+              context,
+            ).colorScheme.primaryContainer.withValues(alpha: 0.3),
             leading: node.thumbnailPath != null
                 ? _SaveNodeThumbnail(node: node, size: 40)
                 : Icon(

@@ -137,8 +137,9 @@ class _FirstUseTooltipState extends State<FirstUseTooltip> {
                         const SizedBox(height: 14),
                         Divider(
                           height: 1,
-                          color: Theme.of(ctx).colorScheme.onPrimary
-                              .withValues(alpha: 0.35),
+                          color: Theme.of(
+                            ctx,
+                          ).colorScheme.onPrimary.withValues(alpha: 0.35),
                         ),
                         const SizedBox(height: 12),
                         Text(
@@ -154,8 +155,9 @@ class _FirstUseTooltipState extends State<FirstUseTooltip> {
                         Text(
                           l10n.firstUseTipOperationGuideBody,
                           style: TextStyle(
-                            color: Theme.of(ctx).colorScheme.onPrimary
-                                .withValues(alpha: 0.92),
+                            color: Theme.of(
+                              ctx,
+                            ).colorScheme.onPrimary.withValues(alpha: 0.92),
                             fontSize: 15,
                             height: 1.5,
                             fontFamily: 'HakkouMincho',

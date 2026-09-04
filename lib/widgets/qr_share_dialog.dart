@@ -29,19 +29,23 @@ class QrShareDialog extends StatelessWidget {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     return AlertDialog(
-      // popup-standard-close: compact top-right close affordance.
-      iconPadding: const EdgeInsets.fromLTRB(0, 4, 4, 0),
-      icon: Align(
-        alignment: Alignment.centerRight,
-        child: IconButton(
-          visualDensity: VisualDensity.compact,
-          iconSize: 18,
-          tooltip: MaterialLocalizations.of(context).closeButtonTooltip,
-          onPressed: () => Navigator.of(context, rootNavigator: true).pop(),
-          icon: const Icon(Icons.close),
-        ),
+      // popup-standard-close: タイトル行の右端へ寄せた閉じるボタン。
+      // AlertDialogの`icon:`スロットへ入れると、Flutterが
+      // タイトルを強制的に中央寄せにするため（dialog.dartの
+      // `textAlign: icon == null ? TextAlign.start : TextAlign.center`）、
+      // 他のダイアログと不揃いになる。タイトル行へ直接置くこと。
+      title: Row(
+        children: [
+          Expanded(child: Text(title)),
+          IconButton(
+            visualDensity: VisualDensity.compact,
+            iconSize: 18,
+            tooltip: MaterialLocalizations.of(context).closeButtonTooltip,
+            onPressed: () => Navigator.of(context, rootNavigator: true).pop(),
+            icon: const Icon(Icons.close),
+          ),
+        ],
       ),
-      title: Text(title),
       content: SingleChildScrollView(
         child: Column(
           mainAxisSize: MainAxisSize.min,

@@ -64,9 +64,9 @@ Future<AutofillBatchResult> runAutofillForLayer({
   Uint8List? existingBytes;
   if (hasExisting) {
     final img = await tileManager.compositeLayerToImage(autofillKey);
-    existingBytes = (await img.toByteData(format: ui.ImageByteFormat.rawRgba))!
-        .buffer
-        .asUint8List();
+    existingBytes = (await img.toByteData(
+      format: ui.ImageByteFormat.rawRgba,
+    ))!.buffer.asUint8List();
     img.dispose();
   }
 

@@ -95,19 +95,23 @@ class _CommunityAuthorWorksScreenState extends State<CommunityAuthorWorksScreen>
     showDialog<void>(
       context: context,
       builder: (dialogContext) => AlertDialog(
-        // popup-standard-close: compact top-right close affordance.
-        iconPadding: const EdgeInsets.fromLTRB(0, 4, 4, 0),
-        icon: Align(
-          alignment: Alignment.centerRight,
-          child: IconButton(
-            visualDensity: VisualDensity.compact,
-            iconSize: 18,
-            tooltip: MaterialLocalizations.of(context).closeButtonTooltip,
-            onPressed: () => Navigator.of(context, rootNavigator: true).pop(),
-            icon: const Icon(Icons.close),
-          ),
+        // popup-standard-close: タイトル行の右端へ寄せた閉じるボタン。
+        // AlertDialogの`icon:`スロットへ入れると、Flutterが
+        // タイトルを強制的に中央寄せにするため（dialog.dartの
+        // `textAlign: icon == null ? TextAlign.start : TextAlign.center`）、
+        // 他のダイアログと不揃いになる。タイトル行へ直接置くこと。
+        title: Row(
+          children: [
+            Expanded(child: Text(title)),
+            IconButton(
+              visualDensity: VisualDensity.compact,
+              iconSize: 18,
+              tooltip: MaterialLocalizations.of(context).closeButtonTooltip,
+              onPressed: () => Navigator.of(context, rootNavigator: true).pop(),
+              icon: const Icon(Icons.close),
+            ),
+          ],
         ),
-        title: Text(title),
         content: SizedBox(
           width: double.maxFinite,
           child: Column(
@@ -120,9 +124,9 @@ class _CommunityAuthorWorksScreenState extends State<CommunityAuthorWorksScreen>
                         child: Text(
                           emptyMessage,
                           style: TextStyle(
-                            color: Theme.of(dialogContext)
-                                .colorScheme
-                                .onSurfaceVariant,
+                            color: Theme.of(
+                              dialogContext,
+                            ).colorScheme.onSurfaceVariant,
                           ),
                         ),
                       )
@@ -131,9 +135,9 @@ class _CommunityAuthorWorksScreenState extends State<CommunityAuthorWorksScreen>
                         itemCount: names.length,
                         itemBuilder: (_, i) => ListTile(
                           leading: CircleAvatar(
-                            backgroundColor: Theme.of(dialogContext)
-                                .colorScheme
-                                .primaryContainer,
+                            backgroundColor: Theme.of(
+                              dialogContext,
+                            ).colorScheme.primaryContainer,
                             child: Text(names[i].substring(0, 1)),
                           ),
                           title: Text(names[i]),
@@ -147,16 +151,15 @@ class _CommunityAuthorWorksScreenState extends State<CommunityAuthorWorksScreen>
                     footerNote,
                     style: TextStyle(
                       fontSize: 12,
-                      color: Theme.of(dialogContext)
-                          .colorScheme
-                          .onSurfaceVariant,
+                      color: Theme.of(
+                        dialogContext,
+                      ).colorScheme.onSurfaceVariant,
                     ),
                   ),
                 ),
             ],
           ),
         ),
-        actions: [],
       ),
     );
   }

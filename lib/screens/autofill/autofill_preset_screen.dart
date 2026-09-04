@@ -187,9 +187,9 @@ class _AutofillPresetScreenState extends State<AutofillPresetScreen> {
                             width: 88,
                             height: 88,
                             decoration: BoxDecoration(
-                              color: Theme.of(context)
-                                  .colorScheme
-                                  .primaryContainer,
+                              color: Theme.of(
+                                context,
+                              ).colorScheme.primaryContainer,
                               shape: BoxShape.circle,
                             ),
                             child: Icon(
@@ -215,9 +215,9 @@ class _AutofillPresetScreenState extends State<AutofillPresetScreen> {
                             l10n.autofillPresetEmptyHint,
                             style: TextStyle(
                               fontSize: 12,
-                              color: Theme.of(context)
-                                  .colorScheme
-                                  .onSurfaceVariant,
+                              color: Theme.of(
+                                context,
+                              ).colorScheme.onSurfaceVariant,
                             ),
                           ),
                         ],
@@ -596,19 +596,23 @@ class _AutofillPresetScreenState extends State<AutofillPresetScreen> {
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
-        // popup-standard-close: compact top-right close affordance.
-        iconPadding: const EdgeInsets.fromLTRB(0, 4, 4, 0),
-        icon: Align(
-          alignment: Alignment.centerRight,
-          child: IconButton(
-            visualDensity: VisualDensity.compact,
-            iconSize: 18,
-            tooltip: MaterialLocalizations.of(context).closeButtonTooltip,
-            onPressed: () => Navigator.of(context, rootNavigator: true).pop(),
-            icon: const Icon(Icons.close),
-          ),
+        // popup-standard-close: タイトル行の右端へ寄せた閉じるボタン。
+        // AlertDialogの`icon:`スロットへ入れると、Flutterが
+        // タイトルを強制的に中央寄せにするため（dialog.dartの
+        // `textAlign: icon == null ? TextAlign.start : TextAlign.center`）、
+        // 他のダイアログと不揃いになる。タイトル行へ直接置くこと。
+        title: Row(
+          children: [
+            Expanded(child: Text(l10n.autofillThumbnailMenuItem)),
+            IconButton(
+              visualDensity: VisualDensity.compact,
+              iconSize: 18,
+              tooltip: MaterialLocalizations.of(context).closeButtonTooltip,
+              onPressed: () => Navigator.of(context, rootNavigator: true).pop(),
+              icon: const Icon(Icons.close),
+            ),
+          ],
         ),
-        title: Text(l10n.autofillThumbnailMenuItem),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
@@ -661,7 +665,6 @@ class _AutofillPresetScreenState extends State<AutofillPresetScreen> {
               ),
           ],
         ),
-        actions: [],
       ),
     );
   }
@@ -776,8 +779,9 @@ class _PresetCard extends StatelessWidget {
     return Card(
       margin: const EdgeInsets.only(bottom: 12),
       color: isSelected
-          ? Theme.of(context).colorScheme.primaryContainer
-                .withValues(alpha: 0.4)
+          ? Theme.of(
+              context,
+            ).colorScheme.primaryContainer.withValues(alpha: 0.4)
           : null,
       child: ListTile(
         onLongPress: onLongPress,
@@ -892,10 +896,8 @@ class _PresetCard extends StatelessWidget {
   }
 }
 
-typedef _PresetUpdateCallback = void Function(
-  AutofillPreset updated, {
-  String? changedPartId,
-});
+typedef _PresetUpdateCallback =
+    void Function(AutofillPreset updated, {String? changedPartId});
 
 class _PresetDetailScreen extends StatefulWidget {
   final AutofillPreset preset;
@@ -1531,9 +1533,9 @@ class _PresetDetailScreenState extends State<_PresetDetailScreen> {
                             color: Color(current.outlineColor),
                             shape: BoxShape.circle,
                             border: Border.all(
-                              color: Theme.of(context)
-                                  .colorScheme
-                                  .outlineVariant,
+                              color: Theme.of(
+                                context,
+                              ).colorScheme.outlineVariant,
                             ),
                           ),
                         ),
@@ -1654,9 +1656,9 @@ class _PresetDetailScreenState extends State<_PresetDetailScreen> {
                             color: Color(current.lineColor),
                             shape: BoxShape.circle,
                             border: Border.all(
-                              color: Theme.of(context)
-                                  .colorScheme
-                                  .outlineVariant,
+                              color: Theme.of(
+                                context,
+                              ).colorScheme.outlineVariant,
                             ),
                           ),
                         ),
@@ -1945,9 +1947,9 @@ class _PresetDetailScreenState extends State<_PresetDetailScreen> {
                             child: Text(
                               l10n.toneEmpty,
                               style: TextStyle(
-                                color: Theme.of(context)
-                                    .colorScheme
-                                    .onSurfaceVariant,
+                                color: Theme.of(
+                                  context,
+                                ).colorScheme.onSurfaceVariant,
                                 fontSize: 12,
                               ),
                             ),
@@ -1975,9 +1977,9 @@ class _PresetDetailScreenState extends State<_PresetDetailScreen> {
                                       decoration: BoxDecoration(
                                         border: Border.all(
                                           color: isSelected
-                                              ? Theme.of(context)
-                                                    .colorScheme
-                                                    .primary
+                                              ? Theme.of(
+                                                  context,
+                                                ).colorScheme.primary
                                               : Colors.transparent,
                                           width: 2,
                                         ),
@@ -2100,9 +2102,9 @@ class _PresetDetailScreenState extends State<_PresetDetailScreen> {
                               decoration: BoxDecoration(
                                 shape: BoxShape.circle,
                                 border: Border.all(
-                                  color: Theme.of(context)
-                                      .colorScheme
-                                      .outlineVariant,
+                                  color: Theme.of(
+                                    context,
+                                  ).colorScheme.outlineVariant,
                                 ),
                               ),
                               child: Stack(
@@ -2437,9 +2439,9 @@ class _PresetDetailScreenState extends State<_PresetDetailScreen> {
                                     color: color,
                                     shape: BoxShape.circle,
                                     border: Border.all(
-                                      color: Theme.of(context)
-                                          .colorScheme
-                                          .outlineVariant,
+                                      color: Theme.of(
+                                        context,
+                                      ).colorScheme.outlineVariant,
                                     ),
                                   ),
                                 ),

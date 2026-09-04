@@ -891,9 +891,9 @@ class _CanvasScreenState extends State<CanvasScreen> {
                                           borderRadius: BorderRadius.circular(
                                             10,
                                           ),
-                                          color: Theme.of(context)
-                                              .colorScheme
-                                              .inverseSurface,
+                                          color: Theme.of(
+                                            context,
+                                          ).colorScheme.inverseSurface,
                                           child: Padding(
                                             padding: const EdgeInsets.symmetric(
                                               horizontal: 14,
@@ -1137,8 +1137,9 @@ class _CanvasScreenState extends State<CanvasScreen> {
                           size: 22,
                           // 色固定をやめ、テーマの文字色と連動させる（CanvasIconButton・
                           // ToolbarWidgetの色連動と同じ方針）。
-                          color: Theme.of(context).colorScheme.onSurface
-                              .withValues(alpha: 0.7),
+                          color: Theme.of(
+                            context,
+                          ).colorScheme.onSurface.withValues(alpha: 0.7),
                         ),
                       ),
                     ),
@@ -2748,19 +2749,23 @@ class _CanvasScreenState extends State<CanvasScreen> {
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
-        // popup-standard-close: compact top-right close affordance.
-        iconPadding: const EdgeInsets.fromLTRB(0, 4, 4, 0),
-        icon: Align(
-          alignment: Alignment.centerRight,
-          child: IconButton(
-            visualDensity: VisualDensity.compact,
-            iconSize: 18,
-            tooltip: MaterialLocalizations.of(context).closeButtonTooltip,
-            onPressed: () => Navigator.of(context, rootNavigator: true).pop(),
-            icon: const Icon(Icons.close),
-          ),
+        // popup-standard-close: タイトル行の右端へ寄せた閉じるボタン。
+        // AlertDialogの`icon:`スロットへ入れると、Flutterが
+        // タイトルを強制的に中央寄せにするため（dialog.dartの
+        // `textAlign: icon == null ? TextAlign.start : TextAlign.center`）、
+        // 他のダイアログと不揃いになる。タイトル行へ直接置くこと。
+        title: Row(
+          children: [
+            Expanded(child: Text(l10n.canvasTypesettingHelpTooltip)),
+            IconButton(
+              visualDensity: VisualDensity.compact,
+              iconSize: 18,
+              tooltip: MaterialLocalizations.of(context).closeButtonTooltip,
+              onPressed: () => Navigator.of(context, rootNavigator: true).pop(),
+              icon: const Icon(Icons.close),
+            ),
+          ],
         ),
-        title: Text(l10n.canvasTypesettingHelpTooltip),
         content: SingleChildScrollView(
           child: Column(
             mainAxisSize: MainAxisSize.min,
@@ -2798,7 +2803,6 @@ class _CanvasScreenState extends State<CanvasScreen> {
             ],
           ),
         ),
-        actions: [],
       ),
     );
   }

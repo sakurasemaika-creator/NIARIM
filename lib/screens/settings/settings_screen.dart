@@ -60,7 +60,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
         icon: Icons.speed,
         title: l10n.settingsPerformanceTitle,
         subtitle: l10n.settingsPerformanceSubtitle,
-        keywords: '品質 タイルキャッシュ 低品質 中品質 高品質 カスタム オニオンスキン 傾き検知 undo ゴミ箱 削除 performance quality cache',
+        keywords:
+            '品質 タイルキャッシュ 低品質 中品質 高品質 カスタム オニオンスキン 傾き検知 undo ゴミ箱 削除 performance quality cache',
         onTap: () => context.push('/settings/performance'),
         accent: Theme.of(context).colorScheme.primary,
       ),
@@ -208,9 +209,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
                         child: Text(
                           l10n.settingsTermsLicense,
                           style: TextStyle(
-                            color: Theme.of(context)
-                                .colorScheme
-                                .onSurfaceVariant,
+                            color: Theme.of(
+                              context,
+                            ).colorScheme.onSurfaceVariant,
                             fontSize: 12,
                           ),
                         ),
@@ -227,9 +228,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
                         child: Text(
                           l10n.privacyPolicyScreenTitle,
                           style: TextStyle(
-                            color: Theme.of(context)
-                                .colorScheme
-                                .onSurfaceVariant,
+                            color: Theme.of(
+                              context,
+                            ).colorScheme.onSurfaceVariant,
                             fontSize: 12,
                           ),
                         ),
@@ -258,8 +259,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
         color: Theme.of(context).colorScheme.surfaceContainerLow,
         borderRadius: BorderRadius.circular(14),
         elevation: 1,
-        shadowColor: Theme.of(context).colorScheme.shadow
-            .withValues(alpha: 0.15),
+        shadowColor: Theme.of(
+          context,
+        ).colorScheme.shadow.withValues(alpha: 0.15),
         child: InkWell(
           borderRadius: BorderRadius.circular(14),
           onTap: onTap,

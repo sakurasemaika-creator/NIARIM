@@ -124,9 +124,9 @@ class _ImageEyedropperDialogState extends State<ImageEyedropperDialog> {
                           child: Container(
                             decoration: BoxDecoration(
                               border: Border.all(
-                                color: Theme.of(context)
-                                    .colorScheme
-                                    .outlineVariant,
+                                color: Theme.of(
+                                  context,
+                                ).colorScheme.outlineVariant,
                               ),
                             ),
                             // dart:ioのFileはWeb版で使えないため、常にバイト列

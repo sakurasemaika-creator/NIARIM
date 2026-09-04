@@ -183,9 +183,9 @@ class ThemeSettingsScreen extends StatelessWidget {
                                   padding: const EdgeInsets.only(right: 4),
                                   child: Icon(
                                     Icons.check,
-                                    color: Theme.of(context)
-                                        .colorScheme
-                                        .primary,
+                                    color: Theme.of(
+                                      context,
+                                    ).colorScheme.primary,
                                     size: 16,
                                   ),
                                 ),
@@ -392,8 +392,9 @@ class ThemeSettingsScreen extends StatelessWidget {
     try {
       final content = await File(result.files.first.path!).readAsString();
       final json = jsonDecode(content) as Map<String, dynamic>;
-      final preset = AppThemePreset.fromJson(json)
-          .copyWith(id: 'theme_${DateTime.now().millisecondsSinceEpoch}');
+      final preset = AppThemePreset.fromJson(
+        json,
+      ).copyWith(id: 'theme_${DateTime.now().millisecondsSinceEpoch}');
       service.savePreset(preset);
       service.applyPreset(preset.id);
       if (!context.mounted) return;
