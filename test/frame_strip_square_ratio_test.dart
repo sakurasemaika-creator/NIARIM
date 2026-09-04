@@ -13,8 +13,8 @@ void main() {
       multiLine: true,
     );
 
-    // 通常フレームセル、末尾の追加セル、中央の現在フレーム枠の3系統が
-    // すべて50x50で固定されていることを守る。
+    // 通常フレームセル、末尾の追加セル、中央の現在フレーム枠の3系統を
+    // すべて50x50に固定し、一覧の見た目を1:1で統一する。
     expect(squareCellPattern.allMatches(source).length, greaterThanOrEqualTo(3));
     expect(source, contains('static const double _itemExtent = 50;'));
   });
