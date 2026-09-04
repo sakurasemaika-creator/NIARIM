@@ -1,11 +1,10 @@
 name: Audit Live Dashboard
 
 on:
+  # dev_branch のどの変更でもHEAD/作業状態を追従する。
+  # ダッシュボード自身はIssue本文だけを書き換えるためpushループにはならない。
   push:
     branches: [dev_branch]
-    paths:
-      - "audit-dashboard/**"
-      - ".github/workflows/**"
   workflow_dispatch:
   workflow_run:
     workflows:
@@ -17,6 +16,11 @@ on:
       - 'One-shot Current Coverage Census'
       - 'One-shot Known Scope Reaudit'
       - 'One-shot Current HEAD Unique Reaudit'
+      - 'One-shot Filter Canvas Eyedropper'
+      - 'One-shot Add Ink Pool Filter'
+      - 'One-shot Refine Ink Pool Audit'
+      - 'Visual Smoke Test'
+      - 'Build APK'
     types: [requested, completed]
 
 permissions:
