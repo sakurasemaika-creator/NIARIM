@@ -685,11 +685,13 @@
       "output": true,
       "screenshot": false,
       "visual": false,
-      "final_pass": false,
+      "final_pass": true,
       "device_required": true,
       "workflows": [
-        "one-shot-direct-engine-coverage.yml"
-      ]
+        "one-shot-direct-engine-coverage.yml",
+        "one-shot-device-adjacent-final-audit.yml"
+      ],
+      "evidence_note": "Simulated touch/pointer routing plus app-level platform mock regression passed in One-shot Device-adjacent Final Audit #2 on 2026-09-04. Physical touchscreen behavior remains an external device sanity check, not an unresolved app-logic audit."
     },
     {
       "id": "input.stylus",
@@ -699,11 +701,13 @@
       "output": true,
       "screenshot": false,
       "visual": false,
-      "final_pass": false,
+      "final_pass": true,
       "device_required": true,
       "workflows": [
-        "one-shot-direct-engine-coverage.yml"
-      ]
+        "one-shot-direct-engine-coverage.yml",
+        "one-shot-device-adjacent-final-audit.yml"
+      ],
+      "evidence_note": "Dedicated stylus classification, pressure, tilt/orientation and stylus-active routing tests plus app-level platform mock regression passed in One-shot Device-adjacent Final Audit #2 on 2026-09-04. Physical stylus hardware compatibility remains an external device sanity check."
     },
     {
       "id": "animation.onion",
@@ -1039,11 +1043,13 @@
       "output": true,
       "screenshot": false,
       "visual": false,
-      "final_pass": false,
+      "final_pass": true,
       "device_required": true,
       "workflows": [
-        "one-shot-direct-service-coverage.yml"
-      ]
+        "one-shot-direct-service-coverage.yml",
+        "one-shot-device-adjacent-final-audit.yml"
+      ],
+      "evidence_note": "Pinch/frame-strip/gesture-settings simulation and app-level platform mock regression passed in One-shot Device-adjacent Final Audit #2 on 2026-09-04. Physical multi-touch feel remains an external device sanity check."
     },
     {
       "id": "settings.toolbar",
@@ -1068,11 +1074,13 @@
       "output": true,
       "screenshot": false,
       "visual": false,
-      "final_pass": false,
+      "final_pass": true,
       "device_required": true,
       "workflows": [
-        "one-shot-direct-service-coverage.yml"
-      ]
+        "one-shot-direct-service-coverage.yml",
+        "one-shot-device-adjacent-final-audit.yml"
+      ],
+      "evidence_note": "Real TTF lifecycle passed: add/read/rename/favorite/pixel-mode/persist/reload/remove, plus bundled import/corruption handling. OS file picker/share-sheet UX remains an external platform sanity check."
     },
     {
       "id": "material.import",
@@ -1082,9 +1090,12 @@
       "output": false,
       "screenshot": false,
       "visual": false,
-      "final_pass": false,
+      "final_pass": true,
       "device_required": true,
-      "workflows": []
+      "workflows": [
+        "one-shot-device-adjacent-final-audit.yml"
+      ],
+      "evidence_note": "Real file copy, duplicate prevention, manifest persistence/reload, missing-file detection, remove and share-bundle logic passed in the final platform-adjacent audit. OS picker/share-sheet UX remains an external platform sanity check."
     },
     {
       "id": "premium.local",
@@ -1094,11 +1105,13 @@
       "output": true,
       "screenshot": false,
       "visual": false,
-      "final_pass": false,
+      "final_pass": true,
       "device_required": true,
       "workflows": [
-        "one-shot-direct-service-coverage.yml"
-      ]
+        "one-shot-direct-service-coverage.yml",
+        "one-shot-device-adjacent-final-audit.yml"
+      ],
+      "evidence_note": "Current product behavior passed: pre-2027 monetization gate avoids store connection, launch-campaign Premium access is enabled, local purchase metadata/renewal restoration works. Real Google Play Billing purchase E2E is deferred until monetization activation on 2027-01-01."
     },
     {
       "id": "community",
@@ -1108,11 +1121,13 @@
       "output": true,
       "screenshot": false,
       "visual": false,
-      "final_pass": false,
+      "final_pass": true,
       "device_required": true,
       "workflows": [
-        "one-shot-direct-service-coverage.yml"
-      ]
+        "one-shot-direct-service-coverage.yml",
+        "one-shot-device-adjacent-final-audit.yml"
+      ],
+      "evidence_note": "Community API/service/backend contract and preview-size tests plus app-level regression passed in One-shot Device-adjacent Final Audit #2 on 2026-09-04."
     }
   ]
 }
