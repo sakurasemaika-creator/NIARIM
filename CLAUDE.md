@@ -126,7 +126,12 @@
   **全FilledButtonのラベル**が端末標準フォントになっていた。太さ等を
   変えたいときは`textTheme.labelLarge?.copyWith(...)`のように
   **textThemeを土台にして上書き**すること。
-  `test/theme_button_font_test.dart`がボタン系4テーマを機械的に見張っている。`theme_service.dart`の
+  `SnackBarThemeData.contentTextStyle`もまったく同じ罠で、素の
+  `TextStyle(color: ...)`が入っていたため**アプリ中のSnackBarの文字が
+  すべて端末標準フォント**だった（テーマ一覧の操作をPNGへ焼いて目視した
+  ところ豆腐＝フォント未指定と分かり発覚）。
+  `test/theme_button_font_test.dart`がボタン系4テーマ＋snackBarThemeを
+  機械的に見張っている。`theme_service.dart`の
   `listTileTheme`・`dialogTheme`は既に修正済みだが、新しくMaterialの
   テーマ系クラス（`XxxThemeData`）を触る／新設する際は同じ罠が無いか
   必ず確認すること。
@@ -600,6 +605,22 @@ onTap: ...)`だったために
   状態が長く続いていた（税務上の都合による一時停止という設計意図とも、
   CLAUDE.md・7言語のキャンペーン文言とも食い違う）。検証のために一時的に
   値を固定する場合は、戻し忘れないよう作業を分けること。
+
+- **一連の操作でしか現れない画面は、操作ウォークスルーのPNGで確認する**：
+  ルート単位・ダイアログ単位のスクショ監査は1画面1状態しか撮らないため、
+  「ツールを切り替えて→範囲を囲んで→モードを選んで→ドラッグする」のような
+  途中経過は一切検証されない。`test/selection_tool_walkthrough_test.dart`・
+  `test/theme_settings_walkthrough_test.dart`が本番画面を実タップ・実ドラッグで
+  通して各段階を`build/selection-walkthrough/`・`build/theme-walkthrough/`へ
+  焼くので、同種の機能を足したらこの形で1本足すこと。実際にこの監査で
+  「SnackBarの文字だけ端末標準フォント」を見つけている。
+  なお**ドラッグ位置はウィジェットの割合ではなくプロジェクトのピクセル座標**
+  で指定すること（描画エリアはCanvasAreaの中央へアスペクト比フィットで
+  置かれるため割合指定だとずれる）。加えて**選択ツールへ入るとツールバーと
+  フレーム一覧が畳まれてキャンバスの矩形が変わる**ので、座標の基準は
+  操作のたびに取り直すこと（キャッシュすると畳まれた後にずれる）。
+  ストロークの実画素化も本物の非同期処理なので、1点動かすごとに
+  `tester.runAsync`で実時間を進めないと最初の点しか描かれない。
 
 ## 人間の実操作が必要な項目（ストア公開前に必ず確認・最重要）
 

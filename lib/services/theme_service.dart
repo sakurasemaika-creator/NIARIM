@@ -659,7 +659,16 @@ class ThemeService extends ChangeNotifier {
       snackBarTheme: SnackBarThemeData(
         behavior: SnackBarBehavior.floating,
         backgroundColor: preset.menuBgColor,
-        contentTextStyle: TextStyle(color: preset.textColor),
+        // AppBarのtitleTextStyle・FilledButtonのtextStyleとまったく同じ罠。
+        // 素のTextStyle()を渡すとそれが本文の書式を丸ごと決めてしまい、
+        // ThemeData.fontFamily='HakkouMincho'は継承されない。その結果
+        // **アプリ中のSnackBarの文字だけ**端末標準フォント（Roboto等）で
+        // 描かれ、同梱フォントの周囲から明確に浮く（日本語以外の端末では
+        // 字形が別物になる）。textTheme.titleMedium（SnackBarの既定書式）を
+        // 土台にして色だけ上書きする。
+        contentTextStyle: textTheme.titleMedium?.copyWith(
+          color: preset.textColor,
+        ),
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(radius),
         ),

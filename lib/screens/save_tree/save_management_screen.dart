@@ -441,7 +441,11 @@ class _GameSaveSlotTile extends StatelessWidget {
                   ),
                 ),
                 const SizedBox(width: 4),
-                // ペン＝書き込み、本＝読み込み、ゴミ箱＝削除。
+                // ペン＝書き込み（セーブ）、本＝読み込み（ロード）、
+                // ゴミ箱＝削除。読み込みが本なので、書き込みは
+                // 「その本へ書き入れる」ペンで揃える（フロッピーディスクだと
+                // 本と別の比喩が混ざる）。スロットには名前変更のような
+                // 「編集」操作が無いので、ペン＝編集との取り違えも起きない。
                 // 3つとも全スロットに出し、使えないものは無効表示にする
                 // （`test/save_slot_action_buttons_test.dart`が監視）。
                 _SlotActionButton(
