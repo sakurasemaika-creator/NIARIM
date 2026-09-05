@@ -1,0 +1,24 @@
+name: One-shot Project Tag Search Audit
+on:
+  push:
+    branches: [dev_branch]
+    paths:
+      - 'test/project_tag_search_test.dart'
+      - '.github/workflows/one-shot-project-tag-search-audit.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+      - run: flutter pub get
+      - name: Analyze tag search implementation
+        run: flutter analyze lib/screens/home/home_screen.dart lib/screens/home/widgets/project_list_widget.dart lib/screens/project/project_detail_screen.dart test/project_tag_search_test.dart
+      - name: Run tag search widget tests
+        run: flutter test test/project_tag_search_test.dart
