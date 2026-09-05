@@ -1082,9 +1082,6 @@ class AppLocalizationsFr extends AppLocalizations {
   String get toolbarItemSelect => 'Sélection';
 
   @override
-  String get toolbarItemTransform => 'Transformation';
-
-  @override
   String get toolbarItemText => 'Texte';
 
   @override
@@ -1593,7 +1590,7 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get helpTransformSelectionDesc =>
-      'Une zone délimitée avec l\'outil de sélection peut être déplacée, pivotée et redimensionnée avec l\'outil de transformation. Pratique pour repositionner une partie dessinée par erreur, ou pour agrandir une seule zone afin de la mettre en valeur. Pour transformer tout le calque, utilisez la Transformation libre / Déformation maillée (accessible depuis le menu d\'édition) qui ne nécessite pas de sélection et permet de faire glisser individuellement les points de la grille pour un résultat plus libre.';
+      'Une zone délimitée avec l\'outil de sélection se transforme en choisissant Déplacer, Redimensionner ou Pivoter dans les boutons en bas à gauche du canevas, puis en faisant glisser à l\'intérieur de la sélection. Pratique pour repositionner une partie dessinée par erreur, ou pour agrandir une seule zone afin de la mettre en valeur. Le bouton Tout sélectionner de la même barre sélectionne tout le calque courant : vous pouvez donc déplacer, pivoter et redimensionner un calque entier de la même façon (l\'ancien outil de transformation a été fusionné ici). Pour déformer plus librement en faisant glisser individuellement les points de la grille, utilisez Transf. libre ou Maillage sur la même barre.';
 
   @override
   String get helpGradientAutofillTitle =>
@@ -2638,6 +2635,16 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get themeDuplicateAction => 'Dupliquer';
+
+  @override
+  String themeAdoptColorsSnackbar(String name) {
+    return 'Les couleurs de « $name » ont été appliquées à vos couleurs actuelles. Les modifier ne changera pas le thème d\'origine.';
+  }
+
+  @override
+  String themeEditPresetSnackbar(String name) {
+    return 'Vous modifiez maintenant « $name ». Les changements de personnalisation des couleurs y seront enregistrés.';
+  }
 
   @override
   String get themeExportMenuItem => 'Exporter (.niatheme)';
@@ -4268,6 +4275,24 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get canvasDeselectAllButton => 'Tout désélectionner';
+
+  @override
+  String get canvasSelectionModeMove => 'Déplacer';
+
+  @override
+  String get canvasSelectionModeScale => 'Redimensionner';
+
+  @override
+  String get canvasSelectionModeRotate => 'Pivoter';
+
+  @override
+  String get canvasSelectionFreeTransform => 'Transf. libre';
+
+  @override
+  String get canvasSelectionMeshTransform => 'Maillage';
+
+  @override
+  String get canvasSelectionExitTooltip => 'Quitter la sélection';
 
   @override
   String get canvasApplyFilterButton => 'Appliquer le filtre';

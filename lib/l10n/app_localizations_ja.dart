@@ -1044,9 +1044,6 @@ class AppLocalizationsJa extends AppLocalizations {
   String get toolbarItemSelect => '選択';
 
   @override
-  String get toolbarItemTransform => '変形';
-
-  @override
   String get toolbarItemText => 'テキスト';
 
   @override
@@ -1547,7 +1544,7 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get helpTransformSelectionDesc =>
-      '選択ツールで囲んだ範囲は、変形ツールで移動・回転・拡大縮小できます。誤って描いた部分の位置調整や、一部だけを拡大して強調したい時などに使います。 レイヤー全体を対象にしたい場合は、範囲選択を使わない「自由変形・メッシュ変形」（編集メニューから開く）を使うと、格子点を個別にドラッグしてより自由な変形ができます。';
+      '選択ツールで囲んだ範囲は、キャンバス左下に出る「移動」「拡大縮小」「回転」のボタンでモードを選び、選択範囲の中をドラッグして変形できます。誤って描いた部分の位置調整や、一部だけを拡大して強調したい時などに使います。同じバーの「全選択」を押せば描画中のレイヤー全体が選択範囲になるので、レイヤーまるごとの移動・回転・拡大縮小も同じ操作でできます（以前あった独立した「変形ツール」はここへ統合しました）。格子点を個別にドラッグしてもっと自由に歪ませたい場合は、同じバーの「自由変形」「メッシュ変形」を使ってください。';
 
   @override
   String get helpGradientAutofillTitle => 'グラデーション塗り（自動塗り設定）';
@@ -2513,6 +2510,16 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get themeDuplicateAction => '複製';
+
+  @override
+  String themeAdoptColorsSnackbar(String name) {
+    return '「$name」の配色を現在の色へ反映しました。カラーカスタマイズで変えても元のテーマはそのままです';
+  }
+
+  @override
+  String themeEditPresetSnackbar(String name) {
+    return '「$name」を編集対象にしました。カラーカスタマイズの変更はこのテーマへ保存されます';
+  }
 
   @override
   String get themeExportMenuItem => '書き出し (.niatheme)';
@@ -4061,6 +4068,24 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get canvasDeselectAllButton => '全解除';
+
+  @override
+  String get canvasSelectionModeMove => '移動';
+
+  @override
+  String get canvasSelectionModeScale => '拡大縮小';
+
+  @override
+  String get canvasSelectionModeRotate => '回転';
+
+  @override
+  String get canvasSelectionFreeTransform => '自由変形';
+
+  @override
+  String get canvasSelectionMeshTransform => 'メッシュ変形';
+
+  @override
+  String get canvasSelectionExitTooltip => '選択ツールを終了';
 
   @override
   String get canvasApplyFilterButton => 'フィルター適用';

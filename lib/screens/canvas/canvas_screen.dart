@@ -119,6 +119,8 @@ class _CanvasScreenState extends State<CanvasScreen> {
   // 反転自体はinvertSelectionTokenを増やすことでCanvasArea側へ指示する
   // （meshCommitToken等と同じトークン方式）。
   bool _hasActiveSelection = false;
+  // 選択範囲を掴んだときの操作モード。キャンバス左下のボタンで切り替える。
+  SelectionTransformMode _selectionTransformMode = SelectionTransformMode.move;
   int _invertSelectionToken = 0;
   int _selectAllSelectionToken = 0;
   int _clearSelectionToken = 0;
@@ -178,10 +180,12 @@ class _CanvasScreenState extends State<CanvasScreen> {
   /// メニューから、既存の変形ツールと異なり範囲選択なしで
   /// レイヤー全体を対象にする）。開くたびに分割数・回転・拡大縮小の
   /// スライダー値を初期状態へ戻す。
-  void _openMeshTransformPanel() => setState(() {
+  /// [density]は格子の分割数。1（既定・4隅のみ）が「自由変形」、
+  /// 2以上が「メッシュ変形」にあたる（同じ仕組みの分割数違い）。
+  void _openMeshTransformPanel({int density = 1}) => setState(() {
     _closeAllOverlayPanels();
     _showMeshTransformPanel = true;
-    _meshDensity = 1;
+    _meshDensity = density;
     _meshRotateDeg = 0.0;
     _meshScaleValue = 1.0;
     _currentTool = DrawingTool.meshTransform;
@@ -763,6 +767,18 @@ class _CanvasScreenState extends State<CanvasScreen> {
       child: Focus(
         autofocus: true,
         child: Scaffold(
+          // キャンバスモードのバー類（上部バー・太さ/不透明度スライダー・
+          // ツールバー・折りたたみハンドル）は、いずれも自前の背景を持たず
+          // 「アイコンだけが浮かんでいる」意匠（canvas_icon_button.dart参照）。
+          // ところがこれらはキャンバスのStackの外側＝Columnの別の行に置かれて
+          // いるため、透過した先に見えるのはキャンバス外周ではなくScaffold
+          // 本来の背景色だった。結果、バーの帯だけが明るい別パネルのように
+          // 見えてしまう（Task#163で一度ツールバー側へ外周色を塗って
+          // 誤魔化したが、その後の変更で透明に戻り再発した）。
+          // Scaffoldの背景自体をキャンバス外周色に揃えることで、レイアウトも
+          // ジェスチャー処理も変えずに「バーは透過、背後は一続きの
+          // キャンバス外周」という本来の見た目にする。
+          backgroundColor: kCanvasOutsideColor,
           body: SafeArea(
             // ツールオプション系のフローティングパネル（ブラシ・トーン・
             // スタンプ・ペンサブツール・オニオンスキン・定規・フィルター・
@@ -877,6 +893,8 @@ class _CanvasScreenState extends State<CanvasScreen> {
                                     if (_hasActiveSelection == v) return;
                                     setState(() => _hasActiveSelection = v);
                                   },
+                                  selectionTransformMode:
+                                      _selectionTransformMode,
                                 ),
                                 if (_filterColorEyedropperTarget != null ||
                                     _textColorEyedropperTarget != null)
@@ -934,41 +952,11 @@ class _CanvasScreenState extends State<CanvasScreen> {
                                   Positioned(
                                     left: 12,
                                     bottom: 12,
+                                    right: 12,
                                     child: SafeArea(
-                                      child: Material(
-                                        elevation: 4,
-                                        borderRadius: BorderRadius.circular(10),
-                                        child: Padding(
-                                          padding: const EdgeInsets.all(4),
-                                          child: Row(
-                                            mainAxisSize: MainAxisSize.min,
-                                            children: [
-                                              FilledButton.tonalIcon(
-                                                onPressed: () => setState(
-                                                  () =>
-                                                      _selectAllSelectionToken++,
-                                                ),
-                                                icon: const Icon(
-                                                  Icons.select_all,
-                                                ),
-                                                label: const Text('全選択'),
-                                              ),
-                                              const SizedBox(width: 6),
-                                              FilledButton.tonalIcon(
-                                                onPressed: _hasActiveSelection
-                                                    ? () => setState(
-                                                        () =>
-                                                            _clearSelectionToken++,
-                                                      )
-                                                    : null,
-                                                icon: const Icon(
-                                                  Icons.deselect,
-                                                ),
-                                                label: const Text('全解除'),
-                                              ),
-                                            ],
-                                          ),
-                                        ),
+                                      child: Align(
+                                        alignment: Alignment.bottomLeft,
+                                        child: _selectionToolBar(context),
                                       ),
                                     ),
                                   ),
@@ -1082,19 +1070,15 @@ class _CanvasScreenState extends State<CanvasScreen> {
                     // 同様に、任意のタイミングで開閉できるようにし描画領域を広げる）。
                     // デスクトップでは常設の縦レール表示に切り替わるため対象外。
                     //
-                    // 【背景色の不一致修正】このハンドルは直下のツールバー
-                    // （kCanvasOutsideColorに統一済み）と地続きに見えるよう、
-                    // ここもkCanvasOutsideColorへ合わせる。アイコン色も
-                    // onSurface（テーマによっては暗色で暗いkCanvasOutsideColor
-                    // に沈んで見えなくなる）から、常に明るいThemeService.activeColorScheme.onSurface70へ
-                    // 固定する（キャンバス外周の暗い背景色は固定値のため、
-                    // アイコン側もテーマに関わらず視認できる固定色でよい）。
+                    // 背景はツールバー本体と同じく持たせない（Scaffoldの
+                    // 背景をキャンバス外周色に揃えてあるため、透過した先は
+                    // キャンバス外周と地続きに見える）。
                     //
                     // 【タップしやすさ改善】高さ16→28pxへ拡大（アイコンも
                     // 16→22pxへ）。フルの48px（Material推奨タップ領域）まで
                     // 広げると常時表示のバーとして描画領域を圧迫しすぎるため、
                     // 誤タップしにくくなる範囲での妥協値としている。
-                    if (!isDesktop)
+                    if (!isDesktop && !_isSelectionToolActive)
                       GestureDetector(
                         behavior: HitTestBehavior.opaque,
                         onTap: () =>
@@ -1102,7 +1086,7 @@ class _CanvasScreenState extends State<CanvasScreen> {
                         child: Container(
                           height: 28,
                           alignment: Alignment.center,
-                          color: kCanvasOutsideColor,
+                          color: Colors.transparent,
                           child: Icon(
                             _showToolbar
                                 ? Icons.keyboard_arrow_down
@@ -1115,35 +1099,39 @@ class _CanvasScreenState extends State<CanvasScreen> {
                       ),
                     // デスクトップでは左側（左利きモードでは右側）の常設縦レールとして
                     // 表示するため、下部の横並びバーはモバイルレイアウトのみで表示する。
-                    if (_showToolbar && !isDesktop)
+                    if (_showToolbar && !isDesktop && !_isSelectionToolActive)
                       _buildToolbarWidget(vertical: false),
                     if (_frameMultiSelectMode) _buildFrameMultiSelectBar(),
                     // フレーム一覧の折りたたみ用ハンドル（描画領域を
                     // できるだけ広げるため、任意のタイミングで開閉できるようにする）。
                     // 高さ16→28px・アイコン16→22pxへ拡大（ツールバー折りたたみ
                     // ハンドルと同様、タップしやすさ改善のため）。
-                    GestureDetector(
-                      behavior: HitTestBehavior.opaque,
-                      onTap: () =>
-                          setState(() => _showFrameStrip = !_showFrameStrip),
-                      child: Container(
-                        height: 28,
-                        alignment: Alignment.center,
-                        color: Colors.transparent,
-                        child: Icon(
-                          _showFrameStrip
-                              ? Icons.keyboard_arrow_down
-                              : Icons.keyboard_arrow_up,
-                          size: 22,
-                          // 色固定をやめ、テーマの文字色と連動させる（CanvasIconButton・
-                          // ToolbarWidgetの色連動と同じ方針）。
-                          color: Theme.of(
-                            context,
-                          ).colorScheme.onSurface.withValues(alpha: 0.7),
+                    //
+                    // 選択ツール使用中は、キャンバス左下の操作バーへ集中できるよう
+                    // ツールバー・フレーム一覧ごと畳む（開閉ハンドルも隠す）。
+                    if (!_isSelectionToolActive)
+                      GestureDetector(
+                        behavior: HitTestBehavior.opaque,
+                        onTap: () =>
+                            setState(() => _showFrameStrip = !_showFrameStrip),
+                        child: Container(
+                          height: 28,
+                          alignment: Alignment.center,
+                          color: Colors.transparent,
+                          child: Icon(
+                            _showFrameStrip
+                                ? Icons.keyboard_arrow_down
+                                : Icons.keyboard_arrow_up,
+                            size: 22,
+                            // 色固定をやめ、テーマの文字色と連動させる（CanvasIconButton・
+                            // ToolbarWidgetの色連動と同じ方針）。
+                            color: Theme.of(
+                              context,
+                            ).colorScheme.onSurface.withValues(alpha: 0.7),
+                          ),
                         ),
                       ),
-                    ),
-                    if (_showFrameStrip)
+                    if (_showFrameStrip && !_isSelectionToolActive)
                       FrameStripWidget(
                         currentFrame: _currentFrame,
                         projectId: widget.projectId,
@@ -1834,6 +1822,163 @@ class _CanvasScreenState extends State<CanvasScreen> {
       selected: selected,
     );
   }
+
+  /// 選択ツール使用中にキャンバス左下へ出す操作バー。
+  ///
+  /// 上段が選択範囲を掴んだときの操作モード（移動・拡大縮小・回転）と、
+  /// 格子点を個別に動かす自由変形・メッシュ変形。下段が全選択・全解除と、
+  /// 選択ツールを抜けるボタン。
+  ///
+  /// かつては独立した「変形ツール」がレイヤー全体の一体変形を担っていたが、
+  /// 選択範囲の変形と役割が重複していたため統合した（レイヤー全体を変形
+  /// したいときは「全選択」してからモードを選ぶ）。モードをボタンにしたのは、
+  /// 掴んだ位置で判定する従来方式ではハンドルがドラッグ中しか描かれず、
+  /// 拡大縮小・回転ができること自体が分からなかったため。
+  ///
+  /// このバーが出ている間はツールバーとフレーム一覧を畳むので、
+  /// 選択ツールから抜ける導線としてバー自身に終了ボタンを持たせている
+  /// （これが無いとツールを切り替えられなくなる）。
+  Widget _selectionToolBar(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    final scheme = Theme.of(context).colorScheme;
+
+    Widget chip({
+      required IconData icon,
+      required String label,
+      required VoidCallback? onTap,
+      bool selected = false,
+    }) {
+      // 非選択側にonSurfaceVariantを使うと、テーマによっては地の
+      // surfaceContainerHighestとほとんど同じ明るさになりラベルが読めない。
+      // 本文と同じonSurfaceを使い、枠線でボタンだと分かるようにする。
+      final enabled = onTap != null;
+      final fg = selected
+          ? scheme.onPrimary
+          : scheme.onSurface.withValues(alpha: enabled ? 1.0 : 0.38);
+      return Tooltip(
+        message: label,
+        child: InkWell(
+          borderRadius: BorderRadius.circular(8),
+          onTap: onTap,
+          child: Container(
+            constraints: const BoxConstraints(minWidth: 56),
+            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 5),
+            decoration: BoxDecoration(
+              color: selected ? scheme.primary : scheme.surfaceContainerHighest,
+              borderRadius: BorderRadius.circular(8),
+              border: selected
+                  ? null
+                  : Border.all(color: scheme.outlineVariant),
+            ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(icon, size: 18, color: fg),
+                const SizedBox(height: 2),
+                Text(
+                  label,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(fontSize: 10, color: fg),
+                ),
+              ],
+            ),
+          ),
+        ),
+      );
+    }
+
+    Widget modeChip(SelectionTransformMode mode, IconData icon, String label) =>
+        chip(
+          icon: icon,
+          label: label,
+          selected: _selectionTransformMode == mode,
+          onTap: () => setState(() => _selectionTransformMode = mode),
+        );
+
+    return Material(
+      elevation: 4,
+      borderRadius: BorderRadius.circular(10),
+      child: Padding(
+        padding: const EdgeInsets.all(4),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // 選択範囲がある間だけ変形操作を出す（無いと掴む対象が無い）。
+            if (_hasActiveSelection) ...[
+              Wrap(
+                spacing: 4,
+                runSpacing: 4,
+                children: [
+                  modeChip(
+                    SelectionTransformMode.move,
+                    Icons.open_with,
+                    l10n.canvasSelectionModeMove,
+                  ),
+                  modeChip(
+                    SelectionTransformMode.scale,
+                    Icons.zoom_out_map,
+                    l10n.canvasSelectionModeScale,
+                  ),
+                  modeChip(
+                    SelectionTransformMode.rotate,
+                    Icons.rotate_right,
+                    l10n.canvasSelectionModeRotate,
+                  ),
+                  // 自由変形・メッシュ変形は同じ仕組みの分割数違い
+                  // （4隅だけか、格子状に細かく分けるか）。
+                  chip(
+                    icon: Icons.crop_free,
+                    label: l10n.canvasSelectionFreeTransform,
+                    onTap: () => _openMeshTransformPanel(),
+                  ),
+                  chip(
+                    icon: Icons.grid_on,
+                    label: l10n.canvasSelectionMeshTransform,
+                    onTap: () => _openMeshTransformPanel(density: 3),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 4),
+            ],
+            Wrap(
+              spacing: 6,
+              runSpacing: 4,
+              crossAxisAlignment: WrapCrossAlignment.center,
+              children: [
+                FilledButton.tonalIcon(
+                  onPressed: () => setState(() => _selectAllSelectionToken++),
+                  icon: const Icon(Icons.select_all),
+                  label: Text(l10n.canvasSelectAllButton),
+                ),
+                FilledButton.tonalIcon(
+                  onPressed: _hasActiveSelection
+                      ? () => setState(() => _clearSelectionToken++)
+                      : null,
+                  icon: const Icon(Icons.deselect),
+                  label: Text(l10n.canvasDeselectAllButton),
+                ),
+                IconButton(
+                  onPressed: _exitSelectionTool,
+                  icon: const Icon(Icons.close),
+                  tooltip: l10n.canvasSelectionExitTooltip,
+                  visualDensity: VisualDensity.compact,
+                ),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  /// 選択ツールを抜けてペンへ戻す（左下バーの終了ボタン）。
+  /// 選択範囲は残したままだと他ツールの操作範囲を絞ったままになるため解除する。
+  void _exitSelectionTool() => setState(() {
+    _clearSelectionToken++;
+    _currentTool = DrawingTool.pen;
+  });
 
   Widget _buildTopBar() {
     final l10n = AppLocalizations.of(context)!;
@@ -2857,7 +3002,6 @@ enum DrawingTool {
   selectLasso,
   selectMagicWand,
   move,
-  transform,
   ruler,
   text,
   shape,
@@ -2865,12 +3009,21 @@ enum DrawingTool {
   // ツールバーには表示せず、描画を行わずキャンバスの平行移動のみを行う。
   pan,
   // レイヤー全体の自由変形・メッシュ変形：範囲選択せずに現在レイヤー全体を
-  // 変形できる点がtransformと異なる（transformは4隅の一体スケール・回転の
-  // みだが、こちらは格子点を個別にドラッグできる自由変形・メッシュ変形）。
-  // ツールバーには表示せず、キャンバス上部バーの「設定/編集」メニューから
-  // のみ到達する一時ツール。
+  // 変形できる（格子点を個別にドラッグする自由変形・メッシュ変形）。
+  // 選択ツールの移動・拡大縮小・回転が一体変形なのに対し、こちらは各点を
+  // 個別に動かせる点が異なる。キャンバス上部バーの「設定/編集」メニューと
+  // 選択ツールの操作バーから到達する一時ツール。
   meshTransform,
 }
+
+/// 選択ツールで選択範囲を掴んだときの操作モード（移動・拡大縮小・回転）。
+///
+/// かつては独立した「変形ツール」（DrawingTool.transform）がレイヤー全体の
+/// 一体変形を担っていたが、選択範囲の変形と役割が重複していたため統合した。
+/// レイヤー全体を変形したい場合は「全選択」してから各モードを使う。
+/// モードはキャンバス左下のボタンで明示的に切り替える（掴んだ位置から
+/// 推測する方式は、ハンドルがドラッグ中しか描かれず発見できなかった）。
+enum SelectionTransformMode { move, scale, rotate }
 
 /// 図形ツールの種別（タップでポップアップ表示・OFF/線/四角形/円）
 enum ShapeKind { off, line, rect, circle }

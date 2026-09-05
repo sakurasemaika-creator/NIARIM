@@ -8,7 +8,8 @@ import 'package:flutter/rendering.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:niarim/app_bootstrap.dart';
 import 'package:niarim/engine/undo_manager.dart' as app_undo;
-import 'package:niarim/screens/canvas/canvas_screen.dart' show DrawingTool;
+import 'package:niarim/screens/canvas/canvas_screen.dart'
+    show DrawingTool, SelectionTransformMode;
 import 'package:niarim/screens/canvas/widgets/canvas_area.dart';
 import 'package:niarim/services/project_service.dart';
 import 'package:provider/provider.dart';
@@ -20,7 +21,9 @@ void main() {
   setUpAll(() => out.createSync(recursive: true));
   setUp(() => SharedPreferences.setMockInitialValues({}));
 
-  testWidgets('実CanvasAreaで選択回転ハンドルを90度操作し色別位置とUndo/Redoを検証する', (tester) async {
+  testWidgets('実CanvasAreaで選択範囲を回転モードで90度操作し色別位置とUndo/Redoを検証する', (
+    tester,
+  ) async {
     tester.view.physicalSize = const Size(480, 420);
     tester.view.devicePixelRatio = 1;
     addTearDown(tester.view.resetPhysicalSize);
@@ -76,6 +79,9 @@ void main() {
                     currentTool: DrawingTool.selectRect,
                     currentFrame: 0,
                     sceneId: scene.id,
+                    // 変形ツールの統合により、選択範囲を掴んだときの操作は
+                    // キャンバス左下のモードボタンで選ぶ方式になった。
+                    selectionTransformMode: SelectionTransformMode.rotate,
                   ),
                 ),
               ),
@@ -103,17 +109,18 @@ void main() {
       () => _shot(boundaryKey, '${out.path}/selection_rotate_01_selected.png'),
     );
 
-    // 回転ハンドル=(center.x, top-40)=(48,10)。開始ベクトル(0,-60)から
+    // bounds=(24,50)-(72,90)、center=(48,70)。回転モードでは選択範囲の内側
+    // どこを掴んでもよいので(48,55)を掴む。開始ベクトル(0,-15)から
     // current=(88,70)の(40,0)へ移すため +90° 回転になる。
     final rotate = await tester.startGesture(
-      at(const Offset(48, 10)),
+      at(const Offset(48, 55)),
       kind: PointerDeviceKind.touch,
     );
     await tester.pump();
     expect(
       tm.recordingTouchedTiles,
       isNotNull,
-      reason: '上部回転ハンドルが実際に回転モードを開始すること',
+      reason: '回転モードで選択範囲を掴むと実際に回転が開始されること',
     );
     await _waitForAlpha(tester, tm, key, 36, 62, 0);
     await tester.runAsync(

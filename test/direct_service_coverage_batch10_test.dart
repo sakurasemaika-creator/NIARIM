@@ -111,7 +111,6 @@ void main() {
         ToolbarItemId.finger,
         ToolbarItemId.pan,
         ToolbarItemId.select,
-        ToolbarItemId.transform,
         ToolbarItemId.text,
         ToolbarItemId.shape,
       ];

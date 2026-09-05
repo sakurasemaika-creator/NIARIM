@@ -6,6 +6,7 @@ import 'dart:ui' as ui;
 import 'package:flutter/foundation.dart' show compute;
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/scheduler.dart';
 import 'package:provider/provider.dart';
 
 import '../../../engine/bucket_fill_engine.dart';
@@ -39,7 +40,9 @@ import '../../../services/tone_service.dart';
 import '../canvas_screen.dart';
 import 'pen_sub_tool_panel.dart' show PenSubTool;
 
-/// 変形ツールの操作モード（移動・拡大縮小・回転）
+/// 選択範囲の変形の内部モード（移動・拡大縮小・回転）。
+/// 外部（キャンバス左下のモード切替ボタン）からは[SelectionTransformMode]で
+/// 指定され、[_modeOf]でこの内部表現へ変換される。
 enum _TransformMode { translate, scale, rotate }
 
 /// キャンバスウィジェット上で、実際にプロジェクトの内容
@@ -135,6 +138,10 @@ class CanvasArea extends StatefulWidget {
   final int clearSelectionToken;
   final ValueChanged<bool>? onSelectionActiveChanged;
 
+  /// 選択範囲を掴んだときの操作モード。キャンバス左下のモード切替ボタン
+  /// （canvas_screen.dart）で選ばれた値がそのまま渡ってくる。
+  final SelectionTransformMode selectionTransformMode;
+
   const CanvasArea({
     super.key,
     this.onTapForText,
@@ -168,6 +175,7 @@ class CanvasArea extends StatefulWidget {
     this.selectAllSelectionToken = 0,
     this.clearSelectionToken = 0,
     this.onSelectionActiveChanged,
+    this.selectionTransformMode = SelectionTransformMode.move,
   });
 
   @override
@@ -307,12 +315,6 @@ class _CanvasAreaState extends State<CanvasArea> {
   // ─── 移動ツール ───────────────────────────────────────────────────────
   Offset? _moveStart;
   Offset _moveDelta = Offset.zero;
-
-  // ─── 変形ツール ───────────────────────────────────────────────────────
-  _TransformMode _transformMode = _TransformMode.translate;
-  Offset? _transformStart;
-  Offset? _transformCenter;
-  Matrix4? _transformLive;
 
   // ─── レイヤー全体の自由変形・メッシュ変形（新機能） ────────────────────
   // 格子点は行優先（(rows+1)*(cols+1)点）でキャンバスピクセル座標系。
@@ -516,7 +518,28 @@ class _CanvasAreaState extends State<CanvasArea> {
     _selectionOverlayImage?.dispose();
     _selectionOverlayImage = null;
     setState(() => _selectionMask = null);
-    widget.onSelectionActiveChanged?.call(false);
+    _notifySelectionActive(false);
+  }
+
+  /// 選択範囲の有無を親（canvas_screen.dart）へ知らせる。
+  ///
+  /// 「全選択」「全解除」ボタンはトークンの増加＝[didUpdateWidget]経由で
+  /// ここへ来るため、ビルド中に親のsetStateを直接呼ぶと
+  /// 「setState() called during build」で例外になり、通知そのものが
+  /// 届かない（実際に「全選択」を押しても全解除ボタンとモードボタンが
+  /// 出ないバグになっていた）。ビルド中はフレーム後まで遅らせる。
+  void _notifySelectionActive(bool active) {
+    final callback = widget.onSelectionActiveChanged;
+    if (callback == null) return;
+    final phase = SchedulerBinding.instance.schedulerPhase;
+    if (phase == SchedulerPhase.persistentCallbacks ||
+        phase == SchedulerPhase.midFrameMicrotasks) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) callback(active);
+      });
+      return;
+    }
+    callback(active);
   }
 
   /// キャンバスの全ピクセルを選択する。UIの「全選択」から呼ばれる。
@@ -614,7 +637,7 @@ class _CanvasAreaState extends State<CanvasArea> {
     _selectionOverlayImage = null;
     _selectionMask = mask;
     setState(() {});
-    widget.onSelectionActiveChanged?.call(true);
+    _notifySelectionActive(true);
     final rgba = Uint8List(w * h * 4);
     for (int i = 0; i < w * h; i++) {
       if (mask[i] == 0) continue;
@@ -880,10 +903,6 @@ class _CanvasAreaState extends State<CanvasArea> {
       });
       return;
     }
-    if (widget.currentTool == DrawingTool.transform) {
-      _beginTransform(canvasPos);
-      return;
-    }
     if (widget.currentTool == DrawingTool.meshTransform) {
       final idx = _hitTestMeshPoint(canvasPos);
       if (idx != null) {
@@ -1012,11 +1031,6 @@ class _CanvasAreaState extends State<CanvasArea> {
       setState(() => _moveDelta = canvasPos - _moveStart!);
       return;
     }
-    if (widget.currentTool == DrawingTool.transform &&
-        _transformStart != null) {
-      _updateTransform(canvasPos);
-      return;
-    }
     if (widget.currentTool == DrawingTool.meshTransform) {
       final idx = _meshPointerToIndex[event.pointer];
       final points = meshControlPoints;
@@ -1125,10 +1139,6 @@ class _CanvasAreaState extends State<CanvasArea> {
     }
     if (widget.currentTool == DrawingTool.move) {
       _commitMove();
-      return;
-    }
-    if (widget.currentTool == DrawingTool.transform) {
-      _commitTransform();
       return;
     }
     if (widget.currentTool == DrawingTool.meshTransform) {
@@ -1759,47 +1769,9 @@ class _CanvasAreaState extends State<CanvasArea> {
     );
   }
 
-  // ─── 変形ツール ───────────────────────────────────────────────────────
+  // ─── 選択範囲の変形行列 ───────────────────────────────────────────────
 
-  void _beginTransform(Offset canvasPos) {
-    final w = _tileManager.canvasWidth.toDouble();
-    final h = _tileManager.canvasHeight.toDouble();
-    final center = Offset(w / 2, h / 2);
-    final threshold = math.min(w, h) * 0.05;
-    final scaleHandle = Offset(w, h);
-    final rotateHandle = Offset(w / 2, -40);
-    _TransformMode mode;
-    if ((canvasPos - scaleHandle).distance < threshold) {
-      mode = _TransformMode.scale;
-    } else if ((canvasPos - rotateHandle).distance < threshold) {
-      mode = _TransformMode.rotate;
-    } else {
-      mode = _TransformMode.translate;
-    }
-    setState(() {
-      _transformMode = mode;
-      _transformStart = canvasPos;
-      _transformCenter = center;
-      _transformLive = Matrix4.identity();
-    });
-  }
-
-  void _updateTransform(Offset canvasPos) {
-    final start = _transformStart;
-    final center = _transformCenter;
-    if (start == null || center == null) return;
-    setState(
-      () => _transformLive = _computeTransformMatrix(
-        _transformMode,
-        start,
-        canvasPos,
-        center,
-      ),
-    );
-  }
-
-  /// 移動・拡大縮小・回転の行列を計算する（変形ツール・選択ツールの
-  /// 変形操作で共通利用）。
+  /// 移動・拡大縮小・回転の行列を計算する。
   static Matrix4 _computeTransformMatrix(
     _TransformMode mode,
     Offset start,
@@ -1824,25 +1796,6 @@ class _CanvasAreaState extends State<CanvasArea> {
             Matrix4.rotationZ(a1 - a0) *
             Matrix4.translationValues(-center.dx, -center.dy, 0);
     }
-  }
-
-  void _commitTransform() {
-    final matrix = _transformLive;
-    setState(() {
-      _transformStart = null;
-      _transformCenter = null;
-      _transformLive = null;
-    });
-    if (matrix == null || matrix.isIdentity()) return;
-    _beginTileUndo();
-    _tileManager.transformLayer(_tileKeyFor(_layerId), matrix.storage).then((
-      _,
-    ) {
-      if (!mounted) return;
-      _scheduleComposite();
-      _markLineartDirtyIfNeeded();
-      _finishTileUndo();
-    });
   }
 
   // ─── レイヤー全体の自由変形・メッシュ変形（新機能） ────────────────────
@@ -2050,28 +2003,34 @@ class _CanvasAreaState extends State<CanvasArea> {
     return mask[y * w + x] != 0;
   }
 
-  /// [canvasPos]が既存の選択範囲の変形ハンドル／内側に該当すれば変形操作を
+  /// [canvasPos]が既存の選択範囲を掴んだ位置に該当すれば、キャンバス左下の
+  /// モード切替ボタンで選ばれているモード（移動・拡大縮小・回転）で変形操作を
   /// 開始してtrueを返す。該当しなければfalse（＝新規選択の開始に進む）。
+  ///
+  /// 掴んだ位置からモードを推測する方式は採らない。ハンドルはドラッグ中しか
+  /// 描かれず、掴む前は「どこを掴めば回転できるのか」が画面に出ていないため
+  /// 発見できなかった（独立した変形ツールを廃してモードボタンへ統合した理由）。
   bool _beginSelectionTransformIfHit(Offset canvasPos) {
     final bounds = _selectionMaskBounds();
     if (bounds == null) return false;
-    final threshold =
+    // 拡大縮小・回転は選択範囲の外へ大きく振る操作なので、マスクの内側
+    // ちょうどではなくバウンディングボックスを少し広げた範囲で掴めるようにする。
+    final slack =
         math.min(_tileManager.canvasWidth, _tileManager.canvasHeight) * 0.05;
-    final scaleHandle = bounds.bottomRight;
-    final rotateHandle = Offset(bounds.center.dx, bounds.top - 40);
-    _TransformMode mode;
-    if ((canvasPos - scaleHandle).distance < threshold) {
-      mode = _TransformMode.scale;
-    } else if ((canvasPos - rotateHandle).distance < threshold) {
-      mode = _TransformMode.rotate;
-    } else if (_selectionMaskContains(canvasPos)) {
-      mode = _TransformMode.translate;
-    } else {
-      return false;
-    }
+    final mode = _modeOf(widget.selectionTransformMode);
+    final hit = mode == _TransformMode.translate
+        ? _selectionMaskContains(canvasPos)
+        : bounds.inflate(slack).contains(canvasPos);
+    if (!hit) return false;
     _beginSelectionTransform(canvasPos, mode, bounds);
     return true;
   }
+
+  static _TransformMode _modeOf(SelectionTransformMode mode) => switch (mode) {
+    SelectionTransformMode.move => _TransformMode.translate,
+    SelectionTransformMode.scale => _TransformMode.scale,
+    SelectionTransformMode.rotate => _TransformMode.rotate,
+  };
 
   void _beginSelectionTransform(
     Offset canvasPos,
@@ -3121,12 +3080,11 @@ class _CanvasAreaState extends State<CanvasArea> {
           if (e.kind == PointerDeviceKind.touch ||
               e.kind == PointerDeviceKind.stylus) {
             final edgeSide = _edgeDoubleTapSide(e.localPosition.dx);
-            // レイヤー全体変形・メッシュ変形では操作ハンドル自体がキャンバス端に
-            // 置かれる。端ダブルタップ専用ゾーンを先に奪うと右下の拡縮ハンドルや
-            // 端のメッシュ点がタッチ不能になるため、この2ツールではツール側へ
-            // ポインターを優先して渡す。フレーム送りは他ツールでは従来通り有効。
+            // メッシュ変形では操作ハンドル（格子点）自体がキャンバス端に
+            // 置かれる。端ダブルタップ専用ゾーンを先に奪うと端の格子点が
+            // タッチ不能になるため、このツールではツール側へポインターを
+            // 優先して渡す。フレーム送りは他ツールでは従来通り有効。
             final transformNeedsEdge =
-                widget.currentTool == DrawingTool.transform ||
                 widget.currentTool == DrawingTool.meshTransform;
             if (edgeSide != null && !transformNeedsEdge) {
               _handleEdgeZoneTap(edgeSide);
@@ -3244,11 +3202,6 @@ class _CanvasAreaState extends State<CanvasArea> {
                     moveDelta: widget.currentTool == DrawingTool.move
                         ? _moveDelta
                         : null,
-                    transformLive: widget.currentTool == DrawingTool.transform
-                        ? _transformLive
-                        : null,
-                    showTransformHandles:
-                        widget.currentTool == DrawingTool.transform,
                     floatingSelectionImage: _floatingSelectionImage,
                     selectionTransformLive: _selectionTransformLive,
                     selectionTransformBounds: _selectionTransformBounds,
@@ -3333,8 +3286,6 @@ class _CanvasPainter extends CustomPainter {
   final Offset? shapeStart;
   final Offset? shapeEnd;
   final Offset? moveDelta;
-  final Matrix4? transformLive;
-  final bool showTransformHandles;
   // 選択ツールの移動・回転・拡大縮小：ドラッグ中は選択範囲の
   // 中身を切り取った「浮動画像」をコミット前のプレビューとして表示する。
   final ui.Image? floatingSelectionImage;
@@ -3381,8 +3332,6 @@ class _CanvasPainter extends CustomPainter {
     this.shapeStart,
     this.shapeEnd,
     this.moveDelta,
-    this.transformLive,
-    this.showTransformHandles = false,
     this.floatingSelectionImage,
     this.selectionTransformLive,
     this.selectionTransformBounds,
@@ -3463,17 +3412,12 @@ class _CanvasPainter extends CustomPainter {
         ..blendMode = mapLayerBlendMode(currentLayerBlendMode);
       final sx = drawingRect.width / compositeImage!.width;
       final sy = drawingRect.height / compositeImage!.height;
-      if (moveDelta != null || transformLive != null) {
-        // 移動・変形ツール：ドラッグ中はコミット前のプレビューとして表示する
+      if (moveDelta != null) {
+        // 移動ツール：ドラッグ中はコミット前のプレビューとして表示する
         canvas.save();
         canvas.translate(drawingRect.left, drawingRect.top);
         canvas.scale(sx, sy);
-        if (moveDelta != null) {
-          canvas.translate(moveDelta!.dx, moveDelta!.dy);
-        }
-        if (transformLive != null) {
-          canvas.transform(transformLive!.storage);
-        }
+        canvas.translate(moveDelta!.dx, moveDelta!.dy);
         canvas.drawImage(compositeImage!, Offset.zero, currentPaint);
         canvas.restore();
       } else {
@@ -3624,41 +3568,6 @@ class _CanvasPainter extends CustomPainter {
         case ShapeKind.off:
           break;
       }
-    }
-
-    // 変形ツール：バウンディングボックス・拡縮ハンドル・回転ハンドル
-    if (showTransformHandles) {
-      final sx = drawingRect.width / (project?.exportWidth ?? 1920);
-      final sy = drawingRect.height / (project?.exportHeight ?? 1080);
-      Offset ts(Offset p) => drawingRect.topLeft + Offset(p.dx * sx, p.dy * sy);
-      final w = (project?.exportWidth ?? 1920).toDouble();
-      final h = (project?.exportHeight ?? 1080).toDouble();
-      final boxPaint = Paint()
-        ..color = handleColor
-        ..style = PaintingStyle.stroke
-        ..strokeWidth = 1.5;
-      canvas.drawRect(
-        Rect.fromPoints(ts(Offset.zero), ts(Offset(w, h))),
-        boxPaint,
-      );
-      void handle(Offset p) {
-        canvas.drawCircle(
-          p,
-          8,
-          Paint()..color = handleColor.withValues(alpha: 0.85),
-        );
-        canvas.drawCircle(
-          p,
-          8,
-          Paint()
-            ..color = handleOutlineColor
-            ..style = PaintingStyle.stroke
-            ..strokeWidth = 1.5,
-        );
-      }
-
-      handle(ts(Offset(w, h))); // 拡縮ハンドル
-      handle(ts(Offset(w / 2, -40))); // 回転ハンドル
     }
 
     // レイヤー全体の自由変形・メッシュ変形：格子線・各格子点のドラッグハンドル
@@ -3995,8 +3904,6 @@ class _CanvasPainter extends CustomPainter {
       old.shapeStart != shapeStart ||
       old.shapeEnd != shapeEnd ||
       old.moveDelta != moveDelta ||
-      old.transformLive != transformLive ||
-      old.showTransformHandles != showTransformHandles ||
       old.floatingSelectionImage != floatingSelectionImage ||
       old.selectionTransformLive != selectionTransformLive ||
       old.selectionTransformBounds != selectionTransformBounds ||

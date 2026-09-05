@@ -8,7 +8,8 @@ import 'package:flutter/rendering.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:niarim/app_bootstrap.dart';
 import 'package:niarim/engine/undo_manager.dart' as app_undo;
-import 'package:niarim/screens/canvas/canvas_screen.dart' show DrawingTool;
+import 'package:niarim/screens/canvas/canvas_screen.dart'
+    show DrawingTool, SelectionTransformMode;
 import 'package:niarim/screens/canvas/widgets/canvas_area.dart';
 import 'package:niarim/services/project_service.dart';
 import 'package:provider/provider.dart';
@@ -20,9 +21,10 @@ void main() {
   setUpAll(() => out.createSync(recursive: true));
   setUp(() => SharedPreferences.setMockInitialValues({}));
 
-  testWidgets('実CanvasAreaのレイヤー全体変形で右下拡縮ハンドルをタッチ操作できUndo/Redoできる', (
-    tester,
-  ) async {
+  // 独立した「変形ツール」（DrawingTool.transform）は選択ツールへ統合した。
+  // レイヤー全体の変形は「全選択」＋左下の拡大縮小モードで行う経路になったので、
+  // その経路が実画素まで到達することをここで見張る。
+  testWidgets('全選択＋拡大縮小モードでレイヤー全体をタッチ操作で縮小できUndo/Redoできる', (tester) async {
     tester.view.physicalSize = const Size(480, 360);
     tester.view.devicePixelRatio = 1;
     addTearDown(tester.view.resetPhysicalSize);
@@ -77,11 +79,9 @@ void main() {
                 child: SizedBox(
                   width: 288,
                   height: 240,
-                  child: CanvasArea(
+                  child: _SelectionTransformHarness(
                     project: p,
-                    currentLayerId: layer.id,
-                    currentTool: DrawingTool.transform,
-                    currentFrame: 0,
+                    layerId: layer.id,
                     sceneId: scene.id,
                   ),
                 ),
@@ -96,17 +96,32 @@ void main() {
       () => _capture(boundaryKey, '${out.path}/transform_whole_before_ui.png'),
     );
 
+    // 「全選択」ボタン相当（selectAllSelectionToken）でレイヤー全体を選択範囲にする。
+    await tester.tap(find.byKey(const ValueKey('select-all')));
+    await tester.pump();
+
     final origin = tester.getTopLeft(find.byType(CanvasArea));
     Offset at(double x, double y) => origin + Offset(x * 3, y * 3);
 
-    // 右下ハンドルは(96,80)。境界ちょうどを避け95.5,79.5から開始しても
-    // hit threshold内なのでscaleモードになるはず。中心へ近付けて約0.6倍に縮小する。
+    // 拡大縮小モードでは選択範囲の内側どこを掴んでもよい。中心(48,40)から
+    // 見て距離が0.6倍になる位置までドラッグし、約0.6倍へ縮小する。
+    // キャンバス左右端32pxはダブルタップ専用ゾーンなので、掴む位置は
+    // ウィジェット座標で32〜256pxの内側（＝キャンバス座標で約11〜85）に収める。
     final g = await tester.startGesture(
-      at(95.5, 79.5),
+      at(80.0, 60.0),
       kind: PointerDeviceKind.touch,
     );
     await tester.pump();
-    await g.moveTo(at(76.0, 64.0));
+    // 掴んだ瞬間に選択範囲の中身を切り取る「浮動画像」の生成
+    // （compositeLayerToImage→toByteData→decodeImageFromPixels）が走る。
+    // これはFakeAsyncでは進まないので実時間で待つ（CLAUDE.md参照）。
+    for (var i = 0; i < 12; i++) {
+      await tester.runAsync(
+        () => Future<void>.delayed(const Duration(milliseconds: 50)),
+      );
+      await tester.pump();
+    }
+    await g.moveTo(at(67.2, 52.0));
     await tester.pump(const Duration(milliseconds: 50));
     await g.up();
     await tester.pump();
@@ -121,7 +136,7 @@ void main() {
     expect(
       after,
       isNot(orderedEquals(before)),
-      reason: '右下ハンドルのタッチドラッグが実画素変形へ到達すること',
+      reason: '全選択＋拡大縮小モードのタッチドラッグが実画素変形へ到達すること',
     );
     expect(
       afterCount,
@@ -175,4 +190,56 @@ Uint8List _read(dynamic tm, String key, int w, int h) {
     o.setRange(y * w * 4, (y + 1) * w * 4, tile, y * 256 * 4);
   }
   return o;
+}
+
+/// 「全選択」ボタン（canvas_screen.dartの左下バー）に相当するトークン更新と、
+/// 拡大縮小モードの指定を再現する最小のテスト用ラッパー。
+class _SelectionTransformHarness extends StatefulWidget {
+  const _SelectionTransformHarness({
+    required this.project,
+    required this.layerId,
+    required this.sceneId,
+  });
+
+  final dynamic project;
+  final String layerId;
+  final String sceneId;
+
+  @override
+  State<_SelectionTransformHarness> createState() =>
+      _SelectionTransformHarnessState();
+}
+
+class _SelectionTransformHarnessState
+    extends State<_SelectionTransformHarness> {
+  int _selectAllToken = 0;
+
+  @override
+  Widget build(BuildContext context) {
+    return Stack(
+      children: [
+        CanvasArea(
+          project: widget.project,
+          currentLayerId: widget.layerId,
+          currentTool: DrawingTool.selectRect,
+          currentFrame: 0,
+          sceneId: widget.sceneId,
+          selectAllSelectionToken: _selectAllToken,
+          selectionTransformMode: SelectionTransformMode.scale,
+        ),
+        Positioned(
+          right: 0,
+          top: 0,
+          child: SizedBox(
+            width: 1,
+            height: 1,
+            child: GestureDetector(
+              key: const ValueKey('select-all'),
+              onTap: () => setState(() => _selectAllToken++),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
 }

@@ -8,6 +8,15 @@ class ThemeService extends ChangeNotifier {
   static const _prefsPresetsKey = 'theme_presets';
   static const _prefsCurrentIdKey = 'theme_current_id';
 
+  /// 現在の色そのもの（JSON）。テーマ一覧から配色だけ取り込んだ状態は
+  /// どのプリセットとも一致しないため、IDだけでは復元できない。
+  static const _prefsCurrentJsonKey = 'theme_current_json';
+
+  /// テーマ一覧から配色だけ取り込んだ「現在の色」に付けるID。
+  /// プリセット一覧には現れないIDなので、この状態では一覧のどのテーマにも
+  /// チェックマークが付かず、色を編集してもどのテーマも書き換わらない。
+  static const String customCurrentId = 'theme_custom_current';
+
   final List<AppThemePreset> _presets = [];
   AppThemePreset _current = AppThemePreset.defaultLight;
 
@@ -317,8 +326,16 @@ class ThemeService extends ChangeNotifier {
       final missing = _builtInPresets.where((p) => !existingIds.contains(p.id));
       if (missing.isNotEmpty) _presets.addAll(missing);
     }
+    // 現在の色は「一覧のどれか」とは限らない（テーマ一覧から配色だけ
+    // 取り込んだ状態）ので、まずJSONそのものから復元する。無ければ旧形式の
+    // ID参照へフォールバックする（アプリ更新前からのデータ用）。
+    final currentJson = prefs.getString(_prefsCurrentJsonKey);
     final currentId = prefs.getString(_prefsCurrentIdKey);
-    if (currentId != null) {
+    if (currentJson != null) {
+      _current = AppThemePreset.fromJson(
+        jsonDecode(currentJson) as Map<String, dynamic>,
+      );
+    } else if (currentId != null) {
       _current = _presets.firstWhere(
         (p) => p.id == currentId,
         orElse: () => _presets.first,
@@ -335,8 +352,12 @@ class ThemeService extends ChangeNotifier {
       _presets.map((p) => jsonEncode(p.toJson())).toList(),
     );
     await prefs.setString(_prefsCurrentIdKey, _current.id);
+    await prefs.setString(_prefsCurrentJsonKey, jsonEncode(_current.toJson()));
   }
 
+  /// テーマ一覧の三点メニュー「編集」から呼ぶ：そのテーマ自体を編集対象に
+  /// する（一覧でチェックが付き、以後のカラーカスタマイズはこのテーマへ
+  /// 上書き保存される）。
   void applyPreset(String id) {
     final preset = _presets.firstWhere(
       (p) => p.id == id,
@@ -346,6 +367,34 @@ class ThemeService extends ChangeNotifier {
     notifyListeners();
     _persist();
   }
+
+  /// テーマ一覧のカードをタップしたときに呼ぶ：**配色だけ**を現在の色設定へ
+  /// 取り込む。取り込んだあとにカラーカスタマイズで色を変えても、取り込み元の
+  /// テーマは書き換わらない（＝一覧のテーマは「見本」として扱う）。
+  /// 現在の色はどのプリセットとも一致しなくなるため、一覧のどのテーマにも
+  /// チェックマークは付かない。
+  void adoptPresetColors(String id) {
+    final preset = _presets.firstWhere(
+      (p) => p.id == id,
+      orElse: () => _current,
+    );
+    _current = preset.copyWith(id: customCurrentId);
+    notifyListeners();
+    _persist();
+  }
+
+  /// 引き継ぎ（.niatra）から「現在の色」を復元する。一覧のどのテーマとも
+  /// 一致しない配色（テーマ一覧から取り込んで手直しした状態）もそのまま
+  /// 持ち込めるよう、プリセット一覧へは足さずに現在の色だけを差し替える。
+  void restoreCurrent(AppThemePreset preset) {
+    _current = preset;
+    notifyListeners();
+    _persist();
+  }
+
+  /// 現在の色が一覧のいずれかのテーマそのもの（＝編集対象）かどうか。
+  /// falseなら配色だけ取り込んだ状態で、色を変えてもテーマは書き換わらない。
+  bool get isEditingPreset => _presets.any((p) => p.id == _current.id);
 
   /// カラーピッカーでのライブプレビュー用（「変更はアプリ全体へ
   /// 即時反映される」）。ドラッグ中に毎回SharedPreferencesへ書き込むのを
@@ -359,6 +408,15 @@ class ThemeService extends ChangeNotifier {
   /// 一覧にも反映：組み込みプリセットを編集した場合はそのプリセット自体が
   /// 上書きされる。これは「上書き保存」と同じ挙動）。
   void commitCurrent() {
+    // 一覧から配色だけ取り込んだ状態は「どのテーマの編集でもない」ので、
+    // プリセット一覧へは書き戻さず現在の色としてだけ保存する
+    // （書き戻すと、見本のつもりでタップしたテーマが勝手に上書きされたり、
+    // 一覧に見えないテーマが増えたりする）。
+    if (!isEditingPreset) {
+      notifyListeners();
+      _persist();
+      return;
+    }
     savePreset(_current);
   }
 

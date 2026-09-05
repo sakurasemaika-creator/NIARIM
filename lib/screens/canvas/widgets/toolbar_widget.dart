@@ -139,12 +139,6 @@ class ToolbarWidget extends StatelessWidget {
         l10n.toolbarItemPan,
       ),
       ToolbarItemId.select => _selectToolButton(context, l10n),
-      ToolbarItemId.transform => _toolButton(
-        context,
-        Icons.transform,
-        DrawingTool.transform,
-        l10n.toolbarItemTransform,
-      ),
       ToolbarItemId.text => FirstUseTooltip(
         tooltipKey: 'text_tool',
         message: l10n.toolbarTextFirstUseTip,

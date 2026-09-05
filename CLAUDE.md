@@ -38,7 +38,7 @@
    `test/helpers/color_channels.dart`の`.red8`/`.green8`/`.blue8`/
    `.alpha8`を使う。テスト内のデバッグ出力は`print`ではなく
    `debugPrint`を使う）
-3. `flutter test`（ベースライン：**681 tests**、全成功。うち大半は
+3. `flutter test`（ベースライン：**691 tests**、全成功。うち大半は
    `test/app_smoke_test.dart`の自律スモークテスト。詳細は後述）
 4. **コード変更後は`dart format lib test tool`をかける**。
    リポジトリ全体を一度フォーマッタに通してあるので（コミット
@@ -248,6 +248,30 @@ FONT_LICENSES.txt`への本文・著作権表示の追記、`license_screen.dart
   Wrapを使うこと。`test/text_scale_layout_test.dart`が1.3倍・2.0倍で
   全ルートを巡回して監視しているので、レイアウトを触ったらこのテストが
   通ることを確認する。
+- **子から親へ「状態が変わった」を知らせるコールバックは、
+  `didUpdateWidget`から呼ばれる経路が無いか確認すること**：
+  `CanvasArea`は「全選択」「全解除」「選択範囲を反転」をトークン方式
+  （親が`int`をインクリメント→子の`didUpdateWidget`で検知）で受け取る。
+  この経路は**ビルド中に走る**ため、その中から
+  `widget.onSelectionActiveChanged?.call(...)`のように親の`setState`を
+  直接呼ぶと`setState() called during build`で例外になり、
+  **通知そのものが親へ届かない**。実際に「全選択」を押しても
+  全解除ボタンもモードボタンも出ない不具合になっていた
+  （例外はコンソールに出るだけなので、テストが無いと気付けない）。
+  `canvas_area.dart`の`_notifySelectionActive()`のように、
+  `SchedulerBinding.instance.schedulerPhase`を見てビルド中なら
+  `addPostFrameCallback`へ回すこと。テスト側も、この経路の反映には
+  **pumpが2回**要る点に注意。
+- **キャンバスモードのバー（上部バー・太さ/不透明度スライダー・
+  ツールバー・折りたたみハンドル）へ背景色を塗らないこと**：これらは
+  「アイコンだけがキャンバスの上に浮かぶ」意匠だが、実装上はキャンバスの
+  Stackの**外側**（`Column`の別の行）にいる。そのため`Colors.transparent`に
+  しても透過した先はキャンバス外周ではなく**Scaffold本来の背景色**で、
+  バーの帯だけが明るい別パネルのように浮いて見える。`canvas_screen.dart`の
+  `Scaffold`へ`backgroundColor: kCanvasOutsideColor`を指定して**背後の側**を
+  揃えてあるので、バー側は透明のままにすること（過去に2度、バー側へ色を
+  塗る／塗り直しが剥がれる形で再発している）。
+  `test/canvas_bar_transparency_test.dart`が両側を見張っている。
 - **`shouldRepaint`を1行で無効化しないこと**：`_CanvasPainter.shouldRepaint`は
   30項目を比較しているが、`build()`側で`Map.unmodifiable(...)`のように
   **毎回新しいオブジェクト**を作って渡すと、その1項目が常に不一致になり
