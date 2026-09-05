@@ -4089,22 +4089,34 @@ class AppLocalizationsKo extends AppLocalizations {
   String get canvasDeselectAllButton => '전체 해제';
 
   @override
-  String get canvasSelectionModeMove => '이동';
-
-  @override
-  String get canvasSelectionModeScale => '크기 조절';
-
-  @override
-  String get canvasSelectionModeRotate => '회전';
-
-  @override
   String get canvasSelectionFreeTransform => '자유 변형';
 
   @override
   String get canvasSelectionMeshTransform => '메시 변형';
 
   @override
-  String get canvasSelectionExitTooltip => '선택 도구 종료';
+  String get canvasSelectionRevertButton => '변형 취소';
+
+  @override
+  String get canvasSelectionRevertTooltip => '변형을 취소하고 선택 도구를 종료';
+
+  @override
+  String get canvasSelectionApplyButton => '변형 적용';
+
+  @override
+  String get canvasSelectionApplyTooltip => '변형을 확정하고 선택 도구를 종료';
+
+  @override
+  String get canvasSelectionSliderMoveX => 'X 이동';
+
+  @override
+  String get canvasSelectionSliderMoveY => 'Y 이동';
+
+  @override
+  String get canvasSelectionSliderScale => '크기 조절';
+
+  @override
+  String get canvasSelectionSliderRotate => '회전';
 
   @override
   String get canvasApplyFilterButton => '필터 적용';

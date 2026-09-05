@@ -18,6 +18,7 @@ import 'package:niarim/l10n/app_localizations.dart';
 import 'package:niarim/models/toolbar_item.dart';
 import 'package:niarim/screens/canvas/canvas_screen.dart';
 import 'package:niarim/screens/canvas/widgets/frame_strip_widget.dart';
+import 'package:niarim/screens/canvas/widgets/selection_transform_sliders.dart';
 import 'package:niarim/screens/canvas/widgets/toolbar_widget.dart';
 import 'package:niarim/services/project_service.dart';
 import 'package:niarim/services/theme_service.dart';
@@ -71,11 +72,10 @@ void main() {
     for (final literal in [
       "'全選択'",
       "'全解除'",
-      "'移動'",
-      "'回転'",
-      "'拡大縮小'",
       "'自由変形'",
       "'メッシュ変形'",
+      "'変形キャンセル'",
+      "'変形適用'",
     ]) {
       expect(
         source.contains('Text($literal)'),
@@ -85,7 +85,7 @@ void main() {
     }
   });
 
-  testWidgets('選択ツールのバーがモードボタンを出し、ツールバーとフレーム一覧を畳む', (tester) async {
+  testWidgets('選択ツールのバーが新仕様の2段構成で出て、ツールバーとフレーム一覧を畳む', (tester) async {
     tester.view.physicalSize = const Size(960, 2160);
     tester.view.devicePixelRatio = 3;
     addTearDown(tester.view.resetPhysicalSize);
@@ -153,10 +153,20 @@ void main() {
     await tester.tap(selectTool.first);
     await tester.pump(const Duration(milliseconds: 300));
 
-    expect(find.text(l10n.canvasSelectAllButton), findsOneWidget);
-    expect(find.text(l10n.canvasDeselectAllButton), findsOneWidget);
-    // 選択範囲がまだ無いのでモードボタンは出ない（掴む対象が無い）。
-    expect(find.text(l10n.canvasSelectionModeRotate), findsNothing);
+    // 1段目：自由変形／メッシュ変形／変形キャンセル、2段目：全選択／全解除／変形適用。
+    for (final label in [
+      l10n.canvasSelectionFreeTransform,
+      l10n.canvasSelectionMeshTransform,
+      l10n.canvasSelectionRevertButton,
+      l10n.canvasSelectAllButton,
+      l10n.canvasDeselectAllButton,
+      l10n.canvasSelectionApplyButton,
+    ]) {
+      expect(find.text(label), findsOneWidget, reason: '$label がバーに無い');
+    }
+    // 移動・拡大縮小・回転はボタンではなく、選択範囲のハンドルと
+    // 画面下部のスライダーで行うのでバーには出ない。
+    expect(find.byType(SelectionTransformSliders), findsNothing);
     // バーが出ている間はツールバーとフレーム一覧を畳む。
     expect(
       find.byType(ToolbarWidget),
@@ -178,48 +188,35 @@ void main() {
       await tester.pump(const Duration(milliseconds: 50));
     }
 
-    expect(find.text(l10n.canvasSelectionModeMove), findsOneWidget);
-    expect(find.text(l10n.canvasSelectionModeScale), findsOneWidget);
-    expect(find.text(l10n.canvasSelectionModeRotate), findsOneWidget);
-    expect(find.text(l10n.canvasSelectionFreeTransform), findsOneWidget);
-    expect(find.text(l10n.canvasSelectionMeshTransform), findsOneWidget);
-
-    // 既定は「移動」。回転を押すとそちらが選択状態（差し色）になる。
-    final scheme = Theme.of(
-      tester.element(find.byType(CanvasScreen)),
-    ).colorScheme;
-    Color? modeColor(String label) {
-      final box = tester.widget<Container>(
-        find
-            .ancestor(of: find.text(label), matching: find.byType(Container))
-            .first,
-      );
-      return (box.decoration as BoxDecoration?)?.color;
+    // 選択範囲ができたら画面下部に変形量のスライダーが出る。
+    expect(
+      find.byType(SelectionTransformSliders),
+      findsOneWidget,
+      reason: '選択範囲があるときは変形スライダーを出すこと',
+    );
+    for (final label in [
+      l10n.canvasSelectionSliderMoveX,
+      l10n.canvasSelectionSliderMoveY,
+      l10n.canvasSelectionSliderScale,
+      l10n.canvasSelectionSliderRotate,
+    ]) {
+      expect(find.text(label), findsOneWidget, reason: '$label のスライダーが無い');
     }
-
-    expect(modeColor(l10n.canvasSelectionModeMove), scheme.primary);
-    expect(modeColor(l10n.canvasSelectionModeRotate), isNot(scheme.primary));
-
-    await tester.tap(find.text(l10n.canvasSelectionModeRotate));
-    await tester.pump(const Duration(milliseconds: 200));
-
-    expect(modeColor(l10n.canvasSelectionModeRotate), scheme.primary);
-    expect(modeColor(l10n.canvasSelectionModeMove), isNot(scheme.primary));
 
     await tester.runAsync(
       () => _capture(rootKey, '${out.path}/20_selection_tool_bar.png'),
     );
 
-    // 全解除でモードボタンが引っ込む。
+    // 全解除でスライダーが引っ込む。
     await tester.tap(find.text(l10n.canvasDeselectAllButton));
     // 選択有無の通知はビルド中を避けてポストフレームへ回るので、
     // 反映にはpumpが2回要る。
     await tester.pump(const Duration(milliseconds: 300));
     await tester.pump(const Duration(milliseconds: 100));
-    expect(find.text(l10n.canvasSelectionModeRotate), findsNothing);
+    expect(find.byType(SelectionTransformSliders), findsNothing);
 
-    // 終了ボタンで選択ツールを抜け、ツールバーとフレーム一覧が戻る。
-    await tester.tap(find.byTooltip(l10n.canvasSelectionExitTooltip));
+    // 「変形適用（終了）」で選択ツールを抜け、ツールバーとフレーム一覧が戻る。
+    await tester.tap(find.text(l10n.canvasSelectionApplyButton));
     await tester.pump(const Duration(milliseconds: 300));
     expect(find.text(l10n.canvasSelectAllButton), findsNothing);
     expect(

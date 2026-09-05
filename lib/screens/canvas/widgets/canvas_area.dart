@@ -62,6 +62,72 @@ enum _TransformMode { translate, scale, rotate }
 Color get kCanvasOutsideColor =>
     ThemeService.activeColorScheme.surfaceContainerHighest;
 
+/// 選択範囲のハンドルの見た目の大きさ（**画面px**での半径）。
+///
+/// キャンバスの解像度ではなく画面に対して固定にする。キャンバス基準にすると、
+/// 高解像度のプロジェクトではハンドルが極端に小さく、低解像度では巨大に
+/// 見えてしまう（指の大きさは画面基準なので、掴みやすさも画面基準が正しい）。
+const double kSelectionHandleScreenRadius = 7.0;
+
+/// 回転ハンドルだけは他より大きくする（画面pxでの半径）。
+/// 四隅の拡大縮小ハンドルと役割が違うことが一目で分かるようにするのと、
+/// 角から離して置くぶん指が届きやすいようにするため。
+const double kSelectionRotateHandleScreenRadius = 11.0;
+
+/// 回転ハンドルを右上の角からどれだけ離すか（拡大縮小ハンドルの半径の倍数）。
+/// 近すぎると角のハンドルと取り違えるので、しっかり離す。
+const double kSelectionRotateHandleGap = 4.5;
+
+/// [kSelectionHandleScreenRadius]をキャンバスpxへ換算する。
+/// [canvasToScreenScale]はキャンバス1pxが画面何pxにあたるかの比率。
+///
+/// **位置の計算にも当たり判定にも、必ずこの同じ値を使うこと。** 片方だけ
+/// 別の値にすると、回転ハンドルと四隅の拡大縮小ハンドルが当たり判定上
+/// 重なり、角を掴んだのに回転してしまう。
+double selectionHandleRadiusFor(double canvasToScreenScale) =>
+    canvasToScreenScale > 0
+    ? kSelectionHandleScreenRadius / canvasToScreenScale
+    : kSelectionHandleScreenRadius;
+
+/// 回転ハンドルの半径（キャンバスpx）。
+double selectionRotateHandleRadiusFor(double canvasToScreenScale) =>
+    canvasToScreenScale > 0
+    ? kSelectionRotateHandleScreenRadius / canvasToScreenScale
+    : kSelectionRotateHandleScreenRadius;
+
+/// 拡大縮小用のハンドル位置（選択範囲の四隅）。
+List<Offset> selectionScaleHandlesOf(Rect bounds) => [
+  bounds.topLeft,
+  bounds.topRight,
+  bounds.bottomLeft,
+  bounds.bottomRight,
+];
+
+/// 回転用のハンドル位置（選択範囲の右上の**外側**）。
+///
+/// 全選択のように選択範囲がキャンバス端まで届いている場合でも、必ず選択範囲の
+/// 外へ置く（キャンバスの外＝レターボックス側へはみ出してよい）。ただし横方向
+/// だけは、はみ出しすぎるとウィジェットの外になって指が届かなくなるため、
+/// キャンバス幅の内側へ寄せる。上方向のオフセットは常に残るので、横に寄せても
+/// 「選択範囲の外側」であることは変わらない。
+Offset selectionRotateHandleOf(
+  Rect bounds,
+  double handleRadius, {
+  Size? canvasSize,
+}) {
+  final gap = handleRadius * kSelectionRotateHandleGap;
+  final y = bounds.top - gap;
+  var x = bounds.right + gap;
+  if (canvasSize != null) {
+    // 横だけは、はみ出しすぎるとウィジェットの外になって指が届かなくなる。
+    // 寄せる場合も上方向のオフセットは残るので、選択範囲の外側であることは
+    // 変わらない。
+    final limit = canvasSize.width - handleRadius;
+    if (x > limit) x = math.max(bounds.right, limit);
+  }
+  return Offset(x, y);
+}
+
 Rect canvasDrawingRectFor(Size size, Project? project) {
   final hasExtended = project?.hasExtendedDrawingArea ?? false;
   if (hasExtended) return Rect.fromLTWH(0, 0, size.width, size.height);
@@ -138,9 +204,18 @@ class CanvasArea extends StatefulWidget {
   final int clearSelectionToken;
   final ValueChanged<bool>? onSelectionActiveChanged;
 
-  /// 選択範囲を掴んだときの操作モード。キャンバス左下のモード切替ボタン
-  /// （canvas_screen.dart）で選ばれた値がそのまま渡ってくる。
-  final SelectionTransformMode selectionTransformMode;
+  /// 画面下部のスライダーで指定する、選択範囲の変形量。
+  ///
+  /// いずれも「いまの状態を0」とした**相対量**で、スライダーを離した時点で
+  /// 実画素へ確定し、canvas_screen.dart側が0へ戻す。
+  /// [selectionScale]だけは倍率なので1.0が等倍（＝変化なし）。
+  final double selectionMoveX;
+  final double selectionMoveY;
+  final double selectionScale;
+  final double selectionRotateDeg;
+
+  /// スライダーから指を離したときに増える。増えたら実画素へ確定する。
+  final int selectionTransformCommitToken;
 
   const CanvasArea({
     super.key,
@@ -175,7 +250,11 @@ class CanvasArea extends StatefulWidget {
     this.selectAllSelectionToken = 0,
     this.clearSelectionToken = 0,
     this.onSelectionActiveChanged,
-    this.selectionTransformMode = SelectionTransformMode.move,
+    this.selectionMoveX = 0,
+    this.selectionMoveY = 0,
+    this.selectionScale = 1,
+    this.selectionRotateDeg = 0,
+    this.selectionTransformCommitToken = 0,
   });
 
   @override
@@ -477,6 +556,19 @@ class _CanvasAreaState extends State<CanvasArea> {
     // 進行中の場合は_cancelMeshTransform内のガードにより何もしない。
     if (leftMeshTransform) {
       _cancelMeshTransform();
+    }
+
+    // 画面下部のスライダーによる変形。値が動いている間はライブプレビュー、
+    // 指を離した時点（確定トークンの増加）で実画素へ焼き込む。
+    if (old.selectionMoveX != widget.selectionMoveX ||
+        old.selectionMoveY != widget.selectionMoveY ||
+        old.selectionScale != widget.selectionScale ||
+        old.selectionRotateDeg != widget.selectionRotateDeg) {
+      _applySliderTransform();
+    }
+    if (old.selectionTransformCommitToken !=
+        widget.selectionTransformCommitToken) {
+      if (_selectionTransformActive) _commitSelectionTransform();
     }
 
     if (old.invertSelectionToken != widget.invertSelectionToken) {
@@ -2003,34 +2095,57 @@ class _CanvasAreaState extends State<CanvasArea> {
     return mask[y * w + x] != 0;
   }
 
-  /// [canvasPos]が既存の選択範囲を掴んだ位置に該当すれば、キャンバス左下の
-  /// モード切替ボタンで選ばれているモード（移動・拡大縮小・回転）で変形操作を
-  /// 開始してtrueを返す。該当しなければfalse（＝新規選択の開始に進む）。
+  /// いま画面に出ているキャンバス1pxが画面何pxにあたるか
+  /// （＝描画エリアの拡大率。ピンチズームぶんも含む）。
+  double get _canvasToScreenScale {
+    final size = context.size;
+    final exportW = widget.project?.exportWidth.toDouble() ?? 1920.0;
+    if (size == null || size.width <= 0 || exportW <= 0) return 1.0;
+    final rect = canvasDrawingRectFor(size, widget.project);
+    if (rect.width <= 0) return 1.0;
+    final zoom = _transformController.value.getMaxScaleOnAxis();
+    return (rect.width / exportW) * (zoom > 0 ? zoom : 1.0);
+  }
+
+  /// 選択範囲がある間、常時描くハンドルの半径（キャンバスpx）。
+  /// 位置の計算と当たり判定の両方でこの同じ値を使う。
+  double get _selectionHandleHitRadius =>
+      selectionHandleRadiusFor(_canvasToScreenScale);
+
+  /// [canvasPos]が選択範囲のハンドル／内側に該当すれば、掴んだ場所に応じた
+  /// モードで変形操作を開始してtrueを返す。該当しなければfalse（＝新規選択へ）。
   ///
-  /// 掴んだ位置からモードを推測する方式は採らない。ハンドルはドラッグ中しか
-  /// 描かれず、掴む前は「どこを掴めば回転できるのか」が画面に出ていないため
-  /// 発見できなかった（独立した変形ツールを廃してモードボタンへ統合した理由）。
+  /// モードはボタンではなく**掴んだ場所**で決まる。四隅＝拡大縮小、中央の
+  /// 十字矢印＝移動、右上のカーブ矢印＝回転。以前は「掴む前はハンドルが
+  /// 描かれない」ために何ができるか分からなかったが、いまは選択範囲がある間
+  /// 常にハンドルを描いているので、見たまま掴めばよい。
   bool _beginSelectionTransformIfHit(Offset canvasPos) {
     final bounds = _selectionMaskBounds();
     if (bounds == null) return false;
-    // 拡大縮小・回転は選択範囲の外へ大きく振る操作なので、マスクの内側
-    // ちょうどではなくバウンディングボックスを少し広げた範囲で掴めるようにする。
-    final slack =
-        math.min(_tileManager.canvasWidth, _tileManager.canvasHeight) * 0.05;
-    final mode = _modeOf(widget.selectionTransformMode);
-    final hit = mode == _TransformMode.translate
-        ? _selectionMaskContains(canvasPos)
-        : bounds.inflate(slack).contains(canvasPos);
-    if (!hit) return false;
+    final r = _selectionHandleHitRadius;
+    final rotateR = selectionRotateHandleRadiusFor(_canvasToScreenScale);
+    final canvasSize = Size(
+      _tileManager.canvasWidth.toDouble(),
+      _tileManager.canvasHeight.toDouble(),
+    );
+    _TransformMode mode;
+    if ((canvasPos - selectionRotateHandleOf(bounds, r, canvasSize: canvasSize))
+            .distance <
+        rotateR) {
+      mode = _TransformMode.rotate;
+    } else if (selectionScaleHandlesOf(
+      bounds,
+    ).any((c) => (canvasPos - c).distance < r)) {
+      mode = _TransformMode.scale;
+    } else if ((canvasPos - bounds.center).distance < r ||
+        _selectionMaskContains(canvasPos)) {
+      mode = _TransformMode.translate;
+    } else {
+      return false;
+    }
     _beginSelectionTransform(canvasPos, mode, bounds);
     return true;
   }
-
-  static _TransformMode _modeOf(SelectionTransformMode mode) => switch (mode) {
-    SelectionTransformMode.move => _TransformMode.translate,
-    SelectionTransformMode.scale => _TransformMode.scale,
-    SelectionTransformMode.rotate => _TransformMode.rotate,
-  };
 
   void _beginSelectionTransform(
     Offset canvasPos,
@@ -2098,6 +2213,34 @@ class _CanvasAreaState extends State<CanvasArea> {
         setState(() => _floatingSelectionImage = img);
       });
     });
+  }
+
+  /// 画面下部のスライダーの値を選択範囲へ反映する（ライブプレビュー）。
+  ///
+  /// 最初に値が動いた時点で、ドラッグと同じように選択範囲の中身を切り出して
+  /// 「浮動画像」にする。以降は行列だけ差し替えるので、スライダーを動かして
+  /// いる間は実画素を触らない（確定は[_commitSelectionTransform]）。
+  void _applySliderTransform() {
+    final bounds = _selectionMaskBounds();
+    if (bounds == null) return;
+    if (!_selectionTransformActive) {
+      // まだ掴んでいない状態からスライダーが動いた：切り出しだけ先に始める。
+      _beginSelectionTransform(bounds.center, _TransformMode.translate, bounds);
+    }
+    final center = bounds.center;
+    final scale = widget.selectionScale <= 0 ? 1.0 : widget.selectionScale;
+    final radians = widget.selectionRotateDeg * math.pi / 180.0;
+    final matrix =
+        Matrix4.translationValues(
+          widget.selectionMoveX,
+          widget.selectionMoveY,
+          0,
+        ) *
+        Matrix4.translationValues(center.dx, center.dy, 0) *
+        Matrix4.rotationZ(radians) *
+        Matrix4.diagonal3Values(scale, scale, 1) *
+        Matrix4.translationValues(-center.dx, -center.dy, 0);
+    setState(() => _selectionTransformLive = matrix);
   }
 
   void _updateSelectionTransform(Offset canvasPos) {
@@ -3205,6 +3348,13 @@ class _CanvasAreaState extends State<CanvasArea> {
                     floatingSelectionImage: _floatingSelectionImage,
                     selectionTransformLive: _selectionTransformLive,
                     selectionTransformBounds: _selectionTransformBounds,
+                    // 選択範囲がある間は、掴む前からハンドルを描いておく
+                    // （何ができるか画面に出ていないと使われないため）。
+                    // 変形中は上のselectionTransformBoundsの枠を描くので出さない。
+                    selectionAffordanceBounds:
+                        _isSelectionTool && !_selectionTransformActive
+                        ? _selectionMaskBounds()
+                        : null,
                     meshRows: meshRows,
                     meshCols: meshCols,
                     meshControlPoints: meshControlPoints,
@@ -3291,6 +3441,10 @@ class _CanvasPainter extends CustomPainter {
   final ui.Image? floatingSelectionImage;
   final Matrix4? selectionTransformLive;
   final Rect? selectionTransformBounds;
+
+  /// 選択範囲がある間、常時描く操作ハンドルの基準矩形。
+  /// 四隅＝拡大縮小、中央＝移動、右上の外側＝回転。
+  final Rect? selectionAffordanceBounds;
   // レイヤー全体の自由変形・メッシュ変形（新機能）：ワープ元画像・格子点は
   // ライブプレビューの描画に、showMeshHandlesは格子線・ハンドルの表示要否に使う。
   final int meshRows;
@@ -3335,6 +3489,7 @@ class _CanvasPainter extends CustomPainter {
     this.floatingSelectionImage,
     this.selectionTransformLive,
     this.selectionTransformBounds,
+    this.selectionAffordanceBounds,
     this.meshRows = 1,
     this.meshCols = 1,
     this.meshControlPoints,
@@ -3613,8 +3768,90 @@ class _CanvasPainter extends CustomPainter {
       }
     }
 
-    // 選択ツールの移動・回転・拡大縮小：選択範囲のバウンディングボックス・
-    // 拡縮ハンドル・回転ハンドル（変形ツールと同じ見た目、範囲は選択範囲基準）。
+    // 選択範囲がある間、常時出す操作ハンドル。
+    // 四隅＝拡大縮小（四角）、中央＝移動（十字矢印）、右上の外側＝回転
+    // （カーブした矢印）。掴む前から見えていないと「何ができるのか」が
+    // 分からないため、ドラッグ中でなくても描く。
+    if (selectionAffordanceBounds != null) {
+      final bounds = selectionAffordanceBounds!;
+      final sx = drawingRect.width / (project?.exportWidth ?? 1920);
+      final sy = drawingRect.height / (project?.exportHeight ?? 1080);
+      Offset ts(Offset p) => drawingRect.topLeft + Offset(p.dx * sx, p.dy * sy);
+      // ハンドルの大きさは画面px基準で固定。キャンバスpxへは
+      // 描画エリアの拡大率で割って戻す（当たり判定側と同じ式）。
+      final r = selectionHandleRadiusFor(sx);
+      const screenR = kSelectionHandleScreenRadius;
+
+      canvas.drawRect(
+        Rect.fromPoints(ts(bounds.topLeft), ts(bounds.bottomRight)),
+        Paint()
+          ..color = handleColor
+          ..style = PaintingStyle.stroke
+          ..strokeWidth = 1.5,
+      );
+      // 四隅：拡大縮小用の四角いハンドル。
+      for (final corner in selectionScaleHandlesOf(bounds)) {
+        final rect = Rect.fromCenter(
+          center: ts(corner),
+          width: screenR * 2,
+          height: screenR * 2,
+        );
+        canvas.drawRect(rect, Paint()..color = handleColor);
+        canvas.drawRect(
+          rect,
+          Paint()
+            ..color = handleOutlineColor
+            ..style = PaintingStyle.stroke
+            ..strokeWidth = 1.5,
+        );
+      }
+      // 中央：移動用の十字矢印。右上の外側：回転用のカーブした矢印。
+      void iconHandle(Offset center, IconData icon, double radius) {
+        canvas.drawCircle(center, radius, Paint()..color = handleColor);
+        canvas.drawCircle(
+          center,
+          radius,
+          Paint()
+            ..color = handleOutlineColor
+            ..style = PaintingStyle.stroke
+            ..strokeWidth = 1.5,
+        );
+        final painter = TextPainter(
+          text: TextSpan(
+            text: String.fromCharCode(icon.codePoint),
+            style: TextStyle(
+              fontSize: radius * 1.5,
+              fontFamily: icon.fontFamily,
+              package: icon.fontPackage,
+              color: handleOutlineColor,
+            ),
+          ),
+          textDirection: TextDirection.ltr,
+        )..layout();
+        painter.paint(
+          canvas,
+          center - Offset(painter.width / 2, painter.height / 2),
+        );
+      }
+
+      iconHandle(ts(bounds.center), Icons.open_with, screenR + 2);
+      iconHandle(
+        ts(
+          selectionRotateHandleOf(
+            bounds,
+            r,
+            canvasSize: Size(
+              (project?.exportWidth ?? 1920).toDouble(),
+              (project?.exportHeight ?? 1080).toDouble(),
+            ),
+          ),
+        ),
+        Icons.rotate_right,
+        kSelectionRotateHandleScreenRadius,
+      );
+    }
+
+    // 変形中：選択範囲のバウンディングボックス・拡縮ハンドル・回転ハンドル。
     if (selectionTransformBounds != null) {
       final bounds = selectionTransformBounds!;
       final sx = drawingRect.width / (project?.exportWidth ?? 1920);
@@ -3907,6 +4144,7 @@ class _CanvasPainter extends CustomPainter {
       old.floatingSelectionImage != floatingSelectionImage ||
       old.selectionTransformLive != selectionTransformLive ||
       old.selectionTransformBounds != selectionTransformBounds ||
+      old.selectionAffordanceBounds != selectionAffordanceBounds ||
       old.meshRows != meshRows ||
       old.meshCols != meshCols ||
       old.meshControlPoints != meshControlPoints ||

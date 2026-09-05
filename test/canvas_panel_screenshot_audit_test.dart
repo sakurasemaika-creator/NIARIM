@@ -289,7 +289,19 @@ void main() {
     await tapInSheet(find.byIcon(Icons.crop_free));
     await tester.pump(const Duration(milliseconds: 500));
     _expectNoException(tester, 'mesh_transform_panel');
-    expect(find.byType(MeshTransformPanel), findsOneWidget);
+    // スマホ幅では自由変形・メッシュ変形の専用パネルを出さない（パネルが
+    // キャンバスを覆って格子点を掴めなくなるため）。代わりにキャンバス左下の
+    // キャンセル／適用だけを出し、格子点の操作に画面を明け渡す。
+    final l10n = AppLocalizations.of(
+      tester.element(find.byType(CanvasScreen)),
+    )!;
+    expect(
+      find.byType(MeshTransformPanel),
+      findsNothing,
+      reason: 'スマホ幅では自由変形・メッシュ変形の専用パネルを出さないこと',
+    );
+    expect(find.text(l10n.commonCancel), findsOneWidget);
+    expect(find.text(l10n.meshTransformApplyButton), findsOneWidget);
     await capture('09_mesh_transform_panel');
   }, timeout: const Timeout(Duration(minutes: 2)));
 }

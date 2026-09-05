@@ -2,14 +2,12 @@ import 'dart:io';
 import 'dart:typed_data';
 import 'dart:ui' as ui;
 
-import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:niarim/app_bootstrap.dart';
 import 'package:niarim/engine/undo_manager.dart' as app_undo;
-import 'package:niarim/screens/canvas/canvas_screen.dart'
-    show DrawingTool, SelectionTransformMode;
+import 'package:niarim/screens/canvas/canvas_screen.dart' show DrawingTool;
 import 'package:niarim/screens/canvas/widgets/canvas_area.dart';
 import 'package:niarim/services/project_service.dart';
 import 'package:provider/provider.dart';
@@ -22,9 +20,9 @@ void main() {
   setUp(() => SharedPreferences.setMockInitialValues({}));
 
   // 独立した「変形ツール」（DrawingTool.transform）は選択ツールへ統合した。
-  // レイヤー全体の変形は「全選択」＋左下の拡大縮小モードで行う経路になったので、
-  // その経路が実画素まで到達することをここで見張る。
-  testWidgets('全選択＋拡大縮小モードでレイヤー全体をタッチ操作で縮小できUndo/Redoできる', (tester) async {
+  // レイヤー全体の変形は「全選択」＋画面下部の拡大縮小スライダーで行う経路に
+  // なったので、その経路が実画素まで到達することをここで見張る。
+  testWidgets('全選択＋画面下部の拡大縮小スライダーでレイヤー全体を縮小できUndo/Redoできる', (tester) async {
     tester.view.physicalSize = const Size(480, 360);
     tester.view.devicePixelRatio = 1;
     addTearDown(tester.view.resetPhysicalSize);
@@ -100,19 +98,9 @@ void main() {
     await tester.tap(find.byKey(const ValueKey('select-all')));
     await tester.pump();
 
-    final origin = tester.getTopLeft(find.byType(CanvasArea));
-    Offset at(double x, double y) => origin + Offset(x * 3, y * 3);
-
-    // 拡大縮小モードでは選択範囲の内側どこを掴んでもよい。中心(48,40)から
-    // 見て距離が0.6倍になる位置までドラッグし、約0.6倍へ縮小する。
-    // キャンバス左右端32pxはダブルタップ専用ゾーンなので、掴む位置は
-    // ウィジェット座標で32〜256pxの内側（＝キャンバス座標で約11〜85）に収める。
-    final g = await tester.startGesture(
-      at(80.0, 60.0),
-      kind: PointerDeviceKind.touch,
-    );
-    await tester.pump();
-    // 掴んだ瞬間に選択範囲の中身を切り取る「浮動画像」の生成
+    // 画面下部の拡大縮小スライダーを0.6倍にして離す（＝確定トークンを増やす）。
+    await tester.tap(find.byKey(const ValueKey('scale-0.6')));
+    // スライダーが動いた時点で選択範囲の中身を切り取る「浮動画像」の生成
     // （compositeLayerToImage→toByteData→decodeImageFromPixels）が走る。
     // これはFakeAsyncでは進まないので実時間で待つ（CLAUDE.md参照）。
     for (var i = 0; i < 12; i++) {
@@ -121,9 +109,7 @@ void main() {
       );
       await tester.pump();
     }
-    await g.moveTo(at(67.2, 52.0));
-    await tester.pump(const Duration(milliseconds: 50));
-    await g.up();
+    await tester.tap(find.byKey(const ValueKey('commit')));
     await tester.pump();
     await _waitUndo(tester, undo, 1);
     await tester.pump(const Duration(milliseconds: 120));
@@ -136,7 +122,7 @@ void main() {
     expect(
       after,
       isNot(orderedEquals(before)),
-      reason: '全選択＋拡大縮小モードのタッチドラッグが実画素変形へ到達すること',
+      reason: '全選択＋拡大縮小スライダーが実画素変形へ到達すること',
     );
     expect(
       afterCount,
@@ -192,8 +178,8 @@ Uint8List _read(dynamic tm, String key, int w, int h) {
   return o;
 }
 
-/// 「全選択」ボタン（canvas_screen.dartの左下バー）に相当するトークン更新と、
-/// 拡大縮小モードの指定を再現する最小のテスト用ラッパー。
+/// canvas_screen.dartの左下バー「全選択」と、画面下部の拡大縮小スライダー
+/// （値の変更＋指を離したときの確定）を最小限に再現するテスト用ラッパー。
 class _SelectionTransformHarness extends StatefulWidget {
   const _SelectionTransformHarness({
     required this.project,
@@ -213,6 +199,14 @@ class _SelectionTransformHarness extends StatefulWidget {
 class _SelectionTransformHarnessState
     extends State<_SelectionTransformHarness> {
   int _selectAllToken = 0;
+  int _commitToken = 0;
+  double _scale = 1;
+
+  Widget _hiddenButton(String key, VoidCallback onTap) => SizedBox(
+    width: 1,
+    height: 1,
+    child: GestureDetector(key: ValueKey(key), onTap: onTap),
+  );
 
   @override
   Widget build(BuildContext context) {
@@ -225,18 +219,21 @@ class _SelectionTransformHarnessState
           currentFrame: 0,
           sceneId: widget.sceneId,
           selectAllSelectionToken: _selectAllToken,
-          selectionTransformMode: SelectionTransformMode.scale,
+          selectionScale: _scale,
+          selectionTransformCommitToken: _commitToken,
         ),
         Positioned(
           right: 0,
           top: 0,
-          child: SizedBox(
-            width: 1,
-            height: 1,
-            child: GestureDetector(
-              key: const ValueKey('select-all'),
-              onTap: () => setState(() => _selectAllToken++),
-            ),
+          child: Column(
+            children: [
+              _hiddenButton(
+                'select-all',
+                () => setState(() => _selectAllToken++),
+              ),
+              _hiddenButton('scale-0.6', () => setState(() => _scale = 0.6)),
+              _hiddenButton('commit', () => setState(() => _commitToken++)),
+            ],
           ),
         ),
       ],

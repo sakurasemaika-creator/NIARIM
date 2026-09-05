@@ -7499,24 +7499,6 @@ abstract class AppLocalizations {
   /// **'全解除'**
   String get canvasDeselectAllButton;
 
-  /// No description provided for @canvasSelectionModeMove.
-  ///
-  /// In ja, this message translates to:
-  /// **'移動'**
-  String get canvasSelectionModeMove;
-
-  /// No description provided for @canvasSelectionModeScale.
-  ///
-  /// In ja, this message translates to:
-  /// **'拡大縮小'**
-  String get canvasSelectionModeScale;
-
-  /// No description provided for @canvasSelectionModeRotate.
-  ///
-  /// In ja, this message translates to:
-  /// **'回転'**
-  String get canvasSelectionModeRotate;
-
   /// No description provided for @canvasSelectionFreeTransform.
   ///
   /// In ja, this message translates to:
@@ -7529,11 +7511,53 @@ abstract class AppLocalizations {
   /// **'メッシュ変形'**
   String get canvasSelectionMeshTransform;
 
-  /// No description provided for @canvasSelectionExitTooltip.
+  /// No description provided for @canvasSelectionRevertButton.
   ///
   /// In ja, this message translates to:
-  /// **'選択ツールを終了'**
-  String get canvasSelectionExitTooltip;
+  /// **'変形キャンセル'**
+  String get canvasSelectionRevertButton;
+
+  /// No description provided for @canvasSelectionRevertTooltip.
+  ///
+  /// In ja, this message translates to:
+  /// **'変形を取り消して選択ツールを終了'**
+  String get canvasSelectionRevertTooltip;
+
+  /// No description provided for @canvasSelectionApplyButton.
+  ///
+  /// In ja, this message translates to:
+  /// **'変形適用'**
+  String get canvasSelectionApplyButton;
+
+  /// No description provided for @canvasSelectionApplyTooltip.
+  ///
+  /// In ja, this message translates to:
+  /// **'変形を確定して選択ツールを終了'**
+  String get canvasSelectionApplyTooltip;
+
+  /// No description provided for @canvasSelectionSliderMoveX.
+  ///
+  /// In ja, this message translates to:
+  /// **'X移動'**
+  String get canvasSelectionSliderMoveX;
+
+  /// No description provided for @canvasSelectionSliderMoveY.
+  ///
+  /// In ja, this message translates to:
+  /// **'Y移動'**
+  String get canvasSelectionSliderMoveY;
+
+  /// No description provided for @canvasSelectionSliderScale.
+  ///
+  /// In ja, this message translates to:
+  /// **'拡大縮小'**
+  String get canvasSelectionSliderScale;
+
+  /// No description provided for @canvasSelectionSliderRotate.
+  ///
+  /// In ja, this message translates to:
+  /// **'回転'**
+  String get canvasSelectionSliderRotate;
 
   /// No description provided for @canvasApplyFilterButton.
   ///

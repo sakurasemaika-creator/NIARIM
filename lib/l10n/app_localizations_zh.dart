@@ -4052,22 +4052,34 @@ class AppLocalizationsZh extends AppLocalizations {
   String get canvasDeselectAllButton => '取消全选';
 
   @override
-  String get canvasSelectionModeMove => '移动';
-
-  @override
-  String get canvasSelectionModeScale => '缩放';
-
-  @override
-  String get canvasSelectionModeRotate => '旋转';
-
-  @override
   String get canvasSelectionFreeTransform => '自由变形';
 
   @override
   String get canvasSelectionMeshTransform => '网格变形';
 
   @override
-  String get canvasSelectionExitTooltip => '退出选择工具';
+  String get canvasSelectionRevertButton => '取消变形';
+
+  @override
+  String get canvasSelectionRevertTooltip => '放弃变形并退出选择工具';
+
+  @override
+  String get canvasSelectionApplyButton => '应用变形';
+
+  @override
+  String get canvasSelectionApplyTooltip => '保留变形并退出选择工具';
+
+  @override
+  String get canvasSelectionSliderMoveX => 'X 移动';
+
+  @override
+  String get canvasSelectionSliderMoveY => 'Y 移动';
+
+  @override
+  String get canvasSelectionSliderScale => '缩放';
+
+  @override
+  String get canvasSelectionSliderRotate => '旋转';
 
   @override
   String get canvasApplyFilterButton => '应用滤镜';
@@ -10071,22 +10083,34 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get canvasDeselectAllButton => '取消全選';
 
   @override
-  String get canvasSelectionModeMove => '移動';
-
-  @override
-  String get canvasSelectionModeScale => '縮放';
-
-  @override
-  String get canvasSelectionModeRotate => '旋轉';
-
-  @override
   String get canvasSelectionFreeTransform => '自由變形';
 
   @override
   String get canvasSelectionMeshTransform => '網格變形';
 
   @override
-  String get canvasSelectionExitTooltip => '結束選取工具';
+  String get canvasSelectionRevertButton => '取消變形';
+
+  @override
+  String get canvasSelectionRevertTooltip => '放棄變形並結束選取工具';
+
+  @override
+  String get canvasSelectionApplyButton => '套用變形';
+
+  @override
+  String get canvasSelectionApplyTooltip => '保留變形並結束選取工具';
+
+  @override
+  String get canvasSelectionSliderMoveX => 'X 移動';
+
+  @override
+  String get canvasSelectionSliderMoveY => 'Y 移動';
+
+  @override
+  String get canvasSelectionSliderScale => '縮放';
+
+  @override
+  String get canvasSelectionSliderRotate => '旋轉';
 
   @override
   String get canvasApplyFilterButton => '套用濾鏡';

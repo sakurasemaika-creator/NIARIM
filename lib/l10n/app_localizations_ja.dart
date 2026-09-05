@@ -4070,22 +4070,34 @@ class AppLocalizationsJa extends AppLocalizations {
   String get canvasDeselectAllButton => '全解除';
 
   @override
-  String get canvasSelectionModeMove => '移動';
-
-  @override
-  String get canvasSelectionModeScale => '拡大縮小';
-
-  @override
-  String get canvasSelectionModeRotate => '回転';
-
-  @override
   String get canvasSelectionFreeTransform => '自由変形';
 
   @override
   String get canvasSelectionMeshTransform => 'メッシュ変形';
 
   @override
-  String get canvasSelectionExitTooltip => '選択ツールを終了';
+  String get canvasSelectionRevertButton => '変形キャンセル';
+
+  @override
+  String get canvasSelectionRevertTooltip => '変形を取り消して選択ツールを終了';
+
+  @override
+  String get canvasSelectionApplyButton => '変形適用';
+
+  @override
+  String get canvasSelectionApplyTooltip => '変形を確定して選択ツールを終了';
+
+  @override
+  String get canvasSelectionSliderMoveX => 'X移動';
+
+  @override
+  String get canvasSelectionSliderMoveY => 'Y移動';
+
+  @override
+  String get canvasSelectionSliderScale => '拡大縮小';
+
+  @override
+  String get canvasSelectionSliderRotate => '回転';
 
   @override
   String get canvasApplyFilterButton => 'フィルター適用';

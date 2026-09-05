@@ -5,8 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:niarim/app_bootstrap.dart';
 import 'package:niarim/engine/undo_manager.dart' as app_undo;
-import 'package:niarim/screens/canvas/canvas_screen.dart'
-    show DrawingTool, SelectionTransformMode;
+import 'package:niarim/screens/canvas/canvas_screen.dart' show DrawingTool;
 import 'package:niarim/screens/canvas/widgets/canvas_area.dart';
 import 'package:niarim/services/project_service.dart';
 import 'package:provider/provider.dart';
@@ -79,9 +78,6 @@ void main() {
                   currentTool: DrawingTool.selectRect,
                   currentFrame: 0,
                   sceneId: scene.id,
-                  // 変形ツールの統合により、選択範囲を掴んだときの操作は
-                  // キャンバス左下のモードボタンで選ぶ方式になった。
-                  selectionTransformMode: SelectionTransformMode.scale,
                   onSelectionActiveChanged: (v) => selectionActive = v,
                 ),
               ),
@@ -108,8 +104,8 @@ void main() {
     await tester.pump();
     expect(selectionActive, isTrue);
 
-    // bounds=(16,14)-(48,46), center=(32,30)。拡大縮小モードでは選択範囲の
-    // 内側どこを掴んでもよいので、右下の角(48,46)を掴む。
+    // bounds=(16,14)-(48,46), center=(32,30)。四隅は拡大縮小ハンドルなので、
+    // 右下の角(48,46)を掴めば拡大縮小として扱われる。
     // centerからのベクトル(16,16)を(32,32)へ伸ばし、scale=2を厳密に作る。
     final scale = await tester.startGesture(
       at(const Offset(48, 46)),
@@ -119,7 +115,7 @@ void main() {
     expect(
       tm.recordingTouchedTiles,
       isNotNull,
-      reason: '拡大縮小モードで選択範囲を掴むと拡大縮小が開始されること',
+      reason: '四隅の角ハンドルを掴むと拡大縮小が開始されること',
     );
     await _waitForPixelAlpha(tester, tm, key, 24, 22, 0);
     await tester.runAsync(

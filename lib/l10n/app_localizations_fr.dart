@@ -4277,22 +4277,36 @@ class AppLocalizationsFr extends AppLocalizations {
   String get canvasDeselectAllButton => 'Tout désélectionner';
 
   @override
-  String get canvasSelectionModeMove => 'Déplacer';
-
-  @override
-  String get canvasSelectionModeScale => 'Redimensionner';
-
-  @override
-  String get canvasSelectionModeRotate => 'Pivoter';
-
-  @override
   String get canvasSelectionFreeTransform => 'Transf. libre';
 
   @override
   String get canvasSelectionMeshTransform => 'Maillage';
 
   @override
-  String get canvasSelectionExitTooltip => 'Quitter la sélection';
+  String get canvasSelectionRevertButton => 'Annuler';
+
+  @override
+  String get canvasSelectionRevertTooltip =>
+      'Annuler la transformation et quitter la sélection';
+
+  @override
+  String get canvasSelectionApplyButton => 'Appliquer';
+
+  @override
+  String get canvasSelectionApplyTooltip =>
+      'Conserver la transformation et quitter la sélection';
+
+  @override
+  String get canvasSelectionSliderMoveX => 'Déplacer X';
+
+  @override
+  String get canvasSelectionSliderMoveY => 'Déplacer Y';
+
+  @override
+  String get canvasSelectionSliderScale => 'Échelle';
+
+  @override
+  String get canvasSelectionSliderRotate => 'Rotation';
 
   @override
   String get canvasApplyFilterButton => 'Appliquer le filtre';

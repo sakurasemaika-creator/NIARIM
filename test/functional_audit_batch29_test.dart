@@ -8,8 +8,7 @@ import 'package:flutter/rendering.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:niarim/app_bootstrap.dart';
 import 'package:niarim/engine/undo_manager.dart' as app_undo;
-import 'package:niarim/screens/canvas/canvas_screen.dart'
-    show DrawingTool, SelectionTransformMode;
+import 'package:niarim/screens/canvas/canvas_screen.dart' show DrawingTool;
 import 'package:niarim/screens/canvas/widgets/canvas_area.dart';
 import 'package:niarim/services/project_service.dart';
 import 'package:provider/provider.dart';
@@ -21,7 +20,7 @@ void main() {
   setUpAll(() => out.createSync(recursive: true));
   setUp(() => SharedPreferences.setMockInitialValues({}));
 
-  testWidgets('実CanvasAreaで選択範囲を回転モードで90度操作し色別位置とUndo/Redoを検証する', (
+  testWidgets('実CanvasAreaで選択範囲を回転スライダーで90度回し色別位置とUndo/Redoを検証する', (
     tester,
   ) async {
     tester.view.physicalSize = const Size(480, 420);
@@ -73,15 +72,10 @@ void main() {
                 height: 288,
                 child: RepaintBoundary(
                   key: boundaryKey,
-                  child: CanvasArea(
+                  child: _RotateSliderHarness(
                     project: p,
-                    currentLayerId: layer.id,
-                    currentTool: DrawingTool.selectRect,
-                    currentFrame: 0,
+                    layerId: layer.id,
                     sceneId: scene.id,
-                    // 変形ツールの統合により、選択範囲を掴んだときの操作は
-                    // キャンバス左下のモードボタンで選ぶ方式になった。
-                    selectionTransformMode: SelectionTransformMode.rotate,
                   ),
                 ),
               ),
@@ -109,27 +103,21 @@ void main() {
       () => _shot(boundaryKey, '${out.path}/selection_rotate_01_selected.png'),
     );
 
-    // bounds=(24,50)-(72,90)、center=(48,70)。回転モードでは選択範囲の内側
-    // どこを掴んでもよいので(48,55)を掴む。開始ベクトル(0,-15)から
-    // current=(88,70)の(40,0)へ移すため +90° 回転になる。
-    final rotate = await tester.startGesture(
-      at(const Offset(48, 55)),
-      kind: PointerDeviceKind.touch,
-    );
+    // bounds=(24,50)-(72,90)、center=(48,70)。画面下部の回転スライダーを
+    // +90°にして離す（＝選択範囲の中心まわりに90度回る）。
+    await tester.tap(find.byKey(const ValueKey('rotate-90')));
     await tester.pump();
     expect(
       tm.recordingTouchedTiles,
       isNotNull,
-      reason: '回転モードで選択範囲を掴むと実際に回転が開始されること',
+      reason: '回転スライダーを動かすと実際に回転が開始されること',
     );
     await _waitForAlpha(tester, tm, key, 36, 62, 0);
     await tester.runAsync(
       () => Future<void>.delayed(const Duration(milliseconds: 150)),
     );
     await tester.pump();
-    await rotate.moveTo(at(const Offset(88, 70)));
-    await tester.pump(const Duration(milliseconds: 40));
-    await rotate.up();
+    await tester.tap(find.byKey(const ValueKey('commit')));
     await tester.pump();
     await _waitForUndo(tester, undo, 1);
     await tester.runAsync(
@@ -245,4 +233,59 @@ Uint8List _readCanvas(dynamic tm, String key, int w, int h) {
     out.setRange(y * w * 4, (y + 1) * w * 4, tile, y * 256 * 4);
   }
   return out;
+}
+
+/// 画面下部の回転スライダー（値の変更＋指を離したときの確定）を最小限に
+/// 再現するテスト用ラッパー。
+class _RotateSliderHarness extends StatefulWidget {
+  const _RotateSliderHarness({
+    required this.project,
+    required this.layerId,
+    required this.sceneId,
+  });
+
+  final dynamic project;
+  final String layerId;
+  final String sceneId;
+
+  @override
+  State<_RotateSliderHarness> createState() => _RotateSliderHarnessState();
+}
+
+class _RotateSliderHarnessState extends State<_RotateSliderHarness> {
+  int _commitToken = 0;
+  double _rotateDeg = 0;
+
+  Widget _hiddenButton(String key, VoidCallback onTap) => SizedBox(
+    width: 1,
+    height: 1,
+    child: GestureDetector(key: ValueKey(key), onTap: onTap),
+  );
+
+  @override
+  Widget build(BuildContext context) {
+    return Stack(
+      children: [
+        CanvasArea(
+          project: widget.project,
+          currentLayerId: widget.layerId,
+          currentTool: DrawingTool.selectRect,
+          currentFrame: 0,
+          sceneId: widget.sceneId,
+          selectionRotateDeg: _rotateDeg,
+          selectionTransformCommitToken: _commitToken,
+        ),
+        Positioned(
+          right: 0,
+          top: 0,
+          child: Column(
+            children: [
+              _hiddenButton('rotate-90', () => setState(() => _rotateDeg = 90)),
+              _hiddenButton('commit', () => setState(() => _commitToken++)),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
 }
