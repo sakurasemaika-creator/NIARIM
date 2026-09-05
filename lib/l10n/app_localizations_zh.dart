@@ -1038,9 +1038,6 @@ class AppLocalizationsZh extends AppLocalizations {
   String get toolbarItemSelect => '选择';
 
   @override
-  String get toolbarItemTransform => '变形';
-
-  @override
   String get toolbarItemText => '文字';
 
   @override
@@ -1539,7 +1536,7 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get helpTransformSelectionDesc =>
-      '用选择工具圈出的区域，可以用变换工具进行移动、旋转、缩放。适合用来调整误画部分的位置，或只放大强调某一部分。 如果想变形整个图层，可以使用无需选区的「自由变形・网格变形」（从编辑菜单打开），可以单独拖动各个网格点做出更自由的变形。';
+      '用选择工具圈出的区域，可以在画布左下方的「移动」「缩放」「旋转」按钮中选择模式，然后在选区内拖动进行变形。适合用来调整误画部分的位置，或只放大强调某一部分。按同一栏的「全选」会把当前图层整体变成选区，因此整个图层的移动、旋转、缩放也可以用同样的方式完成（原先独立的「变换工具」已整合到这里）。如果想单独拖动各个网格点做出更自由的变形，请使用同一栏的「自由变形」「网格变形」。';
 
   @override
   String get helpGradientAutofillTitle => '渐变上色（自动上色设置）';
@@ -2501,6 +2498,16 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get themeDuplicateAction => '复制';
+
+  @override
+  String themeAdoptColorsSnackbar(String name) {
+    return '已把「$name」的配色套用到当前颜色。之后修改颜色不会改动原主题';
+  }
+
+  @override
+  String themeEditPresetSnackbar(String name) {
+    return '已将「$name」设为编辑对象。颜色自定义的修改会保存到该主题';
+  }
 
   @override
   String get themeExportMenuItem => '导出 (.niatheme)';
@@ -4043,6 +4050,24 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get canvasDeselectAllButton => '取消全选';
+
+  @override
+  String get canvasSelectionModeMove => '移动';
+
+  @override
+  String get canvasSelectionModeScale => '缩放';
+
+  @override
+  String get canvasSelectionModeRotate => '旋转';
+
+  @override
+  String get canvasSelectionFreeTransform => '自由变形';
+
+  @override
+  String get canvasSelectionMeshTransform => '网格变形';
+
+  @override
+  String get canvasSelectionExitTooltip => '退出选择工具';
 
   @override
   String get canvasApplyFilterButton => '应用滤镜';
@@ -7033,9 +7058,6 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get toolbarItemSelect => '選取';
 
   @override
-  String get toolbarItemTransform => '變形';
-
-  @override
   String get toolbarItemText => '文字';
 
   @override
@@ -7534,7 +7556,7 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get helpTransformSelectionDesc =>
-      '用選取工具圈出的範圍，可以用變形工具進行移動、旋轉、縮放。適合用來調整誤畫部分的位置，或只放大強調某一部分。 若想變形整個圖層，可以使用不需選取範圍的「自由變形・網格變形」（從編輯選單開啟），能單獨拖曳各個網格點做出更自由的變形。';
+      '用選取工具圈出的範圍，可以在畫布左下方的「移動」「縮放」「旋轉」按鈕中選擇模式，再於選取範圍內拖曳進行變形。適合用來調整誤畫部分的位置，或只放大強調某一部分。按同一列的「全選」會把目前圖層整體變成選取範圍，因此整個圖層的移動、旋轉、縮放也能用同樣的方式完成（原先獨立的「變形工具」已整合到這裡）。若想單獨拖曳各個網格點做出更自由的變形，請使用同一列的「自由變形」「網格變形」。';
 
   @override
   String get helpGradientAutofillTitle => '漸層上色（自動上色設定）';
@@ -8496,6 +8518,16 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get themeDuplicateAction => '複製';
+
+  @override
+  String themeAdoptColorsSnackbar(String name) {
+    return '已將「$name」的配色套用到目前顏色。之後修改顏色不會改動原主題';
+  }
+
+  @override
+  String themeEditPresetSnackbar(String name) {
+    return '已將「$name」設為編輯對象。顏色自訂的修改會儲存到該主題';
+  }
 
   @override
   String get themeExportMenuItem => '匯出 (.niatheme)';
@@ -10037,6 +10069,24 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get canvasDeselectAllButton => '取消全選';
+
+  @override
+  String get canvasSelectionModeMove => '移動';
+
+  @override
+  String get canvasSelectionModeScale => '縮放';
+
+  @override
+  String get canvasSelectionModeRotate => '旋轉';
+
+  @override
+  String get canvasSelectionFreeTransform => '自由變形';
+
+  @override
+  String get canvasSelectionMeshTransform => '網格變形';
+
+  @override
+  String get canvasSelectionExitTooltip => '結束選取工具';
 
   @override
   String get canvasApplyFilterButton => '套用濾鏡';

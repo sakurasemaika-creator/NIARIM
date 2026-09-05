@@ -8,16 +8,16 @@ import 'package:niarim/services/project_service.dart';
 import 'package:provider/provider.dart';
 
 Project _project(String id, String name, List<String> tags) => Project(
-      id: id,
-      name: name,
-      fps: 24,
-      durationSeconds: 1,
-      backgroundColor: 0xFFFFFFFF,
-      createdAt: DateTime(2026, 1, 1),
-      updatedAt: DateTime(2026, 1, 1),
-      totalWorkSeconds: 0,
-      tags: tags,
-    );
+  id: id,
+  name: name,
+  fps: 24,
+  durationSeconds: 1,
+  backgroundColor: 0xFFFFFFFF,
+  createdAt: DateTime(2026, 1, 1),
+  updatedAt: DateTime(2026, 1, 1),
+  totalWorkSeconds: 0,
+  tags: tags,
+);
 
 Widget _host({required String query, required bool byTag}) {
   final projects = [
@@ -57,7 +57,9 @@ void main() {
     expect(find.text('School Days'), findsNothing);
   });
 
-  testWidgets('tag mode accepts a leading hash and ignores case', (tester) async {
+  testWidgets('tag mode accepts a leading hash and ignores case', (
+    tester,
+  ) async {
     await tester.pumpWidget(_host(query: '#NIGHT', byTag: true));
     await tester.pumpAndSettle();
 
@@ -65,7 +67,9 @@ void main() {
     expect(find.text('School Days'), findsNothing);
   });
 
-  testWidgets('keyword mode does not treat project tags as names', (tester) async {
+  testWidgets('keyword mode does not treat project tags as names', (
+    tester,
+  ) async {
     await tester.pumpWidget(_host(query: 'fantasy', byTag: false));
     await tester.pumpAndSettle();
 

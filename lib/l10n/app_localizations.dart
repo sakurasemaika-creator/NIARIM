@@ -2057,12 +2057,6 @@ abstract class AppLocalizations {
   /// **'選択'**
   String get toolbarItemSelect;
 
-  /// No description provided for @toolbarItemTransform.
-  ///
-  /// In ja, this message translates to:
-  /// **'変形'**
-  String get toolbarItemTransform;
-
   /// No description provided for @toolbarItemText.
   ///
   /// In ja, this message translates to:
@@ -2954,7 +2948,7 @@ abstract class AppLocalizations {
   /// No description provided for @helpTransformSelectionDesc.
   ///
   /// In ja, this message translates to:
-  /// **'選択ツールで囲んだ範囲は、変形ツールで移動・回転・拡大縮小できます。誤って描いた部分の位置調整や、一部だけを拡大して強調したい時などに使います。 レイヤー全体を対象にしたい場合は、範囲選択を使わない「自由変形・メッシュ変形」（編集メニューから開く）を使うと、格子点を個別にドラッグしてより自由な変形ができます。'**
+  /// **'選択ツールで囲んだ範囲は、キャンバス左下に出る「移動」「拡大縮小」「回転」のボタンでモードを選び、選択範囲の中をドラッグして変形できます。誤って描いた部分の位置調整や、一部だけを拡大して強調したい時などに使います。同じバーの「全選択」を押せば描画中のレイヤー全体が選択範囲になるので、レイヤーまるごとの移動・回転・拡大縮小も同じ操作でできます（以前あった独立した「変形ツール」はここへ統合しました）。格子点を個別にドラッグしてもっと自由に歪ませたい場合は、同じバーの「自由変形」「メッシュ変形」を使ってください。'**
   String get helpTransformSelectionDesc;
 
   /// No description provided for @helpGradientAutofillTitle.
@@ -4696,6 +4690,18 @@ abstract class AppLocalizations {
   /// In ja, this message translates to:
   /// **'複製'**
   String get themeDuplicateAction;
+
+  /// No description provided for @themeAdoptColorsSnackbar.
+  ///
+  /// In ja, this message translates to:
+  /// **'「{name}」の配色を現在の色へ反映しました。カラーカスタマイズで変えても元のテーマはそのままです'**
+  String themeAdoptColorsSnackbar(String name);
+
+  /// No description provided for @themeEditPresetSnackbar.
+  ///
+  /// In ja, this message translates to:
+  /// **'「{name}」を編集対象にしました。カラーカスタマイズの変更はこのテーマへ保存されます'**
+  String themeEditPresetSnackbar(String name);
 
   /// No description provided for @themeExportMenuItem.
   ///
@@ -7492,6 +7498,42 @@ abstract class AppLocalizations {
   /// In ja, this message translates to:
   /// **'全解除'**
   String get canvasDeselectAllButton;
+
+  /// No description provided for @canvasSelectionModeMove.
+  ///
+  /// In ja, this message translates to:
+  /// **'移動'**
+  String get canvasSelectionModeMove;
+
+  /// No description provided for @canvasSelectionModeScale.
+  ///
+  /// In ja, this message translates to:
+  /// **'拡大縮小'**
+  String get canvasSelectionModeScale;
+
+  /// No description provided for @canvasSelectionModeRotate.
+  ///
+  /// In ja, this message translates to:
+  /// **'回転'**
+  String get canvasSelectionModeRotate;
+
+  /// No description provided for @canvasSelectionFreeTransform.
+  ///
+  /// In ja, this message translates to:
+  /// **'自由変形'**
+  String get canvasSelectionFreeTransform;
+
+  /// No description provided for @canvasSelectionMeshTransform.
+  ///
+  /// In ja, this message translates to:
+  /// **'メッシュ変形'**
+  String get canvasSelectionMeshTransform;
+
+  /// No description provided for @canvasSelectionExitTooltip.
+  ///
+  /// In ja, this message translates to:
+  /// **'選択ツールを終了'**
+  String get canvasSelectionExitTooltip;
 
   /// No description provided for @canvasApplyFilterButton.
   ///

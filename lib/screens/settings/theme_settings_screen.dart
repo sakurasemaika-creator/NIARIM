@@ -135,8 +135,15 @@ class ThemeSettingsScreen extends StatelessWidget {
               ),
               children: [
                 // 他の画面（設定トップ・セーブツリー等）と統一した、影付き
-                // カードとして浮かせるデザイン（作り込みの一環）。選択中の
-                // テーマだけは背景をprimaryContainerに敷いて区別する。
+                // カードとして浮かせるデザイン（作り込みの一環）。
+                //
+                // カードのタップは「そのテーマの配色を現在の色へ取り込む」
+                // だけで、テーマ自体の編集対象にはしない（取り込んだあとに
+                // カラーカスタマイズで色を変えても、見本にしたテーマは
+                // 書き換わらない）。そのためタップしてもチェックマークは
+                // 付かない。テーマ自体を編集したい場合は三点メニューの
+                // 「編集」から編集対象にする（そのときだけチェックが付き、
+                // 背景をprimaryContainerに敷いて区別する）。
                 for (final entry in presets.asMap().entries)
                   Padding(
                     key: ValueKey(entry.value.id),
@@ -155,7 +162,16 @@ class ThemeSettingsScreen extends StatelessWidget {
                           .withValues(alpha: 0.15),
                       child: InkWell(
                         borderRadius: BorderRadius.circular(14),
-                        onTap: () => themeService.applyPreset(entry.value.id),
+                        onTap: () {
+                          themeService.adoptPresetColors(entry.value.id);
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content: Text(
+                                l10n.themeAdoptColorsSnackbar(entry.value.name),
+                              ),
+                            ),
+                          );
+                        },
                         child: Padding(
                           padding: const EdgeInsets.symmetric(
                             horizontal: 12,
@@ -210,6 +226,10 @@ class ThemeSettingsScreen extends StatelessWidget {
                                   themeService,
                                 ),
                                 itemBuilder: (_) => [
+                                  PopupMenuItem(
+                                    value: 'edit',
+                                    child: Text(l10n.commonEdit),
+                                  ),
                                   PopupMenuItem(
                                     value: 'rename',
                                     child: Text(l10n.commonRename),
@@ -336,6 +356,14 @@ class ThemeSettingsScreen extends StatelessWidget {
   ) {
     final l10n = AppLocalizations.of(context)!;
     switch (action) {
+      // このテーマ自体を編集対象にする（一覧でチェックが付き、以後の
+      // カラーカスタマイズの変更はこのテーマへ上書き保存される）。
+      // カードのタップは配色の取り込みだけなので、編集はここからのみ。
+      case 'edit':
+        service.applyPreset(preset.id);
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(l10n.themeEditPresetSnackbar(preset.name))),
+        );
       case 'rename':
         _showRenameDialog(context, preset, service);
       case 'duplicate':

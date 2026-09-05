@@ -74,7 +74,7 @@ void main() {
                   child: CanvasArea(
                     project: p,
                     currentLayerId: layer.id,
-                    currentTool: DrawingTool.transform,
+                    currentTool: DrawingTool.selectRect,
                     currentFrame: 0,
                     sceneId: scene.id,
                   ),

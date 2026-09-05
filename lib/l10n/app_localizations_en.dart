@@ -1064,9 +1064,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get toolbarItemSelect => 'Select';
 
   @override
-  String get toolbarItemTransform => 'Transform';
-
-  @override
   String get toolbarItemText => 'Text';
 
   @override
@@ -1572,7 +1569,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get helpTransformSelectionDesc =>
-      'A region enclosed with the select tool can be moved, rotated, and scaled with the transform tool. Handy for repositioning a mistakenly drawn part, or enlarging just one area to emphasize it. If you want to transform the whole layer instead, use Free Transform / Mesh Warp (opened from the edit menu) — it doesn\'t need a selection and lets you drag individual grid points for more freeform results.';
+      'A region enclosed with the select tool can be transformed by picking Move, Scale, or Rotate from the buttons at the bottom left of the canvas and then dragging inside the selection. Handy for repositioning a mistakenly drawn part, or enlarging just one area to emphasize it. Tapping Select All on the same bar selects the entire current layer, so you can move, rotate, and scale a whole layer the same way (the separate Transform tool has been merged into this). To warp more freely by dragging individual grid points, use Free transform or Mesh warp on the same bar.';
 
   @override
   String get helpGradientAutofillTitle => 'Gradient fill (autofill settings)';
@@ -2607,6 +2604,16 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get themeDuplicateAction => 'Duplicate';
+
+  @override
+  String themeAdoptColorsSnackbar(String name) {
+    return 'Applied the colors of “$name” to your current colors. Editing them will not change the original theme.';
+  }
+
+  @override
+  String themeEditPresetSnackbar(String name) {
+    return 'Now editing “$name”. Changes in Color customization are saved to this theme.';
+  }
 
   @override
   String get themeExportMenuItem => 'Export (.niatheme)';
@@ -4203,6 +4210,24 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get canvasDeselectAllButton => 'Deselect all';
+
+  @override
+  String get canvasSelectionModeMove => 'Move';
+
+  @override
+  String get canvasSelectionModeScale => 'Scale';
+
+  @override
+  String get canvasSelectionModeRotate => 'Rotate';
+
+  @override
+  String get canvasSelectionFreeTransform => 'Free transform';
+
+  @override
+  String get canvasSelectionMeshTransform => 'Mesh warp';
+
+  @override
+  String get canvasSelectionExitTooltip => 'Exit select tool';
 
   @override
   String get canvasApplyFilterButton => 'Apply filter';

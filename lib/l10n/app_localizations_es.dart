@@ -1085,9 +1085,6 @@ class AppLocalizationsEs extends AppLocalizations {
   String get toolbarItemSelect => 'Selección';
 
   @override
-  String get toolbarItemTransform => 'Transformar';
-
-  @override
   String get toolbarItemText => 'Texto';
 
   @override
@@ -1599,7 +1596,7 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get helpTransformSelectionDesc =>
-      'Una zona delimitada con la herramienta de selección se puede mover, rotar y escalar con la herramienta de transformación. Útil para reposicionar una parte dibujada por error, o para ampliar solo una zona para destacarla. Si quieres transformar toda la capa, usa Transformación libre / Deformación de malla (se abre desde el menú de edición): no necesita selección y permite arrastrar cada punto de la cuadrícula individualmente para un resultado más libre.';
+      'Una zona delimitada con la herramienta de selección se puede transformar eligiendo Mover, Escalar o Rotar en los botones de la esquina inferior izquierda del lienzo y arrastrando dentro de la selección. Útil para reposicionar una parte dibujada por error, o para ampliar solo una zona para destacarla. Al pulsar Seleccionar todo en esa misma barra se selecciona la capa entera, así que puedes mover, rotar y escalar toda una capa del mismo modo (la antigua herramienta de transformación se ha integrado aquí). Si quieres deformar con más libertad arrastrando cada punto de la cuadrícula, usa Transf. libre o Malla en la misma barra.';
 
   @override
   String get helpGradientAutofillTitle =>
@@ -2642,6 +2639,16 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get themeDuplicateAction => 'Duplicar';
+
+  @override
+  String themeAdoptColorsSnackbar(String name) {
+    return 'Se han aplicado los colores de «$name» a tus colores actuales. Al editarlos no cambiará el tema original.';
+  }
+
+  @override
+  String themeEditPresetSnackbar(String name) {
+    return 'Ahora editas «$name». Los cambios en Personalizar color se guardan en este tema.';
+  }
 
   @override
   String get themeExportMenuItem => 'Exportar (.niatheme)';
@@ -4263,6 +4270,24 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get canvasDeselectAllButton => 'Deseleccionar todo';
+
+  @override
+  String get canvasSelectionModeMove => 'Mover';
+
+  @override
+  String get canvasSelectionModeScale => 'Escalar';
+
+  @override
+  String get canvasSelectionModeRotate => 'Rotar';
+
+  @override
+  String get canvasSelectionFreeTransform => 'Transf. libre';
+
+  @override
+  String get canvasSelectionMeshTransform => 'Malla';
+
+  @override
+  String get canvasSelectionExitTooltip => 'Salir de selección';
 
   @override
   String get canvasApplyFilterButton => 'Aplicar filtro';

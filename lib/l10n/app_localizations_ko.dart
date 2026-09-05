@@ -1047,9 +1047,6 @@ class AppLocalizationsKo extends AppLocalizations {
   String get toolbarItemSelect => '선택';
 
   @override
-  String get toolbarItemTransform => '변형';
-
-  @override
   String get toolbarItemText => '텍스트';
 
   @override
@@ -1551,7 +1548,7 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get helpTransformSelectionDesc =>
-      '선택 도구로 감싼 범위는 변형 도구로 이동・회전・확대축소할 수 있습니다. 실수로 그린 부분의 위치를 조정하거나, 일부만 확대해 강조하고 싶을 때 사용합니다. 레이어 전체를 변형하고 싶다면 선택 범위가 필요 없는 「자유 변형・메시 변형」（편집 메뉴에서 열기）을 사용하면, 격자점을 개별적으로 드래그해 더 자유로운 변형을 할 수 있습니다.';
+      '선택 도구로 감싼 범위는 캔버스 왼쪽 아래에 나오는 「이동」「크기 조절」「회전」 버튼으로 모드를 고른 뒤 선택 범위 안을 드래그해 변형할 수 있습니다. 실수로 그린 부분의 위치를 조정하거나, 일부만 확대해 강조하고 싶을 때 사용합니다. 같은 바의 「전체 선택」을 누르면 그리고 있는 레이어 전체가 선택 범위가 되므로, 레이어 전체의 이동・회전・크기 조절도 같은 방법으로 할 수 있습니다（예전의 독립된 「변형 도구」는 여기로 통합했습니다）. 격자점을 개별적으로 드래그해 더 자유롭게 일그러뜨리고 싶다면 같은 바의 「자유 변형」「메시 변형」을 사용하세요.';
 
   @override
   String get helpGradientAutofillTitle => '그라데이션 채색（자동 채색 설정）';
@@ -2522,6 +2519,16 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get themeDuplicateAction => '복제';
+
+  @override
+  String themeAdoptColorsSnackbar(String name) {
+    return '「$name」의 배색을 현재 색으로 반영했습니다. 색을 바꿔도 원래 테마는 그대로입니다';
+  }
+
+  @override
+  String themeEditPresetSnackbar(String name) {
+    return '「$name」을(를) 편집 대상으로 설정했습니다. 색 커스터마이즈의 변경이 이 테마에 저장됩니다';
+  }
 
   @override
   String get themeExportMenuItem => '내보내기 (.niatheme)';
@@ -4080,6 +4087,24 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get canvasDeselectAllButton => '전체 해제';
+
+  @override
+  String get canvasSelectionModeMove => '이동';
+
+  @override
+  String get canvasSelectionModeScale => '크기 조절';
+
+  @override
+  String get canvasSelectionModeRotate => '회전';
+
+  @override
+  String get canvasSelectionFreeTransform => '자유 변형';
+
+  @override
+  String get canvasSelectionMeshTransform => '메시 변형';
+
+  @override
+  String get canvasSelectionExitTooltip => '선택 도구 종료';
 
   @override
   String get canvasApplyFilterButton => '필터 적용';

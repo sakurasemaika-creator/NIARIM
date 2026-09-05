@@ -112,6 +112,15 @@ void main() {
       expect((e.widget as IconButton).onPressed, isNotNull);
     }
 
+    // アイコンだけで役割が分かることが要件なので、字面（ツールチップ）だけで
+    // なく実際のアイコンも見張る。読み込みが本なので、書き込みは
+    // 「その本へ書き入れる」ペンで比喩を揃える。
+    IconData iconOf(Finder f) =>
+        ((f.evaluate().first.widget as IconButton).icon as Icon).icon!;
+    expect(iconOf(writes), Icons.edit, reason: '書き込みはペンのアイコン');
+    expect(iconOf(loads), Icons.menu_book, reason: '読み込みは本のアイコン');
+    expect(iconOf(deletes), Icons.delete_outline, reason: '削除はゴミ箱のアイコン');
+
     // 役割が重複していた旧ボトムシートが残っていないことをソースで確認する。
     final source = File(
       'lib/screens/save_tree/save_management_screen.dart',

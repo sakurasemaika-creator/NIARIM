@@ -14,6 +14,9 @@ import '../l10n/app_localizations.dart';
 /// フィルター（filter）・オニオンスキンは上部バーの「設定/編集」メニューに
 /// 集約されているため、フィルターはここには含めない（オニオンスキンは
 /// 元々カスタマイズ対象外の常設項目）。
+/// 変形（transform）は選択ツールへ統合したため削除した。選択ツール使用中に
+/// キャンバス左下へ出る移動・拡大縮小・回転のモードボタンが役割を引き継ぎ、
+/// レイヤー全体の変形は「全選択」してから同じボタンで行う。
 enum ToolbarItemId {
   pen,
   eraser,
@@ -28,7 +31,6 @@ enum ToolbarItemId {
   // 液タブ接続時に手のひらツールが自動で使えるようにするための項目。
   pan,
   select,
-  transform,
   text,
   shape,
 }
@@ -42,7 +44,6 @@ extension ToolbarItemLabel on ToolbarItemId {
     ToolbarItemId.finger => l10n.toolbarItemFinger,
     ToolbarItemId.pan => l10n.toolbarItemPan,
     ToolbarItemId.select => l10n.toolbarItemSelect,
-    ToolbarItemId.transform => l10n.toolbarItemTransform,
     ToolbarItemId.text => l10n.toolbarItemText,
     ToolbarItemId.shape => l10n.toolbarItemShape,
   };
@@ -75,7 +76,6 @@ extension ToolbarItemIcon on ToolbarItemId {
     ToolbarItemId.finger => Icons.pan_tool_alt,
     ToolbarItemId.pan => Icons.back_hand,
     ToolbarItemId.select => Icons.highlight_alt,
-    ToolbarItemId.transform => Icons.transform,
     ToolbarItemId.text => Icons.text_fields,
     // 図形ツール：Font Awesomeの「shapes」（複数の図形を重ねた見た目）が
     // Material Iconsのcategory（三角形1つ）よりも図形選択ツールらしいため変更。

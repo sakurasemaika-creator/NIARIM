@@ -87,6 +87,9 @@ class NiatraSerializer {
     if (selectedItems['UIテーマ'] ?? false) {
       data['themePresets'] = theme.presets.map(_serializeThemePreset).toList();
       data['currentThemeId'] = theme.current.id;
+      // 現在の色は一覧のどれかとは限らない（テーマ一覧から配色だけ取り込んで
+      // 手直しした状態）ので、IDではなく配色そのものも持たせる。
+      data['currentTheme'] = _serializeThemePreset(theme.current);
     }
 
     if (selectedItems['パレット'] ?? false) {
@@ -203,6 +206,11 @@ class NiatraSerializer {
       for (final tpj in themePresetsJson) {
         theme.savePreset(_deserializeThemePreset(tpj as Map<String, dynamic>));
       }
+    }
+    // 現在の色は一覧へ足さずに差し替える（一覧に無い配色のこともあるため）。
+    final currentThemeJson = j['currentTheme'] as Map<String, dynamic>?;
+    if (currentThemeJson != null) {
+      theme.restoreCurrent(_deserializeThemePreset(currentThemeJson));
     }
 
     // パレット・ドット絵専用パレットはIDが取り込み先の既存データと衝突
