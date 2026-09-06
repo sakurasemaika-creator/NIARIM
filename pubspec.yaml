@@ -21,6 +21,10 @@ dependencies:
   path_provider: ^2.1.1
   disk_space_2: ^1.0.13
   google_mobile_ads: ^7.0.0
+  # NIARIM APIのGoogle IDトークン認証と、YouTube Data API投稿用の
+  # `youtube.upload` スコープ認可に使用。7.xでは認証と追加スコープ認可を
+  # 分離して扱うため、lib/services/google_auth_service.dartで一元管理する。
+  google_sign_in: ^7.2.0
   in_app_purchase: ^3.1.13
   video_player: ^2.8.2
   # audioplayers 5.2.1が依存するaudioplayers_android 4.0.3はcompileSdk 33で
