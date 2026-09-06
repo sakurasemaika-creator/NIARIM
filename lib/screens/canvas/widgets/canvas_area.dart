@@ -113,19 +113,54 @@ List<Offset> selectionScaleHandlesOf(Rect bounds) => [
 Offset selectionRotateHandleOf(
   Rect bounds,
   double handleRadius, {
-  Size? canvasSize,
+  double? rotateRadius,
+  Rect? reachable,
 }) {
   final gap = handleRadius * kSelectionRotateHandleGap;
-  final y = bounds.top - gap;
+  // 位置を寄せる際に確保する余白は、四隅のハンドルではなく**回転ハンドル
+  // 自身**の半径で測る。四隅ぶん（より小さい）で測ると、寄せきったときに
+  // 回転ハンドルの円が差分ぶんだけウィジェットの外へはみ出して欠ける。
+  final margin = rotateRadius ?? handleRadius;
   var x = bounds.right + gap;
-  if (canvasSize != null) {
-    // 横だけは、はみ出しすぎるとウィジェットの外になって指が届かなくなる。
-    // 寄せる場合も上方向のオフセットは残るので、選択範囲の外側であることは
-    // 変わらない。
-    final limit = canvasSize.width - handleRadius;
-    if (x > limit) x = math.max(bounds.right, limit);
+  var y = bounds.top - gap;
+  if (reachable != null) {
+    // キャンバスの外へはみ出すのは構わないが、CanvasAreaウィジェットの外へ
+    // 出るとポインターイベントが届かず掴めなくなる。はみ出すぶんだけ内側へ
+    // 寄せる。アスペクト比フィットの都合で描画エリアの外側に余白が付くのは
+    // 縦横どちらか一方だけなので、通常寄せるのも一方だけで済む。
+    x = math.min(x, reachable.right - margin);
+    y = math.max(y, reachable.top + margin);
+    // 縦横とも選択範囲へ食い込んだ場合（キャンバスとウィジェットの縦横比が
+    // ぴったり一致していて余白がまったく無いとき）は、縦方向へ出す。
+    // 四隅の拡大縮小ハンドルと重なると「角を掴んだのに回転する」状態に
+    // なるため、こうなったときだけは掴めなくなるより外へ出す方を選ぶ。
+    if (x < bounds.right + margin && y > bounds.top - margin) {
+      y = bounds.top - margin;
+    }
   }
   return Offset(x, y);
+}
+
+/// 指が届く範囲（＝CanvasAreaウィジェット全体）を、キャンバスpxへ直した矩形。
+///
+/// アスペクト比フィットで置かれる描画エリア（[canvasDrawingRectFor]）の
+/// 外側にはレターボックス／ピラーボックスの余白があり、そこもウィジェットの
+/// 内側なのでタップは届く。回転ハンドルを「キャンバスの外だがウィジェットの
+/// 内」へ置けるようにするための計算。
+Rect reachableCanvasRectFor(Size size, Rect drawingRect, Project? project) {
+  final exportW = project?.exportWidth.toDouble() ?? 1920.0;
+  final exportH = project?.exportHeight.toDouble() ?? 1080.0;
+  if (drawingRect.width <= 0 || drawingRect.height <= 0) {
+    return Rect.fromLTWH(0, 0, exportW, exportH);
+  }
+  final sx = exportW / drawingRect.width;
+  final sy = exportH / drawingRect.height;
+  return Rect.fromLTRB(
+    -drawingRect.left * sx,
+    -drawingRect.top * sy,
+    (size.width - drawingRect.left) * sx,
+    (size.height - drawingRect.top) * sy,
+  );
 }
 
 Rect canvasDrawingRectFor(Size size, Project? project) {
@@ -2112,6 +2147,16 @@ class _CanvasAreaState extends State<CanvasArea> {
   double get _selectionHandleHitRadius =>
       selectionHandleRadiusFor(_canvasToScreenScale);
 
+  /// 指が届く範囲をキャンバスpxで表した矩形。_CanvasPainter側と同じ計算元
+  /// （canvasDrawingRectFor）を使い、当たり判定と描画位置を一致させる。
+  Rect? get _reachableCanvasRect {
+    final size = context.size;
+    if (size == null || size.width <= 0 || size.height <= 0) return null;
+    final rect = canvasDrawingRectFor(size, widget.project);
+    if (rect.width <= 0 || rect.height <= 0) return null;
+    return reachableCanvasRectFor(size, rect, widget.project);
+  }
+
   /// [canvasPos]が選択範囲のハンドル／内側に該当すれば、掴んだ場所に応じた
   /// モードで変形操作を開始してtrueを返す。該当しなければfalse（＝新規選択へ）。
   ///
@@ -2124,12 +2169,15 @@ class _CanvasAreaState extends State<CanvasArea> {
     if (bounds == null) return false;
     final r = _selectionHandleHitRadius;
     final rotateR = selectionRotateHandleRadiusFor(_canvasToScreenScale);
-    final canvasSize = Size(
-      _tileManager.canvasWidth.toDouble(),
-      _tileManager.canvasHeight.toDouble(),
-    );
+    final reachable = _reachableCanvasRect;
     _TransformMode mode;
-    if ((canvasPos - selectionRotateHandleOf(bounds, r, canvasSize: canvasSize))
+    if ((canvasPos -
+                selectionRotateHandleOf(
+                  bounds,
+                  r,
+                  rotateRadius: rotateR,
+                  reachable: reachable,
+                ))
             .distance <
         rotateR) {
       mode = _TransformMode.rotate;
@@ -3840,10 +3888,8 @@ class _CanvasPainter extends CustomPainter {
           selectionRotateHandleOf(
             bounds,
             r,
-            canvasSize: Size(
-              (project?.exportWidth ?? 1920).toDouble(),
-              (project?.exportHeight ?? 1080).toDouble(),
-            ),
+            rotateRadius: selectionRotateHandleRadiusFor(sx),
+            reachable: reachableCanvasRectFor(size, drawingRect, project),
           ),
         ),
         Icons.rotate_right,

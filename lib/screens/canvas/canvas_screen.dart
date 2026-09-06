@@ -1971,9 +1971,10 @@ class _CanvasScreenState extends State<CanvasScreen> {
                   label: l10n.canvasSelectionMeshTransform,
                   onTap: () => _openMeshTransformPanel(density: 3),
                 ),
-                // 変形を取り消して選択ツールごと抜ける。
+                // 変形を取り消して選択ツールごと抜ける。アイコンは、
+                // 隣の「適用」がチェックなのと対になるよう×にしている。
                 chip(
-                  icon: Icons.settings_backup_restore,
+                  icon: Icons.close,
                   label: l10n.canvasSelectionRevertButton,
                   tooltip: l10n.canvasSelectionRevertTooltip,
                   onTap: _cancelSelectionTransformAndExit,
