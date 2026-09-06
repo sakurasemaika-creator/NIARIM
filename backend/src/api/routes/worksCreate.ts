@@ -79,9 +79,20 @@ export async function createWork(event: APIGatewayProxyEventV2) {
     if (!snippet) {
       badRequest("指定されたYouTube動画が見つかりません", "VIDEO_NOT_FOUND");
     }
-    const verification = verifyVideoOwnership(snippet, user.youtubeChannelId);
-    if (!verification.ok) {
-      forbidden(verification.reason);
+
+    if (existing) {
+      // 初回登録時に「投稿直後であること」まで検証済みの作品は、後日の
+      // 通信再送・制作情報更新でも冪等に再登録できるよう、再登録時は
+      // チャンネル所有者の一致だけを再確認する。15分制限を再適用すると、
+      // 正規に登録済みの作品まで時間経過だけで更新不能になってしまう。
+      if (snippet.channelId !== user.youtubeChannelId) {
+        forbidden("この動画は連携済みチャンネルの投稿ではありません");
+      }
+    } else {
+      const verification = verifyVideoOwnership(snippet, user.youtubeChannelId);
+      if (!verification.ok) {
+        forbidden(verification.reason);
+      }
     }
 
     const channelInfo = await getOwnChannelInfo(body.youtubeAccessToken);
