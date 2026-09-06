@@ -23,6 +23,10 @@ enum RankingPeriod {
   final String pathValue;
 }
 
+/// `PATCH /works/{id}/tags`へ送る1回分の操作。
+/// バックエンドの`TagAction`と値を完全に一致させること。
+enum CommunityTagAction { add, remove, lock, unlock }
+
 /// 作品広場バックエンドの全エンドポイントを型付きで呼ぶ層。
 ///
 /// `backend/src/api/handler.ts`のルーティング表と1対1に対応させてある
@@ -168,21 +172,20 @@ class CommunityApi {
   Future<void> deleteWork(String workId) =>
       _client.deleteJson('/works/${Uri.encodeComponent(workId)}');
 
-  /// クラウド編集タグを更新する。`PATCH /works/{id}/tags`
+  /// クラウド編集タグを1操作ずつ更新する。`PATCH /works/{id}/tags`
   ///
-  /// タグの追加・削除は誰でもでき、[lockedTags]（他人に消させないタグ）の
-  /// 変更は投稿者本人だけがサーバー側で許可される。
-  Future<ApiWork> updateTags(
+  /// バックエンドはリスト全体の置換ではなく`{action, tag}`を受け付ける。
+  /// 追加・削除はログイン済みユーザーなら誰でも可能、lock/unlockは
+  /// 投稿者本人だけがサーバー側で許可される。1作品10タグの上限も
+  /// サーバー側で検証する。
+  Future<ApiWork> updateTag(
     String workId, {
-    required List<String> tags,
-    Set<String>? lockedTags,
+    required CommunityTagAction action,
+    required String tag,
   }) async {
     final json = await _client.patchJson(
       '/works/${Uri.encodeComponent(workId)}/tags',
-      body: {
-        'tags': tags,
-        if (lockedTags != null) 'lockedTags': lockedTags.toList(),
-      },
+      body: {'action': action.name, 'tag': tag},
     );
     return ApiWork.fromJson(_work(json));
   }
