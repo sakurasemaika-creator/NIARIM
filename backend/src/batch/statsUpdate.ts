@@ -80,7 +80,7 @@ export async function handler(event: BatchPayload = {}): Promise<void> {
     new ScanCommand({
       TableName: tableName(),
       FilterExpression: "itemType = :type",
-      ExpressionAttributeValues: { ":type": "WORK" },
+      ExpressionAttributeValues: { ":type": TABLE_ITEM_TYPE.Work },
       Limit: PAGE_SIZE,
       ExclusiveStartKey: event.lastEvaluatedKey as never,
     }),
@@ -99,14 +99,8 @@ export async function handler(event: BatchPayload = {}): Promise<void> {
     return;
   }
 
-  // 全作品を見終わったので、期間別ランキングを確定して書き出す（8.2節）。
   await writeRankingSnapshots(topLists);
 
-  // 全ページの処理が完了：「最終更新完了日時」を記録する（8.1節）。
-  // 表示側（GSI Query）は更新途中の中途半端な状態を参照しないよう、
-  // rankingScore自体はページ処理のたびに随時反映済みだが、この完了
-  // 印は監視・デバッグ用途（次回実行までにバッチが完走したかの確認）
-  // に使う。
   await ddb.send(
     new UpdateCommand({
       TableName: tableName(),
@@ -129,8 +123,6 @@ async function processPage(
 ): Promise<void> {
   if (works.length === 0) return;
 
-  // videos.batchGetStatsの1回あたり件数上限は【要確認】（youtube.ts参照）。
-  // 保守的に50件ずつのチャンクへ分割して呼び出す。
   const chunks = chunk(works, 50);
   for (const workChunk of chunks) {
     const stats = await batchGetVideoStats(
@@ -161,8 +153,6 @@ async function updateWorkStats(
   const nowDate = new Date();
   const now = nowDate.toISOString();
 
-  // videos.batchGetStatsで取得できなかった動画はYouTube側で削除済みと
-  // みなす（13章の状態表）。
   const youtubePrivacyStatus = stats ? stats.privacyStatus : "deleted";
   const viewCount = stats?.viewCount ?? work.viewCount;
   const likeCount = stats?.likeCount ?? work.likeCount;
@@ -173,8 +163,6 @@ async function updateWorkStats(
     commentCount,
   });
 
-  // 13章：非公開(private)・削除済み(deleted)は強制非表示。それ以外
-  // （public/unlisted）は、NIARIM側のisNiarimPublished設定どおりに表示。
   const forcedHidden =
     youtubePrivacyStatus === "private" || youtubePrivacyStatus === "deleted";
   const isVisible = work.isNiarimPublished && !forcedHidden;
@@ -192,20 +180,21 @@ async function updateWorkStats(
     ":comment": commentCount,
     ":now": now,
     ":status": youtubePrivacyStatus,
+    ":expectedType": TABLE_ITEM_TYPE.Work,
     ":expectedPublished": work.isNiarimPublished,
   };
   const removes: string[] = [];
-  const conditions = ["isNiarimPublished = :expectedPublished"];
+  const conditions = [
+    "itemType = :expectedType",
+    "isNiarimPublished = :expectedPublished",
+  ];
 
-  // 8.2節：期間別ランキング用スナップショットを現在の窓へ進める。
-  // 窓が変わっていなければ基準点は据え置かれ、期間中スコアが積み上がる。
   const current = { viewCount, likeCount, commentCount };
   const statsWindows = rollStatsWindows(work.statsWindows, current, nowDate);
   setParts.push("statsWindows = :windows");
   values[":windows"] = statsWindows;
 
   if (isVisible) {
-    // 累計ランキングだけはYouTube統計に合わせて毎回更新する。
     setParts.push(
       "rankingScore = :score",
       "gsi1pk = :rankPk",
@@ -214,11 +203,6 @@ async function updateWorkStats(
     values[":score"] = rankingScore;
     values[":rankPk"] = "RANKING#ALL";
 
-    // ブックマークGSI・作者GSI・新着GSIは通常の可視作品なら別処理が常に
-    // 最新状態を保っているので触らない。YouTube非公開→公開復帰などで
-    // インデックスが欠けている場合だけ復元する。復元時はScan後に
-    // bookmarkCountが変わっていないことも条件に入れ、古い値をgsi2skへ
-    // 書き戻さない。
     const hasPublicIndexes =
       work.gsi2pk != null &&
       work.gsi2sk != null &&
@@ -276,20 +260,23 @@ async function updateWorkStats(
       error instanceof ConditionalCheckFailedException &&
       conflictAttempt < MAX_VISIBILITY_CONFLICT_RETRIES
     ) {
-      // Scan後に作者の公開設定またはブックマーク数が変わった。最新Itemを
-      // 読み直し、同じYouTube統計値を使って条件・GSIを組み直す。
       const latestResult = await ddb.send(
         new GetCommand({ TableName: tableName(), Key: Keys.work(work.workId) }),
       );
-      const latest = latestResult.Item as WorkItem | undefined;
-      if (latest) {
-        await updateWorkStats(latest, stats, topLists, conflictAttempt + 1);
+      const latestRaw = latestResult.Item;
+      // Scan後に作品が削除され墓標へ置換された場合は、墓標をWorkItemとして
+      // 再試行しない。統計更新から完全に除外し、次サイクルのScanにも載らない。
+      if (latestRaw?.itemType === TABLE_ITEM_TYPE.Work) {
+        await updateWorkStats(
+          latestRaw as WorkItem,
+          stats,
+          topLists,
+          conflictAttempt + 1,
+        );
       }
       return;
     }
     if (error instanceof ConditionalCheckFailedException) {
-      // 公開設定を連続操作中などで競合が続く場合は、古いScan結果で公開状態を
-      // 上書きするより、この作品の統計更新を次サイクルへ回す方を優先する。
       console.warn(
         `作品${work.workId}の統計更新を公開設定競合のためスキップしました`,
       );
@@ -298,8 +285,6 @@ async function updateWorkStats(
     throw error;
   }
 
-  // ランキング途中集計は、DynamoDB更新が成功して「この作品が現在も可視」
-  // と確認できた後にだけ追加する。競合前の古い公開状態でTop50へ混入させない。
   if (isVisible) {
     for (const period of DELTA_RANKING_PERIODS) {
       const score = computePeriodScore(current, statsWindows[period]);
@@ -312,12 +297,6 @@ async function updateWorkStats(
   }
 }
 
-/**
- * 期間別ランキングを`RANKINGSNAPSHOT#{PERIOD}`へ書き出す（8.2節）。
- * 期間ごとに1アイテムなので書き込みは4回だけで、GSIも増えない。
- * 途中でバッチが失敗した場合は前回のスナップショットが残るため、
- * 「順位が古いまま」にはなっても壊れた順位は表示されない。
- */
 async function writeRankingSnapshots(topLists: TopLists): Promise<void> {
   const now = new Date();
   await Promise.all(
