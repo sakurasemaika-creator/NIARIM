@@ -1,0 +1,191 @@
+name: One-shot Canvas Angle Fixed Background Audit
+
+on:
+  push:
+    branches: [dev_branch]
+    paths:
+      - '.github/workflows/one-shot-canvas-angle-fixed-background-audit.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: dev_branch
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+      - run: flutter pub get
+      - name: Create angled fixed-background operation test
+        run: |
+          cat > test/canvas_angle_fixed_background_visual_test.dart <<'DART'
+          import 'dart:io';
+          import 'dart:math' as math;
+          import 'dart:ui' as ui;
+
+          import 'package:flutter/gestures.dart';
+          import 'package:flutter/material.dart';
+          import 'package:flutter/rendering.dart';
+          import 'package:flutter/services.dart';
+          import 'package:flutter_test/flutter_test.dart';
+          import 'package:niarim/app.dart';
+          import 'package:niarim/app_bootstrap.dart';
+          import 'package:niarim/router.dart';
+          import 'package:niarim/screens/canvas/widgets/canvas_area.dart';
+          import 'package:niarim/services/project_service.dart';
+          import 'package:provider/provider.dart';
+          import 'package:shared_preferences/shared_preferences.dart';
+          import 'helpers/load_app_fonts.dart';
+
+          void main() {
+            TestWidgetsFlutterBinding.ensureInitialized();
+            testWidgets('斜め回転でも背景固定のまま境界で止まる', (tester) async {
+              SharedPreferences.setMockInitialValues({});
+              final tempDir = Directory.systemTemp.createTempSync('niarim_angle_fixed_bg_');
+              const pathChannel = MethodChannel('plugins.flutter.io/path_provider');
+              TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
+                  .setMockMethodCallHandler(pathChannel, (call) async => tempDir.path);
+              addTearDown(() {
+                TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
+                    .setMockMethodCallHandler(pathChannel, null);
+                if (tempDir.existsSync()) tempDir.deleteSync(recursive: true);
+              });
+
+              tester.view.physicalSize = const Size(1080, 1920);
+              tester.view.devicePixelRatio = 2.5;
+              addTearDown(tester.view.resetPhysicalSize);
+              addTearDown(tester.view.resetDevicePixelRatio);
+
+              await loadAppFonts(tester);
+              final providers = await tester.runAsync(buildAppProviders);
+              final boundaryKey = GlobalKey();
+              await tester.pumpWidget(
+                RepaintBoundary(
+                  key: boundaryKey,
+                  child: MultiProvider(providers: providers!, child: const NiarimApp()),
+                ),
+              );
+              await tester.pumpAndSettle();
+              final context = tester.element(find.byType(MaterialApp).first);
+              final ps = context.read<ProjectService>();
+              final project = await tester.runAsync(() => ps.createProject(
+                name: 'angle-fixed-background-audit',
+                fps: 12,
+                durationSeconds: 1,
+                backgroundColor: 0xFFFFFFFF,
+                exportWidth: 640,
+                exportHeight: 480,
+              ));
+              expect(project, isNotNull);
+
+              Future<void> openCanvas() async {
+                appRouter.go('/home');
+                await tester.pump(const Duration(milliseconds: 120));
+                appRouter.go('/canvas/${project!.id}');
+                for (var i = 0; i < 10; i++) {
+                  await tester.pump(const Duration(milliseconds: 100));
+                  await tester.runAsync(() => Future<void>.delayed(const Duration(milliseconds: 50)));
+                }
+                expect(find.byType(CanvasArea), findsOneWidget);
+                expect(tester.takeException(), isNull);
+              }
+
+              final out = Directory('build/canvas-angle-fixed-background')..createSync(recursive: true);
+              Future<void> capture(String name) async {
+                await tester.pump(const Duration(milliseconds: 100));
+                expect(tester.takeException(), isNull);
+                final boundary = boundaryKey.currentContext!.findRenderObject() as RenderRepaintBoundary;
+                final bytes = await tester.runAsync(() async {
+                  final image = await boundary.toImage(pixelRatio: 1);
+                  final data = await image.toByteData(format: ui.ImageByteFormat.png);
+                  image.dispose();
+                  return data!.buffer.asUint8List();
+                });
+                await tester.runAsync(() => File('${out.path}/$name.png').writeAsBytes(bytes!));
+              }
+
+              Offset center() => tester.getCenter(find.byType(CanvasArea));
+
+              Future<void> pinchToMinScale() async {
+                final c = center();
+                final a = await tester.startGesture(c + const Offset(-160, 0), pointer: 11);
+                final b = await tester.startGesture(c + const Offset(160, 0), pointer: 12);
+                await tester.pump();
+                await a.moveTo(c + const Offset(-32, 0));
+                await b.moveTo(c + const Offset(32, 0));
+                await tester.pump();
+                await a.up(); await b.up(); await tester.pump();
+              }
+
+              Future<void> rotateExactly(double degrees) async {
+                final c = center();
+                const half = 70.0;
+                final anchor = c + const Offset(-half, 0);
+                final moverStart = c + const Offset(half, 0);
+                final a = await tester.startGesture(anchor, pointer: 21);
+                final b = await tester.startGesture(moverStart, pointer: 22);
+                await tester.pump();
+                final rad = degrees * math.pi / 180.0;
+                final target = anchor + Offset(math.cos(rad) * (half * 2), math.sin(rad) * (half * 2));
+                await b.moveTo(target);
+                await tester.pump();
+                await b.up(); await a.up(); await tester.pump();
+              }
+
+              Future<void> middleDrag(Offset delta) async {
+                final c = center();
+                final g = await tester.startGesture(c, pointer: 41, kind: PointerDeviceKind.mouse, buttons: kMiddleMouseButton);
+                await tester.pump();
+                await g.moveTo(c + delta);
+                await tester.pump();
+                await g.up(); await tester.pump();
+              }
+
+              final cases = <(double, Offset, String)>[
+                (30, const Offset(5000, 5000), 'p030_right_bottom'),
+                (45, const Offset(-5000, -5000), 'p045_left_top'),
+                (60, const Offset(5000, -5000), 'p060_right_top'),
+                (90, const Offset(-5000, 5000), 'p090_left_bottom'),
+                (-30, const Offset(-5000, 5000), 'm030_left_bottom'),
+                (-45, const Offset(5000, -5000), 'm045_right_top'),
+                (-60, const Offset(-5000, -5000), 'm060_left_top'),
+                (-90, const Offset(5000, 5000), 'm090_right_bottom'),
+              ];
+
+              for (final item in cases) {
+                await openCanvas();
+                await pinchToMinScale();
+                await rotateExactly(item.$1);
+                await middleDrag(item.$2);
+                await capture(item.$3);
+              }
+              expect(out.listSync().whereType<File>().length, 8);
+            });
+          }
+          DART
+          dart format test/canvas_angle_fixed_background_visual_test.dart
+      - name: Run angled fixed-background audit
+        run: flutter test test/canvas_angle_fixed_background_visual_test.dart --reporter expanded
+      - name: Verify capture diversity
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          import hashlib
+          files = sorted(Path('build/canvas-angle-fixed-background').glob('*.png'))
+          assert len(files) == 8, len(files)
+          hashes = [hashlib.sha256(f.read_bytes()).hexdigest() for f in files]
+          for f,h in zip(files,hashes): print(f.name,h)
+          assert len(set(hashes)) == 8, f'unique={len(set(hashes))}'
+          PY
+      - name: Upload captures
+        uses: actions/upload-artifact@v4
+        with:
+          name: canvas-angle-fixed-background-audit
+          path: build/canvas-angle-fixed-background/*.png
+          if-no-files-found: error
