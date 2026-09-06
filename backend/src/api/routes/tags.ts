@@ -12,6 +12,7 @@ import {
 } from "../../lib/response";
 import { parseJsonObject } from "../../lib/request";
 import type { WorkItem } from "../../lib/types";
+import { TABLE_ITEM_TYPE } from "../../lib/types";
 import { toPublicWork } from "./_publicWork";
 
 type TagAction =
@@ -49,8 +50,11 @@ export async function updateTags(
     const existing = await ddb.send(
       new GetCommand({ TableName: tableName(), Key: Keys.work(workId) }),
     );
-    const work = existing.Item as WorkItem | undefined;
-    if (!work) notFound("作品が見つかりません");
+    const raw = existing.Item;
+    if (!raw || raw.itemType !== TABLE_ITEM_TYPE.Work) {
+      notFound("作品が見つかりません");
+    }
+    const work = raw as WorkItem;
 
     const isOwner = work.authorId === auth.niarimUserId;
     if ((body.action === "lock" || body.action === "unlock") && !isOwner) {
