@@ -19,20 +19,10 @@ class CommunityShortsScreen extends StatefulWidget {
   final List<CommunityWork> works;
   final int initialIndex;
 
-  /// 呼び出し側との互換性のため残す初期スナップショット。
-  /// 表示中のブックマーク状態はCommunityServiceをwatchして取得する。
-  final Set<String> bookmarkedIds;
-
-  /// 呼び出し側との互換性のため残す。現在の縦画面内操作は
-  /// CommunityService.toggleBookmark()を直接呼ぶ。
-  final void Function(CommunityWork work) onToggleBookmark;
-
   const CommunityShortsScreen({
     super.key,
     required this.works,
     this.initialIndex = 0,
-    required this.bookmarkedIds,
-    required this.onToggleBookmark,
   });
 
   @override
