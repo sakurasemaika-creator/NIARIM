@@ -83,6 +83,49 @@ double boundedCanvasScaleFactor(double currentScale, double requestedFactor) {
   return target / currentScale;
 }
 
+/// キャンバスの表示変換を背景（＝CanvasAreaの表示領域）内へ拘束する。
+///
+/// 回転後の[drawingRect]の外接矩形を使い、縮小時はキャンバス全体が背景内から
+/// はみ出さないようにする。拡大時は逆に、片側へ動かしすぎて反対側から背景の
+/// 外へ抜けられないようにする。これにより背景の端より先へドラッグできない。
+Matrix4 constrainCanvasViewTransform(
+  Size viewportSize,
+  Rect drawingRect,
+  Matrix4 candidate,
+) {
+  if (viewportSize.width <= 0 || viewportSize.height <= 0) return candidate;
+  final viewport = Offset.zero & viewportSize;
+  final bounds = MatrixUtils.transformRect(candidate, drawingRect);
+
+  double correction(double min, double max, double viewMin, double viewMax) {
+    final extent = max - min;
+    final viewExtent = viewMax - viewMin;
+    if (extent <= viewExtent) {
+      if (min < viewMin) return viewMin - min;
+      if (max > viewMax) return viewMax - max;
+      return 0;
+    }
+    if (min > viewMin) return viewMin - min;
+    if (max < viewMax) return viewMax - max;
+    return 0;
+  }
+
+  final dx = correction(
+    bounds.left,
+    bounds.right,
+    viewport.left,
+    viewport.right,
+  );
+  final dy = correction(
+    bounds.top,
+    bounds.bottom,
+    viewport.top,
+    viewport.bottom,
+  );
+  if (dx == 0 && dy == 0) return candidate;
+  return (Matrix4.identity()..translateByDouble(dx, dy, 0, 1)) * candidate;
+}
+
 /// 選択範囲のハンドルの見た目の大きさ（**画面px**での半径）。
 ///
 /// キャンバスの解像度ではなく画面に対して固定にする。キャンバス基準にすると、
@@ -941,6 +984,13 @@ class _CanvasAreaState extends State<CanvasArea> {
     }
   }
 
+  Matrix4 _constrainViewMatrix(Matrix4 candidate) {
+    final size = context.size;
+    if (size == null) return candidate;
+    final drawingRect = canvasDrawingRectFor(size, widget.project);
+    return constrainCanvasViewTransform(size, drawingRect, candidate);
+  }
+
   /// マウスホイールでのズーム（Galaxy DeXモード・マウス入力）。
   /// カーソル位置を中心に拡大縮小する。
   void _handlePointerSignal(PointerSignalEvent event) {
@@ -956,7 +1006,9 @@ class _CanvasAreaState extends State<CanvasArea> {
     // setState()で包まないこと。_transformControllerの値を変えると
     // 下のAnimatedBuilderが変換部分だけを描き直す。setStateを重ねると
     // 画面全体のビルドが余分に1回走る（以前はそうなっていた）。
-    _transformController.value = zoomMatrix * _transformController.value;
+    _transformController.value = _constrainViewMatrix(
+      zoomMatrix * _transformController.value,
+    );
   }
 
   /// 2本指以上でのキャンバス操作（パン・ピンチズーム・回転）。[movedPointer]が
@@ -993,7 +1045,9 @@ class _CanvasAreaState extends State<CanvasArea> {
         Matrix4.diagonal3Values(scaleFactor, scaleFactor, 1) *
         Matrix4.translationValues(-anchorPos.dx, -anchorPos.dy, 0);
     // 倍率だけを境界へクランプし、回転・パン成分は捨てない。
-    _transformController.value = transform * _transformController.value;
+    _transformController.value = _constrainViewMatrix(
+      transform * _transformController.value,
+    );
   }
 
   void _onPointerDown(PointerEvent event) {
@@ -1173,9 +1227,10 @@ class _CanvasAreaState extends State<CanvasArea> {
       final last = _middleClickLastScreenPos;
       if (last != null) {
         final delta = event.localPosition - last;
-        _transformController.value =
+        final candidate =
             (Matrix4.identity()..translateByDouble(delta.dx, delta.dy, 0, 1)) *
             _transformController.value;
+        _transformController.value = _constrainViewMatrix(candidate);
       }
       _middleClickLastScreenPos = event.localPosition;
       return;
@@ -1187,9 +1242,10 @@ class _CanvasAreaState extends State<CanvasArea> {
       final last = _panToolLastScreenPos;
       if (last != null) {
         final delta = event.localPosition - last;
-        _transformController.value =
+        final candidate =
             (Matrix4.identity()..translateByDouble(delta.dx, delta.dy, 0, 1)) *
             _transformController.value;
+        _transformController.value = _constrainViewMatrix(candidate);
       }
       _panToolLastScreenPos = event.localPosition;
       return;
