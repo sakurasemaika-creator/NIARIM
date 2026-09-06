@@ -141,14 +141,14 @@ jobs:
               Future<void> rotateDegrees(double degrees) async {
                 final c = canvasCenter();
                 const r = 70.0;
+                final anchor = c + const Offset(-r, 0);
                 final rad = degrees * math.pi / 180.0;
-                final cosA = math.cos(rad);
-                final sinA = math.sin(rad);
-                final g1 = await tester.startGesture(c + const Offset(-r, 0), pointer: 21);
-                final g2 = await tester.startGesture(c + const Offset(r, 0), pointer: 22);
+                final movingStart = c + const Offset(r, 0);
+                final movingEnd = anchor + Offset.fromDirection(rad, r * 2);
+                final g1 = await tester.startGesture(anchor, pointer: 21);
+                final g2 = await tester.startGesture(movingStart, pointer: 22);
                 await tester.pump();
-                await g1.moveTo(c + Offset(-r * cosA, -r * sinA));
-                await g2.moveTo(c + Offset(r * cosA, r * sinA));
+                await g2.moveTo(movingEnd);
                 await tester.pump();
                 await g1.up();
                 await g2.up();
