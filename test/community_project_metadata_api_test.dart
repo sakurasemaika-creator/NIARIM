@@ -5,6 +5,7 @@ import 'package:http/http.dart' as http;
 import 'package:http/testing.dart';
 import 'package:niarim/services/api/community_api.dart';
 import 'package:niarim/services/api/niarim_api_client.dart';
+import 'package:niarim/services/api/niarim_api_models.dart';
 
 void main() {
   CommunityApi apiWith(
@@ -141,15 +142,7 @@ void main() {
   });
 
   test('FPSかフレーム数が無い古い作品は尺0のまま安全に扱う', () {
-    final noMetadata = workJson(withMetadata: false);
-    final dto = apiWorkFromJsonForTest(noMetadata);
+    final dto = ApiWork.fromJson(workJson(withMetadata: false));
     expect(dto.toCommunityWork().durationSeconds, 0);
   });
-}
-
-/// テスト内でDTO変換だけを使うための薄いヘルパー。
-/// CommunityApiのHTTP経路とは別に、古い作品の後方互換も直接固定する。
-dynamic apiWorkFromJsonForTest(Map<String, dynamic> json) {
-  // ignore: avoid_dynamic_calls
-  return (json);
 }
