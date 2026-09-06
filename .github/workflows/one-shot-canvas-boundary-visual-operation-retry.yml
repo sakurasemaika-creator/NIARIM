@@ -1,5 +1,6 @@
 name: One-shot Canvas Boundary Visual Operation Retry
 
+# trigger: corrected capture bytes handling
 on:
   push:
     branches: [dev_branch]
