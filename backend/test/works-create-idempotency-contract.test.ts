@@ -48,4 +48,13 @@ describe("work registration idempotency contract", () => {
     expect(source).toContain("snippet.channelId !== user.youtubeChannelId");
     expect(source).toContain("} else {\n      const verification = verifyVideoOwnership");
   });
+
+  it("preserves a title edited inside NIARIM when re-registering", () => {
+    const existingBranch = source.slice(
+      source.indexOf("if (existing) {", source.indexOf("const now")),
+      source.indexOf("const isVisible =", source.indexOf("const now")),
+    );
+    expect(existingBranch).not.toContain('"title = :title"');
+    expect(source).toContain("title: snippet.title");
+  });
 });
