@@ -19,7 +19,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 /// 検証するのは次の4点：
 ///   1. 2本指を広げるとキャンバスが拡大される
 ///   2. 2本指を狭めると縮小される
-///   3. 拡大率の上下限（0.1〜10倍）を超える操作は無視される
+///   3. 拡大率の上下限（0.2〜10倍）を超える要求は境界値へクランプされる
 ///   4. 1本指だけでは変形しない（＝描画操作を奪わない）
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
@@ -144,7 +144,8 @@ void main() {
   testWidgets('2本指を狭めるとキャンバスが縮小される', (tester) async {
     final scaleOf = await pumpCanvas(tester);
     // まず広げてから狭める（既定倍率が下限付近だと縮小が上下限で
-    // 弾かれ、テストが「縮小できない」のか「弾かれた」のか区別できない）。
+    // クランプされ、テストが「縮小できない」のか「下限へ到達した」のか
+    // 区別できないため）。
     final center = tester.getCenter(find.byType(CanvasArea));
     await pinch(tester, center, from: 80, to: 240);
     final enlarged = scaleOf();
@@ -153,7 +154,7 @@ void main() {
     expect(scaleOf(), lessThan(enlarged), reason: 'ピンチインで拡大率が下がること');
   });
 
-  testWidgets('拡大率の上限を超える操作は無視され、暴走しない', (tester) async {
+  testWidgets('拡大率の上限を超える要求は10倍へクランプされ、暴走しない', (tester) async {
     final scaleOf = await pumpCanvas(tester);
     final center = tester.getCenter(find.byType(CanvasArea));
     // 上限（10倍）を確実に超える倍率を何度も要求する。
