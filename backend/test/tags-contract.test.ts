@@ -28,5 +28,6 @@ describe("tag editing contract", () => {
     expect(source).toContain(":expectedLockedTags");
     expect(source).toContain("ConditionalCheckFailedException");
     expect(source).toContain("MAX_CONFLICT_RETRIES = 3");
+    expect(source).toContain('"TAG_UPDATE_CONFLICT"');
   });
 });
