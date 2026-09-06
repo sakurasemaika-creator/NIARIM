@@ -14,6 +14,14 @@ import type { BookmarkItem, WorkItem } from "../../lib/types";
 import { TABLE_ITEM_TYPE } from "../../lib/types";
 import { toPublicWork } from "./_publicWork";
 
+function isWorkPublic(work: WorkItem): boolean {
+  return (
+    work.isNiarimPublished &&
+    work.youtubePrivacyStatus !== "private" &&
+    work.youtubePrivacyStatus !== "deleted"
+  );
+}
+
 /**
  * `POST /works/{id}/bookmark`（8.5節）。ブックマーク/解除の操作ごとに
  * `TransactWriteItems`で「ユーザー別ブックマーク記録の作成/削除」と
@@ -37,10 +45,19 @@ export async function toggleBookmark(
   ]);
   const work = existingWork.Item as WorkItem | undefined;
   if (!work) notFound("作品が見つかりません");
-  const isVisible = Boolean(work.gsi2pk);
+
+  const isBookmarked = Boolean(existingBookmark.Item);
+  const isPublic = isWorkPublic(work);
+  // 非公開作品はIDを知っていても新規ブックマークできない。既に公開中に
+  // ブックマークしていた作品が後から非公開になった場合は、利用者が自分の
+  // 記録を解除できなくなるのを避けるため解除だけ許可する。作者本人は
+  // 自作品の管理用として非公開中でも操作可能。
+  if (!isPublic && work.authorId !== auth.niarimUserId && !isBookmarked) {
+    notFound("作品が見つかりません");
+  }
+  const isVisible = isPublic && Boolean(work.gsi2pk);
 
   const now = new Date().toISOString();
-  const isBookmarked = Boolean(existingBookmark.Item);
 
   try {
     if (isBookmarked) {
@@ -120,6 +137,8 @@ const bookmarksVisibilityDefault = false;
 /**
  * `GET /users/{id}/bookmarks`（8.5節・21.2節）。非公開の場合は403で
  * 拒否する。本人自身が見る場合は公開設定に関わらず常に見られる。
+ * ただしブックマーク先の作品自体が非公開になった場合、その作品はこの
+ * 一覧から除外する。ブックマーク一覧を経由して作品公開設定を迂回させない。
  */
 export async function getUserBookmarks(
   event: APIGatewayProxyEventV2,
@@ -159,7 +178,7 @@ export async function getUserBookmarks(
   );
   const publicWorks = works
     .map((w) => w.Item as WorkItem | undefined)
-    .filter((w): w is WorkItem => Boolean(w))
+    .filter((w): w is WorkItem => Boolean(w) && isWorkPublic(w!))
     .map(toPublicWork);
 
   return ok({ userId: targetUserId, works: publicWorks });
@@ -202,6 +221,8 @@ export async function updateBookmarksVisibility(
  * したかを他人に見せない設定なので、この一覧からも除外する。除外しても
  * 総数（`totalCount`）には数えるため、作者は「何人にブックマークされたか」
  * は分かる。呼び出し本人は公開設定に関わらず自分自身を見られる。
+ * 作品自体が非公開の場合は、作者本人以外には404相当として扱い、作品の
+ * 存在・総ブックマーク数・ブックマークした利用者を漏らさない。
  */
 export async function getWorkBookmarkers(
   event: APIGatewayProxyEventV2,
@@ -216,6 +237,9 @@ export async function getWorkBookmarkers(
   );
   const work = workResult.Item as WorkItem | undefined;
   if (!work) notFound("作品が見つかりません");
+  if (!isWorkPublic(work) && caller?.niarimUserId !== work.authorId) {
+    notFound("作品が見つかりません");
+  }
 
   const result = await ddb.send(
     new QueryCommand({
