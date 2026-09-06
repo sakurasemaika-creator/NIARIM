@@ -1,10 +1,10 @@
-import type { WorkItem } from "../../lib/types";
+import type { WorkWithProjectMetadata } from "../../lib/workProjectMetadata";
 
 /**
  * 作品アイテムからクライアントへ公開してよいフィールドだけを抜き出す。
  * DynamoDBの内部キー（pk/sk/gsi*）・itemTypeはレスポンスに含めない。
  */
-export function toPublicWork(item: WorkItem) {
+export function toPublicWork(item: WorkWithProjectMetadata) {
   return {
     workId: item.workId,
     authorId: item.authorId,
@@ -23,5 +23,11 @@ export function toPublicWork(item: WorkItem) {
     tags: item.tags,
     lockedTags: item.lockedTags,
     isNiarimPublished: item.isNiarimPublished,
+    projectFps: item.projectFps ?? 0,
+    projectFrameCount: item.projectFrameCount ?? 0,
+    projectWorkSeconds: item.projectWorkSeconds ?? 0,
+    projectCreatedAt: item.projectCreatedAt ?? null,
+    projectCanvasWidth: item.projectCanvasWidth ?? 0,
+    projectCanvasHeight: item.projectCanvasHeight ?? 0,
   };
 }
