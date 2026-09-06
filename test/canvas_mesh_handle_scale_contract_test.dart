@@ -42,12 +42,9 @@ void main() {
     final effectiveScale = fitScale * zoom;
     final canvasRadius = screenRadius / effectiveScale;
 
-    // 当たり判定側はproject pxへ逆算してからfit+zoomで画面へ戻す。
     expect(canvasRadius, 175.0);
     expect(canvasRadius * effectiveScale, screenRadius);
 
-    // Painterが外側Transformのzoomを補正せず7pxで描くと、画面上では
-    // 1.4pxに縮んでしまう。描画時は1/zoom倍しておけば最終画面で7pxになる。
     final uncorrectedPaintRadius = screenRadius * zoom;
     final localPaintRadius = screenRadius / zoom;
     final correctedPaintRadius = localPaintRadius * zoom;
@@ -68,10 +65,61 @@ void main() {
 
     expect(finalScreenGap, screenHandleRadius * gapMultiplier);
 
-    // fit倍率だけで位置を決める旧描画式では、外側zoomで距離まで1/5になる。
     final oldCanvasRadius = screenHandleRadius / fitScale;
     final oldFinalScreenGap = oldCanvasRadius * gapMultiplier * effectiveScale;
     expect(oldFinalScreenGap, closeTo(6.3, 1e-9));
     expect(finalScreenGap, 31.5);
+  });
+
+  test('定規ハンドルの28pxヒット領域もfit倍率とpinch倍率で画面一定になる', () {
+    const screenRadius = 28.0;
+    const canvasWidth = 1920.0;
+    const drawingRectWidth = 384.0;
+    const zoom = 0.2;
+
+    final fitScale = drawingRectWidth / canvasWidth;
+    final effectiveScale = fitScale * zoom;
+    final canvasRadius = screenRadius / effectiveScale;
+
+    expect(effectiveScale, closeTo(0.04, 1e-9));
+    expect(canvasRadius, 700.0);
+    expect(canvasRadius * effectiveScale, screenRadius);
+  });
+
+  test('操作ハンドルの最終画面サイズはzoomに依存しない', () {
+    const fitScale = 0.2;
+    const desiredSelectionRadius = 7.0;
+    const desiredRotateRadius = 11.0;
+    const desiredMeshHitRadius = 28.0;
+    const desiredRulerHitRadius = 28.0;
+
+    for (final zoom in <double>[0.2, 0.5, 1.0, 2.0, 4.0, 10.0]) {
+      final effectiveScale = fitScale * zoom;
+      final selectionCanvasRadius = desiredSelectionRadius / effectiveScale;
+      final rotateCanvasRadius = desiredRotateRadius / effectiveScale;
+      final meshCanvasRadius = desiredMeshHitRadius / effectiveScale;
+      final rulerCanvasRadius = desiredRulerHitRadius / effectiveScale;
+
+      expect(
+        selectionCanvasRadius * effectiveScale,
+        closeTo(desiredSelectionRadius, 1e-9),
+        reason: 'selection zoom=$zoom',
+      );
+      expect(
+        rotateCanvasRadius * effectiveScale,
+        closeTo(desiredRotateRadius, 1e-9),
+        reason: 'rotate zoom=$zoom',
+      );
+      expect(
+        meshCanvasRadius * effectiveScale,
+        closeTo(desiredMeshHitRadius, 1e-9),
+        reason: 'mesh zoom=$zoom',
+      );
+      expect(
+        rulerCanvasRadius * effectiveScale,
+        closeTo(desiredRulerHitRadius, 1e-9),
+        reason: 'ruler zoom=$zoom',
+      );
+    }
   });
 }
