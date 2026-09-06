@@ -24,7 +24,7 @@ type TagAction =
  * それを防ぐための上限。
  */
 const MAX_TAG_LENGTH = 30;
-const MAX_TAGS_PER_WORK = 30;
+const MAX_TAGS_PER_WORK = 10;
 
 /**
  * `PATCH /works/{id}/tags`（8.7節）。誰でもタグを追加・削除できるが、
