@@ -1,5 +1,6 @@
 name: One-shot Canvas Boundary Visual Operation Final2
 
+# trigger: robust independent scenarios
 on:
   push:
     branches: [dev_branch]
