@@ -36,4 +36,10 @@ describe("work registration idempotency contract", () => {
     expect(source).toContain('"gsi1pk"');
     expect(source).toContain('"gsi4sk"');
   });
+
+  it("does not rewrite ranking indexes on ordinary public-to-public re-registration", () => {
+    expect(source).toContain("const hasPublicIndexes =");
+    expect(source).toContain("if (visible && !hasPublicIndexes)");
+    expect(source).toContain("else if (!visible)");
+  });
 });
