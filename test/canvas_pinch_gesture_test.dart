@@ -1,3 +1,5 @@
+import 'dart:math' as math;
+
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -13,14 +15,15 @@ import 'package:shared_preferences/shared_preferences.dart';
 ///
 /// この操作はFlutter標準の`InteractiveViewer`ではなく`CanvasArea`が
 /// 自前で実装している（標準版が回転ジェスチャーに非対応のため）。独自
-/// 実装であるぶん壊れても気付きにくく、既存テストでは1件も触れていな
-/// かったため新設した。
+/// 実装であるぶん壊れても気付きにくいため、倍率境界と最小倍率時の回転を
+/// 実ポインター入力で固定する。
 ///
-/// 検証するのは次の4点：
+/// 検証するのは次の5点：
 ///   1. 2本指を広げるとキャンバスが拡大される
 ///   2. 2本指を狭めると縮小される
 ///   3. 拡大率の上下限（0.2〜10倍）を超える要求は境界値へクランプされる
-///   4. 1本指だけでは変形しない（＝描画操作を奪わない）
+///   4. 0.2倍へ到達する操作でも回転角は捨てられない
+///   5. 1本指だけでは変形しない（＝描画操作を奪わない）
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
   setUp(() => SharedPreferences.setMockInitialValues({}));
@@ -66,9 +69,6 @@ void main() {
                 child: CanvasArea(
                   project: p,
                   currentLayerId: layer.id,
-                  // パンツール中でも2本指変形は同じ経路を通る。描画ツール
-                  // だと1本指が描画へ流れて意図が混ざるため、ここでは
-                  // ズーム挙動だけを見たいのでpanを選ぶ。
                   currentTool: DrawingTool.pan,
                   currentFrame: 0,
                   sceneId: scene.id,
@@ -81,23 +81,7 @@ void main() {
     );
     await tester.pump(const Duration(milliseconds: 200));
 
-    // CanvasAreaが内部で使うTransformの拡大率を読む。CanvasArea配下の
-    // Transformのうち、実際に倍率が変わるものを拾う。
-    double currentScale() {
-      final transforms = tester.widgetList<Transform>(
-        find.descendant(
-          of: find.byType(CanvasArea),
-          matching: find.byType(Transform),
-        ),
-      );
-      var maxScale = 1.0;
-      for (final t in transforms) {
-        final s = t.transform.getMaxScaleOnAxis();
-        if (s > maxScale) maxScale = s;
-      }
-      return maxScale;
-    }
-
+    double currentScale() => _viewMatrix(tester).getMaxScaleOnAxis();
     return currentScale;
   }
 
@@ -117,8 +101,6 @@ void main() {
       kind: PointerDeviceKind.touch,
     );
     await tester.pump();
-    // 片方ずつ動かす（実装は「動いた指」と「もう一方＝アンカー」で
-    // 差分を取るため、同時に動かす必要はない）。
     await b.moveTo(center + Offset(to / 2, 0));
     await tester.pump();
     await a.moveTo(center - Offset(to / 2, 0));
@@ -143,9 +125,6 @@ void main() {
 
   testWidgets('2本指を狭めるとキャンバスが縮小される', (tester) async {
     final scaleOf = await pumpCanvas(tester);
-    // まず広げてから狭める（既定倍率が下限付近だと縮小が上下限で
-    // クランプされ、テストが「縮小できない」のか「下限へ到達した」のか
-    // 区別できないため）。
     final center = tester.getCenter(find.byType(CanvasArea));
     await pinch(tester, center, from: 80, to: 240);
     final enlarged = scaleOf();
@@ -154,18 +133,62 @@ void main() {
     expect(scaleOf(), lessThan(enlarged), reason: 'ピンチインで拡大率が下がること');
   });
 
+  testWidgets('下限未満の縮小要求は0.2倍へ正確にクランプされる', (tester) async {
+    final scaleOf = await pumpCanvas(tester);
+    final center = tester.getCenter(find.byType(CanvasArea));
+    await pinch(tester, center, from: 200, to: 2);
+    expect(tester.takeException(), isNull);
+    expect(
+      scaleOf(),
+      closeTo(kCanvasMinScale, 0.001),
+      reason: '下限未満を要求しても1/5より小さくならず、境界値へ到達すること',
+    );
+  });
+
+  testWidgets('0.2倍へ到達する同一ジェスチャーでも45度回転は保持される', (tester) async {
+    await pumpCanvas(tester);
+    final center = tester.getCenter(find.byType(CanvasArea));
+    final anchor = center - const Offset(60, 0);
+    final movingStart = center + const Offset(60, 0);
+    final movingEnd = anchor + Offset.fromDirection(math.pi / 4, 12);
+
+    final fixed = await tester.startGesture(
+      anchor,
+      kind: PointerDeviceKind.touch,
+    );
+    final moving = await tester.startGesture(
+      movingStart,
+      kind: PointerDeviceKind.touch,
+    );
+    await tester.pump();
+    await moving.moveTo(movingEnd);
+    await tester.pump();
+    await moving.up();
+    await fixed.up();
+    await tester.pump();
+
+    expect(tester.takeException(), isNull);
+    final matrix = _viewMatrix(tester);
+    expect(matrix.getMaxScaleOnAxis(), closeTo(kCanvasMinScale, 0.001));
+    final angle = math.atan2(matrix.entry(1, 0), matrix.entry(0, 0));
+    expect(
+      _angleDelta(angle, math.pi / 4).abs(),
+      lessThan(0.02),
+      reason: '最小倍率へのクランプで同時入力された回転を捨てないこと',
+    );
+  });
+
   testWidgets('拡大率の上限を超える要求は10倍へクランプされ、暴走しない', (tester) async {
     final scaleOf = await pumpCanvas(tester);
     final center = tester.getCenter(find.byType(CanvasArea));
-    // 上限（10倍）を確実に超える倍率を何度も要求する。
     for (var i = 0; i < 6; i++) {
       await pinch(tester, center, from: 20, to: 300);
     }
     expect(tester.takeException(), isNull);
     expect(
       scaleOf(),
-      lessThanOrEqualTo(10.0),
-      reason: '_maxCanvasScale(10倍)を超えないこと',
+      lessThanOrEqualTo(kCanvasMaxScale + 0.001),
+      reason: '10倍を超えないこと',
     );
   });
 
@@ -182,4 +205,22 @@ void main() {
     expect(tester.takeException(), isNull);
     expect(scaleOf(), before, reason: '1本指では拡大率が変わらないこと');
   });
+}
+
+Matrix4 _viewMatrix(WidgetTester tester) {
+  final transforms = tester.widgetList<Transform>(
+    find.descendant(
+      of: find.byType(CanvasArea),
+      matching: find.byType(Transform),
+    ),
+  );
+  expect(transforms, isNotEmpty, reason: 'CanvasArea内部の表示Transformが存在すること');
+  return transforms.first.transform.clone();
+}
+
+double _angleDelta(double a, double b) {
+  var d = a - b;
+  while (d > math.pi) d -= math.pi * 2;
+  while (d < -math.pi) d += math.pi * 2;
+  return d;
 }
