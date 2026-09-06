@@ -13,18 +13,10 @@ import 'widgets/community_work_card.dart';
 import '../../config/font_fallback.dart';
 
 /// 作品詳細画面（別ルート、`/community/work/:id`）。
-///
-/// フローティング動画プレビューウィンドウ（`CommunityFloatingPreview`）の
-/// 「詳細へ」ボタンから遷移する。リサイズ可能なプレビュー・タイトル・
-/// 投稿日・投稿者（タップで投稿者別作品一覧へ）・YouTubeいいね数・
-/// タグ（タップで絞り込み・誰でも追加削除可・投稿者はロック可）・
-/// ブックマークボタンとNIARIM独自のブックマーク数を表示する。
-///
-/// `29_動画投稿・ランキング機能仕様.md`のバックエンドは未実装のため、
-/// `CommunityService`が保持するダミーデータを参照・編集する。実際の
-/// 動画本体（YouTube埋め込み）は無く、既存の一覧・フローティング
-/// プレビューと同じプレースホルダー（グラデーション＋再生アイコン）を
-/// 表示する。
+/// 横画面フローティングプレビューの「詳細へ」と縦画面の詳細情報アイコンは
+/// どちらもこの同一画面へ遷移する。YouTube統計に加えて、投稿元NIARIM
+/// プロジェクトのFPS・フレーム数・制作時間・制作日時・キャンバスサイズも
+/// 同じ画面で確認できる。
 class CommunityWorkDetailScreen extends StatefulWidget {
   final String workId;
   const CommunityWorkDetailScreen({super.key, required this.workId});
@@ -37,8 +29,6 @@ class CommunityWorkDetailScreen extends StatefulWidget {
 class _CommunityWorkDetailScreenState extends State<CommunityWorkDetailScreen> {
   static const double _minPreviewHeight = 140;
   static const double _defaultPreviewHeight = 220;
-  // ドラッグ中のプレビュー高さ（指を離しても最後の値をそのまま保持する。
-  // タイムラインモードのプレビューのドラッグハンドルと同じ操作感）。
   double _previewHeight = _defaultPreviewHeight;
 
   void _openAuthorWorks(CommunityWork work) {
@@ -106,9 +96,6 @@ class _CommunityWorkDetailScreenState extends State<CommunityWorkDetailScreen> {
     ];
     String selected = reasons.first;
     final detailController = TextEditingController();
-    // 未入力のまま送信しようとした場合のみエラー表示を出す（最初から
-    // 赤字を出して威圧的にならないよう、送信ボタンを一度押すまでは
-    // エラーを表示しない）。
     bool showDetailError = false;
     showDialog(
       context: context,
@@ -124,8 +111,6 @@ class _CommunityWorkDetailScreenState extends State<CommunityWorkDetailScreen> {
                 children: [
                   Text(l10n.communityReportDialogBody),
                   const SizedBox(height: 8),
-                  // 選択状態と変更通知はRadioGroupがまとめて持つ
-                  // （groupValue/onChangedはFlutter 3.32で非推奨）。
                   RadioGroup<String>(
                     groupValue: selected,
                     onChanged: (v) => setDialogState(() => selected = v!),
@@ -178,9 +163,6 @@ class _CommunityWorkDetailScreenState extends State<CommunityWorkDetailScreen> {
                   _showComingSoonSnackbar(
                     l10n.communityReportComingSoonSnackbar,
                   );
-                  // 通報送信後、続けてこの投稿者をブロックするか確認する
-                  // （「通報後はブロック確認ポップアップを表示してほしい」
-                  // という要望への対応）。
                   _showBlockConfirmDialog(work);
                 },
                 child: Text(l10n.communityReportSubmitButton),
@@ -259,10 +241,6 @@ class _CommunityWorkDetailScreenState extends State<CommunityWorkDetailScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // リサイズ可能なプレビュー（タイムラインモードのプレビュー
-              // ドラッグハンドルと同じ操作感）。実際の動画本体は無いため、
-              // 既存の一覧・フローティングプレビューと同じプレースホルダー
-              // を表示する。
               ClipRRect(
                 borderRadius: BorderRadius.circular(14),
                 child: SizedBox(
@@ -328,9 +306,6 @@ class _CommunityWorkDetailScreenState extends State<CommunityWorkDetailScreen> {
                       child: Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          // 投稿者アイコン（あれば表示。ダミーデータには
-                          // アイコン画像が無いため、常に頭文字アバターに
-                          // フォールバックする）。
                           CircleAvatar(
                             radius: 14,
                             backgroundColor: scheme.primaryContainer,
@@ -358,7 +333,6 @@ class _CommunityWorkDetailScreenState extends State<CommunityWorkDetailScreen> {
                       ),
                     ),
                   ),
-                  // お気に入り作者（フォロー、Task#144）。自分自身の作品では表示しない。
                   if (!isAuthorSelf)
                     IconButton(
                       onPressed: () =>
@@ -391,9 +365,6 @@ class _CommunityWorkDetailScreenState extends State<CommunityWorkDetailScreen> {
                     style: TextStyle(color: scheme.onSurfaceVariant),
                   ),
                   const SizedBox(width: 14),
-                  // YouTube側の「いいね」数。APIが返す値をそのまま表示し、
-                  // NIARIM側で独自に加算・合算はしない（YouTube API利用規約
-                  // の要件）。
                   Icon(
                     Icons.thumb_up_alt_outlined,
                     size: 16,
@@ -405,9 +376,6 @@ class _CommunityWorkDetailScreenState extends State<CommunityWorkDetailScreen> {
                     style: TextStyle(color: scheme.onSurfaceVariant),
                   ),
                   const SizedBox(width: 14),
-                  // NIARIM独自のブックマーク数（YouTube側の「いいね」とは
-                  // 別のNIARIM内機能。29_動画投稿・ランキング機能仕様.md
-                  // 8.5節）。
                   Icon(
                     Icons.bookmark,
                     size: 16,
@@ -419,8 +387,6 @@ class _CommunityWorkDetailScreenState extends State<CommunityWorkDetailScreen> {
                     style: TextStyle(color: scheme.onSurfaceVariant),
                   ),
                   const SizedBox(width: 14),
-                  // リポスト数（Task#145）。ブックマーク同様NIARIM独自の
-                  // カウントで、YouTube側の統計とは無関係。
                   Icon(Icons.repeat, size: 16, color: scheme.onSurfaceVariant),
                   const SizedBox(width: 3),
                   Text(
@@ -437,6 +403,10 @@ class _CommunityWorkDetailScreenState extends State<CommunityWorkDetailScreen> {
                 l10n.communityWorkDetailPostedLabel(_formatDate(work.postedAt)),
                 style: TextStyle(fontSize: 12, color: scheme.onSurfaceVariant),
               ),
+              if (_hasProjectMetadata(work)) ...[
+                const SizedBox(height: 12),
+                _ProjectMetadataCard(work: work),
+              ],
               if (isAuthorSelf) ...[
                 const SizedBox(height: 12),
                 _NiarimVisibilitySwitch(
@@ -458,23 +428,12 @@ class _CommunityWorkDetailScreenState extends State<CommunityWorkDetailScreen> {
                     _TagChip(
                       label: tag,
                       isLocked: work.lockedTags.contains(tag),
-                      // ロックの鍵アイコン自体は投稿者本人のみ操作可能
-                      // （ロック中/解除中の切り替え）。それ以外の
-                      // ユーザーには鍵アイコンのみ表示し操作はさせない。
                       onToggleLock: isAuthorSelf
                           ? () => communityService.toggleTagLock(work.id, tag)
                           : null,
-                      // ロックされていないタグのみ誰でも削除できる。
                       onRemove: work.lockedTags.contains(tag)
                           ? null
                           : () => communityService.removeTag(work.id, tag),
-                      // go()（ナビゲーション履歴を丸ごと置き換える）ではなく
-                      // push()を使う。go()だと起動画面まで含めて履歴が消え、
-                      // 作品広場画面左上の「起動画面へ戻る」矢印が消えて
-                      // しまうバグと、同じ`/community`ルートへ連続でナビゲート
-                      // した際にCommunityScreenのStateが使い回されて
-                      // initState()が再実行されず2回目以降のタグ検索が
-                      // 効かないバグの、両方の原因になっていた。
                       onTap: () => appRouter.push('/community', extra: tag),
                     ),
                   ActionChip(
@@ -511,9 +470,6 @@ class _CommunityWorkDetailScreenState extends State<CommunityWorkDetailScreen> {
                   ),
                 ],
               ),
-              // リポスト（Task#145）：投稿者本人も含め誰でもリポストできる
-              // （フォロワーへ改めて周知する用途を想定し、フォローボタンとは
-              // 異なり投稿者本人にも制限しない）。
               const SizedBox(height: 8),
               SizedBox(
                 width: double.infinity,
@@ -561,9 +517,110 @@ class _CommunityWorkDetailScreenState extends State<CommunityWorkDetailScreen> {
   }
 }
 
-/// タグ表示チップ。タップでそのタグによる絞り込みへ遷移し、ロックされて
-/// いないタグには削除ボタン（誰でも操作可）、投稿者本人が見ている場合
-/// のみロック/解除の切り替えボタンを追加で表示する。
+bool _hasProjectMetadata(CommunityWork work) =>
+    work.projectFps > 0 ||
+    work.projectFrameCount > 0 ||
+    work.projectWorkSeconds > 0 ||
+    work.projectCreatedAt != null ||
+    (work.projectCanvasWidth > 0 && work.projectCanvasHeight > 0);
+
+class _ProjectMetadataCard extends StatelessWidget {
+  final CommunityWork work;
+
+  const _ProjectMetadataCard({required this.work});
+
+  String _formatDate(DateTime date) {
+    final month = date.month.toString().padLeft(2, '0');
+    final day = date.day.toString().padLeft(2, '0');
+    return '${date.year}/$month/$day';
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+    final workTime = formatProjectWorkTime(work.projectWorkSeconds);
+    return Material(
+      color: scheme.surfaceContainerLow,
+      borderRadius: BorderRadius.circular(12),
+      child: Padding(
+        padding: const EdgeInsets.all(12),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Icon(Icons.animation_rounded, size: 18, color: scheme.primary),
+                const SizedBox(width: 6),
+                Text(
+                  'NIARIM',
+                  style: TextStyle(
+                    color: scheme.primary,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 8),
+            Wrap(
+              spacing: 14,
+              runSpacing: 8,
+              children: [
+                if (work.projectFrameCount > 0)
+                  _ProjectMetaItem(
+                    icon: Icons.movie_outlined,
+                    text: '${work.projectFrameCount}f',
+                  ),
+                if (work.projectFps > 0)
+                  _ProjectMetaItem(
+                    icon: Icons.speed_rounded,
+                    text: '${work.projectFps}fps',
+                  ),
+                if (work.projectCanvasWidth > 0 &&
+                    work.projectCanvasHeight > 0)
+                  _ProjectMetaItem(
+                    icon: Icons.aspect_ratio_rounded,
+                    text:
+                        '${work.projectCanvasWidth}×${work.projectCanvasHeight}',
+                  ),
+                if (workTime.isNotEmpty)
+                  _ProjectMetaItem(
+                    icon: Icons.timer_outlined,
+                    text: workTime,
+                  ),
+                if (work.projectCreatedAt != null)
+                  _ProjectMetaItem(
+                    icon: Icons.edit_calendar_outlined,
+                    text: _formatDate(work.projectCreatedAt!),
+                  ),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _ProjectMetaItem extends StatelessWidget {
+  final IconData icon;
+  final String text;
+
+  const _ProjectMetaItem({required this.icon, required this.text});
+
+  @override
+  Widget build(BuildContext context) {
+    final color = Theme.of(context).colorScheme.onSurfaceVariant;
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Icon(icon, size: 15, color: color),
+        const SizedBox(width: 4),
+        Text(text, style: TextStyle(fontSize: 12, color: color)),
+      ],
+    );
+  }
+}
+
 class _TagChip extends StatelessWidget {
   final String label;
   final bool isLocked;
@@ -628,10 +685,6 @@ class _TagChip extends StatelessWidget {
   }
 }
 
-/// 作品広場独自の公開/非公開設定を切り替えるカード。投稿者本人
-/// にのみ表示する（29_動画投稿・ランキング機能仕様.md 13章）。YouTube側
-/// の公開設定とは独立した設定であることが伝わるよう、専用の説明文を
-/// 添える。
 class _NiarimVisibilitySwitch extends StatelessWidget {
   final bool isPublished;
   final VoidCallback onChanged;
@@ -697,9 +750,6 @@ class _NiarimVisibilitySwitch extends StatelessWidget {
   }
 }
 
-/// 非公開になっている作品の詳細画面に表示する注意書き（投稿者本人以外が
-/// 何らかの経路でたどり着いた場合の保険。通常は一覧側で除外済みのため
-/// 到達しない想定）。
 class _NiarimHiddenNotice extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
