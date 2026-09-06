@@ -8,47 +8,14 @@ import '../../../router.dart';
 import '../../../services/community_service.dart';
 import 'community_work_card.dart' show communityThumbnailGradient;
 
-/// 縦画面モードで1本の動画が最後まで再生されたときの挙動。
-///
-/// [loopCurrent] は同じ作品を先頭から再生、[autoAdvance] は次の作品へ
-/// 自動スクロールする。ユーザーの選択はSharedPreferencesへ保存し、次回
-/// 縦画面モードを開いたときにも引き継ぐ。
 enum CommunityShortsEndBehavior { loopCurrent, autoAdvance }
 
-/// 「縦画面モード」：新着・ランキング・お気に入り作者一覧から切り替えられる
-/// 全画面縦スクロール連続再生ビューア（Task#159）。
-///
-/// 【横動画/縦動画の区別について】YouTube Data APIには「これはShortsで
-/// ある」という直接のフラグが無いが、NIARIM側は投稿元プロジェクトの
-/// キャンバスサイズ（縦長かどうか）を投稿時点で把握できるため、確実に
-/// 判定できる（詳細はCommunityWork.isShortのドキュメントコメント参照）。
-/// このビューアには呼び出し元で事前にisShortのみへ絞り込んだ一覧を渡す。
-///
-/// 現在は実際のYouTube埋め込みプレーヤーが未接続のため、動画領域には既存の
-/// プレースホルダーを表示する。ただし本物のプレーヤーへ差し替える際に
-/// そのまま使えるよう、次の再生状態管理を先に実装している。
-/// - [_currentIndex] のページだけを自動再生対象にする。
-/// - プレーヤーの再生終了イベントから[_handlePlaybackEnded]を呼ぶ。
-/// - 「同じ動画をループ」ならプレーヤー側を0秒へ戻して再生する。
-/// - 「次の動画へ」ならPageViewを次ページへ自動スクロールする。
-///
-/// ★**本物のYouTube埋め込みプレーヤーを入れる前に、必ず
-/// `docs/AI設計書/28_継続タスク（未着手一覧）.md`の該当項目を読むこと。**
-/// YouTube API利用ポリシー上、独自UIをプレーヤーの前面に重ねない必要が
-/// ある。そのため本実装では、作品名・投稿者・タグ・制作情報・各種操作を
-/// 動画領域の**外側**に配置し、将来の実プレーヤー接続時にも構造を崩さず
-/// 済むレイアウトにしている。また同時自動再生は常に1本だけとする。
+/// 「縦画面モード」。YouTubeプレーヤー領域の上にはNIARIM独自UIを重ねず、
+/// 作者・タグ・制作情報・操作はすべて動画外の下部パネルへ分離する。
 class CommunityShortsScreen extends StatefulWidget {
   final List<CommunityWork> works;
   final int initialIndex;
-
-  /// 呼び出し側との互換性のため残している初期値。表示中の最新状態は
-  /// CommunityServiceをwatchして取得するため、このSetを表示状態の正と
-  /// しては使わない。
   final Set<String> bookmarkedIds;
-
-  /// 呼び出し側との互換性のため残しているコールバック。現在は画面内から
-  /// CommunityService.toggleBookmark()を直接呼び、Provider通知で即時反映する。
   final void Function(CommunityWork work) onToggleBookmark;
 
   const CommunityShortsScreen({
@@ -98,14 +65,6 @@ class _CommunityShortsScreenState extends State<CommunityShortsScreen> {
     await prefs.setString(_endBehaviorPreferenceKey, value.name);
   }
 
-  /// 実プレーヤー接続時に、現在ページの動画が最後まで再生された瞬間に呼ぶ。
-  ///
-  /// 現時点のプレースホルダーには動画の時間軸が存在しないため、このメソッド
-  /// 自体を擬似タイマーで呼ぶことはしない。そうすると「再生していないのに
-  /// 勝手にページだけ動く」不自然なUIになるためである。
-  ///
-  /// [loopCurrent]の場合のseekTo(Duration.zero) + play()はプレーヤー固有API
-  /// なので、実プレーヤーWidget側で[onLoopCurrent]を受けて実行する。
   void _handlePlaybackEnded(int pageIndex, {VoidCallback? onLoopCurrent}) {
     if (!mounted || pageIndex != _currentIndex || widget.works.isEmpty) return;
 
@@ -124,8 +83,6 @@ class _CommunityShortsScreenState extends State<CommunityShortsScreen> {
       return;
     }
 
-    // 実運用ではここで次ページをAPIから追加取得する。ダミーデータは有限なので
-    // 最終作品では先頭へ戻し、縦画面フィード自体が停止しないようにする。
     if (widget.works.length > 1) {
       _controller.animateToPage(
         0,
@@ -165,8 +122,6 @@ class _CommunityShortsScreenState extends State<CommunityShortsScreen> {
                 isBookmarked: communityService.isBookmarked(work.id),
                 onToggleBookmark: () =>
                     communityService.toggleBookmark(work.id),
-                // 実プレーヤー接続時は、そのプレーヤーのonEndedからこの
-                // callbackを呼ぶ。loop時のseek/play callbackも同時に渡す。
                 onPlaybackEnded: (onLoopCurrent) => _handlePlaybackEnded(
                   index,
                   onLoopCurrent: onLoopCurrent,
@@ -244,10 +199,6 @@ class _ShortsPage extends StatelessWidget {
   final bool isCurrentPage;
   final bool isBookmarked;
   final VoidCallback onToggleBookmark;
-
-  /// 実プレーヤーの再生終了時に呼ぶためのフック。
-  /// 引数は「同じ動画を先頭から再生する処理」。現在はプレースホルダーなので
-  /// 呼び出し元だけを用意し、実プレーヤー接続時に利用する。
   final void Function(VoidCallback? onLoopCurrent) onPlaybackEnded;
 
   const _ShortsPage({
@@ -279,14 +230,13 @@ class _ShortsPage extends StatelessWidget {
       work.thumbnailColorIndex,
     );
     final languageCode = Localizations.localeOf(context).languageCode;
+    final workTime = formatProjectWorkTime(work.projectWorkSeconds);
 
     return SafeArea(
       top: false,
       child: Column(
         children: [
-          // 動画領域。将来のYouTubeプレーヤーはこの領域だけを置き換える。
-          // 作品情報・タグ・操作は下のパネルへ分離しているため、プレーヤーの
-          // 前面へ独自UIを重ねない構造を保てる。
+          // 将来のYouTubeプレーヤーはこの矩形だけを置き換える。
           Expanded(
             child: Container(
               width: double.infinity,
@@ -309,9 +259,6 @@ class _ShortsPage extends StatelessWidget {
                       size: 76,
                     ),
                     const SizedBox(height: 10),
-                    // 「現在ページだけを自動再生対象にする」状態をUIモックでも
-                    // 明示できるよう、非アクティブページでは小さな一時停止
-                    // アイコンに切り替える。実プレーヤー接続時はこの表示を削除。
                     Icon(
                       isCurrentPage
                           ? Icons.volume_off_rounded
@@ -326,6 +273,7 @@ class _ShortsPage extends StatelessWidget {
               ),
             ),
           ),
+          // 作者・タグ・制作情報・詳細導線はすべて動画領域の外。
           Material(
             color: scheme.surface,
             elevation: 4,
@@ -418,9 +366,6 @@ class _ShortsPage extends StatelessWidget {
                     ),
                   ],
                   const SizedBox(height: 9),
-                  // NIARIM固有の制作・作品情報。単なるShortsクローンにせず、
-                  // 「この作品がNIARIMでどう作られたか」へ繋げる情報帯として
-                  // 将来はキャンバスサイズ/FPS/使用ブラシ等もここへ追加する。
                   Wrap(
                     spacing: 14,
                     runSpacing: 5,
@@ -430,6 +375,33 @@ class _ShortsPage extends StatelessWidget {
                         icon: Icons.schedule_rounded,
                         text: _formatDuration(work.durationSeconds),
                       ),
+                      if (work.projectFrameCount > 0)
+                        _InfoItem(
+                          icon: Icons.movie_outlined,
+                          text: '${work.projectFrameCount}f',
+                        ),
+                      if (work.projectFps > 0)
+                        _InfoItem(
+                          icon: Icons.speed_rounded,
+                          text: '${work.projectFps}fps',
+                        ),
+                      if (work.projectCanvasWidth > 0 &&
+                          work.projectCanvasHeight > 0)
+                        _InfoItem(
+                          icon: Icons.aspect_ratio_rounded,
+                          text:
+                              '${work.projectCanvasWidth}×${work.projectCanvasHeight}',
+                        ),
+                      if (workTime.isNotEmpty)
+                        _InfoItem(
+                          icon: Icons.timer_outlined,
+                          text: workTime,
+                        ),
+                      if (work.projectCreatedAt != null)
+                        _InfoItem(
+                          icon: Icons.edit_calendar_outlined,
+                          text: _formatDate(work.projectCreatedAt!),
+                        ),
                       _InfoItem(
                         icon: Icons.calendar_today_outlined,
                         text: _formatDate(work.postedAt),
