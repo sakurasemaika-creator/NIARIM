@@ -58,9 +58,9 @@ class _CommunityScreenState extends State<CommunityScreen>
   bool _isSearching = false;
   String _searchQuery = '';
   final _searchController = TextEditingController();
-  // trueのときは検索語をタグの完全一致・部分一致として扱う
-  // （「検索ボックスをタグ検索モードに切り替える」機能）。タグチップを
-  // 直接タップした場合もこのモードへ切り替えて絞り込む。
+  // trueのときは検索語をタグの部分一致として扱う。検索中はAppBar下部の
+  // 「作品タイトル・投稿者名」「タグ名」の2タブUIで明示的に切り替える。
+  // タグチップを直接タップした場合もこのモードへ切り替えて絞り込む。
   bool _tagSearchMode = false;
   // 「総合」「縦画面のみ」「横画面のみ」の絞り込み。新着・ランキング・
   // お気に入り作者タブすべてで共通に使うタブ横断の状態（AppBar上の
@@ -313,19 +313,6 @@ class _CommunityScreenState extends State<CommunityScreen>
             : Text(l10n.communityScreenTitle),
         actions: [
           if (_isSearching) ...[
-            // 通常のタイトル・投稿者名検索と、タグ検索の切り替えボタン。
-            // タグをタップした場合もこのモードに切り替わる。
-            IconButton(
-              icon: Icon(_tagSearchMode ? Icons.sell : Icons.sell_outlined),
-              tooltip: _tagSearchMode
-                  ? l10n.communityTagSearchModeOnTooltip
-                  : l10n.communityTagSearchModeOffTooltip,
-              onPressed: () => setState(() {
-                _tagSearchMode = !_tagSearchMode;
-                _searchQuery = '';
-                _searchController.clear();
-              }),
-            ),
             IconButton(
               icon: const Icon(Icons.close),
               tooltip: l10n.commonClose,
@@ -379,13 +366,61 @@ class _CommunityScreenState extends State<CommunityScreen>
             const HelpButton(topic: '作品広場'),
           ],
         ],
-        bottom: TabBar(
-          controller: _tabController,
-          tabs: [
-            Tab(text: l10n.communityTabNew),
-            Tab(text: l10n.communityTabRanking),
-            Tab(text: l10n.communityTabFavoriteAuthors),
-          ],
+        bottom: PreferredSize(
+          preferredSize: Size.fromHeight(_isSearching ? 104 : 48),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              if (_isSearching)
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(12, 4, 12, 8),
+                  child: SizedBox(
+                    width: double.infinity,
+                    child: SegmentedButton<bool>(
+                      showSelectedIcon: false,
+                      segments: [
+                        ButtonSegment<bool>(
+                          value: false,
+                          icon: const Icon(Icons.search, size: 18),
+                          label: Text(
+                            l10n.communitySearchHint,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
+                        ButtonSegment<bool>(
+                          value: true,
+                          icon: const Icon(Icons.sell_outlined, size: 18),
+                          label: Text(
+                            l10n.communityTagSearchHint,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
+                      ],
+                      selected: {_tagSearchMode},
+                      onSelectionChanged: (selection) {
+                        final tagMode = selection.first;
+                        if (tagMode == _tagSearchMode) return;
+                        setState(() {
+                          _tagSearchMode = tagMode;
+                          _searchQuery = '';
+                          _searchController.clear();
+                        });
+                      },
+                    ),
+                  ),
+                ),
+              TabBar(
+                controller: _tabController,
+                tabs: [
+                  Tab(text: l10n.communityTabNew),
+                  Tab(text: l10n.communityTabRanking),
+                  Tab(text: l10n.communityTabFavoriteAuthors),
+                ],
+              ),
+            ],
+          ),
         ),
       ),
       floatingActionButton: FloatingActionButton.extended(
