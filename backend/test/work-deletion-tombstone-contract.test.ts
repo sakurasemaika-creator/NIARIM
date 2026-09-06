@@ -41,7 +41,7 @@ describe("work deletion tombstone contract", () => {
   it("keeps tombstones out of the stats scan and retry path", () => {
     expect(statsSource).toContain('ExpressionAttributeValues: { ":type": "WORK" }');
     expect(statsSource).toContain(
-      "latestResult.Item?.itemType === TABLE_ITEM_TYPE.Work",
+      "latestRaw?.itemType === TABLE_ITEM_TYPE.Work",
     );
   });
 });
