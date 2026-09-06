@@ -1,0 +1,46 @@
+name: One-shot Canvas Boundary Visual Operation Retry
+
+on:
+  push:
+    branches: [dev_branch]
+    paths:
+      - '.github/workflows/one-shot-canvas-boundary-visual-operation-retry.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  visual-operation-audit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: dev_branch
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+      - run: flutter pub get
+      - name: Recreate corrected real-operation test
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          import textwrap
+          src = Path('.github/workflows/one-shot-canvas-boundary-visual-operation.yml').read_text(encoding='utf-8')
+          start = "cat > test/canvas_boundary_visual_operation_test.dart <<'DART'\n"
+          body = src.split(start, 1)[1].split("\n          DART", 1)[0]
+          body = textwrap.dedent(body)
+          body = body.replace('writeAsBytes(bytes),', 'writeAsBytes(bytes!),')
+          Path('test/canvas_boundary_visual_operation_test.dart').write_text(body, encoding='utf-8')
+          PY
+          dart format test/canvas_boundary_visual_operation_test.dart
+      - name: Run real-operation visual audit
+        run: flutter test test/canvas_boundary_visual_operation_test.dart --reporter expanded
+      - name: Upload captures
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: canvas-boundary-visual-operation-retry
+          path: build/canvas-boundary-visual/*.png
+          if-no-files-found: error
