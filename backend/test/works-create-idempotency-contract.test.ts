@@ -8,19 +8,40 @@ const source = readFileSync(
 );
 
 describe("work registration idempotency contract", () => {
-  it("does not consume post quota when the same author re-registers a work", () => {
-    expect(source).toContain("const isNewWork = existing == null");
-    expect(source).toContain("if (isNewWork)");
-    expect(source).toContain("reservePostQuota");
+  it("treats the YouTube video id as the NIARIM work idempotency key", () => {
+    expect(source).toContain("workId: body.youtubeVideoId");
+    expect(source).toContain("youtubeVideoId: body.youtubeVideoId");
+    expect(source).toContain("Key: Keys.work(body.youtubeVideoId)");
   });
 
-  it("updates existing work metadata without overwriting mutable community state", () => {
-    expect(source).toContain("new UpdateCommand");
-    expect(source).toContain('ConditionExpression: "authorId = :authorId"');
-    expect(source).not.toContain("tags: existing?.tags");
-    expect(source).not.toContain("lockedTags: existing?.lockedTags");
-    expect(source).not.toContain("repostCount: existing?.repostCount");
-    expect(source).not.toContain("bookmarkCount: existing?.bookmarkCount");
+  it("returns an existing work unchanged for a duplicate POST by the same author", () => {
+    expect(source).toContain("if (existing) {");
+    expect(source).toContain("existing.authorId !== auth.niarimUserId");
+    expect(source).toContain("return created({ work: toPublicWork(existing) })");
+    expect(source).not.toContain("new UpdateCommand");
+  });
+
+  it("does not reserve post quota before the duplicate-POST early return", () => {
+    const duplicateReturn = source.indexOf(
+      "return created({ work: toPublicWork(existing) })",
+    );
+    const quotaReservation = source.indexOf("await reservePostQuota");
+    expect(duplicateReturn).toBeGreaterThan(-1);
+    expect(quotaReservation).toBeGreaterThan(duplicateReturn);
+  });
+
+  it("applies the recent-upload ownership check only to a new work", () => {
+    const duplicateReturn = source.indexOf(
+      "return created({ work: toPublicWork(existing) })",
+    );
+    const ownershipCheck = source.indexOf("verifyVideoOwnership");
+    expect(ownershipCheck).toBeGreaterThan(duplicateReturn);
+  });
+
+  it("keeps publish-state changes outside POST /works", () => {
+    expect(source).toContain("公開/非公開切り替えやタイトル変更はPATCH /works/{id}");
+    expect(source).not.toContain("existing.isNiarimPublished");
+    expect(source).not.toContain("hasPublicIndexes");
   });
 
   it("protects first registration from concurrent overwrite", () => {
@@ -29,32 +50,8 @@ describe("work registration idempotency contract", () => {
     expect(source).toContain('"VIDEO_REGISTRATION_CONFLICT"');
   });
 
-  it("removes public indexes immediately when YouTube or NIARIM visibility is off", () => {
-    expect(source).toContain("existing.isNiarimPublished &&");
-    expect(source).toContain('status !== "private"');
-    expect(source).toContain('status !== "deleted"');
-    expect(source).toContain('"gsi1pk"');
-    expect(source).toContain('"gsi4sk"');
-  });
-
-  it("does not rewrite ranking indexes on ordinary public-to-public re-registration", () => {
-    expect(source).toContain("const hasPublicIndexes =");
-    expect(source).toContain("if (visible && !hasPublicIndexes)");
-    expect(source).toContain("else if (!visible)");
-  });
-
-  it("applies the recent-upload check only to first registration", () => {
-    expect(source).toContain("if (existing) {");
-    expect(source).toContain("snippet.channelId !== user.youtubeChannelId");
-    expect(source).toContain("} else {\n      const verification = verifyVideoOwnership");
-  });
-
-  it("preserves a title edited inside NIARIM when re-registering", () => {
-    const existingBranch = source.slice(
-      source.indexOf("if (existing) {", source.indexOf("const now")),
-      source.indexOf("const isVisible =", source.indexOf("const now")),
-    );
-    expect(existingBranch).not.toContain('"title = :title"');
-    expect(source).toContain("title: snippet.title");
+  it("never revives a deleted work id", () => {
+    expect(source).toContain('existingRaw?.itemType === "WORK_TOMBSTONE"');
+    expect(source).toContain('"WORK_DELETED"');
   });
 });
