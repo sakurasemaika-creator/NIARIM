@@ -155,12 +155,23 @@ export async function createWork(event: APIGatewayProxyEventV2) {
         sets.push("projectCanvasHeight = :projectCanvasHeight");
       }
 
-      // 非公開化は直ちに一覧/ランキングGSIから外す。再び公開可能になった
-      // 場合は現在の統計スナップショットを基にGSI属性を復元する。
+      // 公開→公開の再登録ではランキング/GSIを触らない。統計更新バッチが
+      // 同時に走っていても、再登録前のGetで得た古いスコアへ巻き戻さないため。
+      // 非公開化では必ずGSIを除去し、公開復帰時（または不完全な旧データで
+      // インデックスが欠けている場合）だけ現在スナップショットから復元する。
       const visible =
         existing.isNiarimPublished && isYoutubeVisible(snippet.privacyStatus);
+      const hasPublicIndexes =
+        existing.gsi1pk != null &&
+        existing.gsi1sk != null &&
+        existing.gsi2pk != null &&
+        existing.gsi2sk != null &&
+        existing.gsi3pk != null &&
+        existing.gsi3sk != null &&
+        existing.gsi4pk != null &&
+        existing.gsi4sk != null;
       const removes: string[] = [];
-      if (visible) {
+      if (visible && !hasPublicIndexes) {
         const score = computeRankingScore({
           viewCount: existing.viewCount,
           likeCount: existing.likeCount,
@@ -185,7 +196,7 @@ export async function createWork(event: APIGatewayProxyEventV2) {
           "gsi4pk = :latestPk",
           "gsi4sk = :postedAt",
         );
-      } else {
+      } else if (!visible) {
         removes.push(
           "rankingScore",
           "bookmarkScore",
