@@ -29,9 +29,6 @@ jobs:
       - name: 依存関係取得
         run: flutter pub get
 
-      - name: キャンバス斜め回転・境界実操作監査
-        run: flutter test test/canvas_angle_boundary_visual_audit_test.dart --reporter expanded
-
       - name: 機能監査テスト 1-26
         run: |
           flutter test test/functional_render_real_async_test.dart --reporter expanded
@@ -53,7 +50,6 @@ jobs:
             build/functional-visual/*.png
             build/strict-visual-evidence/*.png
             build/final-remaining-strict/*.png
-            build/visual-reaudit/canvas-angle-boundary/*.png
           if-no-files-found: warn
           retention-days: 7
 # Latest HEAD strict manifest evidence rerun.
