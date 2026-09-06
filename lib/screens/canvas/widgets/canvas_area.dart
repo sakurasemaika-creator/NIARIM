@@ -62,6 +62,27 @@ enum _TransformMode { translate, scale, rotate }
 Color get kCanvasOutsideColor =>
     ThemeService.activeColorScheme.surfaceContainerHighest;
 
+/// キャンバス表示の縮小下限。等倍表示時の1/5まで縮小できる。
+const double kCanvasMinScale = 0.2;
+
+/// キャンバス表示の拡大上限。
+const double kCanvasMaxScale = 10.0;
+
+/// 現在倍率へ要求倍率を掛けた結果を表示可能範囲へ正確にクランプする。
+/// 境界到達時に操作全体を破棄しないため、最小倍率でも回転は継続できる。
+double boundedCanvasScaleFactor(double currentScale, double requestedFactor) {
+  if (currentScale <= 0 ||
+      !currentScale.isFinite ||
+      !requestedFactor.isFinite) {
+    return 1.0;
+  }
+  final target = (currentScale * requestedFactor).clamp(
+    kCanvasMinScale,
+    kCanvasMaxScale,
+  );
+  return target / currentScale;
+}
+
 /// 選択範囲のハンドルの見た目の大きさ（**画面px**での半径）。
 ///
 /// キャンバスの解像度ではなく画面に対して固定にする。キャンバス基準にすると、
@@ -358,8 +379,6 @@ class _CanvasAreaState extends State<CanvasArea> {
   // Flutter標準のInteractiveViewerは回転ジェスチャーに非対応のため、独自の
   // ポインタートラッキングでパン・ピンチズーム・2本指回転を実装する（既知の
   // バグ「二本指回転未対応・ピンチアウトでのキャンバスサイズ超縮小」の修正）。
-  static const double _minCanvasScale = 0.1;
-  static const double _maxCanvasScale = 10.0;
   // タッチ中のポインターID→現在位置（2本指以上での変形操作の計算に使う）。
   final Map<int, Offset> _activeTouchPositions = {};
   // 一度2本指以上になったら、その後1本に減っても全ての指が離れるまでは
@@ -926,19 +945,18 @@ class _CanvasAreaState extends State<CanvasArea> {
   /// カーソル位置を中心に拡大縮小する。
   void _handlePointerSignal(PointerSignalEvent event) {
     if (event is! PointerScrollEvent) return;
-    final scaleFactor = event.scrollDelta.dy > 0 ? 0.9 : 1.1;
+    final requestedFactor = event.scrollDelta.dy > 0 ? 0.9 : 1.1;
+    final currentScale = _transformController.value.getMaxScaleOnAxis();
+    final scaleFactor = boundedCanvasScaleFactor(currentScale, requestedFactor);
     final focal = event.localPosition;
     final zoomMatrix = Matrix4.identity()
       ..translateByDouble(focal.dx, focal.dy, 0, 1)
       ..scaleByDouble(scaleFactor, scaleFactor, scaleFactor, 1)
       ..translateByDouble(-focal.dx, -focal.dy, 0, 1);
-    final newMatrix = zoomMatrix * _transformController.value;
-    final newScale = newMatrix.getMaxScaleOnAxis();
-    if (newScale < _minCanvasScale || newScale > _maxCanvasScale) return;
     // setState()で包まないこと。_transformControllerの値を変えると
     // 下のAnimatedBuilderが変換部分だけを描き直す。setStateを重ねると
     // 画面全体のビルドが余分に1回走る（以前はそうなっていた）。
-    _transformController.value = newMatrix;
+    _transformController.value = zoomMatrix * _transformController.value;
   }
 
   /// 2本指以上でのキャンバス操作（パン・ピンチズーム・回転）。[movedPointer]が
@@ -962,18 +980,20 @@ class _CanvasAreaState extends State<CanvasArea> {
     // 指同士が近すぎる間は角度・拡大率の計算が不安定になるため更新しない。
     if (beforeDist < 4 || afterDist < 4) return;
 
-    final scaleFactor = afterDist / beforeDist;
+    final requestedScaleFactor = afterDist / beforeDist;
     final rotationDelta = afterVec.direction - beforeVec.direction;
+    final currentScale = _transformController.value.getMaxScaleOnAxis();
+    final scaleFactor = boundedCanvasScaleFactor(
+      currentScale,
+      requestedScaleFactor,
+    );
     final transform =
         Matrix4.translationValues(anchorPos.dx, anchorPos.dy, 0) *
         Matrix4.rotationZ(rotationDelta) *
         Matrix4.diagonal3Values(scaleFactor, scaleFactor, 1) *
         Matrix4.translationValues(-anchorPos.dx, -anchorPos.dy, 0);
-    final newMatrix = transform * _transformController.value;
-    final newScale = newMatrix.getMaxScaleOnAxis();
-    // ピンチアウトでの過剰縮小・過剰拡大を防ぐ（既知バグの修正）。
-    if (newScale < _minCanvasScale || newScale > _maxCanvasScale) return;
-    _transformController.value = newMatrix;
+    // 倍率だけを境界へクランプし、回転・パン成分は捨てない。
+    _transformController.value = transform * _transformController.value;
   }
 
   void _onPointerDown(PointerEvent event) {
