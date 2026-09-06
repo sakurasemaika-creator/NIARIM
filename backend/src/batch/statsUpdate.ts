@@ -1,5 +1,13 @@
+import {
+  ConditionalCheckFailedException,
+} from "@aws-sdk/client-dynamodb";
 import { LambdaClient, InvokeCommand } from "@aws-sdk/client-lambda";
-import { PutCommand, ScanCommand, UpdateCommand } from "@aws-sdk/lib-dynamodb";
+import {
+  GetCommand,
+  PutCommand,
+  ScanCommand,
+  UpdateCommand,
+} from "@aws-sdk/lib-dynamodb";
 import { ddb, tableName, Keys } from "../lib/dynamo";
 import { batchGetVideoStats } from "../lib/youtube";
 import {
@@ -36,6 +44,7 @@ const PAGE_SIZE = 25;
  * 20,000ページ相当を上限の目安とし、余裕を持たせて設定している。
  */
 const MAX_PAGES = 25_000;
+const MAX_VISIBILITY_CONFLICT_RETRIES = 2;
 
 /** 期間別ランキングの集計途中経過（ページ間で持ち回る）。 */
 type TopLists = Record<DeltaRankingPeriod, RankingSnapshotEntry[]>;
@@ -147,6 +156,7 @@ async function updateWorkStats(
       }
     | undefined,
   topLists: TopLists,
+  conflictAttempt = 0,
 ): Promise<void> {
   const nowDate = new Date();
   const now = nowDate.toISOString();
@@ -182,8 +192,10 @@ async function updateWorkStats(
     ":comment": commentCount,
     ":now": now,
     ":status": youtubePrivacyStatus,
+    ":expectedPublished": work.isNiarimPublished,
   };
   const removes: string[] = [];
+  const conditions = ["isNiarimPublished = :expectedPublished"];
 
   // 8.2節：期間別ランキング用スナップショットを現在の窓へ進める。
   // 窓が変わっていなければ基準点は据え置かれ、期間中スコアが積み上がる。
@@ -192,37 +204,45 @@ async function updateWorkStats(
   setParts.push("statsWindows = :windows");
   values[":windows"] = statsWindows;
 
-  // 非表示の作品は期間別ランキングにも載せない（累計と同じ扱い）。
   if (isVisible) {
-    for (const period of DELTA_RANKING_PERIODS) {
-      const score = computePeriodScore(current, statsWindows[period]);
-      topLists[period] = insertIntoTopList(
-        topLists[period],
-        { workId: work.workId, score },
-        RANKING_TOP_LIMIT,
-      );
-    }
-  }
-
-  if (isVisible) {
+    // 累計ランキングだけはYouTube統計に合わせて毎回更新する。
     setParts.push(
       "rankingScore = :score",
       "gsi1pk = :rankPk",
       "gsi1sk = :score",
-      "gsi2pk = :bmPk",
-      "gsi2sk = :bm",
-      "gsi3pk = :authorPk",
-      "gsi3sk = :postedAt",
-      "gsi4pk = :latestPk",
-      "gsi4sk = :postedAt",
     );
     values[":score"] = rankingScore;
     values[":rankPk"] = "RANKING#ALL";
-    values[":bmPk"] = "BOOKMARK_RANKING";
-    values[":bm"] = work.bookmarkCount;
-    values[":authorPk"] = `AUTHOR#${work.authorId}`;
-    values[":postedAt"] = work.postedAt;
-    values[":latestPk"] = "LATEST";
+
+    // ブックマークGSI・作者GSI・新着GSIは通常の可視作品なら別処理が常に
+    // 最新状態を保っているので触らない。YouTube非公開→公開復帰などで
+    // インデックスが欠けている場合だけ復元する。復元時はScan後に
+    // bookmarkCountが変わっていないことも条件に入れ、古い値をgsi2skへ
+    // 書き戻さない。
+    const hasPublicIndexes =
+      work.gsi2pk != null &&
+      work.gsi2sk != null &&
+      work.gsi3pk != null &&
+      work.gsi3sk != null &&
+      work.gsi4pk != null &&
+      work.gsi4sk != null;
+    if (!hasPublicIndexes) {
+      setParts.push(
+        "gsi2pk = :bmPk",
+        "gsi2sk = :bm",
+        "gsi3pk = :authorPk",
+        "gsi3sk = :postedAt",
+        "gsi4pk = :latestPk",
+        "gsi4sk = :postedAt",
+      );
+      values[":bmPk"] = "BOOKMARK_RANKING";
+      values[":bm"] = work.bookmarkCount;
+      values[":authorPk"] = `AUTHOR#${work.authorId}`;
+      values[":postedAt"] = work.postedAt;
+      values[":latestPk"] = "LATEST";
+      values[":expectedBookmarkCount"] = work.bookmarkCount;
+      conditions.push("bookmarkCount = :expectedBookmarkCount");
+    }
   } else {
     removes.push(
       "rankingScore",
@@ -241,17 +261,55 @@ async function updateWorkStats(
     `SET ${setParts.join(", ")}` +
     (removes.length ? ` REMOVE ${removes.join(", ")}` : "");
 
-  // rankingScoreの更新は「最新値で上書き」なので、Lambdaの非同期呼び出し
-  // が失敗時に自動リトライされ同一ページが二重処理されても結果は壊れ
-  // ない（冪等、8.1節）。ConditionExpressionは付けない。
-  await ddb.send(
-    new UpdateCommand({
-      TableName: tableName(),
-      Key: Keys.work(work.workId),
-      UpdateExpression: updateExpression,
-      ExpressionAttributeValues: values,
-    }),
-  );
+  try {
+    await ddb.send(
+      new UpdateCommand({
+        TableName: tableName(),
+        Key: Keys.work(work.workId),
+        UpdateExpression: updateExpression,
+        ConditionExpression: conditions.join(" AND "),
+        ExpressionAttributeValues: values,
+      }),
+    );
+  } catch (error) {
+    if (
+      error instanceof ConditionalCheckFailedException &&
+      conflictAttempt < MAX_VISIBILITY_CONFLICT_RETRIES
+    ) {
+      // Scan後に作者の公開設定またはブックマーク数が変わった。最新Itemを
+      // 読み直し、同じYouTube統計値を使って条件・GSIを組み直す。
+      const latestResult = await ddb.send(
+        new GetCommand({ TableName: tableName(), Key: Keys.work(work.workId) }),
+      );
+      const latest = latestResult.Item as WorkItem | undefined;
+      if (latest) {
+        await updateWorkStats(latest, stats, topLists, conflictAttempt + 1);
+      }
+      return;
+    }
+    if (error instanceof ConditionalCheckFailedException) {
+      // 公開設定を連続操作中などで競合が続く場合は、古いScan結果で公開状態を
+      // 上書きするより、この作品の統計更新を次サイクルへ回す方を優先する。
+      console.warn(
+        `作品${work.workId}の統計更新を公開設定競合のためスキップしました`,
+      );
+      return;
+    }
+    throw error;
+  }
+
+  // ランキング途中集計は、DynamoDB更新が成功して「この作品が現在も可視」
+  // と確認できた後にだけ追加する。競合前の古い公開状態でTop50へ混入させない。
+  if (isVisible) {
+    for (const period of DELTA_RANKING_PERIODS) {
+      const score = computePeriodScore(current, statsWindows[period]);
+      topLists[period] = insertIntoTopList(
+        topLists[period],
+        { workId: work.workId, score },
+        RANKING_TOP_LIMIT,
+      );
+    }
+  }
 }
 
 /**
