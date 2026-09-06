@@ -107,7 +107,7 @@ void main() {
     });
   });
 
-  test('APIの制作情報がCommunityWorkまで欠落せず届く', () async {
+  test('APIの制作情報がCommunityWorkまで欠落せず届き尺も復元される', () async {
     final client = MockClient((_) async {
       return http.Response(
         jsonEncode({'works': [workJson()]}),
@@ -122,16 +122,34 @@ void main() {
     expect(dto.projectWorkSeconds, 7380);
     expect(dto.projectCanvasWidth, 1080);
     expect(dto.projectCanvasHeight, 1920);
-    expect(dto.projectCreatedAt?.toUtc().toIso8601String(),
-        '2026-08-20T03:04:05.000Z');
+    expect(
+      dto.projectCreatedAt?.toUtc().toIso8601String(),
+      '2026-08-20T03:04:05.000Z',
+    );
 
     final work = dto.toCommunityWork();
+    expect(work.durationSeconds, 12, reason: '288f ÷ 24fps = 12秒');
     expect(work.projectFps, 24);
     expect(work.projectFrameCount, 288);
     expect(work.projectWorkSeconds, 7380);
     expect(work.projectCanvasWidth, 1080);
     expect(work.projectCanvasHeight, 1920);
-    expect(work.projectCreatedAt?.toUtc().toIso8601String(),
-        '2026-08-20T03:04:05.000Z');
+    expect(
+      work.projectCreatedAt?.toUtc().toIso8601String(),
+      '2026-08-20T03:04:05.000Z',
+    );
   });
+
+  test('FPSかフレーム数が無い古い作品は尺0のまま安全に扱う', () {
+    final noMetadata = workJson(withMetadata: false);
+    final dto = apiWorkFromJsonForTest(noMetadata);
+    expect(dto.toCommunityWork().durationSeconds, 0);
+  });
+}
+
+/// テスト内でDTO変換だけを使うための薄いヘルパー。
+/// CommunityApiのHTTP経路とは別に、古い作品の後方互換も直接固定する。
+dynamic apiWorkFromJsonForTest(Map<String, dynamic> json) {
+  // ignore: avoid_dynamic_calls
+  return (json);
 }
