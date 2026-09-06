@@ -138,17 +138,26 @@ void main() {
       });
     });
 
-    test('タグ更新はlockedTagsを指定したときだけ送る', () async {
+    test('タグ更新はactionとtagを1操作ずつ送る', () async {
       final m = mock((_) => workJson());
       final api = apiWith(m.client, token: 'T');
-      await api.updateTags('vid1', tags: ['a', 'b']);
-      await api.updateTags('vid1', tags: ['a'], lockedTags: {'a'});
+      await api.updateTag(
+        'vid1',
+        action: CommunityTagAction.add,
+        tag: '背景',
+      );
+      await api.updateTag(
+        'vid1',
+        action: CommunityTagAction.lock,
+        tag: '作画',
+      );
       expect(jsonDecode(m.requests[0].body), {
-        'tags': ['a', 'b'],
+        'action': 'add',
+        'tag': '背景',
       });
       expect(jsonDecode(m.requests[1].body), {
-        'tags': ['a'],
-        'lockedTags': ['a'],
+        'action': 'lock',
+        'tag': '作画',
       });
     });
   });
@@ -506,7 +515,7 @@ void main() {
     await api.createWork(youtubeVideoId: 'V', youtubeAccessToken: 'T');
     await api.updateWorkVisibility('W', isNiarimPublished: false);
     await api.deleteWork('W');
-    await api.updateTags('W', tags: const []);
+    await api.updateTag('W', action: CommunityTagAction.add, tag: 'tag');
     await api.toggleBookmark('W');
     await api.toggleRepost('W');
     await api.toggleFollow('U');
