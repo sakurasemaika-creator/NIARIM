@@ -110,18 +110,17 @@ export async function createWork(event: APIGatewayProxyEventV2) {
       // 再登録はPutで作品アイテム全体を書き戻さない。タグ・ロックタグ・
       // ブックマーク・リポスト・統計更新が同時に発生していても、それらの
       // 属性を古いGet結果で上書きしないよう、YouTube/制作メタデータだけを
-      // UpdateExpressionで部分更新する。
+      // UpdateExpressionで部分更新する。作品タイトルはPATCH /works/{id}で
+      // 作者がNIARIM側独自に編集できるため、YouTubeタイトルへ戻さない。
       const values: Record<string, unknown> = {
         ":authorId": auth.niarimUserId,
         ":youtubeChannelId": snippet.channelId,
-        ":title": snippet.title,
         ":youtubeUrl": `https://www.youtube.com/watch?v=${body.youtubeVideoId}`,
         ":thumbnailUrl": snippet.thumbnailUrl,
         ":privacy": snippet.privacyStatus,
       };
       const sets = [
         "youtubeChannelId = :youtubeChannelId",
-        "title = :title",
         "youtubeUrl = :youtubeUrl",
         "thumbnailUrl = :thumbnailUrl",
         "youtubePrivacyStatus = :privacy",
