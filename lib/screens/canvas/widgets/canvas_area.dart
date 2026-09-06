@@ -141,46 +141,89 @@ Offset selectionRotateHandleOf(
   return Offset(x, y);
 }
 
-/// 指が届く範囲（＝CanvasAreaウィジェット全体）を、キャンバスpxへ直した矩形。
+/// いま画面に映っている範囲を、ズーム・パン適用前のウィジェット座標へ
+/// 戻した矩形。ピンチで縮小していればウィジェットの外側まで広がり、
+/// 拡大していれば内側の一部だけになる。
+Rect visibleWidgetRectFor(Size size, Matrix4 viewTransform) {
+  final inverted = Matrix4.copy(viewTransform);
+  if (inverted.invert() == 0) return Offset.zero & size;
+  return MatrixUtils.transformRect(inverted, Offset.zero & size);
+}
+
+/// 指が届く範囲を、キャンバスpxへ直した矩形。
 ///
 /// アスペクト比フィットで置かれる描画エリア（[canvasDrawingRectFor]）の
 /// 外側にはレターボックス／ピラーボックスの余白があり、そこもウィジェットの
 /// 内側なのでタップは届く。回転ハンドルを「キャンバスの外だがウィジェットの
 /// 内」へ置けるようにするための計算。
-Rect reachableCanvasRectFor(Size size, Rect drawingRect, Project? project) {
-  final exportW = project?.exportWidth.toDouble() ?? 1920.0;
-  final exportH = project?.exportHeight.toDouble() ?? 1080.0;
+///
+/// [visibleWidgetRect]には[visibleWidgetRectFor]の結果（＝ピンチズーム・
+/// パンを織り込んだ、いま映っている範囲）を渡すこと。ウィジェットの矩形を
+/// そのまま渡すと、ピンチで縮小して余白が生まれても寄せたままになる。
+Rect reachableCanvasRectFor(
+  Rect visibleWidgetRect,
+  Rect drawingRect,
+  Project? project,
+) {
+  final canvasPx = canvasPixelSizeOf(project);
   if (drawingRect.width <= 0 || drawingRect.height <= 0) {
-    return Rect.fromLTWH(0, 0, exportW, exportH);
+    return Offset.zero & canvasPx;
   }
-  final sx = exportW / drawingRect.width;
-  final sy = exportH / drawingRect.height;
+  final sx = canvasPx.width / drawingRect.width;
+  final sy = canvasPx.height / drawingRect.height;
   return Rect.fromLTRB(
-    -drawingRect.left * sx,
-    -drawingRect.top * sy,
-    (size.width - drawingRect.left) * sx,
-    (size.height - drawingRect.top) * sy,
+    (visibleWidgetRect.left - drawingRect.left) * sx,
+    (visibleWidgetRect.top - drawingRect.top) * sy,
+    (visibleWidgetRect.right - drawingRect.left) * sx,
+    (visibleWidgetRect.bottom - drawingRect.top) * sy,
   );
 }
 
+/// キャンバスのピクセル寸法。**書き出しサイズではなく描画範囲サイズ**
+/// （＝書き出しサイズ×drawingAreaScale）で、TileManagerの実寸・選択マスクの
+/// 寸法・ポインター座標系のすべてがこれで揃っている。
+///
+/// 「キャンバス外にも描画範囲を広げる」モード（drawingAreaScale > 1.0）では
+/// この2つが食い違う。書き出しサイズの方を使うと、タップ位置と実際に描かれる
+/// 位置がdrawingAreaScale倍ずれる（実際にそうなっていた）。
+Size canvasPixelSizeOf(Project? project) => Size(
+  (project?.drawingWidth ?? 1920).toDouble(),
+  (project?.drawingHeight ?? 1080).toDouble(),
+);
+
+/// 描画範囲（[canvasPixelSizeOf]）をウィジェットへアスペクト比フィットさせた
+/// 矩形。ポインター座標の変換もハンドルの描画位置もすべてこれを基準にする。
+///
+/// 拡張描画範囲ONでも同じ扱いにすること。以前はONのときだけウィジェット全体を
+/// 返していたが、（1）描画範囲の縦横比とウィジェットの縦横比が違うと画が
+/// 引き伸ばされ、（2）座標変換が書き出しサイズ基準のままだったため
+/// タップ位置がdrawingAreaScale倍ずれていた。
 Rect canvasDrawingRectFor(Size size, Project? project) {
-  final hasExtended = project?.hasExtendedDrawingArea ?? false;
-  if (hasExtended) return Rect.fromLTWH(0, 0, size.width, size.height);
-  final exportW = project?.exportWidth.toDouble() ?? 1920.0;
-  final exportH = project?.exportHeight.toDouble() ?? 1080.0;
-  final scale = project?.drawingAreaScale ?? 1.0;
-  final availW = size.width / scale;
-  final availH = size.height / scale;
-  final aspectRatio = exportW / exportH;
+  final canvas = canvasPixelSizeOf(project);
+  if (canvas.width <= 0 || canvas.height <= 0) {
+    return Rect.fromLTWH(0, 0, size.width, size.height);
+  }
+  final aspectRatio = canvas.width / canvas.height;
   final double w, h;
-  if (availW / availH > aspectRatio) {
-    h = availH;
+  if (size.width / size.height > aspectRatio) {
+    h = size.height;
     w = h * aspectRatio;
   } else {
-    w = availW;
+    w = size.width;
     h = w / aspectRatio;
   }
   return Rect.fromLTWH((size.width - w) / 2, (size.height - h) / 2, w, h);
+}
+
+/// 拡張描画範囲ONのとき、実際に書き出される範囲（描画範囲の中央
+/// 1/drawingAreaScale）を[drawingRect]の中の矩形として返す。OFFなら
+/// [drawingRect]そのもの。
+Rect exportWarningRectFor(Rect drawingRect, Project? project) {
+  final scale = project?.drawingAreaScale ?? 1.0;
+  if (scale <= 1.0) return drawingRect;
+  final w = drawingRect.width / scale;
+  final h = drawingRect.height / scale;
+  return Rect.fromCenter(center: drawingRect.center, width: w, height: h);
 }
 
 class CanvasArea extends StatefulWidget {
@@ -2134,12 +2177,12 @@ class _CanvasAreaState extends State<CanvasArea> {
   /// （＝描画エリアの拡大率。ピンチズームぶんも含む）。
   double get _canvasToScreenScale {
     final size = context.size;
-    final exportW = widget.project?.exportWidth.toDouble() ?? 1920.0;
-    if (size == null || size.width <= 0 || exportW <= 0) return 1.0;
+    final canvasW = canvasPixelSizeOf(widget.project).width;
+    if (size == null || size.width <= 0 || canvasW <= 0) return 1.0;
     final rect = canvasDrawingRectFor(size, widget.project);
     if (rect.width <= 0) return 1.0;
     final zoom = _transformController.value.getMaxScaleOnAxis();
-    return (rect.width / exportW) * (zoom > 0 ? zoom : 1.0);
+    return (rect.width / canvasW) * (zoom > 0 ? zoom : 1.0);
   }
 
   /// 選択範囲がある間、常時描くハンドルの半径（キャンバスpx）。
@@ -2148,13 +2191,18 @@ class _CanvasAreaState extends State<CanvasArea> {
       selectionHandleRadiusFor(_canvasToScreenScale);
 
   /// 指が届く範囲をキャンバスpxで表した矩形。_CanvasPainter側と同じ計算元
-  /// （canvasDrawingRectFor）を使い、当たり判定と描画位置を一致させる。
+  /// （canvasDrawingRectFor＋いまのズーム・パン）を使い、当たり判定と
+  /// 描画位置を一致させる。
   Rect? get _reachableCanvasRect {
     final size = context.size;
     if (size == null || size.width <= 0 || size.height <= 0) return null;
     final rect = canvasDrawingRectFor(size, widget.project);
     if (rect.width <= 0 || rect.height <= 0) return null;
-    return reachableCanvasRectFor(size, rect, widget.project);
+    return reachableCanvasRectFor(
+      visibleWidgetRectFor(size, _transformController.value),
+      rect,
+      widget.project,
+    );
   }
 
   /// [canvasPos]が選択範囲のハンドル／内側に該当すれば、掴んだ場所に応じた
@@ -2803,15 +2851,15 @@ class _CanvasAreaState extends State<CanvasArea> {
     const screenPixels = 28.0;
     final zoomScale = _transformController.value.getMaxScaleOnAxis();
     final size = context.size;
-    final exportW = widget.project?.exportWidth.toDouble() ?? 1920.0;
-    if (size == null || size.width <= 0 || size.height <= 0 || exportW <= 0) {
+    final canvasW = canvasPixelSizeOf(widget.project).width;
+    if (size == null || size.width <= 0 || size.height <= 0 || canvasW <= 0) {
       return zoomScale > 0 ? screenPixels / zoomScale : screenPixels;
     }
     final rect = canvasDrawingRectFor(size, widget.project);
     if (rect.width <= 0) {
       return zoomScale > 0 ? screenPixels / zoomScale : screenPixels;
     }
-    final fitScale = rect.width / exportW;
+    final fitScale = rect.width / canvasW;
     final effectiveScale = zoomScale * fitScale;
     return effectiveScale > 0 ? screenPixels / effectiveScale : screenPixels;
   }
@@ -2960,7 +3008,7 @@ class _CanvasAreaState extends State<CanvasArea> {
   /// Listenerローカル座標（ズーム・パン適用前のウィジェット内座標）を、
   /// _CanvasPainterが実際に描画へ使う矩形（canvasDrawingRectFor、
   /// レターボックス時は中央揃え）を通してプロジェクトのピクセル座標
-  /// （0..exportWidth, 0..exportHeight）へ変換する。
+  /// （0..drawingWidth, 0..drawingHeight＝canvasPixelSizeOf）へ変換する。
   ///
   /// 【重大バグ修正】以前はこの矩形変換が欠落しており、ズーム・パン分の
   /// 逆行列適用だけで完結させていたため、ウィジェットの表示サイズが
@@ -2973,11 +3021,10 @@ class _CanvasAreaState extends State<CanvasArea> {
     if (size == null || size.width <= 0 || size.height <= 0) return widgetLocal;
     final rect = canvasDrawingRectFor(size, widget.project);
     if (rect.width <= 0 || rect.height <= 0) return widgetLocal;
-    final exportW = widget.project?.exportWidth.toDouble() ?? 1920.0;
-    final exportH = widget.project?.exportHeight.toDouble() ?? 1080.0;
+    final canvasPx = canvasPixelSizeOf(widget.project);
     return Offset(
-      (widgetLocal.dx - rect.left) * exportW / rect.width,
-      (widgetLocal.dy - rect.top) * exportH / rect.height,
+      (widgetLocal.dx - rect.left) * canvasPx.width / rect.width,
+      (widgetLocal.dy - rect.top) * canvasPx.height / rect.height,
     );
   }
 
@@ -3412,6 +3459,7 @@ class _CanvasAreaState extends State<CanvasArea> {
                     handleColor: theme.selectionColor,
                     handleOutlineColor: theme.menuBgColor,
                     extendedAreaWarningColor: theme.updateMarkColor,
+                    viewTransform: _transformController.value,
                   ),
                   size: Size.infinite,
                 ),
@@ -3508,6 +3556,9 @@ class _CanvasPainter extends CustomPainter {
   final Color handleOutlineColor;
   // 「書き出し範囲外」の警告枠色（テーマの更新マーク色連動）。
   final Color extendedAreaWarningColor;
+  // いまのピンチズーム・パンの行列。回転ハンドルを「指が届く範囲」の内側へ
+  // 寄せる計算に使う（縮小すれば余白が増え、拡大すれば減るため）。
+  final Matrix4 viewTransform;
 
   static const double _checkerSize = 16.0;
 
@@ -3546,6 +3597,7 @@ class _CanvasPainter extends CustomPainter {
     required this.handleColor,
     required this.handleOutlineColor,
     required this.extendedAreaWarningColor,
+    required this.viewTransform,
   });
 
   @override
@@ -3684,8 +3736,9 @@ class _CanvasPainter extends CustomPainter {
 
     // 矩形選択プレビュー
     if (selectionStart != null && selectionEnd != null) {
-      final sx = drawingRect.width / (project?.exportWidth ?? 1920);
-      final sy = drawingRect.height / (project?.exportHeight ?? 1080);
+      final canvasPx = canvasPixelSizeOf(project);
+      final sx = drawingRect.width / canvasPx.width;
+      final sy = drawingRect.height / canvasPx.height;
       final r = Rect.fromPoints(
         drawingRect.topLeft +
             Offset(selectionStart!.dx * sx, selectionStart!.dy * sy),
@@ -3704,8 +3757,9 @@ class _CanvasPainter extends CustomPainter {
 
     // 投げ縄選択プレビュー
     if (lassoPoints.length > 1) {
-      final sx = drawingRect.width / (project?.exportWidth ?? 1920);
-      final sy = drawingRect.height / (project?.exportHeight ?? 1080);
+      final canvasPx = canvasPixelSizeOf(project);
+      final sx = drawingRect.width / canvasPx.width;
+      final sy = drawingRect.height / canvasPx.height;
       final path = Path();
       path.moveTo(
         drawingRect.left + lassoPoints.first.dx * sx,
@@ -3725,8 +3779,9 @@ class _CanvasPainter extends CustomPainter {
 
     // トーン自由描画・スタンプのストロークプレビュー（確定は指を離した時点）
     if (subToolStrokePoints.length > 1) {
-      final sx = drawingRect.width / (project?.exportWidth ?? 1920);
-      final sy = drawingRect.height / (project?.exportHeight ?? 1080);
+      final canvasPx = canvasPixelSizeOf(project);
+      final sx = drawingRect.width / canvasPx.width;
+      final sy = drawingRect.height / canvasPx.height;
       final path = Path();
       path.moveTo(
         drawingRect.left + subToolStrokePoints.first.dx * sx,
@@ -3746,8 +3801,9 @@ class _CanvasPainter extends CustomPainter {
 
     // 図形ツール：ゴムバンドプレビュー（指を離すまで確定しない）
     if (shapeStart != null && shapeEnd != null && shapeKind != ShapeKind.off) {
-      final sx = drawingRect.width / (project?.exportWidth ?? 1920);
-      final sy = drawingRect.height / (project?.exportHeight ?? 1080);
+      final canvasPx = canvasPixelSizeOf(project);
+      final sx = drawingRect.width / canvasPx.width;
+      final sy = drawingRect.height / canvasPx.height;
       Offset ts(Offset p) => drawingRect.topLeft + Offset(p.dx * sx, p.dy * sy);
       final shapePaint = Paint()
         ..color = ThemeService.activeColorScheme.onSurface.withValues(
@@ -3822,8 +3878,9 @@ class _CanvasPainter extends CustomPainter {
     // 分からないため、ドラッグ中でなくても描く。
     if (selectionAffordanceBounds != null) {
       final bounds = selectionAffordanceBounds!;
-      final sx = drawingRect.width / (project?.exportWidth ?? 1920);
-      final sy = drawingRect.height / (project?.exportHeight ?? 1080);
+      final canvasPx = canvasPixelSizeOf(project);
+      final sx = drawingRect.width / canvasPx.width;
+      final sy = drawingRect.height / canvasPx.height;
       Offset ts(Offset p) => drawingRect.topLeft + Offset(p.dx * sx, p.dy * sy);
       // ハンドルの大きさは画面px基準で固定。キャンバスpxへは
       // 描画エリアの拡大率で割って戻す（当たり判定側と同じ式）。
@@ -3889,7 +3946,11 @@ class _CanvasPainter extends CustomPainter {
             bounds,
             r,
             rotateRadius: selectionRotateHandleRadiusFor(sx),
-            reachable: reachableCanvasRectFor(size, drawingRect, project),
+            reachable: reachableCanvasRectFor(
+              visibleWidgetRectFor(size, viewTransform),
+              drawingRect,
+              project,
+            ),
           ),
         ),
         Icons.rotate_right,
@@ -3900,8 +3961,9 @@ class _CanvasPainter extends CustomPainter {
     // 変形中：選択範囲のバウンディングボックス・拡縮ハンドル・回転ハンドル。
     if (selectionTransformBounds != null) {
       final bounds = selectionTransformBounds!;
-      final sx = drawingRect.width / (project?.exportWidth ?? 1920);
-      final sy = drawingRect.height / (project?.exportHeight ?? 1080);
+      final canvasPx = canvasPixelSizeOf(project);
+      final sx = drawingRect.width / canvasPx.width;
+      final sy = drawingRect.height / canvasPx.height;
       Offset ts(Offset p) => drawingRect.topLeft + Offset(p.dx * sx, p.dy * sy);
       final boxPaint = Paint()
         ..color = handleColor
@@ -3934,10 +3996,7 @@ class _CanvasPainter extends CustomPainter {
     // 拡張表示範囲ON時のみ、実際に書き出される範囲（拡張前のアスペクト比
     // フィット矩形）を警告枠として重ねる。
     if (project?.hasExtendedDrawingArea ?? false) {
-      final exportRect = canvasDrawingRectFor(
-        size,
-        project?.copyWith(drawingAreaScale: 1.0),
-      );
+      final exportRect = exportWarningRectFor(drawingRect, project);
       canvas.drawRect(
         exportRect,
         Paint()
@@ -3958,8 +4017,9 @@ class _CanvasPainter extends CustomPainter {
       ..color = handleColor.withValues(alpha: 0.5)
       ..strokeWidth = 1.5
       ..style = PaintingStyle.stroke;
-    final cw = project?.exportWidth.toDouble() ?? 1920.0;
-    final ch = project?.exportHeight.toDouble() ?? 1080.0;
+    final canvasPx = canvasPixelSizeOf(project);
+    final cw = canvasPx.width;
+    final ch = canvasPx.height;
     final sx = drawingRect.width / cw;
     final sy = drawingRect.height / ch;
     Offset ts(Offset p) => drawingRect.topLeft + Offset(p.dx * sx, p.dy * sy);
@@ -4197,8 +4257,10 @@ class _CanvasPainter extends CustomPainter {
       old.meshSourceImage != meshSourceImage ||
       old.showMeshHandles != showMeshHandles ||
       old.project?.drawingAreaScale != project?.drawingAreaScale ||
+      old.viewTransform != viewTransform ||
       old.project?.exportWidth != project?.exportWidth ||
       old.project?.exportHeight != project?.exportHeight ||
+      old.project?.drawingAreaScale != project?.drawingAreaScale ||
       old.handleColor != handleColor ||
       old.handleOutlineColor != handleOutlineColor ||
       old.extendedAreaWarningColor != extendedAreaWarningColor;

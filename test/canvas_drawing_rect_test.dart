@@ -30,11 +30,10 @@ Project _project({
 /// （タスク#141の重大バグ修正で追加したロジック）をテスト用に再現する。
 Offset _toCanvasPixel(Offset widgetLocal, Size size, Project? project) {
   final rect = canvasDrawingRectFor(size, project);
-  final exportW = project?.exportWidth.toDouble() ?? 1920.0;
-  final exportH = project?.exportHeight.toDouble() ?? 1080.0;
+  final canvas = canvasPixelSizeOf(project);
   return Offset(
-    (widgetLocal.dx - rect.left) * exportW / rect.width,
-    (widgetLocal.dy - rect.top) * exportH / rect.height,
+    (widgetLocal.dx - rect.left) * canvas.width / rect.width,
+    (widgetLocal.dy - rect.top) * canvas.height / rect.height,
   );
 }
 
@@ -71,7 +70,12 @@ void main() {
       expect(rect.left, closeTo(0, 0.001));
     });
 
-    test('拡張表示範囲ONの場合はウィジェット全体を使う（レターボックスなし）', () {
+    test('拡張表示範囲ONでも描画範囲をアスペクト比フィットさせる', () {
+      // 拡張ONのときにウィジェット全体へ引き伸ばすと、（1）描画範囲の縦横比と
+      // ウィジェットの縦横比が違えば画が歪み、（2）座標変換が書き出しサイズ
+      // 基準のままだったためタップ位置がdrawingAreaScale倍ずれていた。
+      // 描画範囲（書き出し×倍率）は書き出しと同じ縦横比なので、結果として
+      // 拡張OFFのときと同じ矩形になるのが正しい。
       final project = _project(
         exportWidth: 1920,
         exportHeight: 1080,
@@ -79,7 +83,53 @@ void main() {
       );
       const size = Size(500, 300);
       final rect = canvasDrawingRectFor(size, project);
-      expect(rect, const Rect.fromLTWH(0, 0, 500, 300));
+      // 16:9を500x300へフィット → 幅500・高さ281.25、上下中央揃え。
+      expect(rect.width, closeTo(500, 0.001));
+      expect(rect.height, closeTo(281.25, 0.001));
+      expect(rect.top, closeTo((300 - rect.height) / 2, 0.001));
+      expect(
+        rect,
+        canvasDrawingRectFor(size, _project()),
+        reason: '倍率が変わっても表示矩形そのものは変わらない（中身の解像度が上がるだけ）',
+      );
+    });
+
+    test('拡張表示範囲ONでは、キャンバス座標系が描画範囲サイズになる', () {
+      final project = _project(
+        exportWidth: 320,
+        exportHeight: 320,
+        drawingAreaScale: 2.0,
+      );
+      expect(canvasPixelSizeOf(project), const Size(640, 640));
+
+      const size = Size(400, 800);
+      final rect = canvasDrawingRectFor(size, project);
+      // 描画矩形の中心をタップ → 描画範囲の中心(320,320)になること。
+      // ここが書き出しサイズ基準（=160,160）だと、タップ位置と実際に描かれる
+      // 位置がdrawingAreaScale倍ずれる（実際にそうなっていた）。
+      final center = _toCanvasPixel(rect.center, size, project);
+      expect(center.dx, closeTo(320, 0.01));
+      expect(center.dy, closeTo(320, 0.01));
+      // 右下は(640,640)。
+      final br = _toCanvasPixel(rect.bottomRight, size, project);
+      expect(br.dx, closeTo(640, 0.01));
+      expect(br.dy, closeTo(640, 0.01));
+    });
+
+    test('書き出し範囲の警告枠は、描画矩形の中央1/倍率', () {
+      final project = _project(
+        exportWidth: 320,
+        exportHeight: 320,
+        drawingAreaScale: 2.0,
+      );
+      const size = Size(400, 800);
+      final rect = canvasDrawingRectFor(size, project);
+      final export = exportWarningRectFor(rect, project);
+      expect(export.width, closeTo(rect.width / 2, 0.001));
+      expect(export.height, closeTo(rect.height / 2, 0.001));
+      expect(export.center, rect.center);
+      // 拡張OFFなら描画矩形そのもの。
+      expect(exportWarningRectFor(rect, _project()), rect);
     });
 
     test('プロジェクト未指定時はデフォルト1920x1080として扱う', () {
