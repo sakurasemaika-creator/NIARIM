@@ -33,4 +33,28 @@ describe("stats update DynamoDB contract", () => {
       expect(source).toContain(`"${key}"`);
     }
   });
+
+  it("does not let a stale scan overwrite a concurrent visibility change", () => {
+    expect(source).toContain('"isNiarimPublished = :expectedPublished"');
+    expect(source).toContain("ConditionalCheckFailedException");
+    expect(source).toContain("MAX_VISIBILITY_CONFLICT_RETRIES = 2");
+    expect(source).toContain("new GetCommand");
+    expect(source).toContain("updateWorkStats(latest, stats, topLists");
+  });
+
+  it("does not rewrite bookmark ranking from a stale scan during normal visible updates", () => {
+    expect(source).toContain("const hasPublicIndexes =");
+    expect(source).toContain("if (!hasPublicIndexes)");
+    expect(source).toContain('conditions.push("bookmarkCount = :expectedBookmarkCount")');
+  });
+
+  it("adds period ranking entries only after the conditional DynamoDB update succeeds", () => {
+    const sendIndex = source.indexOf("await ddb.send(", source.indexOf("async function updateWorkStats"));
+    const rankingInsertIndex = source.indexOf(
+      "for (const period of DELTA_RANKING_PERIODS)",
+      sendIndex,
+    );
+    expect(sendIndex).toBeGreaterThanOrEqual(0);
+    expect(rankingInsertIndex).toBeGreaterThan(sendIndex);
+  });
 });
