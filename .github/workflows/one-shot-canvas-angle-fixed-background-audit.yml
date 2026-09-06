@@ -1,4 +1,4 @@
-name: One-shot Canvas Angle Fixed Background Audit
+name: One-shot Canvas Angle Background Audit
 
 on:
   push:
@@ -12,7 +12,7 @@ permissions:
 jobs:
   audit:
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    timeout-minutes: 35
     steps:
       - uses: actions/checkout@v4
         with:
@@ -22,9 +22,9 @@ jobs:
           channel: stable
           cache: true
       - run: flutter pub get
-      - name: Create angled fixed-background operation test
+      - name: Create angled normal and extended canvas operation test
         run: |
-          cat > test/canvas_angle_fixed_background_visual_test.dart <<'DART'
+          cat > test/canvas_angle_background_visual_test.dart <<'DART'
           import 'dart:io';
           import 'dart:math' as math;
           import 'dart:ui' as ui;
@@ -45,147 +45,225 @@ jobs:
 
           void main() {
             TestWidgetsFlutterBinding.ensureInitialized();
-            testWidgets('斜め回転でも背景固定のまま境界で止まる', (tester) async {
-              SharedPreferences.setMockInitialValues({});
-              final tempDir = Directory.systemTemp.createTempSync('niarim_angle_fixed_bg_');
-              const pathChannel = MethodChannel('plugins.flutter.io/path_provider');
-              TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
-                  .setMockMethodCallHandler(pathChannel, (call) async => tempDir.path);
-              addTearDown(() {
+
+            testWidgets(
+              '通常背景固定と拡張描画領域追従を1/5＋複数斜め角度で確認する',
+              (tester) async {
+                SharedPreferences.setMockInitialValues({});
+                final tempDir = Directory.systemTemp.createTempSync(
+                  'niarim_angle_background_',
+                );
+                const pathChannel = MethodChannel(
+                  'plugins.flutter.io/path_provider',
+                );
                 TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
-                    .setMockMethodCallHandler(pathChannel, null);
-                if (tempDir.existsSync()) tempDir.deleteSync(recursive: true);
-              });
-
-              tester.view.physicalSize = const Size(1080, 1920);
-              tester.view.devicePixelRatio = 2.5;
-              addTearDown(tester.view.resetPhysicalSize);
-              addTearDown(tester.view.resetDevicePixelRatio);
-
-              await loadAppFonts(tester);
-              final providers = await tester.runAsync(buildAppProviders);
-              final boundaryKey = GlobalKey();
-              await tester.pumpWidget(
-                RepaintBoundary(
-                  key: boundaryKey,
-                  child: MultiProvider(providers: providers!, child: const NiarimApp()),
-                ),
-              );
-              await tester.pumpAndSettle();
-              final context = tester.element(find.byType(MaterialApp).first);
-              final ps = context.read<ProjectService>();
-              final project = await tester.runAsync(() => ps.createProject(
-                name: 'angle-fixed-background-audit',
-                fps: 12,
-                durationSeconds: 1,
-                backgroundColor: 0xFFFFFFFF,
-                exportWidth: 640,
-                exportHeight: 480,
-              ));
-              expect(project, isNotNull);
-
-              Future<void> openCanvas() async {
-                appRouter.go('/home');
-                await tester.pump(const Duration(milliseconds: 120));
-                appRouter.go('/canvas/${project!.id}');
-                for (var i = 0; i < 10; i++) {
-                  await tester.pump(const Duration(milliseconds: 100));
-                  await tester.runAsync(() => Future<void>.delayed(const Duration(milliseconds: 50)));
-                }
-                expect(find.byType(CanvasArea), findsOneWidget);
-                expect(tester.takeException(), isNull);
-              }
-
-              final out = Directory('build/canvas-angle-fixed-background')..createSync(recursive: true);
-              Future<void> capture(String name) async {
-                await tester.pump(const Duration(milliseconds: 100));
-                expect(tester.takeException(), isNull);
-                final boundary = boundaryKey.currentContext!.findRenderObject() as RenderRepaintBoundary;
-                final bytes = await tester.runAsync(() async {
-                  final image = await boundary.toImage(pixelRatio: 1);
-                  final data = await image.toByteData(format: ui.ImageByteFormat.png);
-                  image.dispose();
-                  return data!.buffer.asUint8List();
+                    .setMockMethodCallHandler(
+                      pathChannel,
+                      (call) async => tempDir.path,
+                    );
+                addTearDown(() {
+                  TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
+                      .setMockMethodCallHandler(pathChannel, null);
+                  if (tempDir.existsSync()) {
+                    tempDir.deleteSync(recursive: true);
+                  }
                 });
-                await tester.runAsync(() => File('${out.path}/$name.png').writeAsBytes(bytes!));
-              }
 
-              Offset center() => tester.getCenter(find.byType(CanvasArea));
+                tester.view.physicalSize = const Size(1080, 1920);
+                tester.view.devicePixelRatio = 2.5;
+                addTearDown(tester.view.resetPhysicalSize);
+                addTearDown(tester.view.resetDevicePixelRatio);
 
-              Future<void> pinchToMinScale() async {
-                final c = center();
-                final a = await tester.startGesture(c + const Offset(-160, 0), pointer: 11);
-                final b = await tester.startGesture(c + const Offset(160, 0), pointer: 12);
-                await tester.pump();
-                await a.moveTo(c + const Offset(-32, 0));
-                await b.moveTo(c + const Offset(32, 0));
-                await tester.pump();
-                await a.up(); await b.up(); await tester.pump();
-              }
+                await loadAppFonts(tester);
+                final providers = await tester.runAsync(buildAppProviders);
+                final boundaryKey = GlobalKey();
+                await tester.pumpWidget(
+                  RepaintBoundary(
+                    key: boundaryKey,
+                    child: MultiProvider(
+                      providers: providers!,
+                      child: const NiarimApp(),
+                    ),
+                  ),
+                );
+                await tester.pumpAndSettle();
 
-              Future<void> rotateExactly(double degrees) async {
-                final c = center();
-                const half = 70.0;
-                final anchor = c + const Offset(-half, 0);
-                final moverStart = c + const Offset(half, 0);
-                final a = await tester.startGesture(anchor, pointer: 21);
-                final b = await tester.startGesture(moverStart, pointer: 22);
-                await tester.pump();
-                final rad = degrees * math.pi / 180.0;
-                final target = anchor + Offset(math.cos(rad) * (half * 2), math.sin(rad) * (half * 2));
-                await b.moveTo(target);
-                await tester.pump();
-                await b.up(); await a.up(); await tester.pump();
-              }
+                final context = tester.element(find.byType(MaterialApp).first);
+                final ps = context.read<ProjectService>();
+                final normalProject = await tester.runAsync(
+                  () => ps.createProject(
+                    name: 'angle-normal-background-audit',
+                    fps: 12,
+                    durationSeconds: 1,
+                    backgroundColor: 0xFFFFFFFF,
+                    exportWidth: 640,
+                    exportHeight: 480,
+                    drawingAreaScale: 1.0,
+                  ),
+                );
+                final extendedProject = await tester.runAsync(
+                  () => ps.createProject(
+                    name: 'angle-extended-background-audit',
+                    fps: 12,
+                    durationSeconds: 1,
+                    backgroundColor: 0xFFFFFFFF,
+                    exportWidth: 640,
+                    exportHeight: 480,
+                    drawingAreaScale: 2.0,
+                  ),
+                );
+                expect(normalProject, isNotNull);
+                expect(extendedProject, isNotNull);
+                expect(normalProject!.hasExtendedDrawingArea, isFalse);
+                expect(extendedProject!.hasExtendedDrawingArea, isTrue);
 
-              Future<void> middleDrag(Offset delta) async {
-                final c = center();
-                final g = await tester.startGesture(c, pointer: 41, kind: PointerDeviceKind.mouse, buttons: kMiddleMouseButton);
-                await tester.pump();
-                await g.moveTo(c + delta);
-                await tester.pump();
-                await g.up(); await tester.pump();
-              }
+                final out = Directory('build/canvas-angle-background')
+                  ..createSync(recursive: true);
 
-              final cases = <(double, Offset, String)>[
-                (30, const Offset(5000, 5000), 'p030_right_bottom'),
-                (45, const Offset(-5000, -5000), 'p045_left_top'),
-                (60, const Offset(5000, -5000), 'p060_right_top'),
-                (90, const Offset(-5000, 5000), 'p090_left_bottom'),
-                (-30, const Offset(-5000, 5000), 'm030_left_bottom'),
-                (-45, const Offset(5000, -5000), 'm045_right_top'),
-                (-60, const Offset(-5000, -5000), 'm060_left_top'),
-                (-90, const Offset(5000, 5000), 'm090_right_bottom'),
-              ];
+                Future<void> openCanvas(String projectId) async {
+                  appRouter.go('/home');
+                  await tester.pump(const Duration(milliseconds: 120));
+                  appRouter.go('/canvas/$projectId');
+                  for (var i = 0; i < 10; i++) {
+                    await tester.pump(const Duration(milliseconds: 100));
+                    await tester.runAsync(
+                      () => Future<void>.delayed(
+                        const Duration(milliseconds: 50),
+                      ),
+                    );
+                  }
+                  expect(find.byType(CanvasArea), findsOneWidget);
+                  expect(tester.takeException(), isNull);
+                }
 
-              for (final item in cases) {
-                await openCanvas();
-                await pinchToMinScale();
-                await rotateExactly(item.$1);
-                await middleDrag(item.$2);
-                await capture(item.$3);
-              }
-              expect(out.listSync().whereType<File>().length, 8);
-            });
+                Future<void> capture(String name) async {
+                  await tester.pump(const Duration(milliseconds: 120));
+                  expect(tester.takeException(), isNull);
+                  final boundary = boundaryKey.currentContext!.findRenderObject()
+                      as RenderRepaintBoundary;
+                  final bytes = await tester.runAsync(() async {
+                    final image = await boundary.toImage(pixelRatio: 1);
+                    final data = await image.toByteData(
+                      format: ui.ImageByteFormat.png,
+                    );
+                    image.dispose();
+                    return data!.buffer.asUint8List();
+                  });
+                  await tester.runAsync(
+                    () => File('${out.path}/$name.png').writeAsBytes(bytes!),
+                  );
+                }
+
+                Offset center() => tester.getCenter(find.byType(CanvasArea));
+
+                Future<void> pinchToMinScale() async {
+                  final c = center();
+                  final a = await tester.startGesture(
+                    c + const Offset(-160, 0),
+                    pointer: 11,
+                  );
+                  final b = await tester.startGesture(
+                    c + const Offset(160, 0),
+                    pointer: 12,
+                  );
+                  await tester.pump();
+                  await a.moveTo(c + const Offset(-32, 0));
+                  await b.moveTo(c + const Offset(32, 0));
+                  await tester.pump();
+                  await a.up();
+                  await b.up();
+                  await tester.pump();
+                }
+
+                // NIARIMの実装に合わせ、片方の指を固定アンカーにして
+                // もう片方だけを指定角度へ動かす。両指を対称移動すると
+                // 逐次角度差が相殺されるため、監査入力としては使わない。
+                Future<void> rotateExactly(double degrees) async {
+                  final c = center();
+                  const half = 70.0;
+                  final anchor = c + const Offset(-half, 0);
+                  final moverStart = c + const Offset(half, 0);
+                  final a = await tester.startGesture(anchor, pointer: 21);
+                  final b = await tester.startGesture(moverStart, pointer: 22);
+                  await tester.pump();
+                  final rad = degrees * math.pi / 180.0;
+                  final target = anchor +
+                      Offset(
+                        math.cos(rad) * (half * 2),
+                        math.sin(rad) * (half * 2),
+                      );
+                  await b.moveTo(target);
+                  await tester.pump();
+                  await b.up();
+                  await a.up();
+                  await tester.pump();
+                }
+
+                Future<void> middleDrag(Offset delta) async {
+                  final c = center();
+                  final g = await tester.startGesture(
+                    c,
+                    pointer: 41,
+                    kind: PointerDeviceKind.mouse,
+                    buttons: kMiddleMouseButton,
+                  );
+                  await tester.pump();
+                  await g.moveTo(c + delta);
+                  await tester.pump();
+                  await g.up();
+                  await tester.pump();
+                }
+
+                final cases = <(double, Offset, String)>[
+                  (30, const Offset(5000, 5000), 'p030_right_bottom'),
+                  (45, const Offset(-5000, -5000), 'p045_left_top'),
+                  (60, const Offset(5000, -5000), 'p060_right_top'),
+                  (90, const Offset(-5000, 5000), 'p090_left_bottom'),
+                  (-30, const Offset(-5000, 5000), 'm030_left_bottom'),
+                  (-45, const Offset(5000, -5000), 'm045_right_top'),
+                  (-60, const Offset(-5000, -5000), 'm060_left_top'),
+                  (-90, const Offset(5000, 5000), 'm090_right_bottom'),
+                ];
+
+                for (final scenario in <(String, String)>[
+                  ('normal', normalProject.id),
+                  ('extended', extendedProject.id),
+                ]) {
+                  for (final item in cases) {
+                    await openCanvas(scenario.$2);
+                    await pinchToMinScale();
+                    await rotateExactly(item.$1);
+                    await middleDrag(item.$2);
+                    await capture('${scenario.$1}_${item.$3}');
+                  }
+                }
+
+                final files = out.listSync().whereType<File>().toList();
+                expect(files.length, 16);
+              },
+            );
           }
           DART
-          dart format test/canvas_angle_fixed_background_visual_test.dart
-      - name: Run angled fixed-background audit
-        run: flutter test test/canvas_angle_fixed_background_visual_test.dart --reporter expanded
-      - name: Verify capture diversity
+          dart format test/canvas_angle_background_visual_test.dart
+      - name: Run angled normal/extended background audit
+        run: flutter test test/canvas_angle_background_visual_test.dart --reporter expanded
+      - name: Verify capture diversity and count
         run: |
           python3 - <<'PY'
           from pathlib import Path
           import hashlib
-          files = sorted(Path('build/canvas-angle-fixed-background').glob('*.png'))
-          assert len(files) == 8, len(files)
+          files = sorted(Path('build/canvas-angle-background').glob('*.png'))
+          assert len(files) == 16, len(files)
           hashes = [hashlib.sha256(f.read_bytes()).hexdigest() for f in files]
           for f,h in zip(files,hashes): print(f.name,h)
-          assert len(set(hashes)) == 8, f'unique={len(set(hashes))}'
+          # 各角度・方向が実際に異なる状態になっていることを最低条件にする。
+          assert len(set(hashes)) >= 14, f'unique={len(set(hashes))}'
+          assert len(list(Path('build/canvas-angle-background').glob('normal_*.png'))) == 8
+          assert len(list(Path('build/canvas-angle-background').glob('extended_*.png'))) == 8
           PY
       - name: Upload captures
         uses: actions/upload-artifact@v4
         with:
-          name: canvas-angle-fixed-background-audit
-          path: build/canvas-angle-fixed-background/*.png
+          name: canvas-angle-normal-extended-background-audit
+          path: build/canvas-angle-background/*.png
           if-no-files-found: error
