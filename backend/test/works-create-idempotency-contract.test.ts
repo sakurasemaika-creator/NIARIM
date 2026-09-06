@@ -42,4 +42,10 @@ describe("work registration idempotency contract", () => {
     expect(source).toContain("if (visible && !hasPublicIndexes)");
     expect(source).toContain("else if (!visible)");
   });
+
+  it("applies the recent-upload check only to first registration", () => {
+    expect(source).toContain("if (existing) {");
+    expect(source).toContain("snippet.channelId !== user.youtubeChannelId");
+    expect(source).toContain("} else {\n      const verification = verifyVideoOwnership");
+  });
 });
