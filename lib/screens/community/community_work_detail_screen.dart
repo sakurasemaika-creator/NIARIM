@@ -223,6 +223,7 @@ class _CommunityWorkDetailScreenState extends State<CommunityWorkDetailScreen> {
     final isBookmarked = communityService.isBookmarked(work.id);
     final isAuthorSelf = work.authorId == kDummySelfAuthorId;
     final isReposted = communityService.isRepostedBySelf(work.id);
+    final canAddTag = work.tags.length < CommunityService.maxTagsPerWork;
     final maxPreviewHeight = (MediaQuery.sizeOf(context).height * 0.55).clamp(
       _minPreviewHeight,
       500.0,
@@ -439,8 +440,9 @@ class _CommunityWorkDetailScreenState extends State<CommunityWorkDetailScreen> {
                   ActionChip(
                     avatar: const Icon(Icons.add, size: 16),
                     label: Text(l10n.communityAddTagButton),
-                    onPressed: () =>
-                        _showAddTagDialog(communityService, work.id),
+                    onPressed: canAddTag
+                        ? () => _showAddTagDialog(communityService, work.id)
+                        : null,
                   ),
                 ],
               ),
