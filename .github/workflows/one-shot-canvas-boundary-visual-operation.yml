@@ -1,5 +1,6 @@
 name: One-shot Canvas Boundary Visual Operation
 
+# trigger: real-operation capture audit
 on:
   push:
     branches: [dev_branch]
@@ -172,26 +173,19 @@ jobs:
               }
 
               await capture('00_initial');
-
               await pinchToMinScale();
               await capture('01_min_scale_center');
-
               await rotateAtMinScale();
               await capture('02_min_scale_rotated');
-
               await middleDrag(const Offset(5000, 0), 41);
               await capture('03_min_scale_drag_far_right');
-
               await middleDrag(const Offset(-10000, -10000), 42);
               await capture('04_min_scale_drag_far_left_top');
-
               await middleDrag(const Offset(5000, 10000), 43);
               await capture('05_min_scale_drag_far_right_bottom');
-
               await zoomIn();
               await middleDrag(const Offset(10000, 10000), 44);
               await capture('06_zoomed_drag_far_right_bottom');
-
               await middleDrag(const Offset(-20000, -20000), 45);
               await capture('07_zoomed_drag_far_left_top');
 
