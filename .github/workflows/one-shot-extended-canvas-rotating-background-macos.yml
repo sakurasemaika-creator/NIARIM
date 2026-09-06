@@ -1,0 +1,125 @@
+name: One-shot Extended Canvas Rotating Background macOS
+
+on:
+  push:
+    branches: [dev_branch]
+    paths:
+      - '.github/workflows/one-shot-extended-canvas-rotating-background-macos.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  implement-and-verify:
+    runs-on: macos-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: dev_branch
+          fetch-depth: 0
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+      - run: flutter pub get
+      - name: Implement extended rotating backdrop
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          p = Path('lib/screens/canvas/widgets/canvas_area.dart')
+          s = p.read_text()
+          anchor = 'const double kCanvasMaxScale = 10.0;\n'
+          insert = '''const double kCanvasMaxScale = 10.0;\n\n/// 拡張描画範囲ON時にキャンバスと一緒に変形させる背面背景の矩形。\n/// 最小倍率[kCanvasMinScale]かつ斜め回転・境界パンでも外周が見えないよう、\n/// ビューポート長辺を基準に十分なオーバースキャンを持たせる。\nRect extendedCanvasBackdropRectFor(Size viewportSize) {\n  final longest = math.max(viewportSize.width, viewportSize.height);\n  if (longest <= 0 || !longest.isFinite) return Rect.zero;\n  final halfExtent = longest * 4.0 / kCanvasMinScale;\n  return Rect.fromCenter(\n    center: Offset(viewportSize.width / 2, viewportSize.height / 2),\n    width: halfExtent * 2,\n    height: halfExtent * 2,\n  );\n}\n'''
+          if 'Rect extendedCanvasBackdropRectFor(Size viewportSize)' not in s:
+              if anchor not in s:
+                  raise SystemExit('scale anchor not found')
+              s = s.replace(anchor, insert, 1)
+
+          old = '''    // 「枠外」の塗りつぶしは、この描画全体を包む親側（canvas_screen.dart）が\n    // 固定背景（kCanvasOutsideColor）として1枚だけ敷いている。ここで\n    // 重ねて塗ると背景が二重になり、ピンチズームでキャンバス内容ごと\n    // 縮小されるこの塗りの方だけが一緒に縮んで見た目がちぐはぐになるため、\n    // ここでは描画内容（drawingRect）だけを塗り、枠外は透明のままにして\n    // 親の固定背景をそのまま透過させる。\n    _paintBackground(canvas, drawingRect);\n'''
+          new = '''    // 通常モードでは親側(canvas_screen.dart)の固定背景だけを使い、\n    // キャンバスを回転しても背面背景は画面へ固定する。拡張描画範囲ON時だけ、\n    // 背面背景もこのCustomPaint内へ描くことでキャンバスと同じTransformへ乗せる。\n    // 巨大なオーバースキャン面なので最小20%＋斜め回転でも背景の果ては見えない。\n    if (project?.hasExtendedDrawingArea ?? false) {\n      canvas.drawRect(\n        extendedCanvasBackdropRectFor(size),\n        Paint()..color = kCanvasOutsideColor,\n      );\n    }\n    _paintBackground(canvas, drawingRect);\n'''
+          if old in s:
+              s = s.replace(old, new, 1)
+          elif 'extendedCanvasBackdropRectFor(size)' not in s:
+              raise SystemExit('paint anchor not found')
+          p.write_text(s)
+          PY
+
+          cat > test/canvas_extended_background_transform_test.dart <<'DART'
+          import 'dart:math' as math;
+          import 'package:flutter/material.dart';
+          import 'package:flutter_test/flutter_test.dart';
+          import 'package:niarim/screens/canvas/widgets/canvas_area.dart';
+
+          void main() {
+            test('拡張背景は1/5かつ複数斜め角度・境界パンでもviewportを覆う', () {
+              const viewport = Size(1080, 1920);
+              final backdrop = extendedCanvasBackdropRectFor(viewport);
+              final center = viewport.center(Offset.zero);
+              final viewportCorners = <Offset>[
+                Offset.zero,
+                const Offset(1080, 0),
+                const Offset(0, 1920),
+                const Offset(1080, 1920),
+              ];
+              for (final degrees in <double>[0, 30, 45, 60, 90, -30, -45, -60, -90, 135]) {
+                final rad = degrees * math.pi / 180;
+                final base = Matrix4.identity()
+                  ..translateByDouble(center.dx, center.dy, 0, 1)
+                  ..rotateZ(rad)
+                  ..scaleByDouble(kCanvasMinScale, kCanvasMinScale, 1, 1)
+                  ..translateByDouble(-center.dx, -center.dy, 0, 1);
+                for (final delta in <Offset>[
+                  Offset.zero,
+                  const Offset(1920, 0),
+                  const Offset(-1920, 0),
+                  const Offset(0, 1920),
+                  const Offset(0, -1920),
+                  const Offset(1920, 1920),
+                  const Offset(-1920, -1920),
+                ]) {
+                  final candidate = (Matrix4.identity()..translateByDouble(delta.dx, delta.dy, 0, 1)) * base;
+                  final inverse = Matrix4.copy(candidate)..invert();
+                  for (final corner in viewportCorners) {
+                    final local = MatrixUtils.transformPoint(inverse, corner);
+                    expect(backdrop.contains(local), isTrue, reason: '$degrees° $delta $corner -> $local');
+                  }
+                }
+              }
+            });
+
+            test('パン境界は巨大背景ではなくdrawingRect基準のまま', () {
+              const viewport = Size(1080, 1920);
+              const drawing = Rect.fromLTWH(0, 555, 1080, 810);
+              final candidate = Matrix4.identity()..translateByDouble(100000, 100000, 0, 1);
+              final constrained = constrainCanvasViewTransform(viewport, drawing, candidate);
+              final bounds = MatrixUtils.transformRect(constrained, drawing);
+              expect(bounds.right, lessThanOrEqualTo(viewport.width));
+              expect(bounds.bottom, lessThanOrEqualTo(viewport.height));
+            });
+          }
+          DART
+          dart format lib/screens/canvas/widgets/canvas_area.dart test/canvas_extended_background_transform_test.dart
+      - name: Static analysis
+        run: flutter analyze
+      - name: Extended background regression
+        run: flutter test test/canvas_extended_background_transform_test.dart --reporter expanded
+      - name: Existing canvas boundary regressions
+        run: |
+          set -e
+          for f in test/*canvas*bound*.dart test/*canvas*view*transform*.dart test/*canvas*drawing*rect*.dart; do
+            [ -f "$f" ] || continue
+            echo "Running $f"
+            flutter test "$f" --reporter expanded
+          done
+      - name: Commit implementation
+        run: |
+          git config user.name "NIARIM Audit Bot"
+          git config user.email "actions@users.noreply.github.com"
+          git add lib/screens/canvas/widgets/canvas_area.dart test/canvas_extended_background_transform_test.dart
+          if git diff --cached --quiet; then
+            echo "No implementation changes"
+          else
+            git commit -m "fix: rotate extended canvas background with canvas"
+            git push origin HEAD:dev_branch
+          fi
