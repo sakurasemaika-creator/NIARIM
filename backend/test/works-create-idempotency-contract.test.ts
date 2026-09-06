@@ -34,7 +34,9 @@ describe("work registration idempotency contract", () => {
     const duplicateReturn = source.indexOf(
       "return created({ work: toPublicWork(existing) })",
     );
-    const ownershipCheck = source.indexOf("verifyVideoOwnership");
+    const ownershipCheck = source.indexOf(
+      "const verification = verifyVideoOwnership(",
+    );
     expect(ownershipCheck).toBeGreaterThan(duplicateReturn);
   });
 
