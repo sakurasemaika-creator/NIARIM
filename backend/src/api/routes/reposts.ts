@@ -4,8 +4,16 @@ import { TransactionCanceledException } from "@aws-sdk/client-dynamodb";
 import { ddb, tableName, Keys } from "../../lib/dynamo";
 import { authenticate } from "../../lib/auth";
 import { notFound, ok } from "../../lib/response";
-import type { RepostItem } from "../../lib/types";
+import type { RepostItem, WorkItem } from "../../lib/types";
 import { TABLE_ITEM_TYPE } from "../../lib/types";
+
+function isWorkPublic(work: WorkItem): boolean {
+  return (
+    work.isNiarimPublished &&
+    work.youtubePrivacyStatus !== "private" &&
+    work.youtubePrivacyStatus !== "deleted"
+  );
+}
 
 /**
  * `POST /works/{id}/repost`（8.5bis節）。ブックマークと同じ
@@ -14,6 +22,8 @@ import { TABLE_ITEM_TYPE } from "../../lib/types";
  *
  * 自分自身が投稿した作品もリポスト可能（Task#134継続の仕様変更。
  * フォロワーへ改めて周知する用途を想定し、投稿者本人にも制限しない）。
+ * ただし作品が非公開になった後の新規リポストは許可しない。公開中に
+ * 作成済みだったリポストは、非公開後でも本人が解除できる。
  */
 export async function toggleRepost(
   event: APIGatewayProxyEventV2,
@@ -29,9 +39,13 @@ export async function toggleRepost(
     ddb.send(new GetCommand({ TableName: tableName(), Key: repostKey })),
     ddb.send(new GetCommand({ TableName: tableName(), Key: workKey })),
   ]);
-  if (!existingWork.Item) notFound("作品が見つかりません");
+  const work = existingWork.Item as WorkItem | undefined;
+  if (!work) notFound("作品が見つかりません");
 
   const isReposted = Boolean(existingRepost.Item);
+  if (!isWorkPublic(work) && !isReposted) {
+    notFound("作品が見つかりません");
+  }
   const now = new Date().toISOString();
 
   try {
