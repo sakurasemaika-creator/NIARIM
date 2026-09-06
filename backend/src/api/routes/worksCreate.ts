@@ -50,13 +50,29 @@ export async function createWork(event: APIGatewayProxyEventV2) {
 
   // workId = youtubeVideoId は冪等キー。同じ作者が同じ動画を再登録した場合は
   // 新規投稿として数えない。別作者の動画を上書きすることも許可しない。
+  // 削除済みworkIdはWORK_TOMBSTONEが同じ主キーを占有し続ける。関連する
+  // ブックマーク/リポスト記録を将来の再登録作品へ再接続させないため、墓標は
+  // 誰からの再登録でも復活させない。
   const existingResult = await ddb.send(
     new GetCommand({
       TableName: tableName(),
       Key: Keys.work(body.youtubeVideoId),
     }),
   );
-  const existing = existingResult.Item as WorkWithProjectMetadata | undefined;
+  const existingRaw = existingResult.Item;
+  if (existingRaw?.itemType === "WORK_TOMBSTONE") {
+    conflict(
+      "この動画はNIARIMから削除済みのため再登録できません",
+      "WORK_DELETED",
+    );
+  }
+  if (existingRaw && existingRaw.itemType !== TABLE_ITEM_TYPE.Work) {
+    conflict(
+      "この動画IDは既に別のデータで使用されています",
+      "VIDEO_REGISTRATION_CONFLICT",
+    );
+  }
+  const existing = existingRaw as WorkWithProjectMetadata | undefined;
   if (existing && existing.authorId !== auth.niarimUserId) {
     conflict(
       "この動画は既に別のユーザーによってNIARIMへ登録されています",
