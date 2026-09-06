@@ -1,6 +1,6 @@
 name: One-shot Canvas Boundary Visual Operation Final2
 
-# trigger: robust independent scenarios
+# trigger: asymmetric marker for zoomed edge visual audit
 on:
   push:
     branches: [dev_branch]
@@ -45,6 +45,23 @@ jobs:
                 expect(find.byType(CanvasArea), findsOneWidget);
               }
 
+              Future<void> drawAsymmetricMarker(int pointer) async {
+                final c = canvasCenter();
+                final g = await tester.startGesture(
+                  c + const Offset(-105, -55),
+                  pointer: pointer,
+                );
+                await tester.pump();
+                await g.moveTo(c + const Offset(20, -10));
+                await tester.pump();
+                await g.moveTo(c + const Offset(85, 45));
+                await tester.pump();
+                await g.up();
+                for (var i = 0; i < 4; i++) {
+                  await tester.pump(const Duration(milliseconds: 80));
+                }
+              }
+
               await capture('00_initial');
 
               await resetCanvas();
@@ -75,11 +92,13 @@ jobs:
               await capture('05_min_scale_drag_far_right_bottom');
 
               await resetCanvas();
+              await drawAsymmetricMarker(91);
               await zoomIn();
               await middleDrag(const Offset(5000, 5000), 41);
               await capture('06_zoomed_drag_far_right_bottom');
 
               await resetCanvas();
+              await drawAsymmetricMarker(92);
               await zoomIn();
               await middleDrag(const Offset(-5000, -5000), 41);
               await capture('07_zoomed_drag_far_left_top');
@@ -102,7 +121,7 @@ jobs:
           assert len(files) == 8, len(files)
           hashes = [hashlib.sha256(f.read_bytes()).hexdigest() for f in files]
           for f,h in zip(files,hashes): print(f.name,h)
-          assert len(set(hashes)) >= 6, f'only {len(set(hashes))} unique captures'
+          assert len(set(hashes)) == 8, f'expected 8 unique captures, got {len(set(hashes))}'
           PY
       - name: Upload captures
         if: always()
