@@ -3,10 +3,10 @@ import 'niarim_api_models.dart';
 
 enum RankingPeriod {
   all('all'),
-  year('year'),
-  month('month'),
-  week('week'),
-  day('day'),
+  year('yearly'),
+  month('monthly'),
+  week('weekly'),
+  day('daily'),
   bookmarks('bookmarks');
 
   const RankingPeriod(this.pathValue);
@@ -93,10 +93,15 @@ class CommunityApi {
         .toList();
   }
 
-  /// YouTube動画を作品広場へ登録する。
+  /// YouTubeへのアップロード成功時にYouTubeから返されたvideoIdを、
+  /// NIARIM作品のworkId（冪等キー）として登録する。
   ///
-  /// project* はNIARIM投稿元プロジェクト由来の独自制作情報。既存クライアント
-  /// との互換性のためすべてoptionalで、値がある場合だけ送信する。
+  /// 同じvideoIdでこのメソッドを再送するのは、通信タイムアウト等で初回の
+  /// 登録成否を確認できなかった場合のリトライだけ。公開/非公開切り替えや
+  /// タイトル変更には使わず、下のPATCH系メソッドを使う。
+  ///
+  /// project* はNIARIM投稿元プロジェクト由来の独自制作情報。値がある場合
+  /// だけ送信し、新規登録時の作品メタデータとして保持する。
   Future<ApiWork> createWork({
     required String youtubeVideoId,
     required String youtubeAccessToken,
