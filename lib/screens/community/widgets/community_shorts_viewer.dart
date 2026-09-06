@@ -1,11 +1,14 @@
-import 'package:niarim/services/theme_service.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:niarim/services/theme_service.dart';
+
 import '../../../l10n/app_localizations.dart';
 import '../../../models/community_work.dart';
 import '../../../router.dart';
 import '../../../services/community_service.dart';
+import '../../../widgets/ad_banner_mock_widget.dart';
+import '../community_author_works_screen.dart';
 import 'community_work_card.dart' show communityThumbnailGradient;
 
 enum CommunityShortsEndBehavior { loopCurrent, autoAdvance }
@@ -15,7 +18,13 @@ enum CommunityShortsEndBehavior { loopCurrent, autoAdvance }
 class CommunityShortsScreen extends StatefulWidget {
   final List<CommunityWork> works;
   final int initialIndex;
+
+  /// 呼び出し側との互換性のため残す初期スナップショット。
+  /// 表示中のブックマーク状態はCommunityServiceをwatchして取得する。
   final Set<String> bookmarkedIds;
+
+  /// 呼び出し側との互換性のため残す。現在の縦画面内操作は
+  /// CommunityService.toggleBookmark()を直接呼ぶ。
   final void Function(CommunityWork work) onToggleBookmark;
 
   const CommunityShortsScreen({
@@ -65,6 +74,7 @@ class _CommunityShortsScreenState extends State<CommunityShortsScreen> {
     await prefs.setString(_endBehaviorPreferenceKey, value.name);
   }
 
+  /// 実プレーヤー接続時に現在ページのonEndedから呼ぶ。
   void _handlePlaybackEnded(int pageIndex, {VoidCallback? onLoopCurrent}) {
     if (!mounted || pageIndex != _currentIndex || widget.works.isEmpty) return;
 
@@ -105,6 +115,7 @@ class _CommunityShortsScreenState extends State<CommunityShortsScreen> {
     final l10n = AppLocalizations.of(context)!;
     final scheme = Theme.of(context).colorScheme;
     final communityService = context.watch<CommunityService>();
+
     return Scaffold(
       backgroundColor: scheme.surface,
       body: Stack(
@@ -221,6 +232,17 @@ class _ShortsPage extends StatelessWidget {
     return '${date.year}/$month/$day';
   }
 
+  void _openAuthorWorks(BuildContext context) {
+    Navigator.of(context).push(
+      adMockMaterialPageRoute(
+        builder: (_) => CommunityAuthorWorksScreen(
+          authorId: work.authorId,
+          authorName: work.authorName,
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
@@ -285,43 +307,57 @@ class _ShortsPage extends StatelessWidget {
                 children: [
                   Row(
                     children: [
-                      CircleAvatar(
-                        radius: 15,
-                        backgroundColor: scheme.primaryContainer,
-                        child: Text(
-                          work.authorName.substring(0, 1),
-                          style: TextStyle(
-                            color: scheme.onPrimaryContainer,
-                            fontSize: 12,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                      ),
-                      const SizedBox(width: 8),
                       Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              work.authorName,
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                              style: TextStyle(
-                                color: scheme.primary,
-                                fontSize: 13,
-                                fontWeight: FontWeight.bold,
-                              ),
+                        child: InkWell(
+                          borderRadius: BorderRadius.circular(10),
+                          onTap: () => _openAuthorWorks(context),
+                          child: Padding(
+                            padding: const EdgeInsets.symmetric(vertical: 2),
+                            child: Row(
+                              children: [
+                                CircleAvatar(
+                                  radius: 15,
+                                  backgroundColor: scheme.primaryContainer,
+                                  child: Text(
+                                    work.authorName.substring(0, 1),
+                                    style: TextStyle(
+                                      color: scheme.onPrimaryContainer,
+                                      fontSize: 12,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                ),
+                                const SizedBox(width: 8),
+                                Expanded(
+                                  child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        work.authorName,
+                                        maxLines: 1,
+                                        overflow: TextOverflow.ellipsis,
+                                        style: TextStyle(
+                                          color: scheme.primary,
+                                          fontSize: 13,
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                      ),
+                                      Text(
+                                        work.title,
+                                        maxLines: 1,
+                                        overflow: TextOverflow.ellipsis,
+                                        style: const TextStyle(
+                                          fontSize: 15,
+                                          fontWeight: FontWeight.w600,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ],
                             ),
-                            Text(
-                              work.title,
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                              style: const TextStyle(
-                                fontSize: 15,
-                                fontWeight: FontWeight.w600,
-                              ),
-                            ),
-                          ],
+                          ),
                         ),
                       ),
                       IconButton(
@@ -371,10 +407,11 @@ class _ShortsPage extends StatelessWidget {
                     runSpacing: 5,
                     crossAxisAlignment: WrapCrossAlignment.center,
                     children: [
-                      _InfoItem(
-                        icon: Icons.schedule_rounded,
-                        text: _formatDuration(work.durationSeconds),
-                      ),
+                      if (work.durationSeconds > 0)
+                        _InfoItem(
+                          icon: Icons.schedule_rounded,
+                          text: _formatDuration(work.durationSeconds),
+                        ),
                       if (work.projectFrameCount > 0)
                         _InfoItem(
                           icon: Icons.movie_outlined,
