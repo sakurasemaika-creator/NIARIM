@@ -1,11 +1,9 @@
 import { readFileSync } from "node:fs";
-import { fileURLToPath } from "node:url";
-import { dirname, resolve } from "node:path";
+import { resolve } from "node:path";
 import { describe, expect, it } from "vitest";
 
-const here = dirname(fileURLToPath(import.meta.url));
 const source = readFileSync(
-  resolve(here, "../src/api/routes/tags.ts"),
+  resolve(__dirname, "../src/api/routes/tags.ts"),
   "utf8",
 );
 
