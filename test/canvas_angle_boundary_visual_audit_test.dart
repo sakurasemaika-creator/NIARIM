@@ -181,10 +181,18 @@ void main() {
 
       final sign = testCase.degrees < 0 ? 'm' : 'p';
       final angle = testCase.degrees.abs().toString().padLeft(2, '0');
+      final safeColor = Theme.of(
+        rootKey.currentContext!,
+      ).colorScheme.surfaceContainerHighest;
       await tester.runAsync(
-        () => _capture(
+        () => _captureAndAssertSafety(
           rootKey,
           '${out.path}/${mode}_${sign}${angle}.png',
+          matrix: matrix,
+          viewport: const Size(420, 520),
+          project: p,
+          safeColor: safeColor,
+          reason: '$mode ${testCase.degrees}°',
         ),
       );
     }
@@ -262,10 +270,96 @@ void _expectDrawingBoundsConstrained({
   }
 }
 
-Future<void> _capture(GlobalKey key, String path) async {
+Future<void> _captureAndAssertSafety(
+  GlobalKey key,
+  String path, {
+  required Matrix4 matrix,
+  required Size viewport,
+  required dynamic project,
+  required Color safeColor,
+  required String reason,
+}) async {
   final boundary = key.currentContext!.findRenderObject()! as RenderRepaintBoundary;
   final image = await boundary.toImage(pixelRatio: 1);
-  final data = await image.toByteData(format: ui.ImageByteFormat.png);
-  await File(path).writeAsBytes(data!.buffer.asUint8List(), flush: true);
+  final png = await image.toByteData(format: ui.ImageByteFormat.png);
+  final rgba = await image.toByteData(format: ui.ImageByteFormat.rawRgba);
+  expect(png, isNotNull, reason: '$reason PNG');
+  expect(rgba, isNotNull, reason: '$reason RGBA');
+
+  final bytes = rgba!.buffer.asUint8List();
+  final width = image.width;
+  final height = image.height;
+  expect(width, viewport.width.round(), reason: '$reason capture width');
+  expect(height, viewport.height.round(), reason: '$reason capture height');
+
+  // 画面サンプル点をTransformの逆行列でCanvasAreaローカルへ戻し、描画矩形
+  // から十分離れている点だけを安全背景として検査する。斜め回転の外接矩形内に
+  // ある「三角形の余白」も対象になるので、単なる四隅チェックより強い。
+  final inverse = Matrix4.copy(matrix);
+  expect(inverse.invert(), isNot(0), reason: '$reason invertible transform');
+  final drawing = canvasDrawingRectFor(viewport, project);
+  final safeOutside = drawing.inflate(20);
+  var sampledSafePixels = 0;
+  for (var y = 5; y < height; y += 15) {
+    for (var x = 5; x < width; x += 15) {
+      final local = MatrixUtils.transformPoint(
+        inverse,
+        Offset(x.toDouble(), y.toDouble()),
+      );
+      if (safeOutside.contains(local)) continue;
+      sampledSafePixels++;
+      _expectPixelNearColor(
+        bytes,
+        width,
+        x,
+        y,
+        safeColor,
+        reason: '$reason safe background @($x,$y)',
+      );
+    }
+  }
+  expect(
+    sampledSafePixels,
+    greaterThan(100),
+    reason: '$reason: 十分な数の描画領域外ピクセルを実画像で検査すること',
+  );
+
+  // 描画矩形の中心はTransform後も必ずキャンバスの内部。テストプロジェクトは
+  // 白背景なので、ここが白であることも確認し、「全画面が安全背景だっただけ」
+  // という偽陽性を防ぐ。
+  final transformedCenter = MatrixUtils.transformPoint(matrix, drawing.center);
+  final cx = transformedCenter.dx.round().clamp(0, width - 1);
+  final cy = transformedCenter.dy.round().clamp(0, height - 1);
+  _expectPixelNearColor(
+    bytes,
+    width,
+    cx,
+    cy,
+    const Color(0xFFFFFFFF),
+    tolerance: 8,
+    reason: '$reason canvas center',
+  );
+
+  await File(path).writeAsBytes(png!.buffer.asUint8List(), flush: true);
   image.dispose();
+}
+
+void _expectPixelNearColor(
+  Uint8List bytes,
+  int width,
+  int x,
+  int y,
+  Color expected, {
+  int tolerance = 2,
+  required String reason,
+}) {
+  final i = (y * width + x) * 4;
+  final expectedR = (expected.r * 255).round();
+  final expectedG = (expected.g * 255).round();
+  final expectedB = (expected.b * 255).round();
+  final expectedA = (expected.a * 255).round();
+  expect((bytes[i] - expectedR).abs(), lessThanOrEqualTo(tolerance), reason: '$reason R');
+  expect((bytes[i + 1] - expectedG).abs(), lessThanOrEqualTo(tolerance), reason: '$reason G');
+  expect((bytes[i + 2] - expectedB).abs(), lessThanOrEqualTo(tolerance), reason: '$reason B');
+  expect((bytes[i + 3] - expectedA).abs(), lessThanOrEqualTo(tolerance), reason: '$reason A');
 }
