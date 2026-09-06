@@ -1,5 +1,6 @@
 name: One-shot Canvas Angle Boundary Audit
 
+# retry trigger: corrected one-finger-anchor rotation input
 on:
   push:
     branches: [dev_branch]
