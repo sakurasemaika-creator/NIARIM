@@ -13,26 +13,21 @@ import { badRequest, conflict, created, forbidden } from "../../lib/response";
 import { parseJsonObject } from "../../lib/request";
 import type { WorkItem } from "../../lib/types";
 import { TABLE_ITEM_TYPE } from "../../lib/types";
+import type { WorkWithProjectMetadata } from "../../lib/workProjectMetadata";
 import { toPublicWork } from "./_publicWork";
 
 interface CreateWorkRequestBody {
   youtubeVideoId: string;
-  youtubeAccessToken: string; // クライアントが保持するYouTube OAuthアクセストークン（6章）
-  isShort: boolean; // 8.9節：投稿元プロジェクトのキャンバス縦横比から判定した結果
+  youtubeAccessToken: string;
+  isShort: boolean;
+  projectFps?: number;
+  projectFrameCount?: number;
+  projectWorkSeconds?: number;
+  projectCreatedAt?: string;
+  projectCanvasWidth?: number;
+  projectCanvasHeight?: number;
 }
 
-/**
- * `POST /works`（6章・12章・17章）。
- *
- * ① Google認証 → ② 連携済みチャンネルID確認 → ③④⑤ 投稿枠の原子的予約
- * （quota.ts） → ⑥ videoId所有者検証（videos.list） → ⑦ 冪等登録
- * （youtubeVideoId=workIdをキーにPutItemで作成/更新）という12.2節の
- * 手順どおりに実装する。
- *
- * 動画本体のアップロード自体（`videos.insert`）はこのLambdaを経由せず
- * クライアントがYouTubeへ直接行う（6章）。ここではアップロード
- * 完了後の登録依頼のみを扱う。
- */
 export async function createWork(event: APIGatewayProxyEventV2) {
   const auth = await authenticate(
     event.headers["authorization"] ?? event.headers["Authorization"],
@@ -47,11 +42,9 @@ export async function createWork(event: APIGatewayProxyEventV2) {
     );
   }
 
-  // ③④⑤ 投稿枠の原子的な予約（未満の場合のみ枠を確保。上限超過は409）。
   await reservePostQuota(auth.niarimUserId, user.membershipTier);
 
   try {
-    // ⑥ videoId所有者検証（クライアントの自己申告を信用しない、6章）。
     const snippet = await getVideoSnippet(
       body.youtubeVideoId,
       body.youtubeAccessToken,
@@ -64,7 +57,6 @@ export async function createWork(event: APIGatewayProxyEventV2) {
       forbidden(verification.reason);
     }
 
-    // 23.2節：投稿時にチャンネル情報を再取得しキャッシュを最新化する。
     const channelInfo = await getOwnChannelInfo(body.youtubeAccessToken);
     if (channelInfo) {
       await cacheChannelInfo(auth.niarimUserId, {
@@ -74,18 +66,15 @@ export async function createWork(event: APIGatewayProxyEventV2) {
       });
     }
 
-    // ⑦ 冪等登録（17章）：youtubeVideoId = workId をキーにPutItemする
-    // ため、通信エラー等でクライアントが同じリクエストを再試行しても
-    // 二重登録にならない。
     const now = new Date().toISOString();
-    const isVisible = true; // 新規投稿は既定でNIARIM側も公開（13章）
+    const isVisible = true;
     const rankingScore = computeRankingScore({
       viewCount: 0,
       likeCount: 0,
       commentCount: 0,
     });
 
-    const work: WorkItem = {
+    const work: WorkWithProjectMetadata = {
       itemType: TABLE_ITEM_TYPE.Work,
       ...Keys.work(body.youtubeVideoId),
       workId: body.youtubeVideoId,
@@ -114,6 +103,12 @@ export async function createWork(event: APIGatewayProxyEventV2) {
       tags: [],
       lockedTags: [],
       createdAt: now,
+      projectFps: body.projectFps,
+      projectFrameCount: body.projectFrameCount,
+      projectWorkSeconds: body.projectWorkSeconds,
+      projectCreatedAt: body.projectCreatedAt,
+      projectCanvasWidth: body.projectCanvasWidth,
+      projectCanvasHeight: body.projectCanvasHeight,
       gsi1pk: isVisible ? "RANKING#ALL" : undefined,
       gsi1sk: isVisible ? rankingScore : undefined,
       gsi2pk: isVisible ? "BOOKMARK_RANKING" : undefined,
@@ -126,9 +121,6 @@ export async function createWork(event: APIGatewayProxyEventV2) {
       gsi4sk: isVisible ? now : undefined,
     };
 
-    // 既に同じvideoIdで登録済みなら（冪等リトライ）上書きするだけで、
-    // 二重登録にはならない。ただし他人のNIARIM User IDで既登録済みの
-    // videoIdを奪う形の上書きは防ぐ（authorIdが一致する場合のみ許可）。
     const existing = await ddb.send(
       new GetCommand({
         TableName: tableName(),
@@ -149,7 +141,6 @@ export async function createWork(event: APIGatewayProxyEventV2) {
 
     return created({ work: toPublicWork(work) });
   } catch (err) {
-    // ⑥以降で失敗した場合は、⑤で確保した投稿枠を解放する（12.2節）。
     await releasePostQuota(auth.niarimUserId).catch(() => {});
     throw err;
   }
@@ -173,9 +164,67 @@ function parseBody(raw: string | undefined): CreateWorkRequestBody {
   if (body.isShort !== undefined && typeof body.isShort !== "boolean") {
     badRequest("isShortは真偽値である必要があります");
   }
+
+  const projectFps = optionalNonNegativeInt(body.projectFps, "projectFps", 240);
+  const projectFrameCount = optionalNonNegativeInt(
+    body.projectFrameCount,
+    "projectFrameCount",
+    10_000_000,
+  );
+  const projectWorkSeconds = optionalNonNegativeInt(
+    body.projectWorkSeconds,
+    "projectWorkSeconds",
+    1_000_000_000,
+  );
+  const projectCanvasWidth = optionalNonNegativeInt(
+    body.projectCanvasWidth,
+    "projectCanvasWidth",
+    100_000,
+  );
+  const projectCanvasHeight = optionalNonNegativeInt(
+    body.projectCanvasHeight,
+    "projectCanvasHeight",
+    100_000,
+  );
+
+  let projectCreatedAt: string | undefined;
+  if (body.projectCreatedAt !== undefined) {
+    if (
+      typeof body.projectCreatedAt !== "string" ||
+      body.projectCreatedAt.length > 64 ||
+      Number.isNaN(Date.parse(body.projectCreatedAt))
+    ) {
+      badRequest("projectCreatedAtの形式が不正です");
+    }
+    projectCreatedAt = new Date(body.projectCreatedAt).toISOString();
+  }
+
   return {
     youtubeVideoId: body.youtubeVideoId,
     youtubeAccessToken: body.youtubeAccessToken,
     isShort: body.isShort ?? false,
+    projectFps,
+    projectFrameCount,
+    projectWorkSeconds,
+    projectCreatedAt,
+    projectCanvasWidth,
+    projectCanvasHeight,
   };
+}
+
+function optionalNonNegativeInt(
+  value: unknown,
+  fieldName: string,
+  max: number,
+): number | undefined {
+  if (value === undefined) return undefined;
+  if (
+    typeof value !== "number" ||
+    !Number.isSafeInteger(value) ||
+    value < 0 ||
+    value > max
+  ) {
+    badRequest(`${fieldName}の値が不正です`);
+  }
+  return value;
 }
