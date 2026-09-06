@@ -9,8 +9,6 @@ import 'package:intl/intl.dart';
 const String kDummySelfAuthorId = 'author_01';
 
 /// 作品広場画面で表示する投稿作品1件分のデータ。
-/// バックエンド（29_動画投稿・ランキング機能仕様.md）が未実装のため、
-/// 現段階ではUI・デザイン確認用のダミーデータのみを保持するモデル。
 class CommunityWork {
   final String id;
   final String title;
@@ -21,6 +19,19 @@ class CommunityWork {
   final int bookmarkCount;
   final DateTime postedAt;
   final int durationSeconds;
+
+  /// 投稿元NIARIMプロジェクト由来の制作情報。
+  ///
+  /// 作品広場を単なるYouTube動画一覧にせず、NIARIM固有の「どう作られた
+  /// 作品か」を横画面詳細・縦画面の両方で同じように表示するために保持する。
+  /// 本番APIで値がまだ無い古い作品は0/nullになり、UI側では項目自体を隠す。
+  final int projectFps;
+  final int projectFrameCount;
+  final int projectWorkSeconds;
+  final DateTime? projectCreatedAt;
+  final int projectCanvasWidth;
+  final int projectCanvasHeight;
+
   // サムネイル画像の代わりに表示するプレースホルダーの配色を選ぶための
   // インデックス（実際のサムネイル取得はバックエンド実装後に対応）。
   final int thumbnailColorIndex;
@@ -29,20 +40,9 @@ class CommunityWork {
   // tagsのうち、投稿者がロックして他ユーザーが削除できないようにした
   // タグの集合（tagsの部分集合）。
   final Set<String> lockedTags;
-  // 作品広場独自の公開/非公開設定（29_動画投稿・ランキング機能
-  // 仕様.md 13章）。YouTube側の公開設定とは独立しており、trueのときのみ
-  // 新着・ランキング・（自分以外から見た）投稿者別作品一覧に表示される。
-  // 投稿者本人は非公開にした作品も自分の投稿者別作品一覧からは引き続き
-  // 確認・再公開できる（CommunityService.worksByAuthorのincludeHidden参照）。
+  // 作品広場独自の公開/非公開設定。
   final bool isNiarimPublished;
-  // ショート動画（縦長・TikTok/Instagramリール/YouTubeショート風）かどうか。
-  // 「横動画とショートをアプリ側で区別できるか」の調査の結論：YouTube Data
-  // APIには「これはShortsである」という直接のフラグは存在しない（YouTube
-  // 自身も動画の長さ・アスペクト比から内部判定している）。一方NIARIM側は
-  // 投稿元となるプロジェクトのキャンバスサイズ（Project.drawingWidth/
-  // drawingHeight）を投稿時点で把握しているため、縦長（高さ>幅）かどうかで
-  // 確実に判定できる。バックエンド未実装の現段階ではこの判定結果を
-  // ダミーデータ側で模擬している（buildDummyCommunityWorks参照）。
+  // ショート動画（縦長）かどうか。
   final bool isShort;
 
   const CommunityWork({
@@ -56,6 +56,12 @@ class CommunityWork {
     required this.postedAt,
     required this.durationSeconds,
     required this.thumbnailColorIndex,
+    this.projectFps = 0,
+    this.projectFrameCount = 0,
+    this.projectWorkSeconds = 0,
+    this.projectCreatedAt,
+    this.projectCanvasWidth = 0,
+    this.projectCanvasHeight = 0,
     this.tags = const [],
     this.lockedTags = const {},
     this.isNiarimPublished = true,
@@ -67,6 +73,12 @@ class CommunityWork {
     Set<String>? lockedTags,
     bool? isNiarimPublished,
     bool? isShort,
+    int? projectFps,
+    int? projectFrameCount,
+    int? projectWorkSeconds,
+    DateTime? projectCreatedAt,
+    int? projectCanvasWidth,
+    int? projectCanvasHeight,
   }) {
     return CommunityWork(
       id: id,
@@ -79,6 +91,12 @@ class CommunityWork {
       postedAt: postedAt,
       durationSeconds: durationSeconds,
       thumbnailColorIndex: thumbnailColorIndex,
+      projectFps: projectFps ?? this.projectFps,
+      projectFrameCount: projectFrameCount ?? this.projectFrameCount,
+      projectWorkSeconds: projectWorkSeconds ?? this.projectWorkSeconds,
+      projectCreatedAt: projectCreatedAt ?? this.projectCreatedAt,
+      projectCanvasWidth: projectCanvasWidth ?? this.projectCanvasWidth,
+      projectCanvasHeight: projectCanvasHeight ?? this.projectCanvasHeight,
       tags: tags ?? this.tags,
       lockedTags: lockedTags ?? this.lockedTags,
       isNiarimPublished: isNiarimPublished ?? this.isNiarimPublished,
@@ -87,8 +105,7 @@ class CommunityWork {
   }
 }
 
-/// 表示確認用のダミー作品一覧を生成する（バックエンド未実装のため）。
-/// 同じ内容を毎回返せるよう固定シードの乱数を使う。
+/// 表示確認用のダミー作品一覧を生成する。
 List<CommunityWork> buildDummyCommunityWorks() {
   final random = Random(42);
   final authors = [
@@ -126,8 +143,6 @@ List<CommunityWork> buildDummyCommunityWorks() {
     final title =
         '${titleParts1[i % titleParts1.length]}${titleParts2[(i * 3) % titleParts2.length]}';
     final views = 50 + random.nextInt(200000);
-    // 各作品に2〜3個のタグを割り当て、そのうち1個をロック状態にする
-    // （投稿者ロックの見た目上の挙動を確認できるようにするため）。
     final tagCount = 2 + random.nextInt(2);
     final tags = <String>{};
     while (tags.length < tagCount) {
@@ -135,11 +150,19 @@ List<CommunityWork> buildDummyCommunityWorks() {
     }
     final tagList = tags.toList();
     final lockedTags = {tagList[random.nextInt(tagList.length)]};
-    // ショート動画かどうか（約35%をショートにして横動画と混在させ、
-    // グリッド・ショートモード双方の見た目を確認しやすくする）。実際の
-    // 判定基準はキャンバスの縦横比（isShortの説明コメント参照）だが、
-    // ダミーデータではその判定結果のみを模擬する。
     final isShort = random.nextDouble() < 0.35;
+    final durationSeconds = isShort
+        ? 3 + random.nextInt(58)
+        : 15 + random.nextInt(105);
+    final fps = [12, 24, 30][random.nextInt(3)];
+    final postedAt = DateTime.now().subtract(
+      Duration(days: random.nextInt(400), hours: random.nextInt(24)),
+    );
+    final projectCreatedAt = postedAt.subtract(
+      Duration(days: 1 + random.nextInt(45), hours: random.nextInt(24)),
+    );
+    final projectWorkSeconds = 900 + random.nextInt(18 * 60 * 60);
+
     return CommunityWork(
       id: 'work_${i.toString().padLeft(3, '0')}',
       title: title,
@@ -148,15 +171,15 @@ List<CommunityWork> buildDummyCommunityWorks() {
       viewCount: views,
       likeCount: (views * (0.02 + random.nextDouble() * 0.08)).round(),
       bookmarkCount: 5 + random.nextInt(3000),
-      postedAt: DateTime.now().subtract(
-        Duration(days: random.nextInt(400), hours: random.nextInt(24)),
-      ),
-      // ショート動画は実際のYouTube Shorts同様、短尺（3〜60秒程度）に
-      // 寄せる。横動画は従来どおりの幅を持たせる。
-      durationSeconds: isShort
-          ? 3 + random.nextInt(58)
-          : 15 + random.nextInt(105),
+      postedAt: postedAt,
+      durationSeconds: durationSeconds,
       thumbnailColorIndex: i % 6,
+      projectFps: fps,
+      projectFrameCount: fps * durationSeconds,
+      projectWorkSeconds: projectWorkSeconds,
+      projectCreatedAt: projectCreatedAt,
+      projectCanvasWidth: isShort ? 1080 : 1920,
+      projectCanvasHeight: isShort ? 1920 : 1080,
       tags: tagList,
       lockedTags: lockedTags,
       isShort: isShort,
@@ -165,13 +188,6 @@ List<CommunityWork> buildDummyCommunityWorks() {
 }
 
 /// 再生数・ブックマーク数等の統計を表示用に整形する。
-///
-/// 日本語では「1.5k」のようなアルファベット省略表記は馴染みが薄いため、
-/// [languageCode]が'ja'の場合はカンマ区切りの通常表記（例：1,500）へ、
-/// それ以外の言語では従来どおり「1.5K」「3.4M」のような簡略表記へ変換する。
-/// [languageCode]は呼び出し元で`Localizations.localeOf(context)
-/// .languageCode`を渡す想定（この関数自体はモデル層のためBuildContextに
-/// 依存しない）。
 String formatCompactCount(int value, String languageCode) {
   if (languageCode == 'ja') {
     return NumberFormat.decimalPattern('ja').format(value);
@@ -183,4 +199,13 @@ String formatCompactCount(int value, String languageCode) {
     return '${(value / 1000).toStringAsFixed(1)}K';
   }
   return '$value';
+}
+
+/// 制作時間を作品広場用の短い表記へ整形する。
+String formatProjectWorkTime(int totalSeconds) {
+  if (totalSeconds <= 0) return '';
+  final hours = totalSeconds ~/ 3600;
+  final minutes = (totalSeconds % 3600) ~/ 60;
+  if (hours > 0) return '${hours}h ${minutes}m';
+  return '${max(1, minutes)}m';
 }
