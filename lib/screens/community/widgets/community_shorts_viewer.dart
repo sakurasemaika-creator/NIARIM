@@ -1,9 +1,11 @@
 import 'package:niarim/services/theme_service.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../../models/community_work.dart';
 import '../../../router.dart';
+import '../../../services/community_service.dart';
 import 'community_work_card.dart' show communityThumbnailGradient;
 
 /// 縦画面モードで1本の動画が最後まで再生されたときの挙動。
@@ -39,7 +41,14 @@ enum CommunityShortsEndBehavior { loopCurrent, autoAdvance }
 class CommunityShortsScreen extends StatefulWidget {
   final List<CommunityWork> works;
   final int initialIndex;
+
+  /// 呼び出し側との互換性のため残している初期値。表示中の最新状態は
+  /// CommunityServiceをwatchして取得するため、このSetを表示状態の正と
+  /// しては使わない。
   final Set<String> bookmarkedIds;
+
+  /// 呼び出し側との互換性のため残しているコールバック。現在は画面内から
+  /// CommunityService.toggleBookmark()を直接呼び、Provider通知で即時反映する。
   final void Function(CommunityWork work) onToggleBookmark;
 
   const CommunityShortsScreen({
@@ -138,6 +147,7 @@ class _CommunityShortsScreenState extends State<CommunityShortsScreen> {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     final scheme = Theme.of(context).colorScheme;
+    final communityService = context.watch<CommunityService>();
     return Scaffold(
       backgroundColor: scheme.surface,
       body: Stack(
@@ -152,8 +162,9 @@ class _CommunityShortsScreenState extends State<CommunityShortsScreen> {
               return _ShortsPage(
                 work: work,
                 isCurrentPage: index == _currentIndex,
-                isBookmarked: widget.bookmarkedIds.contains(work.id),
-                onToggleBookmark: () => widget.onToggleBookmark(work),
+                isBookmarked: communityService.isBookmarked(work.id),
+                onToggleBookmark: () =>
+                    communityService.toggleBookmark(work.id),
                 // 実プレーヤー接続時は、そのプレーヤーのonEndedからこの
                 // callbackを呼ぶ。loop時のseek/play callbackも同時に渡す。
                 onPlaybackEnded: (onLoopCurrent) => _handlePlaybackEnded(
@@ -375,13 +386,11 @@ class _ShortsPage extends StatelessWidget {
                           color: isBookmarked ? scheme.primary : null,
                         ),
                       ),
-                      FilledButton.tonal(
+                      IconButton.filledTonal(
                         onPressed: () =>
                             appRouter.push('/community/work/${work.id}'),
-                        child: Text(
-                          l10n.communityFloatingPreviewDetailButton,
-                          style: const TextStyle(fontSize: 12),
-                        ),
+                        tooltip: l10n.communityFloatingPreviewDetailButton,
+                        icon: const Icon(Icons.info_outline_rounded),
                       ),
                     ],
                   ),
