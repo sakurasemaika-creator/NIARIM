@@ -3,7 +3,13 @@ import { ConditionalCheckFailedException } from "@aws-sdk/client-dynamodb";
 import { GetCommand, UpdateCommand } from "@aws-sdk/lib-dynamodb";
 import { ddb, tableName, Keys } from "../../lib/dynamo";
 import { authenticate } from "../../lib/auth";
-import { badRequest, forbidden, notFound, ok } from "../../lib/response";
+import {
+  badRequest,
+  conflict,
+  forbidden,
+  notFound,
+  ok,
+} from "../../lib/response";
 import { parseJsonObject } from "../../lib/request";
 import type { WorkItem } from "../../lib/types";
 import { toPublicWork } from "./_publicWork";
@@ -106,18 +112,23 @@ export async function updateTags(
 
       return ok({ work: toPublicWork(result.Attributes as WorkItem) });
     } catch (error) {
-      if (
-        error instanceof ConditionalCheckFailedException &&
-        attempt + 1 < MAX_CONFLICT_RETRIES
-      ) {
-        continue;
+      if (error instanceof ConditionalCheckFailedException) {
+        if (attempt + 1 < MAX_CONFLICT_RETRIES) {
+          continue;
+        }
+        conflict(
+          "タグが同時に更新されました。もう一度お試しください",
+          "TAG_UPDATE_CONFLICT",
+        );
       }
       throw error;
     }
   }
 
-  // ループ上は到達しないが、TypeScriptに全経路のreturnを明示する。
-  throw new Error("タグ更新の競合再試行に失敗しました");
+  conflict(
+    "タグが同時に更新されました。もう一度お試しください",
+    "TAG_UPDATE_CONFLICT",
+  );
 }
 
 function parseBody(raw: string | undefined): TagAction {
