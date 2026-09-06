@@ -214,7 +214,13 @@ class CommunityService extends ChangeNotifier {
     notifyListeners();
   }
 
-  /// タグを追加する（誰でも可能）。同名タグが既にある場合は何もしない。
+  /// バックエンド（backend/src/api/routes/tags.ts）と共通の1作品タグ上限。
+  /// ダミーデータ利用時も同じ制約にして、開発中UIだけ11件以上追加できる
+  /// 状態を防ぐ。
+  static const int maxTagsPerWork = 10;
+
+  /// タグを追加する（誰でも可能）。同名タグが既にある場合、または既に
+  /// 10件登録済みの場合は何もしない。
   void addTag(String workId, String tag) {
     final trimmed = tag.trim();
     if (trimmed.isEmpty) return;
@@ -222,6 +228,7 @@ class CommunityService extends ChangeNotifier {
     if (index == -1) return;
     final current = _works[index];
     if (current.tags.contains(trimmed)) return;
+    if (current.tags.length >= maxTagsPerWork) return;
     _works[index] = current.copyWith(tags: [...current.tags, trimmed]);
     notifyListeners();
   }
