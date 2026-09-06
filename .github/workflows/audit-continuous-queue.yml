@@ -2,6 +2,10 @@ name: Audit Continuous Queue
 
 on:
   workflow_dispatch:
+  push:
+    branches: [dev_branch]
+    paths:
+      - '.github/workflows/audit-continuous-queue.yml'
 
 permissions:
   contents: write
@@ -203,7 +207,7 @@ jobs:
           ISSUE_NUMBER: '3'
           BRANCH: dev_branch
         run: python3 audit-dashboard/update_dashboard.py
-      - uses: subosito/flutter-action@v2
+      - uses: subosito/flutter-action@v4
         with:
           channel: stable
           cache: true
