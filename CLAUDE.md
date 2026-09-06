@@ -8,6 +8,11 @@
 まとめた実践的な引き継ぎメモであり、内容が古くなったら都度このファイル自体を
 更新すること（他のドキュメントと同様、削除・書き換えを恐れず現状に合わせる）。
 
+**作業の進め方そのもの**（環境構築・検証手順・レビューの通し方・コードの地図）は
+`docs/AI設計書/31_引き継ぎガイド（AI開発者向け）.md`にまとめてある。
+このリポジトリを初めて触るなら、まずそちらを読むこと。実操作＋スクショによる
+自律動作確認の手順は`docs/AI設計書/30_AI自律動作確認プロンプト.md`。
+
 ## リポジトリの基礎情報
 
 - アプリ名：NIARIM（手書きアニメ制作Androidアプリ、Flutter/Dart）
@@ -334,7 +339,7 @@ FONT_LICENSES.txt`への本文・著作権表示の追記、`license_screen.dart
     完了しない）。待つ側は`await tester.runAsync(() => Future.delayed(d));`
     してから`await tester.pump();`する形にすること。ジェスチャー自体は
     runAsyncの外で駆動する（runAsyncはネストできない）。
-- **`CanvasArea`をテストへ直接載せるときは、Providerを6つ揃える**：
+- **`CanvasArea`をテストへ直接載せるときは、Providerを8つ揃える**：
   `ProjectService`・`UndoManager`に加えて`SettingsService`・`ThemeService`・
   `BrushService`・`ToneService`・`StampService`・`PerformanceService`を
   `context.read/watch`する。1つでも欠けると
