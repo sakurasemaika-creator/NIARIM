@@ -1,5 +1,6 @@
 name: One-shot Canvas Pan Boundary Fix
 
+# trigger: constrain canvas to background bounds
 on:
   push:
     branches: [dev_branch]
@@ -35,7 +36,6 @@ jobs:
           assert marker in s, 'scale helper marker not found'
           s = s.replace(marker, addition, 1)
 
-          # Insert state helper before pointer signal handler.
           marker2 = """  /// マウスホイールでのズーム（Galaxy DeXモード・マウス入力）。\n  /// カーソル位置を中心に拡大縮小する。\n  void _handlePointerSignal(PointerSignalEvent event) {"""
           replacement2 = """  Matrix4 _constrainViewMatrix(Matrix4 candidate) {\n    final size = context.size;\n    if (size == null) return candidate;\n    final drawingRect = canvasDrawingRectFor(size, widget.project);\n    return constrainCanvasViewTransform(size, drawingRect, candidate);\n  }\n\n  /// マウスホイールでのズーム（Galaxy DeXモード・マウス入力）。\n  /// カーソル位置を中心に拡大縮小する。\n  void _handlePointerSignal(PointerSignalEvent event) {"""
           assert marker2 in s, 'pointer signal marker not found'
@@ -78,11 +78,7 @@ jobs:
                 final candidate = Matrix4.identity()
                   ..scaleByDouble(0.5, 0.5, 1, 1)
                   ..translateByDouble(2000, 0, 0, 1);
-                final fixed = constrainCanvasViewTransform(
-                  viewport,
-                  drawing,
-                  candidate,
-                );
+                final fixed = constrainCanvasViewTransform(viewport, drawing, candidate);
                 final b = transformed(drawing, fixed);
                 expect(b.right, lessThanOrEqualTo(viewport.width + 1e-6));
                 expect(b.left, greaterThanOrEqualTo(-1e-6));
@@ -92,11 +88,7 @@ jobs:
                 final candidate = Matrix4.identity()
                   ..scaleByDouble(0.2, 0.2, 1, 1)
                   ..translateByDouble(-5000, -5000, 0, 1);
-                final fixed = constrainCanvasViewTransform(
-                  viewport,
-                  drawing,
-                  candidate,
-                );
+                final fixed = constrainCanvasViewTransform(viewport, drawing, candidate);
                 final b = transformed(drawing, fixed);
                 expect(b.left, greaterThanOrEqualTo(-1e-6));
                 expect(b.top, greaterThanOrEqualTo(-1e-6));
@@ -107,11 +99,7 @@ jobs:
                   ..translateByDouble(900, 600, 0, 1)
                   ..rotateZ(0.7)
                   ..scaleByDouble(kCanvasMinScale, kCanvasMinScale, 1, 1);
-                final fixed = constrainCanvasViewTransform(
-                  viewport,
-                  drawing,
-                  candidate,
-                );
+                final fixed = constrainCanvasViewTransform(viewport, drawing, candidate);
                 final b = transformed(drawing, fixed);
                 expect(b.left, greaterThanOrEqualTo(-1e-6));
                 expect(b.top, greaterThanOrEqualTo(-1e-6));
@@ -123,11 +111,7 @@ jobs:
                 final candidate = Matrix4.identity()
                   ..scaleByDouble(2, 2, 1, 1)
                   ..translateByDouble(2000, 1500, 0, 1);
-                final fixed = constrainCanvasViewTransform(
-                  viewport,
-                  drawing,
-                  candidate,
-                );
+                final fixed = constrainCanvasViewTransform(viewport, drawing, candidate);
                 final b = transformed(drawing, fixed);
                 expect(b.left, lessThanOrEqualTo(1e-6));
                 expect(b.right, greaterThanOrEqualTo(viewport.width - 1e-6));
