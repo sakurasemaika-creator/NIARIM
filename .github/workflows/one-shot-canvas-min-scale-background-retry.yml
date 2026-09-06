@@ -1,0 +1,120 @@
+name: One-shot Canvas Min Scale Background Retry
+
+on:
+  push:
+    branches: [dev_branch]
+    paths:
+      - '.github/workflows/one-shot-canvas-min-scale-background-retry.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  fix-and-verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: dev_branch
+          fetch-depth: 0
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+      - run: flutter pub get
+      - name: Apply canvas viewport fix
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          path = Path('lib/screens/canvas/widgets/canvas_area.dart')
+          s = path.read_text(encoding='utf-8')
+
+          old_constants = """  static const double _minCanvasScale = 0.1;\n  static const double _maxCanvasScale = 10.0;\n"""
+          assert old_constants in s, 'old scale constants not found'
+          s = s.replace(old_constants, '', 1)
+
+          marker = """Color get kCanvasOutsideColor =>\n    ThemeService.activeColorScheme.surfaceContainerHighest;\n"""
+          addition = """Color get kCanvasOutsideColor =>\n    ThemeService.activeColorScheme.surfaceContainerHighest;\n\n/// キャンバス表示の縮小下限。等倍表示時の1/5まで縮小できる。\nconst double kCanvasMinScale = 0.2;\n\n/// キャンバス表示の拡大上限。\nconst double kCanvasMaxScale = 10.0;\n\n/// 現在倍率へ要求倍率を掛けた結果を表示可能範囲へ正確にクランプする。\n/// 境界到達時に操作全体を破棄しないため、最小倍率でも回転は継続できる。\ndouble boundedCanvasScaleFactor(double currentScale, double requestedFactor) {\n  if (currentScale <= 0 || !currentScale.isFinite || !requestedFactor.isFinite) {\n    return 1.0;\n  }\n  final target = (currentScale * requestedFactor).clamp(\n    kCanvasMinScale,\n    kCanvasMaxScale,\n  );\n  return target / currentScale;\n}\n"""
+          assert marker in s, 'outside-color marker not found'
+          s = s.replace(marker, addition, 1)
+
+          old_wheel = """  void _handlePointerSignal(PointerSignalEvent event) {\n    if (event is! PointerScrollEvent) return;\n    final scaleFactor = event.scrollDelta.dy > 0 ? 0.9 : 1.1;\n    final focal = event.localPosition;\n    final zoomMatrix = Matrix4.identity()\n      ..translateByDouble(focal.dx, focal.dy, 0, 1)\n      ..scaleByDouble(scaleFactor, scaleFactor, scaleFactor, 1)\n      ..translateByDouble(-focal.dx, -focal.dy, 0, 1);\n    final newMatrix = zoomMatrix * _transformController.value;\n    final newScale = newMatrix.getMaxScaleOnAxis();\n    if (newScale < _minCanvasScale || newScale > _maxCanvasScale) return;\n    // setState()で包まないこと。_transformControllerの値を変えると\n    // 下のAnimatedBuilderが変換部分だけを描き直す。setStateを重ねると\n    // 画面全体のビルドが余分に1回走る（以前はそうなっていた）。\n    _transformController.value = newMatrix;\n  }"""
+          new_wheel = """  void _handlePointerSignal(PointerSignalEvent event) {\n    if (event is! PointerScrollEvent) return;\n    final requestedFactor = event.scrollDelta.dy > 0 ? 0.9 : 1.1;\n    final currentScale = _transformController.value.getMaxScaleOnAxis();\n    final scaleFactor = boundedCanvasScaleFactor(\n      currentScale,\n      requestedFactor,\n    );\n    final focal = event.localPosition;\n    final zoomMatrix = Matrix4.identity()\n      ..translateByDouble(focal.dx, focal.dy, 0, 1)\n      ..scaleByDouble(scaleFactor, scaleFactor, scaleFactor, 1)\n      ..translateByDouble(-focal.dx, -focal.dy, 0, 1);\n    // setState()で包まないこと。_transformControllerの値を変えると\n    // 下のAnimatedBuilderが変換部分だけを描き直す。setStateを重ねると\n    // 画面全体のビルドが余分に1回走る（以前はそうなっていた）。\n    _transformController.value = zoomMatrix * _transformController.value;\n  }"""
+          assert old_wheel in s, 'wheel zoom block not found'
+          s = s.replace(old_wheel, new_wheel, 1)
+
+          old_multi = """    final scaleFactor = afterDist / beforeDist;\n    final rotationDelta = afterVec.direction - beforeVec.direction;\n    final transform =\n        Matrix4.translationValues(anchorPos.dx, anchorPos.dy, 0) *\n        Matrix4.rotationZ(rotationDelta) *\n        Matrix4.diagonal3Values(scaleFactor, scaleFactor, 1) *\n        Matrix4.translationValues(-anchorPos.dx, -anchorPos.dy, 0);\n    final newMatrix = transform * _transformController.value;\n    final newScale = newMatrix.getMaxScaleOnAxis();\n    // ピンチアウトでの過剰縮小・過剰拡大を防ぐ（既知バグの修正）。\n    if (newScale < _minCanvasScale || newScale > _maxCanvasScale) return;\n    _transformController.value = newMatrix;"""
+          new_multi = """    final requestedScaleFactor = afterDist / beforeDist;\n    final rotationDelta = afterVec.direction - beforeVec.direction;\n    final currentScale = _transformController.value.getMaxScaleOnAxis();\n    final scaleFactor = boundedCanvasScaleFactor(\n      currentScale,\n      requestedScaleFactor,\n    );\n    final transform =\n        Matrix4.translationValues(anchorPos.dx, anchorPos.dy, 0) *\n        Matrix4.rotationZ(rotationDelta) *\n        Matrix4.diagonal3Values(scaleFactor, scaleFactor, 1) *\n        Matrix4.translationValues(-anchorPos.dx, -anchorPos.dy, 0);\n    // 倍率だけを境界へクランプし、回転・パン成分は捨てない。\n    _transformController.value = transform * _transformController.value;"""
+          assert old_multi in s, 'multi-touch block not found'
+          s = s.replace(old_multi, new_multi, 1)
+          path.write_text(s, encoding='utf-8')
+          PY
+
+          cat > test/canvas_viewport_transform_test.dart <<'DART'
+          import 'dart:io';
+
+          import 'package:flutter_test/flutter_test.dart';
+          import 'package:niarim/screens/canvas/widgets/canvas_area.dart';
+
+          void main() {
+            group('キャンバス表示倍率', () {
+              test('縮小下限は等倍の1/5', () {
+                expect(kCanvasMinScale, 0.2);
+              });
+
+              test('下限を飛び越えるピンチでも1/5ちょうどへクランプする', () {
+                final factor = boundedCanvasScaleFactor(0.25, 0.5);
+                expect(0.25 * factor, closeTo(0.2, 1e-12));
+              });
+
+              test('最小倍率でさらに縮小入力されても倍率は固定され回転を妨げない', () {
+                final factor = boundedCanvasScaleFactor(kCanvasMinScale, 0.5);
+                expect(factor, closeTo(1.0, 1e-12));
+              });
+
+              test('拡大上限も境界へ正確にクランプする', () {
+                final factor = boundedCanvasScaleFactor(9.5, 2.0);
+                expect(9.5 * factor, closeTo(kCanvasMaxScale, 1e-12));
+              });
+            });
+
+            test('キャンバス外周背景はCanvasAreaの変換外に固定された兄弟レイヤー', () {
+              final source = File(
+                'lib/screens/canvas/canvas_screen.dart',
+              ).readAsStringSync();
+              const backdrop = 'Container(color: kCanvasOutsideColor),';
+              const canvasArea = 'CanvasArea(';
+              final backdropIndex = source.indexOf(backdrop);
+              final canvasIndex = source.indexOf(
+                canvasArea,
+                backdropIndex + backdrop.length,
+              );
+              expect(backdropIndex, greaterThanOrEqualTo(0));
+              expect(canvasIndex, greaterThan(backdropIndex));
+              final between = source.substring(backdropIndex, canvasIndex);
+              expect(
+                between.contains('Transform('),
+                isFalse,
+                reason: '背景をキャンバスの回転・縮小Transform内へ入れてはいけない',
+              );
+            });
+          }
+          DART
+
+          dart format lib/screens/canvas/widgets/canvas_area.dart test/canvas_viewport_transform_test.dart
+      - name: Analyze
+        run: flutter analyze --no-fatal-infos
+      - name: Targeted regression tests
+        run: |
+          flutter test test/canvas_viewport_transform_test.dart --reporter expanded
+          flutter test test/canvas_drawing_rect_test.dart --reporter expanded
+      - name: Commit fix to dev_branch
+        run: |
+          git config user.name "NIARIM Fix Bot"
+          git config user.email "actions@users.noreply.github.com"
+          git add lib/screens/canvas/widgets/canvas_area.dart test/canvas_viewport_transform_test.dart
+          git diff --cached --check
+          git commit -m "fix: clamp canvas zoom-out to one fifth and preserve rotation"
+          git pull --rebase origin dev_branch
+          git push origin HEAD:dev_branch
