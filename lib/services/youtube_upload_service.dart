@@ -131,12 +131,17 @@ class YoutubeUploadService {
             }
             retry++;
             await _backoff(retry, response.headers['retry-after']);
-            offset = await _queryNextOffset(
+            final status = await _queryStatus(
               sessionUri: sessionUri,
               accessToken: accessToken,
               totalBytes: totalBytes,
               fallback: offset,
             );
+            if (status.videoId case final String id) {
+              onProgress?.call(totalBytes, totalBytes);
+              return YoutubeUploadResult(videoId: id);
+            }
+            offset = status.nextOffset;
             onProgress?.call(offset, totalBytes);
             continue;
           }
@@ -151,12 +156,17 @@ class YoutubeUploadService {
           retry++;
           await _backoff(retry, null);
           try {
-            offset = await _queryNextOffset(
+            final status = await _queryStatus(
               sessionUri: sessionUri,
               accessToken: accessToken,
               totalBytes: totalBytes,
               fallback: offset,
             );
+            if (status.videoId case final String id) {
+              onProgress?.call(totalBytes, totalBytes);
+              return YoutubeUploadResult(videoId: id);
+            }
+            offset = status.nextOffset;
             onProgress?.call(offset, totalBytes);
           } on Object {
             // 状態照会自体が一時的に失敗した場合は同じchunkを再送する。
@@ -229,9 +239,11 @@ class YoutubeUploadService {
     return http.Response.fromStream(await _http.send(request));
   }
 
-  /// 308へ `Content-Range: bytes */total` を送ると、YouTubeはRangeヘッダーで
-  /// 受信済み位置を返す。既に完了済みなら2xx＋video resourceが返る。
-  Future<int> _queryNextOffset({
+  /// `Content-Range: bytes */total` で現在位置を照会する。
+  /// 308なら次に送るbyte位置、既に完了済みなら2xxのvideo resourceから
+  /// videoIdを返す。最終chunkのレスポンスだけ端末へ届かなかった場合でも、
+  /// 同じ動画を二重アップロードせず完了扱いへ復旧できる。
+  Future<_YoutubeUploadStatus> _queryStatus({
     required Uri sessionUri,
     required String accessToken,
     required int totalBytes,
@@ -245,13 +257,19 @@ class YoutubeUploadService {
       });
     final response = await http.Response.fromStream(await _http.send(request));
     if (response.statusCode == 308) {
-      return _nextOffset(response, fallback: fallback);
+      return _YoutubeUploadStatus(
+        nextOffset: _nextOffset(response, fallback: fallback),
+      );
     }
     if (_isSuccess(response.statusCode)) {
-      // 呼び出し元は次のループで再度状態を確認できるようEOFへ進める。
-      return totalBytes;
+      return _YoutubeUploadStatus(
+        nextOffset: totalBytes,
+        videoId: _videoIdFrom(response),
+      );
     }
-    if (_isRetriable(response.statusCode)) return fallback;
+    if (_isRetriable(response.statusCode)) {
+      return _YoutubeUploadStatus(nextOffset: fallback);
+    }
     throw YoutubeUploadException.fromResponse(response);
   }
 
@@ -302,6 +320,13 @@ class YoutubeUploadService {
   }
 
   void close() => _http.close();
+}
+
+class _YoutubeUploadStatus {
+  const _YoutubeUploadStatus({required this.nextOffset, this.videoId});
+
+  final int nextOffset;
+  final String? videoId;
 }
 
 class YoutubeUploadException implements Exception {
