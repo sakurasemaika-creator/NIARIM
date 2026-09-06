@@ -1,6 +1,6 @@
 import type { APIGatewayProxyEventV2 } from "aws-lambda";
 import { ConditionalCheckFailedException } from "@aws-sdk/client-dynamodb";
-import { GetCommand, PutCommand, UpdateCommand } from "@aws-sdk/lib-dynamodb";
+import { GetCommand, PutCommand } from "@aws-sdk/lib-dynamodb";
 import { ddb, tableName, Keys } from "../../lib/dynamo";
 import { authenticate, cacheChannelInfo, getUser } from "../../lib/auth";
 import { reservePostQuota, releasePostQuota } from "../../lib/quota";
@@ -38,7 +38,6 @@ export async function createWork(event: APIGatewayProxyEventV2) {
   const auth = await authenticate(
     event.headers["authorization"] ?? event.headers["Authorization"],
   );
-
   const body = parseBody(event.body);
 
   const user = await getUser(auth.niarimUserId);
@@ -48,11 +47,12 @@ export async function createWork(event: APIGatewayProxyEventV2) {
     );
   }
 
-  // workId = youtubeVideoId は冪等キー。同じ作者が同じ動画を再登録した場合は
-  // 新規投稿として数えない。別作者の動画を上書きすることも許可しない。
-  // 削除済みworkIdはWORK_TOMBSTONEが同じ主キーを占有し続ける。関連する
-  // ブックマーク/リポスト記録を将来の再登録作品へ再接続させないため、墓標は
-  // 誰からの再登録でも復活させない。
+  // YouTubeがアップロード成功時に発行したyoutubeVideoIdを、そのまま
+  // NIARIMのworkId/冪等キーとして使う。POST /worksの同一ID再送は
+  // 「作品を再登録する操作」ではなく、通信切断・タイムアウト等で初回の
+  // 成否を確認できなかったクライアントが同じ登録要求を再送するケース。
+  // 既に同じ作者のWORKが存在すれば一切変更せず、その現在値を返す。
+  // 公開/非公開切り替えやタイトル変更はPATCH /works/{id}の責務とする。
   const existingResult = await ddb.send(
     new GetCommand({
       TableName: tableName(),
@@ -60,6 +60,7 @@ export async function createWork(event: APIGatewayProxyEventV2) {
     }),
   );
   const existingRaw = existingResult.Item;
+
   if (existingRaw?.itemType === "WORK_TOMBSTONE") {
     conflict(
       "この動画はNIARIMから削除済みのため再登録できません",
@@ -72,21 +73,22 @@ export async function createWork(event: APIGatewayProxyEventV2) {
       "VIDEO_REGISTRATION_CONFLICT",
     );
   }
+
   const existing = existingRaw as WorkWithProjectMetadata | undefined;
-  if (existing && existing.authorId !== auth.niarimUserId) {
-    conflict(
-      "この動画は既に別のユーザーによってNIARIMへ登録されています",
-      "VIDEO_ALREADY_REGISTERED",
-    );
+  if (existing) {
+    if (existing.authorId !== auth.niarimUserId) {
+      conflict(
+        "この動画は既に別のユーザーによってNIARIMへ登録されています",
+        "VIDEO_ALREADY_REGISTERED",
+      );
+    }
+
+    // 重複送信は純粋に冪等。YouTube APIの再検証、投稿枠消費、
+    // メタデータ/GSI更新を一切行わず、保存済み作品をそのまま返す。
+    return created({ work: toPublicWork(existing) });
   }
 
-  const isNewWork = existing == null;
   let quotaReserved = false;
-  if (isNewWork) {
-    await reservePostQuota(auth.niarimUserId, user.membershipTier);
-    quotaReserved = true;
-  }
-
   try {
     const snippet = await getVideoSnippet(
       body.youtubeVideoId,
@@ -96,20 +98,15 @@ export async function createWork(event: APIGatewayProxyEventV2) {
       badRequest("指定されたYouTube動画が見つかりません", "VIDEO_NOT_FOUND");
     }
 
-    if (existing) {
-      // 初回登録時に「投稿直後であること」まで検証済みの作品は、後日の
-      // 通信再送・制作情報更新でも冪等に再登録できるよう、再登録時は
-      // チャンネル所有者の一致だけを再確認する。15分制限を再適用すると、
-      // 正規に登録済みの作品まで時間経過だけで更新不能になってしまう。
-      if (snippet.channelId !== user.youtubeChannelId) {
-        forbidden("この動画は連携済みチャンネルの投稿ではありません");
-      }
-    } else {
-      const verification = verifyVideoOwnership(snippet, user.youtubeChannelId);
-      if (!verification.ok) {
-        forbidden(verification.reason);
-      }
+    // 持ち込み防止の「連携チャンネル一致＋投稿直後」検証は初回登録だけ。
+    // 同じyoutubeVideoIdの重複送信は上で既存WORKを返して終了している。
+    const verification = verifyVideoOwnership(snippet, user.youtubeChannelId);
+    if (!verification.ok) {
+      forbidden(verification.reason);
     }
+
+    await reservePostQuota(auth.niarimUserId, user.membershipTier);
+    quotaReserved = true;
 
     const channelInfo = await getOwnChannelInfo(body.youtubeAccessToken);
     if (channelInfo) {
@@ -121,149 +118,6 @@ export async function createWork(event: APIGatewayProxyEventV2) {
     }
 
     const now = new Date().toISOString();
-
-    if (existing) {
-      // 再登録はPutで作品アイテム全体を書き戻さない。タグ・ロックタグ・
-      // ブックマーク・リポスト・統計更新が同時に発生していても、それらの
-      // 属性を古いGet結果で上書きしないよう、YouTube/制作メタデータだけを
-      // UpdateExpressionで部分更新する。作品タイトルはPATCH /works/{id}で
-      // 作者がNIARIM側独自に編集できるため、YouTubeタイトルへ戻さない。
-      const values: Record<string, unknown> = {
-        ":authorId": auth.niarimUserId,
-        ":youtubeChannelId": snippet.channelId,
-        ":youtubeUrl": `https://www.youtube.com/watch?v=${body.youtubeVideoId}`,
-        ":thumbnailUrl": snippet.thumbnailUrl,
-        ":privacy": snippet.privacyStatus,
-      };
-      const sets = [
-        "youtubeChannelId = :youtubeChannelId",
-        "youtubeUrl = :youtubeUrl",
-        "thumbnailUrl = :thumbnailUrl",
-        "youtubePrivacyStatus = :privacy",
-      ];
-
-      if (channelInfo) {
-        values[":channelName"] = channelInfo.channelName;
-        values[":channelAvatarUrl"] = channelInfo.channelAvatarUrl;
-        values[":channelInfoCachedAt"] = now;
-        sets.push(
-          "channelName = :channelName",
-          "channelAvatarUrl = :channelAvatarUrl",
-          "channelInfoCachedAt = :channelInfoCachedAt",
-        );
-      }
-      if (body.isShort !== undefined) {
-        values[":isShort"] = body.isShort;
-        sets.push("isShort = :isShort");
-      }
-      if (body.projectFps !== undefined) {
-        values[":projectFps"] = body.projectFps;
-        sets.push("projectFps = :projectFps");
-      }
-      if (body.projectFrameCount !== undefined) {
-        values[":projectFrameCount"] = body.projectFrameCount;
-        sets.push("projectFrameCount = :projectFrameCount");
-      }
-      if (body.projectWorkSeconds !== undefined) {
-        values[":projectWorkSeconds"] = body.projectWorkSeconds;
-        sets.push("projectWorkSeconds = :projectWorkSeconds");
-      }
-      if (body.projectCreatedAt !== undefined) {
-        values[":projectCreatedAt"] = body.projectCreatedAt;
-        sets.push("projectCreatedAt = :projectCreatedAt");
-      }
-      if (body.projectCanvasWidth !== undefined) {
-        values[":projectCanvasWidth"] = body.projectCanvasWidth;
-        sets.push("projectCanvasWidth = :projectCanvasWidth");
-      }
-      if (body.projectCanvasHeight !== undefined) {
-        values[":projectCanvasHeight"] = body.projectCanvasHeight;
-        sets.push("projectCanvasHeight = :projectCanvasHeight");
-      }
-
-      // 公開→公開の再登録ではランキング/GSIを触らない。統計更新バッチが
-      // 同時に走っていても、再登録前のGetで得た古いスコアへ巻き戻さないため。
-      // 非公開化では必ずGSIを除去し、公開復帰時（または不完全な旧データで
-      // インデックスが欠けている場合）だけ現在スナップショットから復元する。
-      const visible =
-        existing.isNiarimPublished && isYoutubeVisible(snippet.privacyStatus);
-      const hasPublicIndexes =
-        existing.gsi1pk != null &&
-        existing.gsi1sk != null &&
-        existing.gsi2pk != null &&
-        existing.gsi2sk != null &&
-        existing.gsi3pk != null &&
-        existing.gsi3sk != null &&
-        existing.gsi4pk != null &&
-        existing.gsi4sk != null;
-      const removes: string[] = [];
-      if (visible && !hasPublicIndexes) {
-        const score = computeRankingScore({
-          viewCount: existing.viewCount,
-          likeCount: existing.likeCount,
-          commentCount: existing.commentCount,
-        });
-        values[":rankingPk"] = "RANKING#ALL";
-        values[":rankingScore"] = score;
-        values[":bookmarkPk"] = "BOOKMARK_RANKING";
-        values[":bookmarkScore"] = existing.bookmarkCount;
-        values[":authorPk"] = `AUTHOR#${auth.niarimUserId}`;
-        values[":postedAt"] = existing.postedAt;
-        values[":latestPk"] = "LATEST";
-        sets.push(
-          "rankingScore = :rankingScore",
-          "bookmarkScore = :bookmarkScore",
-          "gsi1pk = :rankingPk",
-          "gsi1sk = :rankingScore",
-          "gsi2pk = :bookmarkPk",
-          "gsi2sk = :bookmarkScore",
-          "gsi3pk = :authorPk",
-          "gsi3sk = :postedAt",
-          "gsi4pk = :latestPk",
-          "gsi4sk = :postedAt",
-        );
-      } else if (!visible) {
-        removes.push(
-          "rankingScore",
-          "bookmarkScore",
-          "gsi1pk",
-          "gsi1sk",
-          "gsi2pk",
-          "gsi2sk",
-          "gsi3pk",
-          "gsi3sk",
-          "gsi4pk",
-          "gsi4sk",
-        );
-      }
-
-      try {
-        const result = await ddb.send(
-          new UpdateCommand({
-            TableName: tableName(),
-            Key: Keys.work(body.youtubeVideoId),
-            UpdateExpression: `SET ${sets.join(", ")}${
-              removes.length > 0 ? ` REMOVE ${removes.join(", ")}` : ""
-            }`,
-            ConditionExpression: "authorId = :authorId",
-            ExpressionAttributeValues: values,
-            ReturnValues: "ALL_NEW",
-          }),
-        );
-        return created({
-          work: toPublicWork(result.Attributes as WorkWithProjectMetadata),
-        });
-      } catch (error) {
-        if (error instanceof ConditionalCheckFailedException) {
-          conflict(
-            "作品の所有者情報が変更されています。作品一覧を更新してもう一度お試しください",
-            "VIDEO_REGISTRATION_CONFLICT",
-          );
-        }
-        throw error;
-      }
-    }
-
     const isVisible = isYoutubeVisible(snippet.privacyStatus);
     const rankingScore = computeRankingScore({
       viewCount: 0,
