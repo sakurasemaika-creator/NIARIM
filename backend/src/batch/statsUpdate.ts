@@ -217,6 +217,7 @@ async function updateWorkStats(
       "gsi4sk = :postedAt",
     );
     values[":score"] = rankingScore;
+    values[":rankPk"] = "RANKING#ALL";
     values[":bmPk"] = "BOOKMARK_RANKING";
     values[":bm"] = work.bookmarkCount;
     values[":authorPk"] = `AUTHOR#${work.authorId}`;
