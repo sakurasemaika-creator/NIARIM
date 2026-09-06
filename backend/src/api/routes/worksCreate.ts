@@ -1,4 +1,5 @@
 import type { APIGatewayProxyEventV2 } from "aws-lambda";
+import { ConditionalCheckFailedException } from "@aws-sdk/client-dynamodb";
 import { GetCommand, PutCommand } from "@aws-sdk/lib-dynamodb";
 import { ddb, tableName, Keys } from "../../lib/dynamo";
 import { authenticate, cacheChannelInfo, getUser } from "../../lib/auth";
@@ -19,13 +20,18 @@ import { toPublicWork } from "./_publicWork";
 interface CreateWorkRequestBody {
   youtubeVideoId: string;
   youtubeAccessToken: string;
-  isShort: boolean;
+  isShort?: boolean;
   projectFps?: number;
   projectFrameCount?: number;
   projectWorkSeconds?: number;
   projectCreatedAt?: string;
   projectCanvasWidth?: number;
   projectCanvasHeight?: number;
+}
+
+/** YouTube側の状態だけを見た公開可否。NIARIM側の公開設定とは別に扱う。 */
+function isYoutubeVisible(status: WorkItem["youtubePrivacyStatus"]) {
+  return status !== "private" && status !== "deleted";
 }
 
 export async function createWork(event: APIGatewayProxyEventV2) {
@@ -42,7 +48,29 @@ export async function createWork(event: APIGatewayProxyEventV2) {
     );
   }
 
-  await reservePostQuota(auth.niarimUserId, user.membershipTier);
+  // workId = youtubeVideoId は冪等キー。同じ作者が同じ動画を再登録した場合は
+  // 新規投稿として数えず、既存のタグ・ブックマーク・統計等を保持したまま
+  // YouTube/プロジェクト由来メタデータだけ更新する。
+  const existingResult = await ddb.send(
+    new GetCommand({
+      TableName: tableName(),
+      Key: Keys.work(body.youtubeVideoId),
+    }),
+  );
+  const existing = existingResult.Item as WorkWithProjectMetadata | undefined;
+  if (existing && existing.authorId !== auth.niarimUserId) {
+    conflict(
+      "この動画は既に別のユーザーによってNIARIMへ登録されています",
+      "VIDEO_ALREADY_REGISTERED",
+    );
+  }
+
+  const isNewWork = existing == null;
+  let quotaReserved = false;
+  if (isNewWork) {
+    await reservePostQuota(auth.niarimUserId, user.membershipTier);
+    quotaReserved = true;
+  }
 
   try {
     const snippet = await getVideoSnippet(
@@ -67,12 +95,19 @@ export async function createWork(event: APIGatewayProxyEventV2) {
     }
 
     const now = new Date().toISOString();
-    const isVisible = true;
+    const isNiarimPublished = existing?.isNiarimPublished ?? true;
+    const isVisible =
+      isNiarimPublished && isYoutubeVisible(snippet.privacyStatus);
+    const viewCount = existing?.viewCount ?? 0;
+    const likeCount = existing?.likeCount ?? 0;
+    const commentCount = existing?.commentCount ?? 0;
+    const bookmarkCount = existing?.bookmarkCount ?? 0;
     const rankingScore = computeRankingScore({
-      viewCount: 0,
-      likeCount: 0,
-      commentCount: 0,
+      viewCount,
+      likeCount,
+      commentCount,
     });
+    const postedAt = existing?.postedAt ?? now;
 
     const work: WorkWithProjectMetadata = {
       itemType: TABLE_ITEM_TYPE.Work,
@@ -81,67 +116,83 @@ export async function createWork(event: APIGatewayProxyEventV2) {
       authorId: auth.niarimUserId,
       youtubeChannelId: snippet.channelId,
       youtubeVideoId: body.youtubeVideoId,
-      channelName: channelInfo?.channelName ?? user.channelName ?? "",
+      channelName:
+        channelInfo?.channelName ?? existing?.channelName ?? user.channelName ?? "",
       channelAvatarUrl:
-        channelInfo?.channelAvatarUrl ?? user.channelAvatarUrl ?? "",
-      channelInfoCachedAt: now,
+        channelInfo?.channelAvatarUrl ??
+        existing?.channelAvatarUrl ??
+        user.channelAvatarUrl ??
+        "",
+      channelInfoCachedAt: channelInfo ? now : existing?.channelInfoCachedAt ?? now,
       title: snippet.title,
-      postedAt: now,
+      postedAt,
       youtubeUrl: `https://www.youtube.com/watch?v=${body.youtubeVideoId}`,
       thumbnailUrl: snippet.thumbnailUrl,
-      viewCount: 0,
-      likeCount: 0,
-      commentCount: 0,
-      lastFetchedAt: now,
+      viewCount,
+      likeCount,
+      commentCount,
+      lastFetchedAt: existing?.lastFetchedAt ?? now,
       rankingScore: isVisible ? rankingScore : undefined,
-      bookmarkCount: 0,
-      bookmarkScore: isVisible ? 0 : undefined,
-      repostCount: 0,
-      isNiarimPublished: true,
+      bookmarkCount,
+      bookmarkScore: isVisible ? bookmarkCount : undefined,
+      repostCount: existing?.repostCount ?? 0,
+      isNiarimPublished,
       youtubePrivacyStatus: snippet.privacyStatus,
-      isShort: body.isShort,
-      tags: [],
-      lockedTags: [],
-      createdAt: now,
-      projectFps: body.projectFps,
-      projectFrameCount: body.projectFrameCount,
-      projectWorkSeconds: body.projectWorkSeconds,
-      projectCreatedAt: body.projectCreatedAt,
-      projectCanvasWidth: body.projectCanvasWidth,
-      projectCanvasHeight: body.projectCanvasHeight,
+      isShort: body.isShort ?? existing?.isShort ?? false,
+      tags: existing?.tags ?? [],
+      lockedTags: existing?.lockedTags ?? [],
+      createdAt: existing?.createdAt ?? now,
+      statsWindows: existing?.statsWindows,
+      projectFps: body.projectFps ?? existing?.projectFps,
+      projectFrameCount: body.projectFrameCount ?? existing?.projectFrameCount,
+      projectWorkSeconds:
+        body.projectWorkSeconds ?? existing?.projectWorkSeconds,
+      projectCreatedAt: body.projectCreatedAt ?? existing?.projectCreatedAt,
+      projectCanvasWidth:
+        body.projectCanvasWidth ?? existing?.projectCanvasWidth,
+      projectCanvasHeight:
+        body.projectCanvasHeight ?? existing?.projectCanvasHeight,
       gsi1pk: isVisible ? "RANKING#ALL" : undefined,
       gsi1sk: isVisible ? rankingScore : undefined,
       gsi2pk: isVisible ? "BOOKMARK_RANKING" : undefined,
-      gsi2sk: isVisible ? 0 : undefined,
+      gsi2sk: isVisible ? bookmarkCount : undefined,
       gsi3pk: isVisible ? `AUTHOR#${auth.niarimUserId}` : undefined,
-      gsi3sk: isVisible ? now : undefined,
+      gsi3sk: isVisible ? postedAt : undefined,
       gsi3AllPk: `AUTHOR#${auth.niarimUserId}`,
-      gsi3AllSk: now,
+      gsi3AllSk: postedAt,
       gsi4pk: isVisible ? "LATEST" : undefined,
-      gsi4sk: isVisible ? now : undefined,
+      gsi4sk: isVisible ? postedAt : undefined,
     };
 
-    const existing = await ddb.send(
-      new GetCommand({
-        TableName: tableName(),
-        Key: Keys.work(body.youtubeVideoId),
-      }),
-    );
-    if (
-      existing.Item &&
-      (existing.Item as WorkItem).authorId !== auth.niarimUserId
-    ) {
-      conflict(
-        "この動画は既に別のユーザーによってNIARIMへ登録されています",
-        "VIDEO_ALREADY_REGISTERED",
+    try {
+      await ddb.send(
+        new PutCommand({
+          TableName: tableName(),
+          Item: work,
+          // 初回登録では別リクエストとの競合で既存作品を上書きしない。
+          // 再登録では所有者が途中で変わっていないことを確認する。
+          ConditionExpression: existing
+            ? "authorId = :authorId"
+            : "attribute_not_exists(pk)",
+          ExpressionAttributeValues: existing
+            ? { ":authorId": auth.niarimUserId }
+            : undefined,
+        }),
       );
+    } catch (error) {
+      if (error instanceof ConditionalCheckFailedException) {
+        const message =
+          "この動画は同時に登録処理されています。作品一覧を更新してもう一度お試しください";
+        conflict(message, "VIDEO_REGISTRATION_CONFLICT");
+      }
+      throw error;
     }
-
-    await ddb.send(new PutCommand({ TableName: tableName(), Item: work }));
 
     return created({ work: toPublicWork(work) });
   } catch (err) {
-    await releasePostQuota(auth.niarimUserId).catch(() => {});
+    if (quotaReserved) {
+      await releasePostQuota(auth.niarimUserId).catch(() => {});
+    }
     throw err;
   }
 }
@@ -202,7 +253,7 @@ function parseBody(raw: string | undefined): CreateWorkRequestBody {
   return {
     youtubeVideoId: body.youtubeVideoId,
     youtubeAccessToken: body.youtubeAccessToken,
-    isShort: body.isShort ?? false,
+    isShort: body.isShort,
     projectFps,
     projectFrameCount,
     projectWorkSeconds,
