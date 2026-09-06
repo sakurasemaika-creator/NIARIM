@@ -2,12 +2,6 @@ import '../../models/community_work.dart';
 
 /// バックエンドが返す作品1件（`backend/src/api/routes/_publicWork.ts`の
 /// `toPublicWork`と1対1で対応する）。
-///
-/// 画面が使う[CommunityWork]へは[toCommunityWork]で変換する。
-/// [CommunityWork]はダミーデータ時代の名残でサムネイルURL等を持たない
-/// フィールド構成なので、変換で落ちる情報（`youtubeUrl`・`thumbnailUrl`・
-/// `channelAvatarUrl`・`commentCount`・`repostCount`）はこのDTOのまま
-/// 保持して、必要な画面がDTO側を参照できるようにしてある。
 class ApiWork {
   final String workId;
   final String authorId;
@@ -26,6 +20,12 @@ class ApiWork {
   final List<String> tags;
   final Set<String> lockedTags;
   final bool isNiarimPublished;
+  final int projectFps;
+  final int projectFrameCount;
+  final int projectWorkSeconds;
+  final DateTime? projectCreatedAt;
+  final int projectCanvasWidth;
+  final int projectCanvasHeight;
 
   const ApiWork({
     required this.workId,
@@ -45,6 +45,12 @@ class ApiWork {
     required this.tags,
     required this.lockedTags,
     required this.isNiarimPublished,
+    this.projectFps = 0,
+    this.projectFrameCount = 0,
+    this.projectWorkSeconds = 0,
+    this.projectCreatedAt,
+    this.projectCanvasWidth = 0,
+    this.projectCanvasHeight = 0,
   });
 
   factory ApiWork.fromJson(Map<String, dynamic> json) => ApiWork(
@@ -64,17 +70,15 @@ class ApiWork {
     isShort: json['isShort'] == true,
     tags: _stringList(json['tags']),
     lockedTags: _stringList(json['lockedTags']).toSet(),
-    // 未指定は「公開」とみなす（一覧APIは公開作品しか返さないため）。
     isNiarimPublished: json['isNiarimPublished'] != false,
+    projectFps: _int(json['projectFps']),
+    projectFrameCount: _int(json['projectFrameCount']),
+    projectWorkSeconds: _int(json['projectWorkSeconds']),
+    projectCreatedAt: _nullableDateTime(json['projectCreatedAt']),
+    projectCanvasWidth: _int(json['projectCanvasWidth']),
+    projectCanvasHeight: _int(json['projectCanvasHeight']),
   );
 
-  /// 画面が使うモデルへ変換する。
-  ///
-  /// `durationSeconds`はバックエンドが返さない（YouTube側の情報で、
-  /// 統計更新バッチも取得していない）ため0にする。表示側は0を
-  /// 「尺は不明」として扱うこと。`thumbnailColorIndex`はサムネイルURLが
-  /// 無かった時代のプレースホルダー配色用なので、URLがある本番データでは
-  /// workIdから安定した値を導出するだけにしてある（同じ作品なら常に同じ色）。
   CommunityWork toCommunityWork() => CommunityWork(
     id: workId,
     title: title,
@@ -86,6 +90,12 @@ class ApiWork {
     postedAt: postedAt,
     durationSeconds: 0,
     thumbnailColorIndex: workId.hashCode.abs() % 6,
+    projectFps: projectFps,
+    projectFrameCount: projectFrameCount,
+    projectWorkSeconds: projectWorkSeconds,
+    projectCreatedAt: projectCreatedAt,
+    projectCanvasWidth: projectCanvasWidth,
+    projectCanvasHeight: projectCanvasHeight,
     tags: tags,
     lockedTags: lockedTags,
     isNiarimPublished: isNiarimPublished,
@@ -93,14 +103,10 @@ class ApiWork {
   );
 }
 
-/// 一覧APIに出てくるユーザーの最小情報（フォロワー一覧・被ブックマーク
-/// 一覧などで共通）。
 class ApiUserRef {
   final String niarimUserId;
   final String? channelName;
   final String? channelAvatarUrl;
-
-  /// 被ブックマーク一覧でのみ入る「いつブックマークしたか」。
   final DateTime? bookmarkedAt;
 
   const ApiUserRef({
@@ -119,18 +125,11 @@ class ApiUserRef {
         : _dateTime(json['bookmarkedAt']),
   );
 
-  /// 表示名（チャンネル名が未取得ならIDで代用する）。
   String get displayName => (channelName == null || channelName!.isEmpty)
       ? niarimUserId
       : channelName!;
 }
 
-/// ランキング1ページ（`GET /ranking/{period}`）。
-///
-/// 累計（`all`）とブックマーク数（`bookmarks`）はその場で集計するため
-/// [computedAt]・[windowId]がnullになる。期間別（year/month/week/day）は
-/// バッチが事前計算したスナップショットを返すので、いつ時点の集計かを
-/// [computedAt]で画面に出せる。
 class ApiRankingPage {
   final String period;
   final List<ApiWork> works;
@@ -154,10 +153,6 @@ class ApiRankingPage {
   );
 }
 
-/// 被ブックマーク一覧（`GET /works/{id}/bookmarkers`）。
-///
-/// [totalCount]は非公開設定の人も含んだ総数、[users]は一覧公開を許可した
-/// 人だけ。「集計」と「表示」を分けるという22.7節の設計がそのまま出ている。
 class ApiBookmarkers {
   final String workId;
   final int totalCount;
@@ -176,9 +171,6 @@ class ApiBookmarkers {
   );
 }
 
-/// フォロワー一覧（`GET /users/{id}/followers`）。
-/// [visibleFollowers]は一覧公開を許可した人だけで、[hiddenCount]が
-/// 「非公開にしているため出していない人数」。
 class ApiFollowers {
   final String targetId;
   final int totalCount;
@@ -200,7 +192,6 @@ class ApiFollowers {
   );
 }
 
-/// フォロー通知1件（`GET /users/{id}/notifications`）。
 class ApiFollowNotification {
   final String fromUserId;
   final String fromUserName;
@@ -223,7 +214,6 @@ class ApiFollowNotification {
       );
 }
 
-/// 通知一覧（`GET /users/{id}/notifications`）。
 class ApiNotifications {
   final List<ApiFollowNotification> notifications;
   final int unreadCount;
@@ -242,11 +232,6 @@ class ApiNotifications {
         unreadCount: _int(json['unreadCount']),
       );
 }
-
-// ─── JSONの読み取りヘルパー ────────────────────────────────────────
-// サーバーは型を守って返すが、通信の途中でプロキシに書き換えられる等の
-// 想定外に対しても**画面が落ちない**ことを優先し、型が違えば既定値へ
-// 倒す（例外にしない）。落ちた値は表示が空になるだけで済む。
 
 List<ApiWork> _works(Object? raw) => (raw as List? ?? const [])
     .whereType<Map<String, dynamic>>()
@@ -270,12 +255,15 @@ int _int(Object? raw) {
 List<String> _stringList(Object? raw) =>
     (raw as List? ?? const []).whereType<String>().toList();
 
-/// ISO8601をパースする。解釈できない場合はエポックにする
-/// （並び替えで最後尾へ落ちるだけで、画面は壊れない）。
 DateTime _dateTime(Object? raw) {
   if (raw is String) {
     final parsed = DateTime.tryParse(raw);
     if (parsed != null) return parsed.toLocal();
   }
   return DateTime.fromMillisecondsSinceEpoch(0);
+}
+
+DateTime? _nullableDateTime(Object? raw) {
+  if (raw is! String || raw.isEmpty) return null;
+  return DateTime.tryParse(raw)?.toLocal();
 }
