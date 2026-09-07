@@ -117,8 +117,13 @@ class CommunityApi {
     int? projectCanvasWidth,
     int? projectCanvasHeight,
   }) async {
+    // POST /works is intentionally special: youtubeVideoId is the backend workId and
+    // idempotency key. Retrying once on a timeout/5xx cannot create a second NIARIM
+    // work, and lets the client recover when the server committed the first request but
+    // its response was lost. Other mutating API calls keep the client's retries=0.
     final json = await _client.postJson(
       '/works',
+      retries: 1,
       body: {
         'youtubeVideoId': youtubeVideoId,
         'youtubeAccessToken': youtubeAccessToken,
