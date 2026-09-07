@@ -41,9 +41,9 @@ describe("work registration idempotency contract", () => {
   });
 
   it("keeps publish-state changes outside POST /works", () => {
-    expect(source).toContain("公開/非公開切り替えやタイトル変更はPATCH /works/{id}");
     expect(source).not.toContain("existing.isNiarimPublished");
     expect(source).not.toContain("hasPublicIndexes");
+    expect(source).not.toContain("new UpdateCommand");
   });
 
   it("protects first registration from concurrent overwrite", () => {
