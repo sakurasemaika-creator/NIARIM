@@ -1,0 +1,29 @@
+name: Temp Posting Auth Validation
+
+on:
+  push:
+    branches: [dev_branch]
+    paths:
+      - 'lib/services/google_auth_service.dart'
+      - 'lib/screens/community/community_post_screen.dart'
+      - '.github/workflows/temp-post-auth-validation.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+      - name: Install dependencies
+        run: flutter pub get
+      - name: Analyze posting and auth changes
+        run: flutter analyze lib/services/google_auth_service.dart lib/screens/community/community_post_screen.dart --no-fatal-infos
+      - name: Run Flutter tests
+        run: flutter test --reporter compact
