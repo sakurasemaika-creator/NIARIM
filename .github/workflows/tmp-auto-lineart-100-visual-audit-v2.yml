@@ -1,0 +1,77 @@
+name: TMP Auto Lineart 100 Visual Audit v2
+on:
+  push:
+    branches: [dev_branch]
+    paths:
+      - '.github/workflows/tmp-auto-lineart-100-visual-audit-v2.yml'
+permissions:
+  contents: write
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          ref: dev_branch
+          fetch-depth: 0
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+      - name: Patch 100-step smoothing robustly
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          import re
+          p=Path('lib/screens/canvas/widgets/filter_panel.dart'); s=p.read_text()
+          s,n=re.subn(r'final smoothingLevel = \(filter\.autoLineartSmoothing / 10\)\.round\(\)\.clamp\(\s*0,\s*10,\s*\);', 'final smoothingLevel = filter.autoLineartSmoothing.round().clamp(0, 100);', s); assert n==1,n
+          s,n=re.subn(r'\(current\.autoLineartSmoothing / 10\)\.round\(\)\.clamp\(\s*0,\s*10,?\s*\),\s*0,\s*10,', 'current.autoLineartSmoothing.round().clamp(0, 100),\n                    0,\n                    100,', s); assert n==1,n
+          s,n=re.subn(r'autoLineartSmoothing: \(v \* 10\)\.toDouble\(\),', 'autoLineartSmoothing: v.toDouble(),', s); assert n==1,n
+          p.write_text(s)
+          p=Path('lib/engine/auto_lineart_engine.dart'); s=p.read_text()
+          s=s.replace('[smoothingLevel] is intentionally discrete\n  /// (0..10): higher levels smooth the control polygon and retain fewer points.', '[smoothingLevel] is 0..100: higher levels smooth the control polygon and\n  /// continuously retain fewer points.')
+          s,n=re.subn(r'final level = smoothingLevel\.clamp\(0, 10\);\s*if \(level == 0 \|\| source\.paths\.isEmpty\) return source;', 'final level = smoothingLevel.clamp(0, 100);\n    if (level == 0 || source.paths.isEmpty) return source;\n    final legacyLevel = level / 10.0;', s); assert n==1,n
+          s,n=re.subn(r'final passes = math\.max\(1, level\);\s*final amount = 0\.12 \+ level \* 0\.025;', 'final passes = math.max(1, legacyLevel.ceil());\n      final amount = 0.12 + legacyLevel * 0.025;', s); assert n==1,n
+          s,n=re.subn(r'// Retain 92% -> 20% of interior controls over the ten levels\.\s*final target = math\.max\(\s*2,\s*\(original\.length \* \(1\.0 - level \* 0\.08\)\)\.round\(\),\s*\);', '// Retain 100% -> 20% of controls continuously over 0..100.\n      final target = math.max(\n        2,\n        (original.length * (1.0 - legacyLevel * 0.08)).round(),\n      );', s); assert n==1,n
+          p.write_text(s)
+          PY
+          dart format lib/screens/canvas/widgets/filter_panel.dart lib/engine/auto_lineart_engine.dart
+      - name: Recover focused visual test from v1 workflow
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          src=Path('.github/workflows/tmp-auto-lineart-100-visual-audit.yml').read_text().splitlines()
+          out=[]; active=False
+          for line in src:
+            if "cat > test/auto_lineart_filter_panel_visual_audit_test.dart <<'DART'" in line:
+              active=True; continue
+            if active and line.strip()=='DART': break
+            if active:
+              out.append(line[10:] if line.startswith('          ') else line)
+          assert len(out)>100, len(out)
+          Path('test/auto_lineart_filter_panel_visual_audit_test.dart').write_text('\n'.join(out)+'\n')
+          PY
+          dart format test/auto_lineart_filter_panel_visual_audit_test.dart
+      - name: Validate and capture
+        run: |
+          flutter pub get
+          flutter analyze lib/engine/auto_lineart_engine.dart lib/screens/canvas/widgets/filter_panel.dart lib/screens/canvas/widgets/auto_lineart_control_overlay.dart test/auto_lineart_filter_panel_visual_audit_test.dart
+          flutter test test/auto_lineart_filter_test.dart test/auto_lineart_control_overlay_test.dart test/auto_lineart_filter_panel_visual_audit_test.dart
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: auto-lineart-panel-audit-v2
+          path: build/auto-lineart-panel-audit/*.png
+          if-no-files-found: warn
+      - name: Land
+        if: success()
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add lib/engine/auto_lineart_engine.dart lib/screens/canvas/widgets/filter_panel.dart test/auto_lineart_filter_panel_visual_audit_test.dart
+          git commit -m 'feat: restore 100-step auto lineart smoothing and visual audit'
+          git reset --hard HEAD && git clean -fd
+          git fetch origin dev_branch
+          git rebase origin/dev_branch
+          git push origin HEAD:dev_branch
