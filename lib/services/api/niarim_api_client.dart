@@ -27,11 +27,16 @@ typedef NiarimAuthTokenProvider = Future<String?> Function();
 ///
 /// ## 再試行の方針
 ///
-/// 再試行するのは**GETだけ**。POST/PATCH/PUT/DELETEは、サーバーに届いた
-/// あとで応答が失われた場合に「二重投稿・二重通報」を起こしうるため、
-/// タイムアウトしても自動では投げ直さない（投稿系はサーバー側が
-/// workId=youtubeVideoIdの冪等キーで守っているが、通報のように
-/// 冪等でないものもあるため、層としては一律で投げ直さない方針にする）。
+/// GETは従来どおり自動再試行する。POST/PATCH/PUT/DELETEは既定では再試行
+/// しない。サーバーに届いたあと応答だけ失われた場合に、二重投稿・二重通報
+/// などを起こしうるため。
+///
+/// ただし、サーバー側で明示的に冪等性が保証されている個別POSTだけは、
+/// 呼び出し側が[postJson]の[retries]を明示指定できる。現在の代表例は
+/// `POST /works` で、YouTubeのvideoIdをworkId兼冪等キーとしている。
+/// これにより「サーバーでは登録成功したがレスポンスだけ失われた」場合も、
+/// 同じvideoIdを安全に再送して既存Workを受け取れる。他のPOSTはretries=0の
+/// ままなので、この例外が通報等へ波及することはない。
 class NiarimApiClient {
   /// APIのベースURL（末尾のスラッシュは持たない）。
   final String baseUrl;
@@ -89,16 +94,21 @@ class NiarimApiClient {
     retries: maxGetRetries,
   );
 
+  /// POST。既定では書き込みを再送しない。
+  ///
+  /// [retries]は、呼び出し先が同じリクエストの再送を安全に受け付ける
+  /// 冪等エンドポイントであることを確認した場合だけ0より大きくする。
   Future<Map<String, dynamic>> postJson(
     String path, {
     Object? body,
     bool authenticated = true,
+    int retries = 0,
   }) => _sendWithRetry(
     'POST',
     _uri(path),
     body: body,
     authenticated: authenticated,
-    retries: 0,
+    retries: retries,
   );
 
   Future<Map<String, dynamic>> patchJson(
