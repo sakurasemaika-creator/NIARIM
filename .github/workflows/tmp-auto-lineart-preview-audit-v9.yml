@@ -1,0 +1,73 @@
+name: TMP Auto Lineart Preview Audit v9
+on:
+  push:
+    branches: [dev_branch]
+    paths: ['.github/workflows/tmp-auto-lineart-preview-audit-v9.yml']
+permissions:
+  contents: write
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v6
+        with: {ref: dev_branch, fetch-depth: 0}
+      - uses: subosito/flutter-action@v2
+        with: {channel: stable, cache: true}
+      - name: Patch audit tests
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          import base64
+          p=Path('test/auto_lineart_filter_panel_visual_audit_test.dart')
+          s=p.read_text()
+          marker='void main() {\n  TestWidgetsFlutterBinding.ensureInitialized();'
+          replacement="const runAutoLineartVisualAudit = bool.fromEnvironment('NIARIM_AUTO_LINEART_VISUAL_AUDIT');\n\nvoid main() {\n  TestWidgetsFlutterBinding.ensureInitialized();"
+          assert marker in s
+          s=s.replace(marker,replacement,1)
+          for name in ['auto_lineart_sp_45.png','auto_lineart_sp_85.png','auto_lineart_desktop_45.png']:
+            old=f"      golden: 'goldens/{name}',\n    );\n  }});"
+            new=f"      golden: 'goldens/{name}',\n    );\n  }}, skip: !runAutoLineartVisualAudit);"
+            assert old in s, name
+            s=s.replace(old,new,1)
+          preview=base64.b64decode('CgogIEZ1dHVyZTx2b2lkPiBwdW1wUHJldmlld0F1ZGl0KAogICAgV2lkZ2V0VGVzdGVyIHRlc3RlciwgewogICAgcmVxdWlyZWQgaW50IHNtb290aGluZywKICAgIHJlcXVpcmVkIFN0cmluZyBnb2xkZW4sCiAgfSkgYXN5bmMgewogICAgdGVzdGVyLnZpZXcucGh5c2ljYWxTaXplID0gY29uc3QgU2l6ZSgzNjAsIDM2MCk7CiAgICB0ZXN0ZXIudmlldy5kZXZpY2VQaXhlbFJhdGlvID0gMzsKICAgIGFkZFRlYXJEb3duKHRlc3Rlci52aWV3LnJlc2V0UGh5c2ljYWxTaXplKTsKICAgIGFkZFRlYXJEb3duKHRlc3Rlci52aWV3LnJlc2V0RGV2aWNlUGl4ZWxSYXRpbyk7CiAgICBmaW5hbCBpbWFnZSA9IGF3YWl0IG1ha2VQcmV2aWV3KCk7CiAgICBhZGRUZWFyRG93bihpbWFnZS5kaXNwb3NlKTsKICAgIGZpbmFsIGdyYXBoID0gQXV0b0xpbmVhcnRFbmdpbmUucHJlcGFyZUVkaXRhYmxlR3JhcGgoCiAgICAgIGJhc2VHcmFwaCgpLAogICAgICBzbW9vdGhpbmdMZXZlbDogc21vb3RoaW5nLAogICAgKTsKICAgIGZpbmFsIGtleSA9IEdsb2JhbEtleSgpOwogICAgYXdhaXQgdGVzdGVyLnB1bXBXaWRnZXQoCiAgICAgIE1hdGVyaWFsQXBwKAogICAgICAgIGhvbWU6IFNjYWZmb2xkKAogICAgICAgICAgYm9keTogQ2VudGVyKAogICAgICAgICAgICBjaGlsZDogUmVwYWludEJvdW5kYXJ5KAogICAgICAgICAgICAgIGtleToga2V5LAogICAgICAgICAgICAgIGNoaWxkOiBTaXplZEJveCgKICAgICAgICAgICAgICAgIHdpZHRoOiAxMjAsCiAgICAgICAgICAgICAgICBoZWlnaHQ6IDEyMCwKICAgICAgICAgICAgICAgIGNoaWxkOiBBdXRvTGluZWFydENvbnRyb2xPdmVybGF5KAogICAgICAgICAgICAgICAgICBpbWFnZTogaW1hZ2UsCiAgICAgICAgICAgICAgICAgIGdyYXBoOiBncmFwaCwKICAgICAgICAgICAgICAgICAgb25Qb2ludE1vdmVkOiAoXywgX18sIF9fXykge30sCiAgICAgICAgICAgICAgICApLAogICAgICAgICAgICAgICksCiAgICAgICAgICAgICksCiAgICAgICAgICApLAogICAgICAgICksCiAgICAgICksCiAgICApOwogICAgYXdhaXQgdGVzdGVyLnB1bXAoKTsKICAgIGV4cGVjdCh0ZXN0ZXIudGFrZUV4Y2VwdGlvbigpLCBpc051bGwpOwogICAgYXdhaXQgZXhwZWN0TGF0ZXIoZmluZC5ieUtleShrZXkpLCBtYXRjaGVzR29sZGVuRmlsZShnb2xkZW4pKTsKICB9CgogIHRlc3RXaWRnZXRzKAogICAgJzEyMHB4IHByb2R1Y3Rpb24gcHJldmlldyBzbW9vdGhpbmcgNDUnLAogICAgKHRlc3RlcikgYXN5bmMgPT4gcHVtcFByZXZpZXdBdWRpdCgKICAgICAgdGVzdGVyLAogICAgICBzbW9vdGhpbmc6IDQ1LAogICAgICBnb2xkZW46ICdnb2xkZW5zL2F1dG9fbGluZWFydF9wcmV2aWV3XzEyMF80NS5wbmcnLAogICAgKSwKICAgIHNraXA6ICFydW5BdXRvTGluZWFydFZpc3VhbEF1ZGl0LAogICk7CgogIHRlc3RXaWRnZXRzKAogICAgJzEyMHB4IHByb2R1Y3Rpb24gcHJldmlldyBzbW9vdGhpbmcgODUnLAogICAgKHRlc3RlcikgYXN5bmMgPT4gcHVtcFByZXZpZXdBdWRpdCgKICAgICAgdGVzdGVyLAogICAgICBzbW9vdGhpbmc6IDg1LAogICAgICBnb2xkZW46ICdnb2xkZW5zL2F1dG9fbGluZWFydF9wcmV2aWV3XzEyMF84NS5wbmcnLAogICAgKSwKICAgIHNraXA6ICFydW5BdXRvTGluZWFydFZpc3VhbEF1ZGl0LAogICk7Cg==').decode()
+          idx=s.rfind('\n}')
+          assert idx!=-1
+          s=s[:idx]+preview+s[idx:]
+          p.write_text(s)
+
+          p=Path('test/auto_lineart_control_overlay_test.dart')
+          s=p.read_text()
+          anchor="  testWidgets('SP-sized transparent hit target reaches 20px from a control point', (tester) async {"
+          assert anchor in s
+          dense=base64.b64decode('CgogIHRlc3RXaWRnZXRzKCdvdmVybGFwcGluZyB0b3VjaCB0YXJnZXRzIHNlbGVjdCB0aGUgbmVhcmVzdCBjb250cm9sIHBvaW50JywgKHRlc3RlcikgYXN5bmMgewogICAgZmluYWwgcmVjb3JkZXIgPSB1aS5QaWN0dXJlUmVjb3JkZXIoKTsKICAgIGZpbmFsIGNhbnZhcyA9IENhbnZhcyhyZWNvcmRlcik7CiAgICBjYW52YXMuZHJhd1JlY3QoY29uc3QgUmVjdC5mcm9tTFRXSCgwLCAwLCAxMDAsIDEwMCksIFBhaW50KCkpOwogICAgZmluYWwgaW1hZ2UgPSBhd2FpdCByZWNvcmRlci5lbmRSZWNvcmRpbmcoKS50b0ltYWdlKDEwMCwgMTAwKTsKICAgIGludD8gbW92ZWRJbmRleDsKICAgIGNvbnN0IGdyYXBoID0gQXV0b0xpbmVhcnRHcmFwaCgKICAgICAgd2lkdGg6IDEwMCwKICAgICAgaGVpZ2h0OiAxMDAsCiAgICAgIHBhdGhzOiBbCiAgICAgICAgQXV0b0xpbmVhcnRQYXRoKAogICAgICAgICAgcG9pbnRzOiBbCiAgICAgICAgICAgIEF1dG9MaW5lYXJ0UG9pbnQoNDUsIDUwKSwKICAgICAgICAgICAgQXV0b0xpbmVhcnRQb2ludCg1NSwgNTApLAogICAgICAgICAgICBBdXRvTGluZWFydFBvaW50KDgwLCA1MCksCiAgICAgICAgICBdLAogICAgICAgICAgc3RhcnRJc0p1bmN0aW9uOiBmYWxzZSwKICAgICAgICAgIGVuZElzSnVuY3Rpb246IGZhbHNlLAogICAgICAgICAgcGVyc2lzdGVuY2U6IDEsCiAgICAgICAgKSwKICAgICAgXSwKICAgICk7CiAgICBhd2FpdCB0ZXN0ZXIucHVtcFdpZGdldCgKICAgICAgTWF0ZXJpYWxBcHAoCiAgICAgICAgaG9tZTogQ2VudGVyKAogICAgICAgICAgY2hpbGQ6IFNpemVkQm94KAogICAgICAgICAgICB3aWR0aDogMTAwLAogICAgICAgICAgICBoZWlnaHQ6IDEwMCwKICAgICAgICAgICAgY2hpbGQ6IEF1dG9MaW5lYXJ0Q29udHJvbE92ZXJsYXkoCiAgICAgICAgICAgICAgaW1hZ2U6IGltYWdlLAogICAgICAgICAgICAgIGdyYXBoOiBncmFwaCwKICAgICAgICAgICAgICBvblBvaW50TW92ZWQ6IChfLCBwb2ludEluZGV4LCBfXykgPT4gbW92ZWRJbmRleCA9IHBvaW50SW5kZXgsCiAgICAgICAgICAgICksCiAgICAgICAgICApLAogICAgICAgICksCiAgICAgICksCiAgICApOwogICAgZmluYWwgcmVjdCA9IHRlc3Rlci5nZXRSZWN0KGZpbmQuYnlUeXBlKEF1dG9MaW5lYXJ0Q29udHJvbE92ZXJsYXkpKTsKICAgIGF3YWl0IHRlc3Rlci5kcmFnRnJvbSgKICAgICAgT2Zmc2V0KHJlY3QubGVmdCArIDU0LCByZWN0LnRvcCArIDUwKSwKICAgICAgY29uc3QgT2Zmc2V0KDYsIC0xMCksCiAgICApOwogICAgYXdhaXQgdGVzdGVyLnB1bXAoKTsKICAgIGV4cGVjdChtb3ZlZEluZGV4LCAxKTsKICAgIGltYWdlLmRpc3Bvc2UoKTsKICB9KTsK').decode()
+          s=s.replace(anchor,dense+'\n'+anchor,1)
+          p.write_text(s)
+          PY
+          dart format test/auto_lineart_filter_panel_visual_audit_test.dart test/auto_lineart_control_overlay_test.dart
+      - name: Validate normal suite behavior
+        run: |
+          flutter pub get
+          flutter analyze test/auto_lineart_filter_panel_visual_audit_test.dart test/auto_lineart_control_overlay_test.dart
+          flutter test test/auto_lineart_control_overlay_test.dart
+          flutter test test/auto_lineart_filter_panel_visual_audit_test.dart
+      - name: Generate visual evidence
+        run: flutter test --dart-define=NIARIM_AUTO_LINEART_VISUAL_AUDIT=true --update-goldens test/auto_lineart_filter_panel_visual_audit_test.dart
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: auto-lineart-preview-audit-v9
+          path: test/goldens/*.png
+          if-no-files-found: warn
+      - name: Land regression-safe audit tests
+        if: success()
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add test/auto_lineart_filter_panel_visual_audit_test.dart test/auto_lineart_control_overlay_test.dart
+          git commit -m 'test: isolate auto lineart visual audit and verify dense touch selection'
+          git reset --hard HEAD
+          git clean -fd
+          git fetch origin dev_branch
+          git rebase origin/dev_branch
+          git push origin HEAD:dev_branch
