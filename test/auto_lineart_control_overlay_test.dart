@@ -95,7 +95,7 @@ void main() {
               child: AutoLineartControlOverlay(
                 image: image,
                 graph: graph,
-                onPointMoved: (_, __, point) => movedTo = point,
+                onPointMoved: (_, _, point) => movedTo = point,
               ),
             ),
           ),
@@ -146,7 +146,7 @@ void main() {
             child: AutoLineartControlOverlay(
               image: image,
               graph: graph,
-              onPointMoved: (_, pointIndex, __) => movedIndex = pointIndex,
+              onPointMoved: (_, pointIndex, _) => movedIndex = pointIndex,
             ),
           ),
         ),

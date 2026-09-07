@@ -142,7 +142,7 @@ void main() {
                         child: AutoLineartControlOverlay(
                           image: image,
                           graph: graph,
-                          onPointMoved: (_, __, ___) {},
+                          onPointMoved: (_, _, _) {},
                         ),
                       ),
                       Align(
@@ -217,7 +217,7 @@ void main() {
                 child: AutoLineartControlOverlay(
                   image: image,
                   graph: graph,
-                  onPointMoved: (_, __, ___) {},
+                  onPointMoved: (_, _, _) {},
                 ),
               ),
             ),
