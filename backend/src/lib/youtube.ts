@@ -9,12 +9,8 @@
  * そのまま使う（サーバー側に秘匿のAPIキーは持たない。動画の所有者本人
  * にしかできない操作のため、サービスアカウント等は不要）。
  *
- * 【要確認】`videos.batchGetStats`は本仕様書10章に「2026年6月3日追加」と
- * 記録している比較的新しいエンドポイントである。デプロイ前に必ず
- * Google公式ドキュメント（https://developers.google.com/youtube/v3/docs）
- * でリクエスト形式・レスポンス形式を最新版に照らして確認すること
- * （本ファイルのURL・パラメータ名は仕様書の記述に基づく best-effort の
- * 実装であり、実際のAPI呼び出しで検証していない）。
+ * 統計APIの形式はGoogle公式リファレンスに準拠する。
+ * https://developers.google.com/youtube/v3/docs/videos/batchGetStats
  */
 
 const API_BASE = "https://www.googleapis.com/youtube/v3";
@@ -30,9 +26,9 @@ export interface YoutubeVideoSnippet {
 
 export interface YoutubeVideoStats {
   id: string;
-  viewCount: number;
-  likeCount: number;
-  commentCount: number;
+  viewCount?: number;
+  likeCount?: number;
+  commentCount?: number;
   privacyStatus: "public" | "unlisted" | "private";
 }
 
@@ -45,6 +41,7 @@ async function callYoutubeApi<T>(
   for (const [k, v] of Object.entries(params)) url.searchParams.set(k, v);
 
   const res = await fetch(url, {
+    signal: AbortSignal.timeout(15_000),
     headers: { Authorization: `Bearer ${accessToken}` },
   });
   if (!res.ok) {
@@ -92,9 +89,9 @@ export async function getVideoSnippet(
 
 /**
  * `videos.batchGetStats`（8.1節の統計更新バッチで使用。専用バケット
- * 10,000ユニット/日、10章）。一度に最大50件程度まとめて取得する想定
- * （実際の上限は公式ドキュメントで確認すること。取得できなかった動画は
- * 削除済みとみなす）。
+ * 10,000ユニット/日、10章）。最大50件ずつ処理する。
+ * 統計レスポンスに公開状態は含まれないため、videos.listで別途確認する。
+ * 取得失敗を削除と断定せず、取得できた項目のみ更新する。
  *
  * サーバー側の統計更新バッチはAPIキー（アプリ用のプロジェクトAPIキー）
  * を使う想定とし、個々の投稿者のOAuthトークンには依存しない
@@ -107,11 +104,14 @@ export async function batchGetVideoStats(
 ): Promise<Map<string, YoutubeVideoStats>> {
   if (videoIds.length === 0) return new Map();
 
-  const url = new URL(`${API_BASE}/videos/batchGetStats`);
+  if (videoIds.length > 50)
+    throw new Error("統計取得は50件以内で指定してください");
+  const url = new URL(`${API_BASE}/videos:batchGetStats`);
+  url.searchParams.set("part", "statistics");
   url.searchParams.set("id", videoIds.join(","));
   url.searchParams.set("key", apiKey);
 
-  const res = await fetch(url);
+  const res = await fetch(url, { signal: AbortSignal.timeout(15_000) });
   if (!res.ok) {
     const body = await res.text().catch(() => "");
     throw new Error(
@@ -126,21 +126,65 @@ export async function batchGetVideoStats(
         likeCount?: string;
         commentCount?: string;
       };
-      status?: { privacyStatus: "public" | "unlisted" | "private" };
     }>;
   };
 
+  if (!Array.isArray(data.items))
+    throw new Error("YouTube統計レスポンスが不正です");
+  const statusUrl = new URL(`${API_BASE}/videos`);
+  statusUrl.searchParams.set("part", "status");
+  statusUrl.searchParams.set("id", videoIds.join(","));
+  statusUrl.searchParams.set("key", apiKey);
+  const statusResponse = await fetch(statusUrl, {
+    signal: AbortSignal.timeout(15_000),
+  });
+  if (!statusResponse.ok)
+    throw new Error(
+      `YouTube公開状態の取得に失敗しました（status=${statusResponse.status}）`,
+    );
+  const statusData = (await statusResponse.json()) as {
+    items: Array<{
+      id: string;
+      status: { privacyStatus: YoutubeVideoStats["privacyStatus"] };
+    }>;
+  };
+  if (!Array.isArray(statusData.items))
+    throw new Error("YouTube公開状態レスポンスが不正です");
+  const statuses = new Map(
+    statusData.items.map((item) => [item.id, item.status?.privacyStatus]),
+  );
+  const statistics = new Map(
+    data.items.map((item) => [item.id, item.statistics]),
+  );
   const result = new Map<string, YoutubeVideoStats>();
-  for (const item of data.items) {
-    result.set(item.id, {
-      id: item.id,
-      viewCount: Number(item.statistics.viewCount ?? 0),
-      likeCount: Number(item.statistics.likeCount ?? 0),
-      commentCount: Number(item.statistics.commentCount ?? 0),
-      privacyStatus: item.status?.privacyStatus ?? "public",
+  for (const id of videoIds) {
+    // APIキーで読めない動画は非公開・削除を区別できない。削除と断定せず
+    // 安全側に非表示とし、後のサイクルで再確認する。
+    const privacyStatus = statuses.has(id) ? statuses.get(id) : "private";
+    if (
+      privacyStatus !== "public" &&
+      privacyStatus !== "unlisted" &&
+      privacyStatus !== "private"
+    ) {
+      throw new Error("YouTube公開状態が不正です");
+    }
+    const stats = statistics.get(id);
+    result.set(id, {
+      id,
+      privacyStatus,
+      viewCount: parseCount(stats?.viewCount),
+      likeCount: parseCount(stats?.likeCount),
+      commentCount: parseCount(stats?.commentCount),
     });
   }
   return result;
+}
+
+function parseCount(value: unknown): number | undefined {
+  if (typeof value !== "string" && typeof value !== "number") return undefined;
+  if (!/^\d+$/.test(String(value))) return undefined;
+  const count = Number(value);
+  return Number.isSafeInteger(count) ? count : undefined;
 }
 
 /** `videos.delete`（13章：ユーザーが希望した場合のYouTube側削除）。 */
@@ -151,6 +195,7 @@ export async function deleteVideo(
   const url = new URL(`${API_BASE}/videos`);
   url.searchParams.set("id", videoId);
   const res = await fetch(url, {
+    signal: AbortSignal.timeout(15_000),
     method: "DELETE",
     headers: { Authorization: `Bearer ${accessToken}` },
   });

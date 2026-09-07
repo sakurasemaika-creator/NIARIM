@@ -1,53 +1,55 @@
 # NIARIM App＋Web 製品監査・再開記録
 
-状態：進行中。全体監査完了ではない。開始：2026-09-07。
+状態：**進行中。全体監査は未完了**。2026-09-07 Work checkpoint。
 
-## 安全条件と再開手順
+## 再開・Git安全条件
 
-- App `C:/Users/user/Downloads/MIRANIMA`、Web `C:/Users/user/Downloads/NIARIM_web/NIARIM-web`。両方 `dev_branch` のみ。force push / hard reset / 本番データ操作は禁止。
-- 毎再開・重要領域変更・checkpoint・push直前に両repoの status / HEAD / fetch origin / ahead-behind / incoming diff を確認。差分がある領域の旧監査結果は無効化して読み直す。競合は双方の意図を統合する。
-- 開始前のユーザー変更：`macos/Flutter/GeneratedPluginRegistrant.swift`、`pubspec.lock`。今回のcommitには含めない。無関係な上書き・破棄禁止。
-- ローカル原本＋patch＋SHA256保護：`.git/niarim-product-audit/initial-user-changes/`。既存stash `f7f8bec9cbae01261bc37ef8dd4727029c61c295` を維持。
-- Swift SHA256 `c21cf31544420c9a679ce095b05c9761720bfaa5b583e8fd10f93a25b1940d2b`、lock SHA256 `f901642a163cc1d1cd57dc6c38926f3633d7048982486a0af6d99fe452561475`。
-- 本体を変更する前に回帰テストRED→修正→GREEN。formatは対象差分中心、pub操作は上記保護を前提とする。検証済み論理単位だけcommit/pushし、独立レビューを通す。
+- App `sakurasemaika-creator/NIARIM` / Web `sakurasemaika-creator/NIARIM-web`。両方 `dev_branch` のみ。force push、破壊的reset、本番データ操作は禁止。
+- 再開・checkpoint・push前に status / HEAD / fetch / ahead-behind / incoming diff を確認し、変更の影響がある領域だけ再監査する。
+- Work checkout: `/workspace/scratch/dd8428d3aee3/NIARIM` と同階層の `NIARIM-web`。
+- 今回開始時は両方clean、stash・未push commitなし。HermesのWindows作業領域にあったSwift/lockの未commit変更・stashは、このcheckoutにはない。取得した最新commitのSwift/lockを維持する。
+- 今回の初期HEAD App `069c9e8` / Web `10116b5`。追加指示後fetchし、App **`353f94c`** / Web **`e53f248`** へincomingを確認してfast-forward。実投稿・認証retry・保存確認UI・Prism・Web heroの並行変更を継承した。
+- HermesのREADMEは両repoとも全領域が調査中/未確認。完了として継承できる領域はない。参照されたWindowsのinventory/findings原本はリポジトリに含まれていない。
 
-## 調査基準
-
-開始HEAD：App `dfa64ab981a5eaea159fa284ec6e436cc9bd9844`、Web `3f397d05d624f4f3866ee85e535f15b848aaf030`（Webの先行8commitを内容確認してfast-forward済み）。
-追跡ファイル：App 799、Web 152。全体一覧・hash・サイズ・TODO候補はローカル `C:/Users/user/AppData/Local/Temp/niarim-audit/{app,web}-{inventory,flags}.json`。一覧化は精査完了を意味しない。
-
-設計：Android向け低価格端末対応の手描きラスター制作。生成AI/クラウド同期/ベクター/3Dは対象外。Webは公式紹介＋ヘルプ＋法務＋問い合わせWorkerであり、別の制作クラウドではない。既存ロゴ・HakkouMincho/Kuramubon・コーラルアクセントを維持する。
-
-## 全体監査マップ
+## 監査マップ
 
 | 領域 | 状態 / 次の確認 |
 | --- | --- |
-| 構造・仕様・履歴 | entry/依存/CI一覧化、00/01/31/30・CLAUDE・Web guide/DESIGNを確認中。古い「認証未実装」記載は現コードと要照合 |
-| 永続化・復元・共有・autosave・削除 | 調査中。`findings/persistence.md` に根拠を分離 |
-| 認証・API・公開/投稿・YouTube・セキュリティ | App/backend/Web横断調査中。`findings/contracts-security.md` |
-| workspace・旧設定・スマホ/DeX | 調査中。`findings/workspace.md` |
-| 描画・レイヤー・Undo・timeline・export・音声・素材 | 未精査。既存testを入口に実操作/異常系へ追跡 |
-| Web全ページ・問い合わせ・多言語・a11y | 環境確立/既存監査baseline取得から開始 |
-| ブランド・法務・サポート・用語・URL | 上記横断担当と統合、未完了 |
-| 性能・メモリ・重複・dead code・依存 | 一覧化のみ。明確な根拠と計測後に局所改善 |
-| 実画面・モーダル・keyboard/mouse/touch | 未実施。テストの成功だけで正常扱いしない |
+| 構造・仕様・履歴 | 入口/依存/CI/全体構造を把握。00/01/31・CLAUDE、Web DESIGN/guide等確認。最新差分を反映済み |
+| 永続化・復元・共有・autosave・削除 | 保存の原子的置換・順序保証を実装中。回帰test追加済み、Flutter検証待ち |
+| 認証・API・公開/投稿・YouTube | ID競合と統計APIを修正・単体検証。公開設定PATCHの競合、一覧の整合性、最新投稿フローの詳細は継続 |
+| workspace・旧設定・スマホ/DeX | 未精査 |
+| 描画・レイヤー・Undo・timeline・export・音声・素材 | 既存テスト/構造の確認まで。詳細監査と実画面は未完了 |
+| Web全ページ・問い合わせ・多言語・a11y | Workerの容量制限等を修正。問い合わせ/言語メニューを実ブラウザ検証中 |
+| ブランド・サポート・用語・URL | App/Webのロゴ・書体・coralを継承。公開設定・用語・未設定外部リンクは継続 |
+| 性能・メモリ・重複・依存 | 問い合わせ変換ピークとCDK未宣言依存を修正。描画/保存の実測は未完了 |
+| 実画面・keyboard/mouse/touch | Web問い合わせのエラーフォーカス確認済み。他画面/実端末は未完了 |
 
-## 環境・検証
+## 問題と採択状況
 
-- Windows / bash。Flutter 3.44.7、Dart 3.12.2。資料のLinux/Flutter3.47.2をそのまま採用しない。
-- `python` はWindowsAppsスタブ。実行可能なのは `C:/Users/user/AppData/Local/hermes/hermes-agent/venv/Scripts/python.exe`。
-- `node` はwinpty aliasで非TTY時失敗するため `node.exe`。Node 20.11.1、npm 10.2.4。依存engine要件を確認。
-- baseline `flutter analyze --no-pub`、backend `npm run build && npm test` 実行中。結果未判定。
-- テスト/画像ログはGit管理対象へ大量投入せず、コマンド・結果・必要な証拠パスを記録する。
+| ID / 優先度 | 根拠・修正 / 状態 |
+| --- | --- |
+| A01 / P1 データ整合性 | authの競合後の無条件lookup再作成がUser IDを分裂させ得る。強整合read＋条件付きtransaction＋最大3試行。同じIDで欠落user修復、既存user上書き禁止。検証済み |
+| A02 / P1 保存安全性 | 差分保存で元ファイルを先に削除、フル保存で直接上書き、保存が並行しdirty確定にawaitが挟まる。完成ZIPの同一FS置換・project単位の順序保証・同期dirty確定を実装。未検証、次の最優先 |
+| A03 / P1 統計・公開状態 | batchGetStatsのURL/partが公式形式と不一致、statusは返らず、部分失敗をdeleted扱い。URL修正＋status別取得＋欠損数値を維持＋timeout。APIキーで読めない動画は削除と断定せずprivate相当の非表示にし再確認。検証済み |
+| A04 / P1 公開状態競合 | worksUpdateは強整合readになったが、titleだけのPATCHも古い公開状態/GSIを書き直す。統計/公開変更との競合条件不足。要修正 |
+| A05 / P2 CI再現性 | cdk.jsonが未宣言ts-nodeをnpxで都度取得。devDependency/lockへ固定する |
 
-## 問題・修正・checkpoint
+A03の根拠：[Google公式batchGetStats](https://developers.google.com/youtube/v3/docs/videos/batchGetStats)。統計失敗IDは削除の証拠にならず、statusはvideos.listから取得する。古いソース文字列assertの1件を、partial failure・非表示・競合・tombstoneの実行テストへ置き換えた。公開設定や投稿履歴を消す変更はしない。
 
-本監査によるproduction変更：まだ無し。新規checkpoint：まだ無し。push：まだ無し。
-発見問題は証拠・優先度・再現・修正ファイル・検証を各findingsへ追記し、この欄に採択結果を要約する。
+## 検証・実画面・環境
 
-## 現在地点 / 次の具体作業
+- WorkはLinux、Node 22系。Flutter 3.47.2 SDKを準備中。SDK起動時のAzureメタデータ検出が自動審査で拒否されたため、SDKソースの分岐を確認し、メタデータへアクセスしない `CI=true` で実行する。
+- 旧baseline backend: tsc成功、81件中78成功/3失敗（古いソース文字列assert）。並行開発の修正を取り込み済み。
+- **統合後 `npm run build` 成功、`npm test` 105/105成功（19ファイル）**。認証4、YouTube5、統計batch4の実行テストを追加。
+- `AWS_EC2_METADATA_DISABLED=true npm exec cdk -- synth --quiet -c googleClientId=ci-dummy -c youtubeApiKey=ci-dummy` 成功。実AWSデプロイなし。
+- Web Worker新規6test成功（実メールなし）。Web問い合わせで入力不足→同意欄へのfocusを実ブラウザ確認。
+- Flutter analyze/full suite/APK/実画面は未完了。Google/YouTube実アカウント、AWS実環境、Android/DeX実機も未検証。
+- 旧監査dashboardのcompletedは本監査の完了根拠にしない。
 
-1. baselineログを回収し、Web依存とローカル配信/Chromiumを用意する。
-2. 並列の保存/契約/workspace調査結果を統合し、データ損失/認証から再現テスト付きで修正する。
-3. 初回の安全記録checkpoint、以後修正単位で検証・独立レビュー・commit・fetch・push。
-4. 未精査領域を明示したまま範囲を広げる。実機・外部認証・運用設定など不可検証項目を完了扱いしない。
+## checkpoint / 現在地点 / 次の具体作業
+
+- このREADMEを含む最初のbackend修正checkpointを作成する。commit IDは `git log -- docs/product-audit/README.md` で取得できる。pushは次のGit確認後。
+- App保存の未commit変更は保持中、テスト未実行のためbackend checkpointから除外。
+- 次：Flutter bootstrap→保存test→全analyze/test、A04競合修正、Web入力/言語のUI回帰、未精査領域を順番に監査する。
+- UI全体・スマホ/PC/DeX・Workspace・App/Web横断・最終商品レビューは未完了。テスト成功だけで全体完了にしない。

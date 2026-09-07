@@ -1,6 +1,4 @@
-import {
-  ConditionalCheckFailedException,
-} from "@aws-sdk/client-dynamodb";
+import { ConditionalCheckFailedException } from "@aws-sdk/client-dynamodb";
 import { LambdaClient, InvokeCommand } from "@aws-sdk/client-lambda";
 import {
   GetCommand,
@@ -9,7 +7,7 @@ import {
   UpdateCommand,
 } from "@aws-sdk/lib-dynamodb";
 import { ddb, tableName, Keys } from "../lib/dynamo";
-import { batchGetVideoStats } from "../lib/youtube";
+import { batchGetVideoStats, type YoutubeVideoStats } from "../lib/youtube";
 import {
   computePeriodScore,
   computeRankingScore,
@@ -139,21 +137,15 @@ async function processPage(
 
 async function updateWorkStats(
   work: WorkItem,
-  stats:
-    | {
-        viewCount: number;
-        likeCount: number;
-        commentCount: number;
-        privacyStatus: "public" | "unlisted" | "private";
-      }
-    | undefined,
+  stats: YoutubeVideoStats | undefined,
   topLists: TopLists,
   conflictAttempt = 0,
 ): Promise<void> {
+  if (!stats) return;
   const nowDate = new Date();
   const now = nowDate.toISOString();
 
-  const youtubePrivacyStatus = stats ? stats.privacyStatus : "deleted";
+  const youtubePrivacyStatus = stats.privacyStatus;
   const viewCount = stats?.viewCount ?? work.viewCount;
   const likeCount = stats?.likeCount ?? work.likeCount;
   const commentCount = stats?.commentCount ?? work.commentCount;
@@ -163,8 +155,7 @@ async function updateWorkStats(
     commentCount,
   });
 
-  const forcedHidden =
-    youtubePrivacyStatus === "private" || youtubePrivacyStatus === "deleted";
+  const forcedHidden = youtubePrivacyStatus === "private";
   const isVisible = work.isNiarimPublished && !forcedHidden;
 
   const setParts = [
@@ -261,7 +252,11 @@ async function updateWorkStats(
       conflictAttempt < MAX_VISIBILITY_CONFLICT_RETRIES
     ) {
       const latestResult = await ddb.send(
-        new GetCommand({ TableName: tableName(), Key: Keys.work(work.workId) }),
+        new GetCommand({
+          TableName: tableName(),
+          Key: Keys.work(work.workId),
+          ConsistentRead: true,
+        }),
       );
       const latestRaw = latestResult.Item;
       // Scan後に作品が削除され墓標へ置換された場合は、墓標をWorkItemとして

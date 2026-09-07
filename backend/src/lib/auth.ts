@@ -73,95 +73,83 @@ export async function authenticate(
  */
 async function findOrCreateUser(sub: string): Promise<UserItem> {
   const lookupKey = Keys.googleSubLookup(sub);
-  const lookup = await ddb.send(
-    new GetCommand({ TableName: tableName(), Key: lookupKey }),
-  );
-
-  if (lookup.Item) {
-    const niarimUserId = (lookup.Item as GoogleSubLookupItem).niarimUserId;
-    const userResult = await ddb.send(
-      new GetCommand({ TableName: tableName(), Key: Keys.user(niarimUserId) }),
+  // 競合後も強い整合性で読み直す。読み取りの遅延を「未登録」と扱って
+  // lookupを上書きすると、同じGoogleアカウントの履歴が別IDへ分裂する。
+  for (let attempt = 0; ; attempt++) {
+    const lookup = await ddb.send(
+      new GetCommand({
+        TableName: tableName(),
+        Key: lookupKey,
+        ConsistentRead: true,
+      }),
     );
-    if (userResult.Item) return userResult.Item as UserItem;
-    // ユーザーレコードだけ何らかの理由で欠落していた場合は作り直す。
-  }
+    const existing = lookup.Item as GoogleSubLookupItem | undefined;
+    const niarimUserId = existing?.niarimUserId ?? generateNiarimUserId();
+    if (existing) {
+      const user = await getUser(niarimUserId);
+      if (user) return user;
+    }
 
-  const niarimUserId = generateNiarimUserId();
-  const now = new Date().toISOString();
+    const newUser: UserItem = {
+      itemType: TABLE_ITEM_TYPE.User,
+      ...Keys.user(niarimUserId),
+      niarimUserId,
+      googleSub: sub,
+      membershipTier: "free",
+      bookmarksPublic: false,
+      followersPublic: false,
+      followerCount: 0,
+      followingCount: 0,
+      createdAt: new Date().toISOString(),
+    };
+    const newLookup: GoogleSubLookupItem = {
+      itemType: TABLE_ITEM_TYPE.GoogleSubLookup,
+      ...lookupKey,
+      googleSub: sub,
+      niarimUserId,
+    };
 
-  const newUser: UserItem = {
-    itemType: TABLE_ITEM_TYPE.User,
-    ...Keys.user(niarimUserId),
-    niarimUserId,
-    googleSub: sub,
-    membershipTier: "free",
-    bookmarksPublic: false,
-    followersPublic: false,
-    followerCount: 0,
-    followingCount: 0,
-    createdAt: now,
-  };
-  const newLookup: GoogleSubLookupItem = {
-    itemType: TABLE_ITEM_TYPE.GoogleSubLookup,
-    ...lookupKey,
-    googleSub: sub,
-    niarimUserId,
-  };
-
-  // 同一subからの初回リクエストが同時に複数届くと、どちらも「lookupが
-  // 無い」と判断してUser IDを2つ発行してしまう（4章のUser IDは1人1つが
-  // 前提で、二重発行されるとブックマーク・フォロー・投稿履歴が2つの
-  // IDへ分裂する）。これを防ぐため、lookupの作成に
-  // attribute_not_exists(pk) を付けたTransactWriteItemsで2件を同時に
-  // 書き込む。競合した側はTransactionCanceledExceptionで失敗するので、
-  // 勝った側が書いたlookupを読み直して同じUser IDへ合流させる。
-  try {
-    await ddb.send(
-      new TransactWriteCommand({
-        TransactItems: [
-          {
-            Put: {
-              TableName: tableName(),
-              Item: newLookup,
-              ConditionExpression: "attribute_not_exists(pk)",
+    try {
+      await ddb.send(
+        new TransactWriteCommand({
+          TransactItems: [
+            existing
+              ? {
+                  // 欠落したユーザーを修復するときも、元のIDを維持し、
+                  // lookupの所有関係が変わっていないことを同時に確認する。
+                  ConditionCheck: {
+                    TableName: tableName(),
+                    Key: lookupKey,
+                    ConditionExpression: "niarimUserId = :uid",
+                    ExpressionAttributeValues: { ":uid": niarimUserId },
+                  },
+                }
+              : {
+                  Put: {
+                    TableName: tableName(),
+                    Item: newLookup,
+                    ConditionExpression: "attribute_not_exists(pk)",
+                  },
+                },
+            {
+              Put: {
+                TableName: tableName(),
+                Item: newUser,
+                ConditionExpression: "attribute_not_exists(pk)",
+              },
             },
-          },
-          { Put: { TableName: tableName(), Item: newUser } },
-        ],
-      }),
-    );
-  } catch (err) {
-    if (!(err instanceof TransactionCanceledException)) throw err;
-    const winner = await resolveExistingUser(sub);
-    if (winner) return winner;
-    // lookupは在るのにUserItemが無い（前回の障害等）ケース。ここまで
-    // 来たら競合ではないので、条件なしで作り直して整合させる。
-    await ddb.send(
-      new TransactWriteCommand({
-        TransactItems: [
-          { Put: { TableName: tableName(), Item: newLookup } },
-          { Put: { TableName: tableName(), Item: newUser } },
-        ],
-      }),
-    );
+          ],
+        }),
+      );
+      return newUser;
+    } catch (error) {
+      // 競合は再読込して既存IDへ合流する。繰り返し失敗する場合は
+      // 障害を返し、無条件書込で既存アカウントを置き換えない。
+      if (!(error instanceof TransactionCanceledException) || attempt >= 2) {
+        throw error;
+      }
+    }
   }
-  return newUser;
-}
-
-/**
- * 競合に負けた側が、勝った側の発行したNIARIM User IDへ合流するための
- * 読み直し。lookupが読めない・UserItemが無い場合はnullを返す。
- */
-async function resolveExistingUser(sub: string): Promise<UserItem | undefined> {
-  const lookup = await ddb.send(
-    new GetCommand({ TableName: tableName(), Key: Keys.googleSubLookup(sub) }),
-  );
-  if (!lookup.Item) return undefined;
-  const niarimUserId = (lookup.Item as GoogleSubLookupItem).niarimUserId;
-  const userResult = await ddb.send(
-    new GetCommand({ TableName: tableName(), Key: Keys.user(niarimUserId) }),
-  );
-  return userResult.Item as UserItem | undefined;
 }
 
 function generateNiarimUserId(): string {
@@ -183,7 +171,9 @@ export async function cacheChannelInfo(
       Key: Keys.user(niarimUserId),
       UpdateExpression:
         "SET youtubeChannelId = :cid, channelName = :name, channelAvatarUrl = :avatar, channelInfoCachedAt = :now",
+      ConditionExpression: "itemType = :type",
       ExpressionAttributeValues: {
+        ":type": TABLE_ITEM_TYPE.User,
         ":cid": info.youtubeChannelId,
         ":name": info.channelName,
         ":avatar": info.channelAvatarUrl,
@@ -214,7 +204,11 @@ export async function getUser(
   niarimUserId: string,
 ): Promise<UserItem | undefined> {
   const result = await ddb.send(
-    new GetCommand({ TableName: tableName(), Key: Keys.user(niarimUserId) }),
+    new GetCommand({
+      TableName: tableName(),
+      Key: Keys.user(niarimUserId),
+      ConsistentRead: true,
+    }),
   );
   return result.Item as UserItem | undefined;
 }
