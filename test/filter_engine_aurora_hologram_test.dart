@@ -77,6 +77,54 @@ void main() {
     expect(result, equals(data));
   });
 
+  test('半透明画素はRGBだけ変化しアルファ値を保持する', () {
+    final data = Uint8List.fromList([
+      70, 90, 120, 32,
+      100, 120, 140, 96,
+      130, 150, 170, 160,
+      160, 180, 200, 224,
+    ]);
+    final originalAlpha = [32, 96, 160, 224];
+    final result = engine.applyAuroraHologram(
+      data,
+      4,
+      1,
+      strength: 100,
+      brightness: 10,
+      saturation: 25,
+      preset: AuroraHologramPreset.soapBubble,
+    );
+
+    var rgbChanged = false;
+    for (var i = 0; i < 4; i++) {
+      final offset = i * 4;
+      expect(result[offset + 3], originalAlpha[i]);
+      if (result[offset] != data[offset] ||
+          result[offset + 1] != data[offset + 1] ||
+          result[offset + 2] != data[offset + 2]) {
+        rgbChanged = true;
+      }
+    }
+    expect(rgbChanged, isTrue);
+  });
+
+  test('入力バッファを破壊せず新しい結果を返す', () {
+    final data = buildPattern();
+    final before = Uint8List.fromList(data);
+    final result = engine.applyAuroraHologram(
+      data,
+      width,
+      height,
+      strength: 75,
+      brightness: -20,
+      saturation: 30,
+      preset: AuroraHologramPreset.sunsetGold,
+    );
+
+    expect(data, equals(before));
+    expect(result, isNot(same(data)));
+  });
+
   test('同じ明度の画素は同じ結果色になる（グラデーションマップの一貫性）', () {
     // 全画素を同じ明度（128,128,128）にする。
     final data = Uint8List(width * height * 4);
@@ -124,6 +172,32 @@ void main() {
     expect(aurora, isNot(equals(silverFoil)));
   });
 
+  test('全プリセットが不透明入力を処理でき、アルファを保持する', () {
+    final data = buildPattern();
+    for (final preset in AuroraHologramPreset.values) {
+      final result = engine.applyAuroraHologram(
+        data,
+        width,
+        height,
+        strength: 100,
+        brightness: 0,
+        saturation: 0,
+        preset: preset,
+      );
+      expect(result.length, data.length, reason: preset.name);
+      var changed = false;
+      for (var i = 0; i < result.length; i += 4) {
+        expect(result[i + 3], data[i + 3], reason: preset.name);
+        if (result[i] != data[i] ||
+            result[i + 1] != data[i + 1] ||
+            result[i + 2] != data[i + 2]) {
+          changed = true;
+        }
+      }
+      expect(changed, isTrue, reason: preset.name);
+    }
+  });
+
   test('brightnessを上げると結果が明るくなる', () {
     final data = buildPattern();
     final base = engine.applyAuroraHologram(
@@ -151,6 +225,77 @@ void main() {
       sumBrighter += brighter[i] + brighter[i + 1] + brighter[i + 2];
     }
     expect(sumBrighter, greaterThan(sumBase));
+  });
+
+  test('strengthは0〜100へクランプされる', () {
+    final data = buildPattern();
+    final belowZero = engine.applyAuroraHologram(
+      data,
+      width,
+      height,
+      strength: -50,
+      brightness: 0,
+      saturation: 0,
+      preset: AuroraHologramPreset.aurora,
+    );
+    final atHundred = engine.applyAuroraHologram(
+      data,
+      width,
+      height,
+      strength: 100,
+      brightness: 0,
+      saturation: 0,
+      preset: AuroraHologramPreset.aurora,
+    );
+    final aboveHundred = engine.applyAuroraHologram(
+      data,
+      width,
+      height,
+      strength: 250,
+      brightness: 0,
+      saturation: 0,
+      preset: AuroraHologramPreset.aurora,
+    );
+
+    expect(belowZero, equals(data));
+    expect(aboveHundred, equals(atHundred));
+  });
+
+  test('brightness/saturationの極端値でもチャンネル範囲とアルファを維持する', () {
+    final data = buildPattern();
+    for (final values in [(-500.0, -500.0), (500.0, 500.0)]) {
+      final result = engine.applyAuroraHologram(
+        data,
+        width,
+        height,
+        strength: 100,
+        brightness: values.$1,
+        saturation: values.$2,
+        preset: AuroraHologramPreset.cyberNeon,
+      );
+      expect(result.length, data.length);
+      for (var i = 0; i < result.length; i += 4) {
+        expect(result[i], inInclusiveRange(0, 255));
+        expect(result[i + 1], inInclusiveRange(0, 255));
+        expect(result[i + 2], inInclusiveRange(0, 255));
+        expect(result[i + 3], data[i + 3]);
+      }
+    }
+  });
+
+  test('同一入力・同一パラメータなら常に同じ結果になる', () {
+    final data = buildPattern();
+    Uint8List apply() => engine.applyAuroraHologram(
+      data,
+      width,
+      height,
+      strength: 83,
+      brightness: 17,
+      saturation: -12,
+      preset: AuroraHologramPreset.pastelDream,
+    );
+
+    expect(apply(), equals(apply()));
   });
 
   test('auroraHologramStopsは各プリセットで昇順の位置を持つ', () {
