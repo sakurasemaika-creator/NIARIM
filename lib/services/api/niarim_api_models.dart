@@ -20,6 +20,12 @@ class ApiWork {
   final List<String> tags;
   final Set<String> lockedTags;
   final bool isNiarimPublished;
+
+  /// Owner-list responses include the current YouTube privacy state so the app
+  /// can distinguish a NIARIM-hidden work from a work forced hidden by YouTube.
+  /// Public list responses intentionally omit it.
+  final String? youtubePrivacyStatus;
+
   final int projectFps;
   final int projectFrameCount;
   final int projectWorkSeconds;
@@ -45,6 +51,7 @@ class ApiWork {
     required this.tags,
     required this.lockedTags,
     required this.isNiarimPublished,
+    this.youtubePrivacyStatus,
     this.projectFps = 0,
     this.projectFrameCount = 0,
     this.projectWorkSeconds = 0,
@@ -71,6 +78,7 @@ class ApiWork {
     tags: _stringList(json['tags']),
     lockedTags: _stringList(json['lockedTags']).toSet(),
     isNiarimPublished: json['isNiarimPublished'] != false,
+    youtubePrivacyStatus: json['youtubePrivacyStatus'] as String?,
     projectFps: _int(json['projectFps']),
     projectFrameCount: _int(json['projectFrameCount']),
     projectWorkSeconds: _int(json['projectWorkSeconds']),
