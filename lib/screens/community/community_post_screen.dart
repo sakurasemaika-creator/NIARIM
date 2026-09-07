@@ -342,7 +342,13 @@ class _CommunityPostScreenState extends State<CommunityPostScreen> {
                   value: _isNiarimPublished,
                   onChanged: _busy
                       ? null
-                      : (value) => setState(() => _isNiarimPublished = value),
+                      : (value) async {
+                          setState(() => _isNiarimPublished = value);
+                          if (retainedVideoId != null) {
+                            final prefs = await SharedPreferences.getInstance();
+                            await prefs.setBool(_pendingPublishedKey, value);
+                          }
+                        },
                   title: const Text('作品広場で公開'),
                   subtitle: const Text(
                     'YouTube側は限定公開でアップロードし、NIARIM側の公開状態を別に管理します',
