@@ -14,7 +14,7 @@ on:
 jobs:
   save-slot-widget:
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 20
     permissions:
       contents: read
 
@@ -35,3 +35,15 @@ jobs:
 
       - name: セーブ確認ダイヤログ Widget test
         run: flutter test test/save_slot_confirmation_dialog_test.dart --reporter expanded
+
+      - name: セーブスロット操作・実キャプチャ監査
+        run: flutter test test/save_slot_visual_audit_test.dart --reporter expanded
+
+      - name: 目視監査用キャプチャを保存
+        if: always()
+        uses: actions/upload-artifact@v6
+        with:
+          name: save-slot-visual-audit-${{ github.sha }}
+          path: build/save-slot-visual-audit/*.png
+          if-no-files-found: warn
+          retention-days: 7
