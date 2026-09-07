@@ -1,0 +1,232 @@
+=== imports ===
+import 'dart:async';
+import 'dart:math' as math;
+import 'dart:typed_data';
+import 'dart:ui' as ui;
+
+import 'package:flutter/foundation.dart' show compute;
+import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+
+import '../../../config/font_fallback.dart';
+import '../../../engine/background_acclimation_engine.dart';
+import '../../../engine/filter_engine.dart';
+import '../../../engine/layer_compositor.dart';
+import '../../../engine/prism_filter_engine.dart';
+import '../../../engine/tile_manager.dart';
+import '../../../l10n/app_localizations.dart';
+import '../../../models/filter_def.dart';
+import '../../../models/layer.dart' as model;
+import '../../../services/filter_service.dart';
+import '../../../services/premium_service.dart';
+import '../../../services/project_service.dart';
+import '../../../services/theme_service.dart';
+import '../../../widgets/editable_slider_value.dart';
+import '../../../widgets/pixel_color_mode_selector.dart';
+import '../../../widgets/premium_lock_widget.dart';
+import '../../../widgets/progress_dialog.dart';
+import '../../../widgets/stepped_slider.dart';
+import 'color_picker_panel.dart';
+import 'panel_close_bar.dart';
+
+enum FilterColorEyedropperTarget { inkPool, outline }
+
+class FilterPanel extends StatefulWidget {
+  final String projectId;
+  final String sceneId;
+  final String? layerId;
+  final int frameIndex;
+  final Set<int>? bulkFrameIndices;
+  final VoidCallback onClose;
+  final ValueChanged<FilterColorEyedropperTarget>? onStartCanvasEyedropper;
+  final FilterColorEyedropperTarget? activeCanvasEyedropperTarget;
+
+  const FilterPanel({
+    super.key,
+    required this.projectId,
+    required this.sceneId,
+    required this.layerId,
+    required this.frameIndex,
+    this.bulkFrameIndices,
+    required this.onClose,
+    this.onStartCanvasEyedropper,
+    this.activeCanvasEyedropperTarget,
+  });
+
+  @override
+  State<FilterPanel> createState() => _FilterPanelState();
+}
+
+class _FilterPanelState extends State<FilterPanel> {
+  final FilterEngine _engine = FilterEngine();
+  final PrismFilterEngine _prismEngine = PrismFilterEngine();
+  bool _showFavoritesOnly = false;
+  bool _showSearch = false;
+  bool _applying = false;
+
+  Uint8List? _previewBase;
+  Uint8List? _previewMask;
+  Uint8List? _previewBackgroundBytes;
+  int? _autoBlendColorArgb;
+  BackgroundAcclimationAnalysis? _lastBgBlendAnalysis;
+  int _previewW = 0;
+  int _previewH = 0;
+  double _previewScale = 1;
+  ui.Image? _previewImage;
+  String? _previewFilterId;
+
+  bool _isPrism(FilterDef filter) => filter.id == FilterService.prismFilterId;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadPreviewBase();
+  }
+
+  @override
+  void dispose() {
+    _previewImage?.dispose();
+    super.dispose();
+  }
+
+=== 450-500 ===
+            359,
+            (value) => service.updateFilterParams(
+              current.id,
+              prismDirectionDegrees: value.toDouble(),
+            ),
+            suffix: '°',
+            wrap: true,
+          ),
+        ],
+      );
+    }
+
+    switch (current.kind) {
+      case FilterKind.gaussianBlur:
+      case FilterKind.lensBlur:
+        return _paramSlider(
+          l10n.filterStrengthBlurRadius,
+          current.strength,
+          1,
+          20,
+          (v) => service.updateFilterParams(current.id, strength: v),
+        );
+      case FilterKind.pixelate:
+        return Column(
+          children: [
+            _paramSlider(
+              l10n.filterPixelateBlockSize,
+              current.strength,
+              1,
+              64,
+              (v) => service.updateFilterParams(current.id, strength: v),
+            ),
+            PixelColorModeSelector(
+              mode: current.pixelColorMode,
+              colorLevels: current.colorLevels,
+              explicitColors: current.pixelExplicitColors,
+              onModeChanged: (v) {
+                service.updateFilterParams(current.id, pixelColorMode: v);
+                _updatePreview();
+              },
+              onColorLevelsChanged: (v) {
+                service.updateFilterParams(current.id, colorLevels: v);
+                _updatePreview();
+              },
+              onExplicitColorsChanged: (v) {
+                service.updateFilterParams(current.id, pixelExplicitColors: v);
+                _updatePreview();
+              },
+            ),
+          ],
+        );
+=== auto lineart occurrences ===
+940-      FilterKind.lensDistortion => l10n.filterNameLensDistortion,
+941-      FilterKind.pixelate => l10n.filterNamePixelate,
+942-      FilterKind.auroraHologram => l10n.filterNameAuroraHologram,
+943-      FilterKind.backgroundBlend => l10n.filterNameBackgroundBlend,
+944-      FilterKind.inkPool => l10n.filterNameInkPool,
+945:      FilterKind.autoLineart => l10n.filterNameAutoLineart,
+946-    };
+947-  }
+948-
+949-  String _toneCurveLabel(AppLocalizations l10n, ToneCurvePreset preset) =>
+950-      switch (preset) {
+--
+989-      FilterKind.lensDistortion => Icons.remove_red_eye,
+990-      FilterKind.pixelate => Icons.grid_view,
+991-      FilterKind.auroraHologram => Icons.auto_awesome_mosaic,
+992-      FilterKind.backgroundBlend => Icons.wb_twilight,
+993-      FilterKind.inkPool => Icons.gesture_rounded,
+994:      FilterKind.autoLineart => Icons.auto_fix_high,
+995-    };
+996-  }
+997-
+998-  PremiumFeature? _premiumFeatureFor(FilterKind kind) {
+999-    return switch (kind) {
+--
+1138-          strength: filter.strength,
+1139-          brightness: filter.hologramBrightness,
+1140-          saturation: filter.hologramSaturation,
+1141-          preset: filter.hologramPreset,
+1142-        );
+1143:      case FilterKind.autoLineart:
+1144:        return AutoLineartEngine.render(
+1145:          AutoLineartEngine.analyze(
+1146-            data,
+1147-            width,
+1148-            height,
+1149:            roughWidthPx: filter.autoLineartRoughWidth * _previewScale,
+1150-          ),
+1151-          width,
+1152-          height,
+1153-          outputWidthPx:
+1154:              math.max(1.0, filter.autoLineartOutputWidth * _previewScale),
+1155:          taperLengthPx: filter.autoLineartTaperLength * _previewScale,
+1156:          smoothing: filter.autoLineartSmoothing,
+1157-        );
+1158-      case FilterKind.inkPool:
+1159-        return _engine.applyInkPoolComposite(
+1160-          data,
+1161-          width,
+--
+1219-    String? generatedLayerId,
+1220-  }) async {
+1221-    final l10n =
+1222-        filter.kind == FilterKind.outline ||
+1223-            filter.kind == FilterKind.inkPool ||
+1224:            filter.kind == FilterKind.autoLineart
+1225-            ? AppLocalizations.of(context)!
+1226-            : null;
+1227-    final key = ps.tileKeyFor(
+1228-      widget.projectId,
+1229-      widget.sceneId,
+--
+1318-        result,
+1319-        generatedLayerId,
+1320-        l10n!.filterInkPoolLayerNameSuffix,
+1321-      );
+1322-    }
+1323:    if (!_isPrism(filter) && filter.kind == FilterKind.autoLineart) {
+1324-      return _applyGeneratedLayer(
+1325-        ps,
+1326-        tm,
+1327-        layerId,
+1328-        frameIndex,
+1329-        result,
+1330-        generatedLayerId,
+1331:        l10n!.filterAutoLineartLayerNameSuffix,
+1332-      );
+1333-    }
+1334-
+1335-    tm.replaceLayerPixels(key, result);
+1336-    final layer = ps
+=== engine declaration ===
+41-/// output is always a normal raster layer. Keeping the centerline as paths only
+42-/// during preview makes width/taper/smoothing adjustments cheap and avoids
+43-/// repeatedly skeletonizing the same rough artwork.
+44:class AutoLineartEngine {
+45-  AutoLineartEngine._();
+46-
+47-  static const _neighbors = <(int, int)>[
