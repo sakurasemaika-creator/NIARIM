@@ -42,4 +42,5 @@ jobs:
           cache-dependency-path: backend/package-lock.json
       - run: npm ci
       - run: npm run build
-      - run: npm test
+      - name: Real posting flow contract tests
+        run: npm test -- test/real-post-flow-contract.test.ts
