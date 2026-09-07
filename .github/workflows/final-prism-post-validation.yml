@@ -1,0 +1,46 @@
+name: Final Prism/Post Validation
+
+on:
+  push:
+    branches: [dev_branch]
+  workflow_dispatch:
+
+concurrency:
+  group: final-prism-post-validation-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  flutter:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+        with:
+          persist-credentials: false
+      - uses: subosito/flutter-action@1a449444c387b1966244ae4d4f8c696479add0b2 # v2
+        with:
+          channel: stable
+          cache: false
+      - run: flutter pub get
+      - name: Analyze Flutter project
+        run: flutter analyze --no-fatal-warnings --no-fatal-infos
+      - name: Prism engine test
+        run: flutter test test/engine/prism_filter_engine_test.dart
+
+  backend:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: backend
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: backend/package-lock.json
+      - run: npm ci
+      - run: npm run build
+      - name: Real posting flow contract tests
+        run: npm test -- test/real-post-flow-contract.test.ts
