@@ -1,0 +1,69 @@
+name: TMP Auto Lineart Preview Audit v10
+on:
+  push:
+    branches: [dev_branch]
+    paths: ['.github/workflows/tmp-auto-lineart-preview-audit-v10.yml']
+permissions:
+  contents: write
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v6
+        with: {ref: dev_branch, fetch-depth: 0}
+      - uses: subosito/flutter-action@v2
+        with: {channel: stable, cache: true}
+      - name: Expand only auto lineart editing preview
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          p=Path('lib/screens/canvas/widgets/filter_panel.dart')
+          s=p.read_text()
+          anchor='''    final current = service.currentFilter;\n    final bulk = widget.bulkFrameIndices;'''
+          replacement='''    final current = service.currentFilter;\n    final bulk = widget.bulkFrameIndices;\n    final previewSide = current?.kind == FilterKind.autoLineart ? 200.0 : 120.0;'''
+          assert anchor in s
+          s=s.replace(anchor,replacement,1)
+          target='''                  child: Container(\n                    width: 120,\n                    height: 120,'''
+          replacement='''                  child: Container(\n                    width: previewSide,\n                    height: previewSide,'''
+          assert target in s
+          s=s.replace(target,replacement,1)
+          p.write_text(s)
+
+          p=Path('test/auto_lineart_filter_panel_visual_audit_test.dart')
+          s=p.read_text()
+          s=s.replace('tester.view.physicalSize = const Size(360, 360);','tester.view.physicalSize = const Size(600, 600);')
+          s=s.replace('width: 120,\n                height: 120,','width: 200,\n                height: 200,')
+          s=s.replace("'120px production preview smoothing 45'", "'200px production preview smoothing 45'")
+          s=s.replace("'120px production preview smoothing 85'", "'200px production preview smoothing 85'")
+          s=s.replace("golden: 'goldens/auto_lineart_preview_120_45.png'", "golden: 'goldens/auto_lineart_preview_200_45.png'")
+          s=s.replace("golden: 'goldens/auto_lineart_preview_120_85.png'", "golden: 'goldens/auto_lineart_preview_200_85.png'")
+          p.write_text(s)
+          PY
+          dart format lib/screens/canvas/widgets/filter_panel.dart test/auto_lineart_filter_panel_visual_audit_test.dart
+      - name: Validate
+        run: |
+          flutter pub get
+          flutter analyze lib/screens/canvas/widgets/filter_panel.dart test/auto_lineart_filter_panel_visual_audit_test.dart test/auto_lineart_control_overlay_test.dart
+          flutter test test/auto_lineart_filter_test.dart test/auto_lineart_control_overlay_test.dart
+          flutter test test/auto_lineart_filter_panel_visual_audit_test.dart
+      - name: Generate SP desktop and 200px evidence
+        run: flutter test --dart-define=NIARIM_AUTO_LINEART_VISUAL_AUDIT=true --update-goldens test/auto_lineart_filter_panel_visual_audit_test.dart
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: auto-lineart-preview-audit-v10
+          path: test/goldens/*.png
+          if-no-files-found: error
+      - name: Land larger auto lineart preview
+        if: success()
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add lib/screens/canvas/widgets/filter_panel.dart test/auto_lineart_filter_panel_visual_audit_test.dart
+          git commit -m 'fix: 自動線画の制御点編集プレビューを拡大'
+          git reset --hard HEAD
+          git clean -fd
+          git fetch origin dev_branch
+          git rebase origin/dev_branch
+          git push origin HEAD:dev_branch
