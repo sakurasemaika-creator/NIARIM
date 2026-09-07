@@ -243,7 +243,7 @@ class _CommunityPostScreenState extends State<CommunityPostScreen> {
       }
 
       final registeredVideoId = videoId;
-      if (registeredVideoId == null || registeredVideoId.isEmpty) {
+      if (registeredVideoId.isEmpty) {
         throw StateError('YouTube videoIdを取得できませんでした');
       }
 
