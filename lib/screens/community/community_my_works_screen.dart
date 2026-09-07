@@ -6,7 +6,9 @@ import '../../models/community_work.dart';
 import '../../services/community_preview_service.dart';
 import '../../services/community_service.dart';
 import '../../services/google_auth_service.dart';
+import '../../widgets/ad_banner_mock_widget.dart';
 import '../../widgets/responsive.dart';
+import 'community_post_screen.dart';
 import 'widgets/community_work_card.dart';
 
 /// 投稿広場から開く「自分の投稿」専用画面。
@@ -38,11 +40,9 @@ class _CommunityMyWorksScreenState extends State<CommunityMyWorksScreen> {
     setState(() => _switchingAccount = true);
     try {
       // google_sign_in 7.xでは現在のセッションが残っていると同一アカウントが
-      // そのまま再利用されることがあるため、明示的な「切り替え・追加」操作
-      // では一度サインアウトしてからアカウント選択UIを開く。
-      if (auth.isSignedIn) {
-        await auth.signOut();
-      }
+      // 再利用されることがあるため、明示的な切り替え操作では一度サインアウト
+      // してからアカウント選択UIを開く。追加済みアカウントもここから選べる。
+      if (auth.isSignedIn) await auth.signOut();
       await auth.signInInteractively();
     } catch (error) {
       if (!mounted) return;
@@ -54,35 +54,41 @@ class _CommunityMyWorksScreenState extends State<CommunityMyWorksScreen> {
     }
   }
 
-  void _handlePostTap() {
-    final l10n = AppLocalizations.of(context)!;
-    final hasPosted = context
-        .read<CommunityService>()
-        .worksByAuthor(kDummySelfAuthorId, includeHidden: true)
-        .isNotEmpty;
+  Future<void> _handlePostTap() async {
+    final auth = context.read<GoogleAuthService>();
+    if (!auth.isConfigured) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Google認証がまだ設定されていません')),
+      );
+      return;
+    }
 
-    showDialog<void>(
-      context: context,
-      builder: (dialogContext) => AlertDialog(
-        icon: hasPosted ? null : const Icon(Icons.info_outline, size: 32),
-        title: Text(
-          hasPosted
-              ? l10n.communityPostComingSoonTitle
-              : l10n.communityPostInfoTitle,
-        ),
-        content: Text(
-          hasPosted
-              ? l10n.communityPostComingSoonBody
-              : l10n.communityPostInfoBody,
-        ),
-        actions: [
-          FilledButton(
-            onPressed: () => Navigator.of(dialogContext).pop(),
-            child: Text(l10n.commonOk),
-          ),
-        ],
+    // 投稿画面を開く前にログインだけ確定させる。YouTubeのyoutube.upload
+    // スコープ認可は実際に「投稿」ボタンを押した時にCommunityPostScreen側で
+    // 明示的に要求する。
+    if (!auth.isSignedIn) {
+      try {
+        await auth.signInInteractively();
+      } catch (error) {
+        if (!mounted) return;
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Googleログインに失敗しました: $error')),
+        );
+        return;
+      }
+    }
+    if (!mounted) return;
+
+    final videoId = await Navigator.of(context).push<String>(
+      adMockMaterialPageRoute<String>(
+        builder: (_) => const CommunityPostScreen(),
       ),
     );
+    if (!mounted || videoId == null) return;
+
+    // 投稿完了後はバックエンド一覧を取り直す。接続なしの開発ビルドでは
+    // falseになるだけなので、画面確認用ダミーデータはそのまま維持される。
+    await context.read<CommunityService>().refreshFromBackend();
   }
 
   @override
