@@ -28,6 +28,7 @@ import 'services/work_folder_service.dart';
 import 'services/api/niarim_api_config.dart';
 import 'services/community_service.dart';
 import 'services/community_preview_service.dart';
+import 'services/google_auth_service.dart';
 import 'services/home_widget_service.dart';
 
 /// アプリ全体で使う各Serviceを初期化し、`MultiProvider`へ渡す
@@ -125,6 +126,12 @@ Future<List<SingleChildWidget>> buildAppProviders() async {
   final homeWidgetService = HomeWidgetService();
   await homeWidgetService.init();
 
+  // Google認証は匿名利用を妨げない。OAuth client ID未設定の開発・テスト
+  // 環境ではinit()が安全に匿名モードで完了し、実設定済み環境では既存の
+  // Googleセッションを軽量認証で復元する。
+  final googleAuthService = GoogleAuthService();
+  await googleAuthService.init();
+
   // 「作品広場」機能の作品一覧・タグ・ブックマークの状態と、
   // フローティングプレビューウィンドウの表示状態。
   // バックエンドの接続先がビルド時（--dart-define=NIARIM_API_BASE_URL）に
@@ -170,6 +177,7 @@ Future<List<SingleChildWidget>> buildAppProviders() async {
     ChangeNotifierProvider.value(value: pixelArtPaletteService),
     ChangeNotifierProvider.value(value: workFolderService),
     ChangeNotifierProvider.value(value: homeWidgetService),
+    ChangeNotifierProvider.value(value: googleAuthService),
     ChangeNotifierProvider.value(value: communityService),
     ChangeNotifierProvider.value(value: communityPreviewService),
     Provider<ShareIntentService>.value(value: shareIntentService),
