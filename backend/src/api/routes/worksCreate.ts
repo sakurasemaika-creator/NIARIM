@@ -43,10 +43,14 @@ export async function createWork(event: APIGatewayProxyEventV2) {
   // YouTube's returned video id is the NIARIM work id / idempotency key.
   // Resolve an existing item before making any YouTube calls so a client that lost
   // the first POST response can safely retry without re-validating or consuming quota.
+  // Use a strongly consistent read: an eventually consistent miss immediately after
+  // a successful first POST would otherwise send the retry through YouTube/quota work
+  // again and can turn a harmless lost response into a misleading conflict.
   const existingResult = await ddb.send(
     new GetCommand({
       TableName: tableName(),
       Key: Keys.work(body.youtubeVideoId),
+      ConsistentRead: true,
     }),
   );
   const existingRaw = existingResult.Item;
@@ -189,8 +193,39 @@ export async function createWork(event: APIGatewayProxyEventV2) {
       );
     } catch (error) {
       if (error instanceof ConditionalCheckFailedException) {
+        // Another request may have completed between our initial read and conditional
+        // put. Re-read strongly and treat the same author's winning write exactly like
+        // any other idempotent retry instead of surfacing a false conflict. The losing
+        // request already reserved quota, so release only that reservation before
+        // returning the canonical stored work.
+        const racedResult = await ddb.send(
+          new GetCommand({
+            TableName: tableName(),
+            Key: Keys.work(body.youtubeVideoId),
+            ConsistentRead: true,
+          }),
+        );
+        const racedRaw = racedResult.Item;
+        if (racedRaw?.itemType === TABLE_ITEM_TYPE.Work) {
+          const racedWork = racedRaw as WorkWithProjectMetadata;
+          if (racedWork.authorId === auth.niarimUserId) {
+            await releasePostQuota(auth.niarimUserId);
+            quotaReserved = false;
+            return created({ work: toPublicWork(racedWork) });
+          }
+          conflict(
+            "この動画は既に別のユーザーによってNIARIMへ登録されています",
+            "VIDEO_ALREADY_REGISTERED",
+          );
+        }
+        if (racedRaw?.itemType === "WORK_TOMBSTONE") {
+          conflict(
+            "この動画はNIARIMから削除済みのため再登録できません",
+            "WORK_DELETED",
+          );
+        }
         conflict(
-          "この動画は同時に登録処理されています。作品一覧を更新してもう一度お試しください",
+          "この動画IDは同時に別の登録処理で使用されました。作品一覧を更新してもう一度お試しください",
           "VIDEO_REGISTRATION_CONFLICT",
         );
       }
