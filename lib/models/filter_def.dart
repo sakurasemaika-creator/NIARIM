@@ -23,7 +23,6 @@ enum FilterKind {
   auroraHologram,
   backgroundBlend,
   inkPool,
-  prism,
 }
 
 enum ToneCurvePreset {
@@ -247,27 +246,22 @@ class FilterDef {
       bgBlendLightStrength: bgBlendLightStrength ?? this.bgBlendLightStrength,
       bgBlendShadowStrength: bgBlendShadowStrength ?? this.bgBlendShadowStrength,
       bgBlendAmbientStrength: bgBlendAmbientStrength ?? this.bgBlendAmbientStrength,
-      bgBlendReflectionStrength:
-          bgBlendReflectionStrength ?? this.bgBlendReflectionStrength,
+      bgBlendReflectionStrength: bgBlendReflectionStrength ?? this.bgBlendReflectionStrength,
       bgBlendColorBleed: bgBlendColorBleed ?? this.bgBlendColorBleed,
       bgBlendSoftness: bgBlendSoftness ?? this.bgBlendSoftness,
-      bgBlendSecondaryStrength:
-          bgBlendSecondaryStrength ?? this.bgBlendSecondaryStrength,
-      bgBlendMaterialProtection:
-          bgBlendMaterialProtection ?? this.bgBlendMaterialProtection,
+      bgBlendSecondaryStrength: bgBlendSecondaryStrength ?? this.bgBlendSecondaryStrength,
+      bgBlendMaterialProtection: bgBlendMaterialProtection ?? this.bgBlendMaterialProtection,
       bgBlendSamplingBand: bgBlendSamplingBand ?? this.bgBlendSamplingBand,
       bgBlendLightColor: bgBlendLightColor ?? this.bgBlendLightColor,
       bgBlendAmbientColor: bgBlendAmbientColor ?? this.bgBlendAmbientColor,
       bgBlendShadowColor: bgBlendShadowColor ?? this.bgBlendShadowColor,
-      bgBlendReflectionColor:
-          bgBlendReflectionColor ?? this.bgBlendReflectionColor,
+      bgBlendReflectionColor: bgBlendReflectionColor ?? this.bgBlendReflectionColor,
       bgBlendShowAnalysis: bgBlendShowAnalysis ?? this.bgBlendShowAnalysis,
       inkPoolColor: inkPoolColor ?? this.inkPoolColor,
       inkPoolRange: inkPoolRange ?? this.inkPoolRange,
       inkPoolCenterWidth: inkPoolCenterWidth ?? this.inkPoolCenterWidth,
       prismBlurPx: prismBlurPx ?? this.prismBlurPx,
-      prismDirectionDegrees:
-          prismDirectionDegrees ?? this.prismDirectionDegrees,
+      prismDirectionDegrees: prismDirectionDegrees ?? this.prismDirectionDegrees,
     );
   }
 
@@ -359,11 +353,7 @@ class FilterDef {
       (e) => e.name == j['pixelColorMode'],
       orElse: () => PixelColorMode.count,
     ),
-    pixelExplicitColors:
-        (j['pixelExplicitColors'] as List<dynamic>?)
-            ?.map((e) => e as int)
-            .toList() ??
-        const [0xFF000000],
+    pixelExplicitColors: (j['pixelExplicitColors'] as List<dynamic>?)?.map((e) => e as int).toList() ?? const [0xFF000000],
     hologramBrightness: (j['hologramBrightness'] as num?)?.toDouble() ?? 0,
     hologramSaturation: (j['hologramSaturation'] as num?)?.toDouble() ?? 0,
     hologramPreset: AuroraHologramPreset.values.firstWhere(
@@ -377,18 +367,13 @@ class FilterDef {
     bgBlendAutoLight: j['bgBlendAutoLight'] as bool? ?? true,
     bgBlendStrength: (j['bgBlendStrength'] as num?)?.toDouble() ?? 70,
     bgBlendLightStrength: (j['bgBlendLightStrength'] as num?)?.toDouble() ?? 65,
-    bgBlendShadowStrength:
-        (j['bgBlendShadowStrength'] as num?)?.toDouble() ?? 45,
-    bgBlendAmbientStrength:
-        (j['bgBlendAmbientStrength'] as num?)?.toDouble() ?? 18,
-    bgBlendReflectionStrength:
-        (j['bgBlendReflectionStrength'] as num?)?.toDouble() ?? 22,
+    bgBlendShadowStrength: (j['bgBlendShadowStrength'] as num?)?.toDouble() ?? 45,
+    bgBlendAmbientStrength: (j['bgBlendAmbientStrength'] as num?)?.toDouble() ?? 18,
+    bgBlendReflectionStrength: (j['bgBlendReflectionStrength'] as num?)?.toDouble() ?? 22,
     bgBlendColorBleed: (j['bgBlendColorBleed'] as num?)?.toDouble() ?? 35,
     bgBlendSoftness: (j['bgBlendSoftness'] as num?)?.toDouble() ?? 55,
-    bgBlendSecondaryStrength:
-        (j['bgBlendSecondaryStrength'] as num?)?.toDouble() ?? 35,
-    bgBlendMaterialProtection:
-        (j['bgBlendMaterialProtection'] as num?)?.toDouble() ?? 75,
+    bgBlendSecondaryStrength: (j['bgBlendSecondaryStrength'] as num?)?.toDouble() ?? 35,
+    bgBlendMaterialProtection: (j['bgBlendMaterialProtection'] as num?)?.toDouble() ?? 75,
     bgBlendSamplingBand: (j['bgBlendSamplingBand'] as num?)?.toDouble() ?? 28,
     bgBlendLightColor: j['bgBlendLightColor'] as int? ?? -1,
     bgBlendAmbientColor: j['bgBlendAmbientColor'] as int? ?? -1,
@@ -399,7 +384,6 @@ class FilterDef {
     inkPoolRange: (j['inkPoolRange'] as num?)?.toDouble() ?? 12,
     inkPoolCenterWidth: (j['inkPoolCenterWidth'] as num?)?.toDouble() ?? 6,
     prismBlurPx: (j['prismBlurPx'] as num?)?.toDouble() ?? 8,
-    prismDirectionDegrees:
-        (j['prismDirectionDegrees'] as num?)?.toDouble() ?? 45,
+    prismDirectionDegrees: (j['prismDirectionDegrees'] as num?)?.toDouble() ?? 45,
   );
 }
