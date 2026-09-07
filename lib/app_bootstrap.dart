@@ -134,10 +134,15 @@ Future<List<SingleChildWidget>> buildAppProviders() async {
 
   // 「作品広場」機能の作品一覧・タグ・ブックマークの状態と、
   // フローティングプレビューウィンドウの表示状態。
-  // バックエンドの接続先がビルド時（--dart-define=NIARIM_API_BASE_URL）に
-  // 渡されていれば実データ、渡されていなければ従来どおりダミーデータで
-  // 動く（デプロイ前でも画面確認・テストが一通りできる状態を保つため）。
-  final communityService = CommunityService(api: NiarimApiConfig.createApi());
+  // バックエンド接続時はGoogleAuthServiceのIDトークン取得関数を低レベル
+  // APIクライアントへ渡す。これによりログイン後のPOST/PATCHは、UI側で
+  // トークン文字列を持ち回らず常に現在のGoogleアカウントで認証される。
+  // 未設定ビルドでは従来どおりダミーデータで動く。
+  final communityService = CommunityService(
+    api: NiarimApiConfig.createApi(
+      tokenProvider: googleAuthService.backendIdToken,
+    ),
+  );
   final communityPreviewService = CommunityPreviewService();
 
   final shareIntentService = ShareIntentService();
