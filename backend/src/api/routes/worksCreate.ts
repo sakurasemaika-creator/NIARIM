@@ -21,6 +21,7 @@ interface CreateWorkRequestBody {
   youtubeVideoId: string;
   youtubeAccessToken: string;
   isShort?: boolean;
+  isNiarimPublished?: boolean;
   projectFps?: number;
   projectFrameCount?: number;
   projectWorkSeconds?: number;
@@ -122,7 +123,9 @@ export async function createWork(event: APIGatewayProxyEventV2) {
     }
 
     const now = new Date().toISOString();
-    const isVisible = isYoutubeVisible(snippet.privacyStatus);
+    const isNiarimPublished = body.isNiarimPublished ?? true;
+    const isVisible =
+      isNiarimPublished && isYoutubeVisible(snippet.privacyStatus);
     const rankingScore = computeRankingScore({
       viewCount: 0,
       likeCount: 0,
@@ -152,7 +155,7 @@ export async function createWork(event: APIGatewayProxyEventV2) {
       bookmarkCount: 0,
       bookmarkScore: isVisible ? 0 : undefined,
       repostCount: 0,
-      isNiarimPublished: true,
+      isNiarimPublished,
       youtubePrivacyStatus: snippet.privacyStatus,
       isShort: body.isShort ?? false,
       tags: [],
@@ -221,6 +224,12 @@ function parseBody(raw: string | undefined): CreateWorkRequestBody {
   if (body.isShort !== undefined && typeof body.isShort !== "boolean") {
     badRequest("isShortは真偽値である必要があります");
   }
+  if (
+    body.isNiarimPublished !== undefined &&
+    typeof body.isNiarimPublished !== "boolean"
+  ) {
+    badRequest("isNiarimPublishedは真偽値である必要があります");
+  }
 
   const projectFps = optionalNonNegativeInt(body.projectFps, "projectFps", 240);
   const projectFrameCount = optionalNonNegativeInt(
@@ -260,6 +269,7 @@ function parseBody(raw: string | undefined): CreateWorkRequestBody {
     youtubeVideoId: body.youtubeVideoId,
     youtubeAccessToken: body.youtubeAccessToken,
     isShort: body.isShort,
+    isNiarimPublished: body.isNiarimPublished,
     projectFps,
     projectFrameCount,
     projectWorkSeconds,
