@@ -1,0 +1,37 @@
+name: Save Slot Widget Test
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [dev_branch]
+    paths:
+      - '.github/workflows/save-slot-widget.yml'
+      - 'lib/screens/save_tree/**'
+      - 'lib/services/save_tree_service.dart'
+      - 'lib/models/save_node.dart'
+      - 'test/save_slot_*_test.dart'
+
+jobs:
+  save-slot-widget:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      contents: read
+
+    steps:
+      - name: リポジトリ取得
+        uses: actions/checkout@v6
+        with:
+          ref: dev_branch
+
+      - name: Flutter セットアップ
+        uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+
+      - name: 依存関係取得
+        run: flutter pub get
+
+      - name: セーブ確認ダイヤログ Widget test
+        run: flutter test test/save_slot_confirmation_dialog_test.dart --reporter expanded
