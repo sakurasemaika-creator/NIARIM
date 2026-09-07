@@ -1,0 +1,35 @@
+name: Diagnose Auto Line Art Patch
+
+on:
+  push:
+    branches: [dev_branch]
+    paths:
+      - '.github/workflows/diagnose-auto-lineart.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  diagnose:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          ref: dev_branch
+          fetch-depth: 0
+      - name: Run patch and capture output
+        shell: bash
+        run: |
+          set +e
+          python3 .github/scripts/add_auto_lineart_filter.py > /tmp/auto-lineart-patch.log 2>&1
+          status=$?
+          cat /tmp/auto-lineart-patch.log
+          printf 'exit_code=%s\n' "$status" > .github/auto-lineart-patch-diagnostic.txt
+          cat /tmp/auto-lineart-patch.log >> .github/auto-lineart-patch-diagnostic.txt
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add .github/auto-lineart-patch-diagnostic.txt
+          git commit -m 'ci: record auto lineart patch diagnostic' || true
+          git push origin HEAD:dev_branch
+          exit "$status"
