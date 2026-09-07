@@ -1,0 +1,29 @@
+name: Temp Auth Refresh Validation
+
+on:
+  push:
+    branches: [dev_branch]
+    paths:
+      - 'lib/services/api/niarim_api_client.dart'
+      - 'test/services/api/community_api_retry_test.dart'
+      - '.github/workflows/temp-auth-refresh-validation.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+      - name: Install dependencies
+        run: flutter pub get
+      - name: Analyze auth retry path
+        run: flutter analyze lib/services/api/niarim_api_client.dart test/services/api/community_api_retry_test.dart --no-fatal-infos
+      - name: Run auth retry tests
+        run: flutter test test/services/api/community_api_retry_test.dart --reporter expanded
