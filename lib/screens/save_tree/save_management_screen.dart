@@ -86,7 +86,7 @@ class _GameStyleSlotScreen extends StatelessWidget {
                   return _GameSaveSlotTile(
                     slotIndex: slotIndex,
                     node: node,
-                    // ペン＝書き込み、本＝読み込み、ゴミ箱＝削除。
+                    // メモ＋ペン＝書き込み、ノート＝読み込み、ゴミ箱＝削除。
                     // 3つを全スロットへ常に出し、使えない操作は無効化して
                     // 見せる（空スロットは読み込み・削除ができない、
                     // クイックセーブ経由では読み込みを行わない）。
@@ -109,8 +109,8 @@ class _GameStyleSlotScreen extends StatelessWidget {
     );
   }
 
-  /// ペン（書き込み）。空スロットはそのまま保存ダイアログ、既存データが
-  /// あるスロットは上書き確認を挟む。
+  /// メモ＋ペン（書き込み）。空スロットはそのまま保存ダイアログ、既存データが
+  /// あるスロットはサムネイルと保存日時を見せた上書き確認を挟む。
   Future<void> _writeToSlot(
     BuildContext context,
     SaveTreeService saveService,
@@ -126,7 +126,18 @@ class _GameStyleSlotScreen extends StatelessWidget {
       context: context,
       builder: (ctx) => AlertDialog(
         title: Text(l10n.saveTreeOverwriteAction),
-        content: Text(l10n.saveTreeOverwriteConfirmBody),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Text(l10n.saveTreeOverwriteConfirmBody),
+            const SizedBox(height: 14),
+            _SlotConfirmationSummary(
+              slotIndex: slotIndex,
+              node: node,
+            ),
+          ],
+        ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx, false),
@@ -291,10 +302,21 @@ class _GameStyleSlotScreen extends StatelessWidget {
       context: context,
       builder: (ctx) => AlertDialog(
         title: Text(l10n.saveTreeRestoreAction),
-        content: Text(
-          entryMode == SaveTreeEntryMode.projectDetail
-              ? l10n.saveTreeProjectDetailResumeBody
-              : l10n.saveTreeResumeConfirmBody,
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Text(
+              entryMode == SaveTreeEntryMode.projectDetail
+                  ? l10n.saveTreeProjectDetailResumeBody
+                  : l10n.saveTreeResumeConfirmBody,
+            ),
+            const SizedBox(height: 14),
+            _SlotConfirmationSummary(
+              slotIndex: node.slotIndex,
+              node: node,
+            ),
+          ],
         ),
         actions: [
           TextButton(
@@ -333,21 +355,78 @@ class _GameStyleSlotScreen extends StatelessWidget {
   }
 }
 
+/// 書き込み／読み込み確認ダイアログで対象セーブを取り違えないための要約。
+/// サムネイル、スロット名、コメント、保存日時を同時に見せる。
+class _SlotConfirmationSummary extends StatelessWidget {
+  final int slotIndex;
+  final SaveNode node;
+
+  const _SlotConfirmationSummary({
+    required this.slotIndex,
+    required this.node,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    final scheme = Theme.of(context).colorScheme;
+    return Container(
+      padding: const EdgeInsets.all(10),
+      decoration: BoxDecoration(
+        color: scheme.surfaceContainerLow,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: scheme.outlineVariant),
+      ),
+      child: Row(
+        children: [
+          _SlotThumbnail(node: node, size: 68),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  l10n.saveTreeSlotLabel(slotIndex + 1),
+                  style: const TextStyle(fontWeight: FontWeight.w700),
+                ),
+                const SizedBox(height: 3),
+                Text(
+                  node.comment ?? l10n.saveTreeSlotFallbackName(slotIndex + 1),
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  _formatDate(node.savedAt),
+                  style: TextStyle(
+                    fontSize: 12,
+                    color: scheme.onSurfaceVariant,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
 /// セーブスロット1件ぶんの行。
 ///
 /// 以前は行をタップするとボトムシートが開き、その中の
 /// 「上書きする／復元／削除」を選ぶ形だった。操作が2段になるうえ、
 /// どのスロットに対する操作なのかがシートの中では分からなくなるため、
 /// **各スロットの行に3つのボタンを直接置く**形へ変更した。
-/// ペン＝セーブデータの書き込み、本＝読み込み、ゴミ箱＝削除。
+/// メモ＋ペン＝セーブデータの書き込み、ノート＝読み込み、ゴミ箱＝削除。
 class _GameSaveSlotTile extends StatelessWidget {
   final int slotIndex;
   final SaveNode? node;
 
-  /// ペン（このスロットへ保存）。空スロットでも押せる。
+  /// メモ＋ペン（このスロットへ保存）。空スロットでも押せる。
   final VoidCallback onWrite;
 
-  /// 本（このスロットから読み込む）。空スロット・クイックセーブ経由では
+  /// ノート（このスロットから読み込む）。空スロット・クイックセーブ経由では
   /// nullを渡して無効表示にする。
   final VoidCallback? onLoad;
 
@@ -381,9 +460,9 @@ class _GameSaveSlotTile extends StatelessWidget {
         borderRadius: BorderRadius.circular(14),
         clipBehavior: Clip.antiAlias,
         child: InkWell(
-          // 行全体のタップは主操作（＝ペンと同じ書き込み）に割り当てる。
-          // ボタンが小さい端末でも押しやすくするための補助で、
-          // 既存データがある場合はペンと同じく上書き確認を挟む。
+          // 行全体のタップは主操作（＝書き込み）に割り当てる。
+          // 既存データがある場合はボタンと同じく、サムネイルと保存日時入りの
+          // 上書き確認を必ず挟む。
           onTap: onWrite,
           child: Container(
             constraints: const BoxConstraints(minHeight: 82),
@@ -441,21 +520,16 @@ class _GameSaveSlotTile extends StatelessWidget {
                   ),
                 ),
                 const SizedBox(width: 4),
-                // ペン＝書き込み（セーブ）、本＝読み込み（ロード）、
-                // ゴミ箱＝削除。読み込みが本なので、書き込みは
-                // 「その本へ書き入れる」ペンで揃える（フロッピーディスクだと
-                // 本と別の比喩が混ざる）。スロットには名前変更のような
-                // 「編集」操作が無いので、ペン＝編集との取り違えも起きない。
-                // 3つとも全スロットに出し、使えないものは無効表示にする
-                // （`test/save_slot_action_buttons_test.dart`が監視）。
+                // MaterialのIcons.edit_noteは📝に近い「メモ＋ペン」、
+                // Icons.book_outlinedは📓に近い閉じたノートとして使う。
                 _SlotActionButton(
-                  icon: Icons.edit,
+                  icon: Icons.edit_note,
                   tooltip: l10n.saveTreeSlotWriteTooltip,
                   color: scheme.primary,
                   onPressed: onWrite,
                 ),
                 _SlotActionButton(
-                  icon: Icons.menu_book,
+                  icon: Icons.book_outlined,
                   tooltip: l10n.saveTreeSlotLoadTooltip,
                   color: scheme.onSurfaceVariant,
                   onPressed: onLoad,
