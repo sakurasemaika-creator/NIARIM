@@ -43,6 +43,7 @@ jobs:
             echo 'No implementation changes to commit'
           else
             git commit -m 'feat: edit auto lineart preview control points'
+            git reset --hard HEAD
             git pull --rebase origin dev_branch
             git push origin HEAD:dev_branch
           fi
