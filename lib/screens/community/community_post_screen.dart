@@ -133,10 +133,18 @@ class _CommunityPostScreenState extends State<CommunityPostScreen> {
         }
       }
 
+      // closureをまたいだnullable変数の型昇格に依存せず、この先で使うIDを
+      // 明示的に非nullへ固定する。以後POST/PATCH/完了通知のすべてがこの
+      // 1つのIDだけを参照する。
+      final registeredVideoId = videoId;
+      if (registeredVideoId == null || registeredVideoId.isEmpty) {
+        throw StateError('YouTube videoIdを取得できませんでした');
+      }
+
       // 同じvideoIdをworkIdとして登録。サーバー側も同一videoIdのPOSTを
       // 冪等に扱うので、応答喪失時はこの呼び出しだけ安全に手動再試行できる。
       await api.createWork(
-        youtubeVideoId: videoId,
+        youtubeVideoId: registeredVideoId,
         youtubeAccessToken: youtubeToken,
         isShort: _isShort,
       );
@@ -145,7 +153,7 @@ class _CommunityPostScreenState extends State<CommunityPostScreen> {
       // 同一videoIdへPATCHする。公開/非公開管理にも別IDを作らない。
       if (!_isNiarimPublished) {
         await api.updateWorkVisibility(
-          videoId,
+          registeredVideoId,
           isNiarimPublished: false,
         );
       }
@@ -155,9 +163,9 @@ class _CommunityPostScreenState extends State<CommunityPostScreen> {
       if (!mounted) return;
       setState(() => _status = '投稿が完了しました');
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('投稿しました（videoId: $videoId）')),
+        SnackBar(content: Text('投稿しました（videoId: $registeredVideoId）')),
       );
-      Navigator.of(context).pop(videoId);
+      Navigator.of(context).pop(registeredVideoId);
     } catch (error) {
       if (!mounted) return;
       setState(() {
@@ -220,7 +228,9 @@ class _CommunityPostScreenState extends State<CommunityPostScreen> {
                     ? null
                     : (value) => setState(() => _isNiarimPublished = value),
                 title: const Text('作品広場で公開'),
-                subtitle: const Text('YouTube側は限定公開でアップロードし、NIARIM側の公開状態を別に管理します'),
+                subtitle: const Text(
+                  'YouTube側は限定公開でアップロードし、NIARIM側の公開状態を別に管理します',
+                ),
               ),
               if (retainedVideoId != null) ...[
                 const SizedBox(height: 8),
@@ -230,12 +240,17 @@ class _CommunityPostScreenState extends State<CommunityPostScreen> {
                     padding: const EdgeInsets.all(12),
                     child: Row(
                       children: [
-                        Icon(Icons.cloud_done_outlined, color: scheme.onSecondaryContainer),
+                        Icon(
+                          Icons.cloud_done_outlined,
+                          color: scheme.onSecondaryContainer,
+                        ),
                         const SizedBox(width: 10),
                         Expanded(
                           child: Text(
                             'YouTubeアップロード済み\nvideoId: $retainedVideoId\n再試行しても動画は再アップロードしません。',
-                            style: TextStyle(color: scheme.onSecondaryContainer),
+                            style: TextStyle(
+                              color: scheme.onSecondaryContainer,
+                            ),
                           ),
                         ),
                       ],
@@ -245,11 +260,16 @@ class _CommunityPostScreenState extends State<CommunityPostScreen> {
               ],
               if (_busy && retainedVideoId == null) ...[
                 const SizedBox(height: 12),
-                LinearProgressIndicator(value: _progress > 0 ? _progress : null),
+                LinearProgressIndicator(
+                  value: _progress > 0 ? _progress : null,
+                ),
               ],
               if (_status != null) ...[
                 const SizedBox(height: 12),
-                Text(_status!, style: TextStyle(color: scheme.onSurfaceVariant)),
+                Text(
+                  _status!,
+                  style: TextStyle(color: scheme.onSurfaceVariant),
+                ),
               ],
               if (_error != null) ...[
                 const SizedBox(height: 8),
@@ -274,7 +294,9 @@ class _CommunityPostScreenState extends State<CommunityPostScreen> {
                             : Icons.refresh,
                       ),
                 label: Text(
-                  retainedVideoId == null ? 'YouTubeへアップロードして投稿' : 'NIARIM登録を再試行',
+                  retainedVideoId == null
+                      ? 'YouTubeへアップロードして投稿'
+                      : 'NIARIM登録を再試行',
                 ),
               ),
             ],
