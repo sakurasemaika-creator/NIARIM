@@ -1,0 +1,49 @@
+name: Diagnose Auto Line Art Analyze v3
+
+on:
+  push:
+    branches: [dev_branch]
+    paths:
+      - '.github/workflows/diagnose-auto-lineart-analyze-v3.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  diagnose:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          ref: dev_branch
+          fetch-depth: 0
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+      - run: flutter pub get
+      - name: Prepare implementation
+        shell: bash
+        run: |
+          python3 .github/scripts/add_auto_lineart_filter.py || true
+          python3 .github/scripts/finish_auto_lineart_filter.py
+          python3 .github/scripts/complete_auto_lineart_panel.py
+          flutter gen-l10n
+          dart format lib/models/filter_def.dart lib/services/filter_service.dart lib/engine/filter_engine.dart lib/engine/auto_lineart_engine.dart lib/screens/canvas/widgets/filter_panel.dart test/auto_lineart_filter_test.dart
+      - name: Capture analyzer output
+        shell: bash
+        run: |
+          set +e
+          flutter analyze lib > /tmp/auto-lineart-analyze-v3.log 2>&1
+          status=$?
+          set -e
+          printf 'exit_code=%s\n' "$status" > .github/auto-lineart-analyze-v3-diagnostic.txt
+          cat /tmp/auto-lineart-analyze-v3.log >> .github/auto-lineart-analyze-v3-diagnostic.txt
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add .github/auto-lineart-analyze-v3-diagnostic.txt
+          git commit -m 'ci: record completed auto lineart analyzer diagnostic' || true
+          git push origin HEAD:dev_branch
+          exit "$status"
