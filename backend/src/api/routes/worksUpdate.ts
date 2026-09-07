@@ -34,8 +34,15 @@ export async function updateWork(
   );
   const body = parseBody(event.body);
 
+  // Visibility PATCH is safely retried by the app when the response is lost.
+  // Use a strongly consistent read so a retry always converges from the latest Work
+  // state instead of rebuilding public indexes from a potentially stale snapshot.
   const existing = await ddb.send(
-    new GetCommand({ TableName: tableName(), Key: Keys.work(workId) }),
+    new GetCommand({
+      TableName: tableName(),
+      Key: Keys.work(workId),
+      ConsistentRead: true,
+    }),
   );
   const raw = existing.Item;
   if (!raw || raw.itemType !== TABLE_ITEM_TYPE.Work) {
