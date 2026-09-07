@@ -1,0 +1,71 @@
+name: TMP Auto Lineart 100 Visual Audit v6
+on:
+  push:
+    branches: [dev_branch]
+    paths: ['.github/workflows/tmp-auto-lineart-100-visual-audit-v6.yml']
+permissions:
+  contents: write
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v6
+        with: {ref: dev_branch, fetch-depth: 0}
+      - uses: subosito/flutter-action@v2
+        with: {channel: stable, cache: true}
+      - name: Patch production to 100-step smoothing and SP touch targets
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          import re
+          p=Path('lib/screens/canvas/widgets/filter_panel.dart'); s=p.read_text()
+          s,n=re.subn(r'final smoothingLevel = \(filter\.autoLineartSmoothing / 10\)\.round\(\)\.clamp\(\s*0,\s*10,\s*\);','final smoothingLevel = filter.autoLineartSmoothing.round().clamp(0, 100);',s); assert n==1,n
+          s,n=re.subn(r'\(current\.autoLineartSmoothing / 10\)\.round\(\)\.clamp\(\s*0,\s*10,?\s*\),\s*0,\s*10,','current.autoLineartSmoothing.round().clamp(0, 100),\n                    0,\n                    100,',s); assert n==1,n
+          s,n=re.subn(r'autoLineartSmoothing: \(v \* 10\)\.toDouble\(\),','autoLineartSmoothing: v.toDouble(),',s); assert n==1,n
+          p.write_text(s)
+          p=Path('lib/engine/auto_lineart_engine.dart'); s=p.read_text()
+          s=s.replace('(0..10): higher levels smooth the control polygon and retain fewer points.','(0..100): higher levels smooth the control polygon and retain fewer points.')
+          s,n=re.subn(r'final level = smoothingLevel\.clamp\(0, 10\);\s*if \(level == 0 \|\| source\.paths\.isEmpty\) return source;','final level = smoothingLevel.clamp(0, 100);\n    if (level == 0 || source.paths.isEmpty) return source;\n    final legacyLevel = level / 10.0;',s); assert n==1,n
+          s,n=re.subn(r'final passes = math\.max\(1, level\);\s*final amount = 0\.12 \+ level \* 0\.025;','final passes = math.max(1, legacyLevel.ceil());\n      final amount = 0.12 + legacyLevel * 0.025;',s); assert n==1,n
+          assert 'level * 0.08' in s; s=s.replace('level * 0.08','legacyLevel * 0.08'); p.write_text(s)
+          p=Path('lib/screens/canvas/widgets/auto_lineart_control_overlay.dart'); s=p.read_text(); s,n=re.subn(r'const radius = 13\.0;','const radius = 22.0;',s); assert n==1,n; p.write_text(s)
+          p=Path('test/auto_lineart_filter_test.dart'); s=p.read_text(); s=s.replace("test('ten-level smoothing reduces editable control points', () {", "test('100-level smoothing reduces editable control points', () {"); s=s.replace('smoothingLevel: 1,\n      );\n      final high','smoothingLevel: 10,\n      );\n      final high',1); s=s.replace('smoothingLevel: 10,\n      );\n      expect(','smoothingLevel: 100,\n      );\n      expect(',1); p.write_text(s)
+          p=Path('test/auto_lineart_control_overlay_test.dart'); s=p.read_text(); anchor='''    expect(movedTo!.y, lessThan(50));\n    image.dispose();\n  });'''; addition='''    expect(movedTo!.y, lessThan(50));\n    image.dispose();\n  });\n\n  testWidgets('SP-sized transparent hit target reaches 20px from a control point', (tester) async {\n    final recorder = ui.PictureRecorder();\n    final canvas = Canvas(recorder);\n    canvas.drawRect(const Rect.fromLTWH(0, 0, 100, 100), Paint());\n    final image = await recorder.endRecording().toImage(100, 100);\n    AutoLineartPoint? movedTo;\n    const graph = AutoLineartGraph(width: 100, height: 100, paths: [AutoLineartPath(points: [AutoLineartPoint(50, 50), AutoLineartPoint(80, 50)], startIsJunction: false, endIsJunction: false, persistence: 1)]);\n    await tester.pumpWidget(MaterialApp(home: Center(child: SizedBox(width: 200, height: 200, child: AutoLineartControlOverlay(image: image, graph: graph, onPointMoved: (_, __, point) => movedTo = point)))));\n    final box = tester.getRect(find.byType(AutoLineartControlOverlay));\n    await tester.dragFrom(Offset(box.left + box.width * .5 + 20, box.top + box.height * .5), const Offset(15, -20));\n    await tester.pump();\n    expect(movedTo, isNotNull);\n    image.dispose();\n  });'''; assert anchor in s; p.write_text(s.replace(anchor,addition))
+          PY
+          dart format lib/screens/canvas/widgets/filter_panel.dart lib/engine/auto_lineart_engine.dart lib/screens/canvas/widgets/auto_lineart_control_overlay.dart test/auto_lineart_filter_test.dart test/auto_lineart_control_overlay_test.dart
+      - name: Build corrected visual audit test from v5 fixture
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          src=Path('.github/workflows/tmp-auto-lineart-100-visual-audit-v5.yml').read_text().splitlines(); out=[]; active=False
+          for line in src:
+            if "cat > test/auto_lineart_filter_panel_visual_audit_test.dart <<'DART'" in line: active=True; continue
+            if active and line.strip()=='DART': break
+            if active: out.append(line[10:] if line.startswith('          ') else line)
+          s='\n'.join(out)+'\n'
+          s=s.replace("                      final fs = context.read<FilterService>();\n                      fs.selectFilter('Filter0023');\n                      fs.updateFilterParams('Filter0023', autoLineartSmoothing: smoothing.toDouble());\n",'')
+          old='''    await tester.pump(const Duration(milliseconds: 400));\n    expect(find.byType(FilterPanel), findsOneWidget);'''
+          new='''    await tester.pump(const Duration(milliseconds: 400));\n    expect(find.byType(FilterPanel), findsOneWidget);\n    final panelContext = tester.element(find.byType(FilterPanel));\n    final fs = panelContext.read<FilterService>();\n    fs.selectFilter('Filter0023');\n    fs.updateFilterParams('Filter0023', autoLineartSmoothing: smoothing.toDouble());\n    await tester.pump(const Duration(milliseconds: 400));'''
+          assert old in s
+          s=s.replace(old,new)
+          Path('test/auto_lineart_filter_panel_visual_audit_test.dart').write_text(s)
+          PY
+          dart format test/auto_lineart_filter_panel_visual_audit_test.dart
+      - name: Validate production behavior
+        run: |
+          flutter pub get
+          flutter analyze --no-fatal-warnings --no-fatal-infos lib/engine/auto_lineart_engine.dart lib/screens/canvas/widgets/filter_panel.dart lib/screens/canvas/widgets/auto_lineart_control_overlay.dart test/auto_lineart_filter_test.dart test/auto_lineart_control_overlay_test.dart test/auto_lineart_filter_panel_visual_audit_test.dart
+          flutter test test/auto_lineart_filter_test.dart test/auto_lineart_control_overlay_test.dart
+      - name: Capture SP and desktop production widgets
+        run: flutter test --update-goldens test/auto_lineart_filter_panel_visual_audit_test.dart
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with: {name: auto-lineart-panel-audit-v6, path: 'test/goldens/*.png', if-no-files-found: warn}
+      - name: Land
+        if: success()
+        run: |
+          git config user.name 'github-actions[bot]'; git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add lib/engine/auto_lineart_engine.dart lib/screens/canvas/widgets/filter_panel.dart lib/screens/canvas/widgets/auto_lineart_control_overlay.dart test/auto_lineart_filter_test.dart test/auto_lineart_control_overlay_test.dart test/auto_lineart_filter_panel_visual_audit_test.dart
+          git commit -m 'feat: restore 100-step auto lineart smoothing and improve touch targets'
+          git reset --hard HEAD; git clean -fd; git fetch origin dev_branch; git rebase origin/dev_branch; git push origin HEAD:dev_branch
