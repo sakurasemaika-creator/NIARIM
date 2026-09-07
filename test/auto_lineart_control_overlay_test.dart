@@ -111,4 +111,56 @@ void main() {
       image.dispose();
     },
   );
+
+  testWidgets('overlapping touch targets select the nearest control point', (
+    tester,
+  ) async {
+    final recorder = ui.PictureRecorder();
+    final canvas = Canvas(recorder);
+    canvas.drawRect(const Rect.fromLTWH(0, 0, 100, 100), Paint());
+    final image = await recorder.endRecording().toImage(100, 100);
+    int? movedIndex;
+    const graph = AutoLineartGraph(
+      width: 100,
+      height: 100,
+      paths: [
+        AutoLineartPath(
+          points: [
+            AutoLineartPoint(45, 50),
+            AutoLineartPoint(55, 50),
+            AutoLineartPoint(80, 50),
+          ],
+          startIsJunction: false,
+          endIsJunction: false,
+          persistence: 1,
+        ),
+      ],
+    );
+
+    await tester.pumpWidget(
+      MaterialApp(
+        home: Center(
+          child: SizedBox(
+            width: 100,
+            height: 100,
+            child: AutoLineartControlOverlay(
+              image: image,
+              graph: graph,
+              onPointMoved: (_, pointIndex, __) => movedIndex = pointIndex,
+            ),
+          ),
+        ),
+      ),
+    );
+
+    final rect = tester.getRect(find.byType(AutoLineartControlOverlay));
+    await tester.dragFrom(
+      Offset(rect.left + 54, rect.top + 50),
+      const Offset(6, -10),
+    );
+    await tester.pump();
+
+    expect(movedIndex, 1);
+    image.dispose();
+  });
 }
