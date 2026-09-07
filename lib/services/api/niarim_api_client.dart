@@ -127,9 +127,6 @@ class NiarimApiClient {
       try {
         return await _sendOnce(method, uri, body: body, auth: authenticated);
       } on NiarimApiException catch (e) {
-        // GETは副作用が無く、POST /works と作品本体のPATCHは冪等性を個別に
-        // 保証しているため、401だけ1回tokenProviderを再評価して再送できる。
-        // 通報・フォロー・タグ変更など他の書き込みにはこの例外を広げない。
         if (authenticated &&
             e.isUnauthorized &&
             !authRetryUsed &&
@@ -146,7 +143,7 @@ class NiarimApiClient {
         await Future<void>.delayed(retryBackoff * transientAttempts);
       }
     }
-    throw lastError!;
+    throw lastError;
   }
 
   Future<Map<String, dynamic>> _sendOnce(
