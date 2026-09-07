@@ -25,5 +25,30 @@ jobs:
         run: flutter pub get
       - name: Analyze posting and auth changes
         run: flutter analyze lib/services/google_auth_service.dart lib/screens/community/community_post_screen.dart --no-fatal-infos
-      - name: Run Flutter tests
-        run: flutter test --reporter compact
+      - name: Run Flutter tests with captured output
+        id: tests
+        continue-on-error: true
+        shell: bash
+        run: |
+          set -o pipefail
+          flutter test --reporter expanded 2>&1 | tee flutter-test.log
+          echo "exit_code=${PIPESTATUS[0]}" >> "$GITHUB_OUTPUT"
+      - name: Print failure summary
+        if: steps.tests.outputs.exit_code != '0'
+        shell: bash
+        run: |
+          echo '=== FAILURE MATCHES ==='
+          grep -n -E 'FAILED|Expected:|Actual:|Exception|Some tests failed|Test failed|Error:|\[E\]' flutter-test.log | tail -300 || true
+          echo '=== LOG TAIL ==='
+          tail -400 flutter-test.log || true
+      - name: Upload Flutter test log
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: posting-auth-flutter-test-log
+          path: flutter-test.log
+          if-no-files-found: warn
+          retention-days: 1
+      - name: Fail if Flutter tests failed
+        if: steps.tests.outputs.exit_code != '0'
+        run: exit 1
