@@ -6,6 +6,7 @@ import '../models/pixel_color_mode.dart';
 
 class FilterService extends ChangeNotifier {
   static const _prefsKey = 'draw_filters';
+  static const prismFilterId = 'Filter0022';
 
   final List<FilterDef> _filters = [];
   String? _currentFilterId;
@@ -48,10 +49,13 @@ class FilterService extends ChangeNotifier {
     FilterDef(id: 'Filter0019', name: 'オーロラホログラム', kind: FilterKind.auroraHologram, strength: 60),
     FilterDef(id: 'Filter0020', name: '背景馴染ませ', kind: FilterKind.backgroundBlend),
     FilterDef(id: 'Filter0021', name: '墨溜まり', kind: FilterKind.inkPool, inkPoolColor: 0xFF000000, inkPoolRange: 12, inkPoolCenterWidth: 6),
+    // Prism deliberately uses an existing enum kind so adding it does not make every
+    // shared FilterKind switch exhaustive again. filter_panel.dart dispatches this
+    // built-in by stable id to PrismFilterEngine instead of the aurora implementation.
     FilterDef(
-      id: 'Filter0022',
+      id: prismFilterId,
       name: 'プリズム',
-      kind: FilterKind.prism,
+      kind: FilterKind.auroraHologram,
       prismBlurPx: 8,
       prismDirectionDegrees: 45,
     ),
@@ -208,7 +212,6 @@ class FilterService extends ChangeNotifier {
   }
 
   static final Set<String> _builtInIds = _defaultFilters().map((f) => f.id).toSet();
-
   bool isBuiltIn(String id) => _builtInIds.contains(id);
 
   void addFilter(FilterDef filter) {
