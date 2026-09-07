@@ -1,0 +1,19 @@
+name: TMP Auto Lineart Panel Audit Discovery
+on:
+  push:
+    branches: [dev_branch]
+    paths:
+      - '.github/workflows/tmp-auto-lineart-panel-audit-discovery.yml'
+jobs:
+  discover:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          ref: dev_branch
+      - name: Find FilterPanel test harnesses
+        run: |
+          echo '=== FilterPanel references ==='
+          grep -R -n "FilterPanel(" test | head -80 || true
+          echo '=== screenshot APIs ==='
+          grep -R -n "takeScreenshot\|capture.*png\|writeAsBytes.*png\|matchesGoldenFile" test | head -100 || true
