@@ -72,14 +72,14 @@ class PrismFilterEngine {
     final maxX = math.max(0, width - 1).toDouble();
     final maxY = math.max(0, height - 1).toDouble();
     final projections = <double>[
-      0,
+      0.0,
       maxX * dx,
       maxY * dy,
       maxX * dx + maxY * dy,
     ];
     final minProjection = projections.reduce(math.min);
     final maxProjection = projections.reduce(math.max);
-    final span = math.max(1e-9, maxProjection - minProjection);
+    final span = math.max(1e-9, maxProjection - minProjection).toDouble();
 
     for (var y = 0; y < height; y++) {
       for (var x = 0; x < width; x++) {
@@ -88,7 +88,9 @@ class PrismFilterEngine {
         if (sourceAlpha == 0) continue;
 
         final projection = x * dx + y * dy;
-        final t = ((projection - minProjection) / span).clamp(0.0, 1.0);
+        final t = ((projection - minProjection) / span)
+            .clamp(0.0, 1.0)
+            .toDouble();
         final rgb = _darkRainbowAt(t);
         out[i] = rgb.$1;
         out[i + 1] = rgb.$2;
@@ -108,20 +110,16 @@ class PrismFilterEngine {
       final outA = oa + ba * (1.0 - oa);
       if (outA <= 0) continue;
 
-      out[i] = (((overlay[i] * oa) + (base[i] * ba * (1.0 - oa))) / outA)
-          .round()
-          .clamp(0, 255);
-      out[i + 1] = (((overlay[i + 1] * oa) +
-                  (base[i + 1] * ba * (1.0 - oa))) /
-              outA)
-          .round()
-          .clamp(0, 255);
-      out[i + 2] = (((overlay[i + 2] * oa) +
-                  (base[i + 2] * ba * (1.0 - oa))) /
-              outA)
-          .round()
-          .clamp(0, 255);
-      out[i + 3] = (outA * 255).round().clamp(0, 255);
+      out[i] = _clampByte(
+        ((overlay[i] * oa) + (base[i] * ba * (1.0 - oa))) / outA,
+      );
+      out[i + 1] = _clampByte(
+        ((overlay[i + 1] * oa) + (base[i + 1] * ba * (1.0 - oa))) / outA,
+      );
+      out[i + 2] = _clampByte(
+        ((overlay[i + 2] * oa) + (base[i + 2] * ba * (1.0 - oa))) / outA,
+      );
+      out[i + 3] = _clampByte(outA * 255.0);
     }
     return out;
   }
@@ -135,14 +133,10 @@ class PrismFilterEngine {
       if (outA <= 0) continue;
 
       // Linear Dodge(Add): RGB は加算。effect 側はアルファで寄与量を制御する。
-      out[i] = (base[i] + effect[i] * ea).round().clamp(0, 255);
-      out[i + 1] = (base[i + 1] + effect[i + 1] * ea)
-          .round()
-          .clamp(0, 255);
-      out[i + 2] = (base[i + 2] + effect[i + 2] * ea)
-          .round()
-          .clamp(0, 255);
-      out[i + 3] = (outA * 255).round().clamp(0, 255);
+      out[i] = _clampByte(base[i] + effect[i] * ea);
+      out[i + 1] = _clampByte(base[i + 1] + effect[i + 1] * ea);
+      out[i + 2] = _clampByte(base[i + 2] + effect[i + 2] * ea);
+      out[i + 3] = _clampByte(outA * 255.0);
     }
     return out;
   }
@@ -160,12 +154,14 @@ class PrismFilterEngine {
       (1.00, 92, 18, 72),
     ];
 
-    final v = t.clamp(0.0, 1.0);
+    final v = t.clamp(0.0, 1.0).toDouble();
     for (var i = 0; i < stops.length - 1; i++) {
       final a = stops[i];
       final b = stops[i + 1];
       if (v > b.$1) continue;
-      final local = ((v - a.$1) / (b.$1 - a.$1)).clamp(0.0, 1.0);
+      final local = ((v - a.$1) / (b.$1 - a.$1))
+          .clamp(0.0, 1.0)
+          .toDouble();
       return (
         _lerpChannel(a.$2, b.$2, local),
         _lerpChannel(a.$3, b.$3, local),
@@ -177,7 +173,9 @@ class PrismFilterEngine {
   }
 
   int _lerpChannel(int a, int b, double t) =>
-      (a + (b - a) * t).round().clamp(0, 255);
+      _clampByte(a + (b - a) * t);
+
+  int _clampByte(num value) => value.round().clamp(0, 255).toInt();
 
   double _normalizeDegrees(double value) {
     final normalized = value % 360.0;
