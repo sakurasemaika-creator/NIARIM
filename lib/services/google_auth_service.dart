@@ -36,19 +36,25 @@ class GoogleAuthService extends ChangeNotifier {
   Object? _lastError;
 
   GoogleSignInAccount? get account => _account;
+  bool get isConfigured => googleClientId.isNotEmpty;
   bool get isInitialized => _initialized;
   bool get isSignedIn => _account != null;
   Object? get lastError => _lastError;
 
   /// GoogleSignIn 7.xはinitializeを1回だけ呼ぶ必要があるため、起動時に
-  /// app_bootstrapから1度だけ実行する。UIを出さないlightweight認証もここで
-  /// 試みるが、未ログインならそのまま匿名利用を継続する。
+  /// app_bootstrapから1度だけ実行する。
+  ///
+  /// OAuthクライアントIDを渡していない通常のWidgetテスト・画面監査・
+  /// 未設定開発ビルドでは、ネイティブGoogle SDKへ一切触れず匿名モードで
+  /// 初期化完了扱いにする。これにより認証未設定がアプリ全体の起動を妨げない。
   Future<void> init() async {
     if (_initialized) return;
+    if (!isConfigured) {
+      _initialized = true;
+      return;
+    }
 
-    await _signIn.initialize(
-      serverClientId: googleClientId.isEmpty ? null : googleClientId,
-    );
+    await _signIn.initialize(serverClientId: googleClientId);
     _initialized = true;
 
     _authSubscription = _signIn.authenticationEvents.listen(
@@ -82,7 +88,7 @@ class GoogleAuthService extends ChangeNotifier {
 
   /// ユーザー操作から呼ぶ対話ログイン。
   Future<GoogleSignInAccount> signInInteractively() async {
-    _ensureInitialized();
+    _ensureReadyForGoogle();
     if (!_signIn.supportsAuthenticate()) {
       throw UnsupportedError('このプラットフォームでは対話Googleログインに未対応です');
     }
@@ -99,9 +105,10 @@ class GoogleAuthService extends ChangeNotifier {
 
   /// NIARIM APIが検証するOpenID Connect IDトークン。
   ///
-  /// UIを出さないため、未ログイン時はnullを返す。書き込み操作を始める前に
-  /// [signInInteractively] を呼ぶのは画面側の責務。
+  /// UIを出さないため、未設定・未ログイン時はnullを返す。書き込み操作を
+  /// 始める前に[signInInteractively]を呼ぶのは画面側の責務。
   Future<String?> backendIdToken() async {
+    if (!isConfigured) return null;
     final user = _account;
     if (user == null) return null;
     return user.authentication.idToken;
@@ -114,7 +121,7 @@ class GoogleAuthService extends ChangeNotifier {
   Future<String?> youtubeUploadAccessToken({
     bool promptIfNecessary = false,
   }) async {
-    _ensureInitialized();
+    _ensureReadyForGoogle();
     var user = _account;
     if (user == null) {
       if (!promptIfNecessary) return null;
@@ -139,14 +146,14 @@ class GoogleAuthService extends ChangeNotifier {
   }
 
   Future<void> signOut() async {
-    _ensureInitialized();
+    _ensureReadyForGoogle();
     await _signIn.signOut();
     _setAccount(null);
   }
 
   /// Google側のNIARIM認可そのものも取り消す場合に使う。
   Future<void> disconnect() async {
-    _ensureInitialized();
+    _ensureReadyForGoogle();
     await _signIn.disconnect();
     _setAccount(null);
   }
@@ -158,9 +165,14 @@ class GoogleAuthService extends ChangeNotifier {
     notifyListeners();
   }
 
-  void _ensureInitialized() {
+  void _ensureReadyForGoogle() {
     if (!_initialized) {
       throw StateError('GoogleAuthService.init() がまだ呼ばれていません');
+    }
+    if (!isConfigured) {
+      throw StateError(
+        'NIARIM_GOOGLE_CLIENT_ID が未設定です。Google認証は匿名モードです',
+      );
     }
   }
 
