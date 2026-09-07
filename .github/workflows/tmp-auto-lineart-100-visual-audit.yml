@@ -1,0 +1,219 @@
+name: TMP Auto Lineart 100 Visual Audit
+on:
+  push:
+    branches: [dev_branch]
+    paths:
+      - '.github/workflows/tmp-auto-lineart-100-visual-audit.yml'
+permissions:
+  contents: write
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          ref: dev_branch
+          fetch-depth: 0
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+      - name: Patch 100-step smoothing
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          p=Path('lib/screens/canvas/widgets/filter_panel.dart')
+          s=p.read_text()
+          old="""      final smoothingLevel = (filter.autoLineartSmoothing / 10).round().clamp(\n        0,\n        10,\n      );"""
+          new="""      final smoothingLevel = filter.autoLineartSmoothing.round().clamp(0, 100);"""
+          assert old in s
+          s=s.replace(old,new)
+          old="""                    (current.autoLineartSmoothing / 10).round().clamp(0, 10),\n                    0,\n                    10,"""
+          new="""                    current.autoLineartSmoothing.round().clamp(0, 100),\n                    0,\n                    100,"""
+          assert old in s
+          s=s.replace(old,new)
+          old="autoLineartSmoothing: (v * 10).toDouble(),"
+          assert old in s
+          s=s.replace(old,"autoLineartSmoothing: v.toDouble(),")
+          p.write_text(s)
+
+          p=Path('lib/engine/auto_lineart_engine.dart')
+          s=p.read_text()
+          s=s.replace('/// polygon used by the preview. [smoothingLevel] is intentionally discrete\n  /// (0..10): higher levels smooth the control polygon and retain fewer points.',
+                      '/// polygon used by the preview. [smoothingLevel] is 0..100: higher levels\n  /// smooth the control polygon and continuously retain fewer points.')
+          old="""    final level = smoothingLevel.clamp(0, 10);\n    if (level == 0 || source.paths.isEmpty) return source;"""
+          new="""    final level = smoothingLevel.clamp(0, 100);\n    if (level == 0 || source.paths.isEmpty) return source;\n    final legacyLevel = level / 10.0;"""
+          assert old in s
+          s=s.replace(old,new)
+          s=s.replace('      final passes = math.max(1, level);\n      final amount = 0.12 + level * 0.025;',
+                      '      final passes = math.max(1, legacyLevel.ceil());\n      final amount = 0.12 + legacyLevel * 0.025;')
+          s=s.replace('      // Retain 92% -> 20% of interior controls over the ten levels.\n      final target = math.max(\n        2,\n        (original.length * (1.0 - level * 0.08)).round(),\n      );',
+                      '      // Retain 100% -> 20% of controls continuously over 0..100.\n      final target = math.max(\n        2,\n        (original.length * (1.0 - legacyLevel * 0.08)).round(),\n      );')
+          p.write_text(s)
+          PY
+          dart format lib/screens/canvas/widgets/filter_panel.dart lib/engine/auto_lineart_engine.dart
+      - name: Add focused visual audit test
+        run: |
+          cat > test/auto_lineart_filter_panel_visual_audit_test.dart <<'DART'
+          import 'dart:io';
+          import 'dart:math' as math;
+          import 'dart:ui' as ui;
+
+          import 'package:flutter/material.dart';
+          import 'package:flutter/rendering.dart';
+          import 'package:flutter/services.dart';
+          import 'package:flutter_test/flutter_test.dart';
+          import 'package:niarim/app_bootstrap.dart';
+          import 'package:niarim/l10n/app_localizations.dart';
+          import 'package:niarim/screens/canvas/widgets/auto_lineart_control_overlay.dart';
+          import 'package:niarim/screens/canvas/widgets/filter_panel.dart';
+          import 'package:niarim/services/filter_service.dart';
+          import 'package:niarim/services/project_service.dart';
+          import 'package:niarim/services/theme_service.dart';
+          import 'package:provider/provider.dart';
+          import 'package:shared_preferences/shared_preferences.dart';
+
+          import 'helpers/load_app_fonts.dart';
+
+          void main() {
+            TestWidgetsFlutterBinding.ensureInitialized();
+            final out = Directory('build/auto-lineart-panel-audit');
+            final appDocs = Directory('${Directory.systemTemp.path}/niarim_auto_lineart_panel_docs');
+            const channel = MethodChannel('plugins.flutter.io/path_provider');
+
+            setUpAll(() { out.createSync(recursive: true); appDocs.createSync(recursive: true); });
+            setUp(() {
+              SharedPreferences.setMockInitialValues({});
+              TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
+                .setMockMethodCallHandler(channel, (_) async => appDocs.path);
+            });
+            tearDown(() {
+              TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
+                .setMockMethodCallHandler(channel, null);
+            });
+
+            testWidgets('actual FilterPanel renders editable auto lineart on SP and desktop', (tester) async {
+              await loadAppFonts(tester);
+              final providers = (await tester.runAsync(buildAppProviders))!;
+              ProjectService? ps;
+              FilterService? fs;
+              ThemeService? ts;
+              final rootKey = GlobalKey();
+
+              await tester.pumpWidget(MultiProvider(
+                providers: providers,
+                child: Builder(builder: (context) {
+                  ps ??= context.read<ProjectService>();
+                  fs ??= context.read<FilterService>();
+                  ts ??= context.read<ThemeService>();
+                  return const SizedBox();
+                }),
+              ));
+              await tester.pump();
+              final project = (await tester.runAsync(() => ps!.createProject(
+                name: 'auto-lineart-panel-audit', fps: 24, durationSeconds: 1,
+                backgroundColor: 0xFFFFFFFF, exportWidth: 320, exportHeight: 320,
+              )))!;
+              final scene = ps!.scenesOf(project.id).first;
+              final layer = ps!.layersOf(project.id, scene.id, 0).first;
+              final key = ps!.tileKeyFor(project.id, scene.id, 0, layer.id);
+              final tm = ps!.tileManagerOf(project.id);
+              final tile = tm.getOrCreateTile(key, 0, 0);
+              void dot(int x, int y, int radius) {
+                for (var yy=y-radius; yy<=y+radius; yy++) {
+                  for (var xx=x-radius; xx<=x+radius; xx++) {
+                    if ((xx-x)*(xx-x)+(yy-y)*(yy-y) <= radius*radius) {
+                      tm.setPixel(tile, xx, yy, 25, 25, 25, 255);
+                    }
+                  }
+                }
+              }
+              final pts=<Offset>[];
+              for (var x=28; x<=220; x++) {
+                final y=118 + 48*math.sin((x-28)/26.0) + 14*math.sin((x-28)/7.0);
+                pts.add(Offset(x.toDouble(), y));
+              }
+              for (final p in pts) dot(p.dx.round(), p.dy.round(), 5);
+              // branch/junction to expose shared control points
+              for (var i=0; i<80; i++) dot(124+i, 120-i, 4);
+              tm.invalidateTile(key, 0, 0);
+              tm.markDirty(key, 0, 0);
+              fs!.selectFilter('Filter0023');
+              fs!.updateFilterParams('Filter0023', autoLineartSmoothing: 45);
+
+              Future<void> mount(Size physical, double dpr) async {
+                tester.view.physicalSize = physical;
+                tester.view.devicePixelRatio = dpr;
+                await tester.pumpWidget(RepaintBoundary(
+                  key: rootKey,
+                  child: MultiProvider(
+                    providers: providers,
+                    child: Builder(builder: (context) => MaterialApp(
+                      theme: context.watch<ThemeService>().themeData,
+                      locale: const Locale('ja'),
+                      localizationsDelegates: AppLocalizations.localizationsDelegates,
+                      supportedLocales: AppLocalizations.supportedLocales,
+                      home: Scaffold(body: Stack(children: [
+                        const Positioned.fill(child: ColoredBox(color: Color(0xFFE8E8E8))),
+                        Align(alignment: Alignment.centerLeft, child: FilterPanel(
+                          projectId: project.id, sceneId: scene.id, layerId: layer.id,
+                          frameIndex: 0, onClose: () {},
+                        )),
+                      ])),
+                    )),
+                  ),
+                ));
+                for (var i=0;i<18;i++) {
+                  await tester.runAsync(() => Future<void>.delayed(const Duration(milliseconds: 60)));
+                  await tester.pump(const Duration(milliseconds: 40));
+                }
+                expect(tester.takeException(), isNull);
+                expect(find.byType(FilterPanel), findsOneWidget);
+                expect(find.byType(AutoLineartControlOverlay), findsOneWidget);
+              }
+
+              Future<void> capture(String name) async {
+                final boundary=rootKey.currentContext!.findRenderObject()! as RenderRepaintBoundary;
+                final image=await boundary.toImage(pixelRatio: 1);
+                final data=await image.toByteData(format: ui.ImageByteFormat.png);
+                await File('${out.path}/$name.png').writeAsBytes(data!.buffer.asUint8List());
+                image.dispose();
+              }
+
+              addTearDown(tester.view.resetPhysicalSize);
+              addTearDown(tester.view.resetDevicePixelRatio);
+              await mount(const Size(1170,2532), 3); // 390x844 logical SP
+              await capture('sp_smoothing_45');
+              fs!.updateFilterParams('Filter0023', autoLineartSmoothing: 85);
+              for (var i=0;i<10;i++) { await tester.runAsync(() => Future<void>.delayed(const Duration(milliseconds: 50))); await tester.pump(const Duration(milliseconds: 30)); }
+              await capture('sp_smoothing_85');
+              await mount(const Size(1200,800), 1);
+              await capture('desktop_smoothing_85');
+            }, timeout: const Timeout(Duration(minutes: 3)));
+          }
+          DART
+          dart format test/auto_lineart_filter_panel_visual_audit_test.dart
+      - name: Validate
+        run: |
+          flutter pub get
+          flutter analyze lib/engine/auto_lineart_engine.dart lib/screens/canvas/widgets/filter_panel.dart lib/screens/canvas/widgets/auto_lineart_control_overlay.dart test/auto_lineart_filter_panel_visual_audit_test.dart
+          flutter test test/auto_lineart_filter_test.dart test/auto_lineart_control_overlay_test.dart test/auto_lineart_filter_panel_visual_audit_test.dart
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: auto-lineart-panel-audit
+          path: build/auto-lineart-panel-audit/*.png
+          if-no-files-found: warn
+      - name: Land implementation and test
+        if: success()
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add lib/engine/auto_lineart_engine.dart lib/screens/canvas/widgets/filter_panel.dart test/auto_lineart_filter_panel_visual_audit_test.dart
+          git commit -m 'feat: restore 100-step auto lineart smoothing and visual audit'
+          git reset --hard HEAD
+          git clean -fd
+          git fetch origin dev_branch
+          git rebase origin/dev_branch
+          git push origin HEAD:dev_branch
