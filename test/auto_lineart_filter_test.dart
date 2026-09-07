@@ -5,7 +5,24 @@ import 'package:niarim/engine/auto_lineart_engine.dart';
 
 Uint8List _canvas(int w, int h) => Uint8List(w * h * 4);
 
-void _dot(Uint8List b, int w, int h, int cx, int cy, int radius) {
+void _fillOpaque(Uint8List b, int shade) {
+  for (var i = 0; i < b.length; i += 4) {
+    b[i] = shade;
+    b[i + 1] = shade;
+    b[i + 2] = shade;
+    b[i + 3] = 255;
+  }
+}
+
+void _dot(
+  Uint8List b,
+  int w,
+  int h,
+  int cx,
+  int cy,
+  int radius, {
+  int shade = 20,
+}) {
   for (var y = cy - radius; y <= cy + radius; y++) {
     for (var x = cx - radius; x <= cx + radius; x++) {
       if (x < 0 || x >= w || y < 0 || y >= h) continue;
@@ -13,9 +30,9 @@ void _dot(Uint8List b, int w, int h, int cx, int cy, int radius) {
       final dy = y - cy;
       if (dx * dx + dy * dy > radius * radius) continue;
       final i = (y * w + x) * 4;
-      b[i] = 20;
-      b[i + 1] = 20;
-      b[i + 2] = 20;
+      b[i] = shade;
+      b[i + 1] = shade;
+      b[i + 2] = shade;
       b[i + 3] = 255;
     }
   }
@@ -29,8 +46,9 @@ void _line(
   int y0,
   int x1,
   int y1,
-  int radius,
-) {
+  int radius, {
+  int shade = 20,
+}) {
   final dx = (x1 - x0).abs();
   final sx = x0 < x1 ? 1 : -1;
   final dy = -(y1 - y0).abs();
@@ -39,7 +57,7 @@ void _line(
   var x = x0;
   var y = y0;
   while (true) {
-    _dot(b, w, h, x, y, radius);
+    _dot(b, w, h, x, y, radius, shade: shade);
     if (x == x1 && y == y1) break;
     final e2 = 2 * err;
     if (e2 >= dy) {
@@ -86,6 +104,57 @@ void main() {
       // The output is a centerline, not the two outside edges of the rough.
       expect(_alpha(out, w, 48, 27), lessThan(50));
       expect(_alpha(out, w, 48, 37), lessThan(50));
+    });
+
+    test('extracts a dark rough from an opaque white background', () {
+      const w = 96, h = 64;
+      final src = _canvas(w, h);
+      _fillOpaque(src, 255);
+      _line(src, w, h, 12, 32, 84, 32, 5, shade: 24);
+
+      final graph = AutoLineartEngine.analyze(src, w, h, roughWidthPx: 11);
+      expect(graph.paths, isNotEmpty);
+
+      final out = AutoLineartEngine.render(
+        graph,
+        w,
+        h,
+        outputWidthPx: 2,
+        taperLengthPx: 8,
+        smoothing: 45,
+      );
+      expect(_alpha(out, w, 48, 32), greaterThan(100));
+      expect(_alpha(out, w, 48, 10), lessThan(20));
+    });
+
+    test('extracts a light rough from an opaque dark background', () {
+      const w = 96, h = 64;
+      final src = _canvas(w, h);
+      _fillOpaque(src, 8);
+      _line(src, w, h, 12, 32, 84, 32, 5, shade: 235);
+
+      final graph = AutoLineartEngine.analyze(src, w, h, roughWidthPx: 11);
+      expect(graph.paths, isNotEmpty);
+
+      final out = AutoLineartEngine.render(
+        graph,
+        w,
+        h,
+        outputWidthPx: 2,
+        taperLengthPx: 8,
+        smoothing: 45,
+      );
+      expect(_alpha(out, w, 48, 32), greaterThan(100));
+      expect(_alpha(out, w, 48, 10), lessThan(20));
+    });
+
+    test('uniform opaque background does not become a full-canvas line graph', () {
+      const w = 72, h = 48;
+      final src = _canvas(w, h);
+      _fillOpaque(src, 248);
+
+      final graph = AutoLineartEngine.analyze(src, w, h, roughWidthPx: 9);
+      expect(graph.paths, isEmpty);
     });
 
     test('keeps an X crossing as connected topology', () {
