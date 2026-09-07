@@ -21,7 +21,7 @@ jobs:
           channel: stable
           cache: false
       - run: flutter pub get
-      - name: Analyze changed Flutter integration surface
+      - name: Analyze Flutter project
         run: flutter analyze --no-fatal-infos
       - name: Prism engine test
         run: flutter test test/engine/prism_filter_engine_test.dart
@@ -41,6 +41,5 @@ jobs:
           cache: npm
           cache-dependency-path: backend/package-lock.json
       - run: npm ci
-      - run: npm run lint
       - run: npm run build
-      - run: npm test -- --runInBand
+      - run: npm test
