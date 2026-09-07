@@ -39,7 +39,9 @@ describe("stats update DynamoDB contract", () => {
     expect(source).toContain("ConditionalCheckFailedException");
     expect(source).toContain("MAX_VISIBILITY_CONFLICT_RETRIES = 2");
     expect(source).toContain("new GetCommand");
-    expect(source).toContain("updateWorkStats(latest, stats, topLists");
+    expect(source).toMatch(
+      /updateWorkStats\(\s*latestRaw as WorkItem,\s*stats,\s*topLists,/s,
+    );
   });
 
   it("does not rewrite bookmark ranking from a stale scan during normal visible updates", () => {
