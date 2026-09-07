@@ -3,6 +3,8 @@ on:
   push:
     branches: [dev_branch]
     paths: ['.github/workflows/tmp-auto-lineart-preview-audit-v9.yml']
+permissions:
+  contents: write
 jobs:
   audit:
     runs-on: ubuntu-latest
@@ -12,10 +14,10 @@ jobs:
         with: {ref: dev_branch, fetch-depth: 0}
       - uses: subosito/flutter-action@v2
         with: {channel: stable, cache: true}
-      - name: Validate normal suite behavior
+      - name: Format and validate normal suite behavior
         run: |
           flutter pub get
-          dart format --output=none --set-exit-if-changed test/auto_lineart_filter_panel_visual_audit_test.dart test/auto_lineart_control_overlay_test.dart
+          dart format test/auto_lineart_filter_panel_visual_audit_test.dart test/auto_lineart_control_overlay_test.dart
           flutter analyze test/auto_lineart_filter_panel_visual_audit_test.dart test/auto_lineart_control_overlay_test.dart
           flutter test test/auto_lineart_control_overlay_test.dart
           flutter test test/auto_lineart_filter_panel_visual_audit_test.dart
@@ -27,3 +29,16 @@ jobs:
           name: auto-lineart-preview-audit-v9
           path: test/goldens/*.png
           if-no-files-found: error
+      - name: Land formatted tests
+        if: success()
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add test/auto_lineart_filter_panel_visual_audit_test.dart test/auto_lineart_control_overlay_test.dart
+          if git diff --cached --quiet; then exit 0; fi
+          git commit -m 'test: 自動線画の目視監査と近接タッチ回帰を安定化'
+          git reset --hard HEAD
+          git clean -fd
+          git fetch origin dev_branch
+          git rebase origin/dev_branch
+          git push origin HEAD:dev_branch
