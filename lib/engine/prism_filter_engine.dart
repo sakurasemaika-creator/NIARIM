@@ -21,7 +21,22 @@ class PrismFilterEngine {
   PrismFilterEngine({FilterEngine? filterEngine})
     : _filterEngine = filterEngine ?? FilterEngine();
 
+  static const double minBlurPx = 0;
+  static const double maxBlurPx = 40;
+  static const double defaultBlurPx = 8;
+  static const double minDirectionDegrees = 0;
+  static const double maxDirectionDegrees = 359;
+  static const double defaultDirectionDegrees = 45;
+
   final FilterEngine _filterEngine;
+
+  static double normalizeDirectionDegrees(double value) {
+    final normalized = value % 360.0;
+    return normalized < 0 ? normalized + 360.0 : normalized;
+  }
+
+  static double clampBlurPx(double value) =>
+      value.clamp(minBlurPx, maxBlurPx).toDouble();
 
   Uint8List apply(
     Uint8List source,
@@ -41,16 +56,17 @@ class PrismFilterEngine {
       gradientDirectionDegrees,
     );
     final merged = _normalMerge(source, clippedGradient);
+    final safeBlurPx = clampBlurPx(blurPx);
 
     // blurPx は既存のガウスぼかしと同じ「px数」としてそのまま渡す。
     // 0px は実質無効として結合結果をそのまま使用する。
-    final blurred = blurPx <= 0
+    final blurred = safeBlurPx <= 0
         ? merged
         : _filterEngine.applyGaussianBlur(
             merged,
             width,
             height,
-            blurPx,
+            safeBlurPx,
           );
 
     return _linearDodge(source, blurred);
@@ -63,7 +79,7 @@ class PrismFilterEngine {
     double directionDegrees,
   ) {
     final out = Uint8List(source.length);
-    final radians = _normalizeDegrees(directionDegrees) * math.pi / 180.0;
+    final radians = normalizeDirectionDegrees(directionDegrees) * math.pi / 180.0;
     final dx = math.cos(radians);
     final dy = math.sin(radians);
 
@@ -176,9 +192,4 @@ class PrismFilterEngine {
       _clampByte(a + (b - a) * t);
 
   int _clampByte(num value) => value.round().clamp(0, 255).toInt();
-
-  double _normalizeDegrees(double value) {
-    final normalized = value % 360.0;
-    return normalized < 0 ? normalized + 360.0 : normalized;
-  }
 }
