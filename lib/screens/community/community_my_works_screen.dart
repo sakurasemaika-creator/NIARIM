@@ -28,6 +28,7 @@ class _CommunityMyWorksScreenState extends State<CommunityMyWorksScreen> {
   bool _loadingWorks = false;
   Object? _worksError;
   List<CommunityWork>? _ownerWorks;
+  Map<String, String> _youtubePrivacyById = const <String, String>{};
   final Set<String> _visibilityBusy = <String>{};
 
   @override
@@ -43,6 +44,7 @@ class _CommunityMyWorksScreenState extends State<CommunityMyWorksScreen> {
     if (api == null || !auth.isSignedIn) {
       setState(() {
         _ownerWorks = null;
+        _youtubePrivacyById = const <String, String>{};
         _worksError = null;
         _loadingWorks = false;
       });
@@ -57,8 +59,16 @@ class _CommunityMyWorksScreenState extends State<CommunityMyWorksScreen> {
       final works = await api.myWorks();
       final converted = works.map((w) => w.toCommunityWork()).toList()
         ..sort((a, b) => b.postedAt.compareTo(a.postedAt));
+      final privacy = <String, String>{
+        for (final work in works)
+          if (work.youtubePrivacyStatus != null)
+            work.workId: work.youtubePrivacyStatus!,
+      };
       if (!mounted) return;
-      setState(() => _ownerWorks = converted);
+      setState(() {
+        _ownerWorks = converted;
+        _youtubePrivacyById = privacy;
+      });
     } catch (error) {
       if (!mounted) return;
       setState(() => _worksError = error);
@@ -84,6 +94,7 @@ class _CommunityMyWorksScreenState extends State<CommunityMyWorksScreen> {
       if (mounted) {
         setState(() {
           _ownerWorks = null;
+          _youtubePrivacyById = const <String, String>{};
           _worksError = null;
         });
       }
@@ -133,6 +144,16 @@ class _CommunityMyWorksScreenState extends State<CommunityMyWorksScreen> {
   }
 
   Future<void> _setVisibility(CommunityWork work, bool published) async {
+    final youtubePrivacy = _youtubePrivacyById[work.id];
+    if (published && youtubePrivacy == 'deleted') {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('YouTubeから削除された動画はNIARIMで再公開できません'),
+        ),
+      );
+      return;
+    }
+
     final api = context.read<CommunityService>().api;
     if (api == null || _visibilityBusy.contains(work.id)) return;
     setState(() => _visibilityBusy.add(work.id));
@@ -158,6 +179,29 @@ class _CommunityMyWorksScreenState extends State<CommunityMyWorksScreen> {
     } finally {
       if (mounted) setState(() => _visibilityBusy.remove(work.id));
     }
+  }
+
+  String _visibilityLabel(CommunityWork work) {
+    final youtubePrivacy = _youtubePrivacyById[work.id];
+    if (youtubePrivacy == 'deleted') {
+      return 'YouTubeから削除済み • NIARIMでは再公開できません';
+    }
+    if (youtubePrivacy == 'private') {
+      if (work.isNiarimPublished) {
+        return 'NIARIM公開ON • YouTube非公開のため一時非表示';
+      }
+      return 'NIARIM非公開 • YouTubeも非公開';
+    }
+    return work.isNiarimPublished ? '公開中' : '非公開';
+  }
+
+  IconData _visibilityIcon(CommunityWork work) {
+    final youtubePrivacy = _youtubePrivacyById[work.id];
+    if (youtubePrivacy == 'deleted') return Icons.delete_forever_outlined;
+    if (youtubePrivacy == 'private') return Icons.lock_outline;
+    return work.isNiarimPublished
+        ? Icons.public
+        : Icons.visibility_off_outlined;
   }
 
   @override
@@ -344,6 +388,8 @@ class _CommunityMyWorksScreenState extends State<CommunityMyWorksScreen> {
                       itemBuilder: (context, index) {
                         final work = works[index];
                         final busy = _visibilityBusy.contains(work.id);
+                        final youtubePrivacy = _youtubePrivacyById[work.id];
+                        final deleted = youtubePrivacy == 'deleted';
                         return Card(
                           clipBehavior: Clip.antiAlias,
                           child: ListTile(
@@ -351,14 +397,10 @@ class _CommunityMyWorksScreenState extends State<CommunityMyWorksScreen> {
                                 .read<CommunityPreviewService>()
                                 .show(work),
                             leading: CircleAvatar(
-                              backgroundColor: work.isNiarimPublished
+                              backgroundColor: work.isNiarimPublished && !deleted
                                   ? scheme.primaryContainer
                                   : scheme.surfaceContainerHighest,
-                              child: Icon(
-                                work.isNiarimPublished
-                                    ? Icons.public
-                                    : Icons.visibility_off_outlined,
-                              ),
+                              child: Icon(_visibilityIcon(work)),
                             ),
                             title: Text(
                               work.title.isEmpty ? work.id : work.title,
@@ -366,7 +408,7 @@ class _CommunityMyWorksScreenState extends State<CommunityMyWorksScreen> {
                               overflow: TextOverflow.ellipsis,
                             ),
                             subtitle: Text(
-                              '${work.isNiarimPublished ? '公開中' : '非公開'}  •  videoId: ${work.id}',
+                              '${_visibilityLabel(work)}  •  videoId: ${work.id}',
                               maxLines: 2,
                               overflow: TextOverflow.ellipsis,
                             ),
@@ -383,7 +425,9 @@ class _CommunityMyWorksScreenState extends State<CommunityMyWorksScreen> {
                                           )
                                         : Switch.adaptive(
                                             value: work.isNiarimPublished,
-                                            onChanged: (v) => _setVisibility(work, v),
+                                            onChanged: deleted && !work.isNiarimPublished
+                                                ? null
+                                                : (v) => _setVisibility(work, v),
                                           ),
                                   )
                                 : null,
