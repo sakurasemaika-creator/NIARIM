@@ -121,9 +121,8 @@ class AutoLineartEngine {
       // roughs. Preserve short paths when both ends are topology anchors, so
       // compact X/Y intersections do not get destroyed.
       final anchoredBoth = raw.startIsJunction && raw.endIsJunction;
-      final keep = anchoredBoth ||
-          length >= minBranchLength ||
-          persistence >= 0.67;
+      final keep =
+          anchoredBoth || length >= minBranchLength || persistence >= 0.67;
       if (!keep) continue;
 
       // Compress exact pixel stepping into direction-change points. Smoothing is
@@ -284,7 +283,10 @@ class AutoLineartEngine {
       final maxRadius = lineWidth * 0.5 + 1.25;
       final minX = (math.min(a.x, b.x) - maxRadius).floor().clamp(0, width - 1);
       final maxX = (math.max(a.x, b.x) + maxRadius).ceil().clamp(0, width - 1);
-      final minY = (math.min(a.y, b.y) - maxRadius).floor().clamp(0, height - 1);
+      final minY = (math.min(a.y, b.y) - maxRadius).floor().clamp(
+        0,
+        height - 1,
+      );
       final maxY = (math.max(a.y, b.y) + maxRadius).ceil().clamp(0, height - 1);
       final vx = b.x - a.x;
       final vy = b.y - a.y;
@@ -306,7 +308,10 @@ class AutoLineartEngine {
           var widthFactor = 1.0;
           if (taperLength > 0) {
             if (taperStart) {
-              widthFactor = math.min(widthFactor, (along / taperLength).clamp(0.08, 1.0));
+              widthFactor = math.min(
+                widthFactor,
+                (along / taperLength).clamp(0.08, 1.0),
+              );
             }
             if (taperEnd) {
               widthFactor = math.min(
@@ -482,7 +487,9 @@ class AutoLineartEngine {
         var previous = start;
         var current = first;
         while (!anchors.contains(current)) {
-          final options = neighborsOf(current).where((n) => n != previous).toList();
+          final options = neighborsOf(
+            current,
+          ).where((n) => n != previous).toList();
           if (options.isEmpty) break;
           // Degree-2 pixels should have one onward neighbor. If raster topology
           // produces more, choose the direction that continues most straight.
@@ -520,10 +527,8 @@ class AutoLineartEngine {
             _RawPath(
               points: chain
                   .map(
-                    (i) => AutoLineartPoint(
-                      (i % width) + 0.5,
-                      (i ~/ width) + 0.5,
-                    ),
+                    (i) =>
+                        AutoLineartPoint((i % width) + 0.5, (i ~/ width) + 0.5),
                   )
                   .toList(growable: false),
               startIsJunction: degrees[start] >= 3,
@@ -536,12 +541,7 @@ class AutoLineartEngine {
     return paths;
   }
 
-  static Uint8List _dilate(
-    Uint8List input,
-    int width,
-    int height,
-    int radius,
-  ) {
+  static Uint8List _dilate(Uint8List input, int width, int height, int radius) {
     if (radius <= 0) return Uint8List.fromList(input);
     final out = Uint8List(input.length);
     for (var y = 0; y < height; y++) {
@@ -565,12 +565,7 @@ class AutoLineartEngine {
     return out;
   }
 
-  static Uint8List _erode(
-    Uint8List input,
-    int width,
-    int height,
-    int radius,
-  ) {
+  static Uint8List _erode(Uint8List input, int width, int height, int radius) {
     if (radius <= 0) return Uint8List.fromList(input);
     final out = Uint8List(input.length);
     for (var y = 0; y < height; y++) {
@@ -581,7 +576,11 @@ class AutoLineartEngine {
             if (ox * ox + oy * oy > radius * radius) continue;
             final nx = x + ox;
             final ny = y + oy;
-            if (nx < 0 || nx >= width || ny < 0 || ny >= height || input[ny * width + nx] == 0) {
+            if (nx < 0 ||
+                nx >= width ||
+                ny < 0 ||
+                ny >= height ||
+                input[ny * width + nx] == 0) {
               on = false;
               break;
             }
@@ -593,11 +592,7 @@ class AutoLineartEngine {
     return out;
   }
 
-  static Uint8List _thinZhangSuen(
-    Uint8List input,
-    int width,
-    int height,
-  ) {
+  static Uint8List _thinZhangSuen(Uint8List input, int width, int height) {
     final img = Uint8List.fromList(input);
     if (width < 3 || height < 3) return img;
     var changed = true;

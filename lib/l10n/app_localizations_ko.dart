@@ -6104,4 +6104,24 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get filterOutlineEyedropperHint => '캔버스를 탭하여 테두리 색상을 선택하세요';
+
+  @override
+  String get filterNameAutoLineart => '자동 선화';
+
+  @override
+  String get filterAutoLineartRoughWidth => '러프 선 굵기';
+
+  @override
+  String get filterAutoLineartOutputWidth => '선화 굵기';
+
+  @override
+  String get filterAutoLineartTaperLength => '테이퍼 길이';
+
+  @override
+  String get filterAutoLineartSmoothing => '부드럽게';
+
+  @override
+  String filterAutoLineartLayerNameSuffix(String name) {
+    return '$name 자동 선화';
+  }
 }

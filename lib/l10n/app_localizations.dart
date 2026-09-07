@@ -11158,6 +11158,42 @@ abstract class AppLocalizations {
   /// In ja, this message translates to:
   /// **'タップで縁取りの色を選択してください'**
   String get filterOutlineEyedropperHint;
+
+  /// No description provided for @filterNameAutoLineart.
+  ///
+  /// In ja, this message translates to:
+  /// **'自動線画'**
+  String get filterNameAutoLineart;
+
+  /// No description provided for @filterAutoLineartRoughWidth.
+  ///
+  /// In ja, this message translates to:
+  /// **'対象ラフ線幅'**
+  String get filterAutoLineartRoughWidth;
+
+  /// No description provided for @filterAutoLineartOutputWidth.
+  ///
+  /// In ja, this message translates to:
+  /// **'線画の太さ'**
+  String get filterAutoLineartOutputWidth;
+
+  /// No description provided for @filterAutoLineartTaperLength.
+  ///
+  /// In ja, this message translates to:
+  /// **'入り抜きの長さ'**
+  String get filterAutoLineartTaperLength;
+
+  /// No description provided for @filterAutoLineartSmoothing.
+  ///
+  /// In ja, this message translates to:
+  /// **'なめらか補正'**
+  String get filterAutoLineartSmoothing;
+
+  /// No description provided for @filterAutoLineartLayerNameSuffix.
+  ///
+  /// In ja, this message translates to:
+  /// **'{name} 自動線画'**
+  String filterAutoLineartLayerNameSuffix(String name);
 }
 
 class _AppLocalizationsDelegate

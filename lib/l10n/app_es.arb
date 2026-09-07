@@ -2634,5 +2634,18 @@
   "brushSettingsEdgeJitterStrengthLabel": "Intensidad",
   "filterCanvasEyedropperTooltip": "Elegir color del lienzo",
   "filterInkPoolEyedropperHint": "Toca el lienzo para elegir el color de acumulación de tinta",
-  "filterOutlineEyedropperHint": "Toca el lienzo para elegir el color del contorno"
+  "filterOutlineEyedropperHint": "Toca el lienzo para elegir el color del contorno",
+  "filterNameAutoLineart": "Entintado automático",
+  "filterAutoLineartRoughWidth": "Grosor del boceto",
+  "filterAutoLineartOutputWidth": "Grosor de línea",
+  "filterAutoLineartTaperLength": "Longitud del afinado",
+  "filterAutoLineartSmoothing": "Suavizado",
+  "filterAutoLineartLayerNameSuffix": "{name} Entintado automático",
+  "@filterAutoLineartLayerNameSuffix": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  }
 }

@@ -5,6 +5,7 @@ import '../models/effect_filter_instance.dart';
 import '../models/filter_def.dart';
 import '../models/pixel_color_mode.dart';
 import 'background_acclimation_engine.dart';
+import 'auto_lineart_engine.dart';
 
 /// 描画フィルターの本適用（低スペック端末でのUIスレッドブロック防止のため
 /// compute()経由でバックグラウンドisolate実行する想定のトップレベル関数）。
@@ -174,6 +175,19 @@ Uint8List applyDrawFilterInIsolate(
       color: filter.inkPoolColor,
       rangePx: filter.inkPoolRange,
       centerWidthPx: filter.inkPoolCenterWidth,
+    ),
+    FilterKind.autoLineart => AutoLineartEngine.render(
+      AutoLineartEngine.analyze(
+        data,
+        width,
+        height,
+        roughWidthPx: filter.autoLineartRoughWidth,
+      ),
+      width,
+      height,
+      outputWidthPx: filter.autoLineartOutputWidth,
+      taperLengthPx: filter.autoLineartTaperLength,
+      smoothing: filter.autoLineartSmoothing,
     ),
   };
 }

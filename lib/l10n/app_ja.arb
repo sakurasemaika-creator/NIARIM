@@ -1015,11 +1015,19 @@
   "themeDuplicateAction": "複製",
   "themeAdoptColorsSnackbar": "「{name}」の配色を現在の色へ反映しました。カラーカスタマイズで変えても元のテーマはそのままです",
   "@themeAdoptColorsSnackbar": {
-    "placeholders": { "name": { "type": "String" } }
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
   },
   "themeEditPresetSnackbar": "「{name}」を編集対象にしました。カラーカスタマイズの変更はこのテーマへ保存されます",
   "@themeEditPresetSnackbar": {
-    "placeholders": { "name": { "type": "String" } }
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
   },
   "themeExportMenuItem": "書き出し (.niatheme)",
   "themeExportFailedSnackbar": "書き出しに失敗しました: {error}",
@@ -2936,5 +2944,18 @@
   },
   "filterCanvasEyedropperTooltip": "キャンバスから色を選択",
   "filterInkPoolEyedropperHint": "タップで墨溜まりの色を選択してください",
-  "filterOutlineEyedropperHint": "タップで縁取りの色を選択してください"
+  "filterOutlineEyedropperHint": "タップで縁取りの色を選択してください",
+  "filterNameAutoLineart": "自動線画",
+  "filterAutoLineartRoughWidth": "対象ラフ線幅",
+  "filterAutoLineartOutputWidth": "線画の太さ",
+  "filterAutoLineartTaperLength": "入り抜きの長さ",
+  "filterAutoLineartSmoothing": "なめらか補正",
+  "filterAutoLineartLayerNameSuffix": "{name} 自動線画",
+  "@filterAutoLineartLayerNameSuffix": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  }
 }

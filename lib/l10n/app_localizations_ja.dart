@@ -6075,4 +6075,24 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get filterOutlineEyedropperHint => 'タップで縁取りの色を選択してください';
+
+  @override
+  String get filterNameAutoLineart => '自動線画';
+
+  @override
+  String get filterAutoLineartRoughWidth => '対象ラフ線幅';
+
+  @override
+  String get filterAutoLineartOutputWidth => '線画の太さ';
+
+  @override
+  String get filterAutoLineartTaperLength => '入り抜きの長さ';
+
+  @override
+  String get filterAutoLineartSmoothing => 'なめらか補正';
+
+  @override
+  String filterAutoLineartLayerNameSuffix(String name) {
+    return '$name 自動線画';
+  }
 }

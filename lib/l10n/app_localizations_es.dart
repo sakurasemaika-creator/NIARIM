@@ -6395,4 +6395,24 @@ class AppLocalizationsEs extends AppLocalizations {
   @override
   String get filterOutlineEyedropperHint =>
       'Toca el lienzo para elegir el color del contorno';
+
+  @override
+  String get filterNameAutoLineart => 'Entintado automático';
+
+  @override
+  String get filterAutoLineartRoughWidth => 'Grosor del boceto';
+
+  @override
+  String get filterAutoLineartOutputWidth => 'Grosor de línea';
+
+  @override
+  String get filterAutoLineartTaperLength => 'Longitud del afinado';
+
+  @override
+  String get filterAutoLineartSmoothing => 'Suavizado';
+
+  @override
+  String filterAutoLineartLayerNameSuffix(String name) {
+    return '$name Entintado automático';
+  }
 }

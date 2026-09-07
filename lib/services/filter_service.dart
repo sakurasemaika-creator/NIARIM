@@ -28,27 +28,136 @@ class FilterService extends ChangeNotifier {
   }
 
   static List<FilterDef> _defaultFilters() => const [
-    FilterDef(id: 'Filter0001', name: 'ガウスぼかし', kind: FilterKind.gaussianBlur, strength: 8),
-    FilterDef(id: 'Filter0002', name: 'レンズぼかし', kind: FilterKind.lensBlur, strength: 8),
-    FilterDef(id: 'Filter0003', name: 'アニメ風加工', kind: FilterKind.animeStyle, colorLevels: 6, edgeStrength: 0.4),
+    FilterDef(
+      id: 'Filter0001',
+      name: 'ガウスぼかし',
+      kind: FilterKind.gaussianBlur,
+      strength: 8,
+    ),
+    FilterDef(
+      id: 'Filter0002',
+      name: 'レンズぼかし',
+      kind: FilterKind.lensBlur,
+      strength: 8,
+    ),
+    FilterDef(
+      id: 'Filter0003',
+      name: 'アニメ風加工',
+      kind: FilterKind.animeStyle,
+      colorLevels: 6,
+      edgeStrength: 0.4,
+    ),
     FilterDef(id: 'Filter0004', name: 'トーンカーブ', kind: FilterKind.toneCurve),
     FilterDef(id: 'Filter0005', name: 'レベル補正', kind: FilterKind.levels),
-    FilterDef(id: 'Filter0006', name: '縁取り', kind: FilterKind.outline, outlineColor: 0xFF000000, outlineWidth: 6),
-    FilterDef(id: 'Filter0007', name: 'シャープ', kind: FilterKind.sharpen, strength: 50),
-    FilterDef(id: 'Filter0008', name: 'アンシャープマスク', kind: FilterKind.unsharpMask, strength: 4, edgeStrength: 1.0),
-    FilterDef(id: 'Filter0009', name: '周辺減光', kind: FilterKind.vignette, strength: 40),
-    FilterDef(id: 'Filter0010', name: 'フィルムグレイン', kind: FilterKind.noise, strength: 15),
-    FilterDef(id: 'Filter0011', name: 'レトロアニメ', kind: FilterKind.retroAnime, strength: 60),
-    FilterDef(id: 'Filter0012', name: 'ブラウン管', kind: FilterKind.crt, strength: 50),
-    FilterDef(id: 'Filter0013', name: 'モノクロ', kind: FilterKind.monochrome, strength: 100),
-    FilterDef(id: 'Filter0014', name: '二値化', kind: FilterKind.threshold, thresholdValue: 128),
-    FilterDef(id: 'Filter0015', name: '魚眼レンズ', kind: FilterKind.fisheye, strength: 50),
-    FilterDef(id: 'Filter0016', name: '色収差', kind: FilterKind.chromaticAberration, strength: 8),
-    FilterDef(id: 'Filter0017', name: '眼鏡断層', kind: FilterKind.lensDistortion, strength: 50),
-    FilterDef(id: 'Filter0018', name: 'ドット絵', kind: FilterKind.pixelate, strength: 8, colorLevels: 8),
-    FilterDef(id: 'Filter0019', name: 'オーロラホログラム', kind: FilterKind.auroraHologram, strength: 60),
-    FilterDef(id: 'Filter0020', name: '背景馴染ませ', kind: FilterKind.backgroundBlend),
-    FilterDef(id: 'Filter0021', name: '墨溜まり', kind: FilterKind.inkPool, inkPoolColor: 0xFF000000, inkPoolRange: 12, inkPoolCenterWidth: 6),
+    FilterDef(
+      id: 'Filter0006',
+      name: '縁取り',
+      kind: FilterKind.outline,
+      outlineColor: 0xFF000000,
+      outlineWidth: 6,
+    ),
+    FilterDef(
+      id: 'Filter0007',
+      name: 'シャープ',
+      kind: FilterKind.sharpen,
+      strength: 50,
+    ),
+    FilterDef(
+      id: 'Filter0008',
+      name: 'アンシャープマスク',
+      kind: FilterKind.unsharpMask,
+      strength: 4,
+      edgeStrength: 1.0,
+    ),
+    FilterDef(
+      id: 'Filter0009',
+      name: '周辺減光',
+      kind: FilterKind.vignette,
+      strength: 40,
+    ),
+    FilterDef(
+      id: 'Filter0010',
+      name: 'フィルムグレイン',
+      kind: FilterKind.noise,
+      strength: 15,
+    ),
+    FilterDef(
+      id: 'Filter0011',
+      name: 'レトロアニメ',
+      kind: FilterKind.retroAnime,
+      strength: 60,
+    ),
+    FilterDef(
+      id: 'Filter0012',
+      name: 'ブラウン管',
+      kind: FilterKind.crt,
+      strength: 50,
+    ),
+    FilterDef(
+      id: 'Filter0013',
+      name: 'モノクロ',
+      kind: FilterKind.monochrome,
+      strength: 100,
+    ),
+    FilterDef(
+      id: 'Filter0014',
+      name: '二値化',
+      kind: FilterKind.threshold,
+      thresholdValue: 128,
+    ),
+    FilterDef(
+      id: 'Filter0015',
+      name: '魚眼レンズ',
+      kind: FilterKind.fisheye,
+      strength: 50,
+    ),
+    FilterDef(
+      id: 'Filter0016',
+      name: '色収差',
+      kind: FilterKind.chromaticAberration,
+      strength: 8,
+    ),
+    FilterDef(
+      id: 'Filter0017',
+      name: '眼鏡断層',
+      kind: FilterKind.lensDistortion,
+      strength: 50,
+    ),
+    FilterDef(
+      id: 'Filter0018',
+      name: 'ドット絵',
+      kind: FilterKind.pixelate,
+      strength: 8,
+      colorLevels: 8,
+    ),
+    FilterDef(
+      id: 'Filter0019',
+      name: 'オーロラホログラム',
+      kind: FilterKind.auroraHologram,
+      strength: 60,
+    ),
+    FilterDef(
+      id: 'Filter0020',
+      name: '背景馴染ませ',
+      kind: FilterKind.backgroundBlend,
+    ),
+    FilterDef(
+      id: 'Filter0021',
+      name: '墨溜まり',
+      kind: FilterKind.inkPool,
+      inkPoolColor: 0xFF000000,
+      inkPoolRange: 12,
+      inkPoolCenterWidth: 6,
+    ),
+    FilterDef(
+      id: 'Filter0023',
+      name: '自動線画',
+      kind: FilterKind.autoLineart,
+      autoLineartRoughWidth: 12,
+      autoLineartOutputWidth: 2,
+      autoLineartTaperLength: 8,
+      autoLineartSmoothing: 45,
+    ),
     // Prism deliberately uses an existing enum kind so adding it does not make every
     // shared FilterKind switch exhaustive again. filter_panel.dart dispatches this
     // built-in by stable id to PrismFilterEngine instead of the aurora implementation.
@@ -70,10 +179,14 @@ class FilterService extends ChangeNotifier {
       await _persist();
     } else {
       _filters.addAll(
-        raw.map((s) => FilterDef.fromJson(jsonDecode(s) as Map<String, dynamic>)),
+        raw.map(
+          (s) => FilterDef.fromJson(jsonDecode(s) as Map<String, dynamic>),
+        ),
       );
       final existingIds = _filters.map((f) => f.id).toSet();
-      final missing = _defaultFilters().where((f) => !existingIds.contains(f.id));
+      final missing = _defaultFilters().where(
+        (f) => !existingIds.contains(f.id),
+      );
       if (missing.isNotEmpty) {
         _filters.addAll(missing);
         await _persist();
@@ -143,6 +256,10 @@ class FilterService extends ChangeNotifier {
     int? inkPoolColor,
     double? inkPoolRange,
     double? inkPoolCenterWidth,
+    double? autoLineartRoughWidth,
+    double? autoLineartOutputWidth,
+    double? autoLineartTaperLength,
+    double? autoLineartSmoothing,
     double? prismBlurPx,
     double? prismDirectionDegrees,
   }) {
@@ -195,6 +312,10 @@ class FilterService extends ChangeNotifier {
       inkPoolColor: inkPoolColor,
       inkPoolRange: inkPoolRange,
       inkPoolCenterWidth: inkPoolCenterWidth,
+      autoLineartRoughWidth: autoLineartRoughWidth,
+      autoLineartOutputWidth: autoLineartOutputWidth,
+      autoLineartTaperLength: autoLineartTaperLength,
+      autoLineartSmoothing: autoLineartSmoothing,
       prismBlurPx: prismBlurPx,
       prismDirectionDegrees: prismDirectionDegrees,
     );
@@ -205,13 +326,17 @@ class FilterService extends ChangeNotifier {
   void toggleFavorite(String id) {
     final idx = _filters.indexWhere((f) => f.id == id);
     if (idx >= 0) {
-      _filters[idx] = _filters[idx].copyWith(isFavorite: !_filters[idx].isFavorite);
+      _filters[idx] = _filters[idx].copyWith(
+        isFavorite: !_filters[idx].isFavorite,
+      );
       notifyListeners();
       _persist();
     }
   }
 
-  static final Set<String> _builtInIds = _defaultFilters().map((f) => f.id).toSet();
+  static final Set<String> _builtInIds = _defaultFilters()
+      .map((f) => f.id)
+      .toSet();
   bool isBuiltIn(String id) => _builtInIds.contains(id);
 
   void addFilter(FilterDef filter) {

@@ -2646,5 +2646,18 @@
   },
   "filterCanvasEyedropperTooltip": "Pick color from canvas",
   "filterInkPoolEyedropperHint": "Tap the canvas to choose the ink pooling color",
-  "filterOutlineEyedropperHint": "Tap the canvas to choose the outline color"
+  "filterOutlineEyedropperHint": "Tap the canvas to choose the outline color",
+  "filterNameAutoLineart": "Auto line art",
+  "filterAutoLineartRoughWidth": "Rough line width",
+  "filterAutoLineartOutputWidth": "Line art width",
+  "filterAutoLineartTaperLength": "Taper length",
+  "filterAutoLineartSmoothing": "Smoothing",
+  "filterAutoLineartLayerNameSuffix": "{name} Auto line art",
+  "@filterAutoLineartLayerNameSuffix": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  }
 }

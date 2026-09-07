@@ -70,12 +70,7 @@ void main() {
       final src = _canvas(w, h);
       _line(src, w, h, 12, 32, 84, 32, 5);
 
-      final graph = AutoLineartEngine.analyze(
-        src,
-        w,
-        h,
-        roughWidthPx: 11,
-      );
+      final graph = AutoLineartEngine.analyze(src, w, h, roughWidthPx: 11);
       expect(graph.paths, isNotEmpty);
 
       final out = AutoLineartEngine.render(
@@ -99,12 +94,7 @@ void main() {
       _line(src, w, h, 14, 14, 82, 82, 4);
       _line(src, w, h, 82, 14, 14, 82, 4);
 
-      final graph = AutoLineartEngine.analyze(
-        src,
-        w,
-        h,
-        roughWidthPx: 9,
-      );
+      final graph = AutoLineartEngine.analyze(src, w, h, roughWidthPx: 9);
       expect(graph.paths.length, greaterThanOrEqualTo(4));
       expect(
         graph.paths.where((p) => p.startIsJunction || p.endIsJunction),
@@ -133,12 +123,7 @@ void main() {
       _line(src, w, h, 76, 18, 48, 48, 4);
       _line(src, w, h, 48, 48, 48, 82, 4);
 
-      final graph = AutoLineartEngine.analyze(
-        src,
-        w,
-        h,
-        roughWidthPx: 9,
-      );
+      final graph = AutoLineartEngine.analyze(src, w, h, roughWidthPx: 9);
       final junctionPaths = graph.paths
           .where((p) => p.startIsJunction || p.endIsJunction)
           .toList();
@@ -163,12 +148,7 @@ void main() {
       // Tiny accidental touch/nub on the main rough.
       _line(src, w, h, 60, 36, 60, 40, 2);
 
-      final graph = AutoLineartEngine.analyze(
-        src,
-        w,
-        h,
-        roughWidthPx: 12,
-      );
+      final graph = AutoLineartEngine.analyze(src, w, h, roughWidthPx: 12);
       final out = AutoLineartEngine.render(
         graph,
         w,
@@ -181,55 +161,48 @@ void main() {
       expect(_alpha(out, w, 60, 44), lessThan(30));
     });
 
-    test('smoothing changes geometry without moving locked endpoints far away', () {
-      const w = 100, h = 80;
-      final src = _canvas(w, h);
-      // Deliberately wobbly thick rough.
-      var lastX = 10;
-      var lastY = 38;
-      for (var x = 14; x <= 90; x += 4) {
-        final y = 38 + ((x ~/ 4).isEven ? 3 : -3);
-        _line(src, w, h, lastX, lastY, x, y, 4);
-        lastX = x;
-        lastY = y;
-      }
+    test(
+      'smoothing changes geometry without moving locked endpoints far away',
+      () {
+        const w = 100, h = 80;
+        final src = _canvas(w, h);
+        // Deliberately wobbly thick rough.
+        var lastX = 10;
+        var lastY = 38;
+        for (var x = 14; x <= 90; x += 4) {
+          final y = 38 + ((x ~/ 4).isEven ? 3 : -3);
+          _line(src, w, h, lastX, lastY, x, y, 4);
+          lastX = x;
+          lastY = y;
+        }
 
-      final graph = AutoLineartEngine.analyze(
-        src,
-        w,
-        h,
-        roughWidthPx: 9,
-      );
-      final raw = AutoLineartEngine.render(
-        graph,
-        w,
-        h,
-        outputWidthPx: 2,
-        taperLengthPx: 0,
-        smoothing: 0,
-      );
-      final smooth = AutoLineartEngine.render(
-        graph,
-        w,
-        h,
-        outputWidthPx: 2,
-        taperLengthPx: 0,
-        smoothing: 100,
-      );
-      expect(raw, isNot(equals(smooth)));
-      expect(_opaqueCount(smooth), greaterThan(20));
-    });
+        final graph = AutoLineartEngine.analyze(src, w, h, roughWidthPx: 9);
+        final raw = AutoLineartEngine.render(
+          graph,
+          w,
+          h,
+          outputWidthPx: 2,
+          taperLengthPx: 0,
+          smoothing: 0,
+        );
+        final smooth = AutoLineartEngine.render(
+          graph,
+          w,
+          h,
+          outputWidthPx: 2,
+          taperLengthPx: 0,
+          smoothing: 100,
+        );
+        expect(raw, isNot(equals(smooth)));
+        expect(_opaqueCount(smooth), greaterThan(20));
+      },
+    );
 
     test('rasterizer always emits partial-alpha antialias coverage', () {
       const w = 80, h = 64;
       final src = _canvas(w, h);
       _line(src, w, h, 10, 16, 70, 49, 4);
-      final graph = AutoLineartEngine.analyze(
-        src,
-        w,
-        h,
-        roughWidthPx: 9,
-      );
+      final graph = AutoLineartEngine.analyze(src, w, h, roughWidthPx: 9);
       final out = AutoLineartEngine.render(
         graph,
         w,

@@ -2634,5 +2634,18 @@
   "brushSettingsEdgeJitterStrengthLabel": "渗漏强度",
   "filterCanvasEyedropperTooltip": "从画布选取颜色",
   "filterInkPoolEyedropperHint": "点击画布选择积墨颜色",
-  "filterOutlineEyedropperHint": "点击画布选择描边颜色"
+  "filterOutlineEyedropperHint": "点击画布选择描边颜色",
+  "filterNameAutoLineart": "自动线稿",
+  "filterAutoLineartRoughWidth": "草稿线宽",
+  "filterAutoLineartOutputWidth": "线稿宽度",
+  "filterAutoLineartTaperLength": "收笔长度",
+  "filterAutoLineartSmoothing": "平滑修正",
+  "filterAutoLineartLayerNameSuffix": "{name} 自动线稿",
+  "@filterAutoLineartLayerNameSuffix": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  }
 }

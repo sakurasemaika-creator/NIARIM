@@ -2634,5 +2634,18 @@
   "brushSettingsEdgeJitterStrengthLabel": "漸漫強度",
   "filterCanvasEyedropperTooltip": "從畫布選取顏色",
   "filterInkPoolEyedropperHint": "點擊畫布選擇積墨顏色",
-  "filterOutlineEyedropperHint": "點擊畫布選擇描邊顏色"
+  "filterOutlineEyedropperHint": "點擊畫布選擇描邊顏色",
+  "filterNameAutoLineart": "自動線稿",
+  "filterAutoLineartRoughWidth": "草稿線寬",
+  "filterAutoLineartOutputWidth": "線稿寬度",
+  "filterAutoLineartTaperLength": "收筆長度",
+  "filterAutoLineartSmoothing": "平滑修正",
+  "filterAutoLineartLayerNameSuffix": "{name} 自動線稿",
+  "@filterAutoLineartLayerNameSuffix": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  }
 }

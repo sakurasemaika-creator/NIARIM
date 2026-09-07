@@ -6034,6 +6034,26 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get filterOutlineEyedropperHint => '点击画布选择描边颜色';
+
+  @override
+  String get filterNameAutoLineart => '自动线稿';
+
+  @override
+  String get filterAutoLineartRoughWidth => '草稿线宽';
+
+  @override
+  String get filterAutoLineartOutputWidth => '线稿宽度';
+
+  @override
+  String get filterAutoLineartTaperLength => '收笔长度';
+
+  @override
+  String get filterAutoLineartSmoothing => '平滑修正';
+
+  @override
+  String filterAutoLineartLayerNameSuffix(String name) {
+    return '$name 自动线稿';
+  }
 }
 
 /// The translations for Chinese, using the Han script (`zh_Hant`).
@@ -12048,4 +12068,24 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get filterOutlineEyedropperHint => '點擊畫布選擇描邊顏色';
+
+  @override
+  String get filterNameAutoLineart => '自動線稿';
+
+  @override
+  String get filterAutoLineartRoughWidth => '草稿線寬';
+
+  @override
+  String get filterAutoLineartOutputWidth => '線稿寬度';
+
+  @override
+  String get filterAutoLineartTaperLength => '收筆長度';
+
+  @override
+  String get filterAutoLineartSmoothing => '平滑修正';
+
+  @override
+  String filterAutoLineartLayerNameSuffix(String name) {
+    return '$name 自動線稿';
+  }
 }

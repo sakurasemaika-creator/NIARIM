@@ -23,6 +23,7 @@ enum FilterKind {
   auroraHologram,
   backgroundBlend,
   inkPool,
+  autoLineart,
 }
 
 enum ToneCurvePreset {
@@ -97,6 +98,10 @@ class FilterDef {
   final int inkPoolColor;
   final double inkPoolRange;
   final double inkPoolCenterWidth;
+  final double autoLineartRoughWidth;
+  final double autoLineartOutputWidth;
+  final double autoLineartTaperLength;
+  final double autoLineartSmoothing;
   final double prismBlurPx;
   final double prismDirectionDegrees;
 
@@ -151,6 +156,10 @@ class FilterDef {
     this.inkPoolColor = 0xFF000000,
     this.inkPoolRange = 12,
     this.inkPoolCenterWidth = 6,
+    this.autoLineartRoughWidth = 12,
+    this.autoLineartOutputWidth = 2,
+    this.autoLineartTaperLength = 8,
+    this.autoLineartSmoothing = 45,
     this.prismBlurPx = 8,
     this.prismDirectionDegrees = 45,
   });
@@ -206,6 +215,10 @@ class FilterDef {
     int? inkPoolColor,
     double? inkPoolRange,
     double? inkPoolCenterWidth,
+    double? autoLineartRoughWidth,
+    double? autoLineartOutputWidth,
+    double? autoLineartTaperLength,
+    double? autoLineartSmoothing,
     double? prismBlurPx,
     double? prismDirectionDegrees,
   }) {
@@ -244,24 +257,38 @@ class FilterDef {
       bgBlendAutoLight: bgBlendAutoLight ?? this.bgBlendAutoLight,
       bgBlendStrength: bgBlendStrength ?? this.bgBlendStrength,
       bgBlendLightStrength: bgBlendLightStrength ?? this.bgBlendLightStrength,
-      bgBlendShadowStrength: bgBlendShadowStrength ?? this.bgBlendShadowStrength,
-      bgBlendAmbientStrength: bgBlendAmbientStrength ?? this.bgBlendAmbientStrength,
-      bgBlendReflectionStrength: bgBlendReflectionStrength ?? this.bgBlendReflectionStrength,
+      bgBlendShadowStrength:
+          bgBlendShadowStrength ?? this.bgBlendShadowStrength,
+      bgBlendAmbientStrength:
+          bgBlendAmbientStrength ?? this.bgBlendAmbientStrength,
+      bgBlendReflectionStrength:
+          bgBlendReflectionStrength ?? this.bgBlendReflectionStrength,
       bgBlendColorBleed: bgBlendColorBleed ?? this.bgBlendColorBleed,
       bgBlendSoftness: bgBlendSoftness ?? this.bgBlendSoftness,
-      bgBlendSecondaryStrength: bgBlendSecondaryStrength ?? this.bgBlendSecondaryStrength,
-      bgBlendMaterialProtection: bgBlendMaterialProtection ?? this.bgBlendMaterialProtection,
+      bgBlendSecondaryStrength:
+          bgBlendSecondaryStrength ?? this.bgBlendSecondaryStrength,
+      bgBlendMaterialProtection:
+          bgBlendMaterialProtection ?? this.bgBlendMaterialProtection,
       bgBlendSamplingBand: bgBlendSamplingBand ?? this.bgBlendSamplingBand,
       bgBlendLightColor: bgBlendLightColor ?? this.bgBlendLightColor,
       bgBlendAmbientColor: bgBlendAmbientColor ?? this.bgBlendAmbientColor,
       bgBlendShadowColor: bgBlendShadowColor ?? this.bgBlendShadowColor,
-      bgBlendReflectionColor: bgBlendReflectionColor ?? this.bgBlendReflectionColor,
+      bgBlendReflectionColor:
+          bgBlendReflectionColor ?? this.bgBlendReflectionColor,
       bgBlendShowAnalysis: bgBlendShowAnalysis ?? this.bgBlendShowAnalysis,
       inkPoolColor: inkPoolColor ?? this.inkPoolColor,
       inkPoolRange: inkPoolRange ?? this.inkPoolRange,
       inkPoolCenterWidth: inkPoolCenterWidth ?? this.inkPoolCenterWidth,
+      autoLineartRoughWidth:
+          autoLineartRoughWidth ?? this.autoLineartRoughWidth,
+      autoLineartOutputWidth:
+          autoLineartOutputWidth ?? this.autoLineartOutputWidth,
+      autoLineartTaperLength:
+          autoLineartTaperLength ?? this.autoLineartTaperLength,
+      autoLineartSmoothing: autoLineartSmoothing ?? this.autoLineartSmoothing,
       prismBlurPx: prismBlurPx ?? this.prismBlurPx,
-      prismDirectionDegrees: prismDirectionDegrees ?? this.prismDirectionDegrees,
+      prismDirectionDegrees:
+          prismDirectionDegrees ?? this.prismDirectionDegrees,
     );
   }
 
@@ -316,6 +343,10 @@ class FilterDef {
     'inkPoolColor': inkPoolColor,
     'inkPoolRange': inkPoolRange,
     'inkPoolCenterWidth': inkPoolCenterWidth,
+    'autoLineartRoughWidth': autoLineartRoughWidth,
+    'autoLineartOutputWidth': autoLineartOutputWidth,
+    'autoLineartTaperLength': autoLineartTaperLength,
+    'autoLineartSmoothing': autoLineartSmoothing,
     'prismBlurPx': prismBlurPx,
     'prismDirectionDegrees': prismDirectionDegrees,
   };
@@ -353,7 +384,11 @@ class FilterDef {
       (e) => e.name == j['pixelColorMode'],
       orElse: () => PixelColorMode.count,
     ),
-    pixelExplicitColors: (j['pixelExplicitColors'] as List<dynamic>?)?.map((e) => e as int).toList() ?? const [0xFF000000],
+    pixelExplicitColors:
+        (j['pixelExplicitColors'] as List<dynamic>?)
+            ?.map((e) => e as int)
+            .toList() ??
+        const [0xFF000000],
     hologramBrightness: (j['hologramBrightness'] as num?)?.toDouble() ?? 0,
     hologramSaturation: (j['hologramSaturation'] as num?)?.toDouble() ?? 0,
     hologramPreset: AuroraHologramPreset.values.firstWhere(
@@ -367,13 +402,18 @@ class FilterDef {
     bgBlendAutoLight: j['bgBlendAutoLight'] as bool? ?? true,
     bgBlendStrength: (j['bgBlendStrength'] as num?)?.toDouble() ?? 70,
     bgBlendLightStrength: (j['bgBlendLightStrength'] as num?)?.toDouble() ?? 65,
-    bgBlendShadowStrength: (j['bgBlendShadowStrength'] as num?)?.toDouble() ?? 45,
-    bgBlendAmbientStrength: (j['bgBlendAmbientStrength'] as num?)?.toDouble() ?? 18,
-    bgBlendReflectionStrength: (j['bgBlendReflectionStrength'] as num?)?.toDouble() ?? 22,
+    bgBlendShadowStrength:
+        (j['bgBlendShadowStrength'] as num?)?.toDouble() ?? 45,
+    bgBlendAmbientStrength:
+        (j['bgBlendAmbientStrength'] as num?)?.toDouble() ?? 18,
+    bgBlendReflectionStrength:
+        (j['bgBlendReflectionStrength'] as num?)?.toDouble() ?? 22,
     bgBlendColorBleed: (j['bgBlendColorBleed'] as num?)?.toDouble() ?? 35,
     bgBlendSoftness: (j['bgBlendSoftness'] as num?)?.toDouble() ?? 55,
-    bgBlendSecondaryStrength: (j['bgBlendSecondaryStrength'] as num?)?.toDouble() ?? 35,
-    bgBlendMaterialProtection: (j['bgBlendMaterialProtection'] as num?)?.toDouble() ?? 75,
+    bgBlendSecondaryStrength:
+        (j['bgBlendSecondaryStrength'] as num?)?.toDouble() ?? 35,
+    bgBlendMaterialProtection:
+        (j['bgBlendMaterialProtection'] as num?)?.toDouble() ?? 75,
     bgBlendSamplingBand: (j['bgBlendSamplingBand'] as num?)?.toDouble() ?? 28,
     bgBlendLightColor: j['bgBlendLightColor'] as int? ?? -1,
     bgBlendAmbientColor: j['bgBlendAmbientColor'] as int? ?? -1,
@@ -383,7 +423,15 @@ class FilterDef {
     inkPoolColor: j['inkPoolColor'] as int? ?? 0xFF000000,
     inkPoolRange: (j['inkPoolRange'] as num?)?.toDouble() ?? 12,
     inkPoolCenterWidth: (j['inkPoolCenterWidth'] as num?)?.toDouble() ?? 6,
+    autoLineartRoughWidth:
+        (j['autoLineartRoughWidth'] as num?)?.toDouble() ?? 12,
+    autoLineartOutputWidth:
+        (j['autoLineartOutputWidth'] as num?)?.toDouble() ?? 2,
+    autoLineartTaperLength:
+        (j['autoLineartTaperLength'] as num?)?.toDouble() ?? 8,
+    autoLineartSmoothing: (j['autoLineartSmoothing'] as num?)?.toDouble() ?? 45,
     prismBlurPx: (j['prismBlurPx'] as num?)?.toDouble() ?? 8,
-    prismDirectionDegrees: (j['prismDirectionDegrees'] as num?)?.toDouble() ?? 45,
+    prismDirectionDegrees:
+        (j['prismDirectionDegrees'] as num?)?.toDouble() ?? 45,
   );
 }

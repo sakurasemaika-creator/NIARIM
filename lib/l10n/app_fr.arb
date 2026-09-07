@@ -2634,5 +2634,18 @@
   "brushSettingsEdgeJitterStrengthLabel": "Intensité",
   "filterCanvasEyedropperTooltip": "Choisir une couleur sur la toile",
   "filterInkPoolEyedropperHint": "Touchez la toile pour choisir la couleur de l’accumulation d’encre",
-  "filterOutlineEyedropperHint": "Touchez la toile pour choisir la couleur du contour"
+  "filterOutlineEyedropperHint": "Touchez la toile pour choisir la couleur du contour",
+  "filterNameAutoLineart": "Encrage automatique",
+  "filterAutoLineartRoughWidth": "Épaisseur du brouillon",
+  "filterAutoLineartOutputWidth": "Épaisseur du trait",
+  "filterAutoLineartTaperLength": "Longueur de l’effilé",
+  "filterAutoLineartSmoothing": "Lissage",
+  "filterAutoLineartLayerNameSuffix": "{name} Encrage automatique",
+  "@filterAutoLineartLayerNameSuffix": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  }
 }

@@ -6403,4 +6403,24 @@ class AppLocalizationsFr extends AppLocalizations {
   @override
   String get filterOutlineEyedropperHint =>
       'Touchez la toile pour choisir la couleur du contour';
+
+  @override
+  String get filterNameAutoLineart => 'Encrage automatique';
+
+  @override
+  String get filterAutoLineartRoughWidth => 'Épaisseur du brouillon';
+
+  @override
+  String get filterAutoLineartOutputWidth => 'Épaisseur du trait';
+
+  @override
+  String get filterAutoLineartTaperLength => 'Longueur de l’effilé';
+
+  @override
+  String get filterAutoLineartSmoothing => 'Lissage';
+
+  @override
+  String filterAutoLineartLayerNameSuffix(String name) {
+    return '$name Encrage automatique';
+  }
 }

@@ -9,6 +9,7 @@ import 'package:provider/provider.dart';
 
 import '../../../config/font_fallback.dart';
 import '../../../engine/background_acclimation_engine.dart';
+import '../../../engine/auto_lineart_engine.dart';
 import '../../../engine/filter_engine.dart';
 import '../../../engine/layer_compositor.dart';
 import '../../../engine/prism_filter_engine.dart';
@@ -68,6 +69,8 @@ class _FilterPanelState extends State<FilterPanel> {
   Uint8List? _previewBackgroundBytes;
   int? _autoBlendColorArgb;
   BackgroundAcclimationAnalysis? _lastBgBlendAnalysis;
+  AutoLineartGraph? _autoLineartPreviewGraph;
+  double? _autoLineartPreviewRoughWidth;
   int _previewW = 0;
   int _previewH = 0;
   double _previewScale = 1;
@@ -100,12 +103,7 @@ class _FilterPanelState extends State<FilterPanel> {
     canvas.drawImageRect(
       image,
       ui.Rect.fromLTWH(0, 0, width.toDouble(), height.toDouble()),
-      ui.Rect.fromLTWH(
-        0,
-        0,
-        previewWidth.toDouble(),
-        previewHeight.toDouble(),
-      ),
+      ui.Rect.fromLTWH(0, 0, previewWidth.toDouble(), previewHeight.toDouble()),
       ui.Paint(),
     );
     image.dispose();
@@ -211,7 +209,35 @@ class _FilterPanelState extends State<FilterPanel> {
     final base = _previewBase;
     final filter = context.read<FilterService>().currentFilter;
     if (base == null || filter == null || !mounted) return;
-    final filtered = _runFilter(filter, base, _previewW, _previewH);
+    final Uint8List filtered;
+    if (filter.kind == FilterKind.autoLineart) {
+      if (_autoLineartPreviewGraph == null ||
+          _autoLineartPreviewRoughWidth != filter.autoLineartRoughWidth) {
+        _autoLineartPreviewGraph = AutoLineartEngine.analyze(
+          base,
+          _previewW,
+          _previewH,
+          roughWidthPx: math.max(
+            2.0,
+            filter.autoLineartRoughWidth * _previewScale,
+          ),
+        );
+        _autoLineartPreviewRoughWidth = filter.autoLineartRoughWidth;
+      }
+      filtered = AutoLineartEngine.render(
+        _autoLineartPreviewGraph!,
+        _previewW,
+        _previewH,
+        outputWidthPx: math.max(
+          1.0,
+          filter.autoLineartOutputWidth * _previewScale,
+        ),
+        taperLengthPx: filter.autoLineartTaperLength * _previewScale,
+        smoothing: filter.autoLineartSmoothing,
+      );
+    } else {
+      filtered = _runFilter(filter, base, _previewW, _previewH);
+    }
     final completer = Completer<ui.Image>();
     ui.decodeImageFromPixels(
       filtered,
@@ -280,8 +306,9 @@ class _FilterPanelState extends State<FilterPanel> {
                       _showFavoritesOnly ? Icons.star : Icons.star_outline,
                       size: 18,
                     ),
-                    onPressed: () =>
-                        setState(() => _showFavoritesOnly = !_showFavoritesOnly),
+                    onPressed: () => setState(
+                      () => _showFavoritesOnly = !_showFavoritesOnly,
+                    ),
                   ),
                   IconButton(
                     visualDensity: VisualDensity.compact,
@@ -309,11 +336,16 @@ class _FilterPanelState extends State<FilterPanel> {
                   itemBuilder: (context, index) {
                     final filter = filters[index];
                     final premium = _premiumFeatureFor(filter.kind);
-                    final locked = premium != null &&
-                        !context.watch<PremiumService>().isFeatureAvailable(premium);
+                    final locked =
+                        premium != null &&
+                        !context.watch<PremiumService>().isFeatureAvailable(
+                          premium,
+                        );
                     final selected = filter.id == current?.id;
                     final child = GestureDetector(
-                      onTap: locked ? null : () => service.selectFilter(filter.id),
+                      onTap: locked
+                          ? null
+                          : () => service.selectFilter(filter.id),
                       child: Container(
                         width: 78,
                         margin: const EdgeInsets.only(right: 6),
@@ -343,7 +375,9 @@ class _FilterPanelState extends State<FilterPanel> {
                             InkWell(
                               onTap: () => service.toggleFavorite(filter.id),
                               child: Icon(
-                                filter.isFavorite ? Icons.star : Icons.star_outline,
+                                filter.isFavorite
+                                    ? Icons.star
+                                    : Icons.star_outline,
                                 size: 13,
                               ),
                             ),
@@ -366,7 +400,9 @@ class _FilterPanelState extends State<FilterPanel> {
                     width: 120,
                     height: 120,
                     decoration: BoxDecoration(
-                      color: Theme.of(context).colorScheme.surfaceContainerHighest,
+                      color: Theme.of(
+                        context,
+                      ).colorScheme.surfaceContainerHighest,
                       borderRadius: BorderRadius.circular(6),
                     ),
                     child: _previewImage == null
@@ -379,7 +415,10 @@ class _FilterPanelState extends State<FilterPanel> {
                           )
                         : ClipRRect(
                             borderRadius: BorderRadius.circular(6),
-                            child: RawImage(image: _previewImage, fit: BoxFit.contain),
+                            child: RawImage(
+                              image: _previewImage,
+                              fit: BoxFit.contain,
+                            ),
                           ),
                   ),
                 ),
@@ -391,7 +430,9 @@ class _FilterPanelState extends State<FilterPanel> {
                 ),
                 const SizedBox(height: 8),
                 FilledButton.icon(
-                  onPressed: widget.layerId == null || _applying ? null : _applyFilter,
+                  onPressed: widget.layerId == null || _applying
+                      ? null
+                      : _applyFilter,
                   icon: _applying
                       ? SizedBox(
                           width: 14,
@@ -444,8 +485,9 @@ class _FilterPanelState extends State<FilterPanel> {
           _integerStepperSlider(
             '色方向',
             PrismFilterEngine.normalizeDirectionDegrees(
-              current.prismDirectionDegrees,
-            ).round() % 360,
+                  current.prismDirectionDegrees,
+                ).round() %
+                360,
             0,
             359,
             (value) => service.updateFilterParams(
@@ -513,14 +555,16 @@ class _FilterPanelState extends State<FilterPanel> {
               current.hologramBrightness,
               -100,
               100,
-              (v) => service.updateFilterParams(current.id, hologramBrightness: v),
+              (v) =>
+                  service.updateFilterParams(current.id, hologramBrightness: v),
             ),
             _paramSlider(
               l10n.filterAuroraHologramSaturation,
               current.hologramSaturation,
               -100,
               100,
-              (v) => service.updateFilterParams(current.id, hologramSaturation: v),
+              (v) =>
+                  service.updateFilterParams(current.id, hologramSaturation: v),
             ),
             Wrap(
               spacing: 4,
@@ -535,7 +579,10 @@ class _FilterPanelState extends State<FilterPanel> {
                       selected: current.hologramPreset == preset,
                       onSelected: (selected) {
                         if (!selected) return;
-                        service.updateFilterParams(current.id, hologramPreset: preset);
+                        service.updateFilterParams(
+                          current.id,
+                          hologramPreset: preset,
+                        );
                         _updatePreview();
                       },
                     ),
@@ -552,7 +599,10 @@ class _FilterPanelState extends State<FilterPanel> {
               current.colorLevels.toDouble(),
               2,
               32,
-              (v) => service.updateFilterParams(current.id, colorLevels: v.round()),
+              (v) => service.updateFilterParams(
+                current.id,
+                colorLevels: v.round(),
+              ),
             ),
             _paramSlider(
               l10n.filterEdgeStrength,
@@ -582,6 +632,68 @@ class _FilterPanelState extends State<FilterPanel> {
             ),
           ],
         );
+      case FilterKind.autoLineart:
+        return Column(
+          children: [
+            _integerStepperSlider(
+              l10n.filterAutoLineartRoughWidth,
+              current.autoLineartRoughWidth.round(),
+              2,
+              80,
+              (v) {
+                service.updateFilterParams(
+                  current.id,
+                  autoLineartRoughWidth: v.toDouble(),
+                );
+                _autoLineartPreviewGraph = null;
+                _autoLineartPreviewRoughWidth = null;
+                _updatePreview();
+              },
+              suffix: 'px',
+            ),
+            _integerStepperSlider(
+              l10n.filterAutoLineartOutputWidth,
+              current.autoLineartOutputWidth.round(),
+              1,
+              30,
+              (v) {
+                service.updateFilterParams(
+                  current.id,
+                  autoLineartOutputWidth: v.toDouble(),
+                );
+                _updatePreview();
+              },
+              suffix: 'px',
+            ),
+            _integerStepperSlider(
+              l10n.filterAutoLineartTaperLength,
+              current.autoLineartTaperLength.round(),
+              0,
+              100,
+              (v) {
+                service.updateFilterParams(
+                  current.id,
+                  autoLineartTaperLength: v.toDouble(),
+                );
+                _updatePreview();
+              },
+              suffix: 'px',
+            ),
+            _integerStepperSlider(
+              l10n.filterAutoLineartSmoothing,
+              current.autoLineartSmoothing.round(),
+              0,
+              100,
+              (v) {
+                service.updateFilterParams(
+                  current.id,
+                  autoLineartSmoothing: v.toDouble(),
+                );
+                _updatePreview();
+              },
+            ),
+          ],
+        );
       case FilterKind.inkPool:
         return Column(
           children: [
@@ -596,7 +708,10 @@ class _FilterPanelState extends State<FilterPanel> {
               current.inkPoolRange.round(),
               1,
               80,
-              (v) => service.updateFilterParams(current.id, inkPoolRange: v.toDouble()),
+              (v) => service.updateFilterParams(
+                current.id,
+                inkPoolRange: v.toDouble(),
+              ),
               suffix: 'px',
             ),
             _integerStepperSlider(
@@ -619,11 +734,17 @@ class _FilterPanelState extends State<FilterPanel> {
           children: ToneCurvePreset.values
               .map(
                 (preset) => ChoiceChip(
-                  label: Text(_toneCurveLabel(l10n, preset), style: const TextStyle(fontSize: 9)),
+                  label: Text(
+                    _toneCurveLabel(l10n, preset),
+                    style: const TextStyle(fontSize: 9),
+                  ),
                   selected: current.toneCurvePreset == preset,
                   onSelected: (selected) {
                     if (!selected) return;
-                    service.updateFilterParams(current.id, toneCurvePreset: preset);
+                    service.updateFilterParams(
+                      current.id,
+                      toneCurvePreset: preset,
+                    );
                     _updatePreview();
                   },
                 ),
@@ -633,14 +754,42 @@ class _FilterPanelState extends State<FilterPanel> {
       case FilterKind.levels:
         return Column(
           children: [
-            _paramSlider(l10n.filterLevelsInputBlack, current.inputBlack.toDouble(), 0, 255,
-                (v) => service.updateFilterParams(current.id, inputBlack: v.round())),
-            _paramSlider(l10n.filterLevelsInputWhite, current.inputWhite.toDouble(), 0, 255,
-                (v) => service.updateFilterParams(current.id, inputWhite: v.round())),
-            _paramSlider(l10n.filterLevelsOutputBlack, current.outputBlack.toDouble(), 0, 255,
-                (v) => service.updateFilterParams(current.id, outputBlack: v.round())),
-            _paramSlider(l10n.filterLevelsOutputWhite, current.outputWhite.toDouble(), 0, 255,
-                (v) => service.updateFilterParams(current.id, outputWhite: v.round())),
+            _paramSlider(
+              l10n.filterLevelsInputBlack,
+              current.inputBlack.toDouble(),
+              0,
+              255,
+              (v) =>
+                  service.updateFilterParams(current.id, inputBlack: v.round()),
+            ),
+            _paramSlider(
+              l10n.filterLevelsInputWhite,
+              current.inputWhite.toDouble(),
+              0,
+              255,
+              (v) =>
+                  service.updateFilterParams(current.id, inputWhite: v.round()),
+            ),
+            _paramSlider(
+              l10n.filterLevelsOutputBlack,
+              current.outputBlack.toDouble(),
+              0,
+              255,
+              (v) => service.updateFilterParams(
+                current.id,
+                outputBlack: v.round(),
+              ),
+            ),
+            _paramSlider(
+              l10n.filterLevelsOutputWhite,
+              current.outputWhite.toDouble(),
+              0,
+              255,
+              (v) => service.updateFilterParams(
+                current.id,
+                outputWhite: v.round(),
+              ),
+            ),
           ],
         );
       case FilterKind.sharpen:
@@ -654,10 +803,21 @@ class _FilterPanelState extends State<FilterPanel> {
       case FilterKind.unsharpMask:
         return Column(
           children: [
-            _paramSlider(l10n.filterStrengthBlurRadius, current.strength, 1, 20,
-                (v) => service.updateFilterParams(current.id, strength: v)),
-            _paramSlider(l10n.filterUnsharpAmount, current.edgeStrength, 0, 3,
-                (v) => service.updateFilterParams(current.id, edgeStrength: v), decimals: 2),
+            _paramSlider(
+              l10n.filterStrengthBlurRadius,
+              current.strength,
+              1,
+              20,
+              (v) => service.updateFilterParams(current.id, strength: v),
+            ),
+            _paramSlider(
+              l10n.filterUnsharpAmount,
+              current.edgeStrength,
+              0,
+              3,
+              (v) => service.updateFilterParams(current.id, edgeStrength: v),
+              decimals: 2,
+            ),
           ],
         );
       case FilterKind.vignette:
@@ -668,22 +828,42 @@ class _FilterPanelState extends State<FilterPanel> {
               current.vignetteColor,
               (c) => service.updateFilterParams(current.id, vignetteColor: c),
             ),
-            _paramSlider(l10n.filterVignetteStrength, current.strength, 0, 100,
-                (v) => service.updateFilterParams(current.id, strength: v)),
+            _paramSlider(
+              l10n.filterVignetteStrength,
+              current.strength,
+              0,
+              100,
+              (v) => service.updateFilterParams(current.id, strength: v),
+            ),
           ],
         );
       case FilterKind.noise:
-        return _paramSlider(l10n.filterNoiseStrength, current.strength, 0, 100,
-            (v) => service.updateFilterParams(current.id, strength: v));
+        return _paramSlider(
+          l10n.filterNoiseStrength,
+          current.strength,
+          0,
+          100,
+          (v) => service.updateFilterParams(current.id, strength: v),
+        );
       case FilterKind.retroAnime:
       case FilterKind.crt:
-        return _paramSlider(l10n.filterRetroStrength, current.strength, 0, 100,
-            (v) => service.updateFilterParams(current.id, strength: v));
+        return _paramSlider(
+          l10n.filterRetroStrength,
+          current.strength,
+          0,
+          100,
+          (v) => service.updateFilterParams(current.id, strength: v),
+        );
       case FilterKind.monochrome:
         return Column(
           children: [
-            _paramSlider(l10n.filterMonochromeStrength, current.strength, 0, 100,
-                (v) => service.updateFilterParams(current.id, strength: v)),
+            _paramSlider(
+              l10n.filterMonochromeStrength,
+              current.strength,
+              0,
+              100,
+              (v) => service.updateFilterParams(current.id, strength: v),
+            ),
             _colorControl(
               l10n.filterMonochromeColorLabel,
               current.monochromeColor,
@@ -694,48 +874,114 @@ class _FilterPanelState extends State<FilterPanel> {
       case FilterKind.colorAdjust:
         return Column(
           children: [
-            _paramSlider(l10n.filterColorAdjustSaturationLabel, current.caSaturation, -100, 100,
-                (v) => service.updateFilterParams(current.id, caSaturation: v)),
-            _paramSlider(l10n.filterColorAdjustBrightnessLabel, current.caBrightness, -100, 100,
-                (v) => service.updateFilterParams(current.id, caBrightness: v)),
-            _paramSlider(l10n.filterColorAdjustContrastLabel, current.caContrast, -100, 100,
-                (v) => service.updateFilterParams(current.id, caContrast: v)),
+            _paramSlider(
+              l10n.filterColorAdjustSaturationLabel,
+              current.caSaturation,
+              -100,
+              100,
+              (v) => service.updateFilterParams(current.id, caSaturation: v),
+            ),
+            _paramSlider(
+              l10n.filterColorAdjustBrightnessLabel,
+              current.caBrightness,
+              -100,
+              100,
+              (v) => service.updateFilterParams(current.id, caBrightness: v),
+            ),
+            _paramSlider(
+              l10n.filterColorAdjustContrastLabel,
+              current.caContrast,
+              -100,
+              100,
+              (v) => service.updateFilterParams(current.id, caContrast: v),
+            ),
           ],
         );
       case FilterKind.threshold:
-        return _paramSlider(l10n.filterThresholdLabel, current.thresholdValue, 0, 255,
-            (v) => service.updateFilterParams(current.id, thresholdValue: v));
+        return _paramSlider(
+          l10n.filterThresholdLabel,
+          current.thresholdValue,
+          0,
+          255,
+          (v) => service.updateFilterParams(current.id, thresholdValue: v),
+        );
       case FilterKind.fisheye:
-        return _paramSlider(l10n.filterFisheyeStrength, current.strength, 0, 100,
-            (v) => service.updateFilterParams(current.id, strength: v));
+        return _paramSlider(
+          l10n.filterFisheyeStrength,
+          current.strength,
+          0,
+          100,
+          (v) => service.updateFilterParams(current.id, strength: v),
+        );
       case FilterKind.chromaticAberration:
-        return _paramSlider(l10n.filterChromaticAberrationStrength, current.strength, 1, 30,
-            (v) => service.updateFilterParams(current.id, strength: v));
+        return _paramSlider(
+          l10n.filterChromaticAberrationStrength,
+          current.strength,
+          1,
+          30,
+          (v) => service.updateFilterParams(current.id, strength: v),
+        );
       case FilterKind.lensDistortion:
         return Column(
           children: [
             if (_previewMask == null)
               Text(
                 l10n.filterLensDistortionNoMaskHint,
-                style: TextStyle(fontSize: 10, color: Theme.of(context).colorScheme.error),
+                style: TextStyle(
+                  fontSize: 10,
+                  color: Theme.of(context).colorScheme.error,
+                ),
               ),
-            _paramSlider(l10n.filterLensDistortionStrength, current.strength, -100, 100,
-                (v) => service.updateFilterParams(current.id, strength: v)),
-            _paramSlider(l10n.filterLensDistortionOffsetX, current.lensCenterOffsetX, -100, 100,
-                (v) => service.updateFilterParams(current.id, lensCenterOffsetX: v)),
-            _paramSlider(l10n.filterLensDistortionOffsetY, current.lensCenterOffsetY, -100, 100,
-                (v) => service.updateFilterParams(current.id, lensCenterOffsetY: v)),
+            _paramSlider(
+              l10n.filterLensDistortionStrength,
+              current.strength,
+              -100,
+              100,
+              (v) => service.updateFilterParams(current.id, strength: v),
+            ),
+            _paramSlider(
+              l10n.filterLensDistortionOffsetX,
+              current.lensCenterOffsetX,
+              -100,
+              100,
+              (v) =>
+                  service.updateFilterParams(current.id, lensCenterOffsetX: v),
+            ),
+            _paramSlider(
+              l10n.filterLensDistortionOffsetY,
+              current.lensCenterOffsetY,
+              -100,
+              100,
+              (v) =>
+                  service.updateFilterParams(current.id, lensCenterOffsetY: v),
+            ),
           ],
         );
       case FilterKind.backgroundBlend:
         return Column(
           children: [
-            _paramSlider(l10n.filterBackgroundBlendDirection, current.bgBlendDirection, 0, 360,
-                (v) => service.updateFilterParams(current.id, bgBlendDirection: v)),
-            _paramSlider(l10n.filterBackgroundBlendLength, current.bgBlendLength, 1, 80,
-                (v) => service.updateFilterParams(current.id, bgBlendLength: v)),
-            _paramSlider(l10n.filterBackgroundBlendBlur, current.bgBlendBlur, 0, 40,
-                (v) => service.updateFilterParams(current.id, bgBlendBlur: v)),
+            _paramSlider(
+              l10n.filterBackgroundBlendDirection,
+              current.bgBlendDirection,
+              0,
+              360,
+              (v) =>
+                  service.updateFilterParams(current.id, bgBlendDirection: v),
+            ),
+            _paramSlider(
+              l10n.filterBackgroundBlendLength,
+              current.bgBlendLength,
+              1,
+              80,
+              (v) => service.updateFilterParams(current.id, bgBlendLength: v),
+            ),
+            _paramSlider(
+              l10n.filterBackgroundBlendBlur,
+              current.bgBlendBlur,
+              0,
+              40,
+              (v) => service.updateFilterParams(current.id, bgBlendBlur: v),
+            ),
             SwitchListTile.adaptive(
               dense: true,
               contentPadding: EdgeInsets.zero,
@@ -746,26 +992,98 @@ class _FilterPanelState extends State<FilterPanel> {
                 _updatePreview();
               },
             ),
-            _paramSlider('馴染み強度', current.bgBlendStrength, 0, 100,
-                (v) => service.updateFilterParams(current.id, bgBlendStrength: v)),
-            _paramSlider('主光源の強さ', current.bgBlendLightStrength, 0, 100,
-                (v) => service.updateFilterParams(current.id, bgBlendLightStrength: v)),
-            _paramSlider('影の強さ', current.bgBlendShadowStrength, 0, 100,
-                (v) => service.updateFilterParams(current.id, bgBlendShadowStrength: v)),
-            _paramSlider('環境光', current.bgBlendAmbientStrength, 0, 100,
-                (v) => service.updateFilterParams(current.id, bgBlendAmbientStrength: v)),
-            _paramSlider('下方反射光', current.bgBlendReflectionStrength, 0, 100,
-                (v) => service.updateFilterParams(current.id, bgBlendReflectionStrength: v)),
-            _paramSlider('局所的な色移り', current.bgBlendColorBleed, 0, 100,
-                (v) => service.updateFilterParams(current.id, bgBlendColorBleed: v)),
-            _paramSlider('光の柔らかさ', current.bgBlendSoftness, 0, 100,
-                (v) => service.updateFilterParams(current.id, bgBlendSoftness: v)),
-            _paramSlider('副光源', current.bgBlendSecondaryStrength, 0, 100,
-                (v) => service.updateFilterParams(current.id, bgBlendSecondaryStrength: v)),
-            _paramSlider('素材保護', current.bgBlendMaterialProtection, 0, 100,
-                (v) => service.updateFilterParams(current.id, bgBlendMaterialProtection: v)),
-            _paramSlider('環境サンプリング帯', current.bgBlendSamplingBand, 4, 120,
-                (v) => service.updateFilterParams(current.id, bgBlendSamplingBand: v)),
+            _paramSlider(
+              '馴染み強度',
+              current.bgBlendStrength,
+              0,
+              100,
+              (v) => service.updateFilterParams(current.id, bgBlendStrength: v),
+            ),
+            _paramSlider(
+              '主光源の強さ',
+              current.bgBlendLightStrength,
+              0,
+              100,
+              (v) => service.updateFilterParams(
+                current.id,
+                bgBlendLightStrength: v,
+              ),
+            ),
+            _paramSlider(
+              '影の強さ',
+              current.bgBlendShadowStrength,
+              0,
+              100,
+              (v) => service.updateFilterParams(
+                current.id,
+                bgBlendShadowStrength: v,
+              ),
+            ),
+            _paramSlider(
+              '環境光',
+              current.bgBlendAmbientStrength,
+              0,
+              100,
+              (v) => service.updateFilterParams(
+                current.id,
+                bgBlendAmbientStrength: v,
+              ),
+            ),
+            _paramSlider(
+              '下方反射光',
+              current.bgBlendReflectionStrength,
+              0,
+              100,
+              (v) => service.updateFilterParams(
+                current.id,
+                bgBlendReflectionStrength: v,
+              ),
+            ),
+            _paramSlider(
+              '局所的な色移り',
+              current.bgBlendColorBleed,
+              0,
+              100,
+              (v) =>
+                  service.updateFilterParams(current.id, bgBlendColorBleed: v),
+            ),
+            _paramSlider(
+              '光の柔らかさ',
+              current.bgBlendSoftness,
+              0,
+              100,
+              (v) => service.updateFilterParams(current.id, bgBlendSoftness: v),
+            ),
+            _paramSlider(
+              '副光源',
+              current.bgBlendSecondaryStrength,
+              0,
+              100,
+              (v) => service.updateFilterParams(
+                current.id,
+                bgBlendSecondaryStrength: v,
+              ),
+            ),
+            _paramSlider(
+              '素材保護',
+              current.bgBlendMaterialProtection,
+              0,
+              100,
+              (v) => service.updateFilterParams(
+                current.id,
+                bgBlendMaterialProtection: v,
+              ),
+            ),
+            _paramSlider(
+              '環境サンプリング帯',
+              current.bgBlendSamplingBand,
+              4,
+              120,
+              (v) => service.updateFilterParams(
+                current.id,
+                bgBlendSamplingBand: v,
+              ),
+            ),
           ],
         );
     }
@@ -803,7 +1121,9 @@ class _FilterPanelState extends State<FilterPanel> {
               decoration: BoxDecoration(
                 color: Color(value),
                 borderRadius: BorderRadius.circular(4),
-                border: Border.all(color: Theme.of(context).colorScheme.outline),
+                border: Border.all(
+                  color: Theme.of(context).colorScheme.outline,
+                ),
               ),
             ),
           ),
@@ -811,7 +1131,8 @@ class _FilterPanelState extends State<FilterPanel> {
             IconButton(
               visualDensity: VisualDensity.compact,
               icon: const Icon(Icons.colorize, size: 18),
-              onPressed: () => widget.onStartCanvasEyedropper?.call(eyedropperTarget),
+              onPressed: () =>
+                  widget.onStartCanvasEyedropper?.call(eyedropperTarget),
             ),
         ],
       ),
@@ -942,6 +1263,7 @@ class _FilterPanelState extends State<FilterPanel> {
       FilterKind.auroraHologram => l10n.filterNameAuroraHologram,
       FilterKind.backgroundBlend => l10n.filterNameBackgroundBlend,
       FilterKind.inkPool => l10n.filterNameInkPool,
+      FilterKind.autoLineart => l10n.filterNameAutoLineart,
     };
   }
 
@@ -955,15 +1277,21 @@ class _FilterPanelState extends State<FilterPanel> {
         ToneCurvePreset.invert => l10n.filterToneCurveInvert,
       };
 
-  String _auroraPresetLabel(AppLocalizations l10n, AuroraHologramPreset preset) =>
-      switch (preset) {
-        AuroraHologramPreset.aurora => l10n.filterAuroraHologramPresetAurora,
-        AuroraHologramPreset.soapBubble => l10n.filterAuroraHologramPresetSoapBubble,
-        AuroraHologramPreset.cyberNeon => l10n.filterAuroraHologramPresetCyberNeon,
-        AuroraHologramPreset.pastelDream => l10n.filterAuroraHologramPresetPastelDream,
-        AuroraHologramPreset.sunsetGold => l10n.filterAuroraHologramPresetSunsetGold,
-        AuroraHologramPreset.silverFoil => l10n.filterAuroraHologramPresetSilverFoil,
-      };
+  String _auroraPresetLabel(
+    AppLocalizations l10n,
+    AuroraHologramPreset preset,
+  ) => switch (preset) {
+    AuroraHologramPreset.aurora => l10n.filterAuroraHologramPresetAurora,
+    AuroraHologramPreset.soapBubble =>
+      l10n.filterAuroraHologramPresetSoapBubble,
+    AuroraHologramPreset.cyberNeon => l10n.filterAuroraHologramPresetCyberNeon,
+    AuroraHologramPreset.pastelDream =>
+      l10n.filterAuroraHologramPresetPastelDream,
+    AuroraHologramPreset.sunsetGold =>
+      l10n.filterAuroraHologramPresetSunsetGold,
+    AuroraHologramPreset.silverFoil =>
+      l10n.filterAuroraHologramPresetSilverFoil,
+  };
 
   IconData _iconForFilter(FilterDef filter) {
     if (_isPrism(filter)) return Icons.gradient;
@@ -990,6 +1318,7 @@ class _FilterPanelState extends State<FilterPanel> {
       FilterKind.auroraHologram => Icons.auto_awesome_mosaic,
       FilterKind.backgroundBlend => Icons.wb_twilight,
       FilterKind.inkPool => Icons.gesture_rounded,
+      FilterKind.autoLineart => Icons.auto_fix_high,
     };
   }
 
@@ -1103,11 +1432,22 @@ class _FilterPanelState extends State<FilterPanel> {
           contrast: filter.caContrast,
         );
       case FilterKind.threshold:
-        return _engine.applyThreshold(data, width, height, filter.thresholdValue);
+        return _engine.applyThreshold(
+          data,
+          width,
+          height,
+          filter.thresholdValue,
+        );
       case FilterKind.fisheye:
         return _engine.applyFisheye(data, width, height, filter.strength);
       case FilterKind.chromaticAberration:
-        return _engine.applyChromaticAberration(data, width, height, filter.strength, 0);
+        return _engine.applyChromaticAberration(
+          data,
+          width,
+          height,
+          filter.strength,
+          0,
+        );
       case FilterKind.lensDistortion:
         return _engine.applyLensDistortion(
           data,
@@ -1137,6 +1477,23 @@ class _FilterPanelState extends State<FilterPanel> {
           brightness: filter.hologramBrightness,
           saturation: filter.hologramSaturation,
           preset: filter.hologramPreset,
+        );
+      case FilterKind.autoLineart:
+        return AutoLineartEngine.render(
+          AutoLineartEngine.analyze(
+            data,
+            width,
+            height,
+            roughWidthPx: filter.autoLineartRoughWidth * _previewScale,
+          ),
+          width,
+          height,
+          outputWidthPx: math.max(
+            1.0,
+            filter.autoLineartOutputWidth * _previewScale,
+          ),
+          taperLengthPx: filter.autoLineartTaperLength * _previewScale,
+          smoothing: filter.autoLineartSmoothing,
         );
       case FilterKind.inkPool:
         return _engine.applyInkPoolComposite(
@@ -1202,9 +1559,11 @@ class _FilterPanelState extends State<FilterPanel> {
     String? generatedLayerId,
   }) async {
     final l10n =
-        filter.kind == FilterKind.outline || filter.kind == FilterKind.inkPool
-            ? AppLocalizations.of(context)!
-            : null;
+        filter.kind == FilterKind.outline ||
+            filter.kind == FilterKind.inkPool ||
+            filter.kind == FilterKind.autoLineart
+        ? AppLocalizations.of(context)!
+        : null;
     final key = ps.tileKeyFor(
       widget.projectId,
       widget.sceneId,
@@ -1252,7 +1611,11 @@ class _FilterPanelState extends State<FilterPanel> {
         }
       }
       if (filter.kind == FilterKind.backgroundBlend) {
-        final layers = ps.layersOf(widget.projectId, widget.sceneId, frameIndex);
+        final layers = ps.layersOf(
+          widget.projectId,
+          widget.sceneId,
+          frameIndex,
+        );
         final otherImage = await LayerCompositor.composite(
           tm,
           layers,
@@ -1266,7 +1629,9 @@ class _FilterPanelState extends State<FilterPanel> {
           tm.canvasHeight,
           shouldRender: (layer, _) => layer.id != layerId,
         );
-        final otherData = await otherImage.toByteData(format: ui.ImageByteFormat.rawRgba);
+        final otherData = await otherImage.toByteData(
+          format: ui.ImageByteFormat.rawRgba,
+        );
         otherImage.dispose();
         maskData = otherData?.buffer.asUint8List();
       }
@@ -1299,6 +1664,17 @@ class _FilterPanelState extends State<FilterPanel> {
         result,
         generatedLayerId,
         l10n!.filterInkPoolLayerNameSuffix,
+      );
+    }
+    if (!_isPrism(filter) && filter.kind == FilterKind.autoLineart) {
+      return _applyGeneratedLayer(
+        ps,
+        tm,
+        layerId,
+        frameIndex,
+        result,
+        generatedLayerId,
+        l10n!.filterAutoLineartLayerNameSuffix,
       );
     }
 

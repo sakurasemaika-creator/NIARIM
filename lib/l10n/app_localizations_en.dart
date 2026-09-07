@@ -6287,4 +6287,24 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get filterOutlineEyedropperHint =>
       'Tap the canvas to choose the outline color';
+
+  @override
+  String get filterNameAutoLineart => 'Auto line art';
+
+  @override
+  String get filterAutoLineartRoughWidth => 'Rough line width';
+
+  @override
+  String get filterAutoLineartOutputWidth => 'Line art width';
+
+  @override
+  String get filterAutoLineartTaperLength => 'Taper length';
+
+  @override
+  String get filterAutoLineartSmoothing => 'Smoothing';
+
+  @override
+  String filterAutoLineartLayerNameSuffix(String name) {
+    return '$name Auto line art';
+  }
 }
