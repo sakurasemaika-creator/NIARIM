@@ -14,7 +14,7 @@ on:
 jobs:
   save-slot-widget:
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 25
     permissions:
       contents: read
 
@@ -38,6 +38,9 @@ jobs:
 
       - name: セーブスロット操作・実キャプチャ監査
         run: flutter test test/save_slot_visual_audit_test.dart --reporter expanded
+
+      - name: 保存・上書き・復元・削除の確定操作監査
+        run: flutter test test/save_slot_action_success_visual_test.dart --reporter expanded
 
       - name: 目視監査用キャプチャを保存
         if: always()
