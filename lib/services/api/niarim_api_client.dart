@@ -103,6 +103,15 @@ class NiarimApiClient {
     retries: 0,
   );
 
+  bool _canRetryUnauthorized(String method, Uri uri) {
+    if (method == 'GET') return true;
+    if (method == 'POST' && uri.path == '/works') return true;
+    if (method == 'PATCH' && RegExp(r'^/works/[^/]+$').hasMatch(uri.path)) {
+      return true;
+    }
+    return false;
+  }
+
   Future<Map<String, dynamic>> _sendWithRetry(
     String method,
     Uri uri, {
@@ -118,12 +127,13 @@ class NiarimApiClient {
       try {
         return await _sendOnce(method, uri, body: body, auth: authenticated);
       } on NiarimApiException catch (e) {
-        // 認証付きリクエストの401だけは、HTTPメソッドに関係なく1回だけ
-        // tokenProviderを再評価して再送する。バックエンドは各書き込みの先頭で
-        // authenticateしてから副作用へ進むため、401応答時点ではまだ変更されていない。
-        // これにより、投稿復旧中などにIDトークンだけ失効しても、YouTube動画を
-        // 再アップロードせず同じ処理を継続できる。
-        if (authenticated && e.isUnauthorized && !authRetryUsed) {
+        // GETは副作用が無く、POST /works と作品本体のPATCHは冪等性を個別に
+        // 保証しているため、401だけ1回tokenProviderを再評価して再送できる。
+        // 通報・フォロー・タグ変更など他の書き込みにはこの例外を広げない。
+        if (authenticated &&
+            e.isUnauthorized &&
+            !authRetryUsed &&
+            _canRetryUnauthorized(method, uri)) {
           authRetryUsed = true;
           lastError = e;
           continue;
