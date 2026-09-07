@@ -336,5 +336,100 @@ void main() {
         expect(_alpha(out, w, 123, 100), 0);
       },
     );
+
+    test('ten-level smoothing reduces editable control points', () {
+      const w = 160, h = 100;
+      final src = _canvas(w, h);
+      var lastX = 10;
+      var lastY = 50;
+      for (var x = 14; x <= 146; x += 4) {
+        final y = 50 + ((x ~/ 4).isEven ? 7 : -7);
+        _line(src, w, h, lastX, lastY, x, y, 3);
+        lastX = x;
+        lastY = y;
+      }
+      final base = AutoLineartEngine.analyze(src, w, h, roughWidthPx: 8);
+      final low = AutoLineartEngine.prepareEditableGraph(
+        base,
+        smoothingLevel: 1,
+      );
+      final high = AutoLineartEngine.prepareEditableGraph(
+        base,
+        smoothingLevel: 10,
+      );
+      expect(
+        AutoLineartEngine.controlPointCount(high),
+        lessThan(AutoLineartEngine.controlPointCount(low)),
+      );
+    });
+
+    test(
+      'dragging a shared junction keeps coincident branch endpoints joined',
+      () {
+        final graph = AutoLineartGraph(
+          width: 100,
+          height: 100,
+          paths: const [
+            AutoLineartPath(
+              points: [AutoLineartPoint(10, 10), AutoLineartPoint(50, 50)],
+              startIsJunction: false,
+              endIsJunction: true,
+              persistence: 1,
+            ),
+            AutoLineartPath(
+              points: [AutoLineartPoint(50, 50), AutoLineartPoint(90, 10)],
+              startIsJunction: true,
+              endIsJunction: false,
+              persistence: 1,
+            ),
+          ],
+        );
+        final moved = AutoLineartEngine.moveControlPoint(
+          graph,
+          pathIndex: 0,
+          pointIndex: 1,
+          point: const AutoLineartPoint(54, 57),
+        );
+        expect(moved.paths[0].points.last.x, 54);
+        expect(moved.paths[0].points.last.y, 57);
+        expect(moved.paths[1].points.first.x, 54);
+        expect(moved.paths[1].points.first.y, 57);
+      },
+    );
+
+    test('manual control movement changes the rasterized line position', () {
+      final graph = AutoLineartGraph(
+        width: 100,
+        height: 80,
+        paths: const [
+          AutoLineartPath(
+            points: [
+              AutoLineartPoint(10, 40),
+              AutoLineartPoint(50, 40),
+              AutoLineartPoint(90, 40),
+            ],
+            startIsJunction: false,
+            endIsJunction: false,
+            persistence: 1,
+          ),
+        ],
+      );
+      final moved = AutoLineartEngine.moveControlPoint(
+        graph,
+        pathIndex: 0,
+        pointIndex: 1,
+        point: const AutoLineartPoint(50, 25),
+      );
+      final out = AutoLineartEngine.render(
+        moved,
+        100,
+        80,
+        outputWidthPx: 3,
+        taperLengthPx: 0,
+        smoothing: 0,
+      );
+      expect(_alpha(out, 100, 50, 25), greaterThan(80));
+      expect(_alpha(out, 100, 50, 40), lessThan(80));
+    });
   });
 }

@@ -26,6 +26,7 @@ import '../../../widgets/pixel_color_mode_selector.dart';
 import '../../../widgets/premium_lock_widget.dart';
 import '../../../widgets/progress_dialog.dart';
 import '../../../widgets/stepped_slider.dart';
+import 'auto_lineart_control_overlay.dart';
 import 'color_picker_panel.dart';
 import 'panel_close_bar.dart';
 
@@ -69,8 +70,11 @@ class _FilterPanelState extends State<FilterPanel> {
   Uint8List? _previewBackgroundBytes;
   int? _autoBlendColorArgb;
   BackgroundAcclimationAnalysis? _lastBgBlendAnalysis;
+  AutoLineartGraph? _autoLineartBaseGraph;
   AutoLineartGraph? _autoLineartPreviewGraph;
   double? _autoLineartPreviewRoughWidth;
+  int? _autoLineartPreviewSmoothingLevel;
+  bool _autoLineartManualEdited = false;
   int _previewW = 0;
   int _previewH = 0;
   double _previewScale = 1;
@@ -211,9 +215,13 @@ class _FilterPanelState extends State<FilterPanel> {
     if (base == null || filter == null || !mounted) return;
     final Uint8List filtered;
     if (filter.kind == FilterKind.autoLineart) {
-      if (_autoLineartPreviewGraph == null ||
+      final smoothingLevel = (filter.autoLineartSmoothing / 10).round().clamp(
+        0,
+        10,
+      );
+      if (_autoLineartBaseGraph == null ||
           _autoLineartPreviewRoughWidth != filter.autoLineartRoughWidth) {
-        _autoLineartPreviewGraph = AutoLineartEngine.analyze(
+        _autoLineartBaseGraph = AutoLineartEngine.analyze(
           base,
           _previewW,
           _previewH,
@@ -223,6 +231,18 @@ class _FilterPanelState extends State<FilterPanel> {
           ),
         );
         _autoLineartPreviewRoughWidth = filter.autoLineartRoughWidth;
+        _autoLineartPreviewGraph = null;
+        _autoLineartPreviewSmoothingLevel = null;
+        _autoLineartManualEdited = false;
+      }
+      if (_autoLineartPreviewGraph == null ||
+          _autoLineartPreviewSmoothingLevel != smoothingLevel) {
+        _autoLineartPreviewGraph = AutoLineartEngine.prepareEditableGraph(
+          _autoLineartBaseGraph!,
+          smoothingLevel: smoothingLevel,
+        );
+        _autoLineartPreviewSmoothingLevel = smoothingLevel;
+        _autoLineartManualEdited = false;
       }
       filtered = AutoLineartEngine.render(
         _autoLineartPreviewGraph!,
@@ -233,7 +253,7 @@ class _FilterPanelState extends State<FilterPanel> {
           filter.autoLineartOutputWidth * _previewScale,
         ),
         taperLengthPx: filter.autoLineartTaperLength * _previewScale,
-        smoothing: filter.autoLineartSmoothing,
+        smoothing: 0,
       );
     } else {
       filtered = _runFilter(filter, base, _previewW, _previewH);
@@ -415,10 +435,30 @@ class _FilterPanelState extends State<FilterPanel> {
                           )
                         : ClipRRect(
                             borderRadius: BorderRadius.circular(6),
-                            child: RawImage(
-                              image: _previewImage,
-                              fit: BoxFit.contain,
-                            ),
+                            child:
+                                current.kind == FilterKind.autoLineart &&
+                                    _autoLineartPreviewGraph != null &&
+                                    (bulk == null || bulk.length <= 1)
+                                ? AutoLineartControlOverlay(
+                                    image: _previewImage!,
+                                    graph: _autoLineartPreviewGraph!,
+                                    onPointMoved:
+                                        (pathIndex, pointIndex, point) {
+                                          _autoLineartPreviewGraph =
+                                              AutoLineartEngine.moveControlPoint(
+                                                _autoLineartPreviewGraph!,
+                                                pathIndex: pathIndex,
+                                                pointIndex: pointIndex,
+                                                point: point,
+                                              );
+                                          _autoLineartManualEdited = true;
+                                          _updatePreview();
+                                        },
+                                  )
+                                : RawImage(
+                                    image: _previewImage,
+                                    fit: BoxFit.contain,
+                                  ),
                           ),
                   ),
                 ),
@@ -645,8 +685,11 @@ class _FilterPanelState extends State<FilterPanel> {
                   current.id,
                   autoLineartRoughWidth: v.toDouble(),
                 );
+                _autoLineartBaseGraph = null;
                 _autoLineartPreviewGraph = null;
                 _autoLineartPreviewRoughWidth = null;
+                _autoLineartPreviewSmoothingLevel = null;
+                _autoLineartManualEdited = false;
                 _updatePreview();
               },
               suffix: 'px',
@@ -681,14 +724,17 @@ class _FilterPanelState extends State<FilterPanel> {
             ),
             _integerStepperSlider(
               l10n.filterAutoLineartSmoothing,
-              current.autoLineartSmoothing.round(),
+              (current.autoLineartSmoothing / 10).round().clamp(0, 10),
               0,
-              100,
+              10,
               (v) {
                 service.updateFilterParams(
                   current.id,
-                  autoLineartSmoothing: v.toDouble(),
+                  autoLineartSmoothing: (v * 10).toDouble(),
                 );
+                _autoLineartPreviewGraph = null;
+                _autoLineartPreviewSmoothingLevel = null;
+                _autoLineartManualEdited = false;
                 _updatePreview();
               },
             ),
@@ -1577,7 +1623,23 @@ class _FilterPanelState extends State<FilterPanel> {
     final data = byteData.buffer.asUint8List();
 
     Uint8List result;
-    if (_isPrism(filter)) {
+    final canUseManualAutoLineart =
+        filter.kind == FilterKind.autoLineart &&
+        _autoLineartManualEdited &&
+        _autoLineartPreviewGraph != null &&
+        frameIndex == widget.frameIndex &&
+        (widget.bulkFrameIndices == null ||
+            widget.bulkFrameIndices!.length <= 1);
+    if (canUseManualAutoLineart) {
+      result = AutoLineartEngine.render(
+        _autoLineartPreviewGraph!,
+        tm.canvasWidth,
+        tm.canvasHeight,
+        outputWidthPx: filter.autoLineartOutputWidth,
+        taperLengthPx: filter.autoLineartTaperLength,
+        smoothing: 0,
+      );
+    } else if (_isPrism(filter)) {
       // Full-resolution blur uses the exact user-facing px value. Clipping only
       // constrains the rainbow fill; the Gaussian stage is intentionally unclipped.
       result = await compute(applyPrismFilterInIsolate, (

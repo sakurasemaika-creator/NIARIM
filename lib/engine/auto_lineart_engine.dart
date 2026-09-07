@@ -329,6 +329,147 @@ class AutoLineartEngine {
     );
   }
 
+  /// Converts an analyzed topology graph into the temporary editable control
+  /// polygon used by the preview. [smoothingLevel] is intentionally discrete
+  /// (0..10): higher levels smooth the control polygon and retain fewer points.
+  /// Junction/end anchors stay as path endpoints so topology is not detached.
+  static AutoLineartGraph prepareEditableGraph(
+    AutoLineartGraph source, {
+    required int smoothingLevel,
+  }) {
+    final level = smoothingLevel.clamp(0, 10);
+    if (level == 0 || source.paths.isEmpty) return source;
+
+    final paths = <AutoLineartPath>[];
+    for (final path in source.paths) {
+      final original = path.points;
+      if (original.length <= 2) {
+        paths.add(path);
+        continue;
+      }
+
+      var work = List<AutoLineartPoint>.from(original);
+      final passes = math.max(1, level);
+      final amount = 0.12 + level * 0.025;
+      for (var pass = 0; pass < passes; pass++) {
+        final next = List<AutoLineartPoint>.from(work);
+        for (var i = 1; i < work.length - 1; i++) {
+          final prev = work[i - 1];
+          final cur = work[i];
+          final after = work[i + 1];
+          next[i] = AutoLineartPoint(
+            cur.x + (((prev.x + after.x) * 0.5) - cur.x) * amount,
+            cur.y + (((prev.y + after.y) * 0.5) - cur.y) * amount,
+          );
+        }
+        // Never move topology anchors through automatic smoothing.
+        next[0] = original.first;
+        next[next.length - 1] = original.last;
+        work = next;
+      }
+
+      // Retain 92% -> 20% of interior controls over the ten levels. Selecting
+      // evenly from the smoothed polygon avoids a bias toward either endpoint.
+      final target = math.max(
+        2,
+        (original.length * (1.0 - level * 0.08)).round(),
+      );
+      final keepCount = math.min(work.length, target);
+      final reduced = <AutoLineartPoint>[];
+      for (var i = 0; i < keepCount; i++) {
+        final index = keepCount == 1
+            ? 0
+            : (i * (work.length - 1) / (keepCount - 1)).round();
+        final point = work[index];
+        if (reduced.isEmpty ||
+            reduced.last.x != point.x ||
+            reduced.last.y != point.y) {
+          reduced.add(point);
+        }
+      }
+      if (reduced.length < 2) {
+        reduced
+          ..clear()
+          ..add(work.first)
+          ..add(work.last);
+      } else {
+        reduced[0] = original.first;
+        reduced[reduced.length - 1] = original.last;
+      }
+
+      paths.add(
+        AutoLineartPath(
+          points: reduced,
+          startIsJunction: path.startIsJunction,
+          endIsJunction: path.endIsJunction,
+          persistence: path.persistence,
+        ),
+      );
+    }
+
+    return AutoLineartGraph(
+      width: source.width,
+      height: source.height,
+      paths: paths,
+      analysisWidth: source.analysisWidth,
+      analysisHeight: source.analysisHeight,
+    );
+  }
+
+  /// Moves one preview control point. Coincident points (normally the endpoints
+  /// of branches sharing a junction) move together so dragging a junction never
+  /// tears connected topology apart.
+  static AutoLineartGraph moveControlPoint(
+    AutoLineartGraph source, {
+    required int pathIndex,
+    required int pointIndex,
+    required AutoLineartPoint point,
+    bool moveCoincident = true,
+  }) {
+    if (pathIndex < 0 ||
+        pathIndex >= source.paths.length ||
+        pointIndex < 0 ||
+        pointIndex >= source.paths[pathIndex].points.length) {
+      return source;
+    }
+    final origin = source.paths[pathIndex].points[pointIndex];
+    final nextPoint = AutoLineartPoint(
+      point.x.clamp(0.0, math.max(0, source.width - 1).toDouble()),
+      point.y.clamp(0.0, math.max(0, source.height - 1).toDouble()),
+    );
+    const epsilonSq = 0.25;
+    final paths = <AutoLineartPath>[];
+    for (var p = 0; p < source.paths.length; p++) {
+      final oldPath = source.paths[p];
+      final points = List<AutoLineartPoint>.from(oldPath.points);
+      for (var i = 0; i < points.length; i++) {
+        final exactTarget = p == pathIndex && i == pointIndex;
+        final dx = points[i].x - origin.x;
+        final dy = points[i].y - origin.y;
+        final coincident = moveCoincident && dx * dx + dy * dy <= epsilonSq;
+        if (exactTarget || coincident) points[i] = nextPoint;
+      }
+      paths.add(
+        AutoLineartPath(
+          points: points,
+          startIsJunction: oldPath.startIsJunction,
+          endIsJunction: oldPath.endIsJunction,
+          persistence: oldPath.persistence,
+        ),
+      );
+    }
+    return AutoLineartGraph(
+      width: source.width,
+      height: source.height,
+      paths: paths,
+      analysisWidth: source.analysisWidth,
+      analysisHeight: source.analysisHeight,
+    );
+  }
+
+  static int controlPointCount(AutoLineartGraph graph) =>
+      graph.paths.fold<int>(0, (sum, path) => sum + path.points.length);
+
   static Uint8List render(
     AutoLineartGraph graph,
     int width,
