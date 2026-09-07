@@ -36,6 +36,18 @@ class CommunityApi {
     return ApiRankingPage.fromJson(json);
   }
 
+  /// The signed-in account's works, including NIARIM-hidden works.
+  /// The backend resolves the generated NIARIM user id from the Google ID token,
+  /// so changing Google accounts immediately changes the owner list without a local
+  /// author-id cache.
+  Future<List<ApiWork>> myWorks() async {
+    final json = await _client.getJson('/me/works', authenticated: true);
+    return (json['works'] as List? ?? const [])
+        .whereType<Map<String, dynamic>>()
+        .map(ApiWork.fromJson)
+        .toList();
+  }
+
   Future<List<ApiWork>> worksByAuthor(
     String authorId, {
     bool asOwner = false,
@@ -93,15 +105,6 @@ class CommunityApi {
         .toList();
   }
 
-  /// YouTubeへのアップロード成功時にYouTubeから返されたvideoIdを、
-  /// NIARIM作品のworkId（冪等キー）として登録する。
-  ///
-  /// 同じvideoIdでこのメソッドを再送するのは、通信タイムアウト等で初回の
-  /// 登録成否を確認できなかった場合のリトライだけ。公開/非公開切り替えや
-  /// タイトル変更には使わず、下のPATCH系メソッドを使う。
-  ///
-  /// project* はNIARIM投稿元プロジェクト由来の独自制作情報。値がある場合
-  /// だけ送信し、新規登録時の作品メタデータとして保持する。
   Future<ApiWork> createWork({
     required String youtubeVideoId,
     required String youtubeAccessToken,
@@ -121,14 +124,11 @@ class CommunityApi {
         'isShort': isShort,
         if (projectFps != null) 'projectFps': projectFps,
         if (projectFrameCount != null) 'projectFrameCount': projectFrameCount,
-        if (projectWorkSeconds != null)
-          'projectWorkSeconds': projectWorkSeconds,
+        if (projectWorkSeconds != null) 'projectWorkSeconds': projectWorkSeconds,
         if (projectCreatedAt != null)
           'projectCreatedAt': projectCreatedAt.toUtc().toIso8601String(),
-        if (projectCanvasWidth != null)
-          'projectCanvasWidth': projectCanvasWidth,
-        if (projectCanvasHeight != null)
-          'projectCanvasHeight': projectCanvasHeight,
+        if (projectCanvasWidth != null) 'projectCanvasWidth': projectCanvasWidth,
+        if (projectCanvasHeight != null) 'projectCanvasHeight': projectCanvasHeight,
       },
     );
     return ApiWork.fromJson(_work(json));
