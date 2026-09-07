@@ -1,0 +1,62 @@
+name: One-shot Auto Line Art Filter
+
+on:
+  push:
+    branches: [dev_branch]
+    paths:
+      - '.github/scripts/add_auto_lineart_filter.py'
+      - '.github/workflows/one-shot-auto-lineart-filter.yml'
+      - 'lib/engine/auto_lineart_engine.dart'
+      - 'test/auto_lineart_filter_test.dart'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  implement-and-verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          ref: dev_branch
+          fetch-depth: 0
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+      - run: flutter pub get
+      - name: Apply auto line art plumbing
+        run: python3 .github/scripts/add_auto_lineart_filter.py
+      - name: Regenerate localization
+        run: flutter gen-l10n
+      - name: Format implementation
+        run: |
+          dart format \
+            lib/models/filter_def.dart \
+            lib/services/filter_service.dart \
+            lib/engine/filter_engine.dart \
+            lib/engine/auto_lineart_engine.dart \
+            lib/screens/canvas/widgets/filter_panel.dart \
+            lib/screens/timeline/timeline_screen.dart \
+            test/auto_lineart_filter_test.dart
+      - name: Analyze production code
+        run: flutter analyze lib
+      - name: Auto line art topology tests
+        run: flutter test test/auto_lineart_filter_test.dart --reporter expanded
+      - name: Existing filter regression tests
+        run: |
+          flutter test test/ink_pool_filter_test.dart --reporter expanded
+          flutter test test/final_remaining_strict_evidence_test.dart --reporter expanded
+      - name: Commit implementation
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '4189823+github-actions[bot]@users.noreply.github.com'
+          git add lib test
+          if git diff --cached --quiet; then
+            echo 'No implementation changes to commit'
+          else
+            git commit -m 'feat: add automatic line art draw filter'
+            git push origin HEAD:dev_branch
+          fi
