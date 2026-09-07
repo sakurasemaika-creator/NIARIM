@@ -1,0 +1,40 @@
+name: Inspect Auto Line Art Patched Source
+
+on:
+  push:
+    branches: [dev_branch]
+    paths:
+      - '.github/workflows/inspect-auto-lineart-patched-source.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  inspect:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          ref: dev_branch
+          fetch-depth: 0
+      - name: Patch and capture relevant source
+        shell: bash
+        run: |
+          python3 .github/scripts/add_auto_lineart_filter.py || true
+          python3 .github/scripts/finish_auto_lineart_filter.py
+          {
+            echo '=== imports ==='
+            sed -n '1,90p' lib/screens/canvas/widgets/filter_panel.dart
+            echo '=== 450-500 ==='
+            sed -n '450,500p' lib/screens/canvas/widgets/filter_panel.dart
+            echo '=== auto lineart occurrences ==='
+            grep -n -C 5 'autoLineart\|AutoLineart' lib/screens/canvas/widgets/filter_panel.dart || true
+            echo '=== engine declaration ==='
+            grep -n -C 3 'class AutoLineartEngine' lib/engine/auto_lineart_engine.dart || true
+          } > .github/auto-lineart-patched-source-diagnostic.txt
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add .github/auto-lineart-patched-source-diagnostic.txt
+          git commit -m 'ci: record patched auto lineart source diagnostic'
+          git push origin HEAD:dev_branch
