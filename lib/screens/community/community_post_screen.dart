@@ -113,7 +113,7 @@ class _CommunityPostScreenState extends State<CommunityPostScreen> {
             title: title,
             // 作品広場で再生可能にしつつ、YouTubeチャンネルの通常公開一覧へ
             // 勝手に露出させないため初期値は限定公開。NIARIM側の公開状態は
-            // この後PATCH /works/{videoId}で別に管理する。
+            // POST /worksで同時に確定させ、非公開指定の一瞬の露出も作らない。
             privacyStatus: 'unlisted',
             onProgress: (sent, total) {
               if (!mounted || total <= 0) return;
@@ -141,20 +141,23 @@ class _CommunityPostScreenState extends State<CommunityPostScreen> {
         throw StateError('YouTube videoIdを取得できませんでした');
       }
 
-      // 同じvideoIdをworkIdとして登録。サーバー側も同一videoIdのPOSTを
-      // 冪等に扱うので、応答喪失時はこの呼び出しだけ安全に手動再試行できる。
-      await api.createWork(
+      // 同じvideoIdをworkIdとして登録。初回のNIARIM公開状態もPOSTに含める
+      // ことで「非公開で投稿」を選んだ作品がPATCHまで一瞬公開される競合を
+      // 防ぐ。サーバー側は同一videoIdのPOSTを冪等に扱う。
+      final registeredWork = await api.createWork(
         youtubeVideoId: registeredVideoId,
         youtubeAccessToken: youtubeToken,
         isShort: _isShort,
+        isNiarimPublished: _isNiarimPublished,
       );
 
-      // 新規登録の既定値は公開なので、ユーザーが非公開を選んだ場合だけ
-      // 同一videoIdへPATCHする。公開/非公開管理にも別IDを作らない。
-      if (!_isNiarimPublished) {
+      // 初回POSTの応答を端末が受け取れず再試行した場合、既存Workが返る。
+      // その間にユーザーが公開スイッチを変えていても希望状態へ収束させる。
+      // IDは当然、YouTubeから返った同じvideoIdのまま。
+      if (registeredWork.isNiarimPublished != _isNiarimPublished) {
         await api.updateWorkVisibility(
           registeredVideoId,
-          isNiarimPublished: false,
+          isNiarimPublished: _isNiarimPublished,
         );
       }
 
