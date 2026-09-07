@@ -10,7 +10,7 @@ import {
 } from "../lib/response";
 import { getRanking } from "./routes/ranking";
 import { getLatestWorks } from "./routes/worksLatest";
-import { getAuthorWorks } from "./routes/userWorks";
+import { getAuthorWorks, getMyWorks } from "./routes/userWorks";
 import { createWork } from "./routes/worksCreate";
 import { updateWork } from "./routes/worksUpdate";
 import { deleteWork } from "./routes/worksDelete";
@@ -36,16 +36,6 @@ import {
   putPushToken,
 } from "./routes/notifications";
 
-/**
- * 16章「1つのLambda内にAPIルーター（method + pathで振り分け）」。
- * Lambda Function URL（AuthType: NONE）から呼ばれるエントリポイント。
- *
- * ルートの追加は、下記のディスパッチテーブルへの1行追加で完結する。
- * パスパラメータ（`{id}`）は簡易的な正規表現マッチで抽出している
- * （API Gatewayを使わないためルーティングは自前実装。16章の設計判断
- * どおりAPI Gatewayの使用量プラン等は将来の追加候補に留める）。
- */
-
 type Handler = (
   event: APIGatewayProxyEventV2,
   params: Record<string, string>,
@@ -58,9 +48,6 @@ interface Route {
   handler: Handler;
 }
 
-// 現在のAPIはJSONと小さなパスパラメータだけを受け取る。Function URLへ
-// 直接巨大入力を送られてLambdaのメモリ・実行時間を消費されないよう、
-// ルーティングより前に上限を適用する。
 const MAX_REQUEST_BODY_BYTES = 64 * 1024;
 const MAX_REQUEST_PATH_CHARS = 2048;
 const MAX_PATH_PARAMETER_CHARS = 256;
@@ -86,7 +73,7 @@ function route(method: string, path: string, handler: Handler): Route {
 }
 
 const routes: Route[] = [
-  // --- 読み取り系（匿名利用可、16章） ---
+  // Public/optionally authenticated reads.
   route("GET", "/ranking/{period}", (e, p) => getRanking(e, p.period)),
   route("GET", "/works/latest", (e) => getLatestWorks(e)),
   route("GET", "/users/{id}/works", (e, p) => getAuthorWorks(e, p.id)),
@@ -97,7 +84,11 @@ const routes: Route[] = [
   route("GET", "/users/{id}/followers", (e, p) => getFollowers(e, p.id)),
   route("GET", "/users/{id}/following", (e, p) => getFollowing(e, p.id)),
 
-  // --- 書き込み系（要ログイン。各ハンドラ内でauthenticate()を呼ぶ） ---
+  // Authenticated owner read. This keeps account switching simple on clients:
+  // callers do not need to know or persist the generated NIARIM user id.
+  route("GET", "/me/works", (e) => getMyWorks(e)),
+
+  // Authenticated mutations.
   route("POST", "/works", (e) => createWork(e)),
   route("PATCH", "/works/{id}", (e, p) => updateWork(e, p.id)),
   route("DELETE", "/works/{id}", (e, p) => deleteWork(e, p.id)),
@@ -172,7 +163,6 @@ function normalizeRequestBody(
 
   let bytes: Buffer;
   if (event.isBase64Encoded) {
-    // Buffer.from()は不正文字を黙って無視するため、先に厳密な形式を確認する。
     const base64 = event.body;
     const validBase64 =
       base64.length % 4 === 0 &&
