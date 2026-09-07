@@ -7,6 +7,7 @@
 - 作業対象は **`dev_branch` のみ**。ユーザーから明示指示がない限り、`main` その他のブランチへ変更・push・mergeしない。
 - 既存仕様を壊す大規模改変を先に行わない。まず現状を把握し、重大バグ → 機能不全 → UX問題 → UI品質 → コード品質 → パフォーマンスの順で改善する。
 - このファイルだけで仕様を判断しない。開始時に必ず `CLAUDE.md`、`docs/AI設計書/00_AIへの指示.md`、`docs/AI設計書/31_引き継ぎガイド（AI開発者向け）.md`、`docs/AI設計書/28_継続タスク（未着手一覧）.md`、`docs/work-continuation.md` を確認する。
+- NIARIMの全面監査・改善では `docs/product-audit/QUALITY_STANDARD.md` を恒久的な品質基準として必ず確認し、`docs/product-audit/README.md` の監査checkpointから未完了地点を復元する。
 - 既存のプロジェクト固有ルールと本ファイルが競合する場合は、より具体的で安全側の既存仕様を優先し、必要なら `docs/work-continuation.md` に競合内容を記録する。
 
 ## 1. セッション開始時に必ず行うこと
