@@ -1,0 +1,40 @@
+name: Auto Line Art Post-Land Verify
+
+on:
+  push:
+    branches: [dev_branch]
+    paths:
+      - '.github/workflows/auto-lineart-post-land-verify.yml'
+      - 'lib/engine/auto_lineart_engine.dart'
+      - 'lib/engine/filter_engine.dart'
+      - 'lib/models/filter_def.dart'
+      - 'lib/services/filter_service.dart'
+      - 'lib/screens/canvas/widgets/filter_panel.dart'
+      - 'lib/l10n/**'
+      - 'test/auto_lineart_filter_test.dart'
+  workflow_dispatch:
+
+jobs:
+  verify-landed-code:
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          ref: dev_branch
+          fetch-depth: 1
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+      - run: flutter pub get
+      - name: Regenerate localization for compile verification
+        run: flutter gen-l10n
+      - name: Analyze landed production code
+        run: flutter analyze --no-fatal-warnings --no-fatal-infos lib
+      - name: Auto line art topology and rasterization tests
+        run: flutter test test/auto_lineart_filter_test.dart --reporter expanded
+      - name: Existing draw-filter regressions
+        run: |
+          flutter test test/ink_pool_filter_test.dart --reporter expanded
+          flutter test test/final_remaining_strict_evidence_test.dart --reporter expanded
