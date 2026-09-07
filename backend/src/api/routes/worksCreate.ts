@@ -29,7 +29,6 @@ interface CreateWorkRequestBody {
   projectCanvasHeight?: number;
 }
 
-/** YouTube側の状態だけを見た公開可否。NIARIM側の公開設定とは別に扱う。 */
 function isYoutubeVisible(status: WorkItem["youtubePrivacyStatus"]) {
   return status !== "private" && status !== "deleted";
 }
@@ -40,19 +39,9 @@ export async function createWork(event: APIGatewayProxyEventV2) {
   );
   const body = parseBody(event.body);
 
-  const user = await getUser(auth.niarimUserId);
-  if (!user?.youtubeChannelId) {
-    forbidden(
-      "YouTubeチャンネルとの連携が完了していません（3章の連携フローを先に行ってください）",
-    );
-  }
-
-  // YouTubeがアップロード成功時に発行したyoutubeVideoIdを、そのまま
-  // NIARIMのworkId/冪等キーとして使う。POST /worksの同一ID再送は
-  // 「作品を再登録する操作」ではなく、通信切断・タイムアウト等で初回の
-  // 成否を確認できなかったクライアントが同じ登録要求を再送するケース。
-  // 既に同じ作者のWORKが存在すれば一切変更せず、その現在値を返す。
-  // 公開/非公開切り替えやタイトル変更はPATCH /works/{id}の責務とする。
+  // YouTube's returned video id is the NIARIM work id / idempotency key.
+  // Resolve an existing item before making any YouTube calls so a client that lost
+  // the first POST response can safely retry without re-validating or consuming quota.
   const existingResult = await ddb.send(
     new GetCommand({
       TableName: tableName(),
@@ -60,7 +49,6 @@ export async function createWork(event: APIGatewayProxyEventV2) {
     }),
   );
   const existingRaw = existingResult.Item;
-
   if (existingRaw?.itemType === "WORK_TOMBSTONE") {
     conflict(
       "この動画はNIARIMから削除済みのため再登録できません",
@@ -73,7 +61,6 @@ export async function createWork(event: APIGatewayProxyEventV2) {
       "VIDEO_REGISTRATION_CONFLICT",
     );
   }
-
   const existing = existingRaw as WorkWithProjectMetadata | undefined;
   if (existing) {
     if (existing.authorId !== auth.niarimUserId) {
@@ -82,14 +69,36 @@ export async function createWork(event: APIGatewayProxyEventV2) {
         "VIDEO_ALREADY_REGISTERED",
       );
     }
-
-    // 重複送信は純粋に冪等。YouTube APIの再検証、投稿枠消費、
-    // メタデータ/GSI更新を一切行わず、保存済み作品をそのまま返す。
     return created({ work: toPublicWork(existing) });
   }
 
+  const user = await getUser(auth.niarimUserId);
+  if (!user) forbidden("NIARIMユーザー情報を取得できませんでした");
+
   let quotaReserved = false;
   try {
+    // The upload access token identifies the same YouTube account used by the client.
+    // On a user's first post there may be no cached channel yet, so discover and cache
+    // it here instead of requiring a separate hidden pre-link step. If a channel was
+    // already cached, a different OAuth channel is rejected rather than silently
+    // relinking the NIARIM identity.
+    const channelInfo = await getOwnChannelInfo(body.youtubeAccessToken);
+    const linkedChannelId = user.youtubeChannelId ?? channelInfo?.channelId;
+    if (!linkedChannelId) {
+      forbidden(
+        "YouTubeチャンネル情報を取得できませんでした。YouTube投稿権限を確認してください",
+      );
+    }
+    if (
+      user.youtubeChannelId &&
+      channelInfo?.channelId &&
+      user.youtubeChannelId !== channelInfo.channelId
+    ) {
+      forbidden(
+        "Googleアカウントと連携済みYouTubeチャンネルが一致しません。アカウントを切り替えてください",
+      );
+    }
+
     const snippet = await getVideoSnippet(
       body.youtubeVideoId,
       body.youtubeAccessToken,
@@ -98,17 +107,12 @@ export async function createWork(event: APIGatewayProxyEventV2) {
       badRequest("指定されたYouTube動画が見つかりません", "VIDEO_NOT_FOUND");
     }
 
-    // 持ち込み防止の「連携チャンネル一致＋投稿直後」検証は初回登録だけ。
-    // 同じyoutubeVideoIdの重複送信は上で既存WORKを返して終了している。
-    const verification = verifyVideoOwnership(snippet, user.youtubeChannelId);
-    if (!verification.ok) {
-      forbidden(verification.reason);
-    }
+    const verification = verifyVideoOwnership(snippet, linkedChannelId);
+    if (!verification.ok) forbidden(verification.reason);
 
     await reservePostQuota(auth.niarimUserId, user.membershipTier);
     quotaReserved = true;
 
-    const channelInfo = await getOwnChannelInfo(body.youtubeAccessToken);
     if (channelInfo) {
       await cacheChannelInfo(auth.niarimUserId, {
         youtubeChannelId: channelInfo.channelId,
