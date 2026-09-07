@@ -6,10 +6,6 @@ const createSource = readFileSync(
   resolve(__dirname, "../src/api/routes/worksCreate.ts"),
   "utf8",
 );
-const updateSource = readFileSync(
-  resolve(__dirname, "../src/api/routes/worksUpdate.ts"),
-  "utf8",
-);
 const statsSource = readFileSync(
   resolve(__dirname, "../src/batch/statsUpdate.ts"),
   "utf8",
@@ -78,16 +74,8 @@ describe("real posting flow contract", () => {
 });
 
 describe("YouTube visibility recovery contract", () => {
-  it("keeps the NIARIM publish preference while YouTube temporarily forces the work hidden", () => {
-    expect(updateSource).toContain(
-      "const nextPublished = body.isNiarimPublished ?? work.isNiarimPublished",
-    );
-    expect(updateSource).toContain('work.youtubePrivacyStatus === "private"');
-    expect(updateSource).toContain(
-      "const nowVisible = nextPublished && !forcedHidden",
-    );
-    expect(updateSource).toContain('"isNiarimPublished = :pub"');
-  });
+  // Publication preferences, metadata-only edits and concurrent privacy changes
+  // are exercised by updateWork in works-update.test.ts instead of source text.
 
   it("restores public indexes automatically when YouTube becomes public again", () => {
     expect(statsSource).toContain(

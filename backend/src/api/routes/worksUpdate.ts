@@ -3,7 +3,14 @@ import { ConditionalCheckFailedException } from "@aws-sdk/client-dynamodb";
 import { GetCommand, UpdateCommand } from "@aws-sdk/lib-dynamodb";
 import { ddb, tableName, Keys } from "../../lib/dynamo";
 import { authenticate } from "../../lib/auth";
-import { badRequest, forbidden, notFound, ok } from "../../lib/response";
+import {
+  badRequest,
+  conflict,
+  forbidden,
+  notFound,
+  ok,
+} from "../../lib/response";
+import { computeRankingScore } from "../../lib/ranking";
 import { parseJsonObject } from "../../lib/request";
 import type { WorkItem } from "../../lib/types";
 import { TABLE_ITEM_TYPE } from "../../lib/types";
@@ -34,91 +41,112 @@ export async function updateWork(
   );
   const body = parseBody(event.body);
 
-  // Visibility PATCH is safely retried by the app when the response is lost.
-  // Use a strongly consistent read so a retry always converges from the latest Work
-  // state instead of rebuilding public indexes from a potentially stale snapshot.
-  const existing = await ddb.send(
-    new GetCommand({
-      TableName: tableName(),
-      Key: Keys.work(workId),
-      ConsistentRead: true,
-    }),
-  );
-  const raw = existing.Item;
-  if (!raw || raw.itemType !== TABLE_ITEM_TYPE.Work) {
-    notFound("作品が見つかりません");
-  }
-  const work = raw as WorkItem;
-  if (work.authorId !== auth.niarimUserId)
-    forbidden("この作品の投稿者本人のみ編集できます");
-
-  const nextPublished = body.isNiarimPublished ?? work.isNiarimPublished;
-  const forcedHidden =
-    work.youtubePrivacyStatus === "private" ||
-    work.youtubePrivacyStatus === "deleted";
-  const nowVisible = nextPublished && !forcedHidden;
-
-  const updates: string[] = ["isNiarimPublished = :pub"];
-  const values: Record<string, unknown> = {
-    ":pub": nextPublished,
-    ":workType": TABLE_ITEM_TYPE.Work,
-    ":authorId": auth.niarimUserId,
-  };
-  const removes: string[] = [];
-
-  if (body.title !== undefined) {
-    updates.push("title = :title");
-    values[":title"] = body.title;
-  }
-
-  if (nowVisible) {
-    updates.push(
-      "gsi1pk = :rankPk, gsi1sk = :score, gsi2pk = :bmPk, gsi2sk = :bm, gsi3pk = :authorPk, gsi3sk = :postedAt, gsi4pk = :latestPk, gsi4sk = :postedAt2",
-    );
-    values[":rankPk"] = "RANKING#ALL";
-    values[":score"] = work.rankingScore ?? 0;
-    values[":bmPk"] = "BOOKMARK_RANKING";
-    values[":bm"] = work.bookmarkCount;
-    values[":authorPk"] = `AUTHOR#${work.authorId}`;
-    values[":postedAt"] = work.postedAt;
-    values[":latestPk"] = "LATEST";
-    values[":postedAt2"] = work.postedAt;
-  } else {
-    removes.push(
-      "gsi1pk",
-      "gsi1sk",
-      "gsi2pk",
-      "gsi2sk",
-      "gsi3pk",
-      "gsi3sk",
-      "gsi4pk",
-      "gsi4sk",
-    );
-  }
-
-  const updateExpression =
-    `SET ${updates.join(", ")}` +
-    (removes.length ? ` REMOVE ${removes.join(", ")}` : "");
-
-  try {
-    const result = await ddb.send(
-      new UpdateCommand({
+  // Re-read on conditional conflicts: statistics and deletion can change the
+  // work while the owner is editing it. Never rebuild indexes from stale data.
+  for (let attempt = 0; attempt < 3; attempt++) {
+    const existing = await ddb.send(
+      new GetCommand({
         TableName: tableName(),
         Key: Keys.work(workId),
-        UpdateExpression: updateExpression,
-        ConditionExpression: "itemType = :workType AND authorId = :authorId",
-        ExpressionAttributeValues: values,
-        ReturnValues: "ALL_NEW",
+        ConsistentRead: true,
       }),
     );
-
-    return ok({ work: toPublicWork(result.Attributes as WorkItem) });
-  } catch (error) {
-    if (error instanceof ConditionalCheckFailedException) {
+    const raw = existing.Item;
+    if (!raw || raw.itemType !== TABLE_ITEM_TYPE.Work) {
       notFound("作品が見つかりません");
     }
-    throw error;
+    const work = raw as WorkItem;
+    if (work.authorId !== auth.niarimUserId)
+      forbidden("この作品の投稿者本人のみ編集できます");
+
+    const updates: string[] = [];
+    const removes: string[] = [];
+    const conditions = ["itemType = :workType", "authorId = :authorId"];
+    const values: Record<string, unknown> = {
+      ":workType": TABLE_ITEM_TYPE.Work,
+      ":authorId": auth.niarimUserId,
+    };
+    if (body.title !== undefined) {
+      updates.push("title = :title");
+      values[":title"] = body.title;
+    }
+
+    // A metadata-only PATCH must not change publication or ranking indexes.
+    if (body.isNiarimPublished !== undefined) {
+      updates.push("isNiarimPublished = :pub");
+      values[":pub"] = body.isNiarimPublished;
+      conditions.push("youtubePrivacyStatus = :privacy");
+      values[":privacy"] = work.youtubePrivacyStatus;
+      const forcedHidden =
+        work.youtubePrivacyStatus === "private" ||
+        work.youtubePrivacyStatus === "deleted";
+      if (body.isNiarimPublished && !forcedHidden) {
+        updates.push(
+          "rankingScore = :score",
+          "gsi1pk = :rankPk",
+          "gsi1sk = :score",
+          "gsi2pk = :bmPk",
+          "gsi2sk = :bm",
+          "gsi3pk = :authorPk",
+          "gsi3sk = :postedAt",
+          "gsi4pk = :latestPk",
+          "gsi4sk = :postedAt",
+        );
+        Object.assign(values, {
+          ":rankPk": "RANKING#ALL",
+          ":score": computeRankingScore(work),
+          ":bmPk": "BOOKMARK_RANKING",
+          ":bm": work.bookmarkCount,
+          ":authorPk": `AUTHOR#${work.authorId}`,
+          ":postedAt": work.postedAt,
+          ":latestPk": "LATEST",
+        });
+        // Hidden works have no rankingScore. Derive it from the counters and
+        // guard those counters so a simultaneous stats/bookmark update wins.
+        for (const counter of [
+          "viewCount",
+          "likeCount",
+          "commentCount",
+          "bookmarkCount",
+        ] as const) {
+          conditions.push(`${counter} = :${counter}`);
+          values[`:${counter}`] = work[counter];
+        }
+      } else {
+        removes.push(
+          "rankingScore",
+          "gsi1pk",
+          "gsi1sk",
+          "gsi2pk",
+          "gsi2sk",
+          "gsi3pk",
+          "gsi3sk",
+          "gsi4pk",
+          "gsi4sk",
+        );
+      }
+    }
+
+    if (updates.length === 0) return ok({ work: toPublicWork(work) });
+    try {
+      const result = await ddb.send(
+        new UpdateCommand({
+          TableName: tableName(),
+          Key: Keys.work(workId),
+          UpdateExpression:
+            `SET ${updates.join(", ")}` +
+            (removes.length ? ` REMOVE ${removes.join(", ")}` : ""),
+          ConditionExpression: conditions.join(" AND "),
+          ExpressionAttributeValues: values,
+          ReturnValues: "ALL_NEW",
+        }),
+      );
+      return ok({ work: toPublicWork(result.Attributes as WorkItem) });
+    } catch (error) {
+      if (!(error instanceof ConditionalCheckFailedException)) throw error;
+    }
   }
+  conflict("作品が更新されました。もう一度お試しください", "WORK_CHANGED");
 }
 
 function parseBody(raw: string | undefined): UpdateWorkRequestBody {
