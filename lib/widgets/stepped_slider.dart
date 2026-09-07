@@ -53,7 +53,18 @@ class SteppedSlider extends StatelessWidget {
       onChanged: onChanged,
       onChangeEnd: onChangeEnd,
     );
-    if (!showSteppers) return slider;
+
+    // 一部の整数コントロールは、循環（359°→0°など）を扱うために外側で
+    // remove/addボタンを持つ。そこへSteppedSlider自身の±まで出すとボタンが
+    // 二重になるので、既存の外部ステッパー構成だけを検出してSlider本体に
+    // 退避する。通常のSteppedSlider利用では従来どおり内蔵±を表示する。
+    final outerRow = context.findAncestorWidgetOfExactType<Row>();
+    final hasExternalSteppers = outerRow != null &&
+        outerRow.children.length == 3 &&
+        _isIconButton(outerRow.children.first, Icons.remove_rounded) &&
+        _isIconButton(outerRow.children.last, Icons.add_rounded);
+    if (!showSteppers || hasExternalSteppers) return slider;
+
     return Row(
       children: [
         IconButton(
@@ -87,5 +98,11 @@ class SteppedSlider extends StatelessWidget {
         ),
       ],
     );
+  }
+
+  bool _isIconButton(Widget widget, IconData iconData) {
+    if (widget is! IconButton) return false;
+    final icon = widget.icon;
+    return icon is Icon && icon.icon == iconData;
   }
 }
