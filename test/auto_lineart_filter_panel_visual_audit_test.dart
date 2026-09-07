@@ -15,6 +15,10 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import 'helpers/load_app_fonts.dart';
 
+const runAutoLineartVisualAudit = bool.fromEnvironment(
+  'NIARIM_AUTO_LINEART_VISUAL_AUDIT',
+);
+
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
@@ -82,7 +86,7 @@ void main() {
     );
   }
 
-  Future<void> pumpAudit(
+  Future<void> pumpPanelAudit(
     WidgetTester tester, {
     required Size physicalSize,
     required double dpr,
@@ -134,7 +138,7 @@ void main() {
                     fit: StackFit.expand,
                     children: [
                       Padding(
-                        padding: const EdgeInsets.fromLTRB(8, 8, 8, 8),
+                        padding: const EdgeInsets.all(8),
                         child: AutoLineartControlOverlay(
                           image: image,
                           graph: graph,
@@ -178,46 +182,107 @@ void main() {
         ),
       ),
     );
-    await tester.pump(const Duration(milliseconds: 400));
+    await tester.pump(const Duration(milliseconds: 800));
     expect(find.byType(FilterPanel), findsOneWidget);
     expect(find.byType(AutoLineartControlOverlay), findsOneWidget);
     expect(tester.takeException(), isNull);
     await expectLater(find.byKey(rootKey), matchesGoldenFile(golden));
   }
 
-  testWidgets('SP actual FilterPanel + production overlay smoothing 45', (
-    tester,
-  ) async {
-    await pumpAudit(
+  Future<void> pumpPreviewAudit(
+    WidgetTester tester, {
+    required int smoothing,
+    required String golden,
+  }) async {
+    tester.view.physicalSize = const Size(360, 360);
+    tester.view.devicePixelRatio = 3;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+    final image = await makePreview();
+    addTearDown(image.dispose);
+    final graph = AutoLineartEngine.prepareEditableGraph(
+      baseGraph(),
+      smoothingLevel: smoothing,
+    );
+    final key = GlobalKey();
+    await tester.pumpWidget(
+      MaterialApp(
+        home: Scaffold(
+          body: Center(
+            child: RepaintBoundary(
+              key: key,
+              child: SizedBox(
+                width: 120,
+                height: 120,
+                child: AutoLineartControlOverlay(
+                  image: image,
+                  graph: graph,
+                  onPointMoved: (_, __, ___) {},
+                ),
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+    await tester.pump();
+    expect(tester.takeException(), isNull);
+    await expectLater(find.byKey(key), matchesGoldenFile(golden));
+  }
+
+  testWidgets(
+    'SP actual FilterPanel + production overlay smoothing 45',
+    (tester) => pumpPanelAudit(
       tester,
       physicalSize: const Size(1170, 2532),
       dpr: 3,
       smoothing: 45,
       golden: 'goldens/auto_lineart_sp_45.png',
-    );
-  });
+    ),
+    skip: !runAutoLineartVisualAudit,
+  );
 
-  testWidgets('SP actual FilterPanel + production overlay smoothing 85', (
-    tester,
-  ) async {
-    await pumpAudit(
+  testWidgets(
+    'SP actual FilterPanel + production overlay smoothing 85',
+    (tester) => pumpPanelAudit(
       tester,
       physicalSize: const Size(1170, 2532),
       dpr: 3,
       smoothing: 85,
       golden: 'goldens/auto_lineart_sp_85.png',
-    );
-  });
+    ),
+    skip: !runAutoLineartVisualAudit,
+  );
 
-  testWidgets('desktop actual FilterPanel + production overlay smoothing 45', (
-    tester,
-  ) async {
-    await pumpAudit(
+  testWidgets(
+    'desktop actual FilterPanel + production overlay smoothing 45',
+    (tester) => pumpPanelAudit(
       tester,
       physicalSize: const Size(1200, 800),
       dpr: 1,
       smoothing: 45,
       golden: 'goldens/auto_lineart_desktop_45.png',
-    );
-  });
+    ),
+    skip: !runAutoLineartVisualAudit,
+  );
+
+  testWidgets(
+    '120px production preview smoothing 45',
+    (tester) => pumpPreviewAudit(
+      tester,
+      smoothing: 45,
+      golden: 'goldens/auto_lineart_preview_120_45.png',
+    ),
+    skip: !runAutoLineartVisualAudit,
+  );
+
+  testWidgets(
+    '120px production preview smoothing 85',
+    (tester) => pumpPreviewAudit(
+      tester,
+      smoothing: 85,
+      golden: 'goldens/auto_lineart_preview_120_85.png',
+    ),
+    skip: !runAutoLineartVisualAudit,
+  );
 }
