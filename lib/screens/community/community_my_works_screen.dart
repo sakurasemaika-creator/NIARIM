@@ -9,14 +9,13 @@ import '../../services/google_auth_service.dart';
 import '../../widgets/ad_banner_mock_widget.dart';
 import '../../widgets/responsive.dart';
 import 'community_post_screen.dart';
-import 'widgets/community_work_card.dart';
 
-/// 投稿広場から開く「自分の投稿」専用画面。
+/// Owner hub opened from the community square.
 ///
-/// 自分の公開・非公開投稿をまとめて確認しつつ、投稿開始とGoogleアカウントの
-/// 追加／切り替えを同じ場所で行えるようにする。GoogleアカウントはNIARIM
-/// バックエンド認証とYouTube投稿認可で共通利用するため、ここで切り替えた
-/// アカウントが以後の投稿フローにも使われる。
+/// The authenticated backend path is GET /me/works, so switching Google accounts
+/// automatically switches the NIARIM owner list without persisting a generated
+/// NIARIM author id on-device. Hidden works are included here and can be toggled
+/// with PATCH /works/{videoId}; the work id remains the YouTube video id.
 class CommunityMyWorksScreen extends StatefulWidget {
   const CommunityMyWorksScreen({super.key});
 
@@ -26,6 +25,47 @@ class CommunityMyWorksScreen extends StatefulWidget {
 
 class _CommunityMyWorksScreenState extends State<CommunityMyWorksScreen> {
   bool _switchingAccount = false;
+  bool _loadingWorks = false;
+  Object? _worksError;
+  List<CommunityWork>? _ownerWorks;
+  final Set<String> _visibilityBusy = <String>{};
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) => _reloadOwnerWorks());
+  }
+
+  Future<void> _reloadOwnerWorks() async {
+    if (!mounted) return;
+    final auth = context.read<GoogleAuthService>();
+    final api = context.read<CommunityService>().api;
+    if (api == null || !auth.isSignedIn) {
+      setState(() {
+        _ownerWorks = null;
+        _worksError = null;
+        _loadingWorks = false;
+      });
+      return;
+    }
+
+    setState(() {
+      _loadingWorks = true;
+      _worksError = null;
+    });
+    try {
+      final works = await api.myWorks();
+      final converted = works.map((w) => w.toCommunityWork()).toList()
+        ..sort((a, b) => b.postedAt.compareTo(a.postedAt));
+      if (!mounted) return;
+      setState(() => _ownerWorks = converted);
+    } catch (error) {
+      if (!mounted) return;
+      setState(() => _worksError = error);
+    } finally {
+      if (mounted) setState(() => _loadingWorks = false);
+    }
+  }
 
   Future<void> _switchOrAddGoogleAccount() async {
     final auth = context.read<GoogleAuthService>();
@@ -39,11 +79,16 @@ class _CommunityMyWorksScreenState extends State<CommunityMyWorksScreen> {
 
     setState(() => _switchingAccount = true);
     try {
-      // google_sign_in 7.xでは現在のセッションが残っていると同一アカウントが
-      // 再利用されることがあるため、明示的な切り替え操作では一度サインアウト
-      // してからアカウント選択UIを開く。追加済みアカウントもここから選べる。
+      // Force account chooser instead of silently reusing the current session.
       if (auth.isSignedIn) await auth.signOut();
+      if (mounted) {
+        setState(() {
+          _ownerWorks = null;
+          _worksError = null;
+        });
+      }
       await auth.signInInteractively();
+      await _reloadOwnerWorks();
     } catch (error) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
@@ -63,12 +108,10 @@ class _CommunityMyWorksScreenState extends State<CommunityMyWorksScreen> {
       return;
     }
 
-    // 投稿画面を開く前にログインだけ確定させる。YouTubeのyoutube.upload
-    // スコープ認可は実際に「投稿」ボタンを押した時にCommunityPostScreen側で
-    // 明示的に要求する。
     if (!auth.isSignedIn) {
       try {
         await auth.signInInteractively();
+        await _reloadOwnerWorks();
       } catch (error) {
         if (!mounted) return;
         ScaffoldMessenger.of(context).showSnackBar(
@@ -85,10 +128,36 @@ class _CommunityMyWorksScreenState extends State<CommunityMyWorksScreen> {
       ),
     );
     if (!mounted || videoId == null) return;
-
-    // 投稿完了後はバックエンド一覧を取り直す。接続なしの開発ビルドでは
-    // falseになるだけなので、画面確認用ダミーデータはそのまま維持される。
     await context.read<CommunityService>().refreshFromBackend();
+    await _reloadOwnerWorks();
+  }
+
+  Future<void> _setVisibility(CommunityWork work, bool published) async {
+    final api = context.read<CommunityService>().api;
+    if (api == null || _visibilityBusy.contains(work.id)) return;
+    setState(() => _visibilityBusy.add(work.id));
+    try {
+      final updated = await api.updateWorkVisibility(
+        work.id,
+        isNiarimPublished: published,
+      );
+      if (!mounted) return;
+      final next = updated.toCommunityWork();
+      setState(() {
+        final works = _ownerWorks;
+        if (works == null) return;
+        final i = works.indexWhere((w) => w.id == next.id);
+        if (i >= 0) works[i] = next;
+      });
+      await context.read<CommunityService>().refreshFromBackend();
+    } catch (error) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('公開状態を変更できませんでした: $error')),
+      );
+    } finally {
+      if (mounted) setState(() => _visibilityBusy.remove(work.id));
+    }
   }
 
   @override
@@ -97,19 +166,32 @@ class _CommunityMyWorksScreenState extends State<CommunityMyWorksScreen> {
     final scheme = Theme.of(context).colorScheme;
     final communityService = context.watch<CommunityService>();
     final auth = context.watch<GoogleAuthService>();
-    final works = communityService.worksByAuthor(
-      kDummySelfAuthorId,
-      includeHidden: true,
-    )..sort((a, b) => b.postedAt.compareTo(a.postedAt));
     final account = auth.account;
     final accountLabel = account == null
         ? 'Googleアカウント未接続'
         : (account.displayName?.trim().isNotEmpty ?? false)
-        ? account.displayName!.trim()
-        : account.email;
+            ? account.displayName!.trim()
+            : account.email;
+
+    final usingBackendOwnerList = communityService.api != null && auth.isSignedIn;
+    final works = usingBackendOwnerList
+        ? (_ownerWorks ?? const <CommunityWork>[])
+        : (communityService.worksByAuthor(
+            kDummySelfAuthorId,
+            includeHidden: true,
+          )..sort((a, b) => b.postedAt.compareTo(a.postedAt)));
 
     return Scaffold(
-      appBar: AppBar(title: const Text('自分の投稿')),
+      appBar: AppBar(
+        title: const Text('自分の投稿'),
+        actions: [
+          IconButton(
+            tooltip: '再読み込み',
+            onPressed: _loadingWorks ? null : _reloadOwnerWorks,
+            icon: const Icon(Icons.refresh),
+          ),
+        ],
+      ),
       body: desktopCentered(
         context,
         Column(
@@ -146,12 +228,9 @@ class _CommunityMyWorksScreenState extends State<CommunityMyWorksScreen> {
                                   accountLabel,
                                   maxLines: 1,
                                   overflow: TextOverflow.ellipsis,
-                                  style: const TextStyle(
-                                    fontWeight: FontWeight.w600,
-                                  ),
+                                  style: const TextStyle(fontWeight: FontWeight.w600),
                                 ),
-                                if (account != null &&
-                                    account.email != accountLabel) ...[
+                                if (account != null && account.email != accountLabel) ...[
                                   const SizedBox(height: 2),
                                   Text(
                                     account.email,
@@ -188,9 +267,7 @@ class _CommunityMyWorksScreenState extends State<CommunityMyWorksScreen> {
                                 ? const SizedBox(
                                     width: 16,
                                     height: 16,
-                                    child: CircularProgressIndicator(
-                                      strokeWidth: 2,
-                                    ),
+                                    child: CircularProgressIndicator(strokeWidth: 2),
                                   )
                                 : const Icon(Icons.manage_accounts_outlined),
                             label: Text(
@@ -208,14 +285,33 @@ class _CommunityMyWorksScreenState extends State<CommunityMyWorksScreen> {
             ),
             Padding(
               padding: const EdgeInsets.fromLTRB(16, 4, 16, 4),
-              child: Text(
-                l10n.communityAuthorWorksCount(works.length),
-                style: TextStyle(
-                  fontSize: 12,
-                  color: scheme.onSurfaceVariant,
-                ),
+              child: Row(
+                children: [
+                  Text(
+                    l10n.communityAuthorWorksCount(works.length),
+                    style: TextStyle(fontSize: 12, color: scheme.onSurfaceVariant),
+                  ),
+                  if (_loadingWorks) ...[
+                    const SizedBox(width: 10),
+                    const SizedBox(
+                      width: 14,
+                      height: 14,
+                      child: CircularProgressIndicator(strokeWidth: 2),
+                    ),
+                  ],
+                ],
               ),
             ),
+            if (_worksError != null && usingBackendOwnerList)
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+                child: MaterialBanner(
+                  content: Text('自分の投稿を読み込めませんでした: $_worksError'),
+                  actions: [
+                    TextButton(onPressed: _reloadOwnerWorks, child: const Text('再試行')),
+                  ],
+                ),
+              ),
             Expanded(
               child: works.isEmpty
                   ? Center(
@@ -231,27 +327,69 @@ class _CommunityMyWorksScreenState extends State<CommunityMyWorksScreen> {
                             ),
                             const SizedBox(height: 12),
                             Text(
-                              l10n.communityEmptyState,
+                              usingBackendOwnerList && _loadingWorks
+                                  ? '投稿を読み込んでいます…'
+                                  : l10n.communityEmptyState,
                               textAlign: TextAlign.center,
-                              style: TextStyle(
-                                color: scheme.onSurfaceVariant,
-                              ),
+                              style: TextStyle(color: scheme.onSurfaceVariant),
                             ),
                           ],
                         ),
                       ),
                     )
-                  : SingleChildScrollView(
-                      child: CommunityWorkGrid(
-                        works: works,
-                        bookmarkedIds: communityService.bookmarkedIds,
-                        onTapWork: (work) => context
-                            .read<CommunityPreviewService>()
-                            .show(work),
-                        onToggleBookmark: (work) =>
-                            communityService.toggleBookmark(work.id),
-                        bottomPadding: 24,
-                      ),
+                  : ListView.separated(
+                      padding: const EdgeInsets.fromLTRB(16, 8, 16, 24),
+                      itemCount: works.length,
+                      separatorBuilder: (_, __) => const SizedBox(height: 8),
+                      itemBuilder: (context, index) {
+                        final work = works[index];
+                        final busy = _visibilityBusy.contains(work.id);
+                        return Card(
+                          clipBehavior: Clip.antiAlias,
+                          child: ListTile(
+                            onTap: () => context
+                                .read<CommunityPreviewService>()
+                                .show(work),
+                            leading: CircleAvatar(
+                              backgroundColor: work.isNiarimPublished
+                                  ? scheme.primaryContainer
+                                  : scheme.surfaceContainerHighest,
+                              child: Icon(
+                                work.isNiarimPublished
+                                    ? Icons.public
+                                    : Icons.visibility_off_outlined,
+                              ),
+                            ),
+                            title: Text(
+                              work.title.isEmpty ? work.id : work.title,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                            subtitle: Text(
+                              '${work.isNiarimPublished ? '公開中' : '非公開'}  •  videoId: ${work.id}',
+                              maxLines: 2,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                            trailing: usingBackendOwnerList
+                                ? SizedBox(
+                                    width: 58,
+                                    child: busy
+                                        ? const Center(
+                                            child: SizedBox(
+                                              width: 18,
+                                              height: 18,
+                                              child: CircularProgressIndicator(strokeWidth: 2),
+                                            ),
+                                          )
+                                        : Switch.adaptive(
+                                            value: work.isNiarimPublished,
+                                            onChanged: (v) => _setVisibility(work, v),
+                                          ),
+                                  )
+                                : null,
+                          ),
+                        );
+                      },
                     ),
             ),
           ],
