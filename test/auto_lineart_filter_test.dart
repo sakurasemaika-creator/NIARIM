@@ -148,14 +148,17 @@ void main() {
       expect(_alpha(out, w, 48, 10), lessThan(20));
     });
 
-    test('uniform opaque background does not become a full-canvas line graph', () {
-      const w = 72, h = 48;
-      final src = _canvas(w, h);
-      _fillOpaque(src, 248);
+    test(
+      'uniform opaque background does not become a full-canvas line graph',
+      () {
+        const w = 72, h = 48;
+        final src = _canvas(w, h);
+        _fillOpaque(src, 248);
 
-      final graph = AutoLineartEngine.analyze(src, w, h, roughWidthPx: 9);
-      expect(graph.paths, isEmpty);
-    });
+        final graph = AutoLineartEngine.analyze(src, w, h, roughWidthPx: 9);
+        expect(graph.paths, isEmpty);
+      },
+    );
 
     test('keeps an X crossing as connected topology', () {
       const w = 96, h = 96;
@@ -286,5 +289,52 @@ void main() {
       }
       expect(partial, greaterThan(0));
     });
+
+    test('restricts expensive topology work to a sparse rough bounding box', () {
+      const w = 512, h = 512;
+      final src = _canvas(w, h);
+      _line(src, w, h, 236, 252, 276, 252, 5);
+
+      final graph = AutoLineartEngine.analyze(src, w, h, roughWidthPx: 11);
+      expect(graph.paths, isNotEmpty);
+      expect(graph.analysisWidth * graph.analysisHeight, lessThan(w * h ~/ 20));
+
+      // Paths must still use original canvas coordinates after local analysis.
+      final out = AutoLineartEngine.render(
+        graph,
+        w,
+        h,
+        outputWidthPx: 2,
+        taperLengthPx: 6,
+        smoothing: 45,
+      );
+      expect(_alpha(out, w, 256, 252), greaterThan(100));
+      expect(_alpha(out, w, 40, 40), 0);
+    });
+
+    test(
+      'cropped analysis preserves coordinates near the bottom-right edge',
+      () {
+        const w = 320, h = 240;
+        final src = _canvas(w, h);
+        _line(src, w, h, 260, 210, 306, 210, 4);
+
+        final graph = AutoLineartEngine.analyze(src, w, h, roughWidthPx: 9);
+        expect(graph.paths, isNotEmpty);
+        expect(graph.analysisWidth, lessThan(w));
+        expect(graph.analysisHeight, lessThan(h));
+
+        final out = AutoLineartEngine.render(
+          graph,
+          w,
+          h,
+          outputWidthPx: 2,
+          taperLengthPx: 4,
+          smoothing: 30,
+        );
+        expect(_alpha(out, w, 283, 210), greaterThan(80));
+        expect(_alpha(out, w, 123, 100), 0);
+      },
+    );
   });
 }
