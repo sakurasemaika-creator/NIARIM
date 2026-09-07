@@ -299,6 +299,7 @@ class _FilterPanelState extends State<FilterPanel> {
     }).toList();
     final current = service.currentFilter;
     final bulk = widget.bulkFrameIndices;
+    final previewSide = current?.kind == FilterKind.autoLineart ? 200.0 : 120.0;
 
     if (current != null && current.id != _previewFilterId) {
       WidgetsBinding.instance.addPostFrameCallback((_) => _updatePreview());
@@ -426,8 +427,8 @@ class _FilterPanelState extends State<FilterPanel> {
               else ...[
                 Center(
                   child: Container(
-                    width: 120,
-                    height: 120,
+                    width: previewSide,
+                    height: previewSide,
                     decoration: BoxDecoration(
                       color: Theme.of(context)
                           .colorScheme

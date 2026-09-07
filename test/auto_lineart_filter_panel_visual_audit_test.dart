@@ -194,7 +194,7 @@ void main() {
     required int smoothing,
     required String golden,
   }) async {
-    tester.view.physicalSize = const Size(360, 360);
+    tester.view.physicalSize = const Size(600, 600);
     tester.view.devicePixelRatio = 3;
     addTearDown(tester.view.resetPhysicalSize);
     addTearDown(tester.view.resetDevicePixelRatio);
@@ -212,8 +212,8 @@ void main() {
             child: RepaintBoundary(
               key: key,
               child: SizedBox(
-                width: 120,
-                height: 120,
+                width: 200,
+                height: 200,
                 child: AutoLineartControlOverlay(
                   image: image,
                   graph: graph,
@@ -267,21 +267,21 @@ void main() {
   );
 
   testWidgets(
-    '120px production preview smoothing 45',
+    '200px production preview smoothing 45',
     (tester) => pumpPreviewAudit(
       tester,
       smoothing: 45,
-      golden: 'goldens/auto_lineart_preview_120_45.png',
+      golden: 'goldens/auto_lineart_preview_200_45.png',
     ),
     skip: !runAutoLineartVisualAudit,
   );
 
   testWidgets(
-    '120px production preview smoothing 85',
+    '200px production preview smoothing 85',
     (tester) => pumpPreviewAudit(
       tester,
       smoothing: 85,
-      golden: 'goldens/auto_lineart_preview_120_85.png',
+      golden: 'goldens/auto_lineart_preview_200_85.png',
     ),
     skip: !runAutoLineartVisualAudit,
   );
