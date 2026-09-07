@@ -36,6 +36,17 @@ describe("real posting flow contract", () => {
     expect(createSource).toContain("return created({ work: toPublicWork(existing) })");
   });
 
+  it("creates an initially hidden NIARIM work without a temporary public-index window", () => {
+    expect(createSource).toContain("isNiarimPublished?: boolean");
+    expect(createSource).toContain(
+      "const isNiarimPublished = body.isNiarimPublished ?? true",
+    );
+    expect(createSource).toContain(
+      "isNiarimPublished && isYoutubeVisible(snippet.privacyStatus)",
+    );
+    expect(createSource).toContain("isNiarimPublished,");
+  });
+
   it("discovers and caches the upload account's YouTube channel on first post", () => {
     expect(createSource).toContain(
       "const channelInfo = await getOwnChannelInfo(body.youtubeAccessToken)",
