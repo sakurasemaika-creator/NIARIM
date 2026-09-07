@@ -1,0 +1,16 @@
+exit_code=1
+Analyzing lib...                                                
+
+warning • The value of the field '_autoBlendColorArgb' isn't used. Try removing the field, or using it • lib/screens/canvas/widgets/filter_panel.dart:69:8 • unused_field
+warning • The value of the field '_lastBgBlendAnalysis' isn't used. Try removing the field, or using it • lib/screens/canvas/widgets/filter_panel.dart:70:34 • unused_field
+  error • The type 'FilterKind' isn't exhaustively matched by the switch cases since it doesn't match the pattern 'FilterKind.autoLineart'. Try adding a default case or cases that match 'FilterKind.autoLineart' • lib/screens/canvas/widgets/filter_panel.dart:473:5 • non_exhaustive_switch_statement
+  error • Undefined name 'AutoLineartEngine'. Try correcting the name to one that is defined, or defining the name • lib/screens/canvas/widgets/filter_panel.dart:1389:16 • undefined_identifier
+  error • Undefined name 'AutoLineartEngine'. Try correcting the name to one that is defined, or defining the name • lib/screens/canvas/widgets/filter_panel.dart:1390:11 • undefined_identifier
+   info • Unnecessary use of multiple underscores. Try using '_' • lib/screens/community/community_my_works_screen.dart:387:45 • unnecessary_underscores
+   info • Use the null-aware marker '?' rather than a null check via an 'if'. Try using '?' • lib/services/api/community_api.dart:132:9 • use_null_aware_elements
+   info • Use the null-aware marker '?' rather than a null check via an 'if'. Try using '?' • lib/services/api/community_api.dart:133:9 • use_null_aware_elements
+   info • Use the null-aware marker '?' rather than a null check via an 'if'. Try using '?' • lib/services/api/community_api.dart:134:9 • use_null_aware_elements
+   info • Use the null-aware marker '?' rather than a null check via an 'if'. Try using '?' • lib/services/api/community_api.dart:137:9 • use_null_aware_elements
+   info • Use the null-aware marker '?' rather than a null check via an 'if'. Try using '?' • lib/services/api/community_api.dart:138:9 • use_null_aware_elements
+
+11 issues found. (ran in 18.5s)
