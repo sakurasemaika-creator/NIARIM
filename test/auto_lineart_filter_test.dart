@@ -337,7 +337,7 @@ void main() {
       },
     );
 
-    test('ten-level smoothing reduces editable control points', () {
+    test('100-level smoothing reduces editable control points', () {
       const w = 160, h = 100;
       final src = _canvas(w, h);
       var lastX = 10;
@@ -351,11 +351,11 @@ void main() {
       final base = AutoLineartEngine.analyze(src, w, h, roughWidthPx: 8);
       final low = AutoLineartEngine.prepareEditableGraph(
         base,
-        smoothingLevel: 1,
+        smoothingLevel: 10,
       );
       final high = AutoLineartEngine.prepareEditableGraph(
         base,
-        smoothingLevel: 10,
+        smoothingLevel: 100,
       );
       expect(
         AutoLineartEngine.controlPointCount(high),

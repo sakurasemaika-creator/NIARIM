@@ -65,4 +65,50 @@ void main() {
     expect(movedTo!.y, lessThan(50));
     image.dispose();
   });
+
+  testWidgets(
+    'SP-sized transparent hit target reaches 20px from a control point',
+    (tester) async {
+      final recorder = ui.PictureRecorder();
+      final canvas = Canvas(recorder);
+      canvas.drawRect(const Rect.fromLTWH(0, 0, 100, 100), Paint());
+      final image = await recorder.endRecording().toImage(100, 100);
+      AutoLineartPoint? movedTo;
+      const graph = AutoLineartGraph(
+        width: 100,
+        height: 100,
+        paths: [
+          AutoLineartPath(
+            points: [AutoLineartPoint(50, 50), AutoLineartPoint(80, 50)],
+            startIsJunction: false,
+            endIsJunction: false,
+            persistence: 1,
+          ),
+        ],
+      );
+      await tester.pumpWidget(
+        MaterialApp(
+          home: Center(
+            child: SizedBox(
+              width: 200,
+              height: 200,
+              child: AutoLineartControlOverlay(
+                image: image,
+                graph: graph,
+                onPointMoved: (_, __, point) => movedTo = point,
+              ),
+            ),
+          ),
+        ),
+      );
+      final box = tester.getRect(find.byType(AutoLineartControlOverlay));
+      await tester.dragFrom(
+        Offset(box.left + box.width * .5 + 20, box.top + box.height * .5),
+        const Offset(15, -20),
+      );
+      await tester.pump();
+      expect(movedTo, isNotNull);
+      image.dispose();
+    },
+  );
 }

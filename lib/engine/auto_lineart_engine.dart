@@ -331,14 +331,15 @@ class AutoLineartEngine {
 
   /// Converts an analyzed topology graph into the temporary editable control
   /// polygon used by the preview. [smoothingLevel] is intentionally discrete
-  /// (0..10): higher levels smooth the control polygon and retain fewer points.
+  /// (0..100): higher levels smooth the control polygon and retain fewer points.
   /// Junction/end anchors stay as path endpoints so topology is not detached.
   static AutoLineartGraph prepareEditableGraph(
     AutoLineartGraph source, {
     required int smoothingLevel,
   }) {
-    final level = smoothingLevel.clamp(0, 10);
+    final level = smoothingLevel.clamp(0, 100);
     if (level == 0 || source.paths.isEmpty) return source;
+    final legacyLevel = level / 10.0;
 
     final paths = <AutoLineartPath>[];
     for (final path in source.paths) {
@@ -349,8 +350,8 @@ class AutoLineartEngine {
       }
 
       var work = List<AutoLineartPoint>.from(original);
-      final passes = math.max(1, level);
-      final amount = 0.12 + level * 0.025;
+      final passes = math.max(1, legacyLevel.ceil());
+      final amount = 0.12 + legacyLevel * 0.025;
       for (var pass = 0; pass < passes; pass++) {
         final next = List<AutoLineartPoint>.from(work);
         for (var i = 1; i < work.length - 1; i++) {
@@ -372,7 +373,7 @@ class AutoLineartEngine {
       // evenly from the smoothed polygon avoids a bias toward either endpoint.
       final target = math.max(
         2,
-        (original.length * (1.0 - level * 0.08)).round(),
+        (original.length * (1.0 - legacyLevel * 0.08)).round(),
       );
       final keepCount = math.min(work.length, target);
       final reduced = <AutoLineartPoint>[];
@@ -815,9 +816,9 @@ class AutoLineartEngine {
         var previous = start;
         var current = first;
         while (!anchors.contains(current)) {
-          final options = neighborsOf(
-            current,
-          ).where((n) => n != previous).toList();
+          final options = neighborsOf(current)
+              .where((n) => n != previous)
+              .toList();
           if (options.isEmpty) break;
           // Degree-2 pixels should have one onward neighbor. If raster topology
           // produces more, choose the direction that continues most straight.

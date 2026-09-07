@@ -49,7 +49,7 @@ class _AutoLineartControlOverlayState extends State<AutoLineartControlOverlay> {
   );
 
   (int, int)? _hit(Offset local, Rect rect) {
-    const radius = 13.0;
+    const radius = 22.0;
     var best = radius * radius;
     (int, int)? result;
     for (var p = 0; p < widget.graph.paths.length; p++) {

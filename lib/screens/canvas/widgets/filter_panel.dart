@@ -227,10 +227,7 @@ class _FilterPanelState extends State<FilterPanel> {
     final previewRevision = ++_autoLineartPreviewRevision;
     final Uint8List filtered;
     if (filter.kind == FilterKind.autoLineart) {
-      final smoothingLevel = (filter.autoLineartSmoothing / 10).round().clamp(
-        0,
-        10,
-      );
+      final smoothingLevel = filter.autoLineartSmoothing.round().clamp(0, 100);
       if (_autoLineartBaseGraph == null ||
           _autoLineartPreviewRoughWidth != filter.autoLineartRoughWidth) {
         _autoLineartBaseGraph = AutoLineartEngine.analyze(
@@ -432,9 +429,9 @@ class _FilterPanelState extends State<FilterPanel> {
                     width: 120,
                     height: 120,
                     decoration: BoxDecoration(
-                      color: Theme.of(
-                        context,
-                      ).colorScheme.surfaceContainerHighest,
+                      color: Theme.of(context)
+                          .colorScheme
+                          .surfaceContainerHighest,
                       borderRadius: BorderRadius.circular(6),
                     ),
                     child: _previewImage == null
@@ -454,18 +451,17 @@ class _FilterPanelState extends State<FilterPanel> {
                                 ? AutoLineartControlOverlay(
                                     image: _previewImage!,
                                     graph: _autoLineartPreviewGraph!,
-                                    onPointMoved:
-                                        (pathIndex, pointIndex, point) {
-                                          _autoLineartPreviewGraph =
-                                              AutoLineartEngine.moveControlPoint(
-                                                _autoLineartPreviewGraph!,
-                                                pathIndex: pathIndex,
-                                                pointIndex: pointIndex,
-                                                point: point,
-                                              );
-                                          _autoLineartManualEdited = true;
-                                          _scheduleAutoLineartPreviewUpdate();
-                                        },
+                                    onPointMoved: (pathIndex, pointIndex, point) {
+                                      _autoLineartPreviewGraph =
+                                          AutoLineartEngine.moveControlPoint(
+                                            _autoLineartPreviewGraph!,
+                                            pathIndex: pathIndex,
+                                            pointIndex: pointIndex,
+                                            point: point,
+                                          );
+                                      _autoLineartManualEdited = true;
+                                      _scheduleAutoLineartPreviewUpdate();
+                                    },
                                   )
                                 : RawImage(
                                     image: _previewImage,
@@ -736,13 +732,13 @@ class _FilterPanelState extends State<FilterPanel> {
             ),
             _integerStepperSlider(
               l10n.filterAutoLineartSmoothing,
-              (current.autoLineartSmoothing / 10).round().clamp(0, 10),
+              current.autoLineartSmoothing.round().clamp(0, 100),
               0,
-              10,
+              100,
               (v) {
                 service.updateFilterParams(
                   current.id,
-                  autoLineartSmoothing: (v * 10).toDouble(),
+                  autoLineartSmoothing: v.toDouble(),
                 );
                 _autoLineartPreviewGraph = null;
                 _autoLineartPreviewSmoothingLevel = null;
