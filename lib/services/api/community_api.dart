@@ -145,8 +145,11 @@ class CommunityApi {
     String workId, {
     required bool isNiarimPublished,
   }) async {
+    // Setting visibility to an explicit boolean is idempotent. If the backend applies
+    // the PATCH but the response is lost, resend the exact same desired state once.
     final json = await _client.patchJson(
       '/works/${Uri.encodeComponent(workId)}',
+      retries: 1,
       body: {'isNiarimPublished': isNiarimPublished},
     );
     return ApiWork.fromJson(_work(json));
