@@ -43,7 +43,6 @@ jobs:
             if active and line.strip()=='DART': break
             if active: out.append(line[10:] if line.startswith('          ') else line)
           text='\n'.join(out)+'\n'
-          text=text.replace("import 'package:niarim/services/theme_service.dart';\n",'')
           text=text.replace('              ThemeService? ts;\n','').replace('                  ts ??= context.read<ThemeService>();\n','')
           Path('test/auto_lineart_filter_panel_visual_audit_test.dart').write_text(text)
           PY
