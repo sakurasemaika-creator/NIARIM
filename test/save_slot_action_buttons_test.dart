@@ -17,17 +17,13 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'helpers/first_use_tooltips.dart';
 import 'helpers/load_app_fonts.dart';
 
-/// セーブスロット画面：**全てのスロット1つ1つに**ペン（書き込み）・
-/// 本（読み込み）・ゴミ箱（削除）の3ボタンが並ぶことを実画面で検証し、
+/// セーブスロット画面：**全てのスロット1つ1つに**メモ＋ペン（書き込み）・
+/// ノート（読み込み）・ゴミ箱（削除）の3ボタンが並ぶことを実画面で検証し、
 /// あわせて目視用のPNGを焼く。
-///
-/// 以前は行をタップするとボトムシートが開き、その中の
-/// 「上書きする／復元／削除」を選ぶ2段構えだった。役割が重複するので
-/// シートごと廃止している（`_SlotAction`が残っていないこともソースで確認）。
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
-  testWidgets('全セーブスロットにペン・本・ゴミ箱の3ボタンが並ぶ', (tester) async {
+  testWidgets('全セーブスロットに書き込み・読み込み・削除の3ボタンが並ぶ', (tester) async {
     SharedPreferences.setMockInitialValues({
       firstUseTooltipsSeenKey: kAllFirstUseTooltipKeys,
     });
@@ -70,7 +66,6 @@ void main() {
     final ctx = tester.element(find.byType(MaterialApp).first);
     final ps = ctx.read<ProjectService>();
     final saveService = ctx.read<SaveTreeService>();
-    // スロット方式（ゲーム風）でのみ出る画面なので、ツリー方式なら切り替える。
     expect(saveService.isTreeMode, isFalse, reason: 'このテストはスロット方式の画面を対象にしている');
     final project = (await tester.runAsync(
       () => ps.createProject(
@@ -87,9 +82,6 @@ void main() {
     expect(tester.takeException(), isNull);
 
     final l10n = await AppLocalizations.delegate.load(const Locale('ja'));
-    // 画面に見えているスロット行のぶんだけ、3種類のボタンが揃っている。
-    // `find.byTooltip`はIconButtonが内部に作るTooltipを返してしまうので、
-    // IconButton自身のtooltipプロパティで探す（onPressedを見たいため）。
     Finder byTooltip(String tooltip) =>
         find.byWidgetPredicate((w) => w is IconButton && w.tooltip == tooltip);
     final writes = byTooltip(l10n.saveTreeSlotWriteTooltip);
@@ -97,31 +89,25 @@ void main() {
     final deletes = byTooltip(l10n.saveTreeSlotDeleteTooltip);
     final slotRows = writes.evaluate().length;
     expect(slotRows, greaterThan(1), reason: 'スロット行が表示されていない');
-    expect(loads.evaluate().length, slotRows, reason: '本ボタンが足りない');
+    expect(loads.evaluate().length, slotRows, reason: 'ノートボタンが足りない');
     expect(deletes.evaluate().length, slotRows, reason: 'ゴミ箱ボタンが足りない');
 
-    // 空スロットでは読み込み・削除は無効（押しても何も起きない）。
     for (final e in loads.evaluate()) {
       expect((e.widget as IconButton).onPressed, isNull);
     }
     for (final e in deletes.evaluate()) {
       expect((e.widget as IconButton).onPressed, isNull);
     }
-    // 書き込みは空スロットでも常に押せる。
     for (final e in writes.evaluate()) {
       expect((e.widget as IconButton).onPressed, isNotNull);
     }
 
-    // アイコンだけで役割が分かることが要件なので、字面（ツールチップ）だけで
-    // なく実際のアイコンも見張る。読み込みが本なので、書き込みは
-    // 「その本へ書き入れる」ペンで比喩を揃える。
     IconData iconOf(Finder f) =>
         ((f.evaluate().first.widget as IconButton).icon as Icon).icon!;
-    expect(iconOf(writes), Icons.edit, reason: '書き込みはペンのアイコン');
-    expect(iconOf(loads), Icons.menu_book, reason: '読み込みは本のアイコン');
+    expect(iconOf(writes), Icons.edit_note, reason: '書き込みはメモ＋ペンのアイコン');
+    expect(iconOf(loads), Icons.book_outlined, reason: '読み込みはノートのアイコン');
     expect(iconOf(deletes), Icons.delete_outline, reason: '削除はゴミ箱のアイコン');
 
-    // 役割が重複していた旧ボトムシートが残っていないことをソースで確認する。
     final source = File(
       'lib/screens/save_tree/save_management_screen.dart',
     ).readAsStringSync();
@@ -135,8 +121,12 @@ void main() {
       isFalse,
       reason: 'シートの選択肢を表すenumも不要になった',
     );
+    expect(
+      source.contains('_SlotConfirmationSummary'),
+      isTrue,
+      reason: '書き込み・読み込み確認にはサムネイルと保存日時の要約を表示する',
+    );
 
-    // 目視用のPNGを焼く。
     final boundary =
         boundaryKey.currentContext!.findRenderObject()!
             as RenderRepaintBoundary;
