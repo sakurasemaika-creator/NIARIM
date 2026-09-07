@@ -96,7 +96,7 @@ void main() {
     client.close();
   });
 
-  test('authenticated request re-evaluates token once after 401', () async {
+  test('authenticated GET re-evaluates token once after 401', () async {
     var tokenReads = 0;
     var attempts = 0;
     final seenAuthorization = <String?>[];
@@ -134,7 +134,7 @@ void main() {
     client.close();
   });
 
-  test('authenticated mutation may retry once after 401 but not after ordinary 4xx', () async {
+  test('idempotent POST /works may refresh token once after 401', () async {
     var attempts = 0;
     final requestBodies = <String>[];
     final client = NiarimApiClient(
@@ -150,27 +150,62 @@ void main() {
           );
         }
         return http.Response(
-          jsonEncode({'error': 'bad request'}),
-          400,
+          jsonEncode({
+            'work': {
+              'workId': 'abc123DEF_4',
+              'authorId': 'author-1',
+              'title': 'auth retry work',
+              'postedAt': '2026-09-07T00:00:00.000Z',
+              'isNiarimPublished': true,
+            },
+          }),
+          201,
           headers: const {'content-type': 'application/json'},
         );
       }),
       tokenProvider: () async => attempts == 0 ? 'expired-token' : 'fresh-token',
       retryBackoff: Duration.zero,
     );
+    final api = CommunityApi(client);
 
-    await expectLater(
-      client.postJson('/reports', body: const {'workId': 'abc123DEF_4'}),
-      throwsA(
-        isA<NiarimApiException>().having((e) => e.statusCode, 'statusCode', 400),
-      ),
+    final work = await api.createWork(
+      youtubeVideoId: 'abc123DEF_4',
+      youtubeAccessToken: 'youtube-token',
     );
+
+    expect(work.workId, 'abc123DEF_4');
     expect(attempts, 2);
     expect(requestBodies[1], requestBodies[0]);
     client.close();
   });
 
-  test('ordinary POST calls still do not retry by default', () async {
+  test('non-idempotent POST does not retry after 401', () async {
+    var attempts = 0;
+    final client = NiarimApiClient(
+      baseUrl: 'https://example.invalid',
+      httpClient: MockClient((request) async {
+        attempts++;
+        return http.Response(
+          jsonEncode({'error': 'expired', 'code': 'UNAUTHORIZED'}),
+          401,
+          headers: const {'content-type': 'application/json'},
+        );
+      }),
+      tokenProvider: () async => 'expired-token',
+      retryBackoff: Duration.zero,
+    );
+
+    await expectLater(
+      client.postJson('/reports', body: const {'workId': 'abc123DEF_4'}),
+      throwsA(
+        isA<NiarimApiException>().having((e) => e.statusCode, 'statusCode', 401),
+      ),
+    );
+    expect(attempts, 1);
+    client.close();
+  });
+
+  test('ordinary POST calls still do not retry after network loss', () async {
     var attempts = 0;
     final client = NiarimApiClient(
       baseUrl: 'https://example.invalid',
