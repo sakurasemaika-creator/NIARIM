@@ -10,8 +10,10 @@ on:
       - 'lib/models/filter_def.dart'
       - 'lib/services/filter_service.dart'
       - 'lib/screens/canvas/widgets/filter_panel.dart'
+      - 'lib/screens/canvas/widgets/auto_lineart_control_overlay.dart'
       - 'lib/l10n/**'
       - 'test/auto_lineart_filter_test.dart'
+      - 'test/auto_lineart_control_overlay_test.dart'
       - 'test/filter_engine_aurora_hologram_test.dart'
   workflow_dispatch:
 
@@ -35,6 +37,8 @@ jobs:
         run: flutter analyze --no-fatal-warnings --no-fatal-infos lib
       - name: Auto line art topology and rasterization tests
         run: flutter test test/auto_lineart_filter_test.dart --reporter expanded
+      - name: Auto line art editable preview test
+        run: flutter test test/auto_lineart_control_overlay_test.dart --reporter expanded
       - name: Aurora hologram pixel-processing tests
         run: flutter test test/filter_engine_aurora_hologram_test.dart --reporter expanded
       - name: Existing draw-filter regressions
