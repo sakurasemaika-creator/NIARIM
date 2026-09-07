@@ -75,6 +75,8 @@ class _FilterPanelState extends State<FilterPanel> {
   double? _autoLineartPreviewRoughWidth;
   int? _autoLineartPreviewSmoothingLevel;
   bool _autoLineartManualEdited = false;
+  bool _autoLineartPreviewUpdateScheduled = false;
+  int _autoLineartPreviewRevision = 0;
   int _previewW = 0;
   int _previewH = 0;
   double _previewScale = 1;
@@ -209,10 +211,20 @@ class _FilterPanelState extends State<FilterPanel> {
     await _updatePreview();
   }
 
+  void _scheduleAutoLineartPreviewUpdate() {
+    if (_autoLineartPreviewUpdateScheduled) return;
+    _autoLineartPreviewUpdateScheduled = true;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _autoLineartPreviewUpdateScheduled = false;
+      if (mounted) _updatePreview();
+    });
+  }
+
   Future<void> _updatePreview() async {
     final base = _previewBase;
     final filter = context.read<FilterService>().currentFilter;
     if (base == null || filter == null || !mounted) return;
+    final previewRevision = ++_autoLineartPreviewRevision;
     final Uint8List filtered;
     if (filter.kind == FilterKind.autoLineart) {
       final smoothingLevel = (filter.autoLineartSmoothing / 10).round().clamp(
@@ -267,7 +279,7 @@ class _FilterPanelState extends State<FilterPanel> {
       completer.complete,
     );
     final image = await completer.future;
-    if (!mounted) {
+    if (!mounted || previewRevision != _autoLineartPreviewRevision) {
       image.dispose();
       return;
     }
@@ -452,7 +464,7 @@ class _FilterPanelState extends State<FilterPanel> {
                                                 point: point,
                                               );
                                           _autoLineartManualEdited = true;
-                                          _updatePreview();
+                                          _scheduleAutoLineartPreviewUpdate();
                                         },
                                   )
                                 : RawImage(
