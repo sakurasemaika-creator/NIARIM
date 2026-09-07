@@ -55,6 +55,98 @@ class AutoLineartEngine {
     (1, 1),
   ];
 
+  /// Builds the binary rough-line mask used by the topology pass.
+  ///
+  /// Transparent drawing layers keep the historical alpha-based behaviour.
+  /// Imported/scanned roughs are often flattened onto an opaque white (or dark)
+  /// background, though; treating alpha as foreground in that case turns the
+  /// whole canvas into one solid blob. When at least 90% of the canvas is
+  /// opaque, estimate a uniform background colour from the image border and use
+  /// colour/luminance contrast instead. If the border itself is highly varied,
+  /// fall back to alpha rather than guessing a background for arbitrary artwork.
+  static Uint8List _buildForegroundMask(
+    Uint8List rgba,
+    int width,
+    int height,
+  ) {
+    final pixelCount = width * height;
+    final alphaMask = Uint8List(pixelCount);
+    var alphaForeground = 0;
+    for (var i = 0; i < pixelCount; i++) {
+      if (rgba[i * 4 + 3] >= 24) {
+        alphaMask[i] = 1;
+        alphaForeground++;
+      }
+    }
+
+    if (alphaForeground < pixelCount * 0.90 || width < 2 || height < 2) {
+      return alphaMask;
+    }
+
+    final borderR = <int>[];
+    final borderG = <int>[];
+    final borderB = <int>[];
+    void addBorderPixel(int x, int y) {
+      final offset = (y * width + x) * 4;
+      if (rgba[offset + 3] < 24) return;
+      borderR.add(rgba[offset]);
+      borderG.add(rgba[offset + 1]);
+      borderB.add(rgba[offset + 2]);
+    }
+
+    for (var x = 0; x < width; x++) {
+      addBorderPixel(x, 0);
+      addBorderPixel(x, height - 1);
+    }
+    for (var y = 1; y < height - 1; y++) {
+      addBorderPixel(0, y);
+      addBorderPixel(width - 1, y);
+    }
+    if (borderR.length < 4) return alphaMask;
+
+    borderR.sort();
+    borderG.sort();
+    borderB.sort();
+    final middle = borderR.length ~/ 2;
+    final bgR = borderR[middle];
+    final bgG = borderG[middle];
+    final bgB = borderB[middle];
+
+    // Do not apply a single-background heuristic to photos/painted borders.
+    final borderDistances = <double>[];
+    for (var i = 0; i < borderR.length; i++) {
+      final dr = borderR[i] - bgR;
+      final dg = borderG[i] - bgG;
+      final db = borderB[i] - bgB;
+      borderDistances.add(math.sqrt((dr * dr + dg * dg + db * db).toDouble()));
+    }
+    borderDistances.sort();
+    final p75 = borderDistances[((borderDistances.length - 1) * 0.75).round()];
+    if (p75 > 42) return alphaMask;
+
+    final bgLuminance = bgR * 0.299 + bgG * 0.587 + bgB * 0.114;
+    final contrastMask = Uint8List(pixelCount);
+    const minColorDistanceSq = 18 * 18;
+    const minLuminanceDistance = 14.0;
+    for (var i = 0; i < pixelCount; i++) {
+      final offset = i * 4;
+      if (rgba[offset + 3] < 24) continue;
+      final r = rgba[offset];
+      final g = rgba[offset + 1];
+      final b = rgba[offset + 2];
+      final dr = r - bgR;
+      final dg = g - bgG;
+      final db = b - bgB;
+      final colorDistanceSq = dr * dr + dg * dg + db * db;
+      final luminance = r * 0.299 + g * 0.587 + b * 0.114;
+      if (colorDistanceSq >= minColorDistanceSq ||
+          (luminance - bgLuminance).abs() >= minLuminanceDistance) {
+        contrastMask[i] = 1;
+      }
+    }
+    return contrastMask;
+  }
+
   static AutoLineartGraph analyze(
     Uint8List rgba,
     int width,
@@ -65,12 +157,7 @@ class AutoLineartEngine {
       return AutoLineartGraph(width: width, height: height, paths: const []);
     }
 
-    final base = Uint8List(width * height);
-    for (var i = 0; i < width * height; i++) {
-      // Alpha is the least surprising definition of "rough shape" in a raster
-      // drawing app. A low threshold keeps antialiased fringe connected.
-      if (rgba[i * 4 + 3] >= 24) base[i] = 1;
-    }
+    final base = _buildForegroundMask(rgba, width, height);
 
     final rough = roughWidthPx.clamp(2.0, 80.0);
     // Merge tiny holes/gaps inside a scribbly rough while avoiding a large
