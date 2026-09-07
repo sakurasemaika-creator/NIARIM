@@ -10,7 +10,7 @@ const source = readFileSync(
 describe("report target contract", () => {
   it("requires a real public work before reserving report quota", () => {
     const getIndex = source.indexOf("new GetCommand");
-    const quotaIndex = source.indexOf("reserveReportQuota");
+    const quotaIndex = source.indexOf("await reserveReportQuota");
     expect(getIndex).toBeGreaterThanOrEqual(0);
     expect(quotaIndex).toBeGreaterThan(getIndex);
     expect(source).toContain("if (!work || !isWorkPublic(work))");
