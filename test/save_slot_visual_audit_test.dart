@@ -20,15 +20,6 @@ import 'helpers/load_app_fonts.dart';
 
 /// セーブスロット画面の主要操作を SP / PC の実レンダリングで通し、
 /// build/save-slot-visual-audit/ へ目視監査用PNGを焼く。
-///
-/// 対象:
-/// - 既存/空スロットが混在する一覧
-/// - 空スロットへの新規書き込みダイアログ
-/// - 既存スロットへの上書き確認
-/// - 上書き確認OK後の保存ダイアログ
-/// - projectDetail / timeline の読み込み確認
-/// - quickSave で読み込みが無効になる状態
-/// - 削除確認
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
@@ -36,7 +27,6 @@ void main() {
     SharedPreferences.setMockInitialValues({
       firstUseTooltipsSeenKey: kAllFirstUseTooltipKeys,
     });
-
     final tempDir = Directory.systemTemp.createTempSync('niarim_save_slot_visual_');
     const pathChannel = MethodChannel('plugins.flutter.io/path_provider');
     TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
@@ -48,7 +38,6 @@ void main() {
     });
 
     final boundaryKey = GlobalKey();
-
     Future<void> settle({int rounds = 6}) async {
       for (var i = 0; i < rounds; i++) {
         await tester.pump(const Duration(milliseconds: 100));
@@ -65,30 +54,24 @@ void main() {
       await tester.pump();
       await settle(rounds: 2);
     }
-
     addTearDown(tester.view.resetPhysicalSize);
     addTearDown(tester.view.resetDevicePixelRatio);
 
-    void expectNoRenderException() {
-      expect(tester.takeException(), isNull);
+    Finder dialog() {
+      final result = find.byType(AlertDialog);
+      expect(result, findsOneWidget);
+      return result;
     }
 
-    Finder activeDialog() {
-      final dialog = find.byType(AlertDialog);
-      expect(dialog, findsOneWidget);
-      return dialog;
-    }
-
-    void expectDialogText(String text) {
+    void expectDialogContains(String text) {
       expect(
-        find.descendant(of: activeDialog(), matching: find.text(text)),
-        findsOneWidget,
+        find.descendant(of: dialog(), matching: find.text(text)),
+        findsWidgets,
       );
     }
 
     void expectDialogFitsViewport() {
-      final dialog = activeDialog();
-      final rect = tester.getRect(dialog);
+      final rect = tester.getRect(dialog());
       final logicalSize = tester.view.physicalSize / tester.view.devicePixelRatio;
       expect(rect.left, greaterThanOrEqualTo(0));
       expect(rect.top, greaterThanOrEqualTo(0));
@@ -98,7 +81,7 @@ void main() {
 
     Future<void> capture(String name) async {
       await settle(rounds: 4);
-      expectNoRenderException();
+      expect(tester.takeException(), isNull);
       final boundary = boundaryKey.currentContext!.findRenderObject()!
           as RenderRepaintBoundary;
       final bytes = await tester.runAsync(() async {
@@ -109,20 +92,7 @@ void main() {
       });
       final out = Directory('build/save-slot-visual-audit')
         ..createSync(recursive: true);
-      await tester.runAsync(
-        () => File('${out.path}/$name.png').writeAsBytes(bytes!),
-      );
-    }
-
-    Future<void> cancelDialog(AppLocalizations l10n) async {
-      final button = find.descendant(
-        of: activeDialog(),
-        matching: find.widgetWithText(TextButton, l10n.commonCancel),
-      );
-      expect(button, findsOneWidget);
-      await tester.tap(button);
-      await settle();
-      expect(find.byType(AlertDialog), findsNothing);
+      await tester.runAsync(() => File('${out.path}/$name.png').writeAsBytes(bytes!));
     }
 
     await loadAppFonts(tester);
@@ -140,7 +110,6 @@ void main() {
     final projectService = context.read<ProjectService>();
     final saveService = context.read<SaveTreeService>();
     expect(saveService.isTreeMode, isFalse);
-
     final project = (await tester.runAsync(
       () => projectService.createProject(
         name: 'save-slot-visual-audit',
@@ -171,122 +140,122 @@ void main() {
     expect(File(node.thumbnailPath!).existsSync(), isTrue);
 
     final l10n = await AppLocalizations.delegate.load(const Locale('ja'));
-    Finder byTooltip(String tooltip) => find.byWidgetPredicate(
-      (widget) => widget is IconButton && widget.tooltip == tooltip,
+    Finder buttons(String tooltip) => find.byWidgetPredicate(
+      (w) => w is IconButton && w.tooltip == tooltip,
     );
 
-    Future<void> auditViewport({
+    Future<void> cancelDialog() async {
+      final cancel = find.descendant(
+        of: dialog(),
+        matching: find.widgetWithText(TextButton, l10n.commonCancel),
+      );
+      expect(cancel, findsOneWidget);
+      await tester.tap(cancel);
+      await settle();
+      expect(find.byType(AlertDialog), findsNothing);
+    }
+
+    Future<void> audit({
       required String prefix,
       required Size physicalSize,
       required double dpr,
     }) async {
       await setViewport(physicalSize, dpr);
-
-      // projectDetail: 既存データの読み込みが有効な正式入口。
       appRouter.go('/save-tree/${project.id}?entry=projectDetail');
       await settle();
-      expectNoRenderException();
-      final writes = byTooltip(l10n.saveTreeSlotWriteTooltip);
-      final loads = byTooltip(l10n.saveTreeSlotLoadTooltip);
-      final deletes = byTooltip(l10n.saveTreeSlotDeleteTooltip);
+      expect(tester.takeException(), isNull);
+
+      final writes = buttons(l10n.saveTreeSlotWriteTooltip);
+      final loads = buttons(l10n.saveTreeSlotLoadTooltip);
+      final deletes = buttons(l10n.saveTreeSlotDeleteTooltip);
       expect(writes.evaluate().length, saveService.slotMax);
       expect(loads.evaluate().length, saveService.slotMax);
       expect(deletes.evaluate().length, saveService.slotMax);
-      expect((tester.widget<IconButton>(loads.first)).onPressed, isNotNull);
-      expect((tester.widget<IconButton>(loads.at(1))).onPressed, isNull);
-      expect((tester.widget<IconButton>(deletes.first)).onPressed, isNotNull);
-      expect((tester.widget<IconButton>(deletes.at(1))).onPressed, isNull);
+      expect(tester.widget<IconButton>(loads.first).onPressed, isNotNull);
+      expect(tester.widget<IconButton>(loads.at(1)).onPressed, isNull);
+      expect(tester.widget<IconButton>(deletes.first).onPressed, isNotNull);
+      expect(tester.widget<IconButton>(deletes.at(1)).onPressed, isNull);
       await capture('${prefix}_01_project_detail_list');
 
-      // 空スロットは確認を挟まず新規保存ダイアログへ直接進む。
       await tester.tap(writes.at(1));
       await settle();
-      expectDialogText(l10n.saveTreeSlotSaveDialogTitle(2));
+      expectDialogContains(l10n.saveTreeSlotSaveDialogTitle(2));
       expectDialogFitsViewport();
       await capture('${prefix}_02_empty_slot_save_dialog');
-      await cancelDialog(l10n);
+      await cancelDialog();
 
-      // 既存スロットは上書き確認を挟み、対象コメント・画像・日時を見せる。
       await tester.tap(writes.first);
       await settle();
-      expectDialogText(l10n.saveTreeOverwriteAction);
-      expectDialogText(comment);
-      expect(
-        find.descendant(of: activeDialog(), matching: find.byType(Image)),
-        findsOneWidget,
-      );
+      expectDialogContains(l10n.saveTreeOverwriteAction);
+      expectDialogContains(comment);
+      expect(find.descendant(of: dialog(), matching: find.byType(Image)), findsOneWidget);
       expectDialogFitsViewport();
       await capture('${prefix}_03_overwrite_confirmation');
 
-      // OK後は既存コメントを引き継いだ保存ダイアログへ進む。
-      final okButton = find.descendant(
-        of: activeDialog(),
+      final ok = find.descendant(
+        of: dialog(),
         matching: find.widgetWithText(FilledButton, l10n.commonOk),
       );
-      expect(okButton, findsOneWidget);
-      await tester.tap(okButton);
+      expect(ok, findsOneWidget);
+      await tester.tap(ok);
       await settle();
-      expectDialogText(l10n.saveTreeSlotSaveDialogTitle(1));
-      final fieldFinder = find.descendant(
-        of: activeDialog(),
-        matching: find.byType(TextField),
-      );
-      expect(fieldFinder, findsOneWidget);
-      expect(tester.widget<TextField>(fieldFinder).controller?.text, comment);
+      expectDialogContains(l10n.saveTreeSlotSaveDialogTitle(1));
+      final field = find.descendant(of: dialog(), matching: find.byType(TextField));
+      expect(field, findsOneWidget);
+      expect(tester.widget<TextField>(field).controller?.text, comment);
       expectDialogFitsViewport();
       await capture('${prefix}_04_overwrite_save_dialog');
-      await cancelDialog(l10n);
+      await cancelDialog();
 
-      // projectDetail の読み込み確認。
       await tester.tap(loads.first);
       await settle();
-      expectDialogText(l10n.saveTreeRestoreAction);
-      expectDialogText(l10n.saveTreeProjectDetailResumeBody);
-      expectDialogText(comment);
+      expectDialogContains(l10n.saveTreeRestoreAction);
+      expectDialogContains(l10n.saveTreeProjectDetailResumeBody);
+      expectDialogContains(comment);
       expectDialogFitsViewport();
       await capture('${prefix}_05_project_detail_load_confirmation');
-      await cancelDialog(l10n);
+      await cancelDialog();
 
-      // 削除も即時削除ではなく確認を挟む。
       await tester.tap(deletes.first);
       await settle();
-      expectDialogText(l10n.commonDelete);
-      expectDialogText(l10n.confirmDeleteNamedBody(comment));
+      expectDialogContains(l10n.confirmDeleteNamedBody(comment));
+      expect(
+        find.descendant(
+          of: dialog(),
+          matching: find.widgetWithText(FilledButton, l10n.commonDelete),
+        ),
+        findsOneWidget,
+      );
       expectDialogFitsViewport();
       await capture('${prefix}_06_delete_confirmation');
-      await cancelDialog(l10n);
+      await cancelDialog();
 
-      // quickSave: 既存データでも読み込みは無効。
       appRouter.go('/save-tree/${project.id}?entry=quickSave');
       await settle();
-      final quickLoads = byTooltip(l10n.saveTreeSlotLoadTooltip);
-      expect((tester.widget<IconButton>(quickLoads.first)).onPressed, isNull);
+      final quickLoads = buttons(l10n.saveTreeSlotLoadTooltip);
+      expect(tester.widget<IconButton>(quickLoads.first).onPressed, isNull);
       await capture('${prefix}_07_quick_save_load_disabled');
 
-      // timeline: 読み込み可能で、確認本文はタイムライン用になる。
       appRouter.go('/save-tree/${project.id}?entry=timeline');
       await settle();
-      final timelineLoads = byTooltip(l10n.saveTreeSlotLoadTooltip);
-      expect((tester.widget<IconButton>(timelineLoads.first)).onPressed, isNotNull);
+      final timelineLoads = buttons(l10n.saveTreeSlotLoadTooltip);
+      expect(tester.widget<IconButton>(timelineLoads.first).onPressed, isNotNull);
       await tester.tap(timelineLoads.first);
       await settle();
-      expectDialogText(l10n.saveTreeRestoreAction);
-      expectDialogText(l10n.saveTreeResumeConfirmBody);
-      expectDialogText(comment);
+      expectDialogContains(l10n.saveTreeRestoreAction);
+      expectDialogContains(l10n.saveTreeResumeConfirmBody);
+      expectDialogContains(comment);
       expectDialogFitsViewport();
       await capture('${prefix}_08_timeline_load_confirmation');
-      await cancelDialog(l10n);
+      await cancelDialog();
     }
 
-    // 360x760 logical: 小さめAndroid級。縦方向のクリップも拾う。
-    await auditViewport(
+    await audit(
       prefix: 'sp_360x760',
       physicalSize: const Size(1080, 2280),
       dpr: 3,
     );
-
-    // 1440x900 logical: デスクトップ幅で中央寄せ・ダイアログ余白を確認。
-    await auditViewport(
+    await audit(
       prefix: 'pc_1440x900',
       physicalSize: const Size(1440, 900),
       dpr: 1,
