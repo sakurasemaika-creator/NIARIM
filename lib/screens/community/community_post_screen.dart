@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import '../../services/api/niarim_api_exception.dart';
 import '../../services/community_service.dart';
 import '../../services/google_auth_service.dart';
 import '../../services/youtube_upload_service.dart';
@@ -100,6 +101,23 @@ class _CommunityPostScreenState extends State<CommunityPostScreen> {
       prefs.remove(_pendingIsShortKey),
       prefs.remove(_pendingPublishedKey),
     ]);
+  }
+
+  /// 保留中のvideoIdがYouTubeから削除済み／取得不能と確定した場合は、
+  /// 「再試行可能」状態を永続化したままにしない。タイトル等の入力値は画面に
+  /// 残し、新しい動画を選び直せる状態へ戻す。
+  Future<void> _markPendingVideoUnavailable() async {
+    await _clearPendingUpload();
+    if (!mounted) return;
+    setState(() {
+      _youtubeVideoId = null;
+      _uploadAccountId = null;
+      _uploadAccountEmail = null;
+      _videoFile = null;
+      _progress = 0;
+      _status = '保留中のYouTube動画は削除済み、または見つからないため復旧できません。新しい動画を選択してください';
+      _error = 'YouTube動画が見つかりません。このvideoIdのNIARIM登録は再試行できません';
+    });
   }
 
   Future<void> _discardPendingUpload() async {
@@ -224,6 +242,13 @@ class _CommunityPostScreenState extends State<CommunityPostScreen> {
         }
         for (final work in ownWorks) {
           if (work.workId != videoId) continue;
+          // 既にNIARIM登録済みでも、同期バッチがYouTube削除を検知している
+          // 場合は復旧扱いにしない。削除済み動画は公開状態をPATCHしても
+          // 復活しないため、保留情報を破棄して新しい動画の選択へ戻す。
+          if (work.youtubePrivacyStatus == 'deleted') {
+            await _markPendingVideoUnavailable();
+            return;
+          }
           if (work.isNiarimPublished != _isNiarimPublished) {
             setState(() => _status = '投稿済み作品の公開状態を同期しています…');
             await api.updateWorkVisibility(
@@ -329,6 +354,13 @@ class _CommunityPostScreenState extends State<CommunityPostScreen> {
 
       await _finishRegistration(community, registeredVideoId);
     } catch (error) {
+      // 未登録の保留動画がYouTubeから消されている場合、バックエンドは
+      // VIDEO_NOT_FOUNDを返す。この状態は時間や再認証では直らないため、
+      // 「再試行できます」と表示し続けず、保留情報を破棄して終了する。
+      if (error is NiarimApiException && error.code == 'VIDEO_NOT_FOUND') {
+        await _markPendingVideoUnavailable();
+        return;
+      }
       if (!mounted) return;
       setState(() {
         _error = error;
