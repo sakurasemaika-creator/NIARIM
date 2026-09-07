@@ -1,13 +1,6 @@
 name: One-shot Auto Line Art Filter
 
 on:
-  push:
-    branches: [dev_branch]
-    paths:
-      - '.github/scripts/add_auto_lineart_filter.py'
-      - '.github/workflows/one-shot-auto-lineart-filter.yml'
-      - 'lib/engine/auto_lineart_engine.dart'
-      - 'test/auto_lineart_filter_test.dart'
   workflow_dispatch:
 
 permissions:
