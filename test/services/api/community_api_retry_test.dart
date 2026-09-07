@@ -15,11 +15,7 @@ void main() {
     final httpClient = MockClient((request) async {
       attempts++;
       requestBodies.add(jsonDecode(request.body) as Map<String, dynamic>);
-      if (attempts == 1) {
-        // Simulate the important failure mode: the request may already have reached
-        // the backend, but the client never receives its response.
-        throw TimeoutException('response lost');
-      }
+      if (attempts == 1) throw TimeoutException('response lost');
       return http.Response(
         jsonEncode({
           'work': {
@@ -67,9 +63,7 @@ void main() {
         requestBodies.add(jsonDecode(request.body) as Map<String, dynamic>);
         expect(request.method, 'PATCH');
         expect(request.url.path, '/works/abc123DEF_4');
-        if (attempts == 1) {
-          throw TimeoutException('response lost');
-        }
+        if (attempts == 1) throw TimeoutException('response lost');
         return http.Response(
           jsonEncode({
             'work': {
@@ -98,6 +92,80 @@ void main() {
     expect(attempts, 2);
     expect(requestBodies, hasLength(2));
     expect(requestBodies[0], {'isNiarimPublished': false});
+    expect(requestBodies[1], requestBodies[0]);
+    client.close();
+  });
+
+  test('authenticated request re-evaluates token once after 401', () async {
+    var tokenReads = 0;
+    var attempts = 0;
+    final seenAuthorization = <String?>[];
+    final client = NiarimApiClient(
+      baseUrl: 'https://example.invalid',
+      httpClient: MockClient((request) async {
+        attempts++;
+        seenAuthorization.add(request.headers['authorization']);
+        if (attempts == 1) {
+          return http.Response(
+            jsonEncode({'error': 'expired', 'code': 'UNAUTHORIZED'}),
+            401,
+            headers: const {'content-type': 'application/json'},
+          );
+        }
+        return http.Response(
+          jsonEncode({'works': []}),
+          200,
+          headers: const {'content-type': 'application/json'},
+        );
+      }),
+      tokenProvider: () async {
+        tokenReads++;
+        return tokenReads == 1 ? 'expired-token' : 'fresh-token';
+      },
+      retryBackoff: Duration.zero,
+    );
+
+    final json = await client.getJson('/me/works', authenticated: true);
+
+    expect(json['works'], isEmpty);
+    expect(attempts, 2);
+    expect(tokenReads, 2);
+    expect(seenAuthorization, ['Bearer expired-token', 'Bearer fresh-token']);
+    client.close();
+  });
+
+  test('authenticated mutation may retry once after 401 but not after ordinary 4xx', () async {
+    var attempts = 0;
+    final requestBodies = <String>[];
+    final client = NiarimApiClient(
+      baseUrl: 'https://example.invalid',
+      httpClient: MockClient((request) async {
+        attempts++;
+        requestBodies.add(request.body);
+        if (attempts == 1) {
+          return http.Response(
+            jsonEncode({'error': 'expired', 'code': 'UNAUTHORIZED'}),
+            401,
+            headers: const {'content-type': 'application/json'},
+          );
+        }
+        return http.Response(
+          jsonEncode({'error': 'bad request'}),
+          400,
+          headers: const {'content-type': 'application/json'},
+        );
+      }),
+      tokenProvider: () async => attempts == 0 ? 'expired-token' : 'fresh-token',
+      retryBackoff: Duration.zero,
+    );
+
+    await expectLater(
+      client.postJson('/reports', body: const {'workId': 'abc123DEF_4'}),
+      throwsA(
+        isA<NiarimApiException>().having((e) => e.statusCode, 'statusCode', 400),
+      ),
+    );
+    expect(attempts, 2);
     expect(requestBodies[1], requestBodies[0]);
     client.close();
   });
