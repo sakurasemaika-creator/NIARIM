@@ -31,12 +31,11 @@ typedef NiarimAuthTokenProvider = Future<String?> Function();
 /// しない。サーバーに届いたあと応答だけ失われた場合に、二重投稿・二重通報
 /// などを起こしうるため。
 ///
-/// ただし、サーバー側で明示的に冪等性が保証されている個別POSTだけは、
-/// 呼び出し側が[postJson]の[retries]を明示指定できる。現在の代表例は
-/// `POST /works` で、YouTubeのvideoIdをworkId兼冪等キーとしている。
-/// これにより「サーバーでは登録成功したがレスポンスだけ失われた」場合も、
-/// 同じvideoIdを安全に再送して既存Workを受け取れる。他のPOSTはretries=0の
-/// ままなので、この例外が通報等へ波及することはない。
+/// ただし、サーバー側で明示的に冪等性が保証されている個別エンドポイントだけは、
+/// 呼び出し側が[postJson]または[patchJson]の[retries]を明示指定できる。
+/// 現在の代表例は `POST /works`（YouTube videoIdがworkId兼冪等キー）と、
+/// `PATCH /works/{workId}` の公開状態更新（同じ真偽値を再設定しても結果が同じ）。
+/// 他の書き込みはretries=0のままなので、この例外が通報等へ波及しない。
 class NiarimApiClient {
   /// APIのベースURL（末尾のスラッシュは持たない）。
   final String baseUrl;
@@ -111,16 +110,21 @@ class NiarimApiClient {
     retries: retries,
   );
 
+  /// PATCH。既定では再送しない。
+  ///
+  /// 同じPATCHを繰り返しても結果が変わらないことが保証される呼び出しだけ、
+  /// [retries]を明示的に指定する。
   Future<Map<String, dynamic>> patchJson(
     String path, {
     Object? body,
     bool authenticated = true,
+    int retries = 0,
   }) => _sendWithRetry(
     'PATCH',
     _uri(path),
     body: body,
     authenticated: authenticated,
-    retries: 0,
+    retries: retries,
   );
 
   Future<Map<String, dynamic>> putJson(
