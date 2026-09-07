@@ -10,13 +10,10 @@ import '../../services/google_auth_service.dart';
 import '../../services/youtube_upload_service.dart';
 import '../../widgets/responsive.dart';
 
-/// YouTubeへ動画を実アップロードし、返却されたvideoIdをそのままNIARIMの
-/// workIdとしてPOST /worksへ登録する投稿画面。
-///
-/// 最重要の復旧ルールは「YouTubeアップロード成功後はvideoIdを永続保持し、
-/// /works登録が失敗したり画面・アプリが終了しても動画を再アップロードしない」
-/// こと。再試行時は保持済みvideoIdと、アップロード時と同じGoogleアカウントの
-/// OAuthアクセストークンでPOST /worksだけを再送する。
+/// YouTubeへ動画を実アップロードし、返却されたvideoIdをNIARIMのworkIdとして
+/// 登録する。YouTubeアップロード成功後はvideoIdとアップロード元Google
+/// アカウントを永続保持し、NIARIM登録失敗・画面終了・アプリ終了後も動画を
+/// 再アップロードせずPOST /worksだけを再試行する。
 class CommunityPostScreen extends StatefulWidget {
   const CommunityPostScreen({super.key});
 
@@ -95,7 +92,7 @@ class _CommunityPostScreenState extends State<CommunityPostScreen> {
 
   Future<void> _clearPendingUpload() async {
     final prefs = await SharedPreferences.getInstance();
-    await Future.wait<void>([
+    await Future.wait<bool>([
       prefs.remove(_pendingVideoIdKey),
       prefs.remove(_pendingAccountIdKey),
       prefs.remove(_pendingAccountEmailKey),
@@ -176,8 +173,6 @@ class _CommunityPostScreenState extends State<CommunityPostScreen> {
     });
 
     try {
-      // YouTube用OAuth tokenは登録再試行時にも取り直す。videoIdだけは保持し、
-      // tokenの期限切れを理由に動画そのものを再アップロードしない。
       final youtubeToken = await auth.youtubeUploadAccessToken(
         promptIfNecessary: true,
       );
@@ -190,9 +185,6 @@ class _CommunityPostScreenState extends State<CommunityPostScreen> {
         throw StateError('Googleアカウントを確認できませんでした');
       }
 
-      // 保留中videoIdは「アップロードしたGoogleアカウント」に固定する。
-      // 別アカウントでPOST /worksを試すと、YouTube所有権検証とNIARIM認証の
-      // 組み合わせが崩れるため、ネットワークへ送る前に止める。
       final retainedAccountId = _uploadAccountId;
       if (_youtubeVideoId != null &&
           retainedAccountId != null &&
@@ -219,9 +211,6 @@ class _CommunityPostScreenState extends State<CommunityPostScreen> {
             file: file!,
             accessToken: youtubeToken,
             title: title,
-            // 作品広場で再生可能にしつつ、YouTubeチャンネルの通常公開一覧へ
-            // 勝手に露出させないため初期値は限定公開。NIARIM側の公開状態は
-            // POST /worksで同時に確定させ、非公開指定の一瞬の露出も作らない。
             privacyStatus: 'unlisted',
             onProgress: (sent, total) {
               if (!mounted || total <= 0) return;
@@ -232,17 +221,17 @@ class _CommunityPostScreenState extends State<CommunityPostScreen> {
           uploadAccountId = postingAccount.id;
           uploadAccountEmail = postingAccount.email;
 
-          // State更新より先に永続化する。アップロード完了直後にOSから終了されても
-          // 次回起動時に同じvideoIdだけを使ってNIARIM登録を再開できる。
+          // Stateより先に永続化し、アップロード完了直後の強制終了でも
+          // 同じvideoIdからNIARIM登録だけを復旧できるようにする。
           await _persistPendingUpload(
-            videoId: videoId,
+            videoId: result.videoId,
             accountId: uploadAccountId,
             accountEmail: uploadAccountEmail,
             title: title,
           );
           if (!mounted) return;
           setState(() {
-            _youtubeVideoId = videoId;
+            _youtubeVideoId = result.videoId;
             _uploadAccountId = uploadAccountId;
             _uploadAccountEmail = uploadAccountEmail;
             _progress = 1;
@@ -258,8 +247,8 @@ class _CommunityPostScreenState extends State<CommunityPostScreen> {
         throw StateError('YouTube videoIdを取得できませんでした');
       }
 
-      // アップロード中に外部のGoogle認証イベント等でアカウントが変わった場合は、
-      // YouTube tokenとNIARIM ID tokenを別アカウントで混在させずここで止める。
+      // 外部認証イベント等でアカウントが変わった場合、YouTube tokenと
+      // NIARIM ID tokenを別アカウントで混在させずPOST前に止める。
       if (auth.account?.id != uploadAccountId) {
         throw StateError(
           '投稿中にGoogleアカウントが変更されました。$uploadAccountEmailへ戻してNIARIM登録を再試行してください',
@@ -283,11 +272,7 @@ class _CommunityPostScreenState extends State<CommunityPostScreen> {
         );
       }
 
-      // POST/PATCHが完了した時点でのみ保留情報を消す。以後は自分の投稿一覧から
-      // 同じvideoIdを使って公開状態を管理できる。
       await _clearPendingUpload();
-
-      // 新着一覧の再取得は失敗しても投稿そのものの成功を取り消さない。
       await community.refreshFromBackend();
       if (!mounted) return;
       setState(() => _status = '投稿が完了しました');
