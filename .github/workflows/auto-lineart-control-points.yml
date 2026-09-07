@@ -1,0 +1,52 @@
+name: Auto Line Art Control Points
+
+on:
+  push:
+    branches: [dev_branch]
+    paths:
+      - '.github/workflows/auto-lineart-control-points.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  implement-and-verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          ref: dev_branch
+          fetch-depth: 0
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+      - run: flutter pub get
+      - name: Apply editable control points
+        run: python3 .github/scripts/add_auto_lineart_control_points.py
+      - name: Format changed Dart files
+        run: dart format lib/engine/auto_lineart_engine.dart lib/models/filter_def.dart lib/screens/canvas/widgets/filter_panel.dart lib/screens/canvas/widgets/auto_lineart_control_overlay.dart test/auto_lineart_filter_test.dart test/auto_lineart_control_overlay_test.dart
+      - name: Analyze production code
+        run: flutter analyze --no-fatal-warnings --no-fatal-infos lib
+      - name: Auto line art engine and optimization regressions
+        run: flutter test test/auto_lineart_filter_test.dart --reporter expanded
+      - name: Editable preview widget test
+        run: flutter test test/auto_lineart_control_overlay_test.dart --reporter expanded
+      - name: Existing draw-filter regressions
+        run: |
+          flutter test test/filter_engine_aurora_hologram_test.dart --reporter expanded
+          flutter test test/ink_pool_filter_test.dart --reporter expanded
+          flutter test test/final_remaining_strict_evidence_test.dart --reporter expanded
+      - name: Commit implementation
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '4189823+github-actions[bot]@users.noreply.github.com'
+          git add lib/engine/auto_lineart_engine.dart lib/models/filter_def.dart lib/screens/canvas/widgets/filter_panel.dart lib/screens/canvas/widgets/auto_lineart_control_overlay.dart test/auto_lineart_filter_test.dart test/auto_lineart_control_overlay_test.dart
+          if git diff --cached --quiet; then
+            echo 'No implementation changes to commit'
+          else
+            git commit -m 'feat: edit auto lineart preview control points'
+            git push origin HEAD:dev_branch
+          fi
