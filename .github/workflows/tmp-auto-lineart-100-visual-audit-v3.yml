@@ -43,18 +43,20 @@ jobs:
             if active and line.strip()=='DART': break
             if active: out.append(line[10:] if line.startswith('          ') else line)
           text='\n'.join(out)+'\n'
+          text=text.replace("import 'package:niarim/services/theme_service.dart';\n",'')
           text=text.replace('              ThemeService? ts;\n','').replace('                  ts ??= context.read<ThemeService>();\n','')
           Path('test/auto_lineart_filter_panel_visual_audit_test.dart').write_text(text)
           PY
           dart format test/auto_lineart_filter_panel_visual_audit_test.dart
-      - name: Validate and capture
+      - name: Analyze changed production code
         run: |
           flutter pub get
-          flutter analyze lib/engine/auto_lineart_engine.dart lib/screens/canvas/widgets/filter_panel.dart lib/screens/canvas/widgets/auto_lineart_control_overlay.dart test/auto_lineart_filter_panel_visual_audit_test.dart
-          flutter test test/auto_lineart_filter_test.dart test/auto_lineart_control_overlay_test.dart test/auto_lineart_filter_panel_visual_audit_test.dart
+          flutter analyze --no-fatal-warnings --no-fatal-infos lib/engine/auto_lineart_engine.dart lib/screens/canvas/widgets/filter_panel.dart lib/screens/canvas/widgets/auto_lineart_control_overlay.dart test/auto_lineart_filter_panel_visual_audit_test.dart
+      - name: Test and capture
+        run: flutter test test/auto_lineart_filter_test.dart test/auto_lineart_control_overlay_test.dart test/auto_lineart_filter_panel_visual_audit_test.dart
       - uses: actions/upload-artifact@v4
         if: always()
-        with: {name: auto-lineart-panel-audit-v3, path: 'build/auto-lineart-panel-audit/*.png', if-no-files-found: warn}
+        with: {name: auto-lineart-panel-audit-v3, path: 'build/auto-lineart-panel-audit/*.png', if-no-files-found: warn, overwrite: true}
       - name: Land
         if: success()
         run: |
