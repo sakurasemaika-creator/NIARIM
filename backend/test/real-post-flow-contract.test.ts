@@ -36,6 +36,14 @@ describe("real posting flow contract", () => {
     expect(createSource).toContain("return created({ work: toPublicWork(existing) })");
   });
 
+  it("uses strongly consistent reads and resolves a concurrent same-author winner", () => {
+    expect(createSource).toContain("ConsistentRead: true");
+    expect(createSource).toContain("const racedResult = await ddb.send");
+    expect(createSource).toContain("racedWork.authorId === auth.niarimUserId");
+    expect(createSource).toContain("await releasePostQuota(auth.niarimUserId)");
+    expect(createSource).toContain("return created({ work: toPublicWork(racedWork) })");
+  });
+
   it("creates an initially hidden NIARIM work without a temporary public-index window", () => {
     expect(createSource).toContain("isNiarimPublished?: boolean");
     expect(createSource).toContain(
