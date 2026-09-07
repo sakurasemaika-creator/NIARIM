@@ -3,8 +3,7 @@ name: One-shot All Routes Screenshot Audit
 on:
   workflow_dispatch:
   push:
-    branches:
-      - dev_branch
+    branches: [dev_branch]
     paths:
       - ".github/workflows/one-shot-all-routes-screenshot-audit.yml"
       - "test/all_routes_screenshot_audit_test.dart"
@@ -40,6 +39,7 @@ jobs:
             echo "attempt $attempt failed rc=$rc; retrying after 10s"
             sleep 10
           done
+          mkdir -p build
           echo "$rc" > build/all-route-test-exit-code.txt
           exit 0
 
@@ -64,29 +64,24 @@ jobs:
         shell: bash
         run: |
           set +e
-          mkdir -p build/visual-baseline
-          previous_run_id=$(gh api \
-            -H "Accept: application/vnd.github+json" \
-            "/repos/${GITHUB_REPOSITORY}/actions/workflows/one-shot-all-routes-screenshot-audit.yml/runs?branch=dev_branch&status=completed&per_page=20" \
-            --jq ".workflow_runs[] | select(.id != ${GITHUB_RUN_ID}) | .id" | head -n 1)
-
-          if [ -z "$previous_run_id" ]; then
-            echo "No previous completed screenshot run available." | tee build/visual-baseline/BASELINE_NOT_AVAILABLE.txt
-            exit 0
-          fi
-
-          echo "baseline_run_id=$previous_run_id" > build/visual-baseline/baseline_metadata.txt
-          gh run download "$previous_run_id" -n all-route-screenshot-audit -D build/visual-baseline/raw
-          rc=$?
-          if [ $rc -ne 0 ]; then
-            echo "Failed to download baseline artifact from run $previous_run_id" | tee build/visual-baseline/BASELINE_DOWNLOAD_FAILED.txt
-            exit 0
-          fi
-
-          # Normalize whether the artifact contains files directly or one nested directory.
           mkdir -p build/visual-baseline/screenshots
+          previous_run_id=$(gh api "/repos/${GITHUB_REPOSITORY}/actions/workflows/one-shot-all-routes-screenshot-audit.yml/runs?branch=dev_branch&status=completed&per_page=20" \
+            --jq ".workflow_runs[] | select(.id != ${GITHUB_RUN_ID}) | .id" | head -n 1)
+          if [ -z "$previous_run_id" ]; then
+            echo "No previous completed screenshot run available." > build/visual-baseline/BASELINE_NOT_AVAILABLE.txt
+            exit 0
+          fi
+          echo "baseline_run_id=$previous_run_id" > build/visual-baseline/baseline_metadata.txt
+          gh run download "$previous_run_id" -n all-route-screenshot-audit -D build/visual-baseline/raw || {
+            echo "Failed to download baseline artifact from run $previous_run_id" > build/visual-baseline/BASELINE_DOWNLOAD_FAILED.txt
+            exit 0
+          }
           find build/visual-baseline/raw -type f -name '*.png' -exec cp '{}' build/visual-baseline/screenshots/ \;
           find build/visual-baseline/raw -type f -name 'capture_metadata.txt' -exec cp '{}' build/visual-baseline/previous_capture_metadata.txt \; || true
+
+      - name: Install pixel diff dependency
+        if: always()
+        run: python3 -m pip install --disable-pip-version-check pillow
 
       - name: Pixel-compare current screenshots against previous real-Flutter baseline
         if: always()
@@ -94,147 +89,85 @@ jobs:
         run: |
           python3 - <<'PY'
           from pathlib import Path
+          from PIL import Image, ImageChops, ImageOps
           import json
-          import math
-          import struct
-          import zlib
 
           current = Path('build/all-route-screenshots')
           baseline = Path('build/visual-baseline/screenshots')
           out = Path('build/visual-diff')
           out.mkdir(parents=True, exist_ok=True)
-
-          def read_png_rgba(path: Path):
-              data = path.read_bytes()
-              if data[:8] != b'\x89PNG\r\n\x1a\n':
-                  raise ValueError('not png')
-              pos = 8
-              width = height = color_type = bit_depth = None
-              chunks = []
-              while pos < len(data):
-                  ln = struct.unpack('>I', data[pos:pos+4])[0]
-                  typ = data[pos+4:pos+8]
-                  payload = data[pos+8:pos+8+ln]
-                  pos += 12 + ln
-                  if typ == b'IHDR':
-                      width, height, bit_depth, color_type, comp, filt, interlace = struct.unpack('>IIBBBBB', payload)
-                      if bit_depth != 8 or interlace != 0:
-                          raise ValueError('unsupported png format')
-                  elif typ == b'IDAT':
-                      chunks.append(payload)
-                  elif typ == b'IEND':
-                      break
-              if color_type == 6:
-                  bpp, channels = 4, 4
-              elif color_type == 2:
-                  bpp, channels = 3, 3
-              else:
-                  raise ValueError(f'unsupported color type {color_type}')
-              raw = zlib.decompress(b''.join(chunks))
-              stride = width * bpp
-              rows = []
-              prev = bytearray(stride)
-              i = 0
-              for _ in range(height):
-                  f = raw[i]; i += 1
-                  scan = bytearray(raw[i:i+stride]); i += stride
-                  recon = bytearray(stride)
-                  for x in range(stride):
-                      a = recon[x-bpp] if x >= bpp else 0
-                      b = prev[x]
-                      c = prev[x-bpp] if x >= bpp else 0
-                      v = scan[x]
-                      if f == 0: r = v
-                      elif f == 1: r = (v + a) & 255
-                      elif f == 2: r = (v + b) & 255
-                      elif f == 3: r = (v + ((a+b)//2)) & 255
-                      elif f == 4:
-                          p = a + b - c
-                          pa, pb, pc = abs(p-a), abs(p-b), abs(p-c)
-                          pr = a if pa <= pb and pa <= pc else (b if pb <= pc else c)
-                          r = (v + pr) & 255
-                      else: raise ValueError(f'unsupported filter {f}')
-                      recon[x] = r
-                  prev = recon
-                  if channels == 4:
-                      rows.append(bytes(recon))
-                  else:
-                      rgba = bytearray(width*4)
-                      for px in range(width):
-                          rgba[4*px:4*px+3] = recon[3*px:3*px+3]
-                          rgba[4*px+3] = 255
-                      rows.append(bytes(rgba))
-              return width, height, rows
-
-          def chunk(t, d):
-              return struct.pack('>I', len(d)) + t + d + struct.pack('>I', zlib.crc32(t+d) & 0xffffffff)
-
-          def write_png(path, w, h, rows):
-              raw = b''.join(b'\x00' + row for row in rows)
-              png = b'\x89PNG\r\n\x1a\n' + chunk(b'IHDR', struct.pack('>IIBBBBB', w,h,8,6,0,0,0)) + chunk(b'IDAT', zlib.compress(raw, 9)) + chunk(b'IEND', b'')
-              path.write_bytes(png)
-
           results = []
-          current_files = sorted(current.glob('*.png'))
-          for cur in current_files:
+
+          for cur in sorted(current.glob('*.png')):
               base = baseline / cur.name
-              entry = {'file': cur.name, 'baseline_available': base.exists()}
+              row = {'file': cur.name, 'baseline_available': base.exists()}
               if not base.exists():
-                  results.append(entry); continue
+                  results.append(row)
+                  continue
               try:
-                  cw,ch,cr = read_png_rgba(cur)
-                  bw,bh,br = read_png_rgba(base)
-                  entry['current_size'] = [cw,ch]
-                  entry['baseline_size'] = [bw,bh]
-                  if (cw,ch) != (bw,bh):
-                      entry['size_mismatch'] = True
-                      results.append(entry); continue
+                  a = Image.open(cur).convert('RGBA')
+                  b = Image.open(base).convert('RGBA')
+                  row['current_size'] = list(a.size)
+                  row['baseline_size'] = list(b.size)
+                  if a.size != b.size:
+                      row['size_mismatch'] = True
+                      results.append(row)
+                      continue
+                  diff = ImageChops.difference(a, b)
+                  bbox = diff.getbbox()
+                  pixels = a.size[0] * a.size[1]
                   changed = 0
-                  total_abs = 0
+                  total_rgb = 0
                   max_delta = 0
-                  diff_rows = []
-                  for y in range(ch):
-                      dr = bytearray(cw*4)
-                      for x in range(cw):
-                          o = x*4
-                          cpx = cr[y][o:o+4]; bpx = br[y][o:o+4]
-                          ds = [abs(cpx[k]-bpx[k]) for k in range(4)]
-                          md = max(ds)
+                  mask = Image.new('L', a.size, 0)
+                  mp = mask.load()
+                  dp = diff.load()
+                  for y in range(a.size[1]):
+                      for x in range(a.size[0]):
+                          d = dp[x, y]
+                          md = max(d)
                           if md:
                               changed += 1
-                              total_abs += sum(ds[:3])
+                              total_rgb += d[0] + d[1] + d[2]
                               max_delta = max(max_delta, md)
-                              dr[o:o+4] = bytes((255, 0, 0, 255))
-                          else:
-                              g = int((cpx[0]+cpx[1]+cpx[2])/3)
-                              dr[o:o+4] = bytes((g,g,g,110))
-                      diff_rows.append(bytes(dr))
-                  pixels = cw*ch
-                  entry['changed_pixels'] = changed
-                  entry['changed_ratio'] = changed/pixels if pixels else 0
-                  entry['mean_abs_rgb_delta'] = total_abs/(pixels*3) if pixels else 0
-                  entry['max_channel_delta'] = max_delta
-                  write_png(out / f'{cur.stem}.diff.png', cw,ch,diff_rows)
+                              mp[x, y] = 255
+                  row['changed_pixels'] = changed
+                  row['changed_ratio'] = (changed / pixels) if pixels else 0.0
+                  row['mean_abs_rgb_delta'] = (total_rgb / (pixels * 3)) if pixels else 0.0
+                  row['max_channel_delta'] = max_delta
+                  gray = ImageOps.grayscale(a).convert('RGBA')
+                  red = Image.new('RGBA', a.size, (255, 0, 0, 255))
+                  visual = Image.composite(red, gray, mask)
+                  visual.save(out / f'{cur.stem}.diff.png')
               except Exception as e:
-                  entry['error'] = str(e)
-              results.append(entry)
+                  row['error'] = str(e)
+              results.append(row)
 
           summary = {
-              'current_count': len(current_files),
+              'current_count': len(list(current.glob('*.png'))),
               'baseline_count': len(list(baseline.glob('*.png'))) if baseline.exists() else 0,
               'comparisons': results,
           }
-          (out/'pixel_diff_summary.json').write_text(json.dumps(summary, ensure_ascii=False, indent=2), encoding='utf-8')
-          with (out/'pixel_diff_summary.md').open('w', encoding='utf-8') as f:
-              f.write('# Real Flutter pixel diff summary\n\n')
-              f.write(f"Current screenshots: {summary['current_count']}  \nBaseline screenshots: {summary['baseline_count']}\n\n")
-              f.write('| Screenshot | Changed pixels | Changed ratio | Mean RGB delta | Notes |\n|---|---:|---:|---:|---|\n')
-              for r in results:
-                  notes=[]
-                  if not r.get('baseline_available'): notes.append('no baseline')
-                  if r.get('size_mismatch'): notes.append('size mismatch')
-                  if r.get('error'): notes.append(r['error'])
-                  f.write(f"| {r['file']} | {r.get('changed_pixels','-')} | {r.get('changed_ratio','-') if isinstance(r.get('changed_ratio'),str) else (f'{r.get('changed_ratio',0):.6f}' if 'changed_ratio' in r else '-')} | {r.get('mean_abs_rgb_delta','-') if isinstance(r.get('mean_abs_rgb_delta'),str) else (f'{r.get('mean_abs_rgb_delta',0):.4f}' if 'mean_abs_rgb_delta' in r else '-')} | {', '.join(notes)} |\n")
+          (out / 'pixel_diff_summary.json').write_text(json.dumps(summary, ensure_ascii=False, indent=2), encoding='utf-8')
+          lines = [
+              '# Real Flutter pixel diff summary',
+              '',
+              f"Current screenshots: {summary['current_count']}  ",
+              f"Baseline screenshots: {summary['baseline_count']}",
+              '',
+              '| Screenshot | Changed pixels | Changed ratio | Mean RGB delta | Notes |',
+              '|---|---:|---:|---:|---|',
+          ]
+          for r in results:
+              notes = []
+              if not r.get('baseline_available'): notes.append('no baseline')
+              if r.get('size_mismatch'): notes.append('size mismatch')
+              if r.get('error'): notes.append(r['error'])
+              changed = r.get('changed_pixels', '-')
+              ratio = f"{r['changed_ratio']:.6f}" if 'changed_ratio' in r else '-'
+              mean = f"{r['mean_abs_rgb_delta']:.4f}" if 'mean_abs_rgb_delta' in r else '-'
+              lines.append(f"| {r['file']} | {changed} | {ratio} | {mean} | {', '.join(notes)} |")
+          (out / 'pixel_diff_summary.md').write_text('\n'.join(lines) + '\n', encoding='utf-8')
           PY
 
       - name: Upload current real Flutter screenshots
