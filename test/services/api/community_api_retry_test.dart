@@ -57,6 +57,51 @@ void main() {
     client.close();
   });
 
+  test('visibility PATCH retries once after a lost response with the same desired state', () async {
+    var attempts = 0;
+    final requestBodies = <Map<String, dynamic>>[];
+    final client = NiarimApiClient(
+      baseUrl: 'https://example.invalid',
+      httpClient: MockClient((request) async {
+        attempts++;
+        requestBodies.add(jsonDecode(request.body) as Map<String, dynamic>);
+        expect(request.method, 'PATCH');
+        expect(request.url.path, '/works/abc123DEF_4');
+        if (attempts == 1) {
+          throw TimeoutException('response lost');
+        }
+        return http.Response(
+          jsonEncode({
+            'work': {
+              'workId': 'abc123DEF_4',
+              'authorId': 'author-1',
+              'title': 'visibility work',
+              'postedAt': '2026-09-07T00:00:00.000Z',
+              'isNiarimPublished': false,
+            },
+          }),
+          200,
+          headers: const {'content-type': 'application/json; charset=utf-8'},
+        );
+      }),
+      tokenProvider: () async => 'google-id-token',
+      retryBackoff: Duration.zero,
+    );
+    final api = CommunityApi(client);
+
+    final work = await api.updateWorkVisibility(
+      'abc123DEF_4',
+      isNiarimPublished: false,
+    );
+
+    expect(work.isNiarimPublished, isFalse);
+    expect(attempts, 2);
+    expect(requestBodies, hasLength(2));
+    expect(requestBodies[0], {'isNiarimPublished': false});
+    expect(requestBodies[1], requestBodies[0]);
+    client.close();
+  });
+
   test('ordinary POST calls still do not retry by default', () async {
     var attempts = 0;
     final client = NiarimApiClient(
@@ -70,6 +115,28 @@ void main() {
 
     await expectLater(
       client.postJson('/reports', body: const {'workId': 'abc123DEF_4'}),
+      throwsA(isA<NiarimApiException>()),
+    );
+    expect(attempts, 1);
+    client.close();
+  });
+
+  test('ordinary PATCH calls still do not retry by default', () async {
+    var attempts = 0;
+    final client = NiarimApiClient(
+      baseUrl: 'https://example.invalid',
+      httpClient: MockClient((request) async {
+        attempts++;
+        throw TimeoutException('response lost');
+      }),
+      retryBackoff: Duration.zero,
+    );
+
+    await expectLater(
+      client.patchJson(
+        '/works/abc123DEF_4/tags',
+        body: const {'action': 'add', 'tag': 'test'},
+      ),
       throwsA(isA<NiarimApiException>()),
     );
     expect(attempts, 1);
