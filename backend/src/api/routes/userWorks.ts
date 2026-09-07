@@ -19,6 +19,18 @@ async function allWorksForAuthor(authorId: string) {
   return (result.Items ?? []) as WorkItem[];
 }
 
+/**
+ * Owner-only representation. The YouTube privacy state is intentionally exposed
+ * only on owner list responses so the app can explain why a NIARIM-published work
+ * is temporarily hidden when YouTube is private/deleted.
+ */
+function toOwnerWork(work: WorkItem) {
+  return {
+    ...toPublicWork(work),
+    youtubePrivacyStatus: work.youtubePrivacyStatus,
+  };
+}
+
 /** GET /me/works. Authentication selects the NIARIM user id server-side. */
 export async function getMyWorks(event: APIGatewayProxyEventV2) {
   const caller = await authenticate(
@@ -27,7 +39,7 @@ export async function getMyWorks(event: APIGatewayProxyEventV2) {
   const works = await allWorksForAuthor(caller.niarimUserId);
   return ok({
     authorId: caller.niarimUserId,
-    works: works.map(toPublicWork),
+    works: works.map(toOwnerWork),
   });
 }
 
@@ -58,5 +70,8 @@ export async function getAuthorWorks(
         )
       ).Items ?? []) as WorkItem[];
 
-  return ok({ authorId, works: result.map(toPublicWork) });
+  return ok({
+    authorId,
+    works: includeHidden ? result.map(toOwnerWork) : result.map(toPublicWork),
+  });
 }
