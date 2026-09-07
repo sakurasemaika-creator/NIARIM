@@ -73,9 +73,21 @@ void main() {
       expect(tester.takeException(), isNull);
     }
 
-    void expectDialogFitsViewport() {
+    Finder activeDialog() {
       final dialog = find.byType(AlertDialog);
       expect(dialog, findsOneWidget);
+      return dialog;
+    }
+
+    void expectDialogText(String text) {
+      expect(
+        find.descendant(of: activeDialog(), matching: find.text(text)),
+        findsOneWidget,
+      );
+    }
+
+    void expectDialogFitsViewport() {
+      final dialog = activeDialog();
       final rect = tester.getRect(dialog);
       final logicalSize = tester.view.physicalSize / tester.view.devicePixelRatio;
       expect(rect.left, greaterThanOrEqualTo(0));
@@ -103,7 +115,10 @@ void main() {
     }
 
     Future<void> cancelDialog(AppLocalizations l10n) async {
-      final button = find.widgetWithText(TextButton, l10n.commonCancel);
+      final button = find.descendant(
+        of: activeDialog(),
+        matching: find.widgetWithText(TextButton, l10n.commonCancel),
+      );
       expect(button, findsOneWidget);
       await tester.tap(button);
       await settle();
@@ -186,7 +201,7 @@ void main() {
       // 空スロットは確認を挟まず新規保存ダイアログへ直接進む。
       await tester.tap(writes.at(1));
       await settle();
-      expect(find.text(l10n.saveTreeSlotSaveDialogTitle(2)), findsOneWidget);
+      expectDialogText(l10n.saveTreeSlotSaveDialogTitle(2));
       expectDialogFitsViewport();
       await capture('${prefix}_02_empty_slot_save_dialog');
       await cancelDialog(l10n);
@@ -194,17 +209,30 @@ void main() {
       // 既存スロットは上書き確認を挟み、対象コメント・画像・日時を見せる。
       await tester.tap(writes.first);
       await settle();
-      expect(find.text(l10n.saveTreeOverwriteAction), findsOneWidget);
-      expect(find.text(comment), findsOneWidget);
-      expect(find.byType(Image), findsAtLeastNWidgets(1));
+      expectDialogText(l10n.saveTreeOverwriteAction);
+      expectDialogText(comment);
+      expect(
+        find.descendant(of: activeDialog(), matching: find.byType(Image)),
+        findsOneWidget,
+      );
       expectDialogFitsViewport();
       await capture('${prefix}_03_overwrite_confirmation');
 
       // OK後は既存コメントを引き継いだ保存ダイアログへ進む。
-      await tester.tap(find.widgetWithText(FilledButton, l10n.commonOk));
+      final okButton = find.descendant(
+        of: activeDialog(),
+        matching: find.widgetWithText(FilledButton, l10n.commonOk),
+      );
+      expect(okButton, findsOneWidget);
+      await tester.tap(okButton);
       await settle();
-      expect(find.text(l10n.saveTreeSlotSaveDialogTitle(1)), findsOneWidget);
-      expect(find.text(comment), findsOneWidget);
+      expectDialogText(l10n.saveTreeSlotSaveDialogTitle(1));
+      final fieldFinder = find.descendant(
+        of: activeDialog(),
+        matching: find.byType(TextField),
+      );
+      expect(fieldFinder, findsOneWidget);
+      expect(tester.widget<TextField>(fieldFinder).controller?.text, comment);
       expectDialogFitsViewport();
       await capture('${prefix}_04_overwrite_save_dialog');
       await cancelDialog(l10n);
@@ -212,9 +240,9 @@ void main() {
       // projectDetail の読み込み確認。
       await tester.tap(loads.first);
       await settle();
-      expect(find.text(l10n.saveTreeRestoreAction), findsOneWidget);
-      expect(find.text(l10n.saveTreeProjectDetailResumeBody), findsOneWidget);
-      expect(find.text(comment), findsOneWidget);
+      expectDialogText(l10n.saveTreeRestoreAction);
+      expectDialogText(l10n.saveTreeProjectDetailResumeBody);
+      expectDialogText(comment);
       expectDialogFitsViewport();
       await capture('${prefix}_05_project_detail_load_confirmation');
       await cancelDialog(l10n);
@@ -222,8 +250,8 @@ void main() {
       // 削除も即時削除ではなく確認を挟む。
       await tester.tap(deletes.first);
       await settle();
-      expect(find.text(l10n.commonDelete), findsWidgets);
-      expect(find.text(l10n.confirmDeleteNamedBody(comment)), findsOneWidget);
+      expectDialogText(l10n.commonDelete);
+      expectDialogText(l10n.confirmDeleteNamedBody(comment));
       expectDialogFitsViewport();
       await capture('${prefix}_06_delete_confirmation');
       await cancelDialog(l10n);
@@ -242,9 +270,9 @@ void main() {
       expect((tester.widget<IconButton>(timelineLoads.first)).onPressed, isNotNull);
       await tester.tap(timelineLoads.first);
       await settle();
-      expect(find.text(l10n.saveTreeRestoreAction), findsOneWidget);
-      expect(find.text(l10n.saveTreeResumeConfirmBody), findsOneWidget);
-      expect(find.text(comment), findsOneWidget);
+      expectDialogText(l10n.saveTreeRestoreAction);
+      expectDialogText(l10n.saveTreeResumeConfirmBody);
+      expectDialogText(comment);
       expectDialogFitsViewport();
       await capture('${prefix}_08_timeline_load_confirmation');
       await cancelDialog(l10n);
