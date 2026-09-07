@@ -92,4 +92,13 @@ describe("current-user works contract", () => {
     expect(userWorksSource).toContain('IndexName: "GSI3AllStates"');
     expect(userWorksSource).toContain('`AUTHOR#${authorId}`');
   });
+
+  it("returns YouTube privacy state only on owner-visible work lists", () => {
+    expect(userWorksSource).toContain("function toOwnerWork(work: WorkItem)");
+    expect(userWorksSource).toContain("youtubePrivacyStatus: work.youtubePrivacyStatus");
+    expect(userWorksSource).toContain("works: works.map(toOwnerWork)");
+    expect(userWorksSource).toContain(
+      "works: includeHidden ? result.map(toOwnerWork) : result.map(toPublicWork)",
+    );
+  });
 });
