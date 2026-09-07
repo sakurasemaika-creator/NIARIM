@@ -33,12 +33,14 @@ class GoogleAuthService extends ChangeNotifier {
 
   GoogleSignInAccount? _account;
   bool _initialized = false;
+  bool _authOperationInProgress = false;
   Object? _lastError;
 
   GoogleSignInAccount? get account => _account;
   bool get isConfigured => googleClientId.isNotEmpty;
   bool get isInitialized => _initialized;
   bool get isSignedIn => _account != null;
+  bool get authOperationInProgress => _authOperationInProgress;
   Object? get lastError => _lastError;
 
   /// GoogleSignIn 7.xはinitializeを1回だけ呼ぶ必要があるため、起動時に
@@ -78,8 +80,6 @@ class GoogleAuthService extends ChangeNotifier {
         final user = await lightweight;
         if (user != null) _setAccount(user);
       } catch (error) {
-        // 起動時の無操作認証失敗はアプリ起動を妨げない。必要になった時に
-        // [signInInteractively] で明示的にログインしてもらう。
         _lastError = error;
         notifyListeners();
       }
@@ -87,20 +87,22 @@ class GoogleAuthService extends ChangeNotifier {
   }
 
   /// ユーザー操作から呼ぶ対話ログイン。
-  Future<GoogleSignInAccount> signInInteractively() async {
+  ///
+  /// Google SDKのauthenticate/signOut/disconnect/追加scope認可は同時実行しない。
+  /// アカウント切替と投稿用scope取得が競合すると、IDトークンとYouTube tokenが
+  /// 別アカウント由来になる可能性があるため、先行操作中の新規操作は明示的に
+  /// 拒否してUI側から再試行してもらう。
+  Future<GoogleSignInAccount> signInInteractively() =>
+      _runExclusive(_signInInteractivelyInternal);
+
+  Future<GoogleSignInAccount> _signInInteractivelyInternal() async {
     _ensureReadyForGoogle();
     if (!_signIn.supportsAuthenticate()) {
       throw UnsupportedError('このプラットフォームでは対話Googleログインに未対応です');
     }
-    try {
-      final user = await _signIn.authenticate();
-      _setAccount(user);
-      return user;
-    } catch (error) {
-      _lastError = error;
-      notifyListeners();
-      rethrow;
-    }
+    final user = await _signIn.authenticate();
+    _setAccount(user);
+    return user;
   }
 
   /// NIARIM APIが検証するOpenID Connect IDトークン。
@@ -120,42 +122,54 @@ class GoogleAuthService extends ChangeNotifier {
   /// trueは必ずボタン等のユーザー操作から呼ぶこと。
   Future<String?> youtubeUploadAccessToken({
     bool promptIfNecessary = false,
-  }) async {
+  }) => _runExclusive(() async {
     _ensureReadyForGoogle();
     var user = _account;
     if (user == null) {
       if (!promptIfNecessary) return null;
-      user = await signInInteractively();
+      user = await _signInInteractivelyInternal();
     }
 
-    try {
-      var authorization = await user.authorizationClient.authorizationForScopes(
+    var authorization = await user.authorizationClient.authorizationForScopes(
+      youtubeUploadScopes,
+    );
+    if (authorization == null && promptIfNecessary) {
+      authorization = await user.authorizationClient.authorizeScopes(
         youtubeUploadScopes,
       );
-      if (authorization == null && promptIfNecessary) {
-        authorization = await user.authorizationClient.authorizeScopes(
-          youtubeUploadScopes,
-        );
-      }
-      return authorization?.accessToken;
+    }
+    return authorization?.accessToken;
+  });
+
+  Future<void> signOut() => _runExclusive(() async {
+    _ensureReadyForGoogle();
+    await _signIn.signOut();
+    _setAccount(null);
+  });
+
+  /// Google側のNIARIM認可そのものも取り消す場合に使う。
+  Future<void> disconnect() => _runExclusive(() async {
+    _ensureReadyForGoogle();
+    await _signIn.disconnect();
+    _setAccount(null);
+  });
+
+  Future<T> _runExclusive<T>(Future<T> Function() operation) async {
+    if (_authOperationInProgress) {
+      throw StateError('Googleアカウント操作を処理中です。完了後にもう一度お試しください');
+    }
+    _authOperationInProgress = true;
+    notifyListeners();
+    try {
+      return await operation();
     } catch (error) {
       _lastError = error;
       notifyListeners();
       rethrow;
+    } finally {
+      _authOperationInProgress = false;
+      notifyListeners();
     }
-  }
-
-  Future<void> signOut() async {
-    _ensureReadyForGoogle();
-    await _signIn.signOut();
-    _setAccount(null);
-  }
-
-  /// Google側のNIARIM認可そのものも取り消す場合に使う。
-  Future<void> disconnect() async {
-    _ensureReadyForGoogle();
-    await _signIn.disconnect();
-    _setAccount(null);
   }
 
   void _setAccount(GoogleSignInAccount? value) {
