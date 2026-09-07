@@ -139,6 +139,27 @@ class _CommunityPostScreenState extends State<CommunityPostScreen> {
     });
   }
 
+  Future<void> _finishRegistration(
+    CommunityService community,
+    String registeredVideoId, {
+    bool recovered = false,
+  }) async {
+    await _clearPendingUpload();
+    await community.refreshFromBackend();
+    if (!mounted) return;
+    setState(() => _status = recovered ? '投稿済みの作品を復旧しました' : '投稿が完了しました');
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(
+          recovered
+              ? '投稿済みの作品を復旧しました（videoId: $registeredVideoId）'
+              : '投稿しました（videoId: $registeredVideoId）',
+        ),
+      ),
+    );
+    Navigator.of(context).pop(registeredVideoId);
+  }
+
   Future<void> _submit() async {
     if (_busy || _restoringPending) return;
     final file = _videoFile;
@@ -169,21 +190,12 @@ class _CommunityPostScreenState extends State<CommunityPostScreen> {
       _error = null;
       _status = _youtubeVideoId == null
           ? 'Googleアカウントを確認しています…'
-          : 'NIARIMへの登録を再試行しています…';
+          : 'NIARIMへの登録状況を確認しています…';
     });
 
     try {
-      final youtubeToken = await auth.youtubeUploadAccessToken(
-        promptIfNecessary: true,
-      );
-      if (youtubeToken == null || youtubeToken.isEmpty) {
-        throw StateError('YouTubeへの投稿権限を取得できませんでした');
-      }
-
-      final postingAccount = auth.account;
-      if (postingAccount == null) {
-        throw StateError('Googleアカウントを確認できませんでした');
-      }
+      var postingAccount = auth.account;
+      postingAccount ??= await auth.signInInteractively();
 
       final retainedAccountId = _uploadAccountId;
       if (_youtubeVideoId != null &&
@@ -199,6 +211,49 @@ class _CommunityPostScreenState extends State<CommunityPostScreen> {
       var videoId = _youtubeVideoId;
       var uploadAccountId = _uploadAccountId ?? postingAccount.id;
       var uploadAccountEmail = _uploadAccountEmail ?? postingAccount.email;
+
+      // YouTubeアップロード後にPOST /worksが成功したものの、その成功応答を
+      // 受け取る前にアプリが終了したケースを先に復旧する。ここではYouTubeの
+      // upload scopeを要求しないので、既に登録済みなら不要な再認可を出さない。
+      if (videoId != null) {
+        final ownWorks = await api.myWorks();
+        if (auth.account?.id != uploadAccountId) {
+          throw StateError(
+            '登録状況の確認中にGoogleアカウントが変更されました。$uploadAccountEmailへ戻して再試行してください',
+          );
+        }
+        for (final work in ownWorks) {
+          if (work.workId != videoId) continue;
+          if (work.isNiarimPublished != _isNiarimPublished) {
+            setState(() => _status = '投稿済み作品の公開状態を同期しています…');
+            await api.updateWorkVisibility(
+              videoId,
+              isNiarimPublished: _isNiarimPublished,
+            );
+          }
+          await _finishRegistration(
+            community,
+            videoId,
+            recovered: true,
+          );
+          return;
+        }
+      }
+
+      // ここへ来るのは新規YouTubeアップロード、またはYouTubeには存在するが
+      // NIARIM未登録の保留投稿だけ。初めてここでyoutube.upload scopeを要求する。
+      final youtubeToken = await auth.youtubeUploadAccessToken(
+        promptIfNecessary: true,
+      );
+      if (youtubeToken == null || youtubeToken.isEmpty) {
+        throw StateError('YouTubeへの投稿権限を取得できませんでした');
+      }
+      if (auth.account?.id != uploadAccountId) {
+        throw StateError(
+          'YouTube投稿権限の確認中にGoogleアカウントが変更されました。$uploadAccountEmailへ戻して再試行してください',
+        );
+      }
+
       if (videoId == null) {
         if (!mounted) return;
         setState(() {
@@ -272,14 +327,7 @@ class _CommunityPostScreenState extends State<CommunityPostScreen> {
         );
       }
 
-      await _clearPendingUpload();
-      await community.refreshFromBackend();
-      if (!mounted) return;
-      setState(() => _status = '投稿が完了しました');
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('投稿しました（videoId: $registeredVideoId）')),
-      );
-      Navigator.of(context).pop(registeredVideoId);
+      await _finishRegistration(community, registeredVideoId);
     } catch (error) {
       if (!mounted) return;
       setState(() {
