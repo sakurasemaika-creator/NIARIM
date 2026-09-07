@@ -14,10 +14,24 @@ jobs:
         with: {ref: dev_branch, fetch-depth: 0}
       - uses: subosito/flutter-action@v2
         with: {channel: stable, cache: true}
-      - name: Format and validate normal suite behavior
+      - name: Normalize audit test wildcards
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          for name in [
+            'test/auto_lineart_filter_panel_visual_audit_test.dart',
+            'test/auto_lineart_control_overlay_test.dart',
+          ]:
+            p=Path(name); s=p.read_text()
+            s=s.replace('(_, __, point)', '(_, _, point)')
+            s=s.replace('(_, pointIndex, __)', '(_, pointIndex, _)')
+            s=s.replace('(_, __, ___)', '(_, _, _)')
+            p.write_text(s)
+          PY
+          dart format test/auto_lineart_filter_panel_visual_audit_test.dart test/auto_lineart_control_overlay_test.dart
+      - name: Validate normal suite behavior
         run: |
           flutter pub get
-          dart format test/auto_lineart_filter_panel_visual_audit_test.dart test/auto_lineart_control_overlay_test.dart
           flutter analyze test/auto_lineart_filter_panel_visual_audit_test.dart test/auto_lineart_control_overlay_test.dart
           flutter test test/auto_lineart_control_overlay_test.dart
           flutter test test/auto_lineart_filter_panel_visual_audit_test.dart
