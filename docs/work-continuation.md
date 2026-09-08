@@ -1,6 +1,6 @@
 # ChatGPT Work 継続チェックポイント
 
-状態: `paused`（手動Work再開待ち。監査checkpointは有効）
+状態: `in-progress`（保存安全性とApp/Web回帰の監査を継続中）
 
 ## 運用更新（2026-09-08 JST）
 
@@ -11,6 +11,22 @@
 - 監査品質、サブエージェント制限、Actions/CI活用、checkpoint/pushのルールは変更しない。
 
 ## 最新セッション
+
+- セッション再開時刻 (JST): 2026-09-08 11:57:01（同日06:51の環境復元から継続）
+- 追加再開確認 (JST): 2026-09-08 13:12:00。最新AGENTS/品質基準/継続資料に更新なし。Appは `3aecad6` のまま。Webの追加6commitを継承。
+- 開始時HEAD: `3aecad65b55cc96e9c6a164ad59fc659bbce0427`
+- 目的: 最新AGENTS・品質基準・checkpointを継承し、A02保存安全性とWebの未完了回帰を修正・検証する。
+- Git: 両repo cleanから最新dev_branchへfast-forward。他の作業領域の未commit差分は触らない。
+- 実行済み: Flutter3.44.7/Dart3.12.2起動、既存lockを保ったoffline pub get成功。旧App d823808でanalyzeは既存14件（warning2/info12）。最新incoming後の再検証を行う。
+- 保存RED: Flutter3.44.7・既存lockで実ファイルの回帰12件を実行し、**1成功/11失敗**。ZIP破損、既存保存への並行書込、writable/invalidate/import/copy/renameのdirty欠落、保存確定時に新しい描画のdirtyを消す問題を再現。
+- 修正候補: 同一FSの完成ZIP置換・project単位の直列化・同期dirty確定・変更経路のdirty追跡。`pending/save-safety.patch` と `pending/project_save_safety_test.dart` に保全。本体へのcommitは候補CI検証後。
+- checkpoint直前にAppの追加4commitを確認し `03bed2c` を継承。自動線画の補正段階修正と一時script/workflow削除であり、保存候補の対象2ファイル・品質基準・継続資料にincoming変更なし。
+- 環境: 中断中に旧作業領域のFlutter SDK/pub cacheが消失。再現ログは保持。`Save safety candidate audit` が固定Flutter3.44.7でRED/GREEN→関連保存test→全format/analyze/testを実行し、成功した候補差分をartifactへ保存する。CI結果は未確認。
+- CI構文: parse不能だった一時workflow v8/v11を `pending/retired-workflows/*.yml.txt` へ原文のまま退避。v8のpreview/最寄り点検査はv9/v10経由で実装済み。v11の補正率変更案は未実行のまま保全し、完了とは扱わない。
+- 未完了: A02候補GREEN/全gate、Webの4,032条件CI、全体UI/UX・workspace/settings等の未精査領域。
+- 次の1手: `Save safety candidate audit` の結果とverified.patchを取得し、成功した本体差分だけをcommit。失敗時はログから修正して再検証する。
+
+## 前回セッション
 
 - セッション開始時刻 (JST): 2026-09-08 06:23:52
 - セッション終了時刻 (JST): 2026-09-08 06:32:07

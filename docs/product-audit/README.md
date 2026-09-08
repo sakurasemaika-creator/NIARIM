@@ -61,3 +61,11 @@ A03の根拠：[Google公式batchGetStats](https://developers.google.com/youtube
 - A04/A05を復元し、`npm run build`成功、`npm test` **110/110成功（20ファイル）**、CDK synth成功。公開設定の古いソース文字列assert1件を実行テスト6件へ置き換えた。
 - データ永続化・破損workspace/settings、全Flutter検証・UI/UXは未完了。最新Web CIは288画面の操作領域監査で失敗しており、原因を追跡中。
 - 次の1手：A02原子的保存とautosave復元後の差分保存を、実ファイル/タイルの往復テストで再現して直す。
+
+## 2026-09-08 JST 13時台 A02検証checkpoint
+
+- App `3aecad6` で実ファイル回帰12件を実行、**1成功/11失敗**。フルZIPはNaN manifestの失敗で空ファイルになり、既存保存への並行要求は同名tmpで競合した。復元・コピー・フレーム再インデックス後の青画素が赤い旧画素へ戻る経路と、保存直後の描画変更がdirtyから消える経路も再現。
+- 既存草案を精査し、`renameKey` が移動した全タイルも保存対象にする修正を追加。候補patchと実行テストを `docs/product-audit/pending/` に保全。まだ本体commitに含めず、読取専用CIでRED/GREEN・関連保存テスト・全gateを検証する。
+- `Save safety candidate audit` はFlutter3.44.7と既存lockを使用。成功した3ファイルの差分をverified.patchとして保存する。full-gatesで既存のformat/analyze/test不良が出た場合も失敗として残し、候補由来かを分類する。
+- Active workflow YAMLを94本parse成功。構文破損のv8/v11は原文を `.yml.txt` として退避し、継続CIを壊さない状態にした。v11の未実行の補正率変更案は今後の描画監査に残る。
+- WebはFAQ誤検知・整形・fallbackを修正し、24幅×PC/SP×7言語×12ページへCIを拡張。全体監査は未完了。次は候補CIの結果取得と本体への検証済み反映。
