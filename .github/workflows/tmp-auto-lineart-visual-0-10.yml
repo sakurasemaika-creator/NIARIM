@@ -1,0 +1,48 @@
+name: TMP Auto Lineart Visual 0-10
+
+on:
+  push:
+    branches: [dev_branch]
+    paths:
+      - '.github/workflows/tmp-auto-lineart-visual-0-10.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  visual-audit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: dev_branch
+          fetch-depth: 0
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+      - name: Update visual cases to 0-10
+        run: python3 scripts/tmp_auto_lineart_visual_0_10.py
+      - name: Format visual test
+        run: dart format test/auto_lineart_filter_panel_visual_audit_test.dart
+      - name: Generate real UI captures
+        env:
+          NIARIM_AUTO_LINEART_VISUAL_AUDIT: 'true'
+        run: flutter test test/auto_lineart_filter_panel_visual_audit_test.dart --update-goldens --reporter expanded
+      - uses: actions/upload-artifact@v4
+        with:
+          name: auto-lineart-visual-0-10
+          path: test/goldens/auto_lineart_*.png
+          if-no-files-found: error
+      - name: Land visual-audit test update
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add test/auto_lineart_filter_panel_visual_audit_test.dart
+          git diff --cached --quiet && exit 0
+          git commit -m 'test: refresh auto lineart visual audit for 0-10 smoothing'
+          git reset --hard HEAD
+          git pull --rebase origin dev_branch
+          git push origin HEAD:dev_branch
