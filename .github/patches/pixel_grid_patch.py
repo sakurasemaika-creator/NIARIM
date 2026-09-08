@@ -39,7 +39,7 @@ replacement = '''                    viewTransform: _transformController.value,
                   foregroundPainter: _PixelGridPainter(
                     project: widget.project,
                     enabled: pixelBrushActive,
-                    color: theme.menuTextColor,
+                    color: theme.textColor,
                     viewTransform: _transformController.value,
                   ),
                   size: Size.infinite,
