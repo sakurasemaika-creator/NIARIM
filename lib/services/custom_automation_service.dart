@@ -101,18 +101,39 @@ class CustomAutomationService extends ChangeNotifier {
   }) {
     final draft = _draft;
     if (!_recording || draft == null) return;
-    final index = draft.steps.length;
-    draft.steps.add(
-      CustomAutomationStep(
-        id: '${draft.id}_step_${index + 1}',
-        surface: surface,
-        command: command,
-        label: label,
-        args: Map.unmodifiable(args),
-        changesFrame: changesFrame,
-        changesScene: changesScene,
-      ),
+    final step = CustomAutomationStep(
+      id: '${draft.id}_step_${draft.steps.length + 1}',
+      surface: surface,
+      command: command,
+      label: label,
+      args: Map.unmodifiable(args),
+      changesFrame: changesFrame,
+      changesScene: changesScene,
     );
+    // Slider/color drags may emit dozens of onChanged callbacks. Consecutive
+    // writes of the same deterministic command represent one user operation,
+    // so keep only the latest value. Navigation is never coalesced because its
+    // sequence is semantically meaningful for a recorded macro.
+    if (!changesFrame && !changesScene && draft.steps.isNotEmpty) {
+      final last = draft.steps.last;
+      if (!last.changesFrame &&
+          !last.changesScene &&
+          last.surface == surface &&
+          last.command == command) {
+        draft.steps[draft.steps.length - 1] = CustomAutomationStep(
+          id: last.id,
+          surface: surface,
+          command: command,
+          label: label,
+          args: Map.unmodifiable(args),
+          changesFrame: false,
+          changesScene: false,
+        );
+        notifyListeners();
+        return;
+      }
+    }
+    draft.steps.add(step);
     notifyListeners();
   }
 
