@@ -16,12 +16,14 @@ class CustomAutomationManagerSheet extends StatelessWidget {
     CustomAutomationExecutionScope scope,
   ) onExecute;
   final VoidCallback onRecordingStarted;
+  final int? recordingStartFrame;
 
   const CustomAutomationManagerSheet({
     super.key,
     required this.surface,
     required this.onExecute,
     required this.onRecordingStarted,
+    this.recordingStartFrame,
   });
 
   Future<void> _startNew(BuildContext context) async {
@@ -39,7 +41,9 @@ class CustomAutomationManagerSheet extends StatelessWidget {
             border: const OutlineInputBorder(),
           ),
           onSubmitted: (value) {
-            if (value.trim().isNotEmpty) Navigator.pop(dialogContext, value.trim());
+            if (value.trim().isNotEmpty) {
+              Navigator.pop(dialogContext, value.trim());
+            }
           },
         ),
         actions: [
@@ -59,7 +63,11 @@ class CustomAutomationManagerSheet extends StatelessWidget {
     );
     controller.dispose();
     if (name == null || !context.mounted) return;
-    context.read<CustomAutomationService>().beginDraft(name: name, surface: surface);
+    context.read<CustomAutomationService>().beginDraft(
+      name: name,
+      surface: surface,
+      recordingStartFrame: recordingStartFrame,
+    );
     Navigator.pop(context);
     onRecordingStarted();
   }
@@ -82,19 +90,26 @@ class CustomAutomationManagerSheet extends StatelessWidget {
               Text(automation.name),
               if (automation.supportsFrameScopeChoice) ...[
                 const SizedBox(height: 12),
-                RadioListTile<CustomAutomationExecutionScope>(
-                  value: CustomAutomationExecutionScope.currentFrame,
+                RadioGroup<CustomAutomationExecutionScope>(
                   groupValue: scope,
-                  onChanged: (value) => setState(() => scope = value!),
-                  title: Text(l10n.customAutomationCurrentFrame),
-                  contentPadding: EdgeInsets.zero,
-                ),
-                RadioListTile<CustomAutomationExecutionScope>(
-                  value: CustomAutomationExecutionScope.allFrames,
-                  groupValue: scope,
-                  onChanged: (value) => setState(() => scope = value!),
-                  title: Text(l10n.customAutomationAllFrames),
-                  contentPadding: EdgeInsets.zero,
+                  onChanged: (value) {
+                    if (value != null) setState(() => scope = value);
+                  },
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      RadioListTile<CustomAutomationExecutionScope>(
+                        value: CustomAutomationExecutionScope.currentFrame,
+                        title: Text(l10n.customAutomationCurrentFrame),
+                        contentPadding: EdgeInsets.zero,
+                      ),
+                      RadioListTile<CustomAutomationExecutionScope>(
+                        value: CustomAutomationExecutionScope.allFrames,
+                        title: Text(l10n.customAutomationAllFrames),
+                        contentPadding: EdgeInsets.zero,
+                      ),
+                    ],
+                  ),
                 ),
               ],
             ],
@@ -102,11 +117,11 @@ class CustomAutomationManagerSheet extends StatelessWidget {
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(dialogContext, false),
-              child: Text(l10n.commonNo),
+              child: Text(l10n.customAutomationNo),
             ),
             FilledButton(
               onPressed: () => Navigator.pop(dialogContext, true),
-              child: Text(l10n.commonYes),
+              child: Text(l10n.customAutomationYes),
             ),
           ],
         ),
@@ -236,10 +251,8 @@ class CustomAutomationManagerSheet extends StatelessWidget {
             Expanded(
               child: service.items.isEmpty
                   ? Center(child: Text(l10n.customAutomationEmpty))
-                  : ReorderableListView.builder(
+                  : ListView.builder(
                       itemCount: service.items.length,
-                      onReorder: (_, __) {},
-                      buildDefaultDragHandles: false,
                       itemBuilder: (context, index) {
                         final item = service.items[index];
                         return ListTile(
@@ -281,6 +294,114 @@ class CustomAutomationManagerSheet extends StatelessWidget {
                         );
                       },
                     ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+/// 操作記録停止後の確認・編集画面。
+/// 手順番号、ドラッグ並べ替え、削除、記録へ戻る、保存を1画面にまとめる。
+class CustomAutomationDraftEditorSheet extends StatelessWidget {
+  final CustomAutomationSurface surface;
+  final VoidCallback onResumeRecording;
+  final VoidCallback onSaved;
+
+  const CustomAutomationDraftEditorSheet({
+    super.key,
+    required this.surface,
+    required this.onResumeRecording,
+    required this.onSaved,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    final service = context.watch<CustomAutomationService>();
+    final draft = service.draft;
+    if (draft == null) return const SizedBox.shrink();
+    return SafeArea(
+      child: SizedBox(
+        height: MediaQuery.sizeOf(context).height * .72,
+        child: Column(
+          children: [
+            ListTile(
+              title: Text(draft.name),
+              subtitle: Text(l10n.customAutomationStepCount(draft.steps.length)),
+            ),
+            const Divider(height: 1),
+            Expanded(
+              child: ReorderableListView.builder(
+                itemCount: draft.steps.length,
+                onReorderItem: service.reorderDraftStep,
+                buildDefaultDragHandles: false,
+                itemBuilder: (context, index) {
+                  final step = draft.steps[index];
+                  return ListTile(
+                    key: ValueKey(step.id),
+                    leading: CircleAvatar(
+                      radius: 14,
+                      child: Text('${index + 1}', style: const TextStyle(fontSize: 11)),
+                    ),
+                    title: Text(step.label),
+                    subtitle: Text(step.command, style: const TextStyle(fontSize: 10)),
+                    trailing: Wrap(
+                      spacing: 0,
+                      children: [
+                        ReorderableDragStartListener(
+                          index: index,
+                          child: const Padding(
+                            padding: EdgeInsets.all(12),
+                            child: Icon(Icons.drag_handle, size: 20),
+                          ),
+                        ),
+                        IconButton(
+                          icon: const Icon(Icons.delete_outline, size: 20),
+                          tooltip: l10n.commonDelete,
+                          onPressed: () => service.removeDraftStep(index),
+                        ),
+                      ],
+                    ),
+                  );
+                },
+              ),
+            ),
+            const Divider(height: 1),
+            Padding(
+              padding: const EdgeInsets.all(12),
+              child: Row(
+                children: [
+                  Expanded(
+                    child: OutlinedButton.icon(
+                      onPressed: () {
+                        service.resumeRecording(surface);
+                        Navigator.pop(context);
+                        onResumeRecording();
+                      },
+                      icon: const Icon(Icons.fiber_manual_record),
+                      label: Text(l10n.customAutomationReturnToRecording),
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: FilledButton.icon(
+                      onPressed: draft.steps.isEmpty
+                          ? null
+                          : () async {
+                              final saved = await service.saveDraft();
+                              if (saved != null && context.mounted) {
+                                Navigator.pop(context);
+                                onSaved();
+                              }
+                            },
+                      icon: const Icon(Icons.save_outlined),
+                      label: Text(l10n.commonSave),
+                    ),
+                  ),
+                ],
+              ),
             ),
           ],
         ),
