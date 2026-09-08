@@ -1,6 +1,6 @@
 name: TMP Auto Lineart Finish Audit v2
 
-# rerun marker: latest dev_branch verification
+# rerun marker: initial + reopened preview state waits
 on:
   push:
     branches: [dev_branch]
