@@ -17,6 +17,17 @@
 - 品質基準の追加: 操作手順・プリセット・一括処理の効率、SEO/Discoverability/ASO、製品へのAI機能追加禁止を継承。
 - 目的: A02保存安全性の検証済み本体反映と全体gateの失敗分類、Webの問い合わせ案内・App画面再現の不整合修正。
 
+### 2026-09-08 VHSフィルター継続作業
+
+- `lib/engine/vhs_noise_engine.dart` を追加。ノイズ、走査線、RGB色にじみ、水平トラッキング乱れを共通画素エンジンとして実装し、`seed + frameIndex` で決定論的にした。描画側は固定frame、演出側はタイムラインframeを渡す前提。
+- 回帰監査で、`colorBleed=0` でも他効果が有効だと1pxのRGBずれが残る不具合を発見し修正。0指定を厳密な無効化として扱う。
+- alphaは全画素で入力値を保持し、透明度を生成・削除・ぼかししない。
+- `test/engine/vhs_noise_engine_test.dart` を追加・拡張。同一seed/frameの完全一致、frame変更での変化、alpha保持、全0 no-op、colorBleed=0時の隠れた色ずれなしを固定。
+- `lib/models/vhs_noise_settings.dart` を追加。noise/scanline/colorBleed/trackingを0..100へ正規化し、seedを含めJSON round-trip可能な共通設定モデルにした。
+- `test/models/vhs_noise_settings_test.dart` でJSON round-trip、範囲外値clamp、欠損時defaultを固定。
+- `lib/engine/vhs_filter_runner.dart` を追加。描画・演出の双方が同じ設定正規化とエンジンを通り、`compute()`からも呼べるトップレベルadapterを用意。
+- **未完了**: VHSを描画フィルター一覧/UI/保存パラメータへ接続すること、`EffectFilterType` とタイムライン演出UI/保存/書き出しへ接続すること、l10n追加、全gate実行。既存enumや保存形式を安易に壊さず、Prism同様の安定ID方式または明示的migrationを使う。
+
 ## 確定した検証と変更
 
 - 保存の実ファイル回帰12件: 修正前 **1成功/11失敗**。候補を適用後、関連6ファイル **28/28成功**、対象3ファイルのanalyze **0 issues**。Flutter3.44.7・既存lockを使用。
@@ -31,10 +42,11 @@
 ## 未完了と次の1手
 
 1. **本体反映後の保存回帰/全gateを確認し、23件の失敗を最新状態で切り分ける。** 特にピンチ縮小が1.0から変わらない4件は実操作再現を優先。
-2. 保存の残り: 破損した通常ZIPからの復旧後の再保存、サイズ変更を伴うautosave復元、削除と保存キューの競合、非同期保存エラーの通知・再試行。
-3. Web: X未設定時の案内、問い合わせ成功/reset/添付の模擬送信回帰、自動線画mockのApp最新との一致（線画色含む）、最新CSS/SEOの検証と実画面。
-4. 破損workspace/カスタムサイズJSONが起動を止める経路、範囲外panel設定。描画/Undo/timeline/export/素材/音声、全UI/UX、運用/SEO/ASO等の監査マップを継続。
-5. Google/YouTube実アカウント、AWS実環境、Android/DeX実機、最終商品レビューは未検証。CI成功だけで完了にしない。
+2. VHSフィルター: 共通エンジン/設定/runnerは追加済み。描画フィルターUI・安定ID/保存接続 → 演出フィルターenum/UI/保存/書き出し → l10n → 全gateの順に接続する。
+3. 保存の残り: 破損した通常ZIPからの復旧後の再保存、サイズ変更を伴うautosave復元、削除と保存キューの競合、非同期保存エラーの通知・再試行。
+4. Web: X未設定時の案内、問い合わせ成功/reset/添付の模擬送信回帰、自動線画mockのApp最新との一致（線画色含む）、最新CSS/SEOの検証と実画面。
+5. 破損workspace/カスタムサイズJSONが起動を止める経路、範囲外panel設定。描画/Undo/timeline/export/素材/音声、全UI/UX、運用/SEO/ASO等の監査マップを継続。
+6. Google/YouTube実アカウント、AWS実環境、Android/DeX実機、最終商品レビューは未検証。CI成功だけで完了にしない。
 
 ## 環境・確定済み過去成果
 
