@@ -40,8 +40,11 @@ jobs:
         shell: bash
         run: |
           if [ -f docs/product-audit/pending/auto-lineart-repairs.patch ]; then
-            git apply --check docs/product-audit/pending/auto-lineart-repairs.patch
-            git apply docs/product-audit/pending/auto-lineart-repairs.patch
+            # The overlay drag fix has already landed in production. Keep the
+            # remaining candidate under test without applying that stale hunk
+            # over the newer implementation.
+            git apply --check --exclude=lib/screens/canvas/widgets/auto_lineart_control_overlay.dart docs/product-audit/pending/auto-lineart-repairs.patch
+            git apply --exclude=lib/screens/canvas/widgets/auto_lineart_control_overlay.dart docs/product-audit/pending/auto-lineart-repairs.patch
           fi
           mkdir -p artifacts/auto-lineart
       - name: Restore locked dependencies
@@ -108,8 +111,8 @@ jobs:
         shell: bash
         run: |
           if [ -f docs/product-audit/pending/auto-lineart-repairs.patch ]; then
-            git apply --check docs/product-audit/pending/auto-lineart-repairs.patch
-            git apply docs/product-audit/pending/auto-lineart-repairs.patch
+            git apply --check --exclude=lib/screens/canvas/widgets/auto_lineart_control_overlay.dart docs/product-audit/pending/auto-lineart-repairs.patch
+            git apply --exclude=lib/screens/canvas/widgets/auto_lineart_control_overlay.dart docs/product-audit/pending/auto-lineart-repairs.patch
           fi
       - uses: subosito/flutter-action@v2
         with:
