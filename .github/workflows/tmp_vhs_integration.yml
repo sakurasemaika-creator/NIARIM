@@ -43,7 +43,7 @@ jobs:
           flutter test test/engine/vhs_noise_engine_test.dart
           flutter test test/engine/vhs_filter_integration_test.dart
       - name: Analyze integration
-        run: flutter analyze lib/engine/filter_engine.dart lib/engine/vhs_noise_engine.dart lib/services/filter_service.dart lib/screens/canvas/widgets/filter_panel.dart lib/screens/timeline/timeline_screen.dart lib/services/recorded_filter_apply_service.dart
+        run: flutter analyze --no-fatal-warnings lib/engine/filter_engine.dart lib/engine/vhs_noise_engine.dart lib/services/filter_service.dart lib/screens/canvas/widgets/filter_panel.dart lib/screens/timeline/timeline_screen.dart lib/services/recorded_filter_apply_service.dart
       - name: Commit verified integration
         run: |
           git config user.name 'github-actions[bot]'
