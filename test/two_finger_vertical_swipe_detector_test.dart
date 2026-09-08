@@ -3,6 +3,8 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:niarim/screens/canvas/widgets/two_finger_vertical_swipe_detector.dart';
 
 void main() {
+  const surfaceKey = ValueKey('layer-gesture-surface');
+
   testWidgets('fires up and down only for a two-finger vertical swipe', (
     tester,
   ) async {
@@ -17,14 +19,17 @@ void main() {
             child: TwoFingerVerticalSwipeDetector(
               onSwipeUp: () => up++,
               onSwipeDown: () => down++,
-              child: const ColoredBox(color: Colors.white),
+              child: const ColoredBox(
+                key: surfaceKey,
+                color: Colors.white,
+              ),
             ),
           ),
         ),
       ),
     );
 
-    final center = tester.getCenter(find.byType(ColoredBox));
+    final center = tester.getCenter(find.byKey(surfaceKey));
     final first = await tester.createGesture(pointer: 1);
     final second = await tester.createGesture(pointer: 2);
     await first.down(center + const Offset(-30, 20));
@@ -63,14 +68,17 @@ void main() {
             child: TwoFingerVerticalSwipeDetector(
               onSwipeUp: () => fired++,
               onSwipeDown: () => fired++,
-              child: const ColoredBox(color: Colors.white),
+              child: const ColoredBox(
+                key: surfaceKey,
+                color: Colors.white,
+              ),
             ),
           ),
         ),
       ),
     );
 
-    final center = tester.getCenter(find.byType(ColoredBox));
+    final center = tester.getCenter(find.byKey(surfaceKey));
     final single = await tester.createGesture(pointer: 10);
     await single.down(center);
     await single.moveBy(const Offset(0, -80));
