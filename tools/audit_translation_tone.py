@@ -16,10 +16,12 @@ SOURCE = ARB_DIR / 'app_ja.arb'
 
 # Deliberately narrow list: only expressions that are clearly too casual/slangy
 # for NIARIM's calm Japanese source tone. Ordinary friendly UI language is allowed.
+# Do not flag words such as French "grave": it is also standard legal vocabulary
+# (for example "négligence grave" = gross negligence).
 BANNED = {
     'en': [r'\bgonna\b', r'\bwanna\b', r'\bgotta\b', r'\bkinda\b', r'\bsorta\b', r'\blol\b', r'\bomg\b', r'\bnope\b', r'\byep\b', r'\bsuper cool\b'],
     'es': [r'\bguay\b', r'\bcurro\b', r'\bchulo\b', r'\bflipante\b'],
-    'fr': [r'\bouais\b', r'\bbosser\b', r'\btrop cool\b', r'\bgrave\b'],
+    'fr': [r'\bouais\b', r'\bbosser\b', r'\btrop cool\b'],
     'ko': [r'ㅋㅋ', r'ㅎㅎ', r'대박', r'짱', r'꿀팁'],
     'zh': [r'牛逼', r'超赞', r'666', r'绝绝子', r'YYDS'],
     'zh_Hant': [r'超讚', r'666', r'絕絕子', r'YYDS'],
