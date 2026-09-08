@@ -198,6 +198,7 @@ class TileManager {
   /// ここで初めて複製し、以後はこのレイヤー専用のバッファとして書き込む。
   Uint8List getOrCreateTile(String layerId, int tx, int ty) {
     final key = _tileKey(tx, ty);
+    _dirtyTiles.add('$layerId:$key');
     _recordBeforeIfNeeded(layerId, key);
     // 呼び出し規約上、getOrCreateTileは必ず書き込み目的で呼ばれる
     // （返したバッファへ直後にblendPixel/erasePixelで書き込まれる）ため、
@@ -233,6 +234,7 @@ class TileManager {
   /// [getTile]で得たバッファを直接書き換えたあとに呼び、そのタイルの
   /// キャッシュ（デコード済み画像とレイヤーの合成結果）を捨てる。
   void invalidateTile(String layerId, int tx, int ty) {
+    markDirty(layerId, tx, ty);
     _invalidateComposite(layerId);
     _invalidateTileImage(layerId, _tileKey(tx, ty));
   }
@@ -388,6 +390,7 @@ class TileManager {
     for (final e in source.entries) {
       _sharedTiles.add(e.value);
       target[e.key] = e.value;
+      _dirtyTiles.add('$targetLayerId:${e.key}');
     }
     _tiles[targetLayerId] = target;
     _invalidateCache(targetLayerId);
@@ -587,11 +590,17 @@ class TileManager {
   }
 
   /// 合成キーを付け替える（フレーム削除に伴う後続フレームの再インデックス等で使用）。
-  /// 移動先に既存データがあれば上書きする。dirty集合も合わせて付け替える。
+  /// 移動先に既存データがあれば上書きし、移動した全タイルを次の保存対象にする。
   void renameKey(String oldKey, String newKey) {
     if (oldKey == newKey) return;
     final tiles = _tiles.remove(oldKey);
-    if (tiles != null) _tiles[newKey] = tiles;
+    if (tiles != null) {
+      _tiles[newKey] = tiles;
+      // A saved destination may contain different pixels under these same keys.
+      for (final tileKey in tiles.keys) {
+        _dirtyTiles.add('$newKey:$tileKey');
+      }
+    }
     _invalidateCache(oldKey);
     _invalidateCache(newKey);
     final prefix = '$oldKey:';
@@ -710,11 +719,18 @@ class TileManager {
   /// シリアライズデータから復元（読み込み用）
   void importAll(Map<String, Map<String, Uint8List>> data) {
     _tiles.clear();
+    _dirtyTiles.clear();
+    _sharedTiles.clear();
     for (final layerEntry in data.entries) {
       _tiles[layerEntry.key] = {
         for (final tileEntry in layerEntry.value.entries)
           tileEntry.key: Uint8List.fromList(tileEntry.value),
       };
+      // Restoring an autosave can replace tiles at paths already present in the
+      // normal archive. Every restored tile must participate in the next save.
+      for (final tileKey in layerEntry.value.keys) {
+        _dirtyTiles.add('${layerEntry.key}:$tileKey');
+      }
     }
     _invalidateCacheAll();
   }

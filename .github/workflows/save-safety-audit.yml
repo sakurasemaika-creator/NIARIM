@@ -1,4 +1,4 @@
-name: Save safety candidate audit
+name: Save safety regression audit
 
 on:
   workflow_dispatch:
@@ -6,97 +6,69 @@ on:
     branches: [dev_branch]
     paths:
       - '.github/workflows/save-safety-audit.yml'
-      - 'docs/product-audit/pending/save-safety.patch'
-      - 'docs/product-audit/pending/project_save_safety_test.dart'
+      - 'lib/engine/niapro_serializer.dart'
+      - 'lib/engine/tile_manager.dart'
+      - 'lib/services/project_service.dart'
+      - 'lib/services/autosave_service.dart'
+      - 'test/project_save_safety_test.dart'
+      - 'test/tile_manager_test.dart'
+      - 'test/save_slot_*test.dart'
+      - 'test/save_tree_*test.dart'
+      - 'pubspec.yaml'
+      - 'pubspec.lock'
 
 permissions:
   contents: read
 
 jobs:
-  verify-candidate:
+  save-regressions:
     runs-on: ubuntu-latest
     timeout-minutes: 20
     steps:
       - uses: actions/checkout@v6
       - uses: subosito/flutter-action@v2
         with:
-          flutter-version: '3.44.7'
+          flutter-version: '3.47.2'
           channel: stable
           cache: true
       - name: Restore locked dependencies
         run: flutter pub get --enforce-lockfile
-      - name: Reproduce failures before the candidate
-        shell: bash
-        run: |
-          mkdir -p artifacts/save-safety
-          cp docs/product-audit/pending/project_save_safety_test.dart test/project_save_safety_test.dart
-          set +e
-          flutter test --no-pub test/project_save_safety_test.dart --machine > artifacts/save-safety/red.jsonl 2>&1
-          status=$?
-          set -e
-          test "$status" -ne 0
-          python3 - <<'PY'
-          import json
-          from pathlib import Path
-          events = []
-          for line in Path('artifacts/save-safety/red.jsonl').read_text().splitlines():
-              try:
-                  event = json.loads(line)
-                  if isinstance(event, dict):
-                      events.append(event)
-              except json.JSONDecodeError:
-                  pass
-          names = {e['test']['id']: e['test']['name'] for e in events if e.get('type') == 'testStart' and not e['test']['name'].startswith('loading ')}
-          finished = [e for e in events if e.get('type') == 'testDone' and e['testID'] in names]
-          failures = [names[e['testID']] for e in finished if e['result'] != 'success']
-          assert len(finished) == 12, f'Tests did not execute: {len(finished)}'
-          assert len(failures) >= 10, f'Expected persistence regressions: {failures}'
-          print(json.dumps({'executed': len(finished), 'failures': failures}, ensure_ascii=False, indent=2))
-          PY
-      - name: Apply and format the isolated candidate
-        run: |
-          git apply --check docs/product-audit/pending/save-safety.patch
-          git apply docs/product-audit/pending/save-safety.patch
-          dart format lib/engine/niapro_serializer.dart lib/engine/tile_manager.dart test/project_save_safety_test.dart
-      - name: Analyze candidate files
+      - name: Check save file formatting
+        run: dart format --output=none --set-exit-if-changed lib/engine/niapro_serializer.dart lib/engine/tile_manager.dart test/project_save_safety_test.dart
+      - name: Analyze save files
         run: flutter analyze --no-pub lib/engine/niapro_serializer.dart lib/engine/tile_manager.dart test/project_save_safety_test.dart
       - name: Verify persistence and existing save regressions
         shell: bash
         run: |
+          mkdir -p artifacts/save-safety
           set -o pipefail
           flutter test --no-pub --reporter expanded test/project_save_safety_test.dart test/tile_manager_test.dart test/save_slot_overwrite_test.dart test/save_slot_confirmation_dialog_test.dart test/save_slot_action_buttons_test.dart test/save_tree_lazy_list_test.dart 2>&1 | tee artifacts/save-safety/green.log
-      - name: Export only the verified candidate
-        run: |
-          git add --intent-to-add test/project_save_safety_test.dart
-          git diff --binary -- lib/engine/niapro_serializer.dart lib/engine/tile_manager.dart test/project_save_safety_test.dart > artifacts/save-safety/verified.patch
       - uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: save-safety-candidate-${{ github.sha }}
+          name: save-safety-regressions-${{ github.sha }}
           path: artifacts/save-safety/
           if-no-files-found: error
 
   full-gates:
-    needs: verify-candidate
     runs-on: ubuntu-latest
     timeout-minutes: 45
     steps:
       - uses: actions/checkout@v6
-      - uses: actions/download-artifact@v4
-        with:
-          name: save-safety-candidate-${{ github.sha }}
-          path: artifacts/save-safety/
       - uses: subosito/flutter-action@v2
         with:
-          flutter-version: '3.44.7'
+          flutter-version: '3.47.2'
           channel: stable
           cache: true
-      - name: Prepare verified candidate
+      - name: Restore locked dependencies
         run: |
-          git apply artifacts/save-safety/verified.patch
+          mkdir -p artifacts/save-safety
           flutter pub get --enforce-lockfile
       - name: Global format gate
-        run: dart format --output=none --set-exit-if-changed lib test tool
+        shell: bash
+        run: |
+          set -o pipefail
+          dart format --output=none --set-exit-if-changed lib test tool 2>&1 | tee artifacts/save-safety/format.log
       - name: Full analyzer gate
         if: always()
         shell: bash
@@ -114,4 +86,25 @@ jobs:
         with:
           name: save-safety-full-gates-${{ github.sha }}
           path: artifacts/save-safety/
+          if-no-files-found: error
+
+  checkpoint-format:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Format checkpoint documents with the repository formatter
+        run: |
+          mkdir -p artifacts/save-safety-format
+          npx --yes prettier@3.8.1 --write .github/workflows/save-safety-audit.yml docs/work-continuation.md docs/product-audit/README.md 'docs/AI設計書/12_実装チェックリスト.md'
+          git diff --binary > artifacts/save-safety-format/format.patch
+          git diff --exit-code
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: save-safety-format-${{ github.sha }}
+          path: artifacts/save-safety-format/
           if-no-files-found: error

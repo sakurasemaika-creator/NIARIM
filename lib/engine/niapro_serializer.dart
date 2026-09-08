@@ -95,20 +95,41 @@ class NiaproSerializer {
 
   /// プロジェクトを保存する。既存の.niaproがある場合は差分保存（変更されたタイルのみ
   /// 再書き込みし、未変更タイルは前回保存分をそのまま引き継ぐ）差分保存を行う。
+  static final Map<String, Future<void>> _pendingSaves = {};
+
   static Future<File> save({
     required Project project,
     required List<Scene> scenes,
     required TileManager tileManager,
-  }) async {
-    final dir = await _projectDir(project.id);
-    final filePath = '${dir.path}/${project.id}.niapro';
-    final exists = await File(filePath).exists();
-    final result = exists
-        ? await _writeArchiveDiff(filePath, project, scenes, tileManager)
-        : await _writeArchive(filePath, project, scenes, tileManager);
-    // 保存完了時点を基準に、次回保存までの変更差分を追跡し直す
-    tileManager.consumeDirtyTiles();
-    return result;
+  }) {
+    // Queue before the first asynchronous directory lookup so invocation order
+    // is preserved even when explicit saves overlap background persistence.
+    final previous = _pendingSaves[project.id] ?? Future<void>.value();
+    final result = previous.then((_) async {
+      final dir = await _projectDir(project.id);
+      final filePath = '${dir.path}/${project.id}.niapro';
+      return File(filePath).existsSync()
+          ? _writeArchiveDiff(filePath, project, scenes, tileManager)
+          : _writeArchive(
+              filePath,
+              project,
+              scenes,
+              tileManager,
+              clearDirty: true,
+            );
+    });
+    // A failed save is still reported to its caller, but must not poison the
+    // next save in the queue.
+    final settled = result.then<void>(
+      (_) {},
+      onError: (Object error, StackTrace stack) {},
+    );
+    _pendingSaves[project.id] = settled;
+    return result.whenComplete(() {
+      if (identical(_pendingSaves[project.id], settled)) {
+        _pendingSaves.remove(project.id);
+      }
+    });
   }
 
   /// .niashare として保存する（内容は.niaproと同一形式、拡張子のみ異なる）。
@@ -318,89 +339,86 @@ class NiaproSerializer {
     Project project,
     List<Scene> scenes,
     TileManager tileManager, {
+    bool clearDirty = false,
     Map<String, Uint8List>? materialFiles,
     String? materialsManifest,
     Map<String, Uint8List>? fontFiles,
     String? fontsManifest,
   }) async {
-    final encoder = ZipFileEncoder();
-    encoder.create(filePath);
-
-    encoder.addArchiveFile(
-      ArchiveFile(
-        _manifestFile,
-        0,
-        utf8.encode(jsonEncode(_serializeManifest(project))),
-      ),
-    );
-
-    for (final scene in scenes) {
+    return _writeArchiveAtomically(filePath, (encoder) {
       encoder.addArchiveFile(
         ArchiveFile(
-          'Scene/${scene.id}/$_framesFile',
+          _manifestFile,
           0,
-          utf8.encode(jsonEncode(_serializeScene(scene))),
+          utf8.encode(jsonEncode(_serializeManifest(project))),
         ),
       );
-    }
 
-    final allTiles = tileManager.exportAll();
-    for (final layerEntry in allTiles.entries) {
-      for (final tileEntry in layerEntry.value.entries) {
+      for (final scene in scenes) {
         encoder.addArchiveFile(
           ArchiveFile(
-            _tilePath(layerEntry.key, tileEntry.key),
+            'Scene/${scene.id}/$_framesFile',
             0,
-            tileEntry.value,
+            utf8.encode(jsonEncode(_serializeScene(scene))),
           ),
         );
       }
-    }
 
-    // 同梱素材（.niashare作成時に選択した画像/動画/音声）
-    if (materialFiles != null) {
-      for (final entry in materialFiles.entries) {
+      final allTiles = tileManager.exportAll();
+      for (final layerEntry in allTiles.entries) {
+        for (final tileEntry in layerEntry.value.entries) {
+          encoder.addArchiveFile(
+            ArchiveFile(
+              _tilePath(layerEntry.key, tileEntry.key),
+              0,
+              tileEntry.value,
+            ),
+          );
+        }
+      }
+
+      // 同梱素材（.niashare作成時に選択した画像/動画/音声）
+      if (materialFiles != null) {
+        for (final entry in materialFiles.entries) {
+          encoder.addArchiveFile(
+            ArchiveFile(
+              '$_materialsArchiveDir/${entry.key}',
+              entry.value.length,
+              entry.value,
+            ),
+          );
+        }
+      }
+      if (materialsManifest != null) {
+        final bytes = utf8.encode(materialsManifest);
         encoder.addArchiveFile(
           ArchiveFile(
-            '$_materialsArchiveDir/${entry.key}',
-            entry.value.length,
-            entry.value,
+            '$_materialsArchiveDir/materials.json',
+            bytes.length,
+            bytes,
           ),
         );
       }
-    }
-    if (materialsManifest != null) {
-      final bytes = utf8.encode(materialsManifest);
-      encoder.addArchiveFile(
-        ArchiveFile(
-          '$_materialsArchiveDir/materials.json',
-          bytes.length,
-          bytes,
-        ),
-      );
-    }
 
-    // 同梱フォント（.niashare作成時に選択した「フォントを含める」）
-    if (fontFiles != null) {
-      for (final entry in fontFiles.entries) {
+      // 同梱フォント（.niashare作成時に選択した「フォントを含める」）
+      if (fontFiles != null) {
+        for (final entry in fontFiles.entries) {
+          encoder.addArchiveFile(
+            ArchiveFile(
+              '$_fontsArchiveDir/${entry.key}',
+              entry.value.length,
+              entry.value,
+            ),
+          );
+        }
+      }
+      if (fontsManifest != null) {
+        final bytes = utf8.encode(fontsManifest);
         encoder.addArchiveFile(
-          ArchiveFile(
-            '$_fontsArchiveDir/${entry.key}',
-            entry.value.length,
-            entry.value,
-          ),
+          ArchiveFile('$_fontsArchiveDir/fonts.json', bytes.length, bytes),
         );
       }
-    }
-    if (fontsManifest != null) {
-      final bytes = utf8.encode(fontsManifest);
-      encoder.addArchiveFile(
-        ArchiveFile('$_fontsArchiveDir/fonts.json', bytes.length, bytes),
-      );
-    }
-
-    encoder.close();
-    return File(filePath);
+    }, savedTiles: clearDirty ? tileManager : null);
   }
 
   /// TileManagerの合成キー（[frameLayerKey]形式）とタイル座標キーから、
@@ -427,56 +445,79 @@ class NiaproSerializer {
     final oldArchive = ZipDecoder().decodeBytes(oldBytes);
     final oldFilesByName = {for (final f in oldArchive.files) f.name: f};
 
-    final tmpPath = '$filePath.tmp';
-    final encoder = ZipFileEncoder();
-    encoder.create(tmpPath);
-
-    encoder.addArchiveFile(
-      ArchiveFile(
-        _manifestFile,
-        0,
-        utf8.encode(jsonEncode(_serializeManifest(project))),
-      ),
-    );
-
-    for (final scene in scenes) {
+    return _writeArchiveAtomically(filePath, (encoder) {
       encoder.addArchiveFile(
         ArchiveFile(
-          'Scene/${scene.id}/$_framesFile',
+          _manifestFile,
           0,
-          utf8.encode(jsonEncode(_serializeScene(scene))),
+          utf8.encode(jsonEncode(_serializeManifest(project))),
         ),
       );
-    }
 
-    final allTiles = tileManager.exportAll();
-    for (final layerEntry in allTiles.entries) {
-      final layerId = layerEntry.key;
-      // 変更されたタイルキー（非破壊：グローバルなdirty集合は消費しない）
-      final dirtyTiles = tileManager.getDirtyTilesForLayer(layerId);
-      for (final tileEntry in layerEntry.value.entries) {
-        final tileKey = tileEntry.key;
-        final entryName = _tilePath(layerId, tileKey);
-        final oldEntry = oldFilesByName[entryName];
-        if (dirtyTiles.containsKey(tileKey) || oldEntry == null) {
-          // 変更あり、または旧ファイルに存在しない（新規タイル・旧形式からの移行）→再書き込み
-          encoder.addArchiveFile(ArchiveFile(entryName, 0, tileEntry.value));
-        } else {
-          // 未変更タイル：前回保存分をそのまま引き継ぐ
-          encoder.addArchiveFile(
-            ArchiveFile(entryName, 0, oldEntry.content as List<int>),
-          );
+      for (final scene in scenes) {
+        encoder.addArchiveFile(
+          ArchiveFile(
+            'Scene/${scene.id}/$_framesFile',
+            0,
+            utf8.encode(jsonEncode(_serializeScene(scene))),
+          ),
+        );
+      }
+
+      final allTiles = tileManager.exportAll();
+      for (final layerEntry in allTiles.entries) {
+        final layerId = layerEntry.key;
+        // 変更されたタイルキー（非破壊：グローバルなdirty集合は消費しない）
+        final dirtyTiles = tileManager.getDirtyTilesForLayer(layerId);
+        for (final tileEntry in layerEntry.value.entries) {
+          final tileKey = tileEntry.key;
+          final entryName = _tilePath(layerId, tileKey);
+          final oldEntry = oldFilesByName[entryName];
+          if (dirtyTiles.containsKey(tileKey) || oldEntry == null) {
+            // 変更あり、または旧ファイルに存在しない（新規タイル・旧形式からの移行）→再書き込み
+            encoder.addArchiveFile(ArchiveFile(entryName, 0, tileEntry.value));
+          } else {
+            // 未変更タイル：前回保存分をそのまま引き継ぐ
+            encoder.addArchiveFile(
+              ArchiveFile(entryName, 0, oldEntry.content as List<int>),
+            );
+          }
         }
       }
+    }, savedTiles: tileManager);
+  }
+
+  /// Finish a ZIP beside its destination before replacing the last good save.
+  /// Synchronous close/rename/dirty acknowledgement form one uninterrupted
+  /// step: newer drawing changes cannot be acknowledged without being saved.
+  static File _writeArchiveAtomically(
+    String filePath,
+    void Function(ZipFileEncoder encoder) write, {
+    TileManager? savedTiles,
+  }) {
+    final temporary = File(filePath).parent.createTempSync('.niarim-save-');
+    try {
+      final staging = File('${temporary.path}/archive.tmp');
+      final encoder = ZipFileEncoder();
+      encoder.create(staging.path);
+      try {
+        write(encoder);
+      } finally {
+        encoder.closeSync();
+      }
+      // Same-filesystem replacement; never delete the destination beforehand.
+      final result = staging.renameSync(filePath);
+      savedTiles?.consumeDirtyTiles();
+      return result;
+    } finally {
+      try {
+        temporary.deleteSync(recursive: true);
+      } on FileSystemException {
+        debugPrint(
+          '[NiaproSerializer] Could not remove temporary save directory',
+        );
+      }
     }
-
-    encoder.close();
-
-    final tmpFile = File(tmpPath);
-    final targetFile = File(filePath);
-    if (await targetFile.exists()) await targetFile.delete();
-    await tmpFile.rename(filePath);
-    return targetFile;
   }
 
   // ─── 読み込み ─────────────────────────────────────────────────────────

@@ -1,77 +1,47 @@
 # ChatGPT Work 継続チェックポイント
 
-状態: `in-progress`（保存安全性とApp/Web回帰の監査を継続中）
+状態: `in-progress`。App/Webの全面監査は未完了。
 
-## 運用更新（2026-09-08 JST）
+## 再開運用
 
-- Scheduled Taskから **Work + GPT-6 Astra最大effortへ確実に自動復帰する挙動は未確認**。実際に「今すぐ実行」から通常Chatへ遷移したため、従来の自動再開予約を監査継続の前提にしない。
-- 当面は、利用可能になった時点でユーザーがWorkを手動で開き、GPT-6 Astraの現在利用可能な最大effortで再開する。
-- 再開時は会話履歴ではなく、最新 `dev_branch`、両 `AGENTS.md`、品質基準、本ファイル、`docs/product-audit/README.md` のcheckpointから復元する。
-- 旧予約IDや固定5時間スケジュールは履歴情報としても継続判断に使用しない。自動Scheduled Workが将来実証できた場合のみ、ユーザー明示指示で再導入する。
-- 監査品質、サブエージェント制限、Actions/CI活用、checkpoint/pushのルールは変更しない。
+- ユーザーがWorkを開き、GPT-6 Astraの現在利用可能な最大effortで再開する。Scheduled TaskからWorkへ確実に戻る挙動は未確認で、監査継続の前提にしない。
+- 最新の両 `dev_branch` → 両 `AGENTS.md` → 仕様・品質基準 → 本ファイルと `docs/product-audit/README.md` から復元する。Git・checkpointの実行ルールはAGENTSを正とする。
+- アシスタントからメインモデル/effortを変更する操作は公開されていない。実際に変更できたと報告しない。
 
 ## 最新セッション
 
-- セッション再開時刻 (JST): 2026-09-08 11:57:01（同日06:51の環境復元から継続）
-- 追加再開確認 (JST): 2026-09-08 13:12:00。最新AGENTS/品質基準/継続資料に更新なし。Appは `3aecad6` のまま。Webの追加6commitを継承。
-- 開始時HEAD: `3aecad65b55cc96e9c6a164ad59fc659bbce0427`
-- 目的: 最新AGENTS・品質基準・checkpointを継承し、A02保存安全性とWebの未完了回帰を修正・検証する。
-- Git: 両repo cleanから最新dev_branchへfast-forward。他の作業領域の未commit差分は触らない。
-- 実行済み: Flutter3.44.7/Dart3.12.2起動、既存lockを保ったoffline pub get成功。旧App d823808でanalyzeは既存14件（warning2/info12）。最新incoming後の再検証を行う。
-- 保存RED: Flutter3.44.7・既存lockで実ファイルの回帰12件を実行し、**1成功/11失敗**。ZIP破損、既存保存への並行書込、writable/invalidate/import/copy/renameのdirty欠落、保存確定時に新しい描画のdirtyを消す問題を再現。
-- 修正候補: 同一FSの完成ZIP置換・project単位の直列化・同期dirty確定・変更経路のdirty追跡。`pending/save-safety.patch` と `pending/project_save_safety_test.dart` に保全。本体へのcommitは候補CI検証後。
-- checkpoint直前にAppの追加4commitを確認し `03bed2c` を継承。自動線画の補正段階修正と一時script/workflow削除であり、保存候補の対象2ファイル・品質基準・継続資料にincoming変更なし。
-- 環境: 中断中に旧作業領域のFlutter SDK/pub cacheが消失。再現ログは保持。`Save safety candidate audit` が固定Flutter3.44.7でRED/GREEN→関連保存test→全format/analyze/testを実行し、成功した候補差分をartifactへ保存する。CI結果は未確認。
-- CI構文: parse不能だった一時workflow v8/v11を `pending/retired-workflows/*.yml.txt` へ原文のまま退避。v8のpreview/最寄り点検査はv9/v10経由で実装済み。v11の補正率変更案は未実行のまま保全し、完了とは扱わない。
-- 未完了: A02候補GREEN/全gate、Webの4,032条件CI、全体UI/UX・workspace/settings等の未精査領域。
-- 次の1手: `Save safety candidate audit` の結果とverified.patchを取得し、成功した本体差分だけをcommit。失敗時はログから修正して再検証する。
+- 再開時刻 (JST): **2026-09-08 18:12:46**。同日の保存候補検証・Web表示監査から継続。
+- 開始時コードHEAD: App `6cb290b` / Web `b916f19`。incomingを確認しApp **`df119850`** / Web **`439ebf9`** へfast-forwardした。
+- 中断中の追加: Appの自動線画仕上げ・カスタム自動操作・レイヤークリップボード・ピクセルグリッド等、WebのSEO/言語URL・中間幅対応。未commit変更を保持して意味的に統合。
+- 反映直前の追加更新: App **`89153886`** まで統合。ProjectServiceのレイヤー挿入・TextObject新ID・pixel gridとlock更新を保持。追加機能CIのログで使用SDK **Flutter3.47.2** を確認し、保存回帰CIも同版に固定。旧3.44.7の結果とは区別し、最新lockをenforceして再検証する。
+- 品質基準の追加: 操作手順・プリセット・一括処理の効率、SEO/Discoverability/ASO、製品へのAI機能追加禁止を継承。
+- 目的: A02保存安全性の検証済み本体反映と全体gateの失敗分類、Webの問い合わせ案内・App画面再現の不整合修正。
 
-## 前回セッション
+## 確定した検証と変更
 
-- セッション開始時刻 (JST): 2026-09-08 06:23:52
-- セッション終了時刻 (JST): 2026-09-08 06:32:07
-- 開始時HEAD: `022128d0346900495f18de445c05057a4a1e1071`
-- 終了時コードHEAD: `022128d`。この記録のcommitは `git log -1 -- docs/work-continuation.md` で特定する。
-- 今回の目的: App/Webを1製品として、正式監査checkpointの未完了地点から修正・実行検証・実画面監査を継続する
+- 保存の実ファイル回帰12件: 修正前 **1成功/11失敗**。候補を適用後、関連6ファイル **28/28成功**、対象3ファイルのanalyze **0 issues**。Flutter3.44.7・既存lockを使用。
+- 証拠: [候補CI 34187201572](https://github.com/sakurasemaika-creator/NIARIM/actions/runs/34187201572) のverify-candidate成功。成功した `verified.patch` と本体差分が一致することを確認。
+- `niapro_serializer.dart`: 完成したZIPの同一FS置換、project ID単位の保存順序保証、同期close/rename/dirty確定。失敗時は旧ZIPを保ち、次の保存要求を妨げない。
+- `tile_manager.dart`: writable取得・invalidate・copy・rename・importで変更タイルを追跡。復元した画素を古い保存内容で置き換えない。
+- `test/project_save_safety_test.dart`: 実ファイル/画素の往復、失敗・再試行、8並行保存、復元/コピー/再インデックス、保存直後の編集を検証する12件。
+- 検証済み3ファイルを本体へ反映。適用済みpending草案は削除し、候補をREDにするworkflowを通常の保存回帰workflowへ変更。最新統合後のCIはこれから結果を確認する。
+- 全gate (候補CI): **802成功/5skip/23失敗**、analyze **14 issues**、format **50ファイル**。対象3ファイル以外の問題を含む。失敗を隠すfallbackや除外は追加しない。分類はaudit README。
+- Web前回 `56a6610` の [Visual interaction audit](https://github.com/sakurasemaika-creator/NIARIM-web/actions/runs/34186579146) は全ジョブ成功。24幅×PC/SP×7言語×12ページ **4,032条件**の静止表示検査を通過。後続incomingと新規修正の合格や全体UX完了を意味しない。
 
-### 完了した作業
+## 未完了と次の1手
 
-- 両AGENTSを最初に再読。既読の品質基準・仕様・引き継ぎ資料・監査checkpointから復元。前回からリモート実装差分なし。
-- App A04/A05 checkpoint `022128d` はリモート反映済み。メタデータPATCHを公開更新から分離し、privacy/統計の条件付き更新と最大3試行、ts-node固定を継承する。
-- 前回未コミットの保存テスト/Web操作領域改善は環境メンテナンスで消失。Git上のコードと区別し、復元して検証する。
+1. **本体反映後の保存回帰/全gateを確認し、23件の失敗を最新状態で切り分ける。** 特にピンチ縮小が1.0から変わらない4件は実操作再現を優先。
+2. 保存の残り: 破損した通常ZIPからの復旧後の再保存、サイズ変更を伴うautosave復元、削除と保存キューの競合、非同期保存エラーの通知・再試行。
+3. Web: X未設定時の案内、問い合わせ成功/reset/添付の模擬送信回帰、自動線画mockのApp最新との一致（線画色含む）、最新CSS/SEOの検証と実画面。
+4. 破損workspace/カスタムサイズJSONが起動を止める経路、範囲外panel設定。描画/Undo/timeline/export/素材/音声、全UI/UX、運用/SEO/ASO等の監査マップを継続。
+5. Google/YouTube実アカウント、AWS実環境、Android/DeX実機、最終商品レビューは未検証。CI成功だけで完了にしない。
 
-### 変更した主要ファイル
+## 環境・確定済み過去成果
 
-- 現時点では継続記録のみ。以下は実装・検証後に更新する。
-
-### 実行した検証
-
-- 前回 App `022128d` と同じtreeに対して TypeScript build / 110tests / CDK synth 成功。追加6testsは旧実装5失敗/1成功で不具合を再現した。
-- 前回 Web `d8fc6cf` のVisual interaction auditは失敗。format/final matrix/全ページcaptureは成功、24幅×12ページの操作領域検査で失敗。ログにbrand32px・問い合わせリンク33px等。全体合格とは扱わない。
-- 本セッションのFlutterテスト・再実画面確認は未実施。
-
-### 未解決 / 失敗中テスト
-
-- 保存: 既存ZIPの先行削除/直接上書き、同名tmpの並行使用、非同期close未待機、dirty確定のawait。失敗時の既存保存保全を実行検証する。
-- 復元: TileManager.importAll/copyLayer/getOrCreateTile/invalidateTileのdirty追跡欠落。autosave復元後の差分保存で古い画素へ戻る経路を検証する。
-- 設定: 破損workspace/カスタムサイズJSONが起動処理を止める。範囲外panel設定等も継続。
-- Web: ナビ操作領域、問い合わせ成功/reset/添付/7言語回帰、未設定Xへの案内、監査のfallbackによる見逃しを継続。
-- 外部サービス実運用・Android/DeX実機は未検証。全体UI/UXレビューと再監査も未完了。
-
-### 次に行う具体的な1手
-
-既存ZIPを壊さない保存と復元画素の永続化を、実ファイルの往復テストで再現・修正する。Flutter起動環境を復元し、検証済み単位でcheckpoint化する。
-
-## 前回の確定checkpoint
-
-- 2026-09-08 JST: App `022128d` / Web `d8fc6cf`。App A01/A03既存成果 `5076259`、Web W01〜W06成果 `4815f96` を継承。詳細は `docs/product-audit/README.md`。
-
-### 未検証の実装草案
-
-`docs/product-audit/pending/save-safety.patch` に保存/dirty追跡の作業差分を保全した。**未検証で、本体コードには未反映**。次回は対象2ファイルの最新差分を確認し、未適用なら作業ツリーへ適用、実ファイルの往復/失敗/並行保存テストを追加してRED/GREENと全関連testを実施する。検証後に本体へcommitし、この草案を削除する。
-
-- フルZIP/差分ZIP: 同一ディレクトリの一時領域で完成→closeSync→renameSync→dirty確定。元ファイルを先に消さない。
-- save呼び出し: project ID単位に、最初のawaitより前からFIFOに直列化。失敗はcallerに伝えつつ後続保存は継続。
-- TileManager: writable取得/明示invalidate/copy/importAllでdirtyを追跡。autosave復元時に既存archiveの古いタイルを流用しない。
-- 次に追加する実行test: NaN manifest失敗でも前の.niapro/.niashareを維持、並行8保存の最終版、importAll後の青画素保存、既存tile変更、既存layer上書きcopyの画素往復。
-- Flutter3.44.7/Dart3.12.2を既存lockに合わせて準備中。前環境ではCLI bootstrap後に255終了しテスト未到達。archive3.6.1のcloseはFutureであり、closeSyncが別に存在することは依存ソースから確認済み。
+- Work checkout: `/workspace/scratch/a051a4f64f76/NIARIM` と同階層 `NIARIM-web`。
+- ローカルFlutter SDK/pub cacheは中断中に消失。固定Flutter3.47.2のActionsで最新lockを検証する。lockやSDK内部を検証回避のために変更しない。
+- ローカルのPrettier3.8.1取得はnetwork approval cancellationで実行不可。CIで指定版の整形差分をartifactへ出し、取得して反映する。手元の別バージョンで代用したことにはしない。
+- CLI pushは認証不可。接続済みGitHubのGit tree/commit/ref APIを使用し、親HEADと生成treeを照合、`force:false` でdev_branchだけ更新する。更新後fetchしてremoteと一致確認。
+- App A01/A03 `5076259`、A04/A05 `022128d`: backend build、110/110tests、CDK synth成功。実デプロイなし。
+- Web W01〜W06 `4815f96`、W07 `56a6610`: Workerの容量制限等、FAQ検査の誤検知・失敗fallback・表示マトリクスを改善。詳しい根拠は各repo audit README。
+- 構文破損した旧一時workflow v8/v11は `pending/retired-workflows/*.yml.txt` に原文を保全。v11の未実行案を実装済みと扱わない。

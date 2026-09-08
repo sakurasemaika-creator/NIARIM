@@ -1,71 +1,78 @@
-# NIARIM App＋Web 製品監査・再開記録
+# NIARIM App＋Web 製品監査checkpoint
 
-状態：**進行中。全体監査は未完了**。2026-09-07 Work checkpoint。
+状態: **in-progress。全面監査は未完了**。最新セッションは2026-09-08 18:12:46 JST開始。
 
-## 再開・Git安全条件
-
-- App `sakurasemaika-creator/NIARIM` / Web `sakurasemaika-creator/NIARIM-web`。両方 `dev_branch` のみ。force push、破壊的reset、本番データ操作は禁止。
-- 再開・checkpoint・push前に status / HEAD / fetch / ahead-behind / incoming diff を確認し、変更の影響がある領域だけ再監査する。
-- Work checkout: `/workspace/scratch/dd8428d3aee3/NIARIM` と同階層の `NIARIM-web`。
-- 今回開始時は両方clean、stash・未push commitなし。HermesのWindows作業領域にあったSwift/lockの未commit変更・stashは、このcheckoutにはない。取得した最新commitのSwift/lockを維持する。
-- 今回の初期HEAD App `069c9e8` / Web `10116b5`。追加指示後fetchし、App **`353f94c`** / Web **`e53f248`** へincomingを確認してfast-forward。実投稿・認証retry・保存確認UI・Prism・Web heroの並行変更を継承した。
-- HermesのREADMEは両repoとも全領域が調査中/未確認。完了として継承できる領域はない。参照されたWindowsのinventory/findings原本はリポジトリに含まれていない。
+再開の手順・Git安全条件は両 `AGENTS.md`、品質・範囲・完了条件は `QUALITY_STANDARD.md`、最新HEAD・環境・次の1手は `docs/work-continuation.md` を正とする。本書は監査マップと検証根拠を保持する。
 
 ## 監査マップ
 
-| 領域                                               | 状態 / 次の確認                                                                                                     |
-| -------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------- |
-| 構造・仕様・履歴                                   | 入口/依存/CI/全体構造を把握。00/01/31・CLAUDE、Web DESIGN/guide等確認。最新差分を反映済み                           |
-| 永続化・復元・共有・autosave・削除                 | 前回未commit実装は環境再作成で消失。現行コードから復元・実行検証を再開                                              |
-| 認証・API・公開/投稿・YouTube                      | ID競合と統計APIを修正・単体検証。公開設定PATCHの競合も修正・110件検証済み。一覧の整合性、最新投稿フローの詳細は継続 |
-| workspace・旧設定・スマホ/DeX                      | 未精査                                                                                                              |
-| 描画・レイヤー・Undo・timeline・export・音声・素材 | 既存テスト/構造の確認まで。詳細監査と実画面は未完了                                                                 |
-| Web全ページ・問い合わせ・多言語・a11y              | Workerの容量制限等を修正。問い合わせ/言語メニューを実ブラウザ検証中                                                 |
-| ブランド・サポート・用語・URL                      | App/Webのロゴ・書体・coralを継承。公開設定・用語・未設定外部リンクは継続                                            |
-| 性能・メモリ・重複・依存                           | 問い合わせ変換ピークとCDK未宣言依存を修正。描画/保存の実測は未完了                                                  |
-| 実画面・keyboard/mouse/touch                       | Web問い合わせのエラーフォーカス確認済み。他画面/実端末は未完了                                                      |
+| 領域 | 現在地点 / 未完了 |
+| --- | --- |
+| 構造・仕様・履歴 | App/Webを1製品として復元。最新incoming App `df119850` / Web `439ebf9` を継承 |
+| 永続化・復元・共有・autosave・削除 | A02の原子的ZIP置換・保存順序・dirty追跡を実ファイルで検証し本体反映。破損ZIP、復元サイズ、削除競合、保存エラー通知は継続 |
+| 認証・API・公開/投稿・YouTube | A01/A03/A04検証済み。一覧/投稿フローと全体テストの契約不一致・Provider不足を継続 |
+| workspace・旧設定・スマホ/DeX | 破損JSON/範囲外panel設定等は未精査。実機未検証 |
+| 描画・レイヤー・Undo・timeline・export・音声・素材 | 多数の既存テスト成功を確認。縮小/回転4件の失敗、最新追加機能の統合、詳細UI/UX監査は継続 |
+| Web全ページ・問い合わせ・7言語・a11y | Worker6件成功、W07表示CI全ジョブ成功。問い合わせ成功/reset/添付、未設定X案内、最新変更の回帰は継続 |
+| App/Webのブランド・用語・画面・URL | ロゴ/書体/coralを維持。自動線画の実装とmockのラベル・値・線画色を照合中 |
+| 性能・メモリ・依存・重複 | 問い合わせ変換ピークとCDK未宣言依存を修正。描画/保存の実測は未完了 |
+| 操作手順・プリセット・一括処理 | 新品質基準の必須範囲。追加されたカスタム自動操作を含め、取消/Undo/復元/進捗/適用範囲を監査する |
+| SEO・Discoverability・ASO | 新品質基準の必須範囲。Webの最新SEO/言語URL実装を継承。公開応答/索引/店舗情報等は未確認 |
+| 最終商品・実操作レビュー | 全幅×PC/SP×7言語・各状態、実端末、最終再監査は未完了。CI成功だけで完了にしない |
 
-## 問題と採択状況
+製品へのAI/LLM/生成/チャット/アシスタント等の機能追加・提案は禁止。開発支援としてのAI利用と区別する。
 
-| ID / 優先度             | 根拠・修正 / 状態                                                                                                                                                                                                      |
-| ----------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| A01 / P1 データ整合性   | authの競合後の無条件lookup再作成がUser IDを分裂させ得る。強整合read＋条件付きtransaction＋最大3試行。同じIDで欠落user修復、既存user上書き禁止。検証済み                                                                |
-| A02 / P1 保存安全性     | 差分保存で元ファイルを先に削除、フル保存で直接上書き、保存が並行しdirty確定にawaitが挟まる。前回の未commit実装は残っていない。完成ZIPの同一FS置換・project単位の順序保証・同期dirty確定を復元し検証する。次の最優先    |
-| A03 / P1 統計・公開状態 | batchGetStatsのURL/partが公式形式と不一致、statusは返らず、部分失敗をdeleted扱い。URL修正＋status別取得＋欠損数値を維持＋timeout。APIキーで読めない動画は削除と断定せずprivate相当の非表示にし再確認。検証済み         |
-| A04 / P1 公開状態競合   | タイトルだけのPATCHから公開属性/GSI更新を分離。明示的公開変更はYouTube状態/統計/ブクマの条件付き更新・強整合再読込・最大3試行。非公開からの再公開時も現在の統計でscoreを復元。実行6test成功、旧コード5失敗/1成功で再現 |
-| A05 / P2 CI再現性       | cdk.jsonの未宣言ts-nodeをdevDependency/lockに10.9.2で固定。ローカルsynth成功                                                                                                                                           |
+## 検証済み改善
 
-A03の根拠：[Google公式batchGetStats](https://developers.google.com/youtube/v3/docs/videos/batchGetStats)。統計失敗IDは削除の証拠にならず、statusはvideos.listから取得する。古いソース文字列assertの1件を、partial failure・非表示・競合・tombstoneの実行テストへ置き換えた。公開設定や投稿履歴を消す変更はしない。
+| ID / 優先度 | 原因と修正 | 根拠 |
+| --- | --- | --- |
+| A01 / P1 | auth競合後の無条件lookup再作成でUser IDが分裂し得た。強整合read＋条件付きtransaction＋最大3試行。欠落userを同じIDで修復し既存userを上書きしない | `5076259`、認証4件等の実行テスト |
+| A02 / P1 | 既存ZIPの直接上書き/先行削除、同名tmp並行使用、非同期close、保存後のdirty消失、復元/copy/renameのdirty欠落 | 修正前12件中11失敗。修正後保存12件＋既存関連16件成功、対象analyze0。下記詳細 |
+| A03 / P1 | YouTube batch統計URL/part不整合、status未取得、部分失敗を削除扱い。公式形式・status別取得・欠損統計維持・timeout・再確認へ修正 | `5076259`、YouTube5件/統計batch4件等。[公式API](https://developers.google.com/youtube/v3/docs/videos/batchGetStats) |
+| A04 / P1 | タイトルだけのPATCHが公開属性/GSIを上書き。メタデータと公開更新を分離、強整合read/条件付き更新/最大3試行、再公開時score復元 | `022128d`、旧実装5失敗/1成功→6成功 |
+| A05 / P2 | CDKが未宣言ts-nodeに依存 | `022128d`、ts-node10.9.2固定、synth成功 |
 
-## 検証・実画面・環境
+Backend統合checkpoint `022128d`: TypeScript build、**110/110テスト（20ファイル）**、CDK synth成功。実AWSデプロイ・実アカウント操作なし。後続コード全体の合格とは扱わない。
 
-- WorkはLinux、Node 24.19.0（CIは22）。既存pubspec.lockを変えずFlutter 3.44.7で依存復元を実施。SDK起動時のAzureメタデータ検出が自動審査で拒否されたため、SDKソースの分岐を確認し、メタデータへアクセスしない `CI=true` で実行する。
-- 旧baseline backend: tsc成功、81件中78成功/3失敗（古いソース文字列assert）。並行開発の修正を取り込み済み。
-- **統合後 `npm run build` 成功、`npm test` 105/105成功（19ファイル）**。認証4、YouTube5、統計batch4の実行テストを追加。
-- `AWS_EC2_METADATA_DISABLED=true npm exec cdk -- synth --quiet -c googleClientId=ci-dummy -c youtubeApiKey=ci-dummy` 成功。実AWSデプロイなし。
-- Web Worker新規6test成功（実メールなし）。Web問い合わせで入力不足→同意欄へのfocusを実ブラウザ確認。
-- Flutter analyze/full suite/APK/実画面は未完了。Google/YouTube実アカウント、AWS実環境、Android/DeX実機も未検証。
-- 旧監査dashboardのcompletedは本監査の完了根拠にしない。
+## A02 保存安全性の本体反映
 
-## checkpoint / 現在地点 / 次の具体作業
+- `lib/engine/niapro_serializer.dart`: project ID単位に最初のawait前からFIFO化。完成ZIPを同一FS内でcloseSync→renameSyncし、正常な通常保存だけdirtyを同期確定。失敗は呼出元へ伝え、後続要求は継続。共有/autosave/save-treeは通常保存用dirtyを消費しない。
+- `lib/engine/tile_manager.dart`: writable取得、invalidate、copy、import、renameの全移動タイルをdirty対象へ。autosave等で置き換えた同じパスの画素を旧archiveから流用しない。
+- `test/project_save_safety_test.dart`: 実ZIP/画素で失敗時保全と再試行、8並行保存、通常/共有/autosave/save-tree、復元/copy/rename、保存直後の追加編集を検証する12件。
+- 修正前 `3aecad6`: **1成功/11失敗**。候補CI `6cb290b`: 対象analyze **0 issues**、関連6ファイル **28/28成功**。[実行34187201572](https://github.com/sakurasemaika-creator/NIARIM/actions/runs/34187201572) のverified.patchを本体と照合済み。
+- 対象3ファイルは `df119850` までincoming変更なし。検証済み本体へ反映しpending草案を削除。workflowを通常の保存回帰＋全gateに変更した。最新統合後の実行結果は確認待ち。
+- 残り: 破損した通常ZIPからの復旧後の差分保存、復元時TileManagerサイズ、削除と保存の競合、非同期保存エラーの通知。停電/OS強制終了/実端末の耐久性は未検証。
 
-- このREADMEを含む最初のbackend修正checkpointを作成する。commit IDは `git log -- docs/product-audit/README.md` で取得できる。pushは次のGit確認後。
-- App保存の未commit変更は保持中、テスト未実行のためbackend checkpointから除外。
-- 次：Flutter bootstrap→保存test→全analyze/test、A04競合修正、Web入力/言語のUI回帰、未精査領域を順番に監査する。
-- UI全体・スマホ/PC/DeX・Workspace・App/Web横断・最終商品レビューは未完了。テスト成功だけで全体完了にしない。
+## 全体gateで観測した未解決事項
 
-## 2026-09-08 JST 再開checkpoint
+候補CI `34187201572` のfull-gatesは **802成功/5skip/23失敗**。保存回帰12件は全件成功。以下は失敗領域の分類であり、全件を既存問題と断定するための独立baseline比較はまだ行っていない。
 
-- 最新開始HEAD App `f297642` / Web `d8fc6cf`。両AGENTS・QUALITY_STANDARDを最初に確認し、既読のCLAUDE/引き継ぎ資料との差分なしを確認。28継続タスクも現行実装と照合する。
-- 前回push App `5076259` / Web `4815f96` は保持。App自動線画フィルタ、Web24幅監査・community狭幅・同意checkboxなど新規incomingを維持。
-- A04/A05を復元し、`npm run build`成功、`npm test` **110/110成功（20ファイル）**、CDK synth成功。公開設定の古いソース文字列assert1件を実行テスト6件へ置き換えた。
-- データ永続化・破損workspace/settings、全Flutter検証・UI/UXは未完了。最新Web CIは288画面の操作領域監査で失敗しており、原因を追跡中。
-- 次の1手：A02原子的保存とautosave復元後の差分保存を、実ファイル/タイルの往復テストで再現して直す。
+| 失敗数 | 領域 / 観測 |
+| --- | --- |
+| 4 | community detail/search/tag-limitのテスト起動にSettingsService Providerがない |
+| 6 | community APIのisNiarimPublished追加、week/month→weekly/monthly、GET /me/worksのテスト契約不一致 |
+| 4 | canvas pinch/angle visualで要求した0.2倍に到達せず1.0のまま。実ジェスチャーと入力条件を優先調査 |
+| 2 | canvas mesh/rulerの浮動小数点完全一致（175と174.99999999999997等） |
+| 3 | FilterKind追加後の固定件数/列挙期待（direct service/engine、visual reaudit） |
+| 1 | 未使用ARB12キー。最新追加機能で参照状態が変わっている可能性あり |
+| 1 | canvas背景構造のソース文字列assertが旧child: CanvasAreaを要求 |
+| 2 | community shortsの同一アイコン複数、app smokeの旧タグ検索表示期待 |
 
-## 2026-09-08 JST 13時台 A02検証checkpoint
+- Analyzer: **14 issues**（filter panel未使用field2、community側null-aware等6、canvasテストの波括弧6）。候補対象3ファイルは0。
+- Format: **50ファイル**が非整形。候補対象3ファイル以外。現在はさらにincomingがあり、最新結果で差分分類する。
+- 失敗テスト削除・無条件skip・成功へのfallbackは行わない。実装不良と古いテスト条件を分け、実際の振る舞いを確認して修正する。
 
-- App `3aecad6` で実ファイル回帰12件を実行、**1成功/11失敗**。フルZIPはNaN manifestの失敗で空ファイルになり、既存保存への並行要求は同名tmpで競合した。復元・コピー・フレーム再インデックス後の青画素が赤い旧画素へ戻る経路と、保存直後の描画変更がdirtyから消える経路も再現。
-- 既存草案を精査し、`renameKey` が移動した全タイルも保存対象にする修正を追加。候補patchと実行テストを `docs/product-audit/pending/` に保全。まだ本体commitに含めず、読取専用CIでRED/GREEN・関連保存テスト・全gateを検証する。
-- `Save safety candidate audit` はFlutter3.44.7と既存lockを使用。成功した3ファイルの差分をverified.patchとして保存する。full-gatesで既存のformat/analyze/test不良が出た場合も失敗として残し、候補由来かを分類する。
-- Active workflow YAMLを94本parse成功。構文破損のv8/v11は原文を `.yml.txt` として退避し、継続CIを壊さない状態にした。v11の未実行の補正率変更案は今後の描画監査に残る。
-- WebはFAQ誤検知・整形・fallbackを修正し、24幅×PC/SP×7言語×12ページへCIを拡張。全体監査は未完了。次は候補CIの結果取得と本体への検証済み反映。
+## Web側の確定checkpoint
+
+- W01〜W06 `4815f96`: Worker容量制限・変換メモリ等、模擬メール6件成功。問い合わせの必須入力/エラーフォーカスを実ブラウザ確認。
+- W07 `56a6610`: FAQ見出しの存在しないselectorとscrollbar幅の誤検知を修正。失敗を既存JSON検証に差し替えるfallbackを削除。24幅監査を全7言語×PC/SPへ拡張。
+- [CI 34186579146](https://github.com/sakurasemaika-creator/NIARIM-web/actions/runs/34186579146): format/audit/final-matrix/14 fullpage jobsがすべて成功。**24幅×2mode×7言語×12ページ=4,032条件**の静止表示検査が成功。
+- fr/SPの問い合わせ実画面で、未設定Xへの案内が残る不整合を確認。Web側で修正・検証継続中。最新 `439ebf9` のSEO/CSS等と新しい修正には旧CI結果を流用しない。
+
+## 次の具体作業
+
+1. 保存の本体反映後CIを取得し、最新状態の失敗を分類して直す。
+2. Web問い合わせ案内/模擬送信と自動線画mockの最新App整合を実行検証・実画面で確認する。
+3. 破損workspace/settingsと未精査の監査マップを進め、重要修正後に必要な全体回帰・商品レビューを行う。
+
+旧一時workflow v8/v11の構文破損は原文を `pending/retired-workflows/*.yml.txt` へ退避。v8は後続v9/v10実装に継承、v11未実行案は完了扱いにしない。Windows/旧Work作業領域の消失した未commit成果は、Git上の検証済み成果と区別する。
