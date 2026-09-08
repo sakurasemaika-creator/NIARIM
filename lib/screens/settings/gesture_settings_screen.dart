@@ -54,6 +54,14 @@ class GestureSettingsScreen extends StatelessWidget {
                     (a) => settings.setGesture(GestureType.threeFingerTap, a),
                   ),
                   const Divider(height: 1),
+                  _item(
+                    context,
+                    l10n.gestureFourOrMoreFingerTap,
+                    settings.fourOrMoreFingerTap,
+                    (a) =>
+                        settings.setGesture(GestureType.fourOrMoreFingerTap, a),
+                  ),
+                  const Divider(height: 1),
                   // 2本指スワイプ左右のみ、連続動作前提の「フレーム移動」を選択肢に含める。
                   _item(
                     context,

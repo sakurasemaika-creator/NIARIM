@@ -123,6 +123,7 @@
   "gestureSettingsTitle": "Gesture Settings",
   "gestureTwoFingerTap": "Two-Finger Tap",
   "gestureThreeFingerTap": "Three-Finger Tap",
+  "gestureFourOrMoreFingerTap": "Four-or-more-finger tap",
   "gestureTwoFingerSwipe": "Two-Finger Swipe Left/Right",
   "gestureLongPress": "Long Press",
   "gestureHoldEyedropperSection": "Hold to sample color",

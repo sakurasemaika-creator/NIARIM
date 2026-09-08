@@ -123,6 +123,7 @@
   "gestureSettingsTitle": "Réglages des gestes",
   "gestureTwoFingerTap": "Appui à deux doigts",
   "gestureThreeFingerTap": "Appui à trois doigts",
+  "gestureFourOrMoreFingerTap": "Appui à quatre doigts ou plus",
   "gestureTwoFingerSwipe": "Balayage horizontal à deux doigts",
   "gestureLongPress": "Appui long",
   "gestureHoldEyedropperSection": "Pipette par appui long",

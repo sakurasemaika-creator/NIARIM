@@ -345,11 +345,13 @@ class SettingsService extends ChangeNotifier {
 
   GestureAction _twoFingerTap = GestureAction.undo;
   GestureAction _threeFingerTap = GestureAction.redo;
+  GestureAction _fourOrMoreFingerTap = GestureAction.none;
   GestureAction _twoFingerSwipe = GestureAction.frameMove;
   GestureAction _longPress = GestureAction.eyedropper;
 
   GestureAction get twoFingerTap => _twoFingerTap;
   GestureAction get threeFingerTap => _threeFingerTap;
+  GestureAction get fourOrMoreFingerTap => _fourOrMoreFingerTap;
   GestureAction get twoFingerSwipe => _twoFingerSwipe;
   GestureAction get longPress => _longPress;
 
@@ -591,6 +593,10 @@ class SettingsService extends ChangeNotifier {
       prefs.getString('gesture_three_finger_tap'),
       GestureAction.redo,
     );
+    _fourOrMoreFingerTap = _gestureActionFromName(
+      prefs.getString('gesture_four_or_more_finger_tap'),
+      GestureAction.none,
+    );
     _twoFingerSwipe = _gestureActionFromName(
       prefs.getString('gesture_two_finger_swipe'),
       GestureAction.frameMove,
@@ -796,6 +802,9 @@ class SettingsService extends ChangeNotifier {
       case GestureType.threeFingerTap:
         _threeFingerTap = action;
         await prefs.setString('gesture_three_finger_tap', action.name);
+      case GestureType.fourOrMoreFingerTap:
+        _fourOrMoreFingerTap = action;
+        await prefs.setString('gesture_four_or_more_finger_tap', action.name);
       case GestureType.twoFingerSwipe:
         _twoFingerSwipe = action;
         await prefs.setString('gesture_two_finger_swipe', action.name);
@@ -807,7 +816,13 @@ class SettingsService extends ChangeNotifier {
   }
 }
 
-enum GestureType { twoFingerTap, threeFingerTap, twoFingerSwipe, longPress }
+enum GestureType {
+  twoFingerTap,
+  threeFingerTap,
+  fourOrMoreFingerTap,
+  twoFingerSwipe,
+  longPress,
+}
 
 enum GestureAction {
   undo,

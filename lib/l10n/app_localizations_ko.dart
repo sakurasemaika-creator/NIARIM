@@ -358,6 +358,9 @@ class AppLocalizationsKo extends AppLocalizations {
   String get gestureThreeFingerTap => '세 손가락 탭';
 
   @override
+  String get gestureFourOrMoreFingerTap => '네 손가락 이상 탭';
+
+  @override
   String get gestureTwoFingerSwipe => '두 손가락 좌우 스와이프';
 
   @override

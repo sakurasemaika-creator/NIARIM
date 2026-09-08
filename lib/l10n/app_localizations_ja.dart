@@ -358,6 +358,9 @@ class AppLocalizationsJa extends AppLocalizations {
   String get gestureThreeFingerTap => '3本指タップ';
 
   @override
+  String get gestureFourOrMoreFingerTap => '4本指以上のタップ';
+
+  @override
   String get gestureTwoFingerSwipe => '2本指スワイプ左右';
 
   @override

@@ -761,6 +761,12 @@ abstract class AppLocalizations {
   /// **'3本指タップ'**
   String get gestureThreeFingerTap;
 
+  /// No description provided for @gestureFourOrMoreFingerTap.
+  ///
+  /// In ja, this message translates to:
+  /// **'4本指以上のタップ'**
+  String get gestureFourOrMoreFingerTap;
+
   /// No description provided for @gestureTwoFingerSwipe.
   ///
   /// In ja, this message translates to:

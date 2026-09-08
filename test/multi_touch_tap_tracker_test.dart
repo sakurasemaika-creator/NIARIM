@@ -37,7 +37,7 @@ void main() {
       );
     });
 
-    test('recognizes a three-finger tap and ignores four fingers', () {
+    test('recognizes three-finger and four-or-more-finger taps', () {
       final t0 = DateTime(2026, 1, 1);
       final three = MultiTouchTapTracker();
       for (var i = 1; i <= 3; i++) {
@@ -50,17 +50,22 @@ void main() {
         MultiTouchTapKind.threeFinger,
       );
 
-      final four = MultiTouchTapTracker();
-      for (var i = 1; i <= 4; i++) {
-        four.pointerDown(i, Offset(i * 10.0, 10), t0);
+      for (final count in [4, 5]) {
+        final tracker = MultiTouchTapTracker();
+        for (var i = 1; i <= count; i++) {
+          tracker.pointerDown(i, Offset(i * 10.0, 10), t0);
+        }
+        for (var i = 1; i < count; i++) {
+          expect(
+            tracker.pointerUp(i, t0.add(const Duration(milliseconds: 80))),
+            isNull,
+          );
+        }
+        expect(
+          tracker.pointerUp(count, t0.add(const Duration(milliseconds: 100))),
+          MultiTouchTapKind.fourOrMoreFinger,
+        );
       }
-      for (var i = 1; i <= 3; i++) {
-        four.pointerUp(i, t0.add(const Duration(milliseconds: 80)));
-      }
-      expect(
-        four.pointerUp(4, t0.add(const Duration(milliseconds: 100))),
-        isNull,
-      );
     });
   });
 

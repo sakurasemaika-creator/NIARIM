@@ -3479,6 +3479,8 @@ class _CanvasAreaState extends State<CanvasArea> {
             _handleGesture(context, settings.twoFingerTap);
           } else if (completedTap == MultiTouchTapKind.threeFinger) {
             _handleGesture(context, settings.threeFingerTap);
+          } else if (completedTap == MultiTouchTapKind.fourOrMoreFinger) {
+            _handleGesture(context, settings.fourOrMoreFingerTap);
           }
           if (!_toolHandledPointers.remove(e.pointer)) return;
           _onPointerUp(e);

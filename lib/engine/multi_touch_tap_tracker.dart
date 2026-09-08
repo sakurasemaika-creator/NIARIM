@@ -1,8 +1,8 @@
 import 'package:flutter/widgets.dart';
 
-enum MultiTouchTapKind { twoFinger, threeFinger }
+enum MultiTouchTapKind { twoFinger, threeFinger, fourOrMoreFinger }
 
-/// Distinguishes deliberate two/three-finger taps from pan/pinch/rotation.
+/// Distinguishes deliberate multi-finger taps from pan/pinch/rotation.
 /// A tap is emitted only after all participating fingers are released, within
 /// [maxDuration], and without any pointer moving beyond [moveSlop].
 class MultiTouchTapTracker {
@@ -49,6 +49,7 @@ class MultiTouchTapTracker {
     _reset();
 
     if (!durationOk || moved) return null;
+    if (count >= 4) return MultiTouchTapKind.fourOrMoreFinger;
     return switch (count) {
       2 => MultiTouchTapKind.twoFinger,
       3 => MultiTouchTapKind.threeFinger,

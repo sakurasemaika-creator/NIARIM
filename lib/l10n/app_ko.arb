@@ -123,6 +123,7 @@
   "gestureSettingsTitle": "제스처 설정",
   "gestureTwoFingerTap": "두 손가락 탭",
   "gestureThreeFingerTap": "세 손가락 탭",
+  "gestureFourOrMoreFingerTap": "네 손가락 이상 탭",
   "gestureTwoFingerSwipe": "두 손가락 좌우 스와이프",
   "gestureLongPress": "길게 누르기",
   "gestureHoldEyedropperSection": "길게 눌러 색상 추출",

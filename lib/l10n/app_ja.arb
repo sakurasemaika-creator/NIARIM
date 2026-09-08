@@ -182,6 +182,7 @@
   "gestureSettingsTitle": "ジェスチャー設定",
   "gestureTwoFingerTap": "2本指タップ",
   "gestureThreeFingerTap": "3本指タップ",
+  "gestureFourOrMoreFingerTap": "4本指以上のタップ",
   "gestureTwoFingerSwipe": "2本指スワイプ左右",
   "gestureLongPress": "長押し",
   "gestureHoldEyedropperSection": "長押しスポイト",

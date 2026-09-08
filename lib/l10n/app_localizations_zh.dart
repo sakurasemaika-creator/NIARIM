@@ -357,6 +357,9 @@ class AppLocalizationsZh extends AppLocalizations {
   String get gestureThreeFingerTap => '三指点按';
 
   @override
+  String get gestureFourOrMoreFingerTap => '四指及以上轻触';
+
+  @override
   String get gestureTwoFingerSwipe => '双指左右滑动';
 
   @override
@@ -6509,6 +6512,9 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get gestureThreeFingerTap => '三指點按';
+
+  @override
+  String get gestureFourOrMoreFingerTap => '四指以上輕觸';
 
   @override
   String get gestureTwoFingerSwipe => '雙指左右滑動';

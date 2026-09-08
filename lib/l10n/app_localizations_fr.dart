@@ -371,6 +371,9 @@ class AppLocalizationsFr extends AppLocalizations {
   String get gestureThreeFingerTap => 'Appui à trois doigts';
 
   @override
+  String get gestureFourOrMoreFingerTap => 'Appui à quatre doigts ou plus';
+
+  @override
   String get gestureTwoFingerSwipe => 'Balayage horizontal à deux doigts';
 
   @override

@@ -123,6 +123,7 @@
   "gestureSettingsTitle": "手势设置",
   "gestureTwoFingerTap": "双指点按",
   "gestureThreeFingerTap": "三指点按",
+  "gestureFourOrMoreFingerTap": "四指及以上轻触",
   "gestureTwoFingerSwipe": "双指左右滑动",
   "gestureLongPress": "长按",
   "gestureHoldEyedropperSection": "长按取色",
