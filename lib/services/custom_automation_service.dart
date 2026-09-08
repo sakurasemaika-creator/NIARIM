@@ -98,6 +98,8 @@ class CustomAutomationService extends ChangeNotifier {
     Map<String, Object?> args = const {},
     bool changesFrame = false,
     bool changesScene = false,
+    int? recordedFrame,
+    int? recordedScene,
   }) {
     final draft = _draft;
     if (!_recording || draft == null) return;
@@ -109,6 +111,8 @@ class CustomAutomationService extends ChangeNotifier {
       args: Map.unmodifiable(args),
       changesFrame: changesFrame,
       changesScene: changesScene,
+      recordedFrame: recordedFrame,
+      recordedScene: recordedScene,
     );
     // Slider/color drags may emit dozens of onChanged callbacks. Consecutive
     // writes of the same deterministic command represent one user operation,
@@ -119,7 +123,9 @@ class CustomAutomationService extends ChangeNotifier {
       if (!last.changesFrame &&
           !last.changesScene &&
           last.surface == surface &&
-          last.command == command) {
+          last.command == command &&
+          last.recordedFrame == recordedFrame &&
+          last.recordedScene == recordedScene) {
         draft.steps[draft.steps.length - 1] = CustomAutomationStep(
           id: last.id,
           surface: surface,
@@ -128,6 +134,8 @@ class CustomAutomationService extends ChangeNotifier {
           args: Map.unmodifiable(args),
           changesFrame: false,
           changesScene: false,
+          recordedFrame: recordedFrame,
+          recordedScene: recordedScene,
         );
         notifyListeners();
         return;
