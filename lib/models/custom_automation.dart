@@ -11,6 +11,8 @@ class CustomAutomationStep {
   final Map<String, Object?> args;
   final bool changesFrame;
   final bool changesScene;
+  final int? recordedFrame;
+  final int? recordedScene;
   final String label;
 
   const CustomAutomationStep({
@@ -21,6 +23,8 @@ class CustomAutomationStep {
     this.args = const {},
     this.changesFrame = false,
     this.changesScene = false,
+    this.recordedFrame,
+    this.recordedScene,
   });
 
   Map<String, Object?> toJson() => {
@@ -31,6 +35,8 @@ class CustomAutomationStep {
     'args': args,
     'changesFrame': changesFrame,
     'changesScene': changesScene,
+    if (recordedFrame != null) 'recordedFrame': recordedFrame,
+    if (recordedScene != null) 'recordedScene': recordedScene,
   };
 
   factory CustomAutomationStep.fromJson(Map<String, Object?> json) {
@@ -46,12 +52,14 @@ class CustomAutomationStep {
       args: (json['args'] as Map?)?.cast<String, Object?>() ?? const {},
       changesFrame: json['changesFrame'] as bool? ?? false,
       changesScene: json['changesScene'] as bool? ?? false,
+      recordedFrame: (json['recordedFrame'] as num?)?.round(),
+      recordedScene: (json['recordedScene'] as num?)?.round(),
     );
   }
 }
 
 class CustomAutomation {
-  static const currentFormatVersion = 1;
+  static const currentFormatVersion = 2;
 
   final String id;
   final String name;
@@ -71,8 +79,20 @@ class CustomAutomation {
       steps.isNotEmpty &&
       steps.every((step) => step.surface == CustomAutomationSurface.canvas);
 
-  bool get staysInSingleFrame =>
-      steps.every((step) => !step.changesFrame && !step.changesScene);
+  bool get staysInSingleFrame {
+    if (steps.isEmpty || steps.any((step) => step.changesFrame || step.changesScene)) {
+      return false;
+    }
+    // Context metadata makes the eligibility robust even when a user deletes the
+    // explicit navigation step in the post-recording editor: actions recorded on
+    // two different frames/scenes must still never become an all-frame macro.
+    if (steps.any((step) => step.recordedFrame == null || step.recordedScene == null)) {
+      return false;
+    }
+    final frames = steps.map((step) => step.recordedFrame).toSet();
+    final scenes = steps.map((step) => step.recordedScene).toSet();
+    return frames.length == 1 && scenes.length == 1;
+  }
 
   bool get supportsFrameScopeChoice => isCanvasOnly && staysInSingleFrame;
 
@@ -109,6 +129,9 @@ class CustomAutomation {
       throw FormatException('Unsupported automation version: $version');
     }
     final rawSteps = json['steps'] as List? ?? const [];
+    if (rawSteps.length > 5000) {
+      throw const FormatException('Automation has too many steps');
+    }
     return CustomAutomation(
       id: json['id'] as String? ?? '',
       name: json['name'] as String? ?? '',
@@ -124,6 +147,9 @@ class CustomAutomation {
   }
 
   factory CustomAutomation.fromJsonString(String raw) {
+    if (raw.length > 2 * 1024 * 1024) {
+      throw const FormatException('Automation file is too large');
+    }
     final decoded = jsonDecode(raw);
     if (decoded is! Map) {
       throw const FormatException('Automation root must be an object');
