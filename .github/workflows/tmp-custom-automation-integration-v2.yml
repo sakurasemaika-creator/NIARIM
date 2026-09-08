@@ -1,0 +1,69 @@
+name: TMP Custom Automation Integration v2
+
+on:
+  push:
+    branches: [dev_branch]
+    paths:
+      - '.github/workflows/tmp-custom-automation-integration-v2.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  validate-and-land:
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: dev_branch
+          fetch-depth: 0
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+      - name: Apply integration patches
+        run: |
+          python3 scripts/tmp_custom_automation_foundation.py
+          python3 scripts/tmp_custom_automation_followup.py
+          python3 scripts/tmp_custom_automation_compile_fix.py
+      - name: Generate localization
+        run: flutter gen-l10n
+      - name: Format affected files
+        run: |
+          dart format \
+            lib/app_bootstrap.dart \
+            lib/services/premium_service.dart \
+            lib/models/custom_automation.dart \
+            lib/services/custom_automation_service.dart \
+            lib/widgets/custom_automation_manager_sheet.dart \
+            lib/widgets/custom_automation_draft_sheet.dart \
+            lib/screens/canvas/canvas_screen.dart \
+            lib/screens/timeline/timeline_screen.dart \
+            test/custom_automation_service_test.dart
+      - name: Analyze affected production
+        run: |
+          flutter analyze --no-fatal-warnings --no-fatal-infos \
+            lib/app_bootstrap.dart \
+            lib/services/premium_service.dart \
+            lib/models/custom_automation.dart \
+            lib/services/custom_automation_service.dart \
+            lib/widgets/custom_automation_manager_sheet.dart \
+            lib/widgets/custom_automation_draft_sheet.dart \
+            lib/screens/canvas/canvas_screen.dart \
+            lib/screens/timeline/timeline_screen.dart
+      - name: Custom automation tests
+        run: flutter test test/custom_automation_service_test.dart --reporter expanded
+      - name: Smoke affected screens
+        run: flutter test test/app_smoke_test.dart --reporter compact
+      - name: Commit and push
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add lib test/custom_automation_service_test.dart
+          git diff --cached --quiet && exit 0
+          git commit -m 'feat: カスタム自動操作の記録・管理基盤を統合'
+          git reset --hard HEAD
+          git pull --rebase origin dev_branch
+          git push origin HEAD:dev_branch
