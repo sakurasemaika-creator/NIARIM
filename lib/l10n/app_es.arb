@@ -2672,5 +2672,22 @@
   "customAutomationStopConfirmTitle": "¿Dejar de registrar esta automatización?",
   "customAutomationStopConfirmStop": "Dejar",
   "customAutomationStopConfirmContinue": "Continuar",
-  "customAutomationStepCount": "{count} pasos"
+  "customAutomationStepCount": "{count} pasos",
+  "customAutomationReturnToRecording": "Volver al registro de operaciones",
+  "customAutomationStopConfirmQuit": "Dejar de registrar",
+  "customAutomationPremiumHint": "Solo para miembros Premium: permite registrar, editar, distribuir y volver a ejecutar operaciones.",
+  "customAutomationYes": "Sí",
+  "customAutomationNo": "No",
+  "filterNameInkPool": "Acumulación de tinta",
+  "filterInkPoolColor": "Color",
+  "filterInkPoolRange": "Rango",
+  "filterInkPoolCenterWidth": "Grosor central",
+  "filterInkPoolLayerNameSuffix": "{name} Acumulación de tinta",
+  "@filterInkPoolLayerNameSuffix": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  }
 }

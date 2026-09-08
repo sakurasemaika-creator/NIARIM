@@ -2672,5 +2672,22 @@
   "customAutomationStopConfirmTitle": "Arrêter l’enregistrement de cette automatisation ?",
   "customAutomationStopConfirmStop": "Arrêter",
   "customAutomationStopConfirmContinue": "Continuer",
-  "customAutomationStepCount": "{count} étapes"
+  "customAutomationStepCount": "{count} étapes",
+  "customAutomationReturnToRecording": "Revenir à l’enregistrement des actions",
+  "customAutomationStopConfirmQuit": "Arrêter l’enregistrement",
+  "customAutomationPremiumHint": "Réservé aux membres Premium : permet d’enregistrer, de modifier, de distribuer et de réexécuter des actions.",
+  "customAutomationYes": "Oui",
+  "customAutomationNo": "Non",
+  "filterNameInkPool": "Accumulation d’encre",
+  "filterInkPoolColor": "Couleur",
+  "filterInkPoolRange": "Plage",
+  "filterInkPoolCenterWidth": "Épaisseur centrale",
+  "filterInkPoolLayerNameSuffix": "{name} Accumulation d’encre",
+  "@filterInkPoolLayerNameSuffix": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  }
 }

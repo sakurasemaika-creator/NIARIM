@@ -2672,5 +2672,22 @@
   "customAutomationStopConfirmTitle": "要停止登錄此自動操作嗎？",
   "customAutomationStopConfirmStop": "停止",
   "customAutomationStopConfirmContinue": "繼續",
-  "customAutomationStepCount": "{count} 個步驟"
+  "customAutomationStepCount": "{count} 個步驟",
+  "customAutomationReturnToRecording": "返回操作記錄",
+  "customAutomationStopConfirmQuit": "停止記錄",
+  "customAutomationPremiumHint": "僅限 Premium 會員，可記錄、編輯、分發並重新執行操作。",
+  "customAutomationYes": "是",
+  "customAutomationNo": "否",
+  "filterNameInkPool": "積墨",
+  "filterInkPoolColor": "顏色",
+  "filterInkPoolRange": "範圍",
+  "filterInkPoolCenterWidth": "中央寬度",
+  "filterInkPoolLayerNameSuffix": "{name} 積墨",
+  "@filterInkPoolLayerNameSuffix": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  }
 }

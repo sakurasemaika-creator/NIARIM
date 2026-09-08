@@ -2672,5 +2672,22 @@
   "customAutomationStopConfirmTitle": "要停止注册此自动操作吗？",
   "customAutomationStopConfirmStop": "停止",
   "customAutomationStopConfirmContinue": "继续",
-  "customAutomationStepCount": "{count} 个步骤"
+  "customAutomationStepCount": "{count} 个步骤",
+  "customAutomationReturnToRecording": "返回操作记录",
+  "customAutomationStopConfirmQuit": "停止记录",
+  "customAutomationPremiumHint": "仅限 Premium 会员，可记录、编辑、分发并重新执行操作。",
+  "customAutomationYes": "是",
+  "customAutomationNo": "否",
+  "filterNameInkPool": "积墨",
+  "filterInkPoolColor": "颜色",
+  "filterInkPoolRange": "范围",
+  "filterInkPoolCenterWidth": "中央宽度",
+  "filterInkPoolLayerNameSuffix": "{name} 积墨",
+  "@filterInkPoolLayerNameSuffix": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  }
 }

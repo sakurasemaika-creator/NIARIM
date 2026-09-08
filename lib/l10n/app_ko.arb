@@ -2672,5 +2672,22 @@
   "customAutomationStopConfirmTitle": "자동 작업 등록을 중지할까요?",
   "customAutomationStopConfirmStop": "중지",
   "customAutomationStopConfirmContinue": "계속",
-  "customAutomationStepCount": "{count}단계"
+  "customAutomationStepCount": "{count}단계",
+  "customAutomationReturnToRecording": "작업 기록으로 돌아가기",
+  "customAutomationStopConfirmQuit": "기록 그만두기",
+  "customAutomationPremiumHint": "Premium 회원 전용으로 작업을 기록·편집·배포·재실행할 수 있습니다.",
+  "customAutomationYes": "예",
+  "customAutomationNo": "아니요",
+  "filterNameInkPool": "먹물 고임",
+  "filterInkPoolColor": "색상",
+  "filterInkPoolRange": "범위",
+  "filterInkPoolCenterWidth": "중앙 두께",
+  "filterInkPoolLayerNameSuffix": "{name} 먹물 고임",
+  "@filterInkPoolLayerNameSuffix": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  }
 }
