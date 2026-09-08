@@ -1,0 +1,55 @@
+name: TMP Chain Vegetation Presets
+
+on:
+  push:
+    branches: [dev_branch]
+    paths:
+      - '.github/workflows/tmp-chain-vegetation-presets.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  validate-and-land:
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: dev_branch
+          fetch-depth: 0
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+      - name: Apply preset patch and tests
+        run: |
+          python3 scripts/tmp_chain_vegetation_presets.py
+          python3 scripts/tmp_chain_vegetation_tests.py
+      - name: Format
+        run: |
+          dart format \
+            lib/services/brush_service.dart \
+            lib/services/stamp_service.dart \
+            lib/engine/drawing_engine.dart \
+            lib/engine/procedural_texture.dart \
+            test/chain_vegetation_presets_test.dart
+      - name: Analyze affected production
+        run: flutter analyze --no-fatal-warnings --no-fatal-infos lib/services/brush_service.dart lib/services/stamp_service.dart lib/engine/drawing_engine.dart lib/engine/procedural_texture.dart
+      - name: Preset tests
+        run: flutter test test/chain_vegetation_presets_test.dart --reporter expanded
+      - name: Existing brush/stamp regressions
+        run: |
+          flutter test test/functional_audit_builtin_pen_continuity_test.dart --reporter compact
+          flutter test test/services/glitter_brush_presets_test.dart --reporter compact
+      - name: Commit and push
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add lib test/chain_vegetation_presets_test.dart
+          git diff --cached --quiet && exit 0
+          git commit -m 'feat: チェーンブラシと背景植生スタンプを追加'
+          git reset --hard HEAD
+          git pull --rebase origin dev_branch
+          git push origin HEAD:dev_branch
