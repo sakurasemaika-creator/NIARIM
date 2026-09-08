@@ -441,6 +441,16 @@ class AppLocalizationsZh extends AppLocalizations {
   String get penSettingsTitle => '笔输入设置';
 
   @override
+  String get penSettingsPalmRejectionSection => '防误触';
+
+  @override
+  String get penSettingsPalmRejectionTitle => '防误触';
+
+  @override
+  String get penSettingsPalmRejectionHint =>
+      '使用触控笔时，防止单指触摸造成误操作。双指及以上手势仍可正常使用。';
+
+  @override
   String get penSettingsCurveSection => '笔压曲线';
 
   @override
@@ -6010,20 +6020,20 @@ class AppLocalizationsZh extends AppLocalizations {
   String get brushSettingsEdgeJitterStrengthLabel => '渗漏强度';
 
   @override
-  String get filterNameInkPool => '墨溜まり';
+  String get filterNameInkPool => '积墨';
 
   @override
-  String get filterInkPoolColor => '色';
+  String get filterInkPoolColor => '颜色';
 
   @override
-  String get filterInkPoolRange => '範囲';
+  String get filterInkPoolRange => '范围';
 
   @override
-  String get filterInkPoolCenterWidth => '中央の太さ';
+  String get filterInkPoolCenterWidth => '中央宽度';
 
   @override
   String filterInkPoolLayerNameSuffix(String name) {
-    return '$name 墨溜まり';
+    return '$name 积墨';
   }
 
   @override
@@ -6083,10 +6093,10 @@ class AppLocalizationsZh extends AppLocalizations {
   String get customAutomationAllFrames => '在所有帧执行';
 
   @override
-  String get customAutomationYes => 'はい';
+  String get customAutomationYes => '是';
 
   @override
-  String get customAutomationNo => 'いいえ';
+  String get customAutomationNo => '否';
 
   @override
   String get customAutomationRenameTitle => '重命名';
@@ -6115,19 +6125,19 @@ class AppLocalizationsZh extends AppLocalizations {
   }
 
   @override
-  String get customAutomationReturnToRecording => '操作記録に戻る';
+  String get customAutomationReturnToRecording => '返回操作记录';
 
   @override
   String get customAutomationStopConfirmTitle => '要停止注册此自动操作吗？';
 
   @override
-  String get customAutomationStopConfirmQuit => 'やめる';
+  String get customAutomationStopConfirmQuit => '停止记录';
 
   @override
   String get customAutomationStopConfirmContinue => '继续';
 
   @override
-  String get customAutomationPremiumHint => 'プレミアム会員限定で、操作を記録・編集・配布・再実行できます。';
+  String get customAutomationPremiumHint => '仅限 Premium 会员，可记录、编辑、分发并重新执行操作。';
 
   @override
   String get customAutomationReviewHint => '保存前可调整顺序或删除步骤';
@@ -6583,6 +6593,16 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get penSettingsTitle => '筆輸入設定';
+
+  @override
+  String get penSettingsPalmRejectionSection => '防誤觸';
+
+  @override
+  String get penSettingsPalmRejectionTitle => '防誤觸';
+
+  @override
+  String get penSettingsPalmRejectionHint =>
+      '使用觸控筆時，防止單指觸控造成誤操作。雙指及以上手勢仍可正常使用。';
 
   @override
   String get penSettingsCurveSection => '筆壓曲線';
@@ -12153,6 +12173,23 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get brushSettingsEdgeJitterStrengthLabel => '漸漫強度';
 
   @override
+  String get filterNameInkPool => '積墨';
+
+  @override
+  String get filterInkPoolColor => '顏色';
+
+  @override
+  String get filterInkPoolRange => '範圍';
+
+  @override
+  String get filterInkPoolCenterWidth => '中央寬度';
+
+  @override
+  String filterInkPoolLayerNameSuffix(String name) {
+    return '$name 積墨';
+  }
+
+  @override
   String get filterCanvasEyedropperTooltip => '從畫布選取顏色';
 
   @override
@@ -12209,6 +12246,12 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get customAutomationAllFrames => '在所有影格執行';
 
   @override
+  String get customAutomationYes => '是';
+
+  @override
+  String get customAutomationNo => '否';
+
+  @override
   String get customAutomationRenameTitle => '重新命名';
 
   @override
@@ -12235,10 +12278,19 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   }
 
   @override
+  String get customAutomationReturnToRecording => '返回操作記錄';
+
+  @override
   String get customAutomationStopConfirmTitle => '要停止登錄此自動操作嗎？';
 
   @override
+  String get customAutomationStopConfirmQuit => '停止記錄';
+
+  @override
   String get customAutomationStopConfirmContinue => '繼續';
+
+  @override
+  String get customAutomationPremiumHint => '僅限 Premium 會員，可記錄、編輯、分發並重新執行操作。';
 
   @override
   String get customAutomationReviewHint => '儲存前可調整順序或刪除步驟';

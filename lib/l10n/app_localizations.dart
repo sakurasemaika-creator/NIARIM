@@ -923,6 +923,24 @@ abstract class AppLocalizations {
   /// **'ペン入力設定'**
   String get penSettingsTitle;
 
+  /// No description provided for @penSettingsPalmRejectionSection.
+  ///
+  /// In ja, this message translates to:
+  /// **'パームリジェクション'**
+  String get penSettingsPalmRejectionSection;
+
+  /// No description provided for @penSettingsPalmRejectionTitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'パームリジェクション'**
+  String get penSettingsPalmRejectionTitle;
+
+  /// No description provided for @penSettingsPalmRejectionHint.
+  ///
+  /// In ja, this message translates to:
+  /// **'ペン使用中の1本指タッチによる誤操作を防ぎます。2本指以上のジェスチャーは引き続き使用できます。'**
+  String get penSettingsPalmRejectionHint;
+
   /// No description provided for @penSettingsCurveSection.
   ///
   /// In ja, this message translates to:

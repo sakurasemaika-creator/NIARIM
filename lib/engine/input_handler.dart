@@ -44,6 +44,18 @@ class InputHandler {
     );
   }
 
+  bool shouldRejectPalmTouch(
+    InputType type, {
+    required bool palmRejectionEnabled,
+  }) => palmRejectionEnabled && type == InputType.touch && _isStylusActive;
+
+  void onPointerUp(PointerEvent event) {
+    if (event.kind == PointerDeviceKind.stylus ||
+        event.kind == PointerDeviceKind.invertedStylus) {
+      _isStylusActive = false;
+    }
+  }
+
   void onStylusUp() {
     _isStylusActive = false;
   }

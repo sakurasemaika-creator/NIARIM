@@ -443,6 +443,16 @@ class AppLocalizationsKo extends AppLocalizations {
   String get penSettingsTitle => '펜 입력 설정';
 
   @override
+  String get penSettingsPalmRejectionSection => '손바닥 터치 방지';
+
+  @override
+  String get penSettingsPalmRejectionTitle => '손바닥 터치 방지';
+
+  @override
+  String get penSettingsPalmRejectionHint =>
+      '펜을 사용하는 동안 한 손가락 터치로 인한 오작동을 방지합니다. 두 손가락 이상의 제스처는 계속 사용할 수 있습니다.';
+
+  @override
   String get penSettingsCurveSection => '필압 곡선';
 
   @override
@@ -6080,20 +6090,20 @@ class AppLocalizationsKo extends AppLocalizations {
   String get brushSettingsEdgeJitterStrengthLabel => '번짐 강도';
 
   @override
-  String get filterNameInkPool => '墨溜まり';
+  String get filterNameInkPool => '먹물 고임';
 
   @override
-  String get filterInkPoolColor => '色';
+  String get filterInkPoolColor => '색상';
 
   @override
-  String get filterInkPoolRange => '範囲';
+  String get filterInkPoolRange => '범위';
 
   @override
-  String get filterInkPoolCenterWidth => '中央の太さ';
+  String get filterInkPoolCenterWidth => '중앙 두께';
 
   @override
   String filterInkPoolLayerNameSuffix(String name) {
-    return '$name 墨溜まり';
+    return '$name 먹물 고임';
   }
 
   @override
@@ -6153,10 +6163,10 @@ class AppLocalizationsKo extends AppLocalizations {
   String get customAutomationAllFrames => '모든 프레임에 실행';
 
   @override
-  String get customAutomationYes => 'はい';
+  String get customAutomationYes => '예';
 
   @override
-  String get customAutomationNo => 'いいえ';
+  String get customAutomationNo => '아니요';
 
   @override
   String get customAutomationRenameTitle => '이름 변경';
@@ -6185,19 +6195,20 @@ class AppLocalizationsKo extends AppLocalizations {
   }
 
   @override
-  String get customAutomationReturnToRecording => '操作記録に戻る';
+  String get customAutomationReturnToRecording => '작업 기록으로 돌아가기';
 
   @override
   String get customAutomationStopConfirmTitle => '자동 작업 등록을 중지할까요?';
 
   @override
-  String get customAutomationStopConfirmQuit => 'やめる';
+  String get customAutomationStopConfirmQuit => '기록 그만두기';
 
   @override
   String get customAutomationStopConfirmContinue => '계속';
 
   @override
-  String get customAutomationPremiumHint => 'プレミアム会員限定で、操作を記録・編集・配布・再実行できます。';
+  String get customAutomationPremiumHint =>
+      'Premium 회원 전용으로 작업을 기록·편집·배포·재실행할 수 있습니다.';
 
   @override
   String get customAutomationReviewHint => '저장 전에 단계 순서를 바꾸거나 삭제할 수 있습니다';

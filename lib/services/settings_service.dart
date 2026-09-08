@@ -358,10 +358,12 @@ class SettingsService extends ChangeNotifier {
   // 「ブラシ個別設定」であるため、ブラシ設定側(Brush.pressureMode)
   // のみで管理する（グローバル設定としては持たない）。
   // 筆圧カーブのみアプリ全体に適用される設定としてここで管理する。
+  bool _palmRejectionEnabled = true;
   PenPressureCurve _penPressureCurve = PenPressureCurve.normal;
   GestureAction _penButton1 = GestureAction.eraserToggle;
   GestureAction _penButton2 = GestureAction.eyedropper;
 
+  bool get palmRejectionEnabled => _palmRejectionEnabled;
   PenPressureCurve get penPressureCurve => _penPressureCurve;
   GestureAction get penButton1 => _penButton1;
   GestureAction get penButton2 => _penButton2;
@@ -407,6 +409,13 @@ class SettingsService extends ChangeNotifier {
   List<(double, double)> _customPressurePoints = const [(0.0, 0.0), (1.0, 1.0)];
   List<(double, double)> get customPressurePoints =>
       List.unmodifiable(_customPressurePoints);
+
+  Future<void> setPalmRejectionEnabled(bool value) async {
+    _palmRejectionEnabled = value;
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool('palm_rejection_enabled', value);
+    notifyListeners();
+  }
 
   Future<void> setPenPressureCurve(PenPressureCurve curve) async {
     _penPressureCurve = curve;
@@ -590,6 +599,7 @@ class SettingsService extends ChangeNotifier {
       prefs.getString('gesture_long_press'),
       GestureAction.eyedropper,
     );
+    _palmRejectionEnabled = prefs.getBool('palm_rejection_enabled') ?? true;
     _penPressureCurve =
         PenPressureCurve.values.asNameMap()[prefs.getString(
           'pen_pressure_curve',

@@ -6,17 +6,23 @@ import 'package:niarim/engine/multi_touch_tap_tracker.dart';
 
 void main() {
   group('MultiTouchTapTracker', () {
-    test('recognizes a two-finger tap only after both fingers are released', () {
-      final tracker = MultiTouchTapTracker();
-      final t0 = DateTime(2026, 1, 1);
-      tracker.pointerDown(1, const Offset(10, 10), t0);
-      tracker.pointerDown(2, const Offset(30, 10), t0);
-      expect(tracker.pointerUp(1, t0.add(const Duration(milliseconds: 80))), isNull);
-      expect(
-        tracker.pointerUp(2, t0.add(const Duration(milliseconds: 120))),
-        MultiTouchTapKind.twoFinger,
-      );
-    });
+    test(
+      'recognizes a two-finger tap only after both fingers are released',
+      () {
+        final tracker = MultiTouchTapTracker();
+        final t0 = DateTime(2026, 1, 1);
+        tracker.pointerDown(1, const Offset(10, 10), t0);
+        tracker.pointerDown(2, const Offset(30, 10), t0);
+        expect(
+          tracker.pointerUp(1, t0.add(const Duration(milliseconds: 80))),
+          isNull,
+        );
+        expect(
+          tracker.pointerUp(2, t0.add(const Duration(milliseconds: 120))),
+          MultiTouchTapKind.twoFinger,
+        );
+      },
+    );
 
     test('pinch movement is not treated as a two-finger tap', () {
       final tracker = MultiTouchTapTracker();
@@ -59,34 +65,37 @@ void main() {
   });
 
   group('InputHandler palm rejection', () {
-    test('rejects touch only while stylus is active and setting is enabled', () {
-      final handler = InputHandler();
-      handler.classifyInput(
-        const PointerDownEvent(kind: PointerDeviceKind.stylus),
-      );
-      expect(handler.isStylusActive, isTrue);
-      expect(
-        handler.shouldRejectPalmTouch(
-          InputType.touch,
-          palmRejectionEnabled: true,
-        ),
-        isTrue,
-      );
-      expect(
-        handler.shouldRejectPalmTouch(
-          InputType.touch,
-          palmRejectionEnabled: false,
-        ),
-        isFalse,
-      );
-      expect(
-        handler.shouldRejectPalmTouch(
-          InputType.stylus,
-          palmRejectionEnabled: true,
-        ),
-        isFalse,
-      );
-    });
+    test(
+      'rejects touch only while stylus is active and setting is enabled',
+      () {
+        final handler = InputHandler();
+        handler.classifyInput(
+          const PointerDownEvent(kind: PointerDeviceKind.stylus),
+        );
+        expect(handler.isStylusActive, isTrue);
+        expect(
+          handler.shouldRejectPalmTouch(
+            InputType.touch,
+            palmRejectionEnabled: true,
+          ),
+          isTrue,
+        );
+        expect(
+          handler.shouldRejectPalmTouch(
+            InputType.touch,
+            palmRejectionEnabled: false,
+          ),
+          isFalse,
+        );
+        expect(
+          handler.shouldRejectPalmTouch(
+            InputType.stylus,
+            palmRejectionEnabled: true,
+          ),
+          isFalse,
+        );
+      },
+    );
 
     test('touch up does not clear active stylus state', () {
       final handler = InputHandler();

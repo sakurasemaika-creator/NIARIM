@@ -458,6 +458,16 @@ class AppLocalizationsFr extends AppLocalizations {
   String get penSettingsTitle => 'Réglages de saisie au stylet';
 
   @override
+  String get penSettingsPalmRejectionSection => 'Rejet de la paume';
+
+  @override
+  String get penSettingsPalmRejectionTitle => 'Rejet de la paume';
+
+  @override
+  String get penSettingsPalmRejectionHint =>
+      'Évite les entrées accidentelles avec un seul doigt pendant l’utilisation d’un stylet. Les gestes à deux doigts ou plus restent disponibles.';
+
+  @override
   String get penSettingsCurveSection => 'Courbe de pression';
 
   @override
@@ -6376,20 +6386,20 @@ class AppLocalizationsFr extends AppLocalizations {
   String get brushSettingsEdgeJitterStrengthLabel => 'Intensité';
 
   @override
-  String get filterNameInkPool => '墨溜まり';
+  String get filterNameInkPool => 'Accumulation d’encre';
 
   @override
-  String get filterInkPoolColor => '色';
+  String get filterInkPoolColor => 'Couleur';
 
   @override
-  String get filterInkPoolRange => '範囲';
+  String get filterInkPoolRange => 'Plage';
 
   @override
-  String get filterInkPoolCenterWidth => '中央の太さ';
+  String get filterInkPoolCenterWidth => 'Épaisseur centrale';
 
   @override
   String filterInkPoolLayerNameSuffix(String name) {
-    return '$name 墨溜まり';
+    return '$name Accumulation d’encre';
   }
 
   @override
@@ -6453,10 +6463,10 @@ class AppLocalizationsFr extends AppLocalizations {
   String get customAutomationAllFrames => 'Exécuter sur toutes les images';
 
   @override
-  String get customAutomationYes => 'はい';
+  String get customAutomationYes => 'Oui';
 
   @override
-  String get customAutomationNo => 'いいえ';
+  String get customAutomationNo => 'Non';
 
   @override
   String get customAutomationRenameTitle => 'Renommer';
@@ -6486,20 +6496,22 @@ class AppLocalizationsFr extends AppLocalizations {
   }
 
   @override
-  String get customAutomationReturnToRecording => '操作記録に戻る';
+  String get customAutomationReturnToRecording =>
+      'Revenir à l’enregistrement des actions';
 
   @override
   String get customAutomationStopConfirmTitle =>
       'Arrêter l’enregistrement de cette automatisation ?';
 
   @override
-  String get customAutomationStopConfirmQuit => 'やめる';
+  String get customAutomationStopConfirmQuit => 'Arrêter l’enregistrement';
 
   @override
   String get customAutomationStopConfirmContinue => 'Continuer';
 
   @override
-  String get customAutomationPremiumHint => 'プレミアム会員限定で、操作を記録・編集・配布・再実行できます。';
+  String get customAutomationPremiumHint =>
+      'Réservé aux membres Premium : permet d’enregistrer, de modifier, de distribuer et de réexécuter des actions.';
 
   @override
   String get customAutomationReviewHint =>

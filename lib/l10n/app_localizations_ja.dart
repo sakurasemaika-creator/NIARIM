@@ -442,6 +442,16 @@ class AppLocalizationsJa extends AppLocalizations {
   String get penSettingsTitle => 'ペン入力設定';
 
   @override
+  String get penSettingsPalmRejectionSection => 'パームリジェクション';
+
+  @override
+  String get penSettingsPalmRejectionTitle => 'パームリジェクション';
+
+  @override
+  String get penSettingsPalmRejectionHint =>
+      'ペン使用中の1本指タッチによる誤操作を防ぎます。2本指以上のジェスチャーは引き続き使用できます。';
+
+  @override
   String get penSettingsCurveSection => '筆圧カーブ';
 
   @override

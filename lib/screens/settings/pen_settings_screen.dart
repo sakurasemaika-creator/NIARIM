@@ -45,6 +45,27 @@ class PenSettingsScreen extends StatelessWidget {
         ListView(
           padding: const EdgeInsets.all(16),
           children: [
+            _sectionLabel(context, l10n.penSettingsPalmRejectionSection),
+            Card(
+              elevation: 1,
+              shadowColor: ThemeService.activeColorScheme.shadow.withValues(
+                alpha: 0.15,
+              ),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(14),
+              ),
+              color: Theme.of(context).colorScheme.surfaceContainerLow,
+              child: SwitchListTile(
+                title: Text(l10n.penSettingsPalmRejectionTitle),
+                subtitle: Text(
+                  l10n.penSettingsPalmRejectionHint,
+                  style: const TextStyle(fontSize: 11),
+                ),
+                value: settings.palmRejectionEnabled,
+                onChanged: settings.setPalmRejectionEnabled,
+              ),
+            ),
+            const SizedBox(height: 20),
             _sectionLabel(context, l10n.penSettingsCurveSection),
             Text(
               l10n.penSettingsCurveHint,

@@ -17,6 +17,7 @@ import '../../../engine/lasso_fill_engine.dart';
 import '../../../engine/layer_compositor.dart';
 import '../../../engine/layer_keyframe_engine.dart';
 import '../../../engine/mesh_warp_engine.dart';
+import '../../../engine/multi_touch_tap_tracker.dart';
 import '../../../engine/onion_skin.dart';
 import '../../../engine/procedural_texture.dart';
 import '../../../engine/ruler_engine.dart';
@@ -438,6 +439,7 @@ class _CanvasAreaState extends State<CanvasArea> {
   // 対応するonPointerUpも同じポインターのみ委譲する（変形操作用に握り
   // つぶしたポインターのUpをツール側の「描画終了」として誤処理しない）。
   final Set<int> _toolHandledPointers = {};
+  final MultiTouchTapTracker _multiTouchTapTracker = MultiTouchTapTracker();
 
   // ─── 長押しスポイト（設定画面でON/OFF・保持秒数を設定可能、既定ON） ─────
   // ペン（トーン/スタンプサブツールを除く）・消しゴムで描画中、指を動かさず
@@ -468,15 +470,13 @@ class _CanvasAreaState extends State<CanvasArea> {
   DateTime? _lastEdgeTapTime;
   bool? _lastEdgeTapWasRight;
 
-  /// スタイラス使用中は誤操作防止のため2本指キャンバス操作を無効化する
-  /// （手のひらツール選択中のみ例外的に許可）。既存のInteractiveViewerの
-  /// panEnabled/scaleEnabledと同じ条件（パームリジェクション）。
+  /// 2本指以上は明示的なキャンバスジェスチャーとして扱う。
+  /// パームリジェクションはスタイラス使用中の単指タッチ描画だけを抑止し、
+  /// 2本指パン・ピンチ・回転までは無効化しない。
   bool get _canTouchTransform =>
       // メッシュ変形ツール中は、2本指以上でもキャンバス自体のパン・ズーム・
-      // 回転へ渡さず、各指を個別に別々の格子点操作へ渡す（複数指で複数の
-      // 角を同時につまんで引っ張る＝回転・拡大縮小相当の操作）。
-      widget.currentTool != DrawingTool.meshTransform &&
-      (!_inputHandler.isStylusActive || widget.currentTool == DrawingTool.pan);
+      // 回転へ渡さず、各指を個別に別々の格子点操作へ渡す。
+      widget.currentTool != DrawingTool.meshTransform;
 
   late TileManager _tileManager;
   late DrawingEngine _drawingEngine;
@@ -1059,6 +1059,13 @@ class _CanvasAreaState extends State<CanvasArea> {
   void _onPointerDown(PointerEvent event) {
     final type = _inputHandler.classifyInput(event);
     final canvasPos = _canvasPosition(event.localPosition);
+    final settings = context.read<SettingsService>();
+    if (_inputHandler.shouldRejectPalmTouch(
+      type,
+      palmRejectionEnabled: settings.palmRejectionEnabled,
+    )) {
+      return;
+    }
 
     // フィルターパネルから起動した一時スポイト中は、現在選択中の描画
     // ツールを変更せず、このタップを色取得だけに使う。_pickColor()は
@@ -1174,7 +1181,6 @@ class _CanvasAreaState extends State<CanvasArea> {
     if (widget.currentTool == DrawingTool.bucket) {
       // パームリジェクション：スタイラス使用中（isStylusActive）のみタッチを無視する。
       // タッチのみの端末・スタイラス未使用時はタッチでも通常通り描画できる。
-      if (type == InputType.touch && _inputHandler.isStylusActive) return;
       _syncBrushAndColor();
       _handleBucketDown(canvasPos);
       return;
@@ -1182,7 +1188,6 @@ class _CanvasAreaState extends State<CanvasArea> {
     if (widget.currentTool == DrawingTool.lasso) {
       // パームリジェクション：スタイラス使用中（isStylusActive）のみタッチを無視する。
       // タッチのみの端末・スタイラス未使用時はタッチでも通常通り描画できる。
-      if (type == InputType.touch && _inputHandler.isStylusActive) return;
       setState(() {
         _lassoPoints = [canvasPos];
       });
@@ -1193,7 +1198,6 @@ class _CanvasAreaState extends State<CanvasArea> {
             widget.currentSubTool == PenSubTool.stamp)) {
       // パームリジェクション：スタイラス使用中（isStylusActive）のみタッチを無視する。
       // タッチのみの端末・スタイラス未使用時はタッチでも通常通り描画できる。
-      if (type == InputType.touch && _inputHandler.isStylusActive) return;
       _syncBrushAndColor();
       setState(() {
         _subToolStrokePoints = [canvasPos];
@@ -1202,18 +1206,15 @@ class _CanvasAreaState extends State<CanvasArea> {
     }
     if (widget.currentTool == DrawingTool.finger) {
       // パームリジェクション：スタイラス使用中（isStylusActive）のみタッチを無視する。
-      if (type == InputType.touch && _inputHandler.isStylusActive) return;
       _handleFingerDown(canvasPos);
       return;
     }
     if (widget.currentTool == DrawingTool.blur ||
         widget.currentTool == DrawingTool.mosaic) {
-      if (type == InputType.touch && _inputHandler.isStylusActive) return;
       _handleBlurMosaicDown(canvasPos);
       return;
     }
 
-    if (type == InputType.touch && _inputHandler.isStylusActive) return;
     _syncBrushAndColor();
     // 透視定規：新しいストロークの開始点として、消失点スナップの基準をリセットする。
     _rulerEngine.beginStroke();
@@ -1243,6 +1244,14 @@ class _CanvasAreaState extends State<CanvasArea> {
     }
     final type = _inputHandler.classifyInput(event);
     final canvasPos = _canvasPosition(event.localPosition);
+    if (_inputHandler.shouldRejectPalmTouch(
+      type,
+      palmRejectionEnabled: context
+          .read<SettingsService>()
+          .palmRejectionEnabled,
+    )) {
+      return;
+    }
 
     if (widget.currentTool == DrawingTool.pan) {
       final last = _panToolLastScreenPos;
@@ -1303,14 +1312,12 @@ class _CanvasAreaState extends State<CanvasArea> {
     if (widget.currentTool == DrawingTool.bucket) {
       // パームリジェクション：スタイラス使用中（isStylusActive）のみタッチを無視する。
       // タッチのみの端末・スタイラス未使用時はタッチでも通常通り描画できる。
-      if (type == InputType.touch && _inputHandler.isStylusActive) return;
       _handleBucketMove(canvasPos);
       return;
     }
     if (widget.currentTool == DrawingTool.lasso) {
       // パームリジェクション：スタイラス使用中（isStylusActive）のみタッチを無視する。
       // タッチのみの端末・スタイラス未使用時はタッチでも通常通り描画できる。
-      if (type == InputType.touch && _inputHandler.isStylusActive) return;
       setState(() => _lassoPoints.add(canvasPos));
       return;
     }
@@ -1319,22 +1326,18 @@ class _CanvasAreaState extends State<CanvasArea> {
             widget.currentSubTool == PenSubTool.stamp)) {
       // パームリジェクション：スタイラス使用中（isStylusActive）のみタッチを無視する。
       // タッチのみの端末・スタイラス未使用時はタッチでも通常通り描画できる。
-      if (type == InputType.touch && _inputHandler.isStylusActive) return;
       setState(() => _subToolStrokePoints.add(canvasPos));
       return;
     }
     if (widget.currentTool == DrawingTool.finger) {
-      if (type == InputType.touch && _inputHandler.isStylusActive) return;
       _handleFingerMove(canvasPos);
       return;
     }
     if (widget.currentTool == DrawingTool.blur ||
         widget.currentTool == DrawingTool.mosaic) {
-      if (type == InputType.touch && _inputHandler.isStylusActive) return;
       _handleBlurMosaicMove(canvasPos);
       return;
     }
-    if (type == InputType.touch && _inputHandler.isStylusActive) return;
     if (widget.currentTool == DrawingTool.text ||
         widget.currentTool == DrawingTool.eyedropper) {
       return;
@@ -1352,6 +1355,15 @@ class _CanvasAreaState extends State<CanvasArea> {
       return;
     }
     final type = _inputHandler.classifyInput(event);
+    if (_inputHandler.shouldRejectPalmTouch(
+      type,
+      palmRejectionEnabled: context
+          .read<SettingsService>()
+          .palmRejectionEnabled,
+    )) {
+      _disarmHoldEyedropper(event.pointer);
+      return;
+    }
 
     if (widget.currentTool == DrawingTool.pan) {
       _panToolLastScreenPos = null;
@@ -1408,7 +1420,7 @@ class _CanvasAreaState extends State<CanvasArea> {
       _handleBucketUp();
       // スタイラス操作の終了はポインター種別に関わらずここで確定する
       // （スタイラス自体のUpイベントでのみisStylusActiveを確実に解除するため）。
-      _inputHandler.onStylusUp();
+      _inputHandler.onPointerUp(event);
       return;
     }
     if (widget.currentTool == DrawingTool.lasso) {
@@ -1416,7 +1428,7 @@ class _CanvasAreaState extends State<CanvasArea> {
       setState(() => _lassoPoints = []);
       // スタイラス操作の終了はポインター種別に関わらずここで確定する
       // （スタイラス自体のUpイベントでのみisStylusActiveを確実に解除するため）。
-      _inputHandler.onStylusUp();
+      _inputHandler.onPointerUp(event);
       return;
     }
     if (widget.currentTool == DrawingTool.pen &&
@@ -1425,7 +1437,7 @@ class _CanvasAreaState extends State<CanvasArea> {
       setState(() => _subToolStrokePoints = []);
       // スタイラス操作の終了はポインター種別に関わらずここで確定する
       // （スタイラス自体のUpイベントでのみisStylusActiveを確実に解除するため）。
-      _inputHandler.onStylusUp();
+      _inputHandler.onPointerUp(event);
       return;
     }
     if (widget.currentTool == DrawingTool.pen &&
@@ -1434,14 +1446,14 @@ class _CanvasAreaState extends State<CanvasArea> {
       setState(() => _subToolStrokePoints = []);
       // スタイラス操作の終了はポインター種別に関わらずここで確定する
       // （スタイラス自体のUpイベントでのみisStylusActiveを確実に解除するため）。
-      _inputHandler.onStylusUp();
+      _inputHandler.onPointerUp(event);
       return;
     }
     if (widget.currentTool == DrawingTool.finger) {
       _handleFingerUp();
       // スタイラス操作の終了はポインター種別に関わらずここで確定する
       // （スタイラス自体のUpイベントでのみisStylusActiveを確実に解除するため）。
-      _inputHandler.onStylusUp();
+      _inputHandler.onPointerUp(event);
       return;
     }
     if (widget.currentTool == DrawingTool.blur ||
@@ -1450,12 +1462,7 @@ class _CanvasAreaState extends State<CanvasArea> {
       // ここを通さないと記録中のUndoが残り続け、ぼかし・モザイク操作を
       // Undoできないだけでなく、次の描画操作と同じ履歴へ混ざってしまう。
       _handleBlurMosaicUp();
-      _inputHandler.onStylusUp();
-      return;
-    }
-    // パームリジェクションで無視されたタッチ（スタイラス使用中の誤タッチ）はここで終了。
-    // スタイラス未使用時のタッチ描画は下のendStroke()まで到達させ、正しく確定させる。
-    if (type == InputType.touch && _inputHandler.isStylusActive) {
+      _inputHandler.onPointerUp(event);
       return;
     }
     if (widget.currentTool == DrawingTool.text ||
@@ -1466,7 +1473,7 @@ class _CanvasAreaState extends State<CanvasArea> {
     _disarmHoldEyedropper(event.pointer);
     _drawingEngine.endStroke();
     _quantizeStrokeIfNeeded();
-    _inputHandler.onStylusUp();
+    _inputHandler.onPointerUp(event);
     _scheduleComposite();
     _markLineartDirtyIfNeeded();
     _finishTileUndo();
@@ -3422,12 +3429,11 @@ class _CanvasAreaState extends State<CanvasArea> {
           if (e.kind == PointerDeviceKind.touch) {
             _touchCount++;
             _activeTouchPositions[e.pointer] = e.localPosition;
-            if (_touchCount == 2) {
-              _handleGesture(context, settings.twoFingerTap);
-            }
-            if (_touchCount == 3) {
-              _handleGesture(context, settings.threeFingerTap);
-            }
+            _multiTouchTapTracker.pointerDown(
+              e.pointer,
+              e.localPosition,
+              DateTime.now(),
+            );
             if (_activeTouchPositions.length >= 2 && _canTouchTransform) {
               _touchTransformActive = true;
               // 2本指目が触れた時点で、既存の1本指用の長押しスポイト保留は
@@ -3444,6 +3450,7 @@ class _CanvasAreaState extends State<CanvasArea> {
         onPointerMove: (e) {
           if (e.kind == PointerDeviceKind.touch &&
               _activeTouchPositions.containsKey(e.pointer)) {
+            _multiTouchTapTracker.pointerMove(e.pointer, e.localPosition);
             if (_touchTransformActive) {
               if (_activeTouchPositions.length >= 2 && _canTouchTransform) {
                 _applyMultiTouchTransform(e.pointer, e.localPosition);
@@ -3457,12 +3464,21 @@ class _CanvasAreaState extends State<CanvasArea> {
           _onPointerMove(e);
         },
         onPointerUp: (e) {
+          MultiTouchTapKind? completedTap;
           if (e.kind == PointerDeviceKind.touch) {
             _touchCount = (_touchCount - 1).clamp(0, 10);
             _activeTouchPositions.remove(e.pointer);
-            // 全ての指が離れて初めて、次のタッチを新規の描画として扱えるように戻す
-            // （2本指→1本指に減った直後に、残りの指で不意に描画が始まるのを防ぐ）。
+            completedTap = _multiTouchTapTracker.pointerUp(
+              e.pointer,
+              DateTime.now(),
+            );
+            // 全ての指が離れて初めて、次のタッチを新規の描画として扱えるように戻す。
             if (_activeTouchPositions.isEmpty) _touchTransformActive = false;
+          }
+          if (completedTap == MultiTouchTapKind.twoFinger) {
+            _handleGesture(context, settings.twoFingerTap);
+          } else if (completedTap == MultiTouchTapKind.threeFinger) {
+            _handleGesture(context, settings.threeFingerTap);
           }
           if (!_toolHandledPointers.remove(e.pointer)) return;
           _onPointerUp(e);
@@ -3471,6 +3487,7 @@ class _CanvasAreaState extends State<CanvasArea> {
           if (e.kind == PointerDeviceKind.touch) {
             _touchCount = (_touchCount - 1).clamp(0, 10);
             _activeTouchPositions.remove(e.pointer);
+            _multiTouchTapTracker.pointerCancel(e.pointer);
             if (_activeTouchPositions.isEmpty) _touchTransformActive = false;
           }
           _disarmHoldEyedropper(e.pointer);

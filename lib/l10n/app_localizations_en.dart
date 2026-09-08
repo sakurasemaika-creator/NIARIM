@@ -452,6 +452,16 @@ class AppLocalizationsEn extends AppLocalizations {
   String get penSettingsTitle => 'Pen Input Settings';
 
   @override
+  String get penSettingsPalmRejectionSection => 'Palm Rejection';
+
+  @override
+  String get penSettingsPalmRejectionTitle => 'Palm rejection';
+
+  @override
+  String get penSettingsPalmRejectionHint =>
+      'Prevents accidental input from single-finger touches while using a stylus. Gestures with two or more fingers remain available.';
+
+  @override
   String get penSettingsCurveSection => 'Pressure Curve';
 
   @override
