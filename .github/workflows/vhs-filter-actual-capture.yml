@@ -1,0 +1,42 @@
+name: VHS Filter Actual Capture
+
+on:
+  push:
+    branches: [dev_branch]
+    paths:
+      - 'test/visual/vhs_filter_actual_capture_test.dart'
+      - 'lib/engine/vhs_noise_engine.dart'
+      - 'lib/engine/filter_engine.dart'
+      - 'lib/screens/canvas/widgets/filter_panel.dart'
+      - 'lib/services/filter_service.dart'
+      - '.github/workflows/vhs-filter-actual-capture.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  capture:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v6
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: false
+      - run: flutter pub get --enforce-lockfile
+      - name: Format check
+        run: dart format --output=none --set-exit-if-changed test/visual/vhs_filter_actual_capture_test.dart
+      - name: Focused static analysis
+        run: flutter analyze --no-fatal-warnings test/visual/vhs_filter_actual_capture_test.dart lib/engine/vhs_noise_engine.dart lib/engine/filter_engine.dart lib/screens/canvas/widgets/filter_panel.dart lib/services/filter_service.dart
+      - name: Execute actual Flutter UI operation capture
+        run: flutter test test/visual/vhs_filter_actual_capture_test.dart --reporter expanded
+      - name: Upload actual capture evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: vhs-filter-actual-captures
+          path: build/vhs_visual/*.png
+          if-no-files-found: error
+          retention-days: 14
