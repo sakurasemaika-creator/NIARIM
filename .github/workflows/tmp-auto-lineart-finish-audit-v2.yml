@@ -1,5 +1,6 @@
 name: TMP Auto Lineart Finish Audit v2
 
+# rerun marker: latest dev_branch verification
 on:
   push:
     branches: [dev_branch]
