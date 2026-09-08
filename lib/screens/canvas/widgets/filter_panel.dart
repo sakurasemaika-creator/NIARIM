@@ -227,7 +227,7 @@ class _FilterPanelState extends State<FilterPanel> {
     final previewRevision = ++_autoLineartPreviewRevision;
     final Uint8List filtered;
     if (filter.kind == FilterKind.autoLineart) {
-      final smoothingLevel = filter.autoLineartSmoothing.round().clamp(0, 100);
+      final smoothingLevel = filter.autoLineartSmoothing.round().clamp(0, 10);
       if (_autoLineartBaseGraph == null ||
           _autoLineartPreviewRoughWidth != filter.autoLineartRoughWidth) {
         _autoLineartBaseGraph = AutoLineartEngine.analyze(
@@ -733,9 +733,9 @@ class _FilterPanelState extends State<FilterPanel> {
             ),
             _integerStepperSlider(
               l10n.filterAutoLineartSmoothing,
-              current.autoLineartSmoothing.round().clamp(0, 100),
+              current.autoLineartSmoothing.round().clamp(0, 10),
               0,
-              100,
+              10,
               (v) {
                 service.updateFilterParams(
                   current.id,

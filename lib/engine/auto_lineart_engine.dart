@@ -330,16 +330,16 @@ class AutoLineartEngine {
   }
 
   /// Converts an analyzed topology graph into the temporary editable control
-  /// polygon used by the preview. [smoothingLevel] is intentionally discrete
-  /// (0..100): higher levels smooth the control polygon and retain fewer points.
-  /// Junction/end anchors stay as path endpoints so topology is not detached.
+  /// polygon used by the preview. [smoothingLevel] is discrete (0..10).
+  /// Levels 1..9 remove roughly 10%..90% of each path's interior controls;
+  /// level 10 is intentionally special and leaves only the two endpoints,
+  /// making every path a straight segment. Junction/end anchors remain exact.
   static AutoLineartGraph prepareEditableGraph(
     AutoLineartGraph source, {
     required int smoothingLevel,
   }) {
-    final level = smoothingLevel.clamp(0, 100);
+    final level = smoothingLevel.clamp(0, 10);
     if (level == 0 || source.paths.isEmpty) return source;
-    final legacyLevel = level / 10.0;
 
     final paths = <AutoLineartPath>[];
     for (final path in source.paths) {
@@ -349,9 +349,21 @@ class AutoLineartEngine {
         continue;
       }
 
+      if (level == 10) {
+        paths.add(
+          AutoLineartPath(
+            points: [original.first, original.last],
+            startIsJunction: path.startIsJunction,
+            endIsJunction: path.endIsJunction,
+            persistence: path.persistence,
+          ),
+        );
+        continue;
+      }
+
       var work = List<AutoLineartPoint>.from(original);
-      final passes = math.max(1, legacyLevel.ceil());
-      final amount = 0.12 + legacyLevel * 0.025;
+      final passes = math.max(1, level);
+      final amount = 0.12 + level * 0.025;
       for (var pass = 0; pass < passes; pass++) {
         final next = List<AutoLineartPoint>.from(work);
         for (var i = 1; i < work.length - 1; i++) {
@@ -363,40 +375,25 @@ class AutoLineartEngine {
             cur.y + (((prev.y + after.y) * 0.5) - cur.y) * amount,
           );
         }
-        // Never move topology anchors through automatic smoothing.
         next[0] = original.first;
         next[next.length - 1] = original.last;
         work = next;
       }
 
-      // Retain 92% -> 20% of interior controls over the ten levels. Selecting
-      // evenly from the smoothed polygon avoids a bias toward either endpoint.
-      final target = math.max(
-        2,
-        (original.length * (1.0 - legacyLevel * 0.08)).round(),
+      final interiorCount = original.length - 2;
+      final keepInterior = (interiorCount * (1.0 - level / 10.0)).round().clamp(
+        0,
+        interiorCount,
       );
-      final keepCount = math.min(work.length, target);
-      final reduced = <AutoLineartPoint>[];
-      for (var i = 0; i < keepCount; i++) {
-        final index = keepCount == 1
-            ? 0
-            : (i * (work.length - 1) / (keepCount - 1)).round();
-        final point = work[index];
-        if (reduced.isEmpty ||
-            reduced.last.x != point.x ||
-            reduced.last.y != point.y) {
+      final reduced = <AutoLineartPoint>[work.first];
+      for (var i = 1; i <= keepInterior; i++) {
+        final index = (i * (work.length - 1) / (keepInterior + 1)).round();
+        final point = work[index.clamp(1, work.length - 2)];
+        if (reduced.last.x != point.x || reduced.last.y != point.y) {
           reduced.add(point);
         }
       }
-      if (reduced.length < 2) {
-        reduced
-          ..clear()
-          ..add(work.first)
-          ..add(work.last);
-      } else {
-        reduced[0] = original.first;
-        reduced[reduced.length - 1] = original.last;
-      }
+      reduced.add(work.last);
 
       paths.add(
         AutoLineartPath(

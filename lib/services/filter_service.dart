@@ -1,6 +1,8 @@
 import 'dart:convert';
+
 import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+
 import '../models/filter_def.dart';
 import '../models/pixel_color_mode.dart';
 
@@ -156,7 +158,7 @@ class FilterService extends ChangeNotifier {
       autoLineartRoughWidth: 12,
       autoLineartOutputWidth: 2,
       autoLineartTaperLength: 8,
-      autoLineartSmoothing: 45,
+      autoLineartSmoothing: 5,
     ),
     // Prism deliberately uses an existing enum kind so adding it does not make every
     // shared FilterKind switch exhaustive again. filter_panel.dart dispatches this
@@ -178,10 +180,24 @@ class FilterService extends ChangeNotifier {
       _filters.addAll(_defaultFilters());
       await _persist();
     } else {
+      var migratedAutoLineartSmoothing = false;
       _filters.addAll(
-        raw.map(
-          (s) => FilterDef.fromJson(jsonDecode(s) as Map<String, dynamic>),
-        ),
+        raw.map((s) {
+          var filter = FilterDef.fromJson(
+            jsonDecode(s) as Map<String, dynamic>,
+          );
+          if (filter.kind == FilterKind.autoLineart &&
+              filter.autoLineartSmoothing > 10) {
+            filter = filter.copyWith(
+              autoLineartSmoothing: (filter.autoLineartSmoothing / 10)
+                  .round()
+                  .clamp(0, 10)
+                  .toDouble(),
+            );
+            migratedAutoLineartSmoothing = true;
+          }
+          return filter;
+        }),
       );
       final existingIds = _filters.map((f) => f.id).toSet();
       final missing = _defaultFilters().where(
@@ -189,6 +205,8 @@ class FilterService extends ChangeNotifier {
       );
       if (missing.isNotEmpty) {
         _filters.addAll(missing);
+      }
+      if (missing.isNotEmpty || migratedAutoLineartSmoothing) {
         await _persist();
       }
     }

@@ -337,7 +337,7 @@ void main() {
       },
     );
 
-    test('100-level smoothing reduces editable control points', () {
+    test('0-10 smoothing progressively reduces editable control points', () {
       const w = 160, h = 100;
       final src = _canvas(w, h);
       var lastX = 10;
@@ -351,16 +351,86 @@ void main() {
       final base = AutoLineartEngine.analyze(src, w, h, roughWidthPx: 8);
       final low = AutoLineartEngine.prepareEditableGraph(
         base,
-        smoothingLevel: 10,
+        smoothingLevel: 1,
       );
       final high = AutoLineartEngine.prepareEditableGraph(
         base,
-        smoothingLevel: 100,
+        smoothingLevel: 9,
       );
       expect(
         AutoLineartEngine.controlPointCount(high),
         lessThan(AutoLineartEngine.controlPointCount(low)),
       );
+    });
+
+    test('level 10 leaves exactly two endpoints on every path', () {
+      final graph = AutoLineartGraph(
+        width: 100,
+        height: 100,
+        paths: const [
+          AutoLineartPath(
+            points: [
+              AutoLineartPoint(10, 10),
+              AutoLineartPoint(20, 18),
+              AutoLineartPoint(35, 30),
+              AutoLineartPoint(50, 50),
+            ],
+            startIsJunction: false,
+            endIsJunction: true,
+            persistence: 1,
+          ),
+          AutoLineartPath(
+            points: [
+              AutoLineartPoint(50, 50),
+              AutoLineartPoint(65, 34),
+              AutoLineartPoint(80, 20),
+              AutoLineartPoint(90, 10),
+            ],
+            startIsJunction: true,
+            endIsJunction: false,
+            persistence: 1,
+          ),
+        ],
+      );
+      final straight = AutoLineartEngine.prepareEditableGraph(
+        graph,
+        smoothingLevel: 10,
+      );
+      expect(straight.paths, hasLength(2));
+      expect(straight.paths.every((path) => path.points.length == 2), isTrue);
+      expect(straight.paths[0].points.last.x, 50);
+      expect(straight.paths[0].points.last.y, 50);
+      expect(straight.paths[1].points.first.x, 50);
+      expect(straight.paths[1].points.first.y, 50);
+    });
+
+    test('levels 1-9 remove about 10%-90% of interior controls', () {
+      final points = List<AutoLineartPoint>.generate(
+        12,
+        (i) => AutoLineartPoint(i.toDouble(), (i % 3).toDouble()),
+      );
+      final graph = AutoLineartGraph(
+        width: 20,
+        height: 20,
+        paths: [
+          AutoLineartPath(
+            points: points,
+            startIsJunction: false,
+            endIsJunction: false,
+            persistence: 1,
+          ),
+        ],
+      );
+      final level1 = AutoLineartEngine.prepareEditableGraph(
+        graph,
+        smoothingLevel: 1,
+      );
+      final level9 = AutoLineartEngine.prepareEditableGraph(
+        graph,
+        smoothingLevel: 9,
+      );
+      expect(level1.paths.single.points.length, 11);
+      expect(level9.paths.single.points.length, 3);
     });
 
     test(

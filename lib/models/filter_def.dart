@@ -159,7 +159,7 @@ class FilterDef {
     this.autoLineartRoughWidth = 12,
     this.autoLineartOutputWidth = 2,
     this.autoLineartTaperLength = 8,
-    this.autoLineartSmoothing = 50,
+    this.autoLineartSmoothing = 5,
     this.prismBlurPx = 8,
     this.prismDirectionDegrees = 45,
   });
