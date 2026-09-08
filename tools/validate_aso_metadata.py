@@ -4,15 +4,16 @@ from pathlib import Path
 
 PATH = Path("store/aso/metadata.json")
 REQUIRED = {"ja-JP", "en-US", "zh-CN", "zh-TW", "ko-KR", "fr-FR", "es-ES"}
-LIMITS = {
+CHAR_LIMITS = {
     ("appStore", "name"): 30,
     ("appStore", "subtitle"): 30,
-    ("appStore", "keywords"): 100,
     ("appStore", "promotionalText"): 170,
+    ("appStore", "description"): 4000,
     ("googlePlay", "title"): 30,
     ("googlePlay", "shortDescription"): 80,
     ("googlePlay", "fullDescription"): 4000,
 }
+APPLE_KEYWORD_BYTE_LIMIT = 100
 
 
 def fail(message: str) -> None:
@@ -25,7 +26,7 @@ if set(locales) != REQUIRED:
     fail(f"locale set mismatch: expected {sorted(REQUIRED)}, got {sorted(locales)}")
 
 for locale, entry in locales.items():
-    for (store, field), limit in LIMITS.items():
+    for (store, field), limit in CHAR_LIMITS.items():
         value = entry.get(store, {}).get(field)
         if not isinstance(value, str) or not value.strip():
             fail(f"{locale}.{store}.{field} is missing")
@@ -34,7 +35,16 @@ for locale, entry in locales.items():
         if "http://" in value or "https://" in value:
             fail(f"{locale}.{store}.{field} contains a URL; keep store copy URL-free")
 
-    keywords = [item.strip().casefold() for item in entry["appStore"]["keywords"].split(",")]
+    keyword_value = entry.get("appStore", {}).get("keywords")
+    if not isinstance(keyword_value, str) or not keyword_value.strip():
+        fail(f"{locale}.appStore.keywords is missing")
+    keyword_bytes = len(keyword_value.encode("utf-8"))
+    if keyword_bytes > APPLE_KEYWORD_BYTE_LIMIT:
+        fail(
+            f"{locale}.appStore.keywords is {keyword_bytes} UTF-8 bytes; "
+            f"limit is {APPLE_KEYWORD_BYTE_LIMIT}"
+        )
+    keywords = [item.strip().casefold() for item in keyword_value.split(",")]
     if any(not item for item in keywords):
         fail(f"{locale}.appStore.keywords contains an empty keyword")
     if len(keywords) != len(set(keywords)):
