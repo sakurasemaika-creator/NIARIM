@@ -1,6 +1,14 @@
 # ChatGPT Work 継続チェックポイント
 
-状態: `paused`（正式な定期再開へ引き継ぐcheckpoint）
+状態: `paused`（手動Work再開待ち。監査checkpointは有効）
+
+## 運用更新（2026-09-08 JST）
+
+- Scheduled Taskから **Work + GPT-6 Astra最大effortへ確実に自動復帰する挙動は未確認**。実際に「今すぐ実行」から通常Chatへ遷移したため、従来の自動再開予約を監査継続の前提にしない。
+- 当面は、利用可能になった時点でユーザーがWorkを手動で開き、GPT-6 Astraの現在利用可能な最大effortで再開する。
+- 再開時は会話履歴ではなく、最新 `dev_branch`、両 `AGENTS.md`、品質基準、本ファイル、`docs/product-audit/README.md` のcheckpointから復元する。
+- 旧予約IDや固定5時間スケジュールは履歴情報としても継続判断に使用しない。自動Scheduled Workが将来実証できた場合のみ、ユーザー明示指示で再導入する。
+- 監査品質、サブエージェント制限、Actions/CI活用、checkpoint/pushのルールは変更しない。
 
 ## 最新セッション
 
@@ -9,8 +17,6 @@
 - 開始時HEAD: `022128d0346900495f18de445c05057a4a1e1071`
 - 終了時コードHEAD: `022128d`。この記録のcommitは `git log -1 -- docs/work-continuation.md` で特定する。
 - 今回の目的: App/Webを1製品として、正式監査checkpointの未完了地点から修正・実行検証・実画面監査を継続する
-- 継続予定: ユーザー明示指示により、2026-09-08 06:30 JSTを起点に5時間ごと（11:30、16:30、21:30、翌02:30…）。開始+5時間5分の候補計算よりこの固定予定を優先。利用枠回復の保証ではない。
-- Scheduled/Work予約状態: `confirmed`（正式スケジューラ更新成功・有効化確認）
 
 ### 完了した作業
 
@@ -43,13 +49,6 @@
 ## 前回の確定checkpoint
 
 - 2026-09-08 JST: App `022128d` / Web `d8fc6cf`。App A01/A03既存成果 `5076259`、Web W01〜W06成果 `4815f96` を継承。詳細は `docs/product-audit/README.md`。
-
-### 正式予約の確認
-
-- 予約ID: `6a9f2b3d23088191b2d02354997b7d79` / NIARIM監査再開
-- `DTSTART;TZID=Asia/Tokyo:20260908T063000` / `RRULE:FREQ=HOURLY;INTERVAL=5`
-- ご指定のApp/Web監査再開プロンプトをそのまま設定。既存の同一目的予約を更新し、重複作成なし。
-- 2026-09-08 06:29:25 JST、正式ツールがsuccess=true / is_enabled=true / exact_scheduleを返した。モデル種別・利用枠回復・各実行の完走を保証するものではない。
 
 ### 未検証の実装草案
 
