@@ -85,8 +85,10 @@ jobs:
       );
       expect(AutoLineartEngine.controlPointCount(at99), 3);
       expect(AutoLineartEngine.controlPointCount(at100), 2);
-      expect(at100.paths.single.points.first, same(source.paths.single.points.first));
-      expect(at100.paths.single.points.last, same(source.paths.single.points.last));
+      expect(at100.paths.single.points.first.x, source.paths.single.points.first.x);
+      expect(at100.paths.single.points.first.y, source.paths.single.points.first.y);
+      expect(at100.paths.single.points.last.x, source.paths.single.points.last.x);
+      expect(at100.paths.single.points.last.y, source.paths.single.points.last.y);
     });
 
 '''
