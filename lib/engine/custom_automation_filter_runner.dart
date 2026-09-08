@@ -15,9 +15,10 @@ import 'prism_filter_engine.dart';
 ///
 /// The return value is the layer that subsequent automation steps should treat as
 /// active. Generated-layer filters (outline/ink-pool/auto-lineart) return their new
-/// normal layer; destructive filters return [sourceLayerId]. This makes chains such
-/// as Auto Lineart -> Ink Pool deterministic and lets all-frame execution repeat the
-/// same semantic sequence independently on every frame.
+/// normal layer; destructive filters return [sourceLayerId]. Generated-layer effect
+/// filters always reference the composite of every currently visible pixel layer and
+/// place their output at the very top of the layer stack. This keeps effect-filter
+/// behavior consistent for current-frame and all-frame execution.
 class CustomAutomationFilterRunner {
   static Future<String> apply({
     required ProjectService projectService,
@@ -34,7 +35,15 @@ class CustomAutomationFilterRunner {
       frameIndex,
       sourceLayerId,
     );
-    final image = await tm.compositeLayerToImage(key);
+
+    final image = _createsLayer(filter)
+        ? await _compositeVisibleReference(
+            projectService: projectService,
+            projectId: projectId,
+            sceneId: sceneId,
+            frameIndex: frameIndex,
+          )
+        : await tm.compositeLayerToImage(key);
     final byteData = await image.toByteData(format: ui.ImageByteFormat.rawRgba);
     image.dispose();
     if (byteData == null) {
@@ -74,19 +83,13 @@ class CustomAutomationFilterRunner {
           auxiliary = maskBytes?.buffer.asUint8List();
         }
       } else if (filter.kind == FilterKind.backgroundBlend) {
-        final layers = projectService.layersOf(projectId, sceneId, frameIndex);
-        final background = await LayerCompositor.composite(
-          tm,
-          layers,
-          (layer) => projectService.tileKeyFor(
-            projectId,
-            sceneId,
-            frameIndex,
-            layer.id,
-          ),
-          tm.canvasWidth,
-          tm.canvasHeight,
-          shouldRender: (layer, _) => layer.id != sourceLayerId,
+        // Reference filters use the full visible composite for their environment
+        // reference. LayerCompositor itself excludes hidden/non-pixel layers.
+        final background = await _compositeVisibleReference(
+          projectService: projectService,
+          projectId: projectId,
+          sceneId: sceneId,
+          frameIndex: frameIndex,
         );
         final backgroundBytes = await background.toByteData(
           format: ui.ImageByteFormat.rawRgba,
@@ -132,6 +135,29 @@ class CustomAutomationFilterRunner {
     return sourceLayerId;
   }
 
+  static Future<ui.Image> _compositeVisibleReference({
+    required ProjectService projectService,
+    required String projectId,
+    required String sceneId,
+    required int frameIndex,
+  }) {
+    final tm = projectService.tileManagerOf(projectId);
+    final layers = projectService.layersOf(projectId, sceneId, frameIndex);
+    return LayerCompositor.composite(
+      tm,
+      layers,
+      (layer) => projectService.tileKeyFor(
+        projectId,
+        sceneId,
+        frameIndex,
+        layer.id,
+      ),
+      tm.canvasWidth,
+      tm.canvasHeight,
+      shouldRender: (layer, _) => layer.isVisible,
+    );
+  }
+
   static bool _createsLayer(FilterDef filter) =>
       filter.id != FilterService.prismFilterId &&
       (filter.kind == FilterKind.outline ||
@@ -172,17 +198,17 @@ class CustomAutomationFilterRunner {
       name: _generatedLayerName(source.name, filter),
     );
 
+    // Layer order is front-to-back: index 0 is the top-most layer. Every
+    // generated-layer effect filter uses the same placement rule.
     final layers = projectService.layersOf(projectId, sceneId, frameIndex);
     final createdIndex = layers.indexWhere((layer) => layer.id == created.id);
-    final sourceIndex = layers.indexWhere((layer) => layer.id == sourceLayerId);
-    final targetIndex = sourceIndex < 0 ? createdIndex : sourceIndex + 1;
-    if (createdIndex >= 0 && targetIndex >= 0 && createdIndex != targetIndex) {
+    if (createdIndex > 0) {
       projectService.reorderLayer(
         projectId: projectId,
         sceneId: sceneId,
         frameIndex: frameIndex,
         oldIndex: createdIndex,
-        newIndex: targetIndex,
+        newIndex: 0,
       );
     }
 
