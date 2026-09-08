@@ -22,6 +22,18 @@ UI/UX、product design、visual qualityは「動く」「崩れていない」�
 
 可能な限り実画面を操作・確認し、情報設計、導線、操作性、視覚階層、layout、spacing、typography、color、contrast、iconography、density、feedback、loading/empty/error等の各状態、localization、accessibility、ブランド、App/Web一貫性まで評価・改善する。既に優れた部分は理由なく変更しない。
 
+### 全画面・全操作の実機能／実画面監査
+
+全面監査では、コードレビューやunit/widget/integration/E2E test、静的解析、CI、snapshot/screenshot diffだけでUI/UX・操作監査を完了扱いしない。App/Web双方について、通常利用で到達可能な**全画面、route、dialog、sheet、popover、menu、context menu、toolbar、sidebar、panel、tab、設定、onboarding、empty/loading/error/disabled/offline等の主要状態**を棚卸しし、実際に起動した製品または本番相当の実行環境で到達して実画面を確認する。
+
+棚卸しした各画面では、その画面からユーザーが実行可能な操作を漏れなく洗い出し、適用可能な **tap/click、long press、keyboard入力、shortcut、focus/Tab移動、hover、scroll、drag/drop、resize、zoom/pan、context menu、選択/複数選択、toggle、slider、入力/編集/確定/取消、戻る/閉じる、undo/redo、save/load/import/export、共有/公開、権限要求、失敗時のretry/cancel** 等を実際に操作する。操作の存在をコードから確認しただけ、テストがイベントを発火しただけでは実操作確認の代替にしない。
+
+各操作について、必要に応じて**操作前、操作中、成功後、取消後、失敗時、境界値、空データ、長大データ、無効状態、loading、error、offline、権限拒否、再起動/再訪後**まで観察し、表示だけでなくstate遷移、feedback、focus、keyboard、scroll位置、選択状態、保存/復元、undo/redo、二重実行、誤操作耐性、データ整合性を確認する。破壊的操作は専用テストデータ/隔離環境を使い、本番データやユーザー資産を危険にさらさない。
+
+Astra Ultraは、機械的に全組み合わせを反復する必要がない部分はActions/Playwright/E2E等で網羅性を確保してよいが、**実画面の視覚品質と人間が操作したときの自然さをAstra自身が確認する工程を省略しない**。自動テストPASS、DOM/widget tree、ログ、数値、スクリーンショット差分だけを根拠に「目視確認済み」「操作確認済み」と記録してはならない。環境上どうしても実操作・実画面確認できない対象はPASSにせず、未確認理由と必要な確認環境をcheckpointへ残す。
+
+全画面・全操作のinventoryには最低限、対象画面/状態、操作、PC/SP、確認方法、結果、未確認理由を追跡できる証跡を残す。全面監査完了には、このinventoryに未説明の未確認項目がなく、重大な操作フローについて修正後の再操作・regressionまで完了していることを要求する。
+
 スマートフォンとPC/DeXを単なる同一UIのレスポンシブ変形として扱わない。SPはtouch、片手操作、software keyboard、tap target、小画面、限られたcanvas等に適した自然で効率的なモバイルUIへ最適化する。PC/DeXはスマホUIの引き伸ばしではなく、大画面、mouse、keyboardを活かし、必要に応じてtoolbar/sidebar/dock/panel/context menu/shortcut/workspace/広いcanvas/resize/multi-panel workflow等を備えるプロフェッショナルな制作環境として評価・改善する。Workspaceのsave/restore、preset、reset、panel state、default layout、破損/旧設定、device/viewport変更等も確認し、共通構造が最適化を妨げる場合は必要な範囲を再設計してよい。
 
 ### 多言語・ローカライゼーション品質
@@ -64,32 +76,24 @@ NIARIMのApp/Web製品にはAI機能を実装しない。生成AI、LLM、AIチ�
 
 NIARIMを日本国内向け製品の翻訳版としてではなく、各言語圏で自然に発見・理解・比較・導入されるグローバル製品として監査する。技術SEOやストアmetadataだけでなく、**検索流入 → Web理解 → ストア遷移 → ストア閲覧 → インストール/導入**までの獲得ファネル全体を品質対象に含める。
 
-Webは各公開ページ・対応言語について、検索意図と情報設計、title/description、canonical、hreflangと言語・地域指定、robots/index/noindex、robots.txt、XML sitemap、HTTP status/redirect/404、OG/Twitter等のsocial metadata、必要に応じたschema.org/JSON-LD構造化データ、heading/semantic HTML、内部リンク、画像alt、URL設計、重複・thin content、crawlerが主要コンテンツを取得・理解できるrendering、Core Web Vitals、モバイル検索体験を確認する。
+Webは各公開ページ・各言語について、検索意図、title/meta description、heading/semantic structure、canonical、hreflang、indexability、robots/sitemap、internal link、structured data、OG/social metadata、URL設計、重複/薄いcontent、画像alt/性能、Core Web Vitals等を確認する。単なるキーワード詰め込みは行わず、各市場で実際に使われる自然な検索語・競合/カテゴリ語・ユーザー課題を調査し、内容と一致する範囲で情報設計・コピーへ反映する。日本語キーワードの直訳をSEOとみなさない。
 
-各言語のSEOコピーは日本語の直訳やkeyword置換にせず、その言語圏で実際に使われる自然な検索語・検索意図・競合カテゴリ表現を調査して、NIARIMの実在機能とブランドを誇張せず伝える。keyword stuffing、検索エンジン向け隠し文言、内容の薄い量産ページ、意味を壊すSEO翻訳は採用しない。検索順位だけでなく、検索結果上のtitle/descriptionの明瞭さ・信頼性・クリック意欲と、流入後に期待内容が一致することまで評価する。
+App Store / Google Play等では、実際に配布する各市場・言語について、アプリ名、subtitle/short description、keywords（提供される場合）、long description、カテゴリ、promotional text、アイコン、スクリーンショット、feature graphic、preview/video、localization、価格/課金/権限説明、レビュー/評価導線等を監査する。ストア規約・文字数・metadata仕様・禁止表現は公開時点の一次資料で再確認する。スクリーンショット等は単に綺麗な画像ではなく、最初の数枚で価値提案・差別化・主要workflowが理解でき、各言語で自然に読めることを確認する。
 
-ASOはGoogle Play / App Store等、実際の配布先に応じて、アプリ名、短い説明/サブタイトル、長い説明、keywords相当、カテゴリ、タグ、アイコン、スクリーンショット、feature graphic / preview、動画、更新情報、レビュー導線、localization、プライバシー/権限説明、価格・課金表示、ブランド/機能表現の整合を監査する。各ストアの最新仕様・文字数・policyに合わせ、未公開・未確定情報を推測で追加しない。
+SEO/ASOコピーはローカライゼーション品質基準と同様、日本語原文の事実・ブランド温度を保持しつつ、各市場の検索意図に合わせてtranscreationしてよい。検索順位のために事実を誇張したり、競合商標を不自然に詰め込んだり、原文にない機能・優位性を追加しない。
 
-**ストア転換率（CVR）も製品品質指標として扱う。** 検索/ブラウズで見たユーザーが「何のアプリか」「誰向けか」「何が強みか」「自分の端末・制作フローに合うか」を短時間で理解できるか、最初のスクリーンショット/コピー/アイコンで価値が伝わるか、画像と文面が実製品と一致するかを評価する。利用可能な実データがある場合はimpression、product-page view、store listing visitor、install等のファネルを地域・言語・流入元別に比較し、CTR/CVRの低下をコピー・クリエイティブ・期待値不一致・性能/互換性・レビュー等に分解して改善する。データが無い場合は数値を捏造せず、検証可能な仮説と計測設計を提示する。
+獲得品質はランキングだけでなくconversionまで評価する。計測可能な場合は、地域/言語/端末/流入元別に検索impression→CTR→landing engagement→store click→store view→install等のfunnelを確認し、低下箇所を仮説→変更→検証で改善する。実データへアクセスできない場合は数値を推測・捏造せず、計測設計と検証可能な仮説を残す。privacy/consent要件を破って計測を増やさない。
 
-国際展開では、単に7言語を揃えるだけでなく、対象市場ごとの主要端末/画面サイズ、Android普及状況、低価格端末性能、入力デバイス、ストア提供可否、決済/価格表示、法規・プライバシー、文化的意味、サポート期待、検索チャネル等、製品に実際に影響する差を必要に応じて確認する。ただし地域ごとの機能分岐を無闇に増やさず、明確な利用価値・法的必要性・獲得効果がある場合だけ採用する。
+## 法務・知的財産・プライバシー・利用規約
 
-Web→ストア/アプリ、ストア→Web/ヘルプ、共有リンク等の導線も横断監査する。deep link / Universal Links / Android App Links、UTM等の計測、canonicalな遷移先、言語引き継ぎ、404/未インストール時fallback、プライバシーを実装・配布形態に応じて確認する。
+全面監査には `docs/product-audit/LEGAL_IP_STANDARD.md` を必須基準として適用する。ライセンス、著作権、商標、特許/実用新案、意匠等の知財だけでなく、対象国・地域のprivacy/data protection/consumer/contract law、Privacy Policy、Terms of Service、ストアprivacy disclosure/consent/delete-account等と実装の一致まで監査対象とする。法的保証ができない事項は未確認/残余リスク/専門家確認事項として残し、AIだけで全世界適法・非侵害と断定しない。
 
-SEO/ASO/Conversionは公開環境・ストア管理画面・実データでしか確定できない項目を区別し、実装だけで完了扱いしない。自動検証可能なmetadata、リンク、sitemap、structured data、status、rendering、文字数、asset仕様等はCI/テストへ寄せ、検索意図、コピー品質、多言語自然性、クリエイティブ、情報設計、ブランド判断、CVR仮説はAstra Ultraが評価する。変更後はvisual/accessibility/performance/regressionと、可能な範囲で計測結果まで確認する。
+## 検証
 
-## Astra・自動化
+修正後は変更に適したformat/static analysis/lint/unit/widget/integration/E2E/build/実画面確認を実行する。機械的検査は可能な限りCI/Actionsへ寄せるが、AIが判断すべき設計・UX・visual・翻訳・国際展開・法務リスクを機械的PASSで代替しない。
 
-root cause分析、複雑な不具合、security、データ安全性、設計、App/Web横断判断、UI/UX・product design・visual quality等、高度な推論が必要な仕事はAstra Ultraが担う。
+同一HEAD・同一入力・同一環境で既にPASSした重いsuiteを根拠なく再実行しない。ただしコード/依存/環境/入力/テスト自体が変わった場合、失敗原因の再確認、影響範囲のregression、全面監査のfull checkpoint、上記336表示マトリクス等で必要なら再実行する。
 
-formatter、lint、static analysis、build、定型テスト、Playwright、viewport/language/theme等のmatrix、screenshot生成等の決定論的・反復処理はActions/CI/通常ツールへ任せ、必要なら再利用可能で高効率な専用Action/testを作成してよい。CI/test成功を無条件に品質保証とは扱わず、テスト自体の網羅性・妥当性も必要に応じて評価する。
+## 完了条件
 
-サブエージェントの具体的な利用・timeout・wait・polling方針は `AGENTS.md` の最新指示に従う。AIサブエージェントとActions/CI/test等の非AI並列処理を区別する。
-
-品質を落とさず、重複読み込み・重複推論・短時間polling・不要なcontext再投入・Astraで行う必要のない単純処理だけを削減する。具体的な調査順序・実装方法・テスト戦略は、最終品質を最大化できる方法をAstra Ultra自身が選択する。
-
-## 完了基準
-
-一部修正やbuild/test/CI成功、利用上限到達を全面監査完了とは扱わない。App＋Web＋横断監査、必要な修正・改善、実画面UI/UX評価、SP/PC/DeX最適化、**7言語の意味・温度感・用語・registerを含むローカライゼーション監査**、必須表示監査マトリクス、Workflow・反復作業の圧縮、**国際展開・SEO・Discoverability・ASO・ストア転換率/獲得ファネル**、regression、修正後再監査まで継続する。
-
-合理的に「現時点で明確に直すべき問題がもう見つからない」と判断できる完成度を目標に、自律的に監査→判断→実装→検証→checkpoint→次の問題→再監査を進める。checkpoint・push・継続情報・自動再開は `AGENTS.md` の最新ルールに従う。
+重大・高優先度問題を未解決のまま「完了」としない。未監査領域、未実行の必要テスト、未確認の実画面/言語/viewport、queued/running CI、既知regression、法務上の未確認/専門家確認事項を明示する。完了とは、監査範囲を一巡し、必要な修正とregressionを終え、残余リスクと外部制約がcheckpointに記録されている状態を指す。
