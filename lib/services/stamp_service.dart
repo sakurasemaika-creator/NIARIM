@@ -1,9 +1,11 @@
 import 'dart:convert';
 import 'dart:io';
+
 import 'package:archive/archive_io.dart';
 import 'package:flutter/foundation.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+
 import '../models/asset_tags.dart';
 import '../models/stamp.dart';
 
@@ -117,6 +119,30 @@ class StampService extends ChangeNotifier {
     const Stamp(id: 'Stamp0022', name: '花', tags: [AssetTagKeys.decoration]),
     const Stamp(id: 'Stamp0023', name: 'チェックマーク', tags: [AssetTagKeys.symbol]),
     const Stamp(id: 'Stamp0024', name: '両矢印', tags: [AssetTagKeys.symbol]),
+    // 背景をストローク1本で埋めるための連続スタンプ。単発の葉アイコンではなく、
+    // 内部テクスチャ自体が複数の葉・色を持つ小さな植生クラスター。
+    const Stamp(
+      id: 'Stamp0025',
+      name: '葉っぱ（背景）',
+      rotation: true,
+      density: 2.3,
+      scatter: 22,
+      opacity: 94,
+      tags: [
+        AssetTagKeys.background,
+        AssetTagKeys.texture,
+        AssetTagKeys.decoration,
+      ],
+    ),
+    const Stamp(
+      id: 'Stamp0026',
+      name: '草（背景）',
+      rotation: false,
+      density: 2.8,
+      scatter: 18,
+      opacity: 96,
+      tags: [AssetTagKeys.background, AssetTagKeys.texture],
+    ),
   ];
 
   Future<void> init() async {
@@ -418,9 +444,9 @@ class StampService extends ChangeNotifier {
     final archive = ZipDecoder().decodeBytes(bytes);
     final dataFile = archive.findFile(_bundleDataFile);
     if (dataFile == null) throw const FormatException('data.json not found');
-    final json =
-        jsonDecode(utf8.decode(dataFile.content as List<int>))
-            as Map<String, dynamic>;
+    final json = jsonDecode(
+      utf8.decode(dataFile.content as List<int>),
+    ) as Map<String, dynamic>;
     final imported = Stamp.fromJson(json);
     final id = 'Stamp${DateTime.now().millisecondsSinceEpoch}';
     final imageFile = archive.files

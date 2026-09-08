@@ -200,7 +200,7 @@ class DrawingEngine {
     if (distance <= 1e-9) return;
 
     final safeDensity = brush.density.clamp(0.1, 5.0).toDouble();
-    final spacing = math.max(1.0, brush.spacing.toDouble() / safeDensity);
+    final spacing = _brushStampSpacing(brush, safeDensity);
     final pathAngle = math.atan2(to.y - from.y, to.x - from.x);
     // この区間より前に実際に進んだ距離。各補間スタンプでは
     // base + consumed を使うため、1回の大きなmoveでも多数の小さなmoveでも
@@ -251,6 +251,22 @@ class DrawingEngine {
     if (_distanceSinceLastBrushStamp.abs() < 1e-9) {
       _distanceSinceLastBrushStamp = 0.0;
     }
+  }
+
+  double _brushStampSpacing(Brush brush, double safeDensity) {
+    // 装飾チェーンはブラシ径を変更したときもリンク同士の比率が崩れないよう、
+    // 絶対pxのspacingではなくブラシサイズ比例で配置する。
+    final factor = switch (brush.id) {
+      'Brush0018' => 0.68,
+      'Brush0019' => 0.72,
+      'Brush0020' => 0.76,
+      'Brush0021' => 1.35,
+      _ => 0.0,
+    };
+    if (factor > 0) {
+      return math.max(1.0, brush.size * factor / safeDensity);
+    }
+    return math.max(1.0, brush.spacing.toDouble() / safeDensity);
   }
 
   double _stableDouble(double value) => (value * 1000000).round() / 1000000;
@@ -326,9 +342,33 @@ class DrawingEngine {
     // ランダム化し、同じ向きの六角形が機械的に並ぶ見た目を避ける。
     // ラメペンを含む他ブラシは従来どおり円形スタンプのまま。
     final isGlitterHexagon = brush.id == 'Brush0016';
+    final isChainLink =
+        brush.id == 'Brush0018' ||
+        brush.id == 'Brush0019' ||
+        brush.id == 'Brush0020';
+    final isBallChain = brush.id == 'Brush0021';
+    final chainStep = isChainLink
+        ? (strokeLength / math.max(1.0, _brushStampSpacing(brush, 1.0))).round()
+        : 0;
     final particleRotation = isGlitterHexagon
         ? _scatterRng.nextDouble() * math.pi * 2.0
+        : isChainLink
+        // 実鎖の「交互に別平面を向く」印象を2Dで読めるよう、隣接リンクを
+        // 接線に対して左右へ交互に傾ける。完全な90度交互より連結が自然。
+        ? (chainStep.isEven ? -0.48 : 0.48)
         : 0.0;
+    final chainAspect = switch (brush.id) {
+      'Brush0018' => 0.64,
+      'Brush0019' => 0.56,
+      'Brush0020' => 0.50,
+      _ => 1.0,
+    };
+    final chainThickness = switch (brush.id) {
+      'Brush0018' => 0.25,
+      'Brush0019' => 0.19,
+      'Brush0020' => 0.14,
+      _ => 0.0,
+    };
 
     // 傾き変形：カリグラフィーブラシ（ペン先角度固定）の場合は、実際の
     // スタイラス傾きに関わらず常に固定角度へ扁平化したペン先を使う。
@@ -378,6 +418,10 @@ class DrawingEngine {
       edgeJitterStrength: brush.edgeJitterStrength,
       hexagon: isGlitterHexagon,
       particleRotation: particleRotation,
+      chainLink: isChainLink,
+      chainAspect: chainAspect,
+      chainThickness: chainThickness,
+      ballChain: isBallChain,
     );
   }
 
@@ -396,6 +440,10 @@ class DrawingEngine {
     int edgeJitterStrength = 50,
     bool hexagon = false,
     double particleRotation = 0.0,
+    bool chainLink = false,
+    double chainAspect = 1.0,
+    double chainThickness = 0.0,
+    bool ballChain = false,
   }) {
     final r = currentColor.r;
     final g = currentColor.g;
@@ -471,6 +519,28 @@ class DrawingEngine {
                 final texIdx = (texY * brushTextureSize + texX) * 4;
                 pixelAlpha = customTexture[texIdx + 3] / 255.0;
               }
+            } else if (chainLink) {
+              // 中抜き楕円リンク。接線座標へ揃えたあと、リンク固有の交互角度
+              // だけ回す。outer/innerの楕円距離差で肉厚を作るため、拡縮しても
+              // リングの穴が潰れずチェーンとして読める。
+              final cosL = math.cos(-particleRotation);
+              final sinL = math.sin(-particleRotation);
+              final lx = ux * cosL - uy * sinL;
+              final ly = ux * sinL + uy * cosL;
+              final outerX = radius;
+              final outerY = radius * chainAspect;
+              final wall = radius * chainThickness;
+              final innerX = math.max(0.5, outerX - wall);
+              final innerY = math.max(0.5, outerY - wall);
+              final outerD = math.sqrt(
+                (lx * lx) / (outerX * outerX) + (ly * ly) / (outerY * outerY),
+              );
+              final innerD = math.sqrt(
+                (lx * lx) / (innerX * innerX) + (ly * ly) / (innerY * innerY),
+              );
+              final outerAa = ((1.0 - outerD) * radius + 0.7).clamp(0.0, 1.0);
+              final innerAa = ((innerD - 1.0) * radius + 0.7).clamp(0.0, 1.0);
+              pixelAlpha = math.min(outerAa, innerAa);
             } else if (hexagon) {
               // グリッターフレーク：正六角形。傾き変形後のローカル座標を
               // 粒固有の角度だけ回転し、六角形の符号付き近似距離でAAする。
@@ -500,7 +570,8 @@ class DrawingEngine {
                 pixelAlpha = 0.0;
               }
             } else {
-              // 通常ブラシ：アンチエイリアス
+              // 通常ブラシ／ボールチェーン：アンチエイリアス。ボールチェーンは
+              // 円形そのものを保ち、専用spacingで粒がつながり過ぎないようにする。
               if (edgeJitter && dist > radius - 1.5) {
                 final maxJitter = edgeJitterStrength / 100.0 * 2.5;
                 final jitter = (_jitterRng.nextDouble() - 0.5) * maxJitter * 2;

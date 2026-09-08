@@ -2,6 +2,7 @@ import 'dart:io';
 import 'dart:math' as math;
 import 'dart:typed_data';
 import 'dart:ui' as ui;
+
 import '../models/stamp.dart';
 import '../models/tone.dart';
 import 'filter_engine.dart';
@@ -513,8 +514,14 @@ Future<Uint8List> generateBuiltInStampTexture(
   if (texture == null) {
     final recorder = ui.PictureRecorder();
     final canvas = ui.Canvas(recorder);
-    final paint = ui.Paint()..color = const ui.Color(0xFF222222);
-    canvas.drawPath(_shapePathForName(stamp.name, size.toDouble()), paint);
+    if (stamp.name.contains('葉っぱ（背景）')) {
+      _drawLeafCluster(canvas, size.toDouble());
+    } else if (stamp.name.contains('草（背景）')) {
+      _drawGrassCluster(canvas, size.toDouble());
+    } else {
+      final paint = ui.Paint()..color = const ui.Color(0xFF222222);
+      canvas.drawPath(_shapePathForName(stamp.name, size.toDouble()), paint);
+    }
     final picture = recorder.endRecording();
     final img = await picture.toImage(size, size);
     final byteData = await img.toByteData(format: ui.ImageByteFormat.rawRgba);
@@ -533,6 +540,96 @@ Future<Uint8List> generateBuiltInStampTexture(
     texture = adjusted;
   }
   return texture;
+}
+
+void _drawLeafCluster(ui.Canvas canvas, double s) {
+  final rng = math.Random(25025);
+  const colors = <ui.Color>[
+    ui.Color(0xFF1F6B38),
+    ui.Color(0xFF2F8745),
+    ui.Color(0xFF4B9A43),
+    ui.Color(0xFF6EAE42),
+    ui.Color(0xFF91BD45),
+    ui.Color(0xFFB2C94B),
+  ];
+  for (var i = 0; i < 13; i++) {
+    final cx = s * (0.18 + rng.nextDouble() * 0.64);
+    final cy = s * (0.18 + rng.nextDouble() * 0.64);
+    final length = s * (0.18 + rng.nextDouble() * 0.16);
+    final width = length * (0.34 + rng.nextDouble() * 0.18);
+    final angle = rng.nextDouble() * math.pi * 2;
+    final paint = ui.Paint()..color = colors[i % colors.length];
+    canvas.save();
+    canvas.translate(cx, cy);
+    canvas.rotate(angle);
+    final leaf = ui.Path()
+      ..moveTo(-length * 0.52, 0)
+      ..cubicTo(
+        -length * 0.18,
+        -width,
+        length * 0.30,
+        -width * 0.82,
+        length * 0.52,
+        0,
+      )
+      ..cubicTo(
+        length * 0.28,
+        width * 0.82,
+        -length * 0.20,
+        width,
+        -length * 0.52,
+        0,
+      )
+      ..close();
+    canvas.drawPath(leaf, paint);
+    // 葉脈を僅かに暗くして、縮小しても単色の楕円に潰れないようにする。
+    final vein = ui.Paint()
+      ..color = const ui.Color(0x55204E2B)
+      ..strokeWidth = math.max(0.7, s * 0.008)
+      ..style = ui.PaintingStyle.stroke;
+    canvas.drawLine(
+      ui.Offset(-length * 0.38, 0),
+      ui.Offset(length * 0.40, 0),
+      vein,
+    );
+    canvas.restore();
+  }
+}
+
+void _drawGrassCluster(ui.Canvas canvas, double s) {
+  final rng = math.Random(26026);
+  const colors = <ui.Color>[
+    ui.Color(0xFF285F31),
+    ui.Color(0xFF34783B),
+    ui.Color(0xFF4A8F3E),
+    ui.Color(0xFF65A542),
+    ui.Color(0xFF7DB544),
+    ui.Color(0xFFA0C74D),
+  ];
+  final baseY = s * 0.82;
+  for (var i = 0; i < 31; i++) {
+    final x = s * (0.08 + rng.nextDouble() * 0.84);
+    final height = s * (0.24 + rng.nextDouble() * 0.52);
+    final bend = (rng.nextDouble() * 2 - 1) * s * 0.16;
+    final width = s * (0.008 + rng.nextDouble() * 0.012);
+    final paint = ui.Paint()..color = colors[i % colors.length];
+    final blade = ui.Path()
+      ..moveTo(x - width, baseY)
+      ..quadraticBezierTo(
+        x + bend * 0.35 - width,
+        baseY - height * 0.55,
+        x + bend,
+        baseY - height,
+      )
+      ..quadraticBezierTo(
+        x + bend * 0.35 + width,
+        baseY - height * 0.55,
+        x + width,
+        baseY,
+      )
+      ..close();
+    canvas.drawPath(blade, paint);
+  }
 }
 
 ui.Path _shapePathForName(String name, double s) {
