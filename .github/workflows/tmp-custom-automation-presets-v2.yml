@@ -6,6 +6,7 @@ on:
     branches: [dev_branch]
     paths:
       - 'scripts/tmp_integrate_custom_automation_presets_v2.py'
+      - 'scripts/tmp_fix_custom_automation_lints.py'
       - '.github/workflows/tmp-custom-automation-presets-v2.yml'
 
 permissions:
@@ -26,7 +27,9 @@ jobs:
           cache: true
       - run: flutter pub get
       - name: Apply integration
-        run: python3 scripts/tmp_integrate_custom_automation_presets_v2.py
+        run: |
+          python3 scripts/tmp_integrate_custom_automation_presets_v2.py
+          python3 scripts/tmp_fix_custom_automation_lints.py
       - name: Format
         run: dart format lib/services/filter_service.dart lib/services/custom_automation_service.dart lib/engine/custom_automation_executor.dart lib/engine/custom_automation_filter_runner.dart lib/engine/color_trace_adjust_engine.dart lib/models/custom_automation_builtin_presets.dart
       - name: Analyze
