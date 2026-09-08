@@ -41,7 +41,9 @@ jobs:
           events = []
           for line in Path('artifacts/save-safety/red.jsonl').read_text().splitlines():
               try:
-                  events.append(json.loads(line))
+                  event = json.loads(line)
+                  if isinstance(event, dict):
+                      events.append(event)
               except json.JSONDecodeError:
                   pass
           names = {e['test']['id']: e['test']['name'] for e in events if e.get('type') == 'testStart' and not e['test']['name'].startswith('loading ')}
