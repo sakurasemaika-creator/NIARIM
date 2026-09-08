@@ -27,6 +27,7 @@ jobs:
         run: |
           python3 scripts/tmp_custom_automation_foundation.py
           python3 scripts/tmp_custom_automation_followup.py
+          python3 scripts/tmp_custom_automation_context_patch.py
       - name: Generate localization
         run: flutter gen-l10n
       - name: Format
