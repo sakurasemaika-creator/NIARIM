@@ -18,14 +18,14 @@
     "en-US": {
       "appStore": {
         "name": "NIARIM",
-        "subtitle": "Draw & Animate Your Stories",
+        "subtitle": "Draw & Create Animation",
         "keywords": "animation,drawing,art,illustration,animate,frame,sketch,paint,creator,cartoon",
-        "promotionalText": "Draw it. Move it. Make it yours. Turn hand-drawn artwork into animation with NIARIM.",
+        "promotionalText": "Draw, animate, and finish. Turn hand-drawn artwork into animation with NIARIM.",
         "description": "NIARIM is a creative app that brings drawing and animation into one workflow. Create artwork frame by frame, organize layers, use brushes and selection tools, and turn hand-drawn ideas into motion without leaving the canvas.\n\nWhether you draw illustrations or create animation, NIARIM is designed to keep the creative process focused and direct."
       },
       "googlePlay": {
         "title": "NIARIM",
-        "shortDescription": "Draw illustrations and bring them to life with frame-by-frame animation.",
+        "shortDescription": "Draw illustrations and create frame-by-frame animation.",
         "fullDescription": "NIARIM is a creative app that brings drawing and animation into one workflow. Create artwork frame by frame, organize layers, use brushes and selection tools, and turn hand-drawn ideas into motion without leaving the canvas.\n\nWhether you draw illustrations or create animation, NIARIM is designed to keep the creative process focused and direct."
       }
     },
@@ -34,7 +34,7 @@
         "name": "NIARIM",
         "subtitle": "绘画与逐帧动画创作",
         "keywords": "动画,绘画,插画,逐帧,手绘,图层,创作",
-        "promotionalText": "从绘画到动画，一气呵成。用NIARIM让手绘作品动起来。",
+        "promotionalText": "绘画、制作动画、完成。用NIARIM将手绘作品制作成动画。",
         "description": "NIARIM是一款把绘画与动画创作结合在同一工作流程中的创意应用。你可以逐帧绘制画面、管理图层，并使用画笔和选区工具，将手绘想法直接转化为动画。\n\n无论你专注插画还是动画制作，NIARIM都致力于提供专注、直接的画布创作体验。"
       },
       "googlePlay": {
@@ -48,7 +48,7 @@
         "name": "NIARIM",
         "subtitle": "繪圖與逐格動畫創作",
         "keywords": "動畫,繪圖,插畫,逐格,手繪,圖層,創作",
-        "promotionalText": "從繪圖到動畫，一氣呵成。用NIARIM讓手繪作品動起來。",
+        "promotionalText": "繪圖、製作動畫、完成。用NIARIM將手繪作品製作成動畫。",
         "description": "NIARIM是一款把繪圖與動畫創作整合在同一工作流程中的創意應用程式。你可以逐格繪製畫面、管理圖層，並使用筆刷和選取工具，將手繪想法直接轉化為動畫。\n\n無論你專注插畫或動畫製作，NIARIM都致力於提供專注、直接的畫布創作體驗。"
       },
       "googlePlay": {
@@ -60,7 +60,7 @@
     "ko-KR": {
       "appStore": {
         "name": "NIARIM",
-        "subtitle": "그림과 프레임 애니메이션",
+        "subtitle": "그림과 애니메이션 제작",
         "keywords": "애니메이션,그림,일러스트,드로잉,프레임,레이어",
         "promotionalText": "그리고, 움직이고, 완성하세요. NIARIM으로 손그림을 애니메이션으로 만들어 보세요.",
         "description": "NIARIM은 드로잉과 애니메이션 제작을 하나의 흐름으로 이어 주는 크리에이티브 앱입니다. 프레임별로 그림을 그리고, 레이어를 정리하며, 브러시와 선택 도구를 사용해 손으로 그린 아이디어를 자연스럽게 움직임으로 만들 수 있습니다.\n\n일러스트를 그리는 사람과 애니메이션을 만드는 사람 모두 창작에 집중할 수 있는 캔버스 경험을 지향합니다."
@@ -74,9 +74,9 @@
     "fr-FR": {
       "appStore": {
         "name": "NIARIM",
-        "subtitle": "Dessinez et animez vos idées",
+        "subtitle": "Dessin et animation",
         "keywords": "animation,dessin,illustration,art,image,croquis,peinture,calque,création,cartoon",
-        "promotionalText": "Dessinez, animez, créez. Donnez vie à vos illustrations dessinées à la main avec NIARIM.",
+        "promotionalText": "Dessinez, animez, finalisez. Transformez vos dessins en animation avec NIARIM.",
         "description": "NIARIM réunit le dessin et l'animation dans un même flux créatif. Dessinez image par image, organisez vos calques et utilisez pinceaux et outils de sélection pour transformer directement vos idées dessinées à la main en mouvement.\n\nQue vous créiez des illustrations ou des animations, NIARIM vise une expérience de création claire et centrée sur la toile."
       },
       "googlePlay": {
@@ -88,9 +88,9 @@
     "es-ES": {
       "appStore": {
         "name": "NIARIM",
-        "subtitle": "Dibuja y anima tus historias",
+        "subtitle": "Dibujo y animación",
         "keywords": "animación,dibujo,ilustración,arte,fotograma,boceto,pintar,capas,crear,cartoon",
-        "promotionalText": "Dibuja, anima y crea. Convierte tus ilustraciones hechas a mano en animación con NIARIM.",
+        "promotionalText": "Dibuja, anima y termina. Convierte tus dibujos en animación con NIARIM.",
         "description": "NIARIM reúne dibujo y animación en un mismo flujo creativo. Dibuja fotograma a fotograma, organiza capas y utiliza pinceles y herramientas de selección para convertir tus ideas hechas a mano directamente en movimiento.\n\nTanto si dibujas ilustraciones como si creas animaciones, NIARIM busca mantener la experiencia centrada en el lienzo y en tu proceso creativo."
       },
       "googlePlay": {
