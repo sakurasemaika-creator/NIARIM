@@ -1,0 +1,67 @@
+name: TMP Auto Lineart Finish Audit v2
+
+on:
+  push:
+    branches: [dev_branch]
+    paths:
+      - '.github/workflows/tmp-auto-lineart-finish-audit-v2.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  audit-and-land:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: dev_branch
+          fetch-depth: 0
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+      - name: Apply audit fixes
+        run: |
+          set +e
+          python3 scripts/tmp_auto_lineart_finish_audit.py
+          set -e
+          python3 scripts/tmp_auto_lineart_finish_audit_testfix.py
+          python3 scripts/tmp_auto_lineart_panel_wait_fix.py
+      - name: Format
+        run: |
+          dart format \
+            lib/services/project_service.dart \
+            lib/screens/canvas/widgets/filter_panel.dart \
+            lib/screens/canvas/widgets/auto_lineart_control_overlay.dart \
+            test/auto_lineart_control_overlay_test.dart \
+            test/auto_lineart_finish_audit_test.dart \
+            test/auto_lineart_canvas_e2e_test.dart \
+            test/auto_lineart_panel_state_test.dart \
+            test/auto_lineart_bulk_isolation_test.dart
+      - name: Analyze changed production
+        run: flutter analyze --no-fatal-warnings --no-fatal-infos lib/services/project_service.dart lib/screens/canvas/widgets/filter_panel.dart lib/screens/canvas/widgets/auto_lineart_control_overlay.dart
+      - name: Core and boundary audit
+        run: |
+          flutter test test/auto_lineart_filter_test.dart --reporter expanded
+          flutter test test/auto_lineart_finish_audit_test.dart --reporter expanded
+      - name: Gesture audit
+        run: flutter test test/auto_lineart_control_overlay_test.dart --reporter expanded
+      - name: Panel state audit
+        run: flutter test test/auto_lineart_panel_state_test.dart --reporter expanded
+      - name: Bulk isolation audit
+        run: flutter test test/auto_lineart_bulk_isolation_test.dart --reporter expanded
+      - name: Actual Canvas apply Undo Redo audit
+        run: flutter test test/auto_lineart_canvas_e2e_test.dart --reporter expanded
+      - name: Commit and push audit fixes
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add lib test
+          git diff --cached --quiet && exit 0
+          git commit -m 'test: 自動線画の総仕上げ監査を完了'
+          git reset --hard HEAD
+          git pull --rebase origin dev_branch
+          git push origin HEAD:dev_branch
