@@ -105,7 +105,7 @@ void main() {
       });
       final file = File('${out.path}/$name.png');
       await tester.runAsync(() => file.writeAsBytes(bytes!));
-      expect(await file.length(), greaterThan(10000));
+      expect(file.lengthSync(), greaterThan(10000));
       stage('capture:$name:done');
     }
 
