@@ -84,4 +84,39 @@ void main() {
     expect(filtered, orderedEquals(source));
     expect(identical(filtered, source), isFalse);
   });
+
+  test('zero color bleed does not secretly shift RGB channels', () {
+    const width = 8;
+    const height = 4;
+    final source = Uint8List(width * height * 4);
+    for (var y = 0; y < height; y++) {
+      for (var x = 0; x < width; x++) {
+        final i = (y * width + x) * 4;
+        source[i] = 10 + x * 20;
+        source[i + 1] = 20 + x * 20;
+        source[i + 2] = 30 + x * 20;
+        source[i + 3] = 255;
+      }
+    }
+
+    final filtered = VhsNoiseEngine.apply(
+      source,
+      width,
+      height,
+      noiseStrength: 0,
+      scanlineStrength: 50,
+      colorBleed: 0,
+      tracking: 0,
+    );
+
+    // Even rows are not darkened by scanlines. With color bleed disabled they
+    // therefore remain byte-identical, proving there is no hidden channel shift.
+    for (var x = 0; x < width; x++) {
+      final i = x * 4;
+      expect(filtered[i], source[i]);
+      expect(filtered[i + 1], source[i + 1]);
+      expect(filtered[i + 2], source[i + 2]);
+      expect(filtered[i + 3], source[i + 3]);
+    }
+  });
 }
