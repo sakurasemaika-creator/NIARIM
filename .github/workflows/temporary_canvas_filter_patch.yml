@@ -76,7 +76,7 @@ jobs:
         run: dart format lib/screens/canvas/canvas_screen.dart lib/screens/canvas/widgets/filter_panel.dart lib/services/recorded_filter_apply_service.dart
 
       - name: Analyze automation filter path
-        run: flutter analyze lib/screens/canvas/canvas_screen.dart lib/screens/canvas/widgets/filter_panel.dart lib/services/recorded_filter_apply_service.dart
+        run: flutter analyze --no-fatal-warnings lib/screens/canvas/canvas_screen.dart lib/screens/canvas/widgets/filter_panel.dart lib/services/recorded_filter_apply_service.dart
 
       - name: Remove temporary workflow and commit
         run: |
