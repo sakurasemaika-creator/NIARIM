@@ -1,0 +1,48 @@
+name: TMP Custom Automation UI Foundation
+
+on:
+  push:
+    branches: [dev_branch]
+    paths:
+      - '.github/workflows/tmp-custom-automation-ui-foundation.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  integrate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: dev_branch
+          fetch-depth: 0
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+      - run: flutter pub get
+      - name: Apply UI foundation patch
+        run: python3 scripts/tmp_custom_automation_ui_foundation.py
+      - name: Generate localization
+        run: flutter gen-l10n
+      - name: Format affected Dart
+        run: dart format lib/app_bootstrap.dart lib/services/premium_service.dart lib/widgets/custom_automation_manager_sheet.dart lib/models/custom_automation.dart lib/services/custom_automation_service.dart lib/engine/custom_automation_filter_runner.dart lib/engine/custom_automation_executor.dart lib/models/shortcut_binding.dart test/custom_automation_service_test.dart
+      - name: Analyze affected code
+        run: flutter analyze lib/app_bootstrap.dart lib/services/premium_service.dart lib/widgets/custom_automation_manager_sheet.dart lib/models/custom_automation.dart lib/services/custom_automation_service.dart lib/engine/custom_automation_filter_runner.dart lib/engine/custom_automation_executor.dart lib/models/shortcut_binding.dart test/custom_automation_service_test.dart
+      - name: Automation tests
+        run: flutter test test/custom_automation_service_test.dart --reporter expanded
+      - name: App smoke
+        run: flutter test test/app_smoke_test.dart --reporter compact
+      - name: Commit integration
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add lib test
+          if git diff --cached --quiet; then exit 0; fi
+          git commit -m 'feat: 自動操作のPremium・Provider・管理UI基盤を統合'
+          git reset --hard HEAD
+          git pull --rebase origin dev_branch
+          git push origin HEAD:dev_branch
