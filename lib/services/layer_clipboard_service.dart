@@ -7,13 +7,13 @@ import 'project_service.dart';
 
 class _LayerClipboardSnapshot {
   final Layer layer;
-  final String sourceSceneId;
+  final String sourceProjectId;
   final int sourceFrameIndex;
   final Uint8List? pixels;
 
   const _LayerClipboardSnapshot({
     required this.layer,
-    required this.sourceSceneId,
+    required this.sourceProjectId,
     required this.sourceFrameIndex,
     required this.pixels,
   });
@@ -68,7 +68,7 @@ class LayerClipboardService {
 
     _snapshot = _LayerClipboardSnapshot(
       layer: layer.copyWith(keyframes: List.of(layer.keyframes)),
-      sourceSceneId: sceneId,
+      sourceProjectId: projectId,
       sourceFrameIndex: frameIndex,
       pixels: pixels,
     );
@@ -83,7 +83,7 @@ class LayerClipboardService {
     required String beforeLayerId,
   }) {
     final snapshot = _snapshot;
-    if (snapshot == null) return null;
+    if (snapshot == null || snapshot.sourceProjectId != projectId) return null;
     final scene = projectService.sceneOf(projectId, targetSceneId);
     if (scene == null ||
         targetFrameIndex < 0 ||
