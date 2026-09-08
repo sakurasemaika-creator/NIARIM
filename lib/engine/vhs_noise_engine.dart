@@ -35,7 +35,10 @@ class VhsNoiseEngine {
 
     final result = Uint8List.fromList(data);
     final frameSeed = _mix(seed, frameIndex, width ^ (height << 8));
-    final channelShift = (1 + bleed * 5).round();
+    // A zero bleed control must mean zero channel displacement even when other
+    // VHS components remain enabled. The previous `1 + ...` formulation kept a
+    // hidden 1 px red/blue split whenever scanlines/noise/tracking were active.
+    final channelShift = bleed == 0 ? 0 : (1 + bleed * 5).round();
     final maxTrackingShift = math.max(1, (width * 0.035 * trackingAmount).round());
 
     // A small number of horizontal bands emulate unstable VHS tracking.
