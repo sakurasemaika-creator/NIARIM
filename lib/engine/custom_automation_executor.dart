@@ -16,10 +16,8 @@ class CustomAutomationExecutionException implements Exception {
       : 'CustomAutomationExecutionException(step ${stepIndex! + 1}): $message';
 }
 
-typedef AutomationToolHandler = Future<void> Function(
-  String command,
-  Map<String, Object?> args,
-);
+typedef AutomationToolHandler =
+    Future<void> Function(String command, Map<String, Object?> args);
 
 /// Executes semantic automation commands rather than replaying screen coordinates.
 /// This keeps imported/shared automations stable across screen sizes and layouts.
@@ -78,7 +76,9 @@ class CustomAutomationExecutor {
               }
               final raw = step.args['filter'];
               if (raw is! Map) {
-                throw const FormatException('Recorded filter snapshot is missing');
+                throw const FormatException(
+                  'Recorded filter snapshot is missing',
+                );
               }
               final filter = FilterDef.fromJson(raw.cast<String, dynamic>());
               activeLayerId = await CustomAutomationFilterRunner.apply(

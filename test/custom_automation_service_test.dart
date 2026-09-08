@@ -6,32 +6,35 @@ import 'package:shared_preferences/shared_preferences.dart';
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
-  test('single-frame canvas-only automation exposes current/all-frame scope', () {
-    final item = CustomAutomation(
-      id: 'a',
-      name: 'same frame',
-      recordingStartFrame: 3,
-      createdAt: DateTime(2026),
-      updatedAt: DateTime(2026),
-      steps: const [
-        CustomAutomationStep(
-          id: '1',
-          surface: CustomAutomationSurface.canvas,
-          command: 'canvas.tool',
-          label: 'tool',
-          recordedFrame: 3,
-        ),
-        CustomAutomationStep(
-          id: '2',
-          surface: CustomAutomationSurface.canvas,
-          command: 'canvas.brushSize',
-          label: 'size',
-          recordedFrame: 3,
-        ),
-      ],
-    );
-    expect(item.supportsFrameScopeChoice, isTrue);
-  });
+  test(
+    'single-frame canvas-only automation exposes current/all-frame scope',
+    () {
+      final item = CustomAutomation(
+        id: 'a',
+        name: 'same frame',
+        recordingStartFrame: 3,
+        createdAt: DateTime(2026),
+        updatedAt: DateTime(2026),
+        steps: const [
+          CustomAutomationStep(
+            id: '1',
+            surface: CustomAutomationSurface.canvas,
+            command: 'canvas.tool',
+            label: 'tool',
+            recordedFrame: 3,
+          ),
+          CustomAutomationStep(
+            id: '2',
+            surface: CustomAutomationSurface.canvas,
+            command: 'canvas.brushSize',
+            label: 'size',
+            recordedFrame: 3,
+          ),
+        ],
+      );
+      expect(item.supportsFrameScopeChoice, isTrue);
+    },
+  );
 
   test('recording an action on another frame disables all-frame scope', () {
     final item = CustomAutomation(
@@ -60,27 +63,30 @@ void main() {
     expect(item.supportsFrameScopeChoice, isFalse);
   });
 
-  test('frame navigation disables all-frame scope even if context later matches', () {
-    final item = CustomAutomation(
-      id: 'a',
-      name: 'moves frame',
-      recordingStartFrame: 3,
-      createdAt: DateTime(2026),
-      updatedAt: DateTime(2026),
-      steps: const [
-        CustomAutomationStep(
-          id: '1',
-          surface: CustomAutomationSurface.canvas,
-          command: 'canvas.selectFrame',
-          label: 'frame',
-          changesFrame: true,
-          recordedFrame: 3,
-        ),
-      ],
-    );
-    expect(item.isCanvasOnly, isTrue);
-    expect(item.supportsFrameScopeChoice, isFalse);
-  });
+  test(
+    'frame navigation disables all-frame scope even if context later matches',
+    () {
+      final item = CustomAutomation(
+        id: 'a',
+        name: 'moves frame',
+        recordingStartFrame: 3,
+        createdAt: DateTime(2026),
+        updatedAt: DateTime(2026),
+        steps: const [
+          CustomAutomationStep(
+            id: '1',
+            surface: CustomAutomationSurface.canvas,
+            command: 'canvas.selectFrame',
+            label: 'frame',
+            changesFrame: true,
+            recordedFrame: 3,
+          ),
+        ],
+      );
+      expect(item.isCanvasOnly, isTrue);
+      expect(item.supportsFrameScopeChoice, isFalse);
+    },
+  );
 
   test('timeline step disables current/all-frame radio choice', () {
     final item = CustomAutomation(
@@ -102,32 +108,35 @@ void main() {
     expect(item.supportsFrameScopeChoice, isFalse);
   });
 
-  test('deleting navigation step cannot hide cross-frame recording context', () {
-    final remainingAfterDelete = CustomAutomation(
-      id: 'a',
-      name: 'edited macro',
-      recordingStartFrame: 0,
-      createdAt: DateTime(2026),
-      updatedAt: DateTime(2026),
-      steps: const [
-        CustomAutomationStep(
-          id: 'before',
-          surface: CustomAutomationSurface.canvas,
-          command: 'canvas.tool',
-          label: 'Pen',
-          recordedFrame: 0,
-        ),
-        CustomAutomationStep(
-          id: 'after',
-          surface: CustomAutomationSurface.canvas,
-          command: 'canvas.color',
-          label: 'Color',
-          recordedFrame: 1,
-        ),
-      ],
-    );
-    expect(remainingAfterDelete.supportsFrameScopeChoice, isFalse);
-  });
+  test(
+    'deleting navigation step cannot hide cross-frame recording context',
+    () {
+      final remainingAfterDelete = CustomAutomation(
+        id: 'a',
+        name: 'edited macro',
+        recordingStartFrame: 0,
+        createdAt: DateTime(2026),
+        updatedAt: DateTime(2026),
+        steps: const [
+          CustomAutomationStep(
+            id: 'before',
+            surface: CustomAutomationSurface.canvas,
+            command: 'canvas.tool',
+            label: 'Pen',
+            recordedFrame: 0,
+          ),
+          CustomAutomationStep(
+            id: 'after',
+            surface: CustomAutomationSurface.canvas,
+            command: 'canvas.color',
+            label: 'Color',
+            recordedFrame: 1,
+          ),
+        ],
+      );
+      expect(remainingAfterDelete.supportsFrameScopeChoice, isFalse);
+    },
+  );
 
   test('missing start frame is conservative and disables all-frame scope', () {
     final item = CustomAutomation(
@@ -148,58 +157,61 @@ void main() {
     expect(item.supportsFrameScopeChoice, isFalse);
   });
 
-  test('record, coalesce, reorder, save, export and import round-trip', () async {
-    SharedPreferences.setMockInitialValues({});
-    final service = CustomAutomationService();
-    await service.init();
-    service.beginDraft(
-      name: 'My action',
-      surface: CustomAutomationSurface.canvas,
-      recordingStartFrame: 0,
-    );
-    service.recordStep(
-      surface: CustomAutomationSurface.canvas,
-      command: 'canvas.tool',
-      label: 'Pen',
-      args: const {'tool': 'pen'},
-      recordedFrame: 0,
-    );
-    service.recordStep(
-      surface: CustomAutomationSurface.canvas,
-      command: 'canvas.brushSize',
-      label: 'Size',
-      args: const {'value': 7.0},
-      recordedFrame: 0,
-    );
-    service.recordStep(
-      surface: CustomAutomationSurface.canvas,
-      command: 'canvas.brushSize',
-      label: 'Size',
-      args: const {'value': 8.0},
-      recordedFrame: 0,
-    );
-    expect(service.draft!.steps.length, 2);
-    expect(service.draft!.steps.last.args['value'], 8.0);
-    service.stopRecording();
-    service.reorderDraftStep(1, 0);
-    final saved = await service.saveDraft();
-    expect(saved, isNotNull);
-    expect(saved!.steps.first.command, 'canvas.brushSize');
-    expect(saved.recordingStartFrame, 0);
-    expect(saved.supportsFrameScopeChoice, isTrue);
+  test(
+    'record, coalesce, reorder, save, export and import round-trip',
+    () async {
+      SharedPreferences.setMockInitialValues({});
+      final service = CustomAutomationService();
+      await service.init();
+      service.beginDraft(
+        name: 'My action',
+        surface: CustomAutomationSurface.canvas,
+        recordingStartFrame: 0,
+      );
+      service.recordStep(
+        surface: CustomAutomationSurface.canvas,
+        command: 'canvas.tool',
+        label: 'Pen',
+        args: const {'tool': 'pen'},
+        recordedFrame: 0,
+      );
+      service.recordStep(
+        surface: CustomAutomationSurface.canvas,
+        command: 'canvas.brushSize',
+        label: 'Size',
+        args: const {'value': 7.0},
+        recordedFrame: 0,
+      );
+      service.recordStep(
+        surface: CustomAutomationSurface.canvas,
+        command: 'canvas.brushSize',
+        label: 'Size',
+        args: const {'value': 8.0},
+        recordedFrame: 0,
+      );
+      expect(service.draft!.steps.length, 2);
+      expect(service.draft!.steps.last.args['value'], 8.0);
+      service.stopRecording();
+      service.reorderDraftStep(1, 0);
+      final saved = await service.saveDraft();
+      expect(saved, isNotNull);
+      expect(saved!.steps.first.command, 'canvas.brushSize');
+      expect(saved.recordingStartFrame, 0);
+      expect(saved.supportsFrameScopeChoice, isTrue);
 
-    final raw = service.exportJson(saved.id);
-    final imported = await service.importJson(raw);
-    expect(imported.id, isNot(saved.id));
-    expect(imported.name, saved.name);
-    expect(imported.steps.length, 2);
-    expect(imported.recordingStartFrame, 0);
-    expect(imported.supportsFrameScopeChoice, isTrue);
+      final raw = service.exportJson(saved.id);
+      final imported = await service.importJson(raw);
+      expect(imported.id, isNot(saved.id));
+      expect(imported.name, saved.name);
+      expect(imported.steps.length, 2);
+      expect(imported.recordingStartFrame, 0);
+      expect(imported.supportsFrameScopeChoice, isTrue);
 
-    final reloaded = CustomAutomationService();
-    await reloaded.init();
-    expect(reloaded.items.length, 2);
-  });
+      final reloaded = CustomAutomationService();
+      await reloaded.init();
+      expect(reloaded.items.length, 2);
+    },
+  );
 
   test('invalid, oversized or future-format automation is rejected', () async {
     SharedPreferences.setMockInitialValues({});

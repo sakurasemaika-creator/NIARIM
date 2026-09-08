@@ -80,7 +80,8 @@ class CustomAutomation {
     return steps.every((step) => step.recordedFrame == start);
   }
 
-  bool get supportsFrameScopeChoice => isCanvasOnly && staysInRecordingStartFrame;
+  bool get supportsFrameScopeChoice =>
+      isCanvasOnly && staysInRecordingStartFrame;
 
   CustomAutomation copyWith({
     String? name,
@@ -122,7 +123,9 @@ class CustomAutomation {
     }
     final parsedSteps = rawSteps
         .whereType<Map>()
-        .map((step) => CustomAutomationStep.fromJson(step.cast<String, Object?>()))
+        .map(
+          (step) => CustomAutomationStep.fromJson(step.cast<String, Object?>()),
+        )
         .toList();
     // v1/v2 files predate recordingStartFrame. Preserve import compatibility but
     // conservatively disable the all-frame radio because their start frame cannot
@@ -134,9 +137,11 @@ class CustomAutomation {
       id: json['id'] as String? ?? '',
       name: json['name'] as String? ?? '',
       recordingStartFrame: startFrame,
-      createdAt: DateTime.tryParse(json['createdAt'] as String? ?? '') ??
+      createdAt:
+          DateTime.tryParse(json['createdAt'] as String? ?? '') ??
           DateTime.fromMillisecondsSinceEpoch(0),
-      updatedAt: DateTime.tryParse(json['updatedAt'] as String? ?? '') ??
+      updatedAt:
+          DateTime.tryParse(json['updatedAt'] as String? ?? '') ??
           DateTime.fromMillisecondsSinceEpoch(0),
       steps: parsedSteps,
     );
