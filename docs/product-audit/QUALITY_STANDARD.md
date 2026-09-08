@@ -36,6 +36,16 @@ UI/UX、product design、visual qualityは「動く」「崩れていない」�
 
 対象ページ・主要状態に対してマトリクスが未実行、queued/running、失敗、または検査項目が不十分な場合は「表示監査完了」と扱わない。主要UI変更後は影響範囲に応じて再実行する。
 
+## Workflow・反復作業の圧縮
+
+NIARIMを単なる機能の集合として評価せず、ユーザーが実際の制作で繰り返す一連の操作を製品側でどこまで安全かつ自然に圧縮できるかも監査する。主要な利用シナリオについて、同じ順序で繰り返される操作、既存UIでは不要な往復や余分な手数が生じる操作、入力・処理・出力が明確な定型フロー、複数機能を毎回同じ組み合わせで使うフローを洗い出し、Action / Workflow / preset / batch処理等へ昇格させる価値を評価する。
+
+自動化は「できるから増やす」のではなく、反復頻度、手数削減、誤操作防止、学習コスト、発見可能性、編集可能性、undo/redo・cancel、安全性、処理時間、端末性能、保存/互換性、PC/SPそれぞれの操作特性を考慮し、明確にUXを改善する場合だけ採用する。例外や分岐が多く複雑化する作業、低頻度の作業、ユーザーの判断を隠してしまう自動化は無理にWorkflow化しない。
+
+Workflow/presetを実装する場合は、再実行可能性、途中失敗時の一貫性、非破壊性、undo、進捗/feedback、cancel、設定編集、命名・管理、保存/復元、version/migration、import/export・共有の必要性、旧データ互換性まで製品品質として監査する。PCでは高度なAction/Workflow編集やbatch等を、SPでは小画面・touchに適した簡潔な再利用導線を検討し、同一UIを機械的に流用しない。
+
+将来AIを利用する場合も、巨大な汎用チャットを置くこと自体を目的にしない。自然言語等からNIARIMの既存機能を組み合わせた確認可能・編集可能・再実行可能なWorkflowを提案/生成するなど、制作コンテキストに沿って具体的な操作価値へ変換できるかを優先する。AIによる変更はユーザーが内容・影響を理解し、必要に応じて確認・取消・再編集できる設計を優先し、ブラックボックスな破壊的変更を避ける。外部AI/Codex等の利用可否、認証、課金、API/プラン、プラットフォーム制約を推測で製品前提にせず、採用時点の正式仕様を確認する。
+
 ## SEO・Discoverability・ASO
 
 Webは世界規模で発見・理解・共有される製品サイトとして、技術SEOだけでなく検索意図、情報設計、コンテンツ品質、多言語SEO、performanceを横断して監査する。少なくとも各公開ページ・対応言語について、title/description、canonical、hreflangと言語・地域指定、robots/index/noindex、robots.txt、XML sitemap、HTTP status/redirect/404、OG/Twitter等のsocial metadata、必要に応じたschema.org/JSON-LD構造化データ、heading/semantic HTML、内部リンク、画像alt、URL設計、重複・thin content、crawlerが主要コンテンツを取得・理解できるrendering、Core Web Vitalsを含む検索体験を確認する。
@@ -58,6 +68,6 @@ formatter、lint、static analysis、build、定型テスト、Playwright、view
 
 ## 完了基準
 
-一部修正やbuild/test/CI成功、利用上限到達を全面監査完了とは扱わない。App＋Web＋横断監査、必要な修正・改善、実画面UI/UX評価、SP/PC/DeX最適化、必須表示監査マトリクス、SEO/Discoverability/ASO、regression、修正後再監査まで継続する。
+一部修正やbuild/test/CI成功、利用上限到達を全面監査完了とは扱わない。App＋Web＋横断監査、必要な修正・改善、実画面UI/UX評価、SP/PC/DeX最適化、必須表示監査マトリクス、Workflow・反復作業の圧縮、SEO/Discoverability/ASO、regression、修正後再監査まで継続する。
 
 合理的に「現時点で明確に直すべき問題がもう見つからない」と判断できる完成度を目標に、自律的に監査→判断→実装→検証→checkpoint→次の問題→再監査を進める。checkpoint・push・継続情報・自動再開は `AGENTS.md` の最新ルールに従う。
