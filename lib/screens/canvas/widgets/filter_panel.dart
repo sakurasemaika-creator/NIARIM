@@ -14,6 +14,7 @@ import '../../../engine/filter_engine.dart';
 import '../../../engine/layer_compositor.dart';
 import '../../../engine/prism_filter_engine.dart';
 import '../../../engine/tile_manager.dart';
+import '../../../engine/vhs_noise_engine.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../../models/custom_automation.dart';
 import '../../../models/filter_def.dart';
@@ -87,6 +88,7 @@ class _FilterPanelState extends State<FilterPanel> {
   String? _previewFilterId;
 
   bool _isPrism(FilterDef filter) => filter.id == FilterService.prismFilterId;
+  bool _isVhs(FilterDef filter) => filter.id == FilterService.vhsNoiseFilterId;
 
   @override
   void initState() {
@@ -571,6 +573,41 @@ class _FilterPanelState extends State<FilterPanel> {
             ),
             suffix: '°',
             wrap: true,
+          ),
+        ],
+      );
+    }
+
+    if (_isVhs(current)) {
+      return Column(
+        children: [
+          _paramSlider(
+            l10n.filterVhsNoiseStrength,
+            current.strength,
+            0,
+            100,
+            (v) => service.updateFilterParams(current.id, strength: v),
+          ),
+          _paramSlider(
+            l10n.filterVhsScanlineStrength,
+            current.caSaturation,
+            0,
+            100,
+            (v) => service.updateFilterParams(current.id, caSaturation: v),
+          ),
+          _paramSlider(
+            l10n.filterVhsColorBleed,
+            current.caBrightness,
+            0,
+            100,
+            (v) => service.updateFilterParams(current.id, caBrightness: v),
+          ),
+          _paramSlider(
+            l10n.filterVhsTracking,
+            current.caContrast,
+            0,
+            100,
+            (v) => service.updateFilterParams(current.id, caContrast: v),
           ),
         ],
       );
@@ -1319,6 +1356,7 @@ class _FilterPanelState extends State<FilterPanel> {
 
   String _filterDisplayName(AppLocalizations l10n, FilterDef filter) {
     if (_isPrism(filter)) return 'プリズム';
+    if (_isVhs(filter)) return l10n.filterNameVhsNoise;
     return switch (filter.kind) {
       FilterKind.gaussianBlur => l10n.filterNameGaussianBlur,
       FilterKind.lensBlur => l10n.filterNameLensBlur,
@@ -1374,6 +1412,7 @@ class _FilterPanelState extends State<FilterPanel> {
 
   IconData _iconForFilter(FilterDef filter) {
     if (_isPrism(filter)) return Icons.gradient;
+    if (_isVhs(filter)) return Icons.video_settings;
     return switch (filter.kind) {
       FilterKind.gaussianBlur => Icons.blur_on,
       FilterKind.lensBlur => Icons.blur_circular,
@@ -1422,6 +1461,19 @@ class _FilterPanelState extends State<FilterPanel> {
         height,
         blurPx: filter.prismBlurPx * _previewScale,
         gradientDirectionDegrees: filter.prismDirectionDegrees,
+      );
+    }
+    if (_isVhs(filter)) {
+      return VhsNoiseEngine.apply(
+        data,
+        width,
+        height,
+        noiseStrength: filter.strength,
+        scanlineStrength: filter.caSaturation,
+        colorBleed: filter.caBrightness,
+        tracking: filter.caContrast,
+        seed: filter.thresholdValue.round(),
+        frameIndex: 0,
       );
     }
     switch (filter.kind) {

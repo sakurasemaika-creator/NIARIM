@@ -11398,6 +11398,42 @@ abstract class AppLocalizations {
   /// In ja, this message translates to:
   /// **'やめる'**
   String get customAutomationStopConfirmStop;
+
+  /// No description provided for @filterNameVhsNoise.
+  ///
+  /// In ja, this message translates to:
+  /// **'VHSノイズ'**
+  String get filterNameVhsNoise;
+
+  /// No description provided for @filterVhsNoiseStrength.
+  ///
+  /// In ja, this message translates to:
+  /// **'ノイズ'**
+  String get filterVhsNoiseStrength;
+
+  /// No description provided for @filterVhsScanlineStrength.
+  ///
+  /// In ja, this message translates to:
+  /// **'走査線'**
+  String get filterVhsScanlineStrength;
+
+  /// No description provided for @filterVhsColorBleed.
+  ///
+  /// In ja, this message translates to:
+  /// **'色にじみ'**
+  String get filterVhsColorBleed;
+
+  /// No description provided for @filterVhsTracking.
+  ///
+  /// In ja, this message translates to:
+  /// **'トラッキング'**
+  String get filterVhsTracking;
+
+  /// No description provided for @timelineEffectTypeVhsNoise.
+  ///
+  /// In ja, this message translates to:
+  /// **'VHSノイズ'**
+  String get timelineEffectTypeVhsNoise;
 }
 
 class _AppLocalizationsDelegate

@@ -6200,4 +6200,22 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get customAutomationStopConfirmStop => 'やめる';
+
+  @override
+  String get filterNameVhsNoise => 'VHSノイズ';
+
+  @override
+  String get filterVhsNoiseStrength => 'ノイズ';
+
+  @override
+  String get filterVhsScanlineStrength => '走査線';
+
+  @override
+  String get filterVhsColorBleed => '色にじみ';
+
+  @override
+  String get filterVhsTracking => 'トラッキング';
+
+  @override
+  String get timelineEffectTypeVhsNoise => 'VHSノイズ';
 }

@@ -2693,5 +2693,11 @@
         "type": "String"
       }
     }
-  }
+  },
+  "filterNameVhsNoise": "Ruido VHS",
+  "filterVhsNoiseStrength": "Ruido",
+  "filterVhsScanlineStrength": "Líneas de barrido",
+  "filterVhsColorBleed": "Sangrado de color",
+  "filterVhsTracking": "Seguimiento",
+  "timelineEffectTypeVhsNoise": "Ruido VHS"
 }

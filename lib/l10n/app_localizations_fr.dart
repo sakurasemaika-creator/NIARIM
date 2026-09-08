@@ -6534,4 +6534,22 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get customAutomationStopConfirmStop => 'Arrêter';
+
+  @override
+  String get filterNameVhsNoise => 'Bruit VHS';
+
+  @override
+  String get filterVhsNoiseStrength => 'Bruit';
+
+  @override
+  String get filterVhsScanlineStrength => 'Lignes de balayage';
+
+  @override
+  String get filterVhsColorBleed => 'Bavure des couleurs';
+
+  @override
+  String get filterVhsTracking => 'Suivi';
+
+  @override
+  String get timelineEffectTypeVhsNoise => 'Bruit VHS';
 }

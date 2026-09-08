@@ -6230,4 +6230,22 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get customAutomationStopConfirmStop => '중지';
+
+  @override
+  String get filterNameVhsNoise => 'VHS 노이즈';
+
+  @override
+  String get filterVhsNoiseStrength => '노이즈';
+
+  @override
+  String get filterVhsScanlineStrength => '주사선';
+
+  @override
+  String get filterVhsColorBleed => '색 번짐';
+
+  @override
+  String get filterVhsTracking => '트래킹';
+
+  @override
+  String get timelineEffectTypeVhsNoise => 'VHS 노이즈';
 }

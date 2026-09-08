@@ -2693,5 +2693,11 @@
         "type": "String"
       }
     }
-  }
+  },
+  "filterNameVhsNoise": "Bruit VHS",
+  "filterVhsNoiseStrength": "Bruit",
+  "filterVhsScanlineStrength": "Lignes de balayage",
+  "filterVhsColorBleed": "Bavure des couleurs",
+  "filterVhsTracking": "Suivi",
+  "timelineEffectTypeVhsNoise": "Bruit VHS"
 }

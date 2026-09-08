@@ -2693,5 +2693,11 @@
         "type": "String"
       }
     }
-  }
+  },
+  "filterNameVhsNoise": "VHS 雜訊",
+  "filterVhsNoiseStrength": "雜訊",
+  "filterVhsScanlineStrength": "掃描線",
+  "filterVhsColorBleed": "色彩溢出",
+  "filterVhsTracking": "追蹤抖動",
+  "timelineEffectTypeVhsNoise": "VHS 雜訊"
 }

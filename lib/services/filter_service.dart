@@ -9,6 +9,7 @@ import '../models/pixel_color_mode.dart';
 class FilterService extends ChangeNotifier {
   static const _prefsKey = 'draw_filters';
   static const prismFilterId = 'Filter0022';
+  static const vhsNoiseFilterId = 'Filter0024';
 
   final List<FilterDef> _filters = [];
   String? _currentFilterId;
@@ -170,6 +171,19 @@ class FilterService extends ChangeNotifier {
       kind: FilterKind.auroraHologram,
       prismBlurPx: 8,
       prismDirectionDegrees: 45,
+    ),
+    // VHS noise uses the generic slots only under this stable built-in ID:
+    // strength=noise, caSaturation=scanlines, caBrightness=color bleed,
+    // caContrast=tracking, thresholdValue=deterministic seed.
+    FilterDef(
+      id: vhsNoiseFilterId,
+      name: 'VHSノイズ',
+      kind: FilterKind.noise,
+      strength: 35,
+      caSaturation: 35,
+      caBrightness: 35,
+      caContrast: 25,
+      thresholdValue: 1984,
     ),
   ];
 

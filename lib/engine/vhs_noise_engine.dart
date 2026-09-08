@@ -39,10 +39,15 @@ class VhsNoiseEngine {
     // VHS components remain enabled. The previous `1 + ...` formulation kept a
     // hidden 1 px red/blue split whenever scanlines/noise/tracking were active.
     final channelShift = bleed == 0 ? 0 : (1 + bleed * 5).round();
-    final maxTrackingShift = math.max(1, (width * 0.035 * trackingAmount).round());
+    final maxTrackingShift = math.max(
+      1,
+      (width * 0.035 * trackingAmount).round(),
+    );
 
     // A small number of horizontal bands emulate unstable VHS tracking.
-    final bandCount = trackingAmount == 0 ? 0 : 1 + (trackingAmount * 4).round();
+    final bandCount = trackingAmount == 0
+        ? 0
+        : 1 + (trackingAmount * 4).round();
     final bandStarts = <int>[];
     final bandHeights = <int>[];
     final bandShifts = <int>[];
@@ -50,7 +55,10 @@ class VhsNoiseEngine {
       final h0 = _hash(frameSeed ^ (band * 0x45d9f3b));
       final h1 = _hash(h0 ^ 0x27d4eb2d);
       final h2 = _hash(h1 ^ 0x165667b1);
-      final bandHeight = math.max(1, (height * (0.01 + _unit(h1) * 0.055)).round());
+      final bandHeight = math.max(
+        1,
+        (height * (0.01 + _unit(h1) * 0.055)).round(),
+      );
       bandStarts.add((_unit(h0) * math.max(1, height - bandHeight)).round());
       bandHeights.add(bandHeight);
       final signed = _unit(h2) * 2 - 1;
@@ -70,9 +78,10 @@ class VhsNoiseEngine {
       if (trackingAmount > 0) {
         final jitterHash = _hash(frameSeed ^ (y * 0x1f123bb5));
         if (_unit(jitterHash) < trackingAmount * 0.08) {
-          rowShift += ((_unit(_hash(jitterHash ^ 0x6d2b79f5)) * 2 - 1) *
-                  math.max(1, maxTrackingShift ~/ 2))
-              .round();
+          rowShift +=
+              ((_unit(_hash(jitterHash ^ 0x6d2b79f5)) * 2 - 1) *
+                      math.max(1, maxTrackingShift ~/ 2))
+                  .round();
         }
       }
 
@@ -116,6 +125,16 @@ class VhsNoiseEngine {
       }
     }
     return result;
+  }
+
+  /// Stable cross-run seed for timeline effect instances.
+  static int seedFromString(String value) {
+    var hash = 2166136261;
+    for (final codeUnit in value.codeUnits) {
+      hash ^= codeUnit;
+      hash = (hash * 16777619) & 0x7fffffff;
+    }
+    return hash;
   }
 
   static int _mix(int seed, int frame, int salt) {

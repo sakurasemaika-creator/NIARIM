@@ -7,6 +7,7 @@ import '../models/filter_def.dart';
 import '../models/pixel_color_mode.dart';
 import 'background_acclimation_engine.dart';
 import 'auto_lineart_engine.dart';
+import 'vhs_noise_engine.dart';
 
 /// 描画フィルターの本適用（低スペック端末でのUIスレッドブロック防止のため
 /// compute()経由でバックグラウンドisolate実行する想定のトップレベル関数）。
@@ -18,6 +19,19 @@ Uint8List applyDrawFilterInIsolate(
 ) {
   final (data, width, height, filter, maskData) = args;
   final engine = FilterEngine();
+  if (filter.id == 'Filter0024') {
+    return VhsNoiseEngine.apply(
+      data,
+      width,
+      height,
+      noiseStrength: filter.strength,
+      scanlineStrength: filter.caSaturation,
+      colorBleed: filter.caBrightness,
+      tracking: filter.caContrast,
+      seed: filter.thresholdValue.round(),
+      frameIndex: 0,
+    );
+  }
   return switch (filter.kind) {
     FilterKind.gaussianBlur => engine.applyGaussianBlur(
       data,
@@ -525,6 +539,17 @@ class FilterEngine {
           color: e.fadeColor.toARGB32(),
           rangePx: e.param1,
           centerWidthPx: e.param2,
+        ),
+        EffectFilterType.vhsNoise => VhsNoiseEngine.apply(
+          result,
+          width,
+          height,
+          noiseStrength: e.param1,
+          scanlineStrength: e.param2,
+          colorBleed: e.param3,
+          tracking: e.param4,
+          seed: VhsNoiseEngine.seedFromString(e.id),
+          frameIndex: frameIndex,
         ),
       };
     }
@@ -2170,6 +2195,7 @@ enum EffectFilterType {
   pixelate,
   auroraHologram,
   inkPool,
+  vhsNoise,
 }
 
 enum DrawFilterType { animeBackground }

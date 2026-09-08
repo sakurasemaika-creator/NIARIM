@@ -2693,5 +2693,11 @@
         "type": "String"
       }
     }
-  }
+  },
+  "filterNameVhsNoise": "VHS 噪点",
+  "filterVhsNoiseStrength": "噪点",
+  "filterVhsScanlineStrength": "扫描线",
+  "filterVhsColorBleed": "色彩溢出",
+  "filterVhsTracking": "跟踪抖动",
+  "timelineEffectTypeVhsNoise": "VHS 噪点"
 }

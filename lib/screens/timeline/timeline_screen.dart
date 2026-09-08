@@ -2072,9 +2072,9 @@ class _TimelineScreenState extends State<TimelineScreen> {
                                 ),
                               ),
                               backgroundColor: isMoving
-                                  ? Theme.of(context)
-                                        .colorScheme
-                                        .primaryContainer
+                                  ? Theme.of(
+                                      context,
+                                    ).colorScheme.primaryContainer
                                   : null,
                             ),
                           );
@@ -2820,12 +2820,12 @@ class _TimelineScreenState extends State<TimelineScreen> {
                                             width: 3,
                                             height: 28,
                                             color: isActive
-                                                ? Theme.of(context)
-                                                      .colorScheme
-                                                      .primary
-                                                : Theme.of(context)
-                                                      .colorScheme
-                                                      .outline,
+                                                ? Theme.of(
+                                                    context,
+                                                  ).colorScheme.primary
+                                                : Theme.of(
+                                                    context,
+                                                  ).colorScheme.outline,
                                           ),
                                         ),
                                       );
@@ -2846,9 +2846,9 @@ class _TimelineScreenState extends State<TimelineScreen> {
                                         ),
                                         decoration: BoxDecoration(
                                           color: isMoving
-                                              ? Theme.of(context)
-                                                    .colorScheme
-                                                    .primaryContainer
+                                              ? Theme.of(
+                                                  context,
+                                                ).colorScheme.primaryContainer
                                               : ThemeService
                                                     .activeColorScheme
                                                     .onSurfaceVariant,
@@ -2867,9 +2867,9 @@ class _TimelineScreenState extends State<TimelineScreen> {
                                             style: TextStyle(
                                               fontSize: 9,
                                               color: isMoving
-                                                  ? Theme.of(context)
-                                                        .colorScheme
-                                                        .primary
+                                                  ? Theme.of(
+                                                      context,
+                                                    ).colorScheme.primary
                                                   : null,
                                             ),
                                           ),
@@ -2975,20 +2975,20 @@ class _TimelineScreenState extends State<TimelineScreen> {
                                         // 濃いグレーのままだと透明部分の見え方が実際の
                                         // キャンバス画面と一致しなかったため修正。
                                         color: isChecked
-                                            ? Theme.of(context)
-                                                  .colorScheme
-                                                  .primaryContainer
+                                            ? Theme.of(
+                                                context,
+                                              ).colorScheme.primaryContainer
                                             : ThemeService
                                                   .activeColorScheme
                                                   .onSurface,
                                         border: Border.all(
                                           color: isChecked
-                                              ? Theme.of(context)
-                                                    .colorScheme
-                                                    .primary
-                                              : Theme.of(context)
-                                                    .colorScheme
-                                                    .outlineVariant,
+                                              ? Theme.of(
+                                                  context,
+                                                ).colorScheme.primary
+                                              : Theme.of(
+                                                  context,
+                                                ).colorScheme.outlineVariant,
                                         ),
                                         borderRadius: BorderRadius.circular(3),
                                       ),
@@ -4119,9 +4119,9 @@ class _TimelineScreenState extends State<TimelineScreen> {
                                     decoration: BoxDecoration(
                                       border: Border(
                                         right: BorderSide(
-                                          color: Theme.of(context)
-                                              .colorScheme
-                                              .outlineVariant,
+                                          color: Theme.of(
+                                            context,
+                                          ).colorScheme.outlineVariant,
                                           width: 0.5,
                                         ),
                                       ),
@@ -5023,9 +5023,9 @@ class _TimelineScreenState extends State<TimelineScreen> {
                               decoration: BoxDecoration(
                                 border: Border(
                                   right: BorderSide(
-                                    color: Theme.of(context)
-                                        .colorScheme
-                                        .outlineVariant,
+                                    color: Theme.of(
+                                      context,
+                                    ).colorScheme.outlineVariant,
                                     width: 0.5,
                                   ),
                                 ),
@@ -7217,6 +7217,7 @@ class _EffectFilterSheet extends StatelessWidget {
         EffectFilterType.pixelate => l10n.filterNamePixelate,
         EffectFilterType.auroraHologram => l10n.filterNameAuroraHologram,
         EffectFilterType.inkPool => l10n.filterNameInkPool,
+        EffectFilterType.vhsNoise => l10n.timelineEffectTypeVhsNoise,
       };
 
   static const _typeIcons = {
@@ -7239,6 +7240,7 @@ class _EffectFilterSheet extends StatelessWidget {
     EffectFilterType.pixelate: Icons.grid_view,
     EffectFilterType.auroraHologram: Icons.auto_awesome_mosaic,
     EffectFilterType.inkPool: Icons.gesture_rounded,
+    EffectFilterType.vhsNoise: Icons.video_settings,
   };
 
   @override
@@ -7487,6 +7489,8 @@ class _EffectFilterSheet extends StatelessWidget {
                   ..._auroraHologramParams(context, l10n, e)
                 else if (e.type == EffectFilterType.inkPool)
                   ..._inkPoolParams(context, l10n, e)
+                else if (e.type == EffectFilterType.vhsNoise)
+                  ..._vhsNoiseParams(context, l10n, e)
                 else
                   ..._strengthParam(context, l10n, e),
               ],
@@ -7728,6 +7732,47 @@ class _EffectFilterSheet extends StatelessWidget {
         0,
         (v) => _update(context, e.copyWith(param4: v)),
         valueText: '${e.param4.round()}°',
+      ),
+    ];
+  }
+
+  List<Widget> _vhsNoiseParams(
+    BuildContext context,
+    AppLocalizations l10n,
+    EffectFilterInstance e,
+  ) {
+    return [
+      _paramRow(
+        l10n.filterVhsNoiseStrength,
+        e.param1,
+        0,
+        100,
+        100,
+        (v) => _update(context, e.copyWith(param1: v)),
+      ),
+      _paramRow(
+        l10n.filterVhsScanlineStrength,
+        e.param2,
+        0,
+        100,
+        100,
+        (v) => _update(context, e.copyWith(param2: v)),
+      ),
+      _paramRow(
+        l10n.filterVhsColorBleed,
+        e.param3,
+        0,
+        100,
+        100,
+        (v) => _update(context, e.copyWith(param3: v)),
+      ),
+      _paramRow(
+        l10n.filterVhsTracking,
+        e.param4,
+        0,
+        100,
+        100,
+        (v) => _update(context, e.copyWith(param4: v)),
       ),
     ];
   }
@@ -8147,6 +8192,7 @@ class _EffectFilterSheet extends StatelessWidget {
                             // （0〜100）なので、効果がはっきり見える60から始める。
                             EffectFilterType.auroraHologram => 60.0,
                             EffectFilterType.inkPool => 12.0,
+                            EffectFilterType.vhsNoise => 35.0,
                             _ => 5.0,
                           },
                           // ドット絵のparam2は色数（2〜32）なので既定8から始める。
@@ -8162,14 +8208,20 @@ class _EffectFilterSheet extends StatelessWidget {
                               ? 0.0
                               : type == EffectFilterType.inkPool
                               ? 6.0
+                              : type == EffectFilterType.vhsNoise
+                              ? 35.0
                               : 50.0,
                           // オーロラホログラムのparam3は彩度（-100〜100）なので
                           // 既定0（変化なし）から始める。
-                          param3:
-                              type == EffectFilterType.colorAdjust ||
-                                  type == EffectFilterType.auroraHologram
+                          param3: type == EffectFilterType.vhsNoise
+                              ? 35.0
+                              : type == EffectFilterType.colorAdjust ||
+                                    type == EffectFilterType.auroraHologram
                               ? 0.0
                               : 2.0,
+                          param4: type == EffectFilterType.vhsNoise
+                              ? 25.0
+                              : 0.0,
                           // 単色化の色（fadeColorスロットを流用）：既定は白＝通常の
                           // グレースケール。fadeフィルター自体の既定色は黒のままにする。
                           fadeColor: type == EffectFilterType.monochrome

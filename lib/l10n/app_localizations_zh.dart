@@ -6159,6 +6159,24 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get customAutomationStopConfirmStop => '停止';
+
+  @override
+  String get filterNameVhsNoise => 'VHS 噪点';
+
+  @override
+  String get filterVhsNoiseStrength => '噪点';
+
+  @override
+  String get filterVhsScanlineStrength => '扫描线';
+
+  @override
+  String get filterVhsColorBleed => '色彩溢出';
+
+  @override
+  String get filterVhsTracking => '跟踪抖动';
+
+  @override
+  String get timelineEffectTypeVhsNoise => 'VHS 噪点';
 }
 
 /// The translations for Chinese, using the Han script (`zh_Hant`).
@@ -12315,4 +12333,22 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get customAutomationStopConfirmStop => '停止';
+
+  @override
+  String get filterNameVhsNoise => 'VHS 雜訊';
+
+  @override
+  String get filterVhsNoiseStrength => '雜訊';
+
+  @override
+  String get filterVhsScanlineStrength => '掃描線';
+
+  @override
+  String get filterVhsColorBleed => '色彩溢出';
+
+  @override
+  String get filterVhsTracking => '追蹤抖動';
+
+  @override
+  String get timelineEffectTypeVhsNoise => 'VHS 雜訊';
 }

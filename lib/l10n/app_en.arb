@@ -2700,5 +2700,11 @@
   "customAutomationCanvasStep": "Canvas action",
   "customAutomationTimelineStep": "Timeline action",
   "customAutomationBackToRecording": "Back to recording",
-  "customAutomationStopConfirmStop": "Stop"
+  "customAutomationStopConfirmStop": "Stop",
+  "filterNameVhsNoise": "VHS Noise",
+  "filterVhsNoiseStrength": "Noise",
+  "filterVhsScanlineStrength": "Scanlines",
+  "filterVhsColorBleed": "Color bleed",
+  "filterVhsTracking": "Tracking",
+  "timelineEffectTypeVhsNoise": "VHS Noise"
 }

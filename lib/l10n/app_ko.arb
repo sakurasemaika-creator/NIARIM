@@ -2693,5 +2693,11 @@
         "type": "String"
       }
     }
-  }
+  },
+  "filterNameVhsNoise": "VHS 노이즈",
+  "filterVhsNoiseStrength": "노이즈",
+  "filterVhsScanlineStrength": "주사선",
+  "filterVhsColorBleed": "색 번짐",
+  "filterVhsTracking": "트래킹",
+  "timelineEffectTypeVhsNoise": "VHS 노이즈"
 }

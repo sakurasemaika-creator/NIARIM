@@ -2998,5 +2998,11 @@
   "customAutomationCanvasStep": "キャンバス操作",
   "customAutomationTimelineStep": "タイムライン操作",
   "customAutomationBackToRecording": "操作記録に戻る",
-  "customAutomationStopConfirmStop": "やめる"
+  "customAutomationStopConfirmStop": "やめる",
+  "filterNameVhsNoise": "VHSノイズ",
+  "filterVhsNoiseStrength": "ノイズ",
+  "filterVhsScanlineStrength": "走査線",
+  "filterVhsColorBleed": "色にじみ",
+  "filterVhsTracking": "トラッキング",
+  "timelineEffectTypeVhsNoise": "VHSノイズ"
 }
