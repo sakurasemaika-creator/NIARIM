@@ -1,5 +1,6 @@
 import 'package:flutter/gestures.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:niarim/engine/drawing_engine.dart';
 import 'package:niarim/engine/input_handler.dart';
 import 'package:niarim/engine/multi_touch_tap_tracker.dart';
 
