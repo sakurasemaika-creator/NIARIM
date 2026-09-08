@@ -1,5 +1,6 @@
 // ignore: unused_import
 import 'package:intl/intl.dart' as intl;
+
 import 'app_localizations.dart';
 
 // ignore_for_file: type=lint
@@ -6425,31 +6426,32 @@ class AppLocalizationsFr extends AppLocalizations {
   }
 
   @override
-  String get customAutomationTitle => '自動操作';
+  String get customAutomationTitle => 'Automatisations';
 
   @override
-  String get customAutomationAdd => '自動操作を新規追加';
+  String get customAutomationAdd => 'Ajouter une automatisation';
 
   @override
-  String get customAutomationNewTitle => '新しい自動操作';
+  String get customAutomationNewTitle => 'Nouvelle automatisation';
 
   @override
-  String get customAutomationNameLabel => '名前';
+  String get customAutomationNameLabel => 'Nom';
 
   @override
-  String get customAutomationStartRecording => '操作記録開始';
+  String get customAutomationStartRecording => 'Démarrer l’enregistrement';
 
   @override
-  String get customAutomationStopRecording => '操作記録停止';
+  String get customAutomationStopRecording => 'Arrêter l’enregistrement';
 
   @override
-  String get customAutomationRunConfirmTitle => 'この自動操作を実行しますか？';
+  String get customAutomationRunConfirmTitle =>
+      'Exécuter cette automatisation ?';
 
   @override
-  String get customAutomationCurrentFrame => 'この操作を現在のフレームに行う';
+  String get customAutomationCurrentFrame => 'Exécuter sur l’image actuelle';
 
   @override
-  String get customAutomationAllFrames => 'この操作を全フレームに行う';
+  String get customAutomationAllFrames => 'Exécuter sur toutes les images';
 
   @override
   String get customAutomationYes => 'はい';
@@ -6458,43 +6460,64 @@ class AppLocalizationsFr extends AppLocalizations {
   String get customAutomationNo => 'いいえ';
 
   @override
-  String get customAutomationRenameTitle => '自動操作名を変更';
+  String get customAutomationRenameTitle => 'Renommer';
 
   @override
-  String get customAutomationDeleteTitle => 'この自動操作を削除しますか？';
+  String get customAutomationDeleteTitle => 'Supprimer cette automatisation ?';
 
   @override
-  String get customAutomationImport => '読み込む';
+  String get customAutomationImport => 'Importer une automatisation';
 
   @override
-  String get customAutomationExport => '配布・書き出し';
+  String get customAutomationExport => 'Partager / exporter';
 
   @override
-  String get customAutomationRerecord => '再記録';
+  String get customAutomationRerecord => 'Réenregistrer';
 
   @override
-  String get customAutomationImportInvalid => '自動操作ファイルを読み込めませんでした';
+  String get customAutomationImportInvalid =>
+      'Impossible d’importer ce fichier';
 
   @override
-  String get customAutomationEmpty => '記録済みの自動操作はありません';
+  String get customAutomationEmpty => 'Aucune automatisation enregistrée';
 
   @override
   String customAutomationStepCount(int count) {
-    return '$count 手順';
+    return '$count étapes';
   }
 
   @override
   String get customAutomationReturnToRecording => '操作記録に戻る';
 
   @override
-  String get customAutomationStopConfirmTitle => '自動操作の登録をやめますか？';
+  String get customAutomationStopConfirmTitle =>
+      'Arrêter l’enregistrement de cette automatisation ?';
 
   @override
   String get customAutomationStopConfirmQuit => 'やめる';
 
   @override
-  String get customAutomationStopConfirmContinue => '続ける';
+  String get customAutomationStopConfirmContinue => 'Continuer';
 
   @override
   String get customAutomationPremiumHint => 'プレミアム会員限定で、操作を記録・編集・配布・再実行できます。';
+
+  @override
+  String get customAutomationReviewHint =>
+      'Réordonnez ou supprimez des étapes avant d’enregistrer';
+
+  @override
+  String get customAutomationNoRecordedSteps => 'Aucune action enregistrée';
+
+  @override
+  String get customAutomationCanvasStep => 'Action de canevas';
+
+  @override
+  String get customAutomationTimelineStep => 'Action de timeline';
+
+  @override
+  String get customAutomationBackToRecording => 'Revenir à l’enregistrement';
+
+  @override
+  String get customAutomationStopConfirmStop => 'Arrêter';
 }

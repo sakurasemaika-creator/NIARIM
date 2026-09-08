@@ -2647,5 +2647,30 @@
         "type": "String"
       }
     }
-  }
+  },
+  "customAutomationTitle": "自動操作",
+  "customAutomationAdd": "新增自動操作",
+  "customAutomationNewTitle": "新自動操作",
+  "customAutomationNameLabel": "名稱",
+  "customAutomationStartRecording": "開始記錄操作",
+  "customAutomationStopRecording": "停止記錄",
+  "customAutomationRunConfirmTitle": "要執行嗎？",
+  "customAutomationCurrentFrame": "在目前影格執行",
+  "customAutomationAllFrames": "在所有影格執行",
+  "customAutomationRenameTitle": "重新命名",
+  "customAutomationDeleteTitle": "刪除此自動操作嗎？",
+  "customAutomationImport": "匯入自動操作",
+  "customAutomationExport": "分享 / 匯出自動操作",
+  "customAutomationRerecord": "重新記錄",
+  "customAutomationEmpty": "沒有已記錄的自動操作",
+  "customAutomationImportInvalid": "無法匯入此自動操作檔案",
+  "customAutomationReviewHint": "儲存前可調整順序或刪除步驟",
+  "customAutomationNoRecordedSteps": "沒有記錄任何操作",
+  "customAutomationCanvasStep": "畫布操作",
+  "customAutomationTimelineStep": "時間軸操作",
+  "customAutomationBackToRecording": "返回記錄",
+  "customAutomationStopConfirmTitle": "要停止登錄此自動操作嗎？",
+  "customAutomationStopConfirmStop": "停止",
+  "customAutomationStopConfirmContinue": "繼續",
+  "customAutomationStepCount": "{count} 個步驟"
 }

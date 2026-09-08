@@ -2647,5 +2647,30 @@
         "type": "String"
       }
     }
-  }
+  },
+  "customAutomationTitle": "Automatizaciones",
+  "customAutomationAdd": "Añadir automatización",
+  "customAutomationNewTitle": "Nueva automatización",
+  "customAutomationNameLabel": "Nombre",
+  "customAutomationStartRecording": "Iniciar grabación",
+  "customAutomationStopRecording": "Detener grabación",
+  "customAutomationRunConfirmTitle": "¿Ejecutar esta automatización?",
+  "customAutomationCurrentFrame": "Ejecutar en el fotograma actual",
+  "customAutomationAllFrames": "Ejecutar en todos los fotogramas",
+  "customAutomationRenameTitle": "Cambiar nombre",
+  "customAutomationDeleteTitle": "¿Eliminar esta automatización?",
+  "customAutomationImport": "Importar automatización",
+  "customAutomationExport": "Compartir / exportar",
+  "customAutomationRerecord": "Volver a grabar",
+  "customAutomationEmpty": "No hay automatizaciones grabadas",
+  "customAutomationImportInvalid": "No se puede importar este archivo",
+  "customAutomationReviewHint": "Reordena o elimina pasos antes de guardar",
+  "customAutomationNoRecordedSteps": "No se grabaron acciones",
+  "customAutomationCanvasStep": "Acción de lienzo",
+  "customAutomationTimelineStep": "Acción de línea de tiempo",
+  "customAutomationBackToRecording": "Volver a grabación",
+  "customAutomationStopConfirmTitle": "¿Dejar de registrar esta automatización?",
+  "customAutomationStopConfirmStop": "Dejar",
+  "customAutomationStopConfirmContinue": "Continuar",
+  "customAutomationStepCount": "{count} pasos"
 }

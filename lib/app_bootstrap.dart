@@ -1,5 +1,6 @@
 import 'package:provider/provider.dart';
 import 'package:provider/single_child_widget.dart';
+
 import 'engine/undo_manager.dart' as app_undo;
 import 'services/advertising_service.dart';
 import 'services/premium_service.dart';
@@ -16,8 +17,8 @@ import 'services/save_tree_service.dart';
 import 'services/autofill_preset_service.dart';
 import 'services/material_service.dart';
 import 'services/quick_tool_service.dart';
-import 'services/shortcut_service.dart';
 import 'services/custom_automation_service.dart';
+import 'services/shortcut_service.dart';
 import 'services/workspace_preset_service.dart';
 import 'services/watermark_service.dart';
 import 'services/share_intent_service.dart';
@@ -91,10 +92,10 @@ Future<List<SingleChildWidget>> buildAppProviders() async {
   final materialService = MaterialService();
   final quickToolService = QuickToolService();
   await quickToolService.init();
-  final shortcutService = ShortcutService();
-  await shortcutService.init();
   final customAutomationService = CustomAutomationService();
   await customAutomationService.init();
+  final shortcutService = ShortcutService();
+  await shortcutService.init();
 
   final workspacePresetService = WorkspacePresetService();
   await workspacePresetService.init();
@@ -156,8 +157,8 @@ Future<List<SingleChildWidget>> buildAppProviders() async {
     ChangeNotifierProvider.value(value: autofillPresetService),
     ChangeNotifierProvider.value(value: materialService),
     ChangeNotifierProvider.value(value: quickToolService),
-    ChangeNotifierProvider.value(value: shortcutService),
     ChangeNotifierProvider.value(value: customAutomationService),
+    ChangeNotifierProvider.value(value: shortcutService),
     ChangeNotifierProvider.value(value: workspacePresetService),
     ChangeNotifierProvider.value(value: watermarkService),
     ChangeNotifierProvider.value(value: fontService),

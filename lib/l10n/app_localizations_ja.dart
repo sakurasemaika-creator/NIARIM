@@ -1,5 +1,6 @@
 // ignore: unused_import
 import 'package:intl/intl.dart' as intl;
+
 import 'app_localizations.dart';
 
 // ignore_for_file: type=lint
@@ -6115,7 +6116,7 @@ class AppLocalizationsJa extends AppLocalizations {
   String get customAutomationStopRecording => '操作記録停止';
 
   @override
-  String get customAutomationRunConfirmTitle => 'この自動操作を実行しますか？';
+  String get customAutomationRunConfirmTitle => '実行しますか？';
 
   @override
   String get customAutomationCurrentFrame => 'この操作を現在のフレームに行う';
@@ -6130,22 +6131,22 @@ class AppLocalizationsJa extends AppLocalizations {
   String get customAutomationNo => 'いいえ';
 
   @override
-  String get customAutomationRenameTitle => '自動操作名を変更';
+  String get customAutomationRenameTitle => '名前を変更';
 
   @override
-  String get customAutomationDeleteTitle => 'この自動操作を削除しますか？';
+  String get customAutomationDeleteTitle => '自動操作を削除しますか？';
 
   @override
-  String get customAutomationImport => '読み込む';
+  String get customAutomationImport => '自動操作を読み込む';
 
   @override
-  String get customAutomationExport => '配布・書き出し';
+  String get customAutomationExport => '自動操作を配布・書き出し';
 
   @override
   String get customAutomationRerecord => '再記録';
 
   @override
-  String get customAutomationImportInvalid => '自動操作ファイルを読み込めませんでした';
+  String get customAutomationImportInvalid => 'この自動操作ファイルは読み込めません';
 
   @override
   String get customAutomationEmpty => '記録済みの自動操作はありません';
@@ -6169,4 +6170,22 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get customAutomationPremiumHint => 'プレミアム会員限定で、操作を記録・編集・配布・再実行できます。';
+
+  @override
+  String get customAutomationReviewHint => '手順を並べ替えたり削除してから保存できます';
+
+  @override
+  String get customAutomationNoRecordedSteps => '記録された操作がありません';
+
+  @override
+  String get customAutomationCanvasStep => 'キャンバス操作';
+
+  @override
+  String get customAutomationTimelineStep => 'タイムライン操作';
+
+  @override
+  String get customAutomationBackToRecording => '操作記録に戻る';
+
+  @override
+  String get customAutomationStopConfirmStop => 'やめる';
 }

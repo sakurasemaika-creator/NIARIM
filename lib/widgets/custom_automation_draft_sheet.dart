@@ -43,7 +43,10 @@ class CustomAutomationDraftSheet extends StatelessWidget {
                           key: ValueKey(step.id),
                           leading: CircleAvatar(
                             radius: 14,
-                            child: Text('${index + 1}', style: const TextStyle(fontSize: 11)),
+                            child: Text(
+                              '${index + 1}',
+                              style: const TextStyle(fontSize: 11),
+                            ),
                           ),
                           title: Text(step.label),
                           subtitle: Text(

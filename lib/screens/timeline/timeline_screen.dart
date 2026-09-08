@@ -42,9 +42,11 @@ import '../../models/material_asset.dart';
 import '../../models/scene.dart';
 import '../../models/text_object.dart';
 import '../../models/watermark_asset.dart';
+import '../../models/custom_automation.dart';
 import '../../services/autofill_preset_service.dart';
 import '../../services/material_service.dart';
 import '../../services/premium_service.dart';
+import '../../services/custom_automation_service.dart';
 import '../../services/project_service.dart';
 import '../../services/save_tree_service.dart';
 import '../../services/settings_service.dart';
@@ -65,6 +67,8 @@ import '../../widgets/help_button.dart';
 import '../../config/font_fallback.dart';
 import '../../utils/reorder_index.dart';
 import '../../widgets/scrollable_sheet_body.dart';
+import '../../widgets/custom_automation_manager_sheet.dart';
+import '../../widgets/custom_automation_draft_sheet.dart';
 
 // タイムライントラッククリップ
 enum _ClipTrackType { audio, video, image }
@@ -177,6 +181,7 @@ class TimelineScreen extends StatefulWidget {
 }
 
 class _TimelineScreenState extends State<TimelineScreen> {
+  OverlayEntry? _customAutomationRecordingOverlay;
   // 再生位置。再生タイマーはfps間隔（24fpsなら約41ms）でこれを進めるため、
   // ここをただのフィールドにして`setState`で更新すると、そのたびに
   // タイムライン画面のウィジェットツリー全体（フレーム一覧・各トラック・
@@ -1084,17 +1089,34 @@ class _TimelineScreenState extends State<TimelineScreen> {
             icon: const Icon(Icons.more_vert),
             onSelected: (action) {
               if (action == 'autofill') _showAutofillDialog();
+              if (action == 'automation') _showCustomAutomationManager();
               if (action == 'save_tree') {
-                context.push('/save-tree/${widget.projectId}?entry=timeline');
+                _runAutomationBlockedAction(
+                  () => context.push(
+                    '/save-tree/${widget.projectId}?entry=timeline',
+                  ),
+                );
               }
               if (action == 'export') {
-                context.push('/export/${widget.projectId}');
+                _runAutomationBlockedAction(
+                  () => context.push('/export/${widget.projectId}'),
+                );
               }
               if (action == 'export_frame') _exportCurrentFrameImage();
               if (action == 'duration') _showDurationChangeDialog();
               if (action == 'canvas_size') _showCanvasSizeChangeDialog();
             },
             itemBuilder: (_) => [
+              PopupMenuItem(
+                value: 'automation',
+                child: Row(
+                  children: [
+                    const Icon(Icons.playlist_play, size: 18),
+                    const SizedBox(width: 8),
+                    Text(l10n.customAutomationTitle),
+                  ],
+                ),
+              ),
               PopupMenuItem(
                 value: 'save_tree',
                 child: Text(
@@ -2050,9 +2072,9 @@ class _TimelineScreenState extends State<TimelineScreen> {
                                 ),
                               ),
                               backgroundColor: isMoving
-                                  ? Theme.of(
-                                      context,
-                                    ).colorScheme.primaryContainer
+                                  ? Theme.of(context)
+                                        .colorScheme
+                                        .primaryContainer
                                   : null,
                             ),
                           );
@@ -2338,6 +2360,136 @@ class _TimelineScreenState extends State<TimelineScreen> {
       _isSceneMultiSelect = false;
       _selectedSceneIds.clear();
     });
+  }
+
+  void _showCustomAutomationManager() {
+    final premium = context.read<PremiumService>();
+    if (!premium.isFeatureAvailable(PremiumFeature.customAutomation)) {
+      showPremiumBanner(context);
+      return;
+    }
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      builder: (_) => CustomAutomationManagerSheet(
+        surface: CustomAutomationSurface.timeline,
+        onExecute: _executeCustomAutomation,
+        onRecordingStarted: _showCustomAutomationRecordingOverlay,
+        recordingStartFrame: _currentFrame,
+      ),
+    );
+  }
+
+  void _showCustomAutomationRecordingOverlay() {
+    _customAutomationRecordingOverlay?.remove();
+    late final OverlayEntry entry;
+    entry = OverlayEntry(
+      builder: (_) => Stack(
+        children: [
+          CustomAutomationRecordingStopButton(
+            onStop: () {
+              context.read<CustomAutomationService>().stopRecording();
+              entry.remove();
+              if (identical(_customAutomationRecordingOverlay, entry)) {
+                _customAutomationRecordingOverlay = null;
+              }
+              _showCustomAutomationDraftReview();
+            },
+          ),
+        ],
+      ),
+    );
+    _customAutomationRecordingOverlay = entry;
+    Overlay.of(context).insert(entry);
+  }
+
+  void _showCustomAutomationDraftReview() {
+    if (!mounted) return;
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      builder: (_) => CustomAutomationDraftSheet(
+        surface: CustomAutomationSurface.timeline,
+        onResumeRecording: _showCustomAutomationRecordingOverlay,
+      ),
+    );
+  }
+
+  Future<void> _executeCustomAutomation(
+    CustomAutomation automation,
+    CustomAutomationExecutionScope scope,
+  ) async {
+    if (scope == CustomAutomationExecutionScope.allFrames) {
+      throw StateError('Timeline automation cannot run in all-frame scope');
+    }
+    for (final step in automation.steps) {
+      if (step.surface != CustomAutomationSurface.timeline) {
+        throw StateError('Canvas command cannot run from Timeline mode');
+      }
+      switch (step.command) {
+        case 'timeline.selectFrame':
+          final frame = (step.args['frame'] as num?)?.round();
+          if (frame == null || frame < 0 || frame >= _totalFrames) {
+            throw StateError('Frame is outside the current timeline');
+          }
+          setState(() => _currentFrame = frame);
+        case 'timeline.addFrame':
+          final sceneId = _selectedSceneId;
+          if (sceneId == null) throw StateError('No scene selected');
+          if (!_canAddFrames(1)) throw StateError('Frame limit reached');
+          context.read<ProjectService>().addFrame(widget.projectId, sceneId);
+        default:
+          throw StateError(
+            'Unsupported Timeline automation command: ${step.command}',
+          );
+      }
+    }
+  }
+
+  void _recordTimelineAutomation(
+    String command,
+    String label, {
+    Map<String, Object?> args = const {},
+    bool changesFrame = false,
+  }) {
+    context.read<CustomAutomationService>().recordStep(
+      surface: CustomAutomationSurface.timeline,
+      command: command,
+      label: label,
+      args: args,
+      changesFrame: changesFrame,
+      recordedFrame: _currentFrame,
+    );
+  }
+
+  Future<void> _runAutomationBlockedAction(VoidCallback action) async {
+    final service = context.read<CustomAutomationService>();
+    if (!service.isRecording) {
+      action();
+      return;
+    }
+    final l10n = AppLocalizations.of(context)!;
+    final stop = await showDialog<bool>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: Text(l10n.customAutomationStopConfirmTitle),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(dialogContext, true),
+            child: Text(l10n.customAutomationStopConfirmStop),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.pop(dialogContext, false),
+            child: Text(l10n.customAutomationStopConfirmContinue),
+          ),
+        ],
+      ),
+    );
+    if (stop != true || !mounted) return;
+    service.cancelDraft();
+    _customAutomationRecordingOverlay?.remove();
+    _customAutomationRecordingOverlay = null;
+    action();
   }
 
   // 三点メニュー（シーン名変更・複製・削除）
@@ -2668,12 +2820,12 @@ class _TimelineScreenState extends State<TimelineScreen> {
                                             width: 3,
                                             height: 28,
                                             color: isActive
-                                                ? Theme.of(
-                                                    context,
-                                                  ).colorScheme.primary
-                                                : Theme.of(
-                                                    context,
-                                                  ).colorScheme.outline,
+                                                ? Theme.of(context)
+                                                      .colorScheme
+                                                      .primary
+                                                : Theme.of(context)
+                                                      .colorScheme
+                                                      .outline,
                                           ),
                                         ),
                                       );
@@ -2694,9 +2846,9 @@ class _TimelineScreenState extends State<TimelineScreen> {
                                         ),
                                         decoration: BoxDecoration(
                                           color: isMoving
-                                              ? Theme.of(
-                                                  context,
-                                                ).colorScheme.primaryContainer
+                                              ? Theme.of(context)
+                                                    .colorScheme
+                                                    .primaryContainer
                                               : ThemeService
                                                     .activeColorScheme
                                                     .onSurfaceVariant,
@@ -2715,9 +2867,9 @@ class _TimelineScreenState extends State<TimelineScreen> {
                                             style: TextStyle(
                                               fontSize: 9,
                                               color: isMoving
-                                                  ? Theme.of(
-                                                      context,
-                                                    ).colorScheme.primary
+                                                  ? Theme.of(context)
+                                                        .colorScheme
+                                                        .primary
                                                   : null,
                                             ),
                                           ),
@@ -2734,6 +2886,10 @@ class _TimelineScreenState extends State<TimelineScreen> {
                                         context.read<ProjectService>().addFrame(
                                           widget.projectId,
                                           sceneId,
+                                        );
+                                        _recordTimelineAutomation(
+                                          'timeline.addFrame',
+                                          'Add frame',
                                         );
                                       },
                                       child: Container(
@@ -2792,6 +2948,12 @@ class _TimelineScreenState extends State<TimelineScreen> {
                                         // 未選択フレームは何もしない（シーンと同じ操作体系）
                                       } else {
                                         setState(() => _currentFrame = index);
+                                        _recordTimelineAutomation(
+                                          'timeline.selectFrame',
+                                          'Frame ${index + 1}',
+                                          args: {'frame': index},
+                                          changesFrame: true,
+                                        );
                                       }
                                     },
                                     // 長押し：このフレームを選択済みの状態でフレーム複数選択モードを開始する
@@ -2813,20 +2975,20 @@ class _TimelineScreenState extends State<TimelineScreen> {
                                         // 濃いグレーのままだと透明部分の見え方が実際の
                                         // キャンバス画面と一致しなかったため修正。
                                         color: isChecked
-                                            ? Theme.of(
-                                                context,
-                                              ).colorScheme.primaryContainer
+                                            ? Theme.of(context)
+                                                  .colorScheme
+                                                  .primaryContainer
                                             : ThemeService
                                                   .activeColorScheme
                                                   .onSurface,
                                         border: Border.all(
                                           color: isChecked
-                                              ? Theme.of(
-                                                  context,
-                                                ).colorScheme.primary
-                                              : Theme.of(
-                                                  context,
-                                                ).colorScheme.outlineVariant,
+                                              ? Theme.of(context)
+                                                    .colorScheme
+                                                    .primary
+                                              : Theme.of(context)
+                                                    .colorScheme
+                                                    .outlineVariant,
                                         ),
                                         borderRadius: BorderRadius.circular(3),
                                       ),
@@ -3957,9 +4119,9 @@ class _TimelineScreenState extends State<TimelineScreen> {
                                     decoration: BoxDecoration(
                                       border: Border(
                                         right: BorderSide(
-                                          color: Theme.of(
-                                            context,
-                                          ).colorScheme.outlineVariant,
+                                          color: Theme.of(context)
+                                              .colorScheme
+                                              .outlineVariant,
                                           width: 0.5,
                                         ),
                                       ),
@@ -4861,9 +5023,9 @@ class _TimelineScreenState extends State<TimelineScreen> {
                               decoration: BoxDecoration(
                                 border: Border(
                                   right: BorderSide(
-                                    color: Theme.of(
-                                      context,
-                                    ).colorScheme.outlineVariant,
+                                    color: Theme.of(context)
+                                        .colorScheme
+                                        .outlineVariant,
                                     width: 0.5,
                                   ),
                                 ),

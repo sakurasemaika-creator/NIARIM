@@ -11234,7 +11234,7 @@ abstract class AppLocalizations {
   /// No description provided for @customAutomationRunConfirmTitle.
   ///
   /// In ja, this message translates to:
-  /// **'この自動操作を実行しますか？'**
+  /// **'実行しますか？'**
   String get customAutomationRunConfirmTitle;
 
   /// No description provided for @customAutomationCurrentFrame.
@@ -11264,25 +11264,25 @@ abstract class AppLocalizations {
   /// No description provided for @customAutomationRenameTitle.
   ///
   /// In ja, this message translates to:
-  /// **'自動操作名を変更'**
+  /// **'名前を変更'**
   String get customAutomationRenameTitle;
 
   /// No description provided for @customAutomationDeleteTitle.
   ///
   /// In ja, this message translates to:
-  /// **'この自動操作を削除しますか？'**
+  /// **'自動操作を削除しますか？'**
   String get customAutomationDeleteTitle;
 
   /// No description provided for @customAutomationImport.
   ///
   /// In ja, this message translates to:
-  /// **'読み込む'**
+  /// **'自動操作を読み込む'**
   String get customAutomationImport;
 
   /// No description provided for @customAutomationExport.
   ///
   /// In ja, this message translates to:
-  /// **'配布・書き出し'**
+  /// **'自動操作を配布・書き出し'**
   String get customAutomationExport;
 
   /// No description provided for @customAutomationRerecord.
@@ -11294,7 +11294,7 @@ abstract class AppLocalizations {
   /// No description provided for @customAutomationImportInvalid.
   ///
   /// In ja, this message translates to:
-  /// **'自動操作ファイルを読み込めませんでした'**
+  /// **'この自動操作ファイルは読み込めません'**
   String get customAutomationImportInvalid;
 
   /// No description provided for @customAutomationEmpty.
@@ -11338,6 +11338,42 @@ abstract class AppLocalizations {
   /// In ja, this message translates to:
   /// **'プレミアム会員限定で、操作を記録・編集・配布・再実行できます。'**
   String get customAutomationPremiumHint;
+
+  /// No description provided for @customAutomationReviewHint.
+  ///
+  /// In ja, this message translates to:
+  /// **'手順を並べ替えたり削除してから保存できます'**
+  String get customAutomationReviewHint;
+
+  /// No description provided for @customAutomationNoRecordedSteps.
+  ///
+  /// In ja, this message translates to:
+  /// **'記録された操作がありません'**
+  String get customAutomationNoRecordedSteps;
+
+  /// No description provided for @customAutomationCanvasStep.
+  ///
+  /// In ja, this message translates to:
+  /// **'キャンバス操作'**
+  String get customAutomationCanvasStep;
+
+  /// No description provided for @customAutomationTimelineStep.
+  ///
+  /// In ja, this message translates to:
+  /// **'タイムライン操作'**
+  String get customAutomationTimelineStep;
+
+  /// No description provided for @customAutomationBackToRecording.
+  ///
+  /// In ja, this message translates to:
+  /// **'操作記録に戻る'**
+  String get customAutomationBackToRecording;
+
+  /// No description provided for @customAutomationStopConfirmStop.
+  ///
+  /// In ja, this message translates to:
+  /// **'やめる'**
+  String get customAutomationStopConfirmStop;
 }
 
 class _AppLocalizationsDelegate

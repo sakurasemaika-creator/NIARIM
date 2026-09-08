@@ -1,5 +1,6 @@
 // ignore: unused_import
 import 'package:intl/intl.dart' as intl;
+
 import 'app_localizations.dart';
 
 // ignore_for_file: type=lint
@@ -6056,31 +6057,31 @@ class AppLocalizationsZh extends AppLocalizations {
   }
 
   @override
-  String get customAutomationTitle => '自動操作';
+  String get customAutomationTitle => '自动操作';
 
   @override
-  String get customAutomationAdd => '自動操作を新規追加';
+  String get customAutomationAdd => '新建自动操作';
 
   @override
-  String get customAutomationNewTitle => '新しい自動操作';
+  String get customAutomationNewTitle => '新自动操作';
 
   @override
-  String get customAutomationNameLabel => '名前';
+  String get customAutomationNameLabel => '名称';
 
   @override
-  String get customAutomationStartRecording => '操作記録開始';
+  String get customAutomationStartRecording => '开始记录操作';
 
   @override
-  String get customAutomationStopRecording => '操作記録停止';
+  String get customAutomationStopRecording => '停止记录';
 
   @override
-  String get customAutomationRunConfirmTitle => 'この自動操作を実行しますか？';
+  String get customAutomationRunConfirmTitle => '要执行吗？';
 
   @override
-  String get customAutomationCurrentFrame => 'この操作を現在のフレームに行う';
+  String get customAutomationCurrentFrame => '在当前帧执行';
 
   @override
-  String get customAutomationAllFrames => 'この操作を全フレームに行う';
+  String get customAutomationAllFrames => '在所有帧执行';
 
   @override
   String get customAutomationYes => 'はい';
@@ -6089,45 +6090,63 @@ class AppLocalizationsZh extends AppLocalizations {
   String get customAutomationNo => 'いいえ';
 
   @override
-  String get customAutomationRenameTitle => '自動操作名を変更';
+  String get customAutomationRenameTitle => '重命名';
 
   @override
-  String get customAutomationDeleteTitle => 'この自動操作を削除しますか？';
+  String get customAutomationDeleteTitle => '删除此自动操作吗？';
 
   @override
-  String get customAutomationImport => '読み込む';
+  String get customAutomationImport => '导入自动操作';
 
   @override
-  String get customAutomationExport => '配布・書き出し';
+  String get customAutomationExport => '分享 / 导出自动操作';
 
   @override
-  String get customAutomationRerecord => '再記録';
+  String get customAutomationRerecord => '重新记录';
 
   @override
-  String get customAutomationImportInvalid => '自動操作ファイルを読み込めませんでした';
+  String get customAutomationImportInvalid => '无法导入此自动操作文件';
 
   @override
-  String get customAutomationEmpty => '記録済みの自動操作はありません';
+  String get customAutomationEmpty => '没有已记录的自动操作';
 
   @override
   String customAutomationStepCount(int count) {
-    return '$count 手順';
+    return '$count 个步骤';
   }
 
   @override
   String get customAutomationReturnToRecording => '操作記録に戻る';
 
   @override
-  String get customAutomationStopConfirmTitle => '自動操作の登録をやめますか？';
+  String get customAutomationStopConfirmTitle => '要停止注册此自动操作吗？';
 
   @override
   String get customAutomationStopConfirmQuit => 'やめる';
 
   @override
-  String get customAutomationStopConfirmContinue => '続ける';
+  String get customAutomationStopConfirmContinue => '继续';
 
   @override
   String get customAutomationPremiumHint => 'プレミアム会員限定で、操作を記録・編集・配布・再実行できます。';
+
+  @override
+  String get customAutomationReviewHint => '保存前可调整顺序或删除步骤';
+
+  @override
+  String get customAutomationNoRecordedSteps => '没有记录任何操作';
+
+  @override
+  String get customAutomationCanvasStep => '画布操作';
+
+  @override
+  String get customAutomationTimelineStep => '时间轴操作';
+
+  @override
+  String get customAutomationBackToRecording => '返回记录';
+
+  @override
+  String get customAutomationStopConfirmStop => '停止';
 }
 
 /// The translations for Chinese, using the Han script (`zh_Hant`).
@@ -12162,4 +12181,81 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String filterAutoLineartLayerNameSuffix(String name) {
     return '$name 自動線稿';
   }
+
+  @override
+  String get customAutomationTitle => '自動操作';
+
+  @override
+  String get customAutomationAdd => '新增自動操作';
+
+  @override
+  String get customAutomationNewTitle => '新自動操作';
+
+  @override
+  String get customAutomationNameLabel => '名稱';
+
+  @override
+  String get customAutomationStartRecording => '開始記錄操作';
+
+  @override
+  String get customAutomationStopRecording => '停止記錄';
+
+  @override
+  String get customAutomationRunConfirmTitle => '要執行嗎？';
+
+  @override
+  String get customAutomationCurrentFrame => '在目前影格執行';
+
+  @override
+  String get customAutomationAllFrames => '在所有影格執行';
+
+  @override
+  String get customAutomationRenameTitle => '重新命名';
+
+  @override
+  String get customAutomationDeleteTitle => '刪除此自動操作嗎？';
+
+  @override
+  String get customAutomationImport => '匯入自動操作';
+
+  @override
+  String get customAutomationExport => '分享 / 匯出自動操作';
+
+  @override
+  String get customAutomationRerecord => '重新記錄';
+
+  @override
+  String get customAutomationImportInvalid => '無法匯入此自動操作檔案';
+
+  @override
+  String get customAutomationEmpty => '沒有已記錄的自動操作';
+
+  @override
+  String customAutomationStepCount(int count) {
+    return '$count 個步驟';
+  }
+
+  @override
+  String get customAutomationStopConfirmTitle => '要停止登錄此自動操作嗎？';
+
+  @override
+  String get customAutomationStopConfirmContinue => '繼續';
+
+  @override
+  String get customAutomationReviewHint => '儲存前可調整順序或刪除步驟';
+
+  @override
+  String get customAutomationNoRecordedSteps => '沒有記錄任何操作';
+
+  @override
+  String get customAutomationCanvasStep => '畫布操作';
+
+  @override
+  String get customAutomationTimelineStep => '時間軸操作';
+
+  @override
+  String get customAutomationBackToRecording => '返回記錄';
+
+  @override
+  String get customAutomationStopConfirmStop => '停止';
 }

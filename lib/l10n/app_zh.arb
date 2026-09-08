@@ -2647,5 +2647,30 @@
         "type": "String"
       }
     }
-  }
+  },
+  "customAutomationTitle": "自动操作",
+  "customAutomationAdd": "新建自动操作",
+  "customAutomationNewTitle": "新自动操作",
+  "customAutomationNameLabel": "名称",
+  "customAutomationStartRecording": "开始记录操作",
+  "customAutomationStopRecording": "停止记录",
+  "customAutomationRunConfirmTitle": "要执行吗？",
+  "customAutomationCurrentFrame": "在当前帧执行",
+  "customAutomationAllFrames": "在所有帧执行",
+  "customAutomationRenameTitle": "重命名",
+  "customAutomationDeleteTitle": "删除此自动操作吗？",
+  "customAutomationImport": "导入自动操作",
+  "customAutomationExport": "分享 / 导出自动操作",
+  "customAutomationRerecord": "重新记录",
+  "customAutomationEmpty": "没有已记录的自动操作",
+  "customAutomationImportInvalid": "无法导入此自动操作文件",
+  "customAutomationReviewHint": "保存前可调整顺序或删除步骤",
+  "customAutomationNoRecordedSteps": "没有记录任何操作",
+  "customAutomationCanvasStep": "画布操作",
+  "customAutomationTimelineStep": "时间轴操作",
+  "customAutomationBackToRecording": "返回记录",
+  "customAutomationStopConfirmTitle": "要停止注册此自动操作吗？",
+  "customAutomationStopConfirmStop": "停止",
+  "customAutomationStopConfirmContinue": "继续",
+  "customAutomationStepCount": "{count} 个步骤"
 }

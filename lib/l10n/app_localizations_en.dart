@@ -1,5 +1,6 @@
 // ignore: unused_import
 import 'package:intl/intl.dart' as intl;
+
 import 'app_localizations.dart';
 
 // ignore_for_file: type=lint
@@ -6309,10 +6310,10 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String get customAutomationTitle => 'Automation';
+  String get customAutomationTitle => 'Automations';
 
   @override
-  String get customAutomationAdd => 'New automation';
+  String get customAutomationAdd => 'Add automation';
 
   @override
   String get customAutomationNewTitle => 'New automation';
@@ -6342,23 +6343,23 @@ class AppLocalizationsEn extends AppLocalizations {
   String get customAutomationNo => 'No';
 
   @override
-  String get customAutomationRenameTitle => 'Rename automation';
+  String get customAutomationRenameTitle => 'Rename';
 
   @override
   String get customAutomationDeleteTitle => 'Delete this automation?';
 
   @override
-  String get customAutomationImport => 'Import';
+  String get customAutomationImport => 'Import automation';
 
   @override
-  String get customAutomationExport => 'Share / Export';
+  String get customAutomationExport => 'Share / export automation';
 
   @override
   String get customAutomationRerecord => 'Re-record';
 
   @override
   String get customAutomationImportInvalid =>
-      'Could not import this automation file';
+      'This automation file cannot be imported';
 
   @override
   String get customAutomationEmpty => 'No recorded automations';
@@ -6384,4 +6385,23 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get customAutomationPremiumHint =>
       'Premium only: record, edit, share, and replay your own actions.';
+
+  @override
+  String get customAutomationReviewHint =>
+      'Reorder or delete steps before saving';
+
+  @override
+  String get customAutomationNoRecordedSteps => 'No actions were recorded';
+
+  @override
+  String get customAutomationCanvasStep => 'Canvas action';
+
+  @override
+  String get customAutomationTimelineStep => 'Timeline action';
+
+  @override
+  String get customAutomationBackToRecording => 'Back to recording';
+
+  @override
+  String get customAutomationStopConfirmStop => 'Stop';
 }

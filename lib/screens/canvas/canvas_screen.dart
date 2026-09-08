@@ -11,9 +11,12 @@ import '../../services/material_service.dart';
 import '../../services/performance_service.dart';
 import '../../services/filter_service.dart';
 import '../../services/quick_tool_service.dart';
+import '../../services/custom_automation_service.dart';
+import '../../services/premium_service.dart';
 import '../../services/settings_service.dart';
 import '../../services/shortcut_service.dart';
 import '../../models/shortcut_binding.dart';
+import '../../models/custom_automation.dart';
 import '../../widgets/background_color_picker.dart';
 import '../../widgets/dispose_on_unmount.dart';
 import '../../widgets/editable_slider_value.dart';
@@ -52,6 +55,9 @@ import '../../models/ruler.dart';
 import '../../widgets/responsive.dart';
 import '../../config/font_fallback.dart';
 import '../../widgets/scrollable_sheet_body.dart';
+import '../../widgets/custom_automation_manager_sheet.dart';
+import '../../widgets/custom_automation_draft_sheet.dart';
+import '../../widgets/premium_lock_widget.dart';
 
 class CanvasScreen extends StatefulWidget {
   final String projectId;
@@ -146,6 +152,7 @@ class _CanvasScreenState extends State<CanvasScreen> {
   double? _panelWidthDragOverride;
   // 左側ツールオプション系ドッキング領域の横幅（ドラッグ中のローカル反映用）。
   double? _toolPanelWidthDragOverride;
+  OverlayEntry? _customAutomationRecordingOverlay;
 
   /// モバイルレイアウトのオーバーレイパネル（レイヤー・色・ブラシ・トーン・
   /// スタンプ・ペンサブツール・オニオンスキン・定規・フィルター・早替え
@@ -338,11 +345,191 @@ class _CanvasScreenState extends State<CanvasScreen> {
     );
     if (_currentFrame + 1 >= total) return;
     setState(() => _currentFrame += 1);
+    _recordCanvasAutomation(
+      'canvas.selectFrame',
+      'Frame ${_currentFrame + 1}',
+      args: {'frame': _currentFrame},
+      changesFrame: true,
+    );
   }
 
   void _goToPreviousFrame() {
     if (_currentFrame <= 0) return;
     setState(() => _currentFrame -= 1);
+    _recordCanvasAutomation(
+      'canvas.selectFrame',
+      'Frame ${_currentFrame + 1}',
+      args: {'frame': _currentFrame},
+      changesFrame: true,
+    );
+  }
+
+  void _showCustomAutomationManager() {
+    final premium = context.read<PremiumService>();
+    if (!premium.isFeatureAvailable(PremiumFeature.customAutomation)) {
+      showPremiumBanner(context);
+      return;
+    }
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      builder: (_) => CustomAutomationManagerSheet(
+        surface: CustomAutomationSurface.canvas,
+        onExecute: _executeCustomAutomation,
+        onRecordingStarted: _showCustomAutomationRecordingOverlay,
+        recordingStartFrame: _currentFrame,
+      ),
+    );
+  }
+
+  void _showCustomAutomationRecordingOverlay() {
+    _customAutomationRecordingOverlay?.remove();
+    late final OverlayEntry entry;
+    entry = OverlayEntry(
+      builder: (_) => Stack(
+        children: [
+          CustomAutomationRecordingStopButton(
+            onStop: () {
+              context.read<CustomAutomationService>().stopRecording();
+              entry.remove();
+              if (identical(_customAutomationRecordingOverlay, entry)) {
+                _customAutomationRecordingOverlay = null;
+              }
+              _showCustomAutomationDraftReview();
+            },
+          ),
+        ],
+      ),
+    );
+    _customAutomationRecordingOverlay = entry;
+    Overlay.of(context).insert(entry);
+  }
+
+  void _showCustomAutomationDraftReview() {
+    if (!mounted) return;
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      builder: (_) => CustomAutomationDraftSheet(
+        surface: CustomAutomationSurface.canvas,
+        onResumeRecording: _showCustomAutomationRecordingOverlay,
+      ),
+    );
+  }
+
+  void _recordCanvasAutomation(
+    String command,
+    String label, {
+    Map<String, Object?> args = const {},
+    bool changesFrame = false,
+  }) {
+    context.read<CustomAutomationService>().recordStep(
+      surface: CustomAutomationSurface.canvas,
+      command: command,
+      label: label,
+      args: args,
+      changesFrame: changesFrame,
+      recordedFrame: _currentFrame,
+    );
+  }
+
+  Future<void> _executeCustomAutomation(
+    CustomAutomation automation,
+    CustomAutomationExecutionScope scope,
+  ) async {
+    final total = context.read<ProjectService>().frameCount(
+      widget.projectId,
+      _currentSceneId,
+    );
+    final frames = scope == CustomAutomationExecutionScope.allFrames
+        ? List<int>.generate(total, (index) => index)
+        : <int>[_currentFrame];
+    for (final frame in frames) {
+      for (final step in automation.steps) {
+        if (step.surface != CustomAutomationSurface.canvas) {
+          throw StateError('Timeline command cannot run from Canvas mode');
+        }
+        await _executeCanvasAutomationStep(step, frame);
+      }
+    }
+  }
+
+  Future<void> _executeCanvasAutomationStep(
+    CustomAutomationStep step,
+    int targetFrame,
+  ) async {
+    switch (step.command) {
+      case 'canvas.tool':
+        final toolName = step.args['tool'] as String?;
+        if (toolName == null) throw StateError('Missing tool');
+        final tool = DrawingTool.values
+            .where((value) => value.name == toolName)
+            .firstOrNull;
+        if (tool == null) throw StateError('Unknown tool: $toolName');
+        setState(() => _currentTool = tool);
+      case 'canvas.brushSize':
+        final value = (step.args['value'] as num?)?.toDouble();
+        if (value == null) throw StateError('Missing brush size');
+        setState(() => _brushSize = value);
+        context.read<BrushService>().updateCurrentBrushSize(value);
+      case 'canvas.brushOpacity':
+        final value = (step.args['value'] as num?)?.round();
+        if (value == null) throw StateError('Missing brush opacity');
+        setState(() => _brushOpacity = value.clamp(0, 100));
+        context.read<BrushService>().updateCurrentBrushOpacity(_brushOpacity);
+      case 'canvas.color':
+        final argb = (step.args['argb'] as num?)?.toInt();
+        if (argb == null) throw StateError('Missing color');
+        final color = Color(argb);
+        setState(() => _currentColor = color);
+        context.read<BrushService>().setCurrentColor(color);
+      case 'canvas.selectFrame':
+        final frame = (step.args['frame'] as num?)?.round();
+        if (frame == null) throw StateError('Missing frame');
+        if (frame < 0 ||
+            frame >=
+                context.read<ProjectService>().frameCount(
+                  widget.projectId,
+                  _currentSceneId,
+                )) {
+          throw StateError('Frame is outside the current scene');
+        }
+        setState(() => _currentFrame = frame);
+      default:
+        throw StateError(
+          'Unsupported Canvas automation command: ${step.command}',
+        );
+    }
+  }
+
+  Future<void> _runAutomationBlockedAction(VoidCallback action) async {
+    final service = context.read<CustomAutomationService>();
+    if (!service.isRecording) {
+      action();
+      return;
+    }
+    final l10n = AppLocalizations.of(context)!;
+    final stop = await showDialog<bool>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: Text(l10n.customAutomationStopConfirmTitle),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(dialogContext, true),
+            child: Text(l10n.customAutomationStopConfirmStop),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.pop(dialogContext, false),
+            child: Text(l10n.customAutomationStopConfirmContinue),
+          ),
+        ],
+      ),
+    );
+    if (stop != true || !mounted) return;
+    service.cancelDraft();
+    _customAutomationRecordingOverlay?.remove();
+    _customAutomationRecordingOverlay = null;
+    action();
   }
 
   /// キャンバス上部バーの「設定/編集」メニュー（
@@ -366,7 +553,9 @@ class _CanvasScreenState extends State<CanvasScreen> {
                 subtitle: Text(l10n.canvasEditMenuAutofillPresetsSubtitle),
                 onTap: () {
                   Navigator.pop(ctx);
-                  context.push('/autofill-presets');
+                  _runAutomationBlockedAction(
+                    () => context.push('/autofill-presets'),
+                  );
                 },
               ),
               ListTile(
@@ -424,6 +613,28 @@ class _CanvasScreenState extends State<CanvasScreen> {
                 },
               ),
               ListTile(
+                leading: Icon(
+                  Icons.playlist_play,
+                  color:
+                      context.read<PremiumService>().isFeatureAvailable(
+                        PremiumFeature.customAutomation,
+                      )
+                      ? null
+                      : Theme.of(context).colorScheme.outline,
+                ),
+                title: Text(l10n.customAutomationTitle),
+                trailing:
+                    context.read<PremiumService>().isFeatureAvailable(
+                      PremiumFeature.customAutomation,
+                    )
+                    ? null
+                    : const Icon(Icons.lock_outline, size: 18),
+                onTap: () {
+                  Navigator.pop(ctx);
+                  _showCustomAutomationManager();
+                },
+              ),
+              ListTile(
                 leading: const Icon(Icons.blur_on),
                 title: Text(l10n.filterPanelTitle),
                 subtitle: Text(l10n.canvasEditMenuFilterSubtitle),
@@ -452,7 +663,9 @@ class _CanvasScreenState extends State<CanvasScreen> {
                 subtitle: Text(l10n.canvasEditMenuPressureCurveSubtitle),
                 onTap: () {
                   Navigator.pop(ctx);
-                  context.push('/settings/pen');
+                  _runAutomationBlockedAction(
+                    () => context.push('/settings/pen'),
+                  );
                 },
               ),
               // レイヤー全体の自由変形・メッシュ変形。
@@ -654,6 +867,8 @@ class _CanvasScreenState extends State<CanvasScreen> {
 
   @override
   void dispose() {
+    _customAutomationRecordingOverlay?.remove();
+    _customAutomationRecordingOverlay = null;
     ImmersiveMode.exitWorkspace();
     _perf?.removeListener(_onPerfChanged);
     if (_autosaveAttached) _autosaveService?.detach();
@@ -930,9 +1145,9 @@ class _CanvasScreenState extends State<CanvasScreen> {
                                           borderRadius: BorderRadius.circular(
                                             10,
                                           ),
-                                          color: Theme.of(
-                                            context,
-                                          ).colorScheme.inverseSurface,
+                                          color: Theme.of(context)
+                                              .colorScheme
+                                              .inverseSurface,
                                           child: Padding(
                                             padding: const EdgeInsets.symmetric(
                                               horizontal: 14,
@@ -1109,12 +1324,22 @@ class _CanvasScreenState extends State<CanvasScreen> {
                           context.read<BrushService>().updateCurrentBrushSize(
                             v,
                           );
+                          _recordCanvasAutomation(
+                            'canvas.brushSize',
+                            'Brush size',
+                            args: {'value': v},
+                          );
                         },
                         onOpacityChanged: (v) {
                           setState(() => _brushOpacity = v);
                           context
                               .read<BrushService>()
                               .updateCurrentBrushOpacity(v);
+                          _recordCanvasAutomation(
+                            'canvas.brushOpacity',
+                            'Brush opacity',
+                            args: {'value': v},
+                          );
                         },
                       ),
                     // メッシュ変形中は分割数のスライダーだけを画面下部へ出す
@@ -1181,9 +1406,8 @@ class _CanvasScreenState extends State<CanvasScreen> {
                             size: 22,
                             // 色固定をやめ、テーマの文字色と連動させる（CanvasIconButton・
                             // ToolbarWidgetの色連動と同じ方針）。
-                            color: Theme.of(
-                              context,
-                            ).colorScheme.onSurface.withValues(alpha: 0.7),
+                            color: Theme.of(context).colorScheme.onSurface
+                                .withValues(alpha: 0.7),
                           ),
                         ),
                       ),
@@ -1192,10 +1416,18 @@ class _CanvasScreenState extends State<CanvasScreen> {
                         currentFrame: _currentFrame,
                         projectId: widget.projectId,
                         sceneId: _currentSceneId,
-                        onFrameSelected: (idx) =>
-                            setState(() => _currentFrame = idx),
-                        onTimelineTap: () =>
-                            context.go('/timeline/${widget.projectId}'),
+                        onFrameSelected: (idx) {
+                          setState(() => _currentFrame = idx);
+                          _recordCanvasAutomation(
+                            'canvas.selectFrame',
+                            'Frame ${idx + 1}',
+                            args: {'frame': idx},
+                            changesFrame: true,
+                          );
+                        },
+                        onTimelineTap: () => _runAutomationBlockedAction(
+                          () => context.go('/timeline/${widget.projectId}'),
+                        ),
                         multiSelectMode: _frameMultiSelectMode,
                         selectedFrames: _selectedFrameIndices,
                         onFrameToggle: (idx) => setState(() {
@@ -1405,7 +1637,14 @@ class _CanvasScreenState extends State<CanvasScreen> {
     currentTool: _currentTool,
     currentColor: _currentColor,
     isStampSelected: _currentSubTool == PenSubTool.stamp,
-    onToolSelected: (tool) => setState(() => _currentTool = tool),
+    onToolSelected: (tool) {
+      setState(() => _currentTool = tool);
+      _recordCanvasAutomation(
+        'canvas.tool',
+        tool.name,
+        args: {'tool': tool.name},
+      );
+    },
     onColorTap: () => setState(() {
       final next = !_showColorPicker;
       _closeAllOverlayPanels();
@@ -1436,7 +1675,9 @@ class _CanvasScreenState extends State<CanvasScreen> {
       _showQuickToolPanel = next;
     }),
     // 手動保存（セーブツリー）：「キャンバス → 保存 → キャンバスへ戻る」
-    onSaveTap: () => context.push('/save-tree/${widget.projectId}'),
+    onSaveTap: () => _runAutomationBlockedAction(
+      () => context.push('/save-tree/${widget.projectId}'),
+    ),
     // 投げ縄塗り：ペンのサブツールではなくバケツ長押しメニューから
     // 選べるようにする（投げ縄で囲った範囲を塗る点でバケツ塗りに
     // 近いため）。
@@ -1468,6 +1709,11 @@ class _CanvasScreenState extends State<CanvasScreen> {
               onColorChanged: (color) {
                 setState(() => _currentColor = color);
                 context.read<BrushService>().setCurrentColor(color);
+                _recordCanvasAutomation(
+                  'canvas.color',
+                  'Color',
+                  args: {'argb': color.toARGB32()},
+                );
               },
               onClose: () => setState(() => _showColorPicker = false),
               onEyedropperTap: () => setState(() {
@@ -1525,6 +1771,11 @@ class _CanvasScreenState extends State<CanvasScreen> {
     onColorChanged: (color) {
       setState(() => _currentColor = color);
       context.read<BrushService>().setCurrentColor(color);
+      _recordCanvasAutomation(
+        'canvas.color',
+        'Color',
+        args: {'argb': color.toARGB32()},
+      );
     },
     onClose: () => setState(() => _showColorPicker = false),
     // カラーピッカー内のスポイトボタン：スポイトツールへ切り替えて

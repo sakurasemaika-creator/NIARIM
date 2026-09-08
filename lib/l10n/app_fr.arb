@@ -2647,5 +2647,30 @@
         "type": "String"
       }
     }
-  }
+  },
+  "customAutomationTitle": "Automatisations",
+  "customAutomationAdd": "Ajouter une automatisation",
+  "customAutomationNewTitle": "Nouvelle automatisation",
+  "customAutomationNameLabel": "Nom",
+  "customAutomationStartRecording": "Démarrer l’enregistrement",
+  "customAutomationStopRecording": "Arrêter l’enregistrement",
+  "customAutomationRunConfirmTitle": "Exécuter cette automatisation ?",
+  "customAutomationCurrentFrame": "Exécuter sur l’image actuelle",
+  "customAutomationAllFrames": "Exécuter sur toutes les images",
+  "customAutomationRenameTitle": "Renommer",
+  "customAutomationDeleteTitle": "Supprimer cette automatisation ?",
+  "customAutomationImport": "Importer une automatisation",
+  "customAutomationExport": "Partager / exporter",
+  "customAutomationRerecord": "Réenregistrer",
+  "customAutomationEmpty": "Aucune automatisation enregistrée",
+  "customAutomationImportInvalid": "Impossible d’importer ce fichier",
+  "customAutomationReviewHint": "Réordonnez ou supprimez des étapes avant d’enregistrer",
+  "customAutomationNoRecordedSteps": "Aucune action enregistrée",
+  "customAutomationCanvasStep": "Action de canevas",
+  "customAutomationTimelineStep": "Action de timeline",
+  "customAutomationBackToRecording": "Revenir à l’enregistrement",
+  "customAutomationStopConfirmTitle": "Arrêter l’enregistrement de cette automatisation ?",
+  "customAutomationStopConfirmStop": "Arrêter",
+  "customAutomationStopConfirmContinue": "Continuer",
+  "customAutomationStepCount": "{count} étapes"
 }
