@@ -2,7 +2,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart' show SingleActivator;
 
 /// キーボード・左手デバイス用ショートカットに割り当てられる、
-/// ツール選択以外の主要操作。
+/// ツール選択・カスタム自動操作以外の主要操作。
 enum ShortcutCommand {
   undo,
   redo,
@@ -17,10 +17,10 @@ enum ShortcutCommand {
 }
 
 /// キーボード・左手デバイス用ショートカットの1件分の割り当て。
-/// 割り当て先は次のどちらか一方：
-/// - ツール選択（早替えツールと同じ粒度：ツール＋ブラシ＋太さ）
-///   → [toolKey]（必須）・[brushId]・[sizeOverride]を使用
-/// - 主要操作（Undo/Redo/レイヤーパネル切替など）→ [command]を使用
+/// 割り当て先は次のいずれか1つ：
+/// - ツール選択 → [toolKey]（必須）・[brushId]・[sizeOverride]
+/// - 主要操作 → [command]
+/// - Premiumのカスタム自動操作 → [automationId]
 class ShortcutBinding {
   final String id;
   final String label;
@@ -33,6 +33,7 @@ class ShortcutBinding {
   final String? brushId;
   final double? sizeOverride;
   final ShortcutCommand? command;
+  final String? automationId;
 
   const ShortcutBinding({
     required this.id,
@@ -46,11 +47,13 @@ class ShortcutBinding {
     this.brushId,
     this.sizeOverride,
     this.command,
+    this.automationId,
   });
 
   LogicalKeyboardKey get key => LogicalKeyboardKey(keyId);
 
   bool get isToolAction => toolKey != null;
+  bool get isAutomationAction => automationId != null;
 
   SingleActivator get activator => SingleActivator(
     key,
@@ -91,6 +94,7 @@ class ShortcutBinding {
     'brushId': brushId,
     'sizeOverride': sizeOverride,
     'command': command?.name,
+    'automationId': automationId,
   };
 
   factory ShortcutBinding.fromJson(Map<String, dynamic> json) =>
@@ -108,5 +112,6 @@ class ShortcutBinding {
         command: (json['command'] as String?) == null
             ? null
             : ShortcutCommand.values.byName(json['command'] as String),
+        automationId: json['automationId'] as String?,
       );
 }
