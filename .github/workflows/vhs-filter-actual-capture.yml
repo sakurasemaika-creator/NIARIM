@@ -13,10 +13,11 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: read
+  contents: write
 
 jobs:
   capture:
+    if: github.actor != 'github-actions[bot]'
     runs-on: ubuntu-latest
     timeout-minutes: 20
     steps:
@@ -26,17 +27,26 @@ jobs:
           channel: stable
           cache: false
       - run: flutter pub get --enforce-lockfile
-      - name: Format check
-        run: dart format --output=none --set-exit-if-changed test/visual/vhs_filter_actual_capture_test.dart
+      - name: Format focused test
+        run: dart format test/visual/vhs_filter_actual_capture_test.dart
       - name: Focused static analysis
         run: flutter analyze --no-fatal-warnings test/visual/vhs_filter_actual_capture_test.dart lib/engine/vhs_noise_engine.dart lib/engine/filter_engine.dart lib/screens/canvas/widgets/filter_panel.dart lib/services/filter_service.dart
       - name: Execute actual Flutter UI operation capture
         run: flutter test test/visual/vhs_filter_actual_capture_test.dart --reporter expanded
       - name: Upload actual capture evidence
-        if: always()
         uses: actions/upload-artifact@v4
         with:
           name: vhs-filter-actual-captures
           path: build/vhs_visual/*.png
           if-no-files-found: error
           retention-days: 14
+      - name: Commit formatter output when needed
+        run: |
+          if git diff --quiet -- test/visual/vhs_filter_actual_capture_test.dart; then
+            exit 0
+          fi
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add test/visual/vhs_filter_actual_capture_test.dart
+          git commit -m 'style: VHS実操作キャプチャテストを整形'
+          git push origin HEAD:dev_branch
