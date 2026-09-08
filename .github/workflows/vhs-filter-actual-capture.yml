@@ -34,13 +34,15 @@ jobs:
       - name: Execute actual Flutter UI operation capture
         run: flutter test test/visual/vhs_filter_actual_capture_test.dart --reporter expanded
       - name: Upload actual capture evidence
+        if: always()
         uses: actions/upload-artifact@v4
         with:
           name: vhs-filter-actual-captures
           path: build/vhs_visual/*.png
-          if-no-files-found: error
+          if-no-files-found: warn
           retention-days: 14
       - name: Commit formatter output when needed
+        if: success()
         run: |
           if git diff --quiet -- test/visual/vhs_filter_actual_capture_test.dart; then
             exit 0
