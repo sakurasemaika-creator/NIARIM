@@ -6,6 +6,7 @@ on:
     branches: [dev_branch]
     paths:
       - 'scripts/tmp_add_gray_autofill_preset.py'
+      - 'test/autofill_builtin_preset_test.dart'
       - '.github/workflows/tmp-gray-autofill-preset.yml'
 
 permissions:
@@ -26,9 +27,9 @@ jobs:
           cache: true
       - run: flutter pub get
       - run: python3 scripts/tmp_add_gray_autofill_preset.py
-      - run: dart format lib/services/autofill_preset_service.dart
-      - run: flutter analyze lib/services/autofill_preset_service.dart lib/models/autofill_preset.dart
-      - run: flutter test test/autofill_preset_service_test.dart --reporter compact
+      - run: dart format lib/services/autofill_preset_service.dart test/autofill_builtin_preset_test.dart
+      - run: flutter analyze lib/services/autofill_preset_service.dart lib/models/autofill_preset.dart test/autofill_builtin_preset_test.dart
+      - run: flutter test test/autofill_builtin_preset_test.dart --reporter expanded
       - name: Commit integration
         run: |
           git config user.name 'github-actions[bot]'
