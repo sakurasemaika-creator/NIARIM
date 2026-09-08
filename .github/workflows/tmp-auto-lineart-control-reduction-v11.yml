@@ -21,7 +21,7 @@ jobs:
           p=Path('lib/engine/auto_lineart_engine.dart')
           s=p.read_text()
           old='''      // Retain 92% -> 20% of interior controls over the ten levels. Selecting\n      // evenly from the smoothed polygon avoids a bias toward either endpoint.\n      final target = math.max(\n        2,\n        (original.length * (1.0 - legacyLevel * 0.08)).round(),\n      );\n      final keepCount = math.min(work.length, target);'''
-          new='''      // Make levels 1..99 directly describe the approximate percentage of\n      // controls removed. Level 100 is a deliberate endpoint-only mode: every\n      // path collapses to its mandatory start/end anchors. For small paths,\n      // levels 1..99 keep at least three controls so 99 -> 100 always remains\n      // a meaningful final step. Topology anchors stay attached as endpoints.\n      final target = level == 100\n          ? 2\n          : math.max(\n              3,\n              (original.length * (1.0 - level / 100.0)).round(),\n            );\n      final keepCount = math.min(work.length, target);'''
+          new='''      // Make levels 1..99 directly describe the approximate percentage of\n      // controls removed. Level 100 is endpoint-only per path: each extracted\n      // line keeps exactly its own start/end anchors and therefore becomes a\n      // straight segment. For small paths, levels 1..99 keep at least three\n      // controls so 99 -> 100 always remains a meaningful final step. Shared\n      // junction anchors remain shared because each path retains its endpoints.\n      final target = level == 100\n          ? 2\n          : math.max(\n              3,\n              (original.length * (1.0 - level / 100.0)).round(),\n            );\n      final keepCount = math.min(work.length, target);'''
           if old not in s:
             raise SystemExit('reduction block anchor not found')
           p.write_text(s.replace(old,new,1))
@@ -75,20 +75,69 @@ jobs:
           ),
         ],
       );
-      final at99 = AutoLineartEngine.prepareEditableGraph(
-        source,
-        smoothingLevel: 99,
+      final at99 = AutoLineartEngine.prepareEditableGraph(source, smoothingLevel: 99);
+      final at100 = AutoLineartEngine.prepareEditableGraph(source, smoothingLevel: 100);
+      expect(AutoLineartEngine.controlPointCount(at99), 3);
+      expect(AutoLineartEngine.controlPointCount(at100), 2);
+    });
+
+    test('level 100 keeps exactly two endpoints for every path', () {
+      const junction = AutoLineartPoint(50, 50);
+      final source = AutoLineartGraph(
+        width: 100,
+        height: 100,
+        paths: [
+          AutoLineartPath(
+            points: [
+              AutoLineartPoint(10, 10),
+              AutoLineartPoint(25, 20),
+              AutoLineartPoint(40, 35),
+              junction,
+            ],
+            startIsJunction: false,
+            endIsJunction: true,
+            persistence: 1,
+          ),
+          AutoLineartPath(
+            points: [
+              junction,
+              AutoLineartPoint(62, 38),
+              AutoLineartPoint(76, 24),
+              AutoLineartPoint(90, 10),
+            ],
+            startIsJunction: true,
+            endIsJunction: false,
+            persistence: 1,
+          ),
+          AutoLineartPath(
+            points: [
+              junction,
+              AutoLineartPoint(50, 62),
+              AutoLineartPoint(50, 76),
+              AutoLineartPoint(50, 90),
+            ],
+            startIsJunction: true,
+            endIsJunction: false,
+            persistence: 1,
+          ),
+        ],
       );
-      final at100 = AutoLineartEngine.prepareEditableGraph(
+
+      final reduced = AutoLineartEngine.prepareEditableGraph(
         source,
         smoothingLevel: 100,
       );
-      expect(AutoLineartEngine.controlPointCount(at99), 3);
-      expect(AutoLineartEngine.controlPointCount(at100), 2);
-      expect(at100.paths.single.points.first.x, source.paths.single.points.first.x);
-      expect(at100.paths.single.points.first.y, source.paths.single.points.first.y);
-      expect(at100.paths.single.points.last.x, source.paths.single.points.last.x);
-      expect(at100.paths.single.points.last.y, source.paths.single.points.last.y);
+
+      expect(reduced.paths, hasLength(3));
+      for (final path in reduced.paths) {
+        expect(path.points, hasLength(2));
+      }
+      expect(reduced.paths[0].points.last.x, 50);
+      expect(reduced.paths[0].points.last.y, 50);
+      expect(reduced.paths[1].points.first.x, 50);
+      expect(reduced.paths[1].points.first.y, 50);
+      expect(reduced.paths[2].points.first.x, 50);
+      expect(reduced.paths[2].points.first.y, 50);
     });
 
 '''
