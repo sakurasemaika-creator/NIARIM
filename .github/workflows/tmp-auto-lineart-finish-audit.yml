@@ -14,7 +14,7 @@ permissions:
 jobs:
   audit-and-land:
     runs-on: ubuntu-latest
-    timeout-minutes: 40
+    timeout-minutes: 45
     steps:
       - uses: actions/checkout@v4
         with:
@@ -35,7 +35,7 @@ jobs:
           fi
           python3 scripts/tmp_auto_lineart_finish_audit_testfix.py
       - name: Format
-        run: dart format lib/services/project_service.dart lib/screens/canvas/widgets/filter_panel.dart lib/screens/canvas/widgets/auto_lineart_control_overlay.dart test/auto_lineart_control_overlay_test.dart test/auto_lineart_finish_audit_test.dart test/auto_lineart_canvas_e2e_test.dart test/auto_lineart_panel_state_test.dart
+        run: dart format lib/services/project_service.dart lib/screens/canvas/widgets/filter_panel.dart lib/screens/canvas/widgets/auto_lineart_control_overlay.dart test/auto_lineart_control_overlay_test.dart test/auto_lineart_finish_audit_test.dart test/auto_lineart_canvas_e2e_test.dart test/auto_lineart_panel_state_test.dart test/auto_lineart_bulk_isolation_test.dart
       - name: Analyze changed production
         run: flutter analyze --no-fatal-warnings --no-fatal-infos lib/services/project_service.dart lib/screens/canvas/widgets/filter_panel.dart lib/screens/canvas/widgets/auto_lineart_control_overlay.dart
       - name: Core and boundary audit
@@ -46,13 +46,15 @@ jobs:
         run: flutter test test/auto_lineart_control_overlay_test.dart --reporter expanded
       - name: Panel state audit
         run: flutter test test/auto_lineart_panel_state_test.dart --reporter expanded
+      - name: Multi-frame isolation audit
+        run: flutter test test/auto_lineart_bulk_isolation_test.dart --reporter expanded
       - name: Actual Canvas apply Undo Redo audit
         run: flutter test test/auto_lineart_canvas_e2e_test.dart --reporter expanded
       - name: Commit and push audit fixes
         run: |
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          git add lib/services/project_service.dart lib/screens/canvas/widgets/filter_panel.dart lib/screens/canvas/widgets/auto_lineart_control_overlay.dart test/auto_lineart_control_overlay_test.dart test/auto_lineart_finish_audit_test.dart test/auto_lineart_canvas_e2e_test.dart test/auto_lineart_panel_state_test.dart
+          git add lib/services/project_service.dart lib/screens/canvas/widgets/filter_panel.dart lib/screens/canvas/widgets/auto_lineart_control_overlay.dart test/auto_lineart_control_overlay_test.dart test/auto_lineart_finish_audit_test.dart test/auto_lineart_canvas_e2e_test.dart test/auto_lineart_panel_state_test.dart test/auto_lineart_bulk_isolation_test.dart
           git diff --cached --quiet && exit 0
           git commit -m 'fix: harden auto lineart final interaction flow'
           git reset --hard HEAD
