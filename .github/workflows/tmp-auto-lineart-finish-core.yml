@@ -24,7 +24,9 @@ jobs:
           channel: stable
           cache: true
       - name: Apply specification
-        run: python3 scripts/tmp_auto_lineart_finish_core.py
+        run: |
+          python3 scripts/tmp_auto_lineart_finish_core.py
+          python3 scripts/tmp_auto_lineart_finish_core_fix.py
       - name: Format
         run: dart format lib/models/filter_def.dart lib/services/filter_service.dart lib/engine/auto_lineart_engine.dart lib/engine/filter_engine.dart lib/screens/canvas/widgets/filter_panel.dart test/auto_lineart_filter_test.dart
       - name: Analyze production changes
@@ -32,7 +34,10 @@ jobs:
       - name: Test auto line art core and control gestures
         run: flutter test test/auto_lineart_filter_test.dart test/auto_lineart_control_overlay_test.dart
       - name: Test drawing filter regressions
-        run: flutter test test/filter_engine_aurora_hologram_test.dart test/filter_engine_ink_pool_test.dart test/drawing_filters_strict_test.dart
+        run: |
+          flutter test test/filter_engine_aurora_hologram_test.dart
+          flutter test test/ink_pool_filter_test.dart
+          flutter test test/final_remaining_strict_evidence_test.dart
       - name: Commit and push
         run: |
           git config user.name 'github-actions[bot]'
