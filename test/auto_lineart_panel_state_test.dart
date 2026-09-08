@@ -138,7 +138,7 @@ void main() {
       final context = providerContext!;
       final ps = context.read<ProjectService>();
       final fs = context.read<FilterService>();
-      final project = await tester.runAsync(
+      final createdProject = await tester.runAsync(
         () => ps.createProject(
           name: 'lineart-state',
           fps: 12,
@@ -148,6 +148,8 @@ void main() {
           exportHeight: 220,
         ),
       );
+      expect(createdProject, isNotNull);
+      final project = createdProject!;
       projectId = project.id;
       final scene = ps.scenesOf(project.id).first;
       sceneId = scene.id;
@@ -186,7 +188,6 @@ void main() {
       final edited5 = graph();
       expect(_graphDistance(edited5, before), greaterThan(.3));
 
-      // Output width, taper and color must never rebuild the editable graph.
       final stableBefore = _points(edited5);
       fs.updateFilterParams(
         'Filter0023',
@@ -197,18 +198,14 @@ void main() {
       await tester.pump(const Duration(milliseconds: 350));
       expect(_points(graph()), stableBefore);
 
-      // Smoothing 5 -> 7 may reduce controls, but the manually edited curve must
-      // remain measurably different from a fresh level-7 panel.
       fs.updateFilterParams('Filter0023', autoLineartSmoothing: 7);
       await tester.pump(const Duration(milliseconds: 450));
       final edited7 = graph();
 
-      // Rough-width refresh also retains edit influence while accepting fresh topology.
       fs.updateFilterParams('Filter0023', autoLineartRoughWidth: 18);
       await tester.pump(const Duration(milliseconds: 450));
       final editedWide = graph();
 
-      // Close/cancel: no generated layer and no manual/cache state survives a new panel.
       show.value = false;
       await tester.pump(const Duration(milliseconds: 100));
       expect(ps.layersOf(project.id, scene.id, 0), hasLength(1));
@@ -217,14 +214,11 @@ void main() {
       final freshWide = graph();
       expect(_graphDistance(editedWide, freshWide), greaterThan(.15));
 
-      // Return to level 7 and verify the earlier manual shape also differed from fresh.
       fs.updateFilterParams('Filter0023', autoLineartRoughWidth: 12);
       await tester.pump(const Duration(milliseconds: 400));
       final fresh7 = graph();
       expect(_graphDistance(edited7, fresh7), greaterThan(.15));
 
-      // Multi-frame application deliberately hides manual controls so frame 0 edits
-      // cannot be copied to frame 1. The regular preview image is still present.
       ps.addFrame(project.id, scene.id);
       bulk.value = {0, 1};
       await tester.pump(const Duration(milliseconds: 400));
