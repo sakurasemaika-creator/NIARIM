@@ -34,6 +34,7 @@ jobs:
             echo "Primary patch stopped at its format-sensitive overlay-test insertion; continuing with dedicated insertion helper."
           fi
           python3 scripts/tmp_auto_lineart_finish_audit_testfix.py
+          python3 scripts/tmp_auto_lineart_finish_audit_safety.py
       - name: Format
         run: dart format lib/services/project_service.dart lib/screens/canvas/widgets/filter_panel.dart lib/screens/canvas/widgets/auto_lineart_control_overlay.dart test/auto_lineart_control_overlay_test.dart test/auto_lineart_finish_audit_test.dart test/auto_lineart_canvas_e2e_test.dart test/auto_lineart_panel_state_test.dart test/auto_lineart_bulk_isolation_test.dart
       - name: Analyze changed production
