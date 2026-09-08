@@ -23,8 +23,10 @@ jobs:
         with:
           channel: stable
           cache: true
-      - name: Apply integration patch
-        run: python3 scripts/tmp_custom_automation_foundation.py
+      - name: Apply integration patches
+        run: |
+          python3 scripts/tmp_custom_automation_foundation.py
+          python3 scripts/tmp_custom_automation_followup.py
       - name: Generate localization
         run: flutter gen-l10n
       - name: Format
