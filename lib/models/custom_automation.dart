@@ -10,9 +10,7 @@ class CustomAutomationStep {
   final String command;
   final Map<String, Object?> args;
   final bool changesFrame;
-  final bool changesScene;
   final int? recordedFrame;
-  final int? recordedScene;
   final String label;
 
   const CustomAutomationStep({
@@ -22,9 +20,7 @@ class CustomAutomationStep {
     required this.label,
     this.args = const {},
     this.changesFrame = false,
-    this.changesScene = false,
     this.recordedFrame,
-    this.recordedScene,
   });
 
   Map<String, Object?> toJson() => {
@@ -34,9 +30,7 @@ class CustomAutomationStep {
     'label': label,
     'args': args,
     'changesFrame': changesFrame,
-    'changesScene': changesScene,
     if (recordedFrame != null) 'recordedFrame': recordedFrame,
-    if (recordedScene != null) 'recordedScene': recordedScene,
   };
 
   factory CustomAutomationStep.fromJson(Map<String, Object?> json) {
@@ -51,19 +45,18 @@ class CustomAutomationStep {
       label: json['label'] as String? ?? '',
       args: (json['args'] as Map?)?.cast<String, Object?>() ?? const {},
       changesFrame: json['changesFrame'] as bool? ?? false,
-      changesScene: json['changesScene'] as bool? ?? false,
       recordedFrame: (json['recordedFrame'] as num?)?.round(),
-      recordedScene: (json['recordedScene'] as num?)?.round(),
     );
   }
 }
 
 class CustomAutomation {
-  static const currentFormatVersion = 2;
+  static const currentFormatVersion = 3;
 
   final String id;
   final String name;
   final List<CustomAutomationStep> steps;
+  final int? recordingStartFrame;
   final DateTime createdAt;
   final DateTime updatedAt;
 
@@ -73,28 +66,21 @@ class CustomAutomation {
     required this.steps,
     required this.createdAt,
     required this.updatedAt,
+    this.recordingStartFrame,
   });
 
   bool get isCanvasOnly =>
       steps.isNotEmpty &&
       steps.every((step) => step.surface == CustomAutomationSurface.canvas);
 
-  bool get staysInSingleFrame {
-    if (steps.isEmpty || steps.any((step) => step.changesFrame || step.changesScene)) {
-      return false;
-    }
-    // Context metadata makes the eligibility robust even when a user deletes the
-    // explicit navigation step in the post-recording editor: actions recorded on
-    // two different frames/scenes must still never become an all-frame macro.
-    if (steps.any((step) => step.recordedFrame == null || step.recordedScene == null)) {
-      return false;
-    }
-    final frames = steps.map((step) => step.recordedFrame).toSet();
-    final scenes = steps.map((step) => step.recordedScene).toSet();
-    return frames.length == 1 && scenes.length == 1;
+  bool get staysInRecordingStartFrame {
+    final start = recordingStartFrame;
+    if (start == null || steps.isEmpty) return false;
+    if (steps.any((step) => step.changesFrame)) return false;
+    return steps.every((step) => step.recordedFrame == start);
   }
 
-  bool get supportsFrameScopeChoice => isCanvasOnly && staysInSingleFrame;
+  bool get supportsFrameScopeChoice => isCanvasOnly && staysInRecordingStartFrame;
 
   CustomAutomation copyWith({
     String? name,
@@ -104,6 +90,7 @@ class CustomAutomation {
     id: id,
     name: name ?? this.name,
     steps: steps ?? this.steps,
+    recordingStartFrame: recordingStartFrame,
     createdAt: createdAt,
     updatedAt: updatedAt ?? this.updatedAt,
   );
@@ -113,6 +100,7 @@ class CustomAutomation {
     'version': currentFormatVersion,
     'id': id,
     'name': name,
+    if (recordingStartFrame != null) 'recordingStartFrame': recordingStartFrame,
     'createdAt': createdAt.toIso8601String(),
     'updatedAt': updatedAt.toIso8601String(),
     'steps': steps.map((step) => step.toJson()).toList(),
@@ -132,17 +120,25 @@ class CustomAutomation {
     if (rawSteps.length > 5000) {
       throw const FormatException('Automation has too many steps');
     }
+    final parsedSteps = rawSteps
+        .whereType<Map>()
+        .map((step) => CustomAutomationStep.fromJson(step.cast<String, Object?>()))
+        .toList();
+    // v1/v2 files predate recordingStartFrame. Preserve import compatibility but
+    // conservatively disable the all-frame radio because their start frame cannot
+    // be proven from the file.
+    final startFrame = version >= 3
+        ? (json['recordingStartFrame'] as num?)?.round()
+        : null;
     return CustomAutomation(
       id: json['id'] as String? ?? '',
       name: json['name'] as String? ?? '',
+      recordingStartFrame: startFrame,
       createdAt: DateTime.tryParse(json['createdAt'] as String? ?? '') ??
           DateTime.fromMillisecondsSinceEpoch(0),
       updatedAt: DateTime.tryParse(json['updatedAt'] as String? ?? '') ??
           DateTime.fromMillisecondsSinceEpoch(0),
-      steps: rawSteps
-          .whereType<Map>()
-          .map((step) => CustomAutomationStep.fromJson(step.cast<String, Object?>()))
-          .toList(),
+      steps: parsedSteps,
     );
   }
 
