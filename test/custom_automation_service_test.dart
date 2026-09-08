@@ -125,12 +125,12 @@ void main() {
     SharedPreferences.setMockInitialValues({});
     final service = CustomAutomationService();
     await service.init();
-    expect(
-      () => service.importJson('{"format":"other","version":1,"steps":[]}'),
+    await expectLater(
+      service.importJson('{"format":"other","version":1,"steps":[]}'),
       throwsA(isA<FormatException>()),
     );
-    expect(
-      () => service.importJson(
+    await expectLater(
+      service.importJson(
         '{"format":"niarim-custom-automation","version":999,"name":"x","steps":[{}]}',
       ),
       throwsA(isA<FormatException>()),
