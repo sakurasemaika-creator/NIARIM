@@ -56,8 +56,10 @@ jobs:
             lib/screens/timeline/timeline_screen.dart
       - name: Custom automation tests
         run: flutter test test/custom_automation_service_test.dart --reporter expanded
-      - name: Smoke affected screens
-        run: flutter test test/app_smoke_test.dart --reporter compact
+      - name: Smoke Canvas and Timeline workspaces
+        run: |
+          flutter test test/app_smoke_test.dart --plain-name '起動→ホーム→新規プロジェクト作成→キャンバス→タイムラインまで例外なく遷移できる' --reporter compact
+          flutter test test/app_smoke_test.dart --plain-name '起動→新規プロジェクト作成→キャンバス→タイムラインの各種パネルを例外なく操作できる' --reporter compact
       - name: Commit and push
         run: |
           git config user.name 'github-actions[bot]'
