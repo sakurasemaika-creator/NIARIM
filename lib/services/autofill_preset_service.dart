@@ -140,7 +140,20 @@ class AutofillPresetService extends ChangeNotifier {
   /// 各パーツへ1影・2影・ハイライトを用意し、瞳は白目・瞳孔・キャッチライト
   /// まで、服はトップス／ボトムス／シューズへ細分化した、実際の塗り方が
   /// 学べる内容にしている。
+  static const AutofillPreset _grayUnderpaintPreset = AutofillPreset(
+    id: 'builtin_gray_underpaint',
+    name: 'グレー単色の下塗り',
+    parts: [
+      AutofillPart(
+        id: 'builtin_gray_underpaint_base',
+        name: '下塗り',
+        color: 0xFF808080,
+      ),
+    ],
+  );
+
   static List<AutofillPreset> _defaultPresets() => [
+    _grayUnderpaintPreset,
     AutofillPreset(
       id: 'p1',
       name: '主人公',
@@ -184,6 +197,10 @@ class AutofillPresetService extends ChangeNotifier {
       );
       var changed = _dedupeIds();
       if (_upgradeSampleContent()) changed = true;
+      if (_presets.every((preset) => preset.id != _grayUnderpaintPreset.id)) {
+        _presets.insert(0, _grayUnderpaintPreset);
+        changed = true;
+      }
       if (changed) await _persist();
     }
   }
