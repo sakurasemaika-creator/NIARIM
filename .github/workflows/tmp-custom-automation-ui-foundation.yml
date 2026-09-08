@@ -34,8 +34,6 @@ jobs:
         run: flutter analyze lib/app_bootstrap.dart lib/services/premium_service.dart lib/widgets/custom_automation_manager_sheet.dart lib/models/custom_automation.dart lib/services/custom_automation_service.dart lib/engine/custom_automation_filter_runner.dart lib/engine/custom_automation_executor.dart lib/models/shortcut_binding.dart test/custom_automation_service_test.dart
       - name: Automation tests
         run: flutter test test/custom_automation_service_test.dart --reporter expanded
-      - name: Compile Canvas and Timeline tests
-        run: flutter test test/app_smoke_test.dart --plain-name '主要画面を巡回して例外が出ない' --reporter compact || true
       - name: Commit integration
         run: |
           git config user.name 'github-actions[bot]'
@@ -46,4 +44,4 @@ jobs:
           git reset --hard HEAD
           git pull --rebase origin dev_branch
           git push origin HEAD:dev_branch
-# latest-head
+# strict-latest-head
