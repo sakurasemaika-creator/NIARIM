@@ -14,7 +14,8 @@ class CustomAutomationManagerSheet extends StatelessWidget {
   final Future<void> Function(
     CustomAutomation automation,
     CustomAutomationExecutionScope scope,
-  ) onExecute;
+  )
+  onExecute;
   final VoidCallback onRecordingStarted;
   final int? recordingStartFrame;
 
@@ -147,7 +148,8 @@ class CustomAutomationManagerSheet extends StatelessWidget {
             child: Text(l10n.commonCancel),
           ),
           FilledButton(
-            onPressed: () => Navigator.pop(dialogContext, controller.text.trim()),
+            onPressed: () =>
+                Navigator.pop(dialogContext, controller.text.trim()),
             child: Text(l10n.commonSave),
           ),
         ],
@@ -210,7 +212,9 @@ class CustomAutomationManagerSheet extends StatelessWidget {
     }
     if (bytes == null || !context.mounted) return;
     try {
-      await context.read<CustomAutomationService>().importJson(utf8.decode(bytes));
+      await context.read<CustomAutomationService>().importJson(
+        utf8.decode(bytes),
+      );
     } on FormatException {
       if (!context.mounted) return;
       final l10n = AppLocalizations.of(context)!;
@@ -281,12 +285,18 @@ class CustomAutomationManagerSheet extends StatelessWidget {
                               ),
                               IconButton(
                                 tooltip: l10n.customAutomationRerecord,
-                                icon: const Icon(Icons.fiber_manual_record, size: 18),
+                                icon: const Icon(
+                                  Icons.fiber_manual_record,
+                                  size: 18,
+                                ),
                                 onPressed: () => _rerecord(context, item),
                               ),
                               IconButton(
                                 tooltip: l10n.commonDelete,
-                                icon: const Icon(Icons.delete_outline, size: 18),
+                                icon: const Icon(
+                                  Icons.delete_outline,
+                                  size: 18,
+                                ),
                                 onPressed: () => _delete(context, item),
                               ),
                             ],
@@ -329,7 +339,9 @@ class CustomAutomationDraftEditorSheet extends StatelessWidget {
           children: [
             ListTile(
               title: Text(draft.name),
-              subtitle: Text(l10n.customAutomationStepCount(draft.steps.length)),
+              subtitle: Text(
+                l10n.customAutomationStepCount(draft.steps.length),
+              ),
             ),
             const Divider(height: 1),
             Expanded(
@@ -343,10 +355,16 @@ class CustomAutomationDraftEditorSheet extends StatelessWidget {
                     key: ValueKey(step.id),
                     leading: CircleAvatar(
                       radius: 14,
-                      child: Text('${index + 1}', style: const TextStyle(fontSize: 11)),
+                      child: Text(
+                        '${index + 1}',
+                        style: const TextStyle(fontSize: 11),
+                      ),
                     ),
                     title: Text(step.label),
-                    subtitle: Text(step.command, style: const TextStyle(fontSize: 10)),
+                    subtitle: Text(
+                      step.command,
+                      style: const TextStyle(fontSize: 10),
+                    ),
                     trailing: Wrap(
                       spacing: 0,
                       children: [

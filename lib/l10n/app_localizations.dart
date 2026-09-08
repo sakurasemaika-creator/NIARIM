@@ -11194,6 +11194,150 @@ abstract class AppLocalizations {
   /// In ja, this message translates to:
   /// **'{name} 自動線画'**
   String filterAutoLineartLayerNameSuffix(String name);
+
+  /// No description provided for @customAutomationTitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'自動操作'**
+  String get customAutomationTitle;
+
+  /// No description provided for @customAutomationAdd.
+  ///
+  /// In ja, this message translates to:
+  /// **'自動操作を新規追加'**
+  String get customAutomationAdd;
+
+  /// No description provided for @customAutomationNewTitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'新しい自動操作'**
+  String get customAutomationNewTitle;
+
+  /// No description provided for @customAutomationNameLabel.
+  ///
+  /// In ja, this message translates to:
+  /// **'名前'**
+  String get customAutomationNameLabel;
+
+  /// No description provided for @customAutomationStartRecording.
+  ///
+  /// In ja, this message translates to:
+  /// **'操作記録開始'**
+  String get customAutomationStartRecording;
+
+  /// No description provided for @customAutomationStopRecording.
+  ///
+  /// In ja, this message translates to:
+  /// **'操作記録停止'**
+  String get customAutomationStopRecording;
+
+  /// No description provided for @customAutomationRunConfirmTitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'この自動操作を実行しますか？'**
+  String get customAutomationRunConfirmTitle;
+
+  /// No description provided for @customAutomationCurrentFrame.
+  ///
+  /// In ja, this message translates to:
+  /// **'この操作を現在のフレームに行う'**
+  String get customAutomationCurrentFrame;
+
+  /// No description provided for @customAutomationAllFrames.
+  ///
+  /// In ja, this message translates to:
+  /// **'この操作を全フレームに行う'**
+  String get customAutomationAllFrames;
+
+  /// No description provided for @customAutomationYes.
+  ///
+  /// In ja, this message translates to:
+  /// **'はい'**
+  String get customAutomationYes;
+
+  /// No description provided for @customAutomationNo.
+  ///
+  /// In ja, this message translates to:
+  /// **'いいえ'**
+  String get customAutomationNo;
+
+  /// No description provided for @customAutomationRenameTitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'自動操作名を変更'**
+  String get customAutomationRenameTitle;
+
+  /// No description provided for @customAutomationDeleteTitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'この自動操作を削除しますか？'**
+  String get customAutomationDeleteTitle;
+
+  /// No description provided for @customAutomationImport.
+  ///
+  /// In ja, this message translates to:
+  /// **'読み込む'**
+  String get customAutomationImport;
+
+  /// No description provided for @customAutomationExport.
+  ///
+  /// In ja, this message translates to:
+  /// **'配布・書き出し'**
+  String get customAutomationExport;
+
+  /// No description provided for @customAutomationRerecord.
+  ///
+  /// In ja, this message translates to:
+  /// **'再記録'**
+  String get customAutomationRerecord;
+
+  /// No description provided for @customAutomationImportInvalid.
+  ///
+  /// In ja, this message translates to:
+  /// **'自動操作ファイルを読み込めませんでした'**
+  String get customAutomationImportInvalid;
+
+  /// No description provided for @customAutomationEmpty.
+  ///
+  /// In ja, this message translates to:
+  /// **'記録済みの自動操作はありません'**
+  String get customAutomationEmpty;
+
+  /// No description provided for @customAutomationStepCount.
+  ///
+  /// In ja, this message translates to:
+  /// **'{count} 手順'**
+  String customAutomationStepCount(int count);
+
+  /// No description provided for @customAutomationReturnToRecording.
+  ///
+  /// In ja, this message translates to:
+  /// **'操作記録に戻る'**
+  String get customAutomationReturnToRecording;
+
+  /// No description provided for @customAutomationStopConfirmTitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'自動操作の登録をやめますか？'**
+  String get customAutomationStopConfirmTitle;
+
+  /// No description provided for @customAutomationStopConfirmQuit.
+  ///
+  /// In ja, this message translates to:
+  /// **'やめる'**
+  String get customAutomationStopConfirmQuit;
+
+  /// No description provided for @customAutomationStopConfirmContinue.
+  ///
+  /// In ja, this message translates to:
+  /// **'続ける'**
+  String get customAutomationStopConfirmContinue;
+
+  /// No description provided for @customAutomationPremiumHint.
+  ///
+  /// In ja, this message translates to:
+  /// **'プレミアム会員限定で、操作を記録・編集・配布・再実行できます。'**
+  String get customAutomationPremiumHint;
 }
 
 class _AppLocalizationsDelegate

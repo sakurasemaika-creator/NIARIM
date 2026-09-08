@@ -6307,4 +6307,81 @@ class AppLocalizationsEn extends AppLocalizations {
   String filterAutoLineartLayerNameSuffix(String name) {
     return '$name Auto line art';
   }
+
+  @override
+  String get customAutomationTitle => 'Automation';
+
+  @override
+  String get customAutomationAdd => 'New automation';
+
+  @override
+  String get customAutomationNewTitle => 'New automation';
+
+  @override
+  String get customAutomationNameLabel => 'Name';
+
+  @override
+  String get customAutomationStartRecording => 'Start recording';
+
+  @override
+  String get customAutomationStopRecording => 'Stop recording';
+
+  @override
+  String get customAutomationRunConfirmTitle => 'Run this automation?';
+
+  @override
+  String get customAutomationCurrentFrame => 'Run on the current frame';
+
+  @override
+  String get customAutomationAllFrames => 'Run on all frames';
+
+  @override
+  String get customAutomationYes => 'Yes';
+
+  @override
+  String get customAutomationNo => 'No';
+
+  @override
+  String get customAutomationRenameTitle => 'Rename automation';
+
+  @override
+  String get customAutomationDeleteTitle => 'Delete this automation?';
+
+  @override
+  String get customAutomationImport => 'Import';
+
+  @override
+  String get customAutomationExport => 'Share / Export';
+
+  @override
+  String get customAutomationRerecord => 'Re-record';
+
+  @override
+  String get customAutomationImportInvalid =>
+      'Could not import this automation file';
+
+  @override
+  String get customAutomationEmpty => 'No recorded automations';
+
+  @override
+  String customAutomationStepCount(int count) {
+    return '$count steps';
+  }
+
+  @override
+  String get customAutomationReturnToRecording => 'Return to recording';
+
+  @override
+  String get customAutomationStopConfirmTitle =>
+      'Stop registering this automation?';
+
+  @override
+  String get customAutomationStopConfirmQuit => 'Stop';
+
+  @override
+  String get customAutomationStopConfirmContinue => 'Continue';
+
+  @override
+  String get customAutomationPremiumHint =>
+      'Premium only: record, edit, share, and replay your own actions.';
 }

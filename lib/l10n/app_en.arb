@@ -2659,5 +2659,36 @@
         "type": "String"
       }
     }
-  }
+  },
+  "customAutomationTitle": "Automation",
+  "customAutomationAdd": "New automation",
+  "customAutomationNewTitle": "New automation",
+  "customAutomationNameLabel": "Name",
+  "customAutomationStartRecording": "Start recording",
+  "customAutomationStopRecording": "Stop recording",
+  "customAutomationRunConfirmTitle": "Run this automation?",
+  "customAutomationCurrentFrame": "Run on the current frame",
+  "customAutomationAllFrames": "Run on all frames",
+  "customAutomationYes": "Yes",
+  "customAutomationNo": "No",
+  "customAutomationRenameTitle": "Rename automation",
+  "customAutomationDeleteTitle": "Delete this automation?",
+  "customAutomationImport": "Import",
+  "customAutomationExport": "Share / Export",
+  "customAutomationRerecord": "Re-record",
+  "customAutomationImportInvalid": "Could not import this automation file",
+  "customAutomationEmpty": "No recorded automations",
+  "customAutomationStepCount": "{count} steps",
+  "@customAutomationStepCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "customAutomationReturnToRecording": "Return to recording",
+  "customAutomationStopConfirmTitle": "Stop registering this automation?",
+  "customAutomationStopConfirmQuit": "Stop",
+  "customAutomationStopConfirmContinue": "Continue",
+  "customAutomationPremiumHint": "Premium only: record, edit, share, and replay your own actions."
 }

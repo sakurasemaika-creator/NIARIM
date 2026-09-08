@@ -6415,4 +6415,78 @@ class AppLocalizationsEs extends AppLocalizations {
   String filterAutoLineartLayerNameSuffix(String name) {
     return '$name Entintado automático';
   }
+
+  @override
+  String get customAutomationTitle => '自動操作';
+
+  @override
+  String get customAutomationAdd => '自動操作を新規追加';
+
+  @override
+  String get customAutomationNewTitle => '新しい自動操作';
+
+  @override
+  String get customAutomationNameLabel => '名前';
+
+  @override
+  String get customAutomationStartRecording => '操作記録開始';
+
+  @override
+  String get customAutomationStopRecording => '操作記録停止';
+
+  @override
+  String get customAutomationRunConfirmTitle => 'この自動操作を実行しますか？';
+
+  @override
+  String get customAutomationCurrentFrame => 'この操作を現在のフレームに行う';
+
+  @override
+  String get customAutomationAllFrames => 'この操作を全フレームに行う';
+
+  @override
+  String get customAutomationYes => 'はい';
+
+  @override
+  String get customAutomationNo => 'いいえ';
+
+  @override
+  String get customAutomationRenameTitle => '自動操作名を変更';
+
+  @override
+  String get customAutomationDeleteTitle => 'この自動操作を削除しますか？';
+
+  @override
+  String get customAutomationImport => '読み込む';
+
+  @override
+  String get customAutomationExport => '配布・書き出し';
+
+  @override
+  String get customAutomationRerecord => '再記録';
+
+  @override
+  String get customAutomationImportInvalid => '自動操作ファイルを読み込めませんでした';
+
+  @override
+  String get customAutomationEmpty => '記録済みの自動操作はありません';
+
+  @override
+  String customAutomationStepCount(int count) {
+    return '$count 手順';
+  }
+
+  @override
+  String get customAutomationReturnToRecording => '操作記録に戻る';
+
+  @override
+  String get customAutomationStopConfirmTitle => '自動操作の登録をやめますか？';
+
+  @override
+  String get customAutomationStopConfirmQuit => 'やめる';
+
+  @override
+  String get customAutomationStopConfirmContinue => '続ける';
+
+  @override
+  String get customAutomationPremiumHint => 'プレミアム会員限定で、操作を記録・編集・配布・再実行できます。';
 }

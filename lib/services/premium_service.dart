@@ -331,4 +331,5 @@ enum PremiumFeature {
   toneCurve,
   levelAdjustment,
   unlimitedDuration,
+  customAutomation,
 }
