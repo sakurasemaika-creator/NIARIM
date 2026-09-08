@@ -1,0 +1,25 @@
+name: Translation Tone
+
+on:
+  push:
+    branches: [dev_branch]
+    paths:
+      - 'lib/l10n/**.arb'
+      - 'store/aso/metadata.json'
+      - 'tools/audit_translation_tone.py'
+      - '.github/workflows/translation-tone.yml'
+  pull_request:
+    paths:
+      - 'lib/l10n/**.arb'
+      - 'store/aso/metadata.json'
+      - 'tools/audit_translation_tone.py'
+
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: python tools/audit_translation_tone.py
