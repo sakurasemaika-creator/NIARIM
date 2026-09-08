@@ -7,14 +7,15 @@
 - 作業対象は **`dev_branch` のみ**。ユーザーから明示指示がない限り、`main` その他へ変更・push・mergeしない。
 - 製品仕様・禁止事項の正本：`docs/AI設計書/00_AIへの指示.md`
 - 全面監査の品質基準・監査範囲・完了条件の正本：`docs/product-audit/QUALITY_STANDARD.md`
+- 法務・知的財産リスク監査の正本：`docs/product-audit/LEGAL_IP_STANDARD.md`
 - 現在地点・未完了事項：`docs/work-continuation.md` と `docs/product-audit/README.md`
 - 実装上の地雷・環境・個別手順：`CLAUDE.md`、`docs/AI設計書/31_引き継ぎガイド（AI開発者向け）.md`、`30_AI自律動作確認プロンプト.md`、`28_継続タスク（未着手一覧）.md`、`12_実装チェックリスト.md` 等
 
-開始時は上の**正本4系統**から現在の目的と状態を復元する。長大な引き継ぎ文書・履歴は最初から全文を投入せず、触る機能・ファイル・失敗内容に応じて見出し・検索・該当箇所だけを読む。特にコード変更前は `CLAUDE.md` と31番ガイドを対象機能名・ファイル名・利用ツール名で検索し、関連する地雷や検証手順を確認する。
+開始時は上の**正本（仕様・品質・法務/IP・現在地点）**から現在の目的と状態を復元する。長大な引き継ぎ文書・履歴は最初から全文を投入せず、触る機能・ファイル・失敗内容に応じて見出し・検索・該当箇所だけを読む。特にコード変更前は `CLAUDE.md` と31番ガイドを対象機能名・ファイル名・利用ツール名で検索し、関連する地雷や検証手順を確認する。
 
 この「段階的に必要箇所だけ読む」という読み込み方は、参照文書にある一般的な「最初に全部読む」指示より優先する。ただし、参照文書にある**具体的な技術制約・禁止事項・検証条件そのものを省略してよいという意味ではない**。
 
-同じ方針を複数文書で再解釈しない。監査方針は `QUALITY_STANDARD.md`、Git/再開/チェックポイントはこの `AGENTS.md`、現在地点はcontinuation/checkpointを正とする。
+同じ方針を複数文書で再解釈しない。監査方針は `QUALITY_STANDARD.md`、法務/IP監査は `LEGAL_IP_STANDARD.md`、Git/再開/チェックポイントはこの `AGENTS.md`、現在地点はcontinuation/checkpointを正とする。
 
 ## 1. セッション開始
 
@@ -26,7 +27,7 @@
 ## 2. Workの再開
 
 - 現時点では、Scheduled Taskから **Work + GPT-6 Astra最大effortへ確実に自動復帰できることを前提にしない**。標準はユーザーがWorkを開き、現在利用可能な最大effortで再開する運用とする。
-- 再開は会話履歴に依存せず、最新 `dev_branch` → `AGENTS.md` → 仕様/品質基準 → continuation/audit checkpoint の順で復元する。
+- 再開は会話履歴に依存せず、最新 `dev_branch` → `AGENTS.md` → 仕様/品質/法務・IP基準 → continuation/audit checkpoint の順で復元する。
 - 自動Scheduled Workが実証された場合のみ補助的に利用する。それまではエージェント自身が予約作成・重複確認に監査時間を使わない。
 
 ## 3. サブエージェント
@@ -61,6 +62,6 @@
 
 ## 6. 終了
 
-- 全面監査の完了判定は `QUALITY_STANDARD.md` に従う。build/test/CI成功や利用枠到達だけでcompleteにしない。
+- 全面監査の完了判定は `QUALITY_STANDARD.md` と `LEGAL_IP_STANDARD.md` に従う。build/test/CI成功や利用枠到達だけでcompleteにしない。
 - 未完了ならcontinuationを `paused` または `in-progress` とし、次の1手を必ず残す。
 - 利用枠・権限・環境で停止する場合も、可能な限り通常終了と同じcheckpoint・commit/push手順を踏み、次回が会話履歴なしでも復元できる状態にする。
