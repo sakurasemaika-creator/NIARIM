@@ -3,25 +3,14 @@ import json
 
 root = Path('.')
 
-# Premium feature flag.
 p = root / 'lib/services/premium_service.dart'
 s = p.read_text()
 old = '''enum PremiumFeature {\n  endCardEdit,\n  watermark,\n  toneCurve,\n  levelAdjustment,\n  unlimitedDuration,\n}'''
 new = '''enum PremiumFeature {\n  endCardEdit,\n  watermark,\n  toneCurve,\n  levelAdjustment,\n  unlimitedDuration,\n  customAutomation,\n}'''
-if old not in s:
+if old in s:
+    p.write_text(s.replace(old, new))
+elif 'customAutomation,' not in s:
     raise SystemExit('PremiumFeature enum anchor not found')
-p.write_text(s.replace(old, new))
-
-# Manager sheet receives the recording-start frame so scope eligibility remains factual.
-p = root / 'lib/widgets/custom_automation_manager_sheet.dart'
-s = p.read_text()
-s = s.replace(
-'''  final VoidCallback onRecordingStarted;\n\n  const CustomAutomationManagerSheet({\n    super.key,\n    required this.surface,\n    required this.onExecute,\n    required this.onRecordingStarted,\n  });''',
-'''  final VoidCallback onRecordingStarted;\n  final int? recordingStartFrame;\n\n  const CustomAutomationManagerSheet({\n    super.key,\n    required this.surface,\n    required this.onExecute,\n    required this.onRecordingStarted,\n    this.recordingStartFrame,\n  });''')
-s = s.replace(
-'''    context.read<CustomAutomationService>().beginDraft(name: name, surface: surface);''',
-'''    context.read<CustomAutomationService>().beginDraft(\n      name: name,\n      surface: surface,\n      recordingStartFrame: recordingStartFrame,\n    );''')
-p.write_text(s)
 
 ja = {
   'customAutomationTitle': '自動操作',
@@ -33,6 +22,8 @@ ja = {
   'customAutomationRunConfirmTitle': 'この自動操作を実行しますか？',
   'customAutomationCurrentFrame': 'この操作を現在のフレームに行う',
   'customAutomationAllFrames': 'この操作を全フレームに行う',
+  'customAutomationYes': 'はい',
+  'customAutomationNo': 'いいえ',
   'customAutomationRenameTitle': '自動操作名を変更',
   'customAutomationDeleteTitle': 'この自動操作を削除しますか？',
   'customAutomationImport': '読み込む',
@@ -57,6 +48,8 @@ en = {
   'customAutomationRunConfirmTitle': 'Run this automation?',
   'customAutomationCurrentFrame': 'Run on the current frame',
   'customAutomationAllFrames': 'Run on all frames',
+  'customAutomationYes': 'Yes',
+  'customAutomationNo': 'No',
   'customAutomationRenameTitle': 'Rename automation',
   'customAutomationDeleteTitle': 'Delete this automation?',
   'customAutomationImport': 'Import',
