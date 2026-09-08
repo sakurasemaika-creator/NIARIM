@@ -25,6 +25,7 @@ jobs:
           cache: true
       - name: Apply integration patches
         run: |
+          python3 scripts/tmp_custom_automation_prepare_legacy_patch.py
           python3 scripts/tmp_custom_automation_foundation.py
           python3 scripts/tmp_custom_automation_followup.py
           python3 scripts/tmp_custom_automation_compile_fix.py
