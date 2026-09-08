@@ -74,32 +74,45 @@ class _AutoLineartControlOverlayState extends State<AutoLineartControlOverlay> {
       builder: (context, constraints) {
         final size = Size(constraints.maxWidth, constraints.maxHeight);
         final rect = _imageRect(size);
-        return GestureDetector(
+        return Listener(
           behavior: HitTestBehavior.opaque,
-          onPanStart: (details) => _active = _hit(details.localPosition, rect),
-          onPanUpdate: (details) {
-            final active = _active;
-            if (active == null) return;
-            widget.onPointMoved(
-              active.$1,
-              active.$2,
-              _toGraph(details.localPosition, rect),
-            );
+          onPointerDown: (event) {
+            // GestureDetector's pan start is dispatched only after touch slop.
+            // Select the handle at the actual pointer-down position so a fast
+            // drag cannot outrun the hit target before the pan is accepted.
+            _active = _hit(event.localPosition, rect);
           },
-          onPanEnd: (_) => _active = null,
-          onPanCancel: () => _active = null,
-          child: Stack(
-            fit: StackFit.expand,
-            children: [
-              RawImage(image: widget.image, fit: BoxFit.contain),
-              CustomPaint(
-                painter: _ControlPainter(
-                  graph: widget.graph,
-                  imageRect: rect,
-                  color: Theme.of(context).colorScheme.primary,
+          child: GestureDetector(
+            behavior: HitTestBehavior.opaque,
+            onPanStart: (details) {
+              // Pointer-down normally owns selection. Keep a fallback for
+              // synthesized pan starts that do not deliver PointerDown here.
+              _active ??= _hit(details.localPosition, rect);
+            },
+            onPanUpdate: (details) {
+              final active = _active;
+              if (active == null) return;
+              widget.onPointMoved(
+                active.$1,
+                active.$2,
+                _toGraph(details.localPosition, rect),
+              );
+            },
+            onPanEnd: (_) => _active = null,
+            onPanCancel: () => _active = null,
+            child: Stack(
+              fit: StackFit.expand,
+              children: [
+                RawImage(image: widget.image, fit: BoxFit.contain),
+                CustomPaint(
+                  painter: _ControlPainter(
+                    graph: widget.graph,
+                    imageRect: rect,
+                    color: Theme.of(context).colorScheme.primary,
+                  ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         );
       },
