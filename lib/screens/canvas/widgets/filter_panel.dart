@@ -15,8 +15,10 @@ import '../../../engine/layer_compositor.dart';
 import '../../../engine/prism_filter_engine.dart';
 import '../../../engine/tile_manager.dart';
 import '../../../l10n/app_localizations.dart';
+import '../../../models/custom_automation.dart';
 import '../../../models/filter_def.dart';
 import '../../../models/layer.dart' as model;
+import '../../../services/custom_automation_service.dart';
 import '../../../services/filter_service.dart';
 import '../../../services/premium_service.dart';
 import '../../../services/project_service.dart';
@@ -1623,6 +1625,15 @@ class _FilterPanelState extends State<FilterPanel> {
         await _applyBulk(ps, tm, layerId, filter, bulk);
       } else {
         await _applyToFrame(ps, tm, layerId, filter, widget.frameIndex);
+        if (mounted) {
+          context.read<CustomAutomationService>().recordStep(
+            surface: CustomAutomationSurface.canvas,
+            command: 'canvas.filter',
+            label: filter.name,
+            args: {'filter': filter.toJson()},
+            recordedFrame: widget.frameIndex,
+          );
+        }
       }
       if (mounted) widget.onClose();
     } finally {
