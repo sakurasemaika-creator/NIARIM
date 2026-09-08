@@ -18,19 +18,51 @@ void main() {
           surface: CustomAutomationSurface.canvas,
           command: 'canvas.tool',
           label: 'tool',
+          recordedFrame: 3,
+          recordedScene: 0,
         ),
         CustomAutomationStep(
           id: '2',
           surface: CustomAutomationSurface.canvas,
           command: 'canvas.brushSize',
           label: 'size',
+          recordedFrame: 3,
+          recordedScene: 0,
         ),
       ],
     );
     expect(item.supportsFrameScopeChoice, isTrue);
   });
 
-  test('frame navigation disables all-frame scope even for canvas-only recording', () {
+  test('recording an action on another frame disables all-frame scope', () {
+    final item = CustomAutomation(
+      id: 'a',
+      name: 'cross frame',
+      createdAt: DateTime(2026),
+      updatedAt: DateTime(2026),
+      steps: const [
+        CustomAutomationStep(
+          id: '1',
+          surface: CustomAutomationSurface.canvas,
+          command: 'canvas.tool',
+          label: 'tool',
+          recordedFrame: 2,
+          recordedScene: 0,
+        ),
+        CustomAutomationStep(
+          id: '2',
+          surface: CustomAutomationSurface.canvas,
+          command: 'canvas.brushSize',
+          label: 'size',
+          recordedFrame: 3,
+          recordedScene: 0,
+        ),
+      ],
+    );
+    expect(item.supportsFrameScopeChoice, isFalse);
+  });
+
+  test('frame navigation disables all-frame scope even if context later matches', () {
     final item = CustomAutomation(
       id: 'a',
       name: 'moves frame',
@@ -43,6 +75,8 @@ void main() {
           command: 'canvas.selectFrame',
           label: 'frame',
           changesFrame: true,
+          recordedFrame: 3,
+          recordedScene: 0,
         ),
       ],
     );
@@ -63,6 +97,8 @@ void main() {
           command: 'canvas.selectScene',
           label: 'scene',
           changesScene: true,
+          recordedFrame: 0,
+          recordedScene: 1,
         ),
       ],
     );
@@ -81,13 +117,43 @@ void main() {
           surface: CustomAutomationSurface.timeline,
           command: 'timeline.addFrame',
           label: 'add',
+          recordedFrame: 0,
+          recordedScene: 0,
         ),
       ],
     );
     expect(item.supportsFrameScopeChoice, isFalse);
   });
 
-  test('record, reorder, save, export and import round-trip', () async {
+  test('deleting a navigation step cannot hide cross-frame recording context', () {
+    final remainingAfterDelete = CustomAutomation(
+      id: 'a',
+      name: 'edited macro',
+      createdAt: DateTime(2026),
+      updatedAt: DateTime(2026),
+      steps: const [
+        CustomAutomationStep(
+          id: 'before',
+          surface: CustomAutomationSurface.canvas,
+          command: 'canvas.tool',
+          label: 'Pen',
+          recordedFrame: 0,
+          recordedScene: 0,
+        ),
+        CustomAutomationStep(
+          id: 'after',
+          surface: CustomAutomationSurface.canvas,
+          command: 'canvas.color',
+          label: 'Color',
+          recordedFrame: 1,
+          recordedScene: 0,
+        ),
+      ],
+    );
+    expect(remainingAfterDelete.supportsFrameScopeChoice, isFalse);
+  });
+
+  test('record, coalesce, reorder, save, export and import round-trip', () async {
     SharedPreferences.setMockInitialValues({});
     final service = CustomAutomationService();
     await service.init();
@@ -97,31 +163,47 @@ void main() {
       command: 'canvas.tool',
       label: 'Pen',
       args: const {'tool': 'pen'},
+      recordedFrame: 0,
+      recordedScene: 0,
+    );
+    service.recordStep(
+      surface: CustomAutomationSurface.canvas,
+      command: 'canvas.brushSize',
+      label: 'Size',
+      args: const {'value': 7.0},
+      recordedFrame: 0,
+      recordedScene: 0,
     );
     service.recordStep(
       surface: CustomAutomationSurface.canvas,
       command: 'canvas.brushSize',
       label: 'Size',
       args: const {'value': 8.0},
+      recordedFrame: 0,
+      recordedScene: 0,
     );
+    expect(service.draft!.steps.length, 2);
+    expect(service.draft!.steps.last.args['value'], 8.0);
     service.stopRecording();
     service.reorderDraftStep(1, 0);
     final saved = await service.saveDraft();
     expect(saved, isNotNull);
     expect(saved!.steps.first.command, 'canvas.brushSize');
+    expect(saved.supportsFrameScopeChoice, isTrue);
 
     final raw = service.exportJson(saved.id);
     final imported = await service.importJson(raw);
     expect(imported.id, isNot(saved.id));
     expect(imported.name, saved.name);
     expect(imported.steps.length, 2);
+    expect(imported.supportsFrameScopeChoice, isTrue);
 
     final reloaded = CustomAutomationService();
     await reloaded.init();
     expect(reloaded.items.length, 2);
   });
 
-  test('invalid or future-format automation is rejected', () async {
+  test('invalid, oversized or future-format automation is rejected', () async {
     SharedPreferences.setMockInitialValues({});
     final service = CustomAutomationService();
     await service.init();
@@ -133,6 +215,10 @@ void main() {
       service.importJson(
         '{"format":"niarim-custom-automation","version":999,"name":"x","steps":[{}]}',
       ),
+      throwsA(isA<FormatException>()),
+    );
+    await expectLater(
+      service.importJson('x' * (2 * 1024 * 1024 + 1)),
       throwsA(isA<FormatException>()),
     );
   });
