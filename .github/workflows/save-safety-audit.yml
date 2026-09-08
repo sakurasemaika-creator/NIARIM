@@ -18,6 +18,7 @@ on:
       - "pubspec.lock"
       - "docs/product-audit/pending/auto-lineart-repairs.patch"
       - "lib/screens/canvas/widgets/filter_panel.dart"
+      - "lib/screens/canvas/widgets/auto_lineart_control_overlay.dart"
       - "test/auto_lineart_*test.dart"
       - "test/helpers/pump_real_async.dart"
 
@@ -49,7 +50,7 @@ jobs:
         shell: bash
         run: |
           set -o pipefail
-          flutter analyze --no-pub lib/screens/canvas/widgets/filter_panel.dart test/auto_lineart_canvas_e2e_test.dart test/auto_lineart_bulk_isolation_test.dart test/auto_lineart_panel_state_test.dart test/helpers/pump_real_async.dart 2>&1 | tee artifacts/auto-lineart/analyze.log
+          flutter analyze --no-pub lib/screens/canvas/widgets/filter_panel.dart lib/screens/canvas/widgets/auto_lineart_control_overlay.dart test/auto_lineart_canvas_e2e_test.dart test/auto_lineart_bulk_isolation_test.dart test/auto_lineart_panel_state_test.dart test/helpers/pump_real_async.dart 2>&1 | tee artifacts/auto-lineart/analyze.log
       - name: Verify real rendering, apply, Undo/Redo and bulk isolation
         if: always()
         shell: bash
@@ -59,9 +60,9 @@ jobs:
       - name: Export canonical candidate formatting
         if: always()
         run: |
-          dart format lib/screens/canvas/widgets/filter_panel.dart test/auto_lineart_canvas_e2e_test.dart test/auto_lineart_bulk_isolation_test.dart test/auto_lineart_panel_state_test.dart test/helpers/pump_real_async.dart
+          dart format lib/screens/canvas/widgets/filter_panel.dart lib/screens/canvas/widgets/auto_lineart_control_overlay.dart test/auto_lineart_canvas_e2e_test.dart test/auto_lineart_bulk_isolation_test.dart test/auto_lineart_panel_state_test.dart test/helpers/pump_real_async.dart
           git add -N test/helpers/pump_real_async.dart
-          git diff --binary -- lib/screens/canvas/widgets/filter_panel.dart test/auto_lineart_canvas_e2e_test.dart test/auto_lineart_bulk_isolation_test.dart test/auto_lineart_panel_state_test.dart test/helpers/pump_real_async.dart > artifacts/auto-lineart/canonical.patch
+          git diff --binary -- lib/screens/canvas/widgets/filter_panel.dart lib/screens/canvas/widgets/auto_lineart_control_overlay.dart test/auto_lineart_canvas_e2e_test.dart test/auto_lineart_bulk_isolation_test.dart test/auto_lineart_panel_state_test.dart test/helpers/pump_real_async.dart > artifacts/auto-lineart/canonical.patch
       - uses: actions/upload-artifact@v4
         if: always()
         with:

@@ -1,3 +1,25 @@
+diff --git a/lib/screens/canvas/widgets/auto_lineart_control_overlay.dart b/lib/screens/canvas/widgets/auto_lineart_control_overlay.dart
+index d83f31d2..d4dab7c3 100644
+--- a/lib/screens/canvas/widgets/auto_lineart_control_overlay.dart
++++ b/lib/screens/canvas/widgets/auto_lineart_control_overlay.dart
+@@ -1,6 +1,7 @@
+ import 'dart:math' as math;
+ import 'dart:ui' as ui;
+ 
++import 'package:flutter/gestures.dart';
+ import 'package:flutter/material.dart';
+ 
+ import '../../../engine/auto_lineart_engine.dart';
+@@ -76,6 +77,9 @@ class _AutoLineartControlOverlayState extends State<AutoLineartControlOverlay> {
+         final rect = _imageRect(size);
+         return GestureDetector(
+           behavior: HitTestBehavior.opaque,
++          // Select at pointer-down even when the first move crosses touch slop.
++          // Using the moved position can miss the handle on a fast drag.
++          dragStartBehavior: DragStartBehavior.down,
+           onPanStart: (details) => _active = _hit(details.localPosition, rect),
+           onPanUpdate: (details) {
+             final active = _active;
 diff --git a/lib/screens/canvas/widgets/filter_panel.dart b/lib/screens/canvas/widgets/filter_panel.dart
 index fb9979b3..ccf4549b 100644
 --- a/lib/screens/canvas/widgets/filter_panel.dart
@@ -39,7 +61,7 @@ index fb9979b3..ccf4549b 100644
            data,
            background,
 diff --git a/test/auto_lineart_bulk_isolation_test.dart b/test/auto_lineart_bulk_isolation_test.dart
-index 6ff0fb05..128b1ad2 100644
+index 6ff0fb05..cd0c6ece 100644
 --- a/test/auto_lineart_bulk_isolation_test.dart
 +++ b/test/auto_lineart_bulk_isolation_test.dart
 @@ -1,6 +1,5 @@
@@ -149,7 +171,28 @@ index 6ff0fb05..128b1ad2 100644
  
        // Switch this same panel state into bulk mode after a manual edit.
        bulk.value = {0, 1};
-@@ -196,9 +202,15 @@ void main() {
+@@ -179,14 +185,12 @@ void main() {
+       );
+       await tester.tap(apply);
+       await tester.pump(const Duration(milliseconds: 100));
+-      await tester.runAsync(() async {
+-        for (var i = 0; i < 120; i++) {
+-          final f0 = ps.layersOf(project.id, scene.id, 0);
+-          final f1 = ps.layersOf(project.id, scene.id, 1);
+-          if (f0.length >= 2 && f1.length >= 2) break;
+-          await Future<void>.delayed(const Duration(milliseconds: 50));
+-        }
+-      });
++      for (var i = 0; i < 120; i++) {
++        final f0 = ps.layersOf(project.id, scene.id, 0);
++        final f1 = ps.layersOf(project.id, scene.id, 1);
++        if (f0.length >= 2 && f1.length >= 2) break;
++        await pumpRealAsync(tester, const Duration(milliseconds: 50));
++      }
+       await tester.pump(const Duration(milliseconds: 300));
+ 
+       final f0 = ps.layersOf(project.id, scene.id, 0);
+@@ -196,9 +200,15 @@ void main() {
        final g0 = f0.singleWhere((l) => l.id != layerId);
        final g1 = f1.singleWhere((l) => l.id != layerId);
        expect(g0.id, g1.id);
@@ -169,7 +212,7 @@ index 6ff0fb05..128b1ad2 100644
      timeout: const Timeout(Duration(minutes: 3)),
    );
 diff --git a/test/auto_lineart_canvas_e2e_test.dart b/test/auto_lineart_canvas_e2e_test.dart
-index 06b565d2..d2104422 100644
+index 06b565d2..f972356b 100644
 --- a/test/auto_lineart_canvas_e2e_test.dart
 +++ b/test/auto_lineart_canvas_e2e_test.dart
 @@ -1,8 +1,7 @@
@@ -248,15 +291,35 @@ index 06b565d2..d2104422 100644
        expect(tester.takeException(), isNull);
  
        // Open the actual Canvas "settings/edit" menu, then its real FilterPanel.
-@@ -145,7 +151,7 @@ void main() {
+@@ -144,8 +150,10 @@ void main() {
+       await tester.pump(const Duration(milliseconds: 250));
        final filterMenuEntry = find.byIcon(Icons.blur_on);
        expect(filterMenuEntry, findsOneWidget);
++      await tester.ensureVisible(filterMenuEntry);
++      await pumpRealAsync(tester, const Duration(milliseconds: 300));
        await tester.tap(filterMenuEntry);
 -      await tester.pump(const Duration(milliseconds: 900));
 +      await pumpRealAsync(tester, const Duration(milliseconds: 900));
        expect(find.byType(FilterPanel), findsOneWidget);
        expect(find.byType(AutoLineartControlOverlay), findsOneWidget);
  
+@@ -157,12 +165,10 @@ void main() {
+       await tester.tap(apply);
+       await tester.pump(const Duration(milliseconds: 100));
+       // Full-resolution centerline analysis runs in compute(); let real async work finish.
+-      await tester.runAsync(() async {
+-        for (var i = 0; i < 80; i++) {
+-          if (ps.layersOf(project.id, scene.id, 0).length >= 2) break;
+-          await Future<void>.delayed(const Duration(milliseconds: 50));
+-        }
+-      });
++      for (var i = 0; i < 80; i++) {
++        if (ps.layersOf(project.id, scene.id, 0).length >= 2) break;
++        await pumpRealAsync(tester, const Duration(milliseconds: 50));
++      }
+       await tester.pump(const Duration(milliseconds: 400));
+ 
+       var layers = ps.layersOf(project.id, scene.id, 0);
 @@ -172,19 +178,21 @@ void main() {
        expect(layers.indexOf(generated), layers.indexOf(source) + 1);
        expect(undo.canUndo, isTrue);
@@ -319,7 +382,7 @@ index 06b565d2..d2104422 100644
        );
      },
 diff --git a/test/auto_lineart_panel_state_test.dart b/test/auto_lineart_panel_state_test.dart
-index 2a03bee6..bf8af87f 100644
+index 2a03bee6..ed5caf85 100644
 --- a/test/auto_lineart_panel_state_test.dart
 +++ b/test/auto_lineart_panel_state_test.dart
 @@ -1,6 +1,5 @@
@@ -362,7 +425,7 @@ index 2a03bee6..bf8af87f 100644
        addTearDown(() {
          if (tempDir.existsSync()) tempDir.deleteSync(recursive: true);
        });
-@@ -112,20 +115,22 @@ void main() {
+@@ -112,20 +115,23 @@ void main() {
                    body: Center(
                      child: ValueListenableBuilder<bool>(
                        valueListenable: show,
@@ -384,8 +447,9 @@ index 2a03bee6..bf8af87f 100644
 +                          ValueListenableBuilder<Set<int>?>(
 +                            valueListenable: bulk,
 +                            builder: (_, bulkFrames, _) {
-+                              if (!visible || projectId == null)
++                              if (!visible || projectId == null) {
 +                                return const SizedBox();
++                              }
 +                              return FilterPanel(
 +                                projectId: projectId,
 +                                sceneId: sceneId!,
@@ -399,7 +463,7 @@ index 2a03bee6..bf8af87f 100644
                      ),
                    ),
                  ),
-@@ -157,7 +162,10 @@ void main() {
+@@ -157,7 +163,10 @@ void main() {
        final tm = ps.tileManagerOf(project.id);
        final data = Uint8List(tm.canvasWidth * tm.canvasHeight * 4);
        _rough(data, tm.canvasWidth, tm.canvasHeight);
@@ -411,7 +475,7 @@ index 2a03bee6..bf8af87f 100644
        fs.selectFilter('Filter0023');
        fs.updateFilterParams(
          'Filter0023',
-@@ -165,11 +173,13 @@ void main() {
+@@ -165,11 +174,13 @@ void main() {
          autoLineartRoughWidth: 12,
        );
        show.notifyListeners();
@@ -427,7 +491,7 @@ index 2a03bee6..bf8af87f 100644
            .graph;
  
        var before = graph();
-@@ -184,7 +194,7 @@ void main() {
+@@ -184,7 +195,7 @@ void main() {
          rect.top + point.y / before.height * rect.height,
        );
        await tester.dragFrom(start, const Offset(0, -28));
@@ -436,7 +500,7 @@ index 2a03bee6..bf8af87f 100644
        final edited5 = graph();
        expect(_graphDistance(edited5, before), greaterThan(.3));
  
-@@ -195,33 +205,33 @@ void main() {
+@@ -195,33 +206,33 @@ void main() {
          autoLineartTaperLength: 20,
          autoLineartColor: 0xFFE04080,
        );
