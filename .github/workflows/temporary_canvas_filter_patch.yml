@@ -1,0 +1,89 @@
+name: Temporary canvas filter automation patch
+
+on:
+  push:
+    branches: [dev_branch]
+    paths:
+      - .github/workflows/temporary_canvas_filter_patch.yml
+
+permissions:
+  contents: write
+
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: dev_branch
+          fetch-depth: 0
+
+      - name: Apply minimal CanvasScreen patch
+        shell: python
+        run: |
+          from pathlib import Path
+          path = Path('lib/screens/canvas/canvas_screen.dart')
+          text = path.read_text()
+          old_import = "import '../../services/custom_automation_service.dart';\nimport '../../services/premium_service.dart';"
+          new_import = "import '../../services/custom_automation_service.dart';\nimport '../../services/recorded_filter_apply_service.dart';\nimport '../../services/premium_service.dart';"
+          if text.count(old_import) != 1:
+              raise SystemExit(f'import insertion anchor count={text.count(old_import)}')
+          text = text.replace(old_import, new_import, 1)
+          old_case = "\n".join([
+              "      case 'canvas.color':",
+              "        final argb = (step.args['argb'] as num?)?.toInt();",
+              "        if (argb == null) throw StateError('Missing color');",
+              "        final color = Color(argb);",
+              "        setState(() => _currentColor = color);",
+              "        context.read<BrushService>().setCurrentColor(color);",
+              "      case 'canvas.selectFrame':",
+          ]) + "\n"
+          new_case = "\n".join([
+              "      case 'canvas.color':",
+              "        final argb = (step.args['argb'] as num?)?.toInt();",
+              "        if (argb == null) throw StateError('Missing color');",
+              "        final color = Color(argb);",
+              "        setState(() => _currentColor = color);",
+              "        context.read<BrushService>().setCurrentColor(color);",
+              "      case 'canvas.filter':",
+              "        final rawSnapshot = step.args['filter'];",
+              "        if (rawSnapshot is! Map) throw StateError('Missing filter snapshot');",
+              "        final layerId = _currentLayerId;",
+              "        if (layerId == null) throw StateError('No active layer');",
+              "        await RecordedFilterApplyService.apply(",
+              "          projectService: context.read<ProjectService>(),",
+              "          projectId: widget.projectId,",
+              "          sceneId: _currentSceneId,",
+              "          layerId: layerId,",
+              "          frameIndex: targetFrame,",
+              "          filterSnapshot: Map<String, Object?>.from(rawSnapshot),",
+              "        );",
+              "      case 'canvas.selectFrame':",
+          ]) + "\n"
+          if text.count(old_case) != 1:
+              raise SystemExit(f'filter replay insertion anchor count={text.count(old_case)}')
+          path.write_text(text.replace(old_case, new_case, 1))
+
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+
+      - name: Resolve dependencies
+        run: flutter pub get
+
+      - name: Format changed Dart files
+        run: dart format lib/screens/canvas/canvas_screen.dart lib/screens/canvas/widgets/filter_panel.dart lib/services/recorded_filter_apply_service.dart
+
+      - name: Analyze automation filter path
+        run: flutter analyze lib/screens/canvas/canvas_screen.dart lib/screens/canvas/widgets/filter_panel.dart lib/services/recorded_filter_apply_service.dart
+
+      - name: Remove temporary workflow and commit
+        run: |
+          rm .github/workflows/temporary_canvas_filter_patch.yml
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          git add lib/screens/canvas/canvas_screen.dart lib/screens/canvas/widgets/filter_panel.dart lib/services/recorded_filter_apply_service.dart .github/workflows/temporary_canvas_filter_patch.yml
+          git diff --cached --check
+          git commit -m "feat: replay recorded filter snapshots from canvas automation"
+          git push origin HEAD:dev_branch
