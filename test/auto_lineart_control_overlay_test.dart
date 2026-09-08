@@ -163,4 +163,72 @@ void main() {
     expect(movedIndex, 1);
     image.dispose();
   });
+
+  for (final graphExtent in <int>[25, 100, 400]) {
+    final zoomLabel = switch (graphExtent) {
+      25 => '4x',
+      100 => '1x',
+      _ => '0.25x',
+    };
+    testWidgets(
+      'control hit target stays screen-fixed at $zoomLabel graph scale',
+      (tester) async {
+        final recorder = ui.PictureRecorder();
+        final canvas = Canvas(recorder);
+        canvas.drawRect(
+          Rect.fromLTWH(0, 0, graphExtent.toDouble(), graphExtent.toDouble()),
+          Paint(),
+        );
+        final image = await recorder
+            .endRecording()
+            .toImage(graphExtent, graphExtent);
+        int? movedIndex;
+        final center = graphExtent / 2.0;
+        final graph = AutoLineartGraph(
+          width: graphExtent,
+          height: graphExtent,
+          paths: [
+            AutoLineartPath(
+              points: [
+                AutoLineartPoint(center, center),
+                AutoLineartPoint(graphExtent * 0.8, center),
+              ],
+              startIsJunction: false,
+              endIsJunction: false,
+              persistence: 1,
+            ),
+          ],
+        );
+
+        await tester.pumpWidget(
+          MaterialApp(
+            home: Center(
+              child: SizedBox(
+                width: 200,
+                height: 200,
+                child: AutoLineartControlOverlay(
+                  image: image,
+                  graph: graph,
+                  onPointMoved: (_, pointIndex, _) => movedIndex = pointIndex,
+                ),
+              ),
+            ),
+          ),
+        );
+
+        final rect = tester.getRect(find.byType(AutoLineartControlOverlay));
+        // The point is at screen center for every graph scale. Starting 20
+        // logical pixels away must still hit because the 22px hit radius is a
+        // screen-space constant, independent of graph/canvas scale.
+        await tester.dragFrom(
+          Offset(rect.center.dx + 20, rect.center.dy),
+          const Offset(8, -8),
+        );
+        await tester.pump();
+
+        expect(movedIndex, 0);
+        image.dispose();
+      },
+    );
+  }
 }
