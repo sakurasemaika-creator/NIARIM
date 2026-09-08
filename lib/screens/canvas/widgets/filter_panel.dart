@@ -455,9 +455,9 @@ class _FilterPanelState extends State<FilterPanel> {
                     width: previewSide,
                     height: previewSide,
                     decoration: BoxDecoration(
-                      color: Theme.of(context)
-                          .colorScheme
-                          .surfaceContainerHighest,
+                      color: Theme.of(
+                        context,
+                      ).colorScheme.surfaceContainerHighest,
                       borderRadius: BorderRadius.circular(6),
                     ),
                     child: _previewImage == null
@@ -477,17 +477,18 @@ class _FilterPanelState extends State<FilterPanel> {
                                 ? AutoLineartControlOverlay(
                                     image: _previewImage!,
                                     graph: _autoLineartPreviewGraph!,
-                                    onPointMoved: (pathIndex, pointIndex, point) {
-                                      _autoLineartPreviewGraph =
-                                          AutoLineartEngine.moveControlPoint(
-                                            _autoLineartPreviewGraph!,
-                                            pathIndex: pathIndex,
-                                            pointIndex: pointIndex,
-                                            point: point,
-                                          );
-                                      _autoLineartManualEdited = true;
-                                      _scheduleAutoLineartPreviewUpdate();
-                                    },
+                                    onPointMoved:
+                                        (pathIndex, pointIndex, point) {
+                                          _autoLineartPreviewGraph =
+                                              AutoLineartEngine.moveControlPoint(
+                                                _autoLineartPreviewGraph!,
+                                                pathIndex: pathIndex,
+                                                pointIndex: pointIndex,
+                                                point: point,
+                                              );
+                                          _autoLineartManualEdited = true;
+                                          _scheduleAutoLineartPreviewUpdate();
+                                        },
                                   )
                                 : RawImage(
                                     image: _previewImage,

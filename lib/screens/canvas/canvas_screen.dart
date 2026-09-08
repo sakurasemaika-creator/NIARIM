@@ -12,6 +12,7 @@ import '../../services/performance_service.dart';
 import '../../services/filter_service.dart';
 import '../../services/quick_tool_service.dart';
 import '../../services/custom_automation_service.dart';
+import '../../services/recorded_filter_apply_service.dart';
 import '../../services/premium_service.dart';
 import '../../services/settings_service.dart';
 import '../../services/shortcut_service.dart';
@@ -483,6 +484,19 @@ class _CanvasScreenState extends State<CanvasScreen> {
         final color = Color(argb);
         setState(() => _currentColor = color);
         context.read<BrushService>().setCurrentColor(color);
+      case 'canvas.filter':
+        final rawSnapshot = step.args['filter'];
+        if (rawSnapshot is! Map) throw StateError('Missing filter snapshot');
+        final layerId = _currentLayerId;
+        if (layerId == null) throw StateError('No active layer');
+        await RecordedFilterApplyService.apply(
+          projectService: context.read<ProjectService>(),
+          projectId: widget.projectId,
+          sceneId: _currentSceneId,
+          layerId: layerId,
+          frameIndex: targetFrame,
+          filterSnapshot: Map<String, Object?>.from(rawSnapshot),
+        );
       case 'canvas.selectFrame':
         final frame = (step.args['frame'] as num?)?.round();
         if (frame == null) throw StateError('Missing frame');
@@ -1145,9 +1159,9 @@ class _CanvasScreenState extends State<CanvasScreen> {
                                           borderRadius: BorderRadius.circular(
                                             10,
                                           ),
-                                          color: Theme.of(context)
-                                              .colorScheme
-                                              .inverseSurface,
+                                          color: Theme.of(
+                                            context,
+                                          ).colorScheme.inverseSurface,
                                           child: Padding(
                                             padding: const EdgeInsets.symmetric(
                                               horizontal: 14,
@@ -1406,8 +1420,9 @@ class _CanvasScreenState extends State<CanvasScreen> {
                             size: 22,
                             // 色固定をやめ、テーマの文字色と連動させる（CanvasIconButton・
                             // ToolbarWidgetの色連動と同じ方針）。
-                            color: Theme.of(context).colorScheme.onSurface
-                                .withValues(alpha: 0.7),
+                            color: Theme.of(
+                              context,
+                            ).colorScheme.onSurface.withValues(alpha: 0.7),
                           ),
                         ),
                       ),
