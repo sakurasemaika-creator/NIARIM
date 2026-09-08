@@ -434,6 +434,212 @@ void main() {
     });
 
     test(
+      'render uses the selected line-art color without changing AA alpha',
+      () {
+        final graph = AutoLineartGraph(
+          width: 40,
+          height: 20,
+          paths: const [
+            AutoLineartPath(
+              points: [AutoLineartPoint(4, 10), AutoLineartPoint(36, 10)],
+              startIsJunction: false,
+              endIsJunction: false,
+              persistence: 1,
+            ),
+          ],
+        );
+        final out = AutoLineartEngine.render(
+          graph,
+          40,
+          20,
+          outputWidthPx: 3,
+          taperLengthPx: 0,
+          smoothing: 0,
+          color: 0xFF2A7BE4,
+        );
+        final i = (10 * 40 + 20) * 4;
+        expect(out[i], 0x2A);
+        expect(out[i + 1], 0x7B);
+        expect(out[i + 2], 0xE4);
+        expect(out[i + 3], greaterThan(200));
+      },
+    );
+
+    test(
+      'preview keeps the rough at about 40 percent under colored line art',
+      () {
+        final rough = Uint8List.fromList([
+          200,
+          100,
+          50,
+          255,
+          200,
+          100,
+          50,
+          255,
+        ]);
+        final line = Uint8List.fromList([0, 0, 0, 0, 20, 220, 80, 255]);
+        final out = AutoLineartEngine.composePreview(
+          rough,
+          line,
+          roughOpacity: .4,
+        );
+        expect(out[3], inInclusiveRange(100, 104));
+        expect(out[0], 200);
+        expect(out[1], 100);
+        expect(out[2], 50);
+        expect(out[4], 20);
+        expect(out[5], 220);
+        expect(out[6], 80);
+        expect(out[7], 255);
+      },
+    );
+
+    test('manual offsets survive smoothing changes', () {
+      final baseline = AutoLineartGraph(
+        width: 100,
+        height: 100,
+        paths: const [
+          AutoLineartPath(
+            points: [
+              AutoLineartPoint(10, 50),
+              AutoLineartPoint(30, 48),
+              AutoLineartPoint(50, 50),
+              AutoLineartPoint(70, 52),
+              AutoLineartPoint(90, 50),
+            ],
+            startIsJunction: false,
+            endIsJunction: false,
+            persistence: 1,
+          ),
+        ],
+      );
+      final edited = AutoLineartEngine.moveControlPoint(
+        baseline,
+        pathIndex: 0,
+        pointIndex: 2,
+        point: const AutoLineartPoint(50, 35),
+      );
+      final target = AutoLineartEngine.prepareEditableGraph(
+        baseline,
+        smoothingLevel: 5,
+      );
+      final transferred = AutoLineartEngine.transferControlEdits(
+        baseline,
+        edited,
+        target,
+      );
+      expect(transferred.paths.single.points.any((p) => p.y < 42), isTrue);
+    });
+
+    test('rough-width topology refresh keeps edits and accepts new paths', () {
+      final baseline = AutoLineartGraph(
+        width: 120,
+        height: 80,
+        paths: const [
+          AutoLineartPath(
+            points: [
+              AutoLineartPoint(10, 40),
+              AutoLineartPoint(50, 40),
+              AutoLineartPoint(90, 40),
+            ],
+            startIsJunction: false,
+            endIsJunction: false,
+            persistence: 1,
+          ),
+        ],
+      );
+      final edited = AutoLineartEngine.moveControlPoint(
+        baseline,
+        pathIndex: 0,
+        pointIndex: 1,
+        point: const AutoLineartPoint(50, 28),
+      );
+      final expanded = AutoLineartGraph(
+        width: 120,
+        height: 80,
+        paths: const [
+          AutoLineartPath(
+            points: [
+              AutoLineartPoint(5, 40),
+              AutoLineartPoint(50, 40),
+              AutoLineartPoint(105, 40),
+            ],
+            startIsJunction: false,
+            endIsJunction: false,
+            persistence: 1,
+          ),
+          AutoLineartPath(
+            points: [AutoLineartPoint(70, 15), AutoLineartPoint(100, 15)],
+            startIsJunction: false,
+            endIsJunction: false,
+            persistence: 1,
+          ),
+        ],
+      );
+      final transferred = AutoLineartEngine.transferControlEdits(
+        baseline,
+        edited,
+        expanded,
+      );
+      expect(transferred.paths, hasLength(2));
+      expect(transferred.paths.first.points[1].y, lessThan(35));
+      expect(transferred.paths[1].points, expanded.paths[1].points);
+    });
+
+    test(
+      'rough-width topology refresh allows a persistent path to shorten',
+      () {
+        final baseline = AutoLineartGraph(
+          width: 120,
+          height: 80,
+          paths: const [
+            AutoLineartPath(
+              points: [
+                AutoLineartPoint(5, 40),
+                AutoLineartPoint(50, 40),
+                AutoLineartPoint(110, 40),
+              ],
+              startIsJunction: false,
+              endIsJunction: false,
+              persistence: 1,
+            ),
+          ],
+        );
+        final edited = AutoLineartEngine.moveControlPoint(
+          baseline,
+          pathIndex: 0,
+          pointIndex: 1,
+          point: const AutoLineartPoint(50, 30),
+        );
+        final shortened = AutoLineartGraph(
+          width: 120,
+          height: 80,
+          paths: const [
+            AutoLineartPath(
+              points: [
+                AutoLineartPoint(20, 40),
+                AutoLineartPoint(50, 40),
+                AutoLineartPoint(75, 40),
+              ],
+              startIsJunction: false,
+              endIsJunction: false,
+              persistence: 1,
+            ),
+          ],
+        );
+        final transferred = AutoLineartEngine.transferControlEdits(
+          baseline,
+          edited,
+          shortened,
+        );
+        expect(transferred.paths.single.points.first.x, closeTo(20, .001));
+        expect(transferred.paths.single.points.last.x, closeTo(75, .001));
+        expect(transferred.paths.single.points[1].y, lessThan(35));
+      },
+    );
+
+    test(
       'dragging a shared junction keeps coincident branch endpoints joined',
       () {
         final graph = AutoLineartGraph(

@@ -159,6 +159,7 @@ class FilterService extends ChangeNotifier {
       autoLineartOutputWidth: 2,
       autoLineartTaperLength: 8,
       autoLineartSmoothing: 5,
+      autoLineartColor: 0xFF000000,
     ),
     // Prism deliberately uses an existing enum kind so adding it does not make every
     // shared FilterKind switch exhaustive again. filter_panel.dart dispatches this
@@ -278,6 +279,7 @@ class FilterService extends ChangeNotifier {
     double? autoLineartOutputWidth,
     double? autoLineartTaperLength,
     double? autoLineartSmoothing,
+    int? autoLineartColor,
     double? prismBlurPx,
     double? prismDirectionDegrees,
   }) {
@@ -334,6 +336,7 @@ class FilterService extends ChangeNotifier {
       autoLineartOutputWidth: autoLineartOutputWidth,
       autoLineartTaperLength: autoLineartTaperLength,
       autoLineartSmoothing: autoLineartSmoothing,
+      autoLineartColor: autoLineartColor,
       prismBlurPx: prismBlurPx,
       prismDirectionDegrees: prismDirectionDegrees,
     );

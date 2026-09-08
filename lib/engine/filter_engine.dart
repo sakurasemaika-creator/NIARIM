@@ -1,6 +1,7 @@
 import 'dart:math' as math;
 import 'dart:typed_data';
 import 'dart:ui' as ui;
+
 import '../models/effect_filter_instance.dart';
 import '../models/filter_def.dart';
 import '../models/pixel_color_mode.dart';
@@ -177,17 +178,21 @@ Uint8List applyDrawFilterInIsolate(
       centerWidthPx: filter.inkPoolCenterWidth,
     ),
     FilterKind.autoLineart => AutoLineartEngine.render(
-      AutoLineartEngine.analyze(
-        data,
-        width,
-        height,
-        roughWidthPx: filter.autoLineartRoughWidth,
+      AutoLineartEngine.prepareEditableGraph(
+        AutoLineartEngine.analyze(
+          data,
+          width,
+          height,
+          roughWidthPx: filter.autoLineartRoughWidth,
+        ),
+        smoothingLevel: filter.autoLineartSmoothing.round().clamp(0, 10),
       ),
       width,
       height,
       outputWidthPx: filter.autoLineartOutputWidth,
       taperLengthPx: filter.autoLineartTaperLength,
-      smoothing: filter.autoLineartSmoothing,
+      smoothing: 0,
+      color: filter.autoLineartColor,
     ),
   };
 }

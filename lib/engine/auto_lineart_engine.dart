@@ -414,6 +414,143 @@ class AutoLineartEngine {
     );
   }
 
+  /// Transfers manual control-point offsets from [edited] relative to [baseline]
+  /// onto a newly prepared graph [target]. This is used when smoothing level or
+  /// accepted rough width changes: persistent strokes retain the user's edits,
+  /// newly detected strokes remain untouched, and removed/split strokes follow
+  /// the fresh topology instead of resurrecting stale geometry.
+  static AutoLineartGraph transferControlEdits(
+    AutoLineartGraph baseline,
+    AutoLineartGraph edited,
+    AutoLineartGraph target,
+  ) {
+    if (baseline.paths.isEmpty ||
+        edited.paths.isEmpty ||
+        target.paths.isEmpty) {
+      return target;
+    }
+    final diagonal = math.sqrt(
+      target.width.toDouble() * target.width +
+          target.height.toDouble() * target.height,
+    );
+    final maxMatch = math.max(8.0, diagonal * 0.18);
+    final used = <int>{};
+    final out = <AutoLineartPath>[];
+
+    for (final targetPath in target.paths) {
+      var bestIndex = -1;
+      var bestCost = double.infinity;
+      var bestReversed = false;
+      for (var i = 0; i < baseline.paths.length; i++) {
+        if (used.contains(i) || i >= edited.paths.length) continue;
+        final basePath = baseline.paths[i];
+        final editedPath = edited.paths[i];
+        if (basePath.points.length != editedPath.points.length ||
+            basePath.points.length < 2 ||
+            targetPath.points.length < 2) {
+          continue;
+        }
+        var topologyPenalty = 0.0;
+        if (basePath.startIsJunction != targetPath.startIsJunction) {
+          topologyPenalty += maxMatch * 0.35;
+        }
+        if (basePath.endIsJunction != targetPath.endIsJunction) {
+          topologyPenalty += maxMatch * 0.35;
+        }
+        double distance(AutoLineartPoint a, AutoLineartPoint b) {
+          final dx = a.x - b.x;
+          final dy = a.y - b.y;
+          return math.sqrt(dx * dx + dy * dy);
+        }
+
+        final direct =
+            distance(basePath.points.first, targetPath.points.first) +
+            distance(basePath.points.last, targetPath.points.last) +
+            topologyPenalty;
+        final reverse =
+            distance(basePath.points.first, targetPath.points.last) +
+            distance(basePath.points.last, targetPath.points.first) +
+            topologyPenalty;
+        final reversed = reverse < direct;
+        final cost = reversed ? reverse : direct;
+        if (cost < bestCost) {
+          bestCost = cost;
+          bestIndex = i;
+          bestReversed = reversed;
+        }
+      }
+
+      if (bestIndex < 0 || bestCost > maxMatch * 2) {
+        out.add(targetPath);
+        continue;
+      }
+      used.add(bestIndex);
+      final basePath = baseline.paths[bestIndex];
+      final editedPath = edited.paths[bestIndex];
+      final points = <AutoLineartPoint>[];
+      var pathLength = 0.0;
+      for (var i = 1; i < basePath.points.length; i++) {
+        final dx = basePath.points[i].x - basePath.points[i - 1].x;
+        final dy = basePath.points[i].y - basePath.points[i - 1].y;
+        pathLength += math.sqrt(dx * dx + dy * dy);
+      }
+      final averageSpacing =
+          pathLength / math.max(1, basePath.points.length - 1);
+      // A manually moved point may itself disappear when smoothing is raised.
+      // Spread that displacement over about 2.5 old control spacings so the
+      // user's curve survives in neighboring retained controls instead of
+      // snapping back to the automatic path.
+      final influenceRadius = math.max(6.0, averageSpacing * 2.5);
+      for (final tp in targetPath.points) {
+        var offsetX = 0.0;
+        var offsetY = 0.0;
+        for (var bi = 0; bi < basePath.points.length; bi++) {
+          final baseIndex = bestReversed ? basePath.points.length - 1 - bi : bi;
+          final bp = basePath.points[baseIndex];
+          final ep = editedPath.points[baseIndex];
+          final editDx = ep.x - bp.x;
+          final editDy = ep.y - bp.y;
+          if (editDx.abs() < 1e-6 && editDy.abs() < 1e-6) continue;
+          final dx = bp.x - tp.x;
+          final dy = bp.y - tp.y;
+          final distance = math.sqrt(dx * dx + dy * dy);
+          if (distance >= influenceRadius) continue;
+          final influence = 1.0 - distance / influenceRadius;
+          offsetX += editDx * influence;
+          offsetY += editDy * influence;
+        }
+        points.add(
+          AutoLineartPoint(
+            (tp.x + offsetX).clamp(
+              0.0,
+              math.max(0, target.width - 1).toDouble(),
+            ),
+            (tp.y + offsetY).clamp(
+              0.0,
+              math.max(0, target.height - 1).toDouble(),
+            ),
+          ),
+        );
+      }
+      out.add(
+        AutoLineartPath(
+          points: points,
+          startIsJunction: targetPath.startIsJunction,
+          endIsJunction: targetPath.endIsJunction,
+          persistence: targetPath.persistence,
+        ),
+      );
+    }
+
+    return AutoLineartGraph(
+      width: target.width,
+      height: target.height,
+      paths: out,
+      analysisWidth: target.analysisWidth,
+      analysisHeight: target.analysisHeight,
+    );
+  }
+
   /// Moves one preview control point. Coincident points (normally the endpoints
   /// of branches sharing a junction) move together so dragging a junction never
   /// tears connected topology apart.
@@ -475,6 +612,7 @@ class AutoLineartEngine {
     required double outputWidthPx,
     required double taperLengthPx,
     required double smoothing,
+    int color = 0xFF000000,
   }) {
     final out = Uint8List(width * height * 4);
     if (graph.paths.isEmpty || width <= 0 || height <= 0) return out;
@@ -506,6 +644,7 @@ class AutoLineartEngine {
         taperLength: taper * scale,
         taperStart: !path.startIsJunction,
         taperEnd: !path.endIsJunction,
+        color: color,
       );
     }
     return out;
@@ -591,6 +730,7 @@ class AutoLineartEngine {
     required double taperLength,
     required bool taperStart,
     required bool taperEnd,
+    required int color,
   }) {
     final cumulative = List<double>.filled(points.length, 0);
     for (var i = 1; i < points.length; i++) {
@@ -653,15 +793,47 @@ class AutoLineartEngine {
           if (coverage <= 0) continue;
           final index = (y * width + x) * 4;
           final alpha = (coverage * 255).round();
-          if (alpha > out[index + 3]) {
-            out[index] = 0;
-            out[index + 1] = 0;
-            out[index + 2] = 0;
-            out[index + 3] = alpha;
+          final colorAlpha = (color >> 24) & 0xFF;
+          final finalAlpha = (alpha * colorAlpha / 255).round();
+          if (finalAlpha > out[index + 3]) {
+            out[index] = (color >> 16) & 0xFF;
+            out[index + 1] = (color >> 8) & 0xFF;
+            out[index + 2] = color & 0xFF;
+            out[index + 3] = finalAlpha;
           }
         }
       }
     }
+  }
+
+  /// Composes the reference rough at a reduced opacity under the generated
+  /// line-art preview. The source layer itself is never mutated, so closing or
+  /// cancelling the filter has no opacity side effects.
+  static Uint8List composePreview(
+    Uint8List rough,
+    Uint8List line, {
+    double roughOpacity = 0.4,
+  }) {
+    final length = math.min(rough.length, line.length);
+    final out = Uint8List(length);
+    final ro = roughOpacity.clamp(0.0, 1.0);
+    for (var i = 0; i + 3 < length; i += 4) {
+      final ra = rough[i + 3] / 255.0 * ro;
+      final la = line[i + 3] / 255.0;
+      final oa = la + ra * (1.0 - la);
+      if (oa <= 1e-8) continue;
+      double channel(int c) {
+        final lr = line[i + c] / 255.0;
+        final rr = rough[i + c] / 255.0;
+        return (lr * la + rr * ra * (1.0 - la)) / oa;
+      }
+
+      out[i] = (channel(0) * 255).round().clamp(0, 255);
+      out[i + 1] = (channel(1) * 255).round().clamp(0, 255);
+      out[i + 2] = (channel(2) * 255).round().clamp(0, 255);
+      out[i + 3] = (oa * 255).round().clamp(0, 255);
+    }
+    return out;
   }
 
   static double _polylineLength(List<AutoLineartPoint> points) {

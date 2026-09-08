@@ -72,6 +72,7 @@ class _FilterPanelState extends State<FilterPanel> {
   BackgroundAcclimationAnalysis? _lastBgBlendAnalysis;
   AutoLineartGraph? _autoLineartBaseGraph;
   AutoLineartGraph? _autoLineartPreviewGraph;
+  AutoLineartGraph? _autoLineartEditBaselineGraph;
   double? _autoLineartPreviewRoughWidth;
   int? _autoLineartPreviewSmoothingLevel;
   bool _autoLineartManualEdited = false;
@@ -228,32 +229,48 @@ class _FilterPanelState extends State<FilterPanel> {
     final Uint8List filtered;
     if (filter.kind == FilterKind.autoLineart) {
       final smoothingLevel = filter.autoLineartSmoothing.round().clamp(0, 10);
-      if (_autoLineartBaseGraph == null ||
-          _autoLineartPreviewRoughWidth != filter.autoLineartRoughWidth) {
-        _autoLineartBaseGraph = AutoLineartEngine.analyze(
-          base,
-          _previewW,
-          _previewH,
-          roughWidthPx: math.max(
-            2.0,
-            filter.autoLineartRoughWidth * _previewScale,
-          ),
-        );
-        _autoLineartPreviewRoughWidth = filter.autoLineartRoughWidth;
-        _autoLineartPreviewGraph = null;
-        _autoLineartPreviewSmoothingLevel = null;
-        _autoLineartManualEdited = false;
-      }
-      if (_autoLineartPreviewGraph == null ||
-          _autoLineartPreviewSmoothingLevel != smoothingLevel) {
-        _autoLineartPreviewGraph = AutoLineartEngine.prepareEditableGraph(
+      final roughChanged =
+          _autoLineartBaseGraph == null ||
+          _autoLineartPreviewRoughWidth != filter.autoLineartRoughWidth;
+      final smoothingChanged =
+          _autoLineartPreviewSmoothingLevel != smoothingLevel;
+      if (roughChanged ||
+          smoothingChanged ||
+          _autoLineartPreviewGraph == null) {
+        final previousBaseline = _autoLineartEditBaselineGraph;
+        final previousEdited = _autoLineartPreviewGraph;
+        final preserveManual =
+            _autoLineartManualEdited &&
+            previousBaseline != null &&
+            previousEdited != null;
+        if (roughChanged) {
+          _autoLineartBaseGraph = AutoLineartEngine.analyze(
+            base,
+            _previewW,
+            _previewH,
+            roughWidthPx: math.max(
+              2.0,
+              filter.autoLineartRoughWidth * _previewScale,
+            ),
+          );
+          _autoLineartPreviewRoughWidth = filter.autoLineartRoughWidth;
+        }
+        final prepared = AutoLineartEngine.prepareEditableGraph(
           _autoLineartBaseGraph!,
           smoothingLevel: smoothingLevel,
         );
+        _autoLineartPreviewGraph = preserveManual
+            ? AutoLineartEngine.transferControlEdits(
+                previousBaseline,
+                previousEdited,
+                prepared,
+              )
+            : prepared;
+        _autoLineartEditBaselineGraph = prepared;
         _autoLineartPreviewSmoothingLevel = smoothingLevel;
-        _autoLineartManualEdited = false;
+        _autoLineartManualEdited = preserveManual;
       }
-      filtered = AutoLineartEngine.render(
+      final line = AutoLineartEngine.render(
         _autoLineartPreviewGraph!,
         _previewW,
         _previewH,
@@ -263,6 +280,12 @@ class _FilterPanelState extends State<FilterPanel> {
         ),
         taperLengthPx: filter.autoLineartTaperLength * _previewScale,
         smoothing: 0,
+        color: filter.autoLineartColor,
+      );
+      filtered = AutoLineartEngine.composePreview(
+        base,
+        line,
+        roughOpacity: 0.4,
       );
     } else {
       filtered = _runFilter(filter, base, _previewW, _previewH);
@@ -694,14 +717,15 @@ class _FilterPanelState extends State<FilterPanel> {
                   current.id,
                   autoLineartRoughWidth: v.toDouble(),
                 );
-                _autoLineartBaseGraph = null;
-                _autoLineartPreviewGraph = null;
-                _autoLineartPreviewRoughWidth = null;
-                _autoLineartPreviewSmoothingLevel = null;
-                _autoLineartManualEdited = false;
                 _updatePreview();
               },
               suffix: 'px',
+            ),
+            _colorControl(
+              '線画色',
+              current.autoLineartColor,
+              (c) =>
+                  service.updateFilterParams(current.id, autoLineartColor: c),
             ),
             _integerStepperSlider(
               l10n.filterAutoLineartOutputWidth,
@@ -741,9 +765,6 @@ class _FilterPanelState extends State<FilterPanel> {
                   current.id,
                   autoLineartSmoothing: v.toDouble(),
                 );
-                _autoLineartPreviewGraph = null;
-                _autoLineartPreviewSmoothingLevel = null;
-                _autoLineartManualEdited = false;
                 _updatePreview();
               },
             ),
@@ -1535,11 +1556,14 @@ class _FilterPanelState extends State<FilterPanel> {
         );
       case FilterKind.autoLineart:
         return AutoLineartEngine.render(
-          AutoLineartEngine.analyze(
-            data,
-            width,
-            height,
-            roughWidthPx: filter.autoLineartRoughWidth * _previewScale,
+          AutoLineartEngine.prepareEditableGraph(
+            AutoLineartEngine.analyze(
+              data,
+              width,
+              height,
+              roughWidthPx: filter.autoLineartRoughWidth * _previewScale,
+            ),
+            smoothingLevel: filter.autoLineartSmoothing.round().clamp(0, 10),
           ),
           width,
           height,
@@ -1548,7 +1572,8 @@ class _FilterPanelState extends State<FilterPanel> {
             filter.autoLineartOutputWidth * _previewScale,
           ),
           taperLengthPx: filter.autoLineartTaperLength * _previewScale,
-          smoothing: filter.autoLineartSmoothing,
+          smoothing: 0,
+          color: filter.autoLineartColor,
         );
       case FilterKind.inkPool:
         return _engine.applyInkPoolComposite(
@@ -1647,6 +1672,7 @@ class _FilterPanelState extends State<FilterPanel> {
         outputWidthPx: filter.autoLineartOutputWidth,
         taperLengthPx: filter.autoLineartTaperLength,
         smoothing: 0,
+        color: filter.autoLineartColor,
       );
     } else if (_isPrism(filter)) {
       // Full-resolution blur uses the exact user-facing px value. Clipping only

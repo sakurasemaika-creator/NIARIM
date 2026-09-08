@@ -102,6 +102,7 @@ class FilterDef {
   final double autoLineartOutputWidth;
   final double autoLineartTaperLength;
   final double autoLineartSmoothing;
+  final int autoLineartColor;
   final double prismBlurPx;
   final double prismDirectionDegrees;
 
@@ -160,6 +161,7 @@ class FilterDef {
     this.autoLineartOutputWidth = 2,
     this.autoLineartTaperLength = 8,
     this.autoLineartSmoothing = 5,
+    this.autoLineartColor = 0xFF000000,
     this.prismBlurPx = 8,
     this.prismDirectionDegrees = 45,
   });
@@ -219,6 +221,7 @@ class FilterDef {
     double? autoLineartOutputWidth,
     double? autoLineartTaperLength,
     double? autoLineartSmoothing,
+    int? autoLineartColor,
     double? prismBlurPx,
     double? prismDirectionDegrees,
   }) {
@@ -286,6 +289,7 @@ class FilterDef {
       autoLineartTaperLength:
           autoLineartTaperLength ?? this.autoLineartTaperLength,
       autoLineartSmoothing: autoLineartSmoothing ?? this.autoLineartSmoothing,
+      autoLineartColor: autoLineartColor ?? this.autoLineartColor,
       prismBlurPx: prismBlurPx ?? this.prismBlurPx,
       prismDirectionDegrees:
           prismDirectionDegrees ?? this.prismDirectionDegrees,
@@ -347,6 +351,7 @@ class FilterDef {
     'autoLineartOutputWidth': autoLineartOutputWidth,
     'autoLineartTaperLength': autoLineartTaperLength,
     'autoLineartSmoothing': autoLineartSmoothing,
+    'autoLineartColor': autoLineartColor,
     'prismBlurPx': prismBlurPx,
     'prismDirectionDegrees': prismDirectionDegrees,
   };
@@ -429,7 +434,8 @@ class FilterDef {
         (j['autoLineartOutputWidth'] as num?)?.toDouble() ?? 2,
     autoLineartTaperLength:
         (j['autoLineartTaperLength'] as num?)?.toDouble() ?? 8,
-    autoLineartSmoothing: (j['autoLineartSmoothing'] as num?)?.toDouble() ?? 45,
+    autoLineartSmoothing: (j['autoLineartSmoothing'] as num?)?.toDouble() ?? 5,
+    autoLineartColor: j['autoLineartColor'] as int? ?? 0xFF000000,
     prismBlurPx: (j['prismBlurPx'] as num?)?.toDouble() ?? 8,
     prismDirectionDegrees:
         (j['prismDirectionDegrees'] as num?)?.toDouble() ?? 45,
