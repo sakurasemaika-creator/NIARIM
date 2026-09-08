@@ -39,7 +39,7 @@ index fb9979b3..ccf4549b 100644
            data,
            background,
 diff --git a/test/auto_lineart_bulk_isolation_test.dart b/test/auto_lineart_bulk_isolation_test.dart
-index 6ff0fb05..8d586962 100644
+index 6ff0fb05..128b1ad2 100644
 --- a/test/auto_lineart_bulk_isolation_test.dart
 +++ b/test/auto_lineart_bulk_isolation_test.dart
 @@ -1,6 +1,5 @@
@@ -58,7 +58,31 @@ index 6ff0fb05..8d586962 100644
  Uint8List _rough(int w, int h) {
    final out = Uint8List(w * h * 4);
    void dot(int cx, int cy, int r) {
-@@ -101,10 +102,10 @@ void main() {
+@@ -47,9 +48,9 @@ Future<Uint8List> _layerBytes(
+   int frame,
+   String layerId,
+ ) async {
+-  final image = await ps.tileManagerOf(projectId).compositeLayerToImage(
+-        ps.tileKeyFor(projectId, sceneId, frame, layerId),
+-      );
++  final image = await ps
++      .tileManagerOf(projectId)
++      .compositeLayerToImage(ps.tileKeyFor(projectId, sceneId, frame, layerId));
+   final data = await image.toByteData(format: ui.ImageByteFormat.rawRgba);
+   image.dispose();
+   return data!.buffer.asUint8List();
+@@ -66,7 +67,9 @@ void main() {
+       addTearDown(tester.view.resetPhysicalSize);
+       addTearDown(tester.view.resetDevicePixelRatio);
+ 
+-      final tempDir = Directory.systemTemp.createTempSync('niarim_lineart_bulk_');
++      final tempDir = Directory.systemTemp.createTempSync(
++        'niarim_lineart_bulk_',
++      );
+       addTearDown(() {
+         if (tempDir.existsSync()) tempDir.deleteSync(recursive: true);
+       });
+@@ -101,10 +104,10 @@ void main() {
                    body: Center(
                      child: ValueListenableBuilder<Set<int>?>(
                        valueListenable: bulk,
@@ -71,7 +95,7 @@ index 6ff0fb05..8d586962 100644
                                sceneId: sceneId!,
                                layerId: layerId,
                                frameIndex: 0,
-@@ -123,7 +124,7 @@ void main() {
+@@ -123,7 +126,7 @@ void main() {
        final context = providerContext!;
        final ps = context.read<ProjectService>();
        final fs = context.read<FilterService>();
@@ -80,7 +104,7 @@ index 6ff0fb05..8d586962 100644
          () => ps.createProject(
            name: 'bulk isolation',
            fps: 12,
-@@ -133,6 +134,8 @@ void main() {
+@@ -133,6 +136,8 @@ void main() {
            exportHeight: 160,
          ),
        );
@@ -89,7 +113,7 @@ index 6ff0fb05..8d586962 100644
        projectId = project.id;
        final scene = ps.scenesOf(project.id).first;
        sceneId = scene.id;
-@@ -142,14 +145,14 @@ void main() {
+@@ -142,14 +147,14 @@ void main() {
        final rough = _rough(tm.canvasWidth, tm.canvasHeight);
        for (final frame in [0, 1]) {
          tm.replaceLayerPixels(
@@ -106,7 +130,17 @@ index 6ff0fb05..8d586962 100644
        expect(find.byType(AutoLineartControlOverlay), findsOneWidget);
  
        final overlay = tester.widget<AutoLineartControlOverlay>(
-@@ -167,7 +170,7 @@ void main() {
+@@ -158,7 +163,8 @@ void main() {
+       final graph = overlay.graph;
+       final pIndex = graph.paths.indexWhere((p) => p.points.length >= 3);
+       expect(pIndex, greaterThanOrEqualTo(0));
+-      final point = graph.paths[pIndex].points[graph.paths[pIndex].points.length ~/ 2];
++      final point =
++          graph.paths[pIndex].points[graph.paths[pIndex].points.length ~/ 2];
+       final rect = tester.getRect(find.byType(AutoLineartControlOverlay));
+       await tester.dragFrom(
+         Offset(
+@@ -167,7 +173,7 @@ void main() {
          ),
          const Offset(0, -35),
        );
@@ -115,7 +149,7 @@ index 6ff0fb05..8d586962 100644
  
        // Switch this same panel state into bulk mode after a manual edit.
        bulk.value = {0, 1};
-@@ -196,9 +199,15 @@ void main() {
+@@ -196,9 +202,15 @@ void main() {
        final g0 = f0.singleWhere((l) => l.id != layerId);
        final g1 = f1.singleWhere((l) => l.id != layerId);
        expect(g0.id, g1.id);
@@ -135,7 +169,7 @@ index 6ff0fb05..8d586962 100644
      timeout: const Timeout(Duration(minutes: 3)),
    );
 diff --git a/test/auto_lineart_canvas_e2e_test.dart b/test/auto_lineart_canvas_e2e_test.dart
-index 06b565d2..c00786ad 100644
+index 06b565d2..d2104422 100644
 --- a/test/auto_lineart_canvas_e2e_test.dart
 +++ b/test/auto_lineart_canvas_e2e_test.dart
 @@ -1,8 +1,7 @@
@@ -156,7 +190,38 @@ index 06b565d2..c00786ad 100644
  
  void _drawRough(Uint8List bytes, int width, int height) {
    void dot(int cx, int cy, int radius) {
-@@ -109,7 +109,7 @@ void main() {
+@@ -37,7 +37,8 @@ void _drawRough(Uint8List bytes, int width, int height) {
+   }
+ 
+   for (var x = 24; x <= width - 24; x++) {
+-    final y = height ~/ 2 + ((x - width ~/ 2) * (x - width ~/ 2) / 900).round() - 10;
++    final y =
++        height ~/ 2 + ((x - width ~/ 2) * (x - width ~/ 2) / 900).round() - 10;
+     dot(x, y.clamp(12, height - 12), 5);
+   }
+   for (var i = 0; i < 75; i++) {
+@@ -61,7 +62,9 @@ void main() {
+       addTearDown(tester.view.resetPhysicalSize);
+       addTearDown(tester.view.resetDevicePixelRatio);
+ 
+-      final tempDir = Directory.systemTemp.createTempSync('niarim_lineart_e2e_');
++      final tempDir = Directory.systemTemp.createTempSync(
++        'niarim_lineart_e2e_',
++      );
+       addTearDown(() {
+         if (tempDir.existsSync()) tempDir.deleteSync(recursive: true);
+       });
+@@ -92,7 +95,8 @@ void main() {
+                 builder: (context, id, _) => MaterialApp(
+                   theme: context.watch<ThemeService>().themeData,
+                   locale: const Locale('ja'),
+-                  localizationsDelegates: AppLocalizations.localizationsDelegates,
++                  localizationsDelegates:
++                      AppLocalizations.localizationsDelegates,
+                   supportedLocales: AppLocalizations.supportedLocales,
+                   home: id == null
+                       ? const Scaffold(body: SizedBox.expand())
+@@ -109,7 +113,7 @@ void main() {
        final fs = context.read<FilterService>();
        final undo = context.read<UndoManager>();
  
@@ -165,7 +230,7 @@ index 06b565d2..c00786ad 100644
          () => ps.createProject(
            name: 'Auto line art E2E',
            fps: 12,
-@@ -119,6 +119,8 @@ void main() {
+@@ -119,6 +123,8 @@ void main() {
            exportHeight: 256,
          ),
        );
@@ -174,7 +239,7 @@ index 06b565d2..c00786ad 100644
        final scene = ps.scenesOf(project.id).first;
        final source = scene.frames.first.layers.first;
        final tm = ps.tileManagerOf(project.id);
-@@ -136,7 +138,7 @@ void main() {
+@@ -136,7 +142,7 @@ void main() {
          autoLineartColor: 0xFF2E62D5,
        );
        activeProject.value = project.id;
@@ -183,7 +248,7 @@ index 06b565d2..c00786ad 100644
        expect(tester.takeException(), isNull);
  
        // Open the actual Canvas "settings/edit" menu, then its real FilterPanel.
-@@ -145,7 +147,7 @@ void main() {
+@@ -145,7 +151,7 @@ void main() {
        final filterMenuEntry = find.byIcon(Icons.blur_on);
        expect(filterMenuEntry, findsOneWidget);
        await tester.tap(filterMenuEntry);
@@ -192,13 +257,20 @@ index 06b565d2..c00786ad 100644
        expect(find.byType(FilterPanel), findsOneWidget);
        expect(find.byType(AutoLineartControlOverlay), findsOneWidget);
  
-@@ -178,9 +180,14 @@ void main() {
-         0,
-         generated.id,
-       );
+@@ -172,19 +178,21 @@ void main() {
+       expect(layers.indexOf(generated), layers.indexOf(source) + 1);
+       expect(undo.canUndo, isTrue);
+ 
+-      final generatedKey = ps.tileKeyFor(
+-        project.id,
+-        scene.id,
+-        0,
+-        generated.id,
+-      );
 -      final generatedImage = await tm.compositeLayerToImage(generatedKey);
 -      final generatedBytes = await generatedImage.toByteData();
 -      generatedImage.dispose();
++      final generatedKey = ps.tileKeyFor(project.id, scene.id, 0, generated.id);
 +      final generatedBytes = await tester.runAsync(() async {
 +        final image = await tm.compositeLayerToImage(generatedKey);
 +        try {
@@ -210,7 +282,14 @@ index 06b565d2..c00786ad 100644
        expect(generatedBytes, isNotNull);
        final data = generatedBytes!.buffer.asUint8List();
        expect(
-@@ -203,11 +210,16 @@ void main() {
+-        Iterable<int>.generate(data.length ~/ 4).any((n) => data[n * 4 + 3] > 0),
++        Iterable<int>.generate(
++          data.length ~/ 4,
++        ).any((n) => data[n * 4 + 3] > 0),
+         isTrue,
+       );
+ 
+@@ -203,15 +211,21 @@ void main() {
        expect(redone.id, generated.id);
        expect(layers.indexOf(redone), layers.indexOf(source) + 1);
  
@@ -231,9 +310,16 @@ index 06b565d2..c00786ad 100644
 +      });
        expect(redoneBytes, isNotNull);
        expect(
-         Iterable<int>.generate(redoneBytes!.lengthInBytes ~/ 4)
+-        Iterable<int>.generate(redoneBytes!.lengthInBytes ~/ 4)
+-            .any((n) => redoneBytes.getUint8(n * 4 + 3) > 0),
++        Iterable<int>.generate(
++          redoneBytes!.lengthInBytes ~/ 4,
++        ).any((n) => redoneBytes.getUint8(n * 4 + 3) > 0),
+         isTrue,
+       );
+     },
 diff --git a/test/auto_lineart_panel_state_test.dart b/test/auto_lineart_panel_state_test.dart
-index 2a03bee6..53d86c9d 100644
+index 2a03bee6..bf8af87f 100644
 --- a/test/auto_lineart_panel_state_test.dart
 +++ b/test/auto_lineart_panel_state_test.dart
 @@ -1,6 +1,5 @@
@@ -252,32 +338,80 @@ index 2a03bee6..53d86c9d 100644
  void _rough(Uint8List data, int w, int h) {
    void dot(int cx, int cy, int r) {
      for (var y = cy - r; y <= cy + r; y++) {
-@@ -112,12 +113,12 @@ void main() {
+@@ -43,9 +44,9 @@ void _rough(Uint8List data, int w, int h) {
+ }
+ 
+ List<(double, double)> _points(AutoLineartGraph graph) => [
+-      for (final path in graph.paths)
+-        for (final p in path.points) (p.x, p.y),
+-    ];
++  for (final path in graph.paths)
++    for (final p in path.points) (p.x, p.y),
++];
+ 
+ double _graphDistance(AutoLineartGraph a, AutoLineartGraph b) {
+   final ap = _points(a);
+@@ -75,7 +76,9 @@ void main() {
+       addTearDown(tester.view.resetPhysicalSize);
+       addTearDown(tester.view.resetDevicePixelRatio);
+ 
+-      final tempDir = Directory.systemTemp.createTempSync('niarim_lineart_state_');
++      final tempDir = Directory.systemTemp.createTempSync(
++        'niarim_lineart_state_',
++      );
+       addTearDown(() {
+         if (tempDir.existsSync()) tempDir.deleteSync(recursive: true);
+       });
+@@ -112,20 +115,22 @@ void main() {
                    body: Center(
                      child: ValueListenableBuilder<bool>(
                        valueListenable: show,
 -                      builder: (_, visible, __) => ValueListenableBuilder<Set<int>?>(
-+                      builder: (_, visible, _) => ValueListenableBuilder<Set<int>?>(
-                         valueListenable: bulk,
+-                        valueListenable: bulk,
 -                        builder: (_, bulkFrames, __) {
-+                        builder: (_, bulkFrames, _) {
-                           if (!visible || projectId == null) return const SizedBox();
-                           return FilterPanel(
+-                          if (!visible || projectId == null) return const SizedBox();
+-                          return FilterPanel(
 -                            projectId: projectId!,
-+                            projectId: projectId,
-                             sceneId: sceneId!,
-                             layerId: layerId,
-                             frameIndex: 0,
-@@ -157,7 +158,7 @@ void main() {
+-                            sceneId: sceneId!,
+-                            layerId: layerId,
+-                            frameIndex: 0,
+-                            bulkFrameIndices: bulkFrames,
+-                            onClose: () => show.value = false,
+-                          );
+-                        },
+-                      ),
++                      builder: (_, visible, _) =>
++                          ValueListenableBuilder<Set<int>?>(
++                            valueListenable: bulk,
++                            builder: (_, bulkFrames, _) {
++                              if (!visible || projectId == null)
++                                return const SizedBox();
++                              return FilterPanel(
++                                projectId: projectId,
++                                sceneId: sceneId!,
++                                layerId: layerId,
++                                frameIndex: 0,
++                                bulkFrameIndices: bulkFrames,
++                                onClose: () => show.value = false,
++                              );
++                            },
++                          ),
+                     ),
+                   ),
+                 ),
+@@ -157,7 +162,10 @@ void main() {
        final tm = ps.tileManagerOf(project.id);
        final data = Uint8List(tm.canvasWidth * tm.canvasHeight * 4);
        _rough(data, tm.canvasWidth, tm.canvasHeight);
 -      tm.replaceLayerPixels(ps.tileKeyFor(project.id, scene.id, 0, layerId!), data);
-+      tm.replaceLayerPixels(ps.tileKeyFor(project.id, scene.id, 0, layerId), data);
++      tm.replaceLayerPixels(
++        ps.tileKeyFor(project.id, scene.id, 0, layerId),
++        data,
++      );
        fs.selectFilter('Filter0023');
        fs.updateFilterParams(
          'Filter0023',
-@@ -165,7 +166,7 @@ void main() {
+@@ -165,11 +173,13 @@ void main() {
          autoLineartRoughWidth: 12,
        );
        show.notifyListeners();
@@ -286,7 +420,14 @@ index 2a03bee6..53d86c9d 100644
        expect(find.byType(AutoLineartControlOverlay), findsOneWidget);
  
        AutoLineartGraph graph() => tester
-@@ -184,7 +185,7 @@ void main() {
+-          .widget<AutoLineartControlOverlay>(find.byType(AutoLineartControlOverlay))
++          .widget<AutoLineartControlOverlay>(
++            find.byType(AutoLineartControlOverlay),
++          )
+           .graph;
+ 
+       var before = graph();
+@@ -184,7 +194,7 @@ void main() {
          rect.top + point.y / before.height * rect.height,
        );
        await tester.dragFrom(start, const Offset(0, -28));
@@ -295,7 +436,7 @@ index 2a03bee6..53d86c9d 100644
        final edited5 = graph();
        expect(_graphDistance(edited5, before), greaterThan(.3));
  
-@@ -195,33 +196,33 @@ void main() {
+@@ -195,33 +205,33 @@ void main() {
          autoLineartTaperLength: 20,
          autoLineartColor: 0xFFE04080,
        );
@@ -337,16 +478,21 @@ index 2a03bee6..53d86c9d 100644
      },
 diff --git a/test/helpers/pump_real_async.dart b/test/helpers/pump_real_async.dart
 new file mode 100644
-index 00000000..84ad1d0d
+index 00000000..6218337c
 --- /dev/null
 +++ b/test/helpers/pump_real_async.dart
-@@ -0,0 +1,9 @@
+@@ -0,0 +1,14 @@
 +import 'package:flutter_test/flutter_test.dart';
 +
 +/// Builds scheduled widgets, lets real image/file callbacks finish, then paints.
 +/// Advancing FakeAsync alone cannot complete toImage/toByteData/decode callbacks.
 +Future<void> pumpRealAsync(WidgetTester tester, Duration duration) async {
 +  await tester.pump();
-+  await tester.runAsync(() => Future<void>.delayed(duration));
-+  await tester.pump();
++  const tick = Duration(milliseconds: 20);
++  for (var elapsed = Duration.zero; elapsed < duration; elapsed += tick) {
++    await tester.runAsync(() => Future<void>.delayed(tick));
++    // Image callbacks can schedule another real operation from a fake-zone
++    // continuation. Interleave both clocks, including menu route animations.
++    await tester.pump(tick);
++  }
 +}
