@@ -9,12 +9,14 @@ class CustomAutomationDraft {
   final String id;
   String name;
   final DateTime createdAt;
+  final int? recordingStartFrame;
   final List<CustomAutomationStep> steps;
 
   CustomAutomationDraft({
     required this.id,
     required this.name,
     required this.createdAt,
+    this.recordingStartFrame,
     List<CustomAutomationStep>? steps,
   }) : steps = steps ?? [];
 }
@@ -59,12 +61,17 @@ class CustomAutomationService extends ChangeNotifier {
     );
   }
 
-  void beginDraft({required String name, required CustomAutomationSurface surface}) {
+  void beginDraft({
+    required String name,
+    required CustomAutomationSurface surface,
+    int? recordingStartFrame,
+  }) {
     final now = DateTime.now();
     _draft = CustomAutomationDraft(
       id: 'automation_${now.microsecondsSinceEpoch}',
       name: name.trim(),
       createdAt: now,
+      recordingStartFrame: recordingStartFrame,
     );
     _recordingSurface = surface;
     _recording = true;
@@ -97,9 +104,7 @@ class CustomAutomationService extends ChangeNotifier {
     required String label,
     Map<String, Object?> args = const {},
     bool changesFrame = false,
-    bool changesScene = false,
     int? recordedFrame,
-    int? recordedScene,
   }) {
     final draft = _draft;
     if (!_recording || draft == null) return;
@@ -110,32 +115,26 @@ class CustomAutomationService extends ChangeNotifier {
       label: label,
       args: Map.unmodifiable(args),
       changesFrame: changesFrame,
-      changesScene: changesScene,
       recordedFrame: recordedFrame,
-      recordedScene: recordedScene,
     );
-    // Slider/color drags may emit dozens of onChanged callbacks. Consecutive
-    // writes of the same deterministic command represent one user operation,
-    // so keep only the latest value. Navigation is never coalesced because its
-    // sequence is semantically meaningful for a recorded macro.
-    if (!changesFrame && !changesScene && draft.steps.isNotEmpty) {
+
+    // Slider/color drags may emit many callbacks. Consecutive writes of the same
+    // deterministic command in the same recorded frame are one logical operation,
+    // so retain only the latest value. Frame navigation is never coalesced because
+    // its sequence is semantically meaningful and also disables all-frame execution.
+    if (!changesFrame && draft.steps.isNotEmpty) {
       final last = draft.steps.last;
       if (!last.changesFrame &&
-          !last.changesScene &&
           last.surface == surface &&
           last.command == command &&
-          last.recordedFrame == recordedFrame &&
-          last.recordedScene == recordedScene) {
+          last.recordedFrame == recordedFrame) {
         draft.steps[draft.steps.length - 1] = CustomAutomationStep(
           id: last.id,
           surface: surface,
           command: command,
           label: label,
           args: Map.unmodifiable(args),
-          changesFrame: false,
-          changesScene: false,
           recordedFrame: recordedFrame,
-          recordedScene: recordedScene,
         );
         notifyListeners();
         return;
@@ -172,12 +171,15 @@ class CustomAutomationService extends ChangeNotifier {
 
   Future<CustomAutomation?> saveDraft() async {
     final draft = _draft;
-    if (draft == null || draft.name.trim().isEmpty || draft.steps.isEmpty) return null;
+    if (draft == null || draft.name.trim().isEmpty || draft.steps.isEmpty) {
+      return null;
+    }
     final now = DateTime.now();
     final item = CustomAutomation(
       id: draft.id,
       name: draft.name.trim(),
       steps: List.unmodifiable(draft.steps),
+      recordingStartFrame: draft.recordingStartFrame,
       createdAt: draft.createdAt,
       updatedAt: now,
     );
@@ -202,6 +204,7 @@ class CustomAutomationService extends ChangeNotifier {
       id: item.id,
       name: item.name,
       createdAt: item.createdAt,
+      recordingStartFrame: item.recordingStartFrame,
       steps: List.of(item.steps),
     );
     _recording = false;
@@ -212,7 +215,10 @@ class CustomAutomationService extends ChangeNotifier {
   Future<void> rename(String id, String name) async {
     final index = _items.indexWhere((entry) => entry.id == id);
     if (index < 0 || name.trim().isEmpty) return;
-    _items[index] = _items[index].copyWith(name: name.trim(), updatedAt: DateTime.now());
+    _items[index] = _items[index].copyWith(
+      name: name.trim(),
+      updatedAt: DateTime.now(),
+    );
     await _persist();
     notifyListeners();
   }
@@ -225,14 +231,18 @@ class CustomAutomationService extends ChangeNotifier {
 
   String exportJson(String id) {
     final item = _items.where((entry) => entry.id == id).firstOrNull;
-    if (item == null) throw ArgumentError.value(id, 'id', 'Unknown automation');
+    if (item == null) {
+      throw ArgumentError.value(id, 'id', 'Unknown automation');
+    }
     return item.toJsonString();
   }
 
   Future<CustomAutomation> importJson(String raw, {bool keepId = false}) async {
     final parsed = CustomAutomation.fromJsonString(raw);
     if (parsed.name.trim().isEmpty || parsed.steps.isEmpty) {
-      throw const FormatException('Automation must have a name and at least one step');
+      throw const FormatException(
+        'Automation must have a name and at least one step',
+      );
     }
     final now = DateTime.now();
     final id = keepId && _items.every((entry) => entry.id != parsed.id)
@@ -242,6 +252,7 @@ class CustomAutomationService extends ChangeNotifier {
       id: id,
       name: parsed.name,
       steps: List.unmodifiable(parsed.steps),
+      recordingStartFrame: parsed.recordingStartFrame,
       createdAt: now,
       updatedAt: now,
     );
