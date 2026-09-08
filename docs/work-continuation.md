@@ -10,6 +10,11 @@
 
 ## 最新セッション
 
+- 再開確認 (JST): 2026-09-09 06:21:41。remoteはApp `a72fd78f` / Web `606f979` のままで、AGENTS・品質/法務基準に追加変更なし。前回のローカルcommitと自動線画候補を保持。未pushの監査checkpointを反映してCI結果を回収する。
+
+- 23:47:22 JST追記: App `a72fd78f` / Web `606f979` へ差分を保持して追従。自動線画3テストの新Flutterでの型エラー・FakeAsync内の画像処理待機を修正候補として `docs/product-audit/pending/auto-lineart-repairs.patch` に保存。productionへ未適用の候補を既存save-safety workflowで検証し、成功後に反映する。WebはSEO生成起動修正・問い合わせ28条件の回帰・App準拠の説明図を検証中。最新の全体合格ではない。
+
+- 追加再開確認 (JST): **2026-09-08 23:23:48**。App `b61db7f` / Web `439ebf9` からApp **`bc0b7c6b`** / Web **`70ae727`** へincomingを保持して統合。両AGENTS・新LEGAL_IP_STANDARDと品質基準の国際展開/翻訳品質を確認。保存回帰はFlutter3.47.2でも成功、全gateは829成功/5skip/27失敗・analyze46・format43。新しい未完成フィルター/テストも含むため全体合格とは扱わない。
 - 再開時刻 (JST): **2026-09-08 18:12:46**。同日の保存候補検証・Web表示監査から継続。
 - 開始時コードHEAD: App `6cb290b` / Web `b916f19`。incomingを確認しApp **`df119850`** / Web **`439ebf9`** へfast-forwardした。
 - 中断中の追加: Appの自動線画仕上げ・カスタム自動操作・レイヤークリップボード・ピクセルグリッド等、WebのSEO/言語URL・中間幅対応。未commit変更を保持して意味的に統合。

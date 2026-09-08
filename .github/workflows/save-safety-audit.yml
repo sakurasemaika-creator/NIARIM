@@ -5,22 +5,70 @@ on:
   push:
     branches: [dev_branch]
     paths:
-      - '.github/workflows/save-safety-audit.yml'
-      - 'lib/engine/niapro_serializer.dart'
-      - 'lib/engine/tile_manager.dart'
-      - 'lib/services/project_service.dart'
-      - 'lib/services/autosave_service.dart'
-      - 'test/project_save_safety_test.dart'
-      - 'test/tile_manager_test.dart'
-      - 'test/save_slot_*test.dart'
-      - 'test/save_tree_*test.dart'
-      - 'pubspec.yaml'
-      - 'pubspec.lock'
+      - ".github/workflows/save-safety-audit.yml"
+      - "lib/engine/niapro_serializer.dart"
+      - "lib/engine/tile_manager.dart"
+      - "lib/services/project_service.dart"
+      - "lib/services/autosave_service.dart"
+      - "test/project_save_safety_test.dart"
+      - "test/tile_manager_test.dart"
+      - "test/save_slot_*test.dart"
+      - "test/save_tree_*test.dart"
+      - "pubspec.yaml"
+      - "pubspec.lock"
+      - "docs/product-audit/pending/auto-lineart-repairs.patch"
+      - "lib/screens/canvas/widgets/filter_panel.dart"
+      - "test/auto_lineart_*test.dart"
+      - "test/helpers/pump_real_async.dart"
 
 permissions:
   contents: read
 
 jobs:
+  auto-lineart-regressions:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v6
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: "3.47.2"
+          channel: stable
+          cache: true
+      - name: Apply pending audit candidate when present
+        shell: bash
+        run: |
+          if [ -f docs/product-audit/pending/auto-lineart-repairs.patch ]; then
+            git apply --check docs/product-audit/pending/auto-lineart-repairs.patch
+            git apply docs/product-audit/pending/auto-lineart-repairs.patch
+          fi
+          mkdir -p artifacts/auto-lineart
+      - name: Restore locked dependencies
+        run: flutter pub get --enforce-lockfile
+      - name: Analyze auto line art files
+        shell: bash
+        run: |
+          set -o pipefail
+          flutter analyze --no-pub lib/screens/canvas/widgets/filter_panel.dart test/auto_lineart_canvas_e2e_test.dart test/auto_lineart_bulk_isolation_test.dart test/auto_lineart_panel_state_test.dart test/helpers/pump_real_async.dart 2>&1 | tee artifacts/auto-lineart/analyze.log
+      - name: Verify real rendering, apply, Undo/Redo and bulk isolation
+        if: always()
+        shell: bash
+        run: |
+          set -o pipefail
+          flutter test --no-pub --reporter expanded test/auto_lineart_canvas_e2e_test.dart test/auto_lineart_bulk_isolation_test.dart test/auto_lineart_panel_state_test.dart 2>&1 | tee artifacts/auto-lineart/test.log
+      - name: Export canonical candidate formatting
+        if: always()
+        run: |
+          dart format lib/screens/canvas/widgets/filter_panel.dart test/auto_lineart_canvas_e2e_test.dart test/auto_lineart_bulk_isolation_test.dart test/auto_lineart_panel_state_test.dart test/helpers/pump_real_async.dart
+          git add -N test/helpers/pump_real_async.dart
+          git diff --binary -- lib/screens/canvas/widgets/filter_panel.dart test/auto_lineart_canvas_e2e_test.dart test/auto_lineart_bulk_isolation_test.dart test/auto_lineart_panel_state_test.dart test/helpers/pump_real_async.dart > artifacts/auto-lineart/canonical.patch
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: auto-lineart-regressions-${{ github.sha }}
+          path: artifacts/auto-lineart/
+          if-no-files-found: error
+
   save-regressions:
     runs-on: ubuntu-latest
     timeout-minutes: 20
@@ -28,7 +76,7 @@ jobs:
       - uses: actions/checkout@v6
       - uses: subosito/flutter-action@v2
         with:
-          flutter-version: '3.47.2'
+          flutter-version: "3.47.2"
           channel: stable
           cache: true
       - name: Restore locked dependencies
@@ -55,9 +103,16 @@ jobs:
     timeout-minutes: 45
     steps:
       - uses: actions/checkout@v6
+      - name: Apply pending audit candidate when present
+        shell: bash
+        run: |
+          if [ -f docs/product-audit/pending/auto-lineart-repairs.patch ]; then
+            git apply --check docs/product-audit/pending/auto-lineart-repairs.patch
+            git apply docs/product-audit/pending/auto-lineart-repairs.patch
+          fi
       - uses: subosito/flutter-action@v2
         with:
-          flutter-version: '3.47.2'
+          flutter-version: "3.47.2"
           channel: stable
           cache: true
       - name: Restore locked dependencies
@@ -81,6 +136,12 @@ jobs:
         run: |
           set -o pipefail
           flutter test --no-pub --reporter expanded 2>&1 | tee artifacts/save-safety/full-test.log
+      - name: Export global canonical formatting for diagnosis
+        if: always()
+        run: |
+          dart format lib test tool
+          git add -N test/helpers/pump_real_async.dart
+          git diff --binary -- lib test tool > artifacts/save-safety/canonical.patch
       - uses: actions/upload-artifact@v4
         if: always()
         with:
@@ -95,7 +156,7 @@ jobs:
       - uses: actions/checkout@v6
       - uses: actions/setup-node@v4
         with:
-          node-version: '22'
+          node-version: "22"
       - name: Format checkpoint documents with the repository formatter
         run: |
           mkdir -p artifacts/save-safety-format
