@@ -774,6 +774,59 @@ class ProjectService extends ChangeNotifier {
     return layer;
   }
 
+  /// コピー時に保持したレイヤーのメタデータと画素を、既存レイヤーを
+  /// 上書きせず[insertIndex]へ新規IDで挿入する。フレームをまたぐ
+  /// コピー＆ペースト用。テキストオブジェクトも新IDへ付け替える。
+  Layer insertLayerSnapshot({
+    required String projectId,
+    required String sceneId,
+    required int frameIndex,
+    required Layer source,
+    required int insertIndex,
+    required String? parentFolderId,
+    Uint8List? pixels,
+  }) {
+    final scenes = _scenes[projectId];
+    if (scenes == null) throw StateError('Project is unavailable');
+    final sceneIdx = scenes.indexWhere((scene) => scene.id == sceneId);
+    if (sceneIdx < 0) throw StateError('Scene is unavailable');
+    final scene = scenes[sceneIdx];
+    if (frameIndex < 0 || frameIndex >= scene.frames.length) {
+      throw StateError('Frame is unavailable');
+    }
+    final targetIndex = insertIndex.clamp(
+      0,
+      scene.frames[frameIndex].layers.length,
+    );
+    final newId = _nextLayerId(projectId);
+    final copy = source.copyWith(
+      id: newId,
+      parentFolderId: parentFolderId,
+      textObject: source.textObject?.copyWith(id: newId),
+      keyframes: List.of(source.keyframes),
+    );
+    _applyLayerInsert(projectId, sceneId, frameIndex, copy, targetIndex);
+    _registerHomeIfNeeded(projectId, sceneId, frameIndex, copy);
+    if (pixels != null) {
+      final targetKey = tileKeyFor(projectId, sceneId, frameIndex, newId);
+      tileManagerOf(
+        projectId,
+      ).replaceLayerPixels(targetKey, Uint8List.fromList(pixels));
+    }
+    _undoManager?.push(
+      LayerAddUndoAction(
+        projectId: projectId,
+        sceneId: sceneId,
+        frameIndex: frameIndex,
+        layerId: newId,
+        insertIndex: targetIndex,
+        doAdd: _insertLayerById,
+        doRemove: _removeLayerById,
+      ),
+    );
+    return copy;
+  }
+
   /// レイヤーを複製する（メタデータ・キーフレーム等の設定に加えて
   /// ピクセル内容もTileManager.copyLayerでコピーオンライト複製する）。
   /// 複製先は元レイヤーのすぐ上に挿入する。レイヤーのコピー＆ペースト

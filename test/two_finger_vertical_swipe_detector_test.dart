@@ -19,10 +19,7 @@ void main() {
             child: TwoFingerVerticalSwipeDetector(
               onSwipeUp: () => up++,
               onSwipeDown: () => down++,
-              child: const ColoredBox(
-                key: surfaceKey,
-                color: Colors.white,
-              ),
+              child: const ColoredBox(key: surfaceKey, color: Colors.white),
             ),
           ),
         ),
@@ -68,10 +65,7 @@ void main() {
             child: TwoFingerVerticalSwipeDetector(
               onSwipeUp: () => fired++,
               onSwipeDown: () => fired++,
-              child: const ColoredBox(
-                key: surfaceKey,
-                color: Colors.white,
-              ),
+              child: const ColoredBox(key: surfaceKey, color: Colors.white),
             ),
           ),
         ),

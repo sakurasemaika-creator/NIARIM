@@ -38,6 +38,7 @@ class TextObject {
   });
 
   TextObject copyWith({
+    String? id,
     String? text,
     String? fontFamily,
     double? fontSize,
@@ -55,7 +56,7 @@ class TextObject {
     Object? outline = _sentinel,
   }) {
     return TextObject(
-      id: id,
+      id: id ?? this.id,
       text: text ?? this.text,
       fontFamily: fontFamily ?? this.fontFamily,
       fontSize: fontSize ?? this.fontSize,

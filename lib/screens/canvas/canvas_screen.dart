@@ -5,6 +5,7 @@ import 'package:provider/provider.dart';
 
 import '../../services/autosave_service.dart';
 import '../../services/project_service.dart';
+import '../../services/layer_clipboard_service.dart';
 import '../../services/brush_service.dart';
 import '../../services/font_service.dart';
 import '../../services/material_service.dart';
@@ -82,9 +83,6 @@ class _CanvasScreenState extends State<CanvasScreen> {
   // ショートカット（Ctrl+A）からレイヤーパネルの全選択を起動するための
   // トークン。値を増やすたびにLayerPanel側で全選択が実行される。
   int _layerSelectAllToken = 0;
-  // ショートカット（Ctrl+C/Ctrl+V）で現在アクティブなレイヤーを
-  // コピー＆ペーストするための、セッション内のみのクリップボード。
-  String? _copiedLayerId;
   // 資料ウィンドウ（三面図・参考画像を常に表示）。他のツールオプション系
   // パネルとは独立して開閉する（ツール切り替えやパネル外タップでは
   // 閉じない）ため、_closeAllOverlayPanels/_anyToolPanelOpenの対象には
@@ -2039,23 +2037,31 @@ class _CanvasScreenState extends State<CanvasScreen> {
     _layerSelectAllToken++;
   });
 
-  /// 現在アクティブなレイヤーをコピー（Ctrl+C）。
+  /// 現在アクティブなレイヤーをコピー（Ctrl+C）。2本指上スワイプと
+  /// 同じスナップショット式クリップボードを使うため、フレーム移動後も貼れる。
   void _copyActiveLayer() {
-    if (_currentLayerId == null) return;
-    setState(() => _copiedLayerId = _currentLayerId);
-  }
-
-  /// コピー済みのレイヤーを複製して貼り付ける（Ctrl+V）。ピクセル内容も
-  /// 含めて元レイヤーのすぐ上に複製し、複製後のレイヤーをアクティブにする。
-  void _pasteCopiedLayer() {
-    final sourceId = _copiedLayerId;
-    if (sourceId == null) return;
-    final copy = context.read<ProjectService>().duplicateLayer(
+    final layerId = _currentLayerId;
+    if (layerId == null) return;
+    LayerClipboardService.instance.copy(
+      projectService: context.read<ProjectService>(),
       projectId: widget.projectId,
       sceneId: _currentSceneId,
       frameIndex: _currentFrame,
-      layerId: sourceId,
-      nameOverride: null,
+      layerId: layerId,
+    );
+  }
+
+  /// Ctrl+Vは現在アクティブなレイヤーの直前へ割り込み挿入する。
+  /// 2本指下スワイプと同じく既存レイヤーを上書きしない。
+  void _pasteCopiedLayer() {
+    final targetId = _currentLayerId;
+    if (targetId == null) return;
+    final copy = LayerClipboardService.instance.pasteBefore(
+      projectService: context.read<ProjectService>(),
+      projectId: widget.projectId,
+      targetSceneId: _currentSceneId,
+      targetFrameIndex: _currentFrame,
+      beforeLayerId: targetId,
     );
     if (copy == null) return;
     setState(() => _currentLayerId = copy.id);

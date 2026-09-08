@@ -52,7 +52,9 @@ class LayerClipboardService {
         projectService.tileKeyFor(projectId, sceneId, frameIndex, layer.id),
       );
       try {
-        final byteData = await image.toByteData(format: ui.ImageByteFormat.rawRgba);
+        final byteData = await image.toByteData(
+          format: ui.ImageByteFormat.rawRgba,
+        );
         if (byteData != null) {
           pixels = Uint8List.fromList(
             byteData.buffer.asUint8List(
@@ -102,7 +104,8 @@ class LayerClipboardService {
         .where((layer) => layer.id == beforeLayerId)
         .firstOrNull;
     final candidateParent = displayedTarget?.parentFolderId;
-    final targetParentFolderId = candidateParent != null &&
+    final targetParentFolderId =
+        candidateParent != null &&
             physicalLayers.any((layer) => layer.id == candidateParent)
         ? candidateParent
         : null;

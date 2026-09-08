@@ -18,6 +18,7 @@ import '../../../models/layer.dart' as model;
 import '../../../models/layer_keyframe.dart';
 import '../../../services/autofill_preset_service.dart';
 import '../../../services/project_service.dart';
+import '../../../services/layer_clipboard_service.dart';
 import '../../../services/tone_service.dart';
 import '../../../widgets/confirm_delete.dart';
 import '../../../widgets/dispose_on_unmount.dart';
@@ -26,6 +27,7 @@ import '../../../widgets/first_use_tooltip.dart';
 import '../../../widgets/stepped_slider.dart';
 import 'layer_keyframe_sheet.dart';
 import 'panel_close_bar.dart';
+import 'two_finger_vertical_swipe_detector.dart';
 import '../../../config/font_fallback.dart';
 import '../../../utils/reorder_index.dart';
 
@@ -433,243 +435,251 @@ class _LayerPanelState extends State<LayerPanel> {
                 final isSelected = index == _selectedIndex;
                 final isChecked = _selectedIds.contains(layer.id);
                 final depth = _depthOf(layer, layers);
-                return ListTile(
+                return TwoFingerVerticalSwipeDetector(
                   key: ValueKey(layer.id),
-                  selected: isSelected,
-                  dense: true,
-                  // レイヤーパネルは幅が約250dpしか無い。ListTileの既定
-                  // （左右24dpずつの余白＋タイトル前16dpの隙間）のままだと、
-                  // leading（目・種別・サムネイル）とtrailing（更新マーク・
-                  // 三点・結合・ゴミ箱・ドラッグハンドル）に挟まれた
-                  // レイヤー名の領域が30dpほどしか残らず、名前がほぼ
-                  // 省略記号だけになってしまう。余白を詰めて名前へ回す。
-                  contentPadding: const EdgeInsets.symmetric(horizontal: 6),
-                  horizontalTitleGap: 6,
-                  minLeadingWidth: 0,
-                  minVerticalPadding: 0,
-                  leading: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      if (depth > 0) SizedBox(width: depth * 12.0),
-                      if (layer.type == model.LayerType.folder)
-                        GestureDetector(
-                          onTap: () =>
-                              context.read<ProjectService>().updateLayer(
-                                projectId: widget.projectId,
-                                sceneId: widget.sceneId,
-                                frameIndex: widget.frameIndex,
-                                layer: layer.copyWith(
-                                  isExpanded: !layer.isExpanded,
+                  onSwipeUp: () => _copyLayerWithGesture(context, layer),
+                  onSwipeDown: () =>
+                      _pasteLayerBeforeWithGesture(context, layer),
+                  child: ListTile(
+                    key: ValueKey(layer.id),
+                    selected: isSelected,
+                    dense: true,
+                    // レイヤーパネルは幅が約250dpしか無い。ListTileの既定
+                    // （左右24dpずつの余白＋タイトル前16dpの隙間）のままだと、
+                    // leading（目・種別・サムネイル）とtrailing（更新マーク・
+                    // 三点・結合・ゴミ箱・ドラッグハンドル）に挟まれた
+                    // レイヤー名の領域が30dpほどしか残らず、名前がほぼ
+                    // 省略記号だけになってしまう。余白を詰めて名前へ回す。
+                    contentPadding: const EdgeInsets.symmetric(horizontal: 6),
+                    horizontalTitleGap: 6,
+                    minLeadingWidth: 0,
+                    minVerticalPadding: 0,
+                    leading: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        if (depth > 0) SizedBox(width: depth * 12.0),
+                        if (layer.type == model.LayerType.folder)
+                          GestureDetector(
+                            onTap: () =>
+                                context.read<ProjectService>().updateLayer(
+                                  projectId: widget.projectId,
+                                  sceneId: widget.sceneId,
+                                  frameIndex: widget.frameIndex,
+                                  layer: layer.copyWith(
+                                    isExpanded: !layer.isExpanded,
+                                  ),
                                 ),
-                              ),
-                          child: Icon(
-                            layer.isExpanded
-                                ? Icons.expand_more
-                                : Icons.chevron_right,
-                            size: 16,
-                          ),
-                        )
-                      else if (depth > 0)
-                        const SizedBox(width: 16),
-                      if (_isSelectionMode)
-                        Checkbox(
-                          value: isChecked,
-                          onChanged: layer.type == _selectionBaseType
-                              ? (_) => setState(() {
-                                  if (isChecked) {
-                                    _selectedIds.remove(layer.id);
-                                    if (_selectedIds.isEmpty) {
-                                      _isSelectionMode = false;
-                                      _selectionBaseType = null;
-                                    }
-                                  } else {
-                                    _selectedIds.add(layer.id);
-                                  }
-                                })
-                              : null,
-                        )
-                      else
-                        GestureDetector(
-                          onTap: () =>
-                              context.read<ProjectService>().updateLayer(
-                                projectId: widget.projectId,
-                                sceneId: widget.sceneId,
-                                frameIndex: widget.frameIndex,
-                                layer: layer.copyWith(
-                                  isVisible: !layer.isVisible,
-                                ),
-                              ),
-                          child: Icon(
-                            layer.isVisible
-                                ? Icons.visibility
-                                : Icons.visibility_off,
-                            size: 16,
-                          ),
-                        ),
-                      const SizedBox(width: 4),
-                      _layerTypeIcon(context, layer.type),
-                      const SizedBox(width: 4),
-                      _LayerThumbnail(
-                        key: ValueKey(
-                          '${layer.id}-${_thumbRevision[layer.id] ?? 0}',
-                        ),
-                        projectId: widget.projectId,
-                        sceneId: widget.sceneId,
-                        frameIndex: widget.frameIndex,
-                        layerId: layer.id,
-                      ),
-                    ],
-                  ),
-                  // ListTileのleading（目・種別アイコン・サムネイル）と
-                  // trailing（更新マーク・三点・結合・ゴミ箱・ハンドル）で
-                  // 幅を取られ、パネル幅約250dpだと名前に約50dpしか残らない。
-                  // 折り返しを許すと日本語名が**1文字ずつ縦に積まれて**
-                  // 行の高さが3倍になり読めなくなるため、必ず1行で省略する。
-                  title: Text(
-                    layer.name,
-                    maxLines: 1,
-                    softWrap: false,
-                    overflow: TextOverflow.ellipsis,
-                    style: const TextStyle(
-                      fontSize: 12,
-                      fontFamily: 'Kuramubon',
-                      fontFamilyFallback: kHeadingFontFallback,
-                    ),
-                  ),
-                  subtitle: layer.type == model.LayerType.common
-                      ? Text(
-                          _rangeSummary(l10n, layer),
-                          maxLines: 1,
-                          softWrap: false,
-                          overflow: TextOverflow.ellipsis,
-                          style: TextStyle(
-                            fontSize: 9,
-                            color: ThemeService.activeColorScheme.primary,
-                          ),
-                        )
-                      : layer.hasClipping
-                      ? Text(
-                          l10n.layerPanelClippingBadge,
-                          maxLines: 1,
-                          softWrap: false,
-                          overflow: TextOverflow.ellipsis,
-                          style: TextStyle(
-                            fontSize: 9,
-                            color: Theme.of(context).colorScheme.primary,
-                          ),
-                        )
-                      : null,
-                  trailing: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      // 自動塗り更新マーク：初回使用時の吹き出し説明
-                      if (layer.needsAutofillUpdate)
-                        FirstUseTooltip(
-                          tooltipKey: 'autofill_mark',
-                          message: l10n.layerPanelAutofillMarkTooltip,
-                          child: GestureDetector(
-                            onTap: () => _showAutofillDialog(context, layer),
-                            onLongPress: () => _showAutofillUpdateHelp(context),
                             child: Icon(
-                              Icons.error,
-                              color: ThemeService.activeColorScheme.tertiary,
-                              size: 14,
+                              layer.isExpanded
+                                  ? Icons.expand_more
+                                  : Icons.chevron_right,
+                              size: 16,
+                            ),
+                          )
+                        else if (depth > 0)
+                          const SizedBox(width: 16),
+                        if (_isSelectionMode)
+                          Checkbox(
+                            value: isChecked,
+                            onChanged: layer.type == _selectionBaseType
+                                ? (_) => setState(() {
+                                    if (isChecked) {
+                                      _selectedIds.remove(layer.id);
+                                      if (_selectedIds.isEmpty) {
+                                        _isSelectionMode = false;
+                                        _selectionBaseType = null;
+                                      }
+                                    } else {
+                                      _selectedIds.add(layer.id);
+                                    }
+                                  })
+                                : null,
+                          )
+                        else
+                          GestureDetector(
+                            onTap: () =>
+                                context.read<ProjectService>().updateLayer(
+                                  projectId: widget.projectId,
+                                  sceneId: widget.sceneId,
+                                  frameIndex: widget.frameIndex,
+                                  layer: layer.copyWith(
+                                    isVisible: !layer.isVisible,
+                                  ),
+                                ),
+                            child: Icon(
+                              layer.isVisible
+                                  ? Icons.visibility
+                                  : Icons.visibility_off,
+                              size: 16,
                             ),
                           ),
+                        const SizedBox(width: 4),
+                        _layerTypeIcon(context, layer.type),
+                        const SizedBox(width: 4),
+                        _LayerThumbnail(
+                          key: ValueKey(
+                            '${layer.id}-${_thumbRevision[layer.id] ?? 0}',
+                          ),
+                          projectId: widget.projectId,
+                          sceneId: widget.sceneId,
+                          frameIndex: widget.frameIndex,
+                          layerId: layer.id,
                         ),
-                      if (layer.opacityLocked)
-                        Icon(
-                          Icons.opacity,
-                          size: 14,
-                          color: Theme.of(context).colorScheme.primary,
+                      ],
+                    ),
+                    // ListTileのleading（目・種別アイコン・サムネイル）と
+                    // trailing（更新マーク・三点・結合・ゴミ箱・ハンドル）で
+                    // 幅を取られ、パネル幅約250dpだと名前に約50dpしか残らない。
+                    // 折り返しを許すと日本語名が**1文字ずつ縦に積まれて**
+                    // 行の高さが3倍になり読めなくなるため、必ず1行で省略する。
+                    title: Text(
+                      layer.name,
+                      maxLines: 1,
+                      softWrap: false,
+                      overflow: TextOverflow.ellipsis,
+                      style: const TextStyle(
+                        fontSize: 12,
+                        fontFamily: 'Kuramubon',
+                        fontFamilyFallback: kHeadingFontFallback,
+                      ),
+                    ),
+                    subtitle: layer.type == model.LayerType.common
+                        ? Text(
+                            _rangeSummary(l10n, layer),
+                            maxLines: 1,
+                            softWrap: false,
+                            overflow: TextOverflow.ellipsis,
+                            style: TextStyle(
+                              fontSize: 9,
+                              color: ThemeService.activeColorScheme.primary,
+                            ),
+                          )
+                        : layer.hasClipping
+                        ? Text(
+                            l10n.layerPanelClippingBadge,
+                            maxLines: 1,
+                            softWrap: false,
+                            overflow: TextOverflow.ellipsis,
+                            style: TextStyle(
+                              fontSize: 9,
+                              color: Theme.of(context).colorScheme.primary,
+                            ),
+                          )
+                        : null,
+                    trailing: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        // 自動塗り更新マーク：初回使用時の吹き出し説明
+                        if (layer.needsAutofillUpdate)
+                          FirstUseTooltip(
+                            tooltipKey: 'autofill_mark',
+                            message: l10n.layerPanelAutofillMarkTooltip,
+                            child: GestureDetector(
+                              onTap: () => _showAutofillDialog(context, layer),
+                              onLongPress: () =>
+                                  _showAutofillUpdateHelp(context),
+                              child: Icon(
+                                Icons.error,
+                                color: ThemeService.activeColorScheme.tertiary,
+                                size: 14,
+                              ),
+                            ),
+                          ),
+                        if (layer.opacityLocked)
+                          Icon(
+                            Icons.opacity,
+                            size: 14,
+                            color: Theme.of(context).colorScheme.primary,
+                          ),
+                        if (layer.isLocked) const Icon(Icons.lock, size: 14),
+                        // 三点メニュー・ゴミ箱は各レイヤーの右側に配置する
+                        // （対象レイヤーが常に明確になり、選択状態に依存しない）。
+                        GestureDetector(
+                          onTap: () =>
+                              _isTimelineMaterial(layer.type) ||
+                                  layer.type == model.LayerType.common ||
+                                  layer.type == model.LayerType.autoFillLineart
+                              ? _showTimelineLayerMenu(context, layer)
+                              : _showLayerOptions(context, layer),
+                          child: const Icon(Icons.more_vert, size: 16),
                         ),
-                      if (layer.isLocked) const Icon(Icons.lock, size: 14),
-                      // 三点メニュー・ゴミ箱は各レイヤーの右側に配置する
-                      // （対象レイヤーが常に明確になり、選択状態に依存しない）。
-                      GestureDetector(
-                        onTap: () =>
-                            _isTimelineMaterial(layer.type) ||
-                                layer.type == model.LayerType.common ||
-                                layer.type == model.LayerType.autoFillLineart
-                            ? _showTimelineLayerMenu(context, layer)
-                            : _showLayerOptions(context, layer),
-                        child: const Icon(Icons.more_vert, size: 16),
-                      ),
-                      const SizedBox(width: 8),
-                      // 下のレイヤーとワンタップで結合（複数選択モードを使わずに
-                      // 済む一括操作の一つ）。ゴミ箱アイコンのすぐ隣に置くことで
-                      // 「レイヤーへの操作」としてまとまって見えるようにしている。
-                      GestureDetector(
-                        onTap: _layerBelow(layer, layers) != null
-                            ? () => _mergeWithLayerBelow(context, layer, layers)
-                            : null,
-                        child: Icon(
-                          Icons.merge_type,
-                          size: 16,
-                          color: _layerBelow(layer, layers) != null
-                              ? null
-                              : Theme.of(context).disabledColor,
+                        const SizedBox(width: 8),
+                        // 下のレイヤーとワンタップで結合（複数選択モードを使わずに
+                        // 済む一括操作の一つ）。ゴミ箱アイコンのすぐ隣に置くことで
+                        // 「レイヤーへの操作」としてまとまって見えるようにしている。
+                        GestureDetector(
+                          onTap: _layerBelow(layer, layers) != null
+                              ? () =>
+                                    _mergeWithLayerBelow(context, layer, layers)
+                              : null,
+                          child: Icon(
+                            Icons.merge_type,
+                            size: 16,
+                            color: _layerBelow(layer, layers) != null
+                                ? null
+                                : Theme.of(context).disabledColor,
+                          ),
                         ),
-                      ),
-                      const SizedBox(width: 8),
-                      GestureDetector(
-                        onTap: _canDeleteLayerRow(layer, layers)
-                            ? () => _deleteLayerRow(context, layer, layers)
-                            : null,
-                        child: Icon(
-                          Icons.delete_outline,
-                          size: 16,
-                          color: _canDeleteLayerRow(layer, layers)
-                              ? ThemeService.activeColorScheme.error
-                              : Theme.of(context).disabledColor,
+                        const SizedBox(width: 8),
+                        GestureDetector(
+                          onTap: _canDeleteLayerRow(layer, layers)
+                              ? () => _deleteLayerRow(context, layer, layers)
+                              : null,
+                          child: Icon(
+                            Icons.delete_outline,
+                            size: 16,
+                            color: _canDeleteLayerRow(layer, layers)
+                                ? ThemeService.activeColorScheme.error
+                                : Theme.of(context).disabledColor,
+                          ),
                         ),
-                      ),
-                      const SizedBox(width: 8),
-                      // ドラッグハンドル（並び替え用）。ゴミ箱等の操作アイコンと
-                      // 重ならないよう、常にこの位置に明示的に配置する。
-                      ReorderableDragStartListener(
-                        index: index,
-                        child: const Icon(Icons.drag_handle, size: 16),
-                      ),
-                    ],
-                  ),
-                  onTap: () {
-                    setState(() {
-                      if (_isSelectionMode) {
-                        if (layer.type != _selectionBaseType) return;
-                        if (_selectedIds.contains(layer.id)) {
-                          _selectedIds.remove(layer.id);
-                          if (_selectedIds.isEmpty) {
-                            _isSelectionMode = false;
-                            _selectionBaseType = null;
+                        const SizedBox(width: 8),
+                        // ドラッグハンドル（並び替え用）。ゴミ箱等の操作アイコンと
+                        // 重ならないよう、常にこの位置に明示的に配置する。
+                        ReorderableDragStartListener(
+                          index: index,
+                          child: const Icon(Icons.drag_handle, size: 16),
+                        ),
+                      ],
+                    ),
+                    onTap: () {
+                      setState(() {
+                        if (_isSelectionMode) {
+                          if (layer.type != _selectionBaseType) return;
+                          if (_selectedIds.contains(layer.id)) {
+                            _selectedIds.remove(layer.id);
+                            if (_selectedIds.isEmpty) {
+                              _isSelectionMode = false;
+                              _selectionBaseType = null;
+                            }
+                          } else {
+                            _selectedIds.add(layer.id);
                           }
                         } else {
-                          _selectedIds.add(layer.id);
+                          _selectedIndex = index;
                         }
-                      } else {
-                        _selectedIndex = index;
+                      });
+                      if (!_isSelectionMode &&
+                          layer.type == model.LayerType.text &&
+                          widget.onEditTextLayer != null) {
+                        widget.onEditTextLayer!(layer);
                       }
-                    });
-                    if (!_isSelectionMode &&
-                        layer.type == model.LayerType.text &&
-                        widget.onEditTextLayer != null) {
-                      widget.onEditTextLayer!(layer);
-                    }
-                    // フォルダ行は描画対象になり得ないため、実際の描画先
-                    // レイヤーの切り替え通知からは除外する（グループ化用の
-                    // 見出し行としての選択ハイライトのみ）。
-                    if (!_isSelectionMode &&
-                        layer.type != model.LayerType.folder) {
-                      widget.onLayerSelected?.call(layer.id);
-                    }
-                  },
-                  onLongPress: () => setState(() {
-                    if (!_isSelectionMode) {
-                      _isSelectionMode = true;
-                      _selectionBaseType = layer.type;
-                      _selectedIds.add(layer.id);
-                    }
-                  }),
+                      // フォルダ行は描画対象になり得ないため、実際の描画先
+                      // レイヤーの切り替え通知からは除外する（グループ化用の
+                      // 見出し行としての選択ハイライトのみ）。
+                      if (!_isSelectionMode &&
+                          layer.type != model.LayerType.folder) {
+                        widget.onLayerSelected?.call(layer.id);
+                      }
+                    },
+                    onLongPress: () => setState(() {
+                      if (!_isSelectionMode) {
+                        _isSelectionMode = true;
+                        _selectionBaseType = layer.type;
+                        _selectedIds.add(layer.id);
+                      }
+                    }),
+                  ),
                 );
               },
             ),
@@ -716,6 +726,54 @@ class _LayerPanelState extends State<LayerPanel> {
         ],
       ),
     );
+  }
+
+  Future<void> _copyLayerWithGesture(
+    BuildContext context,
+    model.Layer layer,
+  ) async {
+    final projectService = context.read<ProjectService>();
+    final copied = await LayerClipboardService.instance.copy(
+      projectService: projectService,
+      projectId: widget.projectId,
+      sceneId: widget.sceneId,
+      frameIndex: widget.frameIndex,
+      layerId: layer.id,
+    );
+    if (!mounted || !copied) return;
+    final refreshed = _visibleLayers(
+      projectService.layersOf(
+        widget.projectId,
+        widget.sceneId,
+        widget.frameIndex,
+      ),
+    );
+    final index = refreshed.indexWhere((item) => item.id == layer.id);
+    if (index >= 0) setState(() => _selectedIndex = index);
+  }
+
+  void _pasteLayerBeforeWithGesture(BuildContext context, model.Layer target) {
+    final projectService = context.read<ProjectService>();
+    final pasted = LayerClipboardService.instance.pasteBefore(
+      projectService: projectService,
+      projectId: widget.projectId,
+      targetSceneId: widget.sceneId,
+      targetFrameIndex: widget.frameIndex,
+      beforeLayerId: target.id,
+    );
+    if (pasted == null) return;
+    final refreshed = _visibleLayers(
+      projectService.layersOf(
+        widget.projectId,
+        widget.sceneId,
+        widget.frameIndex,
+      ),
+    );
+    final index = refreshed.indexWhere((item) => item.id == pasted.id);
+    if (index >= 0) setState(() => _selectedIndex = index);
+    if (pasted.type != model.LayerType.folder) {
+      widget.onLayerSelected?.call(pasted.id);
+    }
   }
 
   Widget _layerTypeIcon(BuildContext context, model.LayerType type) {
