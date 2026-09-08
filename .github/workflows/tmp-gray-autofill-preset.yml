@@ -1,0 +1,41 @@
+name: TMP Gray Autofill Preset
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [dev_branch]
+    paths:
+      - 'scripts/tmp_add_gray_autofill_preset.py'
+      - '.github/workflows/tmp-gray-autofill-preset.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  integrate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: dev_branch
+          fetch-depth: 0
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+      - run: flutter pub get
+      - run: python3 scripts/tmp_add_gray_autofill_preset.py
+      - run: dart format lib/services/autofill_preset_service.dart
+      - run: flutter analyze lib/services/autofill_preset_service.dart lib/models/autofill_preset.dart
+      - run: flutter test test/autofill_preset_service_test.dart --reporter compact
+      - name: Commit integration
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add lib test
+          if git diff --cached --quiet; then exit 0; fi
+          git commit -m 'feat: グレー単色の下塗りプリセットを追加'
+          git reset --hard HEAD
+          git pull --rebase origin dev_branch
+          git push origin HEAD:dev_branch
