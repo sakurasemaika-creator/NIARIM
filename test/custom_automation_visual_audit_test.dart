@@ -91,36 +91,42 @@ void main() {
     rebuildHost!(() {});
     await tester.pump(const Duration(milliseconds: 1400));
 
+    void stage(String value) => debugPrint('AUTOMATION_VISUAL_AUDIT_STAGE=$value');
+
     Future<void> capture(String name) async {
+      stage('capture:$name:begin');
       await tester.pump(const Duration(milliseconds: 200));
       final boundary = rootKey.currentContext!.findRenderObject()! as RenderRepaintBoundary;
       final image = await boundary.toImage(pixelRatio: 1);
+      stage('capture:$name:toByteData');
       final data = await image.toByteData(format: ui.ImageByteFormat.png);
+      stage('capture:$name:write');
       File('${out.path}/$name.png').writeAsBytesSync(data!.buffer.asUint8List());
       image.dispose();
+      stage('capture:$name:done');
     }
 
     await capture('00_canvas_before');
 
-    // Open Canvas settings sheet. The automation entry is reached from the real settings UI.
-    await tester.ensureVisible(find.byIcon(Icons.settings).first);
+    stage('settings:tap');
     await tester.tap(find.byIcon(Icons.settings).first);
+    stage('settings:pump');
     await tester.pump(const Duration(milliseconds: 500));
     await capture('01_settings_open');
 
-    // Use localized text rather than a private implementation key. If the entry is missing,
-    // this test fails instead of pretending the automation UI is reachable.
     final l10n = AppLocalizations.of(tester.element(find.byType(CanvasScreen)))!;
     final automationEntry = find.text(l10n.customAutomationTitle);
     expect(automationEntry, findsWidgets, reason: 'Canvas settings exposes custom automation');
+    stage('manager:ensure-entry');
     await tester.ensureVisible(automationEntry.last);
+    stage('manager:tap-entry');
     await tester.tap(automationEntry.last);
     await tester.pump(const Duration(milliseconds: 500));
     await capture('02_manager_open');
 
-    // Start recording through the real manager flow: Add -> name -> Start recording.
     final add = find.text(l10n.customAutomationAdd);
     expect(add, findsOneWidget, reason: 'automation manager exposes Add');
+    stage('record:add');
     await tester.tap(add);
     await tester.pump(const Duration(milliseconds: 300));
     final nameField = find.byType(TextField);
@@ -128,39 +134,39 @@ void main() {
     await tester.enterText(nameField, automationName);
     final start = find.text(l10n.customAutomationStartRecording);
     expect(start, findsOneWidget);
+    stage('record:start');
     await tester.tap(start);
     await tester.pump(const Duration(milliseconds: 500));
     await capture('03_recording_started');
 
-    // Record a real Canvas action: open brush panel and change one visible control.
-    await tester.ensureVisible(find.byIcon(Icons.tune).first);
+    stage('action:brush-panel');
     await tester.tap(find.byIcon(Icons.tune).first);
     await tester.pump(const Duration(milliseconds: 400));
     final sliders = find.byType(Slider);
     expect(sliders, findsWidgets, reason: 'Brush panel exposes at least one real adjustable control');
+    stage('action:slider');
     await tester.drag(sliders.first, const Offset(70, 0));
     await tester.pump(const Duration(milliseconds: 300));
     await capture('04_real_canvas_action_recorded');
 
-    // Stop recording using the recording overlay/control actually shown by Canvas.
     final stop = find.text(l10n.customAutomationStopRecording);
     expect(stop, findsWidgets, reason: 'recording stop control is visible');
+    stage('record:stop');
     await tester.tap(stop.last);
     await tester.pump(const Duration(milliseconds: 500));
     await capture('05_recording_stopped_draft');
 
-    // Draft editor must expose at least one recorded step and allow editing.
     expect(find.byIcon(Icons.delete_outline), findsWidgets, reason: 'draft editor opened with recorded steps');
     await capture('06_draft_edit');
 
     final save = find.text(l10n.commonSave);
     expect(save, findsWidgets);
+    stage('draft:save');
     await tester.tap(save.last);
     await tester.pump(const Duration(milliseconds: 600));
     await capture('07_saved');
 
-    // Re-open manager, tap the actual saved row, then accept the real run-confirm dialog.
-    await tester.ensureVisible(find.byIcon(Icons.settings).first);
+    stage('reopen:settings');
     await tester.tap(find.byIcon(Icons.settings).first);
     await tester.pump(const Duration(milliseconds: 400));
     final entryAgain = find.text(l10n.customAutomationTitle);
@@ -171,19 +177,17 @@ void main() {
 
     final savedItem = find.text(automationName);
     expect(savedItem, findsOneWidget, reason: 'saved automation is listed in the manager');
+    stage('execute:row');
     await tester.tap(savedItem);
     await tester.pump(const Duration(milliseconds: 300));
-    expect(
-      find.text(l10n.customAutomationRunConfirmTitle),
-      findsOneWidget,
-      reason: 'tapping the saved row opens the real execution confirmation',
-    );
+    expect(find.text(l10n.customAutomationRunConfirmTitle), findsOneWidget);
     final yes = find.text(l10n.customAutomationYes);
     expect(yes, findsOneWidget);
+    stage('execute:confirm');
     await tester.tap(yes);
     await tester.pump(const Duration(milliseconds: 700));
     await capture('09_reexecuted');
 
     expect(tester.takeException(), isNull);
-  }, timeout: const Timeout(Duration(minutes: 3)));
+  }, timeout: const Timeout(Duration(minutes: 1)));
 }
