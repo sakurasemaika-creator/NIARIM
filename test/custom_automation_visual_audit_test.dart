@@ -103,9 +103,6 @@ void main() {
         ),
       ))!;
 
-      // Test fixture only: put a broad grayscale block into the first real pixel
-      // layer before CanvasScreen is mounted. The operation recorded below is NOT
-      // this setup; it is driven through the production FilterPanel UI.
       final seedScene = ps!.scenesOf(project.id).first;
       final seedLayer = seedScene.frames.first.layers
           .where((layer) => layer.type == model.LayerType.normal)
@@ -222,8 +219,12 @@ void main() {
         stage('settings-helper:before-onPressed');
         tester.widget<CanvasIconButton>(settingsButton).onPressed!();
         stage('settings-helper:after-onPressed');
-        await tester.pump();
-        stage('settings-helper:after-pump');
+        await tester.pump(Duration.zero, EnginePhase.build);
+        stage('settings-helper:after-build');
+        await tester.pump(Duration.zero, EnginePhase.layout);
+        stage('settings-helper:after-layout');
+        await tester.pump(Duration.zero, EnginePhase.paint);
+        stage('settings-helper:after-paint');
       }
 
       final l10n = AppLocalizations.of(tester.element(find.byType(CanvasScreen)))!;
@@ -255,8 +256,6 @@ void main() {
       await tester.pump(const Duration(milliseconds: 350));
       await capture('03_recording_started');
 
-      // Real production operation while recording: settings -> drawing filter ->
-      // Apply. FilterPanel itself records canvas.filter after _applyToFrame succeeds.
       stage('filter:open-settings');
       await openCanvasSettings();
       final filterEntry = find.text(l10n.filterPanelTitle);
