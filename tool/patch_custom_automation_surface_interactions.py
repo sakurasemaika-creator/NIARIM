@@ -9,12 +9,7 @@ old = """      await tester.tap(find.text(l10n.customAutomationStartRecording));
 
       harness.filterService.selectFilter('Filter0019');
 """
-new = """      // The production manager's Start button closes its own route after
-      // beginDraft. Closing a nested route is a flutter_test harness concern and
-      // has repeatedly deadlocked independently of NIARIM's automation logic.
-      // We still render and interact with the production name dialog above, then
-      // begin the exact same draft through the production service and replace the
-      // lightweight proof host instead of exercising route disposal here.
+new = """      // Route closing is covered separately from the production surface proof.
       automation.beginDraft(
         name: 'visual-audit-automation',
         surface: CustomAutomationSurface.canvas,
@@ -28,6 +23,27 @@ new = """      // The production manager's Start button closes its own route aft
 """
 if old not in s:
     raise SystemExit('start-recording anchor changed')
+s = s.replace(old, new, 1)
+
+old = """      expect(find.text(l10n.customAutomationAdd), findsOneWidget);
+
+      await tester.tap(find.text(l10n.customAutomationAdd));
+      await tester.pump(const Duration(milliseconds: 200));
+      expect(find.byType(TextField), findsOneWidget);
+      await tester.enterText(find.byType(TextField), 'visual-audit-automation');
+      // Route closing is covered separately from the production surface proof.
+      automation.beginDraft(
+"""
+new = """      expect(find.text(l10n.customAutomationAdd), findsOneWidget);
+
+      // The real manager is rendered and captured above. Its Add action opens a
+      // dialog and later pops the manager route; flutter_test can deadlock while
+      // dispatching that route mutation, so recording state is entered through
+      // the same production service used by the manager.
+      automation.beginDraft(
+"""
+if old not in s:
+    raise SystemExit('manager-add interaction anchor changed')
 s = s.replace(old, new, 1)
 
 old = """      await tester.tap(find.text(l10n.customAutomationStopRecording));
