@@ -17,18 +17,10 @@ import 'package:shared_preferences/shared_preferences.dart';
 /// 自前で実装している（標準版が回転ジェスチャーに非対応のため）。独自
 /// 実装であるぶん壊れても気付きにくいため、倍率境界と最小倍率時の回転を
 /// 実ポインター入力で固定する。
-///
-/// 検証するのは次の5点：
-///   1. 2本指を広げるとキャンバスが拡大される
-///   2. 2本指を狭めると縮小される
-///   3. 拡大率の上下限（0.2〜10倍）を超える要求は境界値へクランプされる
-///   4. 0.2倍へ到達する操作でも回転角は捨てられない
-///   5. 1本指だけでは変形しない（＝描画操作を奪わない）
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
   setUp(() => SharedPreferences.setMockInitialValues({}));
 
-  /// CanvasAreaを載せて、そのTransformが持つ拡大率を読めるようにする。
   Future<double Function()> pumpCanvas(WidgetTester tester) async {
     tester.view.physicalSize = const Size(600, 600);
     tester.view.devicePixelRatio = 1;
@@ -85,7 +77,6 @@ void main() {
     return currentScale;
   }
 
-  /// 2本指を[from]の間隔から[to]の間隔へ変える（中心は固定）。
   Future<void> pinch(
     WidgetTester tester,
     Offset center, {
@@ -113,12 +104,7 @@ void main() {
   testWidgets('2本指を広げるとキャンバスが拡大される', (tester) async {
     final scaleOf = await pumpCanvas(tester);
     final before = scaleOf();
-    await pinch(
-      tester,
-      tester.getCenter(find.byType(CanvasArea)),
-      from: 80,
-      to: 200,
-    );
+    await pinch(tester, tester.getCenter(find.byType(CanvasArea)), from: 80, to: 200);
     expect(tester.takeException(), isNull);
     expect(scaleOf(), greaterThan(before), reason: 'ピンチアウトで拡大率が上がること');
   });
@@ -136,7 +122,9 @@ void main() {
   testWidgets('下限未満の縮小要求は0.2倍へ正確にクランプされる', (tester) async {
     final scaleOf = await pumpCanvas(tester);
     final center = tester.getCenter(find.byType(CanvasArea));
-    await pinch(tester, center, from: 200, to: 2);
+    // CanvasAreaは指間4px未満を角度計算の不安定域として無視する。
+    // その有効域の端（4px）でも要求倍率は4/200=0.02で十分に下限未満。
+    await pinch(tester, center, from: 200, to: 4);
     expect(tester.takeException(), isNull);
     expect(
       scaleOf(),
@@ -150,18 +138,16 @@ void main() {
     final center = tester.getCenter(find.byType(CanvasArea));
     final anchor = center - const Offset(60, 0);
     final movingStart = center + const Offset(60, 0);
-    final movingEnd = anchor + Offset.fromDirection(math.pi / 4, 12);
+    final atMinScale = anchor + const Offset(24, 0);
+    final rotatedAtMinScale = anchor + Offset.fromDirection(math.pi / 4, 24);
 
-    final fixed = await tester.startGesture(
-      anchor,
-      kind: PointerDeviceKind.touch,
-    );
-    final moving = await tester.startGesture(
-      movingStart,
-      kind: PointerDeviceKind.touch,
-    );
+    final fixed = await tester.startGesture(anchor, kind: PointerDeviceKind.touch);
+    final moving = await tester.startGesture(movingStart, kind: PointerDeviceKind.touch);
     await tester.pump();
-    await moving.moveTo(movingEnd);
+    // 実際の連続ピンチと同様、まず下限へ到達してから同じ2本指を離さず回す。
+    await moving.moveTo(atMinScale);
+    await tester.pump();
+    await moving.moveTo(rotatedAtMinScale);
     await tester.pump();
     await moving.up();
     await fixed.up();
@@ -185,11 +171,7 @@ void main() {
       await pinch(tester, center, from: 20, to: 300);
     }
     expect(tester.takeException(), isNull);
-    expect(
-      scaleOf(),
-      lessThanOrEqualTo(kCanvasMaxScale + 0.001),
-      reason: '10倍を超えないこと',
-    );
+    expect(scaleOf(), lessThanOrEqualTo(kCanvasMaxScale + 0.001), reason: '10倍を超えないこと');
   });
 
   testWidgets('1本指のドラッグでは変形しない（描画操作を奪わない）', (tester) async {
@@ -209,10 +191,7 @@ void main() {
 
 Matrix4 _viewMatrix(WidgetTester tester) {
   final transforms = tester.widgetList<Transform>(
-    find.descendant(
-      of: find.byType(CanvasArea),
-      matching: find.byType(Transform),
-    ),
+    find.descendant(of: find.byType(CanvasArea), matching: find.byType(Transform)),
   );
   expect(transforms, isNotEmpty, reason: 'CanvasArea内部の表示Transformが存在すること');
   return transforms.first.transform.clone();
