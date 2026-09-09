@@ -23,11 +23,54 @@ on:
       - "test/auto_lineart_*test.dart"
       - "test/helpers/pump_real_async.dart"
       - "test/generated_filter_redo_test.dart"
+      - "test/community_api_test.dart"
+      - "test/community_project_metadata_api_test.dart"
+      - "test/community_service_backend_test.dart"
+      - "test/community_detail_metadata_test.dart"
+      - "test/community_search_tabs_test.dart"
+      - "test/community_tag_limit_ui_test.dart"
 
 permissions:
   contents: read
 
 jobs:
+  community-contract-regressions:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      COMMUNITY_TESTS: >-
+        test/community_api_test.dart
+        test/community_project_metadata_api_test.dart
+        test/community_service_backend_test.dart
+        test/community_detail_metadata_test.dart
+        test/community_search_tabs_test.dart
+        test/community_tag_limit_ui_test.dart
+    steps:
+      - uses: actions/checkout@v6
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: "3.47.2"
+          channel: stable
+          cache: true
+      - name: Restore locked dependencies
+        run: flutter pub get --enforce-lockfile
+      - name: Analyze community regression tests
+        run: flutter analyze --no-pub $COMMUNITY_TESTS
+      - name: Verify backend routes, publication metadata and community UI
+        run: flutter test --no-pub --reporter expanded $COMMUNITY_TESTS
+      - name: Export canonical formatting
+        if: always()
+        run: |
+          mkdir -p artifacts/community-contract
+          dart format $COMMUNITY_TESTS
+          git diff --binary -- $COMMUNITY_TESTS > artifacts/community-contract/canonical.patch
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: community-contract-${{ github.sha }}
+          path: artifacts/community-contract/
+          if-no-files-found: error
+
   auto-lineart-regressions:
     runs-on: ubuntu-latest
     timeout-minutes: 15
@@ -174,7 +217,7 @@ jobs:
       - name: Format checkpoint documents with the repository formatter
         run: |
           mkdir -p artifacts/save-safety-format
-          npx --yes prettier@3.8.1 --write .github/workflows/save-safety-audit.yml docs/work-continuation.md docs/product-audit/README.md 'docs/AI設計書/12_実装チェックリスト.md'
+          npx --yes prettier@3.8.1 --write .github/workflows/save-safety-audit.yml docs/work-audit/state/ASTRA_CONTINUATION.md docs/work-audit/state/ASTRA_AUDIT_STATE.md 'docs/AI設計書/12_実装チェックリスト.md'
           git diff --binary > artifacts/save-safety-format/format.patch
           git diff --exit-code
       - uses: actions/upload-artifact@v4

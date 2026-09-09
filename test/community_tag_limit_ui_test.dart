@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 import 'package:niarim/l10n/app_localizations.dart';
 import 'package:niarim/screens/community/community_work_detail_screen.dart';
 import 'package:niarim/services/community_service.dart';
+import 'package:niarim/services/settings_service.dart';
 
 void main() {
   testWidgets('作品詳細では10タグ到達時に追加チップを無効化する', (tester) async {
@@ -17,8 +18,11 @@ void main() {
     expect(full.tags.length, CommunityService.maxTagsPerWork);
 
     await tester.pumpWidget(
-      ChangeNotifierProvider<CommunityService>.value(
-        value: service,
+      MultiProvider(
+        providers: [
+          ChangeNotifierProvider<CommunityService>.value(value: service),
+          ChangeNotifierProvider(create: (_) => SettingsService()),
+        ],
         child: MaterialApp(
           localizationsDelegates: AppLocalizations.localizationsDelegates,
           supportedLocales: AppLocalizations.supportedLocales,

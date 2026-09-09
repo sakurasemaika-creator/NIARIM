@@ -76,6 +76,7 @@ void main() {
       'youtubeVideoId': 'abcdefghijk',
       'youtubeAccessToken': 'YT_TOKEN',
       'isShort': true,
+      'isNiarimPublished': true,
       'projectFps': 24,
       'projectFrameCount': 288,
       'projectWorkSeconds': 7380,
@@ -105,6 +106,7 @@ void main() {
       'youtubeVideoId': 'abcdefghijk',
       'youtubeAccessToken': 'YT_TOKEN',
       'isShort': false,
+      'isNiarimPublished': true,
     });
   });
 

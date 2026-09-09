@@ -2,6 +2,17 @@
 
 状態: **in-progress。全面監査は未完了**。最新セッションは2026-09-08 18:12:46 JST開始。
 
+## 2026-09-09 検証根拠の復元
+
+Policy/State移行後の欠落を、GitとCIログで補った。本節と継続checkpointを最新の現在地点とする。
+
+- **A06 / 生成レイヤーのRedo順序**: `addLayer` は常にindex 0をUndoへ記録し、生成フィルターだけ後から並べ替えていた。`insertIndex` を追加し、初回とRedoを同じ位置へ挿入。CanvasとRecordedFilterApplyServiceの後続並べ替えを除去した。実CanvasのRGBA復元と、outline/inkPool/autoLineartで前後レイヤーを保った2回のUndo/Redoを検証。[本体反映CI 34306797174](https://github.com/sakurasemaika-creator/NIARIM/actions/runs/34306797174): analyze 0、33/33成功。対象本体と候補差分を照合済み。
+- 手動補正の比較は局所編集が全stroke平均で希釈されていた。対応点の最大変位を確認し、rough widthで再分割され点数が変わるpathは対応点比較の対象外とする。最初の実ドラッグによる選択点移動、出力幅/色変更で点が変わらないこと、閉じ直すと補正が消えることも別にassertする。
+- 保存: [34298456089](https://github.com/sakurasemaika-creator/NIARIM/actions/runs/34298456089) は保存回帰28成功。後続 `34304060009` は24成功と3件のloading失敗。原因はTimelineの2引数callbackと3引数契約の不一致。外部修正後の [34322194621](https://github.com/sakurasemaika-creator/NIARIM/actions/runs/34322194621) で保存安全性・ピンチ・設定復元・smoke各stepの成功と `13624e3c` の差分を確認した。
+- 全体gate [34311808072](https://github.com/sakurasemaika-creator/NIARIM/actions/runs/34311808072): **855成功/5skip/29失敗、analyze13件**。CommunityのAPI契約6件/Provider不足4件、pinch/angle4件、gesture sheet1件、固定enum期待3件、浮動小数点2件、未使用ARB1件、背景構造文字列assert1件、automation scope2件、preset migration1件、gesture action列挙1件、VHS実画面1件、shorts icon1件、smoke1件。後続修正を全体合格とは扱わない。
+- 今回はCommunityの10失敗へ対応。`781e95db..30ff7e0b` で対象テスト/API実装に変更なしを確認。backendの公開属性default=true、rankingのweekly/monthly、認証付きGET /me/worksを照合し古い期待を修正。UIはSettingsServiceを供給して本来のassertへ到達させる。テスト削除・skip・fallbackは追加せず、結果は次のCIで確定する。
+- Web W08〜W10: `f2d309d` のSEOメタデータ生成順序、未設定X案内、問い合わせ28条件、自動線画mockの7言語/数値/線画色を修正。`b5cac10` / [34281650981](https://github.com/sakurasemaika-creator/NIARIM-web/actions/runs/34281650981) は17ジョブ成功、問い合わせ28/28と表示4,032条件成功。最新CSSへ旧合格を流用しない。
+
 再開の手順・Git安全条件は両 `AGENTS.md`、品質・範囲・完了条件は `QUALITY_STANDARD.md`、最新HEAD・環境・次の1手は `docs/work-audit/state/ASTRA_CONTINUATION.md` を正とする。本書は監査マップと検証根拠を保持する。
 
 ## 監査マップ

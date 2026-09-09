@@ -2,6 +2,26 @@
 
 状態: `in-progress`。App/Webの全面監査は未完了。
 
+## 最新checkpoint: 2026-09-09 JST
+
+- 明示的な全面監査再開として両AGENTSから新Policy/Stateへ進んだ。移行されたStateに前日以降の記録が欠けていたため、Git差分とActions実行ログで検証済み進捗を復元した。
+- 開始ローカルHEAD: App `b39c557d` / Web `8fd0c72`。外部変更を比較し App `30ff7e0b` / Web `cf35f9c` へ統合。取り込み済みのローカル候補はstashへ保全し、重複適用しない。
+- A02保存本体 `b61db7f` を継承。Flutter3.47.2の保存回帰 `34298456089` は28件成功。後続 `34304060009` の3件はTimeline callback引数不足による起動失敗で、保存assertの失敗と区別する。
+- 生成レイヤーのRedo順序修正は本体へ取り込み済み。CI `34306797174`: analyze 0、実Canvas・一括分離・手動補正・3種の記録フィルターを含む **33/33成功**。実RGBAとレイヤー順序の往復を確認した。
+- 全体gate `34311808072`: **855成功/5skip/29失敗、analyze13件**。その後のピンチ修正 `13624e3c` は、`34322194621` の実ジェスチャー・保存安全性・設定復元・App smokeの成功と差分を照合した。後続全体gateの合格は未確認。
+- Web `b5cac10` / CI `34281650981`: 17ジョブ成功、問い合わせ28条件、静止表示4,032条件を検証済み。後続CSS/SEO変更へ旧合格を流用しない。
+
+### 次の具体的な1手（scope lock）
+
+1. **community契約回帰のCI結果を取得する。** 同じ実装treeの6失敗は公開属性・weekly/monthly・GET /me/worksの古い期待、4失敗はSettingsService Provider不足。backendの実装と照合して6テストファイルを修正した。結果はCI確認後に確定する。
+2. 保存監査workflowのcheckpoint整形対象を現在のStateパスへ更新し、communityの独立analyze/testとcanonical整形artifactを追加した。残る全体gateの契約・実装不良は失敗を隠さず分類・修正する。
+3. Webの最新CSS表示検査、FAQ/言語の実操作、Worker runtime SEOを確認する。全画面・全操作の実査は未完了。
+4. 保存の残り（破損ZIP再保存・復元サイズ・削除競合・エラー通知）、破損workspace/settings、未精査の監査マップへ進む。
+
+メインモデル/effortを変更する操作は公開されておらず、変更できたとは報告しない。Scheduled Taskの成功を再開根拠にしない。実アカウント・AWS・Android/DeX実機・法務/IP・SEO/ASO・最終商品レビューは未完了。
+
+以下は移行前の履歴。上の最新checkpointと矛盾する未完了記述・作業順序は採用しない。VHSの実装メモは、この全面監査で検証した根拠がないため完了Stateや次の1手へ昇格させない。
+
 ## 再開運用
 
 - ユーザーがWorkを開き、GPT-6 Astraの現在利用可能な最大effortで再開する。Scheduled TaskからWorkへ確実に戻る挙動は未確認で、監査継続の前提にしない。

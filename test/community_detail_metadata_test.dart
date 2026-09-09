@@ -7,6 +7,7 @@ import 'package:niarim/l10n/app_localizations.dart';
 import 'package:niarim/models/community_work.dart';
 import 'package:niarim/screens/community/community_work_detail_screen.dart';
 import 'package:niarim/services/community_service.dart';
+import 'package:niarim/services/settings_service.dart';
 
 void main() {
   testWidgets('作品詳細にNIARIM制作情報が表示される', (tester) async {
@@ -14,8 +15,11 @@ void main() {
     final work = service.works.first;
 
     await tester.pumpWidget(
-      ChangeNotifierProvider<CommunityService>.value(
-        value: service,
+      MultiProvider(
+        providers: [
+          ChangeNotifierProvider<CommunityService>.value(value: service),
+          ChangeNotifierProvider(create: (_) => SettingsService()),
+        ],
         child: MaterialApp(
           localizationsDelegates: AppLocalizations.localizationsDelegates,
           supportedLocales: AppLocalizations.supportedLocales,

@@ -116,7 +116,7 @@ void main() {
       paths.add(request.url.path);
       return http.Response(
         jsonEncode({
-          'period': 'month',
+          'period': 'monthly',
           'works': [work('vid9', '月間1位')],
         }),
         200,
@@ -125,7 +125,7 @@ void main() {
     });
     final service = CommunityService(api: api(client));
     final works = await service.fetchRanking(RankingPeriod.month);
-    expect(paths.single, '/ranking/month');
+    expect(paths.single, '/ranking/monthly');
     expect(works.single.title, '月間1位');
   });
 }

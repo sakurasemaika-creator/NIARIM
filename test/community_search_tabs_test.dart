@@ -5,6 +5,7 @@ import 'package:niarim/l10n/app_localizations.dart';
 import 'package:niarim/screens/community/community_screen.dart';
 import 'package:niarim/services/community_preview_service.dart';
 import 'package:niarim/services/community_service.dart';
+import 'package:niarim/services/settings_service.dart';
 
 void main() {
   Widget app({String? initialTag}) {
@@ -12,6 +13,7 @@ void main() {
       providers: [
         ChangeNotifierProvider(create: (_) => CommunityService()),
         ChangeNotifierProvider(create: (_) => CommunityPreviewService()),
+        ChangeNotifierProvider(create: (_) => SettingsService()),
       ],
       child: MaterialApp(
         localizationsDelegates: AppLocalizations.localizationsDelegates,

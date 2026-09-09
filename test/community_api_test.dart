@@ -135,6 +135,7 @@ void main() {
         'youtubeVideoId': 'vid00000001',
         'youtubeAccessToken': 'YT_TOKEN',
         'isShort': true,
+        'isNiarimPublished': true,
       });
     });
 
@@ -197,15 +198,15 @@ void main() {
     test('期間別ランキングはcomputedAt・windowIdも読む', () async {
       final m = mock(
         (_) => {
-          'period': 'week',
+          'period': 'weekly',
           'works': [workJson()],
           'computedAt': '2026-09-01T00:00:00.000Z',
           'windowId': '2026-W35',
         },
       );
       final page = await apiWith(m.client).ranking(RankingPeriod.week);
-      expect(m.requests.single.url.path, '/api/ranking/week');
-      expect(page.period, 'week');
+      expect(m.requests.single.url.path, '/api/ranking/weekly');
+      expect(page.period, 'weekly');
       expect(page.windowId, '2026-W35');
       expect(page.computedAt, isNotNull);
       expect(page.works, hasLength(1));
@@ -508,6 +509,7 @@ void main() {
       await api.ranking(period);
     }
     await api.worksByAuthor('U');
+    await api.myWorks();
     await api.bookmarkers('W');
     await api.bookmarksOf('U');
     await api.followers('U');
@@ -553,7 +555,7 @@ void main() {
           'backend/src/api/handler.ts に無いエンドポイントを呼んでいる:\n'
           '${missing.join('\n')}',
     );
-    // 21本すべてを1回は呼んでいる（＝未接続のエンドポイントが無い）。
+    // 全ルートを1回は呼んでいる（＝未接続のエンドポイントが無い）。
     final untouched = declared.difference(matched);
     expect(
       untouched,
