@@ -7,7 +7,11 @@ import '../services/premium_service.dart';
 import '../config/font_fallback.dart';
 
 /// Premium限定機能の共通ロックウィジェット。
-/// 無料会員にはlockアイコン付きで表示し、タップで共通Premiumバナーを表示する。
+///
+/// 無料会員にも項目自体は表示したまま、南京錠アイコンを重ねてdisabled表示し、
+/// ポインター操作を完全に遮断する。有料会員では元の[child]をそのまま返す。
+/// Premium画面への導線は専用の明示的な導線からのみ提供し、ロック項目そのものを
+/// タップしてアップセルを表示する挙動にはしない。
 class PremiumLockWidget extends StatelessWidget {
   final Widget child;
   final PremiumFeature feature;
@@ -21,20 +25,48 @@ class PremiumLockWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final premium = context.watch<PremiumService>();
-    if (premium.isFeatureAvailable(feature)) return child;
+    return PremiumLockState(
+      locked: !premium.isFeatureAvailable(feature),
+      child: child,
+    );
+  }
+}
 
-    return GestureDetector(
-      onTap: () => showPremiumBanner(context),
+/// Premiumロック状態の見た目と操作不能化を一元化する低レベル部品。
+///
+/// [PremiumLockWidget]から利用するほか、PremiumServiceを起動しないWidgetTestでも
+/// 「表示は残る / 南京錠が付く / 操作不能」を決定的に検証できる。
+class PremiumLockState extends StatelessWidget {
+  final Widget child;
+  final bool locked;
+
+  const PremiumLockState({
+    super.key,
+    required this.child,
+    required this.locked,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    if (!locked) return child;
+
+    return Semantics(
+      enabled: false,
       child: Stack(
         children: [
-          Opacity(opacity: 0.5, child: child),
+          IgnorePointer(
+            ignoring: true,
+            child: Opacity(opacity: 0.5, child: child),
+          ),
           Positioned(
             right: 4,
             top: 4,
-            child: Icon(
-              Icons.lock,
-              size: 16,
-              color: ThemeService.activeColorScheme.tertiary,
+            child: ExcludeSemantics(
+              child: Icon(
+                Icons.lock,
+                size: 16,
+                color: ThemeService.activeColorScheme.tertiary,
+              ),
             ),
           ),
         ],
@@ -43,8 +75,8 @@ class PremiumLockWidget extends StatelessWidget {
   }
 }
 
-/// Premium限定機能タップ時に表示する共通バナーダイアログ。
-/// アプリ全体で統一して使用する。個別説明ダイアログは表示しない。
+/// 明示的なPremium案内導線から表示する共通バナーダイアログ。
+/// ロック済み機能そのものからは呼び出さない。
 void showPremiumBanner(BuildContext context) {
   showDialog(
     context: context,
