@@ -8,10 +8,9 @@ import '../config/font_fallback.dart';
 
 /// Premium限定機能の共通ロックウィジェット。
 ///
-/// 無料会員にも項目自体は表示したまま、南京錠アイコンを重ねてdisabled表示し、
-/// ポインター操作を完全に遮断する。有料会員では元の[child]をそのまま返す。
-/// Premium画面への導線は専用の明示的な導線からのみ提供し、ロック項目そのものを
-/// タップしてアップセルを表示する挙動にはしない。
+/// 無料会員にも項目自体は表示したまま南京錠アイコンを重ねる。ロック中は
+/// [child] 自身の操作は遮断する一方、項目全体のタップは受け取り、共通の
+/// Premium紹介バナーを表示する。有料会員では元の[child]をそのまま返す。
 class PremiumLockWidget extends StatelessWidget {
   final Widget child;
   final PremiumFeature feature;
@@ -27,23 +26,27 @@ class PremiumLockWidget extends StatelessWidget {
     final premium = context.watch<PremiumService>();
     return PremiumLockState(
       locked: !premium.isFeatureAvailable(feature),
+      onLockedTap: () => showPremiumBanner(context),
       child: child,
     );
   }
 }
 
-/// Premiumロック状態の見た目と操作不能化を一元化する低レベル部品。
+/// Premiumロック状態の見た目とタップ時挙動を一元化する低レベル部品。
 ///
-/// [PremiumLockWidget]から利用するほか、PremiumServiceを起動しないWidgetTestでも
-/// 「表示は残る / 南京錠が付く / 操作不能」を決定的に検証できる。
+/// ロック中も項目は表示し、南京錠を表示する。[child]へのポインター入力は
+/// 遮断して本来のPremium操作を実行させず、代わりに外側のタップ領域から
+/// [onLockedTap]を1回だけ呼ぶ。
 class PremiumLockState extends StatelessWidget {
   final Widget child;
   final bool locked;
+  final VoidCallback? onLockedTap;
 
   const PremiumLockState({
     super.key,
     required this.child,
     required this.locked,
+    this.onLockedTap,
   });
 
   @override
@@ -51,32 +54,36 @@ class PremiumLockState extends StatelessWidget {
     if (!locked) return child;
 
     return Semantics(
-      enabled: false,
-      child: Stack(
-        children: [
-          IgnorePointer(
-            ignoring: true,
-            child: Opacity(opacity: 0.5, child: child),
-          ),
-          Positioned(
-            right: 4,
-            top: 4,
-            child: ExcludeSemantics(
-              child: Icon(
-                Icons.lock,
-                size: 16,
-                color: ThemeService.activeColorScheme.tertiary,
+      enabled: true,
+      button: true,
+      child: GestureDetector(
+        behavior: HitTestBehavior.translucent,
+        onTap: onLockedTap,
+        child: Stack(
+          children: [
+            IgnorePointer(
+              ignoring: true,
+              child: Opacity(opacity: 0.5, child: child),
+            ),
+            Positioned(
+              right: 4,
+              top: 4,
+              child: ExcludeSemantics(
+                child: Icon(
+                  Icons.lock,
+                  size: 16,
+                  color: ThemeService.activeColorScheme.tertiary,
+                ),
               ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
 }
 
-/// 明示的なPremium案内導線から表示する共通バナーダイアログ。
-/// ロック済み機能そのものからは呼び出さない。
+/// Premium限定機能から共通して表示するバナーダイアログ。
 void showPremiumBanner(BuildContext context) {
   showDialog(
     context: context,
