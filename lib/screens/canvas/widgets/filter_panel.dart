@@ -345,18 +345,21 @@ class _FilterPanelState extends State<FilterPanel> {
               PanelCenterCloseBar(onClose: widget.onClose),
               Row(
                 children: [
-                  Text(
-                    bulk != null
-                        ? l10n.filterPanelTitleBulk(bulk.length)
-                        : l10n.filterPanelTitle,
-                    style: const TextStyle(
-                      fontWeight: FontWeight.bold,
-                      fontSize: 13,
-                      fontFamily: 'Kuramubon',
-                      fontFamilyFallback: kHeadingFontFallback,
+                  Expanded(
+                    child: Text(
+                      bulk != null
+                          ? l10n.filterPanelTitleBulk(bulk.length)
+                          : l10n.filterPanelTitle,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: const TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 13,
+                        fontFamily: 'Kuramubon',
+                        fontFamilyFallback: kHeadingFontFallback,
+                      ),
                     ),
                   ),
-                  const Spacer(),
                   IconButton(
                     visualDensity: VisualDensity.compact,
                     icon: Icon(
@@ -1739,8 +1742,6 @@ class _FilterPanelState extends State<FilterPanel> {
         color: filter.autoLineartColor,
       );
     } else if (_isPrism(filter)) {
-      // Full-resolution blur uses the exact user-facing px value. Clipping only
-      // constrains the rainbow fill; the Gaussian stage is intentionally unclipped.
       result = await compute(applyPrismFilterInIsolate, (
         data,
         tm.canvasWidth,
