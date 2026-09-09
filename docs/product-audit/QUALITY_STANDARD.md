@@ -1,6 +1,6 @@
 # NIARIM Product Audit Quality Standard
 
-この文書は、NIARIMの全面監査・改善をWork / Codex / Hermes等のセッションをまたいで継続する際の恒久的な品質基準です。実行・Git・再開手順はルートの `AGENTS.md`、現在地点は `docs/product-audit/README.md` と `docs/work-continuation.md` を正とします。
+この文書は、NIARIMの全面監査・改善をWork / Codex / Hermes等のセッションをまたいで継続する際の恒久的な品質基準です。実行・Git・再開手順はルートの `AGENTS.md`、現在地点は `docs/work-audit/state/ASTRA_CONTINUATION.md` と `docs/work-audit/state/ASTRA_AUDIT_STATE.md` を正とします。
 
 ## 目標
 
@@ -14,7 +14,7 @@ App/Webを別々ではなく1つの製品として横断的に扱う。重大バ
 
 問題は必要に応じて再現・影響範囲・root causeを確認し、修正→検証→実画面確認→regressionまで完結させる。
 
-`docs/product-audit/README.md` で明確に監査済みかつ、その後の変更で前提が変わっていない領域は同等レベルのAstra Ultra/Hermes監査成果として引き継ぎ、理由なく再監査しない。未記録領域を推測で完了扱いせず、変更の影響を受けた監査済み領域だけ必要な範囲を再確認する。
+`docs/work-audit/state/ASTRA_AUDIT_STATE.md` で明確に監査済みかつ、その後の変更で前提が変わっていない領域は同等レベルのAstra Ultra/Hermes監査成果として引き継ぎ、理由なく再監査しない。未記録領域を推測で完了扱いせず、変更の影響を受けた監査済み領域だけ必要な範囲を再確認する。
 
 ## UI/UX・デザイン
 
