@@ -1,0 +1,114 @@
+name: Install Custom Automation Starter Presets
+
+on:
+  push:
+    branches: [dev_branch]
+    paths:
+      - '.github/workflows/install-custom-automation-presets.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: dev_branch
+          fetch-depth: 0
+      - name: Patch service and add focused tests
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          p = Path('lib/services/custom_automation_service.dart')
+          s = p.read_text()
+          anchor = "import '../models/custom_automation.dart';\n"
+          if "custom_automation_presets.dart" not in s:
+              s = s.replace(anchor, anchor + "import '../models/custom_automation_presets.dart';\n")
+          old = '''    _items\n      ..clear()\n      ..addAll(\n        raw.map((entry) {\n          try {\n            final decoded = jsonDecode(entry);\n            if (decoded is! Map) return null;\n            return CustomAutomation.fromJson(decoded.cast<String, Object?>());\n          } catch (_) {\n            return null;\n          }\n        }).whereType<CustomAutomation>(),\n      );\n    notifyListeners();\n'''
+          new = '''    _items\n      ..clear()\n      ..addAll(\n        raw.map((entry) {\n          try {\n            final decoded = jsonDecode(entry);\n            if (decoded is! Map) return null;\n            return CustomAutomation.fromJson(decoded.cast<String, Object?>());\n          } catch (_) {\n            return null;\n          }\n        }).whereType<CustomAutomation>(),\n      );\n\n    // Install the three starter Canvas automations exactly once for existing as\n    // well as new users. After this migration they are ordinary automations:\n    // deleting one stays deleted instead of being recreated on every launch.\n    if (!(prefs.getBool(customAutomationPresetInstallKey) ?? false)) {\n      final existingIds = _items.map((item) => item.id).toSet();\n      _items.addAll(\n        builtInCanvasAutomationPresets().where(\n          (preset) => !existingIds.contains(preset.id),\n        ),\n      );\n      await prefs.setBool(customAutomationPresetInstallKey, true);\n      await _persist();\n    }\n    notifyListeners();\n'''
+          if old not in s:
+              raise SystemExit('CustomAutomationService init anchor not found')
+          p.write_text(s.replace(old, new))
+
+          Path('test/custom_automation_presets_test.dart').write_text(r'''import 'package:flutter_test/flutter_test.dart';
+import 'package:niarim/models/custom_automation_presets.dart';
+import 'package:niarim/models/filter_def.dart';
+import 'package:niarim/services/custom_automation_service.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+
+void main() {
+  TestWidgetsFlutterBinding.ensureInitialized();
+
+  setUp(() {
+    SharedPreferences.setMockInitialValues({});
+  });
+
+  test('installs the three requested Canvas presets once', () async {
+    final service = CustomAutomationService();
+    await service.init();
+
+    expect(
+      service.items.map((item) => item.name),
+      containsAll(<String>['オーロラホログラム', '線画抽出', '線画作成']),
+    );
+    expect(service.items.where((item) => item.id.startsWith('preset_')), hasLength(3));
+    for (final item in service.items) {
+      if (!item.id.startsWith('preset_')) continue;
+      expect(item.steps, hasLength(1));
+      expect(item.steps.single.command, 'canvas.filterApply');
+      expect(item.supportsFrameScopeChoice, isTrue);
+    }
+  });
+
+  test('starter preset snapshots map to the intended production filters', () {
+    final presets = {for (final item in builtInCanvasAutomationPresets()) item.name: item};
+
+    FilterDef filterOf(String name) {
+      final raw = presets[name]!.steps.single.args['filter'] as Map;
+      return FilterDef.fromJson(raw.cast<String, dynamic>());
+    }
+
+    expect(filterOf('オーロラホログラム').kind, FilterKind.auroraHologram);
+    expect(filterOf('オーロラホログラム').id, 'Filter0019');
+    expect(filterOf('線画抽出').kind, FilterKind.autoLineart);
+    expect(filterOf('線画抽出').id, 'Filter0023');
+    expect(filterOf('線画作成').kind, FilterKind.outline);
+    expect(filterOf('線画作成').id, 'Filter0006');
+  });
+
+  test('deleting a starter preset does not recreate it after restart', () async {
+    final first = CustomAutomationService();
+    await first.init();
+    await first.delete(auroraHologramAutomationPresetId);
+
+    final second = CustomAutomationService();
+    await second.init();
+    expect(
+      second.items.any((item) => item.id == auroraHologramAutomationPresetId),
+      isFalse,
+    );
+  });
+}
+''')
+          PY
+          dart format lib/services/custom_automation_service.dart lib/models/custom_automation_presets.dart test/custom_automation_presets_test.dart
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+      - run: flutter pub get
+      - run: flutter analyze lib/models/custom_automation_presets.dart lib/services/custom_automation_service.dart test/custom_automation_presets_test.dart --no-fatal-warnings --no-fatal-infos
+      - run: flutter test test/custom_automation_presets_test.dart --reporter expanded
+      - name: Commit verified preset registration
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git rm .github/workflows/install-custom-automation-presets.yml
+          git add lib/models/custom_automation_presets.dart lib/services/custom_automation_service.dart test/custom_automation_presets_test.dart
+          git commit -m 'feat: register three starter canvas automations'
+          git pull --rebase origin dev_branch
+          git push origin HEAD:dev_branch
