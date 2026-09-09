@@ -1,0 +1,29 @@
+name: Aurora Proof Only
+
+on:
+  push:
+    branches:
+      - audit/aurora-automation-proof
+    paths:
+      - 'test/aurora_hologram_visual_proof_test.dart'
+      - '.github/workflows/aurora-proof-only.yml'
+
+jobs:
+  aurora:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v6
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: false
+      - run: flutter pub get
+      - run: flutter analyze test/aurora_hologram_visual_proof_test.dart --no-fatal-warnings --no-fatal-infos
+      - run: flutter test test/aurora_hologram_visual_proof_test.dart --reporter expanded
+      - uses: actions/upload-artifact@v4
+        with:
+          name: aurora-hologram-proof-only
+          path: build/aurora-hologram-proof
+          if-no-files-found: error
+          retention-days: 7
