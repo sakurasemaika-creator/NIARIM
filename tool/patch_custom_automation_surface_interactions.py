@@ -164,6 +164,43 @@ if old not in s:
     raise SystemExit('filter onClose anchor changed')
 s = s.replace(old, new, 1)
 
+old = """  @override
+  Widget build(BuildContext context) {
+    final builder = _builder;
+    if (builder == null) return const Scaffold(body: SizedBox.expand());
+    return Navigator(
+      key: ValueKey(_generation),
+      onGenerateInitialRoutes: (navigator, initialRoute) => [
+        MaterialPageRoute<void>(
+          builder: (_) => const Scaffold(body: SizedBox.expand()),
+        ),
+        MaterialPageRoute<void>(
+          builder: (routeContext) =>
+              Scaffold(body: SafeArea(child: builder(routeContext))),
+        ),
+      ],
+    );
+  }
+"""
+new = """  @override
+  Widget build(BuildContext context) {
+    final builder = _builder;
+    if (builder == null) return const Scaffold(body: SizedBox.expand());
+    // Keep production surfaces real, but do not put them on a nested Navigator.
+    // The previous proof host rebuilt an entire route stack for every surface;
+    // flutter_test could remain inside a guarded pump while those routes were
+    // disposing. A keyed direct host isolates that harness artifact without
+    // changing the production widgets, services, filter engine, or executor.
+    return KeyedSubtree(
+      key: ValueKey(_generation),
+      child: Scaffold(body: SafeArea(child: builder(context))),
+    );
+  }
+"""
+if old not in s:
+    raise SystemExit('surface host Navigator anchor changed')
+s = s.replace(old, new, 1)
+
 s = s.replace("import 'dart:typed_data';\n", '')
 s = s.replace(
     "            if (x >= tm.canvasWidth || x < 36 || x >= 284 || y < 36 || y >= 284) {\n              continue;\n            }",
