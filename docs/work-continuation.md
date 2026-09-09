@@ -10,6 +10,19 @@
 
 ## 最新セッション
 
+- 開始 (JST): **2026-09-09 11:26:08**。終了前、状態 `in-progress`。
+- 開始HEAD: App `14d81b03` / Web `b5cac10`。incomingを確認しApp `f50aa57d` / Web `010e209` まで統合。AGENTSから分離された `docs/work-audit/ASTRA_WORK.md` と実操作監査の追加基準を確認済み。
+- 前候補は他セッションで一部本体へ反映済み。旧ローカル差分は `audit-resume-20260909-1126-preserve-superseded-candidate` のstashへ保全し、丸ごと再適用しない。旧pendingはremoteで削除済み。
+- 最新の確定した全gate: [34298456089](https://github.com/sakurasemaika-creator/NIARIM/actions/runs/34298456089) (`f131f0d0`) は **845成功/5skip/29失敗、analyze18、format45ファイル**。保存回帰28件成功。自動線画UIは一括のみ成功、Redo順序とパネル状態が失敗。後続automation/scope/pixel-gridの検証は全体合格と区別する。
+- 今回の候補: `ProjectService.addLayer` に挿入位置を記録し、FilterPanelとRecordedFilterApplyServiceの生成レイヤーを最初から正しい位置へ挿入。追加後の並び替えがUndo記録へ反映されない実不具合を修正する。3フィルターの記録済み操作で隣接順序・2回のUndo/Redo・画素一致を追加検証する。
+- 自動線画パネル検査は、無関係な全制御点で希釈される最近点平均から、同一設定・同一トポロジーの対応点変位へ変更。閾値を下げず局所編集の保持を測る。線画色は既存7言語ラベルを使い、未使用field2件も除去する。
+- 候補は `docs/product-audit/pending/auto-lineart-repairs.patch` に保存し、既存save-safety workflowで本体とは分離して実行検証する。未検証の成功を宣言しない。
+- Webは `b5cac10` の全17job・問い合わせ28条件・表示4,032条件が成功。後続Hero/CSS/SEO更新の検証はWeb checkpointを参照する。SVGアイコンはCIの実画像で描画を確認し、ローカルpreviewだけの欠落を製品バグと扱わない。
+- **次の1手**: 新候補の対象analyze/回帰結果とcanonical patchを回収し、合格した修正を本体へ反映する。残失敗があれば実装不良と検査不良を分離して修正する。その後、保存/設定復元・ピンチ縮小・全画面/全操作inventoryを継続。
+- App実機/起動製品での手操作、全画面inventory、全7言語の意味/文体、法務/IP、外部サービス実運用は未完了。Astraのメインモデル/effort切替操作は公開されていない。
+
+## 前回までの記録（履歴）
+
 - 再開確認 (JST): 2026-09-09 06:21:41。remoteはApp `a72fd78f` / Web `606f979` のままで、AGENTS・品質/法務基準に追加変更なし。前回のローカルcommitと自動線画候補を保持。未pushの監査checkpointを反映してCI結果を回収する。
 
 - 23:47:22 JST追記: App `a72fd78f` / Web `606f979` へ差分を保持して追従。自動線画3テストの新Flutterでの型エラー・FakeAsync内の画像処理待機を修正候補として `docs/product-audit/pending/auto-lineart-repairs.patch` に保存。productionへ未適用の候補を既存save-safety workflowで検証し、成功後に反映する。WebはSEO生成起動修正・問い合わせ28条件の回帰・App準拠の説明図を検証中。最新の全体合格ではない。

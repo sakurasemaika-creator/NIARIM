@@ -9,6 +9,7 @@ on:
       - "lib/engine/niapro_serializer.dart"
       - "lib/engine/tile_manager.dart"
       - "lib/services/project_service.dart"
+      - "lib/services/recorded_filter_apply_service.dart"
       - "lib/services/autosave_service.dart"
       - "test/project_save_safety_test.dart"
       - "test/tile_manager_test.dart"
@@ -21,6 +22,7 @@ on:
       - "lib/screens/canvas/widgets/auto_lineart_control_overlay.dart"
       - "test/auto_lineart_*test.dart"
       - "test/helpers/pump_real_async.dart"
+      - "test/generated_filter_redo_test.dart"
 
 permissions:
   contents: read
@@ -29,6 +31,17 @@ jobs:
   auto-lineart-regressions:
     runs-on: ubuntu-latest
     timeout-minutes: 15
+    env:
+      AUTO_LINEART_SOURCES: >-
+        lib/services/project_service.dart
+        lib/services/recorded_filter_apply_service.dart
+        lib/screens/canvas/widgets/filter_panel.dart
+        lib/screens/canvas/widgets/auto_lineart_control_overlay.dart
+        test/auto_lineart_canvas_e2e_test.dart
+        test/auto_lineart_bulk_isolation_test.dart
+        test/auto_lineart_panel_state_test.dart
+        test/generated_filter_redo_test.dart
+        test/helpers/pump_real_async.dart
     steps:
       - uses: actions/checkout@v6
       - uses: subosito/flutter-action@v2
@@ -40,11 +53,8 @@ jobs:
         shell: bash
         run: |
           if [ -f docs/product-audit/pending/auto-lineart-repairs.patch ]; then
-            # The overlay drag fix has already landed in production. Keep the
-            # remaining candidate under test without applying that stale hunk
-            # over the newer implementation.
-            git apply --check --exclude=lib/screens/canvas/widgets/auto_lineart_control_overlay.dart docs/product-audit/pending/auto-lineart-repairs.patch
-            git apply --exclude=lib/screens/canvas/widgets/auto_lineart_control_overlay.dart docs/product-audit/pending/auto-lineart-repairs.patch
+            git apply --check docs/product-audit/pending/auto-lineart-repairs.patch
+            git apply docs/product-audit/pending/auto-lineart-repairs.patch
           fi
           mkdir -p artifacts/auto-lineart
       - name: Restore locked dependencies
@@ -53,19 +63,19 @@ jobs:
         shell: bash
         run: |
           set -o pipefail
-          flutter analyze --no-pub lib/screens/canvas/widgets/filter_panel.dart lib/screens/canvas/widgets/auto_lineart_control_overlay.dart test/auto_lineart_canvas_e2e_test.dart test/auto_lineart_bulk_isolation_test.dart test/auto_lineart_panel_state_test.dart test/helpers/pump_real_async.dart 2>&1 | tee artifacts/auto-lineart/analyze.log
+          flutter analyze --no-pub $AUTO_LINEART_SOURCES 2>&1 | tee artifacts/auto-lineart/analyze.log
       - name: Verify real rendering, apply, Undo/Redo and bulk isolation
         if: always()
         shell: bash
         run: |
           set -o pipefail
-          flutter test --no-pub --reporter expanded test/auto_lineart_canvas_e2e_test.dart test/auto_lineart_bulk_isolation_test.dart test/auto_lineart_panel_state_test.dart 2>&1 | tee artifacts/auto-lineart/test.log
+          flutter test --no-pub --reporter expanded test/auto_lineart_canvas_e2e_test.dart test/auto_lineart_bulk_isolation_test.dart test/auto_lineart_panel_state_test.dart test/generated_filter_redo_test.dart test/auto_lineart_filter_test.dart test/auto_lineart_control_overlay_test.dart 2>&1 | tee artifacts/auto-lineart/test.log
       - name: Export canonical candidate formatting
         if: always()
         run: |
-          dart format lib/screens/canvas/widgets/filter_panel.dart lib/screens/canvas/widgets/auto_lineart_control_overlay.dart test/auto_lineart_canvas_e2e_test.dart test/auto_lineart_bulk_isolation_test.dart test/auto_lineart_panel_state_test.dart test/helpers/pump_real_async.dart
-          git add -N test/helpers/pump_real_async.dart
-          git diff --binary -- lib/screens/canvas/widgets/filter_panel.dart lib/screens/canvas/widgets/auto_lineart_control_overlay.dart test/auto_lineart_canvas_e2e_test.dart test/auto_lineart_bulk_isolation_test.dart test/auto_lineart_panel_state_test.dart test/helpers/pump_real_async.dart > artifacts/auto-lineart/canonical.patch
+          dart format $AUTO_LINEART_SOURCES
+          git add -N test/generated_filter_redo_test.dart
+          git diff --binary -- $AUTO_LINEART_SOURCES > artifacts/auto-lineart/canonical.patch
       - uses: actions/upload-artifact@v4
         if: always()
         with:
@@ -111,8 +121,8 @@ jobs:
         shell: bash
         run: |
           if [ -f docs/product-audit/pending/auto-lineart-repairs.patch ]; then
-            git apply --check --exclude=lib/screens/canvas/widgets/auto_lineart_control_overlay.dart docs/product-audit/pending/auto-lineart-repairs.patch
-            git apply --exclude=lib/screens/canvas/widgets/auto_lineart_control_overlay.dart docs/product-audit/pending/auto-lineart-repairs.patch
+            git apply --check docs/product-audit/pending/auto-lineart-repairs.patch
+            git apply docs/product-audit/pending/auto-lineart-repairs.patch
           fi
       - uses: subosito/flutter-action@v2
         with:
@@ -144,7 +154,7 @@ jobs:
         if: always()
         run: |
           dart format lib test tool
-          git add -N test/helpers/pump_real_async.dart
+          git add -N test/generated_filter_redo_test.dart
           git diff --binary -- lib test tool > artifacts/save-safety/canonical.patch
       - uses: actions/upload-artifact@v4
         if: always()
