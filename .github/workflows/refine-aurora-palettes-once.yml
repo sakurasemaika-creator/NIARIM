@@ -18,6 +18,10 @@ jobs:
         with:
           ref: dev_branch
           fetch-depth: 0
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
       - name: Apply palette migration
         run: python3 tool/refine_aurora_palettes_once.py
       - name: Format and validate diff
