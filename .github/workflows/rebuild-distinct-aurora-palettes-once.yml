@@ -1,0 +1,38 @@
+name: Rebuild Distinct Aurora Palettes Once
+
+on:
+  push:
+    branches: [dev_branch]
+    paths:
+      - '.github/workflows/rebuild-distinct-aurora-palettes-once.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  rebuild:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: dev_branch
+          fetch-depth: 0
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+      - name: Apply distinct palettes
+        run: python3 tool/rebuild_distinct_aurora_palettes_once.py
+      - name: Format and validate
+        run: |
+          dart format lib/engine/filter_engine.dart
+          git diff --check
+          flutter analyze lib/engine/filter_engine.dart --no-fatal-warnings --no-fatal-infos
+      - name: Commit palette rebuild
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add lib/engine/filter_engine.dart
+          git diff --cached --quiet && exit 0
+          git commit -m "refine: differentiate aurora hologram palettes"
+          git push origin HEAD:dev_branch
