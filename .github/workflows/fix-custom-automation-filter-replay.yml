@@ -1,0 +1,71 @@
+name: Repair Recorded Filter Replay
+
+on:
+  push:
+    branches: [dev_branch]
+    paths:
+      - '.github/workflows/fix-custom-automation-filter-replay.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  repair:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: dev_branch
+          fetch-depth: 0
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+      - run: flutter pub get
+      - name: Align recorded command with production executor
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+
+          panel = Path('lib/screens/canvas/widgets/filter_panel.dart')
+          source = panel.read_text()
+          old = "command: 'canvas.filter',"
+          new = "command: 'canvas.filterApply',"
+          count = source.count(old)
+          if count != 1:
+              raise SystemExit(f'Expected exactly one recorded canvas.filter command, found {count}')
+          panel.write_text(source.replace(old, new, 1))
+
+          visual = Path('test/custom_automation_visual_audit_test.dart')
+          test_source = visual.read_text()
+          test_source = test_source.replace("find.text('canvas.filter'),", "find.text('canvas.filterApply'),")
+          test_source = test_source.replace(
+              "reason: 'Draft must contain the filter operation recorded by FilterPanel',",
+              "reason: 'Draft must contain the replayable filter operation recorded by FilterPanel',",
+          )
+          visual.write_text(test_source)
+          PY
+      - run: dart format lib/screens/canvas/widgets/filter_panel.dart test/custom_automation_visual_audit_test.dart
+      - name: Verify command contract
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          panel = Path('lib/screens/canvas/widgets/filter_panel.dart').read_text()
+          executor = Path('lib/engine/custom_automation_executor.dart').read_text()
+          assert "command: 'canvas.filterApply'," in panel
+          assert "case 'canvas.filterApply':" in executor
+          assert "command: 'canvas.filter'," not in panel
+          PY
+      - run: flutter analyze lib/screens/canvas/widgets/filter_panel.dart lib/engine/custom_automation_executor.dart test/custom_automation_visual_audit_test.dart --no-fatal-warnings --no-fatal-infos
+      - run: flutter test test/custom_automation_presets_test.dart --reporter expanded
+      - name: Commit verified production fix
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git rm .github/workflows/fix-custom-automation-filter-replay.yml
+          git add lib/screens/canvas/widgets/filter_panel.dart test/custom_automation_visual_audit_test.dart
+          git commit -m 'fix: replay filters recorded from Canvas UI'
+          git pull --rebase origin dev_branch
+          git push origin HEAD:dev_branch
