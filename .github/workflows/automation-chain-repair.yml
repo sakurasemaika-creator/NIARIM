@@ -72,3 +72,5 @@ jobs:
           git commit -m 'fix: chain generated layers in canvas automation'
           git pull --rebase origin dev_branch
           git push origin HEAD:dev_branch
+
+# rerun-marker: canvas-restored-2026-09-09
