@@ -1678,7 +1678,7 @@ class _FilterPanelState extends State<FilterPanel> {
         if (mounted) {
           context.read<CustomAutomationService>().recordStep(
             surface: CustomAutomationSurface.canvas,
-            command: 'canvas.filter',
+            command: 'canvas.filterApply',
             label: filter.name,
             args: {'filter': filter.toJson()},
             recordedFrame: widget.frameIndex,

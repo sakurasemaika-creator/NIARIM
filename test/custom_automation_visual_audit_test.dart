@@ -138,7 +138,8 @@ void main() {
         stage('capture:$name:begin');
         await tester.pump(const Duration(milliseconds: 120));
         final boundary =
-            rootKey.currentContext!.findRenderObject()! as RenderRepaintBoundary;
+            rootKey.currentContext!.findRenderObject()!
+                as RenderRepaintBoundary;
         final image = await boundary.toImage(pixelRatio: 1);
         final data = await image.toByteData(format: ui.ImageByteFormat.png);
         File(
@@ -157,7 +158,11 @@ void main() {
       Uint8List activeLayerPixels() {
         final canvas = canvasWidget();
         final layerId = canvas.currentLayerId;
-        expect(layerId, isNotNull, reason: 'Canvas must expose an active layer');
+        expect(
+          layerId,
+          isNotNull,
+          reason: 'Canvas must expose an active layer',
+        );
         final key = ps!.tileKeyFor(
           project.id,
           canvas.sceneId,
@@ -213,7 +218,8 @@ void main() {
       Future<void> openCanvasSettings() async {
         stage('settings-helper:find');
         final settingsButton = find.byWidgetPredicate(
-          (widget) => widget is CanvasIconButton && widget.icon == Icons.settings,
+          (widget) =>
+              widget is CanvasIconButton && widget.icon == Icons.settings,
           description: 'Canvas production settings button',
         );
         expect(settingsButton, findsOneWidget);
@@ -228,7 +234,9 @@ void main() {
         stage('settings-helper:after-paint');
       }
 
-      final l10n = AppLocalizations.of(tester.element(find.byType(CanvasScreen)))!;
+      final l10n = AppLocalizations.of(
+        tester.element(find.byType(CanvasScreen)),
+      )!;
       await capture('00_canvas_before_recording');
 
       stage('settings:open');
@@ -302,9 +310,10 @@ void main() {
 
       expect(find.byIcon(Icons.delete_outline), findsWidgets);
       expect(
-        find.text('canvas.filter'),
+        find.text('canvas.filterApply'),
         findsOneWidget,
-        reason: 'Draft must contain the filter operation recorded by FilterPanel',
+        reason:
+            'Draft must contain the replayable filter operation recorded by FilterPanel',
       );
       await capture('07_draft_edit');
 
