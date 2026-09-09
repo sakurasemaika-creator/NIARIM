@@ -1,5 +1,4 @@
 import 'dart:io';
-import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart' hide UndoManager;
@@ -219,8 +218,9 @@ void main() {
         return bytes;
       });
       expect(redoneBytes, isNotNull);
+      expect(redoneBytes!.buffer.asUint8List(), orderedEquals(data));
       expect(
-        Iterable<int>.generate(redoneBytes!.lengthInBytes ~/ 4)
+        Iterable<int>.generate(redoneBytes.lengthInBytes ~/ 4)
             .any((n) => redoneBytes.getUint8(n * 4 + 3) > 0),
         isTrue,
       );

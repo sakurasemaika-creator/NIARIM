@@ -1,6 +1,5 @@
 import 'dart:io';
 import 'dart:math' as math;
-import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -49,21 +48,22 @@ List<(double, double)> _points(AutoLineartGraph graph) => [
         for (final p in path.points) (p.x, p.y),
     ];
 
-double _graphDistance(AutoLineartGraph a, AutoLineartGraph b) {
-  final ap = _points(a);
-  final bp = _points(b);
-  if (ap.isEmpty || bp.isEmpty) return 0;
-  var total = 0.0;
-  for (final p in ap) {
-    var best = double.infinity;
-    for (final q in bp) {
-      final dx = p.$1 - q.$1;
-      final dy = p.$2 - q.$2;
-      best = math.min(best, math.sqrt(dx * dx + dy * dy));
+double _largestControlDisplacement(AutoLineartGraph a, AutoLineartGraph b) {
+  // Compare corresponding controls at identical filter settings. Averaging
+  // nearest-point distances across all unrelated strokes dilutes a local edit.
+  expect(a.paths, hasLength(b.paths.length));
+  var largest = 0.0;
+  for (var i = 0; i < a.paths.length; i++) {
+    final ap = a.paths[i].points;
+    final bp = b.paths[i].points;
+    if (ap.length != bp.length) continue;
+    for (var j = 0; j < ap.length; j++) {
+      final dx = ap[j].x - bp[j].x;
+      final dy = ap[j].y - bp[j].y;
+      largest = math.max(largest, math.sqrt(dx * dx + dy * dy));
     }
-    total += best;
   }
-  return total / ap.length;
+  return largest;
 }
 
 void main() {
@@ -117,7 +117,9 @@ void main() {
                       builder: (_, visible, _) => ValueListenableBuilder<Set<int>?>(
                         valueListenable: bulk,
                         builder: (_, bulkFrames, _) {
-                          if (!visible || projectId == null) return const SizedBox();
+                          if (!visible || projectId == null) {
+                            return const SizedBox();
+                          }
                           return FilterPanel(
                             projectId: projectId,
                             sceneId: sceneId!,
@@ -217,12 +219,12 @@ void main() {
       show.value = true;
       await pumpRealAsync(tester, const Duration(milliseconds: 900));
       final freshWide = graph();
-      expect(_graphDistance(editedWide, freshWide), greaterThan(.15));
+      expect(_largestControlDisplacement(editedWide, freshWide), greaterThan(.15));
 
       fs.updateFilterParams('Filter0023', autoLineartRoughWidth: 12);
       await pumpRealAsync(tester, const Duration(milliseconds: 400));
       final fresh7 = graph();
-      expect(_graphDistance(edited7, fresh7), greaterThan(.15));
+      expect(_largestControlDisplacement(edited7, fresh7), greaterThan(.15));
 
       ps.addFrame(project.id, scene.id);
       bulk.value = {0, 1};

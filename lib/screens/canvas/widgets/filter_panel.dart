@@ -71,8 +71,6 @@ class _FilterPanelState extends State<FilterPanel> {
   Uint8List? _previewBase;
   Uint8List? _previewMask;
   Uint8List? _previewBackgroundBytes;
-  int? _autoBlendColorArgb;
-  BackgroundAcclimationAnalysis? _lastBgBlendAnalysis;
   AutoLineartGraph? _autoLineartBaseGraph;
   AutoLineartGraph? _autoLineartPreviewGraph;
   AutoLineartGraph? _autoLineartEditBaselineGraph;
@@ -210,9 +208,6 @@ class _FilterPanelState extends State<FilterPanel> {
     _previewBackgroundBytes = backgroundBytes;
     _previewW = previewWidth;
     _previewH = previewHeight;
-    _autoBlendColorArgb = backgroundBytes == null
-        ? null
-        : FilterEngine.mostFrequentOpaqueColor(backgroundBytes);
     await _updatePreview();
   }
 
@@ -765,7 +760,7 @@ class _FilterPanelState extends State<FilterPanel> {
               suffix: 'px',
             ),
             _colorControl(
-              '線画色',
+              l10n.autofillPartLineColorLabel,
               current.autoLineartColor,
               (c) =>
                   service.updateFilterParams(current.id, autoLineartColor: c),
@@ -1656,7 +1651,6 @@ class _FilterPanelState extends State<FilterPanel> {
           height,
           previewFilter,
         );
-        _lastBgBlendAnalysis = analysis;
         return BackgroundAcclimationEngine.apply(
           data,
           background,
@@ -1870,6 +1864,9 @@ class _FilterPanelState extends State<FilterPanel> {
         .where((l) => l.id == sourceLayerId)
         .firstOrNull;
     final sourceName = sourceLayer?.name ?? 'Layer';
+    final sourceIndex = ps
+        .layersOf(widget.projectId, widget.sceneId, frameIndex)
+        .indexWhere((layer) => layer.id == sourceLayerId);
     final created = ps.addLayer(
       projectId: widget.projectId,
       sceneId: widget.sceneId,
@@ -1877,20 +1874,8 @@ class _FilterPanelState extends State<FilterPanel> {
       type: model.LayerType.normal,
       name: nameBuilder(sourceName),
       id: generatedLayerId,
+      insertIndex: sourceIndex + 1,
     );
-    final layers = ps.layersOf(widget.projectId, widget.sceneId, frameIndex);
-    final createdIndex = layers.indexWhere((l) => l.id == created.id);
-    final sourceIndex = layers.indexWhere((l) => l.id == sourceLayerId);
-    final targetIndex = sourceIndex < 0 ? createdIndex : sourceIndex + 1;
-    if (createdIndex >= 0 && targetIndex >= 0 && createdIndex != targetIndex) {
-      ps.reorderLayer(
-        projectId: widget.projectId,
-        sceneId: widget.sceneId,
-        frameIndex: frameIndex,
-        oldIndex: createdIndex,
-        newIndex: targetIndex,
-      );
-    }
     final key = ps.tileKeyFor(
       widget.projectId,
       widget.sceneId,

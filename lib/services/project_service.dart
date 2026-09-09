@@ -747,6 +747,7 @@ class ProjectService extends ChangeNotifier {
   /// そのまま使う（例：フィルターの複数フレーム一括適用で、各フレームに
   /// 同一IDの新規レイヤーを挿入し、1つの連続したレイヤートラックとして
   /// 扱えるようにする用途。省略時は従来通り自動採番する）。
+  /// [insertIndex]を指定すると、初回追加とRedoを同じ位置へ挿入する。
   Layer addLayer({
     required String projectId,
     required String sceneId,
@@ -754,10 +755,16 @@ class ProjectService extends ChangeNotifier {
     required LayerType type,
     required String name,
     String? id,
+    int insertIndex = 0,
   }) {
     final layerId = id ?? _nextLayerId(projectId);
     final layer = Layer(id: layerId, name: name, type: type);
-    _applyLayerInsert(projectId, sceneId, frameIndex, layer, 0);
+    final scene = sceneOf(projectId, sceneId);
+    final ownLayerCount = scene != null && frameIndex >= 0 && frameIndex < scene.frames.length
+        ? scene.frames[frameIndex].layers.length
+        : 0;
+    final targetIndex = insertIndex.clamp(0, ownLayerCount);
+    _applyLayerInsert(projectId, sceneId, frameIndex, layer, targetIndex);
     _registerHomeIfNeeded(projectId, sceneId, frameIndex, layer);
 
     _undoManager?.push(
@@ -766,7 +773,7 @@ class ProjectService extends ChangeNotifier {
         sceneId: sceneId,
         frameIndex: frameIndex,
         layerId: layerId,
-        insertIndex: 0,
+        insertIndex: targetIndex,
         doAdd: _insertLayerById,
         doRemove: _removeLayerById,
       ),
