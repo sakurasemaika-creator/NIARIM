@@ -234,9 +234,9 @@ void main() {
       await tester.pump(const Duration(milliseconds: 500));
       await capture('03_recording_started');
 
-      // Use a production automation command that actually rewrites layer RGBA.
-      // Brightness is intentionally non-idempotent here: both the recording-time
-      // action and the later replay must measurably change the source pixels.
+      // Use the same semantic command the Canvas manager records and replays in
+      // production. Brightness is intentionally non-idempotent here: both the
+      // recording-time action and later replay must measurably change pixels.
       const recordedFilter = FilterDef(
         id: 'automation-visual-brightness',
         name: 'Automation Visual Brightness',
@@ -264,7 +264,7 @@ void main() {
           .read<CustomAutomationService>()
           .recordStep(
             surface: CustomAutomationSurface.canvas,
-            command: 'canvas.filterApply',
+            command: 'canvas.filter',
             label: recordedFilter.name,
             args: {'filter': recordedFilter.toJson()},
             recordedFrame: canvasAtRecord.currentFrame,
@@ -305,9 +305,9 @@ void main() {
         reason: 'draft editor opened with recorded steps',
       );
       expect(
-        find.text('canvas.filterApply'),
+        find.text('canvas.filter'),
         findsOneWidget,
-        reason: 'draft contains the pixel-changing filter command',
+        reason: 'draft contains the pixel-changing Canvas filter command',
       );
       await capture('06_draft_edit');
 
