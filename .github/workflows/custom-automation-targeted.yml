@@ -7,15 +7,19 @@ on:
     paths:
       - 'lib/models/custom_automation_presets.dart'
       - 'lib/services/custom_automation_service.dart'
+      - 'lib/engine/custom_automation_executor.dart'
+      - 'lib/engine/custom_automation_filter_runner.dart'
+      - 'lib/screens/canvas/widgets/filter_panel.dart'
+      - 'lib/widgets/custom_automation_manager_sheet.dart'
       - 'test/custom_automation_presets_test.dart'
-      - 'test/custom_automation_visual_audit_test.dart'
+      - 'test/custom_automation_production_visual_test.dart'
       - '.github/workflows/custom-automation-targeted.yml'
   workflow_dispatch:
 
 jobs:
   verify:
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 20
     steps:
       - uses: actions/checkout@v4
       - uses: subosito/flutter-action@v2
@@ -23,5 +27,15 @@ jobs:
           channel: stable
           cache: true
       - run: flutter pub get
-      - run: flutter analyze lib/models/custom_automation_presets.dart lib/services/custom_automation_service.dart test/custom_automation_presets_test.dart --no-fatal-warnings --no-fatal-infos
+      - run: flutter analyze lib/models/custom_automation_presets.dart lib/services/custom_automation_service.dart lib/engine/custom_automation_executor.dart lib/engine/custom_automation_filter_runner.dart lib/screens/canvas/widgets/filter_panel.dart test/custom_automation_presets_test.dart test/custom_automation_production_visual_test.dart --no-fatal-warnings --no-fatal-infos
       - run: flutter test test/custom_automation_presets_test.dart --reporter expanded
+      - name: Run production Canvas automation visual flow
+        run: flutter test test/custom_automation_production_visual_test.dart --reporter expanded
+      - name: Upload custom automation PNG evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: custom-automation-production-evidence
+          path: build/visual-reaudit/custom-automation-production
+          if-no-files-found: warn
+          retention-days: 7
