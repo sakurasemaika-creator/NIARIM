@@ -46,7 +46,7 @@ jobs:
           ref: dev_branch
           fetch-depth: 0
       - name: Apply automation generated-layer chaining patch
-        if: github.event_name == 'push' && github.event.head_commit.message == 'ci: patch automation chain'
+        if: github.event_name == 'push' && github.event.head_commit.message == 'patch automation chain'
         run: |
           python3 - <<'PY'
           from pathlib import Path
