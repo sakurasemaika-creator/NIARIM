@@ -8,6 +8,7 @@ import 'package:niarim/l10n/app_localizations.dart';
 import 'package:niarim/models/custom_automation.dart';
 import 'package:niarim/services/custom_automation_service.dart';
 import 'package:niarim/widgets/custom_automation_draft_sheet.dart';
+import 'package:niarim/widgets/custom_automation_manager_sheet.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -20,7 +21,7 @@ void main() {
   setUpAll(() => out.createSync(recursive: true));
   setUp(() => SharedPreferences.setMockInitialValues({}));
 
-  testWidgets('record -> stop/review -> edit -> save -> execute UI proof', (tester) async {
+  testWidgets('record -> stop/review -> edit -> save -> manager execute UI proof', (tester) async {
     tester.view.physicalSize = const Size(960, 2160);
     tester.view.devicePixelRatio = 3;
     addTearDown(tester.view.resetPhysicalSize);
@@ -55,9 +56,9 @@ void main() {
                     children: [
                       FilledButton(
                         onPressed: () {
-                          service.startRecording(
-                            CustomAutomationSurface.canvas,
+                          service.beginDraft(
                             name: 'UI監査',
+                            surface: CustomAutomationSurface.canvas,
                             recordingStartFrame: 3,
                           );
                         },
@@ -66,14 +67,11 @@ void main() {
                       FilledButton(
                         onPressed: () {
                           service.recordStep(
-                            CustomAutomationStep(
-                              id: 'proof-step-1',
-                              surface: CustomAutomationSurface.canvas,
-                              command: 'canvas.tool',
-                              label: 'ブラシ操作',
-                              recordedFrame: 3,
-                              arguments: const {'tool': 'brush'},
-                            ),
+                            surface: CustomAutomationSurface.canvas,
+                            command: 'canvas.tool',
+                            label: 'ブラシ操作',
+                            args: const {'tool': 'brush'},
+                            recordedFrame: 3,
                           );
                         },
                         child: const Text('実操作を記録'),
@@ -96,11 +94,25 @@ void main() {
                         child: const Text('停止して編集'),
                       ),
                       FilledButton(
-                        onPressed: () async {
-                          final saved = service.items.firstOrNull;
-                          if (saved != null && saved.steps.isNotEmpty) executed = true;
+                        onPressed: () {
+                          showModalBottomSheet<void>(
+                            context: context,
+                            isScrollControlled: true,
+                            builder: (_) => ChangeNotifierProvider.value(
+                              value: service,
+                              child: CustomAutomationManagerSheet(
+                                surface: CustomAutomationSurface.canvas,
+                                recordingStartFrame: 3,
+                                frameCount: 6,
+                                onRecordingStarted: () {},
+                                onExecute: (automation, scope, targetFrames) async {
+                                  executed = automation.steps.isNotEmpty;
+                                },
+                              ),
+                            ),
+                          );
                         },
-                        child: const Text('保存済み自動操作を再実行'),
+                        child: const Text('保存済み自動操作を開く'),
                       ),
                       Text(executed ? '再実行済み' : '未実行'),
                     ],
@@ -129,7 +141,6 @@ void main() {
     expect(find.byType(CustomAutomationDraftSheet), findsOneWidget);
     await capture('03_review_edit');
 
-    // Edit operation: delete then resume, re-record, stop again, save.
     await tester.tap(find.byIcon(Icons.delete_outline));
     await tester.pump();
     expect(service.draft?.steps, isEmpty);
@@ -151,9 +162,19 @@ void main() {
     expect(service.items, isNotEmpty);
     await capture('06_saved');
 
-    await tester.tap(find.text('保存済み自動操作を再実行'));
-    await tester.pump();
+    await tester.tap(find.text('保存済み自動操作を開く'));
+    await tester.pumpAndSettle();
+    expect(find.byType(CustomAutomationManagerSheet), findsOneWidget);
+    await capture('07_manager_saved_item');
+
+    await tester.tap(find.text('UI監査'));
+    await tester.pumpAndSettle();
+    await capture('08_execute_confirm');
+
+    final l10n = AppLocalizations.of(tester.element(find.byType(AlertDialog)))!;
+    await tester.tap(find.text(l10n.customAutomationYes));
+    await tester.pumpAndSettle();
     expect(executed, isTrue);
-    await capture('07_reexecuted');
+    await capture('09_reexecuted');
   });
 }
