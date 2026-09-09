@@ -8,8 +8,60 @@ on:
       - '.github/workflows/audit-emergency-timeline-repair.yml'
   workflow_dispatch:
 
+permissions:
+  contents: write
+
 jobs:
-  smoke:
+  repair:
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     steps:
-      - run: echo 'Emergency audit workflow is valid.'
+      - uses: actions/checkout@v4
+        with:
+          ref: dev_branch
+          fetch-depth: 0
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.47.2'
+          channel: stable
+          cache: true
+      - name: Restore locked dependencies
+        run: flutter pub get --enforce-lockfile
+      - name: Repair exact stale callback signature
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          path = Path('lib/screens/timeline/timeline_screen.dart')
+          text = path.read_text()
+          old = '''  Future<void> _executeCustomAutomation(
+              CustomAutomation automation,
+              CustomAutomationExecutionScope scope,
+            ) async {'''
+          new = '''  Future<void> _executeCustomAutomation(
+              CustomAutomation automation,
+              CustomAutomationExecutionScope scope,
+              List<int>? _targetFrames,
+            ) async {'''
+          if old not in text:
+              raise SystemExit('Expected stale callback signature was not found; refusing broad edit.')
+          path.write_text(text.replace(old, new, 1))
+          PY
+          dart format lib/screens/timeline/timeline_screen.dart
+      - name: Verify timeline compilation and save regression entry point
+        run: |
+          flutter analyze --no-pub lib/screens/timeline/timeline_screen.dart
+          flutter test --no-pub --reporter expanded test/project_save_safety_test.dart
+      - name: Commit exact repair when verified
+        shell: bash
+        run: |
+          git config user.name 'NIARIM Audit Bot'
+          git config user.email 'actions@users.noreply.github.com'
+          git add lib/screens/timeline/timeline_screen.dart
+          if git diff --cached --quiet; then
+            echo 'No repair needed.'
+            exit 0
+          fi
+          git commit -m 'fix: forward compatible timeline automation callback'
+          git pull --rebase origin dev_branch
+          git push origin HEAD:dev_branch
