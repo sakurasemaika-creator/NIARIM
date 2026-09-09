@@ -35,21 +35,29 @@ jobs:
           changed="$(git diff --name-only "$range" || true)"
           messages="$(git log --format=%B "$range" || true)"
 
-          policy_re='^(AGENTS\.md|\.github/workflows/audit-policy-guard\.yml|docs/work-audit/.*|docs/product-audit/(QUALITY_STANDARD|LEGAL_IP_STANDARD|HANDS_ON_UI_STANDARD)\.md)$'
-          state_re='^(docs/work-continuation\.md|docs/product-audit/README\.md)$'
+          policy_re='^(AGENTS\.md|\.github/workflows/audit-policy-guard\.yml|docs/work-audit/README\.md|docs/work-audit/policy/.*|docs/product-audit/(QUALITY_STANDARD|LEGAL_IP_STANDARD|HANDS_ON_UI_STANDARD)\.md)$'
+          state_re='^docs/work-audit/state/.*$'
+          legacy_re='^(docs/work-continuation\.md|docs/product-audit/README\.md|docs/work-audit/ASTRA_WORK\.md)$'
 
           policy_changed="$(printf '%s\n' "$changed" | grep -E "$policy_re" || true)"
           state_changed="$(printf '%s\n' "$changed" | grep -E "$state_re" || true)"
+          legacy_changed="$(printf '%s\n' "$changed" | grep -E "$legacy_re" || true)"
 
           if [[ -n "$policy_changed" ]] && ! grep -Fq '[audit-policy-approved]' <<<"$messages"; then
-            echo '::error::Audit policy files changed without explicit [audit-policy-approved] marker.'
+            echo '::error::Audit policy files changed without [audit-policy-approved].'
             echo "$policy_changed"
             exit 1
           fi
 
           if [[ -n "$state_changed" ]] && ! grep -Eq '\[(audit-state|audit-policy-approved)\]' <<<"$messages"; then
-            echo '::error::Audit checkpoint/state changed without [audit-state] or [audit-policy-approved] marker.'
+            echo '::error::Audit state changed without [audit-state] or [audit-policy-approved].'
             echo "$state_changed"
+            exit 1
+          fi
+
+          if [[ -n "$legacy_changed" ]] && ! grep -Fq '[audit-policy-approved]' <<<"$messages"; then
+            echo '::error::Legacy audit paths may only change during explicit audit-system migration.'
+            echo "$legacy_changed"
             exit 1
           fi
 
