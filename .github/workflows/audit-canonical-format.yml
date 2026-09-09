@@ -1,0 +1,44 @@
+name: Export audit canonical formatting
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [dev_branch]
+    paths: [".github/workflows/audit-canonical-format.yml"]
+
+permissions:
+  contents: read
+
+jobs:
+  format-evidence:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v6
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: "3.47.2"
+          channel: stable
+          cache: true
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - name: Restore locked dependencies
+        run: flutter pub get --enforce-lockfile
+      - name: Generate canonical formatting
+        run: |
+          dart format lib test tool
+          npx --yes prettier@3.8.1 --write .github/workflows/save-safety-audit.yml .github/workflows/audit-canonical-format.yml docs/work-audit/state/ASTRA_CONTINUATION.md docs/work-audit/state/ASTRA_AUDIT_STATE.md
+      - name: Export exact diff through the accessible Actions log
+        run: |
+          git diff --stat
+          python3 - <<'PY'
+          import base64
+          import subprocess
+          patch = subprocess.check_output(["git", "diff", "--binary", "--", "lib", "test", "tool", ".github/workflows/save-safety-audit.yml", ".github/workflows/audit-canonical-format.yml", "docs/work-audit/state/ASTRA_CONTINUATION.md", "docs/work-audit/state/ASTRA_AUDIT_STATE.md"])
+          encoded = base64.b64encode(patch).decode("ascii")
+          print("AUDIT_CANONICAL_PATCH_BEGIN")
+          for index in range(0, len(encoded), 4000):
+              print(encoded[index:index + 4000])
+          print("AUDIT_CANONICAL_PATCH_END")
+          PY
