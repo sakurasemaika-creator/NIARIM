@@ -6,6 +6,7 @@ on:
       - dev_branch
     paths:
       - '.github/workflows/fix-custom-automation-production-seed.yml'
+      - 'tool/patch_custom_automation_visual_seed.py'
   workflow_dispatch:
 
 permissions:
@@ -43,6 +44,6 @@ jobs:
           git rm .github/workflows/fix-custom-automation-production-seed.yml
           git rm tool/patch_custom_automation_visual_seed.py
           git add test/custom_automation_production_visual_test.dart
-          git commit -m 'test: seed automation visual canvas across tiles'
+          git commit -m 'test: stabilize production automation visual flow'
           git pull --rebase origin dev_branch
           git push origin HEAD:dev_branch
