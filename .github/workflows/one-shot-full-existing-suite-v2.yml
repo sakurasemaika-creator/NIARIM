@@ -27,3 +27,4 @@ jobs:
       - run: flutter pub get
       - name: Run every existing test
         run: flutter test --reporter expanded
+# Audit trigger revision 3: re-run the complete existing suite on the current dev_branch HEAD.
