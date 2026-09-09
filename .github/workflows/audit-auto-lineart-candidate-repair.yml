@@ -1,4 +1,4 @@
-name: Audit Auto Lineart Candidate Repair
+name: Audit Auto Lineart Candidate Verification
 
 on:
   push:
@@ -8,37 +8,47 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: write
+  contents: read
 
 jobs:
-  repair-candidate:
+  verify-candidate:
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    timeout-minutes: 20
+    env:
+      AUTO_LINEART_SOURCES: >-
+        lib/services/project_service.dart
+        lib/services/recorded_filter_apply_service.dart
+        lib/screens/canvas/widgets/filter_panel.dart
+        lib/screens/canvas/widgets/auto_lineart_control_overlay.dart
+        test/auto_lineart_canvas_e2e_test.dart
+        test/auto_lineart_bulk_isolation_test.dart
+        test/auto_lineart_panel_state_test.dart
+        test/generated_filter_redo_test.dart
+        test/helpers/pump_real_async.dart
     steps:
       - uses: actions/checkout@v4
         with:
           ref: dev_branch
-          fetch-depth: 0
-      - name: Compare only corresponding controls with unchanged topology
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.47.2'
+          channel: stable
+          cache: true
+      - name: Apply preserved candidate exactly
         shell: bash
         run: |
-          python3 - <<'PY'
-          from pathlib import Path
-          path = Path('docs/product-audit/pending/auto-lineart-repairs.patch')
-          text = path.read_text()
-          old = '+    expect(ap, hasLength(bp.length));'
-          new = '+    if (ap.length != bp.length) continue;'
-          if text.count(old) != 1:
-              raise SystemExit(f'Expected exactly one strict point-count assertion, found {text.count(old)}')
-          path.write_text(text.replace(old, new, 1))
-          PY
           git apply --check docs/product-audit/pending/auto-lineart-repairs.patch
-      - name: Commit verified candidate patch edit
-        shell: bash
-        run: |
-          git config user.name 'NIARIM Audit Bot'
-          git config user.email 'actions@users.noreply.github.com'
-          git add docs/product-audit/pending/auto-lineart-repairs.patch
-          git commit -m 'test: compare matching auto-lineart control topology'
-          git pull --rebase origin dev_branch
-          git push origin HEAD:dev_branch
+          git apply docs/product-audit/pending/auto-lineart-repairs.patch
+      - name: Restore locked dependencies
+        run: flutter pub get --enforce-lockfile
+      - name: Analyze candidate sources
+        run: flutter analyze --no-pub $AUTO_LINEART_SOURCES
+      - name: Verify Canvas, bulk isolation, manual controls, and generated-filter Redo
+        run: >-
+          flutter test --no-pub --reporter expanded
+          test/auto_lineart_canvas_e2e_test.dart
+          test/auto_lineart_bulk_isolation_test.dart
+          test/auto_lineart_panel_state_test.dart
+          test/generated_filter_redo_test.dart
+          test/auto_lineart_filter_test.dart
+          test/auto_lineart_control_overlay_test.dart
