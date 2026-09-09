@@ -16,6 +16,8 @@ import 'package:niarim/services/theme_service.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import 'helpers/pump_real_async.dart';
+
 void _rough(Uint8List data, int w, int h) {
   void dot(int cx, int cy, int r) {
     for (var y = cy - r; y <= cy + r; y++) {
@@ -112,12 +114,12 @@ void main() {
                   body: Center(
                     child: ValueListenableBuilder<bool>(
                       valueListenable: show,
-                      builder: (_, visible, __) => ValueListenableBuilder<Set<int>?>(
+                      builder: (_, visible, _) => ValueListenableBuilder<Set<int>?>(
                         valueListenable: bulk,
-                        builder: (_, bulkFrames, __) {
+                        builder: (_, bulkFrames, _) {
                           if (!visible || projectId == null) return const SizedBox();
                           return FilterPanel(
-                            projectId: projectId!,
+                            projectId: projectId,
                             sceneId: sceneId!,
                             layerId: layerId,
                             frameIndex: 0,
@@ -157,7 +159,7 @@ void main() {
       final tm = ps.tileManagerOf(project.id);
       final data = Uint8List(tm.canvasWidth * tm.canvasHeight * 4);
       _rough(data, tm.canvasWidth, tm.canvasHeight);
-      tm.replaceLayerPixels(ps.tileKeyFor(project.id, scene.id, 0, layerId!), data);
+      tm.replaceLayerPixels(ps.tileKeyFor(project.id, scene.id, 0, layerId), data);
       fs.selectFilter('Filter0023');
       fs.updateFilterParams(
         'Filter0023',
@@ -165,14 +167,14 @@ void main() {
         autoLineartRoughWidth: 12,
       );
       show.notifyListeners();
-      await tester.pump(const Duration(milliseconds: 900));
+      await pumpRealAsync(tester, const Duration(milliseconds: 900));
       expect(find.byType(AutoLineartControlOverlay), findsOneWidget);
 
       AutoLineartGraph graph() => tester
           .widget<AutoLineartControlOverlay>(find.byType(AutoLineartControlOverlay))
           .graph;
 
-      var before = graph();
+      final before = graph();
       final pathIndex = before.paths.indexWhere((p) => p.points.length >= 3);
       expect(pathIndex, greaterThanOrEqualTo(0));
       final path = before.paths[pathIndex];
@@ -184,7 +186,7 @@ void main() {
         rect.top + point.y / before.height * rect.height,
       );
       await tester.dragFrom(start, const Offset(0, -28));
-      await tester.pump(const Duration(milliseconds: 300));
+      await pumpRealAsync(tester, const Duration(milliseconds: 300));
       final edited5 = graph();
       final editedPoint = edited5.paths[pathIndex].points[pointIndex];
       final movedDx = editedPoint.x - point.x;
@@ -198,35 +200,36 @@ void main() {
         autoLineartTaperLength: 20,
         autoLineartColor: 0xFFE04080,
       );
-      await tester.pump(const Duration(milliseconds: 350));
+      await pumpRealAsync(tester, const Duration(milliseconds: 350));
       expect(_points(graph()), stableBefore);
 
       fs.updateFilterParams('Filter0023', autoLineartSmoothing: 7);
-      await tester.pump(const Duration(milliseconds: 450));
+      await pumpRealAsync(tester, const Duration(milliseconds: 450));
       final edited7 = graph();
 
       fs.updateFilterParams('Filter0023', autoLineartRoughWidth: 18);
-      await tester.pump(const Duration(milliseconds: 450));
+      await pumpRealAsync(tester, const Duration(milliseconds: 450));
       final editedWide = graph();
 
       show.value = false;
       await tester.pump(const Duration(milliseconds: 100));
       expect(ps.layersOf(project.id, scene.id, 0), hasLength(1));
       show.value = true;
-      await tester.pump(const Duration(milliseconds: 900));
+      await pumpRealAsync(tester, const Duration(milliseconds: 900));
       final freshWide = graph();
       expect(_graphDistance(editedWide, freshWide), greaterThan(.15));
 
       fs.updateFilterParams('Filter0023', autoLineartRoughWidth: 12);
-      await tester.pump(const Duration(milliseconds: 400));
+      await pumpRealAsync(tester, const Duration(milliseconds: 400));
       final fresh7 = graph();
       expect(_graphDistance(edited7, fresh7), greaterThan(.15));
 
       ps.addFrame(project.id, scene.id);
       bulk.value = {0, 1};
-      await tester.pump(const Duration(milliseconds: 400));
+      await pumpRealAsync(tester, const Duration(milliseconds: 400));
       expect(find.byType(FilterPanel), findsOneWidget);
       expect(find.byType(AutoLineartControlOverlay), findsNothing);
+      expect(tester.takeException(), isNull);
     },
     timeout: const Timeout(Duration(minutes: 3)),
   );
