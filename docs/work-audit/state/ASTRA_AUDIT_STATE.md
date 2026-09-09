@@ -2,7 +2,7 @@
 
 状態: **in-progress。全面監査は未完了**。最新セッションは2026-09-08 18:12:46 JST開始。
 
-再開の手順・Git安全条件は両 `AGENTS.md`、品質・範囲・完了条件は `QUALITY_STANDARD.md`、最新HEAD・環境・次の1手は `docs/work-continuation.md` を正とする。本書は監査マップと検証根拠を保持する。
+再開の手順・Git安全条件は両 `AGENTS.md`、品質・範囲・完了条件は `QUALITY_STANDARD.md`、最新HEAD・環境・次の1手は `docs/work-audit/state/ASTRA_CONTINUATION.md` を正とする。本書は監査マップと検証根拠を保持する。
 
 ## 監査マップ
 
