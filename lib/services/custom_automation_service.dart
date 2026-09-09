@@ -48,10 +48,18 @@ class CustomAutomationService extends ChangeNotifier {
 
   Future<void> init() async {
     final prefs = await SharedPreferences.getInstance();
-    final raw = prefs.getStringList(_prefsKey) ?? const [];
-    _items
-      ..clear()
-      ..addAll(
+    final raw = prefs.getStringList(_prefsKey);
+
+    _items.clear();
+    if (raw == null) {
+      // NIARIM is still pre-release, so there is no installed-user migration to
+      // perform. Seed the requested starter automations only when the automation
+      // store is created for the first time. From then on the persisted list is
+      // authoritative, including an intentionally empty list after deletions.
+      _items.addAll(builtInCanvasAutomationPresets());
+      await _persist();
+    } else {
+      _items.addAll(
         raw.map((entry) {
           try {
             final decoded = jsonDecode(entry);
@@ -62,19 +70,6 @@ class CustomAutomationService extends ChangeNotifier {
           }
         }).whereType<CustomAutomation>(),
       );
-
-    // One-time migration for new and existing users. After installation the
-    // presets are ordinary automations, so user edits/deletions are respected and
-    // a deleted preset is not recreated on every launch.
-    if (!(prefs.getBool(customAutomationPresetInstallKey) ?? false)) {
-      final existingIds = _items.map((item) => item.id).toSet();
-      _items.addAll(
-        builtInCanvasAutomationPresets().where(
-          (preset) => !existingIds.contains(preset.id),
-        ),
-      );
-      await prefs.setBool(customAutomationPresetInstallKey, true);
-      await _persist();
     }
     notifyListeners();
   }
