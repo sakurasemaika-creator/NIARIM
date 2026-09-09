@@ -139,6 +139,42 @@ jobs:
               )
               text = text[:match.start()] + replacement + text[match.end():]
               smoke.write_text(text)
+
+          gesture = Path('test/gesture_settings_sheet_test.dart')
+          text = gesture.read_text()
+          if 'await tester.ensureVisible(noneAction);' not in text:
+              pattern = re.compile(
+                  r"(?P<i>\s*)// scrollUntilVisibleのscrollable引数はScrollView本体ではなく、その内部の\n"
+                  r"(?P=i)// Scrollableを要求する。Flutter 3\.47ではSingleChildScrollViewを渡すと\n"
+                  r"(?P=i)// ScrollableへのcastでTypeErrorになるため、モーダル所有のScrollableへ\n"
+                  r"(?P=i)// 明示的に絞り込む。\n"
+                  r"(?P=i)final sheetScrollView = find\.byType\(SingleChildScrollView\);\n"
+                  r"(?P=i)expect\(sheetScrollView, findsOneWidget\);\n"
+                  r"(?P=i)final sheetScrollable = find\.descendant\(\n"
+                  r"(?P=i)  of: sheetScrollView,\n"
+                  r"(?P=i)  matching: find\.byType\(Scrollable\),\n"
+                  r"(?P=i)\);\n"
+                  r"(?P=i)expect\(sheetScrollable, findsOneWidget\);\n"
+                  r"(?P=i)await tester\.scrollUntilVisible\(\n"
+                  r"(?P=i)  find\.text\(l10n\.gestureActionNone\),\n"
+                  r"(?P=i)  120,\n"
+                  r"(?P=i)  scrollable: sheetScrollable,\n"
+                  r"(?P=i)\);"
+              )
+              match = pattern.search(text)
+              if not match:
+                  raise SystemExit('gesture scroll helper anchor changed; refusing blind patch')
+              i = match.group('i')
+              replacement = (
+                  f"{i}// SingleChildScrollViewは全選択肢を同じ要素木に保持するため、\n"
+                  f"{i}// 動的に再評価されるScrollable Finderではなく、最終項目そのものを\n"
+                  f"{i}// ensureVisibleして到達可能性を検証する。\n"
+                  f"{i}final noneAction = find.text(l10n.gestureActionNone).last;\n"
+                  f"{i}await tester.ensureVisible(noneAction);\n"
+                  f"{i}await tester.pumpAndSettle();"
+              )
+              text = text[:match.start()] + replacement + text[match.end():]
+              gesture.write_text(text)
           PY
 
       - name: Format changed Dart files
