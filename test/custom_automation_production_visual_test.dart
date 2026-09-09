@@ -174,11 +174,7 @@ void main() {
         final beforePixels = harness.activeLayerPixels();
         final canvas = harness.canvasWidget;
         final beforeLayers = harness.projectService
-            .layersOf(
-              harness.projectId,
-              canvas.sceneId,
-              canvas.currentFrame,
-            )
+            .layersOf(harness.projectId, canvas.sceneId, canvas.currentFrame)
             .where((layer) => layer.type == model.LayerType.normal)
             .map((layer) => layer.id)
             .toSet();
@@ -217,7 +213,11 @@ void main() {
           final generated = afterLayers.where(
             (layer) => !beforeLayers.contains(layer.id),
           );
-          expect(generated, isNotEmpty, reason: '$name must create an output layer');
+          expect(
+            generated,
+            isNotEmpty,
+            reason: '$name must create an output layer',
+          );
           final generatedLayer = generated.first;
           expect(
             afterLayers.first.id,
@@ -257,7 +257,8 @@ class _ProductionHarness {
 
   String get projectId => _projectId!;
   BuildContext get canvasContext => tester.element(find.byType(CanvasScreen));
-  CanvasArea get canvasWidget => tester.widget<CanvasArea>(find.byType(CanvasArea));
+  CanvasArea get canvasWidget =>
+      tester.widget<CanvasArea>(find.byType(CanvasArea));
   CustomAutomationService get automationService =>
       canvasContext.read<CustomAutomationService>();
   AppLocalizations get l10n => AppLocalizations.of(canvasContext)!;
@@ -374,7 +375,8 @@ class _ProductionHarness {
 
   Future<void> capture(String name) async {
     await tester.pump(const Duration(milliseconds: 100));
-    final boundary = rootKey.currentContext!.findRenderObject()! as RenderRepaintBoundary;
+    final boundary =
+        rootKey.currentContext!.findRenderObject()! as RenderRepaintBoundary;
     final image = await boundary.toImage(pixelRatio: 1);
     final bytes = await image.toByteData(format: ui.ImageByteFormat.png);
     File('${out.path}/$name.png').writeAsBytesSync(bytes!.buffer.asUint8List());

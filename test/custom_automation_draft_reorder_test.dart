@@ -52,8 +52,17 @@ void main() {
         matching: find.byType(ReorderableDragStartListener),
       );
       final target = find.byKey(ValueKey(originalIds[moveDown ? 2 : 0]));
-      final delta = tester.getCenter(target).dy - tester.getCenter(start).dy;
-      await tester.drag(start, Offset(0, delta));
+      final startCenter = tester.getCenter(start);
+      final targetRect = tester.getRect(target);
+      final destinationY = moveDown
+          ? targetRect.bottom + 8
+          : targetRect.top - 8;
+      final gesture = await tester.startGesture(startCenter);
+      await tester.pump();
+      await gesture.moveTo(Offset(startCenter.dx, destinationY));
+      // Keep holding beyond the destination row while its gap animates.
+      await tester.pump(const Duration(milliseconds: 400));
+      await gesture.up();
       await tester.pumpAndSettle();
       expect(tester.takeException(), isNull);
       final expectedIds = moveDown

@@ -49,18 +49,21 @@ void main() {
     expect(filterOf('線画作成').id, 'Filter0006');
   });
 
-  test('persisted automation list is authoritative after first launch', () async {
-    final first = CustomAutomationService();
-    await first.init();
-    await first.delete(auroraHologramAutomationPresetId);
+  test(
+    'persisted automation list is authoritative after first launch',
+    () async {
+      final first = CustomAutomationService();
+      await first.init();
+      await first.delete(auroraHologramAutomationPresetId);
 
-    final second = CustomAutomationService();
-    await second.init();
-    expect(
-      second.items.any((item) => item.id == auroraHologramAutomationPresetId),
-      isFalse,
-    );
-  });
+      final second = CustomAutomationService();
+      await second.init();
+      expect(
+        second.items.any((item) => item.id == auroraHologramAutomationPresetId),
+        isFalse,
+      );
+    },
+  );
 
   test('an intentionally empty persisted list remains empty', () async {
     SharedPreferences.setMockInitialValues(<String, Object>{

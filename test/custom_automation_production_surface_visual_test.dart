@@ -42,7 +42,10 @@ void main() {
       firstUseTooltipsSeenKey: kAllFirstUseTooltipKeys,
     });
     TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
-        .setMockMethodCallHandler(pathProviderChannel, (_) async => appDocs.path);
+        .setMockMethodCallHandler(
+          pathProviderChannel,
+          (_) async => appDocs.path,
+        );
   });
 
   tearDown(() {
@@ -85,7 +88,8 @@ void main() {
       expect(
         _changedBytes(beforeApply, afterApply),
         greaterThan(100),
-        reason: 'The production FilterPanel Apply action must change real pixels',
+        reason:
+            'The production FilterPanel Apply action must change real pixels',
       );
       expect(automation.draft, isNotNull);
       expect(automation.draft!.steps, hasLength(1));
@@ -155,7 +159,10 @@ void main() {
         await harness.capture('preset_${entry.$2}_01_manager');
         await tester.tap(find.text(entry.$1));
         await tester.pump(const Duration(milliseconds: 180));
-        expect(find.text(harness.l10n.customAutomationRunConfirmTitle), findsOneWidget);
+        expect(
+          find.text(harness.l10n.customAutomationRunConfirmTitle),
+          findsOneWidget,
+        );
         await tester.tap(find.text(harness.l10n.customAutomationYes));
         await harness.waitForProductionAsync(extraMilliseconds: 2200);
 
@@ -168,7 +175,11 @@ void main() {
         } else {
           final afterLayers = harness.normalLayerIds();
           final generated = afterLayers.difference(beforeLayers);
-          expect(generated, isNotEmpty, reason: '${entry.$1} must create an output layer');
+          expect(
+            generated,
+            isNotEmpty,
+            reason: '${entry.$1} must create an output layer',
+          );
           final layers = harness.projectService.layersOf(
             harness.projectId,
             harness.sceneId,
@@ -281,7 +292,12 @@ class _SurfaceHarness {
         .id;
 
     final tm = projectService.tileManagerOf(projectId);
-    final key = projectService.tileKeyFor(projectId, sceneId, frameIndex, layerId);
+    final key = projectService.tileKeyFor(
+      projectId,
+      sceneId,
+      frameIndex,
+      layerId,
+    );
     for (var ty = 0; ty < tm.tilesY; ty++) {
       for (var tx = 0; tx < tm.tilesX; tx++) {
         final tile = tm.getOrCreateTile(key, tx, ty);
@@ -291,7 +307,11 @@ class _SurfaceHarness {
           if (y >= tm.canvasHeight) continue;
           for (var localX = 0; localX < TileManager.tileSize; localX++) {
             final x = tx * TileManager.tileSize + localX;
-            if (x >= tm.canvasWidth || x < 36 || x >= 284 || y < 36 || y >= 284) {
+            if (x >= tm.canvasWidth ||
+                x < 36 ||
+                x >= 284 ||
+                y < 36 ||
+                y >= 284) {
               continue;
             }
             final i = (localY * TileManager.tileSize + localX) * 4;
@@ -330,7 +350,8 @@ class _SurfaceHarness {
     for (var ty = 0; ty < tm.tilesY; ty++) {
       for (var tx = 0; tx < tm.tilesX; tx++) {
         final current = tm.getTile(key, tx, ty);
-        if (current != null) snapshot.setRange(offset, offset + tileBytes, current);
+        if (current != null)
+          snapshot.setRange(offset, offset + tileBytes, current);
         offset += tileBytes;
       }
     }
@@ -429,7 +450,8 @@ class _SurfaceHarness {
 
   Future<void> capture(String name) async {
     await tester.pump(const Duration(milliseconds: 80));
-    final boundary = repaintKey.currentContext!.findRenderObject()! as RenderRepaintBoundary;
+    final boundary =
+        repaintKey.currentContext!.findRenderObject()! as RenderRepaintBoundary;
     final image = await boundary.toImage(pixelRatio: 1);
     final bytes = await image.toByteData(format: ui.ImageByteFormat.png);
     File('${out.path}/$name.png').writeAsBytesSync(bytes!.buffer.asUint8List());
@@ -468,9 +490,8 @@ class _SurfaceHostState extends State<_SurfaceHost> {
           builder: (_) => const Scaffold(body: SizedBox.expand()),
         ),
         MaterialPageRoute<void>(
-          builder: (routeContext) => Scaffold(
-            body: SafeArea(child: builder(routeContext)),
-          ),
+          builder: (routeContext) =>
+              Scaffold(body: SafeArea(child: builder(routeContext))),
         ),
       ],
     );

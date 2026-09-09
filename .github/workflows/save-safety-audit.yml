@@ -29,6 +29,10 @@ on:
       - "test/community_detail_metadata_test.dart"
       - "test/community_search_tabs_test.dart"
       - "test/community_tag_limit_ui_test.dart"
+      - "lib/widgets/custom_automation_draft_sheet.dart"
+      - "test/custom_automation_draft_reorder_test.dart"
+      - "test/canvas_mesh_handle_scale_contract_test.dart"
+      - "test/canvas_angle_boundary_visual_audit_test.dart"
 
 permissions:
   contents: read
@@ -239,6 +243,19 @@ jobs:
           echo AUDIT_CANONICAL_PATCH_BEGIN
           base64 /tmp/audit-canonical.patch
           echo AUDIT_CANONICAL_PATCH_END
+          python3 - <<'PY'
+          import base64
+          from pathlib import Path
+          root = Path('build/visual-reaudit/canvas-angle-boundary')
+          for name in ['normal_p30.png', 'extended_m45.png']:
+              image = root / name
+              if image.exists():
+                  print('AUDIT_IMAGE_BEGIN ' + name)
+                  data = base64.b64encode(image.read_bytes()).decode('ascii')
+                  for offset in range(0, len(data), 76):
+                      print(data[offset:offset + 76])
+                  print('AUDIT_IMAGE_END')
+          PY
       - uses: actions/upload-artifact@v4
         if: always()
         with:
