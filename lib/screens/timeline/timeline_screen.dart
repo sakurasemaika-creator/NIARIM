@@ -2418,7 +2418,13 @@ class _TimelineScreenState extends State<TimelineScreen> {
   Future<void> _executeCustomAutomation(
     CustomAutomation automation,
     CustomAutomationExecutionScope scope,
+    List<int>? targetFrames,
   ) async {
+    if (targetFrames != null) {
+      throw StateError(
+        'Timeline automation cannot run with explicit target frames',
+      );
+    }
     if (scope == CustomAutomationExecutionScope.allFrames) {
       throw StateError('Timeline automation cannot run in all-frame scope');
     }
