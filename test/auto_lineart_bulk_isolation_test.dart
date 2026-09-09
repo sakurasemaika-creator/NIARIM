@@ -16,6 +16,8 @@ import 'package:niarim/services/theme_service.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import 'helpers/pump_real_async.dart';
+
 Uint8List _rough(int w, int h) {
   final out = Uint8List(w * h * 4);
   void dot(int cx, int cy, int r) {
@@ -47,9 +49,9 @@ Future<Uint8List> _layerBytes(
   int frame,
   String layerId,
 ) async {
-  final image = await ps.tileManagerOf(projectId).compositeLayerToImage(
-        ps.tileKeyFor(projectId, sceneId, frame, layerId),
-      );
+  final image = await ps
+      .tileManagerOf(projectId)
+      .compositeLayerToImage(ps.tileKeyFor(projectId, sceneId, frame, layerId));
   final data = await image.toByteData(format: ui.ImageByteFormat.rawRgba);
   image.dispose();
   return data!.buffer.asUint8List();
@@ -66,7 +68,9 @@ void main() {
       addTearDown(tester.view.resetPhysicalSize);
       addTearDown(tester.view.resetDevicePixelRatio);
 
-      final tempDir = Directory.systemTemp.createTempSync('niarim_lineart_bulk_');
+      final tempDir = Directory.systemTemp.createTempSync(
+        'niarim_lineart_bulk_',
+      );
       addTearDown(() {
         if (tempDir.existsSync()) tempDir.deleteSync(recursive: true);
       });
@@ -101,10 +105,10 @@ void main() {
                   body: Center(
                     child: ValueListenableBuilder<Set<int>?>(
                       valueListenable: bulk,
-                      builder: (_, frames, __) => projectId == null
+                      builder: (_, frames, _) => projectId == null
                           ? const SizedBox()
                           : FilterPanel(
-                              projectId: projectId!,
+                              projectId: projectId,
                               sceneId: sceneId!,
                               layerId: layerId,
                               frameIndex: 0,
@@ -123,7 +127,7 @@ void main() {
       final context = providerContext!;
       final ps = context.read<ProjectService>();
       final fs = context.read<FilterService>();
-      final project = await tester.runAsync(
+      final createdProject = await tester.runAsync(
         () => ps.createProject(
           name: 'bulk isolation',
           fps: 12,
@@ -133,6 +137,8 @@ void main() {
           exportHeight: 160,
         ),
       );
+      expect(createdProject, isNotNull);
+      final project = createdProject!;
       projectId = project.id;
       final scene = ps.scenesOf(project.id).first;
       sceneId = scene.id;
@@ -142,14 +148,14 @@ void main() {
       final rough = _rough(tm.canvasWidth, tm.canvasHeight);
       for (final frame in [0, 1]) {
         tm.replaceLayerPixels(
-          ps.tileKeyFor(project.id, scene.id, frame, layerId!),
+          ps.tileKeyFor(project.id, scene.id, frame, layerId),
           Uint8List.fromList(rough),
         );
       }
       fs.selectFilter('Filter0023');
       fs.updateFilterParams('Filter0023', autoLineartSmoothing: 5);
       bulk.notifyListeners();
-      await tester.pump(const Duration(milliseconds: 900));
+      await pumpRealAsync(tester, const Duration(milliseconds: 900));
       expect(find.byType(AutoLineartControlOverlay), findsOneWidget);
 
       final overlay = tester.widget<AutoLineartControlOverlay>(
@@ -158,7 +164,8 @@ void main() {
       final graph = overlay.graph;
       final pIndex = graph.paths.indexWhere((p) => p.points.length >= 3);
       expect(pIndex, greaterThanOrEqualTo(0));
-      final point = graph.paths[pIndex].points[graph.paths[pIndex].points.length ~/ 2];
+      final point =
+          graph.paths[pIndex].points[graph.paths[pIndex].points.length ~/ 2];
       final rect = tester.getRect(find.byType(AutoLineartControlOverlay));
       await tester.dragFrom(
         Offset(
@@ -167,11 +174,11 @@ void main() {
         ),
         const Offset(0, -35),
       );
-      await tester.pump(const Duration(milliseconds: 250));
+      await pumpRealAsync(tester, const Duration(milliseconds: 250));
 
       // Switch this same panel state into bulk mode after a manual edit.
       bulk.value = {0, 1};
-      await tester.pump(const Duration(milliseconds: 250));
+      await pumpRealAsync(tester, const Duration(milliseconds: 250));
       expect(find.byType(AutoLineartControlOverlay), findsNothing);
       final apply = find.descendant(
         of: find.byType(FilterPanel),
@@ -179,15 +186,14 @@ void main() {
       );
       await tester.tap(apply);
       await tester.pump(const Duration(milliseconds: 100));
-      await tester.runAsync(() async {
-        for (var i = 0; i < 120; i++) {
-          final f0 = ps.layersOf(project.id, scene.id, 0);
-          final f1 = ps.layersOf(project.id, scene.id, 1);
-          if (f0.length >= 2 && f1.length >= 2) break;
-          await Future<void>.delayed(const Duration(milliseconds: 50));
-        }
-      });
+      for (var i = 0; i < 120; i++) {
+        final f0 = ps.layersOf(project.id, scene.id, 0);
+        final f1 = ps.layersOf(project.id, scene.id, 1);
+        if (f0.length >= 2 && f1.length >= 2) break;
+        await pumpRealAsync(tester, const Duration(milliseconds: 50));
+      }
       await tester.pump(const Duration(milliseconds: 300));
+      expect(tester.takeException(), isNull);
 
       final f0 = ps.layersOf(project.id, scene.id, 0);
       final f1 = ps.layersOf(project.id, scene.id, 1);
@@ -196,9 +202,15 @@ void main() {
       final g0 = f0.singleWhere((l) => l.id != layerId);
       final g1 = f1.singleWhere((l) => l.id != layerId);
       expect(g0.id, g1.id);
-      final b0 = await _layerBytes(ps, project.id, scene.id, 0, g0.id);
-      final b1 = await _layerBytes(ps, project.id, scene.id, 1, g1.id);
-      expect(b0, orderedEquals(b1));
+      final b0 = await tester.runAsync(
+        () => _layerBytes(ps, project.id, scene.id, 0, g0.id),
+      );
+      final b1 = await tester.runAsync(
+        () => _layerBytes(ps, project.id, scene.id, 1, g1.id),
+      );
+      expect(b0, isNotNull);
+      expect(b1, isNotNull);
+      expect(b0!, orderedEquals(b1!));
     },
     timeout: const Timeout(Duration(minutes: 3)),
   );
