@@ -14,11 +14,11 @@
 - 開始HEAD: App `14d81b03` / Web `b5cac10`。incomingを確認しApp `f50aa57d` / Web `010e209` まで統合。AGENTSから分離された `docs/work-audit/ASTRA_WORK.md` と実操作監査の追加基準を確認済み。
 - 前候補は他セッションで一部本体へ反映済み。旧ローカル差分は `audit-resume-20260909-1126-preserve-superseded-candidate` のstashへ保全し、丸ごと再適用しない。旧pendingはremoteで削除済み。
 - 最新の確定した全gate: [34298456089](https://github.com/sakurasemaika-creator/NIARIM/actions/runs/34298456089) (`f131f0d0`) は **845成功/5skip/29失敗、analyze18、format45ファイル**。保存回帰28件成功。自動線画UIは一括のみ成功、Redo順序とパネル状態が失敗。後続automation/scope/pixel-gridの検証は全体合格と区別する。
-- 今回の候補: `ProjectService.addLayer` に挿入位置を記録し、FilterPanelとRecordedFilterApplyServiceの生成レイヤーを最初から正しい位置へ挿入。追加後の並び替えがUndo記録へ反映されない実不具合を修正する。3フィルターの記録済み操作で隣接順序・2回のUndo/Redo・画素一致を追加検証する。
-- 自動線画パネル検査は、無関係な全制御点で希釈される最近点平均から、同一設定・同一トポロジーの対応点変位へ変更。閾値を下げず局所編集の保持を測る。線画色は既存7言語ラベルを使い、未使用field2件も除去する。
-- 候補は `docs/product-audit/pending/auto-lineart-repairs.patch` に保存し、既存save-safety workflowで本体とは分離して実行検証する。未検証の成功を宣言しない。
-- Webは `b5cac10` の全17job・問い合わせ28条件・表示4,032条件が成功。後続Hero/CSS/SEO更新の検証はWeb checkpointを参照する。SVGアイコンはCIの実画像で描画を確認し、ローカルpreviewだけの欠落を製品バグと扱わない。
-- **次の1手**: 新候補の対象analyze/回帰結果とcanonical patchを回収し、合格した修正を本体へ反映する。残失敗があれば実装不良と検査不良を分離して修正する。その後、保存/設定復元・ピンチ縮小・全画面/全操作inventoryを継続。
+- 自動線画/生成フィルター候補は最新HEAD上で2回検証し、対象analyze、実Canvas、自動線画一括のフレーム分離、手動control保持、outline/inkPool/autoLineartの生成レイヤー順序・2回Undo/Redo・画素一致が全て成功した。検証run `34306104930` と着地run `34306797174` を根拠とする。
+- 検証済み候補を App `2b0959ed` (`[audit-state] fix: land verified auto-lineart undo repairs`) として本体反映。`ProjectService.addLayer` は挿入位置をUndo/Redoへ保持し、FilterPanel/RecordedFilterApplyServiceは生成レイヤーを元レイヤー隣接位置へ直接挿入する。対応点変位による手動control検査、線画色の既存l10n利用、不要field除去、Redo画素一致回帰も同時に着地。`docs/product-audit/pending/auto-lineart-repairs.patch` は適用完了として削除済み。
+- Timelineのcustom automation callback互換修復も App `29a6724c` へ着地済み。workflow run `34305688327` でTimeline analyzerと `project_save_safety_test.dart` を含む全工程が成功。
+- Webは `0b853317` が最新HEAD。Heroの1023→1024px密度ジャンプを `cd03a709` で修正し、`0b853317` で320〜1920px・7言語のHero密度/衝突/余白/境界連続性監査を追加。Visual audit #527 (`34306055556`) はGitHub-hosted runner未取得で全17job queuedのため、現行HEADの最終合格は未確定。DESIGN/HANDOFF上はHeroは内容に応じ1〜2カラムで、`.hero-showcase` を必須完成形とする契約は確認できないため、未ロードのshowcase CSSだけを根拠に構造変更しない。
+- **次の1手**: Appは保存/設定復元の残回帰とピンチ縮小の実操作再現を優先して全gate失敗を再分類する。Webは#527を回収し、現行1画面Heroの全幅・7言語実画像を基準に残差を直す。その後、全画面/全操作inventoryを継続。
 - App実機/起動製品での手操作、全画面inventory、全7言語の意味/文体、法務/IP、外部サービス実運用は未完了。Astraのメインモデル/effort切替操作は公開されていない。
 
 ## 前回までの記録（履歴）
