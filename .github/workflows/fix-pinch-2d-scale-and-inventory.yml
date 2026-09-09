@@ -1,0 +1,143 @@
+name: Repair pinch 2D scale and inventory expectation
+
+on:
+  push:
+    branches: [dev_branch]
+    paths:
+      - '.github/workflows/fix-pinch-2d-scale-and-inventory.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  repair:
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.47.2'
+          channel: stable
+          cache: true
+
+      - name: Restore dependencies
+        run: flutter pub get --enforce-lockfile
+
+      - name: Apply narrowly-scoped repairs
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+
+          canvas = Path('lib/screens/canvas/widgets/canvas_area.dart')
+          text = canvas.read_text()
+
+          needle = '''double boundedCanvasScaleFactor(double currentScale, double requestedFactor) {
+            if (currentScale <= 0 ||
+                !currentScale.isFinite ||
+                !requestedFactor.isFinite) {
+              return 1.0;
+            }
+            final target = (currentScale * requestedFactor).clamp(
+              kCanvasMinScale,
+              kCanvasMaxScale,
+            );
+            return target / currentScale;
+          }
+          '''
+          replacement = needle + '''
+          /// 2Dキャンバス表示の実倍率を取得する。
+          ///
+          /// Matrix4.getMaxScaleOnAxis() はZ軸も比較するため、XYだけを0.2倍などへ
+          /// 縮小してもZ=1が最大になり「1.0」と誤認する。キャンバス変換はXYの
+          /// 一様拡大縮小＋回転なので、第1列のXY成分の長さが実際の表示倍率になる。
+          double canvasViewScaleOf(Matrix4 viewTransform) {
+            final x = viewTransform.entry(0, 0);
+            final y = viewTransform.entry(1, 0);
+            final scale = math.sqrt(x * x + y * y);
+            return scale.isFinite && scale > 0 ? scale : 1.0;
+          }
+          '''
+          if needle not in text:
+              raise SystemExit('boundedCanvasScaleFactor anchor changed; refusing blind patch')
+          text = text.replace(needle, replacement, 1)
+
+          old = 'final currentScale = _transformController.value.getMaxScaleOnAxis();'
+          count = text.count(old)
+          if count != 2:
+              raise SystemExit(f'expected 2 production scale reads, found {count}')
+          text = text.replace(
+              old,
+              'final currentScale = canvasViewScaleOf(_transformController.value);',
+          )
+          canvas.write_text(text)
+
+          pinch = Path('test/canvas_pinch_gesture_test.dart')
+          text = pinch.read_text()
+          old = 'double currentScale() => _viewMatrix(tester).getMaxScaleOnAxis();'
+          if text.count(old) != 1:
+              raise SystemExit('pinch currentScale anchor changed')
+          text = text.replace(
+              old,
+              'double currentScale() => canvasViewScaleOf(_viewMatrix(tester));',
+              1,
+          )
+          old = 'expect(matrix.getMaxScaleOnAxis(), closeTo(kCanvasMinScale, 0.001));'
+          if text.count(old) != 1:
+              raise SystemExit('pinch min-scale assertion anchor changed')
+          text = text.replace(
+              old,
+              'expect(canvasViewScaleOf(matrix), closeTo(kCanvasMinScale, 0.001));',
+              1,
+          )
+          pinch.write_text(text)
+
+          smoke = Path('test/app_smoke_test.dart')
+          text = smoke.read_text()
+          old = '''      expect(
+                find.byIcon(Icons.sell),
+                findsOneWidget,
+                reason: 'タグ検索モードに切り替わっていない',
+              );'''
+          new = '''      final tagModeFinder = find.byType(SegmentedButton<bool>);
+              expect(tagModeFinder, findsOneWidget);
+              final tagMode = tester.widget<SegmentedButton<bool>>(tagModeFinder);
+              expect(
+                tagMode.selected,
+                contains(true),
+                reason: 'タグ検索モードに切り替わっていない',
+              );'''
+          if text.count(old) != 1:
+              raise SystemExit('community tag-mode assertion anchor changed; refusing blind patch')
+          smoke.write_text(text.replace(old, new, 1))
+          PY
+
+      - name: Format changed Dart files
+        run: dart format lib/screens/canvas/widgets/canvas_area.dart test/canvas_pinch_gesture_test.dart test/app_smoke_test.dart
+
+      - name: Analyze changed implementation and regressions
+        run: flutter analyze lib/screens/canvas/widgets/canvas_area.dart test/canvas_pinch_gesture_test.dart test/gesture_settings_sheet_test.dart
+
+      - name: Verify all pinch gestures including exact minimum and rotation
+        run: flutter test test/canvas_pinch_gesture_test.dart
+
+      - name: Verify gesture settings restore sheet
+        run: flutter test test/gesture_settings_sheet_test.dart
+
+      - name: Verify Community tag operation inventory case
+        run: flutter test test/app_smoke_test.dart --plain-name 'コミュニティ画面：タグの追加・タップでの絞り込み・削除ができる'
+
+      - name: Commit verified repairs without overwriting concurrent work
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git rm .github/workflows/fix-pinch-2d-scale-and-inventory.yml
+          git add lib/screens/canvas/widgets/canvas_area.dart test/canvas_pinch_gesture_test.dart test/app_smoke_test.dart
+          git commit -m 'fix: use true 2D scale for canvas pinch bounds'
+          git pull --rebase origin dev_branch
+          git push origin HEAD:dev_branch
