@@ -1,5 +1,4 @@
 import 'dart:io';
-import 'dart:typed_data';
 import 'dart:ui' as ui;
 
 import 'package:flutter/material.dart';
@@ -214,13 +213,17 @@ void main() {
       }
 
       Future<void> openCanvasSettings() async {
+        stage('settings-helper:find');
         final settingsButton = find.byWidgetPredicate(
           (widget) => widget is CanvasIconButton && widget.icon == Icons.settings,
           description: 'Canvas production settings button',
         );
         expect(settingsButton, findsOneWidget);
+        stage('settings-helper:before-onPressed');
         tester.widget<CanvasIconButton>(settingsButton).onPressed!();
-        await tester.pump(const Duration(milliseconds: 350));
+        stage('settings-helper:after-onPressed');
+        await tester.pump();
+        stage('settings-helper:after-pump');
       }
 
       final l10n = AppLocalizations.of(tester.element(find.byType(CanvasScreen)))!;
