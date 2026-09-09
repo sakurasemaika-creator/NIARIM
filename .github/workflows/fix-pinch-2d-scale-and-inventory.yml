@@ -90,18 +90,27 @@ jobs:
               text = text.replace(old, new, 1)
           elif new not in text:
               raise SystemExit('pinch min-scale assertion anchor changed')
-          old = '''  while (d > math.pi) d -= math.pi * 2;
-          while (d < -math.pi) d += math.pi * 2;'''
-          new = '''  while (d > math.pi) {
-            d -= math.pi * 2;
-          }
-          while (d < -math.pi) {
-            d += math.pi * 2;
-          }'''
-          if old in text:
-              text = text.replace(old, new, 1)
-          elif new not in text:
-              raise SystemExit('angle-delta loop anchor changed')
+
+          patterns = [
+              (
+                  r'(?m)^(?P<i>\s*)while \(d > math\.pi\) d -= math\.pi \* 2;$',
+                  'while (d > math.pi)',
+                  'd -= math.pi * 2;',
+              ),
+              (
+                  r'(?m)^(?P<i>\s*)while \(d < -math\.pi\) d \+= math\.pi \* 2;$',
+                  'while (d < -math.pi)',
+                  'd += math.pi * 2;',
+              ),
+          ]
+          for pattern, condition, statement in patterns:
+              match = re.search(pattern, text)
+              if match:
+                  i = match.group('i')
+                  replacement = f'{i}{condition} {{\n{i}  {statement}\n{i}}}'
+                  text = text[:match.start()] + replacement + text[match.end():]
+              elif f'{condition} {{' not in text:
+                  raise SystemExit(f'angle-delta loop anchor changed: {condition}')
           pinch.write_text(text)
 
           smoke = Path('test/app_smoke_test.dart')
