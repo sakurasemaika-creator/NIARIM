@@ -31,6 +31,9 @@ jobs:
               'PremiumService|PremiumFeature|PremiumLockWidget|PremiumLockState|showPremiumBanner|isFeatureAvailable|isPremium' \
               lib test || true
             echo
+            echo '## Automation manager call sites'
+            grep -RIn -B 8 -A 8 '_showCustomAutomationManager' lib/screens || true
+            echo
             echo '## Spec references'
             grep -RInE --include='*.md' \
               'Premium|プレミアム|有料|課金|南京錠|ロック' \
@@ -49,6 +52,15 @@ jobs:
         run: |
           flutter test test/premium_lock_widget_test.dart --reporter expanded \
             2>&1 | tee build/premium-lock-audit/test.txt
+      - name: Prove pinch, aurora hologram, and generated-filter Redo regressions
+        shell: bash
+        run: |
+          flutter test \
+            test/canvas_pinch_gesture_test.dart \
+            test/filter_engine_aurora_hologram_test.dart \
+            test/generated_filter_redo_test.dart \
+            --reporter expanded \
+            2>&1 | tee build/premium-lock-audit/focused-regressions.txt
       - name: Upload inventory and proof logs
         if: always()
         uses: actions/upload-artifact@v4
