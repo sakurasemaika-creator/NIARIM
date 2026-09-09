@@ -24,6 +24,17 @@ class CustomAutomationDraft {
 class CustomAutomationService extends ChangeNotifier {
   static const _prefsKey = 'custom_automations_v1';
 
+  // Only high-frequency value controls are safe to collapse while recording.
+  // Discrete operations (especially canvas.filter, duplicate/merge, frame/layer
+  // actions, etc.) must always retain every invocation and its ordering. The old
+  // generic same-command coalescing silently dropped the first operation from
+  // sequences such as Auto line art -> Ink pool because both are canvas.filter.
+  static const Set<String> _coalescibleCommands = {
+    'canvas.brushSize',
+    'canvas.brushOpacity',
+    'canvas.color',
+  };
+
   final List<CustomAutomation> _items = [];
   CustomAutomationDraft? _draft;
   bool _recording = false;
@@ -118,11 +129,12 @@ class CustomAutomationService extends ChangeNotifier {
       recordedFrame: recordedFrame,
     );
 
-    // Slider/color drags may emit many callbacks. Consecutive writes of the same
-    // deterministic command in the same recorded frame are one logical operation,
-    // so retain only the latest value. Frame navigation is never coalesced because
-    // its sequence is semantically meaningful and also disables all-frame execution.
-    if (!changesFrame && draft.steps.isNotEmpty) {
+    // Sliders/color drags may emit many callbacks. Only commands explicitly known
+    // to represent one continuously-edited value are coalesced. Discrete actions
+    // with the same command name are intentionally kept as separate ordered steps.
+    if (!changesFrame &&
+        _coalescibleCommands.contains(command) &&
+        draft.steps.isNotEmpty) {
       final last = draft.steps.last;
       if (!last.changesFrame &&
           last.surface == surface &&
