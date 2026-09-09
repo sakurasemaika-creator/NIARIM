@@ -78,6 +78,76 @@ s = s[:start] + replacement + s[end:]
 
 s = s.replace('await tester.runAsync(activeLayerPixels)', 'activeLayerPixels()')
 
+old_seed = '''      // Seed the real drawing layer with an actual stroke so the recorded filter
+      // has non-transparent pixels to change. This uses CanvasArea's production
+      // pointer path rather than mutating TileManager directly.
+      stage('seed:real-canvas-stroke');
+      final canvasRect = tester.getRect(find.byType(CanvasArea));
+      final beforeSeed = activeLayerPixels();
+      await tester.dragFrom(
+        Offset(
+          canvasRect.left + canvasRect.width * .34,
+          canvasRect.top + canvasRect.height * .50,
+        ),
+        Offset(canvasRect.width * .30, canvasRect.height * .08),
+      );
+      await tester.pump(const Duration(milliseconds: 500));
+      final afterSeed = activeLayerPixels();
+      expect(
+        changedBytes(beforeSeed!, afterSeed!),
+        greaterThan(100),
+        reason: 'The seed brush stroke must change real layer pixels',
+      );
+      await capture('00a_canvas_seeded_with_real_stroke');'''
+new_seed = '''      // Seed the active production layer directly at TileManager level. Gesture
+      // synthesis can deadlock on the headless raster backend before the audit even
+      // reaches automation; the behavior under test is the recorded production
+      // filter command and its replay, not brush gesture dispatch.
+      stage('seed:real-layer-pixels');
+      final canvasForSeed = canvasWidget();
+      final seedLayerId = canvasForSeed.currentLayerId;
+      expect(seedLayerId, isNotNull);
+      final tmForSeed = ps!.tileManagerOf(project.id);
+      final seedKey = ps!.tileKeyFor(
+        project.id,
+        canvasForSeed.sceneId,
+        canvasForSeed.currentFrame,
+        seedLayerId!,
+      );
+      final beforeSeed = activeLayerPixels();
+      final seedTile = tmForSeed.getOrCreateTile(seedKey, 0, 0);
+      for (var y = 48; y < 176; y++) {
+        for (var x = 40; x < 184; x++) {
+          tmForSeed.setPixel(seedTile, x, y, 48, 72, 112, 255);
+        }
+      }
+      tmForSeed.invalidateTile(seedKey, 0, 0);
+      final seedLayer = ps!
+          .layersOf(
+            project.id,
+            canvasForSeed.sceneId,
+            canvasForSeed.currentFrame,
+          )
+          .where((layer) => layer.id == seedLayerId)
+          .first;
+      ps!.updateLayer(
+        projectId: project.id,
+        sceneId: canvasForSeed.sceneId,
+        frameIndex: canvasForSeed.currentFrame,
+        layer: seedLayer,
+      );
+      await tester.pump(const Duration(milliseconds: 300));
+      final afterSeed = activeLayerPixels();
+      expect(
+        changedBytes(beforeSeed, afterSeed),
+        greaterThan(100),
+        reason: 'The seed must change real active-layer RGBA',
+      );
+      await capture('00a_canvas_seeded_with_real_pixels');'''
+if old_seed not in s:
+    raise SystemExit('seed anchor changed')
+s = s.replace(old_seed, new_seed, 1)
+
 old_runner = '''      await tester.runAsync(
         () => CustomAutomationFilterRunner.apply(
           projectService: ps!,
