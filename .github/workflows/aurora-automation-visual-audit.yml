@@ -4,6 +4,7 @@ on:
   push:
     branches: [dev_branch]
     paths:
+      - 'lib/engine/filter_engine.dart'
       - 'test/aurora_hologram_visual_audit_test.dart'
       - 'test/custom_automation_visual_audit_test.dart'
       - '.github/workflows/aurora-automation-visual-audit.yml'
