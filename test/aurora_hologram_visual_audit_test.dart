@@ -3,8 +3,6 @@ import 'dart:io';
 import 'dart:typed_data';
 import 'dart:ui' as ui;
 
-import 'package:flutter/material.dart';
-import 'package:flutter/rendering.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:niarim/engine/filter_engine.dart';
 import 'package:niarim/models/filter_def.dart';
@@ -15,19 +13,18 @@ void main() {
 
   setUpAll(() => out.createSync(recursive: true));
 
-  testWidgets('wide grayscale ramp -> all aurora hologram presets -> PNG', (tester) async {
-    tester.view.physicalSize = const Size(1400, 900);
-    tester.view.devicePixelRatio = 1;
-    addTearDown(tester.view.resetPhysicalSize);
-    addTearDown(tester.view.resetDevicePixelRatio);
-
+  test('wide grayscale ramp -> all aurora hologram presets -> PNG', () async {
     const width = 1024;
     const height = 320;
     final source = _buildWideGrayRamp(width, height);
     final engine = FilterEngine();
 
-    final images = <String, ui.Image>{};
-    images['00_input_grayscale'] = await _imageFromRgba(source, width, height);
+    await _writeRgbaPng(
+      source,
+      width,
+      height,
+      File('${out.path}/00_input_grayscale.png'),
+    );
 
     for (final preset in AuroraHologramPreset.values) {
       final result = engine.applyAuroraHologram(
@@ -39,53 +36,14 @@ void main() {
         saturation: 0,
         preset: preset,
       );
-      images['preset_${preset.name}'] = await _imageFromRgba(result, width, height);
+      await _writeRgbaPng(
+        result,
+        width,
+        height,
+        File('${out.path}/preset_${preset.name}.png'),
+      );
     }
-
-    final key = GlobalKey();
-    await tester.pumpWidget(
-      MaterialApp(
-        home: Scaffold(
-          backgroundColor: Colors.black,
-          body: RepaintBoundary(
-            key: key,
-            child: SingleChildScrollView(
-              child: Padding(
-                padding: const EdgeInsets.all(24),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    const Text(
-                      'NIARIM Aurora Hologram Visual Audit',
-                      style: TextStyle(color: Colors.white, fontSize: 24),
-                    ),
-                    const SizedBox(height: 16),
-                    for (final entry in images.entries) ...[
-                      Text(entry.key, style: const TextStyle(color: Colors.white, fontSize: 16)),
-                      const SizedBox(height: 6),
-                      RawImage(image: entry.value, fit: BoxFit.fitWidth),
-                      const SizedBox(height: 18),
-                    ],
-                  ],
-                ),
-              ),
-            ),
-          ),
-        ),
-      ),
-    );
-    await tester.pumpAndSettle();
-
-    for (final entry in images.entries) {
-      final bytes = await entry.value.toByteData(format: ui.ImageByteFormat.png);
-      await File('${out.path}/${entry.key}.png').writeAsBytes(bytes!.buffer.asUint8List());
-    }
-
-    final boundary = key.currentContext!.findRenderObject()! as RenderRepaintBoundary;
-    final sheet = await boundary.toImage(pixelRatio: 1);
-    final sheetBytes = await sheet.toByteData(format: ui.ImageByteFormat.png);
-    await File('${out.path}/contact_sheet.png').writeAsBytes(sheetBytes!.buffer.asUint8List());
-  });
+  }, timeout: const Timeout(Duration(minutes: 2)));
 }
 
 Uint8List _buildWideGrayRamp(int width, int height) {
@@ -103,6 +61,22 @@ Uint8List _buildWideGrayRamp(int width, int height) {
     }
   }
   return data;
+}
+
+Future<void> _writeRgbaPng(
+  Uint8List rgba,
+  int width,
+  int height,
+  File file,
+) async {
+  final image = await _imageFromRgba(rgba, width, height);
+  try {
+    final bytes = await image.toByteData(format: ui.ImageByteFormat.png);
+    if (bytes == null) throw StateError('PNG encoding returned null');
+    await file.writeAsBytes(bytes.buffer.asUint8List(), flush: true);
+  } finally {
+    image.dispose();
+  }
 }
 
 Future<ui.Image> _imageFromRgba(Uint8List rgba, int width, int height) {
