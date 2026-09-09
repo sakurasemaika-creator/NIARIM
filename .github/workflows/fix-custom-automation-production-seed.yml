@@ -7,11 +7,11 @@ on:
     paths:
       - '.github/workflows/fix-custom-automation-production-seed.yml'
       - 'test/custom_automation_production_surface_visual_test.dart'
-      - 'tool/patch_custom_automation_surface_interactions_v2.py'
+      - 'tool/patch_custom_automation_surface_interactions.py'
   workflow_dispatch:
 
 permissions:
-  contents: write
+  contents: read
 
 jobs:
   repair:
@@ -27,7 +27,7 @@ jobs:
           channel: stable
           cache: true
       - run: flutter pub get
-      - run: python3 tool/patch_custom_automation_surface_interactions_v2.py
+      - run: python3 tool/patch_custom_automation_surface_interactions.py
       - run: dart format test/custom_automation_production_surface_visual_test.dart
       - run: flutter analyze test/custom_automation_production_surface_visual_test.dart --no-fatal-warnings --no-fatal-infos
       - run: flutter test test/custom_automation_production_surface_visual_test.dart --reporter expanded
