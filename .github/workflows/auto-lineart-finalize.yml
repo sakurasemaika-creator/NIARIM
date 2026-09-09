@@ -1,0 +1,213 @@
+name: Auto Line Art Finalize
+
+on:
+  push:
+    branches: [dev_branch]
+    paths:
+      - '.github/workflows/auto-lineart-finalize.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  finalize:
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          ref: dev_branch
+          fetch-depth: 0
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: 3.47.2
+          channel: stable
+          cache: true
+      - run: flutter pub get --enforce-lockfile
+      - name: Apply guarded auto-lineart fixes
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+
+          def replace_once(path, old, new):
+              p = Path(path)
+              s = p.read_text()
+              count = s.count(old)
+              if count != 1:
+                  raise SystemExit(f'{path}: expected exactly one match, got {count}')
+              p.write_text(s.replace(old, new, 1))
+
+          undo = 'lib/engine/undo_manager.dart'
+          replace_once(
+              undo,
+              '''  void undo() {
+''',
+              '''  bool updateLayerAddInsertIndex({
+    required String projectId,
+    required String sceneId,
+    required int frameIndex,
+    required String layerId,
+    required int insertIndex,
+  }) {
+    for (var i = _undoStack.length - 1; i >= 0; i--) {
+      final action = _undoStack[i];
+      if (action is LayerAddUndoAction &&
+          action.projectId == projectId &&
+          action.sceneId == sceneId &&
+          action.frameIndex == frameIndex &&
+          action.layerId == layerId) {
+        action.insertIndex = insertIndex;
+        return true;
+      }
+    }
+    return false;
+  }
+
+  void undo() {
+''')
+          replace_once(undo, '  final int insertIndex;\n', '  int insertIndex;\n')
+
+          panel = 'lib/screens/canvas/widgets/filter_panel.dart'
+          replace_once(
+              panel,
+              "import '../../../engine/tile_manager.dart';\nimport '../../../engine/vhs_noise_engine.dart';\n",
+              "import '../../../engine/tile_manager.dart';\nimport '../../../engine/undo_manager.dart';\nimport '../../../engine/vhs_noise_engine.dart';\n",
+          )
+          replace_once(
+              panel,
+              '  int? _autoBlendColorArgb;\n  BackgroundAcclimationAnalysis? _lastBgBlendAnalysis;\n',
+              '',
+          )
+          replace_once(
+              panel,
+              '''    _autoBlendColorArgb = backgroundBytes == null
+        ? null
+        : FilterEngine.mostFrequentOpaqueColor(backgroundBytes);
+''',
+              '',
+          )
+          replace_once(panel, '        _lastBgBlendAnalysis = analysis;\n', '')
+          replace_once(
+              panel,
+              '''    if (createdIndex >= 0 && targetIndex >= 0 && createdIndex != targetIndex) {
+      ps.reorderLayer(
+        projectId: widget.projectId,
+        sceneId: widget.sceneId,
+        frameIndex: frameIndex,
+        oldIndex: createdIndex,
+        newIndex: targetIndex,
+      );
+    }
+    final key = ps.tileKeyFor(
+''',
+              '''    if (createdIndex >= 0 && targetIndex >= 0 && createdIndex != targetIndex) {
+      ps.reorderLayer(
+        projectId: widget.projectId,
+        sceneId: widget.sceneId,
+        frameIndex: frameIndex,
+        oldIndex: createdIndex,
+        newIndex: targetIndex,
+      );
+    }
+    final finalCreatedIndex = ps
+        .layersOf(widget.projectId, widget.sceneId, frameIndex)
+        .indexWhere((l) => l.id == created.id);
+    if (finalCreatedIndex >= 0) {
+      context.read<UndoManager>().updateLayerAddInsertIndex(
+        projectId: widget.projectId,
+        sceneId: widget.sceneId,
+        frameIndex: frameIndex,
+        layerId: created.id,
+        insertIndex: finalCreatedIndex,
+      );
+    }
+    final key = ps.tileKeyFor(
+''',
+          )
+
+          tests = [
+              'test/auto_lineart_bulk_isolation_test.dart',
+              'test/auto_lineart_canvas_e2e_test.dart',
+              'test/auto_lineart_panel_state_test.dart',
+          ]
+          for path in tests:
+              replace_once(path, "import 'dart:typed_data';\n", '')
+
+          state = 'test/auto_lineart_panel_state_test.dart'
+          replace_once(
+              state,
+              '''double _graphDistance(AutoLineartGraph a, AutoLineartGraph b) {
+  final ap = _points(a);
+  final bp = _points(b);
+  if (ap.isEmpty || bp.isEmpty) return 0;
+  var total = 0.0;
+  for (final p in ap) {
+    var best = double.infinity;
+    for (final q in bp) {
+      final dx = p.$1 - q.$1;
+      final dy = p.$2 - q.$2;
+      best = math.min(best, math.sqrt(dx * dx + dy * dy));
+    }
+    total += best;
+  }
+  return total / ap.length;
+}
+''',
+              '''double _maxGraphDistance(AutoLineartGraph a, AutoLineartGraph b) {
+  final ap = _points(a);
+  final bp = _points(b);
+  if (ap.isEmpty || bp.isEmpty) return 0;
+  var maximum = 0.0;
+  for (final p in ap) {
+    var best = double.infinity;
+    for (final q in bp) {
+      final dx = p.$1 - q.$1;
+      final dy = p.$2 - q.$2;
+      best = math.min(best, math.sqrt(dx * dx + dy * dy));
+    }
+    maximum = math.max(maximum, best);
+  }
+  return maximum;
+}
+''',
+          )
+          replace_once(state, '_graphDistance(editedWide, freshWide)', '_maxGraphDistance(editedWide, freshWide)')
+          replace_once(state, '_graphDistance(edited7, fresh7)', '_maxGraphDistance(edited7, fresh7)')
+          PY
+
+          dart format lib/engine/undo_manager.dart lib/screens/canvas/widgets/filter_panel.dart test/auto_lineart_canvas_e2e_test.dart test/auto_lineart_bulk_isolation_test.dart test/auto_lineart_panel_state_test.dart
+          git diff --check
+          git diff --numstat -- lib/engine/undo_manager.dart lib/screens/canvas/widgets/filter_panel.dart test/auto_lineart_canvas_e2e_test.dart test/auto_lineart_bulk_isolation_test.dart test/auto_lineart_panel_state_test.dart | tee /tmp/numstat
+          python3 - <<'PY'
+          from pathlib import Path
+          allowed = {
+              'lib/engine/undo_manager.dart',
+              'lib/screens/canvas/widgets/filter_panel.dart',
+              'test/auto_lineart_canvas_e2e_test.dart',
+              'test/auto_lineart_bulk_isolation_test.dart',
+              'test/auto_lineart_panel_state_test.dart',
+          }
+          seen = set()
+          for line in Path('/tmp/numstat').read_text().splitlines():
+              add, delete, path = line.split('\t')
+              if path not in allowed:
+                  raise SystemExit(f'unexpected changed file: {path}')
+              if int(add) + int(delete) > 80:
+                  raise SystemExit(f'excessive diff rejected: {path} +{add}/-{delete}')
+              seen.add(path)
+          if not seen:
+              raise SystemExit('no guarded changes produced')
+          PY
+      - name: Analyze repaired scope
+        run: flutter analyze --no-pub lib/engine/undo_manager.dart lib/screens/canvas/widgets/filter_panel.dart lib/screens/canvas/widgets/auto_lineart_control_overlay.dart test/auto_lineart_canvas_e2e_test.dart test/auto_lineart_bulk_isolation_test.dart test/auto_lineart_panel_state_test.dart test/helpers/pump_real_async.dart
+      - name: Verify auto-lineart state and Undo Redo
+        run: flutter test --no-pub --reporter expanded test/auto_lineart_canvas_e2e_test.dart test/auto_lineart_bulk_isolation_test.dart test/auto_lineart_panel_state_test.dart
+      - name: Commit verified repair
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add lib/engine/undo_manager.dart lib/screens/canvas/widgets/filter_panel.dart test/auto_lineart_canvas_e2e_test.dart test/auto_lineart_bulk_isolation_test.dart test/auto_lineart_panel_state_test.dart
+          git diff --cached --check
+          git commit -m 'fix: preserve generated layer order through redo'
+          git pull --rebase origin dev_branch
+          git push origin HEAD:dev_branch
