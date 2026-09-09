@@ -123,7 +123,6 @@ class RecordedFilterApplyService {
         projectId: projectId,
         sceneId: sceneId,
         frameIndex: frameIndex,
-        sourceLayerId: layerId,
         sourceName: sourceLayer.name,
         filter: filter,
         pixels: result,
@@ -150,22 +149,21 @@ class RecordedFilterApplyService {
     required String projectId,
     required String sceneId,
     required int frameIndex,
-    required String sourceLayerId,
     required String sourceName,
     required FilterDef filter,
     required Uint8List pixels,
   }) {
     final tileManager = projectService.tileManagerOf(projectId);
-    final sourceIndex = projectService
-        .layersOf(projectId, sceneId, frameIndex)
-        .indexWhere((layer) => layer.id == sourceLayerId);
+    // ProjectService/LayerCompositor treat index 0 as the front-most layer.
+    // Generated drawing filters are required to create their result at the
+    // absolute top, regardless of which source layer was selected.
     final created = projectService.addLayer(
       projectId: projectId,
       sceneId: sceneId,
       frameIndex: frameIndex,
       type: model.LayerType.normal,
       name: _generatedLayerName(sourceName, filter),
-      insertIndex: sourceIndex + 1,
+      insertIndex: 0,
     );
     final key = projectService.tileKeyFor(
       projectId,
