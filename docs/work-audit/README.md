@@ -1,8 +1,25 @@
 # Work Audit ownership boundary
 
-このディレクトリと、そこから参照される `docs/product-audit/*` / `docs/work-continuation.md` は、NIARIM全面監査Work専用の管理領域です。
+NIARIM全面監査の専用領域。通常ChatGPT/Codex/Solタスクは、ルート `AGENTS.md` に従い、このディレクトリや監査専用 `docs/product-audit/**` を検索・read・実行指示として利用しない。
 
-- **Policy（原則変更しない）**: `ASTRA_WORK.md`、`docs/product-audit/QUALITY_STANDARD.md`、`docs/product-audit/LEGAL_IP_STANDARD.md` 等。通常タスクは編集禁止。監査システム自体の変更をユーザーが明示した場合だけ更新する。
-- **Mutable audit state**: `docs/work-continuation.md`、`docs/product-audit/README.md`。全面監査Workだけがcheckpoint/stateとして更新する。通常タスクは読込・更新しない。
+## Policy — どう監査するか
 
-通常のChatGPT/Codex/Sol作業では、ルート `AGENTS.md` のguardに従い、この監査領域を実行指示や一般的なcontinuationとして利用しない。全面監査が明示的に起動されたときだけ `ASTRA_WORK.md` を入口とする。
+- `docs/work-audit/policy/ASTRA_WORK.md`
+- `docs/product-audit/QUALITY_STANDARD.md`
+- `docs/product-audit/LEGAL_IP_STANDARD.md`
+- その他の明示された監査基準
+
+原則固定。ユーザーが監査システム変更を明示した場合だけ変更する。
+
+## State — どこまで監査済みか
+
+- `docs/work-audit/state/ASTRA_CONTINUATION.md`: 最新の確定進捗、未解決、次の1手
+- `docs/work-audit/state/ASTRA_AUDIT_STATE.md`: 監査マップと検証根拠
+
+Stateは全面監査モードで**実際に検証した事実だけ**更新する。通常タスクの実装、別チャット/別Workの話題、ユーザーの未検証な進捗申告を自動的に監査済みStateへ昇格させない。通常タスクはStateをread/writeしない。
+
+## 起動経路
+
+- 通常タスク: `AGENTS.md` → 通常ルート。ここで終了し監査領域へ進まない。
+- 全面監査: `AGENTS.md` → `policy/ASTRA_WORK.md` → `state/*` → 必要な品質基準。
+- 監査システム保守: 必要なPolicyだけ。State移行/修復が依頼に含まれる場合だけStateへ触る。
