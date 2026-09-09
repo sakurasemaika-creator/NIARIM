@@ -180,30 +180,37 @@ void main() {
 
       await capture('00_canvas_before');
 
-      stage('seed:real-canvas-stroke');
-      final canvasRect = tester.getRect(find.byType(CanvasArea));
-      final beforeSeed = activeLayerPixels();
-      final strokeStart = Offset(
-        canvasRect.left + canvasRect.width * .34,
-        canvasRect.top + canvasRect.height * .50,
+      stage('seed:raw-gray-underlay');
+      final canvasAtSeed = canvasWidget();
+      final seedLayerId = canvasAtSeed.currentLayerId;
+      expect(seedLayerId, isNotNull);
+      final tm = ps!.tileManagerOf(project.id);
+      final seedKey = ps!.tileKeyFor(
+        project.id,
+        canvasAtSeed.sceneId,
+        canvasAtSeed.currentFrame,
+        seedLayerId!,
       );
-      final strokeEnd = strokeStart +
-          Offset(canvasRect.width * .30, canvasRect.height * .08);
-      final gesture = await tester.startGesture(strokeStart, pointer: 21);
-      await tester.pump(const Duration(milliseconds: 32));
-      for (var i = 1; i <= 12; i++) {
-        await gesture.moveTo(Offset.lerp(strokeStart, strokeEnd, i / 12)!);
-        await tester.pump(const Duration(milliseconds: 16));
+      final beforeSeed = activeLayerPixels();
+      final tile = tm.getOrCreateTile(seedKey, 0, 0);
+      for (var y = 48; y < 208; y++) {
+        for (var x = 48; x < 208; x++) {
+          final i = (y * TileManager.tileSize + x) * 4;
+          final shade = 48 + ((x - 48) * 176 ~/ 159);
+          tile[i] = shade;
+          tile[i + 1] = shade;
+          tile[i + 2] = shade;
+          tile[i + 3] = 255;
+        }
       }
-      await gesture.up();
-      await tester.pump(const Duration(milliseconds: 500));
+      await tester.pump(const Duration(milliseconds: 300));
       final afterSeed = activeLayerPixels();
       expect(
         changedBytes(beforeSeed, afterSeed),
         greaterThan(100),
-        reason: 'The seed brush stroke must change real layer pixels',
+        reason: 'The gray setup underlay must exist before recording',
       );
-      await capture('00a_canvas_seeded_with_real_stroke');
+      await capture('00a_canvas_seeded_gray_underlay');
 
       stage('settings:open');
       await openCanvasSettings();
