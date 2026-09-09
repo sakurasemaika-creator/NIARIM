@@ -1,9 +1,6 @@
 import 'custom_automation.dart';
 import 'filter_def.dart';
 
-const customAutomationPresetInstallKey =
-    'custom_automation_builtin_presets_v1_installed';
-
 const auroraHologramAutomationPresetId = 'preset_aurora_hologram';
 const lineExtractionAutomationPresetId = 'preset_line_extraction';
 const lineCreationAutomationPresetId = 'preset_line_creation';
@@ -13,9 +10,9 @@ final DateTime _presetTimestamp = DateTime.utc(2026, 1, 1);
 /// The three starter Canvas automations requested for NIARIM.
 ///
 /// They are normal [CustomAutomation] values so users can rename, re-record,
-/// export, or delete them after the one-time installation migration. Each
-/// preset records a semantic drawing-filter snapshot rather than screen
-/// coordinates, so replay remains stable across device sizes/layouts.
+/// export, or delete them after first-launch initialization. Each preset records
+/// a semantic drawing-filter snapshot rather than screen coordinates, so replay
+/// remains stable across device sizes and layouts.
 List<CustomAutomation> builtInCanvasAutomationPresets() => [
   _filterPreset(
     id: auroraHologramAutomationPresetId,
