@@ -68,3 +68,18 @@ jobs:
             echo "=== $file ==="
             flutter test "$file"
           done <<< "$files"
+
+  app-inventory:
+    name: all screens / operations inventory
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+      - run: flutter pub get
+      - name: All routed screens
+        run: flutter test test/all_routes_screenshot_audit_test.dart
+      - name: Full operation smoke inventory
+        run: flutter test test/app_smoke_test.dart
