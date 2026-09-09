@@ -186,7 +186,10 @@ void main() {
       await tester.dragFrom(start, const Offset(0, -28));
       await tester.pump(const Duration(milliseconds: 300));
       final edited5 = graph();
-      expect(_graphDistance(edited5, before), greaterThan(.3));
+      final editedPoint = edited5.paths[pathIndex].points[pointIndex];
+      final movedDx = editedPoint.x - point.x;
+      final movedDy = editedPoint.y - point.y;
+      expect(math.sqrt(movedDx * movedDx + movedDy * movedDy), greaterThan(.3));
 
       final stableBefore = _points(edited5);
       fs.updateFilterParams(
