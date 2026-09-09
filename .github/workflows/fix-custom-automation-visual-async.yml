@@ -1,0 +1,64 @@
+name: Repair Custom Automation Visual Pixel Reads
+
+on:
+  push:
+    branches: [dev_branch]
+    paths:
+      - '.github/workflows/fix-custom-automation-visual-async.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  repair:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: dev_branch
+          fetch-depth: 0
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+      - run: flutter pub get
+      - name: Avoid runAsync raster deadlock in pixel evidence reads
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          p = Path('test/custom_automation_visual_audit_test.dart')
+          s = p.read_text()
+          s = s.replace("import 'dart:typed_data';\n", '')
+          s = s.replace('await tester.runAsync(activeLayerPixels)', 'await activeLayerPixels()')
+          old = '''      await tester.runAsync(\n        () => CustomAutomationFilterRunner.apply(\n          projectService: ps!,\n          projectId: project.id,\n          sceneId: canvasAtRecord.sceneId,\n          frameIndex: canvasAtRecord.currentFrame,\n          sourceLayerId: sourceLayerId!,\n          filter: recordedFilter,\n        ),\n      );'''
+          new = '''      await CustomAutomationFilterRunner.apply(\n        projectService: ps!,\n        projectId: project.id,\n        sceneId: canvasAtRecord.sceneId,\n        frameIndex: canvasAtRecord.currentFrame,\n        sourceLayerId: sourceLayerId!,\n        filter: recordedFilter,\n      );'''
+          if old not in s:
+              raise SystemExit('filter runner async anchor changed')
+          s = s.replace(old, new, 1)
+          p.write_text(s)
+          PY
+      - run: dart format test/custom_automation_visual_audit_test.dart
+      - name: Analyze custom automation visual audit
+        run: flutter analyze test/custom_automation_visual_audit_test.dart --no-fatal-warnings --no-fatal-infos
+      - name: Run custom automation pixel-changing visual audit
+        run: flutter test test/custom_automation_visual_audit_test.dart --reporter expanded
+      - name: Upload repaired automation evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: custom-automation-repaired-evidence
+          path: build/visual-reaudit/custom-automation
+          if-no-files-found: warn
+          retention-days: 7
+      - name: Commit verified repair
+        if: success()
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git rm .github/workflows/fix-custom-automation-visual-async.yml
+          git add test/custom_automation_visual_audit_test.dart
+          git commit -m 'test: avoid raster deadlock in automation pixel evidence'
+          git pull --rebase origin dev_branch
+          git push origin HEAD:dev_branch
