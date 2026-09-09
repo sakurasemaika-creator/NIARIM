@@ -10,24 +10,6 @@
 
 ## 最新セッション
 
-- 開始 (JST): **2026-09-09 11:26:08**。終了前、状態 `in-progress`。
-- 開始HEAD: App `14d81b03` / Web `b5cac10`。incomingを確認しApp `f50aa57d` / Web `010e209` まで統合。AGENTSから分離された `docs/work-audit/ASTRA_WORK.md` と実操作監査の追加基準を確認済み。
-- 前候補は他セッションで一部本体へ反映済み。旧ローカル差分は `audit-resume-20260909-1126-preserve-superseded-candidate` のstashへ保全し、丸ごと再適用しない。旧pendingはremoteで削除済み。
-- 最新の確定した全gate: [34298456089](https://github.com/sakurasemaika-creator/NIARIM/actions/runs/34298456089) (`f131f0d0`) は **845成功/5skip/29失敗、analyze18、format45ファイル**。保存回帰28件成功。自動線画UIは一括のみ成功、Redo順序とパネル状態が失敗。後続automation/scope/pixel-gridの検証は全体合格と区別する。
-- 自動線画/生成フィルター候補は最新HEAD上で2回検証し、対象analyze、実Canvas、自動線画一括のフレーム分離、手動control保持、outline/inkPool/autoLineartの生成レイヤー順序・2回Undo/Redo・画素一致が全て成功した。検証run `34306104930` と着地run `34306797174` を根拠とする。
-- 検証済み候補を App `2b0959ed` (`[audit-state] fix: land verified auto-lineart undo repairs`) として本体反映。`ProjectService.addLayer` は挿入位置をUndo/Redoへ保持し、FilterPanel/RecordedFilterApplyServiceは生成レイヤーを元レイヤー隣接位置へ直接挿入する。対応点変位による手動control検査、線画色の既存l10n利用、不要field除去、Redo画素一致回帰も同時に着地。`docs/product-audit/pending/auto-lineart-repairs.patch` は適用完了として削除済み。
-- Timelineのcustom automation callback互換修復も App `29a6724c` へ着地済み。workflow run `34305688327` でTimeline analyzerと `project_save_safety_test.dart` を含む全工程が成功。
-- Webは `0b853317` が最新HEAD。Heroの1023→1024px密度ジャンプを `cd03a709` で修正し、`0b853317` で320〜1920px・7言語のHero密度/衝突/余白/境界連続性監査を追加。Visual audit #527 (`34306055556`) はGitHub-hosted runner未取得で全17job queuedのため、現行HEADの最終合格は未確定。DESIGN/HANDOFF上はHeroは内容に応じ1〜2カラムで、`.hero-showcase` を必須完成形とする契約は確認できないため、未ロードのshowcase CSSだけを根拠に構造変更しない。
-- **次の1手**: Appは保存/設定復元の残回帰とピンチ縮小の実操作再現を優先して全gate失敗を再分類する。Webは#527を回収し、現行1画面Heroの全幅・7言語実画像を基準に残差を直す。その後、全画面/全操作inventoryを継続。
-- App実機/起動製品での手操作、全画面inventory、全7言語の意味/文体、法務/IP、外部サービス実運用は未完了。Astraのメインモデル/effort切替操作は公開されていない。
-
-## 前回までの記録（履歴）
-
-- 再開確認 (JST): 2026-09-09 06:21:41。remoteはApp `a72fd78f` / Web `606f979` のままで、AGENTS・品質/法務基準に追加変更なし。前回のローカルcommitと自動線画候補を保持。未pushの監査checkpointを反映してCI結果を回収する。
-
-- 23:47:22 JST追記: App `a72fd78f` / Web `606f979` へ差分を保持して追従。自動線画3テストの新Flutterでの型エラー・FakeAsync内の画像処理待機を修正候補として `docs/product-audit/pending/auto-lineart-repairs.patch` に保存。productionへ未適用の候補を既存save-safety workflowで検証し、成功後に反映する。WebはSEO生成起動修正・問い合わせ28条件の回帰・App準拠の説明図を検証中。最新の全体合格ではない。
-
-- 追加再開確認 (JST): **2026-09-08 23:23:48**。App `b61db7f` / Web `439ebf9` からApp **`bc0b7c6b`** / Web **`70ae727`** へincomingを保持して統合。両AGENTS・新LEGAL_IP_STANDARDと品質基準の国際展開/翻訳品質を確認。保存回帰はFlutter3.47.2でも成功、全gateは829成功/5skip/27失敗・analyze46・format43。新しい未完成フィルター/テストも含むため全体合格とは扱わない。
 - 再開時刻 (JST): **2026-09-08 18:12:46**。同日の保存候補検証・Web表示監査から継続。
 - 開始時コードHEAD: App `6cb290b` / Web `b916f19`。incomingを確認しApp **`df119850`** / Web **`439ebf9`** へfast-forwardした。
 - 中断中の追加: Appの自動線画仕上げ・カスタム自動操作・レイヤークリップボード・ピクセルグリッド等、WebのSEO/言語URL・中間幅対応。未commit変更を保持して意味的に統合。
