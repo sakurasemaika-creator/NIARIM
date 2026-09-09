@@ -4,58 +4,58 @@
 
 > 起動判定は明示トリガー制。「監査」「PNG監査」「最終green」等の語、作業範囲の広さ、前回作業の継続だけから全面監査へ昇格しない。「以下の会話の続きから」「引き続き」「前回の続き」も全面監査トリガーではない。
 
-## 0. Policy / State / 通常タスクの分離
+## 0. 正本と分離
 
 - 今回のユーザー指示: 今回何を行うか。
-- Policy: どう監査するか。
-- State: 全面監査Work自身が検証して確定した進捗。
+- Policy: どう監査するか。本ファイルと `docs/product-audit/*STANDARD.md`。
+- Route: **何をどの順番で監査するか**。`docs/work-audit/state/AUDIT_ROUTE.md` を唯一の正本とする。
+- Progress: `ASTRA_CONTINUATION.md` の `current_id` 等。
+- Evidence: `ASTRA_AUDIT_STATE.md` の検証根拠。
 
-通常タスクや別セッションの変更・話題を、そのままStateへ昇格させない。ユーザーが今回の全面監査で順序を明示した場合はその順序を採用し、単に「全面監査を再開」と依頼された場合はStateの次の1手をscope lockとする。
+通常タスクや別セッションの変更・話題を、そのままRoute/Progress/Evidenceへ昇格させない。
 
-## 1. Scope lock / context isolation
+## 1. Route bootstrap — 一度だけ
 
-全面監査の優先順位を決めるために最近の会話履歴や別セッションの話題を採用しない。別セッションのremote変更は現在scope/stateの前提を壊すかだけ確認する。現在の作業は、今回の全面監査での明示作業、Stateの次の1手、その前提を壊すremote変更、または明確な重大regression/security/data-loss riskのいずれかに限定する。
+`AUDIT_ROUTE.md` が `bootstrap-required` の場合、通常の修正作業へ入る前に**一度だけ**最新App/Webを構造調査し、全画面・全状態・全操作・横断品質要件を一周で検証できる完全なTODOを作る。
 
-## 2. 正本
+- App=`A###`、Web=`W###` の安定IDを付け、実UI/navigationに沿う固定順序にする。
+- 画面だけでなくモーダル、パネル、empty/error/loading、無料/Premium、設定、入力、ジェスチャー、編集、保存/復元、共有/export等を含める。
+- 各TODOへ対象、前提状態、実操作、期待結果、必要なviewport/PC-SP/7言語/Premium条件、必要な画像・証拠、statusを定義する。
+- QUALITY / HANDS_ON_UI（該当repo）/ LEGAL_IPの全要件をTODOへ割り当て、coverage checkで未割当がないことを確認してから `locked` にする。
+- **旧checkpoint、過去会話、最近の別セッションからTODOや完了状態を復元しない。** 最新実装と品質基準から作る。
 
-- branch: `dev_branch`
-- 製品仕様・禁止事項: `docs/AI設計書/00_AIへの指示.md`
-- 監査policy: `docs/work-audit/policy/ASTRA_WORK.md`
-- 品質基準: `docs/product-audit/QUALITY_STANDARD.md`
-- 法務/IP: `docs/product-audit/LEGAL_IP_STANDARD.md`
-- State: `docs/work-audit/state/ASTRA_CONTINUATION.md` + `docs/work-audit/state/ASTRA_AUDIT_STATE.md`
-- 実装固有資料: `CLAUDE.md`、`docs/AI設計書/31_引き継ぎガイド（AI開発者向け）.md` 等
+## 2. locked後のscope lock
 
-開始時はStateと今回必要な正本の該当節だけ確認し、長大な文書を理由なく全文再読しない。
+Routeがlockedになった後は、`current_id` の未完了項目からID順に進める。毎回「次に何を調べるか」を再判断しない。最近のcommit、別セッションの話題、興味深い機能、CI失敗を理由にrouteを飛び越えない。
 
-## 3. 最短再開手順 — 復元を仕事化しない
+例外は、現在IDの前提を直接壊す変更、または明確な重大regression/security/data-loss riskだけ。通常タスク由来の無関係な変更は存在を認識するだけでroute順を変えない。
 
-1. 両repoの最新 `dev_branch` と現在HEADを確認し、他セッションの変更を失わず追従する。
-2. Stateから検証済み事実・未解決・次の1手を復元し、原則そのscope lockから実作業へ入る。
-3. checkpoint後のremote差分はscope-boundedに確認する。全commit・全CI・全変更を網羅的に再調査して「最新Stateを再構築」しない。まず変更概要を見て、現在scopeの前提を壊す、直接競合する、または重大リスクを示す差分だけ深掘りする。
-4. 通常タスク由来の変更は外部変更として認識するだけで、新しい監査優先順位にしない。現在scopeに無関係なら再監査やState昇格を後回しにしてscopeへ戻る。
-5. 過去CIは、State根拠の欠落/矛盾、現在scopeの前提確認、または今回の検証確定に必要な場合だけ確認する。「Stateが古そう」「変更が多い」だけで広く履歴を掘らない。
-6. State破損・汚染・移行など、ユーザーが監査State修復を明示した場合だけGit/CI証拠から広く復元してよい。その特殊修復を通常の再開手順へ持ち込まない。
-7. 今回のユーザー明示指示があればStateと整合させ、必要な該当節だけ確認して作業する。
+新規画面/機能は既存IDを並べ替えずrouteへ追記する。1周完了後にroute作成後の変更差分を回帰フェーズとして扱い、巡回監査と混ぜない。
 
-開始時刻記録だけのcommit/push、理由のない再監査・重いsuite再実行、復元のためだけの広範な履歴探索をしない。再開処理は実監査へ入るための最小コストに留める。
+## 3. 最短再開手順
 
-## 4. 実装・監査
+1. 両repoの最新 `dev_branch` と現在HEADを確認し、安全に追従する。
+2. `AUDIT_ROUTE.md` を読む。bootstrap-requiredならSection 1だけを行う。lockedなら `ASTRA_CONTINUATION.md` の `current_id` を読む。
+3. current IDに必要な仕様/品質基準の該当節だけ確認し、直ちにそのTODOを実行する。
+4. checkpoint後のremote差分は現在IDの前提を壊すかだけscope-boundedに確認する。全commit・全CIを網羅的に再調査してStateを再構築しない。
+5. 完了条件を満たしたIDだけdoneにして次IDへ進む。利用枠終了時は現在IDを保存する。
 
-NIARIMを世界最高水準の商用製品へ仕上げることを優先し、利用枠節約のため品質を落とさない。App/Webを1製品として扱い、必要に応じて再現→影響範囲→root cause→修正→検証→実画面→regressionまで完結させる。品質上有利なら影響を理解した上でrefactor/rewriteしてよい。重大な製品全体変更のみ事前確認する。
+開始時刻記録だけのcommit/push、理由のない再監査・重いsuite再実行、復元のためだけの広範な履歴探索をしない。
 
-変更ごとに最小かつ十分なformat/static analysis/test/build/visual checkを行う。同一HEAD・入力・環境で既にPASSした重いsuiteを根拠なく再実行しない。CI/test PASSだけで品質保証済みにしない。UI/UX、PC/SP差別化、7言語、336表示matrix、全画面・全操作の実操作/目視、SEO/ASO、法務等は各正本を適用する。
+## 4. 実装・監査品質
+
+NIARIMを世界最高水準の商用製品へ仕上げることを優先し、App/Webを1製品として扱う。必要に応じて再現→影響範囲→root cause→修正→検証→実画面→regressionまで完結させる。品質上有利なら影響を理解した上でrefactor/rewriteしてよい。重大な製品全体変更のみ事前確認する。
+
+変更ごとに最小かつ十分なformat/static analysis/test/build/visual checkを行う。CI/test PASSだけで品質保証済みにしない。UI/UX、PC/SP差別化、7言語、336表示matrix、全画面・全操作の実操作/目視、SEO/ASO、法務等は各正本を適用する。
 
 ## 5. AI/非AI作業の効率
 
-単純反復・matrix・lint/test/build/screenshot等は可能な限りActions/CI/決定論的自動化へ寄せ、Astraは設計、root-cause、実装、UI/UX、翻訳品質、法務リスク、異常差分など判断価値の高い作業へ使う。
+単純反復・matrix・lint/test/build/screenshot等はActions/CI/決定論的自動化へ寄せ、Astraは設計、root-cause、実装、UI/UX、翻訳品質、法務リスク、異常差分など判断価値の高い作業へ使う。
 
 サブエージェントは品質/総合効率が明確に上がる独立作業または独立レビューだけ必要最小限。Codex系では原則 `fork_turns:"none"`、必要でも1〜2、`all`は使わない。子から子を増やさない。wait既定値を設定できる場合120秒、個別wait/timeoutは予想実行時間の約2倍を一度に指定する。
 
-## 6. State更新と終了
+## 6. State更新
 
-Stateは全面監査モードで実際に検証した事実だけ更新する。通常タスクで実装済みという理由だけで監査済み/完了済みにしない。
+Route/Progress/Evidenceは全面監査Work自身が実際に検証した事実だけ更新する。旧監査記録や通常タスクの成果だけでTODOをdoneにしない。
 
-`ASTRA_CONTINUATION.md` は開始/終了HEAD、完了事項、主要検証、未解決、次の1手を簡潔に保持し、`ASTRA_AUDIT_STATE.md` は監査マップ・検証根拠を保持する。同じ内容を重複記載しない。
-
-State更新commitには `[audit-state]`、policy/guard変更にはユーザーの明示依頼のもと `[audit-policy-approved]` を使う。合理的な作業単位で検証済み変更をcommitし、安全に`dev_branch`へpushする。全面監査completeは各品質正本の条件を満たした場合だけとする。
+State更新commitには `[audit-state]`、policy/guard変更にはユーザーの明示依頼のもと `[audit-policy-approved]` を使う。全面監査completeはRoute全件と各品質正本の完了条件を満たし、最終回帰フェーズを終えた場合だけとする。
