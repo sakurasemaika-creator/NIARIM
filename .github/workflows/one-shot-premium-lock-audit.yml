@@ -1,0 +1,59 @@
+name: One-shot Premium Lock Audit
+
+on:
+  push:
+    branches:
+      - dev_branch
+    paths:
+      - ".github/workflows/one-shot-premium-lock-audit.yml"
+
+jobs:
+  premium-lock-audit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v6
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: false
+      - run: flutter pub get
+      - name: Inventory Premium gates on dev_branch
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p build/premium-lock-audit
+          {
+            echo '# Premium gate inventory'
+            echo
+            echo '## Dart references'
+            grep -RInE --include='*.dart' \
+              'PremiumService|PremiumFeature|PremiumLockWidget|PremiumLockState|showPremiumBanner|isFeatureAvailable|isPremium' \
+              lib test || true
+            echo
+            echo '## Spec references'
+            grep -RInE --include='*.md' \
+              'Premium|プレミアム|有料|課金|南京錠|ロック' \
+              docs || true
+          } | tee build/premium-lock-audit/inventory.txt
+      - name: Analyze changed Premium lock surface
+        shell: bash
+        run: |
+          flutter analyze \
+            lib/widgets/premium_lock_widget.dart \
+            test/premium_lock_widget_test.dart \
+            --no-fatal-warnings --no-fatal-infos \
+            2>&1 | tee build/premium-lock-audit/analyze.txt
+      - name: Prove visible-lock-disabled and Premium-enabled behavior
+        shell: bash
+        run: |
+          flutter test test/premium_lock_widget_test.dart --reporter expanded \
+            2>&1 | tee build/premium-lock-audit/test.txt
+      - name: Upload inventory and proof logs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: premium-lock-audit
+          path: build/premium-lock-audit
+          if-no-files-found: error
+          retention-days: 7
