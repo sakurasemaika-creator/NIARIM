@@ -1,0 +1,41 @@
+name: Verify automation scope and pixel grid
+
+on:
+  push:
+    branches: [dev_branch]
+    paths:
+      - 'lib/models/custom_automation.dart'
+      - 'lib/widgets/custom_automation_manager_sheet.dart'
+      - 'lib/screens/canvas/canvas_screen.dart'
+      - 'lib/screens/canvas/widgets/canvas_area.dart'
+      - 'test/custom_automation_frame_scope_test.dart'
+      - 'test/pixel_grid_threshold_test.dart'
+      - '.github/workflows/verify-automation-scope-pixel-grid.yml'
+  workflow_dispatch:
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: dev_branch
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+      - run: flutter pub get
+      - name: Analyze implementation and tests
+        run: |
+          flutter analyze \
+            lib/models/custom_automation.dart \
+            lib/widgets/custom_automation_manager_sheet.dart \
+            lib/screens/canvas/canvas_screen.dart \
+            lib/screens/canvas/widgets/canvas_area.dart \
+            test/custom_automation_frame_scope_test.dart \
+            test/pixel_grid_threshold_test.dart
+      - name: Run focused tests
+        run: |
+          flutter test \
+            test/custom_automation_frame_scope_test.dart \
+            test/pixel_grid_threshold_test.dart
