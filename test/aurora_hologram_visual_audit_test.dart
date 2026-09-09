@@ -13,6 +13,19 @@ void main() {
 
   setUpAll(() => out.createSync(recursive: true));
 
+  test('aurora hologram palette identities remain distinct', () {
+    final signatures = <String>{};
+    for (final preset in AuroraHologramPreset.values) {
+      final signature = auroraHologramStops(preset).join('|');
+      expect(
+        signatures.add(signature),
+        isTrue,
+        reason: '${preset.name} must not collapse into another preset palette',
+      );
+    }
+    expect(signatures, hasLength(AuroraHologramPreset.values.length));
+  });
+
   test('wide grayscale ramp -> all aurora hologram presets -> PNG', () async {
     const width = 1024;
     const height = 320;
