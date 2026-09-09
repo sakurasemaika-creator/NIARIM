@@ -25,10 +25,26 @@ class AutoLineartControlOverlay extends StatefulWidget {
 
 class _AutoLineartControlOverlayState extends State<AutoLineartControlOverlay> {
   (int, int)? _active;
+  int? _activePointer;
+  late AutoLineartGraph _displayGraph;
+
+  @override
+  void initState() {
+    super.initState();
+    _displayGraph = widget.graph;
+  }
+
+  @override
+  void didUpdateWidget(covariant AutoLineartControlOverlay oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.graph != widget.graph) {
+      _displayGraph = widget.graph;
+    }
+  }
 
   Rect _imageRect(Size size) {
-    final iw = widget.graph.width.toDouble();
-    final ih = widget.graph.height.toDouble();
+    final iw = _displayGraph.width.toDouble();
+    final ih = _displayGraph.height.toDouble();
     if (iw <= 0 || ih <= 0) return Offset.zero & size;
     final scale = math.min(size.width / iw, size.height / ih);
     final w = iw * scale;
@@ -37,23 +53,23 @@ class _AutoLineartControlOverlayState extends State<AutoLineartControlOverlay> {
   }
 
   Offset _toScreen(AutoLineartPoint point, Rect rect) => Offset(
-    rect.left + point.x / math.max(1, widget.graph.width) * rect.width,
-    rect.top + point.y / math.max(1, widget.graph.height) * rect.height,
+    rect.left + point.x / math.max(1, _displayGraph.width) * rect.width,
+    rect.top + point.y / math.max(1, _displayGraph.height) * rect.height,
   );
 
   AutoLineartPoint _toGraph(Offset point, Rect rect) => AutoLineartPoint(
-    ((point.dx - rect.left) / math.max(1.0, rect.width) * widget.graph.width)
-        .clamp(0.0, math.max(0, widget.graph.width - 1).toDouble()),
-    ((point.dy - rect.top) / math.max(1.0, rect.height) * widget.graph.height)
-        .clamp(0.0, math.max(0, widget.graph.height - 1).toDouble()),
+    ((point.dx - rect.left) / math.max(1.0, rect.width) * _displayGraph.width)
+        .clamp(0.0, math.max(0, _displayGraph.width - 1).toDouble()),
+    ((point.dy - rect.top) / math.max(1.0, rect.height) * _displayGraph.height)
+        .clamp(0.0, math.max(0, _displayGraph.height - 1).toDouble()),
   );
 
   (int, int)? _hit(Offset local, Rect rect) {
     const radius = 22.0;
     var best = radius * radius;
     (int, int)? result;
-    for (var p = 0; p < widget.graph.paths.length; p++) {
-      final path = widget.graph.paths[p];
+    for (var p = 0; p < _displayGraph.paths.length; p++) {
+      final path = _displayGraph.paths[p];
       for (var i = 0; i < path.points.length; i++) {
         final screen = _toScreen(path.points[i], rect);
         final dx = screen.dx - local.dx;
@@ -68,6 +84,12 @@ class _AutoLineartControlOverlayState extends State<AutoLineartControlOverlay> {
     return result;
   }
 
+  void _finishPointer(int pointer) {
+    if (_activePointer != pointer) return;
+    _active = null;
+    _activePointer = null;
+  }
+
   @override
   Widget build(BuildContext context) {
     return LayoutBuilder(
@@ -77,42 +99,39 @@ class _AutoLineartControlOverlayState extends State<AutoLineartControlOverlay> {
         return Listener(
           behavior: HitTestBehavior.opaque,
           onPointerDown: (event) {
-            // GestureDetector's pan start is dispatched only after touch slop.
-            // Select the handle at the actual pointer-down position so a fast
-            // drag cannot outrun the hit target before the pan is accepted.
-            _active = _hit(event.localPosition, rect);
+            final active = _hit(event.localPosition, rect);
+            if (active == null) return;
+            _active = active;
+            _activePointer = event.pointer;
           },
-          child: GestureDetector(
-            behavior: HitTestBehavior.opaque,
-            onPanStart: (details) {
-              // Pointer-down normally owns selection. Keep a fallback for
-              // synthesized pan starts that do not deliver PointerDown here.
-              _active ??= _hit(details.localPosition, rect);
-            },
-            onPanUpdate: (details) {
-              final active = _active;
-              if (active == null) return;
-              widget.onPointMoved(
-                active.$1,
-                active.$2,
-                _toGraph(details.localPosition, rect),
+          onPointerMove: (event) {
+            final active = _active;
+            if (active == null || _activePointer != event.pointer) return;
+            final point = _toGraph(event.localPosition, rect);
+            setState(() {
+              _displayGraph = AutoLineartEngine.moveControlPoint(
+                _displayGraph,
+                pathIndex: active.$1,
+                pointIndex: active.$2,
+                point: point,
               );
-            },
-            onPanEnd: (_) => _active = null,
-            onPanCancel: () => _active = null,
-            child: Stack(
-              fit: StackFit.expand,
-              children: [
-                RawImage(image: widget.image, fit: BoxFit.contain),
-                CustomPaint(
-                  painter: _ControlPainter(
-                    graph: widget.graph,
-                    imageRect: rect,
-                    color: Theme.of(context).colorScheme.primary,
-                  ),
+            });
+            widget.onPointMoved(active.$1, active.$2, point);
+          },
+          onPointerUp: (event) => _finishPointer(event.pointer),
+          onPointerCancel: (event) => _finishPointer(event.pointer),
+          child: Stack(
+            fit: StackFit.expand,
+            children: [
+              RawImage(image: widget.image, fit: BoxFit.contain),
+              CustomPaint(
+                painter: _ControlPainter(
+                  graph: _displayGraph,
+                  imageRect: rect,
+                  color: Theme.of(context).colorScheme.primary,
                 ),
-              ],
-            ),
+              ),
+            ],
           ),
         );
       },
