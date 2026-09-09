@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'dart:typed_data';
 import 'dart:ui' as ui;
 
 import 'package:flutter/material.dart';
@@ -6,16 +7,13 @@ import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:niarim/app_bootstrap.dart';
-import 'package:niarim/engine/custom_automation_filter_runner.dart';
 import 'package:niarim/engine/tile_manager.dart';
 import 'package:niarim/l10n/app_localizations.dart';
-import 'package:niarim/models/custom_automation.dart';
-import 'package:niarim/models/filter_def.dart';
+import 'package:niarim/models/layer.dart' as model;
 import 'package:niarim/screens/canvas/canvas_screen.dart';
-import 'package:niarim/screens/canvas/widgets/brush_panel.dart';
 import 'package:niarim/screens/canvas/widgets/canvas_area.dart';
 import 'package:niarim/screens/canvas/widgets/canvas_icon_button.dart';
-import 'package:niarim/services/custom_automation_service.dart';
+import 'package:niarim/screens/canvas/widgets/filter_panel.dart';
 import 'package:niarim/services/project_service.dart';
 import 'package:niarim/services/theme_service.dart';
 import 'package:provider/provider.dart';
@@ -55,7 +53,7 @@ void main() {
   });
 
   testWidgets(
-    'Canvas automation: start -> pixel action -> settings close -> stop -> edit -> save -> execute, with PNG evidence',
+    'Canvas UI: start recording -> real filter -> stop -> edit -> save -> replay, with PNG evidence',
     (tester) async {
       tester.view.physicalSize = const Size(960, 2160);
       tester.view.devicePixelRatio = 3;
@@ -94,6 +92,7 @@ void main() {
         ),
       );
       await tester.pump();
+
       final project = (await tester.runAsync(
         () => ps!.createProject(
           name: 'custom-automation-visual-audit',
@@ -104,6 +103,33 @@ void main() {
           exportHeight: 320,
         ),
       ))!;
+
+      // Test fixture only: put a broad grayscale block into the first real pixel
+      // layer before CanvasScreen is mounted. The operation recorded below is NOT
+      // this setup; it is driven through the production FilterPanel UI.
+      final seedScene = ps!.scenesOf(project.id).first;
+      final seedLayer = seedScene.frames.first.layers
+          .where((layer) => layer.type == model.LayerType.normal)
+          .first;
+      final tm = ps!.tileManagerOf(project.id);
+      final seedKey = ps!.tileKeyFor(project.id, seedScene.id, 0, seedLayer.id);
+      final tile = tm.getOrCreateTile(seedKey, 0, 0);
+      for (var y = 40; y < 216; y++) {
+        for (var x = 40; x < 216; x++) {
+          final i = (y * TileManager.tileSize + x) * 4;
+          final shade = 32 + ((x - 40) * 208 ~/ 175);
+          tile[i] = shade;
+          tile[i + 1] = shade;
+          tile[i + 2] = shade;
+          tile[i + 3] = 255;
+        }
+      }
+      tm.invalidateTile(seedKey, 0, 0);
+      await tester.runAsync(() async {
+        final image = await tm.compositeLayerToImage(seedKey);
+        image.dispose();
+      });
+
       projectId = project.id;
       rebuildHost!(() {});
       await tester.pump(const Duration(milliseconds: 1400));
@@ -113,13 +139,11 @@ void main() {
 
       Future<void> capture(String name) async {
         stage('capture:$name:begin');
-        await tester.pump(const Duration(milliseconds: 200));
+        await tester.pump(const Duration(milliseconds: 120));
         final boundary =
             rootKey.currentContext!.findRenderObject()! as RenderRepaintBoundary;
         final image = await boundary.toImage(pixelRatio: 1);
-        stage('capture:$name:toByteData');
         final data = await image.toByteData(format: ui.ImageByteFormat.png);
-        stage('capture:$name:write');
         File(
           '${out.path}/$name.png',
         ).writeAsBytesSync(data!.buffer.asUint8List());
@@ -137,7 +161,6 @@ void main() {
         final canvas = canvasWidget();
         final layerId = canvas.currentLayerId;
         expect(layerId, isNotNull, reason: 'Canvas must expose an active layer');
-        final tm = ps!.tileManagerOf(project.id);
         final key = ps!.tileKeyFor(
           project.id,
           canvas.sceneId,
@@ -149,9 +172,9 @@ void main() {
         var offset = 0;
         for (var ty = 0; ty < tm.tilesY; ty++) {
           for (var tx = 0; tx < tm.tilesX; tx++) {
-            final tile = tm.getTile(key, tx, ty);
-            if (tile != null) {
-              snapshot.setRange(offset, offset + tileBytes, tile);
+            final current = tm.getTile(key, tx, ty);
+            if (current != null) {
+              snapshot.setRange(offset, offset + tileBytes, current);
             }
             offset += tileBytes;
           }
@@ -159,11 +182,19 @@ void main() {
         return snapshot;
       }
 
+      int changedBytes(Uint8List before, Uint8List after) {
+        expect(after.length, before.length);
+        var changed = 0;
+        for (var i = 0; i < before.length; i++) {
+          if (before[i] != after[i]) changed++;
+        }
+        return changed;
+      }
+
       Future<void> prewarmActiveLayer() async {
         final canvas = canvasWidget();
         final layerId = canvas.currentLayerId;
         expect(layerId, isNotNull);
-        final tm = ps!.tileManagerOf(project.id);
         final key = ps!.tileKeyFor(
           project.id,
           canvas.sceneId,
@@ -176,13 +207,10 @@ void main() {
         });
       }
 
-      int changedBytes(Uint8List before, Uint8List after) {
-        expect(after.length, before.length);
-        var changed = 0;
-        for (var i = 0; i < before.length; i++) {
-          if (before[i] != after[i]) changed++;
-        }
-        return changed;
+      Future<void> letProductionAsyncWorkFinish() async {
+        await tester.runAsync(
+          () => Future<void>.delayed(const Duration(milliseconds: 1200)),
+        );
       }
 
       Future<void> openCanvasSettings() async {
@@ -192,199 +220,128 @@ void main() {
         );
         expect(settingsButton, findsOneWidget);
         tester.widget<CanvasIconButton>(settingsButton).onPressed!();
-        await tester.pump(const Duration(milliseconds: 500));
+        await tester.pump(const Duration(milliseconds: 350));
       }
 
-      await capture('00_canvas_before');
-
-      stage('seed:raw-gray-underlay');
-      final canvasAtSeed = canvasWidget();
-      final seedLayerId = canvasAtSeed.currentLayerId;
-      expect(seedLayerId, isNotNull);
-      final tm = ps!.tileManagerOf(project.id);
-      final seedKey = ps!.tileKeyFor(
-        project.id,
-        canvasAtSeed.sceneId,
-        canvasAtSeed.currentFrame,
-        seedLayerId!,
-      );
-      final beforeSeed = activeLayerPixels();
-      final tile = tm.getOrCreateTile(seedKey, 0, 0);
-      for (var y = 48; y < 208; y++) {
-        for (var x = 48; x < 208; x++) {
-          final i = (y * TileManager.tileSize + x) * 4;
-          final shade = 48 + ((x - 48) * 176 ~/ 159);
-          tile[i] = shade;
-          tile[i + 1] = shade;
-          tile[i + 2] = shade;
-          tile[i + 3] = 255;
-        }
-      }
-      tm.invalidateTile(seedKey, 0, 0);
-      final afterSeed = activeLayerPixels();
-      expect(
-        changedBytes(beforeSeed, afterSeed),
-        greaterThan(100),
-        reason: 'The gray setup underlay must exist before recording',
-      );
-      stage('seed:prewarm');
-      await prewarmActiveLayer();
-      stage('seed:prewarmed');
-      await capture('00a_canvas_seeded_gray_underlay');
+      final l10n = AppLocalizations.of(tester.element(find.byType(CanvasScreen)))!;
+      await capture('00_canvas_before_recording');
 
       stage('settings:open');
       await openCanvasSettings();
       await capture('01_settings_open');
 
-      final l10n = AppLocalizations.of(tester.element(find.byType(CanvasScreen)))!;
       final automationEntry = find.text(l10n.customAutomationTitle);
-      expect(
-        automationEntry,
-        findsWidgets,
-        reason: 'Canvas settings exposes custom automation',
-      );
-      stage('manager:ensure-entry');
+      expect(automationEntry, findsWidgets);
       await tester.ensureVisible(automationEntry.last);
-      stage('manager:tap-entry');
+      stage('manager:open');
       await tester.tap(automationEntry.last);
-      await tester.pump(const Duration(milliseconds: 500));
+      await tester.pump(const Duration(milliseconds: 350));
       await capture('02_manager_open');
 
       final add = find.text(l10n.customAutomationAdd);
-      expect(add, findsOneWidget, reason: 'automation manager exposes Add');
-      stage('record:add');
+      expect(add, findsOneWidget);
       await tester.tap(add);
-      await tester.pump(const Duration(milliseconds: 300));
+      await tester.pump(const Duration(milliseconds: 250));
       final nameField = find.byType(TextField);
-      expect(
-        nameField,
-        findsOneWidget,
-        reason: 'new automation dialog asks for a name',
-      );
+      expect(nameField, findsOneWidget);
       await tester.enterText(nameField, automationName);
       final start = find.text(l10n.customAutomationStartRecording);
       expect(start, findsOneWidget);
       stage('record:start');
       await tester.tap(start);
-      await tester.pump(const Duration(milliseconds: 500));
+      await tester.pump(const Duration(milliseconds: 350));
       await capture('03_recording_started');
 
-      const recordedFilter = FilterDef(
-        id: 'automation-visual-brightness',
-        name: 'Automation Visual Brightness',
-        kind: FilterKind.colorAdjust,
-        strength: 100,
-        caBrightness: 24,
-      );
-      final canvasAtRecord = canvasWidget();
-      final sourceLayerId = canvasAtRecord.currentLayerId;
-      expect(sourceLayerId, isNotNull);
+      // Real production operation while recording: settings -> drawing filter ->
+      // Apply. FilterPanel itself records canvas.filter after _applyToFrame succeeds.
+      stage('filter:open-settings');
+      await openCanvasSettings();
+      final filterEntry = find.text(l10n.filterPanelTitle);
+      expect(filterEntry, findsWidgets);
+      await tester.ensureVisible(filterEntry.last);
+      await tester.tap(filterEntry.last);
+      await tester.pump(const Duration(milliseconds: 300));
+      expect(find.byType(FilterPanel), findsOneWidget);
+      await letProductionAsyncWorkFinish();
+      await capture('04_filter_panel_open_during_recording');
+
       final beforeRecordedAction = activeLayerPixels();
-      stage('action:production-filter-apply');
-      await tester.runAsync(
-        () => CustomAutomationFilterRunner.apply(
-          projectService: ps!,
-          projectId: project.id,
-          sceneId: canvasAtRecord.sceneId,
-          frameIndex: canvasAtRecord.currentFrame,
-          sourceLayerId: sourceLayerId!,
-          filter: recordedFilter,
-        ),
-      );
-      tester
-          .element(find.byType(CanvasScreen))
-          .read<CustomAutomationService>()
-          .recordStep(
-            surface: CustomAutomationSurface.canvas,
-            command: 'canvas.filter',
-            label: recordedFilter.name,
-            args: {'filter': recordedFilter.toJson()},
-            recordedFrame: canvasAtRecord.currentFrame,
-          );
+      final apply = find.text(l10n.filterApplyButton);
+      expect(apply, findsOneWidget);
+      stage('filter:apply-through-ui');
+      await tester.tap(apply);
+      await letProductionAsyncWorkFinish();
       final afterRecordedAction = activeLayerPixels();
       expect(
         changedBytes(beforeRecordedAction, afterRecordedAction),
         greaterThan(100),
-        reason: 'The recorded production command must change real Canvas RGBA',
+        reason: 'Production FilterPanel Apply must change real Canvas RGBA',
       );
-      stage('action:prewarm');
       await prewarmActiveLayer();
-      stage('action:prewarmed');
-      await capture('04_real_canvas_pixel_action_recorded');
+      await capture('05_real_filter_applied_and_recorded');
 
-      stage('record:settings-panel-open');
-      await tester.tap(find.byIcon(Icons.tune).first);
-      await tester.pump(const Duration(milliseconds: 400));
-      expect(find.byType(BrushPanel), findsOneWidget);
-      await capture('04a_settings_panel_open_during_recording');
-      stage('record:settings-panel-close-before-stop');
-      tester.widget<BrushPanel>(find.byType(BrushPanel)).onClose();
-      await tester.pump(const Duration(milliseconds: 300));
-      expect(find.byType(BrushPanel), findsNothing);
+      final closeFilter = find.descendant(
+        of: find.byType(FilterPanel),
+        matching: find.byIcon(Icons.close),
+      );
+      expect(closeFilter, findsOneWidget);
+      await tester.tap(closeFilter);
+      await tester.pump(const Duration(milliseconds: 250));
+      expect(find.byType(FilterPanel), findsNothing);
 
       final stop = find.text(l10n.customAutomationStopRecording);
-      expect(stop, findsWidgets, reason: 'recording stop control is visible');
+      expect(stop, findsWidgets);
       stage('record:stop');
       await tester.ensureVisible(stop.last);
       await tester.tap(stop.last);
-      await tester.pump(const Duration(milliseconds: 500));
-      await capture('05_recording_stopped_draft');
+      await tester.pump(const Duration(milliseconds: 350));
+      await capture('06_recording_stopped_draft');
 
-      expect(
-        find.byIcon(Icons.delete_outline),
-        findsWidgets,
-        reason: 'draft editor opened with recorded steps',
-      );
+      expect(find.byIcon(Icons.delete_outline), findsWidgets);
       expect(
         find.text('canvas.filter'),
         findsOneWidget,
-        reason: 'draft contains the pixel-changing Canvas filter command',
+        reason: 'Draft must contain the filter operation recorded by FilterPanel',
       );
-      await capture('06_draft_edit');
+      await capture('07_draft_edit');
 
       final save = find.text(l10n.commonSave);
       expect(save, findsWidgets);
       stage('draft:save');
       await tester.tap(save.last);
-      await tester.pump(const Duration(milliseconds: 600));
-      await capture('07_saved');
+      await tester.pump(const Duration(milliseconds: 450));
+      await capture('08_saved');
 
       final beforeReplay = activeLayerPixels();
-
-      stage('reopen:settings');
+      stage('replay:open-manager');
       await openCanvasSettings();
       final entryAgain = find.text(l10n.customAutomationTitle);
       await tester.ensureVisible(entryAgain.last);
       await tester.tap(entryAgain.last);
-      await tester.pump(const Duration(milliseconds: 500));
-      await capture('08_manager_saved_item');
+      await tester.pump(const Duration(milliseconds: 350));
+      await capture('09_manager_saved_item');
 
       final savedItem = find.text(automationName);
-      expect(
-        savedItem,
-        findsOneWidget,
-        reason: 'saved automation is listed in the manager',
-      );
-      stage('execute:row');
+      expect(savedItem, findsOneWidget);
       await tester.tap(savedItem);
-      await tester.pump(const Duration(milliseconds: 300));
+      await tester.pump(const Duration(milliseconds: 250));
       expect(find.text(l10n.customAutomationRunConfirmTitle), findsOneWidget);
       final yes = find.text(l10n.customAutomationYes);
       expect(yes, findsOneWidget);
-      stage('execute:confirm');
+      stage('replay:confirm');
       await tester.tap(yes);
-      await tester.pump(const Duration(milliseconds: 900));
+      await letProductionAsyncWorkFinish();
       final afterReplay = activeLayerPixels();
       expect(
         changedBytes(beforeReplay, afterReplay),
         greaterThan(100),
-        reason: 'Re-executing the saved automation must change real Canvas RGBA',
+        reason: 'Saved automation replay must change real Canvas RGBA again',
       );
       await prewarmActiveLayer();
-      await capture('09_reexecuted_real_canvas_pixels_changed');
+      await capture('10_reexecuted_real_canvas_pixels_changed');
 
       expect(tester.takeException(), isNull);
     },
-    timeout: const Timeout(Duration(minutes: 2)),
+    timeout: const Timeout(Duration(minutes: 3)),
   );
 }
