@@ -6218,4 +6218,16 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get timelineEffectTypeVhsNoise => 'VHSノイズ';
+
+  @override
+  String get customAutomationSpecifiedFrames => '指定したフレームで行う';
+
+  @override
+  String get customAutomationFrameFrom => '開始フレーム';
+
+  @override
+  String get customAutomationFrameTo => '終了フレーム';
+
+  @override
+  String get customAutomationFrameRangeInvalid => '有効なフレーム範囲を入力してください。';
 }

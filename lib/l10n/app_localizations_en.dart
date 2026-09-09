@@ -6434,4 +6434,16 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get timelineEffectTypeVhsNoise => 'VHS Noise';
+
+  @override
+  String get customAutomationSpecifiedFrames => 'Run on specified frames';
+
+  @override
+  String get customAutomationFrameFrom => 'From frame';
+
+  @override
+  String get customAutomationFrameTo => 'To frame';
+
+  @override
+  String get customAutomationFrameRangeInvalid => 'Enter a valid frame range.';
 }

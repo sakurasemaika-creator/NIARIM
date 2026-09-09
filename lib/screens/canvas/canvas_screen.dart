@@ -377,6 +377,10 @@ class _CanvasScreenState extends State<CanvasScreen> {
         onExecute: _executeCustomAutomation,
         onRecordingStarted: _showCustomAutomationRecordingOverlay,
         recordingStartFrame: _currentFrame,
+        frameCount: context.read<ProjectService>().frameCount(
+          widget.projectId,
+          _currentSceneId,
+        ),
       ),
     );
   }
@@ -435,6 +439,7 @@ class _CanvasScreenState extends State<CanvasScreen> {
   Future<void> _executeCustomAutomation(
     CustomAutomation automation,
     CustomAutomationExecutionScope scope,
+    List<int>? targetFrames,
   ) async {
     final total = context.read<ProjectService>().frameCount(
       widget.projectId,
@@ -442,7 +447,12 @@ class _CanvasScreenState extends State<CanvasScreen> {
     );
     final frames = scope == CustomAutomationExecutionScope.allFrames
         ? List<int>.generate(total, (index) => index)
+        : scope == CustomAutomationExecutionScope.specifiedFrames
+        ? (targetFrames ?? const <int>[])
+              .where((frame) => frame >= 0 && frame < total)
+              .toList(growable: false)
         : <int>[_currentFrame];
+    if (frames.isEmpty) return;
     for (final frame in frames) {
       for (final step in automation.steps) {
         if (step.surface != CustomAutomationSurface.canvas) {
@@ -1157,9 +1167,9 @@ class _CanvasScreenState extends State<CanvasScreen> {
                                           borderRadius: BorderRadius.circular(
                                             10,
                                           ),
-                                          color: Theme.of(
-                                            context,
-                                          ).colorScheme.inverseSurface,
+                                          color: Theme.of(context)
+                                              .colorScheme
+                                              .inverseSurface,
                                           child: Padding(
                                             padding: const EdgeInsets.symmetric(
                                               horizontal: 14,
@@ -1418,9 +1428,8 @@ class _CanvasScreenState extends State<CanvasScreen> {
                             size: 22,
                             // 色固定をやめ、テーマの文字色と連動させる（CanvasIconButton・
                             // ToolbarWidgetの色連動と同じ方針）。
-                            color: Theme.of(
-                              context,
-                            ).colorScheme.onSurface.withValues(alpha: 0.7),
+                            color: Theme.of(context).colorScheme.onSurface
+                                .withValues(alpha: 0.7),
                           ),
                         ),
                       ),

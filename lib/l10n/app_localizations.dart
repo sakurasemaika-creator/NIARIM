@@ -11434,6 +11434,30 @@ abstract class AppLocalizations {
   /// In ja, this message translates to:
   /// **'VHSノイズ'**
   String get timelineEffectTypeVhsNoise;
+
+  /// No description provided for @customAutomationSpecifiedFrames.
+  ///
+  /// In ja, this message translates to:
+  /// **'指定したフレームで行う'**
+  String get customAutomationSpecifiedFrames;
+
+  /// No description provided for @customAutomationFrameFrom.
+  ///
+  /// In ja, this message translates to:
+  /// **'開始フレーム'**
+  String get customAutomationFrameFrom;
+
+  /// No description provided for @customAutomationFrameTo.
+  ///
+  /// In ja, this message translates to:
+  /// **'終了フレーム'**
+  String get customAutomationFrameTo;
+
+  /// No description provided for @customAutomationFrameRangeInvalid.
+  ///
+  /// In ja, this message translates to:
+  /// **'有効なフレーム範囲を入力してください。'**
+  String get customAutomationFrameRangeInvalid;
 }
 
 class _AppLocalizationsDelegate

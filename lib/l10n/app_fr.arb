@@ -2699,5 +2699,9 @@
   "filterVhsScanlineStrength": "Lignes de balayage",
   "filterVhsColorBleed": "Bavure des couleurs",
   "filterVhsTracking": "Suivi",
-  "timelineEffectTypeVhsNoise": "Bruit VHS"
+  "timelineEffectTypeVhsNoise": "Bruit VHS",
+  "customAutomationSpecifiedFrames": "Exécuter sur les images spécifiées",
+  "customAutomationFrameFrom": "Image de début",
+  "customAutomationFrameTo": "Image de fin",
+  "customAutomationFrameRangeInvalid": "Saisissez une plage d’images valide."
 }

@@ -2699,5 +2699,9 @@
   "filterVhsScanlineStrength": "Líneas de barrido",
   "filterVhsColorBleed": "Sangrado de color",
   "filterVhsTracking": "Seguimiento",
-  "timelineEffectTypeVhsNoise": "Ruido VHS"
+  "timelineEffectTypeVhsNoise": "Ruido VHS",
+  "customAutomationSpecifiedFrames": "Ejecutar en fotogramas especificados",
+  "customAutomationFrameFrom": "Fotograma inicial",
+  "customAutomationFrameTo": "Fotograma final",
+  "customAutomationFrameRangeInvalid": "Introduce un intervalo de fotogramas válido."
 }

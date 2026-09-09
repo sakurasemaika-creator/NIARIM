@@ -14,10 +14,12 @@ class CustomAutomationManagerSheet extends StatelessWidget {
   final Future<void> Function(
     CustomAutomation automation,
     CustomAutomationExecutionScope scope,
+    List<int>? targetFrames,
   )
   onExecute;
   final VoidCallback onRecordingStarted;
   final int? recordingStartFrame;
+  final int? frameCount;
 
   const CustomAutomationManagerSheet({
     super.key,
@@ -25,6 +27,7 @@ class CustomAutomationManagerSheet extends StatelessWidget {
     required this.onExecute,
     required this.onRecordingStarted,
     this.recordingStartFrame,
+    this.frameCount,
   });
 
   Future<void> _startNew(BuildContext context) async {
@@ -79,6 +82,8 @@ class CustomAutomationManagerSheet extends StatelessWidget {
   ) async {
     final l10n = AppLocalizations.of(context)!;
     var scope = CustomAutomationExecutionScope.currentFrame;
+    final fromController = TextEditingController(text: '1');
+    final toController = TextEditingController(text: '${frameCount ?? 1}');
     final accepted = await showDialog<bool>(
       context: context,
       builder: (dialogContext) => StatefulBuilder(
@@ -109,6 +114,48 @@ class CustomAutomationManagerSheet extends StatelessWidget {
                         title: Text(l10n.customAutomationAllFrames),
                         contentPadding: EdgeInsets.zero,
                       ),
+                      RadioListTile<CustomAutomationExecutionScope>(
+                        value: CustomAutomationExecutionScope.specifiedFrames,
+                        title: Text(l10n.customAutomationSpecifiedFrames),
+                        contentPadding: EdgeInsets.zero,
+                      ),
+                      if (scope ==
+                          CustomAutomationExecutionScope.specifiedFrames)
+                        Padding(
+                          padding: const EdgeInsets.only(
+                            left: 16,
+                            right: 16,
+                            bottom: 8,
+                          ),
+                          child: Row(
+                            children: [
+                              Expanded(
+                                child: TextField(
+                                  controller: fromController,
+                                  keyboardType: TextInputType.number,
+                                  decoration: InputDecoration(
+                                    labelText: l10n.customAutomationFrameFrom,
+                                    border: const OutlineInputBorder(),
+                                  ),
+                                ),
+                              ),
+                              const Padding(
+                                padding: EdgeInsets.symmetric(horizontal: 8),
+                                child: Text('–'),
+                              ),
+                              Expanded(
+                                child: TextField(
+                                  controller: toController,
+                                  keyboardType: TextInputType.number,
+                                  decoration: InputDecoration(
+                                    labelText: l10n.customAutomationFrameTo,
+                                    border: const OutlineInputBorder(),
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
                     ],
                   ),
                 ),
@@ -128,9 +175,39 @@ class CustomAutomationManagerSheet extends StatelessWidget {
         ),
       ),
     );
+    List<int>? targetFrames;
+    if (accepted == true &&
+        scope == CustomAutomationExecutionScope.specifiedFrames) {
+      final from = int.tryParse(fromController.text.trim());
+      final to = int.tryParse(toController.text.trim());
+      final maxFrame = frameCount ?? 0;
+      final valid =
+          from != null &&
+          to != null &&
+          from >= 1 &&
+          to >= from &&
+          maxFrame > 0 &&
+          to <= maxFrame;
+      if (!valid) {
+        fromController.dispose();
+        toController.dispose();
+        if (context.mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text(l10n.customAutomationFrameRangeInvalid)),
+          );
+        }
+        return;
+      }
+      targetFrames = List<int>.generate(
+        to - from + 1,
+        (index) => from - 1 + index,
+      );
+    }
+    fromController.dispose();
+    toController.dispose();
     if (accepted == true && context.mounted) {
       Navigator.pop(context);
-      await onExecute(automation, scope);
+      await onExecute(automation, scope, targetFrames);
     }
   }
 

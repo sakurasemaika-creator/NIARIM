@@ -2318,9 +2318,8 @@ class _CanvasAreaState extends State<CanvasArea> {
             .distance <
         rotateR) {
       mode = _TransformMode.rotate;
-    } else if (selectionScaleHandlesOf(
-      bounds,
-    ).any((c) => (canvasPos - c).distance < r)) {
+    } else if (selectionScaleHandlesOf(bounds)
+        .any((c) => (canvasPos - c).distance < r)) {
       mode = _TransformMode.scale;
     } else if ((canvasPos - bounds.center).distance < r ||
         _selectionMaskContains(canvasPos)) {
@@ -3403,7 +3402,9 @@ class _CanvasAreaState extends State<CanvasArea> {
     final pixelBrushActive =
         currentBrush?.pixelMode == true &&
         ((widget.currentTool == DrawingTool.pen &&
-                widget.currentSubTool == PenSubTool.brush) ||
+                (widget.currentSubTool == PenSubTool.brush ||
+                    widget.currentSubTool == PenSubTool.tone ||
+                    widget.currentSubTool == PenSubTool.stamp)) ||
             widget.currentTool == DrawingTool.eraser ||
             widget.currentTool == DrawingTool.ruler ||
             widget.currentTool == DrawingTool.shape);
@@ -3671,7 +3672,7 @@ class _PixelGridPainter extends CustomPainter {
     );
 
     final gridPaint = Paint()
-      ..color = color.withValues(alpha: 0.18)
+      ..color = color.withValues(alpha: 0.30)
       ..style = PaintingStyle.stroke
       ..strokeWidth = 0.65 / math.max(zoom, 0.001)
       ..isAntiAlias = false;

@@ -3004,5 +3004,9 @@
   "filterVhsScanlineStrength": "走査線",
   "filterVhsColorBleed": "色にじみ",
   "filterVhsTracking": "トラッキング",
-  "timelineEffectTypeVhsNoise": "VHSノイズ"
+  "timelineEffectTypeVhsNoise": "VHSノイズ",
+  "customAutomationSpecifiedFrames": "指定したフレームで行う",
+  "customAutomationFrameFrom": "開始フレーム",
+  "customAutomationFrameTo": "終了フレーム",
+  "customAutomationFrameRangeInvalid": "有効なフレーム範囲を入力してください。"
 }

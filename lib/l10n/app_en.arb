@@ -2706,5 +2706,9 @@
   "filterVhsScanlineStrength": "Scanlines",
   "filterVhsColorBleed": "Color bleed",
   "filterVhsTracking": "Tracking",
-  "timelineEffectTypeVhsNoise": "VHS Noise"
+  "timelineEffectTypeVhsNoise": "VHS Noise",
+  "customAutomationSpecifiedFrames": "Run on specified frames",
+  "customAutomationFrameFrom": "From frame",
+  "customAutomationFrameTo": "To frame",
+  "customAutomationFrameRangeInvalid": "Enter a valid frame range."
 }

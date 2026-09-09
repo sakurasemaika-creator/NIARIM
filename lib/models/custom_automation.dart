@@ -2,7 +2,7 @@ import 'dart:convert';
 
 enum CustomAutomationSurface { canvas, timeline }
 
-enum CustomAutomationExecutionScope { currentFrame, allFrames }
+enum CustomAutomationExecutionScope { currentFrame, specifiedFrames, allFrames }
 
 class CustomAutomationStep {
   final String id;

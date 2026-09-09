@@ -6544,4 +6544,18 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get timelineEffectTypeVhsNoise => 'Ruido VHS';
+
+  @override
+  String get customAutomationSpecifiedFrames =>
+      'Ejecutar en fotogramas especificados';
+
+  @override
+  String get customAutomationFrameFrom => 'Fotograma inicial';
+
+  @override
+  String get customAutomationFrameTo => 'Fotograma final';
+
+  @override
+  String get customAutomationFrameRangeInvalid =>
+      'Introduce un intervalo de fotogramas válido.';
 }

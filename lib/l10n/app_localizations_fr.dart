@@ -6552,4 +6552,18 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get timelineEffectTypeVhsNoise => 'Bruit VHS';
+
+  @override
+  String get customAutomationSpecifiedFrames =>
+      'Exécuter sur les images spécifiées';
+
+  @override
+  String get customAutomationFrameFrom => 'Image de début';
+
+  @override
+  String get customAutomationFrameTo => 'Image de fin';
+
+  @override
+  String get customAutomationFrameRangeInvalid =>
+      'Saisissez une plage d’images valide.';
 }

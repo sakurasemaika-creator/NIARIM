@@ -2699,5 +2699,9 @@
   "filterVhsScanlineStrength": "주사선",
   "filterVhsColorBleed": "색 번짐",
   "filterVhsTracking": "트래킹",
-  "timelineEffectTypeVhsNoise": "VHS 노이즈"
+  "timelineEffectTypeVhsNoise": "VHS 노이즈",
+  "customAutomationSpecifiedFrames": "지정한 프레임에서 실행",
+  "customAutomationFrameFrom": "시작 프레임",
+  "customAutomationFrameTo": "종료 프레임",
+  "customAutomationFrameRangeInvalid": "올바른 프레임 범위를 입력하세요."
 }

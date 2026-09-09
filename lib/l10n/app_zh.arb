@@ -2699,5 +2699,9 @@
   "filterVhsScanlineStrength": "扫描线",
   "filterVhsColorBleed": "色彩溢出",
   "filterVhsTracking": "跟踪抖动",
-  "timelineEffectTypeVhsNoise": "VHS 噪点"
+  "timelineEffectTypeVhsNoise": "VHS 噪点",
+  "customAutomationSpecifiedFrames": "在指定帧执行",
+  "customAutomationFrameFrom": "起始帧",
+  "customAutomationFrameTo": "结束帧",
+  "customAutomationFrameRangeInvalid": "请输入有效的帧范围。"
 }

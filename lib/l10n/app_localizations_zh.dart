@@ -6177,6 +6177,18 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get timelineEffectTypeVhsNoise => 'VHS 噪点';
+
+  @override
+  String get customAutomationSpecifiedFrames => '在指定帧执行';
+
+  @override
+  String get customAutomationFrameFrom => '起始帧';
+
+  @override
+  String get customAutomationFrameTo => '结束帧';
+
+  @override
+  String get customAutomationFrameRangeInvalid => '请输入有效的帧范围。';
 }
 
 /// The translations for Chinese, using the Han script (`zh_Hant`).

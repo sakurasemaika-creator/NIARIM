@@ -6248,4 +6248,16 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get timelineEffectTypeVhsNoise => 'VHS 노이즈';
+
+  @override
+  String get customAutomationSpecifiedFrames => '지정한 프레임에서 실행';
+
+  @override
+  String get customAutomationFrameFrom => '시작 프레임';
+
+  @override
+  String get customAutomationFrameTo => '종료 프레임';
+
+  @override
+  String get customAutomationFrameRangeInvalid => '올바른 프레임 범위를 입력하세요.';
 }
