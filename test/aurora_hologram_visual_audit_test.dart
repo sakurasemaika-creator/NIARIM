@@ -68,11 +68,10 @@ void main() {
     }
   });
 
-  test('wide grayscale ramp -> all aurora hologram presets -> PNG', () async {
+  test('wide grayscale canvas -> production filter route -> all presets -> PNG', () async {
     const width = 1024;
     const height = 320;
     final source = _buildWideGrayRamp(width, height);
-    final engine = FilterEngine();
 
     await _writeRgbaPng(
       source,
@@ -82,14 +81,20 @@ void main() {
     );
 
     for (final preset in AuroraHologramPreset.values) {
-      final result = engine.applyAuroraHologram(
-        source,
-        width,
-        height,
+      final filter = FilterDef(
+        id: 'visual-audit-${preset.name}',
+        name: 'Aurora Hologram ${preset.name}',
+        kind: FilterKind.auroraHologram,
         strength: 100,
-        brightness: 0,
-        saturation: 0,
-        preset: preset,
+        hologramBrightness: 0,
+        hologramSaturation: 0,
+        hologramPreset: preset,
+      );
+      final result = applyDrawFilterInIsolate((source, width, height, filter, null));
+      expect(
+        result,
+        isNot(equals(source)),
+        reason: '${preset.name} must change the canvas pixels on the production route',
       );
       await _writeRgbaPng(
         result,
