@@ -21,6 +21,7 @@ void main() {
   final out = Directory('build/visual-reaudit/custom-automation');
   final appDocs = Directory('${Directory.systemTemp.path}/niarim_custom_automation_audit_docs');
   const pathProviderChannel = MethodChannel('plugins.flutter.io/path_provider');
+  const automationName = 'visual-audit-automation';
 
   setUpAll(() {
     out.createSync(recursive: true);
@@ -96,6 +97,7 @@ void main() {
       final image = await boundary.toImage(pixelRatio: 1);
       final data = await image.toByteData(format: ui.ImageByteFormat.png);
       await File('${out.path}/$name.png').writeAsBytes(data!.buffer.asUint8List());
+      image.dispose();
     }
 
     await capture('00_canvas_before');
@@ -116,10 +118,17 @@ void main() {
     await tester.pump(const Duration(milliseconds: 500));
     await capture('02_manager_open');
 
-    // Start recording from the real manager UI.
+    // Start recording through the real manager flow: Add -> name -> Start recording.
+    final add = find.text(l10n.customAutomationAdd);
+    expect(add, findsOneWidget, reason: 'automation manager exposes Add');
+    await tester.tap(add);
+    await tester.pump(const Duration(milliseconds: 300));
+    final nameField = find.byType(TextField);
+    expect(nameField, findsOneWidget, reason: 'new automation dialog asks for a name');
+    await tester.enterText(nameField, automationName);
     final start = find.text(l10n.customAutomationStartRecording);
-    expect(start, findsWidgets);
-    await tester.tap(start.last);
+    expect(start, findsOneWidget);
+    await tester.tap(start);
     await tester.pump(const Duration(milliseconds: 500));
     await capture('03_recording_started');
 
@@ -150,7 +159,7 @@ void main() {
     await tester.pump(const Duration(milliseconds: 600));
     await capture('07_saved');
 
-    // Re-open manager and execute the saved automation through its UI.
+    // Re-open manager, tap the actual saved row, then accept the real run-confirm dialog.
     await tester.ensureVisible(find.byIcon(Icons.settings).first);
     await tester.tap(find.byIcon(Icons.settings).first);
     await tester.pump(const Duration(milliseconds: 400));
@@ -160,9 +169,18 @@ void main() {
     await tester.pump(const Duration(milliseconds: 500));
     await capture('08_manager_saved_item');
 
-    final execute = find.text(l10n.customAutomationExecute);
-    expect(execute, findsWidgets, reason: 'saved automation exposes execute action');
-    await tester.tap(execute.last);
+    final savedItem = find.text(automationName);
+    expect(savedItem, findsOneWidget, reason: 'saved automation is listed in the manager');
+    await tester.tap(savedItem);
+    await tester.pump(const Duration(milliseconds: 300));
+    expect(
+      find.text(l10n.customAutomationRunConfirmTitle),
+      findsOneWidget,
+      reason: 'tapping the saved row opens the real execution confirmation',
+    );
+    final yes = find.text(l10n.customAutomationYes);
+    expect(yes, findsOneWidget);
+    await tester.tap(yes);
     await tester.pump(const Duration(milliseconds: 700));
     await capture('09_reexecuted');
 
