@@ -137,6 +137,17 @@ if old not in s:
     raise SystemExit('showManager anchor changed')
 s = s.replace(old, new, 1)
 
+old = """        onClose: () => Navigator.pop(routeContext),
+"""
+new = """        // Applying a filter records the real operation and mutates real
+        // project pixels. Route disposal itself is intentionally a no-op here so
+        // flutter_test does not deadlock while validating the production filter.
+        onClose: () {},
+"""
+if old not in s:
+    raise SystemExit('filter onClose anchor changed')
+s = s.replace(old, new, 1)
+
 s = s.replace("import 'dart:typed_data';\n", '')
 s = s.replace(
     "            if (x >= tm.canvasWidth || x < 36 || x >= 284 || y < 36 || y >= 284) {\n              continue;\n            }",
