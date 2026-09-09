@@ -1,0 +1,65 @@
+name: Implement automation scope and pixel grid
+
+on:
+  push:
+    branches: [dev_branch]
+    paths:
+      - '.github/scripts/implement_automation_scope_pixel_grid.py'
+      - '.github/workflows/implement-automation-scope-pixel-grid.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  patch-and-verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: dev_branch
+          fetch-depth: 0
+
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+
+      - name: Apply implementation patch
+        run: python3 .github/scripts/implement_automation_scope_pixel_grid.py
+
+      - name: Regenerate localizations
+        run: flutter gen-l10n
+
+      - name: Format touched Dart files
+        run: |
+          dart format \
+            lib/models/custom_automation.dart \
+            lib/widgets/custom_automation_manager_sheet.dart \
+            lib/screens/canvas/canvas_screen.dart \
+            lib/screens/canvas/widgets/canvas_area.dart
+
+      - name: Analyze touched implementation
+        run: |
+          flutter pub get
+          flutter analyze \
+            lib/models/custom_automation.dart \
+            lib/widgets/custom_automation_manager_sheet.dart \
+            lib/screens/canvas/canvas_screen.dart \
+            lib/screens/canvas/widgets/canvas_area.dart
+
+      - name: Commit implementation
+        run: |
+          if git diff --quiet; then
+            echo 'No source changes to commit.'
+            exit 0
+          fi
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add lib/models/custom_automation.dart \
+                  lib/widgets/custom_automation_manager_sheet.dart \
+                  lib/screens/canvas/canvas_screen.dart \
+                  lib/screens/canvas/widgets/canvas_area.dart \
+                  lib/l10n
+          git commit -m 'feat: add frame-scoped automation and pixel grid'
+          git push origin HEAD:dev_branch
