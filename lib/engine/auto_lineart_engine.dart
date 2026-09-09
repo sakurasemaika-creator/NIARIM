@@ -985,9 +985,9 @@ class AutoLineartEngine {
         var previous = start;
         var current = first;
         while (!anchors.contains(current)) {
-          final options = neighborsOf(current)
-              .where((n) => n != previous)
-              .toList();
+          final options = neighborsOf(
+            current,
+          ).where((n) => n != previous).toList();
           if (options.isEmpty) break;
           // Degree-2 pixels should have one onward neighbor. If raster topology
           // produces more, choose the direction that continues most straight.

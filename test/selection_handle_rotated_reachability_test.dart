@@ -6,18 +6,18 @@ import 'package:niarim/models/project.dart';
 import 'package:niarim/screens/canvas/widgets/canvas_area.dart';
 
 Project _project({double drawingAreaScale = 1.0}) => Project(
-      id: 'selection-handle-reachability',
-      name: 'selection-handle-reachability',
-      fps: 12,
-      durationSeconds: 1,
-      backgroundColor: 0xFFFFFFFF,
-      createdAt: DateTime(2026),
-      updatedAt: DateTime(2026),
-      totalWorkSeconds: 0,
-      exportWidth: 640,
-      exportHeight: 360,
-      drawingAreaScale: drawingAreaScale,
-    );
+  id: 'selection-handle-reachability',
+  name: 'selection-handle-reachability',
+  fps: 12,
+  durationSeconds: 1,
+  backgroundColor: 0xFFFFFFFF,
+  createdAt: DateTime(2026),
+  updatedAt: DateTime(2026),
+  totalWorkSeconds: 0,
+  exportWidth: 640,
+  exportHeight: 360,
+  drawingAreaScale: drawingAreaScale,
+);
 
 Matrix4 _view(Size viewport, Project project, double degrees) {
   final rect = canvasDrawingRectFor(viewport, project);
@@ -60,7 +60,9 @@ void main() {
         final fitScale = drawingRect.width / canvasSize.width;
         final canvasToScreenScale = fitScale * kCanvasMinScale;
         final handleRadius = selectionHandleRadiusFor(canvasToScreenScale);
-        final rotateRadius = selectionRotateHandleRadiusFor(canvasToScreenScale);
+        final rotateRadius = selectionRotateHandleRadiusFor(
+          canvasToScreenScale,
+        );
         final rotatePoint = selectionRotateHandleOf(
           selection,
           handleRadius,

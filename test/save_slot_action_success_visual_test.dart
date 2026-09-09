@@ -27,7 +27,9 @@ void main() {
     SharedPreferences.setMockInitialValues({
       firstUseTooltipsSeenKey: kAllFirstUseTooltipKeys,
     });
-    final tempDir = Directory.systemTemp.createTempSync('niarim_save_slot_e2e_');
+    final tempDir = Directory.systemTemp.createTempSync(
+      'niarim_save_slot_e2e_',
+    );
     const pathChannel = MethodChannel('plugins.flutter.io/path_provider');
     TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
         .setMockMethodCallHandler(pathChannel, (call) async => tempDir.path);
@@ -49,7 +51,11 @@ void main() {
     }
 
     Future<void> waitForDialogToClose() async {
-      for (var i = 0; i < 50 && find.byType(AlertDialog).evaluate().isNotEmpty; i++) {
+      for (
+        var i = 0;
+        i < 50 && find.byType(AlertDialog).evaluate().isNotEmpty;
+        i++
+      ) {
         await settle(rounds: 1);
       }
       expect(find.byType(AlertDialog), findsNothing);
@@ -62,14 +68,16 @@ void main() {
       await tester.pump();
       await settle(rounds: 2);
     }
+
     addTearDown(tester.view.resetPhysicalSize);
     addTearDown(tester.view.resetDevicePixelRatio);
 
     Future<void> capture(String name) async {
       await settle(rounds: 3);
       expect(tester.takeException(), isNull);
-      final boundary = boundaryKey.currentContext!.findRenderObject()!
-          as RenderRepaintBoundary;
+      final boundary =
+          boundaryKey.currentContext!.findRenderObject()!
+              as RenderRepaintBoundary;
       final bytes = await tester.runAsync(() async {
         final image = await boundary.toImage(pixelRatio: 1);
         final data = await image.toByteData(format: ui.ImageByteFormat.png);
@@ -78,7 +86,9 @@ void main() {
       });
       final out = Directory('build/save-slot-visual-audit')
         ..createSync(recursive: true);
-      await tester.runAsync(() => File('${out.path}/$name.png').writeAsBytes(bytes!));
+      await tester.runAsync(
+        () => File('${out.path}/$name.png').writeAsBytes(bytes!),
+      );
     }
 
     await loadAppFonts(tester);
@@ -101,9 +111,8 @@ void main() {
       'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+A8AAQUBAScY42YAAAAASUVORK5CYII=',
     );
 
-    Finder buttons(String tooltip) => find.byWidgetPredicate(
-      (w) => w is IconButton && w.tooltip == tooltip,
-    );
+    Finder buttons(String tooltip) =>
+        find.byWidgetPredicate((w) => w is IconButton && w.tooltip == tooltip);
 
     Future<void> audit({
       required String prefix,

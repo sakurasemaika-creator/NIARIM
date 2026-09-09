@@ -42,7 +42,7 @@ void main() {
     final effectiveScale = fitScale * zoom;
     final canvasRadius = screenRadius / effectiveScale;
 
-    expect(canvasRadius, 175.0);
+    expect(canvasRadius, closeTo(175.0, 1e-9));
     expect(canvasRadius * effectiveScale, screenRadius);
 
     final uncorrectedPaintRadius = screenRadius * zoom;
@@ -82,7 +82,7 @@ void main() {
     final canvasRadius = screenRadius / effectiveScale;
 
     expect(effectiveScale, closeTo(0.04, 1e-9));
-    expect(canvasRadius, 700.0);
+    expect(canvasRadius, closeTo(700.0, 1e-9));
     expect(canvasRadius * effectiveScale, screenRadius);
   });
 

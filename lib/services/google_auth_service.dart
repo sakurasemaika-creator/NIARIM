@@ -120,26 +120,24 @@ class GoogleAuthService extends ChangeNotifier {
   ///
   /// [promptIfNecessary] がfalseならUIを出さず、既に許可済みの時だけ返す。
   /// trueは必ずボタン等のユーザー操作から呼ぶこと。
-  Future<String?> youtubeUploadAccessToken({
-    bool promptIfNecessary = false,
-  }) => _runExclusive(() async {
-    _ensureReadyForGoogle();
-    var user = _account;
-    if (user == null) {
-      if (!promptIfNecessary) return null;
-      user = await _signInInteractivelyInternal();
-    }
+  Future<String?> youtubeUploadAccessToken({bool promptIfNecessary = false}) =>
+      _runExclusive(() async {
+        _ensureReadyForGoogle();
+        var user = _account;
+        if (user == null) {
+          if (!promptIfNecessary) return null;
+          user = await _signInInteractivelyInternal();
+        }
 
-    var authorization = await user.authorizationClient.authorizationForScopes(
-      youtubeUploadScopes,
-    );
-    if (authorization == null && promptIfNecessary) {
-      authorization = await user.authorizationClient.authorizeScopes(
-        youtubeUploadScopes,
-      );
-    }
-    return authorization?.accessToken;
-  });
+        var authorization = await user.authorizationClient
+            .authorizationForScopes(youtubeUploadScopes);
+        if (authorization == null && promptIfNecessary) {
+          authorization = await user.authorizationClient.authorizeScopes(
+            youtubeUploadScopes,
+          );
+        }
+        return authorization?.accessToken;
+      });
 
   Future<void> signOut() => _runExclusive(() async {
     _ensureReadyForGoogle();
@@ -184,9 +182,7 @@ class GoogleAuthService extends ChangeNotifier {
       throw StateError('GoogleAuthService.init() がまだ呼ばれていません');
     }
     if (!isConfigured) {
-      throw StateError(
-        'NIARIM_GOOGLE_CLIENT_ID が未設定です。Google認証は匿名モードです',
-      );
+      throw StateError('NIARIM_GOOGLE_CLIENT_ID が未設定です。Google認証は匿名モードです');
     }
   }
 

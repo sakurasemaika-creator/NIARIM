@@ -27,7 +27,9 @@ void main() {
     SharedPreferences.setMockInitialValues({
       firstUseTooltipsSeenKey: kAllFirstUseTooltipKeys,
     });
-    final tempDir = Directory.systemTemp.createTempSync('niarim_save_slot_visual_');
+    final tempDir = Directory.systemTemp.createTempSync(
+      'niarim_save_slot_visual_',
+    );
     const pathChannel = MethodChannel('plugins.flutter.io/path_provider');
     TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
         .setMockMethodCallHandler(pathChannel, (call) async => tempDir.path);
@@ -54,6 +56,7 @@ void main() {
       await tester.pump();
       await settle(rounds: 2);
     }
+
     addTearDown(tester.view.resetPhysicalSize);
     addTearDown(tester.view.resetDevicePixelRatio);
 
@@ -72,7 +75,8 @@ void main() {
 
     void expectDialogFitsViewport() {
       final rect = tester.getRect(dialog());
-      final logicalSize = tester.view.physicalSize / tester.view.devicePixelRatio;
+      final logicalSize =
+          tester.view.physicalSize / tester.view.devicePixelRatio;
       expect(rect.left, greaterThanOrEqualTo(0));
       expect(rect.top, greaterThanOrEqualTo(0));
       expect(rect.right, lessThanOrEqualTo(logicalSize.width));
@@ -82,8 +86,9 @@ void main() {
     Future<void> capture(String name) async {
       await settle(rounds: 4);
       expect(tester.takeException(), isNull);
-      final boundary = boundaryKey.currentContext!.findRenderObject()!
-          as RenderRepaintBoundary;
+      final boundary =
+          boundaryKey.currentContext!.findRenderObject()!
+              as RenderRepaintBoundary;
       final bytes = await tester.runAsync(() async {
         final image = await boundary.toImage(pixelRatio: 1);
         final data = await image.toByteData(format: ui.ImageByteFormat.png);
@@ -92,7 +97,9 @@ void main() {
       });
       final out = Directory('build/save-slot-visual-audit')
         ..createSync(recursive: true);
-      await tester.runAsync(() => File('${out.path}/$name.png').writeAsBytes(bytes!));
+      await tester.runAsync(
+        () => File('${out.path}/$name.png').writeAsBytes(bytes!),
+      );
     }
 
     await loadAppFonts(tester);
@@ -140,9 +147,8 @@ void main() {
     expect(File(node.thumbnailPath!).existsSync(), isTrue);
 
     final l10n = await AppLocalizations.delegate.load(const Locale('ja'));
-    Finder buttons(String tooltip) => find.byWidgetPredicate(
-      (w) => w is IconButton && w.tooltip == tooltip,
-    );
+    Finder buttons(String tooltip) =>
+        find.byWidgetPredicate((w) => w is IconButton && w.tooltip == tooltip);
 
     Future<void> cancelDialog() async {
       final cancel = find.descendant(
@@ -188,7 +194,10 @@ void main() {
       await settle();
       expectDialogContains(l10n.saveTreeOverwriteAction);
       expectDialogContains(comment);
-      expect(find.descendant(of: dialog(), matching: find.byType(Image)), findsOneWidget);
+      expect(
+        find.descendant(of: dialog(), matching: find.byType(Image)),
+        findsOneWidget,
+      );
       expectDialogFitsViewport();
       await capture('${prefix}_03_overwrite_confirmation');
 
@@ -200,7 +209,10 @@ void main() {
       await tester.tap(ok);
       await settle();
       expectDialogContains(l10n.saveTreeSlotSaveDialogTitle(1));
-      final field = find.descendant(of: dialog(), matching: find.byType(TextField));
+      final field = find.descendant(
+        of: dialog(),
+        matching: find.byType(TextField),
+      );
       expect(field, findsOneWidget);
       expect(tester.widget<TextField>(field).controller?.text, comment);
       expectDialogFitsViewport();
@@ -239,7 +251,10 @@ void main() {
       appRouter.go('/save-tree/${project.id}?entry=timeline');
       await settle();
       final timelineLoads = buttons(l10n.saveTreeSlotLoadTooltip);
-      expect(tester.widget<IconButton>(timelineLoads.first).onPressed, isNotNull);
+      expect(
+        tester.widget<IconButton>(timelineLoads.first).onPressed,
+        isNotNull,
+      );
       await tester.tap(timelineLoads.first);
       await settle();
       expectDialogContains(l10n.saveTreeRestoreAction);

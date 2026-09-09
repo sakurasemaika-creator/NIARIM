@@ -12,7 +12,8 @@ class YoutubeUploadResult {
   final String videoId;
 }
 
-typedef YoutubeUploadProgress = void Function(int uploadedBytes, int totalBytes);
+typedef YoutubeUploadProgress =
+    void Function(int uploadedBytes, int totalBytes);
 
 /// YouTube Data API v3へ動画を直接アップロードするクライアント。
 ///
@@ -61,11 +62,7 @@ class YoutubeUploadService {
       );
     }
     if (chunkSize <= 0 || chunkSize % (256 * 1024) != 0) {
-      throw ArgumentError.value(
-        chunkSize,
-        'chunkSize',
-        '256KiBの正の整数倍にしてください',
-      );
+      throw ArgumentError.value(chunkSize, 'chunkSize', '256KiBの正の整数倍にしてください');
     }
     if (!await file.exists()) {
       throw FileSystemException('アップロード対象ファイルが存在しません', file.path);
@@ -211,7 +208,9 @@ class YoutubeUploadService {
     }
     final location = response.headers['location'];
     if (location == null || location.isEmpty) {
-      throw const YoutubeUploadException('YouTubeがresumable upload URLを返しませんでした');
+      throw const YoutubeUploadException(
+        'YouTubeがresumable upload URLを返しませんでした',
+      );
     }
     final uri = Uri.tryParse(location);
     if (uri == null || uri.scheme != 'https') {

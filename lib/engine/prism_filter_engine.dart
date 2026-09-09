@@ -5,8 +5,14 @@ import 'filter_engine.dart';
 
 /// Isolate entry point used by full-resolution prism application.
 Uint8List applyPrismFilterInIsolate(
-  (Uint8List data, int width, int height, double blurPx, double directionDegrees)
-      args,
+  (
+    Uint8List data,
+    int width,
+    int height,
+    double blurPx,
+    double directionDegrees,
+  )
+  args,
 ) {
   final (data, width, height, blurPx, directionDegrees) = args;
   return PrismFilterEngine().apply(
@@ -22,7 +28,7 @@ Uint8List applyPrismFilterInIsolate(
 /// clipped dark-rainbow fill -> merge -> unclipped Gaussian blur -> Linear Dodge(Add).
 class PrismFilterEngine {
   PrismFilterEngine({FilterEngine? filterEngine})
-      : _filterEngine = filterEngine ?? FilterEngine();
+    : _filterEngine = filterEngine ?? FilterEngine();
 
   static const double minBlurPx = 0;
   static const double maxBlurPx = 40;
@@ -62,12 +68,7 @@ class PrismFilterEngine {
     final safeBlurPx = clampBlurPx(blurPx);
     final blurred = safeBlurPx <= 0
         ? merged
-        : _filterEngine.applyGaussianBlur(
-            merged,
-            width,
-            height,
-            safeBlurPx,
-          );
+        : _filterEngine.applyGaussianBlur(merged, width, height, safeBlurPx);
     return _linearDodge(source, blurred);
   }
 
@@ -78,7 +79,8 @@ class PrismFilterEngine {
     double directionDegrees,
   ) {
     final out = Uint8List(source.length);
-    final radians = normalizeDirectionDegrees(directionDegrees) * math.pi / 180.0;
+    final radians =
+        normalizeDirectionDegrees(directionDegrees) * math.pi / 180.0;
     final dx = math.cos(radians);
     final dy = math.sin(radians);
     final maxX = math.max(0, width - 1).toDouble();
@@ -165,9 +167,7 @@ class PrismFilterEngine {
       final a = stops[i];
       final b = stops[i + 1];
       if (v > b.$1) continue;
-      final local = ((v - a.$1) / (b.$1 - a.$1))
-          .clamp(0.0, 1.0)
-          .toDouble();
+      final local = ((v - a.$1) / (b.$1 - a.$1)).clamp(0.0, 1.0).toDouble();
       return (
         _lerpChannel(a.$2, b.$2, local),
         _lerpChannel(a.$3, b.$3, local),
@@ -178,8 +178,7 @@ class PrismFilterEngine {
     return (last.$2, last.$3, last.$4);
   }
 
-  int _lerpChannel(int a, int b, double t) =>
-      _clampByte(a + (b - a) * t);
+  int _lerpChannel(int a, int b, double t) => _clampByte(a + (b - a) * t);
 
   int _clampByte(num value) => value.round().clamp(0, 255).toInt();
 }

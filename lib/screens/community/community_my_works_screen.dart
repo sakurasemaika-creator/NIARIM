@@ -81,9 +81,9 @@ class _CommunityMyWorksScreenState extends State<CommunityMyWorksScreen> {
     final auth = context.read<GoogleAuthService>();
     if (!auth.isConfigured) {
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Google認証がまだ設定されていません')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('Google認証がまだ設定されていません')));
       return;
     }
 
@@ -102,9 +102,9 @@ class _CommunityMyWorksScreenState extends State<CommunityMyWorksScreen> {
       await _reloadOwnerWorks();
     } catch (error) {
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Googleアカウントを変更できませんでした: $error')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Googleアカウントを変更できませんでした: $error')));
     } finally {
       if (mounted) setState(() => _switchingAccount = false);
     }
@@ -113,9 +113,9 @@ class _CommunityMyWorksScreenState extends State<CommunityMyWorksScreen> {
   Future<void> _handlePostTap() async {
     final auth = context.read<GoogleAuthService>();
     if (!auth.isConfigured) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Google認証がまだ設定されていません')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('Google認証がまだ設定されていません')));
       return;
     }
 
@@ -125,9 +125,9 @@ class _CommunityMyWorksScreenState extends State<CommunityMyWorksScreen> {
         await _reloadOwnerWorks();
       } catch (error) {
         if (!mounted) return;
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Googleログインに失敗しました: $error')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Googleログインに失敗しました: $error')));
         return;
       }
     }
@@ -147,9 +147,7 @@ class _CommunityMyWorksScreenState extends State<CommunityMyWorksScreen> {
     final youtubePrivacy = _youtubePrivacyById[work.id];
     if (published && youtubePrivacy == 'deleted') {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('YouTubeから削除された動画はNIARIMで再公開できません'),
-        ),
+        const SnackBar(content: Text('YouTubeから削除された動画はNIARIMで再公開できません')),
       );
       return;
     }
@@ -173,9 +171,9 @@ class _CommunityMyWorksScreenState extends State<CommunityMyWorksScreen> {
       await context.read<CommunityService>().refreshFromBackend();
     } catch (error) {
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('公開状態を変更できませんでした: $error')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('公開状態を変更できませんでした: $error')));
     } finally {
       if (mounted) setState(() => _visibilityBusy.remove(work.id));
     }
@@ -214,10 +212,11 @@ class _CommunityMyWorksScreenState extends State<CommunityMyWorksScreen> {
     final accountLabel = account == null
         ? 'Googleアカウント未接続'
         : (account.displayName?.trim().isNotEmpty ?? false)
-            ? account.displayName!.trim()
-            : account.email;
+        ? account.displayName!.trim()
+        : account.email;
 
-    final usingBackendOwnerList = communityService.api != null && auth.isSignedIn;
+    final usingBackendOwnerList =
+        communityService.api != null && auth.isSignedIn;
     final works = usingBackendOwnerList
         ? (_ownerWorks ?? const <CommunityWork>[])
         : (communityService.worksByAuthor(
@@ -272,9 +271,12 @@ class _CommunityMyWorksScreenState extends State<CommunityMyWorksScreen> {
                                   accountLabel,
                                   maxLines: 1,
                                   overflow: TextOverflow.ellipsis,
-                                  style: const TextStyle(fontWeight: FontWeight.w600),
+                                  style: const TextStyle(
+                                    fontWeight: FontWeight.w600,
+                                  ),
                                 ),
-                                if (account != null && account.email != accountLabel) ...[
+                                if (account != null &&
+                                    account.email != accountLabel) ...[
                                   const SizedBox(height: 2),
                                   Text(
                                     account.email,
@@ -311,7 +313,9 @@ class _CommunityMyWorksScreenState extends State<CommunityMyWorksScreen> {
                                 ? const SizedBox(
                                     width: 16,
                                     height: 16,
-                                    child: CircularProgressIndicator(strokeWidth: 2),
+                                    child: CircularProgressIndicator(
+                                      strokeWidth: 2,
+                                    ),
                                   )
                                 : const Icon(Icons.manage_accounts_outlined),
                             label: Text(
@@ -333,7 +337,10 @@ class _CommunityMyWorksScreenState extends State<CommunityMyWorksScreen> {
                 children: [
                   Text(
                     l10n.communityAuthorWorksCount(works.length),
-                    style: TextStyle(fontSize: 12, color: scheme.onSurfaceVariant),
+                    style: TextStyle(
+                      fontSize: 12,
+                      color: scheme.onSurfaceVariant,
+                    ),
                   ),
                   if (_loadingWorks) ...[
                     const SizedBox(width: 10),
@@ -348,11 +355,17 @@ class _CommunityMyWorksScreenState extends State<CommunityMyWorksScreen> {
             ),
             if (_worksError != null && usingBackendOwnerList)
               Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 4,
+                ),
                 child: MaterialBanner(
                   content: Text('自分の投稿を読み込めませんでした: $_worksError'),
                   actions: [
-                    TextButton(onPressed: _reloadOwnerWorks, child: const Text('再試行')),
+                    TextButton(
+                      onPressed: _reloadOwnerWorks,
+                      child: const Text('再試行'),
+                    ),
                   ],
                 ),
               ),
@@ -384,7 +397,7 @@ class _CommunityMyWorksScreenState extends State<CommunityMyWorksScreen> {
                   : ListView.separated(
                       padding: const EdgeInsets.fromLTRB(16, 8, 16, 24),
                       itemCount: works.length,
-                      separatorBuilder: (_, __) => const SizedBox(height: 8),
+                      separatorBuilder: (_, _) => const SizedBox(height: 8),
                       itemBuilder: (context, index) {
                         final work = works[index];
                         final busy = _visibilityBusy.contains(work.id);
@@ -397,7 +410,8 @@ class _CommunityMyWorksScreenState extends State<CommunityMyWorksScreen> {
                                 .read<CommunityPreviewService>()
                                 .show(work),
                             leading: CircleAvatar(
-                              backgroundColor: work.isNiarimPublished && !deleted
+                              backgroundColor:
+                                  work.isNiarimPublished && !deleted
                                   ? scheme.primaryContainer
                                   : scheme.surfaceContainerHighest,
                               child: Icon(_visibilityIcon(work)),
@@ -420,14 +434,19 @@ class _CommunityMyWorksScreenState extends State<CommunityMyWorksScreen> {
                                             child: SizedBox(
                                               width: 18,
                                               height: 18,
-                                              child: CircularProgressIndicator(strokeWidth: 2),
+                                              child: CircularProgressIndicator(
+                                                strokeWidth: 2,
+                                              ),
                                             ),
                                           )
                                         : Switch.adaptive(
                                             value: work.isNiarimPublished,
-                                            onChanged: deleted && !work.isNiarimPublished
+                                            onChanged:
+                                                deleted &&
+                                                    !work.isNiarimPublished
                                                 ? null
-                                                : (v) => _setVisibility(work, v),
+                                                : (v) =>
+                                                      _setVisibility(work, v),
                                           ),
                                   )
                                 : null,

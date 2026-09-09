@@ -206,6 +206,48 @@ jobs:
           path: artifacts/save-safety/
           if-no-files-found: error
 
+  audit-gate-repairs:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      REPAIR_SOURCES: >-
+        lib/services/api/community_api.dart
+        lib/screens/community/community_my_works_screen.dart
+        lib/widgets/custom_automation_draft_sheet.dart
+        test/canvas_mesh_handle_scale_contract_test.dart
+        test/canvas_angle_boundary_visual_audit_test.dart
+        test/custom_automation_draft_reorder_test.dart
+    steps:
+      - uses: actions/checkout@v6
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: "3.47.2"
+          channel: stable
+          cache: true
+      - name: Restore locked dependencies
+        run: flutter pub get --enforce-lockfile
+      - name: Analyze repaired contracts and callbacks
+        run: flutter analyze --no-pub $REPAIR_SOURCES
+      - name: Verify scale, rotation, safe background and drag order
+        if: always()
+        run: flutter test --no-pub --reporter expanded test/canvas_mesh_handle_scale_contract_test.dart test/canvas_angle_boundary_visual_audit_test.dart test/custom_automation_draft_reorder_test.dart
+      - name: Export canonical formatting for the current sources
+        if: always()
+        run: |
+          dart format lib test tool
+          git diff --binary -- lib test tool > /tmp/audit-canonical.patch
+          echo AUDIT_CANONICAL_PATCH_BEGIN
+          base64 /tmp/audit-canonical.patch
+          echo AUDIT_CANONICAL_PATCH_END
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: audit-gate-repairs-${{ github.sha }}
+          path: |
+            /tmp/audit-canonical.patch
+            build/visual-reaudit/canvas-angle-boundary/
+          if-no-files-found: error
+
   checkpoint-format:
     runs-on: ubuntu-latest
     timeout-minutes: 10

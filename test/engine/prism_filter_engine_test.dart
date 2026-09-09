@@ -41,30 +41,33 @@ void main() {
       expect(rgbAt(vertical, 0, 0), rgbAt(vertical, 2, 0));
     });
 
-    test('blurPx is passed as gaussian blur pixels and may spread outside clip', () {
-      final source = Uint8List(5 * 5 * 4);
-      final center = (2 * 5 + 2) * 4;
-      source[center + 3] = 255;
+    test(
+      'blurPx is passed as gaussian blur pixels and may spread outside clip',
+      () {
+        final source = Uint8List(5 * 5 * 4);
+        final center = (2 * 5 + 2) * 4;
+        source[center + 3] = 255;
 
-      final engine = PrismFilterEngine();
-      final noBlur = engine.apply(
-        source,
-        5,
-        5,
-        blurPx: 0,
-        gradientDirectionDegrees: 0,
-      );
-      final blurred = engine.apply(
-        source,
-        5,
-        5,
-        blurPx: 1,
-        gradientDirectionDegrees: 0,
-      );
+        final engine = PrismFilterEngine();
+        final noBlur = engine.apply(
+          source,
+          5,
+          5,
+          blurPx: 0,
+          gradientDirectionDegrees: 0,
+        );
+        final blurred = engine.apply(
+          source,
+          5,
+          5,
+          blurPx: 1,
+          gradientDirectionDegrees: 0,
+        );
 
-      final neighbor = (2 * 5 + 1) * 4;
-      expect(noBlur[neighbor + 3], 0);
-      expect(blurred[neighbor + 3], greaterThan(0));
-    });
+        final neighbor = (2 * 5 + 1) * 4;
+        expect(noBlur[neighbor + 3], 0);
+        expect(blurred[neighbor + 3], greaterThan(0));
+      },
+    );
   });
 }

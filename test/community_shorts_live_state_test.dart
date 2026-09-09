@@ -10,9 +10,7 @@ import 'package:niarim/services/community_service.dart';
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
-  testWidgets('縦画面はブックマーク・詳細情報・作者導線・制作情報を即時反映する', (
-    tester,
-  ) async {
+  testWidgets('縦画面はブックマーク・詳細情報・作者導線・制作情報を即時反映する', (tester) async {
     SharedPreferences.setMockInitialValues({});
     final service = CommunityService();
     final work = service.works.first;

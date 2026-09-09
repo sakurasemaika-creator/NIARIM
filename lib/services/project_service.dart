@@ -760,7 +760,8 @@ class ProjectService extends ChangeNotifier {
     final layerId = id ?? _nextLayerId(projectId);
     final layer = Layer(id: layerId, name: name, type: type);
     final scene = sceneOf(projectId, sceneId);
-    final ownLayerCount = scene != null && frameIndex >= 0 && frameIndex < scene.frames.length
+    final ownLayerCount =
+        scene != null && frameIndex >= 0 && frameIndex < scene.frames.length
         ? scene.frames[frameIndex].layers.length
         : 0;
     final targetIndex = insertIndex.clamp(0, ownLayerCount);

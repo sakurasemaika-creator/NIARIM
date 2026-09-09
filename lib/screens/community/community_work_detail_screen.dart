@@ -577,18 +577,14 @@ class _ProjectMetadataCard extends StatelessWidget {
                     icon: Icons.speed_rounded,
                     text: '${work.projectFps}fps',
                   ),
-                if (work.projectCanvasWidth > 0 &&
-                    work.projectCanvasHeight > 0)
+                if (work.projectCanvasWidth > 0 && work.projectCanvasHeight > 0)
                   _ProjectMetaItem(
                     icon: Icons.aspect_ratio_rounded,
                     text:
                         '${work.projectCanvasWidth}×${work.projectCanvasHeight}',
                   ),
                 if (workTime.isNotEmpty)
-                  _ProjectMetaItem(
-                    icon: Icons.timer_outlined,
-                    text: workTime,
-                  ),
+                  _ProjectMetaItem(icon: Icons.timer_outlined, text: workTime),
                 if (work.projectCreatedAt != null)
                   _ProjectMetaItem(
                     icon: Icons.edit_calendar_outlined,

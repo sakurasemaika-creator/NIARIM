@@ -50,6 +50,9 @@ void main() {
       find.byType(SegmentedButton<bool>),
     );
     expect(segmented.selected, {false});
-    expect(tester.widget<TextField>(find.byType(TextField)).controller?.text, '');
+    expect(
+      tester.widget<TextField>(find.byType(TextField)).controller?.text,
+      '',
+    );
   });
 }

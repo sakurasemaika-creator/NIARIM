@@ -41,9 +41,7 @@ class _FakeFilePicker extends FilePicker {
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
-  testWidgets('VHSノイズを実キャンバスUIから操作し実画面PNGを保存する', (
-    tester,
-  ) async {
+  testWidgets('VHSノイズを実キャンバスUIから操作し実画面PNGを保存する', (tester) async {
     void stage(String value) => debugPrint('VHS_CAPTURE_STAGE:$value');
 
     SharedPreferences.setMockInitialValues({});
@@ -96,7 +94,8 @@ void main() {
       final exception = tester.takeException();
       expect(exception, isNull, reason: '$name emitted a Flutter exception');
       final boundary =
-          boundaryKey.currentContext!.findRenderObject() as RenderRepaintBoundary;
+          boundaryKey.currentContext!.findRenderObject()
+              as RenderRepaintBoundary;
       final bytes = await tester.runAsync(() async {
         final image = await boundary.toImage(pixelRatio: 1);
         final data = await image.toByteData(format: ui.ImageByteFormat.png);
@@ -205,7 +204,10 @@ void main() {
     stage('apply:settled');
     await capture('04_vhs_applied_canvas');
 
-    final close = find.descendant(of: panel, matching: find.byIcon(Icons.close));
+    final close = find.descendant(
+      of: panel,
+      matching: find.byIcon(Icons.close),
+    );
     if (close.evaluate().isNotEmpty) {
       await tester.tap(close.first);
       await settle(4);

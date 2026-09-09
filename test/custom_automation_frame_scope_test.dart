@@ -31,23 +31,29 @@ void main() {
     changesFrame: changesFrame,
   );
 
-  test('scope choice is allowed when every canvas operation recorded same frame', () {
-    final item = automation(
-      recordingStartFrame: 99,
-      steps: [
-        step(id: 'a', frame: 4),
-        step(id: 'b', frame: 4, changesFrame: true),
-        step(id: 'c', frame: 4),
-      ],
-    );
+  test(
+    'scope choice is allowed when every canvas operation recorded same frame',
+    () {
+      final item = automation(
+        recordingStartFrame: 99,
+        steps: [
+          step(id: 'a', frame: 4),
+          step(id: 'b', frame: 4, changesFrame: true),
+          step(id: 'c', frame: 4),
+        ],
+      );
 
-    expect(item.staysInRecordingStartFrame, isTrue);
-    expect(item.supportsFrameScopeChoice, isTrue);
-  });
+      expect(item.staysInRecordingStartFrame, isTrue);
+      expect(item.supportsFrameScopeChoice, isTrue);
+    },
+  );
 
   test('scope choice is rejected when recorded frame numbers differ', () {
     final item = automation(
-      steps: [step(id: 'a', frame: 4), step(id: 'b', frame: 5)],
+      steps: [
+        step(id: 'a', frame: 4),
+        step(id: 'b', frame: 5),
+      ],
     );
 
     expect(item.staysInRecordingStartFrame, isFalse);
@@ -56,7 +62,10 @@ void main() {
 
   test('scope choice is rejected when a recorded frame is missing', () {
     final item = automation(
-      steps: [step(id: 'a', frame: 4), step(id: 'b')],
+      steps: [
+        step(id: 'a', frame: 4),
+        step(id: 'b'),
+      ],
     );
 
     expect(item.supportsFrameScopeChoice, isFalse);

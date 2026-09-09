@@ -148,11 +148,7 @@ class CustomAutomationBuiltinPresets {
         surface: CustomAutomationSurface.canvas,
         command: 'canvas.colorTraceAdjust',
         label: '色トレス補正',
-        args: {
-          'hue': -10.0,
-          'saturation': 60.0,
-          'lightness': -50.0,
-        },
+        args: {'hue': -10.0, 'saturation': 60.0, 'lightness': -50.0},
         recordedFrame: 0,
       ),
     ],

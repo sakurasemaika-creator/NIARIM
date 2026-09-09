@@ -44,7 +44,9 @@ void main() {
     expect(area, contains('final h = drawingRect.height / scale;'));
     expect(
       area,
-      contains('Rect.fromCenter(center: drawingRect.center, width: w, height: h)'),
+      contains(
+        'Rect.fromCenter(center: drawingRect.center, width: w, height: h)',
+      ),
     );
   });
 }

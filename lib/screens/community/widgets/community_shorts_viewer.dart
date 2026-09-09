@@ -133,10 +133,8 @@ class _CommunityShortsScreenState extends State<CommunityShortsScreen> {
                 isBookmarked: communityService.isBookmarked(work.id),
                 onToggleBookmark: () =>
                     communityService.toggleBookmark(work.id),
-                onPlaybackEnded: (onLoopCurrent) => _handlePlaybackEnded(
-                  index,
-                  onLoopCurrent: onLoopCurrent,
-                ),
+                onPlaybackEnded: (onLoopCurrent) =>
+                    _handlePlaybackEnded(index, onLoopCurrent: onLoopCurrent),
               );
             },
           ),
@@ -275,9 +273,8 @@ class _ShortsPage extends StatelessWidget {
                   children: [
                     Icon(
                       Icons.play_circle_fill_rounded,
-                      color: ThemeService.activeColorScheme.onSurface.withValues(
-                        alpha: 0.70,
-                      ),
+                      color: ThemeService.activeColorScheme.onSurface
+                          .withValues(alpha: 0.70),
                       size: 76,
                     ),
                     const SizedBox(height: 10),
@@ -285,9 +282,8 @@ class _ShortsPage extends StatelessWidget {
                       isCurrentPage
                           ? Icons.volume_off_rounded
                           : Icons.pause_rounded,
-                      color: ThemeService.activeColorScheme.onSurface.withValues(
-                        alpha: 0.55,
-                      ),
+                      color: ThemeService.activeColorScheme.onSurface
+                          .withValues(alpha: 0.55),
                       size: 20,
                     ),
                   ],
@@ -430,10 +426,7 @@ class _ShortsPage extends StatelessWidget {
                               '${work.projectCanvasWidth}×${work.projectCanvasHeight}',
                         ),
                       if (workTime.isNotEmpty)
-                        _InfoItem(
-                          icon: Icons.timer_outlined,
-                          text: workTime,
-                        ),
+                        _InfoItem(icon: Icons.timer_outlined, text: workTime),
                       if (work.projectCreatedAt != null)
                         _InfoItem(
                           icon: Icons.edit_calendar_outlined,
@@ -568,7 +561,6 @@ String _endBehaviorLabel(
     ('zh', CommunityShortsEndBehavior.loopCurrent) => '循环播放当前视频',
     ('zh', CommunityShortsEndBehavior.autoAdvance) => '自动滚动到下一个视频',
     (_, CommunityShortsEndBehavior.loopCurrent) => 'Loop this video',
-    (_, CommunityShortsEndBehavior.autoAdvance) =>
-      'Auto-scroll to next video',
+    (_, CommunityShortsEndBehavior.autoAdvance) => 'Auto-scroll to next video',
   };
 }

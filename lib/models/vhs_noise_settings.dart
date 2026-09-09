@@ -70,11 +70,6 @@ class VhsNoiseSettings {
       other.seed == seed;
 
   @override
-  int get hashCode => Object.hash(
-    noiseStrength,
-    scanlineStrength,
-    colorBleed,
-    tracking,
-    seed,
-  );
+  int get hashCode =>
+      Object.hash(noiseStrength, scanlineStrength, colorBleed, tracking, seed);
 }

@@ -132,10 +132,7 @@ class _GameStyleSlotScreen extends StatelessWidget {
           children: [
             Text(l10n.saveTreeOverwriteConfirmBody),
             const SizedBox(height: 14),
-            _SlotConfirmationSummary(
-              slotIndex: slotIndex,
-              node: node,
-            ),
+            _SlotConfirmationSummary(slotIndex: slotIndex, node: node),
           ],
         ),
         actions: [
@@ -312,10 +309,7 @@ class _GameStyleSlotScreen extends StatelessWidget {
                   : l10n.saveTreeResumeConfirmBody,
             ),
             const SizedBox(height: 14),
-            _SlotConfirmationSummary(
-              slotIndex: node.slotIndex,
-              node: node,
-            ),
+            _SlotConfirmationSummary(slotIndex: node.slotIndex, node: node),
           ],
         ),
         actions: [
@@ -361,10 +355,7 @@ class _SlotConfirmationSummary extends StatelessWidget {
   final int slotIndex;
   final SaveNode node;
 
-  const _SlotConfirmationSummary({
-    required this.slotIndex,
-    required this.node,
-  });
+  const _SlotConfirmationSummary({required this.slotIndex, required this.node});
 
   @override
   Widget build(BuildContext context) {

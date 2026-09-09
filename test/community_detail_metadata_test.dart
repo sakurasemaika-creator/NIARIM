@@ -35,7 +35,10 @@ void main() {
       find.text('${work.projectCanvasWidth}×${work.projectCanvasHeight}'),
       findsOneWidget,
     );
-    expect(find.text(formatProjectWorkTime(work.projectWorkSeconds)), findsOneWidget);
+    expect(
+      find.text(formatProjectWorkTime(work.projectWorkSeconds)),
+      findsOneWidget,
+    );
   });
 
   test('横画面の詳細へと縦画面の情報アイコンは同じ作品詳細ルートを使う', () {

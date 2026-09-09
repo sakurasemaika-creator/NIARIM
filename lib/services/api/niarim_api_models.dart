@@ -87,10 +87,9 @@ class ApiWork {
     projectCanvasHeight: _int(json['projectCanvasHeight']),
   );
 
-  int get _derivedDurationSeconds =>
-      projectFps > 0 && projectFrameCount > 0
-          ? projectFrameCount ~/ projectFps
-          : 0;
+  int get _derivedDurationSeconds => projectFps > 0 && projectFrameCount > 0
+      ? projectFrameCount ~/ projectFps
+      : 0;
 
   CommunityWork toCommunityWork() => CommunityWork(
     id: workId,

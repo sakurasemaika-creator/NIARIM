@@ -6,25 +6,21 @@ import 'package:niarim/models/project.dart';
 import 'package:niarim/screens/canvas/widgets/canvas_area.dart';
 
 Project _project({double drawingAreaScale = 1.0}) => Project(
-      id: 'rotated-coordinate-mapping',
-      name: 'rotated-coordinate-mapping',
-      fps: 12,
-      durationSeconds: 1,
-      backgroundColor: 0xFFFFFFFF,
-      createdAt: DateTime(2026),
-      updatedAt: DateTime(2026),
-      totalWorkSeconds: 0,
-      exportWidth: 640,
-      exportHeight: 360,
-      drawingAreaScale: drawingAreaScale,
-    );
+  id: 'rotated-coordinate-mapping',
+  name: 'rotated-coordinate-mapping',
+  fps: 12,
+  durationSeconds: 1,
+  backgroundColor: 0xFFFFFFFF,
+  createdAt: DateTime(2026),
+  updatedAt: DateTime(2026),
+  totalWorkSeconds: 0,
+  exportWidth: 640,
+  exportHeight: 360,
+  drawingAreaScale: drawingAreaScale,
+);
 
 /// CanvasAreaの実装と同じ順序で、プロジェクトpxを変形前widget座標へ直す。
-Offset _canvasPixelToWidget(
-  Offset canvasPx,
-  Size viewport,
-  Project project,
-) {
+Offset _canvasPixelToWidget(Offset canvasPx, Size viewport, Project project) {
   final rect = canvasDrawingRectFor(viewport, project);
   final canvasSize = canvasPixelSizeOf(project);
   return Offset(
@@ -64,11 +60,11 @@ Matrix4 _viewFor(
   final radians = degrees * math.pi / 180;
   final candidate =
       (Matrix4.identity()..translateByDouble(pan.dx, pan.dy, 0, 1)) *
-          (Matrix4.identity()
-            ..translateByDouble(c.dx, c.dy, 0, 1)
-            ..rotateZ(radians)
-            ..scaleByDouble(scale, scale, 1, 1)
-            ..translateByDouble(-c.dx, -c.dy, 0, 1));
+      (Matrix4.identity()
+        ..translateByDouble(c.dx, c.dy, 0, 1)
+        ..rotateZ(radians)
+        ..scaleByDouble(scale, scale, 1, 1)
+        ..translateByDouble(-c.dx, -c.dy, 0, 1));
   return constrainCanvasViewTransform(viewport, rect, candidate);
 }
 
@@ -102,14 +98,13 @@ void main() {
 
       for (final degrees in angles) {
         for (final pan in pans) {
-          final view = _viewFor(
-            viewport,
-            project,
-            degrees,
-            pan: pan,
-          );
+          final view = _viewFor(viewport, project, degrees, pan: pan);
           for (final original in points) {
-            final widgetLocal = _canvasPixelToWidget(original, viewport, project);
+            final widgetLocal = _canvasPixelToWidget(
+              original,
+              viewport,
+              project,
+            );
             final screen = MatrixUtils.transformPoint(view, widgetLocal);
             final recovered = _screenToCanvasPixel(
               screen,
@@ -170,7 +165,10 @@ void main() {
     // Transform後の画面pxでは元の7px / 11pxへ戻る。
     final scaleRadius = selectionHandleRadiusFor(kCanvasMinScale);
     final rotateRadius = selectionRotateHandleRadiusFor(kCanvasMinScale);
-    expect(scaleRadius * kCanvasMinScale, closeTo(kSelectionHandleScreenRadius, 0.001));
+    expect(
+      scaleRadius * kCanvasMinScale,
+      closeTo(kSelectionHandleScreenRadius, 0.001),
+    );
     expect(
       rotateRadius * kCanvasMinScale,
       closeTo(kSelectionRotateHandleScreenRadius, 0.001),

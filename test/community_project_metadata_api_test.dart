@@ -8,18 +8,16 @@ import 'package:niarim/services/api/niarim_api_client.dart';
 import 'package:niarim/services/api/niarim_api_models.dart';
 
 void main() {
-  CommunityApi apiWith(
-    http.Client client, {
-    String? token = 'ID_TOKEN',
-  }) => CommunityApi(
-    NiarimApiClient(
-      baseUrl: 'https://example.invalid/api/',
-      httpClient: client,
-      tokenProvider: () async => token,
-      maxGetRetries: 0,
-      retryBackoff: Duration.zero,
-    ),
-  );
+  CommunityApi apiWith(http.Client client, {String? token = 'ID_TOKEN'}) =>
+      CommunityApi(
+        NiarimApiClient(
+          baseUrl: 'https://example.invalid/api/',
+          httpClient: client,
+          tokenProvider: () async => token,
+          maxGetRetries: 0,
+          retryBackoff: Duration.zero,
+        ),
+      );
 
   Map<String, dynamic> workJson({bool withMetadata = true}) => {
     'workId': 'abcdefghijk',
@@ -97,10 +95,9 @@ void main() {
       );
     });
 
-    await apiWith(client).createWork(
-      youtubeVideoId: 'abcdefghijk',
-      youtubeAccessToken: 'YT_TOKEN',
-    );
+    await apiWith(
+      client,
+    ).createWork(youtubeVideoId: 'abcdefghijk', youtubeAccessToken: 'YT_TOKEN');
 
     expect(jsonDecode(captured.body), {
       'youtubeVideoId': 'abcdefghijk',
@@ -113,7 +110,9 @@ void main() {
   test('APIの制作情報がCommunityWorkまで欠落せず届き尺も復元される', () async {
     final client = MockClient((_) async {
       return http.Response(
-        jsonEncode({'works': [workJson()]}),
+        jsonEncode({
+          'works': [workJson()],
+        }),
         200,
         headers: {'content-type': 'application/json; charset=utf-8'},
       );

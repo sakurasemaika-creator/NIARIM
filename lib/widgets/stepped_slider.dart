@@ -59,7 +59,8 @@ class SteppedSlider extends StatelessWidget {
     // 二重になるので、既存の外部ステッパー構成だけを検出してSlider本体に
     // 退避する。通常のSteppedSlider利用では従来どおり内蔵±を表示する。
     final outerRow = context.findAncestorWidgetOfExactType<Row>();
-    final hasExternalSteppers = outerRow != null &&
+    final hasExternalSteppers =
+        outerRow != null &&
         outerRow.children.length == 3 &&
         _isIconButton(outerRow.children.first, Icons.remove_rounded) &&
         _isIconButton(outerRow.children.last, Icons.add_rounded);

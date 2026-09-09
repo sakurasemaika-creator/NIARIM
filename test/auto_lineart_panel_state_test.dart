@@ -44,9 +44,9 @@ void _rough(Uint8List data, int w, int h) {
 }
 
 List<(double, double)> _points(AutoLineartGraph graph) => [
-      for (final path in graph.paths)
-        for (final p in path.points) (p.x, p.y),
-    ];
+  for (final path in graph.paths)
+    for (final p in path.points) (p.x, p.y),
+];
 
 double _largestControlDisplacement(AutoLineartGraph a, AutoLineartGraph b) {
   // Compare corresponding controls at identical filter settings. Averaging
@@ -77,7 +77,9 @@ void main() {
       addTearDown(tester.view.resetPhysicalSize);
       addTearDown(tester.view.resetDevicePixelRatio);
 
-      final tempDir = Directory.systemTemp.createTempSync('niarim_lineart_state_');
+      final tempDir = Directory.systemTemp.createTempSync(
+        'niarim_lineart_state_',
+      );
       addTearDown(() {
         if (tempDir.existsSync()) tempDir.deleteSync(recursive: true);
       });
@@ -114,22 +116,23 @@ void main() {
                   body: Center(
                     child: ValueListenableBuilder<bool>(
                       valueListenable: show,
-                      builder: (_, visible, _) => ValueListenableBuilder<Set<int>?>(
-                        valueListenable: bulk,
-                        builder: (_, bulkFrames, _) {
-                          if (!visible || projectId == null) {
-                            return const SizedBox();
-                          }
-                          return FilterPanel(
-                            projectId: projectId,
-                            sceneId: sceneId!,
-                            layerId: layerId,
-                            frameIndex: 0,
-                            bulkFrameIndices: bulkFrames,
-                            onClose: () => show.value = false,
-                          );
-                        },
-                      ),
+                      builder: (_, visible, _) =>
+                          ValueListenableBuilder<Set<int>?>(
+                            valueListenable: bulk,
+                            builder: (_, bulkFrames, _) {
+                              if (!visible || projectId == null) {
+                                return const SizedBox();
+                              }
+                              return FilterPanel(
+                                projectId: projectId,
+                                sceneId: sceneId!,
+                                layerId: layerId,
+                                frameIndex: 0,
+                                bulkFrameIndices: bulkFrames,
+                                onClose: () => show.value = false,
+                              );
+                            },
+                          ),
                     ),
                   ),
                 ),
@@ -161,7 +164,10 @@ void main() {
       final tm = ps.tileManagerOf(project.id);
       final data = Uint8List(tm.canvasWidth * tm.canvasHeight * 4);
       _rough(data, tm.canvasWidth, tm.canvasHeight);
-      tm.replaceLayerPixels(ps.tileKeyFor(project.id, scene.id, 0, layerId), data);
+      tm.replaceLayerPixels(
+        ps.tileKeyFor(project.id, scene.id, 0, layerId),
+        data,
+      );
       fs.selectFilter('Filter0023');
       fs.updateFilterParams(
         'Filter0023',
@@ -173,7 +179,9 @@ void main() {
       expect(find.byType(AutoLineartControlOverlay), findsOneWidget);
 
       AutoLineartGraph graph() => tester
-          .widget<AutoLineartControlOverlay>(find.byType(AutoLineartControlOverlay))
+          .widget<AutoLineartControlOverlay>(
+            find.byType(AutoLineartControlOverlay),
+          )
           .graph;
 
       final before = graph();
@@ -219,7 +227,10 @@ void main() {
       show.value = true;
       await pumpRealAsync(tester, const Duration(milliseconds: 900));
       final freshWide = graph();
-      expect(_largestControlDisplacement(editedWide, freshWide), greaterThan(.15));
+      expect(
+        _largestControlDisplacement(editedWide, freshWide),
+        greaterThan(.15),
+      );
 
       fs.updateFilterParams('Filter0023', autoLineartRoughWidth: 12);
       await pumpRealAsync(tester, const Duration(milliseconds: 400));

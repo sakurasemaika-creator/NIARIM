@@ -179,9 +179,10 @@ void main() {
           Rect.fromLTWH(0, 0, graphExtent.toDouble(), graphExtent.toDouble()),
           Paint(),
         );
-        final image = await recorder
-            .endRecording()
-            .toImage(graphExtent, graphExtent);
+        final image = await recorder.endRecording().toImage(
+          graphExtent,
+          graphExtent,
+        );
         int? movedIndex;
         final center = graphExtent / 2.0;
         final graph = AutoLineartGraph(

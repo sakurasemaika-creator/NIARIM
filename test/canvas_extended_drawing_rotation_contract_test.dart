@@ -53,20 +53,39 @@ void main() {
         drawingRect,
         candidate,
       );
-      final transformedDrawing = MatrixUtils.transformRect(constrained, drawingRect);
-      final transformedExport = MatrixUtils.transformRect(constrained, exportRect);
+      final transformedDrawing = MatrixUtils.transformRect(
+        constrained,
+        drawingRect,
+      );
+      final transformedExport = MatrixUtils.transformRect(
+        constrained,
+        exportRect,
+      );
 
       expect(
         transformedDrawing.contains(transformedExport.center),
         isTrue,
-        reason: '$degrees° export center must remain inside extended drawing area',
+        reason:
+            '$degrees° export center must remain inside extended drawing area',
       );
-      expect(transformedExport.width, lessThanOrEqualTo(transformedDrawing.width));
-      expect(transformedExport.height, lessThanOrEqualTo(transformedDrawing.height));
+      expect(
+        transformedExport.width,
+        lessThanOrEqualTo(transformedDrawing.width),
+      );
+      expect(
+        transformedExport.height,
+        lessThanOrEqualTo(transformedDrawing.height),
+      );
       expect(transformedDrawing.left, greaterThanOrEqualTo(-0.001));
       expect(transformedDrawing.top, greaterThanOrEqualTo(-0.001));
-      expect(transformedDrawing.right, lessThanOrEqualTo(viewport.width + 0.001));
-      expect(transformedDrawing.bottom, lessThanOrEqualTo(viewport.height + 0.001));
+      expect(
+        transformedDrawing.right,
+        lessThanOrEqualTo(viewport.width + 0.001),
+      );
+      expect(
+        transformedDrawing.bottom,
+        lessThanOrEqualTo(viewport.height + 0.001),
+      );
     }
   });
 
@@ -98,7 +117,7 @@ void main() {
         ]) {
           final moved =
               (Matrix4.identity()
-                    ..translateByDouble(delta.dx, delta.dy, 0, 1)) *
+                ..translateByDouble(delta.dx, delta.dy, 0, 1)) *
               rotated;
           final constrained = constrainCanvasViewTransform(
             viewport,
@@ -155,7 +174,7 @@ void main() {
         ]) {
           final moved =
               (Matrix4.identity()
-                    ..translateByDouble(delta.dx, delta.dy, 0, 1)) *
+                ..translateByDouble(delta.dx, delta.dy, 0, 1)) *
               rotated;
           final constrained = constrainCanvasViewTransform(
             viewport,
@@ -184,7 +203,8 @@ void main() {
           expect(
             bounds.bottom,
             greaterThanOrEqualTo(viewport.height - 0.001),
-            reason: 'scale=$drawingAreaScale $degrees° $delta must cover bottom',
+            reason:
+                'scale=$drawingAreaScale $degrees° $delta must cover bottom',
           );
         }
       }

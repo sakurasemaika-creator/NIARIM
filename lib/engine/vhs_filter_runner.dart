@@ -11,7 +11,13 @@ import 'vhs_noise_engine.dart';
 /// result is stable; timeline effects pass the actual frame index to animate the
 /// tape noise deterministically.
 Uint8List applyVhsFilterInIsolate(
-  (Uint8List data, int width, int height, VhsNoiseSettings settings, int frameIndex)
+  (
+    Uint8List data,
+    int width,
+    int height,
+    VhsNoiseSettings settings,
+    int frameIndex,
+  )
   args,
 ) {
   final (data, width, height, settings, frameIndex) = args;

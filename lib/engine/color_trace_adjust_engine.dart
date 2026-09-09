@@ -62,6 +62,7 @@ Uint8List applyColorTraceAdjust(
     if (t < 2 / 3) return p + (q - p) * (2 / 3 - t) * 6;
     return p;
   }
+
   return (
     (hue(hk + 1 / 3) * 255).round().clamp(0, 255),
     (hue(hk) * 255).round().clamp(0, 255),

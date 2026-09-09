@@ -79,10 +79,22 @@ void main() {
 
   test('半透明画素はRGBだけ変化しアルファ値を保持する', () {
     final data = Uint8List.fromList([
-      70, 90, 120, 32,
-      100, 120, 140, 96,
-      130, 150, 170, 160,
-      160, 180, 200, 224,
+      70,
+      90,
+      120,
+      32,
+      100,
+      120,
+      140,
+      96,
+      130,
+      150,
+      170,
+      160,
+      160,
+      180,
+      200,
+      224,
     ]);
     final originalAlpha = [32, 96, 160, 224];
     final result = engine.applyAuroraHologram(

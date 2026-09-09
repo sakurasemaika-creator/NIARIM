@@ -36,7 +36,14 @@ class CustomAutomationDraftSheet extends StatelessWidget {
                   ? Center(child: Text(l10n.customAutomationNoRecordedSteps))
                   : ReorderableListView.builder(
                       itemCount: draft.steps.length,
-                      onReorder: service.reorderDraftStep,
+                      onReorderItem: (oldIndex, newIndex) {
+                        // The service keeps the original pre-removal index
+                        // contract; Flutter now supplies the final index.
+                        service.reorderDraftStep(
+                          oldIndex,
+                          newIndex > oldIndex ? newIndex + 1 : newIndex,
+                        );
+                      },
                       itemBuilder: (context, index) {
                         final step = draft.steps[index];
                         return ListTile(

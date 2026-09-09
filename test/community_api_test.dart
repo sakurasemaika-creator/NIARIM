@@ -142,24 +142,10 @@ void main() {
     test('タグ更新はactionとtagを1操作ずつ送る', () async {
       final m = mock((_) => workJson());
       final api = apiWith(m.client, token: 'T');
-      await api.updateTag(
-        'vid1',
-        action: CommunityTagAction.add,
-        tag: '背景',
-      );
-      await api.updateTag(
-        'vid1',
-        action: CommunityTagAction.lock,
-        tag: '作画',
-      );
-      expect(jsonDecode(m.requests[0].body), {
-        'action': 'add',
-        'tag': '背景',
-      });
-      expect(jsonDecode(m.requests[1].body), {
-        'action': 'lock',
-        'tag': '作画',
-      });
+      await api.updateTag('vid1', action: CommunityTagAction.add, tag: '背景');
+      await api.updateTag('vid1', action: CommunityTagAction.lock, tag: '作画');
+      expect(jsonDecode(m.requests[0].body), {'action': 'add', 'tag': '背景'});
+      expect(jsonDecode(m.requests[1].body), {'action': 'lock', 'tag': '作画'});
     });
   });
 

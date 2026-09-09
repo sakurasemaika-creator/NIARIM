@@ -9,7 +9,8 @@ void main() {
     expect(CommunityService.maxTagsPerWork, 10);
 
     for (var i = 0; i < 20; i++) {
-      if (service.byId(work.id)!.tags.length >= CommunityService.maxTagsPerWork) {
+      if (service.byId(work.id)!.tags.length >=
+          CommunityService.maxTagsPerWork) {
         break;
       }
       service.addTag(work.id, 'limit_test_$i');

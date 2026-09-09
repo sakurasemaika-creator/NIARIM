@@ -19,9 +19,7 @@ import 'helpers/load_app_fonts.dart';
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
-  testWidgets('既存スロットの書き込み・読み込み確認にサムネイルと保存日時が表示される', (
-    tester,
-  ) async {
+  testWidgets('既存スロットの書き込み・読み込み確認にサムネイルと保存日時が表示される', (tester) async {
     SharedPreferences.setMockInitialValues({
       firstUseTooltipsSeenKey: kAllFirstUseTooltipKeys,
     });
@@ -188,7 +186,10 @@ void main() {
       ),
     );
     await settle();
-    expect(find.widgetWithText(AlertDialog, l10n.saveTreeOverwriteAction), findsNothing);
+    expect(
+      find.widgetWithText(AlertDialog, l10n.saveTreeOverwriteAction),
+      findsNothing,
+    );
 
     // 同じ既存スロットの読み込み確認を直接開く。
     await tester.tap(loads.first);

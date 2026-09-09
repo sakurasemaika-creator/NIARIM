@@ -13,8 +13,10 @@
 
 ### 次の具体的な1手（scope lock）
 
-1. **community契約回帰のCI結果を取得する。** 同じ実装treeの6失敗は公開属性・weekly/monthly・GET /me/worksの古い期待、4失敗はSettingsService Provider不足。backendの実装と照合して6テストファイルを修正した。結果はCI確認後に確定する。
-2. 保存監査workflowのcheckpoint整形対象を現在のStateパスへ更新し、communityの独立analyze/testとcanonical整形artifactを追加した。残る全体gateの契約・実装不良は失敗を隠さず分類・修正する。
+2026-09-09 JST更新: 開始App `813a7d8a`、取り込み後 `4322f7a6`。Community修正 `7403cdf9` のCIは41/41・analyze 0、保存28/28、生成フィルター33/33成功。全体は871成功/5skip/16失敗・analyze12件。詳細根拠は監査Stateを参照。
+
+1. **今回の全体gate修正をCIで確定する。** CIの正規formatter差分を、元blobが一致する50 DartファイルとStateへ反映した。外部変更のあったautomation visualテストは除外して保全。2D倍率をZ軸込みで測っていた角度テスト、浮動小数点2件、静的解析指摘を修正し、並べ替えAPI移行の上下ドラッグ回帰を追加した。修正後は未検証で、`audit-gate-repairs` と全体gateの結果を確認する。
+2. 残る全体gateの契約・実装不良を失敗ログから分類・修正する。破損ZIP等へ進む前に現在の失敗を隠さず扱う。
 3. Webの最新CSS表示検査、FAQ/言語の実操作、Worker runtime SEOを確認する。全画面・全操作の実査は未完了。
 4. 保存の残り（破損ZIP再保存・復元サイズ・削除競合・エラー通知）、破損workspace/settings、未精査の監査マップへ進む。
 

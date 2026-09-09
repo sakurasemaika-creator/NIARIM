@@ -146,12 +146,8 @@ class CustomAutomationFilterRunner {
     return LayerCompositor.composite(
       tm,
       layers,
-      (layer) => projectService.tileKeyFor(
-        projectId,
-        sceneId,
-        frameIndex,
-        layer.id,
-      ),
+      (layer) =>
+          projectService.tileKeyFor(projectId, sceneId, frameIndex, layer.id),
       tm.canvasWidth,
       tm.canvasHeight,
       shouldRender: (layer, _) => layer.isVisible,

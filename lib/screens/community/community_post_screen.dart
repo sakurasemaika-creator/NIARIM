@@ -25,10 +25,12 @@ class CommunityPostScreen extends StatefulWidget {
 class _CommunityPostScreenState extends State<CommunityPostScreen> {
   static const _pendingVideoIdKey = 'community.pendingUpload.videoId';
   static const _pendingAccountIdKey = 'community.pendingUpload.googleAccountId';
-  static const _pendingAccountEmailKey = 'community.pendingUpload.googleAccountEmail';
+  static const _pendingAccountEmailKey =
+      'community.pendingUpload.googleAccountEmail';
   static const _pendingTitleKey = 'community.pendingUpload.title';
   static const _pendingIsShortKey = 'community.pendingUpload.isShort';
-  static const _pendingPublishedKey = 'community.pendingUpload.isNiarimPublished';
+  static const _pendingPublishedKey =
+      'community.pendingUpload.isNiarimPublished';
 
   final _titleController = TextEditingController();
   File? _videoFile;
@@ -137,7 +139,9 @@ class _CommunityPostScreenState extends State<CommunityPostScreen> {
       _progress = 0;
     });
     ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('保留中のNIARIM登録情報を破棄しました。YouTube動画自体は削除していません。')),
+      const SnackBar(
+        content: Text('保留中のNIARIM登録情報を破棄しました。YouTube動画自体は削除していません。'),
+      ),
     );
   }
 
@@ -256,11 +260,7 @@ class _CommunityPostScreenState extends State<CommunityPostScreen> {
               isNiarimPublished: _isNiarimPublished,
             );
           }
-          await _finishRegistration(
-            community,
-            videoId,
-            recovered: true,
-          );
+          await _finishRegistration(community, videoId, recovered: true);
           return;
         }
       }
@@ -399,7 +399,9 @@ class _CommunityPostScreenState extends State<CommunityPostScreen> {
                 ),
                 const SizedBox(height: 12),
                 OutlinedButton.icon(
-                  onPressed: _busy || retainedVideoId != null ? null : _pickVideo,
+                  onPressed: _busy || retainedVideoId != null
+                      ? null
+                      : _pickVideo,
                   icon: const Icon(Icons.video_file_outlined),
                   label: Text(
                     _videoFile == null
@@ -494,10 +496,7 @@ class _CommunityPostScreenState extends State<CommunityPostScreen> {
                 ],
                 if (_error != null) ...[
                   const SizedBox(height: 8),
-                  Text(
-                    'エラー: $_error',
-                    style: TextStyle(color: scheme.error),
-                  ),
+                  Text('エラー: $_error', style: TextStyle(color: scheme.error)),
                 ],
                 const SizedBox(height: 20),
                 FilledButton.icon(

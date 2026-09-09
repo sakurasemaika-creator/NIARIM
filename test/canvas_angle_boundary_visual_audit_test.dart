@@ -128,7 +128,8 @@ void main() {
       final anchor = center - const Offset(60, 0);
       final movingStart = center + const Offset(60, 0); // 初期間隔120px
       final radians = testCase.degrees * math.pi / 180;
-      final movingEnd = anchor + Offset.fromDirection(radians, 24); // 24/120=0.2
+      final movingEnd =
+          anchor + Offset.fromDirection(radians, 24); // 24/120=0.2
 
       final fixed = await tester.startGesture(
         anchor,
@@ -146,7 +147,8 @@ void main() {
       await tester.pump();
 
       Matrix4 matrix = _viewMatrix(tester);
-      final scale = matrix.getMaxScaleOnAxis();
+      // This is a 2D transform: the unchanged Z scale is 1 even when X/Y shrink.
+      final scale = Offset(matrix.entry(0, 0), matrix.entry(1, 0)).distance;
       expect(
         scale,
         closeTo(kCanvasMinScale, 0.015),
@@ -188,7 +190,7 @@ void main() {
       await tester.runAsync(
         () => _captureAndAssertSafety(
           rootKey,
-          '${out.path}/${mode}_${sign}${angle}.png',
+          '${out.path}/${mode}_$sign$angle.png',
           matrix: matrix,
           viewport: const Size(420, 520),
           project: p,
@@ -223,8 +225,12 @@ Matrix4 _viewMatrix(WidgetTester tester) {
 
 double _angleDelta(double a, double b) {
   var d = a - b;
-  while (d > math.pi) d -= math.pi * 2;
-  while (d < -math.pi) d += math.pi * 2;
+  while (d > math.pi) {
+    d -= math.pi * 2;
+  }
+  while (d < -math.pi) {
+    d += math.pi * 2;
+  }
   return d;
 }
 
@@ -239,14 +245,22 @@ void _expectDrawingBoundsConstrained({
   const epsilon = 1.5;
 
   if (transformed.width <= viewport.width) {
-    expect(transformed.left, greaterThanOrEqualTo(-epsilon), reason: '$reason left');
+    expect(
+      transformed.left,
+      greaterThanOrEqualTo(-epsilon),
+      reason: '$reason left',
+    );
     expect(
       transformed.right,
       lessThanOrEqualTo(viewport.width + epsilon),
       reason: '$reason right',
     );
   } else {
-    expect(transformed.left, lessThanOrEqualTo(epsilon), reason: '$reason cover-left');
+    expect(
+      transformed.left,
+      lessThanOrEqualTo(epsilon),
+      reason: '$reason cover-left',
+    );
     expect(
       transformed.right,
       greaterThanOrEqualTo(viewport.width - epsilon),
@@ -255,14 +269,22 @@ void _expectDrawingBoundsConstrained({
   }
 
   if (transformed.height <= viewport.height) {
-    expect(transformed.top, greaterThanOrEqualTo(-epsilon), reason: '$reason top');
+    expect(
+      transformed.top,
+      greaterThanOrEqualTo(-epsilon),
+      reason: '$reason top',
+    );
     expect(
       transformed.bottom,
       lessThanOrEqualTo(viewport.height + epsilon),
       reason: '$reason bottom',
     );
   } else {
-    expect(transformed.top, lessThanOrEqualTo(epsilon), reason: '$reason cover-top');
+    expect(
+      transformed.top,
+      lessThanOrEqualTo(epsilon),
+      reason: '$reason cover-top',
+    );
     expect(
       transformed.bottom,
       greaterThanOrEqualTo(viewport.height - epsilon),
@@ -280,7 +302,8 @@ Future<void> _captureAndAssertSafety(
   required Color safeColor,
   required String reason,
 }) async {
-  final boundary = key.currentContext!.findRenderObject()! as RenderRepaintBoundary;
+  final boundary =
+      key.currentContext!.findRenderObject()! as RenderRepaintBoundary;
   final image = await boundary.toImage(pixelRatio: 1);
   final png = await image.toByteData(format: ui.ImageByteFormat.png);
   final rgba = await image.toByteData(format: ui.ImageByteFormat.rawRgba);
@@ -359,8 +382,24 @@ void _expectPixelNearColor(
   final expectedG = (expected.g * 255).round();
   final expectedB = (expected.b * 255).round();
   final expectedA = (expected.a * 255).round();
-  expect((bytes[i] - expectedR).abs(), lessThanOrEqualTo(tolerance), reason: '$reason R');
-  expect((bytes[i + 1] - expectedG).abs(), lessThanOrEqualTo(tolerance), reason: '$reason G');
-  expect((bytes[i + 2] - expectedB).abs(), lessThanOrEqualTo(tolerance), reason: '$reason B');
-  expect((bytes[i + 3] - expectedA).abs(), lessThanOrEqualTo(tolerance), reason: '$reason A');
+  expect(
+    (bytes[i] - expectedR).abs(),
+    lessThanOrEqualTo(tolerance),
+    reason: '$reason R',
+  );
+  expect(
+    (bytes[i + 1] - expectedG).abs(),
+    lessThanOrEqualTo(tolerance),
+    reason: '$reason G',
+  );
+  expect(
+    (bytes[i + 2] - expectedB).abs(),
+    lessThanOrEqualTo(tolerance),
+    reason: '$reason B',
+  );
+  expect(
+    (bytes[i + 3] - expectedA).abs(),
+    lessThanOrEqualTo(tolerance),
+    reason: '$reason A',
+  );
 }

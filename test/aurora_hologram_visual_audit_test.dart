@@ -68,42 +68,53 @@ void main() {
     }
   });
 
-  test('wide grayscale canvas -> production filter route -> all presets -> PNG', () async {
-    const width = 1024;
-    const height = 320;
-    final source = _buildWideGrayRamp(width, height);
+  test(
+    'wide grayscale canvas -> production filter route -> all presets -> PNG',
+    () async {
+      const width = 1024;
+      const height = 320;
+      final source = _buildWideGrayRamp(width, height);
 
-    await _writeRgbaPng(
-      source,
-      width,
-      height,
-      File('${out.path}/00_input_grayscale.png'),
-    );
-
-    for (final preset in AuroraHologramPreset.values) {
-      final filter = FilterDef(
-        id: 'visual-audit-${preset.name}',
-        name: 'Aurora Hologram ${preset.name}',
-        kind: FilterKind.auroraHologram,
-        strength: 100,
-        hologramBrightness: 0,
-        hologramSaturation: 0,
-        hologramPreset: preset,
-      );
-      final result = applyDrawFilterInIsolate((source, width, height, filter, null));
-      expect(
-        result,
-        isNot(equals(source)),
-        reason: '${preset.name} must change the canvas pixels on the production route',
-      );
       await _writeRgbaPng(
-        result,
+        source,
         width,
         height,
-        File('${out.path}/preset_${preset.name}.png'),
+        File('${out.path}/00_input_grayscale.png'),
       );
-    }
-  }, timeout: const Timeout(Duration(minutes: 2)));
+
+      for (final preset in AuroraHologramPreset.values) {
+        final filter = FilterDef(
+          id: 'visual-audit-${preset.name}',
+          name: 'Aurora Hologram ${preset.name}',
+          kind: FilterKind.auroraHologram,
+          strength: 100,
+          hologramBrightness: 0,
+          hologramSaturation: 0,
+          hologramPreset: preset,
+        );
+        final result = applyDrawFilterInIsolate((
+          source,
+          width,
+          height,
+          filter,
+          null,
+        ));
+        expect(
+          result,
+          isNot(equals(source)),
+          reason:
+              '${preset.name} must change the canvas pixels on the production route',
+        );
+        await _writeRgbaPng(
+          result,
+          width,
+          height,
+          File('${out.path}/preset_${preset.name}.png'),
+        );
+      }
+    },
+    timeout: const Timeout(Duration(minutes: 2)),
+  );
 }
 
 ({double avgR, double avgG, double avgB, double avgChroma, int minChannel})

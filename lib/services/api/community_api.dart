@@ -129,13 +129,13 @@ class CommunityApi {
         'youtubeAccessToken': youtubeAccessToken,
         'isShort': isShort,
         'isNiarimPublished': isNiarimPublished,
-        if (projectFps != null) 'projectFps': projectFps,
-        if (projectFrameCount != null) 'projectFrameCount': projectFrameCount,
-        if (projectWorkSeconds != null) 'projectWorkSeconds': projectWorkSeconds,
+        'projectFps': ?projectFps,
+        'projectFrameCount': ?projectFrameCount,
+        'projectWorkSeconds': ?projectWorkSeconds,
         if (projectCreatedAt != null)
           'projectCreatedAt': projectCreatedAt.toUtc().toIso8601String(),
-        if (projectCanvasWidth != null) 'projectCanvasWidth': projectCanvasWidth,
-        if (projectCanvasHeight != null) 'projectCanvasHeight': projectCanvasHeight,
+        'projectCanvasWidth': ?projectCanvasWidth,
+        'projectCanvasHeight': ?projectCanvasHeight,
       },
     );
     return ApiWork.fromJson(_work(json));
