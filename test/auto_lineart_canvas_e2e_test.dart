@@ -2,7 +2,7 @@ import 'dart:io';
 import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
+import 'package:flutter/services.dart' hide UndoManager;
 import 'package:flutter_test/flutter_test.dart';
 import 'package:niarim/app_bootstrap.dart';
 import 'package:niarim/engine/undo_manager.dart';
@@ -18,6 +18,7 @@ import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'helpers/first_use_tooltips.dart';
+import 'helpers/pump_real_async.dart';
 
 void _drawRough(Uint8List bytes, int width, int height) {
   void dot(int cx, int cy, int radius) {
@@ -37,7 +38,8 @@ void _drawRough(Uint8List bytes, int width, int height) {
   }
 
   for (var x = 24; x <= width - 24; x++) {
-    final y = height ~/ 2 + ((x - width ~/ 2) * (x - width ~/ 2) / 900).round() - 10;
+    final y =
+        height ~/ 2 + ((x - width ~/ 2) * (x - width ~/ 2) / 900).round() - 10;
     dot(x, y.clamp(12, height - 12), 5);
   }
   for (var i = 0; i < 75; i++) {
@@ -61,7 +63,9 @@ void main() {
       addTearDown(tester.view.resetPhysicalSize);
       addTearDown(tester.view.resetDevicePixelRatio);
 
-      final tempDir = Directory.systemTemp.createTempSync('niarim_lineart_e2e_');
+      final tempDir = Directory.systemTemp.createTempSync(
+        'niarim_lineart_e2e_',
+      );
       addTearDown(() {
         if (tempDir.existsSync()) tempDir.deleteSync(recursive: true);
       });
@@ -92,7 +96,8 @@ void main() {
                 builder: (context, id, _) => MaterialApp(
                   theme: context.watch<ThemeService>().themeData,
                   locale: const Locale('ja'),
-                  localizationsDelegates: AppLocalizations.localizationsDelegates,
+                  localizationsDelegates:
+                      AppLocalizations.localizationsDelegates,
                   supportedLocales: AppLocalizations.supportedLocales,
                   home: id == null
                       ? const Scaffold(body: SizedBox.expand())
@@ -109,7 +114,7 @@ void main() {
       final fs = context.read<FilterService>();
       final undo = context.read<UndoManager>();
 
-      final project = await tester.runAsync(
+      final createdProject = await tester.runAsync(
         () => ps.createProject(
           name: 'Auto line art E2E',
           fps: 12,
@@ -119,6 +124,8 @@ void main() {
           exportHeight: 256,
         ),
       );
+      expect(createdProject, isNotNull);
+      final project = createdProject!;
       final scene = ps.scenesOf(project.id).first;
       final source = scene.frames.first.layers.first;
       final tm = ps.tileManagerOf(project.id);
@@ -136,7 +143,7 @@ void main() {
         autoLineartColor: 0xFF2E62D5,
       );
       activeProject.value = project.id;
-      await tester.pump(const Duration(milliseconds: 900));
+      await pumpRealAsync(tester, const Duration(milliseconds: 900));
       expect(tester.takeException(), isNull);
 
       // Open the actual Canvas "settings/edit" menu, then its real FilterPanel.
@@ -144,8 +151,10 @@ void main() {
       await tester.pump(const Duration(milliseconds: 250));
       final filterMenuEntry = find.byIcon(Icons.blur_on);
       expect(filterMenuEntry, findsOneWidget);
+      await tester.ensureVisible(filterMenuEntry);
+      await pumpRealAsync(tester, const Duration(milliseconds: 300));
       await tester.tap(filterMenuEntry);
-      await tester.pump(const Duration(milliseconds: 900));
+      await pumpRealAsync(tester, const Duration(milliseconds: 900));
       expect(find.byType(FilterPanel), findsOneWidget);
       expect(find.byType(AutoLineartControlOverlay), findsOneWidget);
 
@@ -156,14 +165,14 @@ void main() {
       expect(apply, findsOneWidget);
       await tester.tap(apply);
       await tester.pump(const Duration(milliseconds: 100));
-      // Full-resolution centerline analysis runs in compute(); let real async work finish.
-      await tester.runAsync(() async {
-        for (var i = 0; i < 80; i++) {
-          if (ps.layersOf(project.id, scene.id, 0).length >= 2) break;
-          await Future<void>.delayed(const Duration(milliseconds: 50));
-        }
-      });
+      // Full-resolution centerline analysis runs in compute(); interleave real
+      // async callbacks with widget frames until the generated layer appears.
+      for (var i = 0; i < 80; i++) {
+        if (ps.layersOf(project.id, scene.id, 0).length >= 2) break;
+        await pumpRealAsync(tester, const Duration(milliseconds: 50));
+      }
       await tester.pump(const Duration(milliseconds: 400));
+      expect(tester.takeException(), isNull);
 
       var layers = ps.layersOf(project.id, scene.id, 0);
       expect(layers, hasLength(2));
@@ -172,15 +181,13 @@ void main() {
       expect(layers.indexOf(generated), layers.indexOf(source) + 1);
       expect(undo.canUndo, isTrue);
 
-      final generatedKey = ps.tileKeyFor(
-        project.id,
-        scene.id,
-        0,
-        generated.id,
-      );
-      final generatedImage = await tm.compositeLayerToImage(generatedKey);
-      final generatedBytes = await generatedImage.toByteData();
-      generatedImage.dispose();
+      final generatedKey = ps.tileKeyFor(project.id, scene.id, 0, generated.id);
+      final generatedBytes = await tester.runAsync(() async {
+        final image = await tm.compositeLayerToImage(generatedKey);
+        final bytes = await image.toByteData();
+        image.dispose();
+        return bytes;
+      });
       expect(generatedBytes, isNotNull);
       final data = generatedBytes!.buffer.asUint8List();
       expect(
@@ -190,24 +197,27 @@ void main() {
 
       // Use the real Canvas top-bar Undo / Redo controls.
       await tester.tap(find.byIcon(Icons.undo).first);
-      await tester.pump(const Duration(milliseconds: 150));
+      await pumpRealAsync(tester, const Duration(milliseconds: 150));
       layers = ps.layersOf(project.id, scene.id, 0);
       expect(layers, hasLength(1));
       expect(layers.single.id, source.id);
 
       await tester.tap(find.byIcon(Icons.redo).first);
-      await tester.pump(const Duration(milliseconds: 150));
+      await pumpRealAsync(tester, const Duration(milliseconds: 150));
       layers = ps.layersOf(project.id, scene.id, 0);
       expect(layers, hasLength(2));
       final redone = layers.singleWhere((l) => l.id != source.id);
       expect(redone.id, generated.id);
       expect(layers.indexOf(redone), layers.indexOf(source) + 1);
 
-      final redoneImage = await tm.compositeLayerToImage(
-        ps.tileKeyFor(project.id, scene.id, 0, redone.id),
-      );
-      final redoneBytes = await redoneImage.toByteData();
-      redoneImage.dispose();
+      final redoneBytes = await tester.runAsync(() async {
+        final image = await tm.compositeLayerToImage(
+          ps.tileKeyFor(project.id, scene.id, 0, redone.id),
+        );
+        final bytes = await image.toByteData();
+        image.dispose();
+        return bytes;
+      });
       expect(redoneBytes, isNotNull);
       expect(
         Iterable<int>.generate(redoneBytes!.lengthInBytes ~/ 4)
