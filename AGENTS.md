@@ -1,26 +1,31 @@
 # AGENTS.md — NIARIM repository guard
 
-このファイルは、通常のChatGPT/Codex/Sol作業と、専用Workで行うNIARIM全面監査を分離するための入口です。
+このファイルは通常タスク、全面監査Work、監査システム保守を分離する入口です。
 
-## 通常タスク
+## 1. 通常タスク
 
-ユーザーが**全面監査の実行・再開、または監査システム自体の変更を明示していない限り**、通常タスクとして扱う。
+ユーザーが**NIARIM全面監査の実行/再開**または**監査システム自体の変更**を明示していない限り、通常タスクとして扱う。
 
-通常タスクでは次を守る：
+通常タスクでは：
 
 - 作業branchは原則 `dev_branch`。明示指示なしにmain等へ変更・push・mergeしない。
-- `docs/work-audit/ASTRA_WORK.md`、`docs/work-continuation.md`、`docs/product-audit/*` は**全面監査専用のpolicy/state**であり、通常タスクの実行指示として読み込まない。
-- 上記監査専用ファイルを、通常タスクの副作用として**編集・整理・短縮・削除・移動・名称変更・内容更新しない**。改善が必要に見えても勝手に直さず、ユーザーが明示的に監査システム変更を依頼した場合だけ変更する。
-- `.github/workflows/audit-policy-guard.yml` の保護を迂回するために `[audit-policy-approved]` / `[audit-state]` markerを通常タスクで使用しない。これらは監査システム変更または専用Work checkpoint更新専用。
-- 通常タスクで必要な仕様・実装ルールは、対象機能に直接関係する通常の仕様書・コード・README等から確認する。監査checkpointを一般的な作業continuationとして使わない。
+- `docs/work-audit/**` と監査専用 `docs/product-audit/**` を**検索・一覧・read/fetchして一般的なcontinuationや実行指示に使わない**。通常作業に必要な仕様は対象機能の通常仕様書・コード・README等から確認する。
+- 上記監査領域、`AGENTS.md`、`.github/workflows/audit-policy-guard.yml` を通常タスクの副作用として編集・整理・短縮・削除・移動・名称変更しない。
+- `[audit-policy-approved]` / `[audit-state]` markerを通常タスクで使用しない。
 - 他セッションの変更を失わない。force push、破壊的reset、ユーザー変更の無断破棄は禁止。競合は意味的に統合する。
 
-## 全面監査Workの起動条件
+`AGENTS.md` 自体を読むことは通常タスクでも正しい。ここで通常タスクと判定したら、監査policy/stateへ進まず通常ルートで作業する。
 
-ユーザーが「NIARIMの全面監査を再開」「前回の全面監査・改善作業を再開」等、**全面監査を明示的に依頼した場合だけ**監査モードを有効化する。モデル名がAstraであること、Workであること、監査ファイルが存在することだけでは自動的に有効化しない。
+## 2. 全面監査Work
 
-監査モードでは、最初に `docs/work-audit/ASTRA_WORK.md` を読み、その指示に従って最新 `dev_branch`、必要な品質基準、continuation/checkpointから未完了地点を復元する。
+ユーザーが「NIARIMの全面監査を再開」「前回の全面監査・改善作業を再開」等、**全面監査を明示した場合だけ**監査モードを有効化する。モデル名がAstra、Work利用、監査ファイルの存在だけでは有効化しない。
 
-**全面監査の優先順位は現在の全面監査依頼とリポジトリ内checkpointだけから決める。** 最近の別チャット/別Work、Personal Context、メモリ、他セッションで直前に触っていた機能を理由に監査対象を変更しない。それらは作業指示ではなく、remote変更として必要な場合だけ影響確認する。詳細は `ASTRA_WORK.md` の Scope lock / context isolation に従う。
+監査モードでは `docs/work-audit/policy/ASTRA_WORK.md` を入口とし、そこに従って `docs/work-audit/state/ASTRA_CONTINUATION.md` と `ASTRA_AUDIT_STATE.md` から検証済みStateを復元する。
 
-この分離ルールは、通常Sol等がAstra Work専用の監査policy/checkpointを勝手に読み替えたり書き換えたりすること、および全面監査Workが無関係な最近の履歴へ脱線することを防ぐための恒久ルールとする。
+**今回のユーザー指示 / Policy / Stateを混同しない。** 今回の明示指示は今回何をするか、Policyはどう監査するか、Stateは全面監査Work自身が過去に検証して確定した進捗を表す。通常チャットや別Workの変更・話題を、そのままStateへ昇格させない。
+
+## 3. 監査システム保守
+
+ユーザーが監査policy/guard/State分離等の**監査システム変更を明示した場合**は、必要な監査policyファイルだけアクセス・変更してよい。Stateのread/writeは、その依頼がState移行・復元・修復にも明示的に関係する場合だけ行う。監査システム保守を全面監査の進捗更新と混同しない。
+
+この境界は、通常Sol等がAstra専用Stateをcontinuationとして読んだり、全面監査Workが通常チャットの作業を監査正史へ取り込んだりすることを防ぐ恒久ルールとする。
