@@ -14,7 +14,7 @@ void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
   for (final kind in [FilterKind.outline, FilterKind.inkPool, FilterKind.autoLineart]) {
-    test('recorded ${kind.name} keeps neighboring layers and pixels through Redo', () async {
+    test('recorded ${kind.name} creates at absolute top and keeps pixels through Redo', () async {
       final directory = Directory.systemTemp.createTempSync('niarim-filter-redo-');
       const channel = MethodChannel('plugins.flutter.io/path_provider');
       final messenger = TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger;
@@ -66,8 +66,8 @@ void main() {
       );
       expect(generatedId, isNotNull);
       List<String> order() => service.layersOf(project.id, scene.id, 0).map((layer) => layer.id).toList();
-      final expectedOrder = [below.id, source.id, generatedId!, above.id];
-      expect(order(), expectedOrder);
+      final expectedOrder = [generatedId!, below.id, source.id, above.id];
+      expect(order(), expectedOrder, reason: 'generated layer must be absolute front/top');
       expect(undo.undoCount, 1);
       Future<Uint8List> generatedPixels() async {
         final image = await tm.compositeLayerToImage(service.tileKeyFor(project.id, scene.id, 0, generatedId));
