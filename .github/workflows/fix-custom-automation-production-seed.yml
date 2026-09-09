@@ -7,6 +7,7 @@ on:
     paths:
       - '.github/workflows/fix-custom-automation-production-seed.yml'
       - 'tool/patch_custom_automation_visual_seed.py'
+      - 'tool/patch_custom_automation_visual_route_lifecycle.py'
   workflow_dispatch:
 
 permissions:
@@ -27,6 +28,7 @@ jobs:
           cache: true
       - run: flutter pub get
       - run: python3 tool/patch_custom_automation_visual_seed.py
+      - run: python3 tool/patch_custom_automation_visual_route_lifecycle.py
       - run: dart format test/custom_automation_production_visual_test.dart
       - run: flutter analyze test/custom_automation_production_visual_test.dart --no-fatal-warnings --no-fatal-infos
       - run: flutter test test/custom_automation_production_visual_test.dart --reporter expanded
@@ -43,6 +45,7 @@ jobs:
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
           git rm .github/workflows/fix-custom-automation-production-seed.yml
           git rm tool/patch_custom_automation_visual_seed.py
+          git rm tool/patch_custom_automation_visual_route_lifecycle.py
           git add test/custom_automation_production_visual_test.dart
           git commit -m 'test: stabilize production automation visual flow'
           git pull --rebase origin dev_branch
