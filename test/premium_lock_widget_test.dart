@@ -4,16 +4,18 @@ import 'package:niarim/widgets/premium_lock_widget.dart';
 
 void main() {
   testWidgets(
-    'locked Premium content stays visible with a lock and cannot be operated',
+    'locked Premium content stays visible, blocks the action, and routes the tap to upsell',
     (tester) async {
-      var taps = 0;
+      var actionTaps = 0;
+      var upsellTaps = 0;
       await tester.pumpWidget(
         MaterialApp(
           home: Scaffold(
             body: PremiumLockState(
               locked: true,
+              onLockedTap: () => upsellTaps++,
               child: FilledButton(
-                onPressed: () => taps++,
+                onPressed: () => actionTaps++,
                 child: const Text('Premium action'),
               ),
             ),
@@ -30,23 +32,26 @@ void main() {
         findsOneWidget,
       );
 
-      await tester.tap(find.text('Premium action'), warnIfMissed: false);
+      await tester.tap(find.text('Premium action'));
       await tester.pump();
-      expect(taps, 0);
+      expect(actionTaps, 0);
+      expect(upsellTaps, 1);
     },
   );
 
   testWidgets('available Premium content behaves normally and shows no lock', (
     tester,
   ) async {
-    var taps = 0;
+    var actionTaps = 0;
+    var upsellTaps = 0;
     await tester.pumpWidget(
       MaterialApp(
         home: Scaffold(
           body: PremiumLockState(
             locked: false,
+            onLockedTap: () => upsellTaps++,
             child: FilledButton(
-              onPressed: () => taps++,
+              onPressed: () => actionTaps++,
               child: const Text('Premium action'),
             ),
           ),
@@ -65,6 +70,7 @@ void main() {
 
     await tester.tap(find.text('Premium action'));
     await tester.pump();
-    expect(taps, 1);
+    expect(actionTaps, 1);
+    expect(upsellTaps, 0);
   });
 }
