@@ -8,15 +8,14 @@ class CustomAutomationBuiltinPresets {
   static final _epoch = DateTime.fromMillisecondsSinceEpoch(0, isUtc: true);
 
   static List<CustomAutomation> all() => [
-    _draftToLineart(),
+    _digitalLineart(),
     _analogLineartExtraction(),
     _lineartColorTrace(),
-    _auroraHologram(),
   ];
 
-  static CustomAutomation _draftToLineart() => CustomAutomation(
-    id: 'builtin_draft_to_lineart',
-    name: '下書きから線画',
+  static CustomAutomation _digitalLineart() => CustomAutomation(
+    id: 'builtin_lineart_digital',
+    name: '線画作成（デジタル）',
     recordingStartFrame: 0,
     createdAt: _epoch,
     updatedAt: _epoch,
@@ -34,6 +33,7 @@ class CustomAutomationBuiltinPresets {
           autoLineartColor: 0xFF000000,
         ),
         '自動線画',
+        prefix: 'builtin_lineart_digital',
       ),
       _filterStep(
         '2',
@@ -46,29 +46,20 @@ class CustomAutomationBuiltinPresets {
           inkPoolCenterWidth: 6,
         ),
         '墨溜まり',
+        prefix: 'builtin_lineart_digital',
       ),
     ],
   );
 
   static CustomAutomation _analogLineartExtraction() => CustomAutomation(
-    id: 'builtin_analog_lineart_extract',
-    name: 'アナログ線画抽出',
+    id: 'builtin_lineart_analog',
+    name: '線画抽出（アナログ）',
     recordingStartFrame: 0,
     createdAt: _epoch,
     updatedAt: _epoch,
     steps: [
       _filterStep(
         '1',
-        const FilterDef(
-          id: 'Filter0014',
-          name: '二値化',
-          kind: FilterKind.threshold,
-          thresholdValue: 128,
-        ),
-        '二値化',
-      ),
-      _filterStep(
-        '2',
         const FilterDef(
           id: 'builtin_color_adjust',
           name: '色調補正',
@@ -78,9 +69,21 @@ class CustomAutomationBuiltinPresets {
           caContrast: 20,
         ),
         '色調補正',
+        prefix: 'builtin_lineart_analog',
+      ),
+      _filterStep(
+        '2',
+        const FilterDef(
+          id: 'Filter0014',
+          name: '二値化',
+          kind: FilterKind.threshold,
+          thresholdValue: 128,
+        ),
+        '二値化',
+        prefix: 'builtin_lineart_analog',
       ),
       const CustomAutomationStep(
-        id: 'builtin_analog_lineart_extract_3',
+        id: 'builtin_lineart_analog_3',
         surface: CustomAutomationSurface.canvas,
         command: 'canvas.brightnessToAlpha',
         label: '明度で透過（グレー）',
@@ -149,6 +152,7 @@ class CustomAutomationBuiltinPresets {
         command: 'canvas.colorTraceAdjust',
         label: '色トレス補正',
         args: {
+          // Exact defaults used by AutofillPart.traceAdjust.
           'hue': -10.0,
           'saturation': 60.0,
           'lightness': -50.0,
@@ -158,35 +162,11 @@ class CustomAutomationBuiltinPresets {
     ],
   );
 
-  static CustomAutomation _auroraHologram() => CustomAutomation(
-    id: 'builtin_aurora_hologram',
-    name: 'オーロラホログラム',
-    recordingStartFrame: 0,
-    createdAt: _epoch,
-    updatedAt: _epoch,
-    steps: [
-      _filterStep(
-        '1',
-        const FilterDef(
-          id: 'Filter0019',
-          name: 'オーロラホログラム',
-          kind: FilterKind.auroraHologram,
-          strength: 60,
-          hologramBrightness: 0,
-          hologramSaturation: 0,
-          hologramPreset: AuroraHologramPreset.aurora,
-        ),
-        'オーロラホログラム',
-        prefix: 'builtin_aurora_hologram',
-      ),
-    ],
-  );
-
   static CustomAutomationStep _filterStep(
     String suffix,
     FilterDef filter,
     String label, {
-    String prefix = 'builtin_draft_to_lineart',
+    required String prefix,
   }) => CustomAutomationStep(
     id: '${prefix}_$suffix',
     surface: CustomAutomationSurface.canvas,
