@@ -28,9 +28,10 @@ jobs:
       - run: flutter pub get
       - name: Apply automation visual audit repair
         run: python3 .github/scripts/repair_custom_automation_visual.py
-      - run: dart format test/custom_automation_visual_audit_test.dart
-      - name: Analyze custom automation visual audit
-        run: flutter analyze test/custom_automation_visual_audit_test.dart --no-fatal-warnings --no-fatal-infos
+      - name: Format repaired sources
+        run: dart format lib/engine/tile_manager.dart lib/engine/custom_automation_filter_runner.dart lib/services/recorded_filter_apply_service.dart test/custom_automation_visual_audit_test.dart
+      - name: Analyze repaired automation path
+        run: flutter analyze lib/engine/tile_manager.dart lib/engine/custom_automation_filter_runner.dart lib/services/recorded_filter_apply_service.dart test/custom_automation_visual_audit_test.dart --no-fatal-warnings --no-fatal-infos
       - name: Run custom automation pixel-changing visual audit
         run: flutter test test/custom_automation_visual_audit_test.dart --reporter expanded
       - name: Upload repaired automation evidence
@@ -46,6 +47,9 @@ jobs:
         run: |
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add lib/engine/tile_manager.dart
+          git add lib/engine/custom_automation_filter_runner.dart
+          git add lib/services/recorded_filter_apply_service.dart
           git add test/custom_automation_visual_audit_test.dart
           git commit -m 'test: prove automation changes raw Canvas pixels'
           git push origin HEAD:tmp-automation-visual-repair6
