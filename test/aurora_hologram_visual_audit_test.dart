@@ -17,8 +17,11 @@ void main() {
     final signatures = <String>{};
     for (final preset in AuroraHologramPreset.values) {
       final signature = auroraHologramStops(preset).join('|');
-      expect(signatures.add(signature), isTrue,
-          reason: '${preset.name} must not collapse into another preset palette');
+      expect(
+        signatures.add(signature),
+        isTrue,
+        reason: '${preset.name} must not collapse into another preset palette',
+      );
     }
     expect(signatures, hasLength(AuroraHologramPreset.values.length));
 
@@ -47,12 +50,21 @@ void main() {
     for (final preset in AuroraHologramPreset.values) {
       if (preset == AuroraHologramPreset.silverFoil) continue;
       final ingredients = _standardIngredients(preset);
-      expect(ingredients.whiteCount, greaterThanOrEqualTo(1),
-          reason: '${preset.name} needs a pure-white hologram highlight');
-      expect(ingredients.saturatedCount, greaterThanOrEqualTo(1),
-          reason: '${preset.name} needs a high-saturation interference colour');
-      expect(ingredients.whiteMixedCount, greaterThanOrEqualTo(2),
-          reason: '${preset.name} needs at least two white-mixed colours');
+      expect(
+        ingredients.whiteCount,
+        greaterThanOrEqualTo(1),
+        reason: '${preset.name} needs a pure-white hologram highlight',
+      );
+      expect(
+        ingredients.saturatedCount,
+        greaterThanOrEqualTo(1),
+        reason: '${preset.name} needs a high-saturation interference colour',
+      );
+      expect(
+        ingredients.whiteMixedCount,
+        greaterThanOrEqualTo(2),
+        reason: '${preset.name} needs at least two white-mixed colours',
+      );
     }
   });
 
@@ -62,8 +74,12 @@ void main() {
     final source = _buildWideGrayRamp(width, height);
     final engine = FilterEngine();
 
-    await _writeRgbaPng(source, width, height,
-        File('${out.path}/00_input_grayscale.png'));
+    await _writeRgbaPng(
+      source,
+      width,
+      height,
+      File('${out.path}/00_input_grayscale.png'),
+    );
 
     for (final preset in AuroraHologramPreset.values) {
       final result = engine.applyAuroraHologram(
@@ -75,8 +91,12 @@ void main() {
         saturation: 0,
         preset: preset,
       );
-      await _writeRgbaPng(result, width, height,
-          File('${out.path}/preset_${preset.name}.png'));
+      await _writeRgbaPng(
+        result,
+        width,
+        height,
+        File('${out.path}/preset_${preset.name}.png'),
+      );
     }
   }, timeout: const Timeout(Duration(minutes: 2)));
 }
@@ -119,7 +139,10 @@ _standardIngredients(AuroraHologramPreset preset) {
       saturatedCount++;
     }
     // White-mixed colour: bright overall, visibly tinted, but not pure white.
-    if (minChannel >= 185 && maxChannel >= 235 && chroma >= 12 && chroma <= 70) {
+    if (minChannel >= 185 &&
+        maxChannel >= 235 &&
+        chroma >= 12 &&
+        chroma <= 70) {
       whiteMixed.add('$r,$g,$b');
     }
   }
