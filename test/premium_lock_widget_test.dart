@@ -23,7 +23,12 @@ void main() {
 
       expect(find.text('Premium action'), findsOneWidget);
       expect(find.byIcon(Icons.lock), findsOneWidget);
-      expect(find.byType(IgnorePointer), findsOneWidget);
+      expect(
+        find.byWidgetPredicate(
+          (widget) => widget is IgnorePointer && widget.ignoring,
+        ),
+        findsOneWidget,
+      );
 
       await tester.tap(find.text('Premium action'), warnIfMissed: false);
       await tester.pump();
@@ -51,6 +56,12 @@ void main() {
 
     expect(find.text('Premium action'), findsOneWidget);
     expect(find.byIcon(Icons.lock), findsNothing);
+    expect(
+      find.byWidgetPredicate(
+        (widget) => widget is IgnorePointer && widget.ignoring,
+      ),
+      findsNothing,
+    );
 
     await tester.tap(find.text('Premium action'));
     await tester.pump();
