@@ -1,11 +1,11 @@
-# NIARIM App＋Web 全面監査State
+# NIARIM Audit Evidence
 
-状態: `reset-for-route-bootstrap`
+今回の新規Routeの実検証だけを記録する。旧監査からの完了引継ぎなし。
 
-2026-09-10 JST、ユーザー指示により旧全面監査の部分的な監査マップ、検証済み扱い、未完了順序、復元記録を**新しい全面監査の進捗根拠として破棄**した。
+## Bootstrap
 
-これは製品コード・テスト・通常タスクの成果を削除または巻き戻す操作ではない。既存実装は最新 `dev_branch` に存在するものをそのまま扱う。ただし旧監査Stateに「確認済み」と書かれていたことだけを理由に、新routeのTODOを完了扱いしてはならない。
-
-新しい正本は `docs/work-audit/state/AUDIT_ROUTE.md`。最初の全面監査Workでrouteを一度だけ完全に作成・coverage checkして `locked` にし、その後はID順に完了させる。
-
-本ファイルはroute locked後、各IDの詳細な検証根拠が必要な場合だけ追記する。監査対象の選択や順序は本ファイルではなく `AUDIT_ROUTE.md` を正とする。
+- 両AGENTS・ASTRA_WORK・全品質基準を確認。
+- 現行App/Webのrouter、直接遷移、screen/widget、state/input、全default資産、filter/effect/command、API、native/runtime/sourceを棚卸し。
+- 全要件とsourceの割当はAUDIT_INVENTORY.json、固定順序と定義hashはAUDIT_ROUTE_LOCK.json。
+- coverage検査結果はAUDIT_COVERAGE_CHECK.jsonへ保存する。構造coverageであり実機能の合格ではない。
+- 実監査は全件todoから開始。

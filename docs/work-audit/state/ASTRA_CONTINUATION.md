@@ -1,15 +1,16 @@
-# ChatGPT Work 継続チェックポイント
+# NIARIM Audit Progress
 
-状態: `route-bootstrap`
+route_version: 2026-09-09-initial-v1
+route_state: locked
+current_id: A001
+current_status: todo
+last_completed_id: none
+next_id: A001
+app_baseline: 46949156156850f8e49dcd9919ca6a7eeaf3bfac
+web_baseline: 2a44dd9007e4a764e489a42a70f96ac5da6b3b8a
 
-2026-09-10 JST、ユーザー指示により**従来の中途半端な全面監査checkpoint・完了判定・未完了順序・次の1手を全面監査Stateとして破棄**した。製品コードや通常タスクの成果を巻き戻したわけではない。旧監査記録を根拠に項目を完了扱いしない。
+今回の新規Routeから開始。旧進捗の転記なし。
 
-## 現在地点
+次手: Route A001の非UI起動サービス構築・例外処理を現行コードと隔離testで検証する。A002以降へ飛ばない。必要なruntime準備は未完了。
 
-`docs/work-audit/state/AUDIT_ROUTE.md` は `bootstrap-required`。
-
-次の明示的な全面監査Workでは、まず最新App/Webの実装と品質基準から**全画面・全状態・全操作・横断品質要件を一周で検証できる完全な固定TODOルートを一度だけ作成**する。旧checkpointや過去会話からTODOを復元しない。
-
-routeが `locked` になった後は、ここには `route_version`、`current_id`、`last_completed_id`、その項目の検証証拠、blocker、checkpoint時のApp/Web HEADだけを簡潔に記録する。
-
-次回以降は `current_id` から固定順序で再開し、別セッションの話題や最近の変更を理由に監査対象を選び直さない。
+再開: 両dev_branchを安全に取得→両AGENTS→AUDIT_ROUTE lock確認→このcurrent_id→A001関連品質節だけ→即実行。最近の差分はcurrent IDの前提だけ確認。

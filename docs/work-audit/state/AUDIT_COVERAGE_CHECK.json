@@ -1,0 +1,26 @@
+{
+  "ok": true,
+  "scope": "structural coverage and lock integrity; not product quality PASS",
+  "version": "2026-09-09-initial-v1",
+  "baseline": {
+    "NIARIM": "46949156156850f8e49dcd9919ca6a7eeaf3bfac",
+    "NIARIM-web": "2a44dd9007e4a764e489a42a70f96ac5da6b3b8a"
+  },
+  "todo_count": 628,
+  "done_count": 0,
+  "current_id": "A001",
+  "source_snapshot_checked": true,
+  "mirror_checked": true,
+  "counts": {
+    "source_files": 1115,
+    "unassigned_source_files": 0,
+    "source_anchors": 21980,
+    "unassigned_source_anchors": 0,
+    "requirements": 127,
+    "unassigned_requirements": 0,
+    "app_routes": 34,
+    "web_routes": 12,
+    "backend_routes": 22
+  },
+  "errors": []
+}
