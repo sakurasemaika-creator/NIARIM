@@ -46,22 +46,12 @@ void main() {
     final l10n = await AppLocalizations.delegate.load(const Locale('ja'));
     expect(find.text(l10n.gestureActionUndo), findsWidgets);
 
-    // scrollUntilVisibleのscrollable引数はScrollView本体ではなく、その内部の
-    // Scrollableを要求する。Flutter 3.47ではSingleChildScrollViewを渡すと
-    // ScrollableへのcastでTypeErrorになるため、モーダル所有のScrollableへ
-    // 明示的に絞り込む。
-    final sheetScrollView = find.byType(SingleChildScrollView);
-    expect(sheetScrollView, findsOneWidget);
-    final sheetScrollable = find.descendant(
-      of: sheetScrollView,
-      matching: find.byType(Scrollable),
-    );
-    expect(sheetScrollable, findsOneWidget);
-    await tester.scrollUntilVisible(
-      find.text(l10n.gestureActionNone),
-      120,
-      scrollable: sheetScrollable,
-    );
+    // SingleChildScrollViewは全選択肢を同じ要素木に保持するため、
+    // 動的に再評価されるScrollable Finderではなく、最終項目そのものを
+    // ensureVisibleして到達可能性を検証する。
+    final noneAction = find.text(l10n.gestureActionNone).last;
+    await tester.ensureVisible(noneAction);
+    await tester.pumpAndSettle();
     expect(find.text(l10n.gestureActionNone), findsWidgets);
     expect(tester.takeException(), isNull);
   });

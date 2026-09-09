@@ -1726,11 +1726,10 @@ void main() {
     await tester.pump(const Duration(milliseconds: 300));
     await tester.pump(const Duration(milliseconds: 300));
     expect(tester.takeException(), isNull, reason: 'タグタップでの絞り込みで例外');
-    expect(
-      find.byIcon(Icons.sell),
-      findsOneWidget,
-      reason: 'タグ検索モードに切り替わっていない',
-    );
+    final tagModeFinder = find.byType(SegmentedButton<bool>);
+    expect(tagModeFinder, findsOneWidget);
+    final tagMode = tester.widget<SegmentedButton<bool>>(tagModeFinder);
+    expect(tagMode.selected, contains(true), reason: 'タグ検索モードに切り替わっていない');
     expect(
       find.byType(CommunityWorkCard),
       findsOneWidget,

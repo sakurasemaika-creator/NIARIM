@@ -73,7 +73,7 @@ void main() {
     );
     await tester.pump(const Duration(milliseconds: 200));
 
-    double currentScale() => _viewMatrix(tester).getMaxScaleOnAxis();
+    double currentScale() => canvasViewScaleOf(_viewMatrix(tester));
     return currentScale;
   }
 
@@ -104,7 +104,12 @@ void main() {
   testWidgets('2本指を広げるとキャンバスが拡大される', (tester) async {
     final scaleOf = await pumpCanvas(tester);
     final before = scaleOf();
-    await pinch(tester, tester.getCenter(find.byType(CanvasArea)), from: 80, to: 200);
+    await pinch(
+      tester,
+      tester.getCenter(find.byType(CanvasArea)),
+      from: 80,
+      to: 200,
+    );
     expect(tester.takeException(), isNull);
     expect(scaleOf(), greaterThan(before), reason: 'ピンチアウトで拡大率が上がること');
   });
@@ -141,8 +146,14 @@ void main() {
     final atMinScale = anchor + const Offset(24, 0);
     final rotatedAtMinScale = anchor + Offset.fromDirection(math.pi / 4, 24);
 
-    final fixed = await tester.startGesture(anchor, kind: PointerDeviceKind.touch);
-    final moving = await tester.startGesture(movingStart, kind: PointerDeviceKind.touch);
+    final fixed = await tester.startGesture(
+      anchor,
+      kind: PointerDeviceKind.touch,
+    );
+    final moving = await tester.startGesture(
+      movingStart,
+      kind: PointerDeviceKind.touch,
+    );
     await tester.pump();
     // 実際の連続ピンチと同様、まず下限へ到達してから同じ2本指を離さず回す。
     await moving.moveTo(atMinScale);
@@ -155,7 +166,7 @@ void main() {
 
     expect(tester.takeException(), isNull);
     final matrix = _viewMatrix(tester);
-    expect(matrix.getMaxScaleOnAxis(), closeTo(kCanvasMinScale, 0.001));
+    expect(canvasViewScaleOf(matrix), closeTo(kCanvasMinScale, 0.001));
     final angle = math.atan2(matrix.entry(1, 0), matrix.entry(0, 0));
     expect(
       _angleDelta(angle, math.pi / 4).abs(),
@@ -171,7 +182,11 @@ void main() {
       await pinch(tester, center, from: 20, to: 300);
     }
     expect(tester.takeException(), isNull);
-    expect(scaleOf(), lessThanOrEqualTo(kCanvasMaxScale + 0.001), reason: '10倍を超えないこと');
+    expect(
+      scaleOf(),
+      lessThanOrEqualTo(kCanvasMaxScale + 0.001),
+      reason: '10倍を超えないこと',
+    );
   });
 
   testWidgets('1本指のドラッグでは変形しない（描画操作を奪わない）', (tester) async {
@@ -191,7 +206,10 @@ void main() {
 
 Matrix4 _viewMatrix(WidgetTester tester) {
   final transforms = tester.widgetList<Transform>(
-    find.descendant(of: find.byType(CanvasArea), matching: find.byType(Transform)),
+    find.descendant(
+      of: find.byType(CanvasArea),
+      matching: find.byType(Transform),
+    ),
   );
   expect(transforms, isNotEmpty, reason: 'CanvasArea内部の表示Transformが存在すること');
   return transforms.first.transform.clone();
@@ -199,7 +217,11 @@ Matrix4 _viewMatrix(WidgetTester tester) {
 
 double _angleDelta(double a, double b) {
   var d = a - b;
-  while (d > math.pi) d -= math.pi * 2;
-  while (d < -math.pi) d += math.pi * 2;
+  while (d > math.pi) {
+    d -= math.pi * 2;
+  }
+  while (d < -math.pi) {
+    d += math.pi * 2;
+  }
   return d;
 }

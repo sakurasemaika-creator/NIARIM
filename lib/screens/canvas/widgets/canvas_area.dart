@@ -90,6 +90,18 @@ double boundedCanvasScaleFactor(double currentScale, double requestedFactor) {
   return target / currentScale;
 }
 
+/// 2Dキャンバス表示の実倍率を取得する。
+///
+/// Matrix4.getMaxScaleOnAxis() はZ軸も比較するため、XYだけを0.2倍などへ
+/// 縮小してもZ=1が最大になり「1.0」と誤認する。キャンバス変換はXYの
+/// 一様拡大縮小＋回転なので、第1列のXY成分の長さが実際の表示倍率になる。
+double canvasViewScaleOf(Matrix4 viewTransform) {
+  final x = viewTransform.entry(0, 0);
+  final y = viewTransform.entry(1, 0);
+  final scale = math.sqrt(x * x + y * y);
+  return scale.isFinite && scale > 0 ? scale : 1.0;
+}
+
 /// キャンバスの表示変換を背景（＝CanvasAreaの表示領域）内へ拘束する。
 ///
 /// 回転後の[drawingRect]の外接矩形を使い、縮小時はキャンバス全体が背景内から
@@ -1002,7 +1014,7 @@ class _CanvasAreaState extends State<CanvasArea> {
   void _handlePointerSignal(PointerSignalEvent event) {
     if (event is! PointerScrollEvent) return;
     final requestedFactor = event.scrollDelta.dy > 0 ? 0.9 : 1.1;
-    final currentScale = _transformController.value.getMaxScaleOnAxis();
+    final currentScale = canvasViewScaleOf(_transformController.value);
     final scaleFactor = boundedCanvasScaleFactor(currentScale, requestedFactor);
     final focal = event.localPosition;
     final zoomMatrix = Matrix4.identity()
@@ -1040,7 +1052,7 @@ class _CanvasAreaState extends State<CanvasArea> {
 
     final requestedScaleFactor = afterDist / beforeDist;
     final rotationDelta = afterVec.direction - beforeVec.direction;
-    final currentScale = _transformController.value.getMaxScaleOnAxis();
+    final currentScale = canvasViewScaleOf(_transformController.value);
     final scaleFactor = boundedCanvasScaleFactor(
       currentScale,
       requestedScaleFactor,
@@ -2318,8 +2330,9 @@ class _CanvasAreaState extends State<CanvasArea> {
             .distance <
         rotateR) {
       mode = _TransformMode.rotate;
-    } else if (selectionScaleHandlesOf(bounds)
-        .any((c) => (canvasPos - c).distance < r)) {
+    } else if (selectionScaleHandlesOf(
+      bounds,
+    ).any((c) => (canvasPos - c).distance < r)) {
       mode = _TransformMode.scale;
     } else if ((canvasPos - bounds.center).distance < r ||
         _selectionMaskContains(canvasPos)) {
