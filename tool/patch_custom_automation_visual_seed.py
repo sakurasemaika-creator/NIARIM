@@ -180,15 +180,15 @@ new_stop = """  void showRecordingStop() {
           transitionDuration: Duration.zero,
           reverseTransitionDuration: Duration.zero,
           pageBuilder: (routeContext, animation, secondaryAnimation) => Scaffold(
-            body: SafeArea(
-              child: Center(
-                child: CustomAutomationRecordingStopButton(
+            body: Stack(
+              children: [
+                CustomAutomationRecordingStopButton(
                   onStop: () {
                     service.stopRecording();
                     Navigator.pop(routeContext);
                   },
                 ),
-              ),
+              ],
             ),
           ),
         ),
@@ -222,12 +222,12 @@ new_draft = """  void showDraftEditor() {
         PageRouteBuilder<void>(
           transitionDuration: Duration.zero,
           reverseTransitionDuration: Duration.zero,
-          pageBuilder: (context, animation, secondaryAnimation) => const Scaffold(
+          pageBuilder: (context, animation, secondaryAnimation) => Scaffold(
             body: SafeArea(
               child: CustomAutomationDraftEditorSheet(
                 surface: CustomAutomationSurface.canvas,
-                onResumeRecording: _noop,
-                onSaved: _noop,
+                onResumeRecording: () {},
+                onSaved: () {},
               ),
             ),
           ),
@@ -236,15 +236,21 @@ new_draft = """  void showDraftEditor() {
     );
   }
 """
-# Const callbacks cannot refer to a top-level function through this generated
-# replacement without introducing another anchor; keep the page non-const.
-new_draft = new_draft.replace('=> const Scaffold(', '=> Scaffold(').replace('onResumeRecording: _noop,', 'onResumeRecording: () {},').replace('onSaved: _noop,', 'onSaved: () {},')
 if old_draft not in s:
     raise SystemExit('draft route anchor changed')
 s = s.replace(old_draft, new_draft, 1)
 
 s = s.replace("import 'dart:typed_data';\n", '')
 s = s.replace('handleCanvasStateCommand: (_, __) async {},', 'handleCanvasStateCommand: (_, _) async {},')
+
+# Do not advance fake time while a production Canvas route is being covered.
+# A single frame is sufficient to materialize the zero-duration test routes and
+# avoids coupling this proof to background/ticker work owned by CanvasScreen.
+s = s.replace(
+    "      harness.showManager();\n      await tester.pump(const Duration(milliseconds: 300));",
+    "      harness.showManager();\n      debugPrint('AUTOMATION_PROD_STAGE=01_manager_route_scheduled');\n      await tester.pump();\n      debugPrint('AUTOMATION_PROD_STAGE=01_manager_first_frame');",
+    1,
+)
 
 # Stage markers make future hangs attributable to one production UI action.
 s = s.replace("      await harness.capture('00_canvas_before_recording');", "      debugPrint('AUTOMATION_PROD_STAGE=00_before_capture');\n      await harness.capture('00_canvas_before_recording');\n      debugPrint('AUTOMATION_PROD_STAGE=01_open_manager');")
