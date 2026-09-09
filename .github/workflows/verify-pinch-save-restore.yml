@@ -9,7 +9,36 @@ on:
       - '.github/workflows/verify-pinch-save-restore.yml'
 
 jobs:
-  verify:
+  pinch:
+    name: "pinch: ${{ matrix.case }}"
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - case: zoom-out
+            plain: '2本指を広げるとキャンバスが拡大される'
+          - case: zoom-in
+            plain: '2本指を狭めるとキャンバスが縮小される'
+          - case: min-clamp
+            plain: '下限未満の縮小要求は0.2倍へ正確にクランプされる'
+          - case: min-rotate
+            plain: '0.2倍へ到達する同一ジェスチャーでも45度回転は保持される'
+          - case: max-clamp
+            plain: '拡大率の上限を超える要求は10倍へクランプされ、暴走しない'
+          - case: single-pointer
+            plain: '1本指のドラッグでは変形しない（描画操作を奪わない）'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+      - run: flutter pub get
+      - run: flutter test test/canvas_pinch_gesture_test.dart --plain-name "${{ matrix.plain }}"
+
+  save-restore:
+    name: save / settings restore
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -18,8 +47,6 @@ jobs:
           channel: stable
           cache: true
       - run: flutter pub get
-      - name: Pinch real pointer regression
-        run: flutter test test/canvas_pinch_gesture_test.dart
       - name: Save and restore regressions
         shell: bash
         run: |
