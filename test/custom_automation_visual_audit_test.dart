@@ -8,6 +8,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:niarim/app_bootstrap.dart';
 import 'package:niarim/engine/custom_automation_filter_runner.dart';
+import 'package:niarim/engine/tile_manager.dart';
 import 'package:niarim/l10n/app_localizations.dart';
 import 'package:niarim/models/custom_automation.dart';
 import 'package:niarim/models/filter_def.dart';
@@ -133,7 +134,7 @@ void main() {
         return tester.widget<CanvasArea>(finder);
       }
 
-      Future<Uint8List> activeLayerPixels() async {
+      Uint8List activeLayerPixels() {
         final canvas = canvasWidget();
         final layerId = canvas.currentLayerId;
         expect(layerId, isNotNull, reason: 'Canvas must expose an active layer');
@@ -144,11 +145,19 @@ void main() {
           canvas.currentFrame,
           layerId!,
         );
-        final image = await tm.compositeLayerToImage(key);
-        final data = await image.toByteData(format: ui.ImageByteFormat.rawRgba);
-        image.dispose();
-        expect(data, isNotNull);
-        return Uint8List.fromList(data!.buffer.asUint8List());
+        const tileBytes = TileManager.tileSize * TileManager.tileSize * 4;
+        final snapshot = Uint8List(tm.tilesX * tm.tilesY * tileBytes);
+        var offset = 0;
+        for (var ty = 0; ty < tm.tilesY; ty++) {
+          for (var tx = 0; tx < tm.tilesX; tx++) {
+            final tile = tm.getTile(key, tx, ty);
+            if (tile != null) {
+              snapshot.setRange(offset, offset + tileBytes, tile);
+            }
+            offset += tileBytes;
+          }
+        }
+        return snapshot;
       }
 
       int changedBytes(Uint8List before, Uint8List after) {
@@ -166,21 +175,15 @@ void main() {
           description: 'Canvas production settings button',
         );
         expect(settingsButton, findsOneWidget);
-        // Calling the production CanvasIconButton callback avoids a flutter_test
-        // InkResponse gesture-arena stall seen on the headless Linux runner while
-        // still entering the menu through the exact production Canvas UI action.
         tester.widget<CanvasIconButton>(settingsButton).onPressed!();
         await tester.pump(const Duration(milliseconds: 500));
       }
 
       await capture('00_canvas_before');
 
-      // Seed the real drawing layer with an actual stroke so the recorded filter
-      // has non-transparent pixels to change. This uses CanvasArea's production
-      // pointer path rather than mutating TileManager directly.
       stage('seed:real-canvas-stroke');
       final canvasRect = tester.getRect(find.byType(CanvasArea));
-      final beforeSeed = await tester.runAsync(activeLayerPixels);
+      final beforeSeed = activeLayerPixels();
       await tester.dragFrom(
         Offset(
           canvasRect.left + canvasRect.width * .34,
@@ -189,9 +192,9 @@ void main() {
         Offset(canvasRect.width * .30, canvasRect.height * .08),
       );
       await tester.pump(const Duration(milliseconds: 500));
-      final afterSeed = await tester.runAsync(activeLayerPixels);
+      final afterSeed = activeLayerPixels();
       expect(
-        changedBytes(beforeSeed!, afterSeed!),
+        changedBytes(beforeSeed, afterSeed),
         greaterThan(100),
         reason: 'The seed brush stroke must change real layer pixels',
       );
@@ -234,9 +237,6 @@ void main() {
       await tester.pump(const Duration(milliseconds: 500));
       await capture('03_recording_started');
 
-      // Use the same semantic command the Canvas manager records and replays in
-      // production. Brightness is intentionally non-idempotent here: both the
-      // recording-time action and later replay must measurably change pixels.
       const recordedFilter = FilterDef(
         id: 'automation-visual-brightness',
         name: 'Automation Visual Brightness',
@@ -247,7 +247,7 @@ void main() {
       final canvasAtRecord = canvasWidget();
       final sourceLayerId = canvasAtRecord.currentLayerId;
       expect(sourceLayerId, isNotNull);
-      final beforeRecordedAction = await tester.runAsync(activeLayerPixels);
+      final beforeRecordedAction = activeLayerPixels();
       stage('action:production-filter-apply');
       await tester.runAsync(
         () => CustomAutomationFilterRunner.apply(
@@ -270,17 +270,14 @@ void main() {
             recordedFrame: canvasAtRecord.currentFrame,
           );
       await tester.pump(const Duration(milliseconds: 700));
-      final afterRecordedAction = await tester.runAsync(activeLayerPixels);
+      final afterRecordedAction = activeLayerPixels();
       expect(
-        changedBytes(beforeRecordedAction!, afterRecordedAction!),
+        changedBytes(beforeRecordedAction, afterRecordedAction),
         greaterThan(100),
         reason: 'The recorded production command must change real Canvas RGBA',
       );
       await capture('04_real_canvas_pixel_action_recorded');
 
-      // Reproduce the old stop failure condition: a Canvas settings panel is open
-      // while recording. Close that production panel first, then stop. This keeps
-      // the floating recording control from being blocked by the settings surface.
       stage('record:settings-panel-open');
       await tester.tap(find.byIcon(Icons.tune).first);
       await tester.pump(const Duration(milliseconds: 400));
@@ -318,7 +315,7 @@ void main() {
       await tester.pump(const Duration(milliseconds: 600));
       await capture('07_saved');
 
-      final beforeReplay = await tester.runAsync(activeLayerPixels);
+      final beforeReplay = activeLayerPixels();
 
       stage('reopen:settings');
       await openCanvasSettings();
@@ -343,9 +340,9 @@ void main() {
       stage('execute:confirm');
       await tester.tap(yes);
       await tester.pump(const Duration(milliseconds: 900));
-      final afterReplay = await tester.runAsync(activeLayerPixels);
+      final afterReplay = activeLayerPixels();
       expect(
-        changedBytes(beforeReplay!, afterReplay!),
+        changedBytes(beforeReplay, afterReplay),
         greaterThan(100),
         reason: 'Re-executing the saved automation must change real Canvas RGBA',
       );
