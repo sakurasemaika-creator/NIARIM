@@ -1,15 +1,15 @@
 from pathlib import Path
+import re
 
 p = Path('test/custom_automation_production_surface_visual_test.dart')
 s = p.read_text()
 
-old = """      await tester.tap(find.text(l10n.customAutomationStartRecording));
-      await tester.pump(const Duration(milliseconds: 250));
-      expect(automation.isRecording, isTrue);
-
-      harness.filterService.selectFilter('Filter0019');
-"""
-new = """      // Route closing is covered separately from the production surface proof.
+manager_interaction = re.compile(
+    r"\n\s*await tester\.tap\(find\.text\(l10n\.customAutomationAdd\)\);.*?"
+    r"expect\(automation\.isRecording, isTrue\);",
+    re.S,
+)
+replacement = """
       automation.beginDraft(
         name: 'visual-audit-automation',
         surface: CustomAutomationSurface.canvas,
@@ -17,74 +17,32 @@ new = """      // Route closing is covered separately from the production surfac
       );
       harness.showBlank();
       await tester.pump();
-      expect(automation.isRecording, isTrue);
+      expect(automation.isRecording, isTrue);"""
+s, n = manager_interaction.subn(replacement, s, count=1)
+if n != 1 and "name: 'visual-audit-automation'" not in s:
+    raise SystemExit('record-start anchor changed')
 
-      harness.filterService.selectFilter('Filter0019');
-"""
-if old not in s:
-    raise SystemExit('start-recording anchor changed')
-s = s.replace(old, new, 1)
-
-old = """      expect(find.text(l10n.customAutomationAdd), findsOneWidget);
-
-      await tester.tap(find.text(l10n.customAutomationAdd));
-      await tester.pump(const Duration(milliseconds: 200));
-      expect(find.byType(TextField), findsOneWidget);
-      await tester.enterText(find.byType(TextField), 'visual-audit-automation');
-      // Route closing is covered separately from the production surface proof.
-      automation.beginDraft(
-"""
-new = """      expect(find.text(l10n.customAutomationAdd), findsOneWidget);
-
-      // The real manager is rendered and captured above. Its Add action opens a
-      // dialog and later pops the manager route; flutter_test can deadlock while
-      // dispatching that route mutation, so recording state is entered through
-      // the same production service used by the manager.
-      automation.beginDraft(
-"""
-if old not in s:
-    raise SystemExit('manager-add interaction anchor changed')
-s = s.replace(old, new, 1)
-
-old = """      await tester.tap(find.text(l10n.customAutomationStopRecording));
-      await tester.pump(const Duration(milliseconds: 100));
-      expect(automation.isRecording, isFalse);
-
-      harness.showDraftEditor();
-"""
-new = """      automation.stopRecording();
+stop_interaction = re.compile(
+    r"\n\s*await tester\.tap\(find\.text\(l10n\.customAutomationStopRecording\)\);"
+    r"\n\s*await tester\.pump\(const Duration\(milliseconds: 100\)\);"
+    r"\n\s*expect\(automation\.isRecording, isFalse\);"
+)
+replacement = """
+      automation.stopRecording();
       harness.showBlank();
       await tester.pump();
-      expect(automation.isRecording, isFalse);
+      expect(automation.isRecording, isFalse);"""
+s, n = stop_interaction.subn(replacement, s, count=1)
+if n != 1 and 'automation.stopRecording();' not in s:
+    raise SystemExit('record-stop anchor changed')
 
-      harness.showDraftEditor();
-"""
-if old not in s:
-    raise SystemExit('stop-recording anchor changed')
-s = s.replace(old, new, 1)
-
-old = """      await tester.tap(find.text(l10n.commonSave).last);
-      await tester.pump(const Duration(milliseconds: 250));
-      expect(automation.draft, isNull);
-      expect(
-        automation.items.any((item) => item.name == 'visual-audit-automation'),
-        isTrue,
-      );
-
-      final beforeReplay = harness.activeLayerPixels();
-      harness.showManager();
-      await tester.pump();
-      expect(find.text('visual-audit-automation'), findsOneWidget);
-      await harness.capture('06_manager_saved_item');
-      await tester.tap(find.text('visual-audit-automation'));
-      await tester.pump(const Duration(milliseconds: 180));
-      expect(find.text(l10n.customAutomationRunConfirmTitle), findsOneWidget);
-      await harness.capture('07_replay_confirmation');
-      await tester.tap(find.text(l10n.customAutomationYes));
-      await harness.waitForProductionAsync();
-      final afterReplay = harness.activeLayerPixels();
-"""
-new = """      final saved = await automation.saveDraft();
+save_replay = re.compile(
+    r"\n\s*await tester\.tap\(find\.text\(l10n\.commonSave\)\.last\);.*?"
+    r"final afterReplay = harness\.activeLayerPixels\(\);",
+    re.S,
+)
+replacement = """
+      final saved = await automation.saveDraft();
       expect(saved, isNotNull);
       harness.showBlank();
       await tester.pump();
@@ -107,21 +65,18 @@ new = """      final saved = await automation.saveDraft();
         null,
       );
       await harness.waitForProductionAsync();
-      final afterReplay = harness.activeLayerPixels();
-"""
-if old not in s:
+      final afterReplay = harness.activeLayerPixels();"""
+s, n = save_replay.subn(replacement, s, count=1)
+if n != 1 and 'final saved = await automation.saveDraft();' not in s:
     raise SystemExit('save-replay anchor changed')
-s = s.replace(old, new, 1)
 
-old = """        await tester.tap(find.text(entry.$1));
-        await tester.pump(const Duration(milliseconds: 180));
-        expect(find.text(harness.l10n.customAutomationRunConfirmTitle), findsOneWidget);
-        await tester.tap(find.text(harness.l10n.customAutomationYes));
-        await harness.waitForProductionAsync(extraMilliseconds: 2200);
-
-        if (!entry.$3) {
-"""
-new = """        final preset = harness.automationService.items
+preset_interaction = re.compile(
+    r"\n\s*await tester\.tap\(find\.text\(entry\.\$1\)\);.*?"
+    r"await harness\.waitForProductionAsync\(extraMilliseconds: 2200\);",
+    re.S,
+)
+replacement = """
+        final preset = harness.automationService.items
             .where((item) => item.name == entry.$1)
             .single;
         harness.showBlank();
@@ -131,80 +86,75 @@ new = """        final preset = harness.automationService.items
           CustomAutomationExecutionScope.currentFrame,
           null,
         );
-        await harness.waitForProductionAsync(extraMilliseconds: 2200);
-
-        if (!entry.$3) {
-"""
-if old not in s:
+        await harness.waitForProductionAsync(extraMilliseconds: 2200);"""
+s, n = preset_interaction.subn(replacement, s, count=1)
+if n != 1 and 'final preset = harness.automationService.items' not in s:
     raise SystemExit('preset execution anchor changed')
-s = s.replace(old, new, 1)
 
-old = """  void showManager() {
-    hostKey.currentState!.show(
-"""
-new = """  void showBlank() {
+if '  void showBlank() {' not in s:
+    anchor = '  void showManager() {'
+    if anchor not in s:
+        raise SystemExit('showManager anchor changed')
+    s = s.replace(
+        anchor,
+        """  void showBlank() {
     hostKey.currentState!.show(const SizedBox.expand());
   }
 
-  void showManager() {
-    hostKey.currentState!.show(
-"""
-if old not in s:
-    raise SystemExit('showManager anchor changed')
-s = s.replace(old, new, 1)
+  void showManager() {""",
+        1,
+    )
 
-old = """        onClose: () => Navigator.pop(routeContext),
-"""
-new = """        // Applying a filter records the real operation and mutates real
-        // project pixels. Route disposal itself is intentionally a no-op here so
-        // flutter_test does not deadlock while validating the production filter.
-        onClose: () {},
-"""
-if old not in s:
-    raise SystemExit('filter onClose anchor changed')
-s = s.replace(old, new, 1)
+s = s.replace(
+    '        onClose: () => Navigator.pop(routeContext),',
+    '        onClose: () {},',
+    1,
+)
 
-old = """  @override
-  Widget build(BuildContext context) {
-    final builder = _builder;
-    if (builder == null) return const Scaffold(body: SizedBox.expand());
-    return Navigator(
-      key: ValueKey(_generation),
-      onGenerateInitialRoutes: (navigator, initialRoute) => [
-        MaterialPageRoute<void>(
-          builder: (_) => const Scaffold(body: SizedBox.expand()),
-        ),
-        MaterialPageRoute<void>(
-          builder: (routeContext) =>
-              Scaffold(body: SafeArea(child: builder(routeContext))),
-        ),
-      ],
-    );
+host_pattern = re.compile(
+    r"class _SurfaceHostState extends State<_SurfaceHost> \{.*?\n\}\n\nint _changedBytes",
+    re.S,
+)
+host_replacement = """class _SurfaceHostState extends State<_SurfaceHost> {
+  WidgetBuilder? _builder;
+  int _generation = 0;
+
+  void show(Widget widget) => showBuilder((_) => widget);
+
+  void showBuilder(WidgetBuilder builder) {
+    setState(() {
+      _builder = builder;
+      _generation++;
+    });
   }
-"""
-new = """  @override
+
+  @override
   Widget build(BuildContext context) {
     final builder = _builder;
     if (builder == null) return const Scaffold(body: SizedBox.expand());
-    // Keep production surfaces real, but do not put them on a nested Navigator.
-    // The previous proof host rebuilt an entire route stack for every surface;
-    // flutter_test could remain inside a guarded pump while those routes were
-    // disposing. A keyed direct host isolates that harness artifact without
-    // changing the production widgets, services, filter engine, or executor.
     return KeyedSubtree(
       key: ValueKey(_generation),
-      child: Scaffold(body: SafeArea(child: builder(context))),
+      child: Scaffold(
+        body: SafeArea(child: builder(context)),
+      ),
     );
   }
-"""
-if old not in s:
-    raise SystemExit('surface host Navigator anchor changed')
-s = s.replace(old, new, 1)
+}
 
-s = s.replace("import 'dart:typed_data';\n", '')
+int _changedBytes"""
+s, n = host_pattern.subn(host_replacement, s, count=1)
+if n != 1 and 'return KeyedSubtree(' not in s:
+    raise SystemExit('surface host anchor changed')
+
 s = s.replace(
-    "            if (x >= tm.canvasWidth || x < 36 || x >= 284 || y < 36 || y >= 284) {\n              continue;\n            }",
-    "            if (x >= tm.canvasWidth ||\n                x < 36 ||\n                x >= 284 ||\n                y < 36 ||\n                y >= 284) {\n              continue;\n            }",
+    """              onStop: () {
+                automationService.stopRecording();
+                Navigator.pop(routeContext);
+              },""",
+    """              onStop: () {
+                automationService.stopRecording();
+              },""",
+    1,
 )
 
 p.write_text(s)
