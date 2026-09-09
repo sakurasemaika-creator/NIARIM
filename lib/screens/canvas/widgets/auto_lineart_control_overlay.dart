@@ -109,11 +109,18 @@ class _AutoLineartControlOverlayState extends State<AutoLineartControlOverlay> {
             if (active == null || _activePointer != event.pointer) return;
             final point = _toGraph(event.localPosition, rect);
             setState(() {
-              // AutoLineartGraph is a transient editor model. Keep the graph
-              // handed in by FilterPanel in sync immediately so the parent
-              // state and this overlay observe the same control edit before the
-              // asynchronous raster preview catches up.
-              _displayGraph.paths[active.$1].points[active.$2] = point;
+              // Keep the editor graph immutable. FilterPanel retains the
+              // pre-edit graph as the baseline used to transfer manual edits
+              // across smoothing/rough-width changes, so mutating the shared
+              // graph here would erase the very displacement we need to
+              // preserve. A fresh graph also makes CustomPainter repaint
+              // immediately and keeps coincident junction controls together.
+              _displayGraph = AutoLineartEngine.moveControlPoint(
+                _displayGraph,
+                pathIndex: active.$1,
+                pointIndex: active.$2,
+                point: point,
+              );
             });
             widget.onPointMoved(active.$1, active.$2, point);
           },
