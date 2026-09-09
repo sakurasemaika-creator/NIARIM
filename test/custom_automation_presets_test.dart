@@ -11,7 +11,7 @@ void main() {
     SharedPreferences.setMockInitialValues({});
   });
 
-  test('installs the three requested Canvas presets once', () async {
+  test('seeds the three requested Canvas presets on first launch', () async {
     final service = CustomAutomationService();
     await service.init();
 
@@ -49,7 +49,7 @@ void main() {
     expect(filterOf('線画作成').id, 'Filter0006');
   });
 
-  test('deleting a starter preset does not recreate it after restart', () async {
+  test('persisted automation list is authoritative after first launch', () async {
     final first = CustomAutomationService();
     await first.init();
     await first.delete(auroraHologramAutomationPresetId);
@@ -60,5 +60,15 @@ void main() {
       second.items.any((item) => item.id == auroraHologramAutomationPresetId),
       isFalse,
     );
+  });
+
+  test('an intentionally empty persisted list remains empty', () async {
+    SharedPreferences.setMockInitialValues(<String, Object>{
+      'custom_automations_v1': <String>[],
+    });
+
+    final service = CustomAutomationService();
+    await service.init();
+    expect(service.items, isEmpty);
   });
 }
