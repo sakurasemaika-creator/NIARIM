@@ -1,0 +1,43 @@
+name: Aurora and Automation Visual Audit
+
+on:
+  push:
+    branches: [dev_branch]
+    paths:
+      - 'test/aurora_hologram_visual_audit_test.dart'
+      - 'test/custom_automation_visual_audit_test.dart'
+      - '.github/workflows/aurora-automation-visual-audit.yml'
+  workflow_dispatch:
+
+jobs:
+  visual-audit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: dev_branch
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+      - run: flutter pub get
+      - name: Analyze visual audit tests
+        run: flutter analyze test/aurora_hologram_visual_audit_test.dart --no-fatal-warnings --no-fatal-infos
+      - name: Run aurora visual audit
+        run: flutter test test/aurora_hologram_visual_audit_test.dart --reporter expanded
+      - name: Run automation visual audit when present
+        shell: bash
+        run: |
+          if [[ -f test/custom_automation_visual_audit_test.dart ]]; then
+            flutter analyze test/custom_automation_visual_audit_test.dart --no-fatal-warnings --no-fatal-infos
+            flutter test test/custom_automation_visual_audit_test.dart --reporter expanded
+          fi
+      - name: Upload visual evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: aurora-automation-visual-evidence
+          path: build/visual-reaudit
+          if-no-files-found: warn
+          retention-days: 7
