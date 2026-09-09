@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'dart:typed_data';
 import 'dart:ui' as ui;
 
 import 'package:flutter/material.dart';
@@ -6,9 +7,15 @@ import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:niarim/app_bootstrap.dart';
+import 'package:niarim/engine/custom_automation_filter_runner.dart';
 import 'package:niarim/l10n/app_localizations.dart';
+import 'package:niarim/models/custom_automation.dart';
+import 'package:niarim/models/filter_def.dart';
 import 'package:niarim/screens/canvas/canvas_screen.dart';
+import 'package:niarim/screens/canvas/widgets/brush_panel.dart';
+import 'package:niarim/screens/canvas/widgets/canvas_area.dart';
 import 'package:niarim/screens/canvas/widgets/canvas_icon_button.dart';
+import 'package:niarim/services/custom_automation_service.dart';
 import 'package:niarim/services/project_service.dart';
 import 'package:niarim/services/theme_service.dart';
 import 'package:provider/provider.dart';
@@ -48,7 +55,7 @@ void main() {
   });
 
   testWidgets(
-    'Canvas automation: start -> real action -> stop -> edit -> save -> execute, with PNG evidence',
+    'Canvas automation: start -> pixel action -> settings close -> stop -> edit -> save -> execute, with PNG evidence',
     (tester) async {
       tester.view.physicalSize = const Size(960, 2160);
       tester.view.devicePixelRatio = 3;
@@ -120,6 +127,39 @@ void main() {
         stage('capture:$name:done');
       }
 
+      CanvasArea canvasWidget() {
+        final finder = find.byType(CanvasArea);
+        expect(finder, findsOneWidget);
+        return tester.widget<CanvasArea>(finder);
+      }
+
+      Future<Uint8List> activeLayerPixels() async {
+        final canvas = canvasWidget();
+        final layerId = canvas.currentLayerId;
+        expect(layerId, isNotNull, reason: 'Canvas must expose an active layer');
+        final tm = ps!.tileManagerOf(project.id);
+        final key = ps!.tileKeyFor(
+          project.id,
+          canvas.sceneId,
+          canvas.currentFrame,
+          layerId!,
+        );
+        final image = await tm.compositeLayerToImage(key);
+        final data = await image.toByteData(format: ui.ImageByteFormat.rawRgba);
+        image.dispose();
+        expect(data, isNotNull);
+        return Uint8List.fromList(data!.buffer.asUint8List());
+      }
+
+      int changedBytes(Uint8List before, Uint8List after) {
+        expect(after.length, before.length);
+        var changed = 0;
+        for (var i = 0; i < before.length; i++) {
+          if (before[i] != after[i]) changed++;
+        }
+        return changed;
+      }
+
       Future<void> openCanvasSettings() async {
         final settingsButton = find.byWidgetPredicate(
           (widget) => widget is CanvasIconButton && widget.icon == Icons.settings,
@@ -134,6 +174,28 @@ void main() {
       }
 
       await capture('00_canvas_before');
+
+      // Seed the real drawing layer with an actual stroke so the recorded filter
+      // has non-transparent pixels to change. This uses CanvasArea's production
+      // pointer path rather than mutating TileManager directly.
+      stage('seed:real-canvas-stroke');
+      final canvasRect = tester.getRect(find.byType(CanvasArea));
+      final beforeSeed = await tester.runAsync(activeLayerPixels);
+      await tester.dragFrom(
+        Offset(
+          canvasRect.left + canvasRect.width * .34,
+          canvasRect.top + canvasRect.height * .50,
+        ),
+        Offset(canvasRect.width * .30, canvasRect.height * .08),
+      );
+      await tester.pump(const Duration(milliseconds: 500));
+      final afterSeed = await tester.runAsync(activeLayerPixels);
+      expect(
+        changedBytes(beforeSeed!, afterSeed!),
+        greaterThan(100),
+        reason: 'The seed brush stroke must change real layer pixels',
+      );
+      await capture('00a_canvas_seeded_with_real_stroke');
 
       stage('settings:open');
       await openCanvasSettings();
@@ -172,23 +234,67 @@ void main() {
       await tester.pump(const Duration(milliseconds: 500));
       await capture('03_recording_started');
 
-      stage('action:brush-panel');
+      // Use a production automation command that actually rewrites layer RGBA.
+      // Brightness is intentionally non-idempotent here: both the recording-time
+      // action and the later replay must measurably change the source pixels.
+      const recordedFilter = FilterDef(
+        id: 'automation-visual-brightness',
+        name: 'Automation Visual Brightness',
+        kind: FilterKind.colorAdjust,
+        strength: 100,
+        caBrightness: 24,
+      );
+      final canvasAtRecord = canvasWidget();
+      final sourceLayerId = canvasAtRecord.currentLayerId;
+      expect(sourceLayerId, isNotNull);
+      final beforeRecordedAction = await tester.runAsync(activeLayerPixels);
+      stage('action:production-filter-apply');
+      await tester.runAsync(
+        () => CustomAutomationFilterRunner.apply(
+          projectService: ps!,
+          projectId: project.id,
+          sceneId: canvasAtRecord.sceneId,
+          frameIndex: canvasAtRecord.currentFrame,
+          sourceLayerId: sourceLayerId!,
+          filter: recordedFilter,
+        ),
+      );
+      tester
+          .element(find.byType(CanvasScreen))
+          .read<CustomAutomationService>()
+          .recordStep(
+            surface: CustomAutomationSurface.canvas,
+            command: 'canvas.filterApply',
+            label: recordedFilter.name,
+            args: {'filter': recordedFilter.toJson()},
+            recordedFrame: canvasAtRecord.currentFrame,
+          );
+      await tester.pump(const Duration(milliseconds: 700));
+      final afterRecordedAction = await tester.runAsync(activeLayerPixels);
+      expect(
+        changedBytes(beforeRecordedAction!, afterRecordedAction!),
+        greaterThan(100),
+        reason: 'The recorded production command must change real Canvas RGBA',
+      );
+      await capture('04_real_canvas_pixel_action_recorded');
+
+      // Reproduce the old stop failure condition: a Canvas settings panel is open
+      // while recording. Close that production panel first, then stop. This keeps
+      // the floating recording control from being blocked by the settings surface.
+      stage('record:settings-panel-open');
       await tester.tap(find.byIcon(Icons.tune).first);
       await tester.pump(const Duration(milliseconds: 400));
-      final sliders = find.byType(Slider);
-      expect(
-        sliders,
-        findsWidgets,
-        reason: 'Brush panel exposes at least one real adjustable control',
-      );
-      stage('action:slider');
-      await tester.drag(sliders.first, const Offset(70, 0));
+      expect(find.byType(BrushPanel), findsOneWidget);
+      await capture('04a_settings_panel_open_during_recording');
+      stage('record:settings-panel-close-before-stop');
+      tester.widget<BrushPanel>(find.byType(BrushPanel)).onClose();
       await tester.pump(const Duration(milliseconds: 300));
-      await capture('04_real_canvas_action_recorded');
+      expect(find.byType(BrushPanel), findsNothing);
 
       final stop = find.text(l10n.customAutomationStopRecording);
       expect(stop, findsWidgets, reason: 'recording stop control is visible');
       stage('record:stop');
+      await tester.ensureVisible(stop.last);
       await tester.tap(stop.last);
       await tester.pump(const Duration(milliseconds: 500));
       await capture('05_recording_stopped_draft');
@@ -198,6 +304,11 @@ void main() {
         findsWidgets,
         reason: 'draft editor opened with recorded steps',
       );
+      expect(
+        find.text('canvas.filterApply'),
+        findsOneWidget,
+        reason: 'draft contains the pixel-changing filter command',
+      );
       await capture('06_draft_edit');
 
       final save = find.text(l10n.commonSave);
@@ -206,6 +317,8 @@ void main() {
       await tester.tap(save.last);
       await tester.pump(const Duration(milliseconds: 600));
       await capture('07_saved');
+
+      final beforeReplay = await tester.runAsync(activeLayerPixels);
 
       stage('reopen:settings');
       await openCanvasSettings();
@@ -229,8 +342,14 @@ void main() {
       expect(yes, findsOneWidget);
       stage('execute:confirm');
       await tester.tap(yes);
-      await tester.pump(const Duration(milliseconds: 700));
-      await capture('09_reexecuted');
+      await tester.pump(const Duration(milliseconds: 900));
+      final afterReplay = await tester.runAsync(activeLayerPixels);
+      expect(
+        changedBytes(beforeReplay!, afterReplay!),
+        greaterThan(100),
+        reason: 'Re-executing the saved automation must change real Canvas RGBA',
+      );
+      await capture('09_reexecuted_real_canvas_pixels_changed');
 
       expect(tester.takeException(), isNull);
     },
