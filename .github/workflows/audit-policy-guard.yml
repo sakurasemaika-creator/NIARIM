@@ -1,0 +1,56 @@
+name: Audit policy guard
+
+on:
+  push:
+    branches: [dev_branch]
+  pull_request:
+    branches: [dev_branch]
+
+permissions:
+  contents: read
+
+jobs:
+  guard:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Reject unauthorized audit policy/state edits
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [[ "${{ github.event_name }}" == "pull_request" ]]; then
+            git fetch origin "${{ github.base_ref }}" --depth=1
+            base="origin/${{ github.base_ref }}"
+            range="$base...HEAD"
+          else
+            before="${{ github.event.before }}"
+            if [[ -z "$before" || "$before" =~ ^0+$ ]]; then
+              before="HEAD^"
+            fi
+            range="$before..HEAD"
+          fi
+
+          changed="$(git diff --name-only "$range" || true)"
+          messages="$(git log --format=%B "$range" || true)"
+
+          policy_re='^(AGENTS\.md|docs/work-audit/.*|docs/product-audit/(QUALITY_STANDARD|LEGAL_IP_STANDARD|HANDS_ON_UI_STANDARD)\.md)$'
+          state_re='^(docs/work-continuation\.md|docs/product-audit/README\.md)$'
+
+          policy_changed="$(printf '%s\n' "$changed" | grep -E "$policy_re" || true)"
+          state_changed="$(printf '%s\n' "$changed" | grep -E "$state_re" || true)"
+
+          if [[ -n "$policy_changed" ]] && ! grep -Fq '[audit-policy-approved]' <<<"$messages"; then
+            echo '::error::Audit policy files changed without explicit [audit-policy-approved] marker.'
+            echo "$policy_changed"
+            exit 1
+          fi
+
+          if [[ -n "$state_changed" ]] && ! grep -Eq '\[(audit-state|audit-policy-approved)\]' <<<"$messages"; then
+            echo '::error::Audit checkpoint/state changed without [audit-state] or [audit-policy-approved] marker.'
+            echo "$state_changed"
+            exit 1
+          fi
+
+          echo 'Audit policy/state guard passed.'
