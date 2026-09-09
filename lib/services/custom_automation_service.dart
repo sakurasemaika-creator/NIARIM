@@ -4,6 +4,7 @@ import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../models/custom_automation.dart';
+import '../models/custom_automation_presets.dart';
 
 class CustomAutomationDraft {
   final String id;
@@ -61,6 +62,20 @@ class CustomAutomationService extends ChangeNotifier {
           }
         }).whereType<CustomAutomation>(),
       );
+
+    // One-time migration for new and existing users. After installation the
+    // presets are ordinary automations, so user edits/deletions are respected and
+    // a deleted preset is not recreated on every launch.
+    if (!(prefs.getBool(customAutomationPresetInstallKey) ?? false)) {
+      final existingIds = _items.map((item) => item.id).toSet();
+      _items.addAll(
+        builtInCanvasAutomationPresets().where(
+          (preset) => !existingIds.contains(preset.id),
+        ),
+      );
+      await prefs.setBool(customAutomationPresetInstallKey, true);
+      await _persist();
+    }
     notifyListeners();
   }
 
