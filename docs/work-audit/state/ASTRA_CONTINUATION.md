@@ -5,7 +5,7 @@
 ## 再開運用
 
 - ユーザーがWorkを開き、GPT-6 Astraの現在利用可能な最大effortで再開する。Scheduled TaskからWorkへ確実に戻る挙動は未確認で、監査継続の前提にしない。
-- 最新の両 `dev_branch` → 両 `AGENTS.md` → 仕様・品質基準 → 本ファイルと `docs/product-audit/README.md` から復元する。Git・checkpointの実行ルールはAGENTSを正とする。
+- 最新の両 `dev_branch` → 両 `AGENTS.md` → 仕様・品質基準 → 本ファイルと `docs/work-audit/state/ASTRA_AUDIT_STATE.md` から復元する。Git・checkpointの実行ルールはAGENTSを正とする。
 - アシスタントからメインモデル/effortを変更する操作は公開されていない。実際に変更できたと報告しない。
 
 ## 最新セッション
