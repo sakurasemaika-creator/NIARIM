@@ -1,0 +1,30 @@
+name: Verify pinch and save restore
+
+on:
+  workflow_dispatch:
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+      - run: flutter pub get
+      - name: Pinch real pointer regression
+        run: flutter test test/canvas_pinch_gesture_test.dart
+      - name: Save and restore regressions
+        shell: bash
+        run: |
+          set -euo pipefail
+          files=$(find test -type f \( -iname '*save*test.dart' -o -iname '*restore*test.dart' -o -iname '*setting*test.dart' -o -iname '*preference*test.dart' \) -print)
+          if [ -z "$files" ]; then
+            echo 'No matching save/restore/settings tests found.'
+            exit 0
+          fi
+          while IFS= read -r file; do
+            echo "=== $file ==="
+            flutter test "$file"
+          done <<< "$files"
