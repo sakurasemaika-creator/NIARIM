@@ -7,7 +7,7 @@ on:
     paths:
       - '.github/workflows/fix-custom-automation-production-seed.yml'
       - 'test/custom_automation_production_surface_visual_test.dart'
-      - 'tool/patch_custom_automation_surface_interactions.py'
+      - 'tool/patch_custom_automation_surface_interactions_v2.py'
   workflow_dispatch:
 
 permissions:
@@ -27,7 +27,7 @@ jobs:
           channel: stable
           cache: true
       - run: flutter pub get
-      - run: python3 tool/patch_custom_automation_surface_interactions.py
+      - run: python3 tool/patch_custom_automation_surface_interactions_v2.py
       - run: dart format test/custom_automation_production_surface_visual_test.dart
       - run: flutter analyze test/custom_automation_production_surface_visual_test.dart --no-fatal-warnings --no-fatal-infos
       - run: flutter test test/custom_automation_production_surface_visual_test.dart --reporter expanded
@@ -38,17 +38,3 @@ jobs:
           path: build/visual-reaudit/custom-automation-production
           if-no-files-found: warn
           retention-days: 7
-      - if: success()
-        run: |
-          git config user.name 'github-actions[bot]'
-          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          git rm .github/workflows/fix-custom-automation-production-seed.yml
-          git rm tool/patch_custom_automation_visual_seed.py
-          git rm tool/patch_custom_automation_visual_route_lifecycle.py
-          git rm tool/patch_custom_automation_surface_interactions.py
-          git rm test/custom_automation_production_visual_test.dart
-          git mv test/custom_automation_production_surface_visual_test.dart test/custom_automation_production_visual_test.dart
-          git add test/custom_automation_production_visual_test.dart
-          git commit -m 'test: stabilize production automation visual flow'
-          git pull --rebase origin dev_branch
-          git push origin HEAD:dev_branch
