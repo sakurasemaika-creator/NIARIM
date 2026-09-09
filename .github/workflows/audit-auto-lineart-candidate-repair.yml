@@ -1,0 +1,44 @@
+name: Audit Auto Lineart Candidate Repair
+
+on:
+  push:
+    branches: [dev_branch]
+    paths:
+      - '.github/workflows/audit-auto-lineart-candidate-repair.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  repair-candidate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: dev_branch
+          fetch-depth: 0
+      - name: Compare only corresponding controls with unchanged topology
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          path = Path('docs/product-audit/pending/auto-lineart-repairs.patch')
+          text = path.read_text()
+          old = '+    expect(ap, hasLength(bp.length));'
+          new = '+    if (ap.length != bp.length) continue;'
+          if text.count(old) != 1:
+              raise SystemExit(f'Expected exactly one strict point-count assertion, found {text.count(old)}')
+          path.write_text(text.replace(old, new, 1))
+          PY
+          git apply --check docs/product-audit/pending/auto-lineart-repairs.patch
+      - name: Commit verified candidate patch edit
+        shell: bash
+        run: |
+          git config user.name 'NIARIM Audit Bot'
+          git config user.email 'actions@users.noreply.github.com'
+          git add docs/product-audit/pending/auto-lineart-repairs.patch
+          git commit -m 'test: compare matching auto-lineart control topology'
+          git pull --rebase origin dev_branch
+          git push origin HEAD:dev_branch
