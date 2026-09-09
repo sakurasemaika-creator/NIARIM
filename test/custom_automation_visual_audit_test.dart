@@ -1,5 +1,4 @@
 import 'dart:io';
-import 'dart:typed_data';
 import 'dart:ui' as ui;
 
 import 'package:flutter/material.dart';
@@ -184,13 +183,19 @@ void main() {
       stage('seed:real-canvas-stroke');
       final canvasRect = tester.getRect(find.byType(CanvasArea));
       final beforeSeed = activeLayerPixels();
-      await tester.dragFrom(
-        Offset(
-          canvasRect.left + canvasRect.width * .34,
-          canvasRect.top + canvasRect.height * .50,
-        ),
-        Offset(canvasRect.width * .30, canvasRect.height * .08),
+      final strokeStart = Offset(
+        canvasRect.left + canvasRect.width * .34,
+        canvasRect.top + canvasRect.height * .50,
       );
+      final strokeEnd = strokeStart +
+          Offset(canvasRect.width * .30, canvasRect.height * .08);
+      final gesture = await tester.startGesture(strokeStart, pointer: 21);
+      await tester.pump(const Duration(milliseconds: 32));
+      for (var i = 1; i <= 12; i++) {
+        await gesture.moveTo(Offset.lerp(strokeStart, strokeEnd, i / 12)!);
+        await tester.pump(const Duration(milliseconds: 16));
+      }
+      await gesture.up();
       await tester.pump(const Duration(milliseconds: 500));
       final afterSeed = activeLayerPixels();
       expect(
