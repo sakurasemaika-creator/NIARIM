@@ -35,7 +35,7 @@ jobs:
           changed="$(git diff --name-only "$range" || true)"
           messages="$(git log --format=%B "$range" || true)"
 
-          policy_re='^(AGENTS\.md|docs/work-audit/.*|docs/product-audit/(QUALITY_STANDARD|LEGAL_IP_STANDARD|HANDS_ON_UI_STANDARD)\.md)$'
+          policy_re='^(AGENTS\.md|\.github/workflows/audit-policy-guard\.yml|docs/work-audit/.*|docs/product-audit/(QUALITY_STANDARD|LEGAL_IP_STANDARD|HANDS_ON_UI_STANDARD)\.md)$'
           state_re='^(docs/work-continuation\.md|docs/product-audit/README\.md)$'
 
           policy_changed="$(printf '%s\n' "$changed" | grep -E "$policy_re" || true)"
