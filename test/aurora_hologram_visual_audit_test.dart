@@ -24,6 +24,38 @@ void main() {
       );
     }
     expect(signatures, hasLength(AuroraHologramPreset.values.length));
+
+    final aurora = _paletteStats(AuroraHologramPreset.aurora);
+    final soap = _paletteStats(AuroraHologramPreset.soapBubble);
+    final cyber = _paletteStats(AuroraHologramPreset.cyberNeon);
+    final pastel = _paletteStats(AuroraHologramPreset.pastelDream);
+    final sunset = _paletteStats(AuroraHologramPreset.sunsetGold);
+    final silver = _paletteStats(AuroraHologramPreset.silverFoil);
+
+    // Aurora must stay distinctly cool: blue leads red by a wide margin.
+    expect(aurora.avgB - aurora.avgR, greaterThan(70));
+    expect(aurora.avgG - aurora.avgR, greaterThan(45));
+
+    // Soap Bubble is bright/translucent pearl rather than a dark rainbow.
+    expect(soap.minChannel, greaterThanOrEqualTo(200));
+    expect(soap.avgChroma, lessThan(35));
+
+    // Cyber Neon is the deliberately extreme black-light option.
+    expect(cyber.minChannel, lessThanOrEqualTo(10));
+    expect(cyber.avgChroma, greaterThan(170));
+
+    // Pastel Dream stays milky and low-contrast.
+    expect(pastel.minChannel, greaterThanOrEqualTo(195));
+    expect(pastel.avgChroma, lessThan(40));
+
+    // Sunset Gold is warm by construction, not another cyan/pink preset.
+    expect(sunset.avgR - sunset.avgB, greaterThan(70));
+    expect(sunset.avgR - sunset.avgG, greaterThan(55));
+
+    // Silver Foil remains the least colourful preset overall.
+    expect(silver.avgChroma, lessThan(25));
+    expect(silver.avgChroma, lessThan(pastel.avgChroma));
+    expect(silver.avgChroma, lessThan(soap.avgChroma));
   });
 
   test('wide grayscale ramp -> all aurora hologram presets -> PNG', () async {
@@ -57,6 +89,33 @@ void main() {
       );
     }
   }, timeout: const Timeout(Duration(minutes: 2)));
+}
+
+({double avgR, double avgG, double avgB, double avgChroma, int minChannel})
+_paletteStats(AuroraHologramPreset preset) {
+  final stops = auroraHologramStops(preset);
+  var sumR = 0.0;
+  var sumG = 0.0;
+  var sumB = 0.0;
+  var sumChroma = 0.0;
+  var minChannel = 255;
+  for (final (_, r, g, b) in stops) {
+    sumR += r;
+    sumG += g;
+    sumB += b;
+    final maxChannel = [r, g, b].reduce((a, c) => a > c ? a : c);
+    final minRgb = [r, g, b].reduce((a, c) => a < c ? a : c);
+    sumChroma += maxChannel - minRgb;
+    if (minRgb < minChannel) minChannel = minRgb;
+  }
+  final count = stops.length;
+  return (
+    avgR: sumR / count,
+    avgG: sumG / count,
+    avgB: sumB / count,
+    avgChroma: sumChroma / count,
+    minChannel: minChannel,
+  );
 }
 
 Uint8List _buildWideGrayRamp(int width, int height) {
