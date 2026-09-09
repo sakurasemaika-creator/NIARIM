@@ -73,11 +73,18 @@ class CustomAutomation {
       steps.isNotEmpty &&
       steps.every((step) => step.surface == CustomAutomationSurface.canvas);
 
+  /// True only when every recorded operation points at exactly the same frame.
+  ///
+  /// Frame-scope playback deliberately relies on the frame number captured for
+  /// each operation rather than scene-change metadata or the draft's start frame.
+  /// This matches what the user actually operated on and avoids a separate scene
+  /// movement heuristic. Legacy steps without a recorded frame stay conservative.
   bool get staysInRecordingStartFrame {
-    final start = recordingStartFrame;
-    if (start == null || steps.isEmpty) return false;
-    if (steps.any((step) => step.changesFrame)) return false;
-    return steps.every((step) => step.recordedFrame == start);
+    if (steps.isEmpty || steps.any((step) => step.recordedFrame == null)) {
+      return false;
+    }
+    final recordedFrame = steps.first.recordedFrame;
+    return steps.every((step) => step.recordedFrame == recordedFrame);
   }
 
   bool get supportsFrameScopeChoice =>
@@ -127,9 +134,9 @@ class CustomAutomation {
           (step) => CustomAutomationStep.fromJson(step.cast<String, Object?>()),
         )
         .toList();
-    // v1/v2 files predate recordingStartFrame. Preserve import compatibility but
-    // conservatively disable the all-frame radio because their start frame cannot
-    // be proven from the file.
+    // v1/v2 files predate recordingStartFrame. Preserve import compatibility.
+    // Frame-scope choice is decided from per-step recordedFrame values, so old
+    // files without those values remain conservatively ineligible.
     final startFrame = version >= 3
         ? (json['recordingStartFrame'] as num?)?.round()
         : null;
