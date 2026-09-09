@@ -159,6 +159,23 @@ void main() {
         return snapshot;
       }
 
+      Future<void> prewarmActiveLayer() async {
+        final canvas = canvasWidget();
+        final layerId = canvas.currentLayerId;
+        expect(layerId, isNotNull);
+        final tm = ps!.tileManagerOf(project.id);
+        final key = ps!.tileKeyFor(
+          project.id,
+          canvas.sceneId,
+          canvas.currentFrame,
+          layerId!,
+        );
+        await tester.runAsync(() async {
+          final image = await tm.compositeLayerToImage(key);
+          image.dispose();
+        });
+      }
+
       int changedBytes(Uint8List before, Uint8List after) {
         expect(after.length, before.length);
         var changed = 0;
@@ -203,13 +220,16 @@ void main() {
           tile[i + 3] = 255;
         }
       }
-      await tester.pump(const Duration(milliseconds: 300));
+      tm.invalidateTile(seedKey, 0, 0);
       final afterSeed = activeLayerPixels();
       expect(
         changedBytes(beforeSeed, afterSeed),
         greaterThan(100),
         reason: 'The gray setup underlay must exist before recording',
       );
+      stage('seed:prewarm');
+      await prewarmActiveLayer();
+      stage('seed:prewarmed');
       await capture('00a_canvas_seeded_gray_underlay');
 
       stage('settings:open');
@@ -281,13 +301,15 @@ void main() {
             args: {'filter': recordedFilter.toJson()},
             recordedFrame: canvasAtRecord.currentFrame,
           );
-      await tester.pump(const Duration(milliseconds: 700));
       final afterRecordedAction = activeLayerPixels();
       expect(
         changedBytes(beforeRecordedAction, afterRecordedAction),
         greaterThan(100),
         reason: 'The recorded production command must change real Canvas RGBA',
       );
+      stage('action:prewarm');
+      await prewarmActiveLayer();
+      stage('action:prewarmed');
       await capture('04_real_canvas_pixel_action_recorded');
 
       stage('record:settings-panel-open');
@@ -358,6 +380,7 @@ void main() {
         greaterThan(100),
         reason: 'Re-executing the saved automation must change real Canvas RGBA',
       );
+      await prewarmActiveLayer();
       await capture('09_reexecuted_real_canvas_pixels_changed');
 
       expect(tester.takeException(), isNull);
