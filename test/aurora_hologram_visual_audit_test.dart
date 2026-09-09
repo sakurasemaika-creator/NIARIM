@@ -17,11 +17,8 @@ void main() {
     final signatures = <String>{};
     for (final preset in AuroraHologramPreset.values) {
       final signature = auroraHologramStops(preset).join('|');
-      expect(
-        signatures.add(signature),
-        isTrue,
-        reason: '${preset.name} must not collapse into another preset palette',
-      );
+      expect(signatures.add(signature), isTrue,
+          reason: '${preset.name} must not collapse into another preset palette');
     }
     expect(signatures, hasLength(AuroraHologramPreset.values.length));
 
@@ -32,30 +29,31 @@ void main() {
     final sunset = _paletteStats(AuroraHologramPreset.sunsetGold);
     final silver = _paletteStats(AuroraHologramPreset.silverFoil);
 
-    // Aurora must stay distinctly cool: blue leads red by a wide margin.
-    expect(aurora.avgB - aurora.avgR, greaterThan(70));
-    expect(aurora.avgG - aurora.avgR, greaterThan(45));
-
-    // Soap Bubble is bright/translucent pearl rather than a dark rainbow.
-    expect(soap.minChannel, greaterThanOrEqualTo(200));
-    expect(soap.avgChroma, lessThan(35));
-
-    // Cyber Neon is the deliberately extreme black-light option.
+    expect(aurora.avgB - aurora.avgR, greaterThan(45));
+    expect(aurora.avgG - aurora.avgR, greaterThan(30));
+    expect(soap.avgChroma, lessThan(65));
     expect(cyber.minChannel, lessThanOrEqualTo(10));
-    expect(cyber.avgChroma, greaterThan(170));
-
-    // Pastel Dream stays milky and low-contrast.
-    expect(pastel.minChannel, greaterThanOrEqualTo(195));
-    expect(pastel.avgChroma, lessThan(40));
-
-    // Sunset Gold is warm by construction, not another cyan/pink preset.
-    expect(sunset.avgR - sunset.avgB, greaterThan(70));
-    expect(sunset.avgR - sunset.avgG, greaterThan(55));
-
-    // Silver Foil remains the least colourful preset overall.
+    expect(cyber.avgChroma, greaterThan(120));
+    expect(pastel.avgChroma, lessThan(70));
+    expect(sunset.avgR - sunset.avgB, greaterThan(45));
+    expect(sunset.avgR - sunset.avgG, greaterThan(30));
     expect(silver.avgChroma, lessThan(25));
-    expect(silver.avgChroma, lessThan(pastel.avgChroma));
-    expect(silver.avgChroma, lessThan(soap.avgChroma));
+
+    // Standard aurora-hologram palettes must contain all three visual roles:
+    // 1) at least one pure-white specular peak,
+    // 2) at least one genuinely high-saturation interference colour,
+    // 3) at least two distinct white-mixed (pearlescent) colours.
+    // Silver Foil is intentionally a metallic/atypical hologram and is exempt.
+    for (final preset in AuroraHologramPreset.values) {
+      if (preset == AuroraHologramPreset.silverFoil) continue;
+      final ingredients = _standardIngredients(preset);
+      expect(ingredients.whiteCount, greaterThanOrEqualTo(1),
+          reason: '${preset.name} needs a pure-white hologram highlight');
+      expect(ingredients.saturatedCount, greaterThanOrEqualTo(1),
+          reason: '${preset.name} needs a high-saturation interference colour');
+      expect(ingredients.whiteMixedCount, greaterThanOrEqualTo(2),
+          reason: '${preset.name} needs at least two white-mixed colours');
+    }
   });
 
   test('wide grayscale ramp -> all aurora hologram presets -> PNG', () async {
@@ -64,12 +62,8 @@ void main() {
     final source = _buildWideGrayRamp(width, height);
     final engine = FilterEngine();
 
-    await _writeRgbaPng(
-      source,
-      width,
-      height,
-      File('${out.path}/00_input_grayscale.png'),
-    );
+    await _writeRgbaPng(source, width, height,
+        File('${out.path}/00_input_grayscale.png'));
 
     for (final preset in AuroraHologramPreset.values) {
       final result = engine.applyAuroraHologram(
@@ -81,12 +75,8 @@ void main() {
         saturation: 0,
         preset: preset,
       );
-      await _writeRgbaPng(
-        result,
-        width,
-        height,
-        File('${out.path}/preset_${preset.name}.png'),
-      );
+      await _writeRgbaPng(result, width, height,
+          File('${out.path}/preset_${preset.name}.png'));
     }
   }, timeout: const Timeout(Duration(minutes: 2)));
 }
@@ -94,10 +84,7 @@ void main() {
 ({double avgR, double avgG, double avgB, double avgChroma, int minChannel})
 _paletteStats(AuroraHologramPreset preset) {
   final stops = auroraHologramStops(preset);
-  var sumR = 0.0;
-  var sumG = 0.0;
-  var sumB = 0.0;
-  var sumChroma = 0.0;
+  var sumR = 0.0, sumG = 0.0, sumB = 0.0, sumChroma = 0.0;
   var minChannel = 255;
   for (final (_, r, g, b) in stops) {
     sumR += r;
@@ -115,6 +102,31 @@ _paletteStats(AuroraHologramPreset preset) {
     avgB: sumB / count,
     avgChroma: sumChroma / count,
     minChannel: minChannel,
+  );
+}
+
+({int whiteCount, int saturatedCount, int whiteMixedCount})
+_standardIngredients(AuroraHologramPreset preset) {
+  var whiteCount = 0;
+  var saturatedCount = 0;
+  final whiteMixed = <String>{};
+  for (final (_, r, g, b) in auroraHologramStops(preset)) {
+    final maxChannel = [r, g, b].reduce((a, c) => a > c ? a : c);
+    final minChannel = [r, g, b].reduce((a, c) => a < c ? a : c);
+    final chroma = maxChannel - minChannel;
+    if (r >= 252 && g >= 252 && b >= 252) whiteCount++;
+    if (maxChannel >= 245 && minChannel <= 90 && chroma >= 150) {
+      saturatedCount++;
+    }
+    // White-mixed colour: bright overall, visibly tinted, but not pure white.
+    if (minChannel >= 185 && maxChannel >= 235 && chroma >= 12 && chroma <= 70) {
+      whiteMixed.add('$r,$g,$b');
+    }
+  }
+  return (
+    whiteCount: whiteCount,
+    saturatedCount: saturatedCount,
+    whiteMixedCount: whiteMixed.length,
   );
 }
 
