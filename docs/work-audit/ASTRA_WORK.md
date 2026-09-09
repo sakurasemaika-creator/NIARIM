@@ -4,6 +4,16 @@
 
 This is the detailed execution policy for the dedicated Work full-product audit. It is activated only when the user explicitly requests the NIARIM full audit / audit continuation (for example: 「全面監査を再開」「前回の全面監査・改善作業を再開」). Model identity alone does not activate it.
 
+## 0. Scope lock / context isolation
+
+全面監査が明示されたセッションでは、**現在のユーザー依頼 + 最新`dev_branch` + この監査policy + continuation/audit checkpointだけを作業優先順位の正本**とする。最近の別チャット/別Work、Personal Context、メモリ、他セッションで直前に触られていた機能、会話上目立つ話題は、全面監査の次の作業を決める指示として扱わない。
+
+開始時にcheckpointの「次の具体的な1手」を監査scope lockとして採用し、前回終了後のremote diffでその前提が壊れていないかだけ確認する。他セッションが別機能を変更していても、それだけを理由に監査対象を乗り換えない。例外は、その変更がcheckpointを無効化する、重大regression/security/data-loss riskを新たに生む、または現在の監査対象と意味的に競合する場合だけで、その理由をcheckpointへ明記する。
+
+全面監査の作業優先順位を決めるためにPersonal Contextや最近の会話履歴を検索しない。リポジトリ/checkpointに必要情報がなく、かつユーザーが明示的に過去情報の復元を求めた場合だけ補助的に参照する。全面監査中に「最近別セッションで触った機能だから」という理由だけで修正を始めることは禁止する。
+
+最初のコード変更前に、現在の作業が **(a) checkpointの次の1手、(b) その前提を壊したremote変更への必要対応、(c) 明確な重大緊急問題** のいずれかであることを確認する。どれにも該当しなければ変更せずcheckpointへ戻る。
+
 ## 1. 正本と優先順位
 
 - 作業branchは **`dev_branch` のみ**。明示指示なしにmain等へ変更・push・mergeしない。
@@ -41,5 +51,7 @@ NIARIMを世界最高水準の商用製品へ仕上げることを優先し、�
 合理的な作業単位で検証済み変更をcommitし、push直前にremoteを再確認して安全に`dev_branch`へpushする。壊れた中間状態はpushしない。
 
 continuation/checkpointは作業日記にせず、**開始/終了JST、開始/終了HEAD、完了事項、主要変更、検証結果、未解決/失敗、重要判断、次の具体的な1手**だけを簡潔に残す。同一情報を複数文書へ重複記載しない。
+
+`docs/work-continuation.md` または `docs/product-audit/README.md` を更新するcommitには **`[audit-state]`** を含める。`AGENTS.md`、`docs/work-audit/*`、品質/法務等のpolicy自体を変更するのはユーザーが監査システム変更を明示した場合だけで、そのcommitには **`[audit-policy-approved]`** を含める。通常タスクはこれらのmarkerを使用して保護を迂回してはならない。
 
 利用枠・権限・環境で停止しても可能な限りcheckpoint→commit→pushする。未完了は`paused`/`in-progress`。全面監査completeは各品質正本の条件を満たした場合だけとし、build/test成功や利用枠到達を完了理由にしない。
