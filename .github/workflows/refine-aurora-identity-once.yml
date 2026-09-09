@@ -1,0 +1,38 @@
+name: Refine Aurora Identity Once
+
+on:
+  push:
+    branches: [dev_branch]
+    paths:
+      - '.github/workflows/refine-aurora-identity-once.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  refine:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: dev_branch
+          fetch-depth: 0
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+      - name: Apply palette migration
+        run: python3 tool/refine_aurora_identity_once.py
+      - name: Format and validate
+        run: |
+          dart format lib/engine/filter_engine.dart
+          git diff --check
+          git diff -- lib/engine/filter_engine.dart
+      - name: Commit distinct hologram palettes
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add lib/engine/filter_engine.dart
+          git diff --cached --quiet && exit 0
+          git commit -m "refine: separate hologram preset color identities"
+          git push origin HEAD:dev_branch
