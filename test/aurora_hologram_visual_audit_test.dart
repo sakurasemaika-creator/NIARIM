@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:io';
 import 'dart:typed_data';
 import 'dart:ui' as ui;
@@ -92,8 +93,6 @@ Uint8List _buildWideGrayRamp(int width, int height) {
   for (var y = 0; y < height; y++) {
     for (var x = 0; x < width; x++) {
       final base = (x / (width - 1) * 255).round();
-      // Add broad horizontal bands and a smooth vertical modulation so the
-      // gradient-map audit covers many luminance values rather than a single flat ramp.
       final band = ((y / (height - 1)) * 48 - 24).round();
       final shade = (base + band).clamp(0, 255);
       final i = (y * width + x) * 4;
