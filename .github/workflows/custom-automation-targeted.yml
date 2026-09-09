@@ -1,0 +1,27 @@
+name: Custom Automation Targeted Verification
+
+on:
+  push:
+    branches:
+      - dev_branch
+    paths:
+      - 'lib/models/custom_automation_presets.dart'
+      - 'lib/services/custom_automation_service.dart'
+      - 'test/custom_automation_presets_test.dart'
+      - 'test/custom_automation_visual_audit_test.dart'
+      - '.github/workflows/custom-automation-targeted.yml'
+  workflow_dispatch:
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+      - run: flutter pub get
+      - run: flutter analyze lib/models/custom_automation_presets.dart lib/services/custom_automation_service.dart test/custom_automation_presets_test.dart --no-fatal-warnings --no-fatal-infos
+      - run: flutter test test/custom_automation_presets_test.dart --reporter expanded
