@@ -109,12 +109,11 @@ class _AutoLineartControlOverlayState extends State<AutoLineartControlOverlay> {
             if (active == null || _activePointer != event.pointer) return;
             final point = _toGraph(event.localPosition, rect);
             setState(() {
-              _displayGraph = AutoLineartEngine.moveControlPoint(
-                _displayGraph,
-                pathIndex: active.$1,
-                pointIndex: active.$2,
-                point: point,
-              );
+              // AutoLineartGraph is a transient editor model. Keep the graph
+              // handed in by FilterPanel in sync immediately so the parent
+              // state and this overlay observe the same control edit before the
+              // asynchronous raster preview catches up.
+              _displayGraph.paths[active.$1].points[active.$2] = point;
             });
             widget.onPointMoved(active.$1, active.$2, point);
           },
