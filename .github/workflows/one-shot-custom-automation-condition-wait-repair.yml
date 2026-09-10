@@ -62,8 +62,7 @@ jobs:
               "  Future<void> captureCanvas",
           ])
           pattern = re.compile(
-              r"  Future<void> waitUntil\(.*?\n  \}\n\n  Future<void> captureCanvas",
-              re.S,
+              r"(?ms)^\s*Future<void> waitUntil\(.*?^\s*Future<void> captureCanvas",
           )
           s, count = pattern.subn(replacement, s, count=1)
           if count != 1:
