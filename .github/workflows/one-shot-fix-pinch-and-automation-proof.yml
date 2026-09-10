@@ -1,0 +1,42 @@
+name: One-shot Fix Pinch And Automation Proof
+
+on:
+  push:
+    branches: [dev_branch]
+    paths:
+      - '.github/workflows/one-shot-fix-pinch-and-automation-proof.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  apply-and-verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: dev_branch
+          fetch-depth: 0
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+      - run: flutter pub get
+      - name: Apply targeted repairs
+        run: python3 tool/one_shot_fix_pinch_and_automation_proof.py
+      - name: Format changed Dart test
+        run: dart format lib/screens/canvas/widgets/canvas_area.dart test/canvas_pinch_gesture_test.dart
+      - name: Verify pinch behavior
+        run: flutter test test/canvas_pinch_gesture_test.dart --reporter expanded
+      - name: Analyze touched Dart files
+        run: flutter analyze lib/screens/canvas/widgets/canvas_area.dart test/canvas_pinch_gesture_test.dart --no-fatal-warnings --no-fatal-infos
+      - name: Commit repair and remove one-shot scaffolding
+        run: |
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          git rm tool/one_shot_fix_pinch_and_automation_proof.py .github/workflows/one-shot-fix-pinch-and-automation-proof.yml
+          git add lib/screens/canvas/widgets/canvas_area.dart test/canvas_pinch_gesture_test.dart tool/rewrite_custom_automation_visual_proof.py
+          git commit -m 'fix: expand pinch range and await automation proof completion'
+          git push origin HEAD:dev_branch
