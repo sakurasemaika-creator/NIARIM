@@ -10,6 +10,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:niarim/app_bootstrap.dart';
 import 'package:niarim/app_startup.dart';
+import 'package:niarim/l10n/app_localizations.dart';
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
@@ -67,13 +68,16 @@ void main() {
         entry.key,
       )..addFont(rootBundle.load('assets/fonts/${entry.value}'))).load();
     }
+    await (FontLoader(
+      'MaterialIcons',
+    )..addFont(rootBundle.load('fonts/MaterialIcons-Regular.otf'))).load();
     final out = Directory('build/audit-a001/startup-ui')
       ..createSync(recursive: true);
     final manifest = <Map<String, Object>>[];
     addTearDown(() {
       tester.view.resetPhysicalSize();
       tester.view.resetDevicePixelRatio();
-      tester.platformDispatcher.clearLocaleTestValue();
+      tester.platformDispatcher.clearLocalesTestValue();
       tester.platformDispatcher.clearTextScaleFactorTestValue();
       debugDefaultTargetPlatformOverride = null;
     });
@@ -83,7 +87,7 @@ void main() {
           ? TargetPlatform.linux
           : TargetPlatform.android;
       for (final language in locales.entries) {
-        tester.platformDispatcher.localeTestValue = language.value;
+        tester.platformDispatcher.localesTestValue = [language.value];
         for (final width in widths) {
           final height = mode == 'SP' ? 844 : 900;
           tester.view.physicalSize = Size(width.toDouble(), height.toDouble());
@@ -110,6 +114,23 @@ void main() {
             await tester.pump(const Duration(milliseconds: 300));
             await tester.pump();
             expect(tester.takeException(), isNull, reason: id);
+            final screenContext = tester.element(find.byType(Scaffold));
+            expect(
+              Localizations.localeOf(screenContext),
+              language.value,
+              reason:
+                  'The filename must describe the locale actually rendered: $id',
+            );
+            final localized = lookupAppLocalizations(language.value);
+            expect(
+              find.text(
+                state == 'error'
+                    ? localized.startupErrorTitle
+                    : localized.startupLoading,
+              ),
+              findsOneWidget,
+              reason: id,
+            );
             if (state == 'error') {
               final retry = find.byKey(const Key('startup-retry'));
               expect(retry, findsOneWidget, reason: id);

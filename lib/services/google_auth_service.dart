@@ -29,6 +29,11 @@ class GoogleAuthService extends ChangeNotifier {
   ];
 
   final GoogleSignIn _signIn;
+  // The SDK singleton outlives a failed bootstrap and its service owner.
+  // Cache by SDK identity so a fresh service can retry without initializing an
+  // already initialized SDK a second time. Failed initialization is retryable.
+  static final _sdkInitializations = Expando<Future<void>>();
+  Future<void>? _initialization;
   StreamSubscription<GoogleSignInAuthenticationEvent>? _authSubscription;
 
   GoogleSignInAccount? _account;
@@ -44,20 +49,40 @@ class GoogleAuthService extends ChangeNotifier {
   Object? get lastError => _lastError;
 
   /// GoogleSignIn 7.xはinitializeを1回だけ呼ぶ必要があるため、起動時に
-  /// app_bootstrapから1度だけ実行する。
+  /// SDKインスタンスごとに初期化を共有し、起動の再試行でも重複させない。
   ///
   /// OAuthクライアントIDを渡していない通常のWidgetテスト・画面監査・
   /// 未設定開発ビルドでは、ネイティブGoogle SDKへ一切触れず匿名モードで
   /// 初期化完了扱いにする。これにより認証未設定がアプリ全体の起動を妨げない。
-  Future<void> init() async {
-    if (_initialized) return;
+  Future<void> init() {
+    if (_initialized) return Future.value();
+    return _initialization ??= _initialize().catchError((Object error) {
+      _initialization = null;
+      throw error;
+    });
+  }
+
+  Future<void> _initializeSdk() async {
+    final initialization = _sdkInitializations[_signIn] ??= _signIn.initialize(
+      serverClientId: googleClientId,
+    );
+    try {
+      await initialization;
+    } catch (_) {
+      if (identical(_sdkInitializations[_signIn], initialization)) {
+        _sdkInitializations[_signIn] = null;
+      }
+      rethrow;
+    }
+  }
+
+  Future<void> _initialize() async {
     if (!isConfigured) {
       _initialized = true;
       return;
     }
 
-    await _signIn.initialize(serverClientId: googleClientId);
-    _initialized = true;
+    await _initializeSdk();
 
     _authSubscription = _signIn.authenticationEvents.listen(
       (event) {
@@ -84,6 +109,7 @@ class GoogleAuthService extends ChangeNotifier {
         notifyListeners();
       }
     }
+    _initialized = true;
   }
 
   /// ユーザー操作から呼ぶ対話ログイン。

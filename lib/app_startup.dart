@@ -97,6 +97,7 @@ class _AppStartupState extends State<AppStartup> {
                           Text(
                             l10n.startupErrorBody,
                             textAlign: TextAlign.center,
+                            style: Theme.of(context).textTheme.bodyLarge,
                           ),
                           const SizedBox(height: 24),
                           FilledButton.icon(
