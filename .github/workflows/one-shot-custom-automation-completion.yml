@@ -1,4 +1,5 @@
 name: One-shot Custom Automation Completion
+# Retrigger after visual-fixture bounds repair.
 
 on:
   push:
