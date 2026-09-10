@@ -167,7 +167,7 @@ class FilterService extends ChangeNotifier {
     FilterDef(
       id: prismFilterId,
       name: 'プリズム',
-      kind: FilterKind.auroraHologram,
+      kind: FilterKind.prism,
       prismBlurPx: 17,
       prismDirectionDegrees: 90,
     ),
@@ -200,14 +200,19 @@ class FilterService extends ChangeNotifier {
           var filter = FilterDef.fromJson(
             jsonDecode(s) as Map<String, dynamic>,
           );
-          if (filter.id == prismFilterId &&
-              filter.prismBlurPx == 8 &&
-              filter.prismDirectionDegrees == 45) {
-            filter = filter.copyWith(
-              prismBlurPx: 17,
-              prismDirectionDegrees: 90,
-            );
-            migratedAutoLineartSmoothing = true;
+          if (filter.id == prismFilterId) {
+            final usesLegacyDefaults =
+                filter.prismBlurPx == 8 && filter.prismDirectionDegrees == 45;
+            if (filter.kind != FilterKind.prism || usesLegacyDefaults) {
+              filter = filter.copyWith(
+                kind: FilterKind.prism,
+                prismBlurPx: usesLegacyDefaults ? 17 : filter.prismBlurPx,
+                prismDirectionDegrees: usesLegacyDefaults
+                    ? 90
+                    : filter.prismDirectionDegrees,
+              );
+              migratedAutoLineartSmoothing = true;
+            }
           }
           if (filter.kind == FilterKind.autoLineart &&
               filter.autoLineartSmoothing > 10) {

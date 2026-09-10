@@ -85,7 +85,9 @@ class _FilterPanelState extends State<FilterPanel> {
   ui.Image? _previewImage;
   String? _previewFilterId;
 
-  bool _isPrism(FilterDef filter) => filter.id == FilterService.prismFilterId;
+  bool _isPrism(FilterDef filter) =>
+      filter.kind == FilterKind.prism ||
+      filter.id == FilterService.prismFilterId;
   bool _isVhs(FilterDef filter) => filter.id == FilterService.vhsNoiseFilterId;
 
   @override
@@ -542,7 +544,7 @@ class _FilterPanelState extends State<FilterPanel> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           const Text(
-            '暗い虹色をクリッピング → レイヤー結合 → ガウスぼかし → 覆い焼きリニア',
+            '参照レイヤーの不透明部分を6色で直接塗り替え → ガウスぼかし',
             style: TextStyle(fontSize: 10),
           ),
           const SizedBox(height: 6),
@@ -614,6 +616,7 @@ class _FilterPanelState extends State<FilterPanel> {
     switch (current.kind) {
       case FilterKind.gaussianBlur:
       case FilterKind.lensBlur:
+      case FilterKind.prism:
         return _paramSlider(
           l10n.filterStrengthBlurRadius,
           current.strength,
@@ -1356,6 +1359,7 @@ class _FilterPanelState extends State<FilterPanel> {
     if (_isPrism(filter)) return 'プリズム';
     if (_isVhs(filter)) return l10n.filterNameVhsNoise;
     return switch (filter.kind) {
+      FilterKind.prism => 'プリズム',
       FilterKind.gaussianBlur => l10n.filterNameGaussianBlur,
       FilterKind.lensBlur => l10n.filterNameLensBlur,
       FilterKind.animeStyle => l10n.filterNameAnimeStyle,
@@ -1412,6 +1416,7 @@ class _FilterPanelState extends State<FilterPanel> {
     if (_isPrism(filter)) return Icons.gradient;
     if (_isVhs(filter)) return Icons.video_settings;
     return switch (filter.kind) {
+      FilterKind.prism => Icons.gradient,
       FilterKind.gaussianBlur => Icons.blur_on,
       FilterKind.lensBlur => Icons.blur_circular,
       FilterKind.animeStyle => Icons.auto_awesome,
@@ -1475,6 +1480,14 @@ class _FilterPanelState extends State<FilterPanel> {
       );
     }
     switch (filter.kind) {
+      case FilterKind.prism:
+        return _prismEngine.apply(
+          data,
+          width,
+          height,
+          blurPx: filter.prismBlurPx * _previewScale,
+          gradientDirectionDegrees: filter.prismDirectionDegrees,
+        );
       case FilterKind.gaussianBlur:
         return _engine.applyGaussianBlur(data, width, height, filter.strength);
       case FilterKind.lensBlur:

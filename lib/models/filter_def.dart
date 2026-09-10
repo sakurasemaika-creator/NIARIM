@@ -24,6 +24,7 @@ enum FilterKind {
   backgroundBlend,
   inkPool,
   autoLineart,
+  prism,
 }
 
 enum ToneCurvePreset {

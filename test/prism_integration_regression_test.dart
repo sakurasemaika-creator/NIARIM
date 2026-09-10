@@ -10,7 +10,7 @@ void main() {
     const filter = FilterDef(
       id: 'Filter0022',
       name: 'プリズム',
-      kind: FilterKind.auroraHologram,
+      kind: FilterKind.prism,
     );
     expect(filter.prismBlurPx, PrismFilterEngine.defaultBlurPx);
     expect(
@@ -23,7 +23,7 @@ void main() {
     final filter = FilterDef.fromJson({
       'id': 'Filter0022',
       'name': 'プリズム',
-      'kind': FilterKind.auroraHologram.name,
+      'kind': FilterKind.prism.name,
     });
     expect(filter.prismBlurPx, PrismFilterEngine.defaultBlurPx);
     expect(

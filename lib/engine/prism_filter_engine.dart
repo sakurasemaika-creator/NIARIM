@@ -30,8 +30,8 @@ Uint8List applyPrismFilterInIsolate(
 /// red -> green -> cyan -> blue -> purple -> red at HSV saturation 100% and
 /// value/brightness 30%. The alpha lock is then considered released and Gaussian
 /// blur is applied, so the glow may extend beyond the original alpha boundary.
-/// Linear Dodge itself is a layer-compositing concern; callers put these pixels on
-/// a LayerBlendMode.addition layer so the effect is evaluated against lower layers.
+/// The caller replaces the selected/reference layer pixels with this result in place;
+/// no generated layer or blend-mode change is part of the Prism filter.
 class PrismFilterEngine {
   PrismFilterEngine({FilterEngine? filterEngine})
     : _filterEngine = filterEngine ?? FilterEngine();
