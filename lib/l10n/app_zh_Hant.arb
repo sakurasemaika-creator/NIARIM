@@ -2699,5 +2699,9 @@
   "filterVhsScanlineStrength": "掃描線",
   "filterVhsColorBleed": "色彩溢出",
   "filterVhsTracking": "追蹤抖動",
-  "timelineEffectTypeVhsNoise": "VHS 雜訊"
+  "timelineEffectTypeVhsNoise": "VHS 雜訊",
+  "startupLoading": "正在啟動…",
+  "startupErrorTitle": "無法啟動 NIARIM",
+  "startupErrorBody": "請重試。如果問題仍然存在，請聯絡支援團隊，不要清除應用程式資料。",
+  "startupRetry": "重試"
 }

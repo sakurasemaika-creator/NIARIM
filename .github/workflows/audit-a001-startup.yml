@@ -1,0 +1,57 @@
+name: Audit A001 startup contracts
+
+on:
+  push:
+    branches: [dev_branch, work/a001-startup-20260910]
+    paths:
+      - lib/main.dart
+      - lib/app_bootstrap.dart
+      - lib/app_startup.dart
+      - lib/services/project_service.dart
+      - lib/services/font_service.dart
+      - lib/services/share_intent_service.dart
+      - lib/l10n/*.arb
+      - test/audit_a001_startup_test.dart
+      - test/font_service_startup_recovery_test.dart
+      - .github/workflows/audit-a001-startup.yml
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: audit-a001-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  startup:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.47.2'
+          channel: stable
+          cache: true
+      - run: flutter pub get --enforce-lockfile
+      - name: Analyze changed production sources and regression tests
+        run: >-
+          flutter analyze --no-pub
+          lib/main.dart lib/app_bootstrap.dart lib/app_startup.dart
+          lib/services/project_service.dart lib/services/font_service.dart
+          lib/services/share_intent_service.dart
+          test/audit_a001_startup_test.dart test/font_service_startup_recovery_test.dart
+      - name: Verify startup, recovery, and preservation of saved assets
+        run: |
+          set -o pipefail
+          mkdir -p build/audit-a001
+          flutter test --no-pub --reporter expanded test/audit_a001_startup_test.dart test/font_service_startup_recovery_test.dart test/font_license_test.dart test/direct_service_coverage_batch09_test.dart 2>&1 | tee build/audit-a001/tests.txt
+      - name: Preserve evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: audit-a001-${{ github.sha }}
+          path: build/audit-a001/
+          if-no-files-found: warn
+          retention-days: 14

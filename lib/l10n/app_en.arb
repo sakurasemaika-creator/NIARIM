@@ -2710,5 +2710,9 @@
   "customAutomationSpecifiedFrames": "Run on specified frames",
   "customAutomationFrameFrom": "From frame",
   "customAutomationFrameTo": "To frame",
-  "customAutomationFrameRangeInvalid": "Enter a valid frame range."
+  "customAutomationFrameRangeInvalid": "Enter a valid frame range.",
+  "startupLoading": "Starting…",
+  "startupErrorTitle": "Could not start NIARIM",
+  "startupErrorBody": "Please try again. If the problem continues, contact support without clearing the app’s data.",
+  "startupRetry": "Try again"
 }

@@ -2703,5 +2703,9 @@
   "customAutomationSpecifiedFrames": "在指定帧执行",
   "customAutomationFrameFrom": "起始帧",
   "customAutomationFrameTo": "结束帧",
-  "customAutomationFrameRangeInvalid": "请输入有效的帧范围。"
+  "customAutomationFrameRangeInvalid": "请输入有效的帧范围。",
+  "startupLoading": "正在启动…",
+  "startupErrorTitle": "无法启动 NIARIM",
+  "startupErrorBody": "请重试。如果问题仍然存在，请联系支持团队，不要清除应用数据。",
+  "startupRetry": "重试"
 }

@@ -2703,5 +2703,9 @@
   "customAutomationSpecifiedFrames": "Exécuter sur les images spécifiées",
   "customAutomationFrameFrom": "Image de début",
   "customAutomationFrameTo": "Image de fin",
-  "customAutomationFrameRangeInvalid": "Saisissez une plage d’images valide."
+  "customAutomationFrameRangeInvalid": "Saisissez une plage d’images valide.",
+  "startupLoading": "Démarrage…",
+  "startupErrorTitle": "Impossible de démarrer NIARIM",
+  "startupErrorBody": "Veuillez réessayer. Si le problème persiste, contactez l’assistance sans effacer les données de l’application.",
+  "startupRetry": "Réessayer"
 }

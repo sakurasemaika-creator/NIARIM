@@ -2703,5 +2703,9 @@
   "customAutomationSpecifiedFrames": "Ejecutar en fotogramas especificados",
   "customAutomationFrameFrom": "Fotograma inicial",
   "customAutomationFrameTo": "Fotograma final",
-  "customAutomationFrameRangeInvalid": "Introduce un intervalo de fotogramas válido."
+  "customAutomationFrameRangeInvalid": "Introduce un intervalo de fotogramas válido.",
+  "startupLoading": "Iniciando…",
+  "startupErrorTitle": "No se pudo iniciar NIARIM",
+  "startupErrorBody": "Vuelve a intentarlo. Si el problema continúa, contacta con el soporte sin borrar los datos de la aplicación.",
+  "startupRetry": "Reintentar"
 }

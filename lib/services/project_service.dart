@@ -161,40 +161,50 @@ class ProjectService extends ChangeNotifier {
   /// プロジェクトがゴミ箱へ移動された日時（ゴミ箱一覧の削除日時表示用）
   DateTime? deletedAtOf(String projectId) => _trashDeletedAt[projectId];
 
-  Future<void> init() async {
-    try {
-      await _loadTrashState();
-      await _loadFolders();
-      await _loadSharedFolders();
-      final basePath = await NiaproSerializer.projectsBasePath();
-      final baseDir = Directory(basePath);
-      if (!baseDir.existsSync()) return;
-      for (final dir in baseDir.listSync().whereType<Directory>()) {
-        final projectId = dir.path.split(RegExp(r'[\\/]')).last;
-        final niaproFile = File('${dir.path}/$projectId.niapro');
-        if (!niaproFile.existsSync()) continue;
-        try {
-          final data = await NiaproSerializer.load(niaproFile.path);
-          // 容量（Manifest「容量」）は実ファイルサイズから都度算出する
-          // （保存済みの数値をそのまま信用すると、外部要因での差分等でズレうるため）。
-          final sizeBytes = niaproFile.lengthSync();
-          final project = data.project.copyWith(sizeBytes: sizeBytes);
-          if (_trashDeletedAt.containsKey(projectId)) {
-            // ゴミ箱内のプロジェクト：一覧には出さず、シーンデータもメモリに
-            // 載せない（deleteProject()直後と同じ状態を再現する）
-            _trash.add(project);
-          } else {
-            _projects.add(project);
-            _applyLoadedProjectData(data);
-          }
-        } catch (_) {
-          // 破損ファイルはスキップ
-        }
+  Future<void>? _initializing;
+  bool _initialized = false;
+
+  Future<void> init() {
+    if (_initialized) return Future<void>.value();
+    return _initializing ??= _initialize().whenComplete(() {
+      _initializing = null;
+    });
+  }
+
+  Future<void> _initialize() async {
+    // Do not publish a partial catalogue or turn an unreadable store into an
+    // empty project list. A failed attempt can retry without duplicating rows.
+    await _loadTrashState();
+    await _loadFolders();
+    await _loadSharedFolders();
+    final basePath = await NiaproSerializer.projectsBasePath();
+    final baseDir = Directory(basePath);
+    // Creating an absent directory also distinguishes a fresh install from an
+    // inaccessible/invalid documents path before the editor becomes available.
+    await baseDir.create(recursive: true);
+    final loaded = <(NiaproData, int)>[];
+    for (final dir in baseDir.listSync().whereType<Directory>()) {
+      final projectId = dir.path.split(RegExp(r'[\\/]')).last;
+      final niaproFile = File('${dir.path}/$projectId.niapro');
+      if (!niaproFile.existsSync()) continue;
+      final data = await NiaproSerializer.load(niaproFile.path);
+      if (data.project.id != projectId) {
+        throw const FormatException('Project ID does not match its directory');
       }
-      notifyListeners();
-    } catch (_) {
-      // ストレージアクセス失敗時は空状態で起動
+      loaded.add((data, niaproFile.lengthSync()));
     }
+    for (final (data, sizeBytes) in loaded) {
+      final projectId = data.project.id;
+      final project = data.project.copyWith(sizeBytes: sizeBytes);
+      if (_trashDeletedAt.containsKey(projectId)) {
+        _trash.add(project);
+      } else {
+        _projects.add(project);
+        _applyLoadedProjectData(data);
+      }
+    }
+    _initialized = true;
+    notifyListeners();
   }
 
   // ─── ゴミ箱の状態永続化（ゴミ箱・自動削除設定） ─────────────────────────
@@ -204,19 +214,20 @@ class ProjectService extends ChangeNotifier {
   static const _trashPrefsKey = 'trashed_projects';
 
   Future<void> _loadTrashState() async {
-    try {
-      final prefs = await SharedPreferences.getInstance();
-      final raw = prefs.getStringList(_trashPrefsKey) ?? [];
-      for (final entry in raw) {
-        final sep = entry.indexOf('|');
-        if (sep < 0) continue;
-        final id = entry.substring(0, sep);
-        final dt = DateTime.tryParse(entry.substring(sep + 1));
-        if (dt != null) _trashDeletedAt[id] = dt;
+    final prefs = await SharedPreferences.getInstance();
+    final raw = prefs.getStringList(_trashPrefsKey) ?? [];
+    final restored = <String, DateTime>{};
+    for (final entry in raw) {
+      final sep = entry.indexOf('|');
+      final date = sep < 1 ? null : DateTime.tryParse(entry.substring(sep + 1));
+      if (date == null) {
+        throw const FormatException('Invalid saved trash metadata');
       }
-    } catch (_) {
-      // 読み込み失敗時はゴミ箱状態なしとして続行
+      restored[entry.substring(0, sep)] = date;
     }
+    _trashDeletedAt
+      ..clear()
+      ..addAll(restored);
   }
 
   Future<void> _persistTrashState() async {
@@ -817,9 +828,8 @@ class ProjectService extends ChangeNotifier {
     _registerHomeIfNeeded(projectId, sceneId, frameIndex, copy);
     if (pixels != null) {
       final targetKey = tileKeyFor(projectId, sceneId, frameIndex, newId);
-      tileManagerOf(
-        projectId,
-      ).replaceLayerPixels(targetKey, Uint8List.fromList(pixels));
+      tileManagerOf(projectId)
+          .replaceLayerPixels(targetKey, Uint8List.fromList(pixels));
     }
     _undoManager?.push(
       LayerAddUndoAction(
@@ -2730,19 +2740,16 @@ class ProjectService extends ChangeNotifier {
   static const _sharedFoldersPrefsKey = 'shared_folders';
 
   Future<void> _loadSharedFolders() async {
-    try {
-      final prefs = await SharedPreferences.getInstance();
-      final raw = prefs.getString(_sharedFoldersPrefsKey);
-      if (raw == null) return;
-      final list = jsonDecode(raw) as List<dynamic>;
-      _sharedFolders
-        ..clear()
-        ..addAll(
-          list.map((e) => ProjectFolder.fromJson(e as Map<String, dynamic>)),
-        );
-    } catch (_) {
-      // 読み込み失敗時はフォルダなしとして続行
-    }
+    final prefs = await SharedPreferences.getInstance();
+    final raw = prefs.getString(_sharedFoldersPrefsKey);
+    final restored = raw == null
+        ? <ProjectFolder>[]
+        : (jsonDecode(raw) as List<dynamic>)
+              .map((e) => ProjectFolder.fromJson(e as Map<String, dynamic>))
+              .toList();
+    _sharedFolders
+      ..clear()
+      ..addAll(restored);
   }
 
   Future<void> _persistSharedFolders() async {
@@ -2766,19 +2773,16 @@ class ProjectService extends ChangeNotifier {
   static const _foldersPrefsKey = 'project_folders';
 
   Future<void> _loadFolders() async {
-    try {
-      final prefs = await SharedPreferences.getInstance();
-      final raw = prefs.getString(_foldersPrefsKey);
-      if (raw == null) return;
-      final list = jsonDecode(raw) as List<dynamic>;
-      _folders
-        ..clear()
-        ..addAll(
-          list.map((e) => ProjectFolder.fromJson(e as Map<String, dynamic>)),
-        );
-    } catch (_) {
-      // 読み込み失敗時はフォルダなしとして続行
-    }
+    final prefs = await SharedPreferences.getInstance();
+    final raw = prefs.getString(_foldersPrefsKey);
+    final restored = raw == null
+        ? <ProjectFolder>[]
+        : (jsonDecode(raw) as List<dynamic>)
+              .map((e) => ProjectFolder.fromJson(e as Map<String, dynamic>))
+              .toList();
+    _folders
+      ..clear()
+      ..addAll(restored);
   }
 
   Future<void> _persistFolders() async {

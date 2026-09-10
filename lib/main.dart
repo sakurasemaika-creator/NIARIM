@@ -1,12 +1,13 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:provider/provider.dart';
+
 import 'app.dart';
 import 'app_bootstrap.dart';
+import 'app_startup.dart';
 import 'utils/app_error_reporter.dart';
 
-void main() async {
+void main() {
   WidgetsFlutterBinding.ensureInitialized();
 
   // 画面が真っ白になる（＝リリースビルドの既定ErrorWidgetが文字の無い
@@ -16,16 +17,19 @@ void main() async {
 
   _registerBundledFontLicenses();
 
+  runApp(
+    AppStartup(initialize: initializeApplication, child: const NiarimApp()),
+  );
+}
+
+Future<AppServices> initializeApplication() async {
   await SystemChrome.setPreferredOrientations([
     DeviceOrientation.portraitUp,
     DeviceOrientation.portraitDown,
     DeviceOrientation.landscapeLeft,
     DeviceOrientation.landscapeRight,
   ]);
-
-  final providers = await buildAppProviders();
-
-  runApp(MultiProvider(providers: providers, child: const NiarimApp()));
+  return buildAppServices();
 }
 
 /// 同梱フォント（白光明朝・くらむぼん・Noto Serif JP。いずれもSIL Open

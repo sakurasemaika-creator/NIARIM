@@ -1,12 +1,15 @@
 import 'dart:convert';
 import 'dart:io';
+
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:http/http.dart' as http;
 import 'package:path_provider/path_provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+
 import '../models/downloadable_font.dart';
 import '../models/font_asset.dart';
+import '../utils/app_error_reporter.dart';
 
 /// フォント管理サービス（ユーザーフォント追加）。
 /// アプリ全体で共有するFonts/フォルダにTTF/OTFを保存し、FontLoaderで
@@ -16,6 +19,7 @@ class FontService extends ChangeNotifier {
   final List<FontAsset> _fonts = [];
   int _counter = 0;
   List<DownloadableFontEntry> _catalog = [];
+  Future<void>? _initialization;
 
   List<FontAsset> get fonts => List.unmodifiable(_fonts);
 
@@ -36,38 +40,87 @@ class FontService extends ChangeNotifier {
   }
 
   Future<void> init() async {
+    final active = _initialization;
+    if (active != null) return active;
+    final pending = _initialize();
+    _initialization = pending;
+    try {
+      await pending;
+    } catch (_) {
+      // 一時的なI/O失敗を直した後は、同じインスタンスでも再試行できる。
+      _initialization = null;
+      rethrow;
+    }
+  }
+
+  Future<void> _initialize() async {
     try {
       _catalog = await loadDownloadableFontCatalog();
-    } catch (_) {
-      // カタログ読み込み失敗時も既存フォントの初期化は継続する
+    } catch (error, stack) {
+      // カタログは再取得できるため、既存フォントの復元を妨げない。
+      AppErrorReporter.record(error, stack);
     }
-    try {
-      final prefs = await SharedPreferences.getInstance();
-      final raw = prefs.getString(_prefsKey);
-      if (raw != null) {
-        final list = jsonDecode(raw) as List<dynamic>;
-        _fonts.addAll(
-          list.map((e) => FontAsset.fromJson(e as Map<String, dynamic>)),
-        );
-        for (final f in _fonts) {
-          final n = int.tryParse(f.id.replaceAll(RegExp(r'[^0-9]'), '')) ?? 0;
-          if (n >= _counter) _counter = n + 1;
-        }
+
+    final prefs = await SharedPreferences.getInstance();
+    final raw = prefs.getString(_prefsKey);
+    // 全件を検証してから状態へ反映する。途中で失敗した一覧や採番値を
+    // 利用すると、次の追加が既存フォントのファイル名と衝突してしまう。
+    final restored = raw == null
+        ? <FontAsset>[]
+        : (jsonDecode(raw) as List<dynamic>)
+              .map((e) => FontAsset.fromJson(e as Map<String, dynamic>))
+              .toList();
+    var nextCounter = 0;
+    for (final font in restored) {
+      final n = int.tryParse(font.id.replaceAll(RegExp(r'[^0-9]'), '')) ?? 0;
+      if (n >= nextCounter) nextCounter = n + 1;
+    }
+
+    final dir = await _fontsDir();
+    for (final font in restored) {
+      final file = File('${dir.path}/${font.fileName}');
+      if (!file.existsSync()) continue;
+      try {
+        await _registerFont(font, file);
+      } on FileSystemException {
+        rethrow;
+      } catch (error, stack) {
+        // 破損した1書体は記録してスキップし、保存情報と実ファイルは残す。
+        AppErrorReporter.record(error, stack);
       }
-      // 起動のたびにFontLoaderへ再登録する（登録状態はプロセス単位で消えるため）。
-      // 1件が破損していても他のフォントの登録は継続する。
-      final dir = await _fontsDir();
-      for (final font in _fonts) {
-        final file = File('${dir.path}/${font.fileName}');
-        if (!file.existsSync()) continue;
-        try {
-          await _registerFont(font, file);
-        } catch (_) {
-          // 破損フォント：このフォントの登録のみスキップして続行
-        }
+    }
+    _fonts
+      ..clear()
+      ..addAll(restored);
+    _counter = nextCounter;
+  }
+
+  ({String id, File file}) _reserveFontFile(Directory dir, String extension) {
+    while (true) {
+      final id = 'Font${(_counter++).toString().padLeft(4, '0')}';
+      if (_fonts.any((font) => font.id == id)) continue;
+      // メタデータに無いファイルも、復旧待ちの保存資産として保持する。
+      if (['ttf', 'otf'].any(
+        (ext) =>
+            FileSystemEntity.typeSync(
+              '${dir.path}/$id.$ext',
+              followLinks: false,
+            ) !=
+            FileSystemEntityType.notFound,
+      )) {
+        continue;
       }
-    } catch (_) {
-      // 読み込み失敗時はフォントなしとして続行
+      final file = File('${dir.path}/$id.$extension');
+      try {
+        file.createSync(exclusive: true);
+        return (id: id, file: file);
+      } on FileSystemException {
+        if (FileSystemEntity.typeSync(file.path, followLinks: false) !=
+            FileSystemEntityType.notFound) {
+          continue;
+        }
+        rethrow;
+      }
     }
   }
 
@@ -135,13 +188,19 @@ class FontService extends ChangeNotifier {
   Future<FontAsset?> addFont(String sourcePath, String displayName) async {
     final ext = sourcePath.split('.').last.toLowerCase();
     if (ext != 'ttf' && ext != 'otf') return null;
+    await init();
     final dir = await _fontsDir();
-    final id = 'Font${(_counter++).toString().padLeft(4, '0')}';
+    final reserved = _reserveFontFile(dir, ext);
+    final id = reserved.id;
+    final destFile = reserved.file;
     final fileName = '$id.$ext';
-    final destFile = File('${dir.path}/$fileName');
     try {
       await File(sourcePath).copy(destFile.path);
     } catch (_) {
+      // 自分が排他的に作成したファイルだけを片付ける。
+      try {
+        await destFile.delete();
+      } catch (_) {}
       return null;
     }
     final asset = FontAsset(
@@ -186,12 +245,29 @@ class FontService extends ChangeNotifier {
     required String fileName,
     required Uint8List bytes,
   }) async {
+    await init();
     if (_fonts.any((f) => f.id == id)) return;
+    if (fileName.isEmpty ||
+        fileName == '.' ||
+        fileName == '..' ||
+        fileName.contains(RegExp(r'[\\/]'))) {
+      throw ArgumentError.value(fileName, 'fileName', 'Expected a file name');
+    }
     final dir = await _fontsDir();
     final destFile = File('${dir.path}/$fileName');
     try {
+      // IDが未登録でも同名ファイルは上書きしない。並行した取り込みも
+      // 排他的作成で保護し、失敗した呼び出しから既存ファイルを削除しない。
+      destFile.createSync(exclusive: true);
+    } on FileSystemException {
+      return;
+    }
+    try {
       await destFile.writeAsBytes(bytes);
     } catch (_) {
+      try {
+        await destFile.delete();
+      } catch (_) {}
       return;
     }
     final asset = FontAsset(

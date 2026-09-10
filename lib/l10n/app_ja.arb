@@ -3008,5 +3008,9 @@
   "customAutomationSpecifiedFrames": "指定したフレームで行う",
   "customAutomationFrameFrom": "開始フレーム",
   "customAutomationFrameTo": "終了フレーム",
-  "customAutomationFrameRangeInvalid": "有効なフレーム範囲を入力してください。"
+  "customAutomationFrameRangeInvalid": "有効なフレーム範囲を入力してください。",
+  "startupLoading": "起動しています…",
+  "startupErrorTitle": "起動できませんでした",
+  "startupErrorBody": "もう一度お試しください。改善しない場合は、アプリのデータを消去せずにサポートへお問い合わせください。",
+  "startupRetry": "再試行"
 }
