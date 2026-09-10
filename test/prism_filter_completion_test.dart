@@ -44,7 +44,6 @@ void main() {
       expect(result[i + 3], 255);
     }
 
-    // Pixels outside the selected shape remain transparent before blur.
     expect(result[(45 * width + 20) * 4 + 3], 0);
   });
 
@@ -91,8 +90,6 @@ void main() {
         gradientDirectionDegrees: PrismFilterEngine.defaultDirectionDegrees,
       );
 
-      // Gaussian blur happens after alpha-lock coloring, so light must escape the
-      // original shape boundary.
       final glowIndex = (110 * width + 150) * 4;
       expect(source[glowIndex + 3], 0);
       expect(prism[glowIndex + 3], greaterThan(0));
@@ -117,16 +114,26 @@ void main() {
         ),
         Layer(id: 'background', name: 'Background', type: LayerType.normal),
       ];
-      final composite = await LayerCompositor.composite(
-        tm,
-        layers,
-        (layer) => 'scene#0#${layer.id}',
-        width,
-        height,
-      );
-      final raw = await composite.toByteData(format: ui.ImageByteFormat.rawRgba);
-      expect(raw, isNotNull);
-      final pixels = raw!.buffer.asUint8List();
+
+      final proof = await tester.runAsync(() async {
+        final composite = await LayerCompositor.composite(
+          tm,
+          layers,
+          (layer) => 'scene#0#${layer.id}',
+          width,
+          height,
+        );
+        final raw = await composite.toByteData(
+          format: ui.ImageByteFormat.rawRgba,
+        );
+        final png = await composite.toByteData(format: ui.ImageByteFormat.png);
+        composite.dispose();
+        return (raw: raw, png: png);
+      });
+      expect(proof, isNotNull);
+      expect(proof!.raw, isNotNull);
+      expect(proof.png, isNotNull);
+      final pixels = proof.raw!.buffer.asUint8List();
       final center = (110 * width + 180) * 4;
       expect(pixels[center], greaterThanOrEqualTo(background[center]));
       expect(pixels[center + 1], greaterThanOrEqualTo(background[center + 1]));
@@ -138,15 +145,11 @@ void main() {
         ),
       );
 
-      final png = await composite.toByteData(format: ui.ImageByteFormat.png);
-      composite.dispose();
-      expect(png, isNotNull);
-      final out = Directory('build/visual-reaudit/prism')..createSync(recursive: true);
+      final out = Directory('build/visual-reaudit/prism')
+        ..createSync(recursive: true);
       File('${out.path}/prism_default17_vertical_linear_dodge_background.png')
-          .writeAsBytesSync(png!.buffer.asUint8List());
+          .writeAsBytesSync(proof.png!.buffer.asUint8List());
 
-      // A second real composite proves the adjustable split direction is reflected
-      // in output rather than existing only as a stored setting.
       final horizontalPrism = engine.apply(
         source,
         width,
@@ -155,17 +158,18 @@ void main() {
         gradientDirectionDegrees: 0,
       );
       tm.replaceLayerPixels(prismKey, horizontalPrism);
-      final horizontalComposite = await LayerCompositor.composite(
-        tm,
-        layers,
-        (layer) => 'scene#0#${layer.id}',
-        width,
-        height,
-      );
-      final horizontalPng = await horizontalComposite.toByteData(
-        format: ui.ImageByteFormat.png,
-      );
-      horizontalComposite.dispose();
+      final horizontalPng = await tester.runAsync(() async {
+        final composite = await LayerCompositor.composite(
+          tm,
+          layers,
+          (layer) => 'scene#0#${layer.id}',
+          width,
+          height,
+        );
+        final png = await composite.toByteData(format: ui.ImageByteFormat.png);
+        composite.dispose();
+        return png;
+      });
       expect(horizontalPng, isNotNull);
       File('${out.path}/prism_default17_horizontal_linear_dodge_background.png')
           .writeAsBytesSync(horizontalPng!.buffer.asUint8List());
