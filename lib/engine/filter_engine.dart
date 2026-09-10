@@ -7,6 +7,7 @@ import '../models/filter_def.dart';
 import '../models/pixel_color_mode.dart';
 import 'background_acclimation_engine.dart';
 import 'auto_lineart_engine.dart';
+import 'prism_filter_engine.dart';
 import 'vhs_noise_engine.dart';
 
 /// 描画フィルターの本適用（低スペック端末でのUIスレッドブロック防止のため
@@ -33,6 +34,13 @@ Uint8List applyDrawFilterInIsolate(
     );
   }
   return switch (filter.kind) {
+    FilterKind.prism => PrismFilterEngine(filterEngine: engine).apply(
+      data,
+      width,
+      height,
+      blurPx: filter.prismBlurPx,
+      gradientDirectionDegrees: filter.prismDirectionDegrees,
+    ),
     FilterKind.gaussianBlur => engine.applyGaussianBlur(
       data,
       width,

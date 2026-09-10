@@ -85,7 +85,9 @@ class _FilterPanelState extends State<FilterPanel> {
   ui.Image? _previewImage;
   String? _previewFilterId;
 
-  bool _isPrism(FilterDef filter) => filter.id == FilterService.prismFilterId;
+  bool _isPrism(FilterDef filter) =>
+      filter.kind == FilterKind.prism ||
+      filter.id == FilterService.prismFilterId;
   bool _isVhs(FilterDef filter) => filter.id == FilterService.vhsNoiseFilterId;
 
   @override
@@ -455,9 +457,9 @@ class _FilterPanelState extends State<FilterPanel> {
                     width: previewSide,
                     height: previewSide,
                     decoration: BoxDecoration(
-                      color: Theme.of(
-                        context,
-                      ).colorScheme.surfaceContainerHighest,
+                      color: Theme.of(context)
+                          .colorScheme
+                          .surfaceContainerHighest,
                       borderRadius: BorderRadius.circular(6),
                     ),
                     child: _previewImage == null
@@ -477,18 +479,17 @@ class _FilterPanelState extends State<FilterPanel> {
                                 ? AutoLineartControlOverlay(
                                     image: _previewImage!,
                                     graph: _autoLineartPreviewGraph!,
-                                    onPointMoved:
-                                        (pathIndex, pointIndex, point) {
-                                          _autoLineartPreviewGraph =
-                                              AutoLineartEngine.moveControlPoint(
-                                                _autoLineartPreviewGraph!,
-                                                pathIndex: pathIndex,
-                                                pointIndex: pointIndex,
-                                                point: point,
-                                              );
-                                          _autoLineartManualEdited = true;
-                                          _scheduleAutoLineartPreviewUpdate();
-                                        },
+                                    onPointMoved: (pathIndex, pointIndex, point) {
+                                      _autoLineartPreviewGraph =
+                                          AutoLineartEngine.moveControlPoint(
+                                            _autoLineartPreviewGraph!,
+                                            pathIndex: pathIndex,
+                                            pointIndex: pointIndex,
+                                            point: point,
+                                          );
+                                      _autoLineartManualEdited = true;
+                                      _scheduleAutoLineartPreviewUpdate();
+                                    },
                                   )
                                 : RawImage(
                                     image: _previewImage,
@@ -532,49 +533,51 @@ class _FilterPanelState extends State<FilterPanel> {
     );
   }
 
+  Widget _buildPrismControls(FilterService service, FilterDef current) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Text(
+          '暗い虹色をクリッピング → レイヤー結合 → ガウスぼかし → 覆い焼きリニア',
+          style: TextStyle(fontSize: 10),
+        ),
+        const SizedBox(height: 6),
+        _integerStepperSlider(
+          'ぼかし量',
+          current.prismBlurPx.round(),
+          PrismFilterEngine.minBlurPx.toInt(),
+          PrismFilterEngine.maxBlurPx.toInt(),
+          (value) => service.updateFilterParams(
+            current.id,
+            prismBlurPx: value.toDouble(),
+          ),
+          suffix: 'px',
+        ),
+        _integerStepperSlider(
+          '色方向',
+          PrismFilterEngine.normalizeDirectionDegrees(
+                current.prismDirectionDegrees,
+              ).round() %
+              360,
+          0,
+          359,
+          (value) => service.updateFilterParams(
+            current.id,
+            prismDirectionDegrees: value.toDouble(),
+          ),
+          suffix: '°',
+          wrap: true,
+        ),
+      ],
+    );
+  }
+
   Widget _buildControls(
     AppLocalizations l10n,
     FilterService service,
     FilterDef current,
   ) {
-    if (_isPrism(current)) {
-      return Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const Text(
-            '暗い虹色をクリッピング → レイヤー結合 → ガウスぼかし → 覆い焼きリニア',
-            style: TextStyle(fontSize: 10),
-          ),
-          const SizedBox(height: 6),
-          _integerStepperSlider(
-            'ぼかし量',
-            current.prismBlurPx.round(),
-            PrismFilterEngine.minBlurPx.toInt(),
-            PrismFilterEngine.maxBlurPx.toInt(),
-            (value) => service.updateFilterParams(
-              current.id,
-              prismBlurPx: value.toDouble(),
-            ),
-            suffix: 'px',
-          ),
-          _integerStepperSlider(
-            '色方向',
-            PrismFilterEngine.normalizeDirectionDegrees(
-                  current.prismDirectionDegrees,
-                ).round() %
-                360,
-            0,
-            359,
-            (value) => service.updateFilterParams(
-              current.id,
-              prismDirectionDegrees: value.toDouble(),
-            ),
-            suffix: '°',
-            wrap: true,
-          ),
-        ],
-      );
-    }
+    if (_isPrism(current)) return _buildPrismControls(service, current);
 
     if (_isVhs(current)) {
       return Column(
@@ -612,6 +615,8 @@ class _FilterPanelState extends State<FilterPanel> {
     }
 
     switch (current.kind) {
+      case FilterKind.prism:
+        return _buildPrismControls(service, current);
       case FilterKind.gaussianBlur:
       case FilterKind.lensBlur:
         return _paramSlider(
@@ -1356,6 +1361,7 @@ class _FilterPanelState extends State<FilterPanel> {
     if (_isPrism(filter)) return 'プリズム';
     if (_isVhs(filter)) return l10n.filterNameVhsNoise;
     return switch (filter.kind) {
+      FilterKind.prism => filter.name,
       FilterKind.gaussianBlur => l10n.filterNameGaussianBlur,
       FilterKind.lensBlur => l10n.filterNameLensBlur,
       FilterKind.animeStyle => l10n.filterNameAnimeStyle,
@@ -1412,6 +1418,7 @@ class _FilterPanelState extends State<FilterPanel> {
     if (_isPrism(filter)) return Icons.gradient;
     if (_isVhs(filter)) return Icons.video_settings;
     return switch (filter.kind) {
+      FilterKind.prism => Icons.gradient,
       FilterKind.gaussianBlur => Icons.blur_on,
       FilterKind.lensBlur => Icons.blur_circular,
       FilterKind.animeStyle => Icons.auto_awesome,
@@ -1475,6 +1482,14 @@ class _FilterPanelState extends State<FilterPanel> {
       );
     }
     switch (filter.kind) {
+      case FilterKind.prism:
+        return _prismEngine.apply(
+          data,
+          width,
+          height,
+          blurPx: filter.prismBlurPx * _previewScale,
+          gradientDirectionDegrees: filter.prismDirectionDegrees,
+        );
       case FilterKind.gaussianBlur:
         return _engine.applyGaussianBlur(data, width, height, filter.strength);
       case FilterKind.lensBlur:

@@ -1,4 +1,3 @@
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
@@ -6,6 +5,7 @@ import 'app.dart';
 import 'app_bootstrap.dart';
 import 'app_startup.dart';
 import 'utils/app_error_reporter.dart';
+import 'utils/bundled_font_licenses.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
@@ -15,7 +15,7 @@ void main() {
   // ようにする。詳細はAppErrorReporterのコメント参照。
   AppErrorReporter.install();
 
-  _registerBundledFontLicenses();
+  registerBundledFontLicenses();
 
   runApp(
     AppStartup(initialize: initializeApplication, child: const NiarimApp()),
@@ -30,29 +30,4 @@ Future<AppServices> initializeApplication() async {
     DeviceOrientation.landscapeRight,
   ]);
   return buildAppServices();
-}
-
-/// 同梱フォント（白光明朝・くらむぼん・Noto Serif JP。いずれもSIL Open
-/// Font License 1.1）の著作権表示とライセンス本文を、Flutter標準の
-/// ライセンス一覧（設定 → 利用規約・ライセンス → オープンソース
-/// ライセンス）へ登録する。
-///
-/// OFL第2条は、フォントを再配布する際に著作権表示とライセンス本文を
-/// 同梱することを求めている。パッケージのライセンスはLicenseRegistryが
-/// 自動収集するが、assets/fonts/へ直接置いたフォントファイルは収集対象に
-/// ならないため、ここで明示的に登録する。
-void _registerBundledFontLicenses() {
-  LicenseRegistry.addLicense(() async* {
-    final text = await rootBundle.loadString(
-      'assets/licenses/FONT_LICENSES.txt',
-    );
-    yield LicenseEntryWithLineBreaks(const [
-      'HakkouMincho',
-      'Kuramubon',
-      'Noto Serif JP',
-      'Dela Gothic One',
-      'Noto Serif KR / SC',
-      'Noto Sans KR / SC',
-    ], text);
-  });
 }

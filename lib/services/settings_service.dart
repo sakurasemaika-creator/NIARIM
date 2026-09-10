@@ -1,8 +1,10 @@
 import 'dart:convert';
 import 'dart:math' as math;
+
 import 'package:flutter/foundation.dart';
 import 'package:flutter/gestures.dart' show PointerDeviceKind;
 import 'package:shared_preferences/shared_preferences.dart';
+
 import '../models/canvas_dock_panel.dart';
 import '../models/canvas_size_preset.dart';
 import '../models/toolbar_item.dart';
@@ -499,7 +501,12 @@ class SettingsService extends ChangeNotifier {
   Future<void> init() async {
     final prefs = await SharedPreferences.getInstance();
     _defaultFps = prefs.getInt('default_fps') ?? 12;
-    _undoLimit = prefs.getInt('undo_limit') ?? 50;
+    final savedUndoLimit = prefs.getInt('undo_limit') ?? 50;
+    // Invalid imported settings must not make UndoManager remove from an
+    // empty history during startup. Preserve the raw value for recovery.
+    _undoLimit = savedUndoLimit >= 10 && savedUndoLimit <= 200
+        ? savedUndoLimit
+        : 50;
     _trashAutoDeleteDays = prefs.getInt('trash_auto_delete') ?? 0;
     _language = prefs.getString('language') ?? 'ja';
     _defaultDrawingAreaEnabled =

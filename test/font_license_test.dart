@@ -7,6 +7,7 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:niarim/utils/bundled_font_licenses.dart';
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
@@ -34,19 +35,7 @@ void main() {
 
   test('LicenseRegistryへ同梱フォントのライセンスが登録されている', () async {
     LicenseRegistry.reset();
-    LicenseRegistry.addLicense(() async* {
-      final text = await rootBundle.loadString(
-        'assets/licenses/FONT_LICENSES.txt',
-      );
-      yield LicenseEntryWithLineBreaks(const [
-        'HakkouMincho',
-        'Kuramubon',
-        'Noto Serif JP',
-        'Dela Gothic One',
-        'Noto Serif KR / SC',
-        'Noto Sans KR / SC',
-      ], text);
-    });
+    registerBundledFontLicenses();
     final entries = await LicenseRegistry.licenses.toList();
     final packages = entries.expand((e) => e.packages).toSet();
     expect(

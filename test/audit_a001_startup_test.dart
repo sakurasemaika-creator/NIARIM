@@ -12,6 +12,8 @@ import 'package:niarim/app_bootstrap.dart';
 import 'package:niarim/app_startup.dart';
 import 'package:niarim/config/monetization_gate.dart';
 import 'package:niarim/engine/niapro_serializer.dart';
+import 'package:niarim/engine/filter_engine.dart';
+import 'package:niarim/models/filter_def.dart';
 import 'package:niarim/engine/tile_manager.dart';
 import 'package:niarim/models/project.dart';
 import 'package:niarim/models/scene.dart';
@@ -152,6 +154,44 @@ void main() {
       },
     );
   }
+
+  test(
+    'startup dependency dispatch handles the newly introduced prism kind',
+    () {
+      final source = Uint8List.fromList(List.filled(24, 255));
+      final result = applyDrawFilterInIsolate((
+        source,
+        6,
+        1,
+        const FilterDef(
+          id: 'custom_prism',
+          name: 'Prism',
+          kind: FilterKind.prism,
+          prismBlurPx: 0,
+          prismDirectionDegrees: 0,
+        ),
+        null,
+      ));
+      expect(result.length, source.length);
+      expect(result.sublist(0, 4), [77, 0, 0, 255]);
+      expect(result, isNot(orderedEquals(source)));
+    },
+  );
+
+  test(
+    'invalid saved Undo bounds use a safe default without rewriting settings',
+    () async {
+      for (final value in [-1, 0, 9, 201, 0x7fffffff]) {
+        SharedPreferences.setMockInitialValues({'undo_limit': value});
+        final settings = SettingsService();
+        await settings.init();
+        expect(settings.undoLimit, 50);
+        final prefs = await SharedPreferences.getInstance();
+        expect(prefs.getInt('undo_limit'), value);
+        settings.dispose();
+      }
+    },
+  );
 
   test(
     'project storage failure propagates and the same instance can retry',

@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 
 import 'app_bootstrap.dart';
 import 'l10n/app_localizations.dart';
+import 'services/theme_service.dart';
 import 'utils/app_error_reporter.dart';
 
 /// Displays startup failures even when no application provider is available.
@@ -18,6 +19,7 @@ class AppStartup extends StatefulWidget {
 }
 
 class _AppStartupState extends State<AppStartup> {
+  final _recoveryTheme = ThemeService().themeData;
   AppServices? _services;
   bool _loading = false;
   bool _failed = false;
@@ -66,10 +68,7 @@ class _AppStartupState extends State<AppStartup> {
       debugShowCheckedModeBanner: false,
       localizationsDelegates: AppLocalizations.localizationsDelegates,
       supportedLocales: AppLocalizations.supportedLocales,
-      theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: const Color(0xFFFF5C7A)),
-        useMaterial3: true,
-      ),
+      theme: _recoveryTheme,
       home: Builder(
         builder: (context) {
           final l10n = AppLocalizations.of(context)!;
