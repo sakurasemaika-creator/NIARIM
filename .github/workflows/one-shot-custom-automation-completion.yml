@@ -56,52 +56,54 @@ jobs:
               raise SystemExit('custom automation wait anchor changed:\n' + old)
             s = s.replace(old, new, 1)
 
-          old_manager = """  void showManager() {
-    final context = canvasContext;
-    unawaited(
-      showModalBottomSheet<void>(
-        context: context,
-        isScrollControlled: true,
-        builder: (_) => CustomAutomationManagerSheet(
-          surface: CustomAutomationSurface.canvas,
-          recordingStartFrame: canvasWidget.currentFrame,
-          frameCount: projectService.frameCount(
-            projectId,
-            canvasWidget.sceneId,
-          ),
-          onRecordingStarted: () {},
-          onExecute: _execute,
-        ),
-      ),
-    );
-  }
-"""
-          new_manager = """  void showManager() {
-    final context = canvasContext;
-    final startFrame = canvasWidget.currentFrame;
-    final count = projectService.frameCount(projectId, canvasWidget.sceneId);
-    unawaited(
-      showGeneralDialog<void>(
-        context: context,
-        barrierDismissible: false,
-        transitionDuration: Duration.zero,
-        pageBuilder: (_, __, ___) => Material(
-          type: MaterialType.transparency,
-          child: Align(
-            alignment: Alignment.bottomCenter,
-            child: CustomAutomationManagerSheet(
-              surface: CustomAutomationSurface.canvas,
-              recordingStartFrame: startFrame,
-              frameCount: count,
-              onRecordingStarted: () {},
-              onExecute: _execute,
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-"""
+          old_manager = (
+            "  void showManager() {\n"
+            "    final context = canvasContext;\n"
+            "    unawaited(\n"
+            "      showModalBottomSheet<void>(\n"
+            "        context: context,\n"
+            "        isScrollControlled: true,\n"
+            "        builder: (_) => CustomAutomationManagerSheet(\n"
+            "          surface: CustomAutomationSurface.canvas,\n"
+            "          recordingStartFrame: canvasWidget.currentFrame,\n"
+            "          frameCount: projectService.frameCount(\n"
+            "            projectId,\n"
+            "            canvasWidget.sceneId,\n"
+            "          ),\n"
+            "          onRecordingStarted: () {},\n"
+            "          onExecute: _execute,\n"
+            "        ),\n"
+            "      ),\n"
+            "    );\n"
+            "  }\n"
+          )
+          new_manager = (
+            "  void showManager() {\n"
+            "    final context = canvasContext;\n"
+            "    final startFrame = canvasWidget.currentFrame;\n"
+            "    final count = projectService.frameCount(projectId, canvasWidget.sceneId);\n"
+            "    unawaited(\n"
+            "      showGeneralDialog<void>(\n"
+            "        context: context,\n"
+            "        barrierDismissible: false,\n"
+            "        transitionDuration: Duration.zero,\n"
+            "        pageBuilder: (_, __, ___) => Material(\n"
+            "          type: MaterialType.transparency,\n"
+            "          child: Align(\n"
+            "            alignment: Alignment.bottomCenter,\n"
+            "            child: CustomAutomationManagerSheet(\n"
+            "              surface: CustomAutomationSurface.canvas,\n"
+            "              recordingStartFrame: startFrame,\n"
+            "              frameCount: count,\n"
+            "              onRecordingStarted: () {},\n"
+            "              onExecute: _execute,\n"
+            "            ),\n"
+            "          ),\n"
+            "        ),\n"
+            "      ),\n"
+            "    );\n"
+            "  }\n"
+          )
           if old_manager not in s:
             raise SystemExit('production manager route anchor changed')
           s = s.replace(old_manager, new_manager, 1)
