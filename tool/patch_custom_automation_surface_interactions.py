@@ -4,135 +4,274 @@ import re
 p = Path('test/custom_automation_production_surface_visual_test.dart')
 s = p.read_text()
 
+start = s.find("  testWidgets(\n    'production automation surfaces record a real Aurora filter and replay it'")
+end = s.find('\nclass _SurfaceHarness {', start)
+if start < 0 or end < 0:
+    raise SystemExit('visual proof test block anchors changed')
 
-def replace_between(source, start_marker, end_marker, replacement, *, already_marker, label):
-    if already_marker in source:
-        return source
-    start = source.find(start_marker)
-    if start < 0:
-        raise SystemExit(f'{label} start anchor changed')
-    end = source.find(end_marker, start)
-    if end < 0:
-        raise SystemExit(f'{label} end anchor changed')
-    end += len(end_marker)
-    return source[:start] + replacement + source[end:]
-
-
-s = replace_between(
-    s,
-    '      await tester.tap(find.text(l10n.customAutomationAdd));',
-    '      expect(automation.isRecording, isTrue);',
-    """      // Unmount the watching manager before beginDraft() notifies listeners.
-      // This avoids coupling the proof to a route/widget teardown frame while
-      // preserving the production service transition itself.
-      harness.showBlank();
+proofs = r'''  testWidgets(
+    'production manager visibly contains the three starter automations',
+    (tester) async {
+      final harness = await _SurfaceHarness.create(tester, out);
+      await harness.createProject('manager-starters');
+      harness.showManager();
       await tester.pump();
+      expect(find.text('オーロラホログラム'), findsOneWidget);
+      expect(find.text('線画抽出'), findsOneWidget);
+      expect(find.text('線画作成'), findsOneWidget);
+      await harness.capture('01_manager_three_starters');
+      expect(tester.takeException(), isNull);
+    },
+  );
+
+  testWidgets(
+    'real FilterPanel records Aurora, saves it, replays it, and changes canvas pixels',
+    (tester) async {
+      final harness = await _SurfaceHarness.create(tester, out);
+      await harness.createProject('record-replay');
+      final automation = harness.automationService;
+      final l10n = harness.l10n;
+
+      await harness.captureCanvas('02_canvas_before_recording');
       automation.beginDraft(
         name: 'visual-audit-automation',
         surface: CustomAutomationSurface.canvas,
         recordingStartFrame: harness.frameIndex,
       );
       expect(automation.isRecording, isTrue);
-      harness.showRecordingStop();
-      await tester.pump();
-      expect(find.byType(CustomAutomationRecordingStopButton), findsOneWidget);
-      await harness.capture('02_recording_started');""",
-    already_marker="await harness.capture('02_recording_started');",
-    label='record-start',
-)
 
-s = replace_between(
-    s,
-    '      await tester.tap(find.text(l10n.customAutomationStopRecording));',
-    '      expect(automation.isRecording, isFalse);',
-    """      automation.stopRecording();
-      harness.showBlank();
+      harness.filterService.selectFilter('Filter0019');
+      harness.showFilterPanel();
       await tester.pump();
-      expect(automation.isRecording, isFalse);""",
-    already_marker='automation.stopRecording();\n      harness.showBlank();',
-    label='record-stop',
-)
+      await harness.waitForProductionAsync();
+      expect(find.byType(FilterPanel), findsOneWidget);
+      await harness.capture('03_recording_aurora_filter_panel');
 
-s = replace_between(
-    s,
-    '      await tester.tap(find.text(l10n.commonSave).last);',
-    '      final afterReplay = harness.activeLayerPixels();',
-    """      final saved = await automation.saveDraft();
+      final beforeApply = harness.activeLayerPixels();
+      await tester.tap(find.text(l10n.filterApplyButton));
+      await harness.waitForProductionAsync();
+      final afterApply = harness.activeLayerPixels();
+      expect(_changedBytes(beforeApply, afterApply), greaterThan(100));
+      expect(automation.draft, isNotNull);
+      expect(automation.draft!.steps, hasLength(1));
+      expect(automation.draft!.steps.single.command, 'canvas.filterApply');
+      await harness.captureCanvas('04_canvas_after_recorded_aurora');
+
+      automation.stopRecording();
+      expect(automation.isRecording, isFalse);
+      final saved = await automation.saveDraft();
       expect(saved, isNotNull);
-      harness.showBlank();
-      await tester.pump();
-      expect(automation.draft, isNull);
-      expect(
-        automation.items.any((item) => item.name == 'visual-audit-automation'),
-        isTrue,
-      );
+      expect(saved!.steps.single.command, 'canvas.filterApply');
 
       final beforeReplay = harness.activeLayerPixels();
-      harness.showManager();
-      await tester.pump();
-      expect(find.text('visual-audit-automation'), findsOneWidget);
-      await harness.capture('07_manager_saved_item');
-      harness.showBlank();
-      await tester.pump();
       await harness.execute(
-        saved!,
+        saved,
         CustomAutomationExecutionScope.currentFrame,
         null,
       );
-      await harness.waitForProductionAsync();
-      final afterReplay = harness.activeLayerPixels();""",
-    already_marker='final saved = await automation.saveDraft();',
-    label='save-replay',
-)
+      final afterReplay = harness.activeLayerPixels();
+      expect(_changedBytes(beforeReplay, afterReplay), greaterThan(100));
+      await harness.captureCanvas('09_canvas_after_saved_replay');
+      expect(tester.takeException(), isNull);
+    },
+    timeout: const Timeout(Duration(minutes: 3)),
+  );
 
-if 'final preset = harness.automationService.items' not in s:
-    preset_pattern = re.compile(
-        r"(?P<capture>\s*await harness\.capture\('preset_\$\{entry\.\$2\}_01_manager'\);\n)"
-        r"(?P<body>.*?)"
-        r"(?P<wait>\s*await harness\.waitForProductionAsync\(extraMilliseconds: 2200\);)",
-        re.S,
-    )
-    match = preset_pattern.search(s)
-    if match is None:
-        raise SystemExit('preset execution anchors changed')
-    replacement = match.group('capture') + """        final preset = harness.automationService.items
+  testWidgets('production recording stop control stops the draft', (tester) async {
+    final harness = await _SurfaceHarness.create(tester, out);
+    await harness.createProject('stop-ui');
+    harness.automationService.beginDraft(
+      name: 'visual-audit-automation',
+      surface: CustomAutomationSurface.canvas,
+      recordingStartFrame: harness.frameIndex,
+    );
+    harness.showRecordingStop();
+    await tester.pump();
+    expect(find.byType(CustomAutomationRecordingStopButton), findsOneWidget);
+    await harness.capture('05_recording_stop_ui');
+    await tester.tap(find.text(harness.l10n.customAutomationStopRecording));
+    await tester.pump();
+    expect(harness.automationService.isRecording, isFalse);
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('production draft editor visibly edits recorded steps', (tester) async {
+    final harness = await _SurfaceHarness.create(tester, out);
+    await harness.createProject('editor-ui');
+    final automation = harness.automationService;
+    automation.beginDraft(
+      name: 'visual-audit-automation',
+      surface: CustomAutomationSurface.canvas,
+      recordingStartFrame: harness.frameIndex,
+    );
+    final starter = automation.items
+        .where((item) => item.name == 'オーロラホログラム')
+        .single;
+    final step = starter.steps.single;
+    for (var i = 0; i < 2; i++) {
+      automation.recordStep(
+        surface: step.surface,
+        command: step.command,
+        label: step.label,
+        args: step.args,
+        changesFrame: step.changesFrame,
+        recordedFrame: step.recordedFrame,
+      );
+    }
+    automation.stopRecording();
+    expect(automation.draft!.steps, hasLength(2));
+    harness.showDraftEditor();
+    await tester.pump();
+    expect(find.text('canvas.filterApply'), findsNWidgets(2));
+    await harness.capture('06_draft_editor_before_edit');
+    await tester.tap(find.byIcon(Icons.delete_outline).last);
+    await tester.pump();
+    expect(automation.draft!.steps, hasLength(1));
+    await harness.capture('07_draft_editor_after_edit');
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('saved automation is visible and opens production replay confirmation',
+      (tester) async {
+    final harness = await _SurfaceHarness.create(tester, out);
+    await harness.createProject('saved-manager');
+    final automation = harness.automationService;
+    final starter = automation.items
+        .where((item) => item.name == 'オーロラホログラム')
+        .single;
+    final step = starter.steps.single;
+    automation.beginDraft(
+      name: 'visual-audit-automation',
+      surface: CustomAutomationSurface.canvas,
+      recordingStartFrame: harness.frameIndex,
+    );
+    automation.recordStep(
+      surface: step.surface,
+      command: step.command,
+      label: step.label,
+      args: step.args,
+      changesFrame: step.changesFrame,
+      recordedFrame: step.recordedFrame,
+    );
+    automation.stopRecording();
+    final saved = await automation.saveDraft();
+    expect(saved, isNotNull);
+
+    harness.showManager();
+    await tester.pump();
+    expect(find.text('visual-audit-automation'), findsOneWidget);
+    await harness.capture('08_manager_saved_item');
+    await tester.tap(find.text('visual-audit-automation'));
+    await tester.pump(const Duration(milliseconds: 180));
+    expect(find.text(harness.l10n.customAutomationRunConfirmTitle), findsOneWidget);
+    await harness.capture('08b_replay_confirmation');
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets(
+    'three starter automations change real canvas output through the production executor',
+    (tester) async {
+      final harness = await _SurfaceHarness.create(tester, out);
+      final cases = <(String, String, bool)>[
+        ('オーロラホログラム', 'aurora_hologram', false),
+        ('線画抽出', 'line_extraction', true),
+        ('線画作成', 'line_creation', true),
+      ];
+
+      for (final entry in cases) {
+        await harness.createProject('preset-${entry.$2}');
+        final beforePixels = harness.activeLayerPixels();
+        final beforeLayers = harness.normalLayerIds();
+        await harness.captureCanvas('preset_${entry.$2}_01_before');
+        final preset = harness.automationService.items
             .where((item) => item.name == entry.$1)
             .single;
-        harness.showBlank();
-        await tester.pump();
         await harness.execute(
           preset,
           CustomAutomationExecutionScope.currentFrame,
           null,
         );
-        await harness.waitForProductionAsync(extraMilliseconds: 2200);"""
-    s = s[:match.start()] + replacement + s[match.end():]
 
-if '  void showBlank() {' not in s:
-    anchor = '  void showManager() {'
-    if anchor not in s:
-        raise SystemExit('showManager anchor changed')
-    s = s.replace(
-        anchor,
-        """  void showBlank() {
-    hostKey.currentState!.show(const SizedBox.expand());
+        if (!entry.$3) {
+          expect(
+            _changedBytes(beforePixels, harness.activeLayerPixels()),
+            greaterThan(100),
+            reason: '${entry.$1} must visibly change source pixels',
+          );
+          await harness.captureCanvas('preset_${entry.$2}_02_after');
+        } else {
+          final generated = harness.normalLayerIds().difference(beforeLayers);
+          expect(generated, isNotEmpty,
+              reason: '${entry.$1} must create an output layer');
+          final generatedId = generated.first;
+          expect(
+            _nonTransparentPixels(harness.layerPixels(generatedId)),
+            greaterThan(50),
+            reason: '${entry.$1} output layer must contain visible pixels',
+          );
+          await harness.captureCanvas(
+            'preset_${entry.$2}_02_after',
+            targetLayerId: generatedId,
+          );
+        }
+      }
+      expect(tester.takeException(), isNull);
+    },
+    timeout: const Timeout(Duration(minutes: 5)),
+  );
+}
+'''
+
+s = s[:start] + proofs + s[end:]
+
+capture_anchor = '''  Future<void> capture(String name) async {
+'''
+if 'Future<void> captureCanvas(' not in s:
+    if capture_anchor not in s:
+        raise SystemExit('capture anchor changed')
+    canvas_method = r'''  Future<void> captureCanvas(
+    String name, {
+    String? targetLayerId,
+  }) async {
+    final id = targetLayerId ?? layerId;
+    final tm = projectService.tileManagerOf(projectId);
+    final key = projectService.tileKeyFor(projectId, sceneId, frameIndex, id);
+    final png = await tester.runAsync(() async {
+      final image = await tm.compositeLayerToImage(key);
+      final data = await image.toByteData(format: ui.ImageByteFormat.png);
+      image.dispose();
+      return data!.buffer.asUint8List();
+    });
+    File('${out.path}/$name.png').writeAsBytesSync(png!);
   }
 
-  void showManager() {""",
-        1,
-    )
+'''
+    s = s.replace(capture_anchor, canvas_method + capture_anchor, 1)
 
+# Keep production widgets, but remove route-pop side effects from the test-only host callbacks.
 s = s.replace(
     '        onClose: () => Navigator.pop(routeContext),',
     '        onClose: () {},',
     1,
 )
+s = s.replace(
+    '''              onStop: () {
+                automationService.stopRecording();
+                Navigator.pop(routeContext);
+              },''',
+    '''              onStop: () {
+                automationService.stopRecording();
+              },''',
+    1,
+)
 
+# Each test mounts one production surface only. A direct keyed host avoids introducing
+# a nested Navigator that is unrelated to the feature under proof.
 host_pattern = re.compile(
     r"class _SurfaceHostState extends State<_SurfaceHost> \{.*?\n\}\n\nint _changedBytes",
     re.S,
 )
-host_replacement = """class _SurfaceHostState extends State<_SurfaceHost> {
+host_replacement = '''class _SurfaceHostState extends State<_SurfaceHost> {
   WidgetBuilder? _builder;
   int _generation = 0;
 
@@ -151,27 +290,14 @@ host_replacement = """class _SurfaceHostState extends State<_SurfaceHost> {
     if (builder == null) return const Scaffold(body: SizedBox.expand());
     return KeyedSubtree(
       key: ValueKey(_generation),
-      child: Scaffold(
-        body: SafeArea(child: builder(context)),
-      ),
+      child: Scaffold(body: SafeArea(child: builder(context))),
     );
   }
 }
 
-int _changedBytes"""
+int _changedBytes'''
 s, n = host_pattern.subn(host_replacement, s, count=1)
-if n != 1 and 'return KeyedSubtree(' not in s:
+if n != 1:
     raise SystemExit('surface host anchor changed')
-
-s = s.replace(
-    """              onStop: () {
-                automationService.stopRecording();
-                Navigator.pop(routeContext);
-              },""",
-    """              onStop: () {
-                automationService.stopRecording();
-              },""",
-    1,
-)
 
 p.write_text(s)
