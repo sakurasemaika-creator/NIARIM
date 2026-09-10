@@ -1,0 +1,142 @@
+name: One-shot Custom Automation Completion
+
+on:
+  push:
+    branches: [dev_branch]
+    paths:
+      - '.github/workflows/one-shot-custom-automation-completion.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  complete-and-prove:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: dev_branch
+          fetch-depth: 0
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+      - run: flutter pub get
+      - name: Remove fixed wall-clock sleeps from production proof
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          p = Path('test/custom_automation_production_visual_test.dart')
+          s = p.read_text()
+
+          replacements = [
+            (
+              "      await harness.waitForProductionAsync();\n      expect(find.byType(FilterPanel), findsOneWidget);",
+              "      await tester.pumpAndSettle();\n      expect(find.byType(FilterPanel), findsOneWidget);",
+            ),
+            (
+              "      await tester.tap(find.text(l10n.filterApplyButton));\n      await harness.waitForProductionAsync();\n      final afterApply = harness.activeLayerPixels();",
+              "      await tester.tap(find.text(l10n.filterApplyButton));\n      await harness.waitForPixelChange(\n        beforeApply,\n        label: 'recorded filter apply',\n      );\n      final afterApply = harness.activeLayerPixels();",
+            ),
+            (
+              "      await tester.tap(find.text(l10n.customAutomationYes));\n      await harness.waitForProductionAsync();\n      final afterReplay = harness.activeLayerPixels();",
+              "      await tester.tap(find.text(l10n.customAutomationYes));\n      await harness.waitForPixelChange(\n        beforeReplay,\n        label: 'saved automation replay',\n      );\n      final afterReplay = harness.activeLayerPixels();",
+            ),
+            (
+              "        await tester.tap(find.text(harness.l10n.customAutomationYes));\n        await harness.waitForProductionAsync(extraMilliseconds: 2200);\n\n        if (!createsLayer) {",
+              "        await tester.tap(find.text(harness.l10n.customAutomationYes));\n        await harness.waitForAutomationResult(\n          beforePixels: beforePixels,\n          beforeLayers: beforeLayers,\n          createsLayer: createsLayer,\n          label: name,\n        );\n\n        if (!createsLayer) {",
+            ),
+          ]
+          for old, new in replacements:
+            if old not in s:
+              raise SystemExit('custom automation wait anchor changed:\n' + old)
+            s = s.replace(old, new, 1)
+
+          old_helper = """  Future<void> waitForProductionAsync({int extraMilliseconds = 1500}) async {
+            await tester.runAsync(
+              () => Future<void>.delayed(Duration(milliseconds: extraMilliseconds)),
+            );
+            await tester.pump(const Duration(milliseconds: 250));
+          }
+          """
+          new_helper = """  Future<void> _yieldAsyncWork() async {
+            await tester.runAsync(() => Future<void>(() {}));
+            await tester.pump();
+          }
+
+          Future<void> waitForPixelChange(
+            Uint8List before, {
+            required String label,
+          }) async {
+            for (var attempt = 0; attempt < 600; attempt++) {
+              if (_changedBytes(before, activeLayerPixels()) > 100) return;
+              await _yieldAsyncWork();
+            }
+            throw TestFailure('$label did not change Canvas pixels');
+          }
+
+          Future<void> waitForAutomationResult({
+            required Uint8List beforePixels,
+            required Set<String> beforeLayers,
+            required bool createsLayer,
+            required String label,
+          }) async {
+            for (var attempt = 0; attempt < 600; attempt++) {
+              if (createsLayer) {
+                final canvas = canvasWidget;
+                final current = projectService
+                    .layersOf(
+                      projectId,
+                      canvas.sceneId,
+                      canvas.currentFrame,
+                    )
+                    .where((layer) => layer.type == model.LayerType.normal)
+                    .map((layer) => layer.id)
+                    .toSet();
+                if (current.difference(beforeLayers).isNotEmpty) return;
+              } else if (_changedBytes(beforePixels, activeLayerPixels()) > 100) {
+                return;
+              }
+              await _yieldAsyncWork();
+            }
+            throw TestFailure('$label did not reach its observable completion state');
+          }
+          """
+          if old_helper not in s:
+            raise SystemExit('fixed-sleep helper anchor changed')
+          s = s.replace(old_helper, new_helper, 1)
+          s = s.replace("import 'dart:async';\n", '', 1)
+          p.write_text(s)
+          PY
+      - name: Format proof
+        run: dart format test/custom_automation_production_visual_test.dart test/custom_automation_production_surface_visual_test.dart
+      - name: Assert no fixed wall-clock sleep remains
+        run: |
+          if grep -nE 'Future<.*>\.delayed|sleep\(' test/custom_automation_production_visual_test.dart test/custom_automation_production_surface_visual_test.dart; then
+            echo 'Fixed wall-clock sleep remains in Custom Automation proof' >&2
+            exit 1
+          fi
+      - name: Analyze Custom Automation production proofs
+        run: flutter analyze test/custom_automation_production_visual_test.dart test/custom_automation_production_surface_visual_test.dart --no-fatal-warnings --no-fatal-infos
+      - name: Run full record edit save replay PNG proof
+        run: flutter test test/custom_automation_production_surface_visual_test.dart --plain-name 'record start canvas change stop edit save replay changes PNG pixels' --reporter expanded
+      - name: Run production widget Custom Automation proof
+        run: flutter test test/custom_automation_production_visual_test.dart --plain-name 'real Canvas widgets record -> apply -> stop -> edit -> save -> replay with PNG evidence' --reporter expanded
+      - name: Upload Custom Automation PNG evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: custom-automation-step2-png-evidence
+          path: build/visual-reaudit/custom-automation-production
+          if-no-files-found: error
+          retention-days: 7
+      - name: Commit verified sleep removal and clean one-shot workflow
+        run: |
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          git rm .github/workflows/one-shot-custom-automation-completion.yml
+          git add test/custom_automation_production_visual_test.dart test/custom_automation_production_surface_visual_test.dart
+          git commit -m 'test: await custom automation completion without fixed sleeps'
+          git push origin HEAD:dev_branch
