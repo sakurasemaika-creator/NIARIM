@@ -40,7 +40,13 @@ jobs:
 
           p = Path('test/custom_automation_production_surface_visual_test.dart')
           s = p.read_text()
-          replacement = "\n".join([
+
+          executor_import = "import 'package:niarim/engine/custom_automation_executor.dart';"
+          runner_import = "import 'package:niarim/engine/custom_automation_filter_runner.dart';"
+          if runner_import not in s:
+              s = s.replace(executor_import, executor_import + "\n" + runner_import, 1)
+
+          wait_replacement = "\n".join([
               "  Future<void> waitUntil(",
               "    bool Function() condition, {",
               "    required String label,",
@@ -61,12 +67,132 @@ jobs:
               "",
               "  Future<void> captureCanvas",
           ])
-          pattern = re.compile(
+          wait_pattern = re.compile(
               r"(?ms)^\s*Future<void> waitUntil\(.*?^\s*Future<void> captureCanvas",
           )
-          s, count = pattern.subn(replacement, s, count=1)
+          s, count = wait_pattern.subn(wait_replacement, s, count=1)
           if count != 1:
               raise SystemExit('generated waitUntil block anchor changed')
+
+          first_apply = "\n".join([
+              "    harness.filterService.selectFilter('Filter0019');",
+              "    harness.showFilterPanel();",
+              "    await tester.pump();",
+              "    expect(find.byType(FilterPanel), findsOneWidget);",
+              "    await harness.capture('02_filter_panel_while_recording');",
+              "",
+              "    final recordedFilter = harness.filterService.currentFilter!;",
+              "    final beforeFirstApply = harness.activeLayerPixels();",
+              "    await tester.runAsync(() async {",
+              "      await CustomAutomationFilterRunner.apply(",
+              "        projectService: harness.projectService,",
+              "        projectId: harness.projectId,",
+              "        sceneId: harness.sceneId,",
+              "        frameIndex: harness.frameIndex,",
+              "        sourceLayerId: harness.layerId,",
+              "        filter: recordedFilter,",
+              "      );",
+              "    });",
+              "    automation.recordStep(",
+              "      surface: CustomAutomationSurface.canvas,",
+              "      command: 'canvas.filterApply',",
+              "      label: recordedFilter.name,",
+              "      args: {'filter': recordedFilter.toJson()},",
+              "      recordedFrame: harness.frameIndex,",
+              "    );",
+              "    await tester.pump();",
+              "    final afterFirstApply = harness.activeLayerPixels();",
+              "    final firstChanged = _changedBytes(beforeFirstApply, afterFirstApply);",
+              "    expect(firstChanged, greaterThan(100));",
+              "    expect(automation.draft!.steps.single.command, 'canvas.filterApply');",
+              "    await harness.captureCanvas('03_canvas_after_recorded_change');",
+          ])
+          first_pattern = re.compile(
+              r"(?ms)^\s*harness\.filterService\.selectFilter\('Filter0019'\);.*?^\s*await harness\.captureCanvas\('03_canvas_after_recorded_change'\);",
+          )
+          s, count = first_pattern.subn(first_apply, s, count=1)
+          if count != 1:
+              raise SystemExit('first Canvas change block anchor changed')
+
+          second_apply = "\n".join([
+              "    // Record a second real Canvas change so the draft editor has a meaningful",
+              "    // edit to perform. The edit below removes this second step before save.",
+              "    final beforeSecondApply = harness.activeLayerPixels();",
+              "    await tester.runAsync(() async {",
+              "      await CustomAutomationFilterRunner.apply(",
+              "        projectService: harness.projectService,",
+              "        projectId: harness.projectId,",
+              "        sceneId: harness.sceneId,",
+              "        frameIndex: harness.frameIndex,",
+              "        sourceLayerId: harness.layerId,",
+              "        filter: recordedFilter,",
+              "      );",
+              "    });",
+              "    automation.recordStep(",
+              "      surface: CustomAutomationSurface.canvas,",
+              "      command: 'canvas.filterApply',",
+              "      label: recordedFilter.name,",
+              "      args: {'filter': recordedFilter.toJson()},",
+              "      recordedFrame: harness.frameIndex,",
+              "    );",
+              "    await tester.pump();",
+              "    expect(automation.draft!.steps, hasLength(2));",
+              "    expect(",
+              "      _changedBytes(beforeSecondApply, harness.activeLayerPixels()),",
+              "      greaterThan(100),",
+              "    );",
+              "",
+              "    harness.showRecordingStop();",
+          ])
+          second_pattern = re.compile(
+              r"(?ms)^\s*// Record a second real Canvas change.*?^\s*harness\.showRecordingStop\(\);",
+          )
+          s, count = second_pattern.subn(second_apply, s, count=1)
+          if count != 1:
+              raise SystemExit('second Canvas change block anchor changed')
+
+          execute_replacement = "\n".join([
+              "  Future<void> execute(",
+              "    CustomAutomation automation,",
+              "    CustomAutomationExecutionScope scope,",
+              "    List<int>? targetFrames,",
+              "  ) async {",
+              "    Future<void> run(",
+              "      CustomAutomationExecutionScope actualScope,",
+              "      int frame,",
+              "    ) async {",
+              "      await tester.runAsync(() async {",
+              "        await CustomAutomationExecutor.executeCanvas(",
+              "          automation: automation,",
+              "          scope: actualScope,",
+              "          projectService: projectService,",
+              "          projectId: projectId,",
+              "          sceneId: sceneId,",
+              "          currentFrame: frame,",
+              "          currentLayerId: layerId,",
+              "          handleCanvasStateCommand: (_, _) async {},",
+              "        );",
+              "      });",
+              "    }",
+              "",
+              "    if (scope == CustomAutomationExecutionScope.specifiedFrames) {",
+              "      for (final frame in targetFrames ?? const <int>[]) {",
+              "        await run(CustomAutomationExecutionScope.currentFrame, frame);",
+              "      }",
+              "      return;",
+              "    }",
+              "    await run(scope, frameIndex);",
+              "  }",
+              "",
+              "  void showManager()",
+          ])
+          execute_pattern = re.compile(
+              r"(?ms)^\s*Future<void> execute\(.*?^\s*void showManager\(\)",
+          )
+          s, count = execute_pattern.subn(execute_replacement, s, count=1)
+          if count != 1:
+              raise SystemExit('execute helper anchor changed')
+
           if 'waitForProductionAsync' in s:
               raise SystemExit('fixed production wait remains')
           if 'DateTime.now().add(timeout)' in s or 'delayed(Duration.zero)' in s:
