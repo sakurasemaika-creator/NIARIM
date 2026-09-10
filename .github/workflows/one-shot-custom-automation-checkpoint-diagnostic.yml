@@ -20,83 +20,54 @@ jobs:
           channel: stable
           cache: true
       - run: flutter pub get
-      - name: Generate isolated manager smoke test
-        run: |
-          cat > test/custom_automation_manager_isolated_diagnostic_test.dart <<'DART'
-          import 'package:flutter/material.dart';
-          import 'package:flutter_test/flutter_test.dart';
-          import 'package:niarim/l10n/app_localizations.dart';
-          import 'package:niarim/models/custom_automation.dart';
-          import 'package:niarim/services/custom_automation_service.dart';
-          import 'package:niarim/widgets/custom_automation_manager_sheet.dart';
-          import 'package:provider/provider.dart';
-          import 'package:shared_preferences/shared_preferences.dart';
-
-          void main() {
-            TestWidgetsFlutterBinding.ensureInitialized();
-
-            testWidgets('isolated manager first pump completes', (tester) async {
-              SharedPreferences.setMockInitialValues({});
-              final service = CustomAutomationService();
-              await service.init();
-              print('DIAG isolated service init done');
-              await tester.pumpWidget(
-                ChangeNotifierProvider.value(
-                  value: service,
-                  child: MaterialApp(
-                    locale: const Locale('ja'),
-                    localizationsDelegates: AppLocalizations.localizationsDelegates,
-                    supportedLocales: AppLocalizations.supportedLocales,
-                    home: Scaffold(
-                      body: CustomAutomationManagerSheet(
-                        surface: CustomAutomationSurface.canvas,
-                        recordingStartFrame: 0,
-                        frameCount: 1,
-                        onRecordingStarted: () {},
-                        onExecute: (_, __, ___) async {},
-                      ),
-                    ),
-                  ),
-                ),
-              );
-              print('DIAG isolated pumpWidget done');
-              await tester.pump();
-              print('DIAG isolated first pump done');
-              expect(find.byType(CustomAutomationManagerSheet), findsOneWidget);
-            }, timeout: const Timeout(Duration(seconds: 30)));
-          }
-          DART
-          dart format test/custom_automation_manager_isolated_diagnostic_test.dart
-      - name: Run isolated manager diagnostic
-        run: flutter test test/custom_automation_manager_isolated_diagnostic_test.dart --reporter expanded
-      - name: Add Canvas plus manager checkpoints
+      - name: Patch production proof to nested overlay host
         run: |
           python3 - <<'PY'
           from pathlib import Path
           p = Path('test/custom_automation_production_visual_test.dart')
           s = p.read_text()
-          replacements = [
-            (
-              "      await harness.createAndShowProject('record-replay');\n",
-              "      await harness.createAndShowProject('record-replay');\n      print('CHECKPOINT createAndShowProject done');\n      await tester.pump();\n      print('CHECKPOINT bare Canvas pump done');\n",
-            ),
-            (
-              "      await harness.capture('00_canvas_before_recording');\n      harness.showManager();\n      await tester.pump(const Duration(milliseconds: 300));\n      await harness.capture('01_manager_open');",
-              "      await harness.capture('00_canvas_before_recording');\n      print('CHECKPOINT capture 00 done');\n      harness.showManager();\n      print('CHECKPOINT showManager returned');\n      await tester.pump();\n      print('CHECKPOINT manager zero-duration pump done');\n      await tester.pump(const Duration(milliseconds: 1));\n      print('CHECKPOINT manager 1ms pump done');\n      await harness.capture('01_manager_open');\n      print('CHECKPOINT capture 01 done');",
-            ),
-            (
-              "    timeout: const Timeout(Duration(minutes: 4)),",
-              "    timeout: const Timeout(Duration(seconds: 45)),",
-            ),
-          ]
-          for old, new in replacements:
-            if old not in s:
-              raise SystemExit('checkpoint anchor changed: ' + old)
-            s = s.replace(old, new, 1)
+
+          old_fields = """  final StateSetter rebuildHost;\n  String? _projectId;\n\n  _ProductionHarness({\n    required this.tester,\n    required this.out,\n    required this.projectService,\n    required this.rootKey,\n    required this.rebuildHost,\n  });"""
+          new_fields = """  final StateSetter rebuildHost;\n  final GlobalKey<NavigatorState> overlayNavigatorKey;\n  String? _projectId;\n\n  _ProductionHarness({\n    required this.tester,\n    required this.out,\n    required this.projectService,\n    required this.rootKey,\n    required this.rebuildHost,\n    required this.overlayNavigatorKey,\n  });"""
+          if old_fields not in s:
+            raise SystemExit('harness field anchor changed')
+          s = s.replace(old_fields, new_fields, 1)
+
+          old_create = """    final rootKey = GlobalKey();\n\n    await tester.pumpWidget(\n      RepaintBoundary(\n        key: rootKey,\n        child: MultiProvider(\n          providers: providers!,\n          child: Builder(\n            builder: (themeContext) => MaterialApp(\n              theme: themeContext.watch<ThemeService>().themeData,\n              locale: const Locale('ja'),\n              localizationsDelegates: AppLocalizations.localizationsDelegates,\n              supportedLocales: AppLocalizations.supportedLocales,\n              home: StatefulBuilder(\n                builder: (context, setState) {\n                  ps ??= context.read<ProjectService>();\n                  hostSetter = setState;\n                  if (activeProjectId == null) return const SizedBox.expand();\n                  return CanvasScreen(\n                    key: ValueKey(activeProjectId),\n                    projectId: activeProjectId!,\n                  );\n                },\n              ),\n            ),\n          ),\n        ),\n      ),\n    );"""
+          new_create = """    final rootKey = GlobalKey();\n    final overlayNavigatorKey = GlobalKey<NavigatorState>();\n\n    await tester.pumpWidget(\n      RepaintBoundary(\n        key: rootKey,\n        child: MultiProvider(\n          providers: providers!,\n          child: Builder(\n            builder: (themeContext) => MaterialApp(\n              theme: themeContext.watch<ThemeService>().themeData,\n              locale: const Locale('ja'),\n              localizationsDelegates: AppLocalizations.localizationsDelegates,\n              supportedLocales: AppLocalizations.supportedLocales,\n              home: StatefulBuilder(\n                builder: (context, setState) {\n                  ps ??= context.read<ProjectService>();\n                  hostSetter = setState;\n                  return Stack(\n                    fit: StackFit.expand,\n                    children: [\n                      if (activeProjectId == null)\n                        const SizedBox.expand()\n                      else\n                        CanvasScreen(\n                          key: ValueKey(activeProjectId),\n                          projectId: activeProjectId!,\n                        ),\n                      IgnorePointer(\n                        ignoring: activeProjectId == null,\n                        child: Navigator(\n                          key: overlayNavigatorKey,\n                          onGenerateRoute: (_) => PageRouteBuilder<void>(\n                            opaque: false,\n                            barrierColor: Colors.transparent,\n                            transitionDuration: Duration.zero,\n                            reverseTransitionDuration: Duration.zero,\n                            pageBuilder: (_, __, ___) => const SizedBox.shrink(),\n                          ),\n                        ),\n                      ),\n                    ],\n                  );\n                },\n              ),\n            ),\n          ),\n        ),\n      ),\n    );"""
+          if old_create not in s:
+            raise SystemExit('create host anchor changed')
+          s = s.replace(old_create, new_create, 1)
+
+          old_ctor = """      rebuildHost: (fn) {\n        hostSetter!(fn);\n        harness._projectId = activeProjectId;\n      },\n    );"""
+          new_ctor = """      rebuildHost: (fn) {\n        hostSetter!(fn);\n        harness._projectId = activeProjectId;\n      },\n      overlayNavigatorKey: overlayNavigatorKey,\n    );"""
+          if old_ctor not in s:
+            raise SystemExit('constructor anchor changed')
+          s = s.replace(old_ctor, new_ctor, 1)
+
+          old_manager = """  void showManager() {\n    final context = canvasContext;\n    unawaited(\n      showModalBottomSheet<void>(\n        context: context,\n        isScrollControlled: true,\n        builder: (_) => CustomAutomationManagerSheet(\n          surface: CustomAutomationSurface.canvas,\n          recordingStartFrame: canvasWidget.currentFrame,\n          frameCount: projectService.frameCount(\n            projectId,\n            canvasWidget.sceneId,\n          ),\n          onRecordingStarted: () {},\n          onExecute: _execute,\n        ),\n      ),\n    );\n  }"""
+          new_manager = """  void showManager() {\n    final startFrame = canvasWidget.currentFrame;\n    final count = projectService.frameCount(projectId, canvasWidget.sceneId);\n    unawaited(\n      overlayNavigatorKey.currentState!.push(\n        PageRouteBuilder<void>(\n          opaque: false,\n          barrierColor: Colors.black54,\n          transitionDuration: Duration.zero,\n          reverseTransitionDuration: Duration.zero,\n          pageBuilder: (_, __, ___) => Material(\n            type: MaterialType.transparency,\n            child: Align(\n              alignment: Alignment.bottomCenter,\n              child: CustomAutomationManagerSheet(\n                surface: CustomAutomationSurface.canvas,\n                recordingStartFrame: startFrame,\n                frameCount: count,\n                onRecordingStarted: () {},\n                onExecute: _execute,\n              ),\n            ),\n          ),\n        ),\n      ),\n    );\n  }"""
+          if old_manager not in s:
+            raise SystemExit('manager anchor changed')
+          s = s.replace(old_manager, new_manager, 1)
+
+          checkpoint = """      await harness.capture('00_canvas_before_recording');\n      harness.showManager();\n      await tester.pump(const Duration(milliseconds: 300));\n      await harness.capture('01_manager_open');"""
+          checkpoint_new = """      await harness.capture('00_canvas_before_recording');\n      print('CHECKPOINT capture 00 done');\n      harness.showManager();\n      print('CHECKPOINT nested showManager returned');\n      await tester.pump();\n      print('CHECKPOINT nested manager first pump done');\n      expect(find.byType(CustomAutomationManagerSheet), findsOneWidget);\n      await harness.capture('01_manager_open');\n      print('CHECKPOINT nested capture 01 done');"""
+          if checkpoint not in s:
+            raise SystemExit('checkpoint anchor changed')
+          s = s.replace(checkpoint, checkpoint_new, 1)
+
+          s = s.replace(
+            "    timeout: const Timeout(Duration(minutes: 4)),",
+            "    timeout: const Timeout(Duration(seconds: 60)),",
+            1,
+          )
           p.write_text(s)
           PY
       - run: dart format test/custom_automation_production_visual_test.dart
-      - name: Run Canvas plus manager checkpoint diagnostic
+      - name: Analyze nested overlay proof
+        run: flutter analyze test/custom_automation_production_visual_test.dart --no-fatal-warnings --no-fatal-infos
+      - name: Run Canvas plus nested manager diagnostic
         run: flutter test test/custom_automation_production_visual_test.dart --plain-name 'real Canvas widgets record -> apply -> stop -> edit -> save -> replay with PNG evidence' --reporter expanded
       - name: Upload diagnostic checkpoints
         if: always()
