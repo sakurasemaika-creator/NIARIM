@@ -10,7 +10,7 @@ on:
 jobs:
   locate-production-widget-stall:
     runs-on: ubuntu-latest
-    timeout-minutes: 5
+    timeout-minutes: 8
     steps:
       - uses: actions/checkout@v4
         with:
@@ -20,7 +20,56 @@ jobs:
           channel: stable
           cache: true
       - run: flutter pub get
-      - name: Add temporary checkpoints and short diagnostic timeout
+      - name: Generate isolated manager smoke test
+        run: |
+          cat > test/custom_automation_manager_isolated_diagnostic_test.dart <<'DART'
+          import 'package:flutter/material.dart';
+          import 'package:flutter_test/flutter_test.dart';
+          import 'package:niarim/l10n/app_localizations.dart';
+          import 'package:niarim/models/custom_automation.dart';
+          import 'package:niarim/services/custom_automation_service.dart';
+          import 'package:niarim/widgets/custom_automation_manager_sheet.dart';
+          import 'package:provider/provider.dart';
+          import 'package:shared_preferences/shared_preferences.dart';
+
+          void main() {
+            TestWidgetsFlutterBinding.ensureInitialized();
+
+            testWidgets('isolated manager first pump completes', (tester) async {
+              SharedPreferences.setMockInitialValues({});
+              final service = CustomAutomationService();
+              await service.init();
+              print('DIAG isolated service init done');
+              await tester.pumpWidget(
+                ChangeNotifierProvider.value(
+                  value: service,
+                  child: MaterialApp(
+                    locale: const Locale('ja'),
+                    localizationsDelegates: AppLocalizations.localizationsDelegates,
+                    supportedLocales: AppLocalizations.supportedLocales,
+                    home: Scaffold(
+                      body: CustomAutomationManagerSheet(
+                        surface: CustomAutomationSurface.canvas,
+                        recordingStartFrame: 0,
+                        frameCount: 1,
+                        onRecordingStarted: () {},
+                        onExecute: (_, __, ___) async {},
+                      ),
+                    ),
+                  ),
+                ),
+              );
+              print('DIAG isolated pumpWidget done');
+              await tester.pump();
+              print('DIAG isolated first pump done');
+              expect(find.byType(CustomAutomationManagerSheet), findsOneWidget);
+            }, timeout: const Timeout(Duration(seconds: 30)));
+          }
+          DART
+          dart format test/custom_automation_manager_isolated_diagnostic_test.dart
+      - name: Run isolated manager diagnostic
+        run: flutter test test/custom_automation_manager_isolated_diagnostic_test.dart --reporter expanded
+      - name: Add Canvas plus manager checkpoints
         run: |
           python3 - <<'PY'
           from pathlib import Path
@@ -29,11 +78,11 @@ jobs:
           replacements = [
             (
               "      await harness.createAndShowProject('record-replay');\n",
-              "      await harness.createAndShowProject('record-replay');\n      print('CHECKPOINT createAndShowProject done');\n",
+              "      await harness.createAndShowProject('record-replay');\n      print('CHECKPOINT createAndShowProject done');\n      await tester.pump();\n      print('CHECKPOINT bare Canvas pump done');\n",
             ),
             (
               "      await harness.capture('00_canvas_before_recording');\n      harness.showManager();\n      await tester.pump(const Duration(milliseconds: 300));\n      await harness.capture('01_manager_open');",
-              "      await harness.capture('00_canvas_before_recording');\n      print('CHECKPOINT capture 00 done');\n      harness.showManager();\n      print('CHECKPOINT showManager returned');\n      await tester.pump(const Duration(milliseconds: 300));\n      print('CHECKPOINT manager pump done');\n      await harness.capture('01_manager_open');\n      print('CHECKPOINT capture 01 done');",
+              "      await harness.capture('00_canvas_before_recording');\n      print('CHECKPOINT capture 00 done');\n      harness.showManager();\n      print('CHECKPOINT showManager returned');\n      await tester.pump();\n      print('CHECKPOINT manager zero-duration pump done');\n      await tester.pump(const Duration(milliseconds: 1));\n      print('CHECKPOINT manager 1ms pump done');\n      await harness.capture('01_manager_open');\n      print('CHECKPOINT capture 01 done');",
             ),
             (
               "    timeout: const Timeout(Duration(minutes: 4)),",
@@ -47,7 +96,7 @@ jobs:
           p.write_text(s)
           PY
       - run: dart format test/custom_automation_production_visual_test.dart
-      - name: Run checkpoint diagnostic
+      - name: Run Canvas plus manager checkpoint diagnostic
         run: flutter test test/custom_automation_production_visual_test.dart --plain-name 'real Canvas widgets record -> apply -> stop -> edit -> save -> replay with PNG evidence' --reporter expanded
       - name: Upload diagnostic checkpoints
         if: always()
