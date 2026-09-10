@@ -47,31 +47,34 @@ void main() {
     expect(result[(45 * width + 20) * 4 + 3], 0);
   });
 
-  test('prism direction rotates the six-way split by one-degree-capable input', () {
-    const width = 180;
-    const height = 90;
-    final source = Uint8List(width * height * 4);
-    for (var y = 15; y < 75; y++) {
-      for (var x = 60; x < 120; x++) {
-        source[(y * width + x) * 4 + 3] = 255;
+  test(
+    'prism direction rotates the six-way split by one-degree-capable input',
+    () {
+      const width = 180;
+      const height = 90;
+      final source = Uint8List(width * height * 4);
+      for (var y = 15; y < 75; y++) {
+        for (var x = 60; x < 120; x++) {
+          source[(y * width + x) * 4 + 3] = 255;
+        }
       }
-    }
-    final horizontal = PrismFilterEngine().apply(
-      source,
-      width,
-      height,
-      blurPx: 0,
-      gradientDirectionDegrees: 0,
-    );
-    final vertical = PrismFilterEngine().apply(
-      source,
-      width,
-      height,
-      blurPx: 0,
-      gradientDirectionDegrees: 90,
-    );
-    expect(_changedBytes(horizontal, vertical), greaterThan(1000));
-  });
+      final horizontal = PrismFilterEngine().apply(
+        source,
+        width,
+        height,
+        blurPx: 0,
+        gradientDirectionDegrees: 0,
+      );
+      final vertical = PrismFilterEngine().apply(
+        source,
+        width,
+        height,
+        blurPx: 0,
+        gradientDirectionDegrees: 90,
+      );
+      expect(_changedBytes(horizontal, vertical), greaterThan(1000));
+    },
+  );
 
   testWidgets(
     'default blur glows and addition composites over a required background PNG',
@@ -147,8 +150,9 @@ void main() {
 
       final out = Directory('build/visual-reaudit/prism')
         ..createSync(recursive: true);
-      File('${out.path}/prism_default17_vertical_linear_dodge_background.png')
-          .writeAsBytesSync(proof.png!.buffer.asUint8List());
+      File(
+        '${out.path}/prism_default17_vertical_linear_dodge_background.png',
+      ).writeAsBytesSync(proof.png!.buffer.asUint8List());
 
       final horizontalPrism = engine.apply(
         source,
@@ -171,8 +175,9 @@ void main() {
         return png;
       });
       expect(horizontalPng, isNotNull);
-      File('${out.path}/prism_default17_horizontal_linear_dodge_background.png')
-          .writeAsBytesSync(horizontalPng!.buffer.asUint8List());
+      File(
+        '${out.path}/prism_default17_horizontal_linear_dodge_background.png',
+      ).writeAsBytesSync(horizontalPng!.buffer.asUint8List());
       tm.dispose();
     },
   );

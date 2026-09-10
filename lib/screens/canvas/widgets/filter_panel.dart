@@ -544,7 +544,7 @@ class _FilterPanelState extends State<FilterPanel> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           const Text(
-            '参照レイヤーの不透明部分を6色で直接塗り替え → ガウスぼかし',
+            '参照レイヤーのα領域を6等分で着色 → ガウスぼかし → 覆い焼きリニア',
             style: TextStyle(fontSize: 10),
           ),
           const SizedBox(height: 6),
@@ -1857,7 +1857,9 @@ class _FilterPanelState extends State<FilterPanel> {
         projectId: widget.projectId,
         sceneId: widget.sceneId,
         frameIndex: frameIndex,
-        layer: layer,
+        layer: _isPrism(filter)
+            ? layer.copyWith(blendMode: model.LayerBlendMode.addition)
+            : layer,
       );
     }
     return null;
