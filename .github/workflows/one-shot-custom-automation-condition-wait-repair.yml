@@ -35,23 +35,29 @@ jobs:
           start = source.index(marker) + len(marker)
           end = source.index("\n          PY\n", start)
           script = textwrap.dedent(source[start:end])
-          script = script.replace(
-              'final deadline = DateTime.now().add(timeout);',
-              'var polls = 0;\n    final maxPolls = (timeout.inMilliseconds / 25).ceil();',
-              1,
-          ).replace(
-              'if (DateTime.now().isAfter(deadline)) {',
-              'if (++polls > maxPolls) {',
-              1,
-          ).replace(
-              'await tester.pump(const Duration(milliseconds: 16));\n'
-              '    await tester.runAsync(() => Future<void>.delayed(Duration.zero));',
-              'await tester.runAsync(\n'
-              '      () => Future<void>.delayed(const Duration(milliseconds: 25)),\n'
-              '    );\n'
-              '    await tester.pump();',
-              1,
-          )
+          old = '''final deadline = DateTime.now().add(timeout);
+    while (!condition()) {
+      if (DateTime.now().isAfter(deadline)) {
+        fail('Timed out waiting for $label');
+      }
+      await tester.pump(const Duration(milliseconds: 16));
+      await tester.runAsync(() => Future<void>.delayed(Duration.zero));
+    }
+    await tester.pump();'''
+          new = '''await tester.runAsync(() async {
+      final stopwatch = Stopwatch()..start();
+      while (!condition()) {
+        if (stopwatch.elapsed >= timeout) {
+          fail('Timed out waiting for $label');
+        }
+        await Future<void>.delayed(const Duration(milliseconds: 10));
+      }
+      stopwatch.stop();
+    });
+    await tester.pump();'''
+          if old not in script:
+              raise SystemExit('source wait helper anchor changed')
+          script = script.replace(old, new, 1)
           if 'DateTime.now().add(timeout)' in script or 'delayed(Duration.zero)' in script:
               raise SystemExit('condition wait rewrite did not fully apply')
           exec(compile(script, 'record-edit-replay-rewrite', 'exec'))
