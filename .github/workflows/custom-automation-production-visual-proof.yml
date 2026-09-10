@@ -26,12 +26,10 @@ jobs:
         run: python3 tool/patch_custom_automation_surface_interactions.py
       - name: Format patched test
         run: dart format test/custom_automation_production_surface_visual_test.dart
-      - name: Show first proof boundary
-        run: nl -ba test/custom_automation_production_surface_visual_test.dart | sed -n '62,92p'
       - name: Analyze production visual proof
         run: flutter analyze test/custom_automation_production_surface_visual_test.dart --no-fatal-warnings --no-fatal-infos
-      - name: Run record-replay production proof
-        run: flutter test test/custom_automation_production_surface_visual_test.dart --plain-name 'production automation surfaces record a real Aurora filter and replay it' --reporter expanded
+      - name: Run complete production visual proof
+        run: flutter test test/custom_automation_production_surface_visual_test.dart --reporter expanded
       - name: Upload production visual evidence
         if: always()
         uses: actions/upload-artifact@v4
