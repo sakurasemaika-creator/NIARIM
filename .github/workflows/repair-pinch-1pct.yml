@@ -27,6 +27,7 @@ jobs:
         run: |
           python3 - <<'PY'
           from pathlib import Path
+          import re
 
           canvas = Path('lib/screens/canvas/widgets/canvas_area.dart')
           s = canvas.read_text()
@@ -38,17 +39,71 @@ jobs:
 
           test = Path('test/canvas_pinch_gesture_test.dart')
           t = test.read_text()
-          old_lower = '''  testWidgets('下限未満の縮小要求は0.2倍へ正確にクランプされる', (tester) async {\n    final scaleOf = await pumpCanvas(tester);\n    final center = tester.getCenter(find.byType(CanvasArea));\n    // CanvasAreaは指間4px未満を角度計算の不安定域として無視する。\n    // その有効域の端（4px）でも要求倍率は4/200=0.02で十分に下限未満。\n    await pinch(tester, center, from: 200, to: 4);\n    expect(tester.takeException(), isNull);\n    expect(\n      scaleOf(),\n      closeTo(kCanvasMinScale, 0.001),\n      reason: '下限未満を要求しても1/5より小さくならず、境界値へ到達すること',\n    );\n  });'''
-          new_lower = '''  testWidgets('下限未満の縮小要求は0.01倍へ正確にクランプされる', (tester) async {\n    final scaleOf = await pumpCanvas(tester);\n    final center = tester.getCenter(find.byType(CanvasArea));\n    // 極端に近い2本指へ一気に縮めるのではなく、実操作と同じ安全な指間距離で\n    // 20%ピンチを重ねる。3回目は0.008倍を要求するため0.01へクランプされる。\n    for (var i = 0; i < 3; i++) {\n      await pinch(tester, center, from: 200, to: 40);\n    }\n    expect(tester.takeException(), isNull);\n    expect(\n      scaleOf(),\n      closeTo(kCanvasMinScale, 0.001),\n      reason: '連続ピンチで1/100まで縮小でき、それ未満にはならないこと',\n    );\n  });'''
-          if old_lower not in t:
-              raise SystemExit('pinch lower-bound test anchor not found')
-          t = t.replace(old_lower, new_lower, 1)
 
-          old_rotation = '''  testWidgets('0.2倍へ到達する同一ジェスチャーでも45度回転は保持される', (tester) async {\n    await pumpCanvas(tester);\n    final center = tester.getCenter(find.byType(CanvasArea));\n    final anchor = center - const Offset(60, 0);\n    final movingStart = center + const Offset(60, 0);\n    final atMinScale = anchor + const Offset(24, 0);\n    final rotatedAtMinScale = anchor + Offset.fromDirection(math.pi / 4, 24);\n\n    final fixed = await tester.startGesture(\n      anchor,\n      kind: PointerDeviceKind.touch,\n    );\n    final moving = await tester.startGesture(\n      movingStart,\n      kind: PointerDeviceKind.touch,\n    );\n    await tester.pump();\n    // 実際の連続ピンチと同様、まず下限へ到達してから同じ2本指を離さず回す。\n    await moving.moveTo(atMinScale);\n    await tester.pump();\n    await moving.moveTo(rotatedAtMinScale);\n    await tester.pump();\n    await moving.up();\n    await fixed.up();\n    await tester.pump();\n\n    expect(tester.takeException(), isNull);\n    final matrix = _viewMatrix(tester);\n    expect(canvasViewScaleOf(matrix), closeTo(kCanvasMinScale, 0.001));\n    final angle = math.atan2(matrix.entry(1, 0), matrix.entry(0, 0));\n    expect(\n      _angleDelta(angle, math.pi / 4).abs(),\n      lessThan(0.02),\n      reason: '最小倍率へのクランプで同時入力された回転を捨てないこと',\n    );\n  });'''
-          new_rotation = '''  testWidgets('0.01倍へ到達する同一ジェスチャーでも45度回転は保持される', (tester) async {\n    await pumpCanvas(tester);\n    final center = tester.getCenter(find.byType(CanvasArea));\n    // 安全な指間距離の20%ピンチを2回重ねて0.04倍まで縮小する。\n    await pinch(tester, center, from: 200, to: 40);\n    await pinch(tester, center, from: 200, to: 40);\n\n    final anchor = center - const Offset(60, 0);\n    final movingStart = center + const Offset(60, 0);\n    // 120px→30pxで0.25倍。0.04×0.25 = 0.01へ到達する。\n    final atMinScale = anchor + const Offset(30, 0);\n    final rotatedAtMinScale = anchor + Offset.fromDirection(math.pi / 4, 30);\n\n    final fixed = await tester.startGesture(\n      anchor,\n      kind: PointerDeviceKind.touch,\n    );\n    final moving = await tester.startGesture(\n      movingStart,\n      kind: PointerDeviceKind.touch,\n    );\n    await tester.pump();\n    // 最後の同一ジェスチャーで0.04→0.01へ到達し、その2本指を離さず45度回す。\n    await moving.moveTo(atMinScale);\n    await tester.pump();\n    await moving.moveTo(rotatedAtMinScale);\n    await tester.pump();\n    await moving.up();\n    await fixed.up();\n    await tester.pump();\n\n    expect(tester.takeException(), isNull);\n    final matrix = _viewMatrix(tester);\n    expect(canvasViewScaleOf(matrix), closeTo(kCanvasMinScale, 0.001));\n    final angle = math.atan2(matrix.entry(1, 0), matrix.entry(0, 0));\n    expect(\n      _angleDelta(angle, math.pi / 4).abs(),\n      lessThan(0.02),\n      reason: '最小倍率へのクランプで同時入力された回転を捨てないこと',\n    );\n  });'''
-          if old_rotation not in t:
-              raise SystemExit('pinch rotation test anchor not found')
-          t = t.replace(old_rotation, new_rotation, 1)
+          lower = r'''  testWidgets\('下限未満の縮小要求は0\.2倍へ正確にクランプされる', \(tester\) async \{.*?\n  \}\);'''
+          lower_new = '''  testWidgets('下限未満の縮小要求は0.01倍へ正確にクランプされる', (tester) async {
+    final scaleOf = await pumpCanvas(tester);
+    final rect = tester.getRect(find.byType(CanvasArea));
+    // 左右32pxはフレーム送り専用ゾーンなので避ける。縦方向は端まで使い、
+    // 384px四方の中で約480pxの十分な初期指間を確保する。
+    final anchor = Offset(rect.left + 40, rect.top + 4);
+    final movingStart = Offset(rect.right - 40, rect.bottom - 4);
+    final vector = movingStart - anchor;
+    final target = anchor + vector / vector.distance * 4.5;
+    final fixed = await tester.startGesture(anchor, kind: PointerDeviceKind.touch);
+    final moving = await tester.startGesture(movingStart, kind: PointerDeviceKind.touch);
+    await tester.pump();
+    await moving.moveTo(target);
+    await tester.pump();
+    await moving.up();
+    await fixed.up();
+    await tester.pump();
+    expect(tester.takeException(), isNull);
+    expect(
+      scaleOf(),
+      closeTo(kCanvasMinScale, 0.001),
+      reason: '1/100まで縮小でき、それ未満の要求は境界値へクランプされること',
+    );
+  });'''
+          t, n = re.subn(lower, lower_new, t, count=1, flags=re.S)
+          if n != 1:
+              raise SystemExit('lower-bound test replacement failed')
+
+          rotation = r'''  testWidgets\('0\.2倍へ到達する同一ジェスチャーでも45度回転は保持される', \(tester\) async \{.*?\n  \}\);'''
+          rotation_new = '''  testWidgets('0.01倍へ到達する同一ジェスチャーでも45度回転は保持される', (tester) async {
+    await pumpCanvas(tester);
+    final rect = tester.getRect(find.byType(CanvasArea));
+    final anchor = Offset(rect.left + 40, rect.top + 4);
+    final movingStart = Offset(rect.right - 40, rect.bottom - 4);
+    final vector = movingStart - anchor;
+    final direction = vector.direction;
+    final atMinScale = anchor + Offset.fromDirection(direction, 4.5);
+    final rotatedAtMinScale = anchor + Offset.fromDirection(direction + math.pi / 4, 4.5);
+
+    final fixed = await tester.startGesture(anchor, kind: PointerDeviceKind.touch);
+    final moving = await tester.startGesture(movingStart, kind: PointerDeviceKind.touch);
+    await tester.pump();
+    await moving.moveTo(atMinScale);
+    await tester.pump();
+    await moving.moveTo(rotatedAtMinScale);
+    await tester.pump();
+    await moving.up();
+    await fixed.up();
+    await tester.pump();
+
+    expect(tester.takeException(), isNull);
+    final matrix = _viewMatrix(tester);
+    expect(canvasViewScaleOf(matrix), closeTo(kCanvasMinScale, 0.001));
+    final angle = math.atan2(matrix.entry(1, 0), matrix.entry(0, 0));
+    expect(
+      _angleDelta(angle, math.pi / 4).abs(),
+      lessThan(0.02),
+      reason: '最小倍率へのクランプで同時入力された回転を捨てないこと',
+    );
+  });'''
+          t, n = re.subn(rotation, rotation_new, t, count=1, flags=re.S)
+          if n != 1:
+              raise SystemExit('rotation test replacement failed')
           test.write_text(t)
           PY
       - name: Format
