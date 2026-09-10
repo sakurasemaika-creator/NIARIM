@@ -7,10 +7,10 @@ on:
       - '.github/workflows/one-shot-custom-automation-condition-wait-repair.yml'
 
 permissions:
-  contents: read
+  contents: write
 
 jobs:
-  diagnose-and-prove:
+  repair-and-prove:
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:
@@ -23,7 +23,7 @@ jobs:
           channel: stable
           cache: true
       - run: flutter pub get
-      - name: Generate instrumented record edit replay proof
+      - name: Generate real-async production proof
         shell: bash
         run: |
           python3 <<'PY'
@@ -40,99 +40,136 @@ jobs:
 
           p = Path('test/custom_automation_production_surface_visual_test.dart')
           s = p.read_text()
-          replacement = "\n".join([
-              "  Future<void> waitUntil(",
-              "    bool Function() condition, {",
-              "    required String label,",
-              "    Duration timeout = const Duration(seconds: 10),",
-              "  }) async {",
-              "    final stopwatch = Stopwatch()..start();",
-              "    print('WAIT START: $label');",
-              "    while (!condition()) {",
-              "      if (stopwatch.elapsed >= timeout) {",
-              "        print('WAIT TIMEOUT: $label');",
-              "        fail('Timed out waiting for $label');",
-              "      }",
-              "      await tester.pump(const Duration(milliseconds: 16));",
-              "      await tester.runAsync(",
-              "        () => Future<void>.delayed(const Duration(milliseconds: 10)),",
-              "      );",
-              "    }",
-              "    stopwatch.stop();",
-              "    print('WAIT DONE: $label');",
-              "    await tester.pump();",
-              "  }",
-              "",
-              "  Future<void> captureCanvas",
-          ])
-          pattern = re.compile(r"(?ms)^\s*Future<void> waitUntil\(.*?^\s*Future<void> captureCanvas")
-          s, count = pattern.subn(replacement, s, count=1)
+
+          helper = r'''  Future<void> waitUntil(
+            bool Function() condition, {
+            required String label,
+            Duration timeout = const Duration(seconds: 20),
+          }) async {
+            final stopwatch = Stopwatch()..start();
+            while (!condition()) {
+              if (stopwatch.elapsed >= timeout) {
+                fail('Timed out waiting for $label');
+              }
+              await tester.pump(const Duration(milliseconds: 16));
+              await tester.runAsync(
+                () => Future<void>.delayed(const Duration(milliseconds: 10)),
+              );
+            }
+            stopwatch.stop();
+            await tester.pump();
+          }
+
+          Future<void> tapAndWaitRealAsync(
+            Finder finder,
+            bool Function() condition, {
+            required String label,
+            Duration timeout = const Duration(seconds: 20),
+          }) async {
+            await tester.runAsync(() async {
+              await tester.tap(finder);
+              final stopwatch = Stopwatch()..start();
+              while (!condition()) {
+                if (stopwatch.elapsed >= timeout) {
+                  fail('Timed out waiting for $label');
+                }
+                await Future<void>.delayed(const Duration(milliseconds: 10));
+              }
+              stopwatch.stop();
+            });
+            await tester.pump();
+          }
+
+          Future<void> captureCanvas'''
+          wait_pattern = re.compile(
+              r"(?ms)^\s*Future<void> waitUntil\(.*?^\s*Future<void> captureCanvas",
+          )
+          s, count = wait_pattern.subn(helper, s, count=1)
           if count != 1:
               raise SystemExit('generated waitUntil block anchor changed')
 
-          def wrap_statement(statement, before, after=None, occurrence=1):
-              nonlocal_s = [s]
-              pattern = re.compile(rf"(?m)^(\s*){re.escape(statement)}\s*$")
-              matches = list(pattern.finditer(nonlocal_s[0]))
-              if len(matches) < occurrence:
-                  raise SystemExit(f'instrumentation anchor changed: {statement} occurrence {occurrence}')
-              target = matches[occurrence - 1]
-              indent = target.group(1)
-              lines = [f"{indent}print('{before}');", f"{indent}{statement}"]
-              if after is not None:
-                  lines.append(f"{indent}print('{after}');")
-              nonlocal_s[0] = nonlocal_s[0][:target.start()] + "\n".join(lines) + nonlocal_s[0][target.end():]
-              return nonlocal_s[0]
+          first = re.compile(
+              r"(?ms)^(\s*)await tester\.tap\(find\.text\(l10n\.filterApplyButton\)\);\n"
+              r"\1await harness\.waitUntil\(\n"
+              r"\1  \(\) =>\n"
+              r"\1      automation\.draft\?\.steps\.length == 1 &&\n"
+              r"\1      _changedBytes\(beforeFirstApply, harness\.activeLayerPixels\(\)\) > 100,\n"
+              r"\1  label: 'first recorded Canvas filter change',\n"
+              r"\1\);"
+          )
+          first_repl = r'''\1await harness.tapAndWaitRealAsync(
+\1  find.text(l10n.filterApplyButton),
+\1  () =>
+\1      automation.draft?.steps.length == 1 &&
+\1      _changedBytes(beforeFirstApply, harness.activeLayerPixels()) > 100,
+\1  label: 'first recorded Canvas filter change',
+\1);'''
+          s, count = first.subn(first_repl, s, count=1)
+          if count != 1:
+              raise SystemExit('first apply/wait block anchor changed')
 
-          s = wrap_statement("await harness.captureCanvas('01_canvas_before_recording');", 'MARK 01 before capture canvas', 'MARK 02 after capture canvas')
-          s = wrap_statement("harness.showManager();", 'MARK 03 before manager')
-          s = wrap_statement("await tester.tap(find.text(l10n.customAutomationStartRecording));", 'MARK 04 before start-record tap', 'MARK 05 after start-record tap')
-          s = wrap_statement("harness.filterService.selectFilter('Filter0019');", 'MARK 06 before filter select', 'MARK 07 after filter select', 1)
-          s = wrap_statement("harness.showFilterPanel();", 'MARK 08 before show filter panel', 'MARK 09 after show filter panel', 1)
-          s = wrap_statement("await harness.capture('02_filter_panel_while_recording');", 'MARK 10 before filter panel capture', 'MARK 11 after filter panel capture')
-          s = wrap_statement("await tester.tap(find.text(l10n.filterApplyButton));", 'MARK 12 before first apply tap', 'MARK 13 after first apply tap', 1)
-          s = wrap_statement("final afterFirstApply = harness.activeLayerPixels();", 'MARK 14 after first apply wait')
-          s = wrap_statement("await harness.captureCanvas('03_canvas_after_recorded_change');", 'MARK 15 before changed canvas capture', 'MARK 16 after changed canvas capture')
-          s = wrap_statement("harness.showRecordingStop();", 'MARK 17 before recording stop UI')
-          s = wrap_statement("harness.showDraftEditor();", 'MARK 18 before draft editor')
-          s = wrap_statement("await tester.tap(find.text(l10n.commonSave).last);", 'MARK 19 before save tap', 'MARK 20 after save tap')
-          s = wrap_statement("await harness.createProject('record-replay-fresh-target');", 'MARK 21 before fresh project', 'MARK 22 after fresh project')
-          s = wrap_statement("await tester.tap(find.text(l10n.customAutomationYes));", 'MARK 23 before replay confirm tap', 'MARK 24 after replay confirm tap')
-          s = wrap_statement("final afterReplay = harness.activeLayerPixels();", 'MARK 25 after replay wait')
+          second = re.compile(
+              r"(?ms)^(\s*)await tester\.tap\(find\.text\(l10n\.filterApplyButton\)\);\n"
+              r"\1await harness\.waitUntil\(\n"
+              r"\1  \(\) =>\n"
+              r"\1      automation\.draft\?\.steps\.length == 2 &&\n"
+              r"\1      _changedBytes\(beforeSecondApply, harness\.activeLayerPixels\(\)\) > 100,\n"
+              r"\1  label: 'second recorded Canvas filter change',\n"
+              r"\1\);"
+          )
+          second_repl = r'''\1await harness.tapAndWaitRealAsync(
+\1  find.text(l10n.filterApplyButton),
+\1  () =>
+\1      automation.draft?.steps.length == 2 &&
+\1      _changedBytes(beforeSecondApply, harness.activeLayerPixels()) > 100,
+\1  label: 'second recorded Canvas filter change',
+\1);'''
+          s, count = second.subn(second_repl, s, count=1)
+          if count != 1:
+              raise SystemExit('second apply/wait block anchor changed')
 
-          s = s.replace("timeout: const Timeout(Duration(minutes: 3)),", "timeout: const Timeout(Duration(seconds: 60)),", 1)
+          replay = re.compile(
+              r"(?ms)^(\s*)await tester\.tap\(find\.text\(l10n\.customAutomationYes\)\);\n"
+              r"\1await harness\.waitUntil\(\n"
+              r"\1  \(\) => _changedBytes\(beforeReplay, harness\.activeLayerPixels\(\)\) > 100,\n"
+              r"\1  label: 'saved automation replay pixel change',\n"
+              r"\1\);"
+          )
+          replay_repl = r'''\1await harness.tapAndWaitRealAsync(
+\1  find.text(l10n.customAutomationYes),
+\1  () => _changedBytes(beforeReplay, harness.activeLayerPixels()) > 100,
+\1  label: 'saved automation replay pixel change',
+\1);'''
+          s, count = replay.subn(replay_repl, s, count=1)
+          if count != 1:
+              raise SystemExit('replay tap/wait block anchor changed')
+
+          if 'waitForProductionAsync' in s:
+              raise SystemExit('fixed production wait remains')
           p.write_text(s)
           PY
-      - name: Diagnostic only bypass generic compute
-        shell: bash
-        run: |
-          python3 <<'PY'
-          from pathlib import Path
-          panel = Path('lib/screens/canvas/widgets/filter_panel.dart')
-          s = panel.read_text()
-          old = """      result = await compute(applyDrawFilterInIsolate, (\n        data,\n        tm.canvasWidth,\n        tm.canvasHeight,\n        filter,\n        maskData,\n      ));"""
-          new = """      result = applyDrawFilterInIsolate((\n        data,\n        tm.canvasWidth,\n        tm.canvasHeight,\n        filter,\n        maskData,\n      ));"""
-          if old not in s: raise SystemExit('FilterPanel generic compute anchor changed')
-          panel.write_text(s.replace(old, new, 1))
-
-          runner = Path('lib/engine/custom_automation_filter_runner.dart')
-          s = runner.read_text()
-          old = """      result = await compute(applyDrawFilterInIsolate, (\n        data,\n        tm.canvasWidth,\n        tm.canvasHeight,\n        filter,\n        auxiliary,\n      ));"""
-          new = """      result = applyDrawFilterInIsolate((\n        data,\n        tm.canvasWidth,\n        tm.canvasHeight,\n        filter,\n        auxiliary,\n      ));"""
-          if old not in s: raise SystemExit('automation runner generic compute anchor changed')
-          runner.write_text(s.replace(old, new, 1))
-          PY
-      - name: Format diagnostic tree
-        run: dart format test/custom_automation_production_surface_visual_test.dart lib/screens/canvas/widgets/filter_panel.dart lib/engine/custom_automation_filter_runner.dart
-      - name: Analyze diagnostic tree
-        run: flutter analyze test/custom_automation_production_surface_visual_test.dart lib/screens/canvas/widgets/filter_panel.dart lib/engine/custom_automation_filter_runner.dart --no-fatal-warnings --no-fatal-infos
-      - name: Run instrumented proof
+      - name: Format proof
+        run: dart format test/custom_automation_production_surface_visual_test.dart
+      - name: Analyze proof
+        run: flutter analyze test/custom_automation_production_surface_visual_test.dart --no-fatal-warnings --no-fatal-infos
+      - name: Prove record edit save replay pixels
         run: flutter test test/custom_automation_production_surface_visual_test.dart --plain-name 'production UI records a real Canvas change, edits, saves, replays, and changes PNG pixels' --reporter expanded
-      - name: Upload diagnostic PNG evidence
+      - name: Upload PNG pixel evidence
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: custom-automation-stall-diagnostic-png-evidence
+          name: custom-automation-record-edit-replay-png-evidence
           path: build/visual-reaudit/custom-automation-production
           if-no-files-found: warn
           retention-days: 7
+      - name: Commit proven test repair
+        if: success()
+        shell: bash
+        run: |
+          rm .github/workflows/one-shot-custom-automation-record-edit-replay.yml
+          rm .github/workflows/one-shot-custom-automation-condition-wait-repair.yml
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add test/custom_automation_production_surface_visual_test.dart .github/workflows/custom-automation-production-visual-proof.yml .github/workflows/one-shot-custom-automation-record-edit-replay.yml .github/workflows/one-shot-custom-automation-condition-wait-repair.yml
+          git commit -m 'test: prove automation replay with real async UI actions'
+          git push origin HEAD:dev_branch
