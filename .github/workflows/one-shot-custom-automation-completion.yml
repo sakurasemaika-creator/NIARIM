@@ -1,4 +1,5 @@
 name: One-shot Custom Automation Completion
+# Step 2 trigger marker: observable-completion proof
 
 on:
   push:
