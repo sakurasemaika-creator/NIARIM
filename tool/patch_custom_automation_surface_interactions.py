@@ -22,15 +22,22 @@ s = replace_between(
     s,
     '      await tester.tap(find.text(l10n.customAutomationAdd));',
     '      expect(automation.isRecording, isTrue);',
-    """      automation.beginDraft(
+    """      // Unmount the watching manager before beginDraft() notifies listeners.
+      // This avoids coupling the proof to a route/widget teardown frame while
+      // preserving the production service transition itself.
+      harness.showBlank();
+      await tester.pump();
+      automation.beginDraft(
         name: 'visual-audit-automation',
         surface: CustomAutomationSurface.canvas,
         recordingStartFrame: harness.frameIndex,
       );
-      harness.showBlank();
+      expect(automation.isRecording, isTrue);
+      harness.showRecordingStop();
       await tester.pump();
-      expect(automation.isRecording, isTrue);""",
-    already_marker="name: 'visual-audit-automation'",
+      expect(find.byType(CustomAutomationRecordingStopButton), findsOneWidget);
+      await harness.capture('02_recording_started');""",
+    already_marker="await harness.capture('02_recording_started');",
     label='record-start',
 )
 
@@ -64,7 +71,7 @@ s = replace_between(
       harness.showManager();
       await tester.pump();
       expect(find.text('visual-audit-automation'), findsOneWidget);
-      await harness.capture('06_manager_saved_item');
+      await harness.capture('07_manager_saved_item');
       harness.showBlank();
       await tester.pump();
       await harness.execute(
