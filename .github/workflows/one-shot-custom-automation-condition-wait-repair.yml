@@ -28,6 +28,7 @@ jobs:
         run: |
           python3 <<'PY'
           from pathlib import Path
+          import re
           import textwrap
 
           source = Path('.github/workflows/one-shot-custom-automation-record-edit-replay.yml').read_text()
@@ -35,36 +36,43 @@ jobs:
           start = source.index(marker) + len(marker)
           end = source.index("\n          PY\n", start)
           script = textwrap.dedent(source[start:end])
-          old = (
-              "final deadline = DateTime.now().add(timeout);\n"
-              "    while (!condition()) {\n"
-              "      if (DateTime.now().isAfter(deadline)) {\n"
-              "        fail('Timed out waiting for $label');\n"
-              "      }\n"
-              "      await tester.pump(const Duration(milliseconds: 16));\n"
-              "      await tester.runAsync(() => Future<void>.delayed(Duration.zero));\n"
-              "    }\n"
-              "    await tester.pump();"
-          )
-          new = (
-              "await tester.runAsync(() async {\n"
-              "      final stopwatch = Stopwatch()..start();\n"
-              "      while (!condition()) {\n"
-              "        if (stopwatch.elapsed >= timeout) {\n"
-              "          fail('Timed out waiting for $label');\n"
-              "        }\n"
-              "        await Future<void>.delayed(const Duration(milliseconds: 10));\n"
-              "      }\n"
-              "      stopwatch.stop();\n"
-              "    });\n"
-              "    await tester.pump();"
-          )
-          if old not in script:
-              raise SystemExit('source wait helper anchor changed')
-          script = script.replace(old, new, 1)
-          if 'DateTime.now().add(timeout)' in script or 'delayed(Duration.zero)' in script:
-              raise SystemExit('condition wait rewrite did not fully apply')
           exec(compile(script, 'record-edit-replay-rewrite', 'exec'))
+
+          p = Path('test/custom_automation_production_surface_visual_test.dart')
+          s = p.read_text()
+          replacement = "\n".join([
+              "  Future<void> waitUntil(",
+              "    bool Function() condition, {",
+              "    required String label,",
+              "    Duration timeout = const Duration(seconds: 20),",
+              "  }) async {",
+              "    await tester.runAsync(() async {",
+              "      final stopwatch = Stopwatch()..start();",
+              "      while (!condition()) {",
+              "        if (stopwatch.elapsed >= timeout) {",
+              "          fail('Timed out waiting for $label');",
+              "        }",
+              "        await Future<void>.delayed(const Duration(milliseconds: 10));",
+              "      }",
+              "      stopwatch.stop();",
+              "    });",
+              "    await tester.pump();",
+              "  }",
+              "",
+              "  Future<void> captureCanvas",
+          ])
+          pattern = re.compile(
+              r"  Future<void> waitUntil\(.*?\n  \}\n\n  Future<void> captureCanvas",
+              re.S,
+          )
+          s, count = pattern.subn(replacement, s, count=1)
+          if count != 1:
+              raise SystemExit('generated waitUntil block anchor changed')
+          if 'waitForProductionAsync' in s:
+              raise SystemExit('fixed production wait remains')
+          if 'DateTime.now().add(timeout)' in s or 'delayed(Duration.zero)' in s:
+              raise SystemExit('old semantic wait implementation remains')
+          p.write_text(s)
           PY
       - name: Format proof
         run: dart format test/custom_automation_production_surface_visual_test.dart
