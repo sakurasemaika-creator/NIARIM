@@ -26,6 +26,88 @@ jobs:
       - run: flutter pub get
       - name: Apply targeted repairs
         run: python3 tool/one_shot_fix_pinch_and_automation_proof.py
+      - name: Correct 1 percent gesture coverage
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          import re
+          p = Path('test/canvas_pinch_gesture_test.dart')
+          s = p.read_text()
+          min_block = r'''  testWidgets('下限未満の縮小要求は0.01倍へ正確にクランプされる', (tester) async {
+            final scaleOf = await pumpCanvas(tester);
+            final center = tester.getCenter(find.byType(CanvasArea));
+            final fixedStart = center - const Offset(180, 180);
+            final movingStart = center + const Offset(180, 180);
+            final nearFixed = fixedStart + const Offset(3, 3);
+
+            final fixed = await tester.startGesture(
+              fixedStart,
+              kind: PointerDeviceKind.touch,
+            );
+            final moving = await tester.startGesture(
+              movingStart,
+              kind: PointerDeviceKind.touch,
+            );
+            await tester.pump();
+            // 約509pxの対角指間を4.24pxまで縮める。4px未満の不安定域へ
+            // 入らずに1%未満を要求できるため、0.01境界そのものを検証できる。
+            await moving.moveTo(nearFixed);
+            await tester.pump();
+            await moving.up();
+            await fixed.up();
+            await tester.pump();
+
+            expect(tester.takeException(), isNull);
+            expect(
+              scaleOf(),
+              closeTo(kCanvasMinScale, 0.001),
+              reason: '1%未満を要求しても特異行列にせず、1/100の境界値へ到達すること',
+            );
+          });'''
+          rot_block = r'''  testWidgets('0.01倍へ到達する同一ジェスチャーでも45度回転は保持される', (tester) async {
+            await pumpCanvas(tester);
+            final center = tester.getCenter(find.byType(CanvasArea));
+            final fixedStart = center - const Offset(180, 180);
+            final movingStart = center + const Offset(180, 180);
+            // 初期ベクトルは45度。最終ベクトルを90度・長さ4.2pxにすることで、
+            // 同一更新で1%境界へのクランプと+45度回転を同時に要求する。
+            final rotatedAtMinScale = fixedStart + const Offset(0, 4.2);
+
+            final fixed = await tester.startGesture(
+              fixedStart,
+              kind: PointerDeviceKind.touch,
+            );
+            final moving = await tester.startGesture(
+              movingStart,
+              kind: PointerDeviceKind.touch,
+            );
+            await tester.pump();
+            await moving.moveTo(rotatedAtMinScale);
+            await tester.pump();
+            await moving.up();
+            await fixed.up();
+            await tester.pump();
+
+            expect(tester.takeException(), isNull);
+            final matrix = _viewMatrix(tester);
+            expect(canvasViewScaleOf(matrix), closeTo(kCanvasMinScale, 0.001));
+            final angle = math.atan2(matrix.entry(1, 0), matrix.entry(0, 0));
+            expect(
+              _angleDelta(angle, math.pi / 4).abs(),
+              lessThan(0.02),
+              reason: '最小倍率へのクランプで同時入力された回転を捨てないこと',
+            );
+          });'''
+          s, n1 = re.subn(
+              r"  testWidgets\('下限未満の縮小要求は0\.01倍へ正確にクランプされる'.*?\n  \}\);",
+              min_block, s, count=1, flags=re.S)
+          s, n2 = re.subn(
+              r"  testWidgets\('0\.01倍へ到達する同一ジェスチャーでも45度回転は保持される'.*?\n  \}\);",
+              rot_block, s, count=1, flags=re.S)
+          if (n1, n2) != (1, 1):
+              raise SystemExit(f'gesture test anchors changed: {(n1, n2)}')
+          p.write_text(s)
+          PY
       - name: Format changed Dart test
         run: dart format lib/screens/canvas/widgets/canvas_area.dart test/canvas_pinch_gesture_test.dart
       - name: Verify pinch behavior
@@ -40,5 +122,3 @@ jobs:
           git add lib/screens/canvas/widgets/canvas_area.dart test/canvas_pinch_gesture_test.dart tool/rewrite_custom_automation_visual_proof.py
           git commit -m 'fix: expand pinch range and await automation proof completion'
           git push origin HEAD:dev_branch
-
-# rerun after correcting the one-shot patcher's quoting
