@@ -78,19 +78,17 @@ s = replace_between(
     label='save-replay',
 )
 
-preset_capture = "        await harness.capture('preset_${entry.$2}_01_manager');"
-preset_wait = '        await harness.waitForProductionAsync(extraMilliseconds: 2200);'
 if 'final preset = harness.automationService.items' not in s:
-    start = s.find(preset_capture)
-    if start < 0:
-        raise SystemExit('preset execution start anchor changed')
-    start += len(preset_capture)
-    end = s.find(preset_wait, start)
-    if end < 0:
-        raise SystemExit('preset execution end anchor changed')
-    end += len(preset_wait)
-    replacement = """
-        final preset = harness.automationService.items
+    preset_pattern = re.compile(
+        r"(?P<capture>\s*await harness\.capture\('preset_\$\{entry\.\$2\}_01_manager'\);\n)"
+        r"(?P<body>.*?)"
+        r"(?P<wait>\s*await harness\.waitForProductionAsync\(extraMilliseconds: 2200\);)",
+        re.S,
+    )
+    match = preset_pattern.search(s)
+    if match is None:
+        raise SystemExit('preset execution anchors changed')
+    replacement = match.group('capture') + """        final preset = harness.automationService.items
             .where((item) => item.name == entry.$1)
             .single;
         harness.showBlank();
@@ -101,7 +99,7 @@ if 'final preset = harness.automationService.items' not in s:
           null,
         );
         await harness.waitForProductionAsync(extraMilliseconds: 2200);"""
-    s = s[:start] + replacement + s[end:]
+    s = s[:match.start()] + replacement + s[match.end():]
 
 if '  void showBlank() {' not in s:
     anchor = '  void showManager() {'
