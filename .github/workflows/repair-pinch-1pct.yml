@@ -1,0 +1,62 @@
+name: Repair Pinch 1 Percent
+
+on:
+  push:
+    branches: [dev_branch]
+    paths:
+      - '.github/workflows/repair-pinch-1pct.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  repair:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: dev_branch
+          fetch-depth: 0
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+      - name: Patch production minimum and regression test
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+
+          canvas = Path('lib/screens/canvas/widgets/canvas_area.dart')
+          s = canvas.read_text()
+          old = '''/// キャンバス表示の縮小下限。等倍表示時の1/5まで縮小できる。\nconst double kCanvasMinScale = 0.2;'''
+          new = '''/// キャンバス表示の縮小下限。等倍表示時の1/100まで縮小できる。\n/// 0にはせず、逆行列・座標変換が特異にならない最小の正倍率を維持する。\nconst double kCanvasMinScale = 0.01;'''
+          if old not in s:
+              raise SystemExit('canvas min-scale anchor not found')
+          canvas.write_text(s.replace(old, new, 1))
+
+          test = Path('test/canvas_pinch_gesture_test.dart')
+          t = test.read_text()
+          t = t.replace("testWidgets('下限未満の縮小要求は0.2倍へ正確にクランプされる', (tester) async {", "testWidgets('下限未満の縮小要求は0.01倍へ正確にクランプされる', (tester) async {")
+          old_body = '''    final scaleOf = await pumpCanvas(tester);\n    final center = tester.getCenter(find.byType(CanvasArea));\n    // CanvasAreaは指間4px未満を角度計算の不安定域として無視する。\n    // その有効域の端（4px）でも要求倍率は4/200=0.02で十分に下限未満。\n    await pinch(tester, center, from: 200, to: 4);\n    expect(tester.takeException(), isNull);\n    expect(\n      scaleOf(),\n      closeTo(kCanvasMinScale, 0.001),\n      reason: '下限未満を要求しても1/5より小さくならず、境界値へ到達すること',\n    );'''
+          new_body = '''    final scaleOf = await pumpCanvas(tester);\n    final rect = tester.getRect(find.byType(CanvasArea));\n    final center = rect.center;\n    // 実CanvasAreaの内側で対角線いっぱいに2本指を置く。固定画面座標に\n    // 依存させないことで、テスト環境の配置が変わってもhit testを外さない。\n    final a = await tester.startGesture(\n      rect.topLeft + const Offset(8, 8),\n      kind: PointerDeviceKind.touch,\n    );\n    final b = await tester.startGesture(\n      rect.bottomRight - const Offset(8, 8),\n      kind: PointerDeviceKind.touch,\n    );\n    await tester.pump();\n    // 指間4px未満は不安定域として無視されるため、約5.1pxを維持したまま\n    // 520px超から一気に縮め、要求倍率を1%未満にして下限クランプを踏む。\n    await a.moveTo(center - const Offset(1.8, 1.8));\n    await tester.pump();\n    await b.moveTo(center + const Offset(1.8, 1.8));\n    await tester.pump();\n    await a.up();\n    await b.up();\n    await tester.pump();\n    expect(tester.takeException(), isNull);\n    expect(\n      scaleOf(),\n      closeTo(kCanvasMinScale, 0.001),\n      reason: '下限未満を要求しても1/100より小さくならず、境界値へ到達すること',\n    );'''
+          if old_body not in t:
+              raise SystemExit('pinch lower-bound test anchor not found')
+          t = t.replace(old_body, new_body, 1)
+          t = t.replace("testWidgets('0.2倍へ到達する同一ジェスチャーでも45度回転は保持される',", "testWidgets('0.01倍へ到達する同一ジェスチャーでも45度回転は保持される',")
+          test.write_text(t)
+          PY
+      - name: Format
+        run: dart format lib/screens/canvas/widgets/canvas_area.dart test/canvas_pinch_gesture_test.dart
+      - name: Targeted pinch tests
+        run: flutter test test/canvas_pinch_gesture_test.dart
+      - name: Commit verified repair and remove one-shot
+        shell: bash
+        run: |
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          git rm .github/workflows/repair-pinch-1pct.yml
+          git add lib/screens/canvas/widgets/canvas_area.dart test/canvas_pinch_gesture_test.dart
+          git commit -m 'fix: allow canvas pinch zoom out to one percent'
+          git push origin HEAD:dev_branch
