@@ -1,5 +1,5 @@
 name: One-shot Custom Automation Completion
-# Retrigger after visual-fixture bounds repair.
+# Retrigger after removing non-settling pumpAndSettle.
 
 on:
   push:
@@ -36,7 +36,7 @@ jobs:
           replacements = [
             (
               "      await harness.waitForProductionAsync();\n      expect(find.byType(FilterPanel), findsOneWidget);",
-              "      await tester.pumpAndSettle();\n      expect(find.byType(FilterPanel), findsOneWidget);",
+              "      expect(find.byType(FilterPanel), findsOneWidget);",
             ),
             (
               "      await tester.tap(find.text(l10n.filterApplyButton));\n      await harness.waitForProductionAsync();\n      final afterApply = harness.activeLayerPixels();",
