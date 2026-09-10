@@ -348,10 +348,10 @@ class _ProductionHarness {
     final key = projectService.tileKeyFor(project.id, scene.id, 0, layer.id);
     final tile = tm.getOrCreateTile(key, 0, 0);
     tile.fillRange(0, tile.length, 0);
-    for (var y = 36; y < 284; y++) {
-      for (var x = 36; x < 284; x++) {
+    for (var y = 36; y < 244; y++) {
+      for (var x = 36; x < 244; x++) {
         final i = (y * TileManager.tileSize + x) * 4;
-        var shade = 20 + ((x - 36) * 225 ~/ 247);
+        var shade = 20 + ((x - 36) * 225 ~/ 207);
         if ((x > 92 && x < 118) || (y > 148 && y < 174)) {
           shade = 18;
         }
