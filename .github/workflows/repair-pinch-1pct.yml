@@ -1,10 +1,15 @@
 name: Repair Pinch 1 Percent
+
 on:
   push:
-    branches: [dev_branch]
-    paths: [.github/workflows/repair-pinch-1pct.yml]
+    branches:
+      - dev_branch
+    paths:
+      - .github/workflows/repair-pinch-1pct.yml
+
 permissions:
   contents: write
+
 jobs:
   repair:
     runs-on: ubuntu-latest
@@ -18,22 +23,36 @@ jobs:
         with:
           channel: stable
           cache: true
-      - name: Patch production minimum
-        run: python3 -c "from pathlib import Path; p=Path('lib/screens/canvas/widgets/canvas_area.dart'); s=p.read_text(); old='/// キャンバス表示の縮小下限。等倍表示時の1/5まで縮小できる。\\nconst double kCanvasMinScale = 0.2;'; new='/// キャンバス表示の縮小下限。等倍表示時の1/100まで縮小できる。\\n/// 0にはせず、逆行列・座標変換が特異にならない最小の正倍率を維持する。\\nconst double kCanvasMinScale = 0.01;'; assert old in s; p.write_text(s.replace(old,new,1))"
-      - name: Replace pinch regression test
-        run: echo 'aW1wb3J0ICdkYXJ0Om1hdGgnIGFzIG1hdGg7CgppbXBvcnQgJ3BhY2thZ2U6Zmx1dHRlci9nZXN0dXJlcy5kYXJ0JzsKaW1wb3J0ICdwYWNrYWdlOmZsdXR0ZXIvbWF0ZXJpYWwuZGFydCc7CmltcG9ydCAncGFja2FnZTpmbHV0dGVyX3Rlc3QvZmx1dHRlcl90ZXN0LmRhcnQnOwppbXBvcnQgJ3BhY2thZ2U6bmlhcmltL2FwcF9ib290c3RyYXAuZGFydCc7CmltcG9ydCAncGFja2FnZTpuaWFyaW0vZW5naW5lL3VuZG9fbWFuYWdlci5kYXJ0JyBhcyBhcHBfdW5kbzsKaW1wb3J0ICdwYWNrYWdlOm5pYXJpbS9zY3JlZW5zL2NhbnZhcy9jYW52YXNfc2NyZWVuLmRhcnQnIHNob3cgRHJhd2luZ1Rvb2w7CmltcG9ydCAncGFja2FnZTpuaWFyaW0vc2NyZWVucy9jYW52YXMvd2lkZ2V0cy9jYW52YXNfYXJlYS5kYXJ0JzsKaW1wb3J0ICdwYWNrYWdlOm5pYXJpbS9zZXJ2aWNlcy9wcm9qZWN0X3NlcnZpY2UuZGFydCc7CmltcG9ydCAncGFja2FnZTpwcm92aWRlci9wcm92aWRlci5kYXJ0JzsKaW1wb3J0ICdwYWNrYWdlOnNoYXJlZF9wcmVmZXJlbmNlcy9zaGFyZWRfcHJlZmVyZW5jZXMuZGFydCc7CgovLy8g44Kt44Oj44Oz44OQ44K544GuMuacrOaMh+ODl+ODs+ODgeOCuuODvOODo+ODu+Wbnui7ouOBruaIquW+i+ODhuOCueODiO+8iFRhc2sjMTI444CCCi8vLwo=' | base64 -d > /tmp/pinch_prefix && python3 - <<'PY'
+      - name: Patch production and pinch regression
+        shell: bash
+        run: |
+          python3 - <<'PY'
           from pathlib import Path
-          import base64
-          data = '''${PINCH_TEST_B64}'''
-          Path('test/canvas_pinch_gesture_test.dart').write_bytes(base64.b64decode(data))
+          canvas = Path('lib/screens/canvas/widgets/canvas_area.dart')
+          s = canvas.read_text()
+          s = s.replace('/// キャンバス表示の縮小下限。等倍表示時の1/5まで縮小できる。\nconst double kCanvasMinScale = 0.2;', '/// キャンバス表示の縮小下限。等倍表示時の1/100まで縮小できる。\n/// 0にはせず、逆行列・座標変換が特異にならない最小の正倍率を維持する。\nconst double kCanvasMinScale = 0.01;', 1)
+          if 'const double kCanvasMinScale = 0.01;' not in s:
+              raise SystemExit('minimum scale patch failed')
+          canvas.write_text(s)
+          test = Path('test/canvas_pinch_gesture_test.dart')
+          t = test.read_text()
+          t = t.replace('width: 384,\n                height: 384,', 'width: 560,\n                height: 560,', 1)
+          t = t.replace("testWidgets('下限未満の縮小要求は0.2倍へ正確にクランプされる'", "testWidgets('下限未満の縮小要求は0.01倍へ正確にクランプされる'", 1)
+          t = t.replace('// CanvasAreaは指間4px未満を角度計算の不安定域として無視する。\n    // その有効域の端（4px）でも要求倍率は4/200=0.02で十分に下限未満。\n    await pinch(tester, center, from: 200, to: 4);', '// 左右32pxのフレーム送り領域を避けたまま480pxの指間を確保し、\n    // 安定域内の4.5pxまで縮めて1%未満を要求する。\n    await pinch(tester, center, from: 480, to: 4.5);', 1)
+          t = t.replace("reason: '下限未満を要求しても1/5より小さくならず、境界値へ到達すること'", "reason: '下限未満を要求しても1/100より小さくならず、境界値へ到達すること'", 1)
+          t = t.replace("testWidgets('0.2倍へ到達する同一ジェスチャーでも45度回転は保持される'", "testWidgets('0.01倍へ到達する同一ジェスチャーでも45度回転は保持される'", 1)
+          t = t.replace("final anchor = center - const Offset(60, 0);\n    final movingStart = center + const Offset(60, 0);\n    final atMinScale = anchor + const Offset(24, 0);\n    final rotatedAtMinScale = anchor + Offset.fromDirection(math.pi / 4, 24);", "final anchor = center - const Offset(240, 0);\n    final movingStart = center + const Offset(240, 0);\n    final atMinScale = anchor + const Offset(4.5, 0);\n    final rotatedAtMinScale = anchor + Offset.fromDirection(math.pi / 4, 4.5);", 1)
+          required = ['width: 560', 'from: 480, to: 4.5', 'const Offset(240, 0)', 'const Offset(4.5, 0)']
+          if not all(x in t for x in required):
+              raise SystemExit('pinch regression patch failed')
+          test.write_text(t)
           PY
-        env:
-          PINCH_TEST_B64: "REPLACE_ME"
-      - name: Format and test
+      - name: Format and targeted test
         run: |
           dart format lib/screens/canvas/widgets/canvas_area.dart test/canvas_pinch_gesture_test.dart
           flutter test test/canvas_pinch_gesture_test.dart
       - name: Commit verified repair
+        shell: bash
         run: |
           git config user.name github-actions[bot]
           git config user.email 41898282+github-actions[bot]@users.noreply.github.com
