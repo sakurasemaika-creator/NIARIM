@@ -1,5 +1,5 @@
 name: One-shot Custom Automation Completion
-# Retrigger with deterministic manager-route presentation in the widget proof.
+# Retrigger with test-host overlay presentation around production widgets.
 
 on:
   push:
@@ -25,7 +25,7 @@ jobs:
           channel: stable
           cache: true
       - run: flutter pub get
-      - name: Make production proof completion-driven
+      - name: Make production proof completion-driven and route-independent
         run: |
           python3 - <<'PY'
           from pathlib import Path
@@ -50,62 +50,192 @@ jobs:
               "        await tester.tap(find.text(harness.l10n.customAutomationYes));\n        await harness.waitForProductionAsync(extraMilliseconds: 2200);\n\n        if (!createsLayer) {",
               "        await tester.tap(find.text(harness.l10n.customAutomationYes));\n        await harness.waitForAutomationResult(\n          beforePixels: beforePixels,\n          beforeLayers: beforeLayers,\n          createsLayer: createsLayer,\n          label: name,\n        );\n\n        if (!createsLayer) {",
             ),
+            (
+              "    final providers = await tester.runAsync(buildAppProviders);\n    ProjectService? ps;\n    StateSetter? hostSetter;\n    String? activeProjectId;\n    final rootKey = GlobalKey();",
+              "    final providers = await tester.runAsync(buildAppProviders);\n    ProjectService? ps;\n    StateSetter? hostSetter;\n    String? activeProjectId;\n    Widget? testOverlay;\n    final rootKey = GlobalKey();",
+            ),
+            (
+              "                  if (activeProjectId == null) return const SizedBox.expand();\n                  return CanvasScreen(\n                    key: ValueKey(activeProjectId),\n                    projectId: activeProjectId!,\n                  );",
+              "                  if (activeProjectId == null) return const SizedBox.expand();\n                  return Stack(\n                    fit: StackFit.expand,\n                    children: [\n                      CanvasScreen(\n                        key: ValueKey(activeProjectId),\n                        projectId: activeProjectId!,\n                      ),\n                      if (testOverlay != null) testOverlay!,\n                    ],\n                  );",
+            ),
+            (
+              "    harness._setProject = (id) {\n      activeProjectId = id;\n      harness._projectId = id;\n      hostSetter!(() {});\n    };\n    return harness;",
+              "    harness._setProject = (id) {\n      activeProjectId = id;\n      harness._projectId = id;\n      hostSetter!(() {});\n    };\n    harness._setOverlay = (child) {\n      testOverlay = child;\n      hostSetter!(() {});\n    };\n    return harness;",
+            ),
           ]
           for old, new in replacements:
             if old not in s:
-              raise SystemExit('custom automation wait anchor changed:\n' + old)
+              raise SystemExit('custom automation proof anchor changed:\n' + old)
             s = s.replace(old, new, 1)
 
-          old_manager = (
-            "  void showManager() {\n"
-            "    final context = canvasContext;\n"
-            "    unawaited(\n"
-            "      showModalBottomSheet<void>(\n"
-            "        context: context,\n"
-            "        isScrollControlled: true,\n"
-            "        builder: (_) => CustomAutomationManagerSheet(\n"
-            "          surface: CustomAutomationSurface.canvas,\n"
-            "          recordingStartFrame: canvasWidget.currentFrame,\n"
-            "          frameCount: projectService.frameCount(\n"
-            "            projectId,\n"
-            "            canvasWidget.sceneId,\n"
-            "          ),\n"
-            "          onRecordingStarted: () {},\n"
-            "          onExecute: _execute,\n"
-            "        ),\n"
-            "      ),\n"
-            "    );\n"
-            "  }\n"
-          )
-          new_manager = (
-            "  void showManager() {\n"
-            "    final context = canvasContext;\n"
-            "    final startFrame = canvasWidget.currentFrame;\n"
-            "    final count = projectService.frameCount(projectId, canvasWidget.sceneId);\n"
-            "    unawaited(\n"
-            "      showGeneralDialog<void>(\n"
-            "        context: context,\n"
-            "        barrierDismissible: false,\n"
-            "        transitionDuration: Duration.zero,\n"
-            "        pageBuilder: (_, __, ___) => Material(\n"
-            "          type: MaterialType.transparency,\n"
-            "          child: Align(\n"
-            "            alignment: Alignment.bottomCenter,\n"
-            "            child: CustomAutomationManagerSheet(\n"
-            "              surface: CustomAutomationSurface.canvas,\n"
-            "              recordingStartFrame: startFrame,\n"
-            "              frameCount: count,\n"
-            "              onRecordingStarted: () {},\n"
-            "              onExecute: _execute,\n"
-            "            ),\n"
-            "          ),\n"
-            "        ),\n"
-            "      ),\n"
-            "    );\n"
-            "  }\n"
-          )
+          old_manager = '''  void showManager() {
+    final context = canvasContext;
+    unawaited(
+      showModalBottomSheet<void>(
+        context: context,
+        isScrollControlled: true,
+        builder: (_) => CustomAutomationManagerSheet(
+          surface: CustomAutomationSurface.canvas,
+          recordingStartFrame: canvasWidget.currentFrame,
+          frameCount: projectService.frameCount(
+            projectId,
+            canvasWidget.sceneId,
+          ),
+          onRecordingStarted: () {},
+          onExecute: _execute,
+        ),
+      ),
+    );
+  }
+
+  void showFilterPanel() {
+    final context = canvasContext;
+    final canvas = canvasWidget;
+    unawaited(
+      showModalBottomSheet<void>(
+        context: context,
+        isScrollControlled: true,
+        builder: (sheetContext) => Center(
+          child: FilterPanel(
+            projectId: projectId,
+            sceneId: canvas.sceneId,
+            layerId: canvas.currentLayerId,
+            frameIndex: canvas.currentFrame,
+            onClose: () => Navigator.pop(sheetContext),
+          ),
+        ),
+      ),
+    );
+  }
+
+  void showRecordingStop() {
+    final context = canvasContext;
+    final service = automationService;
+    unawaited(
+      showModalBottomSheet<void>(
+        context: context,
+        builder: (sheetContext) => CustomAutomationRecordingStopButton(
+          onStop: () {
+            service.stopRecording();
+            Navigator.pop(sheetContext);
+          },
+        ),
+      ),
+    );
+  }
+
+  void showDraftEditor() {
+    final context = canvasContext;
+    unawaited(
+      showModalBottomSheet<void>(
+        context: context,
+        isScrollControlled: true,
+        builder: (_) => CustomAutomationDraftEditorSheet(
+          surface: CustomAutomationSurface.canvas,
+          onResumeRecording: () {},
+          onSaved: () {},
+        ),
+      ),
+    );
+  }
+'''
+          new_manager = '''  late void Function(Widget? child) _setOverlay;
+
+  void _hideOverlay() => _setOverlay(null);
+
+  Widget _localNavigator(Widget page) => Navigator(
+    onGenerateRoute: (_) => PageRouteBuilder<void>(
+      pageBuilder: (_, __, ___) => page,
+      transitionDuration: Duration.zero,
+      reverseTransitionDuration: Duration.zero,
+    ),
+  );
+
+  Widget _sheetPage(Widget child) => Material(
+    color: Colors.black26,
+    child: Align(
+      alignment: Alignment.bottomCenter,
+      child: Material(child: child),
+    ),
+  );
+
+  void showManager() {
+    final startFrame = canvasWidget.currentFrame;
+    final count = projectService.frameCount(projectId, canvasWidget.sceneId);
+    _setOverlay(
+      _localNavigator(
+        _sheetPage(
+          CustomAutomationManagerSheet(
+            surface: CustomAutomationSurface.canvas,
+            recordingStartFrame: startFrame,
+            frameCount: count,
+            onRecordingStarted: _hideOverlay,
+            onExecute: (automation, scope, targetFrames) async {
+              _hideOverlay();
+              await _execute(automation, scope, targetFrames);
+            },
+          ),
+        ),
+      ),
+    );
+  }
+
+  void showFilterPanel() {
+    final canvas = canvasWidget;
+    _setOverlay(
+      _localNavigator(
+        _sheetPage(
+          Center(
+            child: FilterPanel(
+              projectId: projectId,
+              sceneId: canvas.sceneId,
+              layerId: canvas.currentLayerId,
+              frameIndex: canvas.currentFrame,
+              onClose: _hideOverlay,
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  void showRecordingStop() {
+    final service = automationService;
+    _setOverlay(
+      _localNavigator(
+        Material(
+          color: Colors.transparent,
+          child: Stack(
+            children: [
+              CustomAutomationRecordingStopButton(
+                onStop: () {
+                  service.stopRecording();
+                  _hideOverlay();
+                },
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  void showDraftEditor() {
+    _setOverlay(
+      _localNavigator(
+        _sheetPage(
+          CustomAutomationDraftEditorSheet(
+            surface: CustomAutomationSurface.canvas,
+            onResumeRecording: _hideOverlay,
+            onSaved: _hideOverlay,
+          ),
+        ),
+      ),
+    );
+  }
+'''
           if old_manager not in s:
-            raise SystemExit('production manager route anchor changed')
+            raise SystemExit('production overlay presentation anchor changed')
           s = s.replace(old_manager, new_manager, 1)
 
           helper_start = s.find('  Future<void> waitForProductionAsync(')
@@ -115,48 +245,48 @@ jobs:
           if helper_end < 0:
             raise SystemExit('fixed-sleep helper end changed')
 
-          new_helper = (
-            "  Future<void> _yieldAsyncWork() async {\n"
-            "    await tester.runAsync(() => Future<void>(() {}));\n"
-            "    await tester.pump();\n"
-            "  }\n\n"
-            "  Future<void> waitForPixelChange(\n"
-            "    Uint8List before, {\n"
-            "    required String label,\n"
-            "  }) async {\n"
-            "    for (var attempt = 0; attempt < 600; attempt++) {\n"
-            "      if (_changedBytes(before, activeLayerPixels()) > 100) return;\n"
-            "      await _yieldAsyncWork();\n"
-            "    }\n"
-            "    throw TestFailure('$label did not change Canvas pixels');\n"
-            "  }\n\n"
-            "  Future<void> waitForAutomationResult({\n"
-            "    required Uint8List beforePixels,\n"
-            "    required Set<String> beforeLayers,\n"
-            "    required bool createsLayer,\n"
-            "    required String label,\n"
-            "  }) async {\n"
-            "    for (var attempt = 0; attempt < 600; attempt++) {\n"
-            "      if (createsLayer) {\n"
-            "        final canvas = canvasWidget;\n"
-            "        final current = projectService\n"
-            "            .layersOf(\n"
-            "              projectId,\n"
-            "              canvas.sceneId,\n"
-            "              canvas.currentFrame,\n"
-            "            )\n"
-            "            .where((layer) => layer.type == model.LayerType.normal)\n"
-            "            .map((layer) => layer.id)\n"
-            "            .toSet();\n"
-            "        if (current.difference(beforeLayers).isNotEmpty) return;\n"
-            "      } else if (_changedBytes(beforePixels, activeLayerPixels()) > 100) {\n"
-            "        return;\n"
-            "      }\n"
-            "      await _yieldAsyncWork();\n"
-            "    }\n"
-            "    throw TestFailure('$label did not reach its observable completion state');\n"
-            "  }"
-          )
+          new_helper = '''  Future<void> _yieldAsyncWork() async {
+    await tester.runAsync(() => Future<void>(() {}));
+    await tester.pump();
+  }
+
+  Future<void> waitForPixelChange(
+    Uint8List before, {
+    required String label,
+  }) async {
+    for (var attempt = 0; attempt < 600; attempt++) {
+      if (_changedBytes(before, activeLayerPixels()) > 100) return;
+      await _yieldAsyncWork();
+    }
+    throw TestFailure('$label did not change Canvas pixels');
+  }
+
+  Future<void> waitForAutomationResult({
+    required Uint8List beforePixels,
+    required Set<String> beforeLayers,
+    required bool createsLayer,
+    required String label,
+  }) async {
+    for (var attempt = 0; attempt < 600; attempt++) {
+      if (createsLayer) {
+        final canvas = canvasWidget;
+        final current = projectService
+            .layersOf(
+              projectId,
+              canvas.sceneId,
+              canvas.currentFrame,
+            )
+            .where((layer) => layer.type == model.LayerType.normal)
+            .map((layer) => layer.id)
+            .toSet();
+        if (current.difference(beforeLayers).isNotEmpty) return;
+      } else if (_changedBytes(beforePixels, activeLayerPixels()) > 100) {
+        return;
+      }
+      await _yieldAsyncWork();
+    }
+    throw TestFailure('$label did not reach its observable completion state');
+  }'''
           s = s[:helper_start] + new_helper + s[helper_end:]
           p.write_text(s)
           PY
