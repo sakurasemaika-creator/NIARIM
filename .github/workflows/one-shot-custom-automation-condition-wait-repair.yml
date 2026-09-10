@@ -37,11 +37,11 @@ jobs:
           script = textwrap.dedent(source[start:end])
           script = script.replace(
               'final deadline = DateTime.now().add(timeout);',
-              'final stopwatch = Stopwatch()..start();',
+              'var polls = 0;\n    final maxPolls = (timeout.inMilliseconds / 25).ceil();',
               1,
           ).replace(
               'if (DateTime.now().isAfter(deadline)) {',
-              'if (stopwatch.elapsed >= timeout) {',
+              'if (++polls > maxPolls) {',
               1,
           ).replace(
               'await tester.pump(const Duration(milliseconds: 16));\n'
