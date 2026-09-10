@@ -260,3 +260,4 @@ jobs:
           git add test/custom_automation_production_surface_visual_test.dart .github/workflows/custom-automation-production-visual-proof.yml .github/workflows/one-shot-custom-automation-record-edit-replay.yml
           git commit -m 'test: make automation proof condition-driven'
           git push origin HEAD:dev_branch
+# trigger: 2026-09-10T16:57+09:00
