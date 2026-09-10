@@ -5,6 +5,7 @@ on:
     branches: [dev_branch]
     paths:
       - '.github/workflows/one-shot-step3-starter-png-proof.yml'
+      - 'lib/engine/custom_automation_filter_runner.dart'
 
 permissions:
   contents: write
@@ -30,6 +31,9 @@ jobs:
           from pathlib import Path
           p = Path('test/custom_automation_production_surface_visual_test.dart')
           s = p.read_text()
+          test_name = 'starter Aurora line extraction and line creation produce actual PNG output'
+          if test_name in s:
+              raise SystemExit(0)
           marker = '\n}\n\nclass _SurfaceHarness {'
           if marker not in s:
               raise SystemExit('main/class boundary changed')
@@ -117,6 +121,9 @@ jobs:
         if: success()
         shell: bash
         run: |
+          if git diff --quiet -- test/custom_automation_production_surface_visual_test.dart; then
+            exit 0
+          fi
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
           git add test/custom_automation_production_surface_visual_test.dart
