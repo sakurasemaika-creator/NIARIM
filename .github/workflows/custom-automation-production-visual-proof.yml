@@ -1,0 +1,40 @@
+name: Custom Automation Production Visual Proof
+
+on:
+  push:
+    branches: [dev_branch]
+    paths:
+      - 'tool/patch_custom_automation_surface_interactions.py'
+      - 'test/custom_automation_production_surface_visual_test.dart'
+      - '.github/workflows/custom-automation-production-visual-proof.yml'
+  workflow_dispatch:
+
+jobs:
+  production-visual-proof:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: dev_branch
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+      - run: flutter pub get
+      - name: Apply production-surface harness isolation
+        run: python3 tool/patch_custom_automation_surface_interactions.py
+      - name: Format patched test
+        run: dart format test/custom_automation_production_surface_visual_test.dart
+      - name: Analyze production visual proof
+        run: flutter analyze test/custom_automation_production_surface_visual_test.dart --no-fatal-warnings --no-fatal-infos
+      - name: Run production visual proof
+        run: flutter test test/custom_automation_production_surface_visual_test.dart --reporter expanded
+      - name: Upload production visual evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: custom-automation-production-visual-evidence
+          path: build/visual-reaudit/custom-automation-production
+          if-no-files-found: warn
+          retention-days: 7
