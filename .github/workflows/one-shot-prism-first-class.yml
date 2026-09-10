@@ -1,0 +1,96 @@
+name: One-shot prism first class
+
+on:
+  push:
+    branches: [dev_branch]
+    paths:
+      - '.github/workflows/one-shot-prism-first-class.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  implement:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: dev_branch
+          fetch-depth: 0
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+      - run: flutter pub get
+      - name: Patch first-class prism kind and direct repaint wording
+        run: |
+          python3 <<'PY'
+          from pathlib import Path
+
+          def repl(path, old, new, expected=None):
+              p=Path(path); s=p.read_text(); n=s.count(old)
+              if expected is not None and n != expected:
+                  raise SystemExit(f'{path}: expected {expected}, got {n} for {old!r}')
+              if n == 0:
+                  raise SystemExit(f'{path}: missing {old!r}')
+              p.write_text(s.replace(old,new))
+
+          # Give Prism an actual FilterKind; persisted old auroraHologram Prism records are
+          # migrated by stable id in FilterService below.
+          repl('lib/models/filter_def.dart','  autoLineart,\n}','  autoLineart,\n  prism,\n}',1)
+          repl('lib/services/filter_service.dart',"      kind: FilterKind.auroraHologram,\n      prismBlurPx: 17,","      kind: FilterKind.prism,\n      prismBlurPx: 17,",1)
+          repl('lib/services/filter_service.dart',"          if (filter.id == prismFilterId &&\n              filter.prismBlurPx == 8 &&\n              filter.prismDirectionDegrees == 45) {\n            filter = filter.copyWith(\n              prismBlurPx: 17,\n              prismDirectionDegrees: 90,\n            );\n            migratedAutoLineartSmoothing = true;\n          }","          if (filter.id == prismFilterId) {\n            final usesLegacyDefaults =\n                filter.prismBlurPx == 8 && filter.prismDirectionDegrees == 45;\n            if (filter.kind != FilterKind.prism || usesLegacyDefaults) {\n              filter = filter.copyWith(\n                kind: FilterKind.prism,\n                prismBlurPx: usesLegacyDefaults ? 17 : filter.prismBlurPx,\n                prismDirectionDegrees:\n                    usesLegacyDefaults ? 90 : filter.prismDirectionDegrees,\n              );\n              migratedAutoLineartSmoothing = true;\n            }\n          }",1)
+
+          # Filter engine's generic isolate path must remain exhaustive even though Prism is
+          # dispatched through its dedicated isolate from FilterPanel.
+          p=Path('lib/engine/filter_engine.dart'); s=p.read_text()
+          anchor='    FilterKind.autoLineart => AutoLineartEngine.render('
+          if anchor not in s: raise SystemExit('filter engine autoLineart anchor missing')
+          # Insert dedicated prism case before auto-lineart case.
+          prism_case="""    FilterKind.prism => PrismFilterEngine(filterEngine: engine).apply(\n      data,\n      width,\n      height,\n      blurPx: filter.prismBlurPx,\n      gradientDirectionDegrees: filter.prismDirectionDegrees,\n    ),\n"""
+          s=s.replace(anchor,prism_case+anchor,1)
+          if "import 'prism_filter_engine.dart';" not in s:
+              s=s.replace("import 'auto_lineart_engine.dart';\n", "import 'auto_lineart_engine.dart';\nimport 'prism_filter_engine.dart';\n",1)
+          p.write_text(s)
+
+          # Panel: stable-id compatibility remains, but all enum switches become exhaustive.
+          p=Path('lib/screens/canvas/widgets/filter_panel.dart'); s=p.read_text()
+          s=s.replace("  bool _isPrism(FilterDef filter) => filter.id == FilterService.prismFilterId;", "  bool _isPrism(FilterDef filter) =>\n      filter.kind == FilterKind.prism || filter.id == FilterService.prismFilterId;")
+          s=s.replace("'暗い虹色をクリッピング → レイヤー結合 → ガウスぼかし → 覆い焼きリニア'", "'参照レイヤーの不透明部分を6色で直接塗り替え → ガウスぼかし'")
+          # Prism has its own controls before this switch; these cases are only to satisfy
+          # exhaustiveness/fallbacks and are never reached for an active prism.
+          s=s.replace('      case FilterKind.gaussianBlur:\n      case FilterKind.lensBlur:', '      case FilterKind.gaussianBlur:\n      case FilterKind.lensBlur:\n      case FilterKind.prism:',1)
+          # _runFilter switch: dedicated pre-switch _isPrism path makes this unreachable.
+          idx=s.find('    switch (filter.kind) {')
+          if idx < 0: raise SystemExit('panel runFilter switch missing')
+          tail=s[idx:]
+          tail=tail.replace('      case FilterKind.gaussianBlur:', '      case FilterKind.prism:\n        return _prismEngine.apply(\n          data, width, height,\n          blurPx: filter.prismBlurPx * _previewScale,\n          gradientDirectionDegrees: filter.prismDirectionDegrees,\n        );\n      case FilterKind.gaussianBlur:',1)
+          s=s[:idx]+tail
+          # display-name/icon exhaustive switch: insert prism mappings.
+          s=s.replace('      FilterKind.gaussianBlur => l10n.filterNameGaussianBlur,', "      FilterKind.prism => 'プリズム',\n      FilterKind.gaussianBlur => l10n.filterNameGaussianBlur,",1)
+          s=s.replace('      FilterKind.gaussianBlur => Icons.blur_on,', '      FilterKind.prism => Icons.gradient,\n      FilterKind.gaussianBlur => Icons.blur_on,',1)
+          p.write_text(s)
+
+          # Update direct-repaint regression to require first-class kind.
+          p=Path('test/prism_integration_regression_test.dart'); s=p.read_text()
+          s=s.replace('kind: FilterKind.auroraHologram,','kind: FilterKind.prism,')
+          s=s.replace("'kind': FilterKind.auroraHologram.name,","'kind': FilterKind.prism.name,")
+          p.write_text(s)
+
+          # Correct stale engine docs: direct repaint is deliberately in-place.
+          p=Path('lib/engine/prism_filter_engine.dart'); s=p.read_text()
+          s=s.replace('/// Linear Dodge itself is a layer-compositing concern; callers put these pixels on\n/// a LayerBlendMode.addition layer so the effect is evaluated against lower layers.','/// The caller replaces the selected/reference layer pixels with this result in place;\n/// no generated layer or blend-mode change is part of the Prism filter.')
+          p.write_text(s)
+          PY
+      - run: dart format lib/models/filter_def.dart lib/services/filter_service.dart lib/engine/filter_engine.dart lib/engine/prism_filter_engine.dart lib/screens/canvas/widgets/filter_panel.dart test/prism_integration_regression_test.dart
+      - run: flutter test test/prism_integration_regression_test.dart --reporter expanded
+      - run: flutter analyze lib/models/filter_def.dart lib/services/filter_service.dart lib/engine/filter_engine.dart lib/engine/prism_filter_engine.dart lib/screens/canvas/widgets/filter_panel.dart test/prism_integration_regression_test.dart
+      - name: Commit implementation
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add lib/models/filter_def.dart lib/services/filter_service.dart lib/engine/filter_engine.dart lib/engine/prism_filter_engine.dart lib/screens/canvas/widgets/filter_panel.dart test/prism_integration_regression_test.dart
+          git commit -m 'feat(prism): make direct repaint a first-class filter kind'
+          git push origin HEAD:dev_branch

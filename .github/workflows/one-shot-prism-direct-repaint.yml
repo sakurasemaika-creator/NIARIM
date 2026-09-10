@@ -1,0 +1,72 @@
+name: One-shot prism direct repaint
+
+on:
+  push:
+    branches: [dev_branch]
+    paths:
+      - '.github/workflows/one-shot-prism-direct-repaint.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  implement:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: dev_branch
+          fetch-depth: 0
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+      - run: flutter pub get
+      - name: Patch prism defaults and migration
+        run: |
+          python3 <<'PY'
+          from pathlib import Path
+
+          p = Path('lib/models/filter_def.dart')
+          s = p.read_text()
+          s2 = s.replace('this.prismBlurPx = 8,\n    this.prismDirectionDegrees = 45,', 'this.prismBlurPx = 17,\n    this.prismDirectionDegrees = 90,')
+          s2 = s2.replace("prismBlurPx: (j['prismBlurPx'] as num?)?.toDouble() ?? 8,", "prismBlurPx: (j['prismBlurPx'] as num?)?.toDouble() ?? 17,")
+          s2 = s2.replace("prismDirectionDegrees:\n        (j['prismDirectionDegrees'] as num?)?.toDouble() ?? 45,", "prismDirectionDegrees:\n        (j['prismDirectionDegrees'] as num?)?.toDouble() ?? 90,")
+          if s2 == s:
+              raise SystemExit('filter_def prism defaults were not patched')
+          p.write_text(s2)
+
+          p = Path('lib/services/filter_service.dart')
+          s = p.read_text()
+          old = """    // Prism deliberately uses an existing enum kind so adding it does not make every\n    // shared FilterKind switch exhaustive again. filter_panel.dart dispatches this\n    // built-in by stable id to PrismFilterEngine instead of the aurora implementation.\n    FilterDef(\n      id: prismFilterId,\n      name: 'プリズム',\n      kind: FilterKind.auroraHologram,\n      prismBlurPx: 8,\n      prismDirectionDegrees: 45,\n    ),"""
+          new = """    // Prism is dispatched by stable id to PrismFilterEngine. It directly repaints\n    // the selected/reference layer using that layer's alpha as an opacity-lock mask.\n    FilterDef(\n      id: prismFilterId,\n      name: 'プリズム',\n      kind: FilterKind.auroraHologram,\n      prismBlurPx: 17,\n      prismDirectionDegrees: 90,\n    ),"""
+          if old not in s:
+              raise SystemExit('filter_service prism default block not found')
+          s = s.replace(old, new)
+          # Migrate only untouched legacy built-in defaults; preserve user-customized values.
+          anchor = """          if (filter.kind == FilterKind.autoLineart &&\n              filter.autoLineartSmoothing > 10) {"""
+          migration = """          if (filter.id == prismFilterId &&\n              filter.prismBlurPx == 8 &&\n              filter.prismDirectionDegrees == 45) {\n            filter = filter.copyWith(\n              prismBlurPx: 17,\n              prismDirectionDegrees: 90,\n            );\n            migratedAutoLineartSmoothing = true;\n          }\n          if (filter.kind == FilterKind.autoLineart &&\n              filter.autoLineartSmoothing > 10) {"""
+          if anchor not in s:
+              raise SystemExit('filter_service migration anchor not found')
+          s = s.replace(anchor, migration, 1)
+          p.write_text(s)
+
+          p = Path('test/prism_integration_regression_test.dart')
+          p.write_text("""import 'dart:io';\n\nimport 'package:flutter_test/flutter_test.dart';\n\nimport 'package:niarim/engine/prism_filter_engine.dart';\nimport 'package:niarim/models/filter_def.dart';\n\nvoid main() {\n  test('prism defaults match the product specification', () {\n    const filter = FilterDef(\n      id: 'Filter0022',\n      name: 'プリズム',\n      kind: FilterKind.auroraHologram,\n    );\n    expect(filter.prismBlurPx, PrismFilterEngine.defaultBlurPx);\n    expect(filter.prismDirectionDegrees, PrismFilterEngine.defaultDirectionDegrees);\n  });\n\n  test('serialized prism defaults restore to the product specification', () {\n    final filter = FilterDef.fromJson({\n      'id': 'Filter0022',\n      'name': 'プリズム',\n      'kind': FilterKind.auroraHologram.name,\n    });\n    expect(filter.prismBlurPx, PrismFilterEngine.defaultBlurPx);\n    expect(filter.prismDirectionDegrees, PrismFilterEngine.defaultDirectionDegrees);\n  });\n\n  test('prism directly repaints the selected source layer', () {\n    final source = File('lib/screens/canvas/widgets/filter_panel.dart').readAsStringSync();\n    expect(source, contains('else if (_isPrism(filter))'));\n    expect(source, contains('tm.replaceLayerPixels(key, result);'));\n    expect(source, isNot(contains("if (_isPrism(filter)) {\\n      return _applyGeneratedLayer(")));\n  });\n}\n""")
+          PY
+      - run: dart format lib/models/filter_def.dart lib/services/filter_service.dart test/prism_integration_regression_test.dart
+      - run: flutter test test/prism_integration_regression_test.dart --reporter expanded
+      - run: flutter analyze lib/engine/prism_filter_engine.dart lib/models/filter_def.dart lib/services/filter_service.dart lib/screens/canvas/widgets/filter_panel.dart test/prism_integration_regression_test.dart
+      - name: Commit implementation
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add lib/models/filter_def.dart lib/services/filter_service.dart test/prism_integration_regression_test.dart
+          if git diff --cached --quiet; then
+            echo 'No changes to commit'
+            exit 0
+          fi
+          git commit -m 'fix(prism): use direct repaint with product defaults'
+          git push origin HEAD:dev_branch

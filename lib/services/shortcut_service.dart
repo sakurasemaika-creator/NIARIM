@@ -1,7 +1,9 @@
 import 'dart:convert';
+
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+
 import '../models/shortcut_binding.dart';
 
 /// キーボード・左手デバイス用ショートカット。ツール選択（早替えツールと
@@ -19,7 +21,7 @@ class ShortcutService extends ChangeNotifier {
     if (_bindings.isNotEmpty) return;
     final prefs = await SharedPreferences.getInstance();
     final raw = prefs.getStringList(_prefsKey);
-    if (raw == null || raw.isEmpty) {
+    if (raw == null) {
       // 既定値：従来ハードコードされていたUndo/Redoのキー割り当てを
       // そのまま初期状態として引き継ぐ。
       _bindings.addAll([
@@ -50,22 +52,16 @@ class ShortcutService extends ChangeNotifier {
       await _persist();
     } else {
       _bindings.addAll(
-        raw.map(
-          (s) =>
-              ShortcutBinding.fromJson(jsonDecode(s) as Map<String, dynamic>),
-        ),
+        raw
+            .map(
+              (s) => ShortcutBinding.fromJson(
+                jsonDecode(s) as Map<String, dynamic>,
+              ),
+            )
+            .toList(),
       );
-      // 既に保存済みの環境（Ctrl+A/C/X/Vが既定値に無かった旧バージョン）
-      // でも、キーの組み合わせが未使用であれば追加の既定値として補う。
-      var added = false;
-      for (final candidate in _defaultClipboardBindings) {
-        if (findConflict(candidate) == null &&
-            !_bindings.any((b) => b.id == candidate.id)) {
-          _bindings.add(candidate);
-          added = true;
-        }
-      }
-      if (added) await _persist();
+      // A saved list is authoritative, including an empty list or deliberately
+      // removed clipboard shortcuts. New defaults belong only to first launch.
     }
   }
 

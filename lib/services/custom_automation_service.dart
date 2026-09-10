@@ -50,26 +50,24 @@ class CustomAutomationService extends ChangeNotifier {
     final prefs = await SharedPreferences.getInstance();
     final raw = prefs.getStringList(_prefsKey);
 
-    _items.clear();
     if (raw == null) {
-      // NIARIM is still pre-release, so there is no installed-user migration to
-      // perform. Seed the requested starter automations only when the automation
-      // store is created for the first time. From then on the persisted list is
-      // authoritative, including an intentionally empty list after deletions.
-      _items.addAll(builtInCanvasAutomationPresets());
+      _items
+        ..clear()
+        ..addAll(builtInCanvasAutomationPresets());
       await _persist();
     } else {
-      _items.addAll(
-        raw.map((entry) {
-          try {
-            final decoded = jsonDecode(entry);
-            if (decoded is! Map) return null;
-            return CustomAutomation.fromJson(decoded.cast<String, Object?>());
-          } catch (_) {
-            return null;
-          }
-        }).whereType<CustomAutomation>(),
-      );
+      // Validate the entire saved list before publishing it. Silently dropping
+      // a corrupt entry would delete its original data on the next save.
+      final restored = raw.map((entry) {
+        final decoded = jsonDecode(entry);
+        if (decoded is! Map<String, dynamic>) {
+          throw const FormatException('Invalid saved automation');
+        }
+        return CustomAutomation.fromJson(decoded.cast<String, Object?>());
+      }).toList();
+      _items
+        ..clear()
+        ..addAll(restored);
     }
     notifyListeners();
   }

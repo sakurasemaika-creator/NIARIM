@@ -1,8 +1,10 @@
 import 'dart:convert';
 import 'dart:io';
+
 import 'package:flutter/foundation.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+
 import '../models/autofill_preset.dart';
 
 /// 自動塗りプリセットの管理サービス。
@@ -196,7 +198,6 @@ class AutofillPresetService extends ChangeNotifier {
         ),
       );
       var changed = _dedupeIds();
-      if (_upgradeSampleContent()) changed = true;
       if (_presets.every((preset) => preset.id != _grayUnderpaintPreset.id)) {
         _presets.insert(0, _grayUnderpaintPreset);
         changed = true;
@@ -205,25 +206,9 @@ class AutofillPresetService extends ChangeNotifier {
     }
   }
 
-  /// 既存ユーザーが持っているサンプルプリセット（id: 'p1'/'p2'）が、まだ
-  /// 旧仕様（ベースカラーのみ・4〜5パーツ）のままの場合、新しい内容
-  /// （1影・2影・ハイライト・瞳の細分化・服の細分化を含む）へ差し替える。
-  /// パーツ数がそれより多い場合は既にユーザーが手を加えたとみなし触らない。
-  bool _upgradeSampleContent() {
-    var changed = false;
-    final defaults = {for (final p in _defaultPresets()) p.id: p};
-    for (int i = 0; i < _presets.length; i++) {
-      final preset = _presets[i];
-      final fresh = defaults[preset.id];
-      if (fresh == null) continue;
-      if (preset.parts.length <= 7 &&
-          preset.parts.length < fresh.parts.length) {
-        _presets[i] = preset.copyWith(parts: fresh.parts);
-        changed = true;
-      }
-    }
-    return changed;
-  }
+  // Saved sample presets are editable user data. A short part list does not
+  // establish that the user still has the old defaults, so startup must never
+  // replace it with current sample content.
 
   /// プリセットID・パーツID（プリセット内）の重複を検出し、2件目以降を
   /// 新しいIDへ差し替えて自己修復する。過去に同一ミリ秒での連続タップ等で

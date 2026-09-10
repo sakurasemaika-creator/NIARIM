@@ -30,3 +30,4 @@ jobs:
         run: flutter test test/canvas_pinch_gesture_test.dart --reporter expanded
       - name: Analyze pinch implementation and regression
         run: flutter analyze lib/screens/canvas/widgets/canvas_area.dart test/canvas_pinch_gesture_test.dart
+# current-HEAD rerun marker: 2026-09-10T16:51+09:00

@@ -1,6 +1,8 @@
 import 'dart:convert';
+
 import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+
 import '../models/quick_tool_entry.dart';
 
 /// ツール早替え機能（「↺ ツール早替えボタン」）。
@@ -18,7 +20,7 @@ class QuickToolService extends ChangeNotifier {
     if (_entries.isNotEmpty) return;
     final prefs = await SharedPreferences.getInstance();
     final raw = prefs.getStringList(_prefsKey);
-    if (raw == null || raw.isEmpty) {
+    if (raw == null) {
       _entries.addAll(const [
         QuickToolEntry(
           id: 'qt1',
@@ -46,9 +48,13 @@ class QuickToolService extends ChangeNotifier {
       await _persist();
     } else {
       _entries.addAll(
-        raw.map(
-          (s) => QuickToolEntry.fromJson(jsonDecode(s) as Map<String, dynamic>),
-        ),
+        raw
+            .map(
+              (s) => QuickToolEntry.fromJson(
+                jsonDecode(s) as Map<String, dynamic>,
+              ),
+            )
+            .toList(),
       );
     }
   }

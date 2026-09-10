@@ -34,13 +34,6 @@ Uint8List applyDrawFilterInIsolate(
     );
   }
   return switch (filter.kind) {
-    FilterKind.prism => PrismFilterEngine(filterEngine: engine).apply(
-      data,
-      width,
-      height,
-      blurPx: filter.prismBlurPx,
-      gradientDirectionDegrees: filter.prismDirectionDegrees,
-    ),
     FilterKind.gaussianBlur => engine.applyGaussianBlur(
       data,
       width,
@@ -198,6 +191,13 @@ Uint8List applyDrawFilterInIsolate(
       color: filter.inkPoolColor,
       rangePx: filter.inkPoolRange,
       centerWidthPx: filter.inkPoolCenterWidth,
+    ),
+    FilterKind.prism => PrismFilterEngine(filterEngine: engine).apply(
+      data,
+      width,
+      height,
+      blurPx: filter.prismBlurPx,
+      gradientDirectionDegrees: filter.prismDirectionDegrees,
     ),
     FilterKind.autoLineart => AutoLineartEngine.render(
       AutoLineartEngine.prepareEditableGraph(

@@ -1,0 +1,30 @@
+name: Prism integration regression
+
+on:
+  push:
+    branches: [dev_branch]
+    paths:
+      - '.github/workflows/prism-integration-regression.yml'
+      - 'lib/engine/prism_filter_engine.dart'
+      - 'lib/models/filter_def.dart'
+      - 'lib/services/filter_service.dart'
+      - 'lib/screens/canvas/widgets/filter_panel.dart'
+      - 'test/prism_integration_regression_test.dart'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  prism-integration:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+      - run: flutter pub get
+      - run: flutter test test/prism_integration_regression_test.dart --reporter expanded
+      - run: flutter analyze lib/engine/prism_filter_engine.dart lib/models/filter_def.dart lib/services/filter_service.dart lib/screens/canvas/widgets/filter_panel.dart test/prism_integration_regression_test.dart

@@ -168,6 +168,8 @@ void main() {
     await tester.tap(find.byKey(const Key('startup-retry')));
     await tester.pumpAndSettle();
     expect(tester.takeException(), isNull);
+    // Binding invariants run before addTearDown callbacks.
+    debugDefaultTargetPlatformOverride = null;
     File(
       '${out.path}/manifest.json',
     ).writeAsStringSync(const JsonEncoder.withIndent('  ').convert(manifest));
