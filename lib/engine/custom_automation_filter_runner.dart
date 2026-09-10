@@ -52,7 +52,8 @@ class CustomAutomationFilterRunner {
     final data = byteData.buffer.asUint8List();
 
     Uint8List result;
-    if (filter.id == FilterService.prismFilterId) {
+    if (filter.id == FilterService.prismFilterId ||
+        filter.kind == FilterKind.prism) {
       result = await compute(applyPrismFilterInIsolate, (
         data,
         tm.canvasWidth,
@@ -126,11 +127,16 @@ class CustomAutomationFilterRunner {
     if (sourceLayer == null) {
       throw StateError('Recorded filter source layer disappeared');
     }
+    final isPrism =
+        filter.id == FilterService.prismFilterId ||
+        filter.kind == FilterKind.prism;
     projectService.updateLayer(
       projectId: projectId,
       sceneId: sceneId,
       frameIndex: frameIndex,
-      layer: sourceLayer,
+      layer: isPrism
+          ? sourceLayer.copyWith(blendMode: model.LayerBlendMode.addition)
+          : sourceLayer,
     );
     return sourceLayerId;
   }
@@ -156,6 +162,7 @@ class CustomAutomationFilterRunner {
 
   static bool _createsLayer(FilterDef filter) =>
       filter.id != FilterService.prismFilterId &&
+      filter.kind != FilterKind.prism &&
       (filter.kind == FilterKind.outline ||
           filter.kind == FilterKind.inkPool ||
           filter.kind == FilterKind.autoLineart);
