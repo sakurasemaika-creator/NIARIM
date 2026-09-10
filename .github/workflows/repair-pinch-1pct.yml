@@ -1,14 +1,10 @@
 name: Repair Pinch 1 Percent
-
 on:
   push:
     branches: [dev_branch]
-    paths:
-      - '.github/workflows/repair-pinch-1pct.yml'
-
+    paths: [.github/workflows/repair-pinch-1pct.yml]
 permissions:
   contents: write
-
 jobs:
   repair:
     runs-on: ubuntu-latest
@@ -22,96 +18,22 @@ jobs:
         with:
           channel: stable
           cache: true
-      - name: Patch production minimum and regression test
-        shell: bash
-        run: |
-          python3 - <<'PY'
+      - name: Patch production minimum
+        run: python3 -c "from pathlib import Path; p=Path('lib/screens/canvas/widgets/canvas_area.dart'); s=p.read_text(); old='/// キャンバス表示の縮小下限。等倍表示時の1/5まで縮小できる。\\nconst double kCanvasMinScale = 0.2;'; new='/// キャンバス表示の縮小下限。等倍表示時の1/100まで縮小できる。\\n/// 0にはせず、逆行列・座標変換が特異にならない最小の正倍率を維持する。\\nconst double kCanvasMinScale = 0.01;'; assert old in s; p.write_text(s.replace(old,new,1))"
+      - name: Replace pinch regression test
+        run: echo 'aW1wb3J0ICdkYXJ0Om1hdGgnIGFzIG1hdGg7CgppbXBvcnQgJ3BhY2thZ2U6Zmx1dHRlci9nZXN0dXJlcy5kYXJ0JzsKaW1wb3J0ICdwYWNrYWdlOmZsdXR0ZXIvbWF0ZXJpYWwuZGFydCc7CmltcG9ydCAncGFja2FnZTpmbHV0dGVyX3Rlc3QvZmx1dHRlcl90ZXN0LmRhcnQnOwppbXBvcnQgJ3BhY2thZ2U6bmlhcmltL2FwcF9ib290c3RyYXAuZGFydCc7CmltcG9ydCAncGFja2FnZTpuaWFyaW0vZW5naW5lL3VuZG9fbWFuYWdlci5kYXJ0JyBhcyBhcHBfdW5kbzsKaW1wb3J0ICdwYWNrYWdlOm5pYXJpbS9zY3JlZW5zL2NhbnZhcy9jYW52YXNfc2NyZWVuLmRhcnQnIHNob3cgRHJhd2luZ1Rvb2w7CmltcG9ydCAncGFja2FnZTpuaWFyaW0vc2NyZWVucy9jYW52YXMvd2lkZ2V0cy9jYW52YXNfYXJlYS5kYXJ0JzsKaW1wb3J0ICdwYWNrYWdlOm5pYXJpbS9zZXJ2aWNlcy9wcm9qZWN0X3NlcnZpY2UuZGFydCc7CmltcG9ydCAncGFja2FnZTpwcm92aWRlci9wcm92aWRlci5kYXJ0JzsKaW1wb3J0ICdwYWNrYWdlOnNoYXJlZF9wcmVmZXJlbmNlcy9zaGFyZWRfcHJlZmVyZW5jZXMuZGFydCc7CgovLy8g44Kt44Oj44Oz44OQ44K544GuMuacrOaMh+ODl+ODs+ODgeOCuuODvOODo+ODu+Wbnui7ouOBruaIquW+i+ODhuOCueODiO+8iFRhc2sjMTI444CCCi8vLwo=' | base64 -d > /tmp/pinch_prefix && python3 - <<'PY'
           from pathlib import Path
-          import re
-
-          canvas = Path('lib/screens/canvas/widgets/canvas_area.dart')
-          s = canvas.read_text()
-          old = '''/// キャンバス表示の縮小下限。等倍表示時の1/5まで縮小できる。\nconst double kCanvasMinScale = 0.2;'''
-          new = '''/// キャンバス表示の縮小下限。等倍表示時の1/100まで縮小できる。\n/// 0にはせず、逆行列・座標変換が特異にならない最小の正倍率を維持する。\nconst double kCanvasMinScale = 0.01;'''
-          if old not in s:
-              raise SystemExit('canvas min-scale anchor not found')
-          canvas.write_text(s.replace(old, new, 1))
-
-          test = Path('test/canvas_pinch_gesture_test.dart')
-          t = test.read_text()
-
-          lower = r'''  testWidgets\('下限未満の縮小要求は0\.2倍へ正確にクランプされる', \(tester\) async \{.*?\n  \}\);'''
-          lower_new = '''  testWidgets('下限未満の縮小要求は0.01倍へ正確にクランプされる', (tester) async {
-    final scaleOf = await pumpCanvas(tester);
-    final rect = tester.getRect(find.byType(CanvasArea));
-    // 左右32pxはフレーム送り専用ゾーンなので避ける。縦方向は端まで使い、
-    // 384px四方の中で約480pxの十分な初期指間を確保する。
-    final anchor = Offset(rect.left + 40, rect.top + 4);
-    final movingStart = Offset(rect.right - 40, rect.bottom - 4);
-    final vector = movingStart - anchor;
-    final target = anchor + vector / vector.distance * 4.5;
-    final fixed = await tester.startGesture(anchor, kind: PointerDeviceKind.touch);
-    final moving = await tester.startGesture(movingStart, kind: PointerDeviceKind.touch);
-    await tester.pump();
-    await moving.moveTo(target);
-    await tester.pump();
-    await moving.up();
-    await fixed.up();
-    await tester.pump();
-    expect(tester.takeException(), isNull);
-    expect(
-      scaleOf(),
-      closeTo(kCanvasMinScale, 0.001),
-      reason: '1/100まで縮小でき、それ未満の要求は境界値へクランプされること',
-    );
-  });'''
-          t, n = re.subn(lower, lower_new, t, count=1, flags=re.S)
-          if n != 1:
-              raise SystemExit('lower-bound test replacement failed')
-
-          rotation = r'''  testWidgets\('0\.2倍へ到達する同一ジェスチャーでも45度回転は保持される', \(tester\) async \{.*?\n  \}\);'''
-          rotation_new = '''  testWidgets('0.01倍へ到達する同一ジェスチャーでも45度回転は保持される', (tester) async {
-    await pumpCanvas(tester);
-    final rect = tester.getRect(find.byType(CanvasArea));
-    final anchor = Offset(rect.left + 40, rect.top + 4);
-    final movingStart = Offset(rect.right - 40, rect.bottom - 4);
-    final vector = movingStart - anchor;
-    final direction = vector.direction;
-    final atMinScale = anchor + Offset.fromDirection(direction, 4.5);
-    final rotatedAtMinScale = anchor + Offset.fromDirection(direction + math.pi / 4, 4.5);
-
-    final fixed = await tester.startGesture(anchor, kind: PointerDeviceKind.touch);
-    final moving = await tester.startGesture(movingStart, kind: PointerDeviceKind.touch);
-    await tester.pump();
-    await moving.moveTo(atMinScale);
-    await tester.pump();
-    await moving.moveTo(rotatedAtMinScale);
-    await tester.pump();
-    await moving.up();
-    await fixed.up();
-    await tester.pump();
-
-    expect(tester.takeException(), isNull);
-    final matrix = _viewMatrix(tester);
-    expect(canvasViewScaleOf(matrix), closeTo(kCanvasMinScale, 0.001));
-    final angle = math.atan2(matrix.entry(1, 0), matrix.entry(0, 0));
-    expect(
-      _angleDelta(angle, math.pi / 4).abs(),
-      lessThan(0.02),
-      reason: '最小倍率へのクランプで同時入力された回転を捨てないこと',
-    );
-  });'''
-          t, n = re.subn(rotation, rotation_new, t, count=1, flags=re.S)
-          if n != 1:
-              raise SystemExit('rotation test replacement failed')
-          test.write_text(t)
+          import base64
+          data = '''${PINCH_TEST_B64}'''
+          Path('test/canvas_pinch_gesture_test.dart').write_bytes(base64.b64decode(data))
           PY
-      - name: Format
-        run: dart format lib/screens/canvas/widgets/canvas_area.dart test/canvas_pinch_gesture_test.dart
-      - name: Targeted pinch tests
-        run: flutter test test/canvas_pinch_gesture_test.dart
-      - name: Commit verified repair and remove one-shot
-        shell: bash
+        env:
+          PINCH_TEST_B64: "REPLACE_ME"
+      - name: Format and test
+        run: |
+          dart format lib/screens/canvas/widgets/canvas_area.dart test/canvas_pinch_gesture_test.dart
+          flutter test test/canvas_pinch_gesture_test.dart
+      - name: Commit verified repair
         run: |
           git config user.name github-actions[bot]
           git config user.email 41898282+github-actions[bot]@users.noreply.github.com
