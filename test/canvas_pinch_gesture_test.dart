@@ -56,8 +56,8 @@ void main() {
           home: Scaffold(
             body: Center(
               child: SizedBox(
-                width: 384,
-                height: 384,
+                width: 560,
+                height: 560,
                 child: CanvasArea(
                   project: p,
                   currentLayerId: layer.id,
@@ -124,27 +124,27 @@ void main() {
     expect(scaleOf(), lessThan(enlarged), reason: 'ピンチインで拡大率が下がること');
   });
 
-  testWidgets('下限未満の縮小要求は0.2倍へ正確にクランプされる', (tester) async {
+  testWidgets('下限未満の縮小要求は0.01倍へ正確にクランプされる', (tester) async {
     final scaleOf = await pumpCanvas(tester);
     final center = tester.getCenter(find.byType(CanvasArea));
-    // CanvasAreaは指間4px未満を角度計算の不安定域として無視する。
-    // その有効域の端（4px）でも要求倍率は4/200=0.02で十分に下限未満。
-    await pinch(tester, center, from: 200, to: 4);
+    // 左右32pxのフレーム送り領域を避けたまま480pxの指間を確保し、
+    // 安定域内の4.5pxまで縮めて1%未満を要求する。
+    await pinch(tester, center, from: 480, to: 4.5);
     expect(tester.takeException(), isNull);
     expect(
       scaleOf(),
       closeTo(kCanvasMinScale, 0.001),
-      reason: '下限未満を要求しても1/5より小さくならず、境界値へ到達すること',
+      reason: '下限未満を要求しても1/100より小さくならず、境界値へ到達すること',
     );
   });
 
-  testWidgets('0.2倍へ到達する同一ジェスチャーでも45度回転は保持される', (tester) async {
+  testWidgets('0.01倍へ到達する同一ジェスチャーでも45度回転は保持される', (tester) async {
     await pumpCanvas(tester);
     final center = tester.getCenter(find.byType(CanvasArea));
-    final anchor = center - const Offset(60, 0);
-    final movingStart = center + const Offset(60, 0);
-    final atMinScale = anchor + const Offset(24, 0);
-    final rotatedAtMinScale = anchor + Offset.fromDirection(math.pi / 4, 24);
+    final anchor = center - const Offset(240, 0);
+    final movingStart = center + const Offset(240, 0);
+    final atMinScale = anchor + const Offset(4.5, 0);
+    final rotatedAtMinScale = anchor + Offset.fromDirection(math.pi / 4, 4.5);
 
     final fixed = await tester.startGesture(
       anchor,

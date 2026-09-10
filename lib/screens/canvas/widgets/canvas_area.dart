@@ -63,8 +63,9 @@ enum _TransformMode { translate, scale, rotate }
 Color get kCanvasOutsideColor =>
     ThemeService.activeColorScheme.surfaceContainerHighest;
 
-/// キャンバス表示の縮小下限。等倍表示時の1/5まで縮小できる。
-const double kCanvasMinScale = 0.2;
+/// キャンバス表示の縮小下限。等倍表示時の1/100まで縮小できる。
+/// 0にはせず、逆行列・座標変換が特異にならない最小の正倍率を維持する。
+const double kCanvasMinScale = 0.01;
 
 /// キャンバス表示の拡大上限。
 const double kCanvasMaxScale = 10.0;
@@ -2330,9 +2331,8 @@ class _CanvasAreaState extends State<CanvasArea> {
             .distance <
         rotateR) {
       mode = _TransformMode.rotate;
-    } else if (selectionScaleHandlesOf(
-      bounds,
-    ).any((c) => (canvasPos - c).distance < r)) {
+    } else if (selectionScaleHandlesOf(bounds)
+        .any((c) => (canvasPos - c).distance < r)) {
       mode = _TransformMode.scale;
     } else if ((canvasPos - bounds.center).distance < r ||
         _selectionMaskContains(canvasPos)) {
