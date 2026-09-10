@@ -4,8 +4,6 @@ on:
   push:
     branches: [dev_branch]
     paths:
-      - 'tool/patch_custom_automation_surface_interactions.py'
-      - 'tool/patch_custom_automation_direct_runner_proof.py'
       - 'test/custom_automation_production_surface_visual_test.dart'
       - '.github/workflows/custom-automation-production-visual-proof.yml'
   workflow_dispatch:
@@ -23,12 +21,8 @@ jobs:
           channel: stable
           cache: true
       - run: flutter pub get
-      - name: Apply production-surface harness isolation
-        run: python3 tool/patch_custom_automation_surface_interactions.py
-      - name: Replace fixed-sleep proof with direct production runner proof
-        run: python3 tool/patch_custom_automation_direct_runner_proof.py
-      - name: Format patched test
-        run: dart format test/custom_automation_production_surface_visual_test.dart
+      - name: Check proof formatting
+        run: dart format --output=none --set-exit-if-changed test/custom_automation_production_surface_visual_test.dart
       - name: Analyze production visual proof
         run: flutter analyze test/custom_automation_production_surface_visual_test.dart --no-fatal-warnings --no-fatal-infos
       - name: Run complete production visual proof
