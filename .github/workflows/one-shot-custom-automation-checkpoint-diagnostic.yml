@@ -1,0 +1,59 @@
+name: One-shot Custom Automation Checkpoint Diagnostic
+
+on:
+  push:
+    branches: [dev_branch]
+    paths:
+      - '.github/workflows/one-shot-custom-automation-checkpoint-diagnostic.yml'
+  workflow_dispatch:
+
+jobs:
+  locate-production-widget-stall:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: dev_branch
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+      - run: flutter pub get
+      - name: Add temporary checkpoints and short diagnostic timeout
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          p = Path('test/custom_automation_production_visual_test.dart')
+          s = p.read_text()
+          replacements = [
+            (
+              "      await harness.createAndShowProject('record-replay');\n",
+              "      await harness.createAndShowProject('record-replay');\n      print('CHECKPOINT createAndShowProject done');\n",
+            ),
+            (
+              "      await harness.capture('00_canvas_before_recording');\n      harness.showManager();\n      await tester.pump(const Duration(milliseconds: 300));\n      await harness.capture('01_manager_open');",
+              "      await harness.capture('00_canvas_before_recording');\n      print('CHECKPOINT capture 00 done');\n      harness.showManager();\n      print('CHECKPOINT showManager returned');\n      await tester.pump(const Duration(milliseconds: 300));\n      print('CHECKPOINT manager pump done');\n      await harness.capture('01_manager_open');\n      print('CHECKPOINT capture 01 done');",
+            ),
+            (
+              "    timeout: const Timeout(Duration(minutes: 4)),",
+              "    timeout: const Timeout(Duration(seconds: 45)),",
+            ),
+          ]
+          for old, new in replacements:
+            if old not in s:
+              raise SystemExit('checkpoint anchor changed: ' + old)
+            s = s.replace(old, new, 1)
+          p.write_text(s)
+          PY
+      - run: dart format test/custom_automation_production_visual_test.dart
+      - name: Run checkpoint diagnostic
+        run: flutter test test/custom_automation_production_visual_test.dart --plain-name 'real Canvas widgets record -> apply -> stop -> edit -> save -> replay with PNG evidence' --reporter expanded
+      - name: Upload diagnostic checkpoints
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: custom-automation-step2-checkpoint-diagnostic
+          path: build/visual-reaudit/custom-automation-production
+          if-no-files-found: warn
+          retention-days: 1
