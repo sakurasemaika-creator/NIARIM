@@ -26,12 +26,12 @@ Uint8List applyPrismFilterInIsolate(
 
 /// Prism effect pixels for a single layer.
 ///
-/// The source alpha is the clipping mask. Inside it, six equal bands are painted
-/// red -> green -> cyan -> blue -> purple -> red at HSV saturation 100% and
-/// value/brightness 30%. The alpha lock is then considered released and Gaussian
-/// blur is applied, so the glow may extend beyond the original alpha boundary.
-/// The caller replaces the selected/reference layer pixels with this result in place;
-/// no generated layer or blend-mode change is part of the Prism filter.
+/// The source alpha is the clipping mask. Across the selected shape's actual alpha
+/// extent, six equal bands are painted red -> green -> cyan -> blue -> purple -> red
+/// at HSV saturation 100% and value/brightness 30%. The alpha lock is then considered
+/// released and Gaussian blur is applied, so the glow may extend beyond the original
+/// alpha boundary. The caller replaces the selected/reference layer pixels with this
+/// result and switches that layer to the app's Linear Dodge/additive blend mode.
 class PrismFilterEngine {
   PrismFilterEngine({FilterEngine? filterEngine})
     : _filterEngine = filterEngine ?? FilterEngine();
@@ -92,16 +92,23 @@ class PrismFilterEngine {
         normalizeDirectionDegrees(directionDegrees) * math.pi / 180.0;
     final dx = math.cos(radians);
     final dy = math.sin(radians);
-    final maxX = math.max(0, width - 1).toDouble();
-    final maxY = math.max(0, height - 1).toDouble();
-    final projections = <double>[
-      0.0,
-      maxX * dx,
-      maxY * dy,
-      maxX * dx + maxY * dy,
-    ];
-    final minProjection = projections.reduce(math.min);
-    final maxProjection = projections.reduce(math.max);
+
+    // The six equal sections belong to the selected shape, not to the whole canvas.
+    // Determine the projected extent using only pixels that participate in the source
+    // alpha mask. This is especially important for narrow prism shapes and non-square
+    // canvases, where canvas-corner bounds would otherwise compress or omit bands.
+    var minProjection = double.infinity;
+    var maxProjection = double.negativeInfinity;
+    for (var y = 0; y < height; y++) {
+      for (var x = 0; x < width; x++) {
+        final i = (y * width + x) * 4;
+        if (source[i + 3] == 0) continue;
+        final projection = x * dx + y * dy;
+        minProjection = math.min(minProjection, projection);
+        maxProjection = math.max(maxProjection, projection);
+      }
+    }
+    if (!minProjection.isFinite || !maxProjection.isFinite) return out;
     final span = math.max(1e-9, maxProjection - minProjection).toDouble();
 
     for (var y = 0; y < height; y++) {
