@@ -1,0 +1,34 @@
+name: One-shot Custom Automation Baseline Diagnostic
+
+on:
+  push:
+    branches: [dev_branch]
+    paths:
+      - '.github/workflows/one-shot-custom-automation-baseline-diagnostic.yml'
+  workflow_dispatch:
+
+jobs:
+  baseline-production-widget:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: dev_branch
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+      - run: flutter pub get
+      - name: Analyze baseline production widget proof
+        run: flutter analyze test/custom_automation_production_visual_test.dart --no-fatal-warnings --no-fatal-infos
+      - name: Run baseline production widget proof unchanged
+        run: flutter test test/custom_automation_production_visual_test.dart --plain-name 'real Canvas widgets record -> apply -> stop -> edit -> save -> replay with PNG evidence' --reporter expanded
+      - name: Upload baseline PNG checkpoints
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: custom-automation-step2-baseline-diagnostic
+          path: build/visual-reaudit/custom-automation-production
+          if-no-files-found: warn
+          retention-days: 1
