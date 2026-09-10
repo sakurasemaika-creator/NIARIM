@@ -23,12 +23,11 @@ jobs:
           channel: stable
           cache: true
       - run: flutter pub get
-      - name: Generate real-async production proof
+      - name: Generate condition-driven production proof
         shell: bash
         run: |
           python3 <<'PY'
           from pathlib import Path
-          import re
           import textwrap
 
           source = Path('.github/workflows/one-shot-custom-automation-record-edit-replay.yml').read_text()
@@ -41,12 +40,36 @@ jobs:
           p = Path('test/custom_automation_production_surface_visual_test.dart')
           s = p.read_text()
 
-          helper = r'''  Future<void> waitUntil(
-            bool Function() condition, {
-            required String label,
-            Duration timeout = const Duration(seconds: 20),
-          }) async {
-            final stopwatch = Stopwatch()..start();
+          apply_old = "              await tester.tap(find.text(l10n.filterApplyButton));"
+          apply_new = "\n".join([
+              "              await tester.runAsync(() async {",
+              "                await tester.tap(find.text(l10n.filterApplyButton));",
+              "              });",
+          ])
+          if s.count(apply_old) < 2:
+              raise SystemExit('filter Apply tap anchors changed')
+          s = s.replace(apply_old, apply_new, 2)
+
+          replay_old = "              await tester.tap(find.text(l10n.customAutomationYes));"
+          replay_new = "\n".join([
+              "              await tester.runAsync(() async {",
+              "                await tester.tap(find.text(l10n.customAutomationYes));",
+              "              });",
+          ])
+          if replay_old not in s:
+              raise SystemExit('replay confirmation tap anchor changed')
+          s = s.replace(replay_old, replay_new, 1)
+
+          old_wait = """            final deadline = DateTime.now().add(timeout);
+            while (!condition()) {
+              if (DateTime.now().isAfter(deadline)) {
+                fail('Timed out waiting for $label');
+              }
+              await tester.pump(const Duration(milliseconds: 16));
+              await tester.runAsync(() => Future<void>.delayed(Duration.zero));
+            }
+            await tester.pump();"""
+          new_wait = """            final stopwatch = Stopwatch()..start();
             while (!condition()) {
               if (stopwatch.elapsed >= timeout) {
                 fail('Timed out waiting for $label');
@@ -57,92 +80,10 @@ jobs:
               );
             }
             stopwatch.stop();
-            await tester.pump();
-          }
-
-          Future<void> tapAndWaitRealAsync(
-            Finder finder,
-            bool Function() condition, {
-            required String label,
-            Duration timeout = const Duration(seconds: 20),
-          }) async {
-            await tester.runAsync(() async {
-              await tester.tap(finder);
-              final stopwatch = Stopwatch()..start();
-              while (!condition()) {
-                if (stopwatch.elapsed >= timeout) {
-                  fail('Timed out waiting for $label');
-                }
-                await Future<void>.delayed(const Duration(milliseconds: 10));
-              }
-              stopwatch.stop();
-            });
-            await tester.pump();
-          }
-
-          Future<void> captureCanvas'''
-          wait_pattern = re.compile(
-              r"(?ms)^\s*Future<void> waitUntil\(.*?^\s*Future<void> captureCanvas",
-          )
-          s, count = wait_pattern.subn(helper, s, count=1)
-          if count != 1:
-              raise SystemExit('generated waitUntil block anchor changed')
-
-          first = re.compile(
-              r"(?ms)^(\s*)await tester\.tap\(find\.text\(l10n\.filterApplyButton\)\);\n"
-              r"\1await harness\.waitUntil\(\n"
-              r"\1  \(\) =>\n"
-              r"\1      automation\.draft\?\.steps\.length == 1 &&\n"
-              r"\1      _changedBytes\(beforeFirstApply, harness\.activeLayerPixels\(\)\) > 100,\n"
-              r"\1  label: 'first recorded Canvas filter change',\n"
-              r"\1\);"
-          )
-          first_repl = r'''\1await harness.tapAndWaitRealAsync(
-\1  find.text(l10n.filterApplyButton),
-\1  () =>
-\1      automation.draft?.steps.length == 1 &&
-\1      _changedBytes(beforeFirstApply, harness.activeLayerPixels()) > 100,
-\1  label: 'first recorded Canvas filter change',
-\1);'''
-          s, count = first.subn(first_repl, s, count=1)
-          if count != 1:
-              raise SystemExit('first apply/wait block anchor changed')
-
-          second = re.compile(
-              r"(?ms)^(\s*)await tester\.tap\(find\.text\(l10n\.filterApplyButton\)\);\n"
-              r"\1await harness\.waitUntil\(\n"
-              r"\1  \(\) =>\n"
-              r"\1      automation\.draft\?\.steps\.length == 2 &&\n"
-              r"\1      _changedBytes\(beforeSecondApply, harness\.activeLayerPixels\(\)\) > 100,\n"
-              r"\1  label: 'second recorded Canvas filter change',\n"
-              r"\1\);"
-          )
-          second_repl = r'''\1await harness.tapAndWaitRealAsync(
-\1  find.text(l10n.filterApplyButton),
-\1  () =>
-\1      automation.draft?.steps.length == 2 &&
-\1      _changedBytes(beforeSecondApply, harness.activeLayerPixels()) > 100,
-\1  label: 'second recorded Canvas filter change',
-\1);'''
-          s, count = second.subn(second_repl, s, count=1)
-          if count != 1:
-              raise SystemExit('second apply/wait block anchor changed')
-
-          replay = re.compile(
-              r"(?ms)^(\s*)await tester\.tap\(find\.text\(l10n\.customAutomationYes\)\);\n"
-              r"\1await harness\.waitUntil\(\n"
-              r"\1  \(\) => _changedBytes\(beforeReplay, harness\.activeLayerPixels\(\)\) > 100,\n"
-              r"\1  label: 'saved automation replay pixel change',\n"
-              r"\1\);"
-          )
-          replay_repl = r'''\1await harness.tapAndWaitRealAsync(
-\1  find.text(l10n.customAutomationYes),
-\1  () => _changedBytes(beforeReplay, harness.activeLayerPixels()) > 100,
-\1  label: 'saved automation replay pixel change',
-\1);'''
-          s, count = replay.subn(replay_repl, s, count=1)
-          if count != 1:
-              raise SystemExit('replay tap/wait block anchor changed')
+            await tester.pump();"""
+          if old_wait not in s:
+              raise SystemExit('condition wait helper anchor changed')
+          s = s.replace(old_wait, new_wait, 1)
 
           if 'waitForProductionAsync' in s:
               raise SystemExit('fixed production wait remains')
@@ -171,5 +112,5 @@ jobs:
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
           git add test/custom_automation_production_surface_visual_test.dart .github/workflows/custom-automation-production-visual-proof.yml .github/workflows/one-shot-custom-automation-record-edit-replay.yml .github/workflows/one-shot-custom-automation-condition-wait-repair.yml
-          git commit -m 'test: prove automation replay with real async UI actions'
+          git commit -m 'test: prove automation replay with real async UI taps'
           git push origin HEAD:dev_branch
