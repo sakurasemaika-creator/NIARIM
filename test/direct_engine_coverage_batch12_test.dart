@@ -151,6 +151,22 @@ void main() {
       expect(points.length, greaterThanOrEqualTo(2), reason: preset.name);
       expect(points.first.dx, 0, reason: '${preset.name} starts at x=0');
       expect(points.last.dx, 1, reason: '${preset.name} ends at x=1');
+    }
+
+    const hologramPresets = <AuroraHologramPreset>[
+      AuroraHologramPreset.aurora,
+      AuroraHologramPreset.soapBubble,
+      AuroraHologramPreset.cyberNeon,
+      AuroraHologramPreset.pastelDream,
+      AuroraHologramPreset.sunsetGold,
+      AuroraHologramPreset.silverFoil,
+    ];
+    expect(AuroraHologramPreset.values, hologramPresets);
+    for (final preset in hologramPresets) {
+      final stops = auroraHologramStops(preset);
+      expect(stops.length, greaterThanOrEqualTo(3), reason: preset.name);
+      expect(stops.first.$1, 0.0, reason: '${preset.name} starts at 0');
+      expect(stops.last.$1, 1.0, reason: '${preset.name} ends at 1');
       for (var i = 1; i < stops.length; i++) {
         expect(
           stops[i].$1,
