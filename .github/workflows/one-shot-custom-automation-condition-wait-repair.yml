@@ -35,26 +35,30 @@ jobs:
           start = source.index(marker) + len(marker)
           end = source.index("\n          PY\n", start)
           script = textwrap.dedent(source[start:end])
-          old = '''final deadline = DateTime.now().add(timeout);
-    while (!condition()) {
-      if (DateTime.now().isAfter(deadline)) {
-        fail('Timed out waiting for $label');
-      }
-      await tester.pump(const Duration(milliseconds: 16));
-      await tester.runAsync(() => Future<void>.delayed(Duration.zero));
-    }
-    await tester.pump();'''
-          new = '''await tester.runAsync(() async {
-      final stopwatch = Stopwatch()..start();
-      while (!condition()) {
-        if (stopwatch.elapsed >= timeout) {
-          fail('Timed out waiting for $label');
-        }
-        await Future<void>.delayed(const Duration(milliseconds: 10));
-      }
-      stopwatch.stop();
-    });
-    await tester.pump();'''
+          old = (
+              "final deadline = DateTime.now().add(timeout);\n"
+              "    while (!condition()) {\n"
+              "      if (DateTime.now().isAfter(deadline)) {\n"
+              "        fail('Timed out waiting for $label');\n"
+              "      }\n"
+              "      await tester.pump(const Duration(milliseconds: 16));\n"
+              "      await tester.runAsync(() => Future<void>.delayed(Duration.zero));\n"
+              "    }\n"
+              "    await tester.pump();"
+          )
+          new = (
+              "await tester.runAsync(() async {\n"
+              "      final stopwatch = Stopwatch()..start();\n"
+              "      while (!condition()) {\n"
+              "        if (stopwatch.elapsed >= timeout) {\n"
+              "          fail('Timed out waiting for $label');\n"
+              "        }\n"
+              "        await Future<void>.delayed(const Duration(milliseconds: 10));\n"
+              "      }\n"
+              "      stopwatch.stop();\n"
+              "    });\n"
+              "    await tester.pump();"
+          )
           if old not in script:
               raise SystemExit('source wait helper anchor changed')
           script = script.replace(old, new, 1)
