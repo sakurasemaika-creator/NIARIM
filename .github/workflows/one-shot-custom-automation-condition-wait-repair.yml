@@ -1,0 +1,91 @@
+name: One-shot Custom Automation Condition Wait Repair
+
+on:
+  push:
+    branches: [dev_branch]
+    paths:
+      - '.github/workflows/one-shot-custom-automation-condition-wait-repair.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  repair-and-prove:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: dev_branch
+          fetch-depth: 0
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+      - run: flutter pub get
+      - name: Apply condition-driven production proof rewrite
+        shell: bash
+        run: |
+          python3 <<'PY'
+          from pathlib import Path
+          import textwrap
+
+          source = Path('.github/workflows/one-shot-custom-automation-record-edit-replay.yml').read_text()
+          marker = "          python3 <<'PY'\n"
+          start = source.index(marker) + len(marker)
+          end = source.index("\n          PY\n", start)
+          script = textwrap.dedent(source[start:end])
+          exec(compile(script, 'record-edit-replay-rewrite', 'exec'))
+
+          p = Path('test/custom_automation_production_surface_visual_test.dart')
+          s = p.read_text()
+          old = '''    final deadline = DateTime.now().add(timeout);
+            while (!condition()) {
+              if (DateTime.now().isAfter(deadline)) {
+                fail('Timed out waiting for $label');
+              }
+              await tester.pump(const Duration(milliseconds: 16));
+              await tester.runAsync(() => Future<void>.delayed(Duration.zero));
+            }
+            await tester.pump();'''
+          new = '''    final stopwatch = Stopwatch()..start();
+            while (!condition()) {
+              if (stopwatch.elapsed >= timeout) {
+                fail('Timed out waiting for $label');
+              }
+              await tester.runAsync(
+                () => Future<void>.delayed(const Duration(milliseconds: 25)),
+              );
+              await tester.pump();
+            }
+            stopwatch.stop();
+            await tester.pump();'''
+          if old not in s:
+              raise SystemExit('generated waitUntil helper anchor changed')
+          p.write_text(s.replace(old, new, 1))
+          PY
+      - name: Format proof
+        run: dart format test/custom_automation_production_surface_visual_test.dart
+      - name: Analyze proof
+        run: flutter analyze test/custom_automation_production_surface_visual_test.dart --no-fatal-warnings --no-fatal-infos
+      - name: Prove record edit save replay pixels
+        run: flutter test test/custom_automation_production_surface_visual_test.dart --plain-name 'production UI records a real Canvas change, edits, saves, replays, and changes PNG pixels' --reporter expanded
+      - name: Upload PNG pixel evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: custom-automation-record-edit-replay-png-evidence
+          path: build/visual-reaudit/custom-automation-production
+          if-no-files-found: warn
+          retention-days: 7
+      - name: Commit proven rewrite
+        if: success()
+        shell: bash
+        run: |
+          rm .github/workflows/one-shot-custom-automation-record-edit-replay.yml
+          rm .github/workflows/one-shot-custom-automation-condition-wait-repair.yml
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add test/custom_automation_production_surface_visual_test.dart .github/workflows/custom-automation-production-visual-proof.yml .github/workflows/one-shot-custom-automation-record-edit-replay.yml .github/workflows/one-shot-custom-automation-condition-wait-repair.yml
+          git commit -m 'test: make automation proof condition-driven'
+          git push origin HEAD:dev_branch
