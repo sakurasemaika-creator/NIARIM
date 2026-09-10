@@ -15,10 +15,9 @@ import 'prism_filter_engine.dart';
 ///
 /// The return value is the layer that subsequent automation steps should treat as
 /// active. Generated-layer filters (outline/ink-pool/auto-lineart) return their new
-/// normal layer; destructive filters return [sourceLayerId]. Generated-layer effect
-/// filters always reference the composite of every currently visible pixel layer and
-/// place their output at the very top of the layer stack. This keeps effect-filter
-/// behavior consistent for current-frame and all-frame execution.
+/// normal layer; destructive filters return [sourceLayerId]. Filter input always
+/// comes from the recorded source layer, matching FilterPanel's production apply
+/// path. Filters that need surrounding context build that context separately.
 class CustomAutomationFilterRunner {
   static Future<String> apply({
     required ProjectService projectService,
@@ -36,14 +35,7 @@ class CustomAutomationFilterRunner {
       sourceLayerId,
     );
 
-    final image = _createsLayer(filter)
-        ? await _compositeVisibleReference(
-            projectService: projectService,
-            projectId: projectId,
-            sceneId: sceneId,
-            frameIndex: frameIndex,
-          )
-        : await tm.compositeLayerToImage(key);
+    final image = await tm.compositeLayerToImage(key);
     final byteData = await image.toByteData(format: ui.ImageByteFormat.rawRgba);
     image.dispose();
     if (byteData == null) {
@@ -84,13 +76,14 @@ class CustomAutomationFilterRunner {
           auxiliary = maskBytes?.buffer.asUint8List();
         }
       } else if (filter.kind == FilterKind.backgroundBlend) {
-        // Reference filters use the full visible composite for their environment
-        // reference. LayerCompositor itself excludes hidden/non-pixel layers.
+        // Match FilterPanel: the environment reference is the visible composite
+        // of every layer except the source layer itself.
         final background = await _compositeVisibleReference(
           projectService: projectService,
           projectId: projectId,
           sceneId: sceneId,
           frameIndex: frameIndex,
+          excludedLayerId: sourceLayerId,
         );
         final backgroundBytes = await background.toByteData(
           format: ui.ImageByteFormat.rawRgba,
@@ -146,6 +139,7 @@ class CustomAutomationFilterRunner {
     required String projectId,
     required String sceneId,
     required int frameIndex,
+    String? excludedLayerId,
   }) {
     final tm = projectService.tileManagerOf(projectId);
     final layers = projectService.layersOf(projectId, sceneId, frameIndex);
@@ -156,7 +150,8 @@ class CustomAutomationFilterRunner {
           projectService.tileKeyFor(projectId, sceneId, frameIndex, layer.id),
       tm.canvasWidth,
       tm.canvasHeight,
-      shouldRender: (layer, _) => layer.isVisible,
+      shouldRender: (layer, _) =>
+          layer.isVisible && layer.id != excludedLayerId,
     );
   }
 
