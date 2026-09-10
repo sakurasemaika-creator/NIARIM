@@ -2705,7 +2705,7 @@
   "customAutomationFrameTo": "종료 프레임",
   "customAutomationFrameRangeInvalid": "올바른 프레임 범위를 입력하세요.",
   "startupLoading": "시작하는 중…",
-  "startupErrorTitle": "NIARIM을 시작할 수 없습니다",
+  "startupErrorTitle": "시작할 수 없습니다",
   "startupErrorBody": "다시 시도해 주세요. 문제가 계속되면 앱 데이터를 지우지 말고 고객 지원에 문의해 주세요.",
   "startupRetry": "다시 시도"
 }
