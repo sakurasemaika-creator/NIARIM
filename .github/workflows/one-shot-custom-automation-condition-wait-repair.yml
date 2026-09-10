@@ -12,7 +12,7 @@ permissions:
 jobs:
   diagnose-and-prove:
     runs-on: ubuntu-latest
-    timeout-minutes: 25
+    timeout-minutes: 15
     steps:
       - uses: actions/checkout@v4
         with:
@@ -23,7 +23,7 @@ jobs:
           channel: stable
           cache: true
       - run: flutter pub get
-      - name: Generate condition-driven record/edit/replay proof
+      - name: Generate instrumented record edit replay proof
         shell: bash
         run: |
           python3 <<'PY'
@@ -44,11 +44,13 @@ jobs:
               "  Future<void> waitUntil(",
               "    bool Function() condition, {",
               "    required String label,",
-              "    Duration timeout = const Duration(seconds: 20),",
+              "    Duration timeout = const Duration(seconds: 10),",
               "  }) async {",
               "    final stopwatch = Stopwatch()..start();",
+              "    print('WAIT START: $label');",
               "    while (!condition()) {",
               "      if (stopwatch.elapsed >= timeout) {",
+              "        print('WAIT TIMEOUT: $label');",
               "        fail('Timed out waiting for $label');",
               "      }",
               "      await tester.pump(const Duration(milliseconds: 16));",
@@ -57,57 +59,74 @@ jobs:
               "      );",
               "    }",
               "    stopwatch.stop();",
+              "    print('WAIT DONE: $label');",
               "    await tester.pump();",
               "  }",
               "",
               "  Future<void> captureCanvas",
           ])
-          pattern = re.compile(
-              r"(?ms)^\s*Future<void> waitUntil\(.*?^\s*Future<void> captureCanvas",
-          )
+          pattern = re.compile(r"(?ms)^\s*Future<void> waitUntil\(.*?^\s*Future<void> captureCanvas")
           s, count = pattern.subn(replacement, s, count=1)
           if count != 1:
               raise SystemExit('generated waitUntil block anchor changed')
+
+          markers = [
+              ("              await harness.captureCanvas('01_canvas_before_recording');", "              print('MARK 01 before capture canvas');\n              await harness.captureCanvas('01_canvas_before_recording');\n              print('MARK 02 after capture canvas');"),
+              ("              harness.showManager();", "              print('MARK 03 before manager');\n              harness.showManager();"),
+              ("              await tester.tap(find.text(l10n.customAutomationStartRecording));", "              print('MARK 04 before start-record tap');\n              await tester.tap(find.text(l10n.customAutomationStartRecording));\n              print('MARK 05 after start-record tap');"),
+              ("              harness.filterService.selectFilter('Filter0019');", "              print('MARK 06 before filter select');\n              harness.filterService.selectFilter('Filter0019');\n              print('MARK 07 after filter select');", 1),
+              ("              harness.showFilterPanel();", "              print('MARK 08 before show filter panel');\n              harness.showFilterPanel();\n              print('MARK 09 after show filter panel');", 1),
+              ("              await harness.capture('02_filter_panel_while_recording');", "              print('MARK 10 before filter panel capture');\n              await harness.capture('02_filter_panel_while_recording');\n              print('MARK 11 after filter panel capture');"),
+              ("              await tester.tap(find.text(l10n.filterApplyButton));", "              print('MARK 12 before first apply tap');\n              await tester.tap(find.text(l10n.filterApplyButton));\n              print('MARK 13 after first apply tap');", 1),
+              ("              final afterFirstApply = harness.activeLayerPixels();", "              print('MARK 14 after first apply wait');\n              final afterFirstApply = harness.activeLayerPixels();"),
+              ("              await harness.captureCanvas('03_canvas_after_recorded_change');", "              print('MARK 15 before changed canvas capture');\n              await harness.captureCanvas('03_canvas_after_recorded_change');\n              print('MARK 16 after changed canvas capture');"),
+              ("              harness.showRecordingStop();", "              print('MARK 17 before recording stop UI');\n              harness.showRecordingStop();"),
+              ("              harness.showDraftEditor();", "              print('MARK 18 before draft editor');\n              harness.showDraftEditor();"),
+              ("              await tester.tap(find.text(l10n.commonSave).last);", "              print('MARK 19 before save tap');\n              await tester.tap(find.text(l10n.commonSave).last);\n              print('MARK 20 after save tap');"),
+              ("              await harness.createProject('record-replay-fresh-target');", "              print('MARK 21 before fresh project');\n              await harness.createProject('record-replay-fresh-target');\n              print('MARK 22 after fresh project');"),
+              ("              await tester.tap(find.text(l10n.customAutomationYes));", "              print('MARK 23 before replay confirm tap');\n              await tester.tap(find.text(l10n.customAutomationYes));\n              print('MARK 24 after replay confirm tap');"),
+              ("              final afterReplay = harness.activeLayerPixels();", "              print('MARK 25 after replay wait');\n              final afterReplay = harness.activeLayerPixels();"),
+          ]
+          for entry in markers:
+              old, new = entry[0], entry[1]
+              count = entry[2] if len(entry) > 2 else 1
+              if old not in s:
+                  raise SystemExit(f'instrumentation anchor changed: {old}')
+              s = s.replace(old, new, count)
+
+          s = s.replace("timeout: const Timeout(Duration(minutes: 3)),", "timeout: const Timeout(Duration(seconds: 60)),", 1)
           p.write_text(s)
           PY
-      - name: Diagnostic only - bypass compute inside the two production filter paths
+      - name: Diagnostic only bypass generic compute
         shell: bash
         run: |
           python3 <<'PY'
           from pathlib import Path
-
           panel = Path('lib/screens/canvas/widgets/filter_panel.dart')
           s = panel.read_text()
           old = """      result = await compute(applyDrawFilterInIsolate, (\n        data,\n        tm.canvasWidth,\n        tm.canvasHeight,\n        filter,\n        maskData,\n      ));"""
-          new = """      // Diagnostic workflow only: execute the identical top-level filter\n      // function synchronously to distinguish widget-test isolate scheduling from\n      // production filter semantics. This file is never committed by this workflow.\n      result = applyDrawFilterInIsolate((\n        data,\n        tm.canvasWidth,\n        tm.canvasHeight,\n        filter,\n        maskData,\n      ));"""
-          if old not in s:
-              raise SystemExit('FilterPanel generic compute anchor changed')
+          new = """      result = applyDrawFilterInIsolate((\n        data,\n        tm.canvasWidth,\n        tm.canvasHeight,\n        filter,\n        maskData,\n      ));"""
+          if old not in s: raise SystemExit('FilterPanel generic compute anchor changed')
           panel.write_text(s.replace(old, new, 1))
 
           runner = Path('lib/engine/custom_automation_filter_runner.dart')
           s = runner.read_text()
           old = """      result = await compute(applyDrawFilterInIsolate, (\n        data,\n        tm.canvasWidth,\n        tm.canvasHeight,\n        filter,\n        auxiliary,\n      ));"""
-          new = """      // Diagnostic workflow only; see FilterPanel patch above.\n      result = applyDrawFilterInIsolate((\n        data,\n        tm.canvasWidth,\n        tm.canvasHeight,\n        filter,\n        auxiliary,\n      ));"""
-          if old not in s:
-              raise SystemExit('automation runner generic compute anchor changed')
+          new = """      result = applyDrawFilterInIsolate((\n        data,\n        tm.canvasWidth,\n        tm.canvasHeight,\n        filter,\n        auxiliary,\n      ));"""
+          if old not in s: raise SystemExit('automation runner generic compute anchor changed')
           runner.write_text(s.replace(old, new, 1))
           PY
       - name: Format diagnostic tree
         run: dart format test/custom_automation_production_surface_visual_test.dart lib/screens/canvas/widgets/filter_panel.dart lib/engine/custom_automation_filter_runner.dart
       - name: Analyze diagnostic tree
         run: flutter analyze test/custom_automation_production_surface_visual_test.dart lib/screens/canvas/widgets/filter_panel.dart lib/engine/custom_automation_filter_runner.dart --no-fatal-warnings --no-fatal-infos
-      - name: Prove record edit save replay pixels without isolate scheduling
+      - name: Run instrumented proof
         run: flutter test test/custom_automation_production_surface_visual_test.dart --plain-name 'production UI records a real Canvas change, edits, saves, replays, and changes PNG pixels' --reporter expanded
       - name: Upload diagnostic PNG evidence
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: custom-automation-compute-diagnostic-png-evidence
+          name: custom-automation-stall-diagnostic-png-evidence
           path: build/visual-reaudit/custom-automation-production
           if-no-files-found: warn
           retention-days: 7
-      - name: Verify diagnostic production patches were not persisted
-        if: always()
-        run: |
-          git diff -- lib/screens/canvas/widgets/filter_panel.dart lib/engine/custom_automation_filter_runner.dart
-          echo 'Diagnostic workflow intentionally does not commit or push production patches.'
