@@ -6,11 +6,12 @@ import 'dart:ui' as ui;
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:niarim/app_bootstrap.dart';
 import 'package:niarim/app_startup.dart';
 import 'package:niarim/l10n/app_localizations.dart';
+
+import 'helpers/load_app_fonts.dart';
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
@@ -53,24 +54,17 @@ void main() {
   testWidgets('startup recovery loading/error layout and retry matrix', (
     tester,
   ) async {
-    // Render the actual bundled typography, not Flutter test's Ahem squares.
-    for (final entry in {
-      'HakkouMincho': 'HakkouMincho.ttf',
-      'Kuramubon': 'Kuramubon.otf',
-      'NotoSerifJP': 'NotoSerifJP.ttf',
-      'DelaGothicOne': 'DelaGothicOne-Regular.ttf',
-      'NotoSerifKRSubset': 'NotoSerifKRSubset.ttf',
-      'NotoSerifSCSubset': 'NotoSerifSCSubset.ttf',
-      'NotoSansKRBlackSubset': 'NotoSansKRBlackSubset.ttf',
-      'NotoSansSCBlackSubset': 'NotoSansSCBlackSubset.ttf',
-    }.entries) {
-      await (FontLoader(
-        entry.key,
-      )..addFont(rootBundle.load('assets/fonts/${entry.value}'))).load();
-    }
-    await (FontLoader(
-      'MaterialIcons',
-    )..addFont(rootBundle.load('fonts/MaterialIcons-Regular.otf'))).load();
+    // Use the production font manifest and require the icon font for real PNGs.
+    final flutterRoot = Platform.environment['FLUTTER_ROOT'];
+    expect(flutterRoot, isNotNull);
+    expect(
+      File(
+        '$flutterRoot/bin/cache/artifacts/material_fonts/'
+        'MaterialIcons-Regular.otf',
+      ).existsSync(),
+      isTrue,
+    );
+    await loadAppFonts(tester);
     final out = Directory('build/audit-a001/startup-ui')
       ..createSync(recursive: true);
     final manifest = <Map<String, Object>>[];
