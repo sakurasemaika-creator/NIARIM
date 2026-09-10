@@ -137,9 +137,14 @@ s = replace_once(
     'preset executor async boundary',
 )
 
-old_tail = """p.write_text(s)\n"""
-new_tail = r'''wait_anchor = '''  Future<void> waitForProductionAsync({int extraMilliseconds = 1500}) async {
-'''
+# Inject completion-based helpers into the test generator. Use ordinary quoted
+# strings here so this Python patcher cannot conflict with the generator's raw
+# triple-quoted Dart templates.
+write_call = '\np.write_text(s)\n'
+if write_call not in s:
+    raise SystemExit('rewrite script write anchor changed')
+helper_patch = """
+\nwait_anchor = \"  Future<void> waitForProductionAsync({int extraMilliseconds = 1500}) async {\\n\"
 if 'Future<void> waitForFilterPanelReady()' not in s:
     if wait_anchor not in s:
         raise SystemExit('production wait helper anchor changed')
@@ -171,8 +176,6 @@ if 'Future<void> waitForFilterPanelReady()' not in s:
 
 '''
     s = s.replace(wait_anchor, completion_helpers + wait_anchor, 1)
-
-p.write_text(s)
-'''
-s = replace_once(s, old_tail, new_tail, 'rewrite script tail')
+"""
+s = s.replace(write_call, helper_patch + write_call, 1)
 p.write_text(s)
