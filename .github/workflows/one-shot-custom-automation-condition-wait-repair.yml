@@ -70,29 +70,35 @@ jobs:
           if count != 1:
               raise SystemExit('generated waitUntil block anchor changed')
 
-          markers = [
-              ("              await harness.captureCanvas('01_canvas_before_recording');", "              print('MARK 01 before capture canvas');\n              await harness.captureCanvas('01_canvas_before_recording');\n              print('MARK 02 after capture canvas');"),
-              ("              harness.showManager();", "              print('MARK 03 before manager');\n              harness.showManager();"),
-              ("              await tester.tap(find.text(l10n.customAutomationStartRecording));", "              print('MARK 04 before start-record tap');\n              await tester.tap(find.text(l10n.customAutomationStartRecording));\n              print('MARK 05 after start-record tap');"),
-              ("              harness.filterService.selectFilter('Filter0019');", "              print('MARK 06 before filter select');\n              harness.filterService.selectFilter('Filter0019');\n              print('MARK 07 after filter select');", 1),
-              ("              harness.showFilterPanel();", "              print('MARK 08 before show filter panel');\n              harness.showFilterPanel();\n              print('MARK 09 after show filter panel');", 1),
-              ("              await harness.capture('02_filter_panel_while_recording');", "              print('MARK 10 before filter panel capture');\n              await harness.capture('02_filter_panel_while_recording');\n              print('MARK 11 after filter panel capture');"),
-              ("              await tester.tap(find.text(l10n.filterApplyButton));", "              print('MARK 12 before first apply tap');\n              await tester.tap(find.text(l10n.filterApplyButton));\n              print('MARK 13 after first apply tap');", 1),
-              ("              final afterFirstApply = harness.activeLayerPixels();", "              print('MARK 14 after first apply wait');\n              final afterFirstApply = harness.activeLayerPixels();"),
-              ("              await harness.captureCanvas('03_canvas_after_recorded_change');", "              print('MARK 15 before changed canvas capture');\n              await harness.captureCanvas('03_canvas_after_recorded_change');\n              print('MARK 16 after changed canvas capture');"),
-              ("              harness.showRecordingStop();", "              print('MARK 17 before recording stop UI');\n              harness.showRecordingStop();"),
-              ("              harness.showDraftEditor();", "              print('MARK 18 before draft editor');\n              harness.showDraftEditor();"),
-              ("              await tester.tap(find.text(l10n.commonSave).last);", "              print('MARK 19 before save tap');\n              await tester.tap(find.text(l10n.commonSave).last);\n              print('MARK 20 after save tap');"),
-              ("              await harness.createProject('record-replay-fresh-target');", "              print('MARK 21 before fresh project');\n              await harness.createProject('record-replay-fresh-target');\n              print('MARK 22 after fresh project');"),
-              ("              await tester.tap(find.text(l10n.customAutomationYes));", "              print('MARK 23 before replay confirm tap');\n              await tester.tap(find.text(l10n.customAutomationYes));\n              print('MARK 24 after replay confirm tap');"),
-              ("              final afterReplay = harness.activeLayerPixels();", "              print('MARK 25 after replay wait');\n              final afterReplay = harness.activeLayerPixels();"),
-          ]
-          for entry in markers:
-              old, new = entry[0], entry[1]
-              count = entry[2] if len(entry) > 2 else 1
-              if old not in s:
-                  raise SystemExit(f'instrumentation anchor changed: {old}')
-              s = s.replace(old, new, count)
+          def wrap_statement(statement, before, after=None, occurrence=1):
+              nonlocal_s = [s]
+              pattern = re.compile(rf"(?m)^(\s*){re.escape(statement)}\s*$")
+              matches = list(pattern.finditer(nonlocal_s[0]))
+              if len(matches) < occurrence:
+                  raise SystemExit(f'instrumentation anchor changed: {statement} occurrence {occurrence}')
+              target = matches[occurrence - 1]
+              indent = target.group(1)
+              lines = [f"{indent}print('{before}');", f"{indent}{statement}"]
+              if after is not None:
+                  lines.append(f"{indent}print('{after}');")
+              nonlocal_s[0] = nonlocal_s[0][:target.start()] + "\n".join(lines) + nonlocal_s[0][target.end():]
+              return nonlocal_s[0]
+
+          s = wrap_statement("await harness.captureCanvas('01_canvas_before_recording');", 'MARK 01 before capture canvas', 'MARK 02 after capture canvas')
+          s = wrap_statement("harness.showManager();", 'MARK 03 before manager')
+          s = wrap_statement("await tester.tap(find.text(l10n.customAutomationStartRecording));", 'MARK 04 before start-record tap', 'MARK 05 after start-record tap')
+          s = wrap_statement("harness.filterService.selectFilter('Filter0019');", 'MARK 06 before filter select', 'MARK 07 after filter select', 1)
+          s = wrap_statement("harness.showFilterPanel();", 'MARK 08 before show filter panel', 'MARK 09 after show filter panel', 1)
+          s = wrap_statement("await harness.capture('02_filter_panel_while_recording');", 'MARK 10 before filter panel capture', 'MARK 11 after filter panel capture')
+          s = wrap_statement("await tester.tap(find.text(l10n.filterApplyButton));", 'MARK 12 before first apply tap', 'MARK 13 after first apply tap', 1)
+          s = wrap_statement("final afterFirstApply = harness.activeLayerPixels();", 'MARK 14 after first apply wait')
+          s = wrap_statement("await harness.captureCanvas('03_canvas_after_recorded_change');", 'MARK 15 before changed canvas capture', 'MARK 16 after changed canvas capture')
+          s = wrap_statement("harness.showRecordingStop();", 'MARK 17 before recording stop UI')
+          s = wrap_statement("harness.showDraftEditor();", 'MARK 18 before draft editor')
+          s = wrap_statement("await tester.tap(find.text(l10n.commonSave).last);", 'MARK 19 before save tap', 'MARK 20 after save tap')
+          s = wrap_statement("await harness.createProject('record-replay-fresh-target');", 'MARK 21 before fresh project', 'MARK 22 after fresh project')
+          s = wrap_statement("await tester.tap(find.text(l10n.customAutomationYes));", 'MARK 23 before replay confirm tap', 'MARK 24 after replay confirm tap')
+          s = wrap_statement("final afterReplay = harness.activeLayerPixels();", 'MARK 25 after replay wait')
 
           s = s.replace("timeout: const Timeout(Duration(minutes: 3)),", "timeout: const Timeout(Duration(seconds: 60)),", 1)
           p.write_text(s)
