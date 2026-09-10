@@ -4,45 +4,53 @@ import re
 p = Path('test/custom_automation_production_surface_visual_test.dart')
 s = p.read_text()
 
-manager_interaction = re.compile(
-    r"\n\s*await tester\.tap\(find\.text\(l10n\.customAutomationAdd\)\);.*?"
-    r"expect\(automation\.isRecording, isTrue\);",
-    re.S,
-)
-replacement = """
-      automation.beginDraft(
+
+def replace_between(source, start_marker, end_marker, replacement, *, already_marker, label):
+    if already_marker in source:
+        return source
+    start = source.find(start_marker)
+    if start < 0:
+        raise SystemExit(f'{label} start anchor changed')
+    end = source.find(end_marker, start)
+    if end < 0:
+        raise SystemExit(f'{label} end anchor changed')
+    end += len(end_marker)
+    return source[:start] + replacement + source[end:]
+
+
+s = replace_between(
+    s,
+    '      await tester.tap(find.text(l10n.customAutomationAdd));',
+    '      expect(automation.isRecording, isTrue);',
+    """      automation.beginDraft(
         name: 'visual-audit-automation',
         surface: CustomAutomationSurface.canvas,
         recordingStartFrame: harness.frameIndex,
       );
       harness.showBlank();
       await tester.pump();
-      expect(automation.isRecording, isTrue);"""
-s, n = manager_interaction.subn(replacement, s, count=1)
-if n != 1 and "name: 'visual-audit-automation'" not in s:
-    raise SystemExit('record-start anchor changed')
-
-stop_interaction = re.compile(
-    r"\n\s*await tester\.tap\(find\.text\(l10n\.customAutomationStopRecording\)\);"
-    r"\n\s*await tester\.pump\(const Duration\(milliseconds: 100\)\);"
-    r"\n\s*expect\(automation\.isRecording, isFalse\);"
+      expect(automation.isRecording, isTrue);""",
+    already_marker="name: 'visual-audit-automation'",
+    label='record-start',
 )
-replacement = """
-      automation.stopRecording();
+
+s = replace_between(
+    s,
+    '      await tester.tap(find.text(l10n.customAutomationStopRecording));',
+    '      expect(automation.isRecording, isFalse);',
+    """      automation.stopRecording();
       harness.showBlank();
       await tester.pump();
-      expect(automation.isRecording, isFalse);"""
-s, n = stop_interaction.subn(replacement, s, count=1)
-if n != 1 and 'automation.stopRecording();' not in s:
-    raise SystemExit('record-stop anchor changed')
-
-save_replay = re.compile(
-    r"\n\s*await tester\.tap\(find\.text\(l10n\.commonSave\)\.last\);.*?"
-    r"final afterReplay = harness\.activeLayerPixels\(\);",
-    re.S,
+      expect(automation.isRecording, isFalse);""",
+    already_marker='automation.stopRecording();\n      harness.showBlank();',
+    label='record-stop',
 )
-replacement = """
-      final saved = await automation.saveDraft();
+
+s = replace_between(
+    s,
+    '      await tester.tap(find.text(l10n.commonSave).last);',
+    '      final afterReplay = harness.activeLayerPixels();',
+    """      final saved = await automation.saveDraft();
       expect(saved, isNotNull);
       harness.showBlank();
       await tester.pump();
@@ -65,17 +73,23 @@ replacement = """
         null,
       );
       await harness.waitForProductionAsync();
-      final afterReplay = harness.activeLayerPixels();"""
-s, n = save_replay.subn(replacement, s, count=1)
-if n != 1 and 'final saved = await automation.saveDraft();' not in s:
-    raise SystemExit('save-replay anchor changed')
-
-preset_interaction = re.compile(
-    r"\n\s*await tester\.tap\(find\.text\(entry\.\$1\)\);.*?"
-    r"await harness\.waitForProductionAsync\(extraMilliseconds: 2200\);",
-    re.S,
+      final afterReplay = harness.activeLayerPixels();""",
+    already_marker='final saved = await automation.saveDraft();',
+    label='save-replay',
 )
-replacement = """
+
+preset_capture = "        await harness.capture('preset_${entry.$2}_01_manager');"
+preset_wait = '        await harness.waitForProductionAsync(extraMilliseconds: 2200);'
+if 'final preset = harness.automationService.items' not in s:
+    start = s.find(preset_capture)
+    if start < 0:
+        raise SystemExit('preset execution start anchor changed')
+    start += len(preset_capture)
+    end = s.find(preset_wait, start)
+    if end < 0:
+        raise SystemExit('preset execution end anchor changed')
+    end += len(preset_wait)
+    replacement = """
         final preset = harness.automationService.items
             .where((item) => item.name == entry.$1)
             .single;
@@ -87,9 +101,7 @@ replacement = """
           null,
         );
         await harness.waitForProductionAsync(extraMilliseconds: 2200);"""
-s, n = preset_interaction.subn(replacement, s, count=1)
-if n != 1 and 'final preset = harness.automationService.items' not in s:
-    raise SystemExit('preset execution anchor changed')
+    s = s[:start] + replacement + s[end:]
 
 if '  void showBlank() {' not in s:
     anchor = '  void showManager() {'
