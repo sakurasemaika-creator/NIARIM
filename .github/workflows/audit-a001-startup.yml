@@ -17,6 +17,7 @@ on:
       - lib/l10n/*.arb
       - test/audit_a001_startup_test.dart
       - test/audit_a001_startup_visual_test.dart
+      - test/app_smoke_test.dart
       - test/font_service_startup_recovery_test.dart
       - .github/workflows/audit-a001-startup.yml
   workflow_dispatch:
@@ -54,6 +55,8 @@ jobs:
           set -o pipefail
           mkdir -p build/audit-a001
           flutter test --no-pub --reporter expanded test/audit_a001_startup_test.dart test/font_service_startup_recovery_test.dart test/font_license_test.dart test/direct_service_coverage_batch09_test.dart 2>&1 | tee build/audit-a001/tests.txt
+      - name: Verify production startup route and existing navigation smoke
+        run: flutter test --no-pub --reporter expanded test/app_smoke_test.dart --plain-name '起動→ホーム→設定→ショートカット設定まで例外なく遷移できる'
       - name: Render startup states across all widths, modes, and languages
         run: flutter test --no-pub --reporter expanded test/audit_a001_startup_visual_test.dart
       - name: Preserve evidence

@@ -1,4 +1,5 @@
 import 'dart:io';
+
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
@@ -9,6 +10,7 @@ import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'helpers/first_use_tooltips.dart';
+
 import 'package:niarim/app.dart';
 import 'package:niarim/app_bootstrap.dart';
 import 'package:niarim/engine/export_engine.dart';
@@ -109,6 +111,17 @@ void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
   setUp(() {
+    // Production bootstrap now reports unavailable storage instead of treating
+    // it as an empty catalogue. Every smoke boot needs an isolated real store.
+    const pathChannel = MethodChannel('plugins.flutter.io/path_provider');
+    final documents = Directory.systemTemp.createTempSync('niarim_smoke_boot_');
+    TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
+        .setMockMethodCallHandler(pathChannel, (_) async => documents.path);
+    addTearDown(() {
+      TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
+          .setMockMethodCallHandler(pathChannel, null);
+      if (documents.existsSync()) documents.deleteSync(recursive: true);
+    });
     // 初回吹き出しは画面全体に透明バリアを敷き、直後の操作を吸ってしまう。
     // 吹き出し自体は`first_use_tooltip_gesture_test.dart`で検証するので、
     // ここでは全て表示済み（＝2回目以降の利用者）として扱う。
@@ -2341,9 +2354,9 @@ void main() {
     // 捕捉される想定（アプリ側の設計）。
     final exportsDir = await tester.runAsync(ExportEngine.exportsDir);
     await tester.runAsync(
-      () => File(
-        '${exportsDir!.path}/smoke_test_dummy.mp4',
-      ).writeAsBytes(const [0]),
+      () =>
+          File('${exportsDir!.path}/smoke_test_dummy.mp4')
+              .writeAsBytes(const [0]),
     );
     // ExportEngine.listExportedFilesは結果を静的にキャッシュしており、
     // 起動画面のプリフェッチ（他のテストケースも含め、アプリを起動する

@@ -98,8 +98,9 @@ void main() {
                   key: ValueKey(id),
                   initialize: () async {
                     attempts++;
-                    if (state == 'error')
+                    if (state == 'error') {
                       throw const FormatException('isolated startup fixture');
+                    }
                     return pending.future;
                   },
                   child: const SizedBox(),
