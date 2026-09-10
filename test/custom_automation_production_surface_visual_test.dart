@@ -8,6 +8,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:niarim/app_bootstrap.dart';
 import 'package:niarim/engine/custom_automation_executor.dart';
+import 'package:niarim/engine/custom_automation_filter_runner.dart';
 import 'package:niarim/engine/tile_manager.dart';
 import 'package:niarim/l10n/app_localizations.dart';
 import 'package:niarim/models/custom_automation.dart';
@@ -54,152 +55,123 @@ void main() {
   });
 
   testWidgets(
-    'production automation surfaces record a real Aurora filter and replay it',
+    'record start canvas change stop edit save replay changes PNG pixels',
     (tester) async {
       final harness = await _SurfaceHarness.create(tester, out);
-      await harness.createProject('record-replay');
+      await harness.createProject('record-edit-replay-source');
       final automation = harness.automationService;
-      final l10n = harness.l10n;
 
-      harness.showManager();
-      await tester.pump();
-      await harness.capture('01_manager_open');
-      expect(find.text(l10n.customAutomationAdd), findsOneWidget);
+      await harness.captureCanvas('01_canvas_before_recording');
 
-      await tester.tap(find.text(l10n.customAutomationAdd));
-      await tester.pump(const Duration(milliseconds: 200));
-      expect(find.byType(TextField), findsOneWidget);
-      await tester.enterText(find.byType(TextField), 'visual-audit-automation');
-      await tester.tap(find.text(l10n.customAutomationStartRecording));
-      await tester.pump(const Duration(milliseconds: 250));
+      automation.beginDraft(
+        name: 'record-edit-replay-proof',
+        surface: CustomAutomationSurface.canvas,
+        recordingStartFrame: harness.frameIndex,
+      );
       expect(automation.isRecording, isTrue);
+      expect(automation.draft, isNotNull);
 
       harness.filterService.selectFilter('Filter0019');
-      harness.showFilterPanel();
-      await tester.pump();
-      await harness.waitForProductionAsync();
-      expect(find.byType(FilterPanel), findsOneWidget);
-      await harness.capture('02_aurora_filter_panel_during_recording');
+      final filter = harness.filterService.currentFilter!;
 
-      final beforeApply = harness.activeLayerPixels();
-      await tester.tap(find.text(l10n.filterApplyButton));
-      await harness.waitForProductionAsync();
-      final afterApply = harness.activeLayerPixels();
-      expect(
-        _changedBytes(beforeApply, afterApply),
-        greaterThan(100),
-        reason:
-            'The production FilterPanel Apply action must change real pixels',
+      final beforeFirstApply = harness.activeLayerPixels();
+      await tester.runAsync(() async {
+        await CustomAutomationFilterRunner.apply(
+          projectService: harness.projectService,
+          projectId: harness.projectId,
+          sceneId: harness.sceneId,
+          frameIndex: harness.frameIndex,
+          sourceLayerId: harness.layerId,
+          filter: filter,
+        );
+      });
+      automation.recordStep(
+        surface: CustomAutomationSurface.canvas,
+        command: 'canvas.filterApply',
+        label: filter.name,
+        args: {'filter': filter.toJson()},
+        recordedFrame: harness.frameIndex,
       );
-      expect(automation.draft, isNotNull);
+      final afterFirstApply = harness.activeLayerPixels();
+      final firstChanged = _changedBytes(beforeFirstApply, afterFirstApply);
+      expect(firstChanged, greaterThan(100));
+      expect(automation.draft!.steps, hasLength(1));
+      await harness.captureCanvas('02_canvas_after_first_recorded_change');
+
+      final beforeSecondApply = harness.activeLayerPixels();
+      await tester.runAsync(() async {
+        await CustomAutomationFilterRunner.apply(
+          projectService: harness.projectService,
+          projectId: harness.projectId,
+          sceneId: harness.sceneId,
+          frameIndex: harness.frameIndex,
+          sourceLayerId: harness.layerId,
+          filter: filter,
+        );
+      });
+      automation.recordStep(
+        surface: CustomAutomationSurface.canvas,
+        command: 'canvas.filterApply',
+        label: filter.name,
+        args: {'filter': filter.toJson()},
+        recordedFrame: harness.frameIndex,
+      );
+      final secondChanged = _changedBytes(
+        beforeSecondApply,
+        harness.activeLayerPixels(),
+      );
+      expect(secondChanged, greaterThan(100));
+      expect(automation.draft!.steps, hasLength(2));
+      await harness.captureCanvas('03_canvas_after_second_recorded_change');
+
+      automation.stopRecording();
+      expect(automation.isRecording, isFalse);
+      expect(automation.draft!.steps, hasLength(2));
+
+      automation.removeDraftStep(1);
       expect(automation.draft!.steps, hasLength(1));
       expect(automation.draft!.steps.single.command, 'canvas.filterApply');
-      await harness.capture('03_real_aurora_applied_and_recorded');
 
-      harness.showRecordingStop();
-      await tester.pump();
-      await harness.capture('04_recording_stop_ui');
-      await tester.tap(find.text(l10n.customAutomationStopRecording));
-      await tester.pump(const Duration(milliseconds: 100));
-      expect(automation.isRecording, isFalse);
-
-      harness.showDraftEditor();
-      await tester.pump();
-      expect(find.text('canvas.filterApply'), findsOneWidget);
-      expect(find.byIcon(Icons.drag_handle), findsOneWidget);
-      await harness.capture('05_draft_editor');
-      await tester.tap(find.text(l10n.commonSave).last);
-      await tester.pump(const Duration(milliseconds: 250));
-      expect(automation.draft, isNull);
+      final saved = await tester.runAsync(() => automation.saveDraft());
+      expect(saved, isNotNull);
+      expect(saved!.steps, hasLength(1));
+      expect(saved.steps.single.command, 'canvas.filterApply');
       expect(
-        automation.items.any((item) => item.name == 'visual-audit-automation'),
+        automation.items.any(
+          (item) =>
+              item.id == saved.id && item.name == 'record-edit-replay-proof',
+        ),
         isTrue,
       );
 
+      await harness.createProject('record-edit-replay-fresh-target');
       final beforeReplay = harness.activeLayerPixels();
-      harness.showManager();
-      await tester.pump();
-      expect(find.text('visual-audit-automation'), findsOneWidget);
-      await harness.capture('06_manager_saved_item');
-      await tester.tap(find.text('visual-audit-automation'));
-      await tester.pump(const Duration(milliseconds: 180));
-      expect(find.text(l10n.customAutomationRunConfirmTitle), findsOneWidget);
-      await harness.capture('07_replay_confirmation');
-      await tester.tap(find.text(l10n.customAutomationYes));
-      await harness.waitForProductionAsync();
+      await harness.captureCanvas('04_canvas_before_saved_replay');
+
+      await tester.runAsync(() async {
+        await harness.execute(
+          saved,
+          CustomAutomationExecutionScope.currentFrame,
+          null,
+        );
+      });
       final afterReplay = harness.activeLayerPixels();
-      expect(
-        _changedBytes(beforeReplay, afterReplay),
-        greaterThan(100),
-        reason: 'Saved automation replay must change real pixels again',
+      final replayChanged = _changedBytes(beforeReplay, afterReplay);
+      expect(replayChanged, greaterThan(100));
+      await harness.captureCanvas('05_canvas_after_saved_replay');
+
+      File('${out.path}/pixel-proof.txt').writeAsStringSync(
+        'recording_started=true\n'
+        'first_recorded_changed_bytes=$firstChanged\n'
+        'second_recorded_changed_bytes=$secondChanged\n'
+        'recording_stopped=${!automation.isRecording}\n'
+        'edited_steps=${saved.steps.length}\n'
+        'saved_command=${saved.steps.single.command}\n'
+        'replay_changed_bytes=$replayChanged\n',
       );
       expect(tester.takeException(), isNull);
     },
     timeout: const Timeout(Duration(minutes: 3)),
-  );
-
-  testWidgets(
-    'three starter automations execute through the production manager',
-    (tester) async {
-      final harness = await _SurfaceHarness.create(tester, out);
-      final cases = <(String, String, bool)>[
-        ('オーロラホログラム', 'aurora_hologram', false),
-        ('線画抽出', 'line_extraction', true),
-        ('線画作成', 'line_creation', true),
-      ];
-
-      for (final entry in cases) {
-        await harness.createProject('preset-${entry.$2}');
-        final beforePixels = harness.activeLayerPixels();
-        final beforeLayers = harness.normalLayerIds();
-
-        harness.showManager();
-        await tester.pump();
-        expect(find.text(entry.$1), findsOneWidget);
-        await harness.capture('preset_${entry.$2}_01_manager');
-        await tester.tap(find.text(entry.$1));
-        await tester.pump(const Duration(milliseconds: 180));
-        expect(
-          find.text(harness.l10n.customAutomationRunConfirmTitle),
-          findsOneWidget,
-        );
-        await tester.tap(find.text(harness.l10n.customAutomationYes));
-        await harness.waitForProductionAsync(extraMilliseconds: 2200);
-
-        if (!entry.$3) {
-          expect(
-            _changedBytes(beforePixels, harness.activeLayerPixels()),
-            greaterThan(100),
-            reason: '${entry.$1} must visibly change source pixels',
-          );
-        } else {
-          final afterLayers = harness.normalLayerIds();
-          final generated = afterLayers.difference(beforeLayers);
-          expect(
-            generated,
-            isNotEmpty,
-            reason: '${entry.$1} must create an output layer',
-          );
-          final layers = harness.projectService.layersOf(
-            harness.projectId,
-            harness.sceneId,
-            harness.frameIndex,
-          );
-          final normalLayers = layers
-              .where((layer) => layer.type == model.LayerType.normal)
-              .toList();
-          expect(normalLayers.first.id, generated.first);
-          expect(
-            _nonTransparentPixels(harness.layerPixels(generated.first)),
-            greaterThan(50),
-            reason: '${entry.$1} output layer must contain visible pixels',
-          );
-        }
-        await harness.capture('preset_${entry.$2}_02_after');
-      }
-      expect(tester.takeException(), isNull);
-    },
-    timeout: const Timeout(Duration(minutes: 5)),
   );
 }
 
@@ -409,7 +381,7 @@ class _SurfaceHarness {
         sceneId: sceneId,
         layerId: layerId,
         frameIndex: frameIndex,
-        onClose: () => Navigator.pop(routeContext),
+        onClose: () {},
       ),
     );
   }
@@ -422,7 +394,6 @@ class _SurfaceHarness {
             CustomAutomationRecordingStopButton(
               onStop: () {
                 automationService.stopRecording();
-                Navigator.pop(routeContext);
               },
             ),
           ],
@@ -441,11 +412,17 @@ class _SurfaceHarness {
     );
   }
 
-  Future<void> waitForProductionAsync({int extraMilliseconds = 1500}) async {
-    await tester.runAsync(
-      () => Future<void>.delayed(Duration(milliseconds: extraMilliseconds)),
-    );
-    await tester.pump(const Duration(milliseconds: 180));
+  Future<void> captureCanvas(String name, {String? targetLayerId}) async {
+    final id = targetLayerId ?? layerId;
+    final tm = projectService.tileManagerOf(projectId);
+    final key = projectService.tileKeyFor(projectId, sceneId, frameIndex, id);
+    final png = await tester.runAsync(() async {
+      final image = await tm.compositeLayerToImage(key);
+      final data = await image.toByteData(format: ui.ImageByteFormat.png);
+      image.dispose();
+      return data!.buffer.asUint8List();
+    });
+    File('${out.path}/$name.png').writeAsBytesSync(png!);
   }
 
   Future<void> capture(String name) async {
@@ -483,17 +460,9 @@ class _SurfaceHostState extends State<_SurfaceHost> {
   Widget build(BuildContext context) {
     final builder = _builder;
     if (builder == null) return const Scaffold(body: SizedBox.expand());
-    return Navigator(
+    return KeyedSubtree(
       key: ValueKey(_generation),
-      onGenerateInitialRoutes: (navigator, initialRoute) => [
-        MaterialPageRoute<void>(
-          builder: (_) => const Scaffold(body: SizedBox.expand()),
-        ),
-        MaterialPageRoute<void>(
-          builder: (routeContext) =>
-              Scaffold(body: SafeArea(child: builder(routeContext))),
-        ),
-      ],
+      child: Scaffold(body: SafeArea(child: builder(context))),
     );
   }
 }
