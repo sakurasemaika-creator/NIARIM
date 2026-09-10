@@ -1,0 +1,124 @@
+name: One-shot Step3 Starter PNG Proof
+
+on:
+  push:
+    branches: [dev_branch]
+    paths:
+      - '.github/workflows/one-shot-step3-starter-png-proof.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  starter-png-proof:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: dev_branch
+          fetch-depth: 0
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+      - run: flutter pub get
+      - name: Add permanent starter actual-PNG proof
+        shell: bash
+        run: |
+          python3 <<'PY'
+          from pathlib import Path
+          p = Path('test/custom_automation_production_surface_visual_test.dart')
+          s = p.read_text()
+          marker = '\n}\n\nclass _SurfaceHarness {'
+          if marker not in s:
+              raise SystemExit('main/class boundary changed')
+          test = r'''
+
+  testWidgets(
+    'starter Aurora line extraction and line creation produce actual PNG output',
+    (tester) async {
+      final harness = await _SurfaceHarness.create(tester, out);
+      final cases = <(String, String, bool)>[
+        ('オーロラホログラム', 'aurora_hologram', false),
+        ('線画抽出', 'line_extraction', true),
+        ('線画作成', 'line_creation', true),
+      ];
+
+      for (final entry in cases) {
+        await harness.createProject('step3-${entry.$2}');
+        final beforePixels = harness.activeLayerPixels();
+        final beforeLayers = harness.normalLayerIds();
+        final preset = harness.automationService.items
+            .where((item) => item.name == entry.$1)
+            .single;
+
+        await tester.runAsync(() async {
+          await harness.execute(
+            preset,
+            CustomAutomationExecutionScope.currentFrame,
+            null,
+          );
+        });
+
+        if (!entry.$3) {
+          expect(
+            _changedBytes(beforePixels, harness.activeLayerPixels()),
+            greaterThan(100),
+            reason: '${entry.$1} must visibly change the source layer',
+          );
+          await harness.captureCanvas('step3_${entry.$2}_actual');
+        } else {
+          final generated = harness.normalLayerIds().difference(beforeLayers);
+          expect(
+            generated,
+            isNotEmpty,
+            reason: '${entry.$1} must create an output layer',
+          );
+          final generatedId = generated.first;
+          final pixels = harness.layerPixels(generatedId);
+          var nonTransparent = 0;
+          for (var i = 3; i < pixels.length; i += 4) {
+            if (pixels[i] != 0) nonTransparent++;
+          }
+          expect(
+            nonTransparent,
+            greaterThan(50),
+            reason: '${entry.$1} output layer must contain visible pixels',
+          );
+          await harness.captureCanvas(
+            'step3_${entry.$2}_actual',
+            targetLayerId: generatedId,
+          );
+        }
+      }
+      expect(tester.takeException(), isNull);
+    },
+    timeout: const Timeout(Duration(minutes: 5)),
+  );
+'''
+          s = s.replace(marker, test + marker, 1)
+          p.write_text(s)
+          PY
+          dart format test/custom_automation_production_surface_visual_test.dart
+      - name: Analyze starter proof
+        run: flutter analyze test/custom_automation_production_surface_visual_test.dart --no-fatal-warnings --no-fatal-infos
+      - name: Run starter actual-PNG proof
+        run: flutter test test/custom_automation_production_surface_visual_test.dart --plain-name 'starter Aurora line extraction and line creation produce actual PNG output' --reporter expanded
+      - name: Upload starter PNG proof
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: step3-starter-filter-png-proof
+          path: build/visual-reaudit/custom-automation-production/step3_*_actual.png
+          if-no-files-found: warn
+          retention-days: 7
+      - name: Commit permanent starter proof
+        if: success()
+        shell: bash
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add test/custom_automation_production_surface_visual_test.dart
+          git commit -m 'test: persist starter filter actual PNG proof'
+          git push origin HEAD:dev_branch
