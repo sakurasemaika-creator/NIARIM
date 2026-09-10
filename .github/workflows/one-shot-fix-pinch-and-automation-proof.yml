@@ -40,3 +40,5 @@ jobs:
           git add lib/screens/canvas/widgets/canvas_area.dart test/canvas_pinch_gesture_test.dart tool/rewrite_custom_automation_visual_proof.py
           git commit -m 'fix: expand pinch range and await automation proof completion'
           git push origin HEAD:dev_branch
+
+# rerun after correcting the one-shot patcher's quoting
