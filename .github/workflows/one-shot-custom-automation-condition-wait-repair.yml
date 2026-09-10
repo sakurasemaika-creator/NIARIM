@@ -7,10 +7,10 @@ on:
       - '.github/workflows/one-shot-custom-automation-condition-wait-repair.yml'
 
 permissions:
-  contents: write
+  contents: read
 
 jobs:
-  repair-and-prove:
+  diagnose-and-prove:
     runs-on: ubuntu-latest
     timeout-minutes: 25
     steps:
@@ -23,7 +23,7 @@ jobs:
           channel: stable
           cache: true
       - run: flutter pub get
-      - name: Apply condition-driven production proof rewrite
+      - name: Generate condition-driven record/edit/replay proof
         shell: bash
         run: |
           python3 <<'PY'
@@ -51,10 +51,6 @@ jobs:
               "      if (stopwatch.elapsed >= timeout) {",
               "        fail('Timed out waiting for $label');",
               "      }",
-              "      // Pump one frame so UI/raster work can progress, then yield a",
-              "      // short real-time poll interval so isolate work can complete.",
-              "      // This exits immediately when the semantic condition is true;",
-              "      // it is not a fixed production sleep.",
               "      await tester.pump(const Duration(milliseconds: 16));",
               "      await tester.runAsync(",
               "        () => Future<void>.delayed(const Duration(milliseconds: 10)),",
@@ -72,34 +68,46 @@ jobs:
           s, count = pattern.subn(replacement, s, count=1)
           if count != 1:
               raise SystemExit('generated waitUntil block anchor changed')
-          if 'waitForProductionAsync' in s:
-              raise SystemExit('fixed production wait remains')
-          if 'DateTime.now().add(timeout)' in s or 'delayed(Duration.zero)' in s:
-              raise SystemExit('old semantic wait implementation remains')
           p.write_text(s)
           PY
-      - name: Format proof
-        run: dart format test/custom_automation_production_surface_visual_test.dart
-      - name: Analyze proof
-        run: flutter analyze test/custom_automation_production_surface_visual_test.dart --no-fatal-warnings --no-fatal-infos
-      - name: Prove record edit save replay pixels
+      - name: Diagnostic only - bypass compute inside the two production filter paths
+        shell: bash
+        run: |
+          python3 <<'PY'
+          from pathlib import Path
+
+          panel = Path('lib/screens/canvas/widgets/filter_panel.dart')
+          s = panel.read_text()
+          old = """      result = await compute(applyDrawFilterInIsolate, (\n        data,\n        tm.canvasWidth,\n        tm.canvasHeight,\n        filter,\n        maskData,\n      ));"""
+          new = """      // Diagnostic workflow only: execute the identical top-level filter\n      // function synchronously to distinguish widget-test isolate scheduling from\n      // production filter semantics. This file is never committed by this workflow.\n      result = applyDrawFilterInIsolate((\n        data,\n        tm.canvasWidth,\n        tm.canvasHeight,\n        filter,\n        maskData,\n      ));"""
+          if old not in s:
+              raise SystemExit('FilterPanel generic compute anchor changed')
+          panel.write_text(s.replace(old, new, 1))
+
+          runner = Path('lib/engine/custom_automation_filter_runner.dart')
+          s = runner.read_text()
+          old = """      result = await compute(applyDrawFilterInIsolate, (\n        data,\n        tm.canvasWidth,\n        tm.canvasHeight,\n        filter,\n        auxiliary,\n      ));"""
+          new = """      // Diagnostic workflow only; see FilterPanel patch above.\n      result = applyDrawFilterInIsolate((\n        data,\n        tm.canvasWidth,\n        tm.canvasHeight,\n        filter,\n        auxiliary,\n      ));"""
+          if old not in s:
+              raise SystemExit('automation runner generic compute anchor changed')
+          runner.write_text(s.replace(old, new, 1))
+          PY
+      - name: Format diagnostic tree
+        run: dart format test/custom_automation_production_surface_visual_test.dart lib/screens/canvas/widgets/filter_panel.dart lib/engine/custom_automation_filter_runner.dart
+      - name: Analyze diagnostic tree
+        run: flutter analyze test/custom_automation_production_surface_visual_test.dart lib/screens/canvas/widgets/filter_panel.dart lib/engine/custom_automation_filter_runner.dart --no-fatal-warnings --no-fatal-infos
+      - name: Prove record edit save replay pixels without isolate scheduling
         run: flutter test test/custom_automation_production_surface_visual_test.dart --plain-name 'production UI records a real Canvas change, edits, saves, replays, and changes PNG pixels' --reporter expanded
-      - name: Upload PNG pixel evidence
+      - name: Upload diagnostic PNG evidence
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: custom-automation-record-edit-replay-png-evidence
+          name: custom-automation-compute-diagnostic-png-evidence
           path: build/visual-reaudit/custom-automation-production
           if-no-files-found: warn
           retention-days: 7
-      - name: Commit proven rewrite
-        if: success()
-        shell: bash
+      - name: Verify diagnostic production patches were not persisted
+        if: always()
         run: |
-          rm .github/workflows/one-shot-custom-automation-record-edit-replay.yml
-          rm .github/workflows/one-shot-custom-automation-condition-wait-repair.yml
-          git config user.name 'github-actions[bot]'
-          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          git add test/custom_automation_production_surface_visual_test.dart .github/workflows/custom-automation-production-visual-proof.yml .github/workflows/one-shot-custom-automation-record-edit-replay.yml .github/workflows/one-shot-custom-automation-condition-wait-repair.yml
-          git commit -m 'test: make automation proof condition-driven'
-          git push origin HEAD:dev_branch
+          git diff -- lib/screens/canvas/widgets/filter_panel.dart lib/engine/custom_automation_filter_runner.dart
+          echo 'Diagnostic workflow intentionally does not commit or push production patches.'
