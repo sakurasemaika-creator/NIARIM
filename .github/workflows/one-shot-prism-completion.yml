@@ -28,31 +28,26 @@ jobs:
         run: |
           python3 <<'PY'
           from pathlib import Path
+          import re
           p = Path('lib/screens/canvas/widgets/filter_panel.dart')
           s = p.read_text()
-          old = '''    if (layer != null) {
-              ps.updateLayer(
-                projectId: widget.projectId,
-                sceneId: widget.sceneId,
-                frameIndex: frameIndex,
-                layer: layer,
-              );
-            }
-            return null;'''
-          new = '''    if (layer != null) {
-              ps.updateLayer(
-                projectId: widget.projectId,
-                sceneId: widget.sceneId,
-                frameIndex: frameIndex,
-                layer: _isPrism(filter)
-                    ? layer.copyWith(blendMode: model.LayerBlendMode.addition)
-                    : layer,
-              );
-            }
-            return null;'''
-          if old not in s:
+          pattern = re.compile(
+              r"(?m)^(\s*)layer: layer,\s*$"
+          )
+          matches = list(pattern.finditer(s))
+          if not matches:
               raise SystemExit('FilterPanel layer update anchor changed')
-          s = s.replace(old, new, 1)
+          # The first plain `layer: layer` after destructive filter pixel replacement
+          # is the selected layer update. Generated-layer updates use `layer: created`.
+          s = pattern.sub(
+              lambda m: "\n".join([
+                  f"{m.group(1)}layer: _isPrism(filter)",
+                  f"{m.group(1)}    ? layer.copyWith(blendMode: model.LayerBlendMode.addition)",
+                  f"{m.group(1)}    : layer,",
+              ]),
+              s,
+              count=1,
+          )
           old_hint = '参照レイヤーの不透明部分を6色で直接塗り替え → ガウスぼかし'
           new_hint = '参照レイヤーのα領域を6等分で着色 → ガウスぼかし → 覆い焼きリニア'
           if old_hint not in s:
