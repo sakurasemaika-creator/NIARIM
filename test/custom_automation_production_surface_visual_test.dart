@@ -173,6 +173,107 @@ void main() {
     },
     timeout: const Timeout(Duration(minutes: 3)),
   );
+
+  testWidgets(
+    'starter Aurora line extraction and line creation produce actual PNG output',
+    (tester) async {
+      final harness = await _SurfaceHarness.create(tester, out);
+      final cases = <(String, String, bool)>[
+        ('オーロラホログラム', 'aurora_hologram', false),
+        ('線画抽出', 'line_extraction', true),
+        ('線画作成', 'line_creation', true),
+      ];
+
+      for (final entry in cases) {
+        await harness.createProject('step3-${entry.$2}');
+        if (entry.$2 == 'line_extraction') {
+          final tm = harness.projectService.tileManagerOf(harness.projectId);
+          final key = harness.projectService.tileKeyFor(
+            harness.projectId,
+            harness.sceneId,
+            harness.frameIndex,
+            harness.layerId,
+          );
+          final rough = Uint8List(tm.canvasWidth * tm.canvasHeight * 4);
+          void paintDot(int cx, int cy, int radius) {
+            for (var y = cy - radius; y <= cy + radius; y++) {
+              if (y < 0 || y >= tm.canvasHeight) continue;
+              for (var x = cx - radius; x <= cx + radius; x++) {
+                if (x < 0 || x >= tm.canvasWidth) continue;
+                if ((x - cx) * (x - cx) + (y - cy) * (y - cy) >
+                    radius * radius) {
+                  continue;
+                }
+                final i = (y * tm.canvasWidth + x) * 4;
+                rough[i] = 20;
+                rough[i + 1] = 20;
+                rough[i + 2] = 20;
+                rough[i + 3] = 255;
+              }
+            }
+          }
+
+          for (var x = 54; x <= 266; x++) {
+            final y = 78 + ((x - 54) * 118 ~/ 212);
+            paintDot(x, y, 6);
+          }
+          for (var y = 92; y <= 258; y++) {
+            paintDot(178, y, 6);
+          }
+          for (var x = 84; x <= 246; x++) {
+            paintDot(x, 224, 6);
+          }
+          tm.replaceLayerPixels(key, rough);
+        }
+        final beforePixels = harness.activeLayerPixels();
+        final beforeLayers = harness.normalLayerIds();
+        final preset = harness.automationService.items
+            .where((item) => item.name == entry.$1)
+            .single;
+
+        await tester.runAsync(() async {
+          await harness.execute(
+            preset,
+            CustomAutomationExecutionScope.currentFrame,
+            null,
+          );
+        });
+
+        if (!entry.$3) {
+          expect(
+            _changedBytes(beforePixels, harness.activeLayerPixels()),
+            greaterThan(100),
+            reason: '${entry.$1} must visibly change the source layer',
+          );
+          await harness.captureCanvas('step3_${entry.$2}_actual');
+        } else {
+          final generated = harness.normalLayerIds().difference(beforeLayers);
+          expect(
+            generated,
+            isNotEmpty,
+            reason: '${entry.$1} must create an output layer',
+          );
+          final generatedId = generated.first;
+          final pixels = harness.layerPixels(generatedId);
+          var nonTransparent = 0;
+          for (var i = 3; i < pixels.length; i += 4) {
+            if (pixels[i] != 0) nonTransparent++;
+          }
+          expect(
+            nonTransparent,
+            greaterThan(50),
+            reason: '${entry.$1} output layer must contain visible pixels',
+          );
+          await harness.captureCanvas(
+            'step3_${entry.$2}_actual',
+            targetLayerId: generatedId,
+          );
+        }
+      }
+      expect(tester.takeException(), isNull);
+    },
+    timeout: const Timeout(Duration(minutes: 5)),
+  );
 }
 
 class _SurfaceHarness {
