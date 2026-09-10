@@ -24,13 +24,21 @@
 - QUALITY / HANDS_ON_UI（該当repo）/ LEGAL_IPの全要件をTODOへ割り当て、coverage checkで未割当がないことを確認してから `locked` にする。
 - **旧checkpoint、過去会話、最近の別セッションからTODOや完了状態を復元しない。** 最新実装と品質基準から作る。
 
-## 2. locked後のscope lock
+## 2. locked後のscope lock + Discovery
 
-Routeがlockedになった後は、`current_id` の未完了項目からID順に進める。毎回「次に何を調べるか」を再判断しない。最近のcommit、別セッションの話題、興味深い機能、CI失敗を理由にrouteを飛び越えない。
+Routeがlockedになった後は、`current_id` の未完了Baseline項目からID順に進める。毎回「次に何を調べるか」を再判断しない。最近のcommit、別セッションの話題、興味深い機能、CI失敗を理由にrouteを飛び越えない。
 
-例外は、現在IDの前提を直接壊す変更、または明確な重大regression/security/data-loss riskだけ。通常タスク由来の無関係な変更は存在を認識するだけでroute順を変えない。
+**Route lockはBaseline TODOのID・順序・coverage基準を固定するものであり、実監査で新たに実証された監査対象の追加を禁止しない。** 静的coverageが通っていても、実操作・実画面・実データ・組合せ検証で初めて判明する画面、状態、操作、分岐、入力条件、回帰条件、品質リスク等はあり得る。発見した対象を「628件にないから」等の理由で無視・既存項目へ無理に包含してはならない。
 
-新規画面/機能は既存IDを並べ替えずrouteへ追記する。1周完了後にroute作成後の変更差分を回帰フェーズとして扱い、巡回監査と混ぜない。
+新たな監査対象を発見した場合：
+
+1. 既存Baseline IDの意味・順序・完了済み状態を変更せず、`D001`, `D002`... の安定したDiscovery TODOとして `AUDIT_ROUTE.md` のDiscovery section末尾へ追記する。
+2. Discoveryには `discovered_from`（発見元Baseline/Discovery ID）、対象、再現/前提、必要な検証、期待結果、証拠条件、statusを記録する。同一対象の重複D-IDは作らない。
+3. 現在IDの完了を妨げる問題、security/data-loss/privacy等の重大リスク、または後続監査の前提を壊す問題だけ即時対応してよい。それ以外はDiscovery backlogへ積み、Baselineの固定順序へ戻る。
+4. Baseline全件完了後、D-IDを番号順に全件消化する。Discovery監査中にさらに未想定対象を発見した場合も次のD-IDを末尾へ追加する。
+5. Discovery TODOが追加されてもBaseline Routeを再bootstrap/relockせず、既存IDをrenumber/reorderしない。
+
+新規画面/機能がroute lock後の製品変更として追加された場合も既存Baselineを並べ替えず、変更差分回帰フェーズの対象として追跡する。巡回中の実監査から自然に発見された未想定状態等は上記Discoveryへ入れる。
 
 ## 3. 最短再開手順
 
@@ -38,7 +46,7 @@ Routeがlockedになった後は、`current_id` の未完了項目からID順に
 2. `AUDIT_ROUTE.md` を読む。bootstrap-requiredならSection 1だけを行う。lockedなら `ASTRA_CONTINUATION.md` の `current_id` を読む。
 3. current IDに必要な仕様/品質基準の該当節だけ確認し、直ちにそのTODOを実行する。
 4. checkpoint後のremote差分は現在IDの前提を壊すかだけscope-boundedに確認する。全commit・全CIを網羅的に再調査してStateを再構築しない。
-5. 完了条件を満たしたIDだけdoneにして次IDへ進む。利用枠終了時は現在IDを保存する。
+5. 完了条件を満たしたIDだけdoneにして次IDへ進む。Baseline完了後は未完了D-IDの最小番号へ進む。利用枠終了時は現在IDを保存する。
 
 開始時刻記録だけのcommit/push、理由のない再監査・重いsuite再実行、復元のためだけの広範な履歴探索をしない。
 
@@ -54,8 +62,10 @@ NIARIMを世界最高水準の商用製品へ仕上げることを優先し、Ap
 
 サブエージェントは品質/総合効率が明確に上がる独立作業または独立レビューだけ必要最小限。Codex系では原則 `fork_turns:"none"`、必要でも1〜2、`all`は使わない。子から子を増やさない。wait既定値を設定できる場合120秒、個別wait/timeoutは予想実行時間の約2倍を一度に指定する。
 
-## 6. State更新
+## 6. State更新と完了条件
 
 Route/Progress/Evidenceは全面監査Work自身が実際に検証した事実だけ更新する。旧監査記録や通常タスクの成果だけでTODOをdoneにしない。
 
-State更新commitには `[audit-state]`、policy/guard変更にはユーザーの明示依頼のもと `[audit-policy-approved]` を使う。全面監査completeはRoute全件と各品質正本の完了条件を満たし、最終回帰フェーズを終えた場合だけとする。
+State更新commitには `[audit-state]`、policy/guard変更にはユーザーの明示依頼のもと `[audit-policy-approved]` を使う。
+
+全面監査completeには、少なくとも **Baseline未完了=0、Discovery未完了=0、現在認識している未登録Discovery=0** を満たし、各品質正本の完了条件と最終回帰フェーズも完了していることが必要。Baseline coverageの通過だけを「これ以上発見対象はない」「監査complete」の根拠にしてはならない。
