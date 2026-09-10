@@ -26,6 +26,7 @@ jobs:
             timeout 1200s flutter test \
               test/direct_engine_coverage_batch11_test.dart \
               test/direct_engine_coverage_batch12_test.dart \
+              test/effect_filter_non_square_test.dart \
               --reporter expanded
             rc=$?
             if [ $rc -eq 0 ]; then exit 0; fi
