@@ -1,3 +1,4 @@
+# Prism completion proof; rerun after native compositor async isolation.
 name: One-shot Prism Completion
 
 on:
@@ -37,8 +38,6 @@ jobs:
           matches = list(pattern.finditer(s))
           if not matches:
               raise SystemExit('FilterPanel layer update anchor changed')
-          # The first plain `layer: layer` after destructive filter pixel replacement
-          # is the selected layer update. Generated-layer updates use `layer: created`.
           s = pattern.sub(
               lambda m: "\n".join([
                   f"{m.group(1)}layer: _isPrism(filter)",
