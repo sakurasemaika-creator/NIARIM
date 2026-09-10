@@ -35,68 +35,68 @@ jobs:
               raise SystemExit('main/class boundary changed')
           test = r'''
 
-  testWidgets(
-    'starter Aurora line extraction and line creation produce actual PNG output',
-    (tester) async {
-      final harness = await _SurfaceHarness.create(tester, out);
-      final cases = <(String, String, bool)>[
-        ('オーロラホログラム', 'aurora_hologram', false),
-        ('線画抽出', 'line_extraction', true),
-        ('線画作成', 'line_creation', true),
-      ];
+            testWidgets(
+              'starter Aurora line extraction and line creation produce actual PNG output',
+              (tester) async {
+                final harness = await _SurfaceHarness.create(tester, out);
+                final cases = <(String, String, bool)>[
+                  ('オーロラホログラム', 'aurora_hologram', false),
+                  ('線画抽出', 'line_extraction', true),
+                  ('線画作成', 'line_creation', true),
+                ];
 
-      for (final entry in cases) {
-        await harness.createProject('step3-${entry.$2}');
-        final beforePixels = harness.activeLayerPixels();
-        final beforeLayers = harness.normalLayerIds();
-        final preset = harness.automationService.items
-            .where((item) => item.name == entry.$1)
-            .single;
+                for (final entry in cases) {
+                  await harness.createProject('step3-${entry.$2}');
+                  final beforePixels = harness.activeLayerPixels();
+                  final beforeLayers = harness.normalLayerIds();
+                  final preset = harness.automationService.items
+                      .where((item) => item.name == entry.$1)
+                      .single;
 
-        await tester.runAsync(() async {
-          await harness.execute(
-            preset,
-            CustomAutomationExecutionScope.currentFrame,
-            null,
-          );
-        });
+                  await tester.runAsync(() async {
+                    await harness.execute(
+                      preset,
+                      CustomAutomationExecutionScope.currentFrame,
+                      null,
+                    );
+                  });
 
-        if (!entry.$3) {
-          expect(
-            _changedBytes(beforePixels, harness.activeLayerPixels()),
-            greaterThan(100),
-            reason: '${entry.$1} must visibly change the source layer',
-          );
-          await harness.captureCanvas('step3_${entry.$2}_actual');
-        } else {
-          final generated = harness.normalLayerIds().difference(beforeLayers);
-          expect(
-            generated,
-            isNotEmpty,
-            reason: '${entry.$1} must create an output layer',
-          );
-          final generatedId = generated.first;
-          final pixels = harness.layerPixels(generatedId);
-          var nonTransparent = 0;
-          for (var i = 3; i < pixels.length; i += 4) {
-            if (pixels[i] != 0) nonTransparent++;
-          }
-          expect(
-            nonTransparent,
-            greaterThan(50),
-            reason: '${entry.$1} output layer must contain visible pixels',
-          );
-          await harness.captureCanvas(
-            'step3_${entry.$2}_actual',
-            targetLayerId: generatedId,
-          );
-        }
-      }
-      expect(tester.takeException(), isNull);
-    },
-    timeout: const Timeout(Duration(minutes: 5)),
-  );
-'''
+                  if (!entry.$3) {
+                    expect(
+                      _changedBytes(beforePixels, harness.activeLayerPixels()),
+                      greaterThan(100),
+                      reason: '${entry.$1} must visibly change the source layer',
+                    );
+                    await harness.captureCanvas('step3_${entry.$2}_actual');
+                  } else {
+                    final generated = harness.normalLayerIds().difference(beforeLayers);
+                    expect(
+                      generated,
+                      isNotEmpty,
+                      reason: '${entry.$1} must create an output layer',
+                    );
+                    final generatedId = generated.first;
+                    final pixels = harness.layerPixels(generatedId);
+                    var nonTransparent = 0;
+                    for (var i = 3; i < pixels.length; i += 4) {
+                      if (pixels[i] != 0) nonTransparent++;
+                    }
+                    expect(
+                      nonTransparent,
+                      greaterThan(50),
+                      reason: '${entry.$1} output layer must contain visible pixels',
+                    );
+                    await harness.captureCanvas(
+                      'step3_${entry.$2}_actual',
+                      targetLayerId: generatedId,
+                    );
+                  }
+                }
+                expect(tester.takeException(), isNull);
+              },
+              timeout: const Timeout(Duration(minutes: 5)),
+            );
+          '''
           s = s.replace(marker, test + marker, 1)
           p.write_text(s)
           PY
