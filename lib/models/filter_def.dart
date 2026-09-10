@@ -162,8 +162,8 @@ class FilterDef {
     this.autoLineartTaperLength = 8,
     this.autoLineartSmoothing = 5,
     this.autoLineartColor = 0xFF000000,
-    this.prismBlurPx = 8,
-    this.prismDirectionDegrees = 45,
+    this.prismBlurPx = 17,
+    this.prismDirectionDegrees = 90,
   });
 
   FilterDef copyWith({
@@ -436,8 +436,8 @@ class FilterDef {
         (j['autoLineartTaperLength'] as num?)?.toDouble() ?? 8,
     autoLineartSmoothing: (j['autoLineartSmoothing'] as num?)?.toDouble() ?? 5,
     autoLineartColor: j['autoLineartColor'] as int? ?? 0xFF000000,
-    prismBlurPx: (j['prismBlurPx'] as num?)?.toDouble() ?? 8,
+    prismBlurPx: (j['prismBlurPx'] as num?)?.toDouble() ?? 17,
     prismDirectionDegrees:
-        (j['prismDirectionDegrees'] as num?)?.toDouble() ?? 45,
+        (j['prismDirectionDegrees'] as num?)?.toDouble() ?? 90,
   );
 }

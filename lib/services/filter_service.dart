@@ -162,15 +162,14 @@ class FilterService extends ChangeNotifier {
       autoLineartSmoothing: 5,
       autoLineartColor: 0xFF000000,
     ),
-    // Prism deliberately uses an existing enum kind so adding it does not make every
-    // shared FilterKind switch exhaustive again. filter_panel.dart dispatches this
-    // built-in by stable id to PrismFilterEngine instead of the aurora implementation.
+    // Prism is dispatched by stable id to PrismFilterEngine. It directly repaints
+    // the selected/reference layer using that layer's alpha as an opacity-lock mask.
     FilterDef(
       id: prismFilterId,
       name: 'プリズム',
       kind: FilterKind.auroraHologram,
-      prismBlurPx: 8,
-      prismDirectionDegrees: 45,
+      prismBlurPx: 17,
+      prismDirectionDegrees: 90,
     ),
     // VHS noise uses the generic slots only under this stable built-in ID:
     // strength=noise, caSaturation=scanlines, caBrightness=color bleed,
@@ -201,6 +200,15 @@ class FilterService extends ChangeNotifier {
           var filter = FilterDef.fromJson(
             jsonDecode(s) as Map<String, dynamic>,
           );
+          if (filter.id == prismFilterId &&
+              filter.prismBlurPx == 8 &&
+              filter.prismDirectionDegrees == 45) {
+            filter = filter.copyWith(
+              prismBlurPx: 17,
+              prismDirectionDegrees: 90,
+            );
+            migratedAutoLineartSmoothing = true;
+          }
           if (filter.kind == FilterKind.autoLineart &&
               filter.autoLineartSmoothing > 10) {
             filter = filter.copyWith(

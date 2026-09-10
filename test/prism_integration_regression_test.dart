@@ -32,11 +32,17 @@ void main() {
     );
   });
 
-  test('prism apply creates an additive generated layer', () {
+  test('prism directly repaints the selected source layer', () {
     final source = File(
       'lib/screens/canvas/widgets/filter_panel.dart',
     ).readAsStringSync();
-    expect(source, contains('if (_isPrism(filter)) {\n      return _applyGeneratedLayer('));
-    expect(source, contains('blendMode: model.LayerBlendMode.addition'));
+    expect(source, contains('else if (_isPrism(filter))'));
+    expect(source, contains('tm.replaceLayerPixels(key, result);'));
+    expect(
+      source,
+      isNot(
+        contains("if (_isPrism(filter)) {\n      return _applyGeneratedLayer("),
+      ),
+    );
   });
 }
