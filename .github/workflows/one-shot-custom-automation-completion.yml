@@ -1,5 +1,5 @@
 name: One-shot Custom Automation Completion
-# Retrigger after removing non-settling pumpAndSettle.
+# Retrigger with deterministic bottom-sheet presentation in the widget proof.
 
 on:
   push:
@@ -55,6 +55,15 @@ jobs:
             if old not in s:
               raise SystemExit('custom automation wait anchor changed:\n' + old)
             s = s.replace(old, new, 1)
+
+          sheet_anchor = "      showModalBottomSheet<void>(\n        context: context,\n"
+          sheet_count = s.count(sheet_anchor)
+          if sheet_count != 4:
+            raise SystemExit(f'expected 4 production bottom sheets, found {sheet_count}')
+          s = s.replace(
+            sheet_anchor,
+            sheet_anchor + "        sheetAnimationStyle: AnimationStyle.noAnimation,\n",
+          )
 
           helper_start = s.find('  Future<void> waitForProductionAsync(')
           if helper_start < 0:
