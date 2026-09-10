@@ -9,6 +9,7 @@ on:
       - 'test/custom_automation_production_surface_visual_test.dart'
       - 'tool/patch_custom_automation_surface_interactions.py'
       - 'tool/patch_custom_automation_keep_surfaces.py'
+      - 'tool/patch_custom_automation_rewrite_anchor.py'
       - 'tool/rewrite_custom_automation_visual_proof.py'
   workflow_dispatch:
 
@@ -31,6 +32,7 @@ jobs:
       - run: flutter pub get
       - run: python3 tool/patch_custom_automation_surface_interactions.py
       - run: python3 tool/patch_custom_automation_keep_surfaces.py
+      - run: python3 tool/patch_custom_automation_rewrite_anchor.py
       - run: python3 tool/rewrite_custom_automation_visual_proof.py
       - run: dart format test/custom_automation_production_surface_visual_test.dart
       - run: flutter analyze test/custom_automation_production_surface_visual_test.dart --no-fatal-warnings --no-fatal-infos
