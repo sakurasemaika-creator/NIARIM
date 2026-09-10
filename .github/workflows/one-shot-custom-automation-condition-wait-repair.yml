@@ -35,34 +35,26 @@ jobs:
           start = source.index(marker) + len(marker)
           end = source.index("\n          PY\n", start)
           script = textwrap.dedent(source[start:end])
+          script = script.replace(
+              'final deadline = DateTime.now().add(timeout);',
+              'final stopwatch = Stopwatch()..start();',
+              1,
+          ).replace(
+              'if (DateTime.now().isAfter(deadline)) {',
+              'if (stopwatch.elapsed >= timeout) {',
+              1,
+          ).replace(
+              'await tester.pump(const Duration(milliseconds: 16));\n'
+              '    await tester.runAsync(() => Future<void>.delayed(Duration.zero));',
+              'await tester.runAsync(\n'
+              '      () => Future<void>.delayed(const Duration(milliseconds: 25)),\n'
+              '    );\n'
+              '    await tester.pump();',
+              1,
+          )
+          if 'DateTime.now().add(timeout)' in script or 'delayed(Duration.zero)' in script:
+              raise SystemExit('condition wait rewrite did not fully apply')
           exec(compile(script, 'record-edit-replay-rewrite', 'exec'))
-
-          p = Path('test/custom_automation_production_surface_visual_test.dart')
-          s = p.read_text()
-          old = '''    final deadline = DateTime.now().add(timeout);
-            while (!condition()) {
-              if (DateTime.now().isAfter(deadline)) {
-                fail('Timed out waiting for $label');
-              }
-              await tester.pump(const Duration(milliseconds: 16));
-              await tester.runAsync(() => Future<void>.delayed(Duration.zero));
-            }
-            await tester.pump();'''
-          new = '''    final stopwatch = Stopwatch()..start();
-            while (!condition()) {
-              if (stopwatch.elapsed >= timeout) {
-                fail('Timed out waiting for $label');
-              }
-              await tester.runAsync(
-                () => Future<void>.delayed(const Duration(milliseconds: 25)),
-              );
-              await tester.pump();
-            }
-            stopwatch.stop();
-            await tester.pump();'''
-          if old not in s:
-              raise SystemExit('generated waitUntil helper anchor changed')
-          p.write_text(s.replace(old, new, 1))
           PY
       - name: Format proof
         run: dart format test/custom_automation_production_surface_visual_test.dart
