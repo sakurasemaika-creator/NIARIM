@@ -29,6 +29,7 @@ jobs:
         run: |
           python3 - <<'PY'
           from pathlib import Path
+          from textwrap import dedent
 
           p = Path('test/custom_automation_production_visual_test.dart')
           s = p.read_text()
@@ -68,172 +69,174 @@ jobs:
               raise SystemExit('custom automation proof anchor changed:\n' + old)
             s = s.replace(old, new, 1)
 
-          old_manager = '''  void showManager() {
-    final context = canvasContext;
-    unawaited(
-      showModalBottomSheet<void>(
-        context: context,
-        isScrollControlled: true,
-        builder: (_) => CustomAutomationManagerSheet(
-          surface: CustomAutomationSurface.canvas,
-          recordingStartFrame: canvasWidget.currentFrame,
-          frameCount: projectService.frameCount(
-            projectId,
-            canvasWidget.sceneId,
-          ),
-          onRecordingStarted: () {},
-          onExecute: _execute,
-        ),
-      ),
-    );
-  }
+          old_manager = dedent('''\
+            void showManager() {
+              final context = canvasContext;
+              unawaited(
+                showModalBottomSheet<void>(
+                  context: context,
+                  isScrollControlled: true,
+                  builder: (_) => CustomAutomationManagerSheet(
+                    surface: CustomAutomationSurface.canvas,
+                    recordingStartFrame: canvasWidget.currentFrame,
+                    frameCount: projectService.frameCount(
+                      projectId,
+                      canvasWidget.sceneId,
+                    ),
+                    onRecordingStarted: () {},
+                    onExecute: _execute,
+                  ),
+                ),
+              );
+            }
 
-  void showFilterPanel() {
-    final context = canvasContext;
-    final canvas = canvasWidget;
-    unawaited(
-      showModalBottomSheet<void>(
-        context: context,
-        isScrollControlled: true,
-        builder: (sheetContext) => Center(
-          child: FilterPanel(
-            projectId: projectId,
-            sceneId: canvas.sceneId,
-            layerId: canvas.currentLayerId,
-            frameIndex: canvas.currentFrame,
-            onClose: () => Navigator.pop(sheetContext),
-          ),
-        ),
-      ),
-    );
-  }
+            void showFilterPanel() {
+              final context = canvasContext;
+              final canvas = canvasWidget;
+              unawaited(
+                showModalBottomSheet<void>(
+                  context: context,
+                  isScrollControlled: true,
+                  builder: (sheetContext) => Center(
+                    child: FilterPanel(
+                      projectId: projectId,
+                      sceneId: canvas.sceneId,
+                      layerId: canvas.currentLayerId,
+                      frameIndex: canvas.currentFrame,
+                      onClose: () => Navigator.pop(sheetContext),
+                    ),
+                  ),
+                ),
+              );
+            }
 
-  void showRecordingStop() {
-    final context = canvasContext;
-    final service = automationService;
-    unawaited(
-      showModalBottomSheet<void>(
-        context: context,
-        builder: (sheetContext) => CustomAutomationRecordingStopButton(
-          onStop: () {
-            service.stopRecording();
-            Navigator.pop(sheetContext);
-          },
-        ),
-      ),
-    );
-  }
+            void showRecordingStop() {
+              final context = canvasContext;
+              final service = automationService;
+              unawaited(
+                showModalBottomSheet<void>(
+                  context: context,
+                  builder: (sheetContext) => CustomAutomationRecordingStopButton(
+                    onStop: () {
+                      service.stopRecording();
+                      Navigator.pop(sheetContext);
+                    },
+                  ),
+                ),
+              );
+            }
 
-  void showDraftEditor() {
-    final context = canvasContext;
-    unawaited(
-      showModalBottomSheet<void>(
-        context: context,
-        isScrollControlled: true,
-        builder: (_) => CustomAutomationDraftEditorSheet(
-          surface: CustomAutomationSurface.canvas,
-          onResumeRecording: () {},
-          onSaved: () {},
-        ),
-      ),
-    );
-  }
-'''
-          new_manager = '''  late void Function(Widget? child) _setOverlay;
+            void showDraftEditor() {
+              final context = canvasContext;
+              unawaited(
+                showModalBottomSheet<void>(
+                  context: context,
+                  isScrollControlled: true,
+                  builder: (_) => CustomAutomationDraftEditorSheet(
+                    surface: CustomAutomationSurface.canvas,
+                    onResumeRecording: () {},
+                    onSaved: () {},
+                  ),
+                ),
+              );
+            }
+          ''')
+          new_manager = dedent('''\
+            late void Function(Widget? child) _setOverlay;
 
-  void _hideOverlay() => _setOverlay(null);
+            void _hideOverlay() => _setOverlay(null);
 
-  Widget _localNavigator(Widget page) => Navigator(
-    onGenerateRoute: (_) => PageRouteBuilder<void>(
-      pageBuilder: (_, __, ___) => page,
-      transitionDuration: Duration.zero,
-      reverseTransitionDuration: Duration.zero,
-    ),
-  );
-
-  Widget _sheetPage(Widget child) => Material(
-    color: Colors.black26,
-    child: Align(
-      alignment: Alignment.bottomCenter,
-      child: Material(child: child),
-    ),
-  );
-
-  void showManager() {
-    final startFrame = canvasWidget.currentFrame;
-    final count = projectService.frameCount(projectId, canvasWidget.sceneId);
-    _setOverlay(
-      _localNavigator(
-        _sheetPage(
-          CustomAutomationManagerSheet(
-            surface: CustomAutomationSurface.canvas,
-            recordingStartFrame: startFrame,
-            frameCount: count,
-            onRecordingStarted: _hideOverlay,
-            onExecute: (automation, scope, targetFrames) async {
-              _hideOverlay();
-              await _execute(automation, scope, targetFrames);
-            },
-          ),
-        ),
-      ),
-    );
-  }
-
-  void showFilterPanel() {
-    final canvas = canvasWidget;
-    _setOverlay(
-      _localNavigator(
-        _sheetPage(
-          Center(
-            child: FilterPanel(
-              projectId: projectId,
-              sceneId: canvas.sceneId,
-              layerId: canvas.currentLayerId,
-              frameIndex: canvas.currentFrame,
-              onClose: _hideOverlay,
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-
-  void showRecordingStop() {
-    final service = automationService;
-    _setOverlay(
-      _localNavigator(
-        Material(
-          color: Colors.transparent,
-          child: Stack(
-            children: [
-              CustomAutomationRecordingStopButton(
-                onStop: () {
-                  service.stopRecording();
-                  _hideOverlay();
-                },
+            Widget _localNavigator(Widget page) => Navigator(
+              onGenerateRoute: (_) => PageRouteBuilder<void>(
+                pageBuilder: (_, __, ___) => page,
+                transitionDuration: Duration.zero,
+                reverseTransitionDuration: Duration.zero,
               ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
+            );
 
-  void showDraftEditor() {
-    _setOverlay(
-      _localNavigator(
-        _sheetPage(
-          CustomAutomationDraftEditorSheet(
-            surface: CustomAutomationSurface.canvas,
-            onResumeRecording: _hideOverlay,
-            onSaved: _hideOverlay,
-          ),
-        ),
-      ),
-    );
-  }
-'''
+            Widget _sheetPage(Widget child) => Material(
+              color: Colors.black26,
+              child: Align(
+                alignment: Alignment.bottomCenter,
+                child: Material(child: child),
+              ),
+            );
+
+            void showManager() {
+              final startFrame = canvasWidget.currentFrame;
+              final count = projectService.frameCount(projectId, canvasWidget.sceneId);
+              _setOverlay(
+                _localNavigator(
+                  _sheetPage(
+                    CustomAutomationManagerSheet(
+                      surface: CustomAutomationSurface.canvas,
+                      recordingStartFrame: startFrame,
+                      frameCount: count,
+                      onRecordingStarted: _hideOverlay,
+                      onExecute: (automation, scope, targetFrames) async {
+                        _hideOverlay();
+                        await _execute(automation, scope, targetFrames);
+                      },
+                    ),
+                  ),
+                ),
+              );
+            }
+
+            void showFilterPanel() {
+              final canvas = canvasWidget;
+              _setOverlay(
+                _localNavigator(
+                  _sheetPage(
+                    Center(
+                      child: FilterPanel(
+                        projectId: projectId,
+                        sceneId: canvas.sceneId,
+                        layerId: canvas.currentLayerId,
+                        frameIndex: canvas.currentFrame,
+                        onClose: _hideOverlay,
+                      ),
+                    ),
+                  ),
+                ),
+              );
+            }
+
+            void showRecordingStop() {
+              final service = automationService;
+              _setOverlay(
+                _localNavigator(
+                  Material(
+                    color: Colors.transparent,
+                    child: Stack(
+                      children: [
+                        CustomAutomationRecordingStopButton(
+                          onStop: () {
+                            service.stopRecording();
+                            _hideOverlay();
+                          },
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              );
+            }
+
+            void showDraftEditor() {
+              _setOverlay(
+                _localNavigator(
+                  _sheetPage(
+                    CustomAutomationDraftEditorSheet(
+                      surface: CustomAutomationSurface.canvas,
+                      onResumeRecording: _hideOverlay,
+                      onSaved: _hideOverlay,
+                    ),
+                  ),
+                ),
+              );
+            }
+          ''')
           if old_manager not in s:
             raise SystemExit('production overlay presentation anchor changed')
           s = s.replace(old_manager, new_manager, 1)
@@ -245,48 +248,50 @@ jobs:
           if helper_end < 0:
             raise SystemExit('fixed-sleep helper end changed')
 
-          new_helper = '''  Future<void> _yieldAsyncWork() async {
-    await tester.runAsync(() => Future<void>(() {}));
-    await tester.pump();
-  }
+          new_helper = dedent('''\
+            Future<void> _yieldAsyncWork() async {
+              await tester.runAsync(() => Future<void>(() {}));
+              await tester.pump();
+            }
 
-  Future<void> waitForPixelChange(
-    Uint8List before, {
-    required String label,
-  }) async {
-    for (var attempt = 0; attempt < 600; attempt++) {
-      if (_changedBytes(before, activeLayerPixels()) > 100) return;
-      await _yieldAsyncWork();
-    }
-    throw TestFailure('$label did not change Canvas pixels');
-  }
+            Future<void> waitForPixelChange(
+              Uint8List before, {
+              required String label,
+            }) async {
+              for (var attempt = 0; attempt < 600; attempt++) {
+                if (_changedBytes(before, activeLayerPixels()) > 100) return;
+                await _yieldAsyncWork();
+              }
+              throw TestFailure('$label did not change Canvas pixels');
+            }
 
-  Future<void> waitForAutomationResult({
-    required Uint8List beforePixels,
-    required Set<String> beforeLayers,
-    required bool createsLayer,
-    required String label,
-  }) async {
-    for (var attempt = 0; attempt < 600; attempt++) {
-      if (createsLayer) {
-        final canvas = canvasWidget;
-        final current = projectService
-            .layersOf(
-              projectId,
-              canvas.sceneId,
-              canvas.currentFrame,
-            )
-            .where((layer) => layer.type == model.LayerType.normal)
-            .map((layer) => layer.id)
-            .toSet();
-        if (current.difference(beforeLayers).isNotEmpty) return;
-      } else if (_changedBytes(beforePixels, activeLayerPixels()) > 100) {
-        return;
-      }
-      await _yieldAsyncWork();
-    }
-    throw TestFailure('$label did not reach its observable completion state');
-  }'''
+            Future<void> waitForAutomationResult({
+              required Uint8List beforePixels,
+              required Set<String> beforeLayers,
+              required bool createsLayer,
+              required String label,
+            }) async {
+              for (var attempt = 0; attempt < 600; attempt++) {
+                if (createsLayer) {
+                  final canvas = canvasWidget;
+                  final current = projectService
+                      .layersOf(
+                        projectId,
+                        canvas.sceneId,
+                        canvas.currentFrame,
+                      )
+                      .where((layer) => layer.type == model.LayerType.normal)
+                      .map((layer) => layer.id)
+                      .toSet();
+                  if (current.difference(beforeLayers).isNotEmpty) return;
+                } else if (_changedBytes(beforePixels, activeLayerPixels()) > 100) {
+                  return;
+                }
+                await _yieldAsyncWork();
+              }
+              throw TestFailure('$label did not reach its observable completion state');
+            }
+          ''').rstrip()
           s = s[:helper_start] + new_helper + s[helper_end:]
           p.write_text(s)
           PY
