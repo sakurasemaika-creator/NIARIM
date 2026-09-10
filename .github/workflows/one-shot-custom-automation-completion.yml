@@ -1,5 +1,4 @@
 name: One-shot Custom Automation Completion
-# Step 2 trigger marker: observable-completion proof
 
 on:
   push:
@@ -29,6 +28,7 @@ jobs:
         run: |
           python3 - <<'PY'
           from pathlib import Path
+
           p = Path('test/custom_automation_production_visual_test.dart')
           s = p.read_text()
 
@@ -55,60 +55,56 @@ jobs:
               raise SystemExit('custom automation wait anchor changed:\n' + old)
             s = s.replace(old, new, 1)
 
-          old_helper = """  Future<void> waitForProductionAsync({int extraMilliseconds = 1500}) async {
-            await tester.runAsync(
-              () => Future<void>.delayed(Duration(milliseconds: extraMilliseconds)),
-            );
-            await tester.pump(const Duration(milliseconds: 250));
-          }
-          """
-          new_helper = """  Future<void> _yieldAsyncWork() async {
-            await tester.runAsync(() => Future<void>(() {}));
-            await tester.pump();
-          }
+          helper_start = s.find('  Future<void> waitForProductionAsync(')
+          if helper_start < 0:
+            raise SystemExit('fixed-sleep helper start changed')
+          helper_end = s.find('\n\n  Future<void> _execute(', helper_start)
+          if helper_end < 0:
+            raise SystemExit('fixed-sleep helper end changed')
 
-          Future<void> waitForPixelChange(
-            Uint8List before, {
-            required String label,
-          }) async {
-            for (var attempt = 0; attempt < 600; attempt++) {
-              if (_changedBytes(before, activeLayerPixels()) > 100) return;
-              await _yieldAsyncWork();
-            }
-            throw TestFailure('$label did not change Canvas pixels');
-          }
-
-          Future<void> waitForAutomationResult({
-            required Uint8List beforePixels,
-            required Set<String> beforeLayers,
-            required bool createsLayer,
-            required String label,
-          }) async {
-            for (var attempt = 0; attempt < 600; attempt++) {
-              if (createsLayer) {
-                final canvas = canvasWidget;
-                final current = projectService
-                    .layersOf(
-                      projectId,
-                      canvas.sceneId,
-                      canvas.currentFrame,
-                    )
-                    .where((layer) => layer.type == model.LayerType.normal)
-                    .map((layer) => layer.id)
-                    .toSet();
-                if (current.difference(beforeLayers).isNotEmpty) return;
-              } else if (_changedBytes(beforePixels, activeLayerPixels()) > 100) {
-                return;
-              }
-              await _yieldAsyncWork();
-            }
-            throw TestFailure('$label did not reach its observable completion state');
-          }
-          """
-          if old_helper not in s:
-            raise SystemExit('fixed-sleep helper anchor changed')
-          s = s.replace(old_helper, new_helper, 1)
-          s = s.replace("import 'dart:async';\n", '', 1)
+          new_helper = (
+            "  Future<void> _yieldAsyncWork() async {\n"
+            "    await tester.runAsync(() => Future<void>(() {}));\n"
+            "    await tester.pump();\n"
+            "  }\n\n"
+            "  Future<void> waitForPixelChange(\n"
+            "    Uint8List before, {\n"
+            "    required String label,\n"
+            "  }) async {\n"
+            "    for (var attempt = 0; attempt < 600; attempt++) {\n"
+            "      if (_changedBytes(before, activeLayerPixels()) > 100) return;\n"
+            "      await _yieldAsyncWork();\n"
+            "    }\n"
+            "    throw TestFailure('$label did not change Canvas pixels');\n"
+            "  }\n\n"
+            "  Future<void> waitForAutomationResult({\n"
+            "    required Uint8List beforePixels,\n"
+            "    required Set<String> beforeLayers,\n"
+            "    required bool createsLayer,\n"
+            "    required String label,\n"
+            "  }) async {\n"
+            "    for (var attempt = 0; attempt < 600; attempt++) {\n"
+            "      if (createsLayer) {\n"
+            "        final canvas = canvasWidget;\n"
+            "        final current = projectService\n"
+            "            .layersOf(\n"
+            "              projectId,\n"
+            "              canvas.sceneId,\n"
+            "              canvas.currentFrame,\n"
+            "            )\n"
+            "            .where((layer) => layer.type == model.LayerType.normal)\n"
+            "            .map((layer) => layer.id)\n"
+            "            .toSet();\n"
+            "        if (current.difference(beforeLayers).isNotEmpty) return;\n"
+            "      } else if (_changedBytes(beforePixels, activeLayerPixels()) > 100) {\n"
+            "        return;\n"
+            "      }\n"
+            "      await _yieldAsyncWork();\n"
+            "    }\n"
+            "    throw TestFailure('$label did not reach its observable completion state');\n"
+            "  }"
+          )
+          s = s[:helper_start] + new_helper + s[helper_end:]
           p.write_text(s)
           PY
       - name: Format proof
