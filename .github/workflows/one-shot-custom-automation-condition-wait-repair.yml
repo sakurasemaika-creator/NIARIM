@@ -28,6 +28,7 @@ jobs:
         run: |
           python3 <<'PY'
           from pathlib import Path
+          import re
           import textwrap
 
           source = Path('.github/workflows/one-shot-custom-automation-record-edit-replay.yml').read_text()
@@ -40,50 +41,69 @@ jobs:
           p = Path('test/custom_automation_production_surface_visual_test.dart')
           s = p.read_text()
 
-          apply_old = "              await tester.tap(find.text(l10n.filterApplyButton));"
-          apply_new = "\n".join([
-              "              await tester.runAsync(() async {",
-              "                await tester.tap(find.text(l10n.filterApplyButton));",
-              "              });",
-          ])
-          if s.count(apply_old) < 2:
-              raise SystemExit('filter Apply tap anchors changed')
-          s = s.replace(apply_old, apply_new, 2)
+          apply_pattern = re.compile(
+              r"(?m)^(\s*)await tester\.tap\(find\.text\(l10n\.filterApplyButton\)\);\s*$"
+          )
+          apply_matches = list(apply_pattern.finditer(s))
+          if len(apply_matches) < 2:
+              raise SystemExit(f'filter Apply tap anchors changed: found {len(apply_matches)}')
+          s = apply_pattern.sub(
+              lambda m: "\n".join([
+                  f"{m.group(1)}await tester.runAsync(() async {{",
+                  f"{m.group(1)}  await tester.tap(find.text(l10n.filterApplyButton));",
+                  f"{m.group(1)}}});",
+              ]),
+              s,
+              count=2,
+          )
 
-          replay_old = "              await tester.tap(find.text(l10n.customAutomationYes));"
-          replay_new = "\n".join([
-              "              await tester.runAsync(() async {",
-              "                await tester.tap(find.text(l10n.customAutomationYes));",
-              "              });",
-          ])
-          if replay_old not in s:
+          replay_pattern = re.compile(
+              r"(?m)^(\s*)await tester\.tap\(find\.text\(l10n\.customAutomationYes\)\);\s*$"
+          )
+          replay_matches = list(replay_pattern.finditer(s))
+          if not replay_matches:
               raise SystemExit('replay confirmation tap anchor changed')
-          s = s.replace(replay_old, replay_new, 1)
+          s = replay_pattern.sub(
+              lambda m: "\n".join([
+                  f"{m.group(1)}await tester.runAsync(() async {{",
+                  f"{m.group(1)}  await tester.tap(find.text(l10n.customAutomationYes));",
+                  f"{m.group(1)}}});",
+              ]),
+              s,
+              count=1,
+          )
 
-          old_wait = """            final deadline = DateTime.now().add(timeout);
-            while (!condition()) {
-              if (DateTime.now().isAfter(deadline)) {
-                fail('Timed out waiting for $label');
-              }
-              await tester.pump(const Duration(milliseconds: 16));
-              await tester.runAsync(() => Future<void>.delayed(Duration.zero));
-            }
-            await tester.pump();"""
-          new_wait = """            final stopwatch = Stopwatch()..start();
-            while (!condition()) {
-              if (stopwatch.elapsed >= timeout) {
-                fail('Timed out waiting for $label');
-              }
-              await tester.pump(const Duration(milliseconds: 16));
-              await tester.runAsync(
-                () => Future<void>.delayed(const Duration(milliseconds: 10)),
-              );
-            }
-            stopwatch.stop();
-            await tester.pump();"""
-          if old_wait not in s:
-              raise SystemExit('condition wait helper anchor changed')
-          s = s.replace(old_wait, new_wait, 1)
+          wait_pattern = re.compile(
+              r"(?ms)^(\s*)final deadline = DateTime\.now\(\)\.add\(timeout\);\n"
+              r"\1while \(!condition\(\)\) \{\n"
+              r"\1  if \(DateTime\.now\(\)\.isAfter\(deadline\)\) \{\n"
+              r"\1    fail\('Timed out waiting for \$label'\);\n"
+              r"\1  \}\n"
+              r"\1  await tester\.pump\(const Duration\(milliseconds: 16\)\);\n"
+              r"\1  await tester\.runAsync\(\(\) => Future<void>\.delayed\(Duration\.zero\)\);\n"
+              r"\1\}\n"
+              r"\1await tester\.pump\(\);"
+          )
+          wait_matches = list(wait_pattern.finditer(s))
+          if len(wait_matches) != 1:
+              raise SystemExit(f'condition wait helper anchor changed: found {len(wait_matches)}')
+          def wait_repl(m):
+              i = m.group(1)
+              return "\n".join([
+                  f"{i}final stopwatch = Stopwatch()..start();",
+                  f"{i}while (!condition()) {{",
+                  f"{i}  if (stopwatch.elapsed >= timeout) {{",
+                  f"{i}    fail('Timed out waiting for $label');",
+                  f"{i}  }}",
+                  f"{i}  await tester.pump(const Duration(milliseconds: 16));",
+                  f"{i}  await tester.runAsync(",
+                  f"{i}    () => Future<void>.delayed(const Duration(milliseconds: 10)),",
+                  f"{i}  );",
+                  f"{i}}}",
+                  f"{i}stopwatch.stop();",
+                  f"{i}await tester.pump();",
+              ])
+          s = wait_pattern.sub(wait_repl, s, count=1)
 
           if 'waitForProductionAsync' in s:
               raise SystemExit('fixed production wait remains')
