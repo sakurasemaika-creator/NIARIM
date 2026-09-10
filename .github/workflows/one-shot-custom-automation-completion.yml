@@ -1,5 +1,5 @@
 name: One-shot Custom Automation Completion
-# Retrigger with deterministic bottom-sheet presentation in the widget proof.
+# Retrigger with deterministic manager-route presentation in the widget proof.
 
 on:
   push:
@@ -25,7 +25,7 @@ jobs:
           channel: stable
           cache: true
       - run: flutter pub get
-      - name: Remove fixed wall-clock sleeps from production proof
+      - name: Make production proof completion-driven
         run: |
           python3 - <<'PY'
           from pathlib import Path
@@ -56,14 +56,55 @@ jobs:
               raise SystemExit('custom automation wait anchor changed:\n' + old)
             s = s.replace(old, new, 1)
 
-          sheet_anchor = "      showModalBottomSheet<void>(\n        context: context,\n"
-          sheet_count = s.count(sheet_anchor)
-          if sheet_count != 4:
-            raise SystemExit(f'expected 4 production bottom sheets, found {sheet_count}')
-          s = s.replace(
-            sheet_anchor,
-            sheet_anchor + "        sheetAnimationStyle: AnimationStyle.noAnimation,\n",
-          )
+          old_manager = """  void showManager() {
+    final context = canvasContext;
+    unawaited(
+      showModalBottomSheet<void>(
+        context: context,
+        isScrollControlled: true,
+        builder: (_) => CustomAutomationManagerSheet(
+          surface: CustomAutomationSurface.canvas,
+          recordingStartFrame: canvasWidget.currentFrame,
+          frameCount: projectService.frameCount(
+            projectId,
+            canvasWidget.sceneId,
+          ),
+          onRecordingStarted: () {},
+          onExecute: _execute,
+        ),
+      ),
+    );
+  }
+"""
+          new_manager = """  void showManager() {
+    final context = canvasContext;
+    final startFrame = canvasWidget.currentFrame;
+    final count = projectService.frameCount(projectId, canvasWidget.sceneId);
+    unawaited(
+      showGeneralDialog<void>(
+        context: context,
+        barrierDismissible: false,
+        transitionDuration: Duration.zero,
+        pageBuilder: (_, __, ___) => Material(
+          type: MaterialType.transparency,
+          child: Align(
+            alignment: Alignment.bottomCenter,
+            child: CustomAutomationManagerSheet(
+              surface: CustomAutomationSurface.canvas,
+              recordingStartFrame: startFrame,
+              frameCount: count,
+              onRecordingStarted: () {},
+              onExecute: _execute,
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+"""
+          if old_manager not in s:
+            raise SystemExit('production manager route anchor changed')
+          s = s.replace(old_manager, new_manager, 1)
 
           helper_start = s.find('  Future<void> waitForProductionAsync(')
           if helper_start < 0:
@@ -139,7 +180,7 @@ jobs:
           path: build/visual-reaudit/custom-automation-production
           if-no-files-found: error
           retention-days: 7
-      - name: Commit verified sleep removal and clean one-shot workflow
+      - name: Commit verified proof and clean one-shot workflow
         run: |
           git config user.name github-actions[bot]
           git config user.email 41898282+github-actions[bot]@users.noreply.github.com
