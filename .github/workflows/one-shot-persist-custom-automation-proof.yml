@@ -32,29 +32,13 @@ jobs:
         run: flutter analyze test/custom_automation_production_surface_visual_test.dart --no-fatal-warnings --no-fatal-infos
       - name: Prove permanent record edit save replay pixels
         run: flutter test test/custom_automation_production_surface_visual_test.dart --reporter expanded
-      - name: Simplify permanent proof workflow
+      - name: Commit permanent test and non-workflow helpers only
         shell: bash
         run: |
-          python3 <<'PY'
-          from pathlib import Path
-          p = Path('.github/workflows/custom-automation-production-visual-proof.yml')
-          s = p.read_text()
-          s = s.replace("      - 'tool/patch_custom_automation_surface_interactions.py'\n", '')
-          s = s.replace("      - 'tool/patch_custom_automation_direct_runner_proof.py'\n", '')
-          s = s.replace("      - name: Apply production-surface harness isolation\n        run: python3 tool/patch_custom_automation_surface_interactions.py\n", '')
-          s = s.replace("      - name: Replace fixed-sleep proof with direct production runner proof\n        run: python3 tool/patch_custom_automation_direct_runner_proof.py\n", '')
-          p.write_text(s)
-          PY
           rm tool/patch_custom_automation_surface_interactions.py
           rm tool/patch_custom_automation_direct_runner_proof.py
-          rm -f .github/workflows/one-shot-custom-automation-record-edit-replay.yml
-          rm -f .github/workflows/one-shot-custom-automation-condition-wait-repair.yml
-          rm .github/workflows/one-shot-persist-custom-automation-proof.yml
-      - name: Commit permanent proof
-        shell: bash
-        run: |
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          git add -A
+          git add test/custom_automation_production_surface_visual_test.dart tool/patch_custom_automation_surface_interactions.py tool/patch_custom_automation_direct_runner_proof.py
           git commit -m 'test: persist sleep-free automation PNG proof'
           git push origin HEAD:dev_branch
