@@ -24,18 +24,24 @@ Uint8List applyPrismFilterInIsolate(
   );
 }
 
-/// Prism pipeline, intentionally kept in the requested order:
-/// clipped dark-rainbow fill -> merge -> unclipped Gaussian blur -> Linear Dodge(Add).
+/// Prism effect pixels for a single layer.
+///
+/// The source alpha is the clipping mask. Inside it, six equal bands are painted
+/// red -> green -> cyan -> blue -> purple -> red at HSV saturation 100% and
+/// value/brightness 30%. The alpha lock is then considered released and Gaussian
+/// blur is applied, so the glow may extend beyond the original alpha boundary.
+/// Linear Dodge itself is a layer-compositing concern; callers put these pixels on
+/// a LayerBlendMode.addition layer so the effect is evaluated against lower layers.
 class PrismFilterEngine {
   PrismFilterEngine({FilterEngine? filterEngine})
     : _filterEngine = filterEngine ?? FilterEngine();
 
   static const double minBlurPx = 0;
   static const double maxBlurPx = 40;
-  static const double defaultBlurPx = 8;
+  static const double defaultBlurPx = 17;
   static const double minDirectionDegrees = 0;
   static const double maxDirectionDegrees = 359;
-  static const double defaultDirectionDegrees = 45;
+  static const double defaultDirectionDegrees = 90;
 
   final FilterEngine _filterEngine;
 
@@ -58,21 +64,24 @@ class PrismFilterEngine {
       return Uint8List.fromList(source);
     }
 
-    final clippedGradient = _buildClippedDarkRainbow(
+    final clippedBands = _buildClippedSixBands(
       source,
       width,
       height,
       gradientDirectionDegrees,
     );
-    final merged = _normalMerge(source, clippedGradient);
     final safeBlurPx = clampBlurPx(blurPx);
-    final blurred = safeBlurPx <= 0
-        ? merged
-        : _filterEngine.applyGaussianBlur(merged, width, height, safeBlurPx);
-    return _linearDodge(source, blurred);
+    return safeBlurPx <= 0
+        ? clippedBands
+        : _filterEngine.applyGaussianBlur(
+            clippedBands,
+            width,
+            height,
+            safeBlurPx,
+          );
   }
 
-  Uint8List _buildClippedDarkRainbow(
+  Uint8List _buildClippedSixBands(
     Uint8List source,
     int width,
     int height,
@@ -104,81 +113,29 @@ class PrismFilterEngine {
         final t = ((projection - minProjection) / span)
             .clamp(0.0, 1.0)
             .toDouble();
-        final rgb = _darkRainbowAt(t);
+        final rgb = _sixBandColorAt(t);
         out[i] = rgb.$1;
         out[i + 1] = rgb.$2;
         out[i + 2] = rgb.$3;
-        // This is the clipping stage. The blur below operates after the merge and
-        // is therefore free to spread beyond this alpha boundary.
         out[i + 3] = sourceAlpha;
       }
     }
     return out;
   }
 
-  Uint8List _normalMerge(Uint8List base, Uint8List overlay) {
-    final out = Uint8List(base.length);
-    for (var i = 0; i < base.length; i += 4) {
-      final ba = base[i + 3] / 255.0;
-      final oa = overlay[i + 3] / 255.0;
-      final outA = oa + ba * (1.0 - oa);
-      if (outA <= 0) continue;
-      out[i] = _clampByte(
-        ((overlay[i] * oa) + (base[i] * ba * (1.0 - oa))) / outA,
-      );
-      out[i + 1] = _clampByte(
-        ((overlay[i + 1] * oa) + (base[i + 1] * ba * (1.0 - oa))) / outA,
-      );
-      out[i + 2] = _clampByte(
-        ((overlay[i + 2] * oa) + (base[i + 2] * ba * (1.0 - oa))) / outA,
-      );
-      out[i + 3] = _clampByte(outA * 255.0);
-    }
-    return out;
-  }
-
-  Uint8List _linearDodge(Uint8List base, Uint8List effect) {
-    final out = Uint8List(base.length);
-    for (var i = 0; i < base.length; i += 4) {
-      final ba = base[i + 3] / 255.0;
-      final ea = effect[i + 3] / 255.0;
-      final outA = ea + ba * (1.0 - ea);
-      if (outA <= 0) continue;
-      out[i] = _clampByte(base[i] + effect[i] * ea);
-      out[i + 1] = _clampByte(base[i + 1] + effect[i + 1] * ea);
-      out[i + 2] = _clampByte(base[i + 2] + effect[i + 2] * ea);
-      out[i + 3] = _clampByte(outA * 255.0);
-    }
-    return out;
-  }
-
-  (int, int, int) _darkRainbowAt(double t) {
-    const stops = <(double, int, int, int)>[
-      (0.00, 92, 18, 38),
-      (0.17, 104, 48, 16),
-      (0.33, 86, 78, 12),
-      (0.50, 18, 82, 46),
-      (0.67, 14, 60, 96),
-      (0.83, 48, 30, 104),
-      (1.00, 92, 18, 72),
+  /// HSV(S=100%, V=30%) => max channel round(255 * .30) == 77.
+  /// Six *discrete*, equally-sized bands. The repeated red is intentional.
+  (int, int, int) _sixBandColorAt(double t) {
+    const bands = <(int, int, int)>[
+      (77, 0, 0), // red
+      (0, 77, 0), // green
+      (0, 77, 77), // cyan
+      (0, 0, 77), // blue
+      (77, 0, 77), // purple
+      (77, 0, 0), // red
     ];
     final v = t.clamp(0.0, 1.0).toDouble();
-    for (var i = 0; i < stops.length - 1; i++) {
-      final a = stops[i];
-      final b = stops[i + 1];
-      if (v > b.$1) continue;
-      final local = ((v - a.$1) / (b.$1 - a.$1)).clamp(0.0, 1.0).toDouble();
-      return (
-        _lerpChannel(a.$2, b.$2, local),
-        _lerpChannel(a.$3, b.$3, local),
-        _lerpChannel(a.$4, b.$4, local),
-      );
-    }
-    final last = stops.last;
-    return (last.$2, last.$3, last.$4);
+    final index = math.min(5, (v * 6).floor());
+    return bands[index];
   }
-
-  int _lerpChannel(int a, int b, double t) => _clampByte(a + (b - a) * t);
-
-  int _clampByte(num value) => value.round().clamp(0, 255).toInt();
 }
