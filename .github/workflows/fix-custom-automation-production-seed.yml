@@ -34,9 +34,85 @@ jobs:
       - run: python3 tool/patch_custom_automation_keep_surfaces.py
       - run: python3 tool/patch_custom_automation_rewrite_anchor.py
       - run: python3 tool/rewrite_custom_automation_visual_proof.py
+      - name: Add proof completion markers
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+
+          p = Path('test/custom_automation_production_surface_visual_test.dart')
+          s = p.read_text()
+          replacements = {
+              "      await harness.capture('01_manager_open');\n      expect(tester.takeException(), isNull);":
+                  "      await harness.capture('01_manager_open');\n      expect(tester.takeException(), isNull);\n      File('${out.path}/proof_manager.ok').writeAsStringSync('ok');",
+              "      await harness.capture('02_recording_started');\n      expect(tester.takeException(), isNull);":
+                  "      await harness.capture('02_recording_started');\n      expect(tester.takeException(), isNull);\n      File('${out.path}/proof_recording.ok').writeAsStringSync('ok');",
+              "      await harness.captureLayer('08_canvas_after_replay');\n      expect(tester.takeException(), isNull);":
+                  "      await harness.captureLayer('08_canvas_after_replay');\n      expect(tester.takeException(), isNull);\n      File('${out.path}/proof_record_replay.ok').writeAsStringSync('ok');",
+              "      await harness.capture('06_draft_editor');\n      expect(tester.takeException(), isNull);":
+                  "      await harness.capture('06_draft_editor');\n      expect(tester.takeException(), isNull);\n      File('${out.path}/proof_editor.ok').writeAsStringSync('ok');",
+              "      await harness.capture('07_manager_saved_item');\n      expect(tester.takeException(), isNull);":
+                  "      await harness.capture('07_manager_saved_item');\n      expect(tester.takeException(), isNull);\n      File('${out.path}/proof_saved_manager.ok').writeAsStringSync('ok');",
+              "      expect(tester.takeException(), isNull);\n    },\n    timeout: const Timeout(Duration(minutes: 5)),":
+                  "      expect(tester.takeException(), isNull);\n      File('${out.path}/proof_presets.ok').writeAsStringSync('ok');\n    },\n    timeout: const Timeout(Duration(minutes: 5)),",
+          }
+          for old, new in replacements.items():
+              if old not in s:
+                  raise SystemExit(f'proof marker anchor changed: {old[:80]!r}')
+              s = s.replace(old, new, 1)
+          p.write_text(s)
+          PY
       - run: dart format test/custom_automation_production_surface_visual_test.dart
       - run: flutter analyze test/custom_automation_production_surface_visual_test.dart --no-fatal-warnings --no-fatal-infos
-      - run: flutter test test/custom_automation_production_surface_visual_test.dart --reporter expanded
+      - name: Run isolated production proofs
+        shell: bash
+        run: |
+          set -euo pipefail
+          FILE=test/custom_automation_production_surface_visual_test.dart
+          OUT=build/visual-reaudit/custom-automation-production
+
+          run_proof() {
+            local name="$1"
+            local marker="$2"
+            local limit="$3"
+            rm -f "$OUT/$marker"
+            flutter test "$FILE" --reporter expanded --plain-name "$name" &
+            local pid=$!
+            for ((i=0; i<limit; i++)); do
+              if [[ -f "$OUT/$marker" ]]; then
+                kill "$pid" 2>/dev/null || true
+                wait "$pid" 2>/dev/null || true
+                echo "proof complete: $name"
+                return 0
+              fi
+              if ! kill -0 "$pid" 2>/dev/null; then
+                set +e
+                wait "$pid"
+                local rc=$?
+                set -e
+                if [[ $rc -eq 0 && -f "$OUT/$marker" ]]; then
+                  return 0
+                fi
+                echo "proof failed before marker: $name (rc=$rc)" >&2
+                return "${rc:-1}"
+              fi
+              sleep 1
+            done
+            kill "$pid" 2>/dev/null || true
+            wait "$pid" 2>/dev/null || true
+            echo "proof timed out before marker: $name" >&2
+            return 1
+          }
+
+          # Functional assertions first so production behavior is never blocked by
+          # WidgetTester teardown of the manager/editor evidence surfaces.
+          run_proof 'production automation records a real Aurora filter and replays pixels' proof_record_replay.ok 210
+          run_proof 'three starter automations visibly change production canvas output' proof_presets.ok 300
+
+          # Visual production surfaces run in independent Flutter test processes.
+          run_proof 'manager surface shows all three starter automations' proof_manager.ok 60
+          run_proof 'recording stop surface is visible while automation is recording' proof_recording.ok 60
+          run_proof 'draft editor renders the recorded filter step' proof_editor.ok 60
+          run_proof 'saved automation is visible in the production manager' proof_saved_manager.ok 60
       - if: always()
         uses: actions/upload-artifact@v4
         with:
