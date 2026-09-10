@@ -1,0 +1,32 @@
+name: Pinch current HEAD regression
+
+on:
+  push:
+    branches: [dev_branch]
+    paths:
+      - '.github/workflows/pinch-current-head-regression.yml'
+      - 'lib/screens/canvas/widgets/canvas_area.dart'
+      - 'test/canvas_pinch_gesture_test.dart'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  pinch-regression:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Checkout current HEAD
+        uses: actions/checkout@v4
+      - name: Set up Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+      - name: Install dependencies
+        run: flutter pub get
+      - name: Run pinch regression
+        run: flutter test test/canvas_pinch_gesture_test.dart --reporter expanded
+      - name: Analyze pinch implementation and regression
+        run: flutter analyze lib/screens/canvas/widgets/canvas_area.dart test/canvas_pinch_gesture_test.dart
