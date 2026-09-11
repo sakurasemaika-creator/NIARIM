@@ -1,6 +1,7 @@
 name: Normal Task Final HEAD Gate
 
 # Rerun after verified analyzer cleanup.
+# Normal-task rerun anchor: verify the current dev_branch after Step 2-4 proofs.
 on:
   push:
     branches: [dev_branch]
