@@ -62,7 +62,48 @@ NIARIMを世界最高水準の商用製品へ仕上げることを優先し、Ap
 
 単純反復・matrix・lint/test/build/screenshot等はActions/CI/決定論的自動化へ寄せ、主担当モデルはRoute進行、root-cause、実装、UI/UX、翻訳品質、法務リスク、異常差分など判断価値の高い作業へ使う。
 
-Astraは必須ではない。Sol等で通常のRoute監査を進め、現在の担当モデルでは品質または確度が不足する難問、重大security/architecture/concurrency、独立最終レビュー等に限って、利用可能ならAstra等の上位モデルをadvisor/reviewerとして使ってよい。advisorはRoute/Stateを勝手に更新せず、主担当がEvidenceを確認して反映する。
+### 5.1 主担当と上位advisorの役割
+
+- Astraは必須ではない。Sol等を通常のRoute executor（主担当）として使い、調査、再現、通常の設計判断、実装、テスト、実画面確認、Evidence整理、checkpoint、Route進行は原則として主担当が行う。
+- 上位モデルを使う場合も、Baseline/Discovery IDを丸ごと委譲してはならない。`A001全部をAstraへ` のような委譲は禁止する。
+- Astra等の上位モデルは、高価な専門advisor/reviewerとして、現在の担当モデルだけでは十分な確度を得にくい**最小の判断単位**に限定して使う。例: 重大securityの攻撃成立性、複雑なrace/concurrencyの安全性、不可逆なarchitecture trade-off、複数回の合理的試行でもroot causeを確定できない難問、独立frontier reviewに明確な価値がある箇所。
+- 単なるコード読解、通常のバグ修正、一般的なテスト失敗、UI確認、翻訳、反復検証等を「念のため」で上位モデルへ送らない。
+
+### 5.2 ID内部substepとcheckpoint
+
+- current IDは必要に応じて内部substepへ分解する。これはRouteのBaseline/Discovery IDを増やしたり並べ替えたりする操作ではなく、**同じID内の再開位置を細かく永続化するための作業単位**である。
+- Progress/Evidenceには、少なくとも `completed_substeps`、`current_substep`、`remaining_substeps`、`blockers`、`next_action` を必要に応じて記録する。substep名は安定して再開できる具体性を持たせる。
+- 意味のあるsubstep、重要な修正、再現、targeted test、実画面確認等が完了した時点でcheckpointを残し、ID全体の完了まで進捗をメモリ内だけに保持しない。利用枠終了直前だけにまとめてcheckpointしない。
+- 再開時はGit上で完了済みのsubstep/Evidenceを確認し、前提を壊す変更がない限り理由なく最初から再調査しない。
+
+### 5.3 Granular advisor request
+
+上位モデルが必要な場合は、ID全体ではなく `A001/R1`, `A001/R2` のような**review request packet**へ分ける。R番号は当該ID内で安定させるがRoute IDではない。
+
+各packetには必要最小限として以下を記録する：
+
+- `parent_id` / `request_id`
+- 判断してほしい1つの明確なquestion
+- `why_upper_model`（なぜ主担当だけでは確度不足か）
+- 主担当が既に確認したfacts/evidence
+- 必要な最小コード、ログ、再現条件、制約
+- 既に試した案と結果（該当時）
+- advisorに求めるoutput（判断、リスク、選択肢、追加検証案等）
+- `status: advisor-pending | advisor-answered | verified`
+
+Route全体、無関係な過去会話、巨大な作業中contextをpacketへコピーしない。Codex系advisorを呼べる場合は原則fresh context (`fork_turns:"none"`) とし、明示的に利用したい上位モデルを指定する。advisorは他agentをspawnしない。
+
+advisorは原則read-onlyで、ファイル編集、Route/Progress/Evidenceの直接更新、done判定を行わない。回答は助言であり、主担当が必要な実装・targeted test・実画面確認等で検証してからEvidenceへ反映する。advisor回答だけでTODOをdoneにしない。
+
+### 5.4 上位モデルが利用できない場合
+
+- Astra等が利用不可・利用枠切れ・現在のツールからモデル指定不可の場合、呼んだふりをしない。packetを `advisor-pending` としてGitへ永続化し、ユーザーへ簡潔に「この最小論点はAstra確認待ち、Solは他の検証を継続」と報告する。
+- advisor待ちでも同じID内で独立して進められるsubstepは主担当が継続する。advisor回答がなくても安全に検証可能な後続Baseline IDは、固定Route順序を壊さない形で先行監査してよい。この場合、元IDは `sol-complete/advisor-pending` 等の非done状態として残し、飛ばした理由と依存関係をProgress/Evidenceへ明記する。
+- advisor待ちIDをdone扱いしてはならない。後続を先行した場合も、最終的なBaseline完了判定ではpending IDへ戻る。
+- 上位モデル利用可能時は、溜まったpacketだけを処理対象とし、親ID全体や628件Route全体を上位モデルに再読させない。複数packetがある場合は重大度/依存性を優先しつつ、同条件ならrequest ID順に処理する。
+- 全面監査completeには `advisor-pending=0` が必要。
+
+### 5.5 サブエージェント一般
 
 サブエージェントは品質/総合効率が明確に上がる独立作業または独立レビューだけ必要最小限。Codex系では原則 `fork_turns:"none"`、必要でも1〜2、`all`は使わない。子から子を増やさない。wait既定値を設定できる場合120秒、個別wait/timeoutは予想実行時間の約2倍を一度に指定する。
 
@@ -72,4 +113,4 @@ Route/Progress/Evidenceは**明示的な全面監査モードで実際に検証�
 
 State更新commitには `[audit-state]`、policy/guard変更にはユーザーの明示依頼のもと `[audit-policy-approved]` を使う。
 
-全面監査completeには、少なくとも **Baseline未完了=0、Discovery未完了=0、現在認識している未登録Discovery=0** を満たし、各品質正本の完了条件と最終回帰フェーズも完了していることが必要。Baseline coverageの通過だけを「これ以上発見対象はない」「監査complete」の根拠にしてはならない。
+全面監査completeには、少なくとも **Baseline未完了=0、Discovery未完了=0、advisor-pending=0、現在認識している未登録Discovery=0** を満たし、各品質正本の完了条件と最終回帰フェーズも完了していることが必要。Baseline coverageの通過だけを「これ以上発見対象はない」「監査complete」の根拠にしてはならない。
