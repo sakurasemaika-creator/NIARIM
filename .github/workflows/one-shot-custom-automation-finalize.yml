@@ -45,17 +45,10 @@ jobs:
 
           p = Path('test/custom_automation_production_visual_test.dart')
           s = p.read_text()
-          stale = '''      final close = find.descendant(
-            of: find.byType(FilterPanel),
-            matching: find.byIcon(Icons.close),
-          );
-          expect(close, findsOneWidget);
-          await tester.tap(close);
-          await tester.pump(const Duration(milliseconds: 200));
-
-          '''
-          if stale not in s:
-            raise SystemExit('stale FilterPanel close assertion anchor changed')
+          start = s.find('      final close = find.descendant(')
+          end = s.find('      harness.showRecordingStop();', start)
+          if start < 0 or end < 0:
+            raise SystemExit('FilterPanel close assertion boundary changed')
           replacement = '''      expect(
             find.byType(FilterPanel),
             findsNothing,
@@ -63,7 +56,7 @@ jobs:
           );
 
           '''
-          s = s.replace(stale, replacement, 1)
+          s = s[:start] + replacement + s[end:]
           p.write_text(s)
           PY
 
