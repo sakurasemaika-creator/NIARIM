@@ -312,11 +312,18 @@ class ThemeService extends ChangeNotifier {
     if (raw == null || raw.isEmpty) {
       _presets.addAll(_builtInPresets);
     } else {
-      _presets.addAll(
-        raw.map(
-          (s) => AppThemePreset.fromJson(jsonDecode(s) as Map<String, dynamic>),
-        ),
-      );
+      for (final encoded in raw) {
+        try {
+          final decoded = jsonDecode(encoded);
+          if (decoded is Map<String, dynamic>) {
+            _presets.add(AppThemePreset.fromJson(decoded));
+          }
+        } on FormatException {
+          // Keep malformed persisted JSON untouched; skip it for this session.
+        } on TypeError {
+          // Isolate structurally invalid presets instead of aborting startup.
+        }
+      }
       // 保存済みプリセット一覧に、組み込みプリセット（パステル・
       // ニュアンス・くすみカラー等）を反映する（同IDが既に存在する場合は
       // 追加しない。プリセット名は同一IDであれば保存済みデータ側が優先
@@ -331,10 +338,21 @@ class ThemeService extends ChangeNotifier {
     // ID参照へフォールバックする（アプリ更新前からのデータ用）。
     final currentJson = prefs.getString(_prefsCurrentJsonKey);
     final currentId = prefs.getString(_prefsCurrentIdKey);
+    AppThemePreset? restoredCurrent;
     if (currentJson != null) {
-      _current = AppThemePreset.fromJson(
-        jsonDecode(currentJson) as Map<String, dynamic>,
-      );
+      try {
+        final decoded = jsonDecode(currentJson);
+        if (decoded is Map<String, dynamic>) {
+          restoredCurrent = AppThemePreset.fromJson(decoded);
+        }
+      } on FormatException {
+        // Keep the damaged raw value untouched and fall back below.
+      } on TypeError {
+        // Structurally invalid current theme must not abort app startup.
+      }
+    }
+    if (restoredCurrent != null) {
+      _current = restoredCurrent;
     } else if (currentId != null) {
       _current = _presets.firstWhere(
         (p) => p.id == currentId,

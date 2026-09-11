@@ -551,12 +551,19 @@ class SettingsService extends ChangeNotifier {
       _rightDockOrder = restored;
     }
     final sizePresetStrings = prefs.getStringList('custom_size_presets') ?? [];
-    _customSizePresets = sizePresetStrings
-        .map(
-          (s) =>
-              CanvasSizePreset.fromJson(jsonDecode(s) as Map<String, dynamic>),
-        )
-        .toList();
+    _customSizePresets = [];
+    for (final encoded in sizePresetStrings) {
+      try {
+        final decoded = jsonDecode(encoded);
+        if (decoded is Map<String, dynamic>) {
+          _customSizePresets.add(CanvasSizePreset.fromJson(decoded));
+        }
+      } on FormatException {
+        // Keep the raw persisted entry untouched so recovery is non-destructive.
+      } on TypeError {
+        // A structurally invalid preset is isolated instead of aborting startup.
+      }
+    }
     _endCardDefaultHiddenForPremium =
         prefs.getBool('endcard_default_hidden_for_premium') ?? false;
     final toolbarOrderNames = prefs.getStringList('toolbar_order');
