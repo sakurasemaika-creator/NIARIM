@@ -1,6 +1,6 @@
 name: One-shot Custom Automation Completion
-# Verify the full flow separately from production-widget bindings so CanvasScreen
-# frame scheduling cannot deadlock the widget proof.
+# Verify the full visual flow in the surface proof and keep the production-widget
+# binding proof free of RenderRepaintBoundary capture side effects.
 
 on:
   push:
@@ -27,13 +27,32 @@ jobs:
           cache: true
       - run: flutter pub get
 
-      - name: Make production widget proof CanvasScreen-independent
+      - name: Make production widget proof CanvasScreen and capture independent
         run: |
           python3 - <<'PY'
           from pathlib import Path
 
           p = Path('test/custom_automation_production_visual_test.dart')
           s = p.read_text()
+
+          captures = [
+            '00_canvas_before_recording',
+            '01_manager_open',
+            '02_recording_started',
+            '03_aurora_filter_panel_during_recording',
+            '04_real_aurora_applied_and_recorded',
+            '05_recording_stop_ui',
+            '06_draft_edit_before_save',
+            '07_saved',
+            '08_manager_saved_item',
+            '09_replay_confirmation',
+            '10_reexecuted_canvas_pixels_changed',
+          ]
+          for name in captures:
+            line = f"      await harness.capture('{name}');\n"
+            if line not in s:
+              raise SystemExit('production capture anchor changed: ' + name)
+            s = s.replace(line, '', 1)
 
           replacements = [
             (
