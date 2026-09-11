@@ -175,7 +175,7 @@ void main() {
   );
 
   testWidgets(
-    'starter Aurora line extraction and line creation produce actual PNG output',
+    'Aurora line extraction line creation and Prism produce actual PNG output',
     (tester) async {
       final harness = await _SurfaceHarness.create(tester, out);
       final cases = <(String, String, bool)>[
@@ -270,6 +270,45 @@ void main() {
           );
         }
       }
+      await harness.createProject('step3-prism');
+      final beforePrism = harness.activeLayerPixels();
+      final prismFilter = harness.filterService.filters.singleWhere(
+        (filter) => filter.id == FilterService.prismFilterId,
+      );
+      final prismTimestamp = DateTime.utc(2026, 1, 1);
+      final prismAutomation = CustomAutomation(
+        id: 'step3_prism_proof',
+        name: 'プリズム',
+        recordingStartFrame: harness.frameIndex,
+        createdAt: prismTimestamp,
+        updatedAt: prismTimestamp,
+        steps: [
+          CustomAutomationStep(
+            id: 'step3_prism_filter',
+            surface: CustomAutomationSurface.canvas,
+            command: 'canvas.filterApply',
+            label: prismFilter.name,
+            args: {'filter': prismFilter.toJson()},
+            recordedFrame: harness.frameIndex,
+          ),
+        ],
+      );
+
+      await tester.runAsync(() async {
+        await harness.execute(
+          prismAutomation,
+          CustomAutomationExecutionScope.currentFrame,
+          null,
+        );
+      });
+
+      expect(
+        _changedBytes(beforePrism, harness.activeLayerPixels()),
+        greaterThan(100),
+        reason: 'プリズム must visibly change the source layer',
+      );
+      await harness.captureCanvas('step3_prism_actual');
+
       expect(tester.takeException(), isNull);
     },
     timeout: const Timeout(Duration(minutes: 5)),
