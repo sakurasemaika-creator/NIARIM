@@ -25,6 +25,7 @@ class AppErrorReporter {
   /// 設定画面等からの参照に使う。無制限に貯めない。
   static final List<String> recentErrors = <String>[];
   static const int _maxRecent = 20;
+  static bool _installed = false;
 
   static void record(Object error, StackTrace? stack) {
     final head =
@@ -42,8 +43,12 @@ class AppErrorReporter {
     }
   }
 
-  /// アプリ起動時に一度だけ呼ぶ。
+  /// アプリ起動時に一度だけ呼ぶ。再試行経路から重複して呼ばれても、
+  /// Flutter/Platformのglobal handlerを多重ラップしない。
   static void install() {
+    if (_installed) return;
+    _installed = true;
+
     final previousOnError = FlutterError.onError;
     FlutterError.onError = (details) {
       record(details.exception, details.stack);
