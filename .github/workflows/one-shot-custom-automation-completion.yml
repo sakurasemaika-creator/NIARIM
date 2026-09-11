@@ -1,5 +1,5 @@
 name: One-shot Custom Automation Completion
-# Retrigger with anchor-stable test-host overlay presentation around production widgets.
+# Retrigger with test-host surface swapping around production widgets.
 
 on:
   push:
@@ -25,7 +25,7 @@ jobs:
           channel: stable
           cache: true
       - run: flutter pub get
-      - name: Make production proof completion-driven and route-independent
+      - name: Make production proof completion-driven and surface-isolated
         run: |
           python3 - <<'PY'
           from pathlib import Path
@@ -51,16 +51,24 @@ jobs:
               "        await tester.tap(find.text(harness.l10n.customAutomationYes));\n        await harness.waitForAutomationResult(\n          beforePixels: beforePixels,\n          beforeLayers: beforeLayers,\n          createsLayer: createsLayer,\n          label: name,\n        );\n\n        if (!createsLayer) {",
             ),
             (
+              "  String? _projectId;",
+              "  String? _projectId;\n  String? _sceneId;\n  int _frame = 0;\n  String? _layerId;",
+            ),
+            (
               "    final providers = await tester.runAsync(buildAppProviders);\n    ProjectService? ps;\n    StateSetter? hostSetter;\n    String? activeProjectId;\n    final rootKey = GlobalKey();",
-              "    final providers = await tester.runAsync(buildAppProviders);\n    ProjectService? ps;\n    StateSetter? hostSetter;\n    String? activeProjectId;\n    Widget? testOverlay;\n    final rootKey = GlobalKey();",
+              "    final providers = await tester.runAsync(buildAppProviders);\n    ProjectService? ps;\n    StateSetter? hostSetter;\n    String? activeProjectId;\n    Widget? testSurface;\n    final rootKey = GlobalKey();",
             ),
             (
               "                  if (activeProjectId == null) return const SizedBox.expand();\n                  return CanvasScreen(\n                    key: ValueKey(activeProjectId),\n                    projectId: activeProjectId!,\n                  );",
-              "                  if (activeProjectId == null) return const SizedBox.expand();\n                  return Stack(\n                    fit: StackFit.expand,\n                    children: [\n                      CanvasScreen(\n                        key: ValueKey(activeProjectId),\n                        projectId: activeProjectId!,\n                      ),\n                      if (testOverlay != null) testOverlay!,\n                    ],\n                  );",
+              "                  if (activeProjectId == null) return const SizedBox.expand();\n                  if (testSurface != null) return testSurface!;\n                  return CanvasScreen(\n                    key: ValueKey(activeProjectId),\n                    projectId: activeProjectId!,\n                  );",
             ),
             (
               "    harness._setProject = (id) {\n      activeProjectId = id;\n      harness._projectId = id;\n      hostSetter!(() {});\n    };\n    return harness;",
-              "    harness._setProject = (id) {\n      activeProjectId = id;\n      harness._projectId = id;\n      hostSetter!(() {});\n    };\n    harness._setOverlay = (child) {\n      testOverlay = child;\n      hostSetter!(() {});\n    };\n    return harness;",
+              "    harness._setProject = (id) {\n      activeProjectId = id;\n      harness._projectId = id;\n      hostSetter!(() {});\n    };\n    harness._setSurface = (child) {\n      testSurface = child;\n      hostSetter!(() {});\n    };\n    return harness;",
+            ),
+            (
+              "    _setProject(project.id);\n    await tester.pump(const Duration(milliseconds: 1200));",
+              "    _setProject(project.id);\n    await tester.pump(const Duration(milliseconds: 1200));\n    final canvas = canvasWidget;\n    _sceneId = canvas.sceneId;\n    _frame = canvas.currentFrame;\n    _layerId = canvas.currentLayerId;",
             ),
           ]
           for old, new in replacements:
@@ -68,119 +76,36 @@ jobs:
               raise SystemExit('custom automation proof anchor changed:\n' + old)
             s = s.replace(old, new, 1)
 
-          presentation_start = s.find('  void showManager() {')
-          if presentation_start < 0:
-            raise SystemExit('showManager start changed')
-          presentation_end = s.find('\n}\n\nint _changedBytes(', presentation_start)
-          if presentation_end < 0:
-            raise SystemExit('production harness end changed')
-
-          presentation = '\n'.join([
-            '  late void Function(Widget? child) _setOverlay;',
+          pixel_start = s.find('  Uint8List activeLayerPixels()')
+          execute_start = s.find('  Future<void> _execute(', pixel_start)
+          if pixel_start < 0 or execute_start < 0:
+            raise SystemExit('pixel/helper boundary changed')
+          pixel_helpers = '\n'.join([
+            '  Uint8List activeLayerPixels() => layerPixels(_layerId!);',
             '',
-            '  void _hideOverlay() => _setOverlay(null);',
-            '',
-            '  Widget _localNavigator(Widget page) => Navigator(',
-            '    onGenerateRoute: (_) => PageRouteBuilder<void>(',
-            '      pageBuilder: (_, __, ___) => page,',
-            '      transitionDuration: Duration.zero,',
-            '      reverseTransitionDuration: Duration.zero,',
-            '    ),',
-            '  );',
-            '',
-            '  Widget _sheetPage(Widget child) => Material(',
-            '    color: Colors.black26,',
-            '    child: Align(',
-            '      alignment: Alignment.bottomCenter,',
-            '      child: Material(child: child),',
-            '    ),',
-            '  );',
-            '',
-            '  void showManager() {',
-            '    final startFrame = canvasWidget.currentFrame;',
-            '    final count = projectService.frameCount(projectId, canvasWidget.sceneId);',
-            '    _setOverlay(',
-            '      _localNavigator(',
-            '        _sheetPage(',
-            '          CustomAutomationManagerSheet(',
-            '            surface: CustomAutomationSurface.canvas,',
-            '            recordingStartFrame: startFrame,',
-            '            frameCount: count,',
-            '            onRecordingStarted: _hideOverlay,',
-            '            onExecute: (automation, scope, targetFrames) async {',
-            '              _hideOverlay();',
-            '              await _execute(automation, scope, targetFrames);',
-            '            },',
-            '          ),',
-            '        ),',
-            '      ),',
+            '  Uint8List layerPixels(String layerId) {',
+            '    final tm = projectService.tileManagerOf(projectId);',
+            '    final key = projectService.tileKeyFor(',
+            '      projectId,',
+            '      _sceneId!,',
+            '      _frame,',
+            '      layerId,',
             '    );',
+            '    const tileBytes = TileManager.tileSize * TileManager.tileSize * 4;',
+            '    final snapshot = Uint8List(tm.tilesX * tm.tilesY * tileBytes);',
+            '    var offset = 0;',
+            '    for (var ty = 0; ty < tm.tilesY; ty++) {',
+            '      for (var tx = 0; tx < tm.tilesX; tx++) {',
+            '        final current = tm.getTile(key, tx, ty);',
+            '        if (current != null) {',
+            '          snapshot.setRange(offset, offset + tileBytes, current);',
+            '        }',
+            '        offset += tileBytes;',
+            '      }',
+            '    }',
+            '    return snapshot;',
             '  }',
             '',
-            '  void showFilterPanel() {',
-            '    final canvas = canvasWidget;',
-            '    _setOverlay(',
-            '      _localNavigator(',
-            '        _sheetPage(',
-            '          Center(',
-            '            child: FilterPanel(',
-            '              projectId: projectId,',
-            '              sceneId: canvas.sceneId,',
-            '              layerId: canvas.currentLayerId,',
-            '              frameIndex: canvas.currentFrame,',
-            '              onClose: _hideOverlay,',
-            '            ),',
-            '          ),',
-            '        ),',
-            '      ),',
-            '    );',
-            '  }',
-            '',
-            '  void showRecordingStop() {',
-            '    final service = automationService;',
-            '    _setOverlay(',
-            '      _localNavigator(',
-            '        Material(',
-            '          color: Colors.transparent,',
-            '          child: Stack(',
-            '            children: [',
-            '              CustomAutomationRecordingStopButton(',
-            '                onStop: () {',
-            '                  service.stopRecording();',
-            '                  _hideOverlay();',
-            '                },',
-            '              ),',
-            '            ],',
-            '          ),',
-            '        ),',
-            '      ),',
-            '    );',
-            '  }',
-            '',
-            '  void showDraftEditor() {',
-            '    _setOverlay(',
-            '      _localNavigator(',
-            '        _sheetPage(',
-            '          CustomAutomationDraftEditorSheet(',
-            '            surface: CustomAutomationSurface.canvas,',
-            '            onResumeRecording: _hideOverlay,',
-            '            onSaved: _hideOverlay,',
-            '          ),',
-            '        ),',
-            '      ),',
-            '    );',
-            '  }',
-          ])
-          s = s[:presentation_start] + presentation + s[presentation_end:]
-
-          helper_start = s.find('  Future<void> waitForProductionAsync(')
-          if helper_start < 0:
-            raise SystemExit('fixed-sleep helper start changed')
-          helper_end = s.find('\n\n  Future<void> _execute(', helper_start)
-          if helper_end < 0:
-            raise SystemExit('fixed-sleep helper end changed')
-
-          helper = '\n'.join([
             '  Future<void> _yieldAsyncWork() async {',
             '    await tester.runAsync(() => Future<void>(() {}));',
             '    await tester.pump();',
@@ -205,13 +130,8 @@ jobs:
             '  }) async {',
             '    for (var attempt = 0; attempt < 600; attempt++) {',
             '      if (createsLayer) {',
-            '        final canvas = canvasWidget;',
             '        final current = projectService',
-            '            .layersOf(',
-            '              projectId,',
-            '              canvas.sceneId,',
-            '              canvas.currentFrame,',
-            '            )',
+            '            .layersOf(projectId, _sceneId!, _frame)',
             '            .where((layer) => layer.type == model.LayerType.normal)',
             '            .map((layer) => layer.id)',
             '            .toSet();',
@@ -223,8 +143,150 @@ jobs:
             '    }',
             "    throw TestFailure('$label did not reach its observable completion state');",
             '  }',
+            '',
           ])
-          s = s[:helper_start] + helper + s[helper_end:]
+          s = s[:pixel_start] + pixel_helpers + s[execute_start:]
+
+          execute_start = s.find('  Future<void> _execute(')
+          presentation_start = s.find('  void showManager() {', execute_start)
+          if execute_start < 0 or presentation_start < 0:
+            raise SystemExit('executor/presentation boundary changed')
+          executor = '\n'.join([
+            '  Future<void> _execute(',
+            '    CustomAutomation automation,',
+            '    CustomAutomationExecutionScope scope,',
+            '    List<int>? targetFrames,',
+            '  ) async {',
+            '    final sceneId = _sceneId!;',
+            '    final currentFrame = _frame;',
+            '    final currentLayerId = _layerId;',
+            '    if (scope == CustomAutomationExecutionScope.specifiedFrames) {',
+            '      for (final frame in targetFrames ?? const <int>[]) {',
+            '        await CustomAutomationExecutor.executeCanvas(',
+            '          automation: automation,',
+            '          scope: CustomAutomationExecutionScope.currentFrame,',
+            '          projectService: projectService,',
+            '          projectId: projectId,',
+            '          sceneId: sceneId,',
+            '          currentFrame: frame,',
+            '          currentLayerId: currentLayerId,',
+            '          handleCanvasStateCommand: (_, __) async {},',
+            '        );',
+            '      }',
+            '      return;',
+            '    }',
+            '    await CustomAutomationExecutor.executeCanvas(',
+            '      automation: automation,',
+            '      scope: scope,',
+            '      projectService: projectService,',
+            '      projectId: projectId,',
+            '      sceneId: sceneId,',
+            '      currentFrame: currentFrame,',
+            '      currentLayerId: currentLayerId,',
+            '      handleCanvasStateCommand: (_, __) async {},',
+            '    );',
+            '  }',
+            '',
+          ])
+          s = s[:execute_start] + executor + s[presentation_start:]
+
+          presentation_start = s.find('  void showManager() {')
+          presentation_end = s.find('\n}\n\nint _changedBytes(', presentation_start)
+          if presentation_start < 0 or presentation_end < 0:
+            raise SystemExit('presentation boundary changed')
+          presentation = '\n'.join([
+            '  late void Function(Widget? child) _setSurface;',
+            '',
+            '  void _hideSurface() => _setSurface(null);',
+            '',
+            '  Widget _localNavigator(Widget page) => Navigator(',
+            '    onGenerateRoute: (_) => PageRouteBuilder<void>(',
+            '      pageBuilder: (_, __, ___) => page,',
+            '      transitionDuration: Duration.zero,',
+            '      reverseTransitionDuration: Duration.zero,',
+            '    ),',
+            '  );',
+            '',
+            '  Widget _sheetPage(Widget child) => Material(',
+            '    child: Align(',
+            '      alignment: Alignment.bottomCenter,',
+            '      child: Material(child: child),',
+            '    ),',
+            '  );',
+            '',
+            '  void showManager() {',
+            '    final count = projectService.frameCount(projectId, _sceneId!);',
+            '    _setSurface(',
+            '      _localNavigator(',
+            '        _sheetPage(',
+            '          CustomAutomationManagerSheet(',
+            '            surface: CustomAutomationSurface.canvas,',
+            '            recordingStartFrame: _frame,',
+            '            frameCount: count,',
+            '            onRecordingStarted: _hideSurface,',
+            '            onExecute: (automation, scope, targetFrames) async {',
+            '              _hideSurface();',
+            '              await _execute(automation, scope, targetFrames);',
+            '            },',
+            '          ),',
+            '        ),',
+            '      ),',
+            '    );',
+            '  }',
+            '',
+            '  void showFilterPanel() {',
+            '    _setSurface(',
+            '      _localNavigator(',
+            '        _sheetPage(',
+            '          Center(',
+            '            child: FilterPanel(',
+            '              projectId: projectId,',
+            '              sceneId: _sceneId!,',
+            '              layerId: _layerId,',
+            '              frameIndex: _frame,',
+            '              onClose: _hideSurface,',
+            '            ),',
+            '          ),',
+            '        ),',
+            '      ),',
+            '    );',
+            '  }',
+            '',
+            '  void showRecordingStop() {',
+            '    final service = automationService;',
+            '    _setSurface(',
+            '      _localNavigator(',
+            '        Material(',
+            '          child: Stack(',
+            '            children: [',
+            '              CustomAutomationRecordingStopButton(',
+            '                onStop: () {',
+            '                  service.stopRecording();',
+            '                  _hideSurface();',
+            '                },',
+            '              ),',
+            '            ],',
+            '          ),',
+            '        ),',
+            '      ),',
+            '    );',
+            '  }',
+            '',
+            '  void showDraftEditor() {',
+            '    _setSurface(',
+            '      _localNavigator(',
+            '        _sheetPage(',
+            '          CustomAutomationDraftEditorSheet(',
+            '            surface: CustomAutomationSurface.canvas,',
+            '            onResumeRecording: _hideSurface,',
+            '            onSaved: _hideSurface,',
+            '          ),',
+            '        ),',
+            '      ),',
+            '    );',
+            '  }',
+          ])
+          s = s[:presentation_start] + presentation + s[presentation_end:]
           p.write_text(s)
           PY
       - name: Format proof
