@@ -1,0 +1,223 @@
+name: One-shot A001 Startup Recovery v2
+
+on:
+  push:
+    branches: [dev_branch]
+    paths:
+      - '.github/workflows/one-shot-a001-startup-recovery-v2.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  repair-and-verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      FLUTTER_SUPPRESS_ANALYTICS: 'true'
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          ref: dev_branch
+          fetch-depth: 0
+      - name: Rebase onto latest dev_branch
+        run: git pull --rebase origin dev_branch
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.47.2'
+          channel: stable
+          cache: true
+      - run: flutter pub get --enforce-lockfile
+      - name: Apply A001 persisted JSON recovery
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+
+          settings = Path('lib/services/settings_service.dart')
+          s = settings.read_text()
+          old = """    final sizePresetStrings = prefs.getStringList('custom_size_presets') ?? [];
+              _customSizePresets = sizePresetStrings
+                  .map(
+                    (s) =>
+                        CanvasSizePreset.fromJson(jsonDecode(s) as Map<String, dynamic>),
+                  )
+                  .toList();
+          """
+          new = """    final sizePresetStrings = prefs.getStringList('custom_size_presets') ?? [];
+              _customSizePresets = [];
+              for (final encoded in sizePresetStrings) {
+                try {
+                  final decoded = jsonDecode(encoded);
+                  if (decoded is Map<String, dynamic>) {
+                    _customSizePresets.add(CanvasSizePreset.fromJson(decoded));
+                  }
+                } on FormatException {
+                  // Keep the raw persisted entry untouched so recovery is non-destructive.
+                } on TypeError {
+                  // A structurally invalid preset is isolated instead of aborting startup.
+                }
+              }
+          """
+          if old not in s:
+              raise SystemExit('settings size preset anchor changed')
+          settings.write_text(s.replace(old, new, 1))
+
+          theme = Path('lib/services/theme_service.dart')
+          s = theme.read_text()
+          old = """    if (raw == null || raw.isEmpty) {
+              _presets.addAll(_builtInPresets);
+            } else {
+              _presets.addAll(
+                raw.map(
+                  (s) => AppThemePreset.fromJson(jsonDecode(s) as Map<String, dynamic>),
+                ),
+              );
+              // 保存済みプリセット一覧に、組み込みプリセット（パステル・
+          """
+          # Python triple-string indentation above is intentionally de-indented by YAML;
+          # fall back to the literal source shape if needed.
+          if old not in s:
+              old = """    if (raw == null || raw.isEmpty) {
+                _presets.addAll(_builtInPresets);
+              } else {
+                _presets.addAll(
+                  raw.map(
+                    (s) => AppThemePreset.fromJson(jsonDecode(s) as Map<String, dynamic>),
+                  ),
+                );
+                // 保存済みプリセット一覧に、組み込みプリセット（パステル・
+          """
+          new = """    if (raw == null || raw.isEmpty) {
+                _presets.addAll(_builtInPresets);
+              } else {
+                for (final encoded in raw) {
+                  try {
+                    final decoded = jsonDecode(encoded);
+                    if (decoded is Map<String, dynamic>) {
+                      _presets.add(AppThemePreset.fromJson(decoded));
+                    }
+                  } on FormatException {
+                    // Keep malformed persisted JSON untouched; skip it for this session.
+                  } on TypeError {
+                    // Isolate structurally invalid presets instead of aborting startup.
+                  }
+                }
+                // 保存済みプリセット一覧に、組み込みプリセット（パステル・
+          """
+          if old not in s:
+              raise SystemExit('theme preset list anchor changed v2')
+          s = s.replace(old, new, 1)
+
+          old = """    final currentJson = prefs.getString(_prefsCurrentJsonKey);
+              final currentId = prefs.getString(_prefsCurrentIdKey);
+              if (currentJson != null) {
+                _current = AppThemePreset.fromJson(
+                  jsonDecode(currentJson) as Map<String, dynamic>,
+                );
+              } else if (currentId != null) {
+                _current = _presets.firstWhere(
+                  (p) => p.id == currentId,
+                  orElse: () => _presets.first,
+                );
+              } else if (_presets.isNotEmpty) {
+                _current = _presets.first;
+              }
+          """
+          if old not in s:
+              old = """    final currentJson = prefs.getString(_prefsCurrentJsonKey);
+                final currentId = prefs.getString(_prefsCurrentIdKey);
+                if (currentJson != null) {
+                  _current = AppThemePreset.fromJson(
+                    jsonDecode(currentJson) as Map<String, dynamic>,
+                  );
+                } else if (currentId != null) {
+                  _current = _presets.firstWhere(
+                    (p) => p.id == currentId,
+                    orElse: () => _presets.first,
+                  );
+                } else if (_presets.isNotEmpty) {
+                  _current = _presets.first;
+                }
+          """
+          new = """    final currentJson = prefs.getString(_prefsCurrentJsonKey);
+                final currentId = prefs.getString(_prefsCurrentIdKey);
+                AppThemePreset? restoredCurrent;
+                if (currentJson != null) {
+                  try {
+                    final decoded = jsonDecode(currentJson);
+                    if (decoded is Map<String, dynamic>) {
+                      restoredCurrent = AppThemePreset.fromJson(decoded);
+                    }
+                  } on FormatException {
+                    // Keep the damaged raw value untouched and fall back below.
+                  } on TypeError {
+                    // Structurally invalid current theme must not abort app startup.
+                  }
+                }
+                if (restoredCurrent != null) {
+                  _current = restoredCurrent;
+                } else if (currentId != null) {
+                  _current = _presets.firstWhere(
+                    (p) => p.id == currentId,
+                    orElse: () => _presets.first,
+                  );
+                } else if (_presets.isNotEmpty) {
+                  _current = _presets.first;
+                }
+          """
+          if old not in s:
+              raise SystemExit('theme current anchor changed v2')
+          theme.write_text(s.replace(old, new, 1))
+
+          test = Path('test/startup_settings_recovery_test.dart')
+          s = test.read_text()
+          import_anchor = "import 'package:niarim/services/settings_service.dart';\n"
+          if "package:niarim/models/app_theme_preset.dart" not in s:
+              if import_anchor not in s:
+                  raise SystemExit('startup test import anchor changed')
+              s = s.replace(import_anchor, "import 'package:niarim/models/app_theme_preset.dart';\n" + import_anchor, 1)
+          if "a damaged saved theme does not discard valid neighboring themes" not in s:
+              close = "\n}\n"
+              if not s.endswith(close):
+                  raise SystemExit('startup test closing anchor changed')
+              extra = r'''
+
+            test('a damaged saved theme does not discard valid neighboring themes', () async {
+              final custom = AppThemePreset.defaultLight.copyWith(
+                id: 'kept_custom',
+                name: '保存済みカスタム',
+              );
+              final originals = [
+                jsonEncode(custom.toJson()),
+                '{broken',
+                '{"id":42}',
+              ];
+              SharedPreferences.setMockInitialValues({'theme_presets': originals});
+              final service = ThemeService();
+              addTearDown(service.dispose);
+              await service.init();
+              expect(service.presets.any((p) => p.id == 'kept_custom'), isTrue);
+              final prefs = await SharedPreferences.getInstance();
+              expect(prefs.getStringList('theme_presets'), originals);
+            });
+          '''
+              s = s[:-len(close)] + extra + close
+          test.write_text(s)
+          PY
+      - name: Format touched Dart files
+        run: dart format lib/services/settings_service.dart lib/services/theme_service.dart test/startup_settings_recovery_test.dart
+      - name: Verify A001 startup recovery
+        run: flutter test --no-pub --reporter expanded test/startup_settings_recovery_test.dart
+      - name: Analyze A001 touched files
+        run: flutter analyze lib/services/settings_service.dart lib/services/theme_service.dart test/startup_settings_recovery_test.dart --no-fatal-warnings --no-fatal-infos
+      - name: Commit verified A001 repair
+        run: |
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          git rm -f .github/workflows/one-shot-a001-startup-recovery.yml .github/workflows/one-shot-a001-startup-recovery-v2.yml
+          git add lib/services/settings_service.dart lib/services/theme_service.dart test/startup_settings_recovery_test.dart
+          git commit -m 'fix: recover startup from malformed saved settings'
+          git pull --rebase origin dev_branch
+          git push origin HEAD:dev_branch
