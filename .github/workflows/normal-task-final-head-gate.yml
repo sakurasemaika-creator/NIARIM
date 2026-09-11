@@ -1,5 +1,6 @@
 name: Normal Task Final HEAD Gate
 
+# Rerun after verified analyzer cleanup.
 on:
   push:
     branches: [dev_branch]
