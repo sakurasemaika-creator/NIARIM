@@ -24,6 +24,7 @@ import '../models/project.dart';
 import '../models/scene.dart';
 import '../models/text_object.dart';
 import '../engine/undo_manager.dart';
+import '../utils/app_error_reporter.dart';
 
 class ProjectFolder {
   final String id;
@@ -187,12 +188,14 @@ class ProjectService extends ChangeNotifier {
             _projects.add(project);
             _applyLoadedProjectData(data);
           }
-        } catch (_) {
+        } catch (error, stackTrace) {
+          AppErrorReporter.record(error, stackTrace);
           // 破損ファイルはスキップ
         }
       }
       notifyListeners();
-    } catch (_) {
+    } catch (error, stackTrace) {
+      AppErrorReporter.record(error, stackTrace);
       // ストレージアクセス失敗時は空状態で起動
     }
   }
