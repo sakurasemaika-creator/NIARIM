@@ -1,8 +1,10 @@
-# NIARIM Work Audit — Astra execution policy
+# NIARIM Full Audit — execution policy
 
-> このpolicyは、ユーザーが現在のトップレベル依頼でNIARIMの全面監査/全面監査再開を明示した場合だけ有効化する。通常タスクはこのpolicy/state領域を実行指示として使わない。
+> このpolicyは、ユーザーが現在のトップレベル依頼でNIARIMの全面監査/全面監査再開を明示した場合だけ有効化する。通常タスクはこのpolicy/state領域を実行指示として使わない。実行場所がWorkか通常Chatか、担当モデルがAstra/Sol/その他かは問わない。
 
 > 起動判定は明示トリガー制。「監査」「PNG監査」「最終green」等の語、作業範囲の広さ、前回作業の継続だけから全面監査へ昇格しない。「以下の会話の続きから」「引き続き」「前回の続き」も全面監査トリガーではない。
+
+> ファイル名 `ASTRA_WORK.md` / `ASTRA_CONTINUATION.md` / `ASTRA_AUDIT_STATE.md` は既存参照を壊さないため当面維持するlegacy nameであり、Astra専用を意味しない。このpolicyに入った明示的な全面監査セッションは、モデルに関係なくRoute/Progress/Evidenceを正規にread/writeできる。
 
 ## 0. 正本と分離
 
@@ -21,7 +23,7 @@
 - App=`A###`、Web=`W###` の安定IDを付け、実UI/navigationに沿う固定順序にする。
 - 画面だけでなくモーダル、パネル、empty/error/loading、無料/Premium、設定、入力、ジェスチャー、編集、保存/復元、共有/export等を含める。
 - 各TODOへ対象、前提状態、実操作、期待結果、必要なviewport/PC-SP/7言語/Premium条件、必要な画像・証拠、statusを定義する。
-- QUALITY / HANDS_ON_UI（該当repo）/ LEGAL_IPの全要件をTODOへ割り当て、coverage checkで未割当がないことを確認してから `locked` にする。
+- QUALITY / HANDS_ON_UI（該当repo）/ LEGAL_IPを含む監査品質基準の全要件をTODOへ割り当て、coverage checkで未割当がないことを確認してから `locked` にする。
 - **旧checkpoint、過去会話、最近の別セッションからTODOや完了状態を復元しない。** 最新実装と品質基準から作る。
 
 ## 2. locked後のscope lock + Discovery
@@ -54,17 +56,19 @@ Routeがlockedになった後は、`current_id` の未完了Baseline項目から
 
 NIARIMを世界最高水準の商用製品へ仕上げることを優先し、App/Webを1製品として扱う。必要に応じて再現→影響範囲→root cause→修正→検証→実画面→regressionまで完結させる。品質上有利なら影響を理解した上でrefactor/rewriteしてよい。重大な製品全体変更のみ事前確認する。
 
-変更ごとに最小かつ十分なformat/static analysis/test/build/visual checkを行う。CI/test PASSだけで品質保証済みにしない。UI/UX、PC/SP差別化、7言語、336表示matrix、全画面・全操作の実操作/目視、SEO/ASO、法務等は各正本を適用する。
+変更ごとに最小かつ十分なformat/static analysis/test/build/visual checkを行う。CI/test PASSだけで品質保証済みにしない。UI/UX、PC/SP差別化、7言語、336表示matrix、全画面・全操作の実操作/目視、SEO/ASO、法務、security、安定性、保守性、performance、accessibility/i18n等は各正本を適用する。
 
 ## 5. AI/非AI作業の効率
 
-単純反復・matrix・lint/test/build/screenshot等はActions/CI/決定論的自動化へ寄せ、Astraは設計、root-cause、実装、UI/UX、翻訳品質、法務リスク、異常差分など判断価値の高い作業へ使う。
+単純反復・matrix・lint/test/build/screenshot等はActions/CI/決定論的自動化へ寄せ、主担当モデルはRoute進行、root-cause、実装、UI/UX、翻訳品質、法務リスク、異常差分など判断価値の高い作業へ使う。
+
+Astraは必須ではない。Sol等で通常のRoute監査を進め、現在の担当モデルでは品質または確度が不足する難問、重大security/architecture/concurrency、独立最終レビュー等に限って、利用可能ならAstra等の上位モデルをadvisor/reviewerとして使ってよい。advisorはRoute/Stateを勝手に更新せず、主担当がEvidenceを確認して反映する。
 
 サブエージェントは品質/総合効率が明確に上がる独立作業または独立レビューだけ必要最小限。Codex系では原則 `fork_turns:"none"`、必要でも1〜2、`all`は使わない。子から子を増やさない。wait既定値を設定できる場合120秒、個別wait/timeoutは予想実行時間の約2倍を一度に指定する。
 
 ## 6. State更新と完了条件
 
-Route/Progress/Evidenceは全面監査Work自身が実際に検証した事実だけ更新する。旧監査記録や通常タスクの成果だけでTODOをdoneにしない。
+Route/Progress/Evidenceは**明示的な全面監査モードで実際に検証した事実だけ**更新する。Workか通常Chatか、AstraかSolかではなく、現在の依頼が全面監査モードかどうかで権限を決める。通常タスクの成果だけでTODOをdoneにしない。
 
 State更新commitには `[audit-state]`、policy/guard変更にはユーザーの明示依頼のもと `[audit-policy-approved]` を使う。
 
