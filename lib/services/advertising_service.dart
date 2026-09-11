@@ -23,6 +23,7 @@ import 'admob_provider.dart';
 class AdvertisingService extends ChangeNotifier {
   final PremiumService premiumService;
   late AdProvider _provider;
+  bool _initialized = false;
   // UMP（同意管理）フローの結果、広告をリクエストしてよいかどうか。
   // 同意フロー未実施・EEA等で同意未取得の間はfalseのままとし、
   // shouldShowAdsをfalseに固定して広告を一切表示しない。
@@ -31,6 +32,8 @@ class AdvertisingService extends ChangeNotifier {
   AdvertisingService({required this.premiumService});
 
   Future<void> init() async {
+    if (_initialized) return;
+
     _provider = AdMobProvider(onAdEvent: notifyListeners);
     // google_mobile_adsのUMPはAndroid/iOS専用。Windows上のwidget testや
     // Flutter WebでMethodChannelを呼ぶとMissingPluginExceptionが非同期に
@@ -41,6 +44,7 @@ class AdvertisingService extends ChangeNotifier {
       await _requestConsentThenInitialize();
     }
     premiumService.addListener(_onPremiumChanged);
+    _initialized = true;
   }
 
   /// UMP SDKで同意情報を取得・必要なら同意フォームを表示し、
@@ -131,8 +135,10 @@ class AdvertisingService extends ChangeNotifier {
 
   @override
   void dispose() {
-    premiumService.removeListener(_onPremiumChanged);
-    _provider.hideAllAds();
+    if (_initialized) {
+      premiumService.removeListener(_onPremiumChanged);
+      _provider.hideAllAds();
+    }
     super.dispose();
   }
 }
