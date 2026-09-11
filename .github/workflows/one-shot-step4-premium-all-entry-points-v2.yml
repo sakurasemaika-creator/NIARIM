@@ -103,4 +103,4 @@ jobs:
           git pull --rebase origin dev_branch
           git push origin HEAD:dev_branch
 
-# PNG capture runs inside tester.runAsync to avoid fake-async raster stalls.
+# Proof scrolls lazy UI entry lists and supplies the same SettingsService provider contract as the app.
