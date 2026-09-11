@@ -615,11 +615,3 @@ int _changedBytes(Uint8List before, Uint8List after) {
   }
   return changed;
 }
-
-int _nonTransparentPixels(Uint8List pixels) {
-  var count = 0;
-  for (var i = 3; i < pixels.length; i += 4) {
-    if (pixels[i] != 0) count++;
-  }
-  return count;
-}
