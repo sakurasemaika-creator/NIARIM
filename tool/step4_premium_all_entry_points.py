@@ -85,6 +85,7 @@ import 'package:niarim/l10n/app_localizations.dart';
 import 'package:niarim/screens/home/widgets/home_drawer.dart';
 import 'package:niarim/screens/settings/settings_screen.dart';
 import 'package:niarim/services/premium_service.dart';
+import 'package:niarim/services/settings_service.dart';
 import 'package:niarim/widgets/premium_lock_widget.dart';
 import 'package:provider/provider.dart';
 
@@ -227,6 +228,17 @@ void main() {
     await _pumpFrames(tester);
     await tester.tap(find.byTooltip('Open navigation menu'));
     await _pumpFrames(tester, count: 12);
+    final drawerList = find.descendant(
+      of: find.byType(Drawer),
+      matching: find.byType(Scrollable),
+    );
+    expect(drawerList, findsOneWidget);
+    await tester.scrollUntilVisible(
+      find.byIcon(Icons.workspace_premium_outlined),
+      240,
+      scrollable: drawerList,
+    );
+    await _pumpFrames(tester, count: 2);
     expect(find.byIcon(Icons.workspace_premium_outlined), findsOneWidget);
     await _capture(tester, boundaryKey, 'home-drawer-premium-entry');
     await tester.tap(find.byIcon(Icons.workspace_premium_outlined));
@@ -240,14 +252,19 @@ void main() {
     (tester) async {
       final boundaryKey = GlobalKey();
       final premium = _FreePremiumService();
+      final settings = SettingsService();
       addTearDown(premium.dispose);
+      addTearDown(settings.dispose);
       final router = GoRouter(
         initialLocation: '/',
         routes: [
           GoRoute(
             path: '/',
-            builder: (context, state) => ChangeNotifierProvider<PremiumService>.value(
-              value: premium,
+            builder: (context, state) => MultiProvider(
+              providers: [
+                ChangeNotifierProvider<PremiumService>.value(value: premium),
+                ChangeNotifierProvider<SettingsService>.value(value: settings),
+              ],
               child: const SettingsScreen(),
             ),
           ),
@@ -268,7 +285,18 @@ void main() {
       addTearDown(router.dispose);
 
       await tester.pumpWidget(_routerApp(router, boundaryKey));
-      await _pumpFrames(tester, count: 12);
+      await _pumpFrames(tester, count: 4);
+      final settingsList = find.descendant(
+        of: find.byType(SettingsScreen),
+        matching: find.byType(Scrollable),
+      );
+      expect(settingsList, findsOneWidget);
+      await tester.scrollUntilVisible(
+        find.byIcon(Icons.lock_outline),
+        260,
+        scrollable: settingsList,
+      );
+      await _pumpFrames(tester, count: 2);
       expect(find.byIcon(Icons.lock_outline), findsOneWidget);
       await tester.tap(find.byIcon(Icons.lock_outline));
       await _pumpFrames(tester, count: 12);
