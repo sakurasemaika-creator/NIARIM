@@ -7,37 +7,295 @@ on:
     paths:
       - ".github/workflows/one-shot-step4-premium-all-entry-points.yml"
 
+permissions:
+  contents: write
+
 jobs:
-  map-premium-gates:
+  premium-all-entry-points:
     runs-on: ubuntu-latest
+    timeout-minutes: 45
     steps:
       - uses: actions/checkout@v6
         with:
           ref: dev_branch
-      - name: endCardEdit runtime reference
-        continue-on-error: true
-        run: grep -RIn --include='*.dart' 'PremiumFeature\.endCardEdit' lib | grep -v 'lib/services/premium_service.dart'
-      - name: watermark runtime reference
-        continue-on-error: true
-        run: grep -RIn --include='*.dart' 'PremiumFeature\.watermark' lib | grep -v 'lib/services/premium_service.dart'
-      - name: toneCurve runtime reference
-        continue-on-error: true
-        run: grep -RIn --include='*.dart' 'PremiumFeature\.toneCurve' lib | grep -v 'lib/services/premium_service.dart'
-      - name: levelAdjustment runtime reference
-        continue-on-error: true
-        run: grep -RIn --include='*.dart' 'PremiumFeature\.levelAdjustment' lib | grep -v 'lib/services/premium_service.dart'
-      - name: unlimitedDuration runtime reference
-        continue-on-error: true
-        run: grep -RIn --include='*.dart' 'PremiumFeature\.unlimitedDuration' lib | grep -v 'lib/services/premium_service.dart'
-      - name: customAutomation runtime reference
-        continue-on-error: true
-        run: grep -RIn --include='*.dart' 'PremiumFeature\.customAutomation' lib | grep -v 'lib/services/premium_service.dart'
-      - name: timeline has end-card implementation
-        continue-on-error: true
-        run: grep -in 'end.card\|endcard' lib/screens/timeline/timeline_screen.dart
-      - name: export has end-card implementation
-        continue-on-error: true
-        run: grep -in 'end.card\|endcard' lib/screens/export/export_screen.dart
-      - name: project model has end-card state
-        continue-on-error: true
-        run: grep -RIn --include='*.dart' -i 'end.card\|endcard' lib/models lib/services/project_service.dart
+          fetch-depth: 0
+
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+
+      - run: flutter pub get
+
+      - name: Inventory all six PremiumFeature gates
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p build/step4-premium
+          : > build/step4-premium/inventory.txt
+          echo "HEAD=$(git rev-parse HEAD)" | tee -a build/step4-premium/inventory.txt
+          for feature in endCardEdit watermark toneCurve levelAdjustment unlimitedDuration customAutomation; do
+            echo "## PremiumFeature.${feature}" | tee -a build/step4-premium/inventory.txt
+            grep -RIn --include='*.dart' "PremiumFeature\.${feature}" lib \
+              | grep -v 'lib/services/premium_service.dart' \
+              | tee -a build/step4-premium/inventory.txt
+          done
+          echo '## Premium navigation / upsell entrances' | tee -a build/step4-premium/inventory.txt
+          grep -RIn --include='*.dart' -E "(push|go)\('/premium'\)|showPremiumBanner\(" lib \
+            | tee -a build/step4-premium/inventory.txt
+
+      - name: Assert known user-facing Premium entrance contracts
+        shell: bash
+        run: |
+          set -euo pipefail
+          grep -q "context.push('/premium')" lib/screens/home/widgets/home_drawer.dart
+          grep -q "showPremiumBanner(context)" lib/widgets/premium_lock_widget.dart
+          grep -q "context.push('/premium')" lib/widgets/premium_lock_widget.dart
+          grep -q "PremiumFeature.toneCurve" lib/screens/canvas/widgets/filter_panel.dart
+          grep -q "PremiumFeature.levelAdjustment" lib/screens/canvas/widgets/filter_panel.dart
+          grep -q "PremiumLockWidget" lib/screens/canvas/widgets/filter_panel.dart
+          grep -q "showPremiumBanner(context)" lib/screens/settings/settings_screen.dart
+          grep -q "context.push('/settings/watermark')" lib/screens/settings/settings_screen.dart
+          grep -q "maxProjectDurationSeconds" lib/screens/export/export_screen.dart
+          grep -q "showPremiumBanner(context)" lib/screens/export/export_screen.dart
+          grep -RIl --include='*.dart' "PremiumFeature.customAutomation" lib/screens | tee build/step4-premium/custom-automation-entry-files.txt | grep -q .
+          grep -RIl --include='*.dart' "PremiumFeature.endCardEdit" lib/screens | tee build/step4-premium/end-card-entry-files.txt | grep -q .
+          grep -RIl --include='*.dart' "PremiumFeature.watermark" lib/screens | tee build/step4-premium/watermark-entry-files.txt | grep -q .
+          grep -RIl --include='*.dart' "PremiumFeature.unlimitedDuration" lib/screens | tee build/step4-premium/unlimited-duration-entry-files.txt | grep -q .
+
+      - name: Add fresh Step 4 widget proof
+        shell: bash
+        run: |
+          cat > test/premium_all_entry_points_test.dart <<'DART'
+          import 'dart:io';
+          import 'dart:ui' as ui;
+
+          import 'package:flutter/material.dart';
+          import 'package:flutter/rendering.dart';
+          import 'package:flutter_test/flutter_test.dart';
+          import 'package:go_router/go_router.dart';
+          import 'package:niarim/l10n/app_localizations.dart';
+          import 'package:niarim/screens/home/widgets/home_drawer.dart';
+          import 'package:niarim/screens/settings/settings_screen.dart';
+          import 'package:niarim/services/premium_service.dart';
+          import 'package:niarim/widgets/premium_lock_widget.dart';
+          import 'package:provider/provider.dart';
+
+          class _FreePremiumService extends PremiumService {
+            @override
+            bool get isPremium => false;
+
+            @override
+            bool get isLaunchCampaignActive => false;
+
+            @override
+            bool isFeatureAvailable(PremiumFeature feature) => false;
+          }
+
+          Future<void> _capture(GlobalKey key, String name) async {
+            final boundary = key.currentContext!.findRenderObject()! as RenderRepaintBoundary;
+            final image = await boundary.toImage(pixelRatio: 1.0);
+            final data = await image.toByteData(format: ui.ImageByteFormat.png);
+            image.dispose();
+            final dir = Directory(
+              Platform.environment['STEP4_EVIDENCE_DIR'] ?? 'build/step4-premium/png',
+            );
+            await dir.create(recursive: true);
+            await File('${dir.path}/$name.png').writeAsBytes(
+              data!.buffer.asUint8List(),
+            );
+          }
+
+          Widget _routerApp(GoRouter router, GlobalKey boundaryKey) => RepaintBoundary(
+                key: boundaryKey,
+                child: MaterialApp.router(
+                  routerConfig: router,
+                  locale: const Locale('en'),
+                  localizationsDelegates: AppLocalizations.localizationsDelegates,
+                  supportedLocales: AppLocalizations.supportedLocales,
+                ),
+              );
+
+          void main() {
+            TestWidgetsFlutterBinding.ensureInitialized();
+
+            testWidgets(
+              'shared Premium lock blocks feature, opens upsell, and reaches /premium',
+              (tester) async {
+                final boundaryKey = GlobalKey();
+                final premium = _FreePremiumService();
+                addTearDown(premium.dispose);
+                final router = GoRouter(
+                  initialLocation: '/',
+                  routes: [
+                    GoRoute(
+                      path: '/',
+                      builder: (context, state) =>
+                          ChangeNotifierProvider<PremiumService>.value(
+                            value: premium,
+                            child: Scaffold(
+                              body: Center(
+                                child: PremiumLockWidget(
+                                  feature: PremiumFeature.toneCurve,
+                                  child: FilledButton(
+                                    onPressed: () => fail(
+                                      'locked child action must not execute',
+                                    ),
+                                    child: const Text('LOCKED ACTION'),
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ),
+                    ),
+                    GoRoute(
+                      path: '/premium',
+                      builder: (context, state) => const Scaffold(
+                        body: Text('PREMIUM DESTINATION'),
+                      ),
+                    ),
+                  ],
+                );
+                addTearDown(router.dispose);
+
+                await tester.pumpWidget(_routerApp(router, boundaryKey));
+                await tester.pump();
+                expect(find.byIcon(Icons.lock), findsOneWidget);
+                await tester.tap(find.text('LOCKED ACTION'));
+                await tester.pumpAndSettle();
+                expect(find.byType(Dialog), findsOneWidget);
+                await _capture(boundaryKey, 'shared-lock-upsell');
+
+                final register = find.descendant(
+                  of: find.byType(Dialog),
+                  matching: find.byType(FilledButton),
+                );
+                expect(register, findsOneWidget);
+                await tester.tap(register);
+                await tester.pumpAndSettle();
+                expect(find.text('PREMIUM DESTINATION'), findsOneWidget);
+                expect(tester.takeException(), isNull);
+              },
+            );
+
+            testWidgets('Home drawer Premium entry reaches /premium directly', (
+              tester,
+            ) async {
+              final boundaryKey = GlobalKey();
+              final router = GoRouter(
+                initialLocation: '/',
+                routes: [
+                  GoRoute(
+                    path: '/',
+                    builder: (context, state) => Scaffold(
+                      appBar: AppBar(),
+                      drawer: const HomeDrawer(),
+                      body: const SizedBox.expand(),
+                    ),
+                  ),
+                  GoRoute(
+                    path: '/premium',
+                    builder: (context, state) => const Scaffold(
+                      body: Text('PREMIUM DESTINATION'),
+                    ),
+                  ),
+                ],
+              );
+              addTearDown(router.dispose);
+
+              await tester.pumpWidget(_routerApp(router, boundaryKey));
+              await tester.pumpAndSettle();
+              await tester.tap(find.byTooltip('Open navigation menu'));
+              await tester.pumpAndSettle();
+              expect(find.byIcon(Icons.workspace_premium_outlined), findsOneWidget);
+              await _capture(boundaryKey, 'home-drawer-premium-entry');
+              await tester.tap(find.byIcon(Icons.workspace_premium_outlined));
+              await tester.pumpAndSettle();
+              expect(find.text('PREMIUM DESTINATION'), findsOneWidget);
+              expect(tester.takeException(), isNull);
+            });
+
+            testWidgets(
+              'Settings watermark entry stays locked for a free user and opens upsell',
+              (tester) async {
+                final boundaryKey = GlobalKey();
+                final premium = _FreePremiumService();
+                addTearDown(premium.dispose);
+                final router = GoRouter(
+                  initialLocation: '/',
+                  routes: [
+                    GoRoute(
+                      path: '/',
+                      builder: (context, state) =>
+                          ChangeNotifierProvider<PremiumService>.value(
+                            value: premium,
+                            child: const SettingsScreen(),
+                          ),
+                    ),
+                    GoRoute(
+                      path: '/premium',
+                      builder: (context, state) => const Scaffold(
+                        body: Text('PREMIUM DESTINATION'),
+                      ),
+                    ),
+                    GoRoute(
+                      path: '/settings/watermark',
+                      builder: (context, state) => const Scaffold(
+                        body: Text('WATERMARK SETTINGS'),
+                      ),
+                    ),
+                  ],
+                );
+                addTearDown(router.dispose);
+
+                await tester.pumpWidget(_routerApp(router, boundaryKey));
+                await tester.pumpAndSettle();
+                expect(find.byIcon(Icons.lock_outline), findsOneWidget);
+                await tester.tap(find.byIcon(Icons.lock_outline));
+                await tester.pumpAndSettle();
+                expect(find.byType(Dialog), findsOneWidget);
+                expect(find.text('WATERMARK SETTINGS'), findsNothing);
+                await _capture(boundaryKey, 'settings-watermark-upsell');
+                expect(tester.takeException(), isNull);
+              },
+            );
+          }
+          DART
+          dart format test/premium_all_entry_points_test.dart
+
+      - name: Analyze Step 4 proof
+        run: flutter analyze test/premium_all_entry_points_test.dart lib/widgets/premium_lock_widget.dart lib/screens/home/widgets/home_drawer.dart lib/screens/settings/settings_screen.dart lib/screens/export/export_screen.dart lib/screens/canvas/widgets/filter_panel.dart --no-fatal-warnings --no-fatal-infos
+
+      - name: Run fresh Step 4 Premium UI proof
+        env:
+          STEP4_EVIDENCE_DIR: build/step4-premium/png
+        run: flutter test test/premium_all_entry_points_test.dart --reporter expanded | tee build/step4-premium/widget-proof.txt
+
+      - name: Verify PNG evidence
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -s build/step4-premium/png/shared-lock-upsell.png
+          test -s build/step4-premium/png/home-drawer-premium-entry.png
+          test -s build/step4-premium/png/settings-watermark-upsell.png
+          file build/step4-premium/png/*.png | tee build/step4-premium/png-files.txt
+
+      - name: Upload Step 4 Premium evidence
+        uses: actions/upload-artifact@v4
+        with:
+          name: step4-premium-all-entry-points-evidence
+          path: build/step4-premium
+          if-no-files-found: error
+          retention-days: 14
+
+      - name: Persist verified proof and remove one-shot workflow
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add test/premium_all_entry_points_test.dart
+          git rm .github/workflows/one-shot-step4-premium-all-entry-points.yml
+          git commit -m "test: prove all Premium entry points"
+          git pull --rebase origin dev_branch
+          git push origin HEAD:dev_branch
