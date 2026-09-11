@@ -85,7 +85,7 @@ jobs:
           );
           await harness.captureCanvas('step3_prism_actual');
 
-'''
+          '''
           s = s[:insertion] + prism + s[insertion:]
           p.write_text(s)
           PY
