@@ -1,5 +1,6 @@
 name: One-shot Custom Automation Completion
-# Retrigger with test-host surface swapping around production widgets.
+# Verify the full flow separately from production-widget bindings so CanvasScreen
+# frame scheduling cannot deadlock the widget proof.
 
 on:
   push:
@@ -25,7 +26,8 @@ jobs:
           channel: stable
           cache: true
       - run: flutter pub get
-      - name: Make production proof completion-driven and surface-isolated
+
+      - name: Make production widget proof CanvasScreen-independent
         run: |
           python3 - <<'PY'
           from pathlib import Path
@@ -34,6 +36,10 @@ jobs:
           s = p.read_text()
 
           replacements = [
+            (
+              "real Canvas widgets record -> apply -> stop -> edit -> save -> replay with PNG evidence",
+              "real Custom Automation widgets record -> apply -> stop -> edit -> save -> replay with PNG evidence",
+            ),
             (
               "      await harness.waitForProductionAsync();\n      expect(find.byType(FilterPanel), findsOneWidget);",
               "      expect(find.byType(FilterPanel), findsOneWidget);",
@@ -47,6 +53,10 @@ jobs:
               "      await tester.tap(find.text(l10n.customAutomationYes));\n      await harness.waitForPixelChange(\n        beforeReplay,\n        label: 'saved automation replay',\n      );\n      final afterReplay = harness.activeLayerPixels();",
             ),
             (
+              "        await harness.createAndShowProject('preset-$slug');",
+              "        await harness.createAndShowProject('preset-$slug', showCanvas: true);",
+            ),
+            (
               "        await tester.tap(find.text(harness.l10n.customAutomationYes));\n        await harness.waitForProductionAsync(extraMilliseconds: 2200);\n\n        if (!createsLayer) {",
               "        await tester.tap(find.text(harness.l10n.customAutomationYes));\n        await harness.waitForAutomationResult(\n          beforePixels: beforePixels,\n          beforeLayers: beforeLayers,\n          createsLayer: createsLayer,\n          label: name,\n        );\n\n        if (!createsLayer) {",
             ),
@@ -55,20 +65,20 @@ jobs:
               "  String? _projectId;\n  String? _sceneId;\n  int _frame = 0;\n  String? _layerId;",
             ),
             (
-              "    final providers = await tester.runAsync(buildAppProviders);\n    ProjectService? ps;\n    StateSetter? hostSetter;\n    String? activeProjectId;\n    final rootKey = GlobalKey();",
-              "    final providers = await tester.runAsync(buildAppProviders);\n    ProjectService? ps;\n    StateSetter? hostSetter;\n    String? activeProjectId;\n    Widget? testSurface;\n    final rootKey = GlobalKey();",
+              "  BuildContext get canvasContext => tester.element(find.byType(CanvasScreen));",
+              "  BuildContext get canvasContext =>\n      tester.element(find.byType(Navigator).first);",
+            ),
+            (
+              "    ProjectService? ps;\n    StateSetter? hostSetter;\n    String? activeProjectId;\n    final rootKey = GlobalKey();",
+              "    ProjectService? ps;\n    StateSetter? hostSetter;\n    String? activeProjectId;\n    Widget? testSurface;\n    var showCanvas = false;\n    final rootKey = GlobalKey();",
             ),
             (
               "                  if (activeProjectId == null) return const SizedBox.expand();\n                  return CanvasScreen(\n                    key: ValueKey(activeProjectId),\n                    projectId: activeProjectId!,\n                  );",
-              "                  if (activeProjectId == null) return const SizedBox.expand();\n                  if (testSurface != null) return testSurface!;\n                  return CanvasScreen(\n                    key: ValueKey(activeProjectId),\n                    projectId: activeProjectId!,\n                  );",
+              "                  if (activeProjectId == null) return const SizedBox.expand();\n                  if (testSurface != null) return testSurface!;\n                  if (!showCanvas) {\n                    return const Material(child: SizedBox.expand());\n                  }\n                  return CanvasScreen(\n                    key: ValueKey(activeProjectId),\n                    projectId: activeProjectId!,\n                  );",
             ),
             (
               "    harness._setProject = (id) {\n      activeProjectId = id;\n      harness._projectId = id;\n      hostSetter!(() {});\n    };\n    return harness;",
-              "    harness._setProject = (id) {\n      activeProjectId = id;\n      harness._projectId = id;\n      hostSetter!(() {});\n    };\n    harness._setSurface = (child) {\n      testSurface = child;\n      hostSetter!(() {});\n    };\n    return harness;",
-            ),
-            (
-              "    _setProject(project.id);\n    await tester.pump(const Duration(milliseconds: 1200));",
-              "    _setProject(project.id);\n    await tester.pump(const Duration(milliseconds: 1200));\n    final canvas = canvasWidget;\n    _sceneId = canvas.sceneId;\n    _frame = canvas.currentFrame;\n    _layerId = canvas.currentLayerId;",
+              "    harness._setProject = (id, canvasVisible) {\n      activeProjectId = id;\n      showCanvas = canvasVisible;\n      harness._projectId = id;\n      hostSetter!(() {});\n    };\n    harness._setSurface = (child) {\n      testSurface = child;\n      hostSetter!(() {});\n    };\n    return harness;",
             ),
           ]
           for old, new in replacements:
@@ -76,233 +86,298 @@ jobs:
               raise SystemExit('custom automation proof anchor changed:\n' + old)
             s = s.replace(old, new, 1)
 
+          s = s.replace(
+            '  late void Function(String id) _setProject;',
+            '  late void Function(String id, bool showCanvas) _setProject;\n'
+            '  late void Function(Widget? child) _setSurface;',
+            1,
+          )
+
+          create_start = s.find('  Future<void> createAndShowProject(String name) async {')
+          create_end = s.find('\n\n  Future<void> capture(', create_start)
+          if create_start < 0 or create_end < 0:
+            raise SystemExit('createAndShowProject boundary changed')
+          create_method = '''  Future<void> createAndShowProject(
+            String name, {
+            bool showCanvas = false,
+          }) async {
+            final project = (await tester.runAsync(
+              () => projectService.createProject(
+                name: name,
+                fps: 24,
+                durationSeconds: 1,
+                backgroundColor: 0xFFFFFFFF,
+                exportWidth: 320,
+                exportHeight: 320,
+              ),
+            ))!;
+            final scene = projectService.scenesOf(project.id).first;
+            final layer = scene.frames.first.layers
+                .where((entry) => entry.type == model.LayerType.normal)
+                .first;
+            final tm = projectService.tileManagerOf(project.id);
+            final key = projectService.tileKeyFor(project.id, scene.id, 0, layer.id);
+            final tile = tm.getOrCreateTile(key, 0, 0);
+            tile.fillRange(0, tile.length, 0);
+            for (var y = 36; y < 244; y++) {
+              for (var x = 36; x < 244; x++) {
+                final i = (y * TileManager.tileSize + x) * 4;
+                var shade = 20 + ((x - 36) * 225 ~/ 207);
+                if ((x > 92 && x < 118) || (y > 148 && y < 174)) {
+                  shade = 18;
+                }
+                if (x > 188 && x < 242 && y > 78 && y < 132) {
+                  shade = 235;
+                }
+                tile[i] = shade;
+                tile[i + 1] = shade;
+                tile[i + 2] = shade;
+                tile[i + 3] = 255;
+              }
+            }
+            tm.invalidateTile(key, 0, 0);
+            await tester.runAsync(() async {
+              final image = await tm.compositeLayerToImage(key);
+              image.dispose();
+            });
+            _sceneId = scene.id;
+            _frame = 0;
+            _layerId = layer.id;
+            _setProject(project.id, showCanvas);
+            await tester.pump();
+            if (showCanvas) {
+              await tester.pump(const Duration(milliseconds: 1200));
+            }
+          }'''
+          s = s[:create_start] + create_method + s[create_end:]
+
           pixel_start = s.find('  Uint8List activeLayerPixels()')
           execute_start = s.find('  Future<void> _execute(', pixel_start)
           if pixel_start < 0 or execute_start < 0:
             raise SystemExit('pixel/helper boundary changed')
-          pixel_helpers = '\n'.join([
-            '  Uint8List activeLayerPixels() => layerPixels(_layerId!);',
-            '',
-            '  Uint8List layerPixels(String layerId) {',
-            '    final tm = projectService.tileManagerOf(projectId);',
-            '    final key = projectService.tileKeyFor(',
-            '      projectId,',
-            '      _sceneId!,',
-            '      _frame,',
-            '      layerId,',
-            '    );',
-            '    const tileBytes = TileManager.tileSize * TileManager.tileSize * 4;',
-            '    final snapshot = Uint8List(tm.tilesX * tm.tilesY * tileBytes);',
-            '    var offset = 0;',
-            '    for (var ty = 0; ty < tm.tilesY; ty++) {',
-            '      for (var tx = 0; tx < tm.tilesX; tx++) {',
-            '        final current = tm.getTile(key, tx, ty);',
-            '        if (current != null) {',
-            '          snapshot.setRange(offset, offset + tileBytes, current);',
-            '        }',
-            '        offset += tileBytes;',
-            '      }',
-            '    }',
-            '    return snapshot;',
-            '  }',
-            '',
-            '  Future<void> _yieldAsyncWork() async {',
-            '    await tester.runAsync(() => Future<void>(() {}));',
-            '    await tester.pump();',
-            '  }',
-            '',
-            '  Future<void> waitForPixelChange(',
-            '    Uint8List before, {',
-            '    required String label,',
-            '  }) async {',
-            '    for (var attempt = 0; attempt < 600; attempt++) {',
-            '      if (_changedBytes(before, activeLayerPixels()) > 100) return;',
-            '      await _yieldAsyncWork();',
-            '    }',
-            "    throw TestFailure('$label did not change Canvas pixels');",
-            '  }',
-            '',
-            '  Future<void> waitForAutomationResult({',
-            '    required Uint8List beforePixels,',
-            '    required Set<String> beforeLayers,',
-            '    required bool createsLayer,',
-            '    required String label,',
-            '  }) async {',
-            '    for (var attempt = 0; attempt < 600; attempt++) {',
-            '      if (createsLayer) {',
-            '        final current = projectService',
-            '            .layersOf(projectId, _sceneId!, _frame)',
-            '            .where((layer) => layer.type == model.LayerType.normal)',
-            '            .map((layer) => layer.id)',
-            '            .toSet();',
-            '        if (current.difference(beforeLayers).isNotEmpty) return;',
-            '      } else if (_changedBytes(beforePixels, activeLayerPixels()) > 100) {',
-            '        return;',
-            '      }',
-            '      await _yieldAsyncWork();',
-            '    }',
-            "    throw TestFailure('$label did not reach its observable completion state');",
-            '  }',
-            '',
-          ])
+          pixel_helpers = '''  Uint8List activeLayerPixels() => layerPixels(_layerId!);
+
+          Uint8List layerPixels(String layerId) {
+            final tm = projectService.tileManagerOf(projectId);
+            final key = projectService.tileKeyFor(
+              projectId,
+              _sceneId!,
+              _frame,
+              layerId,
+            );
+            const tileBytes = TileManager.tileSize * TileManager.tileSize * 4;
+            final snapshot = Uint8List(tm.tilesX * tm.tilesY * tileBytes);
+            var offset = 0;
+            for (var ty = 0; ty < tm.tilesY; ty++) {
+              for (var tx = 0; tx < tm.tilesX; tx++) {
+                final current = tm.getTile(key, tx, ty);
+                if (current != null) {
+                  snapshot.setRange(offset, offset + tileBytes, current);
+                }
+                offset += tileBytes;
+              }
+            }
+            return snapshot;
+          }
+
+          Future<void> _yieldAsyncWork() async {
+            await tester.runAsync(() => Future<void>(() {}));
+            await tester.pump();
+          }
+
+          Future<void> waitForPixelChange(
+            Uint8List before, {
+            required String label,
+          }) async {
+            for (var attempt = 0; attempt < 600; attempt++) {
+              if (_changedBytes(before, activeLayerPixels()) > 100) return;
+              await _yieldAsyncWork();
+            }
+            throw TestFailure('$label did not change Canvas pixels');
+          }
+
+          Future<void> waitForAutomationResult({
+            required Uint8List beforePixels,
+            required Set<String> beforeLayers,
+            required bool createsLayer,
+            required String label,
+          }) async {
+            for (var attempt = 0; attempt < 600; attempt++) {
+              if (createsLayer) {
+                final current = projectService
+                    .layersOf(projectId, _sceneId!, _frame)
+                    .where((layer) => layer.type == model.LayerType.normal)
+                    .map((layer) => layer.id)
+                    .toSet();
+                if (current.difference(beforeLayers).isNotEmpty) return;
+              } else if (_changedBytes(beforePixels, activeLayerPixels()) > 100) {
+                return;
+              }
+              await _yieldAsyncWork();
+            }
+            throw TestFailure('$label did not reach its observable completion state');
+          }
+
+          '''
           s = s[:pixel_start] + pixel_helpers + s[execute_start:]
 
           execute_start = s.find('  Future<void> _execute(')
           presentation_start = s.find('  void showManager() {', execute_start)
           if execute_start < 0 or presentation_start < 0:
             raise SystemExit('executor/presentation boundary changed')
-          executor = '\n'.join([
-            '  Future<void> _execute(',
-            '    CustomAutomation automation,',
-            '    CustomAutomationExecutionScope scope,',
-            '    List<int>? targetFrames,',
-            '  ) async {',
-            '    final sceneId = _sceneId!;',
-            '    final currentFrame = _frame;',
-            '    final currentLayerId = _layerId;',
-            '    if (scope == CustomAutomationExecutionScope.specifiedFrames) {',
-            '      for (final frame in targetFrames ?? const <int>[]) {',
-            '        await CustomAutomationExecutor.executeCanvas(',
-            '          automation: automation,',
-            '          scope: CustomAutomationExecutionScope.currentFrame,',
-            '          projectService: projectService,',
-            '          projectId: projectId,',
-            '          sceneId: sceneId,',
-            '          currentFrame: frame,',
-            '          currentLayerId: currentLayerId,',
-            '          handleCanvasStateCommand: (_, __) async {},',
-            '        );',
-            '      }',
-            '      return;',
-            '    }',
-            '    await CustomAutomationExecutor.executeCanvas(',
-            '      automation: automation,',
-            '      scope: scope,',
-            '      projectService: projectService,',
-            '      projectId: projectId,',
-            '      sceneId: sceneId,',
-            '      currentFrame: currentFrame,',
-            '      currentLayerId: currentLayerId,',
-            '      handleCanvasStateCommand: (_, __) async {},',
-            '    );',
-            '  }',
-            '',
-          ])
+          executor = '''  Future<void> _execute(
+            CustomAutomation automation,
+            CustomAutomationExecutionScope scope,
+            List<int>? targetFrames,
+          ) async {
+            final sceneId = _sceneId!;
+            final currentFrame = _frame;
+            final currentLayerId = _layerId;
+            if (scope == CustomAutomationExecutionScope.specifiedFrames) {
+              for (final frame in targetFrames ?? const <int>[]) {
+                await CustomAutomationExecutor.executeCanvas(
+                  automation: automation,
+                  scope: CustomAutomationExecutionScope.currentFrame,
+                  projectService: projectService,
+                  projectId: projectId,
+                  sceneId: sceneId,
+                  currentFrame: frame,
+                  currentLayerId: currentLayerId,
+                  handleCanvasStateCommand: (_, __) async {},
+                );
+              }
+              return;
+            }
+            await CustomAutomationExecutor.executeCanvas(
+              automation: automation,
+              scope: scope,
+              projectService: projectService,
+              projectId: projectId,
+              sceneId: sceneId,
+              currentFrame: currentFrame,
+              currentLayerId: currentLayerId,
+              handleCanvasStateCommand: (_, __) async {},
+            );
+          }
+
+          '''
           s = s[:execute_start] + executor + s[presentation_start:]
 
           presentation_start = s.find('  void showManager() {')
           presentation_end = s.find('\n}\n\nint _changedBytes(', presentation_start)
           if presentation_start < 0 or presentation_end < 0:
             raise SystemExit('presentation boundary changed')
-          presentation = '\n'.join([
-            '  late void Function(Widget? child) _setSurface;',
-            '',
-            '  void _hideSurface() => _setSurface(null);',
-            '',
-            '  Widget _localNavigator(Widget page) => Navigator(',
-            '    onGenerateRoute: (_) => PageRouteBuilder<void>(',
-            '      pageBuilder: (_, __, ___) => page,',
-            '      transitionDuration: Duration.zero,',
-            '      reverseTransitionDuration: Duration.zero,',
-            '    ),',
-            '  );',
-            '',
-            '  Widget _sheetPage(Widget child) => Material(',
-            '    child: Align(',
-            '      alignment: Alignment.bottomCenter,',
-            '      child: Material(child: child),',
-            '    ),',
-            '  );',
-            '',
-            '  void showManager() {',
-            '    final count = projectService.frameCount(projectId, _sceneId!);',
-            '    _setSurface(',
-            '      _localNavigator(',
-            '        _sheetPage(',
-            '          CustomAutomationManagerSheet(',
-            '            surface: CustomAutomationSurface.canvas,',
-            '            recordingStartFrame: _frame,',
-            '            frameCount: count,',
-            '            onRecordingStarted: _hideSurface,',
-            '            onExecute: (automation, scope, targetFrames) async {',
-            '              _hideSurface();',
-            '              await _execute(automation, scope, targetFrames);',
-            '            },',
-            '          ),',
-            '        ),',
-            '      ),',
-            '    );',
-            '  }',
-            '',
-            '  void showFilterPanel() {',
-            '    _setSurface(',
-            '      _localNavigator(',
-            '        _sheetPage(',
-            '          Center(',
-            '            child: FilterPanel(',
-            '              projectId: projectId,',
-            '              sceneId: _sceneId!,',
-            '              layerId: _layerId,',
-            '              frameIndex: _frame,',
-            '              onClose: _hideSurface,',
-            '            ),',
-            '          ),',
-            '        ),',
-            '      ),',
-            '    );',
-            '  }',
-            '',
-            '  void showRecordingStop() {',
-            '    final service = automationService;',
-            '    _setSurface(',
-            '      _localNavigator(',
-            '        Material(',
-            '          child: Stack(',
-            '            children: [',
-            '              CustomAutomationRecordingStopButton(',
-            '                onStop: () {',
-            '                  service.stopRecording();',
-            '                  _hideSurface();',
-            '                },',
-            '              ),',
-            '            ],',
-            '          ),',
-            '        ),',
-            '      ),',
-            '    );',
-            '  }',
-            '',
-            '  void showDraftEditor() {',
-            '    _setSurface(',
-            '      _localNavigator(',
-            '        _sheetPage(',
-            '          CustomAutomationDraftEditorSheet(',
-            '            surface: CustomAutomationSurface.canvas,',
-            '            onResumeRecording: _hideSurface,',
-            '            onSaved: _hideSurface,',
-            '          ),',
-            '        ),',
-            '      ),',
-            '    );',
-            '  }',
-          ])
+          presentation = '''  void _hideSurface() => _setSurface(null);
+
+          Widget _localNavigator(Widget page) => Navigator(
+            onGenerateRoute: (_) => PageRouteBuilder<void>(
+              pageBuilder: (_, __, ___) => page,
+              transitionDuration: Duration.zero,
+              reverseTransitionDuration: Duration.zero,
+            ),
+          );
+
+          Widget _sheetPage(Widget child) => Material(
+            child: Align(
+              alignment: Alignment.bottomCenter,
+              child: Material(child: child),
+            ),
+          );
+
+          void showManager() {
+            final count = projectService.frameCount(projectId, _sceneId!);
+            _setSurface(
+              _localNavigator(
+                _sheetPage(
+                  CustomAutomationManagerSheet(
+                    surface: CustomAutomationSurface.canvas,
+                    recordingStartFrame: _frame,
+                    frameCount: count,
+                    onRecordingStarted: _hideSurface,
+                    onExecute: (automation, scope, targetFrames) async {
+                      _hideSurface();
+                      await _execute(automation, scope, targetFrames);
+                    },
+                  ),
+                ),
+              ),
+            );
+          }
+
+          void showFilterPanel() {
+            _setSurface(
+              _localNavigator(
+                _sheetPage(
+                  Center(
+                    child: FilterPanel(
+                      projectId: projectId,
+                      sceneId: _sceneId!,
+                      layerId: _layerId,
+                      frameIndex: _frame,
+                      onClose: _hideSurface,
+                    ),
+                  ),
+                ),
+              ),
+            );
+          }
+
+          void showRecordingStop() {
+            final service = automationService;
+            _setSurface(
+              _localNavigator(
+                Material(
+                  child: Stack(
+                    children: [
+                      CustomAutomationRecordingStopButton(
+                        onStop: () {
+                          service.stopRecording();
+                          _hideSurface();
+                        },
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            );
+          }
+
+          void showDraftEditor() {
+            _setSurface(
+              _localNavigator(
+                _sheetPage(
+                  CustomAutomationDraftEditorSheet(
+                    surface: CustomAutomationSurface.canvas,
+                    onResumeRecording: _hideSurface,
+                    onSaved: _hideSurface,
+                  ),
+                ),
+              ),
+            );
+          }'''
           s = s[:presentation_start] + presentation + s[presentation_end:]
           p.write_text(s)
           PY
+
       - name: Format proof
         run: dart format test/custom_automation_production_visual_test.dart test/custom_automation_production_surface_visual_test.dart
+
       - name: Assert no fixed wall-clock sleep remains
         run: |
           if grep -nE 'Future<.*>\.delayed|sleep\(' test/custom_automation_production_visual_test.dart test/custom_automation_production_surface_visual_test.dart; then
             echo 'Fixed wall-clock sleep remains in Custom Automation proof' >&2
             exit 1
           fi
+
       - name: Analyze Custom Automation production proofs
         run: flutter analyze test/custom_automation_production_visual_test.dart test/custom_automation_production_surface_visual_test.dart --no-fatal-warnings --no-fatal-infos
+
       - name: Run full record edit save replay PNG proof
         run: flutter test test/custom_automation_production_surface_visual_test.dart --plain-name 'record start canvas change stop edit save replay changes PNG pixels' --reporter expanded
+
       - name: Run production widget Custom Automation proof
-        run: flutter test test/custom_automation_production_visual_test.dart --plain-name 'real Canvas widgets record -> apply -> stop -> edit -> save -> replay with PNG evidence' --reporter expanded
+        run: flutter test test/custom_automation_production_visual_test.dart --plain-name 'real Custom Automation widgets record -> apply -> stop -> edit -> save -> replay with PNG evidence' --reporter expanded
+
       - name: Upload Custom Automation PNG evidence
         if: always()
         uses: actions/upload-artifact@v4
@@ -311,11 +386,12 @@ jobs:
           path: build/visual-reaudit/custom-automation-production
           if-no-files-found: error
           retention-days: 7
+
       - name: Commit verified proof and clean one-shot workflow
         run: |
           git config user.name github-actions[bot]
           git config user.email 41898282+github-actions[bot]@users.noreply.github.com
           git rm .github/workflows/one-shot-custom-automation-completion.yml
           git add test/custom_automation_production_visual_test.dart test/custom_automation_production_surface_visual_test.dart
-          git commit -m 'test: await custom automation completion without fixed sleeps'
+          git commit -m 'test: prove Custom Automation flow and production widgets'
           git push origin HEAD:dev_branch
