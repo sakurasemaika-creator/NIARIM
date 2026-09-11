@@ -1,0 +1,62 @@
+name: One-shot Normal Task Flutter Test Shards
+
+on:
+  push:
+    branches: [dev_branch]
+    paths:
+      - '.github/workflows/one-shot-normal-task-test-shards.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  shard:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    strategy:
+      fail-fast: false
+      matrix:
+        shard: [0, 1, 2, 3]
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-java@v6
+        with:
+          distribution: temurin
+          java-version: '17'
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+      - name: Install dependencies
+        run: flutter pub get
+      - name: Run Flutter test shard
+        shell: bash
+        env:
+          SHARD: ${{ matrix.shard }}
+          SHARD_COUNT: 4
+        run: |
+          mapfile -t all_tests < <(find test -type f -name '*_test.dart' | sort)
+          selected=()
+          for i in "${!all_tests[@]}"; do
+            if (( i % SHARD_COUNT == SHARD )); then
+              selected+=("${all_tests[$i]}")
+            fi
+          done
+          printf '%s\n' "${selected[@]}" | tee "/tmp/flutter-shard-${SHARD}-files.txt"
+          set +e
+          flutter test --reporter expanded "${selected[@]}" 2>&1 | tee "/tmp/flutter-shard-${SHARD}.log"
+          test_exit=${PIPESTATUS[0]}
+          echo "$test_exit" > "/tmp/flutter-shard-${SHARD}.exit"
+          exit "$test_exit"
+      - name: Upload shard diagnostics
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: normal-task-flutter-shard-${{ matrix.shard }}
+          path: |
+            /tmp/flutter-shard-${{ matrix.shard }}-files.txt
+            /tmp/flutter-shard-${{ matrix.shard }}.log
+            /tmp/flutter-shard-${{ matrix.shard }}.exit
+          if-no-files-found: error
+          retention-days: 7
