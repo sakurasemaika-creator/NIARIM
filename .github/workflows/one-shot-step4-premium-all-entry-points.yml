@@ -8,21 +8,36 @@ on:
       - ".github/workflows/one-shot-step4-premium-all-entry-points.yml"
 
 jobs:
-  isolate-premium-gates:
+  map-premium-gates:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v6
         with:
           ref: dev_branch
       - name: endCardEdit runtime reference
+        continue-on-error: true
         run: grep -RIn --include='*.dart' 'PremiumFeature\.endCardEdit' lib | grep -v 'lib/services/premium_service.dart'
       - name: watermark runtime reference
+        continue-on-error: true
         run: grep -RIn --include='*.dart' 'PremiumFeature\.watermark' lib | grep -v 'lib/services/premium_service.dart'
       - name: toneCurve runtime reference
+        continue-on-error: true
         run: grep -RIn --include='*.dart' 'PremiumFeature\.toneCurve' lib | grep -v 'lib/services/premium_service.dart'
       - name: levelAdjustment runtime reference
+        continue-on-error: true
         run: grep -RIn --include='*.dart' 'PremiumFeature\.levelAdjustment' lib | grep -v 'lib/services/premium_service.dart'
       - name: unlimitedDuration runtime reference
+        continue-on-error: true
         run: grep -RIn --include='*.dart' 'PremiumFeature\.unlimitedDuration' lib | grep -v 'lib/services/premium_service.dart'
       - name: customAutomation runtime reference
+        continue-on-error: true
         run: grep -RIn --include='*.dart' 'PremiumFeature\.customAutomation' lib | grep -v 'lib/services/premium_service.dart'
+      - name: timeline has end-card implementation
+        continue-on-error: true
+        run: grep -in 'end.card\|endcard' lib/screens/timeline/timeline_screen.dart
+      - name: export has end-card implementation
+        continue-on-error: true
+        run: grep -in 'end.card\|endcard' lib/screens/export/export_screen.dart
+      - name: project model has end-card state
+        continue-on-error: true
+        run: grep -RIn --include='*.dart' -i 'end.card\|endcard' lib/models lib/services/project_service.dart
