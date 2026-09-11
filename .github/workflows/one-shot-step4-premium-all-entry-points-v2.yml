@@ -30,75 +30,6 @@ jobs:
       - name: Apply PremiumFeature gate normalization and bounded UI proof
         run: |
           python3 tool/step4_premium_all_entry_points.py
-          python3 - <<'PY'
-          from pathlib import Path
-
-          path = Path('test/premium_all_entry_points_test.dart')
-          text = path.read_text()
-          text = text.replace(
-              "import 'dart:io';\nimport 'dart:ui' as ui;\n",
-              "import 'dart:convert';\nimport 'dart:io';\nimport 'dart:typed_data';\nimport 'dart:ui' as ui;\n",
-          )
-          text = text.replace(
-              "import 'package:flutter/rendering.dart';\n",
-              "import 'package:flutter/rendering.dart';\nimport 'package:flutter/services.dart';\n",
-          )
-          marker = 'class _FreePremiumService extends PremiumService {'
-          bundle = r'''class _EvidenceAssetBundle extends CachingAssetBundle {
-            static final Uint8List _pixel = base64Decode(
-              'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+A8AAQUBAScY42YAAAAASUVORK5CYII=',
-            );
-
-            @override
-            Future<ByteData> load(String key) async {
-              if (key == 'assets/images/premium_banner.webp') {
-                return ByteData.sublistView(_pixel);
-              }
-              return rootBundle.load(key);
-            }
-          }
-
-          '''
-          if marker not in text:
-              raise SystemExit('Premium proof class marker not found')
-          text = text.replace(marker, bundle + marker, 1)
-          start = text.index('Widget _routerApp(')
-          end = text.index('\n\nvoid main()', start)
-          router = r'''Widget _routerApp(GoRouter router, GlobalKey boundaryKey) => DefaultAssetBundle(
-            bundle: _EvidenceAssetBundle(),
-            child: RepaintBoundary(
-              key: boundaryKey,
-              child: MaterialApp.router(
-                routerConfig: router,
-                locale: const Locale('en'),
-                localizationsDelegates: AppLocalizations.localizationsDelegates,
-                supportedLocales: AppLocalizations.supportedLocales,
-              ),
-            ),
-          );'''
-          text = text[:start] + router + text[end:]
-          text = text.replace(
-              "      await tester.pumpWidget(_routerApp(router, boundaryKey));\n      await _pumpFrames(tester, count: 2);",
-              "      await tester.pumpWidget(_routerApp(router, boundaryKey));\n      print('STEP4 shared: mounted');\n      await _pumpFrames(tester, count: 2);\n      print('STEP4 shared: initial frames');",
-              1,
-          )
-          text = text.replace(
-              "      await tester.tap(find.byIcon(Icons.lock));\n      await _pumpFrames(tester);",
-              "      await tester.tap(find.byIcon(Icons.lock));\n      print('STEP4 shared: lock tapped');\n      await _pumpFrames(tester);\n      print('STEP4 shared: dialog frames');",
-              1,
-          )
-          text = text.replace(
-              "      await _capture(tester, boundaryKey, 'shared-lock-upsell');",
-              "      await _capture(tester, boundaryKey, 'shared-lock-upsell');\n      print('STEP4 shared: captured');",
-              1,
-          )
-          text = text.replace(
-              "      await tester.tap(register);\n      await _pumpFrames(tester);",
-              "      await tester.tap(register);\n      print('STEP4 shared: register tapped');\n      await _pumpFrames(tester);\n      print('STEP4 shared: route frames');",
-              1,
-          )
-          path.write_text(text)
-          PY
           dart format lib/services/premium_service.dart \
             lib/screens/settings/settings_screen.dart \
             lib/screens/export/export_screen.dart \
@@ -171,3 +102,5 @@ jobs:
           git commit -m "fix: unify Premium feature gates"
           git pull --rebase origin dev_branch
           git push origin HEAD:dev_branch
+
+# PNG capture runs inside tester.runAsync to avoid fake-async raster stalls.
