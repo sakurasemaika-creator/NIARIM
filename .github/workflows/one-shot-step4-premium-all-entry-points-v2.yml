@@ -102,3 +102,5 @@ jobs:
           git commit -m "fix: unify Premium feature gates"
           git pull --rebase origin dev_branch
           git push origin HEAD:dev_branch
+
+# Rerun after targeting the lock surface instead of the ignored child.
