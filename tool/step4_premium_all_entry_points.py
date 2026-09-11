@@ -108,14 +108,16 @@ Future<void> _pumpFrames(WidgetTester tester, {int count = 8}) async {
 Future<void> _capture(WidgetTester tester, GlobalKey key, String name) async {
   await tester.pump();
   final boundary = key.currentContext!.findRenderObject()! as RenderRepaintBoundary;
-  final image = await boundary.toImage(pixelRatio: 1.0);
-  final data = await image.toByteData(format: ui.ImageByteFormat.png);
-  image.dispose();
-  final dir = Directory(
-    Platform.environment['STEP4_EVIDENCE_DIR'] ?? 'build/step4-premium/png',
-  );
-  await dir.create(recursive: true);
-  await File('${dir.path}/$name.png').writeAsBytes(data!.buffer.asUint8List());
+  await tester.runAsync(() async {
+    final image = await boundary.toImage(pixelRatio: 1.0);
+    final data = await image.toByteData(format: ui.ImageByteFormat.png);
+    image.dispose();
+    final dir = Directory(
+      Platform.environment['STEP4_EVIDENCE_DIR'] ?? 'build/step4-premium/png',
+    );
+    await dir.create(recursive: true);
+    await File('${dir.path}/$name.png').writeAsBytes(data!.buffer.asUint8List());
+  });
 }
 
 Widget _routerApp(GoRouter router, GlobalKey boundaryKey) => RepaintBoundary(
