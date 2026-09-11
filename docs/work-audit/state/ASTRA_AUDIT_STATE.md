@@ -37,4 +37,30 @@ status: in_progress
 
 root_cause: persisted structured settings are decoded as an all-or-nothing startup operation instead of item/key-isolated recovery. A single malformed JSON value escapes `init()`, aborts `buildAppProviders()`, and prevents `runApp`.
 
-next_action: implement minimal item/key-level recovery for these corrupt JSON settings, preserve raw persisted values, rerun targeted startup contract tests on current `dev_branch`, then continue S5 side-effect/failure/retry/double-init review.
+### A001/S4 repair execution state
+
+- First repair workflow run `34575062904` checked out current `dev_branch`, completed dependency setup, then stopped at the source-shape guard `theme preset list anchor changed`. The guard fired before formatting/tests/commit, so the failed run made no product-code commit. This is execution evidence only, not a product test failure.
+- Current ThemeService was re-read after the stop and still had the same unguarded saved-preset/current-theme decode semantics; the failure was whitespace/source-shape anchoring rather than an already-fixed product path.
+- v2 repair commit `9bf9ffe69521e0c13350f58e5e9a31379f357067` contains a safer current-shape one-shot. Run `34575385855` is queued and is not counted as pass. Intended verified change remains item/key isolation, preserved raw SharedPreferences values, and a valid-neighbor saved-theme regression case.
+
+### A001/S5 startup side-effects / duplicate initialization findings
+
+- `PremiumService.init()` reads persisted purchase state first. Before monetization is enabled or on unsupported runtime it returns without obtaining `InAppPurchase.instance`, so current campaign startup does not initiate Billing. When store startup is enabled it owns a purchase-stream subscription and therefore must not be duplicated by a retry path.
+- `AdvertisingService.init()` created a new provider every call and registered `_onPremiumChanged` every call. Repeated init on the same instance therefore duplicated a long-lived listener even while monetization was gated off. `dispose()` removed only one registration. This violates A001's no-double-initialization condition.
+- `AppErrorReporter.install()` had no idempotence guard. Calling it again captured its own already-installed Flutter handler as `previousOnError`, nesting wrappers and duplicating error recording on later Flutter errors. This also violates no-double-initialization.
+- `GoogleAuthService.init()` already has an `_initialized` guard, so this specific double-init failure is not present there.
+- `ProjectService.init()` intentionally recovers from a corrupt individual `.niapro` by skipping it and from outer storage access failure by continuing empty, but both startup catch paths used `catch (_)`, making these recoverable failures invisible to the application reporter. That conflicts with A001's failure-not-silently-swallowed condition.
+
+### A001/S5 minimal fixes currently awaiting targeted verification
+
+- Commit `5d71d158c0aae465dfa9122232ff01b52f6e18bd`: `AppErrorReporter.install()` now returns after the first install, preventing global Flutter/Platform handlers from being wrapped repeatedly.
+- Commit `9ea1c72c54f9d5ac73825c661c851083e484408d`: `AdvertisingService` now guards successful initialization and only removes/hides initialized resources on dispose, preventing repeated Premium listener registration/provider setup on the same service instance while leaving a failed init retryable.
+- One-shot run `34575561261` is queued to add deterministic duplicate-init tests for AdvertisingService and AppErrorReporter, record ProjectService startup failures through `AppErrorReporter.record` while keeping the existing recovery behavior, format, run targeted tests, and analyze the touched files. It is not counted as pass until raw job evidence is reviewed.
+
+### A001/S5d partial-bootstrap retry risk
+
+- Current `main()` awaits the full `buildAppProviders()` before `runApp`. An exception from a later initializer can therefore leave no product UI/retry surface.
+- Adding a Retry UI alone would be unsafe: `buildAppProviders()` constructs and initializes services sequentially, and a failure after an earlier service has attached a stream/listener can leave that partial service graph alive. A second build attempt could then duplicate side effects (notably purchase subscriptions or other global/listener ownership) unless partial initialization is rolled back/disposed.
+- Therefore A001/S5d is explicitly reviewing failure UI together with partial-bootstrap cleanup/ownership. No retry UI is accepted until that lifecycle is deterministic.
+
+next_action: inspect queued S4/S5 raw job evidence when runners execute; continue the partial-bootstrap cleanup design and remaining license/auth/premium/project side-effect checks in parallel. A001 remains in_progress and no advisor request is pending at this checkpoint.
