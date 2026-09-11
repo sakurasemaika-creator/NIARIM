@@ -1,0 +1,106 @@
+name: One-shot Custom Automation Finalize
+
+on:
+  push:
+    branches: [dev_branch]
+    paths:
+      - '.github/workflows/one-shot-custom-automation-finalize.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  prove-and-finalize:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: dev_branch
+          fetch-depth: 0
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+      - run: flutter pub get
+
+      - name: Reuse verified completion transformation
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+
+          workflow = Path('.github/workflows/one-shot-custom-automation-completion.yml').read_text().splitlines()
+          start = next(i for i, line in enumerate(workflow) if line.strip() == "python3 - <<'PY'") + 1
+          end = next(i for i in range(start, len(workflow)) if workflow[i].strip() == 'PY')
+          body = '\n'.join(line[10:] if line.startswith('          ') else line for line in workflow[start:end])
+          ns = {'__name__': '__main__'}
+          exec(compile(body, '<completion-transform>', 'exec'), ns, ns)
+          PY
+
+      - name: Match FilterPanel production close lifecycle
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+
+          p = Path('test/custom_automation_production_visual_test.dart')
+          s = p.read_text()
+          stale = '''      final close = find.descendant(
+            of: find.byType(FilterPanel),
+            matching: find.byIcon(Icons.close),
+          );
+          expect(close, findsOneWidget);
+          await tester.tap(close);
+          await tester.pump(const Duration(milliseconds: 200));
+
+          '''
+          if stale not in s:
+            raise SystemExit('stale FilterPanel close assertion anchor changed')
+          replacement = '''      expect(
+            find.byType(FilterPanel),
+            findsNothing,
+            reason: 'FilterPanel closes itself after a successful Apply',
+          );
+
+          '''
+          s = s.replace(stale, replacement, 1)
+          p.write_text(s)
+          PY
+
+      - name: Format proofs
+        run: dart format test/custom_automation_production_visual_test.dart test/custom_automation_production_surface_visual_test.dart
+
+      - name: Assert no fixed wall-clock sleep remains
+        run: |
+          if grep -nE 'Future<.*>\.delayed|sleep\(' test/custom_automation_production_visual_test.dart test/custom_automation_production_surface_visual_test.dart; then
+            echo 'Fixed wall-clock sleep remains in Custom Automation proof' >&2
+            exit 1
+          fi
+
+      - name: Analyze Custom Automation production proofs
+        run: flutter analyze test/custom_automation_production_visual_test.dart test/custom_automation_production_surface_visual_test.dart --no-fatal-warnings --no-fatal-infos
+
+      - name: Run full record edit save replay PNG proof
+        run: flutter test test/custom_automation_production_surface_visual_test.dart --plain-name 'record start canvas change stop edit save replay changes PNG pixels' --reporter expanded
+
+      - name: Run production widget Custom Automation proof
+        run: flutter test test/custom_automation_production_visual_test.dart --plain-name 'real Custom Automation widgets record -> apply -> stop -> edit -> save -> replay with PNG evidence' --reporter expanded
+
+      - name: Upload Custom Automation PNG evidence
+        uses: actions/upload-artifact@v4
+        with:
+          name: custom-automation-step2-png-evidence
+          path: build/visual-reaudit/custom-automation-production
+          if-no-files-found: error
+          retention-days: 7
+
+      - name: Persist verified proof and remove one-shots
+        run: |
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          git rm .github/workflows/one-shot-custom-automation-completion.yml
+          git rm .github/workflows/one-shot-custom-automation-checkpoint.yml
+          git rm .github/workflows/one-shot-custom-automation-finalize.yml
+          git add test/custom_automation_production_visual_test.dart test/custom_automation_production_surface_visual_test.dart
+          git commit -m 'test: prove Custom Automation completion against production lifecycle'
+          git push origin HEAD:dev_branch
