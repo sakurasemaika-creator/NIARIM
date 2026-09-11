@@ -105,7 +105,8 @@ Future<void> _pumpFrames(WidgetTester tester, {int count = 8}) async {
   }
 }
 
-Future<void> _capture(GlobalKey key, String name) async {
+Future<void> _capture(WidgetTester tester, GlobalKey key, String name) async {
+  await tester.pump();
   final boundary = key.currentContext!.findRenderObject()! as RenderRepaintBoundary;
   final image = await boundary.toImage(pixelRatio: 1.0);
   final data = await image.toByteData(format: ui.ImageByteFormat.png);
@@ -180,10 +181,10 @@ void main() {
       await tester.pumpWidget(_routerApp(router, boundaryKey));
       await _pumpFrames(tester, count: 2);
       expect(find.byIcon(Icons.lock), findsOneWidget);
-      await tester.tap(find.text('LOCKED ACTION'));
+      await tester.tap(find.byIcon(Icons.lock));
       await _pumpFrames(tester);
       expect(find.byType(Dialog), findsOneWidget);
-      await _capture(boundaryKey, 'shared-lock-upsell');
+      await _capture(tester, boundaryKey, 'shared-lock-upsell');
 
       final register = find.descendant(
         of: find.byType(Dialog),
@@ -225,7 +226,7 @@ void main() {
     await tester.tap(find.byTooltip('Open navigation menu'));
     await _pumpFrames(tester, count: 12);
     expect(find.byIcon(Icons.workspace_premium_outlined), findsOneWidget);
-    await _capture(boundaryKey, 'home-drawer-premium-entry');
+    await _capture(tester, boundaryKey, 'home-drawer-premium-entry');
     await tester.tap(find.byIcon(Icons.workspace_premium_outlined));
     await _pumpFrames(tester, count: 12);
     expect(find.text('PREMIUM DESTINATION'), findsOneWidget);
@@ -271,7 +272,7 @@ void main() {
       await _pumpFrames(tester, count: 12);
       expect(find.byType(Dialog), findsOneWidget);
       expect(find.text('WATERMARK SETTINGS'), findsNothing);
-      await _capture(boundaryKey, 'settings-watermark-upsell');
+      await _capture(tester, boundaryKey, 'settings-watermark-upsell');
       expect(tester.takeException(), isNull);
     },
   );
