@@ -1,0 +1,130 @@
+name: One-shot Step3 Current PNG Proof
+
+on:
+  push:
+    branches: [dev_branch]
+    paths:
+      - '.github/workflows/one-shot-step3-current-png-proof.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  prove-step3:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: dev_branch
+          fetch-depth: 0
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+      - run: flutter pub get
+
+      - name: Extend current-head Step 3 proof through Prism
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+
+          p = Path('test/custom_automation_production_surface_visual_test.dart')
+          s = p.read_text()
+
+          old_title = "starter Aurora line extraction and line creation produce actual PNG output"
+          new_title = "Aurora line extraction line creation and Prism produce actual PNG output"
+          if old_title not in s:
+            raise SystemExit('Step 3 proof title anchor changed')
+          s = s.replace(old_title, new_title, 1)
+
+          test_start = s.find(new_title)
+          if test_start < 0:
+            raise SystemExit('Step 3 proof start not found')
+          insertion = s.find('      expect(tester.takeException(), isNull);', test_start)
+          if insertion < 0:
+            raise SystemExit('Step 3 proof completion anchor changed')
+
+          prism = '''      await harness.createProject('step3-prism');
+          final beforePrism = harness.activeLayerPixels();
+          final prismFilter = harness.filterService.filters.singleWhere(
+            (filter) => filter.id == FilterService.prismFilterId,
+          );
+          final prismTimestamp = DateTime.utc(2026, 1, 1);
+          final prismAutomation = CustomAutomation(
+            id: 'step3_prism_proof',
+            name: 'プリズム',
+            recordingStartFrame: harness.frameIndex,
+            createdAt: prismTimestamp,
+            updatedAt: prismTimestamp,
+            steps: [
+              CustomAutomationStep(
+                id: 'step3_prism_filter',
+                surface: CustomAutomationSurface.canvas,
+                command: 'canvas.filterApply',
+                label: prismFilter.name,
+                args: {'filter': prismFilter.toJson()},
+                recordedFrame: harness.frameIndex,
+              ),
+            ],
+          );
+
+          await tester.runAsync(() async {
+            await harness.execute(
+              prismAutomation,
+              CustomAutomationExecutionScope.currentFrame,
+              null,
+            );
+          });
+
+          expect(
+            _changedBytes(beforePrism, harness.activeLayerPixels()),
+            greaterThan(100),
+            reason: 'プリズム must visibly change the source layer',
+          );
+          await harness.captureCanvas('step3_prism_actual');
+
+'''
+          s = s[:insertion] + prism + s[insertion:]
+          p.write_text(s)
+          PY
+
+      - name: Format Step 3 proof
+        run: dart format test/custom_automation_production_surface_visual_test.dart
+
+      - name: Analyze Step 3 proof
+        run: flutter analyze test/custom_automation_production_surface_visual_test.dart --no-fatal-warnings --no-fatal-infos
+
+      - name: Run Step 3 in fixed order
+        run: flutter test test/custom_automation_production_surface_visual_test.dart --plain-name 'Aurora line extraction line creation and Prism produce actual PNG output' --reporter expanded
+
+      - name: Assert four PNG proofs exist
+        run: |
+          for f in \
+            step3_aurora_hologram_actual.png \
+            step3_line_extraction_actual.png \
+            step3_line_creation_actual.png \
+            step3_prism_actual.png; do
+            test -s "build/visual-reaudit/custom-automation-production/$f" || {
+              echo "Missing Step 3 PNG evidence: $f" >&2
+              exit 1
+            }
+          done
+
+      - name: Upload Step 3 PNG evidence
+        uses: actions/upload-artifact@v4
+        with:
+          name: step3-current-png-evidence
+          path: build/visual-reaudit/custom-automation-production/step3_*.png
+          if-no-files-found: error
+          retention-days: 7
+
+      - name: Persist verified Step 3 proof and remove one-shot
+        run: |
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          git add test/custom_automation_production_surface_visual_test.dart
+          git rm .github/workflows/one-shot-step3-current-png-proof.yml
+          git commit -m 'test: prove Step 3 filters on current head'
+          git push origin HEAD:dev_branch
