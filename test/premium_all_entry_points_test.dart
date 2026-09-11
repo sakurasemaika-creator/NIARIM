@@ -1,80 +1,4 @@
-from pathlib import Path
-
-
-def replace(path: str, old: str, new: str, count: int = 1) -> None:
-    p = Path(path)
-    text = p.read_text()
-    actual = text.count(old)
-    if actual != count:
-        raise SystemExit(
-            f"{path}: expected {count} matches, found {actual}: {old!r}"
-        )
-    p.write_text(text.replace(old, new))
-
-
-replace(
-    "lib/screens/settings/settings_screen.dart",
-    "if (!context.read<PremiumService>().isPremium) {",
-    "if (!context.read<PremiumService>().isFeatureAvailable(PremiumFeature.watermark)) {",
-)
-replace(
-    "lib/screens/export/export_screen.dart",
-    "if (!premiumService.isPremium) {",
-    "if (!premiumService.isFeatureAvailable(PremiumFeature.unlimitedDuration)) {",
-)
-replace(
-    "lib/screens/export/export_screen.dart",
-    "!premiumService.isPremium &&",
-    "!premiumService.isFeatureAvailable(PremiumFeature.endCardEdit) &&",
-)
-replace(
-    "lib/services/premium_service.dart",
-    "int get maxProjectDurationSeconds => isPremium ? 999999 : 90;",
-    "int get maxProjectDurationSeconds =>\n      isFeatureAvailable(PremiumFeature.unlimitedDuration) ? 999999 : 90;",
-)
-replace(
-    "lib/screens/timeline/timeline_screen.dart",
-    "final isPremium = context.watch<PremiumService>().isPremium;",
-    "final canUseWatermark = context\n        .watch<PremiumService>()\n        .isFeatureAvailable(PremiumFeature.watermark);",
-)
-replace(
-    "lib/screens/timeline/timeline_screen.dart",
-    "_buildWatermarkButton(isPremium),",
-    "_buildWatermarkButton(canUseWatermark),",
-)
-replace(
-    "lib/screens/timeline/timeline_screen.dart",
-    "Widget _buildWatermarkButton(bool isPremium) {\n    final l10n = AppLocalizations.of(context)!;\n    if (isPremium) {",
-    "Widget _buildWatermarkButton(bool canUseWatermark) {\n    final l10n = AppLocalizations.of(context)!;\n    if (canUseWatermark) {",
-)
-replace(
-    "lib/screens/timeline/timeline_screen.dart",
-    "final isPremium = context.read<PremiumService>().isPremium;\n    final ps = context.read<ProjectService>();\n    final maxSeconds = isPremium ? 7200 : 90;",
-    "final hasUnlimitedDuration = context\n        .read<PremiumService>()\n        .isFeatureAvailable(PremiumFeature.unlimitedDuration);\n    final ps = context.read<ProjectService>();\n    final maxSeconds = hasUnlimitedDuration ? 7200 : 90;",
-)
-replace(
-    "lib/screens/timeline/timeline_screen.dart",
-    "isPremium\n              ? l10n.timelineDurationLimitBodyPremium",
-    "hasUnlimitedDuration\n              ? l10n.timelineDurationLimitBodyPremium",
-)
-replace(
-    "lib/screens/timeline/timeline_screen.dart",
-    "final l10n = AppLocalizations.of(context)!;\n        final defaultHidden =\n            premium.isPremium && settings.endCardDefaultHiddenForPremium;",
-    "final l10n = AppLocalizations.of(context)!;\n        final canEditEndCard = premium.isFeatureAvailable(\n          PremiumFeature.endCardEdit,\n        );\n        final defaultHidden =\n            canEditEndCard && settings.endCardDefaultHiddenForPremium;",
-)
-replace(
-    "lib/screens/timeline/timeline_screen.dart",
-    "onTap: premium.isPremium ? null : () => showPremiumBanner(context),",
-    "onTap: canEditEndCard ? null : () => showPremiumBanner(context),",
-)
-replace(
-    "lib/screens/timeline/timeline_screen.dart",
-    "if (!premium.isPremium)\n                  Icon(",
-    "if (!canEditEndCard)\n                  Icon(",
-)
-
-Path("test/premium_all_entry_points_test.dart").write_text(
-r'''import 'dart:io';
+import 'dart:io';
 import 'dart:ui' as ui;
 
 import 'package:flutter/material.dart';
@@ -108,7 +32,8 @@ Future<void> _pumpFrames(WidgetTester tester, {int count = 8}) async {
 
 Future<void> _capture(WidgetTester tester, GlobalKey key, String name) async {
   await tester.pump();
-  final boundary = key.currentContext!.findRenderObject()! as RenderRepaintBoundary;
+  final boundary =
+      key.currentContext!.findRenderObject()! as RenderRepaintBoundary;
   await tester.runAsync(() async {
     final image = await boundary.toImage(pixelRatio: 1.0);
     final data = await image.toByteData(format: ui.ImageByteFormat.png);
@@ -117,19 +42,21 @@ Future<void> _capture(WidgetTester tester, GlobalKey key, String name) async {
       Platform.environment['STEP4_EVIDENCE_DIR'] ?? 'build/step4-premium/png',
     );
     await dir.create(recursive: true);
-    await File('${dir.path}/$name.png').writeAsBytes(data!.buffer.asUint8List());
+    await File(
+      '${dir.path}/$name.png',
+    ).writeAsBytes(data!.buffer.asUint8List());
   });
 }
 
 Widget _routerApp(GoRouter router, GlobalKey boundaryKey) => RepaintBoundary(
-      key: boundaryKey,
-      child: MaterialApp.router(
-        routerConfig: router,
-        locale: const Locale('en'),
-        localizationsDelegates: AppLocalizations.localizationsDelegates,
-        supportedLocales: AppLocalizations.supportedLocales,
-      ),
-    );
+  key: boundaryKey,
+  child: MaterialApp.router(
+    routerConfig: router,
+    locale: const Locale('en'),
+    localizationsDelegates: AppLocalizations.localizationsDelegates,
+    supportedLocales: AppLocalizations.supportedLocales,
+  ),
+);
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
@@ -156,26 +83,27 @@ void main() {
         routes: [
           GoRoute(
             path: '/',
-            builder: (context, state) => ChangeNotifierProvider<PremiumService>.value(
-              value: premium,
-              child: Scaffold(
-                body: Center(
-                  child: PremiumLockWidget(
-                    feature: PremiumFeature.toneCurve,
-                    child: FilledButton(
-                      onPressed: () => fail('locked child action must not execute'),
-                      child: const Text('LOCKED ACTION'),
+            builder: (context, state) =>
+                ChangeNotifierProvider<PremiumService>.value(
+                  value: premium,
+                  child: Scaffold(
+                    body: Center(
+                      child: PremiumLockWidget(
+                        feature: PremiumFeature.toneCurve,
+                        child: FilledButton(
+                          onPressed: () =>
+                              fail('locked child action must not execute'),
+                          child: const Text('LOCKED ACTION'),
+                        ),
+                      ),
                     ),
                   ),
                 ),
-              ),
-            ),
           ),
           GoRoute(
             path: '/premium',
-            builder: (context, state) => const Scaffold(
-              body: Text('PREMIUM DESTINATION'),
-            ),
+            builder: (context, state) =>
+                const Scaffold(body: Text('PREMIUM DESTINATION')),
           ),
         ],
       );
@@ -201,7 +129,9 @@ void main() {
     },
   );
 
-  testWidgets('Home drawer Premium entry reaches /premium directly', (tester) async {
+  testWidgets('Home drawer Premium entry reaches /premium directly', (
+    tester,
+  ) async {
     final boundaryKey = GlobalKey();
     final router = GoRouter(
       initialLocation: '/',
@@ -216,9 +146,8 @@ void main() {
         ),
         GoRoute(
           path: '/premium',
-          builder: (context, state) => const Scaffold(
-            body: Text('PREMIUM DESTINATION'),
-          ),
+          builder: (context, state) =>
+              const Scaffold(body: Text('PREMIUM DESTINATION')),
         ),
       ],
     );
@@ -270,15 +199,13 @@ void main() {
           ),
           GoRoute(
             path: '/premium',
-            builder: (context, state) => const Scaffold(
-              body: Text('PREMIUM DESTINATION'),
-            ),
+            builder: (context, state) =>
+                const Scaffold(body: Text('PREMIUM DESTINATION')),
           ),
           GoRoute(
             path: '/settings/watermark',
-            builder: (context, state) => const Scaffold(
-              body: Text('WATERMARK SETTINGS'),
-            ),
+            builder: (context, state) =>
+                const Scaffold(body: Text('WATERMARK SETTINGS')),
           ),
         ],
       );
@@ -307,5 +234,3 @@ void main() {
     },
   );
 }
-'''
-)

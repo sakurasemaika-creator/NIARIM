@@ -336,7 +336,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
   };
 
   void _showWatermarkSetting() {
-    if (!context.read<PremiumService>().isPremium) {
+    if (!context.read<PremiumService>().isFeatureAvailable(
+      PremiumFeature.watermark,
+    )) {
       showPremiumBanner(context);
       return;
     }

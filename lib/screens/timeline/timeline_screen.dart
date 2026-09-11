@@ -1445,7 +1445,9 @@ class _TimelineScreenState extends State<TimelineScreen> {
 
   Widget _buildToolbar() {
     final l10n = AppLocalizations.of(context)!;
-    final isPremium = context.watch<PremiumService>().isPremium;
+    final canUseWatermark = context.watch<PremiumService>().isFeatureAvailable(
+      PremiumFeature.watermark,
+    );
     return Container(
       height: 40,
       padding: const EdgeInsets.symmetric(horizontal: 8),
@@ -1489,7 +1491,7 @@ class _TimelineScreenState extends State<TimelineScreen> {
                   tooltip: l10n.timelineAddAudioTooltip,
                 ),
                 // ウォーターマーク：無料会員はlockアイコン付き表示、タップで共通Premiumバナー
-                _buildWatermarkButton(isPremium),
+                _buildWatermarkButton(canUseWatermark),
                 IconButton(
                   icon: const Icon(Icons.movie_filter, size: 18),
                   onPressed: () => _showEffectFilterDialog(),
@@ -1518,9 +1520,9 @@ class _TimelineScreenState extends State<TimelineScreen> {
     );
   }
 
-  Widget _buildWatermarkButton(bool isPremium) {
+  Widget _buildWatermarkButton(bool canUseWatermark) {
     final l10n = AppLocalizations.of(context)!;
-    if (isPremium) {
+    if (canUseWatermark) {
       return IconButton(
         icon: const Icon(Icons.branding_watermark, size: 18),
         onPressed: _showWatermarkPicker,
@@ -3204,9 +3206,11 @@ class _TimelineScreenState extends State<TimelineScreen> {
   /// 中止する）。プレミアム会員は上限が2時間（7200秒）と大きいため事実上
   /// ブロックされない。
   bool _canAddFrames(int count) {
-    final isPremium = context.read<PremiumService>().isPremium;
+    final hasUnlimitedDuration = context
+        .read<PremiumService>()
+        .isFeatureAvailable(PremiumFeature.unlimitedDuration);
     final ps = context.read<ProjectService>();
-    final maxSeconds = isPremium ? 7200 : 90;
+    final maxSeconds = hasUnlimitedDuration ? 7200 : 90;
     final projected = ps.projectedDurationSeconds(
       widget.projectId,
       frameDelta: count,
@@ -3234,7 +3238,7 @@ class _TimelineScreenState extends State<TimelineScreen> {
           ],
         ),
         content: Text(
-          isPremium
+          hasUnlimitedDuration
               ? l10n.timelineDurationLimitBodyPremium
               : l10n.timelineDurationLimitBodyFree,
         ),
@@ -5089,13 +5093,16 @@ class _TimelineScreenState extends State<TimelineScreen> {
     return Consumer2<PremiumService, SettingsService>(
       builder: (context, premium, settings, _) {
         final l10n = AppLocalizations.of(context)!;
+        final canEditEndCard = premium.isFeatureAvailable(
+          PremiumFeature.endCardEdit,
+        );
         final defaultHidden =
-            premium.isPremium && settings.endCardDefaultHiddenForPremium;
+            canEditEndCard && settings.endCardDefaultHiddenForPremium;
         final hidden = _endCardManuallyDeleted || defaultHidden;
         return GestureDetector(
           // 無料会員：トラックのどこをタップしてもプレミアム誘導へ（仕様：
           // 「一切操作できずタップした瞬間に有料会員へ誘導される」）。
-          onTap: premium.isPremium ? null : () => showPremiumBanner(context),
+          onTap: canEditEndCard ? null : () => showPremiumBanner(context),
           child: Container(
             height: 32,
             color: Theme.of(context).colorScheme.surfaceContainerLow,
@@ -5123,7 +5130,7 @@ class _TimelineScreenState extends State<TimelineScreen> {
                   ),
                 ),
                 SizedBox(width: 4),
-                if (!premium.isPremium)
+                if (!canEditEndCard)
                   Icon(
                     Icons.lock,
                     size: 14,

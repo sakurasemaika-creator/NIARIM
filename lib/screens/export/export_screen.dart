@@ -226,7 +226,7 @@ class _ExportScreenState extends State<ExportScreen> {
     }
 
     // 無料版の最大動画尺チェック
-    if (!premiumService.isPremium) {
+    if (!premiumService.isFeatureAvailable(PremiumFeature.unlimitedDuration)) {
       final scenesPreview = projectService.scenesOf(widget.projectId);
       final totalFramesPreview = scenesPreview.fold(
         0,
@@ -273,7 +273,7 @@ class _ExportScreenState extends State<ExportScreen> {
       // 自動追加する。mp4/webmとも、動画の結合ではなく
       // フレーム生成の段階で末尾へ焼き込む（endcard_frame参照）。
       final shouldAppendEndCard =
-          !premiumService.isPremium &&
+          !premiumService.isFeatureAvailable(PremiumFeature.endCardEdit) &&
           (_format == ExportFormat.mp4 ||
               _format == ExportFormat.webm ||
               _format == ExportFormat.avi);
