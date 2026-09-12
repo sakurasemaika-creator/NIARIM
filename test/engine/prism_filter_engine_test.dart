@@ -32,12 +32,13 @@ void main() {
         return [bytes[i], bytes[i + 1], bytes[i + 2]];
       }
 
-      // 0° は横方向へ変化し、同じxなら上下で同色。
-      expect(rgbAt(horizontal, 0, 0), isNot(rgbAt(horizontal, 2, 0)));
+      // 六帯は先頭と末尾がどちらも赤なので、端同士ではなく中間点との
+      // 差を見る。0° は横方向へ変化し、同じxなら上下で同色。
+      expect(rgbAt(horizontal, 0, 0), isNot(rgbAt(horizontal, 1, 0)));
       expect(rgbAt(horizontal, 0, 0), rgbAt(horizontal, 0, 2));
 
       // 90° は縦方向へ変化し、同じyなら左右で同色。
-      expect(rgbAt(vertical, 0, 0), isNot(rgbAt(vertical, 0, 2)));
+      expect(rgbAt(vertical, 0, 0), isNot(rgbAt(vertical, 0, 1)));
       expect(rgbAt(vertical, 0, 0), rgbAt(vertical, 2, 0));
     });
 
