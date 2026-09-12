@@ -114,7 +114,9 @@ void main() {
       () async {
         final service = FilterService();
         await service.init();
-        expect(service.filters.length, 21);
+        expect(service.filters.length, 24);
+        expect(service.filters.map((f) => f.id), contains(FilterService.prismFilterId));
+        expect(service.filters.map((f) => f.id), contains(FilterService.vhsNoiseFilterId));
         expect(service.currentFilter?.id, 'Filter0001');
         expect(service.isBuiltIn('Filter0001'), isTrue);
         expect(service.removeFilter('Filter0001'), isFalse);
