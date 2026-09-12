@@ -15,6 +15,7 @@ import 'package:niarim/screens/canvas/widgets/filter_panel.dart';
 import 'package:niarim/services/brush_service.dart';
 import 'package:niarim/services/filter_service.dart';
 import 'package:niarim/services/project_service.dart';
+import 'package:niarim/widgets/stepped_slider.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -178,11 +179,22 @@ void main() {
     stage('vhs:selected');
     await capture('02_vhs_selected_default');
 
-    final sliders = find.descendant(of: panel, matching: find.byType(Slider));
-    expect(sliders, findsNWidgets(4));
+    final controls = find.descendant(
+      of: panel,
+      matching: find.byType(SteppedSlider),
+    );
+    expect(controls, findsNWidgets(4));
     const ratios = [0.72, 0.64, 0.58, 0.66];
     for (var i = 0; i < 4; i++) {
-      final rect = tester.getRect(sliders.at(i));
+      final control = controls.at(i);
+      await tester.ensureVisible(control);
+      await tester.pump();
+      final slider = find.descendant(
+        of: control,
+        matching: find.byType(Slider),
+      );
+      expect(slider, findsOneWidget);
+      final rect = tester.getRect(slider);
       await tester.tapAt(
         Offset(rect.left + rect.width * ratios[i], rect.center.dy),
       );
