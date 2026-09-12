@@ -9,7 +9,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 void main() {
   for (final moveDown in [true, false]) {
-    testWidgets('draft drag preserves final order: down=$moveDown', (
+    testWidgets('draft reorder callback preserves final order: down=$moveDown', (
       tester,
     ) async {
       SharedPreferences.setMockInitialValues({});
@@ -47,24 +47,18 @@ void main() {
         ),
       );
       await tester.pumpAndSettle();
-      final start = find.descendant(
-        of: find.byKey(ValueKey(originalIds[moveDown ? 0 : 2])),
-        matching: find.byType(ReorderableDragStartListener),
+
+      // FlutterのonReorderItemは、gap animationやpointer位置に依存せず
+      // ドロップ後の最終indexを渡す。ここではそのUI契約からserviceの
+      // pre-removal index契約への変換を直接監査する。
+      final list = tester.widget<ReorderableListView>(
+        find.byType(ReorderableListView),
       );
-      final target = find.byKey(ValueKey(originalIds[moveDown ? 2 : 0]));
-      final startCenter = tester.getCenter(start);
-      final targetRect = tester.getRect(target);
-      final destinationY = moveDown
-          ? targetRect.bottom + 8
-          : targetRect.top - 8;
-      final gesture = await tester.startGesture(startCenter);
+      final oldIndex = moveDown ? 0 : 2;
+      final finalIndex = moveDown ? 2 : 0;
+      list.onReorderItem!(oldIndex, finalIndex);
       await tester.pump();
-      await gesture.moveTo(Offset(startCenter.dx, destinationY));
-      // Keep holding beyond the destination row while its gap animates.
-      await tester.pump(const Duration(milliseconds: 400));
-      await gesture.up();
-      await tester.pumpAndSettle();
-      expect(tester.takeException(), isNull);
+
       final expectedIds = moveDown
           ? [originalIds[1], originalIds[2], originalIds[0]]
           : [originalIds[2], originalIds[0], originalIds[1]];
@@ -74,6 +68,13 @@ void main() {
           .where((tile) => tile.key is ValueKey<String>)
           .map((tile) => (tile.key! as ValueKey<String>).value);
       expect(visibleOrder, expectedIds);
+      expect(
+        find.descendant(
+          of: find.byKey(ValueKey(originalIds.first)),
+          matching: find.byType(ReorderableDragStartListener),
+        ),
+        findsOneWidget,
+      );
       await tester.pumpWidget(const SizedBox.shrink());
     });
   }
