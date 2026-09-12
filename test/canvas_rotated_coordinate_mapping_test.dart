@@ -84,7 +84,7 @@ void main() {
   for (final drawingAreaScale in <double>[1.0, 2.0]) {
     final mode = drawingAreaScale == 1.0 ? '通常' : '拡張';
 
-    test('$mode: 1/5縮小＋斜め回転＋極端パンでも画面→キャンバス座標が往復一致する', () {
+    test('$mode: 1/100縮小＋斜め回転＋極端パンでも画面→キャンバス座標が往復一致する', () {
       final project = _project(drawingAreaScale: drawingAreaScale);
       final canvasSize = canvasPixelSizeOf(project);
       final points = <Offset>[
@@ -160,8 +160,8 @@ void main() {
     });
   }
 
-  test('選択ハンドルは0.2倍でも画面上の見た目サイズが一定になる', () {
-    // canvasToScreenScaleが1/5になるとキャンバスpx上の半径は5倍になり、
+  test('選択ハンドルは1/100倍でも画面上の見た目サイズが一定になる', () {
+    // canvasToScreenScaleが1/100になるとキャンバスpx上の半径は100倍になり、
     // Transform後の画面pxでは元の7px / 11pxへ戻る。
     final scaleRadius = selectionHandleRadiusFor(kCanvasMinScale);
     final rotateRadius = selectionRotateHandleRadiusFor(kCanvasMinScale);
@@ -175,21 +175,25 @@ void main() {
     );
   });
 
-  test('選択回転ハンドルは斜め表示でも拡大縮小ハンドルと重ならない', () {
+  test('選択回転ハンドルは1/100斜め表示でも拡大縮小ハンドルと重ならない', () {
     const bounds = Rect.fromLTWH(100, 100, 220, 140);
     final handle = selectionHandleRadiusFor(kCanvasMinScale);
     final rotate = selectionRotateHandleRadiusFor(kCanvasMinScale);
+    // 420x520の画面を1/100表示したとき、逆変換後の到達可能範囲は
+    // 数万px相当になる。旧1/5向けの3000px固定範囲では、巨大化した
+    // キャンバス座標上のハンドルを人工的に押し潰してしまう。
+    const reachable = Rect.fromLTWH(-21000, -26000, 42000, 52000);
     final rotatePoint = selectionRotateHandleOf(
       bounds,
       handle,
       rotateRadius: rotate,
-      reachable: const Rect.fromLTWH(-1000, -1000, 3000, 3000),
+      reachable: reachable,
     );
     for (final scalePoint in selectionScaleHandlesOf(bounds)) {
       expect(
         (rotatePoint - scalePoint).distance,
         greaterThan(handle + rotate),
-        reason: '0.2倍でも回転ハンドルが四隅ハンドルと重ならないこと',
+        reason: '1/100倍でも回転ハンドルが四隅ハンドルと重ならないこと',
       );
     }
   });
