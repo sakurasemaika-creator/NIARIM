@@ -32,12 +32,14 @@ void main() {
         return [bytes[i], bytes[i + 1], bytes[i + 2]];
       }
 
+      // プリズムは赤→緑→シアン→青→紫→赤の6帯で、両端は意図的に同じ赤。
+      // したがって3px監査では端同士ではなく中央帯との差で勾配方向を検証する。
       // 0° は横方向へ変化し、同じxなら上下で同色。
-      expect(rgbAt(horizontal, 0, 0), isNot(rgbAt(horizontal, 2, 0)));
+      expect(rgbAt(horizontal, 0, 0), isNot(rgbAt(horizontal, 1, 0)));
       expect(rgbAt(horizontal, 0, 0), rgbAt(horizontal, 0, 2));
 
       // 90° は縦方向へ変化し、同じyなら左右で同色。
-      expect(rgbAt(vertical, 0, 0), isNot(rgbAt(vertical, 0, 2)));
+      expect(rgbAt(vertical, 0, 0), isNot(rgbAt(vertical, 0, 1)));
       expect(rgbAt(vertical, 0, 0), rgbAt(vertical, 2, 0));
     });
 
