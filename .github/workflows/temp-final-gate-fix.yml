@@ -1,0 +1,94 @@
+name: Temporary Final Gate Fix
+
+on:
+  push:
+    branches: [fix/final-gate-remaining-20260913]
+    paths:
+      - '.github/workflows/temp-final-gate-fix.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  patch-and-verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          ref: fix/final-gate-remaining-20260913
+      - uses: actions/setup-java@v6
+        with:
+          distribution: temurin
+          java-version: '17'
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+      - name: Patch canvas hit testing and print l10n wiring diagnostics
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          import json
+
+          canvas = Path('lib/screens/canvas/widgets/canvas_area.dart')
+          text = canvas.read_text()
+          old = "      child: Listener(\n        onPointerDown: (e) {"
+          new = "      child: Listener(\n        behavior: HitTestBehavior.opaque,\n        onPointerDown: (e) {"
+          if old not in text:
+              raise SystemExit('Canvas Listener anchor not found')
+          canvas.write_text(text.replace(old, new, 1))
+
+          keys = [
+              'filterCustomMenuDuplicate',
+              'filterCustomMenuFavoriteBlockTitle',
+              'filterCustomMenuFavoriteBlockBody',
+              'filterBackgroundBlendColorLabel',
+              'filterBackgroundBlendAutoLabel',
+              'filterBackgroundBlendAutoReset',
+              'communityTagSearchModeOnTooltip',
+              'communityTagSearchModeOffTooltip',
+              'communityPostComingSoonTitle',
+              'communityPostComingSoonBody',
+              'communityPostInfoTitle',
+              'communityPostInfoBody',
+              'customAutomationStopConfirmQuit',
+              'customAutomationPremiumHint',
+          ]
+          ja = json.loads(Path('lib/l10n/app_ja.arb').read_text())
+          dart_files = list(Path('lib').rglob('*.dart'))
+          print('=== L10N HARD-CODED VALUE MATCHES ===')
+          for key in keys:
+              value = ja.get(key)
+              print(f'KEY {key} = {value!r}')
+              if not isinstance(value, str) or not value:
+                  continue
+              for path in dart_files:
+                  body = path.read_text(errors='ignore')
+                  if value in body:
+                      for no, line in enumerate(body.splitlines(), 1):
+                          if value in line:
+                              print(f'  MATCH {path}:{no}: {line.strip()}')
+          PY
+      - name: Install dependencies
+        run: flutter pub get
+      - name: Verify targeted stale-test and canvas fixes
+        run: >-
+          flutter test --reporter expanded
+          test/canvas_angle_boundary_visual_audit_test.dart
+          test/community_shorts_live_state_test.dart
+          test/visual/vhs_filter_actual_capture_test.dart
+      - name: Commit verified canvas implementation fix
+        shell: bash
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add lib/screens/canvas/widgets/canvas_area.dart
+          git diff --cached --check
+          if git diff --cached --quiet; then
+            echo 'No canvas change to commit'
+            exit 0
+          fi
+          git commit -m 'fix: keep canvas gesture surface hittable when zoomed out'
+          git push origin HEAD:fix/final-gate-remaining-20260913
