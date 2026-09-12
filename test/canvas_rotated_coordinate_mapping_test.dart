@@ -84,7 +84,7 @@ void main() {
   for (final drawingAreaScale in <double>[1.0, 2.0]) {
     final mode = drawingAreaScale == 1.0 ? '通常' : '拡張';
 
-    test('$mode: 1/5縮小＋斜め回転＋極端パンでも画面→キャンバス座標が往復一致する', () {
+    test('$mode: 1/100縮小＋斜め回転＋極端パンでも画面→キャンバス座標が往復一致する', () {
       final project = _project(drawingAreaScale: drawingAreaScale);
       final canvasSize = canvasPixelSizeOf(project);
       final points = <Offset>[
@@ -160,8 +160,8 @@ void main() {
     });
   }
 
-  test('選択ハンドルは0.2倍でも画面上の見た目サイズが一定になる', () {
-    // canvasToScreenScaleが1/5になるとキャンバスpx上の半径は5倍になり、
+  test('選択ハンドルは0.01倍でも画面上の見た目サイズが一定になる', () {
+    // canvasToScreenScaleが1/100になるとキャンバスpx上の半径は100倍になり、
     // Transform後の画面pxでは元の7px / 11pxへ戻る。
     final scaleRadius = selectionHandleRadiusFor(kCanvasMinScale);
     final rotateRadius = selectionRotateHandleRadiusFor(kCanvasMinScale);
@@ -183,13 +183,16 @@ void main() {
       bounds,
       handle,
       rotateRadius: rotate,
-      reachable: const Rect.fromLTWH(-1000, -1000, 3000, 3000),
+      // 1/100では画面サイズ固定のハンドル半径がcanvas座標上で100倍になる。
+      // 旧1/5向けの3000px枠では境界クランプ自体を測ってしまうため、
+      // 非クランプ時の「四隅と重ならない」性質を十分広い領域で監査する。
+      reachable: const Rect.fromLTWH(-5000, -5000, 10000, 10000),
     );
     for (final scalePoint in selectionScaleHandlesOf(bounds)) {
       expect(
         (rotatePoint - scalePoint).distance,
         greaterThan(handle + rotate),
-        reason: '0.2倍でも回転ハンドルが四隅ハンドルと重ならないこと',
+        reason: '0.01倍でも回転ハンドルが四隅ハンドルと重ならないこと',
       );
     }
   });
