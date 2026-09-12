@@ -5,13 +5,13 @@ import 'package:niarim/screens/canvas/widgets/canvas_area.dart';
 
 void main() {
   group('キャンバス表示倍率', () {
-    test('縮小下限は等倍の1/5', () {
-      expect(kCanvasMinScale, 0.2);
+    test('縮小下限は等倍の1/100', () {
+      expect(kCanvasMinScale, 0.01);
     });
 
-    test('下限を飛び越えるピンチでも1/5ちょうどへクランプする', () {
-      final factor = boundedCanvasScaleFactor(0.25, 0.5);
-      expect(0.25 * factor, closeTo(0.2, 1e-12));
+    test('下限を飛び越えるピンチでも1/100ちょうどへクランプする', () {
+      final factor = boundedCanvasScaleFactor(0.25, 0.001);
+      expect(0.25 * factor, closeTo(0.01, 1e-12));
     });
 
     test('最小倍率でさらに縮小入力されても倍率は固定され回転を妨げない', () {
