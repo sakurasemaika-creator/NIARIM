@@ -5,6 +5,11 @@ import '../l10n/app_localizations.dart';
 import '../models/custom_automation.dart';
 import '../services/custom_automation_service.dart';
 
+/// Converts Flutter's final reorder index back to the pre-removal index contract
+/// used by [CustomAutomationService.reorderDraftStep].
+int customAutomationDraftPreRemovalIndex(int oldIndex, int finalIndex) =>
+    finalIndex > oldIndex ? finalIndex + 1 : finalIndex;
+
 class CustomAutomationDraftSheet extends StatelessWidget {
   final CustomAutomationSurface surface;
   final VoidCallback onResumeRecording;
@@ -41,7 +46,10 @@ class CustomAutomationDraftSheet extends StatelessWidget {
                         // contract; Flutter now supplies the final index.
                         service.reorderDraftStep(
                           oldIndex,
-                          newIndex > oldIndex ? newIndex + 1 : newIndex,
+                          customAutomationDraftPreRemovalIndex(
+                            oldIndex,
+                            newIndex,
+                          ),
                         );
                       },
                       itemBuilder: (context, index) {
