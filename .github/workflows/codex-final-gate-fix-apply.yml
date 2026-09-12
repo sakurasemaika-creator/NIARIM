@@ -1,0 +1,118 @@
+name: Temporary Final Gate Fix Apply
+
+on:
+  push:
+    branches: [codex/final-gate-fixes-20260912]
+
+permissions:
+  contents: write
+
+jobs:
+  apply:
+    if: github.event.head_commit.message == 'ci: add temporary final gate fixer'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          ref: codex/final-gate-fixes-20260912
+          fetch-depth: 0
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+      - name: Apply targeted source and test updates
+        shell: bash
+        run: |
+          python3 <<'PY'
+          import json
+          import re
+          from pathlib import Path
+
+          unused = [
+              'filterCustomMenuDuplicate',
+              'filterCustomMenuFavoriteBlockTitle',
+              'filterCustomMenuFavoriteBlockBody',
+              'filterBackgroundBlendColorLabel',
+              'filterBackgroundBlendAutoLabel',
+              'filterBackgroundBlendAutoReset',
+              'communityTagSearchModeOnTooltip',
+              'communityTagSearchModeOffTooltip',
+              'communityPostComingSoonTitle',
+              'communityPostComingSoonBody',
+              'communityPostInfoTitle',
+              'communityPostInfoBody',
+              'customAutomationStopConfirmQuit',
+              'customAutomationPremiumHint',
+          ]
+          translations = {
+              'app_en.arb': 'Prism',
+              'app_es.arb': 'Prisma',
+              'app_fr.arb': 'Prisme',
+              'app_ja.arb': 'プリズム',
+              'app_ko.arb': '프리즘',
+              'app_zh.arb': '棱镜',
+              'app_zh_Hant.arb': '稜鏡',
+          }
+
+          for filename, prism_name in translations.items():
+              path = Path('lib/l10n') / filename
+              text = path.read_text()
+              for key in unused:
+                  if f'"@{key}"' in text:
+                      raise SystemExit(f'{filename}: unexpected metadata block for {key}')
+                  pattern = re.compile(rf'(?m)^\s*"{re.escape(key)}"\s*:\s*.*?,?\n')
+                  text, count = pattern.subn('', text, count=1)
+                  if count != 1:
+                      raise SystemExit(f'{filename}: expected exactly one {key}, found {count}')
+              if '"filterNamePrism"' not in text:
+                  marker = re.compile(r'(?m)^(\s*"filterNameVhsNoise"\s*:\s*.*\n)')
+                  text, count = marker.subn(
+                      lambda m: m.group(1) + f'  "filterNamePrism": {json.dumps(prism_name, ensure_ascii=False)},\n',
+                      text,
+                      count=1,
+                  )
+                  if count != 1:
+                      raise SystemExit(f'{filename}: filterNameVhsNoise insertion marker missing')
+              json.loads(text)
+              path.write_text(text)
+
+          panel = Path('lib/screens/canvas/widgets/filter_panel.dart')
+          text = panel.read_text()
+          replacements = {
+              "if (_isPrism(filter)) return 'プリズム';":
+                  'if (_isPrism(filter)) return l10n.filterNamePrism;',
+              "FilterKind.prism => 'プリズム',":
+                  'FilterKind.prism => l10n.filterNamePrism,',
+          }
+          for old, new in replacements.items():
+              if text.count(old) != 1:
+                  raise SystemExit(f'filter_panel replacement count mismatch: {old!r}')
+              text = text.replace(old, new)
+          panel.write_text(text)
+
+          angle = Path('test/canvas_angle_boundary_visual_audit_test.dart')
+          text = angle.read_text()
+          old_gesture = 'anchor + Offset.fromDirection(radians, 24); // 24/120=0.2'
+          new_gesture = 'anchor + Offset.fromDirection(radians, 1.2); // 1.2/120=0.01'
+          if text.count(old_gesture) != 1:
+              raise SystemExit('angle gesture marker mismatch')
+          text = text.replace(old_gesture, new_gesture)
+          text = text.replace('1/5', '1/100')
+          angle.write_text(text)
+          PY
+      - name: Regenerate localization sources
+        run: |
+          flutter pub get
+          flutter gen-l10n
+          dart format lib/screens/canvas/widgets/filter_panel.dart test/canvas_angle_boundary_visual_audit_test.dart
+      - name: Commit generated and source changes
+        shell: bash
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add lib/l10n lib/screens/canvas/widgets/filter_panel.dart test/canvas_angle_boundary_visual_audit_test.dart
+          git diff --cached --check
+          git diff --cached --quiet && { echo 'No changes to commit'; exit 1; }
+          git commit -m 'fix: apply final gate bulk updates'
+          git push origin HEAD:codex/final-gate-fixes-20260912
