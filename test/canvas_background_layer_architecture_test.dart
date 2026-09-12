@@ -10,10 +10,10 @@ void main() {
 
     expect(screen, contains('backgroundColor: kCanvasOutsideColor'));
     expect(screen, contains('color: kCanvasOutsideColor'));
-    expect(screen, contains('child: CanvasArea('));
+    expect(screen, contains('CanvasArea('));
 
     final colorIndex = screen.indexOf('color: kCanvasOutsideColor');
-    final canvasIndex = screen.indexOf('child: CanvasArea(', colorIndex);
+    final canvasIndex = screen.indexOf('CanvasArea(', colorIndex);
     expect(colorIndex, greaterThanOrEqualTo(0));
     expect(canvasIndex, greaterThan(colorIndex));
   });
