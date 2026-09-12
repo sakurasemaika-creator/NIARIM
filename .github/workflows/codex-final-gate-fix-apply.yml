@@ -3,13 +3,14 @@ name: Temporary Final Gate Fix Apply
 on:
   push:
     branches: [codex/final-gate-fixes-20260912]
+    paths:
+      - '.github/workflows/codex-final-gate-fix-apply.yml'
 
 permissions:
   contents: write
 
 jobs:
   apply:
-    if: github.event.head_commit.message == 'ci: add temporary final gate fixer'
     runs-on: ubuntu-latest
     timeout-minutes: 20
     steps:
