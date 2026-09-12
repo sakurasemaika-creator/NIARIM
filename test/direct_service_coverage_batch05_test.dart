@@ -145,6 +145,11 @@ void main() {
         presetIds.length,
         reason: 'duplicate preset IDs must self-repair',
       );
+      expect(
+        presetIds,
+        contains('builtin_gray_underpaint'),
+        reason: 'required built-in underpaint preset must survive migration',
+      );
       final upgraded = service.presets.firstWhere((p) => p.id == 'p1');
       expect(
         upgraded.parts.length,
@@ -161,7 +166,7 @@ void main() {
       final persisted = SharedPreferences.getInstance();
       final prefs = await persisted;
       final raw = prefs.getStringList('autofill_presets')!;
-      expect(raw, hasLength(2));
+      expect(raw, hasLength(service.presets.length));
       final decodedIds = raw
           .map(
             (s) => AutofillPreset.fromJson(
