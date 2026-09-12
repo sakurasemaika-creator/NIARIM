@@ -66,6 +66,7 @@ void main() {
       FilterKind.backgroundBlend,
       FilterKind.inkPool,
       FilterKind.autoLineart,
+      FilterKind.prism,
     ];
     expect(FilterKind.values, allKinds);
 
