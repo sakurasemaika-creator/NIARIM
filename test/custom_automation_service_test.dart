@@ -64,7 +64,7 @@ void main() {
   });
 
   test(
-    'frame navigation disables all-frame scope even if context later matches',
+    'frame-navigation metadata does not hide scope when recorded frame stays the same',
     () {
       final item = CustomAutomation(
         id: 'a',
@@ -84,7 +84,7 @@ void main() {
         ],
       );
       expect(item.isCanvasOnly, isTrue);
-      expect(item.supportsFrameScopeChoice, isFalse);
+      expect(item.supportsFrameScopeChoice, isTrue);
     },
   );
 
@@ -138,7 +138,7 @@ void main() {
     },
   );
 
-  test('missing start frame is conservative and disables all-frame scope', () {
+  test('recorded frame metadata is sufficient even when draft start frame is absent', () {
     final item = CustomAutomation(
       id: 'a',
       name: 'legacy',
@@ -154,7 +154,7 @@ void main() {
         ),
       ],
     );
-    expect(item.supportsFrameScopeChoice, isFalse);
+    expect(item.supportsFrameScopeChoice, isTrue);
   });
 
   test(
@@ -163,6 +163,8 @@ void main() {
       SharedPreferences.setMockInitialValues({});
       final service = CustomAutomationService();
       await service.init();
+      final seededItemCount = service.items.length;
+      expect(seededItemCount, greaterThan(0));
       service.beginDraft(
         name: 'My action',
         surface: CustomAutomationSurface.canvas,
@@ -209,7 +211,9 @@ void main() {
 
       final reloaded = CustomAutomationService();
       await reloaded.init();
-      expect(reloaded.items.length, 2);
+      expect(reloaded.items.length, seededItemCount + 2);
+      expect(reloaded.items.map((item) => item.id), contains(saved.id));
+      expect(reloaded.items.map((item) => item.id), contains(imported.id));
     },
   );
 
