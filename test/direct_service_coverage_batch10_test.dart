@@ -200,6 +200,7 @@ void main() {
       const types = <GestureType>[
         GestureType.twoFingerTap,
         GestureType.threeFingerTap,
+        GestureType.fourOrMoreFingerTap,
         GestureType.twoFingerSwipe,
         GestureType.longPress,
       ];
@@ -209,9 +210,10 @@ void main() {
       }
       expect(s.twoFingerTap, GestureAction.undo);
       expect(s.threeFingerTap, GestureAction.redo);
-      expect(s.twoFingerSwipe, GestureAction.eyedropper);
-      expect(s.longPress, GestureAction.panTool);
-      for (final action in actions.skip(4)) {
+      expect(s.fourOrMoreFingerTap, GestureAction.eyedropper);
+      expect(s.twoFingerSwipe, GestureAction.panTool);
+      expect(s.longPress, GestureAction.eraserToggle);
+      for (final action in actions.skip(types.length)) {
         await s.setGesture(GestureType.longPress, action);
         expect(s.longPress, action);
       }
