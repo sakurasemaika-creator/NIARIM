@@ -149,9 +149,7 @@ void main() {
 
     await tester.tap(find.byIcon(Icons.settings).first);
     await settle(3);
-    final l10n = AppLocalizations.of(
-      tester.element(find.byType(MaterialApp).first),
-    )!;
+    final l10n = AppLocalizations.of(tester.element(canvasFinder))!;
     await tester.tap(find.text(l10n.filterPanelTitle).last);
     await settle(6);
     expect(find.byType(FilterPanel), findsOneWidget);
