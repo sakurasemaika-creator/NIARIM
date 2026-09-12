@@ -121,30 +121,33 @@ void main() {
       final canvasFinder = find.byType(CanvasArea);
       expect(canvasFinder, findsOneWidget);
       final center = tester.getCenter(canvasFinder);
-
-      // NIARIMの独自2本指変形は「動いた指」と「もう一方の固定アンカー」の
-      // ベクトル差から倍率・角度を取る。片指を固定し、もう片方だけを動かす
-      // ことで、相殺なしに指定角度へ回す。
-      final anchor = center - const Offset(60, 0);
-      final movingStart = center + const Offset(60, 0); // 初期間隔120px
       final radians = testCase.degrees * math.pi / 180;
-      final movingEnd =
-          anchor + Offset.fromDirection(radians, 1.2); // 1.2/120=0.01
 
-      final fixed = await tester.startGesture(
-        anchor,
-        kind: PointerDeviceKind.touch,
-      );
-      final moving = await tester.startGesture(
-        movingStart,
-        kind: PointerDeviceKind.touch,
-      );
-      await tester.pump();
-      await moving.moveTo(movingEnd);
-      await tester.pump();
-      await moving.up();
-      await fixed.up();
-      await tester.pump();
+      // 1回で120px→1.2pxまで潰すと、テスト入力自体がタッチ閾値を下回って
+      // 変形開始を安定して観測できない。120px→12pxの1/10ピンチを2回行い、
+      // 2回目に回転も与えることで、実ポインター操作のまま1/100へ到達させる。
+      Future<void> pinch({required double angle}) async {
+        final anchor = center - const Offset(60, 0);
+        final movingStart = center + const Offset(60, 0);
+        final movingEnd = anchor + Offset.fromDirection(angle, 12);
+        final fixed = await tester.startGesture(
+          anchor,
+          kind: PointerDeviceKind.touch,
+        );
+        final moving = await tester.startGesture(
+          movingStart,
+          kind: PointerDeviceKind.touch,
+        );
+        await tester.pump();
+        await moving.moveTo(movingEnd);
+        await tester.pump();
+        await moving.up();
+        await fixed.up();
+        await tester.pump();
+      }
+
+      await pinch(angle: 0);
+      await pinch(angle: radians);
 
       Matrix4 matrix = _viewMatrix(tester);
       // This is a 2D transform: the unchanged Z scale is 1 even when X/Y shrink.
