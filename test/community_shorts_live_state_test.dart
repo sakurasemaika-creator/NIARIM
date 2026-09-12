@@ -41,21 +41,28 @@ void main() {
     );
 
     // ブックマークは画面を開いた時点のSetではなくCommunityServiceをwatchする。
-    expect(find.byIcon(Icons.bookmark_border), findsOneWidget);
+    // bookmark_outline の制作情報アイコンは bookmark_border と同一glyphなので、
+    // 操作対象はIconButton配下に限定して検証する。
+    Finder bookmarkButton(IconData icon) => find.descendant(
+      of: find.byType(IconButton),
+      matching: find.byIcon(icon),
+    );
+
+    expect(bookmarkButton(Icons.bookmark_border), findsOneWidget);
     expect(service.isBookmarked(work.id), isFalse);
 
-    await tester.tap(find.byIcon(Icons.bookmark_border));
+    await tester.tap(bookmarkButton(Icons.bookmark_border));
     await tester.pump();
 
     expect(service.isBookmarked(work.id), isTrue);
-    expect(find.byIcon(Icons.bookmark), findsOneWidget);
-    expect(find.byIcon(Icons.bookmark_border), findsNothing);
+    expect(bookmarkButton(Icons.bookmark), findsOneWidget);
+    expect(bookmarkButton(Icons.bookmark_border), findsNothing);
 
-    await tester.tap(find.byIcon(Icons.bookmark));
+    await tester.tap(bookmarkButton(Icons.bookmark));
     await tester.pump();
 
     expect(service.isBookmarked(work.id), isFalse);
-    expect(find.byIcon(Icons.bookmark_border), findsOneWidget);
+    expect(bookmarkButton(Icons.bookmark_border), findsOneWidget);
 
     // 作者アイコン/作者名の領域から作者作品一覧へ遷移できる。
     await tester.tap(find.text(work.authorName));
