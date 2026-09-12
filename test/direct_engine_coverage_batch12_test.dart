@@ -66,6 +66,7 @@ void main() {
       FilterKind.backgroundBlend,
       FilterKind.inkPool,
       FilterKind.autoLineart,
+      FilterKind.prism,
     ];
     expect(FilterKind.values, allKinds);
 
@@ -124,6 +125,8 @@ void main() {
         inkPoolColor: 0xFF102030,
         inkPoolRange: 4,
         inkPoolCenterWidth: 2,
+        prismBlurPx: 2,
+        prismDirectionDegrees: 90,
       );
       final out = applyDrawFilterInIsolate((source, w, h, def, mask));
       expect(out, hasLength(source.length), reason: '${kind.name} output size');
