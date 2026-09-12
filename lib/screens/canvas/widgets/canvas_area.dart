@@ -3425,6 +3425,7 @@ class _CanvasAreaState extends State<CanvasArea> {
       // 2本指タップ
       onSecondaryTap: () => _handleGesture(context, settings.twoFingerTap),
       child: Listener(
+        behavior: HitTestBehavior.opaque,
         onPointerDown: (e) {
           if (e.kind == PointerDeviceKind.touch ||
               e.kind == PointerDeviceKind.stylus) {
