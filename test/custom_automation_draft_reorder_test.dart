@@ -54,13 +54,16 @@ void main() {
       final target = find.byKey(ValueKey(originalIds[moveDown ? 2 : 0]));
       final startCenter = tester.getCenter(start);
       final targetRect = tester.getRect(target);
+      // ReorderableListView animates a gap under the dragged row. Stopping only a
+      // few pixels beyond the target can therefore resolve one slot early after
+      // the gap moves. Cross a full target-row height so the final insertion index
+      // remains unambiguous throughout the animation.
       final destinationY = moveDown
-          ? targetRect.bottom + 8
-          : targetRect.top - 8;
+          ? targetRect.bottom + targetRect.height
+          : targetRect.top - targetRect.height;
       final gesture = await tester.startGesture(startCenter);
       await tester.pump();
       await gesture.moveTo(Offset(startCenter.dx, destinationY));
-      // Keep holding beyond the destination row while its gap animates.
       await tester.pump(const Duration(milliseconds: 400));
       await gesture.up();
       await tester.pumpAndSettle();
