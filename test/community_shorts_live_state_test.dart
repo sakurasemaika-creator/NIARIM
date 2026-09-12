@@ -40,22 +40,31 @@ void main() {
       findsOneWidget,
     );
 
-    // ブックマークは画面を開いた時点のSetではなくCommunityServiceをwatchする。
-    expect(find.byIcon(Icons.bookmark_border), findsOneWidget);
+    // bookmark_outlineは制作情報の件数アイコンにも使われ、Flutterでは
+    // bookmark_borderと同じIconData alias。操作ボタンだけを対象にする。
+    final bookmarkBorderButton = find.descendant(
+      of: find.byType(IconButton),
+      matching: find.byIcon(Icons.bookmark_border),
+    );
+    expect(bookmarkBorderButton, findsOneWidget);
     expect(service.isBookmarked(work.id), isFalse);
 
-    await tester.tap(find.byIcon(Icons.bookmark_border));
+    await tester.tap(bookmarkBorderButton);
     await tester.pump();
 
     expect(service.isBookmarked(work.id), isTrue);
-    expect(find.byIcon(Icons.bookmark), findsOneWidget);
-    expect(find.byIcon(Icons.bookmark_border), findsNothing);
+    final bookmarkedButton = find.descendant(
+      of: find.byType(IconButton),
+      matching: find.byIcon(Icons.bookmark),
+    );
+    expect(bookmarkedButton, findsOneWidget);
+    expect(bookmarkBorderButton, findsNothing);
 
-    await tester.tap(find.byIcon(Icons.bookmark));
+    await tester.tap(bookmarkedButton);
     await tester.pump();
 
     expect(service.isBookmarked(work.id), isFalse);
-    expect(find.byIcon(Icons.bookmark_border), findsOneWidget);
+    expect(bookmarkBorderButton, findsOneWidget);
 
     // 作者アイコン/作者名の領域から作者作品一覧へ遷移できる。
     await tester.tap(find.text(work.authorName));
