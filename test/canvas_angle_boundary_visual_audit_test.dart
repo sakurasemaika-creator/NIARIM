@@ -15,7 +15,7 @@ import 'package:niarim/services/project_service.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-/// キャンバスの「1/5縮小 + 斜め回転 + 背景端パン制限」を、実際のポインター
+/// キャンバスの「1/100縮小 + 斜め回転 + 背景端パン制限」を、実際のポインター
 /// 操作とPNGの両方で監査する。
 ///
 /// 通常描画範囲(drawingAreaScale=1)と拡張描画範囲(=2)を分け、
@@ -129,7 +129,7 @@ void main() {
       final movingStart = center + const Offset(60, 0); // 初期間隔120px
       final radians = testCase.degrees * math.pi / 180;
       final movingEnd =
-          anchor + Offset.fromDirection(radians, 24); // 24/120=0.2
+          anchor + Offset.fromDirection(radians, 1.2); // 1.2/120=0.01
 
       final fixed = await tester.startGesture(
         anchor,
@@ -152,7 +152,7 @@ void main() {
       expect(
         scale,
         closeTo(kCanvasMinScale, 0.015),
-        reason: '$mode ${testCase.degrees}°: 実ジェスチャーで1/5まで縮小すること',
+        reason: '$mode ${testCase.degrees}°: 実ジェスチャーで1/100まで縮小すること',
       );
       final actualAngle = math.atan2(matrix.entry(1, 0), matrix.entry(0, 0));
       expect(
@@ -201,11 +201,11 @@ void main() {
     }
   }
 
-  testWidgets('通常背景固定: 1/5縮小と8方向斜め回転を実操作してPNG監査する', (tester) async {
+  testWidgets('通常背景固定: 1/100縮小と8方向斜め回転を実操作してPNG監査する', (tester) async {
     await runMode(tester, drawingAreaScale: 1.0, mode: 'normal');
   });
 
-  testWidgets('拡張描画領域連動: 1/5縮小と8方向斜め回転を実操作してPNG監査する', (tester) async {
+  testWidgets('拡張描画領域連動: 1/100縮小と8方向斜め回転を実操作してPNG監査する', (tester) async {
     await runMode(tester, drawingAreaScale: 2.0, mode: 'extended');
   });
 }
