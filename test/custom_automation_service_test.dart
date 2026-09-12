@@ -138,24 +138,27 @@ void main() {
     },
   );
 
-  test('recorded frame metadata is sufficient even when draft start frame is absent', () {
-    final item = CustomAutomation(
-      id: 'a',
-      name: 'legacy',
-      createdAt: DateTime(2026),
-      updatedAt: DateTime(2026),
-      steps: const [
-        CustomAutomationStep(
-          id: '1',
-          surface: CustomAutomationSurface.canvas,
-          command: 'canvas.tool',
-          label: 'Pen',
-          recordedFrame: 0,
-        ),
-      ],
-    );
-    expect(item.supportsFrameScopeChoice, isTrue);
-  });
+  test(
+    'recorded frame metadata is sufficient even when draft start frame is absent',
+    () {
+      final item = CustomAutomation(
+        id: 'a',
+        name: 'legacy',
+        createdAt: DateTime(2026),
+        updatedAt: DateTime(2026),
+        steps: const [
+          CustomAutomationStep(
+            id: '1',
+            surface: CustomAutomationSurface.canvas,
+            command: 'canvas.tool',
+            label: 'Pen',
+            recordedFrame: 0,
+          ),
+        ],
+      );
+      expect(item.supportsFrameScopeChoice, isTrue);
+    },
+  );
 
   test(
     'record, coalesce, reorder, save, export and import round-trip',
