@@ -161,7 +161,11 @@ void main() {
       final persisted = SharedPreferences.getInstance();
       final prefs = await persisted;
       final raw = prefs.getStringList('autofill_presets')!;
-      expect(raw, hasLength(2));
+      expect(
+        raw,
+        hasLength(3),
+        reason: 'the built-in gray underpaint preset is persisted alongside repaired samples',
+      );
       final decodedIds = raw
           .map(
             (s) => AutofillPreset.fromJson(
@@ -169,6 +173,7 @@ void main() {
             ).id,
           )
           .toList();
+      expect(decodedIds, contains('builtin_gray_underpaint'));
       expect(decodedIds.toSet().length, decodedIds.length);
     },
   );
