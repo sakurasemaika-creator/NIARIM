@@ -64,7 +64,7 @@ void main() {
   });
 
   test(
-    'frame navigation disables all-frame scope even if context later matches',
+    'frame-changing command stays eligible when every recorded operation targets one frame',
     () {
       final item = CustomAutomation(
         id: 'a',
@@ -84,7 +84,7 @@ void main() {
         ],
       );
       expect(item.isCanvasOnly, isTrue);
-      expect(item.supportsFrameScopeChoice, isFalse);
+      expect(item.supportsFrameScopeChoice, isTrue);
     },
   );
 
@@ -138,7 +138,7 @@ void main() {
     },
   );
 
-  test('missing start frame is conservative and disables all-frame scope', () {
+  test('recorded frame metadata is sufficient even without a draft start frame', () {
     final item = CustomAutomation(
       id: 'a',
       name: 'legacy',
@@ -154,7 +154,7 @@ void main() {
         ),
       ],
     );
-    expect(item.supportsFrameScopeChoice, isFalse);
+    expect(item.supportsFrameScopeChoice, isTrue);
   });
 
   test(
@@ -209,7 +209,13 @@ void main() {
 
       final reloaded = CustomAutomationService();
       await reloaded.init();
-      expect(reloaded.items.length, 2);
+      expect(
+        reloaded.items.length,
+        5,
+        reason: 'three starter automations plus the saved and imported actions persist',
+      );
+      expect(reloaded.items.map((item) => item.id), contains(saved.id));
+      expect(reloaded.items.map((item) => item.id), contains(imported.id));
     },
   );
 
