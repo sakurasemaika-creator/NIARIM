@@ -44,21 +44,22 @@ void main() {
 
     Future<void> capture(String name) async {
       await tester.pumpAndSettle();
-      final boundary = captureKey.currentContext!.findRenderObject()! as RenderRepaintBoundary;
-      final image = await boundary.toImage(pixelRatio: 1.0);
-      try {
-        final data = await image.toByteData(format: ui.ImageByteFormat.png);
-        expect(data, isNotNull);
-        await File('${out.path}/$name.png').writeAsBytes(
-          data!.buffer.asUint8List(),
-          flush: true,
-        );
-      } finally {
-        image.dispose();
-      }
+      final bytes = await tester.runAsync(() async {
+        final boundary =
+            captureKey.currentContext!.findRenderObject()! as RenderRepaintBoundary;
+        final image = await boundary.toImage(pixelRatio: 1.0);
+        try {
+          final data = await image.toByteData(format: ui.ImageByteFormat.png);
+          if (data == null) throw StateError('PNG encoding returned null');
+          return data.buffer.asUint8List();
+        } finally {
+          image.dispose();
+        }
+      });
+      expect(bytes, isNotNull);
+      await File('${out.path}/$name.png').writeAsBytes(bytes!, flush: true);
     }
 
-    // 1. Open the real manager and start a new recording from its production UI.
     await tester.tap(find.byKey(const ValueKey('open-custom-automation-manager')));
     await tester.pumpAndSettle();
     await capture('01_manager_empty');
@@ -72,7 +73,6 @@ void main() {
     expect(service.isRecording, isTrue);
     await capture('03_recording_started');
 
-    // Record three distinct real steps so reordering/editing is visually provable.
     service.recordStep(
       surface: CustomAutomationSurface.canvas,
       command: 'canvas.brushSize',
@@ -102,7 +102,6 @@ void main() {
     await tester.pumpAndSettle();
     expect(service.isRecording, isFalse);
 
-    // 2. Open the production draft editor and capture actual reorder + edit.
     await tester.tap(find.byKey(const ValueKey('open-custom-automation-editor')));
     await tester.pumpAndSettle();
     await capture('05_editor_before_reorder');
@@ -113,20 +112,17 @@ void main() {
     expect(service.draft!.steps.first.label, beforeOrder[2]);
     await capture('06_editor_after_reorder');
 
-    // Editing: remove one recorded step from the real editor surface.
     await tester.tap(find.byIcon(Icons.delete_outline).first);
     await tester.pumpAndSettle();
     expect(service.draft!.steps, hasLength(2));
     await capture('07_editor_after_step_edit');
 
-    // Save through the production editor button.
     await tester.tap(find.byIcon(Icons.save_outlined));
     await tester.pumpAndSettle();
     expect(service.draft, isNull);
     expect(service.items, hasLength(1));
     final savedId = service.items.single.id;
 
-    // 3. Rename from the production manager UI.
     await tester.tap(find.byKey(const ValueKey('open-custom-automation-manager')));
     await tester.pumpAndSettle();
     await capture('08_saved_item');
@@ -139,7 +135,6 @@ void main() {
     expect(service.items.single.name, '操作キャプチャ・改名済み');
     await capture('10_after_rename');
 
-    // 4. Favorite registration, favorite-only mode, then favorite removal.
     await tester.tap(find.byKey(ValueKey('custom-automation-favorite-$savedId')));
     await tester.pumpAndSettle();
     expect(service.isFavorite(savedId), isTrue);
@@ -157,14 +152,12 @@ void main() {
     expect(service.visibleItems, isEmpty);
     await capture('13_favorite_removed_while_filtered');
 
-    // Return to all items so the saved automation is visible again.
     await tester.tap(find.byKey(const ValueKey('custom-automation-favorites-only')));
     await tester.pumpAndSettle();
     expect(service.favoritesOnly, isFalse);
     expect(service.visibleItems, hasLength(1));
     await capture('14_all_items_after_unfavorite');
 
-    // 5. Delete through the real confirmation dialog and capture both states.
     await tester.tap(find.byIcon(Icons.delete_outline));
     await tester.pumpAndSettle();
     await capture('15_delete_confirmation');
@@ -218,7 +211,7 @@ class _InteractionHost extends StatelessWidget {
                     surface: CustomAutomationSurface.canvas,
                     recordingStartFrame: 0,
                     frameCount: 1,
-                    onExecute: (_, __, ___) async {},
+                    onExecute: (_, _, _) async {},
                     onRecordingStarted: () {},
                   ),
                 ),
