@@ -9860,19 +9860,19 @@ abstract class AppLocalizations {
   /// No description provided for @filterAuroraHologramPresetSoapBubble.
   ///
   /// In ja, this message translates to:
-  /// **'シャボン玉'**
+  /// **'パール1'**
   String get filterAuroraHologramPresetSoapBubble;
 
   /// No description provided for @filterAuroraHologramPresetCyberNeon.
   ///
   /// In ja, this message translates to:
-  /// **'サイバーネオン'**
+  /// **'ヴェイパーウェイヴ'**
   String get filterAuroraHologramPresetCyberNeon;
 
   /// No description provided for @filterAuroraHologramPresetPastelDream.
   ///
   /// In ja, this message translates to:
-  /// **'パステルドリーム'**
+  /// **'パール2'**
   String get filterAuroraHologramPresetPastelDream;
 
   /// No description provided for @filterAuroraHologramPresetSunsetGold.
@@ -9886,6 +9886,12 @@ abstract class AppLocalizations {
   /// In ja, this message translates to:
   /// **'シルバーホイル'**
   String get filterAuroraHologramPresetSilverFoil;
+
+  /// No description provided for @filterAuroraHologramPresetClassicHologram.
+  ///
+  /// In ja, this message translates to:
+  /// **'シャボン玉'**
+  String get filterAuroraHologramPresetClassicHologram;
 
   /// No description provided for @filterNameBackgroundBlend.
   ///

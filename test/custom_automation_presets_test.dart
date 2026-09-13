@@ -25,8 +25,14 @@ void main() {
     );
     for (final item in service.items) {
       if (!item.id.startsWith('preset_')) continue;
-      expect(item.steps, hasLength(1));
-      expect(item.steps.single.command, 'canvas.filterApply');
+      expect(
+        item.steps,
+        hasLength(item.id == lineExtractionAutomationPresetId ? 2 : 1),
+      );
+      expect(
+        item.steps.every((step) => step.command == 'canvas.filterApply'),
+        isTrue,
+      );
       expect(item.supportsFrameScopeChoice, isTrue);
     }
   });
@@ -36,15 +42,18 @@ void main() {
       for (final item in builtInCanvasAutomationPresets()) item.name: item,
     };
 
-    FilterDef filterOf(String name) {
-      final raw = presets[name]!.steps.single.args['filter'] as Map;
+    FilterDef filterOf(String name, [int step = 0]) {
+      final raw = presets[name]!.steps[step].args['filter'] as Map;
       return FilterDef.fromJson(raw.cast<String, dynamic>());
     }
 
     expect(filterOf('オーロラホログラム').kind, FilterKind.auroraHologram);
     expect(filterOf('オーロラホログラム').id, 'Filter0019');
-    expect(filterOf('線画抽出').kind, FilterKind.autoLineart);
-    expect(filterOf('線画抽出').id, 'Filter0023');
+    expect(filterOf('線画抽出', 0).kind, FilterKind.colorAdjust);
+    expect(filterOf('線画抽出', 0).caBrightness, greaterThan(0));
+    expect(filterOf('線画抽出', 0).caContrast, greaterThan(0));
+    expect(filterOf('線画抽出', 1).kind, FilterKind.threshold);
+    expect(filterOf('線画抽出', 1).id, 'Filter0014');
     expect(filterOf('線画作成').kind, FilterKind.outline);
     expect(filterOf('線画作成').id, 'Filter0006');
   });

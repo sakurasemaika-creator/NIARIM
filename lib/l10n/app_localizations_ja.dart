@@ -5368,19 +5368,22 @@ class AppLocalizationsJa extends AppLocalizations {
   String get filterAuroraHologramPresetAurora => 'オーロラ';
 
   @override
-  String get filterAuroraHologramPresetSoapBubble => 'シャボン玉';
+  String get filterAuroraHologramPresetSoapBubble => 'パール1';
 
   @override
-  String get filterAuroraHologramPresetCyberNeon => 'サイバーネオン';
+  String get filterAuroraHologramPresetCyberNeon => 'ヴェイパーウェイヴ';
 
   @override
-  String get filterAuroraHologramPresetPastelDream => 'パステルドリーム';
+  String get filterAuroraHologramPresetPastelDream => 'パール2';
 
   @override
   String get filterAuroraHologramPresetSunsetGold => 'サンセットゴールド';
 
   @override
   String get filterAuroraHologramPresetSilverFoil => 'シルバーホイル';
+
+  @override
+  String get filterAuroraHologramPresetClassicHologram => 'シャボン玉';
 
   @override
   String get filterNameBackgroundBlend => '背景馴染ませ';

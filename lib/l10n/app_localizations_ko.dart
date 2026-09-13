@@ -5406,6 +5406,9 @@ class AppLocalizationsKo extends AppLocalizations {
   String get filterAuroraHologramPresetSilverFoil => '실버 포일';
 
   @override
+  String get filterAuroraHologramPresetClassicHologram => 'シャボン玉';
+
+  @override
   String get filterNameBackgroundBlend => '배경 어우러짐';
 
   @override
