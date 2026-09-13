@@ -55,11 +55,38 @@ jobs:
                   s = re.sub(pat, lambda m, v=value: m.group(1) + f'\"{v}\"', s, count=1)
               write(path, s)
 
+          # Keep every built-in/internal name aligned with the localized top-level filter name.
           p = 'lib/models/custom_automation_presets.dart'
           s = read(p)
-          s = s.replace("name: 'オーロラホログラム', filters: const [", "name: '質感変更フィルター', filters: const [")
-          s = s.replace("FilterDef(id: 'Filter0019', name: 'オーロラホログラム'", "FilterDef(id: 'Filter0019', name: '質感変更フィルター'")
+          s, preset_name_count = re.subn(
+              r"(id:\s*auroraHologramAutomationPresetId,\s*\n\s*name:\s*)'[^']*'",
+              r"\1'質感変更フィルター'",
+              s,
+              count=1,
+          )
+          s, preset_filter_count = re.subn(
+              r"(id:\s*'Filter0019',\s*\n\s*name:\s*)'[^']*'",
+              r"\1'質感変更フィルター'",
+              s,
+              count=1,
+          )
+          if preset_name_count != 1 or preset_filter_count != 1:
+              raise SystemExit(
+                  f'custom automation naming mismatch: preset={preset_name_count} filter={preset_filter_count}'
+              )
           write(p, s)
+
+          p = 'lib/services/filter_service.dart'
+          s = read(p)
+          s2, service_count = re.subn(
+              r"(FilterDef\(id:\s*'Filter0019',\s*name:\s*)'[^']*'",
+              r"\1'質感変更フィルター'",
+              s,
+              count=1,
+          )
+          if service_count != 1:
+              raise SystemExit(f'expected one Filter0019 built-in name, replaced {service_count}')
+          write(p, s2)
 
           p = 'lib/engine/filter_engine.dart'
           s = read(p)
@@ -94,11 +121,16 @@ jobs:
               final ja = File('lib/l10n/app_ja.arb').readAsStringSync();
               final en = File('lib/l10n/app_en.arb').readAsStringSync();
               final engine = File('lib/engine/filter_engine.dart').readAsStringSync();
+              final presets = File('lib/models/custom_automation_presets.dart').readAsStringSync();
+              final service = File('lib/services/filter_service.dart').readAsStringSync();
 
               expect(ja, contains('\"filterNameAuroraHologram\": \"質感変更フィルター\"'));
               expect(ja, contains('\"filterAuroraHologramPresetClassicHologram\": \"オーロラホログラム\"'));
               expect(en, contains('\"filterNameAuroraHologram\": \"Texture Filter\"'));
               expect(en, contains('\"filterAuroraHologramPresetClassicHologram\": \"Aurora Hologram\"'));
+              expect(presets, contains("name: '質感変更フィルター'"));
+              expect(presets, contains("id: 'Filter0019'"));
+              expect(service, contains("FilterDef(id: 'Filter0019', name: '質感変更フィルター'"));
 
               for (final rgbTail in <String>[
                 '223, 149, 31)',
@@ -117,9 +149,9 @@ jobs:
       - name: Generate localizations
         run: flutter gen-l10n
       - name: Format
-        run: dart format lib/models/custom_automation_presets.dart lib/engine/filter_engine.dart test/texture_filter_gold_palette_test.dart test/aurora_hologram_visual_audit_test.dart
+        run: dart format lib/models/custom_automation_presets.dart lib/services/filter_service.dart lib/engine/filter_engine.dart test/texture_filter_gold_palette_test.dart test/aurora_hologram_visual_audit_test.dart
       - name: Analyze targeted files
-        run: flutter analyze lib/models/custom_automation_presets.dart lib/engine/filter_engine.dart test/texture_filter_gold_palette_test.dart test/aurora_hologram_visual_audit_test.dart
+        run: flutter analyze lib/models/custom_automation_presets.dart lib/services/filter_service.dart lib/engine/filter_engine.dart test/texture_filter_gold_palette_test.dart test/aurora_hologram_visual_audit_test.dart
       - name: Run focused tests
         run: |
           flutter test test/texture_filter_gold_palette_test.dart
@@ -133,7 +165,7 @@ jobs:
           fi
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          git add lib/l10n lib/models/custom_automation_presets.dart lib/engine/filter_engine.dart test/texture_filter_gold_palette_test.dart test/aurora_hologram_visual_audit_test.dart
-          git commit -m 'feat: rename texture filter and retune sunset gold'
+          git add lib/l10n lib/models/custom_automation_presets.dart lib/services/filter_service.dart lib/engine/filter_engine.dart test/texture_filter_gold_palette_test.dart test/aurora_hologram_visual_audit_test.dart
+          git commit -m 'fix: align texture filter built-in names'
           git pull --rebase origin dev_branch
           git push origin HEAD:dev_branch
