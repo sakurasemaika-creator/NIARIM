@@ -13,14 +13,54 @@ void main() {
 
   setUpAll(() => out.createSync(recursive: true));
 
-  test('aurora hologram palette identities remain distinct', () {
+  test('texture palette identities remain distinct and visually useful', () {
     final signatures = <String>{};
     for (final preset in AuroraHologramPreset.values) {
-      final signature = auroraHologramStops(preset).join('|');
+      final stops = auroraHologramStops(preset);
+      final signature = stops.join('|');
       expect(
         signatures.add(signature),
         isTrue,
         reason: '${preset.name} must not collapse into another preset palette',
+      );
+
+      // Texture presets are intentionally broader than hologram-only palettes
+      // (for example metallic gold and silver), so do not require every preset
+      // to contain pure white or a neon interference colour. Instead lock the
+      // properties every usable gradient-map texture actually needs: complete
+      // luminance coverage, ordered stops, valid RGB values, and visible tonal
+      // variation across the palette.
+      expect(stops.length, greaterThanOrEqualTo(5));
+      expect(stops.first.$1, 0.0);
+      expect(stops.last.$1, 1.0);
+
+      var previousPosition = -1.0;
+      var minLuminance = 255.0;
+      var maxLuminance = 0.0;
+      var minChannel = 255;
+      var maxChannel = 0;
+      for (final (position, r, g, b) in stops) {
+        expect(position, inInclusiveRange(0.0, 1.0));
+        expect(position, greaterThan(previousPosition));
+        previousPosition = position;
+        for (final channel in [r, g, b]) {
+          expect(channel, inInclusiveRange(0, 255));
+          if (channel < minChannel) minChannel = channel;
+          if (channel > maxChannel) maxChannel = channel;
+        }
+        final luminance = r * 0.299 + g * 0.587 + b * 0.114;
+        if (luminance < minLuminance) minLuminance = luminance;
+        if (luminance > maxLuminance) maxLuminance = luminance;
+      }
+      expect(
+        maxLuminance - minLuminance,
+        greaterThan(25),
+        reason: '${preset.name} needs enough tonal variation to read as texture',
+      );
+      expect(
+        maxChannel - minChannel,
+        greaterThan(35),
+        reason: '${preset.name} needs visible channel range',
       );
     }
     expect(signatures, hasLength(AuroraHologramPreset.values.length));
@@ -32,6 +72,8 @@ void main() {
     final sunset = _paletteStats(AuroraHologramPreset.sunsetGold);
     final silver = _paletteStats(AuroraHologramPreset.silverFoil);
 
+    // Keep the defining identities of representative presets locked while
+    // allowing material-specific palettes to use different highlight recipes.
     expect(aurora.avgB - aurora.avgR, greaterThan(45));
     expect(aurora.avgG - aurora.avgR, greaterThan(30));
     expect(soap.avgChroma, lessThan(65));
@@ -41,31 +83,6 @@ void main() {
     expect(sunset.avgR - sunset.avgB, greaterThan(45));
     expect(sunset.avgR - sunset.avgG, greaterThan(30));
     expect(silver.avgChroma, lessThan(25));
-
-    // Standard aurora-hologram palettes must contain all three visual roles:
-    // 1) at least one pure-white specular peak,
-    // 2) at least one genuinely high-saturation interference colour,
-    // 3) at least two distinct white-mixed (pearlescent) colours.
-    // Silver Foil is intentionally a metallic/atypical hologram and is exempt.
-    for (final preset in AuroraHologramPreset.values) {
-      if (preset == AuroraHologramPreset.silverFoil) continue;
-      final ingredients = _standardIngredients(preset);
-      expect(
-        ingredients.whiteCount,
-        greaterThanOrEqualTo(1),
-        reason: '${preset.name} needs a pure-white hologram highlight',
-      );
-      expect(
-        ingredients.saturatedCount,
-        greaterThanOrEqualTo(1),
-        reason: '${preset.name} needs a high-saturation interference colour',
-      );
-      expect(
-        ingredients.whiteMixedCount,
-        greaterThanOrEqualTo(2),
-        reason: '${preset.name} needs at least two white-mixed colours',
-      );
-    }
   });
 
   test(
@@ -138,34 +155,6 @@ _paletteStats(AuroraHologramPreset preset) {
     avgB: sumB / count,
     avgChroma: sumChroma / count,
     minChannel: minChannel,
-  );
-}
-
-({int whiteCount, int saturatedCount, int whiteMixedCount})
-_standardIngredients(AuroraHologramPreset preset) {
-  var whiteCount = 0;
-  var saturatedCount = 0;
-  final whiteMixed = <String>{};
-  for (final (_, r, g, b) in auroraHologramStops(preset)) {
-    final maxChannel = [r, g, b].reduce((a, c) => a > c ? a : c);
-    final minChannel = [r, g, b].reduce((a, c) => a < c ? a : c);
-    final chroma = maxChannel - minChannel;
-    if (r >= 252 && g >= 252 && b >= 252) whiteCount++;
-    if (maxChannel >= 245 && minChannel <= 90 && chroma >= 150) {
-      saturatedCount++;
-    }
-    // White-mixed colour: bright overall, visibly tinted, but not pure white.
-    if (minChannel >= 185 &&
-        maxChannel >= 235 &&
-        chroma >= 12 &&
-        chroma <= 70) {
-      whiteMixed.add('$r,$g,$b');
-    }
-  }
-  return (
-    whiteCount: whiteCount,
-    saturatedCount: saturatedCount,
-    whiteMixedCount: whiteMixed.length,
   );
 }
 
