@@ -1,5 +1,6 @@
 name: Automation Boundary Probe 20260913
 
+# Isolate the screenshot boundary from Navigator/Overlay routes.
 on:
   push:
     branches: [tmp-automation-boundary-probe-20260913]
@@ -44,7 +45,6 @@ jobs:
           if s.count(old_return) != 1:
               raise SystemExit('CanvasScreen return anchor changed')
           s = s.replace(old_return, new_return, 1)
-          # Removing the outer boundary also removes exactly one wrapper closing line.
           old_close = '''              ),
             ),
           ),
