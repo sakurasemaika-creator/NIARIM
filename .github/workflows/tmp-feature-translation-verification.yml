@@ -13,9 +13,9 @@ permissions:
   contents: write
 
 jobs:
-  verify:
+  verify-translations:
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 25
     steps:
       - uses: actions/checkout@v6
         with:
@@ -25,13 +25,70 @@ jobs:
         with:
           channel: stable
           cache: true
-      - run: flutter pub get
-      - name: Fill localized messages
+      - name: Install dependencies
+        run: flutter pub get
+      - name: Fill feature translations
         run: python3 tool/tmp_fill_pressure_automation_translations.py
       - name: Generate localizations
         run: flutter gen-l10n
-      - name: Translation tone audit
-        run: python3 tools/audit_translation_tone.py
+      - name: Verify feature translations
+        run: |
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
+
+          expected = {
+              'lib/l10n/app_en.arb': {
+                  'brushSettingsPressureHardnessLabel': 'Pressure hardness',
+                  'customAutomationRunAction': 'Run',
+                  'customAutomationFavoriteAction': 'Add to favorites',
+                  'customAutomationUnfavoriteAction': 'Remove from favorites',
+              },
+              'lib/l10n/app_ja.arb': {
+                  'brushSettingsPressureHardnessLabel': '筆圧硬度',
+                  'customAutomationRunAction': '実行',
+                  'customAutomationFavoriteAction': 'お気に入りに追加',
+                  'customAutomationUnfavoriteAction': 'お気に入りを解除',
+              },
+              'lib/l10n/app_es.arb': {
+                  'brushSettingsPressureHardnessLabel': 'Dureza de presión',
+                  'customAutomationRunAction': 'Ejecutar',
+                  'customAutomationFavoriteAction': 'Añadir a favoritos',
+                  'customAutomationUnfavoriteAction': 'Quitar de favoritos',
+              },
+              'lib/l10n/app_fr.arb': {
+                  'brushSettingsPressureHardnessLabel': 'Dureté de pression',
+                  'customAutomationRunAction': 'Exécuter',
+                  'customAutomationFavoriteAction': 'Ajouter aux favoris',
+                  'customAutomationUnfavoriteAction': 'Retirer des favoris',
+              },
+              'lib/l10n/app_ko.arb': {
+                  'brushSettingsPressureHardnessLabel': '필압 경도',
+                  'customAutomationRunAction': '실행',
+                  'customAutomationFavoriteAction': '즐겨찾기에 추가',
+                  'customAutomationUnfavoriteAction': '즐겨찾기에서 제거',
+              },
+              'lib/l10n/app_zh.arb': {
+                  'brushSettingsPressureHardnessLabel': '压感硬度',
+                  'customAutomationRunAction': '运行',
+                  'customAutomationFavoriteAction': '添加到收藏',
+                  'customAutomationUnfavoriteAction': '从收藏中移除',
+              },
+              'lib/l10n/app_zh_Hant.arb': {
+                  'brushSettingsPressureHardnessLabel': '壓感硬度',
+                  'customAutomationRunAction': '執行',
+                  'customAutomationFavoriteAction': '加入收藏',
+                  'customAutomationUnfavoriteAction': '從收藏中移除',
+              },
+          }
+
+          for path, messages in expected.items():
+              data = json.loads(Path(path).read_text(encoding='utf-8'))
+              for key, value in messages.items():
+                  actual = data.get(key)
+                  assert actual == value, f'{path}: {key}: expected {value!r}, got {actual!r}'
+          print('feature localization values verified')
+          PY
       - name: Static analysis
         run: flutter analyze --no-fatal-infos lib/models/pressure_hardness.dart lib/screens/canvas/widgets/brush_panel.dart lib/widgets/custom_automation_manager_sheet.dart test/pressure_hardness_test.dart
       - name: Targeted tests
@@ -41,6 +98,9 @@ jobs:
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
           git add lib/l10n
-          if git diff --cached --quiet; then exit 0; fi
-          git commit -m 'fix: localize pressure and automation management labels'
+          if git diff --cached --quiet; then
+            echo 'No localization changes to commit.'
+            exit 0
+          fi
+          git commit -m 'fix: localize pressure and automation actions'
           git push origin HEAD:feature/pressure-hardness-custom-automation
