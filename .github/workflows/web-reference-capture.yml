@@ -30,6 +30,27 @@ jobs:
           sudo apt-get install -y fonts-noto-cjk
           fc-cache -f
       - run: flutter pub get
+      - name: Bridge current preset-label compile parity for capture only
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+
+          path = Path('lib/screens/timeline/timeline_screen.dart')
+          text = path.read_text(encoding='utf-8')
+          old = '''    AuroraHologramPreset.silverFoil =>
+      l10n.filterAuroraHologramPresetSilverFoil,
+  };'''
+          new = '''    AuroraHologramPreset.silverFoil =>
+      l10n.filterAuroraHologramPresetSilverFoil,
+    AuroraHologramPreset.classicHologram =>
+      l10n.filterAuroraHologramPresetClassicHologram,
+    AuroraHologramPreset.pearl2 => l10n.filterAuroraHologramPresetPearl2,
+  };'''
+          if old not in text:
+              raise SystemExit('Timeline preset-label bridge target changed; refuse to patch capture workspace')
+          path.write_text(text.replace(old, new, 1), encoding='utf-8')
+          PY
       - name: Capture production UI states used by NIARIM-web
         run: flutter test test/app_web_reference_capture_test_v2.dart --reporter expanded
       - name: Record source metadata
