@@ -223,15 +223,10 @@ void main() {
           description: 'Canvas production settings button',
         );
         expect(settingsButton, findsOneWidget);
-        stage('settings-helper:before-onPressed');
-        tester.widget<CanvasIconButton>(settingsButton).onPressed!();
-        stage('settings-helper:after-onPressed');
-        await tester.pump(Duration.zero, EnginePhase.build);
-        stage('settings-helper:after-build');
-        await tester.pump(Duration.zero, EnginePhase.layout);
-        stage('settings-helper:after-layout');
-        await tester.pump(Duration.zero, EnginePhase.paint);
-        stage('settings-helper:after-paint');
+        stage('settings-helper:tap');
+        await tester.tap(settingsButton);
+        await tester.pump(const Duration(milliseconds: 350));
+        stage('settings-helper:opened');
       }
 
       final l10n = AppLocalizations.of(
