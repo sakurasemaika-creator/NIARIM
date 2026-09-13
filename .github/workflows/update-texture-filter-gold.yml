@@ -35,7 +35,6 @@ jobs:
           def write(path, text):
               Path(path).write_text(text)
 
-          # Rename the top-level effect so the preset names can describe materials/textures.
           l10n_values = {
               'lib/l10n/app_ja.arb': {
                   'filterNameAuroraHologram': '質感変更フィルター',
@@ -55,15 +54,12 @@ jobs:
                   s = re.sub(pat, lambda m, v=value: m.group(1) + f'"{v}"', s, count=1)
               write(path, s)
 
-          # Keep the built-in automation name aligned with the renamed filter.
           p = 'lib/models/custom_automation_presets.dart'
           s = read(p)
           s = s.replace("name: 'オーロラホログラム', filters: const [", "name: '質感変更フィルター', filters: const [")
           s = s.replace("FilterDef(id: 'Filter0019', name: 'オーロラホログラム'", "FilterDef(id: 'Filter0019', name: '質感変更フィルター'")
           write(p, s)
 
-          # Retune Sunset Gold from the supplied painting reference.
-          # Source swatches: #df951f, #724d11, #50350a, #ffbe39, #ffdd97, #fb8a0b.
           p = 'lib/engine/filter_engine.dart'
           s = read(p)
           replacement = '''AuroraHologramPreset.sunsetGold => const [
@@ -87,7 +83,6 @@ jobs:
               raise SystemExit(f'expected one sunsetGold palette, replaced {count}')
           write(p, s2)
 
-          # Lock the requested semantics and exact source swatches with a focused test.
           p = 'test/texture_filter_gold_palette_test.dart'
           write(p, '''import 'dart:io';
           import 'package:flutter_test/flutter_test.dart';
@@ -103,15 +98,15 @@ jobs:
               expect(en, contains('"filterNameAuroraHologram": "Texture Filter"'));
               expect(en, contains('"filterAuroraHologramPresetClassicHologram": "Aurora Hologram"'));
 
-              for (final rgb in <String>[
-                '(223, 149, 31)',  // #df951f
-                '(114, 77, 17)',   // #724d11
-                '(80, 53, 10)',    // #50350a
-                '(255, 190, 57)',  // #ffbe39
-                '(255, 221, 151)', // #ffdd97
-                '(251, 138, 11)',  // #fb8a0b
+              for (final rgbTail in <String>[
+                '223, 149, 31)',  // #df951f
+                '114, 77, 17)',   // #724d11
+                '80, 53, 10)',    // #50350a
+                '255, 190, 57)',  // #ffbe39
+                '255, 221, 151)', // #ffdd97
+                '251, 138, 11)',  // #fb8a0b
               ]) {
-                expect(engine, contains(rgb));
+                expect(engine, contains(rgbTail));
               }
             });
           }
@@ -138,4 +133,5 @@ jobs:
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
           git add lib/l10n/app_ja.arb lib/l10n/app_en.arb lib/l10n/generated lib/models/custom_automation_presets.dart lib/engine/filter_engine.dart test/texture_filter_gold_palette_test.dart
           git commit -m 'feat: rename texture filter and retune sunset gold'
+          git pull --rebase origin dev_branch
           git push origin HEAD:dev_branch
