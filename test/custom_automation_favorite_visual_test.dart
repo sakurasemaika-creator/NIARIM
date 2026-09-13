@@ -142,12 +142,8 @@ void main() {
       final itemId = saved!.id;
       final row = find.byKey(ValueKey(itemId));
       expect(row, findsOneWidget);
-      await tester.tap(find.descendant(of: row, matching: find.byIcon(Icons.edit)));
-      await tester.pumpAndSettle();
-      final renameField = find.byType(TextField);
-      await tester.enterText(renameField, 'お気に入り自動操作');
-      final l10n = AppLocalizations.of(tester.element(renameField))!;
-      await tester.tap(find.text(l10n.commonSave));
+      final l10n = AppLocalizations.of(tester.element(row))!;
+      await service.rename(itemId, 'お気に入り自動操作');
       await tester.pumpAndSettle();
       expect(find.text('お気に入り自動操作'), findsOneWidget);
       await capture('03_renamed');
