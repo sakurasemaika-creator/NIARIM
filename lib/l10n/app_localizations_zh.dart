@@ -6156,16 +6156,16 @@ class AppLocalizationsZh extends AppLocalizations {
   String get customAutomationFrameRangeInvalid => '请输入有效的帧范围。';
 
   @override
-  String get brushSettingsPressureHardnessLabel => '筆圧硬度';
+  String get brushSettingsPressureHardnessLabel => '压感硬度';
 
   @override
-  String get customAutomationRunAction => '実行';
+  String get customAutomationRunAction => '运行';
 
   @override
-  String get customAutomationFavoriteAction => 'お気に入りに追加';
+  String get customAutomationFavoriteAction => '添加到收藏';
 
   @override
-  String get customAutomationUnfavoriteAction => 'お気に入りを解除';
+  String get customAutomationUnfavoriteAction => '从收藏中移除';
 }
 
 /// The translations for Chinese, using the Han script (`zh_Hant`).
@@ -12296,4 +12296,16 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get timelineEffectTypeVhsNoise => 'VHS 雜訊';
+
+  @override
+  String get brushSettingsPressureHardnessLabel => '壓感硬度';
+
+  @override
+  String get customAutomationRunAction => '執行';
+
+  @override
+  String get customAutomationFavoriteAction => '加入收藏';
+
+  @override
+  String get customAutomationUnfavoriteAction => '從收藏中移除';
 }

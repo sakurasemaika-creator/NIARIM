@@ -2690,5 +2690,9 @@
   "customAutomationSpecifiedFrames": "Ejecutar en fotogramas especificados",
   "customAutomationFrameFrom": "Fotograma inicial",
   "customAutomationFrameTo": "Fotograma final",
-  "customAutomationFrameRangeInvalid": "Introduce un intervalo de fotogramas válido."
+  "customAutomationFrameRangeInvalid": "Introduce un intervalo de fotogramas válido.",
+  "brushSettingsPressureHardnessLabel": "Dureza de presión",
+  "customAutomationRunAction": "Ejecutar",
+  "customAutomationFavoriteAction": "Añadir a favoritos",
+  "customAutomationUnfavoriteAction": "Quitar de favoritos"
 }

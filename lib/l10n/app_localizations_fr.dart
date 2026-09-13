@@ -6528,14 +6528,14 @@ class AppLocalizationsFr extends AppLocalizations {
       'Saisissez une plage d’images valide.';
 
   @override
-  String get brushSettingsPressureHardnessLabel => '筆圧硬度';
+  String get brushSettingsPressureHardnessLabel => 'Dureté de pression';
 
   @override
-  String get customAutomationRunAction => '実行';
+  String get customAutomationRunAction => 'Exécuter';
 
   @override
-  String get customAutomationFavoriteAction => 'お気に入りに追加';
+  String get customAutomationFavoriteAction => 'Ajouter aux favoris';
 
   @override
-  String get customAutomationUnfavoriteAction => 'お気に入りを解除';
+  String get customAutomationUnfavoriteAction => 'Retirer des favoris';
 }

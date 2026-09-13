@@ -6224,14 +6224,14 @@ class AppLocalizationsKo extends AppLocalizations {
   String get customAutomationFrameRangeInvalid => '올바른 프레임 범위를 입력하세요.';
 
   @override
-  String get brushSettingsPressureHardnessLabel => '筆圧硬度';
+  String get brushSettingsPressureHardnessLabel => '필압 경도';
 
   @override
-  String get customAutomationRunAction => '実行';
+  String get customAutomationRunAction => '실행';
 
   @override
-  String get customAutomationFavoriteAction => 'お気に入りに追加';
+  String get customAutomationFavoriteAction => '즐겨찾기에 추가';
 
   @override
-  String get customAutomationUnfavoriteAction => 'お気に入りを解除';
+  String get customAutomationUnfavoriteAction => '즐겨찾기에서 제거';
 }

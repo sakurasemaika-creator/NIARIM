@@ -6518,14 +6518,14 @@ class AppLocalizationsEs extends AppLocalizations {
       'Introduce un intervalo de fotogramas válido.';
 
   @override
-  String get brushSettingsPressureHardnessLabel => '筆圧硬度';
+  String get brushSettingsPressureHardnessLabel => 'Dureza de presión';
 
   @override
-  String get customAutomationRunAction => '実行';
+  String get customAutomationRunAction => 'Ejecutar';
 
   @override
-  String get customAutomationFavoriteAction => 'お気に入りに追加';
+  String get customAutomationFavoriteAction => 'Añadir a favoritos';
 
   @override
-  String get customAutomationUnfavoriteAction => 'お気に入りを解除';
+  String get customAutomationUnfavoriteAction => 'Quitar de favoritos';
 }

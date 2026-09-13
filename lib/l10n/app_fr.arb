@@ -2690,5 +2690,9 @@
   "customAutomationSpecifiedFrames": "Exécuter sur les images spécifiées",
   "customAutomationFrameFrom": "Image de début",
   "customAutomationFrameTo": "Image de fin",
-  "customAutomationFrameRangeInvalid": "Saisissez une plage d’images valide."
+  "customAutomationFrameRangeInvalid": "Saisissez une plage d’images valide.",
+  "brushSettingsPressureHardnessLabel": "Dureté de pression",
+  "customAutomationRunAction": "Exécuter",
+  "customAutomationFavoriteAction": "Ajouter aux favoris",
+  "customAutomationUnfavoriteAction": "Retirer des favoris"
 }
