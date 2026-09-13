@@ -6,6 +6,7 @@ import 'package:share_plus/share_plus.dart';
 
 import '../../../l10n/app_localizations.dart';
 import '../../../models/brush.dart';
+import '../../../models/pressure_hardness.dart';
 import '../../../services/brush_service.dart';
 import '../../../widgets/editable_slider_value.dart';
 import '../../../widgets/pixel_color_mode_selector.dart';
@@ -32,7 +33,6 @@ class _BrushPanelState extends State<BrushPanel> {
   AssetSearchMode _searchMode = AssetSearchMode.keyword;
   String _searchQuery = '';
   final _searchController = TextEditingController();
-  // null=全て表示・''(空文字)=フォルダなしのみ・その他=そのフォルダIDのみ
   String? _folderFilter;
   static const _allFolders = '__all__';
 
@@ -61,9 +61,6 @@ class _BrushPanelState extends State<BrushPanel> {
       brushes = brushes.where(
         (b) => assetMatchesSearch(
           name: b.name,
-          // 既定タグは言語非依存のキーで保存されているため、その言語での
-          // 表示文言へ直してから突き合わせる（英語UIで「pixel」と打って
-          // ドット絵向けの素材が出る、という当たり前の挙動にするため）。
           tags: localizeAssetTags(l10n, b.tags),
           mode: _searchMode,
           query: query,
@@ -99,7 +96,6 @@ class _BrushPanelState extends State<BrushPanel> {
                     ),
                   ),
                   Spacer(),
-                  // お気に入りのみ表示
                   IconButton(
                     icon: Icon(
                       _showFavoritesOnly ? Icons.star : Icons.star_outline,
@@ -129,14 +125,6 @@ class _BrushPanelState extends State<BrushPanel> {
                   ),
                 ],
               ),
-              // フォルダ管理・自作ブラシ・読み込み。
-              // 【不具合修正】PC/DeXモードのドッキングパネルは既定幅
-              // 280px（パディング差引後240px）まで狭められるため、
-              // 3ボタンの自然幅がわずかに収まらずRenderFlexが
-              // オーバーフローしていた（PC/DeXモードのドッキングパネルを
-              // 実際に自律テストで開くまで気付かれていなかった）。
-              // 横スクロール可能にして、狭い幅でも常に例外なく描画・
-              // 全ボタンへアクセスできるようにする。
               SingleChildScrollView(
                 scrollDirection: Axis.horizontal,
                 child: Row(
@@ -227,9 +215,6 @@ class _BrushPanelState extends State<BrushPanel> {
                   keywordHint: l10n.brushSearchHint,
                   onModeChanged: (m) => setState(() {
                     _searchMode = m;
-                    // 方式を切り替えたら入力は持ち越さない。名前とタグでは
-                    // 一致するものが全く違い、切り替えた瞬間に0件になって
-                    // 「壊れた」ように見えるため。
                     _searchQuery = '';
                     _searchController.clear();
                   }),
@@ -249,10 +234,6 @@ class _BrushPanelState extends State<BrushPanel> {
                         ),
                       )
                     : ReorderableListView.builder(
-                        // ドラッグハンドルは行末に明示アイコンとして置く（既定の
-                        // ドラッグハンドルだと、行全体の長押しで開く編集シート
-                        // （onLongPress）や、お気に入り・三点メニューのタップと
-                        // ジェスチャーが競合するため）。
                         buildDefaultDragHandles: false,
                         itemCount: brushList.length,
                         onReorderItem: (oldIndex, newIndex) {
@@ -266,8 +247,6 @@ class _BrushPanelState extends State<BrushPanel> {
                         itemBuilder: (context, index) {
                           final brush = brushList[index];
                           final isSelected = current?.id == brush.id;
-                          // プリインストールのブラシは編集・削除できない
-                          // （複製したものは複製元とは別IDになるため編集・削除可能）。
                           final builtIn = brushService.isBuiltIn(brush.id);
                           return ListTile(
                             key: ValueKey(brush.id),
@@ -339,9 +318,6 @@ class _BrushPanelState extends State<BrushPanel> {
                                       value: 'move',
                                       child: Text(l10n.folderMoveToTitle),
                                     ),
-                                    // タグはお気に入りと同じく
-                                    // 「利用者の分類」なので、
-                                    // 組み込み素材にも付けられる。
                                     PopupMenuItem(
                                       value: 'tags',
                                       child: Text(l10n.creativePanelTagsLabel),
@@ -441,9 +417,6 @@ class _BrushPanelState extends State<BrushPanel> {
           assetName: brush.name,
           currentTags: localizeAssetTags(l10n, brush.tags),
           suggestions: localizeAssetTags(l10n, service.allTags()),
-          // ダイアログは表示文言で編集させるので、保存時にキーへ戻す。
-          // ここを通さないと既定タグがその言語の文字列として焼き付き、
-          // 言語を切り替えても元に戻らなくなる。
           onSave: (tags) =>
               service.setTags(brush.id, delocalizeAssetTags(l10n, tags)),
         );
@@ -454,8 +427,6 @@ class _BrushPanelState extends State<BrushPanel> {
     }
   }
 
-  /// お気に入り登録中は削除できない（誤って
-  /// お気に入りのブラシを消してしまう事故を防ぐため）。
   void _deleteBrush(BuildContext context, BrushService service, Brush brush) {
     if (brush.isFavorite) {
       final l10n = AppLocalizations.of(context)!;
@@ -588,7 +559,6 @@ class _BrushSettingsSheetState extends State<_BrushSettingsSheet> {
             ),
           ),
           const SizedBox(height: 16),
-          // サイズ
           _sliderRow(
             l10n.brushSettingsSizeLabel,
             _brush.size,
@@ -596,7 +566,6 @@ class _BrushSettingsSheetState extends State<_BrushSettingsSheet> {
             500,
             (v) => setState(() => _brush = _brush.copyWith(size: v)),
           ),
-          // 不透明度
           _sliderRow(
             l10n.brushSettingsOpacityLabel,
             _brush.opacity.toDouble(),
@@ -604,7 +573,6 @@ class _BrushSettingsSheetState extends State<_BrushSettingsSheet> {
             100,
             (v) => setState(() => _brush = _brush.copyWith(opacity: v.round())),
           ),
-          // 間隔
           _sliderRow(
             l10n.brushSettingsSpacingLabel,
             _brush.spacing.toDouble(),
@@ -612,7 +580,6 @@ class _BrushSettingsSheetState extends State<_BrushSettingsSheet> {
             100,
             (v) => setState(() => _brush = _brush.copyWith(spacing: v.round())),
           ),
-          // ぼかし半径（0〜100・デフォルト0）
           _sliderRow(
             l10n.brushSettingsBlurRadiusLabel,
             _brush.blurRadius.toDouble(),
@@ -622,7 +589,6 @@ class _BrushSettingsSheetState extends State<_BrushSettingsSheet> {
                 setState(() => _brush = _brush.copyWith(blurRadius: v.round())),
           ),
           const Divider(),
-          // 回転・密度・散布（スタンプと同じ意味／範囲）
           SwitchListTile(
             title: Text(l10n.stampRotationLabel),
             value: _brush.rotation,
@@ -646,7 +612,6 @@ class _BrushSettingsSheetState extends State<_BrushSettingsSheet> {
             (v) => setState(() => _brush = _brush.copyWith(scatter: v)),
           ),
           const Divider(),
-          // 手ブレ補正
           SwitchListTile(
             title: Text(l10n.brushSettingsStabilizationTitle),
             value: _brush.stabilization,
@@ -664,8 +629,6 @@ class _BrushSettingsSheetState extends State<_BrushSettingsSheet> {
                     _brush = _brush.copyWith(stabilizationStrength: v.round()),
               ),
             ),
-          // ピクセルモード（旧称：ドットペンモード。
-          // 「ドット」だと水玉模様と誤認される恐れがあるため改称）
           SwitchListTile(
             title: Text(l10n.brushSettingsPixelModeTitle),
             value: _brush.pixelMode,
@@ -690,7 +653,6 @@ class _BrushSettingsSheetState extends State<_BrushSettingsSheet> {
               ),
             ),
           const Divider(),
-          // 筆圧設定
           Text(
             l10n.brushSettingsPressureModeTitle,
             style: const TextStyle(
@@ -699,13 +661,22 @@ class _BrushSettingsSheetState extends State<_BrushSettingsSheet> {
               fontFamilyFallback: kHeadingFontFallback,
             ),
           ),
-          // 選択状態と変更通知はRadioGroupがまとめて持つ
-          // （各ラジオのgroupValue/onChangedはFlutter 3.32で非推奨）。
-          // spreadのままだとRadioGroupを祖先に置けないため、Columnで束ねる。
           RadioGroup<PressureMode>(
             groupValue: _brush.pressureMode,
-            onChanged: (v) =>
-                setState(() => _brush = _brush.copyWith(pressureMode: v)),
+            onChanged: (v) {
+              if (v == null) return;
+              setState(() {
+                final normalizedStrength = v == PressureMode.off
+                    ? _brush.pressureStrength
+                    : pressureStrengthForHardness(
+                        pressureHardnessForStrength(_brush.pressureStrength),
+                      );
+                _brush = _brush.copyWith(
+                  pressureMode: v,
+                  pressureStrength: normalizedStrength,
+                );
+              });
+            },
             child: Column(
               children: PressureMode.values
                   .map(
@@ -718,8 +689,8 @@ class _BrushSettingsSheetState extends State<_BrushSettingsSheet> {
                   .toList(),
             ),
           ),
+          _pressureHardnessRow(),
           const Divider(),
-          // フェード
           Text(
             l10n.brushSettingsFadeModeTitle,
             style: const TextStyle(
@@ -728,9 +699,6 @@ class _BrushSettingsSheetState extends State<_BrushSettingsSheet> {
               fontFamilyFallback: kHeadingFontFallback,
             ),
           ),
-          // 選択状態と変更通知はRadioGroupがまとめて持つ
-          // （各ラジオのgroupValue/onChangedはFlutter 3.32で非推奨）。
-          // spreadのままだとRadioGroupを祖先に置けないため、Columnで束ねる。
           RadioGroup<FadeMode>(
             groupValue: _brush.fadeMode,
             onChanged: (v) =>
@@ -795,7 +763,6 @@ class _BrushSettingsSheetState extends State<_BrushSettingsSheet> {
             ),
           ],
           const Divider(),
-          // ストローク減衰
           SwitchListTile(
             title: Text(l10n.brushSettingsStrokeDecayTitle),
             subtitle: Text(
@@ -807,7 +774,6 @@ class _BrushSettingsSheetState extends State<_BrushSettingsSheet> {
                 setState(() => _brush = _brush.copyWith(strokeDecay: v)),
           ),
           const Divider(),
-          // ふち滲み
           SwitchListTile(
             title: Text(l10n.brushSettingsEdgeJitterTitle),
             subtitle: Text(
@@ -829,7 +795,6 @@ class _BrushSettingsSheetState extends State<_BrushSettingsSheet> {
               ),
             ),
           const Divider(),
-          // 混色
           Text(
             l10n.brushSettingsMixingTitle,
             style: const TextStyle(
@@ -838,9 +803,6 @@ class _BrushSettingsSheetState extends State<_BrushSettingsSheet> {
               fontFamilyFallback: kHeadingFontFallback,
             ),
           ),
-          // 選択状態と変更通知はRadioGroupがまとめて持つ
-          // （各ラジオのgroupValue/onChangedはFlutter 3.32で非推奨）。
-          // spreadのままだとRadioGroupを祖先に置けないため、Columnで束ねる。
           RadioGroup<BrushMixingMode>(
             groupValue: _brush.mixingMode,
             onChanged: (v) =>
@@ -893,6 +855,49 @@ class _BrushSettingsSheetState extends State<_BrushSettingsSheet> {
           ),
         ],
       ),
+    );
+  }
+
+  Widget _pressureHardnessRow() {
+    final enabled = isPressureHardnessEnabled(_brush.pressureMode);
+    final hardness = pressureHardnessForStrength(_brush.pressureStrength);
+    return Row(
+      children: [
+        const SizedBox(
+          width: 80,
+          child: Text('筆圧硬度', style: TextStyle(fontSize: 12)),
+        ),
+        Expanded(
+          child: SteppedSlider(
+            min: kMinPressureHardness.toDouble(),
+            max: kMaxPressureHardness.toDouble(),
+            divisions: kMaxPressureHardness - kMinPressureHardness,
+            step: 1,
+            value: hardness.toDouble(),
+            label: '$hardness',
+            onChanged: enabled
+                ? (v) => setState(
+                    () => _brush = _brush.copyWith(
+                      pressureStrength: pressureStrengthForHardness(v.round()),
+                    ),
+                  )
+                : null,
+          ),
+        ),
+        SizedBox(
+          width: 40,
+          child: Text(
+            '$hardness',
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              fontSize: 12,
+              color: enabled
+                  ? null
+                  : ThemeService.activeColorScheme.onSurfaceVariant,
+            ),
+          ),
+        ),
+      ],
     );
   }
 
