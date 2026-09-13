@@ -1,0 +1,46 @@
+name: TMP Feature Translation Verification
+
+on:
+  push:
+    branches:
+      - feature/pressure-hardness-custom-automation
+    paths:
+      - '.github/workflows/tmp-feature-translation-verification.yml'
+      - 'tool/tmp_fill_pressure_automation_translations.py'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          ref: feature/pressure-hardness-custom-automation
+          fetch-depth: 0
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+      - run: flutter pub get
+      - name: Fill localized messages
+        run: python3 tool/tmp_fill_pressure_automation_translations.py
+      - name: Generate localizations
+        run: flutter gen-l10n
+      - name: Translation tone audit
+        run: python3 tools/audit_translation_tone.py
+      - name: Static analysis
+        run: flutter analyze --no-fatal-infos lib/models/pressure_hardness.dart lib/screens/canvas/widgets/brush_panel.dart lib/widgets/custom_automation_manager_sheet.dart test/pressure_hardness_test.dart
+      - name: Targeted tests
+        run: flutter test test/pressure_hardness_test.dart test/custom_automation_service_test.dart --reporter expanded
+      - name: Commit verified translations
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add lib/l10n
+          if git diff --cached --quiet; then exit 0; fi
+          git commit -m 'fix: localize pressure and automation management labels'
+          git push origin HEAD:feature/pressure-hardness-custom-automation
