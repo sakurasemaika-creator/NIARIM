@@ -1,0 +1,7 @@
+Translation tone audit failed:
+- es: missing keys: ['filterAuroraHologramPresetClassicHologram', 'filterAuroraHologramPresetPearl2']
+- fr: missing keys: ['filterAuroraHologramPresetClassicHologram', 'filterAuroraHologramPresetPearl2']
+- ko: missing keys: ['filterAuroraHologramPresetClassicHologram', 'filterAuroraHologramPresetPearl2']
+- zh: missing keys: ['filterAuroraHologramPresetClassicHologram', 'filterAuroraHologramPresetPearl2']
+- zh_Hant: missing keys: ['customAutomationFrameFrom', 'customAutomationFrameRangeInvalid', 'customAutomationFrameTo', 'customAutomationSpecifiedFrames', 'filterAuroraHologramPresetClassicHologram', 'filterAuroraHologramPresetPearl2', 'filterNamePrism']
+- zh_Hant: extra keys: ['communityPostComingSoonBody', 'communityPostComingSoonTitle', 'communityPostInfoBody', 'communityPostInfoTitle', 'communityTagSearchModeOffTooltip', 'communityTagSearchModeOnTooltip', 'customAutomationPremiumHint', 'customAutomationStopConfirmQuit', 'filterBackgroundBlendAutoLabel', 'filterBackgroundBlendAutoReset', 'filterBackgroundBlendColorLabel', 'filterCustomMenuDuplicate', 'filterCustomMenuFavoriteBlockBody', 'filterCustomMenuFavoriteBlockTitle']
