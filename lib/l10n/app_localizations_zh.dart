@@ -5340,6 +5340,9 @@ class AppLocalizationsZh extends AppLocalizations {
   String get filterAuroraHologramPresetPastelDream => '粉彩梦境';
 
   @override
+  String get filterAuroraHologramPresetPearl2 => 'パール2';
+
+  @override
   String get filterAuroraHologramPresetSunsetGold => '日落金';
 
   @override

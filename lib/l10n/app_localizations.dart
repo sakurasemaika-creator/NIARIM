@@ -9872,8 +9872,14 @@ abstract class AppLocalizations {
   /// No description provided for @filterAuroraHologramPresetPastelDream.
   ///
   /// In ja, this message translates to:
-  /// **'パール2'**
+  /// **'パステルドリーム'**
   String get filterAuroraHologramPresetPastelDream;
+
+  /// No description provided for @filterAuroraHologramPresetPearl2.
+  ///
+  /// In ja, this message translates to:
+  /// **'パール2'**
+  String get filterAuroraHologramPresetPearl2;
 
   /// No description provided for @filterAuroraHologramPresetSunsetGold.
   ///

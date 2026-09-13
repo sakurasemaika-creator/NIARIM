@@ -5651,6 +5651,9 @@ class AppLocalizationsEs extends AppLocalizations {
   String get filterAuroraHologramPresetPastelDream => 'Sueño pastel';
 
   @override
+  String get filterAuroraHologramPresetPearl2 => 'パール2';
+
+  @override
   String get filterAuroraHologramPresetSunsetGold => 'Oro del atardecer';
 
   @override

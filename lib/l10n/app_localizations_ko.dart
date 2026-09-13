@@ -5400,6 +5400,9 @@ class AppLocalizationsKo extends AppLocalizations {
   String get filterAuroraHologramPresetPastelDream => '파스텔 드림';
 
   @override
+  String get filterAuroraHologramPresetPearl2 => 'パール2';
+
+  @override
   String get filterAuroraHologramPresetSunsetGold => '선셋 골드';
 
   @override

@@ -1412,6 +1412,7 @@ class _FilterPanelState extends State<FilterPanel> {
       l10n.filterAuroraHologramPresetSilverFoil,
     AuroraHologramPreset.classicHologram =>
       l10n.filterAuroraHologramPresetClassicHologram,
+    AuroraHologramPreset.pearl2 => l10n.filterAuroraHologramPresetPearl2,
   };
 
   IconData _iconForFilter(FilterDef filter) {
