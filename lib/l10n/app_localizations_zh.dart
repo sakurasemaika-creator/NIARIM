@@ -5277,14 +5277,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get canvasEditMenuPreviewNavigatorSubtitle => '显示缩小的整体览（导航器）';
 
   @override
-  String get filterCustomMenuDuplicate => '复制';
-
-  @override
-  String get filterCustomMenuFavoriteBlockTitle => '无法删除';
-
-  @override
-  String get filterCustomMenuFavoriteBlockBody =>
-      '该滤镜已收藏为常用，无法删除。请先取消收藏，再进行删除。';
+  String get filterNamePrism => '棱镜';
 
   @override
   String get filterNameThreshold => '二值化滤镜';
@@ -5354,15 +5347,6 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get filterNameBackgroundBlend => '背景融入';
-
-  @override
-  String get filterBackgroundBlendColorLabel => '融入色';
-
-  @override
-  String get filterBackgroundBlendAutoLabel => '自动检测中（点按可手动指定）';
-
-  @override
-  String get filterBackgroundBlendAutoReset => '恢复自动';
 
   @override
   String get filterBackgroundBlendDirection => '阴影与光（联动）的方向';
@@ -5528,12 +5512,6 @@ class AppLocalizationsZh extends AppLocalizations {
   String get communityTagSearchHint => '按标签搜索';
 
   @override
-  String get communityTagSearchModeOnTooltip => '标签搜索：开启（点击可恢复标题・投稿者名搜索）';
-
-  @override
-  String get communityTagSearchModeOffTooltip => '切换到标签搜索';
-
-  @override
   String get communityAddTagButton => '添加标签';
 
   @override
@@ -5553,19 +5531,6 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get communityPostButton => '发布';
-
-  @override
-  String get communityPostComingSoonTitle => '发布功能正在开发中';
-
-  @override
-  String get communityPostComingSoonBody => '视频发布功能目前仍在开发中，敬请期待后续更新。';
-
-  @override
-  String get communityPostInfoTitle => '发布将通过YouTube进行';
-
-  @override
-  String get communityPostInfoBody =>
-      '投稿到作品广场后，作品将通过YouTube公开。NIARIM不具备将作品本体（视频文件）发送、收集或保存到开发者服务器的功能，发布时需要在YouTube的界面上传视频。\n\n如果在YouTube一侧将视频设置为“不公开列出”，该视频就不会出现在YouTube的公开列表中，只会显示在作品广场内。\n\n（视频发布功能目前仍在开发中，敬请期待后续更新。）';
 
   @override
   String get communityRankingPeriodAllTime => '累计';
@@ -6134,13 +6099,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get customAutomationStopConfirmTitle => '要停止注册此自动操作吗？';
 
   @override
-  String get customAutomationStopConfirmQuit => '停止记录';
-
-  @override
   String get customAutomationStopConfirmContinue => '继续';
-
-  @override
-  String get customAutomationPremiumHint => '仅限 Premium 会员，可记录、编辑、分发并重新执行操作。';
 
   @override
   String get customAutomationReviewHint => '保存前可调整顺序或删除步骤';
@@ -11463,16 +11422,6 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get canvasEditMenuPreviewNavigatorSubtitle => '顯示縮小的整體概覽（導航器）';
 
   @override
-  String get filterCustomMenuDuplicate => '複製';
-
-  @override
-  String get filterCustomMenuFavoriteBlockTitle => '無法刪除';
-
-  @override
-  String get filterCustomMenuFavoriteBlockBody =>
-      '該濾鏡已收藏為常用，無法刪除。請先取消收藏，再進行刪除。';
-
-  @override
   String get filterNameThreshold => '二值化濾鏡';
 
   @override
@@ -11540,15 +11489,6 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get filterNameBackgroundBlend => '背景融入';
-
-  @override
-  String get filterBackgroundBlendColorLabel => '融入色';
-
-  @override
-  String get filterBackgroundBlendAutoLabel => '自動偵測中（點按可手動指定）';
-
-  @override
-  String get filterBackgroundBlendAutoReset => '恢復自動';
 
   @override
   String get filterBackgroundBlendDirection => '陰影與光（連動）的方向';
@@ -11714,12 +11654,6 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get communityTagSearchHint => '依標籤搜尋';
 
   @override
-  String get communityTagSearchModeOnTooltip => '標籤搜尋：開啟（點一下可恢復標題・投稿者名稱搜尋）';
-
-  @override
-  String get communityTagSearchModeOffTooltip => '切換為標籤搜尋';
-
-  @override
   String get communityAddTagButton => '新增標籤';
 
   @override
@@ -11739,19 +11673,6 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get communityPostButton => '發佈';
-
-  @override
-  String get communityPostComingSoonTitle => '發佈功能正在開發中';
-
-  @override
-  String get communityPostComingSoonBody => '影片發佈功能目前仍在開發中，敬請期待後續更新。';
-
-  @override
-  String get communityPostInfoTitle => '發佈將透過YouTube進行';
-
-  @override
-  String get communityPostInfoBody =>
-      '投稿到作品廣場後，作品將透過YouTube公開。NIARIM不具備將作品本體（影片檔案）傳送、蒐集或保存到開發者伺服器的功能，發佈時需要在YouTube的畫面上傳影片。\n\n若在YouTube端將影片設定為「非公開條列」，該影片就不會出現在YouTube的公開清單中，僅會顯示於作品廣場內。\n\n（影片發佈功能目前仍在開發中，敬請期待後續更新。）';
 
   @override
   String get communityRankingPeriodAllTime => '累計';
@@ -12320,13 +12241,7 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get customAutomationStopConfirmTitle => '要停止登錄此自動操作嗎？';
 
   @override
-  String get customAutomationStopConfirmQuit => '停止記錄';
-
-  @override
   String get customAutomationStopConfirmContinue => '繼續';
-
-  @override
-  String get customAutomationPremiumHint => '僅限 Premium 會員，可記錄、編輯、分發並重新執行操作。';
 
   @override
   String get customAutomationReviewHint => '儲存前可調整順序或刪除步驟';

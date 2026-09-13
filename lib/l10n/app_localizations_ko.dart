@@ -5337,14 +5337,7 @@ class AppLocalizationsKo extends AppLocalizations {
   String get canvasEditMenuPreviewNavigatorSubtitle => '전체를 축소 표시(내비게이터)';
 
   @override
-  String get filterCustomMenuDuplicate => '복제';
-
-  @override
-  String get filterCustomMenuFavoriteBlockTitle => '삭제할 수 없습니다';
-
-  @override
-  String get filterCustomMenuFavoriteBlockBody =>
-      '즐겨찾기로 등록된 필터는 삭제할 수 없습니다. 먼저 즐겨찾기를 해제한 후 삭제해 주세요.';
+  String get filterNamePrism => '프리즘';
 
   @override
   String get filterNameThreshold => '이진화 필터';
@@ -5414,15 +5407,6 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get filterNameBackgroundBlend => '배경 어우러짐';
-
-  @override
-  String get filterBackgroundBlendColorLabel => '어우러짐 색상';
-
-  @override
-  String get filterBackgroundBlendAutoLabel => '자동 감지 중(탭하여 수동 지정)';
-
-  @override
-  String get filterBackgroundBlendAutoReset => '자동으로 되돌리기';
 
   @override
   String get filterBackgroundBlendDirection => '그림자·빛(연동)의 방향';
@@ -5588,13 +5572,6 @@ class AppLocalizationsKo extends AppLocalizations {
   String get communityTagSearchHint => '태그명으로 검색';
 
   @override
-  String get communityTagSearchModeOnTooltip =>
-      '태그 검색: 켜짐 (탭하면 제목・투고자명 검색으로 돌아감)';
-
-  @override
-  String get communityTagSearchModeOffTooltip => '태그 검색으로 전환';
-
-  @override
   String get communityAddTagButton => '태그 추가';
 
   @override
@@ -5614,20 +5591,6 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get communityPostButton => '게시하기';
-
-  @override
-  String get communityPostComingSoonTitle => '게시 기능은 준비 중입니다';
-
-  @override
-  String get communityPostComingSoonBody =>
-      '동영상 게시 기능은 아직 개발 중입니다. 다음 업데이트를 기대해 주세요.';
-
-  @override
-  String get communityPostInfoTitle => '게시는 YouTube를 통해 이루어집니다';
-
-  @override
-  String get communityPostInfoBody =>
-      '작품 광장에 게시하면 YouTube를 통해 작품이 공개됩니다. NIARIM은 작품 본체（동영상 파일）를 개발자의 서버로 전송・수집・저장하는 기능을 가지고 있지 않습니다. 게시할 때는 YouTube 화면에서 직접 동영상을 업로드하시게 됩니다.\n\nYouTube 측 공개 설정을 「일부 공개」로 설정하면, YouTube의 일반 공개 목록에는 표시되지 않고 작품 광장 내에만 게시된 상태로 만들 수 있습니다.\n\n（동영상 게시 기능은 아직 개발 중입니다. 다음 업데이트를 기대해 주세요.）';
 
   @override
   String get communityRankingPeriodAllTime => '누적';
@@ -6204,14 +6167,7 @@ class AppLocalizationsKo extends AppLocalizations {
   String get customAutomationStopConfirmTitle => '자동 작업 등록을 중지할까요?';
 
   @override
-  String get customAutomationStopConfirmQuit => '기록 그만두기';
-
-  @override
   String get customAutomationStopConfirmContinue => '계속';
-
-  @override
-  String get customAutomationPremiumHint =>
-      'Premium 회원 전용으로 작업을 기록·편집·배포·재실행할 수 있습니다.';
 
   @override
   String get customAutomationReviewHint => '저장 전에 단계 순서를 바꾸거나 삭제할 수 있습니다';

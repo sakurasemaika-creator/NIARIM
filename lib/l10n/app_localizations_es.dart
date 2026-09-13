@@ -5585,14 +5585,7 @@ class AppLocalizationsEs extends AppLocalizations {
       'Muestra una vista general reducida (navegador)';
 
   @override
-  String get filterCustomMenuDuplicate => 'Duplicar';
-
-  @override
-  String get filterCustomMenuFavoriteBlockTitle => 'No se puede eliminar';
-
-  @override
-  String get filterCustomMenuFavoriteBlockBody =>
-      'Este filtro está marcado como favorito y no se puede eliminar. Quita el favorito primero y luego elimínalo.';
+  String get filterNamePrism => 'Prisma';
 
   @override
   String get filterNameThreshold => 'Filtro de umbral';
@@ -5665,16 +5658,6 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get filterNameBackgroundBlend => 'Mimetismo de fondo';
-
-  @override
-  String get filterBackgroundBlendColorLabel => 'Color de mimetismo';
-
-  @override
-  String get filterBackgroundBlendAutoLabel =>
-      'Detección automática (toca para ajustar)';
-
-  @override
-  String get filterBackgroundBlendAutoReset => 'Volver a automático';
 
   @override
   String get filterBackgroundBlendDirection =>
@@ -5854,14 +5837,6 @@ class AppLocalizationsEs extends AppLocalizations {
   String get communityTagSearchHint => 'Buscar por etiqueta';
 
   @override
-  String get communityTagSearchModeOnTooltip =>
-      'Búsqueda por etiqueta: ACTIVADA (toca para volver a buscar por título/usuario)';
-
-  @override
-  String get communityTagSearchModeOffTooltip =>
-      'Cambiar a búsqueda por etiqueta';
-
-  @override
   String get communityAddTagButton => 'Añadir etiqueta';
 
   @override
@@ -5883,22 +5858,6 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get communityPostButton => 'Publicar';
-
-  @override
-  String get communityPostComingSoonTitle =>
-      'La publicación estará disponible próximamente';
-
-  @override
-  String get communityPostComingSoonBody =>
-      'La función de publicación de vídeos todavía está en desarrollo. Estate atento a futuras actualizaciones.';
-
-  @override
-  String get communityPostInfoTitle =>
-      'La publicación se realiza a través de YouTube';
-
-  @override
-  String get communityPostInfoBody =>
-      'Al publicar en la Plaza de Obras, tu obra se publica a través de YouTube. NIARIM no transmite, recopila ni almacena el propio archivo de vídeo en los servidores del desarrollador: publicar significa subir el vídeo desde la propia pantalla de YouTube.\n\nSi configuras el vídeo como \"No listado\" en YouTube, no aparecerá en los listados públicos de YouTube y solo se publicará dentro de la Plaza de Obras.\n\n(La función de publicación de vídeos todavía está en desarrollo. Estate atento a futuras actualizaciones.)';
 
   @override
   String get communityRankingPeriodAllTime => 'Total';
@@ -6499,14 +6458,7 @@ class AppLocalizationsEs extends AppLocalizations {
       '¿Dejar de registrar esta automatización?';
 
   @override
-  String get customAutomationStopConfirmQuit => 'Dejar de registrar';
-
-  @override
   String get customAutomationStopConfirmContinue => 'Continuar';
-
-  @override
-  String get customAutomationPremiumHint =>
-      'Solo para miembros Premium: permite registrar, editar, distribuir y volver a ejecutar operaciones.';
 
   @override
   String get customAutomationReviewHint =>

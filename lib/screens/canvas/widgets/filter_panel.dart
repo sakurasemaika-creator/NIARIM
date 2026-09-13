@@ -1356,10 +1356,10 @@ class _FilterPanelState extends State<FilterPanel> {
   }
 
   String _filterDisplayName(AppLocalizations l10n, FilterDef filter) {
-    if (_isPrism(filter)) return 'プリズム';
+    if (_isPrism(filter)) return l10n.filterNamePrism;
     if (_isVhs(filter)) return l10n.filterNameVhsNoise;
     return switch (filter.kind) {
-      FilterKind.prism => 'プリズム',
+      FilterKind.prism => l10n.filterNamePrism,
       FilterKind.gaussianBlur => l10n.filterNameGaussianBlur,
       FilterKind.lensBlur => l10n.filterNameLensBlur,
       FilterKind.animeStyle => l10n.filterNameAnimeStyle,

@@ -9749,23 +9749,11 @@ abstract class AppLocalizations {
   /// **'全体を縮小表示（ナビゲーター）'**
   String get canvasEditMenuPreviewNavigatorSubtitle;
 
-  /// No description provided for @filterCustomMenuDuplicate.
+  /// No description provided for @filterNamePrism.
   ///
   /// In ja, this message translates to:
-  /// **'複製'**
-  String get filterCustomMenuDuplicate;
-
-  /// No description provided for @filterCustomMenuFavoriteBlockTitle.
-  ///
-  /// In ja, this message translates to:
-  /// **'削除できません'**
-  String get filterCustomMenuFavoriteBlockTitle;
-
-  /// No description provided for @filterCustomMenuFavoriteBlockBody.
-  ///
-  /// In ja, this message translates to:
-  /// **'お気に入り登録中のフィルターは削除できません。削除するにはお気に入り登録を解除してください。'**
-  String get filterCustomMenuFavoriteBlockBody;
+  /// **'プリズム'**
+  String get filterNamePrism;
 
   /// No description provided for @filterNameThreshold.
   ///
@@ -9904,24 +9892,6 @@ abstract class AppLocalizations {
   /// In ja, this message translates to:
   /// **'背景馴染ませ'**
   String get filterNameBackgroundBlend;
-
-  /// No description provided for @filterBackgroundBlendColorLabel.
-  ///
-  /// In ja, this message translates to:
-  /// **'馴染ませ色'**
-  String get filterBackgroundBlendColorLabel;
-
-  /// No description provided for @filterBackgroundBlendAutoLabel.
-  ///
-  /// In ja, this message translates to:
-  /// **'自動検出中（タップで手動指定）'**
-  String get filterBackgroundBlendAutoLabel;
-
-  /// No description provided for @filterBackgroundBlendAutoReset.
-  ///
-  /// In ja, this message translates to:
-  /// **'自動に戻す'**
-  String get filterBackgroundBlendAutoReset;
 
   /// No description provided for @filterBackgroundBlendDirection.
   ///
@@ -10211,18 +10181,6 @@ abstract class AppLocalizations {
   /// **'タグ名で検索'**
   String get communityTagSearchHint;
 
-  /// No description provided for @communityTagSearchModeOnTooltip.
-  ///
-  /// In ja, this message translates to:
-  /// **'タグ検索：ON（タップでタイトル・投稿者名検索に戻す）'**
-  String get communityTagSearchModeOnTooltip;
-
-  /// No description provided for @communityTagSearchModeOffTooltip.
-  ///
-  /// In ja, this message translates to:
-  /// **'タグ検索に切り替える'**
-  String get communityTagSearchModeOffTooltip;
-
   /// No description provided for @communityAddTagButton.
   ///
   /// In ja, this message translates to:
@@ -10264,30 +10222,6 @@ abstract class AppLocalizations {
   /// In ja, this message translates to:
   /// **'投稿する'**
   String get communityPostButton;
-
-  /// No description provided for @communityPostComingSoonTitle.
-  ///
-  /// In ja, this message translates to:
-  /// **'投稿機能は準備中です'**
-  String get communityPostComingSoonTitle;
-
-  /// No description provided for @communityPostComingSoonBody.
-  ///
-  /// In ja, this message translates to:
-  /// **'動画投稿機能は現在準備中です。今後のアップデートをお楽しみに。'**
-  String get communityPostComingSoonBody;
-
-  /// No description provided for @communityPostInfoTitle.
-  ///
-  /// In ja, this message translates to:
-  /// **'投稿はYouTube経由になります'**
-  String get communityPostInfoTitle;
-
-  /// No description provided for @communityPostInfoBody.
-  ///
-  /// In ja, this message translates to:
-  /// **'作品広場に投稿すると、YouTubeを通じて作品が公開されます。NIARIMは作品本体（動画ファイル）を開発者のサーバーへ送信・収集・保存する機能を持っていません。投稿の際は、YouTube側の画面で動画をアップロードしていただく形になります。\n\nYouTube側の公開設定を「限定公開」にすると、YouTube上の一般公開一覧には表示されず、作品広場内だけに投稿された状態にすることができます。\n\n（動画投稿機能は現在準備中です。今後のアップデートをお楽しみに。）'**
-  String get communityPostInfoBody;
 
   /// No description provided for @communityRankingPeriodAllTime.
   ///
@@ -11345,23 +11279,11 @@ abstract class AppLocalizations {
   /// **'自動操作の登録をやめますか？'**
   String get customAutomationStopConfirmTitle;
 
-  /// No description provided for @customAutomationStopConfirmQuit.
-  ///
-  /// In ja, this message translates to:
-  /// **'やめる'**
-  String get customAutomationStopConfirmQuit;
-
   /// No description provided for @customAutomationStopConfirmContinue.
   ///
   /// In ja, this message translates to:
   /// **'続ける'**
   String get customAutomationStopConfirmContinue;
-
-  /// No description provided for @customAutomationPremiumHint.
-  ///
-  /// In ja, this message translates to:
-  /// **'プレミアム会員限定で、操作を記録・編集・配布・再実行できます。'**
-  String get customAutomationPremiumHint;
 
   /// No description provided for @customAutomationReviewHint.
   ///

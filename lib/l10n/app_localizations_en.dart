@@ -5497,14 +5497,7 @@ class AppLocalizationsEn extends AppLocalizations {
       'Show a scaled-down overview (navigator)';
 
   @override
-  String get filterCustomMenuDuplicate => 'Duplicate';
-
-  @override
-  String get filterCustomMenuFavoriteBlockTitle => 'Can\'t Delete';
-
-  @override
-  String get filterCustomMenuFavoriteBlockBody =>
-      'This filter is favorited and can\'t be deleted. Unfavorite it first, then delete it.';
+  String get filterNamePrism => 'Prism';
 
   @override
   String get filterNameThreshold => 'Threshold Filter';
@@ -5575,16 +5568,6 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get filterNameBackgroundBlend => 'Background Blend';
-
-  @override
-  String get filterBackgroundBlendColorLabel => 'Blend color';
-
-  @override
-  String get filterBackgroundBlendAutoLabel =>
-      'Auto-detecting (tap to set manually)';
-
-  @override
-  String get filterBackgroundBlendAutoReset => 'Reset to auto';
 
   @override
   String get filterBackgroundBlendDirection =>
@@ -5756,13 +5739,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get communityTagSearchHint => 'Search by tag';
 
   @override
-  String get communityTagSearchModeOnTooltip =>
-      'Tag search: ON (tap to search by title/username again)';
-
-  @override
-  String get communityTagSearchModeOffTooltip => 'Switch to tag search';
-
-  @override
   String get communityAddTagButton => 'Add tag';
 
   @override
@@ -5782,20 +5758,6 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get communityPostButton => 'Post';
-
-  @override
-  String get communityPostComingSoonTitle => 'Posting is coming soon';
-
-  @override
-  String get communityPostComingSoonBody =>
-      'Video posting is still under development. Stay tuned for future updates.';
-
-  @override
-  String get communityPostInfoTitle => 'Posting goes through YouTube';
-
-  @override
-  String get communityPostInfoBody =>
-      'When you post to the Work Plaza, your work is published through YouTube. NIARIM does not transmit, collect, or store the video file itself on the developer\'s servers — posting means uploading the video from YouTube\'s own screen.\n\nIf you set the video to \"Unlisted\" on the YouTube side, it won\'t appear in YouTube\'s public listings and will only be posted within the Work Plaza.\n\n(Video posting is still under development. Stay tuned for future updates.)';
 
   @override
   String get communityRankingPeriodAllTime => 'All-time';
@@ -6389,14 +6351,7 @@ class AppLocalizationsEn extends AppLocalizations {
       'Stop registering this automation?';
 
   @override
-  String get customAutomationStopConfirmQuit => 'Stop';
-
-  @override
   String get customAutomationStopConfirmContinue => 'Continue';
-
-  @override
-  String get customAutomationPremiumHint =>
-      'Premium only: record, edit, share, and replay your own actions.';
 
   @override
   String get customAutomationReviewHint =>

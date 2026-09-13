@@ -5314,14 +5314,7 @@ class AppLocalizationsJa extends AppLocalizations {
   String get canvasEditMenuPreviewNavigatorSubtitle => '全体を縮小表示（ナビゲーター）';
 
   @override
-  String get filterCustomMenuDuplicate => '複製';
-
-  @override
-  String get filterCustomMenuFavoriteBlockTitle => '削除できません';
-
-  @override
-  String get filterCustomMenuFavoriteBlockBody =>
-      'お気に入り登録中のフィルターは削除できません。削除するにはお気に入り登録を解除してください。';
+  String get filterNamePrism => 'プリズム';
 
   @override
   String get filterNameThreshold => '二値化フィルター';
@@ -5391,15 +5384,6 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get filterNameBackgroundBlend => '背景馴染ませ';
-
-  @override
-  String get filterBackgroundBlendColorLabel => '馴染ませ色';
-
-  @override
-  String get filterBackgroundBlendAutoLabel => '自動検出中（タップで手動指定）';
-
-  @override
-  String get filterBackgroundBlendAutoReset => '自動に戻す';
 
   @override
   String get filterBackgroundBlendDirection => '影と光（連動）の向き';
@@ -5565,12 +5549,6 @@ class AppLocalizationsJa extends AppLocalizations {
   String get communityTagSearchHint => 'タグ名で検索';
 
   @override
-  String get communityTagSearchModeOnTooltip => 'タグ検索：ON（タップでタイトル・投稿者名検索に戻す）';
-
-  @override
-  String get communityTagSearchModeOffTooltip => 'タグ検索に切り替える';
-
-  @override
   String get communityAddTagButton => 'タグを追加';
 
   @override
@@ -5590,19 +5568,6 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get communityPostButton => '投稿する';
-
-  @override
-  String get communityPostComingSoonTitle => '投稿機能は準備中です';
-
-  @override
-  String get communityPostComingSoonBody => '動画投稿機能は現在準備中です。今後のアップデートをお楽しみに。';
-
-  @override
-  String get communityPostInfoTitle => '投稿はYouTube経由になります';
-
-  @override
-  String get communityPostInfoBody =>
-      '作品広場に投稿すると、YouTubeを通じて作品が公開されます。NIARIMは作品本体（動画ファイル）を開発者のサーバーへ送信・収集・保存する機能を持っていません。投稿の際は、YouTube側の画面で動画をアップロードしていただく形になります。\n\nYouTube側の公開設定を「限定公開」にすると、YouTube上の一般公開一覧には表示されず、作品広場内だけに投稿された状態にすることができます。\n\n（動画投稿機能は現在準備中です。今後のアップデートをお楽しみに。）';
 
   @override
   String get communityRankingPeriodAllTime => '累計';
@@ -6175,13 +6140,7 @@ class AppLocalizationsJa extends AppLocalizations {
   String get customAutomationStopConfirmTitle => '自動操作の登録をやめますか？';
 
   @override
-  String get customAutomationStopConfirmQuit => 'やめる';
-
-  @override
   String get customAutomationStopConfirmContinue => '続ける';
-
-  @override
-  String get customAutomationPremiumHint => 'プレミアム会員限定で、操作を記録・編集・配布・再実行できます。';
 
   @override
   String get customAutomationReviewHint => '手順を並べ替えたり削除してから保存できます';

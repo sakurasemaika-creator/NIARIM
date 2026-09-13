@@ -2331,8 +2331,9 @@ class _CanvasAreaState extends State<CanvasArea> {
             .distance <
         rotateR) {
       mode = _TransformMode.rotate;
-    } else if (selectionScaleHandlesOf(bounds)
-        .any((c) => (canvasPos - c).distance < r)) {
+    } else if (selectionScaleHandlesOf(
+      bounds,
+    ).any((c) => (canvasPos - c).distance < r)) {
       mode = _TransformMode.scale;
     } else if ((canvasPos - bounds.center).distance < r ||
         _selectionMaskContains(canvasPos)) {
@@ -3425,6 +3426,12 @@ class _CanvasAreaState extends State<CanvasArea> {
       // 2本指タップ
       onSecondaryTap: () => _handleGesture(context, settings.twoFingerTap),
       child: Listener(
+        // Keep the entire CanvasArea viewport hit-testable even after the
+        // painted canvas has been zoomed down to 1/100. With the default
+        // deferToChild behavior, the transformed child itself becomes the
+        // gesture target, so a second pinch cannot start outside the tiny
+        // 1/10 canvas and the documented 1/100 minimum is unreachable.
+        behavior: HitTestBehavior.opaque,
         onPointerDown: (e) {
           if (e.kind == PointerDeviceKind.touch ||
               e.kind == PointerDeviceKind.stylus) {
