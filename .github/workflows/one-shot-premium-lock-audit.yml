@@ -39,18 +39,31 @@ jobs:
               'Premium|プレミアム|有料|課金|南京錠|ロック' \
               docs || true
           } | tee build/premium-lock-audit/inventory.txt
-      - name: Analyze changed Premium lock surface
+      - name: Analyze Premium entry-point surface
         shell: bash
         run: |
           flutter analyze \
+            lib/services/premium_service.dart \
             lib/widgets/premium_lock_widget.dart \
+            lib/screens/settings/settings_screen.dart \
+            lib/screens/canvas/widgets/filter_panel.dart \
+            lib/screens/canvas/canvas_screen.dart \
+            lib/screens/export/export_screen.dart \
             test/premium_lock_widget_test.dart \
+            test/premium_all_entry_points_test.dart \
+            test/premium_production_entry_wiring_test.dart \
             --no-fatal-warnings --no-fatal-infos \
             2>&1 | tee build/premium-lock-audit/analyze.txt
-      - name: Prove visible-lock-disabled and Premium-enabled behavior
+      - name: Prove every Premium production entry and shared lock behavior
         shell: bash
+        env:
+          STEP4_EVIDENCE_DIR: build/premium-lock-audit/png
         run: |
-          flutter test test/premium_lock_widget_test.dart --reporter expanded \
+          flutter test \
+            test/premium_lock_widget_test.dart \
+            test/premium_all_entry_points_test.dart \
+            test/premium_production_entry_wiring_test.dart \
+            --reporter expanded \
             2>&1 | tee build/premium-lock-audit/test.txt
       - name: Prove pinch, aurora hologram, and generated-filter Redo regressions
         shell: bash
@@ -61,7 +74,7 @@ jobs:
             test/generated_filter_redo_test.dart \
             --reporter expanded \
             2>&1 | tee build/premium-lock-audit/focused-regressions.txt
-      - name: Upload inventory and proof logs
+      - name: Upload inventory, PNG evidence, and proof logs
         if: always()
         uses: actions/upload-artifact@v4
         with:
