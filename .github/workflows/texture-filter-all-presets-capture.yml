@@ -1,0 +1,36 @@
+name: Texture Filter All Presets Capture
+
+on:
+  push:
+    branches: [dev_branch]
+    paths:
+      - 'test/aurora_hologram_visual_audit_test.dart'
+      - 'lib/engine/filter_engine.dart'
+      - '.github/workflows/texture-filter-all-presets-capture.yml'
+  workflow_dispatch:
+
+jobs:
+  capture-all-presets:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: dev_branch
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+      - run: flutter pub get
+      - name: Analyze all-preset visual test
+        run: flutter analyze test/aurora_hologram_visual_audit_test.dart --no-fatal-warnings --no-fatal-infos
+      - name: Render every texture preset through production filter route
+        run: flutter test test/aurora_hologram_visual_audit_test.dart --reporter expanded
+      - name: Upload all texture preset PNGs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: texture-filter-all-presets-captures
+          path: build/visual-reaudit/aurora-hologram
+          if-no-files-found: error
+          retention-days: 7
