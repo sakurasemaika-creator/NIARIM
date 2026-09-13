@@ -9,11 +9,11 @@ final DateTime _presetTimestamp = DateTime.utc(2026, 1, 1);
 List<CustomAutomation> builtInCanvasAutomationPresets() => [
   _filterPreset(
     id: auroraHologramAutomationPresetId,
-    name: 'オーロラホログラム',
+    name: '質感変更フィルター',
     filters: const [
       FilterDef(
         id: 'Filter0019',
-        name: 'オーロラホログラム',
+        name: '質感変更フィルター',
         kind: FilterKind.auroraHologram,
         strength: 60,
       ),
