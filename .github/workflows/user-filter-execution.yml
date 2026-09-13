@@ -1,0 +1,36 @@
+name: User Filter Execution Evidence
+
+on:
+  push:
+    branches: [dev_branch]
+    paths:
+      - 'test/user_filter_execution_visual_test.dart'
+      - 'test/fixtures/user_filter_execution/**'
+      - '.github/workflows/user-filter-execution.yml'
+  workflow_dispatch:
+
+jobs:
+  capture:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: dev_branch
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+      - run: flutter pub get
+      - name: Analyze requested execution test
+        run: flutter analyze test/user_filter_execution_visual_test.dart --no-fatal-warnings --no-fatal-infos
+      - name: Execute requested filters
+        run: flutter test test/user_filter_execution_visual_test.dart --reporter expanded
+      - name: Upload requested output images
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: user-filter-execution-evidence
+          path: build/user-filter-execution
+          if-no-files-found: error
+          retention-days: 7
