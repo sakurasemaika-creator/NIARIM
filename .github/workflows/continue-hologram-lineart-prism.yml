@@ -29,99 +29,87 @@ jobs:
           from pathlib import Path
           import re
 
-          def read(path):
-              return Path(path).read_text()
+          def read(path): return Path(path).read_text()
+          def write(path, text): Path(path).write_text(text)
 
-          def write(path, text):
-              Path(path).write_text(text)
+          def replace_braced_function(text, signature, replacement):
+              start = text.index(signature)
+              brace = text.index('{', start)
+              depth = 0
+              end = None
+              for i in range(brace, len(text)):
+                  if text[i] == '{': depth += 1
+                  elif text[i] == '}':
+                      depth -= 1
+                      if depth == 0:
+                          end = i + 1
+                          break
+              if end is None: raise SystemExit(f'unclosed function: {signature}')
+              return text[:start] + replacement + text[end:]
 
-          def require_sub(text, old, new, label):
-              if old not in text:
-                  raise SystemExit(f'missing patch anchor: {label}: {old[:100]!r}')
-              return text.replace(old, new)
+          # The temporary eighth enum is redundant: original Pastel Dream becomes Pearl 2.
+          p = 'lib/models/filter_def.dart'
+          s = read(p).replace('  pearl2,\n', '')
+          write(p, s)
 
-          # Preset model: seven variants. The temporary pearl2 enum was redundant;
-          # the original pastelDream slot is now Pearl 2.
-          path = 'lib/models/filter_def.dart'
-          s = read(path)
-          s = s.replace('  pearl2,\n', '')
-          write(path, s)
-
-          # Localized visible names. Keep enum/storage identities stable where possible.
-          for path, values in {
-              'lib/l10n/app_ja.arb': {
-                  'filterAuroraHologramPresetSoapBubble': 'パール1',
-                  'filterAuroraHologramPresetCyberNeon': 'ヴェイパーウェイヴ',
-                  'filterAuroraHologramPresetPastelDream': 'パール2',
-                  'filterAuroraHologramPresetClassicHologram': 'シャボン玉',
-              },
-              'lib/l10n/app_en.arb': {
-                  'filterAuroraHologramPresetSoapBubble': 'Pearl 1',
-                  'filterAuroraHologramPresetCyberNeon': 'Vaporwave',
-                  'filterAuroraHologramPresetPastelDream': 'Pearl 2',
-                  'filterAuroraHologramPresetClassicHologram': 'Soap Bubble',
-              },
-          }.items():
-              s = read(path)
+          # Visible preset names.
+          locale_values = {
+            'lib/l10n/app_ja.arb': {
+              'filterAuroraHologramPresetSoapBubble': 'パール1',
+              'filterAuroraHologramPresetCyberNeon': 'ヴェイパーウェイヴ',
+              'filterAuroraHologramPresetPastelDream': 'パール2',
+              'filterAuroraHologramPresetClassicHologram': 'シャボン玉',
+            },
+            'lib/l10n/app_en.arb': {
+              'filterAuroraHologramPresetSoapBubble': 'Pearl 1',
+              'filterAuroraHologramPresetCyberNeon': 'Vaporwave',
+              'filterAuroraHologramPresetPastelDream': 'Pearl 2',
+              'filterAuroraHologramPresetClassicHologram': 'Soap Bubble',
+            },
+          }
+          for p, values in locale_values.items():
+              s = read(p)
               for key, value in values.items():
-                  pattern = rf'(\"{re.escape(key)}\"\s*:\s*)\"[^\"]*\"'
-                  if re.search(pattern, s):
-                      s = re.sub(pattern, lambda m, v=value: m.group(1) + f'\"{v}\"', s, count=1)
+                  pat = rf'("{re.escape(key)}"\s*:\s*)"[^"]*"'
+                  if re.search(pat, s):
+                      s = re.sub(pat, lambda m, v=value: m.group(1) + f'"{v}"', s, count=1)
                   else:
                       anchor = '"filterAuroraHologramPresetSilverFoil"'
-                      idx = s.find(anchor)
-                      if idx < 0:
-                          raise SystemExit(f'missing localization insertion anchor in {path}')
-                      line_end = s.find('\n', idx)
-                      comma = '' if s[line_end-1] == ',' else ','
-                      s = s[:line_end] + comma + f'\n  "{key}": "{value}",' + s[line_end:]
-              write(path, s)
+                      i = s.index(anchor)
+                      eol = s.index('\n', i)
+                      if s[eol - 1] != ',': s = s[:eol] + ',' + s[eol:]; eol += 1
+                      s = s[:eol] + f'  "{key}": "{value}",\n' + s[eol:]
+              write(p, s)
 
-          # UI labels: Classic Hologram is the new Soap Bubble; original Soap Bubble
-          # is Pearl 1; original Pastel Dream is Pearl 2.
-          path = 'lib/screens/canvas/widgets/filter_panel.dart'
-          s = read(path)
-          start = s.index('  String _auroraPresetLabel(')
-          end = s.index('\n  IconData _iconForFilter', start)
-          label_fn = '''  String _auroraPresetLabel(
+          # UI labels and prism blend mode.
+          p = 'lib/screens/canvas/widgets/filter_panel.dart'
+          s = read(p)
+          a = s.index('  String _auroraPresetLabel(')
+          b = s.index('\n  IconData _iconForFilter', a)
+          labels = '''  String _auroraPresetLabel(
             AppLocalizations l10n,
             AuroraHologramPreset preset,
           ) => switch (preset) {
             AuroraHologramPreset.aurora => l10n.filterAuroraHologramPresetAurora,
-            AuroraHologramPreset.soapBubble =>
-              l10n.filterAuroraHologramPresetSoapBubble,
+            AuroraHologramPreset.soapBubble => l10n.filterAuroraHologramPresetSoapBubble,
             AuroraHologramPreset.cyberNeon => l10n.filterAuroraHologramPresetCyberNeon,
-            AuroraHologramPreset.pastelDream =>
-              l10n.filterAuroraHologramPresetPastelDream,
-            AuroraHologramPreset.sunsetGold =>
-              l10n.filterAuroraHologramPresetSunsetGold,
-            AuroraHologramPreset.silverFoil =>
-              l10n.filterAuroraHologramPresetSilverFoil,
-            AuroraHologramPreset.classicHologram =>
-              l10n.filterAuroraHologramPresetClassicHologram,
+            AuroraHologramPreset.pastelDream => l10n.filterAuroraHologramPresetPastelDream,
+            AuroraHologramPreset.sunsetGold => l10n.filterAuroraHologramPresetSunsetGold,
+            AuroraHologramPreset.silverFoil => l10n.filterAuroraHologramPresetSilverFoil,
+            AuroraHologramPreset.classicHologram => l10n.filterAuroraHologramPresetClassicHologram,
           };
           '''
-          s = s[:start] + label_fn + s[end:]
+          s = s[:a] + labels + s[b:]
+          s = s.replace('model.LayerBlendMode.colorDodge)', 'model.LayerBlendMode.addition)')
+          s = s.replace('ガウスぼかし → 覆い焼き', 'ガウスぼかし → 覆い焼きリニア')
+          s = s.replace('覆い焼きリニアリニア', '覆い焼きリニア')
+          write(p, s)
 
-          # Prism intentionally uses Linear Dodge/Add, matching the app's existing
-          # LayerBlendMode.addition semantics and the requested ibisPaint terminology.
-          s = s.replace(
-              '? layer.copyWith(blendMode: model.LayerBlendMode.colorDodge)',
-              '? layer.copyWith(blendMode: model.LayerBlendMode.addition)',
-          )
-          s = s.replace(
-              '参照レイヤーのα領域を6等分で着色 → ガウスぼかし → 覆い焼き',
-              '参照レイヤーのα領域を6等分で着色 → ガウスぼかし → 覆い焼きリニア',
-          )
-          write(path, s)
-
-          # Hologram colour families. Classic/Soap Bubble is cyan + rainbow;
-          # Pastel Dream/Pearl 2 is the pink + rainbow counterpart.
-          path = 'lib/engine/filter_engine.dart'
-          s = read(path)
-          start = s.index('List<(double, int, int, int)> auroraHologramStops(')
-          end = s.index('\n/// 画素の色を指定方式で減色する', start)
-          fn = '''List<(double, int, int, int)> auroraHologramStops(AuroraHologramPreset preset) {
+          # Hologram palettes: Pearl 1, Vaporwave, Pearl 2 (pink+rainbow),
+          # and Soap Bubble (cyan+rainbow).
+          p = 'lib/engine/filter_engine.dart'
+          s = read(p)
+          palette_fn = '''List<(double, int, int, int)> auroraHologramStops(AuroraHologramPreset preset) {
             return switch (preset) {
               AuroraHologramPreset.aurora => const [
                 (0.00, 22, 86, 156), (0.10, 72, 196, 255), (0.20, 157, 241, 255),
@@ -170,131 +158,62 @@ jobs:
                 (0.84, 245, 255, 207), (0.91, 255, 220, 227), (1.00, 190, 239, 255),
               ],
             };
-          }
-          '''
-          write(path, s[:start] + fn + s[end:])
+          }'''
+          s = replace_braced_function(s, 'List<(double, int, int, int)> auroraHologramStops(', palette_fn)
+          write(p, s)
 
-          # Built-in analogue line extraction is deliberately only an automation
-          # over two existing drawing filters: Color Adjust, then Threshold.
+          # Analog line extraction is strictly existing Color Adjust -> Threshold.
           write('lib/models/custom_automation_presets.dart', '''import 'custom_automation.dart';
           import 'filter_def.dart';
 
           const auroraHologramAutomationPresetId = 'preset_aurora_hologram';
           const lineExtractionAutomationPresetId = 'preset_line_extraction';
           const lineCreationAutomationPresetId = 'preset_line_creation';
-
           final DateTime _presetTimestamp = DateTime.utc(2026, 1, 1);
 
-          /// Starter Canvas automations. These contain only existing filter actions;
-          /// no automation-specific image-processing operation is introduced.
           List<CustomAutomation> builtInCanvasAutomationPresets() => [
-            _filterPreset(
-              id: auroraHologramAutomationPresetId,
-              name: 'オーロラホログラム',
-              filters: const [
-                FilterDef(
-                  id: 'Filter0019',
-                  name: 'オーロラホログラム',
-                  kind: FilterKind.auroraHologram,
-                  strength: 60,
-                ),
-              ],
-            ),
-            _filterPreset(
-              id: lineExtractionAutomationPresetId,
-              name: '線画抽出',
-              filters: const [
-                FilterDef(
-                  id: 'automation_color_adjust',
-                  name: '色調調整',
-                  kind: FilterKind.colorAdjust,
-                  caBrightness: 35,
-                  caContrast: 55,
-                ),
-                FilterDef(
-                  id: 'Filter0014',
-                  name: '二値化',
-                  kind: FilterKind.threshold,
-                  thresholdValue: 190,
-                ),
-              ],
-            ),
-            _filterPreset(
-              id: lineCreationAutomationPresetId,
-              name: '線画作成',
-              filters: const [
-                FilterDef(
-                  id: 'Filter0006',
-                  name: '縁取り',
-                  kind: FilterKind.outline,
-                  outlineColor: 0xFF000000,
-                  outlineWidth: 6,
-                ),
-              ],
-            ),
+            _filterPreset(id: auroraHologramAutomationPresetId, name: 'オーロラホログラム', filters: const [
+              FilterDef(id: 'Filter0019', name: 'オーロラホログラム', kind: FilterKind.auroraHologram, strength: 60),
+            ]),
+            _filterPreset(id: lineExtractionAutomationPresetId, name: '線画抽出', filters: const [
+              FilterDef(id: 'automation_color_adjust', name: '色調調整', kind: FilterKind.colorAdjust, caBrightness: 35, caContrast: 55),
+              FilterDef(id: 'Filter0014', name: '二値化', kind: FilterKind.threshold, thresholdValue: 190),
+            ]),
+            _filterPreset(id: lineCreationAutomationPresetId, name: '線画作成', filters: const [
+              FilterDef(id: 'Filter0006', name: '縁取り', kind: FilterKind.outline, outlineColor: 0xFF000000, outlineWidth: 6),
+            ]),
           ];
 
-          CustomAutomation _filterPreset({
-            required String id,
-            required String name,
-            required List<FilterDef> filters,
-          }) {
+          CustomAutomation _filterPreset({required String id, required String name, required List<FilterDef> filters}) {
             return CustomAutomation(
-              id: id,
-              name: name,
-              recordingStartFrame: 0,
-              createdAt: _presetTimestamp,
-              updatedAt: _presetTimestamp,
-              steps: [
-                for (var i = 0; i < filters.length; i++)
-                  CustomAutomationStep(
-                    id: '${id}_filter_${i + 1}',
-                    surface: CustomAutomationSurface.canvas,
-                    command: 'canvas.filterApply',
-                    label: filters[i].name,
-                    args: {'filter': filters[i].toJson()},
-                    recordedFrame: 0,
-                  ),
-              ],
+              id: id, name: name, recordingStartFrame: 0,
+              createdAt: _presetTimestamp, updatedAt: _presetTimestamp,
+              steps: [for (var i = 0; i < filters.length; i++) CustomAutomationStep(
+                id: '${id}_filter_${i + 1}', surface: CustomAutomationSurface.canvas,
+                command: 'canvas.filterApply', label: filters[i].name,
+                args: {'filter': filters[i].toJson()}, recordedFrame: 0,
+              )],
             );
           }
           ''')
 
-          # Update preset tests to lock the two-step implementation and forbid
-          # accidental regression back to AutoLineartEngine.
-          path = 'test/custom_automation_presets_test.dart'
-          s = read(path)
+          # Lock the line extraction preset to the two requested production filters.
+          p = 'test/custom_automation_presets_test.dart'
+          s = read(p)
           s = s.replace(
-              "      expect(item.steps, hasLength(1));\n      expect(item.steps.single.command, 'canvas.filterApply');",
-              "      final expectedSteps = item.id == lineExtractionAutomationPresetId ? 2 : 1;\n      expect(item.steps, hasLength(expectedSteps));\n      expect(item.steps.every((step) => step.command == 'canvas.filterApply'), isTrue);",
+            "expect(item.steps, hasLength(1));\n      expect(item.steps.single.command, 'canvas.filterApply');",
+            "expect(item.steps, hasLength(item.id == lineExtractionAutomationPresetId ? 2 : 1));\n      expect(item.steps.every((step) => step.command == 'canvas.filterApply'), isTrue);",
           )
-          old = '''    FilterDef filterOf(String name) {
-              final raw = presets[name]!.steps.single.args['filter'] as Map;
-              return FilterDef.fromJson(raw.cast<String, dynamic>());
-            }
-
-            expect(filterOf('オーロラホログラム').kind, FilterKind.auroraHologram);
-            expect(filterOf('オーロラホログラム').id, 'Filter0019');
-            expect(filterOf('線画抽出').kind, FilterKind.autoLineart);
-            expect(filterOf('線画抽出').id, 'Filter0023');
-            expect(filterOf('線画作成').kind, FilterKind.outline);
-            expect(filterOf('線画作成').id, 'Filter0006');'''
-          new = '''    FilterDef filterOf(String name, [int step = 0]) {
-              final raw = presets[name]!.steps[step].args['filter'] as Map;
-              return FilterDef.fromJson(raw.cast<String, dynamic>());
-            }
-
-            expect(filterOf('オーロラホログラム').kind, FilterKind.auroraHologram);
-            expect(filterOf('オーロラホログラム').id, 'Filter0019');
-            expect(filterOf('線画抽出', 0).kind, FilterKind.colorAdjust);
-            expect(filterOf('線画抽出', 0).caBrightness, greaterThan(0));
-            expect(filterOf('線画抽出', 0).caContrast, greaterThan(0));
-            expect(filterOf('線画抽出', 1).kind, FilterKind.threshold);
-            expect(filterOf('線画抽出', 1).id, 'Filter0014');
-            expect(filterOf('線画作成').kind, FilterKind.outline);
-            expect(filterOf('線画作成').id, 'Filter0006');'''
-          s = require_sub(s, old, new, path)
-          write(path, s)
+          s = re.sub(
+            r"FilterDef filterOf\(String name\) \{\s*final raw = presets\[name\]!\.steps\.single\.args\['filter'\] as Map;\s*return FilterDef\.fromJson\(raw\.cast<String, dynamic>\(\)\);\s*\}",
+            "FilterDef filterOf(String name, [int step = 0]) {\n      final raw = presets[name]!.steps[step].args['filter'] as Map;\n      return FilterDef.fromJson(raw.cast<String, dynamic>());\n    }",
+            s,
+          )
+          s = s.replace(
+            "expect(filterOf('線画抽出').kind, FilterKind.autoLineart);\n    expect(filterOf('線画抽出').id, 'Filter0023');",
+            "expect(filterOf('線画抽出', 0).kind, FilterKind.colorAdjust);\n    expect(filterOf('線画抽出', 0).caBrightness, greaterThan(0));\n    expect(filterOf('線画抽出', 0).caContrast, greaterThan(0));\n    expect(filterOf('線画抽出', 1).kind, FilterKind.threshold);\n    expect(filterOf('線画抽出', 1).id, 'Filter0014');",
+          )
+          write(p, s)
       - run: flutter pub get
       - name: Generate localizations
         run: flutter gen-l10n
