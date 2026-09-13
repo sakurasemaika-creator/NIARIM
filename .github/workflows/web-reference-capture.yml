@@ -1,0 +1,54 @@
+name: Web Reference Capture
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [dev_branch]
+    paths:
+      - ".github/workflows/web-reference-capture.yml"
+      - "test/app_web_reference_capture_test_v2.dart"
+      - "lib/**"
+      - "assets/**"
+      - "pubspec.yaml"
+
+permissions:
+  contents: read
+
+jobs:
+  capture:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v6
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: false
+      - name: Install Japanese fonts
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y fonts-noto-cjk
+          fc-cache -f
+      - run: flutter pub get
+      - name: Capture production UI states used by NIARIM-web
+        run: flutter test test/app_web_reference_capture_test_v2.dart --reporter expanded
+      - name: Record source metadata
+        if: always()
+        run: |
+          mkdir -p build/visual-smoke
+          {
+            echo "commit=${GITHUB_SHA}"
+            echo "run_id=${GITHUB_RUN_ID}"
+            echo "captured_at=$(date -u +%Y-%m-%dT%H:%M:%SZ)"
+            echo "flutter=$(flutter --version | head -n 1)"
+          } > build/visual-smoke/webref_capture_metadata.txt
+      - name: Upload exact web-reference screens
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: web-reference-captures
+          path: |
+            build/visual-smoke/webref_*.png
+            build/visual-smoke/webref_capture_metadata.txt
+          if-no-files-found: error
+          retention-days: 14
