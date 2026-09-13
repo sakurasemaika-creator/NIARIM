@@ -5537,7 +5537,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get filterNamePixelate => 'Pixelate Filter';
 
   @override
-  String get filterNameAuroraHologram => 'Aurora Hologram';
+  String get filterNameAuroraHologram => 'Texture Filter';
 
   @override
   String get filterAuroraHologramStrength => 'Strength';
@@ -5570,7 +5570,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get filterAuroraHologramPresetSilverFoil => 'Silver Foil';
 
   @override
-  String get filterAuroraHologramPresetClassicHologram => 'Soap Bubble';
+  String get filterAuroraHologramPresetClassicHologram => 'Aurora Hologram';
 
   @override
   String get filterNameBackgroundBlend => 'Background Blend';

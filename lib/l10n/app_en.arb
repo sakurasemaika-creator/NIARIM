@@ -2292,7 +2292,7 @@
   "filterLensDistortionStrength": "Lens power (negative = concave, positive = convex)",
   "filterLensDistortionOffsetX": "Center fine-tune (horizontal)",
   "filterNamePixelate": "Pixelate Filter",
-  "filterNameAuroraHologram": "Aurora Hologram",
+  "filterNameAuroraHologram": "Texture Filter",
   "filterAuroraHologramStrength": "Strength",
   "filterAuroraHologramBrightness": "Brightness",
   "filterAuroraHologramSaturation": "Saturation",
@@ -2302,7 +2302,7 @@
   "filterAuroraHologramPresetPastelDream": "Pastel Dream",  "filterAuroraHologramPresetPearl2": "Pearl 2",
 
   "filterAuroraHologramPresetSunsetGold": "Sunset Gold",
-  "filterAuroraHologramPresetSilverFoil": "Silver Foil",  "filterAuroraHologramPresetClassicHologram": "Soap Bubble",
+  "filterAuroraHologramPresetSilverFoil": "Silver Foil",  "filterAuroraHologramPresetClassicHologram": "Aurora Hologram",
 
   "filterNameBackgroundBlend": "Background Blend",
   "filterBackgroundBlendDirection": "Shadow/light direction (linked)",

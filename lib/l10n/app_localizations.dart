@@ -9830,7 +9830,7 @@ abstract class AppLocalizations {
   /// No description provided for @filterNameAuroraHologram.
   ///
   /// In ja, this message translates to:
-  /// **'オーロラホログラム'**
+  /// **'質感変更フィルター'**
   String get filterNameAuroraHologram;
 
   /// No description provided for @filterAuroraHologramStrength.
@@ -9896,7 +9896,7 @@ abstract class AppLocalizations {
   /// No description provided for @filterAuroraHologramPresetClassicHologram.
   ///
   /// In ja, this message translates to:
-  /// **'シャボン玉'**
+  /// **'オーロラホログラム'**
   String get filterAuroraHologramPresetClassicHologram;
 
   /// No description provided for @filterNameBackgroundBlend.

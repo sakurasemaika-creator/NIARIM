@@ -5669,7 +5669,7 @@ class AppLocalizationsFr extends AppLocalizations {
   String get filterAuroraHologramPresetSilverFoil => 'Feuille argentée';
 
   @override
-  String get filterAuroraHologramPresetClassicHologram => 'シャボン玉';
+  String get filterAuroraHologramPresetClassicHologram => 'オーロラホログラム';
 
   @override
   String get filterNameBackgroundBlend => 'Fondu d\'arrière-plan';

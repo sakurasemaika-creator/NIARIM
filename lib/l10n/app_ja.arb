@@ -2590,7 +2590,7 @@
   "filterLensDistortionStrength": "レンズの度数（負で凹レンズ、正で凸レンズ）",
   "filterLensDistortionOffsetX": "中心位置の微調整（左右）",
   "filterNamePixelate": "ドット絵フィルター",
-  "filterNameAuroraHologram": "オーロラホログラム",
+  "filterNameAuroraHologram": "質感変更フィルター",
   "filterAuroraHologramStrength": "フィルター強度",
   "filterAuroraHologramBrightness": "明度",
   "filterAuroraHologramSaturation": "彩度",
@@ -2600,7 +2600,7 @@
   "filterAuroraHologramPresetPastelDream": "パステルドリーム",  "filterAuroraHologramPresetPearl2": "パール2",
 
   "filterAuroraHologramPresetSunsetGold": "サンセットゴールド",
-  "filterAuroraHologramPresetSilverFoil": "シルバーホイル",  "filterAuroraHologramPresetClassicHologram": "シャボン玉",
+  "filterAuroraHologramPresetSilverFoil": "シルバーホイル",  "filterAuroraHologramPresetClassicHologram": "オーロラホログラム",
 
   "filterNameBackgroundBlend": "背景馴染ませ",
   "filterBackgroundBlendDirection": "影と光（連動）の向き",

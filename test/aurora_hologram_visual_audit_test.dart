@@ -55,7 +55,8 @@ void main() {
       expect(
         maxLuminance - minLuminance,
         greaterThan(25),
-        reason: '${preset.name} needs enough tonal variation to read as texture',
+        reason:
+            '${preset.name} needs enough tonal variation to read as texture',
       );
       expect(
         maxChannel - minChannel,

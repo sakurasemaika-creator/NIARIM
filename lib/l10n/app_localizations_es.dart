@@ -5660,7 +5660,7 @@ class AppLocalizationsEs extends AppLocalizations {
   String get filterAuroraHologramPresetSilverFoil => 'Papel plateado';
 
   @override
-  String get filterAuroraHologramPresetClassicHologram => 'シャボン玉';
+  String get filterAuroraHologramPresetClassicHologram => 'オーロラホログラム';
 
   @override
   String get filterNameBackgroundBlend => 'Mimetismo de fondo';

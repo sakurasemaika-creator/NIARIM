@@ -5353,7 +5353,7 @@ class AppLocalizationsJa extends AppLocalizations {
   String get filterNamePixelate => 'ドット絵フィルター';
 
   @override
-  String get filterNameAuroraHologram => 'オーロラホログラム';
+  String get filterNameAuroraHologram => '質感変更フィルター';
 
   @override
   String get filterAuroraHologramStrength => 'フィルター強度';
@@ -5386,7 +5386,7 @@ class AppLocalizationsJa extends AppLocalizations {
   String get filterAuroraHologramPresetSilverFoil => 'シルバーホイル';
 
   @override
-  String get filterAuroraHologramPresetClassicHologram => 'シャボン玉';
+  String get filterAuroraHologramPresetClassicHologram => 'オーロラホログラム';
 
   @override
   String get filterNameBackgroundBlend => '背景馴染ませ';
