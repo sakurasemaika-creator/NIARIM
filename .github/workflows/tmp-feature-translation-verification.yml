@@ -31,26 +31,7 @@ jobs:
       - name: Generate localizations
         run: flutter gen-l10n
       - name: Translation tone audit
-        id: tone
-        shell: bash
-        run: |
-          set +e
-          python3 tools/audit_translation_tone.py > tool/tmp_translation_audit_output.txt 2>&1
-          code=$?
-          cat tool/tmp_translation_audit_output.txt
-          echo "exit_code=$code" >> "$GITHUB_OUTPUT"
-          exit 0
-      - name: Commit diagnostic
-        if: steps.tone.outputs.exit_code != '0'
-        run: |
-          git config user.name 'github-actions[bot]'
-          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          git add tool/tmp_translation_audit_output.txt
-          git commit -m 'chore: capture translation audit diagnostic'
-          git push origin HEAD:feature/pressure-hardness-custom-automation
-      - name: Fail on translation audit
-        if: steps.tone.outputs.exit_code != '0'
-        run: exit 1
+        run: python3 tools/audit_translation_tone.py
       - name: Static analysis
         run: flutter analyze --no-fatal-infos lib/models/pressure_hardness.dart lib/screens/canvas/widgets/brush_panel.dart lib/widgets/custom_automation_manager_sheet.dart test/pressure_hardness_test.dart
       - name: Targeted tests
