@@ -6,6 +6,7 @@ import 'package:share_plus/share_plus.dart';
 
 import '../../../l10n/app_localizations.dart';
 import '../../../models/brush.dart';
+import '../../../models/pressure_hardness.dart';
 import '../../../services/brush_service.dart';
 import '../../../widgets/editable_slider_value.dart';
 import '../../../widgets/pixel_color_mode_selector.dart';
@@ -704,8 +705,20 @@ class _BrushSettingsSheetState extends State<_BrushSettingsSheet> {
           // spreadのままだとRadioGroupを祖先に置けないため、Columnで束ねる。
           RadioGroup<PressureMode>(
             groupValue: _brush.pressureMode,
-            onChanged: (v) =>
-                setState(() => _brush = _brush.copyWith(pressureMode: v)),
+            onChanged: (v) {
+              if (v == null) return;
+              setState(() {
+                final normalizedStrength = v == PressureMode.off
+                    ? _brush.pressureStrength
+                    : pressureStrengthForHardness(
+                        pressureHardnessForStrength(_brush.pressureStrength),
+                      );
+                _brush = _brush.copyWith(
+                  pressureMode: v,
+                  pressureStrength: normalizedStrength,
+                );
+              });
+            },
             child: Column(
               children: PressureMode.values
                   .map(
@@ -718,6 +731,7 @@ class _BrushSettingsSheetState extends State<_BrushSettingsSheet> {
                   .toList(),
             ),
           ),
+          _pressureHardnessRow(l10n),
           const Divider(),
           // フェード
           Text(
@@ -893,6 +907,52 @@ class _BrushSettingsSheetState extends State<_BrushSettingsSheet> {
           ),
         ],
       ),
+    );
+  }
+
+  Widget _pressureHardnessRow(AppLocalizations l10n) {
+    final enabled = isPressureHardnessEnabled(_brush.pressureMode);
+    final hardness = pressureHardnessForStrength(_brush.pressureStrength);
+    return Row(
+      children: [
+        SizedBox(
+          width: 80,
+          child: Text(
+            l10n.brushSettingsPressureHardnessLabel,
+            style: const TextStyle(fontSize: 12),
+          ),
+        ),
+        Expanded(
+          child: SteppedSlider(
+            min: kMinPressureHardness.toDouble(),
+            max: kMaxPressureHardness.toDouble(),
+            divisions: kMaxPressureHardness - kMinPressureHardness,
+            step: 1,
+            value: hardness.toDouble(),
+            label: '$hardness',
+            onChanged: enabled
+                ? (v) => setState(
+                    () => _brush = _brush.copyWith(
+                      pressureStrength: pressureStrengthForHardness(v.round()),
+                    ),
+                  )
+                : null,
+          ),
+        ),
+        SizedBox(
+          width: 40,
+          child: Text(
+            '$hardness',
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              fontSize: 12,
+              color: enabled
+                  ? null
+                  : ThemeService.activeColorScheme.onSurfaceVariant,
+            ),
+          ),
+        ),
+      ],
     );
   }
 

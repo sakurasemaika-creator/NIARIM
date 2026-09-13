@@ -2690,5 +2690,9 @@
   "customAutomationSpecifiedFrames": "지정한 프레임에서 실행",
   "customAutomationFrameFrom": "시작 프레임",
   "customAutomationFrameTo": "종료 프레임",
-  "customAutomationFrameRangeInvalid": "올바른 프레임 범위를 입력하세요."
+  "customAutomationFrameRangeInvalid": "올바른 프레임 범위를 입력하세요.",
+  "brushSettingsPressureHardnessLabel": "필압 경도",
+  "customAutomationRunAction": "실행",
+  "customAutomationFavoriteAction": "즐겨찾기에 추가",
+  "customAutomationUnfavoriteAction": "즐겨찾기에서 제거"
 }

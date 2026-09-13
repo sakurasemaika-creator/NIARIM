@@ -2690,5 +2690,9 @@
   "customAutomationSpecifiedFrames": "在指定帧执行",
   "customAutomationFrameFrom": "起始帧",
   "customAutomationFrameTo": "结束帧",
-  "customAutomationFrameRangeInvalid": "请输入有效的帧范围。"
+  "customAutomationFrameRangeInvalid": "请输入有效的帧范围。",
+  "brushSettingsPressureHardnessLabel": "压感硬度",
+  "customAutomationRunAction": "运行",
+  "customAutomationFavoriteAction": "添加到收藏",
+  "customAutomationUnfavoriteAction": "从收藏中移除"
 }

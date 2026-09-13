@@ -11392,6 +11392,30 @@ abstract class AppLocalizations {
   /// In ja, this message translates to:
   /// **'有効なフレーム範囲を入力してください。'**
   String get customAutomationFrameRangeInvalid;
+
+  /// No description provided for @brushSettingsPressureHardnessLabel.
+  ///
+  /// In ja, this message translates to:
+  /// **'筆圧硬度'**
+  String get brushSettingsPressureHardnessLabel;
+
+  /// No description provided for @customAutomationRunAction.
+  ///
+  /// In ja, this message translates to:
+  /// **'実行'**
+  String get customAutomationRunAction;
+
+  /// No description provided for @customAutomationFavoriteAction.
+  ///
+  /// In ja, this message translates to:
+  /// **'お気に入りに追加'**
+  String get customAutomationFavoriteAction;
+
+  /// No description provided for @customAutomationUnfavoriteAction.
+  ///
+  /// In ja, this message translates to:
+  /// **'お気に入りを解除'**
+  String get customAutomationUnfavoriteAction;
 }
 
 class _AppLocalizationsDelegate

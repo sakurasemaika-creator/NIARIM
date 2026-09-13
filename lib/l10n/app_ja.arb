@@ -2997,5 +2997,9 @@
   "customAutomationSpecifiedFrames": "指定したフレームで行う",
   "customAutomationFrameFrom": "開始フレーム",
   "customAutomationFrameTo": "終了フレーム",
-  "customAutomationFrameRangeInvalid": "有効なフレーム範囲を入力してください。"
+  "customAutomationFrameRangeInvalid": "有効なフレーム範囲を入力してください。",
+  "brushSettingsPressureHardnessLabel": "筆圧硬度",
+  "customAutomationRunAction": "実行",
+  "customAutomationFavoriteAction": "お気に入りに追加",
+  "customAutomationUnfavoriteAction": "お気に入りを解除"
 }

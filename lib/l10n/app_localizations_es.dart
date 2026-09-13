@@ -6516,4 +6516,16 @@ class AppLocalizationsEs extends AppLocalizations {
   @override
   String get customAutomationFrameRangeInvalid =>
       'Introduce un intervalo de fotogramas válido.';
+
+  @override
+  String get brushSettingsPressureHardnessLabel => 'Dureza de presión';
+
+  @override
+  String get customAutomationRunAction => 'Ejecutar';
+
+  @override
+  String get customAutomationFavoriteAction => 'Añadir a favoritos';
+
+  @override
+  String get customAutomationUnfavoriteAction => 'Quitar de favoritos';
 }

@@ -2699,5 +2699,9 @@
   "customAutomationSpecifiedFrames": "Run on specified frames",
   "customAutomationFrameFrom": "From frame",
   "customAutomationFrameTo": "To frame",
-  "customAutomationFrameRangeInvalid": "Enter a valid frame range."
+  "customAutomationFrameRangeInvalid": "Enter a valid frame range.",
+  "brushSettingsPressureHardnessLabel": "Pressure hardness",
+  "customAutomationRunAction": "Run",
+  "customAutomationFavoriteAction": "Add to favorites",
+  "customAutomationUnfavoriteAction": "Remove from favorites"
 }

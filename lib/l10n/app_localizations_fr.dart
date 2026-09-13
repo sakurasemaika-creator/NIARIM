@@ -6526,4 +6526,16 @@ class AppLocalizationsFr extends AppLocalizations {
   @override
   String get customAutomationFrameRangeInvalid =>
       'Saisissez une plage d’images valide.';
+
+  @override
+  String get brushSettingsPressureHardnessLabel => 'Dureté de pression';
+
+  @override
+  String get customAutomationRunAction => 'Exécuter';
+
+  @override
+  String get customAutomationFavoriteAction => 'Ajouter aux favoris';
+
+  @override
+  String get customAutomationUnfavoriteAction => 'Retirer des favoris';
 }
