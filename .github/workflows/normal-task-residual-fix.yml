@@ -60,10 +60,20 @@ jobs:
           audit = Path('test/custom_automation_visual_audit_test.dart')
           text = audit.read_text()
           old = """        stage('settings-helper:tap');\n        await tester.tap(settingsButton);\n        await tester.pump(const Duration(milliseconds: 350));\n        stage('settings-helper:opened');"""
-          new = """        stage('settings-helper:invoke');\n        final button = tester.widget<CanvasIconButton>(settingsButton);\n        button.onPressed!();\n        stage('settings-helper:after-onPressed');\n        await tester.pump(const Duration(milliseconds: 350));\n        stage('settings-helper:opened');"""
+          new = """        stage('settings-helper:invoke');\n        final button = tester.widget<CanvasIconButton>(settingsButton);\n        button.onPressed!();\n        stage('settings-helper:after-onPressed');\n        await tester.pump();\n        stage('settings-helper:opened');"""
           if text.count(old) != 1:
               raise SystemExit('automation settings helper anchor changed')
-          audit.write_text(text.replace(old, new, 1))
+          text = text.replace(old, new, 1)
+          # Headless Linux can stall when a modal route animation is advanced by
+          # a fixed duration. Finder-driven widget interaction only needs one
+          # build frame, so keep production callbacks but do not advance those
+          # animations in this visual audit.
+          for ms in (120, 350, 300, 250, 450):
+              text = text.replace(
+                  f'await tester.pump(const Duration(milliseconds: {ms}));',
+                  'await tester.pump();',
+              )
+          audit.write_text(text)
 
           unused = {
               'filterCustomMenuDuplicate',
