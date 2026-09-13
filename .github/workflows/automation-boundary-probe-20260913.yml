@@ -1,0 +1,64 @@
+name: Automation Boundary Probe 20260913
+
+on:
+  push:
+    branches: [tmp-automation-boundary-probe-20260913]
+    paths:
+      - '.github/workflows/automation-boundary-probe-20260913.yml'
+
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          ref: tmp-automation-boundary-probe-20260913
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+      - name: Move screenshot boundary inside Navigator
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          p = Path('test/custom_automation_visual_audit_test.dart')
+          s = p.read_text()
+          old_open = '''      await tester.pumpWidget(
+        RepaintBoundary(
+          key: rootKey,
+          child: MultiProvider(
+            providers: providers!,'''
+          new_open = '''      await tester.pumpWidget(
+        MultiProvider(
+          providers: providers!,'''
+          if s.count(old_open) != 1:
+              raise SystemExit('outer RepaintBoundary anchor changed')
+          s = s.replace(old_open, new_open, 1)
+          old_return = '''                    return CanvasScreen(projectId: projectId);'''
+          new_return = '''                    return RepaintBoundary(
+                      key: rootKey,
+                      child: CanvasScreen(projectId: projectId),
+                    );'''
+          if s.count(old_return) != 1:
+              raise SystemExit('CanvasScreen return anchor changed')
+          s = s.replace(old_return, new_return, 1)
+          # Removing the outer boundary also removes exactly one wrapper closing line.
+          old_close = '''              ),
+            ),
+          ),
+        ),
+      );'''
+          new_close = '''              ),
+            ),
+          ),
+      );'''
+          if s.count(old_close) != 1:
+              raise SystemExit('outer RepaintBoundary close anchor changed')
+          s = s.replace(old_close, new_close, 1)
+          p.write_text(s)
+          PY
+          dart format test/custom_automation_visual_audit_test.dart
+      - name: Run automation visual audit
+        run: flutter test test/custom_automation_visual_audit_test.dart --reporter expanded
