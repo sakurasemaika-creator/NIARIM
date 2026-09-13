@@ -15,8 +15,7 @@ class CustomAutomationManagerSheet extends StatelessWidget {
     CustomAutomation automation,
     CustomAutomationExecutionScope scope,
     List<int>? targetFrames,
-  )
-  onExecute;
+  ) onExecute;
   final VoidCallback onRecordingStarted;
   final int? recordingStartFrame;
   final int? frameCount;
@@ -45,9 +44,7 @@ class CustomAutomationManagerSheet extends StatelessWidget {
             border: const OutlineInputBorder(),
           ),
           onSubmitted: (value) {
-            if (value.trim().isNotEmpty) {
-              Navigator.pop(dialogContext, value.trim());
-            }
+            if (value.trim().isNotEmpty) Navigator.pop(dialogContext, value.trim());
           },
         ),
         actions: [
@@ -76,10 +73,7 @@ class CustomAutomationManagerSheet extends StatelessWidget {
     onRecordingStarted();
   }
 
-  Future<void> _confirmExecute(
-    BuildContext context,
-    CustomAutomation automation,
-  ) async {
+  Future<void> _confirmExecute(BuildContext context, CustomAutomation automation) async {
     final l10n = AppLocalizations.of(context)!;
     var scope = CustomAutomationExecutionScope.currentFrame;
     final fromController = TextEditingController(text: '1');
@@ -119,14 +113,9 @@ class CustomAutomationManagerSheet extends StatelessWidget {
                         title: Text(l10n.customAutomationSpecifiedFrames),
                         contentPadding: EdgeInsets.zero,
                       ),
-                      if (scope ==
-                          CustomAutomationExecutionScope.specifiedFrames)
+                      if (scope == CustomAutomationExecutionScope.specifiedFrames)
                         Padding(
-                          padding: const EdgeInsets.only(
-                            left: 16,
-                            right: 16,
-                            bottom: 8,
-                          ),
+                          padding: const EdgeInsets.only(left: 16, right: 16, bottom: 8),
                           child: Row(
                             children: [
                               Expanded(
@@ -176,18 +165,11 @@ class CustomAutomationManagerSheet extends StatelessWidget {
       ),
     );
     List<int>? targetFrames;
-    if (accepted == true &&
-        scope == CustomAutomationExecutionScope.specifiedFrames) {
+    if (accepted == true && scope == CustomAutomationExecutionScope.specifiedFrames) {
       final from = int.tryParse(fromController.text.trim());
       final to = int.tryParse(toController.text.trim());
       final maxFrame = frameCount ?? 0;
-      final valid =
-          from != null &&
-          to != null &&
-          from >= 1 &&
-          to >= from &&
-          maxFrame > 0 &&
-          to <= maxFrame;
+      final valid = from != null && to != null && from >= 1 && to >= from && maxFrame > 0 && to <= maxFrame;
       if (!valid) {
         fromController.dispose();
         toController.dispose();
@@ -198,10 +180,7 @@ class CustomAutomationManagerSheet extends StatelessWidget {
         }
         return;
       }
-      targetFrames = List<int>.generate(
-        to - from + 1,
-        (index) => from - 1 + index,
-      );
+      targetFrames = List<int>.generate(to - from + 1, (index) => from - 1 + index);
     }
     fromController.dispose();
     toController.dispose();
@@ -225,8 +204,7 @@ class CustomAutomationManagerSheet extends StatelessWidget {
             child: Text(l10n.commonCancel),
           ),
           FilledButton(
-            onPressed: () =>
-                Navigator.pop(dialogContext, controller.text.trim()),
+            onPressed: () => Navigator.pop(dialogContext, controller.text.trim()),
             child: Text(l10n.commonSave),
           ),
         ],
@@ -284,14 +262,10 @@ class CustomAutomationManagerSheet extends StatelessWidget {
     if (result == null || result.files.isEmpty || !context.mounted) return;
     final file = result.files.single;
     Uint8List? bytes = file.bytes;
-    if (bytes == null && file.path != null) {
-      bytes = await file.xFile.readAsBytes();
-    }
+    if (bytes == null && file.path != null) bytes = await file.xFile.readAsBytes();
     if (bytes == null || !context.mounted) return;
     try {
-      await context.read<CustomAutomationService>().importJson(
-        utf8.decode(bytes),
-      );
+      await context.read<CustomAutomationService>().importJson(utf8.decode(bytes));
     } on FormatException {
       if (!context.mounted) return;
       final l10n = AppLocalizations.of(context)!;
@@ -313,6 +287,7 @@ class CustomAutomationManagerSheet extends StatelessWidget {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     final service = context.watch<CustomAutomationService>();
+    final visibleItems = service.visibleItems;
     return SafeArea(
       child: SizedBox(
         height: MediaQuery.sizeOf(context).height * .72,
@@ -322,25 +297,45 @@ class CustomAutomationManagerSheet extends StatelessWidget {
               leading: const Icon(Icons.add_circle_outline),
               title: Text(l10n.customAutomationAdd),
               onTap: () => _startNew(context),
-              trailing: IconButton(
-                tooltip: l10n.customAutomationImport,
-                icon: const Icon(Icons.file_open_outlined),
-                onPressed: () => _import(context),
+              trailing: Wrap(
+                spacing: 0,
+                children: [
+                  IconButton(
+                    key: const ValueKey('custom-automation-favorites-only'),
+                    tooltip: service.favoritesOnly ? 'すべて表示' : 'お気に入りのみ',
+                    icon: Icon(
+                      service.favoritesOnly ? Icons.star : Icons.star_border,
+                    ),
+                    onPressed: () => service.setFavoritesOnly(!service.favoritesOnly),
+                  ),
+                  IconButton(
+                    tooltip: l10n.customAutomationImport,
+                    icon: const Icon(Icons.file_open_outlined),
+                    onPressed: () => _import(context),
+                  ),
+                ],
               ),
             ),
             const Divider(height: 1),
             Expanded(
-              child: service.items.isEmpty
+              child: visibleItems.isEmpty
                   ? Center(child: Text(l10n.customAutomationEmpty))
                   : ListView.builder(
-                      itemCount: service.items.length,
+                      itemCount: visibleItems.length,
                       itemBuilder: (context, index) {
-                        final item = service.items[index];
+                        final item = visibleItems[index];
+                        final favorite = service.isFavorite(item.id);
                         return ListTile(
                           key: ValueKey(item.id),
                           onTap: () => _confirmExecute(context, item),
                           title: Row(
                             children: [
+                              IconButton(
+                                key: ValueKey('custom-automation-favorite-${item.id}'),
+                                tooltip: favorite ? 'お気に入り解除' : 'お気に入り登録',
+                                icon: Icon(favorite ? Icons.star : Icons.star_border, size: 20),
+                                onPressed: () => service.toggleFavorite(item.id),
+                              ),
                               Expanded(child: Text(item.name)),
                               IconButton(
                                 tooltip: l10n.customAutomationRenameTitle,
@@ -349,9 +344,7 @@ class CustomAutomationManagerSheet extends StatelessWidget {
                               ),
                             ],
                           ),
-                          subtitle: Text(
-                            l10n.customAutomationStepCount(item.steps.length),
-                          ),
+                          subtitle: Text(l10n.customAutomationStepCount(item.steps.length)),
                           trailing: Wrap(
                             spacing: 0,
                             children: [
@@ -362,18 +355,12 @@ class CustomAutomationManagerSheet extends StatelessWidget {
                               ),
                               IconButton(
                                 tooltip: l10n.customAutomationRerecord,
-                                icon: const Icon(
-                                  Icons.fiber_manual_record,
-                                  size: 18,
-                                ),
+                                icon: const Icon(Icons.fiber_manual_record, size: 18),
                                 onPressed: () => _rerecord(context, item),
                               ),
                               IconButton(
                                 tooltip: l10n.commonDelete,
-                                icon: const Icon(
-                                  Icons.delete_outline,
-                                  size: 18,
-                                ),
+                                icon: const Icon(Icons.delete_outline, size: 18),
                                 onPressed: () => _delete(context, item),
                               ),
                             ],
@@ -389,8 +376,6 @@ class CustomAutomationManagerSheet extends StatelessWidget {
   }
 }
 
-/// 操作記録停止後の確認・編集画面。
-/// 手順番号、ドラッグ並べ替え、削除、記録へ戻る、保存を1画面にまとめる。
 class CustomAutomationDraftEditorSheet extends StatelessWidget {
   final CustomAutomationSurface surface;
   final VoidCallback onResumeRecording;
@@ -416,9 +401,7 @@ class CustomAutomationDraftEditorSheet extends StatelessWidget {
           children: [
             ListTile(
               title: Text(draft.name),
-              subtitle: Text(
-                l10n.customAutomationStepCount(draft.steps.length),
-              ),
+              subtitle: Text(l10n.customAutomationStepCount(draft.steps.length)),
             ),
             const Divider(height: 1),
             Expanded(
@@ -432,16 +415,10 @@ class CustomAutomationDraftEditorSheet extends StatelessWidget {
                     key: ValueKey(step.id),
                     leading: CircleAvatar(
                       radius: 14,
-                      child: Text(
-                        '${index + 1}',
-                        style: const TextStyle(fontSize: 11),
-                      ),
+                      child: Text('${index + 1}', style: const TextStyle(fontSize: 11)),
                     ),
                     title: Text(step.label),
-                    subtitle: Text(
-                      step.command,
-                      style: const TextStyle(fontSize: 10),
-                    ),
+                    subtitle: Text(step.command, style: const TextStyle(fontSize: 10)),
                     trailing: Wrap(
                       spacing: 0,
                       children: [
@@ -511,12 +488,10 @@ class CustomAutomationRecordingStopButton extends StatefulWidget {
   const CustomAutomationRecordingStopButton({super.key, required this.onStop});
 
   @override
-  State<CustomAutomationRecordingStopButton> createState() =>
-      _CustomAutomationRecordingStopButtonState();
+  State<CustomAutomationRecordingStopButton> createState() => _CustomAutomationRecordingStopButtonState();
 }
 
-class _CustomAutomationRecordingStopButtonState
-    extends State<CustomAutomationRecordingStopButton> {
+class _CustomAutomationRecordingStopButtonState extends State<CustomAutomationRecordingStopButton> {
   Offset offset = const Offset(16, 80);
 
   @override
