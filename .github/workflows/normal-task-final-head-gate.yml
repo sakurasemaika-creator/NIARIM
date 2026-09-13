@@ -4,6 +4,7 @@ name: Normal Task Final HEAD Gate
 # Normal-task rerun anchor: verify the current dev_branch after Step 2-4 proofs.
 # 2026-09-11 rerun anchor: verify latest dev_branch after subsequent app fixes.
 # 2026-09-12 rerun anchor: verify latest dev_branch after stale-test alignment fixes.
+# 2026-09-13 rerun anchor: verify latest dev_branch after confirmed final-gate regressions.
 on:
   push:
     branches: [dev_branch]
