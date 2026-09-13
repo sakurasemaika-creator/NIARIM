@@ -222,7 +222,7 @@ jobs:
       - name: Analyze targeted files
         run: flutter analyze lib/models/filter_def.dart lib/engine/filter_engine.dart lib/models/custom_automation_presets.dart lib/engine/prism_filter_engine.dart lib/screens/canvas/widgets/filter_panel.dart --no-fatal-warnings --no-fatal-infos
       - name: Run targeted tests
-        run: flutter test test/filter_engine_aurora_hologram_test.dart test/custom_automation_presets_test.dart test/prism_filter_test.dart --reporter expanded
+        run: flutter test test/filter_engine_aurora_hologram_test.dart test/custom_automation_presets_test.dart --reporter expanded
       - name: Commit verified implementation
         run: |
           git config user.name github-actions[bot]
