@@ -6195,4 +6195,16 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get customAutomationFrameRangeInvalid => '有効なフレーム範囲を入力してください。';
+
+  @override
+  String get brushSettingsPressureHardnessLabel => '筆圧硬度';
+
+  @override
+  String get customAutomationRunAction => '実行';
+
+  @override
+  String get customAutomationFavoriteAction => 'お気に入りに追加';
+
+  @override
+  String get customAutomationUnfavoriteAction => 'お気に入りを解除';
 }

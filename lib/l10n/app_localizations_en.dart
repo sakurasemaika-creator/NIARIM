@@ -6407,4 +6407,16 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get customAutomationFrameRangeInvalid => 'Enter a valid frame range.';
+
+  @override
+  String get brushSettingsPressureHardnessLabel => 'Pressure hardness';
+
+  @override
+  String get customAutomationRunAction => 'Run';
+
+  @override
+  String get customAutomationFavoriteAction => 'Add to favorites';
+
+  @override
+  String get customAutomationUnfavoriteAction => 'Remove from favorites';
 }

@@ -6526,4 +6526,16 @@ class AppLocalizationsFr extends AppLocalizations {
   @override
   String get customAutomationFrameRangeInvalid =>
       'Saisissez une plage d’images valide.';
+
+  @override
+  String get brushSettingsPressureHardnessLabel => '筆圧硬度';
+
+  @override
+  String get customAutomationRunAction => '実行';
+
+  @override
+  String get customAutomationFavoriteAction => 'お気に入りに追加';
+
+  @override
+  String get customAutomationUnfavoriteAction => 'お気に入りを解除';
 }

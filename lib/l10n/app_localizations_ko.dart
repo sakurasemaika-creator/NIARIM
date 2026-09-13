@@ -6222,4 +6222,16 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get customAutomationFrameRangeInvalid => '올바른 프레임 범위를 입력하세요.';
+
+  @override
+  String get brushSettingsPressureHardnessLabel => '筆圧硬度';
+
+  @override
+  String get customAutomationRunAction => '実行';
+
+  @override
+  String get customAutomationFavoriteAction => 'お気に入りに追加';
+
+  @override
+  String get customAutomationUnfavoriteAction => 'お気に入りを解除';
 }

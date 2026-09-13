@@ -6154,6 +6154,18 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get customAutomationFrameRangeInvalid => '请输入有效的帧范围。';
+
+  @override
+  String get brushSettingsPressureHardnessLabel => '筆圧硬度';
+
+  @override
+  String get customAutomationRunAction => '実行';
+
+  @override
+  String get customAutomationFavoriteAction => 'お気に入りに追加';
+
+  @override
+  String get customAutomationUnfavoriteAction => 'お気に入りを解除';
 }
 
 /// The translations for Chinese, using the Han script (`zh_Hant`).
