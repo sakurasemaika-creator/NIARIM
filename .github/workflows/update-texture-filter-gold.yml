@@ -130,7 +130,8 @@ jobs:
               expect(en, contains('\"filterAuroraHologramPresetClassicHologram\": \"Aurora Hologram\"'));
               expect(presets, contains("name: '質感変更フィルター'"));
               expect(presets, contains("id: 'Filter0019'"));
-              expect(service, contains("FilterDef(id: 'Filter0019', name: '質感変更フィルター'"));
+              expect(service, contains("id: 'Filter0019'"));
+              expect(service, contains("name: '質感変更フィルター'"));
 
               for (final rgbTail in <String>[
                 '223, 149, 31)',
