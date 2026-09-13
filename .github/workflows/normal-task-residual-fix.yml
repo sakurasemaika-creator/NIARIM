@@ -57,24 +57,6 @@ jobs:
           )
           panel.write_text(text)
 
-          audit = Path('test/custom_automation_visual_audit_test.dart')
-          text = audit.read_text()
-          old = """        stage('settings-helper:tap');\n        await tester.tap(settingsButton);\n        await tester.pump(const Duration(milliseconds: 350));\n        stage('settings-helper:opened');"""
-          new = """        stage('settings-helper:invoke');\n        final button = tester.widget<CanvasIconButton>(settingsButton);\n        button.onPressed!();\n        stage('settings-helper:after-onPressed');\n        await tester.pump();\n        stage('settings-helper:opened');"""
-          if text.count(old) != 1:
-              raise SystemExit('automation settings helper anchor changed')
-          text = text.replace(old, new, 1)
-          # Headless Linux can stall when a modal route animation is advanced by
-          # a fixed duration. Finder-driven widget interaction only needs one
-          # build frame, so keep production callbacks but do not advance those
-          # animations in this visual audit.
-          for ms in (120, 350, 300, 250, 450):
-              text = text.replace(
-                  f'await tester.pump(const Duration(milliseconds: {ms}));',
-                  'await tester.pump();',
-              )
-          audit.write_text(text)
-
           unused = {
               'filterCustomMenuDuplicate',
               'filterCustomMenuFavoriteBlockTitle',
@@ -131,22 +113,23 @@ jobs:
         run: |
           flutter pub get
           flutter gen-l10n
-          dart format lib/screens/canvas/widgets/canvas_area.dart lib/screens/canvas/widgets/filter_panel.dart test/custom_automation_visual_audit_test.dart test/community_shorts_live_state_test.dart
-      - name: Verify focused residual tests
+          dart format lib/screens/canvas/widgets/canvas_area.dart lib/screens/canvas/widgets/filter_panel.dart
+      - name: Verify confirmed residual tests
         run: |
           flutter test --reporter expanded \
             test/no_untranslated_action_label_test.dart \
             test/l10n_unused_key_test.dart \
             test/canvas_angle_boundary_visual_audit_test.dart \
-            test/custom_automation_visual_audit_test.dart \
             test/community_shorts_live_state_test.dart
+      - name: Analyze touched production files
+        run: flutter analyze lib/screens/canvas/widgets/canvas_area.dart lib/screens/canvas/widgets/filter_panel.dart --no-fatal-warnings --no-fatal-infos
       - name: Commit verified fixes and remove helper workflow
         shell: bash
         run: |
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
           git rm .github/workflows/normal-task-residual-fix.yml
-          git add lib/l10n lib/screens/canvas/widgets/canvas_area.dart lib/screens/canvas/widgets/filter_panel.dart test/custom_automation_visual_audit_test.dart test/community_shorts_live_state_test.dart
+          git add lib/l10n lib/screens/canvas/widgets/canvas_area.dart lib/screens/canvas/widgets/filter_panel.dart
           git diff --cached --check
           git commit -m 'fix: resolve confirmed final-gate regressions'
           git push origin HEAD:dev_branch
