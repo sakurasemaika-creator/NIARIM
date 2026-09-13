@@ -24,12 +24,8 @@ class CustomAutomationDraft {
 
 class CustomAutomationService extends ChangeNotifier {
   static const _prefsKey = 'custom_automations_v1';
+  static const _favoritesPrefsKey = 'custom_automation_favorites_v1';
 
-  // Only high-frequency value controls are safe to collapse while recording.
-  // Discrete operations (especially canvas.filter, duplicate/merge, frame/layer
-  // actions, etc.) must always retain every invocation and its ordering. The old
-  // generic same-command coalescing silently dropped the first operation from
-  // sequences such as Auto line art -> Ink pool because both are canvas.filter.
   static const Set<String> _coalescibleCommands = {
     'canvas.brushSize',
     'canvas.brushOpacity',
@@ -37,14 +33,25 @@ class CustomAutomationService extends ChangeNotifier {
   };
 
   final List<CustomAutomation> _items = [];
+  final Set<String> _favoriteIds = {};
   CustomAutomationDraft? _draft;
   bool _recording = false;
   CustomAutomationSurface? _recordingSurface;
+  bool _favoritesOnly = false;
 
   List<CustomAutomation> get items => List.unmodifiable(_items);
+  Set<String> get favoriteIds => Set.unmodifiable(_favoriteIds);
+  bool get favoritesOnly => _favoritesOnly;
+  List<CustomAutomation> get visibleItems => List.unmodifiable(
+    _favoritesOnly
+        ? _items.where((item) => _favoriteIds.contains(item.id))
+        : _items,
+  );
   CustomAutomationDraft? get draft => _draft;
   bool get isRecording => _recording;
   CustomAutomationSurface? get recordingSurface => _recordingSurface;
+
+  bool isFavorite(String id) => _favoriteIds.contains(id);
 
   Future<void> init() async {
     final prefs = await SharedPreferences.getInstance();
@@ -52,10 +59,6 @@ class CustomAutomationService extends ChangeNotifier {
 
     _items.clear();
     if (raw == null) {
-      // NIARIM is still pre-release, so there is no installed-user migration to
-      // perform. Seed the requested starter automations only when the automation
-      // store is created for the first time. From then on the persisted list is
-      // authoritative, including an intentionally empty list after deletions.
       _items.addAll(builtInCanvasAutomationPresets());
       await _persist();
     } else {
@@ -71,6 +74,11 @@ class CustomAutomationService extends ChangeNotifier {
         }).whereType<CustomAutomation>(),
       );
     }
+    _favoriteIds
+      ..clear()
+      ..addAll(prefs.getStringList(_favoritesPrefsKey) ?? const <String>[]);
+    _favoriteIds.removeWhere((id) => _items.every((item) => item.id != id));
+    await _persistFavorites();
     notifyListeners();
   }
 
@@ -80,6 +88,26 @@ class CustomAutomationService extends ChangeNotifier {
       _prefsKey,
       _items.map((item) => jsonEncode(item.toJson())).toList(),
     );
+  }
+
+  Future<void> _persistFavorites() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setStringList(_favoritesPrefsKey, _favoriteIds.toList());
+  }
+
+  Future<void> toggleFavorite(String id) async {
+    if (_items.every((item) => item.id != id)) return;
+    if (!_favoriteIds.add(id)) {
+      _favoriteIds.remove(id);
+    }
+    await _persistFavorites();
+    notifyListeners();
+  }
+
+  void setFavoritesOnly(bool value) {
+    if (_favoritesOnly == value) return;
+    _favoritesOnly = value;
+    notifyListeners();
   }
 
   void beginDraft({
@@ -139,9 +167,6 @@ class CustomAutomationService extends ChangeNotifier {
       recordedFrame: recordedFrame,
     );
 
-    // Sliders/color drags may emit many callbacks. Only commands explicitly known
-    // to represent one continuously-edited value are coalesced. Discrete actions
-    // with the same command name are intentionally kept as separate ordered steps.
     if (!changesFrame &&
         _coalescibleCommands.contains(command) &&
         draft.steps.isNotEmpty) {
@@ -247,7 +272,9 @@ class CustomAutomationService extends ChangeNotifier {
 
   Future<void> delete(String id) async {
     _items.removeWhere((entry) => entry.id == id);
+    _favoriteIds.remove(id);
     await _persist();
+    await _persistFavorites();
     notifyListeners();
   }
 
