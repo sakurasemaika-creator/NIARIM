@@ -6,6 +6,7 @@ import 'package:niarim/l10n/app_localizations.dart';
 import 'package:niarim/screens/community/community_author_works_screen.dart';
 import 'package:niarim/screens/community/widgets/community_shorts_viewer.dart';
 import 'package:niarim/services/community_service.dart';
+import 'package:niarim/services/settings_service.dart';
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
@@ -13,11 +14,15 @@ void main() {
   testWidgets('縦画面はブックマーク・詳細情報・作者導線・制作情報を即時反映する', (tester) async {
     SharedPreferences.setMockInitialValues({});
     final service = CommunityService();
+    final settings = SettingsService();
     final work = service.works.first;
 
     await tester.pumpWidget(
-      ChangeNotifierProvider<CommunityService>.value(
-        value: service,
+      MultiProvider(
+        providers: [
+          ChangeNotifierProvider<CommunityService>.value(value: service),
+          ChangeNotifierProvider<SettingsService>.value(value: settings),
+        ],
         child: MaterialApp(
           localizationsDelegates: AppLocalizations.localizationsDelegates,
           supportedLocales: AppLocalizations.supportedLocales,
