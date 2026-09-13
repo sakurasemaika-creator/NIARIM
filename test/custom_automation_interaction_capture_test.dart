@@ -44,20 +44,21 @@ void main() {
 
     Future<void> capture(String name) async {
       await tester.pumpAndSettle();
-      final bytes = await tester.runAsync(() async {
+      await tester.runAsync(() async {
         final boundary =
             captureKey.currentContext!.findRenderObject()! as RenderRepaintBoundary;
         final image = await boundary.toImage(pixelRatio: 1.0);
         try {
           final data = await image.toByteData(format: ui.ImageByteFormat.png);
           if (data == null) throw StateError('PNG encoding returned null');
-          return data.buffer.asUint8List();
+          await File('${out.path}/$name.png').writeAsBytes(
+            data.buffer.asUint8List(),
+            flush: true,
+          );
         } finally {
           image.dispose();
         }
       });
-      expect(bytes, isNotNull);
-      await File('${out.path}/$name.png').writeAsBytes(bytes!, flush: true);
     }
 
     await tester.tap(find.byKey(const ValueKey('open-custom-automation-manager')));
