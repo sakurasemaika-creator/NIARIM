@@ -185,59 +185,68 @@ class _InteractionHost extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final service = context.watch<CustomAutomationService>();
     return MaterialApp(
       locale: const Locale('ja'),
       localizationsDelegates: AppLocalizations.localizationsDelegates,
       supportedLocales: AppLocalizations.supportedLocales,
-      home: Scaffold(
-        appBar: AppBar(title: const Text('自動操作 実操作キャプチャ')),
-        body: Center(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Text(
-                service.isRecording
-                    ? '記録中: ${service.draft?.name ?? ''} / ${service.draft?.steps.length ?? 0} steps'
-                    : '記録停止',
-                key: const ValueKey('recording-status'),
-              ),
-              const SizedBox(height: 16),
-              FilledButton.icon(
-                key: const ValueKey('open-custom-automation-manager'),
-                onPressed: () => showModalBottomSheet<void>(
-                  context: context,
-                  isScrollControlled: true,
-                  builder: (_) => CustomAutomationManagerSheet(
-                    surface: CustomAutomationSurface.canvas,
-                    recordingStartFrame: 0,
-                    frameCount: 1,
-                    onExecute: (_, _, _) async {},
-                    onRecordingStarted: () {},
-                  ),
+      home: const _InteractionHome(),
+    );
+  }
+}
+
+class _InteractionHome extends StatelessWidget {
+  const _InteractionHome();
+
+  @override
+  Widget build(BuildContext context) {
+    final service = context.watch<CustomAutomationService>();
+    return Scaffold(
+      appBar: AppBar(title: const Text('自動操作 実操作キャプチャ')),
+      body: Center(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(
+              service.isRecording
+                  ? '記録中: ${service.draft?.name ?? ''} / ${service.draft?.steps.length ?? 0} steps'
+                  : '記録停止',
+              key: const ValueKey('recording-status'),
+            ),
+            const SizedBox(height: 16),
+            FilledButton.icon(
+              key: const ValueKey('open-custom-automation-manager'),
+              onPressed: () => showModalBottomSheet<void>(
+                context: context,
+                isScrollControlled: true,
+                builder: (_) => CustomAutomationManagerSheet(
+                  surface: CustomAutomationSurface.canvas,
+                  recordingStartFrame: 0,
+                  frameCount: 1,
+                  onExecute: (_, _, _) async {},
+                  onRecordingStarted: () {},
                 ),
-                icon: const Icon(Icons.auto_awesome),
-                label: const Text('自動操作を開く'),
               ),
-              const SizedBox(height: 12),
-              OutlinedButton.icon(
-                key: const ValueKey('open-custom-automation-editor'),
-                onPressed: service.draft == null || service.isRecording
-                    ? null
-                    : () => showModalBottomSheet<void>(
-                        context: context,
-                        isScrollControlled: true,
-                        builder: (_) => CustomAutomationDraftEditorSheet(
-                          surface: CustomAutomationSurface.canvas,
-                          onResumeRecording: () {},
-                          onSaved: () {},
-                        ),
+              icon: const Icon(Icons.auto_awesome),
+              label: const Text('自動操作を開く'),
+            ),
+            const SizedBox(height: 12),
+            OutlinedButton.icon(
+              key: const ValueKey('open-custom-automation-editor'),
+              onPressed: service.draft == null || service.isRecording
+                  ? null
+                  : () => showModalBottomSheet<void>(
+                      context: context,
+                      isScrollControlled: true,
+                      builder: (_) => CustomAutomationDraftEditorSheet(
+                        surface: CustomAutomationSurface.canvas,
+                        onResumeRecording: () {},
+                        onSaved: () {},
                       ),
-                icon: const Icon(Icons.edit_note),
-                label: const Text('記録内容を編集'),
-              ),
-            ],
-          ),
+                    ),
+              icon: const Icon(Icons.edit_note),
+              label: const Text('記録内容を編集'),
+            ),
+          ],
         ),
       ),
     );
