@@ -1,4 +1,4 @@
-name: Continue Hologram Lineart Prism
+name: Correct Pearl2 Pastel Dream Split
 
 on:
   push:
@@ -23,65 +23,75 @@ jobs:
         with:
           channel: stable
           cache: true
-      - name: Apply corrected implementation
+      - name: Split Pearl 2 and Pastel Dream
         shell: python
         run: |
           from pathlib import Path
           import re
 
-          def read(path): return Path(path).read_text()
-          def write(path, text): Path(path).write_text(text)
+          def read(path):
+              return Path(path).read_text()
+
+          def write(path, text):
+              Path(path).write_text(text)
 
           def replace_braced_function(text, signature, replacement):
               start = text.index(signature)
               brace = text.index('{', start)
               depth = 0
-              end = None
               for i in range(brace, len(text)):
-                  if text[i] == '{': depth += 1
+                  if text[i] == '{':
+                      depth += 1
                   elif text[i] == '}':
                       depth -= 1
                       if depth == 0:
-                          end = i + 1
-                          break
-              if end is None: raise SystemExit(f'unclosed function: {signature}')
-              return text[:start] + replacement + text[end:]
+                          return text[:start] + replacement + text[i + 1:]
+              raise SystemExit(f'unclosed function: {signature}')
 
-          # The temporary eighth enum is redundant: original Pastel Dream becomes Pearl 2.
+          # Pearl 2 is a separate preset. Pastel Dream remains the newer pink-rainbow preset.
           p = 'lib/models/filter_def.dart'
-          s = read(p).replace('  pearl2,\n', '')
+          s = read(p)
+          if '  pearl2,\n' not in s:
+              s = s.replace(
+                  '  classicHologram,\n}',
+                  '  classicHologram,\n  pearl2,\n}',
+                  1,
+              )
           write(p, s)
 
-          # Visible preset names.
-          locale_values = {
-            'lib/l10n/app_ja.arb': {
-              'filterAuroraHologramPresetSoapBubble': 'パール1',
-              'filterAuroraHologramPresetCyberNeon': 'ヴェイパーウェイヴ',
-              'filterAuroraHologramPresetPastelDream': 'パール2',
-              'filterAuroraHologramPresetClassicHologram': 'シャボン玉',
-            },
-            'lib/l10n/app_en.arb': {
-              'filterAuroraHologramPresetSoapBubble': 'Pearl 1',
-              'filterAuroraHologramPresetCyberNeon': 'Vaporwave',
-              'filterAuroraHologramPresetPastelDream': 'Pearl 2',
-              'filterAuroraHologramPresetClassicHologram': 'Soap Bubble',
-            },
-          }
-          for p, values in locale_values.items():
-              s = read(p)
-              for key, value in values.items():
-                  pat = rf'("{re.escape(key)}"\s*:\s*)"[^"]*"'
-                  if re.search(pat, s):
-                      s = re.sub(pat, lambda m, v=value: m.group(1) + f'"{v}"', s, count=1)
-                  else:
-                      anchor = '"filterAuroraHologramPresetSilverFoil"'
-                      i = s.index(anchor)
-                      eol = s.index('\n', i)
-                      if s[eol - 1] != ',': s = s[:eol] + ',' + s[eol:]; eol += 1
-                      s = s[:eol] + f'  "{key}": "{value}",\n' + s[eol:]
-              write(p, s)
+          # Restore the visible Pastel Dream name and give Pearl 2 its own label.
+          for path, pastel_name, pearl_name in [
+              ('lib/l10n/app_ja.arb', 'パステルドリーム', 'パール2'),
+              ('lib/l10n/app_en.arb', 'Pastel Dream', 'Pearl 2'),
+          ]:
+              s = read(path)
+              pastel_pat = r'("filterAuroraHologramPresetPastelDream"\s*:\s*)"[^"]*"'
+              s = re.sub(
+                  pastel_pat,
+                  lambda m: m.group(1) + f'"{pastel_name}"',
+                  s,
+                  count=1,
+              )
+              key = 'filterAuroraHologramPresetPearl2'
+              pearl_pat = rf'("{key}"\s*:\s*)"[^"]*"'
+              if re.search(pearl_pat, s):
+                  s = re.sub(
+                      pearl_pat,
+                      lambda m: m.group(1) + f'"{pearl_name}"',
+                      s,
+                      count=1,
+                  )
+              else:
+                  anchor = '"filterAuroraHologramPresetPastelDream"'
+                  i = s.index(anchor)
+                  eol = s.index('\n', i)
+                  if s[eol - 1] != ',':
+                      s = s[:eol] + ',' + s[eol:]
+                      eol += 1
+                  s = s[:eol] + f'  "{key}": "{pearl_name}",\n' + s[eol:]
+              write(path, s)
 
-          # UI labels and prism blend mode.
+          # Keep Pearl 2 and Pastel Dream as separate choices in the panel.
           p = 'lib/screens/canvas/widgets/filter_panel.dart'
           s = read(p)
           a = s.index('  String _auroraPresetLabel(')
@@ -97,16 +107,14 @@ jobs:
             AuroraHologramPreset.sunsetGold => l10n.filterAuroraHologramPresetSunsetGold,
             AuroraHologramPreset.silverFoil => l10n.filterAuroraHologramPresetSilverFoil,
             AuroraHologramPreset.classicHologram => l10n.filterAuroraHologramPresetClassicHologram,
+            AuroraHologramPreset.pearl2 => l10n.filterAuroraHologramPresetPearl2,
           };
           '''
           s = s[:a] + labels + s[b:]
-          s = s.replace('model.LayerBlendMode.colorDodge)', 'model.LayerBlendMode.addition)')
-          s = s.replace('ガウスぼかし → 覆い焼き', 'ガウスぼかし → 覆い焼きリニア')
-          s = s.replace('覆い焼きリニアリニア', '覆い焼きリニア')
           write(p, s)
 
-          # Hologram palettes: Pearl 1, Vaporwave, Pearl 2 (pink+rainbow),
-          # and Soap Bubble (cyan+rainbow).
+          # Preserve all current palettes. Pearl 2 receives the exact earlier Pastel Dream palette
+          # that produced the attached lavender/cream/mint pearlescent reference.
           p = 'lib/engine/filter_engine.dart'
           s = read(p)
           palette_fn = '''List<(double, int, int, int)> auroraHologramStops(AuroraHologramPreset preset) {
@@ -157,78 +165,74 @@ jobs:
                 (0.63, 198, 218, 255), (0.70, 163, 235, 255), (0.77, 190, 255, 239),
                 (0.84, 245, 255, 207), (0.91, 255, 220, 227), (1.00, 190, 239, 255),
               ],
+              AuroraHologramPreset.pearl2 => const [
+                (0.00, 223, 236, 255), (0.07, 242, 233, 255), (0.14, 255, 225, 240),
+                (0.21, 255, 226, 211), (0.28, 255, 244, 199), (0.35, 225, 250, 221),
+                (0.42, 34, 224, 255), (0.49, 255, 255, 255), (0.56, 219, 232, 255),
+                (0.63, 239, 222, 255), (0.70, 255, 217, 235), (0.77, 255, 230, 205),
+                (0.84, 247, 245, 204), (0.91, 218, 247, 227), (0.97, 240, 247, 255),
+                (1.00, 255, 255, 255),
+              ],
             };
           }'''
-          s = replace_braced_function(s, 'List<(double, int, int, int)> auroraHologramStops(', palette_fn)
+          s = replace_braced_function(
+              s,
+              'List<(double, int, int, int)> auroraHologramStops(',
+              palette_fn,
+          )
           write(p, s)
 
-          # Analog line extraction is strictly existing Color Adjust -> Threshold.
-          write('lib/models/custom_automation_presets.dart', '''import 'custom_automation.dart';
-          import 'filter_def.dart';
+          write('test/hologram_palette_mapping_test.dart', '''import 'package:flutter_test/flutter_test.dart';
+          import 'package:niarim/engine/filter_engine.dart';
+          import 'package:niarim/models/filter_def.dart';
 
-          const auroraHologramAutomationPresetId = 'preset_aurora_hologram';
-          const lineExtractionAutomationPresetId = 'preset_line_extraction';
-          const lineCreationAutomationPresetId = 'preset_line_creation';
-          final DateTime _presetTimestamp = DateTime.utc(2026, 1, 1);
+          void main() {
+            test('Pearl 2 keeps earlier Pastel Dream while Pastel Dream is pink-rainbow', () {
+              expect(
+                auroraHologramStops(AuroraHologramPreset.pearl2),
+                equals(const [
+                  (0.00, 223, 236, 255), (0.07, 242, 233, 255), (0.14, 255, 225, 240),
+                  (0.21, 255, 226, 211), (0.28, 255, 244, 199), (0.35, 225, 250, 221),
+                  (0.42, 34, 224, 255), (0.49, 255, 255, 255), (0.56, 219, 232, 255),
+                  (0.63, 239, 222, 255), (0.70, 255, 217, 235), (0.77, 255, 230, 205),
+                  (0.84, 247, 245, 204), (0.91, 218, 247, 227), (0.97, 240, 247, 255),
+                  (1.00, 255, 255, 255),
+                ]),
+              );
 
-          List<CustomAutomation> builtInCanvasAutomationPresets() => [
-            _filterPreset(id: auroraHologramAutomationPresetId, name: 'オーロラホログラム', filters: const [
-              FilterDef(id: 'Filter0019', name: 'オーロラホログラム', kind: FilterKind.auroraHologram, strength: 60),
-            ]),
-            _filterPreset(id: lineExtractionAutomationPresetId, name: '線画抽出', filters: const [
-              FilterDef(id: 'automation_color_adjust', name: '色調調整', kind: FilterKind.colorAdjust, caBrightness: 35, caContrast: 55),
-              FilterDef(id: 'Filter0014', name: '二値化', kind: FilterKind.threshold, thresholdValue: 190),
-            ]),
-            _filterPreset(id: lineCreationAutomationPresetId, name: '線画作成', filters: const [
-              FilterDef(id: 'Filter0006', name: '縁取り', kind: FilterKind.outline, outlineColor: 0xFF000000, outlineWidth: 6),
-            ]),
-          ];
-
-          CustomAutomation _filterPreset({required String id, required String name, required List<FilterDef> filters}) {
-            return CustomAutomation(
-              id: id, name: name, recordingStartFrame: 0,
-              createdAt: _presetTimestamp, updatedAt: _presetTimestamp,
-              steps: [for (var i = 0; i < filters.length; i++) CustomAutomationStep(
-                id: '${id}_filter_${i + 1}', surface: CustomAutomationSurface.canvas,
-                command: 'canvas.filterApply', label: filters[i].name,
-                args: {'filter': filters[i].toJson()}, recordedFrame: 0,
-              )],
-            );
+              final pastel = auroraHologramStops(AuroraHologramPreset.pastelDream);
+              expect(
+                pastel,
+                isNot(equals(auroraHologramStops(AuroraHologramPreset.pearl2))),
+              );
+              expect(
+                pastel,
+                containsAll(const [
+                  (0.00, 255, 214, 237),
+                  (0.28, 214, 207, 255),
+                  (0.42, 202, 255, 244),
+                  (0.56, 255, 232, 194),
+                  (0.70, 255, 174, 220),
+                ]),
+              );
+            });
           }
           ''')
-
-          # Lock the line extraction preset to the two requested production filters.
-          p = 'test/custom_automation_presets_test.dart'
-          s = read(p)
-          s = s.replace(
-            "expect(item.steps, hasLength(1));\n      expect(item.steps.single.command, 'canvas.filterApply');",
-            "expect(item.steps, hasLength(item.id == lineExtractionAutomationPresetId ? 2 : 1));\n      expect(item.steps.every((step) => step.command == 'canvas.filterApply'), isTrue);",
-          )
-          s = re.sub(
-            r"FilterDef filterOf\(String name\) \{\s*final raw = presets\[name\]!\.steps\.single\.args\['filter'\] as Map;\s*return FilterDef\.fromJson\(raw\.cast<String, dynamic>\(\)\);\s*\}",
-            "FilterDef filterOf(String name, [int step = 0]) {\n      final raw = presets[name]!.steps[step].args['filter'] as Map;\n      return FilterDef.fromJson(raw.cast<String, dynamic>());\n    }",
-            s,
-          )
-          s = s.replace(
-            "expect(filterOf('線画抽出').kind, FilterKind.autoLineart);\n    expect(filterOf('線画抽出').id, 'Filter0023');",
-            "expect(filterOf('線画抽出', 0).kind, FilterKind.colorAdjust);\n    expect(filterOf('線画抽出', 0).caBrightness, greaterThan(0));\n    expect(filterOf('線画抽出', 0).caContrast, greaterThan(0));\n    expect(filterOf('線画抽出', 1).kind, FilterKind.threshold);\n    expect(filterOf('線画抽出', 1).id, 'Filter0014');",
-          )
-          write(p, s)
       - run: flutter pub get
       - name: Generate localizations
         run: flutter gen-l10n
       - name: Format
-        run: dart format lib/models/filter_def.dart lib/engine/filter_engine.dart lib/models/custom_automation_presets.dart lib/screens/canvas/widgets/filter_panel.dart test/custom_automation_presets_test.dart
+        run: dart format lib/models/filter_def.dart lib/engine/filter_engine.dart lib/screens/canvas/widgets/filter_panel.dart test/hologram_palette_mapping_test.dart
       - name: Analyze targeted files
-        run: flutter analyze lib/models/filter_def.dart lib/engine/filter_engine.dart lib/models/custom_automation_presets.dart lib/engine/prism_filter_engine.dart lib/screens/canvas/widgets/filter_panel.dart --no-fatal-warnings --no-fatal-infos
+        run: flutter analyze lib/models/filter_def.dart lib/engine/filter_engine.dart lib/screens/canvas/widgets/filter_panel.dart --no-fatal-warnings --no-fatal-infos
       - name: Run targeted tests
-        run: flutter test test/filter_engine_aurora_hologram_test.dart test/custom_automation_presets_test.dart --reporter expanded
+        run: flutter test test/filter_engine_aurora_hologram_test.dart test/hologram_palette_mapping_test.dart --reporter expanded
       - name: Commit verified implementation
         run: |
           git config user.name github-actions[bot]
           git config user.email 41898282+github-actions[bot]@users.noreply.github.com
-          git add lib/models/filter_def.dart lib/engine/filter_engine.dart lib/models/custom_automation_presets.dart lib/screens/canvas/widgets/filter_panel.dart lib/l10n/app_ja.arb lib/l10n/app_en.arb lib/l10n/app_localizations*.dart test/custom_automation_presets_test.dart
+          git add lib/models/filter_def.dart lib/engine/filter_engine.dart lib/screens/canvas/widgets/filter_panel.dart lib/l10n/app_ja.arb lib/l10n/app_en.arb lib/l10n/app_localizations*.dart test/hologram_palette_mapping_test.dart
           git diff --cached --quiet && exit 0
-          git commit -m "feat: correct holograms prism blend and line extraction"
+          git commit -m "fix: split pearl2 from pastel dream palette"
           git pull --rebase origin dev_branch
           git push origin HEAD:dev_branch
