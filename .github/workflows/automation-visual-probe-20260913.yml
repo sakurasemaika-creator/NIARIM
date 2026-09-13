@@ -1,0 +1,36 @@
+name: Automation Visual Probe 20260913
+
+on:
+  push:
+    branches: [tmp-automation-visual-probe-20260913]
+    paths:
+      - '.github/workflows/automation-visual-probe-20260913.yml'
+
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          ref: tmp-automation-visual-probe-20260913
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+      - name: Reduce audit raster surface
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          p = Path('test/custom_automation_visual_audit_test.dart')
+          s = p.read_text()
+          old = """      tester.view.physicalSize = const Size(960, 2160);\n      tester.view.devicePixelRatio = 3;"""
+          new = """      // The audit validates UI flow and PNG state, not device-scale rasterization.\n      // Keep the headless raster surface at logical-phone size so opening an\n      // animated bottom sheet does not force a 3x full-app RepaintBoundary.\n      tester.view.physicalSize = const Size(320, 720);\n      tester.view.devicePixelRatio = 1;"""
+          if s.count(old) != 1:
+              raise SystemExit('viewport anchor changed')
+          p.write_text(s.replace(old, new, 1))
+          PY
+          dart format test/custom_automation_visual_audit_test.dart
+      - name: Run automation visual audit
+        run: flutter test test/custom_automation_visual_audit_test.dart --reporter expanded
