@@ -7,15 +7,15 @@ const int kMaxPressureHardness = 10;
 /// strength scale used by the drawing engine. Hardness 10 is exactly the
 /// previous maximum pressure response.
 int pressureStrengthForHardness(int hardness) =>
-    hardness.clamp(kMinPressureHardness, kMaxPressureHardness) * 10;
+    hardness.clamp(kMinPressureHardness, kMaxPressureHardness).toInt() * 10;
 
 /// Converts an existing pressure-strength value to the nearest UI hardness
 /// step. Values below the editable range map to level 1.
 int pressureHardnessForStrength(int strength) =>
-    (strength.clamp(10, 100) / 10).round().clamp(
-      kMinPressureHardness,
-      kMaxPressureHardness,
-    );
+    (strength.clamp(10, 100) / 10)
+        .round()
+        .clamp(kMinPressureHardness, kMaxPressureHardness)
+        .toInt();
 
 /// The hardness control is intentionally read-only while pressure is OFF.
 bool isPressureHardnessEnabled(PressureMode mode) => mode != PressureMode.off;
