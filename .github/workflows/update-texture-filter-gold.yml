@@ -133,7 +133,7 @@ jobs:
           fi
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          git add lib/l10n/app_ja.arb lib/l10n/app_en.arb lib/l10n/generated lib/models/custom_automation_presets.dart lib/engine/filter_engine.dart test/texture_filter_gold_palette_test.dart test/aurora_hologram_visual_audit_test.dart
+          git add lib/l10n lib/models/custom_automation_presets.dart lib/engine/filter_engine.dart test/texture_filter_gold_palette_test.dart test/aurora_hologram_visual_audit_test.dart
           git commit -m 'feat: rename texture filter and retune sunset gold'
           git pull --rebase origin dev_branch
           git push origin HEAD:dev_branch
