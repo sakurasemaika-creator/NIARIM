@@ -18,18 +18,45 @@ jobs:
         with:
           channel: stable
           cache: true
-      - name: Reduce audit raster surface
+      - name: Isolate Canvas screenshot boundary from route overlays
         shell: bash
         run: |
           python3 - <<'PY'
           from pathlib import Path
           p = Path('test/custom_automation_visual_audit_test.dart')
           s = p.read_text()
-          old = """      tester.view.physicalSize = const Size(960, 2160);\n      tester.view.devicePixelRatio = 3;"""
-          new = """      // The audit validates UI flow and PNG state, not device-scale rasterization.\n      // Keep the headless raster surface at logical-phone size so opening an\n      // animated bottom sheet does not force a 3x full-app RepaintBoundary.\n      tester.view.physicalSize = const Size(320, 720);\n      tester.view.devicePixelRatio = 1;"""
-          if s.count(old) != 1:
-              raise SystemExit('viewport anchor changed')
-          p.write_text(s.replace(old, new, 1))
+          old_open = '''      await tester.pumpWidget(
+        RepaintBoundary(
+          key: rootKey,
+          child: MultiProvider(
+            providers: providers!,'''
+          new_open = '''      await tester.pumpWidget(
+        MultiProvider(
+          providers: providers!,'''
+          if s.count(old_open) != 1:
+              raise SystemExit('outer RepaintBoundary anchor changed')
+          s = s.replace(old_open, new_open, 1)
+          old_return = '''                    return CanvasScreen(projectId: projectId);'''
+          new_return = '''                    return RepaintBoundary(
+                      key: rootKey,
+                      child: CanvasScreen(projectId: projectId),
+                    );'''
+          if s.count(old_return) != 1:
+              raise SystemExit('CanvasScreen return anchor changed')
+          s = s.replace(old_return, new_return, 1)
+          old_close = '''              ),
+            ),
+          ),
+        ),
+      );'''
+          new_close = '''              ),
+            ),
+          ),
+      );'''
+          if s.count(old_close) != 1:
+              raise SystemExit('outer RepaintBoundary close anchor changed')
+          s = s.replace(old_close, new_close, 1)
+          p.write_text(s)
           PY
           dart format test/custom_automation_visual_audit_test.dart
       - name: Run automation visual audit
