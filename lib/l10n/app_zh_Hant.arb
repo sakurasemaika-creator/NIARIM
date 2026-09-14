@@ -1093,11 +1093,6 @@
   "brushSettingsStabilizationTitle": "防手震",
   "brushSettingsStabilizationStrengthLabel": "防手震強度",
   "brushSettingsPixelModeTitle": "像素模式",
-  "brushSettingsPressureModeTitle": "筆壓設定",
-  "brushSettingsPressureOff": "無效",
-  "brushSettingsPressureSize": "套用到大小",
-  "brushSettingsPressureOpacity": "套用到不透明度",
-  "brushSettingsPressureSizeAndOpacity": "套用到大小＋不透明度",
   "brushSettingsFadeModeTitle": "淡出",
   "brushSettingsFadeOff": "OFF",
   "brushSettingsFadeWeak": "弱",
@@ -2700,7 +2695,6 @@
   "filterVhsColorBleed": "色彩溢出",
   "filterVhsTracking": "追蹤抖動",
   "timelineEffectTypeVhsNoise": "VHS 雜訊",
-  "brushSettingsPressureHardnessLabel": "壓感硬度",
   "customAutomationRunAction": "執行",
   "customAutomationFavoriteAction": "加入收藏",
   "customAutomationUnfavoriteAction": "從收藏中移除",
@@ -2709,5 +2703,12 @@
   "brushSettingsPressureOffSection": "筆壓關閉",
   "brushSettingsWeakPressureLabel": "弱",
   "brushSettingsStrongPressureLabel": "強",
-  "brushSettingsValueLabel": "值"
+  "brushSettingsValueLabel": "值",
+  "filterAuroraHologramPresetClassicHologram": "極光全息",
+  "filterAuroraHologramPresetPearl2": "珍珠2",
+  "customAutomationSpecifiedFrames": "在指定影格執行",
+  "customAutomationFrameFrom": "開始影格",
+  "customAutomationFrameTo": "結束影格",
+  "customAutomationFrameRangeInvalid": "請輸入有效的影格範圍。",
+  "filterNamePrism": "稜鏡"
 }

@@ -1,6 +1,5 @@
 // ignore: unused_import
 import 'package:intl/intl.dart' as intl;
-
 import 'app_localizations.dart';
 
 // ignore_for_file: type=lint
@@ -2976,21 +2975,6 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get brushSettingsPixelModeTitle => 'ピクセルモード';
-
-  @override
-  String get brushSettingsPressureModeTitle => '筆圧設定';
-
-  @override
-  String get brushSettingsPressureOff => '無効';
-
-  @override
-  String get brushSettingsPressureSize => 'サイズに反映';
-
-  @override
-  String get brushSettingsPressureOpacity => '不透明度に反映';
-
-  @override
-  String get brushSettingsPressureSizeAndOpacity => 'サイズ＋不透明度に反映';
 
   @override
   String get brushSettingsFadeModeTitle => 'フェード';
@@ -6196,9 +6180,6 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get customAutomationFrameRangeInvalid => '有効なフレーム範囲を入力してください。';
-
-  @override
-  String get brushSettingsPressureHardnessLabel => '筆圧硬度';
 
   @override
   String get customAutomationRunAction => '実行';

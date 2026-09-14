@@ -5513,36 +5513,6 @@ abstract class AppLocalizations {
   /// **'ピクセルモード'**
   String get brushSettingsPixelModeTitle;
 
-  /// No description provided for @brushSettingsPressureModeTitle.
-  ///
-  /// In ja, this message translates to:
-  /// **'筆圧設定'**
-  String get brushSettingsPressureModeTitle;
-
-  /// No description provided for @brushSettingsPressureOff.
-  ///
-  /// In ja, this message translates to:
-  /// **'無効'**
-  String get brushSettingsPressureOff;
-
-  /// No description provided for @brushSettingsPressureSize.
-  ///
-  /// In ja, this message translates to:
-  /// **'サイズに反映'**
-  String get brushSettingsPressureSize;
-
-  /// No description provided for @brushSettingsPressureOpacity.
-  ///
-  /// In ja, this message translates to:
-  /// **'不透明度に反映'**
-  String get brushSettingsPressureOpacity;
-
-  /// No description provided for @brushSettingsPressureSizeAndOpacity.
-  ///
-  /// In ja, this message translates to:
-  /// **'サイズ＋不透明度に反映'**
-  String get brushSettingsPressureSizeAndOpacity;
-
   /// No description provided for @brushSettingsFadeModeTitle.
   ///
   /// In ja, this message translates to:
@@ -11392,12 +11362,6 @@ abstract class AppLocalizations {
   /// In ja, this message translates to:
   /// **'有効なフレーム範囲を入力してください。'**
   String get customAutomationFrameRangeInvalid;
-
-  /// No description provided for @brushSettingsPressureHardnessLabel.
-  ///
-  /// In ja, this message translates to:
-  /// **'筆圧硬度'**
-  String get brushSettingsPressureHardnessLabel;
 
   /// No description provided for @customAutomationRunAction.
   ///

@@ -1,6 +1,5 @@
 // ignore: unused_import
 import 'package:intl/intl.dart' as intl;
-
 import 'app_localizations.dart';
 
 // ignore_for_file: type=lint
@@ -3083,21 +3082,6 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get brushSettingsPixelModeTitle => 'Pixel mode';
-
-  @override
-  String get brushSettingsPressureModeTitle => 'Pressure sensitivity';
-
-  @override
-  String get brushSettingsPressureOff => 'Off';
-
-  @override
-  String get brushSettingsPressureSize => 'Affects size';
-
-  @override
-  String get brushSettingsPressureOpacity => 'Affects opacity';
-
-  @override
-  String get brushSettingsPressureSizeAndOpacity => 'Affects size + opacity';
 
   @override
   String get brushSettingsFadeModeTitle => 'Fade';
@@ -6408,9 +6392,6 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get customAutomationFrameRangeInvalid => 'Enter a valid frame range.';
-
-  @override
-  String get brushSettingsPressureHardnessLabel => 'Pressure hardness';
 
   @override
   String get customAutomationRunAction => 'Run';

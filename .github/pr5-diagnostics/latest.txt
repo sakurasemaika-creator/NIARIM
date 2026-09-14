@@ -1,11 +1,6 @@
 === Translation Tone ===
 exit=1
 Translation tone audit failed:
-- es: missing keys: ['filterAuroraHologramPresetClassicHologram', 'filterAuroraHologramPresetPearl2']
-- fr: missing keys: ['filterAuroraHologramPresetClassicHologram', 'filterAuroraHologramPresetPearl2']
-- ko: missing keys: ['filterAuroraHologramPresetClassicHologram', 'filterAuroraHologramPresetPearl2']
-- zh: missing keys: ['filterAuroraHologramPresetClassicHologram', 'filterAuroraHologramPresetPearl2']
-- zh_Hant: missing keys: ['customAutomationFrameFrom', 'customAutomationFrameRangeInvalid', 'customAutomationFrameTo', 'customAutomationSpecifiedFrames', 'filterAuroraHologramPresetClassicHologram', 'filterAuroraHologramPresetPearl2', 'filterNamePrism']
 - zh_Hant: extra keys: ['communityPostComingSoonBody', 'communityPostComingSoonTitle', 'communityPostInfoBody', 'communityPostInfoTitle', 'communityTagSearchModeOffTooltip', 'communityTagSearchModeOnTooltip', 'customAutomationPremiumHint', 'customAutomationStopConfirmQuit', 'filterBackgroundBlendAutoLabel', 'filterBackgroundBlendAutoReset', 'filterBackgroundBlendColorLabel', 'filterCustomMenuDuplicate', 'filterCustomMenuFavoriteBlockBody', 'filterCustomMenuFavoriteBlockTitle']
 
 === Flutter Analyze ===
@@ -124,4 +119,4 @@ Analyzing 2 items...
    info • Unnecessary 'const' keyword. Try removing the keyword • test/visual/glitter_lame_render_capture_test.dart:55:15 • unnecessary_const
    info • Unnecessary 'const' keyword. Try removing the keyword • test/visual/glitter_lame_render_capture_test.dart:67:16 • unnecessary_const
 
-63 issues found. (ran in 20.0s)
+63 issues found. (ran in 23.3s)

@@ -1093,11 +1093,6 @@
   "brushSettingsStabilizationTitle": "Stabilisation du trait",
   "brushSettingsStabilizationStrengthLabel": "Intensité de la stabilisation",
   "brushSettingsPixelModeTitle": "Mode pixel",
-  "brushSettingsPressureModeTitle": "Sensibilité à la pression",
-  "brushSettingsPressureOff": "Désactivé",
-  "brushSettingsPressureSize": "Affecte la taille",
-  "brushSettingsPressureOpacity": "Affecte l'opacité",
-  "brushSettingsPressureSizeAndOpacity": "Affecte la taille + l'opacité",
   "brushSettingsFadeModeTitle": "Fondu",
   "brushSettingsFadeOff": "OFF",
   "brushSettingsFadeWeak": "Faible",
@@ -2691,7 +2686,6 @@
   "customAutomationFrameFrom": "Image de début",
   "customAutomationFrameTo": "Image de fin",
   "customAutomationFrameRangeInvalid": "Saisissez une plage d’images valide.",
-  "brushSettingsPressureHardnessLabel": "Dureté de pression",
   "customAutomationRunAction": "Exécuter",
   "customAutomationFavoriteAction": "Ajouter aux favoris",
   "customAutomationUnfavoriteAction": "Retirer des favoris",
@@ -2700,5 +2694,7 @@
   "brushSettingsPressureOffSection": "Pression désactivée",
   "brushSettingsWeakPressureLabel": "Faible",
   "brushSettingsStrongPressureLabel": "Forte",
-  "brushSettingsValueLabel": "Valeur"
+  "brushSettingsValueLabel": "Valeur",
+  "filterAuroraHologramPresetClassicHologram": "Hologramme aurore",
+  "filterAuroraHologramPresetPearl2": "Perle 2"
 }

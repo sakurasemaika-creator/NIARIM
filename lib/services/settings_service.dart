@@ -357,11 +357,10 @@ class SettingsService extends ChangeNotifier {
   GestureAction get twoFingerSwipe => _twoFingerSwipe;
   GestureAction get longPress => _longPress;
 
-  // ─── ペン入力設定（筆圧カーブ・ペンボタン） ─────────────────
-  // 注：筆圧の「無効／サイズ／不透明度／両方」反映モードは
-  // アプリ全体の筆圧入力ON/OFF。ブラシごとのON/OFFプロファイルとは独立して保持する。
-  // のみで管理する（グローバル設定としては持たない）。
-  // 筆圧カーブのみアプリ全体に適用される設定としてここで管理する。
+  // ─── ペン入力設定（筆圧ON/OFF・筆圧カーブ・ペンボタン） ─────────────
+  // 筆圧ON/OFFはアプリ全体の入力状態。各ブラシはON/OFF両プロファイルを
+  // 常に保持し、この設定によって描画時に使用する側だけを切り替える。
+  // 筆圧カーブもアプリ全体に適用される。
   bool _palmRejectionEnabled = true;
   // App-wide pressure activation. Brushes always store both ON/OFF profiles;
   // this flag selects which profile is active while drawing.
