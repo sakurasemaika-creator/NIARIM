@@ -1,6 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:niarim/models/brush.dart';
 
+// RED contract for the approved pressure ON/OFF profile redesign.
 void main() {
   group('Brush pressure profiles', () {
     test('new brushes store explicit pressure profile defaults', () {
