@@ -1,6 +1,9 @@
 name: TMP Brush Pressure Cleanup Inventory
 
 on:
+  push:
+    branches:
+      - feature/brush-pressure-profiles
   workflow_dispatch:
 
 jobs:
