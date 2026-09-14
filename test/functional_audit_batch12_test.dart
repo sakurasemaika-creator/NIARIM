@@ -130,8 +130,16 @@ void main() {
     final e = DrawingEngine(tileManager: tm)
       ..currentBrush = _brush(
         size: 30,
-        pressureMode: PressureMode.sizeAndOpacity,
-        pressureStrength: 100,
+        sizePressure: const PressureRangeSetting(
+          enabled: true,
+          weak: 0,
+          strong: 100,
+        ),
+        opacityPressure: const PressureRangeSetting(
+          enabled: true,
+          weak: 0,
+          strong: 100,
+        ),
       )
       ..currentColor = const ui.Color(0xFF202020);
     e.beginStroke(const StrokePoint(x: 30, y: 40, pressure: 1), 'p');
@@ -198,8 +206,16 @@ Brush _brush({
   required double size,
   FadeMode fadeMode = FadeMode.off,
   FadeCustomSettings? fadeCustom,
-  PressureMode pressureMode = PressureMode.off,
-  int pressureStrength = 100,
+  PressureRangeSetting sizePressure = const PressureRangeSetting(
+    enabled: false,
+    weak: 50,
+    strong: 100,
+  ),
+  PressureRangeSetting opacityPressure = const PressureRangeSetting(
+    enabled: false,
+    weak: 50,
+    strong: 100,
+  ),
   bool strokeDecay = false,
 }) => Brush(
   id: 'audit',
@@ -207,17 +223,16 @@ Brush _brush({
   size: size,
   opacity: 100,
   spacing: 1,
-  blurRadius: 0,
   stabilization: false,
   stabilizationStrength: 0,
   pixelMode: false,
-  pressureMode: pressureMode,
-  pressureStrength: pressureStrength,
+  pressureOn: BrushPressureOnSettings.defaults.copyWith(
+    size: sizePressure,
+    opacity: opacityPressure,
+  ),
   fadeMode: fadeMode,
   fadeCustom: fadeCustom,
   strokeDecay: strokeDecay,
-  mixingMode: BrushMixingMode.off,
-  mixingRate: 0,
 );
 
 void _line(
@@ -247,16 +262,11 @@ Future<Uint8List> _drawSpacing(int spacing) async {
       size: 10,
       opacity: 100,
       spacing: spacing,
-      blurRadius: 0,
       stabilization: false,
       stabilizationStrength: 0,
       pixelMode: false,
-      pressureMode: PressureMode.off,
-      pressureStrength: 100,
       fadeMode: FadeMode.off,
       strokeDecay: false,
-      mixingMode: BrushMixingMode.off,
-      mixingRate: 0,
     )
     ..currentColor = const ui.Color(0xFF202020);
   // 1回のcontinueStrokeでengine自身のspacing分割を使う。

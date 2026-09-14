@@ -108,9 +108,8 @@ void main() {
     expect(iconOf(loads), Icons.book_outlined, reason: '読み込みはノートのアイコン');
     expect(iconOf(deletes), Icons.delete_outline, reason: '削除はゴミ箱のアイコン');
 
-    final source = File(
-      'lib/screens/save_tree/save_management_screen.dart',
-    ).readAsStringSync();
+    final source = File('lib/screens/save_tree/save_management_screen.dart')
+        .readAsStringSync();
     expect(
       source.contains('showModalBottomSheet'),
       isFalse,

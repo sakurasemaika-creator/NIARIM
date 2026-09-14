@@ -59,7 +59,8 @@ void main() {
       Future<void> capture(String name) async {
         await tester.pump(const Duration(milliseconds: 100));
         final boundary =
-            rootKey.currentContext!.findRenderObject()! as RenderRepaintBoundary;
+            rootKey.currentContext!.findRenderObject()!
+                as RenderRepaintBoundary;
         await tester.runAsync(() async {
           final image = await boundary.toImage(pixelRatio: 1);
           try {
@@ -177,7 +178,10 @@ void main() {
       await tester.pumpAndSettle();
       final restoredRow = find.byKey(ValueKey(itemId));
       await tester.tap(
-        find.descendant(of: restoredRow, matching: find.byIcon(Icons.delete_outline)),
+        find.descendant(
+          of: restoredRow,
+          matching: find.byIcon(Icons.delete_outline),
+        ),
       );
       await tester.pumpAndSettle();
       await tester.tap(find.text(l10n.commonDelete));

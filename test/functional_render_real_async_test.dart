@@ -11,6 +11,7 @@ import 'package:niarim/engine/tile_manager.dart';
 import 'package:niarim/engine/tone_engine.dart';
 import 'package:niarim/models/brush.dart';
 import 'package:niarim/models/layer.dart';
+
 import 'helpers/color_channels.dart';
 
 const w = 96;
@@ -143,7 +144,14 @@ void main() {
   test('筆圧size：低筆圧で細くなる', () async {
     final tm = TileManager(canvasWidth: w, canvasHeight: h);
     final e = DrawingEngine(tileManager: tm)
-      ..currentBrush = _brush(size: 28, pressureMode: PressureMode.size)
+      ..currentBrush = _brush(
+        size: 28,
+        sizePressure: const PressureRangeSetting(
+          enabled: true,
+          weak: 0,
+          strong: 100,
+        ),
+      )
       ..currentColor = const ui.Color(0xFF000000);
     e.beginStroke(const StrokePoint(x: 28, y: 48, pressure: 1), 'pressure');
     e.endStroke();
@@ -279,7 +287,11 @@ Brush _brush({
   double size = 20,
   int blurRadius = 0,
   bool pixelMode = false,
-  PressureMode pressureMode = PressureMode.off,
+  PressureRangeSetting sizePressure = const PressureRangeSetting(
+    enabled: false,
+    weak: 50,
+    strong: 100,
+  ),
   double? calligraphyAngle,
 }) => Brush(
   id: 'f',
@@ -287,16 +299,23 @@ Brush _brush({
   size: size,
   opacity: 100,
   spacing: 1,
-  blurRadius: blurRadius,
   stabilization: false,
   stabilizationStrength: 0,
   pixelMode: pixelMode,
-  pressureMode: pressureMode,
-  pressureStrength: 100,
+  pressureOn: BrushPressureOnSettings.defaults.copyWith(
+    size: sizePressure,
+    opacity: const PressureRangeSetting(enabled: false, weak: 50, strong: 100),
+    blur: PressureRangeSetting(
+      enabled: blurRadius > 0,
+      weak: blurRadius,
+      strong: blurRadius,
+    ),
+  ),
+  pressureOff: BrushPressureOffSettings.defaults.copyWith(
+    blur: FixedBrushSetting(enabled: blurRadius > 0, value: blurRadius),
+  ),
   fadeMode: FadeMode.off,
   strokeDecay: false,
-  mixingMode: BrushMixingMode.off,
-  mixingRate: 0,
   calligraphyAngle: calligraphyAngle,
 );
 

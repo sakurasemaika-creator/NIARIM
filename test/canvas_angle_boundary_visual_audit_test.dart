@@ -92,9 +92,9 @@ void main() {
                   child: Builder(
                     builder: (context) => ColoredBox(
                       // CanvasScreenと同じ、Transform外の固定安全背景。
-                      color: Theme.of(
-                        context,
-                      ).colorScheme.surfaceContainerHighest,
+                      color: Theme.of(context)
+                          .colorScheme
+                          .surfaceContainerHighest,
                       child: SizedBox(
                         width: 420,
                         height: 520,
@@ -187,9 +187,9 @@ void main() {
 
       final sign = testCase.degrees < 0 ? 'm' : 'p';
       final angle = testCase.degrees.abs().toString().padLeft(2, '0');
-      final safeColor = Theme.of(
-        rootKey.currentContext!,
-      ).colorScheme.surfaceContainerHighest;
+      final safeColor = Theme.of(rootKey.currentContext!)
+          .colorScheme
+          .surfaceContainerHighest;
       await tester.runAsync(
         () => _captureAndAssertSafety(
           rootKey,

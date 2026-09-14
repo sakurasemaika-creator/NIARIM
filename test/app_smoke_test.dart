@@ -1,4 +1,5 @@
 import 'dart:io';
+
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
@@ -9,6 +10,7 @@ import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'helpers/first_use_tooltips.dart';
+
 import 'package:niarim/app.dart';
 import 'package:niarim/app_bootstrap.dart';
 import 'package:niarim/engine/export_engine.dart';
@@ -2341,9 +2343,9 @@ void main() {
     // 捕捉される想定（アプリ側の設計）。
     final exportsDir = await tester.runAsync(ExportEngine.exportsDir);
     await tester.runAsync(
-      () => File(
-        '${exportsDir!.path}/smoke_test_dummy.mp4',
-      ).writeAsBytes(const [0]),
+      () =>
+          File('${exportsDir!.path}/smoke_test_dummy.mp4')
+              .writeAsBytes(const [0]),
     );
     // ExportEngine.listExportedFilesは結果を静的にキャッシュしており、
     // 起動画面のプリフェッチ（他のテストケースも含め、アプリを起動する

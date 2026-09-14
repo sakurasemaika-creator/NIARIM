@@ -117,9 +117,8 @@ void main() {
 
         final before = await generatedPixels();
         expect(
-          Iterable<int>.generate(
-            before.length ~/ 4,
-          ).any((i) => before[i * 4 + 3] > 0),
+          Iterable<int>.generate(before.length ~/ 4)
+              .any((i) => before[i * 4 + 3] > 0),
           isTrue,
         );
         for (var cycle = 0; cycle < 2; cycle++) {

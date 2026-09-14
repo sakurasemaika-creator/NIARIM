@@ -3,6 +3,7 @@ import 'dart:typed_data';
 import 'dart:ui' as ui;
 
 import '../models/brush.dart';
+import '../models/brush_pressure_resolver.dart';
 import 'brush_texture_cache.dart';
 import 'tile_manager.dart';
 
@@ -35,6 +36,7 @@ class DrawingEngine {
   Brush? currentBrush;
   ui.Color currentColor = const ui.Color(0xFF000000);
   bool isEraser = false;
+  bool pressureEnabled = true;
 
   // 定規など、手ブレ補正より後に必ず満たすべき最終座標制約。
   ui.Offset Function(ui.Offset)? pointConstraint;
@@ -285,27 +287,13 @@ class DrawingEngine {
     if (currentBrush == null) return;
     final brush = currentBrush!;
 
-    var size = brush.size;
-    var opacity = brush.opacity / 100.0;
-
-    // 筆圧強度0%では筆圧の影響を無効化し、100%では端末からのpressureを
-    // そのまま反映する。中間値は「筆圧なし(1.0)」と生pressureを線形補間する。
-    final rawPressure = pressure.clamp(0.0, 1.0);
-    final pressureStrength = brush.pressureStrength.clamp(0, 100) / 100.0;
-    final effectivePressure = 1.0 - (1.0 - rawPressure) * pressureStrength;
-
-    // 筆圧反映
-    switch (brush.pressureMode) {
-      case PressureMode.size:
-        size *= effectivePressure;
-      case PressureMode.opacity:
-        opacity *= effectivePressure;
-      case PressureMode.sizeAndOpacity:
-        size *= effectivePressure;
-        opacity *= effectivePressure;
-      case PressureMode.off:
-        break;
-    }
+    final resolvedPressure = resolveBrushPressure(
+      brush: brush,
+      pressureEnabled: pressureEnabled,
+      curvedPressure: pressure,
+    );
+    var size = brush.size * resolvedPressure.sizeScale;
+    var opacity = (brush.opacity / 100.0) * resolvedPressure.opacityScale;
 
     final strokeLength = strokeLengthOverride ?? _currentStrokeLength();
 
@@ -411,11 +399,13 @@ class DrawingEngine {
       tilt,
       layerId,
       brush.pixelMode,
-      brush.blurRadius,
+      resolvedPressure.blur,
       customTexture,
       stylusTiltMagnitude: stylusTiltMagnitude,
-      edgeJitter: brush.edgeJitter,
-      edgeJitterStrength: brush.edgeJitterStrength,
+      edgeJitter: resolvedPressure.edgeJitterEnabled,
+      edgeJitterStrength: resolvedPressure.edgeJitterStrength,
+      mixingMode: resolvedPressure.mixingMode,
+      mixingRate: resolvedPressure.mixingRate,
       hexagon: isGlitterHexagon,
       particleRotation: particleRotation,
       chainLink: isChainLink,
@@ -438,6 +428,8 @@ class DrawingEngine {
     double stylusTiltMagnitude = 0.0,
     bool edgeJitter = false,
     int edgeJitterStrength = 50,
+    BrushMixingMode mixingMode = BrushMixingMode.off,
+    int mixingRate = 0,
     bool hexagon = false,
     double particleRotation = 0.0,
     bool chainLink = false,
@@ -612,7 +604,7 @@ class DrawingEngine {
 
             if (isEraser) {
               tileManager.erasePixel(tile, px, py, incrementalAlpha);
-            } else if (currentBrush!.mixingMode != BrushMixingMode.off) {
+            } else if (mixingMode != BrushMixingMode.off) {
               final idx = (py * TileManager.tileSize + px) * 4;
               if (tile[idx + 3] > 0) {
                 final below = ui.Color.fromARGB(
@@ -622,8 +614,8 @@ class DrawingEngine {
                   tile[idx + 2],
                 );
                 final selected = ui.Color.fromARGB(255, ri, gi, bi);
-                final rate = currentBrush!.mixingRate / 100.0;
-                final mixed = currentBrush!.mixingMode == BrushMixingMode.bleed
+                final rate = mixingRate / 100.0;
+                final mixed = mixingMode == BrushMixingMode.bleed
                     ? bleedColor(below, selected, rate, _currentStroke.length)
                     : mixColor(below, selected, rate);
                 tileManager.blendPixel(

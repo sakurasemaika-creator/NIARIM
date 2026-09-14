@@ -1,8 +1,10 @@
 import 'dart:convert';
 import 'dart:math' as math;
+
 import 'package:flutter/foundation.dart';
 import 'package:flutter/gestures.dart' show PointerDeviceKind;
 import 'package:shared_preferences/shared_preferences.dart';
+
 import '../models/canvas_dock_panel.dart';
 import '../models/canvas_size_preset.dart';
 import '../models/toolbar_item.dart';
@@ -355,17 +357,20 @@ class SettingsService extends ChangeNotifier {
   GestureAction get twoFingerSwipe => _twoFingerSwipe;
   GestureAction get longPress => _longPress;
 
-  // ─── ペン入力設定（筆圧カーブ・ペンボタン） ─────────────────
-  // 注：筆圧の「無効／サイズ／不透明度／両方」反映モードは
-  // 「ブラシ個別設定」であるため、ブラシ設定側(Brush.pressureMode)
-  // のみで管理する（グローバル設定としては持たない）。
-  // 筆圧カーブのみアプリ全体に適用される設定としてここで管理する。
+  // ─── ペン入力設定（筆圧ON/OFF・筆圧カーブ・ペンボタン） ─────────────
+  // 筆圧ON/OFFはアプリ全体の入力状態。各ブラシはON/OFF両プロファイルを
+  // 常に保持し、この設定によって描画時に使用する側だけを切り替える。
+  // 筆圧カーブもアプリ全体に適用される。
   bool _palmRejectionEnabled = true;
+  // App-wide pressure activation. Brushes always store both ON/OFF profiles;
+  // this flag selects which profile is active while drawing.
+  bool _penPressureEnabled = true;
   PenPressureCurve _penPressureCurve = PenPressureCurve.normal;
   GestureAction _penButton1 = GestureAction.eraserToggle;
   GestureAction _penButton2 = GestureAction.eyedropper;
 
   bool get palmRejectionEnabled => _palmRejectionEnabled;
+  bool get penPressureEnabled => _penPressureEnabled;
   PenPressureCurve get penPressureCurve => _penPressureCurve;
   GestureAction get penButton1 => _penButton1;
   GestureAction get penButton2 => _penButton2;
@@ -416,6 +421,13 @@ class SettingsService extends ChangeNotifier {
     _palmRejectionEnabled = value;
     final prefs = await SharedPreferences.getInstance();
     await prefs.setBool('palm_rejection_enabled', value);
+    notifyListeners();
+  }
+
+  Future<void> setPenPressureEnabled(bool value) async {
+    _penPressureEnabled = value;
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool('pen_pressure_enabled', value);
     notifyListeners();
   }
 
@@ -613,6 +625,7 @@ class SettingsService extends ChangeNotifier {
       GestureAction.eyedropper,
     );
     _palmRejectionEnabled = prefs.getBool('palm_rejection_enabled') ?? true;
+    _penPressureEnabled = prefs.getBool('pen_pressure_enabled') ?? true;
     _penPressureCurve =
         PenPressureCurve.values.asNameMap()[prefs.getString(
           'pen_pressure_curve',

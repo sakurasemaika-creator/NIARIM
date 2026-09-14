@@ -190,9 +190,8 @@ void main() {
       expect(generatedBytes, isNotNull);
       final data = generatedBytes!.buffer.asUint8List();
       expect(
-        Iterable<int>.generate(
-          data.length ~/ 4,
-        ).any((n) => data[n * 4 + 3] > 0),
+        Iterable<int>.generate(data.length ~/ 4)
+            .any((n) => data[n * 4 + 3] > 0),
         isTrue,
       );
 
@@ -222,9 +221,8 @@ void main() {
       expect(redoneBytes, isNotNull);
       expect(redoneBytes!.buffer.asUint8List(), orderedEquals(data));
       expect(
-        Iterable<int>.generate(
-          redoneBytes.lengthInBytes ~/ 4,
-        ).any((n) => redoneBytes.getUint8(n * 4 + 3) > 0),
+        Iterable<int>.generate(redoneBytes.lengthInBytes ~/ 4)
+            .any((n) => redoneBytes.getUint8(n * 4 + 3) > 0),
         isTrue,
       );
     },

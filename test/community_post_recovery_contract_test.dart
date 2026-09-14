@@ -3,9 +3,8 @@ import 'dart:io';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
-  final source = File(
-    'lib/screens/community/community_post_screen.dart',
-  ).readAsStringSync();
+  final source = File('lib/screens/community/community_post_screen.dart')
+      .readAsStringSync();
 
   test(
     'checks existing NIARIM work before requesting YouTube upload scope',

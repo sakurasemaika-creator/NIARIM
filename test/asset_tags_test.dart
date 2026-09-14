@@ -60,16 +60,11 @@ void main() {
         size: 5,
         opacity: 100,
         spacing: 1,
-        blurRadius: 0,
         stabilization: false,
         stabilizationStrength: 0,
         pixelMode: false,
-        pressureMode: PressureMode.off,
-        pressureStrength: 0,
         fadeMode: FadeMode.off,
         strokeDecay: false,
-        mixingMode: BrushMixingMode.off,
-        mixingRate: 0,
         tags: tags,
       );
       expect(Brush.fromJson(brush.toJson()).tags, tags);

@@ -13,20 +13,34 @@ const _glitter = Brush(
   size: 14,
   opacity: 90,
   spacing: 18,
-  blurRadius: 0,
   stabilization: false,
   stabilizationStrength: 0,
   pixelMode: false,
-  pressureMode: PressureMode.opacity,
-  pressureStrength: 35,
+  pressureOn: const BrushPressureOnSettings(
+    size: PressureRangeSetting(enabled: false, weak: 50, strong: 100),
+    opacity: PressureRangeSetting(enabled: true, weak: 65, strong: 100),
+    blur: PressureRangeSetting(enabled: false, weak: 0, strong: 0),
+    edgeJitter: PressureRangeSetting(enabled: false, weak: 0, strong: 0),
+    mixing: PressureMixingOnSetting(
+      enabled: false,
+      mode: BrushMixingMode.simple,
+      weakRate: 0,
+      strongRate: 0,
+    ),
+  ),
+  pressureOff: const BrushPressureOffSettings(
+    blur: FixedBrushSetting(enabled: false, value: 0),
+    edgeJitter: FixedBrushSetting(enabled: false, value: 0),
+    mixing: PressureMixingOffSetting(
+      enabled: false,
+      mode: BrushMixingMode.simple,
+      rate: 0,
+    ),
+  ),
   fadeMode: FadeMode.off,
   strokeDecay: false,
-  mixingMode: BrushMixingMode.off,
-  mixingRate: 0,
   density: 1.2,
   scatter: 0.9,
-  edgeJitter: false,
-  edgeJitterStrength: 0,
 );
 
 const _lame = Brush(
@@ -35,20 +49,34 @@ const _lame = Brush(
   size: 5,
   opacity: 76,
   spacing: 4,
-  blurRadius: 1,
   stabilization: true,
   stabilizationStrength: 20,
   pixelMode: false,
-  pressureMode: PressureMode.opacity,
-  pressureStrength: 25,
+  pressureOn: const BrushPressureOnSettings(
+    size: PressureRangeSetting(enabled: false, weak: 50, strong: 100),
+    opacity: PressureRangeSetting(enabled: true, weak: 75, strong: 100),
+    blur: PressureRangeSetting(enabled: true, weak: 1, strong: 1),
+    edgeJitter: PressureRangeSetting(enabled: true, weak: 30, strong: 30),
+    mixing: PressureMixingOnSetting(
+      enabled: false,
+      mode: BrushMixingMode.simple,
+      weakRate: 0,
+      strongRate: 0,
+    ),
+  ),
+  pressureOff: const BrushPressureOffSettings(
+    blur: FixedBrushSetting(enabled: true, value: 1),
+    edgeJitter: FixedBrushSetting(enabled: true, value: 30),
+    mixing: PressureMixingOffSetting(
+      enabled: false,
+      mode: BrushMixingMode.simple,
+      rate: 0,
+    ),
+  ),
   fadeMode: FadeMode.off,
   strokeDecay: false,
-  mixingMode: BrushMixingMode.off,
-  mixingRate: 0,
   density: 2.8,
   scatter: 0.45,
-  edgeJitter: true,
-  edgeJitterStrength: 30,
 );
 
 Future<void> _capture(Brush brush, String name) async {

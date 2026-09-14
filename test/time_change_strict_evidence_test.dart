@@ -58,56 +58,53 @@ void main() {
     },
   );
 
-  test(
-    'layer keyframe position/scale/rotation interpolation produces sequential visual evidence',
-    () async {
-      final engine = LayerKeyframeEngine();
-      const keys = [
-        LayerKeyframe(
-          frameIndex: 0,
-          x: -30,
-          y: 16,
-          scale: 0.72,
-          rotation: -22,
-          easing: LayerKeyframeEasing.easeInOut,
-        ),
-        LayerKeyframe(frameIndex: 10, x: 34, y: -20, scale: 1.42, rotation: 38),
-      ];
+  test('layer keyframe position/scale/rotation interpolation produces sequential visual evidence', () async {
+    final engine = LayerKeyframeEngine();
+    const keys = [
+      LayerKeyframe(
+        frameIndex: 0,
+        x: -30,
+        y: 16,
+        scale: 0.72,
+        rotation: -22,
+        easing: LayerKeyframeEasing.easeInOut,
+      ),
+      LayerKeyframe(frameIndex: 10, x: 34, y: -20, scale: 1.42, rotation: 38),
+    ];
 
-      final start = engine.valueAt(keys, 0);
-      final mid = engine.valueAt(keys, 5);
-      final end = engine.valueAt(keys, 10);
-      expect(start.x, -30);
-      expect(end.x, 34);
-      // easeInOut is exactly 0.5 at the interval midpoint.
-      expect(mid.x, closeTo(2, 1e-9));
-      expect(mid.y, closeTo(-2, 1e-9));
-      expect(mid.scale, closeTo(1.07, 1e-9));
-      expect(mid.rotation, closeTo(8, 1e-9));
+    final start = engine.valueAt(keys, 0);
+    final mid = engine.valueAt(keys, 5);
+    final end = engine.valueAt(keys, 10);
+    expect(start.x, -30);
+    expect(end.x, 34);
+    // easeInOut is exactly 0.5 at the interval midpoint.
+    expect(mid.x, closeTo(2, 1e-9));
+    expect(mid.y, closeTo(-2, 1e-9));
+    expect(mid.scale, closeTo(1.07, 1e-9));
+    expect(mid.rotation, closeTo(8, 1e-9));
 
-      final rendered = <Uint8List>[];
-      for (var frame = 0; frame <= 10; frame++) {
-        final kf = engine.valueAt(keys, frame);
-        final image = await _renderLayerKeyframe(engine, kf, 192, 144);
-        final rgba = await _rgba(image);
-        rendered.add(rgba);
-        await _saveImage(
-          image,
-          '${out.path}/layer_keyframe_${frame.toString().padLeft(2, '0')}.png',
-        );
-        image.dispose();
-      }
-      expect(_meanAbsDiff(rendered.first, rendered[5]), greaterThan(2));
-      expect(_meanAbsDiff(rendered[5], rendered.last), greaterThan(2));
-      for (var i = 1; i < rendered.length; i++) {
-        expect(
-          _meanAbsDiff(rendered[i - 1], rendered[i]),
-          greaterThan(0.10),
-          reason: 'layer keyframe $i must visibly change',
-        );
-      }
-    },
-  );
+    final rendered = <Uint8List>[];
+    for (var frame = 0; frame <= 10; frame++) {
+      final kf = engine.valueAt(keys, frame);
+      final image = await _renderLayerKeyframe(engine, kf, 192, 144);
+      final rgba = await _rgba(image);
+      rendered.add(rgba);
+      await _saveImage(
+        image,
+        '${out.path}/layer_keyframe_${frame.toString().padLeft(2, '0')}.png',
+      );
+      image.dispose();
+    }
+    expect(_meanAbsDiff(rendered.first, rendered[5]), greaterThan(2));
+    expect(_meanAbsDiff(rendered[5], rendered.last), greaterThan(2));
+    for (var i = 1; i < rendered.length; i++) {
+      expect(
+        _meanAbsDiff(rendered[i - 1], rendered[i]),
+        greaterThan(0.10),
+        reason: 'layer keyframe $i must visibly change',
+      );
+    }
+  });
 
   test(
     'layer keyframe easing curves differ from linear at quarter progress',
@@ -392,9 +389,9 @@ Uint8List _solid(int w, int h, int r, int g, int b) {
   return out;
 }
 
-Future<Uint8List> _rgba(ui.Image image) async => (await image.toByteData(
-  format: ui.ImageByteFormat.rawRgba,
-))!.buffer.asUint8List();
+Future<Uint8List> _rgba(ui.Image image) async =>
+    (await image.toByteData(format: ui.ImageByteFormat.rawRgba))!.buffer
+        .asUint8List();
 
 Future<void> _saveImage(ui.Image image, String path) async {
   final data = await image.toByteData(format: ui.ImageByteFormat.png);

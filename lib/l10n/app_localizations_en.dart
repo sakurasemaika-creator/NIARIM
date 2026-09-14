@@ -3084,21 +3084,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get brushSettingsPixelModeTitle => 'Pixel mode';
 
   @override
-  String get brushSettingsPressureModeTitle => 'Pressure sensitivity';
-
-  @override
-  String get brushSettingsPressureOff => 'Off';
-
-  @override
-  String get brushSettingsPressureSize => 'Affects size';
-
-  @override
-  String get brushSettingsPressureOpacity => 'Affects opacity';
-
-  @override
-  String get brushSettingsPressureSizeAndOpacity => 'Affects size + opacity';
-
-  @override
   String get brushSettingsFadeModeTitle => 'Fade';
 
   @override
@@ -6409,9 +6394,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get customAutomationFrameRangeInvalid => 'Enter a valid frame range.';
 
   @override
-  String get brushSettingsPressureHardnessLabel => 'Pressure hardness';
-
-  @override
   String get customAutomationRunAction => 'Run';
 
   @override
@@ -6419,4 +6401,22 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get customAutomationUnfavoriteAction => 'Remove from favorites';
+
+  @override
+  String get brushSettingsCommonSection => 'Common';
+
+  @override
+  String get brushSettingsPressureOnSection => 'Pressure ON';
+
+  @override
+  String get brushSettingsPressureOffSection => 'Pressure OFF';
+
+  @override
+  String get brushSettingsWeakPressureLabel => 'Weak';
+
+  @override
+  String get brushSettingsStrongPressureLabel => 'Strong';
+
+  @override
+  String get brushSettingsValueLabel => 'Value';
 }

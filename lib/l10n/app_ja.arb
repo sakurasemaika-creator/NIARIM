@@ -1349,11 +1349,6 @@
   "brushSettingsStabilizationTitle": "手ブレ補正",
   "brushSettingsStabilizationStrengthLabel": "補正強度",
   "brushSettingsPixelModeTitle": "ピクセルモード",
-  "brushSettingsPressureModeTitle": "筆圧設定",
-  "brushSettingsPressureOff": "無効",
-  "brushSettingsPressureSize": "サイズに反映",
-  "brushSettingsPressureOpacity": "不透明度に反映",
-  "brushSettingsPressureSizeAndOpacity": "サイズ＋不透明度に反映",
   "brushSettingsFadeModeTitle": "フェード",
   "brushSettingsFadeOff": "OFF",
   "brushSettingsFadeWeak": "弱",
@@ -2597,11 +2592,11 @@
   "filterAuroraHologramPresetAurora": "オーロラ",
   "filterAuroraHologramPresetSoapBubble": "パール1",
   "filterAuroraHologramPresetCyberNeon": "ヴェイパーウェイヴ",
-  "filterAuroraHologramPresetPastelDream": "パステルドリーム",  "filterAuroraHologramPresetPearl2": "パール2",
-
+  "filterAuroraHologramPresetPastelDream": "パステルドリーム",
+  "filterAuroraHologramPresetPearl2": "パール2",
   "filterAuroraHologramPresetSunsetGold": "サンセットゴールド",
-  "filterAuroraHologramPresetSilverFoil": "シルバーホイル",  "filterAuroraHologramPresetClassicHologram": "オーロラホログラム",
-
+  "filterAuroraHologramPresetSilverFoil": "シルバーホイル",
+  "filterAuroraHologramPresetClassicHologram": "オーロラホログラム",
   "filterNameBackgroundBlend": "背景馴染ませ",
   "filterBackgroundBlendDirection": "影と光（連動）の向き",
   "filterBackgroundBlendLength": "影と光（連動）の長さ",
@@ -2998,8 +2993,13 @@
   "customAutomationFrameFrom": "開始フレーム",
   "customAutomationFrameTo": "終了フレーム",
   "customAutomationFrameRangeInvalid": "有効なフレーム範囲を入力してください。",
-  "brushSettingsPressureHardnessLabel": "筆圧硬度",
   "customAutomationRunAction": "実行",
   "customAutomationFavoriteAction": "お気に入りに追加",
-  "customAutomationUnfavoriteAction": "お気に入りを解除"
+  "customAutomationUnfavoriteAction": "お気に入りを解除",
+  "brushSettingsCommonSection": "共通",
+  "brushSettingsPressureOnSection": "筆圧ON",
+  "brushSettingsPressureOffSection": "筆圧OFF",
+  "brushSettingsWeakPressureLabel": "弱",
+  "brushSettingsStrongPressureLabel": "強",
+  "brushSettingsValueLabel": "値"
 }

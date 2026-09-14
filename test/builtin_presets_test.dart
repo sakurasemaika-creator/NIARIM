@@ -195,10 +195,42 @@ void main() {
         expect(b.size, inInclusiveRange(1, 200), reason: b.name);
         expect(b.opacity, inInclusiveRange(1, 100), reason: b.name);
         expect(b.spacing, inInclusiveRange(1, 50), reason: b.name);
-        expect(b.blurRadius, inInclusiveRange(0, 100), reason: b.name);
+        for (final range in [
+          b.pressureOn.size,
+          b.pressureOn.opacity,
+          b.pressureOn.blur,
+          b.pressureOn.edgeJitter,
+        ]) {
+          expect(range.weak, inInclusiveRange(0, 100), reason: b.name);
+          expect(range.strong, inInclusiveRange(0, 100), reason: b.name);
+        }
+        expect(
+          b.pressureOn.mixing.weakRate,
+          inInclusiveRange(0, 100),
+          reason: b.name,
+        );
+        expect(
+          b.pressureOn.mixing.strongRate,
+          inInclusiveRange(0, 100),
+          reason: b.name,
+        );
+        expect(
+          b.pressureOff.blur.value,
+          inInclusiveRange(0, 100),
+          reason: b.name,
+        );
+        expect(
+          b.pressureOff.edgeJitter.value,
+          inInclusiveRange(0, 100),
+          reason: b.name,
+        );
+        expect(
+          b.pressureOff.mixing.rate,
+          inInclusiveRange(0, 100),
+          reason: b.name,
+        );
         expect(b.density, inInclusiveRange(0.1, 5.0), reason: b.name);
         expect(b.scatter, inInclusiveRange(0.0, 1.0), reason: b.name);
-        expect(b.edgeJitterStrength, inInclusiveRange(0, 100), reason: b.name);
         final angle = b.calligraphyAngle;
         if (angle != null) {
           expect(angle, inInclusiveRange(0.0, 360.0), reason: b.name);
@@ -298,10 +330,16 @@ void main() {
         'stamps': ['{"id":"Stamp0001","name":"三角形"}'],
         'brushes': [
           '{"id":"Brush0001","name":"ペン","size":5,"opacity":100,'
-              '"spacing":1,"blurRadius":0,"stabilization":true,'
-              '"stabilizationStrength":50,"pixelMode":false,'
-              '"pressureMode":"size","pressureStrength":80,"fadeMode":"off",'
-              '"strokeDecay":false,"mixingMode":"off","mixingRate":0}',
+              '"spacing":1,"stabilization":true,"stabilizationStrength":50,'
+              '"pixelMode":false,"pressureOn":{"size":{"enabled":true,"weak":50,"strong":100},'
+              '"opacity":{"enabled":true,"weak":50,"strong":100},'
+              '"blur":{"enabled":false,"weak":50,"strong":0},'
+              '"edgeJitter":{"enabled":false,"weak":50,"strong":0},'
+              '"mixing":{"enabled":false,"mode":"simple","weakRate":50,"strongRate":0}},'
+              '"pressureOff":{"blur":{"enabled":false,"value":0},'
+              '"edgeJitter":{"enabled":false,"value":0},'
+              '"mixing":{"enabled":false,"mode":"simple","rate":0}},'
+              '"fadeMode":"off","strokeDecay":false}',
         ],
       });
       final tone = ToneService();

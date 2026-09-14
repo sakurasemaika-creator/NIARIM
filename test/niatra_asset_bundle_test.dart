@@ -47,12 +47,34 @@ void main() {
           size: 17,
           opacity: 73,
           spacing: 12,
-          blurRadius: 4,
           stabilization: true,
           stabilizationStrength: 41,
           pixelMode: false,
-          pressureMode: PressureMode.sizeAndOpacity,
-          pressureStrength: 66,
+          pressureOn: const BrushPressureOnSettings(
+            size: PressureRangeSetting(enabled: true, weak: 34, strong: 100),
+            opacity: PressureRangeSetting(enabled: true, weak: 34, strong: 100),
+            blur: PressureRangeSetting(enabled: true, weak: 4, strong: 4),
+            edgeJitter: PressureRangeSetting(
+              enabled: true,
+              weak: 77,
+              strong: 77,
+            ),
+            mixing: PressureMixingOnSetting(
+              enabled: true,
+              mode: BrushMixingMode.bleed,
+              weakRate: 60,
+              strongRate: 60,
+            ),
+          ),
+          pressureOff: const BrushPressureOffSettings(
+            blur: FixedBrushSetting(enabled: true, value: 4),
+            edgeJitter: FixedBrushSetting(enabled: true, value: 77),
+            mixing: PressureMixingOffSetting(
+              enabled: true,
+              mode: BrushMixingMode.bleed,
+              rate: 60,
+            ),
+          ),
           fadeMode: FadeMode.custom,
           fadeCustom: const FadeCustomSettings(
             startValue: 1,
@@ -60,11 +82,7 @@ void main() {
             distancePx: 240,
           ),
           strokeDecay: true,
-          mixingMode: BrushMixingMode.bleed,
-          mixingRate: 60,
           customImagePath: brushImage,
-          edgeJitter: true,
-          edgeJitterStrength: 77,
         ),
       );
 
@@ -119,8 +137,14 @@ void main() {
           (data['brushes'] as List).single as Map<String, dynamic>;
       expect(brushJson['customImagePath'], isNull);
       expect(brushJson['embeddedImagePath'], 'CreativeAssets/Brushes/0.png');
-      expect(brushJson['edgeJitter'], true);
-      expect(brushJson['edgeJitterStrength'], 77);
+      final pressureOn = brushJson['pressureOn'] as Map<String, dynamic>;
+      final pressureOff = brushJson['pressureOff'] as Map<String, dynamic>;
+      expect(
+        (pressureOn['edgeJitter'] as Map<String, dynamic>)['enabled'],
+        true,
+      );
+      expect((pressureOn['edgeJitter'] as Map<String, dynamic>)['weak'], 77);
+      expect((pressureOff['edgeJitter'] as Map<String, dynamic>)['value'], 77);
       expect(
         (brushJson['fadeCustom'] as Map<String, dynamic>)['distancePx'],
         240,

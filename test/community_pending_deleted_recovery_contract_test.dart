@@ -4,9 +4,8 @@ import 'package:flutter_test/flutter_test.dart';
 
 void main() {
   test('deleted or missing pending YouTube videos are made unrecoverable', () {
-    final source = File(
-      'lib/screens/community/community_post_screen.dart',
-    ).readAsStringSync();
+    final source = File('lib/screens/community/community_post_screen.dart')
+        .readAsStringSync();
 
     expect(source, contains("work.youtubePrivacyStatus == 'deleted'"));
     expect(source, contains("error.code == 'VIDEO_NOT_FOUND'"));

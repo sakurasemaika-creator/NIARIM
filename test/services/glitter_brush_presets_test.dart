@@ -34,16 +34,32 @@ void main() {
       size: 5,
       opacity: 100,
       spacing: 1,
-      blurRadius: 0,
       stabilization: true,
       stabilizationStrength: 50,
       pixelMode: false,
-      pressureMode: PressureMode.size,
-      pressureStrength: 80,
+      pressureOn: const BrushPressureOnSettings(
+        size: PressureRangeSetting(enabled: true, weak: 20, strong: 100),
+        opacity: PressureRangeSetting(enabled: false, weak: 50, strong: 100),
+        blur: PressureRangeSetting(enabled: false, weak: 0, strong: 0),
+        edgeJitter: PressureRangeSetting(enabled: false, weak: 50, strong: 50),
+        mixing: PressureMixingOnSetting(
+          enabled: false,
+          mode: BrushMixingMode.simple,
+          weakRate: 0,
+          strongRate: 0,
+        ),
+      ),
+      pressureOff: const BrushPressureOffSettings(
+        blur: FixedBrushSetting(enabled: false, value: 0),
+        edgeJitter: FixedBrushSetting(enabled: false, value: 50),
+        mixing: PressureMixingOffSetting(
+          enabled: false,
+          mode: BrushMixingMode.simple,
+          rate: 0,
+        ),
+      ),
       fadeMode: FadeMode.off,
       strokeDecay: false,
-      mixingMode: BrushMixingMode.off,
-      mixingRate: 0,
     );
     SharedPreferences.setMockInitialValues({
       'brushes': [jsonEncode(oldBrush.toJson())],

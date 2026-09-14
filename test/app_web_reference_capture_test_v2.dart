@@ -183,9 +183,8 @@ void main() {
     WidgetTester tester,
   ) async {
     await bootToHome(tester);
-    GoRouter.of(
-      tester.element(find.byType(Scaffold).first),
-    ).push('/new-project');
+    GoRouter.of(tester.element(find.byType(Scaffold).first))
+        .push('/new-project');
     await tester.pump(const Duration(milliseconds: 650));
     expectClean(tester, '新規プロジェクト画面');
     final createButton = find.widgetWithText(
@@ -285,9 +284,8 @@ void main() {
       ),
     );
     await tester.pump(const Duration(milliseconds: 800));
-    GoRouter.of(
-      tester.element(find.byType(Scaffold).first),
-    ).go('/canvas/${ids.projectId}');
+    GoRouter.of(tester.element(find.byType(Scaffold).first))
+        .go('/canvas/${ids.projectId}');
     await tester.pump(const Duration(milliseconds: 700));
     await openTimeline(tester);
     await tester.pump(const Duration(milliseconds: 700));
@@ -313,9 +311,8 @@ void main() {
     expectClean(tester, 'Canvas→SaveTree');
     await capture(tester, '06_save_tree');
 
-    GoRouter.of(
-      tester.element(find.byType(Scaffold).first),
-    ).go('/canvas/${ids.projectId}');
+    GoRouter.of(tester.element(find.byType(Scaffold).first))
+        .go('/canvas/${ids.projectId}');
     await tester.pump(const Duration(milliseconds: 700));
     await openTimeline(tester);
     final export = find.byIcon(Icons.upload_file, skipOffstage: false);
@@ -331,9 +328,8 @@ void main() {
     GoRouter.of(tester.element(find.byType(Scaffold).first)).push('/settings');
     await tester.pump(const Duration(milliseconds: 650));
     expectClean(tester, '設定画面');
-    GoRouter.of(
-      tester.element(find.byType(Scaffold).first),
-    ).push('/settings/workspace');
+    GoRouter.of(tester.element(find.byType(Scaffold).first))
+        .push('/settings/workspace');
     await tester.pump(const Duration(milliseconds: 650));
     expectClean(tester, '設定→Workspace');
     await capture(tester, '08_workspace');

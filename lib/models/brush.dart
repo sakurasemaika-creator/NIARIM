@@ -7,52 +7,24 @@ class Brush {
   final double size;
   final int opacity;
   final int spacing;
-  final int blurRadius;
   final bool stabilization;
   final int stabilizationStrength;
   final bool pixelMode;
-  final PressureMode pressureMode;
-  final int pressureStrength;
+  final BrushPressureOnSettings pressureOn;
+  final BrushPressureOffSettings pressureOff;
   final FadeMode fadeMode;
   final FadeCustomSettings? fadeCustom;
   final bool strokeDecay;
-  final BrushMixingMode mixingMode;
-  final int mixingRate;
   final bool isFavorite;
   final String? folderId;
   final String? customImagePath;
-  // ブラシ先端をストローク進行方向へ追従回転させる。
-  // 円形ブラシでは見た目は変わらないが、自作画像ブラシや扁平ブラシで有効。
   final bool rotation;
-  // 基準のスタンプ間隔に対する密度倍率。1.0が従来どおり、2.0で約2倍、
-  // 0.5で約半分のスタンプ密度。UI範囲は0.1〜5.0。
   final double density;
-  // ストローク進行方向へ直交する方向へ散布する割合。0.0〜1.0で、実際の
-  // 最大オフセットは描画時のブラシサイズへ乗算して求める。
   final double scatter;
-  // カリグラフィーペン用：ペン先の固定角度（度、0〜360）。nullなら通常の
-  // 円形ブラシ（スタイラスの傾き検知があればそちらで扁平化する）。指定時は
-  // 実際のスタイラス傾きに関わらず、常にこの角度へ扁平化したペン先で
-  // スタンプする（進行方向によって線の太さが変わるカリグラフィー特有の
-  // 見た目を、傾き検知非対応の端末でも一定の見た目で再現するため）。
   final double? calligraphyAngle;
-  // ふち滲み：trueのとき、ブラシスタンプのふち付近のピクセルに微小な
-  // ランダムオフセットを加え、輪郭をわずかにがたがたさせる。
-  // マーカーペンのインクが紙の繊維に沿って滲む様子を再現する。
-  final bool edgeJitter;
-  // ふち滲みの強度（0〜100）。0は最小限のがたがた、100は最大限の滲み。
-  // edgeJitterがtrueのときのみ有効。
-  final int edgeJitterStrength;
-  // ピクセルモード時の配色方式。既定はnone（従来通り、描画色をそのまま
-  // 使い色数の制限を行わない）。ストローク確定直後にタッチした範囲だけへ
-  // 適用される（drawing_engine.dart・canvas_area.dartの
-  // _quantizeStrokeIfNeeded参照）。
   final PixelColorMode pixelColorMode;
   final int pixelColorLevels;
   final List<int> pixelExplicitColors;
-  // 分類用の自由入力タグ。お気に入り・フォルダとは別軸で、1つの素材へ
-  // 複数の観点（用途・雰囲気・案件名など）を付けて絞り込めるようにする。
-  // 一覧画面の検索欄は「キーワード検索」と「タグ検索」を切り替えられる。
   final List<String> tags;
 
   const Brush({
@@ -61,17 +33,14 @@ class Brush {
     required this.size,
     required this.opacity,
     required this.spacing,
-    required this.blurRadius,
     required this.stabilization,
     required this.stabilizationStrength,
     required this.pixelMode,
-    required this.pressureMode,
-    required this.pressureStrength,
+    this.pressureOn = BrushPressureOnSettings.defaults,
+    this.pressureOff = BrushPressureOffSettings.defaults,
     required this.fadeMode,
     this.fadeCustom,
     required this.strokeDecay,
-    required this.mixingMode,
-    required this.mixingRate,
     this.isFavorite = false,
     this.folderId,
     this.customImagePath,
@@ -79,8 +48,6 @@ class Brush {
     this.density = 1.0,
     this.scatter = 0.0,
     this.calligraphyAngle,
-    this.edgeJitter = false,
-    this.edgeJitterStrength = 50,
     this.pixelColorMode = PixelColorMode.none,
     this.pixelColorLevels = 8,
     this.pixelExplicitColors = const [0xFF000000],
@@ -93,17 +60,14 @@ class Brush {
     double? size,
     int? opacity,
     int? spacing,
-    int? blurRadius,
     bool? stabilization,
     int? stabilizationStrength,
     bool? pixelMode,
-    PressureMode? pressureMode,
-    int? pressureStrength,
+    BrushPressureOnSettings? pressureOn,
+    BrushPressureOffSettings? pressureOff,
     FadeMode? fadeMode,
     FadeCustomSettings? fadeCustom,
     bool? strokeDecay,
-    BrushMixingMode? mixingMode,
-    int? mixingRate,
     bool? isFavorite,
     String? folderId,
     String? customImagePath,
@@ -111,8 +75,6 @@ class Brush {
     double? density,
     double? scatter,
     double? calligraphyAngle,
-    bool? edgeJitter,
-    int? edgeJitterStrength,
     PixelColorMode? pixelColorMode,
     int? pixelColorLevels,
     List<int>? pixelExplicitColors,
@@ -124,18 +86,15 @@ class Brush {
       size: size ?? this.size,
       opacity: opacity ?? this.opacity,
       spacing: spacing ?? this.spacing,
-      blurRadius: blurRadius ?? this.blurRadius,
       stabilization: stabilization ?? this.stabilization,
       stabilizationStrength:
           stabilizationStrength ?? this.stabilizationStrength,
       pixelMode: pixelMode ?? this.pixelMode,
-      pressureMode: pressureMode ?? this.pressureMode,
-      pressureStrength: pressureStrength ?? this.pressureStrength,
+      pressureOn: pressureOn ?? this.pressureOn,
+      pressureOff: pressureOff ?? this.pressureOff,
       fadeMode: fadeMode ?? this.fadeMode,
       fadeCustom: fadeCustom ?? this.fadeCustom,
       strokeDecay: strokeDecay ?? this.strokeDecay,
-      mixingMode: mixingMode ?? this.mixingMode,
-      mixingRate: mixingRate ?? this.mixingRate,
       isFavorite: isFavorite ?? this.isFavorite,
       folderId: folderId ?? this.folderId,
       customImagePath: customImagePath ?? this.customImagePath,
@@ -143,8 +102,6 @@ class Brush {
       density: density ?? this.density,
       scatter: scatter ?? this.scatter,
       calligraphyAngle: calligraphyAngle ?? this.calligraphyAngle,
-      edgeJitter: edgeJitter ?? this.edgeJitter,
-      edgeJitterStrength: edgeJitterStrength ?? this.edgeJitterStrength,
       pixelColorMode: pixelColorMode ?? this.pixelColorMode,
       pixelColorLevels: pixelColorLevels ?? this.pixelColorLevels,
       pixelExplicitColors: pixelExplicitColors ?? this.pixelExplicitColors,
@@ -158,12 +115,11 @@ class Brush {
     'size': size,
     'opacity': opacity,
     'spacing': spacing,
-    'blurRadius': blurRadius,
     'stabilization': stabilization,
     'stabilizationStrength': stabilizationStrength,
     'pixelMode': pixelMode,
-    'pressureMode': pressureMode.name,
-    'pressureStrength': pressureStrength,
+    'pressureOn': pressureOn.toJson(),
+    'pressureOff': pressureOff.toJson(),
     'fadeMode': fadeMode.name,
     'fadeCustom': fadeCustom == null
         ? null
@@ -173,8 +129,6 @@ class Brush {
             'distancePx': fadeCustom!.distancePx,
           },
     'strokeDecay': strokeDecay,
-    'mixingMode': mixingMode.name,
-    'mixingRate': mixingRate,
     'isFavorite': isFavorite,
     'folderId': folderId,
     'customImagePath': customImagePath,
@@ -182,8 +136,6 @@ class Brush {
     'density': density,
     'scatter': scatter,
     'calligraphyAngle': calligraphyAngle,
-    'edgeJitter': edgeJitter,
-    'edgeJitterStrength': edgeJitterStrength,
     'pixelColorMode': pixelColorMode.name,
     'pixelColorLevels': pixelColorLevels,
     'pixelExplicitColors': pixelExplicitColors,
@@ -196,19 +148,15 @@ class Brush {
     size: (j['size'] as num).toDouble(),
     opacity: j['opacity'] as int,
     spacing: j['spacing'] as int,
-    blurRadius: j['blurRadius'] as int,
     stabilization: j['stabilization'] as bool,
     stabilizationStrength: j['stabilizationStrength'] as int,
-    // pixelModeは旧称dotPenModeからの改称（「ドット」だと水玉模様と
-    // 誤認される恐れがあるため）。旧バージョンで保存・共有
-    // 済みのブラシ（.niabrush・SharedPreferences永続化データ）を
-    // 引き続き読み込めるよう、旧キーからのフォールバックを残す。
     pixelMode: (j['pixelMode'] ?? j['dotPenMode']) as bool? ?? false,
-    pressureMode: PressureMode.values.firstWhere(
-      (e) => e.name == j['pressureMode'],
-      orElse: () => PressureMode.off,
+    pressureOn: BrushPressureOnSettings.fromJson(
+      j['pressureOn'] as Map<String, dynamic>,
     ),
-    pressureStrength: j['pressureStrength'] as int,
+    pressureOff: BrushPressureOffSettings.fromJson(
+      j['pressureOff'] as Map<String, dynamic>,
+    ),
     fadeMode: FadeMode.values.firstWhere(
       (e) => e.name == j['fadeMode'],
       orElse: () => FadeMode.off,
@@ -227,11 +175,6 @@ class Brush {
                     .toDouble(),
           ),
     strokeDecay: j['strokeDecay'] as bool,
-    mixingMode: BrushMixingMode.values.firstWhere(
-      (e) => e.name == j['mixingMode'],
-      orElse: () => BrushMixingMode.off,
-    ),
-    mixingRate: j['mixingRate'] as int,
     isFavorite: j['isFavorite'] as bool? ?? false,
     folderId: j['folderId'] as String?,
     customImagePath: j['customImagePath'] as String?,
@@ -239,8 +182,6 @@ class Brush {
     density: (j['density'] as num?)?.toDouble() ?? 1.0,
     scatter: (j['scatter'] as num?)?.toDouble() ?? 0.0,
     calligraphyAngle: (j['calligraphyAngle'] as num?)?.toDouble(),
-    edgeJitter: j['edgeJitter'] as bool? ?? false,
-    edgeJitterStrength: j['edgeJitterStrength'] as int? ?? 50,
     pixelColorMode: PixelColorMode.values.firstWhere(
       (e) => e.name == j['pixelColorMode'],
       orElse: () => PixelColorMode.none,
@@ -255,7 +196,281 @@ class Brush {
   );
 }
 
-enum PressureMode { off, size, opacity, sizeAndOpacity }
+class PressureRangeSetting {
+  final bool enabled;
+  final int weak;
+  final int strong;
+
+  const PressureRangeSetting({
+    required this.enabled,
+    required this.weak,
+    required this.strong,
+  });
+
+  PressureRangeSetting copyWith({bool? enabled, int? weak, int? strong}) =>
+      PressureRangeSetting(
+        enabled: enabled ?? this.enabled,
+        weak: weak ?? this.weak,
+        strong: strong ?? this.strong,
+      );
+
+  Map<String, dynamic> toJson() => {
+    'enabled': enabled,
+    'weak': weak,
+    'strong': strong,
+  };
+  factory PressureRangeSetting.fromJson(Map<String, dynamic> j) =>
+      PressureRangeSetting(
+        enabled: j['enabled'] as bool,
+        weak: j['weak'] as int,
+        strong: j['strong'] as int,
+      );
+
+  @override
+  bool operator ==(Object other) =>
+      other is PressureRangeSetting &&
+      enabled == other.enabled &&
+      weak == other.weak &&
+      strong == other.strong;
+  @override
+  int get hashCode => Object.hash(enabled, weak, strong);
+}
+
+class FixedBrushSetting {
+  final bool enabled;
+  final int value;
+  const FixedBrushSetting({required this.enabled, required this.value});
+  FixedBrushSetting copyWith({bool? enabled, int? value}) => FixedBrushSetting(
+    enabled: enabled ?? this.enabled,
+    value: value ?? this.value,
+  );
+  Map<String, dynamic> toJson() => {'enabled': enabled, 'value': value};
+  factory FixedBrushSetting.fromJson(Map<String, dynamic> j) =>
+      FixedBrushSetting(
+        enabled: j['enabled'] as bool,
+        value: j['value'] as int,
+      );
+  @override
+  bool operator ==(Object other) =>
+      other is FixedBrushSetting &&
+      enabled == other.enabled &&
+      value == other.value;
+  @override
+  int get hashCode => Object.hash(enabled, value);
+}
+
+class PressureMixingOnSetting {
+  final bool enabled;
+  final BrushMixingMode mode;
+  final int weakRate;
+  final int strongRate;
+  const PressureMixingOnSetting({
+    required this.enabled,
+    required this.mode,
+    required this.weakRate,
+    required this.strongRate,
+  });
+  PressureMixingOnSetting copyWith({
+    bool? enabled,
+    BrushMixingMode? mode,
+    int? weakRate,
+    int? strongRate,
+  }) => PressureMixingOnSetting(
+    enabled: enabled ?? this.enabled,
+    mode: mode ?? this.mode,
+    weakRate: weakRate ?? this.weakRate,
+    strongRate: strongRate ?? this.strongRate,
+  );
+  Map<String, dynamic> toJson() => {
+    'enabled': enabled,
+    'mode': mode.name,
+    'weakRate': weakRate,
+    'strongRate': strongRate,
+  };
+  factory PressureMixingOnSetting.fromJson(Map<String, dynamic> j) =>
+      PressureMixingOnSetting(
+        enabled: j['enabled'] as bool,
+        mode: BrushMixingMode.values.firstWhere((e) => e.name == j['mode']),
+        weakRate: j['weakRate'] as int,
+        strongRate: j['strongRate'] as int,
+      );
+  @override
+  bool operator ==(Object other) =>
+      other is PressureMixingOnSetting &&
+      enabled == other.enabled &&
+      mode == other.mode &&
+      weakRate == other.weakRate &&
+      strongRate == other.strongRate;
+  @override
+  int get hashCode => Object.hash(enabled, mode, weakRate, strongRate);
+}
+
+class PressureMixingOffSetting {
+  final bool enabled;
+  final BrushMixingMode mode;
+  final int rate;
+  const PressureMixingOffSetting({
+    required this.enabled,
+    required this.mode,
+    required this.rate,
+  });
+  PressureMixingOffSetting copyWith({
+    bool? enabled,
+    BrushMixingMode? mode,
+    int? rate,
+  }) => PressureMixingOffSetting(
+    enabled: enabled ?? this.enabled,
+    mode: mode ?? this.mode,
+    rate: rate ?? this.rate,
+  );
+  Map<String, dynamic> toJson() => {
+    'enabled': enabled,
+    'mode': mode.name,
+    'rate': rate,
+  };
+  factory PressureMixingOffSetting.fromJson(Map<String, dynamic> j) =>
+      PressureMixingOffSetting(
+        enabled: j['enabled'] as bool,
+        mode: BrushMixingMode.values.firstWhere((e) => e.name == j['mode']),
+        rate: j['rate'] as int,
+      );
+  @override
+  bool operator ==(Object other) =>
+      other is PressureMixingOffSetting &&
+      enabled == other.enabled &&
+      mode == other.mode &&
+      rate == other.rate;
+  @override
+  int get hashCode => Object.hash(enabled, mode, rate);
+}
+
+class BrushPressureOnSettings {
+  final PressureRangeSetting size;
+  final PressureRangeSetting opacity;
+  final PressureRangeSetting blur;
+  final PressureRangeSetting edgeJitter;
+  final PressureMixingOnSetting mixing;
+
+  const BrushPressureOnSettings({
+    required this.size,
+    required this.opacity,
+    required this.blur,
+    required this.edgeJitter,
+    required this.mixing,
+  });
+
+  static const defaults = BrushPressureOnSettings(
+    size: PressureRangeSetting(enabled: true, weak: 50, strong: 100),
+    opacity: PressureRangeSetting(enabled: true, weak: 50, strong: 100),
+    blur: PressureRangeSetting(enabled: false, weak: 50, strong: 0),
+    edgeJitter: PressureRangeSetting(enabled: false, weak: 50, strong: 0),
+    mixing: PressureMixingOnSetting(
+      enabled: false,
+      mode: BrushMixingMode.simple,
+      weakRate: 50,
+      strongRate: 0,
+    ),
+  );
+
+  BrushPressureOnSettings copyWith({
+    PressureRangeSetting? size,
+    PressureRangeSetting? opacity,
+    PressureRangeSetting? blur,
+    PressureRangeSetting? edgeJitter,
+    PressureMixingOnSetting? mixing,
+  }) => BrushPressureOnSettings(
+    size: size ?? this.size,
+    opacity: opacity ?? this.opacity,
+    blur: blur ?? this.blur,
+    edgeJitter: edgeJitter ?? this.edgeJitter,
+    mixing: mixing ?? this.mixing,
+  );
+  Map<String, dynamic> toJson() => {
+    'size': size.toJson(),
+    'opacity': opacity.toJson(),
+    'blur': blur.toJson(),
+    'edgeJitter': edgeJitter.toJson(),
+    'mixing': mixing.toJson(),
+  };
+  factory BrushPressureOnSettings.fromJson(Map<String, dynamic> j) =>
+      BrushPressureOnSettings(
+        size: PressureRangeSetting.fromJson(j['size'] as Map<String, dynamic>),
+        opacity: PressureRangeSetting.fromJson(
+          j['opacity'] as Map<String, dynamic>,
+        ),
+        blur: PressureRangeSetting.fromJson(j['blur'] as Map<String, dynamic>),
+        edgeJitter: PressureRangeSetting.fromJson(
+          j['edgeJitter'] as Map<String, dynamic>,
+        ),
+        mixing: PressureMixingOnSetting.fromJson(
+          j['mixing'] as Map<String, dynamic>,
+        ),
+      );
+  @override
+  bool operator ==(Object other) =>
+      other is BrushPressureOnSettings &&
+      size == other.size &&
+      opacity == other.opacity &&
+      blur == other.blur &&
+      edgeJitter == other.edgeJitter &&
+      mixing == other.mixing;
+  @override
+  int get hashCode => Object.hash(size, opacity, blur, edgeJitter, mixing);
+}
+
+class BrushPressureOffSettings {
+  final FixedBrushSetting blur;
+  final FixedBrushSetting edgeJitter;
+  final PressureMixingOffSetting mixing;
+  const BrushPressureOffSettings({
+    required this.blur,
+    required this.edgeJitter,
+    required this.mixing,
+  });
+
+  static const defaults = BrushPressureOffSettings(
+    blur: FixedBrushSetting(enabled: false, value: 0),
+    edgeJitter: FixedBrushSetting(enabled: false, value: 0),
+    mixing: PressureMixingOffSetting(
+      enabled: false,
+      mode: BrushMixingMode.simple,
+      rate: 0,
+    ),
+  );
+
+  BrushPressureOffSettings copyWith({
+    FixedBrushSetting? blur,
+    FixedBrushSetting? edgeJitter,
+    PressureMixingOffSetting? mixing,
+  }) => BrushPressureOffSettings(
+    blur: blur ?? this.blur,
+    edgeJitter: edgeJitter ?? this.edgeJitter,
+    mixing: mixing ?? this.mixing,
+  );
+  Map<String, dynamic> toJson() => {
+    'blur': blur.toJson(),
+    'edgeJitter': edgeJitter.toJson(),
+    'mixing': mixing.toJson(),
+  };
+  factory BrushPressureOffSettings.fromJson(Map<String, dynamic> j) =>
+      BrushPressureOffSettings(
+        blur: FixedBrushSetting.fromJson(j['blur'] as Map<String, dynamic>),
+        edgeJitter: FixedBrushSetting.fromJson(
+          j['edgeJitter'] as Map<String, dynamic>,
+        ),
+        mixing: PressureMixingOffSetting.fromJson(
+          j['mixing'] as Map<String, dynamic>,
+        ),
+      );
+  @override
+  bool operator ==(Object other) =>
+      other is BrushPressureOffSettings &&
+      blur == other.blur &&
+      edgeJitter == other.edgeJitter &&
+      mixing == other.mixing;
+  @override
+  int get hashCode => Object.hash(blur, edgeJitter, mixing);
+}
 
 enum FadeMode { off, weak, medium, strong, custom }
 
@@ -263,7 +478,6 @@ class FadeCustomSettings {
   final double startValue;
   final double endValue;
   final double distancePx;
-
   const FadeCustomSettings({
     required this.startValue,
     required this.endValue,
@@ -271,7 +485,6 @@ class FadeCustomSettings {
   });
 }
 
-// 混色率の選択肢: 0=OFF, 20, 40, 60, 80, 100
 const List<int> kMixingRateOptions = [0, 20, 40, 60, 80, 100];
 
 enum BrushMixingMode { off, simple, bleed }

@@ -2977,21 +2977,6 @@ class AppLocalizationsJa extends AppLocalizations {
   String get brushSettingsPixelModeTitle => 'ピクセルモード';
 
   @override
-  String get brushSettingsPressureModeTitle => '筆圧設定';
-
-  @override
-  String get brushSettingsPressureOff => '無効';
-
-  @override
-  String get brushSettingsPressureSize => 'サイズに反映';
-
-  @override
-  String get brushSettingsPressureOpacity => '不透明度に反映';
-
-  @override
-  String get brushSettingsPressureSizeAndOpacity => 'サイズ＋不透明度に反映';
-
-  @override
   String get brushSettingsFadeModeTitle => 'フェード';
 
   @override
@@ -6197,9 +6182,6 @@ class AppLocalizationsJa extends AppLocalizations {
   String get customAutomationFrameRangeInvalid => '有効なフレーム範囲を入力してください。';
 
   @override
-  String get brushSettingsPressureHardnessLabel => '筆圧硬度';
-
-  @override
   String get customAutomationRunAction => '実行';
 
   @override
@@ -6207,4 +6189,22 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get customAutomationUnfavoriteAction => 'お気に入りを解除';
+
+  @override
+  String get brushSettingsCommonSection => '共通';
+
+  @override
+  String get brushSettingsPressureOnSection => '筆圧ON';
+
+  @override
+  String get brushSettingsPressureOffSection => '筆圧OFF';
+
+  @override
+  String get brushSettingsWeakPressureLabel => '弱';
+
+  @override
+  String get brushSettingsStrongPressureLabel => '強';
+
+  @override
+  String get brushSettingsValueLabel => '値';
 }

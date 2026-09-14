@@ -10,6 +10,7 @@
 // このテストを追加している。文字サイズは端末側の設定であり、開発端末が
 // 既定値のままだと気付けないため、自動テストで恒久的に監視する。
 import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -40,13 +41,12 @@ void main() {
     final original = FlutterError.onError;
     FlutterError.onError = (details) {
       final s = details.toString();
-      final where = RegExp(
-        r'file:///[^\s:]*/(lib/[^\s:]+:\d+:\d+)',
-      ).firstMatch(s);
+      final where = RegExp(r'file:///[^\s:]*/(lib/[^\s:]+:\d+:\d+)')
+          .firstMatch(s);
       final what =
-          RegExp(
-            r'(overflowed by [\d.]+ pixels on the \w+)',
-          ).firstMatch(s)?.group(1) ??
+          RegExp(r'(overflowed by [\d.]+ pixels on the \w+)')
+              .firstMatch(s)
+              ?.group(1) ??
           s
               .split('\n')
               .firstWhere((l) => l.contains('thrown'), orElse: () => 'レイアウト例外');

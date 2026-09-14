@@ -42,9 +42,8 @@ Future<void> _capture(WidgetTester tester, GlobalKey key, String name) async {
       Platform.environment['STEP4_EVIDENCE_DIR'] ?? 'build/step4-premium/png',
     );
     await dir.create(recursive: true);
-    await File(
-      '${dir.path}/$name.png',
-    ).writeAsBytes(data!.buffer.asUint8List());
+    await File('${dir.path}/$name.png')
+        .writeAsBytes(data!.buffer.asUint8List());
   });
 }
 

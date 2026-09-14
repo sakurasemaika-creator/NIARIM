@@ -11,6 +11,7 @@
 // なおflutter testは既定で実フォントを読み込まない（すべて同じテスト用
 // フォントで描かれ字幅に差が出ない）ため、実物をFontLoaderで登録する。
 import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';

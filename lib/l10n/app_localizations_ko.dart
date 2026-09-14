@@ -2989,21 +2989,6 @@ class AppLocalizationsKo extends AppLocalizations {
   String get brushSettingsPixelModeTitle => '픽셀 모드';
 
   @override
-  String get brushSettingsPressureModeTitle => '필압 설정';
-
-  @override
-  String get brushSettingsPressureOff => '사용 안 함';
-
-  @override
-  String get brushSettingsPressureSize => '크기에 반영';
-
-  @override
-  String get brushSettingsPressureOpacity => '불투명도에 반영';
-
-  @override
-  String get brushSettingsPressureSizeAndOpacity => '크기＋불투명도에 반영';
-
-  @override
   String get brushSettingsFadeModeTitle => '페이드';
 
   @override
@@ -5400,7 +5385,7 @@ class AppLocalizationsKo extends AppLocalizations {
   String get filterAuroraHologramPresetPastelDream => '파스텔 드림';
 
   @override
-  String get filterAuroraHologramPresetPearl2 => 'パール2';
+  String get filterAuroraHologramPresetPearl2 => '펄 2';
 
   @override
   String get filterAuroraHologramPresetSunsetGold => '선셋 골드';
@@ -5409,7 +5394,7 @@ class AppLocalizationsKo extends AppLocalizations {
   String get filterAuroraHologramPresetSilverFoil => '실버 포일';
 
   @override
-  String get filterAuroraHologramPresetClassicHologram => 'オーロラホログラム';
+  String get filterAuroraHologramPresetClassicHologram => '오로라 홀로그램';
 
   @override
   String get filterNameBackgroundBlend => '배경 어우러짐';
@@ -6224,9 +6209,6 @@ class AppLocalizationsKo extends AppLocalizations {
   String get customAutomationFrameRangeInvalid => '올바른 프레임 범위를 입력하세요.';
 
   @override
-  String get brushSettingsPressureHardnessLabel => '필압 경도';
-
-  @override
   String get customAutomationRunAction => '실행';
 
   @override
@@ -6234,4 +6216,22 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get customAutomationUnfavoriteAction => '즐겨찾기에서 제거';
+
+  @override
+  String get brushSettingsCommonSection => '공통';
+
+  @override
+  String get brushSettingsPressureOnSection => '필압 ON';
+
+  @override
+  String get brushSettingsPressureOffSection => '필압 OFF';
+
+  @override
+  String get brushSettingsWeakPressureLabel => '약';
+
+  @override
+  String get brushSettingsStrongPressureLabel => '강';
+
+  @override
+  String get brushSettingsValueLabel => '값';
 }

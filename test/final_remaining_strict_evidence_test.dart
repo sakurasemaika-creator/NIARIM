@@ -33,33 +33,33 @@ void main() {
     if (tempDir.existsSync()) tempDir.deleteSync(recursive: true);
   });
 
-  test('筆圧サイズ: strength 0/50/100 が同一pressure=0.25の実線幅へ段階追従', () async {
+  test('筆圧サイズ: weak 100/50/0 が同一pressure=0.25の実線幅へ段階追従', () async {
     final spans = <int, int>{};
-    for (final strength in [0, 50, 100]) {
+    for (final weak in [100, 50, 0]) {
       final tm = TileManager(canvasWidth: 80, canvasHeight: 80);
       final e = DrawingEngine(tileManager: tm)
         ..currentBrush = _brush(
           size: 32,
-          pressureMode: PressureMode.size,
-          pressureStrength: strength,
+          sizePressure: PressureRangeSetting(
+            enabled: true,
+            weak: weak,
+            strong: 100,
+          ),
         )
         ..currentColor = const ui.Color(0xFF202020);
       e.beginStroke(const StrokePoint(x: 40, y: 40, pressure: 0.25), 'p');
       e.endStroke();
       final image = await tm.compositeLayerToImage('p');
-      await _saveImage(
-        image,
-        '${out.path}/pressure_size_strength_$strength.png',
-      );
+      await _saveImage(image, '${out.path}/pressure_size_weak_$weak.png');
       final rgba = await _rgba(image);
-      spans[strength] = _verticalSpan(rgba, 80, 40);
+      spans[weak] = _verticalSpan(rgba, 80, 40);
       image.dispose();
       tm.dispose();
     }
-    expect(spans[0]!, greaterThan(spans[50]!));
-    expect(spans[50]!, greaterThan(spans[100]!));
-    expect(spans[0]!, greaterThanOrEqualTo(28));
-    expect(spans[100]!, lessThanOrEqualTo(12));
+    expect(spans[100]!, greaterThan(spans[50]!));
+    expect(spans[50]!, greaterThan(spans[0]!));
+    expect(spans[100]!, greaterThanOrEqualTo(28));
+    expect(spans[0]!, lessThanOrEqualTo(12));
   });
 
   test('フェード: off/weak/medium/strong/custom が同一長ストローク終端へ段階反映', () async {
@@ -253,8 +253,11 @@ void main() {
 
 Brush _brush({
   double size = 12,
-  PressureMode pressureMode = PressureMode.off,
-  int pressureStrength = 100,
+  PressureRangeSetting sizePressure = const PressureRangeSetting(
+    enabled: false,
+    weak: 50,
+    strong: 100,
+  ),
   FadeMode fadeMode = FadeMode.off,
   FadeCustomSettings? fadeCustom,
 }) => Brush(
@@ -263,17 +266,16 @@ Brush _brush({
   size: size,
   opacity: 100,
   spacing: 1,
-  blurRadius: 0,
   stabilization: false,
   stabilizationStrength: 0,
   pixelMode: false,
-  pressureMode: pressureMode,
-  pressureStrength: pressureStrength,
+  pressureOn: BrushPressureOnSettings.defaults.copyWith(
+    size: sizePressure,
+    opacity: const PressureRangeSetting(enabled: false, weak: 50, strong: 100),
+  ),
   fadeMode: fadeMode,
   fadeCustom: fadeCustom,
   strokeDecay: false,
-  mixingMode: BrushMixingMode.off,
-  mixingRate: 0,
 );
 
 Future<void> _rulerLine(Directory out) async {

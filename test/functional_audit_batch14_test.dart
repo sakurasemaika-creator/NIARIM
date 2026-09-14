@@ -200,8 +200,7 @@ void main() {
     expect(
       differentPixels,
       0,
-      reason:
-          'same straight path must rasterize identically regardless of pointer event count',
+      reason: 'same straight path must rasterize identically regardless of pointer event count',
     );
     expect(maxChannelDiff, 0);
   });
@@ -229,8 +228,7 @@ void main() {
     expect(
       Stamp.fromJson(legacy).opacity,
       100,
-      reason:
-          'stamps saved before opacity existed must keep their old fully-opaque appearance',
+      reason: 'stamps saved before opacity existed must keep their old fully-opaque appearance',
     );
   });
 }

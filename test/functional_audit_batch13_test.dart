@@ -125,17 +125,12 @@ Brush _brush({
   size: size,
   opacity: 100,
   spacing: 1,
-  blurRadius: 0,
   stabilization: false,
   stabilizationStrength: 0,
   pixelMode: false,
-  pressureMode: PressureMode.off,
-  pressureStrength: 100,
   fadeMode: fadeMode,
   fadeCustom: fadeCustom,
   strokeDecay: strokeDecay,
-  mixingMode: BrushMixingMode.off,
-  mixingRate: 0,
 );
 
 int _verticalSpan(
@@ -160,9 +155,9 @@ List<int> _pixel(List<int> d, int width, int x, int y) {
   return [d[i], d[i + 1], d[i + 2], d[i + 3]];
 }
 
-Future<Uint8List> _rgba(ui.Image i) async => (await i.toByteData(
-  format: ui.ImageByteFormat.rawRgba,
-))!.buffer.asUint8List();
+Future<Uint8List> _rgba(ui.Image i) async =>
+    (await i.toByteData(format: ui.ImageByteFormat.rawRgba))!.buffer
+        .asUint8List();
 Future<void> _save(ui.Image i, String p) async {
   final d = await i.toByteData(format: ui.ImageByteFormat.png);
   await File(p).writeAsBytes(d!.buffer.asUint8List());

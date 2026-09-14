@@ -3119,22 +3119,6 @@ class AppLocalizationsFr extends AppLocalizations {
   String get brushSettingsPixelModeTitle => 'Mode pixel';
 
   @override
-  String get brushSettingsPressureModeTitle => 'Sensibilité à la pression';
-
-  @override
-  String get brushSettingsPressureOff => 'Désactivé';
-
-  @override
-  String get brushSettingsPressureSize => 'Affecte la taille';
-
-  @override
-  String get brushSettingsPressureOpacity => 'Affecte l\'opacité';
-
-  @override
-  String get brushSettingsPressureSizeAndOpacity =>
-      'Affecte la taille + l\'opacité';
-
-  @override
   String get brushSettingsFadeModeTitle => 'Fondu';
 
   @override
@@ -5660,7 +5644,7 @@ class AppLocalizationsFr extends AppLocalizations {
   String get filterAuroraHologramPresetPastelDream => 'Rêve pastel';
 
   @override
-  String get filterAuroraHologramPresetPearl2 => 'パール2';
+  String get filterAuroraHologramPresetPearl2 => 'Perle 2';
 
   @override
   String get filterAuroraHologramPresetSunsetGold => 'Or du couchant';
@@ -5669,7 +5653,7 @@ class AppLocalizationsFr extends AppLocalizations {
   String get filterAuroraHologramPresetSilverFoil => 'Feuille argentée';
 
   @override
-  String get filterAuroraHologramPresetClassicHologram => 'オーロラホログラム';
+  String get filterAuroraHologramPresetClassicHologram => 'Hologramme aurore';
 
   @override
   String get filterNameBackgroundBlend => 'Fondu d\'arrière-plan';
@@ -6528,9 +6512,6 @@ class AppLocalizationsFr extends AppLocalizations {
       'Saisissez une plage d’images valide.';
 
   @override
-  String get brushSettingsPressureHardnessLabel => 'Dureté de pression';
-
-  @override
   String get customAutomationRunAction => 'Exécuter';
 
   @override
@@ -6538,4 +6519,22 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get customAutomationUnfavoriteAction => 'Retirer des favoris';
+
+  @override
+  String get brushSettingsCommonSection => 'Commun';
+
+  @override
+  String get brushSettingsPressureOnSection => 'Pression activée';
+
+  @override
+  String get brushSettingsPressureOffSection => 'Pression désactivée';
+
+  @override
+  String get brushSettingsWeakPressureLabel => 'Faible';
+
+  @override
+  String get brushSettingsStrongPressureLabel => 'Forte';
+
+  @override
+  String get brushSettingsValueLabel => 'Valeur';
 }

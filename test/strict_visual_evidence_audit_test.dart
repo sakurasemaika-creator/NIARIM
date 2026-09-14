@@ -9,6 +9,7 @@ import 'package:niarim/engine/ruler_engine.dart';
 import 'package:niarim/engine/tile_manager.dart';
 import 'package:niarim/models/brush.dart';
 import 'package:niarim/models/ruler.dart';
+
 import 'helpers/color_channels.dart';
 
 const _w = 256;
@@ -321,16 +322,32 @@ Brush _brush({
   size: size,
   opacity: opacity,
   spacing: 1,
-  blurRadius: 0,
   stabilization: stabilization,
   stabilizationStrength: stabilizationStrength,
   pixelMode: false,
-  pressureMode: PressureMode.off,
-  pressureStrength: 100,
+  pressureOn: BrushPressureOnSettings.defaults.copyWith(
+    size: const PressureRangeSetting(enabled: false, weak: 50, strong: 100),
+    opacity: const PressureRangeSetting(enabled: false, weak: 50, strong: 100),
+    mixing: PressureMixingOnSetting(
+      enabled: mixingMode != BrushMixingMode.off,
+      mode: mixingMode == BrushMixingMode.off
+          ? BrushMixingMode.simple
+          : mixingMode,
+      weakRate: mixingRate,
+      strongRate: mixingRate,
+    ),
+  ),
+  pressureOff: BrushPressureOffSettings.defaults.copyWith(
+    mixing: PressureMixingOffSetting(
+      enabled: mixingMode != BrushMixingMode.off,
+      mode: mixingMode == BrushMixingMode.off
+          ? BrushMixingMode.simple
+          : mixingMode,
+      rate: mixingRate,
+    ),
+  ),
   fadeMode: FadeMode.off,
   strokeDecay: false,
-  mixingMode: mixingMode,
-  mixingRate: mixingRate,
 );
 
 void _fillLayer(TileManager tm, String key, ui.Color color) {

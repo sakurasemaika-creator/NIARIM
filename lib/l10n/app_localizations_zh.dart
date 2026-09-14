@@ -2964,21 +2964,6 @@ class AppLocalizationsZh extends AppLocalizations {
   String get brushSettingsPixelModeTitle => '像素模式';
 
   @override
-  String get brushSettingsPressureModeTitle => '笔压设置';
-
-  @override
-  String get brushSettingsPressureOff => '无效';
-
-  @override
-  String get brushSettingsPressureSize => '反映到大小';
-
-  @override
-  String get brushSettingsPressureOpacity => '反映到不透明度';
-
-  @override
-  String get brushSettingsPressureSizeAndOpacity => '反映到大小＋不透明度';
-
-  @override
   String get brushSettingsFadeModeTitle => '淡出';
 
   @override
@@ -5340,7 +5325,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get filterAuroraHologramPresetPastelDream => '粉彩梦境';
 
   @override
-  String get filterAuroraHologramPresetPearl2 => 'パール2';
+  String get filterAuroraHologramPresetPearl2 => '珍珠2';
 
   @override
   String get filterAuroraHologramPresetSunsetGold => '日落金';
@@ -5349,7 +5334,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get filterAuroraHologramPresetSilverFoil => '银箔';
 
   @override
-  String get filterAuroraHologramPresetClassicHologram => 'オーロラホログラム';
+  String get filterAuroraHologramPresetClassicHologram => '极光全息';
 
   @override
   String get filterNameBackgroundBlend => '背景融入';
@@ -6156,9 +6141,6 @@ class AppLocalizationsZh extends AppLocalizations {
   String get customAutomationFrameRangeInvalid => '请输入有效的帧范围。';
 
   @override
-  String get brushSettingsPressureHardnessLabel => '压感硬度';
-
-  @override
   String get customAutomationRunAction => '运行';
 
   @override
@@ -6166,6 +6148,24 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get customAutomationUnfavoriteAction => '从收藏中移除';
+
+  @override
+  String get brushSettingsCommonSection => '通用';
+
+  @override
+  String get brushSettingsPressureOnSection => '笔压开启';
+
+  @override
+  String get brushSettingsPressureOffSection => '笔压关闭';
+
+  @override
+  String get brushSettingsWeakPressureLabel => '弱';
+
+  @override
+  String get brushSettingsStrongPressureLabel => '强';
+
+  @override
+  String get brushSettingsValueLabel => '值';
 }
 
 /// The translations for Chinese, using the Han script (`zh_Hant`).
@@ -9127,21 +9127,6 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get brushSettingsPixelModeTitle => '像素模式';
 
   @override
-  String get brushSettingsPressureModeTitle => '筆壓設定';
-
-  @override
-  String get brushSettingsPressureOff => '無效';
-
-  @override
-  String get brushSettingsPressureSize => '套用到大小';
-
-  @override
-  String get brushSettingsPressureOpacity => '套用到不透明度';
-
-  @override
-  String get brushSettingsPressureSizeAndOpacity => '套用到大小＋不透明度';
-
-  @override
   String get brushSettingsFadeModeTitle => '淡出';
 
   @override
@@ -11440,6 +11425,9 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get canvasEditMenuPreviewNavigatorSubtitle => '顯示縮小的整體概覽（導航器）';
 
   @override
+  String get filterNamePrism => '稜鏡';
+
+  @override
   String get filterNameThreshold => '二值化濾鏡';
 
   @override
@@ -11500,10 +11488,16 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get filterAuroraHologramPresetPastelDream => '粉彩夢境';
 
   @override
+  String get filterAuroraHologramPresetPearl2 => '珍珠2';
+
+  @override
   String get filterAuroraHologramPresetSunsetGold => '日落金';
 
   @override
   String get filterAuroraHologramPresetSilverFoil => '銀箔';
+
+  @override
+  String get filterAuroraHologramPresetClassicHologram => '極光全息';
 
   @override
   String get filterNameBackgroundBlend => '背景融入';
@@ -12298,7 +12292,16 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get timelineEffectTypeVhsNoise => 'VHS 雜訊';
 
   @override
-  String get brushSettingsPressureHardnessLabel => '壓感硬度';
+  String get customAutomationSpecifiedFrames => '在指定影格執行';
+
+  @override
+  String get customAutomationFrameFrom => '開始影格';
+
+  @override
+  String get customAutomationFrameTo => '結束影格';
+
+  @override
+  String get customAutomationFrameRangeInvalid => '請輸入有效的影格範圍。';
 
   @override
   String get customAutomationRunAction => '執行';
@@ -12308,4 +12311,22 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get customAutomationUnfavoriteAction => '從收藏中移除';
+
+  @override
+  String get brushSettingsCommonSection => '共用';
+
+  @override
+  String get brushSettingsPressureOnSection => '筆壓開啟';
+
+  @override
+  String get brushSettingsPressureOffSection => '筆壓關閉';
+
+  @override
+  String get brushSettingsWeakPressureLabel => '弱';
+
+  @override
+  String get brushSettingsStrongPressureLabel => '強';
+
+  @override
+  String get brushSettingsValueLabel => '值';
 }
