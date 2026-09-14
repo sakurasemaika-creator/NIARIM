@@ -38,7 +38,7 @@ Widget _app(CustomAutomationService service) {
                 builder: (_) => CustomAutomationManagerSheet(
                   surface: CustomAutomationSurface.canvas,
                   frameCount: 8,
-                  onExecute: (_, __, ___) async {},
+                  onExecute: (_, _, _) async {},
                   onRecordingStarted: () {},
                 ),
               ),
@@ -49,6 +49,15 @@ Widget _app(CustomAutomationService service) {
       ),
     ),
   );
+}
+
+void _prepareViewport(WidgetTester tester) {
+  tester.view.devicePixelRatio = 1.0;
+  tester.view.physicalSize = const Size(1200, 1000);
+  addTearDown(() {
+    tester.view.resetDevicePixelRatio();
+    tester.view.resetPhysicalSize();
+  });
 }
 
 Future<void> _openManager(WidgetTester tester) async {
@@ -67,6 +76,7 @@ void main() {
   testWidgets('new automation dialog can close without disposed controller use', (
     tester,
   ) async {
+    _prepareViewport(tester);
     final service = await _service();
     await tester.pumpWidget(_app(service));
     await _openManager(tester);
@@ -86,6 +96,7 @@ void main() {
   testWidgets('rename dialog can close without disposed controller use', (
     tester,
   ) async {
+    _prepareViewport(tester);
     final service = await _service();
     await tester.pumpWidget(_app(service));
     await _openManager(tester);
@@ -108,6 +119,7 @@ void main() {
   testWidgets('execute dialog can close without disposed controller use', (
     tester,
   ) async {
+    _prepareViewport(tester);
     final service = await _service();
     await tester.pumpWidget(_app(service));
     await _openManager(tester);
