@@ -1,4 +1,5 @@
 name: Popup Close Layout Fix Validation
+# Execute the bounded source repair after the RED regression was confirmed.
 
 on:
   push:
