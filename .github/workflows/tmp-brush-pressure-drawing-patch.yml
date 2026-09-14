@@ -1,0 +1,90 @@
+name: TMP Brush Pressure Drawing Patch
+
+on:
+  push:
+    branches:
+      - feature/brush-pressure-profiles
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  patch:
+    if: ${{ github.actor != 'github-actions[bot]' }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: feature/brush-pressure-profiles
+      - name: Patch drawing pressure integration
+        shell: python
+        run: |
+          from pathlib import Path
+
+          engine_path = Path('lib/engine/drawing_engine.dart')
+          text = engine_path.read_text()
+
+          replacements = [
+              (
+                  "import '../models/brush.dart';\n",
+                  "import '../models/brush.dart';\nimport '../models/brush_pressure_resolver.dart';\n",
+              ),
+              (
+                  "  Brush? currentBrush;\n  ui.Color currentColor = const ui.Color(0xFF000000);\n  bool isEraser = false;",
+                  "  Brush? currentBrush;\n  ui.Color currentColor = const ui.Color(0xFF000000);\n  bool isEraser = false;\n  bool pressureEnabled = true;",
+              ),
+              (
+                  "    var size = brush.size;\n    var opacity = brush.opacity / 100.0;\n\n    // 筆圧強度0%では筆圧の影響を無効化し、100%では端末からのpressureを\n    // そのまま反映する。中間値は「筆圧なし(1.0)」と生pressureを線形補間する。\n    final rawPressure = pressure.clamp(0.0, 1.0);\n    final pressureStrength = brush.pressureStrength.clamp(0, 100) / 100.0;\n    final effectivePressure = 1.0 - (1.0 - rawPressure) * pressureStrength;\n\n    // 筆圧反映\n    switch (brush.pressureMode) {\n      case PressureMode.size:\n        size *= effectivePressure;\n      case PressureMode.opacity:\n        opacity *= effectivePressure;\n      case PressureMode.sizeAndOpacity:\n        size *= effectivePressure;\n        opacity *= effectivePressure;\n      case PressureMode.off:\n        break;\n    }",
+                  "    final resolvedPressure = resolveBrushPressure(\n      brush: brush,\n      pressureEnabled: pressureEnabled,\n      curvedPressure: pressure,\n    );\n    var size = brush.size * resolvedPressure.sizeScale;\n    var opacity = (brush.opacity / 100.0) * resolvedPressure.opacityScale;",
+              ),
+              (
+                  "      brush.pixelMode,\n      brush.blurRadius,\n      customTexture,\n      stylusTiltMagnitude: stylusTiltMagnitude,\n      edgeJitter: brush.edgeJitter,\n      edgeJitterStrength: brush.edgeJitterStrength,",
+                  "      brush.pixelMode,\n      resolvedPressure.blur,\n      customTexture,\n      stylusTiltMagnitude: stylusTiltMagnitude,\n      edgeJitter: resolvedPressure.edgeJitterEnabled,\n      edgeJitterStrength: resolvedPressure.edgeJitterStrength,\n      mixingMode: resolvedPressure.mixingMode,\n      mixingRate: resolvedPressure.mixingRate,",
+              ),
+              (
+                  "    bool edgeJitter = false,\n    int edgeJitterStrength = 50,\n    bool hexagon = false,",
+                  "    bool edgeJitter = false,\n    int edgeJitterStrength = 50,\n    BrushMixingMode mixingMode = BrushMixingMode.off,\n    int mixingRate = 0,\n    bool hexagon = false,",
+              ),
+              (
+                  "            } else if (currentBrush!.mixingMode != BrushMixingMode.off) {",
+                  "            } else if (mixingMode != BrushMixingMode.off) {",
+              ),
+              (
+                  "                final rate = currentBrush!.mixingRate / 100.0;\n                final mixed = currentBrush!.mixingMode == BrushMixingMode.bleed",
+                  "                final rate = mixingRate / 100.0;\n                final mixed = mixingMode == BrushMixingMode.bleed",
+              ),
+          ]
+          for old, new in replacements:
+              count = text.count(old)
+              if count != 1:
+                  raise SystemExit(f'drawing_engine: expected one match, found {count}: {old[:100]!r}')
+              text = text.replace(old, new, 1)
+          engine_path.write_text(text)
+
+          area_path = Path('lib/screens/canvas/widgets/canvas_area.dart')
+          area = area_path.read_text()
+          old = "  void _syncBrushAndColor() {\n    final bs = context.read<BrushService>();\n    _drawingEngine.currentBrush = bs.currentBrush;\n    final c = bs.currentColor;"
+          new = "  void _syncBrushAndColor() {\n    final bs = context.read<BrushService>();\n    final settings = context.read<SettingsService>();\n    _drawingEngine.currentBrush = bs.currentBrush;\n    _drawingEngine.pressureEnabled = settings.penPressureEnabled;\n    final c = bs.currentColor;"
+          count = area.count(old)
+          if count != 1:
+              raise SystemExit(f'canvas_area: expected one match, found {count}')
+          area_path.write_text(area.replace(old, new, 1))
+
+      - name: Format and verify
+        uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+      - run: dart format lib/engine/drawing_engine.dart lib/screens/canvas/widgets/canvas_area.dart
+      - run: flutter pub get
+      - run: flutter analyze --no-fatal-infos lib/engine/drawing_engine.dart lib/screens/canvas/widgets/canvas_area.dart lib/models/brush_pressure_resolver.dart
+      - run: flutter test test/models/brush_pressure_resolver_test.dart --reporter expanded
+      - name: Commit patch
+        run: |
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          git add lib/engine/drawing_engine.dart lib/screens/canvas/widgets/canvas_area.dart
+          git diff --cached --check
+          git commit -m "feat: apply brush pressure profiles while drawing"
+          git push origin HEAD:feature/brush-pressure-profiles
