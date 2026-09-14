@@ -16,7 +16,7 @@ class CustomAutomationBuiltinPresets {
 
   static CustomAutomation _draftToLineart() => CustomAutomation(
     id: 'builtin_draft_to_lineart',
-    name: '下書きから線画',
+    name: '線画作成（デジタル）',
     recordingStartFrame: 0,
     createdAt: _epoch,
     updatedAt: _epoch,
@@ -52,23 +52,13 @@ class CustomAutomationBuiltinPresets {
 
   static CustomAutomation _analogLineartExtraction() => CustomAutomation(
     id: 'builtin_analog_lineart_extract',
-    name: 'アナログ線画抽出',
+    name: '線画抽出（アナログ）',
     recordingStartFrame: 0,
     createdAt: _epoch,
     updatedAt: _epoch,
     steps: [
       _filterStep(
         '1',
-        const FilterDef(
-          id: 'Filter0014',
-          name: '二値化',
-          kind: FilterKind.threshold,
-          thresholdValue: 128,
-        ),
-        '二値化',
-      ),
-      _filterStep(
-        '2',
         const FilterDef(
           id: 'builtin_color_adjust',
           name: '色調補正',
@@ -78,6 +68,18 @@ class CustomAutomationBuiltinPresets {
           caContrast: 20,
         ),
         '色調補正',
+        prefix: 'builtin_analog_lineart_extract',
+      ),
+      _filterStep(
+        '2',
+        const FilterDef(
+          id: 'Filter0014',
+          name: '二値化',
+          kind: FilterKind.threshold,
+          thresholdValue: 128,
+        ),
+        '二値化',
+        prefix: 'builtin_analog_lineart_extract',
       ),
       const CustomAutomationStep(
         id: 'builtin_analog_lineart_extract_3',
