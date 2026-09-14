@@ -1,4 +1,4 @@
-name: One-shot timeline media fix v3
+name: One-shot timeline media fix v4
 
 on:
   push:
@@ -35,29 +35,30 @@ jobs:
           import 'package:flutter_test/flutter_test.dart';
 
           void main() {
-            test('audio import accepts video containers as audio-only sources', () {
+            test('audio import accepts video containers but keeps audio track semantics', () {
               final s = File('lib/screens/timeline/timeline_screen.dart').readAsStringSync();
               expect(s, contains('_ClipTrackType.audio => FileType.custom'));
               expect(s, contains("'mp4'"));
               expect(s, contains("'mov'"));
+              expect(s, contains("'mkv'"));
               expect(s, contains('allowedExtensions: allowedExtensions'));
+              expect(s, contains('trackType: trackType'));
             });
 
-            test('timeline video is preview-only and muted', () {
+            test('video material keeps embedded audio and visual video semantics', () {
               final s = File('lib/screens/timeline/timeline_screen.dart').readAsStringSync();
-              final c = File('lib/engine/layer_compositor.dart').readAsStringSync();
-              expect(s, contains('VideoPlayer(controller)'));
-              expect(s, contains('await controller.setVolume(0.0);'));
-              expect(s, contains('videoVolume: 0.0'));
-              expect(c, isNot(contains('  LayerType.timelineVideo,\n')));
+              expect(s, contains('_ClipTrackType.video => FileType.video'));
+              expect(s, contains('await controller.setVolume(clip.volume.clamp(0.0, 1.0));'));
+              expect(s, contains('videoVolume: clip.trackType == _ClipTrackType.video'));
             });
 
-            test('trim sheet keeps playback available and media synced', () {
+            test('audio and video clip editing keeps play pause available', () {
               final s = File('lib/screens/timeline/timeline_screen.dart').readAsStringSync();
               expect(s, contains('final ValueGetter<bool> isPlaying;'));
               expect(s, contains('final VoidCallback onTogglePlay;'));
               expect(s, contains('widget.onTogglePlay();'));
-              expect(s, contains('_maybeCenterCurrentFrame();\n    _syncMediaPlayback();'));
+              expect(s, contains('isPlaying: () => _isPlaying'));
+              expect(s, contains('onTogglePlay: _togglePlay'));
             });
           }
           DART
@@ -72,7 +73,7 @@ jobs:
           test "$status" -ne 0
           echo 'RED confirmed.'
 
-      - name: Apply robust source patch
+      - name: Apply source patch
         run: |
           python3 <<'PY'
           from pathlib import Path
@@ -81,277 +82,118 @@ jobs:
           path = Path('lib/screens/timeline/timeline_screen.dart')
           s = path.read_text()
 
-          def replace_one(old: str, new: str, label: str):
-              global s
-              count = s.count(old)
-              if count != 1:
-                  raise SystemExit(f'{label}: expected exactly one match, got {count}')
-              s = s.replace(old, new, 1)
-
-          def sub_one(pattern: str, repl: str, label: str, flags=0):
-              global s
-              s2, count = re.subn(pattern, repl, s, count=1, flags=flags)
-              if count != 1:
-                  raise SystemExit(f'{label}: expected exactly one regex match, got {count}')
-              s = s2
-
-          # 1) Audio import accepts common audio files plus video containers. The
-          # resulting clip remains _ClipTrackType.audio, so the selected video's
-          # image stream is never added to the video track by this path.
-          sub_one(
-              r"    final fileType = switch \(trackType\) \{\n\s*_ClipTrackType\.audio => FileType\.audio,\n\s*_ClipTrackType\.video => FileType\.video,\n\s*_ClipTrackType\.image => FileType\.image,\n\s*\};\n\s*final result = await FilePicker\.platform\.pickFiles\(type: fileType\);",
-              """    final allowedExtensions = trackType == _ClipTrackType.audio
-              ? const <String>[
-                  'mp3',
-                  'wav',
-                  'm4a',
-                  'aac',
-                  'flac',
-                  'ogg',
-                  'opus',
-                  'aiff',
-                  'wma',
-                  'mp4',
-                  'm4v',
-                  'mov',
-                  'mkv',
-                  'webm',
-                ]
-              : null;
-          final fileType = switch (trackType) {
-            _ClipTrackType.audio => FileType.custom,
-            _ClipTrackType.video => FileType.video,
-            _ClipTrackType.image => FileType.image,
-          };
-          final result = await FilePicker.platform.pickFiles(
-            type: fileType,
-            allowedExtensions: allowedExtensions,
-          );""",
-              'audio picker',
+          # Audio import accepts both ordinary audio formats and common video
+          # containers. The requested trackType remains audio, so a selected
+          # movie is persisted/rendered exactly like an audio material: waveform
+          # only, no video layer/thumbnail path.
+          picker_pattern = re.compile(
+              r"(?P<indent>\s*)final fileType = switch \(trackType\) \{\s*"
+              r"_ClipTrackType\.audio => FileType\.audio,\s*"
+              r"_ClipTrackType\.video => FileType\.video,\s*"
+              r"_ClipTrackType\.image => FileType\.image,\s*"
+              r"\};\s*"
+              r"final result = await FilePicker\.platform\.pickFiles\(type: fileType\);"
           )
+          m = picker_pattern.search(s)
+          if not m:
+              raise SystemExit('audio picker block not found')
+          i = m.group('indent')
+          replacement = f"""{i}final allowedExtensions = trackType == _ClipTrackType.audio
+          ? const <String>[
+              'mp3', 'wav', 'm4a', 'aac', 'flac', 'ogg', 'opus', 'aiff', 'wma',
+              'mp4', 'm4v', 'mov', 'mkv', 'webm',
+            ]
+          : null;
+      final fileType = switch (trackType) {{
+        _ClipTrackType.audio => FileType.custom,
+        _ClipTrackType.video => FileType.video,
+        _ClipTrackType.image => FileType.image,
+      }};
+      final result = await FilePicker.platform.pickFiles(
+        type: fileType,
+        allowedExtensions: allowedExtensions,
+      );"""
+          s = s[:m.start()] + replacement + s[m.end():]
 
-          # 2) Any frame movement (playback, scrub, trim) synchronizes media.
-          replace_one(
-              "    _maybeCenterCurrentFrame();\n  }\n\n  void _maybeCenterCurrentFrame",
-              "    _maybeCenterCurrentFrame();\n    _syncMediaPlayback();\n  }\n\n  void _maybeCenterCurrentFrame",
-              'frame-change sync',
-          )
-          # Avoid duplicate sync from the timer now that _currentFrame notifies it.
-          replace_one(
-              "          _currentFrame = (_currentFrame + 1) % total;\n          _syncMediaPlayback();",
-              "          _currentFrame = (_currentFrame + 1) % total;",
-              'timer duplicate sync',
-          )
+          # Keep the normal video path untouched: a video imported as video
+          # continues to use its image stream and embedded audio/volume.
 
-          # 3) New/loaded clips immediately initialize the current video preview.
-          replace_one(
-              "                setState(() => clips.add(newClip));",
-              "                setState(() => clips.add(newClip));\n                _syncMediaPlayback();",
-              'new clip sync',
+          # Add play/pause to the clip detail sheet. This makes both split/range
+          # cut setup audibly/visually previewable without dismissing the editor.
+          callback_pattern = re.compile(
+              r"(?P<i>\s*)onDuplicate: \(\) => _duplicateClip\(clip\),\s*"
+              r"onChanged: \(\) => setState\(\(\) \{\}\),"
           )
-          loaded = """    setState(() {
-              _audioClips
-                ..clear()
-                ..addAll(audio);
-              _videoClips
-                ..clear()
-                ..addAll(video);
-              _imageClips
-                ..clear()
-                ..addAll(image);
-            });
-          """
-          # Ignore indentation inside the literal above and match structure by regex.
-          sub_one(
-              r"    setState\(\(\) \{\n\s*_audioClips\n\s*\.\.clear\(\)\n\s*\.\.addAll\(audio\);\n\s*_videoClips\n\s*\.\.clear\(\)\n\s*\.\.addAll\(video\);\n\s*_imageClips\n\s*\.\.clear\(\)\n\s*\.\.addAll\(image\);\n\s*\}\);\n  \}",
-              """    setState(() {
-              _audioClips
-                ..clear()
-                ..addAll(audio);
-              _videoClips
-                ..clear()
-                ..addAll(video);
-              _imageClips
-                ..clear()
-                ..addAll(image);
-            });
-            WidgetsBinding.instance.addPostFrameCallback((_) {
-              if (mounted) _syncMediaPlayback();
-            });
-          }""",
-              'loaded clip sync',
+          m = callback_pattern.search(s)
+          if not m:
+              raise SystemExit('clip detail callback block not found')
+          i = m.group('i')
+          callback_replacement = (
+              f"{i}onDuplicate: () => _duplicateClip(clip),\n"
+              f"{i}onChanged: () {{\n"
+              f"{i}  setState(() {{}});\n"
+              f"{i}  _syncMediaPlayback();\n"
+              f"{i}}},\n"
+              f"{i}isPlaying: () => _isPlaying,\n"
+              f"{i}onTogglePlay: _togglePlay,"
           )
+          s = s[:m.start()] + callback_replacement + s[m.end():]
 
-          # 4) Video track is visual preview only; embedded audio stays muted.
-          replace_one(
-              "    await controller.setVolume(clip.volume.clamp(0.0, 1.0));",
-              "    await controller.setVolume(0.0);",
-              'video controller mute',
-          )
-          s = s.replace('videoVolume: clip.volume.clamp(0.0, 1.0),', 'videoVolume: 0.0,')
-          sub_one(
-              r"          volume: layer\.type == LayerType\.timelineVideo\n\s*\? layer\.videoVolume\.clamp\(0\.0, 1\.0\)\n\s*: 1\.0,",
-              "          volume: 1.0,",
-              'loaded video mute',
-          )
-
-          # 5) Render the actual VideoPlayer only over the editor preview.
-          marker = "  /// プレビュー本体（プレビュー画像＋全画面化ボタン）。PC/DeXモードでは\n"
-          if s.count(marker) != 1:
-              raise SystemExit(f'preview marker count={s.count(marker)}')
-          helper = """  /// タイムライン動画はキャンバスへ焼き込まず、編集プレビューにだけ重ねる。
-            Widget _buildPreviewFrame(ProjectService ps, String sceneId, int frameIndex) {
-              final base = _TimelinePreview(
-                tileManager: ps.tileManagerOf(widget.projectId),
-                layers: ps.layersOf(widget.projectId, sceneId, frameIndex),
-                sceneId: sceneId,
-                frameIndex: frameIndex,
-                cameraKeyframes: ps.cameraKeyframesOf(widget.projectId, sceneId),
-                effectFilters: ps.effectFiltersOf(widget.projectId, sceneId),
-                layerHomes: ps.layerHomesOf(widget.projectId),
-                groups: ps.layerGroupsOf(widget.projectId, sceneId),
-              );
-              final overlays = <Widget>[];
-              for (final clip in _videoClips) {
-                if (frameIndex < clip.startFrame ||
-                    frameIndex >= clip.startFrame + clip.lengthFrames) {
-                  continue;
-                }
-                final controller = _videoControllers[clip.id];
-                if (controller == null || !controller.value.isInitialized) continue;
-                overlays.add(
-                  Positioned.fill(
-                    child: IgnorePointer(
-                      child: Opacity(
-                        opacity: clip.videoOpacity.clamp(0.0, 1.0),
-                        child: Center(
-                          child: AspectRatio(
-                            aspectRatio: controller.value.aspectRatio > 0
-                                ? controller.value.aspectRatio
-                                : 1.0,
-                            child: VideoPlayer(controller),
-                          ),
-                        ),
-                      ),
-                    ),
-                  ),
-                );
-              }
-              if (overlays.isEmpty) return base;
-              return Stack(fit: StackFit.expand, children: [base, ...overlays]);
-            }
-
-          """
-          # dart format normalizes the helper's indentation.
-          s = s.replace(marker, helper + marker, 1)
-
-          old_preview = """                    builder: (context, frameIndex, _) => _TimelinePreview(
-                      tileManager: ps.tileManagerOf(widget.projectId),
-                      layers: ps.layersOf(
-                        widget.projectId,
-                        sceneId,
-                        frameIndex,
-                      ),
-                      sceneId: sceneId,
-                      frameIndex: frameIndex,
-                      cameraKeyframes: ps.cameraKeyframesOf(
-                        widget.projectId,
-                        sceneId,
-                      ),
-                      effectFilters: ps.effectFiltersOf(
-                        widget.projectId,
-                        sceneId,
-                      ),
-                      layerHomes: ps.layerHomesOf(widget.projectId),
-                      groups: ps.layerGroupsOf(widget.projectId, sceneId),
-                    ),"""
-          replace_one(
-              old_preview,
-              "                    builder: (context, frameIndex, _) =>\n                        _buildPreviewFrame(ps, sceneId, frameIndex),",
-              'preview builder',
-          )
-
-          # 6) Clip trim sheet can play/pause while editing and resyncs on slider edits.
-          replace_one(
-              "        onDuplicate: () => _duplicateClip(clip),\n        onChanged: () => setState(() {}),",
-              """        onDuplicate: () => _duplicateClip(clip),
-                      onChanged: () {
-                        setState(() {});
-                        _syncMediaPlayback();
-                      },
-                      isPlaying: () => _isPlaying,
-                      onTogglePlay: _togglePlay,""",
-              'clip sheet callbacks',
-          )
-
-          sheet_at = s.index('class _ClipDetailSheet extends StatefulWidget')
+          sheet_at = s.find('class _ClipDetailSheet extends StatefulWidget')
+          if sheet_at < 0:
+              raise SystemExit('clip detail sheet class not found')
           head, tail = s[:sheet_at], s[sheet_at:]
-          tail = tail.replace(
-              "  final VoidCallback onChanged;\n  const _ClipDetailSheet({",
-              "  final VoidCallback onChanged;\n  final ValueGetter<bool> isPlaying;\n  final VoidCallback onTogglePlay;\n  const _ClipDetailSheet({",
-              1,
-          )
-          tail = tail.replace(
-              "    required this.onChanged,\n  });",
-              "    required this.onChanged,\n    required this.isPlaying,\n    required this.onTogglePlay,\n  });",
-              1,
-          )
-          tail = tail.replace(
-              """                IconButton(
-                  icon: const Icon(Icons.copy),""",
-              """                if (_c.trackType == _ClipTrackType.audio ||
-                    _c.trackType == _ClipTrackType.video)
-                  IconButton(
-                    icon: Icon(
-                      widget.isPlaying() ? Icons.pause : Icons.play_arrow,
-                    ),
-                    tooltip: widget.isPlaying()
-                        ? l10n.commonPause
-                        : l10n.commonPlay,
-                    onPressed: () {
-                      widget.onTogglePlay();
-                      setState(() {});
-                    },
+
+          if 'final ValueGetter<bool> isPlaying;' not in tail:
+              tail, n = re.subn(
+                  r"(\s*final VoidCallback onChanged;)",
+                  r"\1\n  final ValueGetter<bool> isPlaying;\n  final VoidCallback onTogglePlay;",
+                  tail,
+                  count=1,
+              )
+              if n != 1:
+                  raise SystemExit('sheet fields insertion failed')
+
+          if 'required this.isPlaying,' not in tail:
+              tail, n = re.subn(
+                  r"(\s*required this\.onChanged,\s*\n\s*\}\);)",
+                  lambda m: m.group(1).replace(
+                      'required this.onChanged,',
+                      'required this.onChanged,\n    required this.isPlaying,\n    required this.onTogglePlay,',
                   ),
-                IconButton(
-                  icon: const Icon(Icons.copy),""",
-              1,
-          )
-          video_volume = """                  _row(
-                    l10n.timelineClipVolumeLabel,
-                    _c.volume,
-                    0,
-                    1,
-                    100,
-                    (v) {
-                      _c.volume = v;
-                      _notify();
-                    },
-                    '${(_c.volume * 100).round()}%',
-                    step: 0.01,
-                  ),
-          """
-          # In tail, first volume row belongs to audio. Remove the second one (video).
-          first = tail.find(video_volume)
-          second = tail.find(video_volume, first + len(video_volume)) if first >= 0 else -1
-          if second < 0:
-              raise SystemExit('video volume row not found as second volume control')
-          tail = tail[:second] + tail[second + len(video_volume):]
+                  tail,
+                  count=1,
+              )
+              if n != 1:
+                  raise SystemExit('sheet constructor insertion failed')
+
+          if 'widget.onTogglePlay();' not in tail:
+              icon_marker = re.search(
+                  r"(?P<i>\s*)IconButton\(\s*icon: const Icon\(Icons\.copy\),",
+                  tail,
+              )
+              if not icon_marker:
+                  raise SystemExit('copy icon marker not found')
+              i = icon_marker.group('i')
+              play = f"""{i}if (_c.trackType == _ClipTrackType.audio ||
+          _c.trackType == _ClipTrackType.video)
+        IconButton(
+          icon: Icon(widget.isPlaying() ? Icons.pause : Icons.play_arrow),
+          tooltip: widget.isPlaying() ? l10n.commonPause : l10n.commonPlay,
+          onPressed: () {{
+            widget.onTogglePlay();
+            setState(() {{}});
+          }},
+        ),
+"""
+              tail = tail[:icon_marker.start()] + play + tail[icon_marker.start():]
+
           s = head + tail
-
           path.write_text(s)
-
-          # Excluding timelineVideo from pixelLayerTypes keeps it out of compositor/export.
-          cp = Path('lib/engine/layer_compositor.dart')
-          c = cp.read_text()
-          token = '  LayerType.timelineVideo,\n'
-          if c.count(token) != 1:
-              raise SystemExit(f'pixelLayerTypes timelineVideo count={c.count(token)}')
-          cp.write_text(c.replace(token, '', 1))
           PY
 
       - name: Format changed Dart files
-        run: dart format lib/screens/timeline/timeline_screen.dart lib/engine/layer_compositor.dart test/timeline_media_contract_test.dart
+        run: dart format lib/screens/timeline/timeline_screen.dart test/timeline_media_contract_test.dart
 
       - name: Verify GREEN regression test
         run: flutter test test/timeline_media_contract_test.dart
@@ -371,6 +213,6 @@ jobs:
           git config user.name 'NIARIM automation'
           git config user.email 'actions@users.noreply.github.com'
           git add -A
-          git commit -m 'feat: improve timeline media import and preview'
+          git commit -m 'feat: support video as audio-only timeline material'
           git pull --rebase origin dev_branch
           git push origin HEAD:dev_branch
