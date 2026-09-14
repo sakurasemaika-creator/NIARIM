@@ -184,8 +184,9 @@ class NiaproSerializer {
       await File('${materialsDir.path}/${entry.key}').writeAsBytes(entry.value);
     }
     if (data.materialsManifest != null) {
-      await File('${materialsDir.path}/materials.json')
-          .writeAsString(data.materialsManifest!);
+      await File(
+        '${materialsDir.path}/materials.json',
+      ).writeAsString(data.materialsManifest!);
     }
   }
 
