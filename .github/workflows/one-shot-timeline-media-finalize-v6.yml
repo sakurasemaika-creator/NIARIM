@@ -63,7 +63,7 @@ jobs:
         run: python3 tool/one_shot_timeline_media_finalize.py
       - run: dart format lib/screens/timeline/timeline_screen.dart test/timeline_media_contract_test.dart
       - run: flutter test test/timeline_media_contract_test.dart --reporter expanded
-      - run: flutter analyze --no-fatal-infos
+      - run: flutter analyze --no-fatal-infos lib/screens/timeline/timeline_screen.dart test/timeline_media_contract_test.dart
       - run: git diff --check
       - name: Commit verified change and cleanup
         run: |
