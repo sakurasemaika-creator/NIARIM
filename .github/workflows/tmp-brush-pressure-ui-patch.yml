@@ -1,0 +1,51 @@
+name: TMP Brush Pressure UI Patch
+
+on:
+  push:
+    branches:
+      - feature/brush-pressure-profiles
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  patch:
+    if: ${{ github.actor != 'github-actions[bot]' }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: feature/brush-pressure-profiles
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+      - name: Patch brush pressure settings UI
+        shell: python
+        run: |
+          from pathlib import Path
+          p = Path('lib/screens/canvas/widgets/brush_panel.dart')
+          s = p.read_text()
+          s = s.replace("import '../../../models/pressure_hardness.dart';\n", "")
+          start = s.index('          // 筆圧設定\n')
+          end = s.index('          // フェード\n', start)
+          block = '''          // 筆圧設定: アプリ全体の筆圧ON/OFFそれぞれに、\n          // ブラシ固有のプロファイルを保存する。\n          Text(\n            l10n.brushSettingsPressureModeTitle,\n            style: const TextStyle(\n              fontWeight: FontWeight.bold,\n              fontFamily: 'Kuramubon',\n              fontFamilyFallback: kHeadingFontFallback,\n            ),\n          ),\n          _pressureSection(\n            title: '筆圧ON',\n            children: [\n              _pressureRangeTile(\n                label: l10n.brushSettingsSizeLabel,\n                setting: _brush.pressureOn.size,\n                onChanged: (v) => _brush = _brush.copyWith(\n                  pressureOn: _brush.pressureOn.copyWith(size: v),\n                ),\n              ),\n              _pressureRangeTile(\n                label: l10n.brushSettingsOpacityLabel,\n                setting: _brush.pressureOn.opacity,\n                onChanged: (v) => _brush = _brush.copyWith(\n                  pressureOn: _brush.pressureOn.copyWith(opacity: v),\n                ),\n              ),\n              _pressureRangeTile(\n                label: l10n.brushSettingsBlurRadiusLabel,\n                setting: _brush.pressureOn.blur,\n                onChanged: (v) => _brush = _brush.copyWith(\n                  pressureOn: _brush.pressureOn.copyWith(blur: v),\n                ),\n              ),\n              _pressureRangeTile(\n                label: l10n.brushSettingsEdgeJitterTitle,\n                setting: _brush.pressureOn.edgeJitter,\n                onChanged: (v) => _brush = _brush.copyWith(\n                  pressureOn: _brush.pressureOn.copyWith(edgeJitter: v),\n                ),\n              ),\n              _pressureMixingOnTile(l10n),\n            ],\n          ),\n          _pressureSection(\n            title: '筆圧OFF',\n            children: [\n              _fixedPressureTile(\n                label: l10n.brushSettingsBlurRadiusLabel,\n                setting: _brush.pressureOff.blur,\n                onChanged: (v) => _brush = _brush.copyWith(\n                  pressureOff: _brush.pressureOff.copyWith(blur: v),\n                ),\n              ),\n              _fixedPressureTile(\n                label: l10n.brushSettingsEdgeJitterTitle,\n                setting: _brush.pressureOff.edgeJitter,\n                onChanged: (v) => _brush = _brush.copyWith(\n                  pressureOff: _brush.pressureOff.copyWith(edgeJitter: v),\n                ),\n              ),\n              _pressureMixingOffTile(l10n),\n            ],\n          ),\n          const Divider(),\n'''
+          s = s[:start] + block + s[end:]
+          hstart = s.index('  Widget _pressureHardnessRow(')
+          hend = s.index('  Widget _sliderRow(', hstart)
+          helpers = '''  Widget _pressureSection({required String title, required List<Widget> children}) {\n    return ExpansionTile(\n      title: Text(title, style: const TextStyle(fontWeight: FontWeight.w600)),\n      initiallyExpanded: true,\n      children: children,\n    );\n  }\n\n  Widget _pressureRangeTile({\n    required String label,\n    required PressureRangeSetting setting,\n    required ValueChanged<PressureRangeSetting> onChanged,\n  }) {\n    return Column(\n      children: [\n        SwitchListTile(\n          dense: true,\n          title: Text(label),\n          value: setting.enabled,\n          onChanged: (v) => setState(() => onChanged(setting.copyWith(enabled: v))),\n        ),\n        if (setting.enabled) ...[\n          _sliderRow('弱', setting.weak.toDouble(), 0, 100,\n              (v) => setState(() => onChanged(setting.copyWith(weak: v.round())))),\n          _sliderRow('強', setting.strong.toDouble(), 0, 100,\n              (v) => setState(() => onChanged(setting.copyWith(strong: v.round())))),\n        ],\n      ],\n    );\n  }\n\n  Widget _fixedPressureTile({\n    required String label,\n    required FixedBrushSetting setting,\n    required ValueChanged<FixedBrushSetting> onChanged,\n  }) {\n    return Column(\n      children: [\n        SwitchListTile(\n          dense: true,\n          title: Text(label),\n          value: setting.enabled,\n          onChanged: (v) => setState(() => onChanged(setting.copyWith(enabled: v))),\n        ),\n        if (setting.enabled)\n          _sliderRow('値', setting.value.toDouble(), 0, 100,\n              (v) => setState(() => onChanged(setting.copyWith(value: v.round())))),\n      ],\n    );\n  }\n\n  Widget _pressureMixingOnTile(AppLocalizations l10n) {\n    final setting = _brush.pressureOn.mixing;\n    return Column(\n      children: [\n        SwitchListTile(\n          dense: true,\n          title: Text(l10n.brushSettingsMixingTitle),\n          value: setting.enabled,\n          onChanged: (v) => setState(() => _brush = _brush.copyWith(\n            pressureOn: _brush.pressureOn.copyWith(mixing: setting.copyWith(enabled: v)),\n          )),\n        ),\n        if (setting.enabled) ...[\n          DropdownButtonFormField<BrushMixingMode>(\n            initialValue: setting.mode,\n            items: BrushMixingMode.values.where((m) => m != BrushMixingMode.off).map((m) =>\n              DropdownMenuItem(value: m, child: Text(_mixingModeLabel(l10n, m))),\n            ).toList(),\n            onChanged: (m) { if (m != null) setState(() => _brush = _brush.copyWith(\n              pressureOn: _brush.pressureOn.copyWith(mixing: setting.copyWith(mode: m)),\n            )); },\n          ),\n          _sliderRow('弱', setting.weakRate.toDouble(), 0, 100,\n              (v) => setState(() => _brush = _brush.copyWith(pressureOn: _brush.pressureOn.copyWith(\n                mixing: setting.copyWith(weakRate: v.round()),\n              )))),\n          _sliderRow('強', setting.strongRate.toDouble(), 0, 100,\n              (v) => setState(() => _brush = _brush.copyWith(pressureOn: _brush.pressureOn.copyWith(\n                mixing: setting.copyWith(strongRate: v.round()),\n              )))),\n        ],\n      ],\n    );\n  }\n\n  Widget _pressureMixingOffTile(AppLocalizations l10n) {\n    final setting = _brush.pressureOff.mixing;\n    return Column(\n      children: [\n        SwitchListTile(\n          dense: true,\n          title: Text(l10n.brushSettingsMixingTitle),\n          value: setting.enabled,\n          onChanged: (v) => setState(() => _brush = _brush.copyWith(\n            pressureOff: _brush.pressureOff.copyWith(mixing: setting.copyWith(enabled: v)),\n          )),\n        ),\n        if (setting.enabled) ...[\n          DropdownButtonFormField<BrushMixingMode>(\n            initialValue: setting.mode,\n            items: BrushMixingMode.values.where((m) => m != BrushMixingMode.off).map((m) =>\n              DropdownMenuItem(value: m, child: Text(_mixingModeLabel(l10n, m))),\n            ).toList(),\n            onChanged: (m) { if (m != null) setState(() => _brush = _brush.copyWith(\n              pressureOff: _brush.pressureOff.copyWith(mixing: setting.copyWith(mode: m)),\n            )); },\n          ),\n          _sliderRow('値', setting.rate.toDouble(), 0, 100,\n              (v) => setState(() => _brush = _brush.copyWith(pressureOff: _brush.pressureOff.copyWith(\n                mixing: setting.copyWith(rate: v.round()),\n              )))),\n        ],\n      ],\n    );\n  }\n\n'''
+          s = s[:hstart] + helpers + s[hend:]
+          p.write_text(s)
+      - run: dart format lib/screens/canvas/widgets/brush_panel.dart
+      - run: flutter pub get
+      - run: flutter analyze --no-fatal-infos lib/screens/canvas/widgets/brush_panel.dart lib/models/brush.dart
+      - run: flutter test test/models/brush_pressure_profiles_test.dart test/models/brush_pressure_resolver_test.dart test/services/brush_pressure_profile_lifecycle_test.dart --reporter expanded
+      - name: Commit patch
+        run: |
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          git add lib/screens/canvas/widgets/brush_panel.dart
+          git diff --cached --check
+          git commit -m "feat: add brush pressure profile settings UI"
+          git push origin HEAD:feature/brush-pressure-profiles
