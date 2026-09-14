@@ -29,9 +29,23 @@ jobs:
       - name: Apply popup patch only
         if: matrix.variant == 'popup'
         run: python3 .github/scripts/standardize_popup_close.py
+      - name: Verify popup patch scope and formatting
+        if: matrix.variant == 'popup'
+        shell: bash
+        run: |
+          mapfile -t changed < <(git diff --name-only --diff-filter=AM -- 'lib/**/*.dart' 'lib/*.dart')
+          printf 'Changed popup files (%s):\n' "${#changed[@]}"
+          printf '  %s\n' "${changed[@]}"
+          test "${#changed[@]}" -ge 5
+          printf '%s\0' "${changed[@]}" | xargs -0 dart format --output=none --set-exit-if-changed
       - name: Install dependencies
         run: flutter pub get
-      - name: Analyze isolated lib
+      - name: Analyze isolated lib without blocking test comparison
+        id: analyze
+        continue-on-error: true
         run: flutter analyze lib
       - name: Run full existing test suite
         run: flutter test --reporter expanded
+      - name: Report analyzer outcome
+        if: always()
+        run: echo "${{ matrix.variant }} analyzer outcome = ${{ steps.analyze.outcome }}"
