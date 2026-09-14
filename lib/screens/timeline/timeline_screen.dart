@@ -66,6 +66,7 @@ import '../../widgets/responsive.dart';
 import '../../widgets/help_button.dart';
 import '../../config/font_fallback.dart';
 import '../../utils/reorder_index.dart';
+import '../../utils/timeline_clip_split.dart';
 import '../../widgets/scrollable_sheet_body.dart';
 import '../../widgets/custom_automation_manager_sheet.dart';
 import '../../widgets/custom_automation_draft_sheet.dart';
@@ -75,6 +76,8 @@ enum _ClipTrackType { audio, video, image }
 
 // クリップの長押しドラッグ操作の種別。
 enum _ClipDragMode { move, resizeLeft, resizeRight }
+
+enum _ClipCutMode { split, range }
 
 class _TrackClip {
   final String id;
@@ -172,6 +175,96 @@ class _AudioWaveformThumbState extends State<_AudioWaveformThumb> {
   }
 }
 
+class _VideoFrameThumb extends StatefulWidget {
+  final String filePath;
+  final int sourceFrame;
+  final double fps;
+
+  const _VideoFrameThumb({
+    super.key,
+    required this.filePath,
+    required this.sourceFrame,
+    required this.fps,
+  });
+
+  @override
+  State<_VideoFrameThumb> createState() => _VideoFrameThumbState();
+}
+
+class _VideoFrameThumbState extends State<_VideoFrameThumb> {
+  VideoPlayerController? _controller;
+  bool _ready = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _load();
+  }
+
+  @override
+  void didUpdateWidget(covariant _VideoFrameThumb oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.filePath != widget.filePath ||
+        oldWidget.sourceFrame != widget.sourceFrame ||
+        oldWidget.fps != widget.fps) {
+      _disposeController();
+      _load();
+    }
+  }
+
+  Future<void> _load() async {
+    final controller = VideoPlayerController.file(File(widget.filePath));
+    _controller = controller;
+    try {
+      await controller.initialize();
+      if (!mounted || !identical(controller, _controller)) return;
+      final milliseconds = (widget.sourceFrame / widget.fps * 1000).round();
+      await controller.seekTo(Duration(milliseconds: milliseconds));
+      await controller.pause();
+      if (mounted && identical(controller, _controller)) {
+        setState(() => _ready = true);
+      }
+    } catch (_) {
+      if (identical(controller, _controller)) {
+        await controller.dispose();
+        _controller = null;
+      }
+    }
+  }
+
+  void _disposeController() {
+    final controller = _controller;
+    _controller = null;
+    _ready = false;
+    if (controller != null) unawaited(controller.dispose());
+  }
+
+  @override
+  void dispose() {
+    _disposeController();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final controller = _controller;
+    if (!_ready || controller == null || !controller.value.isInitialized) {
+      return const SizedBox.shrink();
+    }
+    final size = controller.value.size;
+    if (size.width <= 0 || size.height <= 0) return const SizedBox.shrink();
+    return FittedBox(
+      fit: BoxFit.cover,
+      clipBehavior: Clip.hardEdge,
+      child: SizedBox(
+        width: size.width,
+        height: size.height,
+        child: VideoPlayer(controller),
+      ),
+    );
+  }
+}
+
 class TimelineScreen extends StatefulWidget {
   final String projectId;
   const TimelineScreen({super.key, required this.projectId});
@@ -238,6 +331,14 @@ class _TimelineScreenState extends State<TimelineScreen> {
   final List<_TrackClip> _audioClips = [];
   final List<_TrackClip> _videoClips = [];
   final List<_TrackClip> _imageClips = [];
+
+  // カットUIは通常の移動・リサイズ操作とは排他。分割はカーソル固定で
+  // クリップ側を左右へ動かし、範囲カットだけ2本のハンドルを動かす。
+  _ClipCutMode? _clipCutMode;
+  String? _cutClipId;
+  double _splitCutPositionFrame = 0;
+  double _rangeCutStartPositionFrame = 0;
+  double _rangeCutEndPositionFrame = 0;
 
   // クリップの長押しドラッグ（表示開始位置の移動）・端のハンドルドラッグ
   // （使用範囲の変更）用の一時状態。ジェスチャー中は
@@ -2074,9 +2175,9 @@ class _TimelineScreenState extends State<TimelineScreen> {
                                 ),
                               ),
                               backgroundColor: isMoving
-                                  ? Theme.of(context)
-                                        .colorScheme
-                                        .primaryContainer
+                                  ? Theme.of(
+                                      context,
+                                    ).colorScheme.primaryContainer
                                   : null,
                             ),
                           );
@@ -2828,12 +2929,12 @@ class _TimelineScreenState extends State<TimelineScreen> {
                                             width: 3,
                                             height: 28,
                                             color: isActive
-                                                ? Theme.of(context)
-                                                      .colorScheme
-                                                      .primary
-                                                : Theme.of(context)
-                                                      .colorScheme
-                                                      .outline,
+                                                ? Theme.of(
+                                                    context,
+                                                  ).colorScheme.primary
+                                                : Theme.of(
+                                                    context,
+                                                  ).colorScheme.outline,
                                           ),
                                         ),
                                       );
@@ -2854,9 +2955,9 @@ class _TimelineScreenState extends State<TimelineScreen> {
                                         ),
                                         decoration: BoxDecoration(
                                           color: isMoving
-                                              ? Theme.of(context)
-                                                    .colorScheme
-                                                    .primaryContainer
+                                              ? Theme.of(
+                                                  context,
+                                                ).colorScheme.primaryContainer
                                               : ThemeService
                                                     .activeColorScheme
                                                     .onSurfaceVariant,
@@ -2875,9 +2976,9 @@ class _TimelineScreenState extends State<TimelineScreen> {
                                             style: TextStyle(
                                               fontSize: 9,
                                               color: isMoving
-                                                  ? Theme.of(context)
-                                                        .colorScheme
-                                                        .primary
+                                                  ? Theme.of(
+                                                      context,
+                                                    ).colorScheme.primary
                                                   : null,
                                             ),
                                           ),
@@ -2983,20 +3084,20 @@ class _TimelineScreenState extends State<TimelineScreen> {
                                         // 濃いグレーのままだと透明部分の見え方が実際の
                                         // キャンバス画面と一致しなかったため修正。
                                         color: isChecked
-                                            ? Theme.of(context)
-                                                  .colorScheme
-                                                  .primaryContainer
+                                            ? Theme.of(
+                                                context,
+                                              ).colorScheme.primaryContainer
                                             : ThemeService
                                                   .activeColorScheme
                                                   .onSurface,
                                         border: Border.all(
                                           color: isChecked
-                                              ? Theme.of(context)
-                                                    .colorScheme
-                                                    .primary
-                                              : Theme.of(context)
-                                                    .colorScheme
-                                                    .outlineVariant,
+                                              ? Theme.of(
+                                                  context,
+                                                ).colorScheme.primary
+                                              : Theme.of(
+                                                  context,
+                                                ).colorScheme.outlineVariant,
                                         ),
                                         borderRadius: BorderRadius.circular(3),
                                       ),
@@ -3519,6 +3620,20 @@ class _TimelineScreenState extends State<TimelineScreen> {
                 ),
                 // クリップ描画
                 ...clips.map((clip) => _buildClipWidget(clip, scrollCtrl)),
+                if (_clipCutMode == _ClipCutMode.split &&
+                    clips.any((clip) => clip.id == _cutClipId))
+                  IgnorePointer(
+                    child: Positioned(
+                      left: (MediaQuery.sizeOf(context).width - 64) / 2 - 1,
+                      top: 0,
+                      bottom: 0,
+                      width: 2,
+                      child: Container(
+                        key: const ValueKey('timeline_fixed_cut_cursor'),
+                        color: ThemeService.activeColorScheme.error,
+                      ),
+                    ),
+                  ),
                 // 表示中の最後尾の行にのみ＋を出し、同じタイミングで重ねたい
                 // 素材がある時だけ新しい行を追加できるようにする。行の削除は
                 // 個々のクリップを消せば自動で畳まれるため、専用ボタンは持たない。
@@ -3606,13 +3721,24 @@ class _TimelineScreenState extends State<TimelineScreen> {
       animation: scrollCtrl,
       builder: (ctx, child) {
         final scrollOffset = scrollCtrl.hasClients ? scrollCtrl.offset : 0.0;
-        final left = clip.startFrame * _cellW - scrollOffset;
+        var left = clip.startFrame * _cellW - scrollOffset;
         final width = clip.lengthFrames * _cellW - _frameMargin * 2;
+        final isSplitTarget =
+            _clipCutMode == _ClipCutMode.split && _cutClipId == clip.id;
+        final isRangeTarget =
+            _clipCutMode == _ClipCutMode.range && _cutClipId == clip.id;
+        if (isSplitTarget) {
+          final fixedCursorX = (MediaQuery.sizeOf(context).width - 64) / 2;
+          left =
+              fixedCursorX -
+              (_splitCutPositionFrame - clip.startFrame) * _cellW;
+        }
         final isDragging = _draggingClipId == clip.id;
         // ドラッグ中のクリップは画面外カリングの対象から外す。カリングで
         // ウィジェット自体が消えるとポインターを掴んでいたRenderObjectが
         // 失われ、ジェスチャーが途中で切れてしまうため。
         if (!isDragging &&
+            !isSplitTarget &&
             (left + width < 0 || left > MediaQuery.sizeOf(context).width)) {
           return const SizedBox.shrink();
         }
@@ -3620,12 +3746,13 @@ class _TimelineScreenState extends State<TimelineScreen> {
         const rowPadding = 3.0;
         final isSelected = _selectedClipIds.contains(clip.id);
         return Positioned(
-          left: left.clamp(0.0, double.infinity),
+          left: isSplitTarget ? left : left.clamp(0.0, double.infinity),
           top: rowPadding,
           width: width.clamp(handleW * 2 + 4, double.infinity),
           height: _materialTrackHeight - rowPadding * 2,
           child: GestureDetector(
             onTap: () {
+              if (_clipCutMode != null) return;
               if (_isClipMultiSelect) {
                 setState(() {
                   if (isSelected) {
@@ -3638,20 +3765,33 @@ class _TimelineScreenState extends State<TimelineScreen> {
                 _showEditClipDialog(clip);
               }
             },
+            onHorizontalDragUpdate: isSplitTarget
+                ? (details) {
+                    final candidate =
+                        _splitCutPositionFrame - details.delta.dx / _cellW;
+                    setState(() {
+                      _splitCutPositionFrame = clampSplitCutCursorFrame(
+                        candidateFrame: candidate.round(),
+                        clipStartFrame: clip.startFrame,
+                        lengthFrames: clip.lengthFrames,
+                      ).toDouble();
+                    });
+                  }
+                : null,
             // 長押しドラッグでクリップ本体を移動＝表示開始位置を変更する
             // （「開始フレーム変更：タイムライン上で表示開始
             // 位置を変更」）。複数選択モード中は選択操作と競合するため無効化する。
-            onLongPressStart: _isClipMultiSelect
+            onLongPressStart: (_isClipMultiSelect || _clipCutMode != null)
                 ? null
                 : (d) => _beginClipDrag(
                     clip,
                     _ClipDragMode.move,
                     d.globalPosition.dx,
                   ),
-            onLongPressMoveUpdate: _isClipMultiSelect
+            onLongPressMoveUpdate: (_isClipMultiSelect || _clipCutMode != null)
                 ? null
                 : (d) => _updateClipDrag(clip, d.globalPosition.dx),
-            onLongPressEnd: _isClipMultiSelect
+            onLongPressEnd: (_isClipMultiSelect || _clipCutMode != null)
                 ? null
                 : (_) => _endClipDrag(clip),
             child: Stack(
@@ -3698,6 +3838,16 @@ class _TimelineScreenState extends State<TimelineScreen> {
                             filePath: clip.filePath!,
                             cacheKey: clip.materialId,
                           ),
+                        if (clip.trackType == _ClipTrackType.video &&
+                            clip.filePath != null)
+                          _VideoFrameThumb(
+                            key: ValueKey(
+                              'video_thumb_${clip.id}_${clip.useStart}',
+                            ),
+                            filePath: clip.filePath!,
+                            sourceFrame: clip.useStart,
+                            fps: _projectFps,
+                          ),
                         Padding(
                           padding: const EdgeInsets.symmetric(horizontal: 4),
                           child: Align(
@@ -3734,7 +3884,30 @@ class _TimelineScreenState extends State<TimelineScreen> {
                 // （「使用範囲変更：タイムライン上でドラッグ
                 // ハンドルにより変更」）。複数選択モード中は選択操作と
                 // 競合するため表示しない。
-                if (!_isClipMultiSelect) ...[
+                if (isRangeTarget) ...[
+                  Positioned(
+                    left:
+                        ((_rangeCutStartPositionFrame - clip.startFrame) *
+                                _cellW)
+                            .clamp(0.0, width),
+                    top: 0,
+                    bottom: 0,
+                    width:
+                        ((_rangeCutEndPositionFrame -
+                                    _rangeCutStartPositionFrame) *
+                                _cellW)
+                            .clamp(0.0, width),
+                    child: IgnorePointer(
+                      child: Container(
+                        color: ThemeService.activeColorScheme.error.withValues(
+                          alpha: 0.22,
+                        ),
+                      ),
+                    ),
+                  ),
+                  _buildRangeCutHandle(clip, isStart: true),
+                  _buildRangeCutHandle(clip, isStart: false),
+                ] else if (!_isClipMultiSelect && _clipCutMode == null) ...[
                   _buildClipResizeHandle(clip, handleW, isLeft: true),
                   _buildClipResizeHandle(clip, handleW, isLeft: false),
                 ],
@@ -3744,6 +3917,189 @@ class _TimelineScreenState extends State<TimelineScreen> {
         );
       },
     );
+  }
+
+  _TrackClip? get _activeCutClip => [
+    ..._videoClips,
+    ..._audioClips,
+  ].where((clip) => clip.id == _cutClipId).firstOrNull;
+
+  double get _projectFps {
+    final project = _projectService.projects
+        .where((project) => project.id == widget.projectId)
+        .firstOrNull;
+    return (project?.fps ?? 24).toDouble();
+  }
+
+  void _startSplitCut(_TrackClip clip) {
+    if (clip.lengthFrames < 2) return;
+    setState(() {
+      _clipCutMode = _ClipCutMode.split;
+      _cutClipId = clip.id;
+      _splitCutPositionFrame = clip.startFrame + (clip.lengthFrames / 2.0);
+    });
+  }
+
+  void _startRangeCut(_TrackClip clip) {
+    if (clip.lengthFrames < 2) return;
+    setState(() {
+      _clipCutMode = _ClipCutMode.range;
+      _cutClipId = clip.id;
+      _rangeCutStartPositionFrame = clip.startFrame.toDouble();
+      _rangeCutEndPositionFrame = (clip.startFrame + clip.lengthFrames)
+          .toDouble();
+    });
+  }
+
+  void _cancelClipCut() {
+    setState(() {
+      _clipCutMode = null;
+      _cutClipId = null;
+    });
+  }
+
+  Widget _buildRangeCutHandle(_TrackClip clip, {required bool isStart}) {
+    final position = isStart
+        ? _rangeCutStartPositionFrame
+        : _rangeCutEndPositionFrame;
+    final x = (position - clip.startFrame) * _cellW;
+    return Positioned(
+      left: x - 9,
+      top: 0,
+      bottom: 0,
+      width: 18,
+      child: GestureDetector(
+        key: ValueKey(
+          isStart ? 'timeline_range_cut_start' : 'timeline_range_cut_end',
+        ),
+        behavior: HitTestBehavior.opaque,
+        onHorizontalDragUpdate: (details) {
+          setState(() {
+            if (isStart) {
+              _rangeCutStartPositionFrame =
+                  (_rangeCutStartPositionFrame + details.delta.dx / _cellW)
+                      .clamp(
+                        clip.startFrame.toDouble(),
+                        _rangeCutEndPositionFrame - 1,
+                      );
+            } else {
+              _rangeCutEndPositionFrame =
+                  (_rangeCutEndPositionFrame + details.delta.dx / _cellW).clamp(
+                    _rangeCutStartPositionFrame + 1,
+                    (clip.startFrame + clip.lengthFrames).toDouble(),
+                  );
+            }
+          });
+        },
+        child: Center(
+          child: Container(
+            width: 3,
+            color: ThemeService.activeColorScheme.error,
+          ),
+        ),
+      ),
+    );
+  }
+
+  Future<void> _confirmClipCut() async {
+    final clip = _activeCutClip;
+    final sceneId = _selectedSceneId;
+    final mode = _clipCutMode;
+    if (clip == null || sceneId == null || mode == null) return;
+
+    if (mode == _ClipCutMode.split) {
+      final splitFrame = _splitCutPositionFrame.round();
+      final result = splitTimelineClip(
+        clipStartFrame: clip.startFrame,
+        lengthFrames: clip.lengthFrames,
+        splitFrame: splitFrame,
+        sourceStartFrame: clip.useStart,
+      );
+      if (result == null) return;
+      final right = _TrackClip(
+        id: clip.id,
+        label: clip.label,
+        startFrame: result.rightStartFrame,
+        lengthFrames: result.rightLengthFrames,
+        color: clip.color,
+        trackType: clip.trackType,
+        filePath: clip.filePath,
+        materialId: clip.materialId,
+        volume: clip.volume,
+        fadeIn: 0,
+        fadeOut: clip.fadeOut,
+        useStart: result.rightSourceStartFrame,
+        useEnd: result.rightSourceEndFrame,
+        videoOpacity: clip.videoOpacity,
+        trackRow: clip.trackRow,
+      );
+      clip.lengthFrames = result.leftLengthFrames;
+      clip.useStart = result.leftSourceStartFrame;
+      clip.useEnd = result.leftSourceEndFrame;
+      if (clip.trackType == _ClipTrackType.audio) clip.fadeOut = 0;
+      _persistClipUpdate(clip, sceneId);
+      await _duplicateClipAt(
+        right,
+        right.startFrame,
+        overrideTrackRow: right.trackRow,
+      );
+    } else {
+      final result = cutTimelineClipRange(
+        clipStartFrame: clip.startFrame,
+        lengthFrames: clip.lengthFrames,
+        cutStartFrame: _rangeCutStartPositionFrame.round(),
+        cutEndFrameExclusive: _rangeCutEndPositionFrame.round(),
+        sourceStartFrame: clip.useStart,
+      );
+      if (result == null) return;
+      final hadLeft = result.leftLengthFrames > 0;
+      final hadRight = result.rightLengthFrames > 0;
+      if (hadLeft && hadRight) {
+        final right = _TrackClip(
+          id: clip.id,
+          label: clip.label,
+          startFrame: result.rightStartFrame,
+          lengthFrames: result.rightLengthFrames,
+          color: clip.color,
+          trackType: clip.trackType,
+          filePath: clip.filePath,
+          materialId: clip.materialId,
+          volume: clip.volume,
+          fadeIn: 0,
+          fadeOut: clip.fadeOut,
+          useStart: result.rightSourceStartFrame,
+          useEnd: result.rightSourceEndFrame,
+          videoOpacity: clip.videoOpacity,
+          trackRow: clip.trackRow,
+        );
+        clip.lengthFrames = result.leftLengthFrames;
+        clip.useStart = result.leftSourceStartFrame;
+        clip.useEnd = result.leftSourceEndFrame;
+        if (clip.trackType == _ClipTrackType.audio) clip.fadeOut = 0;
+        _persistClipUpdate(clip, sceneId);
+        await _duplicateClipAt(
+          right,
+          right.startFrame,
+          overrideTrackRow: right.trackRow,
+        );
+      } else if (hadLeft) {
+        clip.lengthFrames = result.leftLengthFrames;
+        clip.useStart = result.leftSourceStartFrame;
+        clip.useEnd = result.leftSourceEndFrame;
+        if (clip.trackType == _ClipTrackType.audio) clip.fadeOut = 0;
+        _persistClipUpdate(clip, sceneId);
+      } else if (hadRight) {
+        clip.startFrame = result.rightStartFrame;
+        clip.lengthFrames = result.rightLengthFrames;
+        clip.useStart = result.rightSourceStartFrame;
+        clip.useEnd = result.rightSourceEndFrame;
+        if (clip.trackType == _ClipTrackType.audio) clip.fadeIn = 0;
+        _persistClipUpdate(clip, sceneId);
+      }
+    }
+
+    if (!mounted) return;
+    _cancelClipCut();
   }
 
   Widget _buildClipResizeHandle(
@@ -3990,6 +4346,51 @@ class _TimelineScreenState extends State<TimelineScreen> {
       return const SizedBox.shrink();
     }
     final l10n = AppLocalizations.of(context)!;
+    if (_clipCutMode != null) {
+      final clip = _activeCutClip;
+      final canConfirm =
+          clip != null &&
+          (_clipCutMode == _ClipCutMode.split
+              ? canConfirmSplitCut(
+                  cursorFrame: _splitCutPositionFrame.round(),
+                  clipStartFrame: clip.startFrame,
+                  lengthFrames: clip.lengthFrames,
+                )
+              : cutTimelineClipRange(
+                      clipStartFrame: clip.startFrame,
+                      lengthFrames: clip.lengthFrames,
+                      cutStartFrame: _rangeCutStartPositionFrame.round(),
+                      cutEndFrameExclusive: _rangeCutEndPositionFrame.round(),
+                      sourceStartFrame: clip.useStart,
+                    ) !=
+                    null);
+      return Container(
+        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+        color: Theme.of(context).colorScheme.surfaceContainerHigh,
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.end,
+          children: [
+            Text(
+              _clipCutMode == _ClipCutMode.split ? '分割' : '範囲カット',
+              style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600),
+            ),
+            const SizedBox(width: 8),
+            IconButton(
+              key: const ValueKey('timeline_cut_confirm'),
+              tooltip: l10n.commonCut,
+              icon: const Icon(Icons.content_cut),
+              onPressed: canConfirm ? _confirmClipCut : null,
+            ),
+            IconButton(
+              key: const ValueKey('timeline_cut_cancel'),
+              tooltip: l10n.commonCancel,
+              icon: const Icon(Icons.close),
+              onPressed: _cancelClipCut,
+            ),
+          ],
+        ),
+      );
+    }
     final canPaste =
         _clipClipboard != null &&
         _clipClipboard!.sourceSceneId == _selectedSceneId;
@@ -4129,9 +4530,9 @@ class _TimelineScreenState extends State<TimelineScreen> {
                                     decoration: BoxDecoration(
                                       border: Border(
                                         right: BorderSide(
-                                          color: Theme.of(context)
-                                              .colorScheme
-                                              .outlineVariant,
+                                          color: Theme.of(
+                                            context,
+                                          ).colorScheme.outlineVariant,
                                           width: 0.5,
                                         ),
                                       ),
@@ -5033,9 +5434,9 @@ class _TimelineScreenState extends State<TimelineScreen> {
                               decoration: BoxDecoration(
                                 border: Border(
                                   right: BorderSide(
-                                    color: Theme.of(context)
-                                        .colorScheme
-                                        .outlineVariant,
+                                    color: Theme.of(
+                                      context,
+                                    ).colorScheme.outlineVariant,
                                     width: 0.5,
                                   ),
                                 ),
@@ -6140,6 +6541,8 @@ class _TimelineScreenState extends State<TimelineScreen> {
       builder: (ctx) => _ClipDetailSheet(
         clip: clip,
         totalFrames: _totalFrames,
+        onStartSplit: () => _startSplitCut(clip),
+        onStartRangeCut: () => _startRangeCut(clip),
         onDelete: () {
           setState(() {
             _audioClips.remove(clip);
@@ -8285,12 +8688,16 @@ class _EffectFilterSheet extends StatelessWidget {
 class _ClipDetailSheet extends StatefulWidget {
   final _TrackClip clip;
   final int totalFrames;
+  final VoidCallback onStartSplit;
+  final VoidCallback onStartRangeCut;
   final VoidCallback onDelete;
   final VoidCallback onDuplicate;
   final VoidCallback onChanged;
   const _ClipDetailSheet({
     required this.clip,
     required this.totalFrames,
+    required this.onStartSplit,
+    required this.onStartRangeCut,
     required this.onDelete,
     required this.onDuplicate,
     required this.onChanged,
@@ -8380,6 +8787,29 @@ class _ClipDetailSheetState extends State<_ClipDetailSheet> {
               controller: scrollCtrl,
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
               children: [
+                if (_c.trackType != _ClipTrackType.image) ...[
+                  ListTile(
+                    key: const ValueKey('timeline_split_cut_action'),
+                    leading: const Icon(Icons.vertical_split),
+                    title: const Text('分割'),
+                    subtitle: const Text('中央の固定カーソルに素材を合わせて分割'),
+                    onTap: () {
+                      Navigator.pop(context);
+                      widget.onStartSplit();
+                    },
+                  ),
+                  ListTile(
+                    key: const ValueKey('timeline_range_cut_action'),
+                    leading: const Icon(Icons.content_cut),
+                    title: const Text('範囲カット'),
+                    subtitle: const Text('2本のカーソルで削除する範囲を選択'),
+                    onTap: () {
+                      Navigator.pop(context);
+                      widget.onStartRangeCut();
+                    },
+                  ),
+                  const Divider(),
+                ],
                 if (_c.trackType == _ClipTrackType.audio) ...[
                   _row(
                     l10n.timelineClipVolumeLabel,
