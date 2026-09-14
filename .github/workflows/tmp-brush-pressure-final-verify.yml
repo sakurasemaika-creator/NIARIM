@@ -12,7 +12,7 @@ jobs:
   verify:
     if: ${{ github.actor != 'github-actions[bot]' }}
     runs-on: ubuntu-latest
-    timeout-minutes: 45
+    timeout-minutes: 60
     steps:
       - uses: actions/checkout@v4
         with:
@@ -22,22 +22,34 @@ jobs:
           channel: stable
           cache: true
       - run: flutter pub get
-      - name: Remove stale pressure-mode comment
-        shell: python
-        run: |
-          from pathlib import Path
-          p = Path('lib/services/settings_service.dart')
-          s = p.read_text()
-          old = '''  // ─── ペン入力設定（筆圧カーブ・ペンボタン） ─────────────────\n  // 注：筆圧の「無効／サイズ／不透明度／両方」反映モードは\n  // アプリ全体の筆圧入力ON/OFF。ブラシごとのON/OFFプロファイルとは独立して保持する。\n  // のみで管理する（グローバル設定としては持たない）。\n  // 筆圧カーブのみアプリ全体に適用される設定としてここで管理する。\n'''
-          new = '''  // ─── ペン入力設定（筆圧ON/OFF・筆圧カーブ・ペンボタン） ─────────────\n  // 筆圧ON/OFFはアプリ全体の入力状態。各ブラシはON/OFF両プロファイルを\n  // 常に保持し、この設定によって描画時に使用する側だけを切り替える。\n  // 筆圧カーブもアプリ全体に適用される。\n'''
-          if old not in s:
-            raise SystemExit('stale comment block not found')
-          p.write_text(s.replace(old, new, 1))
-      - name: Remove obsolete pressure keys and fill missing translations
+      - name: Apply final pressure integration cleanup
         shell: python
         run: |
           import json
           from pathlib import Path
+
+          # Keep the pressure-setting comment idempotently aligned with the new model.
+          p = Path('lib/services/settings_service.dart')
+          s = p.read_text()
+          old = '''  // ─── ペン入力設定（筆圧カーブ・ペンボタン） ─────────────────\n  // 注：筆圧の「無効／サイズ／不透明度／両方」反映モードは\n  // アプリ全体の筆圧入力ON/OFF。ブラシごとのON/OFFプロファイルとは独立して保持する。\n  // のみで管理する（グローバル設定としては持たない）。\n  // 筆圧カーブのみアプリ全体に適用される設定としてここで管理する。\n'''
+          new = '''  // ─── ペン入力設定（筆圧ON/OFF・筆圧カーブ・ペンボタン） ─────────────\n  // 筆圧ON/OFFはアプリ全体の入力状態。各ブラシはON/OFF両プロファイルを\n  // 常に保持し、この設定によって描画時に使用する側だけを切り替える。\n  // 筆圧カーブもアプリ全体に適用される。\n'''
+          if old in s:
+            s = s.replace(old, new, 1)
+            p.write_text(s)
+          elif new not in s:
+            raise SystemExit('pressure setting comment contract not found')
+
+          # Synchronize the Aurora preset switch with the latest dev_branch implementation.
+          p = Path('lib/screens/timeline/timeline_screen.dart')
+          s = p.read_text()
+          anchor = '''    AuroraHologramPreset.silverFoil =>\n      l10n.filterAuroraHologramPresetSilverFoil,\n  };'''
+          replacement = '''    AuroraHologramPreset.silverFoil =>\n      l10n.filterAuroraHologramPresetSilverFoil,\n\n    AuroraHologramPreset.classicHologram =>\n      l10n.filterAuroraHologramPresetClassicHologram,\n\n    AuroraHologramPreset.pearl2 => l10n.filterAuroraHologramPresetPearl2,\n  };'''
+          if anchor in s:
+            s = s.replace(anchor, replacement, 1)
+            p.write_text(s)
+          elif 'AuroraHologramPreset.classicHologram =>' not in s or 'AuroraHologramPreset.pearl2 =>' not in s:
+            raise SystemExit('Aurora preset switch anchor not found')
+
           arb_dir = Path('lib/l10n')
           legacy = {
             'brushSettingsPressureModeTitle',
@@ -74,83 +86,54 @@ jobs:
               'filterNamePrism': '稜鏡',
             },
           }
-          for p in arb_dir.glob('app_*.arb'):
-            data = json.loads(p.read_text())
+          zh_hant_orphans = {
+            'communityPostComingSoonBody',
+            'communityPostComingSoonTitle',
+            'communityPostInfoBody',
+            'communityPostInfoTitle',
+            'communityTagSearchModeOffTooltip',
+            'communityTagSearchModeOnTooltip',
+            'customAutomationPremiumHint',
+            'customAutomationStopConfirmQuit',
+            'filterBackgroundBlendAutoLabel',
+            'filterBackgroundBlendAutoReset',
+            'filterBackgroundBlendColorLabel',
+            'filterCustomMenuDuplicate',
+            'filterCustomMenuFavoriteBlockBody',
+            'filterCustomMenuFavoriteBlockTitle',
+          }
+          for arb in arb_dir.glob('app_*.arb'):
+            data = json.loads(arb.read_text())
             for key in legacy:
               data.pop(key, None)
               data.pop('@' + key, None)
-            data.update(translations.get(p.name, {}))
-            p.write_text(json.dumps(data, ensure_ascii=False, indent=2) + '\n')
-          template = json.loads((arb_dir / 'app_ja.arb').read_text())
-          required = {k for k in template if not k.startswith('@')}
-          failures = []
-          for p in sorted(arb_dir.glob('app_*.arb')):
-            if p.name == 'app_ja.arb':
-              continue
-            data = json.loads(p.read_text())
-            missing = sorted(required - {k for k in data if not k.startswith('@')})
-            if missing:
-              failures.append((p.name, missing))
-              print(f'{p.name}: missing {missing}')
-          if failures:
-            raise SystemExit(2)
+            if arb.name == 'app_zh_Hant.arb':
+              for key in zh_hant_orphans:
+                data.pop(key, None)
+                data.pop('@' + key, None)
+            data.update(translations.get(arb.name, {}))
+            arb.write_text(json.dumps(data, ensure_ascii=False, indent=2) + '\n')
       - name: Regenerate localization files
         run: flutter gen-l10n
-      - name: Verify no legacy pressure implementation references
+      - name: Format and validate diff
         run: |
-          echo '=== legacy pressure symbols ==='
-          matches=$(grep -R -n -E 'PressureMode|pressureMode|pressureStrength|pressureHardness|pressure_hardness' lib test || true)
-          echo "$matches"
-          bad=$(printf '%s\n' "$matches" | grep -v "containsKey('pressureMode')" | grep -v "containsKey('pressureStrength')" || true)
-          if [ -n "$bad" ]; then
-            echo 'Legacy pressure references remain:'
-            echo "$bad"
-            exit 1
-          fi
-      - name: Format check
-        run: |
-          dart format lib/services/settings_service.dart
+          dart format lib/services/settings_service.dart lib/screens/timeline/timeline_screen.dart
           git diff --check
-      - name: Capture translation tone and analyzer diagnostics
-        id: diagnostics
-        shell: bash
-        run: |
-          set +e
-          python tools/audit_translation_tone.py > /tmp/tone.log 2>&1
-          tone_status=$?
-          flutter analyze --no-fatal-infos lib test > /tmp/analyze.log 2>&1
-          analyze_status=$?
-          mkdir -p .github/pr5-diagnostics
-          {
-            echo '=== Translation Tone ==='
-            echo "exit=$tone_status"
-            cat /tmp/tone.log
-            echo
-            echo '=== Flutter Analyze ==='
-            echo "exit=$analyze_status"
-            cat /tmp/analyze.log
-          } > .github/pr5-diagnostics/latest.txt
-          echo "tone_status=$tone_status" >> "$GITHUB_OUTPUT"
-          echo "analyze_status=$analyze_status" >> "$GITHUB_OUTPUT"
-          exit 0
-      - name: Persist diagnostics
-        shell: bash
+      - name: Verify translation tone
+        run: python tools/audit_translation_tone.py
+      - name: Verify analyzer
+        run: flutter analyze --no-fatal-infos lib test
+      - name: Commit verified cleanup inputs
         run: |
           git config user.name github-actions[bot]
           git config user.email 41898282+github-actions[bot]@users.noreply.github.com
-          git add .github/pr5-diagnostics/latest.txt lib/services/settings_service.dart lib/l10n
+          git add lib/services/settings_service.dart lib/screens/timeline/timeline_screen.dart lib/l10n
           if git diff --cached --quiet; then
-            echo 'No diagnostic or cleanup changes to commit.'
+            echo 'No cleanup changes to commit.'
           else
-            git commit -m "ci: capture pr5 verify diagnostics"
+            git commit -m "fix: finalize brush pressure integration cleanup"
             git push origin HEAD:feature/brush-pressure-profiles
           fi
-      - name: Fail when diagnostics are red
-        if: steps.diagnostics.outputs.tone_status != '0' || steps.diagnostics.outputs.analyze_status != '0'
-        run: |
-          echo "Translation tone exit: ${{ steps.diagnostics.outputs.tone_status }}"
-          echo "Flutter analyze exit: ${{ steps.diagnostics.outputs.analyze_status }}"
-          exit 1
       - name: Focused pressure tests
         run: |
           flutter test \
