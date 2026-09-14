@@ -1,5 +1,6 @@
 // ignore: unused_import
 import 'package:intl/intl.dart' as intl;
+
 import 'app_localizations.dart';
 
 // ignore_for_file: type=lint
@@ -6166,6 +6167,24 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get customAutomationUnfavoriteAction => '从收藏中移除';
+
+  @override
+  String get brushSettingsCommonSection => '通用';
+
+  @override
+  String get brushSettingsPressureOnSection => '笔压开启';
+
+  @override
+  String get brushSettingsPressureOffSection => '笔压关闭';
+
+  @override
+  String get brushSettingsWeakPressureLabel => '弱';
+
+  @override
+  String get brushSettingsStrongPressureLabel => '强';
+
+  @override
+  String get brushSettingsValueLabel => '值';
 }
 
 /// The translations for Chinese, using the Han script (`zh_Hant`).
@@ -12308,4 +12327,22 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get customAutomationUnfavoriteAction => '從收藏中移除';
+
+  @override
+  String get brushSettingsCommonSection => '共用';
+
+  @override
+  String get brushSettingsPressureOnSection => '筆壓開啟';
+
+  @override
+  String get brushSettingsPressureOffSection => '筆壓關閉';
+
+  @override
+  String get brushSettingsWeakPressureLabel => '弱';
+
+  @override
+  String get brushSettingsStrongPressureLabel => '強';
+
+  @override
+  String get brushSettingsValueLabel => '值';
 }

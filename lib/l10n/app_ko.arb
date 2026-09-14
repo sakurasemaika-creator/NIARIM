@@ -2694,5 +2694,11 @@
   "brushSettingsPressureHardnessLabel": "필압 경도",
   "customAutomationRunAction": "실행",
   "customAutomationFavoriteAction": "즐겨찾기에 추가",
-  "customAutomationUnfavoriteAction": "즐겨찾기에서 제거"
+  "customAutomationUnfavoriteAction": "즐겨찾기에서 제거",
+  "brushSettingsCommonSection": "공통",
+  "brushSettingsPressureOnSection": "필압 ON",
+  "brushSettingsPressureOffSection": "필압 OFF",
+  "brushSettingsWeakPressureLabel": "약",
+  "brushSettingsStrongPressureLabel": "강",
+  "brushSettingsValueLabel": "값"
 }

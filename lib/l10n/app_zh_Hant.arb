@@ -2703,5 +2703,11 @@
   "brushSettingsPressureHardnessLabel": "壓感硬度",
   "customAutomationRunAction": "執行",
   "customAutomationFavoriteAction": "加入收藏",
-  "customAutomationUnfavoriteAction": "從收藏中移除"
+  "customAutomationUnfavoriteAction": "從收藏中移除",
+  "brushSettingsCommonSection": "共用",
+  "brushSettingsPressureOnSection": "筆壓開啟",
+  "brushSettingsPressureOffSection": "筆壓關閉",
+  "brushSettingsWeakPressureLabel": "弱",
+  "brushSettingsStrongPressureLabel": "強",
+  "brushSettingsValueLabel": "值"
 }

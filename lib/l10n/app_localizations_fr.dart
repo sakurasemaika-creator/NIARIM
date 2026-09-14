@@ -1,5 +1,6 @@
 // ignore: unused_import
 import 'package:intl/intl.dart' as intl;
+
 import 'app_localizations.dart';
 
 // ignore_for_file: type=lint
@@ -6538,4 +6539,22 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get customAutomationUnfavoriteAction => 'Retirer des favoris';
+
+  @override
+  String get brushSettingsCommonSection => 'Commun';
+
+  @override
+  String get brushSettingsPressureOnSection => 'Pression activée';
+
+  @override
+  String get brushSettingsPressureOffSection => 'Pression désactivée';
+
+  @override
+  String get brushSettingsWeakPressureLabel => 'Faible';
+
+  @override
+  String get brushSettingsStrongPressureLabel => 'Forte';
+
+  @override
+  String get brushSettingsValueLabel => 'Valeur';
 }

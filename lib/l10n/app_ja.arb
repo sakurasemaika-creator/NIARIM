@@ -2597,11 +2597,11 @@
   "filterAuroraHologramPresetAurora": "オーロラ",
   "filterAuroraHologramPresetSoapBubble": "パール1",
   "filterAuroraHologramPresetCyberNeon": "ヴェイパーウェイヴ",
-  "filterAuroraHologramPresetPastelDream": "パステルドリーム",  "filterAuroraHologramPresetPearl2": "パール2",
-
+  "filterAuroraHologramPresetPastelDream": "パステルドリーム",
+  "filterAuroraHologramPresetPearl2": "パール2",
   "filterAuroraHologramPresetSunsetGold": "サンセットゴールド",
-  "filterAuroraHologramPresetSilverFoil": "シルバーホイル",  "filterAuroraHologramPresetClassicHologram": "オーロラホログラム",
-
+  "filterAuroraHologramPresetSilverFoil": "シルバーホイル",
+  "filterAuroraHologramPresetClassicHologram": "オーロラホログラム",
   "filterNameBackgroundBlend": "背景馴染ませ",
   "filterBackgroundBlendDirection": "影と光（連動）の向き",
   "filterBackgroundBlendLength": "影と光（連動）の長さ",
@@ -3001,5 +3001,11 @@
   "brushSettingsPressureHardnessLabel": "筆圧硬度",
   "customAutomationRunAction": "実行",
   "customAutomationFavoriteAction": "お気に入りに追加",
-  "customAutomationUnfavoriteAction": "お気に入りを解除"
+  "customAutomationUnfavoriteAction": "お気に入りを解除",
+  "brushSettingsCommonSection": "共通",
+  "brushSettingsPressureOnSection": "筆圧ON",
+  "brushSettingsPressureOffSection": "筆圧OFF",
+  "brushSettingsWeakPressureLabel": "弱",
+  "brushSettingsStrongPressureLabel": "強",
+  "brushSettingsValueLabel": "値"
 }

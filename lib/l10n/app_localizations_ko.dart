@@ -1,5 +1,6 @@
 // ignore: unused_import
 import 'package:intl/intl.dart' as intl;
+
 import 'app_localizations.dart';
 
 // ignore_for_file: type=lint
@@ -6234,4 +6235,22 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get customAutomationUnfavoriteAction => '즐겨찾기에서 제거';
+
+  @override
+  String get brushSettingsCommonSection => '공통';
+
+  @override
+  String get brushSettingsPressureOnSection => '필압 ON';
+
+  @override
+  String get brushSettingsPressureOffSection => '필압 OFF';
+
+  @override
+  String get brushSettingsWeakPressureLabel => '약';
+
+  @override
+  String get brushSettingsStrongPressureLabel => '강';
+
+  @override
+  String get brushSettingsValueLabel => '값';
 }

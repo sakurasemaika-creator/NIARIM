@@ -11416,6 +11416,42 @@ abstract class AppLocalizations {
   /// In ja, this message translates to:
   /// **'お気に入りを解除'**
   String get customAutomationUnfavoriteAction;
+
+  /// No description provided for @brushSettingsCommonSection.
+  ///
+  /// In ja, this message translates to:
+  /// **'共通'**
+  String get brushSettingsCommonSection;
+
+  /// No description provided for @brushSettingsPressureOnSection.
+  ///
+  /// In ja, this message translates to:
+  /// **'筆圧ON'**
+  String get brushSettingsPressureOnSection;
+
+  /// No description provided for @brushSettingsPressureOffSection.
+  ///
+  /// In ja, this message translates to:
+  /// **'筆圧OFF'**
+  String get brushSettingsPressureOffSection;
+
+  /// No description provided for @brushSettingsWeakPressureLabel.
+  ///
+  /// In ja, this message translates to:
+  /// **'弱'**
+  String get brushSettingsWeakPressureLabel;
+
+  /// No description provided for @brushSettingsStrongPressureLabel.
+  ///
+  /// In ja, this message translates to:
+  /// **'強'**
+  String get brushSettingsStrongPressureLabel;
+
+  /// No description provided for @brushSettingsValueLabel.
+  ///
+  /// In ja, this message translates to:
+  /// **'値'**
+  String get brushSettingsValueLabel;
 }
 
 class _AppLocalizationsDelegate

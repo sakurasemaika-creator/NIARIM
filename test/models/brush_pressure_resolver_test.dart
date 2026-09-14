@@ -12,8 +12,6 @@ Brush _brush() => Brush(
   stabilization: false,
   stabilizationStrength: 50,
   pixelMode: false,
-  pressureMode: PressureMode.off,
-  pressureStrength: 100,
   pressureOn: const BrushPressureOnSettings(
     size: PressureRangeSetting(enabled: true, weak: 50, strong: 100),
     opacity: PressureRangeSetting(enabled: true, weak: 25, strong: 75),
@@ -108,10 +106,26 @@ void main() {
     test('disabled items contribute no pressure-specific effect', () {
       final brush = _brush().copyWith(
         pressureOn: BrushPressureOnSettings.defaults.copyWith(
-          size: const PressureRangeSetting(enabled: false, weak: 10, strong: 20),
-          opacity: const PressureRangeSetting(enabled: false, weak: 10, strong: 20),
-          blur: const PressureRangeSetting(enabled: false, weak: 90, strong: 10),
-          edgeJitter: const PressureRangeSetting(enabled: false, weak: 90, strong: 10),
+          size: const PressureRangeSetting(
+            enabled: false,
+            weak: 10,
+            strong: 20,
+          ),
+          opacity: const PressureRangeSetting(
+            enabled: false,
+            weak: 10,
+            strong: 20,
+          ),
+          blur: const PressureRangeSetting(
+            enabled: false,
+            weak: 90,
+            strong: 10,
+          ),
+          edgeJitter: const PressureRangeSetting(
+            enabled: false,
+            weak: 90,
+            strong: 10,
+          ),
           mixing: const PressureMixingOnSetting(
             enabled: false,
             mode: BrushMixingMode.bleed,

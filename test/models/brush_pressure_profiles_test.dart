@@ -11,8 +11,6 @@ Brush _brush(String id) => Brush(
   stabilization: false,
   stabilizationStrength: 50,
   pixelMode: false,
-  pressureMode: PressureMode.off,
-  pressureStrength: 100,
   fadeMode: FadeMode.off,
   strokeDecay: false,
   mixingMode: BrushMixingMode.off,
@@ -61,9 +59,17 @@ void main() {
       final original = _brush('pressure-roundtrip').copyWith(
         pressureOn: BrushPressureOnSettings.defaults.copyWith(
           size: const PressureRangeSetting(enabled: true, weak: 35, strong: 92),
-          opacity: const PressureRangeSetting(enabled: true, weak: 44, strong: 88),
+          opacity: const PressureRangeSetting(
+            enabled: true,
+            weak: 44,
+            strong: 88,
+          ),
           blur: const PressureRangeSetting(enabled: true, weak: 70, strong: 10),
-          edgeJitter: const PressureRangeSetting(enabled: true, weak: 60, strong: 5),
+          edgeJitter: const PressureRangeSetting(
+            enabled: true,
+            weak: 60,
+            strong: 5,
+          ),
           mixing: const PressureMixingOnSetting(
             enabled: true,
             mode: BrushMixingMode.bleed,

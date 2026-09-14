@@ -2299,11 +2299,11 @@
   "filterAuroraHologramPresetAurora": "Aurora",
   "filterAuroraHologramPresetSoapBubble": "Pearl 1",
   "filterAuroraHologramPresetCyberNeon": "Vaporwave",
-  "filterAuroraHologramPresetPastelDream": "Pastel Dream",  "filterAuroraHologramPresetPearl2": "Pearl 2",
-
+  "filterAuroraHologramPresetPastelDream": "Pastel Dream",
+  "filterAuroraHologramPresetPearl2": "Pearl 2",
   "filterAuroraHologramPresetSunsetGold": "Sunset Gold",
-  "filterAuroraHologramPresetSilverFoil": "Silver Foil",  "filterAuroraHologramPresetClassicHologram": "Aurora Hologram",
-
+  "filterAuroraHologramPresetSilverFoil": "Silver Foil",
+  "filterAuroraHologramPresetClassicHologram": "Aurora Hologram",
   "filterNameBackgroundBlend": "Background Blend",
   "filterBackgroundBlendDirection": "Shadow/light direction (linked)",
   "filterBackgroundBlendLength": "Shadow/light length (linked)",
@@ -2703,5 +2703,11 @@
   "brushSettingsPressureHardnessLabel": "Pressure hardness",
   "customAutomationRunAction": "Run",
   "customAutomationFavoriteAction": "Add to favorites",
-  "customAutomationUnfavoriteAction": "Remove from favorites"
+  "customAutomationUnfavoriteAction": "Remove from favorites",
+  "brushSettingsCommonSection": "Common",
+  "brushSettingsPressureOnSection": "Pressure ON",
+  "brushSettingsPressureOffSection": "Pressure OFF",
+  "brushSettingsWeakPressureLabel": "Weak",
+  "brushSettingsStrongPressureLabel": "Strong",
+  "brushSettingsValueLabel": "Value"
 }

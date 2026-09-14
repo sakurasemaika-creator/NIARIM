@@ -1,8 +1,10 @@
 import 'dart:convert';
 import 'dart:math' as math;
+
 import 'package:flutter/foundation.dart';
 import 'package:flutter/gestures.dart' show PointerDeviceKind;
 import 'package:shared_preferences/shared_preferences.dart';
+
 import '../models/canvas_dock_panel.dart';
 import '../models/canvas_size_preset.dart';
 import '../models/toolbar_item.dart';
@@ -357,7 +359,7 @@ class SettingsService extends ChangeNotifier {
 
   // ─── ペン入力設定（筆圧カーブ・ペンボタン） ─────────────────
   // 注：筆圧の「無効／サイズ／不透明度／両方」反映モードは
-  // 「ブラシ個別設定」であるため、ブラシ設定側(Brush.pressureMode)
+  // アプリ全体の筆圧入力ON/OFF。ブラシごとのON/OFFプロファイルとは独立して保持する。
   // のみで管理する（グローバル設定としては持たない）。
   // 筆圧カーブのみアプリ全体に適用される設定としてここで管理する。
   bool _palmRejectionEnabled = true;

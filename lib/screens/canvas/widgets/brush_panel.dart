@@ -6,7 +6,6 @@ import 'package:share_plus/share_plus.dart';
 
 import '../../../l10n/app_localizations.dart';
 import '../../../models/brush.dart';
-import '../../../models/pressure_hardness.dart';
 import '../../../services/brush_service.dart';
 import '../../../widgets/editable_slider_value.dart';
 import '../../../widgets/pixel_color_mode_selector.dart';
@@ -589,314 +588,240 @@ class _BrushSettingsSheetState extends State<_BrushSettingsSheet> {
             ),
           ),
           const SizedBox(height: 16),
-          // サイズ
-          _sliderRow(
-            l10n.brushSettingsSizeLabel,
-            _brush.size,
-            1,
-            500,
-            (v) => setState(() => _brush = _brush.copyWith(size: v)),
-          ),
-          // 不透明度
-          _sliderRow(
-            l10n.brushSettingsOpacityLabel,
-            _brush.opacity.toDouble(),
-            1,
-            100,
-            (v) => setState(() => _brush = _brush.copyWith(opacity: v.round())),
-          ),
-          // 間隔
-          _sliderRow(
-            l10n.brushSettingsSpacingLabel,
-            _brush.spacing.toDouble(),
-            1,
-            100,
-            (v) => setState(() => _brush = _brush.copyWith(spacing: v.round())),
-          ),
-          // ぼかし半径（0〜100・デフォルト0）
-          _sliderRow(
-            l10n.brushSettingsBlurRadiusLabel,
-            _brush.blurRadius.toDouble(),
-            0,
-            100,
-            (v) =>
-                setState(() => _brush = _brush.copyWith(blurRadius: v.round())),
-          ),
-          const Divider(),
-          // 回転・密度・散布（スタンプと同じ意味／範囲）
-          SwitchListTile(
-            title: Text(l10n.stampRotationLabel),
-            value: _brush.rotation,
-            onChanged: (v) =>
-                setState(() => _brush = _brush.copyWith(rotation: v)),
-          ),
-          _decimalSliderRow(
-            l10n.stampDensityLabel,
-            _brush.density,
-            0.1,
-            5.0,
-            0.1,
-            (v) => setState(() => _brush = _brush.copyWith(density: v)),
-          ),
-          _decimalSliderRow(
-            l10n.stampScatterLabel,
-            _brush.scatter,
-            0.0,
-            1.0,
-            0.01,
-            (v) => setState(() => _brush = _brush.copyWith(scatter: v)),
-          ),
-          const Divider(),
-          // 手ブレ補正
-          SwitchListTile(
-            title: Text(l10n.brushSettingsStabilizationTitle),
-            value: _brush.stabilization,
-            onChanged: (v) =>
-                setState(() => _brush = _brush.copyWith(stabilization: v)),
-          ),
-          if (_brush.stabilization)
-            _sliderRow(
-              l10n.brushSettingsStabilizationStrengthLabel,
-              _brush.stabilizationStrength.toDouble(),
-              0,
-              100,
-              (v) => setState(
-                () =>
-                    _brush = _brush.copyWith(stabilizationStrength: v.round()),
+          _settingsSection(
+            title: l10n.brushSettingsCommonSection,
+            children: [
+              _sliderRow(
+                l10n.brushSettingsSizeLabel,
+                _brush.size,
+                1,
+                500,
+                (v) => setState(() => _brush = _brush.copyWith(size: v)),
               ),
-            ),
-          // ピクセルモード（旧称：ドットペンモード。
-          // 「ドット」だと水玉模様と誤認される恐れがあるため改称）
-          SwitchListTile(
-            title: Text(l10n.brushSettingsPixelModeTitle),
-            value: _brush.pixelMode,
-            onChanged: (v) =>
-                setState(() => _brush = _brush.copyWith(pixelMode: v)),
-          ),
-          if (_brush.pixelMode)
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-              child: PixelColorModeSelector(
-                mode: _brush.pixelColorMode,
-                colorLevels: _brush.pixelColorLevels,
-                explicitColors: _brush.pixelExplicitColors,
-                onModeChanged: (m) =>
-                    setState(() => _brush = _brush.copyWith(pixelColorMode: m)),
-                onColorLevelsChanged: (v) => setState(
-                  () => _brush = _brush.copyWith(pixelColorLevels: v),
-                ),
-                onExplicitColorsChanged: (c) => setState(
-                  () => _brush = _brush.copyWith(pixelExplicitColors: c),
+              _sliderRow(
+                l10n.brushSettingsOpacityLabel,
+                _brush.opacity.toDouble(),
+                1,
+                100,
+                (v) => setState(
+                  () => _brush = _brush.copyWith(opacity: v.round()),
                 ),
               ),
-            ),
-          const Divider(),
-          // 筆圧設定
-          Text(
-            l10n.brushSettingsPressureModeTitle,
-            style: const TextStyle(
-              fontWeight: FontWeight.bold,
-              fontFamily: 'Kuramubon',
-              fontFamilyFallback: kHeadingFontFallback,
-            ),
-          ),
-          // 選択状態と変更通知はRadioGroupがまとめて持つ
-          // （各ラジオのgroupValue/onChangedはFlutter 3.32で非推奨）。
-          // spreadのままだとRadioGroupを祖先に置けないため、Columnで束ねる。
-          RadioGroup<PressureMode>(
-            groupValue: _brush.pressureMode,
-            onChanged: (v) {
-              if (v == null) return;
-              setState(() {
-                final normalizedStrength = v == PressureMode.off
-                    ? _brush.pressureStrength
-                    : pressureStrengthForHardness(
-                        pressureHardnessForStrength(_brush.pressureStrength),
-                      );
-                _brush = _brush.copyWith(
-                  pressureMode: v,
-                  pressureStrength: normalizedStrength,
-                );
-              });
-            },
-            child: Column(
-              children: PressureMode.values
-                  .map(
-                    (mode) => RadioListTile<PressureMode>(
-                      title: Text(_pressureLabel(l10n, mode)),
-                      value: mode,
-                      dense: true,
+              _sliderRow(
+                l10n.brushSettingsSpacingLabel,
+                _brush.spacing.toDouble(),
+                1,
+                100,
+                (v) => setState(
+                  () => _brush = _brush.copyWith(spacing: v.round()),
+                ),
+              ),
+              SwitchListTile(
+                title: Text(l10n.stampRotationLabel),
+                value: _brush.rotation,
+                onChanged: (v) =>
+                    setState(() => _brush = _brush.copyWith(rotation: v)),
+              ),
+              _decimalSliderRow(
+                l10n.stampDensityLabel,
+                _brush.density,
+                0.1,
+                5.0,
+                0.1,
+                (v) => setState(() => _brush = _brush.copyWith(density: v)),
+              ),
+              _decimalSliderRow(
+                l10n.stampScatterLabel,
+                _brush.scatter,
+                0.0,
+                1.0,
+                0.01,
+                (v) => setState(() => _brush = _brush.copyWith(scatter: v)),
+              ),
+              SwitchListTile(
+                title: Text(l10n.brushSettingsStabilizationTitle),
+                value: _brush.stabilization,
+                onChanged: (v) =>
+                    setState(() => _brush = _brush.copyWith(stabilization: v)),
+              ),
+              if (_brush.stabilization)
+                _sliderRow(
+                  l10n.brushSettingsStabilizationStrengthLabel,
+                  _brush.stabilizationStrength.toDouble(),
+                  0,
+                  100,
+                  (v) => setState(
+                    () => _brush = _brush.copyWith(
+                      stabilizationStrength: v.round(),
                     ),
-                  )
-                  .toList(),
-            ),
-          ),
-          _pressureHardnessRow(l10n),
-          const Divider(),
-          // フェード
-          Text(
-            l10n.brushSettingsFadeModeTitle,
-            style: const TextStyle(
-              fontWeight: FontWeight.bold,
-              fontFamily: 'Kuramubon',
-              fontFamilyFallback: kHeadingFontFallback,
-            ),
-          ),
-          // 選択状態と変更通知はRadioGroupがまとめて持つ
-          // （各ラジオのgroupValue/onChangedはFlutter 3.32で非推奨）。
-          // spreadのままだとRadioGroupを祖先に置けないため、Columnで束ねる。
-          RadioGroup<FadeMode>(
-            groupValue: _brush.fadeMode,
-            onChanged: (v) =>
-                setState(() => _brush = _brush.copyWith(fadeMode: v)),
-            child: Column(
-              children: FadeMode.values
-                  .map(
-                    (mode) => RadioListTile<FadeMode>(
-                      title: Text(_fadeModeLabel(l10n, mode)),
-                      value: mode,
-                      dense: true,
-                    ),
-                  )
-                  .toList(),
-            ),
-          ),
-          if (_brush.fadeMode == FadeMode.custom) ...[
-            _sliderRow(
-              l10n.brushSettingsFadeStartValueLabel,
-              _brush.fadeCustom?.startValue ?? 100,
-              0,
-              100,
-              (v) => setState(
-                () => _brush = _brush.copyWith(
-                  fadeCustom: FadeCustomSettings(
-                    startValue: v,
-                    endValue: _brush.fadeCustom?.endValue ?? 0,
-                    distancePx: _brush.fadeCustom?.distancePx ?? 500,
                   ),
                 ),
+              SwitchListTile(
+                title: Text(l10n.brushSettingsPixelModeTitle),
+                value: _brush.pixelMode,
+                onChanged: (v) =>
+                    setState(() => _brush = _brush.copyWith(pixelMode: v)),
               ),
-            ),
-            _sliderRow(
-              l10n.brushSettingsFadeEndValueLabel,
-              _brush.fadeCustom?.endValue ?? 0,
-              0,
-              100,
-              (v) => setState(
-                () => _brush = _brush.copyWith(
-                  fadeCustom: FadeCustomSettings(
-                    startValue: _brush.fadeCustom?.startValue ?? 100,
-                    endValue: v,
-                    distancePx: _brush.fadeCustom?.distancePx ?? 500,
+              if (_brush.pixelMode)
+                Padding(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 4,
                   ),
-                ),
-              ),
-            ),
-            _sliderRow(
-              l10n.brushSettingsFadeDistanceLabel,
-              _brush.fadeCustom?.distancePx ?? 500,
-              10,
-              2000,
-              (v) => setState(
-                () => _brush = _brush.copyWith(
-                  fadeCustom: FadeCustomSettings(
-                    startValue: _brush.fadeCustom?.startValue ?? 100,
-                    endValue: _brush.fadeCustom?.endValue ?? 0,
-                    distancePx: v,
-                  ),
-                ),
-              ),
-            ),
-          ],
-          const Divider(),
-          // ストローク減衰
-          SwitchListTile(
-            title: Text(l10n.brushSettingsStrokeDecayTitle),
-            subtitle: Text(
-              l10n.brushSettingsStrokeDecaySubtitle,
-              style: const TextStyle(fontSize: 11),
-            ),
-            value: _brush.strokeDecay,
-            onChanged: (v) =>
-                setState(() => _brush = _brush.copyWith(strokeDecay: v)),
-          ),
-          const Divider(),
-          // ふち滲み
-          SwitchListTile(
-            title: Text(l10n.brushSettingsEdgeJitterTitle),
-            subtitle: Text(
-              l10n.brushSettingsEdgeJitterSubtitle,
-              style: const TextStyle(fontSize: 11),
-            ),
-            value: _brush.edgeJitter,
-            onChanged: (v) =>
-                setState(() => _brush = _brush.copyWith(edgeJitter: v)),
-          ),
-          if (_brush.edgeJitter)
-            _sliderRow(
-              l10n.brushSettingsEdgeJitterStrengthLabel,
-              _brush.edgeJitterStrength.toDouble(),
-              0,
-              100,
-              (v) => setState(
-                () => _brush = _brush.copyWith(edgeJitterStrength: v.round()),
-              ),
-            ),
-          const Divider(),
-          // 混色
-          Text(
-            l10n.brushSettingsMixingTitle,
-            style: const TextStyle(
-              fontWeight: FontWeight.bold,
-              fontFamily: 'Kuramubon',
-              fontFamilyFallback: kHeadingFontFallback,
-            ),
-          ),
-          // 選択状態と変更通知はRadioGroupがまとめて持つ
-          // （各ラジオのgroupValue/onChangedはFlutter 3.32で非推奨）。
-          // spreadのままだとRadioGroupを祖先に置けないため、Columnで束ねる。
-          RadioGroup<BrushMixingMode>(
-            groupValue: _brush.mixingMode,
-            onChanged: (v) =>
-                setState(() => _brush = _brush.copyWith(mixingMode: v)),
-            child: Column(
-              children: BrushMixingMode.values
-                  .map(
-                    (mode) => RadioListTile<BrushMixingMode>(
-                      title: Text(_mixingModeLabel(l10n, mode)),
-                      value: mode,
-                      dense: true,
+                  child: PixelColorModeSelector(
+                    mode: _brush.pixelColorMode,
+                    colorLevels: _brush.pixelColorLevels,
+                    explicitColors: _brush.pixelExplicitColors,
+                    onModeChanged: (m) => setState(
+                      () => _brush = _brush.copyWith(pixelColorMode: m),
                     ),
-                  )
-                  .toList(),
-            ),
-          ),
-          if (_brush.mixingMode != BrushMixingMode.off) ...[
-            Text(
-              l10n.brushSettingsMixingRateLabel,
-              style: const TextStyle(fontSize: 12),
-            ),
-            Wrap(
-              spacing: 8,
-              children: kMixingRateOptions
-                  .map(
-                    (rate) => ChoiceChip(
-                      label: Text(
-                        rate == 0 ? l10n.brushSettingsMixingOff : '$rate%',
+                    onColorLevelsChanged: (v) => setState(
+                      () => _brush = _brush.copyWith(pixelColorLevels: v),
+                    ),
+                    onExplicitColorsChanged: (c) => setState(
+                      () => _brush = _brush.copyWith(pixelExplicitColors: c),
+                    ),
+                  ),
+                ),
+              Text(
+                l10n.brushSettingsFadeModeTitle,
+                style: const TextStyle(fontWeight: FontWeight.bold),
+              ),
+              RadioGroup<FadeMode>(
+                groupValue: _brush.fadeMode,
+                onChanged: (v) =>
+                    setState(() => _brush = _brush.copyWith(fadeMode: v)),
+                child: Column(
+                  children: FadeMode.values
+                      .map(
+                        (mode) => RadioListTile<FadeMode>(
+                          title: Text(_fadeModeLabel(l10n, mode)),
+                          value: mode,
+                          dense: true,
+                        ),
+                      )
+                      .toList(),
+                ),
+              ),
+              if (_brush.fadeMode == FadeMode.custom) ...[
+                _sliderRow(
+                  l10n.brushSettingsFadeStartValueLabel,
+                  _brush.fadeCustom?.startValue ?? 100,
+                  0,
+                  100,
+                  (v) => setState(
+                    () => _brush = _brush.copyWith(
+                      fadeCustom: FadeCustomSettings(
+                        startValue: v,
+                        endValue: _brush.fadeCustom?.endValue ?? 0,
+                        distancePx: _brush.fadeCustom?.distancePx ?? 500,
                       ),
-                      selected: _brush.mixingRate == rate,
-                      onSelected: (selected) {
-                        if (selected) {
-                          setState(
-                            () => _brush = _brush.copyWith(mixingRate: rate),
-                          );
-                        }
-                      },
                     ),
-                  )
-                  .toList(),
-            ),
-          ],
+                  ),
+                ),
+                _sliderRow(
+                  l10n.brushSettingsFadeEndValueLabel,
+                  _brush.fadeCustom?.endValue ?? 0,
+                  0,
+                  100,
+                  (v) => setState(
+                    () => _brush = _brush.copyWith(
+                      fadeCustom: FadeCustomSettings(
+                        startValue: _brush.fadeCustom?.startValue ?? 100,
+                        endValue: v,
+                        distancePx: _brush.fadeCustom?.distancePx ?? 500,
+                      ),
+                    ),
+                  ),
+                ),
+                _sliderRow(
+                  l10n.brushSettingsFadeDistanceLabel,
+                  _brush.fadeCustom?.distancePx ?? 500,
+                  10,
+                  2000,
+                  (v) => setState(
+                    () => _brush = _brush.copyWith(
+                      fadeCustom: FadeCustomSettings(
+                        startValue: _brush.fadeCustom?.startValue ?? 100,
+                        endValue: _brush.fadeCustom?.endValue ?? 0,
+                        distancePx: v,
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+              SwitchListTile(
+                title: Text(l10n.brushSettingsStrokeDecayTitle),
+                subtitle: Text(
+                  l10n.brushSettingsStrokeDecaySubtitle,
+                  style: const TextStyle(fontSize: 11),
+                ),
+                value: _brush.strokeDecay,
+                onChanged: (v) =>
+                    setState(() => _brush = _brush.copyWith(strokeDecay: v)),
+              ),
+            ],
+          ),
+          _settingsSection(
+            title: l10n.brushSettingsPressureOnSection,
+            children: [
+              _pressureRangeTile(
+                label: l10n.brushSettingsSizeLabel,
+                setting: _brush.pressureOn.size,
+                onChanged: (v) => _brush = _brush.copyWith(
+                  pressureOn: _brush.pressureOn.copyWith(size: v),
+                ),
+                l10n: l10n,
+              ),
+              _pressureRangeTile(
+                label: l10n.brushSettingsOpacityLabel,
+                setting: _brush.pressureOn.opacity,
+                onChanged: (v) => _brush = _brush.copyWith(
+                  pressureOn: _brush.pressureOn.copyWith(opacity: v),
+                ),
+                l10n: l10n,
+              ),
+              _pressureRangeTile(
+                label: l10n.brushSettingsBlurRadiusLabel,
+                setting: _brush.pressureOn.blur,
+                onChanged: (v) => _brush = _brush.copyWith(
+                  pressureOn: _brush.pressureOn.copyWith(blur: v),
+                ),
+                l10n: l10n,
+              ),
+              _pressureRangeTile(
+                label: l10n.brushSettingsEdgeJitterTitle,
+                setting: _brush.pressureOn.edgeJitter,
+                onChanged: (v) => _brush = _brush.copyWith(
+                  pressureOn: _brush.pressureOn.copyWith(edgeJitter: v),
+                ),
+                l10n: l10n,
+              ),
+              _pressureMixingOnTile(l10n),
+            ],
+          ),
+          _settingsSection(
+            title: l10n.brushSettingsPressureOffSection,
+            children: [
+              _fixedPressureTile(
+                label: l10n.brushSettingsBlurRadiusLabel,
+                setting: _brush.pressureOff.blur,
+                onChanged: (v) => _brush = _brush.copyWith(
+                  pressureOff: _brush.pressureOff.copyWith(blur: v),
+                ),
+                l10n: l10n,
+              ),
+              _fixedPressureTile(
+                label: l10n.brushSettingsEdgeJitterTitle,
+                setting: _brush.pressureOff.edgeJitter,
+                onChanged: (v) => _brush = _brush.copyWith(
+                  pressureOff: _brush.pressureOff.copyWith(edgeJitter: v),
+                ),
+                l10n: l10n,
+              ),
+              _pressureMixingOffTile(l10n),
+            ],
+          ),
           const SizedBox(height: 16),
           FilledButton(
             onPressed: () {
@@ -910,49 +835,216 @@ class _BrushSettingsSheetState extends State<_BrushSettingsSheet> {
     );
   }
 
-  Widget _pressureHardnessRow(AppLocalizations l10n) {
-    final enabled = isPressureHardnessEnabled(_brush.pressureMode);
-    final hardness = pressureHardnessForStrength(_brush.pressureStrength);
-    return Row(
+  Widget _settingsSection({
+    required String title,
+    required List<Widget> children,
+  }) {
+    return ExpansionTile(
+      title: Text(
+        title,
+        style: const TextStyle(
+          fontWeight: FontWeight.bold,
+          fontFamily: 'Kuramubon',
+          fontFamilyFallback: kHeadingFontFallback,
+        ),
+      ),
+      initiallyExpanded: true,
+      childrenPadding: const EdgeInsets.only(left: 8, right: 8, bottom: 8),
+      children: children,
+    );
+  }
+
+  Widget _pressureRangeTile({
+    required String label,
+    required PressureRangeSetting setting,
+    required ValueChanged<PressureRangeSetting> onChanged,
+    required AppLocalizations l10n,
+  }) {
+    return Column(
       children: [
-        SizedBox(
-          width: 80,
-          child: Text(
-            l10n.brushSettingsPressureHardnessLabel,
-            style: const TextStyle(fontSize: 12),
-          ),
+        SwitchListTile(
+          dense: true,
+          title: Text(label),
+          value: setting.enabled,
+          onChanged: (v) =>
+              setState(() => onChanged(setting.copyWith(enabled: v))),
         ),
-        Expanded(
-          child: SteppedSlider(
-            min: kMinPressureHardness.toDouble(),
-            max: kMaxPressureHardness.toDouble(),
-            divisions: kMaxPressureHardness - kMinPressureHardness,
-            step: 1,
-            value: hardness.toDouble(),
-            label: '$hardness',
-            onChanged: enabled
-                ? (v) => setState(
-                    () => _brush = _brush.copyWith(
-                      pressureStrength: pressureStrengthForHardness(v.round()),
-                    ),
-                  )
-                : null,
+        if (setting.enabled) ...[
+          _sliderRow(
+            l10n.brushSettingsWeakPressureLabel,
+            setting.weak.toDouble(),
+            0,
+            100,
+            (v) => setState(() => onChanged(setting.copyWith(weak: v.round()))),
           ),
+          _sliderRow(
+            l10n.brushSettingsStrongPressureLabel,
+            setting.strong.toDouble(),
+            0,
+            100,
+            (v) =>
+                setState(() => onChanged(setting.copyWith(strong: v.round()))),
+          ),
+        ],
+      ],
+    );
+  }
+
+  Widget _fixedPressureTile({
+    required String label,
+    required FixedBrushSetting setting,
+    required ValueChanged<FixedBrushSetting> onChanged,
+    required AppLocalizations l10n,
+  }) {
+    return Column(
+      children: [
+        SwitchListTile(
+          dense: true,
+          title: Text(label),
+          value: setting.enabled,
+          onChanged: (v) =>
+              setState(() => onChanged(setting.copyWith(enabled: v))),
         ),
-        SizedBox(
-          width: 40,
-          child: Text(
-            '$hardness',
-            textAlign: TextAlign.center,
-            style: TextStyle(
-              fontSize: 12,
-              color: enabled
-                  ? null
-                  : ThemeService.activeColorScheme.onSurfaceVariant,
+        if (setting.enabled)
+          _sliderRow(
+            l10n.brushSettingsValueLabel,
+            setting.value.toDouble(),
+            0,
+            100,
+            (v) =>
+                setState(() => onChanged(setting.copyWith(value: v.round()))),
+          ),
+      ],
+    );
+  }
+
+  Widget _pressureMixingOnTile(AppLocalizations l10n) {
+    final setting = _brush.pressureOn.mixing;
+    return Column(
+      children: [
+        SwitchListTile(
+          dense: true,
+          title: Text(l10n.brushSettingsMixingTitle),
+          value: setting.enabled,
+          onChanged: (v) => setState(
+            () => _brush = _brush.copyWith(
+              pressureOn: _brush.pressureOn.copyWith(
+                mixing: setting.copyWith(enabled: v),
+              ),
             ),
           ),
         ),
+        if (setting.enabled) ...[
+          _pressureMixingModeSelector(
+            l10n: l10n,
+            mode: setting.mode,
+            onChanged: (mode) => setState(
+              () => _brush = _brush.copyWith(
+                pressureOn: _brush.pressureOn.copyWith(
+                  mixing: setting.copyWith(mode: mode),
+                ),
+              ),
+            ),
+          ),
+          _sliderRow(
+            l10n.brushSettingsWeakPressureLabel,
+            setting.weakRate.toDouble(),
+            0,
+            100,
+            (v) => setState(
+              () => _brush = _brush.copyWith(
+                pressureOn: _brush.pressureOn.copyWith(
+                  mixing: setting.copyWith(weakRate: v.round()),
+                ),
+              ),
+            ),
+          ),
+          _sliderRow(
+            l10n.brushSettingsStrongPressureLabel,
+            setting.strongRate.toDouble(),
+            0,
+            100,
+            (v) => setState(
+              () => _brush = _brush.copyWith(
+                pressureOn: _brush.pressureOn.copyWith(
+                  mixing: setting.copyWith(strongRate: v.round()),
+                ),
+              ),
+            ),
+          ),
+        ],
       ],
+    );
+  }
+
+  Widget _pressureMixingOffTile(AppLocalizations l10n) {
+    final setting = _brush.pressureOff.mixing;
+    return Column(
+      children: [
+        SwitchListTile(
+          dense: true,
+          title: Text(l10n.brushSettingsMixingTitle),
+          value: setting.enabled,
+          onChanged: (v) => setState(
+            () => _brush = _brush.copyWith(
+              pressureOff: _brush.pressureOff.copyWith(
+                mixing: setting.copyWith(enabled: v),
+              ),
+            ),
+          ),
+        ),
+        if (setting.enabled) ...[
+          _pressureMixingModeSelector(
+            l10n: l10n,
+            mode: setting.mode,
+            onChanged: (mode) => setState(
+              () => _brush = _brush.copyWith(
+                pressureOff: _brush.pressureOff.copyWith(
+                  mixing: setting.copyWith(mode: mode),
+                ),
+              ),
+            ),
+          ),
+          _sliderRow(
+            l10n.brushSettingsValueLabel,
+            setting.rate.toDouble(),
+            0,
+            100,
+            (v) => setState(
+              () => _brush = _brush.copyWith(
+                pressureOff: _brush.pressureOff.copyWith(
+                  mixing: setting.copyWith(rate: v.round()),
+                ),
+              ),
+            ),
+          ),
+        ],
+      ],
+    );
+  }
+
+  Widget _pressureMixingModeSelector({
+    required AppLocalizations l10n,
+    required BrushMixingMode mode,
+    required ValueChanged<BrushMixingMode> onChanged,
+  }) {
+    final modes = [BrushMixingMode.simple, BrushMixingMode.bleed];
+    return RadioGroup<BrushMixingMode>(
+      groupValue: mode == BrushMixingMode.off ? BrushMixingMode.simple : mode,
+      onChanged: (v) {
+        if (v != null) onChanged(v);
+      },
+      child: Column(
+        children: modes
+            .map(
+              (value) => RadioListTile<BrushMixingMode>(
+                dense: true,
+                title: Text(_mixingModeLabel(l10n, value)),
+                value: value,
+              ),
+            )
+            .toList(),
+      ),
     );
   }
 
@@ -1030,14 +1122,6 @@ class _BrushSettingsSheetState extends State<_BrushSettingsSheet> {
       ],
     );
   }
-
-  String _pressureLabel(AppLocalizations l10n, PressureMode mode) =>
-      switch (mode) {
-        PressureMode.off => l10n.brushSettingsPressureOff,
-        PressureMode.size => l10n.brushSettingsPressureSize,
-        PressureMode.opacity => l10n.brushSettingsPressureOpacity,
-        PressureMode.sizeAndOpacity => l10n.brushSettingsPressureSizeAndOpacity,
-      };
 
   String _fadeModeLabel(AppLocalizations l10n, FadeMode mode) => switch (mode) {
     FadeMode.off => l10n.brushSettingsFadeOff,

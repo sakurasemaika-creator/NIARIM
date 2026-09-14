@@ -1,5 +1,6 @@
 // ignore: unused_import
 import 'package:intl/intl.dart' as intl;
+
 import 'app_localizations.dart';
 
 // ignore_for_file: type=lint
@@ -6207,4 +6208,22 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get customAutomationUnfavoriteAction => 'お気に入りを解除';
+
+  @override
+  String get brushSettingsCommonSection => '共通';
+
+  @override
+  String get brushSettingsPressureOnSection => '筆圧ON';
+
+  @override
+  String get brushSettingsPressureOffSection => '筆圧OFF';
+
+  @override
+  String get brushSettingsWeakPressureLabel => '弱';
+
+  @override
+  String get brushSettingsStrongPressureLabel => '強';
+
+  @override
+  String get brushSettingsValueLabel => '値';
 }

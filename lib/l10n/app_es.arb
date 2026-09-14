@@ -2694,5 +2694,11 @@
   "brushSettingsPressureHardnessLabel": "Dureza de presión",
   "customAutomationRunAction": "Ejecutar",
   "customAutomationFavoriteAction": "Añadir a favoritos",
-  "customAutomationUnfavoriteAction": "Quitar de favoritos"
+  "customAutomationUnfavoriteAction": "Quitar de favoritos",
+  "brushSettingsCommonSection": "Común",
+  "brushSettingsPressureOnSection": "Presión activada",
+  "brushSettingsPressureOffSection": "Presión desactivada",
+  "brushSettingsWeakPressureLabel": "Débil",
+  "brushSettingsStrongPressureLabel": "Fuerte",
+  "brushSettingsValueLabel": "Valor"
 }
