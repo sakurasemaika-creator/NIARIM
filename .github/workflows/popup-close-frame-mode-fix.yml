@@ -42,7 +42,10 @@ jobs:
               'lib/screens/canvas/widgets/stamp_panel.dart',
               'lib/screens/canvas/widgets/tone_panel.dart',
           ]
-          marker = 'PanelCenterCloseBar(onClose: widget.onClose),'
+          marker_candidates = (
+              'PanelCenterCloseBar(onClose: widget.onClose),',
+              'PanelCenterCloseBar(onClose: onClose),',
+          )
 
           def match_square(text, open_index):
               depth = 0
@@ -88,8 +91,10 @@ jobs:
           for name in panel_files:
               path = Path(name)
               text = path.read_text(encoding='utf-8')
-              if text.count(marker) != 1:
+              matches = [m for m in marker_candidates if text.count(m) == 1]
+              if len(matches) != 1:
                   raise SystemExit(f'{name}: expected exactly one shared close marker')
+              marker = matches[0]
               marker_pos = text.index(marker)
               list_anchor = text.rfind('children: [', 0, marker_pos)
               if list_anchor < 0:
