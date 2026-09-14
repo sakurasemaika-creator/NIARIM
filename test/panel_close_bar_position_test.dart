@@ -17,7 +17,7 @@ void main() {
 
   test('tool detail panels keep the shared close affordance as the final child', () {
     final bottomClose = RegExp(
-      r'PanelCenterCloseBar\(onClose: widget\.onClose\),\s*\],',
+      r'PanelCenterCloseBar\(onClose: (?:widget\.)?onClose\),\s*\],',
       multiLine: true,
     );
 
