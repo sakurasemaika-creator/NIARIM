@@ -1,0 +1,76 @@
+name: One-shot timeline media finalize v6
+
+on:
+  push:
+    branches:
+      - dev_branch
+    paths:
+      - tool/one_shot_timeline_media_finalize.py
+      - .github/workflows/one-shot-timeline-media-finalize-v6.yml
+
+permissions:
+  contents: write
+
+jobs:
+  finalize:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: dev_branch
+          fetch-depth: 0
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+      - run: flutter pub get
+      - name: RED contract
+        run: |
+          cat > test/timeline_media_contract_test.dart <<'DART'
+          import 'dart:io';
+          import 'package:flutter_test/flutter_test.dart';
+          void main() {
+            test('audio import accepts audio and video containers but stays audio-only', () {
+              final s = File('lib/screens/timeline/timeline_screen.dart').readAsStringSync();
+              expect(s, contains('_ClipTrackType.audio => FileType.custom'));
+              expect(s, contains("'mp3'"));
+              expect(s, contains("'mp4'"));
+              expect(s, contains("'mov'"));
+              expect(s, contains('allowedExtensions: allowedExtensions'));
+            });
+            test('video path keeps embedded audio enabled', () {
+              final s = File('lib/screens/timeline/timeline_screen.dart').readAsStringSync();
+              expect(s, contains('_ClipTrackType.video => FileType.video'));
+              expect(s, contains('await controller.setVolume(clip.volume.clamp(0.0, 1.0));'));
+              expect(s, contains('videoVolume: clip.trackType == _ClipTrackType.video'));
+            });
+            test('audio and video clip editor exposes play pause', () {
+              final s = File('lib/screens/timeline/timeline_screen.dart').readAsStringSync();
+              expect(s, contains('final ValueGetter<bool> isPlaying;'));
+              expect(s, contains('final VoidCallback onTogglePlay;'));
+              expect(s, contains('isPlaying: () => _isPlaying'));
+              expect(s, contains('onTogglePlay: _togglePlay'));
+              expect(s, contains('widget.onTogglePlay();'));
+            });
+          }
+          DART
+          set +e
+          flutter test test/timeline_media_contract_test.dart
+          status=$?
+          set -e
+          test "$status" -ne 0
+      - name: Apply safe patch
+        run: python3 tool/one_shot_timeline_media_finalize.py
+      - run: dart format lib/screens/timeline/timeline_screen.dart test/timeline_media_contract_test.dart
+      - run: flutter test test/timeline_media_contract_test.dart --reporter expanded
+      - run: flutter analyze --no-fatal-infos
+      - run: git diff --check
+      - name: Commit verified change and cleanup
+        run: |
+          rm -f tool/one_shot_timeline_media_finalize.py
+          rm -f .github/workflows/one-shot-timeline-media-finalize-v6.yml
+          git config user.name 'NIARIM automation'
+          git config user.email 'actions@users.noreply.github.com'
+          git add -A
+          git commit -m 'feat: finalize timeline audio and video cut playback'
+          git push origin HEAD:dev_branch
