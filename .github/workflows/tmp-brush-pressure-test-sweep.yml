@@ -18,7 +18,7 @@ jobs:
         with:
           channel: stable
           cache: true
-      - name: Analyze tests
+      - name: Analyze tests after current-schema fixture migration
         run: flutter analyze --no-fatal-infos test
       - name: Find legacy pressure test references
         if: always()
