@@ -43,6 +43,30 @@ class TimelineClipRangeCut {
   });
 }
 
+/// 固定された分割カーソルに対してタイムライン側を左右へ動かすとき、
+/// カーソル位置として扱うフレームを選択クリップの先頭〜末尾境界へ制限する。
+/// 先頭・末尾そのものまでは移動できるが、そこより外側へは進めない。
+int clampSplitCutCursorFrame({
+  required int candidateFrame,
+  required int clipStartFrame,
+  required int lengthFrames,
+}) {
+  final clipEndFrame = clipStartFrame + lengthFrames;
+  return candidateFrame.clamp(clipStartFrame, clipEndFrame);
+}
+
+/// 固定カーソルがクリップ内部の境界にある場合だけ分割を確定できる。
+/// 先頭・末尾では片側が0フレームになるため、ハサミボタンは無効化する。
+bool canConfirmSplitCut({
+  required int cursorFrame,
+  required int clipStartFrame,
+  required int lengthFrames,
+}) {
+  if (lengthFrames < 2) return false;
+  final clipEndFrame = clipStartFrame + lengthFrames;
+  return cursorFrame > clipStartFrame && cursorFrame < clipEndFrame;
+}
+
 /// [splitFrame]を右側クリップの先頭フレームとして、1本のクリップを左右へ
 /// 分割する。クリップの先頭・末尾（または範囲外）では片側が0フレームに
 /// なるため分割不可としてnullを返す。
