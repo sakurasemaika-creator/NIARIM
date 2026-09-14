@@ -32,12 +32,6 @@ p.write_text(s)
 
 p = Path("lib/screens/timeline/timeline_screen.dart")
 s = p.read_text()
-s = replace_once(
-    s,
-    "import '../../utils/reorder_index.dart';",
-    "import '../../utils/reorder_index.dart';\nimport '../../utils/timeline_clip_split.dart';",
-    "split import",
-)
 
 # Audio import accepts both normal audio files and video containers. Imported
 # video containers are deliberately stored as MaterialType.audio and therefore
@@ -101,6 +95,15 @@ s = replace_once(
     "              useStart: clip.useStart,\n"
     "              useEnd: clip.useStart + clip.lengthFrames - 1,",
     "duplicate audio UI offset",
+)
+
+# The enum gained extra presets before timeline labels did. Keep this existing
+# screen analyzable until localized labels are added in the dedicated l10n task.
+s = replace_once(
+    s,
+    "    AuroraHologramPreset.silverFoil =>\n      l10n.filterAuroraHologramPresetSilverFoil,\n  };",
+    "    AuroraHologramPreset.silverFoil =>\n      l10n.filterAuroraHologramPresetSilverFoil,\n    _ => p.name,\n  };",
+    "aurora preset fallback",
 )
 p.write_text(s)
 
