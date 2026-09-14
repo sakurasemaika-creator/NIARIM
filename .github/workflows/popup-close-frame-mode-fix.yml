@@ -5,24 +5,170 @@ on:
     branches:
       - fix/popup-close-frame-mode-20260914
     paths:
-      - 'test/panel_close_bar_position_test.dart'
       - '.github/workflows/popup-close-frame-mode-fix.yml'
 
 permissions:
   contents: write
 
 jobs:
-  regression:
+  fix-and-verify:
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 45
     steps:
       - uses: actions/checkout@v4
         with:
           ref: fix/popup-close-frame-mode-20260914
+          fetch-depth: 0
       - uses: subosito/flutter-action@v2
         with:
           flutter-version: '3.47.2'
           channel: stable
           cache: true
       - run: flutter pub get --enforce-lockfile
-      - run: flutter test --reporter expanded test/panel_close_bar_position_test.dart
+      - name: Move shared tool popup close affordances to the bottom
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+
+          panel_files = [
+              'lib/screens/canvas/widgets/brush_panel.dart',
+              'lib/screens/canvas/widgets/color_picker_panel.dart',
+              'lib/screens/canvas/widgets/filter_panel.dart',
+              'lib/screens/canvas/widgets/layer_panel.dart',
+              'lib/screens/canvas/widgets/onion_skin_panel.dart',
+              'lib/screens/canvas/widgets/quick_tool_panel.dart',
+              'lib/screens/canvas/widgets/ruler_panel.dart',
+              'lib/screens/canvas/widgets/stamp_panel.dart',
+              'lib/screens/canvas/widgets/tone_panel.dart',
+          ]
+          marker = 'PanelCenterCloseBar(onClose: widget.onClose),'
+
+          def match_square(text, open_index):
+              depth = 0
+              quote = None
+              escaped = False
+              line_comment = False
+              block_comment = False
+              i = open_index
+              while i < len(text):
+                  c = text[i]
+                  n = text[i + 1] if i + 1 < len(text) else ''
+                  if line_comment:
+                      if c == '\n': line_comment = False
+                  elif block_comment:
+                      if c == '*' and n == '/':
+                          block_comment = False
+                          i += 1
+                  elif quote:
+                      if escaped:
+                          escaped = False
+                      elif c == '\\':
+                          escaped = True
+                      elif c == quote:
+                          quote = None
+                  else:
+                      if c == '/' and n == '/':
+                          line_comment = True
+                          i += 1
+                      elif c == '/' and n == '*':
+                          block_comment = True
+                          i += 1
+                      elif c in ('\"', "'"):
+                          quote = c
+                      elif c == '[':
+                          depth += 1
+                      elif c == ']':
+                          depth -= 1
+                          if depth == 0:
+                              return i
+                  i += 1
+              raise RuntimeError('unmatched children list')
+
+          for name in panel_files:
+              path = Path(name)
+              text = path.read_text(encoding='utf-8')
+              if text.count(marker) != 1:
+                  raise SystemExit(f'{name}: expected exactly one shared close marker')
+              marker_pos = text.index(marker)
+              list_anchor = text.rfind('children: [', 0, marker_pos)
+              if list_anchor < 0:
+                  raise SystemExit(f'{name}: enclosing children list not found')
+              open_index = text.index('[', list_anchor)
+              close_index = match_square(text, open_index)
+              if not (open_index < marker_pos < close_index):
+                  raise SystemExit(f'{name}: marker is not in nearest children list')
+
+              line_start = text.rfind('\n', 0, marker_pos) + 1
+              line_end = text.find('\n', marker_pos)
+              if line_end < 0:
+                  raise SystemExit(f'{name}: marker line is not terminated')
+              indent = text[line_start:marker_pos]
+              text = text[:line_start] + text[line_end + 1:]
+
+              open_index = text.index('[', list_anchor)
+              close_index = match_square(text, open_index)
+              close_line_start = text.rfind('\n', 0, close_index) + 1
+              text = (
+                  text[:close_line_start]
+                  + indent + marker + '\n'
+                  + text[close_line_start:]
+              )
+              path.write_text(text, encoding='utf-8')
+
+          helper = Path('lib/screens/canvas/widgets/panel_close_bar.dart')
+          text = helper.read_text(encoding='utf-8')
+          text = text.replace(
+              '/// 各パネル）共通の閉じるボタン。全パネルで「ポップアップ中央の×ボタンで\n/// 閉じる」という操作方法に統一するため、各パネルのタイトル行の右端では\n/// なく、パネル最上部の中央に配置する。',
+              '/// 各パネル）共通の閉じるボタン。設定内容を先に読み進められるよう、\n/// タイトル行やパネル最上部には置かず、各パネルの内容末尾・中央に配置する。',
+          )
+          text = text.replace(
+              '// （Materialの推奨48dpにはやや届かないが、パネル最上部の帯を\n      // 太らせすぎず、指で確実に押せる大きさとして44を採る）。',
+              '// （Materialの推奨48dpにはやや届かないが、内容末尾を太らせすぎず、\n      // 指で確実に押せる大きさとして44を採る）。',
+          )
+          helper.write_text(text, encoding='utf-8')
+          PY
+      - name: Format changed Dart files
+        run: |
+          dart format \
+            lib/screens/canvas/widgets/brush_panel.dart \
+            lib/screens/canvas/widgets/color_picker_panel.dart \
+            lib/screens/canvas/widgets/filter_panel.dart \
+            lib/screens/canvas/widgets/layer_panel.dart \
+            lib/screens/canvas/widgets/onion_skin_panel.dart \
+            lib/screens/canvas/widgets/quick_tool_panel.dart \
+            lib/screens/canvas/widgets/ruler_panel.dart \
+            lib/screens/canvas/widgets/stamp_panel.dart \
+            lib/screens/canvas/widgets/tone_panel.dart \
+            lib/screens/canvas/widgets/panel_close_bar.dart \
+            test/panel_close_bar_position_test.dart
+      - name: Verify focused regression
+        run: flutter test --no-pub --reporter expanded test/panel_close_bar_position_test.dart
+      - name: Verify analyzer
+        run: flutter analyze --no-pub
+      - name: Verify full test suite
+        run: flutter test --no-pub
+      - name: Commit verified fix
+        shell: bash
+        run: |
+          git config user.name 'NIARIM UI Fix Bot'
+          git config user.email 'actions@users.noreply.github.com'
+          git add \
+            lib/screens/canvas/widgets/brush_panel.dart \
+            lib/screens/canvas/widgets/color_picker_panel.dart \
+            lib/screens/canvas/widgets/filter_panel.dart \
+            lib/screens/canvas/widgets/layer_panel.dart \
+            lib/screens/canvas/widgets/onion_skin_panel.dart \
+            lib/screens/canvas/widgets/quick_tool_panel.dart \
+            lib/screens/canvas/widgets/ruler_panel.dart \
+            lib/screens/canvas/widgets/stamp_panel.dart \
+            lib/screens/canvas/widgets/tone_panel.dart \
+            lib/screens/canvas/widgets/panel_close_bar.dart \
+            test/panel_close_bar_position_test.dart
+          git diff --cached --check
+          if git diff --cached --quiet; then
+            echo 'No source changes to commit.'
+            exit 0
+          fi
+          git commit -m 'fix: move tool popup close affordances to bottom'
+          git push origin HEAD:fix/popup-close-frame-mode-20260914
