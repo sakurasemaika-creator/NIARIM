@@ -1,40 +1,187 @@
 from pathlib import Path
 
-# FilterService: retire Aurora/Hologram from filter picker, keep legacy compatibility.
-p = Path('lib/services/filter_service.dart')
-s = p.read_text()
-s = s.replace("  static const prismFilterId = 'Filter0022';\n", "  static const prismFilterId = 'Filter0022';\n  static const legacyAuroraHologramFilterId = 'Filter0019';\n")
-s = s.replace("    return _filters.where((f) {\n      if (_favoritesOnly", "    return _filters.where((f) {\n      // Filter0019 is retained only for old projects/recorded automations.\n      if (f.id == legacyAuroraHologramFilterId) return false;\n      if (_favoritesOnly")
-aurora_block = """    FilterDef(\n      id: 'Filter0019',\n      name: 'オーロラホログラム',\n      kind: FilterKind.auroraHologram,\n      strength: 60,\n    ),\n"""
-s = s.replace(aurora_block, '')
-s = s.replace("    _currentFilterId = _filters.firstOrNull?.id;", "    _currentFilterId = visibleFilters.firstOrNull?.id;")
-s = s.replace("  void selectFilter(String id) {\n    _currentFilterId = id;", "  void selectFilter(String id) {\n    if (id == legacyAuroraHologramFilterId) return;\n    _currentFilterId = id;")
-s = s.replace("if (_currentFilterId == id) _currentFilterId = _filters.firstOrNull?.id;", "if (_currentFilterId == id) _currentFilterId = visibleFilters.firstOrNull?.id;")
-p.write_text(s)
-
-# CustomAutomationService: seed official semantic presets without overwriting user edits.
+# CustomAutomationService: replace only untouched legacy built-ins, preserve edits,
+# migrate favorites, and seed the new semantic built-ins exactly once.
 p = Path('lib/services/custom_automation_service.dart')
 s = p.read_text()
 if "custom_automation_builtin_presets.dart" not in s:
-    s = s.replace("import '../models/custom_automation.dart';\n", "import '../models/custom_automation.dart';\nimport '../models/custom_automation_builtin_presets.dart';\n")
-needle = """      );\n    notifyListeners();\n  }\n\n  Future<void> _persist() async {"""
-replacement = """      );\n    var addedBuiltin = false;\n    final existingIds = _items.map((item) => item.id).toSet();\n    for (final preset in CustomAutomationBuiltinPresets.all()) {\n      if (existingIds.add(preset.id)) {\n        _items.add(preset);\n        addedBuiltin = true;\n      }\n    }\n    if (addedBuiltin) await _persist();\n    notifyListeners();\n  }\n\n  Future<void> _persist() async {"""
-if needle not in s:
-    raise SystemExit('CustomAutomationService init anchor not found')
-s = s.replace(needle, replacement, 1)
+    s = s.replace(
+        "import '../models/custom_automation.dart';\n",
+        "import '../models/custom_automation.dart';\nimport '../models/custom_automation_builtin_presets.dart';\n",
+    )
+old = '''    _items.clear();
+    if (raw == null) {
+      _items.addAll(builtInCanvasAutomationPresets());
+      await _persist();
+    } else {
+      _items.addAll(
+        raw.map((entry) {
+          try {
+            final decoded = jsonDecode(entry);
+            if (decoded is! Map) return null;
+            return CustomAutomation.fromJson(decoded.cast<String, Object?>());
+          } catch (_) {
+            return null;
+          }
+        }).whereType<CustomAutomation>(),
+      );
+    }
+    _favoriteIds
+      ..clear()
+      ..addAll(prefs.getStringList(_favoritesPrefsKey) ?? const <String>[]);
+    _favoriteIds.removeWhere((id) => _items.every((item) => item.id != id));
+    await _persistFavorites();
+    notifyListeners();
+'''
+new = '''    _items.clear();
+    _favoriteIds
+      ..clear()
+      ..addAll(prefs.getStringList(_favoritesPrefsKey) ?? const <String>[]);
+
+    var changed = false;
+    if (raw == null) {
+      _items.addAll(CustomAutomationBuiltinPresets.all());
+      changed = true;
+    } else {
+      _items.addAll(
+        raw.map((entry) {
+          try {
+            final decoded = jsonDecode(entry);
+            if (decoded is! Map) return null;
+            return CustomAutomation.fromJson(decoded.cast<String, Object?>());
+          } catch (_) {
+            return null;
+          }
+        }).whereType<CustomAutomation>(),
+      );
+
+      final legacyDefaults = {
+        for (final item in builtInCanvasAutomationPresets()) item.id: item,
+      };
+      const replacementIds = {
+        auroraHologramAutomationPresetId: 'builtin_aurora_hologram',
+        lineExtractionAutomationPresetId: 'builtin_analog_lineart_extract',
+        lineCreationAutomationPresetId: 'builtin_draft_to_lineart',
+      };
+      for (var i = _items.length - 1; i >= 0; i--) {
+        final item = _items[i];
+        final legacyDefault = legacyDefaults[item.id];
+        if (legacyDefault == null) continue;
+        if (jsonEncode(item.toJson()) != jsonEncode(legacyDefault.toJson())) {
+          continue;
+        }
+        final replacementId = replacementIds[item.id];
+        if (replacementId != null && _favoriteIds.remove(item.id)) {
+          _favoriteIds.add(replacementId);
+        }
+        _items.removeAt(i);
+        changed = true;
+      }
+
+      final existingIds = _items.map((item) => item.id).toSet();
+      for (final preset in CustomAutomationBuiltinPresets.all()) {
+        if (existingIds.add(preset.id)) {
+          _items.add(preset);
+          changed = true;
+        }
+      }
+    }
+
+    _favoriteIds.removeWhere((id) => _items.every((item) => item.id != id));
+    if (changed) await _persist();
+    await _persistFavorites();
+    notifyListeners();
+'''
+if s.count(old) != 1:
+    raise SystemExit(f'CustomAutomationService init anchor count={s.count(old)}')
+s = s.replace(old, new, 1)
 p.write_text(s)
 
-# Executor: semantic layer operations needed by official presets.
+# Executor: semantic layer/pixel commands required by official presets.
 p = Path('lib/engine/custom_automation_executor.dart')
 s = p.read_text()
-if "dart:ui" not in s:
-    s = "import 'dart:ui' as ui;\n\n" + s
-s = s.replace("import 'custom_automation_filter_runner.dart';\n", "import 'brightness_alpha_engine.dart';\nimport 'color_trace_adjust_engine.dart';\nimport 'custom_automation_filter_runner.dart';\nimport 'layer_compositor.dart';\n")
-old = """            case 'canvas.tool':\n            case 'canvas.brushSize':\n            case 'canvas.brushOpacity':\n            case 'canvas.color':\n            case 'canvas.autofillRun':\n              await handleCanvasStateCommand(step.command, step.args);\n"""
-new = """            case 'canvas.visibleCompositeToNewTop':\n              activeLayerId = await _visibleCompositeToNewTop(\n                projectService: projectService,\n                projectId: projectId,\n                sceneId: sceneId,\n                frameIndex: frameIndex,\n              );\n            case 'canvas.layerDuplicate':\n              if (activeLayerId == null) throw StateError('No active layer');\n              final duplicate = projectService.duplicateLayer(\n                projectId: projectId,\n                sceneId: sceneId,\n                frameIndex: frameIndex,\n                layerId: activeLayerId,\n              );\n              if (duplicate == null) throw StateError('Could not duplicate layer');\n              activeLayerId = duplicate.id;\n            case 'canvas.mergeDown':\n              if (activeLayerId == null) throw StateError('No active layer');\n              activeLayerId = await _mergeDown(\n                projectService: projectService,\n                projectId: projectId,\n                sceneId: sceneId,\n                frameIndex: frameIndex,\n                activeLayerId: activeLayerId,\n              );\n            case 'canvas.brightnessToAlpha':\n              if (activeLayerId == null) throw StateError('No active layer');\n              await _transformActivePixels(\n                projectService: projectService,\n                projectId: projectId,\n                sceneId: sceneId,\n                frameIndex: frameIndex,\n                layerId: activeLayerId,\n                transform: (pixels) => applyBrightnessToAlpha(\n                  pixels,\n                  grayMode: step.args['grayMode'] as bool? ?? true,\n                ),\n              );\n            case 'canvas.colorTraceAdjust':\n              if (activeLayerId == null) throw StateError('No active layer');\n              await _transformActivePixels(\n                projectService: projectService,\n                projectId: projectId,\n                sceneId: sceneId,\n                frameIndex: frameIndex,\n                layerId: activeLayerId,\n                transform: (pixels) => applyColorTraceAdjust(\n                  pixels,\n                  hueShift: (step.args['hue'] as num?)?.toDouble() ?? -10,\n                  saturationShift: (step.args['saturation'] as num?)?.toDouble() ?? 60,\n                  lightnessShift: (step.args['lightness'] as num?)?.toDouble() ?? -50,\n                ),\n              );\n            case 'canvas.tool':\n            case 'canvas.brushSize':\n            case 'canvas.brushOpacity':\n            case 'canvas.color':\n            case 'canvas.autofillRun':\n              await handleCanvasStateCommand(step.command, step.args);\n"""
-if old not in s:
-    raise SystemExit('Executor switch anchor not found')
-s = s.replace(old, new, 1)
+if "import 'dart:ui' as ui;" not in s:
+    s = "import 'dart:typed_data';\nimport 'dart:ui' as ui;\n\n" + s
+for line in [
+    "import 'brightness_alpha_engine.dart';\n",
+    "import 'color_trace_adjust_engine.dart';\n",
+    "import 'layer_compositor.dart';\n",
+]:
+    if line not in s:
+        s = s.replace("import 'custom_automation_filter_runner.dart';\n", line + "import 'custom_automation_filter_runner.dart';\n")
+old_switch = '''            case 'canvas.tool':
+            case 'canvas.brushSize':
+            case 'canvas.brushOpacity':
+            case 'canvas.color':
+            case 'canvas.autofillRun':
+              await handleCanvasStateCommand(step.command, step.args);
+'''
+new_switch = '''            case 'canvas.visibleCompositeToNewTop':
+              activeLayerId = await _visibleCompositeToNewTop(
+                projectService: projectService,
+                projectId: projectId,
+                sceneId: sceneId,
+                frameIndex: frameIndex,
+              );
+            case 'canvas.layerDuplicate':
+              if (activeLayerId == null) throw StateError('No active layer');
+              final duplicate = projectService.duplicateLayer(
+                projectId: projectId,
+                sceneId: sceneId,
+                frameIndex: frameIndex,
+                layerId: activeLayerId,
+              );
+              if (duplicate == null) throw StateError('Could not duplicate layer');
+              activeLayerId = duplicate.id;
+            case 'canvas.mergeDown':
+              if (activeLayerId == null) throw StateError('No active layer');
+              activeLayerId = await _mergeDown(
+                projectService: projectService,
+                projectId: projectId,
+                sceneId: sceneId,
+                frameIndex: frameIndex,
+                activeLayerId: activeLayerId,
+              );
+            case 'canvas.brightnessToAlpha':
+              if (activeLayerId == null) throw StateError('No active layer');
+              await _transformActivePixels(
+                projectService: projectService,
+                projectId: projectId,
+                sceneId: sceneId,
+                frameIndex: frameIndex,
+                layerId: activeLayerId,
+                transform: (pixels) => applyBrightnessToAlpha(
+                  pixels,
+                  grayMode: step.args['grayMode'] as bool? ?? true,
+                ),
+              );
+            case 'canvas.colorTraceAdjust':
+              if (activeLayerId == null) throw StateError('No active layer');
+              await _transformActivePixels(
+                projectService: projectService,
+                projectId: projectId,
+                sceneId: sceneId,
+                frameIndex: frameIndex,
+                layerId: activeLayerId,
+                transform: (pixels) => applyColorTraceAdjust(
+                  pixels,
+                  hueShift: (step.args['hue'] as num?)?.toDouble() ?? -10,
+                  saturationShift:
+                      (step.args['saturation'] as num?)?.toDouble() ?? 60,
+                  lightnessShift:
+                      (step.args['lightness'] as num?)?.toDouble() ?? -50,
+                ),
+              );
+            case 'canvas.tool':
+            case 'canvas.brushSize':
+            case 'canvas.brushOpacity':
+            case 'canvas.color':
+            case 'canvas.autofillRun':
+              await handleCanvasStateCommand(step.command, step.args);
+'''
+if s.count(old_switch) != 1:
+    raise SystemExit(f'Executor switch anchor count={s.count(old_switch)}')
+s = s.replace(old_switch, new_switch, 1)
 anchor = "\nclass _LayerAnchor {"
 helpers = r'''
 
@@ -137,8 +284,7 @@ helpers = r'''
     final bytes = await image.toByteData(format: ui.ImageByteFormat.rawRgba);
     image.dispose();
     if (bytes == null) throw StateError('Could not read layer pixels');
-    final input = bytes.buffer.asUint8List();
-    final output = transform(input);
+    final output = transform(bytes.buffer.asUint8List());
     tm.replaceLayerPixels(key, Uint8List.fromList(output));
     final layer = projectService
         .layersOf(projectId, sceneId, frameIndex)
@@ -154,9 +300,6 @@ helpers = r'''
     }
   }
 '''
-# Need typed_data for helper signature.
-if "dart:typed_data" not in s:
-    s = s.replace("import 'dart:ui' as ui;\n", "import 'dart:typed_data';\nimport 'dart:ui' as ui;\n")
 if anchor not in s:
     raise SystemExit('Executor helper anchor not found')
 s = s.replace(anchor, helpers + anchor, 1)
