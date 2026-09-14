@@ -1,0 +1,27 @@
+name: TMP Brush Pressure Test Sweep
+
+on:
+  push:
+    branches:
+      - feature/brush-pressure-profiles
+  workflow_dispatch:
+
+jobs:
+  sweep:
+    if: ${{ github.actor != 'github-actions[bot]' }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: feature/brush-pressure-profiles
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+      - name: Analyze tests
+        run: flutter analyze --no-fatal-infos test
+      - name: Find legacy pressure test references
+        if: always()
+        run: |
+          grep -R -n -E 'PressureMode|pressureMode|pressureStrength|pressureHardness|pressure_hardness' test || true
+          grep -R -n -E '\.(blurRadius|edgeJitter|edgeJitterStrength|mixingMode|mixingRate)\b|^[[:space:]]*(blurRadius|edgeJitter|edgeJitterStrength|mixingMode|mixingRate):' test || true
