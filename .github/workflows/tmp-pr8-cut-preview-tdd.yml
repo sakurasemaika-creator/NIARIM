@@ -2,16 +2,13 @@ name: TMP PR8 Cut Preview TDD
 
 on:
   push:
-    branches:
-      - feat/timeline-media-cut-waveform
-  workflow_dispatch:
+    branches: [feat/timeline-media-cut-waveform]
 
 permissions:
   contents: write
 
 jobs:
   tdd:
-    if: ${{ github.actor != 'github-actions[bot]' }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -24,7 +21,6 @@ jobs:
           cache: true
       - run: flutter pub get
       - name: Confirm RED before implementation
-        id: red
         shell: bash
         run: |
           set +e
@@ -32,165 +28,12 @@ jobs:
           status=$?
           set -e
           if [ "$status" -eq 0 ]; then
-            echo "Expected RED before cut-preview implementation, but test was already green."
+            echo "Expected RED before implementation."
             exit 1
           fi
-          echo "Confirmed RED as expected."
-      - name: Apply cut-preview implementation
-        shell: python
-        run: |
-          from pathlib import Path
-          import re
-
-          util = Path('lib/utils/timeline_clip_split.dart')
-          s = util.read_text()
-          helper = '''
-
-/// カット位置をプレビュー再生ヘッドとして使える実フレームへ丸めて制限する。
-/// タイムラインの有効範囲は0〜totalFrames-1。空/不正な総フレーム数でも0を返す。
-int cutPreviewFrame({required double boundaryFrame, required int totalFrames}) {
-  if (totalFrames <= 1) return 0;
-  return boundaryFrame.round().clamp(0, totalFrames - 1);
-}
-'''
-          if 'int cutPreviewFrame(' not in s:
-            s = s.rstrip() + helper
-            util.write_text(s)
-
-          p = Path('lib/screens/timeline/timeline_screen.dart')
-          s = p.read_text()
-
-          cancel_anchor = '''  void _cancelClipCut() {
-    setState(() {
-      _clipCutMode = null;
-      _cutClipId = null;
-    });
-  }
-'''
-          preview_helper = '''  void _cancelClipCut() {
-    setState(() {
-      _clipCutMode = null;
-      _cutClipId = null;
-    });
-  }
-
-  /// カット候補位置へ再生ヘッドを合わせる。位置調整中に再生していた場合は
-  /// 一度停止し、通常の再生ボタンからその候補位置を起点に音声/動画を
-  /// すぐ確認できるようにする。カットモード自体は解除しない。
-  void _setCutPreviewFrame(double boundaryFrame) {
-    final nextFrame = cutPreviewFrame(
-      boundaryFrame: boundaryFrame,
-      totalFrames: _totalFrames,
-    );
-    final wasPlaying = _isPlaying;
-    if (wasPlaying) {
-      _playTimer?.cancel();
-      _pauseAllMedia();
-    }
-    setState(() {
-      _currentFrame = nextFrame;
-      if (wasPlaying) _isPlaying = false;
-    });
-    _syncMediaPlayback();
-  }
-'''
-          if '_setCutPreviewFrame(' not in s:
-            if cancel_anchor not in s:
-              raise SystemExit('cancel anchor not found')
-            s = s.replace(cancel_anchor, preview_helper, 1)
-
-          split_start_old = '''  void _startSplitCut(_TrackClip clip) {
-    if (clip.lengthFrames < 2) return;
-    setState(() {
-      _clipCutMode = _ClipCutMode.split;
-      _cutClipId = clip.id;
-      _splitCutPositionFrame = clip.startFrame + (clip.lengthFrames / 2.0);
-    });
-  }
-'''
-          split_start_new = '''  void _startSplitCut(_TrackClip clip) {
-    if (clip.lengthFrames < 2) return;
-    setState(() {
-      _clipCutMode = _ClipCutMode.split;
-      _cutClipId = clip.id;
-      _splitCutPositionFrame = clip.startFrame + (clip.lengthFrames / 2.0);
-    });
-    _setCutPreviewFrame(_splitCutPositionFrame);
-  }
-'''
-          if split_start_old in s:
-            s = s.replace(split_start_old, split_start_new, 1)
-          elif '_setCutPreviewFrame(_splitCutPositionFrame);' not in s:
-            raise SystemExit('split start anchor not found')
-
-          split_drag_pattern = re.compile(r'''onHorizontalDragUpdate: isSplitTarget\n\s*\? \(details\) \{\n\s*final candidate =\n\s*_splitCutPositionFrame - details\.delta\.dx / _cellW;\n\s*setState\(\(\) \{\n\s*_splitCutPositionFrame = clampSplitCutCursorFrame\(\n\s*candidateFrame: candidate\.round\(\),\n\s*clipStartFrame: clip\.startFrame,\n\s*lengthFrames: clip\.lengthFrames,\n\s*\)\.toDouble\(\);\n\s*\}\);\n\s*\}\n\s*: null,''')
-          split_drag_new = '''onHorizontalDragUpdate: isSplitTarget
-                ? (details) {
-                    final candidate =
-                        _splitCutPositionFrame - details.delta.dx / _cellW;
-                    final nextFrame = clampSplitCutCursorFrame(
-                      candidateFrame: candidate.round(),
-                      clipStartFrame: clip.startFrame,
-                      lengthFrames: clip.lengthFrames,
-                    );
-                    setState(() {
-                      _splitCutPositionFrame = nextFrame.toDouble();
-                    });
-                    _setCutPreviewFrame(_splitCutPositionFrame);
-                  }
-                : null,'''
-          if '_setCutPreviewFrame(_splitCutPositionFrame);' not in s[s.find('onHorizontalDragUpdate: isSplitTarget'):s.find('onHorizontalDragUpdate: isSplitTarget')+1500]:
-            s, count = split_drag_pattern.subn(split_drag_new, s, count=1)
-            if count != 1:
-              raise SystemExit('split drag block not found')
-
-          range_old = '''        onHorizontalDragUpdate: (details) {
-          setState(() {
-            if (isStart) {
-              _rangeCutStartPositionFrame =
-                  (_rangeCutStartPositionFrame + details.delta.dx / _cellW)
-                      .clamp(
-                        clip.startFrame.toDouble(),
-                        _rangeCutEndPositionFrame - 1,
-                      );
-            } else {
-              _rangeCutEndPositionFrame =
-                  (_rangeCutEndPositionFrame + details.delta.dx / _cellW).clamp(
-                    _rangeCutStartPositionFrame + 1,
-                    (clip.startFrame + clip.lengthFrames).toDouble(),
-                  );
-            }
-          });
-        },
-'''
-          range_new = '''        onHorizontalDragUpdate: (details) {
-          setState(() {
-            if (isStart) {
-              _rangeCutStartPositionFrame =
-                  (_rangeCutStartPositionFrame + details.delta.dx / _cellW)
-                      .clamp(
-                        clip.startFrame.toDouble(),
-                        _rangeCutEndPositionFrame - 1,
-                      );
-            } else {
-              _rangeCutEndPositionFrame =
-                  (_rangeCutEndPositionFrame + details.delta.dx / _cellW).clamp(
-                    _rangeCutStartPositionFrame + 1,
-                    (clip.startFrame + clip.lengthFrames).toDouble(),
-                  );
-            }
-          });
-          _setCutPreviewFrame(
-            isStart ? _rangeCutStartPositionFrame : _rangeCutEndPositionFrame,
-          );
-        },
-'''
-          if range_old in s:
-            s = s.replace(range_old, range_new, 1)
-          elif 'isStart ? _rangeCutStartPositionFrame : _rangeCutEndPositionFrame' not in s:
-            raise SystemExit('range drag block not found')
-
-          p.write_text(s)
+          echo "Confirmed RED."
+      - name: Apply implementation
+        run: python .github/scripts/tmp_pr8_cut_preview_patch.py
       - run: dart format lib/utils/timeline_clip_split.dart lib/screens/timeline/timeline_screen.dart test/timeline_clip_split_test.dart
       - name: GREEN focused tests
         run: flutter test test/timeline_clip_split_test.dart test/engine/audio_waveform_service_test.dart --reporter expanded
@@ -202,9 +45,5 @@ int cutPreviewFrame({required double boundaryFrame, required int totalFrames}) {
           git config user.email 41898282+github-actions[bot]@users.noreply.github.com
           git add lib/utils/timeline_clip_split.dart lib/screens/timeline/timeline_screen.dart test/timeline_clip_split_test.dart
           git diff --cached --check
-          if git diff --cached --quiet; then
-            echo 'No changes to commit.'
-            exit 1
-          fi
-          git commit -m "feat: preview media from cut positions"
+          git commit -m "feat: preview media from cut positions [skip ci]"
           git push origin HEAD:feat/timeline-media-cut-waveform
