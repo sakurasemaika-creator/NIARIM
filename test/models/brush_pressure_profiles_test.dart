@@ -48,6 +48,15 @@ void main() {
       expect(brush.pressureOff.mixing.rate, 0);
     });
 
+    test('serializes only the current pressure profile schema', () {
+      final json = _brush('pressure-schema').toJson();
+
+      expect(json.containsKey('pressureOn'), isTrue);
+      expect(json.containsKey('pressureOff'), isTrue);
+      expect(json.containsKey('pressureMode'), isFalse);
+      expect(json.containsKey('pressureStrength'), isFalse);
+    });
+
     test('pressure profiles round trip through brush json', () {
       final original = _brush('pressure-roundtrip').copyWith(
         pressureOn: BrushPressureOnSettings.defaults.copyWith(
