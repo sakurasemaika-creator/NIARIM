@@ -4,6 +4,26 @@ import re
 p = Path('lib/screens/timeline/timeline_screen.dart')
 s = p.read_text()
 
+preset_switch = re.compile(
+    r"(?P<i>\s*)AuroraHologramPreset\.silverFoil =>\s*"
+    r"l10n\.filterAuroraHologramPresetSilverFoil,\s*"
+    r"};"
+)
+m = preset_switch.search(s)
+if not m:
+    raise SystemExit('aurora hologram preset switch marker not found/current source already changed')
+i = m.group('i')
+preset_repl = (
+    f"{i}AuroraHologramPreset.silverFoil =>\n"
+    f"{i}  l10n.filterAuroraHologramPresetSilverFoil,\n"
+    f"{i}AuroraHologramPreset.classicHologram =>\n"
+    f"{i}  l10n.filterAuroraHologramPresetClassicHologram,\n"
+    f"{i}AuroraHologramPreset.pearl2 =>\n"
+    f"{i}  l10n.filterAuroraHologramPresetPearl2,\n"
+    f"{i}}};"
+)
+s = s[:m.start()] + preset_repl + s[m.end():]
+
 picker = re.compile(
     r"(?P<i>\s*)final fileType = switch \(trackType\) \{\s*"
     r"_ClipTrackType\.audio => FileType\.audio,\s*"
