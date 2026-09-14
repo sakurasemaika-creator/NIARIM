@@ -361,11 +361,15 @@ class SettingsService extends ChangeNotifier {
   // のみで管理する（グローバル設定としては持たない）。
   // 筆圧カーブのみアプリ全体に適用される設定としてここで管理する。
   bool _palmRejectionEnabled = true;
+  // App-wide pressure activation. Brushes always store both ON/OFF profiles;
+  // this flag selects which profile is active while drawing.
+  bool _penPressureEnabled = true;
   PenPressureCurve _penPressureCurve = PenPressureCurve.normal;
   GestureAction _penButton1 = GestureAction.eraserToggle;
   GestureAction _penButton2 = GestureAction.eyedropper;
 
   bool get palmRejectionEnabled => _palmRejectionEnabled;
+  bool get penPressureEnabled => _penPressureEnabled;
   PenPressureCurve get penPressureCurve => _penPressureCurve;
   GestureAction get penButton1 => _penButton1;
   GestureAction get penButton2 => _penButton2;
@@ -416,6 +420,13 @@ class SettingsService extends ChangeNotifier {
     _palmRejectionEnabled = value;
     final prefs = await SharedPreferences.getInstance();
     await prefs.setBool('palm_rejection_enabled', value);
+    notifyListeners();
+  }
+
+  Future<void> setPenPressureEnabled(bool value) async {
+    _penPressureEnabled = value;
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool('pen_pressure_enabled', value);
     notifyListeners();
   }
 
@@ -613,6 +624,7 @@ class SettingsService extends ChangeNotifier {
       GestureAction.eyedropper,
     );
     _palmRejectionEnabled = prefs.getBool('palm_rejection_enabled') ?? true;
+    _penPressureEnabled = prefs.getBool('pen_pressure_enabled') ?? true;
     _penPressureCurve =
         PenPressureCurve.values.asNameMap()[prefs.getString(
           'pen_pressure_curve',
