@@ -1,0 +1,41 @@
+name: TMP Brush Pressure Cleanup Phase2
+
+on:
+  push:
+    branches:
+      - feature/brush-pressure-profiles
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  patch:
+    if: ${{ github.actor != 'github-actions[bot]' }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: feature/brush-pressure-profiles
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+      - name: Remove obsolete top-level brush fields
+        run: python tool/tmp_brush_pressure_cleanup_phase2.py
+      - name: Format changed files
+        run: dart format lib/models/brush.dart lib/services/brush_service.dart test/models/brush_pressure_profiles_test.dart
+      - name: Analyze production brush code
+        run: flutter analyze --no-fatal-infos lib/models/brush.dart lib/models/brush_pressure_resolver.dart lib/services/brush_service.dart lib/screens/canvas/widgets/brush_panel.dart lib/engine/drawing_engine.dart lib/screens/canvas/widgets/canvas_area.dart
+      - name: Verify obsolete production refs are gone
+        run: |
+          ! grep -R -n -E 'PressureMode|pressureMode|pressureStrength|pressureHardness|pressure_hardness' lib
+          ! grep -R -n -E '\bbrush\.(blurRadius|edgeJitter|edgeJitterStrength|mixingMode|mixingRate)\b' lib
+      - name: Commit production cleanup
+        run: |
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          git add -A
+          git diff --cached --check
+          git commit -m "refactor: remove obsolete brush pressure fields"
+          git push origin HEAD:feature/brush-pressure-profiles
