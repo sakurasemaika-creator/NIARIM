@@ -937,7 +937,9 @@ class _CanvasAreaState extends State<CanvasArea> {
 
   void _syncBrushAndColor() {
     final bs = context.read<BrushService>();
+    final settings = context.read<SettingsService>();
     _drawingEngine.currentBrush = bs.currentBrush;
+    _drawingEngine.pressureEnabled = settings.penPressureEnabled;
     final c = bs.currentColor;
     _drawingEngine.currentColor = ui.Color.fromARGB(
       (c.a * 255).round().clamp(0, 255),
@@ -2331,9 +2333,8 @@ class _CanvasAreaState extends State<CanvasArea> {
             .distance <
         rotateR) {
       mode = _TransformMode.rotate;
-    } else if (selectionScaleHandlesOf(
-      bounds,
-    ).any((c) => (canvasPos - c).distance < r)) {
+    } else if (selectionScaleHandlesOf(bounds)
+        .any((c) => (canvasPos - c).distance < r)) {
       mode = _TransformMode.scale;
     } else if ((canvasPos - bounds.center).distance < r ||
         _selectionMaskContains(canvasPos)) {
