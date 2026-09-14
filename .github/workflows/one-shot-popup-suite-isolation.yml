@@ -29,7 +29,9 @@ jobs:
       - name: Apply popup patch only
         if: matrix.variant == 'popup'
         run: python3 .github/scripts/standardize_popup_close.py
-      - name: Verify popup patch scope and formatting
+      - name: Install dependencies
+        run: flutter pub get
+      - name: Format and verify popup patch scope
         if: matrix.variant == 'popup'
         shell: bash
         run: |
@@ -37,9 +39,9 @@ jobs:
           printf 'Changed popup files (%s):\n' "${#changed[@]}"
           printf '  %s\n' "${changed[@]}"
           test "${#changed[@]}" -ge 5
+          printf '%s\0' "${changed[@]}" | xargs -0 dart format
           printf '%s\0' "${changed[@]}" | xargs -0 dart format --output=none --set-exit-if-changed
-      - name: Install dependencies
-        run: flutter pub get
+          git diff --check -- "${changed[@]}"
       - name: Analyze isolated lib without blocking test comparison
         id: analyze
         continue-on-error: true
