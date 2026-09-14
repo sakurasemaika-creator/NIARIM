@@ -119,4 +119,4 @@ Analyzing 2 items...
    info • Unnecessary 'const' keyword. Try removing the keyword • test/visual/glitter_lame_render_capture_test.dart:55:15 • unnecessary_const
    info • Unnecessary 'const' keyword. Try removing the keyword • test/visual/glitter_lame_render_capture_test.dart:67:16 • unnecessary_const
 
-63 issues found. (ran in 23.3s)
+63 issues found. (ran in 21.8s)
