@@ -5217,12 +5217,38 @@ class _TimelineScreenState extends State<TimelineScreen> {
     _ClipTrackType trackType,
   ) async {
     final l10n = AppLocalizations.of(context)!;
+    final allowedExtensions = trackType == _ClipTrackType.audio
+        ? const <String>[
+            'mp3',
+            'wav',
+            'm4a',
+            'aac',
+            'flac',
+            'ogg',
+            'opus',
+            'aiff',
+            'wma',
+            'mp4',
+            'm4v',
+            'mov',
+            'mkv',
+            'webm',
+          ]
+        : null;
+
     final fileType = switch (trackType) {
-      _ClipTrackType.audio => FileType.audio,
+      _ClipTrackType.audio => FileType.custom,
+
       _ClipTrackType.video => FileType.video,
+
       _ClipTrackType.image => FileType.image,
     };
-    final result = await FilePicker.platform.pickFiles(type: fileType);
+
+    final result = await FilePicker.platform.pickFiles(
+      type: fileType,
+
+      allowedExtensions: allowedExtensions,
+    );
     if (result == null ||
         result.files.isEmpty ||
         result.files.first.path == null) {
@@ -6124,7 +6150,16 @@ class _TimelineScreenState extends State<TimelineScreen> {
           _deletePersistedClip(clip, sceneId);
         },
         onDuplicate: () => _duplicateClip(clip),
-        onChanged: () => setState(() {}),
+
+        onChanged: () {
+          setState(() {});
+
+          _syncMediaPlayback();
+        },
+
+        isPlaying: () => _isPlaying,
+
+        onTogglePlay: _togglePlay,
       ),
     ).then((_) => _persistClipUpdate(clip, sceneId));
   }
@@ -8122,6 +8157,11 @@ class _EffectFilterSheet extends StatelessWidget {
       l10n.filterAuroraHologramPresetSunsetGold,
     AuroraHologramPreset.silverFoil =>
       l10n.filterAuroraHologramPresetSilverFoil,
+
+    AuroraHologramPreset.classicHologram =>
+      l10n.filterAuroraHologramPresetClassicHologram,
+
+    AuroraHologramPreset.pearl2 => l10n.filterAuroraHologramPresetPearl2,
   };
 
   void _pickFadeColor(BuildContext context, EffectFilterInstance e) {
@@ -8262,12 +8302,16 @@ class _ClipDetailSheet extends StatefulWidget {
   final VoidCallback onDelete;
   final VoidCallback onDuplicate;
   final VoidCallback onChanged;
+  final ValueGetter<bool> isPlaying;
+  final VoidCallback onTogglePlay;
   const _ClipDetailSheet({
     required this.clip,
     required this.totalFrames,
     required this.onDelete,
     required this.onDuplicate,
     required this.onChanged,
+    required this.isPlaying,
+    required this.onTogglePlay,
   });
   @override
   State<_ClipDetailSheet> createState() => _ClipDetailSheetState();
@@ -8322,6 +8366,23 @@ class _ClipDetailSheetState extends State<_ClipDetailSheet> {
                     ),
                   ),
                 ),
+                if (_c.trackType == _ClipTrackType.audio ||
+                    _c.trackType == _ClipTrackType.video)
+                  IconButton(
+                    icon: Icon(
+                      widget.isPlaying() ? Icons.pause : Icons.play_arrow,
+                    ),
+
+                    tooltip: widget.isPlaying()
+                        ? l10n.commonPause
+                        : l10n.commonPlay,
+
+                    onPressed: () {
+                      widget.onTogglePlay();
+                      setState(() {});
+                    },
+                  ),
+
                 IconButton(
                   icon: const Icon(Icons.copy),
                   tooltip: l10n.themeDuplicateAction,
