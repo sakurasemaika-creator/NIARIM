@@ -1,0 +1,26 @@
+name: TMP Timeline Cut Verify
+
+on:
+  push:
+    branches:
+      - feat/timeline-media-cut-waveform
+    paths:
+      - '.github/workflows/tmp-timeline-cut-verify.yml'
+  workflow_dispatch:
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: feat/timeline-media-cut-waveform
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+      - run: flutter pub get
+      - run: dart format --output=none --set-exit-if-changed lib/screens/timeline/timeline_screen.dart lib/utils/timeline_clip_split.dart lib/models/audio_clip.dart lib/engine/niapro_serializer.dart lib/engine/audio_waveform_service.dart test/timeline_clip_split_test.dart test/audio_waveform_service_test.dart
+      - run: flutter analyze --no-fatal-infos lib/screens/timeline/timeline_screen.dart lib/utils/timeline_clip_split.dart lib/models/audio_clip.dart lib/engine/niapro_serializer.dart lib/engine/audio_waveform_service.dart test/timeline_clip_split_test.dart test/audio_waveform_service_test.dart
+      - run: flutter test test/timeline_clip_split_test.dart --reporter expanded
+      - run: flutter test test/audio_waveform_service_test.dart --reporter expanded
