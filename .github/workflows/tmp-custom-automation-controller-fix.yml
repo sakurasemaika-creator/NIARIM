@@ -1,0 +1,110 @@
+name: TMP Custom Automation Controller Fix
+
+on:
+  push:
+    branches:
+      - fix/custom-automation-dialog-lifecycle
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  patch:
+    if: ${{ github.actor != 'github-actions[bot]' }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: fix/custom-automation-dialog-lifecycle
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+      - name: Remove dialog controller lifetime hazards
+        shell: python
+        run: |
+          from pathlib import Path
+          p = Path('lib/widgets/custom_automation_manager_sheet.dart')
+          s = p.read_text()
+
+          replacements = [
+            (
+              "    final controller = TextEditingController();\n    final name = await showDialog<String>(",
+              "    var nameValue = '';\n    final name = await showDialog<String>(",
+            ),
+            (
+              "        content: TextField(\n          controller: controller,\n          autofocus: true,",
+              "        content: TextFormField(\n          initialValue: nameValue,\n          autofocus: true,\n          onChanged: (value) => nameValue = value,",
+            ),
+            (
+              "              final value = controller.text.trim();\n              if (value.isNotEmpty) Navigator.pop(dialogContext, value);",
+              "              final value = nameValue.trim();\n              if (value.isNotEmpty) Navigator.pop(dialogContext, value);",
+            ),
+            (
+              "    );\n    controller.dispose();\n    if (name == null || !context.mounted) return;",
+              "    );\n    if (name == null || !context.mounted) return;",
+            ),
+            (
+              "    final fromController = TextEditingController(text: '1');\n    final toController = TextEditingController(text: '${frameCount ?? 1}');",
+              "    var fromText = '1';\n    var toText = '${frameCount ?? 1}';",
+            ),
+            (
+              "                                child: TextField(\n                                  controller: fromController,\n                                  keyboardType: TextInputType.number,",
+              "                                child: TextFormField(\n                                  initialValue: fromText,\n                                  onChanged: (value) => fromText = value,\n                                  keyboardType: TextInputType.number,",
+            ),
+            (
+              "                                child: TextField(\n                                  controller: toController,\n                                  keyboardType: TextInputType.number,",
+              "                                child: TextFormField(\n                                  initialValue: toText,\n                                  onChanged: (value) => toText = value,\n                                  keyboardType: TextInputType.number,",
+            ),
+            (
+              "      final from = int.tryParse(fromController.text.trim());\n      final to = int.tryParse(toController.text.trim());",
+              "      final from = int.tryParse(fromText.trim());\n      final to = int.tryParse(toText.trim());",
+            ),
+            (
+              "      if (!valid) {\n        fromController.dispose();\n        toController.dispose();\n        if (context.mounted) {",
+              "      if (!valid) {\n        if (context.mounted) {",
+            ),
+            (
+              "    }\n    fromController.dispose();\n    toController.dispose();\n    if (accepted == true && context.mounted) {",
+              "    }\n    if (accepted == true && context.mounted) {",
+            ),
+            (
+              "    final controller = TextEditingController(text: item.name);\n    final value = await showDialog<String>(",
+              "    var nameValue = item.name;\n    final value = await showDialog<String>(",
+            ),
+            (
+              "        content: TextField(controller: controller, autofocus: true),",
+              "        content: TextFormField(\n          initialValue: nameValue,\n          autofocus: true,\n          onChanged: (value) => nameValue = value,\n        ),",
+            ),
+            (
+              "            onPressed: () =>\n                Navigator.pop(dialogContext, controller.text.trim()),",
+              "            onPressed: () => Navigator.pop(dialogContext, nameValue.trim()),",
+            ),
+            (
+              "    );\n    controller.dispose();\n    if (value != null && value.isNotEmpty && context.mounted) {",
+              "    );\n    if (value != null && value.isNotEmpty && context.mounted) {",
+            ),
+          ]
+
+          for old, new in replacements:
+            count = s.count(old)
+            if count != 1:
+              raise SystemExit(f'expected one match, found {count}: {old[:100]!r}')
+            s = s.replace(old, new, 1)
+
+          if 'TextEditingController' in s:
+            raise SystemExit('unexpected TextEditingController remains in manager sheet')
+          p.write_text(s)
+      - run: dart format lib/widgets/custom_automation_manager_sheet.dart test/widgets/custom_automation_dialog_lifecycle_test.dart
+      - run: flutter pub get
+      - run: flutter analyze --no-fatal-infos lib/widgets/custom_automation_manager_sheet.dart test/widgets/custom_automation_dialog_lifecycle_test.dart
+      - run: flutter test test/widgets/custom_automation_dialog_lifecycle_test.dart --reporter expanded
+      - name: Commit fix
+        run: |
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          git add lib/widgets/custom_automation_manager_sheet.dart
+          git diff --cached --check
+          git commit -m "fix: own custom automation dialog values without controllers"
+          git push origin HEAD:fix/custom-automation-dialog-lifecycle
