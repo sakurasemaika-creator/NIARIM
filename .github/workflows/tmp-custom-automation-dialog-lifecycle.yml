@@ -1,0 +1,19 @@
+name: TMP Custom Automation Dialog Lifecycle
+
+on:
+  push:
+    branches:
+      - dev_branch
+  workflow_dispatch:
+
+jobs:
+  focused-test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+      - run: flutter pub get
+      - run: flutter test test/widgets/custom_automation_dialog_lifecycle_test.dart --reporter expanded
