@@ -322,16 +322,32 @@ Brush _brush({
   size: size,
   opacity: opacity,
   spacing: 1,
-  blurRadius: 0,
   stabilization: stabilization,
   stabilizationStrength: stabilizationStrength,
   pixelMode: false,
-  pressureMode: PressureMode.off,
-  pressureStrength: 100,
+  pressureOn: BrushPressureOnSettings.defaults.copyWith(
+    size: const PressureRangeSetting(enabled: false, weak: 50, strong: 100),
+    opacity: const PressureRangeSetting(enabled: false, weak: 50, strong: 100),
+    mixing: PressureMixingOnSetting(
+      enabled: mixingMode != BrushMixingMode.off,
+      mode: mixingMode == BrushMixingMode.off
+          ? BrushMixingMode.simple
+          : mixingMode,
+      weakRate: mixingRate,
+      strongRate: mixingRate,
+    ),
+  ),
+  pressureOff: BrushPressureOffSettings.defaults.copyWith(
+    mixing: PressureMixingOffSetting(
+      enabled: mixingMode != BrushMixingMode.off,
+      mode: mixingMode == BrushMixingMode.off
+          ? BrushMixingMode.simple
+          : mixingMode,
+      rate: mixingRate,
+    ),
+  ),
   fadeMode: FadeMode.off,
   strokeDecay: false,
-  mixingMode: mixingMode,
-  mixingRate: mixingRate,
 );
 
 void _fillLayer(TileManager tm, String key, ui.Color color) {
@@ -366,9 +382,9 @@ void _markCross(TileManager tm, String key, ui.Offset p, ui.Color c) {
   tm.markDirty(key, tx, ty);
 }
 
-Future<Uint8List> _rgba(ui.Image image) async =>
-    (await image.toByteData(format: ui.ImageByteFormat.rawRgba))!.buffer
-        .asUint8List();
+Future<Uint8List> _rgba(ui.Image image) async => (await image.toByteData(
+  format: ui.ImageByteFormat.rawRgba,
+))!.buffer.asUint8List();
 
 Future<void> _save(ui.Image image, String path) async {
   final bytes = await image.toByteData(format: ui.ImageByteFormat.png);

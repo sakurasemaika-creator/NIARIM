@@ -15,32 +15,35 @@ void main() {
   final out = Directory('build/functional-visual');
   setUpAll(() => out.createSync(recursive: true));
 
-  test('筆圧強度：0/50/100で同じpressure=0.25の効き方が段階的に変わる', () async {
+  test('筆圧不透明度：weak 100/50/0で同じpressure=0.25の効き方が段階的に変わる', () async {
     final alphas = <int, int>{};
-    for (final strength in [0, 50, 100]) {
+    for (final weak in [100, 50, 0]) {
       final tm = TileManager(canvasWidth: 72, canvasHeight: 72);
       final e = DrawingEngine(tileManager: tm)
         ..currentBrush = _brush(
           size: 20,
           opacity: 100,
-          pressureMode: PressureMode.opacity,
-          pressureStrength: strength,
+          opacityPressure: PressureRangeSetting(
+            enabled: true,
+            weak: weak,
+            strong: 100,
+          ),
         )
         ..currentColor = const ui.Color(0xFF202020);
       e.beginStroke(const StrokePoint(x: 36, y: 36, pressure: 0.25), 'p');
       e.endStroke();
       final image = await tm.compositeLayerToImage('p');
-      await _save(image, '${out.path}/pressure_strength_$strength.png');
-      alphas[strength] = _pixel(await _rgba(image), 72, 36, 36)[3];
+      await _save(image, '${out.path}/pressure_opacity_weak_$weak.png');
+      alphas[weak] = _pixel(await _rgba(image), 72, 36, 36)[3];
       image.dispose();
       tm.dispose();
     }
 
-    // strength=0 は筆圧影響なし、100 は入力pressureを完全反映、50 はその中間。
-    expect(alphas[0]!, inInclusiveRange(250, 255));
-    expect(alphas[100]!, inInclusiveRange(60, 68));
-    expect(alphas[50]!, greaterThan(alphas[100]!));
-    expect(alphas[50]!, lessThan(alphas[0]!));
+    // weak=100 は筆圧影響なし、0 は入力pressureを完全反映、50 はその中間。
+    expect(alphas[100]!, inInclusiveRange(250, 255));
+    expect(alphas[0]!, inInclusiveRange(60, 68));
+    expect(alphas[50]!, greaterThan(alphas[0]!));
+    expect(alphas[50]!, lessThan(alphas[100]!));
     expect(alphas[50]!, inInclusiveRange(154, 166));
   });
 
@@ -232,8 +235,11 @@ void main() {
 Brush _brush({
   required double size,
   required int opacity,
-  PressureMode pressureMode = PressureMode.off,
-  int pressureStrength = 100,
+  PressureRangeSetting opacityPressure = const PressureRangeSetting(
+    enabled: false,
+    weak: 50,
+    strong: 100,
+  ),
   BrushMixingMode mixingMode = BrushMixingMode.off,
   int mixingRate = 0,
 }) => Brush(
@@ -242,16 +248,32 @@ Brush _brush({
   size: size,
   opacity: opacity,
   spacing: 1,
-  blurRadius: 0,
   stabilization: false,
   stabilizationStrength: 0,
   pixelMode: false,
-  pressureMode: pressureMode,
-  pressureStrength: pressureStrength,
+  pressureOn: BrushPressureOnSettings.defaults.copyWith(
+    size: const PressureRangeSetting(enabled: false, weak: 50, strong: 100),
+    opacity: opacityPressure,
+    mixing: PressureMixingOnSetting(
+      enabled: mixingMode != BrushMixingMode.off,
+      mode: mixingMode == BrushMixingMode.off
+          ? BrushMixingMode.simple
+          : mixingMode,
+      weakRate: mixingRate,
+      strongRate: mixingRate,
+    ),
+  ),
+  pressureOff: BrushPressureOffSettings.defaults.copyWith(
+    mixing: PressureMixingOffSetting(
+      enabled: mixingMode != BrushMixingMode.off,
+      mode: mixingMode == BrushMixingMode.off
+          ? BrushMixingMode.simple
+          : mixingMode,
+      rate: mixingRate,
+    ),
+  ),
   fadeMode: FadeMode.off,
   strokeDecay: false,
-  mixingMode: mixingMode,
-  mixingRate: mixingRate,
 );
 
 Future<Uint8List> _drawPixelLine({
@@ -342,9 +364,9 @@ int _countNonTransparent(Uint8List d) {
   return n;
 }
 
-Future<Uint8List> _rgba(ui.Image image) async =>
-    (await image.toByteData(format: ui.ImageByteFormat.rawRgba))!.buffer
-        .asUint8List();
+Future<Uint8List> _rgba(ui.Image image) async => (await image.toByteData(
+  format: ui.ImageByteFormat.rawRgba,
+))!.buffer.asUint8List();
 
 List<int> _pixel(List<int> rgba, int width, int x, int y) {
   final i = (y * width + x) * 4;

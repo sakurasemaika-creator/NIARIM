@@ -69,7 +69,11 @@ void main() {
       ..currentBrush = _brush(
         size: 18,
         opacity: 100,
-        pressureMode: PressureMode.opacity,
+        opacityPressure: const PressureRangeSetting(
+          enabled: true,
+          weak: 0,
+          strong: 100,
+        ),
       )
       ..currentColor = const ui.Color(0xFF202020);
 
@@ -102,7 +106,8 @@ void main() {
     expect(
       smoothSpan,
       lessThan(rawSpan),
-      reason: 'strong stabilization should reduce the vertical excursion of the same jittery input',
+      reason:
+          'strong stabilization should reduce the vertical excursion of the same jittery input',
     );
   });
 
@@ -251,7 +256,11 @@ void main() {
 Brush _brush({
   required double size,
   required int opacity,
-  PressureMode pressureMode = PressureMode.off,
+  PressureRangeSetting opacityPressure = const PressureRangeSetting(
+    enabled: false,
+    weak: 50,
+    strong: 100,
+  ),
   bool stabilization = false,
   int stabilizationStrength = 0,
   FadeMode fadeMode = FadeMode.off,
@@ -264,17 +273,33 @@ Brush _brush({
   size: size,
   opacity: opacity,
   spacing: 1,
-  blurRadius: 0,
   stabilization: stabilization,
   stabilizationStrength: stabilizationStrength,
   pixelMode: false,
-  pressureMode: pressureMode,
-  pressureStrength: 100,
+  pressureOn: BrushPressureOnSettings.defaults.copyWith(
+    size: const PressureRangeSetting(enabled: false, weak: 50, strong: 100),
+    opacity: opacityPressure,
+    mixing: PressureMixingOnSetting(
+      enabled: mixingMode != BrushMixingMode.off,
+      mode: mixingMode == BrushMixingMode.off
+          ? BrushMixingMode.simple
+          : mixingMode,
+      weakRate: mixingRate,
+      strongRate: mixingRate,
+    ),
+  ),
+  pressureOff: BrushPressureOffSettings.defaults.copyWith(
+    mixing: PressureMixingOffSetting(
+      enabled: mixingMode != BrushMixingMode.off,
+      mode: mixingMode == BrushMixingMode.off
+          ? BrushMixingMode.simple
+          : mixingMode,
+      rate: mixingRate,
+    ),
+  ),
   fadeMode: fadeMode,
   fadeCustom: fadeCustom,
   strokeDecay: false,
-  mixingMode: mixingMode,
-  mixingRate: mixingRate,
 );
 
 void _line(
@@ -357,9 +382,9 @@ bool _pointInPolygon(ui.Offset p, List<ui.Offset> poly) {
   return inside;
 }
 
-Future<Uint8List> _rgba(ui.Image image) async =>
-    (await image.toByteData(format: ui.ImageByteFormat.rawRgba))!.buffer
-        .asUint8List();
+Future<Uint8List> _rgba(ui.Image image) async => (await image.toByteData(
+  format: ui.ImageByteFormat.rawRgba,
+))!.buffer.asUint8List();
 
 List<int> _pixel(List<int> rgba, int width, int x, int y) {
   final i = (y * width + x) * 4;

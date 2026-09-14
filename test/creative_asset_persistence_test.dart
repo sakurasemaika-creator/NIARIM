@@ -112,7 +112,8 @@ void main() {
       expect(restored.size, 20);
       expect(restored.pixelMode, isTrue);
       expect(restored.fadeCustom?.startValue, 100);
-      expect(restored.mixingMode, BrushMixingMode.bleed);
+      expect(restored.pressureOn.mixing.mode, BrushMixingMode.bleed);
+      expect(restored.pressureOff.mixing.mode, BrushMixingMode.bleed);
     });
   });
 

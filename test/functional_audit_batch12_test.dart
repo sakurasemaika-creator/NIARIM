@@ -118,7 +118,8 @@ void main() {
     expect(
       (left - right).abs(),
       greaterThan(12),
-      reason: 'tilted nib must have directional alpha shading, not a uniformly filled symmetric ellipse',
+      reason:
+          'tilted nib must have directional alpha shading, not a uniformly filled symmetric ellipse',
     );
     image.dispose();
     tm.dispose();
@@ -129,8 +130,16 @@ void main() {
     final e = DrawingEngine(tileManager: tm)
       ..currentBrush = _brush(
         size: 30,
-        pressureMode: PressureMode.sizeAndOpacity,
-        pressureStrength: 100,
+        sizePressure: const PressureRangeSetting(
+          enabled: true,
+          weak: 0,
+          strong: 100,
+        ),
+        opacityPressure: const PressureRangeSetting(
+          enabled: true,
+          weak: 0,
+          strong: 100,
+        ),
       )
       ..currentColor = const ui.Color(0xFF202020);
     e.beginStroke(const StrokePoint(x: 30, y: 40, pressure: 1), 'p');
@@ -197,8 +206,16 @@ Brush _brush({
   required double size,
   FadeMode fadeMode = FadeMode.off,
   FadeCustomSettings? fadeCustom,
-  PressureMode pressureMode = PressureMode.off,
-  int pressureStrength = 100,
+  PressureRangeSetting sizePressure = const PressureRangeSetting(
+    enabled: false,
+    weak: 50,
+    strong: 100,
+  ),
+  PressureRangeSetting opacityPressure = const PressureRangeSetting(
+    enabled: false,
+    weak: 50,
+    strong: 100,
+  ),
   bool strokeDecay = false,
 }) => Brush(
   id: 'audit',
@@ -206,17 +223,16 @@ Brush _brush({
   size: size,
   opacity: 100,
   spacing: 1,
-  blurRadius: 0,
   stabilization: false,
   stabilizationStrength: 0,
   pixelMode: false,
-  pressureMode: pressureMode,
-  pressureStrength: pressureStrength,
+  pressureOn: BrushPressureOnSettings.defaults.copyWith(
+    size: sizePressure,
+    opacity: opacityPressure,
+  ),
   fadeMode: fadeMode,
   fadeCustom: fadeCustom,
   strokeDecay: strokeDecay,
-  mixingMode: BrushMixingMode.off,
-  mixingRate: 0,
 );
 
 void _line(
@@ -327,9 +343,9 @@ List<int> _pixel(List<int> d, int width, int x, int y) {
   return [d[i], d[i + 1], d[i + 2], d[i + 3]];
 }
 
-Future<Uint8List> _rgba(ui.Image i) async =>
-    (await i.toByteData(format: ui.ImageByteFormat.rawRgba))!.buffer
-        .asUint8List();
+Future<Uint8List> _rgba(ui.Image i) async => (await i.toByteData(
+  format: ui.ImageByteFormat.rawRgba,
+))!.buffer.asUint8List();
 Future<void> _save(ui.Image i, String p) async {
   final d = await i.toByteData(format: ui.ImageByteFormat.png);
   await File(p).writeAsBytes(d!.buffer.asUint8List());
