@@ -75,8 +75,8 @@ class AudioWaveformService {
 
       final session = await FFmpegKit.execute(
         '-y -i "${srcFile.path}" -filter_complex '
-        '"showwavespic=s=${renderWidth}x$renderHeight:colors=white" '
-        '-frames:v 1 "${outFile.path}"',
+        '"[0:a:0]showwavespic=s=${renderWidth}x$renderHeight:colors=white[wave]" '
+        '-map "[wave]" -frames:v 1 "${outFile.path}"',
       );
       final rc = await session.getReturnCode();
       if (!ReturnCode.isSuccess(rc) || !await outFile.exists()) {

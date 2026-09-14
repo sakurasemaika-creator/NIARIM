@@ -2074,9 +2074,9 @@ class _TimelineScreenState extends State<TimelineScreen> {
                                 ),
                               ),
                               backgroundColor: isMoving
-                                  ? Theme.of(
-                                      context,
-                                    ).colorScheme.primaryContainer
+                                  ? Theme.of(context)
+                                        .colorScheme
+                                        .primaryContainer
                                   : null,
                             ),
                           );
@@ -2828,12 +2828,12 @@ class _TimelineScreenState extends State<TimelineScreen> {
                                             width: 3,
                                             height: 28,
                                             color: isActive
-                                                ? Theme.of(
-                                                    context,
-                                                  ).colorScheme.primary
-                                                : Theme.of(
-                                                    context,
-                                                  ).colorScheme.outline,
+                                                ? Theme.of(context)
+                                                      .colorScheme
+                                                      .primary
+                                                : Theme.of(context)
+                                                      .colorScheme
+                                                      .outline,
                                           ),
                                         ),
                                       );
@@ -2854,9 +2854,9 @@ class _TimelineScreenState extends State<TimelineScreen> {
                                         ),
                                         decoration: BoxDecoration(
                                           color: isMoving
-                                              ? Theme.of(
-                                                  context,
-                                                ).colorScheme.primaryContainer
+                                              ? Theme.of(context)
+                                                    .colorScheme
+                                                    .primaryContainer
                                               : ThemeService
                                                     .activeColorScheme
                                                     .onSurfaceVariant,
@@ -2875,9 +2875,9 @@ class _TimelineScreenState extends State<TimelineScreen> {
                                             style: TextStyle(
                                               fontSize: 9,
                                               color: isMoving
-                                                  ? Theme.of(
-                                                      context,
-                                                    ).colorScheme.primary
+                                                  ? Theme.of(context)
+                                                        .colorScheme
+                                                        .primary
                                                   : null,
                                             ),
                                           ),
@@ -2983,20 +2983,20 @@ class _TimelineScreenState extends State<TimelineScreen> {
                                         // 濃いグレーのままだと透明部分の見え方が実際の
                                         // キャンバス画面と一致しなかったため修正。
                                         color: isChecked
-                                            ? Theme.of(
-                                                context,
-                                              ).colorScheme.primaryContainer
+                                            ? Theme.of(context)
+                                                  .colorScheme
+                                                  .primaryContainer
                                             : ThemeService
                                                   .activeColorScheme
                                                   .onSurface,
                                         border: Border.all(
                                           color: isChecked
-                                              ? Theme.of(
-                                                  context,
-                                                ).colorScheme.primary
-                                              : Theme.of(
-                                                  context,
-                                                ).colorScheme.outlineVariant,
+                                              ? Theme.of(context)
+                                                    .colorScheme
+                                                    .primary
+                                              : Theme.of(context)
+                                                    .colorScheme
+                                                    .outlineVariant,
                                         ),
                                         borderRadius: BorderRadius.circular(3),
                                       ),
@@ -4129,9 +4129,9 @@ class _TimelineScreenState extends State<TimelineScreen> {
                                     decoration: BoxDecoration(
                                       border: Border(
                                         right: BorderSide(
-                                          color: Theme.of(
-                                            context,
-                                          ).colorScheme.outlineVariant,
+                                          color: Theme.of(context)
+                                              .colorScheme
+                                              .outlineVariant,
                                           width: 0.5,
                                         ),
                                       ),
@@ -5033,9 +5033,9 @@ class _TimelineScreenState extends State<TimelineScreen> {
                               decoration: BoxDecoration(
                                 border: Border(
                                   right: BorderSide(
-                                    color: Theme.of(
-                                      context,
-                                    ).colorScheme.outlineVariant,
+                                    color: Theme.of(context)
+                                        .colorScheme
+                                        .outlineVariant,
                                     width: 0.5,
                                   ),
                                 ),
@@ -5217,12 +5217,32 @@ class _TimelineScreenState extends State<TimelineScreen> {
     _ClipTrackType trackType,
   ) async {
     final l10n = AppLocalizations.of(context)!;
-    final fileType = switch (trackType) {
-      _ClipTrackType.audio => FileType.audio,
-      _ClipTrackType.video => FileType.video,
-      _ClipTrackType.image => FileType.image,
-    };
-    final result = await FilePicker.platform.pickFiles(type: fileType);
+    final FilePickerResult? result;
+    if (trackType == _ClipTrackType.audio) {
+      result = await FilePicker.platform.pickFiles(
+        type: FileType.custom,
+        allowedExtensions: const [
+          'mp3',
+          'wav',
+          'm4a',
+          'aac',
+          'ogg',
+          'flac',
+          'mp4',
+          'mov',
+          'mkv',
+          'webm',
+          'm4v',
+        ],
+      );
+    } else {
+      final fileType = switch (trackType) {
+        _ClipTrackType.audio => FileType.audio,
+        _ClipTrackType.video => FileType.video,
+        _ClipTrackType.image => FileType.image,
+      };
+      result = await FilePicker.platform.pickFiles(type: fileType);
+    }
     if (result == null ||
         result.files.isEmpty ||
         result.files.first.path == null) {
@@ -5606,6 +5626,7 @@ class _TimelineScreenState extends State<TimelineScreen> {
           volume: clip.volume,
           fadeIn: clip.fadeIn,
           fadeOut: clip.fadeOut,
+          sourceStartFrame: clip.useStart,
           trackRow: targetRow,
         ),
       );
@@ -5624,7 +5645,8 @@ class _TimelineScreenState extends State<TimelineScreen> {
               volume: clip.volume,
               fadeIn: clip.fadeIn,
               fadeOut: clip.fadeOut,
-              useEnd: clip.lengthFrames - 1,
+              useStart: clip.useStart,
+              useEnd: clip.useStart + clip.lengthFrames - 1,
               trackRow: targetRow,
             ),
           ),
@@ -5975,6 +5997,8 @@ class _TimelineScreenState extends State<TimelineScreen> {
           volume: clip.volume,
           fadeIn: clip.fadeIn,
           fadeOut: clip.fadeOut,
+          sourceStartFrame: clip.useStart,
+          trackRow: clip.trackRow,
         ),
       );
     } else {
@@ -6043,7 +6067,8 @@ class _TimelineScreenState extends State<TimelineScreen> {
           volume: a.volume,
           fadeIn: a.fadeIn,
           fadeOut: a.fadeOut,
-          useEnd: a.lengthFrames - 1,
+          useStart: a.sourceStartFrame,
+          useEnd: a.sourceStartFrame + a.lengthFrames - 1,
           trackRow: a.trackRow,
         ),
       );
@@ -8122,6 +8147,7 @@ class _EffectFilterSheet extends StatelessWidget {
       l10n.filterAuroraHologramPresetSunsetGold,
     AuroraHologramPreset.silverFoil =>
       l10n.filterAuroraHologramPresetSilverFoil,
+    _ => p.name,
   };
 
   void _pickFadeColor(BuildContext context, EffectFilterInstance e) {

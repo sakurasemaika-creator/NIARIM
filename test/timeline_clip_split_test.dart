@@ -130,25 +130,28 @@ void main() {
   });
 
   group('cutTimelineClipRange', () {
-    test('removes a middle range and preserves both remaining source ranges', () {
-      final result = cutTimelineClipRange(
-        clipStartFrame: 10,
-        lengthFrames: 12,
-        cutStartFrame: 13,
-        cutEndFrameExclusive: 18,
-        sourceStartFrame: 40,
-      );
+    test(
+      'removes a middle range and preserves both remaining source ranges',
+      () {
+        final result = cutTimelineClipRange(
+          clipStartFrame: 10,
+          lengthFrames: 12,
+          cutStartFrame: 13,
+          cutEndFrameExclusive: 18,
+          sourceStartFrame: 40,
+        );
 
-      expect(result, isNotNull);
-      expect(result!.leftStartFrame, 10);
-      expect(result.leftLengthFrames, 3);
-      expect(result.leftSourceStartFrame, 40);
-      expect(result.leftSourceEndFrame, 42);
-      expect(result.rightStartFrame, 18);
-      expect(result.rightLengthFrames, 4);
-      expect(result.rightSourceStartFrame, 48);
-      expect(result.rightSourceEndFrame, 51);
-    });
+        expect(result, isNotNull);
+        expect(result!.leftStartFrame, 10);
+        expect(result.leftLengthFrames, 3);
+        expect(result.leftSourceStartFrame, 40);
+        expect(result.leftSourceEndFrame, 42);
+        expect(result.rightStartFrame, 18);
+        expect(result.rightLengthFrames, 4);
+        expect(result.rightSourceStartFrame, 48);
+        expect(result.rightSourceEndFrame, 51);
+      },
+    );
 
     test('allows cutting from the clip start leaving only the right side', () {
       final result = cutTimelineClipRange(
