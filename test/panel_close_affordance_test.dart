@@ -16,7 +16,9 @@ void main() {
   });
 
   test('mobile floating panels dismiss when tapping outside', () {
-    final source = File('lib/screens/canvas/canvas_screen.dart').readAsStringSync();
+    final source = File(
+      'lib/screens/canvas/canvas_screen.dart',
+    ).readAsStringSync();
 
     expect(source, contains('if (_anyToolPanelOpen && !isDesktop)'));
     expect(source, contains('Positioned.fill('));
