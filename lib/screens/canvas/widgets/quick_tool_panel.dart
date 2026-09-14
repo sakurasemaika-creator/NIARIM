@@ -48,7 +48,6 @@ class QuickToolPanel extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              PanelCenterCloseBar(onClose: onClose),
               Row(
                 children: [
                   Text(
@@ -134,6 +133,7 @@ class QuickToolPanel extends StatelessWidget {
                 label: Text(l10n.commonAdd),
                 onPressed: () => _showAddDialog(context, service),
               ),
+              PanelCenterCloseBar(onClose: onClose),
             ],
           ),
         ),
