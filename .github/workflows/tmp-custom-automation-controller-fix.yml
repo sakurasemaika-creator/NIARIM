@@ -85,6 +85,10 @@ jobs:
               "    );\n    controller.dispose();\n    if (value != null && value.isNotEmpty && context.mounted) {",
               "    );\n    if (value != null && value.isNotEmpty && context.mounted) {",
             ),
+            (
+              "          onSubmitted: (value) {",
+              "          onFieldSubmitted: (value) {",
+            ),
           ]
 
           for old, new in replacements:
