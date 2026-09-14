@@ -3,10 +3,13 @@ import re
 
 ROOT = Path('.')
 
-# Remove profile-overlap fields from Brush. They are fully superseded by
-# pressureOn / pressureOff and no longer participate in rendering.
+# Remove superseded top-level fields only from the Brush class itself. Do not
+# touch similarly named fields that belong to the new pressure profile objects.
 p = ROOT / 'lib/models/brush.dart'
 s = p.read_text()
+brush_end = s.index('\nclass PressureRangeSetting')
+head = s[:brush_end]
+tail = s[brush_end:]
 for line in [
     '  final int blurRadius;\n',
     '  final BrushMixingMode mixingMode;\n',
@@ -38,17 +41,19 @@ for line in [
     "    edgeJitter: j['edgeJitter'] as bool? ?? false,\n",
     "    edgeJitterStrength: j['edgeJitterStrength'] as int? ?? 50,\n",
 ]:
-    s = s.replace(line, '')
-s = re.sub(
+    head = head.replace(line, '')
+head = re.sub(
     r"\n    mixingMode: BrushMixingMode\.values\.firstWhere\(\n      \(e\) => e\.name == j\['mixingMode'\],\n      orElse: \(\) => BrushMixingMode\.off,\n    \),",
     '',
-    s,
+    head,
 )
-p.write_text(s)
+p.write_text(head + tail)
 
-# Remove obsolete top-level fields from every Brush(...) literal in production.
+# Remove only direct Brush(...) named arguments. Nested pressureOn/pressureOff
+# settings with the same names are part of the new schema and must remain.
 p = ROOT / 'lib/services/brush_service.dart'
 s = p.read_text()
+obsolete = {'blurRadius', 'mixingMode', 'mixingRate', 'edgeJitter', 'edgeJitterStrength'}
 
 def balanced_calls(text, needle='Brush('):
     out = []
@@ -84,14 +89,26 @@ def balanced_calls(text, needle='Brush('):
         pos = i + 1
     return out
 
-for start, end in reversed(balanced_calls(s)):
-    block = s[start:end]
-    for key in ('blurRadius', 'mixingMode', 'mixingRate', 'edgeJitter', 'edgeJitterStrength'):
-        block = re.sub(rf'^\s*{key}:.*\n', '', block, flags=re.M)
-    s = s[:start] + block + s[end:]
 
-# Release has no legacy user brush data. Keep the unrelated calligraphy preset
-# normalization, but remove the old edge-jitter/mixing migration branch.
+def strip_direct_args(block):
+    lines = block.splitlines(keepends=True)
+    depth = 0
+    result = []
+    for line in lines:
+        stripped = line.lstrip()
+        key_match = re.match(r'(\w+)\s*:', stripped)
+        if depth == 1 and key_match and key_match.group(1) in obsolete:
+            depth += line.count('(') - line.count(')')
+            continue
+        result.append(line)
+        depth += line.count('(') - line.count(')')
+    return ''.join(result)
+
+for start, end in reversed(balanced_calls(s)):
+    s = s[:start] + strip_direct_args(s[start:end]) + s[end:]
+
+# No released legacy user data exists. Keep unrelated calligraphy normalization,
+# but remove the obsolete marker edge-jitter/mixing migration branch.
 s = re.sub(
     r"\n        // edgeJitter・混色設定未適用の旧データを補完\n        if \(!m\.edgeJitter \|\| m\.mixingMode == BrushMixingMode\.off\) \{.*?\n        \}",
     '',
@@ -100,21 +117,11 @@ s = re.sub(
 )
 p.write_text(s)
 
-# Current schema test must reject every superseded top-level key.
+# Current schema test rejects all superseded top-level keys.
 p = ROOT / 'test/models/brush_pressure_profiles_test.dart'
 s = p.read_text()
-for old in [
-    'pressureMode',
-    'pressureStrength',
-    'blurRadius',
-    'mixingMode',
-    'mixingRate',
-    'edgeJitter',
-    'edgeJitterStrength',
-]:
-    anchor = "      expect(json.containsKey('pressureStrength'), isFalse);\n"
-    if old in ('pressureMode', 'pressureStrength'):
-        continue
+anchor = "      expect(json.containsKey('pressureStrength'), isFalse);\n"
+for old in ['blurRadius', 'mixingMode', 'mixingRate', 'edgeJitter', 'edgeJitterStrength']:
     if f"json.containsKey('{old}')" not in s:
         s = s.replace(anchor, anchor + f"      expect(json.containsKey('{old}'), isFalse);\n")
 p.write_text(s)
