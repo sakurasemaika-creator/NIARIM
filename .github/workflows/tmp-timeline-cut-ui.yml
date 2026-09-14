@@ -22,6 +22,20 @@ jobs:
         with:
           channel: stable
           cache: true
+      - name: Scope clip detail constructor replacement
+        shell: python
+        run: |
+          from pathlib import Path
+          p = Path('tool/tmp_patch_timeline_cut_ui.py')
+          s = p.read_text()
+          old = '''    "    required this.totalFrames,\\n    required this.onDelete,",
+              "    required this.totalFrames,\\n"'''
+          new = '''    "    required this.clip,\\n    required this.totalFrames,\\n    required this.onDelete,",
+              "    required this.clip,\\n"
+              "    required this.totalFrames,\\n"'''
+          if old not in s:
+              raise SystemExit('constructor patch pattern missing')
+          p.write_text(s.replace(old, new, 1))
       - run: python tool/tmp_patch_timeline_cut_ui.py
       - run: flutter pub get
       - run: dart format lib/screens/timeline/timeline_screen.dart lib/utils/timeline_clip_split.dart test/timeline_clip_split_test.dart
