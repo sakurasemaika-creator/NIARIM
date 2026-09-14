@@ -1,0 +1,28 @@
+name: Popup Close Layout Fix Validation
+
+on:
+  push:
+    branches:
+      - fix/popup-close-frame-mode-20260914
+    paths:
+      - 'test/panel_close_bar_position_test.dart'
+      - '.github/workflows/popup-close-frame-mode-fix.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  regression:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: fix/popup-close-frame-mode-20260914
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.47.2'
+          channel: stable
+          cache: true
+      - run: flutter pub get --enforce-lockfile
+      - run: flutter test --reporter expanded test/panel_close_bar_position_test.dart
