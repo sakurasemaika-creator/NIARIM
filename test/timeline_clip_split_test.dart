@@ -66,4 +66,72 @@ void main() {
       );
     });
   });
+
+  group('cutTimelineClipRange', () {
+    test('removes a middle range and preserves both remaining source ranges', () {
+      final result = cutTimelineClipRange(
+        clipStartFrame: 10,
+        lengthFrames: 12,
+        cutStartFrame: 13,
+        cutEndFrameExclusive: 18,
+        sourceStartFrame: 40,
+      );
+
+      expect(result, isNotNull);
+      expect(result!.leftStartFrame, 10);
+      expect(result.leftLengthFrames, 3);
+      expect(result.leftSourceStartFrame, 40);
+      expect(result.leftSourceEndFrame, 42);
+      expect(result.rightStartFrame, 18);
+      expect(result.rightLengthFrames, 4);
+      expect(result.rightSourceStartFrame, 48);
+      expect(result.rightSourceEndFrame, 51);
+    });
+
+    test('allows cutting from the clip start leaving only the right side', () {
+      final result = cutTimelineClipRange(
+        clipStartFrame: 10,
+        lengthFrames: 8,
+        cutStartFrame: 10,
+        cutEndFrameExclusive: 13,
+        sourceStartFrame: 20,
+      );
+
+      expect(result, isNotNull);
+      expect(result!.leftLengthFrames, 0);
+      expect(result.rightStartFrame, 13);
+      expect(result.rightLengthFrames, 5);
+      expect(result.rightSourceStartFrame, 23);
+    });
+
+    test('allows cutting through the clip end leaving only the left side', () {
+      final result = cutTimelineClipRange(
+        clipStartFrame: 10,
+        lengthFrames: 8,
+        cutStartFrame: 15,
+        cutEndFrameExclusive: 18,
+        sourceStartFrame: 20,
+      );
+
+      expect(result, isNotNull);
+      expect(result!.leftLengthFrames, 5);
+      expect(result.rightLengthFrames, 0);
+      expect(result.leftSourceEndFrame, 24);
+    });
+
+    test('rejects empty, reversed, outside, and full-clip ranges', () {
+      for (final range in <(int, int)>[(12, 12), (14, 13), (9, 12), (12, 19), (10, 18)]) {
+        expect(
+          cutTimelineClipRange(
+            clipStartFrame: 10,
+            lengthFrames: 8,
+            cutStartFrame: range.$1,
+            cutEndFrameExclusive: range.$2,
+          ),
+          isNull,
+          reason: 'range=$range',
+        );
+      }
+    });
+  });
 }
