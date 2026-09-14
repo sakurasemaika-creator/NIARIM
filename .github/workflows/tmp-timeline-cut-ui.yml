@@ -1,0 +1,42 @@
+name: TMP Timeline Cut UI
+
+on:
+  push:
+    branches:
+      - feat/timeline-media-cut-waveform
+    paths:
+      - '.github/workflows/tmp-timeline-cut-ui.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: feat/timeline-media-cut-waveform
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+      - run: python tool/tmp_patch_timeline_cut_ui.py
+      - run: flutter pub get
+      - run: dart format lib/screens/timeline/timeline_screen.dart lib/utils/timeline_clip_split.dart test/timeline_clip_split_test.dart
+      - run: flutter analyze --no-fatal-infos lib/screens/timeline/timeline_screen.dart lib/utils/timeline_clip_split.dart test/timeline_clip_split_test.dart
+      - run: flutter test test/timeline_clip_split_test.dart --reporter expanded
+      - run: flutter test test/audio_waveform_service_test.dart --reporter expanded
+      - name: Commit cut UI
+        run: |
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          git add lib/screens/timeline/timeline_screen.dart lib/utils/timeline_clip_split.dart test/timeline_clip_split_test.dart
+          git diff --cached --check
+          if git diff --cached --quiet; then
+            echo "No changes"
+          else
+            git commit -m "feat: add fixed-cursor and range timeline cuts"
+            git push origin HEAD:feat/timeline-media-cut-waveform
+          fi
