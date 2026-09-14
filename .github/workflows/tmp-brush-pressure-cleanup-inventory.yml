@@ -1,9 +1,6 @@
 name: TMP Brush Pressure Cleanup Inventory
 
 on:
-  push:
-    branches:
-      - feature/brush-pressure-profiles
   workflow_dispatch:
 
 jobs:
@@ -15,5 +12,7 @@ jobs:
         run: |
           echo '=== legacy pressure refs ==='
           grep -R -n -E 'PressureMode|pressureMode|pressureStrength|pressureHardness|pressure_hardness' lib test || true
+          echo '=== legacy profile-overlap refs ==='
+          grep -R -n -E '\.blurRadius|blurRadius:|\.edgeJitter|edgeJitter:|edgeJitterStrength|\.mixingMode|mixingMode:|\.mixingRate|mixingRate:' lib test | head -n 500 || true
           echo '=== pressure profile refs ==='
           grep -R -n -E 'pressureOn|pressureOff|penPressureEnabled' lib test | head -n 300 || true
