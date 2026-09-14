@@ -1,0 +1,27 @@
+name: TMP L10n Missing Keys
+
+on:
+  push:
+    branches:
+      - dev_branch
+  workflow_dispatch:
+
+jobs:
+  detect:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: dev_branch
+      - name: Compare ARB keys
+        shell: python
+        run: |
+          import json
+          from pathlib import Path
+          root = Path('lib/l10n')
+          en = json.loads((root/'app_en.arb').read_text())
+          keys = {k for k in en if not k.startswith('@')}
+          for locale in ['es','fr','ko','zh','zh_Hant']:
+              data = json.loads((root/f'app_{locale}.arb').read_text())
+              missing = sorted(keys - {k for k in data if not k.startswith('@')})
+              print(f'{locale}: {len(missing)} missing: {missing}')
