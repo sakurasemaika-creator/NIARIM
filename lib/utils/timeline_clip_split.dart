@@ -97,7 +97,6 @@ TimelineClipRangeCut? cutTimelineClipRange({
 
   final leftLengthFrames = cutStartFrame - clipStartFrame;
   final rightLengthFrames = clipEndFrame - cutEndFrameExclusive;
-  final cutOffsetStart = cutStartFrame - clipStartFrame;
   final cutOffsetEnd = cutEndFrameExclusive - clipStartFrame;
 
   return TimelineClipRangeCut(
