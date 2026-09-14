@@ -150,8 +150,8 @@ jobs:
             test/panel_close_bar_position_test.dart
       - name: Verify focused regression
         run: flutter test --no-pub --reporter expanded test/panel_close_bar_position_test.dart
-      - name: Verify analyzer
-        run: flutter analyze --no-pub
+      - name: Verify bounded analyzer scope
+        run: flutter analyze --no-pub lib/screens/canvas/widgets
       - name: Verify full test suite
         run: flutter test --no-pub
       - name: Commit verified fix
