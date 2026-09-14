@@ -3,9 +3,11 @@ import '../../../l10n/app_localizations.dart';
 
 /// ツール詳細設定ポップアップ（ブラシ・カラーピッカー・フィルター・
 /// レイヤー・オニオンスキン・早替えツール・定規・スタンプ・トーンの
-/// 各パネル）共通の閉じるボタン。全パネルで「ポップアップ中央の×ボタンで
-/// 閉じる」という操作方法に統一するため、各パネルのタイトル行の右端では
-/// なく、パネル最上部の中央に配置する。
+/// 各パネル）共通の閉じるボタン。
+///
+/// 見た目はパネル上部右端の小さい×に統一する。アイコン自体は小さくても
+/// タップ領域は44×44を維持し、モバイルのフローティング表示では
+/// CanvasScreen側の透明バリアによる「パネル外タップで閉じる」操作も併用する。
 class PanelCenterCloseBar extends StatelessWidget {
   final VoidCallback onClose;
   const PanelCenterCloseBar({super.key, required this.onClose});
@@ -13,12 +15,10 @@ class PanelCenterCloseBar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
-    return Center(
-      // タップ領域は28×28では小さく押しづらかったため44×44へ広げる
-      // （Materialの推奨48dpにはやや届かないが、パネル最上部の帯を
-      // 太らせすぎず、指で確実に押せる大きさとして44を採る）。
+    return Align(
+      alignment: Alignment.centerRight,
       child: IconButton(
-        icon: const Icon(Icons.close, size: 22),
+        icon: const Icon(Icons.close, size: 18),
         tooltip: l10n.commonClose,
         onPressed: onClose,
         visualDensity: VisualDensity.compact,
