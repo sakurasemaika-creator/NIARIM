@@ -1,0 +1,83 @@
+name: TMP Brush Pressure Final Verify
+
+on:
+  push:
+    branches:
+      - feature/brush-pressure-profiles
+
+permissions:
+  contents: write
+
+jobs:
+  verify:
+    if: ${{ github.actor != 'github-actions[bot]' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: feature/brush-pressure-profiles
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+      - run: flutter pub get
+      - name: Remove stale pressure-mode comment
+        shell: python
+        run: |
+          from pathlib import Path
+          p = Path('lib/services/settings_service.dart')
+          s = p.read_text()
+          old = '''  // ─── ペン入力設定（筆圧カーブ・ペンボタン） ─────────────────\n  // 注：筆圧の「無効／サイズ／不透明度／両方」反映モードは\n  // アプリ全体の筆圧入力ON/OFF。ブラシごとのON/OFFプロファイルとは独立して保持する。\n  // のみで管理する（グローバル設定としては持たない）。\n  // 筆圧カーブのみアプリ全体に適用される設定としてここで管理する。\n'''
+          new = '''  // ─── ペン入力設定（筆圧ON/OFF・筆圧カーブ・ペンボタン） ─────────────\n  // 筆圧ON/OFFはアプリ全体の入力状態。各ブラシはON/OFF両プロファイルを\n  // 常に保持し、この設定によって描画時に使用する側だけを切り替える。\n  // 筆圧カーブもアプリ全体に適用される。\n'''
+          if old not in s:
+            raise SystemExit('stale comment block not found')
+          p.write_text(s.replace(old, new, 1))
+      - name: Generate localization report
+        run: |
+          flutter gen-l10n --untranslated-messages-file=/tmp/untranslated.json
+          echo '=== untranslated ==='
+          cat /tmp/untranslated.json || true
+      - name: Verify no legacy pressure implementation references
+        run: |
+          echo '=== legacy pressure symbols ==='
+          matches=$(grep -R -n -E 'PressureMode|pressureMode|pressureStrength|pressureHardness|pressure_hardness' lib test || true)
+          echo "$matches"
+          bad=$(printf '%s\n' "$matches" | grep -v "containsKey('pressureMode')" | grep -v "containsKey('pressureStrength')" || true)
+          if [ -n "$bad" ]; then
+            echo 'Legacy pressure references remain:'
+            echo "$bad"
+            exit 1
+          fi
+      - name: Format check
+        run: |
+          dart format lib/services/settings_service.dart
+          git diff --check
+          if [ -n "$(git status --porcelain -- lib test | grep -v 'lib/services/settings_service.dart' || true)" ]; then
+            echo 'Unexpected formatted/generated changes:'
+            git status --short
+            exit 1
+          fi
+      - name: Analyze production and tests
+        run: flutter analyze --no-fatal-infos lib test
+      - name: Focused pressure tests
+        run: |
+          flutter test \
+            test/models/brush_pressure_profiles_test.dart \
+            test/models/brush_pressure_resolver_test.dart \
+            test/services/brush_pressure_profile_lifecycle_test.dart \
+            test/services/pen_pressure_enabled_setting_test.dart \
+            --reporter expanded
+      - name: Full regression suite
+        run: flutter test --reporter compact
+      - name: Commit stale-comment cleanup after green verification
+        run: |
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          git add lib/services/settings_service.dart
+          if git diff --cached --quiet; then
+            echo 'No production cleanup changes to commit.'
+          else
+            git commit -m "docs: clarify global pen pressure behavior"
+            git push origin HEAD:feature/brush-pressure-profiles
+          fi
