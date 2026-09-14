@@ -16,4 +16,4 @@ jobs:
           channel: stable
           cache: true
       - run: flutter pub get
-      - run: flutter test test/models/brush_pressure_profiles_test.dart test/services/brush_pressure_profile_lifecycle_test.dart --reporter expanded
+      - run: flutter test test/models/brush_pressure_profiles_test.dart test/models/brush_pressure_resolver_test.dart test/services/brush_pressure_profile_lifecycle_test.dart --reporter expanded
