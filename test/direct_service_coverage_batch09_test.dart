@@ -78,9 +78,11 @@ void main() {
       expect(restored.fonts.single.isFavorite, isTrue);
       expect(restored.fonts.single.pixelMode, isTrue);
 
-      final path = Directory(
-        '${root.path}/niarim/Fonts',
-      ).listSync().whereType<File>().single.path;
+      final path = Directory('${root.path}/niarim/Fonts')
+          .listSync()
+          .whereType<File>()
+          .single
+          .path;
       expect(File(path).existsSync(), isTrue);
 
       await restored.removeFont(added.id);

@@ -14,8 +14,12 @@ import 'package:shared_preferences/shared_preferences.dart';
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
-  testWidgets('capture real custom automation management interactions', (tester) async {
-    final out = Directory('build/visual-reaudit/custom-automation-interactions');
+  testWidgets('capture real custom automation management interactions', (
+    tester,
+  ) async {
+    final out = Directory(
+      'build/visual-reaudit/custom-automation-interactions',
+    );
     out.createSync(recursive: true);
     SharedPreferences.setMockInitialValues(<String, Object>{
       'custom_automations_v1': <String>[],
@@ -46,22 +50,23 @@ void main() {
       await tester.pumpAndSettle();
       await tester.runAsync(() async {
         final boundary =
-            captureKey.currentContext!.findRenderObject()! as RenderRepaintBoundary;
+            captureKey.currentContext!.findRenderObject()!
+                as RenderRepaintBoundary;
         final image = await boundary.toImage(pixelRatio: 1.0);
         try {
           final data = await image.toByteData(format: ui.ImageByteFormat.png);
           if (data == null) throw StateError('PNG encoding returned null');
-          await File('${out.path}/$name.png').writeAsBytes(
-            data.buffer.asUint8List(),
-            flush: true,
-          );
+          await File('${out.path}/$name.png')
+              .writeAsBytes(data.buffer.asUint8List(), flush: true);
         } finally {
           image.dispose();
         }
       });
     }
 
-    await tester.tap(find.byKey(const ValueKey('open-custom-automation-manager')));
+    await tester.tap(
+      find.byKey(const ValueKey('open-custom-automation-manager')),
+    );
     await tester.pumpAndSettle();
     await capture('01_manager_empty');
 
@@ -103,7 +108,9 @@ void main() {
     await tester.pumpAndSettle();
     expect(service.isRecording, isFalse);
 
-    await tester.tap(find.byKey(const ValueKey('open-custom-automation-editor')));
+    await tester.tap(
+      find.byKey(const ValueKey('open-custom-automation-editor')),
+    );
     await tester.pumpAndSettle();
     await capture('05_editor_before_reorder');
 
@@ -124,7 +131,9 @@ void main() {
     expect(service.items, hasLength(1));
     final savedId = service.items.single.id;
 
-    await tester.tap(find.byKey(const ValueKey('open-custom-automation-manager')));
+    await tester.tap(
+      find.byKey(const ValueKey('open-custom-automation-manager')),
+    );
     await tester.pumpAndSettle();
     await capture('08_saved_item');
     await tester.tap(find.byIcon(Icons.edit));
@@ -136,24 +145,32 @@ void main() {
     expect(service.items.single.name, '操作キャプチャ・改名済み');
     await capture('10_after_rename');
 
-    await tester.tap(find.byKey(ValueKey('custom-automation-favorite-$savedId')));
+    await tester.tap(
+      find.byKey(ValueKey('custom-automation-favorite-$savedId')),
+    );
     await tester.pumpAndSettle();
     expect(service.isFavorite(savedId), isTrue);
     await capture('11_favorite_registered');
 
-    await tester.tap(find.byKey(const ValueKey('custom-automation-favorites-only')));
+    await tester.tap(
+      find.byKey(const ValueKey('custom-automation-favorites-only')),
+    );
     await tester.pumpAndSettle();
     expect(service.favoritesOnly, isTrue);
     expect(service.visibleItems, hasLength(1));
     await capture('12_favorites_only');
 
-    await tester.tap(find.byKey(ValueKey('custom-automation-favorite-$savedId')));
+    await tester.tap(
+      find.byKey(ValueKey('custom-automation-favorite-$savedId')),
+    );
     await tester.pumpAndSettle();
     expect(service.isFavorite(savedId), isFalse);
     expect(service.visibleItems, isEmpty);
     await capture('13_favorite_removed_while_filtered');
 
-    await tester.tap(find.byKey(const ValueKey('custom-automation-favorites-only')));
+    await tester.tap(
+      find.byKey(const ValueKey('custom-automation-favorites-only')),
+    );
     await tester.pumpAndSettle();
     expect(service.favoritesOnly, isFalse);
     expect(service.visibleItems, hasLength(1));

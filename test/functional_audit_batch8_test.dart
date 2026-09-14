@@ -10,6 +10,7 @@ import 'package:niarim/engine/layer_compositor.dart';
 import 'package:niarim/engine/tile_manager.dart';
 import 'package:niarim/models/brush.dart';
 import 'package:niarim/models/layer.dart';
+
 import 'helpers/color_channels.dart';
 
 void main() {
@@ -110,8 +111,7 @@ void main() {
     expect(
       cross[3],
       inInclusiveRange(188, 196),
-      reason:
-          'only the intersection of two 50% strokes should become about 75% alpha',
+      reason: 'only the intersection of two 50% strokes should become about 75% alpha',
     );
     expect(cross[3], greaterThan(single[3]));
     tm.dispose();
@@ -156,8 +156,7 @@ void main() {
     expect(
       leaked,
       0,
-      reason:
-          'lasso fill must not paint any pixel whose center is outside the polygon',
+      reason: 'lasso fill must not paint any pixel whose center is outside the polygon',
     );
     expect(paintedInside, greaterThan(1000));
   });
@@ -259,16 +258,11 @@ Brush _brush({
   size: size,
   opacity: opacity,
   spacing: spacing,
-  blurRadius: 0,
   stabilization: false,
   stabilizationStrength: 0,
   pixelMode: false,
-  pressureMode: PressureMode.off,
-  pressureStrength: 100,
   fadeMode: FadeMode.off,
   strokeDecay: false,
-  mixingMode: BrushMixingMode.off,
-  mixingRate: 0,
 );
 
 Future<(Uint8List, int)> _pixelStampMask({
@@ -285,16 +279,11 @@ Future<(Uint8List, int)> _pixelStampMask({
       size: size,
       opacity: 100,
       spacing: 1,
-      blurRadius: 0,
       stabilization: false,
       stabilizationStrength: 0,
       pixelMode: true,
-      pressureMode: PressureMode.off,
-      pressureStrength: 100,
       fadeMode: FadeMode.off,
       strokeDecay: false,
-      mixingMode: BrushMixingMode.off,
-      mixingRate: 0,
     )
     ..currentColor = const ui.Color(0xFF000000);
   engine.beginStroke(StrokePoint(x: cx, y: cy), 'px');
@@ -397,9 +386,9 @@ void _fillLayer(
   }
 }
 
-Future<Uint8List> _rgba(ui.Image image) async => (await image.toByteData(
-  format: ui.ImageByteFormat.rawRgba,
-))!.buffer.asUint8List();
+Future<Uint8List> _rgba(ui.Image image) async =>
+    (await image.toByteData(format: ui.ImageByteFormat.rawRgba))!.buffer
+        .asUint8List();
 
 List<int> _pixel(List<int> rgba, int width, int x, int y) {
   final i = (y * width + x) * 4;

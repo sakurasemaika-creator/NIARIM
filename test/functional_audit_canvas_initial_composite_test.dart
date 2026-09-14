@@ -146,8 +146,8 @@ void main() {
     );
 
     await tester.runAsync(
-      () =>
-          File('${out.path}/canvas_initial_composite_counts.txt').writeAsString(
+      () => File('${out.path}/canvas_initial_composite_counts.txt')
+          .writeAsString(
             samples.entries.map((e) => '${e.key}=${e.value}').join('\n'),
           ),
     );
@@ -158,12 +158,11 @@ Future<int> _captureAndCountRed(GlobalKey key, String path) async {
   final boundary =
       key.currentContext!.findRenderObject()! as RenderRepaintBoundary;
   final image = await boundary.toImage(pixelRatio: 1);
-  final rgba = (await image.toByteData(
-    format: ui.ImageByteFormat.rawRgba,
-  ))!.buffer.asUint8List();
-  final png = (await image.toByteData(
-    format: ui.ImageByteFormat.png,
-  ))!.buffer.asUint8List();
+  final rgba = (await image.toByteData(format: ui.ImageByteFormat.rawRgba))!
+      .buffer
+      .asUint8List();
+  final png = (await image.toByteData(format: ui.ImageByteFormat.png))!.buffer
+      .asUint8List();
   var red = 0;
   for (var i = 0; i < rgba.length; i += 4) {
     if (rgba[i] > 170 &&

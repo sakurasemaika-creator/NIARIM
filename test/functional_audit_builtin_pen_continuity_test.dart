@@ -33,15 +33,14 @@ void main() {
       engine.endStroke();
 
       final image = await tm.compositeLayerToImage('paint');
-      final raw = (await image.toByteData(
-        format: ui.ImageByteFormat.rawRgba,
-      ))!.buffer.asUint8List();
-      final png = (await image.toByteData(
-        format: ui.ImageByteFormat.png,
-      ))!.buffer.asUint8List();
-      await File(
-        '${out.path}/builtin_${id}_continuous_line.png',
-      ).writeAsBytes(png);
+      final raw = (await image.toByteData(format: ui.ImageByteFormat.rawRgba))!
+          .buffer
+          .asUint8List();
+      final png = (await image.toByteData(format: ui.ImageByteFormat.png))!
+          .buffer
+          .asUint8List();
+      await File('${out.path}/builtin_${id}_continuous_line.png')
+          .writeAsBytes(png);
 
       // 手ブレ補正の追従遅れを避けて中央区間のみ見る。各x列の中心±3pxに
       // 少なくとも1画素が存在し、目視で点線になる透明列が1本も無いこと。

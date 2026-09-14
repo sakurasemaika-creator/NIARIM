@@ -451,9 +451,9 @@ Future<ui.Image> _image(Uint8List rgba, int w, int h) async {
   return f.image;
 }
 
-Future<Uint8List> _rgba(ui.Image i) async => (await i.toByteData(
-  format: ui.ImageByteFormat.rawRgba,
-))!.buffer.asUint8List();
+Future<Uint8List> _rgba(ui.Image i) async =>
+    (await i.toByteData(format: ui.ImageByteFormat.rawRgba))!.buffer
+        .asUint8List();
 Future<void> _saveImage(ui.Image i, String p) async {
   final d = await i.toByteData(format: ui.ImageByteFormat.png);
   await File(p).writeAsBytes(d!.buffer.asUint8List());

@@ -196,13 +196,12 @@ void main() {
       draw.endStroke();
 
       final img = await tm.compositeLayerToImage('paint');
-      final rgba = (await img.toByteData(
-        format: ui.ImageByteFormat.rawRgba,
-      ))!.buffer.asUint8List();
+      final rgba = (await img.toByteData(format: ui.ImageByteFormat.rawRgba))!
+          .buffer
+          .asUint8List();
       final png = await img.toByteData(format: ui.ImageByteFormat.png);
-      await File(
-        '${out.path}/ruler_${c.name}_rendered.png',
-      ).writeAsBytes(png!.buffer.asUint8List());
+      await File('${out.path}/ruler_${c.name}_rendered.png')
+          .writeAsBytes(png!.buffer.asUint8List());
 
       var painted = 0;
       var far = 0;

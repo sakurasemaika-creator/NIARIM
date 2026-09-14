@@ -67,12 +67,34 @@ void main() {
         size: 12,
         opacity: 90,
         spacing: 15,
-        blurRadius: 5,
         stabilization: true,
         stabilizationStrength: 40,
         pixelMode: true,
-        pressureMode: PressureMode.sizeAndOpacity,
-        pressureStrength: 55,
+        pressureOn: const BrushPressureOnSettings(
+          size: PressureRangeSetting(enabled: true, weak: 45, strong: 100),
+          opacity: PressureRangeSetting(enabled: true, weak: 45, strong: 100),
+          blur: PressureRangeSetting(enabled: true, weak: 5, strong: 5),
+          edgeJitter: PressureRangeSetting(
+            enabled: false,
+            weak: 50,
+            strong: 50,
+          ),
+          mixing: PressureMixingOnSetting(
+            enabled: true,
+            mode: BrushMixingMode.bleed,
+            weakRate: 40,
+            strongRate: 40,
+          ),
+        ),
+        pressureOff: const BrushPressureOffSettings(
+          blur: FixedBrushSetting(enabled: true, value: 5),
+          edgeJitter: FixedBrushSetting(enabled: false, value: 50),
+          mixing: PressureMixingOffSetting(
+            enabled: true,
+            mode: BrushMixingMode.bleed,
+            rate: 40,
+          ),
+        ),
         fadeMode: FadeMode.custom,
         fadeCustom: FadeCustomSettings(
           startValue: 100,
@@ -80,8 +102,6 @@ void main() {
           distancePx: 80,
         ),
         strokeDecay: true,
-        mixingMode: BrushMixingMode.bleed,
-        mixingRate: 40,
       );
       s1.addBrush(custom);
       s1.updateBrush(custom.copyWith(size: 20));

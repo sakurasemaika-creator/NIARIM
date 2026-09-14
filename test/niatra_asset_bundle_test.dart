@@ -109,9 +109,9 @@ void main() {
 
       final dataFile = archive.findFile('data.json');
       expect(dataFile, isNotNull);
-      final data =
-          jsonDecode(utf8.decode(dataFile!.content as List<int>))
-              as Map<String, dynamic>;
+      final data = jsonDecode(
+        utf8.decode(dataFile!.content as List<int>),
+      ) as Map<String, dynamic>;
       expect(data['keep'], 42);
       expect(data['creativeAssetsVersion'], 1);
 

@@ -8,7 +8,6 @@ Brush _brush() => Brush(
   size: 20,
   opacity: 80,
   spacing: 10,
-  blurRadius: 0,
   stabilization: false,
   stabilizationStrength: 50,
   pixelMode: false,
@@ -35,8 +34,6 @@ Brush _brush() => Brush(
   ),
   fadeMode: FadeMode.off,
   strokeDecay: false,
-  mixingMode: BrushMixingMode.off,
-  mixingRate: 0,
 );
 
 void main() {

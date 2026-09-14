@@ -155,9 +155,8 @@ void main() {
         expect(freed, 47);
         expect(temp.listSync(), isEmpty);
         expect(
-          (await service.computeBreakdown({
-            'trashp',
-          })).bytesOf(StorageCategory.cache),
+          (await service.computeBreakdown({'trashp'}))
+              .bytesOf(StorageCategory.cache),
           0,
         );
 

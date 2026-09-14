@@ -60,15 +60,14 @@ void main() {
     await tester.pumpAndSettle();
     await tester.runAsync(() async {
       final boundary =
-          captureKey.currentContext!.findRenderObject()! as RenderRepaintBoundary;
+          captureKey.currentContext!.findRenderObject()!
+              as RenderRepaintBoundary;
       final image = await boundary.toImage(pixelRatio: 1.0);
       try {
         final data = await image.toByteData(format: ui.ImageByteFormat.png);
         if (data == null) throw StateError('PNG encoding returned null');
-        await File('${out.path}/$name.png').writeAsBytes(
-          data.buffer.asUint8List(),
-          flush: true,
-        );
+        await File('${out.path}/$name.png')
+            .writeAsBytes(data.buffer.asUint8List(), flush: true);
       } finally {
         image.dispose();
       }
@@ -128,7 +127,9 @@ void main() {
     await capture(tester, key, out, '03_edit_after_step_delete');
   });
 
-  testWidgets('capture favorite filter unfavorite and delete interactions', (tester) async {
+  testWidgets('capture favorite filter unfavorite and delete interactions', (
+    tester,
+  ) async {
     final out = Directory('build/visual-reaudit/custom-automation-management');
     out.createSync(recursive: true);
     final service = await serviceWithDraft();
@@ -158,24 +159,32 @@ void main() {
     await tester.pumpAndSettle();
     await capture(tester, key, out, '04_saved_item');
 
-    await tester.tap(find.byKey(ValueKey('custom-automation-favorite-$savedId')));
+    await tester.tap(
+      find.byKey(ValueKey('custom-automation-favorite-$savedId')),
+    );
     await tester.pumpAndSettle();
     expect(service.isFavorite(savedId), isTrue);
     await capture(tester, key, out, '05_favorite_registered');
 
-    await tester.tap(find.byKey(const ValueKey('custom-automation-favorites-only')));
+    await tester.tap(
+      find.byKey(const ValueKey('custom-automation-favorites-only')),
+    );
     await tester.pumpAndSettle();
     expect(service.favoritesOnly, isTrue);
     expect(service.visibleItems, hasLength(1));
     await capture(tester, key, out, '06_favorites_only');
 
-    await tester.tap(find.byKey(ValueKey('custom-automation-favorite-$savedId')));
+    await tester.tap(
+      find.byKey(ValueKey('custom-automation-favorite-$savedId')),
+    );
     await tester.pumpAndSettle();
     expect(service.isFavorite(savedId), isFalse);
     expect(service.visibleItems, isEmpty);
     await capture(tester, key, out, '07_favorite_removed_filtered');
 
-    await tester.tap(find.byKey(const ValueKey('custom-automation-favorites-only')));
+    await tester.tap(
+      find.byKey(const ValueKey('custom-automation-favorites-only')),
+    );
     await tester.pumpAndSettle();
     expect(service.favoritesOnly, isFalse);
     expect(service.visibleItems, hasLength(1));

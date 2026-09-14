@@ -118,8 +118,7 @@ void main() {
     expect(
       (left - right).abs(),
       greaterThan(12),
-      reason:
-          'tilted nib must have directional alpha shading, not a uniformly filled symmetric ellipse',
+      reason: 'tilted nib must have directional alpha shading, not a uniformly filled symmetric ellipse',
     );
     image.dispose();
     tm.dispose();
@@ -247,16 +246,11 @@ Future<Uint8List> _drawSpacing(int spacing) async {
       size: 10,
       opacity: 100,
       spacing: spacing,
-      blurRadius: 0,
       stabilization: false,
       stabilizationStrength: 0,
       pixelMode: false,
-      pressureMode: PressureMode.off,
-      pressureStrength: 100,
       fadeMode: FadeMode.off,
       strokeDecay: false,
-      mixingMode: BrushMixingMode.off,
-      mixingRate: 0,
     )
     ..currentColor = const ui.Color(0xFF202020);
   // 1回のcontinueStrokeでengine自身のspacing分割を使う。
@@ -333,9 +327,9 @@ List<int> _pixel(List<int> d, int width, int x, int y) {
   return [d[i], d[i + 1], d[i + 2], d[i + 3]];
 }
 
-Future<Uint8List> _rgba(ui.Image i) async => (await i.toByteData(
-  format: ui.ImageByteFormat.rawRgba,
-))!.buffer.asUint8List();
+Future<Uint8List> _rgba(ui.Image i) async =>
+    (await i.toByteData(format: ui.ImageByteFormat.rawRgba))!.buffer
+        .asUint8List();
 Future<void> _save(ui.Image i, String p) async {
   final d = await i.toByteData(format: ui.ImageByteFormat.png);
   await File(p).writeAsBytes(d!.buffer.asUint8List());

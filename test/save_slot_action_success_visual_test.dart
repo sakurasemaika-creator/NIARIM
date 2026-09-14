@@ -197,9 +197,8 @@ void main() {
       await capture('${prefix}_11_after_restore_success');
 
       // Snackbarが次の削除確認を覆わないよう閉じる。
-      ScaffoldMessenger.of(
-        tester.element(find.byType(Scaffold).first),
-      ).hideCurrentSnackBar();
+      ScaffoldMessenger.of(tester.element(find.byType(Scaffold).first))
+          .hideCurrentSnackBar();
       await settle(rounds: 3);
 
       // 4) スロット2をUIから削除確定し、一覧から消えるところまで確認する。

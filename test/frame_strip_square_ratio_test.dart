@@ -3,9 +3,8 @@ import 'dart:io';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
-  final source = File(
-    'lib/screens/canvas/widgets/frame_strip_widget.dart',
-  ).readAsStringSync();
+  final source = File('lib/screens/canvas/widgets/frame_strip_widget.dart')
+      .readAsStringSync();
 
   test('フレーム一覧の通常セル・追加セル・現在枠は50x50の1:1', () {
     final squareCellPattern = RegExp(

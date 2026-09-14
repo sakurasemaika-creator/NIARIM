@@ -146,9 +146,8 @@ void main() {
     WidgetTester tester,
   ) async {
     await boot(tester);
-    GoRouter.of(
-      tester.element(find.byType(Scaffold).first),
-    ).push('/new-project');
+    GoRouter.of(tester.element(find.byType(Scaffold).first))
+        .push('/new-project');
     await tester.pump(const Duration(milliseconds: 600));
     final create = find.widgetWithText(FilledButton, '作成', skipOffstage: false);
     await tester.dragUntilVisible(

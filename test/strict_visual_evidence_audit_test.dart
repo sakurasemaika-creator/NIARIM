@@ -9,6 +9,7 @@ import 'package:niarim/engine/ruler_engine.dart';
 import 'package:niarim/engine/tile_manager.dart';
 import 'package:niarim/models/brush.dart';
 import 'package:niarim/models/ruler.dart';
+
 import 'helpers/color_channels.dart';
 
 const _w = 256;
@@ -365,9 +366,9 @@ void _markCross(TileManager tm, String key, ui.Offset p, ui.Color c) {
   tm.markDirty(key, tx, ty);
 }
 
-Future<Uint8List> _rgba(ui.Image image) async => (await image.toByteData(
-  format: ui.ImageByteFormat.rawRgba,
-))!.buffer.asUint8List();
+Future<Uint8List> _rgba(ui.Image image) async =>
+    (await image.toByteData(format: ui.ImageByteFormat.rawRgba))!.buffer
+        .asUint8List();
 
 Future<void> _save(ui.Image image, String path) async {
   final bytes = await image.toByteData(format: ui.ImageByteFormat.png);

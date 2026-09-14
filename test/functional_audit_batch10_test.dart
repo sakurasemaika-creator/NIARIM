@@ -266,16 +266,11 @@ Future<Uint8List> _drawPixelLine({
       size: 7,
       opacity: 100,
       spacing: 1,
-      blurRadius: 0,
       stabilization: false,
       stabilizationStrength: 0,
       pixelMode: true,
-      pressureMode: PressureMode.off,
-      pressureStrength: 100,
       fadeMode: FadeMode.off,
       strokeDecay: false,
-      mixingMode: BrushMixingMode.off,
-      mixingRate: 0,
     )
     ..currentColor = const ui.Color(0xFF202020);
   final a = ui.Offset(14 + offset.dx, 18 + offset.dy);
@@ -347,9 +342,9 @@ int _countNonTransparent(Uint8List d) {
   return n;
 }
 
-Future<Uint8List> _rgba(ui.Image image) async => (await image.toByteData(
-  format: ui.ImageByteFormat.rawRgba,
-))!.buffer.asUint8List();
+Future<Uint8List> _rgba(ui.Image image) async =>
+    (await image.toByteData(format: ui.ImageByteFormat.rawRgba))!.buffer
+        .asUint8List();
 
 List<int> _pixel(List<int> rgba, int width, int x, int y) {
   final i = (y * width + x) * 4;

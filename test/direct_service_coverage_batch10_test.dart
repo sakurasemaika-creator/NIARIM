@@ -261,44 +261,41 @@ void main() {
     },
   );
 
-  test(
-    'custom canvas size presets add update duplicate reorder and remove persist',
-    () async {
-      final s = SettingsService();
-      await s.init();
-      await s.addCustomSizePreset('A', 100, 200);
-      await Future<void>.delayed(const Duration(microseconds: 1));
-      await s.addCustomSizePreset('B', 300, 400);
-      expect(s.customSizePresets, hasLength(2));
+  test('custom canvas size presets add update duplicate reorder and remove persist', () async {
+    final s = SettingsService();
+    await s.init();
+    await s.addCustomSizePreset('A', 100, 200);
+    await Future<void>.delayed(const Duration(microseconds: 1));
+    await s.addCustomSizePreset('B', 300, 400);
+    expect(s.customSizePresets, hasLength(2));
 
-      final firstId = s.customSizePresets.first.id;
-      await s.updateCustomSizePreset(
-        firstId,
-        name: 'A2',
-        width: 111,
-        height: 222,
-      );
-      expect(s.customSizePresets.first.name, 'A2');
-      expect(s.customSizePresets.first.width, 111);
-      expect(s.customSizePresets.first.height, 222);
+    final firstId = s.customSizePresets.first.id;
+    await s.updateCustomSizePreset(
+      firstId,
+      name: 'A2',
+      width: 111,
+      height: 222,
+    );
+    expect(s.customSizePresets.first.name, 'A2');
+    expect(s.customSizePresets.first.width, 111);
+    expect(s.customSizePresets.first.height, 222);
 
-      await s.duplicateCustomSizePreset(firstId, 'A copy');
-      expect(s.customSizePresets, hasLength(3));
-      expect(s.customSizePresets.last.name, 'A copy');
-      expect(s.customSizePresets.last.width, 111);
-      expect(s.customSizePresets.last.height, 222);
-      await s.duplicateCustomSizePreset('missing', 'ignored');
-      expect(s.customSizePresets, hasLength(3));
+    await s.duplicateCustomSizePreset(firstId, 'A copy');
+    expect(s.customSizePresets, hasLength(3));
+    expect(s.customSizePresets.last.name, 'A copy');
+    expect(s.customSizePresets.last.width, 111);
+    expect(s.customSizePresets.last.height, 222);
+    await s.duplicateCustomSizePreset('missing', 'ignored');
+    expect(s.customSizePresets, hasLength(3));
 
-      await s.reorderCustomSizePresets(0, 3);
-      expect(s.customSizePresets.last.id, firstId);
-      await s.removeCustomSizePreset(firstId);
-      expect(s.customSizePresets.map((e) => e.id), isNot(contains(firstId)));
+    await s.reorderCustomSizePresets(0, 3);
+    expect(s.customSizePresets.last.id, firstId);
+    await s.removeCustomSizePreset(firstId);
+    expect(s.customSizePresets.map((e) => e.id), isNot(contains(firstId)));
 
-      final restored = SettingsService();
-      await restored.init();
-      expect(restored.customSizePresets, hasLength(2));
-      expect(restored.customSizePresets.map((e) => e.name), contains('A copy'));
-    },
-  );
+    final restored = SettingsService();
+    await restored.init();
+    expect(restored.customSizePresets, hasLength(2));
+    expect(restored.customSizePresets.map((e) => e.name), contains('A copy'));
+  });
 }

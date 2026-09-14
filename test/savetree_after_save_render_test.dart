@@ -12,6 +12,7 @@
 // タイムアウトするため、代表値1件に絞っている。全画面のレイアウト検証は
 // text_scale_layout_test.dartが1.3倍・2.0倍で別途行っている。
 import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -23,6 +24,7 @@ import 'package:niarim/router.dart';
 import 'package:niarim/services/project_service.dart';
 import 'package:niarim/services/save_tree_service.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+
 import 'dart:ui' as ui;
 import 'dart:math' as math;
 
@@ -78,13 +80,12 @@ void main() {
       final original = FlutterError.onError;
       FlutterError.onError = (d) {
         final s = d.toString();
-        final loc = RegExp(
-          r'file:///[^\s:]*/(lib/[^\s:]+:\d+:\d+)',
-        ).firstMatch(s);
+        final loc = RegExp(r'file:///[^\s:]*/(lib/[^\s:]+:\d+:\d+)')
+            .firstMatch(s);
         final what =
-            RegExp(
-              r'(overflowed by [\d.]+ pixels on the \w+)',
-            ).firstMatch(s)?.group(1) ??
+            RegExp(r'(overflowed by [\d.]+ pixels on the \w+)')
+                .firstMatch(s)
+                ?.group(1) ??
             s
                 .split('\n')
                 .firstWhere((l) => l.contains('thrown'), orElse: () => '?');

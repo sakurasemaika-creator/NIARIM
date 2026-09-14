@@ -115,8 +115,7 @@ void main() {
     expect(
       tester.takeException(),
       isNull,
-      reason:
-          'Timeline must render without any Flutter layout/runtime exception at 320 logical px',
+      reason: 'Timeline must render without any Flutter layout/runtime exception at 320 logical px',
     );
     expect(find.text('timeline-overflow-probe'), findsOneWidget);
   }, timeout: const Timeout(Duration(seconds: 120)));

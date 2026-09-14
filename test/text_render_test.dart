@@ -1,4 +1,5 @@
 import 'dart:ui' as ui;
+
 import 'package:flutter_test/flutter_test.dart';
 import 'package:niarim/engine/text_render.dart';
 import 'package:niarim/models/text_object.dart';
@@ -239,9 +240,8 @@ void main() {
   });
 
   test('回転・拡大・不透明度を伴う横書きテキスト', () async {
-    final text = baseText(
-      '回転テスト',
-    ).copyWith(rotation: 45, scale: 1.5, opacity: 0.5);
+    final text = baseText('回転テスト')
+        .copyWith(rotation: 45, scale: 1.5, opacity: 0.5);
     final result = await rasterizeTextObject(text, canvasWidth, canvasHeight);
     expect(result, isNotNull);
     expect(result!.length, expectedBytes);

@@ -1,4 +1,5 @@
 import 'dart:io';
+
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
@@ -6,9 +7,8 @@ void main() {
     final ja = File('lib/l10n/app_ja.arb').readAsStringSync();
     final en = File('lib/l10n/app_en.arb').readAsStringSync();
     final engine = File('lib/engine/filter_engine.dart').readAsStringSync();
-    final presets = File(
-      'lib/models/custom_automation_presets.dart',
-    ).readAsStringSync();
+    final presets = File('lib/models/custom_automation_presets.dart')
+        .readAsStringSync();
     final service = File('lib/services/filter_service.dart').readAsStringSync();
 
     expect(ja, contains('"filterNameAuroraHologram": "質感変更フィルター"'));
