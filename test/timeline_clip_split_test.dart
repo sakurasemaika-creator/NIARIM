@@ -129,6 +129,15 @@ void main() {
     );
   });
 
+  group('cut preview frame', () {
+    test('rounds the chosen cut position and clamps it to playable frames', () {
+      expect(cutPreviewFrame(boundaryFrame: 13.6, totalFrames: 24), 14);
+      expect(cutPreviewFrame(boundaryFrame: -3, totalFrames: 24), 0);
+      expect(cutPreviewFrame(boundaryFrame: 100, totalFrames: 24), 23);
+      expect(cutPreviewFrame(boundaryFrame: 8, totalFrames: 1), 0);
+    });
+  });
+
   group('cutTimelineClipRange', () {
     test(
       'removes a middle range and preserves both remaining source ranges',
