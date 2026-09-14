@@ -152,8 +152,10 @@ jobs:
         run: flutter test --no-pub --reporter expanded test/panel_close_bar_position_test.dart
       - name: Verify bounded analyzer scope
         run: flutter analyze --no-pub lib/screens/canvas/widgets
-      - name: Verify full test suite
-        run: flutter test --no-pub
+      - name: Verify unit and widget suite
+        # integration_test screenshot cases require a device/driver screenshot handler;
+        # plain hosted `flutter test` cannot initialize that platform channel.
+        run: flutter test --no-pub test/
       - name: Commit verified fix
         shell: bash
         run: |
