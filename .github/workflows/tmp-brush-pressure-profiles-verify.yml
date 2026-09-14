@@ -1,0 +1,21 @@
+name: TMP Brush Pressure Profiles Verify
+
+on:
+  pull_request:
+    branches: [dev_branch]
+    paths:
+      - 'lib/models/brush.dart'
+      - 'test/models/brush_pressure_profiles_test.dart'
+      - '.github/workflows/tmp-brush-pressure-profiles-verify.yml'
+
+jobs:
+  focused-test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+      - run: flutter pub get
+      - run: flutter test test/models/brush_pressure_profiles_test.dart
