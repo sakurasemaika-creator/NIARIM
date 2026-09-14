@@ -6,14 +6,70 @@ on:
       - dev_branch
   workflow_dispatch:
 
+permissions:
+  contents: write
+
 jobs:
   focused-test:
+    if: ${{ github.actor != 'github-actions[bot]' }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          ref: dev_branch
+      - name: Patch lifecycle handling and test viewport
+        shell: python
+        run: |
+          from pathlib import Path
+
+          p = Path('lib/widgets/custom_automation_manager_sheet.dart')
+          s = p.read_text()
+          replacements = [
+              (
+                  "    controller.dispose();\n    if (name == null || !context.mounted) return;",
+                  "    WidgetsBinding.instance.addPostFrameCallback((_) => controller.dispose());\n    if (name == null || !context.mounted) return;",
+              ),
+              (
+                  "        fromController.dispose();\n        toController.dispose();\n        if (context.mounted) {",
+                  "        WidgetsBinding.instance.addPostFrameCallback((_) {\n          fromController.dispose();\n          toController.dispose();\n        });\n        if (context.mounted) {",
+              ),
+              (
+                  "    fromController.dispose();\n    toController.dispose();\n    if (accepted == true && context.mounted) {",
+                  "    WidgetsBinding.instance.addPostFrameCallback((_) {\n      fromController.dispose();\n      toController.dispose();\n    });\n    if (accepted == true && context.mounted) {",
+              ),
+              (
+                  "    controller.dispose();\n    if (value != null && value.isNotEmpty && context.mounted) {",
+                  "    WidgetsBinding.instance.addPostFrameCallback((_) => controller.dispose());\n    if (value != null && value.isNotEmpty && context.mounted) {",
+              ),
+          ]
+          for old, new in replacements:
+              count = s.count(old)
+              if count != 1:
+                  raise SystemExit(f'expected one match, found {count}: {old[:80]!r}')
+              s = s.replace(old, new, 1)
+          p.write_text(s)
+
+          t = Path('test/widgets/custom_automation_dialog_lifecycle_test.dart')
+          ts = t.read_text()
+          old = "void main() {\n  TestWidgetsFlutterBinding.ensureInitialized();\n"
+          new = "void main() {\n  final binding = TestWidgetsFlutterBinding.ensureInitialized();\n\n  setUp(() async {\n    await binding.setSurfaceSize(const Size(900, 900));\n  });\n\n  tearDown(() async {\n    await binding.setSurfaceSize(null);\n  });\n"
+          count = ts.count(old)
+          if count != 1:
+              raise SystemExit(f'test main marker count={count}')
+          t.write_text(ts.replace(old, new, 1))
       - uses: subosito/flutter-action@v2
         with:
           channel: stable
           cache: true
+      - run: dart format lib/widgets/custom_automation_manager_sheet.dart test/widgets/custom_automation_dialog_lifecycle_test.dart
       - run: flutter pub get
+      - run: flutter analyze --no-fatal-infos lib/widgets/custom_automation_manager_sheet.dart test/widgets/custom_automation_dialog_lifecycle_test.dart
       - run: flutter test test/widgets/custom_automation_dialog_lifecycle_test.dart --reporter expanded
+      - name: Commit fix
+        run: |
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          git add lib/widgets/custom_automation_manager_sheet.dart test/widgets/custom_automation_dialog_lifecycle_test.dart
+          git diff --cached --check
+          git commit -m "fix: defer automation dialog controller disposal"
+          git push origin HEAD:dev_branch
