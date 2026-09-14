@@ -120,7 +120,14 @@ void main() {
     });
 
     test('rejects empty, reversed, outside, and full-clip ranges', () {
-      for (final range in <(int, int)>[(12, 12), (14, 13), (9, 12), (12, 19), (10, 18)]) {
+      final ranges = <(int, int)>[
+        (12, 12),
+        (14, 13),
+        (9, 12),
+        (12, 19),
+        (10, 18),
+      ];
+      for (final range in ranges) {
         expect(
           cutTimelineClipRange(
             clipStartFrame: 10,
