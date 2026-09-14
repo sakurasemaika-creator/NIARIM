@@ -43,7 +43,7 @@ void main() {
       expect(brush.pressureOff.blur.enabled, isFalse);
       expect(brush.pressureOff.blur.value, 0);
       expect(brush.pressureOff.edgeJitter.enabled, isFalse);
-      expect(brush.pressureOff.edgeJitter.strength, 0);
+      expect(brush.pressureOff.edgeJitter.value, 0);
       expect(brush.pressureOff.mixing.enabled, isFalse);
       expect(brush.pressureOff.mixing.rate, 0);
     });
