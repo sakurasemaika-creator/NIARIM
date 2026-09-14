@@ -1,11 +1,28 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:niarim/models/brush.dart';
 
-// RED contract for the approved pressure ON/OFF profile redesign.
+Brush _brush(String id) => Brush(
+  id: id,
+  name: id,
+  size: 20,
+  opacity: 80,
+  spacing: 10,
+  blurRadius: 0,
+  stabilization: false,
+  stabilizationStrength: 50,
+  pixelMode: false,
+  pressureMode: PressureMode.off,
+  pressureStrength: 100,
+  fadeMode: FadeMode.off,
+  strokeDecay: false,
+  mixingMode: BrushMixingMode.off,
+  mixingRate: 0,
+);
+
 void main() {
   group('Brush pressure profiles', () {
     test('new brushes store explicit pressure profile defaults', () {
-      final brush = Brush.defaultBrush('pressure-defaults');
+      final brush = _brush('pressure-defaults');
 
       expect(brush.pressureOn.size.enabled, isTrue);
       expect(brush.pressureOn.size.weak, 50);
@@ -32,7 +49,7 @@ void main() {
     });
 
     test('pressure profiles round trip through brush json', () {
-      final original = Brush.defaultBrush('pressure-roundtrip').copyWith(
+      final original = _brush('pressure-roundtrip').copyWith(
         pressureOn: BrushPressureOnSettings.defaults.copyWith(
           size: const PressureRangeSetting(enabled: true, weak: 35, strong: 92),
           opacity: const PressureRangeSetting(enabled: true, weak: 44, strong: 88),
