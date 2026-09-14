@@ -7,7 +7,6 @@ class Brush {
   final double size;
   final int opacity;
   final int spacing;
-  final int blurRadius;
   final bool stabilization;
   final int stabilizationStrength;
   final bool pixelMode;
@@ -16,8 +15,6 @@ class Brush {
   final FadeMode fadeMode;
   final FadeCustomSettings? fadeCustom;
   final bool strokeDecay;
-  final BrushMixingMode mixingMode;
-  final int mixingRate;
   final bool isFavorite;
   final String? folderId;
   final String? customImagePath;
@@ -25,8 +22,6 @@ class Brush {
   final double density;
   final double scatter;
   final double? calligraphyAngle;
-  final bool edgeJitter;
-  final int edgeJitterStrength;
   final PixelColorMode pixelColorMode;
   final int pixelColorLevels;
   final List<int> pixelExplicitColors;
@@ -38,7 +33,6 @@ class Brush {
     required this.size,
     required this.opacity,
     required this.spacing,
-    required this.blurRadius,
     required this.stabilization,
     required this.stabilizationStrength,
     required this.pixelMode,
@@ -47,8 +41,6 @@ class Brush {
     required this.fadeMode,
     this.fadeCustom,
     required this.strokeDecay,
-    required this.mixingMode,
-    required this.mixingRate,
     this.isFavorite = false,
     this.folderId,
     this.customImagePath,
@@ -56,8 +48,6 @@ class Brush {
     this.density = 1.0,
     this.scatter = 0.0,
     this.calligraphyAngle,
-    this.edgeJitter = false,
-    this.edgeJitterStrength = 50,
     this.pixelColorMode = PixelColorMode.none,
     this.pixelColorLevels = 8,
     this.pixelExplicitColors = const [0xFF000000],
@@ -70,7 +60,6 @@ class Brush {
     double? size,
     int? opacity,
     int? spacing,
-    int? blurRadius,
     bool? stabilization,
     int? stabilizationStrength,
     bool? pixelMode,
@@ -79,8 +68,6 @@ class Brush {
     FadeMode? fadeMode,
     FadeCustomSettings? fadeCustom,
     bool? strokeDecay,
-    BrushMixingMode? mixingMode,
-    int? mixingRate,
     bool? isFavorite,
     String? folderId,
     String? customImagePath,
@@ -88,8 +75,6 @@ class Brush {
     double? density,
     double? scatter,
     double? calligraphyAngle,
-    bool? edgeJitter,
-    int? edgeJitterStrength,
     PixelColorMode? pixelColorMode,
     int? pixelColorLevels,
     List<int>? pixelExplicitColors,
@@ -101,7 +86,6 @@ class Brush {
       size: size ?? this.size,
       opacity: opacity ?? this.opacity,
       spacing: spacing ?? this.spacing,
-      blurRadius: blurRadius ?? this.blurRadius,
       stabilization: stabilization ?? this.stabilization,
       stabilizationStrength:
           stabilizationStrength ?? this.stabilizationStrength,
@@ -111,8 +95,6 @@ class Brush {
       fadeMode: fadeMode ?? this.fadeMode,
       fadeCustom: fadeCustom ?? this.fadeCustom,
       strokeDecay: strokeDecay ?? this.strokeDecay,
-      mixingMode: mixingMode ?? this.mixingMode,
-      mixingRate: mixingRate ?? this.mixingRate,
       isFavorite: isFavorite ?? this.isFavorite,
       folderId: folderId ?? this.folderId,
       customImagePath: customImagePath ?? this.customImagePath,
@@ -120,8 +102,6 @@ class Brush {
       density: density ?? this.density,
       scatter: scatter ?? this.scatter,
       calligraphyAngle: calligraphyAngle ?? this.calligraphyAngle,
-      edgeJitter: edgeJitter ?? this.edgeJitter,
-      edgeJitterStrength: edgeJitterStrength ?? this.edgeJitterStrength,
       pixelColorMode: pixelColorMode ?? this.pixelColorMode,
       pixelColorLevels: pixelColorLevels ?? this.pixelColorLevels,
       pixelExplicitColors: pixelExplicitColors ?? this.pixelExplicitColors,
@@ -135,7 +115,6 @@ class Brush {
     'size': size,
     'opacity': opacity,
     'spacing': spacing,
-    'blurRadius': blurRadius,
     'stabilization': stabilization,
     'stabilizationStrength': stabilizationStrength,
     'pixelMode': pixelMode,
@@ -150,8 +129,6 @@ class Brush {
             'distancePx': fadeCustom!.distancePx,
           },
     'strokeDecay': strokeDecay,
-    'mixingMode': mixingMode.name,
-    'mixingRate': mixingRate,
     'isFavorite': isFavorite,
     'folderId': folderId,
     'customImagePath': customImagePath,
@@ -159,8 +136,6 @@ class Brush {
     'density': density,
     'scatter': scatter,
     'calligraphyAngle': calligraphyAngle,
-    'edgeJitter': edgeJitter,
-    'edgeJitterStrength': edgeJitterStrength,
     'pixelColorMode': pixelColorMode.name,
     'pixelColorLevels': pixelColorLevels,
     'pixelExplicitColors': pixelExplicitColors,
@@ -173,7 +148,6 @@ class Brush {
     size: (j['size'] as num).toDouble(),
     opacity: j['opacity'] as int,
     spacing: j['spacing'] as int,
-    blurRadius: j['blurRadius'] as int,
     stabilization: j['stabilization'] as bool,
     stabilizationStrength: j['stabilizationStrength'] as int,
     pixelMode: (j['pixelMode'] ?? j['dotPenMode']) as bool? ?? false,
@@ -201,11 +175,6 @@ class Brush {
                     .toDouble(),
           ),
     strokeDecay: j['strokeDecay'] as bool,
-    mixingMode: BrushMixingMode.values.firstWhere(
-      (e) => e.name == j['mixingMode'],
-      orElse: () => BrushMixingMode.off,
-    ),
-    mixingRate: j['mixingRate'] as int,
     isFavorite: j['isFavorite'] as bool? ?? false,
     folderId: j['folderId'] as String?,
     customImagePath: j['customImagePath'] as String?,
@@ -213,8 +182,6 @@ class Brush {
     density: (j['density'] as num?)?.toDouble() ?? 1.0,
     scatter: (j['scatter'] as num?)?.toDouble() ?? 0.0,
     calligraphyAngle: (j['calligraphyAngle'] as num?)?.toDouble(),
-    edgeJitter: j['edgeJitter'] as bool? ?? false,
-    edgeJitterStrength: j['edgeJitterStrength'] as int? ?? 50,
     pixelColorMode: PixelColorMode.values.firstWhere(
       (e) => e.name == j['pixelColorMode'],
       orElse: () => PixelColorMode.none,

@@ -53,6 +53,11 @@ void main() {
       expect(json.containsKey('pressureOff'), isTrue);
       expect(json.containsKey('pressureMode'), isFalse);
       expect(json.containsKey('pressureStrength'), isFalse);
+      expect(json.containsKey('edgeJitterStrength'), isFalse);
+      expect(json.containsKey('edgeJitter'), isFalse);
+      expect(json.containsKey('mixingRate'), isFalse);
+      expect(json.containsKey('mixingMode'), isFalse);
+      expect(json.containsKey('blurRadius'), isFalse);
     });
 
     test('pressure profiles round trip through brush json', () {
