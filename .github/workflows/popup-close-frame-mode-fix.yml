@@ -7,6 +7,7 @@ on:
       - fix/popup-close-frame-mode-20260914
     paths:
       - '.github/workflows/popup-close-frame-mode-fix.yml'
+      - 'test/panel_close_bar_position_test.dart'
 
 permissions:
   contents: write
