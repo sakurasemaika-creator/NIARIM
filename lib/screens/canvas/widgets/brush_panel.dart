@@ -7,6 +7,7 @@ import 'package:share_plus/share_plus.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../../models/brush.dart';
 import '../../../services/brush_service.dart';
+import '../../../services/settings_service.dart';
 import '../../../widgets/editable_slider_value.dart';
 import '../../../widgets/pixel_color_mode_selector.dart';
 import '../../../widgets/stepped_slider.dart';
@@ -569,6 +570,9 @@ class _BrushSettingsSheetState extends State<_BrushSettingsSheet> {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
+    final penPressureEnabled = context
+        .read<SettingsService>()
+        .penPressureEnabled;
     return DraggableScrollableSheet(
       initialChildSize: 0.7,
       minChildSize: 0.4,
@@ -590,23 +594,8 @@ class _BrushSettingsSheetState extends State<_BrushSettingsSheet> {
           const SizedBox(height: 16),
           _settingsSection(
             title: l10n.brushSettingsCommonSection,
+            initiallyExpanded: true,
             children: [
-              _sliderRow(
-                l10n.brushSettingsSizeLabel,
-                _brush.size,
-                1,
-                500,
-                (v) => setState(() => _brush = _brush.copyWith(size: v)),
-              ),
-              _sliderRow(
-                l10n.brushSettingsOpacityLabel,
-                _brush.opacity.toDouble(),
-                1,
-                100,
-                (v) => setState(
-                  () => _brush = _brush.copyWith(opacity: v.round()),
-                ),
-              ),
               _sliderRow(
                 l10n.brushSettingsSpacingLabel,
                 _brush.spacing.toDouble(),
@@ -638,24 +627,6 @@ class _BrushSettingsSheetState extends State<_BrushSettingsSheet> {
                 0.01,
                 (v) => setState(() => _brush = _brush.copyWith(scatter: v)),
               ),
-              SwitchListTile(
-                title: Text(l10n.brushSettingsStabilizationTitle),
-                value: _brush.stabilization,
-                onChanged: (v) =>
-                    setState(() => _brush = _brush.copyWith(stabilization: v)),
-              ),
-              if (_brush.stabilization)
-                _sliderRow(
-                  l10n.brushSettingsStabilizationStrengthLabel,
-                  _brush.stabilizationStrength.toDouble(),
-                  0,
-                  100,
-                  (v) => setState(
-                    () => _brush = _brush.copyWith(
-                      stabilizationStrength: v.round(),
-                    ),
-                  ),
-                ),
               SwitchListTile(
                 title: Text(l10n.brushSettingsPixelModeTitle),
                 value: _brush.pixelMode,
@@ -764,6 +735,7 @@ class _BrushSettingsSheetState extends State<_BrushSettingsSheet> {
           ),
           _settingsSection(
             title: l10n.brushSettingsPressureOnSection,
+            initiallyExpanded: penPressureEnabled,
             children: [
               _pressureRangeTile(
                 label: l10n.brushSettingsSizeLabel,
@@ -802,6 +774,7 @@ class _BrushSettingsSheetState extends State<_BrushSettingsSheet> {
           ),
           _settingsSection(
             title: l10n.brushSettingsPressureOffSection,
+            initiallyExpanded: !penPressureEnabled,
             children: [
               _fixedPressureTile(
                 label: l10n.brushSettingsBlurRadiusLabel,
@@ -837,6 +810,7 @@ class _BrushSettingsSheetState extends State<_BrushSettingsSheet> {
 
   Widget _settingsSection({
     required String title,
+    required bool initiallyExpanded,
     required List<Widget> children,
   }) {
     return ExpansionTile(
@@ -848,7 +822,7 @@ class _BrushSettingsSheetState extends State<_BrushSettingsSheet> {
           fontFamilyFallback: kHeadingFontFallback,
         ),
       ),
-      initiallyExpanded: true,
+      initiallyExpanded: initiallyExpanded,
       childrenPadding: const EdgeInsets.only(left: 8, right: 8, bottom: 8),
       children: children,
     );
