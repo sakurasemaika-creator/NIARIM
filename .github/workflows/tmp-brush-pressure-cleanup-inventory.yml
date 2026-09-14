@@ -1,0 +1,19 @@
+name: TMP Brush Pressure Cleanup Inventory
+
+on:
+  push:
+    branches:
+      - feature/brush-pressure-profiles
+  workflow_dispatch:
+
+jobs:
+  inventory:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Legacy pressure references
+        run: |
+          echo '=== legacy pressure refs ==='
+          grep -R -n -E 'PressureMode|pressureMode|pressureStrength|pressureHardness|pressure_hardness' lib test || true
+          echo '=== pressure profile refs ==='
+          grep -R -n -E 'pressureOn|pressureOff|penPressureEnabled' lib test | head -n 300 || true
