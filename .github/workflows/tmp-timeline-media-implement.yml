@@ -6,6 +6,8 @@ on:
       - feat/timeline-media-cut-waveform
     paths:
       - '.github/workflows/tmp-timeline-media-implement.yml'
+      - 'tool/tmp_patch_timeline_media.py'
+  workflow_dispatch:
 
 permissions:
   contents: write
@@ -24,11 +26,11 @@ jobs:
       - name: Apply timeline media patch
         run: python tool/tmp_patch_timeline_media.py
       - name: Format
-        run: dart format lib/models/audio_clip.dart lib/engine/niapro_serializer.dart lib/screens/timeline/timeline_screen.dart lib/utils/timeline_clip_split.dart test/timeline_clip_split_test.dart
+        run: dart format lib/models/audio_clip.dart lib/engine/niapro_serializer.dart lib/engine/audio_waveform_service.dart lib/screens/timeline/timeline_screen.dart lib/utils/timeline_clip_split.dart test/timeline_clip_split_test.dart
       - run: flutter pub get
       - name: Analyze
-        run: flutter analyze --no-fatal-infos lib/models/audio_clip.dart lib/engine/niapro_serializer.dart lib/screens/timeline/timeline_screen.dart lib/utils/timeline_clip_split.dart test/timeline_clip_split_test.dart
-      - name: Test split
+        run: flutter analyze --no-fatal-infos lib/models/audio_clip.dart lib/engine/niapro_serializer.dart lib/engine/audio_waveform_service.dart lib/screens/timeline/timeline_screen.dart lib/utils/timeline_clip_split.dart test/timeline_clip_split_test.dart
+      - name: Test split and range cut
         run: flutter test test/timeline_clip_split_test.dart --reporter expanded
       - name: Test waveform service
         run: flutter test test/audio_waveform_service_test.dart --reporter expanded
@@ -36,10 +38,10 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add lib/models/audio_clip.dart lib/engine/niapro_serializer.dart lib/screens/timeline/timeline_screen.dart lib/utils/timeline_clip_split.dart test/timeline_clip_split_test.dart
+          git add lib/models/audio_clip.dart lib/engine/niapro_serializer.dart lib/engine/audio_waveform_service.dart lib/screens/timeline/timeline_screen.dart lib/utils/timeline_clip_split.dart test/timeline_clip_split_test.dart
           if git diff --cached --quiet; then
             echo "No changes"
           else
-            git commit -m "feat: add timeline media split and visual modes"
+            git commit -m "feat: import video containers as timeline audio"
             git push origin HEAD:feat/timeline-media-cut-waveform
           fi
