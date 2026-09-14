@@ -33,11 +33,41 @@ jobs:
           if old not in s:
             raise SystemExit('stale comment block not found')
           p.write_text(s.replace(old, new, 1))
-      - name: Generate localization report
+      - name: Report localization gaps and remove obsolete pressure keys in worktree
+        shell: python
         run: |
-          flutter gen-l10n --untranslated-messages-file=/tmp/untranslated.json
-          echo '=== untranslated ==='
-          cat /tmp/untranslated.json || true
+          import json
+          from pathlib import Path
+          arb_dir = Path('lib/l10n')
+          legacy = {
+            'brushSettingsPressureModeTitle',
+            'brushSettingsPressureOff',
+            'brushSettingsPressureSize',
+            'brushSettingsPressureOpacity',
+            'brushSettingsPressureSizeAndOpacity',
+            'brushSettingsPressureHardnessLabel',
+          }
+          for p in arb_dir.glob('app_*.arb'):
+            data = json.loads(p.read_text())
+            for key in legacy:
+              data.pop(key, None)
+              data.pop('@' + key, None)
+            p.write_text(json.dumps(data, ensure_ascii=False, indent=2) + '\n')
+          template = json.loads((arb_dir / 'app_ja.arb').read_text())
+          required = {k for k in template if not k.startswith('@')}
+          failures = []
+          for p in sorted(arb_dir.glob('app_*.arb')):
+            if p.name == 'app_ja.arb':
+              continue
+            data = json.loads(p.read_text())
+            missing = sorted(required - {k for k in data if not k.startswith('@')})
+            if missing:
+              failures.append((p.name, missing))
+              print(f'{p.name}: missing {missing}')
+          if failures:
+            raise SystemExit(2)
+      - name: Regenerate localization files
+        run: flutter gen-l10n
       - name: Verify no legacy pressure implementation references
         run: |
           echo '=== legacy pressure symbols ==='
@@ -53,11 +83,6 @@ jobs:
         run: |
           dart format lib/services/settings_service.dart
           git diff --check
-          if [ -n "$(git status --porcelain -- lib test | grep -v 'lib/services/settings_service.dart' || true)" ]; then
-            echo 'Unexpected formatted/generated changes:'
-            git status --short
-            exit 1
-          fi
       - name: Analyze production and tests
         run: flutter analyze --no-fatal-infos lib test
       - name: Focused pressure tests
@@ -70,14 +95,14 @@ jobs:
             --reporter expanded
       - name: Full regression suite
         run: flutter test --reporter compact
-      - name: Commit stale-comment cleanup after green verification
+      - name: Commit verified pressure cleanup
         run: |
           git config user.name github-actions[bot]
           git config user.email 41898282+github-actions[bot]@users.noreply.github.com
-          git add lib/services/settings_service.dart
+          git add lib/services/settings_service.dart lib/l10n
           if git diff --cached --quiet; then
             echo 'No production cleanup changes to commit.'
           else
-            git commit -m "docs: clarify global pen pressure behavior"
+            git commit -m "chore: remove obsolete pressure localization"
             git push origin HEAD:feature/brush-pressure-profiles
           fi
