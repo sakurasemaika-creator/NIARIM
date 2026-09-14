@@ -67,6 +67,62 @@ void main() {
     });
   });
 
+  group('fixed split cursor', () {
+    test('timeline may move only until the selected clip edges reach the cursor', () {
+      expect(
+        clampSplitCutCursorFrame(
+          candidateFrame: 5,
+          clipStartFrame: 10,
+          lengthFrames: 8,
+        ),
+        10,
+      );
+      expect(
+        clampSplitCutCursorFrame(
+          candidateFrame: 14,
+          clipStartFrame: 10,
+          lengthFrames: 8,
+        ),
+        14,
+      );
+      expect(
+        clampSplitCutCursorFrame(
+          candidateFrame: 30,
+          clipStartFrame: 10,
+          lengthFrames: 8,
+        ),
+        18,
+      );
+    });
+
+    test('cut can be confirmed only when the fixed cursor is inside the clip', () {
+      expect(
+        canConfirmSplitCut(
+          cursorFrame: 10,
+          clipStartFrame: 10,
+          lengthFrames: 8,
+        ),
+        isFalse,
+      );
+      expect(
+        canConfirmSplitCut(
+          cursorFrame: 14,
+          clipStartFrame: 10,
+          lengthFrames: 8,
+        ),
+        isTrue,
+      );
+      expect(
+        canConfirmSplitCut(
+          cursorFrame: 18,
+          clipStartFrame: 10,
+          lengthFrames: 8,
+        ),
+        isFalse,
+      );
+    });
+  });
+
   group('cutTimelineClipRange', () {
     test('removes a middle range and preserves both remaining source ranges', () {
       final result = cutTimelineClipRange(
