@@ -63,10 +63,26 @@ jobs:
         run: python3 tool/one_shot_timeline_media_finalize.py
       - run: dart format lib/screens/timeline/timeline_screen.dart test/timeline_media_contract_test.dart
       - run: flutter test test/timeline_media_contract_test.dart --reporter expanded
-      - run: flutter analyze --no-fatal-infos lib/screens/timeline/timeline_screen.dart test/timeline_media_contract_test.dart
+      - name: Analyze changed files
+        id: analyze
+        continue-on-error: true
+        run: |
+          set -o pipefail
+          flutter analyze --no-fatal-infos lib/screens/timeline/timeline_screen.dart test/timeline_media_contract_test.dart 2>&1 | tee timeline_analyze_output.txt
+      - name: Persist diagnostics only on analyze failure
+        if: steps.analyze.outcome == 'failure'
+        run: |
+          git config user.name 'NIARIM automation'
+          git config user.email 'actions@users.noreply.github.com'
+          git add timeline_analyze_output.txt
+          git commit -m 'ci: capture timeline analyze diagnostics'
+          git push origin HEAD:dev_branch
+          exit 1
       - run: git diff --check
       - name: Commit verified change and cleanup
+        if: steps.analyze.outcome == 'success'
         run: |
+          rm -f timeline_analyze_output.txt
           rm -f tool/one_shot_timeline_media_finalize.py
           rm -f .github/workflows/one-shot-timeline-media-finalize-v6.yml
           git config user.name 'NIARIM automation'
