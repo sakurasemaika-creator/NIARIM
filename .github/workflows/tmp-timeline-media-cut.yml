@@ -21,6 +21,6 @@ jobs:
           channel: stable
           cache: true
       - run: flutter pub get
-      - run: dart format --output=none --set-exit-if-changed lib/utils/timeline_clip_split.dart test/timeline_clip_split_test.dart
+      - run: dart format lib/utils/timeline_clip_split.dart test/timeline_clip_split_test.dart
         if: ${{ hashFiles('lib/utils/timeline_clip_split.dart') != '' }}
       - run: flutter test test/timeline_clip_split_test.dart
