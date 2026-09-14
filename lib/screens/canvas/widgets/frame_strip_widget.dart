@@ -489,36 +489,25 @@ class _FrameStripWidgetState extends State<FrameStripWidget> {
             ),
           ),
           Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 4),
-            child: SegmentedButton<String>(
-              segments: [
-                ButtonSegment(
-                  value: 'frames',
-                  label: Text(
-                    l10n.frameStripFrameListModeLabel,
-                    style: const TextStyle(fontSize: 11),
-                  ),
-                ),
-                ButtonSegment(
-                  value: 'timeline',
-                  label: Text(
-                    l10n.frameStripTimelineModeLabel,
-                    style: const TextStyle(fontSize: 11),
-                  ),
-                ),
-              ],
-              selected: const {'frames'},
-              showSelectedIcon: false,
-              style: ButtonStyle(
-                visualDensity: VisualDensity.compact,
-                tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                backgroundColor: WidgetStatePropertyAll(
-                  scheme.surface.withValues(alpha: 0),
+            padding: const EdgeInsets.symmetric(horizontal: 6),
+            child: IconButton(
+              key: const ValueKey('frameStripTimelineButton'),
+              tooltip: l10n.frameStripTimelineModeLabel,
+              onPressed: widget.onTimelineTap,
+              icon: const Icon(Icons.movie_filter_outlined),
+              iconSize: 21,
+              style: IconButton.styleFrom(
+                fixedSize: const Size(42, 42),
+                minimumSize: const Size(42, 42),
+                maximumSize: const Size(42, 42),
+                padding: EdgeInsets.zero,
+                shape: const CircleBorder(),
+                side: BorderSide(color: scheme.outlineVariant),
+                foregroundColor: scheme.onSurfaceVariant,
+                backgroundColor: scheme.surfaceContainerLow.withValues(
+                  alpha: 0.72,
                 ),
               ),
-              onSelectionChanged: (selected) {
-                if (selected.contains('timeline')) widget.onTimelineTap();
-              },
             ),
           ),
         ],
