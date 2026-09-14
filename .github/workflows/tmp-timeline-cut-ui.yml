@@ -22,7 +22,7 @@ jobs:
         with:
           channel: stable
           cache: true
-      - name: Scope clip detail constructor replacement
+      - name: Scope and harden clip cut patch
         shell: python
         run: |
           from pathlib import Path
@@ -35,7 +35,17 @@ jobs:
               "    required this.totalFrames,\\n"'''
           if old not in s:
               raise SystemExit('constructor patch pattern missing')
-          p.write_text(s.replace(old, new, 1))
+          s = s.replace(old, new, 1)
+          old_service = '''    final project = _projectService.projects
+                  .where((project) => project.id == widget.projectId)
+                  .firstOrNull;'''
+          new_service = '''    final project = context.read<ProjectService>().projects
+                  .where((project) => project.id == widget.projectId)
+                  .firstOrNull;'''
+          if old_service not in s:
+              raise SystemExit('project service patch pattern missing')
+          s = s.replace(old_service, new_service, 1)
+          p.write_text(s)
       - run: python tool/tmp_patch_timeline_cut_ui.py
       - run: flutter pub get
       - run: dart format lib/screens/timeline/timeline_screen.dart lib/utils/timeline_clip_split.dart test/timeline_clip_split_test.dart
