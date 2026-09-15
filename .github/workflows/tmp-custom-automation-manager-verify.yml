@@ -4,7 +4,10 @@ on:
     branches: [dev_branch]
     paths:
       - 'lib/widgets/custom_automation_manager_sheet.dart'
+      - 'lib/models/custom_automation_presets.dart'
+      - 'lib/screens/canvas/canvas_screen.dart'
       - 'test/custom_automation_manager_dialog_lifecycle_test.dart'
+      - 'test/custom_automation_presets_test.dart'
       - '.github/workflows/tmp-custom-automation-manager-verify.yml'
 permissions:
   contents: read
@@ -18,4 +21,5 @@ jobs:
           channel: stable
           cache: false
       - run: flutter pub get --enforce-lockfile
+      - run: flutter test test/custom_automation_presets_test.dart --reporter expanded
       - run: flutter test test/custom_automation_manager_dialog_lifecycle_test.dart --reporter expanded
