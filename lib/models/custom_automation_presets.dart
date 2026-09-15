@@ -1,62 +1,46 @@
 import 'custom_automation.dart';
 import 'filter_def.dart';
 
-const auroraHologramAutomationPresetId = 'preset_aurora_hologram';
-const lineExtractionAutomationPresetId = 'preset_line_extraction';
-const lineCreationAutomationPresetId = 'preset_line_creation';
+const digitalLineartAutomationPresetId = 'preset_digital_lineart';
+const analogLineartAutomationPresetId = 'preset_analog_lineart';
 final DateTime _presetTimestamp = DateTime.utc(2026, 1, 1);
 
 List<CustomAutomation> builtInCanvasAutomationPresets() => [
-  _filterPreset(
-    id: auroraHologramAutomationPresetId,
-    name: '質感変更フィルター',
-    filters: const [
+  _preset(
+    id: digitalLineartAutomationPresetId,
+    name: 'デジタル線画作成',
+    steps: const [
       FilterDef(
-        id: 'Filter0019',
-        name: '質感変更フィルター',
-        kind: FilterKind.auroraHologram,
-        strength: 60,
+        id: 'Filter0023',
+        name: '自動線画',
+        kind: FilterKind.autoLineart,
+      ),
+      FilterDef(
+        id: 'Filter0021',
+        name: '墨溜まり',
+        kind: FilterKind.inkPool,
       ),
     ],
   ),
-  _filterPreset(
-    id: lineExtractionAutomationPresetId,
-    name: '線画抽出',
-    filters: const [
+  _preset(
+    id: analogLineartAutomationPresetId,
+    name: 'アナログ線画作成',
+    steps: const [
       FilterDef(
-        id: 'automation_color_adjust',
-        name: '色調調整',
-        kind: FilterKind.colorAdjust,
-        caBrightness: 35,
-        caContrast: 55,
-      ),
-      FilterDef(
-        id: 'Filter0014',
+        id: 'Filter0015',
         name: '二値化',
         kind: FilterKind.threshold,
-        thresholdValue: 190,
       ),
     ],
-  ),
-  _filterPreset(
-    id: lineCreationAutomationPresetId,
-    name: '線画作成',
-    filters: const [
-      FilterDef(
-        id: 'Filter0006',
-        name: '縁取り',
-        kind: FilterKind.outline,
-        outlineColor: 0xFF000000,
-        outlineWidth: 6,
-      ),
-    ],
+    appendBrightnessToAlpha: true,
   ),
 ];
 
-CustomAutomation _filterPreset({
+CustomAutomation _preset({
   required String id,
   required String name,
-  required List<FilterDef> filters,
+  required List<FilterDef> steps,
+  bool appendBrightnessToAlpha = false,
 }) {
   return CustomAutomation(
     id: id,
@@ -65,13 +49,22 @@ CustomAutomation _filterPreset({
     createdAt: _presetTimestamp,
     updatedAt: _presetTimestamp,
     steps: [
-      for (var i = 0; i < filters.length; i++)
+      for (var i = 0; i < steps.length; i++)
         CustomAutomationStep(
           id: '${id}_filter_${i + 1}',
           surface: CustomAutomationSurface.canvas,
-          command: 'canvas.filterApply',
-          label: filters[i].name,
-          args: {'filter': filters[i].toJson()},
+          command: 'canvas.filter',
+          label: steps[i].name,
+          args: {'filter': steps[i].toJson()},
+          recordedFrame: 0,
+        ),
+      if (appendBrightnessToAlpha)
+        CustomAutomationStep(
+          id: '${id}_brightness_to_alpha',
+          surface: CustomAutomationSurface.canvas,
+          command: 'canvas.brightnessToAlpha',
+          label: '明度で透過',
+          args: const {'grayMode': true},
           recordedFrame: 0,
         ),
     ],
