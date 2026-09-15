@@ -13,39 +13,13 @@ jobs:
       - uses: actions/checkout@v6
         with:
           fetch-depth: 0
-      - name: Replace dialog controllers with local values
-        run: |
-          python3 - <<'PY'
-          from pathlib import Path
-          p = Path('lib/widgets/custom_automation_manager_sheet.dart')
-          s = p.read_text()
-          replacements = [
-            ("    final controller = TextEditingController();\n", "    var draftName = '';\n", 1),
-            ("          controller: controller,\n          autofocus: true,\n", "          autofocus: true,\n          onChanged: (value) => draftName = value,\n", 1),
-            ("              final value = controller.text.trim();\n", "              final value = draftName.trim();\n", 1),
-            ("    WidgetsBinding.instance.addPostFrameCallback((_) => controller.dispose());\n", "", 1),
-            ("    final fromController = TextEditingController(text: '1');\n    final toController = TextEditingController(text: '${frameCount ?? 1}');\n", "    var fromText = '1';\n    var toText = '${frameCount ?? 1}';\n", 1),
-            ("                                  controller: fromController,\n", "                                  initialValue: fromText,\n                                  onChanged: (value) => fromText = value,\n", 1),
-            ("                                  controller: toController,\n", "                                  initialValue: toText,\n                                  onChanged: (value) => toText = value,\n", 1),
-            ("      final from = int.tryParse(fromController.text.trim());\n      final to = int.tryParse(toController.text.trim());\n", "      final from = int.tryParse(fromText.trim());\n      final to = int.tryParse(toText.trim());\n", 1),
-            ("        WidgetsBinding.instance.addPostFrameCallback((_) => fromController.dispose());\n        WidgetsBinding.instance.addPostFrameCallback((_) => toController.dispose());\n", "", 1),
-            ("    WidgetsBinding.instance.addPostFrameCallback((_) => fromController.dispose());\n    WidgetsBinding.instance.addPostFrameCallback((_) => toController.dispose());\n", "", 1),
-            ("    final controller = TextEditingController(text: item.name);\n", "    var draftName = item.name;\n", 1),
-            ("        content: TextField(controller: controller, autofocus: true),\n", "        content: TextFormField(\n          initialValue: item.name,\n          autofocus: true,\n          onChanged: (value) => draftName = value,\n        ),\n", 1),
-            ("                Navigator.pop(dialogContext, controller.text.trim()),\n", "                Navigator.pop(dialogContext, draftName.trim()),\n", 1),
-            ("    WidgetsBinding.instance.addPostFrameCallback((_) => controller.dispose());\n", "", 1),
-          ]
-          for old, new, count in replacements:
-            if s.count(old) < count:
-              raise SystemExit(f'missing anchor: {old!r}')
-            s = s.replace(old, new, count)
-          p.write_text(s)
-          PY
+      - name: Use form fields for value-backed frame inputs
+        run: python3 -c "from pathlib import Path; p=Path('lib/widgets/custom_automation_manager_sheet.dart'); s=p.read_text(); old='child: TextField(\n                                  initialValue:'; assert s.count(old)==2,s.count(old); p.write_text(s.replace(old,'child: TextFormField(\n                                  initialValue:',2))"
       - run: git diff --check
       - run: |
           git config user.name github-actions[bot]
           git config user.email 41898282+github-actions[bot]@users.noreply.github.com
           git add lib/widgets/custom_automation_manager_sheet.dart
-          git commit -m 'fix: own automation dialog input values safely'
+          git commit -m 'fix: use value-backed automation frame fields'
           git pull --rebase origin dev_branch
           git push origin HEAD:dev_branch
