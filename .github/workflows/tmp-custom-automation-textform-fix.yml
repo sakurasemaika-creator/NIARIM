@@ -18,5 +18,14 @@ jobs:
           channel: stable
           cache: false
       - run: flutter pub get --enforce-lockfile
-      - name: Confirm timeline regression fixture exists
-        run: test -f test/timeline_cut_ui_regression_test.dart
+      - name: Verify timeline cut regression is RED
+        run: |
+          set +e
+          flutter test test/timeline_cut_ui_regression_test.dart --reporter expanded
+          status=$?
+          set -e
+          if [ "$status" -eq 0 ]; then
+            echo 'Expected timeline cut UI regression to fail before production integration.'
+            exit 1
+          fi
+          echo 'RED regression confirmed.'
