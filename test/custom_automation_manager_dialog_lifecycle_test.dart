@@ -12,6 +12,11 @@ void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
   Future<CustomAutomationService> pumpManager(WidgetTester tester) async {
+    tester.view.physicalSize = const Size(1200, 1000);
+    tester.view.devicePixelRatio = 1.0;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+
     SharedPreferences.setMockInitialValues({});
     final service = CustomAutomationService();
     await service.init();
@@ -50,7 +55,7 @@ void main() {
     await tester.tap(find.byIcon(Icons.add_circle_outline));
     await tester.pumpAndSettle();
     await tester.enterText(find.byType(TextField), 'dialog lifecycle');
-    await tester.tap(find.text('記録開始'));
+    await tester.tap(find.byType(FilledButton));
     await tester.pumpAndSettle();
 
     expect(tester.takeException(), isNull);
@@ -67,7 +72,7 @@ void main() {
     await tester.tap(find.byIcon(Icons.edit_outlined));
     await tester.pumpAndSettle();
     await tester.enterText(find.byType(TextField), 'renamed automation');
-    await tester.tap(find.text('保存'));
+    await tester.tap(find.byType(FilledButton));
     await tester.pumpAndSettle();
 
     expect(tester.takeException(), isNull);
