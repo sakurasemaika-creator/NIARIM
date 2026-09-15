@@ -38,7 +38,6 @@ class RulerPanel extends StatelessWidget {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            PanelCenterCloseBar(onClose: onClose),
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
               child: Row(
@@ -114,6 +113,7 @@ class RulerPanel extends StatelessWidget {
               _divisionsRow(context),
             ],
             const SizedBox(height: 4),
+            PanelCenterCloseBar(onClose: onClose),
           ],
         ),
       ),

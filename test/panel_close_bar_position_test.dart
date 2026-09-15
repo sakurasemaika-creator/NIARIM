@@ -15,24 +15,27 @@ void main() {
     'lib/screens/canvas/widgets/tone_panel.dart',
   ];
 
-  test('tool detail panels keep the shared close affordance as the final child', () {
-    final bottomClose = RegExp(
-      r'PanelCenterCloseBar\(onClose: (?:widget\.)?onClose\),\s*\],',
-      multiLine: true,
-    );
+  test(
+    'tool detail panels keep the shared close affordance as the final child',
+    () {
+      final bottomClose = RegExp(
+        r'PanelCenterCloseBar\(onClose: (?:widget\.)?onClose\),\s*\],',
+        multiLine: true,
+      );
 
-    for (final path in panelFiles) {
-      final source = File(path).readAsStringSync();
-      expect(
-        'PanelCenterCloseBar('.allMatches(source).length,
-        1,
-        reason: '$path must contain exactly one shared close affordance',
-      );
-      expect(
-        bottomClose.hasMatch(source),
-        isTrue,
-        reason: '$path must place the close affordance after panel content',
-      );
-    }
-  });
+      for (final path in panelFiles) {
+        final source = File(path).readAsStringSync();
+        expect(
+          'PanelCenterCloseBar('.allMatches(source).length,
+          1,
+          reason: '$path must contain exactly one shared close affordance',
+        );
+        expect(
+          bottomClose.hasMatch(source),
+          isTrue,
+          reason: '$path must place the close affordance after panel content',
+        );
+      }
+    },
+  );
 }

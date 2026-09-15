@@ -265,7 +265,6 @@ class _LayerPanelState extends State<LayerPanel> {
       color: Theme.of(context).colorScheme.surfaceContainerHigh,
       child: Column(
         children: [
-          if (!widget.dockedMode) PanelCenterCloseBar(onClose: widget.onClose),
           // ヘッダー
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
@@ -723,6 +722,7 @@ class _LayerPanelState extends State<LayerPanel> {
               ),
             ),
           ],
+          if (!widget.dockedMode) PanelCenterCloseBar(onClose: widget.onClose),
         ],
       ),
     );

@@ -89,7 +89,6 @@ class _OnionSkinPanelState extends State<OnionSkinPanel> {
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              PanelCenterCloseBar(onClose: widget.onClose),
               // ヘッダー：オニオンスキン全体ON/OFF
               Row(
                 children: [
@@ -189,6 +188,7 @@ class _OnionSkinPanelState extends State<OnionSkinPanel> {
                       _update(_settings.copyWith(fadeByDistance: v)),
                 ),
               ],
+              PanelCenterCloseBar(onClose: widget.onClose),
             ],
           ),
         ),

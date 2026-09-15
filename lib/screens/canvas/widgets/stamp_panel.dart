@@ -88,7 +88,6 @@ class _StampPanelState extends State<StampPanel> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              PanelCenterCloseBar(onClose: widget.onClose),
               Row(
                 children: [
                   Text(
@@ -369,6 +368,7 @@ class _StampPanelState extends State<StampPanel> {
                         },
                       ),
               ),
+              PanelCenterCloseBar(onClose: widget.onClose),
             ],
           ),
         ),

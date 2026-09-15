@@ -88,7 +88,6 @@ class _BrushPanelState extends State<BrushPanel> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              PanelCenterCloseBar(onClose: widget.onClose),
               Row(
                 children: [
                   Text(
@@ -389,6 +388,7 @@ class _BrushPanelState extends State<BrushPanel> {
                         },
                       ),
               ),
+              PanelCenterCloseBar(onClose: widget.onClose),
             ],
           ),
         ),

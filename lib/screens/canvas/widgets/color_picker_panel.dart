@@ -150,27 +150,26 @@ class _ColorPickerPanelState extends State<ColorPickerPanel> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               if (widget.showCloseBar)
-                PanelCenterCloseBar(onClose: widget.onClose),
-              Row(
-                children: [
-                  Text(
-                    l10n.colorPickerTitle,
-                    style: const TextStyle(
-                      fontWeight: FontWeight.bold,
-                      fontFamily: 'Kuramubon',
-                      fontFamilyFallback: kHeadingFontFallback,
+                Row(
+                  children: [
+                    Text(
+                      l10n.colorPickerTitle,
+                      style: const TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontFamily: 'Kuramubon',
+                        fontFamilyFallback: kHeadingFontFallback,
+                      ),
                     ),
-                  ),
-                  const Spacer(),
-                  // スポイトボタン（カラーピッカー内のスポイトボタン）
-                  if (widget.onEyedropperTap != null)
-                    IconButton(
-                      icon: const Icon(Icons.colorize, size: 18),
-                      tooltip: l10n.toolbarItemEyedropper,
-                      onPressed: widget.onEyedropperTap,
-                    ),
-                ],
-              ),
+                    const Spacer(),
+                    // スポイトボタン（カラーピッカー内のスポイトボタン）
+                    if (widget.onEyedropperTap != null)
+                      IconButton(
+                        icon: const Icon(Icons.colorize, size: 18),
+                        tooltip: l10n.toolbarItemEyedropper,
+                        onPressed: widget.onEyedropperTap,
+                      ),
+                  ],
+                ),
               const SizedBox(height: 8),
               // HSVサークルとRGBスライダーは別タブへ分けず常に両方表示し、
               // どちらを操作してももう片方へ即座に反映することで、RGB側が
@@ -367,6 +366,7 @@ class _ColorPickerPanelState extends State<ColorPickerPanel> {
               const Divider(height: 1),
               const SizedBox(height: 8),
               _paletteSection(context, l10n, paletteService),
+              PanelCenterCloseBar(onClose: widget.onClose),
             ],
           ),
         ),

@@ -86,7 +86,6 @@ class _TonePanelState extends State<TonePanel> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              PanelCenterCloseBar(onClose: widget.onClose),
               Row(
                 children: [
                   Text(
@@ -364,6 +363,7 @@ class _TonePanelState extends State<TonePanel> {
                         },
                       ),
               ),
+              PanelCenterCloseBar(onClose: widget.onClose),
             ],
           ),
         ),

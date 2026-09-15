@@ -339,7 +339,6 @@ class _FilterPanelState extends State<FilterPanel> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              PanelCenterCloseBar(onClose: widget.onClose),
               Row(
                 children: [
                   Expanded(
@@ -527,6 +526,7 @@ class _FilterPanelState extends State<FilterPanel> {
                   ),
                 ),
               ],
+              PanelCenterCloseBar(onClose: widget.onClose),
             ],
           ),
         ),
