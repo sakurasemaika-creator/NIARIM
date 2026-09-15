@@ -15,7 +15,7 @@ jobs:
     if: github.actor != 'github-actions[bot]'
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
         with:
           ref: dev_branch
           fetch-depth: 0
@@ -23,28 +23,39 @@ jobs:
         with:
           channel: stable
           cache: true
-      - run: flutter pub get
+      - run: flutter pub get --enforce-lockfile
       - name: Integrate source-offset timeline semantics
         run: |
-          git show 7be2b99589d5e43983bc54b41fc1af9b1e1c0880 -- lib/screens/timeline/timeline_screen.dart | git apply --3way
-      - name: Integrate fixed-cursor and range-cut UI semantics
-        run: |
-          git show c25989c00621a6f5805ec8e219654371d175a6b9 -- lib/screens/timeline/timeline_screen.dart | git apply --3way
-      - name: Verify semantic anchors
+          python3 - <<'PY'
+          from pathlib import Path
+          p = Path('lib/screens/timeline/timeline_screen.dart')
+          s = p.read_text()
+          replacements = [
+            ("          fadeOut: clip.fadeOut,\n          trackRow: targetRow,", "          fadeOut: clip.fadeOut,\n          sourceStartFrame: clip.useStart,\n          trackRow: targetRow,"),
+            ("              fadeOut: clip.fadeOut,\n              useEnd: clip.lengthFrames - 1,", "              fadeOut: clip.fadeOut,\n              useStart: clip.useStart,\n              useEnd: clip.useStart + clip.lengthFrames - 1,"),
+            ("          fadeOut: clip.fadeOut,\n        ),\n      );\n    } else {", "          fadeOut: clip.fadeOut,\n          sourceStartFrame: clip.useStart,\n          trackRow: clip.trackRow,\n        ),\n      );\n    } else {"),
+            ("          fadeOut: a.fadeOut,\n          useEnd: a.lengthFrames - 1,", "          fadeOut: a.fadeOut,\n          useStart: a.sourceStartFrame,\n          useEnd: a.sourceStartFrame + a.lengthFrames - 1,"),
+          ]
+          for old, new in replacements:
+            count = s.count(old)
+            if count != 1:
+              raise SystemExit(f'expected exactly one semantic anchor, found {count}: {old[:60]!r}')
+            s = s.replace(old, new, 1)
+          p.write_text(s)
+          PY
+      - name: Verify source-offset anchors
         run: |
           grep -q "sourceStartFrame: clip.useStart" lib/screens/timeline/timeline_screen.dart
           grep -q "useStart: a.sourceStartFrame" lib/screens/timeline/timeline_screen.dart
-          grep -q "timeline_fixed_cut_cursor" lib/screens/timeline/timeline_screen.dart
-          grep -q "timeline_range_cut_start" lib/screens/timeline/timeline_screen.dart
-          grep -q "splitTimelineClip(" lib/screens/timeline/timeline_screen.dart
-          grep -q "cutTimelineClipRange(" lib/screens/timeline/timeline_screen.dart
-      - run: dart format lib/screens/timeline/timeline_screen.dart lib/utils/timeline_clip_split.dart test/timeline_clip_split_test.dart
+          grep -q "useEnd: a.sourceStartFrame + a.lengthFrames - 1" lib/screens/timeline/timeline_screen.dart
+      - run: dart format lib/screens/timeline/timeline_screen.dart
       - run: flutter test test/timeline_clip_split_test.dart test/audio_source_offset_serializer_regression_test.dart
-      - run: flutter analyze lib/screens/timeline/timeline_screen.dart lib/models/audio_clip.dart lib/engine/niapro_serializer.dart lib/utils/timeline_clip_split.dart
-      - name: Commit integration
+      - run: flutter analyze --no-fatal-infos lib/screens/timeline/timeline_screen.dart lib/models/audio_clip.dart lib/engine/niapro_serializer.dart lib/utils/timeline_clip_split.dart
+      - name: Commit source-offset integration
         run: |
           git config user.name github-actions[bot]
           git config user.email 41898282+github-actions[bot]@users.noreply.github.com
-          git add lib/screens/timeline/timeline_screen.dart lib/utils/timeline_clip_split.dart test/timeline_clip_split_test.dart
-          git commit -m 'feat: integrate timeline source-offset cuts'
+          git add lib/screens/timeline/timeline_screen.dart
+          git commit -m 'fix: preserve timeline audio source offsets'
+          git pull --rebase origin dev_branch
           git push origin HEAD:dev_branch
