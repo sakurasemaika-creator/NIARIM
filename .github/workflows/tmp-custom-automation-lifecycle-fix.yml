@@ -1,0 +1,221 @@
+name: TMP Custom Automation Lifecycle Fix
+on:
+  push:
+    branches: [dev_branch]
+    paths:
+      - '.github/workflows/tmp-custom-automation-lifecycle-fix.yml'
+permissions:
+  contents: write
+jobs:
+  fix:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - name: Replace route-external controllers with dialog-owned values
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          import re
+          p = Path('lib/widgets/custom_automation_manager_sheet.dart')
+          s = p.read_text()
+          start_new = '''  Future<void> _startNew() async {
+            final l10n = AppLocalizations.of(context)!;
+            var name = '';
+            final value = await showDialog<String>(
+              context: context,
+              builder: (dialogContext) => AlertDialog(
+                title: Text(l10n.customAutomationNewTitle),
+                content: TextFormField(
+                  autofocus: true,
+                  onChanged: (value) => name = value,
+                  onFieldSubmitted: (value) => Navigator.pop(
+                    dialogContext,
+                    value.trim().isEmpty ? null : value.trim(),
+                  ),
+                ),
+                actions: [
+                  TextButton(
+                    onPressed: () => Navigator.pop(dialogContext),
+                    child: Text(l10n.cancelButton),
+                  ),
+                  FilledButton(
+                    onPressed: () => Navigator.pop(
+                      dialogContext,
+                      name.trim().isEmpty ? null : name.trim(),
+                    ),
+                    child: Text(l10n.customAutomationStartRecordingButton),
+                  ),
+                ],
+              ),
+            );
+            if (!mounted || value == null) return;
+            final service = context.read<CustomAutomationService>();
+            service.startRecording(surface: widget.surface, name: value);
+            widget.onRecordingStarted();
+            Navigator.pop(context);
+          }
+
+'''
+          rename = '''  Future<void> _rename(CustomAutomation item) async {
+            final l10n = AppLocalizations.of(context)!;
+            var name = item.name;
+            final value = await showDialog<String>(
+              context: context,
+              builder: (dialogContext) => AlertDialog(
+                title: Text(l10n.customAutomationRenameTitle),
+                content: TextFormField(
+                  initialValue: item.name,
+                  autofocus: true,
+                  onChanged: (value) => name = value,
+                  onFieldSubmitted: (value) => Navigator.pop(
+                    dialogContext,
+                    value.trim().isEmpty ? null : value.trim(),
+                  ),
+                ),
+                actions: [
+                  TextButton(
+                    onPressed: () => Navigator.pop(dialogContext),
+                    child: Text(l10n.cancelButton),
+                  ),
+                  FilledButton(
+                    onPressed: () => Navigator.pop(
+                      dialogContext,
+                      name.trim().isEmpty ? null : name.trim(),
+                    ),
+                    child: Text(l10n.saveButton),
+                  ),
+                ],
+              ),
+            );
+            if (!mounted || value == null) return;
+            await context.read<CustomAutomationService>().rename(item.id, value);
+          }
+
+'''
+          confirm = '''  Future<_ExecutionChoice?> _confirmExecute(CustomAutomation item) async {
+            final l10n = AppLocalizations.of(context)!;
+            var scope = CustomAutomationExecutionScope.currentFrame;
+            var fromText = '1';
+            var toText = widget.frameCount.toString();
+            final result = await showDialog<_ExecutionChoice>(
+              context: context,
+              builder: (dialogContext) => StatefulBuilder(
+                builder: (context, setDialogState) => AlertDialog(
+                  title: Text(l10n.customAutomationRunConfirmTitle),
+                  content: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(l10n.customAutomationRunConfirmMessage(item.name)),
+                      if (widget.surface == CustomAutomationSurface.canvas) ...[
+                        const SizedBox(height: 12),
+                        RadioGroup<CustomAutomationExecutionScope>(
+                          groupValue: scope,
+                          onChanged: (value) {
+                            if (value == null) return;
+                            setDialogState(() => scope = value);
+                          },
+                          child: Column(
+                            children: [
+                              RadioListTile<CustomAutomationExecutionScope>(
+                                value: CustomAutomationExecutionScope.currentFrame,
+                                title: Text(l10n.customAutomationCurrentFrame),
+                              ),
+                              RadioListTile<CustomAutomationExecutionScope>(
+                                value: CustomAutomationExecutionScope.allFrames,
+                                title: Text(l10n.customAutomationAllFrames),
+                              ),
+                              RadioListTile<CustomAutomationExecutionScope>(
+                                value: CustomAutomationExecutionScope.specifiedFrames,
+                                title: Text(l10n.customAutomationSpecifiedFrames),
+                              ),
+                            ],
+                          ),
+                        ),
+                        if (scope ==
+                            CustomAutomationExecutionScope.specifiedFrames)
+                          Row(
+                            children: [
+                              Expanded(
+                                child: TextFormField(
+                                  initialValue: fromText,
+                                  keyboardType: TextInputType.number,
+                                  onChanged: (value) => fromText = value,
+                                  decoration: InputDecoration(
+                                    labelText: l10n.customAutomationFromFrame,
+                                  ),
+                                ),
+                              ),
+                              const Padding(
+                                padding: EdgeInsets.symmetric(horizontal: 8),
+                                child: Text('–'),
+                              ),
+                              Expanded(
+                                child: TextFormField(
+                                  initialValue: toText,
+                                  keyboardType: TextInputType.number,
+                                  onChanged: (value) => toText = value,
+                                  decoration: InputDecoration(
+                                    labelText: l10n.customAutomationToFrame,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                      ],
+                    ],
+                  ),
+                  actions: [
+                    TextButton(
+                      onPressed: () => Navigator.pop(dialogContext),
+                      child: Text(l10n.cancelButton),
+                    ),
+                    FilledButton(
+                      onPressed: () {
+                        List<int>? targetFrames;
+                        if (scope ==
+                            CustomAutomationExecutionScope.specifiedFrames) {
+                          final from = int.tryParse(fromText.trim());
+                          final to = int.tryParse(toText.trim());
+                          if (from == null ||
+                              to == null ||
+                              from < 1 ||
+                              to < from ||
+                              to > widget.frameCount) {
+                            return;
+                          }
+                          targetFrames = List<int>.generate(
+                            to - from + 1,
+                            (index) => from - 1 + index,
+                          );
+                        }
+                        Navigator.pop(
+                          dialogContext,
+                          _ExecutionChoice(
+                            scope: scope,
+                            targetFrames: targetFrames,
+                          ),
+                        );
+                      },
+                      child: Text(l10n.customAutomationRunButton),
+                    ),
+                  ],
+                ),
+              ),
+            );
+            return result;
+          }
+
+'''
+          s, n1 = re.subn(r'  Future<void> _startNew\(\) async \{.*?\n  Future<void> _rename', start_new + '  Future<void> _rename', s, count=1, flags=re.S)
+          s, n2 = re.subn(r'  Future<void> _rename\(CustomAutomation item\) async \{.*?\n  Future<void> _confirmDelete', rename + '  Future<void> _confirmDelete', s, count=1, flags=re.S)
+          s, n3 = re.subn(r'  Future<_ExecutionChoice\?> _confirmExecute\(CustomAutomation item\) async \{.*?\n  Future<void> _showActions', confirm + '  Future<void> _showActions', s, count=1, flags=re.S)
+          if (n1, n2, n3) != (1, 1, 1):
+              raise SystemExit(f'unexpected replacements: {(n1,n2,n3)}')
+          p.write_text(s)
+          PY
+          git diff --check
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          git add lib/widgets/custom_automation_manager_sheet.dart
+          git commit -m 'fix: own automation dialog input values safely'
+          git push origin HEAD:dev_branch
