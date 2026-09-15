@@ -11,16 +11,14 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v6
-      - name: Remove unnecessary legacy migration
+      - name: Remove unnecessary Filter0025 migration
         env:
-          OLD_BLOCK: ICAgICAgICAgIGZpbmFsIGlzTGVnYWN5SW52ZXJzaW9uID0KICAgICAgICAgICAgICBtYXBbJ2lkJ10gPT0gJ0ZpbHRlcjAwMjUnICYmCiAgICAgICAgICAgICAgIW1hcC5jb250YWluc0tleSgndG9uZUN1cnZlUHJlc2V0Jyk7CiAgICAgICAgICBmaW5hbCBmaWx0ZXIgPSBGaWx0ZXJEZWYuZnJvbUpzb24obWFwKTsKICAgICAgICAgIGlmIChpc0xlZ2FjeUludmVyc2lvbikgewogICAgICAgICAgICBfZmlsdGVycy5hZGQoCiAgICAgICAgICAgICAgZmlsdGVyLmNvcHlXaXRoKHRvbmVDdXJ2ZVByZXNldDogVG9uZUN1cnZlUHJlc2V0LmludmVydCksCiAgICAgICAgICAgICk7CiAgICAgICAgICAgIG5lZWRzUGVyc2lzdCA9IHRydWU7CiAgICAgICAgICB9IGVsc2UgewogICAgICAgICAgICBfZmlsdGVycy5hZGQoZmlsdGVyKTsKICAgICAgICAgIH0K
-          NEW_BLOCK: ICAgICAgICAgIF9maWx0ZXJzLmFkZChGaWx0ZXJEZWYuZnJvbUpzb24obWFwKSk7Cg==
-        run: python3 -c "import os,base64,pathlib; p=pathlib.Path('lib/services/filter_service.dart'); s=p.read_text(); d=lambda k:base64.b64decode(os.environ[k]).decode(); assert d('OLD_BLOCK') in s; p.write_text(s.replace(d('OLD_BLOCK'),d('NEW_BLOCK'),1))"
-      - run: dart --version || true
+          OLD_BLOCK: ICAgICAgICAgIGlmIChmaWx0ZXIuaWQgPT0gJ0ZpbHRlcjAwMjUnICYmICFqc29uLmNvbnRhaW5zS2V5KCd0b25lQ3VydmVQcmVzZXQnKSkgewogICAgICAgICAgICBmaWx0ZXIgPSBmaWx0ZXIuY29weVdpdGgodG9uZUN1cnZlUHJlc2V0OiBUb25lQ3VydmVQcmVzZXQuaW52ZXJ0KTsKICAgICAgICAgICAgbWlncmF0ZWRGaWx0ZXJTdGF0ZSA9IHRydWU7CiAgICAgICAgICB9Cg==
+        run: python3 -c "import os,base64,pathlib; p=pathlib.Path('lib/services/filter_service.dart'); s=p.read_text(); old=base64.b64decode(os.environ['OLD_BLOCK']).decode(); assert old in s; p.write_text(s.replace(old,'',1))"
       - run: git diff --check
       - run: |
           git config user.name github-actions[bot]
           git config user.email 41898282+github-actions[bot]@users.noreply.github.com
           git add lib/services/filter_service.dart
-          git commit -m 'fix: keep pre-release filter defaults migration-free'
+          git commit -m 'fix: keep Filter0025 pre-release default migration-free'
           git push origin HEAD:dev_branch
