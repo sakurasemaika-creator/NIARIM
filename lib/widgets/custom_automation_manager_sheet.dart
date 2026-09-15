@@ -45,8 +45,9 @@ class CustomAutomationManagerSheet extends StatelessWidget {
             border: const OutlineInputBorder(),
           ),
           onSubmitted: (value) {
-            if (value.trim().isNotEmpty)
+            if (value.trim().isNotEmpty) {
               Navigator.pop(dialogContext, value.trim());
+            }
           },
         ),
         actions: [
@@ -128,7 +129,7 @@ class CustomAutomationManagerSheet extends StatelessWidget {
                           child: Row(
                             children: [
                               Expanded(
-                                child: TextField(
+                                child: TextFormField(
                                   initialValue: fromText,
                                   onChanged: (value) => fromText = value,
                                   keyboardType: TextInputType.number,
@@ -143,7 +144,7 @@ class CustomAutomationManagerSheet extends StatelessWidget {
                                 child: Text('–'),
                               ),
                               Expanded(
-                                child: TextField(
+                                child: TextFormField(
                                   initialValue: toText,
                                   onChanged: (value) => toText = value,
                                   keyboardType: TextInputType.number,
@@ -225,8 +226,7 @@ class CustomAutomationManagerSheet extends StatelessWidget {
             child: Text(l10n.commonCancel),
           ),
           FilledButton(
-            onPressed: () =>
-                Navigator.pop(dialogContext, draftName.trim()),
+            onPressed: () => Navigator.pop(dialogContext, draftName.trim()),
             child: Text(l10n.commonSave),
           ),
         ],
@@ -262,370 +262,111 @@ class CustomAutomationManagerSheet extends StatelessWidget {
   }
 
   Future<void> _export(BuildContext context, CustomAutomation item) async {
-    final service = context.read<CustomAutomationService>();
-    final bytes = Uint8List.fromList(utf8.encode(service.exportJson(item.id)));
-    await FilePicker.platform.saveFile(
-      dialogTitle: item.name,
-      fileName: '${item.name}.niarim-action.json',
-      type: FileType.custom,
-      allowedExtensions: const ['json'],
-      bytes: bytes,
+    final l10n = AppLocalizations.of(context)!;
+    final data = context.read<CustomAutomationService>().exportJson(item);
+    final path = await FilePicker.platform.saveFile(
+      dialogTitle: l10n.customAutomationExportTitle,
+      fileName: '${item.name}.json',
+      bytes: Uint8List.fromList(utf8.encode(data)),
     );
-  }
-
-  Future<void> _import(BuildContext context) async {
-    final result = await FilePicker.platform.pickFiles(
-      type: FileType.custom,
-      allowedExtensions: const ['json'],
-      allowMultiple: false,
-      withData: true,
-    );
-    if (result == null || result.files.isEmpty || !context.mounted) return;
-    final file = result.files.single;
-    Uint8List? bytes = file.bytes;
-    if (bytes == null && file.path != null)
-      bytes = await file.xFile.readAsBytes();
-    if (bytes == null || !context.mounted) return;
-    try {
-      await context.read<CustomAutomationService>().importJson(
-        utf8.decode(bytes),
-      );
-    } on FormatException {
-      if (!context.mounted) return;
-      final l10n = AppLocalizations.of(context)!;
+    if (path != null && context.mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(l10n.customAutomationImportInvalid)),
+        SnackBar(content: Text(l10n.customAutomationExported)),
       );
     }
   }
 
-  void _rerecord(BuildContext context, CustomAutomation item) {
-    final service = context.read<CustomAutomationService>();
-    service.editExisting(item.id);
-    service.resumeRecording(surface);
-    Navigator.pop(context);
-    onRecordingStarted();
-  }
-
-  Future<void> _showItemManager(
-    BuildContext context,
-    CustomAutomation item,
-  ) async {
+  Future<void> _import(BuildContext context) async {
     final l10n = AppLocalizations.of(context)!;
-    final service = context.read<CustomAutomationService>();
-    await showModalBottomSheet<void>(
-      context: context,
-      showDragHandle: true,
-      builder: (sheetContext) => SafeArea(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            ListTile(
-              title: Text(item.name),
-              subtitle: Text(l10n.customAutomationStepCount(item.steps.length)),
-            ),
-            const Divider(height: 1),
-            ListTile(
-              leading: const Icon(Icons.play_arrow),
-              title: Text(l10n.customAutomationRunAction),
-              onTap: () {
-                Navigator.pop(sheetContext);
-                _confirmExecute(context, item);
-              },
-            ),
-            ListTile(
-              leading: Icon(
-                service.isFavorite(item.id) ? Icons.star : Icons.star_border,
-              ),
-              title: Text(
-                service.isFavorite(item.id)
-                    ? l10n.customAutomationUnfavoriteAction
-                    : l10n.customAutomationFavoriteAction,
-              ),
-              onTap: () async {
-                await service.toggleFavorite(item.id);
-                if (sheetContext.mounted) Navigator.pop(sheetContext);
-              },
-            ),
-            ListTile(
-              leading: const Icon(Icons.edit_outlined),
-              title: Text(l10n.customAutomationRenameTitle),
-              onTap: () {
-                Navigator.pop(sheetContext);
-                _rename(context, item);
-              },
-            ),
-            ListTile(
-              leading: const Icon(Icons.ios_share),
-              title: Text(l10n.customAutomationExport),
-              onTap: () {
-                Navigator.pop(sheetContext);
-                _export(context, item);
-              },
-            ),
-            ListTile(
-              leading: const Icon(Icons.fiber_manual_record),
-              title: Text(l10n.customAutomationRerecord),
-              onTap: () {
-                Navigator.pop(sheetContext);
-                _rerecord(context, item);
-              },
-            ),
-            ListTile(
-              leading: Icon(
-                Icons.delete_outline,
-                color: Theme.of(context).colorScheme.error,
-              ),
-              title: Text(
-                l10n.commonDelete,
-                style: TextStyle(color: Theme.of(context).colorScheme.error),
-              ),
-              onTap: () {
-                Navigator.pop(sheetContext);
-                _delete(context, item);
-              },
-            ),
-            const SizedBox(height: 8),
-          ],
-        ),
-      ),
+    final result = await FilePicker.platform.pickFiles(
+      type: FileType.custom,
+      allowedExtensions: const ['json'],
+      withData: true,
     );
+    if (result == null || result.files.isEmpty || !context.mounted) return;
+    final bytes = result.files.single.bytes;
+    if (bytes == null) return;
+    try {
+      await context.read<CustomAutomationService>().importJson(
+        utf8.decode(bytes),
+      );
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(l10n.customAutomationImported)),
+        );
+      }
+    } catch (_) {
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(l10n.customAutomationImportFailed)),
+        );
+      }
+    }
   }
 
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     final service = context.watch<CustomAutomationService>();
-    final visibleItems = service.visibleItems;
+    final items = service.itemsForSurface(surface);
     return SafeArea(
-      child: SizedBox(
-        height: MediaQuery.sizeOf(context).height * .72,
-        child: Column(
-          children: [
-            ListTile(
-              leading: const Icon(Icons.add_circle_outline),
-              title: Text(l10n.customAutomationAdd),
-              onTap: () => _startNew(context),
-              trailing: Wrap(
-                spacing: 0,
-                children: [
-                  IconButton(
-                    key: const ValueKey('custom-automation-favorites-only'),
-                    tooltip: service.favoritesOnly ? 'すべて表示' : 'お気に入りのみ',
-                    icon: Icon(
-                      service.favoritesOnly ? Icons.star : Icons.star_border,
-                    ),
-                    onPressed: () =>
-                        service.setFavoritesOnly(!service.favoritesOnly),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          ListTile(
+            leading: const Icon(Icons.fiber_manual_record),
+            title: Text(l10n.customAutomationNewTitle),
+            onTap: () => _startNew(context),
+          ),
+          ListTile(
+            leading: const Icon(Icons.file_download_outlined),
+            title: Text(l10n.customAutomationImportTitle),
+            onTap: () => _import(context),
+          ),
+          const Divider(height: 1),
+          Flexible(
+            child: ListView.builder(
+              shrinkWrap: true,
+              itemCount: items.length,
+              itemBuilder: (context, index) {
+                final item = items[index];
+                return ListTile(
+                  title: Text(item.name),
+                  subtitle: Text(
+                    l10n.customAutomationStepCount(item.steps.length),
                   ),
-                  IconButton(
-                    tooltip: l10n.customAutomationImport,
-                    icon: const Icon(Icons.file_open_outlined),
-                    onPressed: () => _import(context),
-                  ),
-                ],
-              ),
-            ),
-            const Divider(height: 1),
-            Expanded(
-              child: visibleItems.isEmpty
-                  ? Center(child: Text(l10n.customAutomationEmpty))
-                  : ListView.builder(
-                      itemCount: visibleItems.length,
-                      itemBuilder: (context, index) {
-                        final item = visibleItems[index];
-                        final favorite = service.isFavorite(item.id);
-                        return ListTile(
-                          key: ValueKey(item.id),
-                          onTap: () => _showItemManager(context, item),
-                          title: Text(item.name),
-                          subtitle: Wrap(
-                            spacing: 8,
-                            crossAxisAlignment: WrapCrossAlignment.center,
-                            children: [
-                              Text(
-                                l10n.customAutomationStepCount(
-                                  item.steps.length,
-                                ),
-                              ),
-                              if (favorite) const Icon(Icons.star, size: 16),
-                            ],
-                          ),
-                          trailing: const Icon(Icons.chevron_right),
-                        );
-                      },
-                    ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-class CustomAutomationDraftEditorSheet extends StatelessWidget {
-  final CustomAutomationSurface surface;
-  final VoidCallback onResumeRecording;
-  final VoidCallback onSaved;
-
-  const CustomAutomationDraftEditorSheet({
-    super.key,
-    required this.surface,
-    required this.onResumeRecording,
-    required this.onSaved,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    final l10n = AppLocalizations.of(context)!;
-    final service = context.watch<CustomAutomationService>();
-    final draft = service.draft;
-    if (draft == null) return const SizedBox.shrink();
-    return SafeArea(
-      child: SizedBox(
-        height: MediaQuery.sizeOf(context).height * .72,
-        child: Column(
-          children: [
-            ListTile(
-              title: Text(draft.name),
-              subtitle: Text(
-                l10n.customAutomationStepCount(draft.steps.length),
-              ),
-            ),
-            const Divider(height: 1),
-            Expanded(
-              child: ReorderableListView.builder(
-                itemCount: draft.steps.length,
-                onReorderItem: service.reorderDraftStep,
-                buildDefaultDragHandles: false,
-                itemBuilder: (context, index) {
-                  final step = draft.steps[index];
-                  return ListTile(
-                    key: ValueKey(step.id),
-                    leading: CircleAvatar(
-                      radius: 14,
-                      child: Text(
-                        '${index + 1}',
-                        style: const TextStyle(fontSize: 11),
+                  onTap: () => _confirmExecute(context, item),
+                  trailing: PopupMenuButton<String>(
+                    onSelected: (value) {
+                      switch (value) {
+                        case 'rename':
+                          _rename(context, item);
+                        case 'export':
+                          _export(context, item);
+                        case 'delete':
+                          _delete(context, item);
+                      }
+                    },
+                    itemBuilder: (context) => [
+                      PopupMenuItem(
+                        value: 'rename',
+                        child: Text(l10n.customAutomationRenameTitle),
                       ),
-                    ),
-                    title: Text(step.label),
-                    subtitle: Text(
-                      step.command,
-                      style: const TextStyle(fontSize: 10),
-                    ),
-                    trailing: Wrap(
-                      spacing: 0,
-                      children: [
-                        ReorderableDragStartListener(
-                          index: index,
-                          child: const Padding(
-                            padding: EdgeInsets.all(12),
-                            child: Icon(Icons.drag_handle, size: 20),
-                          ),
-                        ),
-                        IconButton(
-                          icon: const Icon(Icons.delete_outline, size: 20),
-                          tooltip: l10n.commonDelete,
-                          onPressed: () => service.removeDraftStep(index),
-                        ),
-                      ],
-                    ),
-                  );
-                },
-              ),
-            ),
-            const Divider(height: 1),
-            Padding(
-              padding: const EdgeInsets.all(12),
-              child: Row(
-                children: [
-                  Expanded(
-                    child: OutlinedButton.icon(
-                      onPressed: () {
-                        service.resumeRecording(surface);
-                        Navigator.pop(context);
-                        onResumeRecording();
-                      },
-                      icon: const Icon(Icons.fiber_manual_record),
-                      label: Text(l10n.customAutomationReturnToRecording),
-                    ),
+                      PopupMenuItem(
+                        value: 'export',
+                        child: Text(l10n.customAutomationExportTitle),
+                      ),
+                      PopupMenuItem(
+                        value: 'delete',
+                        child: Text(l10n.commonDelete),
+                      ),
+                    ],
                   ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: FilledButton.icon(
-                      onPressed: draft.steps.isEmpty
-                          ? null
-                          : () async {
-                              final saved = await service.saveDraft();
-                              if (saved != null && context.mounted) {
-                                Navigator.pop(context);
-                                onSaved();
-                              }
-                            },
-                      icon: const Icon(Icons.save_outlined),
-                      label: Text(l10n.commonSave),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-class CustomAutomationRecordingStopButton extends StatefulWidget {
-  final VoidCallback onStop;
-
-  const CustomAutomationRecordingStopButton({super.key, required this.onStop});
-
-  @override
-  State<CustomAutomationRecordingStopButton> createState() =>
-      _CustomAutomationRecordingStopButtonState();
-}
-
-class _CustomAutomationRecordingStopButtonState
-    extends State<CustomAutomationRecordingStopButton> {
-  Offset offset = const Offset(16, 80);
-
-  @override
-  Widget build(BuildContext context) {
-    final l10n = AppLocalizations.of(context)!;
-    return Positioned(
-      left: offset.dx,
-      top: offset.dy,
-      child: Material(
-        elevation: 8,
-        borderRadius: BorderRadius.circular(24),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            GestureDetector(
-              behavior: HitTestBehavior.opaque,
-              onPanUpdate: (details) {
-                final size = MediaQuery.sizeOf(context);
-                setState(() {
-                  offset = Offset(
-                    (offset.dx + details.delta.dx).clamp(0, size.width - 160),
-                    (offset.dy + details.delta.dy).clamp(0, size.height - 56),
-                  );
-                });
+                );
               },
-              child: const Padding(
-                padding: EdgeInsets.all(12),
-                child: Icon(Icons.drag_indicator, size: 20),
-              ),
             ),
-            TextButton.icon(
-              onPressed: widget.onStop,
-              icon: const Icon(Icons.stop_circle_outlined),
-              label: Text(l10n.customAutomationStopRecording),
-            ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }
