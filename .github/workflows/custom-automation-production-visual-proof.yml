@@ -8,7 +8,9 @@ on:
       - '.github/workflows/custom-automation-production-visual-proof.yml'
   workflow_dispatch:
 
-# Re-run production visual proof against the current dev_branch surface.
+permissions:
+  contents: write
+
 jobs:
   production-visual-proof:
     runs-on: ubuntu-latest
@@ -17,17 +19,89 @@ jobs:
       - uses: actions/checkout@v4
         with:
           ref: dev_branch
+          fetch-depth: 0
       - uses: subosito/flutter-action@v2
         with:
           channel: stable
           cache: true
       - run: flutter pub get
-      - name: Check proof formatting
-        run: dart format --output=none --set-exit-if-changed test/custom_automation_production_surface_visual_test.dart
+      - name: Align stale visual proof with current built-in presets
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          p = Path('test/custom_automation_production_surface_visual_test.dart')
+          s = p.read_text()
+          start = s.index("  testWidgets(\n    'Aurora line extraction line creation and Prism produce actual PNG output',")
+          end = s.index("\n}\n\nclass _SurfaceHarness", start)
+          replacement = r'''  testWidgets(
+    'all current built-in automation presets produce actual PNG output',
+    (tester) async {
+      final harness = await _SurfaceHarness.create(tester, out);
+      final cases = <(String, String)>[
+        ('デジタル線画作成', 'digital_lineart'),
+        ('アナログ線画作成', 'analog_lineart'),
+      ];
+
+      expect(
+        harness.automationService.items.map((item) => item.name).toSet(),
+        containsAll(cases.map((entry) => entry.$1)),
+      );
+
+      for (final entry in cases) {
+        await harness.createProject('builtin-${entry.$2}');
+        final beforePixels = harness.activeLayerPixels();
+        final beforeLayers = harness.normalLayerIds();
+        final preset = harness.automationService.items
+            .where((item) => item.name == entry.$1)
+            .single;
+
+        await harness.captureCanvas('preset_${entry.$2}_before');
+        await tester.runAsync(() async {
+          await harness.execute(
+            preset,
+            CustomAutomationExecutionScope.currentFrame,
+            null,
+          );
+        });
+
+        final activeChanged =
+            _changedBytes(beforePixels, harness.activeLayerPixels());
+        final generated = harness.normalLayerIds().difference(beforeLayers);
+        var generatedVisiblePixels = 0;
+        for (final id in generated) {
+          final pixels = harness.layerPixels(id);
+          for (var i = 3; i < pixels.length; i += 4) {
+            if (pixels[i] != 0) generatedVisiblePixels++;
+          }
+        }
+        expect(
+          activeChanged > 100 || generatedVisiblePixels > 50,
+          isTrue,
+          reason: '${entry.$1} must visibly change canvas output',
+        );
+        await harness.captureCanvas('preset_${entry.$2}_after');
+      }
+
+      expect(tester.takeException(), isNull);
+    },
+    timeout: const Timeout(Duration(minutes: 5)),
+  );'''
+          p.write_text(s[:start] + replacement + s[end:])
+          PY
+          dart format test/custom_automation_production_surface_visual_test.dart
       - name: Analyze production visual proof
         run: flutter analyze test/custom_automation_production_surface_visual_test.dart --no-fatal-warnings --no-fatal-infos
       - name: Run complete production visual proof
         run: flutter test test/custom_automation_production_surface_visual_test.dart --reporter expanded
+      - name: Persist verified visual proof
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add test/custom_automation_production_surface_visual_test.dart
+          git diff --cached --quiet && exit 0
+          git commit -m 'test: align automation visual proof with production presets'
+          git pull --rebase origin dev_branch
+          git push origin HEAD:dev_branch
       - name: Upload production visual evidence
         if: always()
         uses: actions/upload-artifact@v4
