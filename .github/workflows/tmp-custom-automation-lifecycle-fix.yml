@@ -12,7 +12,7 @@ jobs:
     steps:
       - uses: actions/checkout@v6
       - name: Delay controller disposal until dialog route is detached
-        run: python3 -c "from pathlib import Path; p=Path('lib/widgets/custom_automation_manager_sheet.dart'); s=p.read_text(); pairs=[('nameController.dispose();','WidgetsBinding.instance.addPostFrameCallback((_) => nameController.dispose());'),('fromController.dispose();','WidgetsBinding.instance.addPostFrameCallback((_) => fromController.dispose());'),('toController.dispose();','WidgetsBinding.instance.addPostFrameCallback((_) => toController.dispose());')]; counts=[s.count(a) for a,b in pairs]; assert counts==[2,1,1], counts; [None for a,b in pairs if not (s:=s.replace(a,b))]; p.write_text(s)"
+        run: python3 -c "from pathlib import Path; p=Path('lib/widgets/custom_automation_manager_sheet.dart'); s=p.read_text(); pairs=[('controller.dispose();','WidgetsBinding.instance.addPostFrameCallback((_) => controller.dispose());'),('fromController.dispose();','WidgetsBinding.instance.addPostFrameCallback((_) => fromController.dispose());'),('toController.dispose();','WidgetsBinding.instance.addPostFrameCallback((_) => toController.dispose());')]; counts=[s.count(a) for a,b in pairs]; assert counts==[2,2,2], counts; s=s.replace(pairs[0][0],pairs[0][1]).replace(pairs[1][0],pairs[1][1]).replace(pairs[2][0],pairs[2][1]); p.write_text(s)"
       - run: git diff --check
       - run: |
           git config user.name github-actions[bot]
