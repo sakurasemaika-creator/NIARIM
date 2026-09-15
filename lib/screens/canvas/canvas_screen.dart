@@ -497,7 +497,7 @@ class _CanvasScreenState extends State<CanvasScreen> {
         if (rawSnapshot is! Map) throw StateError('Missing filter snapshot');
         final layerId = _currentLayerId;
         if (layerId == null) throw StateError('No active layer');
-        await RecordedFilterApplyService.apply(
+        final generatedLayerId = await RecordedFilterApplyService.apply(
           projectService: context.read<ProjectService>(),
           projectId: widget.projectId,
           sceneId: _currentSceneId,
@@ -505,6 +505,38 @@ class _CanvasScreenState extends State<CanvasScreen> {
           frameIndex: targetFrame,
           filterSnapshot: Map<String, Object?>.from(rawSnapshot),
         );
+        if (generatedLayerId != null && mounted) {
+          setState(() => _currentLayerId = generatedLayerId);
+        }
+      case 'canvas.brightnessToAlpha':
+        final layerId = _currentLayerId;
+        if (layerId == null) throw StateError('No active layer');
+        final projectService = context.read<ProjectService>();
+        final layer = projectService
+            .layersOf(widget.projectId, _currentSceneId, targetFrame)
+            .where((value) => value.id == layerId)
+            .firstOrNull;
+        if (layer == null) throw StateError('No active layer');
+        final changed = projectService
+            .tileManagerOf(widget.projectId)
+            .applyBrightnessToAlpha(
+              projectService.tileKeyFor(
+                widget.projectId,
+                _currentSceneId,
+                targetFrame,
+                layerId,
+              ),
+              grayMode: step.args['grayMode'] == true,
+            );
+        if (changed) {
+          projectService.updateLayer(
+            projectId: widget.projectId,
+            sceneId: _currentSceneId,
+            frameIndex: targetFrame,
+            layer: layer,
+          );
+          if (mounted) setState(() {});
+        }
       case 'canvas.selectFrame':
         final frame = (step.args['frame'] as num?)?.round();
         if (frame == null) throw StateError('Missing frame');
