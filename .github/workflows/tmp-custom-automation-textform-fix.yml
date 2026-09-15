@@ -3,6 +3,7 @@ name: TMP Custom Automation TextForm Fix
 on:
   push:
     branches: [dev_branch]
+  workflow_dispatch:
 
 permissions:
   contents: write
