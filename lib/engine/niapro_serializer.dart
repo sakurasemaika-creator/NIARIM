@@ -779,6 +779,7 @@ class NiaproSerializer {
             'volume': a.volume,
             'fadeIn': a.fadeIn,
             'fadeOut': a.fadeOut,
+            'sourceStartFrame': a.sourceStartFrame,
             'trackRow': a.trackRow,
           },
         )
@@ -951,6 +952,7 @@ class NiaproSerializer {
           volume: (m['volume'] as num?)?.toDouble() ?? 1.0,
           fadeIn: (m['fadeIn'] as num?)?.toDouble() ?? 0.0,
           fadeOut: (m['fadeOut'] as num?)?.toDouble() ?? 0.0,
+          sourceStartFrame: m['sourceStartFrame'] as int? ?? 0,
           trackRow: m['trackRow'] as int? ?? 0,
         );
       }).toList();
