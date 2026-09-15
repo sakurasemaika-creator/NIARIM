@@ -1,4 +1,4 @@
-name: TMP Custom Automation TextForm Fix
+name: TMP Timeline Cut UI Runner
 
 on:
   push:
@@ -9,7 +9,7 @@ permissions:
   contents: write
 
 jobs:
-  fix-and-verify:
+  integrate-and-verify:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v6
@@ -21,45 +21,50 @@ jobs:
           channel: stable
           cache: false
       - run: flutter pub get --enforce-lockfile
-      - name: Apply exact TextFormField fix
+      - name: Verify RED regression before implementation
+        run: |
+          if grep -q "void _startClipSplitCut" lib/screens/timeline/timeline_screen.dart; then
+            echo 'Timeline cut semantics already present; skipping RED prerequisite.'
+          else
+            set +e
+            flutter test test/timeline_cut_ui_regression_test.dart --reporter expanded
+            status=$?
+            set -e
+            if [ "$status" -eq 0 ]; then
+              echo 'Expected timeline cut UI regression to be RED before implementation.'
+              exit 1
+            fi
+          fi
+      - name: Integrate cut semantics using prepared workflow
         run: |
           python3 - <<'PY'
           from pathlib import Path
-          p = Path('lib/widgets/custom_automation_manager_sheet.dart')
-          s = p.read_text()
-          old = 'child: TextField(\n                                  initialValue:'
-          new = 'child: TextFormField(\n                                  initialValue:'
-          count = s.count(old)
-          if count not in (0, 2):
-              raise SystemExit(f'expected 0 or exactly 2 frame TextField matches, found {count}')
-          if count == 2:
-              p.write_text(s.replace(old, new))
+          source = Path('.github/workflows/tmp-timeline-cut-ui-integration.yml').read_text()
+          start = source.index("          python3 - <<'PY'\n") + len("          python3 - <<'PY'\n")
+          end = source.index("\n          PY\n", start)
+          code = source[start:end]
+          if 'void _startClipSplitCut' in Path('lib/screens/timeline/timeline_screen.dart').read_text():
+              print('Timeline cut semantics already integrated')
+          else:
+              exec(compile(code, 'timeline-cut-integration', 'exec'), {'__name__': '__main__'})
           PY
-          dart format lib/widgets/custom_automation_manager_sheet.dart
-      - name: Analyze focused file
+          dart format lib/screens/timeline/timeline_screen.dart
+      - name: Verify GREEN regressions
         run: |
-          set +e
-          flutter analyze --no-fatal-warnings lib/widgets/custom_automation_manager_sheet.dart 2>&1 | tee /tmp/analyze.log
-          status=${PIPESTATUS[0]}
-          if grep -Eq '(^| )error •' /tmp/analyze.log; then
-            exit 1
-          fi
-          if [ "$status" -ne 0 ]; then
-            echo 'Analyzer returned nonzero for pre-existing info-level lints only; continuing to behavioral regressions.'
-          fi
-      - name: Run lifecycle regression
-        run: flutter test test/custom_automation_manager_dialog_lifecycle_test.dart --reporter expanded
-      - name: Run automation presets regression
-        run: flutter test test/custom_automation_presets_test.dart --reporter expanded
-      - name: Persist verified fix
+          flutter test test/timeline_cut_ui_regression_test.dart --reporter expanded
+          flutter test test/timeline_clip_split_test.dart --reporter expanded
+          flutter test test/audio_source_offset_serializer_regression_test.dart --reporter expanded
+      - name: Analyze affected production files
+        run: flutter analyze --no-fatal-infos lib/screens/timeline/timeline_screen.dart lib/utils/timeline_clip_split.dart lib/models/audio_clip.dart lib/engine/niapro_serializer.dart
+      - name: Persist verified production integration
         run: |
-          if git diff --quiet; then
-            echo 'No changes to persist'
-            exit 0
-          fi
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          git add lib/widgets/custom_automation_manager_sheet.dart
-          git commit -m 'fix: use form fields for automation frame range'
+          git add lib/screens/timeline/timeline_screen.dart
+          if git diff --cached --quiet; then
+            echo 'No production changes to persist'
+            exit 0
+          fi
+          git commit -m 'feat: integrate timeline split and range cut semantics'
           git pull --rebase origin dev_branch
           git push origin HEAD:dev_branch
