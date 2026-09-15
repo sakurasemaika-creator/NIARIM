@@ -1,0 +1,87 @@
+name: TMP Automation Executor Fix
+on:
+  push:
+    branches: [dev_branch]
+    paths:
+      - '.github/workflows/tmp-automation-executor-fix.yml'
+permissions:
+  contents: write
+jobs:
+  fix:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - name: Patch Canvas automation executor
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          p = Path('lib/screens/canvas/canvas_screen.dart')
+          s = p.read_text()
+          old_import = "import '../../engine/text_render.dart';\n"
+          new_import = "import '../../engine/text_render.dart';\nimport '../../engine/tile_manager.dart' show frameLayerKey;\n"
+          if "tile_manager.dart' show frameLayerKey" not in s:
+            if old_import not in s: raise SystemExit('import anchor missing')
+            s = s.replace(old_import, new_import, 1)
+          old = '''      case 'canvas.filter':
+        final filterJson = step.args['filter'];
+        if (filterJson is! Map) return;
+        final snapshot = FilterDef.fromJson(
+          Map<String, dynamic>.from(filterJson),
+        );
+        await RecordedFilterApplyService.apply(
+          context: context,
+          projectId: widget.projectId,
+          sceneId: _currentSceneId,
+          frameIndex: _currentFrameIndex,
+          layerId: _currentLayerId,
+          filterSnapshot: snapshot,
+          refresh: () {
+            if (mounted) setState(() {});
+          },
+        );
+        return;
+'''
+          new = '''      case 'canvas.filter':
+        final filterJson = step.args['filter'];
+        if (filterJson is! Map) return;
+        final snapshot = FilterDef.fromJson(
+          Map<String, dynamic>.from(filterJson),
+        );
+        final generatedLayerId = await RecordedFilterApplyService.apply(
+          context: context,
+          projectId: widget.projectId,
+          sceneId: _currentSceneId,
+          frameIndex: _currentFrameIndex,
+          layerId: _currentLayerId,
+          filterSnapshot: snapshot,
+          refresh: () {
+            if (mounted) setState(() {});
+          },
+        );
+        if (generatedLayerId != null && mounted) {
+          setState(() => _currentLayerId = generatedLayerId);
+        }
+        return;
+      case 'canvas.brightnessToAlpha':
+        final projectService = context.read<ProjectService>();
+        final layerKey = frameLayerKey(_currentLayerId, _currentFrameIndex);
+        final changed = projectService.tileManager.applyBrightnessToAlpha(
+          layerKey,
+          grayMode: step.args['grayMode'] == true,
+        );
+        if (changed) {
+          projectService.markDirty();
+          if (mounted) setState(() {});
+        }
+        return;
+'''
+          if old not in s: raise SystemExit('canvas.filter block anchor missing')
+          s = s.replace(old, new, 1)
+          p.write_text(s)
+          PY
+          git diff --check
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          git add lib/screens/canvas/canvas_screen.dart
+          git commit -m 'fix: execute final automation recipes correctly'
+          git push origin HEAD:dev_branch
