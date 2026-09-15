@@ -53,6 +53,7 @@ import '../../services/settings_service.dart';
 import '../../services/theme_service.dart';
 import '../../services/tone_service.dart';
 import '../../services/watermark_service.dart';
+import '../../utils/timeline_clip_split.dart';
 import '../canvas/widgets/color_picker_panel.dart';
 import '../../widgets/confirm_delete.dart';
 import '../../widgets/dispose_on_unmount.dart';
@@ -261,6 +262,11 @@ class _TimelineScreenState extends State<TimelineScreen> {
   // シーンと異なる場合は貼り付けを行わない（クリップ一覧はシーンごとに
   // 読み込まれるため）。
   ({String sourceSceneId, List<_TrackClip> clips, bool isCut})? _clipClipboard;
+
+  _TrackClip? _clipCutTarget;
+  int? _clipSplitCursorFrame;
+  int? _clipRangeCutStartFrame;
+  int? _clipRangeCutEndFrameExclusive;
 
   // カメラキーフレームマーカーの長押し不要ドラッグ用の一時状態。持ち方は
   // クリップドラッグと同じアンカー方式だが、ProjectServiceへの反映は
@@ -5736,6 +5742,151 @@ class _TimelineScreenState extends State<TimelineScreen> {
       } else {
         _imageClips.add(newClip);
       }
+    });
+  }
+
+  void _startClipSplitCut(_TrackClip clip) {
+    final frame = clampSplitCutCursorFrame(
+      candidateFrame: _currentFrame,
+      clipStartFrame: clip.startFrame,
+      lengthFrames: clip.lengthFrames,
+    );
+    setState(() {
+      _clipCutTarget = clip;
+      _clipSplitCursorFrame = frame;
+      _clipRangeCutStartFrame = null;
+      _clipRangeCutEndFrameExclusive = null;
+    });
+  }
+
+  void _startClipRangeCut(_TrackClip clip) {
+    if (clip.lengthFrames < 2) return;
+    final start = clip.startFrame + 1;
+    final end = (start + 1).clamp(
+      start + 1,
+      clip.startFrame + clip.lengthFrames,
+    );
+    setState(() {
+      _clipCutTarget = clip;
+      _clipSplitCursorFrame = null;
+      _clipRangeCutStartFrame = start;
+      _clipRangeCutEndFrameExclusive = end;
+    });
+  }
+
+  int _clipCutPreviewFrame(_TrackClip clip, double boundaryFrame) =>
+      cutPreviewFrame(
+        boundaryFrame: boundaryFrame - clip.startFrame + clip.useStart,
+        totalFrames: (clip.useEnd - clip.useStart + 1).clamp(1, 1 << 30),
+      );
+
+  Future<void> _confirmClipSplitCut() async {
+    final clip = _clipCutTarget;
+    final cursor = _clipSplitCursorFrame;
+    final sceneId = _selectedSceneId;
+    if (clip == null || cursor == null || sceneId == null) return;
+    final split = splitTimelineClip(
+      clipStartFrame: clip.startFrame,
+      lengthFrames: clip.lengthFrames,
+      splitFrame: cursor,
+      sourceStartFrame: clip.useStart,
+    );
+    if (split == null) return;
+    final originalEnd = clip.useEnd;
+    clip.lengthFrames = split.leftLengthFrames;
+    clip.useEnd = split.leftSourceEndFrame;
+    _persistClipUpdate(clip, sceneId);
+    final right = _TrackClip(
+      id: clip.id,
+      label: clip.label,
+      startFrame: split.rightStartFrame,
+      lengthFrames: split.rightLengthFrames,
+      color: clip.color,
+      trackType: clip.trackType,
+      filePath: clip.filePath,
+      materialId: clip.materialId,
+      volume: clip.volume,
+      fadeIn: clip.fadeIn,
+      fadeOut: clip.fadeOut,
+      useStart: split.rightSourceStartFrame,
+      useEnd: originalEnd,
+      videoOpacity: clip.videoOpacity,
+      trackRow: clip.trackRow,
+    );
+    await _duplicateClipAt(right, split.rightStartFrame);
+    if (!mounted) return;
+    setState(() {
+      _clipCutTarget = null;
+      _clipSplitCursorFrame = null;
+    });
+  }
+
+  Future<void> _confirmClipRangeCut() async {
+    final clip = _clipCutTarget;
+    final start = _clipRangeCutStartFrame;
+    final end = _clipRangeCutEndFrameExclusive;
+    final sceneId = _selectedSceneId;
+    if (clip == null || start == null || end == null || sceneId == null) return;
+    final cut = cutTimelineClipRange(
+      clipStartFrame: clip.startFrame,
+      lengthFrames: clip.lengthFrames,
+      cutStartFrame: start,
+      cutEndFrameExclusive: end,
+      sourceStartFrame: clip.useStart,
+    );
+    if (cut == null) return;
+    final original = _snapshotClip(clip);
+    setState(() {
+      _audioClips.remove(clip);
+      _videoClips.remove(clip);
+      _imageClips.remove(clip);
+    });
+    _deletePersistedClip(clip, sceneId);
+    if (cut.leftLengthFrames > 0) {
+      final left = _TrackClip(
+        id: original.id,
+        label: original.label,
+        startFrame: cut.leftStartFrame,
+        lengthFrames: cut.leftLengthFrames,
+        color: original.color,
+        trackType: original.trackType,
+        filePath: original.filePath,
+        materialId: original.materialId,
+        volume: original.volume,
+        fadeIn: original.fadeIn,
+        fadeOut: original.fadeOut,
+        useStart: cut.leftSourceStartFrame,
+        useEnd: cut.leftSourceEndFrame,
+        videoOpacity: original.videoOpacity,
+        trackRow: original.trackRow,
+      );
+      await _duplicateClipAt(left, cut.leftStartFrame);
+    }
+    if (cut.rightLengthFrames > 0) {
+      final right = _TrackClip(
+        id: original.id,
+        label: original.label,
+        startFrame: cut.rightStartFrame,
+        lengthFrames: cut.rightLengthFrames,
+        color: original.color,
+        trackType: original.trackType,
+        filePath: original.filePath,
+        materialId: original.materialId,
+        volume: original.volume,
+        fadeIn: original.fadeIn,
+        fadeOut: original.fadeOut,
+        useStart: cut.rightSourceStartFrame,
+        useEnd: cut.rightSourceEndFrame,
+        videoOpacity: original.videoOpacity,
+        trackRow: original.trackRow,
+      );
+      await _duplicateClipAt(right, cut.rightStartFrame);
+    }
+    if (!mounted) return;
+    setState(() {
+      _clipCutTarget = null;
+      _clipRangeCutStartFrame = null;
+      _clipRangeCutEndFrameExclusive = null;
     });
   }
 
