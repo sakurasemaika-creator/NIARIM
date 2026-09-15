@@ -5632,6 +5632,7 @@ class _TimelineScreenState extends State<TimelineScreen> {
           volume: clip.volume,
           fadeIn: clip.fadeIn,
           fadeOut: clip.fadeOut,
+          sourceStartFrame: clip.useStart,
           trackRow: targetRow,
         ),
       );
@@ -5650,7 +5651,8 @@ class _TimelineScreenState extends State<TimelineScreen> {
               volume: clip.volume,
               fadeIn: clip.fadeIn,
               fadeOut: clip.fadeOut,
-              useEnd: clip.lengthFrames - 1,
+              useStart: clip.useStart,
+              useEnd: clip.useStart + clip.lengthFrames - 1,
               trackRow: targetRow,
             ),
           ),
@@ -6001,6 +6003,8 @@ class _TimelineScreenState extends State<TimelineScreen> {
           volume: clip.volume,
           fadeIn: clip.fadeIn,
           fadeOut: clip.fadeOut,
+          sourceStartFrame: clip.useStart,
+          trackRow: clip.trackRow,
         ),
       );
     } else {
@@ -6069,7 +6073,8 @@ class _TimelineScreenState extends State<TimelineScreen> {
           volume: a.volume,
           fadeIn: a.fadeIn,
           fadeOut: a.fadeOut,
-          useEnd: a.lengthFrames - 1,
+          useStart: a.sourceStartFrame,
+          useEnd: a.sourceStartFrame + a.lengthFrames - 1,
           trackRow: a.trackRow,
         ),
       );
