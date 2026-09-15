@@ -64,7 +64,7 @@ class CustomAutomationManagerSheet extends StatelessWidget {
         ],
       ),
     );
-    controller.dispose();
+    WidgetsBinding.instance.addPostFrameCallback((_) => controller.dispose());
     if (name == null || !context.mounted) return;
     context.read<CustomAutomationService>().beginDraft(
       name: name,
@@ -188,8 +188,8 @@ class CustomAutomationManagerSheet extends StatelessWidget {
           maxFrame > 0 &&
           to <= maxFrame;
       if (!valid) {
-        fromController.dispose();
-        toController.dispose();
+        WidgetsBinding.instance.addPostFrameCallback((_) => fromController.dispose());
+        WidgetsBinding.instance.addPostFrameCallback((_) => toController.dispose());
         if (context.mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(content: Text(l10n.customAutomationFrameRangeInvalid)),
@@ -202,8 +202,8 @@ class CustomAutomationManagerSheet extends StatelessWidget {
         (index) => from - 1 + index,
       );
     }
-    fromController.dispose();
-    toController.dispose();
+    WidgetsBinding.instance.addPostFrameCallback((_) => fromController.dispose());
+    WidgetsBinding.instance.addPostFrameCallback((_) => toController.dispose());
     if (accepted == true && context.mounted) {
       Navigator.pop(context);
       await onExecute(automation, scope, targetFrames);
@@ -231,7 +231,7 @@ class CustomAutomationManagerSheet extends StatelessWidget {
         ],
       ),
     );
-    controller.dispose();
+    WidgetsBinding.instance.addPostFrameCallback((_) => controller.dispose());
     if (value != null && value.isNotEmpty && context.mounted) {
       await context.read<CustomAutomationService>().rename(item.id, value);
     }
