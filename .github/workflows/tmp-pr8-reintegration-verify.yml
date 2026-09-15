@@ -14,6 +14,6 @@ jobs:
           channel: stable
           cache: false
       - run: flutter pub get --enforce-lockfile
-      - run: dart format --output=none --set-exit-if-changed lib/utils/timeline_clip_split.dart lib/models/audio_clip.dart lib/engine/audio_waveform_service.dart test/timeline_clip_split_test.dart
+      - run: dart format lib/utils/timeline_clip_split.dart lib/models/audio_clip.dart lib/engine/audio_waveform_service.dart test/timeline_clip_split_test.dart
       - run: flutter test test/timeline_clip_split_test.dart --reporter expanded
       - run: flutter analyze --no-fatal-infos lib/utils/timeline_clip_split.dart lib/models/audio_clip.dart lib/engine/audio_waveform_service.dart
