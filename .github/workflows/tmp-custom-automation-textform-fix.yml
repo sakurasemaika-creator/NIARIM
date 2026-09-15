@@ -6,26 +6,110 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: read
+  contents: write
 
 jobs:
-  validate-runner:
+  integrate-and-verify:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          ref: dev_branch
+          fetch-depth: 0
       - uses: subosito/flutter-action@v2
         with:
           channel: stable
           cache: false
       - run: flutter pub get --enforce-lockfile
-      - name: Verify timeline cut regression is RED
+      - name: Verify RED regression before integration
         run: |
           set +e
           flutter test test/timeline_cut_ui_regression_test.dart --reporter expanded
           status=$?
           set -e
           if [ "$status" -eq 0 ]; then
-            echo 'Expected timeline cut UI regression to fail before production integration.'
+            echo 'Expected RED before timeline cut integration.'
             exit 1
           fi
-          echo 'RED regression confirmed.'
+      - name: Integrate timeline cut semantics
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          p = Path('lib/screens/timeline/timeline_screen.dart')
+          s = p.read_text()
+          def one(old, new, label):
+              global s
+              n = s.count(old)
+              if n != 1:
+                  raise SystemExit(f'{label}: expected one anchor, got {n}')
+              s = s.replace(old, new, 1)
+          one("import '../../services/watermark_service.dart';\n", "import '../../services/watermark_service.dart';\nimport '../../utils/timeline_clip_split.dart';\n", 'import')
+          anchor = "  ({String sourceSceneId, List<_TrackClip> clips, bool isCut})? _clipClipboard;\n"
+          one(anchor, anchor + "\n  _TrackClip? _clipCutTarget;\n  int? _clipSplitCursorFrame;\n  int? _clipRangeCutStartFrame;\n  int? _clipRangeCutEndFrameExclusive;\n", 'state')
+          marker = "  // ─── クリップの複数選択・コピー・切り取り・貼り付け ─────────\n"
+          methods = r'''  void _startClipSplitCut(_TrackClip clip) {
+    final frame = clampSplitCutCursorFrame(candidateFrame: _currentFrame, clipStartFrame: clip.startFrame, lengthFrames: clip.lengthFrames);
+    setState(() { _clipCutTarget = clip; _clipSplitCursorFrame = frame; _clipRangeCutStartFrame = null; _clipRangeCutEndFrameExclusive = null; });
+  }
+
+  void _startClipRangeCut(_TrackClip clip) {
+    if (clip.lengthFrames < 2) return;
+    final start = clip.startFrame + 1;
+    final end = (start + 1).clamp(start + 1, clip.startFrame + clip.lengthFrames);
+    setState(() { _clipCutTarget = clip; _clipSplitCursorFrame = null; _clipRangeCutStartFrame = start; _clipRangeCutEndFrameExclusive = end; });
+  }
+
+  int _clipCutPreviewFrame(_TrackClip clip, double boundaryFrame) => cutPreviewFrame(boundaryFrame: boundaryFrame - clip.startFrame + clip.useStart, totalFrames: (clip.useEnd - clip.useStart + 1).clamp(1, 1 << 30));
+
+  Future<void> _confirmClipSplitCut() async {
+    final clip = _clipCutTarget; final cursor = _clipSplitCursorFrame; final sceneId = _selectedSceneId;
+    if (clip == null || cursor == null || sceneId == null) return;
+    final split = splitTimelineClip(clipStartFrame: clip.startFrame, lengthFrames: clip.lengthFrames, splitFrame: cursor, sourceStartFrame: clip.useStart);
+    if (split == null) return;
+    final originalEnd = clip.useEnd;
+    clip.lengthFrames = split.leftLengthFrames; clip.useEnd = split.leftSourceEndFrame; _persistClipUpdate(clip, sceneId);
+    final right = _TrackClip(id: clip.id, label: clip.label, startFrame: split.rightStartFrame, lengthFrames: split.rightLengthFrames, color: clip.color, trackType: clip.trackType, filePath: clip.filePath, materialId: clip.materialId, volume: clip.volume, fadeIn: clip.fadeIn, fadeOut: clip.fadeOut, useStart: split.rightSourceStartFrame, useEnd: originalEnd, videoOpacity: clip.videoOpacity, trackRow: clip.trackRow);
+    await _duplicateClipAt(right, split.rightStartFrame);
+    if (!mounted) return; setState(() { _clipCutTarget = null; _clipSplitCursorFrame = null; });
+  }
+
+  Future<void> _confirmClipRangeCut() async {
+    final clip = _clipCutTarget; final start = _clipRangeCutStartFrame; final end = _clipRangeCutEndFrameExclusive; final sceneId = _selectedSceneId;
+    if (clip == null || start == null || end == null || sceneId == null) return;
+    final cut = cutTimelineClipRange(clipStartFrame: clip.startFrame, lengthFrames: clip.lengthFrames, cutStartFrame: start, cutEndFrameExclusive: end, sourceStartFrame: clip.useStart);
+    if (cut == null) return;
+    final original = _snapshotClip(clip);
+    setState(() { _audioClips.remove(clip); _videoClips.remove(clip); _imageClips.remove(clip); });
+    _deletePersistedClip(clip, sceneId);
+    if (cut.leftLengthFrames > 0) {
+      final left = _TrackClip(id: original.id, label: original.label, startFrame: cut.leftStartFrame, lengthFrames: cut.leftLengthFrames, color: original.color, trackType: original.trackType, filePath: original.filePath, materialId: original.materialId, volume: original.volume, fadeIn: original.fadeIn, fadeOut: original.fadeOut, useStart: cut.leftSourceStartFrame, useEnd: cut.leftSourceEndFrame, videoOpacity: original.videoOpacity, trackRow: original.trackRow);
+      await _duplicateClipAt(left, cut.leftStartFrame);
+    }
+    if (cut.rightLengthFrames > 0) {
+      final right = _TrackClip(id: original.id, label: original.label, startFrame: cut.rightStartFrame, lengthFrames: cut.rightLengthFrames, color: original.color, trackType: original.trackType, filePath: original.filePath, materialId: original.materialId, volume: original.volume, fadeIn: original.fadeIn, fadeOut: original.fadeOut, useStart: cut.rightSourceStartFrame, useEnd: cut.rightSourceEndFrame, videoOpacity: original.videoOpacity, trackRow: original.trackRow);
+      await _duplicateClipAt(right, cut.rightStartFrame);
+    }
+    if (!mounted) return; setState(() { _clipCutTarget = null; _clipRangeCutStartFrame = null; _clipRangeCutEndFrameExclusive = null; });
+  }
+
+'''
+          one(marker, methods + marker, 'methods')
+          p.write_text(s)
+          PY
+          dart format lib/screens/timeline/timeline_screen.dart
+      - name: Verify GREEN regressions
+        run: |
+          flutter test test/timeline_cut_ui_regression_test.dart --reporter expanded
+          flutter test test/timeline_clip_split_test.dart --reporter expanded
+          flutter test test/audio_source_offset_serializer_regression_test.dart --reporter expanded
+      - name: Analyze affected files
+        run: flutter analyze --no-fatal-infos lib/screens/timeline/timeline_screen.dart lib/utils/timeline_clip_split.dart lib/models/audio_clip.dart lib/engine/niapro_serializer.dart
+      - name: Persist verified integration
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add lib/screens/timeline/timeline_screen.dart
+          git diff --cached --quiet && exit 0
+          git commit -m 'feat: integrate timeline split and range cut semantics'
+          git pull --rebase origin dev_branch
+          git push origin HEAD:dev_branch
