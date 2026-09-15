@@ -27,7 +27,7 @@ List<CustomAutomation> builtInCanvasAutomationPresets() => [
     name: 'アナログ線画作成',
     steps: const [
       FilterDef(
-        id: 'Filter0015',
+        id: 'Filter0014',
         name: '二値化',
         kind: FilterKind.threshold,
       ),
