@@ -11,6 +11,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
       - name: Remove unnecessary Filter0025 migration
         env:
           OLD_BLOCK: ICAgICAgICAgIGlmIChmaWx0ZXIuaWQgPT0gJ0ZpbHRlcjAwMjUnICYmICFqc29uLmNvbnRhaW5zS2V5KCd0b25lQ3VydmVQcmVzZXQnKSkgewogICAgICAgICAgICBmaWx0ZXIgPSBmaWx0ZXIuY29weVdpdGgodG9uZUN1cnZlUHJlc2V0OiBUb25lQ3VydmVQcmVzZXQuaW52ZXJ0KTsKICAgICAgICAgICAgbWlncmF0ZWRGaWx0ZXJTdGF0ZSA9IHRydWU7CiAgICAgICAgICB9Cg==
@@ -21,4 +23,5 @@ jobs:
           git config user.email 41898282+github-actions[bot]@users.noreply.github.com
           git add lib/services/filter_service.dart
           git commit -m 'fix: keep Filter0025 pre-release default migration-free'
+          git pull --rebase origin dev_branch
           git push origin HEAD:dev_branch
