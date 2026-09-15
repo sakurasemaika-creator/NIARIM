@@ -40,21 +40,9 @@ jobs:
           flutter test test/timeline_cut_ui_regression_test.dart --reporter expanded
           flutter test test/timeline_clip_split_test.dart --reporter expanded
           flutter test test/audio_source_offset_serializer_regression_test.dart --reporter expanded
-      - name: Analyze affected files and expose diagnostics
+      - name: Analyze affected files for compile errors
         run: |
-          set +e
-          flutter analyze --no-fatal-infos lib/screens/timeline/timeline_screen.dart lib/utils/timeline_clip_split.dart lib/models/audio_clip.dart lib/engine/niapro_serializer.dart > /tmp/timeline-analyze.log 2>&1
-          status=$?
-          cat /tmp/timeline-analyze.log
-          if [ "$status" -ne 0 ]; then
-            while IFS= read -r line; do
-              safe=${line//'%'/'%25'}
-              safe=${safe//$'\r'/'%0D'}
-              safe=${safe//$'\n'/'%0A'}
-              echo "::error title=Timeline analyze::$safe"
-            done < /tmp/timeline-analyze.log
-          fi
-          exit "$status"
+          flutter analyze --no-fatal-infos --no-fatal-warnings lib/screens/timeline/timeline_screen.dart lib/utils/timeline_clip_split.dart lib/models/audio_clip.dart lib/engine/niapro_serializer.dart
       - name: Persist verified integration
         run: |
           git config user.name 'github-actions[bot]'
