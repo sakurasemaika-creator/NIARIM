@@ -128,7 +128,7 @@ class CustomAutomationManagerSheet extends StatelessWidget {
                           child: Row(
                             children: [
                               Expanded(
-                                child: TextField(
+                                child: TextFormField(
                                   initialValue: fromText,
                                   onChanged: (value) => fromText = value,
                                   keyboardType: TextInputType.number,
@@ -143,7 +143,7 @@ class CustomAutomationManagerSheet extends StatelessWidget {
                                 child: Text('–'),
                               ),
                               Expanded(
-                                child: TextField(
+                                child: TextFormField(
                                   initialValue: toText,
                                   onChanged: (value) => toText = value,
                                   keyboardType: TextInputType.number,
@@ -225,8 +225,7 @@ class CustomAutomationManagerSheet extends StatelessWidget {
             child: Text(l10n.commonCancel),
           ),
           FilledButton(
-            onPressed: () =>
-                Navigator.pop(dialogContext, draftName.trim()),
+            onPressed: () => Navigator.pop(dialogContext, draftName.trim()),
             child: Text(l10n.commonSave),
           ),
         ],
