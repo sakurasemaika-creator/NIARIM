@@ -1,0 +1,26 @@
+name: TMP Remove Pre-release Filter Migration
+on:
+  push:
+    branches: [dev_branch]
+    paths:
+      - '.github/workflows/tmp-remove-pre-release-filter-migration.yml'
+permissions:
+  contents: write
+jobs:
+  fix:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - name: Remove unnecessary legacy migration
+        env:
+          OLD_BLOCK: ICAgICAgICAgIGZpbmFsIGlzTGVnYWN5SW52ZXJzaW9uID0KICAgICAgICAgICAgICBtYXBbJ2lkJ10gPT0gJ0ZpbHRlcjAwMjUnICYmCiAgICAgICAgICAgICAgIW1hcC5jb250YWluc0tleSgndG9uZUN1cnZlUHJlc2V0Jyk7CiAgICAgICAgICBmaW5hbCBmaWx0ZXIgPSBGaWx0ZXJEZWYuZnJvbUpzb24obWFwKTsKICAgICAgICAgIGlmIChpc0xlZ2FjeUludmVyc2lvbikgewogICAgICAgICAgICBfZmlsdGVycy5hZGQoCiAgICAgICAgICAgICAgZmlsdGVyLmNvcHlXaXRoKHRvbmVDdXJ2ZVByZXNldDogVG9uZUN1cnZlUHJlc2V0LmludmVydCksCiAgICAgICAgICAgICk7CiAgICAgICAgICAgIG5lZWRzUGVyc2lzdCA9IHRydWU7CiAgICAgICAgICB9IGVsc2UgewogICAgICAgICAgICBfZmlsdGVycy5hZGQoZmlsdGVyKTsKICAgICAgICAgIH0K
+          NEW_BLOCK: ICAgICAgICAgIF9maWx0ZXJzLmFkZChGaWx0ZXJEZWYuZnJvbUpzb24obWFwKSk7Cg==
+        run: python3 -c "import os,base64,pathlib; p=pathlib.Path('lib/services/filter_service.dart'); s=p.read_text(); d=lambda k:base64.b64decode(os.environ[k]).decode(); assert d('OLD_BLOCK') in s; p.write_text(s.replace(d('OLD_BLOCK'),d('NEW_BLOCK'),1))"
+      - run: dart --version || true
+      - run: git diff --check
+      - run: |
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          git add lib/services/filter_service.dart
+          git commit -m 'fix: keep pre-release filter defaults migration-free'
+          git push origin HEAD:dev_branch
