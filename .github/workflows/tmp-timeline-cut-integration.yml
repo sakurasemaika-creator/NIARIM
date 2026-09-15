@@ -1,0 +1,50 @@
+name: TMP Timeline Cut Integration
+
+on:
+  push:
+    branches: [dev_branch]
+    paths:
+      - '.github/workflows/tmp-timeline-cut-integration.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  integrate:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: dev_branch
+          fetch-depth: 0
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+      - run: flutter pub get
+      - name: Integrate source-offset timeline semantics
+        run: |
+          git show 7be2b99589d5e43983bc54b41fc1af9b1e1c0880 -- lib/screens/timeline/timeline_screen.dart | git apply --3way
+      - name: Integrate fixed-cursor and range-cut UI semantics
+        run: |
+          git show c25989c00621a6f5805ec8e219654371d175a6b9 -- lib/screens/timeline/timeline_screen.dart | git apply --3way
+      - name: Verify semantic anchors
+        run: |
+          grep -q "sourceStartFrame: clip.useStart" lib/screens/timeline/timeline_screen.dart
+          grep -q "useStart: a.sourceStartFrame" lib/screens/timeline/timeline_screen.dart
+          grep -q "timeline_fixed_cut_cursor" lib/screens/timeline/timeline_screen.dart
+          grep -q "timeline_range_cut_start" lib/screens/timeline/timeline_screen.dart
+          grep -q "splitTimelineClip(" lib/screens/timeline/timeline_screen.dart
+          grep -q "cutTimelineClipRange(" lib/screens/timeline/timeline_screen.dart
+      - run: dart format lib/screens/timeline/timeline_screen.dart lib/utils/timeline_clip_split.dart test/timeline_clip_split_test.dart
+      - run: flutter test test/timeline_clip_split_test.dart test/audio_source_offset_serializer_regression_test.dart
+      - run: flutter analyze lib/screens/timeline/timeline_screen.dart lib/models/audio_clip.dart lib/engine/niapro_serializer.dart lib/utils/timeline_clip_split.dart
+      - name: Commit integration
+        run: |
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          git add lib/screens/timeline/timeline_screen.dart lib/utils/timeline_clip_split.dart test/timeline_clip_split_test.dart
+          git commit -m 'feat: integrate timeline source-offset cuts'
+          git push origin HEAD:dev_branch
