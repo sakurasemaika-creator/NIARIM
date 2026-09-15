@@ -56,24 +56,14 @@ jobs:
           method_anchor = "  // ─── クリップの複数選択・コピー・切り取り・貼り付け ─────────\n"
           methods = r'''  void _startClipSplitCut(_TrackClip clip) {
     final initial = clampSplitCutCursorFrame(candidateFrame: _currentFrame, clipStartFrame: clip.startFrame, lengthFrames: clip.lengthFrames);
-    setState(() {
-      _clipCutTarget = clip;
-      _clipSplitCursorFrame = initial;
-      _clipRangeCutStartFrame = null;
-      _clipRangeCutEndFrameExclusive = null;
-    });
+    setState(() { _clipCutTarget = clip; _clipSplitCursorFrame = initial; _clipRangeCutStartFrame = null; _clipRangeCutEndFrameExclusive = null; });
   }
 
   void _startClipRangeCut(_TrackClip clip) {
     if (clip.lengthFrames < 2) return;
     final start = (clip.startFrame + 1).clamp(clip.startFrame, clip.startFrame + clip.lengthFrames - 1);
     final end = (start + 1).clamp(start + 1, clip.startFrame + clip.lengthFrames);
-    setState(() {
-      _clipCutTarget = clip;
-      _clipSplitCursorFrame = null;
-      _clipRangeCutStartFrame = start;
-      _clipRangeCutEndFrameExclusive = end;
-    });
+    setState(() { _clipCutTarget = clip; _clipSplitCursorFrame = null; _clipRangeCutStartFrame = start; _clipRangeCutEndFrameExclusive = end; });
   }
 
   Future<void> _previewClipCutBoundary(_TrackClip clip, double boundaryFrame) async {
@@ -81,57 +71,28 @@ jobs:
     final project = context.read<ProjectService>().projects.where((p) => p.id == widget.projectId).firstOrNull;
     final fps = project?.fps ?? 24;
     final position = Duration(milliseconds: (localFrame * 1000 / fps).round());
-    if (clip.trackType == _ClipTrackType.audio) {
-      final player = _audioPlayers[clip.id];
-      if (player == null) return;
-      await player.seek(position);
-      await player.resume();
-    } else if (clip.trackType == _ClipTrackType.video) {
-      final controller = _videoControllers[clip.id];
-      if (controller == null || !controller.value.isInitialized) return;
-      await controller.seekTo(position);
-      await controller.play();
-    }
+    if (clip.trackType == _ClipTrackType.audio) { final player = _audioPlayers[clip.id]; if (player == null) return; await player.seek(position); await player.resume(); }
+    else if (clip.trackType == _ClipTrackType.video) { final controller = _videoControllers[clip.id]; if (controller == null || !controller.value.isInitialized) return; await controller.seekTo(position); await controller.play(); }
   }
 
   Future<void> _confirmClipSplitCut() async {
-    final clip = _clipCutTarget;
-    final cursor = _clipSplitCursorFrame;
-    final sceneId = _selectedSceneId;
+    final clip = _clipCutTarget; final cursor = _clipSplitCursorFrame; final sceneId = _selectedSceneId;
     if (clip == null || cursor == null || sceneId == null) return;
     final split = splitTimelineClip(clipStartFrame: clip.startFrame, lengthFrames: clip.lengthFrames, splitFrame: cursor, sourceStartFrame: clip.useStart);
     if (split == null) return;
-    final originalEnd = clip.useEnd;
-    clip.lengthFrames = split.leftLengthFrames;
-    clip.useEnd = split.leftSourceEndFrame;
-    _persistClipUpdate(clip, sceneId);
+    final originalEnd = clip.useEnd; clip.lengthFrames = split.leftLengthFrames; clip.useEnd = split.leftSourceEndFrame; _persistClipUpdate(clip, sceneId);
     final right = _TrackClip(id: clip.id, label: clip.label, startFrame: split.rightStartFrame, lengthFrames: split.rightLengthFrames, color: clip.color, trackType: clip.trackType, filePath: clip.filePath, materialId: clip.materialId, volume: clip.volume, fadeIn: clip.fadeIn, fadeOut: clip.fadeOut, useStart: split.rightSourceStartFrame, useEnd: originalEnd, videoOpacity: clip.videoOpacity, trackRow: clip.trackRow);
-    await _duplicateClipAt(right, split.rightStartFrame);
-    if (!mounted) return;
-    setState(() { _clipCutTarget = null; _clipSplitCursorFrame = null; });
+    await _duplicateClipAt(right, split.rightStartFrame); if (!mounted) return; setState(() { _clipCutTarget = null; _clipSplitCursorFrame = null; });
   }
 
   Future<void> _confirmClipRangeCut() async {
-    final clip = _clipCutTarget;
-    final start = _clipRangeCutStartFrame;
-    final end = _clipRangeCutEndFrameExclusive;
-    final sceneId = _selectedSceneId;
+    final clip = _clipCutTarget; final start = _clipRangeCutStartFrame; final end = _clipRangeCutEndFrameExclusive; final sceneId = _selectedSceneId;
     if (clip == null || start == null || end == null || sceneId == null) return;
-    final cut = cutTimelineClipRange(clipStartFrame: clip.startFrame, lengthFrames: clip.lengthFrames, cutStartFrame: start, cutEndFrameExclusive: end, sourceStartFrame: clip.useStart);
-    if (cut == null) return;
-    final original = _snapshotClip(clip);
-    setState(() { _audioClips.remove(clip); _videoClips.remove(clip); _imageClips.remove(clip); });
-    _deletePersistedClip(clip, sceneId);
-    if (cut.leftLengthFrames > 0) {
-      final left = _TrackClip(id: original.id, label: original.label, startFrame: cut.leftStartFrame, lengthFrames: cut.leftLengthFrames, color: original.color, trackType: original.trackType, filePath: original.filePath, materialId: original.materialId, volume: original.volume, fadeIn: original.fadeIn, fadeOut: original.fadeOut, useStart: cut.leftSourceStartFrame, useEnd: cut.leftSourceEndFrame, videoOpacity: original.videoOpacity, trackRow: original.trackRow);
-      await _duplicateClipAt(left, cut.leftStartFrame);
-    }
-    if (cut.rightLengthFrames > 0) {
-      final right = _TrackClip(id: original.id, label: original.label, startFrame: cut.rightStartFrame, lengthFrames: cut.rightLengthFrames, color: original.color, trackType: original.trackType, filePath: original.filePath, materialId: original.materialId, volume: original.volume, fadeIn: original.fadeIn, fadeOut: original.fadeOut, useStart: cut.rightSourceStartFrame, useEnd: cut.rightSourceEndFrame, videoOpacity: original.videoOpacity, trackRow: original.trackRow);
-      await _duplicateClipAt(right, cut.rightStartFrame);
-    }
-    if (!mounted) return;
-    setState(() { _clipCutTarget = null; _clipRangeCutStartFrame = null; _clipRangeCutEndFrameExclusive = null; });
+    final cut = cutTimelineClipRange(clipStartFrame: clip.startFrame, lengthFrames: clip.lengthFrames, cutStartFrame: start, cutEndFrameExclusive: end, sourceStartFrame: clip.useStart); if (cut == null) return;
+    final original = _snapshotClip(clip); setState(() { _audioClips.remove(clip); _videoClips.remove(clip); _imageClips.remove(clip); }); _deletePersistedClip(clip, sceneId);
+    if (cut.leftLengthFrames > 0) { final left = _TrackClip(id: original.id, label: original.label, startFrame: cut.leftStartFrame, lengthFrames: cut.leftLengthFrames, color: original.color, trackType: original.trackType, filePath: original.filePath, materialId: original.materialId, volume: original.volume, fadeIn: original.fadeIn, fadeOut: original.fadeOut, useStart: cut.leftSourceStartFrame, useEnd: cut.leftSourceEndFrame, videoOpacity: original.videoOpacity, trackRow: original.trackRow); await _duplicateClipAt(left, cut.leftStartFrame); }
+    if (cut.rightLengthFrames > 0) { final right = _TrackClip(id: original.id, label: original.label, startFrame: cut.rightStartFrame, lengthFrames: cut.rightLengthFrames, color: original.color, trackType: original.trackType, filePath: original.filePath, materialId: original.materialId, volume: original.volume, fadeIn: original.fadeIn, fadeOut: original.fadeOut, useStart: cut.rightSourceStartFrame, useEnd: cut.rightSourceEndFrame, videoOpacity: original.videoOpacity, trackRow: original.trackRow); await _duplicateClipAt(right, cut.rightStartFrame); }
+    if (!mounted) return; setState(() { _clipCutTarget = null; _clipRangeCutStartFrame = null; _clipRangeCutEndFrameExclusive = null; });
   }
 
 '''
