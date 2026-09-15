@@ -32,14 +32,14 @@ class CustomAutomationManagerSheet extends StatelessWidget {
 
   Future<void> _startNew(BuildContext context) async {
     final l10n = AppLocalizations.of(context)!;
-    final controller = TextEditingController();
+    var draftName = '';
     final name = await showDialog<String>(
       context: context,
       builder: (dialogContext) => AlertDialog(
         title: Text(l10n.customAutomationNewTitle),
         content: TextField(
-          controller: controller,
           autofocus: true,
+          onChanged: (value) => draftName = value,
           decoration: InputDecoration(
             labelText: l10n.customAutomationNameLabel,
             border: const OutlineInputBorder(),
@@ -56,7 +56,7 @@ class CustomAutomationManagerSheet extends StatelessWidget {
           ),
           FilledButton(
             onPressed: () {
-              final value = controller.text.trim();
+              final value = draftName.trim();
               if (value.isNotEmpty) Navigator.pop(dialogContext, value);
             },
             child: Text(l10n.customAutomationStartRecording),
@@ -64,7 +64,6 @@ class CustomAutomationManagerSheet extends StatelessWidget {
         ],
       ),
     );
-    WidgetsBinding.instance.addPostFrameCallback((_) => controller.dispose());
     if (name == null || !context.mounted) return;
     context.read<CustomAutomationService>().beginDraft(
       name: name,
@@ -81,8 +80,8 @@ class CustomAutomationManagerSheet extends StatelessWidget {
   ) async {
     final l10n = AppLocalizations.of(context)!;
     var scope = CustomAutomationExecutionScope.currentFrame;
-    final fromController = TextEditingController(text: '1');
-    final toController = TextEditingController(text: '${frameCount ?? 1}');
+    var fromText = '1';
+    var toText = '${frameCount ?? 1}';
     final accepted = await showDialog<bool>(
       context: context,
       builder: (dialogContext) => StatefulBuilder(
@@ -130,7 +129,8 @@ class CustomAutomationManagerSheet extends StatelessWidget {
                             children: [
                               Expanded(
                                 child: TextField(
-                                  controller: fromController,
+                                  initialValue: fromText,
+                                  onChanged: (value) => fromText = value,
                                   keyboardType: TextInputType.number,
                                   decoration: InputDecoration(
                                     labelText: l10n.customAutomationFrameFrom,
@@ -144,7 +144,8 @@ class CustomAutomationManagerSheet extends StatelessWidget {
                               ),
                               Expanded(
                                 child: TextField(
-                                  controller: toController,
+                                  initialValue: toText,
+                                  onChanged: (value) => toText = value,
                                   keyboardType: TextInputType.number,
                                   decoration: InputDecoration(
                                     labelText: l10n.customAutomationFrameTo,
@@ -177,8 +178,8 @@ class CustomAutomationManagerSheet extends StatelessWidget {
     List<int>? targetFrames;
     if (accepted == true &&
         scope == CustomAutomationExecutionScope.specifiedFrames) {
-      final from = int.tryParse(fromController.text.trim());
-      final to = int.tryParse(toController.text.trim());
+      final from = int.tryParse(fromText.trim());
+      final to = int.tryParse(toText.trim());
       final maxFrame = frameCount ?? 0;
       final valid =
           from != null &&
@@ -188,8 +189,6 @@ class CustomAutomationManagerSheet extends StatelessWidget {
           maxFrame > 0 &&
           to <= maxFrame;
       if (!valid) {
-        WidgetsBinding.instance.addPostFrameCallback((_) => fromController.dispose());
-        WidgetsBinding.instance.addPostFrameCallback((_) => toController.dispose());
         if (context.mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(content: Text(l10n.customAutomationFrameRangeInvalid)),
@@ -202,8 +201,6 @@ class CustomAutomationManagerSheet extends StatelessWidget {
         (index) => from - 1 + index,
       );
     }
-    WidgetsBinding.instance.addPostFrameCallback((_) => fromController.dispose());
-    WidgetsBinding.instance.addPostFrameCallback((_) => toController.dispose());
     if (accepted == true && context.mounted) {
       Navigator.pop(context);
       await onExecute(automation, scope, targetFrames);
@@ -212,12 +209,16 @@ class CustomAutomationManagerSheet extends StatelessWidget {
 
   Future<void> _rename(BuildContext context, CustomAutomation item) async {
     final l10n = AppLocalizations.of(context)!;
-    final controller = TextEditingController(text: item.name);
+    var draftName = item.name;
     final value = await showDialog<String>(
       context: context,
       builder: (dialogContext) => AlertDialog(
         title: Text(l10n.customAutomationRenameTitle),
-        content: TextField(controller: controller, autofocus: true),
+        content: TextFormField(
+          initialValue: item.name,
+          autofocus: true,
+          onChanged: (value) => draftName = value,
+        ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(dialogContext),
@@ -225,13 +226,12 @@ class CustomAutomationManagerSheet extends StatelessWidget {
           ),
           FilledButton(
             onPressed: () =>
-                Navigator.pop(dialogContext, controller.text.trim()),
+                Navigator.pop(dialogContext, draftName.trim()),
             child: Text(l10n.commonSave),
           ),
         ],
       ),
     );
-    WidgetsBinding.instance.addPostFrameCallback((_) => controller.dispose());
     if (value != null && value.isNotEmpty && context.mounted) {
       await context.read<CustomAutomationService>().rename(item.id, value);
     }
