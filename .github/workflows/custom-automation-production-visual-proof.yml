@@ -8,6 +8,7 @@ on:
       - '.github/workflows/custom-automation-production-visual-proof.yml'
   workflow_dispatch:
 
+# Re-run production visual proof against the current dev_branch surface.
 jobs:
   production-visual-proof:
     runs-on: ubuntu-latest
