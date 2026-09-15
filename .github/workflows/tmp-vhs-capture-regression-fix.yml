@@ -1,0 +1,35 @@
+name: TMP VHS Capture Regression Fix
+on:
+  push:
+    branches: [dev_branch]
+    paths:
+      - '.github/workflows/tmp-vhs-capture-regression-fix.yml'
+permissions:
+  contents: write
+jobs:
+  fix-and-verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: false
+      - run: flutter pub get --enforce-lockfile
+      - name: Stabilize slider interactions across rebuilds
+        env:
+          OLD_BLOCK: ICAgIGZvciAodmFyIGkgPSAwOyBpIDwgNDsgaSsrKSB7CiAgICAgIGZpbmFsIHNsaWRlciA9IGZpbmQuYnlUeXBlKFNsaWRlcikuYXQoaSk7CiAgICAgIGF3YWl0IHRlc3Rlci50YXBBdCh0ZXN0ZXIuZ2V0Q2VudGVyKHNsaWRlcikpOwogICAgICBhd2FpdCB0ZXN0ZXIucHVtcEFuZFNldHRsZSgpOwogICAgfQo=
+          NEW_BLOCK: ICAgIGZpbmFsIHNsaWRlckNlbnRlcnMgPSBMaXN0PE9mZnNldD4uZ2VuZXJhdGUoCiAgICAgIDQsCiAgICAgIChpbmRleCkgPT4gdGVzdGVyLmdldENlbnRlcihmaW5kLmJ5VHlwZShTbGlkZXIpLmF0KGluZGV4KSksCiAgICApOwogICAgZm9yIChmaW5hbCBjZW50ZXIgaW4gc2xpZGVyQ2VudGVycykgewogICAgICBhd2FpdCB0ZXN0ZXIudGFwQXQoY2VudGVyKTsKICAgICAgYXdhaXQgdGVzdGVyLnB1bXBBbmRTZXR0bGUoKTsKICAgIH0K
+        run: python3 -c "import os,base64,pathlib; p=pathlib.Path('test/visual/vhs_filter_actual_capture_test.dart'); s=p.read_text(); d=lambda k:base64.b64decode(os.environ[k]).decode(); assert d('OLD_BLOCK') in s; p.write_text(s.replace(d('OLD_BLOCK'),d('NEW_BLOCK'),1))"
+      - run: dart format test/visual/vhs_filter_actual_capture_test.dart
+      - run: flutter test test/visual/vhs_filter_actual_capture_test.dart --reporter expanded
+      - run: git diff --check
+      - run: |
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          git add test/visual/vhs_filter_actual_capture_test.dart
+          git commit -m 'test: stabilize VHS actual capture sliders'
+          git pull --rebase origin dev_branch
+          git push origin HEAD:dev_branch
