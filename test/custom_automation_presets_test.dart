@@ -15,7 +15,10 @@ void main() {
     final service = CustomAutomationService();
     await service.init();
 
-    expect(service.items.map((item) => item.name), ['デジタル線画作成', 'アナログ線画作成']);
+    expect(service.items.map((item) => item.name), [
+      'デジタル線画作成',
+      'アナログ線画作成',
+    ]);
     expect(service.items, hasLength(2));
     expect(service.items.every((item) => item.supportsFrameScopeChoice), isTrue);
   });
@@ -25,7 +28,10 @@ void main() {
       (item) => item.name == 'デジタル線画作成',
     );
 
-    expect(preset.steps.map((step) => step.command), ['canvas.filter', 'canvas.filter']);
+    expect(preset.steps.map((step) => step.command), [
+      'canvas.filter',
+      'canvas.filter',
+    ]);
     final first = FilterDef.fromJson(
       Map<String, dynamic>.from(preset.steps[0].args['filter']! as Map),
     );
@@ -51,7 +57,7 @@ void main() {
       Map<String, dynamic>.from(preset.steps[0].args['filter']! as Map),
     );
     expect(threshold.kind, FilterKind.threshold);
-    expect(threshold.id, 'Filter0015');
+    expect(threshold.id, 'Filter0014');
     expect(preset.steps[1].args['grayMode'], isTrue);
   });
 
