@@ -40,8 +40,15 @@ jobs:
           flutter test test/timeline_cut_ui_regression_test.dart --reporter expanded
           flutter test test/timeline_clip_split_test.dart --reporter expanded
           flutter test test/audio_source_offset_serializer_regression_test.dart --reporter expanded
-      - name: Analyze affected files
-        run: flutter analyze --no-fatal-infos lib/screens/timeline/timeline_screen.dart lib/utils/timeline_clip_split.dart lib/models/audio_clip.dart lib/engine/niapro_serializer.dart
+      - name: Analyze affected files and capture diagnostics
+        run: |
+          set +e
+          flutter analyze --no-fatal-infos lib/screens/timeline/timeline_screen.dart lib/utils/timeline_clip_split.dart lib/models/audio_clip.dart lib/engine/niapro_serializer.dart 2>&1 | tee /tmp/timeline-analyze.log
+          status=${PIPESTATUS[0]}
+          echo '===== ANALYZE DIAGNOSTICS ====='
+          cat /tmp/timeline-analyze.log
+          echo '===== END ANALYZE DIAGNOSTICS ====='
+          exit "$status"
       - name: Persist verified integration
         run: |
           git config user.name 'github-actions[bot]'
