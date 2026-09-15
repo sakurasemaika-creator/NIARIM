@@ -13,5 +13,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: false
+      - run: flutter pub get --enforce-lockfile
       - name: Confirm timeline regression fixture exists
         run: test -f test/timeline_cut_ui_regression_test.dart
