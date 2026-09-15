@@ -1,0 +1,56 @@
+name: Finalize UI Task
+on:
+  push:
+    branches: [fix/app-final-work]
+    paths: ['.github/workflows/finalize-ui-task.yml']
+permissions:
+  contents: write
+jobs:
+  fix-verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: fix/app-final-work
+          fetch-depth: 0
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.47.2'
+          channel: stable
+          cache: true
+      - run: flutter pub get --enforce-lockfile
+      - name: Fix exhaustive Aurora preset labels
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          p=Path('lib/screens/timeline/timeline_screen.dart')
+          s=p.read_text()
+          old='''    AuroraHologramPreset.silverFoil =>\n      l10n.filterAuroraHologramPresetSilverFoil,\n  };'''
+          new='''    AuroraHologramPreset.silverFoil =>\n      l10n.filterAuroraHologramPresetSilverFoil,\n    AuroraHologramPreset.classicHologram =>\n      l10n.filterAuroraHologramPresetClassicHologram,\n    AuroraHologramPreset.pearl2 => l10n.filterAuroraHologramPresetPearl2,\n  };'''
+          if old not in s: raise SystemExit('expected switch tail not found')
+          p.write_text(s.replace(old,new,1))
+          PY
+          dart format lib/screens/timeline/timeline_screen.dart
+      - name: Verify popup outside-tap implementation remains present
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          s=Path('lib/screens/canvas/canvas_screen.dart').read_text()
+          assert 'if (_anyToolPanelOpen && !isDesktop)' in s
+          assert 'HitTestBehavior.opaque' in s
+          assert 'onTap: () => setState(_closeAllOverlayPanels)' in s
+          print('outside-tap popup contract: ok')
+          PY
+      - name: Analyze affected screens
+        run: flutter analyze --no-pub lib/screens/canvas lib/screens/timeline
+      - name: Run popup regression
+        run: flutter test --no-pub test/panel_close_bar_position_test.dart
+      - name: Commit verified source fix
+        run: |
+          git config user.name 'NIARIM UI Fix Bot'
+          git config user.email 'actions@users.noreply.github.com'
+          git add lib/screens/timeline/timeline_screen.dart
+          git diff --cached --check
+          git commit -m 'fix: handle all aurora hologram presets'
+          git push origin HEAD:fix/app-final-work
