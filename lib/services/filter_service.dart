@@ -71,10 +71,6 @@ class FilterService extends ChangeNotifier {
         raw.map((s) {
           final json = jsonDecode(s) as Map<String, dynamic>;
           var filter = FilterDef.fromJson(json);
-          if (filter.id == 'Filter0025' && !json.containsKey('toneCurvePreset')) {
-            filter = filter.copyWith(toneCurvePreset: ToneCurvePreset.invert);
-            migratedFilterState = true;
-          }
           if (filter.id == prismFilterId) {
             final usesLegacyDefaults = filter.prismBlurPx == 8 && filter.prismDirectionDegrees == 45;
             if (filter.kind != FilterKind.prism || usesLegacyDefaults) {
