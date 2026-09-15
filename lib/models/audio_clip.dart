@@ -9,6 +9,8 @@ class AudioClip {
   final double volume; // 0.0〜1.0
   final double fadeIn; // フェードイン秒数
   final double fadeOut; // フェードアウト秒数
+  /// 元素材内で使用を開始するフレーム。分割・範囲カット後も素材位置を保持する。
+  final int sourceStartFrame;
   // 音声タイムラインの表示行番号（0始まり）。素材種別ごとに複数行の
   // タイムライン行を追加/削除できる。
   final int trackRow;
@@ -22,6 +24,7 @@ class AudioClip {
     this.volume = 1.0,
     this.fadeIn = 0.0,
     this.fadeOut = 0.0,
+    this.sourceStartFrame = 0,
     this.trackRow = 0,
   });
 
@@ -33,6 +36,7 @@ class AudioClip {
     double? volume,
     double? fadeIn,
     double? fadeOut,
+    int? sourceStartFrame,
     int? trackRow,
   }) {
     return AudioClip(
@@ -46,6 +50,7 @@ class AudioClip {
       volume: volume ?? this.volume,
       fadeIn: fadeIn ?? this.fadeIn,
       fadeOut: fadeOut ?? this.fadeOut,
+      sourceStartFrame: sourceStartFrame ?? this.sourceStartFrame,
       trackRow: trackRow ?? this.trackRow,
     );
   }
