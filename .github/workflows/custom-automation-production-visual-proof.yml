@@ -1,50 +1,65 @@
 name: Custom Automation Production Visual Proof
 
 on:
-  push:
-    branches: [dev_branch]
   workflow_dispatch:
+  push:
+    branches:
+      - dev_branch
+    paths:
+      - "lib/features/custom_automation/**"
+      - "lib/features/editor/**"
+      - "test/custom_automation_production_surface_visual_test.dart"
+      - ".github/workflows/custom-automation-production-visual-proof.yml"
 
 permissions:
-  contents: write
+  contents: read
+
+concurrency:
+  group: custom-automation-production-visual-proof-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
-  production-visual-proof:
+  visual-proof:
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 30
+
     steps:
-      - uses: actions/checkout@v4
-        with:
-          ref: dev_branch
-          fetch-depth: 0
-      - uses: subosito/flutter-action@v2
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Flutter
+        uses: subosito/flutter-action@v2
         with:
           channel: stable
           cache: true
-      - run: flutter pub get
-      - name: Align stale visual proof with current built-in presets
-        env:
-          REPLACEMENT_B64: ICB0ZXN0V2lkZ2V0cygKICAgICdhbGwgY3VycmVudCBidWlsdC1pbiBhdXRvbWF0aW9uIHByZXNldHMgcHJvZHVjZSBhY3R1YWwgUE5HIG91dHB1dCcsCiAgICAodGVzdGVyKSBhc3luYyB7CiAgICAgIGZpbmFsIGhhcm5lc3MgPSBhd2FpdCBfU3VyZmFjZUhhcm5lc3MuY3JlYXRlKHRlc3Rlciwgb3V0KTsKICAgICAgZmluYWwgY2FzZXMgPSA8KFN0cmluZywgU3RyaW5nKT5bCiAgICAgICAgKCfjg4fjgrjjgr/jg6vnt5rnlLvkvZzmiJAnLCAnZGlnaXRhbF9saW5lYXJ0JyksCiAgICAgICAgKCfjgqLjg4rjg63jgrDnt5rnlLvkvZzmiJAnLCAnYW5hbG9nX2xpbmVhcnQnKSwKICAgICAgXTsKICAgICAgZXhwZWN0KAogICAgICAgIGhhcm5lc3MuYXV0b21hdGlvblNlcnZpY2UuaXRlbXMubWFwKChpdGVtKSA9PiBpdGVtLm5hbWUpLnRvU2V0KCksCiAgICAgICAgY29udGFpbnNBbGwoY2FzZXMubWFwKChlbnRyeSkgPT4gZW50cnkuJDEpKSwKICAgICAgKTsKICAgICAgZm9yIChmaW5hbCBlbnRyeSBpbiBjYXNlcykgewogICAgICAgIGF3YWl0IGhhcm5lc3MuY3JlYXRlUHJvamVjdCgnYnVpbHRpbi0ke2VudHJ5LiQyfScpOwogICAgICAgIGZpbmFsIGJlZm9yZVBpeGVscyA9IGhhcm5lc3MuYWN0aXZlTGF5ZXJQaXhlbHMoKTsKICAgICAgICBmaW5hbCBiZWZvcmVMYXllcnMgPSBoYXJuZXNzLm5vcm1hbExheWVySWRzKCk7CiAgICAgICAgZmluYWwgcHJlc2V0ID0gaGFybmVzcy5hdXRvbWF0aW9uU2VydmljZS5pdGVtcwogICAgICAgICAgICAud2hlcmUoKGl0ZW0pID0+IGl0ZW0ubmFtZSA9PSBlbnRyeS4kMSkKICAgICAgICAgICAgLnNpbmdsZTsKICAgICAgICBhd2FpdCBoYXJuZXNzLmNhcHR1cmVDYW52YXMoJ3ByZXNldF8ke2VudHJ5LiQyfV9iZWZvcmUnKTsKICAgICAgICBhd2FpdCB0ZXN0ZXIucnVuQXN5bmMoKCkgYXN5bmMgewogICAgICAgICAgYXdhaXQgaGFybmVzcy5leGVjdXRlKAogICAgICAgICAgICBwcmVzZXQsCiAgICAgICAgICAgIEN1c3RvbUF1dG9tYXRpb25FeGVjdXRpb25TY29wZS5jdXJyZW50RnJhbWUsCiAgICAgICAgICAgIG51bGwsCiAgICAgICAgICApOwogICAgICAgIH0pOwogICAgICAgIGZpbmFsIGFjdGl2ZUNoYW5nZWQgPQogICAgICAgICAgICBfY2hhbmdlZEJ5dGVzKGJlZm9yZVBpeGVscywgaGFybmVzcy5hY3RpdmVMYXllclBpeGVscygpKTsKICAgICAgICBmaW5hbCBnZW5lcmF0ZWQgPSBoYXJuZXNzLm5vcm1hbExheWVySWRzKCkuZGlmZmVyZW5jZShiZWZvcmVMYXllcnMpOwogICAgICAgIHZhciBnZW5lcmF0ZWRWaXNpYmxlUGl4ZWxzID0gMDsKICAgICAgICBmb3IgKGZpbmFsIGlkIGluIGdlbmVyYXRlZCkgewogICAgICAgICAgZmluYWwgcGl4ZWxzID0gaGFybmVzcy5sYXllclBpeGVscyhpZCk7CiAgICAgICAgICBmb3IgKHZhciBpID0gMzsgaSA8IHBpeGVscy5sZW5ndGg7IGkgKz0gNCkgewogICAgICAgICAgICBpZiAocGl4ZWxzW2ldICE9IDApIGdlbmVyYXRlZFZpc2libGVQaXhlbHMrKzsKICAgICAgICAgIH0KICAgICAgICB9CiAgICAgICAgZXhwZWN0KAogICAgICAgICAgYWN0aXZlQ2hhbmdlZCA+IDEwMCB8fCBnZW5lcmF0ZWRWaXNpYmxlUGl4ZWxzID4gNTAsCiAgICAgICAgICBpc1RydWUsCiAgICAgICAgICByZWFzb246ICcke2VudHJ5LiQxfSBtdXN0IHZpc2libHkgY2hhbmdlIGNhbnZhcyBvdXRwdXQnLAogICAgICAgICk7CiAgICAgICAgYXdhaXQgaGFybmVzcy5jYXB0dXJlQ2FudmFzKCdwcmVzZXRfJHtlbnRyeS4kMn1fYWZ0ZXInKTsKICAgICAgfQogICAgICBleHBlY3QodGVzdGVyLnRha2VFeGNlcHRpb24oKSwgaXNOdWxsKTsKICAgIH0sCiAgICB0aW1lb3V0OiBjb25zdCBUaW1lb3V0KER1cmF0aW9uKG1pbnV0ZXM6IDUpKSwKICApOw==
-        run: python3 -c "import base64,os,pathlib; p=pathlib.Path('test/custom_automation_production_surface_visual_test.dart'); s=p.read_text(); old=\"  testWidgets(\\n    'Aurora line extraction line creation and Prism produce actual PNG output',\"; replacement=base64.b64decode(os.environ['REPLACEMENT_B64']).decode(); p.write_text(s if old not in s else s[:s.index(old)]+replacement+s[s.index('\\n}\\n\\nclass _SurfaceHarness',s.index(old)):])"
-      - run: dart format test/custom_automation_production_surface_visual_test.dart
-      - name: Analyze production visual proof
-        run: flutter analyze test/custom_automation_production_surface_visual_test.dart --no-fatal-warnings --no-fatal-infos
-      - name: Run complete production visual proof
-        run: flutter test test/custom_automation_production_surface_visual_test.dart --reporter expanded
-      - name: Persist verified visual proof
+
+      - name: Install Linux desktop dependencies
         run: |
-          git config user.name 'github-actions[bot]'
-          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          git add test/custom_automation_production_surface_visual_test.dart
-          git diff --cached --quiet && exit 0
-          git commit -m 'test: align automation visual proof with production presets'
-          git pull --rebase origin dev_branch
-          git push origin HEAD:dev_branch
-      - name: Upload production visual evidence
+          sudo apt-get update
+          sudo apt-get install -y clang cmake ninja-build pkg-config libgtk-3-dev liblzma-dev libstdc++-12-dev xvfb
+
+      - name: Enable Linux desktop
+        run: flutter config --enable-linux-desktop
+
+      - name: Get dependencies
+        run: flutter pub get
+
+      - name: Format proof surface
+        run: dart format --output=none --set-exit-if-changed test/custom_automation_production_surface_visual_test.dart
+
+      - name: Analyze proof surface
+        run: flutter analyze test/custom_automation_production_surface_visual_test.dart
+
+      - name: Run production custom automation visual proof
+        run: xvfb-run -a flutter test test/custom_automation_production_surface_visual_test.dart -r expanded
+
+      - name: Upload production visual proof
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: custom-automation-production-visual-evidence
-          path: build/visual-reaudit/custom-automation-production
+          name: custom-automation-production-visual-proof-${{ github.run_id }}
           if-no-files-found: warn
-          retention-days: 7
+          retention-days: 14
+          path: |
+            build/custom_automation_visual_proof/**
+            build/custom_automation_visual_proof_log.jsonl
