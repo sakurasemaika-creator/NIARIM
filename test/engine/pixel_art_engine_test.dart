@@ -55,4 +55,26 @@ void main() {
     }
     expect(used.difference({0xff0000, 0x0000ff}), isEmpty);
   });
+
+  test('count mode limits the total number of output colors', () {
+    final input = Uint8List.fromList([
+      255, 0, 0, 255, 0, 255, 0, 255,
+      0, 0, 255, 255, 255, 255, 0, 255,
+      255, 0, 255, 255, 0, 255, 255, 255,
+    ]);
+    final out = engine.convert(
+      input,
+      3,
+      2,
+      pixelSize: 1,
+      colorMode: PixelColorMode.count,
+      colorLevels: 3,
+    );
+    final used = <int>{};
+    for (var i = 0; i < out.length; i += 4) {
+      if (out[i + 3] == 0) continue;
+      used.add((out[i] << 16) | (out[i + 1] << 8) | out[i + 2]);
+    }
+    expect(used.length, lessThanOrEqualTo(3));
+  });
 }
