@@ -1,22 +1,21 @@
 import 'dart:math' as math;
 import 'dart:ui';
 
-const double _epsilon = 1e-6;
-
-int _repeatCount(int count) => count.clamp(1, 10).toInt();
-
-double _finiteOr(double value, double fallback) => value.isFinite ? value : fallback;
-
-/// Symmetric offsets along the local stroke normal. Even counts straddle the
-/// centerline; odd counts include it.
+/// Returns offsets centered on the stroke centerline. [count] is always
+/// treated as 1..10 so malformed imported brushes cannot fan out without
+/// bound. Even counts straddle the centerline instead of occupying it.
 List<double> lateralOffsets({required int count, required double spacing}) {
-  final n = _repeatCount(count);
-  final gap = math.max(0.0, _finiteOr(spacing, 0));
-  final center = (n - 1) / 2.0;
-  return List<double>.generate(n, (i) => (i - center) * gap, growable: false);
+  final safeCount = count.clamp(1, 10).toInt();
+  final safeSpacing = spacing.isFinite ? spacing.abs() : 0.0;
+  final center = (safeCount - 1) / 2.0;
+  return List<double>.generate(
+    safeCount,
+    (index) => (index - center) * safeSpacing,
+    growable: false,
+  );
 }
 
-/// Returns lateral stamp centers using a normal derived from [tangent].
+/// Places repeat centers along the local normal of [tangent].
 List<Offset> lateralCenters({
   required Offset center,
   required Offset tangent,
@@ -24,12 +23,12 @@ List<Offset> lateralCenters({
   required double spacing,
 }) {
   final length = tangent.distance;
-  final unitTangent = length > _epsilon ? tangent / length : const Offset(1, 0);
-  final normal = Offset(-unitTangent.dy, unitTangent.dx);
-  return [
-    for (final offset in lateralOffsets(count: count, spacing: spacing))
-      center + normal * offset,
-  ];
+  if (!length.isFinite || length <= 1e-9) {
+    return [for (final offset in lateralOffsets(count: count, spacing: spacing)) center + Offset(0, offset)];
+  }
+  final unit = tangent / length;
+  final normal = Offset(-unit.dy, unit.dx);
+  return [for (final offset in lateralOffsets(count: count, spacing: spacing)) center + normal * offset];
 }
 
 class BrushStrokeSample {
@@ -73,17 +72,22 @@ class FoldBranch {
     required this.taperRatio,
   });
 
+  double get length => (end - start).distance;
+
+  /// Width along the branch. Taper affects only the configured final fraction.
   double widthAt(double t) {
-    final u = t.clamp(0.0, 1.0);
-    final taper = taperRatio.clamp(0.0, 1.0);
-    if (taper <= _epsilon || u <= 1 - taper) return width;
-    return width * ((1 - u) / taper).clamp(0.0, 1.0);
+    final clampedT = t.clamp(0.0, 1.0).toDouble();
+    final taper = taperRatio.clamp(0.0, 1.0).toDouble();
+    if (taper <= 0) return width;
+    final taperStart = 1.0 - taper;
+    if (clampedT <= taperStart) return width;
+    final local = ((clampedT - taperStart) / taper).clamp(0.0, 1.0).toDouble();
+    // Smoothstep avoids a visible kink where taper begins.
+    final eased = local * local * (3.0 - 2.0 * local);
+    return width * (1.0 - eased);
   }
 }
 
-/// Bounded, distance-resampled fold detector. All thresholds are logical
-/// screen-space distances, so document zoom/canvas resolution do not alter the
-/// gesture threshold. Document coordinates are retained only for rendering.
 class ScreenSpaceFoldDetector {
   final double triggerAngleDegrees;
   final double sampleSpacing;
@@ -91,10 +95,9 @@ class ScreenSpaceFoldDetector {
   final double windowLength;
   final double cooldownDistance;
 
-  final List<BrushStrokeSample> _samples = <BrushStrokeSample>[];
-  double _distanceSinceEvent = double.infinity;
-  BrushStrokeSample? _lastInput;
-  BrushStrokeSample? _lastAccepted;
+  final List<_DistanceSample> _samples = <_DistanceSample>[];
+  double _totalDistance = 0;
+  double _lastFoldDistance = double.negativeInfinity;
 
   ScreenSpaceFoldDetector({
     this.triggerAngleDegrees = 90,
@@ -108,107 +111,84 @@ class ScreenSpaceFoldDetector {
 
   void reset() {
     _samples.clear();
-    _distanceSinceEvent = double.infinity;
-    _lastInput = null;
-    _lastAccepted = null;
+    _totalDistance = 0;
+    _lastFoldDistance = double.negativeInfinity;
   }
 
   FoldEvent? add(BrushStrokeSample sample) {
-    final previousInput = _lastInput;
-    _lastInput = sample;
-    if (previousInput != null) {
-      _distanceSinceEvent +=
-          (sample.screenPosition - previousInput.screenPosition).distance;
-    }
-
-    final accepted = _lastAccepted;
-    if (accepted != null &&
-        (sample.screenPosition - accepted.screenPosition).distance <
-            math.max(.25, sampleSpacing)) {
+    if (!_isFiniteOffset(sample.screenPosition) ||
+        !_isFiniteOffset(sample.documentPosition) ||
+        !sample.effectiveWidth.isFinite ||
+        sample.effectiveWidth <= 0) {
       return null;
     }
-    _lastAccepted = sample;
-    _samples.add(sample);
-    _trimWindow();
+    if (_samples.isEmpty) {
+      _samples.add(_DistanceSample(sample, 0));
+      return null;
+    }
 
-    if (_samples.length < 3 || _pathLength() < minimumTravel) return null;
-    if (_distanceSinceEvent < cooldownDistance) return null;
+    final previous = _samples.last.sample.screenPosition;
+    final delta = sample.screenPosition - previous;
+    final distance = delta.distance;
+    if (!distance.isFinite || distance < math.max(sampleSpacing, 0.1)) return null;
 
-    final pivotIndex = _bestPivotIndex();
-    if (pivotIndex <= 0 || pivotIndex >= _samples.length - 1) return null;
-    final incoming = _direction(_samples.first, _samples[pivotIndex]);
-    final outgoing = _direction(_samples[pivotIndex], _samples.last);
-    if (incoming == null || outgoing == null) return null;
-
-    final signedTurn = math.atan2(
-      incoming.dx * outgoing.dy - incoming.dy * outgoing.dx,
-      incoming.dx * outgoing.dx + incoming.dy * outgoing.dy,
-    );
-    final threshold = triggerAngleDegrees.clamp(30.0, 170.0) * math.pi / 180;
-    if (signedTurn.abs() < threshold) return null;
-
-    // In screen coordinates positive y points down. Rotating the outgoing
-    // tangent toward the signed turn gives the bend's inside normal.
-    final inward = signedTurn > 0
-        ? Offset(-outgoing.dy, outgoing.dx)
-        : Offset(outgoing.dy, -outgoing.dx);
-    final event = FoldEvent(
-      sample: _samples[pivotIndex],
-      tangent: outgoing,
-      inwardNormal: inward,
-      signedTurnRadians: signedTurn,
-      screenDistance: _pathLength(),
-    );
-    _distanceSinceEvent = 0;
-    return event;
-  }
-
-  void _trimWindow() {
-    while (_samples.length > 3 && _pathLength() > windowLength) {
+    _totalDistance += distance;
+    _samples.add(_DistanceSample(sample, _totalDistance));
+    final safeWindow = math.max(windowLength, minimumTravel * 2);
+    while (_samples.length > 3 && _totalDistance - _samples.first.distance > safeWindow) {
       _samples.removeAt(0);
     }
-    // Hard memory bound even with pathological zero-distance input.
-    final maxSamples = math.max(8, (windowLength / math.max(.25, sampleSpacing)).ceil() + 4);
-    if (_samples.length > maxSamples) {
-      _samples.removeRange(0, _samples.length - maxSamples);
-    }
-  }
 
-  double _pathLength() {
-    var distance = 0.0;
-    for (var i = 1; i < _samples.length; i++) {
-      distance += (_samples[i].screenPosition - _samples[i - 1].screenPosition).distance;
+    if (_totalDistance < minimumTravel ||
+        _totalDistance - _lastFoldDistance < cooldownDistance ||
+        _samples.length < 3) {
+      return null;
     }
-    return distance;
-  }
 
-  int _bestPivotIndex() {
-    // Favor a pivot near the middle of the distance window rather than event
-    // density, keeping results stable on high-refresh-rate devices.
-    final total = _pathLength();
-    var walked = 0.0;
-    var best = 1;
-    var error = double.infinity;
+    // Compare directions on either side of a distance-based pivot. This keeps
+    // event density from changing the result and smooths tiny hand jitter.
+    final pivotTarget = _totalDistance - math.max(minimumTravel / 2, 1.0);
+    var pivotIndex = 1;
+    var best = double.infinity;
     for (var i = 1; i < _samples.length - 1; i++) {
-      walked += (_samples[i].screenPosition - _samples[i - 1].screenPosition).distance;
-      final e = (walked - total / 2).abs();
-      if (e < error) {
-        error = e;
-        best = i;
+      final error = (_samples[i].distance - pivotTarget).abs();
+      if (error < best) {
+        best = error;
+        pivotIndex = i;
       }
     }
-    return best;
-  }
+    final before = _samples[pivotIndex].sample.screenPosition - _samples.first.sample.screenPosition;
+    final after = _samples.last.sample.screenPosition - _samples[pivotIndex].sample.screenPosition;
+    if (before.distance < minimumTravel / 3 || after.distance < minimumTravel / 3) return null;
 
-  Offset? _direction(BrushStrokeSample a, BrushStrokeSample b) {
-    final d = b.screenPosition - a.screenPosition;
-    final length = d.distance;
-    return length > _epsilon ? d / length : null;
+    final a = before / before.distance;
+    final b = after / after.distance;
+    final cross = a.dx * b.dy - a.dy * b.dx;
+    final dot = (a.dx * b.dx + a.dy * b.dy).clamp(-1.0, 1.0).toDouble();
+    final signedTurn = math.atan2(cross, dot);
+    final threshold = triggerAngleDegrees.clamp(30.0, 170.0).toDouble() * math.pi / 180.0;
+    if (signedTurn.abs() < threshold) return null;
+
+    final tangentLength = b.distance;
+    if (tangentLength <= 1e-9) return null;
+    final tangent = b / tangentLength;
+    // A positive mathematical cross in Flutter's y-down screen coordinates
+    // visually bends downward; rotating the outgoing tangent toward that side
+    // yields the curve's interior normal.
+    final leftNormal = Offset(-tangent.dy, tangent.dx);
+    final inward = cross >= 0 ? leftNormal : -leftNormal;
+    _lastFoldDistance = _totalDistance;
+
+    return FoldEvent(
+      sample: sample,
+      tangent: tangent,
+      inwardNormal: inward,
+      signedTurnRadians: signedTurn,
+      screenDistance: _totalDistance,
+    );
   }
 }
 
-/// Builds a three-ray Y mark in document space. Length and width are ratios of
-/// the pressure/fade-resolved effective brush width at the fold sample.
 List<FoldBranch> buildFoldY(
   FoldEvent event, {
   required double branchAngleDegrees,
@@ -216,36 +196,35 @@ List<FoldBranch> buildFoldY(
   required double widthRatio,
   required double taperRatio,
 }) {
-  final widthBase = math.max(0.0, _finiteOr(event.sample.effectiveWidth, 0));
-  final length = widthBase * _finiteOr(lengthRatio, .6).clamp(.1, 1.0);
-  final width = widthBase * _finiteOr(widthRatio, .08).clamp(.01, .3);
-  final taper = _finiteOr(taperRatio, .4).clamp(0.0, 1.0);
-  final angle = _finiteOr(branchAngleDegrees, 45).clamp(10.0, 120.0) * math.pi / 180;
+  final width = event.sample.effectiveWidth;
+  final branchLength = width * lengthRatio.clamp(0.1, 1.0).toDouble();
+  final branchWidth = width * widthRatio.clamp(0.01, 0.3).toDouble();
+  final taper = taperRatio.clamp(0.0, 1.0).toDouble();
+  final angle = branchAngleDegrees.clamp(10.0, 120.0).toDouble() * math.pi / 180.0;
+  final inward = _normalized(event.inwardNormal);
+  final tangent = _normalized(event.tangent);
+  final origin = event.sample.documentPosition;
 
-  // screen/document transforms may include zoom but not an arbitrary rotation
-  // in current CanvasArea. Use the event's inward/tangent directions and scale
-  // only by document effective width, keeping the generated mark inside the
-  // brush body at any zoom.
-  final inward = _unit(event.inwardNormal, const Offset(0, 1));
-  final tangent = _unit(event.tangent, const Offset(1, 0));
-  final start = event.sample.documentPosition;
-  final directions = <Offset>[
-    inward,
-    _unit(inward * math.cos(angle) + tangent * math.sin(angle), inward),
-    _unit(inward * math.cos(angle) - tangent * math.sin(angle), inward),
-  ];
-  return [
-    for (final direction in directions)
-      FoldBranch(
-        start: start,
-        end: start + direction * length,
-        width: width,
-        taperRatio: taper,
-      ),
+  // The stem and two arms all remain biased into the bend interior. The arm
+  // angle is measured away from the inward normal toward ± tangent.
+  final armA = _normalized(inward * math.cos(angle) + tangent * math.sin(angle));
+  final armB = _normalized(inward * math.cos(angle) - tangent * math.sin(angle));
+  return <FoldBranch>[
+    FoldBranch(start: origin, end: origin + inward * branchLength, width: branchWidth, taperRatio: taper),
+    FoldBranch(start: origin, end: origin + armA * branchLength, width: branchWidth, taperRatio: taper),
+    FoldBranch(start: origin, end: origin + armB * branchLength, width: branchWidth, taperRatio: taper),
   ];
 }
 
-Offset _unit(Offset value, Offset fallback) {
+class _DistanceSample {
+  final BrushStrokeSample sample;
+  final double distance;
+  const _DistanceSample(this.sample, this.distance);
+}
+
+Offset _normalized(Offset value) {
   final length = value.distance;
-  return length > _epsilon ? value / length : fallback;
+  return length <= 1e-9 || !length.isFinite ? Offset.zero : value / length;
 }
+
+bool _isFiniteOffset(Offset value) => value.dx.isFinite && value.dy.isFinite;
