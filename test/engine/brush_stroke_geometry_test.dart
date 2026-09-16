@@ -74,18 +74,18 @@ void main() {
     });
 
     test('left and right bends report opposite inward normals', () {
-      final right = <Offset>[
+      final down = <Offset>[
         for (var x = 0; x <= 30; x += 2) Offset(x.toDouble(), 0),
         for (var y = 2; y <= 32; y += 2) Offset(30, y.toDouble()),
       ];
-      final left = <Offset>[
+      final up = <Offset>[
         for (var x = 0; x <= 30; x += 2) Offset(x.toDouble(), 0),
         for (var y = -2; y >= -32; y -= 2) Offset(30, y.toDouble()),
       ];
-      final a = runPath(right).first;
-      final b = runPath(left).first;
+      final a = runPath(down).first;
+      final b = runPath(up).first;
       expect(a.signedTurnRadians.sign, -b.signedTurnRadians.sign);
-      expect(a.inwardNormal.dy.sign, -b.inwardNormal.dy.sign);
+      expect(a.inwardNormal.dx.sign, -b.inwardNormal.dx.sign);
     });
   });
 
