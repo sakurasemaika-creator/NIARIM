@@ -28,6 +28,57 @@ class FilterEngine extends legacy.FilterEngine {
     colorLevels: colorLevels,
     paletteColors: paletteColors,
   );
+
+  /// Classic mosaic: each block becomes its arithmetic mean RGBA.
+  /// Pixel-art edge synthesis, palette reduction, and alpha preservation are
+  /// intentionally not used here: mosaic is a separate effect.
+  Uint8List applyMosaic(
+    Uint8List data,
+    int width,
+    int height, {
+    int blockSize = 8,
+  }) {
+    if (width <= 0 || height <= 0 || data.length < width * height * 4) {
+      return Uint8List.fromList(data);
+    }
+    final size = blockSize.clamp(1, 64);
+    final out = Uint8List.fromList(data);
+    for (var by = 0; by < height; by += size) {
+      final yEnd = (by + size).clamp(0, height);
+      for (var bx = 0; bx < width; bx += size) {
+        final xEnd = (bx + size).clamp(0, width);
+        var r = 0;
+        var g = 0;
+        var b = 0;
+        var a = 0;
+        var count = 0;
+        for (var y = by; y < yEnd; y++) {
+          for (var x = bx; x < xEnd; x++) {
+            final i = (y * width + x) * 4;
+            r += data[i];
+            g += data[i + 1];
+            b += data[i + 2];
+            a += data[i + 3];
+            count++;
+          }
+        }
+        final rr = (r / count).round();
+        final gg = (g / count).round();
+        final bb = (b / count).round();
+        final aa = (a / count).round();
+        for (var y = by; y < yEnd; y++) {
+          for (var x = bx; x < xEnd; x++) {
+            final i = (y * width + x) * 4;
+            out[i] = rr;
+            out[i + 1] = gg;
+            out[i + 2] = bb;
+            out[i + 3] = aa;
+          }
+        }
+      }
+    }
+    return out;
+  }
 }
 
 /// Preserve the existing isolate entry point while ensuring draw-filter pixel
