@@ -190,17 +190,22 @@ class _SurfaceHarness {
   }
 
   Future<Uint8List> compositePixels() async {
-    final image = await _compositeImage();
-    final data = await image.toByteData(format: ui.ImageByteFormat.rawRgba);
-    image.dispose();
-    return data!.buffer.asUint8List();
+    return (await tester.runAsync(() async {
+      final image = await _compositeImage();
+      final data = await image.toByteData(format: ui.ImageByteFormat.rawRgba);
+      image.dispose();
+      return data!.buffer.asUint8List();
+    }))!;
   }
 
   Future<void> captureComposite(String name) async {
-    final image = await _compositeImage();
-    final data = await image.toByteData(format: ui.ImageByteFormat.png);
-    image.dispose();
-    File('${out.path}/$name.png').writeAsBytesSync(data!.buffer.asUint8List());
+    final bytes = await tester.runAsync(() async {
+      final image = await _compositeImage();
+      final data = await image.toByteData(format: ui.ImageByteFormat.png);
+      image.dispose();
+      return data!.buffer.asUint8List();
+    });
+    File('${out.path}/$name.png').writeAsBytesSync(bytes!);
   }
 
   Future<void> captureCanvas(String name) => captureComposite(name);
