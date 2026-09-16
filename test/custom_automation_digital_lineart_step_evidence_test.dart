@@ -1,5 +1,7 @@
+import 'dart:io';
 import 'dart:typed_data';
 
+import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:niarim/app_bootstrap.dart';
@@ -23,7 +25,8 @@ void main() {
     TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
         .setMockMethodCallHandler(
       pathProviderChannel,
-      (_) async => '${Directory.systemTemp.path}/niarim_digital_lineart_step_evidence',
+      (_) async =>
+          '${Directory.systemTemp.path}/niarim_digital_lineart_step_evidence',
     );
   });
 
@@ -32,101 +35,114 @@ void main() {
         .setMockMethodCallHandler(pathProviderChannel, null);
   });
 
-  testWidgets('digital lineart preset preserves visible pixels at each generated step',
-      (tester) async {
-    final providers = await tester.runAsync(buildAppProviders);
-    await tester.pumpWidget(
-      MultiProvider(
-        providers: providers!,
-        child: const Directionality(
-          textDirection: TextDirection.ltr,
-          child: SizedBox(),
+  testWidgets(
+    'digital lineart preset preserves visible pixels at each generated step',
+    (tester) async {
+      final providers = await tester.runAsync(buildAppProviders);
+      await tester.pumpWidget(
+        MultiProvider(
+          providers: providers!,
+          child: const Directionality(
+            textDirection: TextDirection.ltr,
+            child: SizedBox(),
+          ),
         ),
-      ),
-    );
-    await tester.pump();
+      );
+      await tester.pump();
 
-    final context = tester.element(find.byType(SizedBox));
-    final projects = context.read<ProjectService>();
-    final project = (await tester.runAsync(
-      () => projects.createProject(
-        name: 'digital-lineart-step-evidence',
-        fps: 24,
-        durationSeconds: 1,
-        backgroundColor: 0xFFFFFFFF,
-        exportWidth: 96,
-        exportHeight: 96,
-      ),
-    ))!;
-    final projectId = project.id;
-    final sceneId = projects.scenesOf(projectId).first.id;
-    const frameIndex = 0;
-    final sourceLayerId = projects
-        .layersOf(projectId, sceneId, frameIndex)
-        .firstWhere((layer) => layer.type == model.LayerType.normal)
-        .id;
-    final tm = projects.tileManagerOf(projectId);
-    final sourceKey =
-        projects.tileKeyFor(projectId, sceneId, frameIndex, sourceLayerId);
-    final tile = tm.getOrCreateTile(sourceKey, 0, 0);
-    tile.fillRange(0, tile.length, 0);
-    for (var y = 8; y < 88; y++) {
-      for (var x = 8; x < 88; x++) {
-        final i = (y * 256 + x) * 4;
-        var shade = 20 + ((x - 8) * 225 ~/ 79);
-        if ((x > 26 && x < 36) || (y > 45 && y < 55)) shade = 18;
-        if (x > 58 && x < 78 && y > 22 && y < 42) shade = 235;
-        tile[i] = shade;
-        tile[i + 1] = shade;
-        tile[i + 2] = shade;
-        tile[i + 3] = 255;
+      final context = tester.element(find.byType(SizedBox));
+      final projects = context.read<ProjectService>();
+      final project = (await tester.runAsync(
+        () => projects.createProject(
+          name: 'digital-lineart-step-evidence',
+          fps: 24,
+          durationSeconds: 1,
+          backgroundColor: 0xFFFFFFFF,
+          exportWidth: 96,
+          exportHeight: 96,
+        ),
+      ))!;
+      final projectId = project.id;
+      final sceneId = projects.scenesOf(projectId).first.id;
+      const frameIndex = 0;
+      final sourceLayerId = projects
+          .layersOf(projectId, sceneId, frameIndex)
+          .firstWhere((layer) => layer.type == model.LayerType.normal)
+          .id;
+      final tm = projects.tileManagerOf(projectId);
+      final sourceKey =
+          projects.tileKeyFor(projectId, sceneId, frameIndex, sourceLayerId);
+      final tile = tm.getOrCreateTile(sourceKey, 0, 0);
+      tile.fillRange(0, tile.length, 0);
+      for (var y = 8; y < 88; y++) {
+        for (var x = 8; x < 88; x++) {
+          final i = (y * 256 + x) * 4;
+          var shade = 20 + ((x - 8) * 225 ~/ 79);
+          if ((x > 26 && x < 36) || (y > 45 && y < 55)) shade = 18;
+          if (x > 58 && x < 78 && y > 22 && y < 42) shade = 235;
+          tile[i] = shade;
+          tile[i + 1] = shade;
+          tile[i + 2] = shade;
+          tile[i + 3] = 255;
+        }
       }
-    }
-    tm.invalidateTile(sourceKey, 0, 0);
+      tm.invalidateTile(sourceKey, 0, 0);
 
-    const autoLineart = FilterDef(
-      id: 'Filter0023',
-      name: '自動線画',
-      kind: FilterKind.autoLineart,
-    );
-    const inkPool = FilterDef(
-      id: 'Filter0021',
-      name: '墨溜まり',
-      kind: FilterKind.inkPool,
-    );
+      const autoLineart = FilterDef(
+        id: 'Filter0023',
+        name: '自動線画',
+        kind: FilterKind.autoLineart,
+      );
+      const inkPool = FilterDef(
+        id: 'Filter0021',
+        name: '墨溜まり',
+        kind: FilterKind.inkPool,
+      );
 
-    final autoLayerId = (await tester.runAsync(
-      () => CustomAutomationFilterRunner.apply(
-        projectService: projects,
-        projectId: projectId,
-        sceneId: sceneId,
-        frameIndex: frameIndex,
-        sourceLayerId: sourceLayerId,
-        filter: autoLineart,
-      ),
-    ))!;
-    final autoPixels = _layerPixels(projects, projectId, sceneId, frameIndex, autoLayerId);
-    final autoVisible = _visiblePixels(autoPixels);
-    // ignore: avoid_print
-    print('DIGITAL_LINEART_STEP auto_lineart_visible_pixels=$autoVisible');
-    expect(autoVisible, greaterThan(20), reason: 'Auto Lineart itself must produce visible pixels before Ink Pool runs');
+      final autoLayerId = (await tester.runAsync(
+        () => CustomAutomationFilterRunner.apply(
+          projectService: projects,
+          projectId: projectId,
+          sceneId: sceneId,
+          frameIndex: frameIndex,
+          sourceLayerId: sourceLayerId,
+          filter: autoLineart,
+        ),
+      ))!;
+      final autoPixels =
+          _layerPixels(projects, projectId, sceneId, frameIndex, autoLayerId);
+      final autoVisible = _visiblePixels(autoPixels);
+      // ignore: avoid_print
+      print('DIGITAL_LINEART_STEP auto_lineart_visible_pixels=$autoVisible');
+      expect(
+        autoVisible,
+        greaterThan(20),
+        reason: 'Auto Lineart itself must produce visible pixels before Ink Pool runs',
+      );
 
-    final inkLayerId = (await tester.runAsync(
-      () => CustomAutomationFilterRunner.apply(
-        projectService: projects,
-        projectId: projectId,
-        sceneId: sceneId,
-        frameIndex: frameIndex,
-        sourceLayerId: autoLayerId,
-        filter: inkPool,
-      ),
-    ))!;
-    final inkPixels = _layerPixels(projects, projectId, sceneId, frameIndex, inkLayerId);
-    final inkVisible = _visiblePixels(inkPixels);
-    // ignore: avoid_print
-    print('DIGITAL_LINEART_STEP ink_pool_visible_pixels=$inkVisible');
-    expect(inkVisible, greaterThan(20), reason: 'Ink Pool must preserve visible output when fed the generated Auto Lineart layer');
-  });
+      final inkLayerId = (await tester.runAsync(
+        () => CustomAutomationFilterRunner.apply(
+          projectService: projects,
+          projectId: projectId,
+          sceneId: sceneId,
+          frameIndex: frameIndex,
+          sourceLayerId: autoLayerId,
+          filter: inkPool,
+        ),
+      ))!;
+      final inkPixels =
+          _layerPixels(projects, projectId, sceneId, frameIndex, inkLayerId);
+      final inkVisible = _visiblePixels(inkPixels);
+      // ignore: avoid_print
+      print('DIGITAL_LINEART_STEP ink_pool_visible_pixels=$inkVisible');
+      expect(
+        inkVisible,
+        greaterThan(20),
+        reason:
+            'Ink Pool must preserve visible output when fed the generated Auto Lineart layer',
+      );
+    },
+  );
 }
 
 Uint8List _layerPixels(
