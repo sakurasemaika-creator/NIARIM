@@ -1,0 +1,18 @@
+name: Temporary Pixel Refresh Verify
+on:
+  push:
+    branches:
+      - feature/pixel-filter-blend-refresh
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v6
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+      - run: flutter pub get
+      - run: flutter test test/engine/pixel_art_engine_test.dart test/engine/pixel_art_filter_engine_test.dart --reporter expanded
+      - run: flutter analyze lib/engine/pixel_art_engine.dart lib/models/pixel_color_mode.dart test/engine/pixel_art_engine_test.dart test/engine/pixel_art_filter_engine_test.dart
