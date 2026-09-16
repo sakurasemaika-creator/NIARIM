@@ -3,9 +3,6 @@ name: Custom Automation Production Visual Proof
 on:
   push:
     branches: [dev_branch]
-    paths:
-      - 'test/custom_automation_production_surface_visual_test.dart'
-      - '.github/workflows/custom-automation-production-visual-proof.yml'
   workflow_dispatch:
 
 permissions:
@@ -31,9 +28,11 @@ jobs:
           from pathlib import Path
           p = Path('test/custom_automation_production_surface_visual_test.dart')
           s = p.read_text()
-          start = s.index("  testWidgets(\n    'Aurora line extraction line creation and Prism produce actual PNG output',")
-          end = s.index("\n}\n\nclass _SurfaceHarness", start)
-          replacement = r'''  testWidgets(
+          old_title = "  testWidgets(\n    'Aurora line extraction line creation and Prism produce actual PNG output',"
+          if old_title in s:
+            start = s.index(old_title)
+            end = s.index("\n}\n\nclass _SurfaceHarness", start)
+            replacement = r'''  testWidgets(
     'all current built-in automation presets produce actual PNG output',
     (tester) async {
       final harness = await _SurfaceHarness.create(tester, out);
@@ -41,12 +40,10 @@ jobs:
         ('デジタル線画作成', 'digital_lineart'),
         ('アナログ線画作成', 'analog_lineart'),
       ];
-
       expect(
         harness.automationService.items.map((item) => item.name).toSet(),
         containsAll(cases.map((entry) => entry.$1)),
       );
-
       for (final entry in cases) {
         await harness.createProject('builtin-${entry.$2}');
         final beforePixels = harness.activeLayerPixels();
@@ -54,7 +51,6 @@ jobs:
         final preset = harness.automationService.items
             .where((item) => item.name == entry.$1)
             .single;
-
         await harness.captureCanvas('preset_${entry.$2}_before');
         await tester.runAsync(() async {
           await harness.execute(
@@ -63,7 +59,6 @@ jobs:
             null,
           );
         });
-
         final activeChanged =
             _changedBytes(beforePixels, harness.activeLayerPixels());
         final generated = harness.normalLayerIds().difference(beforeLayers);
@@ -81,12 +76,11 @@ jobs:
         );
         await harness.captureCanvas('preset_${entry.$2}_after');
       }
-
       expect(tester.takeException(), isNull);
     },
     timeout: const Timeout(Duration(minutes: 5)),
   );'''
-          p.write_text(s[:start] + replacement + s[end:])
+            p.write_text(s[:start] + replacement + s[end:])
           PY
           dart format test/custom_automation_production_surface_visual_test.dart
       - name: Analyze production visual proof
