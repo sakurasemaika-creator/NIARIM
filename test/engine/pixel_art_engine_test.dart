@@ -32,7 +32,8 @@ void main() {
       0, 0, 255, 255, 255, 0, 0, 255,
     ]);
     final out = engine.convert(input, 2, 2, pixelSize: 1, colorMode: PixelColorMode.none);
-    expect(out.sublist(4, 7), [127, 0, 127]);
+    // 255 / 2 rounds to 128 in Dart; this is the exact midpoint byte.
+    expect(out.sublist(4, 7), [128, 0, 128]);
     expect([out[3], out[7], out[11], out[15]], [255, 255, 255, 255]);
   });
 
