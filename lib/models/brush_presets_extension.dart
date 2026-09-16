@@ -1,0 +1,77 @@
+import 'asset_tags.dart';
+import 'brush.dart';
+import 'brush_extension_defaults.dart';
+
+/// Approved extension presets. BrushService can append these to its built-ins
+/// once the production renderer consumes the extension fields.
+List<Brush> brushExtensionPresets() => const <Brush>[
+      Brush(
+        id: 'Brush0022',
+        name: 'ネット',
+        size: 20,
+        opacity: 100,
+        spacing: 100,
+        stabilization: true,
+        stabilizationStrength: 35,
+        pixelMode: false,
+        pressureOn: BrushPressureOnSettings(
+          size: PressureRangeSetting(enabled: false, weak: 100, strong: 100),
+          opacity: PressureRangeSetting(enabled: false, weak: 100, strong: 100),
+          blur: PressureRangeSetting(enabled: false, weak: 0, strong: 0),
+          edgeJitter: PressureRangeSetting(enabled: false, weak: 0, strong: 0),
+          mixing: PressureMixingOnSetting(
+            enabled: false,
+            mode: BrushMixingMode.simple,
+            weakRate: 0,
+            strongRate: 0,
+          ),
+        ),
+        fadeMode: FadeMode.off,
+        strokeDecay: false,
+        rotation: true,
+        density: 1,
+        scatter: 0,
+        lateralRepeatEnabled: true,
+        lateralRepeatCount: 4,
+        lateralRepeatSpacing: BrushExtensionDefaults.lateralRepeatSpacing,
+        tipShape: BrushTipShape.hollowSquare,
+        tags: <String>[AssetTagKeys.decoration, AssetTagKeys.background],
+      ),
+      Brush(
+        id: 'Brush0023',
+        name: '髪の毛',
+        size: 28,
+        opacity: 100,
+        spacing: 1,
+        stabilization: true,
+        stabilizationStrength: 45,
+        pixelMode: false,
+        pressureOn: BrushPressureOnSettings(
+          size: PressureRangeSetting(enabled: true, weak: 20, strong: 100),
+          opacity: PressureRangeSetting(enabled: false, weak: 100, strong: 100),
+          blur: PressureRangeSetting(enabled: false, weak: 0, strong: 0),
+          edgeJitter: PressureRangeSetting(enabled: false, weak: 0, strong: 0),
+          mixing: PressureMixingOnSetting(
+            enabled: false,
+            mode: BrushMixingMode.simple,
+            weakRate: 0,
+            strongRate: 0,
+          ),
+        ),
+        fadeMode: FadeMode.weak,
+        strokeDecay: false,
+        rotation: false,
+        density: 1,
+        scatter: 0,
+        outlineEnabled: true,
+        outlineWidth: BrushExtensionDefaults.outlineWidth,
+        outlineColor: BrushExtensionDefaults.outlineColor,
+        foldEnabled: true,
+        foldTriggerAngle: BrushExtensionDefaults.foldTriggerAngle,
+        yBranchAngle: BrushExtensionDefaults.yBranchAngle,
+        yBranchLengthRatio: BrushExtensionDefaults.yBranchLengthRatio,
+        yBranchWidthRatio: BrushExtensionDefaults.yBranchWidthRatio,
+        yBranchEndTaperRatio: BrushExtensionDefaults.yBranchEndTaperRatio,
+        tags: <String>[AssetTagKeys.hair, AssetTagKeys.lineArt],
+      ),
+    ];
