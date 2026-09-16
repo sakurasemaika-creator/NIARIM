@@ -24,7 +24,7 @@ class PixelArtEngine {
     final result = Uint8List.fromList(data);
     final cellsX = (width + size - 1) ~/ size;
     final cellsY = (height + size - 1) ~/ size;
-    final colors = List<int?>.filled(cellsX * cellsY, null);
+    final rawColors = List<int?>.filled(cellsX * cellsY, null);
 
     for (var cy = 0; cy < cellsY; cy++) {
       for (var cx = 0; cx < cellsX; cx++) {
@@ -41,20 +41,26 @@ class PixelArtEngine {
           }
         }
         if (aw == 0) continue;
-        colors[cy * cellsX + cx] = _constrainColor(
+        rawColors[cy * cellsX + cx] = _rgb(
           (wr / aw).round(),
           (wg / aw).round(),
           (wb / aw).round(),
-          colorMode,
-          colorLevels,
-          paletteColors,
         );
       }
     }
 
+    final countPalette = colorMode == PixelColorMode.count
+        ? _buildCountPalette(rawColors.whereType<int>().toList(), colorLevels)
+        : const <int>[];
+    final colors = rawColors
+        .map((color) => color == null
+            ? null
+            : _constrainColor(color, colorMode, paletteColors, countPalette))
+        .toList();
+
     // Only a true diagonal A/B crossing is eligible for a middle color.
-    // A transparent cell in the 2x2 neighborhood blocks smoothing, and an
-    // ordinary horizontal/vertical A/B boundary does not match this pattern.
+    // Transparency blocks smoothing. Horizontal/vertical A/B boundaries never
+    // match this pattern, so they stay crisp.
     for (var cy = 0; cy + 1 < cellsY; cy++) {
       for (var cx = 0; cx + 1 < cellsX; cx++) {
         final tl = colors[cy * cellsX + cx];
@@ -63,13 +69,14 @@ class PixelArtEngine {
         final br = colors[(cy + 1) * cellsX + cx + 1];
         if (tl == null || tr == null || bl == null || br == null) continue;
         if (tl == br && tr == bl && tl != tr) {
-          final middle = _middleColor(tl, tr, colorMode, colorLevels, paletteColors);
-          if (middle != null) {
-            // Replace one of the two diagonal corner cells only. This softens
-            // the internal stair-step without creating sub-pixel alpha or
-            // widening the outer silhouette.
-            colors[cy * cellsX + cx + 1] = middle;
-          }
+          final middle = _middleColor(
+            tl,
+            tr,
+            colorMode,
+            paletteColors,
+            countPalette,
+          );
+          if (middle != null) colors[cy * cellsX + cx + 1] = middle;
         }
       }
     }
@@ -88,7 +95,7 @@ class PixelArtEngine {
             result[i] = r;
             result[i + 1] = g;
             result[i + 2] = b;
-            // Preserve source alpha exactly.
+            // Preserve source alpha exactly: never anti-alias against transparency.
           }
         }
       }
@@ -96,45 +103,96 @@ class PixelArtEngine {
     return result;
   }
 
-  int _constrainColor(int r, int g, int b, PixelColorMode mode, int levels, List<int> palette) {
-    if ((mode == PixelColorMode.explicit || mode == PixelColorMode.palette) && palette.isNotEmpty) {
-      return _nearest(r, g, b, palette);
+  int _constrainColor(
+    int color,
+    PixelColorMode mode,
+    List<int> explicitPalette,
+    List<int> countPalette,
+  ) {
+    if (mode == PixelColorMode.count && countPalette.isNotEmpty) {
+      return _nearestColor(color, countPalette);
     }
+    if ((mode == PixelColorMode.explicit || mode == PixelColorMode.palette) &&
+        explicitPalette.isNotEmpty) {
+      return _nearestColor(color, explicitPalette);
+    }
+    return color;
+  }
+
+  int? _middleColor(
+    int a,
+    int b,
+    PixelColorMode mode,
+    List<int> explicitPalette,
+    List<int> countPalette,
+  ) {
+    final middle = _rgb(
+      ((((a >> 16) & 0xff) + ((b >> 16) & 0xff)) / 2).round(),
+      ((((a >> 8) & 0xff) + ((b >> 8) & 0xff)) / 2).round(),
+      (((a & 0xff) + (b & 0xff)) / 2).round(),
+    );
     if (mode == PixelColorMode.count) {
-      final step = (256 / levels.clamp(1, 256)).round().clamp(1, 256);
-      r = ((r / step).round() * step).clamp(0, 255);
-      g = ((g / step).round() * step).clamp(0, 255);
-      b = ((b / step).round() * step).clamp(0, 255);
+      if (countPalette.isEmpty) return null;
+      final candidate = _nearestColor(middle, countPalette);
+      return candidate == a || candidate == b ? null : candidate;
     }
-    return 0xff000000 | (r << 16) | (g << 8) | b;
-  }
-
-  int? _middleColor(int a, int b, PixelColorMode mode, int levels, List<int> palette) {
-    final r = (((a >> 16) & 0xff) + ((b >> 16) & 0xff)) ~/ 2;
-    final g = (((a >> 8) & 0xff) + ((b >> 8) & 0xff)) ~/ 2;
-    final bl = ((a & 0xff) + (b & 0xff)) ~/ 2;
     if (mode == PixelColorMode.explicit || mode == PixelColorMode.palette) {
-      if (palette.isEmpty) return null;
-      final candidate = _nearest(r, g, bl, palette);
-      if (candidate == a || candidate == b) return null;
-      return candidate;
+      if (explicitPalette.isEmpty) return null;
+      final candidate = _nearestColor(middle, explicitPalette);
+      return candidate == a || candidate == b ? null : candidate;
     }
-    return _constrainColor(r, g, bl, mode, levels, palette);
+    return middle;
   }
 
-  int _nearest(int r, int g, int b, List<int> palette) {
+  List<int> _buildCountPalette(List<int> colors, int requestedCount) {
+    if (colors.isEmpty) return const [];
+    final unique = colors.toSet().toList()..sort();
+    final count = requestedCount.clamp(1, 256);
+    if (unique.length <= count) return unique;
+
+    // Deterministic farthest-point palette. It preserves separated artwork
+    // colors while guaranteeing that the final image never exceeds [count].
+    final palette = <int>[unique.first];
+    while (palette.length < count) {
+      var best = unique.first;
+      var bestDistance = -1;
+      for (final color in unique) {
+        var nearestDistance = 1 << 30;
+        for (final chosen in palette) {
+          final d = _distance(color, chosen);
+          if (d < nearestDistance) nearestDistance = d;
+        }
+        if (nearestDistance > bestDistance) {
+          bestDistance = nearestDistance;
+          best = color;
+        }
+      }
+      if (palette.contains(best)) break;
+      palette.add(best);
+    }
+    return palette;
+  }
+
+  int _nearestColor(int color, List<int> palette) {
     var best = palette.first;
     var bestDistance = 1 << 30;
-    for (final color in palette) {
-      final dr = r - ((color >> 16) & 0xff);
-      final dg = g - ((color >> 8) & 0xff);
-      final db = b - (color & 0xff);
-      final d = dr * dr + dg * dg + db * db;
+    for (final candidate in palette) {
+      final d = _distance(color, candidate);
       if (d < bestDistance) {
         bestDistance = d;
-        best = color;
+        best = candidate;
       }
     }
-    return 0xff000000 | (best & 0x00ffffff);
+    return _rgb((best >> 16) & 0xff, (best >> 8) & 0xff, best & 0xff);
   }
+
+  int _distance(int a, int b) {
+    final dr = ((a >> 16) & 0xff) - ((b >> 16) & 0xff);
+    final dg = ((a >> 8) & 0xff) - ((b >> 8) & 0xff);
+    final db = (a & 0xff) - (b & 0xff);
+    return dr * dr + dg * dg + db * db;
+  }
+
+  int _rgb(int r, int g, int b) =>
+      0xff000000 | ((r & 0xff) << 16) | ((g & 0xff) << 8) | (b & 0xff);
 }
