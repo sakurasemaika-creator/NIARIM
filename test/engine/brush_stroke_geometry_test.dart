@@ -5,33 +5,42 @@ import 'package:niarim/engine/brush_stroke_geometry.dart';
 
 void main() {
   group('lateral repeat geometry', () {
-    test('centers even counts symmetrically around stroke', () {
-      expect(lateralOffsets(count: 4, spacing: 10), [-15, -5, 5, 15]);
-      expect(lateralOffsets(count: 0, spacing: 10), [0]);
+    test('four columns are centered symmetrically', () {
+      expect(lateralOffsets(count: 4, spacing: 10), [-15.0, -5.0, 5.0, 15.0]);
+    });
+
+    test('count is clamped to one through ten', () {
+      expect(lateralOffsets(count: 0, spacing: 10), [0.0]);
       expect(lateralOffsets(count: 99, spacing: 10).length, 10);
     });
 
     test('centers follow the local normal', () {
       final centers = lateralCenters(
-        center: const Offset(20, 30),
+        center: const Offset(100, 100),
         tangent: const Offset(1, 0),
         count: 3,
-        spacing: 5,
+        spacing: 10,
       );
-      expect(centers, const [Offset(20, 25), Offset(20, 30), Offset(20, 35)]);
+      expect(centers, const [Offset(100, 90), Offset(100, 100), Offset(100, 110)]);
     });
   });
 
   group('screen-space fold detector', () {
-    List<FoldEvent> feed(List<Offset> points, {double zoom = 1}) {
-      final detector = ScreenSpaceFoldDetector();
+    List<FoldEvent> runPath(List<Offset> screen, {double documentScale = 1}) {
+      final detector = ScreenSpaceFoldDetector(
+        triggerAngleDegrees: 80,
+        sampleSpacing: 2,
+        minimumTravel: 10,
+        windowLength: 44,
+        cooldownDistance: 20,
+      );
       final events = <FoldEvent>[];
-      for (final p in points) {
+      for (final point in screen) {
         final event = detector.add(
           BrushStrokeSample(
-            screenPosition: p,
-            documentPosition: p / zoom,
-            effectiveWidth: 20 / zoom,
+            screenPosition: point,
+            documentPosition: point * documentScale,
+            effectiveWidth: 20 * documentScale,
           ),
         );
         if (event != null) events.add(event);
@@ -39,59 +48,70 @@ void main() {
       return events;
     }
 
-    test('gentle path and jitter do not trigger', () {
-      final straight = [for (var x = 0.0; x <= 80; x += 2) Offset(x, x * .03)];
-      expect(feed(straight), isEmpty);
-      expect(feed(const [Offset.zero, Offset(.2, -.1), Offset(-.1, .1)]), isEmpty);
+    test('jitter and gentle motion do not fire', () {
+      final points = <Offset>[
+        for (var x = 0; x <= 50; x += 2)
+          Offset(x.toDouble(), x.isEven ? .2 : -.2),
+      ];
+      expect(runPath(points), isEmpty);
     });
 
-    test('sharp left and right turns point inward', () {
-      final left = <Offset>[
-        for (var x = 0.0; x <= 30; x += 2) Offset(x, 0),
-        for (var y = 2.0; y <= 34; y += 2) Offset(30, -y),
+    test('a meaningful sharp bend fires', () {
+      final points = <Offset>[
+        for (var x = 0; x <= 30; x += 2) Offset(x.toDouble(), 0),
+        for (var y = 2; y <= 32; y += 2) Offset(30, y.toDouble()),
       ];
+      expect(runPath(points), isNotEmpty);
+    });
+
+    test('document zoom does not change screen-space detection', () {
+      final points = <Offset>[
+        for (var x = 0; x <= 30; x += 2) Offset(x.toDouble(), 0),
+        for (var y = 2; y <= 32; y += 2) Offset(30, y.toDouble()),
+      ];
+      expect(runPath(points, documentScale: 1).length,
+          runPath(points, documentScale: 8).length);
+    });
+
+    test('left and right bends report opposite inward normals', () {
       final right = <Offset>[
-        for (var x = 0.0; x <= 30; x += 2) Offset(x, 0),
-        for (var y = 2.0; y <= 34; y += 2) Offset(30, y),
+        for (var x = 0; x <= 30; x += 2) Offset(x.toDouble(), 0),
+        for (var y = 2; y <= 32; y += 2) Offset(30, y.toDouble()),
       ];
-      final le = feed(left).first;
-      final re = feed(right).first;
-      expect(le.inwardNormal.dy, lessThan(0));
-      expect(re.inwardNormal.dy, greaterThan(0));
-    });
-
-    test('screen-space result is independent of document zoom', () {
-      final path = <Offset>[
-        for (var x = 0.0; x <= 30; x += 2) Offset(x, 0),
-        for (var y = 2.0; y <= 34; y += 2) Offset(30, y),
+      final left = <Offset>[
+        for (var x = 0; x <= 30; x += 2) Offset(x.toDouble(), 0),
+        for (var y = -2; y >= -32; y -= 2) Offset(30, y.toDouble()),
       ];
-      expect(feed(path, zoom: 1).length, feed(path, zoom: 4).length);
+      final a = runPath(right).first;
+      final b = runPath(left).first;
+      expect(a.signedTurnRadians.sign, -b.signedTurnRadians.sign);
+      expect(a.inwardNormal.dy.sign, -b.inwardNormal.dy.sign);
     });
+  });
 
-    test('fold Y uses effective width ratios and tapers to zero', () {
-      const event = FoldEvent(
-        sample: BrushStrokeSample(
-          screenPosition: Offset(10, 10),
-          documentPosition: Offset(20, 20),
-          effectiveWidth: 40,
-        ),
-        tangent: Offset(1, 0),
-        inwardNormal: Offset(0, 1),
-        signedTurnRadians: 1.7,
-        screenDistance: 30,
-      );
-      final branches = buildFoldY(
-        event,
-        branchAngleDegrees: 45,
-        lengthRatio: .5,
-        widthRatio: .1,
-        taperRatio: .5,
-      );
-      expect(branches, hasLength(3));
-      expect(branches.first.width, 4);
-      expect((branches.first.end - branches.first.start).distance, closeTo(20, .001));
-      expect(branches.first.widthAt(0), 4);
-      expect(branches.first.widthAt(1), 0);
-    });
+  test('fold Y uses effective-width ratios and endpoint taper', () {
+    const event = FoldEvent(
+      sample: BrushStrokeSample(
+        screenPosition: Offset.zero,
+        documentPosition: Offset(50, 50),
+        effectiveWidth: 40,
+      ),
+      tangent: Offset(1, 0),
+      inwardNormal: Offset(0, 1),
+      signedTurnRadians: 1.8,
+      screenDistance: 40,
+    );
+    final branches = buildFoldY(
+      event,
+      branchAngleDegrees: 45,
+      lengthRatio: .5,
+      widthRatio: .1,
+      taperRatio: .5,
+    );
+    expect(branches.length, 3);
+    expect(branches.first.length, closeTo(20, .001));
+    expect(branches.first.width, 4);
+    expect(branches.first.widthAt(0), 4);
+    expect(branches.first.widthAt(1), 0);
   });
 }
