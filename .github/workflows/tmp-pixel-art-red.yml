@@ -3,8 +3,6 @@ on:
   workflow_dispatch:
   push:
     branches: [dev_branch]
-    paths:
-      - 'test/engine/pixel_art_filter_engine_test.dart'
 jobs:
   test:
     runs-on: ubuntu-latest
