@@ -4,7 +4,8 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:niarim/engine/filter_engine.dart';
 import 'package:niarim/models/pixel_color_mode.dart';
 
-// Contract: pixel-art conversion must preserve source alpha per canvas pixel.
+// Contract: pixel-art conversion preserves source alpha per canvas pixel;
+// mosaic remains a separate alpha-averaging effect.
 void main() {
   group('FilterEngine.applyPixelate true pixel art', () {
     test('does not average alpha inside a pixel cell', () {
