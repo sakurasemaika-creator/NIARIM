@@ -228,7 +228,9 @@ int _changedBytes(Uint8List before, Uint8List after) {
   expect(after.length, before.length);
   var changed = 0;
   for (var i = 0; i < before.length; i++) {
-    if (before[i] != after[i]) changed++;
+    if (before[i] != after[i]) {
+      changed++;
+    }
   }
   return changed;
 }
