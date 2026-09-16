@@ -20,6 +20,7 @@ enum FilterKind {
   chromaticAberration,
   lensDistortion,
   pixelate,
+  mosaic,
   auroraHologram,
   backgroundBlend,
   inkPool,
@@ -263,39 +264,29 @@ class FilterDef {
       bgBlendAutoLight: bgBlendAutoLight ?? this.bgBlendAutoLight,
       bgBlendStrength: bgBlendStrength ?? this.bgBlendStrength,
       bgBlendLightStrength: bgBlendLightStrength ?? this.bgBlendLightStrength,
-      bgBlendShadowStrength:
-          bgBlendShadowStrength ?? this.bgBlendShadowStrength,
-      bgBlendAmbientStrength:
-          bgBlendAmbientStrength ?? this.bgBlendAmbientStrength,
-      bgBlendReflectionStrength:
-          bgBlendReflectionStrength ?? this.bgBlendReflectionStrength,
+      bgBlendShadowStrength: bgBlendShadowStrength ?? this.bgBlendShadowStrength,
+      bgBlendAmbientStrength: bgBlendAmbientStrength ?? this.bgBlendAmbientStrength,
+      bgBlendReflectionStrength: bgBlendReflectionStrength ?? this.bgBlendReflectionStrength,
       bgBlendColorBleed: bgBlendColorBleed ?? this.bgBlendColorBleed,
       bgBlendSoftness: bgBlendSoftness ?? this.bgBlendSoftness,
-      bgBlendSecondaryStrength:
-          bgBlendSecondaryStrength ?? this.bgBlendSecondaryStrength,
-      bgBlendMaterialProtection:
-          bgBlendMaterialProtection ?? this.bgBlendMaterialProtection,
+      bgBlendSecondaryStrength: bgBlendSecondaryStrength ?? this.bgBlendSecondaryStrength,
+      bgBlendMaterialProtection: bgBlendMaterialProtection ?? this.bgBlendMaterialProtection,
       bgBlendSamplingBand: bgBlendSamplingBand ?? this.bgBlendSamplingBand,
       bgBlendLightColor: bgBlendLightColor ?? this.bgBlendLightColor,
       bgBlendAmbientColor: bgBlendAmbientColor ?? this.bgBlendAmbientColor,
       bgBlendShadowColor: bgBlendShadowColor ?? this.bgBlendShadowColor,
-      bgBlendReflectionColor:
-          bgBlendReflectionColor ?? this.bgBlendReflectionColor,
+      bgBlendReflectionColor: bgBlendReflectionColor ?? this.bgBlendReflectionColor,
       bgBlendShowAnalysis: bgBlendShowAnalysis ?? this.bgBlendShowAnalysis,
       inkPoolColor: inkPoolColor ?? this.inkPoolColor,
       inkPoolRange: inkPoolRange ?? this.inkPoolRange,
       inkPoolCenterWidth: inkPoolCenterWidth ?? this.inkPoolCenterWidth,
-      autoLineartRoughWidth:
-          autoLineartRoughWidth ?? this.autoLineartRoughWidth,
-      autoLineartOutputWidth:
-          autoLineartOutputWidth ?? this.autoLineartOutputWidth,
-      autoLineartTaperLength:
-          autoLineartTaperLength ?? this.autoLineartTaperLength,
+      autoLineartRoughWidth: autoLineartRoughWidth ?? this.autoLineartRoughWidth,
+      autoLineartOutputWidth: autoLineartOutputWidth ?? this.autoLineartOutputWidth,
+      autoLineartTaperLength: autoLineartTaperLength ?? this.autoLineartTaperLength,
       autoLineartSmoothing: autoLineartSmoothing ?? this.autoLineartSmoothing,
       autoLineartColor: autoLineartColor ?? this.autoLineartColor,
       prismBlurPx: prismBlurPx ?? this.prismBlurPx,
-      prismDirectionDegrees:
-          prismDirectionDegrees ?? this.prismDirectionDegrees,
+      prismDirectionDegrees: prismDirectionDegrees ?? this.prismDirectionDegrees,
     );
   }
 
@@ -410,18 +401,13 @@ class FilterDef {
     bgBlendAutoLight: j['bgBlendAutoLight'] as bool? ?? true,
     bgBlendStrength: (j['bgBlendStrength'] as num?)?.toDouble() ?? 70,
     bgBlendLightStrength: (j['bgBlendLightStrength'] as num?)?.toDouble() ?? 65,
-    bgBlendShadowStrength:
-        (j['bgBlendShadowStrength'] as num?)?.toDouble() ?? 45,
-    bgBlendAmbientStrength:
-        (j['bgBlendAmbientStrength'] as num?)?.toDouble() ?? 18,
-    bgBlendReflectionStrength:
-        (j['bgBlendReflectionStrength'] as num?)?.toDouble() ?? 22,
+    bgBlendShadowStrength: (j['bgBlendShadowStrength'] as num?)?.toDouble() ?? 45,
+    bgBlendAmbientStrength: (j['bgBlendAmbientStrength'] as num?)?.toDouble() ?? 18,
+    bgBlendReflectionStrength: (j['bgBlendReflectionStrength'] as num?)?.toDouble() ?? 22,
     bgBlendColorBleed: (j['bgBlendColorBleed'] as num?)?.toDouble() ?? 35,
     bgBlendSoftness: (j['bgBlendSoftness'] as num?)?.toDouble() ?? 55,
-    bgBlendSecondaryStrength:
-        (j['bgBlendSecondaryStrength'] as num?)?.toDouble() ?? 35,
-    bgBlendMaterialProtection:
-        (j['bgBlendMaterialProtection'] as num?)?.toDouble() ?? 75,
+    bgBlendSecondaryStrength: (j['bgBlendSecondaryStrength'] as num?)?.toDouble() ?? 35,
+    bgBlendMaterialProtection: (j['bgBlendMaterialProtection'] as num?)?.toDouble() ?? 75,
     bgBlendSamplingBand: (j['bgBlendSamplingBand'] as num?)?.toDouble() ?? 28,
     bgBlendLightColor: j['bgBlendLightColor'] as int? ?? -1,
     bgBlendAmbientColor: j['bgBlendAmbientColor'] as int? ?? -1,
@@ -431,16 +417,12 @@ class FilterDef {
     inkPoolColor: j['inkPoolColor'] as int? ?? 0xFF000000,
     inkPoolRange: (j['inkPoolRange'] as num?)?.toDouble() ?? 12,
     inkPoolCenterWidth: (j['inkPoolCenterWidth'] as num?)?.toDouble() ?? 6,
-    autoLineartRoughWidth:
-        (j['autoLineartRoughWidth'] as num?)?.toDouble() ?? 12,
-    autoLineartOutputWidth:
-        (j['autoLineartOutputWidth'] as num?)?.toDouble() ?? 2,
-    autoLineartTaperLength:
-        (j['autoLineartTaperLength'] as num?)?.toDouble() ?? 8,
+    autoLineartRoughWidth: (j['autoLineartRoughWidth'] as num?)?.toDouble() ?? 12,
+    autoLineartOutputWidth: (j['autoLineartOutputWidth'] as num?)?.toDouble() ?? 2,
+    autoLineartTaperLength: (j['autoLineartTaperLength'] as num?)?.toDouble() ?? 8,
     autoLineartSmoothing: (j['autoLineartSmoothing'] as num?)?.toDouble() ?? 5,
     autoLineartColor: j['autoLineartColor'] as int? ?? 0xFF000000,
     prismBlurPx: (j['prismBlurPx'] as num?)?.toDouble() ?? 17,
-    prismDirectionDegrees:
-        (j['prismDirectionDegrees'] as num?)?.toDouble() ?? 90,
+    prismDirectionDegrees: (j['prismDirectionDegrees'] as num?)?.toDouble() ?? 90,
   );
 }
