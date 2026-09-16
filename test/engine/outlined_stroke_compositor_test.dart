@@ -34,4 +34,10 @@ void main() {
   test('coverage union is max coverage, not additive', () {
     expect(OutlinedStrokeCompositor.union(.6, .7), .7);
   });
+
+  test('non-finite and out-of-range coverage is bounded', () {
+    expect(OutlinedStrokeCompositor.clampCoverage(double.nan), 0);
+    expect(OutlinedStrokeCompositor.clampCoverage(-1), 0);
+    expect(OutlinedStrokeCompositor.clampCoverage(2), 1);
+  });
 }
