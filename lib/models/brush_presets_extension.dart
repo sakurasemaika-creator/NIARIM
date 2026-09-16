@@ -72,6 +72,6 @@ List<Brush> brushExtensionPresets() => const <Brush>[
         yBranchLengthRatio: BrushExtensionDefaults.yBranchLengthRatio,
         yBranchWidthRatio: BrushExtensionDefaults.yBranchWidthRatio,
         yBranchEndTaperRatio: BrushExtensionDefaults.yBranchEndTaperRatio,
-        tags: <String>[AssetTagKeys.hair, AssetTagKeys.lineArt],
+        tags: <String>[AssetTagKeys.clothing],
       ),
     ];
