@@ -24,10 +24,10 @@ void main() {
     });
     TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
         .setMockMethodCallHandler(
-          pathProviderChannel,
-          (_) async =>
-              '${Directory.systemTemp.path}/niarim_filter_panel_ui_contract',
-        );
+      pathProviderChannel,
+      (_) async =>
+          '${Directory.systemTemp.path}/niarim_filter_panel_ui_contract',
+    );
   });
 
   tearDown(() {
