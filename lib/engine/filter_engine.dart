@@ -1849,13 +1849,47 @@ class FilterEngine {
     int colorLevels = 6,
     List<int> paletteColors = const [],
   }) {
-    final mosaic = applyMosaic(data, width, height, mosaicSize);
-    return quantizeColors(
-      mosaic,
-      colorMode: colorMode,
-      colorLevels: colorLevels,
-      paletteColors: paletteColors,
-    );
+    final size = mosaicSize.clamp(1, 64);
+    final result = Uint8List.fromList(data);
+    for (int y = 0; y < height; y += size) {
+      for (int x = 0; x < width; x += size) {
+        int weightedR = 0, weightedG = 0, weightedB = 0, alphaWeight = 0;
+        for (int dy = 0; dy < size && y + dy < height; dy++) {
+          for (int dx = 0; dx < size && x + dx < width; dx++) {
+            final i = ((y + dy) * width + (x + dx)) * 4;
+            final a = data[i + 3];
+            if (a == 0) continue;
+            weightedR += data[i] * a;
+            weightedG += data[i + 1] * a;
+            weightedB += data[i + 2] * a;
+            alphaWeight += a;
+          }
+        }
+        if (alphaWeight == 0) continue;
+        final cell = Uint8List.fromList([
+          (weightedR / alphaWeight).round().clamp(0, 255),
+          (weightedG / alphaWeight).round().clamp(0, 255),
+          (weightedB / alphaWeight).round().clamp(0, 255),
+          255,
+        ]);
+        final quantized = quantizeColors(
+          cell,
+          colorMode: colorMode,
+          colorLevels: colorLevels,
+          paletteColors: paletteColors,
+        );
+        for (int dy = 0; dy < size && y + dy < height; dy++) {
+          for (int dx = 0; dx < size && x + dx < width; dx++) {
+            final i = ((y + dy) * width + (x + dx)) * 4;
+            if (data[i + 3] == 0) continue;
+            result[i] = quantized[0];
+            result[i + 1] = quantized[1];
+            result[i + 2] = quantized[2];
+          }
+        }
+      }
+    }
+    return result;
   }
 
   Uint8List applyFade(
