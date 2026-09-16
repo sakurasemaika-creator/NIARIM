@@ -165,6 +165,12 @@ Uint8List applyDrawFilterInIsolate(
       colorLevels: filter.colorLevels,
       paletteColors: filter.pixelExplicitColors,
     ),
+    FilterKind.mosaic => engine.applyMosaic(
+      data,
+      width,
+      height,
+      filter.strength.round().clamp(1, 64),
+    ),
     FilterKind.auroraHologram => engine.applyAuroraHologram(
       data,
       width,

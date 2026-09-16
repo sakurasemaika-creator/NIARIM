@@ -462,9 +462,9 @@ class _FilterPanelState extends State<FilterPanel> {
                             width: previewSide,
                             height: previewSide,
                             decoration: BoxDecoration(
-                              color: Theme.of(
-                                context,
-                              ).colorScheme.surfaceContainerHighest,
+                              color: Theme.of(context)
+                                  .colorScheme
+                                  .surfaceContainerHighest,
                               borderRadius: BorderRadius.circular(6),
                             ),
                             child: _previewImage == null
@@ -630,6 +630,14 @@ class _FilterPanelState extends State<FilterPanel> {
           current.strength,
           1,
           20,
+          (v) => service.updateFilterParams(current.id, strength: v),
+        );
+      case FilterKind.mosaic:
+        return _paramSlider(
+          l10n.filterPixelateBlockSize,
+          current.strength,
+          1,
+          64,
           (v) => service.updateFilterParams(current.id, strength: v),
         );
       case FilterKind.pixelate:
@@ -1388,6 +1396,7 @@ class _FilterPanelState extends State<FilterPanel> {
       FilterKind.chromaticAberration => l10n.filterNameChromaticAberration,
       FilterKind.lensDistortion => l10n.filterNameLensDistortion,
       FilterKind.pixelate => l10n.filterNamePixelate,
+      FilterKind.mosaic => filter.name,
       FilterKind.auroraHologram => l10n.filterNameAuroraHologram,
       FilterKind.backgroundBlend => l10n.filterNameBackgroundBlend,
       FilterKind.inkPool => l10n.filterNameInkPool,
@@ -1448,6 +1457,7 @@ class _FilterPanelState extends State<FilterPanel> {
       FilterKind.chromaticAberration => Icons.color_lens,
       FilterKind.lensDistortion => Icons.remove_red_eye,
       FilterKind.pixelate => Icons.grid_view,
+      FilterKind.mosaic => Icons.grid_4x4,
       FilterKind.auroraHologram => Icons.auto_awesome_mosaic,
       FilterKind.backgroundBlend => Icons.wb_twilight,
       FilterKind.inkPool => Icons.gesture_rounded,
@@ -1611,6 +1621,13 @@ class _FilterPanelState extends State<FilterPanel> {
           _previewMask,
           centerOffsetX: filter.lensCenterOffsetX * _previewScale,
           centerOffsetY: filter.lensCenterOffsetY * _previewScale,
+        );
+      case FilterKind.mosaic:
+        return _engine.applyMosaic(
+          data,
+          width,
+          height,
+          filter.strength.round().clamp(1, 64),
         );
       case FilterKind.pixelate:
         return _engine.applyPixelate(
