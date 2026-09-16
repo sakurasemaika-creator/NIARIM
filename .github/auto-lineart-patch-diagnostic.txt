@@ -1,2 +1,0 @@
-exit_code=1
-inkPool _runFilter case not found
