@@ -5,7 +5,9 @@ import 'package:niarim/engine/filter_engine.dart';
 import 'package:niarim/models/pixel_color_mode.dart';
 
 // Contract: pixel-art conversion preserves source alpha per canvas pixel;
-// mosaic remains a separate alpha-averaging effect.
+// mosaic remains a separate alpha-averaging effect. Internal smoothing is
+// permitted only for diagonal boundaries between opaque colors and must obey
+// the active color constraint; transparency and axis-aligned edges stay hard.
 void main() {
   group('FilterEngine.applyPixelate true pixel art', () {
     test('does not average alpha inside a pixel cell', () {
@@ -70,6 +72,73 @@ void main() {
       expect(output[7], 64);
       expect(output[11], 64);
       expect(output[15], 64);
+    });
+
+    test('transparent diagonal outer edge never gains intermediate alpha', () {
+      final engine = FilterEngine();
+      final input = Uint8List.fromList([
+        255, 0, 0, 255, 0, 0, 0, 0, 0, 0, 0, 0,
+        255, 0, 0, 255, 255, 0, 0, 255, 0, 0, 0, 0,
+        255, 0, 0, 255, 255, 0, 0, 255, 255, 0, 0, 255,
+      ]);
+
+      final output = engine.applyPixelate(
+        input,
+        3,
+        3,
+        mosaicSize: 1,
+        colorMode: PixelColorMode.none,
+      );
+
+      for (var i = 3; i < output.length; i += 4) {
+        expect(output[i], anyOf(0, 255));
+      }
+    });
+
+    test('axis-aligned opaque color boundary does not invent a middle color', () {
+      final engine = FilterEngine();
+      final input = Uint8List.fromList([
+        255, 0, 0, 255, 255, 0, 0, 255,
+        0, 0, 255, 255, 0, 0, 255, 255,
+      ]);
+
+      final output = engine.applyPixelate(
+        input,
+        2,
+        2,
+        mosaicSize: 1,
+        colorMode: PixelColorMode.none,
+      );
+
+      final rgb = <String>{};
+      for (var i = 0; i < output.length; i += 4) {
+        rgb.add('${output[i]},${output[i + 1]},${output[i + 2]}');
+      }
+      expect(rgb, {'255,0,0', '0,0,255'});
+    });
+
+    test('explicit palette never synthesizes a color outside the palette', () {
+      final engine = FilterEngine();
+      final input = Uint8List.fromList([
+        255, 0, 0, 255, 0, 0, 255, 255, 0, 0, 255, 255,
+        255, 0, 0, 255, 255, 0, 0, 255, 0, 0, 255, 255,
+        255, 0, 0, 255, 255, 0, 0, 255, 255, 0, 0, 255,
+      ]);
+      const palette = [0xFFFF0000, 0xFF800080, 0xFF0000FF];
+
+      final output = engine.applyPixelate(
+        input,
+        3,
+        3,
+        mosaicSize: 1,
+        colorMode: PixelColorMode.explicit,
+        paletteColors: palette,
+      );
+
+      final allowed = {'255,0,0', '128,0,128', '0,0,255'};
+      for (var i = 0; i < output.length; i += 4) {
+        expect(allowed, contains('${output[i]},${output[i + 1]},${output[i + 2]}'));
+      }
     });
   });
 }
