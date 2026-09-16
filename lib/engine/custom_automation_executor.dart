@@ -70,6 +70,9 @@ class CustomAutomationExecutor {
         final step = automation.steps[i];
         try {
           switch (step.command) {
+            // `canvas.filter` is retained for built-in presets and automations
+            // persisted before the semantic command was renamed.
+            case 'canvas.filter':
             case 'canvas.filterApply':
               if (activeLayerId == null) {
                 throw StateError('No normal source layer is available');
@@ -94,6 +97,7 @@ class CustomAutomationExecutor {
             case 'canvas.brushOpacity':
             case 'canvas.color':
             case 'canvas.autofillRun':
+            case 'canvas.brightnessToAlpha':
               await handleCanvasStateCommand(step.command, step.args);
             default:
               throw UnsupportedError(
