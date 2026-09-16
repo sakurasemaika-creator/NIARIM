@@ -1,0 +1,63 @@
+name: Temporary Shared Pixel Route
+on:
+  push:
+    branches: [dev_branch]
+permissions:
+  contents: write
+jobs:
+  route:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          ref: feature/pixel-filter-blend-refresh
+      - name: Route filter pixelation through shared engine
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          p = Path('lib/engine/filter_engine.dart')
+          s = p.read_text()
+          anchor = "import 'prism_filter_engine.dart';\n"
+          if "import 'pixel_art_engine.dart';" not in s:
+              if anchor not in s: raise SystemExit('import anchor missing')
+              s = s.replace(anchor, anchor + "import 'pixel_art_engine.dart';\n", 1)
+          start = s.index('  Uint8List applyPixelate(\n')
+          end = s.index('\n  Uint8List applyFade(', start)
+          replacement = """  Uint8List applyPixelate(
+    Uint8List data,
+    int width,
+    int height, {
+    int mosaicSize = 8,
+    PixelColorMode colorMode = PixelColorMode.count,
+    int colorLevels = 6,
+    List<int> paletteColors = const [],
+  }) {
+    return const PixelArtEngine().convert(
+      data,
+      width,
+      height,
+      pixelSize: mosaicSize,
+      colorMode: colorMode,
+      colorLevels: colorLevels,
+      paletteColors: paletteColors,
+    );
+  }
+"""
+          p.write_text(s[:start] + replacement + s[end:])
+          PY
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+      - run: flutter pub get
+      - run: flutter test test/engine/pixel_art_engine_test.dart test/engine/pixel_art_filter_engine_test.dart --reporter expanded
+      - run: flutter analyze lib/engine/pixel_art_engine.dart lib/engine/filter_engine.dart lib/models/pixel_color_mode.dart test/engine/pixel_art_engine_test.dart test/engine/pixel_art_filter_engine_test.dart
+      - name: Commit feature implementation
+        run: |
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          git add lib/engine/filter_engine.dart
+          if git diff --cached --quiet; then exit 0; fi
+          git commit -m "refactor: route pixel filter through shared engine"
+          git push origin HEAD:feature/pixel-filter-blend-refresh
