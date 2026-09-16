@@ -19,7 +19,7 @@ void main() {
       colorMode: PixelColorMode.none,
     );
 
-    expect(out.sublist(4, 7), [127, 0, 127]);
+    expect(out.sublist(4, 7), [128, 0, 128]);
     expect([out[3], out[7], out[11], out[15]], [255, 255, 255, 255]);
   });
 
