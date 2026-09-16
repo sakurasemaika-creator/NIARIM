@@ -1,0 +1,28 @@
+name: Temporary Filter Panel UI Contract
+
+on:
+  push:
+    branches: [dev_branch]
+    paths:
+      - 'test/filter_panel_production_ui_contract_test.dart'
+      - 'lib/screens/canvas/widgets/filter_panel.dart'
+      - '.github/workflows/tmp-filter-panel-ui-contract.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+      - run: flutter pub get --enforce-lockfile
+      - run: dart format --output=none --set-exit-if-changed test/filter_panel_production_ui_contract_test.dart
+      - run: flutter analyze --no-fatal-warnings --no-fatal-infos test/filter_panel_production_ui_contract_test.dart lib/screens/canvas/widgets/filter_panel.dart
+      - run: flutter test test/filter_panel_production_ui_contract_test.dart --reporter expanded
