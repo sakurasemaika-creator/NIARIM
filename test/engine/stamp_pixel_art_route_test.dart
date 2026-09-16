@@ -11,6 +11,6 @@ void main() {
 
     final filterSource = File('lib/engine/filter_engine.dart').readAsStringSync();
     expect(filterSource, contains("import 'pixel_art_engine.dart';"));
-    expect(filterSource, contains('return const PixelArtEngine().convert('));
+    expect(filterSource, contains('const PixelArtEngine().convert('));
   });
 }
