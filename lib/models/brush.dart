@@ -27,6 +27,22 @@ class Brush {
   final List<int> pixelExplicitColors;
   final List<String> tags;
 
+  // Brush extension settings. Fill color intentionally remains the app's
+  // current color and is not persisted on Brush.
+  final bool lateralRepeatEnabled;
+  final int lateralRepeatCount;
+  final double lateralRepeatSpacing;
+  final bool outlineEnabled;
+  final double outlineWidth;
+  final int outlineColor;
+  final bool foldEnabled;
+  final double foldTriggerAngle;
+  final double yBranchAngle;
+  final double yBranchLengthRatio;
+  final double yBranchWidthRatio;
+  final double yBranchEndTaperRatio;
+  final BrushTipShape tipShape;
+
   const Brush({
     required this.id,
     required this.name,
@@ -52,7 +68,22 @@ class Brush {
     this.pixelColorLevels = 8,
     this.pixelExplicitColors = const [0xFF000000],
     this.tags = const [],
+    this.lateralRepeatEnabled = false,
+    this.lateralRepeatCount = 1,
+    this.lateralRepeatSpacing = 1.0,
+    this.outlineEnabled = false,
+    this.outlineWidth = 1.0,
+    this.outlineColor = 0xFF000000,
+    this.foldEnabled = false,
+    this.foldTriggerAngle = 90.0,
+    this.yBranchAngle = 45.0,
+    this.yBranchLengthRatio = 0.6,
+    this.yBranchWidthRatio = 0.12,
+    this.yBranchEndTaperRatio = 0.4,
+    this.tipShape = BrushTipShape.round,
   });
+
+  static int clampLateralRepeatCount(int value) => value.clamp(1, 10).toInt();
 
   Brush copyWith({
     String? id,
@@ -79,6 +110,19 @@ class Brush {
     int? pixelColorLevels,
     List<int>? pixelExplicitColors,
     List<String>? tags,
+    bool? lateralRepeatEnabled,
+    int? lateralRepeatCount,
+    double? lateralRepeatSpacing,
+    bool? outlineEnabled,
+    double? outlineWidth,
+    int? outlineColor,
+    bool? foldEnabled,
+    double? foldTriggerAngle,
+    double? yBranchAngle,
+    double? yBranchLengthRatio,
+    double? yBranchWidthRatio,
+    double? yBranchEndTaperRatio,
+    BrushTipShape? tipShape,
   }) {
     return Brush(
       id: id ?? this.id,
@@ -106,6 +150,24 @@ class Brush {
       pixelColorLevels: pixelColorLevels ?? this.pixelColorLevels,
       pixelExplicitColors: pixelExplicitColors ?? this.pixelExplicitColors,
       tags: tags ?? this.tags,
+      lateralRepeatEnabled:
+          lateralRepeatEnabled ?? this.lateralRepeatEnabled,
+      lateralRepeatCount: clampLateralRepeatCount(
+        lateralRepeatCount ?? this.lateralRepeatCount,
+      ),
+      lateralRepeatSpacing:
+          lateralRepeatSpacing ?? this.lateralRepeatSpacing,
+      outlineEnabled: outlineEnabled ?? this.outlineEnabled,
+      outlineWidth: outlineWidth ?? this.outlineWidth,
+      outlineColor: outlineColor ?? this.outlineColor,
+      foldEnabled: foldEnabled ?? this.foldEnabled,
+      foldTriggerAngle: foldTriggerAngle ?? this.foldTriggerAngle,
+      yBranchAngle: yBranchAngle ?? this.yBranchAngle,
+      yBranchLengthRatio: yBranchLengthRatio ?? this.yBranchLengthRatio,
+      yBranchWidthRatio: yBranchWidthRatio ?? this.yBranchWidthRatio,
+      yBranchEndTaperRatio:
+          yBranchEndTaperRatio ?? this.yBranchEndTaperRatio,
+      tipShape: tipShape ?? this.tipShape,
     );
   }
 
@@ -140,6 +202,19 @@ class Brush {
     'pixelColorLevels': pixelColorLevels,
     'pixelExplicitColors': pixelExplicitColors,
     'tags': tags,
+    'lateralRepeatEnabled': lateralRepeatEnabled,
+    'lateralRepeatCount': clampLateralRepeatCount(lateralRepeatCount),
+    'lateralRepeatSpacing': lateralRepeatSpacing,
+    'outlineEnabled': outlineEnabled,
+    'outlineWidth': outlineWidth,
+    'outlineColor': outlineColor,
+    'foldEnabled': foldEnabled,
+    'foldTriggerAngle': foldTriggerAngle,
+    'yBranchAngle': yBranchAngle,
+    'yBranchLengthRatio': yBranchLengthRatio,
+    'yBranchWidthRatio': yBranchWidthRatio,
+    'yBranchEndTaperRatio': yBranchEndTaperRatio,
+    'tipShape': tipShape.name,
   };
 
   factory Brush.fromJson(Map<String, dynamic> j) => Brush(
@@ -193,6 +268,28 @@ class Brush {
             .toList() ??
         const [0xFF000000],
     tags: parseTags(j['tags']),
+    lateralRepeatEnabled: j['lateralRepeatEnabled'] as bool? ?? false,
+    lateralRepeatCount: clampLateralRepeatCount(
+      (j['lateralRepeatCount'] as num?)?.toInt() ?? 1,
+    ),
+    lateralRepeatSpacing:
+        (j['lateralRepeatSpacing'] as num?)?.toDouble() ?? 1.0,
+    outlineEnabled: j['outlineEnabled'] as bool? ?? false,
+    outlineWidth: (j['outlineWidth'] as num?)?.toDouble() ?? 1.0,
+    outlineColor: (j['outlineColor'] as num?)?.toInt() ?? 0xFF000000,
+    foldEnabled: j['foldEnabled'] as bool? ?? false,
+    foldTriggerAngle: (j['foldTriggerAngle'] as num?)?.toDouble() ?? 90.0,
+    yBranchAngle: (j['yBranchAngle'] as num?)?.toDouble() ?? 45.0,
+    yBranchLengthRatio:
+        (j['yBranchLengthRatio'] as num?)?.toDouble() ?? 0.6,
+    yBranchWidthRatio:
+        (j['yBranchWidthRatio'] as num?)?.toDouble() ?? 0.12,
+    yBranchEndTaperRatio:
+        (j['yBranchEndTaperRatio'] as num?)?.toDouble() ?? 0.4,
+    tipShape: BrushTipShape.values.firstWhere(
+      (e) => e.name == j['tipShape'],
+      orElse: () => BrushTipShape.round,
+    ),
   );
 }
 
@@ -473,6 +570,8 @@ class BrushPressureOffSettings {
 }
 
 enum FadeMode { off, weak, medium, strong, custom }
+
+enum BrushTipShape { round, hollowSquare }
 
 class FadeCustomSettings {
   final double startValue;
