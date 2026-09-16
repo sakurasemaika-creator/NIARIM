@@ -78,7 +78,7 @@ void main() {
     expect(harness.automationService.items.map((item) => item.name).toSet(), containsAll(cases.map((entry) => entry.$1)));
 
     for (final entry in cases) {
-      await harness.createProject('builtin-${entry.$2}');
+      await harness.createProject('builtin-${entry.$2}', transparentRough: entry.$1 == 'デジタル線画作成');
       final beforeLayers = harness.normalLayerIds();
       final beforeComposite = await harness.compositePixels();
       final beforeSource = harness.activeLayerPixels();
@@ -139,7 +139,7 @@ class _SurfaceHarness {
     return harness;
   }
 
-  Future<void> createProject(String name) async {
+  Future<void> createProject(String name, {bool transparentRough = false}) async {
     const size = 96;
     final project = (await tester.runAsync(() => projectService.createProject(name: name, fps: 24, durationSeconds: 1, backgroundColor: 0xFFFFFFFF, exportWidth: size, exportHeight: size)))!;
     projectId = project.id;
@@ -150,16 +150,45 @@ class _SurfaceHarness {
     final key = projectService.tileKeyFor(projectId, sceneId, frameIndex, layerId);
     final tile = tm.getOrCreateTile(key, 0, 0);
     tile.fillRange(0, tile.length, 0);
-    for (var y = 8; y < size - 8; y++) {
-      for (var x = 8; x < size - 8; x++) {
-        final i = (y * 256 + x) * 4;
-        var shade = 20 + ((x - 8) * 225 ~/ (size - 17));
-        if ((x > 26 && x < 36) || (y > 45 && y < 55)) shade = 18;
-        if (x > 58 && x < 78 && y > 22 && y < 42) shade = 235;
-        tile[i] = shade;
-        tile[i + 1] = shade;
-        tile[i + 2] = shade;
-        tile[i + 3] = 255;
+    if (transparentRough) {
+      void paintDisc(int cx, int cy, int radius) {
+        for (var y = cy - radius; y <= cy + radius; y++) {
+          if (y < 0 || y >= size) continue;
+          for (var x = cx - radius; x <= cx + radius; x++) {
+            if (x < 0 || x >= size) continue;
+            final dx = x - cx;
+            final dy = y - cy;
+            if (dx * dx + dy * dy > radius * radius) continue;
+            final i = (y * 256 + x) * 4;
+            tile[i] = 24;
+            tile[i + 1] = 24;
+            tile[i + 2] = 24;
+            tile[i + 3] = 255;
+          }
+        }
+      }
+      void paintStroke(int x0, int y0, int x1, int y1, int radius) {
+        final steps = (x1 - x0).abs() + (y1 - y0).abs();
+        for (var step = 0; step <= steps; step++) {
+          final t = steps == 0 ? 0.0 : step / steps;
+          paintDisc((x0 + (x1 - x0) * t).round(), (y0 + (y1 - y0) * t).round(), radius);
+        }
+      }
+      paintStroke(14, 20, 78, 72, 4);
+      paintStroke(18, 70, 76, 26, 4);
+      paintStroke(46, 14, 46, 82, 3);
+    } else {
+      for (var y = 8; y < size - 8; y++) {
+        for (var x = 8; x < size - 8; x++) {
+          final i = (y * 256 + x) * 4;
+          var shade = 20 + ((x - 8) * 225 ~/ (size - 17));
+          if ((x > 26 && x < 36) || (y > 45 && y < 55)) shade = 18;
+          if (x > 58 && x < 78 && y > 22 && y < 42) shade = 235;
+          tile[i] = shade;
+          tile[i + 1] = shade;
+          tile[i + 2] = shade;
+          tile[i + 3] = 255;
+        }
       }
     }
     tm.invalidateTile(key, 0, 0);
