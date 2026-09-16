@@ -28,21 +28,21 @@ jobs:
           p = Path('lib/engine/filter_engine_legacy.dart')
           s = p.read_text()
           old = """    FilterKind.pixelate => engine.applyPixelate(
-              data,
-              width,
-              height,
-              mosaicSize: filter.strength.round().clamp(1, 64),
-              colorMode: filter.pixelColorMode,
-              colorLevels: filter.colorLevels,
-              paletteColors: filter.pixelExplicitColors,
-            ),"""
+                data,
+                width,
+                height,
+                mosaicSize: filter.strength.round().clamp(1, 64),
+                colorMode: filter.pixelColorMode,
+                colorLevels: filter.colorLevels,
+                paletteColors: filter.pixelExplicitColors,
+              ),"""
           new = old + """
-            FilterKind.mosaic => engine.applyMosaic(
-              data,
-              width,
-              height,
-              filter.strength.round().clamp(1, 64),
-            ),"""
+              FilterKind.mosaic => engine.applyMosaic(
+                data,
+                width,
+                height,
+                filter.strength.round().clamp(1, 64),
+              ),"""
           if s.count(old) != 1:
               raise SystemExit('legacy pixelate dispatch anchor mismatch')
           p.write_text(s.replace(old, new, 1))
