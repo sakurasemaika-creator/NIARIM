@@ -45,7 +45,9 @@ jobs:
         run: flutter pub get
 
       - name: Format proof surface
-        run: dart format --output=none --set-exit-if-changed test/custom_automation_production_surface_visual_test.dart
+        run: |
+          dart format test/custom_automation_production_surface_visual_test.dart
+          git diff --exit-code -- test/custom_automation_production_surface_visual_test.dart
 
       - name: Analyze proof surface
         run: flutter analyze test/custom_automation_production_surface_visual_test.dart
