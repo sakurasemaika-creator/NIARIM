@@ -10,6 +10,7 @@ class FilterService extends ChangeNotifier {
   static const _prefsKey = 'draw_filters';
   static const prismFilterId = 'Filter0022';
   static const vhsNoiseFilterId = 'Filter0024';
+  static const mosaicFilterId = 'Filter0026';
 
   final List<FilterDef> _filters = [];
   String? _currentFilterId;
@@ -56,6 +57,7 @@ class FilterService extends ChangeNotifier {
     FilterDef(id: prismFilterId, name: 'プリズム', kind: FilterKind.prism, prismBlurPx: 17, prismDirectionDegrees: 90),
     FilterDef(id: vhsNoiseFilterId, name: 'VHSノイズ', kind: FilterKind.noise, strength: 35, caSaturation: 35, caBrightness: 35, caContrast: 25, thresholdValue: 1984),
     FilterDef(id: 'Filter0025', name: '色反転', kind: FilterKind.toneCurve, toneCurvePreset: ToneCurvePreset.invert),
+    FilterDef(id: mosaicFilterId, name: 'モザイク', kind: FilterKind.mosaic, strength: 8),
   ];
 
   Future<void> init() async {
