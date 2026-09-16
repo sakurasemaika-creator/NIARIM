@@ -82,7 +82,7 @@ class FilterEngine extends legacy.FilterEngine {
 }
 
 /// Preserve the existing isolate entry point while ensuring draw-filter pixel
-/// art uses the same shared conversion path as direct FilterEngine callers.
+/// art and classic mosaic use their distinct conversion paths.
 Uint8List applyDrawFilterInIsolate(
   (Uint8List data, int width, int height, FilterDef filter, Uint8List? maskData)
   args,
@@ -97,6 +97,14 @@ Uint8List applyDrawFilterInIsolate(
       colorMode: filter.pixelColorMode,
       colorLevels: filter.colorLevels,
       paletteColors: filter.pixelExplicitColors,
+    );
+  }
+  if (filter.kind == FilterKind.mosaic) {
+    return FilterEngine().applyMosaic(
+      data,
+      width,
+      height,
+      blockSize: filter.strength.round().clamp(1, 64),
     );
   }
   return legacy.applyDrawFilterInIsolate(args);
