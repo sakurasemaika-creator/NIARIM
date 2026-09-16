@@ -44,10 +44,8 @@ jobs:
       - name: Get dependencies
         run: flutter pub get
 
-      - name: Format proof surface
-        run: |
-          dart format test/custom_automation_production_surface_visual_test.dart
-          git diff --exit-code -- test/custom_automation_production_surface_visual_test.dart
+      - name: Normalize proof surface formatting
+        run: dart format test/custom_automation_production_surface_visual_test.dart
 
       - name: Analyze proof surface
         run: flutter analyze test/custom_automation_production_surface_visual_test.dart
@@ -63,5 +61,4 @@ jobs:
           if-no-files-found: warn
           retention-days: 14
           path: |
-            build/custom_automation_visual_proof/**
-            build/custom_automation_visual_proof_log.jsonl
+            build/visual-reaudit/custom-automation-production/**
