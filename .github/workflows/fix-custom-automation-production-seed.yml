@@ -7,6 +7,7 @@ on:
     paths:
       - '.github/workflows/fix-custom-automation-production-seed.yml'
       - 'test/custom_automation_production_surface_visual_test.dart'
+      - 'test/custom_automation_digital_lineart_step_evidence_test.dart'
       - 'lib/engine/custom_automation_executor.dart'
       - 'lib/engine/custom_automation_filter_runner.dart'
       - 'lib/models/custom_automation_presets.dart'
@@ -31,10 +32,13 @@ jobs:
           cache: true
       - run: flutter pub get --enforce-lockfile
       - name: Format affected production and proof files
-        run: dart format test/custom_automation_production_surface_visual_test.dart lib/engine/custom_automation_executor.dart lib/engine/custom_automation_filter_runner.dart lib/models/custom_automation_presets.dart lib/services/custom_automation_service.dart
+        run: dart format test/custom_automation_production_surface_visual_test.dart test/custom_automation_digital_lineart_step_evidence_test.dart lib/engine/custom_automation_executor.dart lib/engine/custom_automation_filter_runner.dart lib/models/custom_automation_presets.dart lib/services/custom_automation_service.dart
       - name: Analyze affected production and proof files
-        run: flutter analyze --no-fatal-warnings --no-fatal-infos test/custom_automation_production_surface_visual_test.dart lib/engine/custom_automation_executor.dart lib/engine/custom_automation_filter_runner.dart lib/models/custom_automation_presets.dart lib/services/custom_automation_service.dart
+        run: flutter analyze --no-fatal-warnings --no-fatal-infos test/custom_automation_production_surface_visual_test.dart test/custom_automation_digital_lineart_step_evidence_test.dart lib/engine/custom_automation_executor.dart lib/engine/custom_automation_filter_runner.dart lib/models/custom_automation_presets.dart lib/services/custom_automation_service.dart
+      - name: Isolate digital lineart generated steps
+        run: flutter test test/custom_automation_digital_lineart_step_evidence_test.dart --reporter expanded
       - name: Run recording replay and all current built-in presets
+        if: always()
         run: flutter test test/custom_automation_production_surface_visual_test.dart --reporter expanded
       - name: Upload production visual evidence
         if: always()
