@@ -1,7 +1,7 @@
 import 'dart:math' as math;
 import 'dart:typed_data';
 
-import 'filter_engine.dart';
+import 'filter_engine_legacy.dart';
 
 /// Isolate entry point used by full-resolution prism application.
 Uint8List applyPrismFilterInIsolate(
@@ -93,10 +93,6 @@ class PrismFilterEngine {
     final dx = math.cos(radians);
     final dy = math.sin(radians);
 
-    // The six equal sections belong to the selected shape, not to the whole canvas.
-    // Determine the projected extent using only pixels that participate in the source
-    // alpha mask. This is especially important for narrow prism shapes and non-square
-    // canvases, where canvas-corner bounds would otherwise compress or omit bands.
     var minProjection = double.infinity;
     var maxProjection = double.negativeInfinity;
     for (var y = 0; y < height; y++) {
@@ -130,16 +126,14 @@ class PrismFilterEngine {
     return out;
   }
 
-  /// HSV(S=100%, V=30%) => max channel round(255 * .30) == 77.
-  /// Six *discrete*, equally-sized bands. The repeated red is intentional.
   (int, int, int) _sixBandColorAt(double t) {
     const bands = <(int, int, int)>[
-      (77, 0, 0), // red
-      (0, 77, 0), // green
-      (0, 77, 77), // cyan
-      (0, 0, 77), // blue
-      (77, 0, 77), // purple
-      (77, 0, 0), // red
+      (77, 0, 0),
+      (0, 77, 0),
+      (0, 77, 77),
+      (0, 0, 77),
+      (77, 0, 77),
+      (77, 0, 0),
     ];
     final v = t.clamp(0.0, 1.0).toDouble();
     final index = math.min(5, (v * 6).floor());
