@@ -1,0 +1,21 @@
+name: Temporary Pixel Wrapper Verify
+on:
+  push:
+    branches: [feature/pixel-filter-blend-refresh]
+permissions:
+  contents: read
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+      - run: flutter pub get
+      - name: Pixel contract tests
+        run: flutter test test/engine/pixel_art_engine_test.dart test/engine/pixel_art_filter_engine_test.dart --reporter expanded
+      - name: Analyze routed engines
+        run: flutter analyze lib/engine/pixel_art_engine.dart lib/engine/filter_engine.dart lib/engine/filter_engine_legacy.dart lib/engine/prism_filter_engine.dart
