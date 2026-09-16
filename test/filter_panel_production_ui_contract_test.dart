@@ -122,10 +122,7 @@ void main() {
           reason: '${filter.id} ${filter.name} must be selectable through the UI',
         );
       }
-      expect(
-        find.byKey(const ValueKey('filter-apply-button')),
-        findsOneWidget,
-      );
+      expect(find.byKey(const ValueKey('filter-apply-button')), findsOneWidget);
       expect(tester.takeException(), isNull);
     },
   );
