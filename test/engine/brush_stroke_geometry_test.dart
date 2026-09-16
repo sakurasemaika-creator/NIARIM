@@ -73,7 +73,7 @@ void main() {
           runPath(points, documentScale: 8).length);
     });
 
-    test('left and right bends report opposite inward normals', () {
+    test('opposite bend signs both point toward their curve interior', () {
       final down = <Offset>[
         for (var x = 0; x <= 30; x += 2) Offset(x.toDouble(), 0),
         for (var y = 2; y <= 32; y += 2) Offset(30, y.toDouble()),
@@ -85,7 +85,10 @@ void main() {
       final a = runPath(down).first;
       final b = runPath(up).first;
       expect(a.signedTurnRadians.sign, -b.signedTurnRadians.sign);
-      expect(a.inwardNormal.dx.sign, -b.inwardNormal.dx.sign);
+      // Both paths approach from the left, so the inside of either 90-degree
+      // bend lies back toward x < 30 at the outgoing segment.
+      expect(a.inwardNormal.dx, lessThan(0));
+      expect(b.inwardNormal.dx, lessThan(0));
     });
   });
 
