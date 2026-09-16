@@ -1,10 +1,15 @@
 name: Temporary Mosaic UI Connect
+
 on:
   push:
-    branches: [feature/pixel-filter-blend-refresh]
-    paths: [.github/workflows/tmp-mosaic-ui-connect.yml]
+    branches:
+      - feature/pixel-filter-blend-refresh
+    paths:
+      - .github/workflows/tmp-mosaic-ui-connect.yml
+
 permissions:
   contents: write
+
 jobs:
   connect:
     runs-on: ubuntu-latest
@@ -20,43 +25,59 @@ jobs:
         run: |
           python3 - <<'PY'
           from pathlib import Path
-          p=Path('lib/engine/filter_engine_legacy.dart'); s=p.read_text()
-          old="""    FilterKind.pixelate => engine.applyPixelate(
-      data,
-      width,
-      height,
-      mosaicSize: filter.strength.round().clamp(1, 64),
-      colorMode: filter.pixelColorMode,
-      colorLevels: filter.colorLevels,
-      paletteColors: filter.pixelExplicitColors,
-    ),"""
-          new=old+"""
-    FilterKind.mosaic => engine.applyMosaic(
-      data,
-      width,
-      height,
-      filter.strength.round().clamp(1, 64),
-    ),"""
-          if s.count(old)!=1: raise SystemExit('legacy pixelate dispatch anchor mismatch')
-          p.write_text(s.replace(old,new,1))
+          p = Path('lib/engine/filter_engine_legacy.dart')
+          s = p.read_text()
+          old = """    FilterKind.pixelate => engine.applyPixelate(
+              data,
+              width,
+              height,
+              mosaicSize: filter.strength.round().clamp(1, 64),
+              colorMode: filter.pixelColorMode,
+              colorLevels: filter.colorLevels,
+              paletteColors: filter.pixelExplicitColors,
+            ),"""
+          new = old + """
+            FilterKind.mosaic => engine.applyMosaic(
+              data,
+              width,
+              height,
+              filter.strength.round().clamp(1, 64),
+            ),"""
+          if s.count(old) != 1:
+              raise SystemExit('legacy pixelate dispatch anchor mismatch')
+          p.write_text(s.replace(old, new, 1))
 
-          p=Path('lib/screens/canvas/widgets/filter_panel.dart'); s=p.read_text()
-          replacements=[
-            ("      case FilterKind.pixelate:\n        return Column(\n", "      case FilterKind.mosaic:\n        return _paramSlider(\n          l10n.filterPixelateBlockSize,\n          current.strength,\n          1,\n          64,\n          (v) => service.updateFilterParams(current.id, strength: v),\n        );\n      case FilterKind.pixelate:\n        return Column(\n"),
-            ("      FilterKind.pixelate => l10n.filterNamePixelate,\n", "      FilterKind.pixelate => l10n.filterNamePixelate,\n      FilterKind.mosaic => filter.name,\n"),
-            ("      FilterKind.pixelate => Icons.grid_view,\n", "      FilterKind.pixelate => Icons.grid_view,\n      FilterKind.mosaic => Icons.grid_4x4,\n"),
-            ("      case FilterKind.pixelate:\n        return _engine.applyPixelate(\n", "      case FilterKind.mosaic:\n        return _engine.applyMosaic(\n          data,\n          width,\n          height,\n          filter.strength.round().clamp(1, 64),\n        );\n      case FilterKind.pixelate:\n        return _engine.applyPixelate(\n"),
+          p = Path('lib/screens/canvas/widgets/filter_panel.dart')
+          s = p.read_text()
+          replacements = [
+            (
+              "      case FilterKind.pixelate:\n        return Column(\n",
+              "      case FilterKind.mosaic:\n        return _paramSlider(\n          l10n.filterPixelateBlockSize,\n          current.strength,\n          1,\n          64,\n          (v) => service.updateFilterParams(current.id, strength: v),\n        );\n      case FilterKind.pixelate:\n        return Column(\n",
+            ),
+            (
+              "      FilterKind.pixelate => l10n.filterNamePixelate,\n",
+              "      FilterKind.pixelate => l10n.filterNamePixelate,\n      FilterKind.mosaic => filter.name,\n",
+            ),
+            (
+              "      FilterKind.pixelate => Icons.grid_view,\n",
+              "      FilterKind.pixelate => Icons.grid_view,\n      FilterKind.mosaic => Icons.grid_4x4,\n",
+            ),
+            (
+              "      case FilterKind.pixelate:\n        return _engine.applyPixelate(\n",
+              "      case FilterKind.mosaic:\n        return _engine.applyMosaic(\n          data,\n          width,\n          height,\n          filter.strength.round().clamp(1, 64),\n        );\n      case FilterKind.pixelate:\n        return _engine.applyPixelate(\n",
+            ),
           ]
-          for old,new in replacements:
-            if s.count(old)!=1: raise SystemExit(f'UI anchor mismatch: {old[:50]!r}')
-            s=s.replace(old,new,1)
+          for old, new in replacements:
+              if s.count(old) != 1:
+                  raise SystemExit(f'UI anchor mismatch: {old[:50]!r}')
+              s = s.replace(old, new, 1)
           p.write_text(s)
           PY
           dart format lib/engine/filter_engine_legacy.dart lib/screens/canvas/widgets/filter_panel.dart lib/engine/filter_engine.dart test/mosaic_filter_test.dart
       - name: Verify Mosaic integration
         run: |
-          flutter test test/mosaic_filter_test.dart test/models/mosaic_filter_def_contract_test.dart
-          flutter analyze lib/models/filter_def.dart lib/services/filter_service.dart lib/engine/filter_engine.dart lib/engine/filter_engine_legacy.dart lib/screens/canvas/widgets/filter_panel.dart test/mosaic_filter_test.dart test/models/mosaic_filter_def_contract_test.dart
+          flutter test test/mosaic_filter_test.dart test/models/mosaic_filter_def_contract_test.dart test/engine/pixel_art_engine_test.dart test/engine/pixel_art_filter_engine_test.dart test/engine/filter_engine_pixel_art_contract_test.dart test/engine/stamp_pixel_art_route_test.dart
+          flutter analyze lib/models/filter_def.dart lib/services/filter_service.dart lib/engine/filter_engine.dart lib/engine/filter_engine_legacy.dart lib/screens/canvas/widgets/filter_panel.dart test/mosaic_filter_test.dart test/models/mosaic_filter_def_contract_test.dart test/engine/stamp_pixel_art_route_test.dart
       - name: Commit production changes and remove temporary workflow
         run: |
           rm .github/workflows/tmp-mosaic-ui-connect.yml
