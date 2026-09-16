@@ -1,5 +1,4 @@
 import 'dart:io';
-import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -74,18 +73,42 @@ void main() {
           projects.tileKeyFor(projectId, sceneId, frameIndex, sourceLayerId);
       final tile = tm.getOrCreateTile(sourceKey, 0, 0);
       tile.fillRange(0, tile.length, 0);
-      for (var y = 8; y < 88; y++) {
-        for (var x = 8; x < 88; x++) {
-          final i = (y * 256 + x) * 4;
-          var shade = 20 + ((x - 8) * 225 ~/ 79);
-          if ((x > 26 && x < 36) || (y > 45 && y < 55)) shade = 18;
-          if (x > 58 && x < 78 && y > 22 && y < 42) shade = 235;
-          tile[i] = shade;
-          tile[i + 1] = shade;
-          tile[i + 2] = shade;
-          tile[i + 3] = 255;
+
+      // Production-like rough: opaque dark strokes on a transparent drawing
+      // layer. The Auto Lineart engine intentionally treats alpha as foreground
+      // for this common canvas case.
+      void paintDisc(int cx, int cy, int radius) {
+        for (var y = cy - radius; y <= cy + radius; y++) {
+          if (y < 0 || y >= 96) continue;
+          for (var x = cx - radius; x <= cx + radius; x++) {
+            if (x < 0 || x >= 96) continue;
+            final dx = x - cx;
+            final dy = y - cy;
+            if (dx * dx + dy * dy > radius * radius) continue;
+            final i = (y * 256 + x) * 4;
+            tile[i] = 24;
+            tile[i + 1] = 24;
+            tile[i + 2] = 24;
+            tile[i + 3] = 255;
+          }
         }
       }
+
+      void paintStroke(int x0, int y0, int x1, int y1, int radius) {
+        final steps = (x1 - x0).abs() + (y1 - y0).abs();
+        for (var step = 0; step <= steps; step++) {
+          final t = steps == 0 ? 0.0 : step / steps;
+          paintDisc(
+            (x0 + (x1 - x0) * t).round(),
+            (y0 + (y1 - y0) * t).round(),
+            radius,
+          );
+        }
+      }
+
+      paintStroke(14, 20, 78, 72, 4);
+      paintStroke(18, 70, 76, 26, 4);
+      paintStroke(46, 14, 46, 82, 3);
       tm.invalidateTile(sourceKey, 0, 0);
 
       const autoLineart = FilterDef(
@@ -117,7 +140,8 @@ void main() {
       expect(
         autoVisible,
         greaterThan(20),
-        reason: 'Auto Lineart itself must produce visible pixels before Ink Pool runs',
+        reason:
+            'Auto Lineart must produce visible pixels from a transparent rough-line layer',
       );
 
       final inkLayerId = (await tester.runAsync(
