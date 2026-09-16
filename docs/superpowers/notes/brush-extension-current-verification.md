@@ -7,7 +7,7 @@ This ordinary-task note records only the implementation checkpoint for the appro
 - `Brush` already contains repeat, outline, fold, Y-ratio and tip-shape persistence fields.
 - Pure geometry contains centered lateral offsets, local-normal centers, bounded screen-space sampling, minimum travel, cooldown, inward fold events, effective-width Y ratios and smooth endpoint taper.
 - Canonical approved constants live in `brush_extension_defaults.dart`.
-- Net (`Brush0022`) and Hair (`Brush0023`) definitions live in `brush_presets_extension.dart`, ready to be appended to BrushService built-ins once the production renderer consumes their fields.
+- Net (`Brush0022`) and Hair (`Brush0023`) definitions live in `brush_presets_extension.dart`, ready to be appended to BrushService built-ins once the production renderer consumes the extension fields.
 - Coverage-only outline composition is isolated in `outlined_stroke_compositor.dart`: fill union removes internal outline seams and fold marks are clipped to fill.
 - Focused tests exist for model contracts, canonical defaults, geometry, presets and outline coverage composition.
 
