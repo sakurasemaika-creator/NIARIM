@@ -99,13 +99,20 @@ Uint8List applyDrawFilterInIsolate(
       filter.strength,
       color: filter.vignetteColor,
     ),
-    FilterKind.noise => engine.applyNoise(
-      data,
-      width,
-      height,
-      (filter.strength / 100).clamp(0.0, 1.0),
-      NoiseType.gaussian,
-    ),
+    FilterKind.noise =>
+      filter.id == 'Filter0027'
+          ? engine.applyColorNoise(
+              data,
+              width,
+              height,
+              (filter.strength / 100).clamp(0.0, 1.0),
+            )
+          : engine.applyFilmGrain(
+              data,
+              width,
+              height,
+              (filter.strength / 100).clamp(0.0, 1.0),
+            ),
     FilterKind.retroAnime => engine.applyRetroAnime(
       data,
       width,
@@ -1013,6 +1020,50 @@ class FilterEngine {
               .round()
               .clamp(0, 255);
         }
+      }
+    }
+    return result;
+  }
+
+  /// Film grain is neutral-luminance grain: one random sample is applied
+  /// equally to R/G/B, preserving hue and alpha. A seed makes previews/tests stable.
+  Uint8List applyFilmGrain(
+    Uint8List data,
+    int width,
+    int height,
+    double strength, {
+    int? seed,
+  }) {
+    final result = Uint8List.fromList(data);
+    final rng = seed == null ? math.Random() : math.Random(seed);
+    final s = (strength.clamp(0.0, 1.0) * 255).round();
+    for (int i = 0; i < result.length; i += 4) {
+      if (result[i + 3] == 0) continue;
+      final n = (_gaussianRandom(rng) * s).round().clamp(-s, s);
+      result[i] = (result[i] + n).clamp(0, 255);
+      result[i + 1] = (result[i + 1] + n).clamp(0, 255);
+      result[i + 2] = (result[i + 2] + n).clamp(0, 255);
+    }
+    return result;
+  }
+
+  /// General RGB noise: each colour channel receives an independent Gaussian
+  /// sample. This is intentionally distinct from neutral film grain.
+  Uint8List applyColorNoise(
+    Uint8List data,
+    int width,
+    int height,
+    double strength, {
+    int? seed,
+  }) {
+    final result = Uint8List.fromList(data);
+    final rng = seed == null ? math.Random() : math.Random(seed);
+    final s = (strength.clamp(0.0, 1.0) * 255).round();
+    for (int i = 0; i < result.length; i += 4) {
+      if (result[i + 3] == 0) continue;
+      for (int c = 0; c < 3; c++) {
+        final n = (_gaussianRandom(rng) * s).round().clamp(-s, s);
+        result[i + c] = (result[i + c] + n).clamp(0, 255);
       }
     }
     return result;

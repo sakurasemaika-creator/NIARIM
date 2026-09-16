@@ -1567,13 +1567,19 @@ class _FilterPanelState extends State<FilterPanel> {
           color: filter.vignetteColor,
         );
       case FilterKind.noise:
-        return _engine.applyNoise(
-          data,
-          width,
-          height,
-          (filter.strength / 100).clamp(0.0, 1.0),
-          NoiseType.gaussian,
-        );
+        return filter.id == FilterService.genericNoiseFilterId
+            ? _engine.applyColorNoise(
+                data,
+                width,
+                height,
+                (filter.strength / 100).clamp(0.0, 1.0),
+              )
+            : _engine.applyFilmGrain(
+                data,
+                width,
+                height,
+                (filter.strength / 100).clamp(0.0, 1.0),
+              );
       case FilterKind.retroAnime:
         return _engine.applyRetroAnime(data, width, height, filter.strength);
       case FilterKind.crt:
