@@ -30,18 +30,19 @@ class FilterEngine extends legacy.FilterEngine {
   );
 
   /// Classic mosaic: each block becomes its arithmetic mean RGBA.
-  /// Pixel-art edge synthesis, palette reduction, and alpha preservation are
-  /// intentionally not used here: mosaic is a separate effect.
+  /// Pixel-art edge synthesis and palette reduction are intentionally not used
+  /// here: mosaic remains a separate effect.
+  @override
   Uint8List applyMosaic(
     Uint8List data,
     int width,
-    int height, {
-    int blockSize = 8,
-  }) {
+    int height,
+    int mosaicSize,
+  ) {
     if (width <= 0 || height <= 0 || data.length < width * height * 4) {
       return Uint8List.fromList(data);
     }
-    final size = blockSize.clamp(1, 64);
+    final size = mosaicSize.clamp(1, 64);
     final out = Uint8List.fromList(data);
     for (var by = 0; by < height; by += size) {
       final yEnd = (by + size).clamp(0, height);
@@ -104,7 +105,7 @@ Uint8List applyDrawFilterInIsolate(
       data,
       width,
       height,
-      blockSize: filter.strength.round().clamp(1, 64),
+      filter.strength.round().clamp(1, 64),
     );
   }
   return legacy.applyDrawFilterInIsolate(args);
