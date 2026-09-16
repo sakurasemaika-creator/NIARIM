@@ -1,5 +1,6 @@
 name: Temporary Pixel Art GREEN
 on:
+  workflow_dispatch:
   push:
     branches: [dev_branch]
 permissions:
