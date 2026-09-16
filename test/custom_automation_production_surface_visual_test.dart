@@ -1,15 +1,12 @@
 import 'dart:io';
-import 'dart:typed_data';
 import 'dart:ui' as ui;
 
 import 'package:flutter/material.dart';
-import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:niarim/app_bootstrap.dart';
 import 'package:niarim/engine/custom_automation_executor.dart';
 import 'package:niarim/engine/custom_automation_filter_runner.dart';
-import 'package:niarim/engine/tile_manager.dart';
 import 'package:niarim/l10n/app_localizations.dart';
 import 'package:niarim/models/custom_automation.dart';
 import 'package:niarim/models/layer.dart' as model;
@@ -101,7 +98,9 @@ void main() {
       for (final id in generated) {
         final pixels = harness.layerPixels(id);
         for (var i = 3; i < pixels.length; i += 4) {
-          if (pixels[i] != 0) generatedVisiblePixels++;
+          if (pixels[i] != 0) {
+            generatedVisiblePixels++;
+          }
         }
       }
       final afterComposite = await harness.compositePixels();
@@ -195,7 +194,9 @@ class _SurfaceHarness {
     for (var ty = 0; ty < tm.tilesY; ty++) {
       for (var tx = 0; tx < tm.tilesX; tx++) {
         final current = tm.getTile(key, tx, ty);
-        if (current != null) snapshot.setRange(offset, offset + tileBytes, current);
+        if (current != null) {
+          snapshot.setRange(offset, offset + tileBytes, current);
+        }
         offset += tileBytes;
       }
     }
