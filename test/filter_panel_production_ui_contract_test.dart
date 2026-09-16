@@ -24,9 +24,10 @@ void main() {
     });
     TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
         .setMockMethodCallHandler(
-      pathProviderChannel,
-      (_) async => '${Directory.systemTemp.path}/niarim_filter_panel_ui_contract',
-    );
+          pathProviderChannel,
+          (_) async =>
+              '${Directory.systemTemp.path}/niarim_filter_panel_ui_contract',
+        );
   });
 
   tearDown(() {
@@ -34,91 +35,100 @@ void main() {
         .setMockMethodCallHandler(pathProviderChannel, null);
   });
 
-  testWidgets('every built-in filter is reachable by a stable production UI card',
-      (tester) async {
-    tester.view.physicalSize = const Size(1080, 2160);
-    tester.view.devicePixelRatio = 3;
-    addTearDown(tester.view.resetPhysicalSize);
-    addTearDown(tester.view.resetDevicePixelRatio);
+  testWidgets(
+    'every built-in filter is reachable by a stable production UI card',
+    (tester) async {
+      tester.view.physicalSize = const Size(1080, 2160);
+      tester.view.devicePixelRatio = 3;
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
 
-    final providers = await tester.runAsync(buildAppProviders);
-    await tester.pumpWidget(
-      MultiProvider(
-        providers: providers!,
-        child: const MaterialApp(
-          locale: Locale('ja'),
-          localizationsDelegates: AppLocalizations.localizationsDelegates,
-          supportedLocales: AppLocalizations.supportedLocales,
-          home: Scaffold(body: _FilterPanelHarness()),
+      final providers = await tester.runAsync(buildAppProviders);
+      await tester.pumpWidget(
+        MultiProvider(
+          providers: providers!,
+          child: const MaterialApp(
+            locale: Locale('ja'),
+            localizationsDelegates: AppLocalizations.localizationsDelegates,
+            supportedLocales: AppLocalizations.supportedLocales,
+            home: Scaffold(body: _FilterPanelHarness()),
+          ),
         ),
-      ),
-    );
-    await tester.pump();
+      );
+      await tester.pump();
 
-    final context = tester.element(find.byType(_FilterPanelHarness));
-    final projects = context.read<ProjectService>();
-    final project = (await tester.runAsync(
-      () => projects.createProject(
-        name: 'filter-panel-ui-contract',
-        fps: 24,
-        durationSeconds: 1,
-        backgroundColor: 0xFFFFFFFF,
-        exportWidth: 96,
-        exportHeight: 96,
-      ),
-    ))!;
-    final sceneId = projects.scenesOf(project.id).first.id;
-    final layerId = projects
-        .layersOf(project.id, sceneId, 0)
-        .firstWhere((layer) => layer.type == model.LayerType.normal)
-        .id;
+      final context = tester.element(find.byType(_FilterPanelHarness));
+      final projects = context.read<ProjectService>();
+      final project = (await tester.runAsync(
+        () => projects.createProject(
+          name: 'filter-panel-ui-contract',
+          fps: 24,
+          durationSeconds: 1,
+          backgroundColor: 0xFFFFFFFF,
+          exportWidth: 96,
+          exportHeight: 96,
+        ),
+      ))!;
+      final sceneId = projects.scenesOf(project.id).first.id;
+      final layerId = projects
+          .layersOf(project.id, sceneId, 0)
+          .firstWhere((layer) => layer.type == model.LayerType.normal)
+          .id;
 
-    await tester.pumpWidget(
-      MultiProvider(
-        providers: providers,
-        child: MaterialApp(
-          locale: const Locale('ja'),
-          localizationsDelegates: AppLocalizations.localizationsDelegates,
-          supportedLocales: AppLocalizations.supportedLocales,
-          home: Scaffold(
-            body: FilterPanel(
-              projectId: project.id,
-              sceneId: sceneId,
-              layerId: layerId,
-              frameIndex: 0,
-              onClose: () {},
+      await tester.pumpWidget(
+        MultiProvider(
+          providers: providers,
+          child: MaterialApp(
+            locale: const Locale('ja'),
+            localizationsDelegates: AppLocalizations.localizationsDelegates,
+            supportedLocales: AppLocalizations.supportedLocales,
+            home: Scaffold(
+              body: FilterPanel(
+                projectId: project.id,
+                sceneId: sceneId,
+                layerId: layerId,
+                frameIndex: 0,
+                onClose: () {},
+              ),
             ),
           ),
         ),
-      ),
-    );
-    await tester.pump();
-
-    final filters = context.read<FilterService>().allFilters;
-    expect(filters, hasLength(25));
-    final horizontalList = find.byType(ListView).first;
-    for (final filter in filters) {
-      final card = find.byKey(ValueKey('filter-card-${filter.id}'));
-      await tester.scrollUntilVisible(
-        card,
-        120,
-        scrollable: find.descendant(
-          of: horizontalList,
-          matching: find.byType(Scrollable),
-        ),
       );
-      expect(card, findsOneWidget, reason: '${filter.id} ${filter.name} must be reachable');
-      await tester.tap(card);
       await tester.pump();
+
+      final filters = context.read<FilterService>().allFilters;
+      expect(filters, hasLength(25));
+      final horizontalList = find.byType(ListView).first;
+      for (final filter in filters) {
+        final card = find.byKey(ValueKey('filter-card-${filter.id}'));
+        await tester.scrollUntilVisible(
+          card,
+          120,
+          scrollable: find.descendant(
+            of: horizontalList,
+            matching: find.byType(Scrollable),
+          ),
+        );
+        expect(
+          card,
+          findsOneWidget,
+          reason: '${filter.id} ${filter.name} must be reachable',
+        );
+        await tester.tap(card);
+        await tester.pump();
+        expect(
+          context.read<FilterService>().currentFilter?.id,
+          filter.id,
+          reason: '${filter.id} ${filter.name} must be selectable through the UI',
+        );
+      }
       expect(
-        context.read<FilterService>().currentFilter?.id,
-        filter.id,
-        reason: '${filter.id} ${filter.name} must be selectable through the UI',
+        find.byKey(const ValueKey('filter-apply-button')),
+        findsOneWidget,
       );
-    }
-    expect(find.byKey(const ValueKey('filter-apply-button')), findsOneWidget);
-    expect(tester.takeException(), isNull);
-  });
+      expect(tester.takeException(), isNull);
+    },
+  );
 }
 
 class _FilterPanelHarness extends StatelessWidget {
