@@ -3176,7 +3176,7 @@ abstract class AppLocalizations {
   /// No description provided for @helpDrawingFilterDesc.
   ///
   /// In ja, this message translates to:
-  /// **'選択中のレイヤーに直接適用するフィルターです（演出フィルターがタイムライン全体・シーン単位に適用されるのに対し、描画フィルターはレイヤー単位）。ぼかし・シャープ・アンシャープマスク・トーンカーブ・レベル補正・周辺減光・ノイズ・レトロアニメ・ブラウン管・アニメ調・縁取り・ドット絵・眼鏡断層フィルターなどが用意されています。縁取りは元のレイヤーを書き換えず、縁どった内容だけを新規レイヤーへ描画します。眼鏡断層フィルターは、選択レイヤーで塗った範囲だけに、度数の強い眼鏡レンズのような局所的な歪みをかけられます。ドット絵は配色方式（色を指定しない・色を指定する・色数を指定する・パレットから選ぶ）も選べます。'**
+  /// **'選択中のレイヤーに直接適用するフィルターです（演出フィルターがタイムライン全体・シーン単位に適用されるのに対し、描画フィルターはレイヤー単位）。ガウスぼかし・レンズぼかし・アニメ風加工・トーンカーブ・レベル補正・縁取り・シャープ・アンシャープマスク・周辺減光・フィルムグレイン・レトロアニメ・ブラウン管・単色化・二値化・魚眼レンズ・色収差・眼鏡断層・ドット絵・質感変更フィルター・背景馴染ませ・墨溜まり・自動線画・プリズム・VHSノイズ・色反転の25種類が用意されています。縁取りは元のレイヤーを書き換えず、縁どった内容だけを新規レイヤーへ描画します。眼鏡断層フィルターは、選択レイヤーで塗った範囲だけに、度数の強い眼鏡レンズのような局所的な歪みをかけられます。ドット絵は配色方式（色を指定しない・色を指定する・色数を指定する・パレットから選ぶ）も選べます。'**
   String get helpDrawingFilterDesc;
 
   /// No description provided for @helpLayerKeyframeTitle.
@@ -6052,6 +6052,12 @@ abstract class AppLocalizations {
   /// In ja, this message translates to:
   /// **'縁取り'**
   String get filterNameOutline;
+
+  /// No description provided for @filterNameInvert.
+  ///
+  /// In ja, this message translates to:
+  /// **'色反転'**
+  String get filterNameInvert;
 
   /// No description provided for @filterNameToneCurve.
   ///
@@ -11416,6 +11422,48 @@ abstract class AppLocalizations {
   /// In ja, this message translates to:
   /// **'値'**
   String get brushSettingsValueLabel;
+
+  /// No description provided for @helpCustomAutomationTitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'自動操作（操作記録）'**
+  String get helpCustomAutomationTitle;
+
+  /// No description provided for @helpCustomAutomationDesc.
+  ///
+  /// In ja, this message translates to:
+  /// **'キャンバスまたはタイムラインで行った対応操作を手順として記録し、名前を付けて繰り返し実行できる機能です。「自動操作」から新規追加して記録を開始し、停止後の確認画面で手順の並べ替え・削除をして保存します。保存した操作は名前変更・再記録・削除ができ、お気に入りだけに絞り込めます。JSONファイルとして書き出し・読み込みもできます。キャンバスだけで、かつ同じ1フレーム内に記録した操作では、実行時に現在のフレーム・指定したフレーム範囲・全フレームを選べます。タイムライン操作や複数フレームにまたがる記録では、このフレーム範囲選択は表示されません。'**
+  String get helpCustomAutomationDesc;
+
+  /// No description provided for @tipsOfficialAutomationPresetsTitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'公式の自動操作プリセットを自分用に調整する'**
+  String get tipsOfficialAutomationPresetsTitle;
+
+  /// No description provided for @tipsOfficialAutomationPresetsDesc.
+  ///
+  /// In ja, this message translates to:
+  /// **'「線画作成（デジタル）」は自動線画→墨溜まり、「線画抽出（アナログ）」は色調補正→二値化→明度で透過、「線画色トレス」は表示レイヤーの統合→ぼかしと複製・結合→色トレス補正、「オーロラホログラム」は質感変更を一手順で実行する公式プリセットです。再記録では記録に対応した操作を追加できます。確認画面では手順の並べ替え・削除ができます。元の設定へ戻せるよう、編集前に書き出しておくと安心です。'**
+  String get tipsOfficialAutomationPresetsDesc;
+
+  /// No description provided for @tipsTexturePrismVhsTitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'質感・プリズム・VHSは複製レイヤーで試す'**
+  String get tipsTexturePrismVhsTitle;
+
+  /// No description provided for @tipsTexturePrismVhsDesc.
+  ///
+  /// In ja, this message translates to:
+  /// **'質感変更フィルターはオーロラ・パール1・ヴェイパーウェイヴ・パステルドリーム・サンセットゴールド・シルバーホイル・オーロラホログラム・パール2から土台を選び、明るさと彩度で調整できます。プリズムはぼかし量と虹の向きで光の帯を作り、VHSノイズはノイズ・彩度・明るさ・コントラストをまとめて古いテープ風にします。複製したレイヤーで一つずつ試すと比較しやすく、気に入った設定をお気に入りにすると再利用も速くなります。'**
+  String get tipsTexturePrismVhsDesc;
+
+  /// No description provided for @customAutomationExecutionFailed.
+  ///
+  /// In ja, this message translates to:
+  /// **'自動操作を完了できませんでした。設定と対象レイヤーを確認してください。'**
+  String get customAutomationExecutionFailed;
 }
 
 class _AppLocalizationsDelegate

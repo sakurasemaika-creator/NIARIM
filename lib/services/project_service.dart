@@ -147,6 +147,30 @@ class ProjectService extends ChangeNotifier {
     _undoManager = undoManager;
   }
 
+  /// Groups a serialized automation's existing Undo actions without changing
+  /// the pixel lifetime or the behavior of standalone layer operations.
+  Future<T> runWithGroupedUndo<T>({
+    required String description,
+    required Future<T> Function() operation,
+  }) {
+    final undo = _undoManager;
+    if (undo == null) return operation();
+    return undo.runGrouped(
+      description: description,
+      operation: operation,
+      shouldUndoAction: (action) {
+        if (action is! LayerAddUndoAction) return true;
+        // Merges may consume a layer added earlier in the same automation.
+        // Its add action has no remaining inverse and must not enter Redo.
+        return layersOf(
+          action.projectId,
+          action.sceneId,
+          action.frameIndex,
+        ).any((layer) => layer.id == action.layerId);
+      },
+    );
+  }
+
   List<Project> get projects => List.unmodifiable(_projects);
   List<Project> get trash => List.unmodifiable(_trash);
   // 「共有」タブ：_projects内の.niashareインポート由来プロジェクトのみを

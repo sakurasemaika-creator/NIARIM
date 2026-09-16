@@ -24,10 +24,10 @@ void main() {
     });
     TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
         .setMockMethodCallHandler(
-      pathProviderChannel,
-      (_) async =>
-          '${Directory.systemTemp.path}/niarim_filter_panel_ui_contract',
-    );
+          pathProviderChannel,
+          (_) async =>
+              '${Directory.systemTemp.path}/niarim_filter_panel_ui_contract',
+        );
   });
 
   tearDown(() {
@@ -96,7 +96,8 @@ void main() {
       );
       await tester.pump();
 
-      final filters = context.read<FilterService>().allFilters;
+      final panelContext = tester.element(find.byType(FilterPanel));
+      final filters = panelContext.read<FilterService>().filters;
       expect(filters, hasLength(25));
       final horizontalList = find.byType(ListView).first;
       for (final filter in filters) {
@@ -117,9 +118,10 @@ void main() {
         await tester.tap(card);
         await tester.pump();
         expect(
-          context.read<FilterService>().currentFilter?.id,
+          panelContext.read<FilterService>().currentFilter?.id,
           filter.id,
-          reason: '${filter.id} ${filter.name} must be selectable through the UI',
+          reason:
+              '${filter.id} ${filter.name} must be selectable through the UI',
         );
       }
       expect(find.byKey(const ValueKey('filter-apply-button')), findsOneWidget);

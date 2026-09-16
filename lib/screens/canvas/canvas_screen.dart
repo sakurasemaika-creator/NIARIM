@@ -26,6 +26,7 @@ import '../../widgets/stepped_slider.dart';
 import '../../utils/immersive_mode.dart';
 import '../../engine/text_render.dart';
 import '../../engine/undo_manager.dart';
+import '../../engine/custom_automation_executor.dart';
 import '../../l10n/app_localizations.dart';
 import '../../models/bundled_fonts.dart';
 import '../../models/layer.dart' as model;
@@ -436,31 +437,83 @@ class _CanvasScreenState extends State<CanvasScreen> {
     );
   }
 
+  bool _customAutomationRunning = false;
+
   Future<void> _executeCustomAutomation(
     CustomAutomation automation,
     CustomAutomationExecutionScope scope,
     List<int>? targetFrames,
   ) async {
-    final total = context.read<ProjectService>().frameCount(
-      widget.projectId,
-      _currentSceneId,
+    if (_customAutomationRunning) return;
+    _customAutomationRunning = true;
+    final navigator = Navigator.of(context);
+    final l10n = AppLocalizations.of(context)!;
+    final progress = DialogRoute<void>(
+      context: context,
+      barrierDismissible: false,
+      builder: (_) => PopScope(
+        canPop: false,
+        child: AlertDialog(
+          key: const ValueKey('custom-automation-progress'),
+          title: Text(automation.name),
+          content: const Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [CircularProgressIndicator()],
+          ),
+        ),
+      ),
     );
-    final frames = scope == CustomAutomationExecutionScope.allFrames
-        ? List<int>.generate(total, (index) => index)
-        : scope == CustomAutomationExecutionScope.specifiedFrames
-        ? (targetFrames ?? const <int>[])
-              .where((frame) => frame >= 0 && frame < total)
-              .toList(growable: false)
-        : <int>[_currentFrame];
-    if (frames.isEmpty) return;
-    for (final frame in frames) {
-      for (final step in automation.steps) {
-        if (step.surface != CustomAutomationSurface.canvas) {
-          throw StateError('Timeline command cannot run from Canvas mode');
-        }
-        await _executeCanvasAutomationStep(step, frame);
+    navigator.push(progress);
+    try {
+      await _executeSemanticAutomation(automation, scope, targetFrames);
+    } catch (_) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(l10n.customAutomationExecutionFailed)),
+        );
       }
+    } finally {
+      if (progress.isActive) navigator.removeRoute(progress);
+      _customAutomationRunning = false;
     }
+  }
+
+  Future<void> _executeSemanticAutomation(
+    CustomAutomation automation,
+    CustomAutomationExecutionScope scope,
+    List<int>? targetFrames,
+  ) async {
+    final activeLayerId = await CustomAutomationExecutor.executeCanvas(
+      automation: automation,
+      scope: scope,
+      targetFrames: targetFrames,
+      projectService: context.read<ProjectService>(),
+      projectId: widget.projectId,
+      sceneId: _currentSceneId,
+      currentFrame: _currentFrame,
+      currentLayerId: _currentLayerId,
+      handleCanvasStateCommand: _executeSemanticCanvasStateCommand,
+    );
+    if (activeLayerId != null && mounted) {
+      setState(() => _currentLayerId = activeLayerId);
+    }
+  }
+
+  Future<void> _executeSemanticCanvasStateCommand(
+    String command,
+    Map<String, Object?> args,
+  ) {
+    return _executeCanvasAutomationStep(
+      CustomAutomationStep(
+        id: 'semantic-runtime-$command',
+        surface: CustomAutomationSurface.canvas,
+        command: command,
+        label: command,
+        args: args,
+        recordedFrame: _currentFrame,
+      ),
+      _currentFrame,
+    );
   }
 
   Future<void> _executeCanvasAutomationStep(
@@ -493,6 +546,7 @@ class _CanvasScreenState extends State<CanvasScreen> {
         setState(() => _currentColor = color);
         context.read<BrushService>().setCurrentColor(color);
       case 'canvas.filter':
+      case 'canvas.filterApply':
         final rawSnapshot = step.args['filter'];
         if (rawSnapshot is! Map) throw StateError('Missing filter snapshot');
         final layerId = _currentLayerId;
@@ -517,7 +571,7 @@ class _CanvasScreenState extends State<CanvasScreen> {
             .where((value) => value.id == layerId)
             .firstOrNull;
         if (layer == null) throw StateError('No active layer');
-        final changed = projectService
+        await projectService
             .tileManagerOf(widget.projectId)
             .applyBrightnessToAlpha(
               projectService.tileKeyFor(
@@ -528,15 +582,13 @@ class _CanvasScreenState extends State<CanvasScreen> {
               ),
               grayMode: step.args['grayMode'] == true,
             );
-        if (changed) {
-          projectService.updateLayer(
-            projectId: widget.projectId,
-            sceneId: _currentSceneId,
-            frameIndex: targetFrame,
-            layer: layer,
-          );
-          if (mounted) setState(() {});
-        }
+        projectService.updateLayer(
+          projectId: widget.projectId,
+          sceneId: _currentSceneId,
+          frameIndex: targetFrame,
+          layer: layer,
+        );
+        if (mounted) setState(() {});
       case 'canvas.selectFrame':
         final frame = (step.args['frame'] as num?)?.round();
         if (frame == null) throw StateError('Missing frame');

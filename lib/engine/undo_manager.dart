@@ -6,6 +6,7 @@ import 'tile_manager.dart';
 class UndoManager extends ChangeNotifier {
   final List<UndoAction> _undoStack = [];
   final List<UndoAction> _redoStack = [];
+  final List<List<UndoAction>> _recordingGroups = [];
   int _maxUndoCount = 50;
 
   int get undoCount => _undoStack.length;
@@ -21,10 +22,33 @@ class UndoManager extends ChangeNotifier {
   }
 
   void push(UndoAction action) {
+    if (_recordingGroups.isNotEmpty) {
+      _recordingGroups.last.add(action);
+      return;
+    }
     _undoStack.add(action);
     _redoStack.clear();
     if (_undoStack.length > _maxUndoCount) _undoStack.removeAt(0);
     notifyListeners();
+  }
+
+  /// Records a serialized operation as one history entry. Partial changes remain
+  /// undoable when [operation] throws; callers still receive the original error.
+  Future<T> runGrouped<T>({
+    required String description,
+    required Future<T> Function() operation,
+    bool Function(UndoAction action)? shouldUndoAction,
+  }) async {
+    final actions = <UndoAction>[];
+    _recordingGroups.add(actions);
+    try {
+      return await operation();
+    } finally {
+      _recordingGroups.removeLast();
+      if (actions.isNotEmpty) {
+        push(_GroupedUndoAction(description, actions, shouldUndoAction));
+      }
+    }
   }
 
   void undo() {
@@ -54,6 +78,35 @@ abstract class UndoAction {
   void undo();
   void redo();
   String get description;
+}
+
+class _GroupedUndoAction extends UndoAction {
+  @override
+  final String description;
+  final List<UndoAction> _actions;
+  final bool Function(UndoAction action)? _shouldUndoAction;
+  final List<UndoAction> _undone = [];
+
+  _GroupedUndoAction(this.description, this._actions, this._shouldUndoAction);
+
+  @override
+  void undo() {
+    _undone.clear();
+    for (final action in _actions.reversed) {
+      if (_shouldUndoAction?.call(action) == false) continue;
+      action.undo();
+      _undone.add(action);
+    }
+  }
+
+  @override
+  void redo() {
+    // Only replay actions actually reversed by Undo. A temporary layer consumed
+    // by a later merge must not be recreated from an old removed-layer cache.
+    for (final action in _undone.reversed) {
+      action.redo();
+    }
+  }
 }
 
 /// 描画操作（ペン・消しゴム・バケツ・投げ縄塗り・トーン・スタンプ・

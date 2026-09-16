@@ -1724,7 +1724,7 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get helpDrawingFilterDesc =>
-      'Filtres appliqués directement au calque sélectionné (contrairement aux filtres d\'effet, qui s\'appliquent à toute la timeline ou à une scène, les filtres de dessin agissent par calque). Comprend flou, netteté, masque flou, courbe de tons, niveaux, vignettage, bruit, anime rétro, tube cathodique, style anime, contour, un filtre pixel art et un filtre de distorsion optique. Le contour ne réécrit pas le calque d\'origine : il dessine seulement le résultat contourné sur un nouveau calque. Le filtre de distorsion optique applique une déformation localisée, comme à travers un verre de lunettes à forte correction, uniquement sur la zone peinte sur le calque de sélection. Le filtre pixel art permet aussi de choisir un mode de couleur (sans limite, couleurs spécifiées, nombre de couleurs spécifié, ou choix depuis une palette).';
+      'Filtres appliqués directement au calque sélectionné (contrairement aux filtres d’effet, qui s’appliquent à toute la timeline ou à une scène, les filtres de dessin agissent par calque). Les 25 filtres inclus sont Flou gaussien, Flou d’objectif, Style anime, Courbe de tons, Niveaux, Contour, Netteté, Masque flou, Vignettage, Grain de pellicule, Anime rétro, Tube cathodique, Monochrome, Seuil, Objectif fisheye, Aberration chromatique, Distorsion optique, Pixel art, Filtre de texture, Intégration à l’arrière-plan, Accumulation d’encre, Trait automatique, Prisme, Bruit VHS et Inversion des couleurs. Contour ne réécrit pas le calque d’origine : il dessine seulement le résultat sur un nouveau calque. Distorsion optique applique une déformation localisée, comme à travers un verre de lunettes très correcteur, uniquement sur la zone peinte du calque de sélection. Pixel art permet aussi de choisir un mode de couleur (sans limite, couleurs définies, nombre de couleurs ou palette).';
 
   @override
   String get helpLayerKeyframeTitle =>
@@ -3423,6 +3423,9 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get filterNameOutline => 'Contour';
+
+  @override
+  String get filterNameInvert => 'Inverser les couleurs';
 
   @override
   String get filterNameToneCurve => 'Courbe de tons';
@@ -6537,4 +6540,32 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get brushSettingsValueLabel => 'Valeur';
+
+  @override
+  String get helpCustomAutomationTitle =>
+      'Automatisations personnalisées (enregistrement d’actions)';
+
+  @override
+  String get helpCustomAutomationDesc =>
+      'Enregistrez les actions prises en charge sur le canevas ou la timeline sous forme de séquence nommée à réexécuter. Ajoutez un élément depuis Automatisations pour lancer l’enregistrement, puis réordonnez ou supprimez des étapes dans l’écran de vérification avant de sauvegarder. Vous pouvez renommer, réenregistrer, supprimer, filtrer par favoris, exporter et importer les automatisations enregistrées sous forme de fichiers JSON. Pour une automatisation limitée au canevas et entièrement enregistrée dans une seule image, vous pouvez l’exécuter sur l’image actuelle, une plage précise ou toutes les images. Le choix de la plage n’apparaît pas pour les automatisations de timeline ni pour les enregistrements couvrant plusieurs images.';
+
+  @override
+  String get tipsOfficialAutomationPresetsTitle =>
+      'Adaptez les automatisations officielles à votre dessin';
+
+  @override
+  String get tipsOfficialAutomationPresetsDesc =>
+      'Les préréglages officiels sont 「線画作成（デジタル）」 (trait automatique → accumulation d’encre), 「線画抽出（アナログ）」 (réglage des couleurs → seuil → luminosité vers alpha), 「線画色トレス」 (fusion des calques visibles → flou, duplication et fusion → réglage du calque de couleur) et 「オーロラホログラム」 (filtre de texture en une étape). Le réenregistrement ajoute des actions prises en charge. L’écran de révision permet de réordonner ou de supprimer des étapes. Exportez-le avant modification si vous souhaitez pouvoir retrouver facilement les réglages d’origine.';
+
+  @override
+  String get tipsTexturePrismVhsTitle =>
+      'Essayez Texture, Prisme et VHS sur des calques dupliqués';
+
+  @override
+  String get tipsTexturePrismVhsDesc =>
+      'Filtre de texture part d’Aurore, Bulle de savon, Néon cyber, Rêve pastel, Or du couchant, Feuille argentée, Hologramme aurore ou Perle 2, puis permet d’ajuster luminosité et saturation. Prisme crée une bande lumineuse avec le flou et la direction de l’arc-en-ciel ; Bruit VHS combine bruit, saturation, luminosité et contraste pour évoquer une vieille cassette. Tester chaque effet sur un calque dupliqué facilite la comparaison ; ajoutez vos réglages favoris aux favoris pour les réutiliser rapidement.';
+
+  @override
+  String get customAutomationExecutionFailed =>
+      'L’automatisation n’a pas pu se terminer. Vérifiez ses réglages et le calque cible.';
 }

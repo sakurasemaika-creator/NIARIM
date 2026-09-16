@@ -188,27 +188,17 @@ class CustomAutomationFilterRunner {
     if (source == null) {
       throw StateError('Recorded filter source layer disappeared');
     }
+    final sourceIndex = projectService
+        .layersOf(projectId, sceneId, frameIndex)
+        .indexWhere((layer) => layer.id == sourceLayerId);
     final created = projectService.addLayer(
       projectId: projectId,
       sceneId: sceneId,
       frameIndex: frameIndex,
       type: model.LayerType.normal,
       name: _generatedLayerName(source.name, filter),
+      insertIndex: sourceIndex + 1,
     );
-
-    // Layer order is front-to-back: index 0 is the top-most layer. Every
-    // generated-layer effect filter uses the same placement rule.
-    final layers = projectService.layersOf(projectId, sceneId, frameIndex);
-    final createdIndex = layers.indexWhere((layer) => layer.id == created.id);
-    if (createdIndex > 0) {
-      projectService.reorderLayer(
-        projectId: projectId,
-        sceneId: sceneId,
-        frameIndex: frameIndex,
-        oldIndex: createdIndex,
-        newIndex: 0,
-      );
-    }
 
     final key = projectService.tileKeyFor(
       projectId,

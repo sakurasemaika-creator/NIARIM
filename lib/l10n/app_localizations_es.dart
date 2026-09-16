@@ -1730,7 +1730,7 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get helpDrawingFilterDesc =>
-      'Filtros aplicados directamente a la capa seleccionada (a diferencia de los filtros de efecto, que se aplican a toda la línea de tiempo o a una escena, los filtros de dibujo actúan por capa). Incluyen desenfoque, nitidez, máscara de enfoque, curva de tonos, niveles, viñeteado, ruido, anime retro, TRC, estilo anime, contorno, un filtro de pixel art y un filtro de distorsión óptica. El contorno no reescribe la capa original: dibuja solo el resultado contorneado en una capa nueva. El filtro de distorsión óptica aplica una deformación localizada, como a través de un cristal de gafas de gran graduación, únicamente al área pintada en la capa de selección. El filtro de pixel art también permite elegir un modo de color (sin límite, especificar colores, especificar el número de colores o elegir desde una paleta).';
+      'Filtros aplicados directamente a la capa seleccionada (a diferencia de los filtros de efecto, que se aplican a toda la línea de tiempo o a una escena, los filtros de dibujo actúan por capa). Los 25 filtros incluidos son Desenfoque gaussiano, Desenfoque de lente, Estilo anime, Curva de tonos, Niveles, Contorno, Nitidez, Máscara de enfoque, Viñeta, Grano de película, Anime retro, CRT, Monocromo, Umbral, Ojo de pez, Aberración cromática, Distorsión óptica, Pixel art, Filtro de textura, Integración con el fondo, Acumulación de tinta, Dibujo lineal automático, Prisma, Ruido VHS e Invertir colores. Contorno no reescribe la capa original: dibuja solo el resultado en una capa nueva. Distorsión óptica aplica una deformación localizada, como a través de una lente de gafas de gran graduación, únicamente al área pintada en la capa de selección. Pixel art también permite elegir un modo de color (sin límite, colores específicos, número de colores o paleta).';
 
   @override
   String get helpLayerKeyframeTitle =>
@@ -3427,6 +3427,9 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get filterNameOutline => 'Contorno';
+
+  @override
+  String get filterNameInvert => 'Invertir colores';
 
   @override
   String get filterNameToneCurve => 'Curva de tonos';
@@ -6527,4 +6530,32 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get brushSettingsValueLabel => 'Valor';
+
+  @override
+  String get helpCustomAutomationTitle =>
+      'Automatizaciones personalizadas (grabación de acciones)';
+
+  @override
+  String get helpCustomAutomationDesc =>
+      'Graba las acciones compatibles del lienzo o la línea de tiempo como una secuencia con nombre que puedes volver a ejecutar. Añade un elemento en Automatizaciones para iniciar la grabación y, antes de guardarlo, reordena o elimina pasos en la pantalla de revisión. Puedes cambiar el nombre, volver a grabar, eliminar, filtrar por favoritos, exportar e importar automatizaciones guardadas como archivos JSON. Si una automatización solo usa el lienzo y se grabó íntegramente en un fotograma, puedes ejecutarla en el fotograma actual, en un intervalo especificado o en todos los fotogramas. Las opciones de intervalo no aparecen en automatizaciones de la línea de tiempo ni en grabaciones que abarcan varios fotogramas.';
+
+  @override
+  String get tipsOfficialAutomationPresetsTitle =>
+      'Adapta los ajustes oficiales de automatización a tu dibujo';
+
+  @override
+  String get tipsOfficialAutomationPresetsDesc =>
+      'Los ajustes oficiales son 「線画作成（デジタル）」 (líneas automáticas → acumulación de tinta), 「線画抽出（アナログ）」 (ajuste de color → umbral → brillo a alfa), 「線画色トレス」 (combinar capas visibles → desenfocar, duplicar y combinar → ajustar calco de color) y 「オーロラホログラム」 (filtro de textura en un paso). Al volver a grabar se añaden acciones compatibles. En la pantalla de revisión puedes reordenar o eliminar pasos. Expórtalo antes de editarlo si quieres conservar una forma sencilla de volver a la configuración original.';
+
+  @override
+  String get tipsTexturePrismVhsTitle =>
+      'Prueba Textura, Prisma y VHS en capas duplicadas';
+
+  @override
+  String get tipsTexturePrismVhsDesc =>
+      'Filtro de textura parte de Aurora, Pompa de jabón, Neón cibernético, Sueño pastel, Oro del atardecer, Papel plateado, Holograma aurora o Perla 2, y permite ajustar brillo y saturación. Prisma crea una banda de luz con el desenfoque y la dirección del arcoíris; Ruido VHS combina ruido, saturación, brillo y contraste para imitar una cinta antigua. Probar cada efecto en una capa duplicada facilita la comparación; marca como favoritos los ajustes que quieras reutilizar.';
+
+  @override
+  String get customAutomationExecutionFailed =>
+      'No se pudo completar la automatización. Revisa sus ajustes y la capa de destino.';
 }

@@ -400,6 +400,7 @@ class _FilterPanelState extends State<FilterPanel> {
                         );
                     final selected = filter.id == current?.id;
                     final child = GestureDetector(
+                      key: ValueKey('filter-card-${filter.id}'),
                       onTap: locked
                           ? null
                           : () => service.selectFilter(filter.id),
@@ -452,61 +453,68 @@ class _FilterPanelState extends State<FilterPanel> {
               if (current == null)
                 Expanded(child: Center(child: Text(l10n.filterEmpty)))
               else ...[
-                Center(
-                  child: Container(
-                    width: previewSide,
-                    height: previewSide,
-                    decoration: BoxDecoration(
-                      color: Theme.of(
-                        context,
-                      ).colorScheme.surfaceContainerHighest,
-                      borderRadius: BorderRadius.circular(6),
-                    ),
-                    child: _previewImage == null
-                        ? const Center(
-                            child: SizedBox(
-                              width: 20,
-                              height: 20,
-                              child: CircularProgressIndicator(strokeWidth: 2),
-                            ),
-                          )
-                        : ClipRRect(
-                            borderRadius: BorderRadius.circular(6),
-                            child:
-                                current.kind == FilterKind.autoLineart &&
-                                    _autoLineartPreviewGraph != null &&
-                                    (bulk == null || bulk.length <= 1)
-                                ? AutoLineartControlOverlay(
-                                    image: _previewImage!,
-                                    graph: _autoLineartPreviewGraph!,
-                                    onPointMoved:
-                                        (pathIndex, pointIndex, point) {
-                                          _autoLineartPreviewGraph =
-                                              AutoLineartEngine.moveControlPoint(
-                                                _autoLineartPreviewGraph!,
-                                                pathIndex: pathIndex,
-                                                pointIndex: pointIndex,
-                                                point: point,
-                                              );
-                                          _autoLineartManualEdited = true;
-                                          _scheduleAutoLineartPreviewUpdate();
-                                        },
-                                  )
-                                : RawImage(
-                                    image: _previewImage,
-                                    fit: BoxFit.contain,
-                                  ),
-                          ),
-                  ),
-                ),
-                const SizedBox(height: 6),
                 Expanded(
                   child: SingleChildScrollView(
-                    child: _buildControls(l10n, service, current),
+                    child: Column(
+                      children: [
+                        Center(
+                          child: Container(
+                            width: previewSide,
+                            height: previewSide,
+                            decoration: BoxDecoration(
+                              color: Theme.of(
+                                context,
+                              ).colorScheme.surfaceContainerHighest,
+                              borderRadius: BorderRadius.circular(6),
+                            ),
+                            child: _previewImage == null
+                                ? const Center(
+                                    child: SizedBox(
+                                      width: 20,
+                                      height: 20,
+                                      child: CircularProgressIndicator(
+                                        strokeWidth: 2,
+                                      ),
+                                    ),
+                                  )
+                                : ClipRRect(
+                                    borderRadius: BorderRadius.circular(6),
+                                    child:
+                                        current.kind ==
+                                                FilterKind.autoLineart &&
+                                            _autoLineartPreviewGraph != null &&
+                                            (bulk == null || bulk.length <= 1)
+                                        ? AutoLineartControlOverlay(
+                                            image: _previewImage!,
+                                            graph: _autoLineartPreviewGraph!,
+                                            onPointMoved: (pathIndex, pointIndex, point) {
+                                              _autoLineartPreviewGraph =
+                                                  AutoLineartEngine.moveControlPoint(
+                                                    _autoLineartPreviewGraph!,
+                                                    pathIndex: pathIndex,
+                                                    pointIndex: pointIndex,
+                                                    point: point,
+                                                  );
+                                              _autoLineartManualEdited = true;
+                                              _scheduleAutoLineartPreviewUpdate();
+                                            },
+                                          )
+                                        : RawImage(
+                                            image: _previewImage,
+                                            fit: BoxFit.contain,
+                                          ),
+                                  ),
+                          ),
+                        ),
+                        const SizedBox(height: 6),
+                        _buildControls(l10n, service, current),
+                      ],
+                    ),
                   ),
                 ),
                 const SizedBox(height: 8),
                 FilledButton.icon(
+                  key: const ValueKey('filter-apply-button'),
                   onPressed: widget.layerId == null || _applying
                       ? null
                       : _applyFilter,
@@ -1356,6 +1364,7 @@ class _FilterPanelState extends State<FilterPanel> {
   }
 
   String _filterDisplayName(AppLocalizations l10n, FilterDef filter) {
+    if (filter.id == 'Filter0025') return l10n.filterNameInvert;
     if (_isPrism(filter)) return l10n.filterNamePrism;
     if (_isVhs(filter)) return l10n.filterNameVhsNoise;
     return switch (filter.kind) {

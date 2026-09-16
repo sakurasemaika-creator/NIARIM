@@ -1667,7 +1667,7 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get helpDrawingFilterDesc =>
-      '直接应用于所选图层的滤镜（与应用于整条时间轴或整个场景的演出滤镜不同，绘图滤镜按图层生效）。包含模糊、锐化、USM锐化、色调曲线、色阶、暗角、噪点、复古动画、显像管、动画风、描边、像素画、眼镜断层滤镜等。描边不会改写原图层，只会把描边后的结果绘制到一个新图层上。眼镜断层滤镜可以只对选区图层中涂抹的范围，施加类似高度数眼镜镜片那样的局部扭曲效果。像素画也可以选择配色方式（不指定颜色・指定颜色・指定颜色数・从调色板选择）。';
+      '直接应用于所选图层的滤镜（演出滤镜作用于整条时间线或整个场景，而绘图滤镜按图层生效）。内置25种滤镜：高斯模糊、镜头模糊、动画风、色调曲线、色阶、描边、锐化、USM锐化、暗角、胶片颗粒、复古动画、显像管、单色、二值化、鱼眼镜头、色差、眼镜断层、像素画、质感变换滤镜、背景融合、积墨、自动线稿、棱镜、VHS噪点和颜色反转。描边不会改写原图层，只会把结果绘制到新图层。眼镜断层只对选区图层中涂抹的范围施加类似高度数眼镜镜片的局部变形。像素画还可选择配色方式（不限制、指定颜色、指定颜色数或从调色板选择）。';
 
   @override
   String get helpLayerKeyframeTitle => '图层关键帧（分部件动画）';
@@ -3248,6 +3248,9 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get filterNameOutline => '描边';
+
+  @override
+  String get filterNameInvert => '反色';
 
   @override
   String get filterNameToneCurve => '色调曲线';
@@ -6166,6 +6169,30 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get brushSettingsValueLabel => '值';
+
+  @override
+  String get helpCustomAutomationTitle => '自定义自动操作（操作录制）';
+
+  @override
+  String get helpCustomAutomationDesc =>
+      '将在画布或时间线上进行的受支持操作录制为命名步骤，以便重复执行。从“自动操作”中新建项目开始录制，停止后可在检查画面中调整步骤顺序或删除步骤，再进行保存。已保存的自动操作可以重命名、重新录制、删除、仅筛选收藏项，还能以JSON文件导出和导入。仅包含画布操作且全部录制于同一帧的自动操作，可在执行时选择当前帧、指定帧范围或所有帧。时间线自动操作以及跨越多帧的录制不会显示帧范围选项。';
+
+  @override
+  String get tipsOfficialAutomationPresetsTitle => '按自己的画面调整官方自动操作预设';
+
+  @override
+  String get tipsOfficialAutomationPresetsDesc =>
+      '官方预设包括「線画作成（デジタル）」（自动线稿→积墨）、「線画抽出（アナログ）」（色彩调整→二值化→亮度转透明）、「線画色トレス」（合并可见图层→模糊、复制与合并→色彩描线调整）以及「オーロラホログラム」（一步完成质感滤镜）。重新录制会追加支持录制的操作。在确认画面中可以调整步骤顺序或删除步骤。若希望轻松恢复原始设置，可在编辑前先导出一份。';
+
+  @override
+  String get tipsTexturePrismVhsTitle => '在复制图层上尝试质感、棱镜和VHS';
+
+  @override
+  String get tipsTexturePrismVhsDesc =>
+      '质感变换滤镜可从极光、肥皂泡、赛博霓虹、粉彩梦境、日落金、银箔、极光全息或珍珠2开始，再调整亮度和饱和度。棱镜用模糊量和虹彩方向制作光带；VHS噪点将噪点、饱和度、亮度和对比度结合成旧磁带效果。在复制图层上逐个尝试便于比较；将满意的设置加入收藏可更快复用。';
+
+  @override
+  String get customAutomationExecutionFailed => '无法完成自动操作。请检查设置和目标图层。';
 }
 
 /// The translations for Chinese, using the Han script (`zh_Hant`).
@@ -7831,7 +7858,7 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get helpDrawingFilterDesc =>
-      '直接套用於所選圖層的濾鏡（與套用於整條時間軸或整個場景的演出濾鏡不同，繪圖濾鏡按圖層生效）。包含模糊、銳化、USM銳化、色調曲線、色階、暗角、雜訊、復古動畫、映像管、動畫風、外框、像素畫、眼鏡斷層濾鏡等。外框不會改寫原圖層，只會把外框後的結果繪製到一個新圖層上。眼鏡斷層濾鏡可以只對選取圖層中塗抹的範圍，套用類似高度數眼鏡鏡片那樣的局部扭曲效果。像素畫也可以選擇配色方式（不指定顏色・指定顏色・指定顏色數・從調色盤選擇）。';
+      '直接套用於所選圖層的濾鏡（演出濾鏡作用於整條時間軸或整個場景，而繪圖濾鏡按圖層生效）。內建25種濾鏡：高斯模糊、鏡頭模糊、動畫風、色調曲線、色階、外框、銳化、USM銳化、暗角、膠片顆粒、復古動畫、映像管、單色、二值化、魚眼鏡頭、色差、眼鏡斷層、像素畫、質感變換濾鏡、背景融合、積墨、自動線稿、稜鏡、VHS雜訊和色彩反轉。外框不會改寫原圖層，只會把結果繪製到新圖層。眼鏡斷層只對選取圖層中塗抹的範圍套用類似高度數眼鏡鏡片的局部變形。像素畫還可選擇配色方式（不限制、指定顏色、指定顏色數或從調色盤選擇）。';
 
   @override
   String get helpLayerKeyframeTitle => '圖層關鍵影格（分部件動畫）';
@@ -9411,6 +9438,9 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get filterNameOutline => '描邊';
+
+  @override
+  String get filterNameInvert => '色彩反轉';
 
   @override
   String get filterNameToneCurve => '色調曲線';
@@ -12329,4 +12359,28 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get brushSettingsValueLabel => '值';
+
+  @override
+  String get helpCustomAutomationTitle => '自訂自動操作（操作錄製）';
+
+  @override
+  String get helpCustomAutomationDesc =>
+      '將在畫布或時間軸上進行的支援操作錄製為命名步驟，以便重複執行。從「自動操作」新增項目開始錄製，停止後可在檢查畫面調整步驟順序或刪除步驟，再進行儲存。已儲存的自動操作可以重新命名、重新錄製、刪除、僅篩選收藏項目，還能以JSON檔案匯出和匯入。僅包含畫布操作且全部錄製於同一影格的自動操作，可在執行時選擇目前影格、指定影格範圍或所有影格。時間軸自動操作以及跨越多個影格的錄製不會顯示影格範圍選項。';
+
+  @override
+  String get tipsOfficialAutomationPresetsTitle => '依自己的畫面調整官方自動操作預設';
+
+  @override
+  String get tipsOfficialAutomationPresetsDesc =>
+      '官方預設包括「線画作成（デジタル）」（自動線稿→積墨）、「線画抽出（アナログ）」（色彩調整→二值化→亮度轉透明）、「線画色トレス」（合併可見圖層→模糊、複製與合併→色彩描線調整）以及「オーロラホログラム」（一步完成質感濾鏡）。重新錄製會追加支援錄製的操作。在確認畫面中可以調整步驟順序或刪除步驟。若希望輕鬆恢復原始設定，可在編輯前先匯出一份。';
+
+  @override
+  String get tipsTexturePrismVhsTitle => '在複製圖層上嘗試質感、稜鏡和VHS';
+
+  @override
+  String get tipsTexturePrismVhsDesc =>
+      '質感變換濾鏡可從極光、肥皂泡、賽博霓虹、粉彩夢境、日落金、銀箔、極光全息或珍珠2開始，再調整亮度和飽和度。稜鏡用模糊量和虹彩方向製作光帶；VHS雜訊將雜訊、飽和度、亮度和對比度結合成舊磁帶效果。在複製圖層上逐一嘗試便於比較；將滿意的設定加入收藏可更快重複使用。';
+
+  @override
+  String get customAutomationExecutionFailed => '無法完成自動操作。請檢查設定與目標圖層。';
 }

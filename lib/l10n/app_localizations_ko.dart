@@ -1680,7 +1680,7 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get helpDrawingFilterDesc =>
-      '선택 중인 레이어에 직접 적용하는 필터입니다（연출 필터가 타임라인 전체・장면 단위로 적용되는 것과 달리, 그리기 필터는 레이어 단위입니다）. 흐림・샤프・언샤프 마스크・톤 커브・레벨 보정・비네트・노이즈・레트로 애니메이션・브라운관・애니메이션풍・윤곽선・픽셀 아트・안경 단면 필터 등이 준비되어 있습니다. 윤곽선은 원본 레이어를 다시 쓰지 않고, 윤곽선을 두른 내용만 새 레이어에 그립니다. 안경 단면 필터는 선택 레이어에 칠한 범위에만, 도수가 강한 안경 렌즈처럼 국소적으로 왜곡을 줄 수 있습니다. 픽셀 아트는 배색 방식（색을 지정하지 않음・색을 지정함・색 수를 지정함・팔레트에서 선택）도 고를 수 있습니다.';
+      '선택한 레이어에 직접 적용하는 필터입니다(연출 필터가 타임라인 전체나 장면 단위로 적용되는 것과 달리 그리기 필터는 레이어 단위로 작동합니다). 제공되는 25종은 가우시안 블러, 렌즈 블러, 애니메이션풍, 톤 커브, 레벨 보정, 윤곽선, 샤프, 언샤프 마스크, 비네트, 필름 그레인, 레트로 애니메이션, 브라운관, 모노크롬, 이진화, 어안 렌즈, 색수차, 안경 단면, 픽셀 아트, 질감 변경 필터, 배경 어우러짐, 잉크 고임, 자동 선화, 프리즘, VHS 노이즈, 색상 반전입니다. 윤곽선은 원본 레이어를 다시 쓰지 않고 결과만 새 레이어에 그립니다. 안경 단면은 선택 레이어에서 칠한 범위에만 도수가 강한 안경 렌즈 같은 국소 왜곡을 적용합니다. 픽셀 아트는 배색 방식(제한 없음, 색 지정, 색 수 지정, 팔레트 선택)도 고를 수 있습니다.';
 
   @override
   String get helpLayerKeyframeTitle => '레이어 키프레임（파츠 단위 애니메이션）';
@@ -3275,6 +3275,9 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get filterNameOutline => '테두리';
+
+  @override
+  String get filterNameInvert => '색상 반전';
 
   @override
   String get filterNameToneCurve => '톤 커브';
@@ -6234,4 +6237,29 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get brushSettingsValueLabel => '값';
+
+  @override
+  String get helpCustomAutomationTitle => '사용자 지정 자동 작업(동작 기록)';
+
+  @override
+  String get helpCustomAutomationDesc =>
+      '캔버스나 타임라인에서 지원되는 동작을 이름이 있는 순서로 기록해 반복 실행하는 기능입니다. 자동 작업에서 새 항목을 추가해 기록을 시작하고, 중지 후 검토 화면에서 순서를 바꾸거나 단계를 삭제한 뒤 저장합니다. 저장한 자동 작업은 이름 변경, 다시 기록, 삭제, 즐겨찾기 필터링이 가능하며 JSON 파일로 내보내고 가져올 수도 있습니다. 캔버스 동작만 같은 한 프레임 안에서 기록한 자동 작업은 실행할 때 현재 프레임, 지정한 프레임 범위, 모든 프레임 중에서 선택할 수 있습니다. 타임라인 자동 작업이나 여러 프레임에 걸친 기록에는 프레임 범위 선택이 표시되지 않습니다.';
+
+  @override
+  String get tipsOfficialAutomationPresetsTitle => '공식 자동 작업 프리셋을 그림에 맞게 조정하기';
+
+  @override
+  String get tipsOfficialAutomationPresetsDesc =>
+      '공식 프리셋은 「線画作成（デジタル）」(자동 선화 → 잉크 고임), 「線画抽出（アナログ）」(색조 보정 → 이진화 → 밝기로 투명도 변환), 「線画色トレス」(표시 레이어 병합 → 블러·복제·병합 → 색 트레이스 보정), 「オーロラホログラム」(한 단계 질감 필터)입니다. 다시 기록하면 지원되는 작업이 추가됩니다. 확인 화면에서 단계 순서를 바꾸거나 삭제할 수 있습니다. 원래 설정으로 쉽게 돌아가려면 편집 전에 내보내 두세요.';
+
+  @override
+  String get tipsTexturePrismVhsTitle => '질감·프리즘·VHS는 복제 레이어에서 시험하기';
+
+  @override
+  String get tipsTexturePrismVhsDesc =>
+      '질감 변경 필터는 오로라, 비눗방울, 사이버 네온, 파스텔 드림, 선셋 골드, 실버 포일, 오로라 홀로그램, 펄 2를 바탕으로 밝기와 채도를 조정합니다. 프리즘은 블러와 무지개 방향으로 빛 띠를 만들고, VHS 노이즈는 노이즈·채도·밝기·대비를 조합해 오래된 테이프 느낌을 냅니다. 복제 레이어에서 하나씩 시험하면 비교하기 쉽고 마음에 든 설정을 즐겨찾기에 넣으면 빠르게 재사용할 수 있습니다.';
+
+  @override
+  String get customAutomationExecutionFailed =>
+      '자동 작업을 완료하지 못했습니다. 설정과 대상 레이어를 확인하세요.';
 }

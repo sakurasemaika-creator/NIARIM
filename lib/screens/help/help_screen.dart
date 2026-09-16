@@ -431,6 +431,17 @@ class _HelpScreenState extends State<HelpScreen> {
       diagram: const HelpDiagramSpec(HelpScreenTemplate.floatingPanel, 1),
     ),
     _HelpEntry(
+      topicKey: '自動操作',
+      title: l10n.helpCustomAutomationTitle,
+      description: l10n.helpCustomAutomationDesc,
+      category: l10n.helpCategoryTool,
+      diagram: const HelpDiagramSpec(
+        HelpScreenTemplate.floatingPanel,
+        1,
+        icon: Icons.playlist_play,
+      ),
+    ),
+    _HelpEntry(
       topicKey: 'レイヤーキーフレーム',
       title: l10n.helpLayerKeyframeTitle,
       description: l10n.helpLayerKeyframeDesc,

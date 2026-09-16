@@ -1702,7 +1702,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get helpDrawingFilterDesc =>
-      'Filters applied directly to the selected layer (as opposed to effect filters, which apply across the whole timeline or a scene, draw filters work per layer). Includes blur, sharpen, unsharp mask, tone curve, levels, vignette, noise, retro anime, CRT, anime style, outline, pixel art, and a lens-distortion filter. Outline doesn\'t rewrite the original layer — it draws just the outlined result onto a new layer. The lens-distortion filter applies a localized warp, like looking through a strong eyeglass lens, only to the area painted on the selection layer. Pixel art also lets you choose a color mode (no limit, specify colors, specify color count, or choose from a palette).';
+      'Filters applied directly to the selected layer (as opposed to effect filters, which apply across the whole timeline or a scene, draw filters work per layer). The 25 included filters are Gaussian Blur, Lens Blur, Anime Style, Tone Curve, Levels, Outline, Sharpen, Unsharp Mask, Vignette, Film Grain, Retro Anime, CRT, Monochrome, Threshold, Fisheye Lens, Chromatic Aberration, Lens Distortion, Pixel Art, Texture Filter, Background Blend, Ink Pool, Auto Line Art, Prism, VHS Noise, and Invert. Outline does not rewrite the original layer — it draws just the outlined result onto a new layer. Lens Distortion applies a localized warp, like looking through a strong eyeglass lens, only to the area painted on the selection layer. Pixel Art also lets you choose a color mode (no limit, specify colors, specify color count, or choose from a palette).';
 
   @override
   String get helpLayerKeyframeTitle => 'Layer keyframes (per-part animation)';
@@ -3377,6 +3377,9 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get filterNameOutline => 'Outline';
+
+  @override
+  String get filterNameInvert => 'Invert colors';
 
   @override
   String get filterNameToneCurve => 'Tone Curve';
@@ -6419,4 +6422,32 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get brushSettingsValueLabel => 'Value';
+
+  @override
+  String get helpCustomAutomationTitle =>
+      'Custom automations (action recording)';
+
+  @override
+  String get helpCustomAutomationDesc =>
+      'Record supported actions on the canvas or timeline as a named sequence that you can run again. Add a new item from Automations to start recording, then reorder or remove steps on the review screen before saving. You can rename, re-record, delete, filter to favorites, export, and import saved automations as JSON files. For a canvas-only automation recorded entirely within one frame, you can run it on the current frame, a specified frame range, or all frames. Frame-range choices are not shown for timeline automations or recordings that span multiple frames.';
+
+  @override
+  String get tipsOfficialAutomationPresetsTitle =>
+      'Tune the official automation presets to your artwork';
+
+  @override
+  String get tipsOfficialAutomationPresetsDesc =>
+      'The official presets are 「線画作成（デジタル）」 (Auto Line Art → Ink Pool), 「線画抽出（アナログ）」 (Color Adjust → Threshold → Brightness to Alpha), 「線画色トレス」 (merge visible layers → blur, duplicate, and merge → color-trace adjustment), and 「オーロラホログラム」 (a one-step texture filter). Re-recording appends supported actions. In the review screen, you can reorder or remove steps. Export it before editing if you want an easy way back to the original settings.';
+
+  @override
+  String get tipsTexturePrismVhsTitle =>
+      'Try Texture, Prism, and VHS on duplicate layers';
+
+  @override
+  String get tipsTexturePrismVhsDesc =>
+      'Texture Filter starts from Aurora, Pearl 1, Vaporwave, Pastel Dream, Sunset Gold, Silver Foil, Aurora Hologram, or Pearl 2, then lets you tune brightness and saturation. Prism creates a band of light with blur and rainbow direction, while VHS Noise combines noise, saturation, brightness, and contrast for an aged-tape look. Trying each on a duplicate layer makes comparison easy; favorite the settings you like for faster reuse.';
+
+  @override
+  String get customAutomationExecutionFailed =>
+      'Automation could not finish. Check its settings and target layer.';
 }

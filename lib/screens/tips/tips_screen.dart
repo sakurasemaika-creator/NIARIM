@@ -236,6 +236,15 @@ List<_TipCategory> _buildTipCategories(AppLocalizations l10n) => [
       _Tip(
         TipDiagramSpec(
           TipDiagramKind.pairCombo,
+          iconA: Icons.playlist_play,
+          iconB: Icons.tune,
+        ),
+        l10n.tipsOfficialAutomationPresetsTitle,
+        l10n.tipsOfficialAutomationPresetsDesc,
+      ),
+      _Tip(
+        TipDiagramSpec(
+          TipDiagramKind.pairCombo,
           iconA: Icons.auto_fix_high,
           iconB: Icons.format_color_fill,
         ),
@@ -506,6 +515,15 @@ List<_TipCategory> _buildTipCategories(AppLocalizations l10n) => [
         ),
         l10n.tipsRainNoiseTitle,
         l10n.tipsRainNoiseDesc,
+      ),
+      _Tip(
+        TipDiagramSpec(
+          TipDiagramKind.pairCombo,
+          iconA: Icons.auto_awesome,
+          iconB: Icons.tv,
+        ),
+        l10n.tipsTexturePrismVhsTitle,
+        l10n.tipsTexturePrismVhsDesc,
       ),
       _Tip(
         TipDiagramSpec(
