@@ -1,100 +1,60 @@
 from pathlib import Path
 
-p = Path('lib/screens/canvas/canvas_screen.dart')
-s = p.read_text(encoding='utf-8')
+canvas_path = Path('lib/screens/canvas/canvas_screen.dart')
+canvas = canvas_path.read_text(encoding='utf-8')
 
-if "import 'dart:async';" not in s:
-    s = "import 'dart:async';\n\n" + s
-
-field_anchor = "  ValueChanged<Color>? _pendingTextColorEyedropper;\n"
-if "Completer<int?>? _pendingBrushOutlineEyedropper;" not in s:
-    if field_anchor not in s:
-        raise SystemExit('brush eyedropper field anchor missing')
-    s = s.replace(
-        field_anchor,
-        field_anchor + "  Completer<int?>? _pendingBrushOutlineEyedropper;\n\n  bool get _brushOutlineEyedropperActive =>\n      _pendingBrushOutlineEyedropper != null;\n",
-        1,
-    )
-
-handler_anchor = "  void _handleCanvasEyedropper(Color color) {\n"
-if "Future<int?> _startBrushOutlineEyedropper()" not in s:
-    if handler_anchor not in s:
-        raise SystemExit('canvas eyedropper handler anchor missing')
-    helper = """  Future<int?> _startBrushOutlineEyedropper() {
-    final previous = _pendingBrushOutlineEyedropper;
-    if (previous != null && !previous.isCompleted) {
-      previous.complete(null);
-    }
-    final completer = Completer<int?>();
-    setState(() => _pendingBrushOutlineEyedropper = completer);
-    return completer.future;
-  }
-
-"""
-    s = s.replace(handler_anchor, helper + handler_anchor, 1)
-
-handler_body = "  void _handleCanvasEyedropper(Color color) {\n"
-if "_pendingBrushOutlineEyedropper?.complete(color.toARGB32())" not in s:
-    replacement = """  void _handleCanvasEyedropper(Color color) {
-    final brushOutline = _pendingBrushOutlineEyedropper;
-    if (brushOutline != null) {
+bad_handler = """  void _handleCanvasEyedropper(Color color) {
+    final pendingBrushOutline = _pendingBrushOutlineEyedropper;
+    if (pendingBrushOutline != null) {
       setState(() => _pendingBrushOutlineEyedropper = null);
-      if (!brushOutline.isCompleted) {
-        brushOutline.complete(color.toARGB32());
+      if (!pendingBrushOutline.isCompleted) {
+        _pendingBrushOutlineEyedropper?.complete(color.toARGB32());
+        pendingBrushOutline.complete(color.toARGB32());
       }
       return;
     }
 """
-    s = s.replace(handler_body, replacement, 1)
-
-hint_anchor = "    if (_textColorEyedropperTarget != null) {\n      return l10n.filterCanvasEyedropperTooltip;\n    }\n"
-if "if (_brushOutlineEyedropperActive)" not in s:
-    if hint_anchor not in s:
-        raise SystemExit('eyedropper hint anchor missing')
-    s = s.replace(
-        hint_anchor,
-        hint_anchor + "    if (_brushOutlineEyedropperActive) {\n      return l10n.filterCanvasEyedropperTooltip;\n    }\n",
-        1,
-    )
-
-old_brush = "  Widget _brushPanel() =>\n      BrushPanel(onClose: () => setState(() => _showBrushPanel = false));\n"
-if "onEyedropOutlineColor: _startBrushOutlineEyedropper" not in s:
-    if old_brush not in s:
-        raise SystemExit('brush panel anchor missing')
-    s = s.replace(
-        old_brush,
-        """  Widget _brushPanel() => BrushPanel(
-    onClose: () => setState(() => _showBrushPanel = false),
-    onEyedropOutlineColor: _startBrushOutlineEyedropper,
-  );
-""",
-        1,
-    )
-
-old_active = """                                  filterEyedropperActive:
-                                      _filterColorEyedropperTarget != null ||
-                                      _textColorEyedropperTarget != null,
+good_handler = """  void _handleCanvasEyedropper(Color color) {
+    final pendingBrushOutline = _pendingBrushOutlineEyedropper;
+    if (pendingBrushOutline != null) {
+      setState(() => _pendingBrushOutlineEyedropper = null);
+      if (!pendingBrushOutline.isCompleted) {
+        pendingBrushOutline.complete(color.toARGB32());
+      }
+      return;
+    }
 """
-new_active = """                                  filterEyedropperActive:
-                                      _filterColorEyedropperTarget != null ||
-                                      _textColorEyedropperTarget != null ||
-                                      _brushOutlineEyedropperActive,
-"""
-if old_active in s:
-    s = s.replace(old_active, new_active, 1)
-elif new_active not in s:
-    raise SystemExit('canvas eyedropper active anchor missing')
+if bad_handler in canvas:
+    canvas = canvas.replace(bad_handler, good_handler, 1)
+elif good_handler not in canvas:
+    raise SystemExit('brush outline canvas handler anchor missing')
 
-old_overlay = """                                if (_filterColorEyedropperTarget != null ||
-                                    _textColorEyedropperTarget != null)
-"""
-new_overlay = """                                if (_filterColorEyedropperTarget != null ||
-                                    _textColorEyedropperTarget != null ||
-                                    _brushOutlineEyedropperActive)
-"""
-if old_overlay in s:
-    s = s.replace(old_overlay, new_overlay, 1)
-elif new_overlay not in s:
-    raise SystemExit('eyedropper overlay anchor missing')
+canvas_path.write_text(canvas, encoding='utf-8', newline='\n')
 
-p.write_text(s, encoding='utf-8', newline='\n')
+brush_path = Path('lib/screens/canvas/widgets/brush_panel.dart')
+brush = brush_path.read_text(encoding='utf-8')
+old_method = """  Future<void> _eyedropOutlineColor() async {
+    final callback = widget.onEyedropOutlineColor;
+    if (callback == null) return;
+    final sampled = await callback();
+    if (!mounted || sampled == null) return;
+    setState(() => _brush = _brush.copyWith(outlineColor: sampled));
+  }
+"""
+new_method = """  Future<void> _eyedropOutlineColor() async {
+    final callback = widget.onEyedropOutlineColor;
+    if (callback == null) return;
+    final service = context.read<BrushService>();
+    final draft = _brush;
+    Navigator.of(context).pop();
+    final sampled = await callback();
+    if (sampled == null) return;
+    service.updateBrush(draft.copyWith(outlineColor: sampled));
+  }
+"""
+if old_method in brush:
+    brush = brush.replace(old_method, new_method, 1)
+elif new_method not in brush:
+    raise SystemExit('brush outline settings eyedropper anchor missing')
+
+brush_path.write_text(brush, encoding='utf-8', newline='\n')
