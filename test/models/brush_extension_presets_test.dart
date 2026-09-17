@@ -12,7 +12,7 @@ void main() {
     expect(net.tipShape, BrushTipShape.hollowSquare);
   });
 
-  test('hair preset uses current fill plus black outline and folds', () {
+  test('hair preset uses current fill, outline, straight fold and 30% endpoint wave', () {
     final hair = brushExtensionPresets().singleWhere((b) => b.id == 'Brush0023');
     expect(hair.name, '髪の毛');
     expect(hair.outlineEnabled, isTrue);
@@ -20,11 +20,25 @@ void main() {
     expect(hair.outlineWidth, 1.5);
     expect(hair.foldEnabled, isTrue);
     expect(hair.foldTriggerAngle, 90);
-    expect(hair.yBranchAngle, 45);
-    expect(hair.yBranchLengthRatio, .6);
-    expect(hair.yBranchWidthRatio, .08);
-    expect(hair.yBranchEndTaperRatio, .4);
+    expect(hair.foldCurveStartRatio, .25);
+    expect(hair.foldDepthRatio, .55);
+    expect(hair.foldLengthRatio, .8);
+    expect(hair.foldEndTaperRatio, .35);
+    expect(hair.foldWaveEnabled, isTrue);
+    expect(hair.foldWaveEndRatio, .30);
+    expect(hair.foldWaveTriggerAngle, 45);
     expect(hair.toJson().containsKey('fillColor'), isFalse);
+  });
+
+  test('bangs preset keeps fold wave disabled and at zero percent', () {
+    final bangs = brushExtensionPresets().singleWhere((b) => b.id == 'Brush0024');
+    expect(bangs.name, '前髪');
+    expect(bangs.outlineEnabled, isTrue);
+    expect(bangs.foldEnabled, isTrue);
+    expect(bangs.foldWaveEnabled, isFalse);
+    expect(bangs.foldWaveEndRatio, 0);
+    expect(bangs.pressureOn.size.enabled, isTrue);
+    expect(bangs.toJson().containsKey('fillColor'), isFalse);
   });
 
   test('extension preset ids are unique', () {
