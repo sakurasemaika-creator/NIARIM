@@ -23,7 +23,6 @@ jobs:
         run: |
           python3 - <<'PY'
           from pathlib import Path
-          import re
 
           p=Path('lib/services/filter_service.dart')
           s=p.read_text()
@@ -108,7 +107,6 @@ jobs:
             if marker not in s: raise SystemExit('applyNoise method anchor missing')
             s=s.replace(marker,'\n'+methods+marker,1)
 
-          # Retro Anime uses neutral grain after its grading instead of generic legacy noise.
           s=s.replace('return applyNoise(result, width, height, amount * 0.15, NoiseType.gaussian);',
                       'return applyFilmGrain(result, width, height, amount * 0.15);',1)
           p.write_text(s)
@@ -134,3 +132,4 @@ jobs:
             git rebase origin/dev_branch
             git push origin HEAD:dev_branch
           fi
+# trigger: 2026-09-17 pixel-noise closure
