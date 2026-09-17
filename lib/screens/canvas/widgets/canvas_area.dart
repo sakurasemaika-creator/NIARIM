@@ -1239,7 +1239,11 @@ class _CanvasAreaState extends State<CanvasArea> {
     // anchorとして扱うため、この呼び出しで既存仕様も維持される。
     final point = _toCanvasPoint(_rawToStrokePoint(event));
     _beginTileUndo();
-    _drawingEngine.beginStroke(point, _tileKeyFor(_layerId));
+    _drawingEngine.beginStroke(
+      point,
+      _tileKeyFor(_layerId),
+      screenPosition: event.localPosition,
+    );
     _scheduleComposite();
     _armHoldEyedropperIfEligible(event, canvasPos);
   }
@@ -1359,7 +1363,11 @@ class _CanvasAreaState extends State<CanvasArea> {
     }
     _updateHoldEyedropper(event, canvasPos);
     final point = _toCanvasPoint(_rawToStrokePoint(event));
-    _drawingEngine.continueStroke(point, _tileKeyFor(_layerId));
+    _drawingEngine.continueStroke(
+      point,
+      _tileKeyFor(_layerId),
+      screenPosition: event.localPosition,
+    );
     _scheduleComposite();
   }
 
@@ -2333,8 +2341,9 @@ class _CanvasAreaState extends State<CanvasArea> {
             .distance <
         rotateR) {
       mode = _TransformMode.rotate;
-    } else if (selectionScaleHandlesOf(bounds)
-        .any((c) => (canvasPos - c).distance < r)) {
+    } else if (selectionScaleHandlesOf(
+      bounds,
+    ).any((c) => (canvasPos - c).distance < r)) {
       mode = _TransformMode.scale;
     } else if ((canvasPos - bounds.center).distance < r ||
         _selectionMaskContains(canvasPos)) {
