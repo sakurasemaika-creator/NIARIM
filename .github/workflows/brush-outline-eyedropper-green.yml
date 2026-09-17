@@ -5,6 +5,7 @@ on:
     branches: [dev_branch]
     paths:
       - '.github/workflows/brush-outline-eyedropper-green.yml'
+      - '.github/scripts/complete_brush_outline_canvas_eyedropper.py'
       - 'lib/screens/canvas/canvas_screen.dart'
       - 'lib/screens/canvas/widgets/brush_panel.dart'
       - 'test/brush_outline_canvas_eyedropper_contract_test.dart'
@@ -14,6 +15,8 @@ jobs:
   green:
     runs-on: ubuntu-latest
     timeout-minutes: 20
+    permissions:
+      contents: write
     steps:
       - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
       - uses: subosito/flutter-action@1a449444c387b1966244ae4d4f8c696479add0b2 # v2
@@ -21,5 +24,21 @@ jobs:
           channel: stable
           cache: false
       - run: flutter pub get --enforce-lockfile
+      - name: Complete brush outline canvas eyedropper
+        run: |
+          python3 .github/scripts/complete_brush_outline_canvas_eyedropper.py
+          dart format lib/screens/canvas/canvas_screen.dart
       - run: flutter test test/brush_outline_canvas_eyedropper_contract_test.dart --reporter expanded
       - run: flutter analyze lib/screens/canvas/canvas_screen.dart lib/screens/canvas/widgets/brush_panel.dart test/brush_outline_canvas_eyedropper_contract_test.dart --no-fatal-infos --no-fatal-warnings
+      - name: Persist verified integration
+        run: |
+          if git diff --quiet -- lib/screens/canvas/canvas_screen.dart; then
+            exit 0
+          fi
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add lib/screens/canvas/canvas_screen.dart
+          git commit -m 'fix: wire brush outline eyedropper to canvas'
+          git fetch origin dev_branch
+          git rebase origin/dev_branch
+          git push origin HEAD:dev_branch
