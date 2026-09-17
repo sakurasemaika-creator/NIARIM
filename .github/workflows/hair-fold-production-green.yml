@@ -1,0 +1,57 @@
+name: Hair Fold Production Green
+
+on:
+  push:
+    branches: [dev_branch]
+    paths:
+      - '.github/workflows/hair-fold-production-green.yml'
+      - '.github/scripts/complete_screen_space_fold_integration.py'
+      - 'lib/models/brush.dart'
+      - 'lib/engine/drawing_engine.dart'
+      - 'lib/engine/brush_stroke_geometry.dart'
+      - 'lib/engine/hair_fold_render_resolver.dart'
+      - 'lib/engine/wave_hair_fold_geometry.dart'
+      - 'test/engine/straight_hair_fold_geometry_test.dart'
+      - 'test/engine/wave_hair_fold_geometry_test.dart'
+      - 'test/engine/hair_fold_render_resolver_test.dart'
+      - 'test/engine/drawing_engine_wave_fold_contract_test.dart'
+  workflow_dispatch:
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+      - uses: subosito/flutter-action@1a449444c387b1966244ae4d4f8c696479add0b2 # v2
+        with:
+          channel: stable
+          cache: false
+      - name: Resolve dependencies
+        run: flutter pub get --enforce-lockfile
+      - name: Apply production fold integration
+        run: |
+          python3 .github/scripts/complete_screen_space_fold_integration.py
+          dart format lib/engine/drawing_engine.dart
+      - name: Hair fold tests
+        run: |
+          flutter test test/engine/straight_hair_fold_geometry_test.dart --reporter expanded
+          flutter test test/engine/wave_hair_fold_geometry_test.dart --reporter expanded
+          flutter test test/engine/hair_fold_render_resolver_test.dart --reporter expanded
+          flutter test test/engine/drawing_engine_wave_fold_contract_test.dart --reporter expanded
+      - name: Targeted analyze
+        run: flutter analyze lib/models/brush.dart lib/engine/brush_stroke_geometry.dart lib/engine/hair_fold_render_resolver.dart lib/engine/wave_hair_fold_geometry.dart lib/engine/drawing_engine.dart test/engine/drawing_engine_wave_fold_contract_test.dart --no-fatal-infos --no-fatal-warnings
+      - name: Persist verified drawing engine integration
+        run: |
+          if git diff --quiet -- lib/engine/drawing_engine.dart; then
+            exit 0
+          fi
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add lib/engine/drawing_engine.dart
+          git commit -m 'fix: activate straight and wave hair fold rendering'
+          git fetch origin dev_branch
+          git rebase origin/dev_branch
+          git push origin HEAD:dev_branch
