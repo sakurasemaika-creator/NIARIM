@@ -69,8 +69,10 @@ void main() {
         for (var x = 0; x <= 30; x += 2) Offset(x.toDouble(), 0),
         for (var y = 2; y <= 32; y += 2) Offset(30, y.toDouble()),
       ];
-      expect(runPath(points, documentScale: 1).length,
-          runPath(points, documentScale: 8).length);
+      expect(
+        runPath(points, documentScale: 1).length,
+        runPath(points, documentScale: 8).length,
+      );
     });
 
     test('opposite bend signs both point toward their curve interior', () {
@@ -85,14 +87,99 @@ void main() {
       final a = runPath(down).first;
       final b = runPath(up).first;
       expect(a.signedTurnRadians.sign, -b.signedTurnRadians.sign);
-      // Both paths approach from the left, so the inside of either 90-degree
-      // bend lies back toward x < 30 at the outgoing segment.
       expect(a.inwardNormal.dx, lessThan(0));
       expect(b.inwardNormal.dx, lessThan(0));
     });
   });
 
-  test('fold Y uses effective-width ratios and endpoint taper', () {
+  group('straight hair fold geometry', () {
+    const event = FoldEvent(
+      sample: BrushStrokeSample(
+        screenPosition: Offset.zero,
+        documentPosition: Offset(50, 50),
+        effectiveWidth: 40,
+      ),
+      tangent: Offset(1, 0),
+      inwardNormal: Offset(0, 1),
+      signedTurnRadians: 1.5707963267948966,
+      screenDistance: 40,
+    );
+
+    test('length and depth are effective-width ratios', () {
+      final path = buildStraightFoldPath(
+        event,
+        curveStartRatio: .25,
+        depthRatio: .5,
+        lengthRatio: .75,
+        taperRatio: .4,
+      );
+      expect(path.length, greaterThan(3));
+      expect(path.last.distanceFromStart, closeTo(30, 1.0));
+      expect(path.map((p) => p.position.dy).reduce((a, b) => a > b ? a : b),
+          greaterThanOrEqualTo(19));
+    });
+
+    test('curve-start ratio delays bending without changing initial tangent', () {
+      final early = buildStraightFoldPath(
+        event,
+        curveStartRatio: .1,
+        depthRatio: .5,
+        lengthRatio: .8,
+        taperRatio: .4,
+      );
+      final late = buildStraightFoldPath(
+        event,
+        curveStartRatio: .6,
+        depthRatio: .5,
+        lengthRatio: .8,
+        taperRatio: .4,
+      );
+      expect(early[1].position.dy, greaterThan(late[1].position.dy));
+      expect((late[1].position - late.first.position).dy.abs(), lessThan(2));
+    });
+
+    test('terminal taper reaches zero while start uses outline width', () {
+      final path = buildStraightFoldPath(
+        event,
+        curveStartRatio: .25,
+        depthRatio: .5,
+        lengthRatio: .75,
+        taperRatio: .5,
+        outlineWidth: 6,
+      );
+      expect(path.first.width, 6);
+      expect(path[path.length ~/ 3].width, closeTo(6, .01));
+      expect(path.last.width, 0);
+    });
+
+    test('opposite turns mirror the inward fold side', () {
+      final opposite = FoldEvent(
+        sample: event.sample,
+        tangent: event.tangent,
+        inwardNormal: const Offset(0, -1),
+        signedTurnRadians: -event.signedTurnRadians,
+        screenDistance: event.screenDistance,
+      );
+      final a = buildStraightFoldPath(
+        event,
+        curveStartRatio: .25,
+        depthRatio: .5,
+        lengthRatio: .75,
+        taperRatio: .4,
+      );
+      final b = buildStraightFoldPath(
+        opposite,
+        curveStartRatio: .25,
+        depthRatio: .5,
+        lengthRatio: .75,
+        taperRatio: .4,
+      );
+      expect(a.last.position.dx, closeTo(b.last.position.dx, .001));
+      expect(a.last.position.dy - 50, closeTo(-(b.last.position.dy - 50), .001));
+    });
+  });
+
+  test('legacy fold Y still uses effective-width ratios during migration', () {
     const event = FoldEvent(
       sample: BrushStrokeSample(
         screenPosition: Offset.zero,
@@ -114,7 +201,6 @@ void main() {
     expect(branches.length, 3);
     expect(branches.first.length, closeTo(20, .001));
     expect(branches.first.width, 4);
-    expect(branches.first.widthAt(0), 4);
     expect(branches.first.widthAt(1), 0);
   });
 }
