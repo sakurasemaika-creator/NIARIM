@@ -20,6 +20,7 @@ enum FilterKind {
   chromaticAberration,
   lensDistortion,
   pixelate,
+  mosaic,
   auroraHologram,
   backgroundBlend,
   inkPool,
@@ -393,9 +394,7 @@ class FilterDef {
       orElse: () => PixelColorMode.count,
     ),
     pixelExplicitColors:
-        (j['pixelExplicitColors'] as List<dynamic>?)
-            ?.map((e) => e as int)
-            .toList() ??
+        (j['pixelExplicitColors'] as List<dynamic>?)?.cast<int>() ??
         const [0xFF000000],
     hologramBrightness: (j['hologramBrightness'] as num?)?.toDouble() ?? 0,
     hologramSaturation: (j['hologramSaturation'] as num?)?.toDouble() ?? 0,
