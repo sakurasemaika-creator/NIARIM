@@ -1,0 +1,136 @@
+name: Temporary Pixel Noise Closure
+
+on:
+  push:
+    branches: [dev_branch]
+    paths: ['.github/workflows/tmp-pixel-noise-closure.yml']
+
+permissions:
+  contents: write
+
+jobs:
+  integrate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803
+      - uses: subosito/flutter-action@1a449444c387b1966244ae4d4f8c696479add0b2
+        with:
+          channel: stable
+          cache: false
+      - run: flutter pub get --enforce-lockfile
+      - name: Apply only pixel/noise production closure
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          import re
+
+          p=Path('lib/services/filter_service.dart')
+          s=p.read_text()
+          if 'static const genericNoiseFilterId' not in s:
+            s=s.replace("  static const mosaicFilterId = 'Filter0026';", "  static const mosaicFilterId = 'Filter0026';\n  static const genericNoiseFilterId = 'Filter0027';", 1)
+          if 'id: genericNoiseFilterId' not in s:
+            anchor="""    FilterDef(
+              id: mosaicFilterId,
+              name: 'モザイク',
+              kind: FilterKind.mosaic,
+              strength: 8,
+            ),"""
+            addition=anchor+"""
+            FilterDef(
+              id: genericNoiseFilterId,
+              name: 'ノイズ',
+              kind: FilterKind.noise,
+              strength: 15,
+            ),"""
+            if anchor not in s: raise SystemExit('mosaic preset anchor missing')
+            s=s.replace(anchor,addition,1)
+          p.write_text(s)
+
+          p=Path('lib/engine/filter_engine.dart')
+          s=p.read_text()
+          old="""    FilterKind.noise => engine.applyNoise(
+                data,
+                width,
+                height,
+                (filter.strength / 100).clamp(0.0, 1.0),
+                NoiseType.gaussian,
+              ),"""
+          new="""    FilterKind.noise => filter.id == 'Filter0027'
+                ? engine.applyColorNoise(
+                    data,
+                    width,
+                    height,
+                    (filter.strength / 100).clamp(0.0, 1.0),
+                  )
+                : engine.applyFilmGrain(
+                    data,
+                    width,
+                    height,
+                    (filter.strength / 100).clamp(0.0, 1.0),
+                  ),"""
+          if old in s: s=s.replace(old,new,1)
+          elif "filter.id == 'Filter0027'" not in s: raise SystemExit('noise route anchor missing')
+
+          if 'Uint8List applyFilmGrain(' not in s:
+            marker='\n  Uint8List applyNoise('
+            methods='''
+            /// Neutral-luminance grain: one sample is shared by RGB, preserving hue and alpha.
+            Uint8List applyFilmGrain(Uint8List data, int width, int height, double strength, {int? seed}) {
+              final result = Uint8List.fromList(data);
+              final rng = seed == null ? math.Random() : math.Random(seed);
+              final amount = (strength.clamp(0.0, 1.0) * 255).round();
+              for (var i = 0; i < result.length; i += 4) {
+                if (result[i + 3] == 0) continue;
+                final n = (_gaussianRandom(rng) * amount).round().clamp(-amount, amount);
+                result[i] = (result[i] + n).clamp(0, 255);
+                result[i + 1] = (result[i + 1] + n).clamp(0, 255);
+                result[i + 2] = (result[i + 2] + n).clamp(0, 255);
+              }
+              return result;
+            }
+
+            /// General RGB noise: channels receive independent samples; alpha is preserved.
+            Uint8List applyColorNoise(Uint8List data, int width, int height, double strength, {int? seed}) {
+              final result = Uint8List.fromList(data);
+              final rng = seed == null ? math.Random() : math.Random(seed);
+              final amount = (strength.clamp(0.0, 1.0) * 255).round();
+              for (var i = 0; i < result.length; i += 4) {
+                if (result[i + 3] == 0) continue;
+                for (var c = 0; c < 3; c++) {
+                  final n = (_gaussianRandom(rng) * amount).round().clamp(-amount, amount);
+                  result[i + c] = (result[i + c] + n).clamp(0, 255);
+                }
+              }
+              return result;
+            }
+          '''
+            if marker not in s: raise SystemExit('applyNoise method anchor missing')
+            s=s.replace(marker,'\n'+methods+marker,1)
+
+          # Retro Anime uses neutral grain after its grading instead of generic legacy noise.
+          s=s.replace('return applyNoise(result, width, height, amount * 0.15, NoiseType.gaussian);',
+                      'return applyFilmGrain(result, width, height, amount * 0.15);',1)
+          p.write_text(s)
+          PY
+          dart format lib/services/filter_service.dart lib/engine/filter_engine.dart
+      - name: Verify scoped contracts
+        run: |
+          flutter test test/engine/pixel_art_engine_test.dart --reporter expanded
+          flutter test test/engine/filter_pixel_art_route_test.dart --reporter expanded
+          if [ -f test/engine/stamp_pixel_art_route_test.dart ]; then flutter test test/engine/stamp_pixel_art_route_test.dart --reporter expanded; fi
+          flutter test test/engine/mosaic_filter_test.dart --reporter expanded
+          if [ -f test/engine/noise_filter_distinction_test.dart ]; then flutter test test/engine/noise_filter_distinction_test.dart --reporter expanded; fi
+          if [ -f test/engine/analog_filter_distinction_test.dart ]; then flutter test test/engine/analog_filter_distinction_test.dart --reporter expanded; fi
+          flutter analyze lib/engine/pixel_art_engine.dart lib/engine/filter_engine.dart lib/services/filter_service.dart --no-fatal-infos --no-fatal-warnings
+      - name: Persist scoped production changes
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add lib/engine/filter_engine.dart lib/services/filter_service.dart
+          if ! git diff --cached --quiet; then
+            git commit -m 'fix: separate pixel mosaic and noise semantics'
+            git fetch origin dev_branch
+            git rebase origin/dev_branch
+            git push origin HEAD:dev_branch
+          fi
