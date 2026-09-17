@@ -35,6 +35,32 @@ if 'FilterKind.mosaic => engine.applyMosaic(' not in s:
         raise SystemExit('isolate pixelate switch marker not found')
     s = s.replace(marker, replacement, 1)
 
+# Filter0010 remains neutral film grain; Filter0027 is the new general RGB
+# noise filter. VHS (Filter0024) continues through VhsNoiseEngine above.
+old_noise = '''    FilterKind.noise => engine.applyNoise(
+      data,
+      width,
+      height,
+      (filter.strength / 100).clamp(0.0, 1.0),
+      NoiseType.gaussian,
+    ),'''
+new_noise = '''    FilterKind.noise =>
+      filter.id == 'Filter0027'
+          ? engine.applyColorNoise(
+              data,
+              width,
+              height,
+              (filter.strength / 100).clamp(0.0, 1.0),
+            )
+          : engine.applyFilmGrain(
+              data,
+              width,
+              height,
+              (filter.strength / 100).clamp(0.0, 1.0),
+            ),'''
+if old_noise in s:
+    s = s.replace(old_noise, new_noise, 1)
+
 if 'Uint8List applyMosaic(' not in s:
     class_end_marker = '\n  Uint8List applyNoise('
     method = '''
@@ -92,6 +118,78 @@ if 'Uint8List applyMosaic(' not in s:
         raise SystemExit('FilterEngine applyNoise marker not found')
     s = s.replace(class_end_marker, method + class_end_marker, 1)
 
+# Add the two deliberately different static noise primitives before the legacy
+# applyNoise API so existing callers remain source-compatible.
+if 'Uint8List applyFilmGrain(' not in s:
+    marker = '\n  Uint8List applyNoise('
+    methods = '''
+  /// Neutral-luminance film grain: one random sample is applied equally to
+  /// R/G/B, preserving hue and source alpha. Seeded mode is deterministic.
+  Uint8List applyFilmGrain(
+    Uint8List data,
+    int width,
+    int height,
+    double strength, {
+    int? seed,
+  }) {
+    final result = Uint8List.fromList(data);
+    final rng = seed == null ? math.Random() : math.Random(seed);
+    final s = (strength.clamp(0.0, 1.0) * 255).round();
+    for (int i = 0; i < result.length; i += 4) {
+      if (result[i + 3] == 0) continue;
+      final n = (_gaussianRandom(rng) * s).round().clamp(-s, s);
+      result[i] = (result[i] + n).clamp(0, 255);
+      result[i + 1] = (result[i + 1] + n).clamp(0, 255);
+      result[i + 2] = (result[i + 2] + n).clamp(0, 255);
+    }
+    return result;
+  }
+
+  /// General RGB noise: each colour channel receives an independent Gaussian
+  /// sample, intentionally distinct from neutral film grain.
+  Uint8List applyColorNoise(
+    Uint8List data,
+    int width,
+    int height,
+    double strength, {
+    int? seed,
+  }) {
+    final result = Uint8List.fromList(data);
+    final rng = seed == null ? math.Random() : math.Random(seed);
+    final s = (strength.clamp(0.0, 1.0) * 255).round();
+    for (int i = 0; i < result.length; i += 4) {
+      if (result[i + 3] == 0) continue;
+      for (int c = 0; c < 3; c++) {
+        final n = (_gaussianRandom(rng) * s).round().clamp(-s, s);
+        result[i + c] = (result[i + c] + n).clamp(0, 255);
+      }
+    }
+    return result;
+  }
+'''
+    if marker not in s:
+        raise SystemExit('FilterEngine applyNoise insertion marker not found')
+    s = s.replace(marker, methods + marker, 1)
+
+# Retro Anime uses the same neutral grain primitive after its warm/desaturated
+# grading, while keeping a seed hook for deterministic regression captures.
+retro_pattern = re.compile(
+    r'''  Uint8List applyRetroAnime\(\n    Uint8List data,\n    int width,\n    int height,\n    double strength,\n  \) \{(.*?)    return applyNoise\(result, width, height, amount \* 0\.15, NoiseType\.gaussian\);\n  \}''',
+    re.S,
+)
+retro_match = retro_pattern.search(s)
+if retro_match:
+    body = retro_match.group(1)
+    replacement = '''  Uint8List applyRetroAnime(
+    Uint8List data,
+    int width,
+    int height,
+    double strength, {
+    int? seed,
+  }) {''' + body + '''    return applyFilmGrain(result, width, height, amount * 0.15, seed: seed);
+  }'''
+    s = s[:retro_match.start()] + replacement + s[retro_match.end():]
+
 # Replace the old block-average+quantize Pixel Art implementation with the
 # shared contract. This preserves source alpha exactly, keeps transparent outer
 # edges and horizontal/vertical boundaries crisp, and only permits a middle
@@ -115,9 +213,7 @@ pixel_method = '''  Uint8List applyPixelate(
   );
 
 '''
-pattern = re.compile(
-    r'  Uint8List applyPixelate\(.*?\n  Uint8List applyFade\(', re.S
-)
+pattern = re.compile(r'  Uint8List applyPixelate\(.*?\n  Uint8List applyFade\(', re.S)
 match = pattern.search(s)
 if not match:
     raise SystemExit('FilterEngine applyPixelate range not found')
@@ -187,10 +283,22 @@ if 'static const mosaicFilterId' not in s:
         "  static const vhsNoiseFilterId = 'Filter0024';\n  static const mosaicFilterId = 'Filter0026';\n",
         1,
     )
+if 'static const genericNoiseFilterId' not in s:
+    s = s.replace(
+        "  static const mosaicFilterId = 'Filter0026';\n",
+        "  static const mosaicFilterId = 'Filter0026';\n  static const genericNoiseFilterId = 'Filter0027';\n",
+        1,
+    )
 if "id: mosaicFilterId" not in s:
     marker = "    FilterDef(id: 'Filter0025', name: '色反転', kind: FilterKind.toneCurve, toneCurvePreset: ToneCurvePreset.invert),\n"
     addition = marker + "    FilterDef(id: mosaicFilterId, name: 'モザイク', kind: FilterKind.mosaic, strength: 8),\n"
     if marker not in s:
         raise SystemExit('FilterService tail preset marker not found')
+    s = s.replace(marker, addition, 1)
+if "id: genericNoiseFilterId" not in s:
+    marker = "    FilterDef(id: mosaicFilterId, name: 'モザイク', kind: FilterKind.mosaic, strength: 8),\n"
+    addition = marker + "    FilterDef(id: genericNoiseFilterId, name: 'ノイズ', kind: FilterKind.noise, strength: 15),\n"
+    if marker not in s:
+        raise SystemExit('generic noise preset marker not found')
     s = s.replace(marker, addition, 1)
 service.write_text(s)
