@@ -110,7 +110,8 @@ class _CanvasScreenState extends State<CanvasScreen> {
   _TextColorEyedropperTarget? _textColorEyedropperTarget;
   ValueChanged<Color>? _pendingTextColorEyedropper;
   Completer<int?>? _pendingBrushOutlineEyedropper;
-  bool get _brushOutlineEyedropperActive => _pendingBrushOutlineEyedropper != null;
+  bool get _brushOutlineEyedropperActive =>
+      _pendingBrushOutlineEyedropper != null;
 
   // ─── レイヤー全体の自由変形・メッシュ変形（新機能） ────────────────────
   // 実際の格子点ドラッグ・ワーププレビューはCanvasArea側で完結させ、
@@ -294,7 +295,6 @@ class _CanvasScreenState extends State<CanvasScreen> {
     if (pendingBrushOutline != null) {
       setState(() => _pendingBrushOutlineEyedropper = null);
       if (!pendingBrushOutline.isCompleted) {
-        _pendingBrushOutlineEyedropper?.complete(color.toARGB32());
         pendingBrushOutline.complete(color.toARGB32());
       }
       return;

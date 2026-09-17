@@ -602,9 +602,12 @@ class _BrushSettingsSheetState extends State<_BrushSettingsSheet> {
   Future<void> _eyedropOutlineColor() async {
     final callback = widget.onEyedropOutlineColor;
     if (callback == null) return;
+    final service = context.read<BrushService>();
+    final draft = _brush;
+    Navigator.of(context).pop();
     final sampled = await callback();
-    if (!mounted || sampled == null) return;
-    setState(() => _brush = _brush.copyWith(outlineColor: sampled));
+    if (sampled == null) return;
+    service.updateBrush(draft.copyWith(outlineColor: sampled));
   }
 
   late Brush _brush;
