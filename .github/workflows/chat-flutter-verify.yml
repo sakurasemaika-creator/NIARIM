@@ -5,6 +5,7 @@ on:
     branches: [dev_branch]
     paths:
       - '.github/workflows/chat-flutter-verify.yml'
+      - '.github/scripts/apply_drawing_engine_brush_extensions.py'
       - 'lib/models/brush.dart'
       - 'lib/models/brush_extension_defaults.dart'
       - 'lib/models/brush_presets_extension.dart'
@@ -42,11 +43,10 @@ jobs:
         run: flutter --version
       - name: Resolve dependencies
         run: flutter pub get --enforce-lockfile
-      - name: Apply approved model and preset integration
+      - name: Apply approved model, preset, and DrawingEngine integration
         run: |
           python3 - <<'PY'
           from pathlib import Path
-
           brush = Path('lib/models/brush.dart')
           s = brush.read_text()
           s = s.replace('this.outlineWidth = 1.0,', 'this.outlineWidth = 1.5,')
@@ -54,7 +54,6 @@ jobs:
           s = s.replace("outlineWidth: (j['outlineWidth'] as num?)?.toDouble() ?? 1.0,", "outlineWidth: (j['outlineWidth'] as num?)?.toDouble() ?? 1.5,")
           s = s.replace("(j['yBranchWidthRatio'] as num?)?.toDouble() ?? 0.12,", "(j['yBranchWidthRatio'] as num?)?.toDouble() ?? 0.08,")
           brush.write_text(s)
-
           service = Path('lib/services/brush_service.dart')
           s = service.read_text()
           import_line = "import '../models/brush.dart';\n"
@@ -69,6 +68,8 @@ jobs:
             s = s.replace(marker, replacement, 1)
           service.write_text(s)
           PY
+          python3 .github/scripts/apply_drawing_engine_brush_extensions.py
+          dart format lib/engine/drawing_engine.dart
       - name: Targeted brush and ruler tests
         run: |
           flutter test test/models/brush_extensions_test.dart --reporter expanded
@@ -82,15 +83,15 @@ jobs:
           flutter test test/engine/drawing_engine_brush_extensions_test.dart --reporter expanded
       - name: Targeted analyze
         run: flutter analyze lib/models/brush.dart lib/models/brush_extension_defaults.dart lib/models/brush_presets_extension.dart lib/models/ruler.dart lib/services/brush_service.dart lib/engine/drawing_engine.dart lib/engine/brush_stroke_geometry.dart lib/engine/brush_render_plan.dart lib/engine/outlined_stroke_compositor.dart lib/engine/ruler_engine.dart test/models/brush_extensions_test.dart test/models/brush_extension_defaults_test.dart test/models/brush_extension_presets_test.dart test/services/brush_service_extension_presets_test.dart test/engine/drawing_engine_brush_extensions_test.dart test/engine/brush_stroke_geometry_test.dart test/engine/brush_render_plan_test.dart test/engine/outlined_stroke_compositor_test.dart test/engine/ruler_snap_toggle_test.dart --no-fatal-infos
-      - name: Persist verified model and preset integration
+      - name: Persist verified brush integration
         run: |
-          if git diff --quiet -- lib/models/brush.dart lib/services/brush_service.dart; then
+          if git diff --quiet -- lib/models/brush.dart lib/services/brush_service.dart lib/engine/drawing_engine.dart; then
             exit 0
           fi
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          git add lib/models/brush.dart lib/services/brush_service.dart
-          git commit -m 'feat: integrate approved brush extension presets'
+          git add lib/models/brush.dart lib/services/brush_service.dart lib/engine/drawing_engine.dart
+          git commit -m 'feat: integrate brush extension rasterization'
           git fetch origin dev_branch
           git rebase origin/dev_branch
           git push origin HEAD:dev_branch
