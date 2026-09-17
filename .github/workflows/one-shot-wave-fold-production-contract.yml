@@ -4,15 +4,22 @@ on:
   push:
     branches: [dev_branch]
     paths:
+      - lib/engine/brush_stroke_geometry.dart
+      - lib/engine/hair_fold_render_resolver.dart
+      - lib/engine/wave_hair_fold_geometry.dart
       - test/engine/drawing_engine_wave_fold_contract_test.dart
+      - test/engine/wave_hair_fold_geometry_test.dart
+      - .github/scripts/connect_hair_fold_rendering.py
       - .github/workflows/one-shot-wave-fold-production-contract.yml
+  workflow_dispatch:
 
 permissions:
-  contents: read
+  contents: write
 
 jobs:
   verify:
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     steps:
       - uses: actions/checkout@v4
         with:
@@ -21,6 +28,28 @@ jobs:
         with:
           channel: stable
       - name: Resolve dependencies
-        run: flutter pub get
-      - name: Verify wave fold production contract
-        run: flutter test test/engine/drawing_engine_wave_fold_contract_test.dart test/engine/wave_hair_fold_geometry_test.dart
+        run: flutter pub get --enforce-lockfile
+      - name: Connect production fold renderer
+        run: |
+          python3 .github/scripts/connect_hair_fold_rendering.py
+          dart format lib/engine/drawing_engine.dart lib/engine/hair_fold_render_resolver.dart lib/engine/wave_hair_fold_geometry.dart
+      - name: Verify Straight and Wave geometry
+        run: |
+          flutter test test/engine/straight_hair_fold_geometry_test.dart --reporter expanded
+          flutter test test/engine/wave_hair_fold_geometry_test.dart --reporter expanded
+          flutter test test/engine/hair_fold_render_resolver_test.dart --reporter expanded
+          flutter test test/engine/drawing_engine_wave_fold_contract_test.dart --reporter expanded
+      - name: Analyze production fold path
+        run: flutter analyze lib/engine/brush_stroke_geometry.dart lib/engine/hair_fold_render_resolver.dart lib/engine/wave_hair_fold_geometry.dart lib/engine/drawing_engine.dart test/engine/drawing_engine_wave_fold_contract_test.dart --no-fatal-infos --no-fatal-warnings
+      - name: Persist verified DrawingEngine integration
+        run: |
+          if git diff --quiet -- lib/engine/drawing_engine.dart; then
+            exit 0
+          fi
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add lib/engine/drawing_engine.dart
+          git commit -m 'feat: connect straight and wave hair fold rendering'
+          git fetch origin dev_branch
+          git rebase origin/dev_branch
+          git push origin HEAD:dev_branch
