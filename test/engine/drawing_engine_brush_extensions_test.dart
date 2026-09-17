@@ -119,8 +119,8 @@ void main() {
     );
     engine.endStroke();
 
-    // The 90-degree bend turns toward +x/+y. A fold branch extends into that
-    // interior beyond the ordinary horizontal/vertical stroke footprint.
-    expect(pixel(engine, 59, 59)[3], greaterThan(0));
+    // The detector anchors its event at the latest sample. For this right turn
+    // the inward stem extends left from (50,70), beyond the 20px base stroke.
+    expect(pixel(engine, 35, 70)[3], greaterThan(0));
   });
 }
