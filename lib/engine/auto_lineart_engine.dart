@@ -258,18 +258,9 @@ class AutoLineartEngine {
             closeRadius,
           );
 
-    // Multi-scale topology sampling. The changing tolerance is deliberately
-    // small: true main connections tend to survive, whereas accidental branch
-    // contacts and raster nubs are unstable across these variants.
-    final masks = <Uint8List>[
-      _erode(cleaned, localWidth, localHeight, scaleRadius),
-      cleaned,
-      _dilate(cleaned, localWidth, localHeight, scaleRadius),
-    ];
-    final skeletons = masks
-        .map((m) => _thinZhangSuen(m, localWidth, localHeight))
-        .toList(growable: false);
-    final skeleton = skeletons[1];
+    // Generate a normal centerline from the cleaned rough. Overlap/interference
+    // preservation is intentionally left to the editable temporary vector graph.
+    final skeleton = _thinZhangSuen(cleaned, localWidth, localHeight);
 
     final rawPaths = _traceSkeleton(skeleton, localWidth, localHeight);
     if (rawPaths.isEmpty) {
@@ -287,21 +278,8 @@ class AutoLineartEngine {
     for (final raw in rawPaths) {
       if (raw.points.length < 2) continue;
       final length = _polylineLength(raw.points);
-      final persistence = _pathPersistence(
-        raw.points,
-        skeletons,
-        localWidth,
-        localHeight,
-        radius: math.max(1, scaleRadius + 1),
-      );
-
-      // Short, unstable terminal nubs are the common artifact from scribbly
-      // roughs. Preserve short paths when both ends are topology anchors, so
-      // compact X/Y intersections do not get destroyed.
-      final anchoredBoth = raw.startIsJunction && raw.endIsJunction;
-      final keep =
-          anchoredBoth || length >= minBranchLength || persistence >= 0.67;
-      if (!keep) continue;
+      if (length < minBranchLength) continue;
+      const persistence = 1.0;
 
       // Compress exact pixel stepping into direction-change points. Smoothing is
       // intentionally deferred to render(), so its slider does not rerun image
