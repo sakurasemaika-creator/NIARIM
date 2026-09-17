@@ -18,12 +18,7 @@ List<Brush> brushExtensionPresets() => const <Brush>[
           opacity: PressureRangeSetting(enabled: false, weak: 100, strong: 100),
           blur: PressureRangeSetting(enabled: false, weak: 0, strong: 0),
           edgeJitter: PressureRangeSetting(enabled: false, weak: 0, strong: 0),
-          mixing: PressureMixingOnSetting(
-            enabled: false,
-            mode: BrushMixingMode.simple,
-            weakRate: 0,
-            strongRate: 0,
-          ),
+          mixing: PressureMixingOnSetting(enabled: false, mode: BrushMixingMode.simple, weakRate: 0, strongRate: 0),
         ),
         fadeMode: FadeMode.off,
         strokeDecay: false,
@@ -50,12 +45,7 @@ List<Brush> brushExtensionPresets() => const <Brush>[
           opacity: PressureRangeSetting(enabled: false, weak: 100, strong: 100),
           blur: PressureRangeSetting(enabled: false, weak: 0, strong: 0),
           edgeJitter: PressureRangeSetting(enabled: false, weak: 0, strong: 0),
-          mixing: PressureMixingOnSetting(
-            enabled: false,
-            mode: BrushMixingMode.simple,
-            weakRate: 0,
-            strongRate: 0,
-          ),
+          mixing: PressureMixingOnSetting(enabled: false, mode: BrushMixingMode.simple, weakRate: 0, strongRate: 0),
         ),
         fadeMode: FadeMode.weak,
         strokeDecay: false,
@@ -76,10 +66,6 @@ List<Brush> brushExtensionPresets() => const <Brush>[
         foldWaveTriggerAngle: BrushExtensionDefaults.foldWaveTriggerAngle,
         tags: <String>[AssetTagKeys.clothing],
       ),
-      // Bangs uses the same outlined/fold-aware hair base but deliberately
-      // keeps Wave at 0%. Its approved flat, softly irregular jagged tip is
-      // implemented by the renderer separately; until that renderer shape is
-      // wired, this preset remains round rather than pretending the tip exists.
       Brush(
         id: 'Brush0024',
         name: '前髪',
@@ -94,12 +80,7 @@ List<Brush> brushExtensionPresets() => const <Brush>[
           opacity: PressureRangeSetting(enabled: false, weak: 100, strong: 100),
           blur: PressureRangeSetting(enabled: false, weak: 0, strong: 0),
           edgeJitter: PressureRangeSetting(enabled: false, weak: 0, strong: 0),
-          mixing: PressureMixingOnSetting(
-            enabled: false,
-            mode: BrushMixingMode.simple,
-            weakRate: 0,
-            strongRate: 0,
-          ),
+          mixing: PressureMixingOnSetting(enabled: false, mode: BrushMixingMode.simple, weakRate: 0, strongRate: 0),
         ),
         fadeMode: FadeMode.weak,
         strokeDecay: false,
@@ -118,6 +99,7 @@ List<Brush> brushExtensionPresets() => const <Brush>[
         foldWaveEnabled: false,
         foldWaveEndRatio: BrushExtensionDefaults.foldWaveEndRatio,
         foldWaveTriggerAngle: BrushExtensionDefaults.foldWaveTriggerAngle,
+        tipShape: BrushTipShape.softJaggedFlat,
         tags: <String>[AssetTagKeys.clothing],
       ),
     ];
