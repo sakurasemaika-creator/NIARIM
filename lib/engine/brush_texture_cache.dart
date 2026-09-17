@@ -11,8 +11,8 @@ import 'dart:ui' as ui;
 ///
 /// [DrawingEngine._stampBrush]はポインタ移動のたびに同期的に呼ばれる
 /// ホットパスのため、ここでのデコードは非同期の事前読み込み
-/// （[preloadBrushTexture]）でのみ行い、描画時は同期の[getCachedBrushTexture]
-/// でキャッシュを参照するだけにする。
+/// （[preloadBrushTexture] / [preloadBrushTextures]）でのみ行い、描画時は同期の
+/// [getCachedBrushTexture]でキャッシュを参照するだけにする。
 const int brushTextureSize = 128;
 
 final Map<String, Uint8List> _brushTextureCache = {};
@@ -20,6 +20,14 @@ final Map<String, Uint8List> _brushTextureCache = {};
 /// キャッシュ済みのブラシテクスチャ（brushTextureSize×brushTextureSize、
 /// RGBA・RGB=0でalphaのみ意味を持つ）を返す。未読み込みならnull。
 Uint8List? getCachedBrushTexture(String path) => _brushTextureCache[path];
+
+/// 複数素材をブラシ選択時にまとめて事前読み込みする。
+/// 重複pathは除外し、各pathの既存のgraceful fallbackを維持する。
+Future<void> preloadBrushTextures(Iterable<String> paths) async {
+  for (final path in paths.toSet()) {
+    await preloadBrushTexture(path);
+  }
+}
 
 /// [path]の画像を読み込み、アルファマスクへ変換してキャッシュする。
 /// ブラシ選択時・自作ブラシ作成時に呼び出しておくことで、実際の描画時には
