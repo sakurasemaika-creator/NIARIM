@@ -1,0 +1,26 @@
+name: one-shot wave fold production contract
+
+on:
+  push:
+    branches: [dev_branch]
+    paths:
+      - test/engine/drawing_engine_wave_fold_contract_test.dart
+      - .github/workflows/one-shot-wave-fold-production-contract.yml
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: dev_branch
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+      - name: Resolve dependencies
+        run: flutter pub get
+      - name: Verify wave fold production contract
+        run: flutter test test/engine/drawing_engine_wave_fold_contract_test.dart test/engine/wave_hair_fold_geometry_test.dart
