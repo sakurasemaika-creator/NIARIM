@@ -12,6 +12,8 @@ void main() {
     double lateralSpacing = 1,
     bool outline = false,
     double outlineWidth = 1.5,
+    bool fold = false,
+    double foldTriggerAngle = 90,
     BrushTipShape tip = BrushTipShape.round,
   }) => Brush(
     id: 'test',
@@ -30,6 +32,12 @@ void main() {
     outlineEnabled: outline,
     outlineWidth: outlineWidth,
     outlineColor: 0xFF000000,
+    foldEnabled: fold,
+    foldTriggerAngle: foldTriggerAngle,
+    yBranchAngle: 45,
+    yBranchLengthRatio: 0.8,
+    yBranchWidthRatio: 0.12,
+    yBranchEndTaperRatio: 0.4,
     tipShape: tip,
   );
 
@@ -91,5 +99,28 @@ void main() {
     final outline = pixel(engine, 75, 64);
     expect(fill, [255, 0, 0, 255]);
     expect(outline, [0, 0, 0, 255]);
+  });
+
+  test('fold-enabled outlined stroke rasterizes inward Y branches at a sharp bend', () {
+    final engine = engineFor(
+      brush(outline: true, outlineWidth: 2, fold: true, foldTriggerAngle: 80),
+    );
+    engine.beginStroke(
+      const StrokePoint(x: 30, y: 50, pressure: 1, tiltX: 0, tiltY: 0),
+      'layer',
+    );
+    engine.continueStroke(
+      const StrokePoint(x: 50, y: 50, pressure: 1, tiltX: 0, tiltY: 0),
+      'layer',
+    );
+    engine.continueStroke(
+      const StrokePoint(x: 50, y: 70, pressure: 1, tiltX: 0, tiltY: 0),
+      'layer',
+    );
+    engine.endStroke();
+
+    // The 90-degree bend turns toward +x/+y. A fold branch extends into that
+    // interior beyond the ordinary horizontal/vertical stroke footprint.
+    expect(pixel(engine, 59, 59)[3], greaterThan(0));
   });
 }
