@@ -2,6 +2,7 @@ import 'dart:ui';
 
 import 'package:flutter_test/flutter_test.dart';
 import 'package:niarim/engine/brush_stroke_geometry.dart';
+import 'package:niarim/engine/wave_hair_fold_geometry.dart';
 
 FoldEvent event({
   double width = 20,
