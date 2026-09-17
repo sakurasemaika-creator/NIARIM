@@ -30,15 +30,22 @@ void main() {
     expect(hair.toJson().containsKey('fillColor'), isFalse);
   });
 
-  test('bangs preset keeps fold wave disabled and at zero percent', () {
+  test('bangs preset uses soft jagged flat tip and keeps wave disabled', () {
     final bangs = brushExtensionPresets().singleWhere((b) => b.id == 'Brush0024');
     expect(bangs.name, '前髪');
+    expect(bangs.tipShape, BrushTipShape.softJaggedFlat);
     expect(bangs.outlineEnabled, isTrue);
     expect(bangs.foldEnabled, isTrue);
     expect(bangs.foldWaveEnabled, isFalse);
     expect(bangs.foldWaveEndRatio, 0);
     expect(bangs.pressureOn.size.enabled, isTrue);
     expect(bangs.toJson().containsKey('fillColor'), isFalse);
+  });
+
+  test('soft jagged flat tip survives brush json round trip', () {
+    final bangs = brushExtensionPresets().singleWhere((b) => b.id == 'Brush0024');
+    final restored = Brush.fromJson(bangs.toJson());
+    expect(restored.tipShape, BrushTipShape.softJaggedFlat);
   });
 
   test('extension preset ids are unique', () {
