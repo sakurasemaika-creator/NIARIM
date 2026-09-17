@@ -26,15 +26,19 @@ class RulerEngine {
   }
 
   Offset snapToRuler(Offset point) {
-    if (_activeRuler == null) return point;
-    final settings = _activeRuler!.settings;
-    return switch (_activeRuler!.type) {
+    final ruler = _activeRuler;
+    // Snap is independent from ruler visibility/existence. Keeping the active
+    // ruler here lets its guide and handles remain usable while brush input is
+    // temporarily freehand, then resume against the exact same ruler.
+    if (ruler == null || !ruler.snapEnabled) return point;
+    final settings = ruler.settings;
+    return switch (ruler.type) {
       RulerType.line => _snapToLine(point),
       RulerType.circle => _snapToCircle(point),
       RulerType.ellipse => _snapToEllipse(point),
       RulerType.radial => _snapToRadial(point),
       RulerType.onePointPerspective => _snapToPerspective(point, [
-        settings.vanishingPoint1 ?? _activeRuler!.position,
+        settings.vanishingPoint1 ?? ruler.position,
       ]),
       RulerType.twoPointPerspective => _snapToPerspective(point, [
         settings.vanishingPoint1 ?? const Offset(200, 540),
