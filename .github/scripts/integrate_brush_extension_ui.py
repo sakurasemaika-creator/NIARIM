@@ -1,6 +1,7 @@
 from pathlib import Path
 import json
 
+# Focused, idempotent integration used by Brush Extension UI Green.
 ROOT = Path('.')
 
 translations = {
