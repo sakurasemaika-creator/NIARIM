@@ -494,7 +494,6 @@ class _FilterPanelState extends State<FilterPanel> {
                                                     pathIndex: pathIndex,
                                                     pointIndex: pointIndex,
                                                     point: point,
-                                                    moveCoincident: false,
                                                   );
                                               _autoLineartManualEdited = true;
                                               _scheduleAutoLineartPreviewUpdate();
