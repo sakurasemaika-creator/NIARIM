@@ -67,4 +67,4 @@ jobs:
             build/visual-reaudit/canvas-angle-boundary/*.png
           if-no-files-found: warn
           retention-days: 7
-# Latest HEAD strict manifest evidence rerun.
+# Latest HEAD strict manifest evidence rerun: 2026-09-17 full filter/preset capture verification.
