@@ -87,6 +87,14 @@ List<Brush> brushExtensionPresets() => const <Brush>[
         rotation: false,
         density: 1,
         scatter: 0,
+        customImagePaths: <String>[
+          'assets/brushes/bangs/bangs_01.png',
+          'assets/brushes/bangs/bangs_02.png',
+          'assets/brushes/bangs/bangs_03.png',
+          'assets/brushes/bangs/bangs_04.png',
+          'assets/brushes/bangs/bangs_05.png',
+        ],
+        customImageSelectionMode: BrushImageSelectionMode.random,
         outlineEnabled: true,
         outlineWidth: BrushExtensionDefaults.outlineWidth,
         outlineColor: BrushExtensionDefaults.outlineColor,
@@ -99,7 +107,6 @@ List<Brush> brushExtensionPresets() => const <Brush>[
         foldWaveEnabled: false,
         foldWaveEndRatio: BrushExtensionDefaults.foldWaveEndRatio,
         foldWaveTriggerAngle: BrushExtensionDefaults.foldWaveTriggerAngle,
-        tipShape: BrushTipShape.softJaggedFlat,
         tags: <String>[AssetTagKeys.clothing],
       ),
     ];
