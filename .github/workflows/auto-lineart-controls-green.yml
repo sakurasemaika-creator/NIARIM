@@ -23,7 +23,7 @@ jobs:
       - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
         with:
           ref: dev_branch
-      - name: Remove legacy coincident-control coupling
+      - name: Remove legacy auto-lineart preservation logic
         shell: bash
         run: |
           python3 - <<'PY'
@@ -31,6 +31,8 @@ jobs:
 
           engine_path = Path('lib/engine/auto_lineart_engine.dart')
           engine = engine_path.read_text()
+
+          # Control points are independent; remove the old coincident-junction coupling API.
           if 'bool moveCoincident = true,' in engine:
               engine = engine.replace(
                   '  /// Moves one preview control point. Coincident points (normally the endpoints\n'
@@ -40,10 +42,7 @@ jobs:
                   '  /// independent, including controls that happen to share coordinates.\n',
               )
               engine = engine.replace('    bool moveCoincident = true,\n', '')
-              engine = engine.replace(
-                  '    final origin = source.paths[pathIndex].points[pointIndex];\n',
-                  '',
-              )
+              engine = engine.replace('    final origin = source.paths[pathIndex].points[pointIndex];\n', '')
               engine = engine.replace('    const epsilonSq = 0.25;\n', '')
               engine = engine.replace(
                   '        final exactTarget = p == pathIndex && i == pointIndex;\n'
@@ -53,7 +52,52 @@ jobs:
                   '        if (exactTarget || coincident) points[i] = nextPoint;\n',
                   '        if (p == pathIndex && i == pointIndex) points[i] = nextPoint;\n',
               )
-              engine_path.write_text(engine)
+
+          # The filter no longer performs dedicated overlap/interference preservation.
+          # Generate the ordinary cleaned skeleton once and prune only by geometric length.
+          old_multiscale = '''    // Multi-scale topology sampling. The changing tolerance is deliberately
+    // small: true main connections tend to survive, whereas accidental branch
+    // contacts and raster nubs are unstable across these variants.
+    final masks = <Uint8List>[
+      _erode(cleaned, localWidth, localHeight, scaleRadius),
+      cleaned,
+      _dilate(cleaned, localWidth, localHeight, scaleRadius),
+    ];
+    final skeletons = masks
+        .map((m) => _thinZhangSuen(m, localWidth, localHeight))
+        .toList(growable: false);
+    final skeleton = skeletons[1];
+'''
+          new_multiscale = '''    // Generate a normal centerline from the cleaned rough. Overlap/interference
+    // preservation is intentionally left to the editable temporary vector graph.
+    final skeleton = _thinZhangSuen(cleaned, localWidth, localHeight);
+'''
+          if old_multiscale in engine:
+              engine = engine.replace(old_multiscale, new_multiscale)
+
+          old_keep = '''      final persistence = _pathPersistence(
+        raw.points,
+        skeletons,
+        localWidth,
+        localHeight,
+        radius: math.max(1, scaleRadius + 1),
+      );
+
+      // Short, unstable terminal nubs are the common artifact from scribbly
+      // roughs. Preserve short paths when both ends are topology anchors, so
+      // compact X/Y intersections do not get destroyed.
+      final anchoredBoth = raw.startIsJunction && raw.endIsJunction;
+      final keep =
+          anchoredBoth || length >= minBranchLength || persistence >= 0.67;
+      if (!keep) continue;
+'''
+          new_keep = '''      if (length < minBranchLength) continue;
+      const persistence = 1.0;
+'''
+          if old_keep in engine:
+              engine = engine.replace(old_keep, new_keep)
+
+          engine_path.write_text(engine)
 
           overlay_path = Path('lib/screens/canvas/widgets/auto_lineart_control_overlay.dart')
           overlay = overlay_path.read_text()
@@ -63,20 +107,25 @@ jobs:
               '              // immediately while each control remains independently editable.\n',
           )
           overlay_path.write_text(overlay)
+
+          panel_path = Path('lib/screens/canvas/widgets/filter_panel.dart')
+          panel = panel_path.read_text().replace('moveCoincident: false,', '')
+          panel_path.write_text(panel)
           PY
 
-          if grep -R -n "moveCoincident\|coincident junction controls together" \
+          if grep -R -n -E "moveCoincident|coincident junction controls together|Multi-scale topology sampling|Preserve short paths when both ends|persistence >= 0.67" \
             lib/engine/auto_lineart_engine.dart \
-            lib/screens/canvas/widgets/auto_lineart_control_overlay.dart; then
-            echo 'Legacy coincident-control coupling remains' >&2
+            lib/screens/canvas/widgets/auto_lineart_control_overlay.dart \
+            lib/screens/canvas/widgets/filter_panel.dart; then
+            echo 'Legacy auto-lineart preservation logic remains' >&2
             exit 1
           fi
 
-          if ! git diff --quiet -- lib/engine/auto_lineart_engine.dart lib/screens/canvas/widgets/auto_lineart_control_overlay.dart; then
+          if ! git diff --quiet -- lib/engine/auto_lineart_engine.dart lib/screens/canvas/widgets/auto_lineart_control_overlay.dart lib/screens/canvas/widgets/filter_panel.dart; then
             git config user.name github-actions[bot]
             git config user.email 41898282+github-actions[bot]@users.noreply.github.com
-            git add lib/engine/auto_lineart_engine.dart lib/screens/canvas/widgets/auto_lineart_control_overlay.dart
-            git commit -m "fix: isolate auto lineart control points"
+            git add lib/engine/auto_lineart_engine.dart lib/screens/canvas/widgets/auto_lineart_control_overlay.dart lib/screens/canvas/widgets/filter_panel.dart
+            git commit -m "fix: remove auto lineart interference preservation"
             git push origin HEAD:dev_branch
           fi
       - uses: subosito/flutter-action@1a449444c387b1966244ae4d4f8c696479add0b2 # v2
@@ -84,8 +133,13 @@ jobs:
           channel: stable
           cache: false
       - run: flutter pub get --enforce-lockfile
-      - name: Verify control editing on current production HEAD
+      - name: Verify auto lineart production behavior
         run: |
           flutter test test/auto_lineart_control_overlay_test.dart --reporter expanded
           flutter test test/auto_lineart_engine_test.dart --reporter expanded
           flutter analyze lib/engine/auto_lineart_engine.dart lib/screens/canvas/widgets/auto_lineart_control_overlay.dart lib/screens/canvas/widgets/filter_panel.dart test/auto_lineart_control_overlay_test.dart test/auto_lineart_engine_test.dart --no-fatal-infos --no-fatal-warnings
+      - name: Inventory entry-exit taper production references
+        if: always()
+        run: |
+          echo '=== taper references ==='
+          grep -R -n -E "fadeMode|fadeCustom|FadeCustomSettings|distancePx" lib test --exclude-dir=.dart_tool || true
