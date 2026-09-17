@@ -17,6 +17,10 @@ on:
       - 'test/engine/drawing_engine_wave_fold_contract_test.dart'
   workflow_dispatch:
 
+concurrency:
+  group: hair-fold-production-green
+  cancel-in-progress: false
+
 jobs:
   verify:
     runs-on: ubuntu-latest
@@ -49,7 +53,7 @@ jobs:
             exit 0
           fi
           git config user.name 'github-actions[bot]'
-          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git config user.email '4189824+github-actions[bot]@users.noreply.github.com'
           git add lib/engine/drawing_engine.dart
           git commit -m 'fix: activate straight and wave hair fold rendering'
           git fetch origin dev_branch
