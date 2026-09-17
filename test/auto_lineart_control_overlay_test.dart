@@ -5,6 +5,16 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:niarim/engine/auto_lineart_engine.dart';
 import 'package:niarim/screens/canvas/widgets/auto_lineart_control_overlay.dart';
 
+Future<ui.Image> _makeImage(int width, int height) async {
+  final recorder = ui.PictureRecorder();
+  final canvas = Canvas(recorder);
+  canvas.drawRect(
+    Rect.fromLTWH(0, 0, width.toDouble(), height.toDouble()),
+    Paint(),
+  );
+  return recorder.endRecording().toImage(width, height);
+}
+
 void main() {
   testWidgets('auto lineart preview control point can be dragged', (
     tester,
@@ -232,4 +242,99 @@ void main() {
       },
     );
   }
+  testWidgets('tap on vector segment adds a control point', (tester) async {
+    final image = await _makeImage(100, 100);
+    AutoLineartGraph? changed;
+    const graph = AutoLineartGraph(
+      width: 100,
+      height: 100,
+      paths: [
+        AutoLineartPath(
+          points: [AutoLineartPoint(20, 50), AutoLineartPoint(80, 50)],
+          startIsJunction: false,
+          endIsJunction: false,
+          persistence: 1,
+        ),
+      ],
+    );
+    await tester.pumpWidget(
+      MaterialApp(
+        home: Center(
+          child: SizedBox(
+            width: 200,
+            height: 200,
+            child: AutoLineartControlOverlay(
+              image: image,
+              graph: graph,
+              onPointMoved: (_, _, _) {},
+              onGraphChanged: (value) => changed = value,
+            ),
+          ),
+        ),
+      ),
+    );
+    final rect = tester.getRect(find.byType(AutoLineartControlOverlay));
+    await tester.tapAt(rect.center);
+    await tester.pump();
+    expect(changed, isNotNull);
+    expect(changed!.paths.single.points, hasLength(3));
+    image.dispose();
+  });
+
+  testWidgets(
+    'control point tap asks before deletion and cancel preserves it',
+    (tester) async {
+      final image = await _makeImage(100, 100);
+      AutoLineartGraph? changed;
+      const graph = AutoLineartGraph(
+        width: 100,
+        height: 100,
+        paths: [
+          AutoLineartPath(
+            points: [
+              AutoLineartPoint(20, 50),
+              AutoLineartPoint(50, 50),
+              AutoLineartPoint(80, 50),
+            ],
+            startIsJunction: false,
+            endIsJunction: false,
+            persistence: 1,
+          ),
+        ],
+      );
+      await tester.pumpWidget(
+        MaterialApp(
+          home: Center(
+            child: SizedBox(
+              width: 200,
+              height: 200,
+              child: AutoLineartControlOverlay(
+                image: image,
+                graph: graph,
+                onPointMoved: (_, _, _) {},
+                onGraphChanged: (value) => changed = value,
+              ),
+            ),
+          ),
+        ),
+      );
+      final rect = tester.getRect(find.byType(AutoLineartControlOverlay));
+      await tester.tapAt(rect.center);
+      await tester.pumpAndSettle();
+      expect(find.text('制御点を削除'), findsOneWidget);
+      expect(find.text('キャンセル'), findsOneWidget);
+      expect(find.text('削除'), findsOneWidget);
+      await tester.tap(find.text('キャンセル'));
+      await tester.pumpAndSettle();
+      expect(changed, isNull);
+
+      await tester.tapAt(rect.center);
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('削除'));
+      await tester.pumpAndSettle();
+      expect(changed, isNotNull);
+      expect(changed!.paths.single.points, hasLength(2));
+      image.dispose();
+    },
+  );
 }
