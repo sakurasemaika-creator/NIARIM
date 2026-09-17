@@ -6,6 +6,7 @@ import '../models/brush.dart';
 import '../models/brush_pressure_resolver.dart';
 import 'brush_texture_cache.dart';
 import 'brush_render_plan.dart';
+import 'brush_stroke_geometry.dart';
 import 'tile_manager.dart';
 
 final _jitterRng = math.Random();
@@ -33,6 +34,7 @@ class DrawingEngine {
   bool _hasStampedCurrentStroke = false;
   String? _activeLayerId;
   math.Random _scatterRng = math.Random(0);
+  ScreenSpaceFoldDetector? _foldDetector;
 
   Brush? currentBrush;
   ui.Color currentColor = const ui.Color(0xFF000000);
@@ -56,8 +58,12 @@ class DrawingEngine {
     _distanceSinceLastBrushStamp = 0.0;
     _hasStampedCurrentStroke = false;
     _scatterRng = math.Random(0);
-    _currentStroke.add(effective);
     final brush = currentBrush;
+    _foldDetector = brush != null && brush.outlineEnabled && brush.foldEnabled
+        ? ScreenSpaceFoldDetector(triggerAngleDegrees: brush.foldTriggerAngle)
+        : null;
+    _feedFoldDetector(effective, layerId);
+    _currentStroke.add(effective);
     final needsDirection =
         brush != null && (brush.rotation || brush.scatter > 0.0);
     if (!needsDirection) {
@@ -85,6 +91,7 @@ class DrawingEngine {
     // _renderStrokeSegment() が取得するbaseStrokeLengthは必ず区間開始時点までの
     // 累積距離となり、OSから届くmoveイベント数に依存しない。
     _renderStrokeSegment(from, effective, layerId);
+    _feedFoldDetector(effective, layerId);
     _currentStroke.add(effective);
   }
 
@@ -112,6 +119,72 @@ class DrawingEngine {
     _activeLayerId = null;
     _distanceSinceLastBrushStamp = 0.0;
     _hasStampedCurrentStroke = false;
+    _foldDetector = null;
+  }
+
+  void _feedFoldDetector(StrokePoint point, String layerId) {
+    final detector = _foldDetector;
+    final brush = currentBrush;
+    if (detector == null ||
+        brush == null ||
+        !brush.outlineEnabled ||
+        !brush.foldEnabled)
+      return;
+    final resolved = resolveBrushPressure(
+      brush: brush,
+      pressureEnabled: pressureEnabled,
+      curvedPressure: point.pressure,
+    );
+    final effectiveWidth = (brush.size * resolved.sizeScale)
+        .clamp(0.5, 2000.0)
+        .toDouble();
+    final event = detector.add(
+      BrushStrokeSample(
+        // DrawingEngine accepts document coordinates. Canvas may supply a
+        // screen-space mapper separately; at 1x these coordinates are identical.
+        screenPosition: ui.Offset(point.x, point.y),
+        documentPosition: ui.Offset(point.x, point.y),
+        effectiveWidth: effectiveWidth,
+      ),
+    );
+    if (event == null) return;
+    final branches = buildFoldY(
+      event,
+      branchAngleDegrees: brush.yBranchAngle,
+      lengthRatio: brush.yBranchLengthRatio,
+      widthRatio: brush.yBranchWidthRatio,
+      taperRatio: brush.yBranchEndTaperRatio,
+    );
+    for (final branch in branches) {
+      _renderFoldBranch(branch, layerId, ui.Color(brush.outlineColor));
+    }
+  }
+
+  void _renderFoldBranch(FoldBranch branch, String layerId, ui.Color color) {
+    final delta = branch.end - branch.start;
+    final length = delta.distance;
+    if (!length.isFinite || length <= 1e-9) return;
+    final steps = math.max(1, length.ceil());
+    const identityTilt = (scaleX: 1.0, scaleY: 1.0, angle: 0.0);
+    for (var i = 0; i <= steps; i++) {
+      final t = i / steps;
+      final center = branch.start + delta * t;
+      final width = branch.widthAt(t);
+      if (width <= 0.05) continue;
+      _renderCircleStamp(
+        center.dx,
+        center.dy,
+        width / 2,
+        255,
+        identityTilt,
+        layerId,
+        false,
+        0,
+        null,
+        colorOverride: color,
+        coverageNamespace: 'fold',
+      );
+    }
   }
 
   StrokePoint _applyPointConstraint(StrokePoint point) {
@@ -564,6 +637,16 @@ class DrawingEngine {
                 final texIdx = (texY * brushTextureSize + texX) * 4;
                 pixelAlpha = customTexture[texIdx + 3] / 255.0;
               }
+            } else if (hollowSquare) {
+              final outerDistance = math.max(ux.abs(), uy.abs());
+              final innerRadius =
+                  radius * hollowSquareInnerRatio.clamp(0.0, 0.95).toDouble();
+              final outerAa = (radius + 0.5 - outerDistance).clamp(0.0, 1.0);
+              final innerAa = (outerDistance - innerRadius + 0.5).clamp(
+                0.0,
+                1.0,
+              );
+              pixelAlpha = math.min(outerAa, innerAa);
             } else if (hollowSquare) {
               final outerDistance = math.max(ux.abs(), uy.abs());
               final innerRadius =
