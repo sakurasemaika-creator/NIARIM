@@ -209,7 +209,6 @@ if 'onGraphChanged: (graph)' not in p:
     if needle not in p:
         raise SystemExit('filter-panel overlay callback marker not found')
     p = p.replace(needle, replacement, 1)
-    # Manual point dragging must not preserve coincident rough-line junctions.
     old = '''                                                    pointIndex: pointIndex,
                                                     point: point,
                                                   );'''
@@ -226,8 +225,7 @@ t = TEST.read_text()
 if 'tap on vector segment adds a control point' not in t:
     insert = r'''
   testWidgets('tap on vector segment adds a control point', (tester) async {
-    final recorder = ui.PictureRecorder();
-    final image = await recorder.endRecording().toImage(100, 100);
+    final image = await _makeImage(100, 100);
     AutoLineartGraph? changed;
     const graph = AutoLineartGraph(
       width: 100,
@@ -258,8 +256,7 @@ if 'tap on vector segment adds a control point' not in t:
   });
 
   testWidgets('control point tap asks before deletion and cancel preserves it', (tester) async {
-    final recorder = ui.PictureRecorder();
-    final image = await recorder.endRecording().toImage(100, 100);
+    final image = await _makeImage(100, 100);
     AutoLineartGraph? changed;
     const graph = AutoLineartGraph(
       width: 100,
