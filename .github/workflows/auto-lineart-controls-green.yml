@@ -26,6 +26,27 @@ jobs:
       - name: Implement approved temporary-vector controls
         run: |
           python3 .github/scripts/implement_auto_lineart_controls.py
+          python3 - <<'PY'
+          from pathlib import Path
+          p = Path('test/auto_lineart_control_overlay_test.dart')
+          s = p.read_text()
+          if '_makeImage(' in s and 'Future<ui.Image> _makeImage' not in s:
+              marker = 'void main() {'
+              helper = '''Future<ui.Image> _makeImage(int width, int height) async {
+            final recorder = ui.PictureRecorder();
+            final canvas = Canvas(recorder);
+            canvas.drawRect(
+              Rect.fromLTWH(0, 0, width.toDouble(), height.toDouble()),
+              Paint(),
+            );
+            return recorder.endRecording().toImage(width, height);
+          }
+
+          '''
+              if marker not in s:
+                  raise SystemExit('test main marker not found')
+              p.write_text(s.replace(marker, helper + marker, 1))
+          PY
           dart format lib/screens/canvas/widgets/auto_lineart_control_overlay.dart lib/screens/canvas/widgets/filter_panel.dart test/auto_lineart_control_overlay_test.dart
       - name: Verify control editing
         run: |
