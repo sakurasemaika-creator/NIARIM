@@ -1837,16 +1837,18 @@ class FilterEngine {
     return result;
   }
 
-  /// レトロアニメ風：暖色寄りのカラーグレーディング・彩度低下・粒状ノイズを
-  /// 組み合わせた、昔のセルアニメ・VHS録画のような質感。1画素あたりの
-  /// 色変換とノイズ処理1回分のみで、既存のanimeStyle（ポスタリゼーション＋
-  /// Sobelエッジ検出）より軽い。
+  /// レトロアニメ風：暖色寄りのカラーグレーディング・彩度低下・
+  /// ニュートラルなフィルムグレインを組み合わせ、古いセル画をフィルム撮影
+  /// したような質感にする。CRTの走査線・周辺減光やVHSのトラッキングずれ・
+  /// 色にじみは含めないため、表示機器／テープ由来の効果とは明確に分離する。
+  /// [seed]はテスト・再現可能なプレビュー用。通常利用では省略できる。
   Uint8List applyRetroAnime(
     Uint8List data,
     int width,
     int height,
-    double strength,
-  ) {
+    double strength, {
+    int? seed,
+  }) {
     final amount = (strength / 100.0).clamp(0.0, 1.0);
     if (amount <= 0) return Uint8List.fromList(data);
     final result = Uint8List.fromList(data);
@@ -1863,7 +1865,7 @@ class FilterEngine {
       result[i + 1] = (g + (targetG - g) * amount).round().clamp(0, 255);
       result[i + 2] = (b + (targetB - b) * amount).round().clamp(0, 255);
     }
-    return applyNoise(result, width, height, amount * 0.15, NoiseType.gaussian);
+    return applyFilmGrain(result, width, height, amount * 0.15, seed: seed);
   }
 
   /// ブラウン管（CRT）風：色収差・周辺減光・走査線を組み合わせた昔のテレビ・
