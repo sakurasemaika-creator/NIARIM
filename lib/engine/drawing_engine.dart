@@ -49,7 +49,11 @@ class DrawingEngine {
 
   DrawingEngine({required this.tileManager});
 
-  void beginStroke(StrokePoint point, String layerId) {
+  void beginStroke(
+    StrokePoint point,
+    String layerId, {
+    ui.Offset? screenPosition,
+  }) {
     _currentStroke.clear();
     _strokeCoverageByTile.clear();
     _smoothed = point;
@@ -62,7 +66,7 @@ class DrawingEngine {
     _foldDetector = brush != null && brush.outlineEnabled && brush.foldEnabled
         ? ScreenSpaceFoldDetector(triggerAngleDegrees: brush.foldTriggerAngle)
         : null;
-    _feedFoldDetector(effective, layerId);
+    _feedFoldDetector(effective, layerId, screenPosition: screenPosition);
     _currentStroke.add(effective);
     final needsDirection =
         brush != null && (brush.rotation || brush.scatter > 0.0);
@@ -80,9 +84,13 @@ class DrawingEngine {
     }
   }
 
-  void continueStroke(StrokePoint point, String layerId) {
+  void continueStroke(
+    StrokePoint point,
+    String layerId, {
+    ui.Offset? screenPosition,
+  }) {
     if (_currentStroke.isEmpty) {
-      beginStroke(point, layerId);
+      beginStroke(point, layerId, screenPosition: screenPosition);
       return;
     }
     final effective = _applyPointConstraint(_applyStabilization(point));
@@ -91,7 +99,7 @@ class DrawingEngine {
     // _renderStrokeSegment() が取得するbaseStrokeLengthは必ず区間開始時点までの
     // 累積距離となり、OSから届くmoveイベント数に依存しない。
     _renderStrokeSegment(from, effective, layerId);
-    _feedFoldDetector(effective, layerId);
+    _feedFoldDetector(effective, layerId, screenPosition: screenPosition);
     _currentStroke.add(effective);
   }
 
@@ -122,7 +130,11 @@ class DrawingEngine {
     _foldDetector = null;
   }
 
-  void _feedFoldDetector(StrokePoint point, String layerId) {
+  void _feedFoldDetector(
+    StrokePoint point,
+    String layerId, {
+    ui.Offset? screenPosition,
+  }) {
     final detector = _foldDetector;
     final brush = currentBrush;
     if (detector == null ||
@@ -140,9 +152,10 @@ class DrawingEngine {
         .toDouble();
     final event = detector.add(
       BrushStrokeSample(
-        // DrawingEngine accepts document coordinates. Canvas may supply a
-        // screen-space mapper separately; at 1x these coordinates are identical.
-        screenPosition: ui.Offset(point.x, point.y),
+        // Fold thresholds are defined in physical screen-space travel. The
+        // caller supplies pointer screen coordinates when document zoom differs
+        // from 1x; direct engine callers retain the 1x-compatible fallback.
+        screenPosition: screenPosition ?? ui.Offset(point.x, point.y),
         documentPosition: ui.Offset(point.x, point.y),
         effectiveWidth: effectiveWidth,
       ),
@@ -637,6 +650,16 @@ class DrawingEngine {
                 final texIdx = (texY * brushTextureSize + texX) * 4;
                 pixelAlpha = customTexture[texIdx + 3] / 255.0;
               }
+            } else if (hollowSquare) {
+              final outerDistance = math.max(ux.abs(), uy.abs());
+              final innerRadius =
+                  radius * hollowSquareInnerRatio.clamp(0.0, 0.95).toDouble();
+              final outerAa = (radius + 0.5 - outerDistance).clamp(0.0, 1.0);
+              final innerAa = (outerDistance - innerRadius + 0.5).clamp(
+                0.0,
+                1.0,
+              );
+              pixelAlpha = math.min(outerAa, innerAa);
             } else if (hollowSquare) {
               final outerDistance = math.max(ux.abs(), uy.abs());
               final innerRadius =
