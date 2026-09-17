@@ -8,10 +8,10 @@ void main() {
       'darken', 'lighten', 'colorBurn', 'colorDodge', 'hardLight', 'softLight',
       'difference', 'hue', 'saturation', 'color', 'luminosity',
     ];
-    expect(BlendMode.values.take(legacy.length).map((e) => e.name), legacy);
+    expect(LayerBlendMode.values.take(legacy.length).map((e) => e.name), legacy);
 
     expect(
-      BlendMode.values.map((e) => e.name),
+      LayerBlendMode.values.map((e) => e.name),
       containsAll(<String>[
         'linearBurn',
         'linearDodge',
