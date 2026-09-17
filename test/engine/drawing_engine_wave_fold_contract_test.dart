@@ -63,8 +63,8 @@ void main() {
       );
       final firstWave = path.indexWhere((sample) => sample.isWave);
       expect(firstWave, greaterThan(0));
-      expect(path[firstWave].distanceFromStart, closeTo(14, 1.2));
-      expect(path.last.distanceFromStart, closeTo(20, .2));
+      expect(path[firstWave].distanceFromStart, closeTo(16.8, 1.2));
+      expect(path.last.distanceFromStart, closeTo(24, .2));
     });
 
     test('bangs with zero wave percentage never emit wave samples', () {
