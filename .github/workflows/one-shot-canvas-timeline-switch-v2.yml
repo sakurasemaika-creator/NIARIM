@@ -1,0 +1,71 @@
+name: one-shot canvas timeline switch v2
+
+on:
+  push:
+    branches: [dev_branch]
+    paths:
+      - .github/workflows/one-shot-canvas-timeline-switch-v2.yml
+
+permissions:
+  contents: write
+
+jobs:
+  apply:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: dev_branch
+      - name: Add paired timeline switch
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          p = Path('lib/screens/canvas/canvas_screen.dart')
+          s = p.read_text()
+          old = '''          _topBarIconButton(
+            context,
+            Icons.home_outlined,
+            onPressed: _confirmBackToProjectList,
+            tooltip: l10n.timelineBackToProjectListTooltip,
+          ),
+        ],'''
+          new = '''          _topBarIconButton(
+            context,
+            Icons.home_outlined,
+            onPressed: _confirmBackToProjectList,
+            tooltip: l10n.timelineBackToProjectListTooltip,
+          ),
+          // タイムライン側の「← + パレット」と対になる常設モード切替。
+          // フレーム追加ボタンと競合しないよう右上メニューの一番右へ置く。
+          CanvasIconButton(
+            iconBuilder: (color) => SizedBox(
+              width: 30,
+              height: 20,
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(Icons.movie_filter_outlined, size: 16, color: color),
+                  Icon(Icons.arrow_forward, size: 14, color: color),
+                ],
+              ),
+            ),
+            iconSize: 30,
+            onPressed: () => _runAutomationBlockedAction(
+              () => context.go('/timeline/${widget.projectId}'),
+            ),
+            tooltip: 'タイムラインへ',
+          ),
+        ],'''
+          if old not in s:
+              raise SystemExit('canvas top-bar target not found')
+          p.write_text(s.replace(old, new, 1))
+          PY
+      - name: Format and commit
+        run: |
+          dart format lib/screens/canvas/canvas_screen.dart lib/screens/canvas/widgets/canvas_icon_button.dart || true
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          git add lib/screens/canvas/canvas_screen.dart lib/screens/canvas/widgets/canvas_icon_button.dart
+          git diff --cached --quiet && exit 0
+          git commit -m "feat: add paired timeline switch to canvas top bar"
+          git push origin HEAD:dev_branch
