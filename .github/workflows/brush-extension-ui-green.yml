@@ -28,7 +28,8 @@ jobs:
       - run: flutter pub get --enforce-lockfile
       - name: Apply focused Task 4 integration
         run: |
-          python3 .github/scripts/integrate_brush_extension_ui.py
+          set -euxo pipefail
+          python3 -u .github/scripts/integrate_brush_extension_ui.py
           flutter gen-l10n
           dart format lib/screens/canvas/widgets/brush_extension_settings.dart lib/screens/canvas/widgets/brush_panel.dart test/brush_extension_settings_test.dart test/brush_panel_extension_integration_test.dart
       - name: Verify Task 4 UI
