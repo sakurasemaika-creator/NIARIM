@@ -72,13 +72,13 @@ class Brush {
     this.lateralRepeatCount = 1,
     this.lateralRepeatSpacing = 1.0,
     this.outlineEnabled = false,
-    this.outlineWidth = 1.0,
+    this.outlineWidth = 1.5,
     this.outlineColor = 0xFF000000,
     this.foldEnabled = false,
     this.foldTriggerAngle = 90.0,
     this.yBranchAngle = 45.0,
     this.yBranchLengthRatio = 0.6,
-    this.yBranchWidthRatio = 0.12,
+    this.yBranchWidthRatio = 0.08,
     this.yBranchEndTaperRatio = 0.4,
     this.tipShape = BrushTipShape.round,
   });
@@ -275,7 +275,7 @@ class Brush {
     lateralRepeatSpacing:
         (j['lateralRepeatSpacing'] as num?)?.toDouble() ?? 1.0,
     outlineEnabled: j['outlineEnabled'] as bool? ?? false,
-    outlineWidth: (j['outlineWidth'] as num?)?.toDouble() ?? 1.0,
+    outlineWidth: (j['outlineWidth'] as num?)?.toDouble() ?? 1.5,
     outlineColor: (j['outlineColor'] as num?)?.toInt() ?? 0xFF000000,
     foldEnabled: j['foldEnabled'] as bool? ?? false,
     foldTriggerAngle: (j['foldTriggerAngle'] as num?)?.toDouble() ?? 90.0,
@@ -283,7 +283,7 @@ class Brush {
     yBranchLengthRatio:
         (j['yBranchLengthRatio'] as num?)?.toDouble() ?? 0.6,
     yBranchWidthRatio:
-        (j['yBranchWidthRatio'] as num?)?.toDouble() ?? 0.12,
+        (j['yBranchWidthRatio'] as num?)?.toDouble() ?? 0.08,
     yBranchEndTaperRatio:
         (j['yBranchEndTaperRatio'] as num?)?.toDouble() ?? 0.4,
     tipShape: BrushTipShape.values.firstWhere(

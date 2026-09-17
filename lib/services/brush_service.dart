@@ -10,6 +10,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../engine/brush_texture_cache.dart';
 import '../models/asset_tags.dart';
 import '../models/brush.dart';
+import '../models/brush_presets_extension.dart';
 
 /// ブラシ管理サービス。
 /// SharedPreferencesへ永続化する（端末単位。プロジェクトファイルには含めない）。
@@ -822,6 +823,7 @@ class BrushService extends ChangeNotifier {
       scatter: 0,
       tags: [AssetTagKeys.decoration, AssetTagKeys.clothing],
     ),
+    ...brushExtensionPresets(),
   ];
 
   Future<void> init() async {
