@@ -128,7 +128,7 @@ List<FoldPathSample> buildStraightFoldPath(
   final safeDepthRatio = _finiteClamp(depthRatio, 0, 1.5, .5);
   final safeCurveStartRatio = _finiteClamp(curveStartRatio, 0, safeLengthRatio, .25);
   final safeTaper = _finiteClamp(taperRatio, 0, 1, .4);
-  final safeOutlineWidth = outlineWidth.isFinite ? math.max(0, outlineWidth) : 0.0;
+  final safeOutlineWidth = outlineWidth.isFinite ? math.max(0.0, outlineWidth) : 0.0;
   final totalLength = effectiveWidth * safeLengthRatio;
   final curveStartDistance = math.min(effectiveWidth * safeCurveStartRatio, totalLength * .9);
   final targetDepth = effectiveWidth * safeDepthRatio;
