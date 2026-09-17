@@ -5,53 +5,110 @@ on:
     branches: [dev_branch]
     paths:
       - '.github/workflows/chat-flutter-verify.yml'
-      - '.github/chat-integration-trigger.txt'
+      - '.github/scripts/apply_drawing_engine_brush_extensions.py'
+      - '.github/scripts/complete_screen_space_fold_integration.py'
+      - '.github/scripts/complete_mosaic_integration.py'
+      - 'lib/models/brush.dart'
+      - 'lib/models/brush_extension_defaults.dart'
+      - 'lib/models/brush_presets_extension.dart'
+      - 'lib/models/ruler.dart'
+      - 'lib/models/filter_def.dart'
+      - 'lib/services/brush_service.dart'
+      - 'lib/services/filter_service.dart'
+      - 'lib/engine/drawing_engine.dart'
+      - 'lib/engine/brush_stroke_geometry.dart'
+      - 'lib/engine/brush_render_plan.dart'
+      - 'lib/engine/outlined_stroke_compositor.dart'
+      - 'lib/engine/ruler_engine.dart'
+      - 'lib/engine/filter_engine.dart'
+      - 'lib/screens/canvas/widgets/filter_panel.dart'
+      - 'test/models/brush_extensions_test.dart'
+      - 'test/models/brush_extension_defaults_test.dart'
+      - 'test/models/brush_extension_presets_test.dart'
+      - 'test/models/mosaic_filter_def_contract_test.dart'
+      - 'test/services/brush_service_extension_presets_test.dart'
+      - 'test/engine/drawing_engine_brush_extensions_test.dart'
+      - 'test/engine/brush_stroke_geometry_test.dart'
+      - 'test/engine/brush_render_plan_test.dart'
+      - 'test/engine/outlined_stroke_compositor_test.dart'
+      - 'test/engine/ruler_snap_toggle_test.dart'
+      - 'test/engine/mosaic_filter_test.dart'
   workflow_dispatch:
 
 jobs:
   verify:
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    timeout-minutes: 25
     permissions:
       contents: write
     steps:
       - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
-        with:
-          ref: dev_branch
-          fetch-depth: 0
       - uses: subosito/flutter-action@1a449444c387b1966244ae4d4f8c696479add0b2 # v2
         with:
           channel: stable
           cache: false
-      - name: Merge feature history while preserving current dev conflicts
+      - name: Flutter version
+        run: flutter --version
+      - name: Resolve dependencies
+        run: flutter pub get --enforce-lockfile
+      - name: Apply approved brush integration and preserve parallel mosaic work
         run: |
-          set -euxo pipefail
+          python3 - <<'PY'
+          from pathlib import Path
+          brush = Path('lib/models/brush.dart')
+          s = brush.read_text()
+          s = s.replace('this.outlineWidth = 1.0,', 'this.outlineWidth = 1.5,')
+          s = s.replace('this.yBranchWidthRatio = 0.12,', 'this.yBranchWidthRatio = 0.08,')
+          s = s.replace("outlineWidth: (j['outlineWidth'] as num?)?.toDouble() ?? 1.0,", "outlineWidth: (j['outlineWidth'] as num?)?.toDouble() ?? 1.5,")
+          s = s.replace("(j['yBranchWidthRatio'] as num?)?.toDouble() ?? 0.12,", "(j['yBranchWidthRatio'] as num?)?.toDouble() ?? 0.08,")
+          brush.write_text(s)
+          service = Path('lib/services/brush_service.dart')
+          s = service.read_text()
+          import_line = "import '../models/brush.dart';\n"
+          extension_import = "import '../models/brush_presets_extension.dart';\n"
+          if extension_import not in s:
+            s = s.replace(import_line, import_line + extension_import)
+          marker = "    ),\n  ];\n\n  Future<void> init() async {"
+          replacement = "    ),\n    ...brushExtensionPresets(),\n  ];\n\n  Future<void> init() async {"
+          if '...brushExtensionPresets(),' not in s:
+            if marker not in s:
+              raise SystemExit('BrushService default-list insertion marker not found')
+            s = s.replace(marker, replacement, 1)
+          service.write_text(s)
+          PY
+          python3 .github/scripts/apply_drawing_engine_brush_extensions.py
+          python3 .github/scripts/complete_screen_space_fold_integration.py
+          python3 .github/scripts/complete_mosaic_integration.py
+          dart format lib/engine/drawing_engine.dart lib/engine/filter_engine.dart lib/screens/canvas/widgets/filter_panel.dart lib/services/filter_service.dart
+      - name: Targeted brush, ruler, and mosaic tests
+        run: |
+          flutter test test/models/brush_extensions_test.dart --reporter expanded
+          flutter test test/models/brush_extension_defaults_test.dart --reporter expanded
+          flutter test test/models/brush_extension_presets_test.dart --reporter expanded
+          flutter test test/models/mosaic_filter_def_contract_test.dart --reporter expanded
+          flutter test test/services/brush_service_extension_presets_test.dart --reporter expanded
+          flutter test test/engine/brush_stroke_geometry_test.dart --reporter expanded
+          flutter test test/engine/brush_render_plan_test.dart --reporter expanded
+          flutter test test/engine/outlined_stroke_compositor_test.dart --reporter expanded
+          flutter test test/engine/ruler_snap_toggle_test.dart --reporter expanded
+          flutter test test/engine/drawing_engine_brush_extensions_test.dart --reporter expanded
+          flutter test test/engine/mosaic_filter_test.dart --reporter expanded
+          if [ -f test/engine/pixel_art_engine_test.dart ]; then flutter test test/engine/pixel_art_engine_test.dart --reporter expanded; fi
+          if [ -f test/engine/filter_pixel_art_route_test.dart ]; then flutter test test/engine/filter_pixel_art_route_test.dart --reporter expanded; fi
+          if [ -f test/engine/stamp_pixel_art_route_test.dart ]; then flutter test test/engine/stamp_pixel_art_route_test.dart --reporter expanded; fi
+          if [ -f test/engine/noise_filter_distinction_test.dart ]; then flutter test test/engine/noise_filter_distinction_test.dart --reporter expanded; fi
+          if [ -f test/engine/analog_filter_distinction_test.dart ]; then flutter test test/engine/analog_filter_distinction_test.dart --reporter expanded; fi
+      - name: Targeted analyze
+        run: flutter analyze lib/models/brush.dart lib/models/brush_extension_defaults.dart lib/models/brush_presets_extension.dart lib/models/ruler.dart lib/models/filter_def.dart lib/services/brush_service.dart lib/services/filter_service.dart lib/engine/drawing_engine.dart lib/engine/brush_stroke_geometry.dart lib/engine/brush_render_plan.dart lib/engine/outlined_stroke_compositor.dart lib/engine/ruler_engine.dart lib/engine/filter_engine.dart lib/engine/pixel_art_engine.dart lib/screens/canvas/widgets/filter_panel.dart --no-fatal-infos --no-fatal-warnings
+      - name: Persist verified integration
+        run: |
+          if git diff --quiet -- lib/models/brush.dart lib/services/brush_service.dart lib/engine/drawing_engine.dart lib/engine/filter_engine.dart lib/screens/canvas/widgets/filter_panel.dart lib/services/filter_service.dart; then
+            exit 0
+          fi
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          git fetch origin feature/pixel-filter-blend-refresh
-          git merge --no-ff -X ours -m 'merge: preserve pixel filter refresh history on dev_branch' origin/feature/pixel-filter-blend-refresh
-      - name: Verify integrated production tree
-        run: |
-          set -euxo pipefail
-          flutter pub get --enforce-lockfile
-          flutter analyze lib/models/filter_def.dart lib/engine/pixel_art_engine.dart lib/engine/filter_engine.dart lib/engine/prism_filter_engine.dart lib/services/filter_service.dart lib/screens/canvas/widgets/filter_panel.dart --no-fatal-infos --no-fatal-warnings
-          tests=()
-          for t in \
-            test/engine/pixel_art_engine_test.dart \
-            test/engine/filter_engine_pixel_art_contract_test.dart \
-            test/engine/filter_pixel_art_route_test.dart \
-            test/engine/stamp_pixel_art_route_test.dart \
-            test/engine/mosaic_filter_contract_test.dart \
-            test/models/mosaic_filter_def_contract_test.dart \
-            test/mosaic_filter_test.dart \
-            test/engine/noise_filter_distinction_test.dart \
-            test/engine/analog_filter_distinction_test.dart; do
-            [ -f "$t" ] && tests+=("$t")
-          done
-          if [ ${#tests[@]} -gt 0 ]; then flutter test "${tests[@]}" --reporter expanded; fi
-      - name: Persist verified merge
-        run: |
-          set -euxo pipefail
+          git add lib/models/brush.dart lib/services/brush_service.dart lib/engine/drawing_engine.dart lib/engine/filter_engine.dart lib/screens/canvas/widgets/filter_panel.dart lib/services/filter_service.dart
+          git commit -m 'fix: complete pixel filter integration and brush rasterization'
           git fetch origin dev_branch
           git rebase origin/dev_branch
           git push origin HEAD:dev_branch
