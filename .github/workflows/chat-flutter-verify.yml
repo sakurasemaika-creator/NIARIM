@@ -6,25 +6,32 @@ on:
     paths:
       - '.github/workflows/chat-flutter-verify.yml'
       - '.github/scripts/apply_drawing_engine_brush_extensions.py'
+      - '.github/scripts/complete_mosaic_integration.py'
       - 'lib/models/brush.dart'
       - 'lib/models/brush_extension_defaults.dart'
       - 'lib/models/brush_presets_extension.dart'
       - 'lib/models/ruler.dart'
+      - 'lib/models/filter_def.dart'
       - 'lib/services/brush_service.dart'
+      - 'lib/services/filter_service.dart'
       - 'lib/engine/drawing_engine.dart'
       - 'lib/engine/brush_stroke_geometry.dart'
       - 'lib/engine/brush_render_plan.dart'
       - 'lib/engine/outlined_stroke_compositor.dart'
       - 'lib/engine/ruler_engine.dart'
+      - 'lib/engine/filter_engine.dart'
+      - 'lib/screens/canvas/widgets/filter_panel.dart'
       - 'test/models/brush_extensions_test.dart'
       - 'test/models/brush_extension_defaults_test.dart'
       - 'test/models/brush_extension_presets_test.dart'
+      - 'test/models/mosaic_filter_def_contract_test.dart'
       - 'test/services/brush_service_extension_presets_test.dart'
       - 'test/engine/drawing_engine_brush_extensions_test.dart'
       - 'test/engine/brush_stroke_geometry_test.dart'
       - 'test/engine/brush_render_plan_test.dart'
       - 'test/engine/outlined_stroke_compositor_test.dart'
       - 'test/engine/ruler_snap_toggle_test.dart'
+      - 'test/engine/mosaic_filter_test.dart'
   workflow_dispatch:
 
 jobs:
@@ -43,7 +50,7 @@ jobs:
         run: flutter --version
       - name: Resolve dependencies
         run: flutter pub get --enforce-lockfile
-      - name: Apply approved model, preset, and DrawingEngine integration
+      - name: Apply approved brush integration and preserve parallel mosaic work
         run: |
           python3 - <<'PY'
           from pathlib import Path
@@ -69,29 +76,32 @@ jobs:
           service.write_text(s)
           PY
           python3 .github/scripts/apply_drawing_engine_brush_extensions.py
-          dart format lib/engine/drawing_engine.dart
-      - name: Targeted brush and ruler tests
+          python3 .github/scripts/complete_mosaic_integration.py
+          dart format lib/engine/drawing_engine.dart lib/engine/filter_engine.dart lib/screens/canvas/widgets/filter_panel.dart lib/services/filter_service.dart
+      - name: Targeted brush, ruler, and mosaic tests
         run: |
           flutter test test/models/brush_extensions_test.dart --reporter expanded
           flutter test test/models/brush_extension_defaults_test.dart --reporter expanded
           flutter test test/models/brush_extension_presets_test.dart --reporter expanded
+          flutter test test/models/mosaic_filter_def_contract_test.dart --reporter expanded
           flutter test test/services/brush_service_extension_presets_test.dart --reporter expanded
           flutter test test/engine/brush_stroke_geometry_test.dart --reporter expanded
           flutter test test/engine/brush_render_plan_test.dart --reporter expanded
           flutter test test/engine/outlined_stroke_compositor_test.dart --reporter expanded
           flutter test test/engine/ruler_snap_toggle_test.dart --reporter expanded
           flutter test test/engine/drawing_engine_brush_extensions_test.dart --reporter expanded
+          flutter test test/engine/mosaic_filter_test.dart --reporter expanded
       - name: Targeted analyze
-        run: flutter analyze lib/models/brush.dart lib/models/brush_extension_defaults.dart lib/models/brush_presets_extension.dart lib/models/ruler.dart lib/services/brush_service.dart lib/engine/drawing_engine.dart lib/engine/brush_stroke_geometry.dart lib/engine/brush_render_plan.dart lib/engine/outlined_stroke_compositor.dart lib/engine/ruler_engine.dart test/models/brush_extensions_test.dart test/models/brush_extension_defaults_test.dart test/models/brush_extension_presets_test.dart test/services/brush_service_extension_presets_test.dart test/engine/drawing_engine_brush_extensions_test.dart test/engine/brush_stroke_geometry_test.dart test/engine/brush_render_plan_test.dart test/engine/outlined_stroke_compositor_test.dart test/engine/ruler_snap_toggle_test.dart --no-fatal-infos
-      - name: Persist verified brush integration
+        run: flutter analyze lib/models/brush.dart lib/models/brush_extension_defaults.dart lib/models/brush_presets_extension.dart lib/models/ruler.dart lib/models/filter_def.dart lib/services/brush_service.dart lib/services/filter_service.dart lib/engine/drawing_engine.dart lib/engine/brush_stroke_geometry.dart lib/engine/brush_render_plan.dart lib/engine/outlined_stroke_compositor.dart lib/engine/ruler_engine.dart lib/engine/filter_engine.dart lib/screens/canvas/widgets/filter_panel.dart test/models/brush_extensions_test.dart test/models/brush_extension_defaults_test.dart test/models/brush_extension_presets_test.dart test/models/mosaic_filter_def_contract_test.dart test/services/brush_service_extension_presets_test.dart test/engine/drawing_engine_brush_extensions_test.dart test/engine/brush_stroke_geometry_test.dart test/engine/brush_render_plan_test.dart test/engine/outlined_stroke_compositor_test.dart test/engine/ruler_snap_toggle_test.dart test/engine/mosaic_filter_test.dart --no-fatal-infos
+      - name: Persist verified integration
         run: |
-          if git diff --quiet -- lib/models/brush.dart lib/services/brush_service.dart lib/engine/drawing_engine.dart; then
+          if git diff --quiet -- lib/models/brush.dart lib/services/brush_service.dart lib/engine/drawing_engine.dart lib/engine/filter_engine.dart lib/screens/canvas/widgets/filter_panel.dart lib/services/filter_service.dart; then
             exit 0
           fi
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          git add lib/models/brush.dart lib/services/brush_service.dart lib/engine/drawing_engine.dart
-          git commit -m 'feat: integrate brush extension rasterization'
+          git add lib/models/brush.dart lib/services/brush_service.dart lib/engine/drawing_engine.dart lib/engine/filter_engine.dart lib/screens/canvas/widgets/filter_panel.dart lib/services/filter_service.dart
+          git commit -m 'fix: complete mosaic integration and brush rasterization'
           git fetch origin dev_branch
           git rebase origin/dev_branch
           git push origin HEAD:dev_branch
