@@ -12,8 +12,15 @@ void main() {
       255, 255, 255, 0,
     ]);
 
+    // Mosaic is deliberately arithmetic block averaging; it must never route
+    // through the shared PixelArtEngine edge/palette synthesis contract.
     final output = FilterEngine().applyMosaic(input, 2, 2, 2);
 
-    expect(output, [128, 128, 128, 128, 128, 128, 128, 128, 128, 128, 128, 128, 128, 128, 128, 128]);
+    expect(output, [
+      128, 128, 128, 128,
+      128, 128, 128, 128,
+      128, 128, 128, 128,
+      128, 128, 128, 128,
+    ]);
   });
 }
