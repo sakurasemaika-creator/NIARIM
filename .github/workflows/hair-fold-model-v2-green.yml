@@ -1,0 +1,45 @@
+name: Hair Fold Model V2 Green
+
+on:
+  push:
+    branches: [dev_branch]
+    paths:
+      - '.github/workflows/hair-fold-model-v2-green.yml'
+      - '.github/scripts/implement_hair_fold_model_v2.py'
+      - 'test/hair_fold_settings_model_test.dart'
+      - 'lib/models/brush.dart'
+  workflow_dispatch:
+
+jobs:
+  green:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+        with:
+          ref: dev_branch
+      - uses: subosito/flutter-action@1a449444c387b1966244ae4d4f8c696479add0b2 # v2
+        with:
+          channel: stable
+          cache: false
+      - run: flutter pub get --enforce-lockfile
+      - name: Apply model implementation
+        run: |
+          python3 .github/scripts/implement_hair_fold_model_v2.py
+          dart format lib/models/brush.dart test/hair_fold_settings_model_test.dart
+      - run: flutter test test/hair_fold_settings_model_test.dart --reporter expanded
+      - run: flutter analyze lib/models/brush.dart test/hair_fold_settings_model_test.dart --no-fatal-infos --no-fatal-warnings
+      - name: Persist verified model
+        run: |
+          if git diff --quiet -- lib/models/brush.dart test/hair_fold_settings_model_test.dart; then
+            exit 0
+          fi
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add lib/models/brush.dart test/hair_fold_settings_model_test.dart
+          git commit -m 'feat: add hair fold wave lifecycle settings'
+          git fetch origin dev_branch
+          git rebase --autostash origin/dev_branch
+          git push origin HEAD:dev_branch
