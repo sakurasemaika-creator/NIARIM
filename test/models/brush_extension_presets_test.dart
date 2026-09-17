@@ -2,6 +2,26 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:niarim/models/brush.dart';
 import 'package:niarim/models/brush_presets_extension.dart';
 
+Brush _baseBrush({
+  String? customImagePath,
+  List<String> customImagePaths = const [],
+  BrushImageSelectionMode customImageSelectionMode = BrushImageSelectionMode.random,
+}) => Brush(
+      id: 'test',
+      name: 'test',
+      size: 20,
+      opacity: 100,
+      spacing: 1,
+      stabilization: false,
+      stabilizationStrength: 0,
+      pixelMode: false,
+      fadeMode: FadeMode.off,
+      strokeDecay: false,
+      customImagePath: customImagePath,
+      customImagePaths: customImagePaths,
+      customImageSelectionMode: customImageSelectionMode,
+    );
+
 void main() {
   test('net preset uses lateral repetition and hollow square tip', () {
     final net = brushExtensionPresets().singleWhere((b) => b.id == 'Brush0022');
@@ -30,10 +50,11 @@ void main() {
     expect(hair.toJson().containsKey('fillColor'), isFalse);
   });
 
-  test('bangs preset uses soft jagged flat tip and keeps wave disabled', () {
+  test('bangs preset uses multiple random textures and keeps wave disabled', () {
     final bangs = brushExtensionPresets().singleWhere((b) => b.id == 'Brush0024');
     expect(bangs.name, '前髪');
-    expect(bangs.tipShape, BrushTipShape.softJaggedFlat);
+    expect(bangs.customImagePaths.length, greaterThanOrEqualTo(4));
+    expect(bangs.customImageSelectionMode, BrushImageSelectionMode.random);
     expect(bangs.outlineEnabled, isTrue);
     expect(bangs.foldEnabled, isTrue);
     expect(bangs.foldWaveEnabled, isFalse);
@@ -42,10 +63,20 @@ void main() {
     expect(bangs.toJson().containsKey('fillColor'), isFalse);
   });
 
-  test('soft jagged flat tip survives brush json round trip', () {
-    final bangs = brushExtensionPresets().singleWhere((b) => b.id == 'Brush0024');
-    final restored = Brush.fromJson(bangs.toJson());
-    expect(restored.tipShape, BrushTipShape.softJaggedFlat);
+  test('multiple texture selection survives brush json round trip', () {
+    final brush = _baseBrush(
+      customImagePaths: const ['a.png', 'b.png', 'c.png'],
+      customImageSelectionMode: BrushImageSelectionMode.sequential,
+    );
+    final restored = Brush.fromJson(brush.toJson());
+    expect(restored.customImagePaths, const ['a.png', 'b.png', 'c.png']);
+    expect(restored.customImageSelectionMode, BrushImageSelectionMode.sequential);
+  });
+
+  test('legacy single custom image remains available as one texture', () {
+    final restored = Brush.fromJson(_baseBrush(customImagePath: 'legacy.png').toJson());
+    expect(restored.customImagePath, 'legacy.png');
+    expect(restored.resolvedCustomImagePaths, const ['legacy.png']);
   });
 
   test('extension preset ids are unique', () {
