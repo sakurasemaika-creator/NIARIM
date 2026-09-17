@@ -85,6 +85,10 @@ if old_call in s:
 elif 'final extensionPlan = buildBrushStampPlan(' not in s:
     raise SystemExit('render call marker not found')
 
+# The legacy radius was only consumed by the single-stamp call above. The
+# extension plan now owns fill/outline radii, so keeping it trips analyzer.
+s = s.replace('    final radius = size / 2;\n', '', 1)
+
 old_sig = '''    bool ballChain = false,
   }) {
     final r = currentColor.r;
