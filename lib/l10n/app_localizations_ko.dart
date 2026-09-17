@@ -6262,4 +6262,46 @@ class AppLocalizationsKo extends AppLocalizations {
   @override
   String get customAutomationExecutionFailed =>
       '자동 작업을 완료하지 못했습니다. 설정과 대상 레이어를 확인하세요.';
+
+  @override
+  String get brushLateralRepeat => '가로 반복';
+
+  @override
+  String get brushLateralRepeatCount => '반복 개수';
+
+  @override
+  String get brushLateralRepeatSpacing => '가로 간격';
+
+  @override
+  String get brushOutline => '외곽선';
+
+  @override
+  String get brushOutlineWidth => '외곽선 두께';
+
+  @override
+  String get brushOutlineColor => '외곽선 색상';
+
+  @override
+  String get brushOutlineColorPicker => '색상 선택기';
+
+  @override
+  String get brushOutlineEyedropper => '스포이드';
+
+  @override
+  String get brushFold => '접힘';
+
+  @override
+  String get brushFoldTriggerAngle => '발생 각도';
+
+  @override
+  String get brushYBranchAngle => 'Y자 가지 각도';
+
+  @override
+  String get brushYBranchLength => 'Y자 길이';
+
+  @override
+  String get brushYBranchWidth => 'Y자 두께';
+
+  @override
+  String get brushYBranchEndTaper => 'Y자 끝 테이퍼';
 }

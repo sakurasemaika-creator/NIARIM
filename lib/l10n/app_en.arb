@@ -2711,5 +2711,19 @@
   "tipsOfficialAutomationPresetsDesc": "The official presets are 「線画作成（デジタル）」 (Auto Line Art → Ink Pool), 「線画抽出（アナログ）」 (Color Adjust → Threshold → Brightness to Alpha), 「線画色トレス」 (merge visible layers → blur, duplicate, and merge → color-trace adjustment), and 「オーロラホログラム」 (a one-step texture filter). Re-recording appends supported actions. In the review screen, you can reorder or remove steps. Export it before editing if you want an easy way back to the original settings.",
   "tipsTexturePrismVhsTitle": "Try Texture, Prism, and VHS on duplicate layers",
   "tipsTexturePrismVhsDesc": "Texture Filter starts from Aurora, Pearl 1, Vaporwave, Pastel Dream, Sunset Gold, Silver Foil, Aurora Hologram, or Pearl 2, then lets you tune brightness and saturation. Prism creates a band of light with blur and rainbow direction, while VHS Noise combines noise, saturation, brightness, and contrast for an aged-tape look. Trying each on a duplicate layer makes comparison easy; favorite the settings you like for faster reuse.",
-  "customAutomationExecutionFailed": "Automation could not finish. Check its settings and target layer."
+  "customAutomationExecutionFailed": "Automation could not finish. Check its settings and target layer.",
+  "brushLateralRepeat": "Lateral repeat",
+  "brushLateralRepeatCount": "Repeat count",
+  "brushLateralRepeatSpacing": "Lateral spacing",
+  "brushOutline": "Outline",
+  "brushOutlineWidth": "Outline width",
+  "brushOutlineColor": "Outline color",
+  "brushOutlineColorPicker": "Color picker",
+  "brushOutlineEyedropper": "Eyedropper",
+  "brushFold": "Fold",
+  "brushFoldTriggerAngle": "Trigger angle",
+  "brushYBranchAngle": "Y-branch angle",
+  "brushYBranchLength": "Y-branch length",
+  "brushYBranchWidth": "Y-branch width",
+  "brushYBranchEndTaper": "Y-branch end taper"
 }

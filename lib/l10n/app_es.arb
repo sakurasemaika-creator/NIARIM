@@ -2704,5 +2704,19 @@
   "tipsOfficialAutomationPresetsDesc": "Los ajustes oficiales son 「線画作成（デジタル）」 (líneas automáticas → acumulación de tinta), 「線画抽出（アナログ）」 (ajuste de color → umbral → brillo a alfa), 「線画色トレス」 (combinar capas visibles → desenfocar, duplicar y combinar → ajustar calco de color) y 「オーロラホログラム」 (filtro de textura en un paso). Al volver a grabar se añaden acciones compatibles. En la pantalla de revisión puedes reordenar o eliminar pasos. Expórtalo antes de editarlo si quieres conservar una forma sencilla de volver a la configuración original.",
   "tipsTexturePrismVhsTitle": "Prueba Textura, Prisma y VHS en capas duplicadas",
   "tipsTexturePrismVhsDesc": "Filtro de textura parte de Aurora, Pompa de jabón, Neón cibernético, Sueño pastel, Oro del atardecer, Papel plateado, Holograma aurora o Perla 2, y permite ajustar brillo y saturación. Prisma crea una banda de luz con el desenfoque y la dirección del arcoíris; Ruido VHS combina ruido, saturación, brillo y contraste para imitar una cinta antigua. Probar cada efecto en una capa duplicada facilita la comparación; marca como favoritos los ajustes que quieras reutilizar.",
-  "customAutomationExecutionFailed": "No se pudo completar la automatización. Revisa sus ajustes y la capa de destino."
+  "customAutomationExecutionFailed": "No se pudo completar la automatización. Revisa sus ajustes y la capa de destino.",
+  "brushLateralRepeat": "Repetición lateral",
+  "brushLateralRepeatCount": "Cantidad de repeticiones",
+  "brushLateralRepeatSpacing": "Espaciado lateral",
+  "brushOutline": "Contorno",
+  "brushOutlineWidth": "Ancho del contorno",
+  "brushOutlineColor": "Color del contorno",
+  "brushOutlineColorPicker": "Selector de color",
+  "brushOutlineEyedropper": "Cuentagotas",
+  "brushFold": "Pliegue",
+  "brushFoldTriggerAngle": "Ángulo de activación",
+  "brushYBranchAngle": "Ángulo de rama Y",
+  "brushYBranchLength": "Longitud de rama Y",
+  "brushYBranchWidth": "Ancho de rama Y",
+  "brushYBranchEndTaper": "Atenuación final de rama Y"
 }

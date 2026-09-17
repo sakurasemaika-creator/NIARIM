@@ -13,6 +13,8 @@ import '../../../widgets/pixel_color_mode_selector.dart';
 import '../../../widgets/stepped_slider.dart';
 import 'creative_folder_sheets.dart';
 import 'panel_close_bar.dart';
+import 'color_picker_panel.dart';
+import 'brush_extension_settings.dart';
 import '../../../config/font_fallback.dart';
 import '../../../utils/reorder_index.dart';
 import 'asset_search_bar.dart';
@@ -21,7 +23,12 @@ import '../../../widgets/asset_tag_label.dart';
 
 class BrushPanel extends StatefulWidget {
   final VoidCallback onClose;
-  const BrushPanel({super.key, required this.onClose});
+  final Future<int?> Function()? onEyedropOutlineColor;
+  const BrushPanel({
+    super.key,
+    required this.onClose,
+    this.onEyedropOutlineColor,
+  });
 
   @override
   State<BrushPanel> createState() => _BrushPanelState();
@@ -472,7 +479,10 @@ class _BrushPanelState extends State<BrushPanel> {
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
-      builder: (ctx) => _BrushSettingsSheet(brush: brush),
+      builder: (ctx) => _BrushSettingsSheet(
+        brush: brush,
+        onEyedropOutlineColor: widget.onEyedropOutlineColor,
+      ),
     );
   }
 
@@ -552,13 +562,51 @@ class _BrushPanelState extends State<BrushPanel> {
 
 class _BrushSettingsSheet extends StatefulWidget {
   final Brush brush;
-  const _BrushSettingsSheet({required this.brush});
+  final Future<int?> Function()? onEyedropOutlineColor;
+  const _BrushSettingsSheet({required this.brush, this.onEyedropOutlineColor});
 
   @override
   State<_BrushSettingsSheet> createState() => _BrushSettingsSheetState();
 }
 
 class _BrushSettingsSheetState extends State<_BrushSettingsSheet> {
+  Future<void> _showOutlineColorPicker() async {
+    await showDialog<void>(
+      context: context,
+      builder: (dialogContext) => Dialog(
+        insetPadding: const EdgeInsets.all(16),
+        child: ColorPickerPanel(
+          currentColor: Color(_brush.outlineColor),
+          onColorChanged: (color) {
+            if (!mounted) return;
+            setState(
+              () => _brush = _brush.copyWith(outlineColor: color.toARGB32()),
+            );
+          },
+          onClose: () => Navigator.of(dialogContext).pop(),
+          onEyedropperTap: widget.onEyedropOutlineColor == null
+              ? null
+              : () async {
+                  Navigator.of(dialogContext).pop();
+                  final sampled = await widget.onEyedropOutlineColor!();
+                  if (!mounted || sampled == null) return;
+                  setState(
+                    () => _brush = _brush.copyWith(outlineColor: sampled),
+                  );
+                },
+        ),
+      ),
+    );
+  }
+
+  Future<void> _eyedropOutlineColor() async {
+    final callback = widget.onEyedropOutlineColor;
+    if (callback == null) return;
+    final sampled = await callback();
+    if (!mounted || sampled == null) return;
+    setState(() => _brush = _brush.copyWith(outlineColor: sampled));
+  }
+
   late Brush _brush;
 
   @override
@@ -794,6 +842,17 @@ class _BrushSettingsSheetState extends State<_BrushSettingsSheet> {
               ),
               _pressureMixingOffTile(l10n),
             ],
+          ),
+          const SizedBox(height: 8),
+          const Divider(),
+          BrushExtensionSettings(
+            brush: _brush,
+            labels: BrushExtensionLabels.fromLocalizations(l10n),
+            onChanged: (value) => setState(() => _brush = value),
+            onPickOutlineColor: _showOutlineColorPicker,
+            onEyedropOutlineColor: widget.onEyedropOutlineColor == null
+                ? null
+                : _eyedropOutlineColor,
           ),
           const SizedBox(height: 16),
           FilledButton(

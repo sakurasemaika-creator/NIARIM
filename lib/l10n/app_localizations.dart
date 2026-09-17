@@ -11464,6 +11464,90 @@ abstract class AppLocalizations {
   /// In ja, this message translates to:
   /// **'自動操作を完了できませんでした。設定と対象レイヤーを確認してください。'**
   String get customAutomationExecutionFailed;
+
+  /// No description provided for @brushLateralRepeat.
+  ///
+  /// In ja, this message translates to:
+  /// **'横方向反復'**
+  String get brushLateralRepeat;
+
+  /// No description provided for @brushLateralRepeatCount.
+  ///
+  /// In ja, this message translates to:
+  /// **'横方向反復個数'**
+  String get brushLateralRepeatCount;
+
+  /// No description provided for @brushLateralRepeatSpacing.
+  ///
+  /// In ja, this message translates to:
+  /// **'横方向間隔'**
+  String get brushLateralRepeatSpacing;
+
+  /// No description provided for @brushOutline.
+  ///
+  /// In ja, this message translates to:
+  /// **'縁取り'**
+  String get brushOutline;
+
+  /// No description provided for @brushOutlineWidth.
+  ///
+  /// In ja, this message translates to:
+  /// **'縁取り幅'**
+  String get brushOutlineWidth;
+
+  /// No description provided for @brushOutlineColor.
+  ///
+  /// In ja, this message translates to:
+  /// **'縁取り色'**
+  String get brushOutlineColor;
+
+  /// No description provided for @brushOutlineColorPicker.
+  ///
+  /// In ja, this message translates to:
+  /// **'カラーピッカー'**
+  String get brushOutlineColorPicker;
+
+  /// No description provided for @brushOutlineEyedropper.
+  ///
+  /// In ja, this message translates to:
+  /// **'スポイト'**
+  String get brushOutlineEyedropper;
+
+  /// No description provided for @brushFold.
+  ///
+  /// In ja, this message translates to:
+  /// **'折り返し'**
+  String get brushFold;
+
+  /// No description provided for @brushFoldTriggerAngle.
+  ///
+  /// In ja, this message translates to:
+  /// **'発生角度'**
+  String get brushFoldTriggerAngle;
+
+  /// No description provided for @brushYBranchAngle.
+  ///
+  /// In ja, this message translates to:
+  /// **'Y字枝分かれ角度'**
+  String get brushYBranchAngle;
+
+  /// No description provided for @brushYBranchLength.
+  ///
+  /// In ja, this message translates to:
+  /// **'Y字長さ'**
+  String get brushYBranchLength;
+
+  /// No description provided for @brushYBranchWidth.
+  ///
+  /// In ja, this message translates to:
+  /// **'Y字太さ'**
+  String get brushYBranchWidth;
+
+  /// No description provided for @brushYBranchEndTaper.
+  ///
+  /// In ja, this message translates to:
+  /// **'Y字終点入り抜き'**
+  String get brushYBranchEndTaper;
 }
 
 class _AppLocalizationsDelegate

@@ -2704,5 +2704,19 @@
   "tipsOfficialAutomationPresetsDesc": "공식 프리셋은 「線画作成（デジタル）」(자동 선화 → 잉크 고임), 「線画抽出（アナログ）」(색조 보정 → 이진화 → 밝기로 투명도 변환), 「線画色トレス」(표시 레이어 병합 → 블러·복제·병합 → 색 트레이스 보정), 「オーロラホログラム」(한 단계 질감 필터)입니다. 다시 기록하면 지원되는 작업이 추가됩니다. 확인 화면에서 단계 순서를 바꾸거나 삭제할 수 있습니다. 원래 설정으로 쉽게 돌아가려면 편집 전에 내보내 두세요.",
   "tipsTexturePrismVhsTitle": "질감·프리즘·VHS는 복제 레이어에서 시험하기",
   "tipsTexturePrismVhsDesc": "질감 변경 필터는 오로라, 비눗방울, 사이버 네온, 파스텔 드림, 선셋 골드, 실버 포일, 오로라 홀로그램, 펄 2를 바탕으로 밝기와 채도를 조정합니다. 프리즘은 블러와 무지개 방향으로 빛 띠를 만들고, VHS 노이즈는 노이즈·채도·밝기·대비를 조합해 오래된 테이프 느낌을 냅니다. 복제 레이어에서 하나씩 시험하면 비교하기 쉽고 마음에 든 설정을 즐겨찾기에 넣으면 빠르게 재사용할 수 있습니다.",
-  "customAutomationExecutionFailed": "자동 작업을 완료하지 못했습니다. 설정과 대상 레이어를 확인하세요."
+  "customAutomationExecutionFailed": "자동 작업을 완료하지 못했습니다. 설정과 대상 레이어를 확인하세요.",
+  "brushLateralRepeat": "가로 반복",
+  "brushLateralRepeatCount": "반복 개수",
+  "brushLateralRepeatSpacing": "가로 간격",
+  "brushOutline": "외곽선",
+  "brushOutlineWidth": "외곽선 두께",
+  "brushOutlineColor": "외곽선 색상",
+  "brushOutlineColorPicker": "색상 선택기",
+  "brushOutlineEyedropper": "스포이드",
+  "brushFold": "접힘",
+  "brushFoldTriggerAngle": "발생 각도",
+  "brushYBranchAngle": "Y자 가지 각도",
+  "brushYBranchLength": "Y자 길이",
+  "brushYBranchWidth": "Y자 두께",
+  "brushYBranchEndTaper": "Y자 끝 테이퍼"
 }

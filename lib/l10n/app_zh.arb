@@ -2704,5 +2704,19 @@
   "tipsOfficialAutomationPresetsDesc": "官方预设包括「線画作成（デジタル）」（自动线稿→积墨）、「線画抽出（アナログ）」（色彩调整→二值化→亮度转透明）、「線画色トレス」（合并可见图层→模糊、复制与合并→色彩描线调整）以及「オーロラホログラム」（一步完成质感滤镜）。重新录制会追加支持录制的操作。在确认画面中可以调整步骤顺序或删除步骤。若希望轻松恢复原始设置，可在编辑前先导出一份。",
   "tipsTexturePrismVhsTitle": "在复制图层上尝试质感、棱镜和VHS",
   "tipsTexturePrismVhsDesc": "质感变换滤镜可从极光、肥皂泡、赛博霓虹、粉彩梦境、日落金、银箔、极光全息或珍珠2开始，再调整亮度和饱和度。棱镜用模糊量和虹彩方向制作光带；VHS噪点将噪点、饱和度、亮度和对比度结合成旧磁带效果。在复制图层上逐个尝试便于比较；将满意的设置加入收藏可更快复用。",
-  "customAutomationExecutionFailed": "无法完成自动操作。请检查设置和目标图层。"
+  "customAutomationExecutionFailed": "无法完成自动操作。请检查设置和目标图层。",
+  "brushLateralRepeat": "横向重复",
+  "brushLateralRepeatCount": "重复数量",
+  "brushLateralRepeatSpacing": "横向间距",
+  "brushOutline": "描边",
+  "brushOutlineWidth": "描边宽度",
+  "brushOutlineColor": "描边颜色",
+  "brushOutlineColorPicker": "颜色选择器",
+  "brushOutlineEyedropper": "吸管",
+  "brushFold": "折返",
+  "brushFoldTriggerAngle": "触发角度",
+  "brushYBranchAngle": "Y形分支角度",
+  "brushYBranchLength": "Y形分支长度",
+  "brushYBranchWidth": "Y形分支宽度",
+  "brushYBranchEndTaper": "Y形分支末端渐细"
 }

@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import '../../../l10n/app_localizations.dart';
+
 import '../../../models/brush.dart';
 
 class BrushExtensionLabels {
@@ -35,21 +37,39 @@ class BrushExtensionLabels {
     required this.yBranchEndTaper,
   });
 
+  factory BrushExtensionLabels.fromLocalizations(AppLocalizations l) =>
+      BrushExtensionLabels(
+        lateralRepeat: l.brushLateralRepeat,
+        lateralRepeatCount: l.brushLateralRepeatCount,
+        lateralRepeatSpacing: l.brushLateralRepeatSpacing,
+        outline: l.brushOutline,
+        outlineWidth: l.brushOutlineWidth,
+        outlineColor: l.brushOutlineColor,
+        colorPicker: l.brushOutlineColorPicker,
+        eyedropper: l.brushOutlineEyedropper,
+        fold: l.brushFold,
+        foldTriggerAngle: l.brushFoldTriggerAngle,
+        yBranchAngle: l.brushYBranchAngle,
+        yBranchLength: l.brushYBranchLength,
+        yBranchWidth: l.brushYBranchWidth,
+        yBranchEndTaper: l.brushYBranchEndTaper,
+      );
+
   const BrushExtensionLabels.japanese()
-      : lateralRepeat = '横方向反復',
-        lateralRepeatCount = '横方向反復個数',
-        lateralRepeatSpacing = '横方向間隔',
-        outline = '縁取り',
-        outlineWidth = '縁取り幅',
-        outlineColor = '縁取り色',
-        colorPicker = 'カラーピッカー',
-        eyedropper = 'スポイト',
-        fold = '折り返し',
-        foldTriggerAngle = '発生角度',
-        yBranchAngle = 'Y字枝分かれ角度',
-        yBranchLength = 'Y字長さ',
-        yBranchWidth = 'Y字太さ',
-        yBranchEndTaper = 'Y字終点入り抜き';
+    : lateralRepeat = '横方向反復',
+      lateralRepeatCount = '横方向反復個数',
+      lateralRepeatSpacing = '横方向間隔',
+      outline = '縁取り',
+      outlineWidth = '縁取り幅',
+      outlineColor = '縁取り色',
+      colorPicker = 'カラーピッカー',
+      eyedropper = 'スポイト',
+      fold = '折り返し',
+      foldTriggerAngle = '発生角度',
+      yBranchAngle = 'Y字枝分かれ角度',
+      yBranchLength = 'Y字長さ',
+      yBranchWidth = 'Y字太さ',
+      yBranchEndTaper = 'Y字終点入り抜き';
 }
 
 class BrushExtensionSettings extends StatefulWidget {
@@ -105,11 +125,21 @@ class _BrushExtensionSettingsState extends State<BrushExtensionSettings> {
           onChanged: (v) => _set(_brush.copyWith(lateralRepeatEnabled: v)),
         ),
         if (_brush.lateralRepeatEnabled) ...[
-          _integerSlider(l.lateralRepeatCount, _brush.lateralRepeatCount, 1, 10,
-              (v) => _set(_brush.copyWith(lateralRepeatCount: v))),
-          _slider(l.lateralRepeatSpacing, _brush.lateralRepeatSpacing, 0, 4,
-              (v) => _set(_brush.copyWith(lateralRepeatSpacing: v)),
-              suffix: '×'),
+          _integerSlider(
+            l.lateralRepeatCount,
+            _brush.lateralRepeatCount,
+            1,
+            10,
+            (v) => _set(_brush.copyWith(lateralRepeatCount: v)),
+          ),
+          _slider(
+            l.lateralRepeatSpacing,
+            _brush.lateralRepeatSpacing,
+            0,
+            4,
+            (v) => _set(_brush.copyWith(lateralRepeatSpacing: v)),
+            suffix: '×',
+          ),
         ],
         const Divider(),
         SwitchListTile(
@@ -119,8 +149,13 @@ class _BrushExtensionSettingsState extends State<BrushExtensionSettings> {
           onChanged: (v) => _set(_brush.copyWith(outlineEnabled: v)),
         ),
         if (_brush.outlineEnabled) ...[
-          _slider(l.outlineWidth, _brush.outlineWidth, 0.25, 8,
-              (v) => _set(_brush.copyWith(outlineWidth: v))),
+          _slider(
+            l.outlineWidth,
+            _brush.outlineWidth,
+            0.25,
+            8,
+            (v) => _set(_brush.copyWith(outlineWidth: v)),
+          ),
           ListTile(
             dense: true,
             title: Text(l.outlineColor),
@@ -158,42 +193,100 @@ class _BrushExtensionSettingsState extends State<BrushExtensionSettings> {
             onChanged: (v) => _set(_brush.copyWith(foldEnabled: v)),
           ),
           if (_brush.foldEnabled) ...[
-            _slider(l.foldTriggerAngle, _brush.foldTriggerAngle, 30, 170,
-                (v) => _set(_brush.copyWith(foldTriggerAngle: v)), suffix: '°'),
-            _slider(l.yBranchAngle, _brush.yBranchAngle, 10, 120,
-                (v) => _set(_brush.copyWith(yBranchAngle: v)), suffix: '°'),
-            _ratioSlider(l.yBranchLength, _brush.yBranchLengthRatio,
-                (v) => _set(_brush.copyWith(yBranchLengthRatio: v))),
-            _ratioSlider(l.yBranchWidth, _brush.yBranchWidthRatio,
-                (v) => _set(_brush.copyWith(yBranchWidthRatio: v)), max: 0.5),
-            _ratioSlider(l.yBranchEndTaper, _brush.yBranchEndTaperRatio,
-                (v) => _set(_brush.copyWith(yBranchEndTaperRatio: v))),
+            _slider(
+              l.foldTriggerAngle,
+              _brush.foldTriggerAngle,
+              30,
+              170,
+              (v) => _set(_brush.copyWith(foldTriggerAngle: v)),
+              suffix: '°',
+            ),
+            _slider(
+              l.yBranchAngle,
+              _brush.yBranchAngle,
+              10,
+              120,
+              (v) => _set(_brush.copyWith(yBranchAngle: v)),
+              suffix: '°',
+            ),
+            _ratioSlider(
+              l.yBranchLength,
+              _brush.yBranchLengthRatio,
+              (v) => _set(_brush.copyWith(yBranchLengthRatio: v)),
+            ),
+            _ratioSlider(
+              l.yBranchWidth,
+              _brush.yBranchWidthRatio,
+              (v) => _set(_brush.copyWith(yBranchWidthRatio: v)),
+              max: 0.5,
+            ),
+            _ratioSlider(
+              l.yBranchEndTaper,
+              _brush.yBranchEndTaperRatio,
+              (v) => _set(_brush.copyWith(yBranchEndTaperRatio: v)),
+            ),
           ],
         ],
       ],
     );
   }
 
-  Widget _integerSlider(String label, int value, int min, int max, ValueChanged<int> changed) =>
-      _slider(label, value.toDouble(), min.toDouble(), max.toDouble(),
-          (v) => changed(v.round()), divisions: max - min, suffix: '');
+  Widget _integerSlider(
+    String label,
+    int value,
+    int min,
+    int max,
+    ValueChanged<int> changed,
+  ) => _slider(
+    label,
+    value.toDouble(),
+    min.toDouble(),
+    max.toDouble(),
+    (v) => changed(v.round()),
+    divisions: max - min,
+    suffix: '',
+  );
 
-  Widget _ratioSlider(String label, double value, ValueChanged<double> changed,
-          {double max = 1}) =>
-      _slider(label, value, 0, max, changed, divisions: 100,
-          displayValue: '${(value * 100).round()}%');
+  Widget _ratioSlider(
+    String label,
+    double value,
+    ValueChanged<double> changed, {
+    double max = 1,
+  }) => _slider(
+    label,
+    value,
+    0,
+    max,
+    changed,
+    divisions: 100,
+    displayValue: '${(value * 100).round()}%',
+  );
 
-  Widget _slider(String label, double value, double min, double max,
-      ValueChanged<double> changed,
-      {int? divisions, String? suffix, String? displayValue}) {
+  Widget _slider(
+    String label,
+    double value,
+    double min,
+    double max,
+    ValueChanged<double> changed, {
+    int? divisions,
+    String? suffix,
+    String? displayValue,
+  }) {
     final safe = value.clamp(min, max).toDouble();
-    final shown = displayValue ?? '${safe.toStringAsFixed(safe == safe.roundToDouble() ? 0 : 2)}${suffix ?? ''}';
+    final shown =
+        displayValue ??
+        '${safe.toStringAsFixed(safe == safe.roundToDouble() ? 0 : 2)}${suffix ?? ''}';
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 2),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Row(children: [Expanded(child: Text(label)), Text(shown)]),
+          Row(
+            children: [
+              Expanded(child: Text(label)),
+              Text(shown),
+            ],
+          ),
           Slider(
             value: safe,
             min: min,

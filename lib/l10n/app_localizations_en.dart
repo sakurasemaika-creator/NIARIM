@@ -6450,4 +6450,46 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get customAutomationExecutionFailed =>
       'Automation could not finish. Check its settings and target layer.';
+
+  @override
+  String get brushLateralRepeat => 'Lateral repeat';
+
+  @override
+  String get brushLateralRepeatCount => 'Repeat count';
+
+  @override
+  String get brushLateralRepeatSpacing => 'Lateral spacing';
+
+  @override
+  String get brushOutline => 'Outline';
+
+  @override
+  String get brushOutlineWidth => 'Outline width';
+
+  @override
+  String get brushOutlineColor => 'Outline color';
+
+  @override
+  String get brushOutlineColorPicker => 'Color picker';
+
+  @override
+  String get brushOutlineEyedropper => 'Eyedropper';
+
+  @override
+  String get brushFold => 'Fold';
+
+  @override
+  String get brushFoldTriggerAngle => 'Trigger angle';
+
+  @override
+  String get brushYBranchAngle => 'Y-branch angle';
+
+  @override
+  String get brushYBranchLength => 'Y-branch length';
+
+  @override
+  String get brushYBranchWidth => 'Y-branch width';
+
+  @override
+  String get brushYBranchEndTaper => 'Y-branch end taper';
 }

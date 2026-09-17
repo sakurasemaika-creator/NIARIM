@@ -6235,4 +6235,46 @@ class AppLocalizationsJa extends AppLocalizations {
   @override
   String get customAutomationExecutionFailed =>
       '自動操作を完了できませんでした。設定と対象レイヤーを確認してください。';
+
+  @override
+  String get brushLateralRepeat => '横方向反復';
+
+  @override
+  String get brushLateralRepeatCount => '横方向反復個数';
+
+  @override
+  String get brushLateralRepeatSpacing => '横方向間隔';
+
+  @override
+  String get brushOutline => '縁取り';
+
+  @override
+  String get brushOutlineWidth => '縁取り幅';
+
+  @override
+  String get brushOutlineColor => '縁取り色';
+
+  @override
+  String get brushOutlineColorPicker => 'カラーピッカー';
+
+  @override
+  String get brushOutlineEyedropper => 'スポイト';
+
+  @override
+  String get brushFold => '折り返し';
+
+  @override
+  String get brushFoldTriggerAngle => '発生角度';
+
+  @override
+  String get brushYBranchAngle => 'Y字枝分かれ角度';
+
+  @override
+  String get brushYBranchLength => 'Y字長さ';
+
+  @override
+  String get brushYBranchWidth => 'Y字太さ';
+
+  @override
+  String get brushYBranchEndTaper => 'Y字終点入り抜き';
 }

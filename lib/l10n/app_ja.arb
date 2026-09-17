@@ -3009,5 +3009,19 @@
   "tipsOfficialAutomationPresetsDesc": "「線画作成（デジタル）」は自動線画→墨溜まり、「線画抽出（アナログ）」は色調補正→二値化→明度で透過、「線画色トレス」は表示レイヤーの統合→ぼかしと複製・結合→色トレス補正、「オーロラホログラム」は質感変更を一手順で実行する公式プリセットです。再記録では記録に対応した操作を追加できます。確認画面では手順の並べ替え・削除ができます。元の設定へ戻せるよう、編集前に書き出しておくと安心です。",
   "tipsTexturePrismVhsTitle": "質感・プリズム・VHSは複製レイヤーで試す",
   "tipsTexturePrismVhsDesc": "質感変更フィルターはオーロラ・パール1・ヴェイパーウェイヴ・パステルドリーム・サンセットゴールド・シルバーホイル・オーロラホログラム・パール2から土台を選び、明るさと彩度で調整できます。プリズムはぼかし量と虹の向きで光の帯を作り、VHSノイズはノイズ・彩度・明るさ・コントラストをまとめて古いテープ風にします。複製したレイヤーで一つずつ試すと比較しやすく、気に入った設定をお気に入りにすると再利用も速くなります。",
-  "customAutomationExecutionFailed": "自動操作を完了できませんでした。設定と対象レイヤーを確認してください。"
+  "customAutomationExecutionFailed": "自動操作を完了できませんでした。設定と対象レイヤーを確認してください。",
+  "brushLateralRepeat": "横方向反復",
+  "brushLateralRepeatCount": "横方向反復個数",
+  "brushLateralRepeatSpacing": "横方向間隔",
+  "brushOutline": "縁取り",
+  "brushOutlineWidth": "縁取り幅",
+  "brushOutlineColor": "縁取り色",
+  "brushOutlineColorPicker": "カラーピッカー",
+  "brushOutlineEyedropper": "スポイト",
+  "brushFold": "折り返し",
+  "brushFoldTriggerAngle": "発生角度",
+  "brushYBranchAngle": "Y字枝分かれ角度",
+  "brushYBranchLength": "Y字長さ",
+  "brushYBranchWidth": "Y字太さ",
+  "brushYBranchEndTaper": "Y字終点入り抜き"
 }

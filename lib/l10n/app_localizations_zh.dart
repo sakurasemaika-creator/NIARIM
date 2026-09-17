@@ -6193,6 +6193,48 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get customAutomationExecutionFailed => '无法完成自动操作。请检查设置和目标图层。';
+
+  @override
+  String get brushLateralRepeat => '横向重复';
+
+  @override
+  String get brushLateralRepeatCount => '重复数量';
+
+  @override
+  String get brushLateralRepeatSpacing => '横向间距';
+
+  @override
+  String get brushOutline => '描边';
+
+  @override
+  String get brushOutlineWidth => '描边宽度';
+
+  @override
+  String get brushOutlineColor => '描边颜色';
+
+  @override
+  String get brushOutlineColorPicker => '颜色选择器';
+
+  @override
+  String get brushOutlineEyedropper => '吸管';
+
+  @override
+  String get brushFold => '折返';
+
+  @override
+  String get brushFoldTriggerAngle => '触发角度';
+
+  @override
+  String get brushYBranchAngle => 'Y形分支角度';
+
+  @override
+  String get brushYBranchLength => 'Y形分支长度';
+
+  @override
+  String get brushYBranchWidth => 'Y形分支宽度';
+
+  @override
+  String get brushYBranchEndTaper => 'Y形分支末端渐细';
 }
 
 /// The translations for Chinese, using the Han script (`zh_Hant`).
@@ -12383,4 +12425,46 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get customAutomationExecutionFailed => '無法完成自動操作。請檢查設定與目標圖層。';
+
+  @override
+  String get brushLateralRepeat => '横向重复';
+
+  @override
+  String get brushLateralRepeatCount => '重复数量';
+
+  @override
+  String get brushLateralRepeatSpacing => '横向间距';
+
+  @override
+  String get brushOutline => '描边';
+
+  @override
+  String get brushOutlineWidth => '描边宽度';
+
+  @override
+  String get brushOutlineColor => '描边颜色';
+
+  @override
+  String get brushOutlineColorPicker => '颜色选择器';
+
+  @override
+  String get brushOutlineEyedropper => '吸管';
+
+  @override
+  String get brushFold => '折返';
+
+  @override
+  String get brushFoldTriggerAngle => '触发角度';
+
+  @override
+  String get brushYBranchAngle => 'Y形分支角度';
+
+  @override
+  String get brushYBranchLength => 'Y形分支长度';
+
+  @override
+  String get brushYBranchWidth => 'Y形分支宽度';
+
+  @override
+  String get brushYBranchEndTaper => 'Y形分支末端渐细';
 }

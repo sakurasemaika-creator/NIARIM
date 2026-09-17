@@ -2704,5 +2704,19 @@
   "tipsOfficialAutomationPresetsDesc": "Les préréglages officiels sont 「線画作成（デジタル）」 (trait automatique → accumulation d’encre), 「線画抽出（アナログ）」 (réglage des couleurs → seuil → luminosité vers alpha), 「線画色トレス」 (fusion des calques visibles → flou, duplication et fusion → réglage du calque de couleur) et 「オーロラホログラム」 (filtre de texture en une étape). Le réenregistrement ajoute des actions prises en charge. L’écran de révision permet de réordonner ou de supprimer des étapes. Exportez-le avant modification si vous souhaitez pouvoir retrouver facilement les réglages d’origine.",
   "tipsTexturePrismVhsTitle": "Essayez Texture, Prisme et VHS sur des calques dupliqués",
   "tipsTexturePrismVhsDesc": "Filtre de texture part d’Aurore, Bulle de savon, Néon cyber, Rêve pastel, Or du couchant, Feuille argentée, Hologramme aurore ou Perle 2, puis permet d’ajuster luminosité et saturation. Prisme crée une bande lumineuse avec le flou et la direction de l’arc-en-ciel ; Bruit VHS combine bruit, saturation, luminosité et contraste pour évoquer une vieille cassette. Tester chaque effet sur un calque dupliqué facilite la comparaison ; ajoutez vos réglages favoris aux favoris pour les réutiliser rapidement.",
-  "customAutomationExecutionFailed": "L’automatisation n’a pas pu se terminer. Vérifiez ses réglages et le calque cible."
+  "customAutomationExecutionFailed": "L’automatisation n’a pas pu se terminer. Vérifiez ses réglages et le calque cible.",
+  "brushLateralRepeat": "Répétition latérale",
+  "brushLateralRepeatCount": "Nombre de répétitions",
+  "brushLateralRepeatSpacing": "Espacement latéral",
+  "brushOutline": "Contour",
+  "brushOutlineWidth": "Largeur du contour",
+  "brushOutlineColor": "Couleur du contour",
+  "brushOutlineColorPicker": "Sélecteur de couleur",
+  "brushOutlineEyedropper": "Pipette",
+  "brushFold": "Repli",
+  "brushFoldTriggerAngle": "Angle de déclenchement",
+  "brushYBranchAngle": "Angle de branche Y",
+  "brushYBranchLength": "Longueur de branche Y",
+  "brushYBranchWidth": "Largeur de branche Y",
+  "brushYBranchEndTaper": "Effilage final de branche Y"
 }
