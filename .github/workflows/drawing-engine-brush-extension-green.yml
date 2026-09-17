@@ -24,35 +24,10 @@ jobs:
         run: |
           python3 - <<'PY'
           from pathlib import Path
-
           p = Path('lib/engine/drawing_engine.dart')
           s = p.read_text()
           if "import 'brush_render_plan.dart';" not in s:
             s = s.replace("import 'brush_texture_cache.dart';\n", "import 'brush_texture_cache.dart';\nimport 'brush_render_plan.dart';\n")
-
-          old_call = '''    _renderCircleStamp(
-              stampX,
-              stampY,
-              radius,
-              alphaInt,
-              tilt,
-              layerId,
-              brush.pixelMode,
-              resolvedPressure.blur,
-              customTexture,
-              stylusTiltMagnitude: stylusTiltMagnitude,
-              edgeJitter: resolvedPressure.edgeJitterEnabled,
-              edgeJitterStrength: resolvedPressure.edgeJitterStrength,
-              mixingMode: resolvedPressure.mixingMode,
-              mixingRate: resolvedPressure.mixingRate,
-              hexagon: isGlitterHexagon,
-              particleRotation: particleRotation,
-              chainLink: isChainLink,
-              chainAspect: chainAspect,
-              chainThickness: chainThickness,
-              ballChain: isBallChain,
-            );'''.replace('              ', '      ', 1)
-          # Use the exact source block instead of indentation tricks.
           old_call = '''    _renderCircleStamp(
       stampX,
       stampY,
@@ -81,10 +56,8 @@ jobs:
       pathAngle: pathAngle,
       effectiveSize: size,
     );
-    final usesExtensionRaster =
-        brush.lateralRepeatEnabled ||
-        brush.outlineEnabled ||
-        extensionPlan.hollowSquare;
+    final usesExtensionRaster = brush.lateralRepeatEnabled ||
+        brush.outlineEnabled || extensionPlan.hollowSquare;
     final centers = usesExtensionRaster
         ? extensionPlan.centers
         : <ui.Offset>[ui.Offset(stampX, stampY)];
@@ -92,15 +65,8 @@ jobs:
       final outlineRadius = extensionPlan.outlineRadius;
       if (usesExtensionRaster && outlineRadius != null) {
         _renderCircleStamp(
-          center.dx,
-          center.dy,
-          outlineRadius,
-          alphaInt,
-          tilt,
-          layerId,
-          brush.pixelMode,
-          resolvedPressure.blur,
-          customTexture,
+          center.dx, center.dy, outlineRadius, alphaInt, tilt, layerId,
+          brush.pixelMode, resolvedPressure.blur, customTexture,
           stylusTiltMagnitude: stylusTiltMagnitude,
           edgeJitter: resolvedPressure.edgeJitterEnabled,
           edgeJitterStrength: resolvedPressure.edgeJitterStrength,
@@ -119,15 +85,8 @@ jobs:
         );
       }
       _renderCircleStamp(
-        center.dx,
-        center.dy,
-        extensionPlan.fillRadius,
-        alphaInt,
-        tilt,
-        layerId,
-        brush.pixelMode,
-        resolvedPressure.blur,
-        customTexture,
+        center.dx, center.dy, extensionPlan.fillRadius, alphaInt, tilt, layerId,
+        brush.pixelMode, resolvedPressure.blur, customTexture,
         stylusTiltMagnitude: stylusTiltMagnitude,
         edgeJitter: resolvedPressure.edgeJitterEnabled,
         edgeJitterStrength: resolvedPressure.edgeJitterStrength,
@@ -147,7 +106,6 @@ jobs:
           if old_call not in s:
             raise SystemExit('render call marker not found')
           s = s.replace(old_call, new_call, 1)
-
           old_sig = '''    bool ballChain = false,
   }) {
     final r = currentColor.r;
@@ -167,13 +125,9 @@ jobs:
             raise SystemExit('signature marker not found')
           s = s.replace(old_sig, new_sig, 1)
           s = s.replace("final coverageKey = '$layerId:$tx:$ty';", "final coverageKey = '$coverageNamespace:$layerId:$tx:$ty';", 1)
-
           marker = '''            } else if (chainLink) {
               // 中抜き楕円リンク。'''
           hollow = '''            } else if (hollowSquare) {
-              // Hollow-square brush tip: outer square coverage minus a centered
-              // square opening. Keep AA on both boundaries and scale the opening
-              // with the pressure-resolved effective radius.
               final outerDistance = math.max(ux.abs(), uy.abs());
               final innerRadius = radius *
                   hollowSquareInnerRatio.clamp(0.0, 0.95).toDouble();
