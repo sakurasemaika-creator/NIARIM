@@ -1,0 +1,51 @@
+name: Chat Flutter Targeted Verification
+
+on:
+  push:
+    branches: [dev_branch]
+    paths:
+      - '.github/workflows/chat-flutter-verify.yml'
+      - 'lib/models/brush.dart'
+      - 'lib/models/brush_extension_defaults.dart'
+      - 'lib/models/brush_presets_extension.dart'
+      - 'lib/models/ruler.dart'
+      - 'lib/engine/brush_stroke_geometry.dart'
+      - 'lib/engine/brush_render_plan.dart'
+      - 'lib/engine/outlined_stroke_compositor.dart'
+      - 'lib/engine/ruler_engine.dart'
+      - 'test/models/brush_extensions_test.dart'
+      - 'test/models/brush_extension_defaults_test.dart'
+      - 'test/models/brush_extension_presets_test.dart'
+      - 'test/engine/brush_stroke_geometry_test.dart'
+      - 'test/engine/brush_render_plan_test.dart'
+      - 'test/engine/outlined_stroke_compositor_test.dart'
+      - 'test/engine/ruler_snap_toggle_test.dart'
+  workflow_dispatch:
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+      - uses: subosito/flutter-action@1a449444c387b1966244ae4d4f8c696479add0b2 # v2
+        with:
+          channel: stable
+          cache: false
+      - name: Flutter version
+        run: flutter --version
+      - name: Resolve dependencies
+        run: flutter pub get --enforce-lockfile
+      - name: Targeted brush and ruler tests
+        run: |
+          flutter test test/models/brush_extensions_test.dart --reporter expanded
+          flutter test test/models/brush_extension_defaults_test.dart --reporter expanded
+          flutter test test/models/brush_extension_presets_test.dart --reporter expanded
+          flutter test test/engine/brush_stroke_geometry_test.dart --reporter expanded
+          flutter test test/engine/brush_render_plan_test.dart --reporter expanded
+          flutter test test/engine/outlined_stroke_compositor_test.dart --reporter expanded
+          flutter test test/engine/ruler_snap_toggle_test.dart --reporter expanded
+      - name: Targeted analyze
+        run: flutter analyze lib/models/brush.dart lib/models/brush_extension_defaults.dart lib/models/brush_presets_extension.dart lib/models/ruler.dart lib/engine/brush_stroke_geometry.dart lib/engine/brush_render_plan.dart lib/engine/outlined_stroke_compositor.dart lib/engine/ruler_engine.dart test/models/brush_extensions_test.dart test/models/brush_extension_defaults_test.dart test/models/brush_extension_presets_test.dart test/engine/brush_stroke_geometry_test.dart test/engine/brush_render_plan_test.dart test/engine/outlined_stroke_compositor_test.dart test/engine/ruler_snap_toggle_test.dart --no-fatal-infos
