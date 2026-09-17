@@ -5,7 +5,7 @@ on:
     branches: [dev_branch]
     paths:
       - '.github/workflows/chat-flutter-verify.yml'
-      - 'lib/models/filter_def.dart'
+      - '.github/chat-integration-trigger.txt'
   workflow_dispatch:
 
 jobs:
