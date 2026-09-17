@@ -2,10 +2,11 @@ name: Straight Hair Fold Geometry Green
 
 on:
   push:
-    branches: [dev_branch]
+    branches:
+      - dev_branch
     paths:
       - 'lib/engine/brush_stroke_geometry.dart'
-      - 'test/engine/straight_hair_fold_geometry_test.dart'
+      - 'test/engine/straight_hair-fold-geometry_test.dart'
       - '.github/workflows/straight-hair-fold-geometry-green.yml'
   workflow_dispatch:
 
