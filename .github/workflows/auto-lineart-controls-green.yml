@@ -9,6 +9,7 @@ on:
       - 'lib/screens/canvas/widgets/auto_lineart_control_overlay.dart'
       - 'lib/screens/canvas/widgets/filter_panel.dart'
       - 'test/auto_lineart_control_overlay_test.dart'
+      - 'test/auto_lineart_engine_test.dart'
   workflow_dispatch:
 
 jobs:
@@ -25,4 +26,5 @@ jobs:
       - name: Verify control editing on current production HEAD
         run: |
           flutter test test/auto_lineart_control_overlay_test.dart --reporter expanded
-          flutter analyze lib/engine/auto_lineart_engine.dart lib/screens/canvas/widgets/auto_lineart_control_overlay.dart lib/screens/canvas/widgets/filter_panel.dart test/auto_lineart_control_overlay_test.dart --no-fatal-infos --no-fatal-warnings
+          flutter test test/auto_lineart_engine_test.dart --reporter expanded
+          flutter analyze lib/engine/auto_lineart_engine.dart lib/screens/canvas/widgets/auto_lineart_control_overlay.dart lib/screens/canvas/widgets/filter_panel.dart test/auto_lineart_control_overlay_test.dart test/auto_lineart_engine_test.dart --no-fatal-infos --no-fatal-warnings
