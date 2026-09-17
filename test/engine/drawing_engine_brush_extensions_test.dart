@@ -119,8 +119,38 @@ void main() {
     );
     engine.endStroke();
 
-    // The detector anchors its event at the latest sample. For this right turn
-    // the inward stem extends left from (50,70), beyond the 20px base stroke.
     expect(pixel(engine, 35, 70)[3], greaterThan(0));
+  });
+
+  test('fold detection uses explicit screen positions at non-1x display scale', () {
+    final engine = engineFor(
+      brush(outline: true, outlineWidth: 2, fold: true, foldTriggerAngle: 80),
+    );
+
+    // Document travel is only 4px per leg. That is below the detector's
+    // minimum travel and therefore cannot fold if document coordinates are
+    // incorrectly used as screen coordinates. At 5x display scale, however,
+    // the same pointer movement is 20 screen px per leg and must trigger.
+    engine.beginStroke(
+      const StrokePoint(x: 30, y: 50, pressure: 1, tiltX: 0, tiltY: 0),
+      'layer',
+      screenPosition: const Offset(30, 50),
+    );
+    engine.continueStroke(
+      const StrokePoint(x: 34, y: 50, pressure: 1, tiltX: 0, tiltY: 0),
+      'layer',
+      screenPosition: const Offset(50, 50),
+    );
+    engine.continueStroke(
+      const StrokePoint(x: 34, y: 54, pressure: 1, tiltX: 0, tiltY: 0),
+      'layer',
+      screenPosition: const Offset(50, 70),
+    );
+    engine.endStroke();
+
+    // The fold event remains anchored in document space, so the inward branch
+    // reaches left from (34,54) even though detection was performed in screen
+    // space. The ordinary 20px brush does not reach x=18 here.
+    expect(pixel(engine, 18, 54)[3], greaterThan(0));
   });
 }
