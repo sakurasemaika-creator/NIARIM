@@ -1,0 +1,25 @@
+name: Brush Outline Eyedropper Green
+
+on:
+  push:
+    branches: [dev_branch]
+    paths:
+      - '.github/workflows/brush-outline-eyedropper-green.yml'
+      - 'lib/screens/canvas/canvas_screen.dart'
+      - 'lib/screens/canvas/widgets/brush_panel.dart'
+      - 'test/brush_outline_canvas_eyedropper_contract_test.dart'
+  workflow_dispatch:
+
+jobs:
+  green:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+      - uses: subosito/flutter-action@1a449444c387b1966244ae4d4f8c696479add0b2 # v2
+        with:
+          channel: stable
+          cache: false
+      - run: flutter pub get --enforce-lockfile
+      - run: flutter test test/brush_outline_canvas_eyedropper_contract_test.dart --reporter expanded
+      - run: flutter analyze lib/screens/canvas/canvas_screen.dart lib/screens/canvas/widgets/brush_panel.dart test/brush_outline_canvas_eyedropper_contract_test.dart --no-fatal-infos --no-fatal-warnings
