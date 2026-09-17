@@ -13,8 +13,9 @@ class Layer {
   final bool hasClipping;
   final String? parentFolderId;
   final bool needsAutofillUpdate;
-  final String? partId;
-  final TextObject? textObject;
+  final String? partId; // 自動塗り用線画レイヤーのパーツID
+  final TextObject? textObject; // テキストレイヤーのテキストオブジェクト
+
   final LayerRangeMode rangeMode;
   final int? rangeStart;
   final int? rangeEnd;
@@ -122,7 +123,6 @@ class Layer {
 }
 
 enum LayerRangeMode { allFrames, currentScene, sceneRange, frameRange }
-
 const Object _sentinel = Object();
 
 enum LayerType {
@@ -139,17 +139,9 @@ enum LayerType {
 }
 
 bool isRangeLayerType(LayerType type) =>
-    type == LayerType.common ||
-    type == LayerType.timelineImage ||
-    type == LayerType.timelineVideo ||
-    type == LayerType.watermark;
+    type == LayerType.common || type == LayerType.timelineImage || type == LayerType.timelineVideo || type == LayerType.watermark;
 
-({int start, int end})? trimCommonLayerRange({
-  required int start,
-  required int end,
-  required int frameIndex,
-  bool? keepBefore,
-}) {
+({int start, int end})? trimCommonLayerRange({required int start, required int end, required int frameIndex, bool? keepBefore}) {
   if (start >= end) return null;
   if (frameIndex <= start) return (start: start + 1, end: end);
   if (frameIndex >= end) return (start: start, end: end - 1);
@@ -176,12 +168,4 @@ enum LayerBlendMode {
   saturation,
   color,
   luminosity,
-  linearBurn,
-  linearDodge,
-  vividLight,
-  linearLight,
-  pinLight,
-  hardMix,
-  exclusion,
-  divide,
 }
