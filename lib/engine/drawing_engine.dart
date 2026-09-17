@@ -5,6 +5,7 @@ import 'dart:ui' as ui;
 import '../models/brush.dart';
 import '../models/brush_pressure_resolver.dart';
 import 'brush_texture_cache.dart';
+import 'brush_render_plan.dart';
 import 'tile_manager.dart';
 
 final _jitterRng = math.Random();
@@ -391,28 +392,75 @@ class DrawingEngine {
     final customTexture = texturePath != null
         ? getCachedBrushTexture(texturePath)
         : null;
-    _renderCircleStamp(
-      stampX,
-      stampY,
-      radius,
-      alphaInt,
-      tilt,
-      layerId,
-      brush.pixelMode,
-      resolvedPressure.blur,
-      customTexture,
-      stylusTiltMagnitude: stylusTiltMagnitude,
-      edgeJitter: resolvedPressure.edgeJitterEnabled,
-      edgeJitterStrength: resolvedPressure.edgeJitterStrength,
-      mixingMode: resolvedPressure.mixingMode,
-      mixingRate: resolvedPressure.mixingRate,
-      hexagon: isGlitterHexagon,
-      particleRotation: particleRotation,
-      chainLink: isChainLink,
-      chainAspect: chainAspect,
-      chainThickness: chainThickness,
-      ballChain: isBallChain,
+    final extensionPlan = buildBrushStampPlan(
+      brush: brush,
+      center: ui.Offset(stampX, stampY),
+      pathAngle: pathAngle,
+      effectiveSize: size,
     );
+    final usesExtensionRaster =
+        brush.lateralRepeatEnabled ||
+        brush.outlineEnabled ||
+        extensionPlan.hollowSquare;
+    final centers = usesExtensionRaster
+        ? extensionPlan.centers
+        : <ui.Offset>[ui.Offset(stampX, stampY)];
+    for (final center in centers) {
+      final outlineRadius = extensionPlan.outlineRadius;
+      if (usesExtensionRaster && outlineRadius != null) {
+        _renderCircleStamp(
+          center.dx,
+          center.dy,
+          outlineRadius,
+          alphaInt,
+          tilt,
+          layerId,
+          brush.pixelMode,
+          resolvedPressure.blur,
+          customTexture,
+          stylusTiltMagnitude: stylusTiltMagnitude,
+          edgeJitter: resolvedPressure.edgeJitterEnabled,
+          edgeJitterStrength: resolvedPressure.edgeJitterStrength,
+          mixingMode: resolvedPressure.mixingMode,
+          mixingRate: resolvedPressure.mixingRate,
+          hexagon: isGlitterHexagon,
+          particleRotation: particleRotation,
+          chainLink: isChainLink,
+          chainAspect: chainAspect,
+          chainThickness: chainThickness,
+          ballChain: isBallChain,
+          hollowSquare: extensionPlan.hollowSquare,
+          hollowSquareInnerRatio: extensionPlan.hollowSquareInnerRatio,
+          colorOverride: ui.Color(brush.outlineColor),
+          coverageNamespace: 'outline',
+        );
+      }
+      _renderCircleStamp(
+        center.dx,
+        center.dy,
+        extensionPlan.fillRadius,
+        alphaInt,
+        tilt,
+        layerId,
+        brush.pixelMode,
+        resolvedPressure.blur,
+        customTexture,
+        stylusTiltMagnitude: stylusTiltMagnitude,
+        edgeJitter: resolvedPressure.edgeJitterEnabled,
+        edgeJitterStrength: resolvedPressure.edgeJitterStrength,
+        mixingMode: resolvedPressure.mixingMode,
+        mixingRate: resolvedPressure.mixingRate,
+        hexagon: isGlitterHexagon,
+        particleRotation: particleRotation,
+        chainLink: isChainLink,
+        chainAspect: chainAspect,
+        chainThickness: chainThickness,
+        ballChain: isBallChain,
+        hollowSquare: usesExtensionRaster && extensionPlan.hollowSquare,
+        hollowSquareInnerRatio: extensionPlan.hollowSquareInnerRatio,
+        coverageNamespace: usesExtensionRaster ? 'fill' : 'legacy',
+      );
+    }
   }
 
   void _renderCircleStamp(
@@ -436,10 +484,15 @@ class DrawingEngine {
     double chainAspect = 1.0,
     double chainThickness = 0.0,
     bool ballChain = false,
+    bool hollowSquare = false,
+    double hollowSquareInnerRatio = 0.5,
+    ui.Color? colorOverride,
+    String coverageNamespace = 'legacy',
   }) {
-    final r = currentColor.r;
-    final g = currentColor.g;
-    final b = currentColor.b;
+    final paintColor = colorOverride ?? currentColor;
+    final r = paintColor.r;
+    final g = paintColor.g;
+    final b = paintColor.b;
     final ri = (r * 255).round();
     final gi = (g * 255).round();
     final bi = (b * 255).round();
@@ -460,7 +513,7 @@ class DrawingEngine {
         final tile = tileManager.getOrCreateTile(layerId, tx, ty);
         final tileOriginX = tx * TileManager.tileSize;
         final tileOriginY = ty * TileManager.tileSize;
-        final coverageKey = '$layerId:$tx:$ty';
+        final coverageKey = '$coverageNamespace:$layerId:$tx:$ty';
         final coverage = _strokeCoverageByTile.putIfAbsent(
           coverageKey,
           () => Uint8List(TileManager.tileSize * TileManager.tileSize),
@@ -511,6 +564,16 @@ class DrawingEngine {
                 final texIdx = (texY * brushTextureSize + texX) * 4;
                 pixelAlpha = customTexture[texIdx + 3] / 255.0;
               }
+            } else if (hollowSquare) {
+              final outerDistance = math.max(ux.abs(), uy.abs());
+              final innerRadius =
+                  radius * hollowSquareInnerRatio.clamp(0.0, 0.95).toDouble();
+              final outerAa = (radius + 0.5 - outerDistance).clamp(0.0, 1.0);
+              final innerAa = (outerDistance - innerRadius + 0.5).clamp(
+                0.0,
+                1.0,
+              );
+              pixelAlpha = math.min(outerAa, innerAa);
             } else if (chainLink) {
               // 中抜き楕円リンク。接線座標へ揃えたあと、リンク固有の交互角度
               // だけ回す。outer/innerの楕円距離差で肉厚を作るため、拡縮しても

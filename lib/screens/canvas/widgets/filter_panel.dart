@@ -632,6 +632,14 @@ class _FilterPanelState extends State<FilterPanel> {
           20,
           (v) => service.updateFilterParams(current.id, strength: v),
         );
+      case FilterKind.mosaic:
+        return _paramSlider(
+          l10n.filterPixelateBlockSize,
+          current.strength,
+          1,
+          64,
+          (v) => service.updateFilterParams(current.id, strength: v),
+        );
       case FilterKind.pixelate:
         return Column(
           children: [
@@ -1388,6 +1396,7 @@ class _FilterPanelState extends State<FilterPanel> {
       FilterKind.chromaticAberration => l10n.filterNameChromaticAberration,
       FilterKind.lensDistortion => l10n.filterNameLensDistortion,
       FilterKind.pixelate => l10n.filterNamePixelate,
+      FilterKind.mosaic => 'モザイク',
       FilterKind.auroraHologram => l10n.filterNameAuroraHologram,
       FilterKind.backgroundBlend => l10n.filterNameBackgroundBlend,
       FilterKind.inkPool => l10n.filterNameInkPool,
@@ -1448,6 +1457,7 @@ class _FilterPanelState extends State<FilterPanel> {
       FilterKind.chromaticAberration => Icons.color_lens,
       FilterKind.lensDistortion => Icons.remove_red_eye,
       FilterKind.pixelate => Icons.grid_view,
+      FilterKind.mosaic => Icons.grid_on,
       FilterKind.auroraHologram => Icons.auto_awesome_mosaic,
       FilterKind.backgroundBlend => Icons.wb_twilight,
       FilterKind.inkPool => Icons.gesture_rounded,
@@ -1621,6 +1631,13 @@ class _FilterPanelState extends State<FilterPanel> {
           colorMode: filter.pixelColorMode,
           colorLevels: filter.colorLevels,
           paletteColors: filter.pixelExplicitColors,
+        );
+      case FilterKind.mosaic:
+        return _engine.applyMosaic(
+          data,
+          width,
+          height,
+          filter.strength.round().clamp(1, 64),
         );
       case FilterKind.auroraHologram:
         return _engine.applyAuroraHologram(
