@@ -24,25 +24,54 @@ jobs:
       - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803
         with:
           ref: dev_branch
-      - name: Remove stale control coupling call
+      - name: Remove legacy auto lineart preservation
         shell: bash
         run: |
           python3 - <<'PY'
           from pathlib import Path
-          path = Path('lib/screens/canvas/widgets/filter_panel.dart')
-          text = path.read_text()
-          text = text.replace('                                                    moveCoincident: false,\n', '')
-          path.write_text(text)
+          import re
+
+          panel_path = Path('lib/screens/canvas/widgets/filter_panel.dart')
+          panel = panel_path.read_text()
+          panel = re.sub(r'^\s*moveCoincident:\s*false,\s*\n', '', panel, flags=re.M)
+          panel_path.write_text(panel)
+
+          engine_path = Path('lib/engine/auto_lineart_engine.dart')
+          engine = engine_path.read_text()
+          engine, multiscale_count = re.subn(
+              r'    // Multi-scale topology sampling\..*?    final skeleton = skeletons\[1\];\n',
+              '    // Generate a normal centerline from the cleaned rough. Overlap/interference\n'
+              '    // preservation is intentionally left to the editable temporary vector graph.\n'
+              '    final skeleton = _thinZhangSuen(cleaned, localWidth, localHeight);\n',
+              engine,
+              count=1,
+              flags=re.S,
+          )
+          engine, keep_count = re.subn(
+              r'      final persistence = _pathPersistence\(.*?      if \(!keep\) continue;\n',
+              '      if (length < minBranchLength) continue;\n'
+              '      const persistence = 1.0;\n',
+              engine,
+              count=1,
+              flags=re.S,
+          )
+          if multiscale_count != 1 or keep_count != 1:
+              raise SystemExit(
+                  f'Expected one legacy topology block and one persistence block; got '
+                  f'{multiscale_count=} {keep_count=}'
+              )
+          engine_path.write_text(engine)
           PY
-          if grep -R -n "moveCoincident" lib/engine/auto_lineart_engine.dart lib/screens/canvas/widgets/auto_lineart_control_overlay.dart lib/screens/canvas/widgets/filter_panel.dart; then
-            echo "Legacy coincident control coupling remains" >&2
+
+          if grep -R -n -E "moveCoincident|Multi-scale topology sampling|Preserve short paths when both ends|persistence >= 0.67|coincident junction controls together" lib/engine/auto_lineart_engine.dart lib/screens/canvas/widgets/auto_lineart_control_overlay.dart lib/screens/canvas/widgets/filter_panel.dart; then
+            echo "Legacy auto-lineart preservation logic remains" >&2
             exit 1
           fi
-          if ! git diff --quiet -- lib/screens/canvas/widgets/filter_panel.dart; then
+          if ! git diff --quiet -- lib/engine/auto_lineart_engine.dart lib/screens/canvas/widgets/filter_panel.dart; then
             git config user.name github-actions[bot]
             git config user.email 41898282+github-actions[bot]@users.noreply.github.com
-            git add lib/screens/canvas/widgets/filter_panel.dart
-            git commit -m "fix: remove stale auto lineart control coupling call"
+            git add lib/engine/auto_lineart_engine.dart lib/screens/canvas/widgets/filter_panel.dart
+            git commit -m "fix: remove auto lineart interference preservation"
             git push origin HEAD:dev_branch
           fi
       - uses: subosito/flutter-action@1a449444c387b1966244ae4d4f8c696479add0b2
@@ -57,7 +86,7 @@ jobs:
           flutter analyze lib/engine/auto_lineart_engine.dart lib/screens/canvas/widgets/auto_lineart_control_overlay.dart lib/screens/canvas/widgets/filter_panel.dart test/auto_lineart_control_overlay_test.dart test/auto_lineart_engine_test.dart --no-fatal-infos --no-fatal-warnings
       - name: Reject legacy preservation markers
         run: |
-          if grep -R -n -E "Multi-scale topology sampling|Preserve short paths when both ends|persistence >= 0.67|coincident junction controls together" lib/engine/auto_lineart_engine.dart lib/screens/canvas/widgets/auto_lineart_control_overlay.dart lib/screens/canvas/widgets/filter_panel.dart; then
+          if grep -R -n -E "Multi-scale topology sampling|Preserve short paths when both ends|persistence >= 0.67|coincident junction controls together|moveCoincident" lib/engine/auto_lineart_engine.dart lib/screens/canvas/widgets/auto_lineart_control_overlay.dart lib/screens/canvas/widgets/filter_panel.dart; then
             echo "Legacy auto-lineart preservation logic remains" >&2
             exit 1
           fi
