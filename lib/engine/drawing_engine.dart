@@ -7,6 +7,8 @@ import '../models/brush_pressure_resolver.dart';
 import 'brush_texture_cache.dart';
 import 'brush_render_plan.dart';
 import 'brush_stroke_geometry.dart';
+import 'hair_fold_render_resolver.dart';
+import 'wave_hair_fold_geometry.dart';
 import 'tile_manager.dart';
 
 final _jitterRng = math.Random();
@@ -161,32 +163,33 @@ class DrawingEngine {
       ),
     );
     if (event == null) return;
-    final branches = buildFoldY(
-      event,
-      branchAngleDegrees: brush.yBranchAngle,
-      lengthRatio: brush.yBranchLengthRatio,
-      widthRatio: brush.yBranchWidthRatio,
-      taperRatio: brush.yBranchEndTaperRatio,
+    final path = resolveHairFoldRenderPath(
+      event: event,
+      waveEnabled: brush.foldWaveEnabled,
+      curveStartRatio: brush.foldCurveStartRatio,
+      depthRatio: brush.foldDepthRatio,
+      lengthRatio: brush.foldLengthRatio,
+      waveEndRatio: brush.foldWaveEndRatio,
+      waveTriggerAngleDegrees: brush.foldWaveTriggerAngle,
+      taperRatio: brush.foldEndTaperRatio,
+      outlineWidth: brush.outlineWidth,
     );
-    for (final branch in branches) {
-      _renderFoldBranch(branch, layerId, ui.Color(brush.outlineColor));
-    }
+    _renderHairFoldPath(path, layerId, ui.Color(brush.outlineColor));
   }
 
-  void _renderFoldBranch(FoldBranch branch, String layerId, ui.Color color) {
-    final delta = branch.end - branch.start;
-    final length = delta.distance;
-    if (!length.isFinite || length <= 1e-9) return;
-    final steps = math.max(1, length.ceil());
+  void _renderHairFoldPath(
+    List<WaveFoldPathSample> path,
+    String layerId,
+    ui.Color color,
+  ) {
+    if (path.isEmpty) return;
     const identityTilt = (scaleX: 1.0, scaleY: 1.0, angle: 0.0);
-    for (var i = 0; i <= steps; i++) {
-      final t = i / steps;
-      final center = branch.start + delta * t;
-      final width = branch.widthAt(t);
-      if (width <= 0.05) continue;
+    for (final sample in path) {
+      final width = sample.width;
+      if (!width.isFinite || width <= 0.05) continue;
       _renderCircleStamp(
-        center.dx,
-        center.dy,
+        sample.position.dx,
+        sample.position.dy,
         width / 2,
         255,
         identityTilt,
@@ -198,6 +201,32 @@ class DrawingEngine {
         coverageNamespace: 'fold',
       );
     }
+  }
+
+  static List<WaveFoldPathSample> debugResolveHairFoldPath({
+    required FoldEvent event,
+    required bool waveEnabled,
+    required double curveStartRatio,
+    required double depthRatio,
+    required double lengthRatio,
+    required double waveEndRatio,
+    required double waveTriggerAngleDegrees,
+    double taperRatio = .35,
+    double outlineWidth = 1,
+    int sampleCount = 48,
+  }) {
+    return resolveHairFoldRenderPath(
+      event: event,
+      waveEnabled: waveEnabled,
+      curveStartRatio: curveStartRatio,
+      depthRatio: depthRatio,
+      lengthRatio: lengthRatio,
+      waveEndRatio: waveEndRatio,
+      waveTriggerAngleDegrees: waveTriggerAngleDegrees,
+      taperRatio: taperRatio,
+      outlineWidth: outlineWidth,
+      sampleCount: sampleCount,
+    );
   }
 
   StrokePoint _applyPointConstraint(StrokePoint point) {
