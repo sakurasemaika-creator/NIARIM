@@ -15,6 +15,8 @@ void main() {
     bool fold = false,
     double foldTriggerAngle = 90,
     BrushTipShape tip = BrushTipShape.round,
+    List<String> customImagePaths = const [],
+    BrushImageSelectionMode customImageSelectionMode = BrushImageSelectionMode.random,
   }) => Brush(
     id: 'test',
     name: 'test',
@@ -39,6 +41,8 @@ void main() {
     yBranchWidthRatio: 0.12,
     yBranchEndTaperRatio: 0.4,
     tipShape: tip,
+    customImagePaths: customImagePaths,
+    customImageSelectionMode: customImageSelectionMode,
   );
 
   DrawingEngine engineFor(Brush value, {Color color = const Color(0xFFFF0000)}) {
@@ -55,6 +59,30 @@ void main() {
     final index = (y * TileManager.tileSize + x) * 4;
     return tile.sublist(index, index + 4);
   }
+
+  test('drawing engine selects one sequential texture per stroke', () {
+    final engine = engineFor(
+      brush(
+        customImagePaths: const ['a.png', 'b.png'],
+        customImageSelectionMode: BrushImageSelectionMode.sequential,
+      ),
+    );
+    const point = StrokePoint(x: 64, y: 64, pressure: 1, tiltX: 0, tiltY: 0);
+
+    engine.beginStroke(point, 'layer');
+    expect(engine.debugActiveBrushTexturePath, 'a.png');
+    engine.continueStroke(
+      const StrokePoint(x: 84, y: 64, pressure: 1, tiltX: 0, tiltY: 0),
+      'layer',
+    );
+    expect(engine.debugActiveBrushTexturePath, 'a.png');
+    engine.endStroke();
+    expect(engine.debugActiveBrushTexturePath, isNull);
+
+    engine.beginStroke(point, 'layer');
+    expect(engine.debugActiveBrushTexturePath, 'b.png');
+    engine.endStroke();
+  });
 
   test('lateral repeat rasterizes symmetric normal-space columns', () {
     final engine = engineFor(
@@ -127,10 +155,6 @@ void main() {
       brush(outline: true, outlineWidth: 2, fold: true, foldTriggerAngle: 80),
     );
 
-    // Document travel is only 4px per leg. That is below the detector's
-    // minimum travel and therefore cannot fold if document coordinates are
-    // incorrectly used as screen coordinates. At 5x display scale, however,
-    // the same pointer movement is 20 screen px per leg and must trigger.
     engine.beginStroke(
       const StrokePoint(x: 30, y: 50, pressure: 1, tiltX: 0, tiltY: 0),
       'layer',
@@ -148,9 +172,6 @@ void main() {
     );
     engine.endStroke();
 
-    // The fold event remains anchored in document space, so the inward branch
-    // reaches left from (34,54) even though detection was performed in screen
-    // space. The ordinary 20px brush does not reach x=18 here.
     expect(pixel(engine, 18, 54)[3], greaterThan(0));
   });
 }
