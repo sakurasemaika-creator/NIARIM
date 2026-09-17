@@ -1,1 +1,37 @@
-x
+name: Entry Exit Taper Green
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [dev_branch]
+    paths:
+      - 'lib/models/brush.dart'
+      - 'lib/engine/drawing_engine.dart'
+      - 'lib/**/brush*.dart'
+      - 'test/**/brush*.dart'
+      - 'test/**/stroke*.dart'
+      - 'test/**/taper*.dart'
+      - '.github/workflows/entry-exit-taper-red.yml'
+
+jobs:
+  verify-entry-exit-taper:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+      - run: flutter pub get
+      - name: Verify no legacy shared fade structure remains
+        run: |
+          ! grep -R --line-number --exclude-dir=.git --exclude='entry-exit-taper-red.yml' -E 'fadeCustom|distancePx' lib test
+      - name: Run brush stroke and taper tests
+        run: |
+          set -e
+          files=$(find test -type f \( -iname '*brush*test.dart' -o -iname '*stroke*test.dart' -o -iname '*taper*test.dart' \) | sort)
+          if [ -n "$files" ]; then
+            flutter test $files
+          fi
+      - name: Analyze affected production code
+        run: flutter analyze lib/models/brush.dart lib/engine/drawing_engine.dart
