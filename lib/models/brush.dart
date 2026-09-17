@@ -18,6 +18,8 @@ class Brush {
   final bool isFavorite;
   final String? folderId;
   final String? customImagePath;
+  final List<String> customImagePaths;
+  final BrushImageSelectionMode customImageSelectionMode;
   final bool rotation;
   final double density;
   final double scatter;
@@ -65,6 +67,8 @@ class Brush {
     this.isFavorite = false,
     this.folderId,
     this.customImagePath,
+    this.customImagePaths = const [],
+    this.customImageSelectionMode = BrushImageSelectionMode.random,
     this.rotation = false,
     this.density = 1.0,
     this.scatter = 0.0,
@@ -95,6 +99,12 @@ class Brush {
     this.tipShape = BrushTipShape.round,
   });
 
+  List<String> get resolvedCustomImagePaths {
+    if (customImagePaths.isNotEmpty) return List.unmodifiable(customImagePaths);
+    final legacy = customImagePath;
+    return legacy == null || legacy.isEmpty ? const [] : [legacy];
+  }
+
   static int clampLateralRepeatCount(int value) => value.clamp(1, 10).toInt();
   static double clampFoldRatio(double value, double fallback) =>
       value.isFinite ? value.clamp(0.0, 1.0).toDouble() : fallback;
@@ -106,8 +116,9 @@ class Brush {
     bool? stabilization, int? stabilizationStrength, bool? pixelMode,
     BrushPressureOnSettings? pressureOn, BrushPressureOffSettings? pressureOff,
     FadeMode? fadeMode, FadeCustomSettings? fadeCustom, bool? strokeDecay,
-    bool? isFavorite, String? folderId, String? customImagePath, bool? rotation,
-    double? density, double? scatter, double? calligraphyAngle,
+    bool? isFavorite, String? folderId, String? customImagePath,
+    List<String>? customImagePaths, BrushImageSelectionMode? customImageSelectionMode,
+    bool? rotation, double? density, double? scatter, double? calligraphyAngle,
     PixelColorMode? pixelColorMode, int? pixelColorLevels,
     List<int>? pixelExplicitColors, List<String>? tags,
     bool? lateralRepeatEnabled, int? lateralRepeatCount,
@@ -127,9 +138,11 @@ class Brush {
     pressureOff: pressureOff ?? this.pressureOff, fadeMode: fadeMode ?? this.fadeMode,
     fadeCustom: fadeCustom ?? this.fadeCustom, strokeDecay: strokeDecay ?? this.strokeDecay,
     isFavorite: isFavorite ?? this.isFavorite, folderId: folderId ?? this.folderId,
-    customImagePath: customImagePath ?? this.customImagePath, rotation: rotation ?? this.rotation,
-    density: density ?? this.density, scatter: scatter ?? this.scatter,
-    calligraphyAngle: calligraphyAngle ?? this.calligraphyAngle,
+    customImagePath: customImagePath ?? this.customImagePath,
+    customImagePaths: customImagePaths ?? this.customImagePaths,
+    customImageSelectionMode: customImageSelectionMode ?? this.customImageSelectionMode,
+    rotation: rotation ?? this.rotation, density: density ?? this.density,
+    scatter: scatter ?? this.scatter, calligraphyAngle: calligraphyAngle ?? this.calligraphyAngle,
     pixelColorMode: pixelColorMode ?? this.pixelColorMode,
     pixelColorLevels: pixelColorLevels ?? this.pixelColorLevels,
     pixelExplicitColors: pixelExplicitColors ?? this.pixelExplicitColors, tags: tags ?? this.tags,
@@ -160,8 +173,10 @@ class Brush {
     'fadeMode': fadeMode.name,
     'fadeCustom': fadeCustom == null ? null : {'startValue': fadeCustom!.startValue, 'endValue': fadeCustom!.endValue, 'distancePx': fadeCustom!.distancePx},
     'strokeDecay': strokeDecay, 'isFavorite': isFavorite, 'folderId': folderId,
-    'customImagePath': customImagePath, 'rotation': rotation, 'density': density,
-    'scatter': scatter, 'calligraphyAngle': calligraphyAngle, 'pixelColorMode': pixelColorMode.name,
+    'customImagePath': customImagePath, 'customImagePaths': customImagePaths,
+    'customImageSelectionMode': customImageSelectionMode.name,
+    'rotation': rotation, 'density': density, 'scatter': scatter,
+    'calligraphyAngle': calligraphyAngle, 'pixelColorMode': pixelColorMode.name,
     'pixelColorLevels': pixelColorLevels, 'pixelExplicitColors': pixelExplicitColors, 'tags': tags,
     'lateralRepeatEnabled': lateralRepeatEnabled,
     'lateralRepeatCount': clampLateralRepeatCount(lateralRepeatCount),
@@ -194,6 +209,11 @@ class Brush {
       distancePx: ((j['fadeCustom'] as Map<String, dynamic>)['distancePx'] as num).toDouble()),
     strokeDecay: j['strokeDecay'] as bool, isFavorite: j['isFavorite'] as bool? ?? false,
     folderId: j['folderId'] as String?, customImagePath: j['customImagePath'] as String?,
+    customImagePaths: (j['customImagePaths'] as List<dynamic>?)?.whereType<String>().toList() ?? const [],
+    customImageSelectionMode: BrushImageSelectionMode.values.firstWhere(
+      (e) => e.name == j['customImageSelectionMode'],
+      orElse: () => BrushImageSelectionMode.random,
+    ),
     rotation: j['rotation'] as bool? ?? false, density: (j['density'] as num?)?.toDouble() ?? 1,
     scatter: (j['scatter'] as num?)?.toDouble() ?? 0,
     calligraphyAngle: (j['calligraphyAngle'] as num?)?.toDouble(),
@@ -286,7 +306,8 @@ class BrushPressureOffSettings {
 }
 
 enum FadeMode { off, weak, medium, strong, custom }
-enum BrushTipShape { round, hollowSquare, softJaggedFlat }
+enum BrushTipShape { round, hollowSquare }
+enum BrushImageSelectionMode { random, sequential }
 
 class FadeCustomSettings {
   final double startValue; final double endValue; final double distancePx;
