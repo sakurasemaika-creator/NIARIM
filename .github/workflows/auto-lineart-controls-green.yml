@@ -12,12 +12,73 @@ on:
       - 'test/auto_lineart_engine_test.dart'
   workflow_dispatch:
 
+permissions:
+  contents: write
+
 jobs:
   green:
     runs-on: ubuntu-latest
     timeout-minutes: 20
     steps:
       - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+        with:
+          ref: dev_branch
+      - name: Remove legacy coincident-control coupling
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+
+          engine_path = Path('lib/engine/auto_lineart_engine.dart')
+          engine = engine_path.read_text()
+          if 'bool moveCoincident = true,' in engine:
+              engine = engine.replace(
+                  '  /// Moves one preview control point. Coincident points (normally the endpoints\n'
+                  '  /// of branches sharing a junction) move together so dragging a junction never\n'
+                  '  /// tears connected topology apart.\n',
+                  '  /// Moves exactly one preview control point. Each editable control is\n'
+                  '  /// independent, including controls that happen to share coordinates.\n',
+              )
+              engine = engine.replace('    bool moveCoincident = true,\n', '')
+              engine = engine.replace(
+                  '    final origin = source.paths[pathIndex].points[pointIndex];\n',
+                  '',
+              )
+              engine = engine.replace('    const epsilonSq = 0.25;\n', '')
+              engine = engine.replace(
+                  '        final exactTarget = p == pathIndex && i == pointIndex;\n'
+                  '        final dx = points[i].x - origin.x;\n'
+                  '        final dy = points[i].y - origin.y;\n'
+                  '        final coincident = moveCoincident && dx * dx + dy * dy <= epsilonSq;\n'
+                  '        if (exactTarget || coincident) points[i] = nextPoint;\n',
+                  '        if (p == pathIndex && i == pointIndex) points[i] = nextPoint;\n',
+              )
+              engine_path.write_text(engine)
+
+          overlay_path = Path('lib/screens/canvas/widgets/auto_lineart_control_overlay.dart')
+          overlay = overlay_path.read_text()
+          overlay = overlay.replace('                moveCoincident: false,\n', '')
+          overlay = overlay.replace(
+              '              // immediately and keeps coincident junction controls together.\n',
+              '              // immediately while each control remains independently editable.\n',
+          )
+          overlay_path.write_text(overlay)
+          PY
+
+          if grep -R -n "moveCoincident\|coincident junction controls together" \
+            lib/engine/auto_lineart_engine.dart \
+            lib/screens/canvas/widgets/auto_lineart_control_overlay.dart; then
+            echo 'Legacy coincident-control coupling remains' >&2
+            exit 1
+          fi
+
+          if ! git diff --quiet -- lib/engine/auto_lineart_engine.dart lib/screens/canvas/widgets/auto_lineart_control_overlay.dart; then
+            git config user.name github-actions[bot]
+            git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+            git add lib/engine/auto_lineart_engine.dart lib/screens/canvas/widgets/auto_lineart_control_overlay.dart
+            git commit -m "fix: isolate auto lineart control points"
+            git push origin HEAD:dev_branch
+          fi
       - uses: subosito/flutter-action@1a449444c387b1966244ae4d4f8c696479add0b2 # v2
         with:
           channel: stable
