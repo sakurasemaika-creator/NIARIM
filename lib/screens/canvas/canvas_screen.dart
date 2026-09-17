@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:niarim/services/theme_service.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
@@ -107,6 +109,8 @@ class _CanvasScreenState extends State<CanvasScreen> {
   FilterColorEyedropperTarget? _filterColorEyedropperTarget;
   _TextColorEyedropperTarget? _textColorEyedropperTarget;
   ValueChanged<Color>? _pendingTextColorEyedropper;
+  Completer<int?>? _pendingBrushOutlineEyedropper;
+  bool get _brushOutlineEyedropperActive => _pendingBrushOutlineEyedropper != null;
 
   // ─── レイヤー全体の自由変形・メッシュ変形（新機能） ────────────────────
   // 実際の格子点ドラッグ・ワーププレビューはCanvasArea側で完結させ、
@@ -274,7 +278,27 @@ class _CanvasScreenState extends State<CanvasScreen> {
     });
   }
 
+  Future<int?> _startBrushOutlineEyedropper() {
+    final previous = _pendingBrushOutlineEyedropper;
+    if (previous != null && !previous.isCompleted) previous.complete(null);
+    final completer = Completer<int?>();
+    setState(() {
+      _pendingBrushOutlineEyedropper = completer;
+      _showBrushPanel = false;
+    });
+    return completer.future;
+  }
+
   void _handleCanvasEyedropper(Color color) {
+    final pendingBrushOutline = _pendingBrushOutlineEyedropper;
+    if (pendingBrushOutline != null) {
+      setState(() => _pendingBrushOutlineEyedropper = null);
+      if (!pendingBrushOutline.isCompleted) {
+        _pendingBrushOutlineEyedropper?.complete(color.toARGB32());
+        pendingBrushOutline.complete(color.toARGB32());
+      }
+      return;
+    }
     final textTarget = _textColorEyedropperTarget;
     final pendingText = _pendingTextColorEyedropper;
     if (textTarget != null && pendingText != null) {
@@ -1185,7 +1209,8 @@ class _CanvasScreenState extends State<CanvasScreen> {
                                   onEyedropper: _handleCanvasEyedropper,
                                   filterEyedropperActive:
                                       _filterColorEyedropperTarget != null ||
-                                      _textColorEyedropperTarget != null,
+                                      _textColorEyedropperTarget != null ||
+                                      _brushOutlineEyedropperActive,
                                   project: project,
                                   background: _canvasBackground,
                                   currentLayerId: _currentLayerId,
@@ -1239,7 +1264,8 @@ class _CanvasScreenState extends State<CanvasScreen> {
                                       _selectionTransformCommitToken,
                                 ),
                                 if (_filterColorEyedropperTarget != null ||
-                                    _textColorEyedropperTarget != null)
+                                    _textColorEyedropperTarget != null ||
+                                    _brushOutlineEyedropperActive)
                                   Positioned(
                                     top: 12,
                                     left: 12,
@@ -1893,8 +1919,10 @@ class _CanvasScreenState extends State<CanvasScreen> {
     }),
   );
 
-  Widget _brushPanel() =>
-      BrushPanel(onClose: () => setState(() => _showBrushPanel = false));
+  Widget _brushPanel() => BrushPanel(
+    onClose: () => setState(() => _showBrushPanel = false),
+    onEyedropOutlineColor: _startBrushOutlineEyedropper,
+  );
 
   Widget _tonePanel() =>
       TonePanel(onClose: () => setState(() => _showTonePanel = false));
