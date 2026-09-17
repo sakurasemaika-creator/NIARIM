@@ -38,13 +38,10 @@ for imp in ["import 'brush_extension_settings.dart';\n", "import 'color_picker_p
     if imp not in s:
         s = s.replace("import 'panel_close_bar.dart';\n", "import 'panel_close_bar.dart';\n" + imp, 1)
 
-# The canvas owner supplies only sampling. The full color UI is the existing
-# ColorPickerPanel, so outline gets HSV/RGB/alpha/HEX/recent colors/palettes.
 if 'onEyedropOutlineColor' not in s.split('class _BrushPanelState',1)[0]:
     s = s.replace('  final VoidCallback onClose;\n', '  final VoidCallback onClose;\n  final Future<int?> Function()? onEyedropOutlineColor;\n', 1)
     s = s.replace('  const BrushPanel({super.key, required this.onClose});', '  const BrushPanel({\n    super.key,\n    required this.onClose,\n    this.onEyedropOutlineColor,\n  });', 1)
 
-# Pass sampling callback into settings sheet.
 s = s.replace('_BrushSettingsSheet(brush: brush)', '_BrushSettingsSheet(\n        brush: brush,\n        onEyedropOutlineColor: widget.onEyedropOutlineColor,\n      )')
 
 idx = s.find('class _BrushSettingsSheet extends')
@@ -55,7 +52,7 @@ header = tail[:header_end]
 body = tail[header_end:]
 if 'onEyedropOutlineColor' not in header:
     header = header.replace('  final Brush brush;\n', '  final Brush brush;\n  final Future<int?> Function()? onEyedropOutlineColor;\n', 1)
-    header = header.replace('    required this.brush,\n', '    required this.brush,\n    this.onEyedropOutlineColor,\n', 1)
+    header = header.replace('  const _BrushSettingsSheet({required this.brush});', '  const _BrushSettingsSheet({\n    required this.brush,\n    this.onEyedropOutlineColor,\n  });', 1)
 tail = header + body
 s = head + tail
 
@@ -100,18 +97,20 @@ if 'Future<void> _showOutlineColorPicker()' not in tail:
     tail = tail[:state_open] + methods + tail[state_open:]
 
 if 'BrushExtensionSettings(' not in tail:
-    marker = '              const SizedBox(height: 16),\n              Row(\n'
-    section = """              const SizedBox(height: 8),
-              const Divider(),
-              BrushExtensionSettings(
-                brush: _brush,
-                labels: BrushExtensionLabels.fromLocalizations(AppLocalizations.of(context)!),
-                onChanged: (value) => setState(() => _brush = value),
-                onPickOutlineColor: _showOutlineColorPicker,
-                onEyedropOutlineColor: widget.onEyedropOutlineColor == null ? null : _eyedropOutlineColor,
-              ),
+    marker = '          const SizedBox(height: 16),\n          FilledButton(\n'
+    section = """          const SizedBox(height: 8),
+          const Divider(),
+          BrushExtensionSettings(
+            brush: _brush,
+            labels: BrushExtensionLabels.fromLocalizations(l10n),
+            onChanged: (value) => setState(() => _brush = value),
+            onPickOutlineColor: _showOutlineColorPicker,
+            onEyedropOutlineColor: widget.onEyedropOutlineColor == null
+                ? null
+                : _eyedropOutlineColor,
+          ),
 """
-    if marker not in tail: raise SystemExit('action marker missing')
+    if marker not in tail: raise SystemExit('save action marker missing')
     tail = tail.replace(marker, section + marker, 1)
 s = head + tail
 p.write_text(s)
