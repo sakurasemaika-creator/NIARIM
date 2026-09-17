@@ -6,6 +6,13 @@ class Ruler {
   final double rotation;
   final bool isLocked;
   final bool isVisible;
+
+  /// Whether brush input should be constrained by this ruler.
+  ///
+  /// Visibility is intentionally independent: a ruler may stay on canvas while
+  /// snapping is disabled so the user can freely draw and later re-enable the
+  /// same guide without recreating it.
+  final bool snapEnabled;
   final RulerSettings settings;
 
   const Ruler({
@@ -14,6 +21,7 @@ class Ruler {
     this.rotation = 0,
     this.isLocked = false,
     this.isVisible = true,
+    this.snapEnabled = true,
     required this.settings,
   });
 
@@ -23,6 +31,7 @@ class Ruler {
     double? rotation,
     bool? isLocked,
     bool? isVisible,
+    bool? snapEnabled,
     RulerSettings? settings,
   }) {
     return Ruler(
@@ -31,6 +40,7 @@ class Ruler {
       rotation: rotation ?? this.rotation,
       isLocked: isLocked ?? this.isLocked,
       isVisible: isVisible ?? this.isVisible,
+      snapEnabled: snapEnabled ?? this.snapEnabled,
       settings: settings ?? this.settings,
     );
   }
