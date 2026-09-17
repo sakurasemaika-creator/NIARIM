@@ -136,12 +136,9 @@ List<FoldPathSample> buildStraightFoldPath(
   final count = sampleCount.clamp(8, 96).toInt();
   final origin = event.sample.documentPosition;
 
-  // Cubic control points preserve the initial tangent. The first control point
-  // is placed at the requested curve-start distance, so increasing the setting
-  // visibly delays the inward bend. The terminal tangent is biased by the
-  // source signed curvature instead of a user-authored Y angle.
-  final p0 = origin;
-  final p1 = origin + tangent * curveStartDistance;
+  // Cubic control points preserve the initial tangent. Increasing the requested
+  // curve-start distance visibly delays the inward bend. The terminal tangent
+  // is biased by the source signed curvature instead of a user-authored Y angle.
   final curvature = (event.signedTurnRadians.abs() / math.pi).clamp(.15, 1.0).toDouble();
   final remaining = math.max(totalLength - curveStartDistance, totalLength * .1);
   final p3 = origin + tangent * (totalLength * .72) + inward * targetDepth;
