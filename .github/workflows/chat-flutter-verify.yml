@@ -29,6 +29,7 @@ on:
       - 'test/services/brush_service_extension_presets_test.dart'
       - 'test/engine/drawing_engine_brush_extensions_test.dart'
       - 'test/engine/brush_stroke_geometry_test.dart'
+      - 'test/engine/straight_hair_fold_geometry_test.dart'
       - 'test/engine/brush_render_plan_test.dart'
       - 'test/engine/outlined_stroke_compositor_test.dart'
       - 'test/engine/ruler_snap_toggle_test.dart'
@@ -88,6 +89,7 @@ jobs:
           flutter test test/models/mosaic_filter_def_contract_test.dart --reporter expanded
           flutter test test/services/brush_service_extension_presets_test.dart --reporter expanded
           flutter test test/engine/brush_stroke_geometry_test.dart --reporter expanded
+          flutter test test/engine/straight_hair_fold_geometry_test.dart --reporter expanded
           flutter test test/engine/brush_render_plan_test.dart --reporter expanded
           flutter test test/engine/outlined_stroke_compositor_test.dart --reporter expanded
           flutter test test/engine/ruler_snap_toggle_test.dart --reporter expanded
@@ -99,7 +101,7 @@ jobs:
           if [ -f test/engine/noise_filter_distinction_test.dart ]; then flutter test test/engine/noise_filter_distinction_test.dart --reporter expanded; fi
           if [ -f test/engine/analog_filter_distinction_test.dart ]; then flutter test test/engine/analog_filter_distinction_test.dart --reporter expanded; fi
       - name: Targeted analyze
-        run: flutter analyze lib/models/brush.dart lib/models/brush_extension_defaults.dart lib/models/brush_presets_extension.dart lib/models/ruler.dart lib/models/filter_def.dart lib/services/brush_service.dart lib/services/filter_service.dart lib/engine/drawing_engine.dart lib/engine/brush_stroke_geometry.dart lib/engine/brush_render_plan.dart lib/engine/outlined_stroke_compositor.dart lib/engine/ruler_engine.dart lib/engine/filter_engine.dart lib/engine/pixel_art_engine.dart lib/screens/canvas/widgets/filter_panel.dart --no-fatal-infos --no-fatal-warnings
+        run: flutter analyze lib/models/brush.dart lib/models/brush_extension_defaults.dart lib/models/brush_presets_extension.dart lib/models/ruler.dart lib/models/filter_def.dart lib/services/brush_service.dart lib/services/filter_service.dart lib/engine/drawing_engine.dart lib/engine/brush_stroke_geometry.dart lib/engine/brush_render_plan.dart lib/engine/outlined_stroke_compositor.dart lib/engine/ruler_engine.dart lib/engine/filter_engine.dart lib/engine/pixel_art_engine.dart lib/screens/canvas/widgets/filter_panel.dart test/engine/straight_hair_fold_geometry_test.dart --no-fatal-infos --no-fatal-warnings
       - name: Persist verified integration
         run: |
           if git diff --quiet -- lib/models/brush.dart lib/services/brush_service.dart lib/engine/drawing_engine.dart lib/engine/filter_engine.dart lib/screens/canvas/widgets/filter_panel.dart lib/services/filter_service.dart; then
