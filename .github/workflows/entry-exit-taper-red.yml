@@ -11,6 +11,7 @@ on:
       - 'test/**/brush*.dart'
       - 'test/**/stroke*.dart'
       - 'test/**/taper*.dart'
+      - '.github/chat-integration-trigger.txt'
       - '.github/workflows/entry-exit-taper-red.yml'
 
 jobs:
