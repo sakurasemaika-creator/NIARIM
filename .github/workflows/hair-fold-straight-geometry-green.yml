@@ -1,0 +1,28 @@
+name: Hair Fold Straight Geometry Green
+
+on:
+  push:
+    branches: [dev_branch]
+    paths:
+      - 'lib/engine/brush_stroke_geometry.dart'
+      - 'test/engine/brush_stroke_geometry_test.dart'
+      - '.github/workflows/hair-fold-straight-geometry-green.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  green:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803
+      - uses: subosito/flutter-action@1a449444c387b1966244ae4d4f8c696479add0b2
+        with:
+          flutter-version: '3.47.3'
+          channel: stable
+          cache: true
+      - run: flutter pub get --enforce-lockfile
+      - run: flutter test test/engine/brush_stroke_geometry_test.dart --reporter expanded
+      - run: flutter analyze lib/engine/brush_stroke_geometry.dart test/engine/brush_stroke_geometry_test.dart --no-fatal-infos --no-fatal-warnings
+      - run: dart format --output=none --set-exit-if-changed lib/engine/brush_stroke_geometry.dart test/engine/brush_stroke_geometry_test.dart
