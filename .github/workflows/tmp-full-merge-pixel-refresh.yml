@@ -1,0 +1,59 @@
+name: Temporary Full Merge Pixel Filter Refresh
+on:
+  push:
+    branches: [dev_branch]
+    paths: [.github/workflows/tmp-full-merge-pixel-refresh.yml]
+permissions:
+  contents: write
+jobs:
+  merge-and-verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: dev_branch
+          fetch-depth: 0
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+      - name: Merge complete feature history into latest dev_branch
+        run: |
+          set -euxo pipefail
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git fetch origin dev_branch feature/pixel-filter-blend-refresh
+          git reset --hard origin/dev_branch
+          # Full history merge. On overlapping hunks, latest dev_branch is authoritative;
+          # all non-conflicting feature changes and the complete feature ancestry remain.
+          git merge --no-ff -X ours origin/feature/pixel-filter-blend-refresh \
+            -m 'merge: feature/pixel-filter-blend-refresh into dev_branch'
+      - name: Verify pixel/filter integration
+        run: |
+          set -euxo pipefail
+          flutter pub get
+          tests=(
+            test/engine/pixel_art_engine_test.dart
+            test/engine/pixel_art_filter_engine_test.dart
+            test/engine/filter_engine_pixel_art_contract_test.dart
+            test/engine/stamp_pixel_art_route_test.dart
+            test/engine/mosaic_filter_contract_test.dart
+            test/models/mosaic_filter_def_contract_test.dart
+            test/mosaic_filter_test.dart
+            test/engine/noise_filter_distinction_test.dart
+            test/engine/analog_filter_distinction_test.dart
+          )
+          existing=()
+          for t in "${tests[@]}"; do [[ -f "$t" ]] && existing+=("$t"); done
+          if ((${#existing[@]})); then flutter test "${existing[@]}"; fi
+          flutter analyze lib/models/filter_def.dart lib/engine/pixel_art_engine.dart lib/engine/filter_engine.dart lib/services/filter_service.dart lib/screens/canvas/widgets/filter_panel.dart lib/engine/stamp_engine.dart
+      - name: Push full merge
+        run: |
+          set -euxo pipefail
+          git push origin HEAD:dev_branch
+      - name: Remove temporary workflow after successful merge
+        run: |
+          set -euxo pipefail
+          git pull --ff-only origin dev_branch
+          git rm .github/workflows/tmp-full-merge-pixel-refresh.yml
+          git commit -m 'ci: remove completed full merge workflow'
+          git push origin HEAD:dev_branch
