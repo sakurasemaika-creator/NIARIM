@@ -1,7 +1,19 @@
 from pathlib import Path
+import re
 
 engine = Path('lib/engine/filter_engine.dart')
 s = engine.read_text()
+
+# Keep the latest dev_branch FilterEngine architecture and only splice in the
+# verified shared pixel-art behavior. Do not replace the file with the old
+# feature-branch facade, because dev_branch contains newer production engines.
+pixel_import = "import 'pixel_art_engine.dart';\n"
+if pixel_import not in s:
+    marker = "import 'prism_filter_engine.dart';\n"
+    if marker not in s:
+        raise SystemExit('pixel-art import marker not found')
+    s = s.replace(marker, marker + pixel_import, 1)
+
 if 'FilterKind.mosaic => engine.applyMosaic(' not in s:
     marker = '''    FilterKind.pixelate => engine.applyPixelate(
       data,
@@ -79,6 +91,37 @@ if 'Uint8List applyMosaic(' not in s:
     if class_end_marker not in s:
         raise SystemExit('FilterEngine applyNoise marker not found')
     s = s.replace(class_end_marker, method + class_end_marker, 1)
+
+# Replace the old block-average+quantize Pixel Art implementation with the
+# shared contract. This preserves source alpha exactly, keeps transparent outer
+# edges and horizontal/vertical boundaries crisp, and only permits a middle
+# color at opaque diagonal crossings when the active palette policy allows it.
+pixel_method = '''  Uint8List applyPixelate(
+    Uint8List data,
+    int width,
+    int height, {
+    int mosaicSize = 8,
+    PixelColorMode colorMode = PixelColorMode.count,
+    int colorLevels = 6,
+    List<int> paletteColors = const [],
+  }) => const PixelArtEngine().convert(
+    data,
+    width,
+    height,
+    pixelSize: mosaicSize,
+    colorMode: colorMode,
+    colorLevels: colorLevels,
+    paletteColors: paletteColors,
+  );
+
+'''
+pattern = re.compile(
+    r'  Uint8List applyPixelate\(.*?\n  Uint8List applyFade\(', re.S
+)
+match = pattern.search(s)
+if not match:
+    raise SystemExit('FilterEngine applyPixelate range not found')
+s = s[:match.start()] + pixel_method + '  Uint8List applyFade(' + s[match.end():]
 engine.write_text(s)
 
 panel = Path('lib/screens/canvas/widgets/filter_panel.dart')
@@ -100,7 +143,6 @@ if 'case FilterKind.mosaic:' not in s:
         raise SystemExit('filter controls pixelate marker not found')
     s = s.replace(control_marker, control_replacement, 1)
 
-# Display name: use the existing Japanese built-in name until dedicated l10n lands.
 name_marker = '      FilterKind.pixelate => l10n.filterNamePixelate,\n'
 if 'FilterKind.mosaic => ' not in s:
     if name_marker not in s:
@@ -108,7 +150,6 @@ if 'FilterKind.mosaic => ' not in s:
     s = s.replace(name_marker, name_marker + "      FilterKind.mosaic => 'モザイク',\n", 1)
 
 icon_marker = '      FilterKind.pixelate => Icons.grid_view,\n'
-# There are separate exhaustive switches for name and icon; detect icon specifically.
 if "FilterKind.mosaic => Icons.grid_on," not in s:
     if icon_marker not in s:
         raise SystemExit('icon pixelate marker not found')
