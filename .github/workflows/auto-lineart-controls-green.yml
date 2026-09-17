@@ -1,66 +1,30 @@
 name: Auto Lineart Controls Green
 
 on:
-  workflow_dispatch:
   push:
     branches: [dev_branch]
     paths:
       - '.github/workflows/auto-lineart-controls-green.yml'
-      - '.github/scripts/implement_auto_lineart_controls.py'
+      - 'lib/engine/auto_lineart_engine.dart'
+      - 'lib/screens/canvas/widgets/auto_lineart_control_overlay.dart'
+      - 'lib/screens/canvas/widgets/filter_panel.dart'
+      - 'test/auto_lineart_control_overlay_test.dart'
+      - 'test/auto_lineart_engine_test.dart'
+  workflow_dispatch:
 
 jobs:
   green:
     runs-on: ubuntu-latest
-    timeout-minutes: 25
-    permissions:
-      contents: write
+    timeout-minutes: 20
     steps:
       - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
-        with:
-          ref: dev_branch
       - uses: subosito/flutter-action@1a449444c387b1966244ae4d4f8c696479add0b2 # v2
         with:
           channel: stable
           cache: false
       - run: flutter pub get --enforce-lockfile
-      - name: Implement approved temporary-vector controls
-        run: |
-          python3 .github/scripts/implement_auto_lineart_controls.py
-          python3 - <<'PY'
-          from pathlib import Path
-          p = Path('test/auto_lineart_control_overlay_test.dart')
-          s = p.read_text()
-          if '_makeImage(' in s and 'Future<ui.Image> _makeImage' not in s:
-              marker = 'void main() {'
-              helper = '''Future<ui.Image> _makeImage(int width, int height) async {
-            final recorder = ui.PictureRecorder();
-            final canvas = Canvas(recorder);
-            canvas.drawRect(
-              Rect.fromLTWH(0, 0, width.toDouble(), height.toDouble()),
-              Paint(),
-            );
-            return recorder.endRecording().toImage(width, height);
-          }
-
-          '''
-              if marker not in s:
-                  raise SystemExit('test main marker not found')
-              p.write_text(s.replace(marker, helper + marker, 1))
-          PY
-          dart format lib/screens/canvas/widgets/auto_lineart_control_overlay.dart lib/screens/canvas/widgets/filter_panel.dart test/auto_lineart_control_overlay_test.dart
-      - name: Verify control editing
+      - name: Verify control editing on current production HEAD
         run: |
           flutter test test/auto_lineart_control_overlay_test.dart --reporter expanded
-          flutter analyze lib/engine/auto_lineart_engine.dart lib/screens/canvas/widgets/auto_lineart_control_overlay.dart lib/screens/canvas/widgets/filter_panel.dart test/auto_lineart_control_overlay_test.dart --no-fatal-infos --no-fatal-warnings
-      - name: Persist verified implementation
-        run: |
-          if git diff --quiet -- lib/screens/canvas/widgets/auto_lineart_control_overlay.dart lib/screens/canvas/widgets/filter_panel.dart test/auto_lineart_control_overlay_test.dart; then
-            exit 0
-          fi
-          git config user.name 'github-actions[bot]'
-          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          git add lib/screens/canvas/widgets/auto_lineart_control_overlay.dart lib/screens/canvas/widgets/filter_panel.dart test/auto_lineart_control_overlay_test.dart
-          git commit -m 'feat: add editable auto lineart vector controls'
-          git fetch origin dev_branch
-          git rebase origin/dev_branch
-          git push origin HEAD:dev_branch
+          flutter test test/auto_lineart_engine_test.dart --reporter expanded
+          flutter analyze lib/engine/auto_lineart_engine.dart lib/screens/canvas/widgets/auto_lineart_control_overlay.dart lib/screens/canvas/widgets/filter_panel.dart test/auto_lineart_control_overlay_test.dart test/auto_lineart_engine_test.dart --no-fatal-infos --no-fatal-warnings
