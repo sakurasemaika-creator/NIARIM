@@ -551,15 +551,13 @@ class AutoLineartEngine {
     );
   }
 
-  /// Moves one preview control point. Coincident points (normally the endpoints
-  /// of branches sharing a junction) move together so dragging a junction never
-  /// tears connected topology apart.
+  /// Moves exactly one preview control point. Each editable control is
+  /// independent, including controls that happen to share coordinates.
   static AutoLineartGraph moveControlPoint(
     AutoLineartGraph source, {
     required int pathIndex,
     required int pointIndex,
     required AutoLineartPoint point,
-    bool moveCoincident = true,
   }) {
     if (pathIndex < 0 ||
         pathIndex >= source.paths.length ||
@@ -567,22 +565,16 @@ class AutoLineartEngine {
         pointIndex >= source.paths[pathIndex].points.length) {
       return source;
     }
-    final origin = source.paths[pathIndex].points[pointIndex];
     final nextPoint = AutoLineartPoint(
       point.x.clamp(0.0, math.max(0, source.width - 1).toDouble()),
       point.y.clamp(0.0, math.max(0, source.height - 1).toDouble()),
     );
-    const epsilonSq = 0.25;
     final paths = <AutoLineartPath>[];
     for (var p = 0; p < source.paths.length; p++) {
       final oldPath = source.paths[p];
       final points = List<AutoLineartPoint>.from(oldPath.points);
       for (var i = 0; i < points.length; i++) {
-        final exactTarget = p == pathIndex && i == pointIndex;
-        final dx = points[i].x - origin.x;
-        final dy = points[i].y - origin.y;
-        final coincident = moveCoincident && dx * dx + dy * dy <= epsilonSq;
-        if (exactTarget || coincident) points[i] = nextPoint;
+        if (p == pathIndex && i == pointIndex) points[i] = nextPoint;
       }
       paths.add(
         AutoLineartPath(

@@ -237,13 +237,12 @@ class _AutoLineartControlOverlayState extends State<AutoLineartControlOverlay> {
               // across smoothing/rough-width changes, so mutating the shared
               // graph here would erase the very displacement we need to
               // preserve. A fresh graph also makes CustomPainter repaint
-              // immediately and keeps coincident junction controls together.
+              // immediately while each control remains independently editable.
               _displayGraph = AutoLineartEngine.moveControlPoint(
                 _displayGraph,
                 pathIndex: active.$1,
                 pointIndex: active.$2,
                 point: point,
-                moveCoincident: false,
               );
             });
             widget.onPointMoved(active.$1, active.$2, point);
