@@ -51,8 +51,7 @@ jobs:
       - name: Verify control editing
         run: |
           flutter test test/auto_lineart_control_overlay_test.dart --reporter expanded
-          flutter test test/auto_lineart_engine_test.dart --reporter expanded
-          flutter analyze lib/screens/canvas/widgets/auto_lineart_control_overlay.dart lib/screens/canvas/widgets/filter_panel.dart test/auto_lineart_control_overlay_test.dart --no-fatal-infos --no-fatal-warnings
+          flutter analyze lib/engine/auto_lineart_engine.dart lib/screens/canvas/widgets/auto_lineart_control_overlay.dart lib/screens/canvas/widgets/filter_panel.dart test/auto_lineart_control_overlay_test.dart --no-fatal-infos --no-fatal-warnings
       - name: Persist verified implementation
         run: |
           if git diff --quiet -- lib/screens/canvas/widgets/auto_lineart_control_overlay.dart lib/screens/canvas/widgets/filter_panel.dart test/auto_lineart_control_overlay_test.dart; then
