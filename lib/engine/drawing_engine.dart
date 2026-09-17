@@ -657,6 +657,16 @@ class DrawingEngine {
                 1.0,
               );
               pixelAlpha = math.min(outerAa, innerAa);
+            } else if (hollowSquare) {
+              final outerDistance = math.max(ux.abs(), uy.abs());
+              final innerRadius =
+                  radius * hollowSquareInnerRatio.clamp(0.0, 0.95).toDouble();
+              final outerAa = (radius + 0.5 - outerDistance).clamp(0.0, 1.0);
+              final innerAa = (outerDistance - innerRadius + 0.5).clamp(
+                0.0,
+                1.0,
+              );
+              pixelAlpha = math.min(outerAa, innerAa);
             } else if (chainLink) {
               // 中抜き楕円リンク。接線座標へ揃えたあと、リンク固有の交互角度
               // だけ回す。outer/innerの楕円距離差で肉厚を作るため、拡縮しても
