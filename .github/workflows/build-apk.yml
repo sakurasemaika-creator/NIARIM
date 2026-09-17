@@ -1,7 +1,8 @@
 name: Build APK
 
-# Final manual APK verification plus targeted dev_branch validation for the
-# approved hair-fold production integration.
+# 最終確認用の手動Workflow。
+# 細かな修正ごとには起動せず、対象テスト・flutter analyze・必要な実キャプチャを先に完了し、
+# 一連の追加修正がすべて揃った最後に1回だけ起動する。
 on:
   workflow_dispatch:
     inputs:
@@ -13,105 +14,78 @@ on:
           - debug
           - release
         default: debug
-  push:
-    branches: [dev_branch]
-    paths:
-      - '.github/workflows/build-apk.yml'
-      - '.github/scripts/connect_hair_fold_rendering.py'
-      - 'lib/engine/brush_stroke_geometry.dart'
-      - 'lib/engine/hair_fold_render_resolver.dart'
-      - 'lib/engine/wave_hair_fold_geometry.dart'
-      - 'test/engine/straight_hair_fold_geometry_test.dart'
-      - 'test/engine/wave_hair_fold_geometry_test.dart'
-      - 'test/engine/hair_fold_render_resolver_test.dart'
-      - 'test/engine/drawing_engine_wave_fold_contract_test.dart'
 
+# 誤って同じブランチで複数回起動された場合は、古いビルドを継続して資源を消費しない。
+# 最新の手動実行だけを残す。
 concurrency:
   group: build-apk-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:
-  hair-fold-verify:
-    if: ${{ github.event_name == 'push' }}
-    runs-on: ubuntu-latest
-    timeout-minutes: 20
-    permissions:
-      contents: write
-    steps:
-      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
-        with:
-          ref: dev_branch
-      - uses: subosito/flutter-action@1a449444c387b1966244ae4d4f8c696479add0b2 # v2
-        with:
-          channel: stable
-          cache: false
-      - name: Resolve dependencies
-        run: flutter pub get --enforce-lockfile
-      - name: Connect production fold renderer
-        run: |
-          python3 .github/scripts/connect_hair_fold_rendering.py
-          dart format lib/engine/drawing_engine.dart lib/engine/hair_fold_render_resolver.dart lib/engine/wave_hair_fold_geometry.dart
-      - name: Verify approved hair-fold geometry and production contract
-        run: |
-          flutter test test/engine/straight_hair_fold_geometry_test.dart --reporter expanded
-          flutter test test/engine/wave_hair_fold_geometry_test.dart --reporter expanded
-          flutter test test/engine/hair_fold_render_resolver_test.dart --reporter expanded
-          flutter test test/engine/drawing_engine_wave_fold_contract_test.dart --reporter expanded
-      - name: Analyze production fold path
-        run: flutter analyze lib/engine/brush_stroke_geometry.dart lib/engine/hair_fold_render_resolver.dart lib/engine/wave_hair_fold_geometry.dart lib/engine/drawing_engine.dart test/engine/drawing_engine_wave_fold_contract_test.dart --no-fatal-infos --no-fatal-warnings
-      - name: Persist verified DrawingEngine integration
-        run: |
-          if git diff --quiet -- lib/engine/drawing_engine.dart; then
-            exit 0
-          fi
-          git config user.name 'github-actions[bot]'
-          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          git add lib/engine/drawing_engine.dart
-          git commit -m 'feat: connect straight and wave hair fold rendering'
-          git fetch origin dev_branch
-          git rebase origin/dev_branch
-          git push origin HEAD:dev_branch
-
   build:
-    if: ${{ github.event_name == 'workflow_dispatch' }}
     runs-on: ubuntu-latest
+    # GitHub Releaseへapkを添付するために書き込み権限が必要
+    # （Actions Storageの上限に達している間の代替配布経路。下記
+    # 「APKをGitHub Releaseへ公開」ステップ参照）。
     permissions:
       contents: write
     steps:
       - name: リポジトリ取得
+        # タグの移動や依存改ざんの影響を避けるため、検証済みcommitへ固定。
         uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
         with:
+          # 後続のサードパーティActionやビルド処理へ書き込み可能な
+          # GITHUB_TOKENをgit資格情報として残さない。
           persist-credentials: false
+
       - name: JDK 17 セットアップ
         uses: actions/setup-java@dd06d9cba3e5552c54d9f8ea23572deb30010f7c # v6
         with:
           distribution: temurin
           java-version: "17"
+          # GradleキャッシュはAPK生成後の保存時にrunnerのディスクを圧迫し、
+          # tar/zstdがNo space left on deviceで警告になることがあるため無効化。
+          # ビルドの確実性を優先し、毎回必要な依存関係を解決する。
+
       - name: Flutter セットアップ
         uses: subosito/flutter-action@1a449444c387b1966244ae4d4f8c696479add0b2 # v2
         with:
           channel: stable
+          # Flutter SDK/Pubキャッシュも保存時に数GB規模の一時領域を使い、
+          # APK生成後にrunnerの空き容量を使い切ることがあるため無効化。
           cache: false
+
       - name: 依存関係取得
         run: flutter pub get
+
       - name: 静的解析
+        # 既存のinfoは許容するが、warning/errorを見逃してAPKを配布しない。
         run: flutter analyze --no-fatal-infos
+
       - name: APKビルド（debug）
         if: ${{ inputs.build-type == 'debug' }}
         run: flutter build apk --debug
+
       - name: APKビルド（release）
         if: ${{ inputs.build-type == 'release' }}
         run: flutter build apk --release
+
+      # Actions Storage（無料枠0.5GB）の上限に達していると、このステップ
+      # だけが失敗してもビルド済みAPKは下のGitHub Releaseから取得できる。
       - name: APKをArtifactsへアップロード
-        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6
+        uses: actions/upload-artifact@b7c566a772e6b6fb58ed0dc250532a479d7789f # v6
         continue-on-error: true
         with:
           name: niarim-${{ inputs.build-type }}-apk
           path: build/app/outputs/flutter-apk/app-${{ inputs.build-type }}.apk
+          # APK本体は大きいため保持期間を最短にする。
           retention-days: 1
+
+      # リリースビルドのR8マッピング/使用状況レポート（難読化後のクラス名
+      # から元の名前を復元する際や、将来の同種の不具合調査に備えて保存）。
       - name: R8マッピング/使用状況レポートをArtifactsへアップロード
         if: ${{ inputs.build-type == 'release' }}
-        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6
+        uses: actions/upload-artifact@b7c566a772e6b6fb58ed0dc250532a479d7789f # v6
         continue-on-error: true
         with:
           name: niarim-release-r8-reports
@@ -121,6 +95,9 @@ jobs:
             build/app/outputs/mapping/release/usage.txt
           retention-days: 1
           if-no-files-found: warn
+
+      # Actions Storageの上限とは別枠のGitHub Releaseへapkを添付する代替
+      # 配布経路。ビルド種別ごとに固定タグを使い回し、毎回置き換える。
       - name: APKをGitHub Releaseへ公開（Actions Storage逼迫時の代替配布）
         env:
           GH_TOKEN: ${{ github.token }}
