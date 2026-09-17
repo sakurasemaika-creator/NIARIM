@@ -143,3 +143,5 @@ jobs:
         run: |
           echo '=== taper references ==='
           grep -R -n -E "fadeMode|fadeCustom|FadeCustomSettings|distancePx" lib test --exclude-dir=.dart_tool || true
+
+# Closure rerun: 2026-09-17 latest dev_branch
