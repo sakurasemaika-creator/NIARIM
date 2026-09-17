@@ -40,6 +40,9 @@ List<WaveFoldPathSample> buildWaveFoldPath(
   double outlineWidth = 1,
   int sampleCount = 48,
 }) {
+  final safeWaveRatio = _finiteClamp(waveEndRatio, 0, 1, 0);
+  final threshold = _finiteClamp(waveTriggerAngleDegrees, 1, 180, 45) * math.pi / 180;
+  final waveEnabled = safeWaveRatio > 0 && event.signedTurnRadians.abs() >= threshold;
   final straight = buildStraightFoldPath(
     event,
     curveStartRatio: curveStartRatio,
@@ -47,14 +50,12 @@ List<WaveFoldPathSample> buildWaveFoldPath(
     lengthRatio: lengthRatio,
     taperRatio: taperRatio,
     outlineWidth: outlineWidth,
-    sampleCount: sampleCount,
+    sampleCount: waveEnabled ? sampleCount : 24,
   );
   if (straight.isEmpty) return const [];
 
   final totalLength = straight.last.distanceFromStart;
-  final safeWaveRatio = _finiteClamp(waveEndRatio, 0, 1, 0);
-  final threshold = _finiteClamp(waveTriggerAngleDegrees, 1, 180, 45) * math.pi / 180;
-  if (safeWaveRatio <= 0 || event.signedTurnRadians.abs() < threshold) {
+  if (!waveEnabled) {
     return [
       for (final sample in straight)
         WaveFoldPathSample(
