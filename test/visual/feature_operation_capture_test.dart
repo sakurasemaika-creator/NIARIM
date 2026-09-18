@@ -653,7 +653,11 @@ class _Harness {
   }
 
   Future<void> seed(String layerId, String fixture) async {
-    final bytes = (await tester.runAsync(() => _fixture(fixture)))!;
+    final bytes = (await tester.runAsync(() => _fixture(
+      fixture,
+      width: ps.projectOf(projectId).exportWidth,
+      height: ps.projectOf(projectId).exportHeight,
+    )))!;
     final tm = ps.tileManagerOf(projectId);
     final key = ps.tileKeyFor(projectId, sceneId, 0, layerId);
     tm.getOrCreateTile(key, 0, 0).setAll(0, bytes);
@@ -856,9 +860,13 @@ class _Harness {
 
 // Synthetic source assets use precise closed regions, color/gray ramps and
 // transparent margins. They are generated before the operation under test.
-Future<Uint8List> _fixture(String kind) async {
+Future<Uint8List> _fixture(
+  String kind, {
+  int width = 256,
+  int height = 256,
+}) async {
   if (kind == 'textureReference3' || kind == 'textureReference4') {
-    return Future.value(textureReferenceRgba(kind));
+    return Future.value(textureReferenceRgba(kind, width: width, height: height));
   }
   final recorder = ui.PictureRecorder();
   final canvas = Canvas(recorder);
