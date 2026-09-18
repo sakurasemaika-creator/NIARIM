@@ -11,6 +11,7 @@ class FilterService extends ChangeNotifier {
   static const prismFilterId = 'Filter0022';
   static const vhsNoiseFilterId = 'Filter0024';
   static const mosaicFilterId = 'Filter0026';
+  static const genericNoiseFilterId = 'Filter0027';
 
   final List<FilterDef> _filters = [];
   String? _currentFilterId;
@@ -191,6 +192,12 @@ class FilterService extends ChangeNotifier {
       name: 'モザイク',
       kind: FilterKind.mosaic,
       strength: 8,
+    ),
+    FilterDef(
+      id: genericNoiseFilterId,
+      name: 'ノイズ',
+      kind: FilterKind.noise,
+      strength: 15,
     ),
   ];
 
