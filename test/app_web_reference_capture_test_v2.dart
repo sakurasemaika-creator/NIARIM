@@ -229,13 +229,17 @@ void main() {
     expectClean(tester, 'オーバーレイを閉じる');
   }
 
-  Future<void> openTimeline(WidgetTester tester) async {
-    final timeline = find.text('タイムライン', skipOffstage: false);
-    expect(timeline, findsWidgets);
-    await tester.ensureVisible(timeline.last);
-    await tester.pump(const Duration(milliseconds: 120));
-    await tester.tap(timeline.last, warnIfMissed: false);
-    await tester.pump(const Duration(milliseconds: 550));
+  Future<void> openTimeline(
+    WidgetTester tester, {
+    required String projectId,
+  }) async {
+    // The production canvas no longer exposes a text-labelled "タイムライン"
+    // control in every layout. Navigation itself is the stable contract used
+    // by the real button (context.go('/timeline/<projectId>')), so reference
+    // capture should not depend on a presentation label.
+    GoRouter.of(tester.element(find.byType(Scaffold).first))
+        .go('/timeline/$projectId');
+    await tester.pump(const Duration(milliseconds: 700));
     consumeKnownTimelineOverflow(tester);
   }
 
@@ -262,7 +266,7 @@ void main() {
 
   testWidgets('Web比較基準v2: Timeline / Audio編集', (tester) async {
     final ids = await createProjectAndOpenCanvas(tester);
-    await openTimeline(tester);
+    await openTimeline(tester, projectId: ids.projectId);
     await capture(tester, '04_timeline_default');
 
     // CIではOSのファイル選択UIを開けないため、永続AudioClipだけを実サービスへ投入する。
@@ -287,7 +291,7 @@ void main() {
     GoRouter.of(tester.element(find.byType(Scaffold).first))
         .go('/canvas/${ids.projectId}');
     await tester.pump(const Duration(milliseconds: 700));
-    await openTimeline(tester);
+    await openTimeline(tester, projectId: ids.projectId);
     await tester.pump(const Duration(milliseconds: 700));
     final audio = find.text('比較用音声', skipOffstage: false);
     if (audio.evaluate().isNotEmpty) {
@@ -314,7 +318,7 @@ void main() {
     GoRouter.of(tester.element(find.byType(Scaffold).first))
         .go('/canvas/${ids.projectId}');
     await tester.pump(const Duration(milliseconds: 700));
-    await openTimeline(tester);
+    await openTimeline(tester, projectId: ids.projectId);
     final export = find.byIcon(Icons.upload_file, skipOffstage: false);
     expect(export, findsWidgets);
     await tester.tap(export.last, warnIfMissed: false);
