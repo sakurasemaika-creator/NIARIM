@@ -1,1 +1,1 @@
-auto-lineart controls preservation removal verification 2
+auto-lineart idempotent verification
