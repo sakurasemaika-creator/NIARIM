@@ -42,7 +42,7 @@ class DrawingEngine {
   double? _finalizedStrokeLengthOverride;
 
   String? get debugActiveBrushTexturePath => _brushTextureSelector.activePath;
-  void Function(List<WaveFoldPathSample>)? debugOnHairFoldRendered;
+  void Function(List<WaveFoldPathSample>)? debugOnHairFoldRendered; // Test-only observation hook.
 
   Brush? currentBrush;
   ui.Color currentColor = const ui.Color(0xFF000000);
