@@ -10,7 +10,7 @@ List<WaveFoldPathSample> resolveHairFoldRenderPath({
   required FoldEvent event,
   required bool waveEnabled,
   required double curveStartRatio,
-  required double depthRatio,
+  required int curveStrength,
   required double lengthRatio,
   required double waveEndRatio,
   required double waveTriggerAngleDegrees,
@@ -21,7 +21,7 @@ List<WaveFoldPathSample> resolveHairFoldRenderPath({
   return buildWaveFoldPath(
     event,
     curveStartRatio: curveStartRatio,
-    depthRatio: depthRatio,
+    curveStrength: curveStrength,
     lengthRatio: lengthRatio,
     waveEndRatio: waveEnabled ? waveEndRatio : 0,
     waveTriggerAngleDegrees: waveTriggerAngleDegrees,
