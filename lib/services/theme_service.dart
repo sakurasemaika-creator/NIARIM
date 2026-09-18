@@ -333,11 +333,8 @@ class ThemeService extends ChangeNotifier {
       final missing = _builtInPresets.where((p) => !existingIds.contains(p.id));
       if (missing.isNotEmpty) _presets.addAll(missing);
     }
-    // 現在の色は「一覧のどれか」とは限らない（テーマ一覧から配色だけ
-    // 取り込んだ状態）ので、まずJSONそのものから復元する。無ければ旧形式の
-    // ID参照へフォールバックする（アプリ更新前からのデータ用）。
+    // 現在の色は「一覧のどれか」とは限らないため、保存したJSONから復元する。
     final currentJson = prefs.getString(_prefsCurrentJsonKey);
-    final currentId = prefs.getString(_prefsCurrentIdKey);
     AppThemePreset? restoredCurrent;
     if (currentJson != null) {
       try {
@@ -353,11 +350,6 @@ class ThemeService extends ChangeNotifier {
     }
     if (restoredCurrent != null) {
       _current = restoredCurrent;
-    } else if (currentId != null) {
-      _current = _presets.firstWhere(
-        (p) => p.id == currentId,
-        orElse: () => _presets.first,
-      );
     } else if (_presets.isNotEmpty) {
       _current = _presets.first;
     }
