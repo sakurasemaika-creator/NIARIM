@@ -1351,7 +1351,7 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get helpFadeDesc =>
-      'Un ajuste de pincel donde la opacidad y el grosor disminuyen gradualmente a medida que continúas un trazo. Úsalo cuando quieras que el final de una línea se desvanezca, o para crear una sensación de dibujo con un efecto persistente.';
+      'Un ajuste de pincel para dar forma a los extremos del trazo. En el modo personalizado, la intensidad y el alcance de la entrada (inicio) y la salida (final) se ajustan de forma independiente, por lo que puedes afinar solo un extremo o usar longitudes distintas.';
 
   @override
   String get helpStrokeDecayTitle => 'Atenuación de trazo';
