@@ -76,11 +76,8 @@ void main() {
             ),
           ),
           fadeMode: FadeMode.custom,
-          fadeCustom: const FadeCustomSettings(
-            startValue: 1,
-            endValue: 0.2,
-            distancePx: 240,
-          ),
+          fadeIn: const FadeEndpointSettings(value: 1, rangePx: 120),
+          fadeOut: const FadeEndpointSettings(value: 0.2, rangePx: 240),
           strokeDecay: true,
           customImagePath: brushImage,
         ),
@@ -145,10 +142,8 @@ void main() {
       );
       expect((pressureOn['edgeJitter'] as Map<String, dynamic>)['weak'], 77);
       expect((pressureOff['edgeJitter'] as Map<String, dynamic>)['value'], 77);
-      expect(
-        (brushJson['fadeCustom'] as Map<String, dynamic>)['distancePx'],
-        240,
-      );
+      expect((brushJson['fadeIn'] as Map<String, dynamic>)['rangePx'], 120);
+      expect((brushJson['fadeOut'] as Map<String, dynamic>)['rangePx'], 240);
 
       final toneJson = (data['tones'] as List).single as Map<String, dynamic>;
       expect(toneJson['texturePath'], isNull);
