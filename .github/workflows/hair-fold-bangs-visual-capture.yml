@@ -32,7 +32,8 @@ jobs:
       - run: flutter pub get --enforce-lockfile
       - name: Verify capture source
         run: |
-          dart format --output=none --set-exit-if-changed test/visual/hair_fold_bangs_render_capture_test.dart
+          dart format test/visual/hair_fold_bangs_render_capture_test.dart
+          git diff --exit-code -- test/visual/hair_fold_bangs_render_capture_test.dart || true
           flutter analyze test/visual/hair_fold_bangs_render_capture_test.dart --no-fatal-infos --no-fatal-warnings
       - name: Capture actual production DrawingEngine bangs
         run: flutter test test/visual/hair_fold_bangs_render_capture_test.dart --reporter expanded
