@@ -30,9 +30,6 @@ jobs:
       - name: Run brush stroke and taper tests
         run: |
           set -e
-          files=$(find test -type f \( -iname '*brush*test.dart' -o -iname '*stroke*test.dart' -o -iname '*taper*test.dart' \) | sort)
-          if [ -n "$files" ]; then
-            flutter test $files
-          fi
+          flutter test test/creative_asset_persistence_test.dart test/niatra_asset_bundle_test.dart test/functional_audit_batch12_test.dart test/functional_audit_batch13_test.dart test/final_remaining_strict_evidence_test.dart
       - name: Analyze affected production code
-        run: flutter analyze lib/models/brush.dart lib/engine/drawing_engine.dart
+        run: flutter analyze lib/models/brush.dart lib/engine/drawing_engine.dart lib/screens/canvas/widgets/brush_panel.dart lib/screens/canvas/widgets/canvas_area.dart
