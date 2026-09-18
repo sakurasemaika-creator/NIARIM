@@ -78,7 +78,6 @@ jobs:
           service.write_text(s)
           PY
           python3 .github/scripts/apply_drawing_engine_brush_extensions.py
-          python3 .github/scripts/complete_screen_space_fold_integration.py
           python3 .github/scripts/complete_mosaic_integration.py
           dart format lib/engine/drawing_engine.dart lib/engine/filter_engine.dart lib/screens/canvas/widgets/filter_panel.dart lib/services/filter_service.dart
       - name: Targeted brush, ruler, and mosaic tests
