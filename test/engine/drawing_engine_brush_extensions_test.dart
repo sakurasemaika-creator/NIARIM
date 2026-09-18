@@ -136,14 +136,17 @@ void main() {
     engine.beginStroke(
       const StrokePoint(x: 30, y: 50, pressure: 1, tiltX: 0, tiltY: 0),
       'layer',
+      screenPosition: const Offset(30, 50),
     );
     engine.continueStroke(
       const StrokePoint(x: 50, y: 50, pressure: 1, tiltX: 0, tiltY: 0),
       'layer',
+      screenPosition: const Offset(50, 50),
     );
     engine.continueStroke(
       const StrokePoint(x: 50, y: 70, pressure: 1, tiltX: 0, tiltY: 0),
       'layer',
+      screenPosition: const Offset(50, 70),
     );
     engine.endStroke();
 
