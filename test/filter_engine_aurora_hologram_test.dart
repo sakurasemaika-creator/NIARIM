@@ -311,6 +311,34 @@ void main() {
     expect(apply(), equals(apply()));
   });
 
+  test('ホログラム色プリセットは白ハイライトと主色を両方持つ', () {
+    const expectedDominant = {
+      AuroraHologramPreset.blueHologram: 'blue',
+      AuroraHologramPreset.lightBlueHologram: 'blue',
+      AuroraHologramPreset.purpleHologram: 'purple',
+      AuroraHologramPreset.blueGreenHologram: 'blueGreen',
+    };
+    for (final entry in expectedDominant.entries) {
+      final stops = auroraHologramStops(entry.key);
+      expect(
+        stops.any((s) => s.$2 >= 238 && s.$3 >= 238 && s.$4 >= 238),
+        isTrue,
+        reason: '${entry.key.name} should retain pearly white highlights',
+      );
+      switch (entry.value) {
+        case 'blue':
+          expect(stops.any((s) => s.$4 > s.$2 && s.$4 >= 230), isTrue);
+        case 'purple':
+          expect(stops.any((s) => s.$2 >= 140 && s.$4 >= 230), isTrue);
+        case 'blueGreen':
+          expect(
+            stops.any((s) => s.$3 >= 210 && s.$4 >= 210),
+            isTrue,
+          );
+      }
+    }
+  });
+
   test('auroraHologramStopsは各プリセットで昇順の位置を持つ', () {
     for (final preset in AuroraHologramPreset.values) {
       final stops = auroraHologramStops(preset);
