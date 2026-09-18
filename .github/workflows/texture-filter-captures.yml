@@ -1,4 +1,5 @@
 name: Texture Filter Captures
+# rerun after preset switch exhaustiveness fix
 
 on:
   workflow_dispatch:
