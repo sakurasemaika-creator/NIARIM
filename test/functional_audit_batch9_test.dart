@@ -118,11 +118,8 @@ void main() {
         size: 6,
         opacity: 100,
         fadeMode: FadeMode.custom,
-        fadeCustom: const FadeCustomSettings(
-          startValue: 100,
-          endValue: 20,
-          distancePx: 96,
-        ),
+        fadeIn: const FadeEndpointSettings(value: 100, rangePx: 96),
+        fadeOut: const FadeEndpointSettings(value: 20, rangePx: 96),
       )
       ..currentColor = const ui.Color(0xFF2030C0);
 
@@ -264,7 +261,8 @@ Brush _brush({
   bool stabilization = false,
   int stabilizationStrength = 0,
   FadeMode fadeMode = FadeMode.off,
-  FadeCustomSettings? fadeCustom,
+  FadeEndpointSettings fadeIn = FadeEndpointSettings.full,
+  FadeEndpointSettings fadeOut = FadeEndpointSettings.full,
   BrushMixingMode mixingMode = BrushMixingMode.off,
   int mixingRate = 0,
 }) => Brush(
@@ -298,7 +296,8 @@ Brush _brush({
     ),
   ),
   fadeMode: fadeMode,
-  fadeCustom: fadeCustom,
+  fadeIn: fadeIn,
+  fadeOut: fadeOut,
   strokeDecay: false,
 );
 
