@@ -461,7 +461,11 @@ class DrawingEngine {
     // フェード仕様は「ストロークが進むにつれて不透明度・サイズが減少」。
     // 同じ係数を両方へ適用し、終端で薄いだけの同径線にならないようにする。
     if (brush.fadeMode != FadeMode.off) {
-      final fade = _calculateFade(brush, strokeLength, totalLength: _finalizedStrokeLengthOverride);
+      final fade = _calculateFade(
+        brush,
+        strokeLength,
+        totalLength: _finalizedStrokeLengthOverride,
+      );
       opacity *= fade;
       size *= fade;
     }
@@ -936,7 +940,11 @@ class DrawingEngine {
     return total;
   }
 
-  double _calculateFade(Brush brush, double strokeLength, {double? totalLength}) {
+  double _calculateFade(
+    Brush brush,
+    double strokeLength, {
+    double? totalLength,
+  }) {
     return switch (brush.fadeMode) {
       FadeMode.weak => (1.0 - strokeLength / 1000).clamp(0.3, 1.0),
       FadeMode.medium => (1.0 - strokeLength / 500).clamp(0.1, 1.0),
