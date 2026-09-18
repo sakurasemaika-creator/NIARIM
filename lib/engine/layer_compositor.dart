@@ -67,7 +67,7 @@ ui.BlendMode mapLayerBlendMode(LayerBlendMode mode) {
     case LayerBlendMode.luminosity:
       return ui.BlendMode.luminosity;
     case LayerBlendMode.linearDodge:
-      return ui.BlendMode.plus;
+      return ui.BlendMode.srcOver;
     case LayerBlendMode.exclusion:
       return ui.BlendMode.exclusion;
     case LayerBlendMode.linearBurn:
@@ -290,6 +290,7 @@ class LayerCompositor {
   /// 正しい結果になるよう、W3C Compositing and Blendingの一般式を使う。
   static bool _requiresCpuBlend(LayerBlendMode mode) => switch (mode) {
     LayerBlendMode.subtract ||
+    LayerBlendMode.linearDodge ||
     LayerBlendMode.linearBurn ||
     LayerBlendMode.vividLight ||
     LayerBlendMode.linearLight ||
@@ -301,6 +302,7 @@ class LayerCompositor {
 
   static double _blendChannel(LayerBlendMode mode, double b, double s) => switch (mode) {
     LayerBlendMode.subtract => (b - s).clamp(0.0, 1.0),
+    LayerBlendMode.linearDodge => (b + s).clamp(0.0, 1.0),
     LayerBlendMode.linearBurn => (b + s - 1.0).clamp(0.0, 1.0),
     LayerBlendMode.vividLight => s <= 0.5
         ? (s <= 0 ? 0.0 : 1.0 - ((1.0 - b) / (2.0 * s)).clamp(0.0, 1.0))
