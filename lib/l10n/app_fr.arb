@@ -2718,5 +2718,11 @@
   "brushYBranchAngle": "Angle de branche Y",
   "brushYBranchLength": "Longueur de branche Y",
   "brushYBranchWidth": "Largeur de branche Y",
-  "brushYBranchEndTaper": "Effilage final de branche Y"
+  "brushYBranchEndTaper": "Effilage final de branche Y",
+  "brushFoldCurveStart": "Position de début de courbe",
+  "brushFoldLength": "Longueur du pli",
+  "brushFoldCurveStrength": "Intensité de courbe",
+  "brushFoldWave": "Onde",
+  "brushFoldWaveEndpointRange": "Zone ondulée depuis la fin",
+  "brushFoldWaveTriggerAngle": "Angle de déclenchement de l'onde"
 }
