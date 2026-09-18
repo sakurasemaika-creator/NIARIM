@@ -12,7 +12,7 @@ abstract final class BrushExtensionDefaults {
 
   // Current Straight fold controls, expressed as effective-brush-width ratios.
   static const double foldCurveStartRatio = 0.25;
-  static const double foldDepthRatio = 0.55;
+  static const int foldCurveStrength = 5;
   static const double foldLengthRatio = 0.8;
   static const double foldEndTaperRatio = 0.35;
 
