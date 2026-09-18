@@ -288,6 +288,14 @@ class LayerCompositor {
   /// backdrop - source を各RGBチャンネルへ適用し、透明度は通常のブレンド
   /// モードと同じsource-over規則で合成する。半透明レイヤー・半透明背景でも
   /// 正しい結果になるよう、W3C Compositing and Blendingの一般式を使う。
+  static Uint8List _rgba8ToFloat32(Uint8List rgba) {
+    final floats = Float32List(rgba.length);
+    for (var i = 0; i < rgba.length; i++) {
+      floats[i] = rgba[i] / 255.0;
+    }
+    return floats.buffer.asUint8List();
+  }
+
   static bool _requiresCpuBlend(LayerBlendMode mode) => switch (mode) {
     LayerBlendMode.subtract ||
     LayerBlendMode.linearDodge ||
@@ -358,10 +366,10 @@ class LayerCompositor {
     }
 
     final codec = await ui.ImageDescriptor.raw(
-      await ui.ImmutableBuffer.fromUint8List(out),
+      await ui.ImmutableBuffer.fromUint8List(_rgba8ToFloat32(out)),
       width: width,
       height: height,
-      pixelFormat: ui.PixelFormat.rgba8888,
+      pixelFormat: ui.PixelFormat.rgbaFloat32,
     ).instantiateCodec();
     final frame = await codec.getNextFrame();
     codec.dispose();
