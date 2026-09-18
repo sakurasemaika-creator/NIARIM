@@ -117,6 +117,34 @@ void main() {
     });
   });
 
+    test('ブラシ複製で入り/抜きの値と範囲を独立保持する', () async {
+      final service = BrushService();
+      await service.init();
+      final source = Brush(
+        id: 'BrushTaperDuplicate',
+        name: '入り抜き複製',
+        size: 12,
+        opacity: 100,
+        spacing: 2,
+        stabilization: false,
+        stabilizationStrength: 0,
+        pixelMode: false,
+        fadeMode: FadeMode.custom,
+        fadeIn: const FadeEndpointSettings(value: 82, rangePx: 73),
+        fadeOut: const FadeEndpointSettings(value: 17, rangePx: 211),
+        strokeDecay: false,
+      );
+      service.addBrush(source);
+      service.duplicateBrush(source.id);
+
+      final duplicate = service.brushes.last;
+      expect(duplicate.id, isNot(source.id));
+      expect(duplicate.fadeIn.value, 82);
+      expect(duplicate.fadeIn.rangePx, 73);
+      expect(duplicate.fadeOut.value, 17);
+      expect(duplicate.fadeOut.rangePx, 211);
+    });
+
   group('ToneService', () {
     test('自作トーンの追加とお気に入りが再起動後も復元される', () async {
       final s1 = ToneService();
