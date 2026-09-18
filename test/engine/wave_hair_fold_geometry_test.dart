@@ -26,7 +26,7 @@ void main() {
       final path = buildWaveFoldPath(
         event(),
         curveStartRatio: .2,
-        depthRatio: .5,
+        curveStrength: 5,
         lengthRatio: 1,
         waveEndRatio: .3,
         waveTriggerAngleDegrees: 45,
@@ -42,7 +42,7 @@ void main() {
       final narrow = buildWaveFoldPath(
         event(width: 20),
         curveStartRatio: .2,
-        depthRatio: .5,
+        curveStrength: 5,
         lengthRatio: 1,
         waveEndRatio: 1,
         waveTriggerAngleDegrees: 45,
@@ -50,7 +50,7 @@ void main() {
       final wide = buildWaveFoldPath(
         event(width: 40),
         curveStartRatio: .2,
-        depthRatio: .5,
+        curveStrength: 5,
         lengthRatio: 1,
         waveEndRatio: 1,
         waveTriggerAngleDegrees: 45,
@@ -63,7 +63,7 @@ void main() {
       final path = buildWaveFoldPath(
         event(width: 24),
         curveStartRatio: .15,
-        depthRatio: .55,
+        curveStrength: 5,
         lengthRatio: 1.5,
         waveEndRatio: 1,
         waveTriggerAngleDegrees: 45,
@@ -77,7 +77,7 @@ void main() {
       final path = buildWaveFoldPath(
         event(width: 20),
         curveStartRatio: .2,
-        depthRatio: .5,
+        curveStrength: 5,
         lengthRatio: 1.6,
         waveEndRatio: 1,
         waveTriggerAngleDegrees: 45,
@@ -91,7 +91,7 @@ void main() {
       final shallow = buildWaveFoldPath(
         event(turn: .5),
         curveStartRatio: .2,
-        depthRatio: .5,
+        curveStrength: 5,
         lengthRatio: 1,
         waveEndRatio: 1,
         waveTriggerAngleDegrees: 45,
@@ -103,14 +103,14 @@ void main() {
       final straight = buildStraightFoldPath(
         event(),
         curveStartRatio: .2,
-        depthRatio: .5,
+        curveStrength: 5,
         lengthRatio: 1,
         taperRatio: .35,
       );
       final waveOff = buildWaveFoldPath(
         event(),
         curveStartRatio: .2,
-        depthRatio: .5,
+        curveStrength: 5,
         lengthRatio: 1,
         waveEndRatio: 0,
         waveTriggerAngleDegrees: 45,
