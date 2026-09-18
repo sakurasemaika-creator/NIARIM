@@ -41,6 +41,42 @@ void main() {
     expect(ids, containsAll(<String>{'Brush0022', 'Brush0023', 'Brush0024'}));
   });
 
+  test('duplicate and persistence preserve multiple texture settings', () async {
+    final service = BrushService();
+    await service.init();
+    final base = service.brushes.firstWhere((brush) => brush.id == 'Brush0024');
+    final original = base.copyWith(
+      id: 'MultiTextureLifecycle',
+      name: 'Multi texture lifecycle',
+      customImagePaths: const ['a.png', 'b.png', 'c.png'],
+      customImageSelectionMode: BrushImageSelectionMode.sequential,
+    );
+    service.addBrush(original);
+
+    service.duplicateBrush(original.id);
+    final duplicate = service.brushes.singleWhere(
+      (brush) =>
+          brush.id != original.id && brush.name == '${original.name} (コピー)',
+    );
+    expect(duplicate.customImagePaths, original.customImagePaths);
+    expect(
+      duplicate.customImageSelectionMode,
+      BrushImageSelectionMode.sequential,
+    );
+
+    await Future<void>.delayed(Duration.zero);
+    final reloaded = BrushService();
+    await reloaded.init();
+    final restored = reloaded.brushes.singleWhere(
+      (brush) => brush.id == original.id,
+    );
+    expect(restored.customImagePaths, original.customImagePaths);
+    expect(
+      restored.customImageSelectionMode,
+      BrushImageSelectionMode.sequential,
+    );
+  });
+
   test('niabrush round trip preserves multiple texture variants', () async {
     final service = BrushService();
     await service.init();
