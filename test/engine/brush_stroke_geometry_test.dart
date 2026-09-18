@@ -134,8 +134,18 @@ void main() {
         lengthRatio: .8,
         taperRatio: .4,
       );
-      expect(early[1].position.dy, greaterThan(late[1].position.dy));
-      expect((late[1].position - late.first.position).dy.abs(), lessThan(2));
+      final earlyFirstBend = early.indexWhere(
+        (sample) => (sample.position.dy - early.first.position.dy).abs() > .25,
+      );
+      final lateFirstBend = late.indexWhere(
+        (sample) => (sample.position.dy - late.first.position.dy).abs() > .25,
+      );
+      expect(earlyFirstBend, greaterThan(0));
+      expect(lateFirstBend, greaterThan(earlyFirstBend));
+      expect(
+        (late[1].position - late.first.position).dy.abs(),
+        lessThan(.25),
+      );
     });
 
     test('terminal taper reaches zero while start uses outline width', () {
