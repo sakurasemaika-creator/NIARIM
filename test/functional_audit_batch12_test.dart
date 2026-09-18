@@ -62,13 +62,21 @@ void main() {
         fadeOut: const FadeEndpointSettings(value: 30, rangePx: 120),
       )
       ..currentColor = const ui.Color(0xFFB03040);
+    tm.beginUndoRecording('fade');
     _line(
       e,
       'fade',
       const ui.Offset(20, 50),
       const ui.Offset(180, 50),
       steps: 40,
+      finalizeCustomFade: false,
     );
+    final preview = tm.endUndoRecording();
+    if (preview.before.isNotEmpty) {
+      tm.applyTileSnapshot('fade', preview.before);
+    }
+    e.replayCurrentStrokeWithFinalFade();
+    e.endStroke();
     final image = await tm.compositeLayerToImage('fade');
     await _save(image, '${out.path}/fade_custom_size_and_opacity.png');
     final d = await _rgba(image);
@@ -240,6 +248,7 @@ void _line(
   ui.Offset a,
   ui.Offset b, {
   required int steps,
+  bool finalizeCustomFade = true,
 }) {
   e.beginStroke(StrokePoint(x: a.dx, y: a.dy), layer);
   for (var i = 1; i <= steps; i++) {
@@ -249,10 +258,10 @@ void _line(
       layer,
     );
   }
-  if (e.needsFinalFadeReplay) {
+  if (finalizeCustomFade && e.needsFinalFadeReplay) {
     e.replayCurrentStrokeWithFinalFade();
   }
-  e.endStroke();
+  if (finalizeCustomFade) e.endStroke();
 }
 
 Future<Uint8List> _drawSpacing(int spacing) async {
