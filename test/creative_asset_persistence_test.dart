@@ -96,11 +96,8 @@ void main() {
           ),
         ),
         fadeMode: FadeMode.custom,
-        fadeCustom: FadeCustomSettings(
-          startValue: 100,
-          endValue: 20,
-          distancePx: 80,
-        ),
+        fadeIn: const FadeEndpointSettings(value: 100, rangePx: 80),
+        fadeOut: const FadeEndpointSettings(value: 20, rangePx: 160),
         strokeDecay: true,
       );
       s1.addBrush(custom);
@@ -111,7 +108,10 @@ void main() {
       final restored = s2.brushes.firstWhere((b) => b.id == 'BrushCustom001');
       expect(restored.size, 20);
       expect(restored.pixelMode, isTrue);
-      expect(restored.fadeCustom?.startValue, 100);
+      expect(restored.fadeIn.value, 100);
+      expect(restored.fadeIn.rangePx, 80);
+      expect(restored.fadeOut.value, 20);
+      expect(restored.fadeOut.rangePx, 160);
       expect(restored.pressureOn.mixing.mode, BrushMixingMode.bleed);
       expect(restored.pressureOff.mixing.mode, BrushMixingMode.bleed);
     });
