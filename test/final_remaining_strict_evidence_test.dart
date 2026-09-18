@@ -77,13 +77,12 @@ void main() {
         ..currentBrush = _brush(
           size: 24,
           fadeMode: entry.value,
-          fadeCustom: entry.value == FadeMode.custom
-              ? const FadeCustomSettings(
-                  startValue: 100,
-                  endValue: 15,
-                  distancePx: 200,
-                )
-              : null,
+          fadeIn: entry.value == FadeMode.custom
+              ? const FadeEndpointSettings(value: 100, rangePx: 70)
+              : FadeEndpointSettings.full,
+          fadeOut: entry.value == FadeMode.custom
+              ? const FadeEndpointSettings(value: 15, rangePx: 200)
+              : FadeEndpointSettings.full,
         )
         ..currentColor = const ui.Color(0xFF3040C0);
       e.beginStroke(const StrokePoint(x: 20, y: 40), 'f');
@@ -259,7 +258,8 @@ Brush _brush({
     strong: 100,
   ),
   FadeMode fadeMode = FadeMode.off,
-  FadeCustomSettings? fadeCustom,
+  FadeEndpointSettings fadeIn = FadeEndpointSettings.full,
+  FadeEndpointSettings fadeOut = FadeEndpointSettings.full,
 }) => Brush(
   id: 'final',
   name: 'final',
@@ -274,7 +274,8 @@ Brush _brush({
     opacity: const PressureRangeSetting(enabled: false, weak: 50, strong: 100),
   ),
   fadeMode: fadeMode,
-  fadeCustom: fadeCustom,
+  fadeIn: fadeIn,
+  fadeOut: fadeOut,
   strokeDecay: false,
 );
 
