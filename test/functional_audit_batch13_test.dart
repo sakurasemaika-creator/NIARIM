@@ -103,6 +103,9 @@ Future<Uint8List> _drawFade({required int segments}) async {
     final t = i / segments;
     e.continueStroke(StrokePoint(x: x0 + (x1 - x0) * t, y: 50), 'fade');
   }
+  if (e.needsFinalFadeReplay) {
+    e.replayCurrentStrokeWithFinalFade();
+  }
   e.endStroke();
   final image = await tm.compositeLayerToImage('fade');
   final d = await _rgba(image);
