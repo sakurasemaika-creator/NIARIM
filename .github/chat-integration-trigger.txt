@@ -1,1 +1,1 @@
-entry-exit-taper verification after analyze cleanup
+entry-exit-taper verification with entry-only exit-only short-stroke pressure cases
