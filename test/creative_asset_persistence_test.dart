@@ -145,6 +145,33 @@ void main() {
       expect(duplicate.fadeOut.rangePx, 211);
     });
 
+    test('niabrush export/importで入り/抜きの値と範囲を独立保持する', () async {
+      final service = BrushService();
+      await service.init();
+      final source = Brush(
+        id: 'BrushTaperBundle',
+        name: '入り抜きbundle',
+        size: 9,
+        opacity: 100,
+        spacing: 1,
+        stabilization: false,
+        stabilizationStrength: 0,
+        pixelMode: false,
+        fadeMode: FadeMode.custom,
+        fadeIn: const FadeEndpointSettings(value: 91, rangePx: 64),
+        fadeOut: const FadeEndpointSettings(value: 13, rangePx: 287),
+        strokeDecay: false,
+      );
+      service.addBrush(source);
+
+      final file = await service.exportBrush(source.id);
+      final imported = await service.importBrushFile(file.path);
+      expect(imported.fadeIn.value, 91);
+      expect(imported.fadeIn.rangePx, 64);
+      expect(imported.fadeOut.value, 13);
+      expect(imported.fadeOut.rangePx, 287);
+    });
+
   group('ToneService', () {
     test('自作トーンの追加とお気に入りが再起動後も復元される', () async {
       final s1 = ToneService();
