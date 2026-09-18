@@ -1,1 +1,1 @@
-entry-exit-taper verification 2026-09-17 23:10 JST
+entry-exit-taper verification after endpoint-finalization
