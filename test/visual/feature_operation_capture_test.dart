@@ -660,8 +660,29 @@ class _Harness {
     )))!;
     final tm = ps.tileManagerOf(projectId);
     final key = ps.tileKeyFor(projectId, sceneId, 0, layerId);
-    tm.getOrCreateTile(key, 0, 0).setAll(0, bytes);
-    tm.invalidateTile(key, 0, 0);
+    final project = ps.projects.firstWhere((p) => p.id == projectId);
+    final width = project.exportWidth;
+    final height = project.exportHeight;
+    for (var ty = 0; ty < tm.tilesY; ty++) {
+      for (var tx = 0; tx < tm.tilesX; tx++) {
+        final tile = tm.getOrCreateTile(key, tx, ty);
+        for (var py = 0; py < TileManager.tileSize; py++) {
+          final y = ty * TileManager.tileSize + py;
+          if (y >= height) break;
+          final copyWidth = math.min(TileManager.tileSize, width - tx * TileManager.tileSize);
+          if (copyWidth <= 0) break;
+          final srcOffset = (y * width + tx * TileManager.tileSize) * 4;
+          final dstOffset = py * TileManager.tileSize * 4;
+          tile.setRange(
+            dstOffset,
+            dstOffset + copyWidth * 4,
+            bytes,
+            srcOffset,
+          );
+        }
+        tm.invalidateTile(key, tx, ty);
+      }
+    }
     await tester.runAsync(() async {
       final image = await tm.compositeLayerToImage(key);
       image.dispose();
