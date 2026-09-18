@@ -48,3 +48,5 @@ jobs:
           flutter test test/engine/drawing_engine_wave_fold_contract_test.dart --reporter expanded
       - name: Targeted analyze
         run: flutter analyze lib/models/brush.dart lib/engine/brush_stroke_geometry.dart lib/engine/hair_fold_render_resolver.dart lib/engine/wave_hair_fold_geometry.dart lib/engine/drawing_engine.dart test/engine/drawing_engine_wave_fold_contract_test.dart --no-fatal-infos --no-fatal-warnings
+
+# production-chain trigger
