@@ -42,6 +42,7 @@ class DrawingEngine {
   double? _finalizedStrokeLengthOverride;
 
   String? get debugActiveBrushTexturePath => _brushTextureSelector.activePath;
+  void Function(List<WaveFoldPathSample>)? debugOnHairFoldRendered;
 
   Brush? currentBrush;
   ui.Color currentColor = const ui.Color(0xFF000000);
@@ -215,6 +216,7 @@ class DrawingEngine {
       taperRatio: brush.foldEndTaperRatio,
       outlineWidth: brush.outlineWidth,
     );
+    debugOnHairFoldRendered?.call(path);
     _renderHairFoldPath(path, layerId, ui.Color(brush.outlineColor));
   }
 
