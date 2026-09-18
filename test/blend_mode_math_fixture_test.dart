@@ -75,13 +75,13 @@ Future<List<int>> _compositePixel(
     1,
     1,
   );
-  final data = await image.toByteData(format: ui.ImageByteFormat.rawStraightRgba);
+  final data = await image.toByteData(format: ui.ImageByteFormat.rawRgba);
   image.dispose();
   tm.dispose();
-  return data!.buffer.asUint8List().take(4).toList();
+  return _unpremultiply(data!.buffer.asUint8List().take(4).toList());
 }
 
-Uint8List _premultiply(List<int> straight) {
+List<int> _unpremultiply(List<int> premultiplied) {\n  final alpha = premultiplied[3];\n  if (alpha == 0) return const [0, 0, 0, 0];\n  return <int>[\n    (premultiplied[0] * 255 / alpha).round().clamp(0, 255),\n    (premultiplied[1] * 255 / alpha).round().clamp(0, 255),\n    (premultiplied[2] * 255 / alpha).round().clamp(0, 255),\n    alpha,\n  ];\n}\n\nUint8List _premultiply(List<int> straight) {
   final alpha = straight[3] / 255.0;
   return Uint8List.fromList(<int>[
     (straight[0] * alpha).round(),
