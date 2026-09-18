@@ -3023,5 +3023,11 @@
   "brushYBranchAngle": "Y字枝分かれ角度",
   "brushYBranchLength": "Y字長さ",
   "brushYBranchWidth": "Y字太さ",
-  "brushYBranchEndTaper": "Y字終点入り抜き"
+  "brushYBranchEndTaper": "Y字終点入り抜き",
+  "brushFoldCurveStart": "カーブ開始位置",
+  "brushFoldLength": "折り返し長さ",
+  "brushFoldCurveStrength": "カーブ強度",
+  "brushFoldWave": "ウェーブ",
+  "brushFoldWaveEndpointRange": "終点からウェーブにする範囲",
+  "brushFoldWaveTriggerAngle": "ウェーブ発生角度"
 }
