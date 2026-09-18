@@ -111,7 +111,7 @@ class FoldPathSample {
 List<FoldPathSample> buildStraightFoldPath(
   FoldEvent event, {
   required double curveStartRatio,
-  required double depthRatio,
+  required int curveStrength,
   required double lengthRatio,
   required double taperRatio,
   double outlineWidth = 1,
@@ -125,13 +125,13 @@ List<FoldPathSample> buildStraightFoldPath(
   if (tangent == Offset.zero || inward == Offset.zero) return const [];
 
   final safeLengthRatio = _finiteClamp(lengthRatio, .1, 3.0, .6);
-  final safeDepthRatio = _finiteClamp(depthRatio, 0, 1.5, .5);
+  final safeCurveStrength = curveStrength.clamp(1, 10).toInt();
   final safeCurveStartRatio = _finiteClamp(curveStartRatio, 0, safeLengthRatio, .25);
   final safeTaper = _finiteClamp(taperRatio, 0, 1, .4);
   final safeOutlineWidth = outlineWidth.isFinite ? math.max(0.0, outlineWidth) : 0.0;
   final totalLength = effectiveWidth * safeLengthRatio;
   final curveStartDistance = math.min(effectiveWidth * safeCurveStartRatio, totalLength * .9);
-  final targetDepth = effectiveWidth * safeDepthRatio;
+  final targetDepth = effectiveWidth;
   final straightFraction = totalLength <= 1e-9 ? 0.0 : curveStartDistance / totalLength;
   final count = sampleCount.clamp(8, 96).toInt();
   final origin = event.sample.documentPosition;
@@ -139,7 +139,11 @@ List<FoldPathSample> buildStraightFoldPath(
   // Cubic control points preserve the initial tangent. Increasing the requested
   // curve-start distance visibly delays the inward bend. The terminal tangent
   // is biased by the source signed curvature instead of a user-authored Y angle.
-  final curvature = (event.signedTurnRadians.abs() / math.pi).clamp(.15, 1.0).toDouble();
+  final sourceCurvature = (event.signedTurnRadians.abs() / math.pi).clamp(.15, 1.0).toDouble();
+  // 5 is neutral (1.0x source curvature); lower values relax the bend and
+  // higher values tighten it without ever changing the detected inward side.
+  final strengthMultiplier = 0.5 + (safeCurveStrength - 1) * 0.125;
+  final curvature = (sourceCurvature * strengthMultiplier).clamp(.075, 1.75).toDouble();
   final remaining = math.max(totalLength - curveStartDistance, totalLength * .1);
   final p3 = origin + tangent * (totalLength * .72) + inward * targetDepth;
   final p2 = p3 - tangent * (remaining * (.28 + .22 * curvature)) - inward * (targetDepth * .12);
