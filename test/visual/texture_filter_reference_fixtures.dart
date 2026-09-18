@@ -2,8 +2,9 @@ import 'dart:convert';
 import 'dart:typed_data';
 import 'package:image/image.dart' as img;
 
-// User-provided texture-filter verification references (2026-09-18),
-// resized to 192x192 JPEG only for deterministic test-fixture embedding.
+// Legacy texture-filter verification references. These 192x192 JPEG fixtures
+// must never be upscaled and presented as full-resolution texture-filter evidence.
+// Full-resolution production captures require the original source pixels.
 Uint8List textureReferenceFixture(String kind) => base64Decode(switch (kind) {
   'textureReference3' => _reference3,
   'textureReference4' => _reference4,
@@ -24,6 +25,14 @@ Uint8List textureReferenceRgba(
   }
   final targetWidth = width ?? decoded.width;
   final targetHeight = height ?? decoded.height;
+  if (targetWidth > decoded.width || targetHeight > decoded.height) {
+    throw StateError(
+      'Refusing to upscale legacy texture fixture $kind '
+      'from ${decoded.width}x${decoded.height} to '
+      '${targetWidth}x${targetHeight}. Use the original full-resolution '
+      'source for texture-filter verification.',
+    );
+  }
   final resized = decoded.width == targetWidth && decoded.height == targetHeight
       ? decoded
       : img.copyResize(decoded, width: targetWidth, height: targetHeight);
