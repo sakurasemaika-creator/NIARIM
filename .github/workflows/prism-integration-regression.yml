@@ -7,6 +7,12 @@ on:
       - '.github/workflows/prism-integration-regression.yml'
       - 'lib/engine/prism_filter_engine.dart'
       - 'lib/models/filter_def.dart'
+      - 'lib/models/layer.dart'
+      - 'lib/engine/layer_compositor.dart'
+      - 'lib/screens/canvas/widgets/layer_panel.dart'
+      - 'lib/l10n/**'
+      - 'test/models/blend_mode_refresh_contract_test.dart'
+      - 'test/prism_filter_completion_test.dart'
       - 'lib/services/filter_service.dart'
       - 'lib/screens/canvas/widgets/filter_panel.dart'
       - 'test/prism_integration_regression_test.dart'
@@ -26,5 +32,5 @@ jobs:
           channel: stable
           cache: true
       - run: flutter pub get
-      - run: flutter test test/prism_integration_regression_test.dart --reporter expanded
-      - run: flutter analyze lib/engine/prism_filter_engine.dart lib/models/filter_def.dart lib/services/filter_service.dart lib/screens/canvas/widgets/filter_panel.dart test/prism_integration_regression_test.dart
+      - run: flutter test test/prism_integration_regression_test.dart test/prism_filter_completion_test.dart test/models/blend_mode_refresh_contract_test.dart --reporter expanded
+      - run: flutter analyze lib/engine/prism_filter_engine.dart lib/engine/layer_compositor.dart lib/models/filter_def.dart lib/models/layer.dart lib/services/filter_service.dart lib/screens/canvas/widgets/filter_panel.dart lib/screens/canvas/widgets/layer_panel.dart test/prism_integration_regression_test.dart test/prism_filter_completion_test.dart test/models/blend_mode_refresh_contract_test.dart
