@@ -1294,7 +1294,7 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get helpFadeDesc =>
-      '画笔设置之一，随着笔画的持续绘制，不透明度或粗细会逐渐减少的效果。用于想让线条末端产生渐隐感，或想营造带有余韵的笔触时。';
+      '用于调整笔画两端形状的画笔设置。在自定义模式下，可分别独立设置“起笔（笔画开始）”与“收笔（笔画结束）”的强度和作用范围，因此可以只收细一端，或让两端使用不同的渐变长度。';
 
   @override
   String get helpStrokeDecayTitle => '笔画衰减';
