@@ -31,6 +31,16 @@ jobs:
       - name: 依存関係取得
         run: flutter pub get
 
+      - name: 質感変更フィルター全12色 production UI実キャプチャ
+        run: |
+          for preset in aurora soapBubble cyberNeon pastelDream sunsetGold silverFoil classicHologram pearl2 blueHologram lightBlueHologram purpleHologram blueGreenHologram; do
+            CI=true flutter test test/visual/feature_operation_capture_test.dart --reporter expanded \
+              --dart-define=CAPTURE_GROUP=filters \
+              --dart-define=CAPTURE_MATCH=Filter0019_${preset}
+            mkdir -p "build/hologram-preset-captures/${preset}"
+            cp -a build/feature-captures/filters/. "build/hologram-preset-captures/${preset}/"
+          done
+
       - name: キャンバス1/5縮小・斜め回転・背景端実操作監査
         run: flutter test test/canvas_angle_boundary_visual_audit_test.dart --reporter expanded
 
@@ -54,16 +64,6 @@ jobs:
         run: |
           flutter test test/strict_visual_evidence_audit_test.dart --reporter expanded
           flutter test test/final_remaining_strict_evidence_test.dart --reporter expanded
-
-      - name: 質感変更フィルター全12色 production UI実キャプチャ
-        run: |
-          for preset in aurora soapBubble cyberNeon pastelDream sunsetGold silverFoil classicHologram pearl2 blueHologram lightBlueHologram purpleHologram blueGreenHologram; do
-            CI=true flutter test test/visual/feature_operation_capture_test.dart --reporter expanded \
-              --dart-define=CAPTURE_GROUP=filters \
-              --dart-define=CAPTURE_MATCH=Filter0019_${preset}
-            mkdir -p "build/hologram-preset-captures/${preset}"
-            cp -a build/feature-captures/filters/. "build/hologram-preset-captures/${preset}/"
-          done
 
       - name: 機能別レンダリング画像を保存
         if: always()
