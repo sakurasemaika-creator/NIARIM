@@ -55,8 +55,8 @@ Future<List<int>> _compositePixel(
   List<int> source,
 ) async {
   final tm = TileManager(canvasWidth: 1, canvasHeight: 1);
-  tm.replaceLayerPixels('scene#0#backdrop', Uint8List.fromList(backdrop));
-  tm.replaceLayerPixels('scene#0#source', Uint8List.fromList(source));
+  tm.replaceLayerPixels('scene#0#backdrop', _premultiply(backdrop));
+  tm.replaceLayerPixels('scene#0#source', _premultiply(source));
   final image = await LayerCompositor.composite(
     tm,
     <Layer>[
@@ -76,10 +76,20 @@ Future<List<int>> _compositePixel(
     1,
     1,
   );
-  final data = await image.toByteData(format: ui.ImageByteFormat.rawRgba);
+  final data = await image.toByteData(format: ui.ImageByteFormat.rawStraightRgba);
   image.dispose();
   tm.dispose();
-  return _unpremultiply(data!.buffer.asUint8List().take(4).toList());
+  return data!.buffer.asUint8List().take(4).toList();
+}
+
+Uint8List _premultiply(List<int> straight) {
+  final alpha = straight[3] / 255.0;
+  return Uint8List.fromList(<int>[
+    (straight[0] * alpha).round(),
+    (straight[1] * alpha).round(),
+    (straight[2] * alpha).round(),
+    straight[3],
+  ]);
 }
 
 List<int> _unpremultiply(List<int> premultiplied) {
