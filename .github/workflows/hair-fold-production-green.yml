@@ -15,6 +15,9 @@ on:
       - 'test/engine/wave_hair_fold_geometry_test.dart'
       - 'test/engine/hair_fold_render_resolver_test.dart'
       - 'test/engine/drawing_engine_wave_fold_contract_test.dart'
+      - 'test/engine/brush_texture_cache_test.dart'
+      - 'assets/brushes/**'
+      - 'pubspec.yaml'
   workflow_dispatch:
 
 concurrency:
