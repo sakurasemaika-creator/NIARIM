@@ -16,7 +16,9 @@ Future<void> _capture(Brush brush, String name) async {
   }
 
   final tiles = TileManager(canvasWidth: 720, canvasHeight: 520);
+  var foldEvents = 0;
   final engine = DrawingEngine(tileManager: tiles)
+    ..debugOnHairFoldRendered = (_) => foldEvents++
     ..currentBrush = brush
     ..currentColor = const ui.Color(0xFF202020);
   const layer = 'hair-fold-capture';
@@ -53,6 +55,8 @@ Future<void> _capture(Brush brush, String name) async {
     }
     engine.endStroke();
   }
+
+  expect(foldEvents, greaterThan(0), reason: 'capture did not render any fold');
 
   final image = await tiles.compositeLayerToImage(layer);
   final data = await image.toByteData(format: ui.ImageByteFormat.png);
