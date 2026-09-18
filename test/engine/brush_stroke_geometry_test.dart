@@ -105,32 +105,49 @@ void main() {
       screenDistance: 40,
     );
 
-    test('length and depth are effective-width ratios', () {
+    test('length follows effective width and fold depth is automatic', () {
       final path = buildStraightFoldPath(
         event,
         curveStartRatio: .25,
-        depthRatio: .5,
+        curveStrength: 5,
         lengthRatio: .75,
         taperRatio: .4,
       );
       expect(path.length, greaterThan(3));
       expect(path.last.distanceFromStart, closeTo(30, 1.0));
       expect(path.map((p) => p.position.dy).reduce((a, b) => a > b ? a : b),
-          greaterThanOrEqualTo(19));
+          greaterThanOrEqualTo(39));
+    });
+
+    test('curve strength 5 is neutral and 1/10 relax/tighten the bend', () {
+      List<FoldPathSample> path(int strength) => buildStraightFoldPath(
+        event,
+        curveStartRatio: .25,
+        curveStrength: strength,
+        lengthRatio: .8,
+        taperRatio: .4,
+      );
+      final gentle = path(1);
+      final neutral = path(5);
+      final tight = path(10);
+      double inwardAtMid(List<FoldPathSample> p) =>
+          p[p.length ~/ 2].position.dy - event.sample.documentPosition.dy;
+      expect(inwardAtMid(gentle), lessThan(inwardAtMid(neutral)));
+      expect(inwardAtMid(neutral), lessThan(inwardAtMid(tight)));
     });
 
     test('curve-start ratio delays bending without changing initial tangent', () {
       final early = buildStraightFoldPath(
         event,
         curveStartRatio: .1,
-        depthRatio: .5,
+        curveStrength: 5,
         lengthRatio: .8,
         taperRatio: .4,
       );
       final late = buildStraightFoldPath(
         event,
         curveStartRatio: .6,
-        depthRatio: .5,
+        curveStrength: 5,
         lengthRatio: .8,
         taperRatio: .4,
       );
@@ -152,7 +169,7 @@ void main() {
       final path = buildStraightFoldPath(
         event,
         curveStartRatio: .25,
-        depthRatio: .5,
+        curveStrength: 5,
         lengthRatio: .75,
         taperRatio: .5,
         outlineWidth: 6,
@@ -173,14 +190,14 @@ void main() {
       final a = buildStraightFoldPath(
         event,
         curveStartRatio: .25,
-        depthRatio: .5,
+        curveStrength: 5,
         lengthRatio: .75,
         taperRatio: .4,
       );
       final b = buildStraightFoldPath(
         opposite,
         curveStartRatio: .25,
-        depthRatio: .5,
+        curveStrength: 5,
         lengthRatio: .75,
         taperRatio: .4,
       );
