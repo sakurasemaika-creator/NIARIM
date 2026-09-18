@@ -8318,6 +8318,10 @@ class _EffectFilterSheet extends StatelessWidget {
       l10n.filterAuroraHologramPresetClassicHologram,
 
     AuroraHologramPreset.pearl2 => l10n.filterAuroraHologramPresetPearl2,
+    AuroraHologramPreset.blueHologram => 'ブルーホログラム',
+    AuroraHologramPreset.lightBlueHologram => 'ライトブルーホログラム',
+    AuroraHologramPreset.purpleHologram => 'パープルホログラム',
+    AuroraHologramPreset.blueGreenHologram => 'ブルーグリーンホログラム',
   };
 
   void _pickFadeColor(BuildContext context, EffectFilterInstance e) {
