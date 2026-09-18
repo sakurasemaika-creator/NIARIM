@@ -27,6 +27,29 @@ void main() {
   });
 
 
+  test('pixelSize 1 shared color route obeys strict requested color count', () {
+    final input = Uint8List.fromList([
+      255, 0, 0, 255,
+      0, 255, 0, 255,
+      0, 0, 255, 255,
+      255, 255, 0, 255,
+    ]);
+    final out = engine.convert(
+      input,
+      4,
+      1,
+      pixelSize: 1,
+      colorMode: PixelColorMode.count,
+      colorLevels: 2,
+    );
+    final colors = <String>{};
+    for (var i = 0; i < out.length; i += 4) {
+      colors.add('${out[i]},${out[i + 1]},${out[i + 2]}');
+      expect(out[i + 3], 255);
+    }
+    expect(colors.length, lessThanOrEqualTo(2));
+  });
+
   test('vertical opaque boundary stays hard', () {
     final input = Uint8List.fromList([
       255, 0, 0, 255, 0, 0, 255, 255,
