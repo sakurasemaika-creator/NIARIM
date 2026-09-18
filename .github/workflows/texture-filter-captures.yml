@@ -8,6 +8,8 @@ on:
     paths:
       - 'lib/models/filter_def.dart'
       - 'lib/engine/filter_engine.dart'
+      - 'lib/services/filter_service.dart'
+      - 'test/filter_engine_aurora_hologram_test.dart'
       - 'lib/screens/canvas/widgets/filter_panel.dart'
       - 'test/visual/feature_operation_capture_test.dart'
       - 'test/visual/texture_filter_reference_fixtures.dart'
