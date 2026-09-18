@@ -19,7 +19,7 @@ class BrushExtensionLabels {
   final String foldLength;
   final String foldCurveStrength;
   final String foldWave;
-  final String foldWaveEndpointRange;
+  final String foldWaveEndRatio;
   final String foldWaveTriggerAngle;
 
   const BrushExtensionLabels({
@@ -37,7 +37,7 @@ class BrushExtensionLabels {
     required this.foldLength,
     required this.foldCurveStrength,
     required this.foldWave,
-    required this.foldWaveEndpointRange,
+    required this.foldWaveEndRatio,
     required this.foldWaveTriggerAngle,
   });
 
@@ -57,7 +57,7 @@ class BrushExtensionLabels {
         foldLength: l.brushFoldLength,
         foldCurveStrength: l.brushFoldCurveStrength,
         foldWave: l.brushFoldWave,
-        foldWaveEndpointRange: l.brushFoldWaveEndpointRange,
+        foldWaveEndRatio: l.brushFoldWaveEndpointRange,
         foldWaveTriggerAngle: l.brushFoldWaveTriggerAngle,
       );
 
@@ -76,7 +76,7 @@ class BrushExtensionLabels {
       foldLength = '折り返し長さ',
       foldCurveStrength = 'カーブ強度',
       foldWave = 'ウェーブ',
-      foldWaveEndpointRange = '終点からウェーブにする範囲',
+      foldWaveEndRatio = '終点からウェーブにする範囲',
       foldWaveTriggerAngle = 'ウェーブ発生角度';
 }
 
@@ -235,9 +235,9 @@ class _BrushExtensionSettingsState extends State<BrushExtensionSettings> {
             ),
             if (_brush.foldWaveEnabled) ...[
               _ratioSlider(
-                l.foldWaveEndpointRange,
-                _brush.foldWaveEndpointRange,
-                (v) => _set(_brush.copyWith(foldWaveEndpointRange: v)),
+                l.foldWaveEndRatio,
+                _brush.foldWaveEndRatio,
+                (v) => _set(_brush.copyWith(foldWaveEndRatio: v)),
               ),
               _slider(
                 l.foldWaveTriggerAngle,
