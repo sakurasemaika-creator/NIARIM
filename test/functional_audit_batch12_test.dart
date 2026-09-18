@@ -205,7 +205,8 @@ void main() {
 Brush _brush({
   required double size,
   FadeMode fadeMode = FadeMode.off,
-  FadeCustomSettings? fadeCustom,
+  FadeEndpointSettings fadeIn = FadeEndpointSettings.full,
+  FadeEndpointSettings fadeOut = FadeEndpointSettings.full,
   PressureRangeSetting sizePressure = const PressureRangeSetting(
     enabled: false,
     weak: 50,
@@ -231,7 +232,8 @@ Brush _brush({
     opacity: opacityPressure,
   ),
   fadeMode: fadeMode,
-  fadeCustom: fadeCustom,
+  fadeIn: fadeIn,
+  fadeOut: fadeOut,
   strokeDecay: strokeDecay,
 );
 
