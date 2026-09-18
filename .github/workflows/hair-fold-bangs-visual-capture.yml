@@ -1,0 +1,43 @@
+name: Hair Fold Bangs Visual Capture
+
+on:
+  push:
+    branches: [dev_branch]
+    paths:
+      - '.github/workflows/hair-fold-bangs-visual-capture.yml'
+      - 'test/visual/hair_fold_bangs_render_capture_test.dart'
+      - 'lib/engine/drawing_engine.dart'
+      - 'lib/engine/brush_texture_cache.dart'
+      - 'lib/engine/hair_fold_render_resolver.dart'
+      - 'lib/engine/wave_hair_fold_geometry.dart'
+      - 'lib/models/brush.dart'
+      - 'lib/models/brush_presets_extension.dart'
+      - 'assets/brushes/**'
+      - 'pubspec.yaml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  capture:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803
+      - uses: subosito/flutter-action@1a449444c387b1966244ae4d4f8c696479add0b2
+        with:
+          channel: stable
+          cache: false
+      - run: flutter pub get --enforce-lockfile
+      - name: Verify capture source
+        run: |
+          dart format --output=none --set-exit-if-changed test/visual/hair_fold_bangs_render_capture_test.dart
+          flutter analyze test/visual/hair_fold_bangs_render_capture_test.dart --no-fatal-infos --no-fatal-warnings
+      - name: Capture actual production DrawingEngine bangs
+        run: flutter test test/visual/hair_fold_bangs_render_capture_test.dart --reporter expanded
+      - uses: actions/upload-artifact@v4
+        with:
+          name: hair-fold-bangs-captures
+          path: build/hair_fold_visual/*.png
+          if-no-files-found: error
