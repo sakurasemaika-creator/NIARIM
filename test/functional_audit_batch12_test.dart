@@ -58,11 +58,8 @@ void main() {
       ..currentBrush = _brush(
         size: 28,
         fadeMode: FadeMode.custom,
-        fadeCustom: const FadeCustomSettings(
-          startValue: 100,
-          endValue: 30,
-          distancePx: 120,
-        ),
+        fadeIn: const FadeEndpointSettings(value: 100, rangePx: 60),
+        fadeOut: const FadeEndpointSettings(value: 30, rangePx: 120),
       )
       ..currentColor = const ui.Color(0xFFB03040);
     _line(
