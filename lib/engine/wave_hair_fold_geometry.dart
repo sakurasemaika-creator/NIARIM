@@ -32,7 +32,7 @@ class WaveFoldPathSample {
 List<WaveFoldPathSample> buildWaveFoldPath(
   FoldEvent event, {
   required double curveStartRatio,
-  required double depthRatio,
+  required int curveStrength,
   required double lengthRatio,
   required double waveEndRatio,
   required double waveTriggerAngleDegrees,
@@ -46,7 +46,7 @@ List<WaveFoldPathSample> buildWaveFoldPath(
   final straight = buildStraightFoldPath(
     event,
     curveStartRatio: curveStartRatio,
-    depthRatio: depthRatio,
+    curveStrength: curveStrength,
     lengthRatio: lengthRatio,
     taperRatio: taperRatio,
     outlineWidth: outlineWidth,
