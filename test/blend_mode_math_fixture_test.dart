@@ -92,17 +92,6 @@ Uint8List _premultiply(List<int> straight) {
   ]);
 }
 
-List<int> _unpremultiply(List<int> premultiplied) {
-  final alpha = premultiplied[3];
-  if (alpha == 0) return const [0, 0, 0, 0];
-  return <int>[
-    (premultiplied[0] * 255 / alpha).round().clamp(0, 255),
-    (premultiplied[1] * 255 / alpha).round().clamp(0, 255),
-    (premultiplied[2] * 255 / alpha).round().clamp(0, 255),
-    alpha,
-  ];
-}
-
 List<int> _reference(
   LayerBlendMode mode,
   List<int> backdrop,
