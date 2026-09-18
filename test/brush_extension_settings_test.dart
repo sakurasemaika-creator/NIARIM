@@ -54,10 +54,33 @@ void main() {
     await tester.tap(find.text('折り返し'));
     await tester.pump();
     expect(find.text('発生角度'), findsOneWidget);
-    expect(find.text('Y字枝分かれ角度'), findsOneWidget);
-    expect(find.text('Y字長さ'), findsOneWidget);
-    expect(find.text('Y字太さ'), findsOneWidget);
-    expect(find.text('Y字終点入り抜き'), findsOneWidget);
+    expect(find.text('カーブ開始位置'), findsOneWidget);
+    expect(find.text('折り返し長さ'), findsOneWidget);
+    expect(find.text('カーブ強度'), findsOneWidget);
+    expect(find.text('ウェーブ'), findsOneWidget);
+    expect(find.text('終点からウェーブにする範囲'), findsNothing);
+    expect(find.text('ウェーブ発生角度'), findsNothing);
+    expect(find.text('Y字枝分かれ角度'), findsNothing);
+    expect(find.text('Y字太さ'), findsNothing);
+
+    await tester.tap(find.text('ウェーブ'));
+    await tester.pump();
+    expect(find.text('終点からウェーブにする範囲'), findsOneWidget);
+    expect(find.text('ウェーブ発生角度'), findsOneWidget);
+  });
+
+
+  testWidgets('curve strength uses ten discrete levels with neutral five', (tester) async {
+    await tester.pumpWidget(host(
+      base.copyWith(outlineEnabled: true, foldEnabled: true),
+      (_) {},
+    ));
+    final sliders = tester.widgetList<Slider>(find.byType(Slider)).toList();
+    final strength = sliders.singleWhere(
+      (slider) => slider.min == 1 && slider.max == 10,
+    );
+    expect(strength.value, 5);
+    expect(strength.divisions, 9);
   });
 
   testWidgets('outline exposes picker and eyedropper actions', (tester) async {
