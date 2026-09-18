@@ -5,6 +5,7 @@ import 'dart:ui' as ui;
 import 'package:flutter_test/flutter_test.dart';
 import 'package:niarim/engine/brush_texture_cache.dart';
 import 'package:niarim/engine/drawing_engine.dart';
+import 'package:niarim/engine/wave_hair_fold_geometry.dart';
 import 'package:niarim/engine/tile_manager.dart';
 import 'package:niarim/models/brush.dart';
 import 'package:niarim/models/brush_presets_extension.dart';
@@ -17,9 +18,11 @@ Future<void> _capture(Brush brush, String name) async {
 
   final tiles = TileManager(canvasWidth: 720, canvasHeight: 520);
   var foldEvents = 0;
+  final foldPaths = <List<WaveFoldPathSample>>[];
   final engine = DrawingEngine(tileManager: tiles)
-    ..debugOnHairFoldRendered = (_) {
+    ..debugOnHairFoldRendered = (path) {
       foldEvents++;
+      foldPaths.add(path);
     }
     ..currentBrush = brush
     ..currentColor = const ui.Color(0xFF202020);
@@ -59,6 +62,8 @@ Future<void> _capture(Brush brush, String name) async {
   }
 
   expect(foldEvents, greaterThan(0), reason: 'capture did not render any fold');
+  expect(foldPaths.every((path) => path.isNotEmpty), isTrue);
+  expect(foldPaths.every((path) => path.last.distanceFromStart > 0), isTrue);
 
   final image = await tiles.compositeLayerToImage(layer);
   final data = await image.toByteData(format: ui.ImageByteFormat.png);
