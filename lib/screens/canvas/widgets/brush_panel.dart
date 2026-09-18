@@ -726,14 +726,50 @@ class _BrushSettingsSheetState extends State<_BrushSettingsSheet> {
                 ),
               ),
               if (_brush.fadeMode == FadeMode.custom) ...[
-                _sliderRow(l10n.brushSettingsFadeStartValueLabel, _brush.fadeIn.value, 0, 100,
-                  (v) => setState(() => _brush = _brush.copyWith(fadeIn: _brush.fadeIn.copyWith(value: v)))),
-                _sliderRow('${l10n.brushSettingsFadeDistanceLabel} (${l10n.brushSettingsFadeStartValueLabel})', _brush.fadeIn.rangePx, 10, 2000,
-                  (v) => setState(() => _brush = _brush.copyWith(fadeIn: _brush.fadeIn.copyWith(rangePx: v)))),
-                _sliderRow(l10n.brushSettingsFadeEndValueLabel, _brush.fadeOut.value, 0, 100,
-                  (v) => setState(() => _brush = _brush.copyWith(fadeOut: _brush.fadeOut.copyWith(value: v)))),
-                _sliderRow('${l10n.brushSettingsFadeDistanceLabel} (${l10n.brushSettingsFadeEndValueLabel})', _brush.fadeOut.rangePx, 10, 2000,
-                  (v) => setState(() => _brush = _brush.copyWith(fadeOut: _brush.fadeOut.copyWith(rangePx: v)))),
+                _sliderRow(
+                  l10n.brushSettingsFadeStartValueLabel,
+                  _brush.fadeIn.value,
+                  0,
+                  100,
+                  (v) => setState(
+                    () => _brush = _brush.copyWith(
+                      fadeIn: _brush.fadeIn.copyWith(value: v),
+                    ),
+                  ),
+                ),
+                _sliderRow(
+                  '${l10n.brushSettingsFadeDistanceLabel} (${l10n.brushSettingsFadeStartValueLabel})',
+                  _brush.fadeIn.rangePx,
+                  10,
+                  2000,
+                  (v) => setState(
+                    () => _brush = _brush.copyWith(
+                      fadeIn: _brush.fadeIn.copyWith(rangePx: v),
+                    ),
+                  ),
+                ),
+                _sliderRow(
+                  l10n.brushSettingsFadeEndValueLabel,
+                  _brush.fadeOut.value,
+                  0,
+                  100,
+                  (v) => setState(
+                    () => _brush = _brush.copyWith(
+                      fadeOut: _brush.fadeOut.copyWith(value: v),
+                    ),
+                  ),
+                ),
+                _sliderRow(
+                  '${l10n.brushSettingsFadeDistanceLabel} (${l10n.brushSettingsFadeEndValueLabel})',
+                  _brush.fadeOut.rangePx,
+                  10,
+                  2000,
+                  (v) => setState(
+                    () => _brush = _brush.copyWith(
+                      fadeOut: _brush.fadeOut.copyWith(rangePx: v),
+                    ),
+                  ),
+                ),
               ],
               SwitchListTile(
                 title: Text(l10n.brushSettingsStrokeDecayTitle),
