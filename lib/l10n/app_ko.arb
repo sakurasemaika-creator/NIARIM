@@ -2718,5 +2718,11 @@
   "brushYBranchAngle": "Y자 가지 각도",
   "brushYBranchLength": "Y자 길이",
   "brushYBranchWidth": "Y자 두께",
-  "brushYBranchEndTaper": "Y자 끝 테이퍼"
+  "brushYBranchEndTaper": "Y자 끝 테이퍼",
+  "brushFoldCurveStart": "커브 시작 위치",
+  "brushFoldLength": "접힘 길이",
+  "brushFoldCurveStrength": "커브 강도",
+  "brushFoldWave": "웨이브",
+  "brushFoldWaveEndpointRange": "끝점부터 웨이브 범위",
+  "brushFoldWaveTriggerAngle": "웨이브 발생 각도"
 }
