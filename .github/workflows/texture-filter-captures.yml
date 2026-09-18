@@ -1,5 +1,5 @@
 name: Texture Filter Captures
-# rerun 100% gradient-map captures after pre-release cleanup
+# rerun full-resolution 100% gradient-map captures
 
 on:
   workflow_dispatch:
