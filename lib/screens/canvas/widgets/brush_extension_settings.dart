@@ -15,10 +15,12 @@ class BrushExtensionLabels {
   final String eyedropper;
   final String fold;
   final String foldTriggerAngle;
-  final String yBranchAngle;
-  final String yBranchLength;
-  final String yBranchWidth;
-  final String yBranchEndTaper;
+  final String foldCurveStart;
+  final String foldLength;
+  final String foldCurveStrength;
+  final String foldWave;
+  final String foldWaveEndpointRange;
+  final String foldWaveTriggerAngle;
 
   const BrushExtensionLabels({
     required this.lateralRepeat,
@@ -31,10 +33,12 @@ class BrushExtensionLabels {
     required this.eyedropper,
     required this.fold,
     required this.foldTriggerAngle,
-    required this.yBranchAngle,
-    required this.yBranchLength,
-    required this.yBranchWidth,
-    required this.yBranchEndTaper,
+    required this.foldCurveStart,
+    required this.foldLength,
+    required this.foldCurveStrength,
+    required this.foldWave,
+    required this.foldWaveEndpointRange,
+    required this.foldWaveTriggerAngle,
   });
 
   factory BrushExtensionLabels.fromLocalizations(AppLocalizations l) =>
@@ -49,10 +53,12 @@ class BrushExtensionLabels {
         eyedropper: l.brushOutlineEyedropper,
         fold: l.brushFold,
         foldTriggerAngle: l.brushFoldTriggerAngle,
-        yBranchAngle: l.brushYBranchAngle,
-        yBranchLength: l.brushYBranchLength,
-        yBranchWidth: l.brushYBranchWidth,
-        yBranchEndTaper: l.brushYBranchEndTaper,
+        foldCurveStart: l.brushFoldCurveStart,
+        foldLength: l.brushFoldLength,
+        foldCurveStrength: l.brushFoldCurveStrength,
+        foldWave: l.brushFoldWave,
+        foldWaveEndpointRange: l.brushFoldWaveEndpointRange,
+        foldWaveTriggerAngle: l.brushFoldWaveTriggerAngle,
       );
 
   const BrushExtensionLabels.japanese()
@@ -66,10 +72,12 @@ class BrushExtensionLabels {
       eyedropper = 'スポイト',
       fold = '折り返し',
       foldTriggerAngle = '発生角度',
-      yBranchAngle = 'Y字枝分かれ角度',
-      yBranchLength = 'Y字長さ',
-      yBranchWidth = 'Y字太さ',
-      yBranchEndTaper = 'Y字終点入り抜き';
+      foldCurveStart = 'カーブ開始位置',
+      foldLength = '折り返し長さ',
+      foldCurveStrength = 'カーブ強度',
+      foldWave = 'ウェーブ',
+      foldWaveEndpointRange = '終点からウェーブにする範囲',
+      foldWaveTriggerAngle = 'ウェーブ発生角度';
 }
 
 class BrushExtensionSettings extends StatefulWidget {
@@ -201,30 +209,45 @@ class _BrushExtensionSettingsState extends State<BrushExtensionSettings> {
               (v) => _set(_brush.copyWith(foldTriggerAngle: v)),
               suffix: '°',
             ),
-            _slider(
-              l.yBranchAngle,
-              _brush.yBranchAngle,
+            _ratioSlider(
+              l.foldCurveStart,
+              _brush.foldCurveStartRatio,
+              (v) => _set(_brush.copyWith(foldCurveStartRatio: v)),
+            ),
+            _ratioSlider(
+              l.foldLength,
+              _brush.foldLengthRatio,
+              (v) => _set(_brush.copyWith(foldLengthRatio: v)),
+              max: 2,
+            ),
+            _integerSlider(
+              l.foldCurveStrength,
+              _brush.foldCurveStrength,
+              1,
               10,
-              120,
-              (v) => _set(_brush.copyWith(yBranchAngle: v)),
-              suffix: '°',
+              (v) => _set(_brush.copyWith(foldCurveStrength: v)),
             ),
-            _ratioSlider(
-              l.yBranchLength,
-              _brush.yBranchLengthRatio,
-              (v) => _set(_brush.copyWith(yBranchLengthRatio: v)),
+            SwitchListTile(
+              dense: true,
+              title: Text(l.foldWave),
+              value: _brush.foldWaveEnabled,
+              onChanged: (v) => _set(_brush.copyWith(foldWaveEnabled: v)),
             ),
-            _ratioSlider(
-              l.yBranchWidth,
-              _brush.yBranchWidthRatio,
-              (v) => _set(_brush.copyWith(yBranchWidthRatio: v)),
-              max: 0.5,
-            ),
-            _ratioSlider(
-              l.yBranchEndTaper,
-              _brush.yBranchEndTaperRatio,
-              (v) => _set(_brush.copyWith(yBranchEndTaperRatio: v)),
-            ),
+            if (_brush.foldWaveEnabled) ...[
+              _ratioSlider(
+                l.foldWaveEndpointRange,
+                _brush.foldWaveEndpointRange,
+                (v) => _set(_brush.copyWith(foldWaveEndpointRange: v)),
+              ),
+              _slider(
+                l.foldWaveTriggerAngle,
+                _brush.foldWaveTriggerAngle,
+                5,
+                170,
+                (v) => _set(_brush.copyWith(foldWaveTriggerAngle: v)),
+                suffix: '°',
+              ),
+            ],
           ],
         ],
       ],
