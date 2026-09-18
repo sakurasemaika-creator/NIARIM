@@ -27,22 +27,8 @@ jobs:
           channel: stable
           cache: false
       - run: flutter pub get --enforce-lockfile
-      - name: Apply model implementation
-        run: |
-          python3 .github/scripts/implement_hair_fold_model_v2.py
-          dart format lib/models/brush.dart test/hair_fold_settings_model_test.dart test/engine/straight_hair_fold_geometry_test.dart lib/engine/brush_stroke_geometry.dart
+      - name: Format current model implementation
+        run: dart format lib/models/brush.dart test/hair_fold_settings_model_test.dart test/engine/straight_hair_fold_geometry_test.dart lib/engine/brush_stroke_geometry.dart
       - run: flutter test test/hair_fold_settings_model_test.dart --reporter expanded
       - run: flutter test test/engine/straight_hair_fold_geometry_test.dart --reporter expanded
       - run: flutter analyze lib/models/brush.dart test/hair_fold_settings_model_test.dart lib/engine/brush_stroke_geometry.dart test/engine/straight_hair_fold_geometry_test.dart --no-fatal-infos --no-fatal-warnings
-      - name: Persist verified model
-        run: |
-          if git diff --quiet -- lib/models/brush.dart test/hair_fold_settings_model_test.dart; then
-            exit 0
-          fi
-          git config user.name 'github-actions[bot]'
-          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          git add lib/models/brush.dart test/hair_fold_settings_model_test.dart
-          git commit -m 'feat: add hair fold wave lifecycle settings'
-          git fetch origin dev_branch
-          git rebase --autostash origin/dev_branch
-          git push origin HEAD:dev_branch
