@@ -249,6 +249,9 @@ void _line(
       layer,
     );
   }
+  if (e.needsFinalFadeReplay) {
+    e.replayCurrentStrokeWithFinalFade();
+  }
   e.endStroke();
 }
 
