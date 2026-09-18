@@ -2718,5 +2718,11 @@
   "brushYBranchAngle": "Ángulo de rama Y",
   "brushYBranchLength": "Longitud de rama Y",
   "brushYBranchWidth": "Ancho de rama Y",
-  "brushYBranchEndTaper": "Atenuación final de rama Y"
+  "brushYBranchEndTaper": "Atenuación final de rama Y",
+  "brushFoldCurveStart": "Posición de inicio de curva",
+  "brushFoldLength": "Longitud del pliegue",
+  "brushFoldCurveStrength": "Intensidad de curva",
+  "brushFoldWave": "Onda",
+  "brushFoldWaveEndpointRange": "Rango de onda desde el final",
+  "brushFoldWaveTriggerAngle": "Ángulo de activación de onda"
 }
