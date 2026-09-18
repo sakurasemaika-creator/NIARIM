@@ -100,13 +100,19 @@ Uint8List applyDrawFilterInIsolate(
       filter.strength,
       color: filter.vignetteColor,
     ),
-    FilterKind.noise => engine.applyNoise(
-      data,
-      width,
-      height,
-      (filter.strength / 100).clamp(0.0, 1.0),
-      NoiseType.gaussian,
-    ),
+    FilterKind.noise => filter.id == 'Filter0027'
+        ? engine.applyColorNoise(
+            data,
+            width,
+            height,
+            (filter.strength / 100).clamp(0.0, 1.0),
+          )
+        : engine.applyFilmGrain(
+            data,
+            width,
+            height,
+            (filter.strength / 100).clamp(0.0, 1.0),
+          ),
     FilterKind.retroAnime => engine.applyRetroAnime(
       data,
       width,
@@ -1038,6 +1044,47 @@ class FilterEngine {
     return result;
   }
 
+
+  Uint8List applyFilmGrain(
+    Uint8List data,
+    int width,
+    int height,
+    double strength, {
+    int? seed,
+  }) {
+    final result = Uint8List.fromList(data);
+    final rng = seed == null ? math.Random() : math.Random(seed);
+    final amount = (strength.clamp(0.0, 1.0) * 255).round();
+    for (var i = 0; i < result.length; i += 4) {
+      if (result[i + 3] == 0) continue;
+      final n = (_gaussianRandom(rng) * amount).round().clamp(-amount, amount);
+      result[i] = (result[i] + n).clamp(0, 255);
+      result[i + 1] = (result[i + 1] + n).clamp(0, 255);
+      result[i + 2] = (result[i + 2] + n).clamp(0, 255);
+    }
+    return result;
+  }
+
+  Uint8List applyColorNoise(
+    Uint8List data,
+    int width,
+    int height,
+    double strength, {
+    int? seed,
+  }) {
+    final result = Uint8List.fromList(data);
+    final rng = seed == null ? math.Random() : math.Random(seed);
+    final amount = (strength.clamp(0.0, 1.0) * 255).round();
+    for (var i = 0; i < result.length; i += 4) {
+      if (result[i + 3] == 0) continue;
+      for (var c = 0; c < 3; c++) {
+        final n = (_gaussianRandom(rng) * amount).round().clamp(-amount, amount);
+        result[i + c] = (result[i + c] + n).clamp(0, 255);
+      }
+    }
+    return result;
+  }
+
   Uint8List applyNoise(
     Uint8List data,
     int width,
@@ -1832,7 +1879,7 @@ class FilterEngine {
       result[i + 1] = (g + (targetG - g) * amount).round().clamp(0, 255);
       result[i + 2] = (b + (targetB - b) * amount).round().clamp(0, 255);
     }
-    return applyNoise(result, width, height, amount * 0.15, NoiseType.gaussian);
+    return applyFilmGrain(result, width, height, amount * 0.15);
   }
 
   /// ブラウン管（CRT）風：色収差・周辺減光・走査線を組み合わせた昔のテレビ・
