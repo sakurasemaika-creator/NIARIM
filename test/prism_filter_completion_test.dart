@@ -77,7 +77,7 @@ void main() {
   );
 
   testWidgets(
-    'default blur glows and addition composites over a required background PNG',
+    'default blur glows and linear dodge composites over a required background PNG',
     (tester) async {
       const width = 360;
       const height = 220;
@@ -113,7 +113,7 @@ void main() {
           id: 'prism',
           name: 'Prism',
           type: LayerType.normal,
-          blendMode: LayerBlendMode.addition,
+          blendMode: LayerBlendMode.linearDodge,
         ),
         Layer(id: 'background', name: 'Background', type: LayerType.normal),
       ];
