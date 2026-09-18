@@ -9,7 +9,9 @@ import 'package:niarim/models/layer.dart';
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
-  // Five canonical fixtures required by the production blend-mode closure.\n  // This test is part of the Prism/Blend production regression.\n  const fixtures = <_Fixture>[
+  // Five canonical fixtures required by the production blend-mode closure.
+  // This test is part of the Prism/Blend production regression.
+  const fixtures = <_Fixture>[
     _Fixture('black', [0, 0, 0, 255], [190, 90, 40, 255]),
     _Fixture('white', [255, 255, 255, 255], [40, 120, 210, 255]),
     _Fixture('gray50', [128, 128, 128, 255], [210, 70, 150, 255]),
