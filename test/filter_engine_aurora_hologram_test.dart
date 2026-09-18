@@ -162,6 +162,29 @@ void main() {
     }
   });
 
+
+  test('100%では同じ明度なら元RGBが違っても同じグラデーション色へ置換される', () {
+    // (255,0,0) and (0,130,0) both round to luminance 76 with the
+    // production 0.299/0.587/0.114 luminance calculation.
+    final data = Uint8List.fromList([
+      255, 0, 0, 255,
+      0, 130, 0, 255,
+    ]);
+    final result = engine.applyAuroraHologram(
+      data,
+      2,
+      1,
+      strength: 100,
+      brightness: 0,
+      saturation: 0,
+      preset: AuroraHologramPreset.blueHologram,
+    );
+    expect(
+      (result[0], result[1], result[2]),
+      equals((result[4], result[5], result[6])),
+    );
+  });
+
   test('プリセットごとに結果が異なる（配色パターンとして機能している）', () {
     final data = buildPattern();
     final aurora = engine.applyAuroraHologram(
