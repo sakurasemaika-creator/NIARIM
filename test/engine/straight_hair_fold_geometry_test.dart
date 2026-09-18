@@ -24,7 +24,7 @@ void main() {
       final narrow = buildStraightFoldPath(
         event(width: 20),
         curveStartRatio: .2,
-        depthRatio: .4,
+        curveStrength: 5,
         lengthRatio: .8,
         taperRatio: 0,
         outlineWidth: 2,
@@ -32,7 +32,7 @@ void main() {
       final wide = buildStraightFoldPath(
         event(width: 40),
         curveStartRatio: .2,
-        depthRatio: .4,
+        curveStrength: 5,
         lengthRatio: .8,
         taperRatio: 0,
         outlineWidth: 2,
@@ -45,14 +45,14 @@ void main() {
       final left = buildStraightFoldPath(
         event(inward: const Offset(0, 1), turn: 1.8),
         curveStartRatio: .2,
-        depthRatio: .5,
+        curveStrength: 5,
         lengthRatio: .8,
         taperRatio: .4,
       );
       final right = buildStraightFoldPath(
         event(inward: const Offset(0, -1), turn: -1.8),
         curveStartRatio: .2,
-        depthRatio: .5,
+        curveStrength: 5,
         lengthRatio: .8,
         taperRatio: .4,
       );
@@ -64,14 +64,14 @@ void main() {
       final early = buildStraightFoldPath(
         event(),
         curveStartRatio: .1,
-        depthRatio: .6,
+        curveStrength: 5,
         lengthRatio: 1,
         taperRatio: 0,
       );
       final late = buildStraightFoldPath(
         event(),
         curveStartRatio: .5,
-        depthRatio: .6,
+        curveStrength: 5,
         lengthRatio: 1,
         taperRatio: 0,
       );
@@ -84,14 +84,14 @@ void main() {
       final shallow = buildStraightFoldPath(
         event(),
         curveStartRatio: .2,
-        depthRatio: .2,
+        curveStrength: 5,
         lengthRatio: 1,
         taperRatio: 0,
       );
       final deep = buildStraightFoldPath(
         event(),
         curveStartRatio: .2,
-        depthRatio: .8,
+        curveStrength: 5,
         lengthRatio: 1,
         taperRatio: 0,
       );
@@ -102,7 +102,7 @@ void main() {
       final noTaper = buildStraightFoldPath(
         event(),
         curveStartRatio: .2,
-        depthRatio: .4,
+        curveStrength: 5,
         lengthRatio: .8,
         taperRatio: 0,
         outlineWidth: 3,
@@ -110,7 +110,7 @@ void main() {
       final taper = buildStraightFoldPath(
         event(),
         curveStartRatio: .2,
-        depthRatio: .4,
+        curveStrength: 5,
         lengthRatio: .8,
         taperRatio: .5,
         outlineWidth: 3,
@@ -126,7 +126,7 @@ void main() {
         buildStraightFoldPath(
           event(width: 0),
           curveStartRatio: .2,
-          depthRatio: .4,
+          curveStrength: 5,
           lengthRatio: .8,
           taperRatio: .4,
         ),
