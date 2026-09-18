@@ -10,7 +10,7 @@ void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
   // Five canonical fixtures required by the production blend-mode closure.
-  // This test is part of the Prism/Blend production regression.
+  // This test is part of the Prism/Blend production regression.\n  // Keep the five fixtures aligned with the production closure matrix.
   const fixtures = <_Fixture>[
     _Fixture('black', [0, 0, 0, 255], [190, 90, 40, 255]),
     _Fixture('white', [255, 255, 255, 255], [40, 120, 210, 255]),
