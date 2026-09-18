@@ -10,7 +10,8 @@ void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
   // Five canonical fixtures required by the production blend-mode closure.
-  // This test is part of the Prism/Blend production regression.\n  // Keep the five fixtures aligned with the production closure matrix.
+  // This test is part of the Prism/Blend production regression.
+  // Keep the five fixtures aligned with the production closure matrix.
   const fixtures = <_Fixture>[
     _Fixture('black', [0, 0, 0, 255], [190, 90, 40, 255]),
     _Fixture('white', [255, 255, 255, 255], [40, 120, 210, 255]),
@@ -81,7 +82,18 @@ Future<List<int>> _compositePixel(
   return _unpremultiply(data!.buffer.asUint8List().take(4).toList());
 }
 
-List<int> _unpremultiply(List<int> premultiplied) {\n  final alpha = premultiplied[3];\n  if (alpha == 0) return const [0, 0, 0, 0];\n  return <int>[\n    (premultiplied[0] * 255 / alpha).round().clamp(0, 255),\n    (premultiplied[1] * 255 / alpha).round().clamp(0, 255),\n    (premultiplied[2] * 255 / alpha).round().clamp(0, 255),\n    alpha,\n  ];\n}\n\nUint8List _premultiply(List<int> straight) {
+List<int> _unpremultiply(List<int> premultiplied) {
+  final alpha = premultiplied[3];
+  if (alpha == 0) return const [0, 0, 0, 0];
+  return <int>[
+    (premultiplied[0] * 255 / alpha).round().clamp(0, 255),
+    (premultiplied[1] * 255 / alpha).round().clamp(0, 255),
+    (premultiplied[2] * 255 / alpha).round().clamp(0, 255),
+    alpha,
+  ];
+}
+
+Uint8List _premultiply(List<int> straight) {
   final alpha = straight[3] / 255.0;
   return Uint8List.fromList(<int>[
     (straight[0] * alpha).round(),
