@@ -915,17 +915,23 @@ class DrawingEngine {
       FadeMode.weak => (1.0 - strokeLength / 1000).clamp(0.3, 1.0),
       FadeMode.medium => (1.0 - strokeLength / 500).clamp(0.1, 1.0),
       FadeMode.strong => (1.0 - strokeLength / 200).clamp(0.0, 1.0),
-      FadeMode.custom =>
-        brush.fadeCustom != null
-            ? () {
-                final progress = (strokeLength / brush.fadeCustom!.distancePx)
-                    .clamp(0.0, 1.0);
-                return brush.fadeCustom!.startValue / 100 +
-                    (brush.fadeCustom!.endValue / 100 -
-                            brush.fadeCustom!.startValue / 100) *
-                        progress;
-              }()
-            : 1.0,
+      FadeMode.custom => () {
+        final fadeInRange = brush.fadeIn.rangePx;
+        final fadeOutRange = brush.fadeOut.rangePx;
+        final fadeInProgress = fadeInRange <= 0
+            ? 1.0
+            : (strokeLength / fadeInRange).clamp(0.0, 1.0);
+        final fadeOutProgress = fadeOutRange <= 0
+            ? 1.0
+            : (strokeLength / fadeOutRange).clamp(0.0, 1.0);
+        final fadeIn =
+            brush.fadeIn.value / 100 +
+            (1.0 - brush.fadeIn.value / 100) * fadeInProgress;
+        final fadeOut =
+            1.0 +
+            (brush.fadeOut.value / 100 - 1.0) * fadeOutProgress;
+        return (fadeIn * fadeOut).clamp(0.0, 1.0);
+      }(),
       FadeMode.off => 1.0,
     };
   }
