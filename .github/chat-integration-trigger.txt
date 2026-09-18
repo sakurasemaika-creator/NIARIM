@@ -1,1 +1,1 @@
-pixel noise production verification only
+pixel noise analog closure deterministic retry
