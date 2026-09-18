@@ -46,6 +46,10 @@ enum AuroraHologramPreset {
   silverFoil,
   classicHologram,
   pearl2,
+  blueHologram,
+  lightBlueHologram,
+  purpleHologram,
+  blueGreenHologram,
 }
 
 /// Serializable drawing-filter definition.
