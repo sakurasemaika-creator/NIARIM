@@ -13,6 +13,7 @@ on:
       - 'lib/screens/canvas/widgets/filter_panel.dart'
       - 'test/visual/feature_operation_capture_test.dart'
       - 'test/visual/texture_filter_reference_fixtures.dart'
+      - 'test/visual/fixtures/texture_reference_original.png'
       - '.github/workflows/texture-filter-captures.yml'
 
 jobs:
@@ -35,7 +36,7 @@ jobs:
         run: flutter pub get
       - name: Capture all texture filter variants through production UI
         run: |
-          for fixture in textureReference3; do
+          for fixture in textureReferenceOriginal; do
             for preset in aurora soapBubble cyberNeon pastelDream sunsetGold silverFoil classicHologram pearl2 blueHologram lightBlueHologram purpleHologram blueGreenHologram; do
               rm -rf build/feature-captures/filters
               CI=true flutter test test/visual/feature_operation_capture_test.dart --reporter expanded \
