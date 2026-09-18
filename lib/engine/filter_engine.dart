@@ -321,7 +321,7 @@ List<(double, int, int, int)> auroraHologramStops(AuroraHologramPreset preset) {
       (0.72, 145, 80, 255),
       (0.80, 255, 55, 198),
       (0.90, 108, 46, 219),
-      (1.00, 37, 21, 101),
+      (1.00, 44, 215, 255),
     ],
     AuroraHologramPreset.pastelDream => const [
       (0.00, 255, 214, 237),
@@ -353,7 +353,7 @@ List<(double, int, int, int)> auroraHologramStops(AuroraHologramPreset preset) {
       (0.72, 223, 149, 31),
       (0.80, 80, 53, 10),
       (0.88, 255, 221, 151),
-      (1.00, 255, 190, 57),
+      (1.00, 255, 221, 151),
     ],
     AuroraHologramPreset.silverFoil => const [
       (0.00, 54, 59, 70),
@@ -364,7 +364,7 @@ List<(double, int, int, int)> auroraHologramStops(AuroraHologramPreset preset) {
       (0.62, 233, 242, 245),
       (0.75, 170, 184, 202),
       (0.90, 244, 247, 251),
-      (1.00, 103, 113, 130),
+      (1.00, 255, 255, 255),
     ],
     AuroraHologramPreset.classicHologram => const [
       (0.00, 174, 235, 255),
@@ -381,7 +381,7 @@ List<(double, int, int, int)> auroraHologramStops(AuroraHologramPreset preset) {
       (0.77, 190, 255, 239),
       (0.84, 245, 255, 207),
       (0.91, 255, 220, 227),
-      (1.00, 190, 239, 255),
+      (1.00, 245, 255, 207),
     ],
     AuroraHologramPreset.pearl2 => const [
       (0.00, 223, 236, 255),
@@ -425,7 +425,7 @@ List<(double, int, int, int)> auroraHologramStops(AuroraHologramPreset preset) {
       (0.69, 238, 226, 255),
       (0.80, 185, 231, 255),
       (0.90, 251, 254, 255),
-      (1.00, 210, 234, 255),
+      (1.00, 251, 254, 255),
     ],
     AuroraHologramPreset.purpleHologram => const [
       (0.00, 121, 82, 214),
@@ -438,7 +438,7 @@ List<(double, int, int, int)> auroraHologramStops(AuroraHologramPreset preset) {
       (0.72, 255, 251, 255),
       (0.83, 184, 150, 255),
       (0.92, 231, 204, 255),
-      (1.00, 157, 112, 235),
+      (1.00, 255, 251, 255),
     ],
     AuroraHologramPreset.blueGreenHologram => const [
       (0.00, 61, 165, 215),
@@ -453,7 +453,7 @@ List<(double, int, int, int)> auroraHologramStops(AuroraHologramPreset preset) {
       (0.78, 255, 223, 232),
       (0.87, 247, 253, 222),
       (0.94, 174, 243, 226),
-      (1.00, 231, 252, 255),
+      (1.00, 244, 254, 247),
     ],
   };
 }
