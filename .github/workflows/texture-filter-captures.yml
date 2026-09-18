@@ -1,0 +1,49 @@
+name: Texture Filter Captures
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [dev_branch]
+    paths:
+      - 'lib/models/filter_def.dart'
+      - 'lib/engine/filter_engine.dart'
+      - 'lib/screens/canvas/widgets/filter_panel.dart'
+      - 'test/visual/feature_operation_capture_test.dart'
+      - '.github/workflows/texture-filter-captures.yml'
+
+jobs:
+  capture:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout dev_branch
+        uses: actions/checkout@v6
+        with:
+          ref: dev_branch
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+      - name: Get dependencies
+        run: flutter pub get
+      - name: Capture all texture filter variants through production UI
+        run: |
+          for preset in aurora soapBubble cyberNeon pastelDream sunsetGold silverFoil classicHologram pearl2 blueHologram lightBlueHologram purpleHologram blueGreenHologram; do
+            rm -rf build/feature-captures/filters
+            CI=true flutter test test/visual/feature_operation_capture_test.dart --reporter expanded \
+              --dart-define=CAPTURE_GROUP=filters \
+              --dart-define=CAPTURE_MATCH=Filter0019_${preset}
+            mkdir -p "build/texture-filter-captures/${preset}"
+            cp -a build/feature-captures/filters/. "build/texture-filter-captures/${preset}/"
+          done
+      - name: Upload texture filter captures
+        if: always()
+        uses: actions/upload-artifact@v6
+        with:
+          name: texture-filter-captures
+          path: build/texture-filter-captures/**/*.png
+          if-no-files-found: error
+          retention-days: 7
