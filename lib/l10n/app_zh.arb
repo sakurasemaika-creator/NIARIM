@@ -2718,5 +2718,11 @@
   "brushYBranchAngle": "Y形分支角度",
   "brushYBranchLength": "Y形分支长度",
   "brushYBranchWidth": "Y形分支宽度",
-  "brushYBranchEndTaper": "Y形分支末端渐细"
+  "brushYBranchEndTaper": "Y形分支末端渐细",
+  "brushFoldCurveStart": "曲线起始位置",
+  "brushFoldLength": "折返长度",
+  "brushFoldCurveStrength": "曲线强度",
+  "brushFoldWave": "波浪",
+  "brushFoldWaveEndpointRange": "从终点开始的波浪范围",
+  "brushFoldWaveTriggerAngle": "波浪触发角度"
 }
