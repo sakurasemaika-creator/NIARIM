@@ -2725,5 +2725,11 @@
   "brushYBranchAngle": "Y-branch angle",
   "brushYBranchLength": "Y-branch length",
   "brushYBranchWidth": "Y-branch width",
-  "brushYBranchEndTaper": "Y-branch end taper"
+  "brushYBranchEndTaper": "Y-branch end taper",
+  "brushFoldCurveStart": "Curve start position",
+  "brushFoldLength": "Fold length",
+  "brushFoldCurveStrength": "Curve strength",
+  "brushFoldWave": "Wave",
+  "brushFoldWaveEndpointRange": "Wave range from endpoint",
+  "brushFoldWaveTriggerAngle": "Wave trigger angle"
 }
