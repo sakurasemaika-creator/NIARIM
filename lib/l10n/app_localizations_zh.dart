@@ -7527,7 +7527,7 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get helpFadeDesc =>
-      '筆刷設定之一，隨著筆畫持續繪製，不透明度或粗細會逐漸減少的效果。用於想讓線條末端產生漸隱感，或想營造帶有餘韻的筆觸時。';
+      '用於調整筆畫兩端形狀的筆刷設定。在自訂模式下，可分別獨立設定「起筆（筆畫開始）」與「收筆（筆畫結束）」的強度和作用範圍，因此可以只收細一端，或讓兩端使用不同的漸變長度。';
 
   @override
   String get helpStrokeDecayTitle => '筆畫衰減';
