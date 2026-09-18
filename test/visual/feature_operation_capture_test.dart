@@ -853,13 +853,7 @@ class _Harness {
 // transparent margins. They are generated before the operation under test.
 Future<Uint8List> _fixture(String kind) async {
   if (kind == 'textureReference3' || kind == 'textureReference4') {
-    final bytes = textureReferenceFixture(kind);
-    final codec = await ui.instantiateImageCodec(bytes, targetWidth: 256, targetHeight: 256);
-    final frame = await codec.getNextFrame();
-    final data = await frame.image.toByteData(format: ui.ImageByteFormat.rawRgba);
-    frame.image.dispose();
-    codec.dispose();
-    return data!.buffer.asUint8List();
+    return textureReferenceRgba(kind);
   }
   final recorder = ui.PictureRecorder();
   final canvas = Canvas(recorder);
