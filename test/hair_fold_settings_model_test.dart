@@ -26,7 +26,7 @@ void main() {
       final configured = _baseBrush().copyWith(
         foldEnabled: true,
         foldCurveStartRatio: 0.25,
-        foldDepthRatio: 0.55,
+        foldCurveStrength: 7,
         foldLengthRatio: 0.8,
         foldEndTaperRatio: 0.35,
         foldWaveEnabled: true,
@@ -36,12 +36,27 @@ void main() {
 
       final restored = Brush.fromJson(configured.toJson());
       expect(restored.foldCurveStartRatio, 0.25);
-      expect(restored.foldDepthRatio, 0.55);
+      expect(restored.foldCurveStrength, 7);
       expect(restored.foldLengthRatio, 0.8);
       expect(restored.foldEndTaperRatio, 0.35);
       expect(restored.foldWaveEnabled, isTrue);
       expect(restored.foldWaveEndRatio, 0.3);
       expect(restored.foldWaveTriggerAngle, 72);
+    });
+
+    test('curve strength defaults to five and clamps to one through ten', () {
+      expect(_baseBrush().foldCurveStrength, 5);
+      expect(_baseBrush().copyWith(foldCurveStrength: -3).foldCurveStrength, 1);
+      expect(_baseBrush().copyWith(foldCurveStrength: 99).foldCurveStrength, 10);
+    });
+
+    test('legacy fold depth is ignored when reading pre-release JSON', () {
+      final json = _baseBrush().toJson()
+        ..remove('foldCurveStrength')
+        ..['foldDepthRatio'] = .12;
+      final restored = Brush.fromJson(json);
+      expect(restored.foldCurveStrength, 5);
+      expect(restored.toJson().containsKey('foldDepthRatio'), isFalse);
     });
 
     test('wave endpoint range clamps to zero through one', () {
