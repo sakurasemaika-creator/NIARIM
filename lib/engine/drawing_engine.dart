@@ -39,6 +39,7 @@ class DrawingEngine {
   math.Random _scatterRng = math.Random(0);
   ScreenSpaceFoldDetector? _foldDetector;
   final BrushTextureSelector _brushTextureSelector = BrushTextureSelector();
+  double? _finalizedStrokeLengthOverride;
 
   String? get debugActiveBrushTexturePath => _brushTextureSelector.activePath;
 
@@ -118,6 +119,30 @@ class DrawingEngine {
     _currentStroke.add(effective);
   }
 
+  bool get needsFinalFadeReplay =>
+      currentBrush?.fadeMode == FadeMode.custom && _currentStroke.isNotEmpty;
+
+  void replayCurrentStrokeWithFinalFade() {
+    if (!needsFinalFadeReplay || _activeLayerId == null) return;
+    final points = List<StrokePoint>.of(_currentStroke);
+    final layerId = _activeLayerId!;
+    var totalLength = 0.0;
+    for (var i = 1; i < points.length; i++) {
+      totalLength += _distance(points[i - 1], points[i]);
+    }
+    _currentStroke.clear();
+    _strokeCoverageByTile.clear();
+    _distanceSinceLastBrushStamp = 0.0;
+    _hasStampedCurrentStroke = false;
+    _foldDetector = null;
+    _brushTextureSelector.endStroke();
+    _finalizedStrokeLengthOverride = totalLength;
+    beginStroke(points.first, layerId);
+    for (var i = 1; i < points.length; i++) {
+      continueStroke(points[i], layerId);
+    }
+  }
+
   void endStroke() {
     // 回転/散布ONでPointerDown→Upだけのタップだった場合は進行方向が存在しない。
     // その場合だけ中心位置へ1回描画し、散布は行わない。
@@ -144,6 +169,7 @@ class DrawingEngine {
     _hasStampedCurrentStroke = false;
     _foldDetector = null;
     _brushTextureSelector.endStroke();
+    _finalizedStrokeLengthOverride = null;
   }
 
   void _feedFoldDetector(
@@ -435,7 +461,7 @@ class DrawingEngine {
     // フェード仕様は「ストロークが進むにつれて不透明度・サイズが減少」。
     // 同じ係数を両方へ適用し、終端で薄いだけの同径線にならないようにする。
     if (brush.fadeMode != FadeMode.off) {
-      final fade = _calculateFade(brush, strokeLength);
+      final fade = _calculateFade(brush, strokeLength, totalLength: _finalizedStrokeLengthOverride);
       opacity *= fade;
       size *= fade;
     }
@@ -910,7 +936,7 @@ class DrawingEngine {
     return total;
   }
 
-  double _calculateFade(Brush brush, double strokeLength) {
+  double _calculateFade(Brush brush, double strokeLength, {double? totalLength}) {
     return switch (brush.fadeMode) {
       FadeMode.weak => (1.0 - strokeLength / 1000).clamp(0.3, 1.0),
       FadeMode.medium => (1.0 - strokeLength / 500).clamp(0.1, 1.0),
@@ -921,9 +947,12 @@ class DrawingEngine {
         final fadeInProgress = fadeInRange <= 0
             ? 1.0
             : (strokeLength / fadeInRange).clamp(0.0, 1.0);
+        final distanceFromEnd = totalLength == null
+            ? double.infinity
+            : math.max(0.0, totalLength - strokeLength);
         final fadeOutProgress = fadeOutRange <= 0
             ? 1.0
-            : (strokeLength / fadeOutRange).clamp(0.0, 1.0);
+            : (distanceFromEnd / fadeOutRange).clamp(0.0, 1.0);
         final fadeIn =
             brush.fadeIn.value / 100 +
             (1.0 - brush.fadeIn.value / 100) * fadeInProgress;
