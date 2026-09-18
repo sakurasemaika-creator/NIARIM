@@ -357,20 +357,12 @@ class LayerCompositor {
       for (int c = 0; c < 3; c++) {
         final cb = b[i + c] / 255.0;
         final cs = s[i + c] / 255.0;
-        if (mode == LayerBlendMode.linearDodge) {
-          // Flutter/Skia's plus mode adds premultiplied source and backdrop
-          // components and clamps both RGB and alpha independently.
-          out[i + c] = ((cb * ab + cs * as).clamp(0.0, 1.0) * 255).round();
-          continue;
-        }
         final blended = _blendChannel(mode, cb, cs);
         final premultiplied =
             as * (1.0 - ab) * cs + as * ab * blended + (1.0 - as) * ab * cb;
         out[i + c] = (premultiplied / ao * 255).round().clamp(0, 255);
       }
-      out[i + 3] = mode == LayerBlendMode.linearDodge
-          ? ((ab + as).clamp(0.0, 1.0) * 255).round()
-          : (ao * 255).round().clamp(0, 255);
+      out[i + 3] = (ao * 255).round().clamp(0, 255);
     }
 
     final codec = await ui.ImageDescriptor.raw(
