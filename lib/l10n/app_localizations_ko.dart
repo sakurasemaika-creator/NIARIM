@@ -1306,7 +1306,7 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get helpFadeDesc =>
-      '브러시 설정 중 하나로, 스트로크를 그려나갈수록 불투명도나 굵기가 점점 줄어드는 효과입니다. 선의 끝을 흐릿하게 하고 싶을 때나, 여운이 남는 듯한 화풍을 만들고 싶을 때 사용합니다.';
+      '브러시 선의 양 끝을 조절하는 설정입니다. 사용자 지정에서는 들어가기(그리기 시작)와 빠지기(그리기 끝)의 강도와 적용 범위를 각각 독립적으로 설정할 수 있어 한쪽 끝만 가늘게 하거나 양쪽 길이를 다르게 만들 수 있습니다.';
 
   @override
   String get helpStrokeDecayTitle => '스트로크 감쇠';
