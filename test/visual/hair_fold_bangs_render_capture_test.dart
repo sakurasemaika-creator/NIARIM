@@ -10,7 +10,7 @@ import 'package:niarim/engine/tile_manager.dart';
 import 'package:niarim/models/brush.dart';
 import 'package:niarim/models/brush_presets_extension.dart';
 
-Future<void> _capture(Brush brush, String name) async {
+Future<List<List<WaveFoldPathSample>>> _capture(Brush brush, String name) async {
   await preloadBrushTextures(brush.customImagePaths);
   for (final path in brush.customImagePaths) {
     expect(getCachedBrushTexture(path), isNotNull, reason: 'missing bangs texture: $path');
@@ -74,6 +74,7 @@ Future<void> _capture(Brush brush, String name) async {
   image.dispose();
   tiles.dispose();
   expect(await out.length(), greaterThan(1000));
+  return foldPaths;
 }
 
 void main() {
@@ -83,7 +84,7 @@ void main() {
     final bangs = brushExtensionPresets().singleWhere((b) => b.id == 'Brush0024');
     expect(bangs.customImagePaths.length, 5);
 
-    await _capture(
+    final straightPaths = await _capture(
       bangs.copyWith(
         stabilization: false,
         stabilizationStrength: 0,
@@ -93,7 +94,7 @@ void main() {
       ),
       'bangs_straight_5strokes',
     );
-    await _capture(
+    final wavePaths = await _capture(
       bangs.copyWith(
         stabilization: false,
         stabilizationStrength: 0,
@@ -105,5 +106,20 @@ void main() {
       ),
       'bangs_wave_5strokes',
     );
+
+    expect(wavePaths.length, straightPaths.length);
+    var differingSamples = 0;
+    for (var pathIndex = 0; pathIndex < straightPaths.length; pathIndex++) {
+      final straight = straightPaths[pathIndex];
+      final wave = wavePaths[pathIndex];
+      expect(wave.length, straight.length);
+      for (var sampleIndex = 0; sampleIndex < straight.length; sampleIndex++) {
+        if ((wave[sampleIndex].position - straight[sampleIndex].position).distance > .01) {
+          differingSamples++;
+        }
+      }
+    }
+    expect(differingSamples, greaterThan(0),
+        reason: 'wave fold geometry must differ from straight geometry');
   });
 }
