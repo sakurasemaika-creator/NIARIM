@@ -1,5 +1,5 @@
 name: Texture Filter Captures
-# rerun full-resolution 100% gradient-map captures
+# production UI captures for Drawing Filters > Texture Change palettes
 
 on:
   workflow_dispatch:
@@ -35,7 +35,7 @@ jobs:
         run: flutter pub get
       - name: Capture all texture filter variants through production UI
         run: |
-          for fixture in textureReference3 textureReference4; do
+          for fixture in textureReference3; do
             for preset in aurora soapBubble cyberNeon pastelDream sunsetGold silverFoil classicHologram pearl2 blueHologram lightBlueHologram purpleHologram blueGreenHologram; do
               rm -rf build/feature-captures/filters
               CI=true flutter test test/visual/feature_operation_capture_test.dart --reporter expanded \
