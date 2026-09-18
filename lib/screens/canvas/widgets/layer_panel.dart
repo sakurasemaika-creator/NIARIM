@@ -2295,6 +2295,14 @@ class _LayerPanelState extends State<LayerPanel> {
         model.LayerBlendMode.saturation => l10n.blendModeSaturation,
         model.LayerBlendMode.color => l10n.blendModeColor,
         model.LayerBlendMode.luminosity => l10n.blendModeLuminosity,
+        model.LayerBlendMode.linearBurn => l10n.blendModeLinearBurn,
+        model.LayerBlendMode.linearDodge => l10n.blendModeLinearDodge,
+        model.LayerBlendMode.vividLight => l10n.blendModeVividLight,
+        model.LayerBlendMode.linearLight => l10n.blendModeLinearLight,
+        model.LayerBlendMode.pinLight => l10n.blendModePinLight,
+        model.LayerBlendMode.hardMix => l10n.blendModeHardMix,
+        model.LayerBlendMode.exclusion => l10n.blendModeExclusion,
+        model.LayerBlendMode.divide => l10n.blendModeDivide,
       };
 
   void _showHelp(BuildContext context) {
