@@ -2,6 +2,8 @@ import 'dart:io';
 import 'dart:typed_data';
 import 'dart:ui' as ui;
 
+import 'package:flutter/services.dart';
+
 /// 自作ブラシ画像（[Brush.customImagePath]、「ブラシ画像からの
 /// ブラシ作成」）のデコード結果キャッシュ。
 ///
@@ -34,10 +36,16 @@ Future<void> preloadBrushTextures(Iterable<String> paths) async {
 /// 同期のキャッシュ参照のみで済むようにする。
 Future<void> preloadBrushTexture(String path) async {
   if (_brushTextureCache.containsKey(path)) return;
-  final file = File(path);
-  if (!await file.exists()) return;
   try {
-    final bytes = await file.readAsBytes();
+    final Uint8List bytes;
+    if (path.startsWith('assets/')) {
+      final data = await rootBundle.load(path);
+      bytes = data.buffer.asUint8List(data.offsetInBytes, data.lengthInBytes);
+    } else {
+      final file = File(path);
+      if (!await file.exists()) return;
+      bytes = await file.readAsBytes();
+    }
     final codec = await ui.instantiateImageCodec(
       bytes,
       targetWidth: brushTextureSize,
@@ -55,7 +63,13 @@ Future<void> preloadBrushTexture(String path) async {
     for (int i = 0; i < rgba.length; i += 4) {
       final luminance =
           rgba[i] * 0.299 + rgba[i + 1] * 0.587 + rgba[i + 2] * 0.114;
-      final ink = ((255 - luminance) * rgba[i + 3] / 255).round();
+      // Built-in masks are authored as white ink on an opaque black field so
+      // their silhouette remains easy to inspect in source control. User
+      // images retain the historical dark-pixel-is-ink interpretation.
+      final sourceInk = path.startsWith('assets/brushes/bangs_')
+          ? luminance
+          : 255 - luminance;
+      final ink = (sourceInk * rgba[i + 3] / 255).round();
       mask[i + 3] = ink.clamp(0, 255);
     }
     _brushTextureCache[path] = mask;
