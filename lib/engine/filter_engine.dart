@@ -338,7 +338,7 @@ List<(double, int, int, int)> auroraHologramStops(AuroraHologramPreset preset) {
       (0.77, 231, 190, 255),
       (0.84, 197, 220, 255),
       (0.91, 220, 255, 242),
-      (1.00, 255, 229, 243),
+      (1.00, 249, 255, 214),
     ],
     AuroraHologramPreset.sunsetGold => const [
       (0.00, 58, 31, 12),
@@ -412,7 +412,7 @@ List<(double, int, int, int)> auroraHologramStops(AuroraHologramPreset preset) {
       (0.72, 251, 253, 255),
       (0.84, 103, 190, 255),
       (0.93, 73, 116, 226),
-      (1.00, 238, 248, 255),
+      (1.00, 251, 253, 255),
     ],
     AuroraHologramPreset.lightBlueHologram => const [
       (0.00, 205, 234, 255),
