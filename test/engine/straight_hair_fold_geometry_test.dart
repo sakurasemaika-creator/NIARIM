@@ -110,9 +110,13 @@ void main() {
             lengthRatio: 1,
             taperRatio: 0,
           );
-      final gentle = path(1).last.position.dy - 100;
-      final neutral = path(5).last.position.dy - 100;
-      final tight = path(10).last.position.dy - 100;
+      double midDepth(int strength) {
+        final samples = path(strength);
+        return samples[samples.length ~/ 2].position.dy - 100;
+      }
+      final gentle = midDepth(1);
+      final neutral = midDepth(5);
+      final tight = midDepth(10);
       expect(gentle, lessThan(neutral));
       expect(neutral, lessThan(tight));
     });
