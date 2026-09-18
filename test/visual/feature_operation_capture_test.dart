@@ -60,16 +60,19 @@ void main() {
           final id = '${filter.id}_$variant';
           if (_captureMatch.isNotEmpty && !id.contains(_captureMatch)) continue;
           debugPrint('CAPTURE_CASE:$id');
+          final textureReference =
+              filter.kind == FilterKind.auroraHologram && _textureFixture.isNotEmpty;
           await h.project(
             id,
-            fixture:
-                filter.kind == FilterKind.auroraHologram && _textureFixture.isNotEmpty
+            fixture: textureReference
                 ? _textureFixture
                 : filter.kind == FilterKind.autoLineart || filter.kind == FilterKind.inkPool
                 ? 'lineart'
                 : 'color',
             mask: filter.kind == FilterKind.lensDistortion,
             background: filter.kind == FilterKind.backgroundBlend,
+            exportWidth: textureReference && _textureFixture == 'textureReference3' ? 785 : 256,
+            exportHeight: textureReference && _textureFixture == 'textureReference3' ? 455 : 256,
           );
           final before = await h.art('$id-before');
           final inputIds = h.layers.map((l) => l.id).toSet();
@@ -600,6 +603,8 @@ class _Harness {
     required String fixture,
     bool mask = false,
     bool background = false,
+    int exportWidth = 256,
+    int exportHeight = 256,
   }) async {
     appRouter.go('/');
     await settle();
@@ -609,8 +614,8 @@ class _Harness {
         fps: 1,
         durationSeconds: 1,
         backgroundColor: 0xffffffff,
-        exportWidth: 256,
-        exportHeight: 256,
+        exportWidth: exportWidth,
+        exportHeight: exportHeight,
       ),
     ))!;
     projectId = p.id;
