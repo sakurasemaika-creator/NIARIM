@@ -3490,6 +3490,30 @@ class AppLocalizationsJa extends AppLocalizations {
   String get blendModeLuminosity => '輝度';
 
   @override
+  String get blendModeLinearBurn => '焼き込み（リニア）';
+
+  @override
+  String get blendModeLinearDodge => '覆い焼き（リニア）';
+
+  @override
+  String get blendModeVividLight => 'ビビッドライト';
+
+  @override
+  String get blendModeLinearLight => 'リニアライト';
+
+  @override
+  String get blendModePinLight => 'ピンライト';
+
+  @override
+  String get blendModeHardMix => 'ハードミックス';
+
+  @override
+  String get blendModeExclusion => '除外';
+
+  @override
+  String get blendModeDivide => '除算';
+
+  @override
   String get autofillLineColorModeSpecified => '指定色';
 
   @override

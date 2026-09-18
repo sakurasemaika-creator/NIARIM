@@ -6491,6 +6491,54 @@ abstract class AppLocalizations {
   /// **'輝度'**
   String get blendModeLuminosity;
 
+  /// No description provided for @blendModeLinearBurn.
+  ///
+  /// In ja, this message translates to:
+  /// **'焼き込み（リニア）'**
+  String get blendModeLinearBurn;
+
+  /// No description provided for @blendModeLinearDodge.
+  ///
+  /// In ja, this message translates to:
+  /// **'覆い焼き（リニア）'**
+  String get blendModeLinearDodge;
+
+  /// No description provided for @blendModeVividLight.
+  ///
+  /// In ja, this message translates to:
+  /// **'ビビッドライト'**
+  String get blendModeVividLight;
+
+  /// No description provided for @blendModeLinearLight.
+  ///
+  /// In ja, this message translates to:
+  /// **'リニアライト'**
+  String get blendModeLinearLight;
+
+  /// No description provided for @blendModePinLight.
+  ///
+  /// In ja, this message translates to:
+  /// **'ピンライト'**
+  String get blendModePinLight;
+
+  /// No description provided for @blendModeHardMix.
+  ///
+  /// In ja, this message translates to:
+  /// **'ハードミックス'**
+  String get blendModeHardMix;
+
+  /// No description provided for @blendModeExclusion.
+  ///
+  /// In ja, this message translates to:
+  /// **'除外'**
+  String get blendModeExclusion;
+
+  /// No description provided for @blendModeDivide.
+  ///
+  /// In ja, this message translates to:
+  /// **'除算'**
+  String get blendModeDivide;
+
   /// No description provided for @autofillLineColorModeSpecified.
   ///
   /// In ja, this message translates to:
