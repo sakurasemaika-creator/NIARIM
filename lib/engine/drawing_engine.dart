@@ -928,8 +928,7 @@ class DrawingEngine {
             brush.fadeIn.value / 100 +
             (1.0 - brush.fadeIn.value / 100) * fadeInProgress;
         final fadeOut =
-            1.0 +
-            (brush.fadeOut.value / 100 - 1.0) * fadeOutProgress;
+            1.0 + (brush.fadeOut.value / 100 - 1.0) * fadeOutProgress;
         return (fadeIn * fadeOut).clamp(0.0, 1.0);
       }(),
       FadeMode.off => 1.0,
