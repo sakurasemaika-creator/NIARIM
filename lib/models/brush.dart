@@ -39,7 +39,7 @@ class Brush {
   final bool foldEnabled;
   final double foldTriggerAngle;
   final double foldCurveStartRatio;
-  final double foldDepthRatio;
+  final int foldCurveStrength;
   final double foldLengthRatio;
   final double foldEndTaperRatio;
   final bool foldWaveEnabled;
@@ -88,7 +88,7 @@ class Brush {
     this.foldEnabled = false,
     this.foldTriggerAngle = 90.0,
     this.foldCurveStartRatio = 0.25,
-    this.foldDepthRatio = 0.55,
+    this.foldCurveStrength = 5,
     this.foldLengthRatio = 0.8,
     this.foldEndTaperRatio = 0.35,
     this.foldWaveEnabled = false,
@@ -110,6 +110,7 @@ class Brush {
   static int clampLateralRepeatCount(int value) => value.clamp(1, 10).toInt();
   static double clampFoldRatio(double value, double fallback) =>
       value.isFinite ? value.clamp(0.0, 1.0).toDouble() : fallback;
+  static int clampFoldCurveStrength(int value) => value.clamp(1, 10).toInt();
   static double clampFoldAngle(double value, double fallback) =>
       value.isFinite ? value.clamp(1.0, 180.0).toDouble() : fallback;
 
@@ -126,7 +127,7 @@ class Brush {
     bool? lateralRepeatEnabled, int? lateralRepeatCount,
     double? lateralRepeatSpacing, bool? outlineEnabled, double? outlineWidth,
     int? outlineColor, bool? foldEnabled, double? foldTriggerAngle,
-    double? foldCurveStartRatio, double? foldDepthRatio, double? foldLengthRatio,
+    double? foldCurveStartRatio, int? foldCurveStrength, double? foldLengthRatio,
     double? foldEndTaperRatio, bool? foldWaveEnabled, double? foldWaveEndRatio,
     double? foldWaveTriggerAngle, double? yBranchAngle,
     double? yBranchLengthRatio, double? yBranchWidthRatio,
@@ -156,7 +157,7 @@ class Brush {
     outlineColor: outlineColor ?? this.outlineColor, foldEnabled: foldEnabled ?? this.foldEnabled,
     foldTriggerAngle: foldTriggerAngle ?? this.foldTriggerAngle,
     foldCurveStartRatio: clampFoldRatio(foldCurveStartRatio ?? this.foldCurveStartRatio, .25),
-    foldDepthRatio: clampFoldRatio(foldDepthRatio ?? this.foldDepthRatio, .55),
+    foldCurveStrength: clampFoldCurveStrength(foldCurveStrength ?? this.foldCurveStrength),
     foldLengthRatio: clampFoldRatio(foldLengthRatio ?? this.foldLengthRatio, .8),
     foldEndTaperRatio: clampFoldRatio(foldEndTaperRatio ?? this.foldEndTaperRatio, .35),
     foldWaveEnabled: foldWaveEnabled ?? this.foldWaveEnabled,
@@ -187,7 +188,7 @@ class Brush {
     'outlineWidth': outlineWidth, 'outlineColor': outlineColor, 'foldEnabled': foldEnabled,
     'foldTriggerAngle': foldTriggerAngle,
     'foldCurveStartRatio': clampFoldRatio(foldCurveStartRatio, .25),
-    'foldDepthRatio': clampFoldRatio(foldDepthRatio, .55),
+    'foldCurveStrength': clampFoldCurveStrength(foldCurveStrength),
     'foldLengthRatio': clampFoldRatio(foldLengthRatio, .8),
     'foldEndTaperRatio': clampFoldRatio(foldEndTaperRatio, .35),
     'foldWaveEnabled': foldWaveEnabled,
@@ -230,7 +231,7 @@ class Brush {
     foldEnabled: j['foldEnabled'] as bool? ?? false,
     foldTriggerAngle: (j['foldTriggerAngle'] as num?)?.toDouble() ?? 90,
     foldCurveStartRatio: clampFoldRatio((j['foldCurveStartRatio'] as num?)?.toDouble() ?? .25, .25),
-    foldDepthRatio: clampFoldRatio((j['foldDepthRatio'] as num?)?.toDouble() ?? .55, .55),
+    foldCurveStrength: clampFoldCurveStrength((j['foldCurveStrength'] as num?)?.toInt() ?? 5),
     foldLengthRatio: clampFoldRatio((j['foldLengthRatio'] as num?)?.toDouble() ?? .8, .8),
     foldEndTaperRatio: clampFoldRatio((j['foldEndTaperRatio'] as num?)?.toDouble() ?? .35, .35),
     foldWaveEnabled: j['foldWaveEnabled'] as bool? ?? false,
