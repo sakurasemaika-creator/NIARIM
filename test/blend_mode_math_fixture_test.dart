@@ -92,6 +92,100 @@ Uint8List _premultiply(List<int> straight) {
   ]);
 }
 
+mport 'dart:typed_data';
+import 'dart:ui' as ui;
+
+import 'package:flutter_test/flutter_test.dart';
+import 'package:niarim/engine/layer_compositor.dart';
+import 'package:niarim/engine/tile_manager.dart';
+import 'package:niarim/models/layer.dart';
+
+void main() {
+  TestWidgetsFlutterBinding.ensureInitialized();
+
+  // Five canonical fixtures required by the production blend-mode closure.
+  // This test is part of the Prism/Blend production regression.
+  // Keep the five fixtures aligned with the production closure matrix.
+  const fixtures = <_Fixture>[
+    _Fixture('black', [0, 0, 0, 255], [190, 90, 40, 255]),
+    _Fixture('white', [255, 255, 255, 255], [40, 120, 210, 255]),
+    _Fixture('gray50', [128, 128, 128, 255], [210, 70, 150, 255]),
+    _Fixture('chromatic', [42, 176, 219, 255], [224, 73, 118, 255]),
+    _Fixture('translucent', [54, 164, 218, 143], [205, 92, 47, 181]),
+  ];
+
+  for (final mode in LayerBlendMode.values) {
+    for (final fixture in fixtures) {
+      testWidgets('${mode.name} matches reference math for ${fixture.name}', (tester) async {
+        final actual = await tester.runAsync(
+          () => _compositePixel(mode, fixture.backdrop, fixture.source),
+        );
+        expect(actual, isNotNull);
+        final expected = _reference(mode, fixture.backdrop, fixture.source);
+        for (var channel = 0; channel < 4; channel++) {
+          expect(
+            actual![channel],
+            closeTo(expected[channel], 3),
+            reason:
+                '${mode.name}/${fixture.name} channel $channel: '
+                'actual=${actual[channel]} expected=${expected[channel]}',
+          );
+        }
+      });
+    }
+  }
+}
+
+class _Fixture {
+  const _Fixture(this.name, this.backdrop, this.source);
+  final String name;
+  final List<int> backdrop;
+  final List<int> source;
+}
+
+Future<List<int>> _compositePixel(
+  LayerBlendMode mode,
+  List<int> backdrop,
+  List<int> source,
+) async {
+  final tm = TileManager(canvasWidth: 1, canvasHeight: 1);
+  tm.replaceLayerPixels('scene#0#backdrop', _premultiply(backdrop));
+  tm.replaceLayerPixels('scene#0#source', _premultiply(source));
+  final image = await LayerCompositor.composite(
+    tm,
+    <Layer>[
+      Layer(
+        id: 'source',
+        name: 'Source',
+        type: LayerType.normal,
+        blendMode: mode,
+      ),
+      const Layer(
+        id: 'backdrop',
+        name: 'Backdrop',
+        type: LayerType.normal,
+      ),
+    ],
+    (layer) => 'scene#0#${layer.id}',
+    1,
+    1,
+  );
+  final data = await image.toByteData(format: ui.ImageByteFormat.rawStraightRgba);
+  image.dispose();
+  tm.dispose();
+  return data!.buffer.asUint8List().take(4).toList();
+}
+
+Uint8List _premultiply(List<int> straight) {
+  final alpha = straight[3] / 255.0;
+  return Uint8List.fromList(<int>[
+    (straight[0] * alpha).round(),
+    (straight[1] * alpha).round(),
+    (straight[2] * alpha).round(),
+    straight[3],
+  ]);
+}
+
 List<int> _unpremultiply(List<int> premultiplied) {
   final alpha = premultiplied[3];
   if (alpha == 0) return const [0, 0, 0, 0];
