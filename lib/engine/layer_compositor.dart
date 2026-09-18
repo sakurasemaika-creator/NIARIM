@@ -25,7 +25,7 @@ const Set<LayerType> pixelLayerTypes = {
   LayerType.text,
 };
 
-/// LayerBlendMode（17種）をdart:uiのBlendModeへ変換する。
+/// dart:uiで直接表現できるLayerBlendModeをBlendModeへ変換する。
 /// 減算だけはdart:uiに対応BlendModeが存在しないため、[LayerCompositor]
 /// 内でRGBAを用いた本来の「backdrop - source（0未満は0）」を実装する。
 /// この関数単体でsubtractを要求された場合は、誤ってdifferenceを適用しない
@@ -66,6 +66,17 @@ ui.BlendMode mapLayerBlendMode(LayerBlendMode mode) {
       return ui.BlendMode.color;
     case LayerBlendMode.luminosity:
       return ui.BlendMode.luminosity;
+    case LayerBlendMode.linearDodge:
+      return ui.BlendMode.plus;
+    case LayerBlendMode.exclusion:
+      return ui.BlendMode.exclusion;
+    case LayerBlendMode.linearBurn:
+    case LayerBlendMode.vividLight:
+    case LayerBlendMode.linearLight:
+    case LayerBlendMode.pinLight:
+    case LayerBlendMode.hardMix:
+    case LayerBlendMode.divide:
+      return ui.BlendMode.srcOver;
   }
 }
 
@@ -103,7 +114,7 @@ class LayerCompositor {
       if (!pixelLayerTypes.contains(layer.type)) continue;
       if (shouldRender != null && !shouldRender(layer, i)) continue;
 
-      if (layer.blendMode == LayerBlendMode.subtract) {
+      if (_requiresCpuBlend(layer.blendMode)) {
         // Skia/dart:uiには「減算」BlendModeが無い。difference（差の絶対値）
         // で代用すると、backdrop < source のチャンネルが本来0になるところ
         // 正の値へ反転してしまうため、ここだけ現在までの合成結果と対象レイヤー
@@ -123,11 +134,12 @@ class LayerCompositor {
           keyframeOf,
           groupKeyframeOf,
         );
-        final subtracted = await _subtractImages(
+        final subtracted = await _blendImages(
           backdrop,
           source,
           width,
           height,
+          layer.blendMode,
         );
         backdrop.dispose();
         source.dispose();
@@ -276,11 +288,36 @@ class LayerCompositor {
   /// backdrop - source を各RGBチャンネルへ適用し、透明度は通常のブレンド
   /// モードと同じsource-over規則で合成する。半透明レイヤー・半透明背景でも
   /// 正しい結果になるよう、W3C Compositing and Blendingの一般式を使う。
-  static Future<ui.Image> _subtractImages(
+  static bool _requiresCpuBlend(LayerBlendMode mode) => switch (mode) {
+    LayerBlendMode.subtract ||
+    LayerBlendMode.linearBurn ||
+    LayerBlendMode.vividLight ||
+    LayerBlendMode.linearLight ||
+    LayerBlendMode.pinLight ||
+    LayerBlendMode.hardMix ||
+    LayerBlendMode.divide => true,
+    _ => false,
+  };
+
+  static double _blendChannel(LayerBlendMode mode, double b, double s) => switch (mode) {
+    LayerBlendMode.subtract => (b - s).clamp(0.0, 1.0),
+    LayerBlendMode.linearBurn => (b + s - 1.0).clamp(0.0, 1.0),
+    LayerBlendMode.vividLight => s <= 0.5
+        ? (s <= 0 ? 0.0 : 1.0 - ((1.0 - b) / (2.0 * s)).clamp(0.0, 1.0))
+        : (s >= 1 ? 1.0 : (b / (2.0 * (1.0 - s))).clamp(0.0, 1.0)),
+    LayerBlendMode.linearLight => (b + 2.0 * s - 1.0).clamp(0.0, 1.0),
+    LayerBlendMode.pinLight => s < 0.5 ? b.clamp(0.0, 2.0 * s) : b.clamp(2.0 * s - 1.0, 1.0),
+    LayerBlendMode.hardMix => _blendChannel(LayerBlendMode.vividLight, b, s) < 0.5 ? 0.0 : 1.0,
+    LayerBlendMode.divide => s <= 0 ? 1.0 : (b / s).clamp(0.0, 1.0),
+    _ => s,
+  };
+
+  static Future<ui.Image> _blendImages(
     ui.Image backdrop,
     ui.Image source,
     int width,
     int height,
+    LayerBlendMode mode,
   ) async {
     // rawRgba はpremultiplied alphaなので、半透明レイヤーではRGBにもalphaが
     // 既に掛かっている。それをstraight RGBとして扱うと、減算計算でalphaを
@@ -310,7 +347,7 @@ class LayerCompositor {
       for (int c = 0; c < 3; c++) {
         final cb = b[i + c] / 255.0;
         final cs = s[i + c] / 255.0;
-        final blended = (cb - cs).clamp(0.0, 1.0);
+        final blended = _blendChannel(mode, cb, cs);
         final premultiplied =
             as * (1.0 - ab) * cs + as * ab * blended + (1.0 - as) * ab * cb;
         out[i + c] = (premultiplied / ao * 255).round().clamp(0, 255);
