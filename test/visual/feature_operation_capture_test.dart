@@ -73,8 +73,8 @@ void main() {
                 : 'color',
             mask: filter.kind == FilterKind.lensDistortion,
             background: filter.kind == FilterKind.backgroundBlend,
-            exportWidth: textureReference && _textureFixture == 'textureReference3' ? 785 : 256,
-            exportHeight: textureReference && _textureFixture == 'textureReference3' ? 455 : 256,
+            exportWidth: textureReference && _textureFixture == 'textureReferenceOriginal' ? 785 : 256,
+            exportHeight: textureReference && _textureFixture == 'textureReferenceOriginal' ? 455 : 256,
           );
           final before = await h.art('$id-before');
           final inputIds = h.layers.map((l) => l.id).toSet();
@@ -890,6 +890,29 @@ Future<Uint8List> _fixture(
   int width = 256,
   int height = 256,
 }) async {
+  if (kind == 'textureReferenceOriginal') {
+    final bytes = await File(
+      'test/visual/fixtures/texture_reference_original.png',
+    ).readAsBytes();
+    final codec = await ui.instantiateImageCodec(bytes);
+    final frame = await codec.getNextFrame();
+    final image = frame.image;
+    if (image.width != 785 || image.height != 455) {
+      image.dispose();
+      codec.dispose();
+      throw StateError(
+        'Original texture reference must remain 785x455; '
+        'got ${image.width}x${image.height}.',
+      );
+    }
+    final data = await image.toByteData(format: ui.ImageByteFormat.rawRgba);
+    image.dispose();
+    codec.dispose();
+    if (data == null) {
+      throw StateError('Unable to read original texture reference pixels.');
+    }
+    return data.buffer.asUint8List();
+  }
   if (kind == 'textureReference3' || kind == 'textureReference4') {
     return Future.value(textureReferenceRgba(kind, width: width, height: height));
   }
