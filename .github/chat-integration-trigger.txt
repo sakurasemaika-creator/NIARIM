@@ -1,1 +1,1 @@
-auto-lineart idempotent verification
+pixel mosaic contract verification
