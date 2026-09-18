@@ -29,7 +29,7 @@ class NiatraAssetBundle {
 
   /// 既存 [NiatraSerializer.export] が作ったZIPへカスタム画像を追加し、
   /// ブラシ／トーン／スタンプのJSONを各モデルの完全なtoJson()へ置き換える。
-  /// これにより、画像だけでなくfolderId・fadeCustom・edgeJitter等も欠落しない。
+  /// これにより、画像だけでなくfolderId・fadeIn/fadeOut・edgeJitter等も欠落しない。
   static Future<Uint8List> enrichExport(
     Uint8List original, {
     required Map<String, bool> selectedItems,
