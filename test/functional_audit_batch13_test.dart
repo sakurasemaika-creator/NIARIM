@@ -98,13 +98,20 @@ Future<Uint8List> _drawFade({required int segments}) async {
     )
     ..currentColor = const ui.Color(0xFF2040C0);
   const x0 = 20.0, x1 = 240.0;
+  tm.beginUndoRecording('fade');
   e.beginStroke(const StrokePoint(x: x0, y: 50), 'fade');
   for (var i = 1; i <= segments; i++) {
     final t = i / segments;
     e.continueStroke(StrokePoint(x: x0 + (x1 - x0) * t, y: 50), 'fade');
   }
   if (e.needsFinalFadeReplay) {
+    final preview = tm.endUndoRecording();
+    if (preview.before.isNotEmpty) {
+      tm.applyTileSnapshot('fade', preview.before);
+    }
     e.replayCurrentStrokeWithFinalFade();
+  } else {
+    tm.endUndoRecording();
   }
   e.endStroke();
   final image = await tm.compositeLayerToImage('fade');
