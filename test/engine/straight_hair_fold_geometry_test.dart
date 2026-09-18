@@ -80,22 +80,41 @@ void main() {
       expect(earlyQuarter, greaterThan(lateQuarter));
     });
 
-    test('depth moves terminal point farther inward', () {
-      final shallow = buildStraightFoldPath(
-        event(),
+    test('effective width automatically controls fold depth', () {
+      final narrow = buildStraightFoldPath(
+        event(width: 20),
         curveStartRatio: .2,
         curveStrength: 5,
         lengthRatio: 1,
         taperRatio: 0,
       );
-      final deep = buildStraightFoldPath(
-        event(),
+      final wide = buildStraightFoldPath(
+        event(width: 40),
         curveStartRatio: .2,
         curveStrength: 5,
         lengthRatio: 1,
         taperRatio: 0,
       );
-      expect(deep.last.position.dy, greaterThan(shallow.last.position.dy));
+      final narrowDepth = narrow.last.position.dy - 100;
+      final wideDepth = wide.last.position.dy - 100;
+      expect(narrowDepth, greaterThan(0));
+      expect(wideDepth, greaterThan(narrowDepth));
+      expect(wideDepth / narrowDepth, closeTo(2, .05));
+    });
+
+    test('curve strength changes bend magnitude around neutral five', () {
+      List<FoldPathSample> path(int strength) => buildStraightFoldPath(
+            event(),
+            curveStartRatio: .2,
+            curveStrength: strength,
+            lengthRatio: 1,
+            taperRatio: 0,
+          );
+      final gentle = path(1).last.position.dy - 100;
+      final neutral = path(5).last.position.dy - 100;
+      final tight = path(10).last.position.dy - 100;
+      expect(gentle, lessThan(neutral));
+      expect(neutral, lessThan(tight));
     });
 
     test('fold line uses outline width and tapers at endpoint', () {
