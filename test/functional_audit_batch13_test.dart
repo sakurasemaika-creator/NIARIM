@@ -93,11 +93,8 @@ Future<Uint8List> _drawFade({required int segments}) async {
     ..currentBrush = _brush(
       size: 30,
       fadeMode: FadeMode.custom,
-      fadeCustom: const FadeCustomSettings(
-        startValue: 100,
-        endValue: 20,
-        distancePx: 220,
-      ),
+      fadeIn: const FadeEndpointSettings(value: 100, rangePx: 80),
+      fadeOut: const FadeEndpointSettings(value: 20, rangePx: 220),
     )
     ..currentColor = const ui.Color(0xFF2040C0);
   const x0 = 20.0, x1 = 240.0;
@@ -117,7 +114,8 @@ Future<Uint8List> _drawFade({required int segments}) async {
 Brush _brush({
   required double size,
   FadeMode fadeMode = FadeMode.off,
-  FadeCustomSettings? fadeCustom,
+  FadeEndpointSettings fadeIn = FadeEndpointSettings.full,
+  FadeEndpointSettings fadeOut = FadeEndpointSettings.full,
   bool strokeDecay = false,
 }) => Brush(
   id: 'audit13',
@@ -129,7 +127,8 @@ Brush _brush({
   stabilizationStrength: 0,
   pixelMode: false,
   fadeMode: fadeMode,
-  fadeCustom: fadeCustom,
+  fadeIn: fadeIn,
+  fadeOut: fadeOut,
   strokeDecay: strokeDecay,
 );
 
