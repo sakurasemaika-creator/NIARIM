@@ -10,9 +10,15 @@ on:
       - '.github/scripts/complete_canvas_fold_screen_input.py'
       - 'lib/engine/drawing_engine.dart'
       - 'lib/engine/brush_stroke_geometry.dart'
+      - 'lib/engine/brush_texture_cache.dart'
+      - 'lib/engine/brush_texture_selector.dart'
+      - 'lib/models/brush_presets_extension.dart'
+      - 'assets/brushes/**'
       - 'lib/screens/canvas/widgets/canvas_area.dart'
       - 'test/engine/drawing_engine_brush_extensions_test.dart'
       - 'test/engine/brush_stroke_geometry_test.dart'
+      - 'test/engine/brush_texture_cache_test.dart'
+      - 'test/engine/brush_texture_selector_test.dart'
 
 jobs:
   green:
@@ -36,6 +42,8 @@ jobs:
         run: |
           flutter test test/engine/drawing_engine_brush_extensions_test.dart --reporter expanded
           flutter test test/engine/brush_stroke_geometry_test.dart --reporter expanded
+          flutter test test/engine/brush_texture_cache_test.dart --reporter expanded
+          flutter test test/engine/brush_texture_selector_test.dart --reporter expanded
           flutter test test/engine/brush_render_plan_test.dart --reporter expanded
           flutter test test/engine/outlined_stroke_compositor_test.dart --reporter expanded
           flutter analyze lib/engine/drawing_engine.dart lib/engine/brush_stroke_geometry.dart lib/engine/brush_render_plan.dart lib/screens/canvas/widgets/canvas_area.dart test/engine/drawing_engine_brush_extensions_test.dart test/engine/brush_stroke_geometry_test.dart --no-fatal-infos --no-fatal-warnings
