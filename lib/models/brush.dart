@@ -13,7 +13,8 @@ class Brush {
   final BrushPressureOnSettings pressureOn;
   final BrushPressureOffSettings pressureOff;
   final FadeMode fadeMode;
-  final FadeCustomSettings? fadeCustom;
+  final FadeEndpointSettings fadeIn;
+  final FadeEndpointSettings fadeOut;
   final bool strokeDecay;
   final bool isFavorite;
   final String? folderId;
@@ -62,7 +63,8 @@ class Brush {
     this.pressureOn = BrushPressureOnSettings.defaults,
     this.pressureOff = BrushPressureOffSettings.defaults,
     required this.fadeMode,
-    this.fadeCustom,
+    this.fadeIn = FadeEndpointSettings.full,
+    this.fadeOut = FadeEndpointSettings.full,
     required this.strokeDecay,
     this.isFavorite = false,
     this.folderId,
@@ -115,7 +117,7 @@ class Brush {
     String? id, String? name, double? size, int? opacity, int? spacing,
     bool? stabilization, int? stabilizationStrength, bool? pixelMode,
     BrushPressureOnSettings? pressureOn, BrushPressureOffSettings? pressureOff,
-    FadeMode? fadeMode, FadeCustomSettings? fadeCustom, bool? strokeDecay,
+    FadeMode? fadeMode, FadeEndpointSettings? fadeIn, FadeEndpointSettings? fadeOut, bool? strokeDecay,
     bool? isFavorite, String? folderId, String? customImagePath,
     List<String>? customImagePaths, BrushImageSelectionMode? customImageSelectionMode,
     bool? rotation, double? density, double? scatter, double? calligraphyAngle,
@@ -136,7 +138,8 @@ class Brush {
     stabilizationStrength: stabilizationStrength ?? this.stabilizationStrength,
     pixelMode: pixelMode ?? this.pixelMode, pressureOn: pressureOn ?? this.pressureOn,
     pressureOff: pressureOff ?? this.pressureOff, fadeMode: fadeMode ?? this.fadeMode,
-    fadeCustom: fadeCustom ?? this.fadeCustom, strokeDecay: strokeDecay ?? this.strokeDecay,
+    fadeIn: fadeIn ?? this.fadeIn, fadeOut: fadeOut ?? this.fadeOut,
+    strokeDecay: strokeDecay ?? this.strokeDecay,
     isFavorite: isFavorite ?? this.isFavorite, folderId: folderId ?? this.folderId,
     customImagePath: customImagePath ?? this.customImagePath,
     customImagePaths: customImagePaths ?? this.customImagePaths,
@@ -171,7 +174,7 @@ class Brush {
     'stabilization': stabilization, 'stabilizationStrength': stabilizationStrength,
     'pixelMode': pixelMode, 'pressureOn': pressureOn.toJson(), 'pressureOff': pressureOff.toJson(),
     'fadeMode': fadeMode.name,
-    'fadeCustom': fadeCustom == null ? null : {'startValue': fadeCustom!.startValue, 'endValue': fadeCustom!.endValue, 'distancePx': fadeCustom!.distancePx},
+    'fadeIn': fadeIn.toJson(), 'fadeOut': fadeOut.toJson(),
     'strokeDecay': strokeDecay, 'isFavorite': isFavorite, 'folderId': folderId,
     'customImagePath': customImagePath, 'customImagePaths': customImagePaths,
     'customImageSelectionMode': customImageSelectionMode.name,
@@ -203,10 +206,8 @@ class Brush {
     pressureOn: BrushPressureOnSettings.fromJson(j['pressureOn'] as Map<String, dynamic>),
     pressureOff: BrushPressureOffSettings.fromJson(j['pressureOff'] as Map<String, dynamic>),
     fadeMode: FadeMode.values.firstWhere((e) => e.name == j['fadeMode'], orElse: () => FadeMode.off),
-    fadeCustom: j['fadeCustom'] == null ? null : FadeCustomSettings(
-      startValue: ((j['fadeCustom'] as Map<String, dynamic>)['startValue'] as num).toDouble(),
-      endValue: ((j['fadeCustom'] as Map<String, dynamic>)['endValue'] as num).toDouble(),
-      distancePx: ((j['fadeCustom'] as Map<String, dynamic>)['distancePx'] as num).toDouble()),
+    fadeIn: FadeEndpointSettings.fromJson(j['fadeIn'] as Map<String, dynamic>),
+    fadeOut: FadeEndpointSettings.fromJson(j['fadeOut'] as Map<String, dynamic>),
     strokeDecay: j['strokeDecay'] as bool, isFavorite: j['isFavorite'] as bool? ?? false,
     folderId: j['folderId'] as String?, customImagePath: j['customImagePath'] as String?,
     customImagePaths: (j['customImagePaths'] as List<dynamic>?)?.whereType<String>().toList() ?? const [],
@@ -309,9 +310,14 @@ enum FadeMode { off, weak, medium, strong, custom }
 enum BrushTipShape { round, hollowSquare }
 enum BrushImageSelectionMode { random, sequential }
 
-class FadeCustomSettings {
-  final double startValue; final double endValue; final double distancePx;
-  const FadeCustomSettings({required this.startValue, required this.endValue, required this.distancePx});
+class FadeEndpointSettings {
+  final double value;
+  final double rangePx;
+  const FadeEndpointSettings({required this.value, required this.rangePx});
+  static const full = FadeEndpointSettings(value: 100, rangePx: 500);
+  FadeEndpointSettings copyWith({double? value, double? rangePx}) => FadeEndpointSettings(value: value ?? this.value, rangePx: rangePx ?? this.rangePx);
+  Map<String, dynamic> toJson() => {'value': value, 'rangePx': rangePx};
+  factory FadeEndpointSettings.fromJson(Map<String, dynamic> j) => FadeEndpointSettings(value: (j['value'] as num).toDouble(), rangePx: (j['rangePx'] as num).toDouble());
 }
 
 const List<int> kMixingRateOptions = [0, 20, 40, 60, 80, 100];
