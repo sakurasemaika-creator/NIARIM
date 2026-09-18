@@ -74,6 +74,9 @@ void main() {
 
     await _capture(
       bangs.copyWith(
+        stabilization: false,
+        stabilizationStrength: 0,
+        foldTriggerAngle: 30,
         foldWaveEnabled: false,
         foldCurveStrength: 5,
       ),
@@ -81,9 +84,12 @@ void main() {
     );
     await _capture(
       bangs.copyWith(
+        stabilization: false,
+        stabilizationStrength: 0,
+        foldTriggerAngle: 30,
         foldWaveEnabled: true,
         foldWaveEndRatio: .45,
-        foldWaveTriggerAngle: 20,
+        foldWaveTriggerAngle: 30,
         foldCurveStrength: 5,
       ),
       'bangs_wave_5strokes',
