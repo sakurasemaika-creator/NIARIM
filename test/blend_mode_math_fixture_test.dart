@@ -114,7 +114,7 @@ List<int> _reference(
   final as = source[3] / 255.0;
 
   // Flutter's plus operator is Porter-Duff plus rather than source-over.
-  if (mode == LayerBlendMode.addition || mode == LayerBlendMode.linearDodge) {
+  if (mode == LayerBlendMode.addition) {
     final out = <int>[];
     for (var c = 0; c < 3; c++) {
       out.add(((cb[c] * ab + cs[c] * as).clamp(0.0, 1.0) * 255).round());
@@ -189,6 +189,8 @@ double _blend(LayerBlendMode mode, double b, double s) {
       return (b - s).abs();
     case LayerBlendMode.linearBurn:
       return (b + s - 1).clamp(0.0, 1.0);
+    case LayerBlendMode.linearDodge:
+      return (b + s).clamp(0.0, 1.0);
     case LayerBlendMode.vividLight:
       return s <= 0.5
           ? (s <= 0 ? 0 : 1 - ((1 - b) / (2 * s)).clamp(0.0, 1.0))
@@ -204,7 +206,6 @@ double _blend(LayerBlendMode mode, double b, double s) {
     case LayerBlendMode.divide:
       return s <= 0 ? 1 : (b / s).clamp(0.0, 1.0);
     case LayerBlendMode.addition:
-    case LayerBlendMode.linearDodge:
     case LayerBlendMode.hue:
     case LayerBlendMode.saturation:
     case LayerBlendMode.color:
