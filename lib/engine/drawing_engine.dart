@@ -182,8 +182,9 @@ class DrawingEngine {
     if (detector == null ||
         brush == null ||
         !brush.outlineEnabled ||
-        !brush.foldEnabled)
+        !brush.foldEnabled) {
       return;
+    }
     final resolved = resolveBrushPressure(
       brush: brush,
       pressureEnabled: pressureEnabled,
@@ -487,7 +488,6 @@ class DrawingEngine {
       stampY += math.sin(normal) * offset;
     }
 
-    final radius = size / 2.0;
     final alphaInt = (opacity * 255).round().clamp(0, 255);
     if (alphaInt == 0) return;
 
