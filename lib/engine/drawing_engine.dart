@@ -5,6 +5,7 @@ import 'dart:ui' as ui;
 import '../models/brush.dart';
 import '../models/brush_pressure_resolver.dart';
 import 'brush_texture_cache.dart';
+import 'brush_texture_selector.dart';
 import 'brush_render_plan.dart';
 import 'brush_stroke_geometry.dart';
 import 'hair_fold_render_resolver.dart';
@@ -37,6 +38,9 @@ class DrawingEngine {
   String? _activeLayerId;
   math.Random _scatterRng = math.Random(0);
   ScreenSpaceFoldDetector? _foldDetector;
+  final BrushTextureSelector _brushTextureSelector = BrushTextureSelector();
+
+  String? get debugActiveBrushTexturePath => _brushTextureSelector.activePath;
 
   Brush? currentBrush;
   ui.Color currentColor = const ui.Color(0xFF000000);
@@ -65,6 +69,15 @@ class DrawingEngine {
     _hasStampedCurrentStroke = false;
     _scatterRng = math.Random(0);
     final brush = currentBrush;
+    if (brush != null) {
+      _brushTextureSelector.beginStroke(
+        brushId: brush.id,
+        paths: brush.resolvedCustomImagePaths,
+        mode: brush.customImageSelectionMode,
+      );
+    } else {
+      _brushTextureSelector.endStroke();
+    }
     _foldDetector = brush != null && brush.outlineEnabled && brush.foldEnabled
         ? ScreenSpaceFoldDetector(triggerAngleDegrees: brush.foldTriggerAngle)
         : null;
@@ -130,6 +143,7 @@ class DrawingEngine {
     _distanceSinceLastBrushStamp = 0.0;
     _hasStampedCurrentStroke = false;
     _foldDetector = null;
+    _brushTextureSelector.endStroke();
   }
 
   void _feedFoldDetector(
@@ -283,10 +297,15 @@ class DrawingEngine {
     _distanceSinceLastBrushStamp = 0.0;
     _hasStampedCurrentStroke = false;
     _scatterRng = math.Random(0);
+    final brush = currentBrush!;
+    _brushTextureSelector.beginStroke(
+      brushId: brush.id,
+      paths: brush.resolvedCustomImagePaths,
+      mode: brush.customImageSelectionMode,
+    );
 
     final first = pathPoints.first;
     _currentStroke.add(first);
-    final brush = currentBrush!;
     final needsDirection = brush.rotation || brush.scatter > 0.0;
     if (!needsDirection) {
       _stampBrush(
@@ -503,7 +522,7 @@ class DrawingEngine {
     // 自作ブラシ（ブラシ画像からのブラシ作成）が選択され、
     // 事前読み込み済みの場合はその形状を、それ以外は円形（またはピクセル
     // モード）でスタンプする。
-    final texturePath = brush.customImagePath;
+    final texturePath = _brushTextureSelector.activePath;
     final customTexture = texturePath != null
         ? getCachedBrushTexture(texturePath)
         : null;
