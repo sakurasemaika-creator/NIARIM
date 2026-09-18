@@ -168,4 +168,12 @@ enum LayerBlendMode {
   saturation,
   color,
   luminosity,
+  linearBurn,
+  linearDodge,
+  vividLight,
+  linearLight,
+  pinLight,
+  hardMix,
+  exclusion,
+  divide,
 }
