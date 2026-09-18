@@ -459,9 +459,8 @@ List<(double, int, int, int)> auroraHologramStops(AuroraHologramPreset preset) {
 /// の純粋関数。
 ///
 /// - [PixelColorMode.none]：何もしない（元の色をそのまま返す）。
-/// - [PixelColorMode.count]：チャンネルごとに[colorLevels]段階へ均等割り
-///   （ポスタライズ）する。厳密に「使用する色の数」がN色になるとは限らない
-///   簡易実装だが、既存のドット絵フィルターと同じ挙動を保つ。
+/// - [PixelColorMode.count]：共通[PixelArtEngine]の減色規則で、生成色を
+///   [colorLevels]以下へ制限する。
 /// - [PixelColorMode.explicit] / [PixelColorMode.palette]：[paletteColors]
 ///   （ARGB int）のうち最も近い色（RGB二乗距離）へ各画素をスナップする。
 ///   パレット選択（palette）は選んだ瞬間にexplicitへ解決されるため
@@ -475,54 +474,20 @@ Uint8List quantizeColors(
   int colorLevels = 6,
   List<int> paletteColors = const [],
 }) {
-  switch (colorMode) {
-    case PixelColorMode.none:
-      return Uint8List.fromList(data);
-    case PixelColorMode.count:
-      final step = (256 / colorLevels.clamp(1, 256)).round().clamp(1, 256);
-      final result = Uint8List.fromList(data);
-      for (int i = 0; i < result.length; i += 4) {
-        if (result[i + 3] == 0) continue;
-        result[i] = ((result[i] / step).round() * step).clamp(0, 255);
-        result[i + 1] = ((result[i + 1] / step).round() * step).clamp(0, 255);
-        result[i + 2] = ((result[i + 2] / step).round() * step).clamp(0, 255);
-      }
-      return result;
-    case PixelColorMode.explicit:
-    case PixelColorMode.palette:
-      if (paletteColors.isEmpty) return Uint8List.fromList(data);
-      final pr = <int>[];
-      final pg = <int>[];
-      final pb = <int>[];
-      for (final c in paletteColors) {
-        pr.add((c >> 16) & 0xFF);
-        pg.add((c >> 8) & 0xFF);
-        pb.add(c & 0xFF);
-      }
-      final result = Uint8List.fromList(data);
-      for (int i = 0; i < result.length; i += 4) {
-        if (result[i + 3] == 0) continue;
-        final r = result[i];
-        final g = result[i + 1];
-        final b = result[i + 2];
-        int bestIdx = 0;
-        int bestDist = 1 << 30;
-        for (int k = 0; k < pr.length; k++) {
-          final dr = r - pr[k];
-          final dg = g - pg[k];
-          final db = b - pb[k];
-          final dist = dr * dr + dg * dg + db * db;
-          if (dist < bestDist) {
-            bestDist = dist;
-            bestIdx = k;
-          }
-        }
-        result[i] = pr[bestIdx];
-        result[i + 1] = pg[bestIdx];
-        result[i + 2] = pb[bestIdx];
-      }
-      return result;
-  }
+  if (data.isEmpty) return Uint8List.fromList(data);
+  // Brush pixel mode already rasterizes at one canvas pixel per sample. Route
+  // its color policy through the same PixelArtEngine contract as filter/stamp
+  // pixelization, with pixelSize=1 so geometry is left untouched.
+  final pixelCount = data.length ~/ 4;
+  return const PixelArtEngine().convert(
+    data,
+    pixelCount,
+    1,
+    pixelSize: 1,
+    colorMode: colorMode,
+    colorLevels: colorLevels,
+    paletteColors: paletteColors,
+  );
 }
 
 class FilterEngine {
