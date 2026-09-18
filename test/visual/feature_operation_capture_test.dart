@@ -34,8 +34,10 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import '../helpers/first_use_tooltips.dart';
 import '../helpers/load_app_fonts.dart';
+import 'texture_filter_reference_fixtures.dart';
 
 const _captureMatch = String.fromEnvironment('CAPTURE_MATCH');
+const _textureFixture = String.fromEnvironment('TEXTURE_FIXTURE');
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
@@ -61,8 +63,9 @@ void main() {
           await h.project(
             id,
             fixture:
-                filter.kind == FilterKind.autoLineart ||
-                    filter.kind == FilterKind.inkPool
+                filter.kind == FilterKind.auroraHologram && _textureFixture.isNotEmpty
+                ? _textureFixture
+                : filter.kind == FilterKind.autoLineart || filter.kind == FilterKind.inkPool
                 ? 'lineart'
                 : 'color',
             mask: filter.kind == FilterKind.lensDistortion,
@@ -849,6 +852,15 @@ class _Harness {
 // Synthetic source assets use precise closed regions, color/gray ramps and
 // transparent margins. They are generated before the operation under test.
 Future<Uint8List> _fixture(String kind) async {
+  if (kind == 'textureReference3' || kind == 'textureReference4') {
+    final bytes = textureReferenceFixture(kind);
+    final codec = await ui.instantiateImageCodec(bytes, targetWidth: 256, targetHeight: 256);
+    final frame = await codec.getNextFrame();
+    final data = await frame.image.toByteData(format: ui.ImageByteFormat.rawRgba);
+    frame.image.dispose();
+    codec.dispose();
+    return data!.buffer.asUint8List();
+  }
   final recorder = ui.PictureRecorder();
   final canvas = Canvas(recorder);
   if (kind == 'mask') {
