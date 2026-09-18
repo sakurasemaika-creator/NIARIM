@@ -11548,6 +11548,42 @@ abstract class AppLocalizations {
   /// In ja, this message translates to:
   /// **'Y字終点入り抜き'**
   String get brushYBranchEndTaper;
+
+  /// No description provided for @brushFoldCurveStart.
+  ///
+  /// In ja, this message translates to:
+  /// **'カーブ開始位置'**
+  String get brushFoldCurveStart;
+
+  /// No description provided for @brushFoldLength.
+  ///
+  /// In ja, this message translates to:
+  /// **'折り返し長さ'**
+  String get brushFoldLength;
+
+  /// No description provided for @brushFoldCurveStrength.
+  ///
+  /// In ja, this message translates to:
+  /// **'カーブ強度'**
+  String get brushFoldCurveStrength;
+
+  /// No description provided for @brushFoldWave.
+  ///
+  /// In ja, this message translates to:
+  /// **'ウェーブ'**
+  String get brushFoldWave;
+
+  /// No description provided for @brushFoldWaveEndpointRange.
+  ///
+  /// In ja, this message translates to:
+  /// **'終点からウェーブにする範囲'**
+  String get brushFoldWaveEndpointRange;
+
+  /// No description provided for @brushFoldWaveTriggerAngle.
+  ///
+  /// In ja, this message translates to:
+  /// **'ウェーブ発生角度'**
+  String get brushFoldWaveTriggerAngle;
 }
 
 class _AppLocalizationsDelegate

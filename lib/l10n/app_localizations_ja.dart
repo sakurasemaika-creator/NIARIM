@@ -1302,7 +1302,7 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get helpFadeDesc =>
-      'ブラシ設定の一つです。カスタムでは、入り（描き始め）と抜き（描き終わり）の強さと適用範囲をそれぞれ独立して設定できます。始点だけ・終点だけを細くしたり、左右で異なる長さの入り抜きを作れます。';
+      'ブラシ設定の一つで、ストロークを描き進めるにつれて不透明度や太さが徐々に減少していく効果です。線の端をかすれさせたい時や、余韻を残すような描き味を作りたい時に使います。';
 
   @override
   String get helpStrokeDecayTitle => 'ストローク減衰';
@@ -6277,4 +6277,22 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get brushYBranchEndTaper => 'Y字終点入り抜き';
+
+  @override
+  String get brushFoldCurveStart => 'カーブ開始位置';
+
+  @override
+  String get brushFoldLength => '折り返し長さ';
+
+  @override
+  String get brushFoldCurveStrength => 'カーブ強度';
+
+  @override
+  String get brushFoldWave => 'ウェーブ';
+
+  @override
+  String get brushFoldWaveEndpointRange => '終点からウェーブにする範囲';
+
+  @override
+  String get brushFoldWaveTriggerAngle => 'ウェーブ発生角度';
 }

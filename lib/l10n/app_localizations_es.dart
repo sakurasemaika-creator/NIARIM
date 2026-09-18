@@ -1351,7 +1351,7 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get helpFadeDesc =>
-      'Un ajuste de pincel para dar forma a los extremos del trazo. En el modo personalizado, la intensidad y el alcance de la entrada (inicio) y la salida (final) se ajustan de forma independiente, por lo que puedes afinar solo un extremo o usar longitudes distintas.';
+      'Un ajuste de pincel donde la opacidad y el grosor disminuyen gradualmente a medida que continúas un trazo. Úsalo cuando quieras que el final de una línea se desvanezca, o para crear una sensación de dibujo con un efecto persistente.';
 
   @override
   String get helpStrokeDecayTitle => 'Atenuación de trazo';
@@ -6600,4 +6600,22 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get brushYBranchEndTaper => 'Atenuación final de rama Y';
+
+  @override
+  String get brushFoldCurveStart => 'Posición de inicio de curva';
+
+  @override
+  String get brushFoldLength => 'Longitud del pliegue';
+
+  @override
+  String get brushFoldCurveStrength => 'Intensidad de curva';
+
+  @override
+  String get brushFoldWave => 'Onda';
+
+  @override
+  String get brushFoldWaveEndpointRange => 'Rango de onda desde el final';
+
+  @override
+  String get brushFoldWaveTriggerAngle => 'Ángulo de activación de onda';
 }

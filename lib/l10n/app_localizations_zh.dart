@@ -1294,7 +1294,7 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get helpFadeDesc =>
-      '用于调整笔画两端形状的画笔设置。在自定义模式下，可分别独立设置“起笔（笔画开始）”与“收笔（笔画结束）”的强度和作用范围，因此可以只收细一端，或让两端使用不同的渐变长度。';
+      '画笔设置之一，随着笔画的持续绘制，不透明度或粗细会逐渐减少的效果。用于想让线条末端产生渐隐感，或想营造带有余韵的笔触时。';
 
   @override
   String get helpStrokeDecayTitle => '笔画衰减';
@@ -6235,6 +6235,24 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get brushYBranchEndTaper => 'Y形分支末端渐细';
+
+  @override
+  String get brushFoldCurveStart => '曲线起始位置';
+
+  @override
+  String get brushFoldLength => '折返长度';
+
+  @override
+  String get brushFoldCurveStrength => '曲线强度';
+
+  @override
+  String get brushFoldWave => '波浪';
+
+  @override
+  String get brushFoldWaveEndpointRange => '从终点开始的波浪范围';
+
+  @override
+  String get brushFoldWaveTriggerAngle => '波浪触发角度';
 }
 
 /// The translations for Chinese, using the Han script (`zh_Hant`).
@@ -7527,7 +7545,7 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get helpFadeDesc =>
-      '用於調整筆畫兩端形狀的筆刷設定。在自訂模式下，可分別獨立設定「起筆（筆畫開始）」與「收筆（筆畫結束）」的強度和作用範圍，因此可以只收細一端，或讓兩端使用不同的漸變長度。';
+      '筆刷設定之一，隨著筆畫持續繪製，不透明度或粗細會逐漸減少的效果。用於想讓線條末端產生漸隱感，或想營造帶有餘韻的筆觸時。';
 
   @override
   String get helpStrokeDecayTitle => '筆畫衰減';
@@ -12467,4 +12485,22 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get brushYBranchEndTaper => 'Y形分支末端渐细';
+
+  @override
+  String get brushFoldCurveStart => '曲線起始位置';
+
+  @override
+  String get brushFoldLength => '折返長度';
+
+  @override
+  String get brushFoldCurveStrength => '曲線強度';
+
+  @override
+  String get brushFoldWave => '波浪';
+
+  @override
+  String get brushFoldWaveEndpointRange => '從終點開始的波浪範圍';
+
+  @override
+  String get brushFoldWaveTriggerAngle => '波浪觸發角度';
 }

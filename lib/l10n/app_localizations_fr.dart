@@ -1346,7 +1346,7 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get helpFadeDesc =>
-      'Un réglage de pinceau pour façonner les extrémités du trait. En mode personnalisé, l’intensité et la portée de l’entrée (début) et de la sortie (fin) se règlent indépendamment, afin d’effiler un seul côté ou d’utiliser des longueurs différentes.';
+      'Un réglage de pinceau où l\'opacité et l\'épaisseur diminuent progressivement à mesure que vous continuez un trait. Utilisez-le lorsque vous voulez que la fin d\'une ligne s\'estompe, ou pour créer une sensation de dessin avec un effet persistant.';
 
   @override
   String get helpStrokeDecayTitle => 'Atténuation de trait';
@@ -6610,4 +6610,22 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get brushYBranchEndTaper => 'Effilage final de branche Y';
+
+  @override
+  String get brushFoldCurveStart => 'Position de début de courbe';
+
+  @override
+  String get brushFoldLength => 'Longueur du pli';
+
+  @override
+  String get brushFoldCurveStrength => 'Intensité de courbe';
+
+  @override
+  String get brushFoldWave => 'Onde';
+
+  @override
+  String get brushFoldWaveEndpointRange => 'Zone ondulée depuis la fin';
+
+  @override
+  String get brushFoldWaveTriggerAngle => 'Angle de déclenchement de l\'onde';
 }
