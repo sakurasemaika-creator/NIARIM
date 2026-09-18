@@ -221,15 +221,6 @@ class FilterService extends ChangeNotifier {
               migratedFilterState = true;
             }
           }
-          // Texture change is a true gradient map: source luminance selects
-          // the palette color. Legacy saved Filter0019 values used 60% source
-          // blending, which dulled the mapped palette, so migrate them to 100%.
-          if (filter.id == 'Filter0019' &&
-              filter.kind == FilterKind.auroraHologram &&
-              filter.strength != 100) {
-            filter = filter.copyWith(strength: 100);
-            migratedFilterState = true;
-          }
           if (filter.kind == FilterKind.autoLineart &&
               filter.autoLineartSmoothing > 10) {
             filter = filter.copyWith(
