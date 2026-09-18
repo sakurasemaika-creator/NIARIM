@@ -1861,8 +1861,9 @@ class FilterEngine {
     Uint8List data,
     int width,
     int height,
-    double strength,
-  ) {
+    double strength, {
+    int? seed,
+  }) {
     final amount = (strength / 100.0).clamp(0.0, 1.0);
     if (amount <= 0) return Uint8List.fromList(data);
     final result = Uint8List.fromList(data);
@@ -1879,7 +1880,7 @@ class FilterEngine {
       result[i + 1] = (g + (targetG - g) * amount).round().clamp(0, 255);
       result[i + 2] = (b + (targetB - b) * amount).round().clamp(0, 255);
     }
-    return applyFilmGrain(result, width, height, amount * 0.15);
+    return applyFilmGrain(result, width, height, amount * 0.15, seed: seed);
   }
 
   /// ブラウン管（CRT）風：色収差・周辺減光・走査線を組み合わせた昔のテレビ・
