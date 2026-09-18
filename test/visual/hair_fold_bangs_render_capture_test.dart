@@ -31,24 +31,24 @@ Future<void> _capture(Brush brush, String name) async {
       StrokePoint(x: 70, y: y, pressure: .82, tiltX: 0, tiltY: 0),
       layer,
     );
-    for (var step = 1; step <= 24; step++) {
-      final phase = step / 24.0;
-      final x = 70.0 + step * 10.0;
-      final pressure = .55 + .4 * math.sin(phase * math.pi);
+    for (var step = 1; step <= 18; step++) {
       engine.continueStroke(
-        StrokePoint(x: x, y: y, pressure: pressure, tiltX: 0, tiltY: 0),
+        StrokePoint(
+          x: 70.0 + step * 10.0,
+          y: y,
+          pressure: .8,
+          tiltX: 0,
+          tiltY: 0,
+        ),
         layer,
       );
     }
-    for (var step = 1; step <= 22; step++) {
-      final phase = step / 22.0;
-      final x = 310.0 + step * 10.5;
-      final drop = (row.isEven ? 1.0 : -1.0) * step * 4.8;
+    for (var step = 1; step <= 18; step++) {
       engine.continueStroke(
         StrokePoint(
-          x: x,
-          y: y + drop,
-          pressure: .9 - .3 * phase,
+          x: 250.0 - step * 10.0,
+          y: y + (row.isEven ? step * 2.0 : -step * 2.0),
+          pressure: .8,
           tiltX: 0,
           tiltY: 0,
         ),
