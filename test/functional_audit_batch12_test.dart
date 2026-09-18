@@ -96,6 +96,80 @@ void main() {
     tm.dispose();
   });
 
+  test('カスタムフェード：入りのみ・抜きのみ・短stroke・筆圧併用を独立評価できる', () async {
+    Future<List<int>> render({
+      required FadeEndpointSettings fadeIn,
+      required FadeEndpointSettings fadeOut,
+      double pressure = 1.0,
+      double endX = 180,
+    }) async {
+      final tm = TileManager(canvasWidth: 210, canvasHeight: 100);
+      final e = DrawingEngine(tileManager: tm)
+        ..currentBrush = _brush(
+          size: 28,
+          fadeMode: FadeMode.custom,
+          fadeIn: fadeIn,
+          fadeOut: fadeOut,
+          sizePressure: const PressureRangeSetting(enabled: true, weak: 50, strong: 100),
+          opacityPressure: const PressureRangeSetting(enabled: true, weak: 50, strong: 100),
+        )
+        ..currentColor = const ui.Color(0xFF3050C0);
+      tm.beginUndoRecording('fade');
+      e.beginStroke(StrokePoint(x: 20, y: 50, pressure: pressure), 'fade');
+      for (var i = 1; i <= 40; i++) {
+        final t = i / 40;
+        e.continueStroke(StrokePoint(x: 20 + (endX - 20) * t, y: 50, pressure: pressure), 'fade');
+      }
+      final preview = tm.endUndoRecording();
+      if (preview.before.isNotEmpty) tm.applyTileSnapshot('fade', preview.before);
+      e.replayCurrentStrokeWithFinalFade();
+      e.endStroke();
+      final image = await tm.compositeLayerToImage('fade');
+      final d = await _rgba(image);
+      final start = _pixel(d, 210, 24, 50)[3];
+      final middle = _pixel(d, 210, ((20 + endX) / 2).round(), 50)[3];
+      final end = _pixel(d, 210, (endX - 4).round(), 50)[3];
+      image.dispose();
+      tm.dispose();
+      return [start, middle, end];
+    }
+
+    final entryOnly = await render(
+      fadeIn: const FadeEndpointSettings(value: 20, rangePx: 60),
+      fadeOut: const FadeEndpointSettings(value: 100, rangePx: 20),
+    );
+    expect(entryOnly[0], lessThan(entryOnly[1]));
+    expect(entryOnly[2], greaterThan(entryOnly[0]));
+
+    final exitOnly = await render(
+      fadeIn: const FadeEndpointSettings(value: 100, rangePx: 20),
+      fadeOut: const FadeEndpointSettings(value: 20, rangePx: 60),
+    );
+    expect(exitOnly[2], lessThan(exitOnly[1]));
+    expect(exitOnly[0], greaterThan(exitOnly[2]));
+
+    final shortStroke = await render(
+      fadeIn: const FadeEndpointSettings(value: 35, rangePx: 80),
+      fadeOut: const FadeEndpointSettings(value: 25, rangePx: 80),
+      endX: 80,
+    );
+    expect(shortStroke[1], greaterThan(shortStroke[0]));
+    expect(shortStroke[1], greaterThan(shortStroke[2]));
+
+    final fullPressure = await render(
+      fadeIn: const FadeEndpointSettings(value: 30, rangePx: 60),
+      fadeOut: const FadeEndpointSettings(value: 30, rangePx: 60),
+    );
+    final weakPressure = await render(
+      fadeIn: const FadeEndpointSettings(value: 30, rangePx: 60),
+      fadeOut: const FadeEndpointSettings(value: 30, rangePx: 60),
+      pressure: 0.35,
+    );
+    expect(weakPressure[1], lessThan(fullPressure[1]));
+    expect(weakPressure[0], lessThan(fullPressure[0]));
+    expect(weakPressure[2], lessThan(fullPressure[2]));
+  });
+
   test('傾き：ペンを寝かせた方向へ伸び、左右対称の一様濃度ではなく方向性の濃淡を持つ', () async {
     final tm = TileManager(canvasWidth: 120, canvasHeight: 120);
     final e = DrawingEngine(tileManager: tm)
