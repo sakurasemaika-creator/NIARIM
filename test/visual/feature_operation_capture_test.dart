@@ -853,7 +853,7 @@ class _Harness {
 // transparent margins. They are generated before the operation under test.
 Future<Uint8List> _fixture(String kind) async {
   if (kind == 'textureReference3' || kind == 'textureReference4') {
-    return textureReferenceRgba(kind);
+    return Future.value(textureReferenceRgba(kind));
   }
   final recorder = ui.PictureRecorder();
   final canvas = Canvas(recorder);
