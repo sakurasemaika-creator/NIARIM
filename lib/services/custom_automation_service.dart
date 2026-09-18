@@ -5,7 +5,6 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import '../models/custom_automation.dart';
 import '../models/custom_automation_builtin_presets.dart';
-import '../models/custom_automation_presets.dart';
 
 class CustomAutomationDraft {
   final String id;
@@ -59,10 +58,9 @@ class CustomAutomationService extends ChangeNotifier {
     final raw = prefs.getStringList(_prefsKey);
 
     _items.clear();
-    var itemsChanged = false;
     if (raw == null) {
       _items.addAll(CustomAutomationBuiltinPresets.all());
-      itemsChanged = true;
+      await _persist();
     } else {
       _items.addAll(
         raw.map((entry) {
@@ -79,102 +77,9 @@ class CustomAutomationService extends ChangeNotifier {
     _favoriteIds
       ..clear()
       ..addAll(prefs.getStringList(_favoritesPrefsKey) ?? const <String>[]);
-
-    const migrationKey = 'custom_automation_official_presets_v2';
-    if (raw != null &&
-        prefs.getBool(migrationKey) != true &&
-        _migrateLegacyBuiltIns()) {
-      itemsChanged = true;
-    }
     _favoriteIds.removeWhere((id) => _items.every((item) => item.id != id));
-
-    if (itemsChanged) await _persist();
-    await prefs.setBool(migrationKey, true);
     await _persistFavorites();
     notifyListeners();
-  }
-
-  /// Replaces untouched legacy starter entries with their semantic equivalent.
-  ///
-  /// A stored list is user-owned: an empty or partial semantic list can mean a
-  /// user deliberately deleted presets, so it is never repopulated. Edited
-  /// legacy entries are retained alongside their official replacement. The
-  /// first legacy migration also introduces the two previously unshipped recipes.
-  bool _migrateLegacyBuiltIns() {
-    final legacyById = {
-      for (final preset in builtInCanvasAutomationPresets()) preset.id: preset,
-    };
-    final officialById = {
-      for (final preset in CustomAutomationBuiltinPresets.all())
-        preset.id: preset,
-    };
-    const replacements = <String, String>{
-      digitalLineartAutomationPresetId: 'builtin_draft_to_lineart',
-      analogLineartAutomationPresetId: 'builtin_analog_lineart_extract',
-    };
-
-    var changed = false;
-    var hasLegacy = false;
-    final originalIds = _items.map((item) => item.id).toSet();
-    final migrated = <CustomAutomation>[];
-    final replacementIdsToAdd = <String>{};
-
-    for (final item in _items) {
-      final replacementId = replacements[item.id];
-      final legacy = legacyById[item.id];
-      if (replacementId == null || legacy == null) {
-        migrated.add(item);
-        continue;
-      }
-
-      hasLegacy = true;
-      final replacement = officialById[replacementId]!;
-      if (_isUntouchedLegacyDefault(item, legacy)) {
-        if (!originalIds.contains(replacementId) &&
-            migrated.every((entry) => entry.id != replacementId)) {
-          migrated.add(replacement);
-        }
-        if (_favoriteIds.remove(item.id)) _favoriteIds.add(replacementId);
-        changed = true;
-      } else {
-        migrated.add(item);
-        replacementIdsToAdd.add(replacementId);
-      }
-    }
-
-    if (hasLegacy) {
-      replacementIdsToAdd.addAll([
-        'builtin_lineart_color_trace',
-        'builtin_aurora_hologram',
-      ]);
-    }
-    final existingIds = migrated.map((item) => item.id).toSet();
-    for (final replacementId in replacementIdsToAdd) {
-      if (existingIds.add(replacementId)) {
-        migrated.add(officialById[replacementId]!);
-        changed = true;
-      }
-    }
-
-    if (changed) {
-      _items
-        ..clear()
-        ..addAll(migrated);
-    }
-    return changed;
-  }
-
-  static bool _isUntouchedLegacyDefault(
-    CustomAutomation candidate,
-    CustomAutomation legacyDefault,
-  ) {
-    return candidate.id == legacyDefault.id &&
-        candidate.name == legacyDefault.name &&
-        candidate.recordingStartFrame == legacyDefault.recordingStartFrame &&
-        jsonEncode(candidate.steps.map((step) => step.toJson()).toList()) ==
-            jsonEncode(
-              legacyDefault.steps.map((step) => step.toJson()).toList(),
-            );
   }
 
   Future<void> _persist() async {
