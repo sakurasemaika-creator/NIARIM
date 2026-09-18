@@ -1,1 +1,1 @@
-entry-exit-taper verification after endpoint-finalization
+entry-exit-taper verification after legacy fixture removal
