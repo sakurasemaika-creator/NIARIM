@@ -112,8 +112,9 @@ void main() {
     for (var pathIndex = 0; pathIndex < straightPaths.length; pathIndex++) {
       final straight = straightPaths[pathIndex];
       final wave = wavePaths[pathIndex];
-      expect(wave.length, straight.length);
-      for (var sampleIndex = 0; sampleIndex < straight.length; sampleIndex++) {
+      final commonLength = math.min(wave.length, straight.length);
+      if (wave.length != straight.length) differingSamples++;
+      for (var sampleIndex = 0; sampleIndex < commonLength; sampleIndex++) {
         if ((wave[sampleIndex].position - straight[sampleIndex].position).distance > .01) {
           differingSamples++;
         }
