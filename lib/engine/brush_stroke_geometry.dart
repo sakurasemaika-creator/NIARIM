@@ -146,7 +146,10 @@ List<FoldPathSample> buildStraightFoldPath(
   final curvature = (sourceCurvature * strengthMultiplier).clamp(.075, 1.75).toDouble();
   final remaining = math.max(totalLength - curveStartDistance, totalLength * .1);
   final p3 = origin + tangent * (totalLength * .72) + inward * targetDepth;
-  final p2 = p3 - tangent * (remaining * (.28 + .22 * curvature)) - inward * (targetDepth * .12);
+  final p2InwardBackoff = (.28 - .16 * curvature).clamp(.02, .27).toDouble();
+  final p2 = p3 -
+      tangent * (remaining * (.28 + .22 * curvature)) -
+      inward * (targetDepth * p2InwardBackoff);
 
   final positions = <Offset>[];
   for (var i = 0; i <= count; i++) {
