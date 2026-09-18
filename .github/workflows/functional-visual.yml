@@ -55,9 +55,9 @@ jobs:
           flutter test test/strict_visual_evidence_audit_test.dart --reporter expanded
           flutter test test/final_remaining_strict_evidence_test.dart --reporter expanded
 
-      - name: 質感変更ホログラム4色 production UI実キャプチャ
+      - name: 質感変更フィルター全12色 production UI実キャプチャ
         run: |
-          for preset in blueHologram lightBlueHologram purpleHologram blueGreenHologram; do
+          for preset in aurora soapBubble cyberNeon pastelDream sunsetGold silverFoil classicHologram pearl2 blueHologram lightBlueHologram purpleHologram blueGreenHologram; do
             CI=true flutter test test/visual/feature_operation_capture_test.dart --reporter expanded \
               --dart-define=CAPTURE_GROUP=filters \
               --dart-define=CAPTURE_MATCH=Filter0019_${preset}
