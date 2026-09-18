@@ -3,6 +3,7 @@
 // CAPTURE_GROUP=filters|automation|autofill|extras can split the capture run.
 import 'dart:convert';
 import 'dart:io';
+import 'dart:math' as math;
 import 'dart:ui' as ui;
 
 import 'package:flutter/material.dart';
@@ -12,6 +13,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:niarim/app.dart';
 import 'package:niarim/app_bootstrap.dart';
 import 'package:niarim/engine/layer_compositor.dart';
+import 'package:niarim/engine/tile_manager.dart';
 import 'package:niarim/l10n/app_localizations.dart';
 import 'package:niarim/models/autofill_preset.dart';
 import 'package:niarim/models/autofill_gradient.dart';
