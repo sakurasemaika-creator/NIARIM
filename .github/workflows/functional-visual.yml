@@ -55,6 +55,16 @@ jobs:
           flutter test test/strict_visual_evidence_audit_test.dart --reporter expanded
           flutter test test/final_remaining_strict_evidence_test.dart --reporter expanded
 
+      - name: 質感変更ホログラム4色 production UI実キャプチャ
+        run: |
+          for preset in blueHologram lightBlueHologram purpleHologram blueGreenHologram; do
+            CI=true flutter test test/visual/feature_operation_capture_test.dart --reporter expanded \
+              --dart-define=CAPTURE_GROUP=filters \
+              --dart-define=CAPTURE_MATCH=Filter0019_${preset}
+            mkdir -p "build/hologram-preset-captures/${preset}"
+            cp -a build/feature-captures/filters/. "build/hologram-preset-captures/${preset}/"
+          done
+
       - name: 機能別レンダリング画像を保存
         if: always()
         uses: actions/upload-artifact@v6
@@ -65,6 +75,7 @@ jobs:
             build/strict-visual-evidence/*.png
             build/final-remaining-strict/*.png
             build/visual-reaudit/canvas-angle-boundary/*.png
+            build/hologram-preset-captures/**/*.png
           if-no-files-found: warn
           retention-days: 7
 # Latest HEAD strict manifest evidence rerun: 2026-09-17 full filter/preset capture verification.
