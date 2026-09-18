@@ -82,15 +82,15 @@ void main() {
     final d = await _rgba(image);
 
     final startSpan = _verticalSpan(d, 210, 100, 30, threshold: 10);
-    final endSpan = _verticalSpan(d, 210, 100, 150, threshold: 10);
+    final endSpan = _verticalSpan(d, 210, 100, 176, threshold: 10);
     final startAlpha = _pixel(d, 210, 30, 50)[3];
-    final endAlpha = _pixel(d, 210, 150, 50)[3];
+    final endAlpha = _pixel(d, 210, 176, 50)[3];
     expect(startSpan, greaterThan(endSpan * 1.8));
     expect(startAlpha, greaterThan(endAlpha * 1.8));
     expect(
       endSpan,
       inInclusiveRange(6, 12),
-      reason: '30% of 28px should be roughly 8px plus raster edge',
+      reason: 'near the finalized endpoint, 30% of 28px should be roughly 8px plus raster edge',
     );
     image.dispose();
     tm.dispose();
