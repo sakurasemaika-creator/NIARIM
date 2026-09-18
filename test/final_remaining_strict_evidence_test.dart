@@ -85,9 +85,19 @@ void main() {
               : FadeEndpointSettings.full,
         )
         ..currentColor = const ui.Color(0xFF3040C0);
+      tm.beginUndoRecording('f');
       e.beginStroke(const StrokePoint(x: 20, y: 40), 'f');
       for (var x = 24.0; x <= 230; x += 4) {
         e.continueStroke(StrokePoint(x: x, y: 40), 'f');
+      }
+      if (e.needsFinalFadeReplay) {
+        final preview = tm.endUndoRecording();
+        if (preview.before.isNotEmpty) {
+          tm.applyTileSnapshot('f', preview.before);
+        }
+        e.replayCurrentStrokeWithFinalFade();
+      } else {
+        tm.endUndoRecording();
       }
       e.endStroke();
       final image = await tm.compositeLayerToImage('f');
