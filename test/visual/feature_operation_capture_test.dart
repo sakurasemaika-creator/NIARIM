@@ -805,12 +805,13 @@ class _Harness {
   ))!;
 
   Future<Uint8List> art(String name) async => (await tester.runAsync(() async {
+    final project = ps.projects.firstWhere((p) => p.id == projectId);
     final image = await LayerCompositor.composite(
       ps.tileManagerOf(projectId),
       layers,
       (l) => ps.tileKeyFor(projectId, sceneId, 0, l.id),
-      256,
-      256,
+      project.exportWidth,
+      project.exportHeight,
     );
     final rgba = await image.toByteData(format: ui.ImageByteFormat.rawRgba);
     final png = await image.toByteData(format: ui.ImageByteFormat.png);
@@ -845,7 +846,8 @@ class _Harness {
       'name': name,
       'group': group,
       'changedPixels': changed,
-      'totalPixels': 65536,
+      'totalPixels': ps.projects.firstWhere((p) => p.id == projectId).exportWidth *
+          ps.projects.firstWhere((p) => p.id == projectId).exportHeight,
       'status': 'passed',
       'settings': settings,
       'note': note,
