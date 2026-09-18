@@ -65,7 +65,10 @@ void main() {
     expect(bangs.customImagePaths.length, 5);
 
     await _capture(
-      bangs.copyWith(foldWaveEnabled: false, foldCurveStrength: 5),
+      bangs.copyWith(
+        foldWaveEnabled: false,
+        foldCurveStrength: 5,
+      ),
       'bangs_straight_5strokes',
     );
     await _capture(
