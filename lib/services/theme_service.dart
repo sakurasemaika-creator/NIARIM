@@ -6,7 +6,6 @@ import '../models/app_theme_preset.dart';
 
 class ThemeService extends ChangeNotifier {
   static const _prefsPresetsKey = 'theme_presets';
-  static const _prefsCurrentIdKey = 'theme_current_id';
 
   /// 現在の色そのもの（JSON）。テーマ一覧から配色だけ取り込んだ状態は
   /// どのプリセットとも一致しないため、IDだけでは復元できない。
@@ -361,7 +360,6 @@ class ThemeService extends ChangeNotifier {
       _prefsPresetsKey,
       _presets.map((p) => jsonEncode(p.toJson())).toList(),
     );
-    await prefs.setString(_prefsCurrentIdKey, _current.id);
     await prefs.setString(_prefsCurrentJsonKey, jsonEncode(_current.toJson()));
   }
 
