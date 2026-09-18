@@ -1211,11 +1211,14 @@ class BrushService extends ChangeNotifier {
     encoder.addArchiveFile(
       ArchiveFile(_bundleDataFile, 0, utf8.encode(jsonEncode(brush.toJson()))),
     );
-    final imagePath = brush.customImagePath;
-    if (imagePath != null && File(imagePath).existsSync()) {
+    final imagePaths = brush.resolvedCustomImagePaths;
+    for (var index = 0; index < imagePaths.length; index++) {
+      final imagePath = imagePaths[index];
+      if (!File(imagePath).existsSync()) continue;
       final bytes = await File(imagePath).readAsBytes();
       final ext = imagePath.split('.').last;
-      encoder.addArchiveFile(ArchiveFile('image.$ext', bytes.length, bytes));
+      final name = 'images/${index.toString().padLeft(3, '0')}.$ext';
+      encoder.addArchiveFile(ArchiveFile(name, bytes.length, bytes));
     }
     encoder.close();
     return File(filePath);
@@ -1232,22 +1235,39 @@ class BrushService extends ChangeNotifier {
     ) as Map<String, dynamic>;
     final imported = Brush.fromJson(json);
     final id = 'Brush${DateTime.now().millisecondsSinceEpoch}';
-    final imageFile = archive.files
-        .where((f) => f.name.startsWith('image.'))
+    final variantFiles = archive.files
+        .where((f) => f.isFile && f.name.startsWith('images/'))
+        .toList()
+      ..sort((a, b) => a.name.compareTo(b.name));
+    final legacyImageFile = archive.files
+        .where((f) => f.isFile && f.name.startsWith('image.'))
         .firstOrNull;
-    String? newImagePath;
-    if (imageFile != null) {
-      final ext = imageFile.name.split('.').last;
+    final imageFiles = variantFiles.isNotEmpty
+        ? variantFiles
+        : <ArchiveFile>[
+            if (legacyImageFile != null) legacyImageFile,
+          ];
+    final newImagePaths = <String>[];
+    if (imageFiles.isNotEmpty) {
       final dir = await _brushesDir();
-      newImagePath = '${dir.path}/$id.$ext';
-      await File(newImagePath).writeAsBytes(imageFile.content as List<int>);
+      for (var index = 0; index < imageFiles.length; index++) {
+        final imageFile = imageFiles[index];
+        final ext = imageFile.name.split('.').last;
+        final suffix = imageFiles.length == 1
+            ? ''
+            : '_${index.toString().padLeft(3, '0')}';
+        final newImagePath = '${dir.path}/$id$suffix.$ext';
+        await File(newImagePath).writeAsBytes(imageFile.content as List<int>);
+        newImagePaths.add(newImagePath);
+      }
     }
     // 元端末固有のID・フォルダ・画像パスだけ差し替え、それ以外の
     // rotation/density/scatter/fade/edgeJitter/pixelColor等は全て保持する。
     final restoredJson = Map<String, dynamic>.from(imported.toJson())
       ..['id'] = id
       ..['folderId'] = null
-      ..['customImagePath'] = newImagePath;
+      ..['customImagePath'] = newImagePaths.length == 1 ? newImagePaths.first : null
+      ..['customImagePaths'] = newImagePaths;
     final brush = Brush.fromJson(restoredJson);
     addBrush(brush);
     return brush;
