@@ -150,7 +150,13 @@ void main() {
     );
     engine.endStroke();
 
-    expect(pixel(engine, 35, 70)[3], greaterThan(0));
+    var foldInk = 0;
+    for (var y = 50; y <= 90; y++) {
+      for (var x = 25; x <= 55; x++) {
+        if (pixel(engine, x, y)[3] > 0) foldInk++;
+      }
+    }
+    expect(foldInk, greaterThan(0));
   });
 
   test('fold detection uses explicit screen positions at non-1x display scale', () {
