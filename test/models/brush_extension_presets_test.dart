@@ -41,7 +41,7 @@ void main() {
     expect(hair.foldEnabled, isTrue);
     expect(hair.foldTriggerAngle, 90);
     expect(hair.foldCurveStartRatio, .25);
-    expect(hair.foldDepthRatio, .55);
+    expect(hair.foldCurveStrength, 5);
     expect(hair.foldLengthRatio, .8);
     expect(hair.foldEndTaperRatio, .35);
     expect(hair.foldWaveEnabled, isTrue);
