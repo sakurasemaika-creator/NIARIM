@@ -1494,6 +1494,15 @@ class _CanvasAreaState extends State<CanvasArea> {
     }
 
     _disarmHoldEyedropper(event.pointer);
+    if (_drawingEngine.needsFinalFadeReplay && _undoRecordingLayerKey != null) {
+      final layerKey = _undoRecordingLayerKey!;
+      final previewSnapshot = _tileManager.endUndoRecording();
+      if (previewSnapshot.before.isNotEmpty) {
+        _tileManager.applyTileSnapshot(layerKey, previewSnapshot.before);
+      }
+      _tileManager.beginUndoRecording(layerKey);
+      _drawingEngine.replayCurrentStrokeWithFinalFade();
+    }
     _drawingEngine.endStroke();
     _quantizeStrokeIfNeeded();
     _inputHandler.onPointerUp(event);
