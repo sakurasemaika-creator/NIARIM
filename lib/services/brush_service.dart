@@ -924,10 +924,10 @@ class BrushService extends ChangeNotifier {
   /// 前（選択時・作成時・復元時）に済ませておく必要がある（失敗しても
   /// キャッシュが空のままフォールバックされるだけなので待たない）。
   void _preloadTextureIfNeeded(Brush? brush) {
-    final path = brush?.customImagePath;
-    if (path != null) {
+    final paths = brush?.resolvedCustomImagePaths ?? const <String>[];
+    if (paths.isNotEmpty) {
       // ignore: unawaited_futures
-      preloadBrushTexture(path);
+      preloadBrushTextures(paths);
     }
   }
 
