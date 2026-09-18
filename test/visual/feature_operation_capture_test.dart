@@ -655,8 +655,8 @@ class _Harness {
   Future<void> seed(String layerId, String fixture) async {
     final bytes = (await tester.runAsync(() => _fixture(
       fixture,
-      width: ps.projectOf(projectId).exportWidth,
-      height: ps.projectOf(projectId).exportHeight,
+      width: ps.projects.firstWhere((p) => p.id == projectId).exportWidth,
+      height: ps.projects.firstWhere((p) => p.id == projectId).exportHeight,
     )))!;
     final tm = ps.tileManagerOf(projectId);
     final key = ps.tileKeyFor(projectId, sceneId, 0, layerId);
