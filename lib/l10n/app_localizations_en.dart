@@ -1327,7 +1327,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get helpFadeDesc =>
-      'A brush setting where opacity and thickness gradually decrease as you draw a stroke further. Use it when you want the end of a line to trail off, or to create a drawing feel with a lingering effect.';
+      'A brush setting for shaping stroke ends. In Custom mode, the strength and range of the entry (stroke start) and exit (stroke end) can be set independently, so you can taper only one end or give each end a different taper length.';
 
   @override
   String get helpStrokeDecayTitle => 'Stroke Decay';
