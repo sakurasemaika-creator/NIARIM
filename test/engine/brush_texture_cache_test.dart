@@ -5,6 +5,8 @@ import 'package:niarim/models/brush_presets_extension.dart';
 import 'package:niarim/engine/brush_texture_cache.dart';
 
 void main() {
+  TestWidgetsFlutterBinding.ensureInitialized();
+
   test('preloadBrushTextures accepts multiple paths and ignores missing files', () async {
     final dir = await Directory.systemTemp.createTemp('niarim-brush-textures-');
     addTearDown(() => dir.delete(recursive: true));
