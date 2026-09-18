@@ -32,13 +32,16 @@ jobs:
         run: flutter pub get
       - name: Capture all texture filter variants through production UI
         run: |
-          for preset in aurora soapBubble cyberNeon pastelDream sunsetGold silverFoil classicHologram pearl2 blueHologram lightBlueHologram purpleHologram blueGreenHologram; do
-            rm -rf build/feature-captures/filters
-            CI=true flutter test test/visual/feature_operation_capture_test.dart --reporter expanded \
-              --dart-define=CAPTURE_GROUP=filters \
-              --dart-define=CAPTURE_MATCH=Filter0019_${preset}
-            mkdir -p "build/texture-filter-captures/${preset}"
-            cp -a build/feature-captures/filters/. "build/texture-filter-captures/${preset}/"
+          for fixture in textureReference3 textureReference4; do
+            for preset in aurora soapBubble cyberNeon pastelDream sunsetGold silverFoil classicHologram pearl2 blueHologram lightBlueHologram purpleHologram blueGreenHologram; do
+              rm -rf build/feature-captures/filters
+              CI=true flutter test test/visual/feature_operation_capture_test.dart --reporter expanded \
+                --dart-define=CAPTURE_GROUP=filters \
+                --dart-define=CAPTURE_MATCH=Filter0019_${preset} \
+                --dart-define=TEXTURE_FIXTURE=${fixture}
+              mkdir -p "build/texture-filter-captures/${fixture}/${preset}"
+              cp -a build/feature-captures/filters/. "build/texture-filter-captures/${fixture}/${preset}/"
+            done
           done
       - name: Upload texture filter captures
         if: always()
