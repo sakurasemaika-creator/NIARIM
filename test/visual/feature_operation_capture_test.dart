@@ -345,10 +345,16 @@ void main() {
         final dialog = find.byType(AlertDialog);
         expect(dialog, findsOneWidget);
         final label = h.blendModeName(mode);
-        final choice = find.descendant(of: dialog, matching: find.text(label));
-        await tester.ensureVisible(choice);
+        final list = find.descendant(of: dialog, matching: find.byType(Scrollable));
+        expect(list, findsOneWidget);
+        Finder choice() => find.descendant(of: dialog, matching: find.text(label));
+        for (var i = 0; i < 30 && choice().evaluate().isEmpty; i++) {
+          await tester.drag(list, const Offset(0, -220));
+          await h.settle(1);
+        }
+        expect(choice(), findsOneWidget, reason: '$id must be reachable in the blend dialog');
         await h.capture('$id-settings');
-        await h.tap(choice);
+        await h.tap(choice());
         await h.closeLayers();
         expect(
           h.layers.firstWhere((l) => l.id == source.id).blendMode,
