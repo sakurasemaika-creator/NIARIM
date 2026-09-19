@@ -77,8 +77,70 @@ Future<List<List<WaveFoldPathSample>>> _capture(Brush brush, String name) async 
   return foldPaths;
 }
 
+Future<void> _captureNaturalProductionPreset(Brush brush, String name) async {
+  await preloadBrushTextures(brush.customImagePaths);
+  for (final path in brush.customImagePaths) {
+    expect(getCachedBrushTexture(path), isNotNull,
+        reason: 'missing bangs texture: $path');
+  }
+
+  final tiles = TileManager(canvasWidth: 720, canvasHeight: 520);
+  final engine = DrawingEngine(tileManager: tiles)
+    ..currentBrush = brush
+    ..currentColor = const ui.Color(0xFF202020);
+  const layer = 'hair-fold-production-preset-capture';
+
+  for (var row = 0; row < 5; row++) {
+    final y = 70.0 + row * 90.0;
+    engine.beginStroke(
+      StrokePoint(x: 72, y: y, pressure: .7, tiltX: 0, tiltY: 0),
+      layer,
+    );
+    for (var step = 1; step <= 48; step++) {
+      final t = step / 48.0;
+      final x = 72.0 + step * 11.0;
+      final curve = (row.isEven ? 1.0 : -1.0) *
+          (20.0 * math.sin(t * math.pi) + 7.0 * math.sin(t * math.pi * 2));
+      engine.continueStroke(
+        StrokePoint(
+          x: x,
+          y: y + curve,
+          pressure: .55 + .4 * math.sin(t * math.pi),
+          tiltX: 0,
+          tiltY: 0,
+        ),
+        layer,
+      );
+    }
+    engine.endStroke();
+  }
+
+  final image = await tiles.compositeLayerToImage(layer);
+  final data = await image.toByteData(format: ui.ImageByteFormat.png);
+  expect(data, isNotNull);
+  final out = File('build/hair_fold_visual/$name.png');
+  await out.parent.create(recursive: true);
+  await out.writeAsBytes(data!.buffer.asUint8List());
+  image.dispose();
+  tiles.dispose();
+  expect(await out.length(), greaterThan(1000));
+}
+
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
+
+  test('capture untouched production bangs preset with natural strokes', () async {
+    final bangs = brushExtensionPresets().singleWhere((b) => b.id == 'Brush0024');
+    expect(bangs.stabilization, isTrue);
+    expect(bangs.stabilizationStrength, 40);
+    expect(bangs.foldEnabled, isTrue);
+    expect(bangs.foldWaveEnabled, isFalse);
+
+    await _captureNaturalProductionPreset(
+      bangs,
+      'bangs_production_preset_5strokes',
+    );
+  });
 
   test('capture production bangs straight and wave fold strokes', () async {
     final bangs = brushExtensionPresets().singleWhere((b) => b.id == 'Brush0024');
