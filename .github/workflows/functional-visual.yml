@@ -8,6 +8,7 @@ on:
       - '.github/workflows/functional-visual.yml'
       - 'lib/screens/canvas/**'
       - 'test/canvas_*_test.dart'
+      - 'test/visual/feature_operation_capture_test.dart'
 
 jobs:
   functional-render:
@@ -40,6 +41,9 @@ jobs:
             mkdir -p "build/hologram-preset-captures/${preset}"
             cp -a build/feature-captures/filters/. "build/hologram-preset-captures/${preset}/"
           done
+
+      - name: 全25 Blend Modes production UI実キャプチャ
+        run: CI=true flutter test test/visual/feature_operation_capture_test.dart --reporter expanded --dart-define=CAPTURE_GROUP=blend
 
       - name: キャンバス1/5縮小・斜め回転・背景端実操作監査
         run: flutter test test/canvas_angle_boundary_visual_audit_test.dart --reporter expanded
@@ -76,6 +80,7 @@ jobs:
             build/final-remaining-strict/*.png
             build/visual-reaudit/canvas-angle-boundary/*.png
             build/hologram-preset-captures/**/*.png
+            build/feature-captures/blend/*.png
           if-no-files-found: warn
           retention-days: 7
 # Latest HEAD strict manifest evidence rerun: 2026-09-18 hologram preset production UI capture verification rerun 3 — all 12 variants.
