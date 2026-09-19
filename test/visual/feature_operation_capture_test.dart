@@ -317,6 +317,66 @@ void main() {
       timeout: const Timeout(Duration(minutes: 30)),
     );
   }
+  if (group == 'all' || group == 'blend') {
+    testWidgets('all blend modes composite through the production LayerPanel UI', (
+      tester,
+    ) async {
+      final h = await _Harness.create(tester, 'blend');
+      for (final mode in model.LayerBlendMode.values) {
+        final id = 'blend_${mode.name}';
+        if (_captureMatch.isNotEmpty && !id.contains(_captureMatch)) continue;
+        debugPrint('CAPTURE_CASE:$id');
+        await h.project(id, fixture: 'background');
+        final source = h.layers.firstWhere((l) => l.type == model.LayerType.normal);
+        final backdrop = h.ps.addLayer(
+          projectId: h.projectId,
+          sceneId: h.sceneId,
+          frameIndex: 0,
+          type: model.LayerType.normal,
+          name: 'Blend backdrop',
+          insertIndex: h.layers.length,
+        );
+        await h.seed(backdrop.id, 'color');
+        final before = await h.art('$id-before');
+        await h.capture('$id-before-ui');
+
+        await h.layerMenu(source.id);
+        await h.tap(find.text(h.l10n.autofillPartBlendModeLabel));
+        final dialog = find.byType(AlertDialog);
+        expect(dialog, findsOneWidget);
+        final label = h.blendModeName(mode);
+        final choice = find.descendant(of: dialog, matching: find.text(label));
+        await tester.ensureVisible(choice);
+        await h.capture('$id-settings');
+        await h.tap(choice);
+        await h.closeLayers();
+        expect(
+          h.layers.firstWhere((l) => l.id == source.id).blendMode,
+          mode,
+          reason: '$id must be selected through the production LayerPanel',
+        );
+        final after = await h.art('$id-after');
+        await h.capture('$id-after-ui');
+        final changed = _changedPixels(before, after);
+        if (mode != model.LayerBlendMode.normal) {
+          expect(changed, greaterThan(0), reason: '$id must change the composite');
+        }
+        h.record(
+          id,
+          label,
+          changed,
+          settings: {'blendMode': mode.name},
+          note: mode == model.LayerBlendMode.addition
+              ? 'Porter-Duff Plus。Linear Dodgeとは別モード。'
+              : mode == model.LayerBlendMode.linearDodge
+              ? 'RGB Linear Dodge + source-over。Additionとは別モード。'
+              : null,
+        );
+      }
+      await h.finish();
+    }, timeout: const Timeout(Duration(minutes: 12)));
+  }
+
   if (group == 'all' || group == 'extras') {
     testWidgets('record, replay, auto-fill variants and updated Help/Tips', (
       tester,
@@ -703,6 +763,34 @@ class _Harness {
     await tap(find.byIcon(Icons.settings).first);
     await tap(find.text(label).last);
   }
+
+  String blendModeName(model.LayerBlendMode mode) => switch (mode) {
+    model.LayerBlendMode.normal => l10n.blendModeNormal,
+    model.LayerBlendMode.multiply => l10n.blendModeMultiply,
+    model.LayerBlendMode.screen => l10n.blendModeScreen,
+    model.LayerBlendMode.overlay => l10n.blendModeOverlay,
+    model.LayerBlendMode.addition => l10n.blendModeAddition,
+    model.LayerBlendMode.subtract => l10n.blendModeSubtract,
+    model.LayerBlendMode.darken => l10n.blendModeDarken,
+    model.LayerBlendMode.lighten => l10n.blendModeLighten,
+    model.LayerBlendMode.colorBurn => l10n.blendModeColorBurn,
+    model.LayerBlendMode.colorDodge => l10n.blendModeColorDodge,
+    model.LayerBlendMode.hardLight => l10n.blendModeHardLight,
+    model.LayerBlendMode.softLight => l10n.blendModeSoftLight,
+    model.LayerBlendMode.difference => l10n.blendModeDifference,
+    model.LayerBlendMode.hue => l10n.blendModeHue,
+    model.LayerBlendMode.saturation => l10n.blendModeSaturation,
+    model.LayerBlendMode.color => l10n.blendModeColor,
+    model.LayerBlendMode.luminosity => l10n.blendModeLuminosity,
+    model.LayerBlendMode.linearBurn => l10n.blendModeLinearBurn,
+    model.LayerBlendMode.linearDodge => l10n.blendModeLinearDodge,
+    model.LayerBlendMode.vividLight => l10n.blendModeVividLight,
+    model.LayerBlendMode.linearLight => l10n.blendModeLinearLight,
+    model.LayerBlendMode.pinLight => l10n.blendModePinLight,
+    model.LayerBlendMode.hardMix => l10n.blendModeHardMix,
+    model.LayerBlendMode.exclusion => l10n.blendModeExclusion,
+    model.LayerBlendMode.divide => l10n.blendModeDivide,
+  };
 
   Future<void> closeLayers() async {
     if (find.byType(LayerPanel).evaluate().isEmpty) return;
