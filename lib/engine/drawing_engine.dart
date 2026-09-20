@@ -207,7 +207,7 @@ class DrawingEngine {
     if (event == null) return;
     final path = resolveHairFoldRenderPath(
       event: event,
-      waveEnabled: brush.foldWaveEnabled,
+      mode: brush.foldMode,
       curveStartRatio: brush.foldCurveStartRatio,
       curveStrength: brush.foldCurveStrength,
       lengthRatio: brush.foldLengthRatio,
@@ -227,13 +227,20 @@ class DrawingEngine {
   ) {
     if (path.isEmpty) return;
     const identityTilt = (scaleX: 1.0, scaleY: 1.0, angle: 0.0);
-    for (final sample in path) {
+    // Background portions are deliberately thinner and rendered first. This
+    // makes over/under readable without painting the old full-width black discs.
+    final ordered = <WaveFoldPathSample>[
+      ...path.where((sample) => !sample.isForeground),
+      ...path.where((sample) => sample.isForeground),
+    ];
+    for (final sample in ordered) {
       final width = sample.width;
       if (!width.isFinite || width <= 0.05) continue;
+      final visibleWidth = sample.isForeground ? width : width * .72;
       _renderCircleStamp(
         sample.position.dx,
         sample.position.dy,
-        width / 2,
+        visibleWidth / 2,
         255,
         identityTilt,
         layerId,
@@ -241,14 +248,14 @@ class DrawingEngine {
         0,
         null,
         colorOverride: color,
-        coverageNamespace: 'fold',
+        coverageNamespace: sample.isForeground ? 'fold-front' : 'fold-back',
       );
     }
   }
 
   static List<WaveFoldPathSample> debugResolveHairFoldPath({
     required FoldEvent event,
-    required bool waveEnabled,
+    required HairFoldMode mode,
     required double curveStartRatio,
     required int curveStrength,
     required double lengthRatio,
@@ -260,7 +267,7 @@ class DrawingEngine {
   }) {
     return resolveHairFoldRenderPath(
       event: event,
-      waveEnabled: waveEnabled,
+      mode: mode,
       curveStartRatio: curveStartRatio,
       curveStrength: curveStrength,
       lengthRatio: lengthRatio,
