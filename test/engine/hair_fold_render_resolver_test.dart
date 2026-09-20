@@ -3,6 +3,7 @@ import 'dart:ui';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:niarim/engine/brush_stroke_geometry.dart';
 import 'package:niarim/engine/hair_fold_render_resolver.dart';
+import 'package:niarim/engine/wave_hair_fold_geometry.dart';
 import 'package:niarim/models/brush.dart';
 
 FoldEvent _event() => FoldEvent(
