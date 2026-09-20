@@ -1439,7 +1439,10 @@ class _FilterPanelState extends State<FilterPanel> {
     AuroraHologramPreset.blueHologram => 'ブルーホログラム',
     AuroraHologramPreset.lightBlueHologram => 'ライトブルーホログラム',
     AuroraHologramPreset.purpleHologram => 'パープルホログラム',
-    AuroraHologramPreset.blueGreenHologram => 'ブルーグリーンホログラム',
+    AuroraHologramPreset.blueGreenHologram => 'ターコイズホログラム',
+    AuroraHologramPreset.moonlightPearl => 'ムーンライトパール',
+    AuroraHologramPreset.rainbowPearl => 'ミストレインボー',
+    AuroraHologramPreset.warmHologram => 'サンライズホログラム',
   };
 
   IconData _iconForFilter(FilterDef filter) {
