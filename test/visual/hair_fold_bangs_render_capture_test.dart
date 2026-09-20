@@ -159,7 +159,7 @@ void main() {
           foldTriggerAngle: 30,
           foldMode: entry.key,
         ),
-        'bangs_\${entry.value}_same_curve',
+        'bangs_${entry.value}_same_curve',
       );
     }
   });
