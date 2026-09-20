@@ -59,7 +59,6 @@ List<WaveFoldPathSample> buildWaveFoldPath(
   final total = base.last.distanceFromStart;
   final turnRight = event.signedTurnRadians < 0;
   final tangent = _normalized(event.tangent);
-  final diagonalDownRight = tangent.dx * tangent.dy >= 0;
 
   return [
     for (var i = 0; i < base.length; i++)
@@ -69,7 +68,7 @@ List<WaveFoldPathSample> buildWaveFoldPath(
         mode: mode,
         progress: total <= 1e-9 ? 1 : base[i].distanceFromStart / total,
         turnRight: turnRight,
-        diagonalDownRight: diagonalDownRight,
+        localTangent: _localTangent(base, i, tangent),
       ),
   ];
 }
@@ -80,7 +79,7 @@ WaveFoldPathSample _sampleForMode(
   required HairFoldMode mode,
   required double progress,
   required bool turnRight,
-  required bool diagonalDownRight,
+  required Offset localTangent,
 }) {
   var position = sample.position;
   var foreground = true;
@@ -88,18 +87,20 @@ WaveFoldPathSample _sampleForMode(
   switch (mode) {
     case HairFoldMode.waveTopView:
       // On a crossing, the visually upper strand stays in front.
-      foreground = event.inwardNormal.dy >= 0;
+      final localNormal = Offset(-localTangent.dy, localTangent.dx);
+      foreground = localNormal.dy <= 0;
       break;
     case HairFoldMode.waveLowAngle:
       // Low-angle view is the exact depth inverse of top view.
-      foreground = event.inwardNormal.dy < 0;
+      final localNormal = Offset(-localTangent.dy, localTangent.dx);
+      foreground = localNormal.dy > 0;
       break;
     case HairFoldMode.curlRight:
       // Left-top -> right-bottom is foreground; the opposite diagonal recedes.
-      foreground = diagonalDownRight;
+      foreground = localTangent.dx * localTangent.dy >= 0;
       break;
     case HairFoldMode.curlLeft:
-      foreground = !diagonalDownRight;
+      foreground = localTangent.dx * localTangent.dy < 0;
       break;
     case HairFoldMode.crescent:
       // Follow the detected curve; do not create a wave. Curvature controls
@@ -121,6 +122,14 @@ WaveFoldPathSample _sampleForMode(
     waveSide: event.signedTurnRadians.sign.toInt(),
     isForeground: foreground,
   );
+}
+
+Offset _localTangent(List<FoldPathSample> path, int index, Offset fallback) {
+  if (path.length < 2) return fallback;
+  final a = path[index == 0 ? 0 : index - 1].position;
+  final b = path[index == path.length - 1 ? path.length - 1 : index + 1].position;
+  final tangent = _normalized(b - a);
+  return tangent == Offset.zero ? fallback : tangent;
 }
 
 Offset _normalized(Offset value) {
