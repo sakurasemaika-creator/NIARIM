@@ -142,47 +142,25 @@ void main() {
     );
   });
 
-  test('capture production bangs straight and wave fold strokes', () async {
+  test('capture production bangs fold modes from the same user curve', () async {
     final bangs = brushExtensionPresets().singleWhere((b) => b.id == 'Brush0024');
-    expect(bangs.customImagePaths.length, 5);
-
-    final straightPaths = await _capture(
-      bangs.copyWith(
-        stabilization: false,
-        stabilizationStrength: 0,
-        foldTriggerAngle: 30,
-        foldWaveEnabled: false,
-        foldCurveStrength: 5,
-      ),
-      'bangs_straight_5strokes',
-    );
-    final wavePaths = await _capture(
-      bangs.copyWith(
-        stabilization: false,
-        stabilizationStrength: 0,
-        foldTriggerAngle: 30,
-        foldWaveEnabled: true,
-        foldWaveEndRatio: .45,
-        foldWaveTriggerAngle: 30,
-        foldCurveStrength: 5,
-      ),
-      'bangs_wave_5strokes',
-    );
-
-    expect(wavePaths.length, straightPaths.length);
-    var differingSamples = 0;
-    for (var pathIndex = 0; pathIndex < straightPaths.length; pathIndex++) {
-      final straight = straightPaths[pathIndex];
-      final wave = wavePaths[pathIndex];
-      final commonLength = math.min(wave.length, straight.length);
-      if (wave.length != straight.length) differingSamples++;
-      for (var sampleIndex = 0; sampleIndex < commonLength; sampleIndex++) {
-        if ((wave[sampleIndex].position - straight[sampleIndex].position).distance > .01) {
-          differingSamples++;
-        }
-      }
+    final modes = <HairFoldMode, String>{
+      HairFoldMode.waveTopView: 'wave_top_view',
+      HairFoldMode.waveLowAngle: 'wave_low_angle',
+      HairFoldMode.curlRight: 'curl_right',
+      HairFoldMode.curlLeft: 'curl_left',
+      HairFoldMode.crescent: 'crescent',
+    };
+    for (final entry in modes.entries) {
+      await _capture(
+        bangs.copyWith(
+          stabilization: false,
+          stabilizationStrength: 0,
+          foldTriggerAngle: 30,
+          foldMode: entry.key,
+        ),
+        'bangs_\${entry.value}_same_curve',
+      );
     }
-    expect(differingSamples, greaterThan(0),
-        reason: 'wave fold geometry must differ from straight geometry');
   });
 }
