@@ -9,7 +9,9 @@ FoldEvent event({
   double width = 20,
   double turn = 1.8,
   Offset inward = const Offset(0, 1),
-}) => FoldEvent(
+  List<Offset>? curve,
+}) =>
+    FoldEvent(
       sample: BrushStrokeSample(
         screenPosition: const Offset(40, 40),
         documentPosition: const Offset(100, 100),
@@ -19,115 +21,104 @@ FoldEvent event({
       inwardNormal: inward,
       signedTurnRadians: turn,
       screenDistance: 40,
+      sourceCurve: curve ??
+          const [
+            Offset(10, 10),
+            Offset(30, 16),
+            Offset(50, 32),
+            Offset(66, 56),
+            Offset(78, 84),
+          ],
+    );
+
+List<WaveFoldPathSample> build(
+  HairFoldMode mode, {
+  FoldEvent? fold,
+  double width = 2,
+}) =>
+    buildWaveFoldPath(
+      fold ?? event(),
+      mode: mode,
+      curveStartRatio: .2,
+      curveStrength: 5,
+      lengthRatio: 1,
+      waveEndRatio: 1,
+      waveTriggerAngleDegrees: 45,
+      outlineWidth: width,
     );
 
 void main() {
-  group('Wave hair fold geometry', () {
-    test('wave section occupies requested percentage from endpoint', () {
-      final path = buildWaveFoldPath(
-          mode: HairFoldMode.waveTopView,
-        event(),
-        curveStartRatio: .2,
-        curveStrength: 5,
-        lengthRatio: 1,
-        waveEndRatio: .3,
-        waveTriggerAngleDegrees: 45,
-      );
-      expect(path, isNotEmpty);
-      final firstWave = path.indexWhere((sample) => sample.isWave);
-      expect(firstWave, greaterThan(0));
-      expect(path[firstWave].distanceFromStart, closeTo(14, 1.2));
-      expect(path.last.distanceFromStart, closeTo(20, .2));
+  group('Hair fold modes use the user-drawn curve', () {
+    test('non-crescent modes preserve every source-curve position', () {
+      final fold = event();
+      for (final mode in const [
+        HairFoldMode.waveTopView,
+        HairFoldMode.waveLowAngle,
+        HairFoldMode.curlRight,
+        HairFoldMode.curlLeft,
+      ]) {
+        final path = build(mode, fold: fold);
+        expect(path.length, fold.sourceCurve.length);
+        for (var i = 0; i < path.length; i++) {
+          expect(path[i].position, fold.sourceCurve[i]);
+          expect(path[i].isWave, isFalse);
+        }
+      }
     });
 
-    test('wave thickness follows pressure resolved effective brush width', () {
-      final narrow = buildWaveFoldPath(
-          mode: HairFoldMode.waveTopView,
-        event(width: 20),
-        curveStartRatio: .2,
-        curveStrength: 5,
-        lengthRatio: 1,
-        waveEndRatio: 1,
-        waveTriggerAngleDegrees: 45,
-      );
-      final wide = buildWaveFoldPath(
-          mode: HairFoldMode.waveTopView,
-        event(width: 40),
-        curveStartRatio: .2,
-        curveStrength: 5,
-        lengthRatio: 1,
-        waveEndRatio: 1,
-        waveTriggerAngleDegrees: 45,
-      );
-      expect(wide.map((e) => e.width).reduce((a, b) => a > b ? a : b),
-          closeTo(narrow.map((e) => e.width).reduce((a, b) => a > b ? a : b) * 2, 1));
+    test('top and low-angle views invert foreground depth', () {
+      final top = build(HairFoldMode.waveTopView);
+      final low = build(HairFoldMode.waveLowAngle);
+      expect(top.length, low.length);
+      for (var i = 0; i < top.length; i++) {
+        expect(top[i].isForeground, isNot(low[i].isForeground));
+      }
     });
 
-    test('adjacent crescents alternate around the fold centerline', () {
-      final path = buildWaveFoldPath(
-          mode: HairFoldMode.waveTopView,
-        event(width: 24),
-        curveStartRatio: .15,
-        curveStrength: 5,
-        lengthRatio: 1.5,
-        waveEndRatio: 1,
-        waveTriggerAngleDegrees: 45,
-      );
-      final wave = path.where((sample) => sample.isWave).toList();
-      expect(wave.any((sample) => sample.waveSide > 0), isTrue);
-      expect(wave.any((sample) => sample.waveSide < 0), isTrue);
+    test('right and left curls invert foreground depth', () {
+      final right = build(HairFoldMode.curlRight);
+      final left = build(HairFoldMode.curlLeft);
+      expect(right.length, left.length);
+      for (var i = 0; i < right.length; i++) {
+        expect(right[i].isForeground, isNot(left[i].isForeground));
+      }
     });
 
-    test('first curve is an open pen transition and later lobes close at midpoints', () {
-      final path = buildWaveFoldPath(
-          mode: HairFoldMode.waveTopView,
-        event(width: 20),
-        curveStartRatio: .2,
-        curveStrength: 5,
-        lengthRatio: 1.6,
-        waveEndRatio: 1,
-        waveTriggerAngleDegrees: 45,
-      );
-      final wave = path.where((sample) => sample.isWave).toList();
-      expect(wave.first.isTransition, isTrue);
-      expect(wave.skip(1).any((sample) => sample.isJoin), isTrue);
+    test('local direction can change depth within one curved stroke', () {
+      final fold = event(curve: const [
+        Offset(10, 10),
+        Offset(30, 30),
+        Offset(50, 50),
+        Offset(70, 30),
+        Offset(90, 10),
+      ]);
+      final right = build(HairFoldMode.curlRight, fold: fold);
+      expect(right.any((s) => s.isForeground), isTrue);
+      expect(right.any((s) => !s.isForeground), isTrue);
     });
 
-    test('wave trigger angle keeps shallow bends straight', () {
-      final shallow = buildWaveFoldPath(
-          mode: HairFoldMode.waveTopView,
-        event(turn: .5),
-        curveStartRatio: .2,
-        curveStrength: 5,
-        lengthRatio: 1,
-        waveEndRatio: 1,
-        waveTriggerAngleDegrees: 45,
+    test('crescent follows the same endpoints and bends inward', () {
+      final fold = event();
+      final crescent = build(HairFoldMode.crescent, fold: fold);
+      expect(crescent.length, fold.sourceCurve.length);
+      expect(crescent.first.position, fold.sourceCurve.first);
+      expect(crescent.last.position.dx, closeTo(fold.sourceCurve.last.dx, 1e-6));
+      expect(crescent.last.position.dy, closeTo(fold.sourceCurve.last.dy, 1e-6));
+      expect(
+        List.generate(
+          crescent.length,
+          (i) => (crescent[i].position - fold.sourceCurve[i]).distance,
+        ).reduce((a, b) => a > b ? a : b),
+        greaterThan(0),
       );
-      expect(shallow.every((sample) => !sample.isWave), isTrue);
     });
 
-    test('zero wave percentage is identical to straight mode positions', () {
-      final straight = buildStraightFoldPath(
-        event(),
-        curveStartRatio: .2,
-        curveStrength: 5,
-        lengthRatio: 1,
-        taperRatio: .35,
-      );
-      final waveOff = buildWaveFoldPath(
-          mode: HairFoldMode.waveTopView,
-        event(),
-        curveStartRatio: .2,
-        curveStrength: 5,
-        lengthRatio: 1,
-        waveEndRatio: 0,
-        waveTriggerAngleDegrees: 45,
-        taperRatio: .35,
-      );
-      expect(waveOff.length, straight.length);
-      for (var i = 0; i < straight.length; i++) {
-        expect(waveOff[i].position.dx, closeTo(straight[i].position.dx, 1e-6));
-        expect(waveOff[i].position.dy, closeTo(straight[i].position.dy, 1e-6));
+    test('outline width scales independently of centerline geometry', () {
+      final narrow = build(HairFoldMode.waveTopView, width: 2);
+      final wide = build(HairFoldMode.waveTopView, width: 4);
+      expect(wide.first.width, closeTo(narrow.first.width * 2, 1e-6));
+      for (var i = 0; i < narrow.length; i++) {
+        expect(wide[i].position, narrow[i].position);
       }
     });
   });
