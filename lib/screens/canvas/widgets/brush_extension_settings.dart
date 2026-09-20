@@ -19,6 +19,7 @@ class BrushExtensionLabels {
   final String foldLength;
   final String foldCurveStrength;
   final String foldWave;
+  final String foldMode;
   final String foldWaveEndRatio;
   final String foldWaveTriggerAngle;
 
@@ -37,6 +38,7 @@ class BrushExtensionLabels {
     required this.foldLength,
     required this.foldCurveStrength,
     required this.foldWave,
+    required this.foldMode,
     required this.foldWaveEndRatio,
     required this.foldWaveTriggerAngle,
   });
@@ -57,6 +59,7 @@ class BrushExtensionLabels {
         foldLength: l.brushFoldLength,
         foldCurveStrength: l.brushFoldCurveStrength,
         foldWave: l.brushFoldWave,
+        foldMode: l.brushFoldWave,
         foldWaveEndRatio: l.brushFoldWaveEndpointRange,
         foldWaveTriggerAngle: l.brushFoldWaveTriggerAngle,
       );
@@ -76,6 +79,7 @@ class BrushExtensionLabels {
       foldLength = '折り返し長さ',
       foldCurveStrength = 'カーブ強度',
       foldWave = 'ウェーブ',
+      foldMode = '折りたたみタイプ',
       foldWaveEndRatio = '終点からウェーブにする範囲',
       foldWaveTriggerAngle = 'ウェーブ発生角度';
 }
@@ -227,32 +231,49 @@ class _BrushExtensionSettingsState extends State<BrushExtensionSettings> {
               10,
               (v) => _set(_brush.copyWith(foldCurveStrength: v)),
             ),
-            SwitchListTile(
-              dense: true,
-              title: Text(l.foldWave),
-              value: _brush.foldWaveEnabled,
-              onChanged: (v) => _set(_brush.copyWith(foldWaveEnabled: v)),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+              child: DropdownButtonFormField<HairFoldMode>(
+                key: const Key('brush-fold-mode'),
+                value: _brush.foldMode,
+                decoration: InputDecoration(labelText: l.foldMode),
+                items: HairFoldMode.values
+                    .map((mode) => DropdownMenuItem(
+                          value: mode,
+                          child: Text(_foldModeLabel(mode)),
+                        ))
+                    .toList(),
+                onChanged: (mode) {
+                  if (mode != null) _set(_brush.copyWith(foldMode: mode));
+                },
+              ),
             ),
-            if (_brush.foldWaveEnabled) ...[
-              _ratioSlider(
-                l.foldWaveEndRatio,
-                _brush.foldWaveEndRatio,
-                (v) => _set(_brush.copyWith(foldWaveEndRatio: v)),
-              ),
-              _slider(
-                l.foldWaveTriggerAngle,
-                _brush.foldWaveTriggerAngle,
-                5,
-                170,
-                (v) => _set(_brush.copyWith(foldWaveTriggerAngle: v)),
-                suffix: '°',
-              ),
-            ],
+            _ratioSlider(
+              l.foldWaveEndRatio,
+              _brush.foldWaveEndRatio,
+              (v) => _set(_brush.copyWith(foldWaveEndRatio: v)),
+            ),
+            _slider(
+              l.foldWaveTriggerAngle,
+              _brush.foldWaveTriggerAngle,
+              5,
+              170,
+              (v) => _set(_brush.copyWith(foldWaveTriggerAngle: v)),
+              suffix: '°',
+            ),
           ],
         ],
       ],
     );
   }
+
+  String _foldModeLabel(HairFoldMode mode) => switch (mode) {
+    HairFoldMode.waveTopView => 'ウェーブ俯瞰',
+    HairFoldMode.waveLowAngle => 'ウェーブ煽り',
+    HairFoldMode.curlRight => '右巻き',
+    HairFoldMode.curlLeft => '左巻き',
+    HairFoldMode.crescent => '三日月カール',
+  };
 
   Widget _integerSlider(
     String label,
