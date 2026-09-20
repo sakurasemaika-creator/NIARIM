@@ -3,6 +3,7 @@ import 'dart:ui';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:niarim/engine/brush_stroke_geometry.dart';
 import 'package:niarim/engine/wave_hair_fold_geometry.dart';
+import 'package:niarim/models/brush.dart';
 
 FoldEvent event({
   double width = 20,
@@ -24,6 +25,7 @@ void main() {
   group('Wave hair fold geometry', () {
     test('wave section occupies requested percentage from endpoint', () {
       final path = buildWaveFoldPath(
+          mode: HairFoldMode.waveTopView,
         event(),
         curveStartRatio: .2,
         curveStrength: 5,
@@ -40,6 +42,7 @@ void main() {
 
     test('wave thickness follows pressure resolved effective brush width', () {
       final narrow = buildWaveFoldPath(
+          mode: HairFoldMode.waveTopView,
         event(width: 20),
         curveStartRatio: .2,
         curveStrength: 5,
@@ -48,6 +51,7 @@ void main() {
         waveTriggerAngleDegrees: 45,
       );
       final wide = buildWaveFoldPath(
+          mode: HairFoldMode.waveTopView,
         event(width: 40),
         curveStartRatio: .2,
         curveStrength: 5,
@@ -61,6 +65,7 @@ void main() {
 
     test('adjacent crescents alternate around the fold centerline', () {
       final path = buildWaveFoldPath(
+          mode: HairFoldMode.waveTopView,
         event(width: 24),
         curveStartRatio: .15,
         curveStrength: 5,
@@ -75,6 +80,7 @@ void main() {
 
     test('first curve is an open pen transition and later lobes close at midpoints', () {
       final path = buildWaveFoldPath(
+          mode: HairFoldMode.waveTopView,
         event(width: 20),
         curveStartRatio: .2,
         curveStrength: 5,
@@ -89,6 +95,7 @@ void main() {
 
     test('wave trigger angle keeps shallow bends straight', () {
       final shallow = buildWaveFoldPath(
+          mode: HairFoldMode.waveTopView,
         event(turn: .5),
         curveStartRatio: .2,
         curveStrength: 5,
@@ -108,6 +115,7 @@ void main() {
         taperRatio: .35,
       );
       final waveOff = buildWaveFoldPath(
+          mode: HairFoldMode.waveTopView,
         event(),
         curveStartRatio: .2,
         curveStrength: 5,
