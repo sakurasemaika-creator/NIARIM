@@ -1,6 +1,8 @@
 import 'asset_tags.dart';
 import 'pixel_color_mode.dart';
 
+enum HairFoldMode { waveTopView, waveLowAngle, curlRight, curlLeft, crescent }
+
 class Brush {
   final String id;
   final String name;
@@ -43,6 +45,7 @@ class Brush {
   final double foldLengthRatio;
   final double foldEndTaperRatio;
   final bool foldWaveEnabled;
+  final HairFoldMode foldMode;
   final double foldWaveEndRatio;
   final double foldWaveTriggerAngle;
   final double yBranchAngle;
@@ -92,6 +95,7 @@ class Brush {
     this.foldLengthRatio = 0.8,
     this.foldEndTaperRatio = 0.35,
     this.foldWaveEnabled = false,
+    this.foldMode = HairFoldMode.waveTopView,
     this.foldWaveEndRatio = 0.0,
     this.foldWaveTriggerAngle = 45.0,
     this.yBranchAngle = 45.0,
@@ -128,7 +132,7 @@ class Brush {
     double? lateralRepeatSpacing, bool? outlineEnabled, double? outlineWidth,
     int? outlineColor, bool? foldEnabled, double? foldTriggerAngle,
     double? foldCurveStartRatio, int? foldCurveStrength, double? foldLengthRatio,
-    double? foldEndTaperRatio, bool? foldWaveEnabled, double? foldWaveEndRatio,
+    double? foldEndTaperRatio, bool? foldWaveEnabled, HairFoldMode? foldMode, double? foldWaveEndRatio,
     double? foldWaveTriggerAngle, double? yBranchAngle,
     double? yBranchLengthRatio, double? yBranchWidthRatio,
     double? yBranchEndTaperRatio, BrushTipShape? tipShape,
@@ -161,6 +165,7 @@ class Brush {
     foldLengthRatio: clampFoldRatio(foldLengthRatio ?? this.foldLengthRatio, .8),
     foldEndTaperRatio: clampFoldRatio(foldEndTaperRatio ?? this.foldEndTaperRatio, .35),
     foldWaveEnabled: foldWaveEnabled ?? this.foldWaveEnabled,
+    foldMode: foldMode ?? this.foldMode,
     foldWaveEndRatio: clampFoldRatio(foldWaveEndRatio ?? this.foldWaveEndRatio, 0),
     foldWaveTriggerAngle: clampFoldAngle(foldWaveTriggerAngle ?? this.foldWaveTriggerAngle, 45),
     yBranchAngle: yBranchAngle ?? this.yBranchAngle,
@@ -192,6 +197,7 @@ class Brush {
     'foldLengthRatio': clampFoldRatio(foldLengthRatio, .8),
     'foldEndTaperRatio': clampFoldRatio(foldEndTaperRatio, .35),
     'foldWaveEnabled': foldWaveEnabled,
+    'foldMode': foldMode.name,
     'foldWaveEndRatio': clampFoldRatio(foldWaveEndRatio, 0),
     'foldWaveTriggerAngle': clampFoldAngle(foldWaveTriggerAngle, 45),
     'yBranchAngle': yBranchAngle, 'yBranchLengthRatio': yBranchLengthRatio,
@@ -235,6 +241,10 @@ class Brush {
     foldLengthRatio: clampFoldRatio((j['foldLengthRatio'] as num?)?.toDouble() ?? .8, .8),
     foldEndTaperRatio: clampFoldRatio((j['foldEndTaperRatio'] as num?)?.toDouble() ?? .35, .35),
     foldWaveEnabled: j['foldWaveEnabled'] as bool? ?? false,
+    foldMode: HairFoldMode.values.firstWhere(
+      (e) => e.name == j['foldMode'],
+      orElse: () => HairFoldMode.waveTopView,
+    ),
     foldWaveEndRatio: clampFoldRatio((j['foldWaveEndRatio'] as num?)?.toDouble() ?? 0, 0),
     foldWaveTriggerAngle: clampFoldAngle((j['foldWaveTriggerAngle'] as num?)?.toDouble() ?? 45, 45),
     yBranchAngle: (j['yBranchAngle'] as num?)?.toDouble() ?? 45,
