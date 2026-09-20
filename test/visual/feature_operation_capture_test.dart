@@ -328,6 +328,7 @@ void main() {
         debugPrint('CAPTURE_CASE:$id');
         await h.project(id, fixture: 'background');
         final source = h.layers.firstWhere((l) => l.type == model.LayerType.normal);
+        await h.seed(source.id, 'colorTranslucent');
         final backdrop = h.ps.addLayer(
           projectId: h.projectId,
           sceneId: h.sceneId,
@@ -1012,6 +1013,12 @@ Future<Uint8List> _fixture(
   }
   final recorder = ui.PictureRecorder();
   final canvas = Canvas(recorder);
+  if (kind == 'colorTranslucent') {
+    canvas.saveLayer(
+      const Rect.fromLTWH(0, 0, 256, 256),
+      Paint()..color = const Color.fromRGBO(255, 255, 255, 0.62),
+    );
+  }
   if (kind == 'mask') {
     canvas.drawOval(
       const Rect.fromLTWH(44, 28, 165, 190),
@@ -1043,7 +1050,7 @@ Future<Uint8List> _fixture(
       ..lineTo(194, 217)
       ..quadraticBezierTo(115, 240, 35, 217)
       ..close();
-    if (kind == 'color') {
+    if (kind == 'color' || kind == 'colorTranslucent') {
       canvas.drawPath(
         body,
         Paint()
@@ -1065,7 +1072,7 @@ Future<Uint8List> _fixture(
       ..lineTo(114, 86)
       ..lineTo(94, 63)
       ..close();
-    if (kind == 'color') {
+    if (kind == 'color' || kind == 'colorTranslucent') {
       canvas.drawPath(hair, Paint()..color = const Color(0xff36455e));
     }
     canvas.drawPath(hair, line);
@@ -1078,7 +1085,7 @@ Future<Uint8List> _fixture(
       false,
       line,
     );
-    if (kind == 'color') {
+    if (kind == 'color' || kind == 'colorTranslucent') {
       canvas.drawRect(
         const Rect.fromLTWH(212, 24, 24, 152),
         Paint()
@@ -1104,6 +1111,7 @@ Future<Uint8List> _fixture(
       }
     }
   }
+  if (kind == 'colorTranslucent') canvas.restore();
   final picture = recorder.endRecording();
   final image = await picture.toImage(256, 256);
   picture.dispose();
