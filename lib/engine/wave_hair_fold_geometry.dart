@@ -45,14 +45,10 @@ List<WaveFoldPathSample> buildWaveFoldPath(
   double outlineWidth = 1,
   int sampleCount = 48,
 }) {
-  final base = buildStraightFoldPath(
+  final base = _sourceCurvePath(
     event,
-    curveStartRatio: curveStartRatio,
-    curveStrength: curveStrength,
-    lengthRatio: lengthRatio,
-    taperRatio: taperRatio,
     outlineWidth: outlineWidth,
-    sampleCount: sampleCount,
+    taperRatio: taperRatio,
   );
   if (base.isEmpty) return const [];
 
@@ -69,6 +65,32 @@ List<WaveFoldPathSample> buildWaveFoldPath(
         progress: total <= 1e-9 ? 1 : base[i].distanceFromStart / total,
         turnRight: turnRight,
         localTangent: _localTangent(base, i, tangent),
+      ),
+  ];
+}
+
+List<FoldPathSample> _sourceCurvePath(
+  FoldEvent event, {
+  required double outlineWidth,
+  required double taperRatio,
+}) {
+  final points = event.sourceCurve;
+  if (points.length < 2) return const [];
+  var distance = 0.0;
+  final distances = <double>[0];
+  for (var i = 1; i < points.length; i++) {
+    distance += (points[i] - points[i - 1]).distance;
+    distances.add(distance);
+  }
+  if (distance <= 1e-9) return const [];
+  final taper = taperRatio.clamp(0.0, 1.0).toDouble();
+  return [
+    for (var i = 0; i < points.length; i++)
+      FoldPathSample(
+        position: points[i],
+        distanceFromStart: distances[i],
+        width: outlineWidth *
+            (1.0 - taper * (distances[i] / distance).clamp(0.0, 1.0)),
       ),
   ];
 }
