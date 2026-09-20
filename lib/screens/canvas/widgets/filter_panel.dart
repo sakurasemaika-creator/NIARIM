@@ -1436,9 +1436,9 @@ class _FilterPanelState extends State<FilterPanel> {
     AuroraHologramPreset.classicHologram =>
       l10n.filterAuroraHologramPresetClassicHologram,
     AuroraHologramPreset.pearl2 => l10n.filterAuroraHologramPresetPearl2,
-    AuroraHologramPreset.blueHologram => 'ブルーホログラム',
-    AuroraHologramPreset.lightBlueHologram => 'ライトブルーホログラム',
-    AuroraHologramPreset.purpleHologram => 'パープルホログラム',
+    AuroraHologramPreset.blueHologram => 'サファイアホログラム',
+    AuroraHologramPreset.lightBlueHologram => 'アイスホログラム',
+    AuroraHologramPreset.purpleHologram => 'アメジストホログラム',
     AuroraHologramPreset.blueGreenHologram => 'ターコイズホログラム',
     AuroraHologramPreset.moonlightPearl => 'ムーンライトパール',
     AuroraHologramPreset.rainbowPearl => 'ミストレインボー',
