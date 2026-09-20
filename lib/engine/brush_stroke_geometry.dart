@@ -51,6 +51,7 @@ class FoldEvent {
   final Offset inwardNormal;
   final double signedTurnRadians;
   final double screenDistance;
+  final List<Offset> sourceCurve;
 
   const FoldEvent({
     required this.sample,
@@ -58,6 +59,7 @@ class FoldEvent {
     required this.inwardNormal,
     required this.signedTurnRadians,
     required this.screenDistance,
+    this.sourceCurve = const <Offset>[],
   });
 }
 
@@ -290,6 +292,7 @@ class ScreenSpaceFoldDetector {
       inwardNormal: inward,
       signedTurnRadians: signedTurn,
       screenDistance: _totalDistance,
+      sourceCurve: _samples.map((entry) => entry.sample.documentPosition).toList(growable: false),
     );
   }
 }
