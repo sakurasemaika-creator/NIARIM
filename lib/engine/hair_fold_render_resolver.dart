@@ -1,3 +1,4 @@
+import '../models/brush.dart';
 import 'brush_stroke_geometry.dart';
 import 'wave_hair_fold_geometry.dart';
 
@@ -8,7 +9,7 @@ import 'wave_hair_fold_geometry.dart';
 /// measured from the fold endpoint, matching the brush UI contract.
 List<WaveFoldPathSample> resolveHairFoldRenderPath({
   required FoldEvent event,
-  required bool waveEnabled,
+  required HairFoldMode mode,
   required double curveStartRatio,
   required int curveStrength,
   required double lengthRatio,
@@ -23,7 +24,8 @@ List<WaveFoldPathSample> resolveHairFoldRenderPath({
     curveStartRatio: curveStartRatio,
     curveStrength: curveStrength,
     lengthRatio: lengthRatio,
-    waveEndRatio: waveEnabled ? waveEndRatio : 0,
+    mode: mode,
+    waveEndRatio: waveEndRatio,
     waveTriggerAngleDegrees: waveTriggerAngleDegrees,
     taperRatio: taperRatio,
     outlineWidth: outlineWidth,
