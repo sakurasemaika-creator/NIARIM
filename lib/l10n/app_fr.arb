@@ -2732,5 +2732,11 @@
   "brushFoldCurveStrength": "Intensité de courbe",
   "brushFoldWave": "Onde",
   "brushFoldWaveEndpointRange": "Zone ondulée depuis la fin",
-  "brushFoldWaveTriggerAngle": "Angle de déclenchement de l'onde"
-}
+  "brushFoldWaveTriggerAngle": "Angle de déclenchement de l'onde",
+  "filterAuroraHologramPresetBlueHologram": "Hologramme saphir",
+  "filterAuroraHologramPresetLightBlueHologram": "Hologramme glacé",
+  "filterAuroraHologramPresetPurpleHologram": "Hologramme améthyste",
+  "filterAuroraHologramPresetBlueGreenHologram": "Hologramme turquoise",
+  "filterAuroraHologramPresetMoonlightPearl": "Perle lunaire",
+  "filterAuroraHologramPresetRainbowPearl": "Arc-en-ciel brumeux",
+  "filterAuroraHologramPresetWarmHologram": "Hologramme lever de soleil"
