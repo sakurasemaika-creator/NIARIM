@@ -362,6 +362,77 @@ void main() {
     }
   });
 
+
+  test('全プリセットで黒と白が帯の両端へ100%マッピングされる', () {
+    for (final preset in AuroraHologramPreset.values) {
+      final stops = auroraHologramStops(preset);
+      final data = Uint8List.fromList([
+        0, 0, 0, 255,
+        255, 255, 255, 255,
+      ]);
+      final result = engine.applyAuroraHologram(
+        data,
+        2,
+        1,
+        strength: 100,
+        brightness: 0,
+        saturation: 0,
+        preset: preset,
+      );
+      expect(
+        (result[0], result[1], result[2]),
+        equals((stops.first.$2, stops.first.$3, stops.first.$4)),
+        reason: '${preset.name}: black should map to the left endpoint',
+      );
+      expect(
+        (result[4], result[5], result[6]),
+        equals((stops.last.$2, stops.last.$3, stops.last.$4)),
+        reason: '${preset.name}: white should map to the right endpoint',
+      );
+    }
+  });
+
+  test('全プリセットの右端はその配色の最明色である', () {
+    int luminance((double, int, int, int) stop) =>
+        299 * stop.$2 + 587 * stop.$3 + 114 * stop.$4;
+
+    for (final preset in AuroraHologramPreset.values) {
+      final stops = auroraHologramStops(preset);
+      final brightest = stops.reduce(
+        (a, b) => luminance(a) >= luminance(b) ? a : b,
+      );
+      expect(
+        stops.last,
+        brightest,
+        reason: '${preset.name}: right endpoint must be the brightest stop',
+      );
+    }
+  });
+
+  test('100% Gradient Mapは元RGBではなく入力輝度だけで決まる', () {
+    final data = Uint8List.fromList([
+      255, 0, 0, 255,
+      0, 130, 0, 255,
+    ]);
+    for (final preset in AuroraHologramPreset.values) {
+      final result = engine.applyAuroraHologram(
+        data,
+        2,
+        1,
+        strength: 100,
+        brightness: 0,
+        saturation: 0,
+        preset: preset,
+      );
+      expect(
+        (result[0], result[1], result[2]),
+        equals((result[4], result[5], result[6])),
+        reason: preset.name,
+      );
+    }
+  });
+
+
   test('auroraHologramStopsは各プリセットで昇順の位置を持つ', () {
     for (final preset in AuroraHologramPreset.values) {
       final stops = auroraHologramStops(preset);
