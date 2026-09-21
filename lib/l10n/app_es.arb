@@ -2732,5 +2732,11 @@
   "brushFoldCurveStrength": "Intensidad de curva",
   "brushFoldWave": "Onda",
   "brushFoldWaveEndpointRange": "Rango de onda desde el final",
-  "brushFoldWaveTriggerAngle": "Ángulo de activación de onda"
-}
+  "brushFoldWaveTriggerAngle": "Ángulo de activación de onda",
+  "filterAuroraHologramPresetBlueHologram": "Holograma zafiro",
+  "filterAuroraHologramPresetLightBlueHologram": "Holograma hielo",
+  "filterAuroraHologramPresetPurpleHologram": "Holograma amatista",
+  "filterAuroraHologramPresetBlueGreenHologram": "Holograma turquesa",
+  "filterAuroraHologramPresetMoonlightPearl": "Perla lunar",
+  "filterAuroraHologramPresetRainbowPearl": "Arcoíris brumoso",
+  "filterAuroraHologramPresetWarmHologram": "Holograma amanecer"
