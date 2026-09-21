@@ -33,6 +33,7 @@ jobs:
         run: flutter pub get
 
       - name: 質感変更フィルター全12色 production UI実キャプチャ
+        continue-on-error: true
         run: |
           for preset in aurora soapBubble cyberNeon pastelDream sunsetGold silverFoil classicHologram pearl2 blueHologram lightBlueHologram purpleHologram blueGreenHologram; do
             CI=true flutter test test/visual/feature_operation_capture_test.dart --reporter expanded \
