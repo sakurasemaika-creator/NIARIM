@@ -2732,5 +2732,11 @@
   "brushFoldCurveStrength": "커브 강도",
   "brushFoldWave": "웨이브",
   "brushFoldWaveEndpointRange": "끝점부터 웨이브 범위",
-  "brushFoldWaveTriggerAngle": "웨이브 발생 각도"
-}
+  "brushFoldWaveTriggerAngle": "웨이브 발생 각도",
+  "filterAuroraHologramPresetBlueHologram": "사파이어 홀로그램",
+  "filterAuroraHologramPresetLightBlueHologram": "아이스 홀로그램",
+  "filterAuroraHologramPresetPurpleHologram": "아메시스트 홀로그램",
+  "filterAuroraHologramPresetBlueGreenHologram": "터쿼이즈 홀로그램",
+  "filterAuroraHologramPresetMoonlightPearl": "문라이트 펄",
+  "filterAuroraHologramPresetRainbowPearl": "미스트 레인보우",
+  "filterAuroraHologramPresetWarmHologram": "선라이즈 홀로그램"
