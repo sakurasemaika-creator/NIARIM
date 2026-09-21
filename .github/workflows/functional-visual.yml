@@ -9,6 +9,7 @@ on:
       - 'lib/screens/canvas/**'
       - 'test/canvas_*_test.dart'
       - 'test/visual/feature_operation_capture_test.dart'
+      - 'test/functional_render_real_async_test.dart'
 
 jobs:
   functional-render:
