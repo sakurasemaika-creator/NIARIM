@@ -242,6 +242,47 @@ void main() {
       },
     );
   }
+  testWidgets('dragging a control point never opens the delete dialog', (tester) async {
+    final image = await _makeImage(100, 100);
+    const graph = AutoLineartGraph(
+      width: 100,
+      height: 100,
+      paths: [
+        AutoLineartPath(
+          points: [
+            AutoLineartPoint(20, 50),
+            AutoLineartPoint(50, 50),
+            AutoLineartPoint(80, 50),
+          ],
+          startIsJunction: false,
+          endIsJunction: false,
+          persistence: 1,
+        ),
+      ],
+    );
+    await tester.pumpWidget(
+      MaterialApp(
+        home: Center(
+          child: SizedBox(
+            width: 200,
+            height: 200,
+            child: AutoLineartControlOverlay(
+              image: image,
+              graph: graph,
+              onPointMoved: (_, _, _) {},
+            ),
+          ),
+        ),
+      ),
+    );
+    final rect = tester.getRect(find.byType(AutoLineartControlOverlay));
+    await tester.dragFrom(rect.center, const Offset(28, -24));
+    await tester.pumpAndSettle();
+    expect(find.text('制御点を削除'), findsNothing);
+    expect(find.text('キャンセル'), findsNothing);
+    image.dispose();
+  });
+
   testWidgets('tap on vector segment adds a control point', (tester) async {
     final image = await _makeImage(100, 100);
     AutoLineartGraph? changed;
