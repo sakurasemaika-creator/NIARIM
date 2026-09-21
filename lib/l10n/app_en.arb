@@ -2739,5 +2739,11 @@
   "brushFoldCurveStrength": "Curve strength",
   "brushFoldWave": "Wave",
   "brushFoldWaveEndpointRange": "Wave range from endpoint",
-  "brushFoldWaveTriggerAngle": "Wave trigger angle"
-}
+  "brushFoldWaveTriggerAngle": "Wave trigger angle",
+  "filterAuroraHologramPresetBlueHologram": "Sapphire Hologram",
+  "filterAuroraHologramPresetLightBlueHologram": "Ice Hologram",
+  "filterAuroraHologramPresetPurpleHologram": "Amethyst Hologram",
+  "filterAuroraHologramPresetBlueGreenHologram": "Turquoise Hologram",
+  "filterAuroraHologramPresetMoonlightPearl": "Moonlight Pearl",
+  "filterAuroraHologramPresetRainbowPearl": "Mist Rainbow",
+  "filterAuroraHologramPresetWarmHologram": "Sunrise Hologram"
