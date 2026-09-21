@@ -2732,5 +2732,11 @@
   "brushFoldCurveStrength": "曲線強度",
   "brushFoldWave": "波浪",
   "brushFoldWaveEndpointRange": "從終點開始的波浪範圍",
-  "brushFoldWaveTriggerAngle": "波浪觸發角度"
-}
+  "brushFoldWaveTriggerAngle": "波浪觸發角度",
+  "filterAuroraHologramPresetBlueHologram": "藍寶石全息",
+  "filterAuroraHologramPresetLightBlueHologram": "冰晶全息",
+  "filterAuroraHologramPresetPurpleHologram": "紫水晶全息",
+  "filterAuroraHologramPresetBlueGreenHologram": "綠松石全息",
+  "filterAuroraHologramPresetMoonlightPearl": "月光珍珠",
+  "filterAuroraHologramPresetRainbowPearl": "薄霧彩虹",
+  "filterAuroraHologramPresetWarmHologram": "日出全息"
