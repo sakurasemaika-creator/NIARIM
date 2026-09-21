@@ -3037,5 +3037,11 @@
   "brushFoldCurveStrength": "カーブ強度",
   "brushFoldWave": "ウェーブ",
   "brushFoldWaveEndpointRange": "終点からウェーブにする範囲",
-  "brushFoldWaveTriggerAngle": "ウェーブ発生角度"
-}
+  "brushFoldWaveTriggerAngle": "ウェーブ発生角度",
+  "filterAuroraHologramPresetBlueHologram": "サファイアホログラム",
+  "filterAuroraHologramPresetLightBlueHologram": "アイスホログラム",
+  "filterAuroraHologramPresetPurpleHologram": "アメジストホログラム",
+  "filterAuroraHologramPresetBlueGreenHologram": "ターコイズホログラム",
+  "filterAuroraHologramPresetMoonlightPearl": "ムーンライトパール",
+  "filterAuroraHologramPresetRainbowPearl": "ミストレインボー",
+  "filterAuroraHologramPresetWarmHologram": "サンライズホログラム"
