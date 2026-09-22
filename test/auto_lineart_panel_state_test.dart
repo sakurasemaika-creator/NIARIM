@@ -49,19 +49,20 @@ List<(double, double)> _points(AutoLineartGraph graph) => [
 ];
 
 double _largestControlDisplacement(AutoLineartGraph a, AutoLineartGraph b) {
-  // Compare corresponding controls at identical filter settings. Averaging
-  // nearest-point distances across all unrelated strokes dilutes a local edit.
-  expect(a.paths, hasLength(b.paths.length));
+  // Closing/reopening deliberately regenerates the graph. Parameter changes
+  // can also change path topology, so compare each old control with the
+  // nearest regenerated control instead of assuming identical path counts.
+  final bPoints = _points(b);
+  if (bPoints.isEmpty) return double.infinity;
   var largest = 0.0;
-  for (var i = 0; i < a.paths.length; i++) {
-    final ap = a.paths[i].points;
-    final bp = b.paths[i].points;
-    if (ap.length != bp.length) continue;
-    for (var j = 0; j < ap.length; j++) {
-      final dx = ap[j].x - bp[j].x;
-      final dy = ap[j].y - bp[j].y;
-      largest = math.max(largest, math.sqrt(dx * dx + dy * dy));
+  for (final (ax, ay) in _points(a)) {
+    var nearest = double.infinity;
+    for (final (bx, by) in bPoints) {
+      final dx = ax - bx;
+      final dy = ay - by;
+      nearest = math.min(nearest, math.sqrt(dx * dx + dy * dy));
     }
+    largest = math.max(largest, nearest);
   }
   return largest;
 }
