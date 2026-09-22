@@ -6309,6 +6309,18 @@ class AppLocalizationsZh extends AppLocalizations {
   @override
   String get tipsBrushFoldDesc =>
       '开启描边和折返，将曲线强度设为5，先试画一条平缓的S形曲线。想让重叠部分的上侧显示在前，选择波浪俯视；想让下侧显示在前，选择波浪仰视。斜向的发丝可以比较右卷与左卷：右卷让左上至右下方向的线段显示在前，左卷让右上至左下方向的线段显示在前。连续绘制C形曲线时，可用月牙卷整理相连的月牙形状。所有类型都使用实际绘制的弯曲，直线不会自动变成波浪。逐步调整触发角度、曲线起始位置和折返长度，再在1～10之间调整曲线强度。关闭折返即可恢复普通笔画。';
+
+  @override
+  String get brushYBranchAngle => 'Y形分支角度';
+
+  @override
+  String get brushYBranchLength => 'Y形分支长度';
+
+  @override
+  String get brushYBranchWidth => 'Y形分支宽度';
+
+  @override
+  String get brushYBranchEndTaper => 'Y形分支末端渐细';
 }
 
 /// The translations for Chinese, using the Han script (`zh_Hant`).
@@ -12615,4 +12627,16 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   @override
   String get tipsBrushFoldDesc =>
       '開啟描邊和折返，將曲線強度設為5，先試畫一條平緩的S形曲線。想讓重疊部分的上側顯示在前，選擇波浪俯視；想讓下側顯示在前，選擇波浪仰視。斜向的髮絲可以比較右捲與左捲：右捲讓左上至右下方向的線段顯示在前，左捲讓右上至左下方向的線段顯示在前。連續繪製C形曲線時，可用月牙捲整理相連的月牙形狀。所有類型都使用實際繪製的彎曲，直線不會自動變成波浪。逐步調整觸發角度、曲線起始位置和折返長度，再在1～10之間調整曲線強度。關閉折返即可恢復一般筆畫。';
+
+  @override
+  String get brushYBranchAngle => 'Y形分支角度';
+
+  @override
+  String get brushYBranchLength => 'Y形分支长度';
+
+  @override
+  String get brushYBranchWidth => 'Y形分支宽度';
+
+  @override
+  String get brushYBranchEndTaper => 'Y形分支末端渐细';
 }

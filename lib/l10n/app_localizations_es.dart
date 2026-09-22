@@ -6676,4 +6676,16 @@ class AppLocalizationsEs extends AppLocalizations {
   @override
   String get tipsBrushFoldDesc =>
       'Activa Contorno y Pliegue y prueba un trazo suave en forma de S con una intensidad de curva de 5. Elige Onda (vista superior) para colocar delante la parte superior de cada superposición u Onda (contrapicado) para la inferior. Para un movimiento diagonal, compara Rizo a la derecha, que adelanta el segmento de arriba a la izquierda a abajo a la derecha, con Rizo a la izquierda, que adelanta el de arriba a la derecha a abajo a la izquierda. Al dibujar una serie de curvas en C, usa Rizo de media luna para dar forma a las medias lunas enlazadas. Todos los modos usan las curvas que dibujas; una línea recta no se convierte en onda automáticamente. Ajusta poco a poco el ángulo de activación, la posición de inicio de curva y la longitud del pliegue; después, elige una intensidad entre 1 y 10. Desactiva Pliegue para volver al trazo normal.';
+
+  @override
+  String get brushYBranchAngle => 'Ángulo de rama Y';
+
+  @override
+  String get brushYBranchLength => 'Longitud de rama Y';
+
+  @override
+  String get brushYBranchWidth => 'Ancho de rama Y';
+
+  @override
+  String get brushYBranchEndTaper => 'Atenuación final de rama Y';
 }

@@ -6378,4 +6378,16 @@ class AppLocalizationsKo extends AppLocalizations {
   @override
   String get tipsBrushFoldDesc =>
       '외곽선와 접힘을 켜고 커브 강도를 5로 설정한 뒤 완만한 S자 선을 그려 보세요. 겹친 부분의 위쪽을 앞에 두려면 웨이브 (위에서 보기)를, 아래쪽을 앞에 두려면 웨이브 (아래에서 보기)를 선택합니다. 대각선 흐름은 왼쪽 위와 오른쪽 아래를 잇는 선이 앞에 오는 오른쪽 컬과, 오른쪽 위와 왼쪽 아래를 잇는 선이 앞에 오는 왼쪽 컬을 비교해 보세요. C자 곡선을 연속으로 그릴 때는 초승달 컬로 이어지는 초승달 모양을 다듬습니다. 모든 유형은 직접 그린 굽은 부분을 사용하므로 직선이 자동으로 웨이브로 바뀌지 않습니다. 발생 각도, 커브 시작 위치, 접힘 길이를 조금씩 바꾼 다음 커브 강도를 1~10 사이에서 조절하세요. 접힘을 끄면 일반 선으로 돌아갑니다.';
+
+  @override
+  String get brushYBranchAngle => 'Y자 가지 각도';
+
+  @override
+  String get brushYBranchLength => 'Y자 길이';
+
+  @override
+  String get brushYBranchWidth => 'Y자 두께';
+
+  @override
+  String get brushYBranchEndTaper => 'Y자 끝 테이퍼';
 }

@@ -11692,6 +11692,30 @@ abstract class AppLocalizations {
   /// In ja, this message translates to:
   /// **'縁取りと折り返しをONにし、まずカーブ強度5でゆるいS字を描いてみましょう。重なりの上側を手前にするなら「ウェーブ俯瞰」、下側なら「ウェーブ煽り」を選びます。斜めの流れは、左上―右下方向の線を手前にする「右巻き」と、右上―左下方向の線を手前にする「左巻き」を比べると決めやすくなります。C字のカーブを続けて描くときは「三日月カール」で三日月のつながりを整えます。どのタイプも描いた曲がりを使うため、直線が自動で波形に変わることはありません。発生角度・カーブ開始位置・折り返し長さを少しずつ変え、最後にカーブ強度を1～10で調整してください。折り返しをOFFにすると通常のストロークへ戻ります。'**
   String get tipsBrushFoldDesc;
+
+  /// No description provided for @brushYBranchAngle.
+  ///
+  /// In ja, this message translates to:
+  /// **'Y字枝分かれ角度'**
+  String get brushYBranchAngle;
+
+  /// No description provided for @brushYBranchLength.
+  ///
+  /// In ja, this message translates to:
+  /// **'Y字長さ'**
+  String get brushYBranchLength;
+
+  /// No description provided for @brushYBranchWidth.
+  ///
+  /// In ja, this message translates to:
+  /// **'Y字太さ'**
+  String get brushYBranchWidth;
+
+  /// No description provided for @brushYBranchEndTaper.
+  ///
+  /// In ja, this message translates to:
+  /// **'Y字終点入り抜き'**
+  String get brushYBranchEndTaper;
 }
 
 class _AppLocalizationsDelegate

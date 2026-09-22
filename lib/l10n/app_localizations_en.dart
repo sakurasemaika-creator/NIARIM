@@ -6568,4 +6568,16 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get tipsBrushFoldDesc =>
       'Turn on Outline and Fold, then try a gentle S-shaped stroke with Curve strength set to 5. Choose Wave (top view) to bring the upper part of each overlap forward, or Wave (low angle) for the lower part. For diagonal flow, compare Right curl, which brings the upper-left–lower-right segment forward, with Left curl, which brings the upper-right–lower-left segment forward. When drawing a series of C-shaped curves, use Crescent curl to shape their connected crescents. Every mode uses the bends you draw; a straight stroke does not become a wave automatically. Adjust Trigger angle, Curve start position and Fold length a little at a time, then set Curve strength between 1 and 10. Turn Fold off to return to a normal stroke.';
+
+  @override
+  String get brushYBranchAngle => 'Y-branch angle';
+
+  @override
+  String get brushYBranchLength => 'Y-branch length';
+
+  @override
+  String get brushYBranchWidth => 'Y-branch width';
+
+  @override
+  String get brushYBranchEndTaper => 'Y-branch end taper';
 }
