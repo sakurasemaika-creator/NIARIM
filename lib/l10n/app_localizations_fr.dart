@@ -6688,16 +6688,4 @@ class AppLocalizationsFr extends AppLocalizations {
   @override
   String get tipsBrushFoldDesc =>
       'Activez Contour et Repli, puis essayez un trait doux en S avec une intensité de courbe de 5. Choisissez Ondulation en plongée pour mettre la partie supérieure de chaque chevauchement au premier plan, ou Ondulation en contre-plongée pour la partie inférieure. Pour un mouvement diagonal, comparez Boucle à droite, qui met devant le segment allant du haut à gauche au bas à droite, et Boucle à gauche, qui met devant celui allant du haut à droite au bas à gauche. Pour une suite de courbes en C, utilisez Boucle en croissant afin de former des croissants reliés. Chaque mode utilise vos courbes ; un trait droit ne devient pas automatiquement une ondulation. Ajustez progressivement l’angle de déclenchement, la position de début de courbe et la longueur du pli, puis choisissez une intensité entre 1 et 10. Désactivez Repli pour revenir au trait normal.';
-
-  @override
-  String get brushYBranchAngle => 'Angle de branche Y';
-
-  @override
-  String get brushYBranchLength => 'Longueur de branche Y';
-
-  @override
-  String get brushYBranchWidth => 'Largeur de branche Y';
-
-  @override
-  String get brushYBranchEndTaper => 'Effilage final de branche Y';
 }

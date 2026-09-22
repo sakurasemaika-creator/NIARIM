@@ -10,6 +10,7 @@ on:
       - 'lib/engine/drawing_engine.dart'
       - 'lib/engine/brush_stroke_geometry.dart'
       - 'lib/engine/hair_fold_raster.dart'
+      - 'test/engine/hair_fold_raster_test.dart'
       - 'lib/screens/canvas/widgets/brush_extension_settings.dart'
       - 'lib/l10n/**'
       - 'test/brush_extension_settings_test.dart'
@@ -40,7 +41,7 @@ jobs:
         run: flutter pub get --enforce-lockfile
       - name: Hair fold tests
         run: |
-          flutter test test/engine/drawing_engine_wave_fold_contract_test.dart test/engine/brush_stroke_geometry_test.dart test/brush_extension_settings_test.dart test/hair_fold_settings_model_test.dart test/models/brush_extension_presets_test.dart test/services/brush_fold_mode_lifecycle_test.dart test/services/brush_service_extension_presets_test.dart --reporter expanded
+          flutter test test/engine/hair_fold_raster_test.dart test/engine/drawing_engine_wave_fold_contract_test.dart test/engine/brush_stroke_geometry_test.dart test/brush_extension_settings_test.dart test/hair_fold_settings_model_test.dart test/models/brush_extension_presets_test.dart test/services/brush_fold_mode_lifecycle_test.dart test/services/brush_service_extension_presets_test.dart --reporter expanded
       - name: Targeted analyze
         run: flutter analyze lib/models/brush.dart lib/engine/brush_stroke_geometry.dart lib/engine/hair_fold_raster.dart lib/engine/drawing_engine.dart test/engine/drawing_engine_wave_fold_contract_test.dart
 

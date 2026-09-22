@@ -170,11 +170,13 @@ class HairFoldRaster {
       }
       runs.sort((a, b) => a.depth.compareTo(b.depth));
       for (final run in runs) {
-        final canCache = offset == 0 && brush.foldMode != HairFoldMode.crescent;
+        final canCache = offset == 0;
         final cached = canCache ? _runs[run.start] : null;
         final reusable =
             cached != null &&
             cached.end <= run.end &&
+            (brush.foldMode != HairFoldMode.crescent ||
+                cached.end == run.end) &&
             _samePoint(cached.last, points[cached.end]) &&
             _samePoint(cached.first, points[run.start]);
         final mask = reusable ? cached.mask : <int, _MaskTile>{};
@@ -243,8 +245,11 @@ class HairFoldRaster {
             final cover = m.outer[p];
             if (cover <= 0) continue;
             final fill = m.fill[p];
-            surface.outer[p] = math.max(surface.outer[p], cover);
-            surface.fill[p] = math.max(surface.fill[p], fill);
+            final ink = cover * m.opacity[p];
+            if (ink <= 0) continue;
+            surface.shape[p] = math.max(surface.shape[p], cover);
+            surface.outer[p] = math.max(surface.outer[p], ink);
+            surface.fill[p] = math.max(surface.fill[p], fill * m.opacity[p]);
             var edge = (cover - fill).clamp(0.0, 1.0);
             if (edge > 0 && brush.foldMode != HairFoldMode.crescent) {
               final at = tileOrigin + Offset(p % _size + .5, p ~/ _size + .5);
@@ -254,13 +259,15 @@ class HairFoldRaster {
                 edge = 0;
               }
             }
-            final under = surface.cover[p] * (1 - cover);
-            final total = cover + under;
-            surface.outline[p] = (edge + surface.outline[p] * under) / total;
-            surface.opacity[p] =
-                (m.opacity[p] * cover + surface.opacity[p] * under) / total;
+            // A stroke keeps maximum ink coverage across its faces. Equal
+            // opacity front ink hides rear edges; weaker or invisible ink
+            // cannot erase a stronger face beneath it.
+            final total = math.max(ink, surface.cover[p]);
+            final front = ink / total;
+            surface.outline[p] =
+                edge / cover * front + surface.outline[p] * (1 - front);
             surface.cover[p] = total;
-            if (cover > .5) surface.owner[p] = run.id;
+            if (front > .5) surface.owner[p] = run.id;
           }
         }
       }
@@ -292,11 +299,12 @@ class HairFoldRaster {
           };
           final direction = firstFront ? incoming : -outgoing;
           final continuation = firstFront ? outgoing : -incoming;
-          final innerScale = math.max(
-            .25,
-            _dot(inward, Offset(-incoming.dy, incoming.dx)).abs(),
-          );
-          final origin = p.position + inward * (p.width / 2 / innerScale);
+          var origin = p.position;
+          for (var distance = .5; distance < p.width * 2; distance += .5) {
+            final at = p.position + inward * distance;
+            if (!_covered(result, at)) break;
+            origin = at;
+          }
           final length = p.width * brush.foldLengthRatio.clamp(0.0, 2.0);
           final delay = brush.foldCurveStartRatio.clamp(0.0, 1.0);
           final bend = (brush.foldCurveStrength - 1) / 9;
@@ -313,13 +321,7 @@ class HairFoldRaster {
             final lineWidth =
                 brush.outlineWidth *
                 (1 - ((t - (1 - taper)) / taper).clamp(0.0, 1.0));
-            _crease(
-              result,
-              previous,
-              at,
-              lineWidth,
-              ownerBase + (firstFront ? i : i + 1),
-            );
+            _crease(result, previous, at, lineWidth, ownerBase + i, p.opacity);
             previous = at;
           }
         }
@@ -338,10 +340,7 @@ class HairFoldRaster {
         final perimeter = (s.outer[p] - s.fill[p]) / s.cover[p];
         final mix = math.max(s.outline[p], perimeter).clamp(0.0, 1.0);
         final color = Color.lerp(fillColor, outline, mix)!;
-        final alpha = (255 * s.cover[p] * s.opacity[p] * color.a).round().clamp(
-          0,
-          255,
-        );
+        final alpha = (255 * s.cover[p] * color.a).round().clamp(0, 255);
         if (alpha == 0) continue;
         tiles.blendPixel(
           target,
@@ -383,7 +382,19 @@ class HairFoldRaster {
     for (var y = top; y <= bottom; y++) {
       for (var x = left; x <= right; x++) {
         final delta = Offset(x + .5, y + .5) - a.position;
-        final t = (_dot(delta, d) / squared).clamp(0.0, 1.0);
+        final radiusDelta = (b.width - a.width) / 2;
+        final length = math.sqrt(squared);
+        final projection = _dot(delta, d) / length;
+        final perpendicular = _cross(d, delta).abs() / length;
+        final slope = radiusDelta / length;
+        final t = slope.abs() >= 1
+            ? (slope > 0 ? 1.0 : 0.0)
+            : ((projection +
+                          slope *
+                              perpendicular /
+                              math.sqrt(1 - slope * slope)) /
+                      length)
+                  .clamp(0.0, 1.0);
         final offset = delta - d * t;
         final distance = offset.distance;
         final half = (a.width + (b.width - a.width) * t) / 2;
@@ -476,12 +487,22 @@ class HairFoldRaster {
     }
   }
 
+  bool _covered(Map<int, _SurfaceTile> surface, Offset at) {
+    final x = at.dx.floor(), y = at.dy.floor();
+    if (x < 0 || y < 0 || x >= tiles.canvasWidth || y >= tiles.canvasHeight) {
+      return false;
+    }
+    final tile = surface[(y ~/ _size) * tiles.tilesX + x ~/ _size];
+    return tile != null && tile.shape[(y % _size) * _size + x % _size] > .5;
+  }
+
   void _crease(
     Map<int, _SurfaceTile> masks,
     Offset a,
     Offset b,
     double width,
     int owner,
+    double opacity,
   ) {
     final d = b - a;
     if (d.distanceSquared < 1e-10 || width <= 0) return;
@@ -514,8 +535,13 @@ class HairFoldRaster {
         if (s == null) continue;
         final p = (y % _size) * _size + x % _size;
         // Never draw a crease outside the actual ribbon silhouette.
-        if (s.cover[p] > .99 && s.owner[p] == owner) {
-          s.outline[p] = math.max(s.outline[p], coverage);
+        if (s.cover[p] > 0 &&
+            s.shape[p] > .5 &&
+            (s.owner[p] == owner || s.owner[p] == owner + 1)) {
+          s.outline[p] = math.max(
+            s.outline[p],
+            coverage * (opacity / s.cover[p]).clamp(0.0, 1.0),
+          );
         }
       }
     }
@@ -536,7 +562,7 @@ class _SurfaceTile {
   final outer = Float32List(_pixels), fill = Float32List(_pixels);
   final cover = Float32List(_pixels),
       outline = Float32List(_pixels),
-      opacity = Float32List(_pixels);
+      shape = Float32List(_pixels);
 }
 
 class _RibbonRun {

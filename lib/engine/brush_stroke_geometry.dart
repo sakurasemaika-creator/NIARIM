@@ -144,8 +144,9 @@ class ScreenSpaceFoldDetector {
         _samples.last.sample.screenPosition -
         _samples[pivotIndex].sample.screenPosition;
     if (before.distance < minimumTravel / 3 ||
-        after.distance < minimumTravel / 3)
+        after.distance < minimumTravel / 3) {
       return null;
+    }
 
     final a = before / before.distance;
     final b = after / after.distance;

@@ -6,6 +6,7 @@ on:
     paths:
       - '.github/workflows/hair-fold-bangs-visual-capture.yml'
       - 'test/visual/hair_fold_bangs_render_capture_test.dart'
+      - 'test/visual/hair_fold_settings_capture_test.dart'
       - 'lib/engine/drawing_engine.dart'
       - 'lib/engine/brush_texture_cache.dart'
       - 'lib/engine/hair_fold_raster.dart'
@@ -35,7 +36,7 @@ jobs:
           git diff --exit-code -- test/visual/hair_fold_bangs_render_capture_test.dart || true
           flutter analyze test/visual/hair_fold_bangs_render_capture_test.dart --no-fatal-infos --no-fatal-warnings
       - name: Capture actual production DrawingEngine bangs
-        run: flutter test test/visual/hair_fold_bangs_render_capture_test.dart --reporter expanded
+        run: flutter test test/visual/hair_fold_bangs_render_capture_test.dart test/visual/hair_fold_settings_capture_test.dart --reporter expanded
       - uses: actions/upload-artifact@v4
         with:
           name: hair-fold-bangs-captures
