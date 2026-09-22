@@ -3609,28 +3609,28 @@ class AppLocalizationsEn extends AppLocalizations {
   String get blendModeLuminosity => 'Luminosity';
 
   @override
-  String get blendModeLinearBurn => '焼き込み（リニア）';
+  String get blendModeLinearBurn => 'Linear Burn';
 
   @override
-  String get blendModeLinearDodge => '覆い焼き（リニア）';
+  String get blendModeLinearDodge => 'Linear Dodge';
 
   @override
-  String get blendModeVividLight => 'ビビッドライト';
+  String get blendModeVividLight => 'Vivid Light';
 
   @override
-  String get blendModeLinearLight => 'リニアライト';
+  String get blendModeLinearLight => 'Linear Light';
 
   @override
-  String get blendModePinLight => 'ピンライト';
+  String get blendModePinLight => 'Pin Light';
 
   @override
-  String get blendModeHardMix => 'ハードミックス';
+  String get blendModeHardMix => 'Hard Mix';
 
   @override
-  String get blendModeExclusion => '除外';
+  String get blendModeExclusion => 'Exclusion';
 
   @override
-  String get blendModeDivide => '除算';
+  String get blendModeDivide => 'Divide';
 
   @override
   String get autofillLineColorModeSpecified => 'Specified color';
@@ -5561,28 +5561,28 @@ class AppLocalizationsEn extends AppLocalizations {
   String get filterAuroraHologramSaturation => 'Saturation';
 
   @override
-  String get filterAuroraHologramPresetAurora => 'Aurora';
+  String get filterAuroraHologramPresetAurora => 'Aqua Aurora';
 
   @override
-  String get filterAuroraHologramPresetSoapBubble => 'Pearl 1';
+  String get filterAuroraHologramPresetSoapBubble => 'Fairy Pearl';
 
   @override
-  String get filterAuroraHologramPresetCyberNeon => 'Vaporwave';
+  String get filterAuroraHologramPresetCyberNeon => 'Neon Prism';
 
   @override
-  String get filterAuroraHologramPresetPastelDream => 'Pastel Dream';
+  String get filterAuroraHologramPresetPastelDream => 'Pastel Candy';
 
   @override
-  String get filterAuroraHologramPresetPearl2 => 'Pearl 2';
+  String get filterAuroraHologramPresetPearl2 => 'Prism Pearl';
 
   @override
-  String get filterAuroraHologramPresetSunsetGold => 'Sunset Gold';
+  String get filterAuroraHologramPresetSunsetGold => 'Amber Gold';
 
   @override
-  String get filterAuroraHologramPresetSilverFoil => 'Silver Foil';
+  String get filterAuroraHologramPresetSilverFoil => 'Platinum Silver';
 
   @override
-  String get filterAuroraHologramPresetClassicHologram => 'Aurora Hologram';
+  String get filterAuroraHologramPresetClassicHologram => 'Rainbow Hologram';
 
   @override
   String get filterNameBackgroundBlend => 'Background Blend';
@@ -6506,18 +6506,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get brushFoldTriggerAngle => 'Trigger angle';
 
   @override
-  String get brushYBranchAngle => 'Y-branch angle';
-
-  @override
-  String get brushYBranchLength => 'Y-branch length';
-
-  @override
-  String get brushYBranchWidth => 'Y-branch width';
-
-  @override
-  String get brushYBranchEndTaper => 'Y-branch end taper';
-
-  @override
   String get brushFoldCurveStart => 'Curve start position';
 
   @override
@@ -6527,11 +6515,57 @@ class AppLocalizationsEn extends AppLocalizations {
   String get brushFoldCurveStrength => 'Curve strength';
 
   @override
-  String get brushFoldWave => 'Wave';
+  String get filterAuroraHologramPresetBlueHologram => 'Sapphire Hologram';
 
   @override
-  String get brushFoldWaveEndpointRange => 'Wave range from endpoint';
+  String get filterAuroraHologramPresetLightBlueHologram => 'Ice Hologram';
 
   @override
-  String get brushFoldWaveTriggerAngle => 'Wave trigger angle';
+  String get filterAuroraHologramPresetPurpleHologram => 'Amethyst Hologram';
+
+  @override
+  String get filterAuroraHologramPresetBlueGreenHologram =>
+      'Turquoise Hologram';
+
+  @override
+  String get filterAuroraHologramPresetMoonlightPearl => 'Moonlight Pearl';
+
+  @override
+  String get filterAuroraHologramPresetRainbowPearl => 'Mist Rainbow';
+
+  @override
+  String get filterAuroraHologramPresetWarmHologram => 'Sunrise Hologram';
+
+  @override
+  String get brushFoldMode => 'Fold mode';
+
+  @override
+  String get brushFoldModeWaveTopView => 'Wave (top view)';
+
+  @override
+  String get brushFoldModeWaveLowAngle => 'Wave (low angle)';
+
+  @override
+  String get brushFoldModeCurlRight => 'Right curl';
+
+  @override
+  String get brushFoldModeCurlLeft => 'Left curl';
+
+  @override
+  String get brushFoldModeCrescent => 'Crescent curl';
+
+  @override
+  String get helpBrushFoldTitle => 'Brush folds';
+
+  @override
+  String get helpBrushFoldDesc =>
+      'Turn on Outline in the brush settings to use Fold. With Fold off, the brush draws a normal stroke. With Fold on, creases follow the bends you draw; it does not generate waves automatically. There are five modes. Wave (top view) puts the upper part of each overlap in front, while Wave (low angle) puts the lower part in front. Right curl puts the upper-left–lower-right segment in front; Left curl puts the upper-right–lower-left segment in front. Crescent curl follows the C-shaped curves you actually draw to form connected crescents. Use Trigger angle, Curve start position and Fold length to adjust the position and extent of each crease. Curve strength ranges from 1 to 10 and defaults to 5.';
+
+  @override
+  String get tipsBrushFoldTitle =>
+      'Choose which part of a hair fold appears in front';
+
+  @override
+  String get tipsBrushFoldDesc =>
+      'Turn on Outline and Fold, then try a gentle S-shaped stroke with Curve strength set to 5. Choose Wave (top view) to bring the upper part of each overlap forward, or Wave (low angle) for the lower part. For diagonal flow, compare Right curl, which brings the upper-left–lower-right segment forward, with Left curl, which brings the upper-right–lower-left segment forward. When drawing a series of C-shaped curves, use Crescent curl to shape their connected crescents. Every mode uses the bends you draw; a straight stroke does not become a wave automatically. Adjust Trigger angle, Curve start position and Fold length a little at a time, then set Curve strength between 1 and 10. Turn Fold off to return to a normal stroke.';
 }

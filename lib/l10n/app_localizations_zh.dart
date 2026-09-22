@@ -3477,28 +3477,28 @@ class AppLocalizationsZh extends AppLocalizations {
   String get blendModeLuminosity => '明度';
 
   @override
-  String get blendModeLinearBurn => '焼き込み（リニア）';
+  String get blendModeLinearBurn => '线性加深';
 
   @override
-  String get blendModeLinearDodge => '覆い焼き（リニア）';
+  String get blendModeLinearDodge => '线性减淡';
 
   @override
-  String get blendModeVividLight => 'ビビッドライト';
+  String get blendModeVividLight => '亮光';
 
   @override
-  String get blendModeLinearLight => 'リニアライト';
+  String get blendModeLinearLight => '线性光';
 
   @override
-  String get blendModePinLight => 'ピンライト';
+  String get blendModePinLight => '点光';
 
   @override
-  String get blendModeHardMix => 'ハードミックス';
+  String get blendModeHardMix => '实色混合';
 
   @override
-  String get blendModeExclusion => '除外';
+  String get blendModeExclusion => '排除';
 
   @override
-  String get blendModeDivide => '除算';
+  String get blendModeDivide => '划分';
 
   @override
   String get autofillLineColorModeSpecified => '指定颜色';
@@ -5328,7 +5328,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get filterNamePixelate => '像素画滤镜';
 
   @override
-  String get filterNameAuroraHologram => '极光全息';
+  String get filterNameAuroraHologram => '彩虹全息';
 
   @override
   String get filterAuroraHologramStrength => '强度';
@@ -5340,25 +5340,25 @@ class AppLocalizationsZh extends AppLocalizations {
   String get filterAuroraHologramSaturation => '饱和度';
 
   @override
-  String get filterAuroraHologramPresetAurora => '极光';
+  String get filterAuroraHologramPresetAurora => '水色极光';
 
   @override
-  String get filterAuroraHologramPresetSoapBubble => '肥皂泡';
+  String get filterAuroraHologramPresetSoapBubble => '仙境珍珠';
 
   @override
-  String get filterAuroraHologramPresetCyberNeon => '赛博霓虹';
+  String get filterAuroraHologramPresetCyberNeon => '霓虹棱镜';
 
   @override
-  String get filterAuroraHologramPresetPastelDream => '粉彩梦境';
+  String get filterAuroraHologramPresetPastelDream => '粉彩糖果';
 
   @override
-  String get filterAuroraHologramPresetPearl2 => '珍珠2';
+  String get filterAuroraHologramPresetPearl2 => '棱镜珍珠';
 
   @override
-  String get filterAuroraHologramPresetSunsetGold => '日落金';
+  String get filterAuroraHologramPresetSunsetGold => '琥珀金';
 
   @override
-  String get filterAuroraHologramPresetSilverFoil => '银箔';
+  String get filterAuroraHologramPresetSilverFoil => '铂金银';
 
   @override
   String get filterAuroraHologramPresetClassicHologram => '极光全息';
@@ -6249,18 +6249,6 @@ class AppLocalizationsZh extends AppLocalizations {
   String get brushFoldTriggerAngle => '触发角度';
 
   @override
-  String get brushYBranchAngle => 'Y形分支角度';
-
-  @override
-  String get brushYBranchLength => 'Y形分支长度';
-
-  @override
-  String get brushYBranchWidth => 'Y形分支宽度';
-
-  @override
-  String get brushYBranchEndTaper => 'Y形分支末端渐细';
-
-  @override
   String get brushFoldCurveStart => '曲线起始位置';
 
   @override
@@ -6270,13 +6258,57 @@ class AppLocalizationsZh extends AppLocalizations {
   String get brushFoldCurveStrength => '曲线强度';
 
   @override
-  String get brushFoldWave => '波浪';
+  String get filterAuroraHologramPresetBlueHologram => '蓝宝石全息';
 
   @override
-  String get brushFoldWaveEndpointRange => '从终点开始的波浪范围';
+  String get filterAuroraHologramPresetLightBlueHologram => '冰晶全息';
 
   @override
-  String get brushFoldWaveTriggerAngle => '波浪触发角度';
+  String get filterAuroraHologramPresetPurpleHologram => '紫水晶全息';
+
+  @override
+  String get filterAuroraHologramPresetBlueGreenHologram => '绿松石全息';
+
+  @override
+  String get filterAuroraHologramPresetMoonlightPearl => '月光珍珠';
+
+  @override
+  String get filterAuroraHologramPresetRainbowPearl => '薄雾彩虹';
+
+  @override
+  String get filterAuroraHologramPresetWarmHologram => '日出全息';
+
+  @override
+  String get brushFoldMode => '折返类型';
+
+  @override
+  String get brushFoldModeWaveTopView => '波浪俯视';
+
+  @override
+  String get brushFoldModeWaveLowAngle => '波浪仰视';
+
+  @override
+  String get brushFoldModeCurlRight => '右卷';
+
+  @override
+  String get brushFoldModeCurlLeft => '左卷';
+
+  @override
+  String get brushFoldModeCrescent => '月牙卷';
+
+  @override
+  String get helpBrushFoldTitle => '画笔折返';
+
+  @override
+  String get helpBrushFoldDesc =>
+      '在画笔设置中开启描边后，即可使用折返。关闭折返时绘制普通笔画；开启后，根据实际绘制的弯曲形成折痕，不会自动生成波浪。共有五种类型：波浪俯视让重叠部分的上侧显示在前，波浪仰视让下侧显示在前。右卷让左上至右下方向的线段显示在前，左卷让右上至左下方向的线段显示在前。月牙卷沿实际绘制的C形曲线形成相连的月牙。可通过触发角度、曲线起始位置和折返长度调整折痕的位置与范围。曲线强度为1～10，默认值为5。';
+
+  @override
+  String get tipsBrushFoldTitle => '选择头发折返时显示在前的部分';
+
+  @override
+  String get tipsBrushFoldDesc =>
+      '开启描边和折返，将曲线强度设为5，先试画一条平缓的S形曲线。想让重叠部分的上侧显示在前，选择波浪俯视；想让下侧显示在前，选择波浪仰视。斜向的发丝可以比较右卷与左卷：右卷让左上至右下方向的线段显示在前，左卷让右上至左下方向的线段显示在前。连续绘制C形曲线时，可用月牙卷整理相连的月牙形状。所有类型都使用实际绘制的弯曲，直线不会自动变成波浪。逐步调整触发角度、曲线起始位置和折返长度，再在1～10之间调整曲线强度。关闭折返即可恢复普通笔画。';
 }
 
 /// The translations for Chinese, using the Han script (`zh_Hant`).
@@ -9751,6 +9783,30 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get blendModeLuminosity => '明度';
 
   @override
+  String get blendModeLinearBurn => '線性加深';
+
+  @override
+  String get blendModeLinearDodge => '線性減淡';
+
+  @override
+  String get blendModeVividLight => '亮光';
+
+  @override
+  String get blendModeLinearLight => '線性光';
+
+  @override
+  String get blendModePinLight => '小光源';
+
+  @override
+  String get blendModeHardMix => '實色混合';
+
+  @override
+  String get blendModeExclusion => '排除';
+
+  @override
+  String get blendModeDivide => '劃分';
+
+  @override
   String get autofillLineColorModeSpecified => '指定顏色';
 
   @override
@@ -11578,7 +11634,7 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get filterNamePixelate => '像素畫濾鏡';
 
   @override
-  String get filterNameAuroraHologram => '極光全息';
+  String get filterNameAuroraHologram => '彩虹全息';
 
   @override
   String get filterAuroraHologramStrength => '強度';
@@ -11590,25 +11646,25 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get filterAuroraHologramSaturation => '飽和度';
 
   @override
-  String get filterAuroraHologramPresetAurora => '極光';
+  String get filterAuroraHologramPresetAurora => '水色極光';
 
   @override
-  String get filterAuroraHologramPresetSoapBubble => '肥皂泡';
+  String get filterAuroraHologramPresetSoapBubble => '仙境珍珠';
 
   @override
-  String get filterAuroraHologramPresetCyberNeon => '賽博霓虹';
+  String get filterAuroraHologramPresetCyberNeon => '霓虹稜鏡';
 
   @override
-  String get filterAuroraHologramPresetPastelDream => '粉彩夢境';
+  String get filterAuroraHologramPresetPastelDream => '粉彩糖果';
 
   @override
-  String get filterAuroraHologramPresetPearl2 => '珍珠2';
+  String get filterAuroraHologramPresetPearl2 => '稜鏡珍珠';
 
   @override
-  String get filterAuroraHologramPresetSunsetGold => '日落金';
+  String get filterAuroraHologramPresetSunsetGold => '琥珀金';
 
   @override
-  String get filterAuroraHologramPresetSilverFoil => '銀箔';
+  String get filterAuroraHologramPresetSilverFoil => '鉑金銀';
 
   @override
   String get filterAuroraHologramPresetClassicHologram => '極光全息';
@@ -12499,18 +12555,6 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get brushFoldTriggerAngle => '触发角度';
 
   @override
-  String get brushYBranchAngle => 'Y形分支角度';
-
-  @override
-  String get brushYBranchLength => 'Y形分支长度';
-
-  @override
-  String get brushYBranchWidth => 'Y形分支宽度';
-
-  @override
-  String get brushYBranchEndTaper => 'Y形分支末端渐细';
-
-  @override
   String get brushFoldCurveStart => '曲線起始位置';
 
   @override
@@ -12520,11 +12564,55 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get brushFoldCurveStrength => '曲線強度';
 
   @override
-  String get brushFoldWave => '波浪';
+  String get filterAuroraHologramPresetBlueHologram => '藍寶石全息';
 
   @override
-  String get brushFoldWaveEndpointRange => '從終點開始的波浪範圍';
+  String get filterAuroraHologramPresetLightBlueHologram => '冰晶全息';
 
   @override
-  String get brushFoldWaveTriggerAngle => '波浪觸發角度';
+  String get filterAuroraHologramPresetPurpleHologram => '紫水晶全息';
+
+  @override
+  String get filterAuroraHologramPresetBlueGreenHologram => '綠松石全息';
+
+  @override
+  String get filterAuroraHologramPresetMoonlightPearl => '月光珍珠';
+
+  @override
+  String get filterAuroraHologramPresetRainbowPearl => '薄霧彩虹';
+
+  @override
+  String get filterAuroraHologramPresetWarmHologram => '日出全息';
+
+  @override
+  String get brushFoldMode => '折返類型';
+
+  @override
+  String get brushFoldModeWaveTopView => '波浪俯視';
+
+  @override
+  String get brushFoldModeWaveLowAngle => '波浪仰視';
+
+  @override
+  String get brushFoldModeCurlRight => '右捲';
+
+  @override
+  String get brushFoldModeCurlLeft => '左捲';
+
+  @override
+  String get brushFoldModeCrescent => '月牙捲';
+
+  @override
+  String get helpBrushFoldTitle => '筆刷折返';
+
+  @override
+  String get helpBrushFoldDesc =>
+      '在筆刷設定中開啟描邊後，即可使用折返。關閉折返時繪製一般筆畫；開啟後，根據實際繪製的彎曲形成摺痕，不會自動產生波浪。共有五種類型：波浪俯視讓重疊部分的上側顯示在前，波浪仰視讓下側顯示在前。右捲讓左上至右下方向的線段顯示在前，左捲讓右上至左下方向的線段顯示在前。月牙捲沿實際繪製的C形曲線形成相連的月牙。可透過觸發角度、曲線起始位置和折返長度調整摺痕的位置與範圍。曲線強度為1～10，預設值為5。';
+
+  @override
+  String get tipsBrushFoldTitle => '選擇頭髮折返時顯示在前的部分';
+
+  @override
+  String get tipsBrushFoldDesc =>
+      '開啟描邊和折返，將曲線強度設為5，先試畫一條平緩的S形曲線。想讓重疊部分的上側顯示在前，選擇波浪俯視；想讓下側顯示在前，選擇波浪仰視。斜向的髮絲可以比較右捲與左捲：右捲讓左上至右下方向的線段顯示在前，左捲讓右上至左下方向的線段顯示在前。連續繪製C形曲線時，可用月牙捲整理相連的月牙形狀。所有類型都使用實際繪製的彎曲，直線不會自動變成波浪。逐步調整觸發角度、曲線起始位置和折返長度，再在1～10之間調整曲線強度。關閉折返即可恢復一般筆畫。';
 }

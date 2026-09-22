@@ -44,9 +44,6 @@ void main() {
     expect(hair.foldCurveStrength, 5);
     expect(hair.foldLengthRatio, .8);
     expect(hair.foldEndTaperRatio, .35);
-    expect(hair.foldWaveEnabled, isTrue);
-    expect(hair.foldWaveEndRatio, .30);
-    expect(hair.foldWaveTriggerAngle, 45);
     expect(hair.toJson().containsKey('fillColor'), isFalse);
   });
 
@@ -57,8 +54,6 @@ void main() {
     expect(bangs.customImageSelectionMode, BrushImageSelectionMode.random);
     expect(bangs.outlineEnabled, isTrue);
     expect(bangs.foldEnabled, isTrue);
-    expect(bangs.foldWaveEnabled, isFalse);
-    expect(bangs.foldWaveEndRatio, 0);
     expect(bangs.pressureOn.size.enabled, isTrue);
     expect(bangs.toJson().containsKey('fillColor'), isFalse);
   });

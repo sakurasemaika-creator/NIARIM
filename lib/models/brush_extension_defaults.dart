@@ -10,18 +10,11 @@ abstract final class BrushExtensionDefaults {
   static const int outlineColor = 0xff000000;
   static const double foldTriggerAngle = 90.0;
 
-  // Current Straight fold controls, expressed as effective-brush-width ratios.
+  // Fold crease controls, expressed as effective-brush-width ratios.
   static const double foldCurveStartRatio = 0.25;
   static const int foldCurveStrength = 5;
   static const double foldLengthRatio = 0.8;
   static const double foldEndTaperRatio = 0.35;
-
-  // Wave is opt-in for custom brushes. The Hair preset overrides the endpoint
-  // ratio to 30% (Straight:Wave = 7:3); Bangs intentionally remains at 0%.
-  static const bool foldWaveEnabled = false;
-  static const double foldWaveEndRatio = 0.0;
-  static const double hairFoldWaveEndRatio = 0.30;
-  static const double foldWaveTriggerAngle = 45.0;
 
   // Legacy Y defaults remain for pre-release development data only.
   static const double yBranchAngle = 45.0;

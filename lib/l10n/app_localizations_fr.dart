@@ -3655,28 +3655,28 @@ class AppLocalizationsFr extends AppLocalizations {
   String get blendModeLuminosity => 'Luminosité';
 
   @override
-  String get blendModeLinearBurn => '焼き込み（リニア）';
+  String get blendModeLinearBurn => 'Densité linéaire +';
 
   @override
-  String get blendModeLinearDodge => '覆い焼き（リニア）';
+  String get blendModeLinearDodge => 'Densité linéaire -';
 
   @override
-  String get blendModeVividLight => 'ビビッドライト';
+  String get blendModeVividLight => 'Lumière vive';
 
   @override
-  String get blendModeLinearLight => 'リニアライト';
+  String get blendModeLinearLight => 'Lumière linéaire';
 
   @override
-  String get blendModePinLight => 'ピンライト';
+  String get blendModePinLight => 'Lumière ponctuelle';
 
   @override
-  String get blendModeHardMix => 'ハードミックス';
+  String get blendModeHardMix => 'Mélange maximal';
 
   @override
-  String get blendModeExclusion => '除外';
+  String get blendModeExclusion => 'Exclusion';
 
   @override
-  String get blendModeDivide => '除算';
+  String get blendModeDivide => 'Division';
 
   @override
   String get autofillLineColorModeSpecified => 'Couleur spécifiée';
@@ -5659,28 +5659,29 @@ class AppLocalizationsFr extends AppLocalizations {
   String get filterAuroraHologramSaturation => 'Saturation';
 
   @override
-  String get filterAuroraHologramPresetAurora => 'Aurore';
+  String get filterAuroraHologramPresetAurora => 'Aurore aquatique';
 
   @override
-  String get filterAuroraHologramPresetSoapBubble => 'Bulle de savon';
+  String get filterAuroraHologramPresetSoapBubble => 'Perle féerique';
 
   @override
-  String get filterAuroraHologramPresetCyberNeon => 'Néon cyber';
+  String get filterAuroraHologramPresetCyberNeon => 'Prisme néon';
 
   @override
-  String get filterAuroraHologramPresetPastelDream => 'Rêve pastel';
+  String get filterAuroraHologramPresetPastelDream => 'Bonbon pastel';
 
   @override
-  String get filterAuroraHologramPresetPearl2 => 'Perle 2';
+  String get filterAuroraHologramPresetPearl2 => 'Perle prismatique';
 
   @override
-  String get filterAuroraHologramPresetSunsetGold => 'Or du couchant';
+  String get filterAuroraHologramPresetSunsetGold => 'Or ambré';
 
   @override
-  String get filterAuroraHologramPresetSilverFoil => 'Feuille argentée';
+  String get filterAuroraHologramPresetSilverFoil => 'Argent platine';
 
   @override
-  String get filterAuroraHologramPresetClassicHologram => 'Hologramme aurore';
+  String get filterAuroraHologramPresetClassicHologram =>
+      'Hologramme arc-en-ciel';
 
   @override
   String get filterNameBackgroundBlend => 'Fondu d\'arrière-plan';
@@ -6624,18 +6625,6 @@ class AppLocalizationsFr extends AppLocalizations {
   String get brushFoldTriggerAngle => 'Angle de déclenchement';
 
   @override
-  String get brushYBranchAngle => 'Angle de branche Y';
-
-  @override
-  String get brushYBranchLength => 'Longueur de branche Y';
-
-  @override
-  String get brushYBranchWidth => 'Largeur de branche Y';
-
-  @override
-  String get brushYBranchEndTaper => 'Effilage final de branche Y';
-
-  @override
   String get brushFoldCurveStart => 'Position de début de courbe';
 
   @override
@@ -6645,11 +6634,58 @@ class AppLocalizationsFr extends AppLocalizations {
   String get brushFoldCurveStrength => 'Intensité de courbe';
 
   @override
-  String get brushFoldWave => 'Onde';
+  String get filterAuroraHologramPresetBlueHologram => 'Hologramme saphir';
 
   @override
-  String get brushFoldWaveEndpointRange => 'Zone ondulée depuis la fin';
+  String get filterAuroraHologramPresetLightBlueHologram => 'Hologramme glacé';
 
   @override
-  String get brushFoldWaveTriggerAngle => 'Angle de déclenchement de l\'onde';
+  String get filterAuroraHologramPresetPurpleHologram => 'Hologramme améthyste';
+
+  @override
+  String get filterAuroraHologramPresetBlueGreenHologram =>
+      'Hologramme turquoise';
+
+  @override
+  String get filterAuroraHologramPresetMoonlightPearl => 'Perle lunaire';
+
+  @override
+  String get filterAuroraHologramPresetRainbowPearl => 'Arc-en-ciel brumeux';
+
+  @override
+  String get filterAuroraHologramPresetWarmHologram =>
+      'Hologramme lever de soleil';
+
+  @override
+  String get brushFoldMode => 'Type de repli';
+
+  @override
+  String get brushFoldModeWaveTopView => 'Ondulation en plongée';
+
+  @override
+  String get brushFoldModeWaveLowAngle => 'Ondulation en contre-plongée';
+
+  @override
+  String get brushFoldModeCurlRight => 'Boucle à droite';
+
+  @override
+  String get brushFoldModeCurlLeft => 'Boucle à gauche';
+
+  @override
+  String get brushFoldModeCrescent => 'Boucle en croissant';
+
+  @override
+  String get helpBrushFoldTitle => 'Replis du pinceau';
+
+  @override
+  String get helpBrushFoldDesc =>
+      'Activez Contour dans les réglages du pinceau pour utiliser Repli. Lorsque Repli est désactivé, le trait reste normal. Lorsqu’il est activé, les plis suivent les courbes que vous dessinez ; aucune ondulation n’est générée automatiquement. Cinq modes sont disponibles. Ondulation en plongée place la partie supérieure de chaque chevauchement au premier plan, et Ondulation en contre-plongée, la partie inférieure. Boucle à droite place au premier plan le segment allant du haut à gauche au bas à droite ; Boucle à gauche, celui allant du haut à droite au bas à gauche. Boucle en croissant suit les courbes en C que vous dessinez réellement pour former des croissants reliés. L’angle de déclenchement, la position de début de courbe et la longueur du pli règlent la position et l’étendue de chaque pli. L’intensité de courbe va de 1 à 10, avec une valeur initiale de 5.';
+
+  @override
+  String get tipsBrushFoldTitle =>
+      'Choisir la partie d’une mèche qui passe devant';
+
+  @override
+  String get tipsBrushFoldDesc =>
+      'Activez Contour et Repli, puis essayez un trait doux en S avec une intensité de courbe de 5. Choisissez Ondulation en plongée pour mettre la partie supérieure de chaque chevauchement au premier plan, ou Ondulation en contre-plongée pour la partie inférieure. Pour un mouvement diagonal, comparez Boucle à droite, qui met devant le segment allant du haut à gauche au bas à droite, et Boucle à gauche, qui met devant celui allant du haut à droite au bas à gauche. Pour une suite de courbes en C, utilisez Boucle en croissant afin de former des croissants reliés. Chaque mode utilise vos courbes ; un trait droit ne devient pas automatiquement une ondulation. Ajustez progressivement l’angle de déclenchement, la position de début de courbe et la longueur du pli, puis choisissez une intensité entre 1 et 10. Désactivez Repli pour revenir au trait normal.';
 }

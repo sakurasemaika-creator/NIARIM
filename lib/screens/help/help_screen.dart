@@ -197,6 +197,13 @@ class _HelpScreenState extends State<HelpScreen> {
       category: l10n.helpCategoryBrush,
       diagram: const HelpDiagramSpec(HelpScreenTemplate.floatingPanel, 1),
     ),
+    _HelpEntry(
+      topicKey: '折り返し',
+      title: l10n.helpBrushFoldTitle,
+      description: l10n.helpBrushFoldDesc,
+      category: l10n.helpCategoryBrush,
+      diagram: const HelpDiagramSpec(HelpScreenTemplate.floatingPanel, 3),
+    ),
 
     // ── レイヤー ────────────────────────────────────────────
     _HelpEntry(
@@ -725,6 +732,7 @@ class _HelpScreenState extends State<HelpScreen> {
       : entries
             .where(
               (e) =>
+                  e.topicKey == _searchQuery ||
                   e.title.contains(_searchQuery) ||
                   e.description.contains(_searchQuery) ||
                   e.category.contains(_searchQuery),

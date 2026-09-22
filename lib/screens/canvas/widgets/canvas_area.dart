@@ -1853,7 +1853,7 @@ class _CanvasAreaState extends State<CanvasArea> {
     if (layerKey != null && snapshot.before.isNotEmpty) {
       _tileManager.applyTileSnapshot(layerKey, snapshot.before);
     }
-    _drawingEngine.endStroke();
+    _drawingEngine.endStroke(cancel: true);
     _toolHandledPointers.remove(pointer);
     _scheduleComposite();
 

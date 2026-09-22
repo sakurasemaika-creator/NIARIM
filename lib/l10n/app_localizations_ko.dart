@@ -3505,28 +3505,28 @@ class AppLocalizationsKo extends AppLocalizations {
   String get blendModeLuminosity => '광도';
 
   @override
-  String get blendModeLinearBurn => '焼き込み（リニア）';
+  String get blendModeLinearBurn => '선형 번';
 
   @override
-  String get blendModeLinearDodge => '覆い焼き（リニア）';
+  String get blendModeLinearDodge => '선형 닷지';
 
   @override
-  String get blendModeVividLight => 'ビビッドライト';
+  String get blendModeVividLight => '비비드 라이트';
 
   @override
-  String get blendModeLinearLight => 'リニアライト';
+  String get blendModeLinearLight => '리니어 라이트';
 
   @override
-  String get blendModePinLight => 'ピンライト';
+  String get blendModePinLight => '핀 라이트';
 
   @override
-  String get blendModeHardMix => 'ハードミックス';
+  String get blendModeHardMix => '하드 믹스';
 
   @override
-  String get blendModeExclusion => '除外';
+  String get blendModeExclusion => '제외';
 
   @override
-  String get blendModeDivide => '除算';
+  String get blendModeDivide => '나누기';
 
   @override
   String get autofillLineColorModeSpecified => '지정 색상';
@@ -5388,7 +5388,7 @@ class AppLocalizationsKo extends AppLocalizations {
   String get filterNamePixelate => '도트 그림 필터';
 
   @override
-  String get filterNameAuroraHologram => '오로라 홀로그램';
+  String get filterNameAuroraHologram => '레인보우 홀로그램';
 
   @override
   String get filterAuroraHologramStrength => '강도';
@@ -5400,25 +5400,25 @@ class AppLocalizationsKo extends AppLocalizations {
   String get filterAuroraHologramSaturation => '채도';
 
   @override
-  String get filterAuroraHologramPresetAurora => '오로라';
+  String get filterAuroraHologramPresetAurora => '아쿠아 오로라';
 
   @override
-  String get filterAuroraHologramPresetSoapBubble => '비눗방울';
+  String get filterAuroraHologramPresetSoapBubble => '페어리 펄';
 
   @override
-  String get filterAuroraHologramPresetCyberNeon => '사이버 네온';
+  String get filterAuroraHologramPresetCyberNeon => '네온 프리즘';
 
   @override
-  String get filterAuroraHologramPresetPastelDream => '파스텔 드림';
+  String get filterAuroraHologramPresetPastelDream => '파스텔 캔디';
 
   @override
-  String get filterAuroraHologramPresetPearl2 => '펄 2';
+  String get filterAuroraHologramPresetPearl2 => '프리즘 펄';
 
   @override
-  String get filterAuroraHologramPresetSunsetGold => '선셋 골드';
+  String get filterAuroraHologramPresetSunsetGold => '앰버 골드';
 
   @override
-  String get filterAuroraHologramPresetSilverFoil => '실버 포일';
+  String get filterAuroraHologramPresetSilverFoil => '플래티넘 실버';
 
   @override
   String get filterAuroraHologramPresetClassicHologram => '오로라 홀로그램';
@@ -6318,18 +6318,6 @@ class AppLocalizationsKo extends AppLocalizations {
   String get brushFoldTriggerAngle => '발생 각도';
 
   @override
-  String get brushYBranchAngle => 'Y자 가지 각도';
-
-  @override
-  String get brushYBranchLength => 'Y자 길이';
-
-  @override
-  String get brushYBranchWidth => 'Y자 두께';
-
-  @override
-  String get brushYBranchEndTaper => 'Y자 끝 테이퍼';
-
-  @override
   String get brushFoldCurveStart => '커브 시작 위치';
 
   @override
@@ -6339,11 +6327,55 @@ class AppLocalizationsKo extends AppLocalizations {
   String get brushFoldCurveStrength => '커브 강도';
 
   @override
-  String get brushFoldWave => '웨이브';
+  String get filterAuroraHologramPresetBlueHologram => '사파이어 홀로그램';
 
   @override
-  String get brushFoldWaveEndpointRange => '끝점부터 웨이브 범위';
+  String get filterAuroraHologramPresetLightBlueHologram => '아이스 홀로그램';
 
   @override
-  String get brushFoldWaveTriggerAngle => '웨이브 발생 각도';
+  String get filterAuroraHologramPresetPurpleHologram => '아메시스트 홀로그램';
+
+  @override
+  String get filterAuroraHologramPresetBlueGreenHologram => '터쿼이즈 홀로그램';
+
+  @override
+  String get filterAuroraHologramPresetMoonlightPearl => '문라이트 펄';
+
+  @override
+  String get filterAuroraHologramPresetRainbowPearl => '미스트 레인보우';
+
+  @override
+  String get filterAuroraHologramPresetWarmHologram => '선라이즈 홀로그램';
+
+  @override
+  String get brushFoldMode => '접힘 유형';
+
+  @override
+  String get brushFoldModeWaveTopView => '웨이브 (위에서 보기)';
+
+  @override
+  String get brushFoldModeWaveLowAngle => '웨이브 (아래에서 보기)';
+
+  @override
+  String get brushFoldModeCurlRight => '오른쪽 컬';
+
+  @override
+  String get brushFoldModeCurlLeft => '왼쪽 컬';
+
+  @override
+  String get brushFoldModeCrescent => '초승달 컬';
+
+  @override
+  String get helpBrushFoldTitle => '브러시 접힘';
+
+  @override
+  String get helpBrushFoldDesc =>
+      '브러시 설정에서 외곽선를 켜면 접힘을 사용할 수 있습니다. 접힘을 끄면 일반 선을 그리고, 켜면 직접 그린 선의 굽은 부분에 접힌 모양을 만듭니다. 웨이브를 자동으로 생성하는 기능은 아닙니다. 유형은 다섯 가지입니다. 웨이브 (위에서 보기)는 겹친 부분의 위쪽을, 웨이브 (아래에서 보기)는 아래쪽을 앞에 표시합니다. 오른쪽 컬은 왼쪽 위와 오른쪽 아래를 잇는 선을, 왼쪽 컬은 오른쪽 위와 왼쪽 아래를 잇는 선을 앞에 표시합니다. 초승달 컬은 실제로 그린 C자 곡선을 따라 초승달 모양이 이어지도록 만듭니다. 발생 각도, 커브 시작 위치, 접힘 길이로 접힌 부분의 위치와 범위를 조절할 수 있습니다. 커브 강도는 1~10이며 기본값은 5입니다.';
+
+  @override
+  String get tipsBrushFoldTitle => '머리카락이 접힐 때 앞에 보일 부분 고르기';
+
+  @override
+  String get tipsBrushFoldDesc =>
+      '외곽선와 접힘을 켜고 커브 강도를 5로 설정한 뒤 완만한 S자 선을 그려 보세요. 겹친 부분의 위쪽을 앞에 두려면 웨이브 (위에서 보기)를, 아래쪽을 앞에 두려면 웨이브 (아래에서 보기)를 선택합니다. 대각선 흐름은 왼쪽 위와 오른쪽 아래를 잇는 선이 앞에 오는 오른쪽 컬과, 오른쪽 위와 왼쪽 아래를 잇는 선이 앞에 오는 왼쪽 컬을 비교해 보세요. C자 곡선을 연속으로 그릴 때는 초승달 컬로 이어지는 초승달 모양을 다듬습니다. 모든 유형은 직접 그린 굽은 부분을 사용하므로 직선이 자동으로 웨이브로 바뀌지 않습니다. 발생 각도, 커브 시작 위치, 접힘 길이를 조금씩 바꾼 다음 커브 강도를 1~10 사이에서 조절하세요. 접힘을 끄면 일반 선으로 돌아갑니다.';
 }

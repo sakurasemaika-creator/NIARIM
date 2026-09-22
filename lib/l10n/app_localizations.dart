@@ -9878,49 +9878,49 @@ abstract class AppLocalizations {
   /// No description provided for @filterAuroraHologramPresetAurora.
   ///
   /// In ja, this message translates to:
-  /// **'オーロラ'**
+  /// **'アクアオーロラ'**
   String get filterAuroraHologramPresetAurora;
 
   /// No description provided for @filterAuroraHologramPresetSoapBubble.
   ///
   /// In ja, this message translates to:
-  /// **'パール1'**
+  /// **'フェアリーパール'**
   String get filterAuroraHologramPresetSoapBubble;
 
   /// No description provided for @filterAuroraHologramPresetCyberNeon.
   ///
   /// In ja, this message translates to:
-  /// **'ヴェイパーウェイヴ'**
+  /// **'ネオンプリズム'**
   String get filterAuroraHologramPresetCyberNeon;
 
   /// No description provided for @filterAuroraHologramPresetPastelDream.
   ///
   /// In ja, this message translates to:
-  /// **'パステルドリーム'**
+  /// **'パステルキャンディ'**
   String get filterAuroraHologramPresetPastelDream;
 
   /// No description provided for @filterAuroraHologramPresetPearl2.
   ///
   /// In ja, this message translates to:
-  /// **'パール2'**
+  /// **'プリズムパール'**
   String get filterAuroraHologramPresetPearl2;
 
   /// No description provided for @filterAuroraHologramPresetSunsetGold.
   ///
   /// In ja, this message translates to:
-  /// **'サンセットゴールド'**
+  /// **'アンバーゴールド'**
   String get filterAuroraHologramPresetSunsetGold;
 
   /// No description provided for @filterAuroraHologramPresetSilverFoil.
   ///
   /// In ja, this message translates to:
-  /// **'シルバーホイル'**
+  /// **'プラチナシルバー'**
   String get filterAuroraHologramPresetSilverFoil;
 
   /// No description provided for @filterAuroraHologramPresetClassicHologram.
   ///
   /// In ja, this message translates to:
-  /// **'オーロラホログラム'**
+  /// **'レインボーホログラム'**
   String get filterAuroraHologramPresetClassicHologram;
 
   /// No description provided for @filterNameBackgroundBlend.
@@ -11573,30 +11573,6 @@ abstract class AppLocalizations {
   /// **'発生角度'**
   String get brushFoldTriggerAngle;
 
-  /// No description provided for @brushYBranchAngle.
-  ///
-  /// In ja, this message translates to:
-  /// **'Y字枝分かれ角度'**
-  String get brushYBranchAngle;
-
-  /// No description provided for @brushYBranchLength.
-  ///
-  /// In ja, this message translates to:
-  /// **'Y字長さ'**
-  String get brushYBranchLength;
-
-  /// No description provided for @brushYBranchWidth.
-  ///
-  /// In ja, this message translates to:
-  /// **'Y字太さ'**
-  String get brushYBranchWidth;
-
-  /// No description provided for @brushYBranchEndTaper.
-  ///
-  /// In ja, this message translates to:
-  /// **'Y字終点入り抜き'**
-  String get brushYBranchEndTaper;
-
   /// No description provided for @brushFoldCurveStart.
   ///
   /// In ja, this message translates to:
@@ -11615,23 +11591,107 @@ abstract class AppLocalizations {
   /// **'カーブ強度'**
   String get brushFoldCurveStrength;
 
-  /// No description provided for @brushFoldWave.
+  /// No description provided for @filterAuroraHologramPresetBlueHologram.
   ///
   /// In ja, this message translates to:
-  /// **'ウェーブ'**
-  String get brushFoldWave;
+  /// **'サファイアホログラム'**
+  String get filterAuroraHologramPresetBlueHologram;
 
-  /// No description provided for @brushFoldWaveEndpointRange.
+  /// No description provided for @filterAuroraHologramPresetLightBlueHologram.
   ///
   /// In ja, this message translates to:
-  /// **'終点からウェーブにする範囲'**
-  String get brushFoldWaveEndpointRange;
+  /// **'アイスホログラム'**
+  String get filterAuroraHologramPresetLightBlueHologram;
 
-  /// No description provided for @brushFoldWaveTriggerAngle.
+  /// No description provided for @filterAuroraHologramPresetPurpleHologram.
   ///
   /// In ja, this message translates to:
-  /// **'ウェーブ発生角度'**
-  String get brushFoldWaveTriggerAngle;
+  /// **'アメジストホログラム'**
+  String get filterAuroraHologramPresetPurpleHologram;
+
+  /// No description provided for @filterAuroraHologramPresetBlueGreenHologram.
+  ///
+  /// In ja, this message translates to:
+  /// **'ターコイズホログラム'**
+  String get filterAuroraHologramPresetBlueGreenHologram;
+
+  /// No description provided for @filterAuroraHologramPresetMoonlightPearl.
+  ///
+  /// In ja, this message translates to:
+  /// **'ムーンライトパール'**
+  String get filterAuroraHologramPresetMoonlightPearl;
+
+  /// No description provided for @filterAuroraHologramPresetRainbowPearl.
+  ///
+  /// In ja, this message translates to:
+  /// **'ミストレインボー'**
+  String get filterAuroraHologramPresetRainbowPearl;
+
+  /// No description provided for @filterAuroraHologramPresetWarmHologram.
+  ///
+  /// In ja, this message translates to:
+  /// **'サンライズホログラム'**
+  String get filterAuroraHologramPresetWarmHologram;
+
+  /// No description provided for @brushFoldMode.
+  ///
+  /// In ja, this message translates to:
+  /// **'折りたたみタイプ'**
+  String get brushFoldMode;
+
+  /// No description provided for @brushFoldModeWaveTopView.
+  ///
+  /// In ja, this message translates to:
+  /// **'ウェーブ俯瞰'**
+  String get brushFoldModeWaveTopView;
+
+  /// No description provided for @brushFoldModeWaveLowAngle.
+  ///
+  /// In ja, this message translates to:
+  /// **'ウェーブ煽り'**
+  String get brushFoldModeWaveLowAngle;
+
+  /// No description provided for @brushFoldModeCurlRight.
+  ///
+  /// In ja, this message translates to:
+  /// **'右巻き'**
+  String get brushFoldModeCurlRight;
+
+  /// No description provided for @brushFoldModeCurlLeft.
+  ///
+  /// In ja, this message translates to:
+  /// **'左巻き'**
+  String get brushFoldModeCurlLeft;
+
+  /// No description provided for @brushFoldModeCrescent.
+  ///
+  /// In ja, this message translates to:
+  /// **'三日月カール'**
+  String get brushFoldModeCrescent;
+
+  /// No description provided for @helpBrushFoldTitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'ブラシの折り返し'**
+  String get helpBrushFoldTitle;
+
+  /// No description provided for @helpBrushFoldDesc.
+  ///
+  /// In ja, this message translates to:
+  /// **'ブラシ設定で「縁取り」をONにすると「折り返し」を使えます。OFFでは通常のストローク、ONでは描いた線の曲がりをもとに折り目を付けます。波形を自動生成する機能ではありません。折りたたみタイプは5種類です。「ウェーブ俯瞰」は重なりの上側、「ウェーブ煽り」は下側を手前に描きます。「右巻き」は左上―右下方向の線、「左巻き」は右上―左下方向の線を手前に描きます。「三日月カール」は実際に描いたC字のカーブに沿って、三日月がつながる形に整えます。発生角度・カーブ開始位置・折り返し長さで折り目の位置と範囲を調整できます。カーブ強度は1～10、初期値は5です。'**
+  String get helpBrushFoldDesc;
+
+  /// No description provided for @tipsBrushFoldTitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'折り返しの手前側を選んで髪の流れを描く'**
+  String get tipsBrushFoldTitle;
+
+  /// No description provided for @tipsBrushFoldDesc.
+  ///
+  /// In ja, this message translates to:
+  /// **'縁取りと折り返しをONにし、まずカーブ強度5でゆるいS字を描いてみましょう。重なりの上側を手前にするなら「ウェーブ俯瞰」、下側なら「ウェーブ煽り」を選びます。斜めの流れは、左上―右下方向の線を手前にする「右巻き」と、右上―左下方向の線を手前にする「左巻き」を比べると決めやすくなります。C字のカーブを続けて描くときは「三日月カール」で三日月のつながりを整えます。どのタイプも描いた曲がりを使うため、直線が自動で波形に変わることはありません。発生角度・カーブ開始位置・折り返し長さを少しずつ変え、最後にカーブ強度を1～10で調整してください。折り返しをOFFにすると通常のストロークへ戻ります。'**
+  String get tipsBrushFoldDesc;
 }
 
 class _AppLocalizationsDelegate

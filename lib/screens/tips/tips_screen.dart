@@ -422,6 +422,15 @@ List<_TipCategory> _buildTipCategories(AppLocalizations l10n) => [
         TipDiagramSpec(
           TipDiagramKind.pairCombo,
           iconA: Icons.brush,
+          iconB: Icons.turn_right,
+        ),
+        l10n.tipsBrushFoldTitle,
+        l10n.tipsBrushFoldDesc,
+      ),
+      _Tip(
+        TipDiagramSpec(
+          TipDiagramKind.pairCombo,
+          iconA: Icons.brush,
           iconB: Icons.opacity,
         ),
         l10n.tipsStrokeDecayFadeTitle,

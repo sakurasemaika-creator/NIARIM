@@ -5377,28 +5377,28 @@ class AppLocalizationsJa extends AppLocalizations {
   String get filterAuroraHologramSaturation => '彩度';
 
   @override
-  String get filterAuroraHologramPresetAurora => 'オーロラ';
+  String get filterAuroraHologramPresetAurora => 'アクアオーロラ';
 
   @override
-  String get filterAuroraHologramPresetSoapBubble => 'パール1';
+  String get filterAuroraHologramPresetSoapBubble => 'フェアリーパール';
 
   @override
-  String get filterAuroraHologramPresetCyberNeon => 'ヴェイパーウェイヴ';
+  String get filterAuroraHologramPresetCyberNeon => 'ネオンプリズム';
 
   @override
-  String get filterAuroraHologramPresetPastelDream => 'パステルドリーム';
+  String get filterAuroraHologramPresetPastelDream => 'パステルキャンディ';
 
   @override
-  String get filterAuroraHologramPresetPearl2 => 'パール2';
+  String get filterAuroraHologramPresetPearl2 => 'プリズムパール';
 
   @override
-  String get filterAuroraHologramPresetSunsetGold => 'サンセットゴールド';
+  String get filterAuroraHologramPresetSunsetGold => 'アンバーゴールド';
 
   @override
-  String get filterAuroraHologramPresetSilverFoil => 'シルバーホイル';
+  String get filterAuroraHologramPresetSilverFoil => 'プラチナシルバー';
 
   @override
-  String get filterAuroraHologramPresetClassicHologram => 'オーロラホログラム';
+  String get filterAuroraHologramPresetClassicHologram => 'レインボーホログラム';
 
   @override
   String get filterNameBackgroundBlend => '背景馴染ませ';
@@ -6291,18 +6291,6 @@ class AppLocalizationsJa extends AppLocalizations {
   String get brushFoldTriggerAngle => '発生角度';
 
   @override
-  String get brushYBranchAngle => 'Y字枝分かれ角度';
-
-  @override
-  String get brushYBranchLength => 'Y字長さ';
-
-  @override
-  String get brushYBranchWidth => 'Y字太さ';
-
-  @override
-  String get brushYBranchEndTaper => 'Y字終点入り抜き';
-
-  @override
   String get brushFoldCurveStart => 'カーブ開始位置';
 
   @override
@@ -6312,11 +6300,55 @@ class AppLocalizationsJa extends AppLocalizations {
   String get brushFoldCurveStrength => 'カーブ強度';
 
   @override
-  String get brushFoldWave => 'ウェーブ';
+  String get filterAuroraHologramPresetBlueHologram => 'サファイアホログラム';
 
   @override
-  String get brushFoldWaveEndpointRange => '終点からウェーブにする範囲';
+  String get filterAuroraHologramPresetLightBlueHologram => 'アイスホログラム';
 
   @override
-  String get brushFoldWaveTriggerAngle => 'ウェーブ発生角度';
+  String get filterAuroraHologramPresetPurpleHologram => 'アメジストホログラム';
+
+  @override
+  String get filterAuroraHologramPresetBlueGreenHologram => 'ターコイズホログラム';
+
+  @override
+  String get filterAuroraHologramPresetMoonlightPearl => 'ムーンライトパール';
+
+  @override
+  String get filterAuroraHologramPresetRainbowPearl => 'ミストレインボー';
+
+  @override
+  String get filterAuroraHologramPresetWarmHologram => 'サンライズホログラム';
+
+  @override
+  String get brushFoldMode => '折りたたみタイプ';
+
+  @override
+  String get brushFoldModeWaveTopView => 'ウェーブ俯瞰';
+
+  @override
+  String get brushFoldModeWaveLowAngle => 'ウェーブ煽り';
+
+  @override
+  String get brushFoldModeCurlRight => '右巻き';
+
+  @override
+  String get brushFoldModeCurlLeft => '左巻き';
+
+  @override
+  String get brushFoldModeCrescent => '三日月カール';
+
+  @override
+  String get helpBrushFoldTitle => 'ブラシの折り返し';
+
+  @override
+  String get helpBrushFoldDesc =>
+      'ブラシ設定で「縁取り」をONにすると「折り返し」を使えます。OFFでは通常のストローク、ONでは描いた線の曲がりをもとに折り目を付けます。波形を自動生成する機能ではありません。折りたたみタイプは5種類です。「ウェーブ俯瞰」は重なりの上側、「ウェーブ煽り」は下側を手前に描きます。「右巻き」は左上―右下方向の線、「左巻き」は右上―左下方向の線を手前に描きます。「三日月カール」は実際に描いたC字のカーブに沿って、三日月がつながる形に整えます。発生角度・カーブ開始位置・折り返し長さで折り目の位置と範囲を調整できます。カーブ強度は1～10、初期値は5です。';
+
+  @override
+  String get tipsBrushFoldTitle => '折り返しの手前側を選んで髪の流れを描く';
+
+  @override
+  String get tipsBrushFoldDesc =>
+      '縁取りと折り返しをONにし、まずカーブ強度5でゆるいS字を描いてみましょう。重なりの上側を手前にするなら「ウェーブ俯瞰」、下側なら「ウェーブ煽り」を選びます。斜めの流れは、左上―右下方向の線を手前にする「右巻き」と、右上―左下方向の線を手前にする「左巻き」を比べると決めやすくなります。C字のカーブを続けて描くときは「三日月カール」で三日月のつながりを整えます。どのタイプも描いた曲がりを使うため、直線が自動で波形に変わることはありません。発生角度・カーブ開始位置・折り返し長さを少しずつ変え、最後にカーブ強度を1～10で調整してください。折り返しをOFFにすると通常のストロークへ戻ります。';
 }

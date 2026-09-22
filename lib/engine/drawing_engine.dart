@@ -8,8 +8,7 @@ import 'brush_texture_cache.dart';
 import 'brush_texture_selector.dart';
 import 'brush_render_plan.dart';
 import 'brush_stroke_geometry.dart';
-import 'hair_fold_render_resolver.dart';
-import 'wave_hair_fold_geometry.dart';
+import 'hair_fold_raster.dart';
 import 'tile_manager.dart';
 
 final _jitterRng = math.Random();
@@ -38,11 +37,14 @@ class DrawingEngine {
   String? _activeLayerId;
   math.Random _scatterRng = math.Random(0);
   ScreenSpaceFoldDetector? _foldDetector;
+  HairFoldRaster? _foldRaster;
+  final List<FoldEvent> _foldEvents = [];
   final BrushTextureSelector _brushTextureSelector = BrushTextureSelector();
   double? _finalizedStrokeLengthOverride;
+  bool _replayingFinalStroke = false;
+  final List<ui.Offset> _strokeScreenPositions = [];
 
   String? get debugActiveBrushTexturePath => _brushTextureSelector.activePath;
-  void Function(List<WaveFoldPathSample>)? debugOnHairFoldRendered; // Test-only observation hook.
 
   Brush? currentBrush;
   ui.Color currentColor = const ui.Color(0xFF000000);
@@ -63,7 +65,10 @@ class DrawingEngine {
     ui.Offset? screenPosition,
   }) {
     _currentStroke.clear();
+    _strokeScreenPositions.clear();
     _strokeCoverageByTile.clear();
+    _foldEvents.clear();
+    _foldRaster = null;
     _smoothed = point;
     final effective = _applyPointConstraint(point);
     _activeLayerId = layerId;
@@ -71,20 +76,27 @@ class DrawingEngine {
     _hasStampedCurrentStroke = false;
     _scatterRng = math.Random(0);
     final brush = currentBrush;
-    if (brush != null) {
+    if (brush != null && !_replayingFinalStroke) {
       _brushTextureSelector.beginStroke(
         brushId: brush.id,
         paths: brush.resolvedCustomImagePaths,
         mode: brush.customImageSelectionMode,
       );
-    } else {
+    } else if (brush == null) {
       _brushTextureSelector.endStroke();
     }
-    _foldDetector = brush != null && brush.outlineEnabled && brush.foldEnabled
-        ? ScreenSpaceFoldDetector(triggerAngleDegrees: brush.foldTriggerAngle)
+    _foldRaster =
+        brush != null && brush.outlineEnabled && brush.foldEnabled && !isEraser
+        ? HairFoldRaster(tileManager, layerId)
+        : null;
+    _foldDetector = _foldRaster != null
+        ? ScreenSpaceFoldDetector(triggerAngleDegrees: brush!.foldTriggerAngle)
         : null;
     _feedFoldDetector(effective, layerId, screenPosition: screenPosition);
     _currentStroke.add(effective);
+    _strokeScreenPositions.add(
+      screenPosition ?? ui.Offset(effective.x, effective.y),
+    );
     final needsDirection =
         brush != null && (brush.rotation || brush.scatter > 0.0);
     if (!needsDirection) {
@@ -110,14 +122,22 @@ class DrawingEngine {
       beginStroke(point, layerId, screenPosition: screenPosition);
       return;
     }
-    final effective = _applyPointConstraint(_applyStabilization(point));
+    final effective = _replayingFinalStroke
+        ? point
+        : _applyPointConstraint(_applyStabilization(point));
     final from = _currentStroke.last;
     // 区間を描画してから終点を履歴へ追加する。これにより
     // _renderStrokeSegment() が取得するbaseStrokeLengthは必ず区間開始時点までの
     // 累積距離となり、OSから届くmoveイベント数に依存しない。
-    _renderStrokeSegment(from, effective, layerId);
-    _feedFoldDetector(effective, layerId, screenPosition: screenPosition);
+    if (_foldEvents.isEmpty) {
+      _renderStrokeSegment(from, effective, layerId);
+    }
     _currentStroke.add(effective);
+    _strokeScreenPositions.add(
+      screenPosition ?? ui.Offset(effective.x, effective.y),
+    );
+    _feedFoldDetector(effective, layerId, screenPosition: screenPosition);
+    _rebuildHairFold();
   }
 
   bool get needsFinalFadeReplay =>
@@ -126,6 +146,7 @@ class DrawingEngine {
   void replayCurrentStrokeWithFinalFade() {
     if (!needsFinalFadeReplay || _activeLayerId == null) return;
     final points = List<StrokePoint>.of(_currentStroke);
+    final screen = List<ui.Offset>.of(_strokeScreenPositions);
     final layerId = _activeLayerId!;
     var totalLength = 0.0;
     for (var i = 1; i < points.length; i++) {
@@ -136,18 +157,24 @@ class DrawingEngine {
     _distanceSinceLastBrushStamp = 0.0;
     _hasStampedCurrentStroke = false;
     _foldDetector = null;
-    _brushTextureSelector.endStroke();
     _finalizedStrokeLengthOverride = totalLength;
-    beginStroke(points.first, layerId);
-    for (var i = 1; i < points.length; i++) {
-      continueStroke(points[i], layerId);
+    _replayingFinalStroke = true;
+    try {
+      beginStroke(points.first, layerId, screenPosition: screen.first);
+      for (var i = 1; i < points.length; i++) {
+        continueStroke(points[i], layerId, screenPosition: screen[i]);
+      }
+    } finally {
+      _replayingFinalStroke = false;
     }
   }
 
-  void endStroke() {
+  void endStroke({bool cancel = false}) {
+    if (!cancel) _rebuildHairFold();
     // 回転/散布ONでPointerDown→Upだけのタップだった場合は進行方向が存在しない。
     // その場合だけ中心位置へ1回描画し、散布は行わない。
-    if (!_hasStampedCurrentStroke &&
+    if (!cancel &&
+        !_hasStampedCurrentStroke &&
         _currentStroke.isNotEmpty &&
         _activeLayerId != null) {
       final point = _currentStroke.first;
@@ -169,6 +196,9 @@ class DrawingEngine {
     _distanceSinceLastBrushStamp = 0.0;
     _hasStampedCurrentStroke = false;
     _foldDetector = null;
+    _foldRaster = null;
+    _foldEvents.clear();
+    _strokeScreenPositions.clear();
     _brushTextureSelector.endStroke();
     _finalizedStrokeLengthOverride = null;
   }
@@ -196,6 +226,7 @@ class DrawingEngine {
         .toDouble();
     final event = detector.add(
       BrushStrokeSample(
+        strokeIndex: math.max(0, _currentStroke.length - 1),
         // Fold thresholds are defined in physical screen-space travel. The
         // caller supplies pointer screen coordinates when document zoom differs
         // from 1x; direct engine callers retain the 1x-compatible fallback.
@@ -205,78 +236,51 @@ class DrawingEngine {
       ),
     );
     if (event == null) return;
-    final path = resolveHairFoldRenderPath(
-      event: event,
-      mode: brush.foldMode,
-      curveStartRatio: brush.foldCurveStartRatio,
-      curveStrength: brush.foldCurveStrength,
-      lengthRatio: brush.foldLengthRatio,
-      waveEndRatio: brush.foldWaveEndRatio,
-      waveTriggerAngleDegrees: brush.foldWaveTriggerAngle,
-      taperRatio: brush.foldEndTaperRatio,
-      outlineWidth: brush.outlineWidth,
-    );
-    debugOnHairFoldRendered?.call(path);
-    _renderHairFoldPath(path, layerId, ui.Color(brush.outlineColor));
+    _foldEvents.add(event);
   }
 
-  void _renderHairFoldPath(
-    List<WaveFoldPathSample> path,
-    String layerId,
-    ui.Color color,
-  ) {
-    if (path.isEmpty) return;
-    const identityTilt = (scaleX: 1.0, scaleY: 1.0, angle: 0.0);
-    // Background portions are deliberately thinner and rendered first. This
-    // makes over/under readable without painting the old full-width black discs.
-    final ordered = <WaveFoldPathSample>[
-      ...path.where((sample) => !sample.isForeground),
-      ...path.where((sample) => sample.isForeground),
-    ];
-    for (final sample in ordered) {
-      final width = sample.width;
-      if (!width.isFinite || width <= 0.05) continue;
-      final visibleWidth = sample.isForeground ? width : width * .72;
-      _renderCircleStamp(
-        sample.position.dx,
-        sample.position.dy,
-        visibleWidth / 2,
-        255,
-        identityTilt,
-        layerId,
-        false,
-        0,
-        null,
-        colorOverride: color,
-        coverageNamespace: sample.isForeground ? 'fold-front' : 'fold-back',
+  void _rebuildHairFold() {
+    final brush = currentBrush;
+    final raster = _foldRaster;
+    if (brush == null || raster == null || _foldEvents.isEmpty) return;
+    final samples = <HairRibbonPoint>[];
+    var distance = 0.0;
+    for (var i = 0; i < _currentStroke.length; i++) {
+      final point = _currentStroke[i];
+      if (i > 0) distance += _distance(_currentStroke[i - 1], point);
+      final pressure = resolveBrushPressure(
+        brush: brush,
+        pressureEnabled: pressureEnabled,
+        curvedPressure: point.pressure,
+      );
+      final fade = _calculateFade(
+        brush,
+        distance,
+        totalLength: _finalizedStrokeLengthOverride,
+      );
+      samples.add(
+        HairRibbonPoint(
+          ui.Offset(point.x, point.y),
+          (brush.size * pressure.sizeScale * fade).clamp(.5, 2000).toDouble(),
+          (brush.opacity /
+                  100 *
+                  pressure.opacityScale *
+                  fade *
+                  (brush.strokeDecay ? _calculateDecay(distance) : 1))
+              .clamp(0.0, 1.0)
+              .toDouble(),
+        ),
       );
     }
-  }
-
-  static List<WaveFoldPathSample> debugResolveHairFoldPath({
-    required FoldEvent event,
-    required HairFoldMode mode,
-    required double curveStartRatio,
-    required int curveStrength,
-    required double lengthRatio,
-    required double waveEndRatio,
-    required double waveTriggerAngleDegrees,
-    double taperRatio = .35,
-    double outlineWidth = 1,
-    int sampleCount = 48,
-  }) {
-    return resolveHairFoldRenderPath(
-      event: event,
-      mode: mode,
-      curveStartRatio: curveStartRatio,
-      curveStrength: curveStrength,
-      lengthRatio: lengthRatio,
-      waveEndRatio: waveEndRatio,
-      waveTriggerAngleDegrees: waveTriggerAngleDegrees,
-      taperRatio: taperRatio,
-      outlineWidth: outlineWidth,
-      sampleCount: sampleCount,
+    final texture = _brushTextureSelector.activePath;
+    raster.render(
+      points: samples,
+      folds: _foldEvents,
+      brush: brush,
+      fillColor: currentColor,
+      texture: texture == null ? null : getCachedBrushTexture(texture),
     );
+    _strokeCoverageByTile.clear();
   }
 
   StrokePoint _applyPointConstraint(StrokePoint point) {
@@ -683,6 +687,7 @@ class DrawingEngine {
     for (int ty = minTy; ty <= maxTy; ty++) {
       for (int tx = minTx; tx <= maxTx; tx++) {
         if (tx < 0 || ty < 0) continue;
+        _foldRaster?.rememberTile(tx, ty);
         final tile = tileManager.getOrCreateTile(layerId, tx, ty);
         final tileOriginX = tx * TileManager.tileSize;
         final tileOriginY = ty * TileManager.tileSize;

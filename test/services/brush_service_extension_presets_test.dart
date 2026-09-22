@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:archive/archive_io.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:niarim/models/brush.dart';
@@ -81,8 +82,22 @@ void main() {
     final service = BrushService();
     await service.init();
 
-    final sourceDir = await Directory.systemTemp.createTemp('niarim-brush-textures-');
-    addTearDown(() => sourceDir.delete(recursive: true));
+    final sourceDir = await Directory.systemTemp.createTemp(
+      'niarim-brush-textures-',
+    );
+    const pathProviderChannel = MethodChannel('plugins.flutter.io/path_provider');
+    TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
+        .setMockMethodCallHandler(pathProviderChannel, (call) async {
+          if (call.method == 'getApplicationDocumentsDirectory') {
+            return sourceDir.path;
+          }
+          throw MissingPluginException('Unexpected path lookup: ${call.method}');
+        });
+    addTearDown(() async {
+      TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
+          .setMockMethodCallHandler(pathProviderChannel, null);
+      await sourceDir.delete(recursive: true);
+    });
     final paths = <String>[];
     for (var i = 0; i < 3; i++) {
       final file = File('${sourceDir.path}/variant_$i.png');

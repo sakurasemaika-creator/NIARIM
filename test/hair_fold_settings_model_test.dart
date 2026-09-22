@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:flutter_test/flutter_test.dart';
 import 'package:niarim/models/brush.dart';
 
@@ -16,32 +18,78 @@ Brush _baseBrush() => const Brush(
 
 void main() {
   group('hair fold settings', () {
-    test('custom brush defaults to straight with wave disabled', () {
+    test('custom brush defaults to fold disabled and top-view mode', () {
       final brush = _baseBrush();
-      expect(brush.foldWaveEnabled, isFalse);
-      expect(brush.foldWaveEndRatio, 0.0);
+      expect(brush.foldEnabled, isFalse);
+      expect(brush.foldMode, HairFoldMode.waveTopView);
     });
 
-    test('new fold settings survive copyWith and JSON round-trip', () {
-      final configured = _baseBrush().copyWith(
-        foldEnabled: true,
-        foldCurveStartRatio: 0.25,
-        foldCurveStrength: 7,
-        foldLengthRatio: 0.8,
-        foldEndTaperRatio: 0.35,
-        foldWaveEnabled: true,
-        foldWaveEndRatio: 0.3,
-        foldWaveTriggerAngle: 72,
-      );
+    const serializedModes = <HairFoldMode, String>{
+      HairFoldMode.waveTopView: 'waveTopView',
+      HairFoldMode.waveLowAngle: 'waveLowAngle',
+      HairFoldMode.curlRight: 'curlRight',
+      HairFoldMode.curlLeft: 'curlLeft',
+      HairFoldMode.crescent: 'crescent',
+    };
 
-      final restored = Brush.fromJson(configured.toJson());
-      expect(restored.foldCurveStartRatio, 0.25);
-      expect(restored.foldCurveStrength, 7);
-      expect(restored.foldLengthRatio, 0.8);
-      expect(restored.foldEndTaperRatio, 0.35);
-      expect(restored.foldWaveEnabled, isTrue);
-      expect(restored.foldWaveEndRatio, 0.3);
-      expect(restored.foldWaveTriggerAngle, 72);
+    test('serialized mode contract covers every supported mode', () {
+      expect(serializedModes.keys, unorderedEquals(HairFoldMode.values));
+    });
+
+    for (final entry in serializedModes.entries) {
+      test('${entry.value} survives copyWith and JSON round trip', () {
+        final configured = _baseBrush().copyWith(
+          outlineEnabled: true,
+          foldEnabled: true,
+          foldMode: entry.key,
+          foldTriggerAngle: 67,
+          foldCurveStartRatio: 0.31,
+          foldCurveStrength: 7,
+          foldLengthRatio: 0.72,
+          foldEndTaperRatio: 0.43,
+        );
+        expect(configured.foldMode, entry.key);
+
+        final json = jsonDecode(jsonEncode(configured.toJson()))
+            as Map<String, dynamic>;
+        expect(json['foldMode'], entry.value);
+
+        final restored = Brush.fromJson(json);
+        expect(restored.foldMode, entry.key);
+        expect(restored.outlineEnabled, isTrue);
+        expect(restored.foldEnabled, isTrue);
+        expect(restored.foldTriggerAngle, 67);
+        expect(restored.foldCurveStartRatio, 0.31);
+        expect(restored.foldCurveStrength, 7);
+        expect(restored.foldLengthRatio, 0.72);
+        expect(restored.foldEndTaperRatio, 0.43);
+        expect(restored.copyWith(name: 'Renamed').foldMode, entry.key);
+      });
+
+      test('disabling fold preserves ${entry.value} and its settings', () {
+        final configured = _baseBrush().copyWith(
+          foldEnabled: true,
+          foldMode: entry.key,
+          foldCurveStrength: 8,
+          foldLengthRatio: 0.62,
+        );
+        final disabled = configured.copyWith(foldEnabled: false);
+        final restored = Brush.fromJson(disabled.toJson());
+        expect(restored.foldEnabled, isFalse);
+        expect(restored.foldMode, entry.key);
+        expect(restored.foldCurveStrength, 8);
+        expect(restored.foldLengthRatio, 0.62);
+        expect(restored.copyWith(foldEnabled: true).foldMode, entry.key);
+      });
+    }
+
+    test('missing or unknown mode falls back to top-view mode', () {
+      final missingMode = _baseBrush().toJson()..remove('foldMode');
+      expect(Brush.fromJson(missingMode).foldMode, HairFoldMode.waveTopView);
+      for (final invalidMode in <Object?>[null, 'unsupportedMode', 99]) {
+        final json = _baseBrush().toJson()..['foldMode'] = invalidMode;
+        expect(Brush.fromJson(json).foldMode, HairFoldMode.waveTopView);
+      }
     });
 
     test('curve strength defaults to five and clamps to one through ten', () {
@@ -59,21 +107,16 @@ void main() {
       expect(restored.toJson().containsKey('foldDepthRatio'), isFalse);
     });
 
-    test('wave endpoint range clamps to zero through one', () {
-      expect(_baseBrush().copyWith(foldWaveEndRatio: -1).foldWaveEndRatio, 0);
-      expect(_baseBrush().copyWith(foldWaveEndRatio: 2).foldWaveEndRatio, 1);
-    });
-
-    test('turning wave off preserves its configured dependent values', () {
-      final configured = _baseBrush().copyWith(
-        foldWaveEnabled: true,
-        foldWaveEndRatio: 0.3,
-        foldWaveTriggerAngle: 70,
-      );
-      final disabled = configured.copyWith(foldWaveEnabled: false);
-      expect(disabled.foldWaveEnabled, isFalse);
-      expect(disabled.foldWaveEndRatio, 0.3);
-      expect(disabled.foldWaveTriggerAngle, 70);
+    test('obsolete wave fields do not override mode or survive serialization', () {
+      final json = _baseBrush().copyWith(foldMode: HairFoldMode.curlLeft).toJson()
+        ..['foldWaveEnabled'] = true
+        ..['foldWaveEndRatio'] = 0.3
+        ..['foldWaveTriggerAngle'] = 70;
+      final restored = Brush.fromJson(json);
+      expect(restored.foldMode, HairFoldMode.curlLeft);
+      expect(restored.toJson(), isNot(contains('foldWaveEnabled')));
+      expect(restored.toJson(), isNot(contains('foldWaveEndRatio')));
+      expect(restored.toJson(), isNot(contains('foldWaveTriggerAngle')));
     });
   });
 }

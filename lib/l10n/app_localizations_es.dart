@@ -3659,28 +3659,28 @@ class AppLocalizationsEs extends AppLocalizations {
   String get blendModeLuminosity => 'Luminosidad';
 
   @override
-  String get blendModeLinearBurn => '焼き込み（リニア）';
+  String get blendModeLinearBurn => 'Subexposición lineal';
 
   @override
-  String get blendModeLinearDodge => '覆い焼き（リニア）';
+  String get blendModeLinearDodge => 'Sobreexposición lineal';
 
   @override
-  String get blendModeVividLight => 'ビビッドライト';
+  String get blendModeVividLight => 'Luz intensa';
 
   @override
-  String get blendModeLinearLight => 'リニアライト';
+  String get blendModeLinearLight => 'Luz lineal';
 
   @override
-  String get blendModePinLight => 'ピンライト';
+  String get blendModePinLight => 'Luz puntual';
 
   @override
-  String get blendModeHardMix => 'ハードミックス';
+  String get blendModeHardMix => 'Mezcla definida';
 
   @override
-  String get blendModeExclusion => '除外';
+  String get blendModeExclusion => 'Exclusión';
 
   @override
-  String get blendModeDivide => '除算';
+  String get blendModeDivide => 'Dividir';
 
   @override
   String get autofillLineColorModeSpecified => 'Color especificado';
@@ -5650,28 +5650,28 @@ class AppLocalizationsEs extends AppLocalizations {
   String get filterAuroraHologramSaturation => 'Saturación';
 
   @override
-  String get filterAuroraHologramPresetAurora => 'Aurora';
+  String get filterAuroraHologramPresetAurora => 'Aurora acuática';
 
   @override
-  String get filterAuroraHologramPresetSoapBubble => 'Pompa de jabón';
+  String get filterAuroraHologramPresetSoapBubble => 'Perla de hada';
 
   @override
-  String get filterAuroraHologramPresetCyberNeon => 'Neón cibernético';
+  String get filterAuroraHologramPresetCyberNeon => 'Prisma neón';
 
   @override
-  String get filterAuroraHologramPresetPastelDream => 'Sueño pastel';
+  String get filterAuroraHologramPresetPastelDream => 'Caramelo pastel';
 
   @override
-  String get filterAuroraHologramPresetPearl2 => 'Perla 2';
+  String get filterAuroraHologramPresetPearl2 => 'Perla prisma';
 
   @override
-  String get filterAuroraHologramPresetSunsetGold => 'Oro del atardecer';
+  String get filterAuroraHologramPresetSunsetGold => 'Oro ámbar';
 
   @override
-  String get filterAuroraHologramPresetSilverFoil => 'Papel plateado';
+  String get filterAuroraHologramPresetSilverFoil => 'Plata platino';
 
   @override
-  String get filterAuroraHologramPresetClassicHologram => 'Holograma aurora';
+  String get filterAuroraHologramPresetClassicHologram => 'Holograma arcoíris';
 
   @override
   String get filterNameBackgroundBlend => 'Mimetismo de fondo';
@@ -6614,18 +6614,6 @@ class AppLocalizationsEs extends AppLocalizations {
   String get brushFoldTriggerAngle => 'Ángulo de activación';
 
   @override
-  String get brushYBranchAngle => 'Ángulo de rama Y';
-
-  @override
-  String get brushYBranchLength => 'Longitud de rama Y';
-
-  @override
-  String get brushYBranchWidth => 'Ancho de rama Y';
-
-  @override
-  String get brushYBranchEndTaper => 'Atenuación final de rama Y';
-
-  @override
   String get brushFoldCurveStart => 'Posición de inicio de curva';
 
   @override
@@ -6635,11 +6623,57 @@ class AppLocalizationsEs extends AppLocalizations {
   String get brushFoldCurveStrength => 'Intensidad de curva';
 
   @override
-  String get brushFoldWave => 'Onda';
+  String get filterAuroraHologramPresetBlueHologram => 'Holograma zafiro';
 
   @override
-  String get brushFoldWaveEndpointRange => 'Rango de onda desde el final';
+  String get filterAuroraHologramPresetLightBlueHologram => 'Holograma hielo';
 
   @override
-  String get brushFoldWaveTriggerAngle => 'Ángulo de activación de onda';
+  String get filterAuroraHologramPresetPurpleHologram => 'Holograma amatista';
+
+  @override
+  String get filterAuroraHologramPresetBlueGreenHologram =>
+      'Holograma turquesa';
+
+  @override
+  String get filterAuroraHologramPresetMoonlightPearl => 'Perla lunar';
+
+  @override
+  String get filterAuroraHologramPresetRainbowPearl => 'Arcoíris brumoso';
+
+  @override
+  String get filterAuroraHologramPresetWarmHologram => 'Holograma amanecer';
+
+  @override
+  String get brushFoldMode => 'Modo de pliegue';
+
+  @override
+  String get brushFoldModeWaveTopView => 'Onda (vista superior)';
+
+  @override
+  String get brushFoldModeWaveLowAngle => 'Onda (contrapicado)';
+
+  @override
+  String get brushFoldModeCurlRight => 'Rizo a la derecha';
+
+  @override
+  String get brushFoldModeCurlLeft => 'Rizo a la izquierda';
+
+  @override
+  String get brushFoldModeCrescent => 'Rizo de media luna';
+
+  @override
+  String get helpBrushFoldTitle => 'Pliegues del pincel';
+
+  @override
+  String get helpBrushFoldDesc =>
+      'Activa Contorno en los ajustes del pincel para usar Pliegue. Con Pliegue desactivado, el trazo es normal. Al activarlo, los pliegues siguen las curvas que dibujas; no se generan ondas automáticamente. Hay cinco modos. Onda (vista superior) coloca delante la parte superior de cada superposición y Onda (contrapicado), la inferior. Rizo a la derecha coloca delante el segmento de arriba a la izquierda a abajo a la derecha; Rizo a la izquierda, el de arriba a la derecha a abajo a la izquierda. Rizo de media luna sigue las curvas en forma de C que realmente dibujas para formar medias lunas enlazadas. Usa Ángulo de activación, Posición de inicio de curva y Longitud del pliegue para ajustar la posición y la extensión de cada pliegue. La intensidad de curva va de 1 a 10 y su valor inicial es 5.';
+
+  @override
+  String get tipsBrushFoldTitle =>
+      'Elige qué parte del pliegue del cabello queda delante';
+
+  @override
+  String get tipsBrushFoldDesc =>
+      'Activa Contorno y Pliegue y prueba un trazo suave en forma de S con una intensidad de curva de 5. Elige Onda (vista superior) para colocar delante la parte superior de cada superposición u Onda (contrapicado) para la inferior. Para un movimiento diagonal, compara Rizo a la derecha, que adelanta el segmento de arriba a la izquierda a abajo a la derecha, con Rizo a la izquierda, que adelanta el de arriba a la derecha a abajo a la izquierda. Al dibujar una serie de curvas en C, usa Rizo de media luna para dar forma a las medias lunas enlazadas. Todos los modos usan las curvas que dibujas; una línea recta no se convierte en onda automáticamente. Ajusta poco a poco el ángulo de activación, la posición de inicio de curva y la longitud del pliegue; después, elige una intensidad entre 1 y 10. Desactiva Pliegue para volver al trazo normal.';
 }
