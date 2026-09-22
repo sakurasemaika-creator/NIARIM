@@ -1,5 +1,6 @@
 name: Texture Filter Captures
 # production UI captures for Drawing Filters > Texture Change palettes
+# Re-run after finalized localization and palette verification.
 
 on:
   workflow_dispatch:
