@@ -11,6 +11,8 @@ on:
       - lib/screens/canvas/widgets/filter_panel.dart
       - test/auto_lineart_control_overlay_test.dart
       - test/auto_lineart_engine_test.dart
+      - test/auto_lineart_panel_state_test.dart
+      - test/auto_lineart_canvas_e2e_test.dart
       - .github/chat-integration-trigger.txt
   workflow_dispatch:
 
@@ -40,7 +42,9 @@ jobs:
         run: |
           flutter test test/auto_lineart_control_overlay_test.dart --reporter expanded
           flutter test test/auto_lineart_engine_test.dart --reporter expanded
-          flutter analyze lib/engine/auto_lineart_engine.dart lib/screens/canvas/widgets/auto_lineart_control_overlay.dart lib/screens/canvas/widgets/filter_panel.dart test/auto_lineart_control_overlay_test.dart test/auto_lineart_engine_test.dart --no-fatal-infos --no-fatal-warnings
+          flutter test test/auto_lineart_panel_state_test.dart --reporter expanded
+          flutter test test/auto_lineart_canvas_e2e_test.dart --reporter expanded
+          flutter analyze lib/engine/auto_lineart_engine.dart lib/screens/canvas/widgets/auto_lineart_control_overlay.dart lib/screens/canvas/widgets/filter_panel.dart test/auto_lineart_control_overlay_test.dart test/auto_lineart_engine_test.dart test/auto_lineart_panel_state_test.dart test/auto_lineart_canvas_e2e_test.dart --no-fatal-infos --no-fatal-warnings
       - name: Reject legacy preservation markers
         run: |
           if grep -R -n -E "Multi-scale topology sampling|Preserve short paths when both ends|persistence >= 0.67|coincident junction controls together|moveCoincident" lib/engine/auto_lineart_engine.dart lib/screens/canvas/widgets/auto_lineart_control_overlay.dart lib/screens/canvas/widgets/filter_panel.dart; then
