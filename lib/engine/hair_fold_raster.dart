@@ -246,11 +246,12 @@ class HairFoldRaster {
                   final turn = math
                       .atan2(_cross(incoming, outgoing), _dot(incoming, outgoing))
                       .abs();
-                  // A thick offset around a tight bend develops a cusp on its
-                  // concave side. Narrow only the high-curvature part so the
-                  // inner crescent remains round instead of collapsing to V.
+                  // The rasterizer unions round segment footprints. Narrowing
+                  // a tight bend exposes their concave intersection as a V;
+                  // keep a little more body at the apex so those footprints
+                  // overlap into a rounded inner arc instead.
                   curvatureScale =
-                      (1 - .42 * (turn / math.pi)).clamp(.68, 1.0);
+                      (1 + .18 * (turn / math.pi)).clamp(1.0, 1.12);
                 }
               }
               return points[index].width *
