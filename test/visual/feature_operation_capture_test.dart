@@ -177,6 +177,71 @@ void main() {
       await h.finish();
     }, timeout: const Timeout(Duration(minutes: 25)));
   }
+  if (group == 'all' || group == 'pixel-compare') {
+    testWidgets('Pixel Art and Mosaic differ on the same production UI fixture', (
+      tester,
+    ) async {
+      final h = await _Harness.create(tester, 'pixel-compare');
+      final filters = h.context.read<FilterService>().filters;
+      final cases = [
+        filters.firstWhere((f) => f.kind == FilterKind.pixelate),
+        filters.firstWhere((f) => f.kind == FilterKind.mosaic),
+      ];
+      final outputs = <FilterKind, Uint8List>{};
+      for (final filter in cases) {
+        final id = filter.kind == FilterKind.pixelate
+            ? 'pixel_art_same_fixture'
+            : 'mosaic_same_fixture';
+        debugPrint('CAPTURE_CASE:$id');
+        await h.project(id, fixture: 'color');
+        await h.capture('$id-before-ui');
+        await h.openMenu(h.l10n.filterPanelTitle);
+        final panel = find.byType(FilterPanel);
+        await h.tap(
+          find.descendant(of: panel, matching: find.byIcon(Icons.search)).first,
+        );
+        await tester.enterText(
+          find.descendant(of: panel, matching: find.byType(TextField)).first,
+          _filterName(filter),
+        );
+        await h.settle();
+        await h.tap(
+          find.descendant(
+            of: panel,
+            matching: find.byWidgetPredicate(
+              (w) => w is Text && w.data == _filterName(filter),
+            ),
+          ),
+        );
+        expect(h.context.read<FilterService>().currentFilter!.kind, filter.kind);
+        await h.capture('$id-settings');
+        await h.tap(find.text(h.l10n.filterApplyButton));
+        await h.until(
+          () => panel.evaluate().isEmpty,
+          '$id apply must finish and close the panel',
+        );
+        final after = await h.art('$id-after');
+        outputs[filter.kind] = after;
+        await h.capture('$id-after-ui');
+        h.record(
+          id,
+          filter.name,
+          _changedPixels(await h.art('$id-before-check'), after),
+          settings: {'kind': filter.kind.name},
+          note: filter.kind == FilterKind.pixelate
+              ? 'PixelArtEngine hard-edge conversion.'
+              : 'Independent block-average Mosaic effect.',
+        );
+      }
+      expect(
+        outputs[FilterKind.pixelate],
+        isNot(orderedEquals(outputs[FilterKind.mosaic]!)),
+        reason: 'Pixel Art and Mosaic must remain visually distinct effects',
+      );
+      await h.finish();
+    }, timeout: const Timeout(Duration(minutes: 5)));
+  }
+
   if (group == 'all' || group == 'automation') {
     testWidgets(
       'every official automation executes through the Canvas manager',
