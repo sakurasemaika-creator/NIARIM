@@ -398,13 +398,13 @@ void main() {
 
     for (final preset in AuroraHologramPreset.values) {
       final stops = auroraHologramStops(preset);
-      final brightest = stops.reduce(
-        (a, b) => luminance(a) >= luminance(b) ? a : b,
-      );
+      final maxLuminance = stops
+          .map(luminance)
+          .reduce((a, b) => a >= b ? a : b);
       expect(
-        stops.last,
-        brightest,
-        reason: '${preset.name}: right endpoint must be the brightest stop',
+        luminance(stops.last),
+        maxLuminance,
+        reason: '${preset.name}: right endpoint must be a brightest stop',
       );
     }
   });
