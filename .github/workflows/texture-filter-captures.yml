@@ -36,6 +36,10 @@ jobs:
           cache: true
       - name: Get dependencies
         run: flutter pub get
+      - name: Verify texture Gradient Map contracts
+        run: |
+          flutter test test/filter_engine_aurora_hologram_test.dart test/texture_filter_gold_palette_test.dart --reporter expanded
+          flutter analyze lib/engine/filter_engine.dart lib/models/filter_def.dart lib/screens/canvas/widgets/filter_panel.dart test/filter_engine_aurora_hologram_test.dart test/texture_filter_gold_palette_test.dart
       - name: Capture all texture filter variants through production UI
         run: |
           for fixture in textureReferenceOriginal; do
