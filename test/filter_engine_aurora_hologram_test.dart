@@ -433,6 +433,32 @@ void main() {
   });
 
 
+
+  test('全15配色presetは名前で保存・復元できる', () {
+    expect(AuroraHologramPreset.values.length, 15);
+    for (final preset in AuroraHologramPreset.values) {
+      final original = FilterDef(
+        id: 'texture-${preset.name}',
+        name: 'texture',
+        kind: FilterKind.auroraHologram,
+        strength: 100,
+        hologramBrightness: 17,
+        hologramSaturation: -9,
+        hologramPreset: preset,
+      );
+      final json = original.toJson();
+      expect(json['hologramPreset'], preset.name, reason: preset.name);
+
+      final restored = FilterDef.fromJson(json);
+      expect(restored.kind, FilterKind.auroraHologram, reason: preset.name);
+      expect(restored.strength, 100, reason: preset.name);
+      expect(restored.hologramBrightness, 17, reason: preset.name);
+      expect(restored.hologramSaturation, -9, reason: preset.name);
+      expect(restored.hologramPreset, preset, reason: preset.name);
+    }
+  });
+
+
   test('auroraHologramStopsは各プリセットで昇順の位置を持つ', () {
     for (final preset in AuroraHologramPreset.values) {
       final stops = auroraHologramStops(preset);
