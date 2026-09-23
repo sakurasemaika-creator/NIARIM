@@ -638,8 +638,19 @@ List<HairRibbonPoint> _relaxCrescentConcaveCorners(
     final innerNormal =
         Offset(-bisector.dy, bisector.dx) * (turn.isNegative ? -1.0 : 1.0);
     final shift = source[i].width * (.08 + .22 * amount) * amount;
+    final outside = source[i].position - innerNormal * shift;
+    // Round the concave vertex itself as well as moving it outward: blend it
+    // toward the neighboring chord so the inner outline cannot inherit a
+    // single sharp apex from the sampled centerline.
+    final chordMid =
+        (source[i - 1].position + source[i + 1].position) * .5;
+    final roundedPosition = Offset.lerp(
+      outside,
+      chordMid - innerNormal * shift * .35,
+      (.22 + .38 * amount).clamp(0.0, .6),
+    )!;
     result[i] = HairRibbonPoint(
-      source[i].position - innerNormal * shift,
+      roundedPosition,
       source[i].width,
       source[i].opacity,
     );
