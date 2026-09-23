@@ -456,7 +456,7 @@
   "helpRulerTitle": "Règle",
   "helpRulerDesc": "Un guide pour dessiner des lignes précises difficiles à réaliser à main levée, y compris des règles droites, circulaires, elliptiques et de perspective (utilisant des points de fuite pour le dessin en perspective). La pointe du stylet s'aligne automatiquement sur la règle placée, rendant même les compositions avec une profondeur difficile plus faciles à dessiner que sans règle. Les règles peuvent être déplacées, pivotées et redimensionnées à l'aide de leurs poignées.",
   "helpFadeTitle": "Fondu",
-  "helpFadeDesc": "Un réglage de pinceau où l'opacité et l'épaisseur diminuent progressivement à mesure que vous continuez un trait. Utilisez-le lorsque vous voulez que la fin d'une ligne s'estompe, ou pour créer une sensation de dessin avec un effet persistant.",
+  "helpFadeDesc": "Une fonction de pinceau qui permet de régler indépendamment la valeur et la distance de l’entrée (début du trait) et de la sortie (fin du trait). Vous pouvez effiler uniquement le début, uniquement la fin, ou utiliser des réglages asymétriques pour contrôler séparément l’épaisseur et l’opacité à chaque extrémité.",
   "helpStrokeDecayTitle": "Atténuation de trait",
   "helpStrokeDecayDesc": "Similaire au fondu, mais plus proche de l'effet d'un « encre qui s'épuise » — la couleur s'estompe ou devient irrégulière plus vous continuez à dessiner. Il reproduit la texture d'un pinceau ou d'un marqueur qui manque d'encre à mesure que vous l'utilisez.",
   "helpColorMixingTitle": "Mélange de couleurs",
