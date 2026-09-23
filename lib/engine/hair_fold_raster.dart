@@ -159,7 +159,9 @@ class HairFoldRaster {
         // local tangent continuous enough for a rounded crescent. The stronger
         // smoothing is crescent-only; the four overlap modes keep the exact
         // authored centerline.
-        points = _smoothCrescentCenterline(points);
+        points = _resampleCrescentCenterline(
+          _smoothCrescentCenterline(points),
+        );
       }
       final runs = <_RibbonRun>[];
       for (var i = 1; i < indices.length; i++) {
@@ -614,6 +616,44 @@ class _RibbonRun {
   const _RibbonRun(this.start, this.end, this.depth, this.id);
 }
 
+
+List<HairRibbonPoint> _resampleCrescentCenterline(
+  List<HairRibbonPoint> source,
+) {
+  if (source.length < 4) return source;
+  final result = <HairRibbonPoint>[source.first];
+  for (var i = 0; i < source.length - 1; i++) {
+    final p0 = source[math.max(0, i - 1)];
+    final p1 = source[i];
+    final p2 = source[i + 1];
+    final p3 = source[math.min(source.length - 1, i + 2)];
+    final steps = math.max(2, (p2.position - p1.position).distance.ceil());
+    for (var step = 1; step <= steps; step++) {
+      final t = step / steps;
+      final t2 = t * t, t3 = t2 * t;
+      final position =
+          (p1.position * 2 +
+                  (p2.position - p0.position) * t +
+                  (p0.position * 2 -
+                          p1.position * 5 +
+                          p2.position * 4 -
+                          p3.position) *
+                      t2 +
+                  (-p0.position +
+                          p1.position * 3 -
+                          p2.position * 3 +
+                          p3.position) *
+                      t3) *
+              .5;
+      final width = p1.width + (p2.width - p1.width) * t;
+      final opacity = p1.opacity + (p2.opacity - p1.opacity) * t;
+      result.add(HairRibbonPoint(position, width, opacity));
+    }
+  }
+  result[0] = source.first;
+  result[result.length - 1] = source.last;
+  return result;
+}
 
 List<HairRibbonPoint> _smoothCrescentCenterline(
   List<HairRibbonPoint> source,
