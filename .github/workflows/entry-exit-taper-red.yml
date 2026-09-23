@@ -8,6 +8,7 @@ on:
       - 'lib/models/brush.dart'
       - 'lib/engine/drawing_engine.dart'
       - 'lib/**/brush*.dart'
+      - 'lib/l10n/app_*.arb'
       - 'test/**/brush*.dart'
       - 'test/**/stroke*.dart'
       - 'test/**/taper*.dart'
@@ -32,4 +33,4 @@ jobs:
           set -e
           flutter test test/creative_asset_persistence_test.dart test/niatra_asset_bundle_test.dart test/functional_audit_batch12_test.dart test/functional_audit_batch13_test.dart test/final_remaining_strict_evidence_test.dart
       - name: Analyze affected production code
-        run: flutter analyze lib/models/brush.dart lib/engine/drawing_engine.dart lib/screens/canvas/widgets/brush_panel.dart lib/screens/canvas/widgets/canvas_area.dart
+        run: flutter analyze lib/models/brush.dart lib/engine/drawing_engine.dart lib/screens/canvas/widgets/brush_panel.dart lib/screens/canvas/widgets/canvas_area.dart lib/screens/help/help_screen.dart
