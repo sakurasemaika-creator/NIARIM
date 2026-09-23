@@ -156,7 +156,7 @@ class HairFoldRaster {
         // Crescent curls still follow the authored stroke, but a raw sampled
         // corner makes the concave edge kink into a V. Two light corner-cut
         // passes keep the endpoints and overall direction while making the
-        // local tangent continuous enough for a rounded crescent.
+        // local tangent continuous enough for a rounded crescent. The stronger\n        // smoothing is crescent-only; the four overlap modes keep the exact\n        // authored centerline.
         points = _smoothCrescentCenterline(points);
       }
       final runs = <_RibbonRun>[];
@@ -593,7 +593,7 @@ List<HairRibbonPoint> _smoothCrescentCenterline(
 ) {
   if (source.length < 3) return source;
   var current = List<HairRibbonPoint>.from(source);
-  for (var pass = 0; pass < 2; pass++) {
+  for (var pass = 0; pass < 6; pass++) {
     final next = List<HairRibbonPoint>.from(current);
     for (var i = 1; i < current.length - 1; i++) {
       final before = current[i - 1], at = current[i], after = current[i + 1];
