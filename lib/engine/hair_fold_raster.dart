@@ -647,7 +647,7 @@ List<HairRibbonPoint> _relaxCrescentConcaveCorners(
     final roundedPosition = Offset.lerp(
       outside,
       chordMid - innerNormal * shift * .35,
-      (.22 + .38 * amount).clamp(0.0, .6),
+      (.36 + .48 * amount).clamp(0.0, .78),
     )!;
     result[i] = HairRibbonPoint(
       roundedPosition,
