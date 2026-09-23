@@ -28,17 +28,23 @@ void main() {
   });
 
   group('PixelColorMode.count', () {
-    test('チャンネルごとに指定段階へ均等割り（ポスタライズ）される', () {
-      final data = solidPixels(130, 130, 130, 255);
+    test('指定色数以内の共通PixelArt paletteへ減色される', () {
+      final data = Uint8List.fromList([
+        12, 12, 12, 255,
+        80, 80, 80, 255,
+        170, 170, 170, 255,
+        245, 245, 245, 255,
+      ]);
       final result = quantizeColors(
         data,
         colorMode: PixelColorMode.count,
         colorLevels: 2,
       );
-      // colorLevels=2 → step=128。130は128の倍数へ丸められる（256 or 128）。
-      expect(result[0] % 128, 0);
-      expect(result[1] % 128, 0);
-      expect(result[2] % 128, 0);
+      final colors = <int>{};
+      for (var i = 0; i < result.length; i += 4) {
+        colors.add((result[i] << 16) | (result[i + 1] << 8) | result[i + 2]);
+      }
+      expect(colors.length, lessThanOrEqualTo(2));
     });
 
     test('透明画素（alpha=0）は変化しない', () {
@@ -120,7 +126,7 @@ void main() {
     });
   });
 
-  group('FilterEngine.applyPixelate（モザイク化＋配色）', () {
+  group('FilterEngine.applyPixelate（Pixel Art＋配色）', () {
     test('mosaicSize=1・colorMode=noneでは色は変化しない', () {
       final engine = FilterEngine();
       final data = solidPixels(77, 200, 5, 255, count: 16); // 4x4画像を想定
