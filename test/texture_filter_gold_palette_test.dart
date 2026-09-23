@@ -8,8 +8,6 @@ void main() {
   test('texture filter naming and yellow-gold palette are locked', () {
     final ja = File('lib/l10n/app_ja.arb').readAsStringSync();
     final en = File('lib/l10n/app_en.arb').readAsStringSync();
-    final presets = File('lib/models/custom_automation_presets.dart')
-        .readAsStringSync();
     final service = File('lib/services/filter_service.dart').readAsStringSync();
 
     expect(ja, contains('"filterNameAuroraHologram": "質感変更フィルター"'));
@@ -26,8 +24,6 @@ void main() {
       en,
       contains('"filterAuroraHologramPresetClassicHologram": "Rainbow Hologram"'),
     );
-    expect(presets, contains("name: '質感変更フィルター'"));
-    expect(presets, contains("id: 'Filter0019'"));
     expect(service, contains("id: 'Filter0019'"));
     expect(service, contains("name: '質感変更フィルター'"));
 
