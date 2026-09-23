@@ -152,6 +152,13 @@ class HairFoldRaster {
                 p.opacity,
               );
             });
+      if (brush.foldMode == HairFoldMode.crescent) {
+        // Crescent curls still follow the authored stroke, but a raw sampled
+        // corner makes the concave edge kink into a V. Two light corner-cut
+        // passes keep the endpoints and overall direction while making the
+        // local tangent continuous enough for a rounded crescent.
+        points = _smoothCrescentCenterline(points);
+      }
       final runs = <_RibbonRun>[];
       for (var i = 1; i < indices.length; i++) {
         final start = indices[i - 1], end = indices[i];
@@ -578,6 +585,27 @@ class _RibbonRun {
   final int start, end, id;
   final double depth;
   const _RibbonRun(this.start, this.end, this.depth, this.id);
+}
+
+
+List<HairRibbonPoint> _smoothCrescentCenterline(
+  List<HairRibbonPoint> source,
+) {
+  if (source.length < 3) return source;
+  var current = List<HairRibbonPoint>.from(source);
+  for (var pass = 0; pass < 2; pass++) {
+    final next = List<HairRibbonPoint>.from(current);
+    for (var i = 1; i < current.length - 1; i++) {
+      final before = current[i - 1], at = current[i], after = current[i + 1];
+      final position =
+          before.position * .25 + at.position * .5 + after.position * .25;
+      next[i] = HairRibbonPoint(position, at.width, at.opacity);
+    }
+    current = next;
+  }
+  current[0] = source[0];
+  current[current.length - 1] = source.last;
+  return current;
 }
 
 double _dot(Offset a, Offset b) => a.dx * b.dx + a.dy * b.dy;
