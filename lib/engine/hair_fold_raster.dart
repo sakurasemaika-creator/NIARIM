@@ -226,7 +226,12 @@ class HairFoldRaster {
                 profile.clamp(0.0, 1.0),
                 1.0 + strength * .35,
               ).toDouble();
-              return points[index].width * rounded;
+              // Do not collapse a crescent to a mathematical point at each
+              // join. A zero-width join forces the concave outline into a V
+              // regardless of centerline smoothing. Keep a small rounded
+              // neck, then ease into the full crescent body.
+              const neck = .16;
+              return points[index].width * (neck + (1 - neck) * rounded);
             }
 
             a = HairRibbonPoint(a.position, widthAt(i - 1), a.opacity);
