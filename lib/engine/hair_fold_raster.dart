@@ -208,9 +208,18 @@ class HairFoldRaster {
                   ((lengths[index] - lengths[run.start]) /
                           math.max(.001, runLength))
                       .clamp(0.0, 1.0);
-              final power = .55 + (brush.foldCurveStrength - 1) * .09;
-              return points[index].width *
-                  math.pow(math.sin(math.pi * t), power).toDouble();
+              // A crescent must leave and rejoin the authored curve with a
+              // rounded tangent. Smoothstep the half-sine phase instead of
+              // applying a sub-linear power near the tips; the old profile
+              // produced a pinched V-shaped inner edge.
+              final phase = t * t * (3 - 2 * t);
+              final strength = (brush.foldCurveStrength - 1) / 9;
+              final profile = math.sin(math.pi * phase);
+              final rounded = math.pow(
+                profile.clamp(0.0, 1.0),
+                1.0 + strength * .35,
+              ).toDouble();
+              return points[index].width * rounded;
             }
 
             a = HairRibbonPoint(a.position, widthAt(i - 1), a.opacity);
