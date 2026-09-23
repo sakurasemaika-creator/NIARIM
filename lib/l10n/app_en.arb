@@ -456,7 +456,7 @@
   "helpRulerTitle": "Ruler",
   "helpRulerDesc": "A guide for drawing precise lines that are hard to achieve freehand, including straight, circle, ellipse, and perspective rulers (using vanishing points for perspective drawing). The pen tip automatically snaps to the placed ruler, making even compositions with challenging depth easier to draw than without a ruler. Rulers can be moved, rotated, and resized using their handles.",
   "helpFadeTitle": "Fade",
-  "helpFadeDesc": "A brush setting where opacity and thickness gradually decrease as you draw a stroke further. Use it when you want the end of a line to trail off, or to create a drawing feel with a lingering effect.",
+  "helpFadeDesc": "A brush feature that lets you set the value and distance of the entry (stroke start) and exit (stroke end) independently. You can taper only the start, only the end, or use asymmetric settings to control thickness and opacity separately at each endpoint.",
   "helpStrokeDecayTitle": "Stroke Decay",
   "helpStrokeDecayDesc": "Similar to fade, but closer to the effect of \"ink running out\" — the color fades or gets patchy the longer you keep drawing. It reproduces the texture of a brush or marker running dry as you keep using it.",
   "helpColorMixingTitle": "Color Mixing",
