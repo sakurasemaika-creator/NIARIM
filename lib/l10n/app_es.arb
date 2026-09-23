@@ -456,7 +456,7 @@
   "helpRulerTitle": "Regla",
   "helpRulerDesc": "Una guía para dibujar líneas precisas difíciles de lograr a mano alzada, incluidas reglas rectas, circulares, elípticas y de perspectiva (que usan puntos de fuga para el dibujo en perspectiva). La punta del lápiz se ajusta automáticamente a la regla colocada, facilitando incluso composiciones con profundidad difícil de dibujar sin regla. Las reglas se pueden mover, rotar y redimensionar usando sus controladores.",
   "helpFadeTitle": "Desvanecido",
-  "helpFadeDesc": "Un ajuste de pincel donde la opacidad y el grosor disminuyen gradualmente a medida que continúas un trazo. Úsalo cuando quieras que el final de una línea se desvanezca, o para crear una sensación de dibujo con un efecto persistente.",
+  "helpFadeDesc": "Una función del pincel que permite ajustar de forma independiente el valor y la distancia de entrada (inicio del trazo) y salida (final del trazo). Puedes afinar solo el inicio, solo el final o usar ajustes asimétricos para controlar por separado el grosor y la opacidad en cada extremo.",
   "helpStrokeDecayTitle": "Atenuación de trazo",
   "helpStrokeDecayDesc": "Similar al desvanecido, pero más cercano al efecto de \"la tinta se agota\": el color se desvanece o se vuelve irregular cuanto más sigues dibujando. Reproduce la textura de un pincel o rotulador quedándose sin tinta a medida que lo usas.",
   "helpColorMixingTitle": "Mezcla de colores",
