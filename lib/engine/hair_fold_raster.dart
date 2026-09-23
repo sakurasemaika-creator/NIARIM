@@ -156,7 +156,9 @@ class HairFoldRaster {
         // Crescent curls still follow the authored stroke, but a raw sampled
         // corner makes the concave edge kink into a V. Two light corner-cut
         // passes keep the endpoints and overall direction while making the
-        // local tangent continuous enough for a rounded crescent. The stronger\n        // smoothing is crescent-only; the four overlap modes keep the exact\n        // authored centerline.
+        // local tangent continuous enough for a rounded crescent. The stronger
+        // smoothing is crescent-only; the four overlap modes keep the exact
+        // authored centerline.
         points = _smoothCrescentCenterline(points);
       }
       final runs = <_RibbonRun>[];
@@ -231,7 +233,27 @@ class HairFoldRaster {
               // regardless of centerline smoothing. Keep a small rounded
               // neck, then ease into the full crescent body.
               const neck = .16;
-              return points[index].width * (neck + (1 - neck) * rounded);
+              var curvatureScale = 1.0;
+              if (index > run.start && index < run.end) {
+                final incoming =
+                    points[index].position - points[index - 1].position;
+                final outgoing =
+                    points[index + 1].position - points[index].position;
+                if (incoming.distanceSquared > 1e-10 &&
+                    outgoing.distanceSquared > 1e-10) {
+                  final turn = math
+                      .atan2(_cross(incoming, outgoing), _dot(incoming, outgoing))
+                      .abs();
+                  // A thick offset around a tight bend develops a cusp on its
+                  // concave side. Narrow only the high-curvature part so the
+                  // inner crescent remains round instead of collapsing to V.
+                  curvatureScale =
+                      (1 - .42 * (turn / math.pi)).clamp(.68, 1.0);
+                }
+              }
+              return points[index].width *
+                  (neck + (1 - neck) * rounded) *
+                  curvatureScale;
             }
 
             a = HairRibbonPoint(a.position, widthAt(i - 1), a.opacity);
