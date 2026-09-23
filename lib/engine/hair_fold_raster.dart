@@ -159,7 +159,9 @@ class HairFoldRaster {
         // local tangent continuous enough for a rounded crescent. The stronger
         // smoothing is crescent-only; the four overlap modes keep the exact
         // authored centerline.
-        points = _smoothCrescentCenterline(points);
+        points = _relaxCrescentConcaveCorners(
+          _smoothCrescentCenterline(points),
+        );
       }
       final runs = <_RibbonRun>[];
       for (var i = 1; i < indices.length; i++) {
@@ -614,6 +616,38 @@ class _RibbonRun {
   const _RibbonRun(this.start, this.end, this.depth, this.id);
 }
 
+
+List<HairRibbonPoint> _relaxCrescentConcaveCorners(
+  List<HairRibbonPoint> source,
+) {
+  if (source.length < 3) return source;
+  final result = List<HairRibbonPoint>.from(source);
+  for (var i = 1; i < source.length - 1; i++) {
+    final incoming = _unit(source[i].position - source[i - 1].position);
+    final outgoing = _unit(source[i + 1].position - source[i].position);
+    if (incoming == Offset.zero || outgoing == Offset.zero) continue;
+    final turn = math.atan2(_cross(incoming, outgoing), _dot(incoming, outgoing));
+    final amount = (turn.abs() / math.pi).clamp(0.0, 1.0);
+    if (amount < .04) continue;
+    // The cusp is on the inside of the turn. Move only the rendered crescent
+    // center slightly toward the outside of high-curvature bends. This keeps
+    // the authored stroke direction/endpoints intact while giving the concave
+    // outline a finite radius instead of letting two offsets meet at a V.
+    final bisector = _unit(incoming + outgoing);
+    if (bisector == Offset.zero) continue;
+    final innerNormal =
+        Offset(-bisector.dy, bisector.dx) * (turn.isNegative ? -1.0 : 1.0);
+    final shift = source[i].width * (.08 + .22 * amount) * amount;
+    result[i] = HairRibbonPoint(
+      source[i].position - innerNormal * shift,
+      source[i].width,
+      source[i].opacity,
+    );
+  }
+  result[0] = source.first;
+  result[result.length - 1] = source.last;
+  return result;
+}
 
 List<HairRibbonPoint> _smoothCrescentCenterline(
   List<HairRibbonPoint> source,
