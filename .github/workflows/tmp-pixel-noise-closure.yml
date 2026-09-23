@@ -24,6 +24,7 @@ jobs:
           flutter test test/engine/filter_pixel_art_route_test.dart --reporter expanded
           if [ -f test/engine/stamp_pixel_art_route_test.dart ]; then flutter test test/engine/stamp_pixel_art_route_test.dart --reporter expanded; fi
           flutter test test/engine/mosaic_filter_test.dart --reporter expanded
+          flutter test test/pixel_color_mode_test.dart --reporter expanded
           if [ -f test/engine/noise_filter_distinction_test.dart ]; then flutter test test/engine/noise_filter_distinction_test.dart --reporter expanded; fi
           if [ -f test/engine/analog_filter_distinction_test.dart ]; then flutter test test/engine/analog_filter_distinction_test.dart --reporter expanded; fi
-          flutter analyze lib/engine/pixel_art_engine.dart lib/engine/filter_engine.dart lib/services/filter_service.dart --no-fatal-infos --no-fatal-warnings
+          flutter analyze lib/engine/pixel_art_engine.dart lib/engine/filter_engine.dart lib/services/filter_service.dart lib/screens/canvas/widgets/canvas_area.dart lib/screens/help/help_screen.dart --no-fatal-infos --no-fatal-warnings
