@@ -45,6 +45,9 @@ jobs:
             cp -a build/feature-captures/filters/. "build/hologram-preset-captures/${preset}/"
           done
 
+      - name: Pixel Art / Mosaic 同一fixture production UI比較
+        run: CI=true flutter test test/visual/feature_operation_capture_test.dart --reporter expanded --dart-define=CAPTURE_GROUP=pixel-compare
+
       - name: 全25 Blend Modes production UI実キャプチャ
         run: CI=true flutter test test/visual/feature_operation_capture_test.dart --reporter expanded --dart-define=CAPTURE_GROUP=blend
 
@@ -84,6 +87,7 @@ jobs:
             build/visual-reaudit/canvas-angle-boundary/*.png
             build/hologram-preset-captures/**/*.png
             build/feature-captures/blend/*.png
+            build/feature-captures/pixel-compare/*.png
           if-no-files-found: warn
           retention-days: 7
 # Latest HEAD strict manifest evidence rerun: 2026-09-18 hologram preset production UI capture verification rerun 3 — all 12 variants.
