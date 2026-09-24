@@ -248,12 +248,17 @@ class HairFoldRaster {
                   run.end < points.length - 1 &&
                   bends.any((bend) => bend.index == run.end && bend.continuous);
               var joined = rounded;
-              const neck = .18;
+              // A shared half-turn boundary should read as the waist
+              // between two consecutive crescents, not as a near-zero cut.
+              // Keep roughly one third of the configured width at the join
+              // and ease that support away over the neighboring segment.
+              const neck = .34;
+              final neckEase = math.sin(math.pi * .5 * t);
               if (startsContinuous) {
-                joined = math.max(joined, neck * (1 - t));
+                joined = math.max(joined, neck * (1 - neckEase));
               }
               if (endsContinuous) {
-                joined = math.max(joined, neck * t);
+                joined = math.max(joined, neck * neckEase);
               }
               return points[index].width * joined;
             }
