@@ -1,3 +1,4 @@
+import 'dart:math' as math;
 import 'dart:typed_data';
 import 'dart:ui' as ui;
 
@@ -147,6 +148,47 @@ void main() {
       lessThan(80),
     );
   });
+  List<ui.Offset> circularArc(double degrees, {double radius = 92}) {
+    final count = (degrees.abs() / 5).ceil();
+    final sign = degrees.sign;
+    return [
+      for (var i = 0; i <= count; i++)
+        ui.Offset(
+          128 + radius * math.cos(sign * i * 5 * math.pi / 180),
+          190 + radius * math.sin(sign * i * 5 * math.pi / 180),
+        ),
+    ];
+  }
+
+  test('continuous half-turns affect crescent production rendering', () async {
+    final before = await renderFold(
+      HairFoldMode.crescent,
+      curve: circularArc(175),
+      size: 30,
+    );
+    final after = await renderFold(
+      HairFoldMode.crescent,
+      curve: circularArc(185),
+      size: 30,
+    );
+    expect(changedPixels(before, after), greaterThan(40));
+  });
+
+  test('wave views keep rendering through a full continuous turn', () async {
+    final curve = circularArc(365);
+    final top = await renderFold(
+      HairFoldMode.waveTopView,
+      curve: curve,
+      size: 30,
+    );
+    final low = await renderFold(
+      HairFoldMode.waveLowAngle,
+      curve: curve,
+      size: 30,
+    );
+    expect(changedPixels(top, low), greaterThan(100));
+  });
+
   test('front strand hides a lower bend crease', () async {
     const curve = [
       ui.Offset(170, 150),
