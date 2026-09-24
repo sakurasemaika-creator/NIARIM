@@ -3,7 +3,7 @@ import 'dart:typed_data';
 import '../models/autofill_gradient.dart';
 import '../models/autofill_preset.dart';
 
-enum AutofillMode { repaint, colorUpdate }
+enum AutofillMode { smartUpdate, repaint, colorUpdate }
 
 /// 自動塗りの本処理（AutofillEngine.execute）をcompute()経由のバックグラウンド
 /// isolateで実行するためのトップレベル関数。キャンバス全体を走査する
@@ -116,6 +116,46 @@ class AutofillEngine {
       );
     }
     return result;
+  }
+
+  /// 差分更新：現在の自動塗り用線画から最新形状を作り直しつつ、
+  /// 新旧形状が重なる部分では既存のRGBAをそのまま保持する。
+  ///
+  /// これにより、線画変更で増えた領域だけは最新のパーツ設定で補完し、
+  /// 既にユーザーが手で色・質感を調整した領域は可能な限り壊さない。
+  /// 線画から外れた領域は削除されるため、形状のsource of truthは
+  /// autoFillLineartのまま維持される。
+  Uint8List smartUpdate({
+    required Uint8List lineartData,
+    required Uint8List existingData,
+    required int width,
+    required int height,
+    required AutofillPart part,
+    Uint8List? toneTexture,
+    int toneWidth = 64,
+    int toneHeight = 64,
+  }) {
+    final refreshed = repaint(
+      lineartData: lineartData,
+      width: width,
+      height: height,
+      part: part,
+      toneTexture: toneTexture,
+      toneWidth: toneWidth,
+      toneHeight: toneHeight,
+    );
+    final length = math.min(refreshed.length, existingData.length);
+    for (int i = 0; i + 3 < length; i += 4) {
+      // 最新線画側で透明になった場所は消す。新旧とも不透明な場所だけ、
+      // ユーザーが既存自動塗りへ加えた色調整を保持する。
+      if (refreshed[i + 3] != 0 && existingData[i + 3] != 0) {
+        refreshed[i] = existingData[i];
+        refreshed[i + 1] = existingData[i + 1];
+        refreshed[i + 2] = existingData[i + 2];
+        refreshed[i + 3] = existingData[i + 3];
+      }
+    }
+    return refreshed;
   }
 
   /// 色更新：形状維持・不透明度ロックして最新色で塗りつぶす
@@ -278,6 +318,27 @@ class AutofillEngine {
       );
     }
     return switch (mode) {
+      AutofillMode.smartUpdate =>
+        lineartData != null
+            ? smartUpdate(
+                lineartData: lineartData,
+                existingData: existingData,
+                width: width,
+                height: height,
+                part: part,
+                toneTexture: toneTexture,
+                toneWidth: toneWidth,
+                toneHeight: toneHeight,
+              )
+            : colorUpdate(
+                existingData: existingData,
+                width: width,
+                height: height,
+                part: part,
+                toneTexture: toneTexture,
+                toneWidth: toneWidth,
+                toneHeight: toneHeight,
+              ),
       AutofillMode.repaint =>
         lineartData != null
             ? repaint(
