@@ -153,15 +153,10 @@ class HairFoldRaster {
               );
             });
       if (brush.foldMode == HairFoldMode.crescent) {
-        // Crescent curls still follow the authored stroke, but a raw sampled
-        // corner makes the concave edge kink into a V. Two light corner-cut
-        // passes keep the endpoints and overall direction while making the
-        // local tangent continuous enough for a rounded crescent. The stronger
-        // smoothing is crescent-only; the four overlap modes keep the exact
-        // authored centerline.
-        points = _relaxCrescentConcaveCorners(
-          _smoothCrescentCenterline(points),
-        );
+        // The authored stroke is the crescent centerline. Smooth only sampling
+        // noise; do not move it toward either outline. Outer/inner curvature is
+        // produced explicitly by the asymmetric width sweep below.
+        points = _smoothCrescentCenterline(points);
       }
       final runs = <_RibbonRun>[];
       for (var i = 1; i < indices.length; i++) {
@@ -230,52 +225,24 @@ class HairFoldRaster {
                 profile.clamp(0.0, 1.0),
                 1.0 + strength * .35,
               ).toDouble();
-              // Do not collapse a crescent to a mathematical point at each
-              // join. A zero-width join forces the concave outline into a V
-              // regardless of centerline smoothing. Keep a small rounded
-              // neck, then ease into the full crescent body.
-              const neck = .16;
-              var curvatureScale = 1.0;
-              if (index > run.start && index < run.end) {
-                final incoming =
-                    points[index].position - points[index - 1].position;
-                final outgoing =
-                    points[index + 1].position - points[index].position;
-                if (incoming.distanceSquared > 1e-10 &&
-                    outgoing.distanceSquared > 1e-10) {
-                  final turn = math
-                      .atan2(_cross(incoming, outgoing), _dot(incoming, outgoing))
-                      .abs();
-                  // The rasterizer unions round segment footprints. Narrowing
-                  // a tight bend exposes their concave intersection as a V;
-                  // keep a little more body at the apex so those footprints
-                  // overlap into a rounded inner arc instead.
-                  curvatureScale =
-                      (1 + .18 * (turn / math.pi)).clamp(1.0, 1.12);
-                }
-              }
-              return points[index].width *
-                  (neck + (1 - neck) * rounded) *
-                  curvatureScale;
+              // The configured brush width is the crescent's full
+              // thickness at its middle. Both sides converge continuously to
+              // the authored centerline at the two tips.
+              return points[index].width * rounded;
             }
 
             a = HairRibbonPoint(a.position, widthAt(i - 1), a.opacity);
             b = HairRibbonPoint(b.position, widthAt(i), b.opacity);
           }
           if (texture == null) {
-            _segment(mask, a, b, brush.outlineWidth);
+            if (brush.foldMode == HairFoldMode.crescent) {
+              _crescentSegment(mask, a, b, brush.outlineWidth);
+            } else {
+              _segment(mask, a, b, brush.outlineWidth);
+            }
           } else {
             _texturedSegment(mask, a, b, brush, texture);
           }
-        }
-        if (brush.foldMode == HairFoldMode.crescent && texture == null) {
-          _roundCrescentConcavity(
-            mask,
-            points,
-            run.start,
-            run.end,
-            brush.outlineWidth,
-          );
         }
         if (canCache) {
           _runs[run.start] = _RunCache(
@@ -411,6 +378,86 @@ class HairFoldRaster {
     }
   }
 
+  void _crescentSegment(
+    Map<int, _MaskTile> masks,
+    HairRibbonPoint a,
+    HairRibbonPoint b,
+    double outline,
+  ) {
+    final d = b.position - a.position;
+    final squared = d.distanceSquared;
+    if (squared < 1e-10) return;
+    final tangent = _unit(d);
+    final normal = Offset(-tangent.dy, tangent.dx);
+    // Build the two crescent outlines directly from the authored centerline.
+    // The outside bows farther than a normal ribbon offset while the inside
+    // stays closer to the centerline, so both are smooth curves rather than a
+    // union cusp that must be repaired afterward.
+    final turnBias = _cross(a.position, b.position).sign;
+    final outerScale = 1.18;
+    final innerScale = .82;
+    final side = turnBias == 0 ? 1.0 : turnBias;
+    final aOuter = a.position + normal * (a.width * .5 * outerScale * side);
+    final bOuter = b.position + normal * (b.width * .5 * outerScale * side);
+    final aInner = a.position - normal * (a.width * .5 * innerScale * side);
+    final bInner = b.position - normal * (b.width * .5 * innerScale * side);
+    _quadStrip(mask, aInner, aOuter, bInner, bOuter, a.opacity, b.opacity, outline);
+  }
+
+  void _quadStrip(
+    Map<int, _MaskTile> masks,
+    Offset aInner,
+    Offset aOuter,
+    Offset bInner,
+    Offset bOuter,
+    double opacityA,
+    double opacityB,
+    double outline,
+  ) {
+    final minX = math.min(math.min(aInner.dx, aOuter.dx), math.min(bInner.dx, bOuter.dx));
+    final maxX = math.max(math.max(aInner.dx, aOuter.dx), math.max(bInner.dx, bOuter.dx));
+    final minY = math.min(math.min(aInner.dy, aOuter.dy), math.min(bInner.dy, bOuter.dy));
+    final maxY = math.max(math.max(aInner.dy, aOuter.dy), math.max(bInner.dy, bOuter.dy));
+    final left = (minX - outline - 1).floor().clamp(0, tiles.canvasWidth - 1);
+    final right = (maxX + outline + 1).ceil().clamp(0, tiles.canvasWidth - 1);
+    final top = (minY - outline - 1).floor().clamp(0, tiles.canvasHeight - 1);
+    final bottom = (maxY + outline + 1).ceil().clamp(0, tiles.canvasHeight - 1);
+    final centerA = (aInner + aOuter) * .5;
+    final centerB = (bInner + bOuter) * .5;
+    final centerDelta = centerB - centerA;
+    final centerSquared = centerDelta.distanceSquared;
+    for (var y = top; y <= bottom; y++) {
+      for (var x = left; x <= right; x++) {
+        final at = Offset(x + .5, y + .5);
+        final t = centerSquared < 1e-10
+            ? 0.0
+            : (_dot(at - centerA, centerDelta) / centerSquared).clamp(0.0, 1.0);
+        final inner = Offset.lerp(aInner, bInner, t)!;
+        final outer = Offset.lerp(aOuter, bOuter, t)!;
+        final span = outer - inner;
+        final spanSquared = span.distanceSquared;
+        if (spanSquared < 1e-10) continue;
+        final across = (_dot(at - inner, span) / spanSquared).clamp(0.0, 1.0);
+        final nearest = inner + span * across;
+        final distance = (at - nearest).distance;
+        final insideProjection = _dot(at - inner, span) / spanSquared;
+        final inside = insideProjection >= 0 && insideProjection <= 1;
+        final fill = inside ? (1.0 - distance).clamp(0.0, 1.0) : 0.0;
+        final outerCoverage = inside
+            ? 1.0
+            : (outline + .5 - distance).clamp(0.0, 1.0);
+        if (outerCoverage <= 0 && fill <= 0) continue;
+        final key = (y ~/ _size) * tiles.tilesX + x ~/ _size;
+        final mask = masks.putIfAbsent(key, _MaskTile.new);
+        final p = (y % _size) * _size + x % _size;
+        final opacity = opacityA + (opacityB - opacityA) * t;
+        if (fill > mask.fill[p]) mask.opacity[p] = opacity;
+        mask.fill[p] = math.max(mask.fill[p], fill);
+        mask.outer[p] = math.max(mask.outer[p], math.max(fill, outerCoverage));
+      }
+    }
+  }
+
   void _segment(
     Map<int, _MaskTile> masks,
     HairRibbonPoint a,
@@ -467,70 +514,6 @@ class HairFoldRaster {
         }
         m.outer[p] = math.max(m.outer[p], outer);
         m.fill[p] = math.max(m.fill[p], fill);
-      }
-    }
-  }
-
-  void _roundCrescentConcavity(
-    Map<int, _MaskTile> masks,
-    List<HairRibbonPoint> points,
-    int start,
-    int end,
-    double outline,
-  ) {
-    if (end - start < 2) return;
-    var pivot = -1;
-    var strongest = 0.0;
-    var signedTurn = 0.0;
-    for (var i = start + 1; i < end; i++) {
-      final incoming = _unit(points[i].position - points[i - 1].position);
-      final outgoing = _unit(points[i + 1].position - points[i].position);
-      if (incoming == Offset.zero || outgoing == Offset.zero) continue;
-      final turn = math.atan2(_cross(incoming, outgoing), _dot(incoming, outgoing));
-      if (turn.abs() > strongest) {
-        strongest = turn.abs();
-        signedTurn = turn;
-        pivot = i;
-      }
-    }
-    if (pivot < 0 || strongest < .04) return;
-    final incoming = _unit(points[pivot].position - points[pivot - 1].position);
-    final outgoing = _unit(points[pivot + 1].position - points[pivot].position);
-    final bisector = _unit(incoming + outgoing);
-    if (bisector == Offset.zero) return;
-    final inward =
-        Offset(-bisector.dy, bisector.dx) * (signedTurn.isNegative ? -1.0 : 1.0);
-    final width = points[pivot].width;
-    // The ordinary swept-segment union has a mathematical cusp when the
-    // ribbon half-width approaches the local bend radius. Rasterize a
-    // crescent-only finite-radius inner cap there instead of moving the
-    // authored centerline again. The cap overlaps the two neighboring sweeps,
-    // so its exposed boundary is a circular arc rather than a V.
-    // The visible notch sits roughly one half-width toward the inside edge.
-    // Put the finite-radius cap there; centering it near the stroke center only
-    // thickens the body and leaves the actual concave cusp untouched.
-    final bend = (strongest / math.pi).clamp(0.0, 1.0);
-    final radius = width * (.20 + .14 * bend);
-    final center =
-        points[pivot].position + inward * (width * (.42 - .06 * bend));
-    final opacity = points[pivot].opacity;
-    final outerRadius = radius + outline;
-    final left = (center.dx - outerRadius - 1).floor().clamp(0, tiles.canvasWidth - 1);
-    final right = (center.dx + outerRadius + 1).ceil().clamp(0, tiles.canvasWidth - 1);
-    final top = (center.dy - outerRadius - 1).floor().clamp(0, tiles.canvasHeight - 1);
-    final bottom = (center.dy + outerRadius + 1).ceil().clamp(0, tiles.canvasHeight - 1);
-    for (var y = top; y <= bottom; y++) {
-      for (var x = left; x <= right; x++) {
-        final distance = (Offset(x + .5, y + .5) - center).distance;
-        final outer = (outerRadius + .5 - distance).clamp(0.0, 1.0);
-        if (outer <= 0) continue;
-        final fill = (radius + .5 - distance).clamp(0.0, 1.0);
-        final key = (y ~/ _size) * tiles.tilesX + x ~/ _size;
-        final mask = masks.putIfAbsent(key, _MaskTile.new);
-        final p = (y % _size) * _size + x % _size;
-        if (fill > mask.fill[p]) mask.opacity[p] = opacity;
-        mask.fill[p] = math.max(mask.fill[p], fill);
-        mask.outer[p] = math.max(mask.outer[p], outer);
       }
     }
   }
@@ -690,58 +673,6 @@ class _RibbonRun {
   const _RibbonRun(this.start, this.end, this.depth, this.id);
 }
 
-
-List<HairRibbonPoint> _relaxCrescentConcaveCorners(
-  List<HairRibbonPoint> source,
-) {
-  if (source.length < 3) return source;
-  // Build one smooth displacement field from the immutable source instead of
-  // repeatedly moving neighboring samples in-place. Overlapping bends used to
-  // leave a new apex at the edge of each three-point correction, which still
-  // read as a shallow V in the production captures.
-  final offsets = List<Offset>.filled(source.length, Offset.zero);
-  final weights = <int, double>{-2: .18, -1: .52, 0: 1.0, 1: .52, 2: .18};
-  for (var i = 1; i < source.length - 1; i++) {
-    final incoming = _unit(source[i].position - source[i - 1].position);
-    final outgoing = _unit(source[i + 1].position - source[i].position);
-    if (incoming == Offset.zero || outgoing == Offset.zero) continue;
-    final turn = math.atan2(_cross(incoming, outgoing), _dot(incoming, outgoing));
-    final amount = (turn.abs() / math.pi).clamp(0.0, 1.0);
-    if (amount < .04) continue;
-    final bisector = _unit(incoming + outgoing);
-    if (bisector == Offset.zero) continue;
-    final innerNormal =
-        Offset(-bisector.dy, bisector.dx) * (turn.isNegative ? -1.0 : 1.0);
-    final shift = source[i].width * (.10 + .24 * amount) * amount;
-    for (final entry in weights.entries) {
-      final index = i + entry.key;
-      if (index <= 0 || index >= source.length - 1) continue;
-      offsets[index] += innerNormal * shift * entry.value;
-    }
-  }
-  final result = List<HairRibbonPoint>.generate(source.length, (i) {
-    if (i == 0 || i == source.length - 1) return source[i];
-    final before = source[i - 1].position;
-    final after = source[i + 1].position;
-    final chordMid = (before + after) * .5;
-    final displaced = source[i].position + offsets[i];
-    // Blend toward the local quadratic chord as the inward displacement grows.
-    // This makes the concave side a broad arc while keeping the authored
-    // endpoints and the large-scale stroke direction intact.
-    final scale = source[i].width <= .001
-        ? 0.0
-        : (offsets[i].distance / source[i].width).clamp(0.0, 1.0);
-    final position = Offset.lerp(
-      displaced,
-      chordMid + offsets[i] * .35,
-      (.16 + .28 * scale).clamp(0.0, .42),
-    )!;
-    return HairRibbonPoint(position, source[i].width, source[i].opacity);
-  });
-  result[0] = source.first;
-  result[result.length - 1] = source.last;
-  return result;
-}
 
 List<HairRibbonPoint> _smoothCrescentCenterline(
   List<HairRibbonPoint> source,
