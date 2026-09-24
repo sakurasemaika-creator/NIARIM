@@ -1,3 +1,4 @@
+import 'dart:math' as math;
 import 'dart:ui';
 
 import 'package:flutter_test/flutter_test.dart';
@@ -77,6 +78,35 @@ void main() {
         runPath(points, documentScale: 1).length,
         runPath(points, documentScale: 8).length,
       );
+    });
+
+    List<Offset> arc(double degrees, {double radius = 60, double step = 5}) {
+      final count = (degrees.abs() / step).ceil();
+      final sign = degrees.sign;
+      return [
+        for (var i = 0; i <= count; i++)
+          Offset(
+            radius * math.cos(sign * i * step * math.pi / 180),
+            radius * math.sin(sign * i * step * math.pi / 180),
+          ),
+      ];
+    }
+
+    test('continuous curve folds once per completed half turn', () {
+      expect(runPath(arc(175)), isEmpty);
+      expect(runPath(arc(185)).length, 1);
+      expect(runPath(arc(355)).length, 1);
+      expect(runPath(arc(365)).length, 2);
+      expect(runPath(arc(545)).length, 3);
+    });
+
+    test('continuous half turns preserve the authored turn direction', () {
+      final clockwise = runPath(arc(365));
+      final counterClockwise = runPath(arc(-365));
+      expect(clockwise.length, 2);
+      expect(counterClockwise.length, 2);
+      expect(clockwise.every((event) => event.signedTurnRadians.sign > 0), isTrue);
+      expect(counterClockwise.every((event) => event.signedTurnRadians.sign < 0), isTrue);
     });
 
     test('opposite bend signs both point toward their curve interior', () {
