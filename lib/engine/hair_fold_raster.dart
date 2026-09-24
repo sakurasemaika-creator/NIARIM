@@ -639,10 +639,10 @@ List<HairRibbonPoint> _relaxCrescentConcaveCorners(
     final innerNormal =
         Offset(-bisector.dy, bisector.dx) * (turn.isNegative ? -1.0 : 1.0);
     final shift = source[i].width * (.08 + .22 * amount) * amount;
-    // Move the rendered crescent center slightly into the concavity. The
-    // segment rasterizer unions round footprints; moving away from the inside
-    // deepens the notch, while a small inward bias makes adjacent footprints
-    // overlap across it and produces a finite-radius inner arc.
+    // Keep the authored bend, but spread the correction over its local
+    // neighborhood. Moving one sample alone merely relocates the V; a
+    // three-point inward bulge makes adjacent round footprints overlap across
+    // the concavity and turns that notch into a finite-radius arc.
     final inward = source[i].position + innerNormal * shift;
     final chordMid =
         (source[i - 1].position + source[i + 1].position) * .5;
@@ -651,6 +651,23 @@ List<HairRibbonPoint> _relaxCrescentConcaveCorners(
       chordMid + innerNormal * shift * .35,
       (.30 + .36 * amount).clamp(0.0, .62),
     )!;
+    final shoulderShift = innerNormal * shift * (.22 + .18 * amount);
+    if (i > 1) {
+      final before = result[i - 1];
+      result[i - 1] = HairRibbonPoint(
+        before.position + shoulderShift,
+        before.width,
+        before.opacity,
+      );
+    }
+    if (i < source.length - 2) {
+      final after = result[i + 1];
+      result[i + 1] = HairRibbonPoint(
+        after.position + shoulderShift,
+        after.width,
+        after.opacity,
+      );
+    }
     result[i] = HairRibbonPoint(
       roundedPosition,
       source[i].width,
