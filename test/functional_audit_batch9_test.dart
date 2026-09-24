@@ -118,7 +118,10 @@ void main() {
         size: 6,
         opacity: 100,
         fadeMode: FadeMode.custom,
-        fadeIn: const FadeEndpointSettings(value: 100, rangePx: 96),
+        // Keep the entry at full opacity and taper only the exit. The old
+        // shared-fade fixture used overlapping 96px endpoint ranges, which no
+        // longer represents the independent fade-in/fade-out contract.
+        fadeIn: const FadeEndpointSettings(value: 100, rangePx: 0),
         fadeOut: const FadeEndpointSettings(value: 20, rangePx: 96),
       )
       ..currentColor = const ui.Color(0xFF2030C0);
