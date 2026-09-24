@@ -11,6 +11,7 @@ on:
       - 'lib/screens/canvas/widgets/layer_panel.dart'
       - 'lib/l10n/app_*.arb'
       - 'test/autofill_engine_smart_update_test.dart'
+      - 'test/autofill_check_mode_test.dart'
 
 jobs:
   green:
@@ -29,5 +30,5 @@ jobs:
         run: flutter gen-l10n
       - name: Verify smart autofill update
         run: |
-          flutter test test/autofill_engine_smart_update_test.dart --reporter expanded
-          flutter analyze lib/engine/autofill_engine.dart lib/engine/autofill_batch_runner.dart lib/screens/canvas/widgets/layer_panel.dart test/autofill_engine_smart_update_test.dart --no-fatal-infos --no-fatal-warnings
+          flutter test test/autofill_engine_smart_update_test.dart test/autofill_check_mode_test.dart --reporter expanded
+          flutter analyze lib/engine/autofill_engine.dart lib/engine/autofill_batch_runner.dart lib/screens/canvas/widgets/layer_panel.dart test/autofill_engine_smart_update_test.dart test/autofill_check_mode_test.dart --no-fatal-infos --no-fatal-warnings
