@@ -3360,17 +3360,15 @@ class _CanvasAreaState extends State<CanvasArea> {
       _isComposingSurroundings = false;
       return;
     }
-    final aboveImg = checkMode == AutofillCheckMode.normal
-        ? await LayerCompositor.composite(
-            _tileManager,
-            above,
-            (l) => _tileKeyFor(l.id),
-            w,
-            h,
-            keyframeOf: _keyframeOf,
-            groupKeyframeOf: groupKf,
-          )
-        : await ui.PictureRecorder().endRecording().toImage(w, h);
+    final aboveImg = await LayerCompositor.composite(
+      _tileManager,
+      above,
+      (l) => _tileKeyFor(l.id),
+      w,
+      h,
+      keyframeOf: _keyframeOf,
+      groupKeyframeOf: groupKf,
+    );
     if (!mounted) {
       belowImg.dispose();
       aboveImg.dispose();
