@@ -193,7 +193,8 @@ void main() {
             ? 'pixel_art_same_fixture'
             : 'mosaic_same_fixture';
         debugPrint('CAPTURE_CASE:$id');
-        await h.project(id, fixture: 'color');
+        await h.project(id, fixture: 'pixelCompare');
+        final before = await h.art('$id-before');
         await h.capture('$id-before-ui');
         await h.openMenu(h.l10n.filterPanelTitle);
         final panel = find.byType(FilterPanel);
@@ -226,7 +227,7 @@ void main() {
         h.record(
           id,
           filter.name,
-          _changedPixels(await h.art('$id-before-check'), after),
+          _changedPixels(before, after),
           settings: {'kind': filter.kind.name},
           note: filter.kind == FilterKind.pixelate
               ? 'PixelArtEngine hard-edge conversion.'
@@ -1084,7 +1085,25 @@ Future<Uint8List> _fixture(
       Paint()..color = const Color.fromRGBO(255, 255, 255, 0.62),
     );
   }
-  if (kind == 'mask') {
+  if (kind == 'pixelCompare') {
+    canvas.drawColor(Colors.white, BlendMode.src);
+    final paint = Paint();
+    for (var y = 0; y < height; y++) {
+      for (var x = 0; x < width; x++) {
+        final diagonal = x > y;
+        final stripe = (x ~/ 3 + y ~/ 5).isEven;
+        paint.color = diagonal
+            ? (stripe ? const Color(0xffe45b78) : const Color(0xffb73f91))
+            : (stripe ? const Color(0xff278bc1) : const Color(0xff36b49a));
+        canvas.drawRect(Rect.fromLTWH(x.toDouble(), y.toDouble(), 1, 1), paint);
+      }
+    }
+    canvas.drawCircle(
+      Offset(width * .5, height * .5),
+      width * .19,
+      Paint()..color = const Color(0xffffd36a),
+    );
+  } else   if (kind == 'mask') {
     canvas.drawOval(
       const Rect.fromLTWH(44, 28, 165, 190),
       Paint()..color = Colors.white,
