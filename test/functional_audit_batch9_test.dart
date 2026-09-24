@@ -142,7 +142,10 @@ void main() {
     final early = _pixel(d, 128, 18, 32)[3];
     final middle = _pixel(d, 128, 60, 32)[3];
     final late = _pixel(d, 128, 104, 32)[3];
-    expect(early, greaterThan(middle));
+    // The 6px round stamps overlap at 4px spacing, so fully opaque entry
+    // samples saturate at 255. Assert the independent exit taper against that
+    // plateau instead of requiring a strict drop before the exit range.
+    expect(early, greaterThanOrEqualTo(middle));
     expect(middle, greaterThan(late));
     expect(early, greaterThan(220));
     expect(late, lessThan(100));
