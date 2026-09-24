@@ -146,7 +146,12 @@ void main() {
     // samples saturate at 255. Assert the independent exit taper against that
     // plateau instead of requiring a strict drop before the exit range.
     expect(early, greaterThanOrEqualTo(middle));
-    expect(middle, greaterThan(late));
+    expect(middle, greaterThanOrEqualTo(late));
+    expect(
+      early,
+      greaterThan(late),
+      reason: 'the exit endpoint must finish below the opaque entry plateau',
+    );
     expect(early, greaterThan(220));
     expect(late, lessThan(100));
     image.dispose();
