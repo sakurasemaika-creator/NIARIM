@@ -10,6 +10,7 @@ on:
       - 'test/canvas_*_test.dart'
       - 'test/visual/feature_operation_capture_test.dart'
       - 'test/functional_render_real_async_test.dart'
+      - 'test/functional_audit_batch2_test.dart'
       # Functional Visual Audit trigger includes its full render regression suite.
 
 jobs:
