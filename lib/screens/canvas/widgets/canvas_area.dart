@@ -9,6 +9,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:provider/provider.dart';
 
+import '../../../engine/autofill_engine.dart' show AutofillCheckMode, applyAutofillCheckColor, autofillCheckColor;
 import '../../../engine/bucket_fill_engine.dart';
 import '../../../engine/drawing_engine.dart';
 import '../../../engine/filter_engine.dart' show FilterEngine, quantizeColors;
@@ -314,6 +315,7 @@ class CanvasArea extends StatefulWidget {
   final ValueChanged<Offset>? onTapForText;
   final ValueChanged<Color>? onEyedropper;
   final bool filterEyedropperActive;
+  final AutofillCheckMode autofillCheckMode;
   final Project? project;
   final CanvasBackground background;
   final String? currentLayerId;
@@ -680,7 +682,9 @@ class _CanvasAreaState extends State<CanvasArea> {
         _selectionTransformLive = null;
       }
     }
-    _recomposeSurroundings(force: frameChanged);
+    _recomposeSurroundings(
+      force: frameChanged || old.autofillCheckMode != widget.autofillCheckMode,
+    );
 
     // ─── レイヤー全体の自由変形・メッシュ変形（新機能） ──────────────────
     final enteredMeshTransform =
@@ -3271,6 +3275,48 @@ class _CanvasAreaState extends State<CanvasArea> {
   /// ProjectServiceを経由するため、[force]がfalseの場合は直前に取得した
   /// レイヤー一覧と参照が変わっていない限り再合成をスキップする（低スペック
   /// 端末対策）。
+  Future<ui.Image> _autofillCheckImage(ui.Image source, int argb) async {
+    final data = await source.toByteData(format: ui.ImageByteFormat.rawStraightRgba);
+    if (data == null) return source.clone();
+    final recolored = applyAutofillCheckColor(data.buffer.asUint8List(), argb);
+    final buffer = await ui.ImmutableBuffer.fromUint8List(recolored);
+    final descriptor = ui.ImageDescriptor.raw(
+      buffer,
+      width: source.width,
+      height: source.height,
+      pixelFormat: ui.PixelFormat.rgba8888,
+    );
+    final codec = await descriptor.instantiateCodec();
+    final frame = await codec.getNextFrame();
+    codec.dispose();
+    descriptor.dispose();
+    buffer.dispose();
+    return frame.image;
+  }
+
+  Future<ui.Image> _composeAutofillCheckLayers(List<Layer> layers) async {
+    final w = _tileManager.canvasWidth;
+    final h = _tileManager.canvasHeight;
+    final recorder = ui.PictureRecorder();
+    final canvas = ui.Canvas(recorder);
+    var partIndex = 0;
+    for (var i = layers.length - 1; i >= 0; i--) {
+      final layer = layers[i];
+      if (!layer.isVisible || layer.type != LayerType.autoFill) continue;
+      final raw = await _tileManager.compositeLayerToImage(_tileKeyFor(layer.id));
+      final color = autofillCheckColor(widget.autofillCheckMode, partIndex++);
+      final preview = await _autofillCheckImage(raw, color);
+      raw.dispose();
+      final opacity = (layer.opacity.clamp(0, 100) * 255 / 100).round();
+      canvas.drawImage(preview, ui.Offset.zero, ui.Paint()..color = ui.Color.fromARGB(opacity, 255, 255, 255));
+      preview.dispose();
+    }
+    final picture = recorder.endRecording();
+    final image = await picture.toImage(w, h);
+    picture.dispose();
+    return image;
+  }
+
   Future<void> _recomposeSurroundings({bool force = false}) async {
     final project = widget.project;
     if (project == null) return;
@@ -3296,29 +3342,34 @@ class _CanvasAreaState extends State<CanvasArea> {
       return _layerKeyframeEngine.valueAt(group.keyframes, widget.currentFrame);
     }
 
-    final belowImg = await LayerCompositor.composite(
-      _tileManager,
-      below,
-      (l) => _tileKeyFor(l.id),
-      w,
-      h,
-      keyframeOf: _keyframeOf,
-      groupKeyframeOf: groupKf,
-    );
+    final checkMode = widget.autofillCheckMode;
+    final belowImg = checkMode == AutofillCheckMode.normal
+        ? await LayerCompositor.composite(
+            _tileManager,
+            below,
+            (l) => _tileKeyFor(l.id),
+            w,
+            h,
+            keyframeOf: _keyframeOf,
+            groupKeyframeOf: groupKf,
+          )
+        : await _composeAutofillCheckLayers(layers);
     if (!mounted) {
       belowImg.dispose();
       _isComposingSurroundings = false;
       return;
     }
-    final aboveImg = await LayerCompositor.composite(
-      _tileManager,
-      above,
-      (l) => _tileKeyFor(l.id),
-      w,
-      h,
-      keyframeOf: _keyframeOf,
-      groupKeyframeOf: groupKf,
-    );
+    final aboveImg = checkMode == AutofillCheckMode.normal
+        ? await LayerCompositor.composite(
+            _tileManager,
+            above,
+            (l) => _tileKeyFor(l.id),
+            w,
+            h,
+            keyframeOf: _keyframeOf,
+            groupKeyframeOf: groupKf,
+          )
+        : await ui.PictureRecorder().endRecording().toImage(w, h);
     if (!mounted) {
       belowImg.dispose();
       aboveImg.dispose();
