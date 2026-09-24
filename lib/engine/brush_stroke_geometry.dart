@@ -77,6 +77,8 @@ class ScreenSpaceFoldDetector {
   final List<_DistanceSample> _samples = <_DistanceSample>[];
   double _totalDistance = 0;
   double _lastFoldDistance = double.negativeInfinity;
+  double _unwrappedTurn = 0;
+  double _lastEmittedHalfTurns = 0;
 
   ScreenSpaceFoldDetector({
     this.triggerAngleDegrees = 90,
@@ -92,6 +94,8 @@ class ScreenSpaceFoldDetector {
     _samples.clear();
     _totalDistance = 0;
     _lastFoldDistance = double.negativeInfinity;
+    _unwrappedTurn = 0;
+    _lastEmittedHalfTurns = 0;
   }
 
   FoldEvent? add(BrushStrokeSample sample) {
@@ -114,6 +118,17 @@ class ScreenSpaceFoldDetector {
     }
 
     _totalDistance += distance;
+    if (_samples.length >= 2) {
+      final prior =
+          _samples.last.sample.screenPosition -
+          _samples[_samples.length - 2].sample.screenPosition;
+      if (prior.distanceSquared > 1e-10 && delta.distanceSquared > 1e-10) {
+        _unwrappedTurn += math.atan2(
+          prior.dx * delta.dy - prior.dy * delta.dx,
+          prior.dx * delta.dx + prior.dy * delta.dy,
+        );
+      }
+    }
     _samples.add(_DistanceSample(sample, _totalDistance));
     final safeWindow = math.max(windowLength, minimumTravel * 2);
     while (_samples.length > 3 &&
@@ -121,9 +136,19 @@ class ScreenSpaceFoldDetector {
       _samples.removeAt(0);
     }
 
-    if (_totalDistance < minimumTravel ||
-        _totalDistance - _lastFoldDistance < cooldownDistance ||
-        _samples.length < 3) {
+    if (_totalDistance < minimumTravel || _samples.length < 3) {
+      return null;
+    }
+    // Besides direction reversals, every additional 180 degrees of continuous
+    // turning is a fold boundary. This keeps the current turn direction: a
+    // spiral/crescent continues folding along the authored curve rather than
+    // pretending the stroke reversed.
+    final halfTurns = (_unwrappedTurn.abs() / math.pi).floorToDouble();
+    final continuousHalfTurn =
+        halfTurns > _lastEmittedHalfTurns &&
+        _totalDistance - _lastFoldDistance >= math.max(sampleSpacing, 0.1);
+    if (!continuousHalfTurn &&
+        _totalDistance - _lastFoldDistance < cooldownDistance) {
       return null;
     }
 
@@ -155,7 +180,7 @@ class ScreenSpaceFoldDetector {
     final signedTurn = math.atan2(cross, dot);
     final threshold =
         triggerAngleDegrees.clamp(30.0, 170.0).toDouble() * math.pi / 180.0;
-    if (signedTurn.abs() < threshold) return null;
+    if (signedTurn.abs() < threshold && !continuousHalfTurn) return null;
 
     final tangentLength = b.distance;
     if (tangentLength <= 1e-9) return null;
@@ -163,6 +188,7 @@ class ScreenSpaceFoldDetector {
     final leftNormal = Offset(-tangent.dy, tangent.dx);
     final inward = cross >= 0 ? leftNormal : -leftNormal;
     _lastFoldDistance = _totalDistance;
+    if (continuousHalfTurn) _lastEmittedHalfTurns = halfTurns;
 
     return FoldEvent(
       sample: sample,
