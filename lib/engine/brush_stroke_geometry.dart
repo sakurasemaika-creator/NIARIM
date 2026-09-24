@@ -79,6 +79,8 @@ class ScreenSpaceFoldDetector {
   double _lastFoldDistance = double.negativeInfinity;
   double _unwrappedTurn = 0;
   double _lastEmittedHalfTurns = 0;
+  double _lastSegmentHeading = 0;
+  bool _hasSegmentHeading = false;
 
   ScreenSpaceFoldDetector({
     this.triggerAngleDegrees = 90,
@@ -96,6 +98,8 @@ class ScreenSpaceFoldDetector {
     _lastFoldDistance = double.negativeInfinity;
     _unwrappedTurn = 0;
     _lastEmittedHalfTurns = 0;
+    _lastSegmentHeading = 0;
+    _hasSegmentHeading = false;
   }
 
   FoldEvent? add(BrushStrokeSample sample) {
@@ -118,16 +122,16 @@ class ScreenSpaceFoldDetector {
     }
 
     _totalDistance += distance;
-    if (_samples.length >= 2) {
-      final prior =
-          _samples.last.sample.screenPosition -
-          _samples[_samples.length - 2].sample.screenPosition;
-      if (prior.distanceSquared > 1e-10 && delta.distanceSquared > 1e-10) {
-        _unwrappedTurn += math.atan2(
-          prior.dx * delta.dy - prior.dy * delta.dx,
-          prior.dx * delta.dx + prior.dy * delta.dy,
-        );
+    if (delta.distanceSquared > 1e-10) {
+      final heading = math.atan2(delta.dy, delta.dx);
+      if (_hasSegmentHeading) {
+        var change = heading - _lastSegmentHeading;
+        while (change > math.pi) change -= math.pi * 2;
+        while (change < -math.pi) change += math.pi * 2;
+        _unwrappedTurn += change;
       }
+      _lastSegmentHeading = heading;
+      _hasSegmentHeading = true;
     }
     _samples.add(_DistanceSample(sample, _totalDistance));
     final safeWindow = math.max(windowLength, minimumTravel * 2);
