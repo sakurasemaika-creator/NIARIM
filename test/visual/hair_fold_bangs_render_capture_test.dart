@@ -17,7 +17,7 @@ const modeNames = <HairFoldMode, String>{
   HairFoldMode.curlLeft: 'curl_left',
   HairFoldMode.crescent: 'crescent',
 };
-Future<void> capture(Brush brush, String name) async {
+Future<void> capture(Brush brush, String name, {List<ui.Offset>? input}) async {
   await preloadBrushTextures(brush.resolvedCustomImagePaths);
   for (final path in brush.resolvedCustomImagePaths) {
     expect(getCachedBrushTexture(path), isNotNull, reason: path);
@@ -27,11 +27,13 @@ Future<void> capture(Brush brush, String name) async {
     ..currentBrush = brush
     ..currentColor = const ui.Color(0xfffff5e7)
     ..pressureEnabled = false;
-  final points = <ui.Offset>[];
+  final points = input ?? <ui.Offset>[];
   // Actual input fixture, shared unchanged by all five modes.
-  for (var i = 0; i <= 160; i++) {
-    final t = i / 160;
-    points.add(ui.Offset(350 + 130 * math.sin(t * math.pi * 5), 95 + 850 * t));
+  if (input == null) {
+    for (var i = 0; i <= 160; i++) {
+      final t = i / 160;
+      points.add(ui.Offset(350 + 130 * math.sin(t * math.pi * 5), 95 + 850 * t));
+    }
   }
   StrokePoint p(ui.Offset a) =>
       StrokePoint(x: a.dx, y: a.dy, pressure: 1, tiltX: 0, tiltY: 0);
@@ -106,6 +108,38 @@ void main() {
         presets.singleWhere((b) => b.id == 'Brush0024'),
         'bangs_production_preset',
       );
+      List<ui.Offset> arc(double degrees, double radius) {
+        final count = (degrees.abs() / 3).ceil();
+        return [
+          for (var i = 0; i <= count; i++)
+            ui.Offset(
+              360 + radius * math.cos(i * 3 * math.pi / 180),
+              420 + radius * math.sin(i * 3 * math.pi / 180),
+            ),
+        ];
+      }
+      for (final mode in [
+        HairFoldMode.crescent,
+        HairFoldMode.waveTopView,
+        HairFoldMode.waveLowAngle,
+      ]) {
+        final base = presets.singleWhere((b) => b.id == 'Brush0023');
+        for (final degrees in [185.0, 365.0]) {
+          await capture(
+            base.copyWith(
+              size: 64,
+              outlineWidth: 2.5,
+              stabilization: false,
+              fadeMode: FadeMode.off,
+              foldTriggerAngle: 30,
+              foldMode: mode,
+            ),
+            'hair_${modeNames[mode]}_${degrees.toInt()}deg_continuous',
+            input: arc(degrees, degrees > 200 ? 125 : 155),
+          );
+        }
+      }
+
     },
     timeout: const Timeout(Duration(minutes: 3)),
   );
