@@ -268,6 +268,15 @@ class HairFoldRaster {
             _texturedSegment(mask, a, b, brush, texture);
           }
         }
+        if (brush.foldMode == HairFoldMode.crescent && texture == null) {
+          _roundCrescentConcavity(
+            mask,
+            points,
+            run.start,
+            run.end,
+            brush.outlineWidth,
+          );
+        }
         if (canCache) {
           _runs[run.start] = _RunCache(
             run.end,
@@ -458,6 +467,65 @@ class HairFoldRaster {
         }
         m.outer[p] = math.max(m.outer[p], outer);
         m.fill[p] = math.max(m.fill[p], fill);
+      }
+    }
+  }
+
+  void _roundCrescentConcavity(
+    Map<int, _MaskTile> masks,
+    List<HairRibbonPoint> points,
+    int start,
+    int end,
+    double outline,
+  ) {
+    if (end - start < 2) return;
+    var pivot = -1;
+    var strongest = 0.0;
+    var signedTurn = 0.0;
+    for (var i = start + 1; i < end; i++) {
+      final incoming = _unit(points[i].position - points[i - 1].position);
+      final outgoing = _unit(points[i + 1].position - points[i].position);
+      if (incoming == Offset.zero || outgoing == Offset.zero) continue;
+      final turn = math.atan2(_cross(incoming, outgoing), _dot(incoming, outgoing));
+      if (turn.abs() > strongest) {
+        strongest = turn.abs();
+        signedTurn = turn;
+        pivot = i;
+      }
+    }
+    if (pivot < 0 || strongest < .04) return;
+    final incoming = _unit(points[pivot].position - points[pivot - 1].position);
+    final outgoing = _unit(points[pivot + 1].position - points[pivot].position);
+    final bisector = _unit(incoming + outgoing);
+    if (bisector == Offset.zero) return;
+    final inward =
+        Offset(-bisector.dy, bisector.dx) * (signedTurn.isNegative ? -1.0 : 1.0);
+    final width = points[pivot].width;
+    // The ordinary swept-segment union has a mathematical cusp when the
+    // ribbon half-width approaches the local bend radius. Rasterize a
+    // crescent-only finite-radius inner cap there instead of moving the
+    // authored centerline again. The cap overlaps the two neighboring sweeps,
+    // so its exposed boundary is a circular arc rather than a V.
+    final radius = width * (.18 + .16 * (strongest / math.pi).clamp(0.0, 1.0));
+    final center = points[pivot].position + inward * (width * .18);
+    final opacity = points[pivot].opacity;
+    final outerRadius = radius + outline;
+    final left = (center.dx - outerRadius - 1).floor().clamp(0, tiles.canvasWidth - 1);
+    final right = (center.dx + outerRadius + 1).ceil().clamp(0, tiles.canvasWidth - 1);
+    final top = (center.dy - outerRadius - 1).floor().clamp(0, tiles.canvasHeight - 1);
+    final bottom = (center.dy + outerRadius + 1).ceil().clamp(0, tiles.canvasHeight - 1);
+    for (var y = top; y <= bottom; y++) {
+      for (var x = left; x <= right; x++) {
+        final distance = (Offset(x + .5, y + .5) - center).distance;
+        final outer = (outerRadius + .5 - distance).clamp(0.0, 1.0);
+        if (outer <= 0) continue;
+        final fill = (radius + .5 - distance).clamp(0.0, 1.0);
+        final key = (y ~/ _size) * tiles.tilesX + x ~/ _size;
+        final mask = masks.putIfAbsent(key, _MaskTile.new);
+        final p = (y % _size) * _size + x % _size;
+        if (fill > mask.fill[p]) mask.opacity[p] = opacity;
+        mask.fill[p] = math.max(mask.fill[p], fill);
+        mask.outer[p] = math.max(mask.outer[p], outer);
       }
     }
   }
