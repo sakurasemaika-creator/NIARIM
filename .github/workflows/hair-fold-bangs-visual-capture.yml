@@ -8,6 +8,7 @@ on:
       - 'test/visual/hair_fold_bangs_render_capture_test.dart'
       - 'test/visual/hair_fold_settings_capture_test.dart'
       - 'lib/engine/drawing_engine.dart'
+      - 'lib/engine/brush_stroke_geometry.dart'
       - 'lib/engine/brush_texture_cache.dart'
       - 'lib/engine/hair_fold_raster.dart'
       - 'lib/models/brush.dart'
