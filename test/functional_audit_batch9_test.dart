@@ -134,6 +134,10 @@ void main() {
     for (final p in pts.skip(1)) {
       engine.continueStroke(StrokePoint(x: p.dx, y: p.dy), 'fade');
     }
+    // Production pointer-up performs the final-length replay before endStroke.
+    // Without this call fade-out has no known endpoint and intentionally stays
+    // at full strength during the live preview.
+    engine.replayCurrentStrokeWithFinalFade();
     engine.endStroke();
 
     final image = await tm.compositeLayerToImage('fade');
