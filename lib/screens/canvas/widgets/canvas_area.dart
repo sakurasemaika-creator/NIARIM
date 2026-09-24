@@ -386,6 +386,7 @@ class CanvasArea extends StatefulWidget {
     this.onTapForText,
     this.onEyedropper,
     this.filterEyedropperActive = false,
+    this.autofillCheckMode = AutofillCheckMode.normal,
     this.project,
     this.background = CanvasBackground.white,
     this.currentLayerId,
