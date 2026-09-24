@@ -1,0 +1,33 @@
+name: Temporary Autofill Smart Update
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [dev_branch]
+    paths:
+      - '.github/workflows/temporary-autofill-smart-update.yml'
+      - 'lib/engine/autofill_engine.dart'
+      - 'lib/engine/autofill_batch_runner.dart'
+      - 'lib/screens/canvas/widgets/layer_panel.dart'
+      - 'lib/l10n/app_*.arb'
+      - 'test/autofill_engine_smart_update_test.dart'
+
+jobs:
+  green:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+      - uses: subosito/flutter-action@1a449444c387b1966244ae4d4f8c696479add0b2 # v2
+        with:
+          channel: stable
+          cache: false
+      - run: flutter pub get --enforce-lockfile
+      - name: Generate localizations
+        run: flutter gen-l10n
+      - name: Verify smart autofill update
+        run: |
+          flutter test test/autofill_engine_smart_update_test.dart --reporter expanded
+          flutter analyze lib/engine/autofill_engine.dart lib/engine/autofill_batch_runner.dart lib/screens/canvas/widgets/layer_panel.dart test/autofill_engine_smart_update_test.dart --no-fatal-infos --no-fatal-warnings
