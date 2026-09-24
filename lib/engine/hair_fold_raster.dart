@@ -506,8 +506,13 @@ class HairFoldRaster {
     // crescent-only finite-radius inner cap there instead of moving the
     // authored centerline again. The cap overlaps the two neighboring sweeps,
     // so its exposed boundary is a circular arc rather than a V.
-    final radius = width * (.18 + .16 * (strongest / math.pi).clamp(0.0, 1.0));
-    final center = points[pivot].position + inward * (width * .18);
+    // The visible notch sits roughly one half-width toward the inside edge.
+    // Put the finite-radius cap there; centering it near the stroke center only
+    // thickens the body and leaves the actual concave cusp untouched.
+    final bend = (strongest / math.pi).clamp(0.0, 1.0);
+    final radius = width * (.20 + .14 * bend);
+    final center =
+        points[pivot].position + inward * (width * (.42 - .06 * bend));
     final opacity = points[pivot].opacity;
     final outerRadius = radius + outline;
     final left = (center.dx - outerRadius - 1).floor().clamp(0, tiles.canvasWidth - 1);
