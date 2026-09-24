@@ -5,6 +5,53 @@ import '../models/autofill_preset.dart';
 
 enum AutofillMode { smartUpdate, repaint, colorUpdate }
 
+enum AutofillCheckMode { normal, partSeparation, silhouette }
+
+/// 確認モードは自動塗りの保存色とは独立した表示用色を返す。
+/// partSeparation はパーツ番号ごとに色相を十分離した高彩度色、
+/// silhouette は全パーツ共通の低明度・無彩色を使う。
+int autofillCheckColor(AutofillCheckMode mode, int partIndex) {
+  switch (mode) {
+    case AutofillCheckMode.normal:
+      throw ArgumentError('normal mode does not override the part color');
+    case AutofillCheckMode.silhouette:
+      return 0xFF3D3D3D;
+    case AutofillCheckMode.partSeparation:
+      // 黄金角で色相を散らし、隣接パーツが似た色になりにくくする。
+      final hue = (partIndex * 137.50776405003785) % 360.0;
+      final h = hue / 60.0;
+      final x = 1.0 - ((h % 2.0) - 1.0).abs();
+      double r = 0, g = 0, b = 0;
+      if (h < 1) { r = 1; g = x; }
+      else if (h < 2) { r = x; g = 1; }
+      else if (h < 3) { g = 1; b = x; }
+      else if (h < 4) { g = x; b = 1; }
+      else if (h < 5) { r = x; b = 1; }
+      else { r = 1; b = x; }
+      // saturation=0.88, value=0.95 相当。黒背景でも白背景でも判別しやすい。
+      const saturation = 0.88;
+      const value = 0.95;
+      int channel(double v) => (((1 - saturation) + saturation * v) * value * 255).round().clamp(0, 255);
+      return 0xFF000000 | (channel(r) << 16) | (channel(g) << 8) | channel(b);
+  }
+}
+
+/// 元RGBAのalpha/形状を一切変えず、確認用RGBだけを差し替える。
+/// productionの自動塗りタイルへ書き戻さず表示用bufferにだけ使う前提。
+Uint8List applyAutofillCheckColor(Uint8List source, int argb) {
+  final out = Uint8List.fromList(source);
+  final r = (argb >> 16) & 0xFF;
+  final g = (argb >> 8) & 0xFF;
+  final b = argb & 0xFF;
+  for (var i = 0; i + 3 < out.length; i += 4) {
+    if (out[i + 3] == 0) continue;
+    out[i] = r;
+    out[i + 1] = g;
+    out[i + 2] = b;
+  }
+  return out;
+}
+
 /// 自動塗りの本処理（AutofillEngine.execute）をcompute()経由のバックグラウンド
 /// isolateで実行するためのトップレベル関数。キャンバス全体を走査する
 /// フラッドフィルは自動塗りの中で最も重い処理でありながら、従来はメイン
