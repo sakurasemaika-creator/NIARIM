@@ -15,7 +15,7 @@ void main() {
     SharedPreferences.setMockInitialValues(<String, Object>{});
   });
 
-  test('first launch includes Net and Hair as built-in presets', () async {
+  test('first launch includes extension built-in presets', () async {
     final service = BrushService();
     await service.init();
 
@@ -29,6 +29,13 @@ void main() {
     expect(byId.containsKey('Brush0024'), isTrue);
     expect(byId['Brush0024']!.name, '前髪');
     expect(service.isBuiltIn('Brush0024'), isTrue);
+    expect(byId.containsKey('Brush0025'), isTrue);
+    expect(byId['Brush0025']!.name, '四コマ漫画');
+    expect(byId['Brush0025']!.tipShape, BrushTipShape.hollowSquare);
+    expect(byId['Brush0025']!.lateralRepeatEnabled, isFalse);
+    expect(byId['Brush0025']!.lateralRepeatCount, 1);
+    expect(byId['Brush0025']!.spacing, greaterThan(100));
+    expect(service.isBuiltIn('Brush0025'), isTrue);
   });
 
   test('existing saved brush list receives missing extension presets', () async {
@@ -39,7 +46,7 @@ void main() {
     await service.init();
 
     final ids = service.brushes.map((brush) => brush.id).toSet();
-    expect(ids, containsAll(<String>{'Brush0022', 'Brush0023', 'Brush0024'}));
+    expect(ids, containsAll(<String>{'Brush0022', 'Brush0023', 'Brush0024', 'Brush0025'}));
   });
 
   test('duplicate and persistence preserve multiple texture settings', () async {
