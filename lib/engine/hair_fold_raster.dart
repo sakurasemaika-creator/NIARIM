@@ -237,9 +237,25 @@ class HairFoldRaster {
                 1.0 + strength * .35,
               ).toDouble();
               // The configured brush width is the crescent's full
-              // thickness at its middle. Both sides converge continuously to
-              // the authored centerline at the two tips.
-              return points[index].width * rounded;
+              // thickness at its middle. Authored/reversal tips converge to
+              // the centerline. At a cumulative 180-degree boundary the curve
+              // is still turning in the same direction, so adjacent crescents
+              // share a small neck instead of pinching to zero and reopening.
+              final startsContinuous =
+                  run.start > 0 &&
+                  bends.any((bend) => bend.index == run.start && bend.continuous);
+              final endsContinuous =
+                  run.end < points.length - 1 &&
+                  bends.any((bend) => bend.index == run.end && bend.continuous);
+              var joined = rounded;
+              const neck = .18;
+              if (startsContinuous) {
+                joined = math.max(joined, neck * (1 - t));
+              }
+              if (endsContinuous) {
+                joined = math.max(joined, neck * t);
+              }
+              return points[index].width * joined;
             }
 
             a = HairRibbonPoint(a.position, widthAt(i - 1), a.opacity);
