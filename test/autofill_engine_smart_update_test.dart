@@ -70,6 +70,34 @@ void main() {
     expect(rgba(result, 0, 0), [0, 0, 0, 0]);
   });
 
+
+  test('updating one part leaves a different part byte-for-byte unchanged', () {
+    final lineart = lineartRect(1, 1, 7, 7);
+    final editedPart = Uint8List(width * height * 4);
+    final untouchedPart = Uint8List(width * height * 4);
+
+    setRgba(editedPart, 4, 4, 210, 40, 70, 255);
+    setRgba(untouchedPart, 2, 2, 25, 90, 230, 255);
+    setRgba(untouchedPart, 6, 6, 12, 180, 90, 180);
+    final untouchedBefore = Uint8List.fromList(untouchedPart);
+
+    final updatedPart = AutofillEngine().execute(
+      mode: AutofillMode.smartUpdate,
+      lineartData: lineart,
+      existingData: editedPart,
+      width: width,
+      height: height,
+      part: part,
+    )!;
+
+    expect(rgba(updatedPart, 4, 4), [210, 40, 70, 255]);
+    expect(
+      untouchedPart,
+      untouchedBefore,
+      reason: 'smart update must not mutate buffers belonging to another part',
+    );
+  });
+
   test('smart update removes paint that is no longer inside current lineart', () {
     final lineart = lineartRect(2, 2, 6, 6);
     final existing = Uint8List(width * height * 4);
