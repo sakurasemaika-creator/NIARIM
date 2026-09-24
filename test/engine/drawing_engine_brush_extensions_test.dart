@@ -4,6 +4,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:niarim/engine/drawing_engine.dart';
 import 'package:niarim/engine/tile_manager.dart';
 import 'package:niarim/models/brush.dart';
+import 'package:niarim/models/brush_presets_extension.dart';
 
 void main() {
   Brush brush({
@@ -113,6 +114,46 @@ void main() {
 
     expect(pixel(engine, 64, 64)[3], 0);
     expect(pixel(engine, 56, 64)[3], greaterThan(0));
+  });
+
+
+  test('four-panel manga preset stamps hollow squares only along stroke direction', () {
+    final preset = brushExtensionPresets().singleWhere((b) => b.id == 'Brush0025');
+    final engine = DrawingEngine(
+      tileManager: TileManager(canvasWidth: 512, canvasHeight: 256),
+    )
+      ..currentBrush = preset
+      ..currentColor = const Color(0xFF000000);
+
+    engine.beginStroke(
+      const StrokePoint(x: 80, y: 128, pressure: 1, tiltX: 0, tiltY: 0),
+      'layer',
+    );
+    for (var x = 100.0; x <= 420; x += 20) {
+      engine.continueStroke(
+        StrokePoint(x: x, y: 128, pressure: 1, tiltX: 0, tiltY: 0),
+        'layer',
+      );
+    }
+    engine.endStroke();
+
+    // The hollow-square center remains empty while its frame is inked.
+    expect(pixel(engine, 80, 128)[3], 0);
+    expect(pixel(engine, 40, 128)[3], greaterThan(0));
+
+    // With lateral repetition disabled there must be no parallel rows one
+    // brush-width above or below the stroke.
+    expect(pixel(engine, 80, 48)[3], 0);
+    expect(pixel(engine, 80, 208)[3], 0);
+
+    // A later frame is stamped along the stroke direction, not just at start.
+    var laterFrameInk = 0;
+    for (var y = 88; y <= 168; y++) {
+      for (var x = 160; x <= 420; x++) {
+        if (pixel(engine, x, y)[3] > 0) laterFrameInk++;
+      }
+    }
+    expect(laterFrameInk, greaterThan(0));
   });
 
   test('outline rasterizes black outside current-color fill', () {
