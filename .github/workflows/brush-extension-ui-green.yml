@@ -7,9 +7,12 @@ on:
     paths:
       - '.github/scripts/integrate_brush_extension_ui.py'
       - '.github/workflows/brush-extension-ui-green.yml'
+      - 'lib/models/brush_presets_extension.dart'
+      - 'lib/services/brush_service.dart'
       - 'lib/screens/canvas/widgets/brush_extension_settings.dart'
       - 'lib/screens/canvas/widgets/brush_panel.dart'
       - 'lib/l10n/app_*.arb'
+      - 'test/services/brush_service_extension_presets_test.dart'
       - 'test/brush_extension_settings_test.dart'
       - 'test/brush_panel_extension_integration_test.dart'
 
@@ -28,8 +31,9 @@ jobs:
       - run: flutter pub get --enforce-lockfile
       - name: Generate localizations
         run: flutter gen-l10n
-      - name: Verify brush extension UI
+      - name: Verify brush extension presets and UI
         run: |
+          flutter test test/services/brush_service_extension_presets_test.dart --reporter expanded
           flutter test test/brush_extension_settings_test.dart --reporter expanded
           flutter test test/brush_panel_extension_integration_test.dart --reporter expanded
-          flutter analyze lib/screens/canvas/widgets/brush_extension_settings.dart lib/screens/canvas/widgets/brush_panel.dart test/brush_extension_settings_test.dart test/brush_panel_extension_integration_test.dart --no-fatal-infos --no-fatal-warnings
+          flutter analyze lib/models/brush_presets_extension.dart lib/services/brush_service.dart lib/screens/canvas/widgets/brush_extension_settings.dart lib/screens/canvas/widgets/brush_panel.dart lib/screens/tips/tips_screen.dart test/services/brush_service_extension_presets_test.dart test/brush_extension_settings_test.dart test/brush_panel_extension_integration_test.dart --no-fatal-infos --no-fatal-warnings
