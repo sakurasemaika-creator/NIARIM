@@ -26,6 +26,7 @@ import '../../widgets/dispose_on_unmount.dart';
 import '../../widgets/editable_slider_value.dart';
 import '../../widgets/stepped_slider.dart';
 import '../../utils/immersive_mode.dart';
+import '../../engine/autofill_engine.dart' show AutofillCheckMode;
 import '../../engine/text_render.dart';
 import '../../engine/undo_manager.dart';
 import '../../engine/custom_automation_executor.dart';
@@ -82,6 +83,7 @@ class _CanvasScreenState extends State<CanvasScreen> {
   int _brushOpacity = 100;
   Color _currentColor = Colors.black;
   int _currentFrame = 0;
+  AutofillCheckMode _autofillCheckMode = AutofillCheckMode.normal;
   bool _showLayerPanel = false;
   // ショートカット（Ctrl+A）からレイヤーパネルの全選択を起動するための
   // トークン。値を増やすたびにLayerPanel側で全選択が実行される。
@@ -1207,6 +1209,7 @@ class _CanvasScreenState extends State<CanvasScreen> {
                                       ? onCanvasTapForText
                                       : null,
                                   onEyedropper: _handleCanvasEyedropper,
+                                  autofillCheckMode: _autofillCheckMode,
                                   filterEyedropperActive:
                                       _filterColorEyedropperTarget != null ||
                                       _textColorEyedropperTarget != null ||
@@ -2586,6 +2589,37 @@ class _CanvasScreenState extends State<CanvasScreen> {
               ),
             ),
           const Spacer(),
+          PopupMenuButton<AutofillCheckMode>(
+            key: const ValueKey('autofill-check-mode-menu'),
+            tooltip: '自動塗り確認表示',
+            initialValue: _autofillCheckMode,
+            onSelected: (mode) => setState(() => _autofillCheckMode = mode),
+            itemBuilder: (_) => const [
+              PopupMenuItem(
+                value: AutofillCheckMode.normal,
+                child: Text('通常表示'),
+              ),
+              PopupMenuItem(
+                value: AutofillCheckMode.partSeparation,
+                child: Text('パーツ分け確認'),
+              ),
+              PopupMenuItem(
+                value: AutofillCheckMode.silhouette,
+                child: Text('シルエット確認'),
+              ),
+            ],
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 4),
+              child: Icon(
+                _autofillCheckMode == AutofillCheckMode.normal
+                    ? Icons.visibility_outlined
+                    : _autofillCheckMode == AutofillCheckMode.partSeparation
+                    ? Icons.palette_outlined
+                    : Icons.contrast,
+                size: 22,
+              ),
+            ),
+          ),
           // 設定/編集メニュー（背景色・オニオンスキン・
           // フィルター・フレーム範囲選択を集約）。
           _topBarIconButton(
