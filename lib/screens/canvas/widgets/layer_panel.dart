@@ -2439,6 +2439,24 @@ class _LayerPanelState extends State<LayerPanel> {
                 ),
                 const SizedBox(height: 12),
                 RadioListTile<int>(
+                  title: Text(l10n.layerPanelAutofillSmartUpdateTitle),
+                  subtitle: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        l10n.layerPanelAutofillSmartUpdateHint,
+                        style: const TextStyle(fontSize: 11),
+                      ),
+                      Text(
+                        l10n.layerPanelAutofillSmartUpdateNote,
+                        style: const TextStyle(fontSize: 11),
+                      ),
+                    ],
+                  ),
+                  value: 0,
+                  dense: true,
+                ),
+                RadioListTile<int>(
                   title: Text(l10n.layerPanelAutofillRepaintTitle),
                   subtitle: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -2453,7 +2471,7 @@ class _LayerPanelState extends State<LayerPanel> {
                       ),
                     ],
                   ),
-                  value: 0,
+                  value: 1,
                   dense: true,
                 ),
                 RadioListTile<int>(
@@ -2471,7 +2489,7 @@ class _LayerPanelState extends State<LayerPanel> {
                       ),
                     ],
                   ),
-                  value: 1,
+                  value: 2,
                   dense: true,
                 ),
               ],
@@ -2488,9 +2506,11 @@ class _LayerPanelState extends State<LayerPanel> {
                 _executeAutofill(
                   context,
                   resolvedLineart,
-                  selected == 0
-                      ? autofill.AutofillMode.repaint
-                      : autofill.AutofillMode.colorUpdate,
+                  switch (selected) {
+                    1 => autofill.AutofillMode.repaint,
+                    2 => autofill.AutofillMode.colorUpdate,
+                    _ => autofill.AutofillMode.smartUpdate,
+                  },
                 );
               },
               child: Text(l10n.layerPanelExecuteButton),
