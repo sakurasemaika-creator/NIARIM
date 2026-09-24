@@ -331,6 +331,56 @@ List<int> _blend(LayerBlendMode mode, ui.Color backdrop, ui.Color source) {
       o = _setLum(cs, _lum(cb));
     case LayerBlendMode.luminosity:
       o = _setLum(cb, _lum(cs));
+    case LayerBlendMode.linearBurn:
+      o = List.generate(3, (i) => math.max(0.0, cb[i] + cs[i] - 1));
+    case LayerBlendMode.linearDodge:
+      o = List.generate(3, (i) => math.min(1.0, cb[i] + cs[i]));
+    case LayerBlendMode.vividLight:
+      o = List.generate(3, (i) {
+        final b = cb[i], s = cs[i];
+        if (s <= 0.5) {
+          final doubled = 2 * s;
+          return doubled <= 0
+              ? 0
+              : 1 - math.min(1.0, (1 - b) / doubled);
+        }
+        final doubled = 2 * (s - 0.5);
+        return doubled >= 1 ? 1 : math.min(1.0, b / (1 - doubled));
+      });
+    case LayerBlendMode.linearLight:
+      o = List.generate(
+        3,
+        (i) => (cb[i] + 2 * cs[i] - 1).clamp(0.0, 1.0),
+      );
+    case LayerBlendMode.pinLight:
+      o = List.generate(
+        3,
+        (i) => cs[i] <= 0.5
+            ? math.min(cb[i], 2 * cs[i])
+            : math.max(cb[i], 2 * cs[i] - 1),
+      );
+    case LayerBlendMode.hardMix:
+      o = List.generate(3, (i) {
+        final b = cb[i], s = cs[i];
+        double vivid;
+        if (s <= 0.5) {
+          final doubled = 2 * s;
+          vivid = doubled <= 0
+              ? 0
+              : 1 - math.min(1.0, (1 - b) / doubled);
+        } else {
+          final doubled = 2 * (s - 0.5);
+          vivid = doubled >= 1 ? 1 : math.min(1.0, b / (1 - doubled));
+        }
+        return vivid < 0.5 ? 0.0 : 1.0;
+      });
+    case LayerBlendMode.exclusion:
+      o = List.generate(3, (i) => cb[i] + cs[i] - 2 * cb[i] * cs[i]);
+    case LayerBlendMode.divide:
+      o = List.generate(
+        3,
+        (i) => cs[i] <= 0 ? 1.0 : math.min(1.0, cb[i] / cs[i]),
+      );
   }
   return o.map((v) => (v.clamp(0.0, 1.0) * 255).round()).toList();
 }
