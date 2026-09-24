@@ -403,6 +403,15 @@ List<_TipCategory> _buildTipCategories(AppLocalizations l10n) => [
       _Tip(
         TipDiagramSpec(
           TipDiagramKind.pairCombo,
+          iconA: Icons.grid_view_outlined,
+          iconB: Icons.straighten,
+        ),
+        l10n.tipsFourPanelBrushTitle,
+        l10n.tipsFourPanelBrushDesc,
+      ),
+      _Tip(
+        TipDiagramSpec(
+          TipDiagramKind.pairCombo,
           iconA: Icons.gradient,
           iconB: Icons.colorize,
         ),
