@@ -54,7 +54,7 @@ class HairFoldRaster {
         lengths.last + (points[i].position - points[i - 1].position).distance,
       );
     }
-    final candidates = <({int index, double strength, double sign})>[];
+    final candidates = <({int index, double strength, double sign, bool continuous})>[];
     for (final fold in folds) {
       final source = fold.sourceCurve;
       if (source.length < 3) continue;
@@ -103,11 +103,12 @@ class HairFoldRaster {
           index: nearest,
           strength: best,
           sign: fold.signedTurnRadians.sign,
+          continuous: continuousHalfTurn,
         ));
       }
     }
     candidates.sort((a, b) => a.index.compareTo(b.index));
-    final bends = <({int index, double strength, double sign})>[];
+    final bends = <({int index, double strength, double sign, bool continuous})>[];
     for (final candidate in candidates) {
       if (bends.isNotEmpty &&
           bends.last.sign == candidate.sign &&
@@ -337,8 +338,18 @@ class HairFoldRaster {
             if (!_covered(result, at)) break;
             origin = at;
           }
-          final length = p.width * brush.foldLengthRatio.clamp(0.0, 2.0);
-          final delay = brush.foldCurveStartRatio.clamp(0.0, 1.0);
+          // A cumulative 180-degree fold is not a reversal cusp. Keep its
+          // crease aligned with the ongoing curve and shorter, otherwise the
+          // reversal-style inner crease reads as a sharp inward spike on a
+          // circular/spiral stroke.
+          final continuous = bends[i - 1].continuous;
+          final length =
+              p.width *
+              brush.foldLengthRatio.clamp(0.0, 2.0) *
+              (continuous ? .45 : 1.0);
+          final delay = continuous
+              ? math.max(.35, brush.foldCurveStartRatio.clamp(0.0, 1.0))
+              : brush.foldCurveStartRatio.clamp(0.0, 1.0);
           final bend = (brush.foldCurveStrength - 1) / 9;
           var previous = origin;
           final count = math.max(4, (length * 2).ceil());
