@@ -622,7 +622,12 @@ List<HairRibbonPoint> _relaxCrescentConcaveCorners(
   List<HairRibbonPoint> source,
 ) {
   if (source.length < 3) return source;
-  final result = List<HairRibbonPoint>.from(source);
+  // Build one smooth displacement field from the immutable source instead of
+  // repeatedly moving neighboring samples in-place. Overlapping bends used to
+  // leave a new apex at the edge of each three-point correction, which still
+  // read as a shallow V in the production captures.
+  final offsets = List<Offset>.filled(source.length, Offset.zero);
+  final weights = <int, double>{-2: .18, -1: .52, 0: 1.0, 1: .52, 2: .18};
   for (var i = 1; i < source.length - 1; i++) {
     final incoming = _unit(source[i].position - source[i - 1].position);
     final outgoing = _unit(source[i + 1].position - source[i].position);
@@ -630,50 +635,36 @@ List<HairRibbonPoint> _relaxCrescentConcaveCorners(
     final turn = math.atan2(_cross(incoming, outgoing), _dot(incoming, outgoing));
     final amount = (turn.abs() / math.pi).clamp(0.0, 1.0);
     if (amount < .04) continue;
-    // The cusp is on the inside of the turn. Move only the rendered crescent
-    // center slightly toward the outside of high-curvature bends. This keeps
-    // the authored stroke direction/endpoints intact while giving the concave
-    // outline a finite radius instead of letting two offsets meet at a V.
     final bisector = _unit(incoming + outgoing);
     if (bisector == Offset.zero) continue;
     final innerNormal =
         Offset(-bisector.dy, bisector.dx) * (turn.isNegative ? -1.0 : 1.0);
-    final shift = source[i].width * (.08 + .22 * amount) * amount;
-    // Keep the authored bend, but spread the correction over its local
-    // neighborhood. Moving one sample alone merely relocates the V; a
-    // three-point inward bulge makes adjacent round footprints overlap across
-    // the concavity and turns that notch into a finite-radius arc.
-    final inward = source[i].position + innerNormal * shift;
-    final chordMid =
-        (source[i - 1].position + source[i + 1].position) * .5;
-    final roundedPosition = Offset.lerp(
-      inward,
-      chordMid + innerNormal * shift * .35,
-      (.30 + .36 * amount).clamp(0.0, .62),
-    )!;
-    final shoulderShift = innerNormal * shift * (.22 + .18 * amount);
-    if (i > 1) {
-      final before = result[i - 1];
-      result[i - 1] = HairRibbonPoint(
-        before.position + shoulderShift,
-        before.width,
-        before.opacity,
-      );
+    final shift = source[i].width * (.10 + .24 * amount) * amount;
+    for (final entry in weights.entries) {
+      final index = i + entry.key;
+      if (index <= 0 || index >= source.length - 1) continue;
+      offsets[index] += innerNormal * shift * entry.value;
     }
-    if (i < source.length - 2) {
-      final after = result[i + 1];
-      result[i + 1] = HairRibbonPoint(
-        after.position + shoulderShift,
-        after.width,
-        after.opacity,
-      );
-    }
-    result[i] = HairRibbonPoint(
-      roundedPosition,
-      source[i].width,
-      source[i].opacity,
-    );
   }
+  final result = List<HairRibbonPoint>.generate(source.length, (i) {
+    if (i == 0 || i == source.length - 1) return source[i];
+    final before = source[i - 1].position;
+    final after = source[i + 1].position;
+    final chordMid = (before + after) * .5;
+    final displaced = source[i].position + offsets[i];
+    // Blend toward the local quadratic chord as the inward displacement grows.
+    // This makes the concave side a broad arc while keeping the authored
+    // endpoints and the large-scale stroke direction intact.
+    final scale = source[i].width <= .001
+        ? 0.0
+        : (offsets[i].distance / source[i].width).clamp(0.0, 1.0);
+    final position = Offset.lerp(
+      displaced,
+      chordMid + offsets[i] * .35,
+      (.16 + .28 * scale).clamp(0.0, .42),
+    )!;
+    return HairRibbonPoint(position, source[i].width, source[i].opacity);
+  });
   result[0] = source.first;
   result[result.length - 1] = source.last;
   return result;
