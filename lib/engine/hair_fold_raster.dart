@@ -401,7 +401,7 @@ class HairFoldRaster {
     final bOuter = b.position + normal * (b.width * .5 * outerScale * side);
     final aInner = a.position - normal * (a.width * .5 * innerScale * side);
     final bInner = b.position - normal * (b.width * .5 * innerScale * side);
-    _quadStrip(mask, aInner, aOuter, bInner, bOuter, a.opacity, b.opacity, outline);
+    _quadStrip(masks, aInner, aOuter, bInner, bOuter, a.opacity, b.opacity, outline);
   }
 
   void _quadStrip(
