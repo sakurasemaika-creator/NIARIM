@@ -639,16 +639,17 @@ List<HairRibbonPoint> _relaxCrescentConcaveCorners(
     final innerNormal =
         Offset(-bisector.dy, bisector.dx) * (turn.isNegative ? -1.0 : 1.0);
     final shift = source[i].width * (.08 + .22 * amount) * amount;
-    final outside = source[i].position - innerNormal * shift;
-    // Round the concave vertex itself as well as moving it outward: blend it
-    // toward the neighboring chord so the inner outline cannot inherit a
-    // single sharp apex from the sampled centerline.
+    // Move the rendered crescent center slightly into the concavity. The
+    // segment rasterizer unions round footprints; moving away from the inside
+    // deepens the notch, while a small inward bias makes adjacent footprints
+    // overlap across it and produces a finite-radius inner arc.
+    final inward = source[i].position + innerNormal * shift;
     final chordMid =
         (source[i - 1].position + source[i + 1].position) * .5;
     final roundedPosition = Offset.lerp(
-      outside,
-      chordMid - innerNormal * shift * .35,
-      (.36 + .48 * amount).clamp(0.0, .78),
+      inward,
+      chordMid + innerNormal * shift * .35,
+      (.30 + .36 * amount).clamp(0.0, .62),
     )!;
     result[i] = HairRibbonPoint(
       roundedPosition,
