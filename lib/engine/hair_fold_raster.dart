@@ -58,19 +58,29 @@ class HairFoldRaster {
     for (final fold in folds) {
       final source = fold.sourceCurve;
       if (source.length < 3) continue;
-      // Locate the bend itself, rather than the detector's delayed endpoint.
+      // A direction-change fold belongs at the strongest local bend. A
+      // continuous 180-degree fold has no single sharp bend, so place it at
+      // the detector's cumulative-turn boundary instead of arbitrarily picking
+      // one equally curved sample from the arc.
       var best = 0.0;
       var pivotSourceIndex = source.length ~/ 2;
       var pivot = source[pivotSourceIndex];
-      for (var i = 1; i < source.length - 1; i++) {
-        final a = source[i] - source[i - 1];
-        final b = source[i + 1] - source[i];
-        if (a.distance < .001 || b.distance < .001) continue;
-        final turn = math.atan2(_cross(a, b), _dot(a, b)).abs();
-        if (turn > best) {
-          best = turn;
-          pivot = source[i];
-          pivotSourceIndex = i;
+      final continuousHalfTurn = fold.signedTurnRadians.abs() >= math.pi * .9;
+      if (continuousHalfTurn) {
+        pivotSourceIndex = source.length - 1;
+        pivot = source.last;
+        best = fold.signedTurnRadians.abs();
+      } else {
+        for (var i = 1; i < source.length - 1; i++) {
+          final a = source[i] - source[i - 1];
+          final b = source[i + 1] - source[i];
+          if (a.distance < .001 || b.distance < .001) continue;
+          final turn = math.atan2(_cross(a, b), _dot(a, b)).abs();
+          if (turn > best) {
+            best = turn;
+            pivot = source[i];
+            pivotSourceIndex = i;
+          }
         }
       }
       var nearest = fold.sourceIndices.length == source.length
