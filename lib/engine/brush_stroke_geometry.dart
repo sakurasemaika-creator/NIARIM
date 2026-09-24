@@ -126,8 +126,12 @@ class ScreenSpaceFoldDetector {
       final heading = math.atan2(delta.dy, delta.dx);
       if (_hasSegmentHeading) {
         var change = heading - _lastSegmentHeading;
-        while (change > math.pi) change -= math.pi * 2;
-        while (change < -math.pi) change += math.pi * 2;
+        while (change > math.pi) {
+          change -= math.pi * 2;
+        }
+        while (change < -math.pi) {
+          change += math.pi * 2;
+        }
         _unwrappedTurn += change;
       }
       _lastSegmentHeading = heading;
