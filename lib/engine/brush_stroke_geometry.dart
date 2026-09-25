@@ -78,7 +78,7 @@ class ScreenSpaceFoldDetector {
   double _totalDistance = 0;
   double _lastFoldDistance = double.negativeInfinity;
   double _unwrappedTurn = 0;
-  double _lastEmittedFullTurns = 0;
+  double _lastEmittedContinuousFolds = 0;
   double _lastSegmentHeading = 0;
   bool _hasSegmentHeading = false;
 
@@ -97,7 +97,7 @@ class ScreenSpaceFoldDetector {
     _totalDistance = 0;
     _lastFoldDistance = double.negativeInfinity;
     _unwrappedTurn = 0;
-    _lastEmittedFullTurns = 0;
+    _lastEmittedContinuousFolds = 0;
     _lastSegmentHeading = 0;
     _hasSegmentHeading = false;
   }
@@ -147,13 +147,14 @@ class ScreenSpaceFoldDetector {
     if (_totalDistance < minimumTravel || _samples.length < 3) {
       return null;
     }
-    // Besides direction reversals, every additional 360 degrees of continuous
+    // Besides direction reversals, every additional 270 degrees of continuous
     // turning is a fold boundary. This keeps the current turn direction: a
     // spiral/crescent continues folding along the authored curve rather than
     // pretending the stroke reversed.
-    final fullTurns = (_unwrappedTurn.abs() / (math.pi * 2)).floorToDouble();
+    final continuousFolds =
+        (_unwrappedTurn.abs() / (math.pi * 1.5)).floorToDouble();
     final continuousFullTurn =
-        fullTurns > _lastEmittedFullTurns &&
+        continuousFolds > _lastEmittedContinuousFolds &&
         _totalDistance - _lastFoldDistance >= math.max(sampleSpacing, 0.1);
     if (!continuousFullTurn &&
         _totalDistance - _lastFoldDistance < cooldownDistance) {
@@ -196,7 +197,7 @@ class ScreenSpaceFoldDetector {
     final leftNormal = Offset(-tangent.dy, tangent.dx);
     final inward = cross >= 0 ? leftNormal : -leftNormal;
     _lastFoldDistance = _totalDistance;
-    if (continuousFullTurn) _lastEmittedFullTurns = fullTurns;
+    if (continuousFullTurn) _lastEmittedContinuousFolds = continuousFolds;
 
     return FoldEvent(
       sample: sample,
