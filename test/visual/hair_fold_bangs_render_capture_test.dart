@@ -124,7 +124,7 @@ void main() {
         HairFoldMode.waveLowAngle,
       ]) {
         final base = presets.singleWhere((b) => b.id == 'Brush0023');
-        for (final degrees in [185.0, 365.0]) {
+        for (final degrees in [265.0, 275.0, 535.0, 545.0]) {
           await capture(
             base.copyWith(
               size: 64,
@@ -135,7 +135,7 @@ void main() {
               foldMode: mode,
             ),
             'hair_${modeNames[mode]}_${degrees.toInt()}deg_continuous',
-            input: arc(degrees, degrees > 200 ? 125 : 155),
+            input: arc(degrees, degrees > 400 ? 92 : 125),
           );
         }
       }
