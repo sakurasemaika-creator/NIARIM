@@ -289,7 +289,24 @@ class HairFoldRaster {
           }
           if (texture == null) {
             if (brush.foldMode == HairFoldMode.crescent) {
-              _crescentSegment(mask, a, b, brush.outlineWidth);
+              final before =
+                  points[math.max(run.start, i - 2)].position;
+              final after =
+                  points[math.min(run.end, i + 1)].position;
+              final incoming = a.position - before;
+              final outgoing = after - b.position;
+              var turnSide = _cross(incoming, b.position - a.position).sign;
+              if (turnSide == 0) {
+                turnSide = _cross(b.position - a.position, outgoing).sign;
+              }
+              if (turnSide == 0) turnSide = 1;
+              _crescentSegment(
+                mask,
+                a,
+                b,
+                brush.outlineWidth,
+                turnSide: turnSide,
+              );
             } else {
               _segment(mask, a, b, brush.outlineWidth);
             }
@@ -385,13 +402,16 @@ class HairFoldRaster {
           // reversal-style inner crease reads as a sharp inward spike on a
           // circular/spiral stroke.
           final continuous = bends[i - 1].continuous;
+          // A continuous half-turn keeps the authored tangent direction. The
+          // run ordering already creates the fold; a reversal-style tangent
+          // crease adds a false inward spike, so reserve that crease for real
+          // direction-change folds.
+          if (continuous) continue;
           final length =
               p.width *
               brush.foldLengthRatio.clamp(0.0, 2.0) *
-              (continuous ? .45 : 1.0);
-          final delay = continuous
-              ? math.max(.35, brush.foldCurveStartRatio.clamp(0.0, 1.0))
-              : brush.foldCurveStartRatio.clamp(0.0, 1.0);
+              1.0;
+          final delay = brush.foldCurveStartRatio.clamp(0.0, 1.0);
           final bend = (brush.foldCurveStrength - 1) / 9;
           var previous = origin;
           final count = math.max(4, (length * 2).ceil());
@@ -445,8 +465,9 @@ class HairFoldRaster {
     Map<int, _MaskTile> masks,
     HairRibbonPoint a,
     HairRibbonPoint b,
-    double outline,
-  ) {
+    double outline, {
+    required double turnSide,
+  }) {
     final d = b.position - a.position;
     final squared = d.distanceSquared;
     if (squared < 1e-10) return;
@@ -456,10 +477,12 @@ class HairFoldRaster {
     // The outside bows farther than a normal ribbon offset while the inside
     // stays closer to the centerline, so both are smooth curves rather than a
     // union cusp that must be repaired afterward.
-    final turnBias = _cross(a.position, b.position).sign;
+    // Side must come from the *local tangent turn*. Crossing absolute
+    // canvas positions makes the side depend on the document origin and can
+    // flip halfway around a 360-degree curve, producing a visible seam.
     final outerScale = 1.18;
     final innerScale = .82;
-    final side = turnBias == 0 ? 1.0 : turnBias;
+    final side = turnSide;
     final aOuter = a.position + normal * (a.width * .5 * outerScale * side);
     final bOuter = b.position + normal * (b.width * .5 * outerScale * side);
     final aInner = a.position - normal * (a.width * .5 * innerScale * side);
