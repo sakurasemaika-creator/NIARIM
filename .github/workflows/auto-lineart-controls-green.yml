@@ -51,7 +51,3 @@ jobs:
             echo "Legacy auto-lineart preservation logic remains" >&2
             exit 1
           fi
-      - name: Inventory entry-exit taper references
-        if: always()
-        run: |
-          grep -R -n -E "fadeMode|fadeCustom|FadeCustomSettings|distancePx" lib test --exclude-dir=.dart_tool || true
