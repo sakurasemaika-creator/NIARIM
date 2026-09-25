@@ -252,13 +252,20 @@ class HairFoldRaster {
               // between two consecutive crescents, not as a near-zero cut.
               // Keep roughly one third of the configured width at the join
               // and ease that support away over the neighboring segment.
-              const neck = .34;
-              final neckEase = math.sin(math.pi * .5 * t);
-              if (startsContinuous) {
-                joined = math.max(joined, neck * (1 - neckEase));
+              const neck = .50;
+              // Keep the shared waist broad enough to read as a continuous
+              // ribbon. Limit the support to the quarter nearest the boundary
+              // so the middle of each 180-degree crescent still reaches the
+              // configured brush width.
+              if (startsContinuous && t < .25) {
+                final local = (t / .25).clamp(0.0, 1.0);
+                final support = neck * .5 * (1 + math.cos(math.pi * local));
+                joined = math.max(joined, support);
               }
-              if (endsContinuous) {
-                joined = math.max(joined, neck * neckEase);
+              if (endsContinuous && t > .75) {
+                final local = ((t - .75) / .25).clamp(0.0, 1.0);
+                final support = neck * .5 * (1 - math.cos(math.pi * local));
+                joined = math.max(joined, support);
               }
               return points[index].width * joined;
             }
