@@ -128,15 +128,29 @@ class HairFoldRaster {
     }.toList()..sort();
     if (indices.length < 3) return;
     if (brush.foldMode == HairFoldMode.crescent) {
-      final bendIndices = indices.sublist(1, indices.length - 1);
-      indices.clear();
-      indices.add(0);
-      for (var i = 1; i < bendIndices.length; i++) {
-        final target =
-            (lengths[bendIndices[i - 1]] + lengths[bendIndices[i]]) / 2;
-        indices.add(lengths.indexWhere((d) => d >= target));
+      // Reversal bends describe the centers of adjacent authored crescents, so
+      // their boundary remains the midpoint between two such bends. A
+      // cumulative 180-degree event is different: it *is* the boundary where
+      // the next crescent starts while the turn direction continues. Preserve
+      // that detector index exactly so taper/join logic can recognize it.
+      final crescentBoundaries = <int>{0, points.length - 1};
+      for (final bend in bends) {
+        if (bend.continuous) crescentBoundaries.add(bend.index);
       }
-      indices.add(points.length - 1);
+      for (var i = 1; i < bends.length; i++) {
+        final previous = bends[i - 1];
+        final current = bends[i];
+        if (previous.continuous || current.continuous) continue;
+        final target =
+            (lengths[previous.index] + lengths[current.index]) / 2;
+        final midpoint = lengths.indexWhere((d) => d >= target);
+        if (midpoint > 0 && midpoint < points.length - 1) {
+          crescentBoundaries.add(midpoint);
+        }
+      }
+      indices
+        ..clear()
+        ..addAll(crescentBoundaries.toList()..sort());
     }
     final result = <int, _SurfaceTile>{};
 
