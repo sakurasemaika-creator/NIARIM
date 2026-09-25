@@ -92,17 +92,17 @@ void main() {
       ];
     }
 
-    test('continuous curve folds once per completed full turn', () {
-      expect(runPath(arc(355)), isEmpty);
-      expect(runPath(arc(365)).length, 1);
-      expect(runPath(arc(715)).length, 1);
-      expect(runPath(arc(725)).length, 2);
-      expect(runPath(arc(1085)).length, 3);
+    test('continuous curve folds once per completed 270 degree turn', () {
+      expect(runPath(arc(265)), isEmpty);
+      expect(runPath(arc(275)).length, 1);
+      expect(runPath(arc(535)).length, 1);
+      expect(runPath(arc(545)).length, 2);
+      expect(runPath(arc(815)).length, 3);
     });
 
-    test('continuous full turns preserve the authored turn direction', () {
-      final clockwise = runPath(arc(725));
-      final counterClockwise = runPath(arc(-725));
+    test('continuous 270 degree folds preserve the authored turn direction', () {
+      final clockwise = runPath(arc(545));
+      final counterClockwise = runPath(arc(-545));
       expect(clockwise.length, 2);
       expect(counterClockwise.length, 2);
       expect(clockwise.every((event) => event.signedTurnRadians.sign > 0), isTrue);
