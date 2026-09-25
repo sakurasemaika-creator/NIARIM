@@ -266,20 +266,20 @@ class HairFoldRaster {
               // between two consecutive crescents, not as a near-zero cut.
               // Keep roughly one third of the configured width at the join
               // and ease that support away over the neighboring segment.
-              const neck = .50;
-              // Keep the shared waist broad enough to read as a continuous
-              // ribbon. Limit the support to the quarter nearest the boundary
-              // so the middle of each 180-degree crescent still reaches the
-              // configured brush width.
-              if (startsContinuous && t < .25) {
-                final local = (t / .25).clamp(0.0, 1.0);
-                final support = neck * .5 * (1 + math.cos(math.pi * local));
-                joined = math.max(joined, support);
+              const neck = .72;
+              // A continuous half-turn is a fold *inside one ribbon*, not the
+              // tip of one crescent followed by the tip of another. Preserve a
+              // broad waist at that boundary and blend it over the adjacent
+              // third so the outline stays C1-like instead of forming a cusp.
+              if (startsContinuous && t < .34) {
+                final local = (t / .34).clamp(0.0, 1.0);
+                final ease = local * local * (3 - 2 * local);
+                joined = math.max(joined, neck * (1 - ease));
               }
-              if (endsContinuous && t > .75) {
-                final local = ((t - .75) / .25).clamp(0.0, 1.0);
-                final support = neck * .5 * (1 - math.cos(math.pi * local));
-                joined = math.max(joined, support);
+              if (endsContinuous && t > .66) {
+                final local = ((t - .66) / .34).clamp(0.0, 1.0);
+                final ease = local * local * (3 - 2 * local);
+                joined = math.max(joined, neck * ease);
               }
               return points[index].width * joined;
             }
