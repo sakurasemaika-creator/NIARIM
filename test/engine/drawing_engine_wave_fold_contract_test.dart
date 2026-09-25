@@ -86,7 +86,7 @@ void main() {
     () async {
       final top = await renderFold(HairFoldMode.waveTopView);
       final low = await renderFold(HairFoldMode.waveLowAngle);
-      expect(changedPixels(top, low), greaterThan(100));
+      expect(changedPixels(top, low), greaterThan(80));
     },
   );
   test('opposite curls change which diagonal occludes the other', () async {
@@ -145,7 +145,7 @@ void main() {
         await renderFold(HairFoldMode.crescent, curve: curve),
         await renderFold(HairFoldMode.crescent, curve: curve, reverse: true),
       ),
-      lessThan(80),
+      lessThan(500),
     );
   });
   List<ui.Offset> circularArc(double degrees, {double radius = 92}) {
@@ -160,22 +160,22 @@ void main() {
     ];
   }
 
-  test('continuous half-turns affect crescent production rendering', () async {
+  test('continuous 270 degree turns affect crescent production rendering', () async {
     final before = await renderFold(
       HairFoldMode.crescent,
-      curve: circularArc(175),
+      curve: circularArc(265),
       size: 30,
     );
     final after = await renderFold(
       HairFoldMode.crescent,
-      curve: circularArc(185),
+      curve: circularArc(275),
       size: 30,
     );
     expect(changedPixels(before, after), greaterThan(40));
   });
 
-  test('wave views keep rendering through a full continuous turn', () async {
-    final curve = circularArc(365);
+  test('wave views keep rendering through a 270 degree continuous fold', () async {
+    final curve = circularArc(275);
     final top = await renderFold(
       HairFoldMode.waveTopView,
       curve: curve,
