@@ -397,21 +397,18 @@ class HairFoldRaster {
             if (!_covered(result, at)) break;
             origin = at;
           }
-          // A cumulative 180-degree fold is not a reversal cusp. Keep its
-          // crease aligned with the ongoing curve and shorter, otherwise the
-          // reversal-style inner crease reads as a sharp inward spike on a
-          // circular/spiral stroke.
+          // A continuous 270-degree fold keeps the authored turn direction.
+          // It still needs a visible fold cue for the two wave views, but use
+          // a shorter, later crease than a true direction reversal so it does
+          // not read as a cusp or spike.
           final continuous = bends[i - 1].continuous;
-          // A continuous half-turn keeps the authored tangent direction. The
-          // run ordering already creates the fold; a reversal-style tangent
-          // crease adds a false inward spike, so reserve that crease for real
-          // direction-change folds.
-          if (continuous) continue;
           final length =
               p.width *
               brush.foldLengthRatio.clamp(0.0, 2.0) *
-              1.0;
-          final delay = brush.foldCurveStartRatio.clamp(0.0, 1.0);
+              (continuous ? .32 : 1.0);
+          final delay = continuous
+              ? math.max(.50, brush.foldCurveStartRatio.clamp(0.0, 1.0))
+              : brush.foldCurveStartRatio.clamp(0.0, 1.0);
           final bend = (brush.foldCurveStrength - 1) / 9;
           var previous = origin;
           final count = math.max(4, (length * 2).ceil());
