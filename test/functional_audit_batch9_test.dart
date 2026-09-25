@@ -130,13 +130,19 @@ void main() {
     for (var x = 12.0; x <= 108; x += 4) {
       pts.add(ui.Offset(x, 32));
     }
+    // Mirror CanvasArea's production pointer-up contract: capture the
+    // pre-stroke tiles, draw the live preview, restore those tiles, then replay
+    // once with the finalized total length so fade-out is not composited over
+    // its own opaque preview.
+    tm.beginUndoRecording('fade');
     engine.beginStroke(StrokePoint(x: pts.first.dx, y: pts.first.dy), 'fade');
     for (final p in pts.skip(1)) {
       engine.continueStroke(StrokePoint(x: p.dx, y: p.dy), 'fade');
     }
-    // Production pointer-up performs the final-length replay before endStroke.
-    // Without this call fade-out has no known endpoint and intentionally stays
-    // at full strength during the live preview.
+    final previewSnapshot = tm.endUndoRecording();
+    if (previewSnapshot.before.isNotEmpty) {
+      tm.applyTileSnapshot('fade', previewSnapshot.before);
+    }
     engine.replayCurrentStrokeWithFinalFade();
     engine.endStroke();
 
