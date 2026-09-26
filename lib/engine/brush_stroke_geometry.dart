@@ -53,6 +53,7 @@ class FoldEvent {
   final Offset inwardNormal;
   final double signedTurnRadians;
   final double screenDistance;
+  final bool isContinuousTurnFold;
   final List<Offset> sourceCurve;
   final List<int?> sourceIndices;
 
@@ -62,6 +63,7 @@ class FoldEvent {
     required this.inwardNormal,
     required this.signedTurnRadians,
     required this.screenDistance,
+    this.isContinuousTurnFold = false,
     this.sourceCurve = const <Offset>[],
     this.sourceIndices = const <int?>[],
   });
@@ -205,6 +207,7 @@ class ScreenSpaceFoldDetector {
       inwardNormal: inward,
       signedTurnRadians: signedTurn,
       screenDistance: _totalDistance,
+      isContinuousTurnFold: continuousFullTurn,
       sourceIndices: _samples
           .map((entry) => entry.sample.strokeIndex)
           .toList(growable: false),
