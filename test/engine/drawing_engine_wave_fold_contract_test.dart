@@ -174,19 +174,27 @@ void main() {
     expect(changedPixels(before, after), greaterThan(40));
   });
 
-  test('wave views keep rendering through a 270 degree continuous fold', () async {
-    final curve = circularArc(275);
-    final top = await renderFold(
+  test('both wave views add a fold after 270 continuous degrees', () async {
+    for (final mode in [
       HairFoldMode.waveTopView,
-      curve: curve,
-      size: 30,
-    );
-    final low = await renderFold(
       HairFoldMode.waveLowAngle,
-      curve: curve,
-      size: 30,
-    );
-    expect(changedPixels(top, low), greaterThan(100));
+    ]) {
+      final before = await renderFold(
+        mode,
+        curve: circularArc(265),
+        size: 30,
+      );
+      final after = await renderFold(
+        mode,
+        curve: circularArc(275),
+        size: 30,
+      );
+      expect(
+        changedPixels(before, after),
+        greaterThan(20),
+        reason: mode.name,
+      );
+    }
   });
 
   test('front strand hides a lower bend crease', () async {
