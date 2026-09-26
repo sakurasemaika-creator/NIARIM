@@ -65,8 +65,8 @@ class HairFoldRaster {
       var best = 0.0;
       var pivotSourceIndex = source.length ~/ 2;
       var pivot = source[pivotSourceIndex];
-      final continuousHalfTurn = fold.signedTurnRadians.abs() >= math.pi * .9;
-      if (continuousHalfTurn) {
+      final continuousTurnFold = fold.isContinuousTurnFold;
+      if (continuousTurnFold) {
         pivotSourceIndex = source.length - 1;
         pivot = source.last;
         best = fold.signedTurnRadians.abs();
@@ -103,7 +103,7 @@ class HairFoldRaster {
           index: nearest,
           strength: best,
           sign: fold.signedTurnRadians.sign,
-          continuous: continuousHalfTurn,
+          continuous: continuousTurnFold,
         ));
       }
     }
@@ -130,7 +130,7 @@ class HairFoldRaster {
     if (brush.foldMode == HairFoldMode.crescent) {
       // Reversal bends describe the centers of adjacent authored crescents, so
       // their boundary remains the midpoint between two such bends. A
-      // cumulative 180-degree event is different: it *is* the boundary where
+      // cumulative 270-degree event is different: it *is* the boundary where
       // the next crescent starts while the turn direction continues. Preserve
       // that detector index exactly so taper/join logic can recognize it.
       final crescentBoundaries = <int>{0, points.length - 1};
@@ -262,12 +262,12 @@ class HairFoldRaster {
                   run.end < points.length - 1 &&
                   bends.any((bend) => bend.index == run.end && bend.continuous);
               var joined = rounded;
-              // A shared half-turn boundary should read as the waist
+              // A shared 270-degree boundary should read as the waist
               // between two consecutive crescents, not as a near-zero cut.
               // Keep roughly one third of the configured width at the join
               // and ease that support away over the neighboring segment.
               const neck = .72;
-              // A continuous half-turn is a fold *inside one ribbon*, not the
+              // A continuous 270-degree fold is a fold *inside one ribbon*, not the
               // tip of one crescent followed by the tip of another. Preserve a
               // broad waist at that boundary and blend it over the adjacent
               // third so the outline stays C1-like instead of forming a cusp.
