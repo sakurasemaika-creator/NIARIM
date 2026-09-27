@@ -110,11 +110,18 @@ void main() {
       );
       List<ui.Offset> arc(double degrees, double radius) {
         final count = (degrees.abs() / 3).ceil();
+        // Use an open spiral rather than retracing the same circle beyond
+        // 360 degrees. The latter overlaps a 64 px brush with itself before
+        // the second 270-degree boundary and hides the fold we want to judge.
         return [
           for (var i = 0; i <= count; i++)
             ui.Offset(
-              360 + radius * math.cos(i * 3 * math.pi / 180),
-              420 + radius * math.sin(i * 3 * math.pi / 180),
+              360 +
+                  (radius + i * 3 * .18) *
+                      math.cos(i * 3 * math.pi / 180),
+              420 +
+                  (radius + i * 3 * .18) *
+                      math.sin(i * 3 * math.pi / 180),
             ),
         ];
       }
@@ -135,7 +142,7 @@ void main() {
               foldMode: mode,
             ),
             'hair_${modeNames[mode]}_${degrees.toInt()}deg_continuous',
-            input: arc(degrees, degrees > 400 ? 92 : 125),
+            input: arc(degrees, degrees > 400 ? 70 : 105),
           );
         }
       }
