@@ -18,6 +18,8 @@ on:
       - 'lib/services/filter_service.dart'
       - 'lib/screens/canvas/widgets/filter_panel.dart'
       - 'test/prism_integration_regression_test.dart'
+      # Keep this workflow path-scoped; closure reverification is triggered by
+      # touching this file without changing the production contract.
   workflow_dispatch:
 
 permissions:
