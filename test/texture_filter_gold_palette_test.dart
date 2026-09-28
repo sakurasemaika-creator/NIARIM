@@ -28,7 +28,7 @@ void main() {
     expect(service, contains("name: '質感変更フィルター'"));
 
     final stops = auroraHologramStops(AuroraHologramPreset.sunsetGold);
-    expect(stops.first, equals((0.00, 24, 13, 0)));
+    expect(stops.first, equals((0.00, 20, 10, 0)));
     expect(stops.last, equals((1.00, 255, 255, 255)));
 
     // Mid/high tones should read as yellow gold rather than orange:
