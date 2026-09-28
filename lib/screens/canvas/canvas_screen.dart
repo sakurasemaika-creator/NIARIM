@@ -692,9 +692,18 @@ class _CanvasScreenState extends State<CanvasScreen> {
                   value: _autofillCheckMode,
                   underline: const SizedBox.shrink(),
                   items: const [
-                    DropdownMenuItem(value: AutofillCheckMode.normal, child: Text('通常表示')),
-                    DropdownMenuItem(value: AutofillCheckMode.partSeparation, child: Text('パーツ分け確認')),
-                    DropdownMenuItem(value: AutofillCheckMode.silhouette, child: Text('シルエット確認')),
+                    DropdownMenuItem(
+                      value: AutofillCheckMode.normal,
+                      child: Text('通常表示'),
+                    ),
+                    DropdownMenuItem(
+                      value: AutofillCheckMode.partSeparation,
+                      child: Text('パーツ分け確認'),
+                    ),
+                    DropdownMenuItem(
+                      value: AutofillCheckMode.silhouette,
+                      child: Text('シルエット確認'),
+                    ),
                   ],
                   onChanged: (mode) {
                     if (mode != null) setState(() => _autofillCheckMode = mode);
