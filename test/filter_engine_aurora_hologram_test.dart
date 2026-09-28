@@ -334,34 +334,20 @@ void main() {
     expect(apply(), equals(apply()));
   });
 
-  test('ホログラム色プリセットは白ハイライトと主色を両方持つ', () {
-    const expectedDominant = {
-      AuroraHologramPreset.silverHologram: 'blue',
-      AuroraHologramPreset.silverHologram: 'blue',
-      AuroraHologramPreset.darkHologram: 'purple',
-      AuroraHologramPreset.silverHologram: 'blueGreen',
-    };
-    for (final entry in expectedDominant.entries) {
-      final stops = auroraHologramStops(entry.key);
-      expect(
-        stops.any((s) => s.$2 >= 238 && s.$3 >= 238 && s.$4 >= 238),
-        isTrue,
-        reason: '${entry.key.name} should retain pearly white highlights',
-      );
-      switch (entry.value) {
-        case 'blue':
-          expect(stops.any((s) => s.$4 > s.$2 && s.$4 >= 230), isTrue);
-        case 'purple':
-          expect(stops.any((s) => s.$2 >= 140 && s.$4 >= 230), isTrue);
-        case 'blueGreen':
-          expect(
-            stops.any((s) => s.$3 >= 210 && s.$4 >= 210),
-            isTrue,
-          );
-      }
-    }
-  });
+  test('質感presetは用途ごとに異なる帯構造を持つ', () {
+    final hologram = auroraHologramStops(AuroraHologramPreset.silverHologram);
+    final opal = auroraHologramStops(AuroraHologramPreset.opalPearl);
+    final dark = auroraHologramStops(AuroraHologramPreset.darkHologram);
 
+    expect(hologram.where((s) => s.$2 >= 250 && s.$3 >= 250 && s.$4 >= 250).length, greaterThanOrEqualTo(3));
+    expect(opal.where((s) => s.$2 >= 240 && s.$3 >= 240 && s.$4 >= 240).length, greaterThanOrEqualTo(3));
+    expect(dark.first.$2, lessThan(20));
+    expect(dark.first.$3, lessThan(20));
+    expect(dark.first.$4, lessThan(30));
+    expect(hologram, isNot(equals(opal)));
+    expect(hologram, isNot(equals(dark)));
+    expect(opal, isNot(equals(dark)));
+  });
 
   test('全プリセットで黒と白が帯の両端へ100%マッピングされる', () {
     for (final preset in AuroraHologramPreset.values) {
