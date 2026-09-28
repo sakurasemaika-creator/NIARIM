@@ -459,6 +459,24 @@ void main() {
   });
 
 
+
+  test('全配色は質感の陰影を潰さない十分な明度レンジを持つ', () {
+    int luminance((double, int, int, int) stop) =>
+        ((299 * stop.$2 + 587 * stop.$3 + 114 * stop.$4) / 1000).round();
+
+    for (final preset in AuroraHologramPreset.values) {
+      final values = auroraHologramStops(preset).map(luminance).toList();
+      final minValue = values.reduce((a, b) => a < b ? a : b);
+      final maxValue = values.reduce((a, b) => a > b ? a : b);
+      expect(
+        maxValue - minValue,
+        greaterThanOrEqualTo(100),
+        reason: '${preset.name}: palette must preserve visible material relief',
+      );
+    }
+  });
+
+
   test('auroraHologramStopsは各プリセットで昇順の位置を持つ', () {
     for (final preset in AuroraHologramPreset.values) {
       final stops = auroraHologramStops(preset);
