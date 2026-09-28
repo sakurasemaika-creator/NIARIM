@@ -1886,7 +1886,7 @@ class _FilterPanelState extends State<FilterPanel> {
         sceneId: widget.sceneId,
         frameIndex: frameIndex,
         layer: _isPrism(filter)
-            ? layer.copyWith(blendMode: model.LayerBlendMode.addition)
+            ? layer.copyWith(blendMode: model.LayerBlendMode.linearDodge)
             : layer,
       );
     }
