@@ -1052,27 +1052,13 @@ Future<Uint8List> _fixture(
   int height = 256,
 }) async {
   if (kind == 'textureReferenceOriginal') {
-    final bytes = await File(
-      'test/visual/fixtures/texture_reference_original.png',
-    ).readAsBytes();
-    final codec = await ui.instantiateImageCodec(bytes);
-    final frame = await codec.getNextFrame();
-    final image = frame.image;
-    if (image.width != 785 || image.height != 455) {
-      image.dispose();
-      codec.dispose();
-      throw StateError(
-        'Original texture reference must remain 785x455; '
-        'got ${image.width}x${image.height}.',
-      );
-    }
-    final data = await image.toByteData(format: ui.ImageByteFormat.rawRgba);
-    image.dispose();
-    codec.dispose();
-    if (data == null) {
-      throw StateError('Unable to read original texture reference pixels.');
-    }
-    return data.buffer.asUint8List();
+    // The original 785x455 user reference PNG cannot be safely round-tripped
+    // through the repository transport used by this capture job. Fail clearly
+    // instead of silently substituting/upscaling the old 192x192 fixture.
+    throw StateError(
+      'textureReferenceOriginal requires the verified 785x455 source PNG; '
+      'repository copy is not a valid image. Do not substitute a low-res fixture.',
+    );
   }
   if (kind == 'textureReference3' || kind == 'textureReference4') {
     return Future.value(textureReferenceRgba(kind, width: width, height: height));
