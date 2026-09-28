@@ -54,12 +54,13 @@ class HairFoldRaster {
         lengths.last + (points[i].position - points[i - 1].position).distance,
       );
     }
-    final candidates = <({int index, double strength, double sign, bool continuous})>[];
+    final candidates =
+        <({int index, double strength, double sign, bool continuous})>[];
     for (final fold in folds) {
       final source = fold.sourceCurve;
       if (source.length < 3) continue;
       // A direction-change fold belongs at the strongest local bend. A
-      // continuous 180-degree fold has no single sharp bend, so place it at
+      // continuous 270-degree fold has no single sharp bend, so place it at
       // the detector's cumulative-turn boundary instead of arbitrarily picking
       // one equally curved sample from the arc.
       var best = 0.0;
@@ -108,7 +109,8 @@ class HairFoldRaster {
       }
     }
     candidates.sort((a, b) => a.index.compareTo(b.index));
-    final bends = <({int index, double strength, double sign, bool continuous})>[];
+    final bends =
+        <({int index, double strength, double sign, bool continuous})>[];
     for (final candidate in candidates) {
       if (bends.isNotEmpty &&
           bends.last.sign == candidate.sign &&
@@ -128,26 +130,15 @@ class HairFoldRaster {
     }.toList()..sort();
     if (indices.length < 3) return;
     if (brush.foldMode == HairFoldMode.crescent) {
-      // Reversal bends describe the centers of adjacent authored crescents, so
-      // their boundary remains the midpoint between two such bends. A
-      // cumulative 270-degree event is different: it *is* the boundary where
-      // the next crescent starts while the turn direction continues. Preserve
-      // that detector index exactly so taper/join logic can recognize it.
-      final crescentBoundaries = <int>{0, points.length - 1};
-      for (final bend in bends) {
-        if (bend.continuous) crescentBoundaries.add(bend.index);
-      }
-      for (var i = 1; i < bends.length; i++) {
-        final previous = bends[i - 1];
-        final current = bends[i];
-        if (previous.continuous || current.continuous) continue;
-        final target =
-            (lengths[previous.index] + lengths[current.index]) / 2;
-        final midpoint = lengths.indexWhere((d) => d >= target);
-        if (midpoint > 0 && midpoint < points.length - 1) {
-          crescentBoundaries.add(midpoint);
-        }
-      }
+      // Once folding is active, every actual reversal separates crescents.
+      // Detector cooldown may skip a small final curl; midpoints between its
+      // sparse events can then put both turn directions in one crescent.
+      final crescentBoundaries = <int>{
+        0,
+        points.length - 1,
+        ..._curveReversals(points, lengths),
+        ...bends.where((bend) => bend.continuous).map((bend) => bend.index),
+      };
       indices
         ..clear()
         ..addAll(crescentBoundaries.toList()..sort());
@@ -177,12 +168,8 @@ class HairFoldRaster {
                 p.opacity,
               );
             });
-      if (brush.foldMode == HairFoldMode.crescent) {
-        // The authored stroke is the crescent centerline. Smooth only sampling
-        // noise; do not move it toward either outline. Outer/inner curvature is
-        // produced explicitly by the asymmetric width sweep below.
-        points = _smoothCrescentCenterline(points);
-      }
+      // The engine already resolved stabilization. Keep these authored centers
+      // unchanged; only the outline normals and width profile are derived here.
       final runs = <_RibbonRun>[];
       for (var i = 1; i < indices.length; i++) {
         final start = indices[i - 1], end = indices[i];
@@ -199,20 +186,133 @@ class HairFoldRaster {
         };
         runs.add(_RibbonRun(start, end, depth, ownerBase + i));
       }
+      final crescentTangents = <int, Offset>{};
+      final crescentWidths = <int, double>{};
+      final crescentSides = <int, double>{};
+      if (brush.foldMode == HairFoldMode.crescent) {
+        final radii = <double>[];
+        final turns = <double>[];
+        // Measure curvature over document distance, not adjacent events:
+        // interpolated pointer samples alternate straight sections and tiny
+        // corners. A per-sample width clamp creates dents at those corners.
+        for (var index = 0; index < points.length; index++) {
+          final reach = math.max(.5, points[index].width * .3);
+          final before = _positionAtDistance(
+            points,
+            lengths,
+            lengths[index] - reach,
+          );
+          final after = _positionAtDistance(
+            points,
+            lengths,
+            lengths[index] + reach,
+          );
+          final incoming = points[index].position - before;
+          final outgoing = after - points[index].position;
+          crescentTangents[index] = _unit(after - before);
+          radii.add(_curveRadius(before, points[index].position, after));
+          turns.add(
+            incoming.distanceSquared < 1e-8 || outgoing.distanceSquared < 1e-8
+                ? 0
+                : math.atan2(
+                    _cross(incoming, outgoing),
+                    _dot(incoming, outgoing),
+                  ),
+          );
+        }
+        var groupStart = 0;
+        var limit = double.infinity;
+        var strongestTurn = 0.0;
+        var groupTurn = 0.0;
+        for (var boundary = 1; boundary < indices.length; boundary++) {
+          final start = indices[boundary - 1], end = indices[boundary];
+          for (var index = start; index <= end; index++) {
+            if (index > start) {
+              final a = crescentTangents[index - 1]!,
+                  b = crescentTangents[index]!;
+              groupTurn += math.atan2(_cross(a, b), _dot(a, b)).abs();
+            }
+            if (turns[index].abs() > strongestTurn.abs()) {
+              strongestTurn = turns[index];
+            }
+            final reach = math.max(.5, points[index].width * .3);
+            if (lengths[index] < reach ||
+                lengths.last - lengths[index] < reach) {
+              continue;
+            }
+            limit = math.min(
+              limit,
+              math.max(.5, 2 * (radii[index] * .7 - brush.outlineWidth)),
+            );
+          }
+          final continues = bends.any(
+            (bend) => bend.index == end && bend.continuous,
+          );
+          if (!continues || boundary == indices.length - 1) {
+            // A very short or nearly straight terminal arc cannot support a
+            // full-width crescent. Scale its envelope to its actual bend so
+            // its tip remains a curl rather than a round bead.
+            final groupLength = lengths[end] - lengths[indices[groupStart]];
+            limit = math.min(
+              limit,
+              math.max(
+                .5,
+                groupLength * math.sin(math.min(math.pi, groupTurn) / 2) * .5,
+              ),
+            );
+            // Continuous folds share one width and orientation at their neck.
+            // Reversal boundaries start an independent crescent again.
+            for (var member = groupStart; member < boundary; member++) {
+              crescentWidths[indices[member]] = limit;
+              crescentSides[indices[member]] = strongestTurn == 0
+                  ? 1
+                  : strongestTurn.sign;
+            }
+            groupStart = boundary;
+            limit = double.infinity;
+            strongestTurn = 0;
+            groupTurn = 0;
+          }
+        }
+      }
       runs.sort((a, b) => a.depth.compareTo(b.depth));
       for (final run in runs) {
+        final runLength = lengths[run.end] - lengths[run.start];
+        final crescentWidthLimit = crescentWidths[run.start] ?? double.infinity;
+        final startsContinuous =
+            run.start > 0 &&
+            bends.any((bend) => bend.index == run.start && bend.continuous);
+        final endsContinuous =
+            run.end < points.length - 1 &&
+            bends.any((bend) => bend.index == run.end && bend.continuous);
+        final geometry = brush.foldMode == HairFoldMode.crescent
+            ? <Object>[
+                crescentWidthLimit,
+                crescentSides[run.start]!,
+                startsContinuous,
+                endsContinuous,
+                for (var index = run.start; index <= run.end; index++)
+                  (
+                    points[index].position,
+                    points[index].width,
+                    points[index].opacity,
+                    crescentTangents[index],
+                    lengths[index] - lengths[run.start],
+                  ),
+              ]
+            : null;
         final canCache = offset == 0;
         final cached = canCache ? _runs[run.start] : null;
         final reusable =
             cached != null &&
             cached.end <= run.end &&
             (brush.foldMode != HairFoldMode.crescent ||
-                cached.end == run.end) &&
+                (cached.end == run.end &&
+                    _sameGeometry(cached.geometry, geometry))) &&
             _samePoint(cached.last, points[cached.end]) &&
             _samePoint(cached.first, points[run.start]);
         final mask = reusable ? cached.mask : <int, _MaskTile>{};
         final segmentStart = reusable ? cached.end + 1 : run.start + 1;
-        final runLength = lengths[run.end] - lengths[run.start];
         for (var i = segmentStart; i <= run.end; i++) {
           var a = points[i - 1], b = points[i];
           if (brush.foldMode != HairFoldMode.crescent &&
@@ -246,25 +346,18 @@ class HairFoldRaster {
               final phase = t * t * (3 - 2 * t);
               final strength = (brush.foldCurveStrength - 1) / 9;
               final profile = math.sin(math.pi * phase);
-              final rounded = math.pow(
-                profile.clamp(0.0, 1.0),
-                1.0 + strength * .35,
-              ).toDouble();
+              final rounded = math
+                  .pow(profile.clamp(0.0, 1.0), 1.0 + strength * .35)
+                  .toDouble();
               // The configured brush width is the crescent's full
               // thickness at its middle. Authored/reversal tips converge to
-              // the centerline. At a cumulative 180-degree boundary the curve
+              // the centerline. At a cumulative 270-degree boundary the curve
               // is still turning in the same direction, so adjacent crescents
               // share a small neck instead of pinching to zero and reopening.
-              final startsContinuous =
-                  run.start > 0 &&
-                  bends.any((bend) => bend.index == run.start && bend.continuous);
-              final endsContinuous =
-                  run.end < points.length - 1 &&
-                  bends.any((bend) => bend.index == run.end && bend.continuous);
               var joined = rounded;
               // A shared 270-degree boundary should read as the waist
               // between two consecutive crescents, not as a near-zero cut.
-              // Keep roughly one third of the configured width at the join
+              // Keep most of the configured width at the join
               // and ease that support away over the neighboring segment.
               const neck = .72;
               // A continuous 270-degree fold is a fold *inside one ribbon*, not the
@@ -281,7 +374,24 @@ class HairFoldRaster {
                 final ease = local * local * (3 - 2 * local);
                 joined = math.max(joined, neck * ease);
               }
-              return points[index].width * joined;
+              if (startsContinuous && !endsContinuous) {
+                // Immediately after a continuous fold there may be too little
+                // travel for another full crescent. Finish that shared neck
+                // with a rounded cap, easing into the normal profile as the
+                // next arc grows, instead of swelling wider than the join.
+                final width = math.min(
+                  points[run.start].width,
+                  crescentWidthLimit,
+                );
+                final shortness =
+                    ((width - runLength) / math.max(.001, width * .5)).clamp(
+                      0.0,
+                      1.0,
+                    );
+                final cap = neck * math.sqrt(math.max(0.0, 1 - t * t));
+                joined = joined * (1 - shortness) + cap * shortness;
+              }
+              return math.min(points[index].width, crescentWidthLimit) * joined;
             }
 
             a = HairRibbonPoint(a.position, widthAt(i - 1), a.opacity);
@@ -289,29 +399,28 @@ class HairFoldRaster {
           }
           if (texture == null) {
             if (brush.foldMode == HairFoldMode.crescent) {
-              final before =
-                  points[math.max(run.start, i - 2)].position;
-              final after =
-                  points[math.min(run.end, i + 1)].position;
-              final incoming = a.position - before;
-              final outgoing = after - b.position;
-              var turnSide = _cross(incoming, b.position - a.position).sign;
-              if (turnSide == 0) {
-                turnSide = _cross(b.position - a.position, outgoing).sign;
-              }
-              if (turnSide == 0) turnSide = 1;
               _crescentSegment(
                 mask,
                 a,
                 b,
                 brush.outlineWidth,
-                turnSide: turnSide,
+                turnSide: crescentSides[run.start]!,
+                tangentA: crescentTangents[i - 1]!,
+                tangentB: crescentTangents[i]!,
               );
             } else {
               _segment(mask, a, b, brush.outlineWidth);
             }
           } else {
-            _texturedSegment(mask, a, b, brush, texture);
+            _texturedSegment(
+              mask,
+              a,
+              b,
+              brush,
+              texture,
+              tangentA: crescentTangents[i - 1],
+              tangentB: crescentTangents[i],
+            );
           }
         }
         if (canCache) {
@@ -320,6 +429,7 @@ class HairFoldRaster {
             points[run.start],
             points[run.end],
             mask,
+            geometry: geometry,
           );
         }
         for (final entry in mask.entries) {
@@ -333,33 +443,43 @@ class HairFoldRaster {
               end = points[run.end].position;
           final startTangent = points[run.start + 1].position - start;
           final endTangent = end - points[run.end - 1].position;
-          for (var p = 0; p < _pixels; p++) {
-            final cover = m.outer[p];
-            if (cover <= 0) continue;
-            final fill = m.fill[p];
-            final ink = cover * m.opacity[p];
-            if (ink <= 0) continue;
-            surface.shape[p] = math.max(surface.shape[p], cover);
-            surface.outer[p] = math.max(surface.outer[p], ink);
-            surface.fill[p] = math.max(surface.fill[p], fill * m.opacity[p]);
-            var edge = (cover - fill).clamp(0.0, 1.0);
-            if (edge > 0 && brush.foldMode != HairFoldMode.crescent) {
-              final at = tileOrigin + Offset(p % _size + .5, p ~/ _size + .5);
-              if ((run.start > 0 && _dot(at - start, startTangent) < 0) ||
-                  (run.end < points.length - 1 &&
-                      _dot(at - end, endTangent) > 0)) {
-                edge = 0;
+          for (var row = m.top; row <= m.bottom; row++) {
+            for (
+              var p = row * _size + m.left[row];
+              p <= row * _size + m.right[row];
+              p++
+            ) {
+              final cover = m.outer[p];
+              if (cover <= 0) continue;
+              final fill = m.fill[p];
+              final ink = cover * m.opacity[p];
+              if (ink <= 0) continue;
+              if (surface.cover[p] <= 0) surface.include(p);
+              surface.shape[p] = math.max(surface.shape[p], cover);
+              surface.outer[p] = math.max(surface.outer[p], ink);
+              surface.fill[p] = math.max(surface.fill[p], fill * m.opacity[p]);
+              var edge = (cover - fill).clamp(0.0, 1.0);
+              if (edge > 0 && brush.foldMode != HairFoldMode.crescent) {
+                final at = tileOrigin + Offset(p % _size + .5, p ~/ _size + .5);
+                if ((run.start > 0 && _dot(at - start, startTangent) < 0) ||
+                    (run.end < points.length - 1 &&
+                        _dot(at - end, endTangent) > 0)) {
+                  edge = 0;
+                }
               }
+              // A stroke keeps maximum ink coverage across its faces. Equal
+              // opacity front ink hides rear edges; weaker or invisible ink
+              // cannot erase a stronger face beneath it.
+              final total = math.max(ink, surface.cover[p]);
+              final front = ink / total;
+              // Crescents form a single surface: only the union perimeter below
+              // is visible, never a cross-section cap between connected runs.
+              surface.outline[p] = brush.foldMode == HairFoldMode.crescent
+                  ? 0
+                  : edge / cover * front + surface.outline[p] * (1 - front);
+              surface.cover[p] = total;
+              if (front > .5) surface.owner[p] = run.id;
             }
-            // A stroke keeps maximum ink coverage across its faces. Equal
-            // opacity front ink hides rear edges; weaker or invisible ink
-            // cannot erase a stronger face beneath it.
-            final total = math.max(ink, surface.cover[p]);
-            final front = ink / total;
-            surface.outline[p] =
-                edge / cover * front + surface.outline[p] * (1 - front);
-            surface.cover[p] = total;
-            if (front > .5) surface.owner[p] = run.id;
           }
         }
       }
@@ -437,22 +557,28 @@ class HairFoldRaster {
       rememberTile(tx, ty);
       final target = tiles.getOrCreateTile(layer, tx, ty);
       final s = entry.value;
-      for (var p = 0; p < _pixels; p++) {
-        if (s.cover[p] <= 0) continue;
-        final perimeter = (s.outer[p] - s.fill[p]) / s.cover[p];
-        final mix = math.max(s.outline[p], perimeter).clamp(0.0, 1.0);
-        final color = Color.lerp(fillColor, outline, mix)!;
-        final alpha = (255 * s.cover[p] * color.a).round().clamp(0, 255);
-        if (alpha == 0) continue;
-        tiles.blendPixel(
-          target,
-          p % _size,
-          p ~/ _size,
-          (color.r * 255).round(),
-          (color.g * 255).round(),
-          (color.b * 255).round(),
-          alpha,
-        );
+      for (var row = s.top; row <= s.bottom; row++) {
+        for (
+          var p = row * _size + s.left[row];
+          p <= row * _size + s.right[row];
+          p++
+        ) {
+          if (s.cover[p] <= 0) continue;
+          final perimeter = (s.outer[p] - s.fill[p]) / s.cover[p];
+          final mix = math.max(s.outline[p], perimeter).clamp(0.0, 1.0);
+          final color = Color.lerp(fillColor, outline, mix)!;
+          final alpha = (255 * s.cover[p] * color.a).round().clamp(0, 255);
+          if (alpha == 0) continue;
+          tiles.blendPixel(
+            target,
+            p % _size,
+            p ~/ _size,
+            (color.r * 255).round(),
+            (color.g * 255).round(),
+            (color.b * 255).round(),
+            alpha,
+          );
+        }
       }
       tiles.markDirty(layer, tx, ty);
     }
@@ -464,81 +590,30 @@ class HairFoldRaster {
     HairRibbonPoint b,
     double outline, {
     required double turnSide,
+    required Offset tangentA,
+    required Offset tangentB,
   }) {
-    final d = b.position - a.position;
-    final squared = d.distanceSquared;
-    if (squared < 1e-10) return;
-    final tangent = _unit(d);
-    final normal = Offset(-tangent.dy, tangent.dx);
-    // Build the two crescent outlines directly from the authored centerline.
-    // The outside bows farther than a normal ribbon offset while the inside
-    // stays closer to the centerline, so both are smooth curves rather than a
-    // union cusp that must be repaired afterward.
-    // Side must come from the *local tangent turn*. Crossing absolute
-    // canvas positions makes the side depend on the document origin and can
-    // flip halfway around a 360-degree curve, producing a visible seam.
-    final outerScale = 1.18;
-    final innerScale = .82;
-    final side = turnSide;
-    final aOuter = a.position + normal * (a.width * .5 * outerScale * side);
-    final bOuter = b.position + normal * (b.width * .5 * outerScale * side);
-    final aInner = a.position - normal * (a.width * .5 * innerScale * side);
-    final bInner = b.position - normal * (b.width * .5 * innerScale * side);
-    _quadStrip(masks, aInner, aOuter, bInner, bOuter, a.opacity, b.opacity, outline);
-  }
-
-  void _quadStrip(
-    Map<int, _MaskTile> masks,
-    Offset aInner,
-    Offset aOuter,
-    Offset bInner,
-    Offset bOuter,
-    double opacityA,
-    double opacityB,
-    double outline,
-  ) {
-    final minX = math.min(math.min(aInner.dx, aOuter.dx), math.min(bInner.dx, bOuter.dx));
-    final maxX = math.max(math.max(aInner.dx, aOuter.dx), math.max(bInner.dx, bOuter.dx));
-    final minY = math.min(math.min(aInner.dy, aOuter.dy), math.min(bInner.dy, bOuter.dy));
-    final maxY = math.max(math.max(aInner.dy, aOuter.dy), math.max(bInner.dy, bOuter.dy));
-    final left = (minX - outline - 1).floor().clamp(0, tiles.canvasWidth - 1);
-    final right = (maxX + outline + 1).ceil().clamp(0, tiles.canvasWidth - 1);
-    final top = (minY - outline - 1).floor().clamp(0, tiles.canvasHeight - 1);
-    final bottom = (maxY + outline + 1).ceil().clamp(0, tiles.canvasHeight - 1);
-    final centerA = (aInner + aOuter) * .5;
-    final centerB = (bInner + bOuter) * .5;
-    final centerDelta = centerB - centerA;
-    final centerSquared = centerDelta.distanceSquared;
-    for (var y = top; y <= bottom; y++) {
-      for (var x = left; x <= right; x++) {
-        final at = Offset(x + .5, y + .5);
-        final t = centerSquared < 1e-10
-            ? 0.0
-            : (_dot(at - centerA, centerDelta) / centerSquared).clamp(0.0, 1.0);
-        final inner = Offset.lerp(aInner, bInner, t)!;
-        final outer = Offset.lerp(aOuter, bOuter, t)!;
-        final span = outer - inner;
-        final spanSquared = span.distanceSquared;
-        if (spanSquared < 1e-10) continue;
-        final across = (_dot(at - inner, span) / spanSquared).clamp(0.0, 1.0);
-        final nearest = inner + span * across;
-        final distance = (at - nearest).distance;
-        final insideProjection = _dot(at - inner, span) / spanSquared;
-        final inside = insideProjection >= 0 && insideProjection <= 1;
-        final fill = inside ? (1.0 - distance).clamp(0.0, 1.0) : 0.0;
-        final outerCoverage = inside
-            ? 1.0
-            : (outline + .5 - distance).clamp(0.0, 1.0);
-        if (outerCoverage <= 0 && fill <= 0) continue;
-        final key = (y ~/ _size) * tiles.tilesX + x ~/ _size;
-        final mask = masks.putIfAbsent(key, _MaskTile.new);
-        final p = (y % _size) * _size + x % _size;
-        final opacity = opacityA + (opacityB - opacityA) * t;
-        if (fill > mask.fill[p]) mask.opacity[p] = opacity;
-        mask.fill[p] = math.max(mask.fill[p], fill);
-        mask.outer[p] = math.max(mask.outer[p], math.max(fill, outerCoverage));
-      }
-    }
+    // Reuse the outline pen's analytic variable-width envelope. Independent
+    // quadrilateral caps made a short crescent polygonal; round envelope joins
+    // stay smooth even when only a few pointer samples describe the curl.
+    // The normal offset distributes .59 of the width outside and .41 inside
+    // the authored curve, without generating or resmoothing a centerline.
+    final inwardA = Offset(-tangentA.dy, tangentA.dx) * turnSide;
+    final inwardB = Offset(-tangentB.dy, tangentB.dx) * turnSide;
+    _segment(
+      masks,
+      HairRibbonPoint(
+        a.position - inwardA * (a.width * .09),
+        a.width,
+        a.opacity,
+      ),
+      HairRibbonPoint(
+        b.position - inwardB * (b.width * .09),
+        b.width,
+        b.opacity,
+      ),
+      outline,
+    );
   }
 
   void _segment(
@@ -590,6 +665,7 @@ class HairFoldRaster {
         final key = (y ~/ _size) * tiles.tilesX + (x ~/ _size);
         final m = masks.putIfAbsent(key, _MaskTile.new);
         final p = (y % _size) * _size + (x % _size);
+        if (m.outer[p] <= 0) m.include(p);
         if (fill > m.fill[p]) {
           m.opacity[p] = opacity;
         } else if (fill == m.fill[p]) {
@@ -608,18 +684,33 @@ class HairFoldRaster {
     HairRibbonPoint a,
     HairRibbonPoint b,
     Brush brush,
-    Uint8List texture,
-  ) {
+    Uint8List texture, {
+    Offset? tangentA,
+    Offset? tangentB,
+  }) {
     final delta = b.position - a.position;
     final steps = math.max(1, delta.distance.ceil());
-    final angle =
-        (brush.rotation ? math.atan2(delta.dy, delta.dx) : 0.0) +
-        (brush.calligraphyAngle ?? 0) * math.pi / 180;
-    final cosA = math.cos(-angle), sinA = math.sin(-angle);
+    final crescent = brush.foldMode == HairFoldMode.crescent;
+    final startTangent = tangentA ?? delta;
+    final endTangent = tangentB ?? delta;
+    final startAngle = math.atan2(startTangent.dy, startTangent.dx);
+    final endAngle = math.atan2(endTangent.dy, endTangent.dx);
+    final angleDelta = math.atan2(
+      math.sin(endAngle - startAngle),
+      math.cos(endAngle - startAngle),
+    );
+    final fixedAngle = brush.rotation ? math.atan2(delta.dy, delta.dx) : 0.0;
+    final radiusA = a.width / 2, radiusB = b.width / 2;
     for (var step = 0; step <= steps; step++) {
       final t = step / steps;
       final center = a.position + delta * t;
-      final radius = math.max(.001, (a.width + (b.width - a.width) * t) / 2);
+      final radius = math.max(.001, radiusA + (radiusB - radiusA) * t);
+      // The authored tip's vertical axis follows the stroke in crescent mode.
+      // Interpolated vertex tangents avoid a new corner at every input sample.
+      final angle =
+          (crescent ? startAngle + angleDelta * t - math.pi / 2 : fixedAngle) +
+          (brush.calligraphyAngle ?? 0) * math.pi / 180;
+      final cosA = math.cos(-angle), sinA = math.sin(-angle);
       final outerRadius = radius + brush.outlineWidth;
       final opacity = a.opacity + (b.opacity - a.opacity) * t;
       final left = (center.dx - outerRadius - 1).floor().clamp(
@@ -644,6 +735,16 @@ class HairFoldRaster {
           final u = dx * cosA - dy * sinA, v = dx * sinA + dy * cosA;
           final distSquared = u * u + v * v;
           double coverage(double r) {
+            if (crescent) {
+              final clip = (r + .5 - math.sqrt(distSquared)).clamp(0.0, 1.0);
+              if (clip <= 0) return 0;
+              return _textureAlpha(
+                    texture,
+                    ((u / r + 1) / 2) * (brushTextureSize - 1),
+                    ((v / r + 1) / 2) * (brushTextureSize - 1),
+                  ) *
+                  clip;
+            }
             if (distSquared > r * r) return 0;
             final tx = (((u / r + 1) / 2) * (brushTextureSize - 1))
                 .round()
@@ -660,6 +761,7 @@ class HairFoldRaster {
           final key = (y ~/ _size) * tiles.tilesX + x ~/ _size;
           final mask = masks.putIfAbsent(key, _MaskTile.new);
           final p = (y % _size) * _size + x % _size;
+          if (mask.outer[p] <= 0) mask.include(p);
           if (fill > mask.fill[p]) {
             mask.opacity[p] = opacity;
           } else if (fill == mask.fill[p]) {
@@ -736,13 +838,13 @@ class HairFoldRaster {
 const _size = TileManager.tileSize;
 const _pixels = _size * _size;
 
-class _MaskTile {
+class _MaskTile extends _PixelSpans {
   final outer = Float32List(_pixels),
       fill = Float32List(_pixels),
       opacity = Float32List(_pixels);
 }
 
-class _SurfaceTile {
+class _SurfaceTile extends _PixelSpans {
   final owner = Int32List(_pixels);
   final outer = Float32List(_pixels), fill = Float32List(_pixels);
   final cover = Float32List(_pixels),
@@ -756,27 +858,6 @@ class _RibbonRun {
   const _RibbonRun(this.start, this.end, this.depth, this.id);
 }
 
-
-List<HairRibbonPoint> _smoothCrescentCenterline(
-  List<HairRibbonPoint> source,
-) {
-  if (source.length < 3) return source;
-  var current = List<HairRibbonPoint>.from(source);
-  for (var pass = 0; pass < 6; pass++) {
-    final next = List<HairRibbonPoint>.from(current);
-    for (var i = 1; i < current.length - 1; i++) {
-      final before = current[i - 1], at = current[i], after = current[i + 1];
-      final position =
-          before.position * .25 + at.position * .5 + after.position * .25;
-      next[i] = HairRibbonPoint(position, at.width, at.opacity);
-    }
-    current = next;
-  }
-  current[0] = source[0];
-  current[current.length - 1] = source.last;
-  return current;
-}
-
 double _dot(Offset a, Offset b) => a.dx * b.dx + a.dy * b.dy;
 double _cross(Offset a, Offset b) => a.dx * b.dy - a.dy * b.dx;
 Offset _unit(Offset a) => a.distance < 1e-9 ? Offset.zero : a / a.distance;
@@ -785,8 +866,120 @@ class _RunCache {
   final int end;
   final HairRibbonPoint first, last;
   final Map<int, _MaskTile> mask;
-  const _RunCache(this.end, this.first, this.last, this.mask);
+  // Completed crescents can depend on neighboring tangents or a shared width
+  // limit. Compare the actual geometry, not only endpoints or a lossy hash.
+  final List<Object>? geometry;
+  const _RunCache(this.end, this.first, this.last, this.mask, {this.geometry});
 }
 
 bool _samePoint(HairRibbonPoint a, HairRibbonPoint b) =>
     a.position == b.position && a.width == b.width && a.opacity == b.opacity;
+
+// Circumradius of a sampled turn; straight and duplicate samples are unbounded.
+double _curveRadius(Offset before, Offset at, Offset after) {
+  final a = at - before, b = after - at;
+  final twiceArea = _cross(a, b).abs();
+  if (twiceArea < 1e-9) return double.infinity;
+  return a.distance * b.distance * (after - before).distance / (2 * twiceArea);
+}
+
+// Bilinear alpha avoids stair-stepping when a tip rotates through a curve.
+double _textureAlpha(Uint8List texture, double x, double y) {
+  final fx = x.clamp(0.0, brushTextureSize - 1.0);
+  final fy = y.clamp(0.0, brushTextureSize - 1.0);
+  final x0 = fx.floor(), y0 = fy.floor();
+  final x1 = math.min(x0 + 1, brushTextureSize - 1);
+  final y1 = math.min(y0 + 1, brushTextureSize - 1);
+  final u = fx - x0, v = fy - y0;
+  double alpha(int x, int y) =>
+      texture[(y * brushTextureSize + x) * 4 + 3] / 255;
+  return (alpha(x0, y0) * (1 - u) + alpha(x1, y0) * u) * (1 - v) +
+      (alpha(x0, y1) * (1 - u) + alpha(x1, y1) * u) * v;
+}
+
+Offset _positionAtDistance(
+  List<HairRibbonPoint> points,
+  List<double> lengths,
+  double distance,
+) {
+  if (distance <= 0) return points.first.position;
+  if (distance >= lengths.last) return points.last.position;
+  var low = 0, high = lengths.length - 1;
+  while (high - low > 1) {
+    final middle = (low + high) ~/ 2;
+    if (lengths[middle] < distance) {
+      low = middle;
+    } else {
+      high = middle;
+    }
+  }
+  final span = lengths[high] - lengths[low];
+  return Offset.lerp(
+    points[low].position,
+    points[high].position,
+    span <= 0 ? 0 : (distance - lengths[low]) / span,
+  )!;
+}
+
+// Scanline bounds avoid walking every pixel of a 256-square tile for a narrow
+// strand. Bounds only expand and are retained with cached run masks.
+class _PixelSpans {
+  final left = Int16List(_size)..fillRange(0, _size, _size);
+  final right = Int16List(_size)..fillRange(0, _size, -1);
+  int top = _size, bottom = -1;
+  void include(int p) {
+    final y = p ~/ _size, x = p % _size;
+    if (x < left[y]) left[y] = x;
+    if (x > right[y]) right[y] = x;
+    if (y < top) top = y;
+    if (y > bottom) bottom = y;
+  }
+}
+
+bool _sameGeometry(List<Object>? a, List<Object>? b) {
+  if (a == null || b == null || a.length != b.length) return false;
+  for (var i = 0; i < a.length; i++) {
+    if (a[i] != b[i]) return false;
+  }
+  return true;
+}
+
+List<int> _curveReversals(List<HairRibbonPoint> points, List<double> lengths) {
+  final boundaries = <int>[];
+  var previous = Offset.zero;
+  var direction = 0.0, accumulated = 0.0, opposite = 0.0;
+  var candidate = -1;
+  for (var i = 0; i < points.length; i++) {
+    final reach = math.max(.5, points[i].width * .3);
+    final tangent = _unit(
+      _positionAtDistance(points, lengths, lengths[i] + reach) -
+          _positionAtDistance(points, lengths, lengths[i] - reach),
+    );
+    if (previous == Offset.zero || tangent == Offset.zero) {
+      previous = tangent;
+      continue;
+    }
+    final turn = math.atan2(_cross(previous, tangent), _dot(previous, tangent));
+    previous = tangent;
+    if (turn.abs() < 1e-5) continue;
+    if (direction == 0) direction = turn.sign;
+    if (turn.sign == direction) {
+      accumulated += turn.abs();
+      opposite = 0;
+      candidate = -1;
+    } else {
+      if (candidate < 0) candidate = i - 1;
+      opposite += turn.abs();
+      // Angular hysteresis rejects sampling noise without a screen-distance
+      // cooldown that would swallow a small but real reversal near the tip.
+      if (opposite >= .15) {
+        if (accumulated >= .25 && candidate > 0) boundaries.add(candidate);
+        direction = turn.sign;
+        accumulated = opposite;
+        opposite = 0;
+        candidate = -1;
+      }
+    }
+  }
+  return boundaries;
+}

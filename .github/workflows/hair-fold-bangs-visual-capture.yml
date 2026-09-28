@@ -7,6 +7,8 @@ on:
       - '.github/workflows/hair-fold-bangs-visual-capture.yml'
       - 'test/visual/hair_fold_bangs_render_capture_test.dart'
       - 'test/visual/hair_fold_settings_capture_test.dart'
+      - 'test/visual/hair_fold_hairstyle_capture_test.dart'
+      - 'test/visual/hair_fold_outline_reference_capture_test.dart'
       - 'lib/engine/drawing_engine.dart'
       - 'lib/engine/brush_stroke_geometry.dart'
       - 'lib/engine/brush_texture_cache.dart'
@@ -33,13 +35,15 @@ jobs:
       - run: flutter pub get --enforce-lockfile
       - name: Verify capture source
         run: |
-          dart format test/visual/hair_fold_bangs_render_capture_test.dart
-          git diff --exit-code -- test/visual/hair_fold_bangs_render_capture_test.dart || true
-          flutter analyze test/visual/hair_fold_bangs_render_capture_test.dart --no-fatal-infos --no-fatal-warnings
+          dart format test/visual/hair_fold_bangs_render_capture_test.dart test/visual/hair_fold_hairstyle_capture_test.dart test/visual/hair_fold_outline_reference_capture_test.dart
+          git diff --exit-code -- test/visual/hair_fold_bangs_render_capture_test.dart test/visual/hair_fold_hairstyle_capture_test.dart test/visual/hair_fold_outline_reference_capture_test.dart || true
+          flutter analyze test/visual/hair_fold_bangs_render_capture_test.dart test/visual/hair_fold_hairstyle_capture_test.dart test/visual/hair_fold_outline_reference_capture_test.dart --no-fatal-infos --no-fatal-warnings
       - name: Capture actual production DrawingEngine bangs
-        run: flutter test test/visual/hair_fold_bangs_render_capture_test.dart test/visual/hair_fold_settings_capture_test.dart --reporter expanded
+        run: flutter test test/visual/hair_fold_bangs_render_capture_test.dart test/visual/hair_fold_settings_capture_test.dart test/visual/hair_fold_hairstyle_capture_test.dart test/visual/hair_fold_outline_reference_capture_test.dart --reporter expanded
       - uses: actions/upload-artifact@v4
         with:
           name: hair-fold-bangs-captures
-          path: build/hair_fold_visual/*.png
+          path: |
+            build/hair_fold_visual/*.png
+            build/hair_fold_visual/outline_timings.json
           if-no-files-found: error
