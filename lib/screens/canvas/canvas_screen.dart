@@ -2614,9 +2614,19 @@ class _CanvasScreenState extends State<CanvasScreen> {
           // Canvas/Timeline are the two primary editing modes. Keep the
           // mode switch in the top bar so the current UI matches the mode
           // affordance shown throughout the product and website captures.
-          _topBarIconButton(
-            context,
-            Icons.movie_filter_outlined,
+          CanvasIconButton(
+            iconBuilder: (color) => SizedBox(
+              width: 30,
+              height: 20,
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(Icons.movie_filter_outlined, size: 16, color: color),
+                  Icon(Icons.arrow_forward, size: 14, color: color),
+                ],
+              ),
+            ),
+            iconSize: 30,
             onPressed: () => _runAutomationBlockedAction(
               () => context.go('/timeline/${widget.projectId}'),
             ),
