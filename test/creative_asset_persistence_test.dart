@@ -1,3 +1,5 @@
+import 'dart:io';
+import 'dart:typed_data';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:niarim/services/brush_service.dart';
@@ -143,6 +145,54 @@ void main() {
       expect(duplicate.fadeIn.rangePx, 73);
       expect(duplicate.fadeOut.value, 17);
       expect(duplicate.fadeOut.rangePx, 211);
+    });
+
+    test('.niabrush export/import preserves independent fade and custom images', () async {
+      final dir = await Directory.systemTemp.createTemp('niarim-niabrush-');
+      addTearDown(() async {
+        if (await dir.exists()) await dir.delete(recursive: true);
+      });
+      final imageA = File('${dir.path}/a.png');
+      final imageB = File('${dir.path}/b.png');
+      await imageA.writeAsBytes(Uint8List.fromList([1, 2, 3, 4]));
+      await imageB.writeAsBytes(Uint8List.fromList([5, 6, 7, 8]));
+
+      final service = BrushService();
+      await service.init();
+      final source = Brush(
+        id: 'BrushBundleRoundTrip',
+        name: 'bundle round trip',
+        size: 18,
+        opacity: 91,
+        spacing: 7,
+        stabilization: true,
+        stabilizationStrength: 33,
+        pixelMode: true,
+        fadeMode: FadeMode.custom,
+        fadeIn: const FadeEndpointSettings(value: 81, rangePx: 74),
+        fadeOut: const FadeEndpointSettings(value: 19, rangePx: 213),
+        strokeDecay: true,
+        customImagePaths: [imageA.path, imageB.path],
+      );
+      service.addBrush(source);
+
+      final bundlePath = '${dir.path}/roundtrip.niabrush';
+      await service.exportBrushToPath(source.id, bundlePath);
+      final imported = await service.importBrushFile(
+        bundlePath,
+        imagesDirectory: '${dir.path}/imported',
+      );
+
+      expect(imported.id, isNot(source.id));
+      expect(imported.fadeIn.value, 81);
+      expect(imported.fadeIn.rangePx, 74);
+      expect(imported.fadeOut.value, 19);
+      expect(imported.fadeOut.rangePx, 213);
+      expect(imported.pixelMode, isTrue);
+      expect(imported.strokeDecay, isTrue);
+      expect(imported.resolvedCustomImagePaths, hasLength(2));
+      expect(await File(imported.resolvedCustomImagePaths[0]).readAsBytes(), [1, 2, 3, 4]);
+      expect(await File(imported.resolvedCustomImagePaths[1]).readAsBytes(), [5, 6, 7, 8]);
     });
   });
 
