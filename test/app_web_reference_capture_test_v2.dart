@@ -132,13 +132,14 @@ void main() {
     Color(0xFF6678B8), Color(0xFFB36B86), Color(0xFF6F8F3D),
     Color(0xFF0086C9), Color(0xFFE08B00), Color(0xFF9A4FD0), Color(0xFF00A36C),
     Color(0xFFE65F2B), Color(0xFF485CC7), Color(0xFFC76C8A), Color(0xFF607D2D),
+    Color(0xFF00796B), Color(0xFFAD5A00), Color(0xFF6D5BD0), Color(0xFFB04A72),
   ];
 
   int webCaptureBaseIndex(String name) {
     const names = <String>[
       '01_canvas_default', '02_canvas_layer_panel', '03_canvas_onion_skin',
       '04_timeline_default', '05_timeline_audio_editor', '06_save_tree',
-      '07_export', '08_workspace',
+      '07_export', '08_workspace', '09_widget',
     ];
     return names.indexOf(name);
   }
@@ -403,5 +404,11 @@ void main() {
     await tester.pump(const Duration(milliseconds: 650));
     expectClean(tester, '設定→Workspace');
     await capture(tester, '08_workspace');
+
+    GoRouter.of(tester.element(find.byType(Scaffold).first))
+        .push('/settings/widget');
+    await tester.pump(const Duration(milliseconds: 650));
+    expectClean(tester, '設定→Widget');
+    await capture(tester, '09_widget');
   }, timeout: const Timeout(Duration(seconds: 180)));
 }
