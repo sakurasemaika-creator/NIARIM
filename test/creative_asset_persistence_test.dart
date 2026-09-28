@@ -115,7 +115,7 @@ void main() {
       expect(restored.pressureOn.mixing.mode, BrushMixingMode.bleed);
       expect(restored.pressureOff.mixing.mode, BrushMixingMode.bleed);
     });
-  });
+
 
     test('ブラシ複製で入り/抜きの値と範囲を独立保持する', () async {
       final service = BrushService();
@@ -144,8 +144,7 @@ void main() {
       expect(duplicate.fadeOut.value, 17);
       expect(duplicate.fadeOut.rangePx, 211);
     });
-
-;
+  });
 
   group('ToneService', () {
     test('自作トーンの追加とお気に入りが再起動後も復元される', () async {
