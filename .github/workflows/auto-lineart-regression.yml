@@ -1,0 +1,39 @@
+name: Auto Lineart Regression
+
+on:
+  push:
+    branches: [dev_branch]
+    paths:
+      - '.github/workflows/auto-lineart-regression.yml'
+      - 'lib/engine/auto_lineart_engine.dart'
+      - 'lib/screens/canvas/widgets/auto_lineart_control_overlay.dart'
+      - 'lib/screens/canvas/widgets/filter_panel.dart'
+      - 'test/auto_lineart_control_overlay_test.dart'
+      - 'test/auto_lineart_engine_test.dart'
+      - 'test/auto_lineart_finish_audit_test.dart'
+      - 'test/auto_lineart_bulk_isolation_test.dart'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  auto-lineart:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+      - run: flutter pub get
+      - name: Run auto lineart regressions
+        run: |
+          flutter test test/auto_lineart_engine_test.dart --reporter expanded
+          flutter test test/auto_lineart_control_overlay_test.dart --reporter expanded
+          flutter test test/auto_lineart_finish_audit_test.dart --reporter expanded
+          flutter test test/auto_lineart_bulk_isolation_test.dart --reporter expanded
+      - name: Analyze auto lineart paths
+        run: |
+          flutter analyze --no-fatal-infos lib/engine/auto_lineart_engine.dart lib/screens/canvas/widgets/auto_lineart_control_overlay.dart lib/screens/canvas/widgets/filter_panel.dart test/auto_lineart_engine_test.dart test/auto_lineart_control_overlay_test.dart test/auto_lineart_finish_audit_test.dart test/auto_lineart_bulk_isolation_test.dart
