@@ -32,6 +32,26 @@ void main() {
     );
   });
 
+  test('production prism apply selects Linear Dodge, never Addition', () {
+    final source = File('lib/screens/canvas/widgets/filter_panel.dart')
+        .readAsStringSync();
+    expect(
+      source,
+      contains(
+        'layer.copyWith(blendMode: model.LayerBlendMode.linearDodge)',
+      ),
+    );
+    expect(
+      source,
+      isNot(
+        contains(
+          'layer.copyWith(blendMode: model.LayerBlendMode.addition)',
+        ),
+      ),
+      reason: 'Prism Linear Dodge must remain distinct from Addition',
+    );
+  });
+
   test('prism directly repaints the selected source layer', () {
     final source = File('lib/screens/canvas/widgets/filter_panel.dart')
         .readAsStringSync();
