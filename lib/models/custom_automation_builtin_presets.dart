@@ -172,7 +172,7 @@ class CustomAutomationBuiltinPresets {
           strength: 60,
           hologramBrightness: 0,
           hologramSaturation: 0,
-          hologramPreset: AuroraHologramPreset.aurora,
+          hologramPreset: AuroraHologramPreset.silverHologram,
         ),
         'オーロラホログラム',
         prefix: 'builtin_aurora_hologram',
