@@ -339,7 +339,14 @@ void main() {
     final opal = auroraHologramStops(AuroraHologramPreset.opalPearl);
     final dark = auroraHologramStops(AuroraHologramPreset.darkHologram);
 
-    expect(hologram.where((s) => s.$2 >= 250 && s.$3 >= 250 && s.$4 >= 250).length, greaterThanOrEqualTo(3));
+    expect(
+      hologram.where((s) => s.$2 >= 240 && s.$3 >= 240 && s.$4 >= 215).length,
+      greaterThanOrEqualTo(4),
+    );
+    expect(
+      hologram.where((s) => (s.$2 - s.$3).abs() + (s.$3 - s.$4).abs() >= 35).length,
+      greaterThanOrEqualTo(10),
+    );
     expect(opal.where((s) => s.$2 >= 240 && s.$3 >= 240 && s.$4 >= 240).length, greaterThanOrEqualTo(3));
     expect(dark.first.$2, lessThan(20));
     expect(dark.first.$3, lessThan(20));
