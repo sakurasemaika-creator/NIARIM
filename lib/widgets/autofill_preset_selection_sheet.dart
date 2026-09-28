@@ -3,6 +3,18 @@ import '../l10n/app_localizations.dart';
 import '../models/autofill_preset.dart';
 import '../config/font_fallback.dart';
 
+
+/// パーツ割り当てUIに表示するプリセットを、プロジェクトの選択状態で絞り込む。
+/// nullは「現在および今後の全プリセット」を意味する。
+List<AutofillPreset> enabledAutofillPresets(
+  List<AutofillPreset> allPresets,
+  List<String>? enabledIds,
+) {
+  if (enabledIds == null) return allPresets;
+  final ids = enabledIds.toSet();
+  return allPresets.where((preset) => ids.contains(preset.id)).toList();
+}
+
 /// プロジェクトごとに使用する自動塗りプリセットをチェックボックスで選べる
 /// シート。自動塗りプリセットは使えば使うほど増えていくため、
 /// プロジェクト内で使うものだけを選べるようにし、レイヤーへのパーツ割り当て
