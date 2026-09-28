@@ -14,6 +14,8 @@ on:
       - 'test/auto_lineart_bulk_isolation_test.dart'
   workflow_dispatch:
 
+# Regression gate for editable Auto Lineart vector controls and engine behavior.
+
 permissions:
   contents: read
 
