@@ -200,6 +200,26 @@ void main() {
     otherPixels.setRange(center, center + 4, [7, 8, 9, 255]);
     tm.replaceLayerPixels(otherKey, otherPixels);
 
+    // Production smart-update must react to an actual lineart edit, not just
+    // replay against the same geometry. Shift the enclosed box one pixel to
+    // the right: x=2 leaves the fill, x=6 becomes newly enclosed, while the
+    // manually edited center remains inside the overlap.
+    final changedLine = Uint8List(9 * 9 * 4);
+    void changedInk(int x, int y) =>
+        changedLine[(y * 9 + x) * 4 + 3] = 255;
+    for (var x = 2; x <= 8; x++) {
+      changedInk(x, 1);
+      changedInk(x, 7);
+    }
+    for (var y = 1; y <= 7; y++) {
+      changedInk(2, y);
+      changedInk(8, y);
+    }
+    tm.replaceLayerPixels(
+      frameLayerKey('Scene0001', 0, lineart.id),
+      changedLine,
+    );
+
     assigned = ps.layersOf(project.id, 'Scene0001', 0)
         .firstWhere((l) => l.id == lineart.id);
     await runAutofillForLayer(
@@ -212,13 +232,33 @@ void main() {
     final updatedData = (await updatedImage.toByteData(format: ui.ImageByteFormat.rawRgba))!
         .buffer.asUint8List();
     updatedImage.dispose();
-    expect(updatedData.sublist(center, center + 4), [210, 40, 70, 255]);
+    expect(
+      updatedData.sublist(center, center + 4),
+      [210, 40, 70, 255],
+      reason: 'user-adjusted overlap pixel must survive smart update',
+    );
+    final removed = (4 * 9 + 2) * 4;
+    expect(
+      updatedData.sublist(removed, removed + 4),
+      [0, 0, 0, 0],
+      reason: 'area outside the changed lineart must be removed',
+    );
+    final added = (4 * 9 + 6) * 4;
+    expect(
+      updatedData.sublist(added, added + 4),
+      [0x22, 0xAA, 0x44, 0xFF],
+      reason: 'newly enclosed area must receive the current part color',
+    );
 
     final otherImage = await tm.compositeLayerToImage(otherKey);
     final otherAfter = (await otherImage.toByteData(format: ui.ImageByteFormat.rawRgba))!
         .buffer.asUint8List();
     otherImage.dispose();
-    expect(otherAfter.sublist(center, center + 4), [7, 8, 9, 255]);
+    expect(
+      otherAfter,
+      orderedEquals(otherPixels),
+      reason: 'smart update must leave every byte of another part untouched',
+    );
   });
 
   test('color update recolors existing fill and locks opacity', () async {
