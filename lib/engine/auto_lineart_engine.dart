@@ -816,57 +816,6 @@ class AutoLineartEngine {
     return total;
   }
 
-  static double _pathPersistence(
-    List<AutoLineartPoint> points,
-    List<Uint8List> skeletons,
-    int width,
-    int height, {
-    required int radius,
-  }) {
-    if (points.isEmpty || skeletons.isEmpty) return 0;
-    var supported = 0;
-    var total = 0;
-    // Sampling every other point is enough and substantially cheaper on long
-    // strokes while still seeing local unstable contacts.
-    for (var pi = 0; pi < points.length; pi += 2) {
-      final p = points[pi];
-      for (final skeleton in skeletons) {
-        total++;
-        if (_hasPixelNear(
-          skeleton,
-          width,
-          height,
-          p.x.round(),
-          p.y.round(),
-          radius,
-        )) {
-          supported++;
-        }
-      }
-    }
-    return total == 0 ? 0 : supported / total;
-  }
-
-  static bool _hasPixelNear(
-    Uint8List mask,
-    int width,
-    int height,
-    int x,
-    int y,
-    int radius,
-  ) {
-    for (var oy = -radius; oy <= radius; oy++) {
-      for (var ox = -radius; ox <= radius; ox++) {
-        if (ox * ox + oy * oy > radius * radius) continue;
-        final nx = x + ox;
-        final ny = y + oy;
-        if (nx < 0 || nx >= width || ny < 0 || ny >= height) continue;
-        if (mask[ny * width + nx] != 0) return true;
-      }
-    }
-    return false;
-  }
-
   static List<AutoLineartPoint> _simplifyCollinear(
     List<AutoLineartPoint> points,
   ) {
