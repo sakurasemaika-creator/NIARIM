@@ -130,6 +130,8 @@ void main() {
     Color(0xFFEF6C57), Color(0xFF4B8FDC), Color(0xFFA46B3C),
     Color(0xFF8E62B6), Color(0xFF2F9D8F), Color(0xFFC15F35),
     Color(0xFF6678B8), Color(0xFFB36B86), Color(0xFF6F8F3D),
+    Color(0xFF0086C9), Color(0xFFE08B00), Color(0xFF9A4FD0), Color(0xFF00A36C),
+    Color(0xFFE65F2B), Color(0xFF485CC7), Color(0xFFC76C8A), Color(0xFF607D2D),
   ];
 
   int webCaptureBaseIndex(String name) {
@@ -151,8 +153,8 @@ void main() {
     final baseIndex = webCaptureBaseIndex(name);
     expect(baseIndex, isNonNegative, reason: 'Every web capture needs a stable unique-theme index');
     final baseTheme = webReferenceTheme(name);
-    for (var variant = 0; variant < 3; variant++) {
-      final accent = webCaptureAccents[baseIndex * 3 + variant];
+    for (var variant = 0; variant < 4; variant++) {
+      final accent = webCaptureAccents[baseIndex * 4 + variant];
       final theme = baseTheme.copyWith(
         id: '${baseTheme.id}_v${variant + 1}',
         name: '${baseTheme.name} ${variant + 1}',
