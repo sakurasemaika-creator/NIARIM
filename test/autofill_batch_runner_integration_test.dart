@@ -285,4 +285,75 @@ void main() {
     expect(bytes.sublist(center, center + 4), [0xCC, 0x55, 0, 0xFF]);
   });
 
+
+  test('orphaned autofill layer updates color in place and remains isolated', () async {
+    SharedPreferences.setMockInitialValues({});
+    PathProviderPlatform.instance =
+        _FakePathProvider('/tmp/niarim_autofill_orphan_test');
+
+    final ps = ProjectService();
+    final project = await ps.createProject(
+      name: 'orphan update', fps: 1, durationSeconds: 1,
+      backgroundColor: 0xFFFFFFFF, exportWidth: 5, exportHeight: 5,
+    );
+    var orphan = ps.addLayer(
+      projectId: project.id, sceneId: 'Scene0001', frameIndex: 0,
+      type: LayerType.autoFill, name: 'orphan',
+    );
+    orphan = orphan.copyWith(partId: 'orphan_part', needsAutofillUpdate: true);
+    ps.updateLayer(
+      projectId: project.id, sceneId: 'Scene0001', frameIndex: 0, layer: orphan,
+    );
+    final other = ps.addLayer(
+      projectId: project.id, sceneId: 'Scene0001', frameIndex: 0,
+      type: LayerType.normal, name: 'other',
+    );
+    final tm = ps.tileManagerOf(project.id);
+    final key = frameLayerKey('Scene0001', 0, orphan.id);
+    final pixels = Uint8List(5 * 5 * 4);
+    final center = (2 * 5 + 2) * 4;
+    pixels.setRange(center, center + 4, [10, 20, 30, 255]);
+    tm.replaceLayerPixels(key, pixels);
+    final otherKey = frameLayerKey('Scene0001', 0, other.id);
+    final otherPixels = Uint8List(5 * 5 * 4);
+    otherPixels.setRange(center, center + 4, [1, 2, 3, 255]);
+    tm.replaceLayerPixels(otherKey, otherPixels);
+
+    final presets = AutofillPresetService();
+    await presets.init();
+    await presets.addPreset(const AutofillPreset(
+      id: 'orphan', name: 'orphan',
+      parts: [AutofillPart(id: 'orphan_part', name: 'orphan', color: 0xFF8844CC)],
+    ));
+
+    final current = ps.layersOf(project.id, 'Scene0001', 0)
+        .firstWhere((l) => l.id == orphan.id);
+    expect(isOrphanedAutofillLayer(ps.layersOf(project.id, 'Scene0001', 0), current), isTrue);
+    final result = await runAutofillForOrphanedLayer(
+      projectService: ps, presetService: presets,
+      projectId: project.id, sceneId: 'Scene0001', frameIndex: 0,
+      autofillLayer: current,
+    );
+    expect(result, AutofillBatchResult.applied);
+
+    final updated = ps.layersOf(project.id, 'Scene0001', 0)
+        .firstWhere((l) => l.id == orphan.id);
+    expect(updated.id, orphan.id);
+    expect(updated.partId, 'orphan_part');
+    expect(updated.needsAutofillUpdate, isFalse);
+    expect(updated.opacityLocked, isTrue);
+
+    final image = await tm.compositeLayerToImage(key);
+    final bytes = (await image.toByteData(format: ui.ImageByteFormat.rawRgba))!
+        .buffer.asUint8List();
+    image.dispose();
+    expect(bytes.sublist(center, center + 4), [0x88, 0x44, 0xCC, 0xFF]);
+
+    final otherImage = await tm.compositeLayerToImage(otherKey);
+    final otherAfter = (await otherImage.toByteData(format: ui.ImageByteFormat.rawRgba))!
+        .buffer.asUint8List();
+    otherImage.dispose();
+    expect(otherAfter.sublist(center, center + 4), [1, 2, 3, 255]);
+  });
+
 }
