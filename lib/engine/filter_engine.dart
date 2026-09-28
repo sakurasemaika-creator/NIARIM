@@ -420,7 +420,31 @@ List<(double, int, int, int)> auroraHologramStops(AuroraHologramPreset preset) {
       (0.93, 205, 246, 224),
       (0.97, 244, 230, 250),
       (1.00, 255, 255, 255),
-
+    ],
+    AuroraHologramPreset.darkRainbow => const [
+      // Black-base rainbow interference: most luminance values remain
+      // black/navy while a compact high-chroma band sweeps the spectrum.
+      (0.00, 0, 0, 2),
+      (0.12, 1, 1, 7),
+      (0.24, 4, 2, 16),
+      (0.34, 18, 4, 54),
+      (0.40, 92, 8, 225),
+      (0.445, 18, 55, 255),
+      (0.49, 0, 184, 255),
+      (0.535, 0, 238, 166),
+      (0.58, 31, 226, 24),
+      (0.625, 219, 244, 0),
+      (0.67, 255, 207, 0),
+      (0.715, 255, 92, 0),
+      (0.76, 255, 18, 47),
+      (0.805, 255, 24, 157),
+      (0.85, 126, 20, 255),
+      (0.895, 16, 38, 220),
+      (0.93, 2, 5, 26),
+      (0.96, 8, 12, 40),
+      (0.98, 220, 229, 242),
+      (1.00, 255, 255, 255),
+    ],
   };
 }
 
