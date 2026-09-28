@@ -1423,18 +1423,13 @@ class _FilterPanelState extends State<FilterPanel> {
     AppLocalizations l10n,
     AuroraHologramPreset preset,
   ) => switch (preset) {
-    AuroraHologramPreset.aurora => l10n.filterAuroraHologramPresetAurora,
-    AuroraHologramPreset.cyberNeon => l10n.filterAuroraHologramPresetCyberNeon,
+    AuroraHologramPreset.silverHologram => 'シルバーホログラム',
+    AuroraHologramPreset.opalPearl => 'オパールパール',
+    AuroraHologramPreset.darkHologram => 'ダークホログラム',
     AuroraHologramPreset.sunsetGold =>
       l10n.filterAuroraHologramPresetSunsetGold,
     AuroraHologramPreset.silverFoil =>
       l10n.filterAuroraHologramPresetSilverFoil,
-    AuroraHologramPreset.classicHologram =>
-      l10n.filterAuroraHologramPresetClassicHologram,
-    AuroraHologramPreset.blueHologram => l10n.filterAuroraHologramPresetBlueHologram,
-    AuroraHologramPreset.purpleHologram => l10n.filterAuroraHologramPresetPurpleHologram,
-    AuroraHologramPreset.blueGreenHologram => l10n.filterAuroraHologramPresetBlueGreenHologram,
-    AuroraHologramPreset.warmHologram => l10n.filterAuroraHologramPresetWarmHologram,
   };
 
   IconData _iconForFilter(FilterDef filter) {
