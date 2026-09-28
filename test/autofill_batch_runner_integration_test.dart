@@ -25,7 +25,7 @@ void main() {
 
   test('batch runner writes pixels and production layer state', () async {
     SharedPreferences.setMockInitialValues({});
-    _FakePathProvider('/tmp/niarim_autofill_batch_test');
+    PathProviderPlatform.instance = _FakePathProvider('/tmp/niarim_autofill_batch_test');
 
     final projectService = ProjectService();
     final project = await projectService.createProject(
