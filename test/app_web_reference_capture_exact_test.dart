@@ -12,6 +12,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:niarim/app.dart';
 import 'package:niarim/app_bootstrap.dart';
 import 'package:niarim/router.dart';
+import 'package:niarim/widgets/ad_banner_widget.dart';
 import 'package:niarim/screens/canvas/widgets/canvas_icon_button.dart';
 import 'package:niarim/screens/timeline/timeline_screen.dart';
 import 'package:niarim/services/project_service.dart';
@@ -41,7 +42,7 @@ void main() {
   late Directory tempDir;
 
   setUp(() {
-    SharedPreferences.setMockInitialValues({});
+    SharedPreferences.setMockInitialValues({'is_premium': true});
     appRouter.go('/');
     FilePicker.platform = _FakeFilePicker();
     tempDir = Directory.systemTemp.createTempSync('niarim_webref_exact_');
@@ -101,6 +102,7 @@ void main() {
 
   Future<void> shot(WidgetTester tester, String name) async {
     await tester.pump(const Duration(milliseconds: 220));
+    expect(find.byType(AdBannerWidget, skipOffstage: false), findsNothing);
     final boundary =
         screenshotKey.currentContext!.findRenderObject()
             as RenderRepaintBoundary;
