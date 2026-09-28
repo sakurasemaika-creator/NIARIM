@@ -10,6 +10,43 @@ import 'package:niarim/models/scene.dart';
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
+  test('niapro round-trip preserves enabled autofill preset ids', () async {
+    final dir = await Directory.systemTemp.createTemp('niarim-autofill-project-');
+    addTearDown(() async {
+      if (await dir.exists()) await dir.delete(recursive: true);
+    });
+    final now = DateTime.utc(2026, 1, 1);
+    final project = Project(
+      id: 'autofill-project',
+      name: 'Autofill Project',
+      fps: 12,
+      durationSeconds: 1,
+      backgroundColor: 0xFFFFFFFF,
+      createdAt: now,
+      updatedAt: now,
+      totalWorkSeconds: 0,
+      enabledAutofillPresetIds: const ['preset_a', 'preset_c'],
+    );
+    final scene = Scene(
+      id: 'Scene0001',
+      index: 0,
+      frames: const [Frame(index: 0, layers: [])],
+    );
+    final path = '${dir.path}/autofill-project.niapro';
+    await NiaproSerializer.saveToPath(
+      filePath: path,
+      project: project,
+      scenes: [scene],
+      tileManager: TileManager(canvasWidth: 16, canvasHeight: 16),
+    );
+
+    final loaded = await NiaproSerializer.load(path);
+    expect(
+      loaded.project.enabledAutofillPresetIds,
+      const ['preset_a', 'preset_c'],
+    );
+  });
+
   test('niapro round-trip preserves all added blend modes distinctly', () async {
     final dir = await Directory.systemTemp.createTemp('niarim-blend-roundtrip-');
     addTearDown(() async {
