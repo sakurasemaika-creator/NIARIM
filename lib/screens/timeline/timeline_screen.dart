@@ -8303,28 +8303,16 @@ class _EffectFilterSheet extends StatelessWidget {
     AppLocalizations l10n,
     AuroraHologramPreset p,
   ) => switch (p) {
-    AuroraHologramPreset.aurora => l10n.filterAuroraHologramPresetAurora,
-    AuroraHologramPreset.soapBubble =>
-      l10n.filterAuroraHologramPresetSoapBubble,
-    AuroraHologramPreset.cyberNeon => l10n.filterAuroraHologramPresetCyberNeon,
-    AuroraHologramPreset.pastelDream =>
-      l10n.filterAuroraHologramPresetPastelDream,
+    AuroraHologramPreset.silverHologram =>
+      l10n.filterAuroraHologramPresetSilverHologram,
+    AuroraHologramPreset.opalPearl =>
+      l10n.filterAuroraHologramPresetOpalPearl,
+    AuroraHologramPreset.darkHologram =>
+      l10n.filterAuroraHologramPresetDarkHologram,
     AuroraHologramPreset.sunsetGold =>
       l10n.filterAuroraHologramPresetSunsetGold,
     AuroraHologramPreset.silverFoil =>
       l10n.filterAuroraHologramPresetSilverFoil,
-
-    AuroraHologramPreset.classicHologram =>
-      l10n.filterAuroraHologramPresetClassicHologram,
-
-    AuroraHologramPreset.pearl2 => l10n.filterAuroraHologramPresetPearl2,
-    AuroraHologramPreset.blueHologram => 'サファイアホログラム',
-    AuroraHologramPreset.lightBlueHologram => 'アイスホログラム',
-    AuroraHologramPreset.purpleHologram => 'アメジストホログラム',
-    AuroraHologramPreset.blueGreenHologram => 'ターコイズホログラム',
-    AuroraHologramPreset.moonlightPearl => 'ムーンライトパール',
-    AuroraHologramPreset.rainbowPearl => 'ミストレインボー',
-    AuroraHologramPreset.warmHologram => 'サンライズホログラム',
   };
 
   void _pickFadeColor(BuildContext context, EffectFilterInstance e) {
