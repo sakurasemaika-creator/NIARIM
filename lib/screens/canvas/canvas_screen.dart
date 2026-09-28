@@ -680,6 +680,28 @@ class _CanvasScreenState extends State<CanvasScreen> {
             mainAxisSize: MainAxisSize.min,
             children: [
               ListTile(
+                leading: Icon(
+                  _autofillCheckMode == AutofillCheckMode.normal
+                      ? Icons.visibility_outlined
+                      : _autofillCheckMode == AutofillCheckMode.partSeparation
+                      ? Icons.palette_outlined
+                      : Icons.contrast,
+                ),
+                title: const Text('自動塗り確認表示'),
+                trailing: DropdownButton<AutofillCheckMode>(
+                  value: _autofillCheckMode,
+                  underline: const SizedBox.shrink(),
+                  items: const [
+                    DropdownMenuItem(value: AutofillCheckMode.normal, child: Text('通常表示')),
+                    DropdownMenuItem(value: AutofillCheckMode.partSeparation, child: Text('パーツ分け確認')),
+                    DropdownMenuItem(value: AutofillCheckMode.silhouette, child: Text('シルエット確認')),
+                  ],
+                  onChanged: (mode) {
+                    if (mode != null) setState(() => _autofillCheckMode = mode);
+                  },
+                ),
+              ),
+              ListTile(
                 leading: const Icon(Icons.auto_fix_high_outlined),
                 title: Text(l10n.canvasEditMenuAutofillPresets),
                 subtitle: Text(l10n.canvasEditMenuAutofillPresetsSubtitle),
@@ -2589,36 +2611,16 @@ class _CanvasScreenState extends State<CanvasScreen> {
               ),
             ),
           const Spacer(),
-          PopupMenuButton<AutofillCheckMode>(
-            key: const ValueKey('autofill-check-mode-menu'),
-            tooltip: '自動塗り確認表示',
-            initialValue: _autofillCheckMode,
-            onSelected: (mode) => setState(() => _autofillCheckMode = mode),
-            itemBuilder: (_) => const [
-              PopupMenuItem(
-                value: AutofillCheckMode.normal,
-                child: Text('通常表示'),
-              ),
-              PopupMenuItem(
-                value: AutofillCheckMode.partSeparation,
-                child: Text('パーツ分け確認'),
-              ),
-              PopupMenuItem(
-                value: AutofillCheckMode.silhouette,
-                child: Text('シルエット確認'),
-              ),
-            ],
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 4),
-              child: Icon(
-                _autofillCheckMode == AutofillCheckMode.normal
-                    ? Icons.visibility_outlined
-                    : _autofillCheckMode == AutofillCheckMode.partSeparation
-                    ? Icons.palette_outlined
-                    : Icons.contrast,
-                size: 22,
-              ),
+          // Canvas/Timeline are the two primary editing modes. Keep the
+          // mode switch in the top bar so the current UI matches the mode
+          // affordance shown throughout the product and website captures.
+          _topBarIconButton(
+            context,
+            Icons.movie_filter_outlined,
+            onPressed: () => _runAutomationBlockedAction(
+              () => context.go('/timeline/${widget.projectId}'),
             ),
+            tooltip: 'タイムラインモード',
           ),
           // 設定/編集メニュー（背景色・オニオンスキン・
           // フィルター・フレーム範囲選択を集約）。
