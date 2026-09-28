@@ -17,6 +17,7 @@ import 'package:niarim/services/project_service.dart';
 import 'package:niarim/services/advertising_service.dart';
 import 'package:niarim/services/premium_service.dart';
 import 'package:niarim/widgets/ad_banner_widget.dart';
+import 'package:niarim/widgets/ad_banner_mock_widget.dart';
 
 class _FakeFilePicker extends FilePicker {
   @override
@@ -109,6 +110,8 @@ void main() {
     // Website reference captures always represent the paid-member UI.
     // Free-member ad banners must never be copied into NIARIM-web.
     expect(find.byType(AdBannerWidget, skipOffstage: false), findsNothing);
+    expect(find.byType(AdBannerMockWidget, skipOffstage: false), findsNothing);
+    expect(find.byKey(const Key('persistent-horizontal-ad-mock'), skipOffstage: false), findsNothing);
     final appContext = tester.element(find.byType(NiarimApp));
     final premium = appContext.read<PremiumService>();
     final ads = appContext.read<AdvertisingService>();
