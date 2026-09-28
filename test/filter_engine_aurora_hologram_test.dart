@@ -463,6 +463,45 @@ void main() {
   });
 
 
+  test('クラシックパールは暖色の真珠陰影と白い鏡面を両立する', () {
+    final stops = auroraHologramStops(AuroraHologramPreset.opalPearl);
+    expect(stops.first.$2, greaterThan(stops.first.$3));
+    expect(stops.first.$3, greaterThan(stops.first.$4));
+    expect(
+      stops.where((s) => s.$2 >= 245 && s.$3 >= 240 && s.$4 >= 235).length,
+      greaterThanOrEqualTo(4),
+    );
+  });
+
+  test('ダークホログラムは暗部主体で虹色域には十分な彩度がある', () {
+    final stops = auroraHologramStops(AuroraHologramPreset.darkHologram);
+    int chroma((double, int, int, int) s) {
+      final values = [s.$2, s.$3, s.$4];
+      values.sort();
+      return values.last - values.first;
+    }
+    expect(stops[5].$2, lessThan(30));
+    expect(stops[5].$3, lessThan(50));
+    expect(stops[5].$4, lessThan(80));
+    expect(
+      stops.where((s) => s.$1 >= 0.58 && s.$1 <= 0.965).map(chroma).reduce((a, b) => a > b ? a : b),
+      greaterThanOrEqualTo(100),
+    );
+  });
+
+  test('金銀の高輝度域は最明部直前に不自然な濃色リングを作らない', () {
+    int luminance((double, int, int, int) s) =>
+        ((299 * s.$2 + 587 * s.$3 + 114 * s.$4) / 1000).round();
+    for (final preset in [
+      AuroraHologramPreset.sunsetGold,
+      AuroraHologramPreset.silverFoil,
+    ]) {
+      final high = auroraHologramStops(preset).where((s) => s.$1 >= 0.88).toList();
+      expect(high.map(luminance).reduce((a, b) => a < b ? a : b), greaterThanOrEqualTo(200), reason: preset.name);
+      expect(luminance(high.last), 255, reason: preset.name);
+    }
+  });
+
   test('auroraHologramStopsは各プリセットで昇順の位置を持つ', () {
     for (final preset in AuroraHologramPreset.values) {
       final stops = auroraHologramStops(preset);
