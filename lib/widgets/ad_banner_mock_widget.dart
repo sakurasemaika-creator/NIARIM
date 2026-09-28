@@ -1,5 +1,7 @@
 import 'package:niarim/services/theme_service.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import '../services/premium_service.dart';
 import '../l10n/app_localizations.dart';
 
 /// SafeAreaの上端を除いた、横長広告専用領域の高さ。
@@ -19,6 +21,8 @@ class AdMockPageFrame extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isPremium = context.watch<PremiumService>().isPremium;
+    if (isPremium) return child;
     return Column(
       children: [
         const _AdBannerMockSlot(),
