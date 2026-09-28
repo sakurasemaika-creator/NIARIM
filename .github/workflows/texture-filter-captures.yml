@@ -1,6 +1,6 @@
 name: Texture Filter Captures
 # production UI captures for Drawing Filters > Texture Change palettes
-# curated five-material texture verification 2026-09-28
+# curated five-material texture verification 2026-09-28 defaults-fixed
 # Re-run after finalized localization and palette verification.
 
 on:
