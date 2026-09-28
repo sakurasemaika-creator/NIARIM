@@ -1,4 +1,5 @@
 name: Web Reference Capture
+# Produces four uniquely themed premium variants for each website reference screen.
 
 on:
   workflow_dispatch:
