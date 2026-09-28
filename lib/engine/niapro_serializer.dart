@@ -132,6 +132,17 @@ class NiaproSerializer {
     });
   }
 
+  /// テスト・明示的な書き出し先向けに、通常の.niaproと同じ内容を指定パスへ保存する。
+  /// path_providerを経由しないため、serializerの実round-tripを独立して検証できる。
+  static Future<File> saveToPath({
+    required String filePath,
+    required Project project,
+    required List<Scene> scenes,
+    required TileManager tileManager,
+  }) async {
+    return _writeArchive(filePath, project, scenes, tileManager);
+  }
+
   /// .niashare として保存する（内容は.niaproと同一形式、拡張子のみ異なる）。
   /// 共有用ファイル。受信側で複製して通常プロジェクトとして追加する。
   ///
