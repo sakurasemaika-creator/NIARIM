@@ -41,9 +41,6 @@ enum AuroraHologramPreset {
   silverHologram,
   opalPearl,
   darkHologram,
-  blueVioletHologram,
-  aquaMermaid,
-  warmRoseHologram,
   sunsetGold,
   silverFoil,
 }
