@@ -119,6 +119,55 @@ void main() {
     });
 
 
+    test('四コマ漫画ブラシの形状設定が複製・再起動後も保持される', () async {
+      final s1 = BrushService();
+      await s1.init();
+      final source = s1.brushes.firstWhere((b) => b.id == 'Brush0025');
+      expect(source.tipShape, BrushTipShape.hollowSquare);
+      expect(source.rotation, isTrue);
+      expect(source.spacing, 125);
+      expect(source.size, 80);
+
+      s1.duplicateBrush(source.id);
+      final duplicate = s1.brushes.last;
+      expect(duplicate.tipShape, BrushTipShape.hollowSquare);
+      expect(duplicate.rotation, isTrue);
+      expect(duplicate.spacing, 125);
+      expect(duplicate.size, 80);
+
+      final s2 = BrushService();
+      await s2.init();
+      final restored = s2.brushes.firstWhere((b) => b.id == duplicate.id);
+      expect(restored.tipShape, BrushTipShape.hollowSquare);
+      expect(restored.rotation, isTrue);
+      expect(restored.spacing, 125);
+      expect(restored.size, 80);
+    });
+
+    test('.niabrush round-trip preserves four-panel hollow-square geometry', () async {
+      final dir = await Directory.systemTemp.createTemp('niarim-four-panel-');
+      addTearDown(() async {
+        if (await dir.exists()) await dir.delete(recursive: true);
+      });
+
+      final service = BrushService();
+      await service.init();
+      final source = service.brushes.firstWhere((b) => b.id == 'Brush0025');
+      final path = '${dir.path}/four-panel.niabrush';
+      await service.exportBrushToPath(source.id, path);
+      final imported = await service.importBrushFile(
+        path,
+        imagesDirectory: '${dir.path}/images',
+      );
+
+      expect(imported.tipShape, BrushTipShape.hollowSquare);
+      expect(imported.rotation, isTrue);
+      expect(imported.spacing, 125);
+      expect(imported.size, 80);
+      expect(imported.lateralRepeatEnabled, isFalse);
+      expect(imported.lateralRepeatCount, 1);
+    });
+
     test('ブラシ複製で入り/抜きの値と範囲を独立保持する', () async {
       final service = BrushService();
       await service.init();
