@@ -14,6 +14,7 @@ import 'package:niarim/app_bootstrap.dart';
 import 'package:niarim/models/audio_clip.dart';
 import 'package:niarim/router.dart';
 import 'package:niarim/services/project_service.dart';
+import 'package:niarim/widgets/ad_banner_widget.dart';
 
 class _FakeFilePicker extends FilePicker {
   @override
@@ -39,7 +40,7 @@ void main() {
   late Directory tempDir;
 
   setUp(() {
-    SharedPreferences.setMockInitialValues({});
+    SharedPreferences.setMockInitialValues({'is_premium': true});
     appRouter.go('/');
     FilePicker.platform = _FakeFilePicker();
     tempDir = Directory.systemTemp.createTempSync('niarim_web_reference_v2_');
@@ -103,6 +104,9 @@ void main() {
 
   Future<void> capture(WidgetTester tester, String name) async {
     await tester.pump(const Duration(milliseconds: 220));
+    // Website reference captures always represent the paid-member UI.
+    // Free-member ad banners must never be copied into NIARIM-web.
+    expect(find.byType(AdBannerWidget, skipOffstage: false), findsNothing);
     final boundary =
         screenshotKey.currentContext!.findRenderObject()
             as RenderRepaintBoundary;
