@@ -20,6 +20,7 @@ on:
       - 'test/engine/brush_stroke_geometry_test.dart'
       - 'test/engine/brush_texture_cache_test.dart'
       - 'test/engine/brush_texture_selector_test.dart'
+      - 'test/brush_asset_bundle_regression_test.dart'
 
 jobs:
   green:
@@ -42,6 +43,7 @@ jobs:
           flutter test test/engine/brush_stroke_geometry_test.dart --reporter expanded
           flutter test test/engine/brush_texture_cache_test.dart --reporter expanded
           flutter test test/engine/brush_texture_selector_test.dart --reporter expanded
+          flutter test test/brush_asset_bundle_regression_test.dart --reporter expanded
           flutter test test/engine/brush_render_plan_test.dart --reporter expanded
           flutter test test/engine/outlined_stroke_compositor_test.dart --reporter expanded
           flutter analyze lib/engine/drawing_engine.dart lib/engine/brush_stroke_geometry.dart lib/engine/brush_render_plan.dart lib/screens/canvas/widgets/canvas_area.dart test/engine/drawing_engine_brush_extensions_test.dart test/engine/brush_stroke_geometry_test.dart --no-fatal-infos --no-fatal-warnings
