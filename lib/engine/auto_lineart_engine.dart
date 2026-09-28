@@ -423,8 +423,8 @@ class AutoLineartEngine {
         if (used.contains(i) || i >= edited.paths.length) continue;
         final basePath = baseline.paths[i];
         final editedPath = edited.paths[i];
-        if (basePath.points.length != editedPath.points.length ||
-            basePath.points.length < 2 ||
+        if (basePath.points.length < 2 ||
+            editedPath.points.length < 2 ||
             targetPath.points.length < 2) {
           continue;
         }
@@ -465,6 +465,23 @@ class AutoLineartEngine {
       used.add(bestIndex);
       final basePath = baseline.paths[bestIndex];
       final editedPath = edited.paths[bestIndex];
+
+      // Structural edits (segment insertion / point deletion) are intentional
+      // user geometry, not merely offsets from the automatic baseline. Preserve
+      // them verbatim across a smoothing/rough-width refresh instead of
+      // dropping them because the point counts no longer match.
+      if (basePath.points.length != editedPath.points.length) {
+        out.add(
+          AutoLineartPath(
+            points: List<AutoLineartPoint>.unmodifiable(editedPath.points),
+            startIsJunction: editedPath.startIsJunction,
+            endIsJunction: editedPath.endIsJunction,
+            persistence: editedPath.persistence,
+          ),
+        );
+        continue;
+      }
+
       final points = <AutoLineartPoint>[];
       var pathLength = 0.0;
       for (var i = 1; i < basePath.points.length; i++) {
