@@ -2,6 +2,7 @@ name: Texture Filter Captures
 # production UI captures for Drawing Filters > Texture Change palettes
 # curated five-material texture verification 2026-09-28 migration-complete
 # Re-run after finalized localization and palette verification.
+# 2026-09-28: rerun after mirror-gold contract alignment.
 
 on:
   workflow_dispatch:
