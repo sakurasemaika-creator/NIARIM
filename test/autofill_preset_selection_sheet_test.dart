@@ -6,6 +6,18 @@ import 'package:niarim/models/autofill_preset.dart';
 import 'package:niarim/widgets/autofill_preset_selection_sheet.dart';
 
 void main() {
+  test('project preset filter limits part-assignment candidates', () {
+    final all = [
+      AutofillPreset(id: 'a', name: 'A', parts: const []),
+      AutofillPreset(id: 'b', name: 'B', parts: const []),
+      AutofillPreset(id: 'c', name: 'C', parts: const []),
+    ];
+    expect(enabledAutofillPresets(all, null).map((p) => p.id), ['a', 'b', 'c']);
+    expect(enabledAutofillPresets(all, const ['c', 'a']).map((p) => p.id), ['a', 'c']);
+    expect(enabledAutofillPresets(all, const []), isEmpty);
+  });
+
+
   Widget host(List<AutofillPreset> presets, void Function(AutofillPresetSelectionResult) onResult) {
     return MaterialApp(
       localizationsDelegates: const [
