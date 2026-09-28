@@ -12,10 +12,12 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:niarim/app.dart';
 import 'package:niarim/app_bootstrap.dart';
 import 'package:niarim/models/audio_clip.dart';
+import 'package:niarim/models/app_theme_preset.dart';
 import 'package:niarim/router.dart';
 import 'package:niarim/services/project_service.dart';
 import 'package:niarim/services/advertising_service.dart';
 import 'package:niarim/services/premium_service.dart';
+import 'package:niarim/services/theme_service.dart';
 import 'package:niarim/widgets/ad_banner_widget.dart';
 import 'package:niarim/widgets/ad_banner_mock_widget.dart';
 
@@ -105,14 +107,29 @@ void main() {
     });
   }
 
+  AppThemePreset webReferenceTheme(String name) {
+    const themes = <String, AppThemePreset>{
+      'canvas': AppThemePreset(id: 'web_canvas', name: 'Web Canvas', accentColor: Color(0xFF3AA6FF), textColor: Color(0xFF16232E), panelBgColor: Color(0xFFF1F7FC), menuBgColor: Color(0xFFFFFFFF), selectionColor: Color(0xFF3AA6FF), updateMarkColor: Color(0xFF7C4DFF)),
+      'timeline': AppThemePreset(id: 'web_timeline', name: 'Web Timeline', accentColor: Color(0xFFF2B90F), textColor: Color(0xFF2E2A12), panelBgColor: Color(0xFFFFFBEA), menuBgColor: Color(0xFFFFFFFF), selectionColor: Color(0xFFF2B90F), updateMarkColor: Color(0xFFFF8A3D)),
+      'layers': AppThemePreset(id: 'web_layers', name: 'Web Layers', accentColor: Color(0xFFB15CFF), textColor: Color(0xFF2B2033), panelBgColor: Color(0xFFF8F1FC), menuBgColor: Color(0xFFFFFFFF), selectionColor: Color(0xFFB15CFF), updateMarkColor: Color(0xFFFF7EB3)),
+      'onion_skin': AppThemePreset(id: 'web_onion', name: 'Web Onion', accentColor: Color(0xFF10B981), textColor: Color(0xFF13291F), panelBgColor: Color(0xFFECFAF4), menuBgColor: Color(0xFFFFFFFF), selectionColor: Color(0xFF10B981), updateMarkColor: Color(0xFFF2B90F)),
+      'audio_editor': AppThemePreset(id: 'web_audio', name: 'Web Audio', accentColor: Color(0xFFFF8A3D), textColor: Color(0xFF2E2013), panelBgColor: Color(0xFFFFF6EE), menuBgColor: Color(0xFFFFFFFF), selectionColor: Color(0xFFFF8A3D), updateMarkColor: Color(0xFFFF5C7A)),
+      'save_tree': AppThemePreset(id: 'web_save', name: 'Web Save', accentColor: Color(0xFF5C6BFF), textColor: Color(0xFF1E2033), panelBgColor: Color(0xFFF3F3FC), menuBgColor: Color(0xFFFFFFFF), selectionColor: Color(0xFF5C6BFF), updateMarkColor: Color(0xFF90CAF9)),
+      'workspace': AppThemePreset(id: 'web_workspace', name: 'Web Workspace', accentColor: Color(0xFFD8A0A6), textColor: Color(0xFF2E2325), panelBgColor: Color(0xFFFAF2F2), menuBgColor: Color(0xFFFFFFFF), selectionColor: Color(0xFFD8A0A6), updateMarkColor: Color(0xFF8FB89D)),
+      'export': AppThemePreset(id: 'web_export', name: 'Web Export', accentColor: Color(0xFF8DA9C4), textColor: Color(0xFF212B33), panelBgColor: Color(0xFFF1F5F9), menuBgColor: Color(0xFFFFFFFF), selectionColor: Color(0xFF8DA9C4), updateMarkColor: Color(0xFFFF7EB3)),
+    };
+    return themes[name] ?? AppThemePreset.defaultLight;
+  }
+
   Future<void> capture(WidgetTester tester, String name) async {
-    await tester.pump(const Duration(milliseconds: 220));
+    final appContext = tester.element(find.byType(NiarimApp));
+    appContext.read<ThemeService>().restoreCurrent(webReferenceTheme(name));
+    await tester.pump(const Duration(milliseconds: 300));
     // Website reference captures always represent the paid-member UI.
     // Free-member ad banners must never be copied into NIARIM-web.
     expect(find.byType(AdBannerWidget, skipOffstage: false), findsNothing);
     expect(find.byType(AdBannerMockWidget, skipOffstage: false), findsNothing);
     expect(find.byKey(const Key('persistent-horizontal-ad-mock'), skipOffstage: false), findsNothing);
-    final appContext = tester.element(find.byType(NiarimApp));
     final premium = appContext.read<PremiumService>();
     final ads = appContext.read<AdvertisingService>();
     expect(premium.isPremium, isTrue, reason: 'Web reference capture must use paid-member UI');
