@@ -383,6 +383,44 @@ List<(double, int, int, int)> auroraHologramStops(AuroraHologramPreset preset) {
       (0.992, 249, 252, 254),
       (1.00, 255, 255, 255),
     ],
+    AuroraHologramPreset.luminousPearl => const [
+      // Reference-inspired luminous pearl: warm champagne shadows with
+      // repeated ivory/specular bands so folds retain a nacre-like sheen.
+      (0.00, 112, 79, 49),
+      (0.10, 145, 108, 72),
+      (0.20, 183, 145, 99),
+      (0.31, 222, 190, 137),
+      (0.42, 246, 226, 181),
+      (0.51, 255, 248, 222),
+      (0.58, 255, 255, 247),
+      (0.64, 226, 213, 202),
+      (0.70, 244, 232, 218),
+      (0.76, 255, 249, 229),
+      (0.82, 238, 222, 207),
+      (0.88, 255, 246, 225),
+      (0.94, 247, 239, 231),
+      (0.98, 255, 252, 242),
+      (1.00, 255, 255, 255),
+    ],
+    AuroraHologramPreset.auroraPastel => const [
+      // Reference-inspired pastel aurora: deep violet shadow followed by
+      // cyan, mint, lavender, pink, peach and yellow-white interference bands.
+      (0.00, 67, 38, 142),
+      (0.08, 79, 74, 190),
+      (0.16, 73, 151, 224),
+      (0.24, 76, 215, 225),
+      (0.32, 145, 239, 218),
+      (0.40, 207, 236, 193),
+      (0.48, 190, 153, 236),
+      (0.56, 225, 140, 236),
+      (0.64, 247, 151, 213),
+      (0.72, 255, 183, 174),
+      (0.80, 255, 229, 153),
+      (0.87, 242, 248, 194),
+      (0.93, 205, 246, 224),
+      (0.97, 244, 230, 250),
+      (1.00, 255, 255, 255),
+
   };
 }
 
