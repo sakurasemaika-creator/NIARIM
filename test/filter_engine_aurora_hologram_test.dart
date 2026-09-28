@@ -434,8 +434,8 @@ void main() {
 
 
 
-  test('全15配色presetは名前で保存・復元できる', () {
-    expect(AuroraHologramPreset.values.length, 15);
+  test('全9配色presetは名前で保存・復元できる', () {
+    expect(AuroraHologramPreset.values.length, 9);
     for (final preset in AuroraHologramPreset.values) {
       final original = FilterDef(
         id: 'texture-${preset.name}',
