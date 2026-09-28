@@ -1231,7 +1231,7 @@ class BrushService extends ChangeNotifier {
   }
 
   /// `.niabrush`ファイルを読み込み、新規ブラシとして追加する。
-  Future<Brush> importBrushFile(String filePath) async {
+  Future<Brush> importBrushFile(String filePath, {String? imagesDirectory}) async {
     final bytes = await File(filePath).readAsBytes();
     final archive = ZipDecoder().decodeBytes(bytes);
     final dataFile = archive.findFile(_bundleDataFile);
@@ -1255,7 +1255,9 @@ class BrushService extends ChangeNotifier {
           ];
     final newImagePaths = <String>[];
     if (imageFiles.isNotEmpty) {
-      final dir = await _brushesDir();
+      final dir = imagesDirectory == null
+          ? await _brushesDir()
+          : (Directory(imagesDirectory)..createSync(recursive: true));
       for (var index = 0; index < imageFiles.length; index++) {
         final imageFile = imageFiles[index];
         final ext = imageFile.name.split('.').last;
