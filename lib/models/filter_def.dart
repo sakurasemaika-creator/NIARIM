@@ -134,7 +134,7 @@ class FilterDef {
     this.pixelExplicitColors = const [0xFF000000],
     this.hologramBrightness = 0,
     this.hologramSaturation = 0,
-    this.hologramPreset = AuroraHologramPreset.aurora,
+    this.hologramPreset = AuroraHologramPreset.silverHologram,
     this.bgBlendColor = -1,
     this.bgBlendDirection = 315,
     this.bgBlendLength = 20,
@@ -397,7 +397,7 @@ class FilterDef {
     hologramSaturation: (j['hologramSaturation'] as num?)?.toDouble() ?? 0,
     hologramPreset: AuroraHologramPreset.values.firstWhere(
       (e) => e.name == j['hologramPreset'],
-      orElse: () => AuroraHologramPreset.aurora,
+      orElse: () => AuroraHologramPreset.silverHologram,
     ),
     bgBlendColor: j['bgBlendColor'] as int? ?? -1,
     bgBlendDirection: (j['bgBlendDirection'] as num?)?.toDouble() ?? 315,
