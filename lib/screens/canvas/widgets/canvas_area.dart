@@ -12,7 +12,8 @@ import 'package:provider/provider.dart';
 import '../../../engine/autofill_engine.dart' show AutofillCheckMode, applyAutofillCheckColor, autofillCheckColor;
 import '../../../engine/bucket_fill_engine.dart';
 import '../../../engine/drawing_engine.dart';
-import '../../../engine/filter_engine.dart' show FilterEngine, quantizeColors;
+import '../../../engine/filter_engine.dart' show FilterEngine;
+import '../../../engine/pixel_art_engine.dart';
 import '../../../engine/input_handler.dart';
 import '../../../engine/lasso_fill_engine.dart';
 import '../../../engine/layer_compositor.dart';
@@ -1564,8 +1565,11 @@ class _CanvasAreaState extends State<CanvasArea> {
       if (tx == null || ty == null) continue;
       final tile = _tileManager.getTile(touched.layerId, tx, ty);
       if (tile == null) continue;
-      final quantized = quantizeColors(
+      final quantized = const PixelArtEngine().convert(
         tile,
+        TileManager.tileSize,
+        TileManager.tileSize,
+        pixelSize: 1,
         colorMode: brush.pixelColorMode,
         colorLevels: brush.pixelColorLevels,
         paletteColors: brush.pixelExplicitColors,
