@@ -1491,8 +1491,17 @@ class FilterEngine {
         preset == AuroraHologramPreset.darkRainbow;
     final preserveLuma = switch (preset) {
       AuroraHologramPreset.opalPearl => 0.08,
-      AuroraHologramPreset.auroraPastel => 0.18,
+      // Transparent-film look: retain substantially more of the source
+      // relief so folds read through the pastel interference colour.
+      AuroraHologramPreset.auroraPastel => 0.26,
       AuroraHologramPreset.darkRainbow => 0.22,
+      _ => 0.0,
+    };
+    final sourceLumaBlend = switch (preset) {
+      // Blend only neutral source luminance, never source hue. This gives the
+      // iridescent map a translucent-film appearance without turning it into
+      // ordinary opacity mixing.
+      AuroraHologramPreset.auroraPastel => 0.16,
       _ => 0.0,
     };
     for (int i = 0; i < data.length; i += 4) {
@@ -1527,6 +1536,12 @@ class FilterEngine {
         outR = (outR + lumaDelta).clamp(0.0, 255.0);
         outG = (outG + lumaDelta).clamp(0.0, 255.0);
         outB = (outB + lumaDelta).clamp(0.0, 255.0);
+        if (sourceLumaBlend > 0.0) {
+          final neutral = luminanceIdx.toDouble();
+          outR += (neutral - outR) * sourceLumaBlend;
+          outG += (neutral - outG) * sourceLumaBlend;
+          outB += (neutral - outB) * sourceLumaBlend;
+        }
       }
       result[i] = (r + (outR - r) * amount).round().clamp(0, 255);
       result[i + 1] = (g + (outG - g) * amount).round().clamp(0, 255);
