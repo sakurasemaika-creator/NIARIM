@@ -38,15 +38,14 @@ enum ToneCurvePreset {
 }
 
 enum AuroraHologramPreset {
-  aurora,
-  cyberNeon,
+  silverHologram,
+  opalPearl,
+  darkHologram,
+  blueVioletHologram,
+  aquaMermaid,
+  warmRoseHologram,
   sunsetGold,
   silverFoil,
-  classicHologram,
-  blueHologram,
-  purpleHologram,
-  blueGreenHologram,
-  warmHologram,
 }
 
 /// Serializable drawing-filter definition.
