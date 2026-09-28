@@ -18,6 +18,8 @@ on:
       - 'test/autofill_preset_selection_sheet_test.dart'
       - 'lib/widgets/autofill_preset_selection_sheet.dart'
       - 'lib/screens/canvas/widgets/layer_panel.dart'
+      - 'lib/engine/autofill_batch_runner.dart'
+      - 'test/autofill_batch_runner_integration_test.dart'
   workflow_dispatch:
 
 permissions:
@@ -41,6 +43,7 @@ jobs:
           flutter test test/niatra_asset_bundle_test.dart --reporter expanded
           flutter test test/niapro_blend_mode_roundtrip_test.dart --reporter expanded
           flutter test test/autofill_preset_selection_sheet_test.dart --reporter expanded
+          flutter test test/autofill_batch_runner_integration_test.dart --reporter expanded
       - name: Analyze persistence paths
         run: |
-          flutter analyze --no-fatal-infos lib/engine/niapro_serializer.dart lib/engine/niatra_serializer.dart lib/engine/niatra_asset_bundle.dart lib/services/brush_service.dart test/creative_asset_persistence_test.dart test/niatra_serializer_test.dart test/niatra_asset_bundle_test.dart test/niapro_blend_mode_roundtrip_test.dart test/autofill_preset_selection_sheet_test.dart lib/screens/canvas/widgets/layer_panel.dart
+          flutter analyze --no-fatal-infos lib/engine/niapro_serializer.dart lib/engine/niatra_serializer.dart lib/engine/niatra_asset_bundle.dart lib/services/brush_service.dart test/creative_asset_persistence_test.dart test/niatra_serializer_test.dart test/niatra_asset_bundle_test.dart test/niapro_blend_mode_roundtrip_test.dart test/autofill_preset_selection_sheet_test.dart test/autofill_batch_runner_integration_test.dart lib/engine/autofill_batch_runner.dart lib/screens/canvas/widgets/layer_panel.dart
