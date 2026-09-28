@@ -1491,6 +1491,19 @@ class FilterEngine {
     // キャッシュする（フルHD相当の画素数でも1画素ずつHSL変換し直すより
     // 大幅に軽い）。
     final cache = List<(int, int, int)?>.filled(256, null);
+    // Material presets still use luminance as their only colour coordinate,
+    // but preserve a small amount of source micro-contrast. This keeps sphere
+    // volume and fabric folds/speculars from flattening into a colour strip.
+    final materialPreset =
+        preset == AuroraHologramPreset.opalPearl ||
+        preset == AuroraHologramPreset.auroraPastel ||
+        preset == AuroraHologramPreset.darkRainbow;
+    final preserveLuma = switch (preset) {
+      AuroraHologramPreset.opalPearl => 0.18,
+      AuroraHologramPreset.auroraPastel => 0.14,
+      AuroraHologramPreset.darkRainbow => 0.22,
+      _ => 0.0,
+    };
     for (int i = 0; i < data.length; i += 4) {
       if (data[i + 3] == 0) continue;
       final r = data[i], g = data[i + 1], b = data[i + 2];
@@ -1510,9 +1523,23 @@ class FilterEngine {
         );
         cache[luminanceIdx] = mapped;
       }
-      result[i] = (r + (mapped.$1 - r) * amount).round().clamp(0, 255);
-      result[i + 1] = (g + (mapped.$2 - g) * amount).round().clamp(0, 255);
-      result[i + 2] = (b + (mapped.$3 - b) * amount).round().clamp(0, 255);
+      var outR = mapped.$1.toDouble();
+      var outG = mapped.$2.toDouble();
+      var outB = mapped.$3.toDouble();
+      if (materialPreset) {
+        // Re-introduce only luminance detail, never the source hue. The
+        // gradient map remains deterministic for colour while highlights,
+        // rounded shading and cloth creases retain their material relief.
+        final mappedLuma =
+            outR * 0.299 + outG * 0.587 + outB * 0.114;
+        final lumaDelta = (luminanceIdx - mappedLuma) * preserveLuma;
+        outR = (outR + lumaDelta).clamp(0.0, 255.0);
+        outG = (outG + lumaDelta).clamp(0.0, 255.0);
+        outB = (outB + lumaDelta).clamp(0.0, 255.0);
+      }
+      result[i] = (r + (outR - r) * amount).round().clamp(0, 255);
+      result[i + 1] = (g + (outG - g) * amount).round().clamp(0, 255);
+      result[i + 2] = (b + (outB - b) * amount).round().clamp(0, 255);
     }
     return result;
   }
