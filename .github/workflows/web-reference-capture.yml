@@ -7,6 +7,8 @@ on:
     paths:
       - ".github/workflows/web-reference-capture.yml"
       - "test/app_web_reference_capture_test_v2.dart"
+      - "test/app_web_reference_capture_exact_test.dart"
+      - "test/app_web_reference_export_exact_test.dart"
       - "lib/**"
       - "assets/**"
       - "pubspec.yaml"
