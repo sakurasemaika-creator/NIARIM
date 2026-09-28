@@ -34,4 +34,58 @@ void main() {
     expect(moved.paths[1].points[0].x, 50);
     expect(moved.paths[1].points[0].y, 50);
   });
+
+  test('structural point edits survive smoothing graph refresh', () {
+    const baseline = AutoLineartGraph(
+      width: 100,
+      height: 100,
+      paths: [
+        AutoLineartPath(
+          points: [AutoLineartPoint(10, 50), AutoLineartPoint(90, 50)],
+          startIsJunction: false,
+          endIsJunction: false,
+          persistence: 1,
+        ),
+      ],
+    );
+    const inserted = AutoLineartGraph(
+      width: 100,
+      height: 100,
+      paths: [
+        AutoLineartPath(
+          points: [
+            AutoLineartPoint(10, 50),
+            AutoLineartPoint(50, 25),
+            AutoLineartPoint(90, 50),
+          ],
+          startIsJunction: false,
+          endIsJunction: false,
+          persistence: 1,
+        ),
+      ],
+    );
+    const refreshed = AutoLineartGraph(
+      width: 100,
+      height: 100,
+      paths: [
+        AutoLineartPath(
+          points: [AutoLineartPoint(10, 50), AutoLineartPoint(90, 50)],
+          startIsJunction: false,
+          endIsJunction: false,
+          persistence: 1,
+        ),
+      ],
+    );
+
+    final transferred = AutoLineartEngine.transferControlEdits(
+      baseline,
+      inserted,
+      refreshed,
+    );
+
+    expect(transferred.paths.single.points, hasLength(3));
+    expect(transferred.paths.single.points[1].x, 50);
+    expect(transferred.paths.single.points[1].y, 25);
+  });
+
 }
