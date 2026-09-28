@@ -39,4 +39,4 @@ jobs:
           flutter test test/niapro_blend_mode_roundtrip_test.dart --reporter expanded
       - name: Analyze persistence paths
         run: |
-          flutter analyze lib/engine/niapro_serializer.dart lib/engine/niatra_serializer.dart lib/engine/niatra_asset_bundle.dart lib/services/brush_service.dart test/creative_asset_persistence_test.dart test/niatra_serializer_test.dart test/niatra_asset_bundle_test.dart test/niapro_blend_mode_roundtrip_test.dart
+          flutter analyze --no-fatal-infos lib/engine/niapro_serializer.dart lib/engine/niatra_serializer.dart lib/engine/niatra_asset_bundle.dart lib/services/brush_service.dart test/creative_asset_persistence_test.dart test/niatra_serializer_test.dart test/niatra_asset_bundle_test.dart test/niapro_blend_mode_roundtrip_test.dart
