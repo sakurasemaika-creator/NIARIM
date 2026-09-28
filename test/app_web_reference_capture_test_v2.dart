@@ -121,7 +121,7 @@ void main() {
     return themes[name] ?? AppThemePreset.defaultLight;
   }
 
-  static const webCaptureAccents = <Color>[
+  const webCaptureAccents = <Color>[
     Color(0xFF3AA6FF), Color(0xFFF2B90F), Color(0xFFB15CFF),
     Color(0xFF10B981), Color(0xFFFF8A3D), Color(0xFF5C6BFF),
     Color(0xFFD8A0A6), Color(0xFF8DA9C4), Color(0xFFE85D75),
