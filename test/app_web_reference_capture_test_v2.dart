@@ -121,32 +121,65 @@ void main() {
     return themes[name] ?? AppThemePreset.defaultLight;
   }
 
+  static const webCaptureAccents = <Color>[
+    Color(0xFF3AA6FF), Color(0xFFF2B90F), Color(0xFFB15CFF),
+    Color(0xFF10B981), Color(0xFFFF8A3D), Color(0xFF5C6BFF),
+    Color(0xFFD8A0A6), Color(0xFF8DA9C4), Color(0xFFE85D75),
+    Color(0xFF00A6A6), Color(0xFFCA7A18), Color(0xFF7A6FF0),
+    Color(0xFF2E9B4F), Color(0xFFD45AA6), Color(0xFF567D46),
+    Color(0xFFEF6C57), Color(0xFF4B8FDC), Color(0xFFA46B3C),
+    Color(0xFF8E62B6), Color(0xFF2F9D8F), Color(0xFFC15F35),
+    Color(0xFF6678B8), Color(0xFFB36B86), Color(0xFF6F8F3D),
+  ];
+
+  int webCaptureBaseIndex(String name) {
+    const names = <String>[
+      '01_canvas_default', '02_canvas_layer_panel', '03_canvas_onion_skin',
+      '04_timeline_default', '05_timeline_audio_editor', '06_save_tree',
+      '07_export', '08_workspace',
+    ];
+    return names.indexOf(name);
+  }
+
   Future<void> capture(WidgetTester tester, String name) async {
     final appContext = tester.element(find.byType(NiarimApp));
-    appContext.read<ThemeService>().restoreCurrent(webReferenceTheme(name));
-    await tester.pump(const Duration(milliseconds: 300));
-    // Website reference captures always represent the paid-member UI.
-    // Free-member ad banners must never be copied into NIARIM-web.
-    expect(find.byType(AdBannerWidget, skipOffstage: false), findsNothing);
-    expect(find.byType(AdBannerMockWidget, skipOffstage: false), findsNothing);
-    expect(find.byKey(const Key('persistent-horizontal-ad-mock'), skipOffstage: false), findsNothing);
     final premium = appContext.read<PremiumService>();
     final ads = appContext.read<AdvertisingService>();
     expect(premium.isPremium, isTrue, reason: 'Web reference capture must use paid-member UI');
     expect(ads.shouldShowAds, isFalse, reason: 'Paid-member web reference capture must not reserve or request ads');
-    final boundary =
-        screenshotKey.currentContext!.findRenderObject()
-            as RenderRepaintBoundary;
-    final bytes = await tester.runAsync(() async {
-      final image = await boundary.toImage(pixelRatio: 1.0);
-      final data = await image.toByteData(format: ui.ImageByteFormat.png);
-      image.dispose();
-      return data!.buffer.asUint8List();
-    });
-    final dir = Directory('build/visual-smoke')..createSync(recursive: true);
-    File('${dir.path}/webref_$name.png').writeAsBytesSync(bytes!);
-    // ignore: avoid_print
-    print('web-reference captured: $name');
+
+    final baseIndex = webCaptureBaseIndex(name);
+    expect(baseIndex, isNonNegative, reason: 'Every web capture needs a stable unique-theme index');
+    final baseTheme = webReferenceTheme(name);
+    for (var variant = 0; variant < 3; variant++) {
+      final accent = webCaptureAccents[baseIndex * 3 + variant];
+      final theme = baseTheme.copyWith(
+        id: '${baseTheme.id}_v${variant + 1}',
+        name: '${baseTheme.name} ${variant + 1}',
+        accentColor: accent,
+        selectionColor: accent,
+      );
+      appContext.read<ThemeService>().restoreCurrent(theme);
+      await tester.pump(const Duration(milliseconds: 300));
+
+      expect(find.byType(AdBannerWidget, skipOffstage: false), findsNothing);
+      expect(find.byType(AdBannerMockWidget, skipOffstage: false), findsNothing);
+      expect(find.byKey(const Key('persistent-horizontal-ad-mock'), skipOffstage: false), findsNothing);
+
+      final boundary = screenshotKey.currentContext!.findRenderObject()
+          as RenderRepaintBoundary;
+      final bytes = await tester.runAsync(() async {
+        final image = await boundary.toImage(pixelRatio: 1.0);
+        final data = await image.toByteData(format: ui.ImageByteFormat.png);
+        image.dispose();
+        return data!.buffer.asUint8List();
+      });
+      final dir = Directory('build/visual-smoke')..createSync(recursive: true);
+      final suffix = variant == 0 ? '' : '_v${variant + 1}';
+      File('${dir.path}/webref_$name$suffix.png').writeAsBytesSync(bytes!);
+      // ignore: avoid_print
+      print('web-reference captured: $name$suffix accent=${accent.toARGB32().toRadixString(16)}');
+    }
   }
 
   void expectClean(WidgetTester tester, String operation) {
