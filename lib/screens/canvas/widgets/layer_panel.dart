@@ -21,6 +21,7 @@ import '../../../services/project_service.dart';
 import '../../../services/layer_clipboard_service.dart';
 import '../../../services/tone_service.dart';
 import '../../../widgets/confirm_delete.dart';
+import '../../../widgets/autofill_preset_selection_sheet.dart';
 import '../../../widgets/dispose_on_unmount.dart';
 import '../../../widgets/editable_slider_value.dart';
 import '../../../widgets/first_use_tooltip.dart';
@@ -2602,10 +2603,10 @@ class _LayerPanelState extends State<LayerPanel> {
         .projects
         .where((p) => p.id == widget.projectId)
         .firstOrNull;
-    final enabledIds = project?.enabledAutofillPresetIds;
-    final presets = enabledIds == null
-        ? allPresets
-        : allPresets.where((p) => enabledIds.contains(p.id)).toList();
+    final presets = enabledAutofillPresets(
+      allPresets,
+      project?.enabledAutofillPresetIds,
+    );
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
