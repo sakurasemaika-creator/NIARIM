@@ -310,10 +310,10 @@ List<(double, int, int, int)> auroraHologramStops(AuroraHologramPreset preset) {
       // Reference pearl: a compact champagne-brown core shadow, a broad
       // milky body, then alternating specular / nacre shadow bands. Keeping
       // the body near neutral ivory avoids the previous sepia/cream cast.
-      (0.00, 91, 72, 57),
-      (0.09, 128, 105, 85),
-      (0.18, 166, 143, 121),
-      (0.28, 202, 181, 160),
+      (0.00, 108, 91, 76),
+      (0.09, 144, 123, 103),
+      (0.18, 178, 157, 136),
+      (0.28, 210, 191, 173),
       (0.38, 228, 213, 198),
       (0.48, 245, 238, 229),
       (0.56, 253, 250, 244),
