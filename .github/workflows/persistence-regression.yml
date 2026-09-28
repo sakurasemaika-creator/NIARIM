@@ -22,6 +22,10 @@ on:
       - 'test/models/blend_mode_refresh_contract_test.dart'
       - 'test/prism_filter_completion_test.dart'
       - 'test/prism_integration_regression_test.dart'
+      - 'test/engine/blur_filter_distinction_test.dart'
+      - 'test/engine/noise_filter_distinction_test.dart'
+      - 'test/engine/analog_filter_distinction_test.dart'
+      - 'test/engine/vhs_filter_integration_test.dart'
       - 'test/autofill_preset_selection_sheet_test.dart'
       - 'lib/widgets/autofill_preset_selection_sheet.dart'
       - 'lib/screens/canvas/widgets/layer_panel.dart'
@@ -53,8 +57,12 @@ jobs:
           flutter test test/models/blend_mode_refresh_contract_test.dart --reporter expanded
           flutter test test/prism_filter_completion_test.dart --reporter expanded
           flutter test test/prism_integration_regression_test.dart --reporter expanded
+          flutter test test/engine/blur_filter_distinction_test.dart --reporter expanded
+          flutter test test/engine/noise_filter_distinction_test.dart --reporter expanded
+          flutter test test/engine/analog_filter_distinction_test.dart --reporter expanded
+          flutter test test/engine/vhs_filter_integration_test.dart --reporter expanded
           flutter test test/autofill_preset_selection_sheet_test.dart --reporter expanded
           flutter test test/autofill_batch_runner_integration_test.dart --reporter expanded
       - name: Analyze persistence paths
         run: |
-          flutter analyze --no-fatal-infos lib/engine/niapro_serializer.dart lib/engine/niatra_serializer.dart lib/engine/niatra_asset_bundle.dart lib/services/brush_service.dart lib/models/brush.dart lib/models/brush_presets_extension.dart test/creative_asset_persistence_test.dart test/niatra_serializer_test.dart test/niatra_asset_bundle_test.dart test/niapro_blend_mode_roundtrip_test.dart lib/engine/layer_compositor.dart test/blend_mode_math_fixture_test.dart test/models/blend_mode_refresh_contract_test.dart test/prism_filter_completion_test.dart test/prism_integration_regression_test.dart test/autofill_preset_selection_sheet_test.dart test/autofill_batch_runner_integration_test.dart lib/engine/autofill_batch_runner.dart lib/screens/canvas/widgets/layer_panel.dart
+          flutter analyze --no-fatal-infos lib/engine/niapro_serializer.dart lib/engine/niatra_serializer.dart lib/engine/niatra_asset_bundle.dart lib/services/brush_service.dart lib/models/brush.dart lib/models/brush_presets_extension.dart test/creative_asset_persistence_test.dart test/niatra_serializer_test.dart test/niatra_asset_bundle_test.dart test/niapro_blend_mode_roundtrip_test.dart lib/engine/layer_compositor.dart test/blend_mode_math_fixture_test.dart test/models/blend_mode_refresh_contract_test.dart test/prism_filter_completion_test.dart test/prism_integration_regression_test.dart test/engine/blur_filter_distinction_test.dart test/engine/noise_filter_distinction_test.dart test/engine/analog_filter_distinction_test.dart test/engine/vhs_filter_integration_test.dart test/autofill_preset_selection_sheet_test.dart test/autofill_batch_runner_integration_test.dart lib/engine/autofill_batch_runner.dart lib/screens/canvas/widgets/layer_panel.dart
