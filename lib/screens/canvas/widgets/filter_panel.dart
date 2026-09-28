@@ -1424,24 +1424,16 @@ class _FilterPanelState extends State<FilterPanel> {
     AuroraHologramPreset preset,
   ) => switch (preset) {
     AuroraHologramPreset.aurora => l10n.filterAuroraHologramPresetAurora,
-    AuroraHologramPreset.soapBubble =>
-      l10n.filterAuroraHologramPresetSoapBubble,
     AuroraHologramPreset.cyberNeon => l10n.filterAuroraHologramPresetCyberNeon,
-    AuroraHologramPreset.pastelDream =>
-      l10n.filterAuroraHologramPresetPastelDream,
     AuroraHologramPreset.sunsetGold =>
       l10n.filterAuroraHologramPresetSunsetGold,
     AuroraHologramPreset.silverFoil =>
       l10n.filterAuroraHologramPresetSilverFoil,
     AuroraHologramPreset.classicHologram =>
       l10n.filterAuroraHologramPresetClassicHologram,
-    AuroraHologramPreset.pearl2 => l10n.filterAuroraHologramPresetPearl2,
     AuroraHologramPreset.blueHologram => l10n.filterAuroraHologramPresetBlueHologram,
-    AuroraHologramPreset.lightBlueHologram => l10n.filterAuroraHologramPresetLightBlueHologram,
     AuroraHologramPreset.purpleHologram => l10n.filterAuroraHologramPresetPurpleHologram,
     AuroraHologramPreset.blueGreenHologram => l10n.filterAuroraHologramPresetBlueGreenHologram,
-    AuroraHologramPreset.moonlightPearl => l10n.filterAuroraHologramPresetMoonlightPearl,
-    AuroraHologramPreset.rainbowPearl => l10n.filterAuroraHologramPresetRainbowPearl,
     AuroraHologramPreset.warmHologram => l10n.filterAuroraHologramPresetWarmHologram,
   };
 
