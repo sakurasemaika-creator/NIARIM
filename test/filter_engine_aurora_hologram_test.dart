@@ -34,7 +34,7 @@ void main() {
       strength: 0,
       brightness: 0,
       saturation: 0,
-      preset: AuroraHologramPreset.aurora,
+      preset: AuroraHologramPreset.silverHologram,
     );
     expect(result, equals(data));
   });
@@ -48,7 +48,7 @@ void main() {
       strength: 100,
       brightness: 0,
       saturation: 0,
-      preset: AuroraHologramPreset.cyberNeon,
+      preset: AuroraHologramPreset.darkHologram,
     );
     // strength=100（完全ブレンド）の場合、結果は元のグレーとは異なる
     // （cyberNeonプリセットはグレーを含まない配色のため）はず。
@@ -73,7 +73,7 @@ void main() {
       strength: 100,
       brightness: 50,
       saturation: 50,
-      preset: AuroraHologramPreset.soapBubble,
+      preset: AuroraHologramPreset.opalPearl,
     );
     expect(result, equals(data));
   });
@@ -105,7 +105,7 @@ void main() {
       strength: 100,
       brightness: 10,
       saturation: 25,
-      preset: AuroraHologramPreset.soapBubble,
+      preset: AuroraHologramPreset.opalPearl,
     );
 
     var rgbChanged = false;
@@ -154,7 +154,7 @@ void main() {
       strength: 100,
       brightness: 0,
       saturation: 0,
-      preset: AuroraHologramPreset.pastelDream,
+      preset: AuroraHologramPreset.opalPearl,
     );
     final first = (result[0], result[1], result[2]);
     for (int i = 4; i < result.length; i += 4) {
@@ -177,7 +177,7 @@ void main() {
       strength: 100,
       brightness: 0,
       saturation: 0,
-      preset: AuroraHologramPreset.blueHologram,
+      preset: AuroraHologramPreset.silverHologram,
     );
     expect(
       (result[0], result[1], result[2]),
@@ -194,7 +194,7 @@ void main() {
       strength: 100,
       brightness: 0,
       saturation: 0,
-      preset: AuroraHologramPreset.aurora,
+      preset: AuroraHologramPreset.silverHologram,
     );
     final silverFoil = engine.applyAuroraHologram(
       data,
@@ -272,7 +272,7 @@ void main() {
       strength: -50,
       brightness: 0,
       saturation: 0,
-      preset: AuroraHologramPreset.aurora,
+      preset: AuroraHologramPreset.silverHologram,
     );
     final atHundred = engine.applyAuroraHologram(
       data,
@@ -281,7 +281,7 @@ void main() {
       strength: 100,
       brightness: 0,
       saturation: 0,
-      preset: AuroraHologramPreset.aurora,
+      preset: AuroraHologramPreset.silverHologram,
     );
     final aboveHundred = engine.applyAuroraHologram(
       data,
@@ -290,7 +290,7 @@ void main() {
       strength: 250,
       brightness: 0,
       saturation: 0,
-      preset: AuroraHologramPreset.aurora,
+      preset: AuroraHologramPreset.silverHologram,
     );
 
     expect(belowZero, equals(data));
@@ -307,7 +307,7 @@ void main() {
         strength: 100,
         brightness: values.$1,
         saturation: values.$2,
-        preset: AuroraHologramPreset.cyberNeon,
+        preset: AuroraHologramPreset.darkHologram,
       );
       expect(result.length, data.length);
       for (var i = 0; i < result.length; i += 4) {
@@ -328,7 +328,7 @@ void main() {
       strength: 83,
       brightness: 17,
       saturation: -12,
-      preset: AuroraHologramPreset.pastelDream,
+      preset: AuroraHologramPreset.opalPearl,
     );
 
     expect(apply(), equals(apply()));
@@ -336,10 +336,10 @@ void main() {
 
   test('ホログラム色プリセットは白ハイライトと主色を両方持つ', () {
     const expectedDominant = {
-      AuroraHologramPreset.blueHologram: 'blue',
-      AuroraHologramPreset.lightBlueHologram: 'blue',
-      AuroraHologramPreset.purpleHologram: 'purple',
-      AuroraHologramPreset.blueGreenHologram: 'blueGreen',
+      AuroraHologramPreset.silverHologram: 'blue',
+      AuroraHologramPreset.silverHologram: 'blue',
+      AuroraHologramPreset.darkHologram: 'purple',
+      AuroraHologramPreset.silverHologram: 'blueGreen',
     };
     for (final entry in expectedDominant.entries) {
       final stops = auroraHologramStops(entry.key);
@@ -434,8 +434,8 @@ void main() {
 
 
 
-  test('全9配色presetは名前で保存・復元できる', () {
-    expect(AuroraHologramPreset.values.length, 9);
+  test('全5配色presetは名前で保存・復元できる', () {
+    expect(AuroraHologramPreset.values.length, 5);
     for (final preset in AuroraHologramPreset.values) {
       final original = FilterDef(
         id: 'texture-${preset.name}',
