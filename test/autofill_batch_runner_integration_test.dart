@@ -1,3 +1,4 @@
+import 'dart:io';
 import 'dart:typed_data';
 import 'dart:ui' as ui;
 
@@ -394,6 +395,163 @@ void main() {
         .buffer.asUint8List();
     otherImage.dispose();
     expect(otherAfter.sublist(center, center + 4), [1, 2, 3, 255]);
+  });
+
+
+  test('smart update keeps production semantics after niapro save and reload', () async {
+    SharedPreferences.setMockInitialValues({});
+    final dir = await Directory.systemTemp.createTemp(
+      'niarim_autofill_reload_test_',
+    );
+    addTearDown(() async {
+      if (await dir.exists()) await dir.delete(recursive: true);
+    });
+    PathProviderPlatform.instance = _FakePathProvider(dir.path);
+
+    final ps = ProjectService();
+    final project = await ps.createProject(
+      name: 'smart update reload',
+      fps: 1,
+      durationSeconds: 1,
+      backgroundColor: 0xFFFFFFFF,
+      exportWidth: 9,
+      exportHeight: 9,
+    );
+    final lineart = ps.addLayer(
+      projectId: project.id,
+      sceneId: 'Scene0001',
+      frameIndex: 0,
+      type: LayerType.autoFillLineart,
+      name: 'lineart',
+    );
+    ps.assignAutofillPart(
+      projectId: project.id,
+      sceneId: 'Scene0001',
+      frameIndex: 0,
+      lineartLayerId: lineart.id,
+      partId: 'reload_part',
+      partName: 'reload',
+    );
+
+    final presets = AutofillPresetService();
+    await presets.init();
+    await presets.addPreset(const AutofillPreset(
+      id: 'reload',
+      name: 'reload',
+      parts: [
+        AutofillPart(
+          id: 'reload_part',
+          name: 'reload',
+          color: 0xFF2468AC,
+        ),
+      ],
+    ));
+
+    final tm = ps.tileManagerOf(project.id);
+    final originalLine = Uint8List(9 * 9 * 4);
+    void originalInk(int x, int y) =>
+        originalLine[(y * 9 + x) * 4 + 3] = 255;
+    for (var x = 1; x <= 7; x++) {
+      originalInk(x, 1);
+      originalInk(x, 7);
+    }
+    for (var y = 1; y <= 7; y++) {
+      originalInk(1, y);
+      originalInk(7, y);
+    }
+    tm.replaceLayerPixels(
+      frameLayerKey('Scene0001', 0, lineart.id),
+      originalLine,
+    );
+
+    var assigned = ps.layersOf(project.id, 'Scene0001', 0)
+        .firstWhere((l) => l.id == lineart.id);
+    await runAutofillForLayer(
+      projectService: ps,
+      presetService: presets,
+      toneService: ToneService(),
+      projectId: project.id,
+      sceneId: 'Scene0001',
+      frameIndex: 0,
+      lineartLayer: assigned,
+      mode: AutofillMode.repaint,
+    );
+
+    var layers = ps.layersOf(project.id, 'Scene0001', 0);
+    final fill = layers[layers.indexWhere((l) => l.id == lineart.id) + 1];
+    final fillKey = frameLayerKey('Scene0001', 0, fill.id);
+    final image = await tm.compositeLayerToImage(fillKey);
+    final edited = Uint8List.fromList(
+      (await image.toByteData(format: ui.ImageByteFormat.rawRgba))!
+          .buffer
+          .asUint8List(),
+    );
+    image.dispose();
+    final center = (4 * 9 + 4) * 4;
+    edited.setRange(center, center + 4, [199, 33, 88, 255]);
+    tm.replaceLayerPixels(fillKey, edited);
+
+    await ps.saveProject(project.id);
+
+    // Simulate a real app restart: construct a fresh service and load the
+    // project, layers and tile bytes exclusively from the saved .niapro.
+    final reloaded = ProjectService();
+    await reloaded.init();
+    final restoredProject = reloaded.projects.firstWhere(
+      (p) => p.id == project.id,
+    );
+    expect(restoredProject.id, project.id);
+    layers = reloaded.layersOf(project.id, 'Scene0001', 0);
+    final restoredLineart = layers.firstWhere((l) => l.id == lineart.id);
+    final restoredFill = layers.firstWhere((l) => l.id == fill.id);
+    expect(restoredLineart.partId, 'reload_part');
+    expect(restoredFill.partId, 'reload_part');
+
+    final restoredTm = reloaded.tileManagerOf(project.id);
+    final changedLine = Uint8List(9 * 9 * 4);
+    void changedInk(int x, int y) =>
+        changedLine[(y * 9 + x) * 4 + 3] = 255;
+    for (var x = 2; x <= 8; x++) {
+      changedInk(x, 1);
+      changedInk(x, 7);
+    }
+    for (var y = 1; y <= 7; y++) {
+      changedInk(2, y);
+      changedInk(8, y);
+    }
+    restoredTm.replaceLayerPixels(
+      frameLayerKey('Scene0001', 0, lineart.id),
+      changedLine,
+    );
+
+    await runAutofillForLayer(
+      projectService: reloaded,
+      presetService: presets,
+      toneService: ToneService(),
+      projectId: project.id,
+      sceneId: 'Scene0001',
+      frameIndex: 0,
+      lineartLayer: restoredLineart,
+      mode: AutofillMode.smartUpdate,
+    );
+
+    final updatedImage = await restoredTm.compositeLayerToImage(fillKey);
+    final updated = (await updatedImage.toByteData(
+      format: ui.ImageByteFormat.rawRgba,
+    ))!
+        .buffer
+        .asUint8List();
+    updatedImage.dispose();
+
+    expect(
+      updated.sublist(center, center + 4),
+      [199, 33, 88, 255],
+      reason: 'saved user edit must survive reload and smart update',
+    );
+    final removed = (4 * 9 + 2) * 4;
+    expect(updated.sublist(removed, removed + 4), [0, 0, 0, 0]);
+    final added = (4 * 9 + 6) * 4;
+    expect(updated.sublist(added, added + 4), [0x24, 0x68, 0xAC, 0xFF]);
   });
 
 }
