@@ -1423,9 +1423,9 @@ class _FilterPanelState extends State<FilterPanel> {
     AppLocalizations l10n,
     AuroraHologramPreset preset,
   ) => switch (preset) {
-    AuroraHologramPreset.silverHologram => 'シルバーホログラム',
-    AuroraHologramPreset.opalPearl => 'オパールパール',
-    AuroraHologramPreset.darkHologram => 'ダークホログラム',
+    AuroraHologramPreset.silverHologram => l10n.filterAuroraHologramPresetSilverHologram,
+    AuroraHologramPreset.opalPearl => l10n.filterAuroraHologramPresetOpalPearl,
+    AuroraHologramPreset.darkHologram => l10n.filterAuroraHologramPresetDarkHologram,
     AuroraHologramPreset.sunsetGold =>
       l10n.filterAuroraHologramPresetSunsetGold,
     AuroraHologramPreset.silverFoil =>
