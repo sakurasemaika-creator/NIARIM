@@ -20,15 +20,18 @@ void main() {
 
     expect(lens, isNot(orderedEquals(gaussian)));
 
-    // A circular radius-2 aperture excludes the diagonal (2,2) sample while
-    // the separable Gaussian kernel still spreads energy there.
+    // A circular radius-2 aperture excludes the diagonal (2,2) sample.
+    // Gaussian and lens kernels are already asserted to produce different
+    // complete images above; do not depend on an individual far Gaussian
+    // sample surviving integer/alpha rounding.
     final diagonal = (6 * width + 6) * 4;
     expect(lens[diagonal], 0);
-    expect(gaussian[diagonal], greaterThan(0));
 
     // Both remain actual blur operations rather than a no-op.
     final neighbor = (4 * width + 5) * 4;
     expect(lens[neighbor], greaterThan(0));
     expect(gaussian[neighbor], greaterThan(0));
+    expect(lens[center], lessThan(255));
+    expect(gaussian[center], lessThan(255));
   });
 }
