@@ -326,25 +326,6 @@ List<(double, int, int, int)> auroraHologramStops(AuroraHologramPreset preset) {
       (0.97, 253, 251, 247),
       (1.00, 255, 255, 255),
     ],
-    AuroraHologramPreset.darkHologram => const [
-      (0.00, 1, 2, 7),
-      (0.15, 2, 4, 12),
-      (0.30, 3, 7, 18),
-      (0.45, 5, 11, 27),
-      (0.55, 8, 18, 39),
-      (0.60, 12, 40, 70),
-      (0.64, 20, 200, 218),
-      (0.68, 57, 128, 248),
-      (0.72, 120, 84, 248),
-      (0.76, 216, 72, 232),
-      (0.80, 252, 82, 145),
-      (0.83, 255, 154, 58),
-      (0.86, 8, 20, 44),
-      (0.92, 5, 12, 30),
-      (0.96, 38, 55, 82),
-      (0.985, 195, 218, 240),
-      (1.00, 255, 255, 255),
-    ],
     AuroraHologramPreset.sunsetGold => const [
       // Metallic gold uses tighter value transitions around the reflection
       // bands. This keeps edges crisp without reintroducing a dark halo.
