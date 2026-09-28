@@ -14,6 +14,8 @@ import 'package:niarim/app_bootstrap.dart';
 import 'package:niarim/models/audio_clip.dart';
 import 'package:niarim/router.dart';
 import 'package:niarim/services/project_service.dart';
+import 'package:niarim/services/advertising_service.dart';
+import 'package:niarim/services/premium_service.dart';
 import 'package:niarim/widgets/ad_banner_widget.dart';
 
 class _FakeFilePicker extends FilePicker {
@@ -107,6 +109,11 @@ void main() {
     // Website reference captures always represent the paid-member UI.
     // Free-member ad banners must never be copied into NIARIM-web.
     expect(find.byType(AdBannerWidget, skipOffstage: false), findsNothing);
+    final captureContext = screenshotKey.currentContext!;
+    final premium = captureContext.read<PremiumService>();
+    final ads = captureContext.read<AdvertisingService>();
+    expect(premium.isPremium, isTrue, reason: 'Web reference capture must use paid-member UI');
+    expect(ads.shouldShowAds, isFalse, reason: 'Paid-member web reference capture must not reserve or request ads');
     final boundary =
         screenshotKey.currentContext!.findRenderObject()
             as RenderRepaintBoundary;
