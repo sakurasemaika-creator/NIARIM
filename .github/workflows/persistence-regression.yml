@@ -1,0 +1,42 @@
+name: Persistence Regression
+
+on:
+  push:
+    branches: [dev_branch]
+    paths:
+      - '.github/workflows/persistence-regression.yml'
+      - 'lib/engine/niapro_serializer.dart'
+      - 'lib/engine/niatra_serializer.dart'
+      - 'lib/engine/niatra_asset_bundle.dart'
+      - 'lib/services/brush_service.dart'
+      - 'lib/models/brush.dart'
+      - 'lib/models/layer.dart'
+      - 'test/creative_asset_persistence_test.dart'
+      - 'test/niatra_serializer_test.dart'
+      - 'test/niatra_asset_bundle_test.dart'
+      - 'test/niapro_blend_mode_roundtrip_test.dart'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  persistence:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+      - run: flutter pub get
+      - name: Run persistence regressions
+        run: |
+          flutter test test/creative_asset_persistence_test.dart --reporter expanded
+          flutter test test/niatra_serializer_test.dart --reporter expanded
+          flutter test test/niatra_asset_bundle_test.dart --reporter expanded
+          flutter test test/niapro_blend_mode_roundtrip_test.dart --reporter expanded
+      - name: Analyze persistence paths
+        run: |
+          flutter analyze lib/engine/niapro_serializer.dart lib/engine/niatra_serializer.dart lib/engine/niatra_asset_bundle.dart lib/services/brush_service.dart test/creative_asset_persistence_test.dart test/niatra_serializer_test.dart test/niatra_asset_bundle_test.dart test/niapro_blend_mode_roundtrip_test.dart
