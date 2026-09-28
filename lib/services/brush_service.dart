@@ -1205,7 +1205,13 @@ class BrushService extends ChangeNotifier {
     final brush = _brushes.firstWhere((b) => b.id == id);
     final base = await getApplicationDocumentsDirectory();
     final safeName = brush.name.replaceAll(RegExp(r'[\\/:*?"<>|]'), '_');
-    final filePath = '${base.path}/$safeName.niabrush';
+    return exportBrushToPath(id, '${base.path}/$safeName.niabrush');
+  }
+
+  /// [exportBrush]と同じproduction archiveを明示した保存先へ書き出す。
+  /// テストではpath_providerを介さず実`.niabrush`をround-tripできる。
+  Future<File> exportBrushToPath(String id, String filePath) async {
+    final brush = _brushes.firstWhere((b) => b.id == id);
     final encoder = ZipFileEncoder();
     encoder.create(filePath);
     encoder.addArchiveFile(
