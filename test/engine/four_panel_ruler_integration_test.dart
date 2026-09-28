@@ -47,7 +47,7 @@ void main() {
       'layer',
     );
     for (var x = 100.0; x <= 420; x += 20) {
-      final p = snapped(x, x.isEven ? 170 : 90);
+      final p = snapped(x, x.toInt().isEven ? 170 : 90);
       expect(p.dy, 128);
       engine.continueStroke(
         StrokePoint(x: p.dx, y: p.dy, pressure: 1, tiltX: 0, tiltY: 0),
