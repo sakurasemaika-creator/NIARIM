@@ -92,13 +92,16 @@ void main() {
             _filterSearchLabel(h, filter),
           );
           await h.settle();
-          await h.tap(
-            find.descendant(
-              of: panel,
-              matching: find.byWidgetPredicate(
-                (w) => w is Text && w.data == _filterSearchLabel(h, filter),
-              ),
+          final filterCards = find.descendant(
+            of: panel,
+            matching: find.byWidgetPredicate(
+              (w) => w is Text && w.data == _filterSearchLabel(h, filter),
             ),
+          );
+          await h.tap(
+            filter.id == FilterService.genericNoiseFilterId
+                ? filterCards.last
+                : filterCards,
           );
           expect(h.context.read<FilterService>().currentFilter!.id, filter.id);
           if (filter.id == 'Filter0004' ||
