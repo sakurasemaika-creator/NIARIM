@@ -96,7 +96,7 @@ void main() {
             find.descendant(
               of: panel,
               matching: find.byWidgetPredicate(
-                (w) => w is Text && w.data == _filterName(filter),
+                (w) => w is Text && w.data == _filterCardLabel(filter),
               ),
             ),
           );
@@ -642,6 +642,9 @@ String _filterName(FilterDef filter) => switch (filter.id) {
   'Filter0018' => 'ドット絵フィルター',
   _ => filter.name,
 };
+
+String _filterCardLabel(FilterDef filter) =>
+    filter.id == 'Filter0027' ? 'ノイズフィルター' : _filterName(filter);
 
 class _Harness {
   final WidgetTester tester;
