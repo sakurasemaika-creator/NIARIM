@@ -552,7 +552,7 @@
   "helpProjectDetailDesc": "Una pantalla para consultar y editar en un solo lugar los ajustes de cada proyecto: nombre, miniatura, estado de favorito y qué ajustes de relleno automático están activados. El acceso al árbol de guardado también está aquí.",
   "helpWatermarkEditTitle": "Reeditar una marca de agua",
   "helpWatermarkEditDesc": "Tocar una marca de agua colocada en la pista de capa común de la línea de tiempo permite reeditar en cualquier momento su ángulo, tamaño, opacidad y rango de visualización (bucle). Puedes ajustarla con precisión no solo al registrarla, sino siempre que la estés usando en un proyecto.",
-  "helpAudioClipTitle": "Volumen y fundido",
+  "helpAudioClipTitle": "Volumen",
   "helpAudioClipDesc": "Un clip de audio colocado en la línea de tiempo puede tener su volumen y las duraciones de fundido de entrada y salida ajustados desde su hoja de detalles. Úsalo para equilibrar el volumen de efectos de sonido y música, o suavizar el inicio y el final de una pista.",
   "helpPenSubToolTitle": "Subherramientas del lápiz",
   "helpPenSubToolDesc": "Mantener pulsada la herramienta lápiz la cambia del dibujo normal a las subherramientas de relleno con tramas o colocación de sellos. Permite alternar entre varias tareas con el mismo lápiz sin cambiar de herramienta constantemente.",
