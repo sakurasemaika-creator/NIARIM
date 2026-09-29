@@ -552,7 +552,7 @@
   "helpProjectDetailDesc": "Un écran pour consulter et modifier au même endroit les réglages propres au projet — nom, miniature, statut favori, et quels réglages de remplissage automatique sont activés. L’accès à l’arbre de sauvegarde se trouve aussi ici.",
   "helpWatermarkEditTitle": "Rééditer un filigrane",
   "helpWatermarkEditDesc": "Toucher un filigrane placé sur la piste de calque commun de la timeline permet de rééditer à tout moment son angle, sa taille, son opacité et sa plage d'affichage (boucle). Vous pouvez l'ajuster finement non seulement à l'enregistrement, mais chaque fois que vous l'utilisez réellement dans un projet.",
-  "helpAudioClipTitle": "Volume et fondus des clips audio",
+  "helpAudioClipTitle": "Volume et fondu",
   "helpAudioClipDesc": "Un clip audio placé sur la timeline peut avoir son volume et ses durées de fondu d'entrée et de sortie ajustés depuis sa fiche détaillée. Utile pour équilibrer le volume des effets sonores et de la musique, ou adoucir le début et la fin d'un morceau.",
   "helpPenSubToolTitle": "Sous-outils du stylet",
   "helpPenSubToolDesc": "Un appui long sur l'outil stylet le fait passer du dessin normal aux sous-outils de remplissage en trame ou de placement de tampon. Permet de passer d'une tâche à l'autre avec le même stylet sans changer d'outil sans arrêt.",
