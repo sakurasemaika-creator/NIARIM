@@ -384,14 +384,17 @@ List<(double, int, int, int)> auroraHologramStops(AuroraHologramPreset preset) {
       (0.045, 143, 133, 237),
       (0.090, 166, 157, 244), // lavender
       (0.135, 193, 174, 247),
-      (0.180, 225, 184, 240), // orchid pink
-      (0.225, 247, 193, 228),
-      (0.270, 251, 207, 220), // shell pink
-      (0.315, 244, 219, 238),
-      (0.360, 218, 222, 249), // lilac ice
-      (0.405, 190, 226, 252),
-      (0.450, 153, 224, 250), // clear cyan
-      (0.495, 116, 215, 246),
+      // Pink remains as an interference accent, but the reference material is
+      // predominantly bright ice-blue/cyan over its larger reflective faces.
+      (0.180, 218, 190, 242), // soft orchid
+      (0.215, 243, 198, 231), // narrow clear pink
+      (0.250, 232, 213, 242),
+      (0.295, 211, 226, 250), // lilac ice
+      (0.340, 188, 231, 252),
+      (0.385, 163, 229, 252), // bright ice cyan
+      (0.430, 139, 224, 250),
+      (0.475, 119, 217, 248),
+      (0.515, 137, 224, 250),
       (0.535, 102, 224, 235), // brighter aqua
       // Emerald is a brief spectral flash, not a body colour.
       (0.558, 105, 242, 210),
