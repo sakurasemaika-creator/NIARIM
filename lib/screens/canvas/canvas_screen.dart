@@ -147,6 +147,7 @@ class _CanvasScreenState extends State<CanvasScreen> {
   int _invertSelectionToken = 0;
   int _selectAllSelectionToken = 0;
   int _clearSelectionToken = 0;
+  bool _selectionReferenceAllVisible = false;
 
   bool get _isSelectionToolActive =>
       _currentTool == DrawingTool.selectRect ||
@@ -1279,6 +1280,8 @@ class _CanvasScreenState extends State<CanvasScreen> {
                                   selectAllSelectionToken:
                                       _selectAllSelectionToken,
                                   clearSelectionToken: _clearSelectionToken,
+                                  selectionReferenceAllVisible:
+                                      _selectionReferenceAllVisible,
                                   onSelectionActiveChanged: (v) {
                                     if (_hasActiveSelection == v) return;
                                     setState(() {
@@ -2416,6 +2419,37 @@ class _CanvasScreenState extends State<CanvasScreen> {
               spacing: 4,
               runSpacing: 4,
               children: [
+                SegmentedButton<bool>(
+                  key: const ValueKey('selection-reference-source'),
+                  segments: [
+                    ButtonSegment<bool>(
+                      value: false,
+                      icon: const Icon(Icons.layers_outlined, size: 14),
+                      label: Text(
+                        l10n.canvasSelectionReferenceWorkingLayer,
+                        style: const TextStyle(fontSize: 9),
+                      ),
+                    ),
+                    ButtonSegment<bool>(
+                      value: true,
+                      icon: const Icon(Icons.layers, size: 14),
+                      label: Text(
+                        l10n.canvasSelectionReferenceVisibleLayers,
+                        style: const TextStyle(fontSize: 9),
+                      ),
+                    ),
+                  ],
+                  selected: {_selectionReferenceAllVisible},
+                  onSelectionChanged: (value) => setState(
+                    () => _selectionReferenceAllVisible = value.first,
+                  ),
+                  showSelectedIcon: false,
+                  style: const ButtonStyle(
+                    visualDensity: VisualDensity.compact,
+                    tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                  ),
+                ),
+                const SizedBox(height: 4),
                 chip(
                   icon: Icons.select_all,
                   label: l10n.canvasSelectAllButton,
