@@ -26,6 +26,7 @@ class NiatraAssetBundle {
   static const _versionKey = 'creativeAssetsVersion';
   static const _version = 1;
   static const _embeddedImageKey = 'embeddedImagePath';
+  static const _embeddedImagesKey = 'embeddedImagePaths';
 
   /// 既存 [NiatraSerializer.export] が作ったZIPへカスタム画像を追加し、
   /// ブラシ／トーン／スタンプのJSONを各モデルの完全なtoJson()へ置き換える。
@@ -56,14 +57,24 @@ class NiatraAssetBundle {
       for (int i = 0; i < brush.brushes.length; i++) {
         final model = brush.brushes[i];
         final json = Map<String, dynamic>.from(model.toJson());
-        await _embedImage(
-          output,
-          json,
-          sourcePath: model.customImagePath,
-          category: 'Brushes',
-          index: i,
-          pathKey: 'customImagePath',
-        );
+        final imagePaths = model.resolvedCustomImagePaths;
+        if (imagePaths.length > 1) {
+          await _embedBrushImages(
+            output,
+            json,
+            sourcePaths: imagePaths,
+            index: i,
+          );
+        } else {
+          await _embedImage(
+            output,
+            json,
+            sourcePath: model.customImagePath,
+            category: 'Brushes',
+            index: i,
+            pathKey: 'customImagePath',
+          );
+        }
         items.add(json);
       }
       data['brushes'] = items;
@@ -139,14 +150,27 @@ class NiatraAssetBundle {
         final id = 'Brush${importNonce}_$i';
         json['id'] = id;
         json['folderId'] = null;
-        json['customImagePath'] = await _restoreImage(
+        final restoredImages = await _restoreBrushImages(
           data,
           json,
           basePath: basePath,
-          category: 'Brushes',
           id: id,
-          pathKey: 'customImagePath',
         );
+        if (restoredImages.isNotEmpty) {
+          json['customImagePath'] =
+              restoredImages.length == 1 ? restoredImages.first : null;
+          json['customImagePaths'] = restoredImages;
+        } else {
+          json['customImagePath'] = await _restoreImage(
+            data,
+            json,
+            basePath: basePath,
+            category: 'Brushes',
+            id: id,
+            pathKey: 'customImagePath',
+          );
+          json['customImagePaths'] = <String>[];
+        }
         brush.addBrush(Brush.fromJson(json));
       }
       data.raw.remove('brushes');
@@ -195,6 +219,66 @@ class NiatraAssetBundle {
       }
       data.raw.remove('stamps');
     }
+  }
+
+  static Future<void> _embedBrushImages(
+    Archive archive,
+    Map<String, dynamic> json, {
+    required List<String> sourcePaths,
+    required int index,
+  }) async {
+    final embedded = <String>[];
+    for (var imageIndex = 0; imageIndex < sourcePaths.length; imageIndex++) {
+      final sourcePath = sourcePaths[imageIndex];
+      try {
+        final source = File(sourcePath);
+        if (!await source.exists()) continue;
+        final bytes = await source.readAsBytes();
+        final ext = _safeExtension(sourcePath);
+        final archivePath =
+            'CreativeAssets/Brushes/$index/${imageIndex.toString().padLeft(3, '0')}.$ext';
+        archive.addFile(ArchiveFile(archivePath, bytes.length, bytes));
+        embedded.add(archivePath);
+      } on UnsupportedError {
+        // Keep processing the remaining creative assets.
+      } on FileSystemException {
+        // A missing/unreadable variant must not abort the whole export.
+      }
+    }
+    if (embedded.isNotEmpty) {
+      json[_embeddedImagesKey] = embedded;
+      json['customImagePath'] = null;
+      json['customImagePaths'] = <String>[];
+    }
+  }
+
+  static Future<List<String>> _restoreBrushImages(
+    NiatraData data,
+    Map<String, dynamic> json, {
+    required String? basePath,
+    required String id,
+  }) async {
+    final embedded = (json[_embeddedImagesKey] as List<dynamic>?)
+        ?.whereType<String>()
+        .toList();
+    if (embedded == null || embedded.isEmpty || basePath == null) {
+      return const <String>[];
+    }
+    final dir = Directory('$basePath/niarim/Brushes');
+    if (!await dir.exists()) await dir.create(recursive: true);
+    final restored = <String>[];
+    for (var index = 0; index < embedded.length; index++) {
+      final embeddedPath = embedded[index];
+      final entry = data.archive.findFile(embeddedPath);
+      if (entry == null) continue;
+      final ext = _safeExtension(embeddedPath);
+      final destination = File(
+        '${dir.path}/${id}_${index.toString().padLeft(3, '0')}.$ext',
+      );
+      await destination.writeAsBytes(entry.content as List<int>, flush: true);
+      restored.add(destination.path);
+    }
+    return restored;
   }
 
   static Future<void> _embedImage(
