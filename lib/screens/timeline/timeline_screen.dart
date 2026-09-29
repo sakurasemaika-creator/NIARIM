@@ -8471,12 +8471,24 @@ class _ClipDetailSheet extends StatefulWidget {
 
 class _ClipDetailSheetState extends State<_ClipDetailSheet> {
   late _TrackClip _c;
+  late double _initialVolume;
+  late double _initialFadeIn;
+  late double _initialFadeOut;
+  late double _initialVideoOpacity;
+  late int _initialUseStart;
+  late int _initialUseEnd;
 
   @override
   void initState() {
     super.initState();
     _c = widget.clip;
     if (_c.useEnd == 0 && _c.lengthFrames > 1) _c.useEnd = _c.lengthFrames - 1;
+    _initialVolume = _c.volume;
+    _initialFadeIn = _c.fadeIn;
+    _initialFadeOut = _c.fadeOut;
+    _initialVideoOpacity = _c.videoOpacity;
+    _initialUseStart = _c.useStart;
+    _initialUseEnd = _c.useEnd;
   }
 
   void _notify() {
@@ -8509,7 +8521,9 @@ class _ClipDetailSheetState extends State<_ClipDetailSheet> {
               children: [
                 Expanded(
                   child: Text(
-                    _c.label,
+                    _c.trackType == _ClipTrackType.audio
+                        ? l10n.timelineClipVolumeLabel
+                        : _c.label,
                     style: const TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.bold,
@@ -8524,38 +8538,31 @@ class _ClipDetailSheetState extends State<_ClipDetailSheet> {
                     icon: Icon(
                       widget.isPlaying() ? Icons.pause : Icons.play_arrow,
                     ),
-
                     tooltip: widget.isPlaying()
                         ? l10n.commonPause
                         : l10n.commonPlay,
-
                     onPressed: () {
                       widget.onTogglePlay();
                       setState(() {});
                     },
                   ),
-
                 IconButton(
-                  icon: const Icon(Icons.copy),
-                  tooltip: l10n.themeDuplicateAction,
-                  onPressed: () {
-                    Navigator.pop(context);
-                    widget.onDuplicate();
-                  },
+                  icon: const Icon(Icons.check),
+                  tooltip: l10n.commonOk,
+                  onPressed: () => Navigator.pop(context),
                 ),
                 IconButton(
-                  icon: Icon(
-                    Icons.delete,
-                    color: ThemeService.activeColorScheme.error,
-                  ),
-                  tooltip: l10n.commonDelete,
-                  onPressed: () async {
-                    if (!await confirmDelete(context, itemName: _c.label)) {
-                      return;
-                    }
-                    if (!context.mounted) return;
+                  icon: const Icon(Icons.close),
+                  tooltip: l10n.commonCancel,
+                  onPressed: () {
+                    _c.volume = _initialVolume;
+                    _c.fadeIn = _initialFadeIn;
+                    _c.fadeOut = _initialFadeOut;
+                    _c.videoOpacity = _initialVideoOpacity;
+                    _c.useStart = _initialUseStart;
+                    _c.useEnd = _initialUseEnd;
+                    widget.onChanged();
                     Navigator.pop(context);
-                    widget.onDelete();
                   },
                 ),
               ],
@@ -8697,16 +8704,18 @@ class _ClipDetailSheetState extends State<_ClipDetailSheet> {
                   max: max,
                   divisions: divisions > 0 ? divisions : 1,
                   step: step,
+                  compact: true,
                   onChanged: onChanged,
                 ),
               ),
-              const SizedBox(width: 2),
+              const SizedBox(width: 1),
               ConstrainedBox(
-                constraints: const BoxConstraints(minWidth: 42, maxWidth: 52),
+                constraints: const BoxConstraints(minWidth: 34, maxWidth: 40),
                 child: EditableSliderValue(
                   text: valueText,
                   style: const TextStyle(fontSize: 11),
                   textAlign: TextAlign.right,
+                  editIconRight: -4,
                   value: value,
                   min: min,
                   max: max,
