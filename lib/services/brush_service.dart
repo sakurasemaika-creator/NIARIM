@@ -849,6 +849,23 @@ class BrushService extends ChangeNotifier {
         _brushes.addAll(missing);
         needsPersist = true;
       }
+      // The non-editable hair preset always uses its current minimum exit.
+      // The bangs preset and user-created copies keep their own settings.
+      final hairPreset = brushExtensionPresets().singleWhere(
+        (b) => b.id == 'Brush0023',
+      );
+      final hairIndex = _brushes.indexWhere((b) => b.id == hairPreset.id);
+      final hair = _brushes[hairIndex];
+      if (hair.fadeMode != hairPreset.fadeMode ||
+          hair.fadeOut.value != hairPreset.fadeOut.value ||
+          hair.fadeOut.rangePx != hairPreset.fadeOut.rangePx) {
+        _brushes[hairIndex] = hair.copyWith(
+          fadeMode: hairPreset.fadeMode,
+          fadeIn: hairPreset.fadeIn,
+          fadeOut: hairPreset.fadeOut,
+        );
+        needsPersist = true;
+      }
       // Brush0001/0002はプリインストールかつUI上編集不可。旧版の
       // 保存済み標準値はブラシ径より間隔が広く点線になっていたため、
       // 連続線の1px間隔へ安全に移行する。

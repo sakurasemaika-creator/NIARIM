@@ -153,6 +153,7 @@ int channelAt(TileManager tiles, int x, int y, int channel) {
 }
 
 void main() {
+  TestWidgetsFlutterBinding.ensureInitialized();
   test(
     'crescent reversals follow input even when a small bend misses the detector',
     () {
@@ -211,6 +212,39 @@ void main() {
     expect(channelAt(tiles, 65, 170, 3), 0);
     expect(channelAt(tiles, 95, 170, 3), 255);
   });
+  test('a one-segment continuous neck keeps its negative turn direction', () {
+    final clockwise = crescent(continuous: true, steps: 91);
+    final counterclockwise = crescent(
+      continuous: true,
+      input: [
+        for (var i = 0; i <= 91; i++)
+          HairRibbonPoint(
+            Offset(180, 180) +
+                Offset(
+                      -math.cos(-math.pi / 2 + math.pi * i / 60),
+                      math.sin(-math.pi / 2 + math.pi * i / 60),
+                    ) *
+                    85,
+            60,
+            1,
+          ),
+      ],
+    );
+    addTearDown(clockwise.dispose);
+    addTearDown(counterclockwise.dispose);
+    var differences = 0;
+    for (var y = 150; y <= 190; y++) {
+      for (var x = 65; x <= 125; x++) {
+        if ((channelAt(clockwise, x, y, 3) -
+                    channelAt(counterclockwise, 359 - x, y, 3))
+                .abs() >
+            64) {
+          differences++;
+        }
+      }
+    }
+    expect(differences, lessThan(5));
+  });
   test('continuous crescent neck has no cap seam or opacity accumulation', () {
     final tiles = crescent(continuous: true, width: 30, opacity: .4);
     addTearDown(tiles.dispose);
@@ -246,14 +280,67 @@ void main() {
       }
     }
   });
-  test('tight crescent keeps an open rounded inside', () {
-    final tiles = crescent(radius: 36, width: 90);
+  test('crescent apex keeps the configured width around the authored axis', () {
+    final tiles = crescent(radius: 36, width: 60);
     addTearDown(tiles.dispose);
-    expect(channelAt(tiles, 184, 180, 3), 0);
-    expect(channelAt(tiles, 216, 180, 3), 255);
+    // The authored apex is (216,180): its 60 px body spans x=186..246.
+    expect(channelAt(tiles, 188, 180, 0), greaterThan(245));
+    expect(channelAt(tiles, 243, 180, 0), greaterThan(245));
+    expect(channelAt(tiles, 250, 180, 3), 0);
   });
+  for (final textureKind in ['none', 'opaque', 'bangs']) {
+    test(
+      'tight crescent inner apex is rounded instead of a cusp ($textureKind)',
+      () async {
+        if (textureKind == 'bangs') {
+          await preloadBrushTexture('assets/brushes/bangs_01.png');
+        }
+        final tiles = crescent(
+          width: 64,
+          texture: textureKind == 'bangs'
+              ? getCachedBrushTexture('assets/brushes/bangs_01.png')!
+              : textureKind == 'opaque'
+              ? (Uint8List(brushTextureSize * brushTextureSize * 4)
+                  ..fillRange(0, brushTextureSize * brushTextureSize * 4, 255))
+              : null,
+          input: [
+            for (var i = 0; i <= 120; i++)
+              HairRibbonPoint(
+                Offset(
+                  180 + 130 * math.sin(i * math.pi / 60),
+                  10.5 + i * 170 / 60,
+                ),
+                64,
+                1,
+              ),
+          ],
+        );
+        addTearDown(tiles.dispose);
+        int innerEdge(int y) => [
+          for (var x = 50; x <= 110; x++)
+            if (channelAt(tiles, x, y, 0) > 200 &&
+                channelAt(tiles, x, y, 3) > 200)
+              x,
+        ].last;
+        final apex = innerEdge(265);
+        expect((innerEdge(259) - apex).abs(), lessThanOrEqualTo(1));
+        expect((innerEdge(271) - apex).abs(), lessThanOrEqualTo(1));
+      },
+    );
+  }
   test(
-    'crescent texture follows stroke angle even with fixed tip rotation',
+    'crescent body keeps an open rounded inside within the bend diameter',
+    () {
+      final tiles = crescent(radius: 50, width: 60);
+      addTearDown(tiles.dispose);
+      // A full ordinary start cap can cover the upper opening on this very
+      // tight turn. The curved body below that cap must still remain open.
+      expect(channelAt(tiles, 184, 196, 3), 0);
+      expect(channelAt(tiles, 230, 180, 3), 255);
+    },
+  );
+  test(
+    'curved crescent body follows stroke angle after the ordinary start',
     () {
       final texture = Uint8List(brushTextureSize * brushTextureSize * 4);
       for (var y = 12; y < brushTextureSize - 12; y++) {
@@ -266,7 +353,9 @@ void main() {
       addTearDown(original.dispose);
       addTearDown(rotated.dispose);
       var changed = 0;
-      for (var y = 0; y < 360; y++) {
+      // The fixed-angle start now intentionally matches the ordinary pen.
+      // Compare the lower half, after the authored curve has turned 90 degrees.
+      for (var y = 180; y < 360; y++) {
         for (var x = 0; x < 360; x++) {
           if ((channelAt(original, x, y, 3) - channelAt(rotated, 359 - y, x, 3))
                   .abs() >

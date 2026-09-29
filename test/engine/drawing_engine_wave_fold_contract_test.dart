@@ -138,16 +138,40 @@ void main() {
       );
     }
   });
-  test('one crescent has no extra straight-tail piece when reversed', () async {
-    const curve = [ui.Offset(60, 40), ui.Offset(180, 140), ui.Offset(60, 240)];
-    expect(
-      changedPixels(
-        await renderFold(HairFoldMode.crescent, curve: curve),
-        await renderFold(HairFoldMode.crescent, curve: curve, reverse: true),
-      ),
-      lessThan(500),
-    );
-  });
+  test(
+    'a later crescent keeps the ordinary outline pen start and straight lead',
+    () async {
+      const curve = [
+        ui.Offset(60, 40),
+        ui.Offset(60, 160),
+        ui.Offset(180, 220),
+        ui.Offset(60, 340),
+      ];
+      final plain = await renderFold(
+        HairFoldMode.crescent,
+        enabled: false,
+        curve: curve,
+      );
+      final folded = await renderFold(HairFoldMode.crescent, curve: curve);
+      var changed = 0;
+      for (var y = 16; y < 120; y++) {
+        for (var x = 25; x < 95; x++) {
+          final p = (y * 256 + x) * 4;
+          if ((plain[p] - folded[p]).abs() > 80 ||
+              (plain[p + 3] - folded[p + 3]).abs() > 80) {
+            changed++;
+          }
+        }
+      }
+      expect(
+        changed,
+        lessThan(10),
+        reason:
+            'folding must not turn the already drawn lead into a pointed crescent',
+      );
+      expect(changedPixels(plain, folded), greaterThan(100));
+    },
+  );
   List<ui.Offset> circularArc(double degrees, {double radius = 92}) {
     final count = (degrees.abs() / 5).ceil();
     final sign = degrees.sign;
@@ -160,40 +184,28 @@ void main() {
     ];
   }
 
-  test('continuous 270 degree turns affect crescent production rendering', () async {
-    final before = await renderFold(
-      HairFoldMode.crescent,
-      curve: circularArc(265),
-      size: 30,
-    );
-    final after = await renderFold(
-      HairFoldMode.crescent,
-      curve: circularArc(275),
-      size: 30,
-    );
-    expect(changedPixels(before, after), greaterThan(40));
-  });
-
-  test('both wave views add a fold after 270 continuous degrees', () async {
-    for (final mode in [
-      HairFoldMode.waveTopView,
-      HairFoldMode.waveLowAngle,
-    ]) {
+  test(
+    'continuous 270 degree turns affect crescent production rendering',
+    () async {
       final before = await renderFold(
-        mode,
+        HairFoldMode.crescent,
         curve: circularArc(265),
         size: 30,
       );
       final after = await renderFold(
-        mode,
+        HairFoldMode.crescent,
         curve: circularArc(275),
         size: 30,
       );
-      expect(
-        changedPixels(before, after),
-        greaterThan(20),
-        reason: mode.name,
-      );
+      expect(changedPixels(before, after), greaterThan(40));
+    },
+  );
+
+  test('both wave views add a fold after 270 continuous degrees', () async {
+    for (final mode in [HairFoldMode.waveTopView, HairFoldMode.waveLowAngle]) {
+      final before = await renderFold(mode, curve: circularArc(265), size: 30);
+      final after = await renderFold(mode, curve: circularArc(275), size: 30);
+      expect(changedPixels(before, after), greaterThan(20), reason: mode.name);
     }
   });
 

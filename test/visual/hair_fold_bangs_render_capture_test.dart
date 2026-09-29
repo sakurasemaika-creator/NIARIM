@@ -32,7 +32,9 @@ Future<void> capture(Brush brush, String name, {List<ui.Offset>? input}) async {
   if (input == null) {
     for (var i = 0; i <= 160; i++) {
       final t = i / 160;
-      points.add(ui.Offset(350 + 130 * math.sin(t * math.pi * 5), 95 + 850 * t));
+      points.add(
+        ui.Offset(350 + 130 * math.sin(t * math.pi * 5), 95 + 850 * t),
+      );
     }
   }
   StrokePoint p(ui.Offset a) =>
@@ -108,6 +110,10 @@ void main() {
         presets.singleWhere((b) => b.id == 'Brush0024'),
         'bangs_production_preset',
       );
+      await capture(
+        presets.singleWhere((b) => b.id == 'Brush0023'),
+        'hair_production_preset',
+      );
       List<ui.Offset> arc(double degrees, double radius) {
         final count = (degrees.abs() / 3).ceil();
         // Use an open spiral rather than retracing the same circle beyond
@@ -116,15 +122,12 @@ void main() {
         return [
           for (var i = 0; i <= count; i++)
             ui.Offset(
-              360 +
-                  (radius + i * 3 * .18) *
-                      math.cos(i * 3 * math.pi / 180),
-              420 +
-                  (radius + i * 3 * .18) *
-                      math.sin(i * 3 * math.pi / 180),
+              360 + (radius + i * 3 * .18) * math.cos(i * 3 * math.pi / 180),
+              420 + (radius + i * 3 * .18) * math.sin(i * 3 * math.pi / 180),
             ),
         ];
       }
+
       for (final mode in [
         HairFoldMode.crescent,
         HairFoldMode.waveTopView,
@@ -146,7 +149,6 @@ void main() {
           );
         }
       }
-
     },
     timeout: const Timeout(Duration(minutes: 3)),
   );

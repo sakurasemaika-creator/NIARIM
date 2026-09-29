@@ -167,6 +167,7 @@ class DrawingEngine {
     } finally {
       _replayingFinalStroke = false;
     }
+    _rebuildHairFold();
   }
 
   void endStroke({bool cancel = false}) {
@@ -240,6 +241,9 @@ class DrawingEngine {
   }
 
   void _rebuildHairFold() {
+    // Final fade replay already knows the complete input: rasterize the fold
+    // once after replay instead of rebuilding every intermediate prefix.
+    if (_replayingFinalStroke) return;
     final brush = currentBrush;
     final raster = _foldRaster;
     if (brush == null || raster == null || _foldEvents.isEmpty) return;
