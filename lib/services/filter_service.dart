@@ -17,12 +17,16 @@ class FilterService extends ChangeNotifier {
   String? _currentFilterId;
   String _searchQuery = '';
   bool _favoritesOnly = false;
+  final List<FilterDef> _filterEditUndo = [];
+  final List<FilterDef> _filterEditRedo = [];
 
   List<FilterDef> get filters => List.unmodifiable(_filters);
   FilterDef? get currentFilter =>
       _filters.where((f) => f.id == _currentFilterId).firstOrNull;
   String get searchQuery => _searchQuery;
   bool get favoritesOnly => _favoritesOnly;
+  bool get canUndoFilterEdit => _filterEditUndo.isNotEmpty;
+  bool get canRedoFilterEdit => _filterEditRedo.isNotEmpty;
 
   List<FilterDef> get visibleFilters {
     return _filters.where((f) {
@@ -263,6 +267,8 @@ class FilterService extends ChangeNotifier {
 
   void selectFilter(String id) {
     _currentFilterId = id;
+    _filterEditUndo.clear();
+    _filterEditRedo.clear();
     notifyListeners();
   }
 
@@ -330,6 +336,9 @@ class FilterService extends ChangeNotifier {
   }) {
     final idx = _filters.indexWhere((f) => f.id == id);
     if (idx < 0) return;
+    _filterEditUndo.add(_filters[idx]);
+    if (_filterEditUndo.length > 100) _filterEditUndo.removeAt(0);
+    _filterEditRedo.clear();
     _filters[idx] = _filters[idx].copyWith(
       strength: strength,
       colorLevels: colorLevels,
@@ -385,6 +394,28 @@ class FilterService extends ChangeNotifier {
       prismBlurPx: prismBlurPx,
       prismDirectionDegrees: prismDirectionDegrees,
     );
+    notifyListeners();
+    _persist();
+  }
+
+  void undoFilterEdit() {
+    final id = _currentFilterId;
+    if (id == null || _filterEditUndo.isEmpty) return;
+    final idx = _filters.indexWhere((f) => f.id == id);
+    if (idx < 0) return;
+    _filterEditRedo.add(_filters[idx]);
+    _filters[idx] = _filterEditUndo.removeLast();
+    notifyListeners();
+    _persist();
+  }
+
+  void redoFilterEdit() {
+    final id = _currentFilterId;
+    if (id == null || _filterEditRedo.isEmpty) return;
+    final idx = _filters.indexWhere((f) => f.id == id);
+    if (idx < 0) return;
+    _filterEditUndo.add(_filters[idx]);
+    _filters[idx] = _filterEditRedo.removeLast();
     notifyListeners();
     _persist();
   }
