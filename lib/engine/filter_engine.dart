@@ -1582,11 +1582,11 @@ class FilterEngine {
         // Reference film has broad pale reflective faces plus a much sharper
         // white core on fold ridges. The face term gives reflection area;
         // ridge keeps the brightest highlight crisp instead of foggy.
-        final faceSpecular = math.pow(edge, 1.22).toDouble() * 0.58;
-        final ridgeSpecular = math.pow(ridge, 1.42).toDouble() * 0.78;
+        final faceSpecular = math.pow(edge, 1.34).toDouble() * 0.36;
+        final ridgeSpecular = math.pow(ridge, 1.62).toDouble() * 0.64;
         final specular =
             (faceSpecular + ridgeSpecular - faceSpecular * ridgeSpecular)
-                .clamp(0.0, 0.92);
+                .clamp(0.0, 0.78);
         outR += (255.0 - outR) * specular;
         outG += (255.0 - outG) * specular;
         outB += (255.0 - outB) * specular;
@@ -1597,15 +1597,25 @@ class FilterEngine {
         if (edge > 0.075) {
           final angle = math.atan2(gy.toDouble(), gx.toDouble());
           final phase = (angle + math.pi) / (2 * math.pi);
+          const interferenceStops = <(double, int, int, int)>[
+            (0.00, 38, 232, 255),  // fluorescent cyan
+            (0.16, 34, 255, 211),  // emerald-aqua
+            (0.31, 80, 169, 255),  // electric blue
+            (0.47, 158, 91, 255),  // ultraviolet
+            (0.62, 255, 74, 225),  // neon magenta
+            (0.77, 255, 117, 185), // hot pink
+            (0.90, 255, 240, 92),  // spectral yellow
+            (1.00, 63, 229, 255),  // cyan return
+          ];
           final spectral = _sampleGradient(
-            stops,
-            (0.18 + phase * 0.72).clamp(0.0, 1.0),
+            interferenceStops,
+            phase.clamp(0.0, 1.0),
           );
           final shoulder = (1.0 - ridge * 0.72).clamp(0.18, 1.0);
           final colourMix =
               ((edge - 0.075) / 0.925).clamp(0.0, 1.0) *
               shoulder *
-              0.70;
+              0.82;
           outR += (spectral.$1 - outR) * colourMix;
           outG += (spectral.$2 - outG) * colourMix;
           outB += (spectral.$3 - outB) * colourMix;
