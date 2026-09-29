@@ -8307,8 +8307,6 @@ class _EffectFilterSheet extends StatelessWidget {
       l10n.filterAuroraHologramPresetSilverHologram,
     AuroraHologramPreset.opalPearl =>
       l10n.filterAuroraHologramPresetOpalPearl,
-    AuroraHologramPreset.darkHologram =>
-      l10n.filterAuroraHologramPresetDarkHologram,
     AuroraHologramPreset.sunsetGold =>
       l10n.filterAuroraHologramPresetSunsetGold,
     AuroraHologramPreset.silverFoil =>
