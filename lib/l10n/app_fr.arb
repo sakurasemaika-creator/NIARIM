@@ -620,7 +620,7 @@
   "tipsCommonLayerFolderTitle": "Calques communs + dossiers pour réutiliser d'un épisode à l'autre",
   "tipsCommonLayerFolderDesc": "Pour un logo ou un générique utilisé à chaque épisode d'une série, transformez-le en calque commun et rangez-le dans un dossier — facile à gérer en le copiant vers le projet d'un nouvel épisode.",
   "tipsStrokeDecayFadeTitle": "Dégradé de trait + fondu pour un rendu pinceau calligraphique",
-  "tipsStrokeDecayFadeDesc": "Combiner dégradé de trait et fondu dans les réglages du pinceau affine naturellement le début et la fin d'un trait, donnant aux lignes cette variation expressive d'épaisseur propre à un pinceau calligraphique ou à l'encre.",
+  "tipsStrokeDecayFadeDesc": "Dans les réglages du pinceau, vous pouvez ajuster séparément la valeur et la distance de l’entrée (début du trait) et de la sortie (fin du trait). Combinez-les avec l’atténuation du trait pour effiler seulement le début, prolonger seulement la fin ou rendre les deux extrémités asymétriques, comme avec un pinceau de calligraphie ou à encre.",
   "tipsColorMixingFadeTitle": "Mélange de couleurs + fondu pour un mélange façon peinture",
   "tipsColorMixingFadeDesc": "Ajouter un fondu à un pinceau avec le mélange de couleurs activé le fait se mélanger avec la couleur dessous tout en s'éclaircissant progressivement, bien plus proche du comportement de la vraie peinture.",
   "tipsOutlineAnimeStyleTitle": "Contour + style anime pour une finition animation cel",
