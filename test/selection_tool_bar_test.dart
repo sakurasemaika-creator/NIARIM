@@ -163,6 +163,19 @@ void main() {
     ]) {
       expect(find.text(label), findsOneWidget, reason: '$label がバーに無い');
     }
+    expect(
+      find.text(l10n.canvasSelectionReferenceWorkingLayer),
+      findsOneWidget,
+    );
+    expect(
+      find.text(l10n.canvasSelectionReferenceVisibleLayers),
+      findsOneWidget,
+    );
+    expect(
+      find.byKey(const ValueKey('selection-reference-source')),
+      findsOneWidget,
+    );
+
     // 移動・拡大縮小・回転はボタンではなく、選択範囲のハンドルと
     // 画面下部のスライダーで行うのでバーには出ない。
     expect(find.byType(SelectionTransformSliders), findsNothing);
