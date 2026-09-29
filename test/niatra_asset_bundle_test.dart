@@ -8,6 +8,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import 'package:niarim/engine/archive_security.dart';
 import 'package:niarim/engine/niatra_asset_bundle.dart';
+import 'package:niarim/engine/niatra_serializer.dart';
 import 'package:niarim/models/brush.dart';
 import 'package:niarim/models/stamp.dart';
 import 'package:niarim/models/tone.dart';
@@ -229,6 +230,63 @@ void main() {
         'CreativeAssets/Brushes/0/004.png',
       ],
     );
+  });
+
+  test('niatra restores multi-image brush files in order', () async {
+    SharedPreferences.setMockInitialValues({});
+    final temp = await Directory.systemTemp.createTemp(
+      'niatra_multi_restore_test_',
+    );
+    addTearDown(() async {
+      if (await temp.exists()) await temp.delete(recursive: true);
+    });
+
+    final embedded = <String>[];
+    final archive = Archive();
+    for (var i = 0; i < 5; i++) {
+      final path =
+          'CreativeAssets/Brushes/0/${i.toString().padLeft(3, '0')}.png';
+      embedded.add(path);
+      final bytes = <int>[i + 11, i + 21, i + 31, 255];
+      archive.addFile(ArchiveFile(path, bytes.length, bytes));
+    }
+    final raw = <String, dynamic>{
+      'creativeAssetsVersion': 1,
+      'brushes': [
+        {
+          'id': 'source',
+          'name': 'multi restore',
+          'size': 32.0,
+          'opacity': 100.0,
+          'spacing': 1.0,
+          'stabilization': true,
+          'stabilizationStrength': 40.0,
+          'pixelMode': false,
+          'fadeMode': 'none',
+          'customImagePath': null,
+          'customImagePaths': <String>[],
+          'customImageSelectionMode': 'random',
+          'embeddedImagePaths': embedded,
+        },
+      ],
+    };
+    final brushService = BrushService();
+
+    await NiatraAssetBundle.restoreEmbeddedAssets(
+      NiatraData(raw, archive),
+      brush: brushService,
+      tone: ToneService(),
+      stamp: StampService(),
+    );
+
+    final restored = brushService.brushes.last;
+    expect(restored.customImageSelectionMode, BrushImageSelectionMode.random);
+    expect(restored.customImagePaths, hasLength(5));
+    for (var i = 0; i < restored.customImagePaths.length; i++) {
+      final file = File(restored.customImagePaths[i]);
+      expect(await file.exists(), isTrue);
+      expect((await file.readAsBytes()).first, i + 11);
+    }
   });
 
 }
