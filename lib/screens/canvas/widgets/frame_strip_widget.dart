@@ -491,7 +491,7 @@ class _FrameStripWidgetState extends State<FrameStripWidget> {
           Padding(
             padding: const EdgeInsets.only(left: 4, right: 2),
             child: SizedBox(
-              width: 66,
+              width: 58,
               height: 44,
               child: Row(
                 mainAxisSize: MainAxisSize.min,
@@ -515,12 +515,11 @@ class _FrameStripWidgetState extends State<FrameStripWidget> {
                       ),
                     ),
                   ),
-                  const SizedBox(width: 1),
                   IgnorePointer(
                     child: Icon(
                       Icons.chevron_right_rounded,
                       key: const ValueKey('frameStripTimelineArrow'),
-                      size: 21,
+                      size: 16,
                       color: scheme.onSurface,
                     ),
                   ),
