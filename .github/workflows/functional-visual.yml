@@ -45,6 +45,15 @@ jobs:
       - name: 全25 Blend Modes production UI実キャプチャ
         run: CI=true flutter test test/visual/feature_operation_capture_test.dart --reporter expanded --dart-define=CAPTURE_GROUP=blend
 
+      - name: 公式Automation production UI実キャプチャ
+        run: CI=true flutter test test/visual/feature_operation_capture_test.dart --reporter expanded --dart-define=CAPTURE_GROUP=automation
+
+      - name: Auto Fill production UI実キャプチャ
+        run: CI=true flutter test test/visual/feature_operation_capture_test.dart --reporter expanded --dart-define=CAPTURE_GROUP=autofill
+
+      - name: 記録・再実行など追加 production UI実キャプチャ
+        run: CI=true flutter test test/visual/feature_operation_capture_test.dart --reporter expanded --dart-define=CAPTURE_GROUP=extras
+
       - name: キャンバス1/5縮小・斜め回転・背景端実操作監査
         run: flutter test test/canvas_angle_boundary_visual_audit_test.dart --reporter expanded
 
@@ -79,9 +88,12 @@ jobs:
             build/strict-visual-evidence/*.png
             build/final-remaining-strict/*.png
             build/visual-reaudit/canvas-angle-boundary/*.png
-            build/feature-captures/filters/*.png
-            build/feature-captures/blend/*.png
-            build/feature-captures/pixel-compare/*.png
+            build/feature-captures/filters/*
+            build/feature-captures/blend/*
+            build/feature-captures/pixel-compare/*
+            build/feature-captures/automation/*
+            build/feature-captures/autofill/*
+            build/feature-captures/extras/*
           if-no-files-found: warn
           retention-days: 7
 # Latest HEAD strict manifest evidence rerun: 2026-09-18 hologram preset production UI capture verification rerun 3 — all 12 variants.
