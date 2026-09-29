@@ -377,45 +377,49 @@ List<(double, int, int, int)> auroraHologramStops(AuroraHologramPreset preset) {
       (1.000, 255, 254, 252),
     ],
     AuroraHologramPreset.auroraPastel => const [
-      // Clear-film palette: keep several perceptually distinct hues in the
-      // same brightness neighbourhood so folds read as iridescent material,
-      // while broad intervals prevent the old topographic contour effect.
-      (0.000, 126, 111, 229), // violet-blue
-      (0.045, 143, 133, 237),
-      (0.090, 166, 157, 244), // lavender
-      (0.135, 193, 174, 247),
-      // Pink remains as an interference accent, but the reference material is
-      // predominantly bright ice-blue/cyan over its larger reflective faces.
-      (0.180, 218, 190, 242), // soft orchid
-      (0.215, 243, 198, 231), // narrow clear pink
-      (0.250, 232, 213, 242),
-      (0.295, 211, 226, 250), // lilac ice
-      (0.340, 188, 231, 252),
-      (0.385, 163, 229, 252), // bright ice cyan
-      (0.430, 139, 224, 250),
-      (0.475, 119, 217, 248),
-      (0.515, 137, 224, 250),
-      (0.535, 102, 224, 235), // brighter aqua
-      // Emerald is a brief spectral flash, not a body colour.
-      (0.558, 105, 242, 210),
-      (0.575, 129, 232, 231),
-      (0.610, 169, 229, 250), // sky blue
-      (0.650, 142, 203, 248), // deeper blue accent
-      (0.690, 175, 190, 246),
-      (0.730, 207, 191, 247), // lavender return
-      (0.770, 239, 190, 236), // pink return
-      (0.810, 252, 208, 229),
-      (0.845, 245, 225, 246),
-      (0.875, 218, 237, 251), // pale cyan reflection
-      (0.900, 243, 249, 253),
-      (0.922, 254, 254, 255), // white reflection plane
-      (0.942, 239, 232, 250),
-      (0.958, 249, 221, 239), // tiny pink edge
-      (0.972, 253, 243, 247),
-      // Narrow pale-yellow spectral edge next to the white highlight.
-      (0.983, 255, 255, 221),
-      (0.990, 255, 255, 244),
-      (0.996, 255, 255, 252),
+      // Transparent holographic film: most of the tonal range stays close to
+      // clear/white-silver. Saturated colours are narrow interference flashes
+      // beside bright specular planes, rather than broad painted colour bands.
+      (0.000, 184, 202, 222), // cool transparent shadow
+      (0.055, 202, 218, 233),
+      (0.110, 221, 232, 242), // clear silver-blue body
+      (0.165, 235, 241, 247),
+      (0.215, 245, 248, 250), // near-clear face
+      (0.250, 211, 238, 250), // pale cyan reflection
+      (0.285, 154, 229, 250), // cyan flash
+      (0.310, 102, 221, 245),
+      (0.330, 203, 244, 250), // return quickly toward clear
+      (0.350, 250, 253, 254),
+      (0.365, 255, 255, 255), // sharp white specular
+      (0.385, 238, 239, 250),
+      (0.405, 194, 184, 247), // violet interference edge
+      (0.425, 239, 190, 239), // pink interference edge
+      (0.445, 252, 222, 239),
+      (0.470, 246, 249, 251), // clear body again
+      (0.515, 226, 240, 248),
+      (0.550, 182, 231, 250), // ice blue
+      (0.580, 126, 220, 247),
+      (0.602, 91, 232, 222), // tiny emerald spectral flash
+      (0.620, 178, 241, 241),
+      (0.642, 246, 251, 252),
+      (0.658, 255, 255, 255), // second white reflection plane
+      (0.680, 239, 236, 250),
+      (0.705, 205, 190, 247), // lavender
+      (0.728, 244, 190, 234), // narrow magenta-pink
+      (0.750, 252, 222, 231),
+      (0.775, 249, 248, 249), // clear/white film face
+      (0.815, 226, 240, 249),
+      (0.845, 171, 230, 250), // cyan-blue edge
+      (0.872, 126, 205, 247), // small deeper blue reflection
+      (0.895, 225, 238, 250),
+      (0.918, 252, 253, 253),
+      (0.936, 255, 255, 255), // strongest white glint
+      // Spectral warm edge is deliberately tiny and nearly white.
+      (0.950, 255, 254, 220),
+      (0.960, 255, 239, 219), // faint peach edge
+      (0.972, 250, 224, 242),
+      (0.984, 233, 235, 251),
+      (0.992, 247, 251, 253),
       (1.000, 255, 255, 255),
     ],
     AuroraHologramPreset.darkRainbow => const [
@@ -1489,7 +1493,7 @@ class FilterEngine {
       // Blend only neutral source luminance, never source hue. This gives the
       // iridescent map a translucent-film appearance without turning it into
       // ordinary opacity mixing.
-      AuroraHologramPreset.auroraPastel => 0.06,
+      AuroraHologramPreset.auroraPastel => 0.14,
       _ => 0.0,
     };
     for (int i = 0; i < data.length; i += 4) {
