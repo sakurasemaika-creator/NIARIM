@@ -1602,6 +1602,23 @@ class FilterEngine {
             math.sin(planeAngle) * orientationBlend;
         final materialAngle = math.atan2(vy, vx);
 
+        // Measure how consistently the wide material face points in one
+        // direction. Cloth facets should hold one reflection family across
+        // the face, while rounded surfaces keep a continuous orientation.
+        final planeCoherence =
+            (planeStrength * (1.0 - edge * 0.34)).clamp(0.0, 1.0);
+        // Quantize only coherent planar regions. This prevents a cloth facet
+        // from cycling through several rainbow colours because of tiny luma
+        // changes, but leaves spheres/soft curves continuous.
+        const facetSteps = 12.0;
+        final rawMaterialPhase =
+            (materialAngle + math.pi) / (2 * math.pi);
+        final facetPhase =
+            (rawMaterialPhase * facetSteps).roundToDouble() / facetSteps;
+        final coherentPhase =
+            rawMaterialPhase +
+            (facetPhase - rawMaterialPhase) * planeCoherence * 0.72;
+
         final localMean =
             (sourceLumaAt(x - 3, y) +
                 sourceLumaAt(x + 3, y) +
@@ -1626,7 +1643,7 @@ class FilterEngine {
         // beside (not inside) the white ridge. This creates the reference
         // material's cyan/pink/violet edge flashes without rainbow contouring.
         if (edge > 0.075) {
-          final phase = (materialAngle + math.pi) / (2 * math.pi);
+          final phase = coherentPhase.clamp(0.0, 1.0);
           const interferenceStops = <(double, int, int, int)>[
             // Luminous film reflections: chromatic, but mixed toward the
             // reflected light so they read as iridescence rather than paint.
@@ -1644,11 +1661,19 @@ class FilterEngine {
             phase.clamp(0.0, 1.0),
           );
           final shoulder = (1.0 - ridge * 0.82).clamp(0.12, 1.0);
+          // Preserve quiet transparent faces. Strong colour appears mainly
+          // where a coherent facet catches the light; weak/flat regions keep
+          // the pale transmission map instead of receiving a uniform rainbow.
+          final reflectionGate =
+              (edge * 0.62 + planeStrength * 0.38).clamp(0.0, 1.0);
+          final gatedReflection =
+              math.pow(reflectionGate, 1.35).toDouble();
           final colourMix =
-              ((edge - 0.075) / 0.925).clamp(0.0, 1.0) *
-              (0.72 + planeStrength * 0.28) *
+              ((edge - 0.055) / 0.945).clamp(0.0, 1.0) *
+              (0.62 + planeStrength * 0.38) *
+              gatedReflection *
               shoulder *
-              0.48;
+              0.58;
           outR += (spectral.$1 - outR) * colourMix;
           outG += (spectral.$2 - outG) * colourMix;
           outB += (spectral.$3 - outB) * colourMix;
