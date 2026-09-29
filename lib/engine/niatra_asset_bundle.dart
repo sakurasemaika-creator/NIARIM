@@ -37,6 +37,7 @@ class NiatraAssetBundle {
     required BrushService brush,
     required ToneService tone,
     required StampService stamp,
+    String? restoreBasePath,
   }) async {
     final sourceArchive = ArchiveSecurity.decodeZip(original);
     final dataFile = sourceArchive.findFile(_dataFile);
@@ -136,9 +137,8 @@ class NiatraAssetBundle {
   }) async {
     if (data.raw[_versionKey] != _version) return;
 
-    final String? basePath = kIsWeb
-        ? null
-        : (await getApplicationDocumentsDirectory()).path;
+    final String? basePath = restoreBasePath ??
+        (kIsWeb ? null : (await getApplicationDocumentsDirectory()).path);
     final importNonce = DateTime.now().microsecondsSinceEpoch;
 
     final brushesJson = data.raw['brushes'] as List<dynamic>?;
