@@ -306,25 +306,6 @@ List<(double, int, int, int)> auroraHologramStops(AuroraHologramPreset preset) {
       (0.98, 255, 248, 229),
       (1.00, 255, 255, 255),
     ],
-    AuroraHologramPreset.sunsetGold => const [
-      // Metallic gold uses tighter value transitions around the reflection
-      // bands. This keeps edges crisp without reintroducing a dark halo.
-      (0.00, 20, 10, 0),
-      (0.14, 55, 29, 0),
-      (0.28, 105, 58, 0),
-      (0.42, 166, 98, 0),
-      (0.53, 216, 150, 0),
-      (0.575, 242, 172, 4),
-      (0.61, 255, 207, 28),
-      (0.70, 255, 225, 60),
-      (0.79, 255, 238, 105),
-      (0.865, 255, 246, 158),
-      (0.91, 255, 249, 188),
-      (0.955, 255, 252, 218),
-      (0.985, 255, 254, 240),
-      (1.00, 255, 255, 255),
-    ],
-
     AuroraHologramPreset.sampledGold => const [
       // ~50 clusters sampled only from gold-material pixels in the four supplied
       // references (costumes, sphere, band, cylinder); backgrounds/skin/black
@@ -400,24 +381,32 @@ List<(double, int, int, int)> auroraHologramStops(AuroraHologramPreset preset) {
       // clear-film references. The cluster pool is population-weighted, but the
       // final curve uses broad neighbouring families instead of 50 oscillating
       // stops: that avoids false topographic/contour lines on smooth spheres.
+      // Broad translucent body colours are interrupted by narrow near-white
+      // reflection bands sampled from the clear-film references. Repeating the
+      // same body family on both sides makes these read as specular planes,
+      // not as topographic colour contours.
       (0.000, 92, 184, 224),
-      (0.070, 121, 211, 239),
-      (0.140, 161, 229, 244),
-      (0.210, 196, 239, 244),
-      (0.280, 218, 231, 242),
-      (0.350, 218, 205, 241),
-      (0.420, 224, 190, 237),
-      (0.490, 239, 190, 224),
-      (0.560, 246, 203, 224),
-      (0.630, 239, 218, 237),
-      (0.700, 218, 228, 247),
-      (0.770, 180, 224, 247),
-      (0.840, 133, 215, 246),
-      (0.900, 194, 239, 248),
-      (0.955, 247, 250, 248),
-      // Tiny spectral-yellow glint immediately before the white specular.
-      (0.978, 255, 255, 157),
-      (0.988, 255, 255, 247),
+      (0.090, 133, 215, 241),
+      (0.180, 190, 235, 245),
+      (0.255, 218, 231, 242),
+      (0.315, 247, 250, 250),
+      (0.340, 255, 255, 255),
+      (0.365, 244, 247, 250),
+      (0.430, 218, 205, 241),
+      (0.500, 232, 190, 233),
+      (0.565, 247, 205, 225),
+      (0.620, 253, 244, 247),
+      (0.645, 255, 255, 255),
+      (0.670, 246, 241, 249),
+      (0.730, 218, 228, 247),
+      (0.790, 166, 221, 247),
+      (0.840, 246, 251, 252),
+      (0.862, 255, 255, 255),
+      (0.884, 242, 249, 251),
+      (0.930, 210, 232, 247),
+      // A very narrow spectral glint, followed by the strongest white face.
+      (0.966, 255, 255, 168),
+      (0.980, 255, 255, 247),
       (1.000, 255, 255, 255),
     ],
     AuroraHologramPreset.darkRainbow => const [
@@ -1483,7 +1472,7 @@ class FilterEngine {
     final preserveLuma = switch (preset) {
       // Transparent-film look: retain substantially more of the source
       // relief so folds read through the pastel interference colour.
-      AuroraHologramPreset.auroraPastel => 0.12,
+      AuroraHologramPreset.auroraPastel => 0.20,
       AuroraHologramPreset.darkRainbow => 0.16,
       _ => 0.0,
     };
