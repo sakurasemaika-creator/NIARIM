@@ -1583,7 +1583,7 @@ class FilterEngine {
         // white core on fold ridges. The face term gives reflection area;
         // ridge keeps the brightest highlight crisp instead of foggy.
         final faceSpecular = math.pow(edge, 1.65).toDouble() * 0.30;
-        final ridgeSpecular = math.pow(ridge, 2.05).toDouble() * 0.76;
+        final ridgeSpecular = math.pow(ridge, 2.25).toDouble() * 0.80;
         final specular =
             (faceSpecular + ridgeSpecular - faceSpecular * ridgeSpecular)
                 .clamp(0.0, 0.84);
@@ -1613,11 +1613,11 @@ class FilterEngine {
             interferenceStops,
             phase.clamp(0.0, 1.0),
           );
-          final shoulder = (1.0 - ridge * 0.72).clamp(0.18, 1.0);
+          final shoulder = (1.0 - ridge * 0.82).clamp(0.12, 1.0);
           final colourMix =
               ((edge - 0.075) / 0.925).clamp(0.0, 1.0) *
               shoulder *
-              0.52;
+              0.48;
           outR += (spectral.$1 - outR) * colourMix;
           outG += (spectral.$2 - outG) * colourMix;
           outB += (spectral.$3 - outB) * colourMix;
