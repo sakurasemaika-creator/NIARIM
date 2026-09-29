@@ -2620,27 +2620,6 @@ class _CanvasScreenState extends State<CanvasScreen> {
               ),
             ),
           const Spacer(),
-          // Canvas/Timeline are the two primary editing modes. Keep the
-          // mode switch in the top bar so the current UI matches the mode
-          // affordance shown throughout the product and website captures.
-          CanvasIconButton(
-            iconBuilder: (color) => SizedBox(
-              width: 30,
-              height: 20,
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Icon(Icons.movie_filter_outlined, size: 16, color: color),
-                  Icon(Icons.arrow_forward, size: 14, color: color),
-                ],
-              ),
-            ),
-            iconSize: 30,
-            onPressed: () => _runAutomationBlockedAction(
-              () => context.go('/timeline/${widget.projectId}'),
-            ),
-            tooltip: 'タイムラインモード',
-          ),
           // 設定/編集メニュー（背景色・オニオンスキン・
           // フィルター・フレーム範囲選択を集約）。
           _topBarIconButton(
@@ -2658,6 +2637,15 @@ class _CanvasScreenState extends State<CanvasScreen> {
             Icons.home_outlined,
             onPressed: _confirmBackToProjectList,
             tooltip: l10n.timelineBackToProjectListTooltip,
+          ),
+          // Primary mode switch comes last: settings, home, timeline.
+          _topBarIconButton(
+            context,
+            Icons.movie_filter_outlined,
+            onPressed: () => _runAutomationBlockedAction(
+              () => context.go('/timeline/${widget.projectId}'),
+            ),
+            tooltip: 'タイムラインモード',
           ),
         ],
       ),
