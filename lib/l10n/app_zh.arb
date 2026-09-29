@@ -552,7 +552,7 @@
   "helpProjectDetailDesc": "可以在一个画面中集中查看、编辑项目名称、缩略图、收藏状态、要启用的自动上色设置筛选等项目相关设置。存档树的入口也在这里。",
   "helpWatermarkEditTitle": "重新编辑水印",
   "helpWatermarkEditDesc": "点击放置在时间轴共同图层轨道上的水印，随时可以重新编辑其角度、大小、不透明度、显示范围（循环显示）。不仅在登记时，在项目中实际使用时也能随时细致调整。",
-  "helpAudioClipTitle": "音量・淡入淡出",
+  "helpAudioClipTitle": "音量调整",
   "helpAudioClipDesc": "放置在时间轴上的音频片段，可以在详情面板中调整音量、淡入、淡出的秒数。可用来调整音效和背景音乐的音量平衡，或让曲子的开头、结尾更加顺滑。",
   "helpPenSubToolTitle": "画笔子工具",
   "helpPenSubToolDesc": "长按画笔工具，可以从普通绘图切换到网点填充或印章放置等子工具。无需每次切换工具，就能用同一支笔在多种作业之间来回操作。",
