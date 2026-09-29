@@ -1424,8 +1424,6 @@ class _FilterPanelState extends State<FilterPanel> {
     AuroraHologramPreset preset,
   ) => switch (preset) {
     AuroraHologramPreset.silverHologram => l10n.filterAuroraHologramPresetSilverHologram,
-    AuroraHologramPreset.sunsetGold =>
-      l10n.filterAuroraHologramPresetSunsetGold,
     AuroraHologramPreset.sampledGold => 'サンプルゴールド',
     AuroraHologramPreset.silverFoil =>
       l10n.filterAuroraHologramPresetSilverFoil,
