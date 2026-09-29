@@ -728,7 +728,7 @@
   "tipsCommonLayerFolderTitle": "共通レイヤー×フォルダで話数をまたいで使い回す",
   "tipsCommonLayerFolderDesc": "シリーズ物で毎話使うロゴやクレジット表記は、共通レイヤー化してフォルダにまとめておくと、新しい話数のプロジェクトへコピーする際も迷わず扱えます。",
   "tipsStrokeDecayFadeTitle": "ストローク減衰×フェードで毛筆表現",
-  "tipsStrokeDecayFadeDesc": "ブラシ設定のストローク減衰とフェードを両方かけると、線の描き始め・終わりが自然に細くなり、毛筆やインクブラシのような抑揚のある線が描けます。",
+  "tipsStrokeDecayFadeDesc": "ブラシ設定では、入り（始点）と抜き（終点）の値・距離を別々に調整できます。ストローク減衰も組み合わせると、入りだけ細くする、抜きだけ長く伸ばす、両端を非対称にするなど、毛筆やインクブラシらしい抑揚を作れます。",
   "tipsColorMixingFadeTitle": "混色×フェードで絵の具のような混ざり",
   "tipsColorMixingFadeDesc": "混色を有効にしたブラシへフェードも組み合わせると、下の色と混ざりながら徐々に薄くなる、実際の絵の具に近い塗り心地になります。",
   "tipsOutlineAnimeStyleTitle": "縁取り×アニメ調でセルアニメ風の仕上げ",
