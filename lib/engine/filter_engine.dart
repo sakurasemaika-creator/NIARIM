@@ -377,37 +377,41 @@ List<(double, int, int, int)> auroraHologramStops(AuroraHologramPreset preset) {
       (1.000, 255, 254, 252),
     ],
     AuroraHologramPreset.auroraPastel => const [
-      // Keep the clean 3dfc sampled-film direction, but remove orange-biased
-      // clusters and consolidate nearby samples so smooth forms do not develop
-      // contour bands. Near-white reflections are narrow accents only.
-      (0.000, 145, 104, 240),
-      (0.055, 139, 154, 240),
-      (0.115, 151, 190, 244),
-      (0.175, 166, 211, 247),
-      (0.235, 185, 224, 249),
-      (0.295, 205, 231, 249),
-      (0.355, 214, 214, 248),
-      (0.415, 225, 195, 247),
-      (0.475, 244, 195, 239),
-      (0.535, 249, 207, 236),
-      (0.595, 239, 218, 246),
-      (0.655, 219, 230, 249),
-      (0.715, 194, 235, 251),
-      (0.758, 173, 232, 252),
-      // A tiny transparent emerald flash inside the broad cyan reflection.
-      (0.772, 128, 246, 220),
-      (0.786, 169, 236, 247),
-      (0.825, 206, 240, 252),
-      (0.865, 242, 247, 252),
-      (0.890, 253, 253, 255),
-      (0.915, 240, 238, 252),
-      (0.940, 226, 220, 250),
-      (0.962, 249, 230, 248),
-      (0.978, 253, 248, 252),
-      // Very narrow pale spectral yellow, kept close to white so it blends
-      // into the specular highlight instead of reading as a yellow stripe.
-      (0.987, 255, 255, 220),
-      (0.992, 255, 255, 245),
+      // Clear-film palette: keep several perceptually distinct hues in the
+      // same brightness neighbourhood so folds read as iridescent material,
+      // while broad intervals prevent the old topographic contour effect.
+      (0.000, 126, 111, 229), // violet-blue
+      (0.045, 143, 133, 237),
+      (0.090, 166, 157, 244), // lavender
+      (0.135, 193, 174, 247),
+      (0.180, 225, 184, 240), // orchid pink
+      (0.225, 247, 193, 228),
+      (0.270, 251, 207, 220), // shell pink
+      (0.315, 244, 219, 238),
+      (0.360, 218, 222, 249), // lilac ice
+      (0.405, 190, 226, 252),
+      (0.450, 153, 224, 250), // clear cyan
+      (0.495, 116, 215, 246),
+      (0.535, 102, 224, 235), // brighter aqua
+      // Emerald is a brief spectral flash, not a body colour.
+      (0.558, 105, 242, 210),
+      (0.575, 129, 232, 231),
+      (0.610, 169, 229, 250), // sky blue
+      (0.650, 142, 203, 248), // deeper blue accent
+      (0.690, 175, 190, 246),
+      (0.730, 207, 191, 247), // lavender return
+      (0.770, 239, 190, 236), // pink return
+      (0.810, 252, 208, 229),
+      (0.845, 245, 225, 246),
+      (0.875, 218, 237, 251), // pale cyan reflection
+      (0.900, 243, 249, 253),
+      (0.922, 254, 254, 255), // white reflection plane
+      (0.942, 239, 232, 250),
+      (0.958, 249, 221, 239), // tiny pink edge
+      (0.972, 253, 243, 247),
+      // Narrow pale-yellow spectral edge next to the white highlight.
+      (0.983, 255, 255, 221),
+      (0.990, 255, 255, 244),
       (0.996, 255, 255, 252),
       (1.000, 255, 255, 255),
     ],
