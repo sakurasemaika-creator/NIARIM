@@ -1555,26 +1555,57 @@ class FilterEngine {
         final pixel = i ~/ 4;
         final x = pixel % width;
         final y = pixel ~/ width;
-        final gx = sourceLumaAt(x + 1, y) - sourceLumaAt(x - 1, y);
-        final gy = sourceLumaAt(x, y + 1) - sourceLumaAt(x, y - 1);
-        final edge = math.sqrt((gx * gx + gy * gy).toDouble()).clamp(0.0, 96.0) / 96.0;
+        // Use a wider derivative than a single pixel. It reacts to actual
+        // cloth/sphere planes instead of texture noise, so reflections form
+        // coherent facets rather than glittery outlines.
+        final gx =
+            sourceLumaAt(x + 2, y) -
+            sourceLumaAt(x - 2, y) +
+            sourceLumaAt(x + 4, y) -
+            sourceLumaAt(x - 4, y);
+        final gy =
+            sourceLumaAt(x, y + 2) -
+            sourceLumaAt(x, y - 2) +
+            sourceLumaAt(x, y + 4) -
+            sourceLumaAt(x, y - 4);
+        final edge =
+            math.sqrt((gx * gx + gy * gy).toDouble()).clamp(0.0, 180.0) /
+            180.0;
+        final localMean =
+            (sourceLumaAt(x - 3, y) +
+                sourceLumaAt(x + 3, y) +
+                sourceLumaAt(x, y - 3) +
+                sourceLumaAt(x, y + 3)) /
+            4.0;
+        final ridge = ((luminanceIdx - localMean) / 42.0).clamp(0.0, 1.0);
 
-        // Strong local folds create a hard mirror-like white face. Keep this
-        // deliberately narrow so flat areas remain transparent rather than
-        // becoming uniformly white.
-        final specular = math.pow(edge, 1.7).toDouble() * 0.72;
+        // Reference film has broad pale reflective faces plus a much sharper
+        // white core on fold ridges. The face term gives reflection area;
+        // ridge keeps the brightest highlight crisp instead of foggy.
+        final faceSpecular = math.pow(edge, 1.35).toDouble() * 0.46;
+        final ridgeSpecular = math.pow(ridge, 1.55).toDouble() * 0.68;
+        final specular =
+            (faceSpecular + ridgeSpecular - faceSpecular * ridgeSpecular)
+                .clamp(0.0, 0.86);
         outR += (255.0 - outR) * specular;
         outG += (255.0 - outG) * specular;
         outB += (255.0 - outB) * specular;
 
-        // The coloured shoulder follows surface direction rather than global
-        // luminance. This is what makes neighbouring folds flash cyan/pink/
-        // violet like clear holographic film instead of forming contour bands.
-        if (edge > 0.10) {
+        // Interference colour follows plane direction, but remains strongest
+        // beside (not inside) the white ridge. This creates the reference
+        // material's cyan/pink/violet edge flashes without rainbow contouring.
+        if (edge > 0.075) {
           final angle = math.atan2(gy.toDouble(), gx.toDouble());
           final phase = (angle + math.pi) / (2 * math.pi);
-          final spectral = _sampleGradient(stops, (0.20 + phase * 0.68).clamp(0.0, 1.0));
-          final colourMix = ((edge - 0.10) / 0.90).clamp(0.0, 1.0) * 0.34;
+          final spectral = _sampleGradient(
+            stops,
+            (0.18 + phase * 0.72).clamp(0.0, 1.0),
+          );
+          final shoulder = (1.0 - ridge * 0.72).clamp(0.18, 1.0);
+          final colourMix =
+              ((edge - 0.075) / 0.925).clamp(0.0, 1.0) *
+              shoulder *
+              0.46;
           outR += (spectral.$1 - outR) * colourMix;
           outG += (spectral.$2 - outG) * colourMix;
           outB += (spectral.$3 - outB) * colourMix;
