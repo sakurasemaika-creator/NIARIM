@@ -89,14 +89,14 @@ void main() {
           );
           await tester.enterText(
             find.descendant(of: panel, matching: find.byType(TextField)).first,
-            _filterName(filter),
+            _filterSearchLabel(h, filter),
           );
           await h.settle();
           await h.tap(
             find.descendant(
               of: panel,
               matching: find.byWidgetPredicate(
-                (w) => w is Text && w.data == _filterCardLabel(filter),
+                (w) => w is Text && w.data == _filterSearchLabel(h, filter),
               ),
             ),
           );
@@ -643,8 +643,12 @@ String _filterName(FilterDef filter) => switch (filter.id) {
   _ => filter.name,
 };
 
-String _filterCardLabel(FilterDef filter) =>
-    filter.id == 'Filter0027' ? 'ノイズフィルター' : _filterName(filter);
+String _filterSearchLabel(_Harness h, FilterDef filter) {
+  if (filter.id == FilterService.genericNoiseFilterId) {
+    return h.l10n.filterNameNoise;
+  }
+  return _filterName(filter);
+}
 
 class _Harness {
   final WidgetTester tester;
