@@ -98,7 +98,7 @@ void main() {
 
       final panelContext = tester.element(find.byType(FilterPanel));
       final filters = panelContext.read<FilterService>().filters;
-      expect(filters, hasLength(25));
+      expect(filters, hasLength(24));
       final horizontalList = find.byType(ListView).first;
       for (final filter in filters) {
         final card = find.byKey(ValueKey('filter-card-${filter.id}'));
