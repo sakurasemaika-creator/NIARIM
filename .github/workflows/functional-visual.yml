@@ -1,5 +1,5 @@
 name: Functional Visual Audit
-# Visual closure excludes the material/Gradient Map filter by request. Rerun with separate noise search query and card label.
+# Visual closure excludes the material/Gradient Map filter by request. Rerun with localized generic-noise label.
 
 on:
   workflow_dispatch:
