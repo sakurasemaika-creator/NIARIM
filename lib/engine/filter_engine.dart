@@ -1504,9 +1504,9 @@ class FilterEngine {
     // vinyl instead of painting every luminance band a pastel colour.
     final holographicFilm = preset == AuroraHologramPreset.auroraPastel;
     int sourceLumaAt(int x, int y) {
-      x = x.clamp(0, width - 1);
-      y = y.clamp(0, height - 1);
-      final p = (y * width + x) * 4;
+      final sx = x < 0 ? 0 : (x >= width ? width - 1 : x);
+      final sy = y < 0 ? 0 : (y >= height ? height - 1 : y);
+      final p = (sy * width + sx) * 4;
       return (data[p] * 0.299 + data[p + 1] * 0.587 + data[p + 2] * 0.114)
           .round();
     }
