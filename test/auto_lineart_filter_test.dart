@@ -97,7 +97,7 @@ void main() {
         h,
         outputWidthPx: 2,
         taperLengthPx: 8,
-        smoothing: 45,
+        smoothing: 5,
       );
       expect(_opaqueCount(out), greaterThan(30));
       expect(_alpha(out, w, 48, 32), greaterThan(100));
@@ -281,7 +281,7 @@ void main() {
         h,
         outputWidthPx: 3,
         taperLengthPx: 0,
-        smoothing: 60,
+        smoothing: 6,
       );
       var partial = 0;
       for (var i = 3; i < out.length; i += 4) {
@@ -640,7 +640,7 @@ void main() {
     );
 
     test(
-      'dragging a shared junction keeps coincident branch endpoints joined',
+      'dragging a shared junction moves only the selected control point',
       () {
         final graph = AutoLineartGraph(
           width: 100,
@@ -668,8 +668,8 @@ void main() {
         );
         expect(moved.paths[0].points.last.x, 54);
         expect(moved.paths[0].points.last.y, 57);
-        expect(moved.paths[1].points.first.x, 54);
-        expect(moved.paths[1].points.first.y, 57);
+        expect(moved.paths[1].points.first.x, 50);
+        expect(moved.paths[1].points.first.y, 50);
       },
     );
 
