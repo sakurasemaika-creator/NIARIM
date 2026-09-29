@@ -640,7 +640,6 @@ String _filterName(FilterDef filter) => switch (filter.id) {
   'Filter0016' => '色収差フィルター',
   'Filter0017' => '眼鏡断層フィルター',
   'Filter0018' => 'ドット絵フィルター',
-  'Filter0027' => 'ノイズフィルター',
   _ => filter.name,
 };
 
