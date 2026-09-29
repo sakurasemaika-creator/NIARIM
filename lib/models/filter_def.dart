@@ -39,8 +39,8 @@ enum ToneCurvePreset {
 
 enum AuroraHologramPreset {
   silverHologram,
-  opalPearl,
   sunsetGold,
+  sampledGold,
   silverFoil,
   luminousPearl,
   auroraPastel,
