@@ -333,7 +333,9 @@ class _FilterPanelState extends State<FilterPanel> {
     }
 
     return Card(
-      elevation: 8,
+      elevation: current == null ? 8 : 0,
+      color: current == null ? null : Colors.transparent,
+      surfaceTintColor: Colors.transparent,
       child: SizedBox(
         width: 300,
         height: 520,
