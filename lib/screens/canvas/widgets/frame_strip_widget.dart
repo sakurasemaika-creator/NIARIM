@@ -493,8 +493,9 @@ class _FrameStripWidgetState extends State<FrameStripWidget> {
             child: SizedBox(
               width: 58,
               height: 44,
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
+              child: Stack(
+                clipBehavior: Clip.none,
+                alignment: Alignment.centerLeft,
                 children: [
                   IconButton(
                     key: const ValueKey('frameStripTimelineButton'),
@@ -515,12 +516,15 @@ class _FrameStripWidgetState extends State<FrameStripWidget> {
                       ),
                     ),
                   ),
-                  IgnorePointer(
-                    child: Icon(
-                      Icons.chevron_right_rounded,
-                      key: const ValueKey('frameStripTimelineArrow'),
-                      size: 16,
-                      color: scheme.onSurface,
+                  Positioned(
+                    left: 42,
+                    child: IgnorePointer(
+                      child: Icon(
+                        Icons.chevron_right_rounded,
+                        key: const ValueKey('frameStripTimelineArrow'),
+                        size: 16,
+                        color: scheme.onSurface,
+                      ),
                     ),
                   ),
                 ],
