@@ -370,58 +370,63 @@ List<(double, int, int, int)> auroraHologramStops(AuroraHologramPreset preset) {
       (1.00, 255, 255, 255),
     ],
     AuroraHologramPreset.luminousPearl => const [
-      // Pearl-photo pass: lifted champagne shadows and a dense ivory middle.
-      // The range is intentionally narrow: no muddy darks and no broad pure
-      // white plateau, so roundness survives without metallic contrast.
-      (0.00, 170, 151, 130),
-      (0.06, 177, 159, 138),
-      (0.12, 184, 167, 146),
-      (0.18, 191, 174, 155),
-      (0.24, 198, 182, 164),
-      (0.30, 205, 190, 173),
-      (0.36, 212, 198, 182),
-      (0.42, 219, 206, 191),
-      (0.48, 226, 214, 200),
-      (0.54, 233, 222, 209),
-      (0.60, 239, 230, 218),
-      (0.66, 244, 237, 227),
-      (0.72, 248, 243, 235),
-      (0.78, 246, 242, 236),
-      (0.84, 249, 246, 241),
-      (0.89, 246, 242, 236),
-      (0.93, 249, 246, 241),
-      (0.96, 251, 249, 245),
-      (0.985, 253, 251, 248),
-      (1.00, 255, 254, 252),
+      // Iridescent pearl: warm champagne/amber body with restrained cool
+      // blue-cyan flashes. Dense ivory midtones keep the sphere soft while
+      // alternating warm/cool reflections create nacre rather than flat beige.
+      (0.00, 158, 130, 99),
+      (0.055, 170, 140, 103),
+      (0.11, 183, 151, 108),
+      (0.165, 196, 164, 116),
+      (0.22, 210, 179, 128),
+      (0.275, 222, 194, 143),
+      (0.33, 233, 209, 162),
+      (0.385, 241, 222, 181),
+      (0.44, 247, 233, 201),
+      (0.495, 251, 242, 220),
+      (0.55, 246, 242, 231),
+      (0.60, 222, 235, 237),
+      (0.645, 199, 224, 235),
+      (0.685, 224, 233, 235),
+      (0.72, 246, 238, 218),
+      (0.755, 252, 225, 183),
+      (0.79, 246, 203, 146),
+      (0.825, 237, 184, 121),
+      (0.855, 248, 216, 170),
+      (0.885, 253, 239, 211),
+      (0.915, 224, 237, 241),
+      (0.94, 202, 228, 239),
+      (0.96, 232, 240, 241),
+      (0.98, 251, 247, 237),
+      (1.00, 255, 254, 250),
     ],
     AuroraHologramPreset.auroraPastel => const [
-      // Transparent pink/ice-blue film. Keep green out of the broad substrate:
-      // blue/cyan is biased toward sky blue, then lavender/blush reflections
-      // cycle through the folds. Near-white remains a narrow specular tail.
-      (0.00, 132, 151, 184),
-      (0.055, 148, 174, 207),
-      (0.11, 164, 198, 226),
-      (0.165, 177, 216, 239),
-      (0.22, 190, 228, 245),
-      (0.275, 207, 235, 247),
-      (0.33, 224, 238, 248),
-      (0.385, 219, 221, 247),
-      (0.44, 207, 201, 246),
-      (0.495, 218, 188, 243),
-      (0.55, 239, 187, 235),
-      (0.605, 251, 196, 226),
-      (0.66, 254, 209, 222),
-      (0.715, 252, 222, 230),
-      (0.765, 241, 222, 242),
-      (0.81, 220, 214, 247),
-      (0.85, 199, 215, 249),
-      (0.885, 185, 226, 249),
-      (0.915, 184, 235, 249),
-      (0.94, 202, 238, 249),
-      (0.96, 224, 234, 248),
-      (0.975, 243, 224, 244),
-      (0.988, 252, 234, 241),
-      (1.00, 255, 251, 251),
+      // Clear iridescent film: high-chroma but high-value ice blue, cyan,
+      // lavender and pink. Avoid grey/desaturated substrate colours; the
+      // neutral source luminance underneath supplies transparency/relief.
+      (0.00, 105, 150, 207),
+      (0.05, 117, 177, 226),
+      (0.10, 128, 202, 240),
+      (0.15, 142, 222, 248),
+      (0.20, 162, 237, 250),
+      (0.25, 188, 246, 250),
+      (0.30, 218, 249, 250),
+      (0.35, 233, 242, 255),
+      (0.40, 218, 220, 255),
+      (0.45, 207, 197, 255),
+      (0.50, 222, 187, 253),
+      (0.55, 243, 184, 244),
+      (0.60, 255, 192, 231),
+      (0.65, 255, 207, 225),
+      (0.70, 255, 226, 233),
+      (0.75, 247, 230, 249),
+      (0.80, 226, 225, 255),
+      (0.845, 201, 230, 255),
+      (0.885, 184, 240, 255),
+      (0.92, 194, 247, 255),
+      (0.95, 218, 247, 255),
+      (0.972, 240, 237, 253),
+      (0.988, 253, 234, 246),
+      (1.00, 255, 252, 252),
     ],
     AuroraHologramPreset.darkRainbow => const [
       // Matched to supplied dark holographic foil: near-black navy substrate
@@ -1495,7 +1500,7 @@ class FilterEngine {
       AuroraHologramPreset.opalPearl => 0.08,
       // Transparent-film look: retain substantially more of the source
       // relief so folds read through the pastel interference colour.
-      AuroraHologramPreset.auroraPastel => 0.24,
+      AuroraHologramPreset.auroraPastel => 0.30,
       AuroraHologramPreset.darkRainbow => 0.22,
       _ => 0.0,
     };
@@ -1503,7 +1508,7 @@ class FilterEngine {
       // Blend only neutral source luminance, never source hue. This gives the
       // iridescent map a translucent-film appearance without turning it into
       // ordinary opacity mixing.
-      AuroraHologramPreset.auroraPastel => 0.12,
+      AuroraHologramPreset.auroraPastel => 0.06,
       _ => 0.0,
     };
     for (int i = 0; i < data.length; i += 4) {
