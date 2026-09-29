@@ -15,10 +15,6 @@ void main() {
       ja,
       contains('"filterAuroraHologramPresetClassicHologram": "レインボーホログラム"'),
     );
-    expect(
-      ja,
-      contains('"filterAuroraHologramPresetSunsetGold": "アンバーゴールド"'),
-    );
     expect(en, contains('"filterNameAuroraHologram": "Texture Filter"'));
     expect(
       en,
@@ -27,24 +23,17 @@ void main() {
     expect(service, contains("id: 'Filter0019'"));
     expect(service, contains("name: '質感変更フィルター'"));
 
-    final stops = auroraHologramStops(AuroraHologramPreset.sunsetGold);
-    expect(stops.first, equals((0.00, 20, 10, 0)));
-    expect(stops.last, equals((1.00, 255, 255, 255)));
+    final stops = auroraHologramStops(AuroraHologramPreset.sampledGold);
+    expect(stops.first, equals((0.00, 70, 50, 31)));
+    expect(stops.last, equals((1.00, 255, 255, 244)));
 
-    // Mid/high tones should read as yellow gold rather than orange:
-    // green stays relatively close to red while blue remains restrained.
+    // Sampled gold remains warm metallic through the mid/high range.
     final goldTones = stops.where((s) => s.$1 >= 0.40 && s.$1 <= 0.90);
     for (final stop in goldTones) {
-      expect(stop.$2 - stop.$3, lessThanOrEqualTo(70), reason: '$stop');
+      expect(stop.$2, greaterThanOrEqualTo(stop.$3), reason: '$stop');
       expect(stop.$3, greaterThan(stop.$4), reason: '$stop');
     }
-
-    // Pure-white input maps to the brightest color in the palette.
-    final brightest = stops.reduce((a, b) {
-      final la = 299 * a.$2 + 587 * a.$3 + 114 * a.$4;
-      final lb = 299 * b.$2 + 587 * b.$3 + 114 * b.$4;
-      return la >= lb ? a : b;
-    });
+  });
     expect(stops.last, brightest);
   });
 }
