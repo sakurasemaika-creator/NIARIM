@@ -396,33 +396,30 @@ List<(double, int, int, int)> auroraHologramStops(AuroraHologramPreset preset) {
       (1.000, 255, 255, 253),
     ],
     AuroraHologramPreset.auroraPastel => const [
-      // Reference-population pass corrected on the actual sphere/cloth
-      // fixture. Background/low-chroma clusters are excluded: the broad film
-      // is bright cyan/ice-blue/lavender/pink, with saturated interference
-      // bands and a very narrow white specular tail.
-      (0.000, 93, 178, 226),
-      (0.050, 105, 202, 241),
-      (0.105, 119, 224, 251),
-      (0.165, 143, 239, 254),
-      (0.225, 177, 247, 252),
-      (0.285, 211, 250, 251),
-      (0.340, 231, 244, 255),
-      (0.390, 215, 218, 255),
-      (0.440, 199, 191, 255),
-      (0.490, 218, 174, 252),
-      (0.540, 242, 171, 242),
-      (0.590, 255, 181, 226),
-      (0.640, 255, 202, 220),
-      (0.690, 255, 224, 233),
-      (0.740, 245, 232, 251),
-      (0.790, 219, 226, 255),
-      (0.835, 185, 226, 255),
-      (0.875, 151, 237, 255),
-      (0.910, 169, 247, 255),
-      (0.940, 207, 250, 255),
-      (0.965, 238, 246, 255),
-      (0.982, 252, 239, 251),
-      (0.993, 255, 248, 253),
+      // Clear-film final pass after sphere/cloth inspection. Keep the sampled
+      // reference hue families but lower the floor saturation: transparent
+      // material needs pale icy substrate between vivid cyan/pink reflections.
+      (0.000, 137, 198, 229),
+      (0.055, 151, 216, 240),
+      (0.115, 167, 232, 249),
+      (0.180, 188, 243, 252),
+      (0.245, 214, 249, 252),
+      (0.305, 235, 250, 253),
+      (0.360, 239, 241, 255),
+      (0.415, 225, 220, 253),
+      (0.470, 218, 202, 250),
+      (0.525, 231, 194, 245),
+      (0.580, 247, 197, 234),
+      (0.635, 252, 211, 230),
+      (0.690, 252, 228, 238),
+      (0.745, 245, 238, 250),
+      (0.800, 229, 235, 253),
+      (0.850, 209, 235, 252),
+      (0.895, 192, 242, 252),
+      (0.930, 207, 248, 253),
+      (0.958, 231, 249, 253),
+      (0.978, 247, 244, 252),
+      (0.991, 253, 246, 251),
       (1.000, 255, 255, 255),
     ],
     AuroraHologramPreset.darkRainbow => const [
@@ -1497,7 +1494,7 @@ class FilterEngine {
       AuroraHologramPreset.opalPearl => 0.08,
       // Transparent-film look: retain substantially more of the source
       // relief so folds read through the pastel interference colour.
-      AuroraHologramPreset.auroraPastel => 0.12,
+      AuroraHologramPreset.auroraPastel => 0.16,
       AuroraHologramPreset.darkRainbow => 0.22,
       _ => 0.0,
     };
