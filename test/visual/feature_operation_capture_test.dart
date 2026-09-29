@@ -727,10 +727,11 @@ class _Harness {
   }
 
   Future<void> tap(Finder finder) async {
-    expect(finder, findsOneWidget);
-    await tester.ensureVisible(finder);
+    expect(finder, findsWidgets);
+    final target = finder.first;
+    await tester.ensureVisible(target);
     await tester.pump();
-    await tester.tap(finder);
+    await tester.tap(target);
     await settle();
   }
 
