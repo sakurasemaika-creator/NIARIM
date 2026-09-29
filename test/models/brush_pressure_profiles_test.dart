@@ -19,28 +19,25 @@ void main() {
     test('new brushes store explicit pressure profile defaults', () {
       final brush = _brush('pressure-defaults');
 
-      expect(brush.pressureOn.size.enabled, isTrue);
-      expect(brush.pressureOn.size.weak, 50);
+      expect(brush.pressureOn, BrushPressureOnSettings.defaults);
+      expect(brush.pressureOff, BrushPressureOffSettings.defaults);
+      expect(brush.pressureOn.size.enabled, isFalse);
+      expect(brush.pressureOn.size.weak, 100);
       expect(brush.pressureOn.size.strong, 100);
-      expect(brush.pressureOn.opacity.enabled, isTrue);
-      expect(brush.pressureOn.opacity.weak, 50);
+      expect(brush.pressureOn.opacity.enabled, isFalse);
+      expect(brush.pressureOn.opacity.weak, 100);
       expect(brush.pressureOn.opacity.strong, 100);
       expect(brush.pressureOn.blur.enabled, isFalse);
-      expect(brush.pressureOn.blur.weak, 50);
+      expect(brush.pressureOn.blur.weak, 0);
       expect(brush.pressureOn.blur.strong, 0);
       expect(brush.pressureOn.edgeJitter.enabled, isFalse);
-      expect(brush.pressureOn.edgeJitter.weak, 50);
+      expect(brush.pressureOn.edgeJitter.weak, 0);
       expect(brush.pressureOn.edgeJitter.strong, 0);
       expect(brush.pressureOn.mixing.enabled, isFalse);
-      expect(brush.pressureOn.mixing.weakRate, 50);
+      expect(brush.pressureOn.mixing.weakRate, 0);
       expect(brush.pressureOn.mixing.strongRate, 0);
 
-      expect(brush.pressureOff.blur.enabled, isFalse);
-      expect(brush.pressureOff.blur.value, 0);
-      expect(brush.pressureOff.edgeJitter.enabled, isFalse);
-      expect(brush.pressureOff.edgeJitter.value, 0);
-      expect(brush.pressureOff.mixing.enabled, isFalse);
-      expect(brush.pressureOff.mixing.rate, 0);
+      expect(brush.pressureOff, BrushPressureOffSettings.defaults);
     });
 
     test('serializes only the current pressure profile schema', () {
