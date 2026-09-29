@@ -1496,6 +1496,21 @@ class FilterEngine {
       AuroraHologramPreset.auroraPastel => 0.14,
       _ => 0.0,
     };
+
+    // Aurora Pastel is a material filter, not only a gradient-map preset.
+    // Estimate local surface orientation from source luminance. Fold edges get
+    // a narrow white specular core and a chromatic interference shoulder.
+    // Broad faces stay translucent/near-neutral, matching clear holographic
+    // vinyl instead of painting every luminance band a pastel colour.
+    final holographicFilm = preset == AuroraHologramPreset.auroraPastel;
+    int sourceLumaAt(int x, int y) {
+      x = x.clamp(0, width - 1);
+      y = y.clamp(0, height - 1);
+      final p = (y * width + x) * 4;
+      return (data[p] * 0.299 + data[p + 1] * 0.587 + data[p + 2] * 0.114)
+          .round();
+    }
+
     for (int i = 0; i < data.length; i += 4) {
       if (data[i + 3] == 0) continue;
       final r = data[i], g = data[i + 1], b = data[i + 2];
@@ -1533,6 +1548,36 @@ class FilterEngine {
           outR += (neutral - outR) * sourceLumaBlend;
           outG += (neutral - outG) * sourceLumaBlend;
           outB += (neutral - outB) * sourceLumaBlend;
+        }
+      }
+
+      if (holographicFilm) {
+        final pixel = i ~/ 4;
+        final x = pixel % width;
+        final y = pixel ~/ width;
+        final gx = sourceLumaAt(x + 1, y) - sourceLumaAt(x - 1, y);
+        final gy = sourceLumaAt(x, y + 1) - sourceLumaAt(x, y - 1);
+        final edge = math.sqrt((gx * gx + gy * gy).toDouble()).clamp(0.0, 96.0) / 96.0;
+
+        // Strong local folds create a hard mirror-like white face. Keep this
+        // deliberately narrow so flat areas remain transparent rather than
+        // becoming uniformly white.
+        final specular = math.pow(edge, 1.7).toDouble() * 0.72;
+        outR += (255.0 - outR) * specular;
+        outG += (255.0 - outG) * specular;
+        outB += (255.0 - outB) * specular;
+
+        // The coloured shoulder follows surface direction rather than global
+        // luminance. This is what makes neighbouring folds flash cyan/pink/
+        // violet like clear holographic film instead of forming contour bands.
+        if (edge > 0.10) {
+          final angle = math.atan2(gy.toDouble(), gx.toDouble());
+          final phase = (angle + math.pi) / (2 * math.pi);
+          final spectral = _sampleGradient(stops, (0.20 + phase * 0.68).clamp(0.0, 1.0));
+          final colourMix = ((edge - 0.10) / 0.90).clamp(0.0, 1.0) * 0.34;
+          outR += (spectral.$1 - outR) * colourMix;
+          outG += (spectral.$2 - outG) * colourMix;
+          outB += (spectral.$3 - outB) * colourMix;
         }
       }
       result[i] = (r + (outR - r) * amount).round().clamp(0, 255);
