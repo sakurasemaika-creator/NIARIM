@@ -1,5 +1,5 @@
 name: Functional Visual Audit
-# Visual closure excludes the material/Gradient Map filter by request. Rerun after visual harness duplicate-label fix.
+# Visual closure excludes the material/Gradient Map filter by request. Rerun after visual noise-label disambiguation.
 
 on:
   workflow_dispatch:
