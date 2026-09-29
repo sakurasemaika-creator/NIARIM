@@ -380,14 +380,14 @@ List<(double, int, int, int)> auroraHologramStops(AuroraHologramPreset preset) {
       // Transparent holographic film: most of the tonal range stays close to
       // clear/white-silver. Saturated colours are narrow interference flashes
       // beside bright specular planes, rather than broad painted colour bands.
-      (0.000, 183, 224, 246), // cool transparent shadow
-      (0.055, 196, 235, 251),
-      (0.110, 211, 244, 253), // clear silver-blue body
+      (0.000, 205, 230, 246), // cool transparent shadow
+      (0.055, 215, 238, 250),
+      (0.110, 225, 244, 252), // clear silver-blue body
       (0.165, 229, 246, 254),
       (0.215, 244, 250, 255), // near-clear face
-      (0.250, 211, 238, 250), // pale cyan reflection
-      (0.285, 154, 229, 250), // cyan flash
-      (0.310, 102, 221, 245),
+      (0.250, 220, 241, 251), // pale cyan reflection
+      (0.285, 185, 232, 248), // cyan flash
+      (0.310, 157, 222, 243),
       (0.330, 203, 244, 250), // return quickly toward clear
       (0.350, 250, 253, 254),
       (0.365, 255, 255, 255), // sharp white specular
@@ -396,9 +396,9 @@ List<(double, int, int, int)> auroraHologramStops(AuroraHologramPreset preset) {
       (0.425, 239, 190, 239), // pink interference edge
       (0.445, 252, 222, 239),
       (0.470, 250, 246, 255), // clear body again
-      (0.515, 205, 239, 255),
-      (0.550, 182, 231, 250), // ice blue
-      (0.580, 126, 220, 247),
+      (0.515, 218, 240, 252),
+      (0.550, 197, 233, 249), // ice blue
+      (0.580, 166, 224, 245),
       (0.602, 91, 232, 222), // tiny emerald spectral flash
       (0.620, 178, 241, 241),
       (0.642, 246, 251, 252),
@@ -408,9 +408,9 @@ List<(double, int, int, int)> auroraHologramStops(AuroraHologramPreset preset) {
       (0.728, 244, 190, 234), // narrow magenta-pink
       (0.750, 252, 222, 231),
       (0.775, 255, 241, 252), // clear/white film face
-      (0.815, 199, 237, 255),
-      (0.845, 171, 230, 250), // cyan-blue edge
-      (0.872, 126, 205, 247), // small deeper blue reflection
+      (0.815, 215, 239, 252),
+      (0.845, 192, 232, 248), // cyan-blue edge
+      (0.872, 165, 216, 244), // small deeper blue reflection
       (0.895, 204, 240, 255),
       (0.918, 252, 253, 253),
       (0.936, 255, 255, 255), // strongest white glint
@@ -1582,11 +1582,11 @@ class FilterEngine {
         // Reference film has broad pale reflective faces plus a much sharper
         // white core on fold ridges. The face term gives reflection area;
         // ridge keeps the brightest highlight crisp instead of foggy.
-        final faceSpecular = math.pow(edge, 1.34).toDouble() * 0.36;
-        final ridgeSpecular = math.pow(ridge, 1.62).toDouble() * 0.64;
+        final faceSpecular = math.pow(edge, 1.65).toDouble() * 0.30;
+        final ridgeSpecular = math.pow(ridge, 2.05).toDouble() * 0.76;
         final specular =
             (faceSpecular + ridgeSpecular - faceSpecular * ridgeSpecular)
-                .clamp(0.0, 0.78);
+                .clamp(0.0, 0.84);
         outR += (255.0 - outR) * specular;
         outG += (255.0 - outG) * specular;
         outB += (255.0 - outB) * specular;
@@ -1598,14 +1598,16 @@ class FilterEngine {
           final angle = math.atan2(gy.toDouble(), gx.toDouble());
           final phase = (angle + math.pi) / (2 * math.pi);
           const interferenceStops = <(double, int, int, int)>[
-            (0.00, 38, 232, 255),  // fluorescent cyan
-            (0.16, 34, 255, 211),  // emerald-aqua
-            (0.31, 80, 169, 255),  // electric blue
-            (0.47, 158, 91, 255),  // ultraviolet
-            (0.62, 255, 74, 225),  // neon magenta
-            (0.77, 255, 117, 185), // hot pink
-            (0.90, 255, 240, 92),  // spectral yellow
-            (1.00, 63, 229, 255),  // cyan return
+            // Luminous film reflections: chromatic, but mixed toward the
+            // reflected light so they read as iridescence rather than paint.
+            (0.00, 126, 232, 250), // clear cyan
+            (0.15, 126, 241, 221), // aqua-mint
+            (0.29, 139, 196, 249), // sky/electric blue
+            (0.44, 190, 164, 247), // luminous violet
+            (0.59, 244, 157, 228), // pearly magenta
+            (0.73, 251, 183, 215), // rose-pink
+            (0.87, 255, 245, 174), // pale spectral yellow
+            (1.00, 150, 230, 250), // cyan return
           ];
           final spectral = _sampleGradient(
             interferenceStops,
@@ -1615,7 +1617,7 @@ class FilterEngine {
           final colourMix =
               ((edge - 0.075) / 0.925).clamp(0.0, 1.0) *
               shoulder *
-              0.82;
+              0.52;
           outR += (spectral.$1 - outR) * colourMix;
           outG += (spectral.$2 - outG) * colourMix;
           outB += (spectral.$3 - outB) * colourMix;
