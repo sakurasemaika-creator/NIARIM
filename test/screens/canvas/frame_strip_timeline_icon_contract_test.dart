@@ -10,6 +10,8 @@ void main() {
 
     expect(source, contains("ValueKey('frameStripTimelineButton')"));
     expect(source, contains('Icons.movie_filter_outlined'));
+    expect(source, contains("ValueKey('frameStripTimelineArrow')"));
+    expect(source, contains('Icons.chevron_right_rounded'));
     expect(source, isNot(contains('🎞')));
   });
 }
