@@ -19,9 +19,15 @@ from reportlab.pdfbase import pdfmetrics
 from reportlab.pdfbase.ttfonts import TTFont
 from reportlab.pdfgen import canvas
 
-EXPECTED = {"filters": 40, "automation": 4, "autofill": 55, "extras": 7}
-GROUPS = {"filters": "フィルター", "automation": "公式の自動操作",
-          "autofill": "自動塗りプリセット", "extras": "記録・再実行と自動塗りの追加確認"}
+GROUP_ORDER = ["filters", "pixel-compare", "blend", "automation", "autofill", "extras"]
+GROUPS = {
+    "filters": "フィルター（質感変更を除外）",
+    "pixel-compare": "Pixel Art / Mosaic 同一fixture比較",
+    "blend": "ブレンドモード",
+    "automation": "公式の自動操作",
+    "autofill": "自動塗りプリセット",
+    "extras": "記録・再実行と自動塗りの追加確認",
+}
 FONT = "NIARIM-Report-JP"
 
 
@@ -98,14 +104,15 @@ def build_pdf(path, gallery, groups, revision):
 
     start("NIARIM 操作キャプチャ")
     y = h - 93
-    y = draw_text(c, "25フィルター・全選択肢 / 公式自動操作4種類 / 自動塗り3プリセット・55パーツ",
-                  38, y, w - 76, size=18, leading=27) - 28
+    total = sum(len(cases) for cases in groups.values())
+    y = draw_text(c, f"質感変更を除くVisual closure / {total}ケース", 38, y, w - 76,
+                  size=18, leading=27) - 28
     for label, desc in [
-        ("106ケースの実行結果", "フィルター40、自動操作4、自動塗り55、記録再生・色更新・グラデーション等7。"),
+        ("収録対象", "通常フィルター、Pixel Art / Mosaic、全ブレンドモード、公式自動操作、自動塗り、記録・再実行。質感変更フィルターはユーザー指定により除外。"),
         ("確認方法", "本番のNiarimAppと画面ルートをFlutterテスト環境で起動し、ボタン・選択肢を操作。適用前後の画素と生成レイヤーを検証しました。"),
         ("撮影条件", "Flutter 3.47.3 / Linuxレンダラー。画面480×960、画像960×1920。比較用の入力画像と保存先はテスト用です。Android・iOS実機での撮影ではありません。"),
         ("画像の読み方", "左が適用前、右が適用後。別レイヤーを作る処理は、元画像を非表示にした生成レイヤーを右側に掲載。通常の合成表示もZIPに収録しています。市松模様は透明部分です。"),
-        ("ヘルプ・Tips", "全25フィルターの説明を更新。操作記録・公式自動操作・質感／プリズム／VHSの案内を7言語に追加・更新しました。末尾に日本語画面を掲載しています。"),
+        ("比較重点", "Pixel ArtとMosaic、AdditionとLinear Dodge、GaussianとLens/Bokeh、NoiseとFilm Grain、CRTとVHSなど、見た目の差が仕様となる項目を同一成果物で確認できます。"),
         ("原本", "ZIP内のindex.htmlで全ケースを検索できます。適用前後・設定画面・生成レイヤーのPNGと、設定値を記録したmanifest.jsonを収録しています。"),
     ]:
         y = draw_text(c, label, 38, y, 145, size=12, leading=17)
@@ -197,12 +204,23 @@ def main():
     gallery.mkdir(parents=True, exist_ok=True)
     labels = json.loads((Path(__file__).resolve().parents[1] / "lib/l10n/app_ja.arb").read_text())
     groups = {}
-    for group, count in EXPECTED.items():
-        manifest = json.loads((args.input / group / "manifest.json").read_text())
+    for group in GROUP_ORDER:
+        manifest_path = args.input / group / "manifest.json"
+        if not manifest_path.is_file():
+            continue
+        manifest = json.loads(manifest_path.read_text())
         cases = manifest["cases"]
-        assert len(cases) == count, (group, len(cases), count)
-        assert len({c["id"] for c in cases}) == count
-        assert all(c["status"] == "passed" for c in cases)
+        assert cases, f"{group} capture group is empty"
+        assert len({case["id"] for case in cases}) == len(cases)
+        assert all(case["status"] == "passed" for case in cases)
+        if group == "pixel-compare":
+            assert {case["id"] for case in cases} == {
+                "pixel_art_same_fixture", "mosaic_same_fixture"
+            }
+        if group == "blend":
+            assert len(cases) == 25, ("blend", len(cases), 25)
+            assert any(case["id"] == "blend_addition" for case in cases)
+            assert any(case["id"] == "blend_linearDodge" for case in cases)
         for case in cases:
             case["displayName"] = display_name(case, labels)
         groups[group] = cases
@@ -210,17 +228,20 @@ def main():
         for case in cases:
             for key in ["before", "after", "beforeUI", "afterUI", "configurationUI"]:
                 assert (gallery / group / case[key]).is_file(), (case["id"], key)
+    required = {"filters", "pixel-compare", "blend", "automation", "autofill"}
+    assert required.issubset(groups), ("missing capture groups", required - set(groups))
     (gallery / "manifest.json").write_text(json.dumps({
         "revision": args.revision,
         "environment": "Flutter 3.47.3 / production UI / Linux renderer, not Android or iOS hardware",
-        "counts": EXPECTED, "groups": groups,
+        "counts": {group: len(cases) for group, cases in groups.items()}, "groups": groups,
     }, ensure_ascii=False, indent=2), encoding="utf-8")
     (gallery / "README.md").write_text(f'''# NIARIM 操作キャプチャ
 
 検証ソース: {args.revision}
 
-25フィルターの全選択肢40ケース、公式自動操作4種類、自動塗り3プリセットの
-全55パーツ、記録・再実行と自動塗りの追加設定7ケース。計106ケースです。
+質感変更フィルターを除外したVisual closure成果物です。
+通常フィルター、Pixel Art / Mosaic同一fixture比較、全25ブレンドモード、
+公式自動操作、自動塗り、記録・再実行を収録します。
 連続スライダーの全数値の組合せを網羅するものではありません。
 
 Flutter 3.47.3のLinuxテストレンダラーで、本番NiarimAppと画面ルートを起動。
@@ -248,7 +269,7 @@ extrasの自動塗り設定は機能比較用であり、出荷プリセット�
         for path in sorted(gallery.rglob("*")):
             if path.is_file():
                 z.write(path, path.relative_to(args.output))
-    print(json.dumps({"cases": sum(EXPECTED.values()), "pdf": str(pdf.resolve()),
+    print(json.dumps({"cases": sum(len(cases) for cases in groups.values()), "pdf": str(pdf.resolve()),
                       "zip": str(archive.resolve()),
                       "pngs": len(list(gallery.rglob("*.png")))}, ensure_ascii=False))
 
