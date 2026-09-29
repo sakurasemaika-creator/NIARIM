@@ -489,25 +489,37 @@ class _FrameStripWidgetState extends State<FrameStripWidget> {
             ),
           ),
           Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 6),
-            child: IconButton(
-              key: const ValueKey('frameStripTimelineButton'),
-              tooltip: l10n.frameStripTimelineModeLabel,
-              onPressed: widget.onTimelineTap,
-              icon: const Icon(Icons.movie_filter_outlined),
-              iconSize: 21,
-              style: IconButton.styleFrom(
-                fixedSize: const Size(42, 42),
-                minimumSize: const Size(42, 42),
-                maximumSize: const Size(42, 42),
-                padding: EdgeInsets.zero,
-                shape: const CircleBorder(),
-                side: BorderSide(color: scheme.outlineVariant),
-                foregroundColor: scheme.onSurfaceVariant,
-                backgroundColor: scheme.surfaceContainerLow.withValues(
-                  alpha: 0.72,
+            padding: const EdgeInsets.only(left: 6, right: 3),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                IconButton(
+                  key: const ValueKey('frameStripTimelineButton'),
+                  tooltip: l10n.frameStripTimelineModeLabel,
+                  onPressed: widget.onTimelineTap,
+                  icon: const Icon(Icons.movie_filter_outlined),
+                  iconSize: 21,
+                  style: IconButton.styleFrom(
+                    fixedSize: const Size(42, 42),
+                    minimumSize: const Size(42, 42),
+                    maximumSize: const Size(42, 42),
+                    padding: EdgeInsets.zero,
+                    shape: const CircleBorder(),
+                    side: BorderSide(color: scheme.outlineVariant),
+                    foregroundColor: scheme.onSurfaceVariant,
+                    backgroundColor: scheme.surfaceContainerLow.withValues(
+                      alpha: 0.72,
+                    ),
+                  ),
                 ),
-              ),
+                const SizedBox(width: 1),
+                Icon(
+                  Icons.chevron_right_rounded,
+                  key: const ValueKey('frameStripTimelineArrow'),
+                  size: 18,
+                  color: scheme.onSurfaceVariant,
+                ),
+              ],
             ),
           ),
         ],
