@@ -93,6 +93,9 @@ class _FilterPanelState extends State<FilterPanel> {
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) context.read<FilterService>().clearCurrentFilter();
+    });
     _loadPreviewBase();
   }
 
@@ -340,7 +343,8 @@ class _FilterPanelState extends State<FilterPanel> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               PanelCenterCloseBar(onClose: widget.onClose),
-              Row(
+              if (current == null)
+                Row(
                 children: [
                   Expanded(
                     child: Text(
@@ -374,7 +378,7 @@ class _FilterPanelState extends State<FilterPanel> {
                   ),
                 ],
               ),
-              if (_showSearch)
+              if (current == null && _showSearch)
                 TextField(
                   decoration: InputDecoration(
                     isDense: true,
@@ -384,8 +388,9 @@ class _FilterPanelState extends State<FilterPanel> {
                   style: const TextStyle(fontSize: 12),
                   onChanged: service.setSearchQuery,
                 ),
-              const Divider(),
-              SizedBox(
+              if (current == null) const Divider(),
+              if (current == null)
+                SizedBox(
                 height: 88,
                 child: ListView.builder(
                   scrollDirection: Axis.horizontal,
@@ -449,7 +454,7 @@ class _FilterPanelState extends State<FilterPanel> {
                   },
                 ),
               ),
-              const Divider(),
+              if (current == null) const Divider(),
               if (current == null)
                 Expanded(child: Center(child: Text(l10n.filterEmpty)))
               else ...[
