@@ -620,7 +620,7 @@
   "tipsCommonLayerFolderTitle": "Common layers + folders to reuse across episodes",
   "tipsCommonLayerFolderDesc": "For a logo or credit text used in every episode of a series, turn it into a common layer and keep it organized in a folder — makes it easy to handle when copying it into a new episode's project.",
   "tipsStrokeDecayFadeTitle": "Stroke decay + fade for a brush-pen feel",
-  "tipsStrokeDecayFadeDesc": "Combining stroke decay and fade in brush settings tapers the start and end of a stroke naturally, giving lines the kind of expressive thick-thin variation you get from a calligraphy or ink brush.",
+  "tipsStrokeDecayFadeDesc": "Brush settings let you adjust the value and distance of the entry (stroke start) and exit (stroke end) separately. Combine them with stroke decay to taper only the start, extend only the end, or make the two endpoints asymmetric for expressive calligraphy- and ink-brush strokes.",
   "tipsColorMixingFadeTitle": "Color mixing + fade for a paint-like blend",
   "tipsColorMixingFadeDesc": "Adding fade to a brush that has color mixing enabled makes it blend with the color underneath while gradually thinning out — much closer to how real paint behaves.",
   "tipsOutlineAnimeStyleTitle": "Outline + anime style for a cel-animation finish",
