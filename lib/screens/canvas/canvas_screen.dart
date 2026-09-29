@@ -2298,12 +2298,14 @@ class _CanvasScreenState extends State<CanvasScreen> {
     required VoidCallback? onPressed,
     required String tooltip,
     bool selected = false,
+    double iconSize = 20,
   }) {
     return CanvasIconButton(
       icon: icon,
       onPressed: onPressed,
       tooltip: tooltip,
       selected: selected,
+      iconSize: iconSize,
     );
   }
 
