@@ -8522,7 +8522,7 @@ class _ClipDetailSheetState extends State<_ClipDetailSheet> {
                 Expanded(
                   child: Text(
                     _c.trackType == _ClipTrackType.audio
-                        ? l10n.timelineClipVolumeLabel
+                        ? l10n.helpAudioClipTitle
                         : _c.label,
                     style: const TextStyle(
                       fontSize: 16,
