@@ -78,7 +78,7 @@ class FilterService extends ChangeNotifier {
       id: 'Filter0009',
       name: '周辺減光',
       kind: FilterKind.vignette,
-      strength: 40,
+      strength: 50,
     ),
     FilterDef(
       id: 'Filter0010',
@@ -97,12 +97,6 @@ class FilterService extends ChangeNotifier {
       name: 'ブラウン管',
       kind: FilterKind.crt,
       strength: 50,
-    ),
-    FilterDef(
-      id: 'Filter0013',
-      name: 'モノクロ',
-      kind: FilterKind.monochrome,
-      strength: 100,
     ),
     FilterDef(
       id: 'Filter0014',
@@ -133,7 +127,15 @@ class FilterService extends ChangeNotifier {
       name: 'ドット絵',
       kind: FilterKind.pixelate,
       strength: 8,
-      colorLevels: 8,
+      colorLevels: 6,
+      pixelExplicitColors: [
+        0xFF000000,
+        0xFFFFFFFF,
+        0xFFFF0000,
+        0xFFFFFF00,
+        0xFF0000FF,
+        0xFF00FF00,
+      ],
     ),
     FilterDef(
       id: 'Filter0019',
