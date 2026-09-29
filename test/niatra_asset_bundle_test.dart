@@ -159,4 +159,75 @@ void main() {
       expect(stampJson['pixelMode'], true);
     },
   );
+  test('niatra embeds every image of a multi-image brush in order', () async {
+    SharedPreferences.setMockInitialValues({});
+    final temp = await Directory.systemTemp.createTemp(
+      'niatra_multi_brush_test_',
+    );
+    addTearDown(() async {
+      if (await temp.exists()) await temp.delete(recursive: true);
+    });
+
+    final paths = <String>[];
+    for (var i = 0; i < 5; i++) {
+      final file = File('${temp.path}/bangs_$i.png');
+      await file.writeAsBytes([i + 1, i + 2, i + 3, 255]);
+      paths.add(file.path);
+    }
+
+    final brushService = BrushService();
+    brushService.addBrush(
+      Brush(
+        id: 'multi-brush',
+        name: 'multi',
+        size: 32,
+        opacity: 100,
+        spacing: 1,
+        stabilization: true,
+        stabilizationStrength: 40,
+        pixelMode: false,
+        customImagePaths: paths,
+        customImageSelectionMode: BrushImageSelectionMode.random,
+      ),
+    );
+    final baseData = utf8.encode(jsonEncode({'appVersion': '1.0.0'}));
+    final baseArchive = Archive()
+      ..addFile(ArchiveFile('data.json', baseData.length, baseData));
+
+    final enriched = await NiatraAssetBundle.enrichExport(
+      Uint8List.fromList(ZipEncoder().encode(baseArchive)!),
+      selectedItems: const {'ブラシ': true},
+      brush: brushService,
+      tone: ToneService(),
+      stamp: StampService(),
+    );
+    final archive = ArchiveSecurity.decodeZip(enriched);
+    for (var i = 0; i < 5; i++) {
+      final path =
+          'CreativeAssets/Brushes/0/${i.toString().padLeft(3, '0')}.png';
+      final entry = archive.findFile(path);
+      expect(entry, isNotNull, reason: 'missing bundled variant $i');
+      expect((entry!.content as List<int>).first, i + 1);
+    }
+
+    final dataFile = archive.findFile('data.json')!;
+    final data =
+        jsonDecode(utf8.decode(dataFile.content as List<int>))
+            as Map<String, dynamic>;
+    final brushJson =
+        (data['brushes'] as List).single as Map<String, dynamic>;
+    expect(brushJson['customImagePath'], isNull);
+    expect(brushJson['customImagePaths'], isEmpty);
+    expect(
+      brushJson['embeddedImagePaths'],
+      [
+        'CreativeAssets/Brushes/0/000.png',
+        'CreativeAssets/Brushes/0/001.png',
+        'CreativeAssets/Brushes/0/002.png',
+        'CreativeAssets/Brushes/0/003.png',
+        'CreativeAssets/Brushes/0/004.png',
+      ],
+    );
+  });
+
 }
