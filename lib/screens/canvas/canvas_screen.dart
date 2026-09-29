@@ -2635,6 +2635,7 @@ class _CanvasScreenState extends State<CanvasScreen> {
           _topBarIconButton(
             context,
             Icons.home_outlined,
+            iconSize: 21,
             onPressed: _confirmBackToProjectList,
             tooltip: l10n.timelineBackToProjectListTooltip,
           ),
@@ -2642,6 +2643,7 @@ class _CanvasScreenState extends State<CanvasScreen> {
           _topBarIconButton(
             context,
             Icons.movie_filter_outlined,
+            iconSize: 19,
             onPressed: () => _runAutomationBlockedAction(
               () => context.go('/timeline/${widget.projectId}'),
             ),
