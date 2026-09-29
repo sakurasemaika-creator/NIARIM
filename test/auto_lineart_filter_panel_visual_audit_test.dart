@@ -169,7 +169,7 @@ void main() {
                               horizontal: 8,
                               vertical: 4,
                             ),
-                            child: Text('なめらか補正 $smoothing / 100'),
+                            child: Text('なめらか補正 $smoothing / 10'),
                           ),
                         ),
                       ),
@@ -231,57 +231,57 @@ void main() {
   }
 
   testWidgets(
-    'SP actual FilterPanel + production overlay smoothing 45',
+    'SP actual FilterPanel + production overlay smoothing 5',
     (tester) => pumpPanelAudit(
       tester,
       physicalSize: const Size(1170, 2532),
       dpr: 3,
-      smoothing: 45,
-      golden: 'goldens/auto_lineart_sp_45.png',
+      smoothing: 5,
+      golden: 'goldens/auto_lineart_sp_5.png',
     ),
     skip: !runAutoLineartVisualAudit,
   );
 
   testWidgets(
-    'SP actual FilterPanel + production overlay smoothing 85',
+    'SP actual FilterPanel + production overlay smoothing 9',
     (tester) => pumpPanelAudit(
       tester,
       physicalSize: const Size(1170, 2532),
       dpr: 3,
-      smoothing: 85,
-      golden: 'goldens/auto_lineart_sp_85.png',
+      smoothing: 9,
+      golden: 'goldens/auto_lineart_sp_9.png',
     ),
     skip: !runAutoLineartVisualAudit,
   );
 
   testWidgets(
-    'desktop actual FilterPanel + production overlay smoothing 45',
+    'desktop actual FilterPanel + production overlay smoothing 5',
     (tester) => pumpPanelAudit(
       tester,
       physicalSize: const Size(1200, 800),
       dpr: 1,
-      smoothing: 45,
-      golden: 'goldens/auto_lineart_desktop_45.png',
+      smoothing: 5,
+      golden: 'goldens/auto_lineart_desktop_5.png',
     ),
     skip: !runAutoLineartVisualAudit,
   );
 
   testWidgets(
-    '200px production preview smoothing 45',
+    '200px production preview smoothing 5',
     (tester) => pumpPreviewAudit(
       tester,
-      smoothing: 45,
-      golden: 'goldens/auto_lineart_preview_200_45.png',
+      smoothing: 5,
+      golden: 'goldens/auto_lineart_preview_200_5.png',
     ),
     skip: !runAutoLineartVisualAudit,
   );
 
   testWidgets(
-    '200px production preview smoothing 85',
+    '200px production preview smoothing 9',
     (tester) => pumpPreviewAudit(
       tester,
-      smoothing: 85,
-      golden: 'goldens/auto_lineart_preview_200_85.png',
+      smoothing: 9,
+      golden: 'goldens/auto_lineart_preview_200_9.png',
     ),
     skip: !runAutoLineartVisualAudit,
   );
