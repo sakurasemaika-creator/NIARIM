@@ -370,49 +370,59 @@ List<(double, int, int, int)> auroraHologramStops(AuroraHologramPreset preset) {
       (1.00, 255, 255, 255),
     ],
     AuroraHologramPreset.luminousPearl => const [
-      // 16-colour cluster sample from the supplied pearl photograph. Stop
-      // widths follow measured pixel populations: rosy cream / beige dominate,
-      // while cool pearl-grey and white occupy only the reflection tail.
-      (0.000, 146, 97, 38),
-      (0.014, 143, 110, 75),
-      (0.049, 147, 123, 103),
-      (0.111, 167, 124, 76),
-      (0.144, 172, 137, 104),
-      (0.202, 160, 140, 127),
-      (0.255, 186, 153, 122),
-      (0.325, 176, 155, 141),
-      (0.399, 185, 169, 160),
-      (0.475, 197, 169, 142),
-      (0.547, 196, 185, 181),
-      (0.610, 206, 184, 163),
-      (0.699, 213, 198, 188),
-      (0.797, 218, 210, 207),
-      (0.888, 228, 226, 229),
-      (0.930, 250, 250, 250),
-      (1.000, 255, 255, 255),
+      // Reference-population pass, corrected after applying it to the sphere
+      // and cloth fixture. The photo's deepest brown pixels are reflection
+      // accents, not the pearl body, so the dominant rosy creams occupy the
+      // broad middle and deep cream is compressed into the shadow tail.
+      (0.000, 154, 132, 112),
+      (0.045, 163, 141, 121),
+      (0.100, 173, 151, 131),
+      (0.165, 184, 162, 143),
+      (0.235, 194, 173, 154),
+      (0.310, 203, 184, 166),
+      (0.390, 212, 195, 179),
+      (0.475, 220, 206, 192),
+      (0.555, 227, 216, 204),
+      (0.630, 233, 225, 216),
+      (0.700, 238, 232, 225),
+      (0.755, 229, 229, 232),
+      (0.795, 213, 225, 233),
+      (0.825, 226, 232, 233),
+      (0.855, 239, 231, 216),
+      (0.890, 244, 235, 220),
+      (0.925, 246, 240, 230),
+      (0.955, 249, 246, 239),
+      (0.980, 252, 250, 246),
+      (1.000, 255, 255, 253),
     ],
     AuroraHologramPreset.auroraPastel => const [
-      // 16-colour chromatic cluster sample from the supplied clear-film
-      // references. Widths follow measured colourful-pixel populations. The
-      // sampled hues are lifted, not greyed, so cyan/blue/lavender/blush remain
-      // transparent-looking; white is reserved for specular reflection.
-      (0.000, 27, 136, 168),
-      (0.030, 85, 151, 175),
-      (0.060, 138, 154, 218),
-      (0.086, 144, 166, 186),
-      (0.206, 164, 172, 199),
-      (0.327, 164, 203, 205),
-      (0.430, 120, 209, 213),
-      (0.456, 160, 237, 222),
-      (0.506, 196, 238, 228),
-      (0.568, 187, 197, 226),
-      (0.646, 223, 182, 189),
-      (0.725, 194, 157, 166),
-      (0.780, 243, 214, 198),
-      (0.843, 190, 199, 158),
-      (0.883, 223, 231, 242),
-      (0.935, 242, 240, 249),
-      (0.975, 252, 246, 251),
+      // Reference-population pass corrected on the actual sphere/cloth
+      // fixture. Background/low-chroma clusters are excluded: the broad film
+      // is bright cyan/ice-blue/lavender/pink, with saturated interference
+      // bands and a very narrow white specular tail.
+      (0.000, 93, 178, 226),
+      (0.050, 105, 202, 241),
+      (0.105, 119, 224, 251),
+      (0.165, 143, 239, 254),
+      (0.225, 177, 247, 252),
+      (0.285, 211, 250, 251),
+      (0.340, 231, 244, 255),
+      (0.390, 215, 218, 255),
+      (0.440, 199, 191, 255),
+      (0.490, 218, 174, 252),
+      (0.540, 242, 171, 242),
+      (0.590, 255, 181, 226),
+      (0.640, 255, 202, 220),
+      (0.690, 255, 224, 233),
+      (0.740, 245, 232, 251),
+      (0.790, 219, 226, 255),
+      (0.835, 185, 226, 255),
+      (0.875, 151, 237, 255),
+      (0.910, 169, 247, 255),
+      (0.940, 207, 250, 255),
+      (0.965, 238, 246, 255),
+      (0.982, 252, 239, 251),
+      (0.993, 255, 248, 253),
       (1.000, 255, 255, 255),
     ],
     AuroraHologramPreset.darkRainbow => const [
@@ -1487,7 +1497,7 @@ class FilterEngine {
       AuroraHologramPreset.opalPearl => 0.08,
       // Transparent-film look: retain substantially more of the source
       // relief so folds read through the pastel interference colour.
-      AuroraHologramPreset.auroraPastel => 0.22,
+      AuroraHologramPreset.auroraPastel => 0.12,
       AuroraHologramPreset.darkRainbow => 0.22,
       _ => 0.0,
     };
