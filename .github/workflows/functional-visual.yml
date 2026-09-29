@@ -1,5 +1,5 @@
 name: Functional Visual Audit
-# Visual closure excludes the material/Gradient Map filter by request. Rerun with indexed noise search and duplicate-safe tap.
+# Visual closure excludes the material/Gradient Map filter by request. Rerun current HEAD after removing the noise display-name override.
 
 on:
   workflow_dispatch:
