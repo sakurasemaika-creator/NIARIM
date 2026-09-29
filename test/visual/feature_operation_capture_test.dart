@@ -44,13 +44,14 @@ const _textureFixture = String.fromEnvironment('TEXTURE_FIXTURE');
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
   const group = String.fromEnvironment('CAPTURE_GROUP', defaultValue: 'all');
-  if (group == 'all' || group == 'filters') {
+  if (group == 'all' || group == 'filters' || group == 'filters-core') {
     testWidgets('all filter cards and preset choices apply through Canvas UI', (
       tester,
     ) async {
       final h = await _Harness.create(tester, 'filters');
       final filters = h.context.read<FilterService>().filters;
       for (final filter in filters) {
+        if (group == 'filters-core' && filter.kind == FilterKind.auroraHologram) continue;
         final variants = filter.id == 'Filter0004'
             ? ToneCurvePreset.values.map((e) => e.name).toList()
             : filter.kind == FilterKind.auroraHologram
