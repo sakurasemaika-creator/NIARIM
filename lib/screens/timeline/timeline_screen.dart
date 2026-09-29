@@ -8682,35 +8682,39 @@ class _ClipDetailSheetState extends State<_ClipDetailSheet> {
     double step = 1,
   }) {
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 4),
-      child: Row(
+      padding: const EdgeInsets.symmetric(vertical: 5),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          SizedBox(
-            width: 72,
-            child: Text(label, style: const TextStyle(fontSize: 12)),
-          ),
-          Expanded(
-            child: SteppedSlider(
-              value: value.clamp(min, max),
-              min: min,
-              max: max,
-              divisions: divisions > 0 ? divisions : 1,
-              step: step,
-              onChanged: onChanged,
-            ),
-          ),
-          SizedBox(
-            width: 48,
-            child: EditableSliderValue(
-              text: valueText,
-              style: const TextStyle(fontSize: 11),
-              textAlign: TextAlign.right,
-              value: value,
-              min: min,
-              max: max,
-              isInt: false,
-              onChanged: (v) => onChanged(v.toDouble()),
-            ),
+          Text(label, style: const TextStyle(fontSize: 12)),
+          const SizedBox(height: 2),
+          Row(
+            children: [
+              Expanded(
+                child: SteppedSlider(
+                  value: value.clamp(min, max),
+                  min: min,
+                  max: max,
+                  divisions: divisions > 0 ? divisions : 1,
+                  step: step,
+                  onChanged: onChanged,
+                ),
+              ),
+              const SizedBox(width: 2),
+              ConstrainedBox(
+                constraints: const BoxConstraints(minWidth: 42, maxWidth: 52),
+                child: EditableSliderValue(
+                  text: valueText,
+                  style: const TextStyle(fontSize: 11),
+                  textAlign: TextAlign.right,
+                  value: value,
+                  min: min,
+                  max: max,
+                  isInt: false,
+                  onChanged: (v) => onChanged(v.toDouble()),
+                ),
+              ),
+            ],
           ),
         ],
       ),
