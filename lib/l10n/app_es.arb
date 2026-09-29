@@ -620,7 +620,7 @@
   "tipsCommonLayerFolderTitle": "Capas comunes + carpetas para reutilizar entre episodios",
   "tipsCommonLayerFolderDesc": "Para un logo o los créditos usados en todos los episodios de una serie, conviértelo en capa común y mantenlo organizado en una carpeta; así es fácil de manejar al copiarlo al proyecto de un episodio nuevo.",
   "tipsStrokeDecayFadeTitle": "Decaimiento de trazo + desvanecimiento para un aire de pincel caligráfico",
-  "tipsStrokeDecayFadeDesc": "Combinar decaimiento de trazo y desvanecimiento en los ajustes del pincel afina de forma natural el inicio y el final de un trazo, dando a las líneas esa variación expresiva de grosor propia de un pincel de caligrafía o tinta.",
+  "tipsStrokeDecayFadeDesc": "En los ajustes del pincel puedes ajustar por separado el valor y la distancia de la entrada (inicio del trazo) y la salida (final del trazo). Combínalos con el decaimiento del trazo para afinar solo el inicio, alargar solo el final o hacer ambos extremos asimétricos y conseguir trazos expresivos de caligrafía o tinta.",
   "tipsColorMixingFadeTitle": "Mezcla de color + desvanecimiento para un mezclado tipo pintura",
   "tipsColorMixingFadeDesc": "Añadir desvanecimiento a un pincel con mezcla de color activada hace que se mezcle con el color de debajo mientras se va aclarando gradualmente, mucho más parecido a cómo se comporta la pintura real.",
   "tipsOutlineAnimeStyleTitle": "Contorno + estilo anime para un acabado de animación cel",
