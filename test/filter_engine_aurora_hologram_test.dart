@@ -73,7 +73,7 @@ void main() {
       strength: 100,
       brightness: 50,
       saturation: 50,
-      preset: AuroraHologramPreset.opalPearl,
+      preset: AuroraHologramPreset.luminousPearl,
     );
     expect(result, equals(data));
   });
@@ -105,7 +105,7 @@ void main() {
       strength: 100,
       brightness: 10,
       saturation: 25,
-      preset: AuroraHologramPreset.opalPearl,
+      preset: AuroraHologramPreset.luminousPearl,
     );
 
     var rgbChanged = false;
@@ -154,7 +154,7 @@ void main() {
       strength: 100,
       brightness: 0,
       saturation: 0,
-      preset: AuroraHologramPreset.opalPearl,
+      preset: AuroraHologramPreset.luminousPearl,
     );
     final first = (result[0], result[1], result[2]);
     for (int i = 4; i < result.length; i += 4) {
@@ -328,7 +328,7 @@ void main() {
       strength: 83,
       brightness: 17,
       saturation: -12,
-      preset: AuroraHologramPreset.opalPearl,
+      preset: AuroraHologramPreset.luminousPearl,
     );
 
     expect(apply(), equals(apply()));
@@ -336,7 +336,7 @@ void main() {
 
   test('質感presetは用途ごとに異なる帯構造を持つ', () {
     final hologram = auroraHologramStops(AuroraHologramPreset.silverHologram);
-    final opal = auroraHologramStops(AuroraHologramPreset.opalPearl);
+    final opal = auroraHologramStops(AuroraHologramPreset.luminousPearl);
     final dark = auroraHologramStops(AuroraHologramPreset.darkHologram);
 
     expect(
@@ -471,7 +471,7 @@ void main() {
 
 
   test('クラシックパールは暖色の真珠陰影と白い鏡面を両立する', () {
-    final stops = auroraHologramStops(AuroraHologramPreset.opalPearl);
+    final stops = auroraHologramStops(AuroraHologramPreset.luminousPearl);
     expect(stops.first.$2, greaterThan(stops.first.$3));
     expect(stops.first.$3, greaterThan(stops.first.$4));
     expect(
