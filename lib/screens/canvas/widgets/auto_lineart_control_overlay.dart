@@ -5,12 +5,15 @@ import 'package:flutter/material.dart';
 
 import '../../../engine/auto_lineart_engine.dart';
 
+enum AutoLineartControlMode { move, add, delete }
+
 class AutoLineartControlOverlay extends StatefulWidget {
   final ui.Image image;
   final AutoLineartGraph graph;
   final void Function(int pathIndex, int pointIndex, AutoLineartPoint point)
   onPointMoved;
   final ValueChanged<AutoLineartGraph>? onGraphChanged;
+  final AutoLineartControlMode mode;
 
   const AutoLineartControlOverlay({
     super.key,
@@ -18,6 +21,7 @@ class AutoLineartControlOverlay extends StatefulWidget {
     required this.graph,
     required this.onPointMoved,
     this.onGraphChanged,
+    this.mode = AutoLineartControlMode.move,
   });
 
   @override
@@ -211,6 +215,19 @@ class _AutoLineartControlOverlayState extends State<AutoLineartControlOverlay> {
           behavior: HitTestBehavior.opaque,
           onPointerDown: (event) {
             final active = _hit(event.localPosition, rect);
+            if (widget.mode == AutoLineartControlMode.delete) {
+              if (active != null) {
+                _publishGraph(_withPointDeleted(active.$1, active.$2));
+              }
+              return;
+            }
+            if (widget.mode == AutoLineartControlMode.add) {
+              final segment = _hitSegment(event.localPosition, rect);
+              if (segment == null) return;
+              final point = _toGraph(event.localPosition, rect);
+              _publishGraph(_withPointInserted(segment.$1, segment.$2, point));
+              return;
+            }
             if (active != null) {
               _active = active;
               _activePointer = event.pointer;
@@ -218,10 +235,6 @@ class _AutoLineartControlOverlayState extends State<AutoLineartControlOverlay> {
               _dragged = false;
               return;
             }
-            final segment = _hitSegment(event.localPosition, rect);
-            if (segment == null) return;
-            final point = _toGraph(event.localPosition, rect);
-            _publishGraph(_withPointInserted(segment.$1, segment.$2, point));
           },
           onPointerMove: (event) {
             final active = _active;
