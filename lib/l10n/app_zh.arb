@@ -620,7 +620,7 @@
   "tipsCommonLayerFolderTitle": "共同图层×文件夹，跨集数重复使用",
   "tipsCommonLayerFolderDesc": "系列作品中每集都会用到的Logo或字幕，做成共同图层后整理进文件夹，复制到新一集的项目时也能轻松处理。",
   "tipsStrokeDecayFadeTitle": "笔触衰减×淡出，做出毛笔般的表现",
-  "tipsStrokeDecayFadeDesc": "同时启用笔刷设置中的笔触衰减和淡出，线条的起笔、收笔会自然变细，画出如毛笔或墨水笔般富有轻重变化的线条。",
+  "tipsStrokeDecayFadeDesc": "在画笔设置中，可以分别调整入笔（笔画起点）和收笔（笔画终点）的数值与距离。再配合笔触衰减，可以只让起点变细、只延长收笔，或让两端采用非对称设置，做出毛笔或墨水笔般富有轻重变化的线条。",
   "tipsColorMixingFadeTitle": "混色×淡出，做出类似颜料的融合感",
   "tipsColorMixingFadeDesc": "在开启混色的笔刷上再加上淡出，会与底色融合的同时逐渐变淡，更接近真实颜料的上色手感。",
   "tipsOutlineAnimeStyleTitle": "描边×动画风，做出赛璐璐动画质感",
