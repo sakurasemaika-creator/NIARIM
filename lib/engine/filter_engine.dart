@@ -393,7 +393,10 @@ List<(double, int, int, int)> auroraHologramStops(AuroraHologramPreset preset) {
       (0.595, 239, 218, 246),
       (0.655, 219, 230, 249),
       (0.715, 194, 235, 251),
-      (0.775, 173, 232, 252),
+      (0.758, 173, 232, 252),
+      // A tiny transparent emerald flash inside the broad cyan reflection.
+      (0.772, 128, 246, 220),
+      (0.786, 169, 236, 247),
       (0.825, 206, 240, 252),
       (0.865, 242, 247, 252),
       (0.890, 253, 253, 255),
@@ -401,9 +404,11 @@ List<(double, int, int, int)> auroraHologramStops(AuroraHologramPreset preset) {
       (0.940, 226, 220, 250),
       (0.962, 249, 230, 248),
       (0.978, 253, 248, 252),
-      // Tiny clean spectral glint next to the strongest white highlight.
-      (0.988, 255, 255, 178),
-      (0.994, 255, 255, 249),
+      // Very narrow pale spectral yellow, kept close to white so it blends
+      // into the specular highlight instead of reading as a yellow stripe.
+      (0.987, 255, 255, 220),
+      (0.992, 255, 255, 245),
+      (0.996, 255, 255, 252),
       (1.000, 255, 255, 255),
     ],
     AuroraHologramPreset.darkRainbow => const [
