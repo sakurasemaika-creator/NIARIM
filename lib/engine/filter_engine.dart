@@ -1571,6 +1571,37 @@ class FilterEngine {
         final edge =
             math.sqrt((gx * gx + gy * gy).toDouble()).clamp(0.0, 180.0) /
             180.0;
+
+        // A second, much wider derivative approximates the orientation of the
+        // whole material face. Blend it with the local fold normal so a sphere
+        // gets a continuous curved reflection while cloth keeps coherent
+        // reflection planes instead of breaking into tiny edge-colour bands.
+        final planeGx =
+            sourceLumaAt(x + 8, y) -
+            sourceLumaAt(x - 8, y) +
+            sourceLumaAt(x + 14, y) -
+            sourceLumaAt(x - 14, y);
+        final planeGy =
+            sourceLumaAt(x, y + 8) -
+            sourceLumaAt(x, y - 8) +
+            sourceLumaAt(x, y + 14) -
+            sourceLumaAt(x, y - 14);
+        final planeStrength =
+            math
+                .sqrt((planeGx * planeGx + planeGy * planeGy).toDouble())
+                .clamp(0.0, 220.0) /
+            220.0;
+        final localAngle = math.atan2(gy.toDouble(), gx.toDouble());
+        final planeAngle = math.atan2(planeGy.toDouble(), planeGx.toDouble());
+        final orientationBlend = (0.28 + planeStrength * 0.58).clamp(0.28, 0.78);
+        final vx =
+            math.cos(localAngle) * (1.0 - orientationBlend) +
+            math.cos(planeAngle) * orientationBlend;
+        final vy =
+            math.sin(localAngle) * (1.0 - orientationBlend) +
+            math.sin(planeAngle) * orientationBlend;
+        final materialAngle = math.atan2(vy, vx);
+
         final localMean =
             (sourceLumaAt(x - 3, y) +
                 sourceLumaAt(x + 3, y) +
@@ -1595,8 +1626,7 @@ class FilterEngine {
         // beside (not inside) the white ridge. This creates the reference
         // material's cyan/pink/violet edge flashes without rainbow contouring.
         if (edge > 0.075) {
-          final angle = math.atan2(gy.toDouble(), gx.toDouble());
-          final phase = (angle + math.pi) / (2 * math.pi);
+          final phase = (materialAngle + math.pi) / (2 * math.pi);
           const interferenceStops = <(double, int, int, int)>[
             // Luminous film reflections: chromatic, but mixed toward the
             // reflected light so they read as iridescence rather than paint.
@@ -1616,6 +1646,7 @@ class FilterEngine {
           final shoulder = (1.0 - ridge * 0.82).clamp(0.12, 1.0);
           final colourMix =
               ((edge - 0.075) / 0.925).clamp(0.0, 1.0) *
+              (0.72 + planeStrength * 0.28) *
               shoulder *
               0.48;
           outR += (spectral.$1 - outR) * colourMix;
