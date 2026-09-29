@@ -1,5 +1,5 @@
 name: Functional Visual Audit
-# Visual closure excludes the material/Gradient Map filter by request.
+# Visual closure excludes the material/Gradient Map filter by request. Rerun after build-fix sync.
 
 on:
   workflow_dispatch:
