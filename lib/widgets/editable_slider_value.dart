@@ -15,6 +15,7 @@ class EditableSliderValue extends StatelessWidget {
   final bool isInt;
   final ValueChanged<num> onChanged;
   final TextAlign? textAlign;
+  final double editIconRight;
 
   const EditableSliderValue({
     super.key,
@@ -27,6 +28,7 @@ class EditableSliderValue extends StatelessWidget {
     this.title,
     this.isInt = true,
     this.textAlign,
+    this.editIconRight = -11,
   });
 
   @override
@@ -43,7 +45,7 @@ class EditableSliderValue extends StatelessWidget {
         children: [
           Text(text, style: style, textAlign: textAlign),
           Positioned(
-            right: -11,
+            right: editIconRight,
             top: 0,
             bottom: 0,
             child: Center(
