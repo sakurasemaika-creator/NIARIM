@@ -13,16 +13,17 @@ void main() {
     }),
   );
 
-  test('drawing VHS stable ID routes through deterministic VHS engine', () {
+  test('drawing VHS settings route through deterministic VHS engine', () {
     final f = FilterDef(
-      id: 'Filter0024',
+      id: 'custom-vhs',
       name: 'VHS',
       kind: FilterKind.noise,
+      noiseStyle: NoiseStyle.vhs,
       strength: 45,
       caSaturation: 30,
       caBrightness: 40,
       caContrast: 20,
-      thresholdValue: 1984,
+      noiseSeed: 1984,
     );
     final a = applyDrawFilterInIsolate((sample(), 8, 8, f, null));
     final b = applyDrawFilterInIsolate((sample(), 8, 8, f, null));

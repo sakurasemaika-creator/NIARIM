@@ -30,6 +30,12 @@ Brush _foldBrush(HairFoldMode mode, {String? imagePath}) => Brush(
   strokeDecay: false,
   folderId: 'source-folder',
   customImagePath: imagePath,
+  imageInkMode: BrushImageInkMode.light,
+  tipShape: BrushTipShape.chainLink,
+  tipSpacingFactor: .72,
+  chainAspect: .56,
+  chainThickness: .19,
+  calligraphyAngle: 35,
   outlineEnabled: true,
   outlineWidth: 2.25,
   outlineColor: 0xFF375577,
@@ -43,6 +49,12 @@ Brush _foldBrush(HairFoldMode mode, {String? imagePath}) => Brush(
 );
 
 void _expectFoldSettings(Brush actual, Brush expected) {
+  expect(actual.imageInkMode, expected.imageInkMode);
+  expect(actual.tipShape, expected.tipShape);
+  expect(actual.tipSpacingFactor, expected.tipSpacingFactor);
+  expect(actual.chainAspect, expected.chainAspect);
+  expect(actual.chainThickness, expected.chainThickness);
+  expect(actual.calligraphyAngle, expected.calligraphyAngle);
   expect(actual.foldMode, expected.foldMode);
   expect(actual.foldEnabled, expected.foldEnabled);
   expect(actual.outlineEnabled, expected.outlineEnabled);
@@ -102,7 +114,9 @@ void main() {
           if (call.method == 'getApplicationDocumentsDirectory') {
             return documentsDirectory.path;
           }
-          throw MissingPluginException('Unexpected path lookup: ${call.method}');
+          throw MissingPluginException(
+            'Unexpected path lookup: ${call.method}',
+          );
         });
   });
 
@@ -165,7 +179,8 @@ void main() {
       );
       restarted.updateBrush(duplicate.copyWith(foldEnabled: false));
       expect(
-        restarted.brushes.singleWhere((brush) => brush.id == original.id)
+        restarted.brushes
+            .singleWhere((brush) => brush.id == original.id)
             .foldEnabled,
         isTrue,
       );
@@ -183,9 +198,13 @@ void main() {
       final exported = await service.exportBrush(original.id);
       expect(exported.path, endsWith('.niabrush'));
       final archive = ZipDecoder().decodeBytes(await exported.readAsBytes());
-      final json = jsonDecode(
-        utf8.decode(archive.findFile('data.json')!.content as List<int>),
-      ) as Map<String, dynamic>;
+      final json =
+          jsonDecode(
+                utf8.decode(
+                  archive.findFile('data.json')!.content as List<int>,
+                ),
+              )
+              as Map<String, dynamic>;
       expect(json['foldMode'], mode.name);
       _expectFoldSettings(Brush.fromJson(json), original);
       expect(archive.findFile('images/000.png')!.content, imageBytes);
@@ -259,7 +278,8 @@ void main() {
       '${testDirectory.path}/fold-modes.niatra',
     ).writeAsBytes(bytes);
     final data = await NiatraSerializer.load(transferFile.path);
-    final brushJson = (data.raw['brushes'] as List).cast<Map<String, dynamic>>();
+    final brushJson = (data.raw['brushes'] as List)
+        .cast<Map<String, dynamic>>();
     for (final original in originals) {
       final saved = brushJson.singleWhere((json) => json['id'] == original.id);
       expect(saved['foldMode'], original.foldMode.name);
@@ -301,7 +321,10 @@ void main() {
       expect(imported.customImagePath, startsWith(documentsDirectory.path));
       expect(await File(imported.customImagePath!).readAsBytes(), imageBytes);
       _expectFoldSettings(imported, original);
-      expect((await _savedBrush(imported.id))['foldMode'], original.foldMode.name);
+      expect(
+        (await _savedBrush(imported.id))['foldMode'],
+        original.foldMode.name,
+      );
     }
 
     final restarted = await _loadBrushService();

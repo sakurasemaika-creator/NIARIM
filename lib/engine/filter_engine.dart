@@ -11,6 +11,44 @@ import 'prism_filter_engine.dart';
 import 'pixel_art_engine.dart';
 import 'vhs_noise_engine.dart';
 
+/// Preview, apply and recorded replay share the same seeded noise settings.
+Uint8List applyNoiseFilter(
+  Uint8List data,
+  int width,
+  int height,
+  FilterDef filter,
+) {
+  final engine = FilterEngine();
+  final strength = (filter.strength / 100).clamp(0.0, 1.0);
+  return switch (filter.noiseStyle) {
+    NoiseStyle.filmGrain => engine.applyFilmGrain(
+      data,
+      width,
+      height,
+      strength,
+      seed: filter.noiseSeed,
+    ),
+    NoiseStyle.color => engine.applyColorNoise(
+      data,
+      width,
+      height,
+      strength,
+      seed: filter.noiseSeed,
+    ),
+    NoiseStyle.vhs => VhsNoiseEngine.apply(
+      data,
+      width,
+      height,
+      noiseStrength: filter.strength,
+      scanlineStrength: filter.caSaturation,
+      colorBleed: filter.caBrightness,
+      tracking: filter.caContrast,
+      seed: filter.noiseSeed,
+      frameIndex: 0,
+    ),
+  };
+}
+
 /// 描画フィルターの本適用（低スペック端末でのUIスレッドブロック防止のため
 /// compute()経由でバックグラウンドisolate実行する想定のトップレベル関数）。
 /// [maskData]はlensDistortion（眼鏡断層フィルター）専用（選択レイヤーを
@@ -21,19 +59,6 @@ Uint8List applyDrawFilterInIsolate(
 ) {
   final (data, width, height, filter, maskData) = args;
   final engine = FilterEngine();
-  if (filter.id == 'Filter0024') {
-    return VhsNoiseEngine.apply(
-      data,
-      width,
-      height,
-      noiseStrength: filter.strength,
-      scanlineStrength: filter.caSaturation,
-      colorBleed: filter.caBrightness,
-      tracking: filter.caContrast,
-      seed: filter.thresholdValue.round(),
-      frameIndex: 0,
-    );
-  }
   return switch (filter.kind) {
     FilterKind.gaussianBlur => engine.applyGaussianBlur(
       data,
@@ -100,19 +125,7 @@ Uint8List applyDrawFilterInIsolate(
       filter.strength,
       color: filter.vignetteColor,
     ),
-    FilterKind.noise => filter.id == 'Filter0027'
-        ? engine.applyColorNoise(
-            data,
-            width,
-            height,
-            (filter.strength / 100).clamp(0.0, 1.0),
-          )
-        : engine.applyFilmGrain(
-            data,
-            width,
-            height,
-            (filter.strength / 100).clamp(0.0, 1.0),
-          ),
+    FilterKind.noise => applyNoiseFilter(data, width, height, filter),
     FilterKind.retroAnime => engine.applyRetroAnime(
       data,
       width,

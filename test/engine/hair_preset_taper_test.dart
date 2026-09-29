@@ -34,7 +34,10 @@ void main() {
                   )
                   .toJson(),
             );
-            await preloadBrushTextures(brush.resolvedCustomImagePaths);
+            await preloadBrushTextures(
+              brush.resolvedCustomImagePaths,
+              mode: brush.imageInkMode,
+            );
             final tiles = TileManager(canvasWidth: 220, canvasHeight: 450);
             addTearDown(tiles.dispose);
             final engine = DrawingEngine(tileManager: tiles)

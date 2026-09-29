@@ -15,6 +15,7 @@ import 'creative_folder_sheets.dart';
 import 'panel_close_bar.dart';
 import 'color_picker_panel.dart';
 import 'brush_extension_settings.dart';
+import 'brush_tip_settings.dart';
 import '../../../config/font_fallback.dart';
 import '../../../utils/reorder_index.dart';
 import 'asset_search_bar.dart';
@@ -570,6 +571,24 @@ class _BrushSettingsSheet extends StatefulWidget {
 }
 
 class _BrushSettingsSheetState extends State<_BrushSettingsSheet> {
+  Future<void> _addImages() async {
+    final service = context.read<BrushService>();
+    final selected = await FilePicker.platform.pickFiles(
+      type: FileType.image,
+      allowMultiple: true,
+    );
+    if (selected == null || !mounted) return;
+    final paths = await service.importBrushImages(
+      selected.files.map((file) => file.path).whereType<String>(),
+    );
+    if (!mounted || paths.isEmpty) return;
+    setState(
+      () => _brush = _brush.copyWith(
+        customImagePaths: [..._brush.resolvedCustomImagePaths, ...paths],
+      ),
+    );
+  }
+
   Future<void> _showOutlineColorPicker() async {
     await showDialog<void>(
       context: context,
@@ -780,6 +799,17 @@ class _BrushSettingsSheetState extends State<_BrushSettingsSheet> {
                 value: _brush.strokeDecay,
                 onChanged: (v) =>
                     setState(() => _brush = _brush.copyWith(strokeDecay: v)),
+              ),
+            ],
+          ),
+          _settingsSection(
+            title: l10n.brushTipSettingsTitle,
+            initiallyExpanded: true,
+            children: [
+              BrushTipSettings(
+                brush: _brush,
+                onChanged: (value) => setState(() => _brush = value),
+                onAddImages: _addImages,
               ),
             ],
           ),

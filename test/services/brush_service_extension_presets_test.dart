@@ -56,7 +56,10 @@ void main() {
       await first.init();
       final hair = first.brushes.singleWhere((b) => b.id == 'Brush0023');
       final bangs = first.brushes.singleWhere((b) => b.id == 'Brush0024');
-      final oldHair = hair.copyWith(fadeMode: FadeMode.weak, isFavorite: true);
+      final oldHair = hair.copyWith(
+        fadeMode: FadeMode.weak, isFavorite: true,
+        folderId: 'my-folder', tags: ['my-hair-tag'],
+      );
       final custom = oldHair.copyWith(id: 'CustomHair');
       SharedPreferences.setMockInitialValues({
         'brushes': [
@@ -70,6 +73,8 @@ void main() {
       final updated = restored.brushes.singleWhere((b) => b.id == hair.id);
       expect(updated.fadeMode, FadeMode.custom);
       expect(updated.fadeOut.value, 0);
+      expect(updated.folderId, 'my-folder');
+      expect(updated.tags, ['my-hair-tag']);
       expect(
         restored.brushes.singleWhere((b) => b.id == bangs.id).fadeMode,
         FadeMode.weak,

@@ -153,7 +153,8 @@ class HairFoldRaster {
       ...bends.map((b) => b.index),
       points.length - 1,
     }.toList()..sort();
-    if (indices.length < 3) return;
+    if (indices.length < 3 && brush.foldMode != HairFoldMode.crescent) return;
+    final crescentContinuous = <int>{};
     if (brush.foldMode == HairFoldMode.crescent) {
       // Once folding is active, every actual reversal separates crescents.
       // Detector cooldown may skip a small final curl; midpoints between its
@@ -166,8 +167,15 @@ class HairFoldRaster {
           lengths,
           brush.foldTriggerAngle * math.pi / 180,
         ),
-        ...bends.where((bend) => bend.continuous).map((bend) => bend.index),
       };
+      crescentContinuous.addAll(
+        _crescentTurnBoundaries(
+          points,
+          lengths,
+          crescentBoundaries.toList()..sort(),
+        ),
+      );
+      crescentBoundaries.addAll(crescentContinuous);
       indices
         ..clear()
         ..addAll(crescentBoundaries.toList()..sort());
@@ -296,18 +304,8 @@ class HairFoldRaster {
       }
       runs.sort((a, b) => a.depth.compareTo(b.depth));
       for (final run in runs) {
-        final runLength = lengths[run.end] - lengths[run.start];
-        final startsContinuous =
-            run.start > 0 &&
-            bends.any((bend) => bend.index == run.start && bend.continuous);
-        final endsContinuous =
-            run.end < points.length - 1 &&
-            bends.any((bend) => bend.index == run.end && bend.continuous);
-        final shortContinuation = startsContinuous && !endsContinuous
-            ? ((points[run.start].width - runLength) /
-                      math.max(.001, points[run.start].width * .5))
-                  .clamp(0.0, 1.0)
-            : 0.0;
+        final startsContinuous = crescentContinuous.contains(run.start);
+        final endsContinuous = crescentContinuous.contains(run.end);
         final geometry = brush.foldMode == HairFoldMode.crescent
             ? <Object>[
                 crescentApices[run.start]!,
@@ -392,34 +390,20 @@ class HairFoldRaster {
                           : (end - distance) / math.max(.001, end - apex))
                       .clamp(0.0, 1.0);
               var profile = u * u * (3 - 2 * u);
-              final t = ((distance - start) / math.max(.001, runLength)).clamp(
-                0.0,
-                1.0,
-              );
-              const neck = .72;
-              if (startsContinuous && t < .34) {
-                final local = t / .34;
-                profile +=
-                    (1 - profile) *
-                    neck *
-                    (1 - local * local * (3 - 2 * local));
-              }
-              if (endsContinuous && t > .66) {
-                final local = (t - .66) / .34;
-                profile +=
-                    (1 - profile) * neck * local * local * (3 - 2 * local);
-              }
-              if (startsContinuous && !endsContinuous) {
-                // Finish a not-yet-complete next turn from its existing neck.
-                final width = points[run.start].width;
-                final shortness =
-                    ((width - runLength) / math.max(.001, width * .5)).clamp(
-                      0.0,
-                      1.0,
-                    );
-                profile =
-                    profile * (1 - shortness) +
-                    neck * math.sqrt(math.max(0.0, 1 - t * t)) * shortness;
+              if (startsContinuous) {
+                // A partial next curl grows from zero width. Its amplitude is
+                // determined by the real turn already drawn, never expanded to
+                // full width or capped simply because a detector event fired.
+                final phase =
+                    (crescentAngles[index]! - crescentAngles[run.start]!).abs();
+                final total =
+                    (crescentAngles[run.end]! - crescentAngles[run.start]!)
+                        .abs();
+                final scale = total > math.pi ? math.pi / total : 1.0;
+                profile = math.max(
+                  0.0,
+                  math.sin(phase * scale) * math.sin((total - phase) * scale),
+                );
               }
               final strength = (brush.foldCurveStrength - 1) / 9;
               final blend = crescentBlend[index]!;
@@ -542,24 +526,6 @@ class HairFoldRaster {
                 previousOuter = outer;
                 previousInner = inner;
               }
-            }
-            if (shortContinuation > 0) {
-              // Before the next curl is long enough to form a body, keep a
-              // rounded pen cap. Fade this support out as the real curve grows.
-              _segment(
-                envelope,
-                HairRibbonPoint(
-                  a.position,
-                  a.width * shortContinuation,
-                  a.opacity,
-                ),
-                HairRibbonPoint(
-                  b.position,
-                  b.width * shortContinuation,
-                  b.opacity,
-                ),
-                brush.outlineWidth * shortContinuation,
-              );
             }
           }
           if (texture == null) {
@@ -1116,6 +1082,44 @@ double _textureAlpha(Uint8List texture, double x, double y) {
       texture[(y * brushTextureSize + x) * 4 + 3] / 255;
   return (alpha(x0, y0) * (1 - u) + alpha(x1, y0) * u) * (1 - v) +
       (alpha(x0, y1) * (1 - u) + alpha(x1, y1) * u) * v;
+}
+
+// Split only the authored curve into half-turns. Detector events activate
+// folding; their periodic bookkeeping must never reshape an existing curl.
+Set<int> _crescentTurnBoundaries(
+  List<HairRibbonPoint> points,
+  List<double> lengths,
+  List<int> reversals,
+) {
+  final tangents = [
+    for (var i = 0; i < points.length; i++)
+      _unit(
+        _positionAtDistance(
+              points,
+              lengths,
+              lengths[i] + math.max(.5, points[i].width * .3),
+            ) -
+            _positionAtDistance(
+              points,
+              lengths,
+              lengths[i] - math.max(.5, points[i].width * .3),
+            ),
+      ),
+  ];
+  final result = <int>{};
+  for (var run = 1; run < reversals.length; run++) {
+    var turn = 0.0;
+    for (var i = reversals[run - 1] + 1; i <= reversals[run]; i++) {
+      final a = tangents[i - 1], b = tangents[i];
+      if (a.distanceSquared < 1e-8 || b.distanceSquared < 1e-8) continue;
+      turn += math.atan2(_cross(a, b), _dot(a, b));
+      if (turn.abs() >= math.pi) {
+        result.add(i);
+        turn = 0;
+      }
+    }
+  }
+  return result;
 }
 
 Offset _positionAtDistance(

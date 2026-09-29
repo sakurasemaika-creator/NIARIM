@@ -1306,7 +1306,7 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get helpFadeDesc =>
-      '브러시 설정 중 하나로, 스트로크를 그려나갈수록 불투명도나 굵기가 점점 줄어드는 효과입니다. 선의 끝을 흐릿하게 하고 싶을 때나, 여운이 남는 듯한 화풍을 만들고 싶을 때 사용합니다.';
+      '스트로크의 들어가기(시작점)와 빠지기(끝점)의 값과 거리를 각각 독립적으로 설정하는 브러시 기능입니다. 시작만, 끝만 또는 비대칭으로 설정하여 양 끝의 굵기와 불투명도를 따로 조절할 수 있습니다.';
 
   @override
   String get helpStrokeDecayTitle => '스트로크 감쇠';
@@ -1477,7 +1477,7 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get helpStampToolDesc =>
-      '미리 등록해 둔 이미지를 브러시처럼 캔버스에 배치하는 도구입니다. 효과선・배경 패턴・소품 등을 매번 다시 그리지 않고 재사용할 수 있습니다. 픽셀 모드를 켜면 붙인 스탬프를 모자이크 저해상도화＋색상 수 감소로 도트 그림풍으로 가공할 수 있습니다. 스탬프 패널에서는 배치할 스탬프의 회전 각도・크기를 조정할 수 있습니다. 같은 스탬프라도 방향과 크기를 바꿔가며 배치하면 단조롭지 않은 자연스러운 효과선・소품 배열을 만들 수 있습니다.';
+      '등록된 이미지를 브러시처럼 캔버스에 배치하여 집중선, 배경 패턴, 소품 등을 다시 그리지 않고 재사용하는 도구입니다. 픽셀 모드에서는 픽셀 아트 필터와 동일한 Pixel Art 처리를 사용해 투명 경계를 선명하게 유지하면서 픽셀화와 감색을 수행합니다. 모자이크는 별도의 효과이며 스탬프 픽셀 모드에는 사용하지 않습니다. 스탬프 패널에서 회전 각도와 크기도 조절할 수 있습니다.';
 
   @override
   String get helpToneFillTitle => '스크린톤 채색';
@@ -1641,7 +1641,7 @@ class AppLocalizationsKo extends AppLocalizations {
       '타임라인의 공통 레이어 트랙에 배치한 워터마크를 탭하면 각도・크기・불투명도・표시 범위（루프 표시）를 언제든지 다시 편집할 수 있습니다. 등록할 때뿐 아니라 실제로 프로젝트 안에서 사용할 때 세밀하게 조정할 수 있습니다.';
 
   @override
-  String get helpAudioClipTitle => '오디오 클립 음량・페이드';
+  String get helpAudioClipTitle => '음량 조절';
 
   @override
   String get helpAudioClipDesc =>
@@ -1680,7 +1680,7 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get helpDrawingFilterDesc =>
-      '선택한 레이어에 직접 적용하는 필터입니다(연출 필터가 타임라인 전체나 장면 단위로 적용되는 것과 달리 그리기 필터는 레이어 단위로 작동합니다). 제공되는 25종은 가우시안 블러, 렌즈 블러, 애니메이션풍, 톤 커브, 레벨 보정, 윤곽선, 샤프, 언샤프 마스크, 비네트, 필름 그레인, 레트로 애니메이션, 브라운관, 모노크롬, 이진화, 어안 렌즈, 색수차, 안경 단면, 픽셀 아트, 질감 변경 필터, 배경 어우러짐, 잉크 고임, 자동 선화, 프리즘, VHS 노이즈, 색상 반전입니다. 윤곽선은 원본 레이어를 다시 쓰지 않고 결과만 새 레이어에 그립니다. 안경 단면은 선택 레이어에서 칠한 범위에만 도수가 강한 안경 렌즈 같은 국소 왜곡을 적용합니다. 픽셀 아트는 배색 방식(제한 없음, 색 지정, 색 수 지정, 팔레트 선택)도 고를 수 있습니다.';
+      '선택한 레이어에 직접 적용하는 필터입니다(연출 필터가 타임라인 전체나 장면 단위로 적용되는 것과 달리 그리기 필터는 레이어 단위로 작동합니다). 제공되는 25종은 가우시안 블러, 렌즈 블러, 애니메이션풍, 톤 커브, 레벨 보정, 윤곽선, 샤프, 언샤프 마스크, 비네트, 필름 그레인, 레트로 애니메이션, 브라운관, 모노크롬, 이진화, 어안 렌즈, 색수차, 안경 단면, 픽셀 아트, 질감 변경 필터, 배경 어우러짐, 잉크 고임, 자동 선화, 프리즘, VHS 노이즈, 색상 반전입니다. 윤곽선은 원본 레이어를 다시 쓰지 않고 결과만 새 레이어에 그립니다. 안경 단면은 선택 레이어에서 칠한 범위에만 도수가 강한 안경 렌즈 같은 국소 왜곡을 적용합니다. 픽셀 아트는 배색 방식(제한 없음, 색 지정, 색 수 지정, 팔레트 선택)도 고를 수 있습니다. 자동 선화에서는 필터를 적용하기 전에 임시 Vector 제어점을 직접 편집할 수 있습니다. 점을 드래그하면 해당 점만 이동하고, 선분을 탭하면 제어점을 추가하며, 점을 탭한 뒤 확인하면 삭제할 수 있습니다. 편집한 형상이 그대로 적용 결과에 사용됩니다.';
 
   @override
   String get helpLayerKeyframeTitle => '레이어 키프레임（파츠 단위 애니메이션）';
@@ -1876,7 +1876,7 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get tipsStrokeDecayFadeDesc =>
-      '브러시 설정의 스트로크 감쇠와 페이드를 함께 걸면 선의 시작・끝이 자연스럽게 가늘어져, 붓이나 잉크 브러시 같은 강약이 있는 선을 그릴 수 있습니다.';
+      '브러시 설정에서는 들어가기(시작점)와 빠지기(끝점)의 값과 거리를 각각 따로 조절할 수 있습니다. 스트로크 감쇠도 함께 사용하면 시작만 가늘게 하거나 끝만 길게 빼거나 양 끝을 비대칭으로 설정해 붓이나 잉크 브러시 같은 강약을 만들 수 있습니다.';
 
   @override
   String get tipsColorMixingFadeTitle => '혼색×페이드로 물감 같은 섞임';
@@ -4447,31 +4447,43 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get layerPanelAutofillNote1 =>
-      '※ 프로젝트에서 처음으로 자동 채색을 실행하는 경우 어느 쪽을 선택해도 문제없습니다.';
+      '※ 자동 채색을 처음 실행할 때는 어떤 방법을 선택해도 선화에서 새로 채색됩니다.';
 
   @override
   String get layerPanelAutofillNote2 =>
       '※ 자동 채색 레이어가 없는 경우 어느 쪽을 선택해도 영역을 처음부터 판정해 자동 채색합니다.';
 
   @override
-  String get layerPanelAutofillRepaintTitle => '다시 채색';
+  String get layerPanelAutofillSmartUpdateTitle => '변경된 형태만 업데이트';
 
   @override
-  String get layerPanelAutofillRepaintHint => '실수로 자동 채색 모양을 바꿔버린 경우 추천';
+  String get layerPanelAutofillSmartUpdateHint =>
+      '일반적으로 권장합니다. 선화 변경을 반영하면서 기존 수동 조정을 가능한 한 유지합니다';
+
+  @override
+  String get layerPanelAutofillSmartUpdateNote =>
+      '※ 새 영역은 자동으로 채색하고, 겹치는 기존 영역의 색은 유지하며, 선화에서 빠진 영역은 삭제합니다.';
+
+  @override
+  String get layerPanelAutofillRepaintTitle => '선화에서 형태를 갱신해 채색';
+
+  @override
+  String get layerPanelAutofillRepaintHint => '현재 자동 채색용 선화의 형태에 맞추고 싶은 경우';
 
   @override
   String get layerPanelAutofillRepaintNote =>
-      '※ 영역을 처음부터 판정해 다시 채색합니다. 현재 자동 채색 레이어의 모양은 폐기됩니다.';
+      '※ 자동 채색용 선화에서 영역을 다시 판정합니다. 현재 자동 채색 형태는 교체됩니다.';
 
   @override
-  String get layerPanelAutofillColorUpdateTitle => '색 업데이트';
+  String get layerPanelAutofillColorUpdateTitle => '형태를 유지하고 색만 업데이트';
 
   @override
-  String get layerPanelAutofillColorUpdateHint => '자동 채색 모양을 수동으로 조정한 경우 추천';
+  String get layerPanelAutofillColorUpdateHint =>
+      '수동으로 조정한 자동 채색 형태를 유지하고 싶은 경우';
 
   @override
   String get layerPanelAutofillColorUpdateNote =>
-      '※ 불투명도를 잠그고 최신 색으로 채웁니다. 현재 자동 채색 레이어의 모양은 유지됩니다.';
+      '※ 현재 불투명 영역을 유지한 채 최신 색으로 업데이트합니다. 수동 형태 조정은 유지됩니다.';
 
   @override
   String get layerPanelExecuteButton => '실행';
@@ -5400,7 +5412,13 @@ class AppLocalizationsKo extends AppLocalizations {
   String get filterAuroraHologramSaturation => '채도';
 
   @override
-  String get filterAuroraHologramPresetAurora => '아쿠아 오로라';
+  String get filterAuroraHologramPresetSilverHologram => '오로라 홀로그램';
+
+  @override
+  String get filterAuroraHologramPresetOpalPearl => '오팔 펄';
+
+  @override
+  String get filterAuroraHologramPresetDarkHologram => '다크 홀로그램';
 
   @override
   String get filterAuroraHologramPresetSoapBubble => '페어리 펄';
@@ -6378,4 +6396,105 @@ class AppLocalizationsKo extends AppLocalizations {
   @override
   String get tipsBrushFoldDesc =>
       '외곽선와 접힘을 켜고 커브 강도를 5로 설정한 뒤 완만한 S자 선을 그려 보세요. 겹친 부분의 위쪽을 앞에 두려면 웨이브 (위에서 보기)를, 아래쪽을 앞에 두려면 웨이브 (아래에서 보기)를 선택합니다. 대각선 흐름은 왼쪽 위와 오른쪽 아래를 잇는 선이 앞에 오는 오른쪽 컬과, 오른쪽 위와 왼쪽 아래를 잇는 선이 앞에 오는 왼쪽 컬을 비교해 보세요. C자 곡선을 연속으로 그릴 때는 초승달 컬로 이어지는 초승달 모양을 다듬습니다. 모든 유형은 직접 그린 굽은 부분을 사용하므로 직선이 자동으로 웨이브로 바뀌지 않습니다. 발생 각도, 커브 시작 위치, 접힘 길이를 조금씩 바꾼 다음 커브 강도를 1~10 사이에서 조절하세요. 접힘을 끄면 일반 선으로 돌아갑니다.';
+
+  @override
+  String get tipsFourPanelBrushTitle => '4컷 만화 브러시와 직선 자로 칸을 빠르게 만들기';
+
+  @override
+  String get tipsFourPanelBrushDesc =>
+      '프리셋 ‘4컷 만화’ 브러시는 스트로크의 가로 방향 반복을 사용하지 않고 진행 방향을 따라 사각형 테두리를 일정한 간격으로 배치합니다. 직선 자를 켜고 곧게 그으면 4컷 만화의 칸을 쉽고 가지런하게 만들 수 있습니다.';
+
+  @override
+  String get canvasSelectionReferenceWorkingLayer => '작업 레이어만';
+
+  @override
+  String get canvasSelectionReferenceVisibleLayers => '표시 레이어 모두';
+
+  @override
+  String get brushTipSettingsTitle => '펜촉 및 이미지 소재';
+
+  @override
+  String get brushTipShapeLabel => '펜촉 모양';
+
+  @override
+  String get brushTipRound => '원형';
+
+  @override
+  String get brushTipSquare => '속이 빈 사각형';
+
+  @override
+  String get brushTipHexagon => '육각형';
+
+  @override
+  String get brushTipChain => '체인 고리';
+
+  @override
+  String get brushTipBallChain => '볼 체인';
+
+  @override
+  String get brushTipRelativeSpacing => '크기에 비례하는 간격';
+
+  @override
+  String get brushTipSpacingRatio => '크기 대비 간격';
+
+  @override
+  String get brushChainAspect => '고리 가로세로 비율';
+
+  @override
+  String get brushChainThickness => '고리 두께';
+
+  @override
+  String get brushNibFlat => '납작한 펜촉';
+
+  @override
+  String get brushNibAngle => '펜촉 각도';
+
+  @override
+  String get brushImagesAdd => '이미지 추가';
+
+  @override
+  String get brushImageInkLabel => '이미지의 그릴 부분';
+
+  @override
+  String get brushImageInkDark => '어두운 부분';
+
+  @override
+  String get brushImageInkLight => '밝은 부분';
+
+  @override
+  String get brushImageInkAlpha => '불투명한 부분';
+
+  @override
+  String get brushImageInkHelp =>
+      '선택한 부분을 현재 색으로 그립니다. 여러 이미지를 등록하면 획마다 소재가 바뀝니다.';
+
+  @override
+  String get brushImageOrderLabel => '소재 선택 방식';
+
+  @override
+  String get brushImageOrderRandom => '무작위';
+
+  @override
+  String get brushImageOrderSequential => '등록 순서';
+
+  @override
+  String get brushImageMoveUp => '위로 이동';
+
+  @override
+  String get brushImageMoveDown => '아래로 이동';
+
+  @override
+  String get brushImageRemove => '소재 제거';
+
+  @override
+  String get filterNoiseStyle => '노이즈 종류';
+
+  @override
+  String get filterNoiseFilmGrain => '필름 그레인';
+
+  @override
+  String get filterNoiseColor => '컬러 노이즈';
+
+  @override
+  String get filterNoiseSeed => '패턴 시드';
 }

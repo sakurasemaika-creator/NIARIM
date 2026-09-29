@@ -1351,7 +1351,7 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get helpFadeDesc =>
-      'Un ajuste de pincel donde la opacidad y el grosor disminuyen gradualmente a medida que continúas un trazo. Úsalo cuando quieras que el final de una línea se desvanezca, o para crear una sensación de dibujo con un efecto persistente.';
+      'Una función del pincel que permite ajustar de forma independiente el valor y la distancia de entrada (inicio del trazo) y salida (final del trazo). Puedes afinar solo el inicio, solo el final o usar ajustes asimétricos para controlar por separado el grosor y la opacidad en cada extremo.';
 
   @override
   String get helpStrokeDecayTitle => 'Atenuación de trazo';
@@ -1525,7 +1525,7 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get helpStampToolDesc =>
-      'Coloca una imagen previamente registrada en el lienzo como un pincel. Reutiliza líneas de efecto, patrones de fondo y objetos pequeños sin volver a dibujarlos cada vez. Con el modo píxel activado, las imágenes selladas se procesan con reducción de resolución tipo mosaico y menos colores, para un aspecto pixel art. El panel de sellos permite ajustar el ángulo de rotación y el tamaño del sello que colocas. Variar la dirección y el tamaño del mismo sello evita que las líneas de efecto y los objetos pequeños se vean monótonos.';
+      'Coloca una imagen registrada en el lienzo como si fuera un pincel para reutilizar líneas de velocidad, patrones de fondo y pequeños objetos sin volver a dibujarlos. En modo píxel, los sellos usan el mismo procesamiento Pixel Art que el filtro de arte píxel, conservando bordes de transparencia duros al pixelar y reducir colores. Mosaico es un efecto independiente y no se usa en el modo píxel del sello. El panel del sello también permite ajustar la rotación y el tamaño.';
 
   @override
   String get helpToneFillTitle => 'Relleno con tramas';
@@ -1691,7 +1691,7 @@ class AppLocalizationsEs extends AppLocalizations {
       'Tocar una marca de agua colocada en la pista de capa común de la línea de tiempo permite reeditar en cualquier momento su ángulo, tamaño, opacidad y rango de visualización (bucle). Puedes ajustarla con precisión no solo al registrarla, sino siempre que la estés usando en un proyecto.';
 
   @override
-  String get helpAudioClipTitle => 'Volumen y fundidos de clips de audio';
+  String get helpAudioClipTitle => 'Volumen';
 
   @override
   String get helpAudioClipDesc =>
@@ -1730,7 +1730,7 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get helpDrawingFilterDesc =>
-      'Filtros aplicados directamente a la capa seleccionada (a diferencia de los filtros de efecto, que se aplican a toda la línea de tiempo o a una escena, los filtros de dibujo actúan por capa). Los 25 filtros incluidos son Desenfoque gaussiano, Desenfoque de lente, Estilo anime, Curva de tonos, Niveles, Contorno, Nitidez, Máscara de enfoque, Viñeta, Grano de película, Anime retro, CRT, Monocromo, Umbral, Ojo de pez, Aberración cromática, Distorsión óptica, Pixel art, Filtro de textura, Integración con el fondo, Acumulación de tinta, Dibujo lineal automático, Prisma, Ruido VHS e Invertir colores. Contorno no reescribe la capa original: dibuja solo el resultado en una capa nueva. Distorsión óptica aplica una deformación localizada, como a través de una lente de gafas de gran graduación, únicamente al área pintada en la capa de selección. Pixel art también permite elegir un modo de color (sin límite, colores específicos, número de colores o paleta).';
+      'Filtros aplicados directamente a la capa seleccionada (a diferencia de los filtros de efecto, que se aplican a toda la línea de tiempo o a una escena, los filtros de dibujo actúan por capa). Los 25 filtros incluidos son Desenfoque gaussiano, Desenfoque de lente, Estilo anime, Curva de tonos, Niveles, Contorno, Nitidez, Máscara de enfoque, Viñeta, Grano de película, Anime retro, CRT, Monocromo, Umbral, Ojo de pez, Aberración cromática, Distorsión óptica, Pixel art, Filtro de textura, Integración con el fondo, Acumulación de tinta, Dibujo lineal automático, Prisma, Ruido VHS e Invertir colores. Contorno no reescribe la capa original: dibuja solo el resultado en una capa nueva. Distorsión óptica aplica una deformación localizada, como a través de una lente de gafas de gran graduación, únicamente al área pintada en la capa de selección. Pixel art también permite elegir un modo de color (sin límite, colores específicos, número de colores o paleta). En Dibujo lineal automático puedes editar los puntos de control vectoriales temporales antes de aplicar el filtro. Arrastra un punto para mover solo ese punto, toca un segmento para añadir un punto de control o toca un punto y confirma para eliminarlo. La geometría editada se usa directamente en el resultado aplicado.';
 
   @override
   String get helpLayerKeyframeTitle =>
@@ -1951,7 +1951,7 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get tipsStrokeDecayFadeDesc =>
-      'Combinar decaimiento de trazo y desvanecimiento en los ajustes del pincel afina de forma natural el inicio y el final de un trazo, dando a las líneas esa variación expresiva de grosor propia de un pincel de caligrafía o tinta.';
+      'En los ajustes del pincel puedes ajustar por separado el valor y la distancia de la entrada (inicio del trazo) y la salida (final del trazo). Combínalos con el decaimiento del trazo para afinar solo el inicio, alargar solo el final o hacer ambos extremos asimétricos y conseguir trazos expresivos de caligrafía o tinta.';
 
   @override
   String get tipsColorMixingFadeTitle =>
@@ -4639,33 +4639,47 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get layerPanelAutofillNote1 =>
-      '✳ Cualquiera de las opciones está bien la primera vez que ejecutas el relleno automático en este proyecto.';
+      '✳ En el primer relleno automático, cualquier método crea un relleno nuevo a partir de las líneas.';
 
   @override
   String get layerPanelAutofillNote2 =>
       '✳ Si aún no existe una capa de relleno automático, el área se determinará desde cero de todos modos.';
 
   @override
-  String get layerPanelAutofillRepaintTitle => 'Repintar';
+  String get layerPanelAutofillSmartUpdateTitle =>
+      'Actualizar solo la forma modificada';
+
+  @override
+  String get layerPanelAutofillSmartUpdateHint =>
+      'Recomendado normalmente. Aplica los cambios de las líneas y conserva en lo posible los ajustes manuales existentes';
+
+  @override
+  String get layerPanelAutofillSmartUpdateNote =>
+      '✳ Las áreas nuevas se rellenan automáticamente, se conservan los colores de las áreas existentes superpuestas y se eliminan las áreas que ya no están en las líneas.';
+
+  @override
+  String get layerPanelAutofillRepaintTitle =>
+      'Actualizar la forma desde las líneas y rellenar';
 
   @override
   String get layerPanelAutofillRepaintHint =>
-      'Recomendado si la forma del relleno automático se modificó por accidente';
+      'Úsalo cuando el relleno deba seguir las líneas actuales de relleno automático';
 
   @override
   String get layerPanelAutofillRepaintNote =>
-      '✳ Determina el área desde cero y la repinta. Se descartará la forma actual de la capa de relleno automático.';
+      '✳ Vuelve a detectar la región desde las líneas de relleno automático. Se sustituirá la forma actual del relleno.';
 
   @override
-  String get layerPanelAutofillColorUpdateTitle => 'Actualizar color';
+  String get layerPanelAutofillColorUpdateTitle =>
+      'Actualizar solo el color conservando la forma';
 
   @override
   String get layerPanelAutofillColorUpdateHint =>
-      'Recomendado si la forma del relleno automático se ajustó manualmente';
+      'Úsalo para conservar una forma de relleno automático ajustada manualmente';
 
   @override
   String get layerPanelAutofillColorUpdateNote =>
-      '✳ Bloquea la opacidad y rellena con el color más reciente. Se conserva la forma actual de la capa de relleno automático.';
+      '✳ Actualiza al color más reciente dentro de la región opaca actual. Se conservan los ajustes manuales de forma.';
 
   @override
   String get layerPanelExecuteButton => 'Ejecutar';
@@ -5650,7 +5664,13 @@ class AppLocalizationsEs extends AppLocalizations {
   String get filterAuroraHologramSaturation => 'Saturación';
 
   @override
-  String get filterAuroraHologramPresetAurora => 'Aurora acuática';
+  String get filterAuroraHologramPresetSilverHologram => 'Holograma aurora';
+
+  @override
+  String get filterAuroraHologramPresetOpalPearl => 'Perla ópalo';
+
+  @override
+  String get filterAuroraHologramPresetDarkHologram => 'Holograma oscuro';
 
   @override
   String get filterAuroraHologramPresetSoapBubble => 'Perla de hada';
@@ -6676,4 +6696,107 @@ class AppLocalizationsEs extends AppLocalizations {
   @override
   String get tipsBrushFoldDesc =>
       'Activa Contorno y Pliegue y prueba un trazo suave en forma de S con una intensidad de curva de 5. Elige Onda (vista superior) para colocar delante la parte superior de cada superposición u Onda (contrapicado) para la inferior. Para un movimiento diagonal, compara Rizo a la derecha, que adelanta el segmento de arriba a la izquierda a abajo a la derecha, con Rizo a la izquierda, que adelanta el de arriba a la derecha a abajo a la izquierda. Al dibujar una serie de curvas en C, usa Rizo de media luna para dar forma a las medias lunas enlazadas. Todos los modos usan las curvas que dibujas; una línea recta no se convierte en onda automáticamente. Ajusta poco a poco el ángulo de activación, la posición de inicio de curva y la longitud del pliegue; después, elige una intensidad entre 1 y 10. Desactiva Pliegue para volver al trazo normal.';
+
+  @override
+  String get tipsFourPanelBrushTitle =>
+      'Combina el pincel de cuatro viñetas con la regla recta';
+
+  @override
+  String get tipsFourPanelBrushDesc =>
+      'El preajuste «Manga de cuatro viñetas» no repite en dirección transversal al trazo. Coloca marcos cuadrados a intervalos regulares a lo largo del trazo. Activa la regla recta y dibuja una línea para crear fácilmente viñetas alineadas.';
+
+  @override
+  String get canvasSelectionReferenceWorkingLayer => 'Solo capa de trabajo';
+
+  @override
+  String get canvasSelectionReferenceVisibleLayers =>
+      'Todas las capas visibles';
+
+  @override
+  String get brushTipSettingsTitle => 'Punta e imágenes';
+
+  @override
+  String get brushTipShapeLabel => 'Forma de la punta';
+
+  @override
+  String get brushTipRound => 'Redonda';
+
+  @override
+  String get brushTipSquare => 'Cuadrado hueco';
+
+  @override
+  String get brushTipHexagon => 'Hexágono';
+
+  @override
+  String get brushTipChain => 'Eslabón';
+
+  @override
+  String get brushTipBallChain => 'Cadena de bolas';
+
+  @override
+  String get brushTipRelativeSpacing => 'Espaciado según tamaño';
+
+  @override
+  String get brushTipSpacingRatio => 'Espaciado / tamaño';
+
+  @override
+  String get brushChainAspect => 'Proporción del eslabón';
+
+  @override
+  String get brushChainThickness => 'Grosor del eslabón';
+
+  @override
+  String get brushNibFlat => 'Punta plana';
+
+  @override
+  String get brushNibAngle => 'Ángulo de la punta';
+
+  @override
+  String get brushImagesAdd => 'Añadir imágenes';
+
+  @override
+  String get brushImageInkLabel => 'Zona de tinta de la imagen';
+
+  @override
+  String get brushImageInkDark => 'Píxeles oscuros';
+
+  @override
+  String get brushImageInkLight => 'Píxeles claros';
+
+  @override
+  String get brushImageInkAlpha => 'Píxeles opacos';
+
+  @override
+  String get brushImageInkHelp =>
+      'Dibuja las zonas seleccionadas con el color actual. Añade varias imágenes para alternarlas entre trazos.';
+
+  @override
+  String get brushImageOrderLabel => 'Selección de imagen';
+
+  @override
+  String get brushImageOrderRandom => 'Aleatoria';
+
+  @override
+  String get brushImageOrderSequential => 'En orden';
+
+  @override
+  String get brushImageMoveUp => 'Subir';
+
+  @override
+  String get brushImageMoveDown => 'Bajar';
+
+  @override
+  String get brushImageRemove => 'Quitar imagen';
+
+  @override
+  String get filterNoiseStyle => 'Tipo de ruido';
+
+  @override
+  String get filterNoiseFilmGrain => 'Grano de película';
+
+  @override
+  String get filterNoiseColor => 'Ruido de color';
+
+  @override
+  String get filterNoiseSeed => 'Semilla del patrón';
 }

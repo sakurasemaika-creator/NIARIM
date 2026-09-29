@@ -1346,7 +1346,7 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get helpFadeDesc =>
-      'Un réglage de pinceau où l\'opacité et l\'épaisseur diminuent progressivement à mesure que vous continuez un trait. Utilisez-le lorsque vous voulez que la fin d\'une ligne s\'estompe, ou pour créer une sensation de dessin avec un effet persistant.';
+      'Une fonction de pinceau qui permet de régler indépendamment la valeur et la distance de l’entrée (début du trait) et de la sortie (fin du trait). Vous pouvez effiler uniquement le début, uniquement la fin, ou utiliser des réglages asymétriques pour contrôler séparément l’épaisseur et l’opacité à chaque extrémité.';
 
   @override
   String get helpStrokeDecayTitle => 'Atténuation de trait';
@@ -1519,7 +1519,7 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get helpStampToolDesc =>
-      'Place une image préenregistrée sur le canevas comme un pinceau. Réutilisez traits de vitesse, motifs de fond et petits objets sans les redessiner à chaque fois. Avec le mode pixel activé, les images tamponnées sont traitées avec un sous-échantillonnage en mosaïque et une réduction des couleurs, pour un rendu pixel art. Le panneau des tampons permet d\'ajuster l\'angle de rotation et la taille du tampon placé. Varier l\'orientation et la taille d\'un même tampon évite que les traits de vitesse et petits objets paraissent monotones.';
+      'Place une image enregistrée sur la toile comme un pinceau afin de réutiliser lignes de vitesse, motifs de fond et petits objets sans les redessiner. En mode pixel, les tampons utilisent le même traitement Pixel Art que le filtre pixel art, en conservant des bords de transparence nets pendant la pixellisation et la réduction des couleurs. Mosaïque est un effet distinct et n’est pas utilisé par le mode pixel du tampon. Le panneau permet aussi de régler la rotation et la taille.';
 
   @override
   String get helpToneFillTitle => 'Remplissage en trame';
@@ -1685,7 +1685,7 @@ class AppLocalizationsFr extends AppLocalizations {
       'Toucher un filigrane placé sur la piste de calque commun de la timeline permet de rééditer à tout moment son angle, sa taille, son opacité et sa plage d\'affichage (boucle). Vous pouvez l\'ajuster finement non seulement à l\'enregistrement, mais chaque fois que vous l\'utilisez réellement dans un projet.';
 
   @override
-  String get helpAudioClipTitle => 'Volume et fondus des clips audio';
+  String get helpAudioClipTitle => 'Volume';
 
   @override
   String get helpAudioClipDesc =>
@@ -1724,7 +1724,7 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get helpDrawingFilterDesc =>
-      'Filtres appliqués directement au calque sélectionné (contrairement aux filtres d’effet, qui s’appliquent à toute la timeline ou à une scène, les filtres de dessin agissent par calque). Les 25 filtres inclus sont Flou gaussien, Flou d’objectif, Style anime, Courbe de tons, Niveaux, Contour, Netteté, Masque flou, Vignettage, Grain de pellicule, Anime rétro, Tube cathodique, Monochrome, Seuil, Objectif fisheye, Aberration chromatique, Distorsion optique, Pixel art, Filtre de texture, Intégration à l’arrière-plan, Accumulation d’encre, Trait automatique, Prisme, Bruit VHS et Inversion des couleurs. Contour ne réécrit pas le calque d’origine : il dessine seulement le résultat sur un nouveau calque. Distorsion optique applique une déformation localisée, comme à travers un verre de lunettes très correcteur, uniquement sur la zone peinte du calque de sélection. Pixel art permet aussi de choisir un mode de couleur (sans limite, couleurs définies, nombre de couleurs ou palette).';
+      'Filtres appliqués directement au calque sélectionné (contrairement aux filtres d’effet, qui s’appliquent à toute la timeline ou à une scène, les filtres de dessin agissent par calque). Les 25 filtres inclus sont Flou gaussien, Flou d’objectif, Style anime, Courbe de tons, Niveaux, Contour, Netteté, Masque flou, Vignettage, Grain de pellicule, Anime rétro, Tube cathodique, Monochrome, Seuil, Objectif fisheye, Aberration chromatique, Distorsion optique, Pixel art, Filtre de texture, Intégration à l’arrière-plan, Accumulation d’encre, Trait automatique, Prisme, Bruit VHS et Inversion des couleurs. Contour ne réécrit pas le calque d’origine : il dessine seulement le résultat sur un nouveau calque. Distorsion optique applique une déformation localisée, comme à travers un verre de lunettes très correcteur, uniquement sur la zone peinte du calque de sélection. Pixel art permet aussi de choisir un mode de couleur (sans limite, couleurs définies, nombre de couleurs ou palette). Le Trait automatique permet de modifier les points de contrôle vectoriels temporaires avant d’appliquer le filtre. Faites glisser un point pour déplacer uniquement ce point, touchez un segment pour ajouter un point de contrôle, ou touchez un point puis confirmez pour le supprimer. La géométrie modifiée est utilisée directement dans le résultat appliqué.';
 
   @override
   String get helpLayerKeyframeTitle =>
@@ -1945,7 +1945,7 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get tipsStrokeDecayFadeDesc =>
-      'Combiner dégradé de trait et fondu dans les réglages du pinceau affine naturellement le début et la fin d\'un trait, donnant aux lignes cette variation expressive d\'épaisseur propre à un pinceau calligraphique ou à l\'encre.';
+      'Dans les réglages du pinceau, vous pouvez ajuster séparément la valeur et la distance de l’entrée (début du trait) et de la sortie (fin du trait). Combinez-les avec l’atténuation du trait pour effiler seulement le début, prolonger seulement la fin ou rendre les deux extrémités asymétriques, comme avec un pinceau de calligraphie ou à encre.';
 
   @override
   String get tipsColorMixingFadeTitle =>
@@ -4650,33 +4650,47 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get layerPanelAutofillNote1 =>
-      '✳ N\'importe quelle option convient la première fois que vous exécutez le remplissage automatique dans ce projet.';
+      '✳ Lors du premier remplissage automatique, chaque méthode crée un nouveau remplissage à partir du trait.';
 
   @override
   String get layerPanelAutofillNote2 =>
       '✳ Si aucun calque de remplissage automatique n\'existe encore, la zone sera de toute façon déterminée à partir de zéro.';
 
   @override
-  String get layerPanelAutofillRepaintTitle => 'Repeindre';
+  String get layerPanelAutofillSmartUpdateTitle =>
+      'Actualiser uniquement la forme modifiée';
+
+  @override
+  String get layerPanelAutofillSmartUpdateHint =>
+      'Recommandé en usage normal. Applique les changements du trait tout en préservant autant que possible les retouches manuelles existantes';
+
+  @override
+  String get layerPanelAutofillSmartUpdateNote =>
+      '✳ Les nouvelles zones sont remplies automatiquement, les couleurs des zones existantes qui se chevauchent sont conservées et les zones retirées du trait sont effacées.';
+
+  @override
+  String get layerPanelAutofillRepaintTitle =>
+      'Actualiser la forme depuis le trait et remplir';
 
   @override
   String get layerPanelAutofillRepaintHint =>
-      'Recommandé si la forme du remplissage automatique a été modifiée par erreur';
+      'À utiliser lorsque le remplissage doit suivre le trait de remplissage automatique actuel';
 
   @override
   String get layerPanelAutofillRepaintNote =>
-      '✳ Détermine la zone à partir de zéro et la repeint. La forme actuelle du calque de remplissage automatique sera abandonnée.';
+      '✳ Redétecte la zone depuis le trait de remplissage automatique. La forme actuelle du remplissage sera remplacée.';
 
   @override
-  String get layerPanelAutofillColorUpdateTitle => 'Mettre à jour la couleur';
+  String get layerPanelAutofillColorUpdateTitle =>
+      'Actualiser la couleur en conservant la forme';
 
   @override
   String get layerPanelAutofillColorUpdateHint =>
-      'Recommandé si la forme du remplissage automatique a été ajustée manuellement';
+      'À utiliser pour conserver une forme de remplissage automatique ajustée manuellement';
 
   @override
   String get layerPanelAutofillColorUpdateNote =>
-      '✳ Verrouille l\'opacité et remplit avec la couleur la plus récente. La forme actuelle du calque de remplissage automatique est conservée.';
+      '✳ Actualise avec la dernière couleur dans la zone opaque actuelle. Les ajustements manuels de forme sont conservés.';
 
   @override
   String get layerPanelExecuteButton => 'Exécuter';
@@ -5659,7 +5673,13 @@ class AppLocalizationsFr extends AppLocalizations {
   String get filterAuroraHologramSaturation => 'Saturation';
 
   @override
-  String get filterAuroraHologramPresetAurora => 'Aurore aquatique';
+  String get filterAuroraHologramPresetSilverHologram => 'Hologramme aurore';
+
+  @override
+  String get filterAuroraHologramPresetOpalPearl => 'Perle opale';
+
+  @override
+  String get filterAuroraHologramPresetDarkHologram => 'Hologramme sombre';
 
   @override
   String get filterAuroraHologramPresetSoapBubble => 'Perle féerique';
@@ -6688,4 +6708,108 @@ class AppLocalizationsFr extends AppLocalizations {
   @override
   String get tipsBrushFoldDesc =>
       'Activez Contour et Repli, puis essayez un trait doux en S avec une intensité de courbe de 5. Choisissez Ondulation en plongée pour mettre la partie supérieure de chaque chevauchement au premier plan, ou Ondulation en contre-plongée pour la partie inférieure. Pour un mouvement diagonal, comparez Boucle à droite, qui met devant le segment allant du haut à gauche au bas à droite, et Boucle à gauche, qui met devant celui allant du haut à droite au bas à gauche. Pour une suite de courbes en C, utilisez Boucle en croissant afin de former des croissants reliés. Chaque mode utilise vos courbes ; un trait droit ne devient pas automatiquement une ondulation. Ajustez progressivement l’angle de déclenchement, la position de début de courbe et la longueur du pli, puis choisissez une intensité entre 1 et 10. Désactivez Repli pour revenir au trait normal.';
+
+  @override
+  String get tipsFourPanelBrushTitle =>
+      'Associez le pinceau quatre cases à la règle droite';
+
+  @override
+  String get tipsFourPanelBrushDesc =>
+      'Le préréglage «Manga quatre cases» ne se répète pas transversalement au trait. Il place des cadres carrés à intervalles réguliers dans le sens du trait. Activez la règle droite et tracez une ligne pour créer facilement des cases de manga bien alignées.';
+
+  @override
+  String get canvasSelectionReferenceWorkingLayer =>
+      'Calque de travail uniquement';
+
+  @override
+  String get canvasSelectionReferenceVisibleLayers =>
+      'Tous les calques visibles';
+
+  @override
+  String get brushTipSettingsTitle => 'Pointe et images';
+
+  @override
+  String get brushTipShapeLabel => 'Forme de la pointe';
+
+  @override
+  String get brushTipRound => 'Ronde';
+
+  @override
+  String get brushTipSquare => 'Carré creux';
+
+  @override
+  String get brushTipHexagon => 'Hexagone';
+
+  @override
+  String get brushTipChain => 'Maillon';
+
+  @override
+  String get brushTipBallChain => 'Chaîne à billes';
+
+  @override
+  String get brushTipRelativeSpacing => 'Espacement selon la taille';
+
+  @override
+  String get brushTipSpacingRatio => 'Espacement / taille';
+
+  @override
+  String get brushChainAspect => 'Proportions du maillon';
+
+  @override
+  String get brushChainThickness => 'Épaisseur du maillon';
+
+  @override
+  String get brushNibFlat => 'Pointe plate';
+
+  @override
+  String get brushNibAngle => 'Angle de la pointe';
+
+  @override
+  String get brushImagesAdd => 'Ajouter des images';
+
+  @override
+  String get brushImageInkLabel => 'Source d’encre de l’image';
+
+  @override
+  String get brushImageInkDark => 'Pixels sombres';
+
+  @override
+  String get brushImageInkLight => 'Pixels clairs';
+
+  @override
+  String get brushImageInkAlpha => 'Pixels opaques';
+
+  @override
+  String get brushImageInkHelp =>
+      'Dessinez les zones choisies avec la couleur actuelle. Ajoutez plusieurs images pour changer de pointe entre les traits.';
+
+  @override
+  String get brushImageOrderLabel => 'Sélection des images';
+
+  @override
+  String get brushImageOrderRandom => 'Aléatoire';
+
+  @override
+  String get brushImageOrderSequential => 'Dans l’ordre';
+
+  @override
+  String get brushImageMoveUp => 'Monter';
+
+  @override
+  String get brushImageMoveDown => 'Descendre';
+
+  @override
+  String get brushImageRemove => 'Retirer l’image';
+
+  @override
+  String get filterNoiseStyle => 'Type de bruit';
+
+  @override
+  String get filterNoiseFilmGrain => 'Grain de film';
+
+  @override
+  String get filterNoiseColor => 'Bruit de couleur';
+
+  @override
+  String get filterNoiseSeed => 'Graine du motif';
 }

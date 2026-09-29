@@ -90,7 +90,10 @@ class DrawingEngine {
         ? HairFoldRaster(tileManager, layerId)
         : null;
     _foldDetector = _foldRaster != null
-        ? ScreenSpaceFoldDetector(triggerAngleDegrees: brush!.foldTriggerAngle)
+        ? ScreenSpaceFoldDetector(
+            triggerAngleDegrees: brush!.foldTriggerAngle,
+            detectCumulativeStart: brush.foldMode == HairFoldMode.crescent,
+          )
         : null;
     _feedFoldDetector(effective, layerId, screenPosition: screenPosition);
     _currentStroke.add(effective);
@@ -282,7 +285,9 @@ class DrawingEngine {
       folds: _foldEvents,
       brush: brush,
       fillColor: currentColor,
-      texture: texture == null ? null : getCachedBrushTexture(texture),
+      texture: texture == null
+          ? null
+          : getCachedBrushTexture(texture, mode: brush.imageInkMode),
     );
     _strokeCoverageByTile.clear();
   }
@@ -437,13 +442,7 @@ class DrawingEngine {
   double _brushStampSpacing(Brush brush, double safeDensity) {
     // 装飾チェーンはブラシ径を変更したときもリンク同士の比率が崩れないよう、
     // 絶対pxのspacingではなくブラシサイズ比例で配置する。
-    final factor = switch (brush.id) {
-      'Brush0018' => 0.68,
-      'Brush0019' => 0.72,
-      'Brush0020' => 0.76,
-      'Brush0021' => 1.35,
-      _ => 0.0,
-    };
+    final factor = brush.tipSpacingFactor;
     if (factor > 0) {
       return math.max(1.0, brush.size * factor / safeDensity);
     }
@@ -511,12 +510,9 @@ class DrawingEngine {
     // グリッターペンは大きな六角形フレークとして描画する。粒ごとに向きを
     // ランダム化し、同じ向きの六角形が機械的に並ぶ見た目を避ける。
     // ラメペンを含む他ブラシは従来どおり円形スタンプのまま。
-    final isGlitterHexagon = brush.id == 'Brush0016';
-    final isChainLink =
-        brush.id == 'Brush0018' ||
-        brush.id == 'Brush0019' ||
-        brush.id == 'Brush0020';
-    final isBallChain = brush.id == 'Brush0021';
+    final isGlitterHexagon = brush.tipShape == BrushTipShape.hexagon;
+    final isChainLink = brush.tipShape == BrushTipShape.chainLink;
+    final isBallChain = brush.tipShape == BrushTipShape.ballChain;
     final chainStep = isChainLink
         ? (strokeLength / math.max(1.0, _brushStampSpacing(brush, 1.0))).round()
         : 0;
@@ -527,18 +523,8 @@ class DrawingEngine {
         // 接線に対して左右へ交互に傾ける。完全な90度交互より連結が自然。
         ? (chainStep.isEven ? -0.48 : 0.48)
         : 0.0;
-    final chainAspect = switch (brush.id) {
-      'Brush0018' => 0.64,
-      'Brush0019' => 0.56,
-      'Brush0020' => 0.50,
-      _ => 1.0,
-    };
-    final chainThickness = switch (brush.id) {
-      'Brush0018' => 0.25,
-      'Brush0019' => 0.19,
-      'Brush0020' => 0.14,
-      _ => 0.0,
-    };
+    final chainAspect = brush.chainAspect.clamp(.1, 1.0);
+    final chainThickness = brush.chainThickness.clamp(.05, .9);
 
     // 傾き変形：カリグラフィーブラシ（ペン先角度固定）の場合は、実際の
     // スタイラス傾きに関わらず常に固定角度へ扁平化したペン先を使う。
@@ -571,7 +557,7 @@ class DrawingEngine {
     // モード）でスタンプする。
     final texturePath = _brushTextureSelector.activePath;
     final customTexture = texturePath != null
-        ? getCachedBrushTexture(texturePath)
+        ? getCachedBrushTexture(texturePath, mode: brush.imageInkMode)
         : null;
     final extensionPlan = buildBrushStampPlan(
       brush: brush,

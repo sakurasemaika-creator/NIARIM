@@ -18,9 +18,16 @@ const modeNames = <HairFoldMode, String>{
   HairFoldMode.crescent: 'crescent',
 };
 Future<void> capture(Brush brush, String name, {List<ui.Offset>? input}) async {
-  await preloadBrushTextures(brush.resolvedCustomImagePaths);
+  await preloadBrushTextures(
+    brush.resolvedCustomImagePaths,
+    mode: brush.imageInkMode,
+  );
   for (final path in brush.resolvedCustomImagePaths) {
-    expect(getCachedBrushTexture(path), isNotNull, reason: path);
+    expect(
+      getCachedBrushTexture(path, mode: brush.imageInkMode),
+      isNotNull,
+      reason: path,
+    );
   }
   final tiles = TileManager(canvasWidth: 720, canvasHeight: 1040);
   final engine = DrawingEngine(tileManager: tiles)
@@ -122,8 +129,12 @@ void main() {
         return [
           for (var i = 0; i <= count; i++)
             ui.Offset(
-              360 + (radius + i * 3 * .18) * math.cos(i * 3 * math.pi / 180),
-              420 + (radius + i * 3 * .18) * math.sin(i * 3 * math.pi / 180),
+              360 +
+                  (radius + math.min(i * 3, degrees) * .18) *
+                      math.cos(math.min(i * 3, degrees) * math.pi / 180),
+              420 +
+                  (radius + math.min(i * 3, degrees) * .18) *
+                      math.sin(math.min(i * 3, degrees) * math.pi / 180),
             ),
         ];
       }
@@ -134,7 +145,16 @@ void main() {
         HairFoldMode.waveLowAngle,
       ]) {
         final base = presets.singleWhere((b) => b.id == 'Brush0023');
-        for (final degrees in [265.0, 275.0, 535.0, 545.0]) {
+        for (final degrees in [
+          175.0,
+          185.0,
+          265.0,
+          275.0,
+          355.0,
+          365.0,
+          535.0,
+          545.0,
+        ]) {
           await capture(
             base.copyWith(
               size: 64,
@@ -145,7 +165,7 @@ void main() {
               foldMode: mode,
             ),
             'hair_${modeNames[mode]}_${degrees.toInt()}deg_continuous',
-            input: arc(degrees, degrees > 400 ? 70 : 105),
+            input: arc(degrees, 70),
           );
         }
       }

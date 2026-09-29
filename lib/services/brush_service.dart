@@ -593,6 +593,7 @@ class BrushService extends ChangeNotifier {
     // 強い反射光のようなきらめきを作る。
     const Brush(
       id: 'Brush0016',
+      tipShape: BrushTipShape.hexagon,
       name: 'グリッターペン',
       size: 14,
       opacity: 90,
@@ -669,6 +670,10 @@ class BrushService extends ChangeNotifier {
     // やや角張った縦長楕円、間隔も詰めて「重量感」と噛み合いを優先する。
     const Brush(
       id: 'Brush0018',
+      tipShape: BrushTipShape.chainLink,
+      tipSpacingFactor: .68,
+      chainAspect: .64,
+      chainThickness: .25,
       name: 'チェーン（太）',
       size: 34,
       opacity: 100,
@@ -712,6 +717,10 @@ class BrushService extends ChangeNotifier {
     // 肉厚を少し抑えて輪郭がシャープに見えるバランス。
     const Brush(
       id: 'Brush0019',
+      tipShape: BrushTipShape.chainLink,
+      tipSpacingFactor: .72,
+      chainAspect: .56,
+      chainThickness: .19,
       name: 'チェーン（中）',
       size: 22,
       opacity: 100,
@@ -750,6 +759,10 @@ class BrushService extends ChangeNotifier {
     // チェーン（細）：華奢なネックレス用。小さく細いリンクを高密度に並べる。
     const Brush(
       id: 'Brush0020',
+      tipShape: BrushTipShape.chainLink,
+      tipSpacingFactor: .76,
+      chainAspect: .50,
+      chainThickness: .14,
       name: 'チェーン（細）',
       size: 12,
       opacity: 100,
@@ -788,6 +801,8 @@ class BrushService extends ChangeNotifier {
     // ボールチェーン：小球を等間隔でつなぐ細身の装飾チェーン。
     const Brush(
       id: 'Brush0021',
+      tipShape: BrushTipShape.ballChain,
+      tipSpacingFactor: 1.35,
       name: 'ボールチェーン',
       size: 7,
       opacity: 100,
@@ -849,48 +864,22 @@ class BrushService extends ChangeNotifier {
         _brushes.addAll(missing);
         needsPersist = true;
       }
-      // The non-editable hair preset always uses its current minimum exit.
-      // The bangs preset and user-created copies keep their own settings.
-      final hairPreset = brushExtensionPresets().singleWhere(
-        (b) => b.id == 'Brush0023',
-      );
-      final hairIndex = _brushes.indexWhere((b) => b.id == hairPreset.id);
-      final hair = _brushes[hairIndex];
-      if (hair.fadeMode != hairPreset.fadeMode ||
-          hair.fadeOut.value != hairPreset.fadeOut.value ||
-          hair.fadeOut.rangePx != hairPreset.fadeOut.rangePx) {
-        _brushes[hairIndex] = hair.copyWith(
-          fadeMode: hairPreset.fadeMode,
-          fadeIn: hairPreset.fadeIn,
-          fadeOut: hairPreset.fadeOut,
+      // Built-in presets are ordinary, non-editable setting bundles. Refresh
+      // their definitions uniformly while preserving the user's organization.
+      // User-created copies keep all their own settings.
+      final defaults = {for (final b in _defaultBrushes()) b.id: b};
+      for (var i = 0; i < _brushes.length; i++) {
+        final stored = _brushes[i], definition = defaults[_brushes[i].id];
+        if (definition == null) continue;
+        final current = definition.copyWith(
+          isFavorite: stored.isFavorite,
+          folderId: stored.folderId,
+          tags: stored.tags,
         );
-        needsPersist = true;
-      }
-      // Brush0001/0002はプリインストールかつUI上編集不可。旧版の
-      // 保存済み標準値はブラシ径より間隔が広く点線になっていたため、
-      // 連続線の1px間隔へ安全に移行する。
-      for (final id in const ['Brush0001', 'Brush0002']) {
-        final index = _brushes.indexWhere((b) => b.id == id);
-        if (index != -1 && _brushes[index].spacing != 1) {
-          _brushes[index] = _brushes[index].copyWith(spacing: 1);
+        if (jsonEncode(current.toJson()) != jsonEncode(stored.toJson())) {
+          _brushes[i] = current;
           needsPersist = true;
         }
-      }
-      // 「マーカーペン」（Brush0005）は後からcalligraphyAngle（チゼル先端の
-      // 横太さ変化）を追加した。既にBrush0005を持つ既存ユーザーの端末には
-      // 反映されないため、calligraphyAngle未設定のままなら一度だけ補う
-      // （それ以外のユーザー編集済みパラメータ〔サイズ・不透明度等〕は
-      // 変更しない）。calligraphyAngleはUI上編集不可のプリセット専用項目
-      // のため、上書きしてもユーザーの意図的な設定を壊すことはない。
-      final markerIndex = _brushes.indexWhere((b) => b.id == 'Brush0005');
-      if (markerIndex != -1) {
-        var m = _brushes[markerIndex];
-        // calligraphyAngle未設定の旧データを補完
-        if (m.calligraphyAngle == null) {
-          m = m.copyWith(calligraphyAngle: 0.0);
-          needsPersist = true;
-        }
-        _brushes[markerIndex] = m;
       }
       // 既定タグを日本語リテラルで保存していた版からの移行。
       for (int i = 0; i < _brushes.length; i++) {
@@ -944,7 +933,7 @@ class BrushService extends ChangeNotifier {
     final paths = brush?.resolvedCustomImagePaths ?? const <String>[];
     if (paths.isNotEmpty) {
       // ignore: unawaited_futures
-      preloadBrushTextures(paths);
+      preloadBrushTextures(paths, mode: brush!.imageInkMode);
     }
   }
 
@@ -1165,6 +1154,24 @@ class BrushService extends ChangeNotifier {
     final dir = Directory('${base.path}/niarim/Brushes');
     if (!dir.existsSync()) dir.createSync(recursive: true);
     return dir;
+  }
+
+  /// Copy user-selected materials into the brush storage before saving paths.
+  Future<List<String>> importBrushImages(Iterable<String> sourcePaths) async {
+    final directory = await _brushesDir();
+    final prefix = DateTime.now().microsecondsSinceEpoch;
+    final result = <String>[];
+    for (final source in sourcePaths) {
+      final extension = source
+          .split('.')
+          .last
+          .replaceAll(RegExp(r'[^a-zA-Z0-9]'), '');
+      final destination =
+          '${directory.path}/material_${prefix}_${result.length}.$extension';
+      await File(source).copy(destination);
+      result.add(destination);
+    }
+    return result;
   }
 
   /// [sourcePath]の画像ファイルを取り込み、新規ブラシとして追加する。

@@ -28,6 +28,9 @@ enum FilterKind {
   prism,
 }
 
+/// Shared noise algorithm, independent of preset identity.
+enum NoiseStyle { filmGrain, color, vhs }
+
 enum ToneCurvePreset {
   linear,
   brighten,
@@ -55,6 +58,8 @@ class FilterDef {
   final FilterKind kind;
   final bool isFavorite;
   final double strength;
+  final NoiseStyle noiseStyle;
+  final int noiseSeed;
   final int colorLevels;
   final double edgeStrength;
   final int inputBlack;
@@ -114,6 +119,8 @@ class FilterDef {
     required this.kind,
     this.isFavorite = false,
     this.strength = 8,
+    this.noiseStyle = NoiseStyle.filmGrain,
+    this.noiseSeed = 1984,
     this.colorLevels = 6,
     this.edgeStrength = 0.4,
     this.inputBlack = 0,
@@ -174,6 +181,8 @@ class FilterDef {
     FilterKind? kind,
     bool? isFavorite,
     double? strength,
+    NoiseStyle? noiseStyle,
+    int? noiseSeed,
     int? colorLevels,
     double? edgeStrength,
     int? inputBlack,
@@ -233,6 +242,8 @@ class FilterDef {
       kind: kind ?? this.kind,
       isFavorite: isFavorite ?? this.isFavorite,
       strength: strength ?? this.strength,
+      noiseStyle: noiseStyle ?? this.noiseStyle,
+      noiseSeed: noiseSeed ?? this.noiseSeed,
       colorLevels: colorLevels ?? this.colorLevels,
       edgeStrength: edgeStrength ?? this.edgeStrength,
       inputBlack: inputBlack ?? this.inputBlack,
@@ -299,11 +310,14 @@ class FilterDef {
   }
 
   Map<String, dynamic> toJson() => {
+    'schemaVersion': 2,
     'id': id,
     'name': name,
     'kind': kind.name,
     'isFavorite': isFavorite,
     'strength': strength,
+    'noiseStyle': noiseStyle.name,
+    'noiseSeed': noiseSeed,
     'colorLevels': colorLevels,
     'edgeStrength': edgeStrength,
     'inputBlack': inputBlack,
@@ -362,11 +376,32 @@ class FilterDef {
     id: j['id'] as String,
     name: j['name'] as String,
     kind: FilterKind.values.firstWhere(
-      (e) => e.name == j['kind'],
+      (e) =>
+          e.name ==
+          (j['schemaVersion'] == null && j['id'] == 'Filter0022'
+              ? 'prism'
+              : j['kind']),
       orElse: () => FilterKind.gaussianBlur,
     ),
     isFavorite: j['isFavorite'] as bool? ?? false,
     strength: (j['strength'] as num?)?.toDouble() ?? 8,
+    // One-time compatibility for snapshots written before noiseStyle existed.
+    // New definitions and rendering never depend on a preset ID.
+    noiseStyle: NoiseStyle.values.firstWhere(
+      (e) => e.name == j['noiseStyle'],
+      orElse: () => j['noiseStyle'] != null
+          ? NoiseStyle.filmGrain
+          : switch (j['id']) {
+              'Filter0024' => NoiseStyle.vhs,
+              'Filter0027' => NoiseStyle.color,
+              _ => NoiseStyle.filmGrain,
+            },
+    ),
+    noiseSeed:
+        (j['noiseSeed'] as num?)?.toInt() ??
+        (j['noiseStyle'] == null && j['id'] == 'Filter0024'
+            ? (j['thresholdValue'] as num?)?.round() ?? 1984
+            : 1984),
     colorLevels: j['colorLevels'] as int? ?? 6,
     edgeStrength: (j['edgeStrength'] as num?)?.toDouble() ?? 0.4,
     inputBlack: j['inputBlack'] as int? ?? 0,

@@ -1327,7 +1327,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get helpFadeDesc =>
-      'A brush setting where opacity and thickness gradually decrease as you draw a stroke further. Use it when you want the end of a line to trail off, or to create a drawing feel with a lingering effect.';
+      'A brush feature that lets you set the value and distance of the entry (stroke start) and exit (stroke end) independently. You can taper only the start, only the end, or use asymmetric settings to control thickness and opacity separately at each endpoint.';
 
   @override
   String get helpStrokeDecayTitle => 'Stroke Decay';
@@ -1498,7 +1498,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get helpStampToolDesc =>
-      'Places a pre-registered image onto the canvas like a brush. Reuse speed lines, background patterns, and small props without redrawing them each time. With pixel mode on, stamped images are processed with mosaic downsampling plus color reduction for a pixel-art look. The stamp panel lets you adjust the rotation angle and size of the stamp you\'re placing. Varying the direction and size of the same stamp keeps speed lines and small props from looking monotonous.';
+      'Places a pre-registered image onto the canvas like a brush, so speed lines, background patterns, and small props can be reused without redrawing them. In pixel mode, stamps use the same Pixel Art processing as the pixel-art filter, preserving hard transparency edges while pixelizing and reducing colors. Mosaic is a separate effect and is not used for stamp pixel mode. The stamp panel also lets you adjust rotation and size.';
 
   @override
   String get helpToneFillTitle => 'Screentone fill';
@@ -1663,7 +1663,7 @@ class AppLocalizationsEn extends AppLocalizations {
       'Tapping a watermark placed on the timeline\'s common-layer track lets you re-edit its angle, size, opacity, and display range (loop) at any time. You can fine-tune it not just when registering it, but whenever you\'re actually using it in a project.';
 
   @override
-  String get helpAudioClipTitle => 'Audio clip volume and fades';
+  String get helpAudioClipTitle => 'Volume';
 
   @override
   String get helpAudioClipDesc =>
@@ -1702,7 +1702,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get helpDrawingFilterDesc =>
-      'Filters applied directly to the selected layer (as opposed to effect filters, which apply across the whole timeline or a scene, draw filters work per layer). The 25 included filters are Gaussian Blur, Lens Blur, Anime Style, Tone Curve, Levels, Outline, Sharpen, Unsharp Mask, Vignette, Film Grain, Retro Anime, CRT, Monochrome, Threshold, Fisheye Lens, Chromatic Aberration, Lens Distortion, Pixel Art, Texture Filter, Background Blend, Ink Pool, Auto Line Art, Prism, VHS Noise, and Invert. Outline does not rewrite the original layer — it draws just the outlined result onto a new layer. Lens Distortion applies a localized warp, like looking through a strong eyeglass lens, only to the area painted on the selection layer. Pixel Art also lets you choose a color mode (no limit, specify colors, specify color count, or choose from a palette).';
+      'Filters applied directly to the selected layer (as opposed to effect filters, which apply across the whole timeline or a scene, draw filters work per layer). The 25 included filters are Gaussian Blur, Lens Blur, Anime Style, Tone Curve, Levels, Outline, Sharpen, Unsharp Mask, Vignette, Film Grain, Retro Anime, CRT, Monochrome, Threshold, Fisheye Lens, Chromatic Aberration, Lens Distortion, Pixel Art, Texture Filter, Background Blend, Ink Pool, Auto Line Art, Prism, VHS Noise, and Invert. Outline does not rewrite the original layer — it draws just the outlined result onto a new layer. Lens Distortion applies a localized warp, like looking through a strong eyeglass lens, only to the area painted on the selection layer. Pixel Art also lets you choose a color mode (no limit, specify colors, specify color count, or choose from a palette). Auto Line Art lets you edit temporary vector control points before applying the filter. Drag a point to move only that point, tap a segment to add a control point, or tap a point and confirm to delete it. The edited geometry is used directly for the applied result.';
 
   @override
   String get helpLayerKeyframeTitle => 'Layer keyframes (per-part animation)';
@@ -1920,7 +1920,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get tipsStrokeDecayFadeDesc =>
-      'Combining stroke decay and fade in brush settings tapers the start and end of a stroke naturally, giving lines the kind of expressive thick-thin variation you get from a calligraphy or ink brush.';
+      'Brush settings let you adjust the value and distance of the entry (stroke start) and exit (stroke end) separately. Combine them with stroke decay to taper only the start, extend only the end, or make the two endpoints asymmetric for expressive calligraphy- and ink-brush strokes.';
 
   @override
   String get tipsColorMixingFadeTitle =>
@@ -4578,33 +4578,46 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get layerPanelAutofillNote1 =>
-      '✳ Either option is fine the first time you run auto-fill in this project.';
+      '✳ On the first auto-fill, every method creates a new fill from the lineart.';
 
   @override
   String get layerPanelAutofillNote2 =>
       '✳ If no auto-fill layer exists yet, the area will be judged from scratch either way.';
 
   @override
-  String get layerPanelAutofillRepaintTitle => 'Repaint';
+  String get layerPanelAutofillSmartUpdateTitle => 'Update changed shape only';
+
+  @override
+  String get layerPanelAutofillSmartUpdateHint =>
+      'Recommended for normal use. Applies lineart changes while preserving existing manual edits where possible';
+
+  @override
+  String get layerPanelAutofillSmartUpdateNote =>
+      '✳ New areas are filled automatically, colors in overlapping existing areas are preserved, and areas removed from the lineart are cleared.';
+
+  @override
+  String get layerPanelAutofillRepaintTitle =>
+      'Update shape from lineart and fill';
 
   @override
   String get layerPanelAutofillRepaintHint =>
-      'Recommended if the auto-fill shape was accidentally changed';
+      'Use when the fill should follow the current auto-fill lineart';
 
   @override
   String get layerPanelAutofillRepaintNote =>
-      '✳ Judges the area from scratch and repaints it. The current auto-fill layer\'s shape will be discarded.';
+      '✳ Re-detects the region from the auto-fill lineart. The current auto-fill shape will be replaced.';
 
   @override
-  String get layerPanelAutofillColorUpdateTitle => 'Update color';
+  String get layerPanelAutofillColorUpdateTitle =>
+      'Update color while keeping shape';
 
   @override
   String get layerPanelAutofillColorUpdateHint =>
-      'Recommended if the auto-fill shape was adjusted manually';
+      'Use when you want to keep a manually adjusted auto-fill shape';
 
   @override
   String get layerPanelAutofillColorUpdateNote =>
-      '✳ Locks opacity and fills with the latest color. The current auto-fill layer\'s shape is kept.';
+      '✳ Updates to the latest color inside the current opaque region. Manual shape adjustments are preserved.';
 
   @override
   String get layerPanelExecuteButton => 'Run';
@@ -5561,7 +5574,13 @@ class AppLocalizationsEn extends AppLocalizations {
   String get filterAuroraHologramSaturation => 'Saturation';
 
   @override
-  String get filterAuroraHologramPresetAurora => 'Aqua Aurora';
+  String get filterAuroraHologramPresetSilverHologram => 'Aurora Hologram';
+
+  @override
+  String get filterAuroraHologramPresetOpalPearl => 'Opal Pearl';
+
+  @override
+  String get filterAuroraHologramPresetDarkHologram => 'Dark Hologram';
 
   @override
   String get filterAuroraHologramPresetSoapBubble => 'Fairy Pearl';
@@ -6568,4 +6587,106 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get tipsBrushFoldDesc =>
       'Turn on Outline and Fold, then try a gentle S-shaped stroke with Curve strength set to 5. Choose Wave (top view) to bring the upper part of each overlap forward, or Wave (low angle) for the lower part. For diagonal flow, compare Right curl, which brings the upper-left–lower-right segment forward, with Left curl, which brings the upper-right–lower-left segment forward. When drawing a series of C-shaped curves, use Crescent curl to shape their connected crescents. Every mode uses the bends you draw; a straight stroke does not become a wave automatically. Adjust Trigger angle, Curve start position and Fold length a little at a time, then set Curve strength between 1 and 10. Turn Fold off to return to a normal stroke.';
+
+  @override
+  String get tipsFourPanelBrushTitle =>
+      'Use the Four-panel Manga brush with the Line Ruler';
+
+  @override
+  String get tipsFourPanelBrushDesc =>
+      'The “Four-panel Manga” preset does not repeat across the stroke. It places square frames at regular intervals along the stroke direction. Turn on the Line Ruler and draw a straight stroke to quickly create evenly aligned four-panel comic frames.';
+
+  @override
+  String get canvasSelectionReferenceWorkingLayer => 'Working layer only';
+
+  @override
+  String get canvasSelectionReferenceVisibleLayers => 'All visible layers';
+
+  @override
+  String get brushTipSettingsTitle => 'Brush tip and images';
+
+  @override
+  String get brushTipShapeLabel => 'Tip shape';
+
+  @override
+  String get brushTipRound => 'Round';
+
+  @override
+  String get brushTipSquare => 'Hollow square';
+
+  @override
+  String get brushTipHexagon => 'Hexagon';
+
+  @override
+  String get brushTipChain => 'Chain link';
+
+  @override
+  String get brushTipBallChain => 'Ball chain';
+
+  @override
+  String get brushTipRelativeSpacing => 'Scale spacing with size';
+
+  @override
+  String get brushTipSpacingRatio => 'Spacing / size';
+
+  @override
+  String get brushChainAspect => 'Link aspect ratio';
+
+  @override
+  String get brushChainThickness => 'Link thickness';
+
+  @override
+  String get brushNibFlat => 'Flat nib';
+
+  @override
+  String get brushNibAngle => 'Nib angle';
+
+  @override
+  String get brushImagesAdd => 'Add images';
+
+  @override
+  String get brushImageInkLabel => 'Image ink source';
+
+  @override
+  String get brushImageInkDark => 'Dark pixels';
+
+  @override
+  String get brushImageInkLight => 'Light pixels';
+
+  @override
+  String get brushImageInkAlpha => 'Opaque pixels';
+
+  @override
+  String get brushImageInkHelp =>
+      'Draw the selected image regions in the current color. Add multiple images to switch the tip between strokes.';
+
+  @override
+  String get brushImageOrderLabel => 'Image selection';
+
+  @override
+  String get brushImageOrderRandom => 'Random';
+
+  @override
+  String get brushImageOrderSequential => 'In order';
+
+  @override
+  String get brushImageMoveUp => 'Move up';
+
+  @override
+  String get brushImageMoveDown => 'Move down';
+
+  @override
+  String get brushImageRemove => 'Remove image';
+
+  @override
+  String get filterNoiseStyle => 'Noise style';
+
+  @override
+  String get filterNoiseFilmGrain => 'Film grain';
+
+  @override
+  String get filterNoiseColor => 'Color noise';
+
+  @override
+  String get filterNoiseSeed => 'Pattern seed';
 }

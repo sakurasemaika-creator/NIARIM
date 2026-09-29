@@ -76,6 +76,7 @@ List<Brush> brushExtensionPresets() => const <Brush>[
   ),
   Brush(
     id: 'Brush0024',
+    imageInkMode: BrushImageInkMode.light,
     name: '前髪',
     size: 32,
     opacity: 100,

@@ -1294,7 +1294,7 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get helpFadeDesc =>
-      '画笔设置之一，随着笔画的持续绘制，不透明度或粗细会逐渐减少的效果。用于想让线条末端产生渐隐感，或想营造带有余韵的笔触时。';
+      '可分别独立设置入笔（笔画起点）和收笔（笔画终点）的数值与距离的画笔功能。可以只调整起点、只调整终点，或使用非对称设置，分别控制两端的粗细和不透明度。';
 
   @override
   String get helpStrokeDecayTitle => '笔画衰减';
@@ -1465,7 +1465,7 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get helpStampToolDesc =>
-      '把预先登记的图片像笔刷一样放置到画布上。特效线、背景图案、小物件等无需每次重画即可反复使用。开启像素模式后，贴上的印章会通过马赛克降分辨率＋减少色数处理成像素画风格。 在印章面板中可以调整所放置印章的旋转角度和大小。即使是同一个印章，改变方向和大小放置，也能让特效线、小物件的排列不显得单调而更自然。';
+      '像画笔一样把已注册的图像放到画布上，可重复使用速度线、背景图案和小道具而无需重新绘制。像素模式使用与像素画滤镜相同的 Pixel Art 处理，在像素化和减色时保持清晰的透明边界。马赛克是独立效果，不用于印章像素模式。印章面板还可调整旋转角度和大小。';
 
   @override
   String get helpToneFillTitle => '网点上色';
@@ -1629,7 +1629,7 @@ class AppLocalizationsZh extends AppLocalizations {
       '点击放置在时间轴共同图层轨道上的水印，随时可以重新编辑其角度、大小、不透明度、显示范围（循环显示）。不仅在登记时，在项目中实际使用时也能随时细致调整。';
 
   @override
-  String get helpAudioClipTitle => '音频片段的音量・淡入淡出';
+  String get helpAudioClipTitle => '音量调整';
 
   @override
   String get helpAudioClipDesc =>
@@ -1667,7 +1667,7 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get helpDrawingFilterDesc =>
-      '直接应用于所选图层的滤镜（演出滤镜作用于整条时间线或整个场景，而绘图滤镜按图层生效）。内置25种滤镜：高斯模糊、镜头模糊、动画风、色调曲线、色阶、描边、锐化、USM锐化、暗角、胶片颗粒、复古动画、显像管、单色、二值化、鱼眼镜头、色差、眼镜断层、像素画、质感变换滤镜、背景融合、积墨、自动线稿、棱镜、VHS噪点和颜色反转。描边不会改写原图层，只会把结果绘制到新图层。眼镜断层只对选区图层中涂抹的范围施加类似高度数眼镜镜片的局部变形。像素画还可选择配色方式（不限制、指定颜色、指定颜色数或从调色板选择）。';
+      '直接应用于所选图层的滤镜（演出滤镜作用于整条时间线或整个场景，而绘图滤镜按图层生效）。内置25种滤镜：高斯模糊、镜头模糊、动画风、色调曲线、色阶、描边、锐化、USM锐化、暗角、胶片颗粒、复古动画、显像管、单色、二值化、鱼眼镜头、色差、眼镜断层、像素画、质感变换滤镜、背景融合、积墨、自动线稿、棱镜、VHS噪点和颜色反转。描边不会改写原图层，只会把结果绘制到新图层。眼镜断层只对选区图层中涂抹的范围施加类似高度数眼镜镜片的局部变形。像素画还可选择配色方式（不限制、指定颜色、指定颜色数或从调色板选择）。 自动线稿可在应用滤镜前直接编辑临时Vector控制点。拖动控制点时只移动该点，点击线段可添加控制点，点击控制点并确认后可删除。编辑后的形状会直接用于最终应用结果。';
 
   @override
   String get helpLayerKeyframeTitle => '图层关键帧（分部件动画）';
@@ -1863,7 +1863,7 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get tipsStrokeDecayFadeDesc =>
-      '同时启用笔刷设置中的笔触衰减和淡出，线条的起笔、收笔会自然变细，画出如毛笔或墨水笔般富有轻重变化的线条。';
+      '在画笔设置中，可以分别调整入笔（笔画起点）和收笔（笔画终点）的数值与距离。再配合笔触衰减，可以只让起点变细、只延长收笔，或让两端采用非对称设置，做出毛笔或墨水笔般富有轻重变化的线条。';
 
   @override
   String get tipsColorMixingFadeTitle => '混色×淡出，做出类似颜料的融合感';
@@ -4402,29 +4402,40 @@ class AppLocalizationsZh extends AppLocalizations {
   String get layerPanelAutofillNoLineartSnackbar => '未找到对应的自动上色用线稿图层。';
 
   @override
-  String get layerPanelAutofillNote1 => '※ 若为项目内首次执行自动上色，选择哪一项都没有问题。';
+  String get layerPanelAutofillNote1 => '※ 首次执行自动上色时，无论选择哪种方式都会根据线稿新建填色。';
 
   @override
   String get layerPanelAutofillNote2 => '※ 若不存在自动上色图层，无论选择哪一项都将从头判定区域进行自动上色。';
 
   @override
-  String get layerPanelAutofillRepaintTitle => '重新上色';
+  String get layerPanelAutofillSmartUpdateTitle => '仅更新发生变化的形状';
 
   @override
-  String get layerPanelAutofillRepaintHint => '误改了自动上色的形状时推荐使用';
+  String get layerPanelAutofillSmartUpdateHint => '通常推荐使用。应用线稿变化，同时尽量保留已有的手动调整';
 
   @override
-  String get layerPanelAutofillRepaintNote => '※ 将从头判定区域重新上色。当前自动上色图层的形状将被丢弃。';
+  String get layerPanelAutofillSmartUpdateNote =>
+      '※ 新增区域会自动填色，重叠的已有区域保留原有颜色，已从线稿移除的区域会被清除。';
 
   @override
-  String get layerPanelAutofillColorUpdateTitle => '颜色更新';
+  String get layerPanelAutofillRepaintTitle => '按线稿更新形状并上色';
 
   @override
-  String get layerPanelAutofillColorUpdateHint => '手动调整过自动上色形状时推荐使用';
+  String get layerPanelAutofillRepaintHint => '需要让填色形状跟随当前自动上色用线稿时使用';
+
+  @override
+  String get layerPanelAutofillRepaintNote =>
+      '※ 将根据自动上色用线稿重新判定区域。当前自动上色形状会被替换。';
+
+  @override
+  String get layerPanelAutofillColorUpdateTitle => '保持形状，仅更新颜色';
+
+  @override
+  String get layerPanelAutofillColorUpdateHint => '希望保留手动调整过的自动上色形状时使用';
 
   @override
   String get layerPanelAutofillColorUpdateNote =>
-      '※ 将锁定不透明度并用最新颜色填充。当前自动上色图层的形状将保持不变。';
+      '※ 在保持当前不透明区域的同时更新为最新颜色。手动调整的形状会保留。';
 
   @override
   String get layerPanelExecuteButton => '执行';
@@ -5340,7 +5351,13 @@ class AppLocalizationsZh extends AppLocalizations {
   String get filterAuroraHologramSaturation => '饱和度';
 
   @override
-  String get filterAuroraHologramPresetAurora => '水色极光';
+  String get filterAuroraHologramPresetSilverHologram => '极光全息';
+
+  @override
+  String get filterAuroraHologramPresetOpalPearl => '欧泊珍珠';
+
+  @override
+  String get filterAuroraHologramPresetDarkHologram => '暗色全息';
 
   @override
   String get filterAuroraHologramPresetSoapBubble => '仙境珍珠';
@@ -6309,6 +6326,106 @@ class AppLocalizationsZh extends AppLocalizations {
   @override
   String get tipsBrushFoldDesc =>
       '开启描边和折返，将曲线强度设为5，先试画一条平缓的S形曲线。想让重叠部分的上侧显示在前，选择波浪俯视；想让下侧显示在前，选择波浪仰视。斜向的发丝可以比较右卷与左卷：右卷让左上至右下方向的线段显示在前，左卷让右上至左下方向的线段显示在前。连续绘制C形曲线时，可用月牙卷整理相连的月牙形状。所有类型都使用实际绘制的弯曲，直线不会自动变成波浪。逐步调整触发角度、曲线起始位置和折返长度，再在1～10之间调整曲线强度。关闭折返即可恢复普通笔画。';
+
+  @override
+  String get tipsFourPanelBrushTitle => '四格漫画画笔×直线尺快速绘制分格';
+
+  @override
+  String get tipsFourPanelBrushDesc =>
+      '预设“四格漫画”画笔不会在笔画的横向重复，而是沿笔画前进方向以固定间隔排列方形边框。开启直线尺后画一条直线，就能轻松绘制整齐的四格漫画分格。';
+
+  @override
+  String get canvasSelectionReferenceWorkingLayer => '仅工作图层';
+
+  @override
+  String get canvasSelectionReferenceVisibleLayers => '所有可见图层';
+
+  @override
+  String get brushTipSettingsTitle => '笔尖与图像素材';
+
+  @override
+  String get brushTipShapeLabel => '笔尖形状';
+
+  @override
+  String get brushTipRound => '圆形';
+
+  @override
+  String get brushTipSquare => '空心方形';
+
+  @override
+  String get brushTipHexagon => '六边形';
+
+  @override
+  String get brushTipChain => '链环';
+
+  @override
+  String get brushTipBallChain => '珠链';
+
+  @override
+  String get brushTipRelativeSpacing => '间距随粗细缩放';
+
+  @override
+  String get brushTipSpacingRatio => '间距／粗细';
+
+  @override
+  String get brushChainAspect => '链环纵横比';
+
+  @override
+  String get brushChainThickness => '链环粗细';
+
+  @override
+  String get brushNibFlat => '扁平笔尖';
+
+  @override
+  String get brushNibAngle => '笔尖角度';
+
+  @override
+  String get brushImagesAdd => '添加图像';
+
+  @override
+  String get brushImageInkLabel => '图像绘制区域';
+
+  @override
+  String get brushImageInkDark => '深色部分';
+
+  @override
+  String get brushImageInkLight => '浅色部分';
+
+  @override
+  String get brushImageInkAlpha => '不透明部分';
+
+  @override
+  String get brushImageInkHelp => '以当前颜色绘制所选区域。可添加多张图像，每次笔画切换素材。';
+
+  @override
+  String get brushImageOrderLabel => '素材切换';
+
+  @override
+  String get brushImageOrderRandom => '随机';
+
+  @override
+  String get brushImageOrderSequential => '按顺序';
+
+  @override
+  String get brushImageMoveUp => '上移';
+
+  @override
+  String get brushImageMoveDown => '下移';
+
+  @override
+  String get brushImageRemove => '移除素材';
+
+  @override
+  String get filterNoiseStyle => '噪点类型';
+
+  @override
+  String get filterNoiseFilmGrain => '胶片颗粒';
+
+  @override
+  String get filterNoiseColor => '彩色噪点';
+
+  @override
+  String get filterNoiseSeed => '图案种子';
 }
 
 /// The translations for Chinese, using the Han script (`zh_Hant`).
@@ -7601,7 +7718,7 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get helpFadeDesc =>
-      '筆刷設定之一，隨著筆畫持續繪製，不透明度或粗細會逐漸減少的效果。用於想讓線條末端產生漸隱感，或想營造帶有餘韻的筆觸時。';
+      '可分別獨立設定入筆（筆畫起點）與收筆（筆畫終點）的數值和距離的筆刷功能。可以只調整起點、只調整終點，或使用非對稱設定，分別控制兩端的粗細與不透明度。';
 
   @override
   String get helpStrokeDecayTitle => '筆畫衰減';
@@ -7772,7 +7889,7 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get helpStampToolDesc =>
-      '把預先登記的圖片像筆刷一樣放置到畫布上。特效線、背景圖案、小物件等不用每次重畫就能反覆使用。開啟像素模式後，貼上的印章會透過馬賽克降解析度＋減少色數處理成像素畫風格。 在印章面板中可以調整所放置印章的旋轉角度和大小。即使是同一個印章，改變方向和大小放置，也能讓特效線、小物件的排列不顯得單調而更自然。';
+      '像筆刷一樣把已登錄的圖像放到畫布上，可重複使用速度線、背景圖樣與小道具而無需重新繪製。像素模式使用與像素畫濾鏡相同的 Pixel Art 處理，在像素化與減色時維持清晰的透明邊界。馬賽克是獨立效果，不用於印章像素模式。印章面板還可調整旋轉角度與大小。';
 
   @override
   String get helpToneFillTitle => '網點上色';
@@ -7936,7 +8053,7 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
       '點擊放置在時間軸共用圖層軌道上的浮水印，隨時可以重新編輯其角度、大小、不透明度、顯示範圍（循環顯示）。不僅在登記時，在專案中實際使用時也能隨時細部調整。';
 
   @override
-  String get helpAudioClipTitle => '音訊片段的音量・淡入淡出';
+  String get helpAudioClipTitle => '音量調整';
 
   @override
   String get helpAudioClipDesc =>
@@ -7974,7 +8091,7 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get helpDrawingFilterDesc =>
-      '直接套用於所選圖層的濾鏡（演出濾鏡作用於整條時間軸或整個場景，而繪圖濾鏡按圖層生效）。內建25種濾鏡：高斯模糊、鏡頭模糊、動畫風、色調曲線、色階、外框、銳化、USM銳化、暗角、膠片顆粒、復古動畫、映像管、單色、二值化、魚眼鏡頭、色差、眼鏡斷層、像素畫、質感變換濾鏡、背景融合、積墨、自動線稿、稜鏡、VHS雜訊和色彩反轉。外框不會改寫原圖層，只會把結果繪製到新圖層。眼鏡斷層只對選取圖層中塗抹的範圍套用類似高度數眼鏡鏡片的局部變形。像素畫還可選擇配色方式（不限制、指定顏色、指定顏色數或從調色盤選擇）。';
+      '直接套用於所選圖層的濾鏡（演出濾鏡作用於整條時間軸或整個場景，而繪圖濾鏡按圖層生效）。內建25種濾鏡：高斯模糊、鏡頭模糊、動畫風、色調曲線、色階、外框、銳化、USM銳化、暗角、膠片顆粒、復古動畫、映像管、單色、二值化、魚眼鏡頭、色差、眼鏡斷層、像素畫、質感變換濾鏡、背景融合、積墨、自動線稿、稜鏡、VHS雜訊和色彩反轉。外框不會改寫原圖層，只會把結果繪製到新圖層。眼鏡斷層只對選取圖層中塗抹的範圍套用類似高度數眼鏡鏡片的局部變形。像素畫還可選擇配色方式（不限制、指定顏色、指定顏色數或從調色盤選擇）。 自動線稿可在套用濾鏡前直接編輯暫時Vector控制點。拖曳控制點時只移動該點，點擊線段可新增控制點，點擊控制點並確認後可刪除。編輯後的形狀會直接用於最終套用結果。';
 
   @override
   String get helpLayerKeyframeTitle => '圖層關鍵影格（分部件動畫）';
@@ -8170,7 +8287,7 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get tipsStrokeDecayFadeDesc =>
-      '同時啟用筆刷設定中的筆觸衰減和淡出，線條的起筆、收筆會自然變細，畫出如毛筆或墨水筆般富有輕重變化的線條。';
+      '在筆刷設定中，可以分別調整入筆（筆畫起點）與收筆（筆畫終點）的數值和距離。再搭配筆觸衰減，可以只讓起點變細、只延長收筆，或讓兩端採用非對稱設定，做出毛筆或墨水筆般富有輕重變化的線條。';
 
   @override
   String get tipsColorMixingFadeTitle => '混色×淡出，做出類似顏料的融合感';
@@ -10708,29 +10825,41 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get layerPanelAutofillNoLineartSnackbar => '找不到對應的自動上色用線稿圖層。';
 
   @override
-  String get layerPanelAutofillNote1 => '※ 若為專案內首次執行自動上色，選擇哪一項都沒有問題。';
+  String get layerPanelAutofillNote1 => '※ 首次執行自動上色時，無論選擇哪種方式都會依線稿建立新的填色。';
 
   @override
   String get layerPanelAutofillNote2 => '※ 若不存在自動上色圖層，無論選擇哪一項都會從頭判定區域進行自動上色。';
 
   @override
-  String get layerPanelAutofillRepaintTitle => '重新上色';
+  String get layerPanelAutofillSmartUpdateTitle => '只更新有變化的形狀';
 
   @override
-  String get layerPanelAutofillRepaintHint => '不慎改變了自動上色形狀時推薦使用';
+  String get layerPanelAutofillSmartUpdateHint =>
+      '一般情況建議使用。套用線稿變更，同時盡可能保留既有的手動調整';
 
   @override
-  String get layerPanelAutofillRepaintNote => '※ 將從頭判定區域重新上色。目前自動上色圖層的形狀將被捨棄。';
+  String get layerPanelAutofillSmartUpdateNote =>
+      '※ 新增區域會自動填色，重疊的既有區域保留原有顏色，已從線稿移除的區域會被清除。';
 
   @override
-  String get layerPanelAutofillColorUpdateTitle => '顏色更新';
+  String get layerPanelAutofillRepaintTitle => '依線稿更新形狀並上色';
 
   @override
-  String get layerPanelAutofillColorUpdateHint => '手動調整過自動上色形狀時推薦使用';
+  String get layerPanelAutofillRepaintHint => '需要讓填色形狀跟隨目前自動上色用線稿時使用';
+
+  @override
+  String get layerPanelAutofillRepaintNote =>
+      '※ 將依自動上色用線稿重新判定區域。目前的自動上色形狀會被取代。';
+
+  @override
+  String get layerPanelAutofillColorUpdateTitle => '保留形狀，只更新顏色';
+
+  @override
+  String get layerPanelAutofillColorUpdateHint => '希望保留手動調整過的自動上色形狀時使用';
 
   @override
   String get layerPanelAutofillColorUpdateNote =>
-      '※ 將鎖定不透明度並以最新顏色填色。目前自動上色圖層的形狀將維持不變。';
+      '※ 在保留目前不透明區域的同時更新為最新顏色。手動調整的形狀會保留。';
 
   @override
   String get layerPanelExecuteButton => '執行';
@@ -11646,7 +11775,13 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get filterAuroraHologramSaturation => '飽和度';
 
   @override
-  String get filterAuroraHologramPresetAurora => '水色極光';
+  String get filterAuroraHologramPresetSilverHologram => '極光全息';
+
+  @override
+  String get filterAuroraHologramPresetOpalPearl => '蛋白石珍珠';
+
+  @override
+  String get filterAuroraHologramPresetDarkHologram => '暗色全息';
 
   @override
   String get filterAuroraHologramPresetSoapBubble => '仙境珍珠';
@@ -12615,4 +12750,104 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   @override
   String get tipsBrushFoldDesc =>
       '開啟描邊和折返，將曲線強度設為5，先試畫一條平緩的S形曲線。想讓重疊部分的上側顯示在前，選擇波浪俯視；想讓下側顯示在前，選擇波浪仰視。斜向的髮絲可以比較右捲與左捲：右捲讓左上至右下方向的線段顯示在前，左捲讓右上至左下方向的線段顯示在前。連續繪製C形曲線時，可用月牙捲整理相連的月牙形狀。所有類型都使用實際繪製的彎曲，直線不會自動變成波浪。逐步調整觸發角度、曲線起始位置和折返長度，再在1～10之間調整曲線強度。關閉折返即可恢復一般筆畫。';
+
+  @override
+  String get tipsFourPanelBrushTitle => '四格漫畫筆刷×直線尺快速繪製分格';
+
+  @override
+  String get tipsFourPanelBrushDesc =>
+      '預設「四格漫畫」筆刷不會在筆畫的橫向重複，而是沿筆畫前進方向以固定間隔排列方形邊框。開啟直線尺後畫一條直線，就能輕鬆繪製整齊的四格漫畫分格。';
+
+  @override
+  String get canvasSelectionReferenceWorkingLayer => '僅工作圖層';
+
+  @override
+  String get canvasSelectionReferenceVisibleLayers => '所有可見圖層';
+
+  @override
+  String get brushTipSettingsTitle => '筆尖與影像素材';
+
+  @override
+  String get brushTipShapeLabel => '筆尖形狀';
+
+  @override
+  String get brushTipRound => '圓形';
+
+  @override
+  String get brushTipSquare => '空心方形';
+
+  @override
+  String get brushTipHexagon => '六邊形';
+
+  @override
+  String get brushTipChain => '鏈環';
+
+  @override
+  String get brushTipBallChain => '珠鏈';
+
+  @override
+  String get brushTipRelativeSpacing => '間距隨粗細縮放';
+
+  @override
+  String get brushTipSpacingRatio => '間距／粗細';
+
+  @override
+  String get brushChainAspect => '鏈環縱橫比';
+
+  @override
+  String get brushChainThickness => '鏈環粗細';
+
+  @override
+  String get brushNibFlat => '扁平筆尖';
+
+  @override
+  String get brushNibAngle => '筆尖角度';
+
+  @override
+  String get brushImagesAdd => '新增影像';
+
+  @override
+  String get brushImageInkLabel => '影像繪製區域';
+
+  @override
+  String get brushImageInkDark => '深色部分';
+
+  @override
+  String get brushImageInkLight => '淺色部分';
+
+  @override
+  String get brushImageInkAlpha => '不透明部分';
+
+  @override
+  String get brushImageInkHelp => '以目前顏色繪製所選區域。可新增多張影像，每次筆畫切換素材。';
+
+  @override
+  String get brushImageOrderLabel => '素材切換';
+
+  @override
+  String get brushImageOrderRandom => '隨機';
+
+  @override
+  String get brushImageOrderSequential => '依順序';
+
+  @override
+  String get brushImageMoveUp => '上移';
+
+  @override
+  String get brushImageMoveDown => '下移';
+
+  @override
+  String get brushImageRemove => '移除素材';
+
+  @override
+  String get filterNoiseStyle => '雜訊類型';
+
+  @override
+  String get filterNoiseFilmGrain => '底片顆粒';
+
+  @override
+  String get filterNoiseColor => '彩色雜訊';
+
+  @override
+  String get filterNoiseSeed => '圖案種子';
 }

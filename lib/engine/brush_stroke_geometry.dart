@@ -75,6 +75,7 @@ class ScreenSpaceFoldDetector {
   final double minimumTravel;
   final double windowLength;
   final double cooldownDistance;
+  final bool detectCumulativeStart;
 
   final List<_DistanceSample> _samples = <_DistanceSample>[];
   double _totalDistance = 0;
@@ -90,6 +91,7 @@ class ScreenSpaceFoldDetector {
     this.minimumTravel = 12,
     this.windowLength = 48,
     this.cooldownDistance = 24,
+    this.detectCumulativeStart = false,
   });
 
   int get bufferedSampleCount => _samples.length;
@@ -153,8 +155,8 @@ class ScreenSpaceFoldDetector {
     // turning is a fold boundary. This keeps the current turn direction: a
     // spiral/crescent continues folding along the authored curve rather than
     // pretending the stroke reversed.
-    final continuousFolds =
-        (_unwrappedTurn.abs() / (math.pi * 1.5)).floorToDouble();
+    final continuousFolds = (_unwrappedTurn.abs() / (math.pi * 1.5))
+        .floorToDouble();
     final continuousFullTurn =
         continuousFolds > _lastEmittedContinuousFolds &&
         _totalDistance - _lastFoldDistance >= math.max(sampleSpacing, 0.1);
@@ -191,7 +193,15 @@ class ScreenSpaceFoldDetector {
     final signedTurn = math.atan2(cross, dot);
     final threshold =
         triggerAngleDegrees.clamp(30.0, 170.0).toDouble() * math.pi / 180.0;
-    if (signedTurn.abs() < threshold && !continuousFullTurn) return null;
+    final cumulativeStart =
+        detectCumulativeStart &&
+        _lastFoldDistance == double.negativeInfinity &&
+        _unwrappedTurn.abs() >= threshold;
+    if (signedTurn.abs() < threshold &&
+        !continuousFullTurn &&
+        !cumulativeStart) {
+      return null;
+    }
 
     final tangentLength = b.distance;
     if (tangentLength <= 1e-9) return null;

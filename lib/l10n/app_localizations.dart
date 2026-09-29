@@ -2462,7 +2462,7 @@ abstract class AppLocalizations {
   /// No description provided for @helpBlendModeDesc.
   ///
   /// In ja, this message translates to:
-  /// **'レイヤーの合成方法を変更する機能です。トーンやカラー効果をレイヤーとして重ねる時によく使われます。\n通常：そのまま重ねます。\n乗算：下のレイヤーと掛け合わせて暗くします。影・陰影づけの定番です。\nスクリーン：明るさを足し合わせて明るくします。光の表現に向きます。\nオーバーレイ：暗い部分はより暗く、明るい部分はより明るくしてコントラストを強めます。\n加算：色を単純に足し合わせます。光の効果線などに向きます。\n減算：色を差し引き、暗く沈んだ効果になります。\n比較（暗）：上下のレイヤーで暗い方の色を採用します。\n比較（明）：上下のレイヤーで明るい方の色を採用します。\n焼き込みカラー：下の色を暗く沈めながら濃く発色させます。\n覆い焼きカラー：下の色を明るく飛ばしながら発色させます。\nハードライト：オーバーレイより強くコントラストが付きます。\nソフトライト：オーバーレイより穏やかにコントラストが付きます。柔らかい陰影に向きます。\n差の絶対値：上下の色の差を表示します。色のズレ確認などに使えます。\n色相・彩度・カラー・輝度：それぞれ色相・彩度・色味・明るさだけを下のレイヤーへ反映します。'**
+  /// **'レイヤーの合成方法を変更する機能です。トーンやカラー効果をレイヤーとして重ねる時によく使われます。\n通常：そのまま重ねます。\n乗算：下のレイヤーと掛け合わせて暗くします。影・陰影づけの定番です。\nスクリーン：明るさを足し合わせて明るくします。光の表現に向きます。\nオーバーレイ：暗い部分はより暗く、明るい部分はより明るくしてコントラストを強めます。\n加算：色を単純に足し合わせます。光の効果線などに向きます。\n減算：色を差し引き、暗く沈んだ効果になります。\n比較（暗）：上下のレイヤーで暗い方の色を採用します。\n比較（明）：上下のレイヤーで明るい方の色を採用します。\n焼き込みカラー：下の色を暗く沈めながら濃く発色させます。\n覆い焼きカラー：下の色を明るく飛ばしながら発色させます。\nハードライト：オーバーレイより強くコントラストが付きます。\nソフトライト：オーバーレイより穏やかにコントラストが付きます。柔らかい陰影に向きます。\n差の絶対値：上下の色の差を表示します。色のズレ確認などに使えます。\n色相・彩度・カラー・輝度：それぞれ色相・彩度・色味・明るさだけを下のレイヤーへ反映します。\n焼き込み（リニア）：上下の色を足してから基準値を引き、強く暗くします。\n覆い焼き（リニア）：上下の色を線形に加算して明るくします。加算とは別のブレンドモードです。\nビビッドライト：上の色に応じて焼き込みと覆い焼きを切り替え、強いコントラストを作ります。\nリニアライト：上の色を基準に明るさを線形に増減します。\nピンライト：上の色に応じて暗い側または明るい側へ置き換えます。\nハードミックス：ビビッドライトの結果を二値化し、原色的な強い色分離を作ります。\n除外：差の絶対値より穏やかな反転・差分効果です。\n除算：下の色を上の色で割り、明るい補正や色差の強調に使えます。'**
   String get helpBlendModeDesc;
 
   /// No description provided for @helpClippingTitle.
@@ -2534,7 +2534,7 @@ abstract class AppLocalizations {
   /// No description provided for @helpFadeDesc.
   ///
   /// In ja, this message translates to:
-  /// **'ブラシ設定の一つで、ストロークを描き進めるにつれて不透明度や太さが徐々に減少していく効果です。線の端をかすれさせたい時や、余韻を残すような描き味を作りたい時に使います。'**
+  /// **'入り（始点）と抜き（終点）の値と距離をそれぞれ独立して設定できるブラシ機能です。入りだけ、抜きだけ、または非対称の設定にでき、線の描き始め・描き終わりの太さや不透明度を別々に調整できます。'**
   String get helpFadeDesc;
 
   /// No description provided for @helpStrokeDecayTitle.
@@ -2828,7 +2828,7 @@ abstract class AppLocalizations {
   /// No description provided for @helpStampToolDesc.
   ///
   /// In ja, this message translates to:
-  /// **'あらかじめ登録した画像をブラシのようにキャンバスへ配置するツールです。効果線・背景パターン・小物などを毎回描き直さずに使い回せます。ピクセルモードをONにすると、貼り付けたスタンプをモザイク低解像度化＋色数削減でドット絵風に加工できます。 スタンプパネルでは配置するスタンプの回転角度・大きさを調整できます。同じスタンプでも向きやサイズを変えて配置すれば、単調にならず自然な効果線・小物の並びを作れます。'**
+  /// **'キャンバスに登録済み画像をブラシのように配置するツールです。集中線や背景パターン、小物などを毎回描き直さず再利用できます。ピクセルモードでは、ドット絵フィルターと共通のPixel Art処理で透明境界を硬く保ちながらピクセル化・減色します。モザイクは別のエフェクトで、スタンプのピクセルモードには使用しません。スタンプパネルでは配置するスタンプの回転角度とサイズも調整できます。'**
   String get helpStampToolDesc;
 
   /// No description provided for @helpToneFillTitle.
@@ -3110,7 +3110,7 @@ abstract class AppLocalizations {
   /// No description provided for @helpAudioClipTitle.
   ///
   /// In ja, this message translates to:
-  /// **'音声クリップの音量・フェード'**
+  /// **'音量調整'**
   String get helpAudioClipTitle;
 
   /// No description provided for @helpAudioClipDesc.
@@ -3176,7 +3176,7 @@ abstract class AppLocalizations {
   /// No description provided for @helpDrawingFilterDesc.
   ///
   /// In ja, this message translates to:
-  /// **'選択中のレイヤーに直接適用するフィルターです（演出フィルターがタイムライン全体・シーン単位に適用されるのに対し、描画フィルターはレイヤー単位）。ガウスぼかし・レンズぼかし・アニメ風加工・トーンカーブ・レベル補正・縁取り・シャープ・アンシャープマスク・周辺減光・フィルムグレイン・レトロアニメ・ブラウン管・単色化・二値化・魚眼レンズ・色収差・眼鏡断層・ドット絵・質感変更フィルター・背景馴染ませ・墨溜まり・自動線画・プリズム・VHSノイズ・色反転の25種類が用意されています。縁取りは元のレイヤーを書き換えず、縁どった内容だけを新規レイヤーへ描画します。眼鏡断層フィルターは、選択レイヤーで塗った範囲だけに、度数の強い眼鏡レンズのような局所的な歪みをかけられます。ドット絵は配色方式（色を指定しない・色を指定する・色数を指定する・パレットから選ぶ）も選べます。'**
+  /// **'選択中のレイヤーに直接適用するフィルターです（演出フィルターがタイムライン全体・シーン単位に適用されるのに対し、描画フィルターはレイヤー単位）。ガウスぼかし・レンズぼかし・アニメ風加工・トーンカーブ・レベル補正・縁取り・シャープ・アンシャープマスク・周辺減光・フィルムグレイン・レトロアニメ・ブラウン管・単色化・二値化・魚眼レンズ・色収差・眼鏡断層・ドット絵・質感変更フィルター・背景馴染ませ・墨溜まり・自動線画・プリズム・VHSノイズ・色反転の25種類が用意されています。縁取りは元のレイヤーを書き換えず、縁どった内容だけを新規レイヤーへ描画します。眼鏡断層フィルターは、選択レイヤーで塗った範囲だけに、度数の強い眼鏡レンズのような局所的な歪みをかけられます。ドット絵は配色方式（色を指定しない・色を指定する・色数を指定する・パレットから選ぶ）も選べます。 自動線画では適用前の一時Vector制御点を直接編集できます。点をドラッグするとその点だけを移動し、線分をタップすると制御点を追加、点をタップすると確認後に削除できます。編集した形状がそのまま適用結果になります。'**
   String get helpDrawingFilterDesc;
 
   /// No description provided for @helpLayerKeyframeTitle.
@@ -3518,7 +3518,7 @@ abstract class AppLocalizations {
   /// No description provided for @tipsStrokeDecayFadeDesc.
   ///
   /// In ja, this message translates to:
-  /// **'ブラシ設定のストローク減衰とフェードを両方かけると、線の描き始め・終わりが自然に細くなり、毛筆やインクブラシのような抑揚のある線が描けます。'**
+  /// **'ブラシ設定では、入り（始点）と抜き（終点）の値・距離を別々に調整できます。ストローク減衰も組み合わせると、入りだけ細くする、抜きだけ長く伸ばす、両端を非対称にするなど、毛筆やインクブラシらしい抑揚を作れます。'**
   String get tipsStrokeDecayFadeDesc;
 
   /// No description provided for @tipsColorMixingFadeTitle.
@@ -8156,7 +8156,7 @@ abstract class AppLocalizations {
   /// No description provided for @layerPanelAutofillNote1.
   ///
   /// In ja, this message translates to:
-  /// **'※ プロジェクト内で自動塗りを初回実行する場合はどちらを選んでも問題ありません。'**
+  /// **'※ 自動塗りを初回実行する場合は、どの方法でも線画から新しく塗られます。'**
   String get layerPanelAutofillNote1;
 
   /// No description provided for @layerPanelAutofillNote2.
@@ -8165,40 +8165,58 @@ abstract class AppLocalizations {
   /// **'※ 自動塗りレイヤーが存在しない場合は、一から領域を判定して自動塗りします。'**
   String get layerPanelAutofillNote2;
 
+  /// No description provided for @layerPanelAutofillSmartUpdateTitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'変更された形状だけ更新'**
+  String get layerPanelAutofillSmartUpdateTitle;
+
+  /// No description provided for @layerPanelAutofillSmartUpdateHint.
+  ///
+  /// In ja, this message translates to:
+  /// **'通常はこちら。線画の変更を反映しつつ、既存の手動調整をできるだけ残します'**
+  String get layerPanelAutofillSmartUpdateHint;
+
+  /// No description provided for @layerPanelAutofillSmartUpdateNote.
+  ///
+  /// In ja, this message translates to:
+  /// **'※ 新しい領域は自動で塗り、重なる既存領域の色は保持します。線画から外れた領域は削除されます。'**
+  String get layerPanelAutofillSmartUpdateNote;
+
   /// No description provided for @layerPanelAutofillRepaintTitle.
   ///
   /// In ja, this message translates to:
-  /// **'塗りなおし'**
+  /// **'線画から形状を更新して塗る'**
   String get layerPanelAutofillRepaintTitle;
 
   /// No description provided for @layerPanelAutofillRepaintHint.
   ///
   /// In ja, this message translates to:
-  /// **'誤って自動塗りの形状を変えてしまった場合におすすめ'**
+  /// **'自動塗り用線画の現在の形に合わせたい場合'**
   String get layerPanelAutofillRepaintHint;
 
   /// No description provided for @layerPanelAutofillRepaintNote.
   ///
   /// In ja, this message translates to:
-  /// **'※ 一から領域を判定して塗りなおします。現在の自動塗りレイヤーの形状は破棄されます。'**
+  /// **'※ 自動塗り用線画から領域を判定し直します。現在の自動塗りレイヤーの形状は置き換わります。'**
   String get layerPanelAutofillRepaintNote;
 
   /// No description provided for @layerPanelAutofillColorUpdateTitle.
   ///
   /// In ja, this message translates to:
-  /// **'色更新'**
+  /// **'形状を保ったまま色だけ更新'**
   String get layerPanelAutofillColorUpdateTitle;
 
   /// No description provided for @layerPanelAutofillColorUpdateHint.
   ///
   /// In ja, this message translates to:
-  /// **'自動塗りの形状を手動で調整した場合におすすめ'**
+  /// **'手動で調整した自動塗りの形状を残したい場合'**
   String get layerPanelAutofillColorUpdateHint;
 
   /// No description provided for @layerPanelAutofillColorUpdateNote.
   ///
   /// In ja, this message translates to:
-  /// **'※ 不透明度ロックをして最新の色で塗りつぶします。現在の自動塗りレイヤーの形状は維持されます。'**
+  /// **'※ 現在の不透明領域を保ったまま最新の色へ更新します。手動で整えた形状は維持されます。'**
   String get layerPanelAutofillColorUpdateNote;
 
   /// No description provided for @layerPanelExecuteButton.
@@ -9875,11 +9893,23 @@ abstract class AppLocalizations {
   /// **'彩度'**
   String get filterAuroraHologramSaturation;
 
-  /// No description provided for @filterAuroraHologramPresetAurora.
+  /// No description provided for @filterAuroraHologramPresetSilverHologram.
   ///
   /// In ja, this message translates to:
-  /// **'アクアオーロラ'**
-  String get filterAuroraHologramPresetAurora;
+  /// **'オーロラホログラム'**
+  String get filterAuroraHologramPresetSilverHologram;
+
+  /// No description provided for @filterAuroraHologramPresetOpalPearl.
+  ///
+  /// In ja, this message translates to:
+  /// **'オパールパール'**
+  String get filterAuroraHologramPresetOpalPearl;
+
+  /// No description provided for @filterAuroraHologramPresetDarkHologram.
+  ///
+  /// In ja, this message translates to:
+  /// **'ダークホログラム'**
+  String get filterAuroraHologramPresetDarkHologram;
 
   /// No description provided for @filterAuroraHologramPresetSoapBubble.
   ///
@@ -11692,6 +11722,204 @@ abstract class AppLocalizations {
   /// In ja, this message translates to:
   /// **'縁取りと折り返しをONにし、まずカーブ強度5でゆるいS字を描いてみましょう。重なりの上側を手前にするなら「ウェーブ俯瞰」、下側なら「ウェーブ煽り」を選びます。斜めの流れは、左上―右下方向の線を手前にする「右巻き」と、右上―左下方向の線を手前にする「左巻き」を比べると決めやすくなります。C字のカーブを続けて描くときは「三日月カール」で三日月のつながりを整えます。どのタイプも描いた曲がりを使うため、直線が自動で波形に変わることはありません。発生角度・カーブ開始位置・折り返し長さを少しずつ変え、最後にカーブ強度を1～10で調整してください。折り返しをOFFにすると通常のストロークへ戻ります。'**
   String get tipsBrushFoldDesc;
+
+  /// No description provided for @tipsFourPanelBrushTitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'四コマ漫画ブラシ×直線定規でコマをすばやく作る'**
+  String get tipsFourPanelBrushTitle;
+
+  /// No description provided for @tipsFourPanelBrushDesc.
+  ///
+  /// In ja, this message translates to:
+  /// **'プリセットの「四コマ漫画」ブラシは横方向の繰り返しを使わず、ストロークの進行方向に沿って四角い枠を一定間隔で並べます。直線定規をONにしてまっすぐ引くと、四コマ漫画のコマ枠を簡単に揃えて描けます。'**
+  String get tipsFourPanelBrushDesc;
+
+  /// No description provided for @canvasSelectionReferenceWorkingLayer.
+  ///
+  /// In ja, this message translates to:
+  /// **'作業レイヤーのみ'**
+  String get canvasSelectionReferenceWorkingLayer;
+
+  /// No description provided for @canvasSelectionReferenceVisibleLayers.
+  ///
+  /// In ja, this message translates to:
+  /// **'表示レイヤーすべて'**
+  String get canvasSelectionReferenceVisibleLayers;
+
+  /// No description provided for @brushTipSettingsTitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'ペン先・画像素材'**
+  String get brushTipSettingsTitle;
+
+  /// No description provided for @brushTipShapeLabel.
+  ///
+  /// In ja, this message translates to:
+  /// **'ペン先の形'**
+  String get brushTipShapeLabel;
+
+  /// No description provided for @brushTipRound.
+  ///
+  /// In ja, this message translates to:
+  /// **'円形'**
+  String get brushTipRound;
+
+  /// No description provided for @brushTipSquare.
+  ///
+  /// In ja, this message translates to:
+  /// **'中空の四角'**
+  String get brushTipSquare;
+
+  /// No description provided for @brushTipHexagon.
+  ///
+  /// In ja, this message translates to:
+  /// **'六角形'**
+  String get brushTipHexagon;
+
+  /// No description provided for @brushTipChain.
+  ///
+  /// In ja, this message translates to:
+  /// **'チェーンの輪'**
+  String get brushTipChain;
+
+  /// No description provided for @brushTipBallChain.
+  ///
+  /// In ja, this message translates to:
+  /// **'ボールチェーン'**
+  String get brushTipBallChain;
+
+  /// No description provided for @brushTipRelativeSpacing.
+  ///
+  /// In ja, this message translates to:
+  /// **'太さに比例する間隔'**
+  String get brushTipRelativeSpacing;
+
+  /// No description provided for @brushTipSpacingRatio.
+  ///
+  /// In ja, this message translates to:
+  /// **'太さに対する間隔'**
+  String get brushTipSpacingRatio;
+
+  /// No description provided for @brushChainAspect.
+  ///
+  /// In ja, this message translates to:
+  /// **'リンクの縦横比'**
+  String get brushChainAspect;
+
+  /// No description provided for @brushChainThickness.
+  ///
+  /// In ja, this message translates to:
+  /// **'リンクの太さ'**
+  String get brushChainThickness;
+
+  /// No description provided for @brushNibFlat.
+  ///
+  /// In ja, this message translates to:
+  /// **'扁平なペン先'**
+  String get brushNibFlat;
+
+  /// No description provided for @brushNibAngle.
+  ///
+  /// In ja, this message translates to:
+  /// **'ペン先の角度'**
+  String get brushNibAngle;
+
+  /// No description provided for @brushImagesAdd.
+  ///
+  /// In ja, this message translates to:
+  /// **'画像を追加'**
+  String get brushImagesAdd;
+
+  /// No description provided for @brushImageInkLabel.
+  ///
+  /// In ja, this message translates to:
+  /// **'画像の描画部分'**
+  String get brushImageInkLabel;
+
+  /// No description provided for @brushImageInkDark.
+  ///
+  /// In ja, this message translates to:
+  /// **'暗い部分'**
+  String get brushImageInkDark;
+
+  /// No description provided for @brushImageInkLight.
+  ///
+  /// In ja, this message translates to:
+  /// **'明るい部分'**
+  String get brushImageInkLight;
+
+  /// No description provided for @brushImageInkAlpha.
+  ///
+  /// In ja, this message translates to:
+  /// **'不透明な部分'**
+  String get brushImageInkAlpha;
+
+  /// No description provided for @brushImageInkHelp.
+  ///
+  /// In ja, this message translates to:
+  /// **'選んだ部分を現在色で描画します。素材は複数登録でき、1ストロークごとに切り替わります。'**
+  String get brushImageInkHelp;
+
+  /// No description provided for @brushImageOrderLabel.
+  ///
+  /// In ja, this message translates to:
+  /// **'素材の切り替え'**
+  String get brushImageOrderLabel;
+
+  /// No description provided for @brushImageOrderRandom.
+  ///
+  /// In ja, this message translates to:
+  /// **'ランダム'**
+  String get brushImageOrderRandom;
+
+  /// No description provided for @brushImageOrderSequential.
+  ///
+  /// In ja, this message translates to:
+  /// **'登録順'**
+  String get brushImageOrderSequential;
+
+  /// No description provided for @brushImageMoveUp.
+  ///
+  /// In ja, this message translates to:
+  /// **'上へ移動'**
+  String get brushImageMoveUp;
+
+  /// No description provided for @brushImageMoveDown.
+  ///
+  /// In ja, this message translates to:
+  /// **'下へ移動'**
+  String get brushImageMoveDown;
+
+  /// No description provided for @brushImageRemove.
+  ///
+  /// In ja, this message translates to:
+  /// **'素材を外す'**
+  String get brushImageRemove;
+
+  /// No description provided for @filterNoiseStyle.
+  ///
+  /// In ja, this message translates to:
+  /// **'ノイズの種類'**
+  String get filterNoiseStyle;
+
+  /// No description provided for @filterNoiseFilmGrain.
+  ///
+  /// In ja, this message translates to:
+  /// **'フィルム粒子'**
+  String get filterNoiseFilmGrain;
+
+  /// No description provided for @filterNoiseColor.
+  ///
+  /// In ja, this message translates to:
+  /// **'カラーノイズ'**
+  String get filterNoiseColor;
+
+  /// No description provided for @filterNoiseSeed.
+  ///
+  /// In ja, this message translates to:
+  /// **'模様のシード値'**
+  String get filterNoiseSeed;
 }
 
 class _AppLocalizationsDelegate

@@ -1,6 +1,8 @@
 import 'asset_tags.dart';
 import 'pixel_color_mode.dart';
 
+enum BrushImageInkMode { dark, light, alpha }
+
 enum HairFoldMode { waveTopView, waveLowAngle, curlRight, curlLeft, crescent }
 
 class Brush {
@@ -23,6 +25,10 @@ class Brush {
   final String? customImagePath;
   final List<String> customImagePaths;
   final BrushImageSelectionMode customImageSelectionMode;
+  final BrushImageInkMode imageInkMode;
+  final double tipSpacingFactor;
+  final double chainAspect;
+  final double chainThickness;
   final bool rotation;
   final double density;
   final double scatter;
@@ -71,6 +77,10 @@ class Brush {
     this.customImagePath,
     this.customImagePaths = const [],
     this.customImageSelectionMode = BrushImageSelectionMode.random,
+    this.imageInkMode = BrushImageInkMode.dark,
+    this.tipSpacingFactor = 0,
+    this.chainAspect = .64,
+    this.chainThickness = .25,
     this.rotation = false,
     this.density = 1.0,
     this.scatter = 0.0,
@@ -132,10 +142,16 @@ class Brush {
     String? customImagePath,
     List<String>? customImagePaths,
     BrushImageSelectionMode? customImageSelectionMode,
+    BrushImageInkMode? imageInkMode,
+    double? tipSpacingFactor,
+    double? chainAspect,
+    double? chainThickness,
     bool? rotation,
     double? density,
     double? scatter,
     double? calligraphyAngle,
+    bool clearCalligraphyAngle = false,
+    bool clearCustomImages = false,
     PixelColorMode? pixelColorMode,
     int? pixelColorLevels,
     List<int>? pixelExplicitColors,
@@ -175,14 +191,24 @@ class Brush {
     strokeDecay: strokeDecay ?? this.strokeDecay,
     isFavorite: isFavorite ?? this.isFavorite,
     folderId: folderId ?? this.folderId,
-    customImagePath: customImagePath ?? this.customImagePath,
-    customImagePaths: customImagePaths ?? this.customImagePaths,
+    customImagePath: clearCustomImages
+        ? null
+        : customImagePath ?? this.customImagePath,
+    customImagePaths: clearCustomImages
+        ? const []
+        : customImagePaths ?? this.customImagePaths,
     customImageSelectionMode:
         customImageSelectionMode ?? this.customImageSelectionMode,
+    imageInkMode: imageInkMode ?? this.imageInkMode,
+    tipSpacingFactor: tipSpacingFactor ?? this.tipSpacingFactor,
+    chainAspect: chainAspect ?? this.chainAspect,
+    chainThickness: chainThickness ?? this.chainThickness,
     rotation: rotation ?? this.rotation,
     density: density ?? this.density,
     scatter: scatter ?? this.scatter,
-    calligraphyAngle: calligraphyAngle ?? this.calligraphyAngle,
+    calligraphyAngle: clearCalligraphyAngle
+        ? null
+        : calligraphyAngle ?? this.calligraphyAngle,
     pixelColorMode: pixelColorMode ?? this.pixelColorMode,
     pixelColorLevels: pixelColorLevels ?? this.pixelColorLevels,
     pixelExplicitColors: pixelExplicitColors ?? this.pixelExplicitColors,
@@ -240,6 +266,10 @@ class Brush {
     'customImagePath': customImagePath,
     'customImagePaths': customImagePaths,
     'customImageSelectionMode': customImageSelectionMode.name,
+    'imageInkMode': imageInkMode.name,
+    'tipSpacingFactor': tipSpacingFactor,
+    'chainAspect': chainAspect,
+    'chainThickness': chainThickness,
     'rotation': rotation,
     'density': density,
     'scatter': scatter,
@@ -304,6 +334,24 @@ class Brush {
       (e) => e.name == j['customImageSelectionMode'],
       orElse: () => BrushImageSelectionMode.random,
     ),
+    imageInkMode: BrushImageInkMode.values.firstWhere(
+      (e) => e.name == j['imageInkMode'],
+      // Older snapshots did not store the source-ink setting. Preserve their
+      // bundled light-on-dark material once, then serialize an explicit mode.
+      orElse: () =>
+          j['imageInkMode'] == null &&
+              [
+                j['customImagePath'],
+                ...?j['customImagePaths'] as List<dynamic>?,
+              ].whereType<String>().any(
+                (path) => path.startsWith('assets/brushes/bangs_'),
+              )
+          ? BrushImageInkMode.light
+          : BrushImageInkMode.dark,
+    ),
+    tipSpacingFactor: (j['tipSpacingFactor'] as num?)?.toDouble() ?? 0,
+    chainAspect: (j['chainAspect'] as num?)?.toDouble() ?? .64,
+    chainThickness: (j['chainThickness'] as num?)?.toDouble() ?? .25,
     rotation: j['rotation'] as bool? ?? false,
     density: (j['density'] as num?)?.toDouble() ?? 1,
     scatter: (j['scatter'] as num?)?.toDouble() ?? 0,
@@ -634,7 +682,7 @@ class BrushPressureOffSettings {
 
 enum FadeMode { off, weak, medium, strong, custom }
 
-enum BrushTipShape { round, hollowSquare }
+enum BrushTipShape { round, hollowSquare, hexagon, chainLink, ballChain }
 
 enum BrushImageSelectionMode { random, sequential }
 

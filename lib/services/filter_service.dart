@@ -181,6 +181,7 @@ class FilterService extends ChangeNotifier {
       id: vhsNoiseFilterId,
       name: 'VHSノイズ',
       kind: FilterKind.noise,
+      noiseStyle: NoiseStyle.vhs,
       strength: 35,
       caSaturation: 35,
       caBrightness: 35,
@@ -203,6 +204,7 @@ class FilterService extends ChangeNotifier {
       id: genericNoiseFilterId,
       name: 'ノイズ',
       kind: FilterKind.noise,
+      noiseStyle: NoiseStyle.color,
       strength: 15,
     ),
   ];
@@ -281,6 +283,8 @@ class FilterService extends ChangeNotifier {
   void updateFilterParams(
     String id, {
     double? strength,
+    NoiseStyle? noiseStyle,
+    int? noiseSeed,
     int? colorLevels,
     double? edgeStrength,
     int? inputBlack,
@@ -341,6 +345,8 @@ class FilterService extends ChangeNotifier {
     _filterEditRedo.clear();
     _filters[idx] = _filters[idx].copyWith(
       strength: strength,
+      noiseStyle: noiseStyle,
+      noiseSeed: noiseSeed,
       colorLevels: colorLevels,
       edgeStrength: edgeStrength,
       inputBlack: inputBlack,

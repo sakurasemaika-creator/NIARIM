@@ -100,14 +100,51 @@ void main() {
       expect(runPath(arc(815)).length, 3);
     });
 
-    test('continuous 270 degree folds preserve the authored turn direction', () {
-      final clockwise = runPath(arc(545));
-      final counterClockwise = runPath(arc(-545));
-      expect(clockwise.length, 2);
-      expect(counterClockwise.length, 2);
-      expect(clockwise.every((event) => event.signedTurnRadians.sign > 0), isTrue);
-      expect(counterClockwise.every((event) => event.signedTurnRadians.sign < 0), isTrue);
-    });
+    test(
+      'crescent activates on the authored gentle curve before a full turn',
+      () {
+        final detector = ScreenSpaceFoldDetector(
+          triggerAngleDegrees: 30,
+          sampleSpacing: 2,
+          minimumTravel: 10,
+          windowLength: 44,
+          cooldownDistance: 20,
+          detectCumulativeStart: true,
+        );
+        final events = <FoldEvent>[];
+        for (final point in arc(90, radius: 180, step: 1)) {
+          final event = detector.add(
+            BrushStrokeSample(
+              screenPosition: point,
+              documentPosition: point,
+              effectiveWidth: 40,
+            ),
+          );
+          if (event != null) events.add(event);
+        }
+        expect(events, isNotEmpty);
+        expect(events.first.isContinuousTurnFold, isFalse);
+        expect(events.first.screenDistance, lessThan(180 * math.pi / 2));
+      },
+    );
+
+    test(
+      'continuous 270 degree folds preserve the authored turn direction',
+      () {
+        final clockwise = runPath(arc(545));
+        final counterClockwise = runPath(arc(-545));
+        expect(clockwise.length, 2);
+        expect(counterClockwise.length, 2);
+        expect(
+          clockwise.every((event) => event.signedTurnRadians.sign > 0),
+          isTrue,
+        );
+        expect(
+          counterClockwise.every((event) => event.signedTurnRadians.sign < 0),
+          isTrue,
+        );
+      },
+    );
 
     test('opposite bend signs both point toward their curve interior', () {
       final down = <Offset>[

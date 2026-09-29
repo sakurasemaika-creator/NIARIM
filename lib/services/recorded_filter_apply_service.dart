@@ -8,7 +8,6 @@ import '../engine/layer_compositor.dart';
 import '../engine/prism_filter_engine.dart';
 import '../models/filter_def.dart';
 import '../models/layer.dart' as model;
-import 'filter_service.dart';
 import 'project_service.dart';
 
 /// Replays a filter from the immutable parameter snapshot stored in a custom
@@ -54,7 +53,7 @@ class RecordedFilterApplyService {
     final data = byteData.buffer.asUint8List();
 
     final Uint8List result;
-    if (filter.id == FilterService.prismFilterId) {
+    if (filter.kind == FilterKind.prism) {
       result = await compute(applyPrismFilterInIsolate, (
         data,
         tileManager.canvasWidth,
@@ -114,7 +113,7 @@ class RecordedFilterApplyService {
       ));
     }
 
-    if (filter.id != FilterService.prismFilterId &&
+    if (filter.kind != FilterKind.prism &&
         (filter.kind == FilterKind.outline ||
             filter.kind == FilterKind.inkPool ||
             filter.kind == FilterKind.autoLineart)) {
@@ -135,7 +134,9 @@ class RecordedFilterApplyService {
       projectId: projectId,
       sceneId: sceneId,
       frameIndex: frameIndex,
-      layer: sourceLayer,
+      layer: filter.kind == FilterKind.prism
+          ? sourceLayer.copyWith(blendMode: model.LayerBlendMode.linearDodge)
+          : sourceLayer,
     );
     return null;
   }

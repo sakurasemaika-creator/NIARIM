@@ -141,7 +141,10 @@ Future<Uint8List> _hairstyle(bool front, HairFoldMode mode) async {
   final presets = brushExtensionPresets();
   final hair = presets.singleWhere((b) => b.id == 'Brush0023');
   final bangs = presets.singleWhere((b) => b.id == 'Brush0024');
-  await preloadBrushTextures(bangs.resolvedCustomImagePaths);
+  await preloadBrushTextures(
+    bangs.resolvedCustomImagePaths,
+    mode: bangs.imageInkMode,
+  );
   final tiles = TileManager(canvasWidth: 1000, canvasHeight: 1120);
   final engine = DrawingEngine(tileManager: tiles)..pressureEnabled = false;
   final wash = _brush(
@@ -246,7 +249,10 @@ Future<Uint8List> _hairstyle(bool front, HairFoldMode mode) async {
 
 Future<void> _angles() async {
   final base = brushExtensionPresets().singleWhere((b) => b.id == 'Brush0024');
-  await preloadBrushTextures(base.resolvedCustomImagePaths);
+  await preloadBrushTextures(
+    base.resolvedCustomImagePaths,
+    mode: base.imageInkMode,
+  );
   final tiles = TileManager(canvasWidth: 1280, canvasHeight: 370);
   final engine = DrawingEngine(tileManager: tiles)..pressureEnabled = false;
   final rotations = [-math.pi / 3, 0.0, math.pi / 3, math.pi / 2];

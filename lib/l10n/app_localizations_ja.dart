@@ -1302,7 +1302,7 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get helpFadeDesc =>
-      'ブラシ設定の一つで、ストロークを描き進めるにつれて不透明度や太さが徐々に減少していく効果です。線の端をかすれさせたい時や、余韻を残すような描き味を作りたい時に使います。';
+      '入り（始点）と抜き（終点）の値と距離をそれぞれ独立して設定できるブラシ機能です。入りだけ、抜きだけ、または非対称の設定にでき、線の描き始め・描き終わりの太さや不透明度を別々に調整できます。';
 
   @override
   String get helpStrokeDecayTitle => 'ストローク減衰';
@@ -1473,7 +1473,7 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get helpStampToolDesc =>
-      'あらかじめ登録した画像をブラシのようにキャンバスへ配置するツールです。効果線・背景パターン・小物などを毎回描き直さずに使い回せます。ピクセルモードをONにすると、貼り付けたスタンプをモザイク低解像度化＋色数削減でドット絵風に加工できます。 スタンプパネルでは配置するスタンプの回転角度・大きさを調整できます。同じスタンプでも向きやサイズを変えて配置すれば、単調にならず自然な効果線・小物の並びを作れます。';
+      'キャンバスに登録済み画像をブラシのように配置するツールです。集中線や背景パターン、小物などを毎回描き直さず再利用できます。ピクセルモードでは、ドット絵フィルターと共通のPixel Art処理で透明境界を硬く保ちながらピクセル化・減色します。モザイクは別のエフェクトで、スタンプのピクセルモードには使用しません。スタンプパネルでは配置するスタンプの回転角度とサイズも調整できます。';
 
   @override
   String get helpToneFillTitle => 'トーン塗り';
@@ -1637,7 +1637,7 @@ class AppLocalizationsJa extends AppLocalizations {
       'タイムラインの共通レイヤートラックに配置したウォーターマークをタップすると、角度・大きさ・不透明度・表示範囲（ループ表示）をいつでも再編集できます。登録時だけでなく、実際にプロジェクト内で使うタイミングで細かく調整できます。';
 
   @override
-  String get helpAudioClipTitle => '音声クリップの音量・フェード';
+  String get helpAudioClipTitle => '音量調整';
 
   @override
   String get helpAudioClipDesc =>
@@ -1676,7 +1676,7 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get helpDrawingFilterDesc =>
-      '選択中のレイヤーに直接適用するフィルターです（演出フィルターがタイムライン全体・シーン単位に適用されるのに対し、描画フィルターはレイヤー単位）。ガウスぼかし・レンズぼかし・アニメ風加工・トーンカーブ・レベル補正・縁取り・シャープ・アンシャープマスク・周辺減光・フィルムグレイン・レトロアニメ・ブラウン管・単色化・二値化・魚眼レンズ・色収差・眼鏡断層・ドット絵・質感変更フィルター・背景馴染ませ・墨溜まり・自動線画・プリズム・VHSノイズ・色反転の25種類が用意されています。縁取りは元のレイヤーを書き換えず、縁どった内容だけを新規レイヤーへ描画します。眼鏡断層フィルターは、選択レイヤーで塗った範囲だけに、度数の強い眼鏡レンズのような局所的な歪みをかけられます。ドット絵は配色方式（色を指定しない・色を指定する・色数を指定する・パレットから選ぶ）も選べます。';
+      '選択中のレイヤーに直接適用するフィルターです（演出フィルターがタイムライン全体・シーン単位に適用されるのに対し、描画フィルターはレイヤー単位）。ガウスぼかし・レンズぼかし・アニメ風加工・トーンカーブ・レベル補正・縁取り・シャープ・アンシャープマスク・周辺減光・フィルムグレイン・レトロアニメ・ブラウン管・単色化・二値化・魚眼レンズ・色収差・眼鏡断層・ドット絵・質感変更フィルター・背景馴染ませ・墨溜まり・自動線画・プリズム・VHSノイズ・色反転の25種類が用意されています。縁取りは元のレイヤーを書き換えず、縁どった内容だけを新規レイヤーへ描画します。眼鏡断層フィルターは、選択レイヤーで塗った範囲だけに、度数の強い眼鏡レンズのような局所的な歪みをかけられます。ドット絵は配色方式（色を指定しない・色を指定する・色数を指定する・パレットから選ぶ）も選べます。 自動線画では適用前の一時Vector制御点を直接編集できます。点をドラッグするとその点だけを移動し、線分をタップすると制御点を追加、点をタップすると確認後に削除できます。編集した形状がそのまま適用結果になります。';
 
   @override
   String get helpLayerKeyframeTitle => 'レイヤーキーフレーム（パーツ単位アニメーション）';
@@ -1872,7 +1872,7 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get tipsStrokeDecayFadeDesc =>
-      'ブラシ設定のストローク減衰とフェードを両方かけると、線の描き始め・終わりが自然に細くなり、毛筆やインクブラシのような抑揚のある線が描けます。';
+      'ブラシ設定では、入り（始点）と抜き（終点）の値・距離を別々に調整できます。ストローク減衰も組み合わせると、入りだけ細くする、抜きだけ長く伸ばす、両端を非対称にするなど、毛筆やインクブラシらしい抑揚を作れます。';
 
   @override
   String get tipsColorMixingFadeTitle => '混色×フェードで絵の具のような混ざり';
@@ -4426,32 +4426,42 @@ class AppLocalizationsJa extends AppLocalizations {
   String get layerPanelAutofillNoLineartSnackbar => '対応する自動塗り用線画レイヤーが見つかりません。';
 
   @override
-  String get layerPanelAutofillNote1 =>
-      '※ プロジェクト内で自動塗りを初回実行する場合はどちらを選んでも問題ありません。';
+  String get layerPanelAutofillNote1 => '※ 自動塗りを初回実行する場合は、どの方法でも線画から新しく塗られます。';
 
   @override
   String get layerPanelAutofillNote2 =>
       '※ 自動塗りレイヤーが存在しない場合は、一から領域を判定して自動塗りします。';
 
   @override
-  String get layerPanelAutofillRepaintTitle => '塗りなおし';
+  String get layerPanelAutofillSmartUpdateTitle => '変更された形状だけ更新';
 
   @override
-  String get layerPanelAutofillRepaintHint => '誤って自動塗りの形状を変えてしまった場合におすすめ';
+  String get layerPanelAutofillSmartUpdateHint =>
+      '通常はこちら。線画の変更を反映しつつ、既存の手動調整をできるだけ残します';
+
+  @override
+  String get layerPanelAutofillSmartUpdateNote =>
+      '※ 新しい領域は自動で塗り、重なる既存領域の色は保持します。線画から外れた領域は削除されます。';
+
+  @override
+  String get layerPanelAutofillRepaintTitle => '線画から形状を更新して塗る';
+
+  @override
+  String get layerPanelAutofillRepaintHint => '自動塗り用線画の現在の形に合わせたい場合';
 
   @override
   String get layerPanelAutofillRepaintNote =>
-      '※ 一から領域を判定して塗りなおします。現在の自動塗りレイヤーの形状は破棄されます。';
+      '※ 自動塗り用線画から領域を判定し直します。現在の自動塗りレイヤーの形状は置き換わります。';
 
   @override
-  String get layerPanelAutofillColorUpdateTitle => '色更新';
+  String get layerPanelAutofillColorUpdateTitle => '形状を保ったまま色だけ更新';
 
   @override
-  String get layerPanelAutofillColorUpdateHint => '自動塗りの形状を手動で調整した場合におすすめ';
+  String get layerPanelAutofillColorUpdateHint => '手動で調整した自動塗りの形状を残したい場合';
 
   @override
   String get layerPanelAutofillColorUpdateNote =>
-      '※ 不透明度ロックをして最新の色で塗りつぶします。現在の自動塗りレイヤーの形状は維持されます。';
+      '※ 現在の不透明領域を保ったまま最新の色へ更新します。手動で整えた形状は維持されます。';
 
   @override
   String get layerPanelExecuteButton => '実行';
@@ -5377,7 +5387,13 @@ class AppLocalizationsJa extends AppLocalizations {
   String get filterAuroraHologramSaturation => '彩度';
 
   @override
-  String get filterAuroraHologramPresetAurora => 'アクアオーロラ';
+  String get filterAuroraHologramPresetSilverHologram => 'オーロラホログラム';
+
+  @override
+  String get filterAuroraHologramPresetOpalPearl => 'オパールパール';
+
+  @override
+  String get filterAuroraHologramPresetDarkHologram => 'ダークホログラム';
 
   @override
   String get filterAuroraHologramPresetSoapBubble => 'フェアリーパール';
@@ -6351,4 +6367,104 @@ class AppLocalizationsJa extends AppLocalizations {
   @override
   String get tipsBrushFoldDesc =>
       '縁取りと折り返しをONにし、まずカーブ強度5でゆるいS字を描いてみましょう。重なりの上側を手前にするなら「ウェーブ俯瞰」、下側なら「ウェーブ煽り」を選びます。斜めの流れは、左上―右下方向の線を手前にする「右巻き」と、右上―左下方向の線を手前にする「左巻き」を比べると決めやすくなります。C字のカーブを続けて描くときは「三日月カール」で三日月のつながりを整えます。どのタイプも描いた曲がりを使うため、直線が自動で波形に変わることはありません。発生角度・カーブ開始位置・折り返し長さを少しずつ変え、最後にカーブ強度を1～10で調整してください。折り返しをOFFにすると通常のストロークへ戻ります。';
+
+  @override
+  String get tipsFourPanelBrushTitle => '四コマ漫画ブラシ×直線定規でコマをすばやく作る';
+
+  @override
+  String get tipsFourPanelBrushDesc =>
+      'プリセットの「四コマ漫画」ブラシは横方向の繰り返しを使わず、ストロークの進行方向に沿って四角い枠を一定間隔で並べます。直線定規をONにしてまっすぐ引くと、四コマ漫画のコマ枠を簡単に揃えて描けます。';
+
+  @override
+  String get canvasSelectionReferenceWorkingLayer => '作業レイヤーのみ';
+
+  @override
+  String get canvasSelectionReferenceVisibleLayers => '表示レイヤーすべて';
+
+  @override
+  String get brushTipSettingsTitle => 'ペン先・画像素材';
+
+  @override
+  String get brushTipShapeLabel => 'ペン先の形';
+
+  @override
+  String get brushTipRound => '円形';
+
+  @override
+  String get brushTipSquare => '中空の四角';
+
+  @override
+  String get brushTipHexagon => '六角形';
+
+  @override
+  String get brushTipChain => 'チェーンの輪';
+
+  @override
+  String get brushTipBallChain => 'ボールチェーン';
+
+  @override
+  String get brushTipRelativeSpacing => '太さに比例する間隔';
+
+  @override
+  String get brushTipSpacingRatio => '太さに対する間隔';
+
+  @override
+  String get brushChainAspect => 'リンクの縦横比';
+
+  @override
+  String get brushChainThickness => 'リンクの太さ';
+
+  @override
+  String get brushNibFlat => '扁平なペン先';
+
+  @override
+  String get brushNibAngle => 'ペン先の角度';
+
+  @override
+  String get brushImagesAdd => '画像を追加';
+
+  @override
+  String get brushImageInkLabel => '画像の描画部分';
+
+  @override
+  String get brushImageInkDark => '暗い部分';
+
+  @override
+  String get brushImageInkLight => '明るい部分';
+
+  @override
+  String get brushImageInkAlpha => '不透明な部分';
+
+  @override
+  String get brushImageInkHelp => '選んだ部分を現在色で描画します。素材は複数登録でき、1ストロークごとに切り替わります。';
+
+  @override
+  String get brushImageOrderLabel => '素材の切り替え';
+
+  @override
+  String get brushImageOrderRandom => 'ランダム';
+
+  @override
+  String get brushImageOrderSequential => '登録順';
+
+  @override
+  String get brushImageMoveUp => '上へ移動';
+
+  @override
+  String get brushImageMoveDown => '下へ移動';
+
+  @override
+  String get brushImageRemove => '素材を外す';
+
+  @override
+  String get filterNoiseStyle => 'ノイズの種類';
+
+  @override
+  String get filterNoiseFilmGrain => 'フィルム粒子';
+
+  @override
+  String get filterNoiseColor => 'カラーノイズ';
+
+  @override
+  String get filterNoiseSeed => '模様のシード値';
 }

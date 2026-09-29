@@ -155,6 +155,55 @@ int channelAt(TileManager tiles, int x, int y, int channel) {
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
   test(
+    'continuous crescent geometry does not reset at detector boundaries',
+    () {
+      final points = [
+        for (var i = 0; i <= 150; i++)
+          HairRibbonPoint(
+            const Offset(180, 180) +
+                Offset(math.cos(i * math.pi / 60), math.sin(i * math.pi / 60)) *
+                    (55 + i * .3),
+            30,
+            1,
+          ),
+      ];
+      FoldEvent event(int end, bool continuous) => FoldEvent(
+        sample: BrushStrokeSample(
+          screenPosition: points[end].position,
+          documentPosition: points[end].position,
+          effectiveWidth: 30,
+        ),
+        tangent: const Offset(1, 0),
+        inwardNormal: const Offset(0, 1),
+        signedTurnRadians: 1,
+        screenDistance: end * 4,
+        isContinuousTurnFold: continuous,
+        sourceCurve: points.take(end + 1).map((p) => p.position).toList(),
+        sourceIndices: List.generate(end + 1, (i) => i),
+      );
+      final before = crescent(input: points, folds: [event(20, false)]);
+      final after = crescent(
+        input: points,
+        folds: [event(20, false), event(91, true)],
+      );
+      addTearDown(before.dispose);
+      addTearDown(after.dispose);
+      var changed = 0;
+      for (var y = 0; y < 360; y++) {
+        for (var x = 0; x < 360; x++) {
+          if (channelAt(before, x, y, 3) != channelAt(after, x, y, 3) ||
+              channelAt(before, x, y, 0) != channelAt(after, x, y, 0))
+            changed++;
+        }
+      }
+      expect(
+        changed,
+        0,
+        reason: 'An event cannot change an identical authored curve.',
+      );
+    },
+  );
+  test(
     'crescent reversals follow input even when a small bend misses the detector',
     () {
       final points = [
@@ -293,12 +342,18 @@ void main() {
       'tight crescent inner apex is rounded instead of a cusp ($textureKind)',
       () async {
         if (textureKind == 'bangs') {
-          await preloadBrushTexture('assets/brushes/bangs_01.png');
+          await preloadBrushTexture(
+            'assets/brushes/bangs_01.png',
+            mode: BrushImageInkMode.light,
+          );
         }
         final tiles = crescent(
           width: 64,
           texture: textureKind == 'bangs'
-              ? getCachedBrushTexture('assets/brushes/bangs_01.png')!
+              ? getCachedBrushTexture(
+                  'assets/brushes/bangs_01.png',
+                  mode: BrushImageInkMode.light,
+                )!
               : textureKind == 'opaque'
               ? (Uint8List(brushTextureSize * brushTextureSize * 4)
                   ..fillRange(0, brushTextureSize * brushTextureSize * 4, 255))

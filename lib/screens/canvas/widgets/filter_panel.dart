@@ -14,7 +14,6 @@ import '../../../engine/filter_engine.dart';
 import '../../../engine/layer_compositor.dart';
 import '../../../engine/prism_filter_engine.dart';
 import '../../../engine/tile_manager.dart';
-import '../../../engine/vhs_noise_engine.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../../models/custom_automation.dart';
 import '../../../models/filter_def.dart';
@@ -86,10 +85,9 @@ class _FilterPanelState extends State<FilterPanel> {
   ui.Image? _previewImage;
   String? _previewFilterId;
 
-  bool _isPrism(FilterDef filter) =>
-      filter.kind == FilterKind.prism ||
-      filter.id == FilterService.prismFilterId;
-  bool _isVhs(FilterDef filter) => filter.id == FilterService.vhsNoiseFilterId;
+  bool _isPrism(FilterDef filter) => filter.kind == FilterKind.prism;
+  bool _isVhs(FilterDef filter) =>
+      filter.kind == FilterKind.noise && filter.noiseStyle == NoiseStyle.vhs;
 
   @override
   void initState() {
@@ -658,36 +656,70 @@ class _FilterPanelState extends State<FilterPanel> {
       );
     }
 
-    if (_isVhs(current)) {
+    if (current.kind == FilterKind.noise) {
       return Column(
         children: [
+          DropdownButtonFormField<NoiseStyle>(
+            key: ValueKey('noise-style-${current.noiseStyle.name}'),
+            decoration: InputDecoration(labelText: l10n.filterNoiseStyle),
+            initialValue: current.noiseStyle,
+            items: [
+              DropdownMenuItem(
+                value: NoiseStyle.filmGrain,
+                child: Text(l10n.filterNoiseFilmGrain),
+              ),
+              DropdownMenuItem(
+                value: NoiseStyle.color,
+                child: Text(l10n.filterNoiseColor),
+              ),
+              DropdownMenuItem(
+                value: NoiseStyle.vhs,
+                child: Text(l10n.filterNameVhsNoise),
+              ),
+            ],
+            onChanged: (style) {
+              if (style != null) {
+                service.updateFilterParams(current.id, noiseStyle: style);
+                _updatePreview();
+              }
+            },
+          ),
           _paramSlider(
-            l10n.filterVhsNoiseStrength,
+            l10n.filterNoiseStrength,
             current.strength,
             0,
             100,
             (v) => service.updateFilterParams(current.id, strength: v),
           ),
-          _paramSlider(
-            l10n.filterVhsScanlineStrength,
-            current.caSaturation,
+          if (_isVhs(current)) ...[
+            _paramSlider(
+              l10n.filterVhsScanlineStrength,
+              current.caSaturation,
+              0,
+              100,
+              (v) => service.updateFilterParams(current.id, caSaturation: v),
+            ),
+            _paramSlider(
+              l10n.filterVhsColorBleed,
+              current.caBrightness,
+              0,
+              100,
+              (v) => service.updateFilterParams(current.id, caBrightness: v),
+            ),
+            _paramSlider(
+              l10n.filterVhsTracking,
+              current.caContrast,
+              0,
+              100,
+              (v) => service.updateFilterParams(current.id, caContrast: v),
+            ),
+          ],
+          _integerStepperSlider(
+            l10n.filterNoiseSeed,
+            current.noiseSeed,
             0,
-            100,
-            (v) => service.updateFilterParams(current.id, caSaturation: v),
-          ),
-          _paramSlider(
-            l10n.filterVhsColorBleed,
-            current.caBrightness,
-            0,
-            100,
-            (v) => service.updateFilterParams(current.id, caBrightness: v),
-          ),
-          _paramSlider(
-            l10n.filterVhsTracking,
-            current.caContrast,
-            0,
-            100,
-            (v) => service.updateFilterParams(current.id, caContrast: v),
+            65535,
+            (v) => service.updateFilterParams(current.id, noiseSeed: v),
           ),
         ],
       );
@@ -1554,19 +1586,6 @@ class _FilterPanelState extends State<FilterPanel> {
         gradientDirectionDegrees: filter.prismDirectionDegrees,
       );
     }
-    if (_isVhs(filter)) {
-      return VhsNoiseEngine.apply(
-        data,
-        width,
-        height,
-        noiseStrength: filter.strength,
-        scanlineStrength: filter.caSaturation,
-        colorBleed: filter.caBrightness,
-        tracking: filter.caContrast,
-        seed: filter.thresholdValue.round(),
-        frameIndex: 0,
-      );
-    }
     switch (filter.kind) {
       case FilterKind.prism:
         return _prismEngine.apply(
@@ -1633,13 +1652,7 @@ class _FilterPanelState extends State<FilterPanel> {
           color: filter.vignetteColor,
         );
       case FilterKind.noise:
-        return _engine.applyNoise(
-          data,
-          width,
-          height,
-          (filter.strength / 100).clamp(0.0, 1.0),
-          NoiseType.gaussian,
-        );
+        return applyNoiseFilter(data, width, height, filter);
       case FilterKind.retroAnime:
         return _engine.applyRetroAnime(data, width, height, filter.strength);
       case FilterKind.crt:

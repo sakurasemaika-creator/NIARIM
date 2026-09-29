@@ -5,7 +5,6 @@ import 'package:flutter/foundation.dart' show compute;
 
 import '../models/filter_def.dart';
 import '../models/layer.dart' as model;
-import '../services/filter_service.dart';
 import '../services/project_service.dart';
 import 'filter_engine.dart';
 import 'layer_compositor.dart';
@@ -44,8 +43,7 @@ class CustomAutomationFilterRunner {
     final data = byteData.buffer.asUint8List();
 
     Uint8List result;
-    if (filter.id == FilterService.prismFilterId ||
-        filter.kind == FilterKind.prism) {
+    if (filter.kind == FilterKind.prism) {
       result = await compute(applyPrismFilterInIsolate, (
         data,
         tm.canvasWidth,
@@ -120,15 +118,13 @@ class CustomAutomationFilterRunner {
     if (sourceLayer == null) {
       throw StateError('Recorded filter source layer disappeared');
     }
-    final isPrism =
-        filter.id == FilterService.prismFilterId ||
-        filter.kind == FilterKind.prism;
+    final isPrism = filter.kind == FilterKind.prism;
     projectService.updateLayer(
       projectId: projectId,
       sceneId: sceneId,
       frameIndex: frameIndex,
       layer: isPrism
-          ? sourceLayer.copyWith(blendMode: model.LayerBlendMode.addition)
+          ? sourceLayer.copyWith(blendMode: model.LayerBlendMode.linearDodge)
           : sourceLayer,
     );
     return sourceLayerId;
@@ -156,7 +152,6 @@ class CustomAutomationFilterRunner {
   }
 
   static bool _createsLayer(FilterDef filter) =>
-      filter.id != FilterService.prismFilterId &&
       filter.kind != FilterKind.prism &&
       (filter.kind == FilterKind.outline ||
           filter.kind == FilterKind.inkPool ||
