@@ -186,6 +186,7 @@ void main() {
         stabilization: true,
         stabilizationStrength: 40,
         pixelMode: false,
+        fadeMode: FadeMode.none,
         customImagePaths: paths,
         customImageSelectionMode: BrushImageSelectionMode.random,
       ),
