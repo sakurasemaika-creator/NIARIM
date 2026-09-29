@@ -367,6 +367,8 @@ class CanvasArea extends StatefulWidget {
   final int invertSelectionToken;
   final int selectAllSelectionToken;
   final int clearSelectionToken;
+  /// 自動選択の参照元。false=作業レイヤーのみ、true=表示中レイヤーすべて。
+  final bool selectionReferenceAllVisible;
   final ValueChanged<bool>? onSelectionActiveChanged;
 
   /// 画面下部のスライダーで指定する、選択範囲の変形量。
@@ -415,6 +417,7 @@ class CanvasArea extends StatefulWidget {
     this.invertSelectionToken = 0,
     this.selectAllSelectionToken = 0,
     this.clearSelectionToken = 0,
+    this.selectionReferenceAllVisible = false,
     this.onSelectionActiveChanged,
     this.selectionMoveX = 0,
     this.selectionMoveY = 0,
@@ -876,7 +879,17 @@ class _CanvasAreaState extends State<CanvasArea> {
     final x = canvasPos.dx.round();
     final y = canvasPos.dy.round();
     if (x < 0 || x >= w || y < 0 || y >= h) return;
-    final buffer = await _flattenVisibleLayers();
+    final Uint8List buffer;
+    if (widget.selectionReferenceAllVisible) {
+      buffer = await _flattenVisibleLayers();
+    } else {
+      final image = await _tileManager.compositeLayerToImage(
+        _tileKeyFor(_layerId),
+      );
+      final bytes = await image.toByteData(format: ui.ImageByteFormat.rawRgba);
+      image.dispose();
+      buffer = bytes?.buffer.asUint8List() ?? Uint8List(w * h * 4);
+    }
     if (!mounted) return;
     final mask = _bucketEngine.selectionMask(
       canvasData: buffer,
