@@ -380,11 +380,11 @@ List<(double, int, int, int)> auroraHologramStops(AuroraHologramPreset preset) {
       // Transparent holographic film: most of the tonal range stays close to
       // clear/white-silver. Saturated colours are narrow interference flashes
       // beside bright specular planes, rather than broad painted colour bands.
-      (0.000, 196, 222, 238), // cool transparent shadow
-      (0.055, 211, 231, 245),
-      (0.110, 226, 240, 250), // clear silver-blue body
-      (0.165, 239, 246, 252),
-      (0.215, 248, 251, 253), // near-clear face
+      (0.000, 183, 224, 246), // cool transparent shadow
+      (0.055, 196, 235, 251),
+      (0.110, 211, 244, 253), // clear silver-blue body
+      (0.165, 229, 246, 254),
+      (0.215, 244, 250, 255), // near-clear face
       (0.250, 211, 238, 250), // pale cyan reflection
       (0.285, 154, 229, 250), // cyan flash
       (0.310, 102, 221, 245),
@@ -395,8 +395,8 @@ List<(double, int, int, int)> auroraHologramStops(AuroraHologramPreset preset) {
       (0.405, 194, 184, 247), // violet interference edge
       (0.425, 239, 190, 239), // pink interference edge
       (0.445, 252, 222, 239),
-      (0.470, 249, 251, 253), // clear body again
-      (0.515, 221, 243, 252),
+      (0.470, 250, 246, 255), // clear body again
+      (0.515, 205, 239, 255),
       (0.550, 182, 231, 250), // ice blue
       (0.580, 126, 220, 247),
       (0.602, 91, 232, 222), // tiny emerald spectral flash
@@ -407,11 +407,11 @@ List<(double, int, int, int)> auroraHologramStops(AuroraHologramPreset preset) {
       (0.705, 205, 190, 247), // lavender
       (0.728, 244, 190, 234), // narrow magenta-pink
       (0.750, 252, 222, 231),
-      (0.775, 252, 248, 252), // clear/white film face
-      (0.815, 218, 242, 252),
+      (0.775, 255, 241, 252), // clear/white film face
+      (0.815, 199, 237, 255),
       (0.845, 171, 230, 250), // cyan-blue edge
       (0.872, 126, 205, 247), // small deeper blue reflection
-      (0.895, 218, 240, 252),
+      (0.895, 204, 240, 255),
       (0.918, 252, 253, 253),
       (0.936, 255, 255, 255), // strongest white glint
       // Spectral warm edge is deliberately tiny and nearly white.
@@ -1485,7 +1485,7 @@ class FilterEngine {
     final preserveLuma = switch (preset) {
       // Transparent-film look: retain substantially more of the source
       // relief so folds read through the pastel interference colour.
-      AuroraHologramPreset.auroraPastel => 0.20,
+      AuroraHologramPreset.auroraPastel => 0.08,
       AuroraHologramPreset.darkRainbow => 0.16,
       _ => 0.0,
     };
@@ -1493,7 +1493,7 @@ class FilterEngine {
       // Blend only neutral source luminance, never source hue. This gives the
       // iridescent map a translucent-film appearance without turning it into
       // ordinary opacity mixing.
-      AuroraHologramPreset.auroraPastel => 0.14,
+      AuroraHologramPreset.auroraPastel => 0.03,
       _ => 0.0,
     };
 
@@ -1605,7 +1605,7 @@ class FilterEngine {
           final colourMix =
               ((edge - 0.075) / 0.925).clamp(0.0, 1.0) *
               shoulder *
-              0.62;
+              0.70;
           outR += (spectral.$1 - outR) * colourMix;
           outG += (spectral.$2 - outG) * colourMix;
           outB += (spectral.$3 - outB) * colourMix;
