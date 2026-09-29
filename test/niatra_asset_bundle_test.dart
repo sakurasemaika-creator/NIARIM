@@ -278,6 +278,7 @@ void main() {
       brush: brushService,
       tone: ToneService(),
       stamp: StampService(),
+      restoreBasePath: temp.path,
     );
 
     final restored = brushService.brushes.last;
