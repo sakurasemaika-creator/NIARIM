@@ -18,7 +18,7 @@ void main() {
       final assetPath = 'assets/brushes/$name';
       expect(
         presets,
-        contains("'\$assetPath'"),
+        contains("'$assetPath'"),
         reason: 'the bundled bangs preset must reference $assetPath',
       );
       expect(
