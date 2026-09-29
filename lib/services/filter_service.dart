@@ -266,6 +266,12 @@ class FilterService extends ChangeNotifier {
     notifyListeners();
   }
 
+  void clearCurrentFilter() {
+    if (_currentFilterId == null) return;
+    _currentFilterId = null;
+    notifyListeners();
+  }
+
   void updateFilterParams(
     String id, {
     double? strength,
