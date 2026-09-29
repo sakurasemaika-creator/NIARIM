@@ -156,11 +156,25 @@ void main() {
     final baseTheme = webReferenceTheme(name);
     for (var variant = 0; variant < 4; variant++) {
       final accent = webCaptureAccents[baseIndex * 4 + variant];
+      // Every published variant is a genuinely re-themed app capture. Tint
+      // the large surfaces as well as the accent so the screenshot visibly
+      // belongs to the matching Web frame instead of looking pink/default.
+      final surfaceTint = Color.alphaBlend(
+        accent.withValues(alpha: 0.12),
+        const Color(0xFFFFFFFF),
+      );
+      final panelTint = Color.alphaBlend(
+        accent.withValues(alpha: 0.08),
+        const Color(0xFFFFFFFF),
+      );
       final theme = baseTheme.copyWith(
         id: '${baseTheme.id}_v${variant + 1}',
         name: '${baseTheme.name} ${variant + 1}',
         accentColor: accent,
         selectionColor: accent,
+        panelBgColor: panelTint,
+        menuBgColor: surfaceTint,
+        updateMarkColor: accent,
       );
       appContext.read<ThemeService>().restoreCurrent(theme);
       await tester.pump(const Duration(milliseconds: 300));
