@@ -552,7 +552,7 @@
   "helpProjectDetailDesc": "可以在一個畫面中集中檢視、編輯專案名稱、縮圖、收藏狀態、要啟用的自動上色設定篩選等專案相關設定。存檔樹的入口也在這裡。",
   "helpWatermarkEditTitle": "重新編輯浮水印",
   "helpWatermarkEditDesc": "點擊放置在時間軸共用圖層軌道上的浮水印，隨時可以重新編輯其角度、大小、不透明度、顯示範圍（循環顯示）。不僅在登記時，在專案中實際使用時也能隨時細部調整。",
-  "helpAudioClipTitle": "音量・淡入淡出",
+  "helpAudioClipTitle": "音量調整",
   "helpAudioClipDesc": "放置在時間軸上的音訊片段，可以在詳細面板中調整音量、淡入、淡出的秒數。可用來調整音效和配樂的音量平衡，或讓曲子的開頭、結尾更加順暢。",
   "helpPenSubToolTitle": "畫筆子工具",
   "helpPenSubToolDesc": "長按畫筆工具，可以從一般繪圖切換到網點填色或印章放置等子工具。不用每次切換工具，就能用同一支筆在多種作業之間來回操作。",
