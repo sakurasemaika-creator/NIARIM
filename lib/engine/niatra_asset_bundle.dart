@@ -134,6 +134,7 @@ class NiatraAssetBundle {
     required BrushService brush,
     required ToneService tone,
     required StampService stamp,
+    String? restoreBasePath,
   }) async {
     if (data.raw[_versionKey] != _version) return;
 
