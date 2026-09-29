@@ -270,18 +270,30 @@ void main() {
       },
     );
 
-    test('rasterizer always emits partial-alpha antialias coverage', () {
+    test('rasterizer always uses analytic antialias coverage', () {
       const w = 80, h = 64;
-      final src = _canvas(w, h);
-      _line(src, w, h, 10, 16, 70, 49, 4);
-      final graph = AutoLineartEngine.analyze(src, w, h, roughWidthPx: 9);
+      final graph = AutoLineartGraph(
+        width: w,
+        height: h,
+        paths: [
+          AutoLineartPath(
+            points: const [
+              AutoLineartPoint(10.25, 16.25),
+              AutoLineartPoint(69.25, 48.75),
+            ],
+            startIsJunction: false,
+            endIsJunction: false,
+            persistence: 1,
+          ),
+        ],
+      );
       final out = AutoLineartEngine.render(
         graph,
         w,
         h,
         outputWidthPx: 3,
         taperLengthPx: 0,
-        smoothing: 6,
+        smoothing: 0,
       );
       var partial = 0;
       for (var i = 3; i < out.length; i += 4) {
