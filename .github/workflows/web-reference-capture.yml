@@ -1,5 +1,6 @@
 name: Web Reference Capture
 # Produces four uniquely themed premium variants for each website reference screen.
+# Refresh requested after Canvas top-right menu order/alignment update.
 
 on:
   workflow_dispatch:
