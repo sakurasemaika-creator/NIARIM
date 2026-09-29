@@ -23,6 +23,7 @@ class SteppedSlider extends StatelessWidget {
   // シークバーのように、既に再生ボタンの左右に同じ役割のコマ送りボタンが
   // あるなど±ボタンが冗長になる場面ではfalseにして非表示にする。
   final bool showSteppers;
+  final bool compact;
 
   const SteppedSlider({
     super.key,
@@ -37,6 +38,7 @@ class SteppedSlider extends StatelessWidget {
     this.inactiveColor,
     this.label,
     this.showSteppers = true,
+    this.compact = false,
   });
 
   @override
@@ -64,14 +66,23 @@ class SteppedSlider extends StatelessWidget {
         outerRow.children.length == 3 &&
         _isIconButton(outerRow.children.first, Icons.remove_rounded) &&
         _isIconButton(outerRow.children.last, Icons.add_rounded);
-    if (!showSteppers || hasExternalSteppers) return slider;
+    final sliderWidget = compact
+        ? SliderTheme(
+            data: SliderTheme.of(context).copyWith(
+              overlayShape: SliderComponentShape.noOverlay,
+            ),
+            child: slider,
+          )
+        : slider;
+    if (!showSteppers || hasExternalSteppers) return sliderWidget;
 
+    final stepperExtent = compact ? 28.0 : 40.0;
     return Row(
       children: [
         IconButton(
           icon: const Icon(Icons.remove_circle_outline, size: 22),
           padding: EdgeInsets.zero,
-          constraints: const BoxConstraints(minWidth: 40, minHeight: 40),
+          constraints: BoxConstraints(minWidth: stepperExtent, minHeight: 40),
           visualDensity: VisualDensity.compact,
           tooltip: '-$step',
           onPressed: (onChanged == null || clamped <= min)
@@ -82,11 +93,11 @@ class SteppedSlider extends StatelessWidget {
                   onChangeEnd?.call(v);
                 },
         ),
-        Expanded(child: slider),
+        Expanded(child: sliderWidget),
         IconButton(
           icon: const Icon(Icons.add_circle_outline, size: 22),
           padding: EdgeInsets.zero,
-          constraints: const BoxConstraints(minWidth: 40, minHeight: 40),
+          constraints: BoxConstraints(minWidth: stepperExtent, minHeight: 40),
           visualDensity: VisualDensity.compact,
           tooltip: '+$step',
           onPressed: (onChanged == null || clamped >= max)
