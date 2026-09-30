@@ -6812,4 +6812,28 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get filterNoiseSeed => 'Graine du motif';
+
+  @override
+  String get communityContentFilterTitle => "Filtres d’affichage";
+
+  @override
+  String get communityHideGenerativeAiImageVideo => "Masquer les œuvres contenant des images ou vidéos générées par IA";
+
+  @override
+  String get communityMutedWords => "Mots masqués";
+
+  @override
+  String get communityMutedWordsHint => "Mots séparés par des virgules à masquer s’ils figurent dans le titre";
+
+  @override
+  String get communityMutedTags => "Tags masqués";
+
+  @override
+  String get communityMutedTagsHint => "Noms de tags séparés par des virgules à masquer";
+
+  @override
+  String get communityContainsGenerativeAiImageVideo => "Contient des images ou vidéos générées par IA";
+
+  @override
+  String get communityContainsGenerativeAiImageVideoHelp => "Activez cette option si une IA générative a servi à créer des images ou une vidéo de l’œuvre. Les logiciels de synthèse vocale ne sont pas concernés.";
 }
