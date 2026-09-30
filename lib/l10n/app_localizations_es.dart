@@ -6799,4 +6799,28 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get filterNoiseSeed => 'Semilla del patrón';
+
+  @override
+  String get communityContentFilterTitle => "Filtros de visualización";
+
+  @override
+  String get communityHideGenerativeAiImageVideo => "Ocultar obras con imágenes o vídeo de IA generativa";
+
+  @override
+  String get communityMutedWords => "Palabras silenciadas";
+
+  @override
+  String get communityMutedWordsHint => "Palabras separadas por comas que se ocultarán si aparecen en el título";
+
+  @override
+  String get communityMutedTags => "Etiquetas silenciadas";
+
+  @override
+  String get communityMutedTagsHint => "Etiquetas separadas por comas que se ocultarán";
+
+  @override
+  String get communityContainsGenerativeAiImageVideo => "Contiene imágenes o vídeo de IA generativa";
+
+  @override
+  String get communityContainsGenerativeAiImageVideoHelp => "Actívalo si se utilizó IA generativa para crear imágenes o vídeo de la obra. El software de síntesis de voz no está incluido.";
 }
