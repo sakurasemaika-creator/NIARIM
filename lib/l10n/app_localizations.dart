@@ -6227,6 +6227,9 @@ abstract class AppLocalizations {
   /// **'入力：白'**
   String get filterLevelsInputWhite;
 
+  /// Gamma / midtone adjustment for Levels.
+  String get filterLevelsGamma;
+
   /// No description provided for @filterLevelsOutputBlack.
   ///
   /// In ja, this message translates to:
