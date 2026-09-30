@@ -116,6 +116,21 @@ void main() {
     expect(out[1], out[0]);
     expect(out[2], out[0]);
   });
+  test('tone curve presets remain active until custom points are supplied', () {
+    const preset = FilterDef(
+      id: 'curve-preset',
+      name: 'curve',
+      kind: FilterKind.toneCurve,
+      toneCurvePreset: ToneCurvePreset.invert,
+    );
+    expect(preset.toneCurvePoints, isEmpty);
+    final source = Uint8List.fromList([0, 0, 0, 255]);
+    final out = applyDrawFilterInIsolate((source, 1, 1, preset, null));
+    expect(out[0], 255);
+    expect(out[1], 255);
+    expect(out[2], 255);
+  });
 }
+
 
 
