@@ -136,6 +136,19 @@ void main() {
         'youtubeAccessToken': 'YT_TOKEN',
         'isShort': true,
         'isNiarimPublished': true,
+        'containsGenerativeAiImageOrVideo': false,
+      });
+    });
+
+    test('AI画像・AI動画使用フラグ更新は正しい作品URLと本文へ送る', () async {
+      final m = mock((_) => workJson());
+      await apiWith(m.client, token: 'T').updateWorkAiImageVideoDisclosure(
+        'vid00000001',
+        containsGenerativeAiImageOrVideo: true,
+      );
+      expect(m.requests.single.url.path, '/api/works/vid00000001');
+      expect(jsonDecode(m.requests.single.body), {
+        'containsGenerativeAiImageOrVideo': true,
       });
     });
 
@@ -502,6 +515,10 @@ void main() {
     await api.following('U');
     await api.createWork(youtubeVideoId: 'V', youtubeAccessToken: 'T');
     await api.updateWorkVisibility('W', isNiarimPublished: false);
+    await api.updateWorkAiImageVideoDisclosure(
+      'W',
+      containsGenerativeAiImageOrVideo: true,
+    );
     await api.deleteWork('W');
     await api.updateTag('W', action: CommunityTagAction.add, tag: 'tag');
     await api.toggleBookmark('W');
