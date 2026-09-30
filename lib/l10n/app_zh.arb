@@ -2780,5 +2780,13 @@
   "filterNoiseStyle": "噪点类型",
   "filterNoiseFilmGrain": "胶片颗粒",
   "filterNoiseColor": "彩色噪点",
-  "filterNoiseSeed": "图案种子"
+  "filterNoiseSeed": "图案种子",
+  "communityContentFilterTitle": "显示筛选",
+  "communityHideGenerativeAiImageVideo": "隐藏包含生成式 AI 图像或视频的作品",
+  "communityMutedWords": "屏蔽词",
+  "communityMutedWordsHint": "输入以逗号分隔的词语；作品标题包含时将隐藏",
+  "communityMutedTags": "屏蔽标签",
+  "communityMutedTagsHint": "输入以逗号分隔的标签名称",
+  "communityContainsGenerativeAiImageVideo": "包含生成式 AI 图像或视频",
+  "communityContainsGenerativeAiImageVideoHelp": "作品中的图像或视频使用生成式 AI 制作时请开启。语音合成软件不属于此项范围。"
 }
