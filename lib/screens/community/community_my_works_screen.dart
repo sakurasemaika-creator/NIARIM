@@ -164,7 +164,7 @@ class _CommunityMyWorksScreenState extends State<CommunityMyWorksScreen> {
     } catch (error) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('AI画像・動画フラグを変更できませんでした: $error')),
+        SnackBar(content: Text('「AI画像・AI動画使用」フラグを変更できませんでした: $error')),
       );
     } finally {
       if (mounted) setState(() => _visibilityBusy.remove(work.id));
