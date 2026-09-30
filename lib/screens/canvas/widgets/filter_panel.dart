@@ -1626,7 +1626,9 @@ class _FilterPanelState extends State<FilterPanel> {
           data,
           width,
           height,
-          toneCurvePoints(filter.toneCurvePreset),
+          filter.toneCurvePoints.length >= 4
+              ? [for (var i = 0; i + 1 < filter.toneCurvePoints.length; i += 2) Offset(filter.toneCurvePoints[i], filter.toneCurvePoints[i + 1])]
+              : toneCurvePoints(filter.toneCurvePreset),
         );
       case FilterKind.levels:
         return _engine.applyLevels(
@@ -1635,6 +1637,7 @@ class _FilterPanelState extends State<FilterPanel> {
           height,
           inputBlack: filter.inputBlack,
           inputWhite: filter.inputWhite,
+          inputGamma: filter.inputGamma,
           outputBlack: filter.outputBlack,
           outputWhite: filter.outputWhite,
         );
