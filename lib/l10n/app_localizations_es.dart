@@ -3518,6 +3518,9 @@ class AppLocalizationsEs extends AppLocalizations {
   String get filterLevelsInputWhite => 'Entrada: Blanco';
 
   @override
+  String get filterLevelsGamma => 'Gamma';
+
+  @override
   String get filterLevelsOutputBlack => 'Salida: Negro';
 
   @override
