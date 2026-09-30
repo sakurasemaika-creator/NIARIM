@@ -148,6 +148,7 @@ class _CanvasScreenState extends State<CanvasScreen> {
   int _selectAllSelectionToken = 0;
   int _clearSelectionToken = 0;
   bool _selectionReferenceAllVisible = false;
+  bool _lassoSnapToLines = false;
 
   bool get _isSelectionToolActive =>
       _currentTool == DrawingTool.selectRect ||
@@ -1282,6 +1283,7 @@ class _CanvasScreenState extends State<CanvasScreen> {
                                   clearSelectionToken: _clearSelectionToken,
                                   selectionReferenceAllVisible:
                                       _selectionReferenceAllVisible,
+                                  lassoSnapToLines: _lassoSnapToLines,
                                   onSelectionActiveChanged: (v) {
                                     if (_hasActiveSelection == v) return;
                                     setState(() {
@@ -2449,6 +2451,33 @@ class _CanvasScreenState extends State<CanvasScreen> {
                     tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                   ),
                 ),
+                if (_currentTool == DrawingTool.selectLasso)
+                  InkWell(
+                    key: const ValueKey('lasso-snap-to-lines'),
+                    onTap: () => setState(
+                      () => _lassoSnapToLines = !_lassoSnapToLines,
+                    ),
+                    borderRadius: BorderRadius.circular(6),
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 2),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Checkbox(
+                            value: _lassoSnapToLines,
+                            onChanged: (value) => setState(
+                              () => _lassoSnapToLines = value ?? false,
+                            ),
+                            visualDensity: VisualDensity.compact,
+                          ),
+                          Text(
+                            l10n.canvasLassoSnapToLines,
+                            style: const TextStyle(fontSize: 10),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
                 const SizedBox(height: 4),
                 chip(
                   icon: Icons.select_all,
