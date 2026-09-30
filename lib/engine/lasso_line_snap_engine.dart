@@ -98,6 +98,12 @@ class LassoLineSnapEngine {
         if (distance > radius) continue;
         var score = distance;
         if (previous != null) {
+          // Do not let a later sample jump backwards onto a crossing branch.
+          // The user's guide establishes the local forward half-plane.
+          if (guideDirection != null) {
+            final advance = _dot(p - previous, guideDirection);
+            if (advance < -0.5) continue;
+          }
           final candidateDirection = _unit(p - previous);
           if (candidateDirection != null) {
             if (guideDirection != null) {
