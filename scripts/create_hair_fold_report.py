@@ -21,15 +21,15 @@ def main():
     parser.add_argument("--current", type=Path, required=True)
     parser.add_argument("--baseline", type=Path, required=True)
     parser.add_argument("--output", type=Path, required=True)
-    parser.add_argument("--revision", default="fe92485f")
-    parser.add_argument("--baseline-revision", default="2189afa7")
+    parser.add_argument("--revision", default="curve-tip-fix")
+    parser.add_argument("--baseline-revision", default="fe92485f")
     args = parser.parse_args()
     font = Path(__file__).resolve().parents[1] / "assets/fonts/NotoSerifJP.ttf"
     pdfmetrics.registerFont(TTFont("JP", str(font)))
     args.output.parent.mkdir(parents=True, exist_ok=True)
     width, height = 842, 595
     pdf = canvas.Canvas(str(args.output), pagesize=(width, height))
-    pdf.setTitle("NIARIM 折り畳みモード - 連続カール・共通設定の確認")
+    pdf.setTitle("NIARIM 折り畳みモード - 曲線の輪郭と0%の毛先")
     pdf.setAuthor("NIARIM")
     page = 0
 
@@ -76,13 +76,13 @@ def main():
         ("crescent", "三日月カール"),
     ]
 
-    begin("折り畳みモード：連続カールと共通設定", "本番 DrawingEngine の実描画。前髪・後ろ髪の使用例と修正前後を収録。")
+    begin("折り畳みモード：滑らかな輪郭と毛先", "本番 DrawingEngine の実描画。前髪・後ろ髪の使用例と修正前後を収録。")
     panel(current, "usage_back_crescent", "後ろ髪 / 三日月カール", 32, 80, 270, 412)
     panel(current, "usage_front_crescent", "前髪 / 三日月カール", 316, 80, 270, 412)
     for index, line in enumerate([
         "今回の確認内容",
-        "・270° / 540° 前後の接続",
-        "・半回転 / 一回転前後の形状",
+        "・三日月の内側・外側の曲線",
+        "・ウェーブ・巻き髪の毛先0%",
         "・髪・前髪の5モード",
         "・プリセットとカスタムの描画一致",
         "・共通のペン先・画像素材設定",
@@ -93,6 +93,23 @@ def main():
     text(32, 56, "比較は同じ素材・太さ・入力線で実施。修正前は旧輪郭処理のみを差し替えた比較環境です。", 10)
     end()
 
+    begin("三日月の輪郭：同じ曲線での修正前後", f"内側を中央の向きへ寄せる処理を撤去。左：{args.baseline_revision} / 右：{args.revision}。")
+    for col, (root, prefix, label) in enumerate([
+        (baseline, "hair", "髪 / 修正前"), (current, "hair", "髪 / 現在"),
+        (baseline, "bangs", "前髪 / 修正前"), (current, "bangs", "前髪 / 現在"),
+    ]):
+        panel(root, f"{prefix}_crescent_same_curve", label, 32 + col * 197, 62, 183, 431, strand_crop)
+    text(32, 44, "内側・外側とも描いた曲線の向きに沿う補間。きつい曲がりでは幅を外側へ滑らかに配分。", 10)
+    end()
+
+    begin("ウェーブ・巻き髪：終点まで0%の抜き", "4モード共通の形状処理。フェードOFFでも確定時に幅と濃度を0%まで滑らかに下げます。")
+    for col, (mode, label) in enumerate(modes[:4]):
+        name = f"hair_{mode}_same_curve"
+        panel(baseline, name, f"{label} / 修正前", 32 + col * 197, 278, 183, 210, (220, 700, 520, 975))
+        panel(current, name, f"{label} / 現在", 32 + col * 197, 58, 183, 210, (220, 700, 520, 975))
+    text(32, 40, "抜きの計算はブラシID・名称に依存せず、画像素材を使うカスタムブラシにも適用。", 10)
+    end()
+
     for boundary, degrees in [(270, (265, 275)), (540, (535, 545))]:
         begin(f"連続カール：{boundary}° の前後", f"左：旧輪郭処理 {args.baseline_revision} / 右：現在 {args.revision}。共通条件：太さ64 px、縁取り2.5 px。")
         boundary_crop = (210, 258, 482, 560) if boundary == 270 else (150, 250, 538, 625)
@@ -101,7 +118,7 @@ def main():
             name = f"hair_crescent_{degree}deg_continuous"
             panel(baseline, name, f"修正前 / {degree}°", 38, y, 370, 212, boundary_crop)
             panel(current, name, f"現在 / {degree}°", 434, y, 370, 212, boundary_crop)
-        text(32, 44, "検出角度を越えた瞬間の丸い蓋を撤去。続きは実際の曲がりに合わせて成長します。", 10)
+        text(32, 44, "半回転ごとの接続を保ったまま、両輪郭を実際の曲がりに合わせています。", 10)
         end()
 
     begin("描き進めた途中：半回転・一回転の前後", "同じ螺旋入力の途中で止めた画像。別の位置で毛先が急に太くならないか確認。")

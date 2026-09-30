@@ -174,7 +174,7 @@ class DrawingEngine {
   }
 
   void endStroke({bool cancel = false}) {
-    if (!cancel) _rebuildHairFold();
+    if (!cancel) _rebuildHairFold(finalize: true);
     // 回転/散布ONでPointerDown→Upだけのタップだった場合は進行方向が存在しない。
     // その場合だけ中心位置へ1回描画し、散布は行わない。
     if (!cancel &&
@@ -243,13 +243,17 @@ class DrawingEngine {
     _foldEvents.add(event);
   }
 
-  void _rebuildHairFold() {
+  void _rebuildHairFold({bool finalize = false}) {
     // Final fade replay already knows the complete input: rasterize the fold
     // once after replay instead of rebuilding every intermediate prefix.
     if (_replayingFinalStroke) return;
     final brush = currentBrush;
     final raster = _foldRaster;
-    if (brush == null || raster == null || _foldEvents.isEmpty) return;
+    if (brush == null || raster == null) return;
+    if (_foldEvents.isEmpty &&
+        (!finalize || brush.foldMode == HairFoldMode.crescent)) {
+      return;
+    }
     final samples = <HairRibbonPoint>[];
     var distance = 0.0;
     for (var i = 0; i < _currentStroke.length; i++) {
@@ -282,6 +286,7 @@ class DrawingEngine {
     final texture = _brushTextureSelector.activePath;
     raster.render(
       points: samples,
+      taperEnd: finalize,
       folds: _foldEvents,
       brush: brush,
       fillColor: currentColor,

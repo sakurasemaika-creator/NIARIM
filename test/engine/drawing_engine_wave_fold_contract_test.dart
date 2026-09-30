@@ -71,9 +71,19 @@ Future<Uint8List> renderFold(
   return bytes;
 }
 
-int changedPixels(Uint8List a, Uint8List b) {
+int changedPixels(Uint8List a, Uint8List b, {bool interiorOnly = false}) {
   var count = 0;
   for (var i = 0; i < a.length; i += 4) {
+    if (interiorOnly) {
+      final point = ui.Offset(
+        (i ~/ 4 % 256).toDouble(),
+        (i ~/ 4 ~/ 256).toDouble(),
+      );
+      if ((point - foldCurve.first).distance < 90 ||
+          (point - foldCurve.last).distance < 90) {
+        continue;
+      }
+    }
     if ((a[i] - b[i]).abs() > 80 || (a[i + 3] - b[i + 3]).abs() > 80) count++;
   }
   return count;
@@ -81,6 +91,83 @@ int changedPixels(Uint8List a, Uint8List b) {
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
+  for (final mode in HairFoldMode.values.where(
+    (m) => m != HairFoldMode.crescent,
+  )) {
+    test('${mode.name} folded stroke finishes at zero width', () async {
+      final pixels = await renderFold(mode);
+      int alpha(int x, int y) => pixels[(y * 256 + x) * 4 + 3];
+      expect(
+        alpha(180, 340),
+        lessThan(16),
+        reason: 'the actual stroke endpoint',
+      );
+      expect(
+        alpha(120, 290),
+        greaterThan(240),
+        reason: 'the body retains its width',
+      );
+      expect(
+        [
+          for (var x = 150; x <= 210; x++)
+            if (alpha(x, 340) > 127) x,
+        ],
+        isEmpty,
+        reason: 'no rounded terminal cap',
+      );
+    });
+  }
+  test(
+    'a wide fold with a short final run still finishes at zero width',
+    () async {
+      const curve = [
+        ui.Offset(60, 40),
+        ui.Offset(120, 100),
+        ui.Offset(60, 100),
+      ];
+      final pixels = await renderFold(
+        HairFoldMode.waveTopView,
+        size: 60,
+        curve: curve,
+      );
+      expect(pixels[(100 * 256 + 60) * 4 + 3], lessThan(16));
+    },
+  );
+  test('short straight wave/curl dashes finish at a point', () async {
+    for (final mode in HairFoldMode.values.where(
+      (m) => m != HairFoldMode.crescent,
+    )) {
+      final pixels = await renderFold(
+        mode,
+        size: 60,
+        curve: const [ui.Offset(60, 40), ui.Offset(70, 40)],
+      );
+      expect(pixels[(40 * 256 + 70) * 4 + 3], lessThan(16), reason: mode.name);
+    }
+  });
+  test('duplicate stationary wave/curl input preserves its tap', () async {
+    const point = ui.Offset(60, 40);
+    final plain = await renderFold(
+      HairFoldMode.waveTopView,
+      enabled: false,
+      curve: const [point],
+    );
+    for (final mode in HairFoldMode.values.where(
+      (m) => m != HairFoldMode.crescent,
+    )) {
+      final pixels = await renderFold(
+        mode,
+        curve: const [point],
+        beforeEnd: (engine) {
+          engine.continueStroke(
+            const StrokePoint(x: 60, y: 40, pressure: 1, tiltX: 0, tiltY: 0),
+            'test',
+          );
+        },
+      );
+      expect(pixels, plain, reason: mode.name);
+    }
+  });
   test(
     'opposite views change visible fold edges, not just line thickness',
     () async {
@@ -100,17 +187,30 @@ void main() {
       await renderFold(HairFoldMode.waveTopView, enabled: false),
     );
   });
-  test('straight input is ordinary drawing for every mode', () async {
-    const line = [ui.Offset(60, 40), ui.Offset(60, 340)];
-    final plain = await renderFold(
-      HairFoldMode.waveTopView,
-      enabled: false,
-      curve: line,
-    );
-    for (final mode in HairFoldMode.values) {
-      expect(await renderFold(mode, curve: line), plain);
-    }
-  });
+  test(
+    'straight wave/curl input keeps its body and finishes at zero width',
+    () async {
+      const line = [ui.Offset(60, 40), ui.Offset(60, 340)];
+      final plain = await renderFold(
+        HairFoldMode.waveTopView,
+        enabled: false,
+        curve: line,
+      );
+      expect(await renderFold(HairFoldMode.crescent, curve: line), plain);
+      for (final mode in HairFoldMode.values.where(
+        (m) => m != HairFoldMode.crescent,
+      )) {
+        final actual = await renderFold(mode, curve: line);
+        final body = (120 * 256 + 60) * 4;
+        expect(actual.sublist(body, body + 4), plain.sublist(body, body + 4));
+        expect(
+          actual[(340 * 256 + 60) * 4 + 3],
+          lessThan(16),
+          reason: mode.name,
+        );
+      }
+    },
+  );
   test('depth choices preserve the same input silhouette', () async {
     final baseline = await renderFold(HairFoldMode.waveTopView);
     for (final mode in [
@@ -124,20 +224,24 @@ void main() {
       }
     }
   });
-  test('reversing the input keeps all four depth choices', () async {
-    for (final mode in HairFoldMode.values.where(
-      (m) => m != HairFoldMode.crescent,
-    )) {
-      expect(
-        changedPixels(
-          await renderFold(mode),
-          await renderFold(mode, reverse: true),
-        ),
-        lessThan(80),
-        reason: mode.name,
-      );
-    }
-  });
+  test(
+    'reversing the input keeps interior depth choices apart from the end taper',
+    () async {
+      for (final mode in HairFoldMode.values.where(
+        (m) => m != HairFoldMode.crescent,
+      )) {
+        expect(
+          changedPixels(
+            await renderFold(mode),
+            await renderFold(mode, reverse: true),
+            interiorOnly: true,
+          ),
+          lessThan(80),
+          reason: mode.name,
+        );
+      }
+    },
+  );
   test(
     'a later crescent keeps the ordinary outline pen start and straight lead',
     () async {

@@ -75,7 +75,17 @@ Future<({Uint8List pixels, Map<String, Object> timing})> captureReference(
   final data = await layer.toByteData(format: ui.ImageByteFormat.rawRgba);
   final pixels = Uint8List.fromList(data!.buffer.asUint8List());
   if (mode != HairFoldMode.crescent) {
-    for (final point in points.skip(1).take(points.length - 2)) {
+    var remaining = 0.0;
+    final tailDistances = List<double>.filled(points.length, 0);
+    for (var i = points.length - 2; i >= 0; i--) {
+      remaining += (points[i + 1] - points[i]).distance;
+      tailDistances[i] = remaining;
+    }
+    for (var i = 1; i < points.length - 1; i++) {
+      // The shared fold tail intentionally reaches zero coverage. Verify the
+      // authored centerline in the body, outside its maximum taper length.
+      if (folded && tailDistances[i] <= brush.size * 2) continue;
+      final point = points[i];
       final alpha = pixels[(point.dy.floor() * 720 + point.dx.floor()) * 4 + 3];
       expect(
         alpha,

@@ -6426,6 +6426,34 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get filterNoiseSeed => '图案种子';
+
+  @override
+  String get communityContentFilterTitle => '显示筛选';
+
+  @override
+  String get communityHideGenerativeAiImageVideo => '隐藏包含生成式 AI 图像或视频的作品';
+
+  @override
+  String get communityMutedWords => '屏蔽词';
+
+  @override
+  String get communityMutedWordsHint => '输入以逗号分隔的词语；作品标题包含时将隐藏';
+
+  @override
+  String get communityMutedTags => '屏蔽标签';
+
+  @override
+  String get communityMutedTagsHint => '输入以逗号分隔的标签名称';
+
+  @override
+  String get communityContainsGenerativeAiImageVideo => '包含生成式 AI 图像或视频';
+
+  @override
+  String get communityContainsGenerativeAiImageVideoHelp =>
+      '作品中的图像或视频使用生成式 AI 制作时请开启。语音合成软件不属于此项范围。';
+
+  @override
+  String get canvasLassoSnapToLines => '吸附到线条';
 }
 
 /// The translations for Chinese, using the Han script (`zh_Hant`).

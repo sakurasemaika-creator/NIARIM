@@ -154,6 +154,53 @@ int channelAt(TileManager tiles, int x, int y, int channel) {
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
+  test('short textured wave/curl tails do not keep an outline cap', () {
+    final texture = Uint8List(brushTextureSize * brushTextureSize * 4)
+      ..fillRange(0, brushTextureSize * brushTextureSize * 4, 255);
+    for (final mode in HairFoldMode.values.where(
+      (m) => m != HairFoldMode.crescent,
+    )) {
+      final tiles = TileManager(canvasWidth: 128, canvasHeight: 128);
+      addTearDown(tiles.dispose);
+      HairFoldRaster(tiles, 'test').render(
+        points: const [
+          HairRibbonPoint(Offset(60, 40), 60, 1),
+          HairRibbonPoint(Offset(70, 40), 60, 1),
+        ],
+        folds: const [],
+        brush: Brush(
+          id: 'custom-tail',
+          name: 'Tail',
+          size: 60,
+          opacity: 100,
+          spacing: 1,
+          stabilization: false,
+          stabilizationStrength: 0,
+          pixelMode: false,
+          strokeDecay: false,
+          fadeMode: FadeMode.off,
+          outlineEnabled: true,
+          outlineWidth: 2,
+          foldEnabled: true,
+          foldMode: mode,
+        ),
+        fillColor: const Color(0xffffffff),
+        texture: texture,
+        taperEnd: true,
+      );
+      expect(channelAt(tiles, 65, 40, 3), greaterThan(240), reason: mode.name);
+      expect(channelAt(tiles, 70, 40, 3), lessThan(16), reason: mode.name);
+    }
+  });
+  test('crescent inside follows the authored arc away from its apex', () {
+    final tiles = crescent(radius: 40, width: 60);
+    addTearDown(tiles.dispose);
+    // A circular input of radius 40 and an inward offset of 30 has a
+    // circular inner edge of radius 10. This pixel is safely in the body,
+    // outside that inner circle, rather than on an apex-facing chord.
+    expect(channelAt(tiles, 188, 171, 3), 255);
+    expect(channelAt(tiles, 188, 171, 0), greaterThan(245));
+  });
   test(
     'continuous crescent geometry does not reset at detector boundaries',
     () {
@@ -378,8 +425,19 @@ void main() {
               x,
         ].last;
         final apex = innerEdge(265);
-        expect((innerEdge(259) - apex).abs(), lessThanOrEqualTo(1));
-        expect((innerEdge(271) - apex).abs(), lessThanOrEqualTo(1));
+        // A curve-following inside has a rounded apex, rather than the
+        // nearly flat apex-normal contour. Over 6 px its circle sagitta is
+        // about 2 px; allow one pixel of texture/coverage quantization.
+        for (final direction in [-1, 1]) {
+          var previous = apex;
+          for (var step = 1; step <= 6; step++) {
+            final edge = innerEdge(265 + direction * step);
+            expect(edge, greaterThanOrEqualTo(apex), reason: 'no inward hook');
+            expect((edge - previous).abs(), lessThanOrEqualTo(1));
+            expect(edge - apex, lessThanOrEqualTo(3));
+            previous = edge;
+          }
+        }
       },
     );
   }

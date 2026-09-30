@@ -42,8 +42,34 @@ class HairFoldRaster {
     required Brush brush,
     required Color fillColor,
     Uint8List? texture,
+    bool taperEnd = false,
   }) {
-    if (points.length < 3 || folds.isEmpty) return;
+    final plainTail =
+        taperEnd && brush.foldMode != HairFoldMode.crescent && folds.isEmpty;
+    if (points.length < 2 || (folds.isEmpty && !plainTail)) return;
+    if (plainTail) {
+      // Even a straight wave/curl stroke gets a pointed tip. Insert only
+      // collinear samples so sparse input does not taper the whole segment.
+      final samples = <HairRibbonPoint>[points.first];
+      for (var i = 1; i < points.length; i++) {
+        final a = points[i - 1], b = points[i];
+        final count = math.max(
+          1,
+          ((b.position - a.position).distance / 2).ceil(),
+        );
+        for (var j = 1; j <= count; j++) {
+          final t = j / count;
+          samples.add(
+            HairRibbonPoint(
+              Offset.lerp(a.position, b.position, t)!,
+              a.width + (b.width - a.width) * t,
+              a.opacity + (b.opacity - a.opacity) * t,
+            ),
+          );
+        }
+      }
+      points = samples;
+    }
     if (!identical(brush, _cachedBrush) ||
         !identical(texture, _cachedTexture)) {
       _runs.clear();
@@ -79,6 +105,8 @@ class HairFoldRaster {
         lengths.last + (points[i].position - points[i - 1].position).distance,
       );
     }
+    // Duplicate stationary/constrained input must preserve its existing tap.
+    if (lengths.last <= 1e-6) return;
     final candidates =
         <({int index, double strength, double sign, bool continuous})>[];
     for (final fold in folds) {
@@ -153,7 +181,11 @@ class HairFoldRaster {
       ...bends.map((b) => b.index),
       points.length - 1,
     }.toList()..sort();
-    if (indices.length < 3 && brush.foldMode != HairFoldMode.crescent) return;
+    if (indices.length < 3 &&
+        brush.foldMode != HairFoldMode.crescent &&
+        !taperEnd) {
+      return;
+    }
     final crescentContinuous = <int>{};
     if (brush.foldMode == HairFoldMode.crescent) {
       // Once folding is active, every actual reversal separates crescents.
@@ -182,7 +214,32 @@ class HairFoldRaster {
     }
     final result = <int, _SurfaceTile>{};
 
-    final sourcePoints = points;
+    final originalPoints = points;
+    var sourcePoints = points;
+    if (taperEnd && brush.foldMode != HairFoldMode.crescent) {
+      // Folded wave/curl strands finish at a point. This is shared mode
+      // geometry, independent of preset identity and the ordinary fade mode.
+      // Allow the tail to extend before a nearby fold. Limiting it to a
+      // fraction of the last run leaves full-width disks covering the tip.
+      final tailLength = math.min(lengths.last, brush.size * 2);
+      if (tailLength > 0) {
+        sourcePoints = List.generate(points.length, (i) {
+          final p = points[i];
+          final t = ((lengths.last - lengths[i]) / tailLength).clamp(0.0, 1.0);
+          final taper = t * t * (3 - 2 * t);
+          final tip = (t / .1).clamp(0.0, 1.0);
+          return HairRibbonPoint(
+            p.position,
+            // For a dash shorter than its diameter, the ordinary head disk
+            // would cover the point. Fit its width to the available tail span.
+            math.min(p.width, tailLength) * taper,
+            // Keep the narrowed body opaque; only the last outline pixels
+            // fade away, so zero width cannot leave an outline-only dot.
+            p.opacity * tip * tip * (3 - 2 * tip),
+          );
+        });
+      }
+    }
     final repeats = lateralOffsets(
       count: brush.lateralRepeatEnabled ? brush.lateralRepeatCount : 1,
       spacing: brush.lateralRepeatSpacing.clamp(0.0, 4.0).toDouble(),
@@ -200,7 +257,10 @@ class HairFoldRaster {
                       .position;
               final tangent = _unit(after - before);
               return HairRibbonPoint(
-                p.position + Offset(-tangent.dy, tangent.dx) * p.width * offset,
+                p.position +
+                    Offset(-tangent.dy, tangent.dx) *
+                        originalPoints[i].width *
+                        offset,
                 p.width,
                 p.opacity,
               );
@@ -228,6 +288,7 @@ class HairFoldRaster {
       final crescentBlend = <int, double>{};
       final crescentApices = <int, int>{};
       final crescentAngles = <int, double>{};
+      final crescentRadii = <int, double>{};
       var crescentCurveStart = 0;
       if (brush.foldMode == HairFoldMode.crescent) {
         final turns = <double>[0];
@@ -268,6 +329,15 @@ class HairFoldRaster {
           0,
           turns.indexWhere((turn) => turn > .005),
         );
+        for (var index = 0; index < points.length; index++) {
+          final before = math.max(0, index - 1);
+          final after = math.min(points.length - 1, index + 1);
+          final a = crescentTangents[before]!, b = crescentTangents[after]!;
+          final turn = math.atan2(_cross(a, b), _dot(a, b)).abs();
+          crescentRadii[index] = turn < 1e-6
+              ? double.infinity
+              : math.max(.001, (lengths[after] - lengths[before]) / turn);
+        }
         for (var i = 1; i < indices.length; i++) {
           final start = indices[i - 1], end = indices[i];
           final chord = points[end].position - points[start].position;
@@ -304,6 +374,21 @@ class HairFoldRaster {
       }
       runs.sort((a, b) => a.depth.compareTo(b.depth));
       for (final run in runs) {
+        // Use one curvature bound per crescent. A pointwise radius clamp
+        // changes its inset abruptly near a tight apex and creates a hook.
+        final innerRadius = brush.foldMode == HairFoldMode.crescent
+            ? [
+                for (var i = run.start; i <= run.end; i++) crescentRadii[i]!,
+              ].reduce(math.min)
+            : double.infinity;
+        final widestInside = [
+          for (var i = run.start; i <= run.end; i++) points[i].width / 2,
+        ].reduce(math.max);
+        final tightness = ((widestInside / innerRadius - .9) / .3).clamp(
+          0.0,
+          1.0,
+        );
+        final curvatureEase = tightness * tightness * (3 - 2 * tightness);
         final startsContinuous = crescentContinuous.contains(run.start);
         final endsContinuous = crescentContinuous.contains(run.end);
         final geometry = brush.foldMode == HairFoldMode.crescent
@@ -321,6 +406,7 @@ class HairFoldRaster {
                     crescentTangents[index],
                     crescentBlend[index],
                     crescentAngles[index],
+                    crescentRadii[index],
                     lengths[index] - lengths[run.start],
                   ),
               ]
@@ -357,7 +443,8 @@ class HairFoldRaster {
           );
         }
         for (var i = segmentStart; i <= run.end; i++) {
-          var a = points[i - 1], b = points[i];
+          final firstIndex = i - 1;
+          var a = points[firstIndex], b = points[i];
           var textureAngleA = crescentAngles[i - 1];
           var textureAngleB = crescentAngles[i];
           if (brush.foldMode != HairFoldMode.crescent &&
@@ -422,36 +509,27 @@ class HairFoldRaster {
               final tangent = crescentTangents[index]!;
               final inward =
                   Offset(-tangent.dy, tangent.dx) * crescentSides[run.start]!;
-              final apexTangent = crescentTangents[crescentApices[run.start]]!;
-              final normalStart = run.start == 0
-                  ? lengths[math.min(crescentCurveStart, crescentApices[0]!)]
-                  : start;
-              // The inner edge eases from the actual beginning of the curve.
-              // A straight lead keeps its normal, and continuous runs share
-              // exactly the same normal at their common neck.
-              final normalU =
-                  (distance <= apex
-                          ? (distance - normalStart) /
-                                math.max(.001, apex - normalStart)
-                          : (end - distance) / math.max(.001, end - apex))
-                      .clamp(0.0, 1.0);
-              final normalBlend = normalU * normalU * (3 - 2 * normalU);
-              final turnToApex = math.atan2(
-                _cross(tangent, apexTangent),
-                _dot(tangent, apexTangent),
+              // Both outline edges follow the actual local curve normal.
+              // Aiming the inside normal at the apex produces a small hook
+              // followed by a chord-like contour toward each endpoint.
+              final desiredInside = point.width * inner / 2;
+              final radius = innerRadius;
+              // A monotone soft limit keeps the inset from crossing the
+              // curvature center. Its blend is constant for this crescent,
+              // so changing width near the apex cannot turn it into a hook.
+              final t = ((desiredInside - radius * .2) / (radius * .4)).clamp(
+                0.0,
+                1.0,
               );
-              final angle = turnToApex * normalBlend;
-              // Turn the inner normal more gently near the apex. Its derivative
-              // is zero there, so even a bend tighter than half the brush width
-              // has a rounded inside instead of the cusp from overlapping disks.
-              final innerNormal = Offset(
-                inward.dx * math.cos(angle) - inward.dy * math.sin(angle),
-                inward.dx * math.sin(angle) + inward.dy * math.cos(angle),
-              );
-              final outerEdge =
-                  point.position - inward * (point.width * outer / 2);
-              final innerEdge =
-                  point.position + innerNormal * (point.width * inner / 2);
+              final safeInside = desiredInside <= radius * .2
+                  ? desiredInside
+                  : radius * .2 + radius * .4 * (t - t * t / 2);
+              final inside =
+                  desiredInside +
+                  (safeInside - desiredInside) * curvatureEase * blend;
+              final outside = point.width * (outer + inner) / 2 - inside;
+              final outerEdge = point.position - inward * outside;
+              final innerEdge = point.position + inward * inside;
               final across =
                   (outerEdge - innerEdge) * crescentSides[run.start]!;
               final sourceAngle = crescentAngles[index]!;
@@ -528,9 +606,25 @@ class HairFoldRaster {
               }
             }
           }
+          final tailOutline =
+              taperEnd && brush.foldMode != HairFoldMode.crescent;
+          // Compare with the original pressure/fade width: unaffected cached
+          // body masks keep their existing outline, and only the new tail thins.
+          final outlineScaleA = tailOutline
+              ? (a.width / math.max(.001, originalPoints[firstIndex].width))
+                    .clamp(0.0, 1.0)
+              : 1.0;
+          final outlineScaleB = tailOutline
+              ? (b.width / math.max(.001, originalPoints[i].width)).clamp(
+                  0.0,
+                  1.0,
+                )
+              : 1.0;
           if (texture == null) {
             if (brush.foldMode != HairFoldMode.crescent) {
-              _segment(mask, a, b, brush.outlineWidth);
+              final outline =
+                  brush.outlineWidth * math.max(outlineScaleA, outlineScaleB);
+              _segment(mask, a, b, outline);
             }
           } else {
             _texturedSegment(
@@ -539,6 +633,8 @@ class HairFoldRaster {
               b,
               brush,
               texture,
+              outlineScaleA: outlineScaleA,
+              outlineScaleB: outlineScaleB,
               angleA: textureAngleA,
               angleB: textureAngleB,
               blendA: crescentBlend[i - 1] ?? 1,
@@ -869,6 +965,8 @@ class HairFoldRaster {
     double? angleB,
     double blendA = 1,
     double blendB = 1,
+    double outlineScaleA = 1,
+    double outlineScaleB = 1,
   }) {
     final delta = b.position - a.position;
     final steps = math.max(1, delta.distance.ceil());
@@ -892,7 +990,8 @@ class HairFoldRaster {
               : fixedAngle) +
           (brush.calligraphyAngle ?? 0) * math.pi / 180;
       final cosA = math.cos(-angle), sinA = math.sin(-angle);
-      final outerRadius = radius + brush.outlineWidth;
+      final outlineScale = outlineScaleA + (outlineScaleB - outlineScaleA) * t;
+      final outerRadius = radius + brush.outlineWidth * outlineScale;
       final opacity = a.opacity + (b.opacity - a.opacity) * t;
       final left = (center.dx - outerRadius - 1).floor().clamp(
         0,
