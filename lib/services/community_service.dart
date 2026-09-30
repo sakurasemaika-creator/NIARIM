@@ -225,6 +225,13 @@ class CommunityService extends ChangeNotifier {
   late final List<CommunityFollowNotification> _followNotifications =
       _buildFollowNotifications();
 
+  @visibleForTesting
+  void replaceWorksForTest(Iterable<CommunityWork> works) {
+    _works
+      ..clear()
+      ..addAll(works);
+  }
+
   List<CommunityWork> get works => List.unmodifiable(_works);
   Set<String> get bookmarkedIds => Set.unmodifiable(_bookmarkedIds);
 
