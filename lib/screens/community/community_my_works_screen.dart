@@ -469,8 +469,8 @@ class _CommunityMyWorksScreenState extends State<CommunityMyWorksScreen> {
                                             work,
                                             v ?? false,
                                           ),
-                                    title: const Text(
-                                      '生成AIによる画像・動画を含む',
+                                    title: Text(
+                                      l10n.communityContainsGenerativeAiImageVideo,
                                     ),
                                   ),
                               ],
