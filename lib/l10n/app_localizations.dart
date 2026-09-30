@@ -11901,6 +11901,15 @@ abstract class AppLocalizations {
   ///
   /// In ja, this message translates to:
   /// **'ノイズの種類'**
+  String get communityContentFilterTitle;
+  String get communityHideGenerativeAiImageVideo;
+  String get communityMutedWords;
+  String get communityMutedWordsHint;
+  String get communityMutedTags;
+  String get communityMutedTagsHint;
+  String get communityContainsGenerativeAiImageVideo;
+  String get communityContainsGenerativeAiImageVideoHelp;
+
   String get filterNoiseStyle;
 
   /// No description provided for @filterNoiseFilmGrain.
