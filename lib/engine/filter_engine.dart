@@ -2053,23 +2053,158 @@ class FilterEngine {
     double strength, {
     int? seed,
   }) {
+    // Reference workflow: colour overlays -> low-contrast merge -> unsharp ->
+    // glow -> shifted edge/cel overlap -> degraded glass/glitch -> final
+    // colour correction -> mixed monochrome/colour noise. The UI strength
+    // controls how far the flattened result is mixed back into the source.
+    // NIARIM intentionally uses +5% saturation at the final colour-correction
+    // stage (the referenced recipe uses -2%).
     final amount = (strength / 100.0).clamp(0.0, 1.0);
     if (amount <= 0) return Uint8List.fromList(data);
-    final result = Uint8List.fromList(data);
-    for (int i = 0; i < data.length; i += 4) {
-      if (data[i + 3] == 0) continue;
-      final r = data[i], g = data[i + 1], b = data[i + 2];
-      final warmR = (r * 1.08).clamp(0, 255);
-      final warmB = (b * 0.92).clamp(0, 255);
-      final gray = r * 0.3 + g * 0.59 + b * 0.11;
-      final targetR = warmR + (gray - warmR) * 0.15;
-      final targetG = g + (gray - g) * 0.15;
-      final targetB = warmB + (gray - warmB) * 0.15;
-      result[i] = (r + (targetR - r) * amount).round().clamp(0, 255);
-      result[i + 1] = (g + (targetG - g) * amount).round().clamp(0, 255);
-      result[i + 2] = (b + (targetB - b) * amount).round().clamp(0, 255);
+
+    final original = Uint8List.fromList(data);
+    var work = Uint8List.fromList(data);
+
+    // 1) Pale cyan, Difference, 11%.
+    const cyan = (r: 180, g: 229, b: 232);
+    for (var i = 0; i < work.length; i += 4) {
+      if (work[i + 3] == 0) continue;
+      final dr = (work[i] - cyan.r).abs();
+      final dg = (work[i + 1] - cyan.g).abs();
+      final db = (work[i + 2] - cyan.b).abs();
+      work[i] = (work[i] * 0.89 + dr * 0.11).round().clamp(0, 255);
+      work[i + 1] = (work[i + 1] * 0.89 + dg * 0.11).round().clamp(0, 255);
+      work[i + 2] = (work[i + 2] * 0.89 + db * 0.11).round().clamp(0, 255);
     }
-    return applyFilmGrain(result, width, height, amount * 0.15, seed: seed);
+
+    // 2) Warm beige, Multiply, 85%.
+    const beige = (r: 244, g: 222, b: 183);
+    for (var i = 0; i < work.length; i += 4) {
+      if (work[i + 3] == 0) continue;
+      final mr = work[i] * beige.r / 255.0;
+      final mg = work[i + 1] * beige.g / 255.0;
+      final mb = work[i + 2] * beige.b / 255.0;
+      work[i] = (work[i] * 0.15 + mr * 0.85).round().clamp(0, 255);
+      work[i + 1] = (work[i + 1] * 0.15 + mg * 0.85).round().clamp(0, 255);
+      work[i + 2] = (work[i + 2] * 0.15 + mb * 0.85).round().clamp(0, 255);
+    }
+
+    // 3) Inverted merged copy at 5% to soften contrast.
+    for (var i = 0; i < work.length; i += 4) {
+      if (work[i + 3] == 0) continue;
+      work[i] = (work[i] * 0.95 + (255 - work[i]) * 0.05).round();
+      work[i + 1] =
+          (work[i + 1] * 0.95 + (255 - work[i + 1]) * 0.05).round();
+      work[i + 2] =
+          (work[i + 2] * 0.95 + (255 - work[i + 2]) * 0.05).round();
+    }
+
+    // 4) Unsharp mask: radius 5 px, amount 70%.
+    work = applyUnsharpMask(work, width, height, 5, 0.70);
+
+    // 5) Glow: Gaussian radius 10 px, merged at 27%.
+    final glow = applyGaussianBlur(work, width, height, 10);
+    for (var i = 0; i < work.length; i += 4) {
+      if (work[i + 3] == 0) continue;
+      for (var ch = 0; ch < 3; ch++) {
+        work[i + ch] =
+            (work[i + ch] * 0.73 + glow[i + ch] * 0.27).round().clamp(0, 255);
+      }
+    }
+
+    // 6) Cel-overlap impression: shifted Sobel edge, Multiply at 28%.
+    final edges = _sobelEdge(work, width, height);
+    final edged = Uint8List.fromList(work);
+    for (var y = 0; y < height; y++) {
+      for (var x = 0; x < width; x++) {
+        final dst = (y * width + x) * 4;
+        if (work[dst + 3] == 0) continue;
+        final sx = (x - 1).clamp(0, width - 1);
+        final sy = (y - 1).clamp(0, height - 1);
+        final e = edges[sy * width + sx] / 255.0;
+        final multiplier = 1.0 - e * 0.28;
+        edged[dst] = (work[dst] * multiplier).round().clamp(0, 255);
+        edged[dst + 1] =
+            (work[dst + 1] * multiplier).round().clamp(0, 255);
+        edged[dst + 2] =
+            (work[dst + 2] * multiplier).round().clamp(0, 255);
+      }
+    }
+    work = edged;
+
+    // 7/8) Degraded glass + 2 px RGB glitch. A deterministic seed keeps
+    // preview, apply and recorded replay visually stable.
+    final rng = math.Random(seed ?? 43098);
+    final degraded = Uint8List.fromList(work);
+    for (var y = 0; y < height; y++) {
+      for (var x = 0; x < width; x++) {
+        final i = (y * width + x) * 4;
+        if (work[i + 3] == 0) continue;
+        final jitterX = (rng.nextDouble() * 7 - 3.5).round();
+        final jitterY = (rng.nextDouble() * 7 - 3.5).round();
+        final sx = (x + jitterX).clamp(0, width - 1);
+        final sy = (y + jitterY).clamp(0, height - 1);
+        final s = (sy * width + sx) * 4;
+        for (var ch = 0; ch < 3; ch++) {
+          degraded[i + ch] =
+              (work[i + ch] * 0.75 + work[s + ch] * 0.25).round();
+        }
+        final rx = (x + 2).clamp(0, width - 1);
+        final bx = (x - 2).clamp(0, width - 1);
+        degraded[i] = degraded[(y * width + rx) * 4];
+        degraded[i + 2] = degraded[(y * width + bx) * 4 + 2];
+      }
+    }
+    work = degraded;
+
+    // 9) Contrast -3%, saturation +5% (user-requested deviation from recipe).
+    for (var i = 0; i < work.length; i += 4) {
+      if (work[i + 3] == 0) continue;
+      var r = 128 + (work[i] - 128) * 0.97;
+      var g = 128 + (work[i + 1] - 128) * 0.97;
+      var b = 128 + (work[i + 2] - 128) * 0.97;
+      final gray = r * 0.299 + g * 0.587 + b * 0.114;
+      r = gray + (r - gray) * 1.05;
+      g = gray + (g - gray) * 1.05;
+      b = gray + (b - gray) * 1.05;
+      work[i] = r.round().clamp(0, 255);
+      work[i + 1] = g.round().clamp(0, 255);
+      work[i + 2] = b.round().clamp(0, 255);
+    }
+
+    // 10) Overlay-like neutral grain: grayscale body plus sparse colour grain.
+    final grayGrain = applyFilmGrain(work, width, height, 0.17, seed: seed ?? 43098);
+    final colorGrain = applyColorNoise(
+      grayGrain,
+      width,
+      height,
+      0.015,
+      seed: (seed ?? 43098) + 1,
+    );
+    for (var i = 0; i < work.length; i += 4) {
+      if (work[i + 3] == 0) continue;
+      for (var ch = 0; ch < 3; ch++) {
+        final grain = colorGrain[i + ch];
+        final base = work[i + ch];
+        final overlay = base < 128
+            ? (2 * base * grain / 255.0)
+            : (255 - 2 * (255 - base) * (255 - grain) / 255.0);
+        work[i + ch] =
+            (base * 0.25 + overlay * 0.75).round().clamp(0, 255);
+      }
+    }
+
+    final result = Uint8List.fromList(original);
+    for (var i = 0; i < result.length; i += 4) {
+      if (original[i + 3] == 0) continue;
+      for (var ch = 0; ch < 3; ch++) {
+        result[i + ch] =
+            (original[i + ch] + (work[i + ch] - original[i + ch]) * amount)
+                .round()
+                .clamp(0, 255);
+      }
+    }
+    return result;
   }
 
   /// ブラウン管（CRT）風：色収差・周辺減光・走査線を組み合わせた昔のテレビ・
