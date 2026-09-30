@@ -12850,4 +12850,38 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get filterNoiseSeed => '圖案種子';
+
+  @override
+  String get communityContentFilterTitle => localeName == 'zh_Hant' ? '顯示篩選' : '显示筛选';
+
+  @override
+  String get communityHideGenerativeAiImageVideo => localeName == 'zh_Hant'
+      ? '隱藏包含生成式 AI 圖像或影片的作品'
+      : '隐藏包含生成式 AI 图像或视频的作品';
+
+  @override
+  String get communityMutedWords => localeName == 'zh_Hant' ? '封鎖詞' : '屏蔽词';
+
+  @override
+  String get communityMutedWordsHint => localeName == 'zh_Hant'
+      ? '輸入以逗號分隔的詞語；作品標題包含時將隱藏'
+      : '输入以逗号分隔的词语；作品标题包含时将隐藏';
+
+  @override
+  String get communityMutedTags => localeName == 'zh_Hant' ? '封鎖標籤' : '屏蔽标签';
+
+  @override
+  String get communityMutedTagsHint => localeName == 'zh_Hant'
+      ? '輸入以逗號分隔的標籤名稱'
+      : '输入以逗号分隔的标签名称';
+
+  @override
+  String get communityContainsGenerativeAiImageVideo => localeName == 'zh_Hant'
+      ? '包含生成式 AI 圖像或影片'
+      : '包含生成式 AI 图像或视频';
+
+  @override
+  String get communityContainsGenerativeAiImageVideoHelp => localeName == 'zh_Hant'
+      ? '作品中的圖像或影片使用生成式 AI 製作時請開啟。語音合成軟體不屬於此項範圍。'
+      : '作品中的图像或视频使用生成式 AI 制作时请开启。语音合成软件不属于此项范围。';
 }
