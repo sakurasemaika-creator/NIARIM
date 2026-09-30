@@ -3352,6 +3352,9 @@ class AppLocalizationsJa extends AppLocalizations {
   String get filterLevelsInputWhite => '入力：白';
 
   @override
+  String get filterLevelsGamma => 'ガンマ';
+
+  @override
   String get filterLevelsOutputBlack => '出力：黒';
 
   @override
