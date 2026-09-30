@@ -2788,5 +2788,6 @@
   "communityMutedTags": "Tags masqués",
   "communityMutedTagsHint": "Noms de tags séparés par des virgules à masquer",
   "communityContainsGenerativeAiImageVideo": "Contient des images ou vidéos générées par IA",
-  "communityContainsGenerativeAiImageVideoHelp": "Activez cette option si une IA générative a servi à créer des images ou une vidéo de l’œuvre. Les logiciels de synthèse vocale ne sont pas concernés."
+  "communityContainsGenerativeAiImageVideoHelp": "Activez cette option si une IA générative a servi à créer des images ou une vidéo de l’œuvre. Les logiciels de synthèse vocale ne sont pas concernés.",
+  "canvasLassoSnapToLines": "Magnétiser aux lignes"
 }
