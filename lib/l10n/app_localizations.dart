@@ -11739,6 +11739,8 @@ abstract class AppLocalizations {
   ///
   /// In ja, this message translates to:
   /// **'作業レイヤーのみ'**
+  String get canvasLassoSnapToLines;
+
   String get canvasSelectionReferenceWorkingLayer;
 
   /// No description provided for @canvasSelectionReferenceVisibleLayers.
