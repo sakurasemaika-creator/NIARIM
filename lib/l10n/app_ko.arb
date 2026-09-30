@@ -1278,6 +1278,7 @@
   "filterToneCurveInvert": "반전",
   "filterLevelsInputBlack": "입력: 검정",
   "filterLevelsInputWhite": "입력: 흰색",
+  "filterLevelsGamma": "감마",
   "filterLevelsOutputBlack": "출력: 검정",
   "filterLevelsOutputWhite": "출력: 흰색",
   "filterApplyButton": "적용",
