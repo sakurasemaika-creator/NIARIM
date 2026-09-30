@@ -20,6 +20,8 @@ export function toPublicWork(item: WorkWithProjectMetadata) {
     bookmarkCount: item.bookmarkCount,
     repostCount: item.repostCount,
     isShort: item.isShort,
+    containsGenerativeAiImageOrVideo:
+      item.containsGenerativeAiImageOrVideo ?? false,
     tags: item.tags,
     lockedTags: item.lockedTags,
     isNiarimPublished: item.isNiarimPublished,
