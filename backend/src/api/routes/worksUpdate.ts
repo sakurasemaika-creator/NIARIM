@@ -19,6 +19,7 @@ import { toPublicWork } from "./_publicWork";
 interface UpdateWorkRequestBody {
   isNiarimPublished?: boolean;
   title?: string;
+  containsGenerativeAiImageOrVideo?: boolean;
 }
 
 /**
@@ -69,6 +70,10 @@ export async function updateWork(
     if (body.title !== undefined) {
       updates.push("title = :title");
       values[":title"] = body.title;
+    }
+    if (body.containsGenerativeAiImageOrVideo !== undefined) {
+      updates.push("containsGenerativeAiImageOrVideo = :aiImageVideo");
+      values[":aiImageVideo"] = body.containsGenerativeAiImageOrVideo;
     }
 
     // A metadata-only PATCH must not change publication or ranking indexes.
@@ -158,6 +163,12 @@ function parseBody(raw: string | undefined): UpdateWorkRequestBody {
     badRequest("isNiarimPublishedは真偽値である必要があります");
   }
   if (
+    body.containsGenerativeAiImageOrVideo !== undefined &&
+    typeof body.containsGenerativeAiImageOrVideo !== "boolean"
+  ) {
+    badRequest("containsGenerativeAiImageOrVideoは真偽値である必要があります");
+  }
+  if (
     body.title !== undefined &&
     (typeof body.title !== "string" ||
       !body.title.trim() ||
@@ -167,6 +178,8 @@ function parseBody(raw: string | undefined): UpdateWorkRequestBody {
   }
   return {
     isNiarimPublished: body.isNiarimPublished as boolean | undefined,
+    containsGenerativeAiImageOrVideo:
+      body.containsGenerativeAiImageOrVideo as boolean | undefined,
     title: typeof body.title === "string" ? body.title.trim() : undefined,
   };
 }
