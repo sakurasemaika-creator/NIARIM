@@ -72,4 +72,34 @@ void main() {
       );
     }
   });
+  test('levels gamma persists and changes midtones without moving endpoints', () {
+    const def = FilterDef(
+      id: 'levels-gamma',
+      name: 'levels',
+      kind: FilterKind.levels,
+      inputGamma: 2.0,
+    );
+    final restored = FilterDef.fromJson(def.toJson());
+    expect(restored.inputGamma, 2.0);
+
+    final source = Uint8List.fromList([
+      0, 0, 0, 255,
+      64, 64, 64, 255,
+      128, 128, 128, 255,
+      255, 255, 255, 255,
+    ]);
+    final linear = applyDrawFilterInIsolate((
+      source,
+      4,
+      1,
+      def.copyWith(inputGamma: 1.0),
+      null,
+    ));
+    final gamma = applyDrawFilterInIsolate((source, 4, 1, def, null));
+    expect(gamma[0], 0);
+    expect(gamma[12], 255);
+    expect(gamma[4], greaterThan(linear[4]));
+    expect(gamma[8], greaterThan(linear[8]));
+  });
 }
+
