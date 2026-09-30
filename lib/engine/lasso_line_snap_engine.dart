@@ -31,6 +31,7 @@ class LassoLineSnapEngine {
         height: height,
         radius: radius,
         previous: out.isEmpty ? null : out.last,
+        expected: out.isEmpty ? null : out.last + (raw - guide[i - 1]),
         guideDirection: rawDirection,
         previousDirection: previousDirection,
       );
@@ -67,6 +68,7 @@ class LassoLineSnapEngine {
           height: height,
           radius: radius,
           previous: previous,
+          expected: previous == null ? null : previous + (raw - rawPrevious),
           guideDirection: guideDirection,
           previousDirection: previousDirection,
         ) ??
@@ -80,6 +82,7 @@ class LassoLineSnapEngine {
     required int height,
     required double radius,
     Offset? previous,
+    Offset? expected,
     Offset? guideDirection,
     Offset? previousDirection,
   }) {
@@ -97,6 +100,13 @@ class LassoLineSnapEngine {
         final distance = (p - raw).distance;
         if (distance > radius) continue;
         var score = distance;
+        // Preserve the contour's local offset from the coarse finger guide.
+        // This is crucial at crossings: a perpendicular stroke may be closer
+        // to the raw finger sample, but it is not where the contour was
+        // heading from the previous sample.
+        if (expected != null) {
+          score += (p - expected).distance * 1.5;
+        }
         if (previous != null) {
           // Do not let a later sample jump backwards onto a crossing branch.
           // The user's guide establishes the local forward half-plane.
