@@ -1008,7 +1008,7 @@ class _FilterPanelState extends State<FilterPanel> {
                   service.updateFilterParams(current.id, inputWhite: v.round()),
             ),
             _paramSlider(
-              'ガンマ',
+              l10n.filterLevelsGamma,
               current.inputGamma,
               0.1,
               10.0,
