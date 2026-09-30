@@ -44,6 +44,35 @@ class LassoLineSnapEngine {
     return out;
   }
 
+  /// Snaps one incoming lasso sample while preserving the direction of the
+  /// already-snapped contour. Used by the live canvas preview.
+  Offset snapPoint({
+    required Offset raw,
+    required Offset rawPrevious,
+    required Uint8List rgba,
+    required int width,
+    required int height,
+    Offset? previous,
+    Offset? previousPrevious,
+    double radius = 18,
+  }) {
+    final guideDirection = _unit(raw - rawPrevious);
+    final previousDirection = previous != null && previousPrevious != null
+        ? _unit(previous - previousPrevious)
+        : null;
+    return _bestCandidate(
+          raw: raw,
+          rgba: rgba,
+          width: width,
+          height: height,
+          radius: radius,
+          previous: previous,
+          guideDirection: guideDirection,
+          previousDirection: previousDirection,
+        ) ??
+        raw;
+  }
+
   Offset? _bestCandidate({
     required Offset raw,
     required Uint8List rgba,
