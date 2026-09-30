@@ -6713,4 +6713,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get communityContainsGenerativeAiImageVideoHelp => "Turn this on when generative AI was used to create images or video in the work. Voice-synthesis software is not covered by this setting.";
+
+  @override
+  String get canvasLassoSnapToLines => "Snap to lines";
 }
