@@ -64,6 +64,7 @@ class FilterDef {
   final double edgeStrength;
   final int inputBlack;
   final int inputWhite;
+  final double inputGamma;
   final int outputBlack;
   final int outputWhite;
   final ToneCurvePreset toneCurvePreset;
@@ -131,6 +132,7 @@ class FilterDef {
     this.edgeStrength = 0.4,
     this.inputBlack = 0,
     this.inputWhite = 255,
+    this.inputGamma = 1.0,
     this.outputBlack = 0,
     this.outputWhite = 255,
     this.toneCurvePreset = ToneCurvePreset.linear,
@@ -199,6 +201,7 @@ class FilterDef {
     double? edgeStrength,
     int? inputBlack,
     int? inputWhite,
+    double? inputGamma,
     int? outputBlack,
     int? outputWhite,
     ToneCurvePreset? toneCurvePreset,
@@ -266,6 +269,7 @@ class FilterDef {
       edgeStrength: edgeStrength ?? this.edgeStrength,
       inputBlack: inputBlack ?? this.inputBlack,
       inputWhite: inputWhite ?? this.inputWhite,
+      inputGamma: inputGamma ?? this.inputGamma,
       outputBlack: outputBlack ?? this.outputBlack,
       outputWhite: outputWhite ?? this.outputWhite,
       toneCurvePreset: toneCurvePreset ?? this.toneCurvePreset,
@@ -346,6 +350,7 @@ class FilterDef {
     'edgeStrength': edgeStrength,
     'inputBlack': inputBlack,
     'inputWhite': inputWhite,
+    'inputGamma': inputGamma,
     'outputBlack': outputBlack,
     'outputWhite': outputWhite,
     'toneCurvePreset': toneCurvePreset.name,
@@ -436,6 +441,7 @@ class FilterDef {
     edgeStrength: (j['edgeStrength'] as num?)?.toDouble() ?? 0.4,
     inputBlack: j['inputBlack'] as int? ?? 0,
     inputWhite: j['inputWhite'] as int? ?? 255,
+    inputGamma: (j['inputGamma'] as num?)?.toDouble() ?? 1.0,
     outputBlack: j['outputBlack'] as int? ?? 0,
     outputWhite: j['outputWhite'] as int? ?? 255,
     caSaturation: (j['caSaturation'] as num?)?.toDouble() ?? 0,
