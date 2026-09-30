@@ -3093,5 +3093,6 @@
   "communityMutedTags": "ミュートタグ",
   "communityMutedTagsHint": "タグ名をカンマ区切りで指定",
   "communityContainsGenerativeAiImageVideo": "生成AIによる画像・動画を含む",
-  "communityContainsGenerativeAiImageVideoHelp": "画像または動画の生成に生成AIを使用した作品でONにしてください。音声合成ソフト等はこの項目の対象外です。"
+  "communityContainsGenerativeAiImageVideoHelp": "画像または動画の生成に生成AIを使用した作品でONにしてください。音声合成ソフト等はこの項目の対象外です。",
+  "canvasLassoSnapToLines": "線に吸着"
 }
