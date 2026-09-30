@@ -76,4 +76,41 @@ void main() {
     await tester.pumpAndSettle();
     expect(find.byType(CommunityAuthorWorksScreen), findsOneWidget);
   });
+
+  testWidgets('縦画面は表示中でもコンテンツフィルター変更を即時反映する', (tester) async {
+    SharedPreferences.setMockInitialValues({});
+    final service = CommunityService();
+    final settings = SettingsService();
+    final aiWork = service.works.first.copyWith(
+      containsGenerativeAiImageOrVideo: true,
+    );
+    final normalWork = service.works[1];
+
+    await tester.pumpWidget(
+      MultiProvider(
+        providers: [
+          ChangeNotifierProvider<CommunityService>.value(value: service),
+          ChangeNotifierProvider<SettingsService>.value(value: settings),
+        ],
+        child: MaterialApp(
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+          home: CommunityShortsScreen(
+            works: [aiWork, normalWork],
+            bookmarkedIds: const <String>{},
+            onToggleBookmark: (_) {},
+          ),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+    expect(find.text(aiWork.title), findsOneWidget);
+
+    await service.setHideGenerativeAiImageVideo(true);
+    await tester.pumpAndSettle();
+
+    expect(find.text(aiWork.title), findsNothing);
+    expect(find.text(normalWork.title), findsOneWidget);
+  });
+
 }
