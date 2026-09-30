@@ -1,5 +1,6 @@
 import 'dart:math';
 import 'package:flutter/foundation.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../models/community_follow_notification.dart';
 import '../models/community_repost.dart';
 import '../models/community_work.dart';
@@ -53,7 +54,9 @@ class CommunityService extends ChangeNotifier {
   /// バックエンドのAPIクライアント。未設定（デプロイ前）ならnull。
   final CommunityApi? api;
 
-  CommunityService({this.api});
+  CommunityService({this.api}) {
+    _loadContentFilters();
+  }
 
   /// バックエンドに接続する設定になっているか。
   bool get isBackendConnected => api != null;
@@ -116,6 +119,65 @@ class CommunityService extends ChangeNotifier {
   // ブックマークと同じくバックエンド未実装のためアプリ内一時状態のみ
   // （SharedPreferences等への永続化は行わない）。
   final Set<String> _favoriteAuthorIds = {};
+
+  static const _hideAiImageVideoKey = 'community.hideGenerativeAiImageVideo';
+  static const _mutedWordsKey = 'community.mutedWords';
+  static const _mutedTagsKey = 'community.mutedTags';
+  bool _hideGenerativeAiImageVideo = false;
+  final Set<String> _mutedWords = {};
+  final Set<String> _mutedTags = {};
+
+  bool get hideGenerativeAiImageVideo => _hideGenerativeAiImageVideo;
+  Set<String> get mutedWords => Set.unmodifiable(_mutedWords);
+  Set<String> get mutedTags => Set.unmodifiable(_mutedTags);
+
+  Future<void> _loadContentFilters() async {
+    final prefs = await SharedPreferences.getInstance();
+    _hideGenerativeAiImageVideo = prefs.getBool(_hideAiImageVideoKey) ?? false;
+    _mutedWords
+      ..clear()
+      ..addAll(prefs.getStringList(_mutedWordsKey) ?? const []);
+    _mutedTags
+      ..clear()
+      ..addAll(prefs.getStringList(_mutedTagsKey) ?? const []);
+    notifyListeners();
+  }
+
+  Future<void> setHideGenerativeAiImageVideo(bool value) async {
+    _hideGenerativeAiImageVideo = value;
+    notifyListeners();
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool(_hideAiImageVideoKey, value);
+  }
+
+  Future<void> setMutedWords(Iterable<String> values) async {
+    _mutedWords
+      ..clear()
+      ..addAll(values.map((e) => e.trim().toLowerCase()).where((e) => e.isNotEmpty));
+    notifyListeners();
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setStringList(_mutedWordsKey, _mutedWords.toList()..sort());
+  }
+
+  Future<void> setMutedTags(Iterable<String> values) async {
+    _mutedTags
+      ..clear()
+      ..addAll(values.map((e) => e.trim().toLowerCase()).where((e) => e.isNotEmpty));
+    notifyListeners();
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setStringList(_mutedTagsKey, _mutedTags.toList()..sort());
+  }
+
+  bool _passesContentFilters(CommunityWork work) {
+    if (_hideGenerativeAiImageVideo && work.containsGenerativeAiImageOrVideo) {
+      return false;
+    }
+    final title = work.title.toLowerCase();
+    if (_mutedWords.any(title.contains)) return false;
+    final tags = work.tags.map((e) => e.toLowerCase());
+    if (tags.any(_mutedTags.contains)) return false;
+    return true;
+  }
   // リポスト（Task#145の調査を受けた新機能）。誰が・どの作品を・いつ
   // リポストしたかの記録。自分（kDummySelfAuthorId）のリポストは実際に
   // ボタン操作で追加・削除できるが、他のダミー作者のリポストは
@@ -180,8 +242,9 @@ class CommunityService extends ChangeNotifier {
   /// した作品を除外する。13章：YouTube側が非公開・削除の場合も表示を
   /// 強制停止する設計だが、ダミーデータにはYouTube側状態の概念が無いため
   /// ここではNIARIM側設定のみを対象にする）。
-  List<CommunityWork> get discoverableWorks =>
-      _works.where((w) => w.isNiarimPublished).toList();
+  List<CommunityWork> get discoverableWorks => _works
+      .where((w) => w.isNiarimPublished && _passesContentFilters(w))
+      .toList();
 
   CommunityWork? byId(String workId) {
     final index = _indexOf(workId);
