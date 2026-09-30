@@ -128,6 +128,78 @@ void main() {
       expect(tester.takeException(), isNull);
     },
   );
+
+  testWidgets(
+    'tone curve exposes RGB channels and interactive production graph',
+    (tester) async {
+      tester.view.physicalSize = const Size(1080, 2160);
+      tester.view.devicePixelRatio = 3;
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
+      final providers = await tester.runAsync(buildAppProviders);
+      await tester.pumpWidget(MultiProvider(
+        providers: providers!,
+        child: const MaterialApp(
+          locale: Locale('ja'),
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+          home: Scaffold(body: _FilterPanelHarness()),
+        ),
+      ));
+      await tester.pump();
+      final context = tester.element(find.byType(_FilterPanelHarness));
+      final projects = context.read<ProjectService>();
+      final project = (await tester.runAsync(() => projects.createProject(
+        name: 'tone-curve-ui-contract', fps: 24, durationSeconds: 1,
+        backgroundColor: 0xFFFFFFFF, exportWidth: 96, exportHeight: 96,
+      )))!;
+      final sceneId = projects.scenesOf(project.id).first.id;
+      final layerId = projects.layersOf(project.id, sceneId, 0)
+          .firstWhere((layer) => layer.type == model.LayerType.normal).id;
+      await tester.pumpWidget(MultiProvider(
+        providers: providers,
+        child: MaterialApp(
+          locale: const Locale('ja'),
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+          home: Scaffold(body: FilterPanel(
+            projectId: project.id, sceneId: sceneId, layerId: layerId,
+            frameIndex: 0, onClose: () {},
+          )),
+        ),
+      ));
+      await tester.pump();
+      final panelContext = tester.element(find.byType(FilterPanel));
+      final service = panelContext.read<FilterService>();
+      final tone = service.filters.firstWhere((f) => f.kind == FilterKind.toneCurve);
+      final card = find.byKey(ValueKey('filter-card-' + tone.id));
+      await tester.scrollUntilVisible(card, 120);
+      await tester.tap(card);
+      await tester.pump();
+      expect(find.byKey(const ValueKey('tone-curve-channel-selector')), findsOneWidget);
+      expect(find.byKey(const ValueKey('tone-curve-editor-0')), findsOneWidget);
+      final editor = find.byKey(const ValueKey('tone-curve-editor-0'));
+      final box = tester.getRect(editor);
+      await tester.tapAt(Offset(box.left + box.width * .5, box.top + box.height * .35));
+      await tester.pump();
+      var current = service.currentFilter!;
+      expect(current.toneCurvePoints.length, greaterThan(4));
+      await tester.tap(find.text('R'));
+      await tester.pump();
+      expect(find.byKey(const ValueKey('tone-curve-editor-1')), findsOneWidget);
+      final redEditor = find.byKey(const ValueKey('tone-curve-editor-1'));
+      final redBox = tester.getRect(redEditor);
+      await tester.tapAt(Offset(
+        redBox.left + redBox.width * .4, redBox.top + redBox.height * .6,
+      ));
+      await tester.pump();
+      current = service.currentFilter!;
+      expect(current.toneCurveRedPoints.length, greaterThan(4));
+      expect(current.toneCurvePoints.length, greaterThan(4));
+      expect(tester.takeException(), isNull);
+    },
+  );
+
 }
 
 class _FilterPanelHarness extends StatelessWidget {
