@@ -172,10 +172,15 @@ class CommunityService extends ChangeNotifier {
     if (_hideGenerativeAiImageVideo && work.containsGenerativeAiImageOrVideo) {
       return false;
     }
+    // ミュートワードは作品タイトルだけを対象にする。作者名や作品広場の
+    // ユーザータグへ波及させない（タグは下のミュートタグで独立判定）。
     final title = work.title.toLowerCase();
     if (_mutedWords.any(title.contains)) return false;
-    final tags = work.tags.map((e) => e.toLowerCase());
-    if (tags.any(_mutedTags.contains)) return false;
+
+    // ミュートタグは作品広場で作品に設定されたタグだけが対象。
+    // YouTube側のメタデータやタイトル中の #文字列 はタグ扱いしない。
+    final communityTags = work.tags.map((e) => e.trim().toLowerCase());
+    if (communityTags.any(_mutedTags.contains)) return false;
     return true;
   }
   // リポスト（Task#145の調査を受けた新機能）。誰が・どの作品を・いつ
