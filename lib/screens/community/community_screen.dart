@@ -155,6 +155,59 @@ class _CommunityScreenState extends State<CommunityScreen>
     );
   }
 
+  Future<void> _showContentFilters(CommunityService service) async {
+    final words = TextEditingController(text: service.mutedWords.join(', '));
+    final tags = TextEditingController(text: service.mutedTags.join(', '));
+    var hideAi = service.hideGenerativeAiImageVideo;
+    final save = await showDialog<bool>(
+      context: context,
+      builder: (context) => StatefulBuilder(
+        builder: (context, setDialogState) => AlertDialog(
+          title: const Text('表示フィルター'),
+          content: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                SwitchListTile(
+                  contentPadding: EdgeInsets.zero,
+                  value: hideAi,
+                  onChanged: (v) => setDialogState(() => hideAi = v),
+                  title: const Text('生成AIによる画像・動画を含む作品を非表示'),
+                ),
+                TextField(
+                  controller: words,
+                  decoration: const InputDecoration(
+                    labelText: 'ミュートワード',
+                    helperText: '作品タイトルに含まれる語句をカンマ区切りで指定',
+                  ),
+                ),
+                const SizedBox(height: 12),
+                TextField(
+                  controller: tags,
+                  decoration: const InputDecoration(
+                    labelText: 'ミュートタグ',
+                    helperText: 'タグ名をカンマ区切りで指定',
+                  ),
+                ),
+              ],
+            ),
+          ),
+          actions: [
+            TextButton(onPressed: () => Navigator.pop(context, false), child: const Text('キャンセル')),
+            FilledButton(onPressed: () => Navigator.pop(context, true), child: const Text('保存')),
+          ],
+        ),
+      ),
+    );
+    if (save == true) {
+      await service.setHideGenerativeAiImageVideo(hideAi);
+      await service.setMutedWords(words.text.split(','));
+      await service.setMutedTags(tags.text.split(','));
+    }
+    words.dispose();
+    tags.dispose();
+  }
+
   void _openMyWorks() {
     Navigator.of(context).push(
       adMockMaterialPageRoute<void>(
@@ -250,6 +303,11 @@ class _CommunityScreenState extends State<CommunityScreen>
                 tooltip: l10n.communityShortsModeTooltip,
                 onPressed: () => _openShortsMode(allWorks),
               ),
+            IconButton(
+              icon: const Icon(Icons.filter_alt_outlined),
+              tooltip: '表示フィルター',
+              onPressed: () => _showContentFilters(communityService),
+            ),
             IconButton(
               icon: const Icon(Icons.search),
               tooltip: l10n.commonSearch,
