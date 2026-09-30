@@ -80,6 +80,44 @@ void main() {
     expect(restored.mutedTags, {'new-tag'});
   });
 
+  test('author lists apply viewer filters but owner list can still manage hidden works', () async {
+    final service = CommunityService();
+    await service.setMutedWords(['mute']);
+    service.replaceWorksForTest([
+      makeWork(title: 'visible'),
+      makeWork(title: 'mute this'),
+    ]);
+
+    expect(
+      service.worksByAuthor('author_x').map((w) => w.title),
+      ['visible'],
+    );
+    expect(
+      service.worksByAuthor('author_x', includeHidden: true).map((w) => w.title),
+      containsAll(['visible', 'mute this']),
+    );
+  });
+
+  test('viewer predicate follows AI, title, and tag filters', () async {
+    final service = CommunityService();
+    final ai = makeWork(
+      title: 'ai',
+      containsGenerativeAiImageOrVideo: true,
+    );
+    final mutedTitle = makeWork(title: 'blocked title');
+    final mutedTag = makeWork(title: 'tagged', tags: const ['blocked-tag']);
+    final visible = makeWork(title: 'visible', tags: const ['safe']);
+
+    await service.setHideGenerativeAiImageVideo(true);
+    await service.setMutedWords(['blocked']);
+    await service.setMutedTags(['blocked-tag']);
+
+    expect(service.isDiscoverableForViewer(ai), isFalse);
+    expect(service.isDiscoverableForViewer(mutedTitle), isFalse);
+    expect(service.isDiscoverableForViewer(mutedTag), isFalse);
+    expect(service.isDiscoverableForViewer(visible), isTrue);
+  });
+
   test('AI image/video usage filter hides only disclosed works', () async {
     final service = CommunityService();
     service.replaceWorksForTest([
