@@ -3366,6 +3366,9 @@ class AppLocalizationsKo extends AppLocalizations {
   String get filterLevelsInputWhite => '입력: 흰색';
 
   @override
+  String get filterLevelsGamma => '감마';
+
+  @override
   String get filterLevelsOutputBlack => '출력: 검정';
 
   @override
