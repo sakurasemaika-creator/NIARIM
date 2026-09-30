@@ -17,7 +17,11 @@ const modeNames = <HairFoldMode, String>{
   HairFoldMode.curlLeft: 'curl_left',
   HairFoldMode.crescent: 'crescent',
 };
-Future<void> capture(Brush brush, String name, {List<ui.Offset>? input}) async {
+Future<Uint8List> capture(
+  Brush brush,
+  String name, {
+  List<ui.Offset>? input,
+}) async {
   await preloadBrushTextures(
     brush.resolvedCustomImagePaths,
     mode: brush.imageInkMode,
@@ -60,6 +64,8 @@ Future<void> capture(Brush brush, String name, {List<ui.Offset>? input}) async {
   engine.endStroke();
   tiles.endUndoRecording();
   final layer = await tiles.compositeLayerToImage('hair');
+  final raw = await layer.toByteData(format: ui.ImageByteFormat.rawRgba);
+  final pixels = Uint8List.fromList(raw!.buffer.asUint8List());
   final recorder = ui.PictureRecorder();
   final canvas = ui.Canvas(recorder)
     ..drawColor(const ui.Color(0xffedf1f5), ui.BlendMode.src);
@@ -83,6 +89,7 @@ Future<void> capture(Brush brush, String name, {List<ui.Offset>? input}) async {
   layer.dispose();
   picture.dispose();
   tiles.dispose();
+  return pixels;
 }
 
 void main() {
@@ -99,18 +106,27 @@ void main() {
       for (final entry in modeNames.entries) {
         for (final id in ['Brush0023', 'Brush0024']) {
           final base = presets.singleWhere((b) => b.id == id);
-          await capture(
-            base.copyWith(
-              size: 64,
-              outlineWidth: 2.5,
-              stabilization: false,
-              fadeMode: FadeMode.off,
-              foldTriggerAngle: 30,
-              foldMode: entry.key,
-              customImageSelectionMode: BrushImageSelectionMode.sequential,
-            ),
-            '${id == "Brush0023" ? "hair" : "bangs"}_${entry.value}_same_curve',
+          final settings = base.copyWith(
+            size: 64,
+            outlineWidth: 2.5,
+            stabilization: false,
+            fadeMode: FadeMode.off,
+            foldTriggerAngle: 30,
+            foldMode: entry.key,
+            customImageSelectionMode: BrushImageSelectionMode.sequential,
           );
+          final name = '${id == "Brush0023" ? "hair" : "bangs"}_${entry.value}';
+          final presetPixels = await capture(settings, '${name}_same_curve');
+          // A saved custom definition must render exactly the same authored
+          // curve. This catches preset-ID/name dispatch in the real engine.
+          final custom = Brush.fromJson(
+            settings.copyWith(id: 'user-$id', name: 'My strand').toJson(),
+          );
+          final customPixels = await capture(
+            custom,
+            '${name}_custom_same_curve',
+          );
+          expect(customPixels, orderedEquals(presetPixels), reason: name);
         }
       }
       await capture(
