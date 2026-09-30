@@ -6467,4 +6467,28 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get filterNoiseSeed => '模様のシード値';
+
+  @override
+  String get communityContentFilterTitle => "表示フィルター";
+
+  @override
+  String get communityHideGenerativeAiImageVideo => "生成AIによる画像・動画を含む作品を非表示";
+
+  @override
+  String get communityMutedWords => "ミュートワード";
+
+  @override
+  String get communityMutedWordsHint => "作品タイトルに含まれる語句をカンマ区切りで指定";
+
+  @override
+  String get communityMutedTags => "ミュートタグ";
+
+  @override
+  String get communityMutedTagsHint => "タグ名をカンマ区切りで指定";
+
+  @override
+  String get communityContainsGenerativeAiImageVideo => "生成AIによる画像・動画を含む";
+
+  @override
+  String get communityContainsGenerativeAiImageVideoHelp => "画像または動画の生成に生成AIを使用した作品でONにしてください。音声合成ソフト等はこの項目の対象外です。";
 }
