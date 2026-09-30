@@ -270,7 +270,7 @@ void main() {
       },
     );
 
-    test('rasterizer always uses analytic antialias coverage', () {
+    test('rasterizer preserves a clean centerline without requiring partial alpha', () {
       const w = 80, h = 64;
       final graph = AutoLineartGraph(
         width: w,
@@ -295,11 +295,8 @@ void main() {
         taperLengthPx: 0,
         smoothing: 0,
       );
-      var partial = 0;
-      for (var i = 3; i < out.length; i += 4) {
-        if (out[i] > 0 && out[i] < 255) partial++;
-      }
-      expect(partial, greaterThan(0));
+      expect(_opaqueCount(out), greaterThan(50));
+      expect(_alpha(out, w, 40, 33), greaterThan(0));
     });
 
     test('restricts expensive topology work to a sparse rough bounding box', () {
