@@ -162,7 +162,7 @@ class CommunityApi {
     required bool containsGenerativeAiImageOrVideo,
   }) async {
     final json = await _client.patchJson(
-      '/works/\${Uri.encodeComponent(workId)}',
+      '/works/${Uri.encodeComponent(workId)}',
       retries: 1,
       body: {
         'containsGenerativeAiImageOrVideo': containsGenerativeAiImageOrVideo,
