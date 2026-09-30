@@ -6497,4 +6497,28 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get filterNoiseSeed => '패턴 시드';
+
+  @override
+  String get communityContentFilterTitle => "표시 필터";
+
+  @override
+  String get communityHideGenerativeAiImageVideo => "생성형 AI 이미지·동영상이 포함된 작품 숨기기";
+
+  @override
+  String get communityMutedWords => "뮤트 단어";
+
+  @override
+  String get communityMutedWordsHint => "작품 제목에 포함되면 숨길 단어를 쉼표로 구분해 입력";
+
+  @override
+  String get communityMutedTags => "뮤트 태그";
+
+  @override
+  String get communityMutedTagsHint => "숨길 태그 이름을 쉼표로 구분해 입력";
+
+  @override
+  String get communityContainsGenerativeAiImageVideo => "생성형 AI 이미지·동영상 포함";
+
+  @override
+  String get communityContainsGenerativeAiImageVideoHelp => "작품의 이미지 또는 동영상 생성에 생성형 AI를 사용한 경우 켜 주세요. 음성 합성 소프트웨어는 이 항목의 대상이 아닙니다.";
 }
