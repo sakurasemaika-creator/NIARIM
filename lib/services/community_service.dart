@@ -267,6 +267,11 @@ class CommunityService extends ChangeNotifier {
       .where((w) => w.isNiarimPublished && _passesContentFilters(w))
       .toList();
 
+  /// Whether a work may appear in public discovery surfaces for the
+  /// current viewer. Owner-only management screens intentionally bypass this.
+  bool isDiscoverableForViewer(CommunityWork work) =>
+      work.isNiarimPublished && _passesContentFilters(work);
+
   CommunityWork? byId(String workId) {
     final index = _indexOf(workId);
     return index == -1 ? null : _works[index];
