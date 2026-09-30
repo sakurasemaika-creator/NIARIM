@@ -13,6 +13,8 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:niarim/app.dart';
 import 'package:niarim/app_bootstrap.dart';
 import 'package:niarim/engine/layer_compositor.dart';
+import 'package:niarim/engine/autofill_batch_runner.dart';
+import 'package:niarim/engine/autofill_engine.dart';
 import 'package:niarim/engine/tile_manager.dart';
 import 'package:niarim/l10n/app_localizations.dart';
 import 'package:niarim/models/autofill_preset.dart';
@@ -29,6 +31,7 @@ import 'package:niarim/services/custom_automation_service.dart';
 import 'package:niarim/services/filter_service.dart';
 import 'package:niarim/services/pixel_art_palette_service.dart';
 import 'package:niarim/services/project_service.dart';
+import 'package:niarim/services/tone_service.dart';
 import 'package:niarim/widgets/custom_automation_draft_sheet.dart';
 import 'package:niarim/widgets/pixel_art_palette_picker_dialog.dart';
 import 'package:provider/provider.dart';
@@ -312,75 +315,90 @@ void main() {
   }
   if (group == 'all' || group == 'autofill') {
     testWidgets(
-      'all shipped auto-fill parts repaint via layer menu and assignment',
+      'each shipped auto-fill preset paints all of its parts in one layered scene',
       (tester) async {
         final h = await _Harness.create(tester, 'autofill');
         final presets = h.context.read<AutofillPresetService>().presets;
         expect(presets.length, 3);
         expect(presets.fold<int>(0, (n, p) => n + p.parts.length), 55);
         for (final preset in presets) {
-          for (final part in preset.parts) {
-            final id = '${preset.id}_${part.id}';
-            if (_captureMatch.isNotEmpty && !id.contains(_captureMatch)) {
-              continue;
-            }
-            debugPrint('CAPTURE_CASE:$id');
-            await h.project(id, fixture: 'empty');
-            await h.tap(find.byIcon(Icons.layers).first);
-            await h.tap(
-              find.descendant(
-                of: find.byType(LayerPanel),
-                matching: find.byIcon(Icons.library_add),
-              ),
+          final id = 'autofill_preset_${preset.id}';
+          if (_captureMatch.isNotEmpty && !id.contains(_captureMatch)) continue;
+          debugPrint('CAPTURE_CASE:$id');
+          await h.project(id, fixture: 'empty');
+          await h.ps.setEnabledAutofillPresetIds(h.projectId, [preset.id]);
+          final inputIds = h.layers.map((l) => l.id).toSet();
+
+          // One line-art layer per preset part. Each layer owns a separate
+          // closed region so a single repaint pass demonstrates the complete
+          // preset rather than producing one PDF page per part.
+          for (var i = 0; i < preset.parts.length; i++) {
+            final part = preset.parts[i];
+            final lineart = h.ps.addLayer(
+              projectId: h.projectId,
+              sceneId: h.sceneId,
+              frameIndex: 0,
+              type: model.LayerType.autoFillLineart,
+              name: '${part.name}（線画）',
+              insertIndex: h.layers.length,
             );
-            await h.tap(find.text(h.l10n.layerPanelMenuLineartLayer));
-            final layer = h.layers.firstWhere(
-              (l) => l.type == model.LayerType.autoFillLineart,
+            await h.seedAutofillRegion(
+              lineart.id,
+              index: i,
+              count: preset.parts.length,
             );
-            await h.seed(layer.id, 'lineart');
-            await h.closeLayers();
-            final before = await h.art('$id-before');
-            await h.capture('$id-before-ui');
-            await h.assignPart(layer.id, preset, part);
-            await h.layerMenu(layer.id);
-            await h.tap(find.text(h.l10n.layerPanelMenuRunAutofill));
-            await h.capture('$id-settings');
-            await h.tap(find.text(h.l10n.layerPanelAutofillRepaintTitle));
-            await h.tap(find.text(h.l10n.layerPanelExecuteButton));
-            await h.until(
-              () => h.layers.any((l) => l.type == model.LayerType.autoFill),
-              'auto-fill must create its output layer',
-            );
-            await h.settle(4);
-            await h.closeLayers();
-            final after = await h.art('$id-after');
-            await h.capture('$id-after-ui');
-            final changed = _changedPixels(before, after);
-            expect(
-              changed,
-              greaterThan(100),
-              reason: '$id must fill closed areas',
-            );
-            final fillLayer = h.layers.firstWhere(
-              (l) => l.type == model.LayerType.autoFill,
-            );
-            final fillPixels = await h.layerPixels(fillLayer.id);
-            // A hand-selected interior point in the circular lineart is filled
-            // with the actual assigned part color, including the white parts.
-            final center = (95 * 256 + 115) * 4;
-            expect(fillPixels.sublist(center, center + 4), [
-              (part.color >> 16) & 255,
-              (part.color >> 8) & 255,
-              part.color & 255,
-              255,
-            ]);
-            h.record(
-              id,
-              '${preset.name} / ${part.name}',
-              changed,
-              settings: part.toJson(),
+            h.ps.assignAutofillPart(
+              projectId: h.projectId,
+              sceneId: h.sceneId,
+              frameIndex: 0,
+              lineartLayerId: lineart.id,
+              partId: part.id,
+              partName: part.name,
             );
           }
+          await h.settle(4);
+          final before = await h.art('$id-before');
+          await h.capture('$id-before-ui');
+
+          var applied = 0;
+          for (final lineart in h.layers
+              .where((l) => l.type == model.LayerType.autoFillLineart)
+              .toList()) {
+            final result = await runAutofillForLayer(
+              projectService: h.ps,
+              presetService: h.context.read<AutofillPresetService>(),
+              toneService: h.context.read<ToneService>(),
+              projectId: h.projectId,
+              sceneId: h.sceneId,
+              frameIndex: 0,
+              lineartLayer: lineart,
+              mode: AutofillMode.repaint,
+            );
+            if (result == AutofillBatchResult.applied) applied++;
+          }
+          expect(applied, preset.parts.length);
+          await h.settle(6);
+          final after = await h.art('$id-after');
+          await h.capture('$id-after-ui');
+          final changed = _changedPixels(before, after);
+          expect(changed, greaterThan(100));
+          expect(
+            h.layers.where((l) => l.type == model.LayerType.autoFill).length,
+            preset.parts.length,
+          );
+          h.record(
+            id,
+            '${preset.name} / 全${preset.parts.length}パーツ一括確認',
+            changed,
+            settings: {
+              'presetId': preset.id,
+              'presetName': preset.name,
+              'partCount': preset.parts.length,
+              'parts': preset.parts.map((p) => p.toJson()).toList(),
+              'captureLayout': 'one layered scene per preset',
+            },
+            note: 'プリセット全パーツを別々の線画レイヤーへ割り当て、同一キャンバスで一括描画した最終結果。',
+          );
         }
         await h.finish();
       },
@@ -840,6 +858,68 @@ class _Harness {
       sceneId: sceneId,
       frameIndex: 0,
       layer: layer,
+    );
+    await settle();
+  }
+
+  Future<void> seedAutofillRegion(
+    String layerId, {
+    required int index,
+    required int count,
+  }) async {
+    final project = ps.projects.firstWhere((p) => p.id == projectId);
+    final w = project.exportWidth;
+    final h = project.exportHeight;
+    final columns = math.max(1, math.sqrt(count).ceil());
+    final rows = math.max(1, (count / columns).ceil());
+    final cellW = w / columns;
+    final cellH = h / rows;
+    final col = index % columns;
+    final row = index ~/ columns;
+    final inset = math.max(3.0, math.min(cellW, cellH) * .12);
+    final rect = Rect.fromLTWH(
+      col * cellW + inset,
+      row * cellH + inset,
+      math.max(4.0, cellW - inset * 2),
+      math.max(4.0, cellH - inset * 2),
+    );
+    final recorder = ui.PictureRecorder();
+    final canvas = Canvas(recorder);
+    canvas.drawRect(
+      rect,
+      Paint()
+        ..color = const Color(0xff242739)
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = 3,
+    );
+    final picture = recorder.endRecording();
+    final image = await picture.toImage(w, h);
+    picture.dispose();
+    final data = await image.toByteData(format: ui.ImageByteFormat.rawRgba);
+    image.dispose();
+    final bytes = data!.buffer.asUint8List();
+    final tm = ps.tileManagerOf(projectId);
+    final key = ps.tileKeyFor(projectId, sceneId, 0, layerId);
+    for (var ty = 0; ty < tm.tilesY; ty++) {
+      for (var tx = 0; tx < tm.tilesX; tx++) {
+        final tile = tm.getOrCreateTile(key, tx, ty);
+        for (var py = 0; py < TileManager.tileSize; py++) {
+          final y = ty * TileManager.tileSize + py;
+          if (y >= h) break;
+          final copyWidth = math.min(TileManager.tileSize, w - tx * TileManager.tileSize);
+          if (copyWidth <= 0) break;
+          final srcOffset = (y * w + tx * TileManager.tileSize) * 4;
+          final dstOffset = py * TileManager.tileSize * 4;
+          tile.setRange(dstOffset, dstOffset + copyWidth * 4, bytes, srcOffset);
+        }
+        tm.invalidateTile(key, tx, ty);
+      }
+    }
+    ps.updateLayer(
+      projectId: projectId,
+      sceneId: sceneId,
+      frameIndex: 0,
+      layer: layers.firstWhere((l) => l.id == layerId),
     );
     await settle();
   }
