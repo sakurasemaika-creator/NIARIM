@@ -6491,4 +6491,7 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get communityContainsGenerativeAiImageVideoHelp => "画像または動画の生成に生成AIを使用した作品でONにしてください。音声合成ソフト等はこの項目の対象外です。";
+
+  @override
+  String get canvasLassoSnapToLines => "線に吸着";
 }
