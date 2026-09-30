@@ -31,6 +31,8 @@ class _CommunityPostScreenState extends State<CommunityPostScreen> {
   static const _pendingIsShortKey = 'community.pendingUpload.isShort';
   static const _pendingPublishedKey =
       'community.pendingUpload.isNiarimPublished';
+  static const _pendingAiImageVideoKey =
+      'community.pendingUpload.containsGenerativeAiImageOrVideo';
 
   final _titleController = TextEditingController();
   File? _videoFile;
@@ -39,6 +41,7 @@ class _CommunityPostScreenState extends State<CommunityPostScreen> {
   String? _uploadAccountEmail;
   bool _isShort = false;
   bool _isNiarimPublished = true;
+  bool _containsGenerativeAiImageOrVideo = false;
   bool _busy = false;
   bool _restoringPending = true;
   double _progress = 0;
@@ -69,6 +72,8 @@ class _CommunityPostScreenState extends State<CommunityPostScreen> {
           _uploadAccountEmail = prefs.getString(_pendingAccountEmailKey);
           _isShort = prefs.getBool(_pendingIsShortKey) ?? false;
           _isNiarimPublished = prefs.getBool(_pendingPublishedKey) ?? true;
+          _containsGenerativeAiImageOrVideo =
+              prefs.getBool(_pendingAiImageVideoKey) ?? false;
           _titleController.text = prefs.getString(_pendingTitleKey) ?? '';
           _status = '前回YouTubeへアップロード済みの動画があります。NIARIM登録だけ再試行できます';
         });
@@ -91,6 +96,10 @@ class _CommunityPostScreenState extends State<CommunityPostScreen> {
     await prefs.setString(_pendingTitleKey, title);
     await prefs.setBool(_pendingIsShortKey, _isShort);
     await prefs.setBool(_pendingPublishedKey, _isNiarimPublished);
+    await prefs.setBool(
+      _pendingAiImageVideoKey,
+      _containsGenerativeAiImageOrVideo,
+    );
   }
 
   Future<void> _clearPendingUpload() async {
@@ -102,6 +111,7 @@ class _CommunityPostScreenState extends State<CommunityPostScreen> {
       prefs.remove(_pendingTitleKey),
       prefs.remove(_pendingIsShortKey),
       prefs.remove(_pendingPublishedKey),
+      prefs.remove(_pendingAiImageVideoKey),
     ]);
   }
 
@@ -134,6 +144,7 @@ class _CommunityPostScreenState extends State<CommunityPostScreen> {
       _titleController.clear();
       _isShort = false;
       _isNiarimPublished = true;
+      _containsGenerativeAiImageOrVideo = false;
       _status = null;
       _error = null;
       _progress = 0;
@@ -253,6 +264,15 @@ class _CommunityPostScreenState extends State<CommunityPostScreen> {
             await _markPendingVideoUnavailable();
             return;
           }
+          if (work.containsGenerativeAiImageOrVideo !=
+              _containsGenerativeAiImageOrVideo) {
+            setState(() => _status = '投稿済み作品のAI画像・動画フラグを同期しています…');
+            await api.updateWorkAiImageVideoDisclosure(
+              videoId,
+              containsGenerativeAiImageOrVideo:
+                  _containsGenerativeAiImageOrVideo,
+            );
+          }
           if (work.isNiarimPublished != _isNiarimPublished) {
             setState(() => _status = '投稿済み作品の公開状態を同期しています…');
             await api.updateWorkVisibility(
@@ -340,6 +360,8 @@ class _CommunityPostScreenState extends State<CommunityPostScreen> {
         youtubeAccessToken: youtubeToken,
         isShort: _isShort,
         isNiarimPublished: _isNiarimPublished,
+        containsGenerativeAiImageOrVideo:
+            _containsGenerativeAiImageOrVideo,
       );
 
       if (registeredWork.isNiarimPublished != _isNiarimPublished) {
@@ -418,6 +440,25 @@ class _CommunityPostScreenState extends State<CommunityPostScreen> {
                       ? null
                       : (value) => setState(() => _isShort = value),
                   title: const Text('縦画面ショートとして投稿'),
+                ),
+                SwitchListTile(
+                  contentPadding: EdgeInsets.zero,
+                  value: _containsGenerativeAiImageOrVideo,
+                  onChanged: _busy
+                      ? null
+                      : (value) async {
+                          setState(
+                            () => _containsGenerativeAiImageOrVideo = value,
+                          );
+                          if (retainedVideoId != null) {
+                            final prefs = await SharedPreferences.getInstance();
+                            await prefs.setBool(_pendingAiImageVideoKey, value);
+                          }
+                        },
+                  title: const Text('生成AIによる画像・動画を含む'),
+                  subtitle: const Text(
+                    '画像または動画の生成に生成AIを使用した作品でONにしてください。音声合成ソフト等はこの項目の対象外です。',
+                  ),
                 ),
                 SwitchListTile(
                   contentPadding: EdgeInsets.zero,
