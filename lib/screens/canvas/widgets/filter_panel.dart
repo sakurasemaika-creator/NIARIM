@@ -965,28 +965,60 @@ class _FilterPanelState extends State<FilterPanel> {
           ],
         );
       case FilterKind.toneCurve:
-        return Wrap(
-          spacing: 4,
-          runSpacing: 4,
-          children: ToneCurvePreset.values
-              .map(
-                (preset) => ChoiceChip(
-                  label: Text(
-                    _toneCurveLabel(l10n, preset),
-                    style: const TextStyle(fontSize: 9),
-                  ),
-                  selected: current.toneCurvePreset == preset,
-                  onSelected: (selected) {
-                    if (!selected) return;
-                    service.updateFilterParams(
-                      current.id,
-                      toneCurvePreset: preset,
-                    );
-                    _updatePreview();
-                  },
-                ),
-              )
-              .toList(),
+        return Column(
+          children: [
+            Wrap(
+              spacing: 4,
+              runSpacing: 4,
+              children: ToneCurvePreset.values
+                  .map(
+                    (preset) => ChoiceChip(
+                      label: Text(
+                        _toneCurveLabel(l10n, preset),
+                        style: const TextStyle(fontSize: 9),
+                      ),
+                      selected: current.toneCurvePoints.isEmpty &&
+                          current.toneCurvePreset == preset,
+                      onSelected: (selected) {
+                        if (!selected) return;
+                        service.updateFilterParams(
+                          current.id,
+                          toneCurvePreset: preset,
+                          toneCurvePoints: const [],
+                        );
+                        _updatePreview();
+                      },
+                    ),
+                  )
+                  .toList(),
+            ),
+            const SizedBox(height: 8),
+            _ToneCurveEditor(
+              points: current.toneCurvePoints.isEmpty
+                  ? toneCurvePoints(current.toneCurvePreset)
+                      .map((p) => Offset(p.dx, p.dy))
+                      .toList()
+                  : [
+                      for (var i = 0;
+                          i + 1 < current.toneCurvePoints.length;
+                          i += 2)
+                        Offset(
+                          current.toneCurvePoints[i],
+                          current.toneCurvePoints[i + 1],
+                        ),
+                    ],
+              sourceRgba: _previewBase,
+              onChanged: (points) {
+                service.updateFilterParams(
+                  current.id,
+                  toneCurvePoints: [
+                    for (final p in points) ...[p.dx, p.dy],
+                  ],
+                );
+                _updatePreview();
+              },
+            ),
+          ],
         );
       case FilterKind.levels:
         return Column(
@@ -2071,4 +2103,192 @@ class _FilterPanelState extends State<FilterPanel> {
     }
     if (mounted) Navigator.of(context, rootNavigator: true).pop();
   }
+}
+
+
+class _ToneCurveEditor extends StatefulWidget {
+  final List<Offset> points;
+  final Uint8List? sourceRgba;
+  final ValueChanged<List<Offset>> onChanged;
+
+  const _ToneCurveEditor({
+    required this.points,
+    required this.sourceRgba,
+    required this.onChanged,
+  });
+
+  @override
+  State<_ToneCurveEditor> createState() => _ToneCurveEditorState();
+}
+
+class _ToneCurveEditorState extends State<_ToneCurveEditor> {
+  int? _dragIndex;
+
+  List<Offset> get _points {
+    final p = widget.points
+        .map((e) => Offset(e.dx.clamp(0.0, 1.0), e.dy.clamp(0.0, 1.0)))
+        .toList()
+      ..sort((a, b) => a.dx.compareTo(b.dx));
+    return p.length >= 2 ? p : const [Offset(0, 0), Offset(1, 1)];
+  }
+
+  int _nearest(List<Offset> points, Offset normalized, {double max = .07}) {
+    var best = -1;
+    var distance = max;
+    for (var i = 0; i < points.length; i++) {
+      final d = (points[i] - normalized).distance;
+      if (d < distance) {
+        best = i;
+        distance = d;
+      }
+    }
+    return best;
+  }
+
+  Offset _normalize(Offset local, Size size) => Offset(
+        (local.dx / size.width).clamp(0.0, 1.0),
+        (1 - local.dy / size.height).clamp(0.0, 1.0),
+      );
+
+  void _emit(List<Offset> points) {
+    points.sort((a, b) => a.dx.compareTo(b.dx));
+    widget.onChanged(points);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final points = _points;
+    return AspectRatio(
+      aspectRatio: 1.65,
+      child: LayoutBuilder(
+        builder: (context, constraints) {
+          final size = Size(constraints.maxWidth, constraints.maxHeight);
+          return GestureDetector(
+            behavior: HitTestBehavior.opaque,
+            onTapUp: (details) {
+              final n = _normalize(details.localPosition, size);
+              if (_nearest(points, n) >= 0) return;
+              _emit([...points, n]);
+            },
+            onLongPressStart: (details) {
+              final n = _normalize(details.localPosition, size);
+              final i = _nearest(points, n);
+              if (i <= 0 || i >= points.length - 1) return;
+              final next = [...points]..removeAt(i);
+              _emit(next);
+            },
+            onPanStart: (details) {
+              final n = _normalize(details.localPosition, size);
+              _dragIndex = _nearest(points, n, max: .10);
+            },
+            onPanUpdate: (details) {
+              final i = _dragIndex;
+              if (i == null || i < 0) return;
+              final next = [...points];
+              var n = _normalize(details.localPosition, size);
+              if (i == 0) n = Offset(0, n.dy);
+              if (i == next.length - 1) n = Offset(1, n.dy);
+              if (i > 0 && i < next.length - 1) {
+                n = Offset(
+                  n.dx.clamp(next[i - 1].dx + .001, next[i + 1].dx - .001),
+                  n.dy,
+                );
+              }
+              next[i] = n;
+              _emit(next);
+            },
+            onPanEnd: (_) => _dragIndex = null,
+            child: CustomPaint(
+              painter: _ToneCurvePainter(
+                points: points,
+                sourceRgba: widget.sourceRgba,
+                color: Theme.of(context).colorScheme.primary,
+                gridColor: Theme.of(context).colorScheme.outlineVariant,
+              ),
+            ),
+          );
+        },
+      ),
+    );
+  }
+}
+
+class _ToneCurvePainter extends CustomPainter {
+  final List<Offset> points;
+  final Uint8List? sourceRgba;
+  final Color color;
+  final Color gridColor;
+
+  const _ToneCurvePainter({
+    required this.points,
+    required this.sourceRgba,
+    required this.color,
+    required this.gridColor,
+  });
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final grid = Paint()
+      ..color = gridColor
+      ..strokeWidth = 1;
+    for (var i = 0; i <= 4; i++) {
+      final x = size.width * i / 4;
+      final y = size.height * i / 4;
+      canvas.drawLine(Offset(x, 0), Offset(x, size.height), grid);
+      canvas.drawLine(Offset(0, y), Offset(size.width, y), grid);
+    }
+
+    final rgba = sourceRgba;
+    if (rgba != null && rgba.length >= 4) {
+      final bins = List<int>.filled(64, 0);
+      var peak = 1;
+      for (var i = 0; i + 3 < rgba.length; i += 4) {
+        if (rgba[i + 3] == 0) continue;
+        final luma = ((rgba[i] * 77 + rgba[i + 1] * 150 + rgba[i + 2] * 29) >> 8);
+        final b = (luma * 63 ~/ 255).clamp(0, 63);
+        bins[b]++;
+        if (bins[b] > peak) peak = bins[b];
+      }
+      final hp = Paint()
+        ..color = gridColor.withValues(alpha: .35)
+        ..style = PaintingStyle.fill;
+      final path = Path()..moveTo(0, size.height);
+      for (var i = 0; i < bins.length; i++) {
+        path.lineTo(
+          size.width * i / (bins.length - 1),
+          size.height * (1 - bins[i] / peak),
+        );
+      }
+      path
+        ..lineTo(size.width, size.height)
+        ..close();
+      canvas.drawPath(path, hp);
+    }
+
+    Offset toCanvas(Offset p) =>
+        Offset(p.dx * size.width, (1 - p.dy) * size.height);
+    final curve = Path()..moveTo(toCanvas(points.first).dx, toCanvas(points.first).dy);
+    for (var i = 1; i < points.length; i++) {
+      final p = toCanvas(points[i]);
+      curve.lineTo(p.dx, p.dy);
+    }
+    canvas.drawPath(
+      curve,
+      Paint()
+        ..color = color
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = 2,
+    );
+    final pointPaint = Paint()..color = color;
+    for (final p in points) {
+      canvas.drawCircle(toCanvas(p), 5, pointPaint);
+    }
+  }
+
+  @override
+  bool shouldRepaint(covariant _ToneCurvePainter oldDelegate) =>
+      oldDelegate.points != points ||
+      oldDelegate.sourceRgba != sourceRgba ||
+      oldDelegate.color != color ||
+      oldDelegate.gridColor != gridColor;
 }
