@@ -1028,6 +1028,7 @@ class _FilterPanelState extends State<FilterPanel> {
                 ];
               })(),
               sourceRgba: _previewBase,
+              histogramChannel: _toneCurveChannel,
               onChanged: (points) {
                 final values = [
                   for (final p in points) ...[p.dx, p.dy],
@@ -2142,11 +2143,13 @@ class _FilterPanelState extends State<FilterPanel> {
 class _ToneCurveEditor extends StatefulWidget {
   final List<Offset> points;
   final Uint8List? sourceRgba;
+  final int histogramChannel;
   final ValueChanged<List<Offset>> onChanged;
 
   const _ToneCurveEditor({
     required this.points,
     required this.sourceRgba,
+    required this.histogramChannel,
     required this.onChanged,
   });
 
@@ -2235,6 +2238,7 @@ class _ToneCurveEditorState extends State<_ToneCurveEditor> {
               painter: _ToneCurvePainter(
                 points: points,
                 sourceRgba: widget.sourceRgba,
+                histogramChannel: widget.histogramChannel,
                 color: Theme.of(context).colorScheme.primary,
                 gridColor: Theme.of(context).colorScheme.outlineVariant,
               ),
@@ -2249,12 +2253,14 @@ class _ToneCurveEditorState extends State<_ToneCurveEditor> {
 class _ToneCurvePainter extends CustomPainter {
   final List<Offset> points;
   final Uint8List? sourceRgba;
+  final int histogramChannel;
   final Color color;
   final Color gridColor;
 
   const _ToneCurvePainter({
     required this.points,
     required this.sourceRgba,
+    required this.histogramChannel,
     required this.color,
     required this.gridColor,
   });
@@ -2277,8 +2283,13 @@ class _ToneCurvePainter extends CustomPainter {
       var peak = 1;
       for (var i = 0; i + 3 < rgba.length; i += 4) {
         if (rgba[i + 3] == 0) continue;
-        final luma = ((rgba[i] * 77 + rgba[i + 1] * 150 + rgba[i + 2] * 29) >> 8);
-        final b = (luma * 63 ~/ 255).clamp(0, 63);
+        final value = switch (histogramChannel) {
+          1 => rgba[i],
+          2 => rgba[i + 1],
+          3 => rgba[i + 2],
+          _ => ((rgba[i] * 77 + rgba[i + 1] * 150 + rgba[i + 2] * 29) >> 8),
+        };
+        final b = (value * 63 ~/ 255).clamp(0, 63);
         bins[b]++;
         if (bins[b] > peak) peak = bins[b];
       }
@@ -2322,6 +2333,7 @@ class _ToneCurvePainter extends CustomPainter {
   bool shouldRepaint(covariant _ToneCurvePainter oldDelegate) =>
       oldDelegate.points != points ||
       oldDelegate.sourceRgba != sourceRgba ||
+      oldDelegate.histogramChannel != histogramChannel ||
       oldDelegate.color != color ||
       oldDelegate.gridColor != gridColor;
 }
