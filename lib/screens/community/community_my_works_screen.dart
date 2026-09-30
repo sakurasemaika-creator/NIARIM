@@ -143,6 +143,34 @@ class _CommunityMyWorksScreenState extends State<CommunityMyWorksScreen> {
     await _reloadOwnerWorks();
   }
 
+  Future<void> _setAiImageVideoDisclosure(CommunityWork work, bool value) async {
+    final api = context.read<CommunityService>().api;
+    if (api == null || _visibilityBusy.contains(work.id)) return;
+    setState(() => _visibilityBusy.add(work.id));
+    try {
+      final updated = await api.updateWorkAiImageVideoDisclosure(
+        work.id,
+        containsGenerativeAiImageOrVideo: value,
+      );
+      if (!mounted) return;
+      final next = updated.toCommunityWork();
+      setState(() {
+        final works = _ownerWorks;
+        if (works == null) return;
+        final i = works.indexWhere((w) => w.id == next.id);
+        if (i >= 0) works[i] = next;
+      });
+      await context.read<CommunityService>().refreshFromBackend();
+    } catch (error) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('AI画像・動画フラグを変更できませんでした: $error')),
+      );
+    } finally {
+      if (mounted) setState(() => _visibilityBusy.remove(work.id));
+    }
+  }
+
   Future<void> _setVisibility(CommunityWork work, bool published) async {
     final youtubePrivacy = _youtubePrivacyById[work.id];
     if (published && youtubePrivacy == 'deleted') {
@@ -421,10 +449,31 @@ class _CommunityMyWorksScreenState extends State<CommunityMyWorksScreen> {
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
                             ),
-                            subtitle: Text(
-                              '${_visibilityLabel(work)}  •  videoId: ${work.id}',
-                              maxLines: 2,
-                              overflow: TextOverflow.ellipsis,
+                            subtitle: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  '${_visibilityLabel(work)}  •  videoId: ${work.id}',
+                                  maxLines: 2,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                                if (usingBackendOwnerList)
+                                  CheckboxListTile(
+                                    contentPadding: EdgeInsets.zero,
+                                    dense: true,
+                                    controlAffinity: ListTileControlAffinity.leading,
+                                    value: work.containsGenerativeAiImageOrVideo,
+                                    onChanged: busy
+                                        ? null
+                                        : (v) => _setAiImageVideoDisclosure(
+                                            work,
+                                            v ?? false,
+                                          ),
+                                    title: const Text(
+                                      '生成AIによる画像・動画を含む',
+                                    ),
+                                  ),
+                              ],
                             ),
                             trailing: usingBackendOwnerList
                                 ? SizedBox(
