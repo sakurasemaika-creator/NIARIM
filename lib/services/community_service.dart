@@ -281,7 +281,10 @@ class CommunityService extends ChangeNotifier {
     bool includeHidden = false,
   }) => _works
       .where(
-        (w) => w.authorId == authorId && (includeHidden || w.isNiarimPublished),
+        (w) =>
+            w.authorId == authorId &&
+            (includeHidden ||
+                (w.isNiarimPublished && _passesContentFilters(w))),
       )
       .toList();
 
