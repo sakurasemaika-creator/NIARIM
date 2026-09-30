@@ -3514,6 +3514,9 @@ class AppLocalizationsFr extends AppLocalizations {
   String get filterLevelsInputWhite => 'Entrée : Blanc';
 
   @override
+  String get filterLevelsGamma => 'Gamma';
+
+  @override
   String get filterLevelsOutputBlack => 'Sortie : Noir';
 
   @override
