@@ -7,6 +7,7 @@ CommunityWork makeWork({
   String title = '静かな街',
   List<String> tags = const ['手描き'],
   String authorName = '作者',
+  bool containsGenerativeAiImageOrVideo = false,
 }) => CommunityWork(
   id: '${title}_${tags.join("_")}_$authorName',
   title: title,
@@ -19,6 +20,7 @@ CommunityWork makeWork({
   durationSeconds: 10,
   thumbnailColorIndex: 0,
   tags: tags,
+  containsGenerativeAiImageOrVideo: containsGenerativeAiImageOrVideo,
 );
 
 void main() {
@@ -52,5 +54,20 @@ void main() {
     expect(visible.any((w) => w.title.startsWith('#手描き')), isTrue);
     expect(visible.any((w) => w.tags.contains('手描き風')), isTrue);
     expect(visible.any((w) => w.tags.contains('手描き')), isFalse);
+  });
+
+  test('AI image/video usage filter hides only disclosed works', () async {
+    final service = CommunityService();
+    service.replaceWorksForTest([
+      makeWork(title: 'AI使用作品', containsGenerativeAiImageOrVideo: true),
+      makeWork(title: '通常作品'),
+    ]);
+
+    expect(service.discoverableWorks.map((w) => w.title), containsAll(['AI使用作品', '通常作品']));
+
+    await service.setHideGenerativeAiImageVideo(true);
+    final visible = service.discoverableWorks;
+    expect(visible.map((w) => w.title), contains('通常作品'));
+    expect(visible.map((w) => w.title), isNot(contains('AI使用作品')));
   });
 }
