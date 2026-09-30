@@ -101,5 +101,21 @@ void main() {
     expect(gamma[4], greaterThan(linear[4]));
     expect(gamma[8], greaterThan(linear[8]));
   });
+  test('custom tone curve points persist and drive rendering', () {
+    const def = FilterDef(
+      id: 'curve-custom',
+      name: 'curve',
+      kind: FilterKind.toneCurve,
+      toneCurvePoints: [0, 0, 0.5, 0.8, 1, 1],
+    );
+    final restored = FilterDef.fromJson(def.toJson());
+    expect(restored.toneCurvePoints, orderedEquals(def.toneCurvePoints));
+    final source = Uint8List.fromList([128, 128, 128, 255]);
+    final out = applyDrawFilterInIsolate((source, 1, 1, restored, null));
+    expect(out[0], greaterThan(128));
+    expect(out[1], out[0]);
+    expect(out[2], out[0]);
+  });
 }
+
 
