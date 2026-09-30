@@ -10,6 +10,10 @@ on:
       - 'lib/screens/canvas/**'
       - 'test/canvas_*_test.dart'
       - 'test/visual/feature_operation_capture_test.dart'
+      - 'lib/engine/autofill_batch_runner.dart'
+      - 'lib/engine/autofill_engine.dart'
+      - 'lib/models/autofill_preset.dart'
+      - 'lib/services/autofill_preset_service.dart'
       - 'test/functional_render_real_async_test.dart'
       - 'test/functional_audit_batch*_test.dart'
       # Functional Visual Audit trigger includes its full render regression suite.
@@ -48,7 +52,7 @@ jobs:
       - name: 公式Automation production UI実キャプチャ
         run: CI=true flutter test test/visual/feature_operation_capture_test.dart --reporter expanded --dart-define=CAPTURE_GROUP=automation
 
-      - name: Auto Fill production UI実キャプチャ
+      - name: Auto Fill プリセット別・全パーツ同一キャンバス実キャプチャ
         run: CI=true flutter test test/visual/feature_operation_capture_test.dart --reporter expanded --dart-define=CAPTURE_GROUP=autofill
 
       - name: 記録・再実行など追加 production UI実キャプチャ
