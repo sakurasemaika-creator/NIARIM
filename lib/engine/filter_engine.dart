@@ -1692,10 +1692,33 @@ class FilterEngine {
               (0.62 + planeStrength * 0.38) *
               gatedReflection *
               shoulder *
-              0.58;
+              0.52;
           outR += (spectral.$1 - outR) * colourMix;
           outG += (spectral.$2 - outG) * colourMix;
           outB += (spectral.$3 - outB) * colourMix;
+
+          // Keep the body pale and transparent, but let a very narrow fringe
+          // beside the white reflection become genuinely high-chroma.
+          final fringe =
+              math.pow((edge * 0.70 + ridge * 0.30).clamp(0.0, 1.0), 3.1)
+                  .toDouble() *
+              (1.0 - math.pow(ridge.clamp(0.0, 1.0), 5.0).toDouble()) *
+              (0.52 + planeStrength * 0.48);
+          final spectralMean =
+              (spectral.$1 + spectral.$2 + spectral.$3) / 3.0;
+          final vividR =
+              (spectralMean + (spectral.$1 - spectralMean) * 1.55)
+                  .clamp(0.0, 255.0);
+          final vividG =
+              (spectralMean + (spectral.$2 - spectralMean) * 1.55)
+                  .clamp(0.0, 255.0);
+          final vividB =
+              (spectralMean + (spectral.$3 - spectralMean) * 1.55)
+                  .clamp(0.0, 255.0);
+          final fringeMix = (fringe * 0.54).clamp(0.0, 0.46);
+          outR += (vividR - outR) * fringeMix;
+          outG += (vividG - outG) * fringeMix;
+          outB += (vividB - outB) * fringeMix;
         }
       }
       result[i] = (r + (outR - r) * amount).round().clamp(0, 255);
