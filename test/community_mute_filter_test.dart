@@ -56,6 +56,30 @@ void main() {
     expect(visible.any((w) => w.tags.contains('手描き')), isFalse);
   });
 
+  test('content filters restore and later writes win over async restore', () async {
+    SharedPreferences.setMockInitialValues({
+      'community.hideGenerativeAiImageVideo': true,
+      'community.mutedWords': ['old title'],
+      'community.mutedTags': ['old-tag'],
+    });
+
+    final service = CommunityService();
+    await service.contentFiltersReady;
+    expect(service.hideGenerativeAiImageVideo, isTrue);
+    expect(service.mutedWords, contains('old title'));
+    expect(service.mutedTags, contains('old-tag'));
+
+    await service.setHideGenerativeAiImageVideo(false);
+    await service.setMutedWords(['New Title']);
+    await service.setMutedTags(['New-Tag']);
+
+    final restored = CommunityService();
+    await restored.contentFiltersReady;
+    expect(restored.hideGenerativeAiImageVideo, isFalse);
+    expect(restored.mutedWords, {'new title'});
+    expect(restored.mutedTags, {'new-tag'});
+  });
+
   test('AI image/video usage filter hides only disclosed works', () async {
     final service = CommunityService();
     service.replaceWorksForTest([
