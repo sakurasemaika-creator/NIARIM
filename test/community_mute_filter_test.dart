@@ -80,6 +80,25 @@ void main() {
     expect(restored.mutedTags, {'new-tag'});
   });
 
+  test('restored mute values are normalized before matching', () async {
+    SharedPreferences.setMockInitialValues({
+      'community.mutedWords': ['  BLOCKED  ', ''],
+      'community.mutedTags': ['  SAFE-TAG  ', '   '],
+    });
+
+    final service = CommunityService();
+    await service.contentFiltersReady;
+    service.replaceWorksForTest([
+      makeWork(title: 'blocked title', tags: const ['other']),
+      makeWork(title: 'visible', tags: const ['safe-tag']),
+      makeWork(title: 'keep me', tags: const ['other']),
+    ]);
+
+    expect(service.mutedWords, {'blocked'});
+    expect(service.mutedTags, {'safe-tag'});
+    expect(service.discoverableWorks.map((w) => w.title), ['keep me']);
+  });
+
   test('author lists apply viewer filters but owner list can still manage hidden works', () async {
     final service = CommunityService();
     await service.setMutedWords(['mute']);
