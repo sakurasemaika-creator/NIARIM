@@ -163,7 +163,7 @@ class _CommunityScreenState extends State<CommunityScreen>
       context: context,
       builder: (context) => StatefulBuilder(
         builder: (context, setDialogState) => AlertDialog(
-          title: const Text('表示フィルター'),
+          title: Text(AppLocalizations.of(context)!.communityContentFilterTitle),
           content: SingleChildScrollView(
             child: Column(
               mainAxisSize: MainAxisSize.min,
@@ -172,21 +172,21 @@ class _CommunityScreenState extends State<CommunityScreen>
                   contentPadding: EdgeInsets.zero,
                   value: hideAi,
                   onChanged: (v) => setDialogState(() => hideAi = v),
-                  title: const Text('生成AIによる画像・動画を含む作品を非表示'),
+                  title: Text(AppLocalizations.of(context)!.communityHideGenerativeAiImageVideo),
                 ),
                 TextField(
                   controller: words,
                   decoration: const InputDecoration(
-                    labelText: 'ミュートワード',
-                    helperText: '作品タイトルに含まれる語句をカンマ区切りで指定',
+                    labelText: AppLocalizations.of(context)!.communityMutedWords,
+                    helperText: AppLocalizations.of(context)!.communityMutedWordsHint,
                   ),
                 ),
                 const SizedBox(height: 12),
                 TextField(
                   controller: tags,
                   decoration: const InputDecoration(
-                    labelText: 'ミュートタグ',
-                    helperText: 'タグ名をカンマ区切りで指定',
+                    labelText: AppLocalizations.of(context)!.communityMutedTags,
+                    helperText: AppLocalizations.of(context)!.communityMutedTagsHint,
                   ),
                 ),
               ],
@@ -305,7 +305,7 @@ class _CommunityScreenState extends State<CommunityScreen>
               ),
             IconButton(
               icon: const Icon(Icons.filter_alt_outlined),
-              tooltip: '表示フィルター',
+              tooltip: l10n.communityContentFilterTitle,
               onPressed: () => _showContentFilters(communityService),
             ),
             IconButton(
