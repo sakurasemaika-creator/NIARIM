@@ -67,6 +67,7 @@ class _FilterPanelState extends State<FilterPanel> {
   bool _showSearch = false;
   bool _applying = false;
   int _toneCurveChannel = 0; // 0=RGB, 1=R, 2=G, 3=B
+  int _levelsChannel = 0; // 0=RGB, 1=R, 2=G, 3=B
 
   Uint8List? _previewBase;
   Uint8List? _previewMask;
@@ -1048,51 +1049,71 @@ class _FilterPanelState extends State<FilterPanel> {
           ],
         );
       case FilterKind.levels:
+        final channelValues = switch (_levelsChannel) {
+          1 => current.levelsRed,
+          2 => current.levelsGreen,
+          3 => current.levelsBlue,
+          _ => const <double>[],
+        };
+        final values = channelValues.length >= 5
+            ? channelValues
+            : <double>[
+                current.inputBlack.toDouble(),
+                current.inputWhite.toDouble(),
+                current.inputGamma,
+                current.outputBlack.toDouble(),
+                current.outputWhite.toDouble(),
+              ];
+        void updateLevel(int index, double value) {
+          if (_levelsChannel == 0) {
+            switch (index) {
+              case 0:
+                service.updateFilterParams(current.id, inputBlack: value.round());
+              case 1:
+                service.updateFilterParams(current.id, inputWhite: value.round());
+              case 2:
+                service.updateFilterParams(current.id, inputGamma: value);
+              case 3:
+                service.updateFilterParams(current.id, outputBlack: value.round());
+              case 4:
+                service.updateFilterParams(current.id, outputWhite: value.round());
+            }
+          } else {
+            final next = [...values]..[index] = value;
+            service.updateFilterParams(
+              current.id,
+              levelsRed: _levelsChannel == 1 ? next : null,
+              levelsGreen: _levelsChannel == 2 ? next : null,
+              levelsBlue: _levelsChannel == 3 ? next : null,
+            );
+          }
+        }
         return Column(
           children: [
-            _paramSlider(
-              l10n.filterLevelsInputBlack,
-              current.inputBlack.toDouble(),
-              0,
-              255,
-              (v) =>
-                  service.updateFilterParams(current.id, inputBlack: v.round()),
+            SegmentedButton<int>(
+              key: const ValueKey('levels-channel-selector'),
+              segments: const [
+                ButtonSegment(value: 0, label: Text('RGB')),
+                ButtonSegment(value: 1, label: Text('R')),
+                ButtonSegment(value: 2, label: Text('G')),
+                ButtonSegment(value: 3, label: Text('B')),
+              ],
+              selected: {_levelsChannel},
+              showSelectedIcon: false,
+              onSelectionChanged: (v) =>
+                  setState(() => _levelsChannel = v.first),
             ),
-            _paramSlider(
-              l10n.filterLevelsInputWhite,
-              current.inputWhite.toDouble(),
-              0,
-              255,
-              (v) =>
-                  service.updateFilterParams(current.id, inputWhite: v.round()),
-            ),
-            _paramSlider(
-              l10n.filterLevelsGamma,
-              current.inputGamma,
-              0.1,
-              10.0,
-              (v) => service.updateFilterParams(current.id, inputGamma: v),
-            ),
-            _paramSlider(
-              l10n.filterLevelsOutputBlack,
-              current.outputBlack.toDouble(),
-              0,
-              255,
-              (v) => service.updateFilterParams(
-                current.id,
-                outputBlack: v.round(),
-              ),
-            ),
-            _paramSlider(
-              l10n.filterLevelsOutputWhite,
-              current.outputWhite.toDouble(),
-              0,
-              255,
-              (v) => service.updateFilterParams(
-                current.id,
-                outputWhite: v.round(),
-              ),
-            ),
+            const SizedBox(height: 8),
+            _paramSlider(l10n.filterLevelsInputBlack, values[0], 0, 255,
+                (v) => updateLevel(0, v)),
+            _paramSlider(l10n.filterLevelsInputWhite, values[1], 0, 255,
+                (v) => updateLevel(1, v)),
+            _paramSlider(l10n.filterLevelsGamma, values[2], 0.1, 10.0,
+                (v) => updateLevel(2, v)),
+            _paramSlider(l10n.filterLevelsOutputBlack, values[3], 0, 255,
+                (v) => updateLevel(3, v)),
+            _paramSlider(l10n.filterLevelsOutputWhite, values[4], 0, 255,
+                (v) => updateLevel(4, v)),
           ],
         );
       case FilterKind.sharpen:
@@ -1708,6 +1729,9 @@ class _FilterPanelState extends State<FilterPanel> {
           inputGamma: filter.inputGamma,
           outputBlack: filter.outputBlack,
           outputWhite: filter.outputWhite,
+          redLevels: filter.levelsRed.length >= 5 ? filter.levelsRed : null,
+          greenLevels: filter.levelsGreen.length >= 5 ? filter.levelsGreen : null,
+          blueLevels: filter.levelsBlue.length >= 5 ? filter.levelsBlue : null,
         );
       case FilterKind.sharpen:
         return _engine.applySharpen(data, width, height, filter.strength);
