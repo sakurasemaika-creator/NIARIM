@@ -75,8 +75,12 @@ class _CommunityShortsScreenState extends State<CommunityShortsScreen> {
   }
 
   /// 実プレーヤー接続時に現在ページのonEndedから呼ぶ。
-  void _handlePlaybackEnded(int pageIndex, {VoidCallback? onLoopCurrent}) {
-    if (!mounted || pageIndex != _currentIndex || widget.works.isEmpty) return;
+  void _handlePlaybackEnded(
+    int pageIndex,
+    List<CommunityWork> visibleWorks, {
+    VoidCallback? onLoopCurrent,
+  }) {
+    if (!mounted || pageIndex != _currentIndex || visibleWorks.isEmpty) return;
 
     if (_endBehavior == CommunityShortsEndBehavior.loopCurrent) {
       onLoopCurrent?.call();
@@ -84,7 +88,7 @@ class _CommunityShortsScreenState extends State<CommunityShortsScreen> {
     }
 
     final nextIndex = pageIndex + 1;
-    if (nextIndex < widget.works.length) {
+    if (nextIndex < visibleWorks.length) {
       _controller.animateToPage(
         nextIndex,
         duration: const Duration(milliseconds: 320),
@@ -93,7 +97,7 @@ class _CommunityShortsScreenState extends State<CommunityShortsScreen> {
       return;
     }
 
-    if (widget.works.length > 1) {
+    if (visibleWorks.length > 1) {
       _controller.animateToPage(
         0,
         duration: const Duration(milliseconds: 320),
@@ -115,6 +119,12 @@ class _CommunityShortsScreenState extends State<CommunityShortsScreen> {
     final l10n = AppLocalizations.of(context)!;
     final scheme = Theme.of(context).colorScheme;
     final communityService = context.watch<CommunityService>();
+    final visibleWorks = widget.works
+        .where(communityService.isDiscoverableForViewer)
+        .toList();
+    if (_currentIndex >= visibleWorks.length && visibleWorks.isNotEmpty) {
+      _currentIndex = visibleWorks.length - 1;
+    }
 
     return Scaffold(
       backgroundColor: scheme.surface,
@@ -123,10 +133,10 @@ class _CommunityShortsScreenState extends State<CommunityShortsScreen> {
           PageView.builder(
             controller: _controller,
             scrollDirection: Axis.vertical,
-            itemCount: widget.works.length,
+            itemCount: visibleWorks.length,
             onPageChanged: (index) => setState(() => _currentIndex = index),
             itemBuilder: (context, index) {
-              final work = widget.works[index];
+              final work = visibleWorks[index];
               return _ShortsPage(
                 work: work,
                 isCurrentPage: index == _currentIndex,
@@ -134,7 +144,11 @@ class _CommunityShortsScreenState extends State<CommunityShortsScreen> {
                 onToggleBookmark: () =>
                     communityService.toggleBookmark(work.id),
                 onPlaybackEnded: (onLoopCurrent) =>
-                    _handlePlaybackEnded(index, onLoopCurrent: onLoopCurrent),
+                    _handlePlaybackEnded(
+                      index,
+                      visibleWorks,
+                      onLoopCurrent: onLoopCurrent,
+                    ),
               );
             },
           ),
