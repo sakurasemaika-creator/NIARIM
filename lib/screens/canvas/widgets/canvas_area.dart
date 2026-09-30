@@ -16,6 +16,7 @@ import '../../../engine/filter_engine.dart' show FilterEngine;
 import '../../../engine/pixel_art_engine.dart';
 import '../../../engine/input_handler.dart';
 import '../../../engine/lasso_fill_engine.dart';
+import '../../../engine/lasso_line_snap_engine.dart';
 import '../../../engine/layer_compositor.dart';
 import '../../../engine/layer_keyframe_engine.dart';
 import '../../../engine/mesh_warp_engine.dart';
@@ -369,6 +370,8 @@ class CanvasArea extends StatefulWidget {
   final int clearSelectionToken;
   /// 自動選択の参照元。false=作業レイヤーのみ、true=表示中レイヤーすべて。
   final bool selectionReferenceAllVisible;
+  /// When true, freehand selection follows nearby line-art contours.
+  final bool lassoSnapToLines;
   final ValueChanged<bool>? onSelectionActiveChanged;
 
   /// 画面下部のスライダーで指定する、選択範囲の変形量。
@@ -418,6 +421,7 @@ class CanvasArea extends StatefulWidget {
     this.selectAllSelectionToken = 0,
     this.clearSelectionToken = 0,
     this.selectionReferenceAllVisible = false,
+    this.lassoSnapToLines = false,
     this.onSelectionActiveChanged,
     this.selectionMoveX = 0,
     this.selectionMoveY = 0,
@@ -536,6 +540,9 @@ class _CanvasAreaState extends State<CanvasArea> {
   Offset? _selectionStart;
   Offset? _selectionEnd;
   List<Offset> _lassoPoints = [];
+  List<Offset> _lassoGuidePoints = [];
+  Uint8List? _lassoSnapReference;
+  final LassoLineSnapEngine _lassoLineSnapEngine = const LassoLineSnapEngine();
   int _touchCount = 0;
 
   // ─── 選択範囲（矩形選択・投げ縄選択・自動選択で共通利用） ──
@@ -901,6 +908,29 @@ class _CanvasAreaState extends State<CanvasArea> {
     _setSelectionMask(mask, w, h);
   }
 
+
+  Future<void> _prepareLassoSnapReference() async {
+    if (!widget.lassoSnapToLines || widget.currentTool != DrawingTool.selectLasso) {
+      _lassoSnapReference = null;
+      return;
+    }
+    final w = _tileManager.canvasWidth;
+    final h = _tileManager.canvasHeight;
+    final Uint8List buffer;
+    if (widget.selectionReferenceAllVisible) {
+      buffer = await _flattenVisibleLayers();
+    } else {
+      final image = await _tileManager.compositeLayerToImage(
+        _tileKeyFor(_layerId),
+      );
+      final bytes = await image.toByteData(format: ui.ImageByteFormat.rawRgba);
+      image.dispose();
+      buffer = bytes?.buffer.asUint8List() ?? Uint8List(w * h * 4);
+    }
+    if (!mounted || !widget.lassoSnapToLines) return;
+    _lassoSnapReference = buffer;
+  }
+
   /// 選択範囲マスクを確定し、プレビュー用オーバーレイ画像を非同期で生成する。
   void _setSelectionMask(Uint8List mask, int w, int h) {
     _selectionOverlayImage?.dispose();
@@ -1169,9 +1199,12 @@ class _CanvasAreaState extends State<CanvasArea> {
     }
     if (widget.currentTool == DrawingTool.selectLasso) {
       _clearSelectionMask();
+      _lassoSnapReference = null;
       setState(() {
+        _lassoGuidePoints = [canvasPos];
         _lassoPoints = [canvasPos];
       });
+      unawaited(_prepareLassoSnapReference());
       return;
     }
     if (widget.currentTool == DrawingTool.selectMagicWand) {
@@ -1313,7 +1346,27 @@ class _CanvasAreaState extends State<CanvasArea> {
       return;
     }
     if (widget.currentTool == DrawingTool.selectLasso) {
-      setState(() => _lassoPoints.add(canvasPos));
+      final reference = _lassoSnapReference;
+      final previousRaw = _lassoGuidePoints.isEmpty
+          ? canvasPos
+          : _lassoGuidePoints.last;
+      final snapped = widget.lassoSnapToLines && reference != null
+          ? _lassoLineSnapEngine.snapPoint(
+              raw: canvasPos,
+              rawPrevious: previousRaw,
+              rgba: reference,
+              width: _tileManager.canvasWidth,
+              height: _tileManager.canvasHeight,
+              previous: _lassoPoints.isEmpty ? null : _lassoPoints.last,
+              previousPrevious: _lassoPoints.length < 2
+                  ? null
+                  : _lassoPoints[_lassoPoints.length - 2],
+            )
+          : canvasPos;
+      setState(() {
+        _lassoGuidePoints.add(canvasPos);
+        _lassoPoints.add(snapped);
+      });
       return;
     }
     if (widget.currentTool == DrawingTool.shape && _shapeStart != null) {
@@ -1430,8 +1483,21 @@ class _CanvasAreaState extends State<CanvasArea> {
       return;
     }
     if (widget.currentTool == DrawingTool.selectLasso) {
-      final points = List<Offset>.of(_lassoPoints);
-      setState(() => _lassoPoints = []);
+      var points = List<Offset>.of(_lassoPoints);
+      final reference = _lassoSnapReference;
+      if (widget.lassoSnapToLines && reference != null && _lassoGuidePoints.length >= 3) {
+        points = _lassoLineSnapEngine.snapPath(
+          guide: _lassoGuidePoints,
+          rgba: reference,
+          width: _tileManager.canvasWidth,
+          height: _tileManager.canvasHeight,
+        );
+      }
+      setState(() {
+        _lassoPoints = [];
+        _lassoGuidePoints = [];
+      });
+      _lassoSnapReference = null;
       if (points.length >= 3) {
         final w = _tileManager.canvasWidth;
         final h = _tileManager.canvasHeight;
