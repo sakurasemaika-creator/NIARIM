@@ -110,6 +110,7 @@ class CommunityApi {
     required String youtubeAccessToken,
     bool isShort = false,
     bool isNiarimPublished = true,
+    bool containsGenerativeAiImageOrVideo = false,
     int? projectFps,
     int? projectFrameCount,
     int? projectWorkSeconds,
@@ -129,6 +130,7 @@ class CommunityApi {
         'youtubeAccessToken': youtubeAccessToken,
         'isShort': isShort,
         'isNiarimPublished': isNiarimPublished,
+        'containsGenerativeAiImageOrVideo': containsGenerativeAiImageOrVideo,
         'projectFps': ?projectFps,
         'projectFrameCount': ?projectFrameCount,
         'projectWorkSeconds': ?projectWorkSeconds,
@@ -151,6 +153,20 @@ class CommunityApi {
       '/works/${Uri.encodeComponent(workId)}',
       retries: 1,
       body: {'isNiarimPublished': isNiarimPublished},
+    );
+    return ApiWork.fromJson(_work(json));
+  }
+
+  Future<ApiWork> updateWorkAiImageVideoDisclosure(
+    String workId, {
+    required bool containsGenerativeAiImageOrVideo,
+  }) async {
+    final json = await _client.patchJson(
+      '/works/\${Uri.encodeComponent(workId)}',
+      retries: 1,
+      body: {
+        'containsGenerativeAiImageOrVideo': containsGenerativeAiImageOrVideo,
+      },
     );
     return ApiWork.fromJson(_work(json));
   }
