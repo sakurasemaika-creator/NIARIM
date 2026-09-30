@@ -97,6 +97,9 @@ Uint8List applyDrawFilterInIsolate(
       filter.toneCurvePoints.length >= 4
           ? [for (var i = 0; i + 1 < filter.toneCurvePoints.length; i += 2) ui.Offset(filter.toneCurvePoints[i], filter.toneCurvePoints[i + 1])]
           : toneCurvePoints(filter.toneCurvePreset),
+      redPoints: _storedCurve(filter.toneCurveRedPoints),
+      greenPoints: _storedCurve(filter.toneCurveGreenPoints),
+      bluePoints: _storedCurve(filter.toneCurveBluePoints),
     ),
     FilterKind.levels => engine.applyLevels(
       data,
@@ -248,6 +251,10 @@ Uint8List applyDrawFilterInIsolate(
 
 /// トーンカーブのプリセット形状を制御点（0.0〜1.0の正規化座標）へ変換する。
 /// プレビュー・本適用の両方から共通利用する。
+List<ui.Offset>? _storedCurve(List<double> values) => values.length >= 4
+    ? [for (var i = 0; i + 1 < values.length; i += 2) ui.Offset(values[i], values[i + 1])]
+    : null;
+
 List<ui.Offset> toneCurvePoints(ToneCurvePreset preset) {
   return switch (preset) {
     ToneCurvePreset.linear => const [ui.Offset(0, 0), ui.Offset(1, 1)],
@@ -2312,28 +2319,45 @@ class FilterEngine {
     Uint8List data,
     int width,
     int height,
-    List<ui.Offset> curvePoints,
-  ) {
-    if (curvePoints.length < 2) return data;
-    // LUT生成（0-255 → 0-255）
-    final lut = List<int>.generate(256, (i) {
-      final x = i / 255.0;
-      // 線形補間
-      for (int j = 0; j < curvePoints.length - 1; j++) {
-        final p0 = curvePoints[j];
-        final p1 = curvePoints[j + 1];
-        if (x >= p0.dx && x <= p1.dx) {
-          final t = (x - p0.dx) / (p1.dx - p0.dx);
-          return ((p0.dy + t * (p1.dy - p0.dy)) * 255).round().clamp(0, 255);
-        }
+    List<ui.Offset> curvePoints, {
+    List<ui.Offset>? redPoints,
+    List<ui.Offset>? greenPoints,
+    List<ui.Offset>? bluePoints,
+  }) {
+    List<int> makeLut(List<ui.Offset>? points) {
+      if (points == null || points.length < 2) {
+        return List<int>.generate(256, (i) => i);
       }
-      return i;
-    });
+      final sorted = [...points]..sort((a, b) => a.dx.compareTo(b.dx));
+      return List<int>.generate(256, (i) {
+        final x = i / 255.0;
+        if (x <= sorted.first.dx) {
+          return (sorted.first.dy * 255).round().clamp(0, 255);
+        }
+        for (int j = 0; j < sorted.length - 1; j++) {
+          final p0 = sorted[j];
+          final p1 = sorted[j + 1];
+          if (x >= p0.dx && x <= p1.dx) {
+            final span = p1.dx - p0.dx;
+            final t = span.abs() < 1e-9 ? 0.0 : (x - p0.dx) / span;
+            return ((p0.dy + t * (p1.dy - p0.dy)) * 255)
+                .round()
+                .clamp(0, 255);
+          }
+        }
+        return (sorted.last.dy * 255).round().clamp(0, 255);
+      });
+    }
+
+    final master = makeLut(curvePoints);
+    final red = makeLut(redPoints);
+    final green = makeLut(greenPoints);
+    final blue = makeLut(bluePoints);
     final result = Uint8List.fromList(data);
     for (int i = 0; i < result.length; i += 4) {
-      result[i] = lut[result[i]];
-      result[i + 1] = lut[result[i + 1]];
-      result[i + 2] = lut[result[i + 2]];
+      result[i] = red[master[result[i]]];
+      result[i + 1] = green[master[result[i + 1]]];
+      result[i + 2] = blue[master[result[i + 2]]];
     }
     return result;
   }
