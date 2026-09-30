@@ -995,6 +995,7 @@ class _FilterPanelState extends State<FilterPanel> {
             ),
             const SizedBox(height: 6),
             SegmentedButton<int>(
+              key: const ValueKey('tone-curve-channel-selector'),
               segments: const [
                 ButtonSegment(value: 0, label: Text('RGB')),
                 ButtonSegment(value: 1, label: Text('R')),
@@ -1008,6 +1009,7 @@ class _FilterPanelState extends State<FilterPanel> {
             ),
             const SizedBox(height: 8),
             _ToneCurveEditor(
+              key: ValueKey('tone-curve-editor-${_toneCurveChannel}'),
               points: (() {
                 final stored = switch (_toneCurveChannel) {
                   1 => current.toneCurveRedPoints,
