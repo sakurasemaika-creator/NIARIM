@@ -2583,17 +2583,25 @@ class FilterEngine {
     double inputGamma = 1.0,
     required int outputBlack,
     required int outputWhite,
+    List<double>? redLevels,
+    List<double>? greenLevels,
+    List<double>? blueLevels,
   }) {
-    final inRange = (inputWhite - inputBlack).clamp(1, 255);
-    final outRange = outputWhite - outputBlack;
     final result = Uint8List.fromList(data);
+    final overrides = [redLevels, greenLevels, blueLevels];
     for (int i = 0; i < result.length; i += 4) {
       for (int c = 0; c < 3; c++) {
-        final normalized =
-            ((result[i + c] - inputBlack) / inRange).clamp(0.0, 1.0);
-        final corrected = math.pow(normalized, 1.0 / inputGamma.clamp(0.1, 10.0));
-        final v = (corrected * outRange + outputBlack).round().clamp(0, 255);
-        result[i + c] = v;
+        final values = overrides[c];
+        final ib = values != null && values.length >= 5 ? values[0].round() : inputBlack;
+        final iw = values != null && values.length >= 5 ? values[1].round() : inputWhite;
+        final gamma = values != null && values.length >= 5 ? values[2] : inputGamma;
+        final ob = values != null && values.length >= 5 ? values[3].round() : outputBlack;
+        final ow = values != null && values.length >= 5 ? values[4].round() : outputWhite;
+        final inRange = (iw - ib).clamp(1, 255);
+        final outRange = ow - ob;
+        final normalized = ((result[i + c] - ib) / inRange).clamp(0.0, 1.0);
+        final corrected = math.pow(normalized, 1.0 / gamma.clamp(0.1, 10.0));
+        result[i + c] = (corrected * outRange + ob).round().clamp(0, 255);
       }
     }
     return result;
