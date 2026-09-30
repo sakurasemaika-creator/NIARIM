@@ -55,8 +55,11 @@ class CommunityService extends ChangeNotifier {
   final CommunityApi? api;
 
   CommunityService({this.api}) {
-    _loadContentFilters();
+    contentFiltersReady = _loadContentFilters();
   }
+
+  /// Completes after persisted display filters have been restored.
+  late final Future<void> contentFiltersReady;
 
   /// バックエンドに接続する設定になっているか。
   bool get isBackendConnected => api != null;
@@ -144,6 +147,7 @@ class CommunityService extends ChangeNotifier {
   }
 
   Future<void> setHideGenerativeAiImageVideo(bool value) async {
+    await contentFiltersReady;
     _hideGenerativeAiImageVideo = value;
     notifyListeners();
     final prefs = await SharedPreferences.getInstance();
@@ -151,6 +155,7 @@ class CommunityService extends ChangeNotifier {
   }
 
   Future<void> setMutedWords(Iterable<String> values) async {
+    await contentFiltersReady;
     _mutedWords
       ..clear()
       ..addAll(values.map((e) => e.trim().toLowerCase()).where((e) => e.isNotEmpty));
@@ -160,6 +165,7 @@ class CommunityService extends ChangeNotifier {
   }
 
   Future<void> setMutedTags(Iterable<String> values) async {
+    await contentFiltersReady;
     _mutedTags
       ..clear()
       ..addAll(values.map((e) => e.trim().toLowerCase()).where((e) => e.isNotEmpty));
