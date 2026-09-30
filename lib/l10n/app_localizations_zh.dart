@@ -3339,6 +3339,9 @@ class AppLocalizationsZh extends AppLocalizations {
   String get filterLevelsInputWhite => '输入：白';
 
   @override
+  String get filterLevelsGamma => '伽马';
+
+  @override
   String get filterLevelsOutputBlack => '输出：黑';
 
   @override
@@ -6458,6 +6461,8 @@ class AppLocalizationsZh extends AppLocalizations {
 
 /// The translations for Chinese, using the Han script (`zh_Hant`).
 class AppLocalizationsZhHant extends AppLocalizationsZh {
+  @override
+  String get filterLevelsGamma => '伽瑪';
   AppLocalizationsZhHant() : super('zh_Hant');
 
   @override
