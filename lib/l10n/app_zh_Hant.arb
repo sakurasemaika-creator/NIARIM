@@ -2780,5 +2780,13 @@
   "filterNoiseStyle": "雜訊類型",
   "filterNoiseFilmGrain": "底片顆粒",
   "filterNoiseColor": "彩色雜訊",
-  "filterNoiseSeed": "圖案種子"
+  "filterNoiseSeed": "圖案種子",
+  "communityContentFilterTitle": "顯示篩選",
+  "communityHideGenerativeAiImageVideo": "隱藏包含生成式 AI 圖像或影片的作品",
+  "communityMutedWords": "封鎖詞",
+  "communityMutedWordsHint": "輸入以逗號分隔的詞語；作品標題包含時將隱藏",
+  "communityMutedTags": "封鎖標籤",
+  "communityMutedTagsHint": "輸入以逗號分隔的標籤名稱",
+  "communityContainsGenerativeAiImageVideo": "包含生成式 AI 圖像或影片",
+  "communityContainsGenerativeAiImageVideoHelp": "作品中的圖像或影片使用生成式 AI 製作時請開啟。語音合成軟體不屬於此項範圍。"
 }
