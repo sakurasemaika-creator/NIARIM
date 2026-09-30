@@ -267,7 +267,7 @@ class _CommunityPostScreenState extends State<CommunityPostScreen> {
           }
           if (work.containsGenerativeAiImageOrVideo !=
               _containsGenerativeAiImageOrVideo) {
-            setState(() => _status = '投稿済み作品のAI画像・動画フラグを同期しています…');
+            setState(() => _status = '投稿済み作品のAI画像・AI動画使用フラグを同期しています…');
             await api.updateWorkAiImageVideoDisclosure(
               videoId,
               containsGenerativeAiImageOrVideo:
