@@ -870,12 +870,12 @@ class _Harness {
     final project = ps.projects.firstWhere((p) => p.id == projectId);
     final w = project.exportWidth;
     final h = project.exportHeight;
-    final columns = math.max(1, math.sqrt(count).ceil());
-    final rows = math.max(1, (count / columns).ceil());
+    final int columns = math.max(1, math.sqrt(count).ceil());
+    final int rows = math.max(1, (count / columns).ceil());
     final cellW = w / columns;
     final cellH = h / rows;
-    final col = index % columns;
-    final row = index ~/ columns;
+    final int col = index % columns;
+    final int row = index ~/ columns;
     final inset = math.max(3.0, math.min(cellW, cellH) * .12);
     final rect = Rect.fromLTWH(
       col * cellW + inset,
