@@ -398,6 +398,7 @@ class _CommunityPostScreenState extends State<CommunityPostScreen> {
   @override
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
+    final l10n = AppLocalizations.of(context)!;
     final retainedVideoId = _youtubeVideoId;
     return PopScope(
       canPop: !_busy,
