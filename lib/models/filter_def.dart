@@ -77,6 +77,12 @@ class FilterDef {
   final double thresholdValue;
   final double lensCenterOffsetX;
   final double lensCenterOffsetY;
+  final double fisheyeRadius;
+  final double fisheyeCenterX;
+  final double fisheyeCenterY;
+  final double chromaticShiftX;
+  final double chromaticShiftY;
+  final double chromaticShiftZ;
   final PixelColorMode pixelColorMode;
   final List<int> pixelExplicitColors;
   final double hologramBrightness;
@@ -138,6 +144,12 @@ class FilterDef {
     this.thresholdValue = 128,
     this.lensCenterOffsetX = 0,
     this.lensCenterOffsetY = 0,
+    this.fisheyeRadius = 100,
+    this.fisheyeCenterX = 0,
+    this.fisheyeCenterY = 0,
+    this.chromaticShiftX = 8,
+    this.chromaticShiftY = 0,
+    this.chromaticShiftZ = 0,
     this.pixelColorMode = PixelColorMode.count,
     this.pixelExplicitColors = const [0xFF000000],
     this.hologramBrightness = 0,
@@ -200,6 +212,12 @@ class FilterDef {
     double? thresholdValue,
     double? lensCenterOffsetX,
     double? lensCenterOffsetY,
+    double? fisheyeRadius,
+    double? fisheyeCenterX,
+    double? fisheyeCenterY,
+    double? chromaticShiftX,
+    double? chromaticShiftY,
+    double? chromaticShiftZ,
     PixelColorMode? pixelColorMode,
     List<int>? pixelExplicitColors,
     double? hologramBrightness,
@@ -261,6 +279,12 @@ class FilterDef {
       thresholdValue: thresholdValue ?? this.thresholdValue,
       lensCenterOffsetX: lensCenterOffsetX ?? this.lensCenterOffsetX,
       lensCenterOffsetY: lensCenterOffsetY ?? this.lensCenterOffsetY,
+      fisheyeRadius: fisheyeRadius ?? this.fisheyeRadius,
+      fisheyeCenterX: fisheyeCenterX ?? this.fisheyeCenterX,
+      fisheyeCenterY: fisheyeCenterY ?? this.fisheyeCenterY,
+      chromaticShiftX: chromaticShiftX ?? this.chromaticShiftX,
+      chromaticShiftY: chromaticShiftY ?? this.chromaticShiftY,
+      chromaticShiftZ: chromaticShiftZ ?? this.chromaticShiftZ,
       pixelColorMode: pixelColorMode ?? this.pixelColorMode,
       pixelExplicitColors: pixelExplicitColors ?? this.pixelExplicitColors,
       hologramBrightness: hologramBrightness ?? this.hologramBrightness,
@@ -335,6 +359,12 @@ class FilterDef {
     'thresholdValue': thresholdValue,
     'lensCenterOffsetX': lensCenterOffsetX,
     'lensCenterOffsetY': lensCenterOffsetY,
+    'fisheyeRadius': fisheyeRadius,
+    'fisheyeCenterX': fisheyeCenterX,
+    'fisheyeCenterY': fisheyeCenterY,
+    'chromaticShiftX': chromaticShiftX,
+    'chromaticShiftY': chromaticShiftY,
+    'chromaticShiftZ': chromaticShiftZ,
     'pixelColorMode': pixelColorMode.name,
     'pixelExplicitColors': pixelExplicitColors,
     'hologramBrightness': hologramBrightness,
@@ -422,6 +452,12 @@ class FilterDef {
     thresholdValue: (j['thresholdValue'] as num?)?.toDouble() ?? 128,
     lensCenterOffsetX: (j['lensCenterOffsetX'] as num?)?.toDouble() ?? 0,
     lensCenterOffsetY: (j['lensCenterOffsetY'] as num?)?.toDouble() ?? 0,
+    fisheyeRadius: (j['fisheyeRadius'] as num?)?.toDouble() ?? 100,
+    fisheyeCenterX: (j['fisheyeCenterX'] as num?)?.toDouble() ?? 0,
+    fisheyeCenterY: (j['fisheyeCenterY'] as num?)?.toDouble() ?? 0,
+    chromaticShiftX: (j['chromaticShiftX'] as num?)?.toDouble() ?? 8,
+    chromaticShiftY: (j['chromaticShiftY'] as num?)?.toDouble() ?? 0,
+    chromaticShiftZ: (j['chromaticShiftZ'] as num?)?.toDouble() ?? 0,
     pixelColorMode: PixelColorMode.values.firstWhere(
       (e) => e.name == j['pixelColorMode'],
       orElse: () => PixelColorMode.count,

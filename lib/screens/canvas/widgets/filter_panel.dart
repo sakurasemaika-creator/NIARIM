@@ -1143,21 +1143,19 @@ class _FilterPanelState extends State<FilterPanel> {
           (v) => service.updateFilterParams(current.id, thresholdValue: v),
         );
       case FilterKind.fisheye:
-        return _paramSlider(
-          l10n.filterFisheyeStrength,
-          current.strength,
-          0,
-          100,
-          (v) => service.updateFilterParams(current.id, strength: v),
-        );
+        return Column(children: [
+          _paramSlider(l10n.filterFisheyeStrength, current.strength, 0, 100, (v) => service.updateFilterParams(current.id, strength: v)),
+          _paramSlider('半径', current.fisheyeRadius, 1, 100, (v) => service.updateFilterParams(current.id, fisheyeRadius: v)),
+          _paramSlider('中心 X', current.fisheyeCenterX, -100, 100, (v) => service.updateFilterParams(current.id, fisheyeCenterX: v)),
+          _paramSlider('中心 Y', current.fisheyeCenterY, -100, 100, (v) => service.updateFilterParams(current.id, fisheyeCenterY: v)),
+        ]);
       case FilterKind.chromaticAberration:
-        return _paramSlider(
-          l10n.filterChromaticAberrationStrength,
-          current.strength,
-          1,
-          30,
-          (v) => service.updateFilterParams(current.id, strength: v),
-        );
+        return Column(children: [
+          _paramSlider(l10n.filterChromaticAberrationStrength, current.strength, 0, 30, (v) => service.updateFilterParams(current.id, strength: v)),
+          _paramSlider('X 軸', current.chromaticShiftX, -30, 30, (v) => service.updateFilterParams(current.id, chromaticShiftX: v)),
+          _paramSlider('Y 軸', current.chromaticShiftY, -30, 30, (v) => service.updateFilterParams(current.id, chromaticShiftY: v)),
+          _paramSlider('Z 軸', current.chromaticShiftZ, -180, 180, (v) => service.updateFilterParams(current.id, chromaticShiftZ: v)),
+        ]);
       case FilterKind.lensDistortion:
         return Column(
           children: [
@@ -1682,14 +1680,12 @@ class _FilterPanelState extends State<FilterPanel> {
           filter.thresholdValue,
         );
       case FilterKind.fisheye:
-        return _engine.applyFisheye(data, width, height, filter.strength);
+        return _engine.applyFisheye(data, width, height, filter.strength, radiusPercent: filter.fisheyeRadius, centerOffsetX: filter.fisheyeCenterX * _previewScale, centerOffsetY: filter.fisheyeCenterY * _previewScale);
       case FilterKind.chromaticAberration:
         return _engine.applyChromaticAberration(
-          data,
-          width,
-          height,
-          filter.strength,
-          0,
+          data, width, height,
+          math.max(filter.strength, math.sqrt(filter.chromaticShiftX * filter.chromaticShiftX + filter.chromaticShiftY * filter.chromaticShiftY)),
+          math.atan2(filter.chromaticShiftY, filter.chromaticShiftX) + filter.chromaticShiftZ * math.pi / 180.0,
         );
       case FilterKind.lensDistortion:
         return _engine.applyLensDistortion(

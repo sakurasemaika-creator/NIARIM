@@ -155,17 +155,15 @@ Uint8List applyDrawFilterInIsolate(
       filter.thresholdValue,
     ),
     FilterKind.fisheye => engine.applyFisheye(
-      data,
-      width,
-      height,
-      filter.strength,
+      data, width, height, filter.strength,
+      radiusPercent: filter.fisheyeRadius,
+      centerOffsetX: filter.fisheyeCenterX,
+      centerOffsetY: filter.fisheyeCenterY,
     ),
     FilterKind.chromaticAberration => engine.applyChromaticAberration(
-      data,
-      width,
-      height,
-      filter.strength,
-      0,
+      data, width, height,
+      math.max(filter.strength, math.sqrt(filter.chromaticShiftX * filter.chromaticShiftX + filter.chromaticShiftY * filter.chromaticShiftY)),
+      math.atan2(filter.chromaticShiftY, filter.chromaticShiftX) + filter.chromaticShiftZ * math.pi / 180.0,
     ),
     FilterKind.lensDistortion => engine.applyLensDistortion(
       data,
@@ -883,14 +881,18 @@ class FilterEngine {
     Uint8List data,
     int width,
     int height,
-    double strength,
-  ) {
+    double strength, {
+    double radiusPercent = 100,
+    double centerOffsetX = 0,
+    double centerOffsetY = 0,
+  }) {
     final amount = (strength / 100.0).clamp(0.0, 1.0);
     if (amount <= 0) return Uint8List.fromList(data);
     final exponent = (1.0 - amount * 0.85).clamp(0.15, 1.0);
-    final cx = width / 2.0;
-    final cy = height / 2.0;
-    final maxR = math.sqrt(cx * cx + cy * cy);
+    final cx = width / 2.0 + centerOffsetX;
+    final cy = height / 2.0 + centerOffsetY;
+    final maxCanvasR = math.sqrt(width * width + height * height) / 2.0;
+    final maxR = math.max(1.0, maxCanvasR * (radiusPercent / 100.0).clamp(0.01, 1.0));
     final result = Uint8List(data.length);
     for (int y = 0; y < height; y++) {
       for (int x = 0; x < width; x++) {
@@ -898,7 +900,11 @@ class FilterEngine {
         final ny = (y - cy) / maxR;
         final r = math.sqrt(nx * nx + ny * ny);
         double srcX, srcY;
-        if (r <= 1e-6) {
+        if (r > 1.0) {
+          final q=(y*width+x)*4;
+          result[q]=data[q]; result[q+1]=data[q+1]; result[q+2]=data[q+2]; result[q+3]=data[q+3];
+          continue;
+        } else if (r <= 1e-6) {
           srcX = cx;
           srcY = cy;
         } else {
