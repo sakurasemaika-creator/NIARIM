@@ -142,10 +142,18 @@ class CommunityService extends ChangeNotifier {
     _hideGenerativeAiImageVideo = prefs.getBool(_hideAiImageVideoKey) ?? false;
     _mutedWords
       ..clear()
-      ..addAll(prefs.getStringList(_mutedWordsKey) ?? const []);
+      ..addAll(
+        (prefs.getStringList(_mutedWordsKey) ?? const [])
+            .map((e) => e.trim().toLowerCase())
+            .where((e) => e.isNotEmpty),
+      );
     _mutedTags
       ..clear()
-      ..addAll(prefs.getStringList(_mutedTagsKey) ?? const []);
+      ..addAll(
+        (prefs.getStringList(_mutedTagsKey) ?? const [])
+            .map((e) => e.trim().toLowerCase())
+            .where((e) => e.isNotEmpty),
+      );
     notifyListeners();
   }
 
