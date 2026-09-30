@@ -14,6 +14,8 @@ on:
       - 'lib/engine/autofill_engine.dart'
       - 'lib/models/autofill_preset.dart'
       - 'lib/services/autofill_preset_service.dart'
+      - 'lib/screens/community/community_post_screen.dart'
+      - 'lib/screens/community/community_screen.dart'
       - 'test/functional_render_real_async_test.dart'
       - 'test/functional_audit_batch*_test.dart'
       # Functional Visual Audit trigger includes its full render regression suite.
