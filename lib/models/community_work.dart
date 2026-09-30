@@ -44,6 +44,8 @@ class CommunityWork {
   final bool isNiarimPublished;
   // ショート動画（縦長）かどうか。
   final bool isShort;
+  /// 投稿者申告: 生成AIによる画像・動画を含む。
+  final bool containsGenerativeAiImageOrVideo;
 
   const CommunityWork({
     required this.id,
@@ -66,6 +68,7 @@ class CommunityWork {
     this.lockedTags = const {},
     this.isNiarimPublished = true,
     this.isShort = false,
+    this.containsGenerativeAiImageOrVideo = false,
   });
 
   CommunityWork copyWith({
@@ -73,6 +76,7 @@ class CommunityWork {
     Set<String>? lockedTags,
     bool? isNiarimPublished,
     bool? isShort,
+    bool? containsGenerativeAiImageOrVideo,
     int? projectFps,
     int? projectFrameCount,
     int? projectWorkSeconds,
@@ -101,6 +105,7 @@ class CommunityWork {
       lockedTags: lockedTags ?? this.lockedTags,
       isNiarimPublished: isNiarimPublished ?? this.isNiarimPublished,
       isShort: isShort ?? this.isShort,
+      containsGenerativeAiImageOrVideo: containsGenerativeAiImageOrVideo ?? this.containsGenerativeAiImageOrVideo,
     );
   }
 }
