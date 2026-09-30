@@ -156,6 +156,7 @@ class _CommunityScreenState extends State<CommunityScreen>
   }
 
   Future<void> _showContentFilters(CommunityService service) async {
+    final l10n = AppLocalizations.of(context)!;
     final words = TextEditingController(text: service.mutedWords.join(', '));
     final tags = TextEditingController(text: service.mutedTags.join(', '));
     var hideAi = service.hideGenerativeAiImageVideo;
@@ -163,7 +164,7 @@ class _CommunityScreenState extends State<CommunityScreen>
       context: context,
       builder: (context) => StatefulBuilder(
         builder: (context, setDialogState) => AlertDialog(
-          title: Text(AppLocalizations.of(context)!.communityContentFilterTitle),
+          title: Text(l10n.communityContentFilterTitle),
           content: SingleChildScrollView(
             child: Column(
               mainAxisSize: MainAxisSize.min,
@@ -172,21 +173,21 @@ class _CommunityScreenState extends State<CommunityScreen>
                   contentPadding: EdgeInsets.zero,
                   value: hideAi,
                   onChanged: (v) => setDialogState(() => hideAi = v),
-                  title: Text(AppLocalizations.of(context)!.communityHideGenerativeAiImageVideo),
+                  title: Text(l10n.communityHideGenerativeAiImageVideo),
                 ),
                 TextField(
                   controller: words,
-                  decoration: const InputDecoration(
-                    labelText: AppLocalizations.of(context)!.communityMutedWords,
-                    helperText: AppLocalizations.of(context)!.communityMutedWordsHint,
+                  decoration: InputDecoration(
+                    labelText: l10n.communityMutedWords,
+                    helperText: l10n.communityMutedWordsHint,
                   ),
                 ),
                 const SizedBox(height: 12),
                 TextField(
                   controller: tags,
-                  decoration: const InputDecoration(
-                    labelText: AppLocalizations.of(context)!.communityMutedTags,
-                    helperText: AppLocalizations.of(context)!.communityMutedTagsHint,
+                  decoration: InputDecoration(
+                    labelText: l10n.communityMutedTags,
+                    helperText: l10n.communityMutedTagsHint,
                   ),
                 ),
               ],
