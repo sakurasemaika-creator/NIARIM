@@ -108,7 +108,10 @@ class CommunityService extends ChangeNotifier {
     try {
       final page = await client.ranking(period);
       _lastError = null;
-      return page.works.map((w) => w.toCommunityWork()).toList();
+      return page.works
+          .map((w) => w.toCommunityWork())
+          .where((w) => w.isNiarimPublished && _passesContentFilters(w))
+          .toList();
     } on NiarimApiException catch (e) {
       _lastError = e;
       notifyListeners();
@@ -516,7 +519,11 @@ class CommunityService extends ChangeNotifier {
     for (final r in _reposts) {
       if (!_favoriteAuthorIds.contains(r.reposterId)) continue;
       final work = byId(r.workId);
-      if (work == null || !work.isNiarimPublished) continue;
+      if (work == null ||
+          !work.isNiarimPublished ||
+          !_passesContentFilters(work)) {
+        continue;
+      }
       final existing = byWork[r.workId];
       // 既にフォロー中作者本人の投稿として含まれている場合でも、
       // リポストの方が新しければそちらの日時・「誰がリポストしたか」を
