@@ -67,6 +67,10 @@ class FilterDef {
   final double inputGamma;
   final int outputBlack;
   final int outputWhite;
+  /// Optional per-channel Levels overrides: [inputBlack, inputWhite, gamma, outputBlack, outputWhite].
+  final List<double> levelsRed;
+  final List<double> levelsGreen;
+  final List<double> levelsBlue;
   final ToneCurvePreset toneCurvePreset;
   final List<double> toneCurvePoints;
   final List<double> toneCurveRedPoints;
@@ -139,6 +143,9 @@ class FilterDef {
     this.inputGamma = 1.0,
     this.outputBlack = 0,
     this.outputWhite = 255,
+    this.levelsRed = const [],
+    this.levelsGreen = const [],
+    this.levelsBlue = const [],
     this.toneCurvePreset = ToneCurvePreset.linear,
     this.toneCurvePoints = const [],
     this.toneCurveRedPoints = const [],
@@ -212,6 +219,9 @@ class FilterDef {
     double? inputGamma,
     int? outputBlack,
     int? outputWhite,
+    List<double>? levelsRed,
+    List<double>? levelsGreen,
+    List<double>? levelsBlue,
     ToneCurvePreset? toneCurvePreset,
     List<double>? toneCurvePoints,
     List<double>? toneCurveRedPoints,
@@ -284,6 +294,9 @@ class FilterDef {
       inputGamma: inputGamma ?? this.inputGamma,
       outputBlack: outputBlack ?? this.outputBlack,
       outputWhite: outputWhite ?? this.outputWhite,
+      levelsRed: levelsRed ?? this.levelsRed,
+      levelsGreen: levelsGreen ?? this.levelsGreen,
+      levelsBlue: levelsBlue ?? this.levelsBlue,
       toneCurvePreset: toneCurvePreset ?? this.toneCurvePreset,
       toneCurvePoints: toneCurvePoints ?? this.toneCurvePoints,
       toneCurveRedPoints: toneCurveRedPoints ?? this.toneCurveRedPoints,
@@ -369,6 +382,9 @@ class FilterDef {
     'inputGamma': inputGamma,
     'outputBlack': outputBlack,
     'outputWhite': outputWhite,
+    'levelsRed': levelsRed,
+    'levelsGreen': levelsGreen,
+    'levelsBlue': levelsBlue,
     'toneCurvePreset': toneCurvePreset.name,
     'toneCurvePoints': toneCurvePoints,
     'toneCurveRedPoints': toneCurveRedPoints,
@@ -464,6 +480,9 @@ class FilterDef {
     inputGamma: (j['inputGamma'] as num?)?.toDouble() ?? 1.0,
     outputBlack: j['outputBlack'] as int? ?? 0,
     outputWhite: j['outputWhite'] as int? ?? 255,
+    levelsRed: (j['levelsRed'] as List?)?.map((e) => (e as num).toDouble()).toList() ?? const [],
+    levelsGreen: (j['levelsGreen'] as List?)?.map((e) => (e as num).toDouble()).toList() ?? const [],
+    levelsBlue: (j['levelsBlue'] as List?)?.map((e) => (e as num).toDouble()).toList() ?? const [],
     caSaturation: (j['caSaturation'] as num?)?.toDouble() ?? 0,
     caBrightness: (j['caBrightness'] as num?)?.toDouble() ?? 0,
     caContrast: (j['caContrast'] as num?)?.toDouble() ?? 0,
