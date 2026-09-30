@@ -6475,7 +6475,7 @@ class AppLocalizationsJa extends AppLocalizations {
   String get communityContentFilterTitle => "表示フィルター";
 
   @override
-  String get communityHideGenerativeAiImageVideo => "生成AIによる画像・動画を含む作品を非表示";
+  String get communityHideGenerativeAiImageVideo => "「AI画像・AI動画使用」の作品を非表示";
 
   @override
   String get communityMutedWords => "ミュートワード";
@@ -6484,16 +6484,16 @@ class AppLocalizationsJa extends AppLocalizations {
   String get communityMutedWordsHint => "作品タイトルに含まれる語句をカンマ区切りで指定";
 
   @override
-  String get communityMutedTags => "ミュートタグ";
+  String get communityMutedTags => "ミュートタグ登録";
 
   @override
   String get communityMutedTagsHint => "タグ名をカンマ区切りで指定";
 
   @override
-  String get communityContainsGenerativeAiImageVideo => "生成AIによる画像・動画を含む";
+  String get communityContainsGenerativeAiImageVideo => "AI画像・AI動画使用";
 
   @override
-  String get communityContainsGenerativeAiImageVideoHelp => "画像または動画の生成に生成AIを使用した作品でONにしてください。音声合成ソフト等はこの項目の対象外です。";
+  String get communityContainsGenerativeAiImageVideoHelp => "画像または動画の生成に生成AIを使用した作品でONにしてください。音声合成ソフト等は「AI画像・AI動画使用」の対象外です。";
 
   @override
   String get canvasLassoSnapToLines => "線に吸着";
