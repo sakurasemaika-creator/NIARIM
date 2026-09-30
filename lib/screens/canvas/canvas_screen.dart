@@ -2454,9 +2454,8 @@ class _CanvasScreenState extends State<CanvasScreen> {
                 if (_currentTool == DrawingTool.selectLasso)
                   InkWell(
                     key: const ValueKey('lasso-snap-to-lines'),
-                    onTap: () => setState(
-                      () => _lassoSnapToLines = !_lassoSnapToLines,
-                    ),
+                    onTap: () =>
+                        setState(() => _lassoSnapToLines = !_lassoSnapToLines),
                     borderRadius: BorderRadius.circular(6),
                     child: Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 2),
