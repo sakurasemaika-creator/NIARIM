@@ -130,7 +130,23 @@ void main() {
     expect(out[1], 255);
     expect(out[2], 255);
   });
+  test('tone curve RGB channels persist and affect only their channel', () {
+    const def = FilterDef(
+      id: 'curve-red',
+      name: 'curve',
+      kind: FilterKind.toneCurve,
+      toneCurveRedPoints: [0, 0, 0.5, 1, 1, 1],
+    );
+    final restored = FilterDef.fromJson(def.toJson());
+    expect(restored.toneCurveRedPoints, orderedEquals(def.toneCurveRedPoints));
+    final source = Uint8List.fromList([128, 128, 128, 255]);
+    final out = applyDrawFilterInIsolate((source, 1, 1, restored, null));
+    expect(out[0], greaterThan(128));
+    expect(out[1], 128);
+    expect(out[2], 128);
+  });
 }
+
 
 
 
