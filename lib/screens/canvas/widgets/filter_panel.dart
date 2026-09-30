@@ -1066,17 +1066,16 @@ class _FilterPanelState extends State<FilterPanel> {
               ];
         void updateLevel(int index, double value) {
           if (_levelsChannel == 0) {
-            switch (index) {
-              case 0:
-                service.updateFilterParams(current.id, inputBlack: value.round());
-              case 1:
-                service.updateFilterParams(current.id, inputWhite: value.round());
-              case 2:
-                service.updateFilterParams(current.id, inputGamma: value);
-              case 3:
-                service.updateFilterParams(current.id, outputBlack: value.round());
-              case 4:
-                service.updateFilterParams(current.id, outputWhite: value.round());
+            if (index == 0) {
+              service.updateFilterParams(current.id, inputBlack: value.round());
+            } else if (index == 1) {
+              service.updateFilterParams(current.id, inputWhite: value.round());
+            } else if (index == 2) {
+              service.updateFilterParams(current.id, inputGamma: value);
+            } else if (index == 3) {
+              service.updateFilterParams(current.id, outputBlack: value.round());
+            } else {
+              service.updateFilterParams(current.id, outputWhite: value.round());
             }
           } else {
             final next = [...values]..[index] = value;
