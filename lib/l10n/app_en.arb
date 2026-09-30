@@ -2787,5 +2787,13 @@
   "filterNoiseStyle": "Noise style",
   "filterNoiseFilmGrain": "Film grain",
   "filterNoiseColor": "Color noise",
-  "filterNoiseSeed": "Pattern seed"
+  "filterNoiseSeed": "Pattern seed",
+  "communityContentFilterTitle": "Display filters",
+  "communityHideGenerativeAiImageVideo": "Hide works containing generative-AI images or video",
+  "communityMutedWords": "Muted words",
+  "communityMutedWordsHint": "Comma-separated words to hide when found in a work title",
+  "communityMutedTags": "Muted tags",
+  "communityMutedTagsHint": "Comma-separated tag names to hide",
+  "communityContainsGenerativeAiImageVideo": "Contains generative-AI images or video",
+  "communityContainsGenerativeAiImageVideoHelp": "Turn this on when generative AI was used to create images or video in the work. Voice-synthesis software is not covered by this setting."
 }
