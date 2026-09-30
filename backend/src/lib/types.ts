@@ -112,6 +112,9 @@ export interface WorkItem {
   // 8.9節：ショート/横動画の判定結果（投稿時にクライアントから受け取る）。
   isShort: boolean;
 
+  // 投稿者申告: 生成AIによる画像・動画を含む。既存作品はAPI側でfalse扱い。
+  containsGenerativeAiImageOrVideo?: boolean;
+
   // 8.7節：クラウド編集タグ。
   tags: string[];
   lockedTags: string[];
