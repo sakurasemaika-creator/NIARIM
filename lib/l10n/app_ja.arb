@@ -1534,6 +1534,7 @@
   "filterToneCurveInvert": "反転",
   "filterLevelsInputBlack": "入力：黒",
   "filterLevelsInputWhite": "入力：白",
+  "filterLevelsGamma": "ガンマ",
   "filterLevelsOutputBlack": "出力：黒",
   "filterLevelsOutputWhite": "出力：白",
   "filterApplyButton": "適用",
