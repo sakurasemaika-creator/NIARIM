@@ -22,6 +22,7 @@ interface CreateWorkRequestBody {
   youtubeAccessToken: string;
   isShort?: boolean;
   isNiarimPublished?: boolean;
+  containsGenerativeAiImageOrVideo?: boolean;
   projectFps?: number;
   projectFrameCount?: number;
   projectWorkSeconds?: number;
@@ -162,6 +163,8 @@ export async function createWork(event: APIGatewayProxyEventV2) {
       isNiarimPublished,
       youtubePrivacyStatus: snippet.privacyStatus,
       isShort: body.isShort ?? false,
+      containsGenerativeAiImageOrVideo:
+        body.containsGenerativeAiImageOrVideo ?? false,
       tags: [],
       lockedTags: [],
       createdAt: now,
@@ -260,6 +263,12 @@ function parseBody(raw: string | undefined): CreateWorkRequestBody {
     badRequest("isShortは真偽値である必要があります");
   }
   if (
+    body.containsGenerativeAiImageOrVideo !== undefined &&
+    typeof body.containsGenerativeAiImageOrVideo !== "boolean"
+  ) {
+    badRequest("containsGenerativeAiImageOrVideoは真偽値である必要があります");
+  }
+  if (
     body.isNiarimPublished !== undefined &&
     typeof body.isNiarimPublished !== "boolean"
   ) {
@@ -305,6 +314,8 @@ function parseBody(raw: string | undefined): CreateWorkRequestBody {
     youtubeAccessToken: body.youtubeAccessToken,
     isShort: body.isShort,
     isNiarimPublished: body.isNiarimPublished,
+    containsGenerativeAiImageOrVideo:
+      body.containsGenerativeAiImageOrVideo as boolean | undefined,
     projectFps,
     projectFrameCount,
     projectWorkSeconds,
