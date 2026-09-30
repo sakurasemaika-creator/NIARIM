@@ -6689,4 +6689,28 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get filterNoiseSeed => 'Pattern seed';
+
+  @override
+  String get communityContentFilterTitle => "Display filters";
+
+  @override
+  String get communityHideGenerativeAiImageVideo => "Hide works containing generative-AI images or video";
+
+  @override
+  String get communityMutedWords => "Muted words";
+
+  @override
+  String get communityMutedWordsHint => "Comma-separated words to hide when found in a work title";
+
+  @override
+  String get communityMutedTags => "Muted tags";
+
+  @override
+  String get communityMutedTagsHint => "Comma-separated tag names to hide";
+
+  @override
+  String get communityContainsGenerativeAiImageVideo => "Contains generative-AI images or video";
+
+  @override
+  String get communityContainsGenerativeAiImageVideoHelp => "Turn this on when generative AI was used to create images or video in the work. Voice-synthesis software is not covered by this setting.";
 }
