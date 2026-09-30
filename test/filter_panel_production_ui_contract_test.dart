@@ -5,6 +5,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:niarim/app_bootstrap.dart';
 import 'package:niarim/l10n/app_localizations.dart';
+import 'package:niarim/models/filter_def.dart';
 import 'package:niarim/models/layer.dart' as model;
 import 'package:niarim/screens/canvas/widgets/filter_panel.dart';
 import 'package:niarim/services/filter_service.dart';
@@ -196,6 +197,15 @@ void main() {
       current = service.currentFilter!;
       expect(current.toneCurveRedPoints.length, greaterThan(4));
       expect(current.toneCurvePoints.length, greaterThan(4));
+
+      final levels = service.filters.firstWhere((f) => f.kind == FilterKind.levels);
+      final levelsCard = find.byKey(ValueKey('filter-card-' + levels.id));
+      await tester.scrollUntilVisible(levelsCard, 120);
+      await tester.tap(levelsCard);
+      await tester.pump();
+      expect(find.byKey(const ValueKey('levels-channel-selector')), findsOneWidget);
+      await tester.tap(find.text('R'));
+      await tester.pump();
       expect(tester.takeException(), isNull);
     },
   );
