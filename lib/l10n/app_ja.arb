@@ -3088,12 +3088,12 @@
   "filterNoiseColor": "カラーノイズ",
   "filterNoiseSeed": "模様のシード値",
   "communityContentFilterTitle": "表示フィルター",
-  "communityHideGenerativeAiImageVideo": "生成AIによる画像・動画を含む作品を非表示",
-  "communityMutedWords": "ミュートタイトル",
+  "communityHideGenerativeAiImageVideo": "「AI画像・AI動画使用」の作品を非表示",
+  "communityMutedWords": "ミュートタイトル登録",
   "communityMutedWordsHint": "非表示にする作品タイトル内の語句をカンマ区切りで指定",
-  "communityMutedTags": "ミュートタグ",
+  "communityMutedTags": "ミュートタグ登録",
   "communityMutedTagsHint": "タグ名をカンマ区切りで指定",
-  "communityContainsGenerativeAiImageVideo": "生成AIによる画像・動画を含む",
-  "communityContainsGenerativeAiImageVideoHelp": "画像または動画の生成に生成AIを使用した作品でONにしてください。音声合成ソフト等はこの項目の対象外です。",
+  "communityContainsGenerativeAiImageVideo": "AI画像・AI動画使用",
+  "communityContainsGenerativeAiImageVideoHelp": "画像または動画の生成に生成AIを使用した作品でONにしてください。音声合成ソフト等は「AI画像・AI動画使用」の対象外です。",
   "canvasLassoSnapToLines": "線に吸着"
 }
