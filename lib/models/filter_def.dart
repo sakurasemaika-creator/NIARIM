@@ -69,6 +69,9 @@ class FilterDef {
   final int outputWhite;
   final ToneCurvePreset toneCurvePreset;
   final List<double> toneCurvePoints;
+  final List<double> toneCurveRedPoints;
+  final List<double> toneCurveGreenPoints;
+  final List<double> toneCurveBluePoints;
   final int outlineColor;
   final double outlineWidth;
   final int vignetteColor;
@@ -138,6 +141,9 @@ class FilterDef {
     this.outputWhite = 255,
     this.toneCurvePreset = ToneCurvePreset.linear,
     this.toneCurvePoints = const [],
+    this.toneCurveRedPoints = const [],
+    this.toneCurveGreenPoints = const [],
+    this.toneCurveBluePoints = const [],
     this.outlineColor = 0xFF000000,
     this.outlineWidth = 6,
     this.vignetteColor = 0xFF000000,
@@ -208,6 +214,9 @@ class FilterDef {
     int? outputWhite,
     ToneCurvePreset? toneCurvePreset,
     List<double>? toneCurvePoints,
+    List<double>? toneCurveRedPoints,
+    List<double>? toneCurveGreenPoints,
+    List<double>? toneCurveBluePoints,
     int? outlineColor,
     double? outlineWidth,
     int? vignetteColor,
@@ -277,6 +286,9 @@ class FilterDef {
       outputWhite: outputWhite ?? this.outputWhite,
       toneCurvePreset: toneCurvePreset ?? this.toneCurvePreset,
       toneCurvePoints: toneCurvePoints ?? this.toneCurvePoints,
+      toneCurveRedPoints: toneCurveRedPoints ?? this.toneCurveRedPoints,
+      toneCurveGreenPoints: toneCurveGreenPoints ?? this.toneCurveGreenPoints,
+      toneCurveBluePoints: toneCurveBluePoints ?? this.toneCurveBluePoints,
       outlineColor: outlineColor ?? this.outlineColor,
       outlineWidth: outlineWidth ?? this.outlineWidth,
       vignetteColor: vignetteColor ?? this.vignetteColor,
@@ -359,6 +371,9 @@ class FilterDef {
     'outputWhite': outputWhite,
     'toneCurvePreset': toneCurvePreset.name,
     'toneCurvePoints': toneCurvePoints,
+    'toneCurveRedPoints': toneCurveRedPoints,
+    'toneCurveGreenPoints': toneCurveGreenPoints,
+    'toneCurveBluePoints': toneCurveBluePoints,
     'outlineColor': outlineColor,
     'outlineWidth': outlineWidth,
     'vignetteColor': vignetteColor,
@@ -457,6 +472,9 @@ class FilterDef {
       orElse: () => ToneCurvePreset.linear,
     ),
     toneCurvePoints: (j['toneCurvePoints'] as List?)?.map((e) => (e as num).toDouble()).toList() ?? const [],
+    toneCurveRedPoints: (j['toneCurveRedPoints'] as List?)?.map((e) => (e as num).toDouble()).toList() ?? const [],
+    toneCurveGreenPoints: (j['toneCurveGreenPoints'] as List?)?.map((e) => (e as num).toDouble()).toList() ?? const [],
+    toneCurveBluePoints: (j['toneCurveBluePoints'] as List?)?.map((e) => (e as num).toDouble()).toList() ?? const [],
     outlineColor: j['outlineColor'] as int? ?? 0xFF000000,
     outlineWidth: (j['outlineWidth'] as num?)?.toDouble() ?? 6,
     vignetteColor: j['vignetteColor'] as int? ?? 0xFF000000,
