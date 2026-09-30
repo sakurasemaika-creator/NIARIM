@@ -66,6 +66,7 @@ class _FilterPanelState extends State<FilterPanel> {
   bool _showFavoritesOnly = false;
   bool _showSearch = false;
   bool _applying = false;
+  int _toneCurveChannel = 0; // 0=RGB, 1=R, 2=G, 3=B
 
   Uint8List? _previewBase;
   Uint8List? _previewMask;
@@ -992,28 +993,51 @@ class _FilterPanelState extends State<FilterPanel> {
                   )
                   .toList(),
             ),
+            const SizedBox(height: 6),
+            SegmentedButton<int>(
+              segments: const [
+                ButtonSegment(value: 0, label: Text('RGB')),
+                ButtonSegment(value: 1, label: Text('R')),
+                ButtonSegment(value: 2, label: Text('G')),
+                ButtonSegment(value: 3, label: Text('B')),
+              ],
+              selected: {_toneCurveChannel},
+              showSelectedIcon: false,
+              onSelectionChanged: (v) =>
+                  setState(() => _toneCurveChannel = v.first),
+            ),
             const SizedBox(height: 8),
             _ToneCurveEditor(
-              points: current.toneCurvePoints.isEmpty
-                  ? toneCurvePoints(current.toneCurvePreset)
-                      .map((p) => Offset(p.dx, p.dy))
-                      .toList()
-                  : [
-                      for (var i = 0;
-                          i + 1 < current.toneCurvePoints.length;
-                          i += 2)
-                        Offset(
-                          current.toneCurvePoints[i],
-                          current.toneCurvePoints[i + 1],
-                        ),
-                    ],
+              points: (() {
+                final stored = switch (_toneCurveChannel) {
+                  1 => current.toneCurveRedPoints,
+                  2 => current.toneCurveGreenPoints,
+                  3 => current.toneCurveBluePoints,
+                  _ => current.toneCurvePoints,
+                };
+                if (stored.isEmpty) {
+                  return _toneCurveChannel == 0
+                      ? toneCurvePoints(current.toneCurvePreset)
+                          .map((p) => Offset(p.dx, p.dy))
+                          .toList()
+                      : const [Offset(0, 0), Offset(1, 1)];
+                }
+                return [
+                  for (var i = 0; i + 1 < stored.length; i += 2)
+                    Offset(stored[i], stored[i + 1]),
+                ];
+              })(),
               sourceRgba: _previewBase,
               onChanged: (points) {
+                final values = [
+                  for (final p in points) ...[p.dx, p.dy],
+                ];
                 service.updateFilterParams(
                   current.id,
-                  toneCurvePoints: [
-                    for (final p in points) ...[p.dx, p.dy],
-                  ],
+                  toneCurvePoints: _toneCurveChannel == 0 ? values : null,
+                  toneCurveRedPoints: _toneCurveChannel == 1 ? values : null,
+                  toneCurveGreenPoints: _toneCurveChannel == 2 ? values : null,
+                  toneCurveBluePoints: _toneCurveChannel == 3 ? values : null,
                 );
                 _updatePreview();
               },
@@ -1661,6 +1685,15 @@ class _FilterPanelState extends State<FilterPanel> {
           filter.toneCurvePoints.length >= 4
               ? [for (var i = 0; i + 1 < filter.toneCurvePoints.length; i += 2) Offset(filter.toneCurvePoints[i], filter.toneCurvePoints[i + 1])]
               : toneCurvePoints(filter.toneCurvePreset),
+          redPoints: filter.toneCurveRedPoints.length >= 4
+              ? [for (var i = 0; i + 1 < filter.toneCurveRedPoints.length; i += 2) Offset(filter.toneCurveRedPoints[i], filter.toneCurveRedPoints[i + 1])]
+              : null,
+          greenPoints: filter.toneCurveGreenPoints.length >= 4
+              ? [for (var i = 0; i + 1 < filter.toneCurveGreenPoints.length; i += 2) Offset(filter.toneCurveGreenPoints[i], filter.toneCurveGreenPoints[i + 1])]
+              : null,
+          bluePoints: filter.toneCurveBluePoints.length >= 4
+              ? [for (var i = 0; i + 1 < filter.toneCurveBluePoints.length; i += 2) Offset(filter.toneCurveBluePoints[i], filter.toneCurveBluePoints[i + 1])]
+              : null,
         );
       case FilterKind.levels:
         return _engine.applyLevels(
