@@ -1,0 +1,56 @@
+import 'package:flutter_test/flutter_test.dart';
+import 'package:niarim/models/community_work.dart';
+import 'package:niarim/services/community_service.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+
+CommunityWork makeWork({
+  String title = '静かな街',
+  List<String> tags = const ['手描き'],
+  String authorName = '作者',
+}) => CommunityWork(
+  id: '${title}_${tags.join("_")}_$authorName',
+  title: title,
+  authorId: 'author_x',
+  authorName: authorName,
+  viewCount: 0,
+  likeCount: 0,
+  bookmarkCount: 0,
+  postedAt: DateTime(2026),
+  durationSeconds: 10,
+  thumbnailColorIndex: 0,
+  tags: tags,
+);
+
+void main() {
+  setUp(() => SharedPreferences.setMockInitialValues({}));
+
+  test('mute word filters title but not author or plaza tags', () async {
+    final service = CommunityService();
+    await service.setMutedWords(['禁止語']);
+    service.replaceWorksForTest([
+      makeWork(title: '禁止語を含む作品'),
+      makeWork(authorName: '禁止語作者'),
+      makeWork(tags: const ['禁止語']),
+    ]);
+
+    final visible = service.discoverableWorks;
+    expect(visible.map((w) => w.authorName), contains('禁止語作者'));
+    expect(visible.any((w) => w.tags.contains('禁止語')), isTrue);
+    expect(visible.any((w) => w.title.contains('禁止語')), isFalse);
+  });
+
+  test('mute tag filters exact work-plaza tag only', () async {
+    final service = CommunityService();
+    await service.setMutedTags(['手描き']);
+    service.replaceWorksForTest([
+      makeWork(title: '#手描き はタイトル文字列', tags: const ['風景']),
+      makeWork(tags: const ['手描き風']),
+      makeWork(tags: const ['手描き']),
+    ]);
+
+    final visible = service.discoverableWorks;
+    expect(visible.any((w) => w.title.startsWith('#手描き')), isTrue);
+    expect(visible.any((w) => w.tags.contains('手描き風')), isTrue);
+    expect(visible.any((w) => w.tags.contains('手描き')), isFalse);
+  });
+}
