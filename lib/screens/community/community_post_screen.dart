@@ -455,9 +455,9 @@ class _CommunityPostScreenState extends State<CommunityPostScreen> {
                             await prefs.setBool(_pendingAiImageVideoKey, value);
                           }
                         },
-                  title: const Text('生成AIによる画像・動画を含む'),
-                  subtitle: const Text(
-                    '画像または動画の生成に生成AIを使用した作品でONにしてください。音声合成ソフト等はこの項目の対象外です。',
+                  title: Text(l10n.communityContainsGenerativeAiImageVideo),
+                  subtitle: Text(
+                    l10n.communityContainsGenerativeAiImageVideoHelp,
                   ),
                 ),
                 SwitchListTile(
