@@ -94,7 +94,9 @@ Uint8List applyDrawFilterInIsolate(
       data,
       width,
       height,
-      toneCurvePoints(filter.toneCurvePreset),
+      filter.toneCurvePoints.length >= 4
+          ? [for (var i = 0; i + 1 < filter.toneCurvePoints.length; i += 2) ui.Offset(filter.toneCurvePoints[i], filter.toneCurvePoints[i + 1])]
+          : toneCurvePoints(filter.toneCurvePreset),
     ),
     FilterKind.levels => engine.applyLevels(
       data,
