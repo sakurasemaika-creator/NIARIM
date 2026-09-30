@@ -1278,6 +1278,7 @@
   "filterToneCurveInvert": "Invertir",
   "filterLevelsInputBlack": "Entrada: Negro",
   "filterLevelsInputWhite": "Entrada: Blanco",
+  "filterLevelsGamma": "Gamma",
   "filterLevelsOutputBlack": "Salida: Negro",
   "filterLevelsOutputWhite": "Salida: Blanco",
   "filterApplyButton": "Aplicar",
