@@ -2780,5 +2780,13 @@
   "filterNoiseStyle": "Type de bruit",
   "filterNoiseFilmGrain": "Grain de film",
   "filterNoiseColor": "Bruit de couleur",
-  "filterNoiseSeed": "Graine du motif"
+  "filterNoiseSeed": "Graine du motif",
+  "communityContentFilterTitle": "Filtres d’affichage",
+  "communityHideGenerativeAiImageVideo": "Masquer les œuvres contenant des images ou vidéos générées par IA",
+  "communityMutedWords": "Mots masqués",
+  "communityMutedWordsHint": "Mots séparés par des virgules à masquer s’ils figurent dans le titre",
+  "communityMutedTags": "Tags masqués",
+  "communityMutedTagsHint": "Noms de tags séparés par des virgules à masquer",
+  "communityContainsGenerativeAiImageVideo": "Contient des images ou vidéos générées par IA",
+  "communityContainsGenerativeAiImageVideoHelp": "Activez cette option si une IA générative a servi à créer des images ou une vidéo de l’œuvre. Les logiciels de synthèse vocale ne sont pas concernés."
 }
