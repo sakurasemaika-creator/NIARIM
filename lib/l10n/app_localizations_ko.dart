@@ -9,6 +9,9 @@ class AppLocalizationsKo extends AppLocalizations {
   AppLocalizationsKo([String locale = 'ko']) : super(locale);
 
   @override
+  String get brushFoldCrescentWidthRatio => '초승달 두께 / 곡선 깊이';
+
+  @override
   String get homeTabProjects => '프로젝트';
 
   @override

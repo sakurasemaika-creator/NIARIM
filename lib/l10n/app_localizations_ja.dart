@@ -9,6 +9,9 @@ class AppLocalizationsJa extends AppLocalizations {
   AppLocalizationsJa([String locale = 'ja']) : super(locale);
 
   @override
+  String get brushFoldCrescentWidthRatio => '深さに対する三日月の太さ';
+
+  @override
   String get homeTabProjects => 'プロジェクト';
 
   @override

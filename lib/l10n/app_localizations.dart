@@ -107,6 +107,9 @@ abstract class AppLocalizations {
     Locale.fromSubtags(languageCode: 'zh', scriptCode: 'Hant'),
   ];
 
+  /// Crescent body thickness as a proportion of authored curve depth.
+  String get brushFoldCrescentWidthRatio;
+
   /// No description provided for @homeTabProjects.
   ///
   /// In ja, this message translates to:

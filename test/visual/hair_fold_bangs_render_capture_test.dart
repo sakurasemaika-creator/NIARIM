@@ -99,6 +99,57 @@ void main() {
       ..addFont(rootBundle.load('assets/fonts/NotoSerifJP.ttf'));
     await loader.load();
   });
+  test('crescent shallow bows and short wide ordinary leads', () async {
+    final presets = brushExtensionPresets();
+    for (final id in ['Brush0023', 'Brush0024']) {
+      final brush = presets
+          .singleWhere((b) => b.id == id)
+          .copyWith(
+            size: 64,
+            outlineWidth: 2.5,
+            stabilization: false,
+            fadeMode: FadeMode.off,
+            foldTriggerAngle: 30,
+            foldMode: HairFoldMode.crescent,
+            foldCurveStrength: 10,
+            customImageSelectionMode: BrushImageSelectionMode.sequential,
+          );
+      final prefix = id == 'Brush0023' ? 'hair' : 'bangs';
+      await capture(
+        brush,
+        '${prefix}_crescent_depth_scaling',
+        input: [
+          for (var i = 0; i <= 180; i++)
+            ui.Offset(
+              350 + (20 + i * 100 / 180) * math.sin(i * math.pi / 60),
+              95 + i * 170 / 60,
+            ),
+        ],
+      );
+      await capture(
+        brush,
+        '${prefix}_crescent_shallow_strength_10',
+        input: [
+          for (var i = 0; i <= 120; i++)
+            ui.Offset(350 + 20 * math.sin(i * math.pi / 60), 95 + i * 170 / 60),
+        ],
+      );
+      await capture(
+        brush,
+        '${prefix}_crescent_short_wide_lead',
+        input: [
+          for (var x = 130.0; x < 350; x += 5) ui.Offset(x, 180),
+          for (var i = 0; i <= 60; i++)
+            const ui.Offset(350, 200) +
+                ui.Offset(
+                      math.cos(-math.pi / 2 + i * math.pi / 60),
+                      math.sin(-math.pi / 2 + i * math.pi / 60),
+                    ) *
+                    20,
+        ],
+      );
+    }
+  }, timeout: const Timeout(Duration(minutes: 2)));
   test(
     'production hair and textured bangs follow the same curve in five modes',
     () async {
@@ -186,6 +237,6 @@ void main() {
         }
       }
     },
-    timeout: const Timeout(Duration(minutes: 3)),
+    timeout: const Timeout(Duration(minutes: 5)),
   );
 }

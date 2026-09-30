@@ -9,6 +9,9 @@ class AppLocalizationsFr extends AppLocalizations {
   AppLocalizationsFr([String locale = 'fr']) : super(locale);
 
   @override
+  String get brushFoldCrescentWidthRatio => 'Épaisseur / profondeur du croissant';
+
+  @override
   String get homeTabProjects => 'Projets';
 
   @override

@@ -1,4 +1,5 @@
 {
+  "brushFoldCrescentWidthRatio": "초승달 두께 / 곡선 깊이",
   "@@locale": "ko",
   "homeTabProjects": "프로젝트",
   "homeTabShared": "공유",

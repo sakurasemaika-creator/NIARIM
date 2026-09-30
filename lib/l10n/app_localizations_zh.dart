@@ -9,6 +9,9 @@ class AppLocalizationsZh extends AppLocalizations {
   AppLocalizationsZh([String locale = 'zh']) : super(locale);
 
   @override
+  String get brushFoldCrescentWidthRatio => '月牙厚度 / 曲线深度';
+
+  @override
   String get homeTabProjects => '项目';
 
   @override
@@ -6461,6 +6464,9 @@ class AppLocalizationsZh extends AppLocalizations {
 
 /// The translations for Chinese, using the Han script (`zh_Hant`).
 class AppLocalizationsZhHant extends AppLocalizationsZh {
+  @override
+  String get brushFoldCrescentWidthRatio => '月牙厚度 / 曲線深度';
+
   @override
   String get filterLevelsGamma => '伽瑪';
   AppLocalizationsZhHant() : super('zh_Hant');

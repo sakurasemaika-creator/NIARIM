@@ -9,6 +9,9 @@ class AppLocalizationsEs extends AppLocalizations {
   AppLocalizationsEs([String locale = 'es']) : super(locale);
 
   @override
+  String get brushFoldCrescentWidthRatio => 'Grosor / profundidad de la media luna';
+
+  @override
   String get homeTabProjects => 'Proyectos';
 
   @override

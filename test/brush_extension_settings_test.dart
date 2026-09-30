@@ -48,6 +48,33 @@ void main() {
     ),
   );
 
+  testWidgets('crescent depth ratio is editable in custom settings', (
+    tester,
+  ) async {
+    final changes = <Brush>[];
+    await tester.pumpWidget(
+      host(
+        base.copyWith(
+          outlineEnabled: true,
+          foldEnabled: true,
+          foldMode: HairFoldMode.crescent,
+        ),
+        changes.add,
+      ),
+    );
+    await tester.pumpAndSettle();
+    final control = find.byKey(const Key('brush-crescent-width-ratio'));
+    expect(control, findsOneWidget);
+    await tester.ensureVisible(control);
+    expect(find.text('深さに対する三日月の太さ'), findsOneWidget);
+    final slider = tester.widget<Slider>(
+      find.descendant(of: control, matching: find.byType(Slider)),
+    );
+    expect(slider.value, .5);
+    slider.onChanged!(.35);
+    await tester.pump();
+    expect(changes.last.toJson()['foldCrescentWidthRatio'], .35);
+  });
   testWidgets('lateral repeat dependants are hidden while disabled', (
     tester,
   ) async {

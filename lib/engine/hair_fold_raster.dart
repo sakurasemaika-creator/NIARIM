@@ -288,7 +288,6 @@ class HairFoldRaster {
       final crescentBlend = <int, double>{};
       final crescentApices = <int, int>{};
       final crescentAngles = <int, double>{};
-      final crescentRadii = <int, double>{};
       var crescentCurveStart = 0;
       if (brush.foldMode == HairFoldMode.crescent) {
         final turns = <double>[0];
@@ -329,15 +328,6 @@ class HairFoldRaster {
           0,
           turns.indexWhere((turn) => turn > .005),
         );
-        for (var index = 0; index < points.length; index++) {
-          final before = math.max(0, index - 1);
-          final after = math.min(points.length - 1, index + 1);
-          final a = crescentTangents[before]!, b = crescentTangents[after]!;
-          final turn = math.atan2(_cross(a, b), _dot(a, b)).abs();
-          crescentRadii[index] = turn < 1e-6
-              ? double.infinity
-              : math.max(.001, (lengths[after] - lengths[before]) / turn);
-        }
         for (var i = 1; i < indices.length; i++) {
           final start = indices[i - 1], end = indices[i];
           final chord = points[end].position - points[start].position;
@@ -374,30 +364,55 @@ class HairFoldRaster {
       }
       runs.sort((a, b) => a.depth.compareTo(b.depth));
       for (final run in runs) {
-        // Use one curvature bound per crescent. A pointwise radius clamp
-        // changes its inset abruptly near a tight apex and creates a hook.
-        final innerRadius = brush.foldMode == HairFoldMode.crescent
-            ? [
-                for (var i = run.start; i <= run.end; i++) crescentRadii[i]!,
-              ].reduce(math.min)
-            : double.infinity;
-        final widestInside = [
-          for (var i = run.start; i <= run.end; i++) points[i].width / 2,
+        // A crescent is a pair of bows across the same authored chord.
+        // Parallel normal offsets make the inside sharper than the input.
+        // Scale the actual chord deviation instead, preserving the source path.
+        final chordStart = points[run.start].position;
+        final chord = points[run.end].position - chordStart;
+        final apexIndex = crescentApices[run.start];
+        final chordNormal = _unit(Offset(-chord.dy, chord.dx));
+        final apexBow = apexIndex == null
+            ? 0.0
+            : _dot(points[apexIndex].position - chordStart, chordNormal);
+        final outward = chordNormal * apexBow.sign;
+        final bowDepth = apexBow.abs();
+        final strength = (brush.foldCurveStrength - 1) / 9;
+        final innerPower = 1 + strength * .35;
+        // Partial curls already have a smaller authored depth. No extra
+        // turn-based multiplier may change the selected proportional ratio.
+        final curveDiameter =
+            bowDepth *
+            Brush.clampFoldCrescentWidthRatio(brush.foldCrescentWidthRatio);
+        final widthScale = curveDiameter / math.max(.001, brush.size);
+        final widestHalf = [
+          for (var i = run.start; i <= run.end; i++)
+            points[i].width * widthScale / 2,
         ].reduce(math.max);
-        final tightness = ((widestInside / innerRadius - .9) / .3).clamp(
-          0.0,
-          1.0,
-        );
-        final curvatureEase = tightness * tightness * (3 - 2 * tightness);
-        final startsContinuous = crescentContinuous.contains(run.start);
-        final endsContinuous = crescentContinuous.contains(run.end);
+        // One bound per run prevents hooks with unusually large pressure
+        // widths. The remaining diameter is distributed outside.
+        final insideScale = widestHalf <= 0
+            ? 1.0
+            : math.min(1.0, .98 * bowDepth / (widestHalf * innerPower));
+        final chordAxis = _unit(chord);
+        final leadIndex = math.min(crescentCurveStart, apexIndex ?? run.start);
+        final leadNormal = brush.foldMode == HairFoldMode.crescent
+            ? Offset(
+                    -crescentTangents[leadIndex]!.dy,
+                    crescentTangents[leadIndex]!.dx,
+                  ) *
+                  -crescentSides[run.start]!
+            : Offset.zero;
+        final leadSpan = apexIndex == null
+            ? 0.0
+            : _dot(
+                points[apexIndex].position - points[leadIndex].position,
+                chordAxis,
+              );
         final geometry = brush.foldMode == HairFoldMode.crescent
             ? <Object>[
                 crescentApices[run.start]!,
                 crescentSides[run.start]!,
                 if (run.start == 0) crescentCurveStart,
-                startsContinuous,
-                endsContinuous,
                 for (var index = run.start; index <= run.end; index++)
                   (
                     points[index].position,
@@ -406,7 +421,6 @@ class HairFoldRaster {
                     crescentTangents[index],
                     crescentBlend[index],
                     crescentAngles[index],
-                    crescentRadii[index],
                     lengths[index] - lengths[run.start],
                   ),
               ]
@@ -468,68 +482,51 @@ class HairFoldRaster {
           if (brush.foldMode == HairFoldMode.crescent) {
             ({HairRibbonPoint point, Offset outer, Offset inner, double angle})
             edgeAt(int index) {
-              final distance = lengths[index];
-              final start = lengths[run.start], end = lengths[run.end];
-              final apex = lengths[crescentApices[run.start]!];
-              final u =
-                  (distance <= apex
-                          ? (distance - start) / math.max(.001, apex - start)
-                          : (end - distance) / math.max(.001, end - apex))
-                      .clamp(0.0, 1.0);
-              var profile = u * u * (3 - 2 * u);
-              if (startsContinuous) {
-                // A partial next curl grows from zero width. Its amplitude is
-                // determined by the real turn already drawn, never expanded to
-                // full width or capped simply because a detector event fired.
-                final phase =
-                    (crescentAngles[index]! - crescentAngles[run.start]!).abs();
-                final total =
-                    (crescentAngles[run.end]! - crescentAngles[run.start]!)
-                        .abs();
-                final scale = total > math.pi ? math.pi / total : 1.0;
-                profile = math.max(
-                  0.0,
-                  math.sin(phase * scale) * math.sin((total - phase) * scale),
-                );
-              }
-              final strength = (brush.foldCurveStrength - 1) / 9;
-              final blend = crescentBlend[index]!;
-              // The first half starts at ordinary pen width and reaches the
-              // same full-width apex. A dip between those two would produce
-              // a notch where the ordinary lead becomes the first crescent.
-              if (run.start == 0 && distance <= apex) profile = 1;
-              // Both sides meet the full brush diameter at the actual apex.
-              // Away from it, bow the outer edge more and the inner edge less.
-              // No radius/length clamp is allowed to shrink that apex width.
-              final outer =
-                  1 - blend + math.pow(profile, 1 - strength * .2) * blend;
-              final inner =
-                  1 - blend + math.pow(profile, 1 + strength * .35) * blend;
               final point = points[index];
+              final blend = crescentBlend[index]!;
               final tangent = crescentTangents[index]!;
-              final inward =
-                  Offset(-tangent.dy, tangent.dx) * crescentSides[run.start]!;
-              // Both outline edges follow the actual local curve normal.
-              // Aiming the inside normal at the apex produces a small hook
-              // followed by a chord-like contour toward each endpoint.
-              final desiredInside = point.width * inner / 2;
-              final radius = innerRadius;
-              // A monotone soft limit keeps the inset from crossing the
-              // curvature center. Its blend is constant for this crescent,
-              // so changing width near the apex cannot turn it into a hook.
-              final t = ((desiredInside - radius * .2) / (radius * .4)).clamp(
-                0.0,
-                1.0,
-              );
-              final safeInside = desiredInside <= radius * .2
-                  ? desiredInside
-                  : radius * .2 + radius * .4 * (t - t * t / 2);
-              final inside =
-                  desiredInside +
-                  (safeInside - desiredInside) * curvatureEase * blend;
-              final outside = point.width * (outer + inner) / 2 - inside;
-              final outerEdge = point.position - inward * outside;
-              final innerEdge = point.position + inward * inside;
+              final normal =
+                  Offset(-tangent.dy, tangent.dx) * -crescentSides[run.start]!;
+              final bow = bowDepth < 1e-6
+                  ? 0.0
+                  : (_dot(point.position - chordStart, outward) / bowDepth)
+                        .clamp(0.0, 1.0);
+              final outerProfile = math.pow(bow, 1 - strength * .2).toDouble();
+              final innerProfile = math.pow(bow, innerPower).toDouble();
+              // Preserve the ordinary pen until it starts turning.
+              var ordinary = normal * point.width / 2 * (1 - blend);
+              if (run.start == 0 && index > leadIndex && leadSpan > 1e-6) {
+                final q =
+                    (_dot(
+                              point.position - points[leadIndex].position,
+                              chordAxis,
+                            ) /
+                            leadSpan)
+                        .clamp(0.0, 1.0);
+                // A cap wider than the whole bend must not push the join
+                // backwards. The original ordinary head/lead remains covered.
+                final along = (_dot(leadNormal, chordAxis) * point.width / 2)
+                    .clamp(-leadSpan * .98, leadSpan * .98);
+                ordinary =
+                    ordinary -
+                    chordAxis * _dot(ordinary, chordAxis) +
+                    chordAxis *
+                        along *
+                        _ordinaryLeadFade(q, along.abs() / leadSpan);
+              }
+              final curveWidth = point.width * widthScale;
+              final outerEdge =
+                  point.position +
+                  ordinary +
+                  outward *
+                      curveWidth *
+                      (1 - insideScale / 2) *
+                      outerProfile *
+                      blend;
+              final innerEdge =
+                  point.position -
+                  ordinary -
+                  outward * curveWidth / 2 * insideScale * innerProfile * blend;
               final across =
                   (outerEdge - innerEdge) * crescentSides[run.start]!;
               final sourceAngle = crescentAngles[index]!;
@@ -1141,6 +1138,15 @@ class _RibbonRun {
   final int start, end, id;
   final double depth;
   const _RibbonRun(this.start, this.end, this.depth, this.id);
+}
+
+// Integral of a ramp, constant middle, and fall. A bounded longitudinal
+// derivative prevents the ordinary-to-crescent join from folding back.
+double _ordinaryLeadFade(double q, double offsetRatio) {
+  final ramp = ((1 - offsetRatio) / 2).clamp(.01, .25);
+  if (q < ramp) return 1 - q * q / (2 * ramp * (1 - ramp));
+  if (q <= 1 - ramp) return 1 - (q - ramp / 2) / (1 - ramp);
+  return (1 - q) * (1 - q) / (2 * ramp * (1 - ramp));
 }
 
 double _dot(Offset a, Offset b) => a.dx * b.dx + a.dy * b.dy;

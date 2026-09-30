@@ -18,6 +18,23 @@ Brush _baseBrush() => const Brush(
 
 void main() {
   group('hair fold settings', () {
+    test('crescent width ratio is a persisted common setting', () {
+      final json = _baseBrush().toJson();
+      expect(json['foldCrescentWidthRatio'], .5);
+      json['foldCrescentWidthRatio'] = .35;
+      expect(
+        Brush.fromJson(
+          json,
+        ).copyWith(name: 'My crescent').toJson()['foldCrescentWidthRatio'],
+        .35,
+      );
+      json['foldCrescentWidthRatio'] = 10;
+      expect(Brush.fromJson(json).toJson()['foldCrescentWidthRatio'], 1);
+      json['foldCrescentWidthRatio'] = -2;
+      expect(Brush.fromJson(json).toJson()['foldCrescentWidthRatio'], .1);
+      json.remove('foldCrescentWidthRatio');
+      expect(Brush.fromJson(json).toJson()['foldCrescentWidthRatio'], .5);
+    });
     test('custom brush defaults to fold disabled and top-view mode', () {
       final brush = _baseBrush();
       expect(brush.foldEnabled, isFalse);
@@ -50,8 +67,8 @@ void main() {
         );
         expect(configured.foldMode, entry.key);
 
-        final json = jsonDecode(jsonEncode(configured.toJson()))
-            as Map<String, dynamic>;
+        final json =
+            jsonDecode(jsonEncode(configured.toJson())) as Map<String, dynamic>;
         expect(json['foldMode'], entry.value);
 
         final restored = Brush.fromJson(json);
@@ -95,7 +112,10 @@ void main() {
     test('curve strength defaults to five and clamps to one through ten', () {
       expect(_baseBrush().foldCurveStrength, 5);
       expect(_baseBrush().copyWith(foldCurveStrength: -3).foldCurveStrength, 1);
-      expect(_baseBrush().copyWith(foldCurveStrength: 99).foldCurveStrength, 10);
+      expect(
+        _baseBrush().copyWith(foldCurveStrength: 99).foldCurveStrength,
+        10,
+      );
     });
 
     test('legacy fold depth is ignored when reading pre-release JSON', () {
@@ -107,16 +127,20 @@ void main() {
       expect(restored.toJson().containsKey('foldDepthRatio'), isFalse);
     });
 
-    test('obsolete wave fields do not override mode or survive serialization', () {
-      final json = _baseBrush().copyWith(foldMode: HairFoldMode.curlLeft).toJson()
-        ..['foldWaveEnabled'] = true
-        ..['foldWaveEndRatio'] = 0.3
-        ..['foldWaveTriggerAngle'] = 70;
-      final restored = Brush.fromJson(json);
-      expect(restored.foldMode, HairFoldMode.curlLeft);
-      expect(restored.toJson(), isNot(contains('foldWaveEnabled')));
-      expect(restored.toJson(), isNot(contains('foldWaveEndRatio')));
-      expect(restored.toJson(), isNot(contains('foldWaveTriggerAngle')));
-    });
+    test(
+      'obsolete wave fields do not override mode or survive serialization',
+      () {
+        final json =
+            _baseBrush().copyWith(foldMode: HairFoldMode.curlLeft).toJson()
+              ..['foldWaveEnabled'] = true
+              ..['foldWaveEndRatio'] = 0.3
+              ..['foldWaveTriggerAngle'] = 70;
+        final restored = Brush.fromJson(json);
+        expect(restored.foldMode, HairFoldMode.curlLeft);
+        expect(restored.toJson(), isNot(contains('foldWaveEnabled')));
+        expect(restored.toJson(), isNot(contains('foldWaveEndRatio')));
+        expect(restored.toJson(), isNot(contains('foldWaveTriggerAngle')));
+      },
+    );
   });
 }

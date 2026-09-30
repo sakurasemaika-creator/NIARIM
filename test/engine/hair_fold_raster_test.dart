@@ -67,6 +67,10 @@ TileManager crescent({
   double radius = 85,
   double width = 60,
   double rotation = 0,
+  int strength = 5,
+  double triggerAngle = 90,
+  double ratio = .5,
+  double pressure = 1,
   bool continuous = false,
   int? steps,
   double opacity = 1,
@@ -86,7 +90,7 @@ TileManager crescent({
                       math.sin(-math.pi / 2 + math.pi * i / 60 + rotation),
                     ) *
                     radius,
-            width,
+            width * pressure,
             opacity,
           ),
       ];
@@ -131,6 +135,9 @@ TileManager crescent({
       outlineWidth: 2,
       foldEnabled: true,
       foldMode: HairFoldMode.crescent,
+      foldCurveStrength: strength,
+      foldTriggerAngle: triggerAngle,
+      foldCrescentWidthRatio: ratio,
       rotation: false,
     ),
     fillColor: const Color(0xffffffff),
@@ -192,15 +199,55 @@ void main() {
       expect(channelAt(tiles, 70, 40, 3), lessThan(16), reason: mode.name);
     }
   });
-  test('crescent inside follows the authored arc away from its apex', () {
-    final tiles = crescent(radius: 40, width: 60);
+  List<HairRibbonPoint> sine(double depth) => [
+    for (var i = 0; i <= 120; i++)
+      HairRibbonPoint(
+        Offset(180 + depth * math.sin(i * math.pi / 60), 10.5 + i * 170 / 60),
+        64,
+        1,
+      ),
+  ];
+  List<int> inkAt(TileManager tiles, int y, int left, int right) => [
+    for (var x = left; x < right; x++)
+      if (channelAt(tiles, x, y, 3) > 200 && channelAt(tiles, x, y, 0) > 200) x,
+  ];
+  test('crescent outer bends deeper and inner bends gentler than input', () {
+    final tiles = crescent(width: 64, input: sine(130));
     addTearDown(tiles.dispose);
-    // A circular input of radius 40 and an inward offset of 30 has a
-    // circular inner edge of radius 10. This pixel is safely in the body,
-    // outside that inner circle, rather than on an apex-facing chord.
-    expect(channelAt(tiles, 188, 171, 3), 255);
-    expect(channelAt(tiles, 188, 171, 0), greaterThan(245));
+    final apex = inkAt(tiles, 265, 0, 150);
+    for (final direction in [-1, 1]) {
+      final flank = inkAt(tiles, 265 + direction * 30, 0, 150);
+      final inputBend = 130 * (1 - math.cos(30 * math.pi / 170));
+      expect(flank.first - apex.first, greaterThan(inputBend + 1));
+      expect(flank.last - apex.last, lessThan(inputBend - 1));
+    }
   });
+  test('first crescent joins the ordinary lead without an inner hook', () {
+    final tiles = crescent(width: 64, input: sine(130));
+    addTearDown(tiles.dispose);
+    var previous = inkAt(tiles, 79, 240, 340).first;
+    for (var y = 80; y <= 95; y++) {
+      final current = inkAt(tiles, y, 240, 340).first;
+      expect((current - previous).abs(), lessThanOrEqualTo(3));
+      previous = current;
+    }
+  });
+  for (final strength in [1, 5, 10]) {
+    test('shallow crescent keeps its inside bow at strength $strength', () {
+      final tiles = crescent(
+        width: 64,
+        strength: strength,
+        triggerAngle: 30,
+        input: sine(20),
+      );
+      addTearDown(tiles.dispose);
+      final apex = inkAt(tiles, 265, 100, 220).last;
+      expect(apex, lessThan(180));
+      for (final y in [245, 285]) {
+        expect(inkAt(tiles, y, 100, 220).last, greaterThanOrEqualTo(apex));
+      }
+    });
+  }
   test(
     'continuous crescent geometry does not reset at detector boundaries',
     () {
@@ -239,8 +286,9 @@ void main() {
       for (var y = 0; y < 360; y++) {
         for (var x = 0; x < 360; x++) {
           if (channelAt(before, x, y, 3) != channelAt(after, x, y, 3) ||
-              channelAt(before, x, y, 0) != channelAt(after, x, y, 0))
+              channelAt(before, x, y, 0) != channelAt(after, x, y, 0)) {
             changed++;
+          }
         }
       }
       expect(
@@ -376,13 +424,34 @@ void main() {
       }
     }
   });
-  test('crescent apex keeps the configured width around the authored axis', () {
-    final tiles = crescent(radius: 36, width: 60);
-    addTearDown(tiles.dispose);
-    // The authored apex is (216,180): its 60 px body spans x=186..246.
-    expect(channelAt(tiles, 188, 180, 0), greaterThan(245));
-    expect(channelAt(tiles, 243, 180, 0), greaterThan(245));
-    expect(channelAt(tiles, 250, 180, 3), 0);
+  test('crescent thickness scales with authored bow depth', () {
+    for (final radius in [40.0, 80.0]) {
+      final tiles = crescent(radius: radius, width: 60);
+      addTearDown(tiles.dispose);
+      final apex = 180 + radius;
+      final fill = inkAt(
+        tiles,
+        180,
+        (apex - 40).floor(),
+        (apex + 40).ceil() + 1,
+      );
+      expect(fill.length, closeTo(radius * .5 - 2, 2));
+      expect((fill.first + fill.last + 1) / 2, closeTo(apex, 1));
+    }
+  });
+  test('crescent ratio and pressure independently control its thickness', () {
+    for (final settings in [(.25, 1.0), (.5, 1.0), (1.0, 1.0), (.5, .5)]) {
+      final tiles = crescent(
+        radius: 80,
+        width: 60,
+        ratio: settings.$1,
+        pressure: settings.$2,
+      );
+      addTearDown(tiles.dispose);
+      final fill = inkAt(tiles, 180, 200, 321);
+      expect(fill.length, closeTo(80 * settings.$1 * settings.$2 - 2, 2));
+      expect((fill.first + fill.last + 1) / 2, closeTo(260, 1));
+    }
   });
   for (final textureKind in ['none', 'opaque', 'bangs']) {
     test(

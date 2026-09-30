@@ -22,7 +22,7 @@ def main():
     parser.add_argument("--baseline", type=Path, required=True)
     parser.add_argument("--output", type=Path, required=True)
     parser.add_argument("--revision", default="curve-tip-fix")
-    parser.add_argument("--baseline-revision", default="fe92485f")
+    parser.add_argument("--baseline-revision", default="939f23cf")
     args = parser.parse_args()
     font = Path(__file__).resolve().parents[1] / "assets/fonts/NotoSerifJP.ttf"
     pdfmetrics.registerFont(TTFont("JP", str(font)))
@@ -93,19 +93,26 @@ def main():
     text(32, 56, "比較は同じ素材・太さ・入力線で実施。修正前は旧輪郭処理のみを差し替えた比較環境です。", 10)
     end()
 
-    begin("三日月の輪郭：同じ曲線での修正前後", f"内側を中央の向きへ寄せる処理を撤去。左：{args.baseline_revision} / 右：{args.revision}。")
+    begin("三日月の輪郭：同じ曲線での修正前後", f"外側は深く、内側は浅い滑らかな輪郭。左：{args.baseline_revision} / 右：{args.revision}。")
     for col, (root, prefix, label) in enumerate([
         (baseline, "hair", "髪 / 修正前"), (current, "hair", "髪 / 現在"),
         (baseline, "bangs", "前髪 / 修正前"), (current, "bangs", "前髪 / 現在"),
     ]):
         panel(root, f"{prefix}_crescent_same_curve", label, 32 + col * 197, 62, 183, 431, strand_crop)
-    text(32, 44, "内側・外側とも描いた曲線の向きに沿う補間。きつい曲がりでは幅を外側へ滑らかに配分。", 10)
+    text(32, 44, "始点・終点間のふくらみを基準に両輪郭を生成。内側だけが鋭く曲がる法線オフセットを撤去。", 10)
     end()
 
-    begin("ウェーブ・巻き髪：終点まで0%の抜き", "4モード共通の形状処理。フェードOFFでも確定時に幅と濃度を0%まで滑らかに下げます。")
+    begin("三日月の太さ：カーブの深さに比例", "共通設定「深さに対する三日月の太さ」。初期値50%、10〜100%で調整。筆圧とフェードも反映。")
+    panel(current, "hair_crescent_depth_scaling", "髪 / 深さが変わる入力", 32, 63, 245, 425, (205, 55, 530, 640))
+    panel(current, "bangs_crescent_depth_scaling", "前髪 / 同じ入力と設定", 294, 63, 245, 425, (205, 55, 530, 640))
+    panel(current, "crescent_ratio_settings_ja", "共通の太さ設定", 567, 63, 240, 425)
+    text(32, 44, "50%なら深さ40 pxで太さ20 px、深さ80 pxで太さ40 px。プリセット専用の描画処理はありません。", 10)
+    end()
+
+    begin("ウェーブ・巻き髪：終点まで0%の抜き", "前回の毛先修正を維持。フェードOFFでも確定時に幅と濃度を0%まで滑らかに下げます。")
     for col, (mode, label) in enumerate(modes[:4]):
         name = f"hair_{mode}_same_curve"
-        panel(baseline, name, f"{label} / 修正前", 32 + col * 197, 278, 183, 210, (220, 700, 520, 975))
+        panel(baseline, name, f"{label} / 前回", 32 + col * 197, 278, 183, 210, (220, 700, 520, 975))
         panel(current, name, f"{label} / 現在", 32 + col * 197, 58, 183, 210, (220, 700, 520, 975))
     text(32, 40, "抜きの計算はブラシID・名称に依存せず、画像素材を使うカスタムブラシにも適用。", 10)
     end()

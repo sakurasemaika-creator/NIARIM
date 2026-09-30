@@ -28,9 +28,7 @@ void main() {
     addTearDown(tester.view.resetPhysicalSize);
     addTearDown(tester.view.resetDevicePixelRatio);
     final boundaryKey = GlobalKey();
-    final brush = brushExtensionPresets().singleWhere(
-      (b) => b.id == 'Brush0023',
-    );
+    var brush = brushExtensionPresets().singleWhere((b) => b.id == 'Brush0023');
     await tester.pumpWidget(
       RepaintBoundary(
         key: boundaryKey,
@@ -46,10 +44,10 @@ void main() {
           home: Scaffold(
             appBar: AppBar(title: const Text('ブラシカスタム')),
             body: SingleChildScrollView(
-              child: Builder(
-                builder: (context) => BrushExtensionSettings(
+              child: StatefulBuilder(
+                builder: (context, setState) => BrushExtensionSettings(
                   brush: brush,
-                  onChanged: (_) {},
+                  onChanged: (value) => setState(() => brush = value),
                   labels: BrushExtensionLabels.fromLocalizations(
                     AppLocalizations.of(context)!,
                   ),
@@ -83,6 +81,12 @@ void main() {
     await tester.pumpAndSettle();
     expect(find.text('三日月カール'), findsOneWidget);
     await save('fold_menu_ja');
+    await tester.tap(find.text('三日月カール').last);
+    await tester.pumpAndSettle();
+    await tester.ensureVisible(
+      find.byKey(const Key('brush-crescent-width-ratio')),
+    );
+    await save('crescent_ratio_settings_ja');
     expect(tester.takeException(), isNull);
   });
   testWidgets('capture shared tip and image controls for custom brushes', (
