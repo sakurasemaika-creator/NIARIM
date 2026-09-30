@@ -102,6 +102,7 @@ Uint8List applyDrawFilterInIsolate(
       height,
       inputBlack: filter.inputBlack,
       inputWhite: filter.inputWhite,
+      inputGamma: filter.inputGamma,
       outputBlack: filter.outputBlack,
       outputWhite: filter.outputWhite,
     ),
@@ -2553,6 +2554,7 @@ class FilterEngine {
     int height, {
     required int inputBlack,
     required int inputWhite,
+    double inputGamma = 1.0,
     required int outputBlack,
     required int outputWhite,
   }) {
@@ -2561,10 +2563,10 @@ class FilterEngine {
     final result = Uint8List.fromList(data);
     for (int i = 0; i < result.length; i += 4) {
       for (int c = 0; c < 3; c++) {
-        final v =
-            ((result[i + c] - inputBlack) / inRange * outRange + outputBlack)
-                .round()
-                .clamp(0, 255);
+        final normalized =
+            ((result[i + c] - inputBlack) / inRange).clamp(0.0, 1.0);
+        final corrected = math.pow(normalized, 1.0 / inputGamma.clamp(0.1, 10.0));
+        final v = (corrected * outRange + outputBlack).round().clamp(0, 255);
         result[i + c] = v;
       }
     }
