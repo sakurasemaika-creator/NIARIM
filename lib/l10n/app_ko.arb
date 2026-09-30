@@ -2780,5 +2780,13 @@
   "filterNoiseStyle": "노이즈 종류",
   "filterNoiseFilmGrain": "필름 그레인",
   "filterNoiseColor": "컬러 노이즈",
-  "filterNoiseSeed": "패턴 시드"
+  "filterNoiseSeed": "패턴 시드",
+  "communityContentFilterTitle": "표시 필터",
+  "communityHideGenerativeAiImageVideo": "생성형 AI 이미지·동영상이 포함된 작품 숨기기",
+  "communityMutedWords": "뮤트 단어",
+  "communityMutedWordsHint": "작품 제목에 포함되면 숨길 단어를 쉼표로 구분해 입력",
+  "communityMutedTags": "뮤트 태그",
+  "communityMutedTagsHint": "숨길 태그 이름을 쉼표로 구분해 입력",
+  "communityContainsGenerativeAiImageVideo": "생성형 AI 이미지·동영상 포함",
+  "communityContainsGenerativeAiImageVideoHelp": "작품의 이미지 또는 동영상 생성에 생성형 AI를 사용한 경우 켜 주세요. 음성 합성 소프트웨어는 이 항목의 대상이 아닙니다."
 }
