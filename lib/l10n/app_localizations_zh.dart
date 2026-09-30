@@ -12884,4 +12884,7 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get communityContainsGenerativeAiImageVideoHelp => localeName == 'zh_Hant'
       ? '作品中的圖像或影片使用生成式 AI 製作時請開啟。語音合成軟體不屬於此項範圍。'
       : '作品中的图像或视频使用生成式 AI 制作时请开启。语音合成软件不属于此项范围。';
+
+  @override
+  String get canvasLassoSnapToLines => localeName == 'zh_Hant' ? '吸附到線條' : '吸附到线条';
 }
