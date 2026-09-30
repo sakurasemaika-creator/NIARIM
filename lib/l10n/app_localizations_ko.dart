@@ -6521,4 +6521,7 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get communityContainsGenerativeAiImageVideoHelp => "작품의 이미지 또는 동영상 생성에 생성형 AI를 사용한 경우 켜 주세요. 음성 합성 소프트웨어는 이 항목의 대상이 아닙니다.";
+
+  @override
+  String get canvasLassoSnapToLines => "선에 스냅";
 }
