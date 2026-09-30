@@ -212,7 +212,9 @@ class _CommunityWorkDetailScreenState extends State<CommunityWorkDetailScreen> {
     final l10n = AppLocalizations.of(context)!;
     final communityService = context.watch<CommunityService>();
     final work = communityService.byId(widget.workId);
-    if (work == null) {
+    final isOwner = work?.authorId == kDummySelfAuthorId;
+    if (work == null ||
+        (!isOwner && !communityService.isDiscoverableForViewer(work))) {
       return Scaffold(
         appBar: AppBar(title: Text(l10n.communityWorkDetailTitle)),
         body: Center(child: Text(l10n.communityWorkNotFoundMessage)),
