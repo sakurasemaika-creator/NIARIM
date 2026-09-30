@@ -6836,4 +6836,7 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get communityContainsGenerativeAiImageVideoHelp => "Activez cette option si une IA générative a servi à créer des images ou une vidéo de l’œuvre. Les logiciels de synthèse vocale ne sont pas concernés.";
+
+  @override
+  String get canvasLassoSnapToLines => "Magnétiser aux lignes";
 }
