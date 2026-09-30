@@ -68,6 +68,7 @@ class FilterDef {
   final int outputBlack;
   final int outputWhite;
   final ToneCurvePreset toneCurvePreset;
+  final List<double> toneCurvePoints;
   final int outlineColor;
   final double outlineWidth;
   final int vignetteColor;
@@ -136,6 +137,7 @@ class FilterDef {
     this.outputBlack = 0,
     this.outputWhite = 255,
     this.toneCurvePreset = ToneCurvePreset.linear,
+    this.toneCurvePoints = const [0, 0, 1, 1],
     this.outlineColor = 0xFF000000,
     this.outlineWidth = 6,
     this.vignetteColor = 0xFF000000,
@@ -205,6 +207,7 @@ class FilterDef {
     int? outputBlack,
     int? outputWhite,
     ToneCurvePreset? toneCurvePreset,
+    List<double>? toneCurvePoints,
     int? outlineColor,
     double? outlineWidth,
     int? vignetteColor,
@@ -273,6 +276,7 @@ class FilterDef {
       outputBlack: outputBlack ?? this.outputBlack,
       outputWhite: outputWhite ?? this.outputWhite,
       toneCurvePreset: toneCurvePreset ?? this.toneCurvePreset,
+      toneCurvePoints: toneCurvePoints ?? this.toneCurvePoints,
       outlineColor: outlineColor ?? this.outlineColor,
       outlineWidth: outlineWidth ?? this.outlineWidth,
       vignetteColor: vignetteColor ?? this.vignetteColor,
@@ -354,6 +358,7 @@ class FilterDef {
     'outputBlack': outputBlack,
     'outputWhite': outputWhite,
     'toneCurvePreset': toneCurvePreset.name,
+    'toneCurvePoints': toneCurvePoints,
     'outlineColor': outlineColor,
     'outlineWidth': outlineWidth,
     'vignetteColor': vignetteColor,
@@ -451,6 +456,7 @@ class FilterDef {
       (e) => e.name == j['toneCurvePreset'],
       orElse: () => ToneCurvePreset.linear,
     ),
+    toneCurvePoints: (j['toneCurvePoints'] as List?)?.map((e) => (e as num).toDouble()).toList() ?? const [0, 0, 1, 1],
     outlineColor: j['outlineColor'] as int? ?? 0xFF000000,
     outlineWidth: (j['outlineWidth'] as num?)?.toDouble() ?? 6,
     vignetteColor: j['vignetteColor'] as int? ?? 0xFF000000,
