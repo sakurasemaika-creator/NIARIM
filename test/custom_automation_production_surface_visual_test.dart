@@ -24,7 +24,9 @@ import 'helpers/load_app_fonts.dart';
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
   final out = Directory('build/visual-reaudit/custom-automation-production');
-  final appDocs = Directory('${Directory.systemTemp.path}/niarim_custom_automation_surface_docs');
+  final appDocs = Directory(
+    '${Directory.systemTemp.path}/niarim_custom_automation_surface_docs',
+  );
   const pathProviderChannel = MethodChannel('plugins.flutter.io/path_provider');
 
   setUpAll(() {
@@ -33,80 +35,159 @@ void main() {
   });
 
   setUp(() {
-    SharedPreferences.setMockInitialValues({firstUseTooltipsSeenKey: kAllFirstUseTooltipKeys});
-    TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger.setMockMethodCallHandler(pathProviderChannel, (_) async => appDocs.path);
+    SharedPreferences.setMockInitialValues({
+      firstUseTooltipsSeenKey: kAllFirstUseTooltipKeys,
+    });
+    TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
+        .setMockMethodCallHandler(
+          pathProviderChannel,
+          (_) async => appDocs.path,
+        );
   });
 
   tearDown(() {
-    TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger.setMockMethodCallHandler(pathProviderChannel, null);
+    TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
+        .setMockMethodCallHandler(pathProviderChannel, null);
   });
 
-  testWidgets('record start canvas change stop edit save replay changes PNG pixels', (tester) async {
-    final harness = await _SurfaceHarness.create(tester, out);
-    await harness.createProject('record-edit-replay-source');
-    final automation = harness.automationService;
-    await harness.captureCanvas('01_canvas_before_recording');
-    automation.beginDraft(name: 'record-edit-replay-proof', surface: CustomAutomationSurface.canvas, recordingStartFrame: harness.frameIndex);
-    harness.filterService.selectFilter('Filter0014');
-    final filter = harness.filterService.currentFilter!;
-    final beforeFirstApply = harness.activeLayerPixels();
-    await tester.runAsync(() => CustomAutomationFilterRunner.apply(projectService: harness.projectService, projectId: harness.projectId, sceneId: harness.sceneId, frameIndex: harness.frameIndex, sourceLayerId: harness.layerId, filter: filter));
-    automation.recordStep(surface: CustomAutomationSurface.canvas, command: 'canvas.filterApply', label: filter.name, args: {'filter': filter.toJson()}, recordedFrame: harness.frameIndex);
-    final firstChanged = _changedBytes(beforeFirstApply, harness.activeLayerPixels());
-    expect(firstChanged, greaterThan(100));
-    await harness.captureCanvas('02_canvas_after_first_recorded_change');
-    automation.stopRecording();
-    final saved = await tester.runAsync(() => automation.saveDraft());
-    expect(saved, isNotNull);
-    await harness.createProject('record-edit-replay-fresh-target');
-    final beforeReplay = harness.activeLayerPixels();
-    await harness.captureCanvas('03_canvas_before_saved_replay');
-    await tester.runAsync(() => harness.execute(saved!, CustomAutomationExecutionScope.currentFrame));
-    final replayChanged = _changedBytes(beforeReplay, harness.activeLayerPixels());
-    expect(replayChanged, greaterThan(100));
-    await harness.captureCanvas('04_canvas_after_saved_replay');
-    File('${out.path}/pixel-proof.txt').writeAsStringSync('first_recorded_changed_bytes=$firstChanged\nreplay_changed_bytes=$replayChanged\n');
-    expect(tester.takeException(), isNull);
-  }, timeout: const Timeout(Duration(minutes: 2)));
+  testWidgets(
+    'record start canvas change stop edit save replay changes PNG pixels',
+    (tester) async {
+      final harness = await _SurfaceHarness.create(tester, out);
+      await harness.createProject('record-edit-replay-source');
+      final automation = harness.automationService;
+      await harness.captureCanvas('01_canvas_before_recording');
+      automation.beginDraft(
+        name: 'record-edit-replay-proof',
+        surface: CustomAutomationSurface.canvas,
+        recordingStartFrame: harness.frameIndex,
+      );
+      harness.filterService.selectFilter('Filter0014');
+      final filter = harness.filterService.currentFilter!;
+      final beforeFirstApply = harness.activeLayerPixels();
+      await tester.runAsync(
+        () => CustomAutomationFilterRunner.apply(
+          projectService: harness.projectService,
+          projectId: harness.projectId,
+          sceneId: harness.sceneId,
+          frameIndex: harness.frameIndex,
+          sourceLayerId: harness.layerId,
+          filter: filter,
+        ),
+      );
+      automation.recordStep(
+        surface: CustomAutomationSurface.canvas,
+        command: 'canvas.filterApply',
+        label: filter.name,
+        args: {'filter': filter.toJson()},
+        recordedFrame: harness.frameIndex,
+      );
+      final firstChanged = _changedBytes(
+        beforeFirstApply,
+        harness.activeLayerPixels(),
+      );
+      expect(firstChanged, greaterThan(100));
+      await harness.captureCanvas('02_canvas_after_first_recorded_change');
+      automation.stopRecording();
+      final saved = await tester.runAsync(() => automation.saveDraft());
+      expect(saved, isNotNull);
+      await harness.createProject('record-edit-replay-fresh-target');
+      final beforeReplay = harness.activeLayerPixels();
+      await harness.captureCanvas('03_canvas_before_saved_replay');
+      await tester.runAsync(
+        () => harness.execute(
+          saved!,
+          CustomAutomationExecutionScope.currentFrame,
+        ),
+      );
+      final replayChanged = _changedBytes(
+        beforeReplay,
+        harness.activeLayerPixels(),
+      );
+      expect(replayChanged, greaterThan(100));
+      await harness.captureCanvas('04_canvas_after_saved_replay');
+      File('${out.path}/pixel-proof.txt').writeAsStringSync(
+        'first_recorded_changed_bytes=$firstChanged\nreplay_changed_bytes=$replayChanged\n',
+      );
+      expect(tester.takeException(), isNull);
+    },
+    timeout: const Timeout(Duration(minutes: 2)),
+  );
 
-  testWidgets('all current built-in automation presets produce actual PNG output', (tester) async {
-    final harness = await _SurfaceHarness.create(tester, out);
-    final cases = <(String, String)>[
-      ('デジタル線画作成', 'digital_lineart'),
-      ('アナログ線画作成', 'analog_lineart'),
-    ];
-    expect(harness.automationService.items.map((item) => item.name).toSet(), containsAll(cases.map((entry) => entry.$1)));
+  testWidgets(
+    'all current built-in automation presets produce actual PNG output',
+    (tester) async {
+      final harness = await _SurfaceHarness.create(tester, out);
+      final cases = <(String, String)>[
+        ('線画作成（デジタル）', 'digital_lineart'),
+        ('線画抽出（アナログ）', 'analog_lineart'),
+      ];
+      expect(
+        harness.automationService.items.map((item) => item.name).toSet(),
+        containsAll(cases.map((entry) => entry.$1)),
+      );
 
-    for (final entry in cases) {
-      await harness.createProject('builtin-${entry.$2}', transparentRough: entry.$1 == 'デジタル線画作成');
-      final beforeLayers = harness.normalLayerIds();
-      final beforeComposite = await harness.compositePixels();
-      final beforeSource = harness.activeLayerPixels();
-      final preset = harness.automationService.items.where((item) => item.name == entry.$1).single;
-      await harness.captureComposite('preset_${entry.$2}_before');
-      await tester.runAsync(() => harness.execute(preset, CustomAutomationExecutionScope.currentFrame));
-      final afterLayers = harness.normalLayerIds();
-      final generated = afterLayers.difference(beforeLayers);
-      var generatedVisiblePixels = 0;
-      for (final id in generated) {
-        final pixels = harness.layerPixels(id);
-        for (var i = 3; i < pixels.length; i += 4) {
-          if (pixels[i] != 0) generatedVisiblePixels++;
+      for (final entry in cases) {
+        await harness.createProject(
+          'builtin-${entry.$2}',
+          transparentRough: entry.$1 == '線画作成（デジタル）',
+        );
+        final beforeLayers = harness.normalLayerIds();
+        final beforeComposite = await harness.compositePixels();
+        final beforeSource = harness.activeLayerPixels();
+        final preset = harness.automationService.items
+            .where((item) => item.name == entry.$1)
+            .single;
+        await harness.captureComposite('preset_${entry.$2}_before');
+        await tester.runAsync(
+          () => harness.execute(
+            preset,
+            CustomAutomationExecutionScope.currentFrame,
+          ),
+        );
+        final afterLayers = harness.normalLayerIds();
+        final generated = afterLayers.difference(beforeLayers);
+        var generatedVisiblePixels = 0;
+        for (final id in generated) {
+          final pixels = harness.layerPixels(id);
+          for (var i = 3; i < pixels.length; i += 4) {
+            if (pixels[i] != 0) generatedVisiblePixels++;
+          }
         }
+        final afterComposite = await harness.compositePixels();
+        final compositeChanged = _changedBytes(beforeComposite, afterComposite);
+        if (entry.$1 == '線画作成（デジタル）') {
+          expect(
+            generated,
+            isNotEmpty,
+            reason: '${entry.$1} must create generated output layers',
+          );
+          expect(
+            generatedVisiblePixels,
+            greaterThan(20),
+            reason: '${entry.$1} generated layers must contain visible pixels',
+          );
+        } else {
+          expect(
+            _changedBytes(beforeSource, harness.activeLayerPixels()),
+            greaterThan(100),
+            reason:
+                '${entry.$1} must transform the source layer including brightness-to-alpha',
+          );
+          // The digital preset traces new lines over the rough, so only the
+          // in-place presets are expected to change the composite substantially.
+          expect(
+            compositeChanged,
+            greaterThan(100),
+            reason: '${entry.$1} must visibly change the composited canvas',
+          );
+        }
+        await harness.captureComposite('preset_${entry.$2}_after');
       }
-      final afterComposite = await harness.compositePixels();
-      final compositeChanged = _changedBytes(beforeComposite, afterComposite);
-      if (entry.$1 == 'デジタル線画作成') {
-        expect(generated, isNotEmpty, reason: '${entry.$1} must create generated output layers');
-        expect(generatedVisiblePixels, greaterThan(20), reason: '${entry.$1} generated layers must contain visible pixels');
-      } else {
-        expect(_changedBytes(beforeSource, harness.activeLayerPixels()), greaterThan(100), reason: '${entry.$1} must transform the source layer including brightness-to-alpha');
-      }
-      expect(compositeChanged, greaterThan(100), reason: '${entry.$1} must visibly change the composited canvas');
-      await harness.captureComposite('preset_${entry.$2}_after');
-    }
-    expect(tester.takeException(), isNull);
-  }, timeout: const Timeout(Duration(minutes: 3)));
+      expect(tester.takeException(), isNull);
+    },
+    timeout: const Timeout(Duration(minutes: 3)),
+  );
 }
 
 class _SurfaceHarness {
@@ -122,14 +203,30 @@ class _SurfaceHarness {
 
   _SurfaceHarness(this.tester, this.out);
 
-  static Future<_SurfaceHarness> create(WidgetTester tester, Directory out) async {
+  static Future<_SurfaceHarness> create(
+    WidgetTester tester,
+    Directory out,
+  ) async {
     tester.view.physicalSize = const Size(960, 2160);
     tester.view.devicePixelRatio = 3;
     addTearDown(tester.view.resetPhysicalSize);
     addTearDown(tester.view.resetDevicePixelRatio);
     await loadAppFonts(tester);
     final providers = await tester.runAsync(buildAppProviders);
-    await tester.pumpWidget(MultiProvider(providers: providers!, child: Builder(builder: (context) => MaterialApp(theme: context.watch<ThemeService>().themeData, locale: const Locale('ja'), localizationsDelegates: AppLocalizations.localizationsDelegates, supportedLocales: AppLocalizations.supportedLocales, home: const Scaffold()))));
+    await tester.pumpWidget(
+      MultiProvider(
+        providers: providers!,
+        child: Builder(
+          builder: (context) => MaterialApp(
+            theme: context.watch<ThemeService>().themeData,
+            locale: const Locale('ja'),
+            localizationsDelegates: AppLocalizations.localizationsDelegates,
+            supportedLocales: AppLocalizations.supportedLocales,
+            home: const Scaffold(),
+          ),
+        ),
+      ),
+    );
     await tester.pump();
     final harness = _SurfaceHarness(tester, out);
     final context = tester.element(find.byType(Scaffold));
@@ -139,15 +236,35 @@ class _SurfaceHarness {
     return harness;
   }
 
-  Future<void> createProject(String name, {bool transparentRough = false}) async {
+  Future<void> createProject(
+    String name, {
+    bool transparentRough = false,
+  }) async {
     const size = 96;
-    final project = (await tester.runAsync(() => projectService.createProject(name: name, fps: 24, durationSeconds: 1, backgroundColor: 0xFFFFFFFF, exportWidth: size, exportHeight: size)))!;
+    final project = (await tester.runAsync(
+      () => projectService.createProject(
+        name: name,
+        fps: 24,
+        durationSeconds: 1,
+        backgroundColor: 0xFFFFFFFF,
+        exportWidth: size,
+        exportHeight: size,
+      ),
+    ))!;
     projectId = project.id;
     sceneId = projectService.scenesOf(project.id).first.id;
     frameIndex = 0;
-    layerId = projectService.layersOf(projectId, sceneId, frameIndex).firstWhere((layer) => layer.type == model.LayerType.normal).id;
+    layerId = projectService
+        .layersOf(projectId, sceneId, frameIndex)
+        .firstWhere((layer) => layer.type == model.LayerType.normal)
+        .id;
     final tm = projectService.tileManagerOf(projectId);
-    final key = projectService.tileKeyFor(projectId, sceneId, frameIndex, layerId);
+    final key = projectService.tileKeyFor(
+      projectId,
+      sceneId,
+      frameIndex,
+      layerId,
+    );
     final tile = tm.getOrCreateTile(key, 0, 0);
     tile.fillRange(0, tile.length, 0);
     if (transparentRough) {
@@ -167,13 +284,19 @@ class _SurfaceHarness {
           }
         }
       }
+
       void paintStroke(int x0, int y0, int x1, int y1, int radius) {
         final steps = (x1 - x0).abs() + (y1 - y0).abs();
         for (var step = 0; step <= steps; step++) {
           final t = steps == 0 ? 0.0 : step / steps;
-          paintDisc((x0 + (x1 - x0) * t).round(), (y0 + (y1 - y0) * t).round(), radius);
+          paintDisc(
+            (x0 + (x1 - x0) * t).round(),
+            (y0 + (y1 - y0) * t).round(),
+            radius,
+          );
         }
       }
+
       paintStroke(14, 20, 78, 72, 4);
       paintStroke(18, 70, 76, 26, 4);
       paintStroke(46, 14, 46, 82, 3);
@@ -194,7 +317,11 @@ class _SurfaceHarness {
     tm.invalidateTile(key, 0, 0);
   }
 
-  Set<String> normalLayerIds() => projectService.layersOf(projectId, sceneId, frameIndex).where((layer) => layer.type == model.LayerType.normal).map((layer) => layer.id).toSet();
+  Set<String> normalLayerIds() => projectService
+      .layersOf(projectId, sceneId, frameIndex)
+      .where((layer) => layer.type == model.LayerType.normal)
+      .map((layer) => layer.id)
+      .toSet();
   Uint8List activeLayerPixels() => layerPixels(layerId);
   Uint8List layerPixels(String id) {
     final tm = projectService.tileManagerOf(projectId);
@@ -215,7 +342,14 @@ class _SurfaceHarness {
   Future<ui.Image> _compositeImage() {
     final tm = projectService.tileManagerOf(projectId);
     final layers = projectService.layersOf(projectId, sceneId, frameIndex);
-    return LayerCompositor.composite(tm, layers, (layer) => projectService.tileKeyFor(projectId, sceneId, frameIndex, layer.id), tm.canvasWidth, tm.canvasHeight);
+    return LayerCompositor.composite(
+      tm,
+      layers,
+      (layer) =>
+          projectService.tileKeyFor(projectId, sceneId, frameIndex, layer.id),
+      tm.canvasWidth,
+      tm.canvasHeight,
+    );
   }
 
   Future<Uint8List> compositePixels() async {
@@ -239,12 +373,34 @@ class _SurfaceHarness {
 
   Future<void> captureCanvas(String name) => captureComposite(name);
 
-  Future<void> execute(CustomAutomation automation, CustomAutomationExecutionScope scope) async {
-    await CustomAutomationExecutor.executeCanvas(automation: automation, scope: scope, projectService: projectService, projectId: projectId, sceneId: sceneId, currentFrame: frameIndex, currentLayerId: layerId, handleCanvasStateCommand: (command, args) async {
-      if (command == 'canvas.brightnessToAlpha') {
-        await projectService.tileManagerOf(projectId).applyBrightnessToAlpha(projectService.tileKeyFor(projectId, sceneId, frameIndex, layerId), grayMode: args['grayMode'] != false);
-      }
-    });
+  Future<void> execute(
+    CustomAutomation automation,
+    CustomAutomationExecutionScope scope,
+  ) async {
+    await CustomAutomationExecutor.executeCanvas(
+      automation: automation,
+      scope: scope,
+      projectService: projectService,
+      projectId: projectId,
+      sceneId: sceneId,
+      currentFrame: frameIndex,
+      currentLayerId: layerId,
+      handleCanvasStateCommand: (command, args) async {
+        if (command == 'canvas.brightnessToAlpha') {
+          await projectService
+              .tileManagerOf(projectId)
+              .applyBrightnessToAlpha(
+                projectService.tileKeyFor(
+                  projectId,
+                  sceneId,
+                  frameIndex,
+                  layerId,
+                ),
+                grayMode: args['grayMode'] != false,
+              );
+        }
+      },
+    );
   }
 }
 

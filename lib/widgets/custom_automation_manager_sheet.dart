@@ -8,6 +8,7 @@ import 'package:provider/provider.dart';
 import '../l10n/app_localizations.dart';
 import '../models/custom_automation.dart';
 import '../services/custom_automation_service.dart';
+import 'scrollable_sheet_body.dart';
 
 class CustomAutomationManagerSheet extends StatelessWidget {
   final CustomAutomationSurface surface;
@@ -45,8 +46,9 @@ class CustomAutomationManagerSheet extends StatelessWidget {
             border: const OutlineInputBorder(),
           ),
           onSubmitted: (value) {
-            if (value.trim().isNotEmpty)
+            if (value.trim().isNotEmpty) {
               Navigator.pop(dialogContext, value.trim());
+            }
           },
         ),
         actions: [
@@ -282,8 +284,9 @@ class CustomAutomationManagerSheet extends StatelessWidget {
     if (result == null || result.files.isEmpty || !context.mounted) return;
     final file = result.files.single;
     Uint8List? bytes = file.bytes;
-    if (bytes == null && file.path != null)
+    if (bytes == null && file.path != null) {
       bytes = await file.xFile.readAsBytes();
+    }
     if (bytes == null || !context.mounted) return;
     try {
       await context.read<CustomAutomationService>().importJson(
@@ -315,7 +318,7 @@ class CustomAutomationManagerSheet extends StatelessWidget {
     await showModalBottomSheet<void>(
       context: context,
       showDragHandle: true,
-      builder: (sheetContext) => SafeArea(
+      builder: (sheetContext) => ScrollableSheetBody(
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
@@ -410,7 +413,9 @@ class CustomAutomationManagerSheet extends StatelessWidget {
                 children: [
                   IconButton(
                     key: const ValueKey('custom-automation-favorites-only'),
-                    tooltip: service.favoritesOnly ? 'すべて表示' : 'お気に入りのみ',
+                    tooltip: service.favoritesOnly
+                        ? l10n.customAutomationShowAll
+                        : l10n.customAutomationFavoritesOnly,
                     icon: Icon(
                       service.favoritesOnly ? Icons.star : Icons.star_border,
                     ),
@@ -438,19 +443,28 @@ class CustomAutomationManagerSheet extends StatelessWidget {
                           key: ValueKey(item.id),
                           onTap: () => _showItemManager(context, item),
                           title: Text(item.name),
-                          subtitle: Wrap(
-                            spacing: 8,
-                            crossAxisAlignment: WrapCrossAlignment.center,
+                          subtitle: Text(
+                            l10n.customAutomationStepCount(item.steps.length),
+                          ),
+                          trailing: Row(
+                            mainAxisSize: MainAxisSize.min,
                             children: [
-                              Text(
-                                l10n.customAutomationStepCount(
-                                  item.steps.length,
+                              IconButton(
+                                key: ValueKey(
+                                  'custom-automation-favorite-${item.id}',
                                 ),
+                                tooltip: favorite
+                                    ? l10n.customAutomationUnfavoriteAction
+                                    : l10n.customAutomationFavoriteAction,
+                                icon: Icon(
+                                  favorite ? Icons.star : Icons.star_border,
+                                ),
+                                onPressed: () =>
+                                    service.toggleFavorite(item.id),
                               ),
-                              if (favorite) const Icon(Icons.star, size: 16),
+                              const Icon(Icons.chevron_right),
                             ],
                           ),
-                          trailing: const Icon(Icons.chevron_right),
                         );
                       },
                     ),

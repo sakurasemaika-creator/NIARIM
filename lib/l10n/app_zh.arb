@@ -2791,5 +2791,8 @@
   "communityMutedTagsHint": "输入以逗号分隔的标签名称",
   "communityContainsGenerativeAiImageVideo": "包含生成式 AI 图像或视频",
   "communityContainsGenerativeAiImageVideoHelp": "作品中的图像或视频使用生成式 AI 制作时请开启。语音合成软件不属于此项范围。",
-  "canvasLassoSnapToLines": "吸附到线条"
+  "canvasLassoSnapToLines": "吸附到线条",
+  "filterBackToList": "返回滤镜列表",
+  "customAutomationShowAll": "显示全部",
+  "customAutomationFavoritesOnly": "仅显示收藏"
 }

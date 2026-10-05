@@ -72,7 +72,7 @@ void main() {
         stabilization: true,
         stabilizationStrength: 40,
         pixelMode: true,
-        pressureOn: const BrushPressureOnSettings(
+        pressureOn: BrushPressureOnSettings(
           size: PressureRangeSetting(enabled: true, weak: 45, strong: 100),
           opacity: PressureRangeSetting(enabled: true, weak: 45, strong: 100),
           blur: PressureRangeSetting(enabled: true, weak: 5, strong: 5),
@@ -88,7 +88,7 @@ void main() {
             strongRate: 40,
           ),
         ),
-        pressureOff: const BrushPressureOffSettings(
+        pressureOff: BrushPressureOffSettings(
           blur: FixedBrushSetting(enabled: true, value: 5),
           edgeJitter: FixedBrushSetting(enabled: false, value: 50),
           mixing: PressureMixingOffSetting(
@@ -98,8 +98,8 @@ void main() {
           ),
         ),
         fadeMode: FadeMode.custom,
-        fadeIn: const FadeEndpointSettings(value: 100, rangePx: 80),
-        fadeOut: const FadeEndpointSettings(value: 20, rangePx: 160),
+        fadeIn: FadeEndpointSettings(value: 100, rangePx: 80),
+        fadeOut: FadeEndpointSettings(value: 20, rangePx: 160),
         strokeDecay: true,
       );
       s1.addBrush(custom);
@@ -117,7 +117,6 @@ void main() {
       expect(restored.pressureOn.mixing.mode, BrushMixingMode.bleed);
       expect(restored.pressureOff.mixing.mode, BrushMixingMode.bleed);
     });
-
 
     test('四コマ漫画ブラシの形状設定が複製・再起動後も保持される', () async {
       final s1 = BrushService();
@@ -144,29 +143,32 @@ void main() {
       expect(restored.size, 80);
     });
 
-    test('.niabrush round-trip preserves four-panel hollow-square geometry', () async {
-      final dir = await Directory.systemTemp.createTemp('niarim-four-panel-');
-      addTearDown(() async {
-        if (await dir.exists()) await dir.delete(recursive: true);
-      });
+    test(
+      '.niabrush round-trip preserves four-panel hollow-square geometry',
+      () async {
+        final dir = await Directory.systemTemp.createTemp('niarim-four-panel-');
+        addTearDown(() async {
+          if (await dir.exists()) await dir.delete(recursive: true);
+        });
 
-      final service = BrushService();
-      await service.init();
-      final source = service.brushes.firstWhere((b) => b.id == 'Brush0025');
-      final path = '${dir.path}/four-panel.niabrush';
-      await service.exportBrushToPath(source.id, path);
-      final imported = await service.importBrushFile(
-        path,
-        imagesDirectory: '${dir.path}/images',
-      );
+        final service = BrushService();
+        await service.init();
+        final source = service.brushes.firstWhere((b) => b.id == 'Brush0025');
+        final path = '${dir.path}/four-panel.niabrush';
+        await service.exportBrushToPath(source.id, path);
+        final imported = await service.importBrushFile(
+          path,
+          imagesDirectory: '${dir.path}/images',
+        );
 
-      expect(imported.tipShape, BrushTipShape.hollowSquare);
-      expect(imported.rotation, isTrue);
-      expect(imported.spacing, 125);
-      expect(imported.size, 80);
-      expect(imported.lateralRepeatEnabled, isFalse);
-      expect(imported.lateralRepeatCount, 1);
-    });
+        expect(imported.tipShape, BrushTipShape.hollowSquare);
+        expect(imported.rotation, isTrue);
+        expect(imported.spacing, 125);
+        expect(imported.size, 80);
+        expect(imported.lateralRepeatEnabled, isFalse);
+        expect(imported.lateralRepeatCount, 1);
+      },
+    );
 
     test('ブラシ複製で入り/抜きの値と範囲を独立保持する', () async {
       final service = BrushService();
@@ -196,53 +198,66 @@ void main() {
       expect(duplicate.fadeOut.rangePx, 211);
     });
 
-    test('.niabrush export/import preserves independent fade and custom images', () async {
-      final dir = await Directory.systemTemp.createTemp('niarim-niabrush-');
-      addTearDown(() async {
-        if (await dir.exists()) await dir.delete(recursive: true);
-      });
-      final imageA = File('${dir.path}/a.png');
-      final imageB = File('${dir.path}/b.png');
-      await imageA.writeAsBytes(Uint8List.fromList([1, 2, 3, 4]));
-      await imageB.writeAsBytes(Uint8List.fromList([5, 6, 7, 8]));
+    test(
+      '.niabrush export/import preserves independent fade and custom images',
+      () async {
+        final dir = await Directory.systemTemp.createTemp('niarim-niabrush-');
+        addTearDown(() async {
+          if (await dir.exists()) await dir.delete(recursive: true);
+        });
+        final imageA = File('${dir.path}/a.png');
+        final imageB = File('${dir.path}/b.png');
+        await imageA.writeAsBytes(Uint8List.fromList([1, 2, 3, 4]));
+        await imageB.writeAsBytes(Uint8List.fromList([5, 6, 7, 8]));
 
-      final service = BrushService();
-      await service.init();
-      final source = Brush(
-        id: 'BrushBundleRoundTrip',
-        name: 'bundle round trip',
-        size: 18,
-        opacity: 91,
-        spacing: 7,
-        stabilization: true,
-        stabilizationStrength: 33,
-        pixelMode: true,
-        fadeMode: FadeMode.custom,
-        fadeIn: const FadeEndpointSettings(value: 81, rangePx: 74),
-        fadeOut: const FadeEndpointSettings(value: 19, rangePx: 213),
-        strokeDecay: true,
-        customImagePaths: [imageA.path, imageB.path],
-      );
-      service.addBrush(source);
+        final service = BrushService();
+        await service.init();
+        final source = Brush(
+          id: 'BrushBundleRoundTrip',
+          name: 'bundle round trip',
+          size: 18,
+          opacity: 91,
+          spacing: 7,
+          stabilization: true,
+          stabilizationStrength: 33,
+          pixelMode: true,
+          fadeMode: FadeMode.custom,
+          fadeIn: const FadeEndpointSettings(value: 81, rangePx: 74),
+          fadeOut: const FadeEndpointSettings(value: 19, rangePx: 213),
+          strokeDecay: true,
+          customImagePaths: [imageA.path, imageB.path],
+        );
+        service.addBrush(source);
 
-      final bundlePath = '${dir.path}/roundtrip.niabrush';
-      await service.exportBrushToPath(source.id, bundlePath);
-      final imported = await service.importBrushFile(
-        bundlePath,
-        imagesDirectory: '${dir.path}/imported',
-      );
+        final bundlePath = '${dir.path}/roundtrip.niabrush';
+        await service.exportBrushToPath(source.id, bundlePath);
+        final imported = await service.importBrushFile(
+          bundlePath,
+          imagesDirectory: '${dir.path}/imported',
+        );
 
-      expect(imported.id, isNot(source.id));
-      expect(imported.fadeIn.value, 81);
-      expect(imported.fadeIn.rangePx, 74);
-      expect(imported.fadeOut.value, 19);
-      expect(imported.fadeOut.rangePx, 213);
-      expect(imported.pixelMode, isTrue);
-      expect(imported.strokeDecay, isTrue);
-      expect(imported.resolvedCustomImagePaths, hasLength(2));
-      expect(await File(imported.resolvedCustomImagePaths[0]).readAsBytes(), [1, 2, 3, 4]);
-      expect(await File(imported.resolvedCustomImagePaths[1]).readAsBytes(), [5, 6, 7, 8]);
-    });
+        expect(imported.id, isNot(source.id));
+        expect(imported.fadeIn.value, 81);
+        expect(imported.fadeIn.rangePx, 74);
+        expect(imported.fadeOut.value, 19);
+        expect(imported.fadeOut.rangePx, 213);
+        expect(imported.pixelMode, isTrue);
+        expect(imported.strokeDecay, isTrue);
+        expect(imported.resolvedCustomImagePaths, hasLength(2));
+        expect(await File(imported.resolvedCustomImagePaths[0]).readAsBytes(), [
+          1,
+          2,
+          3,
+          4,
+        ]);
+        expect(await File(imported.resolvedCustomImagePaths[1]).readAsBytes(), [
+          5,
+          6,
+          7,
+          8,
+        ]);
+      },
+    );
   });
 
   group('ToneService', () {

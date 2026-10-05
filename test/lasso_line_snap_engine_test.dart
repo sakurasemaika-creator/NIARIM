@@ -1,6 +1,5 @@
 import 'dart:io';
 import 'dart:typed_data';
-import 'dart:ui';
 
 import 'package:flutter_test/flutter_test.dart';
 import 'package:niarim/engine/lasso_line_snap_engine.dart';
@@ -74,19 +73,28 @@ void main() {
       radius: 6,
     );
     expect(
-      snapped.where((p) =>
-          (p.dx - 16.5).abs() < 1 ||
-          (p.dx - 48.5).abs() < 1 ||
-          (p.dy - 16.5).abs() < 1 ||
-          (p.dy - 48.5).abs() < 1).length,
+      snapped
+          .where(
+            (p) =>
+                (p.dx - 16.5).abs() < 1 ||
+                (p.dx - 48.5).abs() < 1 ||
+                (p.dy - 16.5).abs() < 1 ||
+                (p.dy - 48.5).abs() < 1,
+          )
+          .length,
       greaterThanOrEqualTo(7),
     );
   });
 
-  test('lasso selection exposes a dedicated snap checkbox only for lasso mode', () {
-    final source = File('lib/screens/canvas/canvas_screen.dart').readAsStringSync();
-    expect(source, contains("ValueKey('lasso-snap-to-lines')"));
-    expect(source, contains('_currentTool == DrawingTool.selectLasso'));
-    expect(source, contains('l10n.canvasLassoSnapToLines'));
-  });
+  test(
+    'lasso selection exposes a dedicated snap checkbox only for lasso mode',
+    () {
+      final source = File(
+        'lib/screens/canvas/canvas_screen.dart',
+      ).readAsStringSync();
+      expect(source, contains("ValueKey('lasso-snap-to-lines')"));
+      expect(source, contains('_currentTool == DrawingTool.selectLasso'));
+      expect(source, contains('l10n.canvasLassoSnapToLines'));
+    },
+  );
 }

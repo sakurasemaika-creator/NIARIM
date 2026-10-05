@@ -37,7 +37,7 @@ void main() {
       stabilization: true,
       stabilizationStrength: 50,
       pixelMode: false,
-      pressureOn: const BrushPressureOnSettings(
+      pressureOn: BrushPressureOnSettings(
         size: PressureRangeSetting(enabled: true, weak: 20, strong: 100),
         opacity: PressureRangeSetting(enabled: false, weak: 50, strong: 100),
         blur: PressureRangeSetting(enabled: false, weak: 0, strong: 0),
@@ -49,7 +49,7 @@ void main() {
           strongRate: 0,
         ),
       ),
-      pressureOff: const BrushPressureOffSettings(
+      pressureOff: BrushPressureOffSettings(
         blur: FixedBrushSetting(enabled: false, value: 0),
         edgeJitter: FixedBrushSetting(enabled: false, value: 50),
         mixing: PressureMixingOffSetting(

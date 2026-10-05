@@ -47,7 +47,7 @@ class BrushService extends ChangeNotifier {
       stabilization: true,
       stabilizationStrength: 50,
       pixelMode: false,
-      pressureOn: const BrushPressureOnSettings(
+      pressureOn: BrushPressureOnSettings(
         size: PressureRangeSetting(enabled: true, weak: 20, strong: 100),
         opacity: PressureRangeSetting(enabled: false, weak: 50, strong: 100),
         blur: PressureRangeSetting(enabled: false, weak: 0, strong: 0),
@@ -59,7 +59,7 @@ class BrushService extends ChangeNotifier {
           strongRate: 0,
         ),
       ),
-      pressureOff: const BrushPressureOffSettings(
+      pressureOff: BrushPressureOffSettings(
         blur: FixedBrushSetting(enabled: false, value: 0),
         edgeJitter: FixedBrushSetting(enabled: false, value: 50),
         mixing: PressureMixingOffSetting(
@@ -81,7 +81,7 @@ class BrushService extends ChangeNotifier {
       stabilization: true,
       stabilizationStrength: 60,
       pixelMode: false,
-      pressureOn: const BrushPressureOnSettings(
+      pressureOn: BrushPressureOnSettings(
         size: PressureRangeSetting(enabled: true, weak: 10, strong: 100),
         opacity: PressureRangeSetting(enabled: true, weak: 10, strong: 100),
         blur: PressureRangeSetting(enabled: false, weak: 0, strong: 0),
@@ -93,7 +93,7 @@ class BrushService extends ChangeNotifier {
           strongRate: 0,
         ),
       ),
-      pressureOff: const BrushPressureOffSettings(
+      pressureOff: BrushPressureOffSettings(
         blur: FixedBrushSetting(enabled: false, value: 0),
         edgeJitter: FixedBrushSetting(enabled: false, value: 50),
         mixing: PressureMixingOffSetting(
@@ -115,7 +115,7 @@ class BrushService extends ChangeNotifier {
       stabilization: false,
       stabilizationStrength: 0,
       pixelMode: false,
-      pressureOn: const BrushPressureOnSettings(
+      pressureOn: BrushPressureOnSettings(
         size: PressureRangeSetting(enabled: false, weak: 50, strong: 100),
         opacity: PressureRangeSetting(enabled: true, weak: 30, strong: 100),
         blur: PressureRangeSetting(enabled: true, weak: 50, strong: 50),
@@ -127,7 +127,7 @@ class BrushService extends ChangeNotifier {
           strongRate: 0,
         ),
       ),
-      pressureOff: const BrushPressureOffSettings(
+      pressureOff: BrushPressureOffSettings(
         blur: FixedBrushSetting(enabled: true, value: 50),
         edgeJitter: FixedBrushSetting(enabled: false, value: 50),
         mixing: PressureMixingOffSetting(
@@ -149,7 +149,7 @@ class BrushService extends ChangeNotifier {
       stabilization: false,
       stabilizationStrength: 0,
       pixelMode: false,
-      pressureOn: const BrushPressureOnSettings(
+      pressureOn: BrushPressureOnSettings(
         size: PressureRangeSetting(enabled: true, weak: 40, strong: 100),
         opacity: PressureRangeSetting(enabled: false, weak: 50, strong: 100),
         blur: PressureRangeSetting(enabled: true, weak: 10, strong: 10),
@@ -161,7 +161,7 @@ class BrushService extends ChangeNotifier {
           strongRate: 50,
         ),
       ),
-      pressureOff: const BrushPressureOffSettings(
+      pressureOff: BrushPressureOffSettings(
         blur: FixedBrushSetting(enabled: true, value: 10),
         edgeJitter: FixedBrushSetting(enabled: false, value: 50),
         mixing: PressureMixingOffSetting(
@@ -190,7 +190,7 @@ class BrushService extends ChangeNotifier {
       stabilization: false,
       stabilizationStrength: 0,
       pixelMode: false,
-      pressureOn: const BrushPressureOnSettings(
+      pressureOn: BrushPressureOnSettings(
         size: PressureRangeSetting(enabled: false, weak: 50, strong: 100),
         opacity: PressureRangeSetting(enabled: false, weak: 50, strong: 100),
         blur: PressureRangeSetting(enabled: false, weak: 0, strong: 0),
@@ -202,7 +202,7 @@ class BrushService extends ChangeNotifier {
           strongRate: 15,
         ),
       ),
-      pressureOff: const BrushPressureOffSettings(
+      pressureOff: BrushPressureOffSettings(
         blur: FixedBrushSetting(enabled: false, value: 0),
         edgeJitter: FixedBrushSetting(enabled: true, value: 50),
         mixing: PressureMixingOffSetting(
@@ -228,7 +228,7 @@ class BrushService extends ChangeNotifier {
       stabilization: true,
       stabilizationStrength: 40,
       pixelMode: false,
-      pressureOn: const BrushPressureOnSettings(
+      pressureOn: BrushPressureOnSettings(
         size: PressureRangeSetting(enabled: true, weak: 50, strong: 100),
         opacity: PressureRangeSetting(enabled: false, weak: 50, strong: 100),
         blur: PressureRangeSetting(enabled: false, weak: 0, strong: 0),
@@ -240,7 +240,7 @@ class BrushService extends ChangeNotifier {
           strongRate: 0,
         ),
       ),
-      pressureOff: const BrushPressureOffSettings(
+      pressureOff: BrushPressureOffSettings(
         blur: FixedBrushSetting(enabled: false, value: 0),
         edgeJitter: FixedBrushSetting(enabled: false, value: 50),
         mixing: PressureMixingOffSetting(
@@ -270,7 +270,7 @@ class BrushService extends ChangeNotifier {
       stabilization: true,
       stabilizationStrength: 30,
       pixelMode: false,
-      pressureOn: const BrushPressureOnSettings(
+      pressureOn: BrushPressureOnSettings(
         size: PressureRangeSetting(enabled: true, weak: 15, strong: 100),
         opacity: PressureRangeSetting(enabled: true, weak: 15, strong: 100),
         blur: PressureRangeSetting(enabled: false, weak: 0, strong: 0),
@@ -282,7 +282,7 @@ class BrushService extends ChangeNotifier {
           strongRate: 0,
         ),
       ),
-      pressureOff: const BrushPressureOffSettings(
+      pressureOff: BrushPressureOffSettings(
         blur: FixedBrushSetting(enabled: false, value: 0),
         edgeJitter: FixedBrushSetting(enabled: true, value: 70),
         mixing: PressureMixingOffSetting(
@@ -306,7 +306,7 @@ class BrushService extends ChangeNotifier {
       stabilization: true,
       stabilizationStrength: 75,
       pixelMode: false,
-      pressureOn: const BrushPressureOnSettings(
+      pressureOn: BrushPressureOnSettings(
         size: PressureRangeSetting(enabled: true, weak: 5, strong: 100),
         opacity: PressureRangeSetting(enabled: false, weak: 50, strong: 100),
         blur: PressureRangeSetting(enabled: false, weak: 0, strong: 0),
@@ -318,7 +318,7 @@ class BrushService extends ChangeNotifier {
           strongRate: 0,
         ),
       ),
-      pressureOff: const BrushPressureOffSettings(
+      pressureOff: BrushPressureOffSettings(
         blur: FixedBrushSetting(enabled: false, value: 0),
         edgeJitter: FixedBrushSetting(enabled: false, value: 50),
         mixing: PressureMixingOffSetting(
@@ -342,7 +342,7 @@ class BrushService extends ChangeNotifier {
       stabilization: false,
       stabilizationStrength: 0,
       pixelMode: false,
-      pressureOn: const BrushPressureOnSettings(
+      pressureOn: BrushPressureOnSettings(
         size: PressureRangeSetting(enabled: false, weak: 50, strong: 100),
         opacity: PressureRangeSetting(enabled: true, weak: 40, strong: 100),
         blur: PressureRangeSetting(enabled: true, weak: 5, strong: 5),
@@ -354,7 +354,7 @@ class BrushService extends ChangeNotifier {
           strongRate: 25,
         ),
       ),
-      pressureOff: const BrushPressureOffSettings(
+      pressureOff: BrushPressureOffSettings(
         blur: FixedBrushSetting(enabled: true, value: 5),
         edgeJitter: FixedBrushSetting(enabled: false, value: 50),
         mixing: PressureMixingOffSetting(
@@ -379,7 +379,7 @@ class BrushService extends ChangeNotifier {
       stabilization: false,
       stabilizationStrength: 0,
       pixelMode: false,
-      pressureOn: const BrushPressureOnSettings(
+      pressureOn: BrushPressureOnSettings(
         size: PressureRangeSetting(enabled: true, weak: 25, strong: 100),
         opacity: PressureRangeSetting(enabled: true, weak: 25, strong: 100),
         blur: PressureRangeSetting(enabled: true, weak: 30, strong: 30),
@@ -391,7 +391,7 @@ class BrushService extends ChangeNotifier {
           strongRate: 70,
         ),
       ),
-      pressureOff: const BrushPressureOffSettings(
+      pressureOff: BrushPressureOffSettings(
         blur: FixedBrushSetting(enabled: true, value: 30),
         edgeJitter: FixedBrushSetting(enabled: true, value: 40),
         mixing: PressureMixingOffSetting(
@@ -415,7 +415,7 @@ class BrushService extends ChangeNotifier {
       stabilization: false,
       stabilizationStrength: 0,
       pixelMode: false,
-      pressureOn: const BrushPressureOnSettings(
+      pressureOn: BrushPressureOnSettings(
         size: PressureRangeSetting(enabled: false, weak: 50, strong: 100),
         opacity: PressureRangeSetting(enabled: true, weak: 20, strong: 100),
         blur: PressureRangeSetting(enabled: true, weak: 90, strong: 90),
@@ -427,7 +427,7 @@ class BrushService extends ChangeNotifier {
           strongRate: 0,
         ),
       ),
-      pressureOff: const BrushPressureOffSettings(
+      pressureOff: BrushPressureOffSettings(
         blur: FixedBrushSetting(enabled: true, value: 90),
         edgeJitter: FixedBrushSetting(enabled: false, value: 50),
         mixing: PressureMixingOffSetting(
@@ -451,7 +451,7 @@ class BrushService extends ChangeNotifier {
       stabilization: false,
       stabilizationStrength: 0,
       pixelMode: false,
-      pressureOn: const BrushPressureOnSettings(
+      pressureOn: BrushPressureOnSettings(
         size: PressureRangeSetting(enabled: false, weak: 50, strong: 100),
         opacity: PressureRangeSetting(enabled: true, weak: 30, strong: 100),
         blur: PressureRangeSetting(enabled: false, weak: 0, strong: 0),
@@ -463,7 +463,7 @@ class BrushService extends ChangeNotifier {
           strongRate: 0,
         ),
       ),
-      pressureOff: const BrushPressureOffSettings(
+      pressureOff: BrushPressureOffSettings(
         blur: FixedBrushSetting(enabled: false, value: 0),
         edgeJitter: FixedBrushSetting(enabled: true, value: 100),
         mixing: PressureMixingOffSetting(
@@ -489,7 +489,7 @@ class BrushService extends ChangeNotifier {
       stabilization: false,
       stabilizationStrength: 0,
       pixelMode: false,
-      pressureOn: const BrushPressureOnSettings(
+      pressureOn: BrushPressureOnSettings(
         size: PressureRangeSetting(enabled: false, weak: 50, strong: 100),
         opacity: PressureRangeSetting(enabled: true, weak: 40, strong: 100),
         blur: PressureRangeSetting(enabled: true, weak: 20, strong: 20),
@@ -501,7 +501,7 @@ class BrushService extends ChangeNotifier {
           strongRate: 0,
         ),
       ),
-      pressureOff: const BrushPressureOffSettings(
+      pressureOff: BrushPressureOffSettings(
         blur: FixedBrushSetting(enabled: true, value: 20),
         edgeJitter: FixedBrushSetting(enabled: false, value: 50),
         mixing: PressureMixingOffSetting(
@@ -527,7 +527,7 @@ class BrushService extends ChangeNotifier {
       stabilization: false,
       stabilizationStrength: 0,
       pixelMode: true,
-      pressureOn: const BrushPressureOnSettings(
+      pressureOn: BrushPressureOnSettings(
         size: PressureRangeSetting(enabled: false, weak: 50, strong: 100),
         opacity: PressureRangeSetting(enabled: false, weak: 50, strong: 100),
         blur: PressureRangeSetting(enabled: false, weak: 0, strong: 0),
@@ -539,7 +539,7 @@ class BrushService extends ChangeNotifier {
           strongRate: 0,
         ),
       ),
-      pressureOff: const BrushPressureOffSettings(
+      pressureOff: BrushPressureOffSettings(
         blur: FixedBrushSetting(enabled: false, value: 0),
         edgeJitter: FixedBrushSetting(enabled: false, value: 50),
         mixing: PressureMixingOffSetting(
@@ -563,7 +563,7 @@ class BrushService extends ChangeNotifier {
       stabilization: true,
       stabilizationStrength: 55,
       pixelMode: false,
-      pressureOn: const BrushPressureOnSettings(
+      pressureOn: BrushPressureOnSettings(
         size: PressureRangeSetting(enabled: true, weak: 10, strong: 100),
         opacity: PressureRangeSetting(enabled: false, weak: 50, strong: 100),
         blur: PressureRangeSetting(enabled: false, weak: 0, strong: 0),
@@ -575,7 +575,7 @@ class BrushService extends ChangeNotifier {
           strongRate: 0,
         ),
       ),
-      pressureOff: const BrushPressureOffSettings(
+      pressureOff: BrushPressureOffSettings(
         blur: FixedBrushSetting(enabled: false, value: 0),
         edgeJitter: FixedBrushSetting(enabled: false, value: 50),
         mixing: PressureMixingOffSetting(
@@ -601,7 +601,7 @@ class BrushService extends ChangeNotifier {
       stabilization: false,
       stabilizationStrength: 0,
       pixelMode: false,
-      pressureOn: const BrushPressureOnSettings(
+      pressureOn: BrushPressureOnSettings(
         size: PressureRangeSetting(enabled: false, weak: 50, strong: 100),
         opacity: PressureRangeSetting(enabled: true, weak: 65, strong: 100),
         blur: PressureRangeSetting(enabled: false, weak: 0, strong: 0),
@@ -613,7 +613,7 @@ class BrushService extends ChangeNotifier {
           strongRate: 0,
         ),
       ),
-      pressureOff: const BrushPressureOffSettings(
+      pressureOff: BrushPressureOffSettings(
         blur: FixedBrushSetting(enabled: false, value: 0),
         edgeJitter: FixedBrushSetting(enabled: false, value: 0),
         mixing: PressureMixingOffSetting(
@@ -639,7 +639,7 @@ class BrushService extends ChangeNotifier {
       stabilization: true,
       stabilizationStrength: 20,
       pixelMode: false,
-      pressureOn: const BrushPressureOnSettings(
+      pressureOn: BrushPressureOnSettings(
         size: PressureRangeSetting(enabled: false, weak: 50, strong: 100),
         opacity: PressureRangeSetting(enabled: true, weak: 75, strong: 100),
         blur: PressureRangeSetting(enabled: true, weak: 1, strong: 1),
@@ -651,7 +651,7 @@ class BrushService extends ChangeNotifier {
           strongRate: 0,
         ),
       ),
-      pressureOff: const BrushPressureOffSettings(
+      pressureOff: BrushPressureOffSettings(
         blur: FixedBrushSetting(enabled: true, value: 1),
         edgeJitter: FixedBrushSetting(enabled: true, value: 30),
         mixing: PressureMixingOffSetting(
@@ -681,7 +681,7 @@ class BrushService extends ChangeNotifier {
       stabilization: true,
       stabilizationStrength: 35,
       pixelMode: false,
-      pressureOn: const BrushPressureOnSettings(
+      pressureOn: BrushPressureOnSettings(
         size: PressureRangeSetting(enabled: false, weak: 50, strong: 100),
         opacity: PressureRangeSetting(enabled: false, weak: 50, strong: 100),
         blur: PressureRangeSetting(enabled: false, weak: 0, strong: 0),
@@ -693,7 +693,7 @@ class BrushService extends ChangeNotifier {
           strongRate: 0,
         ),
       ),
-      pressureOff: const BrushPressureOffSettings(
+      pressureOff: BrushPressureOffSettings(
         blur: FixedBrushSetting(enabled: false, value: 0),
         edgeJitter: FixedBrushSetting(enabled: false, value: 50),
         mixing: PressureMixingOffSetting(
@@ -728,7 +728,7 @@ class BrushService extends ChangeNotifier {
       stabilization: true,
       stabilizationStrength: 40,
       pixelMode: false,
-      pressureOn: const BrushPressureOnSettings(
+      pressureOn: BrushPressureOnSettings(
         size: PressureRangeSetting(enabled: false, weak: 50, strong: 100),
         opacity: PressureRangeSetting(enabled: false, weak: 50, strong: 100),
         blur: PressureRangeSetting(enabled: false, weak: 0, strong: 0),
@@ -740,7 +740,7 @@ class BrushService extends ChangeNotifier {
           strongRate: 0,
         ),
       ),
-      pressureOff: const BrushPressureOffSettings(
+      pressureOff: BrushPressureOffSettings(
         blur: FixedBrushSetting(enabled: false, value: 0),
         edgeJitter: FixedBrushSetting(enabled: false, value: 50),
         mixing: PressureMixingOffSetting(
@@ -770,7 +770,7 @@ class BrushService extends ChangeNotifier {
       stabilization: true,
       stabilizationStrength: 48,
       pixelMode: false,
-      pressureOn: const BrushPressureOnSettings(
+      pressureOn: BrushPressureOnSettings(
         size: PressureRangeSetting(enabled: false, weak: 50, strong: 100),
         opacity: PressureRangeSetting(enabled: false, weak: 50, strong: 100),
         blur: PressureRangeSetting(enabled: false, weak: 0, strong: 0),
@@ -782,7 +782,7 @@ class BrushService extends ChangeNotifier {
           strongRate: 0,
         ),
       ),
-      pressureOff: const BrushPressureOffSettings(
+      pressureOff: BrushPressureOffSettings(
         blur: FixedBrushSetting(enabled: false, value: 0),
         edgeJitter: FixedBrushSetting(enabled: false, value: 50),
         mixing: PressureMixingOffSetting(
@@ -810,7 +810,7 @@ class BrushService extends ChangeNotifier {
       stabilization: true,
       stabilizationStrength: 42,
       pixelMode: false,
-      pressureOn: const BrushPressureOnSettings(
+      pressureOn: BrushPressureOnSettings(
         size: PressureRangeSetting(enabled: false, weak: 50, strong: 100),
         opacity: PressureRangeSetting(enabled: false, weak: 50, strong: 100),
         blur: PressureRangeSetting(enabled: false, weak: 0, strong: 0),
@@ -822,7 +822,7 @@ class BrushService extends ChangeNotifier {
           strongRate: 0,
         ),
       ),
-      pressureOff: const BrushPressureOffSettings(
+      pressureOff: BrushPressureOffSettings(
         blur: FixedBrushSetting(enabled: false, value: 0),
         edgeJitter: FixedBrushSetting(enabled: false, value: 50),
         mixing: PressureMixingOffSetting(
@@ -1255,28 +1255,30 @@ class BrushService extends ChangeNotifier {
   }
 
   /// `.niabrush`ファイルを読み込み、新規ブラシとして追加する。
-  Future<Brush> importBrushFile(String filePath, {String? imagesDirectory}) async {
+  Future<Brush> importBrushFile(
+    String filePath, {
+    String? imagesDirectory,
+  }) async {
     final bytes = await File(filePath).readAsBytes();
     final archive = ZipDecoder().decodeBytes(bytes);
     final dataFile = archive.findFile(_bundleDataFile);
     if (dataFile == null) throw const FormatException('data.json not found');
-    final json = jsonDecode(
-      utf8.decode(dataFile.content as List<int>),
-    ) as Map<String, dynamic>;
+    final json =
+        jsonDecode(utf8.decode(dataFile.content as List<int>))
+            as Map<String, dynamic>;
     final imported = Brush.fromJson(json);
     final id = 'Brush${DateTime.now().millisecondsSinceEpoch}';
-    final variantFiles = archive.files
-        .where((f) => f.isFile && f.name.startsWith('images/'))
-        .toList()
-      ..sort((a, b) => a.name.compareTo(b.name));
+    final variantFiles =
+        archive.files
+            .where((f) => f.isFile && f.name.startsWith('images/'))
+            .toList()
+          ..sort((a, b) => a.name.compareTo(b.name));
     final legacyImageFile = archive.files
         .where((f) => f.isFile && f.name.startsWith('image.'))
         .firstOrNull;
     final imageFiles = variantFiles.isNotEmpty
         ? variantFiles
-        : <ArchiveFile>[
-            if (legacyImageFile != null) legacyImageFile,
-          ];
+        : <ArchiveFile>[?legacyImageFile];
     final newImagePaths = <String>[];
     if (imageFiles.isNotEmpty) {
       final dir = imagesDirectory == null
@@ -1298,7 +1300,9 @@ class BrushService extends ChangeNotifier {
     final restoredJson = Map<String, dynamic>.from(imported.toJson())
       ..['id'] = id
       ..['folderId'] = null
-      ..['customImagePath'] = newImagePaths.length == 1 ? newImagePaths.first : null
+      ..['customImagePath'] = newImagePaths.length == 1
+          ? newImagePaths.first
+          : null
       ..['customImagePaths'] = newImagePaths;
     final brush = Brush.fromJson(restoredJson);
     addBrush(brush);

@@ -11986,6 +11986,24 @@ abstract class AppLocalizations {
   /// In ja, this message translates to:
   /// **'線に吸着'**
   String get canvasLassoSnapToLines;
+
+  /// No description provided for @filterBackToList.
+  ///
+  /// In ja, this message translates to:
+  /// **'フィルター一覧へ戻る'**
+  String get filterBackToList;
+
+  /// No description provided for @customAutomationShowAll.
+  ///
+  /// In ja, this message translates to:
+  /// **'すべて表示'**
+  String get customAutomationShowAll;
+
+  /// No description provided for @customAutomationFavoritesOnly.
+  ///
+  /// In ja, this message translates to:
+  /// **'お気に入りのみ'**
+  String get customAutomationFavoritesOnly;
 }
 
 class _AppLocalizationsDelegate

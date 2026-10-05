@@ -6532,4 +6532,13 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get canvasLassoSnapToLines => '선에 스냅';
+
+  @override
+  String get filterBackToList => '필터 목록으로';
+
+  @override
+  String get customAutomationShowAll => '모두 표시';
+
+  @override
+  String get customAutomationFavoritesOnly => '즐겨찾기만';
 }

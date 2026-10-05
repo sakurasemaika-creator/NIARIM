@@ -11,7 +11,6 @@ class CustomAutomationBuiltinPresets {
     _draftToLineart(),
     _analogLineartExtraction(),
     _lineartColorTrace(),
-    _auroraHologram(),
   ];
 
   static CustomAutomation _draftToLineart() => CustomAutomation(
@@ -152,30 +151,6 @@ class CustomAutomationBuiltinPresets {
         label: '色トレス補正',
         args: {'hue': -10.0, 'saturation': 60.0, 'lightness': -50.0},
         recordedFrame: 0,
-      ),
-    ],
-  );
-
-  static CustomAutomation _auroraHologram() => CustomAutomation(
-    id: 'builtin_aurora_hologram',
-    name: 'オーロラホログラム',
-    recordingStartFrame: 0,
-    createdAt: _epoch,
-    updatedAt: _epoch,
-    steps: [
-      _filterStep(
-        '1',
-        const FilterDef(
-          id: 'Filter0019',
-          name: 'オーロラホログラム',
-          kind: FilterKind.auroraHologram,
-          strength: 60,
-          hologramBrightness: 0,
-          hologramSaturation: 0,
-          hologramPreset: AuroraHologramPreset.silverHologram,
-        ),
-        'オーロラホログラム',
-        prefix: 'builtin_aurora_hologram',
       ),
     ],
   );

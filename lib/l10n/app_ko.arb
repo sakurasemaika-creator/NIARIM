@@ -2791,5 +2791,8 @@
   "communityMutedTagsHint": "숨길 태그 이름을 쉼표로 구분해 입력",
   "communityContainsGenerativeAiImageVideo": "생성형 AI 이미지·동영상 포함",
   "communityContainsGenerativeAiImageVideoHelp": "작품의 이미지 또는 동영상 생성에 생성형 AI를 사용한 경우 켜 주세요. 음성 합성 소프트웨어는 이 항목의 대상이 아닙니다.",
-  "canvasLassoSnapToLines": "선에 스냅"
+  "canvasLassoSnapToLines": "선에 스냅",
+  "filterBackToList": "필터 목록으로",
+  "customAutomationShowAll": "모두 표시",
+  "customAutomationFavoritesOnly": "즐겨찾기만"
 }

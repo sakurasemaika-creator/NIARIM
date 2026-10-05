@@ -6460,6 +6460,15 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get canvasLassoSnapToLines => '吸附到线条';
+
+  @override
+  String get filterBackToList => '返回滤镜列表';
+
+  @override
+  String get customAutomationShowAll => '显示全部';
+
+  @override
+  String get customAutomationFavoritesOnly => '仅显示收藏';
 }
 
 /// The translations for Chinese, using the Han script (`zh_Hant`).
@@ -12918,4 +12927,13 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get canvasLassoSnapToLines => '吸附到線條';
+
+  @override
+  String get filterBackToList => '返回濾鏡列表';
+
+  @override
+  String get customAutomationShowAll => '顯示全部';
+
+  @override
+  String get customAutomationFavoritesOnly => '僅顯示收藏';
 }

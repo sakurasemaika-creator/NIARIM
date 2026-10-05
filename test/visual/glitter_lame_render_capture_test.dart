@@ -16,7 +16,7 @@ const _glitter = Brush(
   stabilization: false,
   stabilizationStrength: 0,
   pixelMode: false,
-  pressureOn: const BrushPressureOnSettings(
+  pressureOn: BrushPressureOnSettings(
     size: PressureRangeSetting(enabled: false, weak: 50, strong: 100),
     opacity: PressureRangeSetting(enabled: true, weak: 65, strong: 100),
     blur: PressureRangeSetting(enabled: false, weak: 0, strong: 0),
@@ -28,7 +28,7 @@ const _glitter = Brush(
       strongRate: 0,
     ),
   ),
-  pressureOff: const BrushPressureOffSettings(
+  pressureOff: BrushPressureOffSettings(
     blur: FixedBrushSetting(enabled: false, value: 0),
     edgeJitter: FixedBrushSetting(enabled: false, value: 0),
     mixing: PressureMixingOffSetting(
@@ -52,7 +52,7 @@ const _lame = Brush(
   stabilization: true,
   stabilizationStrength: 20,
   pixelMode: false,
-  pressureOn: const BrushPressureOnSettings(
+  pressureOn: BrushPressureOnSettings(
     size: PressureRangeSetting(enabled: false, weak: 50, strong: 100),
     opacity: PressureRangeSetting(enabled: true, weak: 75, strong: 100),
     blur: PressureRangeSetting(enabled: true, weak: 1, strong: 1),
@@ -64,7 +64,7 @@ const _lame = Brush(
       strongRate: 0,
     ),
   ),
-  pressureOff: const BrushPressureOffSettings(
+  pressureOff: BrushPressureOffSettings(
     blur: FixedBrushSetting(enabled: true, value: 1),
     edgeJitter: FixedBrushSetting(enabled: true, value: 30),
     mixing: PressureMixingOffSetting(

@@ -1,6 +1,4 @@
-import 'dart:async';
 import 'dart:io';
-import 'dart:typed_data';
 import 'dart:ui' as ui;
 
 import 'package:flutter/material.dart';
@@ -153,7 +151,7 @@ void main() {
     (tester) async {
       final harness = await _ProductionHarness.create(tester, out);
       final cases = <(String, String, bool)>[
-        ('オーロラホログラム', 'aurora_hologram', false),
+        ('線画色トレス', 'lineart_color_trace', true),
         ('線画抽出', 'line_extraction', true),
         ('線画作成', 'line_creation', true),
       ];
@@ -486,7 +484,7 @@ class _ProductionHarness {
           sceneId: sceneId,
           currentFrame: frame,
           currentLayerId: currentLayerId,
-          handleCanvasStateCommand: (_, __) async {},
+          handleCanvasStateCommand: (_, _) async {},
         );
       }
       return;
@@ -499,7 +497,7 @@ class _ProductionHarness {
       sceneId: sceneId,
       currentFrame: currentFrame,
       currentLayerId: currentLayerId,
-      handleCanvasStateCommand: (_, __) async {},
+      handleCanvasStateCommand: (_, _) async {},
     );
   }
 
@@ -507,7 +505,7 @@ class _ProductionHarness {
 
   Widget _localNavigator(Widget page) => Navigator(
     onGenerateRoute: (_) => PageRouteBuilder<void>(
-      pageBuilder: (_, __, ___) => page,
+      pageBuilder: (_, _, _) => page,
       transitionDuration: Duration.zero,
       reverseTransitionDuration: Duration.zero,
     ),

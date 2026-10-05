@@ -47,19 +47,20 @@ void main() {
     return service;
   }
 
-  testWidgets('new automation dialog closes without disposed controller access', (
-    tester,
-  ) async {
-    await pumpManager(tester);
+  testWidgets(
+    'new automation dialog closes without disposed controller access',
+    (tester) async {
+      await pumpManager(tester);
 
-    await tester.tap(find.byIcon(Icons.add_circle_outline));
-    await tester.pumpAndSettle();
-    await tester.enterText(find.byType(TextField), 'dialog lifecycle');
-    await tester.tap(find.byType(FilledButton));
-    await tester.pumpAndSettle();
+      await tester.tap(find.byIcon(Icons.add_circle_outline));
+      await tester.pumpAndSettle();
+      await tester.enterText(find.byType(TextField), 'dialog lifecycle');
+      await tester.tap(find.byType(FilledButton));
+      await tester.pumpAndSettle();
 
-    expect(tester.takeException(), isNull);
-  });
+      expect(tester.takeException(), isNull);
+    },
+  );
 
   testWidgets('rename dialog closes without disposed controller access', (
     tester,

@@ -65,8 +65,9 @@ void main() {
           final image = await boundary.toImage(pixelRatio: 1);
           try {
             final data = await image.toByteData(format: ui.ImageByteFormat.png);
-            File('${out.path}/$name.png')
-                .writeAsBytesSync(data!.buffer.asUint8List());
+            File(
+              '${out.path}/$name.png',
+            ).writeAsBytesSync(data!.buffer.asUint8List());
           } finally {
             image.dispose();
           }
@@ -177,12 +178,11 @@ void main() {
       );
       await tester.pumpAndSettle();
       final restoredRow = find.byKey(ValueKey(itemId));
-      await tester.tap(
-        find.descendant(
-          of: restoredRow,
-          matching: find.byIcon(Icons.delete_outline),
-        ),
-      );
+      await tester.tap(restoredRow);
+      await tester.pumpAndSettle();
+      await tester.ensureVisible(find.byIcon(Icons.delete_outline));
+      await tester.pumpAndSettle();
+      await tester.tap(find.byIcon(Icons.delete_outline));
       await tester.pumpAndSettle();
       await tester.tap(find.text(l10n.commonDelete));
       await tester.pumpAndSettle();

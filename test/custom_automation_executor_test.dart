@@ -11,6 +11,33 @@ import 'package:niarim/models/layer.dart';
 import 'package:niarim/services/project_service.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+// An in-place filter recipe: replaces the selected layer's pixels without
+// creating layers, so it isolates selection/frame handling in the executor.
+final _inPlaceBlur = CustomAutomation(
+  id: 'test_in_place_blur',
+  name: 'blur',
+  recordingStartFrame: 0,
+  createdAt: DateTime.utc(2026),
+  updatedAt: DateTime.utc(2026),
+  steps: [
+    CustomAutomationStep(
+      id: 'test_in_place_blur_1',
+      surface: CustomAutomationSurface.canvas,
+      command: 'canvas.filterApply',
+      label: 'blur',
+      args: {
+        'filter': const FilterDef(
+          id: 'Filter0001',
+          name: 'blur',
+          kind: FilterKind.gaussianBlur,
+          strength: 8,
+        ).toJson(),
+      },
+      recordedFrame: 0,
+    ),
+  ],
+);
+
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
   late ProjectService service;
@@ -419,7 +446,7 @@ void main() {
               original,
             );
         sourceId = chosen.id;
-        final result = await execute(CustomAutomationBuiltinPresets.all().last);
+        final result = await execute(_inPlaceBlur);
         expect(result, chosen.id);
         expect(await pixels(normalId), beforeNormal);
         expect(await pixels(chosen.id), isNot(beforeNormal));
@@ -481,7 +508,7 @@ void main() {
             args: {'frame': 1},
             recordedFrame: 1,
           ),
-          ...CustomAutomationBuiltinPresets.all().last.steps,
+          ..._inPlaceBlur.steps,
         ],
       );
       var selectedFrame = 0;

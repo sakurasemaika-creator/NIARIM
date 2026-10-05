@@ -345,42 +345,77 @@ class _FilterPanelState extends State<FilterPanel> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              PanelCenterCloseBar(onClose: widget.onClose),
               if (current == null)
+                PanelCenterCloseBar(onClose: widget.onClose)
+              else
+                // While editing, the filter list stays hidden to keep the
+                // canvas visible; this returns to it without closing.
                 Row(
-                children: [
-                  Expanded(
-                    child: Text(
-                      bulk != null
-                          ? l10n.filterPanelTitleBulk(bulk.length)
-                          : l10n.filterPanelTitle,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: const TextStyle(
-                        fontWeight: FontWeight.bold,
-                        fontSize: 13,
-                        fontFamily: 'Kuramubon',
-                        fontFamilyFallback: kHeadingFontFallback,
+                  children: [
+                    IconButton(
+                      key: const ValueKey('filter-back-to-list'),
+                      icon: const Icon(Icons.arrow_back, size: 18),
+                      tooltip: l10n.filterBackToList,
+                      visualDensity: VisualDensity.compact,
+                      padding: EdgeInsets.zero,
+                      constraints: const BoxConstraints(
+                        minWidth: 44,
+                        minHeight: 44,
+                      ),
+                      onPressed: service.clearCurrentFilter,
+                    ),
+                    Expanded(
+                      child: Text(
+                        _filterDisplayName(l10n, current),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: const TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 13,
+                          fontFamily: 'Kuramubon',
+                          fontFamilyFallback: kHeadingFontFallback,
+                        ),
                       ),
                     ),
-                  ),
-                  IconButton(
-                    visualDensity: VisualDensity.compact,
-                    icon: Icon(
-                      _showFavoritesOnly ? Icons.star : Icons.star_outline,
-                      size: 18,
+                    PanelCenterCloseBar(onClose: widget.onClose),
+                  ],
+                ),
+              if (current == null)
+                Row(
+                  children: [
+                    Expanded(
+                      child: Text(
+                        bulk != null
+                            ? l10n.filterPanelTitleBulk(bulk.length)
+                            : l10n.filterPanelTitle,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: const TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 13,
+                          fontFamily: 'Kuramubon',
+                          fontFamilyFallback: kHeadingFontFallback,
+                        ),
+                      ),
                     ),
-                    onPressed: () => setState(
-                      () => _showFavoritesOnly = !_showFavoritesOnly,
+                    IconButton(
+                      visualDensity: VisualDensity.compact,
+                      icon: Icon(
+                        _showFavoritesOnly ? Icons.star : Icons.star_outline,
+                        size: 18,
+                      ),
+                      onPressed: () => setState(
+                        () => _showFavoritesOnly = !_showFavoritesOnly,
+                      ),
                     ),
-                  ),
-                  IconButton(
-                    visualDensity: VisualDensity.compact,
-                    icon: const Icon(Icons.search, size: 18),
-                    onPressed: () => setState(() => _showSearch = !_showSearch),
-                  ),
-                ],
-              ),
+                    IconButton(
+                      visualDensity: VisualDensity.compact,
+                      icon: const Icon(Icons.search, size: 18),
+                      onPressed: () =>
+                          setState(() => _showSearch = !_showSearch),
+                    ),
+                  ],
+                ),
               if (current == null && _showSearch)
                 TextField(
                   decoration: InputDecoration(
@@ -394,69 +429,71 @@ class _FilterPanelState extends State<FilterPanel> {
               if (current == null) const Divider(),
               if (current == null)
                 SizedBox(
-                height: 88,
-                child: ListView.builder(
-                  scrollDirection: Axis.horizontal,
-                  itemCount: filters.length,
-                  itemBuilder: (context, index) {
-                    final filter = filters[index];
-                    final premium = _premiumFeatureFor(filter.kind);
-                    final locked =
-                        premium != null &&
-                        !context.watch<PremiumService>().isFeatureAvailable(
-                          premium,
-                        );
-                    final selected = filter.id == current?.id;
-                    final child = GestureDetector(
-                      key: ValueKey('filter-card-${filter.id}'),
-                      onTap: locked
-                          ? null
-                          : () => service.selectFilter(filter.id),
-                      child: Container(
-                        width: 78,
-                        margin: const EdgeInsets.only(right: 6),
-                        padding: const EdgeInsets.all(6),
-                        decoration: BoxDecoration(
-                          border: Border.all(
-                            color: selected
-                                ? Theme.of(context).colorScheme.primary
-                                : ThemeService.activeColorScheme.outlineVariant,
-                            width: selected ? 2 : 1,
+                  height: 88,
+                  child: ListView.builder(
+                    scrollDirection: Axis.horizontal,
+                    itemCount: filters.length,
+                    itemBuilder: (context, index) {
+                      final filter = filters[index];
+                      final premium = _premiumFeatureFor(filter.kind);
+                      final locked =
+                          premium != null &&
+                          !context.watch<PremiumService>().isFeatureAvailable(
+                            premium,
+                          );
+                      final selected = filter.id == current?.id;
+                      final child = GestureDetector(
+                        key: ValueKey('filter-card-${filter.id}'),
+                        onTap: locked
+                            ? null
+                            : () => service.selectFilter(filter.id),
+                        child: Container(
+                          width: 78,
+                          margin: const EdgeInsets.only(right: 6),
+                          padding: const EdgeInsets.all(6),
+                          decoration: BoxDecoration(
+                            border: Border.all(
+                              color: selected
+                                  ? Theme.of(context).colorScheme.primary
+                                  : ThemeService
+                                        .activeColorScheme
+                                        .outlineVariant,
+                              width: selected ? 2 : 1,
+                            ),
+                            borderRadius: BorderRadius.circular(8),
                           ),
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Icon(_iconForFilter(filter), size: 22),
-                            const SizedBox(height: 4),
-                            Text(
-                              _filterDisplayName(l10n, filter),
-                              maxLines: 2,
-                              textAlign: TextAlign.center,
-                              overflow: TextOverflow.ellipsis,
-                              style: const TextStyle(fontSize: 9),
-                            ),
-                            const SizedBox(height: 2),
-                            InkWell(
-                              onTap: () => service.toggleFavorite(filter.id),
-                              child: Icon(
-                                filter.isFavorite
-                                    ? Icons.star
-                                    : Icons.star_outline,
-                                size: 13,
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Icon(_iconForFilter(filter), size: 22),
+                              const SizedBox(height: 4),
+                              Text(
+                                _filterDisplayName(l10n, filter),
+                                maxLines: 2,
+                                textAlign: TextAlign.center,
+                                overflow: TextOverflow.ellipsis,
+                                style: const TextStyle(fontSize: 9),
                               ),
-                            ),
-                          ],
+                              const SizedBox(height: 2),
+                              InkWell(
+                                onTap: () => service.toggleFavorite(filter.id),
+                                child: Icon(
+                                  filter.isFavorite
+                                      ? Icons.star
+                                      : Icons.star_outline,
+                                  size: 13,
+                                ),
+                              ),
+                            ],
+                          ),
                         ),
-                      ),
-                    );
-                    return locked
-                        ? PremiumLockWidget(feature: premium, child: child)
-                        : child;
-                  },
+                      );
+                      return locked
+                          ? PremiumLockWidget(feature: premium, child: child)
+                          : child;
+                    },
+                  ),
                 ),
-              ),
               if (current == null) const Divider(),
               if (current == null)
                 Expanded(child: Center(child: Text(l10n.filterEmpty)))
@@ -563,7 +600,9 @@ class _FilterPanelState extends State<FilterPanel> {
                                 height: 14,
                                 child: CircularProgressIndicator(
                                   strokeWidth: 2,
-                                  color: Theme.of(context).colorScheme.onPrimary,
+                                  color: Theme.of(
+                                    context,
+                                  ).colorScheme.onPrimary,
                                 ),
                               )
                             : const Icon(Icons.check, size: 16),
@@ -580,27 +619,29 @@ class _FilterPanelState extends State<FilterPanel> {
                         onPressed: () => setState(
                           () => _autoLineartControlMode =
                               _autoLineartControlMode ==
-                                      AutoLineartControlMode.add
-                                  ? AutoLineartControlMode.move
-                                  : AutoLineartControlMode.add,
+                                  AutoLineartControlMode.add
+                              ? AutoLineartControlMode.move
+                              : AutoLineartControlMode.add,
                         ),
                         icon: const Icon(Icons.add_circle_outline, size: 20),
                         tooltip: '制御点追加',
                         isSelected:
-                            _autoLineartControlMode == AutoLineartControlMode.add,
+                            _autoLineartControlMode ==
+                            AutoLineartControlMode.add,
                       ),
                       IconButton(
                         key: const ValueKey('auto-lineart-delete-point-button'),
                         onPressed: () => setState(
                           () => _autoLineartControlMode =
                               _autoLineartControlMode ==
-                                      AutoLineartControlMode.delete
-                                  ? AutoLineartControlMode.move
-                                  : AutoLineartControlMode.delete,
+                                  AutoLineartControlMode.delete
+                              ? AutoLineartControlMode.move
+                              : AutoLineartControlMode.delete,
                         ),
                         icon: const Icon(Icons.remove_circle_outline, size: 20),
                         tooltip: '制御点削除',
-                        isSelected: _autoLineartControlMode ==
+                        isSelected:
+                            _autoLineartControlMode ==
                             AutoLineartControlMode.delete,
                       ),
                     ],
@@ -979,7 +1020,8 @@ class _FilterPanelState extends State<FilterPanel> {
                         _toneCurveLabel(l10n, preset),
                         style: const TextStyle(fontSize: 9),
                       ),
-                      selected: current.toneCurvePoints.isEmpty &&
+                      selected:
+                          current.toneCurvePoints.isEmpty &&
                           current.toneCurvePreset == preset,
                       onSelected: (selected) {
                         if (!selected) return;
@@ -1010,7 +1052,7 @@ class _FilterPanelState extends State<FilterPanel> {
             ),
             const SizedBox(height: 8),
             _ToneCurveEditor(
-              key: ValueKey('tone-curve-editor-${_toneCurveChannel}'),
+              key: ValueKey('tone-curve-editor-$_toneCurveChannel'),
               points: (() {
                 final stored = switch (_toneCurveChannel) {
                   1 => current.toneCurveRedPoints,
@@ -1020,9 +1062,9 @@ class _FilterPanelState extends State<FilterPanel> {
                 };
                 if (stored.isEmpty) {
                   return _toneCurveChannel == 0
-                      ? toneCurvePoints(current.toneCurvePreset)
-                          .map((p) => Offset(p.dx, p.dy))
-                          .toList()
+                      ? toneCurvePoints(
+                          current.toneCurvePreset,
+                        ).map((p) => Offset(p.dx, p.dy)).toList()
                       : const [Offset(0, 0), Offset(1, 1)];
                 }
                 return [
@@ -1073,9 +1115,15 @@ class _FilterPanelState extends State<FilterPanel> {
             } else if (index == 2) {
               service.updateFilterParams(current.id, inputGamma: value);
             } else if (index == 3) {
-              service.updateFilterParams(current.id, outputBlack: value.round());
+              service.updateFilterParams(
+                current.id,
+                outputBlack: value.round(),
+              );
             } else {
-              service.updateFilterParams(current.id, outputWhite: value.round());
+              service.updateFilterParams(
+                current.id,
+                outputWhite: value.round(),
+              );
             }
           } else {
             final next = [...values]..[index] = value;
@@ -1103,16 +1151,41 @@ class _FilterPanelState extends State<FilterPanel> {
                   setState(() => _levelsChannel = v.first),
             ),
             const SizedBox(height: 8),
-            _paramSlider(l10n.filterLevelsInputBlack, values[0], 0, 255,
-                (v) => updateLevel(0, v)),
-            _paramSlider(l10n.filterLevelsInputWhite, values[1], 0, 255,
-                (v) => updateLevel(1, v)),
-            _paramSlider(l10n.filterLevelsGamma, values[2], 0.1, 10.0,
-                (v) => updateLevel(2, v)),
-            _paramSlider(l10n.filterLevelsOutputBlack, values[3], 0, 255,
-                (v) => updateLevel(3, v)),
-            _paramSlider(l10n.filterLevelsOutputWhite, values[4], 0, 255,
-                (v) => updateLevel(4, v)),
+            _paramSlider(
+              l10n.filterLevelsInputBlack,
+              values[0],
+              0,
+              255,
+              (v) => updateLevel(0, v),
+            ),
+            _paramSlider(
+              l10n.filterLevelsInputWhite,
+              values[1],
+              0,
+              255,
+              (v) => updateLevel(1, v),
+            ),
+            _paramSlider(
+              l10n.filterLevelsGamma,
+              values[2],
+              0.1,
+              10.0,
+              (v) => updateLevel(2, v),
+            ),
+            _paramSlider(
+              l10n.filterLevelsOutputBlack,
+              values[3],
+              0,
+              255,
+              (v) => updateLevel(3, v),
+            ),
+            _paramSlider(
+              l10n.filterLevelsOutputWhite,
+              values[4],
+              0,
+              255,
+              (v) => updateLevel(4, v),
+            ),
           ],
         );
       case FilterKind.sharpen:
@@ -1229,19 +1302,71 @@ class _FilterPanelState extends State<FilterPanel> {
           (v) => service.updateFilterParams(current.id, thresholdValue: v),
         );
       case FilterKind.fisheye:
-        return Column(children: [
-          _paramSlider(l10n.filterFisheyeStrength, current.strength, 0, 100, (v) => service.updateFilterParams(current.id, strength: v)),
-          _paramSlider('半径', current.fisheyeRadius, 1, 100, (v) => service.updateFilterParams(current.id, fisheyeRadius: v)),
-          _paramSlider('中心 X', current.fisheyeCenterX, -100, 100, (v) => service.updateFilterParams(current.id, fisheyeCenterX: v)),
-          _paramSlider('中心 Y', current.fisheyeCenterY, -100, 100, (v) => service.updateFilterParams(current.id, fisheyeCenterY: v)),
-        ]);
+        return Column(
+          children: [
+            _paramSlider(
+              l10n.filterFisheyeStrength,
+              current.strength,
+              0,
+              100,
+              (v) => service.updateFilterParams(current.id, strength: v),
+            ),
+            _paramSlider(
+              '半径',
+              current.fisheyeRadius,
+              1,
+              100,
+              (v) => service.updateFilterParams(current.id, fisheyeRadius: v),
+            ),
+            _paramSlider(
+              '中心 X',
+              current.fisheyeCenterX,
+              -100,
+              100,
+              (v) => service.updateFilterParams(current.id, fisheyeCenterX: v),
+            ),
+            _paramSlider(
+              '中心 Y',
+              current.fisheyeCenterY,
+              -100,
+              100,
+              (v) => service.updateFilterParams(current.id, fisheyeCenterY: v),
+            ),
+          ],
+        );
       case FilterKind.chromaticAberration:
-        return Column(children: [
-          _paramSlider(l10n.filterChromaticAberrationStrength, current.strength, 0, 30, (v) => service.updateFilterParams(current.id, strength: v)),
-          _paramSlider('X 軸', current.chromaticShiftX, -30, 30, (v) => service.updateFilterParams(current.id, chromaticShiftX: v)),
-          _paramSlider('Y 軸', current.chromaticShiftY, -30, 30, (v) => service.updateFilterParams(current.id, chromaticShiftY: v)),
-          _paramSlider('Z 軸', current.chromaticShiftZ, -180, 180, (v) => service.updateFilterParams(current.id, chromaticShiftZ: v)),
-        ]);
+        return Column(
+          children: [
+            _paramSlider(
+              l10n.filterChromaticAberrationStrength,
+              current.strength,
+              0,
+              30,
+              (v) => service.updateFilterParams(current.id, strength: v),
+            ),
+            _paramSlider(
+              'X 軸',
+              current.chromaticShiftX,
+              -30,
+              30,
+              (v) => service.updateFilterParams(current.id, chromaticShiftX: v),
+            ),
+            _paramSlider(
+              'Y 軸',
+              current.chromaticShiftY,
+              -30,
+              30,
+              (v) => service.updateFilterParams(current.id, chromaticShiftY: v),
+            ),
+            _paramSlider(
+              'Z 軸',
+              current.chromaticShiftZ,
+              -180,
+              180,
+              (v) => service.updateFilterParams(current.id, chromaticShiftZ: v),
+            ),
+          ],
+        );
       case FilterKind.lensDistortion:
         return Column(
           children: [
@@ -1606,7 +1731,8 @@ class _FilterPanelState extends State<FilterPanel> {
     AppLocalizations l10n,
     AuroraHologramPreset preset,
   ) => switch (preset) {
-    AuroraHologramPreset.silverHologram => l10n.filterAuroraHologramPresetSilverHologram,
+    AuroraHologramPreset.silverHologram =>
+      l10n.filterAuroraHologramPresetSilverHologram,
     AuroraHologramPreset.sampledGold => 'サンプルゴールド',
     AuroraHologramPreset.silverFoil =>
       l10n.filterAuroraHologramPresetSilverFoil,
@@ -1706,16 +1832,52 @@ class _FilterPanelState extends State<FilterPanel> {
           width,
           height,
           filter.toneCurvePoints.length >= 4
-              ? [for (var i = 0; i + 1 < filter.toneCurvePoints.length; i += 2) Offset(filter.toneCurvePoints[i], filter.toneCurvePoints[i + 1])]
+              ? [
+                  for (var i = 0; i + 1 < filter.toneCurvePoints.length; i += 2)
+                    Offset(
+                      filter.toneCurvePoints[i],
+                      filter.toneCurvePoints[i + 1],
+                    ),
+                ]
               : toneCurvePoints(filter.toneCurvePreset),
           redPoints: filter.toneCurveRedPoints.length >= 4
-              ? [for (var i = 0; i + 1 < filter.toneCurveRedPoints.length; i += 2) Offset(filter.toneCurveRedPoints[i], filter.toneCurveRedPoints[i + 1])]
+              ? [
+                  for (
+                    var i = 0;
+                    i + 1 < filter.toneCurveRedPoints.length;
+                    i += 2
+                  )
+                    Offset(
+                      filter.toneCurveRedPoints[i],
+                      filter.toneCurveRedPoints[i + 1],
+                    ),
+                ]
               : null,
           greenPoints: filter.toneCurveGreenPoints.length >= 4
-              ? [for (var i = 0; i + 1 < filter.toneCurveGreenPoints.length; i += 2) Offset(filter.toneCurveGreenPoints[i], filter.toneCurveGreenPoints[i + 1])]
+              ? [
+                  for (
+                    var i = 0;
+                    i + 1 < filter.toneCurveGreenPoints.length;
+                    i += 2
+                  )
+                    Offset(
+                      filter.toneCurveGreenPoints[i],
+                      filter.toneCurveGreenPoints[i + 1],
+                    ),
+                ]
               : null,
           bluePoints: filter.toneCurveBluePoints.length >= 4
-              ? [for (var i = 0; i + 1 < filter.toneCurveBluePoints.length; i += 2) Offset(filter.toneCurveBluePoints[i], filter.toneCurveBluePoints[i + 1])]
+              ? [
+                  for (
+                    var i = 0;
+                    i + 1 < filter.toneCurveBluePoints.length;
+                    i += 2
+                  )
+                    Offset(
+                      filter.toneCurveBluePoints[i],
+                      filter.toneCurveBluePoints[i + 1],
+                    ),
+                ]
               : null,
         );
       case FilterKind.levels:
@@ -1729,7 +1891,9 @@ class _FilterPanelState extends State<FilterPanel> {
           outputBlack: filter.outputBlack,
           outputWhite: filter.outputWhite,
           redLevels: filter.levelsRed.length >= 5 ? filter.levelsRed : null,
-          greenLevels: filter.levelsGreen.length >= 5 ? filter.levelsGreen : null,
+          greenLevels: filter.levelsGreen.length >= 5
+              ? filter.levelsGreen
+              : null,
           blueLevels: filter.levelsBlue.length >= 5 ? filter.levelsBlue : null,
         );
       case FilterKind.sharpen:
@@ -1781,12 +1945,29 @@ class _FilterPanelState extends State<FilterPanel> {
           filter.thresholdValue,
         );
       case FilterKind.fisheye:
-        return _engine.applyFisheye(data, width, height, filter.strength, radiusPercent: filter.fisheyeRadius, centerOffsetX: filter.fisheyeCenterX * _previewScale, centerOffsetY: filter.fisheyeCenterY * _previewScale);
+        return _engine.applyFisheye(
+          data,
+          width,
+          height,
+          filter.strength,
+          radiusPercent: filter.fisheyeRadius,
+          centerOffsetX: filter.fisheyeCenterX * _previewScale,
+          centerOffsetY: filter.fisheyeCenterY * _previewScale,
+        );
       case FilterKind.chromaticAberration:
         return _engine.applyChromaticAberration(
-          data, width, height,
-          math.max(filter.strength, math.sqrt(filter.chromaticShiftX * filter.chromaticShiftX + filter.chromaticShiftY * filter.chromaticShiftY)),
-          math.atan2(filter.chromaticShiftY, filter.chromaticShiftX) + filter.chromaticShiftZ * math.pi / 180.0,
+          data,
+          width,
+          height,
+          math.max(
+            filter.strength,
+            math.sqrt(
+              filter.chromaticShiftX * filter.chromaticShiftX +
+                  filter.chromaticShiftY * filter.chromaticShiftY,
+            ),
+          ),
+          math.atan2(filter.chromaticShiftY, filter.chromaticShiftX) +
+              filter.chromaticShiftZ * math.pi / 180.0,
         );
       case FilterKind.lensDistortion:
         return _engine.applyLensDistortion(
@@ -2164,7 +2345,6 @@ class _FilterPanelState extends State<FilterPanel> {
   }
 }
 
-
 class _ToneCurveEditor extends StatefulWidget {
   final List<Offset> points;
   final Uint8List? sourceRgba;
@@ -2172,6 +2352,7 @@ class _ToneCurveEditor extends StatefulWidget {
   final ValueChanged<List<Offset>> onChanged;
 
   const _ToneCurveEditor({
+    super.key,
     required this.points,
     required this.sourceRgba,
     required this.histogramChannel,
@@ -2186,10 +2367,11 @@ class _ToneCurveEditorState extends State<_ToneCurveEditor> {
   int? _dragIndex;
 
   List<Offset> get _points {
-    final p = widget.points
-        .map((e) => Offset(e.dx.clamp(0.0, 1.0), e.dy.clamp(0.0, 1.0)))
-        .toList()
-      ..sort((a, b) => a.dx.compareTo(b.dx));
+    final p =
+        widget.points
+            .map((e) => Offset(e.dx.clamp(0.0, 1.0), e.dy.clamp(0.0, 1.0)))
+            .toList()
+          ..sort((a, b) => a.dx.compareTo(b.dx));
     return p.length >= 2 ? p : const [Offset(0, 0), Offset(1, 1)];
   }
 
@@ -2207,9 +2389,9 @@ class _ToneCurveEditorState extends State<_ToneCurveEditor> {
   }
 
   Offset _normalize(Offset local, Size size) => Offset(
-        (local.dx / size.width).clamp(0.0, 1.0),
-        (1 - local.dy / size.height).clamp(0.0, 1.0),
-      );
+    (local.dx / size.width).clamp(0.0, 1.0),
+    (1 - local.dy / size.height).clamp(0.0, 1.0),
+  );
 
   void _emit(List<Offset> points) {
     points.sort((a, b) => a.dx.compareTo(b.dx));
@@ -2336,7 +2518,8 @@ class _ToneCurvePainter extends CustomPainter {
 
     Offset toCanvas(Offset p) =>
         Offset(p.dx * size.width, (1 - p.dy) * size.height);
-    final curve = Path()..moveTo(toCanvas(points.first).dx, toCanvas(points.first).dy);
+    final curve = Path()
+      ..moveTo(toCanvas(points.first).dx, toCanvas(points.first).dy);
     for (var i = 1; i < points.length; i++) {
       final p = toCanvas(points[i]);
       curve.lineTo(p.dx, p.dy);

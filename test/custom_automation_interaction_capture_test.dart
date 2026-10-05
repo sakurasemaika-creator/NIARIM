@@ -56,8 +56,9 @@ void main() {
         try {
           final data = await image.toByteData(format: ui.ImageByteFormat.png);
           if (data == null) throw StateError('PNG encoding returned null');
-          await File('${out.path}/$name.png')
-              .writeAsBytes(data.buffer.asUint8List(), flush: true);
+          await File(
+            '${out.path}/$name.png',
+          ).writeAsBytes(data.buffer.asUint8List(), flush: true);
         } finally {
           image.dispose();
         }
@@ -136,7 +137,9 @@ void main() {
     );
     await tester.pumpAndSettle();
     await capture('08_saved_item');
-    await tester.tap(find.byIcon(Icons.edit));
+    await tester.tap(find.byKey(ValueKey(savedId)));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byIcon(Icons.edit_outlined));
     await tester.pumpAndSettle();
     await capture('09_rename_dialog');
     await tester.enterText(find.byType(TextField).last, '操作キャプチャ・改名済み');
@@ -176,6 +179,10 @@ void main() {
     expect(service.visibleItems, hasLength(1));
     await capture('14_all_items_after_unfavorite');
 
+    await tester.tap(find.byKey(ValueKey(savedId)));
+    await tester.pumpAndSettle();
+    await tester.ensureVisible(find.byIcon(Icons.delete_outline));
+    await tester.pumpAndSettle();
     await tester.tap(find.byIcon(Icons.delete_outline));
     await tester.pumpAndSettle();
     await capture('15_delete_confirmation');

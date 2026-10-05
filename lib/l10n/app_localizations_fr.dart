@@ -6851,4 +6851,13 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get canvasLassoSnapToLines => 'Magnétiser aux lignes';
+
+  @override
+  String get filterBackToList => 'Retour aux filtres';
+
+  @override
+  String get customAutomationShowAll => 'Tout afficher';
+
+  @override
+  String get customAutomationFavoritesOnly => 'Favoris uniquement';
 }

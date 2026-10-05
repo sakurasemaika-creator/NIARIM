@@ -6501,4 +6501,13 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get canvasLassoSnapToLines => '線に吸着';
+
+  @override
+  String get filterBackToList => 'フィルター一覧へ戻る';
+
+  @override
+  String get customAutomationShowAll => 'すべて表示';
+
+  @override
+  String get customAutomationFavoritesOnly => 'お気に入りのみ';
 }

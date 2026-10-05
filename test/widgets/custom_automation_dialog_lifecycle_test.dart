@@ -38,7 +38,7 @@ Widget _app(CustomAutomationService service) {
                 builder: (_) => CustomAutomationManagerSheet(
                   surface: CustomAutomationSurface.canvas,
                   frameCount: 8,
-                  onExecute: (_, __, ___) async {},
+                  onExecute: (_, _, _) async {},
                   onRecordingStarted: () {},
                 ),
               ),
@@ -64,24 +64,25 @@ void _expectNoLifecycleException(WidgetTester tester) {
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
-  testWidgets('new automation dialog can close without disposed controller use', (
-    tester,
-  ) async {
-    final service = await _service();
-    await tester.pumpWidget(_app(service));
-    await _openManager(tester);
+  testWidgets(
+    'new automation dialog can close without disposed controller use',
+    (tester) async {
+      final service = await _service();
+      await tester.pumpWidget(_app(service));
+      await _openManager(tester);
 
-    await tester.tap(find.byIcon(Icons.add_circle_outline));
-    await tester.pumpAndSettle();
-    expect(find.byType(AlertDialog), findsOneWidget);
+      await tester.tap(find.byIcon(Icons.add_circle_outline));
+      await tester.pumpAndSettle();
+      expect(find.byType(AlertDialog), findsOneWidget);
 
-    final cancel = find.widgetWithText(TextButton, 'キャンセル');
-    expect(cancel, findsOneWidget);
-    await tester.tap(cancel);
-    await tester.pumpAndSettle();
+      final cancel = find.widgetWithText(TextButton, 'キャンセル');
+      expect(cancel, findsOneWidget);
+      await tester.tap(cancel);
+      await tester.pumpAndSettle();
 
-    _expectNoLifecycleException(tester);
-  });
+      _expectNoLifecycleException(tester);
+    },
+  );
 
   testWidgets('rename dialog can close without disposed controller use', (
     tester,

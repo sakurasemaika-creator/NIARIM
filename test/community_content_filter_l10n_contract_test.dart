@@ -15,22 +15,28 @@ void main() {
       'app_zh_Hant.arb',
     ];
     for (final name in files) {
-      final json = jsonDecode(
-        File('lib/l10n/' + name).readAsStringSync(),
-      ) as Map<String, dynamic>;
-      expect(json['communityContainsGenerativeAiImageVideo'], isNotEmpty,
-          reason: name);
-      expect(json['communityHideGenerativeAiImageVideo'], isNotEmpty,
-          reason: name);
+      final json =
+          jsonDecode(File('lib/l10n/$name').readAsStringSync())
+              as Map<String, dynamic>;
+      expect(
+        json['communityContainsGenerativeAiImageVideo'],
+        isNotEmpty,
+        reason: name,
+      );
+      expect(
+        json['communityHideGenerativeAiImageVideo'],
+        isNotEmpty,
+        reason: name,
+      );
       expect(json['communityMutedWords'], isNotEmpty, reason: name);
       expect(json['communityMutedWordsHint'], isNotEmpty, reason: name);
       expect(json['communityMutedTags'], isNotEmpty, reason: name);
       expect(json['communityMutedTagsHint'], isNotEmpty, reason: name);
     }
 
-    final ja = jsonDecode(
-      File('lib/l10n/app_ja.arb').readAsStringSync(),
-    ) as Map<String, dynamic>;
+    final ja =
+        jsonDecode(File('lib/l10n/app_ja.arb').readAsStringSync())
+            as Map<String, dynamic>;
     expect(ja['communityContainsGenerativeAiImageVideo'], 'AI画像・AI動画使用');
     expect(ja['communityMutedWords'], 'ミュートタイトル登録');
     expect(ja['communityMutedTags'], 'ミュートタグ登録');

@@ -23,10 +23,10 @@ void main() {
     });
     TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
         .setMockMethodCallHandler(
-      pathProviderChannel,
-      (_) async =>
-          '${Directory.systemTemp.path}/niarim_digital_lineart_step_evidence',
-    );
+          pathProviderChannel,
+          (_) async =>
+              '${Directory.systemTemp.path}/niarim_digital_lineart_step_evidence',
+        );
   });
 
   tearDown(() {
@@ -69,8 +69,12 @@ void main() {
           .firstWhere((layer) => layer.type == model.LayerType.normal)
           .id;
       final tm = projects.tileManagerOf(projectId);
-      final sourceKey =
-          projects.tileKeyFor(projectId, sceneId, frameIndex, sourceLayerId);
+      final sourceKey = projects.tileKeyFor(
+        projectId,
+        sceneId,
+        frameIndex,
+        sourceLayerId,
+      );
       final tile = tm.getOrCreateTile(sourceKey, 0, 0);
       tile.fillRange(0, tile.length, 0);
 
@@ -132,8 +136,13 @@ void main() {
           filter: autoLineart,
         ),
       ))!;
-      final autoPixels =
-          _layerPixels(projects, projectId, sceneId, frameIndex, autoLayerId);
+      final autoPixels = _layerPixels(
+        projects,
+        projectId,
+        sceneId,
+        frameIndex,
+        autoLayerId,
+      );
       final autoVisible = _visiblePixels(autoPixels);
       // ignore: avoid_print
       print('DIGITAL_LINEART_STEP auto_lineart_visible_pixels=$autoVisible');
@@ -154,8 +163,13 @@ void main() {
           filter: inkPool,
         ),
       ))!;
-      final inkPixels =
-          _layerPixels(projects, projectId, sceneId, frameIndex, inkLayerId);
+      final inkPixels = _layerPixels(
+        projects,
+        projectId,
+        sceneId,
+        frameIndex,
+        inkLayerId,
+      );
       final inkVisible = _visiblePixels(inkPixels);
       // ignore: avoid_print
       print('DIGITAL_LINEART_STEP ink_pool_visible_pixels=$inkVisible');

@@ -1,5 +1,4 @@
 import 'dart:io';
-import 'dart:typed_data';
 
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -22,7 +21,9 @@ Map<String, Uint8List> drawBrush(Brush brush) {
   StrokePoint point(double x) =>
       StrokePoint(x: x, y: 80, pressure: 1, tiltX: 0, tiltY: 0);
   engine.beginStroke(point(25), 'ink');
-  for (var x = 30.0; x <= 130; x += 5) engine.continueStroke(point(x), 'ink');
+  for (var x = 30.0; x <= 130; x += 5) {
+    engine.continueStroke(point(x), 'ink');
+  }
   engine.endStroke();
   final result = tiles.exportAll()['ink']!.map(
     (key, value) => MapEntry(key, Uint8List.fromList(value)),

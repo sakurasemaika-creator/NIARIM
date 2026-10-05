@@ -327,7 +327,6 @@ void main() {
           debugPrint('CAPTURE_CASE:$id');
           await h.project(id, fixture: 'empty');
           await h.ps.setEnabledAutofillPresetIds(h.projectId, [preset.id]);
-          final inputIds = h.layers.map((l) => l.id).toSet();
 
           // One line-art layer per preset part. Each layer owns a separate
           // closed region so a single repaint pass demonstrates the complete

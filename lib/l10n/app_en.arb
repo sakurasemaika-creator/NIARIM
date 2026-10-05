@@ -2798,5 +2798,8 @@
   "communityMutedTagsHint": "Comma-separated tag names to hide",
   "communityContainsGenerativeAiImageVideo": "Contains generative-AI images or video",
   "communityContainsGenerativeAiImageVideoHelp": "Turn this on when generative AI was used to create images or video in the work. Voice-synthesis software is not covered by this setting.",
-  "canvasLassoSnapToLines": "Snap to lines"
+  "canvasLassoSnapToLines": "Snap to lines",
+  "filterBackToList": "Back to filters",
+  "customAutomationShowAll": "Show all",
+  "customAutomationFavoritesOnly": "Favorites only"
 }

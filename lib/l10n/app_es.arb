@@ -2791,5 +2791,8 @@
   "communityMutedTagsHint": "Etiquetas separadas por comas que se ocultarán",
   "communityContainsGenerativeAiImageVideo": "Contiene imágenes o vídeo de IA generativa",
   "communityContainsGenerativeAiImageVideoHelp": "Actívalo si se utilizó IA generativa para crear imágenes o vídeo de la obra. El software de síntesis de voz no está incluido.",
-  "canvasLassoSnapToLines": "Ajustar a las líneas"
+  "canvasLassoSnapToLines": "Ajustar a las líneas",
+  "filterBackToList": "Volver a los filtros",
+  "customAutomationShowAll": "Mostrar todo",
+  "customAutomationFavoritesOnly": "Solo favoritos"
 }

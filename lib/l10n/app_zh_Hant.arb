@@ -2791,5 +2791,8 @@
   "communityMutedTagsHint": "輸入以逗號分隔的標籤名稱",
   "communityContainsGenerativeAiImageVideo": "包含生成式 AI 圖像或影片",
   "communityContainsGenerativeAiImageVideoHelp": "作品中的圖像或影片使用生成式 AI 製作時請開啟。語音合成軟體不屬於此項範圍。",
-  "canvasLassoSnapToLines": "吸附到線條"
+  "canvasLassoSnapToLines": "吸附到線條",
+  "filterBackToList": "返回濾鏡列表",
+  "customAutomationShowAll": "顯示全部",
+  "customAutomationFavoritesOnly": "僅顯示收藏"
 }
