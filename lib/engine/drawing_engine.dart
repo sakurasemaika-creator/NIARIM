@@ -7,7 +7,6 @@ import '../models/brush_pressure_resolver.dart';
 import 'brush_texture_cache.dart';
 import 'brush_texture_selector.dart';
 import 'brush_render_plan.dart';
-import 'brush_stroke_geometry.dart';
 import 'hair_fold_raster.dart';
 import 'tile_manager.dart';
 
@@ -36,9 +35,7 @@ class DrawingEngine {
   bool _hasStampedCurrentStroke = false;
   String? _activeLayerId;
   math.Random _scatterRng = math.Random(0);
-  ScreenSpaceFoldDetector? _foldDetector;
   HairFoldRaster? _foldRaster;
-  final List<FoldEvent> _foldEvents = [];
   final BrushTextureSelector _brushTextureSelector = BrushTextureSelector();
   double? _finalizedStrokeLengthOverride;
   bool _replayingFinalStroke = false;
@@ -67,7 +64,6 @@ class DrawingEngine {
     _currentStroke.clear();
     _strokeScreenPositions.clear();
     _strokeCoverageByTile.clear();
-    _foldEvents.clear();
     _foldRaster = null;
     _smoothed = point;
     final effective = _applyPointConstraint(point);
@@ -89,13 +85,6 @@ class DrawingEngine {
         brush != null && brush.outlineEnabled && brush.foldEnabled && !isEraser
         ? HairFoldRaster(tileManager, layerId)
         : null;
-    _foldDetector = _foldRaster != null
-        ? ScreenSpaceFoldDetector(
-            triggerAngleDegrees: brush!.foldTriggerAngle,
-            detectCumulativeStart: brush.foldMode == HairFoldMode.crescent,
-          )
-        : null;
-    _feedFoldDetector(effective, layerId, screenPosition: screenPosition);
     _currentStroke.add(effective);
     _strokeScreenPositions.add(
       screenPosition ?? ui.Offset(effective.x, effective.y),
@@ -132,16 +121,15 @@ class DrawingEngine {
     // 区間を描画してから終点を履歴へ追加する。これにより
     // _renderStrokeSegment() が取得するbaseStrokeLengthは必ず区間開始時点までの
     // 累積距離となり、OSから届くmoveイベント数に依存しない。
-    // A crescent waits until its curve is deep enough for the pen width;
-    // until then the stroke keeps drawing as an ordinary line.
-    if (_foldEvents.isEmpty || !(_foldRaster?.replacesStroke ?? false)) {
+    // Until the stroke folds (and, for a crescent, its curve is deep enough
+    // for the pen width) it keeps drawing as an ordinary line.
+    if (!(_foldRaster?.replacesStroke ?? false)) {
       _renderStrokeSegment(from, effective, layerId);
     }
     _currentStroke.add(effective);
     _strokeScreenPositions.add(
       screenPosition ?? ui.Offset(effective.x, effective.y),
     );
-    _feedFoldDetector(effective, layerId, screenPosition: screenPosition);
     _rebuildHairFold();
   }
 
@@ -161,7 +149,6 @@ class DrawingEngine {
     _strokeCoverageByTile.clear();
     _distanceSinceLastBrushStamp = 0.0;
     _hasStampedCurrentStroke = false;
-    _foldDetector = null;
     _finalizedStrokeLengthOverride = totalLength;
     _replayingFinalStroke = true;
     try {
@@ -201,48 +188,10 @@ class DrawingEngine {
     _activeLayerId = null;
     _distanceSinceLastBrushStamp = 0.0;
     _hasStampedCurrentStroke = false;
-    _foldDetector = null;
     _foldRaster = null;
-    _foldEvents.clear();
     _strokeScreenPositions.clear();
     _brushTextureSelector.endStroke();
     _finalizedStrokeLengthOverride = null;
-  }
-
-  void _feedFoldDetector(
-    StrokePoint point,
-    String layerId, {
-    ui.Offset? screenPosition,
-  }) {
-    final detector = _foldDetector;
-    final brush = currentBrush;
-    if (detector == null ||
-        brush == null ||
-        !brush.outlineEnabled ||
-        !brush.foldEnabled) {
-      return;
-    }
-    final resolved = resolveBrushPressure(
-      brush: brush,
-      pressureEnabled: pressureEnabled,
-      curvedPressure: point.pressure,
-    );
-    final effectiveWidth = (brush.size * resolved.sizeScale)
-        .clamp(0.5, 2000.0)
-        .toDouble();
-    final event = detector.add(
-      BrushStrokeSample(
-        strokeIndex: math.max(0, _currentStroke.length - 1),
-        // Fold thresholds are defined in physical screen-space travel. The
-        // caller supplies pointer screen coordinates when document zoom differs
-        // from 1x; direct engine callers retain the 1x-compatible fallback.
-        screenPosition: screenPosition ?? ui.Offset(point.x, point.y),
-        documentPosition: ui.Offset(point.x, point.y),
-        effectiveWidth: effectiveWidth,
-      ),
-    );
-    if (event == null) return;
-    _foldEvents.add(event);
   }
 
   void _rebuildHairFold({bool finalize = false}) {
@@ -252,10 +201,6 @@ class DrawingEngine {
     final brush = currentBrush;
     final raster = _foldRaster;
     if (brush == null || raster == null) return;
-    if (_foldEvents.isEmpty &&
-        (!finalize || brush.foldMode == HairFoldMode.crescent)) {
-      return;
-    }
     final samples = <HairRibbonPoint>[];
     var distance = 0.0;
     for (var i = 0; i < _currentStroke.length; i++) {
@@ -289,7 +234,6 @@ class DrawingEngine {
     raster.render(
       points: samples,
       taperEnd: finalize,
-      folds: _foldEvents,
       brush: brush,
       fillColor: currentColor,
       texture: texture == null

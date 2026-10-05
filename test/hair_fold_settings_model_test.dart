@@ -61,7 +61,7 @@ void main() {
           foldMode: entry.key,
           foldTriggerAngle: 67,
           foldCurveStartRatio: 0.31,
-          foldCurveStrength: 7,
+          foldAngleRatio: 0.7,
           foldLengthRatio: 0.72,
           foldEndTaperRatio: 0.43,
         );
@@ -77,7 +77,7 @@ void main() {
         expect(restored.foldEnabled, isTrue);
         expect(restored.foldTriggerAngle, 67);
         expect(restored.foldCurveStartRatio, 0.31);
-        expect(restored.foldCurveStrength, 7);
+        expect(restored.foldAngleRatio, 0.7);
         expect(restored.foldLengthRatio, 0.72);
         expect(restored.foldEndTaperRatio, 0.43);
         expect(restored.copyWith(name: 'Renamed').foldMode, entry.key);
@@ -87,14 +87,14 @@ void main() {
         final configured = _baseBrush().copyWith(
           foldEnabled: true,
           foldMode: entry.key,
-          foldCurveStrength: 8,
+          foldAngleRatio: 0.8,
           foldLengthRatio: 0.62,
         );
         final disabled = configured.copyWith(foldEnabled: false);
         final restored = Brush.fromJson(disabled.toJson());
         expect(restored.foldEnabled, isFalse);
         expect(restored.foldMode, entry.key);
-        expect(restored.foldCurveStrength, 8);
+        expect(restored.foldAngleRatio, 0.8);
         expect(restored.foldLengthRatio, 0.62);
         expect(restored.copyWith(foldEnabled: true).foldMode, entry.key);
       });
@@ -109,21 +109,20 @@ void main() {
       }
     });
 
-    test('curve strength defaults to five and clamps to one through ten', () {
-      expect(_baseBrush().foldCurveStrength, 5);
-      expect(_baseBrush().copyWith(foldCurveStrength: -3).foldCurveStrength, 1);
-      expect(
-        _baseBrush().copyWith(foldCurveStrength: 99).foldCurveStrength,
-        10,
-      );
+    test('fold defaults: angle 50%, curve start 0%, length mid-range', () {
+      expect(_baseBrush().foldAngleRatio, .5);
+      expect(_baseBrush().foldCurveStartRatio, 0);
+      expect(_baseBrush().foldLengthRatio, .5);
+      expect(_baseBrush().copyWith(foldAngleRatio: -3).foldAngleRatio, 0);
+      expect(_baseBrush().copyWith(foldAngleRatio: 99).foldAngleRatio, 1);
     });
 
     test('legacy fold depth is ignored when reading pre-release JSON', () {
       final json = _baseBrush().toJson()
-        ..remove('foldCurveStrength')
+        ..remove('foldAngleRatio')
         ..['foldDepthRatio'] = .12;
       final restored = Brush.fromJson(json);
-      expect(restored.foldCurveStrength, 5);
+      expect(restored.foldAngleRatio, .5);
       expect(restored.toJson().containsKey('foldDepthRatio'), isFalse);
     });
 

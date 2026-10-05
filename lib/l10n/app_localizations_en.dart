@@ -6526,19 +6526,13 @@ class AppLocalizationsEn extends AppLocalizations {
   String get brushOutlineEyedropper => 'Eyedropper';
 
   @override
-  String get brushFold => 'Fold';
+  String get brushFold => 'Fold mode';
 
   @override
-  String get brushFoldTriggerAngle => 'Trigger angle';
-
-  @override
-  String get brushFoldCurveStart => 'Curve start position';
+  String get brushFoldCurveStart => 'Fold line curve start';
 
   @override
   String get brushFoldLength => 'Fold length';
-
-  @override
-  String get brushFoldCurveStrength => 'Curve strength';
 
   @override
   String get filterAuroraHologramPresetBlueHologram => 'Sapphire Hologram';
@@ -6563,7 +6557,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get filterAuroraHologramPresetWarmHologram => 'Sunrise Hologram';
 
   @override
-  String get brushFoldMode => 'Fold mode';
+  String get brushFoldMode => 'Fold type';
 
   @override
   String get brushFoldModeWaveTopView => 'Wave (top view)';
@@ -6585,7 +6579,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get helpBrushFoldDesc =>
-      'Turn on Outline in the brush settings to use Fold. With Fold off, the brush draws a normal stroke. With Fold on, creases follow the bends you draw; it does not generate waves automatically. There are five modes. Wave (top view) puts the upper part of each overlap in front, while Wave (low angle) puts the lower part in front. Right curl puts the upper-left–lower-right segment in front; Left curl puts the upper-right–lower-left segment in front. Crescent curl follows the C-shaped curves you actually draw to form connected crescents. Use Trigger angle, Curve start position and Fold length to adjust the position and extent of each crease. Curve strength ranges from 1 to 10 and defaults to 5.';
+      'Turn on Outline in the brush settings to use Fold mode. With it off, the brush draws exactly like the normal outline pen. With it on, the outline pen\'s own line folds and curls along the direction and bends of the stroke you draw; it does not generate waves automatically. At each bend, a fold line branches from the inner edge, curves and fades out. A stroke that keeps turning the same way gets a subtler fold line every 270°. There are five fold types. Wave (top view) brings the earlier part of the stroke forward, and Wave (low angle) the later part. Right curl decides front and back as if rolling to the right of the drawing direction, and Left curl to the left; they follow the stroke, not the screen. Crescent curl follows the C-shaped curves you draw to form connected crescents. Fold length sets the length of the fold line (it scales with the brush size), Fold angle sets how strongly it follows the stroke\'s curve (50% follows it naturally), and Fold line curve start sets how thick the material looks (at 0% it curves right from where it branches).';
 
   @override
   String get tipsBrushFoldTitle =>
@@ -6593,7 +6587,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get tipsBrushFoldDesc =>
-      'Turn on Outline and Fold, then try a gentle S-shaped stroke with Curve strength set to 5. Choose Wave (top view) to bring the upper part of each overlap forward, or Wave (low angle) for the lower part. For diagonal flow, compare Right curl, which brings the upper-left–lower-right segment forward, with Left curl, which brings the upper-right–lower-left segment forward. When drawing a series of C-shaped curves, use Crescent curl to shape their connected crescents. Every mode uses the bends you draw; a straight stroke does not become a wave automatically. Adjust Trigger angle, Curve start position and Fold length a little at a time, then set Curve strength between 1 and 10. Turn Fold off to return to a normal stroke.';
+      'Turn on Outline and Fold mode, then try a gentle S-shaped stroke with the default settings. Choose Wave (top view) to bring the earlier part of the stroke forward, or Wave (low angle) for the later part. To show a strand rolling in, compare Right curl, which rolls to the right of the drawing direction, with Left curl, which rolls to the left. When drawing a series of C-shaped curves, use Crescent curl to shape their connected crescents. Every type uses the bends you draw; a straight stroke does not become a wave automatically. If the fold lines are too short, raise Fold length; if they do not bend enough, raise Fold angle; to make hair or ribbon look thinner, raise Fold line curve start. Turn Fold mode off to return to a normal stroke.';
 
   @override
   String get tipsFourPanelBrushTitle =>
@@ -6736,4 +6730,22 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get customAutomationFavoritesOnly => 'Favorites only';
+
+  @override
+  String get brushFoldAngle => 'Fold angle';
+
+  @override
+  String get brushFoldModeHelp => 'Choose how the stroke folds along its path.';
+
+  @override
+  String get brushFoldLengthHelp =>
+      'Adjusts how far the fold extends. It scales with the brush size.';
+
+  @override
+  String get brushFoldAngleHelp =>
+      'Adjusts how strongly the fold follows the curve of the stroke. At 50% it follows the curve naturally.';
+
+  @override
+  String get brushFoldCurveStartHelp =>
+      'Sets where the fold line starts to curve, expressing the thickness of hair or ribbon. At 0% it curves right from where it branches.';
 }

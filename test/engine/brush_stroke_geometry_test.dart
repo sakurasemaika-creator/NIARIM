@@ -2,6 +2,7 @@ import 'dart:math' as math;
 
 import 'package:flutter_test/flutter_test.dart';
 import 'package:niarim/engine/brush_stroke_geometry.dart';
+import 'package:niarim/engine/hair_fold_raster.dart';
 
 void main() {
   group('lateral repeat geometry', () {
@@ -29,56 +30,10 @@ void main() {
     });
   });
 
-  group('screen-space fold detector', () {
-    List<FoldEvent> runPath(List<Offset> screen, {double documentScale = 1}) {
-      final detector = ScreenSpaceFoldDetector(
-        triggerAngleDegrees: 80,
-        sampleSpacing: 2,
-        minimumTravel: 10,
-        windowLength: 44,
-        cooldownDistance: 20,
-      );
-      final events = <FoldEvent>[];
-      for (final point in screen) {
-        final event = detector.add(
-          BrushStrokeSample(
-            screenPosition: point,
-            documentPosition: point * documentScale,
-            effectiveWidth: 20 * documentScale,
-          ),
-        );
-        if (event != null) events.add(event);
-      }
-      return events;
-    }
-
-    test('jitter and gentle motion do not fire', () {
-      final points = <Offset>[
-        for (var x = 0; x <= 50; x += 2)
-          Offset(x.toDouble(), x.isEven ? .2 : -.2),
-      ];
-      expect(runPath(points), isEmpty);
-    });
-
-    test('a meaningful sharp bend fires', () {
-      final points = <Offset>[
-        for (var x = 0; x <= 30; x += 2) Offset(x.toDouble(), 0),
-        for (var y = 2; y <= 32; y += 2) Offset(30, y.toDouble()),
-      ];
-      expect(runPath(points), isNotEmpty);
-    });
-
-    test('document zoom does not change screen-space detection', () {
-      final points = <Offset>[
-        for (var x = 0; x <= 30; x += 2) Offset(x.toDouble(), 0),
-        for (var y = 2; y <= 32; y += 2) Offset(30, y.toDouble()),
-      ];
-      expect(
-        runPath(points, documentScale: 1).length,
-        runPath(points, documentScale: 8).length,
-      );
-    });
-
+  group('stroke fold vertices', () {
+    List<HairRibbonPoint> strand(List<Offset> path, {double width = 20}) => [
+      for (final p in path) HairRibbonPoint(p, width, 1),
+    ];
     List<Offset> arc(double degrees, {double radius = 60, double step = 5}) {
       final count = (degrees.abs() / step).ceil();
       final sign = degrees.sign;
@@ -91,74 +46,64 @@ void main() {
       ];
     }
 
-    test('continuous curve folds once per completed 270 degree turn', () {
-      expect(runPath(arc(265)), isEmpty);
-      expect(runPath(arc(275)).length, 1);
-      expect(runPath(arc(535)).length, 1);
-      expect(runPath(arc(545)).length, 2);
-      expect(runPath(arc(815)).length, 3);
+    List<({int index, bool continuous})> folds(List<Offset> path) =>
+        HairFoldRaster.foldVertices(strand(path));
+
+    test('jitter and gentle motion do not fold', () {
+      final points = <Offset>[
+        for (var i = 0; i < 80; i++) Offset(i * 3.0, i.isEven ? 0 : .6),
+      ];
+      expect(folds(points), isEmpty);
+      expect(folds(arc(80, radius: 400, step: 1)), isEmpty);
     });
 
-    test(
-      'crescent activates on the authored gentle curve before a full turn',
-      () {
-        final detector = ScreenSpaceFoldDetector(
-          triggerAngleDegrees: 30,
-          sampleSpacing: 2,
-          minimumTravel: 10,
-          windowLength: 44,
-          cooldownDistance: 20,
-          detectCumulativeStart: true,
-        );
-        final events = <FoldEvent>[];
-        for (final point in arc(90, radius: 180, step: 1)) {
-          final event = detector.add(
-            BrushStrokeSample(
-              screenPosition: point,
-              documentPosition: point,
-              effectiveWidth: 40,
-            ),
-          );
-          if (event != null) events.add(event);
-        }
-        expect(events, isNotEmpty);
-        expect(events.first.isContinuousTurnFold, isFalse);
-        expect(events.first.screenDistance, lessThan(180 * math.pi / 2));
-      },
-    );
-
-    test(
-      'continuous 270 degree folds preserve the authored turn direction',
-      () {
-        final clockwise = runPath(arc(545));
-        final counterClockwise = runPath(arc(-545));
-        expect(clockwise.length, 2);
-        expect(counterClockwise.length, 2);
-        expect(
-          clockwise.every((event) => event.signedTurnRadians.sign > 0),
-          isTrue,
-        );
-        expect(
-          counterClockwise.every((event) => event.signedTurnRadians.sign < 0),
-          isTrue,
-        );
-      },
-    );
-
-    test('opposite bend signs both point toward their curve interior', () {
-      final down = <Offset>[
-        for (var x = 0; x <= 30; x += 2) Offset(x.toDouble(), 0),
-        for (var y = 2; y <= 32; y += 2) Offset(30, y.toDouble()),
+    test('a sharp corner folds at the corner', () {
+      final points = <Offset>[
+        for (var x = 0; x <= 60; x += 2) Offset(x.toDouble(), 0),
+        for (var y = 2; y <= 60; y += 2) Offset(60, y.toDouble()),
       ];
-      final up = <Offset>[
-        for (var x = 0; x <= 30; x += 2) Offset(x.toDouble(), 0),
-        for (var y = -2; y >= -32; y -= 2) Offset(30, y.toDouble()),
+      final result = folds(points);
+      expect(result, hasLength(1));
+      expect(
+        (points[result.single.index] - const Offset(60, 0)).distance,
+        lessThan(8),
+      );
+    });
+
+    test('a hand-drawn wave folds at every apex', () {
+      final points = <Offset>[
+        for (var i = 0; i <= 240; i++)
+          Offset(60 * math.sin(i * math.pi / 60), i * 2.0),
       ];
-      final a = runPath(down).first;
-      final b = runPath(up).first;
-      expect(a.signedTurnRadians.sign, -b.signedTurnRadians.sign);
-      expect(a.inwardNormal.dx, lessThan(0));
-      expect(b.inwardNormal.dx, lessThan(0));
+      final result = folds(points);
+      expect(result, hasLength(4));
+      for (final fold in result) {
+        expect(points[fold.index].dx.abs(), greaterThan(50));
+        expect(fold.continuous, isFalse);
+      }
+    });
+
+    test('continuous turning folds once per completed 270 degrees', () {
+      expect(folds(arc(265)), isEmpty);
+      expect(folds(arc(275)), hasLength(1));
+      expect(folds(arc(535)), hasLength(1));
+      expect(folds(arc(545)), hasLength(2));
+      expect(folds(arc(815)), hasLength(3));
+      expect(folds(arc(275)).single.continuous, isTrue);
+    });
+
+    test('continuous folds do not depend on the turn direction', () {
+      expect(folds(arc(545)), hasLength(2));
+      expect(folds(arc(-545)), hasLength(2));
+    });
+
+    test('a crescent curls a lone bend before a full turn', () {
+      final points = strand(arc(90, radius: 180, step: 1), width: 40);
+      expect(HairFoldRaster.foldVertices(points, triggerDegrees: 30), isEmpty);
+      expect(
+        HairFoldRaster.foldVertices(points, triggerDegrees: 30, crescent: true),
+        hasLength(1),
+      );
     });
   });
 }

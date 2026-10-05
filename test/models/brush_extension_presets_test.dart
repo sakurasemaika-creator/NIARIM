@@ -40,9 +40,9 @@ void main() {
     expect(hair.outlineWidth, 1.5);
     expect(hair.foldEnabled, isTrue);
     expect(hair.foldTriggerAngle, 90);
-    expect(hair.foldCurveStartRatio, .25);
-    expect(hair.foldCurveStrength, 5);
-    expect(hair.foldLengthRatio, .8);
+    expect(hair.foldCurveStartRatio, 0);
+    expect(hair.foldAngleRatio, .5);
+    expect(hair.foldLengthRatio, .5);
     expect(hair.foldEndTaperRatio, .35);
     expect(hair.toJson().containsKey('fillColor'), isFalse);
   });

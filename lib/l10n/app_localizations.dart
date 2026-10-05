@@ -11606,19 +11606,13 @@ abstract class AppLocalizations {
   /// No description provided for @brushFold.
   ///
   /// In ja, this message translates to:
-  /// **'折り返し'**
+  /// **'折り畳みモード'**
   String get brushFold;
-
-  /// No description provided for @brushFoldTriggerAngle.
-  ///
-  /// In ja, this message translates to:
-  /// **'発生角度'**
-  String get brushFoldTriggerAngle;
 
   /// No description provided for @brushFoldCurveStart.
   ///
   /// In ja, this message translates to:
-  /// **'カーブ開始位置'**
+  /// **'折り返し線のカーブ開始位置'**
   String get brushFoldCurveStart;
 
   /// No description provided for @brushFoldLength.
@@ -11626,12 +11620,6 @@ abstract class AppLocalizations {
   /// In ja, this message translates to:
   /// **'折り返し長さ'**
   String get brushFoldLength;
-
-  /// No description provided for @brushFoldCurveStrength.
-  ///
-  /// In ja, this message translates to:
-  /// **'カーブ強度'**
-  String get brushFoldCurveStrength;
 
   /// No description provided for @filterAuroraHologramPresetBlueHologram.
   ///
@@ -11678,7 +11666,7 @@ abstract class AppLocalizations {
   /// No description provided for @brushFoldMode.
   ///
   /// In ja, this message translates to:
-  /// **'折りたたみタイプ'**
+  /// **'折り畳みタイプ'**
   String get brushFoldMode;
 
   /// No description provided for @brushFoldModeWaveTopView.
@@ -11720,7 +11708,7 @@ abstract class AppLocalizations {
   /// No description provided for @helpBrushFoldDesc.
   ///
   /// In ja, this message translates to:
-  /// **'ブラシ設定で「縁取り」をONにすると「折り返し」を使えます。OFFでは通常のストローク、ONでは描いた線の曲がりをもとに折り目を付けます。波形を自動生成する機能ではありません。折りたたみタイプは5種類です。「ウェーブ俯瞰」は重なりの上側、「ウェーブ煽り」は下側を手前に描きます。「右巻き」は左上―右下方向の線、「左巻き」は右上―左下方向の線を手前に描きます。「三日月カール」は実際に描いたC字のカーブに沿って、三日月がつながる形に整えます。発生角度・カーブ開始位置・折り返し長さで折り目の位置と範囲を調整できます。カーブ強度は1～10、初期値は5です。'**
+  /// **'ブラシ設定で「縁取り」をONにすると「折り畳みモード」を使えます。OFFでは通常の縁取りペンと同じ描画です。ONにすると、描いたストロークの方向と曲がりをもとに、縁取りペンの線そのものが折れたり巻いたりします。波形を自動生成する機能ではありません。曲がり角ごとに、内側の輪郭から分かれてカーブし、すっと消える折り返し線が入ります。同じ向きに回り続けたときは270°ごとに控えめな折り返し線が入ります。折り畳みタイプは5種類です。「ウェーブ俯瞰」は先に描いた側、「ウェーブ煽り」は後に描いた側を手前にします。「右巻き」はストロークの進行方向の右へ、「左巻き」は左へ巻き込むように前後を決めます。基準は画面の向きではなく描いた向きです。「三日月カール」は描いたC字のカーブに沿って三日月がつながる形に整えます。「折り返し長さ」は折り返し線の長さ（ブラシサイズに連動）、「折り返し角度」はストロークのカーブへの追従の強さ（50%で自然に連動）、「折り返し線のカーブ開始位置」は素材の見かけの厚み（0%で分岐位置からすぐにカーブ）を調整します。'**
   String get helpBrushFoldDesc;
 
   /// No description provided for @tipsBrushFoldTitle.
@@ -11732,7 +11720,7 @@ abstract class AppLocalizations {
   /// No description provided for @tipsBrushFoldDesc.
   ///
   /// In ja, this message translates to:
-  /// **'縁取りと折り返しをONにし、まずカーブ強度5でゆるいS字を描いてみましょう。重なりの上側を手前にするなら「ウェーブ俯瞰」、下側なら「ウェーブ煽り」を選びます。斜めの流れは、左上―右下方向の線を手前にする「右巻き」と、右上―左下方向の線を手前にする「左巻き」を比べると決めやすくなります。C字のカーブを続けて描くときは「三日月カール」で三日月のつながりを整えます。どのタイプも描いた曲がりを使うため、直線が自動で波形に変わることはありません。発生角度・カーブ開始位置・折り返し長さを少しずつ変え、最後にカーブ強度を1～10で調整してください。折り返しをOFFにすると通常のストロークへ戻ります。'**
+  /// **'縁取りと折り畳みモードをONにし、まずは初期値のままゆるいS字を描いてみましょう。先に描いた側を手前にするなら「ウェーブ俯瞰」、後に描いた側なら「ウェーブ煽り」を選びます。巻き込みを表すときは、進行方向の右へ巻く「右巻き」と左へ巻く「左巻き」を比べると決めやすくなります。C字のカーブを続けて描くときは「三日月カール」で三日月のつながりを整えます。どのタイプも描いた曲がりを使うため、直線が自動で波形に変わることはありません。折り返し線が短ければ「折り返し長さ」を、曲がりが足りなければ「折り返し角度」を上げ、薄い髪やリボンに見せたいときは「折り返し線のカーブ開始位置」を上げてください。折り畳みモードをOFFにすると通常のストロークへ戻ります。'**
   String get tipsBrushFoldDesc;
 
   /// No description provided for @tipsFourPanelBrushTitle.
@@ -12004,6 +11992,36 @@ abstract class AppLocalizations {
   /// In ja, this message translates to:
   /// **'お気に入りのみ'**
   String get customAutomationFavoritesOnly;
+
+  /// No description provided for @brushFoldAngle.
+  ///
+  /// In ja, this message translates to:
+  /// **'折り返し角度'**
+  String get brushFoldAngle;
+
+  /// No description provided for @brushFoldModeHelp.
+  ///
+  /// In ja, this message translates to:
+  /// **'ストロークに沿った折り畳み方を選択します。'**
+  String get brushFoldModeHelp;
+
+  /// No description provided for @brushFoldLengthHelp.
+  ///
+  /// In ja, this message translates to:
+  /// **'折り畳みが伸びる長さを調整します。ブラシサイズに連動します。'**
+  String get brushFoldLengthHelp;
+
+  /// No description provided for @brushFoldAngleHelp.
+  ///
+  /// In ja, this message translates to:
+  /// **'ストロークのカーブに対する折り畳みの強さを調整します。50%でストロークのカーブに自然に連動します。'**
+  String get brushFoldAngleHelp;
+
+  /// No description provided for @brushFoldCurveStartHelp.
+  ///
+  /// In ja, this message translates to:
+  /// **'折り返し線が曲がり始める位置を調整し、髪やリボンの厚みを表現します。0%では分岐位置からすぐにカーブします。'**
+  String get brushFoldCurveStartHelp;
 }
 
 class _AppLocalizationsDelegate

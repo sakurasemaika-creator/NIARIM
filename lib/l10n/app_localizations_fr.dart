@@ -6646,19 +6646,13 @@ class AppLocalizationsFr extends AppLocalizations {
   String get brushOutlineEyedropper => 'Pipette';
 
   @override
-  String get brushFold => 'Repli';
+  String get brushFold => 'Mode pliage';
 
   @override
-  String get brushFoldTriggerAngle => 'Angle de déclenchement';
-
-  @override
-  String get brushFoldCurveStart => 'Position de début de courbe';
+  String get brushFoldCurveStart => 'Début de la courbe de la ligne de pli';
 
   @override
   String get brushFoldLength => 'Longueur du pli';
-
-  @override
-  String get brushFoldCurveStrength => 'Intensité de courbe';
 
   @override
   String get filterAuroraHologramPresetBlueHologram => 'Hologramme saphir';
@@ -6684,7 +6678,7 @@ class AppLocalizationsFr extends AppLocalizations {
       'Hologramme lever de soleil';
 
   @override
-  String get brushFoldMode => 'Type de repli';
+  String get brushFoldMode => 'Type de pliage';
 
   @override
   String get brushFoldModeWaveTopView => 'Ondulation en plongée';
@@ -6706,7 +6700,7 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get helpBrushFoldDesc =>
-      'Activez Contour dans les réglages du pinceau pour utiliser Repli. Lorsque Repli est désactivé, le trait reste normal. Lorsqu’il est activé, les plis suivent les courbes que vous dessinez ; aucune ondulation n’est générée automatiquement. Cinq modes sont disponibles. Ondulation en plongée place la partie supérieure de chaque chevauchement au premier plan, et Ondulation en contre-plongée, la partie inférieure. Boucle à droite place au premier plan le segment allant du haut à gauche au bas à droite ; Boucle à gauche, celui allant du haut à droite au bas à gauche. Boucle en croissant suit les courbes en C que vous dessinez réellement pour former des croissants reliés. L’angle de déclenchement, la position de début de courbe et la longueur du pli règlent la position et l’étendue de chaque pli. L’intensité de courbe va de 1 à 10, avec une valeur initiale de 5.';
+      'Activez Contour dans les réglages du pinceau pour utiliser le Mode pliage. Désactivé, le pinceau dessine exactement comme le stylo de contour normal. Activé, le trait du stylo de contour lui-même se plie et s’enroule selon la direction et les courbes du trait que vous dessinez ; il ne génère pas d’ondulations automatiquement. À chaque courbe, une ligne de pli part du bord intérieur, se courbe puis s’efface. Un trait qui continue de tourner dans le même sens reçoit une ligne de pli plus discrète tous les 270°. Il existe cinq types de pliage. Ondulation en plongée place devant la partie dessinée en premier, Ondulation en contre-plongée celle dessinée ensuite. Boucle à droite choisit l’avant et l’arrière comme si le trait s’enroulait vers la droite de son sens de dessin, Boucle à gauche vers la gauche ; ils suivent le trait, pas l’écran. Boucle en croissant suit les courbes en C que vous dessinez pour former des croissants enchaînés. Longueur du pli règle la longueur de la ligne de pli (elle suit la taille du pinceau), Angle du pli règle la force avec laquelle il suit la courbe du trait (à 50 %, il la suit naturellement) et Début de la courbe de la ligne de pli règle l’épaisseur apparente de la matière (à 0 %, elle se courbe dès son point de départ).';
 
   @override
   String get tipsBrushFoldTitle =>
@@ -6714,7 +6708,7 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get tipsBrushFoldDesc =>
-      'Activez Contour et Repli, puis essayez un trait doux en S avec une intensité de courbe de 5. Choisissez Ondulation en plongée pour mettre la partie supérieure de chaque chevauchement au premier plan, ou Ondulation en contre-plongée pour la partie inférieure. Pour un mouvement diagonal, comparez Boucle à droite, qui met devant le segment allant du haut à gauche au bas à droite, et Boucle à gauche, qui met devant celui allant du haut à droite au bas à gauche. Pour une suite de courbes en C, utilisez Boucle en croissant afin de former des croissants reliés. Chaque mode utilise vos courbes ; un trait droit ne devient pas automatiquement une ondulation. Ajustez progressivement l’angle de déclenchement, la position de début de courbe et la longueur du pli, puis choisissez une intensité entre 1 et 10. Désactivez Repli pour revenir au trait normal.';
+      'Activez Contour et Mode pliage, puis essayez d’abord un trait en S léger avec les réglages par défaut. Choisissez Ondulation en plongée pour placer devant la partie dessinée en premier, ou Ondulation en contre-plongée pour celle dessinée ensuite. Pour montrer une mèche qui s’enroule, comparez Boucle à droite, qui s’enroule vers la droite du sens de dessin, et Boucle à gauche, qui s’enroule vers la gauche. Pour une série de courbes en C, utilisez Boucle en croissant afin de former des croissants enchaînés. Chaque type utilise les courbes que vous dessinez ; un trait droit ne devient pas une ondulation automatiquement. Si les lignes de pli sont trop courtes, augmentez Longueur du pli ; si elles ne se courbent pas assez, augmentez Angle du pli ; pour que les cheveux ou le ruban paraissent plus fins, augmentez Début de la courbe de la ligne de pli. Désactivez le Mode pliage pour revenir à un trait normal.';
 
   @override
   String get tipsFourPanelBrushTitle =>
@@ -6860,4 +6854,23 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get customAutomationFavoritesOnly => 'Favoris uniquement';
+
+  @override
+  String get brushFoldAngle => 'Angle du pli';
+
+  @override
+  String get brushFoldModeHelp =>
+      'Choisissez comment le trait se plie le long de son tracé.';
+
+  @override
+  String get brushFoldLengthHelp =>
+      'Règle la longueur du pli. Elle suit la taille du pinceau.';
+
+  @override
+  String get brushFoldAngleHelp =>
+      'Règle avec quelle force le pli suit la courbe du trait. À 50 %, il la suit naturellement.';
+
+  @override
+  String get brushFoldCurveStartHelp =>
+      'Définit où la ligne de pli commence à se courber, pour exprimer l’épaisseur des cheveux ou du ruban. À 0 %, elle se courbe dès son point de départ.';
 }

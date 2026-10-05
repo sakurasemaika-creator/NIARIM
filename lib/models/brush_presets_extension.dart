@@ -69,7 +69,7 @@ List<Brush> brushExtensionPresets() => const <Brush>[
     foldEnabled: true,
     foldTriggerAngle: BrushExtensionDefaults.foldTriggerAngle,
     foldCurveStartRatio: BrushExtensionDefaults.foldCurveStartRatio,
-    foldCurveStrength: BrushExtensionDefaults.foldCurveStrength,
+    foldAngleRatio: BrushExtensionDefaults.foldAngleRatio,
     foldCrescentDepthThreshold:
         BrushExtensionDefaults.foldCrescentDepthThreshold,
     foldLengthRatio: BrushExtensionDefaults.foldLengthRatio,
@@ -117,7 +117,7 @@ List<Brush> brushExtensionPresets() => const <Brush>[
     foldEnabled: true,
     foldTriggerAngle: BrushExtensionDefaults.foldTriggerAngle,
     foldCurveStartRatio: BrushExtensionDefaults.foldCurveStartRatio,
-    foldCurveStrength: BrushExtensionDefaults.foldCurveStrength,
+    foldAngleRatio: BrushExtensionDefaults.foldAngleRatio,
     foldCrescentDepthThreshold:
         BrushExtensionDefaults.foldCrescentDepthThreshold,
     foldLengthRatio: BrushExtensionDefaults.foldLengthRatio,

@@ -112,7 +112,7 @@ void main() {
             fadeMode: FadeMode.off,
             foldTriggerAngle: 30,
             foldMode: HairFoldMode.crescent,
-            foldCurveStrength: 10,
+            foldAngleRatio: 1,
             foldCrescentDepthThreshold: 0,
             customImageSelectionMode: BrushImageSelectionMode.sequential,
           );

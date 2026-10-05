@@ -6336,19 +6336,13 @@ class AppLocalizationsKo extends AppLocalizations {
   String get brushOutlineEyedropper => '스포이드';
 
   @override
-  String get brushFold => '접힘';
+  String get brushFold => '접힘 모드';
 
   @override
-  String get brushFoldTriggerAngle => '발생 각도';
-
-  @override
-  String get brushFoldCurveStart => '커브 시작 위치';
+  String get brushFoldCurveStart => '접힘선 커브 시작 위치';
 
   @override
   String get brushFoldLength => '접힘 길이';
-
-  @override
-  String get brushFoldCurveStrength => '커브 강도';
 
   @override
   String get filterAuroraHologramPresetBlueHologram => '사파이어 홀로그램';
@@ -6394,14 +6388,14 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get helpBrushFoldDesc =>
-      '브러시 설정에서 외곽선를 켜면 접힘을 사용할 수 있습니다. 접힘을 끄면 일반 선을 그리고, 켜면 직접 그린 선의 굽은 부분에 접힌 모양을 만듭니다. 웨이브를 자동으로 생성하는 기능은 아닙니다. 유형은 다섯 가지입니다. 웨이브 (위에서 보기)는 겹친 부분의 위쪽을, 웨이브 (아래에서 보기)는 아래쪽을 앞에 표시합니다. 오른쪽 컬은 왼쪽 위와 오른쪽 아래를 잇는 선을, 왼쪽 컬은 오른쪽 위와 왼쪽 아래를 잇는 선을 앞에 표시합니다. 초승달 컬은 실제로 그린 C자 곡선을 따라 초승달 모양이 이어지도록 만듭니다. 발생 각도, 커브 시작 위치, 접힘 길이로 접힌 부분의 위치와 범위를 조절할 수 있습니다. 커브 강도는 1~10이며 기본값은 5입니다.';
+      '브러시 설정에서 「외곽선」을 켜면 「접힘 모드」를 사용할 수 있습니다. 끄면 일반 외곽선 펜과 동일하게 그립니다. 켜면 그린 스트로크의 방향과 굽은 정도에 따라 외곽선 펜의 선 자체가 접히거나 말립니다. 물결을 자동으로 만드는 기능이 아닙니다. 굽은 곳마다 안쪽 윤곽에서 갈라져 구부러지다가 사라지는 접힘선이 들어갑니다. 같은 방향으로 계속 돌면 270°마다 은은한 접힘선이 들어갑니다. 접힘 유형은 5가지입니다. 「웨이브 (위에서 보기)」는 먼저 그린 쪽을, 「웨이브 (아래에서 보기)」는 나중에 그린 쪽을 앞으로 보냅니다. 「오른쪽 컬」은 진행 방향의 오른쪽으로, 「왼쪽 컬」은 왼쪽으로 말려 들어가듯 앞뒤를 정합니다. 기준은 화면 방향이 아니라 그린 방향입니다. 「초승달 컬」은 그린 C자 곡선을 따라 초승달이 이어지는 모양으로 다듬습니다. 「접힘 길이」는 접힘선의 길이(브러시 크기에 연동), 「접힘 각도」는 스트로크 커브를 따르는 강도(50%에서 자연스럽게 연동), 「접힘선 커브 시작 위치」는 소재의 보이는 두께(0%에서는 갈라지는 위치에서 바로 구부러짐)를 조정합니다.';
 
   @override
   String get tipsBrushFoldTitle => '머리카락이 접힐 때 앞에 보일 부분 고르기';
 
   @override
   String get tipsBrushFoldDesc =>
-      '외곽선와 접힘을 켜고 커브 강도를 5로 설정한 뒤 완만한 S자 선을 그려 보세요. 겹친 부분의 위쪽을 앞에 두려면 웨이브 (위에서 보기)를, 아래쪽을 앞에 두려면 웨이브 (아래에서 보기)를 선택합니다. 대각선 흐름은 왼쪽 위와 오른쪽 아래를 잇는 선이 앞에 오는 오른쪽 컬과, 오른쪽 위와 왼쪽 아래를 잇는 선이 앞에 오는 왼쪽 컬을 비교해 보세요. C자 곡선을 연속으로 그릴 때는 초승달 컬로 이어지는 초승달 모양을 다듬습니다. 모든 유형은 직접 그린 굽은 부분을 사용하므로 직선이 자동으로 웨이브로 바뀌지 않습니다. 발생 각도, 커브 시작 위치, 접힘 길이를 조금씩 바꾼 다음 커브 강도를 1~10 사이에서 조절하세요. 접힘을 끄면 일반 선으로 돌아갑니다.';
+      '외곽선과 접힘 모드를 켜고, 먼저 초기값 그대로 완만한 S자를 그려 보세요. 먼저 그린 쪽을 앞으로 하려면 「웨이브 (위에서 보기)」, 나중에 그린 쪽이면 「웨이브 (아래에서 보기)」를 고릅니다. 말려 들어가는 모습을 그릴 때는 진행 방향의 오른쪽으로 말리는 「오른쪽 컬」과 왼쪽으로 말리는 「왼쪽 컬」을 비교하면 고르기 쉽습니다. C자 곡선을 이어서 그릴 때는 「초승달 컬」로 초승달의 이어짐을 다듬습니다. 어떤 유형이든 그린 굽이를 사용하므로 직선이 자동으로 물결로 바뀌지는 않습니다. 접힘선이 짧으면 「접힘 길이」를, 구부러짐이 부족하면 「접힘 각도」를 올리고, 머리카락이나 리본을 얇게 보이려면 「접힘선 커브 시작 위치」를 올리세요. 접힘 모드를 끄면 일반 스트로크로 돌아갑니다.';
 
   @override
   String get tipsFourPanelBrushTitle => '4컷 만화 브러시와 직선 자로 칸을 빠르게 만들기';
@@ -6541,4 +6535,21 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get customAutomationFavoritesOnly => '즐겨찾기만';
+
+  @override
+  String get brushFoldAngle => '접힘 각도';
+
+  @override
+  String get brushFoldModeHelp => '스트로크를 따라 접히는 방식을 선택합니다.';
+
+  @override
+  String get brushFoldLengthHelp => '접힘이 뻗는 길이를 조정합니다. 브러시 크기에 연동됩니다.';
+
+  @override
+  String get brushFoldAngleHelp =>
+      '스트로크 커브에 대한 접힘의 강도를 조정합니다. 50%에서 스트로크 커브에 자연스럽게 연동됩니다.';
+
+  @override
+  String get brushFoldCurveStartHelp =>
+      '접힘선이 구부러지기 시작하는 위치를 조정해 머리카락이나 리본의 두께를 표현합니다. 0%에서는 갈라지는 위치에서 바로 구부러집니다.';
 }

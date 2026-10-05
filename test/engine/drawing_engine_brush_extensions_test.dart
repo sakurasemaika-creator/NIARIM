@@ -17,7 +17,8 @@ void main() {
     double foldTriggerAngle = 90,
     BrushTipShape tip = BrushTipShape.round,
     List<String> customImagePaths = const [],
-    BrushImageSelectionMode customImageSelectionMode = BrushImageSelectionMode.random,
+    BrushImageSelectionMode customImageSelectionMode =
+        BrushImageSelectionMode.random,
   }) => Brush(
     id: 'test',
     name: 'test',
@@ -46,7 +47,10 @@ void main() {
     customImageSelectionMode: customImageSelectionMode,
   );
 
-  DrawingEngine engineFor(Brush value, {Color color = const Color(0xFFFF0000)}) {
+  DrawingEngine engineFor(
+    Brush value, {
+    Color color = const Color(0xFFFF0000),
+  }) {
     final engine = DrawingEngine(
       tileManager: TileManager(canvasWidth: 128, canvasHeight: 128),
     );
@@ -86,9 +90,7 @@ void main() {
   });
 
   test('lateral repeat rasterizes symmetric normal-space columns', () {
-    final engine = engineFor(
-      brush(lateral: true, count: 3, lateralSpacing: 1),
-    );
+    final engine = engineFor(brush(lateral: true, count: 3, lateralSpacing: 1));
     engine.beginStroke(
       const StrokePoint(x: 64, y: 64, pressure: 1, tiltX: 0, tiltY: 0),
       'layer',
@@ -116,45 +118,50 @@ void main() {
     expect(pixel(engine, 56, 64)[3], greaterThan(0));
   });
 
+  test(
+    'four-panel manga preset stamps hollow squares only along stroke direction',
+    () {
+      final preset = brushExtensionPresets().singleWhere(
+        (b) => b.id == 'Brush0025',
+      );
+      final engine =
+          DrawingEngine(
+              tileManager: TileManager(canvasWidth: 512, canvasHeight: 256),
+            )
+            ..currentBrush = preset
+            ..currentColor = const Color(0xFF000000);
 
-  test('four-panel manga preset stamps hollow squares only along stroke direction', () {
-    final preset = brushExtensionPresets().singleWhere((b) => b.id == 'Brush0025');
-    final engine = DrawingEngine(
-      tileManager: TileManager(canvasWidth: 512, canvasHeight: 256),
-    )
-      ..currentBrush = preset
-      ..currentColor = const Color(0xFF000000);
-
-    engine.beginStroke(
-      const StrokePoint(x: 80, y: 128, pressure: 1, tiltX: 0, tiltY: 0),
-      'layer',
-    );
-    for (var x = 100.0; x <= 420; x += 20) {
-      engine.continueStroke(
-        StrokePoint(x: x, y: 128, pressure: 1, tiltX: 0, tiltY: 0),
+      engine.beginStroke(
+        const StrokePoint(x: 80, y: 128, pressure: 1, tiltX: 0, tiltY: 0),
         'layer',
       );
-    }
-    engine.endStroke();
-
-    // The hollow-square center remains empty while its frame is inked.
-    expect(pixel(engine, 80, 128)[3], 0);
-    expect(pixel(engine, 40, 128)[3], greaterThan(0));
-
-    // With lateral repetition disabled there must be no parallel rows one
-    // brush-width above or below the stroke.
-    expect(pixel(engine, 80, 48)[3], 0);
-    expect(pixel(engine, 80, 208)[3], 0);
-
-    // A later frame is stamped along the stroke direction, not just at start.
-    var laterFrameInk = 0;
-    for (var y = 88; y <= 168; y++) {
-      for (var x = 160; x <= 420; x++) {
-        if (pixel(engine, x, y)[3] > 0) laterFrameInk++;
+      for (var x = 100.0; x <= 420; x += 20) {
+        engine.continueStroke(
+          StrokePoint(x: x, y: 128, pressure: 1, tiltX: 0, tiltY: 0),
+          'layer',
+        );
       }
-    }
-    expect(laterFrameInk, greaterThan(0));
-  });
+      engine.endStroke();
+
+      // The hollow-square center remains empty while its frame is inked.
+      expect(pixel(engine, 80, 128)[3], 0);
+      expect(pixel(engine, 40, 128)[3], greaterThan(0));
+
+      // With lateral repetition disabled there must be no parallel rows one
+      // brush-width above or below the stroke.
+      expect(pixel(engine, 80, 48)[3], 0);
+      expect(pixel(engine, 80, 208)[3], 0);
+
+      // A later frame is stamped along the stroke direction, not just at start.
+      var laterFrameInk = 0;
+      for (var y = 88; y <= 168; y++) {
+        for (var x = 160; x <= 420; x++) {
+          if (pixel(engine, x, y)[3] > 0) laterFrameInk++;
+        }
+      }
+      expect(laterFrameInk, greaterThan(0));
+    },
+  );
 
   test('outline rasterizes black outside current-color fill', () {
     final engine = engineFor(brush(outline: true, outlineWidth: 3));
@@ -170,58 +177,64 @@ void main() {
     expect(outline, [0, 0, 0, 255]);
   });
 
-  test('fold-enabled outlined stroke rasterizes inward Y branches at a sharp bend', () {
-    final engine = engineFor(
-      brush(outline: true, outlineWidth: 2, fold: true, foldTriggerAngle: 80),
-    );
-    engine.beginStroke(
-      const StrokePoint(x: 30, y: 50, pressure: 1, tiltX: 0, tiltY: 0),
-      'layer',
-      screenPosition: const Offset(30, 50),
-    );
-    engine.continueStroke(
-      const StrokePoint(x: 50, y: 50, pressure: 1, tiltX: 0, tiltY: 0),
-      'layer',
-      screenPosition: const Offset(50, 50),
-    );
-    engine.continueStroke(
-      const StrokePoint(x: 50, y: 70, pressure: 1, tiltX: 0, tiltY: 0),
-      'layer',
-      screenPosition: const Offset(50, 70),
-    );
-    engine.endStroke();
+  test(
+    'fold-enabled outlined stroke rasterizes inward Y branches at a sharp bend',
+    () {
+      final engine = engineFor(
+        brush(outline: true, outlineWidth: 2, fold: true, foldTriggerAngle: 80),
+      );
+      engine.beginStroke(
+        const StrokePoint(x: 30, y: 50, pressure: 1, tiltX: 0, tiltY: 0),
+        'layer',
+        screenPosition: const Offset(30, 50),
+      );
+      engine.continueStroke(
+        const StrokePoint(x: 50, y: 50, pressure: 1, tiltX: 0, tiltY: 0),
+        'layer',
+        screenPosition: const Offset(50, 50),
+      );
+      engine.continueStroke(
+        const StrokePoint(x: 50, y: 70, pressure: 1, tiltX: 0, tiltY: 0),
+        'layer',
+        screenPosition: const Offset(50, 70),
+      );
+      engine.endStroke();
 
-    var foldInk = 0;
-    for (var y = 50; y <= 90; y++) {
-      for (var x = 25; x <= 55; x++) {
-        if (pixel(engine, x, y)[3] > 0) foldInk++;
+      var foldInk = 0;
+      for (var y = 50; y <= 90; y++) {
+        for (var x = 25; x <= 55; x++) {
+          if (pixel(engine, x, y)[3] > 0) foldInk++;
+        }
       }
+      expect(foldInk, greaterThan(0));
+    },
+  );
+
+  test('folds depend on the stroke, not on the display zoom', () {
+    // Folds are judged from the document-space stroke relative to its own
+    // width, so the same stroke folds identically at any zoom.
+    List<int> render(double zoom) {
+      final engine = engineFor(
+        brush(outline: true, outlineWidth: 2, fold: true, foldTriggerAngle: 60),
+      );
+      const path = [Offset(20, 20), Offset(70, 60), Offset(20, 100)];
+      StrokePoint at(Offset p) =>
+          StrokePoint(x: p.dx, y: p.dy, pressure: 1, tiltX: 0, tiltY: 0);
+      engine.beginStroke(
+        at(path.first),
+        'layer',
+        screenPosition: path.first * zoom,
+      );
+      for (var i = 1; i < path.length; i++) {
+        for (var t = 1; t <= 40; t++) {
+          final p = Offset.lerp(path[i - 1], path[i], t / 40)!;
+          engine.continueStroke(at(p), 'layer', screenPosition: p * zoom);
+        }
+      }
+      engine.endStroke();
+      return engine.tileManager.getOrCreateTile('layer', 0, 0).toList();
     }
-    expect(foldInk, greaterThan(0));
-  });
 
-  test('fold detection uses explicit screen positions at non-1x display scale', () {
-    final engine = engineFor(
-      brush(outline: true, outlineWidth: 2, fold: true, foldTriggerAngle: 80),
-    );
-
-    engine.beginStroke(
-      const StrokePoint(x: 30, y: 50, pressure: 1, tiltX: 0, tiltY: 0),
-      'layer',
-      screenPosition: const Offset(30, 50),
-    );
-    engine.continueStroke(
-      const StrokePoint(x: 34, y: 50, pressure: 1, tiltX: 0, tiltY: 0),
-      'layer',
-      screenPosition: const Offset(50, 50),
-    );
-    engine.continueStroke(
-      const StrokePoint(x: 34, y: 54, pressure: 1, tiltX: 0, tiltY: 0),
-      'layer',
-      screenPosition: const Offset(50, 70),
-    );
-    engine.endStroke();
-
-    expect(pixel(engine, 18, 54)[3], greaterThan(0));
+    expect(render(5), render(1));
   });
 }

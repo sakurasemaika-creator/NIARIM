@@ -225,20 +225,45 @@ void main() {
     }
   });
   test(
-    'reversing the input keeps interior depth choices apart from the end taper',
+    'fold depth follows the stroke, so a rotated stroke folds the same way',
     () async {
+      // Folds are relative to the stroke's own direction, never to screen
+      // axes: rotating the input by 180 degrees rotates the result exactly.
       for (final mode in HairFoldMode.values.where(
         (m) => m != HairFoldMode.crescent,
       )) {
-        expect(
-          changedPixels(
-            await renderFold(mode),
-            await renderFold(mode, reverse: true),
-            interiorOnly: true,
-          ),
-          lessThan(80),
-          reason: mode.name,
+        final original = await renderFold(mode);
+        final rotated = await renderFold(
+          mode,
+          curve: [for (final p in foldCurve) ui.Offset(256 - p.dx, 400 - p.dy)],
         );
+        // A fold line may land a pixel off, with slightly different
+        // antialiasing, after rotation. A different depth choice moves the
+        // fold line to the other section (about 70 such pixels here).
+        bool near(int x, int y) {
+          final a = (y * 256 + x) * 4;
+          for (var dy = -2; dy <= 2; dy++) {
+            for (var dx = -2; dx <= 2; dx++) {
+              final rx = 255 - x + dx, ry = 399 - y + dy;
+              if (rx < 0 || ry < 0 || rx >= 256 || ry >= 400) continue;
+              final b = (ry * 256 + rx) * 4;
+              var same = true;
+              for (var c = 0; c < 4; c++) {
+                if ((original[a + c] - rotated[b + c]).abs() > 48) same = false;
+              }
+              if (same) return true;
+            }
+          }
+          return false;
+        }
+
+        var changed = 0;
+        for (var y = 0; y < 400; y++) {
+          for (var x = 0; x < 256; x++) {
+            if (!near(x, y)) changed++;
+          }
+        }
+        expect(changed, lessThan(20), reason: mode.name);
       }
     },
   );

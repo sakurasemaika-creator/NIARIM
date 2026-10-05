@@ -6635,19 +6635,13 @@ class AppLocalizationsEs extends AppLocalizations {
   String get brushOutlineEyedropper => 'Cuentagotas';
 
   @override
-  String get brushFold => 'Pliegue';
+  String get brushFold => 'Modo de pliegue';
 
   @override
-  String get brushFoldTriggerAngle => 'Ángulo de activación';
-
-  @override
-  String get brushFoldCurveStart => 'Posición de inicio de curva';
+  String get brushFoldCurveStart => 'Inicio de la curva de la línea de pliegue';
 
   @override
   String get brushFoldLength => 'Longitud del pliegue';
-
-  @override
-  String get brushFoldCurveStrength => 'Intensidad de curva';
 
   @override
   String get filterAuroraHologramPresetBlueHologram => 'Holograma zafiro';
@@ -6672,7 +6666,7 @@ class AppLocalizationsEs extends AppLocalizations {
   String get filterAuroraHologramPresetWarmHologram => 'Holograma amanecer';
 
   @override
-  String get brushFoldMode => 'Modo de pliegue';
+  String get brushFoldMode => 'Tipo de pliegue';
 
   @override
   String get brushFoldModeWaveTopView => 'Onda (vista superior)';
@@ -6694,7 +6688,7 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get helpBrushFoldDesc =>
-      'Activa Contorno en los ajustes del pincel para usar Pliegue. Con Pliegue desactivado, el trazo es normal. Al activarlo, los pliegues siguen las curvas que dibujas; no se generan ondas automáticamente. Hay cinco modos. Onda (vista superior) coloca delante la parte superior de cada superposición y Onda (contrapicado), la inferior. Rizo a la derecha coloca delante el segmento de arriba a la izquierda a abajo a la derecha; Rizo a la izquierda, el de arriba a la derecha a abajo a la izquierda. Rizo de media luna sigue las curvas en forma de C que realmente dibujas para formar medias lunas enlazadas. Usa Ángulo de activación, Posición de inicio de curva y Longitud del pliegue para ajustar la posición y la extensión de cada pliegue. La intensidad de curva va de 1 a 10 y su valor inicial es 5.';
+      'Activa Contorno en los ajustes del pincel para usar el Modo de pliegue. Desactivado, el pincel dibuja igual que el lápiz de contorno normal. Activado, la propia línea del lápiz de contorno se pliega y se riza según la dirección y las curvas del trazo que dibujas; no genera ondas automáticamente. En cada curva, una línea de pliegue sale del borde interior, se curva y se desvanece. Si el trazo sigue girando en el mismo sentido, aparece una línea de pliegue más sutil cada 270°. Hay cinco tipos de pliegue. Onda (vista superior) pone delante la parte dibujada antes y Onda (contrapicado), la dibujada después. Rizo a la derecha decide qué queda delante como si se enrollara hacia la derecha de la dirección de dibujo, y Rizo a la izquierda, hacia la izquierda; siguen el trazo, no la pantalla. Rizo de media luna sigue las curvas en C que dibujas para formar medias lunas encadenadas. Longitud del pliegue ajusta la longitud de la línea de pliegue (se adapta al tamaño del pincel), Ángulo del pliegue ajusta cuánto sigue la curva del trazo (al 50 % la sigue de forma natural) e Inicio de la curva de la línea de pliegue ajusta el grosor aparente del material (al 0 % se curva justo desde donde se ramifica).';
 
   @override
   String get tipsBrushFoldTitle =>
@@ -6702,7 +6696,7 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get tipsBrushFoldDesc =>
-      'Activa Contorno y Pliegue y prueba un trazo suave en forma de S con una intensidad de curva de 5. Elige Onda (vista superior) para colocar delante la parte superior de cada superposición u Onda (contrapicado) para la inferior. Para un movimiento diagonal, compara Rizo a la derecha, que adelanta el segmento de arriba a la izquierda a abajo a la derecha, con Rizo a la izquierda, que adelanta el de arriba a la derecha a abajo a la izquierda. Al dibujar una serie de curvas en C, usa Rizo de media luna para dar forma a las medias lunas enlazadas. Todos los modos usan las curvas que dibujas; una línea recta no se convierte en onda automáticamente. Ajusta poco a poco el ángulo de activación, la posición de inicio de curva y la longitud del pliegue; después, elige una intensidad entre 1 y 10. Desactiva Pliegue para volver al trazo normal.';
+      'Activa Contorno y Modo de pliegue y prueba primero un trazo suave en forma de S con los valores iniciales. Elige Onda (vista superior) para poner delante la parte dibujada antes, u Onda (contrapicado) para la dibujada después. Para mostrar un mechón que se enrolla, compara Rizo a la derecha, que se enrolla hacia la derecha de la dirección de dibujo, con Rizo a la izquierda, que lo hace hacia la izquierda. Cuando dibujes una serie de curvas en C, usa Rizo de media luna para dar forma a sus medias lunas encadenadas. Todos los tipos usan las curvas que dibujas; un trazo recto no se convierte en onda automáticamente. Si las líneas de pliegue son cortas, sube Longitud del pliegue; si no se curvan lo suficiente, sube Ángulo del pliegue; para que el cabello o la cinta parezcan más finos, sube Inicio de la curva de la línea de pliegue. Desactiva el Modo de pliegue para volver a un trazo normal.';
 
   @override
   String get tipsFourPanelBrushTitle =>
@@ -6847,4 +6841,23 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get customAutomationFavoritesOnly => 'Solo favoritos';
+
+  @override
+  String get brushFoldAngle => 'Ángulo del pliegue';
+
+  @override
+  String get brushFoldModeHelp =>
+      'Elige cómo se pliega el trazo a lo largo de su recorrido.';
+
+  @override
+  String get brushFoldLengthHelp =>
+      'Ajusta hasta dónde se extiende el pliegue. Se adapta al tamaño del pincel.';
+
+  @override
+  String get brushFoldAngleHelp =>
+      'Ajusta con qué intensidad el pliegue sigue la curva del trazo. Al 50 % la sigue de forma natural.';
+
+  @override
+  String get brushFoldCurveStartHelp =>
+      'Define dónde empieza a curvarse la línea de pliegue para expresar el grosor del cabello o la cinta. Al 0 % se curva justo desde donde se ramifica.';
 }

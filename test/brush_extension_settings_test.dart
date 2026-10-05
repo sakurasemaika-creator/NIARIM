@@ -96,28 +96,31 @@ void main() {
     final changes = <Brush>[];
     await tester.pumpWidget(host(base, changes.add));
     await tester.pumpAndSettle();
-    expect(find.text('折り返し'), findsNothing);
+    expect(find.text('折り畳みモード'), findsNothing);
     expect(find.byKey(const Key('brush-fold-mode')), findsNothing);
 
     await tester.tap(find.text('縁取り'));
     await tester.pump();
-    expect(find.text('折り返し'), findsOneWidget);
+    expect(find.text('折り畳みモード'), findsOneWidget);
     expect(find.byKey(const Key('brush-fold-mode')), findsNothing);
 
-    await tester.tap(find.text('折り返し'));
+    await tester.tap(find.text('折り畳みモード'));
     await tester.pump();
     expect(changes.last.foldEnabled, isTrue);
-    expect(find.text('発生角度'), findsOneWidget);
-    expect(find.text('カーブ開始位置'), findsOneWidget);
+    // Exactly the three fold sliders, each with its explanation.
+    expect(find.text('発生角度'), findsNothing);
+    expect(find.text('カーブ強度'), findsNothing);
     expect(find.text('折り返し長さ'), findsOneWidget);
-    expect(find.text('カーブ強度'), findsOneWidget);
+    expect(find.text('折り返し角度'), findsOneWidget);
+    expect(find.text('折り返し線のカーブ開始位置'), findsOneWidget);
+    expect(find.text('折り畳みが伸びる長さを調整します。ブラシサイズに連動します。'), findsOneWidget);
     expect(find.byKey(const Key('brush-fold-mode')), findsOneWidget);
     expect(find.byType(SwitchListTile), findsNWidgets(3));
-    expect(find.byType(Slider), findsNWidgets(5));
+    expect(find.byType(Slider), findsNWidgets(4));
     expect(find.text('ウェーブ'), findsNothing);
     expect(find.text('終点からウェーブにする範囲'), findsNothing);
     expect(find.text('ウェーブ発生角度'), findsNothing);
-    await tester.tap(find.text('折り返し'));
+    await tester.tap(find.text('折り畳みモード'));
     await tester.pump();
     expect(changes.last.foldEnabled, isFalse);
     expect(find.byKey(const Key('brush-fold-mode')), findsNothing);
@@ -125,14 +128,14 @@ void main() {
 
     await tester.tap(find.text('縁取り'));
     await tester.pump();
-    expect(find.text('折り返し'), findsNothing);
+    expect(find.text('折り畳みモード'), findsNothing);
     expect(find.byType(Slider), findsNothing);
   });
 
   final translatedModes = <Locale, (String, List<String>)>{
-    Locale('ja'): ('折りたたみタイプ', ['ウェーブ俯瞰', 'ウェーブ煽り', '右巻き', '左巻き', '三日月カール']),
+    Locale('ja'): ('折り畳みタイプ', ['ウェーブ俯瞰', 'ウェーブ煽り', '右巻き', '左巻き', '三日月カール']),
     Locale('en'): (
-      'Fold mode',
+      'Fold type',
       [
         'Wave (top view)',
         'Wave (low angle)',
@@ -142,7 +145,7 @@ void main() {
       ],
     ),
     Locale('es'): (
-      'Modo de pliegue',
+      'Tipo de pliegue',
       [
         'Onda (vista superior)',
         'Onda (contrapicado)',
@@ -152,7 +155,7 @@ void main() {
       ],
     ),
     Locale('fr'): (
-      'Type de repli',
+      'Type de pliage',
       [
         'Ondulation en plongée',
         'Ondulation en contre-plongée',
@@ -165,9 +168,9 @@ void main() {
       '접힘 유형',
       ['웨이브 (위에서 보기)', '웨이브 (아래에서 보기)', '오른쪽 컬', '왼쪽 컬', '초승달 컬'],
     ),
-    Locale('zh'): ('折返类型', ['波浪俯视', '波浪仰视', '右卷', '左卷', '月牙卷']),
+    Locale('zh'): ('折叠类型', ['波浪俯视', '波浪仰视', '右卷', '左卷', '月牙卷']),
     Locale.fromSubtags(languageCode: 'zh', scriptCode: 'Hant'): (
-      '折返類型',
+      '折疊類型',
       ['波浪俯視', '波浪仰視', '右捲', '左捲', '月牙捲'],
     ),
   };
@@ -330,13 +333,13 @@ void main() {
     expect(changes.last.foldMode, HairFoldMode.curlLeft);
     expect(changes.last.foldEnabled, isTrue);
 
-    await tester.ensureVisible(find.text('折り返し'));
-    await tester.tap(find.text('折り返し'));
+    await tester.ensureVisible(find.text('折り畳みモード'));
+    await tester.tap(find.text('折り畳みモード'));
     await tester.pump();
     expect(changes.last.foldEnabled, isFalse);
     expect(changes.last.foldMode, HairFoldMode.curlLeft);
 
-    await tester.tap(find.text('折り返し'));
+    await tester.tap(find.text('折り畳みモード'));
     await tester.pump();
     expect(changes.last.foldEnabled, isTrue);
     expect(changes.last.foldMode, HairFoldMode.curlLeft);
@@ -349,19 +352,18 @@ void main() {
     expect(dropdown.value, HairFoldMode.curlLeft);
   });
 
-  testWidgets('curve strength uses ten discrete levels with neutral five', (
-    tester,
-  ) async {
+  testWidgets('fold angle starts at 50% and curve start at 0%', (tester) async {
     await tester.pumpWidget(
       host(base.copyWith(outlineEnabled: true, foldEnabled: true), (_) {}),
     );
     await tester.pumpAndSettle();
-    final sliders = tester.widgetList<Slider>(find.byType(Slider)).toList();
-    final strength = sliders.singleWhere(
-      (slider) => slider.min == 1 && slider.max == 10,
+    Slider slider(String key) => tester.widget<Slider>(
+      find.descendant(of: find.byKey(Key(key)), matching: find.byType(Slider)),
     );
-    expect(strength.value, 5);
-    expect(strength.divisions, 9);
+    expect(slider('brush-fold-angle').value, .5);
+    expect(slider('brush-fold-curve-start').value, 0);
+    expect(slider('brush-fold-length').value, .5);
+    expect(find.text('50%'), findsNWidgets(2));
   });
 
   testWidgets('outline exposes picker and eyedropper actions', (tester) async {

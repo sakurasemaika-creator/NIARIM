@@ -16,10 +16,13 @@ class BrushExtensionLabels {
   final String colorPicker;
   final String eyedropper;
   final String fold;
-  final String foldTriggerAngle;
   final String foldCurveStart;
   final String foldLength;
-  final String foldCurveStrength;
+  final String foldAngle;
+  final String foldModeHelp;
+  final String foldLengthHelp;
+  final String foldAngleHelp;
+  final String foldCurveStartHelp;
   final String foldCrescentDepthThreshold;
   final String foldMode;
   final String foldModeWaveTopView;
@@ -38,10 +41,13 @@ class BrushExtensionLabels {
     required this.colorPicker,
     required this.eyedropper,
     required this.fold,
-    required this.foldTriggerAngle,
     required this.foldCurveStart,
     required this.foldLength,
-    required this.foldCurveStrength,
+    required this.foldAngle,
+    this.foldModeHelp = '',
+    this.foldLengthHelp = '',
+    this.foldAngleHelp = '',
+    this.foldCurveStartHelp = '',
     this.foldCrescentDepthThreshold = 'Crescent minimum depth / pen width',
     required this.foldMode,
     required this.foldModeWaveTopView,
@@ -62,10 +68,13 @@ class BrushExtensionLabels {
         colorPicker: l.brushOutlineColorPicker,
         eyedropper: l.brushOutlineEyedropper,
         fold: l.brushFold,
-        foldTriggerAngle: l.brushFoldTriggerAngle,
         foldCurveStart: l.brushFoldCurveStart,
         foldLength: l.brushFoldLength,
-        foldCurveStrength: l.brushFoldCurveStrength,
+        foldAngle: l.brushFoldAngle,
+        foldModeHelp: l.brushFoldModeHelp,
+        foldLengthHelp: l.brushFoldLengthHelp,
+        foldAngleHelp: l.brushFoldAngleHelp,
+        foldCurveStartHelp: l.brushFoldCurveStartHelp,
         foldCrescentDepthThreshold: l.brushFoldCrescentDepthThreshold,
         foldMode: l.brushFoldMode,
         foldModeWaveTopView: l.brushFoldModeWaveTopView,
@@ -84,13 +93,20 @@ class BrushExtensionLabels {
       outlineColor = '縁取り色',
       colorPicker = 'カラーピッカー',
       eyedropper = 'スポイト',
-      fold = '折り返し',
-      foldTriggerAngle = '発生角度',
-      foldCurveStart = 'カーブ開始位置',
+      fold = '折り畳みモード',
+      foldCurveStart = '折り返し線のカーブ開始位置',
       foldLength = '折り返し長さ',
-      foldCurveStrength = 'カーブ強度',
+      foldAngle = '折り返し角度',
+      foldModeHelp = 'ストロークに沿った折り畳み方を選択します。',
+      foldLengthHelp = '折り畳みが伸びる長さを調整します。ブラシサイズに連動します。',
+      foldAngleHelp =
+          'ストロークのカーブに対する折り畳みの強さを調整します。'
+          '50%でストロークのカーブに自然に連動します。',
+      foldCurveStartHelp =
+          '折り返し線が曲がり始める位置を調整し、髪やリボンの厚みを表現します。'
+          '0%では分岐位置からすぐにカーブします。',
       foldCrescentDepthThreshold = '三日月にするカーブの深さ（ペン幅比）',
-      foldMode = '折りたたみタイプ',
+      foldMode = '折り畳みタイプ',
       foldModeWaveTopView = 'ウェーブ俯瞰',
       foldModeWaveLowAngle = 'ウェーブ煽り',
       foldModeCurlRight = '右巻き',
@@ -223,39 +239,17 @@ class _BrushExtensionSettingsState extends State<BrushExtensionSettings> {
             onChanged: (v) => _set(_brush.copyWith(foldEnabled: v)),
           ),
           if (_brush.foldEnabled) ...[
-            _slider(
-              l.foldTriggerAngle,
-              _brush.foldTriggerAngle,
-              30,
-              170,
-              (v) => _set(_brush.copyWith(foldTriggerAngle: v)),
-              suffix: '°',
-            ),
-            _ratioSlider(
-              l.foldCurveStart,
-              _brush.foldCurveStartRatio,
-              (v) => _set(_brush.copyWith(foldCurveStartRatio: v)),
-            ),
-            _ratioSlider(
-              l.foldLength,
-              _brush.foldLengthRatio,
-              (v) => _set(_brush.copyWith(foldLengthRatio: v)),
-              max: 2,
-            ),
-            _integerSlider(
-              l.foldCurveStrength,
-              _brush.foldCurveStrength,
-              1,
-              10,
-              (v) => _set(_brush.copyWith(foldCurveStrength: v)),
-            ),
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
               child: DropdownButtonFormField<HairFoldMode>(
                 key: const Key('brush-fold-mode'),
                 initialValue: _brush.foldMode,
                 isExpanded: true,
-                decoration: InputDecoration(labelText: l.foldMode),
+                decoration: InputDecoration(
+                  labelText: l.foldMode,
+                  helperText: l.foldModeHelp.isEmpty ? null : l.foldModeHelp,
+                  helperMaxLines: 3,
+                ),
                 items: HairFoldMode.values
                     .map(
                       (mode) => DropdownMenuItem(
@@ -271,6 +265,33 @@ class _BrushExtensionSettingsState extends State<BrushExtensionSettings> {
                 onChanged: (mode) {
                   if (mode != null) _set(_brush.copyWith(foldMode: mode));
                 },
+              ),
+            ),
+            KeyedSubtree(
+              key: const Key('brush-fold-length'),
+              child: _ratioSlider(
+                l.foldLength,
+                _brush.foldLengthRatio,
+                (v) => _set(_brush.copyWith(foldLengthRatio: v)),
+                help: l.foldLengthHelp,
+              ),
+            ),
+            KeyedSubtree(
+              key: const Key('brush-fold-angle'),
+              child: _ratioSlider(
+                l.foldAngle,
+                _brush.foldAngleRatio,
+                (v) => _set(_brush.copyWith(foldAngleRatio: v)),
+                help: l.foldAngleHelp,
+              ),
+            ),
+            KeyedSubtree(
+              key: const Key('brush-fold-curve-start'),
+              child: _ratioSlider(
+                l.foldCurveStart,
+                _brush.foldCurveStartRatio,
+                (v) => _set(_brush.copyWith(foldCurveStartRatio: v)),
+                help: l.foldCurveStartHelp,
               ),
             ),
             if (_brush.foldMode == HairFoldMode.crescent)
@@ -322,6 +343,7 @@ class _BrushExtensionSettingsState extends State<BrushExtensionSettings> {
     double value,
     ValueChanged<double> changed, {
     double max = 1,
+    String help = '',
   }) => _slider(
     label,
     value,
@@ -330,6 +352,7 @@ class _BrushExtensionSettingsState extends State<BrushExtensionSettings> {
     changed,
     divisions: 100,
     displayValue: '${(value * 100).round()}%',
+    help: help,
   );
 
   Widget _slider(
@@ -341,6 +364,7 @@ class _BrushExtensionSettingsState extends State<BrushExtensionSettings> {
     int? divisions,
     String? suffix,
     String? displayValue,
+    String help = '',
   }) {
     final safe = value.clamp(min, max).toDouble();
     final shown =
@@ -364,6 +388,8 @@ class _BrushExtensionSettingsState extends State<BrushExtensionSettings> {
             divisions: divisions,
             onChanged: changed,
           ),
+          if (help.isNotEmpty)
+            Text(help, style: Theme.of(context).textTheme.bodySmall),
         ],
       ),
     );

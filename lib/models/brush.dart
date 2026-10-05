@@ -48,7 +48,7 @@ class Brush {
   final bool foldEnabled;
   final double foldTriggerAngle;
   final double foldCurveStartRatio;
-  final int foldCurveStrength;
+  final double foldAngleRatio;
   final double foldCrescentDepthThreshold;
   final double foldLengthRatio;
   final double foldEndTaperRatio;
@@ -99,11 +99,11 @@ class Brush {
     this.outlineColor = 0xFF000000,
     this.foldEnabled = false,
     this.foldTriggerAngle = 90.0,
-    this.foldCurveStartRatio = 0.25,
-    this.foldCurveStrength = 5,
+    this.foldCurveStartRatio = BrushExtensionDefaults.foldCurveStartRatio,
+    this.foldAngleRatio = BrushExtensionDefaults.foldAngleRatio,
     this.foldCrescentDepthThreshold =
         BrushExtensionDefaults.foldCrescentDepthThreshold,
-    this.foldLengthRatio = 0.8,
+    this.foldLengthRatio = BrushExtensionDefaults.foldLengthRatio,
     this.foldEndTaperRatio = 0.35,
     this.foldMode = HairFoldMode.waveTopView,
     this.yBranchAngle = 45.0,
@@ -127,7 +127,6 @@ class Brush {
             .clamp(0.0, BrushExtensionDefaults.maxFoldCrescentDepthThreshold)
             .toDouble()
       : BrushExtensionDefaults.foldCrescentDepthThreshold;
-  static int clampFoldCurveStrength(int value) => value.clamp(1, 10).toInt();
   static double clampFoldAngle(double value, double fallback) =>
       value.isFinite ? value.clamp(1.0, 180.0).toDouble() : fallback;
 
@@ -174,7 +173,7 @@ class Brush {
     bool? foldEnabled,
     double? foldTriggerAngle,
     double? foldCurveStartRatio,
-    int? foldCurveStrength,
+    double? foldAngleRatio,
     double? foldCrescentDepthThreshold,
     double? foldLengthRatio,
     double? foldEndTaperRatio,
@@ -235,17 +234,18 @@ class Brush {
     foldTriggerAngle: foldTriggerAngle ?? this.foldTriggerAngle,
     foldCurveStartRatio: clampFoldRatio(
       foldCurveStartRatio ?? this.foldCurveStartRatio,
-      .25,
+      BrushExtensionDefaults.foldCurveStartRatio,
     ),
-    foldCurveStrength: clampFoldCurveStrength(
-      foldCurveStrength ?? this.foldCurveStrength,
+    foldAngleRatio: clampFoldRatio(
+      foldAngleRatio ?? this.foldAngleRatio,
+      BrushExtensionDefaults.foldAngleRatio,
     ),
     foldCrescentDepthThreshold: clampFoldCrescentDepthThreshold(
       foldCrescentDepthThreshold ?? this.foldCrescentDepthThreshold,
     ),
     foldLengthRatio: clampFoldRatio(
       foldLengthRatio ?? this.foldLengthRatio,
-      .8,
+      BrushExtensionDefaults.foldLengthRatio,
     ),
     foldEndTaperRatio: clampFoldRatio(
       foldEndTaperRatio ?? this.foldEndTaperRatio,
@@ -299,12 +299,21 @@ class Brush {
     'outlineColor': outlineColor,
     'foldEnabled': foldEnabled,
     'foldTriggerAngle': foldTriggerAngle,
-    'foldCurveStartRatio': clampFoldRatio(foldCurveStartRatio, .25),
-    'foldCurveStrength': clampFoldCurveStrength(foldCurveStrength),
+    'foldCurveStartRatio': clampFoldRatio(
+      foldCurveStartRatio,
+      BrushExtensionDefaults.foldCurveStartRatio,
+    ),
+    'foldAngleRatio': clampFoldRatio(
+      foldAngleRatio,
+      BrushExtensionDefaults.foldAngleRatio,
+    ),
     'foldCrescentDepthThreshold': clampFoldCrescentDepthThreshold(
       foldCrescentDepthThreshold,
     ),
-    'foldLengthRatio': clampFoldRatio(foldLengthRatio, .8),
+    'foldLengthRatio': clampFoldRatio(
+      foldLengthRatio,
+      BrushExtensionDefaults.foldLengthRatio,
+    ),
     'foldEndTaperRatio': clampFoldRatio(foldEndTaperRatio, .35),
     'foldMode': foldMode.name,
     'yBranchAngle': yBranchAngle,
@@ -394,19 +403,23 @@ class Brush {
     foldEnabled: j['foldEnabled'] as bool? ?? false,
     foldTriggerAngle: (j['foldTriggerAngle'] as num?)?.toDouble() ?? 90,
     foldCurveStartRatio: clampFoldRatio(
-      (j['foldCurveStartRatio'] as num?)?.toDouble() ?? .25,
-      .25,
+      (j['foldCurveStartRatio'] as num?)?.toDouble() ??
+          BrushExtensionDefaults.foldCurveStartRatio,
+      BrushExtensionDefaults.foldCurveStartRatio,
     ),
-    foldCurveStrength: clampFoldCurveStrength(
-      (j['foldCurveStrength'] as num?)?.toInt() ?? 5,
+    foldAngleRatio: clampFoldRatio(
+      (j['foldAngleRatio'] as num?)?.toDouble() ??
+          BrushExtensionDefaults.foldAngleRatio,
+      BrushExtensionDefaults.foldAngleRatio,
     ),
     foldCrescentDepthThreshold: clampFoldCrescentDepthThreshold(
       (j['foldCrescentDepthThreshold'] as num?)?.toDouble() ??
           BrushExtensionDefaults.foldCrescentDepthThreshold,
     ),
     foldLengthRatio: clampFoldRatio(
-      (j['foldLengthRatio'] as num?)?.toDouble() ?? .8,
-      .8,
+      (j['foldLengthRatio'] as num?)?.toDouble() ??
+          BrushExtensionDefaults.foldLengthRatio,
+      BrushExtensionDefaults.foldLengthRatio,
     ),
     foldEndTaperRatio: clampFoldRatio(
       (j['foldEndTaperRatio'] as num?)?.toDouble() ?? .35,

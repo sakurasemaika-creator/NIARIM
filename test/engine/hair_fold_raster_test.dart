@@ -2,7 +2,6 @@ import 'dart:math' as math;
 import 'dart:typed_data';
 import 'dart:ui';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:niarim/engine/brush_stroke_geometry.dart';
 import 'package:niarim/engine/brush_texture_cache.dart';
 import 'package:niarim/engine/hair_fold_raster.dart';
 import 'package:niarim/engine/tile_manager.dart';
@@ -28,21 +27,6 @@ TileManager draw({double frontOpacity = 1, int? textureAlpha}) {
   }
   HairFoldRaster(tiles, 'test').render(
     points: points,
-    folds: const [
-      FoldEvent(
-        sample: BrushStrokeSample(
-          screenPosition: c,
-          documentPosition: c,
-          effectiveWidth: 60,
-        ),
-        tangent: Offset(-1, 1),
-        inwardNormal: Offset(-1, 0),
-        signedTurnRadians: 1.57,
-        screenDistance: 160,
-        sourceCurve: [a, b, c],
-        sourceIndices: [0, 1, 3],
-      ),
-    ],
     brush: const Brush(
       id: 'fold',
       name: 'fold',
@@ -57,6 +41,8 @@ TileManager draw({double frontOpacity = 1, int? textureAlpha}) {
       outlineEnabled: true,
       outlineWidth: 2,
       foldEnabled: true,
+      // The corner is exactly 90 degrees; keep it clear of the threshold.
+      foldTriggerAngle: 60,
     ),
     fillColor: const Color(0xffffffff),
     texture: texture,
@@ -76,7 +62,6 @@ TileManager crescent({
   int? steps,
   double opacity = 1,
   List<HairRibbonPoint>? input,
-  List<FoldEvent>? folds,
   Uint8List? texture,
 }) {
   final tiles = TileManager(canvasWidth: 360, canvasHeight: 360);
@@ -97,30 +82,6 @@ TileManager crescent({
       ];
   HairFoldRaster(tiles, 'test').render(
     points: points,
-    folds:
-        folds ??
-        [
-          FoldEvent(
-            sample: BrushStrokeSample(
-              screenPosition: points.last.position,
-              documentPosition: points.last.position,
-              effectiveWidth: width,
-            ),
-            tangent: const Offset(-1, 0),
-            inwardNormal: const Offset(-1, 0),
-            signedTurnRadians: math.pi,
-            screenDistance: radius * math.pi,
-            isContinuousTurnFold: continuous,
-            sourceCurve: points
-                .take(continuous ? 91 : points.length)
-                .map((p) => p.position)
-                .toList(),
-            sourceIndices: List.generate(
-              continuous ? 91 : points.length,
-              (i) => i,
-            ),
-          ),
-        ],
     brush: Brush(
       id: 'crescent',
       name: 'crescent',
@@ -136,7 +97,7 @@ TileManager crescent({
       outlineWidth: 2,
       foldEnabled: true,
       foldMode: HairFoldMode.crescent,
-      foldCurveStrength: strength,
+      foldAngleRatio: (strength - 1) / 9,
       foldTriggerAngle: triggerAngle,
       foldCrescentDepthThreshold: threshold,
       rotation: false,
@@ -175,7 +136,6 @@ void main() {
           HairRibbonPoint(Offset(60, 40), 60, 1),
           HairRibbonPoint(Offset(70, 40), 60, 1),
         ],
-        folds: const [],
         brush: Brush(
           id: 'custom-tail',
           name: 'Tail',
@@ -250,108 +210,6 @@ void main() {
       }
     });
   }
-  test(
-    'continuous crescent geometry does not reset at detector boundaries',
-    () {
-      final points = [
-        for (var i = 0; i <= 150; i++)
-          HairRibbonPoint(
-            const Offset(180, 180) +
-                Offset(math.cos(i * math.pi / 60), math.sin(i * math.pi / 60)) *
-                    (55 + i * .3),
-            30,
-            1,
-          ),
-      ];
-      FoldEvent event(int end, bool continuous) => FoldEvent(
-        sample: BrushStrokeSample(
-          screenPosition: points[end].position,
-          documentPosition: points[end].position,
-          effectiveWidth: 30,
-        ),
-        tangent: const Offset(1, 0),
-        inwardNormal: const Offset(0, 1),
-        signedTurnRadians: 1,
-        screenDistance: end * 4,
-        isContinuousTurnFold: continuous,
-        sourceCurve: points.take(end + 1).map((p) => p.position).toList(),
-        sourceIndices: List.generate(end + 1, (i) => i),
-      );
-      final before = crescent(input: points, folds: [event(20, false)]);
-      final after = crescent(
-        input: points,
-        folds: [event(20, false), event(91, true)],
-      );
-      addTearDown(before.dispose);
-      addTearDown(after.dispose);
-      var changed = 0;
-      for (var y = 0; y < 360; y++) {
-        for (var x = 0; x < 360; x++) {
-          if (channelAt(before, x, y, 3) != channelAt(after, x, y, 3) ||
-              channelAt(before, x, y, 0) != channelAt(after, x, y, 0)) {
-            changed++;
-          }
-        }
-      }
-      expect(
-        changed,
-        0,
-        reason: 'An event cannot change an identical authored curve.',
-      );
-    },
-  );
-  test(
-    'crescent reversals follow input even when a small bend misses the detector',
-    () {
-      final points = [
-        for (var i = 0; i <= 180; i++)
-          HairRibbonPoint(
-            Offset(180 + 60 * math.sin(i * math.pi / 60), 30 + i * 1.6),
-            26,
-            1,
-          ),
-      ];
-      FoldEvent event(int pivot, double sign) => FoldEvent(
-        sample: BrushStrokeSample(
-          screenPosition: points[pivot + 15].position,
-          documentPosition: points[pivot + 15].position,
-          effectiveWidth: 26,
-        ),
-        tangent: const Offset(0, 1),
-        inwardNormal: const Offset(-1, 0),
-        signedTurnRadians: sign,
-        screenDistance: pivot * 2,
-        sourceCurve: points
-            .sublist(pivot - 15, pivot + 16)
-            .map((p) => p.position)
-            .toList(),
-        sourceIndices: List.generate(31, (i) => pivot - 15 + i),
-      );
-      final oneEvent = crescent(
-        width: 26,
-        input: points,
-        folds: [event(30, 1)],
-      );
-      final allEvents = crescent(
-        width: 26,
-        input: points,
-        folds: [event(30, 1), event(90, -1), event(150, 1)],
-      );
-      addTearDown(oneEvent.dispose);
-      addTearDown(allEvents.dispose);
-      var changed = 0;
-      for (var y = 0; y < 360; y++) {
-        for (var x = 0; x < 360; x++) {
-          if ((channelAt(oneEvent, x, y, 3) - channelAt(allEvents, x, y, 3))
-                  .abs() >
-              80) {
-            changed++;
-          }
-        }
-      }
-      expect(changed, 0);
-    },
-  );
   test('short continuation after a fold tapers without a swollen cap', () {
     final tiles = crescent(continuous: true, steps: 95);
     addTearDown(tiles.dispose);
@@ -463,6 +321,7 @@ void main() {
     // The same 20 px wave: hidden inside a 64 px pen, visible on an 8 px pen.
     final thick = crescent(
       width: 64,
+      triggerAngle: 30,
       threshold: BrushExtensionDefaults.foldCrescentDepthThreshold,
       input: sine(20),
     );
@@ -470,6 +329,7 @@ void main() {
     expect(hasInk(thick), isFalse);
     final thin = crescent(
       width: 8,
+      triggerAngle: 30,
       threshold: BrushExtensionDefaults.foldCrescentDepthThreshold,
       input: [
         for (final p in sine(20)) HairRibbonPoint(p.position, 8, p.opacity),
@@ -477,7 +337,12 @@ void main() {
     );
     addTearDown(thin.dispose);
     expect(hasInk(thin), isTrue);
-    final lowered = crescent(width: 64, threshold: .25, input: sine(20));
+    final lowered = crescent(
+      width: 64,
+      triggerAngle: 30,
+      threshold: .25,
+      input: sine(20),
+    );
     addTearDown(lowered.dispose);
     expect(hasInk(lowered), isTrue);
   });

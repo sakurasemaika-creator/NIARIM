@@ -6266,19 +6266,13 @@ class AppLocalizationsZh extends AppLocalizations {
   String get brushOutlineEyedropper => '吸管';
 
   @override
-  String get brushFold => '折返';
+  String get brushFold => '折叠模式';
 
   @override
-  String get brushFoldTriggerAngle => '触发角度';
-
-  @override
-  String get brushFoldCurveStart => '曲线起始位置';
+  String get brushFoldCurveStart => '折返线的弯曲起点';
 
   @override
   String get brushFoldLength => '折返长度';
-
-  @override
-  String get brushFoldCurveStrength => '曲线强度';
 
   @override
   String get filterAuroraHologramPresetBlueHologram => '蓝宝石全息';
@@ -6302,7 +6296,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get filterAuroraHologramPresetWarmHologram => '日出全息';
 
   @override
-  String get brushFoldMode => '折返类型';
+  String get brushFoldMode => '折叠类型';
 
   @override
   String get brushFoldModeWaveTopView => '波浪俯视';
@@ -6324,14 +6318,14 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get helpBrushFoldDesc =>
-      '在画笔设置中开启描边后，即可使用折返。关闭折返时绘制普通笔画；开启后，根据实际绘制的弯曲形成折痕，不会自动生成波浪。共有五种类型：波浪俯视让重叠部分的上侧显示在前，波浪仰视让下侧显示在前。右卷让左上至右下方向的线段显示在前，左卷让右上至左下方向的线段显示在前。月牙卷沿实际绘制的C形曲线形成相连的月牙。可通过触发角度、曲线起始位置和折返长度调整折痕的位置与范围。曲线强度为1～10，默认值为5。';
+      '在画笔设置中开启「描边」后即可使用「折叠模式」。关闭时与普通描边笔的绘制完全相同。开启后，描边笔的线条本身会根据所画笔画的方向和弯曲而折叠、卷曲；它不会自动生成波浪。每个弯曲处都会出现一条从内侧轮廓分出、弯曲后渐渐消失的折返线。若笔画持续朝同一方向转动，每转270°会加入一条较含蓄的折返线。折叠类型有5种。「波浪俯视」让先画的一侧在前，「波浪仰视」让后画的一侧在前。「右卷」按照朝笔画前进方向右侧卷入的方式决定前后，「左卷」则朝左侧；依据的是所画方向而不是屏幕方向。「月牙卷」会沿着所画的C形曲线整理成相连的月牙形。「折返长度」调整折返线的长度（与画笔大小联动），「折返角度」调整跟随笔画弯曲的强度（50%时自然联动），「折返线的弯曲起点」调整材质看起来的厚度（0%时从分叉处立即弯曲）。';
 
   @override
   String get tipsBrushFoldTitle => '选择头发折返时显示在前的部分';
 
   @override
   String get tipsBrushFoldDesc =>
-      '开启描边和折返，将曲线强度设为5，先试画一条平缓的S形曲线。想让重叠部分的上侧显示在前，选择波浪俯视；想让下侧显示在前，选择波浪仰视。斜向的发丝可以比较右卷与左卷：右卷让左上至右下方向的线段显示在前，左卷让右上至左下方向的线段显示在前。连续绘制C形曲线时，可用月牙卷整理相连的月牙形状。所有类型都使用实际绘制的弯曲，直线不会自动变成波浪。逐步调整触发角度、曲线起始位置和折返长度，再在1～10之间调整曲线强度。关闭折返即可恢复普通笔画。';
+      '开启描边和折叠模式后，先用初始设置画一条平缓的S形试试。要让先画的一侧在前就选「波浪俯视」，让后画的一侧在前则选「波浪仰视」。表现卷入时，比较朝前进方向右侧卷的「右卷」和朝左侧卷的「左卷」更容易决定。连续画C形曲线时，用「月牙卷」整理月牙的连接。每种类型都使用你所画的弯曲，直线不会自动变成波浪。折返线太短就调高「折返长度」，弯曲不足就调高「折返角度」，想让头发或丝带显得更薄时就调高「折返线的弯曲起点」。关闭折叠模式即可回到普通笔画。';
 
   @override
   String get tipsFourPanelBrushTitle => '四格漫画画笔×直线尺快速绘制分格';
@@ -6469,6 +6463,22 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get customAutomationFavoritesOnly => '仅显示收藏';
+
+  @override
+  String get brushFoldAngle => '折返角度';
+
+  @override
+  String get brushFoldModeHelp => '选择沿笔画折叠的方式。';
+
+  @override
+  String get brushFoldLengthHelp => '调整折叠延伸的长度。与画笔大小联动。';
+
+  @override
+  String get brushFoldAngleHelp => '调整折叠相对于笔画弯曲的强度。50%时与笔画弯曲自然联动。';
+
+  @override
+  String get brushFoldCurveStartHelp =>
+      '调整折返线开始弯曲的位置，用以表现头发或丝带的厚度。0%时从分叉处立即弯曲。';
 }
 
 /// The translations for Chinese, using the Han script (`zh_Hant`).
@@ -12733,19 +12743,13 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get brushOutlineEyedropper => '吸管';
 
   @override
-  String get brushFold => '折返';
+  String get brushFold => '折疊模式';
 
   @override
-  String get brushFoldTriggerAngle => '触发角度';
-
-  @override
-  String get brushFoldCurveStart => '曲線起始位置';
+  String get brushFoldCurveStart => '折返線的彎曲起點';
 
   @override
   String get brushFoldLength => '折返長度';
-
-  @override
-  String get brushFoldCurveStrength => '曲線強度';
 
   @override
   String get filterAuroraHologramPresetBlueHologram => '藍寶石全息';
@@ -12769,7 +12773,7 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get filterAuroraHologramPresetWarmHologram => '日出全息';
 
   @override
-  String get brushFoldMode => '折返類型';
+  String get brushFoldMode => '折疊類型';
 
   @override
   String get brushFoldModeWaveTopView => '波浪俯視';
@@ -12791,14 +12795,14 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get helpBrushFoldDesc =>
-      '在筆刷設定中開啟描邊後，即可使用折返。關閉折返時繪製一般筆畫；開啟後，根據實際繪製的彎曲形成摺痕，不會自動產生波浪。共有五種類型：波浪俯視讓重疊部分的上側顯示在前，波浪仰視讓下側顯示在前。右捲讓左上至右下方向的線段顯示在前，左捲讓右上至左下方向的線段顯示在前。月牙捲沿實際繪製的C形曲線形成相連的月牙。可透過觸發角度、曲線起始位置和折返長度調整摺痕的位置與範圍。曲線強度為1～10，預設值為5。';
+      '在筆刷設定中開啟「描边」後即可使用「折疊模式」。關閉時與一般描邊筆的繪製完全相同。開啟後，描邊筆的線條本身會依照所畫筆畫的方向與彎曲而折疊、捲曲；它不會自動產生波浪。每個彎曲處都會出現一條從內側輪廓分出、彎曲後漸漸消失的折返線。若筆畫持續朝同一方向轉動，每轉270°會加入一條較含蓄的折返線。折疊類型有5種。「波浪俯視」讓先畫的一側在前，「波浪仰視」讓後畫的一側在前。「右捲」依照朝筆畫前進方向右側捲入的方式決定前後，「左捲」則朝左側；依據的是所畫方向而不是螢幕方向。「月牙捲」會沿著所畫的C形曲線整理成相連的月牙形。「折返長度」調整折返線的長度（與筆刷大小連動），「折返角度」調整跟隨筆畫彎曲的強度（50%時自然連動），「折返線的彎曲起點」調整材質看起來的厚度（0%時從分岔處立即彎曲）。';
 
   @override
   String get tipsBrushFoldTitle => '選擇頭髮折返時顯示在前的部分';
 
   @override
   String get tipsBrushFoldDesc =>
-      '開啟描邊和折返，將曲線強度設為5，先試畫一條平緩的S形曲線。想讓重疊部分的上側顯示在前，選擇波浪俯視；想讓下側顯示在前，選擇波浪仰視。斜向的髮絲可以比較右捲與左捲：右捲讓左上至右下方向的線段顯示在前，左捲讓右上至左下方向的線段顯示在前。連續繪製C形曲線時，可用月牙捲整理相連的月牙形狀。所有類型都使用實際繪製的彎曲，直線不會自動變成波浪。逐步調整觸發角度、曲線起始位置和折返長度，再在1～10之間調整曲線強度。關閉折返即可恢復一般筆畫。';
+      '開啟描邊與折疊模式後，先用初始設定畫一條平緩的S形試試。要讓先畫的一側在前就選「波浪俯視」，讓後畫的一側在前則選「波浪仰視」。表現捲入時，比較朝前進方向右側捲的「右捲」與朝左側捲的「左捲」更容易決定。連續畫C形曲線時，用「月牙捲」整理月牙的連接。每種類型都使用你所畫的彎曲，直線不會自動變成波浪。折返線太短就調高「折返長度」，彎曲不足就調高「折返角度」，想讓頭髮或緞帶顯得更薄時就調高「折返線的彎曲起點」。關閉折疊模式即可回到一般筆畫。';
 
   @override
   String get tipsFourPanelBrushTitle => '四格漫畫筆刷×直線尺快速繪製分格';
@@ -12936,4 +12940,20 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get customAutomationFavoritesOnly => '僅顯示收藏';
+
+  @override
+  String get brushFoldAngle => '折返角度';
+
+  @override
+  String get brushFoldModeHelp => '選擇沿筆畫折疊的方式。';
+
+  @override
+  String get brushFoldLengthHelp => '調整折疊延伸的長度。與筆刷大小連動。';
+
+  @override
+  String get brushFoldAngleHelp => '調整折疊相對於筆畫彎曲的強度。50%時與筆畫彎曲自然連動。';
+
+  @override
+  String get brushFoldCurveStartHelp =>
+      '調整折返線開始彎曲的位置，用以表現頭髮或緞帶的厚度。0%時從分岔處立即彎曲。';
 }
