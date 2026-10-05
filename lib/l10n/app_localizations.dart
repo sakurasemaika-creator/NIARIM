@@ -2540,7 +2540,7 @@ abstract class AppLocalizations {
   /// No description provided for @helpFadeDesc.
   ///
   /// In ja, this message translates to:
-  /// **'入り（始点）と抜き（終点）の値と距離をそれぞれ独立して設定できるブラシ機能です。入りだけ、抜きだけ、または非対称の設定にでき、線の描き始め・描き終わりの太さや不透明度を別々に調整できます。'**
+  /// **'入り（始点）と抜き（終点）の値と距離をそれぞれ独立して設定できるブラシ機能です。入りだけ、抜きだけ、または非対称の設定にでき、線の描き始め・描き終わりの太さや不透明度を別々に調整できます。縁取りペンでは全体の形（太さ）だけが変わり、不透明度は変わりません。'**
   String get helpFadeDesc;
 
   /// No description provided for @helpStrokeDecayTitle.
@@ -11603,6 +11603,18 @@ abstract class AppLocalizations {
   /// **'スポイト'**
   String get brushOutlineEyedropper;
 
+  /// No description provided for @brushOutlineKeepOverlap.
+  ///
+  /// In ja, this message translates to:
+  /// **'重なりを維持する'**
+  String get brushOutlineKeepOverlap;
+
+  /// No description provided for @brushOutlineKeepOverlapHelp.
+  ///
+  /// In ja, this message translates to:
+  /// **'オンでは、ストローク同士が重なった所にも縁取りを描きます。オフでは、重なった所は縁取りも折り返し線も描かず、全体の周りだけを縁取ります。'**
+  String get brushOutlineKeepOverlapHelp;
+
   /// No description provided for @brushFold.
   ///
   /// In ja, this message translates to:
@@ -11708,7 +11720,7 @@ abstract class AppLocalizations {
   /// No description provided for @helpBrushFoldDesc.
   ///
   /// In ja, this message translates to:
-  /// **'ブラシ設定で「縁取り」をONにすると「折り畳みモード」を使えます。OFFでは通常の縁取りペンと同じ描画です。ONにすると、描いたストロークの方向と曲がりをもとに、縁取りペンの線そのものが折れたり巻いたりします。波形を自動生成する機能ではありません。曲がり角ごとに、内側の輪郭から分かれてカーブし、すっと消える折り返し線が入ります。同じ向きに回り続けたときは270°ごとに控えめな折り返し線が入ります。折り畳みタイプは5種類です。「ウェーブ俯瞰」は先に描いた側、「ウェーブ煽り」は後に描いた側を手前にします。「右巻き」はストロークの進行方向の右へ、「左巻き」は左へ巻き込むように前後を決めます。基準は画面の向きではなく描いた向きです。「三日月カール」は描いたC字のカーブに沿って三日月がつながる形に整えます。「折り返し長さ」は折り返し線の長さ（ブラシサイズに連動）、「折り返し角度」はストロークのカーブへの追従の強さ（50%で自然に連動）、「折り返し線のカーブ開始位置」は素材の見かけの厚み（0%で分岐位置からすぐにカーブ）を調整します。'**
+  /// **'ブラシ設定で「縁取り」をONにすると「折り畳みモード」を使えます。OFFでは通常の縁取りペンと同じ描画です。ONにすると、描いたストロークの方向と曲がりをもとに、縁取りペンの線そのものが折れたり巻いたりします。波形を自動生成する機能ではありません。曲がり角ごとに、内側の輪郭から分かれてカーブし、すっと消える折り返し線が入ります。同じ向きに回り続けたときは270°ごとに控えめな折り返し線が入ります。折り畳みタイプは5種類です。「ウェーブ俯瞰」は先に描いた側、「ウェーブ煽り」は後に描いた側を手前にします。「右巻き」はストロークの進行方向の右へ、「左巻き」は左へ巻き込むように前後を決めます。基準は画面の向きではなく描いた向きです。「三日月カール」は描いたC字のカーブに沿って三日月がつながる形に整えます。「折り返し長さ」は折り返し線の長さ（ブラシサイズに連動）、「折り返し角度」はストロークのカーブへの追従の強さ（50%で自然に連動）、「折り返し線のカーブ開始位置」は素材の見かけの厚み（0%で分岐位置からすぐにカーブ）を調整します。縁取りペンの筆圧とフェード（入り抜き）は縁取りを含む全体の形だけを変え、縁取り線の太さと色の濃さは変わりません。縁取りの「重なりを維持する」をオフにすると、重なったストロークは境目を縁取らずにつながり（重なった所には折り返し線も描きません）、全体の周りだけを縁取ります。'**
   String get helpBrushFoldDesc;
 
   /// No description provided for @tipsBrushFoldTitle.

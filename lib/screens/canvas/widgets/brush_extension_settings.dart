@@ -13,6 +13,8 @@ class BrushExtensionLabels {
   final String outline;
   final String outlineWidth;
   final String outlineColor;
+  final String outlineKeepOverlap;
+  final String outlineKeepOverlapHelp;
   final String colorPicker;
   final String eyedropper;
   final String fold;
@@ -38,6 +40,8 @@ class BrushExtensionLabels {
     required this.outline,
     required this.outlineWidth,
     required this.outlineColor,
+    this.outlineKeepOverlap = 'Keep overlaps',
+    this.outlineKeepOverlapHelp = '',
     required this.colorPicker,
     required this.eyedropper,
     required this.fold,
@@ -65,6 +69,8 @@ class BrushExtensionLabels {
         outline: l.brushOutline,
         outlineWidth: l.brushOutlineWidth,
         outlineColor: l.brushOutlineColor,
+        outlineKeepOverlap: l.brushOutlineKeepOverlap,
+        outlineKeepOverlapHelp: l.brushOutlineKeepOverlapHelp,
         colorPicker: l.brushOutlineColorPicker,
         eyedropper: l.brushOutlineEyedropper,
         fold: l.brushFold,
@@ -91,6 +97,11 @@ class BrushExtensionLabels {
       outline = '縁取り',
       outlineWidth = '縁取り幅',
       outlineColor = '縁取り色',
+      outlineKeepOverlap = '重なりを維持する',
+      outlineKeepOverlapHelp =
+          'オンでは、ストローク同士が重なった所にも縁取りを描きます。'
+          'オフでは、重なった所は縁取りも折り返し線も描かず、'
+          '全体の周りだけを縁取ります。',
       colorPicker = 'カラーピッカー',
       eyedropper = 'スポイト',
       fold = '折り畳みモード',
@@ -227,6 +238,17 @@ class _BrushExtensionSettingsState extends State<BrushExtensionSettings> {
                 ),
               ],
             ),
+          ),
+          CheckboxListTile(
+            key: const Key('brush-outline-keep-overlap'),
+            dense: true,
+            title: Text(l.outlineKeepOverlap),
+            subtitle: l.outlineKeepOverlapHelp.isEmpty
+                ? null
+                : Text(l.outlineKeepOverlapHelp),
+            value: _brush.outlineKeepOverlap,
+            onChanged: (v) =>
+                _set(_brush.copyWith(outlineKeepOverlap: v ?? true)),
           ),
           SwitchListTile(
             dense: true,

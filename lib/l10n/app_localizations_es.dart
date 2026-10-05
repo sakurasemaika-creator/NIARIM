@@ -1355,7 +1355,7 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get helpFadeDesc =>
-      'Una función del pincel que permite ajustar de forma independiente el valor y la distancia de entrada (inicio del trazo) y salida (final del trazo). Puedes afinar solo el inicio, solo el final o usar ajustes asimétricos para controlar por separado el grosor y la opacidad en cada extremo.';
+      'Una función del pincel que permite ajustar de forma independiente el valor y la distancia de entrada (inicio del trazo) y salida (final del trazo). Puedes afinar solo el inicio, solo el final o usar ajustes asimétricos para controlar por separado el grosor y la opacidad en cada extremo. En el lápiz de contorno solo cambia la forma general (el grosor), nunca la opacidad.';
 
   @override
   String get helpStrokeDecayTitle => 'Atenuación de trazo';
@@ -6635,6 +6635,13 @@ class AppLocalizationsEs extends AppLocalizations {
   String get brushOutlineEyedropper => 'Cuentagotas';
 
   @override
+  String get brushOutlineKeepOverlap => 'Mantener superposiciones';
+
+  @override
+  String get brushOutlineKeepOverlapHelp =>
+      'Activado: también se dibuja el contorno donde los trazos se superponen. Desactivado: los trazos superpuestos se fusionan; donde se superponen no se dibujan contornos ni líneas de pliegue, y solo se contornea el exterior de la forma combinada.';
+
+  @override
   String get brushFold => 'Modo de pliegue';
 
   @override
@@ -6688,7 +6695,7 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get helpBrushFoldDesc =>
-      'Activa Contorno en los ajustes del pincel para usar el Modo de pliegue. Desactivado, el pincel dibuja igual que el lápiz de contorno normal. Activado, la propia línea del lápiz de contorno se pliega y se riza según la dirección y las curvas del trazo que dibujas; no genera ondas automáticamente. En cada curva, una línea de pliegue sale del borde interior, se curva y se desvanece. Si el trazo sigue girando en el mismo sentido, aparece una línea de pliegue más sutil cada 270°. Hay cinco tipos de pliegue. Onda (vista superior) pone delante la parte dibujada antes y Onda (contrapicado), la dibujada después. Rizo a la derecha decide qué queda delante como si se enrollara hacia la derecha de la dirección de dibujo, y Rizo a la izquierda, hacia la izquierda; siguen el trazo, no la pantalla. Rizo de media luna sigue las curvas en C que dibujas para formar medias lunas encadenadas. Longitud del pliegue ajusta la longitud de la línea de pliegue (se adapta al tamaño del pincel), Ángulo del pliegue ajusta cuánto sigue la curva del trazo (al 50 % la sigue de forma natural) e Inicio de la curva de la línea de pliegue ajusta el grosor aparente del material (al 0 % se curva justo desde donde se ramifica).';
+      'Activa Contorno en los ajustes del pincel para usar el Modo de pliegue. Desactivado, el pincel dibuja igual que el lápiz de contorno normal. Activado, la propia línea del lápiz de contorno se pliega y se riza según la dirección y las curvas del trazo que dibujas; no genera ondas automáticamente. En cada curva, una línea de pliegue sale del borde interior, se curva y se desvanece. Si el trazo sigue girando en el mismo sentido, aparece una línea de pliegue más sutil cada 270°. Hay cinco tipos de pliegue. Onda (vista superior) pone delante la parte dibujada antes y Onda (contrapicado), la dibujada después. Rizo a la derecha decide qué queda delante como si se enrollara hacia la derecha de la dirección de dibujo, y Rizo a la izquierda, hacia la izquierda; siguen el trazo, no la pantalla. Rizo de media luna sigue las curvas en C que dibujas para formar medias lunas encadenadas. Longitud del pliegue ajusta la longitud de la línea de pliegue (se adapta al tamaño del pincel), Ángulo del pliegue ajusta cuánto sigue la curva del trazo (al 50 % la sigue de forma natural) e Inicio de la curva de la línea de pliegue ajusta el grosor aparente del material (al 0 % se curva justo desde donde se ramifica). En el lápiz de contorno, la presión y el Desvanecido (entrada y salida) solo cambian la forma general, contorno incluido; el contorno conserva su grosor y el color nunca se aclara. Desactiva Mantener superposiciones en Contorno para fusionar los trazos superpuestos: sus uniones no se contornean ni se dibujan líneas de pliegue donde se superponen; solo se contornea el exterior de la forma combinada.';
 
   @override
   String get tipsBrushFoldTitle =>

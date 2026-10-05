@@ -384,4 +384,45 @@ void main() {
     expect(picked, 1);
     expect(eyedropped, 1);
   });
+  testWidgets('keep overlaps is an outline checkbox, on by default', (
+    tester,
+  ) async {
+    final changes = <Brush>[];
+    await tester.pumpWidget(host(base, changes.add));
+    await tester.pumpAndSettle();
+    final control = find.byKey(const Key('brush-outline-keep-overlap'));
+    expect(control, findsNothing, reason: 'only with the outline on');
+
+    await tester.pumpWidget(
+      host(base.copyWith(outlineEnabled: true), changes.add),
+    );
+    await tester.pumpAndSettle();
+    expect(control, findsOneWidget);
+    expect(find.text('重なりを維持する'), findsOneWidget);
+    expect(
+      find.textContaining('重なった所は縁取りも折り返し線も描かず、全体の周りだけを縁取ります'),
+      findsOneWidget,
+    );
+    expect(tester.widget<CheckboxListTile>(control).value, isTrue);
+    await tester.ensureVisible(control);
+    await tester.tap(control);
+    await tester.pump();
+    expect(changes.last.outlineKeepOverlap, isFalse);
+    expect(changes.last.toJson()['outlineKeepOverlap'], isFalse);
+  });
+  for (final locale in AppLocalizations.supportedLocales) {
+    testWidgets('keep overlaps is labelled in ${locale.toLanguageTag()}', (
+      tester,
+    ) async {
+      await tester.pumpWidget(
+        host(base.copyWith(outlineEnabled: true), (_) {}, locale: locale),
+      );
+      await tester.pumpAndSettle();
+      final tile = tester.widget<CheckboxListTile>(
+        find.byKey(const Key('brush-outline-keep-overlap')),
+      );
+      expect((tile.title! as Text).data, isNotEmpty);
+      expect((tile.subtitle! as Text).data, isNotEmpty);
+    });
+  }
 }

@@ -5,6 +5,7 @@ import 'dart:ui';
 import 'package:flutter/foundation.dart';
 
 import '../models/brush.dart';
+import 'brush_render_plan.dart';
 import 'brush_stroke_geometry.dart';
 import 'brush_texture_cache.dart';
 import 'tile_manager.dart';
@@ -14,7 +15,24 @@ class HairRibbonPoint {
   final Offset position;
   final double width;
   final double opacity;
-  const HairRibbonPoint(this.position, this.width, this.opacity);
+
+  /// The pressure/taper scale already applied to [width]. It shapes the
+  /// strand as a whole, outline included, while the outline keeps its width
+  /// (see [outlinedStrokeRadii]).
+  final double scale;
+  const HairRibbonPoint(
+    this.position,
+    this.width,
+    this.opacity, [
+    this.scale = 1,
+  ]);
+
+  /// The fill radius before [outlinedFill] snaps it.
+  double fillRadius(double outlineWidth) =>
+      outlinedFillRadius(width, scale, outlineWidth);
+
+  double outerRadius(double outlineWidth) =>
+      outlinedOuterRadius(width, scale, outlineWidth);
 }
 
 /// Replaces this stroke over its original tiles, so the front surface can hide
@@ -34,7 +52,11 @@ class HairFoldRaster {
   // sections or fold lines changed. Long strokes stay cheap per move.
   final Map<int, _SurfaceTile> _surfaces = {};
   Map<int, Set<int>> _runTiles = {};
-  Map<int, (double, int)> _runSignatures = {};
+  Map<int, (double, int, double, double)> _runSignatures = {};
+
+  /// Fold line starts by (repeat, vertex, front end, back end), with the
+  /// samples they were found from: while drawing, only new folds search.
+  final Map<(int, int, int, int), _FoldStartCache> _foldStarts = {};
   List<_CreaseSegment> _creases = const [];
   Uint8List? _cachedTexture;
   double _textureLeft = 0;
@@ -61,6 +83,50 @@ class HairFoldRaster {
       triggerDegrees.clamp(30.0, 170.0) * math.pi / 180,
       anyCurl: crescent,
     );
+  }
+
+  /// Each fold of [points] drawn with [brush], with where its fold line
+  /// starts and heads, as this renderer finds them; no start for a fold
+  /// without a line (straight, or an overlapping hairpin).
+  @visibleForTesting
+  static List<({Offset vertex, ({Offset origin, Offset direction})? start})>
+  foldLineStarts(List<HairRibbonPoint> points, Brush brush) {
+    final lengths = <double>[0];
+    for (var i = 1; i < points.length; i++) {
+      lengths.add(
+        lengths.last + (points[i].position - points[i - 1].position).distance,
+      );
+    }
+    final bends = _strokeBends(
+      points,
+      lengths,
+      brush.foldTriggerAngle.clamp(30.0, 170.0) * math.pi / 180,
+      anyCurl: brush.foldMode == HairFoldMode.crescent,
+    );
+    final indices = <int>{
+      0,
+      ...bends.map((b) => b.index),
+      points.length - 1,
+    }.toList()..sort();
+    final depths = _runDepths(points, lengths, indices, brush.foldMode);
+    return [
+      for (var i = 1; i < indices.length - 1; i++)
+        (
+          vertex: points[indices[i]].position,
+          start: switch (_foldSides(points, lengths, indices, depths, i)) {
+            null => null,
+            final fold => _foldLineStart(
+              points,
+              lengths,
+              indices[i],
+              fold.frontEnd,
+              fold.backEnd,
+              fold.sign,
+              brush.outlineWidth,
+            ),
+          },
+        ),
+    ];
   }
 
   /// Whether this stroke is drawn by the fold surface instead of ordinary
@@ -120,6 +186,7 @@ class HairFoldRaster {
               Offset.lerp(a.position, b.position, t)!,
               a.width + (b.width - a.width) * t,
               a.opacity + (b.opacity - a.opacity) * t,
+              a.scale + (b.scale - a.scale) * t,
             ),
           );
         }
@@ -132,6 +199,7 @@ class HairFoldRaster {
       _surfaces.clear();
       _runTiles = {};
       _runSignatures = {};
+      _foldStarts.clear();
       _creases = const [];
       _cachedBrush = brush;
       _cachedTexture = texture;
@@ -207,7 +275,13 @@ class HairFoldRaster {
     }
     final originalPoints = points;
     var sourcePoints = points;
-    if (taperEnd && brush.foldMode != HairFoldMode.crescent) {
+    final outlineWidth = brush.outlineWidth;
+    final last = points.last;
+    // A brush taper or pen lift that already ends the strand at a point is
+    // the user's own taper, drawn exactly like the ordinary outline pen.
+    if (taperEnd &&
+        brush.foldMode != HairFoldMode.crescent &&
+        last.outerRadius(outlineWidth) > .5) {
       // Folded wave/curl strands finish at a point. This is shared mode
       // geometry, independent of preset identity and the ordinary fade mode.
       // Allow the tail to extend before a nearby fold. Limiting it to a
@@ -218,15 +292,15 @@ class HairFoldRaster {
           final p = points[i];
           final t = ((lengths.last - lengths[i]) / tailLength).clamp(0.0, 1.0);
           final taper = t * t * (3 - 2 * t);
-          final tip = (t / .1).clamp(0.0, 1.0);
           return HairRibbonPoint(
             p.position,
             // For a dash shorter than its diameter, the ordinary head disk
             // would cover the point. Fit its width to the available tail span.
             math.min(p.width, tailLength) * taper,
-            // Keep the narrowed body opaque; only the last outline pixels
-            // fade away, so zero width cannot leave an outline-only dot.
-            p.opacity * tip * tip * (3 - 2 * tip),
+            // Like pressure and a brush taper, the tail narrows the whole
+            // strand, outline included; it never fades it.
+            p.opacity,
+            p.scale * taper,
           );
         });
       }
@@ -243,9 +317,10 @@ class HairFoldRaster {
     final result = repeats.length == 1 ? _surfaces : <int, _SurfaceTile>{};
     final redrawn = <int, _Area>{};
     final runTiles = <int, Set<int>>{};
-    final runSignatures = <int, (double, int)>{};
+    final runSignatures = <int, (double, int, double, double)>{};
     final creases = <_CreaseSegment>[];
     var repeatIndex = 0;
+    final foldStartsUsed = <(int, int, int, int)>{};
     for (final offset in repeats) {
       final ownerBase = repeatIndex++ * indices.length;
       points = offset == 0
@@ -264,12 +339,82 @@ class HairFoldRaster {
                         offset,
                 p.width,
                 p.opacity,
+                p.scale,
               );
             });
       // The engine already resolved stabilization. Keep these authored centers
       // unchanged; only the outline normals and width profile are derived here.
       final runs = <_RibbonRun>[];
       final depths = _runDepths(points, lengths, indices, brush.foldMode);
+      // Each fold line starts where the inner outlines meet; the front
+      // section's own edge is hidden over the back section up to there.
+      final foldLines =
+          <int, ({Offset origin, Offset direction, Offset continuation})>{};
+      final hidden = <int, double>{};
+      if (brush.foldMode != HairFoldMode.crescent) {
+        for (var i = 1; i < indices.length - 1; i++) {
+          final pivot = indices[i];
+          final p = points[pivot];
+          final fold = _foldSides(points, lengths, indices, depths, i);
+          if (fold == null) continue;
+          final sign = fold.sign, firstFront = fold.firstFront;
+          final incoming = fold.incoming, outgoing = fold.outgoing;
+          // The start depends only on samples a few widths from the fold, so
+          // a stroke growing further on keeps it cached.
+          final reachable = (p.width + brush.outlineWidth * 2) * 6 + 8;
+          int within(int end) {
+            final step = end < pivot ? -1 : 1;
+            var j = pivot;
+            while (j != end &&
+                (lengths[j] - lengths[pivot]).abs() <= reachable) {
+              j += step;
+            }
+            return j;
+          }
+
+          final frontEnd = within(fold.frontEnd);
+          final backEnd = within(fold.backEnd);
+          final key = (repeatIndex, pivot, frontEnd, backEnd);
+          foldStartsUsed.add(key);
+          final low = math.max(0, math.min(frontEnd, backEnd) - 2);
+          final high = math.min(
+            points.length - 1,
+            math.max(frontEnd, backEnd) + 2,
+          );
+          final cached = _foldStarts[key];
+          final start =
+              cached != null && cached.matches(points, low, high, sign)
+              ? cached.start
+              : (_foldStarts[key] = _FoldStartCache(
+                  points.sublist(low, high + 1),
+                  low,
+                  sign,
+                  _foldLineStart(
+                    points,
+                    lengths,
+                    pivot,
+                    frontEnd,
+                    backEnd,
+                    sign,
+                    brush.outlineWidth,
+                  ),
+                )).start;
+          if (start == null) {
+            // An overlapping hairpin: the front's own edge marks the fold.
+            hidden[pivot] = 0;
+            continue;
+          }
+          foldLines[i] = (
+            origin: start.origin,
+            direction: start.direction,
+            continuation: firstFront ? outgoing : -incoming,
+          );
+          hidden[pivot] = math.max(
+            p.width,
+            (start.origin - p.position).distance + brush.outlineWidth + 1,
+          );
+        }
+      }
       for (var i = 1; i < indices.length; i++) {
         final start = indices[i - 1], end = indices[i];
         if (end <= start) continue;
@@ -471,6 +616,7 @@ class HairFoldRaster {
               first.position + crescentTangents[0]! * .001,
               first.width,
               first.opacity,
+              first.scale,
             ),
             brush.outlineWidth,
           );
@@ -557,6 +703,7 @@ class HairFoldRaster {
                   (outerEdge + innerEdge) / 2,
                   (outerEdge - innerEdge).distance,
                   point.opacity,
+                  point.scale,
                 ),
                 outer: outerEdge,
                 inner: innerEdge,
@@ -609,38 +756,57 @@ class HairFoldRaster {
                   Offset.lerp(a.position, b.position, t)!,
                   a.width + (b.width - a.width) * t,
                   a.opacity + (b.opacity - a.opacity) * t,
+                  a.scale + (b.scale - a.scale) * t,
                 );
-                _ribbonSegment(envelope, previous, current, [
+                // The bowed edges bound the strand; pressure and taper inset
+                // its fill so the outline keeps its width.
+                final from = _insetEdges(
                   previousOuter,
+                  previousInner,
+                  previous.scale,
+                  brush.outlineWidth,
+                );
+                final to = _insetEdges(
                   outer,
                   inner,
-                  previousInner,
-                ], brush.outlineWidth);
+                  current.scale,
+                  brush.outlineWidth,
+                );
+                if (from.fill > 0 || to.fill > 0) {
+                  _ribbonSegment(envelope, previous, current, [
+                    from.outer,
+                    to.outer,
+                    to.inner,
+                    from.inner,
+                  ], math.max(from.band, to.band));
+                } else {
+                  // No fill left: a solid outline tip.
+                  _segment(
+                    envelope,
+                    HairRibbonPoint(
+                      (previousOuter + previousInner) / 2,
+                      (previousOuter - previousInner).distance,
+                      previous.opacity,
+                      previous.scale,
+                    ),
+                    HairRibbonPoint(
+                      (outer + inner) / 2,
+                      (outer - inner).distance,
+                      current.opacity,
+                      current.scale,
+                    ),
+                    brush.outlineWidth,
+                  );
+                }
                 previous = current;
                 previousOuter = outer;
                 previousInner = inner;
               }
             }
           }
-          final tailOutline =
-              taperEnd && brush.foldMode != HairFoldMode.crescent;
-          // Compare with the original pressure/fade width: unaffected cached
-          // body masks keep their existing outline, and only the new tail thins.
-          final outlineScaleA = tailOutline
-              ? (a.width / math.max(.001, originalPoints[firstIndex].width))
-                    .clamp(0.0, 1.0)
-              : 1.0;
-          final outlineScaleB = tailOutline
-              ? (b.width / math.max(.001, originalPoints[i].width)).clamp(
-                  0.0,
-                  1.0,
-                )
-              : 1.0;
           if (texture == null) {
             if (brush.foldMode != HairFoldMode.crescent) {
-              final outline =
-                  brush.outlineWidth * math.max(outlineScaleA, outlineScaleB);
-              _segment(mask, a, b, outline);
+              _segment(mask, a, b, brush.outlineWidth);
             }
           } else {
             _texturedSegment(
@@ -649,8 +815,6 @@ class HairFoldRaster {
               b,
               brush,
               texture,
-              outlineScaleA: outlineScaleA,
-              outlineScaleB: outlineScaleB,
               angleA: textureAngleA,
               angleB: textureAngleB,
               blendA: crescentBlend[i - 1] ?? 1,
@@ -702,7 +866,12 @@ class HairFoldRaster {
 
       for (final (run, mask, changed) in built) {
         final keys = mask.keys.toSet();
-        final signature = (run.depth, run.id);
+        final signature = (
+          run.depth,
+          run.id,
+          hidden[run.start] ?? -1,
+          hidden[run.end] ?? -1,
+        );
         if (offset == 0) {
           runTiles[run.start] = keys;
           runSignatures[run.start] = signature;
@@ -730,7 +899,9 @@ class HairFoldRaster {
               : result.putIfAbsent(key, _SurfaceTile.new);
           for (final (run, mask, _) in built) {
             final m = mask[key];
-            if (m != null) _composite(surface, key, m, run, points, brush);
+            if (m != null) {
+              _composite(surface, key, m, run, points, brush, hidden);
+            }
           }
         }
       }
@@ -745,49 +916,10 @@ class HairFoldRaster {
       // curve start keeps it straight first, which reads as thinner material.
       if (brush.foldMode != HairFoldMode.crescent) {
         for (var i = 1; i < indices.length - 1; i++) {
-          final pivot = indices[i];
-          final p = points[pivot];
-          final reach = math.max(2.0, p.width);
-          final incoming = _unit(
-            p.position -
-                _positionAtDistance(points, lengths, lengths[pivot] - reach),
-          );
-          final outgoing = _unit(
-            _positionAtDistance(points, lengths, lengths[pivot] + reach) -
-                p.position,
-          );
-          final sign = _cross(incoming, outgoing).sign;
-          if (sign == 0) continue;
-          final inward =
-              _unit(
-                Offset(-incoming.dy - outgoing.dy, incoming.dx + outgoing.dx),
-              ) *
-              sign;
-          final firstFront = depths[i - 1] > depths[i];
-          // The line leaves along the front section's own local tangent at
-          // the vertex, so on a smooth bend it runs into the strand like the
-          // continuing edge of that section instead of straight out of it.
-          final local = math.max(1.0, p.width * .25);
-          final direction = firstFront
-              ? _unit(
-                  p.position -
-                      _positionAtDistance(
-                        points,
-                        lengths,
-                        lengths[pivot] - local,
-                      ),
-                )
-              : -_unit(
-                  _positionAtDistance(points, lengths, lengths[pivot] + local) -
-                      p.position,
-                );
-          final continuation = firstFront ? outgoing : -incoming;
-          var origin = p.position;
-          for (var distance = .5; distance < p.width * 2; distance += .5) {
-            final at = p.position + inward * distance;
-            if (!_covered(result, at)) break;
-            origin = at;
-          }
+          final line = foldLines[i];
+          if (line == null) continue;
+          final p = points[indices[i]];
+          final (:origin, :direction, :continuation) = line;
           // A continuous 270-degree fold keeps the authored turn direction:
           // a shorter, later, gentler line than a direction change.
           final continuous = bends[i - 1].continuous;
@@ -850,6 +982,7 @@ class HairFoldRaster {
       _crease(result, c.a, c.b, c.width, c.owner, c.opacity);
     }
     _runs.removeWhere((start, _) => !indices.contains(start));
+    _foldStarts.removeWhere((key, _) => !foldStartsUsed.contains(key));
     final firstComposite = !incremental;
     _active = true;
     _runTiles = runTiles;
@@ -865,6 +998,7 @@ class HairFoldRaster {
     final outlineChannels = [outline.r, outline.g, outline.b, outline.a];
     double channel(int c, double t) =>
         (fillChannels[c] * (1.0 - t) + outlineChannels[c] * t).clamp(0.0, 1.0);
+    final behind = !brush.outlineKeepOverlap;
     final keys = firstComposite ? result.keys.toList() : redrawn.keys.toList();
     for (final key in keys) {
       final tx = key % tiles.tilesX, ty = key ~/ tiles.tilesX;
@@ -896,12 +1030,24 @@ class HairFoldRaster {
             p++
           ) {
             if (s.cover[p] <= 0) continue;
-            final perimeter = (s.outer[p] - s.fill[p]) / s.cover[p];
-            final mix = math.max(s.outline[p], perimeter).clamp(0.0, 1.0);
-            final alpha = (255 * s.cover[p] * channel(3, mix)).round().clamp(
-              0,
-              255,
+            final perimeter = ((s.outer[p] - s.fill[p]) / s.cover[p]).clamp(
+              0.0,
+              1.0,
             );
+            var mix = math.max(s.outline[p], perimeter).clamp(0.0, 1.0);
+            var cover = s.cover[p];
+            if (behind && mix > 0) {
+              // Not keeping overlaps, the strand's outline and fold lines go
+              // behind what the layer showed before the stroke (restored just
+              // above), so where it merges with earlier strokes they vanish
+              // together; its fill stays on top.
+              final outline = mix * (1 - target[p * 4 + 3] / 255);
+              final kept = 1 - mix + outline;
+              if (kept <= 0) continue;
+              mix = outline / kept;
+              cover *= kept;
+            }
+            final alpha = (255 * cover * channel(3, mix)).round().clamp(0, 255);
             if (alpha == 0) continue;
             tiles.blendPixel(
               target,
@@ -919,16 +1065,23 @@ class HairFoldRaster {
     }
   }
 
+  /// The fill and outer radii come from each end's width and scale
+  /// ([outlinedStrokeRadii]); being linear in both, they are interpolated
+  /// along the segment, so sparse samples still keep the outline's width.
   void _segment(
     Map<int, _MaskTile> masks,
     HairRibbonPoint a,
     HairRibbonPoint b,
-    double outline,
+    double outlineWidth,
   ) {
     final d = b.position - a.position;
     final squared = d.distanceSquared;
     if (squared < 1e-10) return;
-    final radius = math.max(a.width, b.width) / 2 + outline + 1;
+    final outerA = a.outerRadius(outlineWidth);
+    final outerB = b.outerRadius(outlineWidth);
+    final fillA = a.fillRadius(outlineWidth);
+    final fillB = b.fillRadius(outlineWidth);
+    final radius = math.max(outerA, outerB) + 1;
     final left = (math.min(a.position.dx, b.position.dx) - radius)
         .floor()
         .clamp(0, tiles.canvasWidth - 1);
@@ -945,7 +1098,8 @@ class HairFoldRaster {
     for (var y = top; y <= bottom; y++) {
       for (var x = left; x <= right; x++) {
         final delta = Offset(x + .5, y + .5) - a.position;
-        final radiusDelta = (b.width - a.width) / 2;
+        // The outer edge's cone.
+        final radiusDelta = outerB - outerA;
         final length = math.sqrt(squared);
         final projection = _dot(delta, d) / length;
         final perpendicular = _cross(d, delta).abs() / length;
@@ -960,10 +1114,17 @@ class HairFoldRaster {
                   .clamp(0.0, 1.0);
         final offset = delta - d * t;
         final distance = offset.distance;
-        final half = (a.width + (b.width - a.width) * t) / 2;
-        final outer = (half + outline + .5 - distance).clamp(0.0, 1.0);
+        final reach = outerA + (outerB - outerA) * t;
+        final half = outlinedFill(fillA + (fillB - fillA) * t);
+        // A tip thinner than a pixel covers only its own width of it, so a
+        // tip tapered to nothing ends there and, with no fill left, is solid
+        // outline even on its center line.
+        final outer = math.min(
+          (reach + .5 - distance).clamp(0.0, 1.0),
+          reach * 2,
+        );
         if (outer <= 0) continue;
-        final fill = (half + .5 - distance).clamp(0.0, 1.0);
+        final fill = half <= 0 ? 0.0 : (half + .5 - distance).clamp(0.0, 1.0);
         final opacity = a.opacity + (b.opacity - a.opacity) * t;
         final key = (y ~/ _size) * tiles.tilesX + (x ~/ _size);
         final m = masks.putIfAbsent(key, _MaskTile.new);
@@ -1105,8 +1266,6 @@ class HairFoldRaster {
     double? angleB,
     double blendA = 1,
     double blendB = 1,
-    double outlineScaleA = 1,
-    double outlineScaleB = 1,
   }) {
     final delta = b.position - a.position;
     final steps = math.max(1, delta.distance.ceil());
@@ -1114,7 +1273,11 @@ class HairFoldRaster {
     final fixedAngle = brush.rotation ? math.atan2(delta.dy, delta.dx) : 0.0;
     final startAngle = angleA ?? fixedAngle;
     final endAngle = angleB ?? fixedAngle;
-    final radiusA = a.width / 2, radiusB = b.width / 2;
+    final outlineWidth = brush.outlineWidth;
+    final radiusA = a.fillRadius(outlineWidth);
+    final radiusB = b.fillRadius(outlineWidth);
+    final outerA = a.outerRadius(outlineWidth);
+    final outerB = b.outerRadius(outlineWidth);
     for (var step = 0; step <= steps; step++) {
       final t = step / steps;
       final center = a.position + delta * t;
@@ -1130,8 +1293,7 @@ class HairFoldRaster {
               : fixedAngle) +
           (brush.calligraphyAngle ?? 0) * math.pi / 180;
       final cosA = math.cos(-angle), sinA = math.sin(-angle);
-      final outlineScale = outlineScaleA + (outlineScaleB - outlineScaleA) * t;
-      final outerRadius = radius + brush.outlineWidth * outlineScale;
+      final outerRadius = outerA + (outerB - outerA) * t;
       final opacity = a.opacity + (b.opacity - a.opacity) * t;
       final left = (center.dx - outerRadius - 1).floor().clamp(
         0,
@@ -1218,6 +1380,7 @@ class HairFoldRaster {
     _RibbonRun run,
     List<HairRibbonPoint> points,
     Brush brush,
+    Map<int, double> hidden,
   ) {
     final tileOrigin = Offset(
       (key % tiles.tilesX) * _size.toDouble(),
@@ -1226,8 +1389,14 @@ class HairFoldRaster {
     final start = points[run.start].position, end = points[run.end].position;
     final startTangent = points[run.start + 1].position - start;
     final endTangent = end - points[run.end - 1].position;
-    final startReach = math.pow(points[run.start].width, 2).toDouble();
-    final endReach = math.pow(points[run.end].width, 2).toDouble();
+    // How far from a fold the front's edge is hidden over the back section:
+    // up to where the fold line starts.
+    final startReach = math
+        .pow(hidden[run.start] ?? points[run.start].width, 2)
+        .toDouble();
+    final endReach = math
+        .pow(hidden[run.end] ?? points[run.end].width, 2)
+        .toDouble();
     final crescent = brush.foldMode == HairFoldMode.crescent;
     for (var row = m.top; row <= m.bottom; row++) {
       for (
@@ -1515,8 +1684,29 @@ class _RunCache {
   const _RunCache(this.end, this.first, this.last, this.mask, {this.geometry});
 }
 
+class _FoldStartCache {
+  final List<HairRibbonPoint> samples;
+  final int first;
+  final double side;
+  final ({Offset origin, Offset direction})? start;
+  _FoldStartCache(this.samples, this.first, this.side, this.start);
+
+  bool matches(List<HairRibbonPoint> points, int low, int high, double sign) {
+    if (sign != side || low != first || high - low + 1 != samples.length) {
+      return false;
+    }
+    for (var i = low; i <= high; i++) {
+      if (!_samePoint(samples[i - low], points[i])) return false;
+    }
+    return true;
+  }
+}
+
 bool _samePoint(HairRibbonPoint a, HairRibbonPoint b) =>
-    a.position == b.position && a.width == b.width && a.opacity == b.opacity;
+    a.position == b.position &&
+    a.width == b.width &&
+    a.opacity == b.opacity &&
+    a.scale == b.scale;
 
 // Bilinear alpha avoids stair-stepping when a tip rotates through a curve.
 double _textureAlpha(Uint8List texture, double x, double y) {
@@ -1568,6 +1758,269 @@ Set<int> _crescentTurnBoundaries(
     }
   }
   return result;
+}
+
+/// The two sections meeting at fold [i]: which is in front, where each ends,
+/// and the turn's side; null for a fold that does not turn.
+({
+  double sign,
+  bool firstFront,
+  int frontEnd,
+  int backEnd,
+  Offset incoming,
+  Offset outgoing,
+})?
+_foldSides(
+  List<HairRibbonPoint> points,
+  List<double> lengths,
+  List<int> indices,
+  List<double> depths,
+  int i,
+) {
+  final pivot = indices[i];
+  final p = points[pivot];
+  final reach = math.max(2.0, p.width);
+  final incoming = _unit(
+    p.position - _positionAtDistance(points, lengths, lengths[pivot] - reach),
+  );
+  final outgoing = _unit(
+    _positionAtDistance(points, lengths, lengths[pivot] + reach) - p.position,
+  );
+  final sign = _cross(incoming, outgoing).sign;
+  if (sign == 0) return null;
+  final firstFront = depths[i - 1] > depths[i];
+  return (
+    sign: sign,
+    firstFront: firstFront,
+    frontEnd: firstFront ? indices[i - 1] : indices[i + 1],
+    backEnd: firstFront ? indices[i + 1] : indices[i - 1],
+    incoming: incoming,
+    outgoing: outgoing,
+  );
+}
+
+/// Where a fold line starts: it continues the front section's inner
+/// outline beyond the point where that outline meets the back section's.
+///
+/// Walking the front's inner outline centre line (each sample offset by its
+/// own half width plus half its outline band) away from the fold, the point
+/// where it leaves the back section's body is where both inner outlines
+/// meet, whether the corner is sharp, rounded or between input samples. On
+/// a bend too smooth for the outlines to cross, the front's outline is never
+/// inside the back section and the line starts at the bend's apex.
+///
+/// [frontEnd] and [backEnd] bound the two sections; [side] is the turn's
+/// sign, the side of the inner outlines. Returns the start on the outline's
+/// centre line and the outline's direction there, heading into the fold; or
+/// null when the front outline never leaves the back section (an
+/// overlapping hairpin), where there is no outline left to continue.
+({Offset origin, Offset direction})? _foldLineStart(
+  List<HairRibbonPoint> points,
+  List<double> lengths,
+  int pivot,
+  int frontEnd,
+  int backEnd,
+  double side,
+  double outlineWidth,
+) {
+  final vertex = lengths[pivot];
+  final away = frontEnd < pivot ? -1.0 : 1.0;
+  final width = points[pivot].width + outlineWidth * 2;
+  // The centre of the outline band, which keeps the outline's width unless
+  // the whole strand has narrowed below it.
+  double outlineCentre(HairRibbonPoint p) {
+    final outer = p.outerRadius(outlineWidth);
+    return outer - math.min(outlineWidth, outer) / 2;
+  }
+
+  // Tangents are taken over a few pixels, so jittery input still gives clean
+  // normals; a corner rounded this little keeps its legs' outline lines.
+  final reach = (width / 16).clamp(1.0, 4.0);
+  Offset tangentAt(double at) => _unit(
+    _positionAtDistance(points, lengths, at + reach) -
+        _positionAtDistance(points, lengths, at - reach),
+  );
+  final frontLength = (lengths[frontEnd] - vertex).abs();
+  // A hairpin's outlines meet ever further out; past four widths they no
+  // longer meet in the strand.
+  final limit = math.min(frontLength, width * 4);
+  Offset outlineAt(double distance) {
+    final at = vertex + away * distance;
+    final p = _pointAtDistance(points, lengths, at);
+    final t = tangentAt(at);
+    return p.position + Offset(-t.dy, t.dx) * side * outlineCentre(p);
+  }
+
+  // The back section, nearest the fold first.
+  final back = <int>[];
+  for (
+    var j = pivot;
+    away < 0 ? j <= backEnd : j >= backEnd;
+    j += away < 0 ? 1 : -1
+  ) {
+    back.add(j);
+    if ((lengths[j] - vertex).abs() > limit + width * 2) break;
+  }
+  // The stroke's unwound heading at each sample of both sections. A fold's
+  // two sections differ by its turn, less than half a turn; where the strand
+  // crosses itself further round, as a curl's loop does, it is more.
+  final low = math.max(1, math.min(frontEnd, back.last));
+  final high = math.max(frontEnd, back.last);
+  final heading = Float64List(high + 1);
+  var angle = 0.0;
+  var previousDirection = Offset.zero;
+  for (var j = low; j <= high; j++) {
+    final direction = _unit(points[j].position - points[j - 1].position);
+    if (direction == Offset.zero) {
+      heading[j] = angle;
+      continue;
+    }
+    if (previousDirection != Offset.zero) {
+      angle += math.atan2(
+        _cross(previousDirection, direction),
+        _dot(previousDirection, direction),
+      );
+    }
+    previousDirection = direction;
+    heading[j] = angle;
+  }
+  int sampleAt(double at) {
+    var lowIndex = low - 1, highIndex = high;
+    while (highIndex - lowIndex > 1) {
+      final middle = (lowIndex + highIndex) ~/ 2;
+      if (lengths[middle] < at) {
+        lowIndex = middle;
+      } else {
+        highIndex = middle;
+      }
+    }
+    return math.max(low, highIndex);
+  }
+
+  bool insideBack(Offset q, double distance) {
+    final frontHeading = heading[sampleAt(vertex + away * distance)];
+    for (var k = 1; k < back.length; k++) {
+      // Only the part of the back section about as far from the fold, and
+      // within half a turn of this front sample, meets it at this fold.
+      if ((lengths[back[k - 1]] - vertex).abs() > distance + width) break;
+      if ((heading[math.max(back[k - 1], back[k])] - frontHeading).abs() >=
+          math.pi) {
+        continue;
+      }
+      final a = points[back[k - 1]], b = points[back[k]];
+      final d = b.position - a.position;
+      final squared = d.distanceSquared;
+      final t = squared < 1e-12
+          ? 0.0
+          : (_dot(q - a.position, d) / squared).clamp(0.0, 1.0);
+      // The back section's inner outline centre line.
+      final half = outlineCentre(
+        HairRibbonPoint(
+          a.position,
+          a.width + (b.width - a.width) * t,
+          1,
+          a.scale + (b.scale - a.scale) * t,
+        ),
+      );
+      if ((q - (a.position + d * t)).distance < half - .01) return true;
+    }
+    return false;
+  }
+
+  // Right at the fold the front's outline can dip in and out of the back
+  // section's rounded start, and pass outside it where the back is the
+  // narrower: the outlines meet where it leaves the back section for good.
+  final step = (width / 32).clamp(.5, 2.0);
+  var inside = -1.0;
+  double? outside;
+  for (var distance = step; distance <= limit; distance += step) {
+    if (insideBack(outlineAt(distance), distance)) {
+      inside = distance;
+      outside = null;
+    } else if (inside >= 0) {
+      outside ??= distance;
+      if (distance - outside > width) break;
+    }
+  }
+  if (inside < 0) {
+    // A smooth bend: the front's inner outline runs on from the apex.
+    final t = tangentAt(vertex);
+    return (origin: outlineAt(0), direction: away < 0 ? t : -t);
+  }
+  if (outside == null) return null;
+  var exit = outside;
+  for (var k = 0; k < 8; k++) {
+    final middle = (inside + exit) / 2;
+    if (insideBack(outlineAt(middle), middle)) {
+      inside = middle;
+    } else {
+      exit = middle;
+    }
+  }
+  final origin = outlineAt(exit);
+  // Along the front's own inner outline into the fold, from just beyond the
+  // start but within the front section (clear of its far end's corner), so
+  // it follows a narrowing strand.
+  final span = math.min(
+    (width / 4).clamp(2.0, 16.0),
+    frontLength - exit - reach,
+  );
+  if (span < 1) {
+    final t = tangentAt(vertex + away * exit);
+    return (origin: origin, direction: away < 0 ? t : -t);
+  }
+  return (origin: origin, direction: _unit(origin - outlineAt(exit + span)));
+}
+
+/// A bowed crescent cross-section between [outer] and [inner] edges, its fill
+/// inset so the outline keeps its width under pressure and taper ([scale]).
+({Offset outer, Offset inner, double fill, double band}) _insetEdges(
+  Offset outer,
+  Offset inner,
+  double scale,
+  double outlineWidth,
+) {
+  final across = outer - inner;
+  final radii = outlinedStrokeRadii(
+    width: across.distance,
+    scale: scale,
+    outlineWidth: outlineWidth,
+  );
+  final middle = (outer + inner) / 2;
+  final unit = across.distance < 1e-9 ? Offset.zero : across / across.distance;
+  return (
+    outer: middle + unit * radii.fill,
+    inner: middle - unit * radii.fill,
+    fill: radii.fill,
+    band: radii.outer - radii.fill,
+  );
+}
+
+HairRibbonPoint _pointAtDistance(
+  List<HairRibbonPoint> points,
+  List<double> lengths,
+  double distance,
+) {
+  if (distance <= 0) return points.first;
+  if (distance >= lengths.last) return points.last;
+  var low = 0, high = lengths.length - 1;
+  while (high - low > 1) {
+    final middle = (low + high) ~/ 2;
+    if (lengths[middle] < distance) {
+      low = middle;
+    } else {
+      high = middle;
+    }
+  }
+  final a = points[low], b = points[high];
+  final span = lengths[high] - lengths[low];
+  final t = span <= 0 ? 0.0 : (distance - lengths[low]) / span;
+  return HairRibbonPoint(
+    Offset.lerp(a.position, b.position, t)!,
+    a.width + (b.width - a.width) * t,
+    a.opacity + (b.opacity - a.opacity) * t,
+    a.scale + (b.scale - a.scale) * t,
+  );
 }
 
 Offset _positionAtDistance(

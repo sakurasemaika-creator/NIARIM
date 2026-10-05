@@ -45,6 +45,11 @@ class Brush {
   final bool outlineEnabled;
   final double outlineWidth;
   final int outlineColor;
+
+  /// Whether overlapping outline-pen strokes keep their own outlines across
+  /// one another. Off, a stroke merges with what the layer already shows:
+  /// only the outside of the combined shape is outlined.
+  final bool outlineKeepOverlap;
   final bool foldEnabled;
   final double foldTriggerAngle;
   final double foldCurveStartRatio;
@@ -97,6 +102,7 @@ class Brush {
     this.outlineEnabled = false,
     this.outlineWidth = 1.5,
     this.outlineColor = 0xFF000000,
+    this.outlineKeepOverlap = true,
     this.foldEnabled = false,
     this.foldTriggerAngle = 90.0,
     this.foldCurveStartRatio = BrushExtensionDefaults.foldCurveStartRatio,
@@ -170,6 +176,7 @@ class Brush {
     bool? outlineEnabled,
     double? outlineWidth,
     int? outlineColor,
+    bool? outlineKeepOverlap,
     bool? foldEnabled,
     double? foldTriggerAngle,
     double? foldCurveStartRatio,
@@ -230,6 +237,7 @@ class Brush {
     outlineEnabled: outlineEnabled ?? this.outlineEnabled,
     outlineWidth: outlineWidth ?? this.outlineWidth,
     outlineColor: outlineColor ?? this.outlineColor,
+    outlineKeepOverlap: outlineKeepOverlap ?? this.outlineKeepOverlap,
     foldEnabled: foldEnabled ?? this.foldEnabled,
     foldTriggerAngle: foldTriggerAngle ?? this.foldTriggerAngle,
     foldCurveStartRatio: clampFoldRatio(
@@ -297,6 +305,7 @@ class Brush {
     'outlineEnabled': outlineEnabled,
     'outlineWidth': outlineWidth,
     'outlineColor': outlineColor,
+    'outlineKeepOverlap': outlineKeepOverlap,
     'foldEnabled': foldEnabled,
     'foldTriggerAngle': foldTriggerAngle,
     'foldCurveStartRatio': clampFoldRatio(
@@ -400,6 +409,7 @@ class Brush {
     outlineEnabled: j['outlineEnabled'] as bool? ?? false,
     outlineWidth: (j['outlineWidth'] as num?)?.toDouble() ?? 1.5,
     outlineColor: (j['outlineColor'] as num?)?.toInt() ?? 0xFF000000,
+    outlineKeepOverlap: j['outlineKeepOverlap'] as bool? ?? true,
     foldEnabled: j['foldEnabled'] as bool? ?? false,
     foldTriggerAngle: (j['foldTriggerAngle'] as num?)?.toDouble() ?? 90,
     foldCurveStartRatio: clampFoldRatio(

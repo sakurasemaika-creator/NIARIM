@@ -27,6 +27,11 @@ class DrawingEngine {
   // 線同士を交差させた箇所は通常のsource-overどおり濃くなる。
   final Map<String, Uint8List> _strokeCoverageByTile = {};
 
+  // 「重なりを維持する」をオフにした縁取りペンで、ストローク開始前の各画素の
+  // 不透明度を保持する。縁取りはその下へ回り込み、既に描かれた所の上には
+  // 描かれない（重なった所は縁取りせず、全体の周りだけを縁取る）。
+  final Map<String, Uint8List> _strokeBaseAlpha = {};
+
   // ブラシの密度・散布を入力moveイベント数から独立させるため、ストロークを
   // またいで「直前のスタンプから進んだ距離」を保持する。各move区間の先頭で
   // spacingをリセットすると、同じ直線でもOSのイベント密度によって結果が
@@ -64,6 +69,7 @@ class DrawingEngine {
     _currentStroke.clear();
     _strokeScreenPositions.clear();
     _strokeCoverageByTile.clear();
+    _strokeBaseAlpha.clear();
     _foldRaster = null;
     _smoothed = point;
     final effective = _applyPointConstraint(point);
@@ -147,6 +153,7 @@ class DrawingEngine {
     }
     _currentStroke.clear();
     _strokeCoverageByTile.clear();
+    _strokeBaseAlpha.clear();
     _distanceSinceLastBrushStamp = 0.0;
     _hasStampedCurrentStroke = false;
     _finalizedStrokeLengthOverride = totalLength;
@@ -184,6 +191,7 @@ class DrawingEngine {
     }
     _currentStroke.clear();
     _strokeCoverageByTile.clear();
+    _strokeBaseAlpha.clear();
     _smoothed = null;
     _activeLayerId = null;
     _distanceSinceLastBrushStamp = 0.0;
@@ -216,17 +224,19 @@ class DrawingEngine {
         distance,
         totalLength: _finalizedStrokeLengthOverride,
       );
+      final scale = pressure.sizeScale * fade;
       samples.add(
         HairRibbonPoint(
           ui.Offset(point.x, point.y),
-          (brush.size * pressure.sizeScale * fade).clamp(.5, 2000).toDouble(),
+          (brush.size * scale).clamp(0, 2000).toDouble(),
+          // Pressure and taper shape the strand, outline included
+          // (outlinedStrokeRadii); they never fade it.
           (brush.opacity /
                   100 *
-                  pressure.opacityScale *
-                  fade *
                   (brush.strokeDecay ? _calculateDecay(distance) : 1))
               .clamp(0.0, 1.0)
               .toDouble(),
+          scale,
         ),
       );
     }
@@ -295,6 +305,7 @@ class DrawingEngine {
     if (currentBrush == null || pathPoints.isEmpty) return;
     _currentStroke.clear();
     _strokeCoverageByTile.clear();
+    _strokeBaseAlpha.clear();
     _activeLayerId = layerId;
     _distanceSinceLastBrushStamp = 0.0;
     _hasStampedCurrentStroke = false;
@@ -424,20 +435,30 @@ class DrawingEngine {
       curvedPressure: pressure,
     );
     var size = brush.size * resolvedPressure.sizeScale;
-    var opacity = (brush.opacity / 100.0) * resolvedPressure.opacityScale;
+    // 縁取りペンの筆圧は全体の形だけを変え、不透明度には効かせない。
+    var opacity =
+        (brush.opacity / 100.0) *
+        (brush.outlineEnabled ? 1.0 : resolvedPressure.opacityScale);
 
     final strokeLength = strokeLengthOverride ?? _currentStrokeLength();
 
     // フェード仕様は「ストロークが進むにつれて不透明度・サイズが減少」。
     // 同じ係数を両方へ適用し、終端で薄いだけの同径線にならないようにする。
+    // ただし縁取りペンでは、入り抜き・筆圧は縁取りを含む全体の形だけを変え、
+    // 縁取り線の太さと透明度は変えない（outlinedStrokeRadii）。0%では何も
+    // 描かない。
     if (brush.fadeMode != FadeMode.off) {
       final fade = _calculateFade(
         brush,
         strokeLength,
         totalLength: _finalizedStrokeLengthOverride,
       );
-      opacity *= fade;
       size *= fade;
+      if (brush.outlineEnabled) {
+        if (fade <= 0) return;
+      } else {
+        opacity *= fade;
+      }
     }
     // ストローク減衰はインク切れ表現なので、不透明度だけを減らして太さは維持する。
     if (brush.strokeDecay) {
@@ -445,6 +466,13 @@ class DrawingEngine {
     }
 
     opacity = opacity.clamp(0.0, 1.0);
+    final outlinedRadii = brush.outlineEnabled
+        ? outlinedStrokeRadii(
+            width: size,
+            scale: brush.size > 0 ? size / brush.size : 1.0,
+            outlineWidth: brush.outlineWidth,
+          )
+        : null;
     size = size.clamp(0.5, 2000.0);
 
     var stampX = x;
@@ -517,6 +545,7 @@ class DrawingEngine {
       center: ui.Offset(stampX, stampY),
       pathAngle: pathAngle,
       effectiveSize: size,
+      outlinedRadii: outlinedRadii,
     );
     final usesExtensionRaster =
         brush.lateralRepeatEnabled ||
@@ -553,33 +582,39 @@ class DrawingEngine {
           hollowSquareInnerRatio: extensionPlan.hollowSquareInnerRatio,
           colorOverride: ui.Color(brush.outlineColor),
           coverageNamespace: 'outline',
+          behindExisting: !brush.outlineKeepOverlap,
+          // A tip finer than a pixel covers only its own width of it.
+          coverageCap: brush.pixelMode ? 1.0 : math.min(1.0, outlineRadius * 2),
         );
       }
-      _renderCircleStamp(
-        center.dx,
-        center.dy,
-        extensionPlan.fillRadius,
-        alphaInt,
-        tilt,
-        layerId,
-        brush.pixelMode,
-        resolvedPressure.blur,
-        customTexture,
-        stylusTiltMagnitude: stylusTiltMagnitude,
-        edgeJitter: resolvedPressure.edgeJitterEnabled,
-        edgeJitterStrength: resolvedPressure.edgeJitterStrength,
-        mixingMode: resolvedPressure.mixingMode,
-        mixingRate: resolvedPressure.mixingRate,
-        hexagon: isGlitterHexagon,
-        particleRotation: particleRotation,
-        chainLink: isChainLink,
-        chainAspect: chainAspect,
-        chainThickness: chainThickness,
-        ballChain: isBallChain,
-        hollowSquare: usesExtensionRaster && extensionPlan.hollowSquare,
-        hollowSquareInnerRatio: extensionPlan.hollowSquareInnerRatio,
-        coverageNamespace: usesExtensionRaster ? 'fill' : 'legacy',
-      );
+      // A tapered outline-pen tip thinner than its outline has no fill left.
+      if (extensionPlan.fillRadius > 0) {
+        _renderCircleStamp(
+          center.dx,
+          center.dy,
+          extensionPlan.fillRadius,
+          alphaInt,
+          tilt,
+          layerId,
+          brush.pixelMode,
+          resolvedPressure.blur,
+          customTexture,
+          stylusTiltMagnitude: stylusTiltMagnitude,
+          edgeJitter: resolvedPressure.edgeJitterEnabled,
+          edgeJitterStrength: resolvedPressure.edgeJitterStrength,
+          mixingMode: resolvedPressure.mixingMode,
+          mixingRate: resolvedPressure.mixingRate,
+          hexagon: isGlitterHexagon,
+          particleRotation: particleRotation,
+          chainLink: isChainLink,
+          chainAspect: chainAspect,
+          chainThickness: chainThickness,
+          ballChain: isBallChain,
+          hollowSquare: usesExtensionRaster && extensionPlan.hollowSquare,
+          hollowSquareInnerRatio: extensionPlan.hollowSquareInnerRatio,
+          coverageNamespace: usesExtensionRaster ? 'fill' : 'legacy',
+        );
+      }
     }
   }
 
@@ -608,6 +643,8 @@ class DrawingEngine {
     double hollowSquareInnerRatio = 0.5,
     ui.Color? colorOverride,
     String coverageNamespace = 'legacy',
+    double coverageCap = 1.0,
+    bool behindExisting = false,
   }) {
     final paintColor = colorOverride ?? currentColor;
     final r = paintColor.r;
@@ -639,6 +676,19 @@ class DrawingEngine {
           coverageKey,
           () => Uint8List(TileManager.tileSize * TileManager.tileSize),
         );
+        // The outline is the first stamp of a stroke to reach a tile, so this
+        // keeps the tile as it was before the stroke.
+        final base = behindExisting
+            ? _strokeBaseAlpha.putIfAbsent('$layerId:$tx:$ty', () {
+                final alpha = Uint8List(
+                  TileManager.tileSize * TileManager.tileSize,
+                );
+                for (var i = 0; i < alpha.length; i++) {
+                  alpha[i] = tile[i * 4 + 3];
+                }
+                return alpha;
+              })
+            : null;
 
         // タイル内の影響ピクセル範囲
         final localMinX = math.max(0, (cx - totalRadius - tileOriginX).floor());
@@ -797,6 +847,7 @@ class DrawingEngine {
               }
             }
 
+            if (pixelAlpha > coverageCap) pixelAlpha = coverageCap;
             if (pixelAlpha <= 0) continue;
 
             // スタイラスを寝かせた場合は、傾き方向（+rdx）をペン先側として濃く、
@@ -818,12 +869,17 @@ class DrawingEngine {
             final coveragePos = py * TileManager.tileSize + px;
             final oldCoverage = coverage[coveragePos];
             if (desiredAlpha <= oldCoverage) continue;
-            final incrementalAlpha = oldCoverage >= 255
+            var incrementalAlpha = oldCoverage >= 255
                 ? 0
                 : (((desiredAlpha - oldCoverage) * 255) / (255 - oldCoverage))
                       .round()
                       .clamp(0, 255);
             coverage[coveragePos] = desiredAlpha;
+            if (base != null && !isEraser) {
+              // Behind what the layer already showed before this stroke.
+              incrementalAlpha =
+                  incrementalAlpha * (255 - base[coveragePos]) ~/ 255;
+            }
             if (incrementalAlpha <= 0) continue;
 
             if (isEraser) {

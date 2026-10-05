@@ -1350,7 +1350,7 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get helpFadeDesc =>
-      'Une fonction de pinceau qui permet de régler indépendamment la valeur et la distance de l’entrée (début du trait) et de la sortie (fin du trait). Vous pouvez effiler uniquement le début, uniquement la fin, ou utiliser des réglages asymétriques pour contrôler séparément l’épaisseur et l’opacité à chaque extrémité.';
+      'Une fonction de pinceau qui permet de régler indépendamment la valeur et la distance de l’entrée (début du trait) et de la sortie (fin du trait). Vous pouvez effiler uniquement le début, uniquement la fin, ou utiliser des réglages asymétriques pour contrôler séparément l’épaisseur et l’opacité à chaque extrémité. Avec le stylo de contour, seule la forme d\'ensemble (l\'épaisseur) change, jamais l\'opacité.';
 
   @override
   String get helpStrokeDecayTitle => 'Atténuation de trait';
@@ -6646,6 +6646,13 @@ class AppLocalizationsFr extends AppLocalizations {
   String get brushOutlineEyedropper => 'Pipette';
 
   @override
+  String get brushOutlineKeepOverlap => 'Conserver les chevauchements';
+
+  @override
+  String get brushOutlineKeepOverlapHelp =>
+      'Activé : le contour est aussi tracé là où les traits se chevauchent. Désactivé : les traits qui se chevauchent fusionnent ; là où ils se chevauchent, ni contour ni ligne de pli ne sont tracés, et seul l\'extérieur de la forme combinée est contourné.';
+
+  @override
   String get brushFold => 'Mode pliage';
 
   @override
@@ -6700,7 +6707,7 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get helpBrushFoldDesc =>
-      'Activez Contour dans les réglages du pinceau pour utiliser le Mode pliage. Désactivé, le pinceau dessine exactement comme le stylo de contour normal. Activé, le trait du stylo de contour lui-même se plie et s’enroule selon la direction et les courbes du trait que vous dessinez ; il ne génère pas d’ondulations automatiquement. À chaque courbe, une ligne de pli part du bord intérieur, se courbe puis s’efface. Un trait qui continue de tourner dans le même sens reçoit une ligne de pli plus discrète tous les 270°. Il existe cinq types de pliage. Ondulation en plongée place devant la partie dessinée en premier, Ondulation en contre-plongée celle dessinée ensuite. Boucle à droite choisit l’avant et l’arrière comme si le trait s’enroulait vers la droite de son sens de dessin, Boucle à gauche vers la gauche ; ils suivent le trait, pas l’écran. Boucle en croissant suit les courbes en C que vous dessinez pour former des croissants enchaînés. Longueur du pli règle la longueur de la ligne de pli (elle suit la taille du pinceau), Angle du pli règle la force avec laquelle il suit la courbe du trait (à 50 %, il la suit naturellement) et Début de la courbe de la ligne de pli règle l’épaisseur apparente de la matière (à 0 %, elle se courbe dès son point de départ).';
+      'Activez Contour dans les réglages du pinceau pour utiliser le Mode pliage. Désactivé, le pinceau dessine exactement comme le stylo de contour normal. Activé, le trait du stylo de contour lui-même se plie et s’enroule selon la direction et les courbes du trait que vous dessinez ; il ne génère pas d’ondulations automatiquement. À chaque courbe, une ligne de pli part du bord intérieur, se courbe puis s’efface. Un trait qui continue de tourner dans le même sens reçoit une ligne de pli plus discrète tous les 270°. Il existe cinq types de pliage. Ondulation en plongée place devant la partie dessinée en premier, Ondulation en contre-plongée celle dessinée ensuite. Boucle à droite choisit l’avant et l’arrière comme si le trait s’enroulait vers la droite de son sens de dessin, Boucle à gauche vers la gauche ; ils suivent le trait, pas l’écran. Boucle en croissant suit les courbes en C que vous dessinez pour former des croissants enchaînés. Longueur du pli règle la longueur de la ligne de pli (elle suit la taille du pinceau), Angle du pli règle la force avec laquelle il suit la courbe du trait (à 50 %, il la suit naturellement) et Début de la courbe de la ligne de pli règle l’épaisseur apparente de la matière (à 0 %, elle se courbe dès son point de départ). Avec le stylo de contour, la pression et le Fondu (entrée et sortie) ne modifient que la forme d\'ensemble, contour compris ; le contour garde son épaisseur et la couleur ne pâlit jamais. Désactivez Conserver les chevauchements sous Contour pour fusionner les traits qui se chevauchent : leurs jonctions ne sont pas contournées et aucune ligne de pli n\'est tracée là où ils se chevauchent ; seul l\'extérieur de la forme combinée est contourné.';
 
   @override
   String get tipsBrushFoldTitle =>

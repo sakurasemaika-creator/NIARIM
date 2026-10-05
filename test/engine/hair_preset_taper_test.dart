@@ -82,9 +82,11 @@ void main() {
             ))!.buffer.asUint8List();
             image.dispose();
             int alpha(int x, int y) => data[(y * 220 + x) * 4 + 3];
+            // The taper narrows the outline pen to a point without fading
+            // it, so the end pixel holds only that point's anti-aliasing.
             expect(
               alpha(100, 400),
-              lessThan(16),
+              lessThan(64),
               reason: '0% exit reaches the minimum at the actual stroke end',
             );
             final visible = [

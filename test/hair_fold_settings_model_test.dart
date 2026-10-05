@@ -35,6 +35,27 @@ void main() {
       json.remove('foldCrescentDepthThreshold');
       expect(Brush.fromJson(json).toJson()['foldCrescentDepthThreshold'], 1);
     });
+    test('keep overlaps defaults on and survives copyWith and JSON', () {
+      const brush = Brush(
+        id: 'b',
+        name: 'B',
+        size: 10,
+        opacity: 100,
+        spacing: 1,
+        stabilization: false,
+        stabilizationStrength: 0,
+        pixelMode: false,
+        fadeMode: FadeMode.off,
+        strokeDecay: false,
+      );
+      expect(brush.outlineKeepOverlap, isTrue);
+      final json = brush.toJson()..remove('outlineKeepOverlap');
+      expect(Brush.fromJson(json).outlineKeepOverlap, isTrue);
+      final merged = brush.copyWith(outlineKeepOverlap: false);
+      expect(merged.outlineKeepOverlap, isFalse);
+      expect(Brush.fromJson(merged.toJson()).outlineKeepOverlap, isFalse);
+      expect(merged.copyWith(size: 20).outlineKeepOverlap, isFalse);
+    });
     test('custom brush defaults to fold disabled and top-view mode', () {
       final brush = _baseBrush();
       expect(brush.foldEnabled, isFalse);
