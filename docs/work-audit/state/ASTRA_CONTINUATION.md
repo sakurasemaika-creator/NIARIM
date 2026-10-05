@@ -95,3 +95,42 @@ next_action: current HEAD `770e2c57d0a77c11c1a174b5a07243a71383f369` からS5d�
 - **プリセットの髪の毛ブラシ／前髪ブラシ**を各プリセット単位で実描画・設定・保存復元・Visual確認する。
 - 追加対象は監査対象への登録であり完了宣言ではない。既存Route順序/current_idを変更せず、対応既存IDまたはlock後差分回帰末尾へ取り込む。
 - 最新Visual PDFには上記追加対象を含め、機能名・BEFORE/SETTINGS/AFTER・preset/mode・主要設定値を画像へ焼き込む。
+
+
+## 2026-10-06 lock-after formal TODO ID sync
+
+前回の「全面監査追加同期」を正式なlock後差分TODOへ展開した。既存A001–A104のRoute順序/current_id/lock metadataは変更しない。
+
+- **A105** 全フィルター総inventory
+  - A105.01 最新HEADの全フィルターを1対象=1子TODOへ割当
+  - A105.02 UI/設定/Apply/Cancel/Undo/Redo/境界/実処理
+  - A105.03 保存復元/7言語/PC-SP/Premium
+  - A105.04 質感変更系を含めて監査
+  - A105.05 **質感偏光フィルター**を独立確認
+  - A105.06 全フィルターVisual closure
+- **A106** ブラシカスタム総合
+  - A106.01 設定/境界/履歴
+  - A106.02 永続化/import/export
+- **A107** **縁取りペン**
+  - A107.01 下層レイヤー生成・threshold→engine契約
+  - A107.02 Visual
+- **A108** **折りたたみモード（Hair Fold）**
+  - A108.01 ウェーブ俯瞰
+  - A108.02 ウェーブ煽り
+  - A108.03 右カール
+  - A108.04 左カール
+  - A108.05 **三日月カール**（内外曲線、終端接続、急激な太さ変化、中心点破綻を重点確認）
+  - A108.06 太/細ブラシでの発動基準と形状/線幅再現性
+  - A108.07 保存復元/Undo/Redo
+- **A109** **プリセット髪の毛ブラシ**
+  - 最新HEADの全presetをinventoryし、1プリセット=1個別子TODOへ展開
+  - A109.01 一般設定での再現性
+  - A109.02 保存復元/Visual
+- **A110** **プリセット前髪ブラシ**
+  - 最新HEADの全presetをinventoryし、1プリセット=1個別子TODOへ展開
+  - A110.01 一般設定での再現性
+  - A110.02 保存復元/Visual
+- **A111** 追加対象の最終Visual closure
+- **A112** 追加TODO coverage締め（unassigned feature/filter/preset = 0）
+
+これらは登録しただけでは完了扱いにしない。実操作、targeted regression、保存/復元、必要な7言語・PC/SP、Visual evidenceを最新HEADで確認する。A105.01/A109/A110のinventory時に新規対象が見つかった場合は、その場で1対象=1子TODOへ追加する。
