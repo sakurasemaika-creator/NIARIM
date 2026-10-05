@@ -32,6 +32,21 @@ class _CommunityWorkDetailScreenState extends State<CommunityWorkDetailScreen> {
   double _previewHeight = _defaultPreviewHeight;
   bool _aiDisclosureBusy = false;
 
+  /// With a backend an edit can be refused or lost; it is undone, and the
+  /// viewer is told.
+  Future<void> _reportFailedEdit(
+    CommunityService service,
+    Future<bool> edit,
+  ) async {
+    final messenger = ScaffoldMessenger.of(context);
+    final failed = AppLocalizations.of(context)!.communityEditFailed;
+    if (!await edit &&
+        service.isBackendConnected &&
+        service.lastError != null) {
+      messenger.showSnackBar(SnackBar(content: Text(failed)));
+    }
+  }
+
   Future<void> _setAiImageVideoDisclosure(
     CommunityService service,
     String workId,
@@ -87,7 +102,10 @@ class _CommunityWorkDetailScreenState extends State<CommunityWorkDetailScreen> {
             ),
             onSubmitted: (v) {
               Navigator.pop(ctx);
-              communityService.addTag(workId, v);
+              _reportFailedEdit(
+                communityService,
+                communityService.addTag(workId, v),
+              );
             },
           ),
           actions: [
@@ -98,7 +116,10 @@ class _CommunityWorkDetailScreenState extends State<CommunityWorkDetailScreen> {
             FilledButton(
               onPressed: () {
                 Navigator.pop(ctx);
-                communityService.addTag(workId, controller.text);
+                _reportFailedEdit(
+                  communityService,
+                  communityService.addTag(workId, controller.text),
+                );
               },
               child: Text(l10n.commonOk),
             ),
@@ -237,9 +258,21 @@ class _CommunityWorkDetailScreenState extends State<CommunityWorkDetailScreen> {
     final isOwner = work != null && communityService.isOwnWork(work);
     if (work == null ||
         (!isOwner && !communityService.isDiscoverableForViewer(work))) {
+      // A public work the viewer's own filters hide is not "missing".
+      final hiddenByFilter = work != null && work.isNiarimPublished;
       return Scaffold(
         appBar: AppBar(title: Text(l10n.communityWorkDetailTitle)),
-        body: Center(child: Text(l10n.communityWorkNotFoundMessage)),
+        body: Center(
+          child: Padding(
+            padding: const EdgeInsets.all(24),
+            child: Text(
+              hiddenByFilter
+                  ? l10n.communityWorkHiddenByFilterMessage
+                  : l10n.communityWorkNotFoundMessage,
+              textAlign: TextAlign.center,
+            ),
+          ),
+        ),
       );
     }
     final scheme = Theme.of(context).colorScheme;
@@ -436,8 +469,10 @@ class _CommunityWorkDetailScreenState extends State<CommunityWorkDetailScreen> {
                 const SizedBox(height: 12),
                 _NiarimVisibilitySwitch(
                   isPublished: work.isNiarimPublished,
-                  onChanged: () =>
-                      communityService.toggleNiarimVisibility(work.id),
+                  onChanged: () => _reportFailedEdit(
+                    communityService,
+                    communityService.toggleNiarimVisibility(work.id),
+                  ),
                 ),
                 const SizedBox(height: 8),
                 _AiImageVideoSwitch(
@@ -450,15 +485,11 @@ class _CommunityWorkDetailScreenState extends State<CommunityWorkDetailScreen> {
                           value,
                         ),
                 ),
-              ] else ...[
-                if (!work.isNiarimPublished) ...[
-                  const SizedBox(height: 12),
-                  _NiarimHiddenNotice(),
-                ],
-                if (work.containsGenerativeAiImageOrVideo) ...[
-                  const SizedBox(height: 12),
-                  const _AiImageVideoLabel(),
-                ],
+              ] else if (work.containsGenerativeAiImageOrVideo) ...[
+                // Only public works reach a viewer, so there is no hidden
+                // notice for them.
+                const SizedBox(height: 12),
+                const _AiImageVideoLabel(),
               ],
               const SizedBox(height: 16),
               Wrap(
@@ -471,11 +502,17 @@ class _CommunityWorkDetailScreenState extends State<CommunityWorkDetailScreen> {
                       label: tag,
                       isLocked: work.lockedTags.contains(tag),
                       onToggleLock: isAuthorSelf
-                          ? () => communityService.toggleTagLock(work.id, tag)
+                          ? () => _reportFailedEdit(
+                              communityService,
+                              communityService.toggleTagLock(work.id, tag),
+                            )
                           : null,
                       onRemove: work.lockedTags.contains(tag)
                           ? null
-                          : () => communityService.removeTag(work.id, tag),
+                          : () => _reportFailedEdit(
+                              communityService,
+                              communityService.removeTag(work.id, tag),
+                            ),
                       onTap: () => appRouter.push('/community', extra: tag),
                     ),
                   ActionChip(
@@ -880,33 +917,6 @@ class _AiImageVideoLabel extends StatelessWidget {
           Flexible(
             child: Text(
               l10n.communityContainsGenerativeAiImageVideo,
-              style: TextStyle(fontSize: 12, color: scheme.onSurfaceVariant),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _NiarimHiddenNotice extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    final l10n = AppLocalizations.of(context)!;
-    final scheme = Theme.of(context).colorScheme;
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-      decoration: BoxDecoration(
-        color: scheme.surfaceContainerLow,
-        borderRadius: BorderRadius.circular(10),
-      ),
-      child: Row(
-        children: [
-          Icon(Icons.lock_outline, size: 16, color: scheme.onSurfaceVariant),
-          const SizedBox(width: 6),
-          Expanded(
-            child: Text(
-              l10n.communityVisibilityHiddenNotice,
               style: TextStyle(fontSize: 12, color: scheme.onSurfaceVariant),
             ),
           ),

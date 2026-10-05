@@ -4,6 +4,7 @@ import '../../l10n/app_localizations.dart';
 import '../../models/community_work.dart';
 import '../../services/community_preview_service.dart';
 import '../../services/community_service.dart';
+import '../../services/api/community_api.dart' show RankingPeriod;
 import '../../widgets/ad_banner_mock_widget.dart';
 import '../../widgets/help_button.dart';
 import '../../widgets/responsive.dart';
@@ -60,6 +61,33 @@ class _CommunityScreenState extends State<CommunityScreen>
       _searchQuery = initialTag;
       _searchController.text = initialTag;
     }
+    // With a backend, the plaza shows the server's latest works and the
+    // selected ranking; without one, the bundled dummy works.
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      final service = context.read<CommunityService>();
+      if (!service.isBackendConnected) return;
+      service.refreshFromBackend();
+      _fetchRanking();
+    });
+  }
+
+  /// Brings the selected ranking into the service's store; the ranking tab
+  /// then ranks and filters it like every other work.
+  Future<void> _fetchRanking() async {
+    final service = context.read<CommunityService>();
+    if (!service.isBackendConnected) return;
+    await service.fetchRanking(
+      _sort == _RankingSort.bookmarks && _period == _RankingPeriod.allTime
+          ? RankingPeriod.bookmarks
+          : switch (_period) {
+              _RankingPeriod.allTime => RankingPeriod.all,
+              _RankingPeriod.yearly => RankingPeriod.year,
+              _RankingPeriod.monthly => RankingPeriod.month,
+              _RankingPeriod.weekly => RankingPeriod.week,
+              _RankingPeriod.daily => RankingPeriod.day,
+            },
+    );
   }
 
   @override
@@ -424,7 +452,10 @@ class _CommunityScreenState extends State<CommunityScreen>
                           ChoiceChip(
                             label: Text(_periodLabel(l10n, period)),
                             selected: _period == period,
-                            onSelected: (_) => setState(() => _period = period),
+                            onSelected: (_) {
+                              setState(() => _period = period);
+                              _fetchRanking();
+                            },
                           ),
                       ],
                     ),
@@ -440,16 +471,20 @@ class _CommunityScreenState extends State<CommunityScreen>
                           ),
                           label: Text(l10n.communityRankingSortViews),
                           selected: _sort == _RankingSort.views,
-                          onSelected: (_) =>
-                              setState(() => _sort = _RankingSort.views),
+                          onSelected: (_) {
+                            setState(() => _sort = _RankingSort.views);
+                            _fetchRanking();
+                          },
                         ),
                         const SizedBox(width: 8),
                         ChoiceChip(
                           avatar: const Icon(Icons.bookmark, size: 16),
                           label: Text(l10n.communityRankingSortBookmarks),
                           selected: _sort == _RankingSort.bookmarks,
-                          onSelected: (_) =>
-                              setState(() => _sort = _RankingSort.bookmarks),
+                          onSelected: (_) {
+                            setState(() => _sort = _RankingSort.bookmarks);
+                            _fetchRanking();
+                          },
                         ),
                         const Spacer(),
                         IconButton(

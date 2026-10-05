@@ -5861,10 +5861,6 @@ class AppLocalizationsEn extends AppLocalizations {
       'Hidden: removed from New Arrivals, Rankings, and this author\'s work list (independent of the YouTube-side visibility setting).';
 
   @override
-  String get communityVisibilityHiddenNotice =>
-      'The creator has hidden this work in the Work Plaza.';
-
-  @override
   String get communityVisibilityHiddenBadge => 'Hidden';
 
   @override
@@ -5872,6 +5868,14 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get communityWorkNotFoundMessage => 'This work could not be found';
+
+  @override
+  String get communityWorkHiddenByFilterMessage =>
+      'This work is hidden by your display filters';
+
+  @override
+  String get communityEditFailed =>
+      'Couldn’t save the change. Check your connection and try again.';
 
   @override
   String get communityFloatingPreviewDetailButton => 'Details';

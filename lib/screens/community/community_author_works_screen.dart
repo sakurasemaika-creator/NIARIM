@@ -74,6 +74,9 @@ class _CommunityAuthorWorksScreenState extends State<CommunityAuthorWorksScreen>
       adMockMaterialPageRoute(
         builder: (_) => CommunityShortsScreen(
           works: target,
+          ownerView: context.read<CommunityService>().isOwnAuthor(
+            widget.authorId,
+          ),
           bookmarkedIds: bookmarkedIds,
           onToggleBookmark: (w) =>
               context.read<CommunityService>().toggleBookmark(w.id),

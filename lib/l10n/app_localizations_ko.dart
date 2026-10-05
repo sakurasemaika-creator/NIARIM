@@ -5691,10 +5691,6 @@ class AppLocalizationsKo extends AppLocalizations {
       '비공개 중: 신착・랭킹・이 투고자의 작품 목록에서 숨겨집니다（YouTube 측 공개 설정과는 독립된 설정입니다）.';
 
   @override
-  String get communityVisibilityHiddenNotice =>
-      '투고자가 이 작품을 작품 광장에서 비공개로 설정했습니다.';
-
-  @override
   String get communityVisibilityHiddenBadge => '비공개';
 
   @override
@@ -5702,6 +5698,14 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get communityWorkNotFoundMessage => '작품을 찾을 수 없습니다';
+
+  @override
+  String get communityWorkHiddenByFilterMessage =>
+      '표시 필터 설정에 따라 이 작품은 숨겨져 있습니다';
+
+  @override
+  String get communityEditFailed =>
+      '변경 사항을 저장하지 못했습니다. 연결 상태를 확인하고 다시 시도해 주세요.';
 
   @override
   String get communityFloatingPreviewDetailButton => '상세보기';

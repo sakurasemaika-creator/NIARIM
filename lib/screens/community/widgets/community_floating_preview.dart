@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../../router.dart';
 import '../../../services/community_preview_service.dart';
+import '../../../services/community_service.dart';
 import '../../../widgets/ad_banner_mock_widget.dart';
 import 'community_work_card.dart';
 
@@ -48,8 +49,19 @@ class _CommunityFloatingPreviewState extends State<CommunityFloatingPreview> {
   @override
   Widget build(BuildContext context) {
     final service = context.watch<CommunityPreviewService>();
-    final work = service.work;
-    if (work == null) return const SizedBox.shrink();
+    final opened = service.work;
+    if (opened == null) return const SizedBox.shrink();
+    // The work as it is now: one that becomes hidden or muted while it
+    // plays is closed, except the viewer's own.
+    final community = context.watch<CommunityService>();
+    final work = community.byId(opened.id) ?? opened;
+    if (!community.isOwnWork(work) &&
+        !community.isDiscoverableForViewer(work)) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (service.work?.id == opened.id) service.close();
+      });
+      return const SizedBox.shrink();
+    }
     final l10n = AppLocalizations.of(context)!;
     final screenSize = MediaQuery.sizeOf(context);
     final position = service.position;

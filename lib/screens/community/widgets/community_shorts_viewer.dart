@@ -27,12 +27,17 @@ class CommunityShortsScreen extends StatefulWidget {
   /// CommunityService.toggleBookmark()を直接呼ぶ。
   final void Function(CommunityWork work) onToggleBookmark;
 
+  /// Opened by the poster from their own author page: their own works stay
+  /// even when hidden or filtered out, as on that page.
+  final bool ownerView;
+
   const CommunityShortsScreen({
     super.key,
     required this.works,
     this.initialIndex = 0,
     required this.bookmarkedIds,
     required this.onToggleBookmark,
+    this.ownerView = false,
   });
 
   @override
@@ -119,9 +124,15 @@ class _CommunityShortsScreenState extends State<CommunityShortsScreen> {
     final l10n = AppLocalizations.of(context)!;
     final scheme = Theme.of(context).colorScheme;
     final communityService = context.watch<CommunityService>();
-    final visibleWorks = widget.works
-        .where(communityService.isDiscoverableForViewer)
-        .toList();
+    // The works it was opened with, as they are now: a flag, tag or title
+    // changed meanwhile, or a filter set meanwhile, applies at once.
+    final visibleWorks = [
+      for (final opened in widget.works)
+        if (communityService.byId(opened.id) ?? opened case final work
+            when (widget.ownerView && communityService.isOwnWork(work)) ||
+                communityService.isDiscoverableForViewer(work))
+          work,
+    ];
     if (_currentIndex >= visibleWorks.length && visibleWorks.isNotEmpty) {
       _currentIndex = visibleWorks.length - 1;
     }
@@ -143,12 +154,11 @@ class _CommunityShortsScreenState extends State<CommunityShortsScreen> {
                 isBookmarked: communityService.isBookmarked(work.id),
                 onToggleBookmark: () =>
                     communityService.toggleBookmark(work.id),
-                onPlaybackEnded: (onLoopCurrent) =>
-                    _handlePlaybackEnded(
-                      index,
-                      visibleWorks,
-                      onLoopCurrent: onLoopCurrent,
-                    ),
+                onPlaybackEnded: (onLoopCurrent) => _handlePlaybackEnded(
+                  index,
+                  visibleWorks,
+                  onLoopCurrent: onLoopCurrent,
+                ),
               );
             },
           ),

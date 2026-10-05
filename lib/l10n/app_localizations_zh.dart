@@ -5629,9 +5629,6 @@ class AppLocalizationsZh extends AppLocalizations {
       '非公开中：已从新着、排行榜和该投稿者的作品列表中隐藏（这是独立于YouTube端公开设置的设置）。';
 
   @override
-  String get communityVisibilityHiddenNotice => '投稿者已将此作品在作品广场设为非公开。';
-
-  @override
   String get communityVisibilityHiddenBadge => '非公开';
 
   @override
@@ -5639,6 +5636,12 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get communityWorkNotFoundMessage => '未找到该作品';
+
+  @override
+  String get communityWorkHiddenByFilterMessage => '该作品已按显示筛选设置隐藏';
+
+  @override
+  String get communityEditFailed => '无法保存更改。请检查连接后重试。';
 
   @override
   String get communityFloatingPreviewDetailButton => '详情';
@@ -12117,9 +12120,6 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
       '非公開中：已從新作、排行榜和該投稿者的作品清單中隱藏（這是獨立於YouTube端公開設定的設定）。';
 
   @override
-  String get communityVisibilityHiddenNotice => '投稿者已將此作品在作品廣場設為非公開。';
-
-  @override
   String get communityVisibilityHiddenBadge => '非公開';
 
   @override
@@ -12127,6 +12127,12 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get communityWorkNotFoundMessage => '找不到該作品';
+
+  @override
+  String get communityWorkHiddenByFilterMessage => '該作品已依顯示篩選設定隱藏';
+
+  @override
+  String get communityEditFailed => '無法儲存變更。請檢查網路連線後再試一次。';
 
   @override
   String get communityFloatingPreviewDetailButton => '詳情';

@@ -89,6 +89,8 @@ void main() {
     final aiWork = service.works.first.copyWith(
       containsGenerativeAiImageOrVideo: true,
     );
+    // The viewer shows the service's copy of each work, as the server sent it.
+    service.applyServerWork(aiWork);
     final normalWork = service.works[1];
 
     await tester.pumpWidget(

@@ -6,6 +6,7 @@ import '../models/community_repost.dart';
 import '../models/community_work.dart';
 import 'api/community_api.dart';
 import 'api/niarim_api_exception.dart';
+import 'api/niarim_api_models.dart';
 
 /// フォロー中の作者タブに表示する1件（[CommunityService.favoriteAuthorFeed]）。
 /// フォロー中の作者自身の投稿か、フォロー中の作者が他者の作品をリポスト
@@ -87,9 +88,7 @@ class CommunityService extends ChangeNotifier {
     notifyListeners();
     try {
       final fetched = await client.latestWorks();
-      _works
-        ..clear()
-        ..addAll(fetched.map((w) => w.toCommunityWork()));
+      _mergeLatest([for (final w in fetched) w.toCommunityWork()]);
       return true;
     } on NiarimApiException catch (e) {
       _lastError = e;
@@ -108,10 +107,17 @@ class CommunityService extends ChangeNotifier {
     try {
       final page = await client.ranking(period);
       _lastError = null;
-      return page.works
-          .map((w) => w.toCommunityWork())
-          .where((w) => w.isNiarimPublished && _passesContentFilters(w))
-          .toList();
+      final ranked = [for (final w in page.works) w.toCommunityWork()];
+      // Ranked works join the one store, so their detail, tags and the
+      // viewer's filters work on the same copy as every other surface.
+      for (final work in ranked) {
+        _upsert(work);
+      }
+      notifyListeners();
+      return [
+        for (final work in ranked)
+          if (isDiscoverableForViewer(byId(work.id)!)) byId(work.id)!,
+      ];
     } on NiarimApiException catch (e) {
       _lastError = e;
       notifyListeners();
@@ -119,7 +125,11 @@ class CommunityService extends ChangeNotifier {
     }
   }
 
-  late final List<CommunityWork> _works = buildDummyCommunityWorks();
+  // With a backend the store starts empty rather than showing dummy works
+  // until the first fetch.
+  late final List<CommunityWork> _works = api == null
+      ? buildDummyCommunityWorks()
+      : <CommunityWork>[];
   final Set<String> _bookmarkedIds = {};
   // お気に入り作者（フォロー、Task#144）のNIARIM User ID集合。
   // ブックマークと同じくバックエンド未実装のためアプリ内一時状態のみ
@@ -276,6 +286,15 @@ class CommunityService extends ChangeNotifier {
   /// （21.1節のBookmarkItem）へ置き換えること。現状はアプリ内一時状態
   /// なので再起動すると消える（ブックマーク自体が消えるので順序だけの
   /// 問題ではない）。
+  /// The viewer's bookmarks, newest bookmark first, as the viewer's
+  /// filters allow (their own works always stay).
+  List<CommunityWork> get bookmarkedWorksForViewer => [
+    for (final id in bookmarkedIdsNewestFirst)
+      if (byId(id) case final work?
+          when isOwnWork(work) || isDiscoverableForViewer(work))
+        work,
+  ];
+
   List<String> get bookmarkedIdsNewestFirst =>
       _bookmarkedIds.toList().reversed.toList();
   Set<String> get favoriteAuthorIds => Set.unmodifiable(_favoriteAuthorIds);
@@ -339,6 +358,11 @@ class CommunityService extends ChangeNotifier {
   /// surface reading this service sees the change at once without
   /// refetching the latest list, which may not contain the work at all.
   void applyServerWork(CommunityWork work) {
+    _upsert(work);
+    notifyListeners();
+  }
+
+  void _upsert(CommunityWork work) {
     final index = _indexOf(work.id);
     if (index == -1) {
       final at = _works.indexWhere((w) => w.postedAt.isBefore(work.postedAt));
@@ -346,7 +370,27 @@ class CommunityService extends ChangeNotifier {
     } else {
       _works[index] = work;
     }
-    notifyListeners();
+  }
+
+  /// Takes in the latest page, in the server's order. Works fetched
+  /// elsewhere (ranking) that are older than the page stay; a known work
+  /// the page should contain but does not is no longer public and goes.
+  void _mergeLatest(List<CommunityWork> page) {
+    final ids = {for (final w in page) w.id};
+    final oldest = page.isEmpty
+        ? null
+        : page.map((w) => w.postedAt).reduce((a, b) => a.isBefore(b) ? a : b);
+    final kept = [
+      for (final w in _works)
+        if (!ids.contains(w.id) &&
+            oldest != null &&
+            w.postedAt.isBefore(oldest))
+          w,
+    ];
+    _works
+      ..clear()
+      ..addAll(page)
+      ..addAll(kept);
   }
 
   /// Sets the poster's 「AI画像・AI動画使用」 declaration on [workId]. Only the
@@ -392,61 +436,100 @@ class CommunityService extends ChangeNotifier {
   /// 状態を防ぐ。
   static const int maxTagsPerWork = 10;
 
-  /// タグを追加する（誰でも可能）。同名タグが既にある場合、または既に
-  /// 10件登録済みの場合は何もしない。
-  void addTag(String workId, String tag) {
+  /// Adds a community tag to [workId]. Tag edits, lock changes and the
+  /// visibility toggle below apply locally at once; with a backend they are
+  /// then sent, the server's copy replaces the local one, and a refused
+  /// change is undone ([lastError] says why). They return whether the change
+  /// took effect.
+  Future<bool> addTag(String workId, String tag) async {
     final trimmed = tag.trim();
-    if (trimmed.isEmpty) return;
-    final index = _indexOf(workId);
-    if (index == -1) return;
-    final current = _works[index];
-    if (current.tags.contains(trimmed)) return;
-    if (current.tags.length >= maxTagsPerWork) return;
-    _works[index] = current.copyWith(tags: [...current.tags, trimmed]);
-    notifyListeners();
-  }
-
-  /// タグを削除する。ロックされているタグは削除できない
-  /// （呼び出し元でロック中のタグに対しては削除ボタン自体を表示しない）。
-  void removeTag(String workId, String tag) {
-    final index = _indexOf(workId);
-    if (index == -1) return;
-    final current = _works[index];
-    if (current.lockedTags.contains(tag)) return;
-    _works[index] = current.copyWith(
-      tags: current.tags.where((t) => t != tag).toList(),
-      lockedTags: current.lockedTags.where((t) => t != tag).toSet(),
-    );
-    notifyListeners();
-  }
-
-  /// タグのロック状態を切り替える（投稿者本人のみ呼び出し可能。
-  /// UI側で`work.authorId == kDummySelfAuthorId`のときのみボタンを表示する）。
-  void toggleTagLock(String workId, String tag) {
-    final index = _indexOf(workId);
-    if (index == -1) return;
-    final current = _works[index];
-    final lockedTags = {...current.lockedTags};
-    if (lockedTags.contains(tag)) {
-      lockedTags.remove(tag);
-    } else {
-      lockedTags.add(tag);
+    final current = byId(workId);
+    if (trimmed.isEmpty ||
+        current == null ||
+        current.tags.contains(trimmed) ||
+        current.tags.length >= maxTagsPerWork) {
+      return false;
     }
-    _works[index] = current.copyWith(lockedTags: lockedTags);
-    notifyListeners();
+    return _edit(
+      current,
+      current.copyWith(tags: [...current.tags, trimmed]),
+      (client) => client.updateTag(
+        workId,
+        action: CommunityTagAction.add,
+        tag: trimmed,
+      ),
+    );
   }
 
-  /// 作品広場独自の公開/非公開設定を切り替える（投稿者本人のみ
-  /// 呼び出し可能。UI側で`work.authorId == kDummySelfAuthorId`のときのみ
-  /// 切り替えボタンを表示する。29_動画投稿・ランキング機能仕様.md 13章）。
-  void toggleNiarimVisibility(String workId) {
-    final index = _indexOf(workId);
-    if (index == -1) return;
-    final current = _works[index];
-    _works[index] = current.copyWith(
-      isNiarimPublished: !current.isNiarimPublished,
+  /// Removes a tag. A locked tag cannot be removed (the UI offers no remove
+  /// button for it).
+  Future<bool> removeTag(String workId, String tag) async {
+    final current = byId(workId);
+    if (current == null || current.lockedTags.contains(tag)) return false;
+    return _edit(
+      current,
+      current.copyWith(
+        tags: current.tags.where((t) => t != tag).toList(),
+        lockedTags: current.lockedTags.where((t) => t != tag).toSet(),
+      ),
+      (client) =>
+          client.updateTag(workId, action: CommunityTagAction.remove, tag: tag),
     );
+  }
+
+  /// Locks or unlocks a tag; only the poster may (the UI offers it to them
+  /// alone, and the server refuses anyone else).
+  Future<bool> toggleTagLock(String workId, String tag) async {
+    final current = byId(workId);
+    if (current == null) return false;
+    final lockedTags = {...current.lockedTags};
+    final lock = !lockedTags.remove(tag);
+    if (lock) lockedTags.add(tag);
+    return _edit(
+      current,
+      current.copyWith(lockedTags: lockedTags),
+      (client) => client.updateTag(
+        workId,
+        action: lock ? CommunityTagAction.lock : CommunityTagAction.unlock,
+        tag: tag,
+      ),
+    );
+  }
+
+  /// Toggles the work-plaza visibility of the poster's own work
+  /// (29_動画投稿・ランキング機能仕様.md, chapter 13).
+  Future<bool> toggleNiarimVisibility(String workId) async {
+    final current = byId(workId);
+    if (current == null) return false;
+    final published = !current.isNiarimPublished;
+    return _edit(
+      current,
+      current.copyWith(isNiarimPublished: published),
+      (client) =>
+          client.updateWorkVisibility(workId, isNiarimPublished: published),
+    );
+  }
+
+  Future<bool> _edit(
+    CommunityWork before,
+    CommunityWork optimistic,
+    Future<ApiWork> Function(CommunityApi client) send,
+  ) async {
+    _works[_indexOf(before.id)] = optimistic;
     notifyListeners();
+    final client = api;
+    if (client == null) return true;
+    _lastError = null;
+    try {
+      applyServerWork((await send(client)).toCommunityWork());
+      return true;
+    } on NiarimApiException catch (error) {
+      _lastError = error;
+      final index = _indexOf(before.id);
+      if (index != -1) _works[index] = before;
+      notifyListeners();
+      return false;
+    }
   }
 
   // ─── お気に入り作者（フォロー、Task#144） ──────────────────────────
@@ -732,12 +815,19 @@ class CommunityService extends ChangeNotifier {
   /// 除外しない）。公開設定に関わらずデータ自体は返すため、呼び出し側で
   /// [isBookmarksPublic]を確認してから表示するかどうかを判断すること。
   List<CommunityWork> bookmarkedWorksOf(String authorId) {
-    final isSelf = authorId == kDummySelfAuthorId;
+    final isSelf = isOwnAuthor(authorId);
     final ids = isSelf
         ? _bookmarkedIds
         : (_dummyBookmarksByOtherAuthor[authorId] ?? const {});
-    final source = isSelf ? _works : discoverableWorks;
-    final list = source.where((w) => ids.contains(w.id)).toList();
+    // The viewer's own list follows their filters too; only their own
+    // works stay when hidden.
+    final list = _works
+        .where(
+          (w) =>
+              ids.contains(w.id) &&
+              ((isSelf && isOwnWork(w)) || isDiscoverableForViewer(w)),
+        )
+        .toList();
     list.sort((a, b) => b.postedAt.compareTo(a.postedAt));
     return list;
   }

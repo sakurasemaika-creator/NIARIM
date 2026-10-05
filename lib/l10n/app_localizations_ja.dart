@@ -5666,10 +5666,6 @@ class AppLocalizationsJa extends AppLocalizations {
       '非公開中：新着・ランキング・投稿者別作品一覧から非表示です（YouTube側の公開設定とは独立した設定です）。';
 
   @override
-  String get communityVisibilityHiddenNotice =>
-      'この作品は投稿者により作品広場では非公開に設定されています。';
-
-  @override
   String get communityVisibilityHiddenBadge => '非公開';
 
   @override
@@ -5677,6 +5673,13 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get communityWorkNotFoundMessage => '作品が見つかりませんでした';
+
+  @override
+  String get communityWorkHiddenByFilterMessage =>
+      '表示フィルターの設定により、この作品は非表示になっています';
+
+  @override
+  String get communityEditFailed => '変更を保存できませんでした。通信状態を確認して、もう一度お試しください。';
 
   @override
   String get communityFloatingPreviewDetailButton => '詳細へ';

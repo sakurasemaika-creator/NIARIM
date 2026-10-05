@@ -5973,10 +5973,6 @@ class AppLocalizationsFr extends AppLocalizations {
       'Masqué : retiré de Nouveautés, Classements et la liste des œuvres de cet auteur (réglage indépendant de la visibilité côté YouTube).';
 
   @override
-  String get communityVisibilityHiddenNotice =>
-      'Le créateur a masqué cette œuvre sur la Place des œuvres.';
-
-  @override
   String get communityVisibilityHiddenBadge => 'Masqué';
 
   @override
@@ -5984,6 +5980,14 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get communityWorkNotFoundMessage => 'Cette œuvre est introuvable';
+
+  @override
+  String get communityWorkHiddenByFilterMessage =>
+      'Cette œuvre est masquée par vos filtres d’affichage';
+
+  @override
+  String get communityEditFailed =>
+      'Impossible d’enregistrer la modification. Vérifiez votre connexion et réessayez.';
 
   @override
   String get communityFloatingPreviewDetailButton => 'Détails';

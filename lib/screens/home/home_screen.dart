@@ -1628,11 +1628,8 @@ class _BookmarkedTab extends StatelessWidget {
     // 新しくブックマークした順に並べる。communityService.worksの並び
     // （ダミーデータの生成順）のままだと、たった今ブックマークした作品が
     // 一覧のどこに現れるか分からず、操作の結果が確認できない。
-    final byId = {for (final w in communityService.works) w.id: w};
-    final bookmarkedWorks = [
-      for (final id in communityService.bookmarkedIdsNewestFirst)
-        if (byId[id] != null) byId[id]!,
-    ];
+    // 作品広場の表示フィルター（AI非表示・ミュート）もここに効かせる。
+    final bookmarkedWorks = communityService.bookmarkedWorksForViewer;
 
     if (bookmarkedWorks.isEmpty) {
       return Center(

@@ -10403,12 +10403,6 @@ abstract class AppLocalizations {
   /// **'非公開中：新着・ランキング・投稿者別作品一覧から非表示です（YouTube側の公開設定とは独立した設定です）。'**
   String get communityVisibilityHiddenDesc;
 
-  /// No description provided for @communityVisibilityHiddenNotice.
-  ///
-  /// In ja, this message translates to:
-  /// **'この作品は投稿者により作品広場では非公開に設定されています。'**
-  String get communityVisibilityHiddenNotice;
-
   /// No description provided for @communityVisibilityHiddenBadge.
   ///
   /// In ja, this message translates to:
@@ -10426,6 +10420,18 @@ abstract class AppLocalizations {
   /// In ja, this message translates to:
   /// **'作品が見つかりませんでした'**
   String get communityWorkNotFoundMessage;
+
+  /// No description provided for @communityWorkHiddenByFilterMessage.
+  ///
+  /// In ja, this message translates to:
+  /// **'表示フィルターの設定により、この作品は非表示になっています'**
+  String get communityWorkHiddenByFilterMessage;
+
+  /// No description provided for @communityEditFailed.
+  ///
+  /// In ja, this message translates to:
+  /// **'変更を保存できませんでした。通信状態を確認して、もう一度お試しください。'**
+  String get communityEditFailed;
 
   /// No description provided for @communityFloatingPreviewDetailButton.
   ///

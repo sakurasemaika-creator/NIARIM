@@ -5962,10 +5962,6 @@ class AppLocalizationsEs extends AppLocalizations {
       'Oculto: se elimina de Novedades, Rankings y la lista de obras de este autor (es un ajuste independiente de la visibilidad en YouTube).';
 
   @override
-  String get communityVisibilityHiddenNotice =>
-      'El autor ha ocultado esta obra en la Plaza de Obras.';
-
-  @override
   String get communityVisibilityHiddenBadge => 'Oculto';
 
   @override
@@ -5973,6 +5969,14 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get communityWorkNotFoundMessage => 'No se pudo encontrar esta obra';
+
+  @override
+  String get communityWorkHiddenByFilterMessage =>
+      'Esta obra está oculta por tus filtros de visualización';
+
+  @override
+  String get communityEditFailed =>
+      'No se pudo guardar el cambio. Comprueba la conexión e inténtalo de nuevo.';
 
   @override
   String get communityFloatingPreviewDetailButton => 'Detalles';
