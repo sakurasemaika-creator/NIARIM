@@ -39,10 +39,8 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import '../helpers/first_use_tooltips.dart';
 import '../helpers/load_app_fonts.dart';
-import 'texture_filter_reference_fixtures.dart';
 
 const _captureMatch = String.fromEnvironment('CAPTURE_MATCH');
-const _textureFixture = String.fromEnvironment('TEXTURE_FIXTURE');
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
@@ -69,29 +67,15 @@ void main() {
           final id = '${filter.id}_$variant';
           if (_captureMatch.isNotEmpty && !id.contains(_captureMatch)) continue;
           debugPrint('CAPTURE_CASE:$id');
-          final textureReference =
-              filter.kind == FilterKind.auroraHologram &&
-              _textureFixture.isNotEmpty;
           await h.project(
             id,
-            fixture: textureReference
-                ? _textureFixture
-                : filter.kind == FilterKind.autoLineart ||
-                      filter.kind == FilterKind.inkPool
+            fixture:
+                filter.kind == FilterKind.autoLineart ||
+                    filter.kind == FilterKind.inkPool
                 ? 'lineart'
                 : 'color',
             mask: filter.kind == FilterKind.lensDistortion,
             background: filter.kind == FilterKind.backgroundBlend,
-            exportWidth:
-                textureReference &&
-                    _textureFixture == 'textureReferenceOriginal'
-                ? 785
-                : 256,
-            exportHeight:
-                textureReference &&
-                    _textureFixture == 'textureReferenceOriginal'
-                ? 455
-                : 256,
           );
           final before = await h.art('$id-before');
           final inputIds = h.layers.map((l) => l.id).toSet();
@@ -1178,20 +1162,6 @@ Future<Uint8List> _fixture(
   int width = 256,
   int height = 256,
 }) async {
-  if (kind == 'textureReferenceOriginal') {
-    // The original 785x455 user reference PNG cannot be safely round-tripped
-    // through the repository transport used by this capture job. Fail clearly
-    // instead of silently substituting/upscaling the old 192x192 fixture.
-    throw StateError(
-      'textureReferenceOriginal requires the verified 785x455 source PNG; '
-      'repository copy is not a valid image. Do not substitute a low-res fixture.',
-    );
-  }
-  if (kind == 'textureReference3' || kind == 'textureReference4') {
-    return Future.value(
-      textureReferenceRgba(kind, width: width, height: height),
-    );
-  }
   final recorder = ui.PictureRecorder();
   final canvas = Canvas(recorder);
   if (kind == 'colorTranslucent') {

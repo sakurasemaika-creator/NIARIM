@@ -61,6 +61,7 @@ void main() {
       FilterKind.chromaticAberration,
       FilterKind.lensDistortion,
       FilterKind.pixelate,
+      FilterKind.mosaic,
       FilterKind.auroraHologram,
       FilterKind.backgroundBlend,
       FilterKind.inkPool,
@@ -112,7 +113,7 @@ void main() {
         ],
         hologramBrightness: 10,
         hologramSaturation: 20,
-        hologramPreset: AuroraHologramPreset.soapBubble,
+        hologramPreset: AuroraHologramPreset.luminousPearl,
         bgBlendColor: 0xFF708090,
         bgBlendDirection: 45,
         bgBlendLength: 3,
@@ -155,12 +156,12 @@ void main() {
     }
 
     const hologramPresets = <AuroraHologramPreset>[
-      AuroraHologramPreset.aurora,
-      AuroraHologramPreset.soapBubble,
-      AuroraHologramPreset.cyberNeon,
-      AuroraHologramPreset.pastelDream,
-      AuroraHologramPreset.sunsetGold,
+      AuroraHologramPreset.silverHologram,
+      AuroraHologramPreset.sampledGold,
       AuroraHologramPreset.silverFoil,
+      AuroraHologramPreset.luminousPearl,
+      AuroraHologramPreset.auroraPastel,
+      AuroraHologramPreset.darkRainbow,
     ];
     expect(AuroraHologramPreset.values, hologramPresets);
     for (final preset in hologramPresets) {

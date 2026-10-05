@@ -2958,12 +2958,6 @@ class AppLocalizationsZh extends AppLocalizations {
   String get brushSettingsBlurRadiusLabel => '模糊半径';
 
   @override
-  String get brushSettingsStabilizationTitle => '防抖';
-
-  @override
-  String get brushSettingsStabilizationStrengthLabel => '防抖强度';
-
-  @override
   String get brushSettingsPixelModeTitle => '像素模式';
 
   @override
@@ -3010,9 +3004,6 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get brushSettingsMixingBleed => '晕染';
-
-  @override
-  String get brushSettingsMixingRateLabel => '混色率';
 
   @override
   String get projectDetailNotFoundTitle => '项目';
@@ -4883,9 +4874,6 @@ class AppLocalizationsZh extends AppLocalizations {
   }
 
   @override
-  String get frameStripFrameListModeLabel => '帧列表';
-
-  @override
   String get frameStripTimelineModeLabel => '时间轴';
 
   @override
@@ -5354,31 +5342,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get filterAuroraHologramPresetSilverHologram => '极光全息';
 
   @override
-  String get filterAuroraHologramPresetOpalPearl => '欧泊珍珠';
-
-  @override
-  String get filterAuroraHologramPresetDarkHologram => '暗色全息';
-
-  @override
-  String get filterAuroraHologramPresetSoapBubble => '仙境珍珠';
-
-  @override
-  String get filterAuroraHologramPresetCyberNeon => '霓虹棱镜';
-
-  @override
-  String get filterAuroraHologramPresetPastelDream => '粉彩糖果';
-
-  @override
-  String get filterAuroraHologramPresetPearl2 => '棱镜珍珠';
-
-  @override
-  String get filterAuroraHologramPresetSunsetGold => '琥珀金';
-
-  @override
   String get filterAuroraHologramPresetSilverFoil => '铂金银';
-
-  @override
-  String get filterAuroraHologramPresetClassicHologram => '极光全息';
 
   @override
   String get filterNameBackgroundBlend => '背景融入';
@@ -6020,12 +5984,6 @@ class AppLocalizationsZh extends AppLocalizations {
   String get brushSettingsEdgeJitterTitle => '边缘渗漏';
 
   @override
-  String get brushSettingsEdgeJitterSubtitle => '轻微粗糙化边缘，模拟墨水渗漏效果';
-
-  @override
-  String get brushSettingsEdgeJitterStrengthLabel => '渗漏强度';
-
-  @override
   String get filterNameInkPool => '积墨';
 
   @override
@@ -6283,27 +6241,6 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get brushFoldLength => '折返长度';
-
-  @override
-  String get filterAuroraHologramPresetBlueHologram => '蓝宝石全息';
-
-  @override
-  String get filterAuroraHologramPresetLightBlueHologram => '冰晶全息';
-
-  @override
-  String get filterAuroraHologramPresetPurpleHologram => '紫水晶全息';
-
-  @override
-  String get filterAuroraHologramPresetBlueGreenHologram => '绿松石全息';
-
-  @override
-  String get filterAuroraHologramPresetMoonlightPearl => '月光珍珠';
-
-  @override
-  String get filterAuroraHologramPresetRainbowPearl => '薄雾彩虹';
-
-  @override
-  String get filterAuroraHologramPresetWarmHologram => '日出全息';
 
   @override
   String get brushFoldMode => '折叠类型';
@@ -9448,12 +9385,6 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get brushSettingsBlurRadiusLabel => '模糊半徑';
 
   @override
-  String get brushSettingsStabilizationTitle => '防手震';
-
-  @override
-  String get brushSettingsStabilizationStrengthLabel => '防手震強度';
-
-  @override
   String get brushSettingsPixelModeTitle => '像素模式';
 
   @override
@@ -9500,9 +9431,6 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get brushSettingsMixingBleed => '暈染';
-
-  @override
-  String get brushSettingsMixingRateLabel => '混色率';
 
   @override
   String get projectDetailNotFoundTitle => '專案';
@@ -11374,9 +11302,6 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   }
 
   @override
-  String get frameStripFrameListModeLabel => '影格清單';
-
-  @override
   String get frameStripTimelineModeLabel => '時間軸';
 
   @override
@@ -11845,31 +11770,7 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get filterAuroraHologramPresetSilverHologram => '極光全息';
 
   @override
-  String get filterAuroraHologramPresetOpalPearl => '蛋白石珍珠';
-
-  @override
-  String get filterAuroraHologramPresetDarkHologram => '暗色全息';
-
-  @override
-  String get filterAuroraHologramPresetSoapBubble => '仙境珍珠';
-
-  @override
-  String get filterAuroraHologramPresetCyberNeon => '霓虹稜鏡';
-
-  @override
-  String get filterAuroraHologramPresetPastelDream => '粉彩糖果';
-
-  @override
-  String get filterAuroraHologramPresetPearl2 => '稜鏡珍珠';
-
-  @override
-  String get filterAuroraHologramPresetSunsetGold => '琥珀金';
-
-  @override
   String get filterAuroraHologramPresetSilverFoil => '鉑金銀';
-
-  @override
-  String get filterAuroraHologramPresetClassicHologram => '極光全息';
 
   @override
   String get filterNameBackgroundBlend => '背景融入';
@@ -12511,12 +12412,6 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get brushSettingsEdgeJitterTitle => '邊緣漸漫';
 
   @override
-  String get brushSettingsEdgeJitterSubtitle => '輕微粗糙化邊緣，模擬墨水漸漫效果';
-
-  @override
-  String get brushSettingsEdgeJitterStrengthLabel => '漸漫強度';
-
-  @override
   String get filterNameInkPool => '積墨';
 
   @override
@@ -12774,27 +12669,6 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get brushFoldLength => '折返長度';
-
-  @override
-  String get filterAuroraHologramPresetBlueHologram => '藍寶石全息';
-
-  @override
-  String get filterAuroraHologramPresetLightBlueHologram => '冰晶全息';
-
-  @override
-  String get filterAuroraHologramPresetPurpleHologram => '紫水晶全息';
-
-  @override
-  String get filterAuroraHologramPresetBlueGreenHologram => '綠松石全息';
-
-  @override
-  String get filterAuroraHologramPresetMoonlightPearl => '月光珍珠';
-
-  @override
-  String get filterAuroraHologramPresetRainbowPearl => '薄霧彩虹';
-
-  @override
-  String get filterAuroraHologramPresetWarmHologram => '日出全息';
 
   @override
   String get brushFoldMode => '折疊類型';

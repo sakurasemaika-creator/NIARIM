@@ -2971,12 +2971,6 @@ class AppLocalizationsJa extends AppLocalizations {
   String get brushSettingsBlurRadiusLabel => 'ぼかし半径';
 
   @override
-  String get brushSettingsStabilizationTitle => '手ブレ補正';
-
-  @override
-  String get brushSettingsStabilizationStrengthLabel => '補正強度';
-
-  @override
   String get brushSettingsPixelModeTitle => 'ピクセルモード';
 
   @override
@@ -3023,9 +3017,6 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get brushSettingsMixingBleed => 'にじみ';
-
-  @override
-  String get brushSettingsMixingRateLabel => '混色率';
 
   @override
   String get projectDetailNotFoundTitle => 'プロジェクト';
@@ -4916,9 +4907,6 @@ class AppLocalizationsJa extends AppLocalizations {
   }
 
   @override
-  String get frameStripFrameListModeLabel => 'フレーム一覧';
-
-  @override
   String get frameStripTimelineModeLabel => 'タイムライン';
 
   @override
@@ -5390,31 +5378,7 @@ class AppLocalizationsJa extends AppLocalizations {
   String get filterAuroraHologramPresetSilverHologram => 'オーロラホログラム';
 
   @override
-  String get filterAuroraHologramPresetOpalPearl => 'オパールパール';
-
-  @override
-  String get filterAuroraHologramPresetDarkHologram => 'ダークホログラム';
-
-  @override
-  String get filterAuroraHologramPresetSoapBubble => 'フェアリーパール';
-
-  @override
-  String get filterAuroraHologramPresetCyberNeon => 'ネオンプリズム';
-
-  @override
-  String get filterAuroraHologramPresetPastelDream => 'パステルキャンディ';
-
-  @override
-  String get filterAuroraHologramPresetPearl2 => 'プリズムパール';
-
-  @override
-  String get filterAuroraHologramPresetSunsetGold => 'アンバーゴールド';
-
-  @override
   String get filterAuroraHologramPresetSilverFoil => 'プラチナシルバー';
-
-  @override
-  String get filterAuroraHologramPresetClassicHologram => 'レインボーホログラム';
 
   @override
   String get filterNameBackgroundBlend => '背景馴染ませ';
@@ -6060,12 +6024,6 @@ class AppLocalizationsJa extends AppLocalizations {
   String get brushSettingsEdgeJitterTitle => 'ふち滲み';
 
   @override
-  String get brushSettingsEdgeJitterSubtitle => 'ふちをわずかにがたがたさせてインクの滲みを再現する';
-
-  @override
-  String get brushSettingsEdgeJitterStrengthLabel => '滲み強度';
-
-  @override
   String get filterNameInkPool => '墨溜まり';
 
   @override
@@ -6324,27 +6282,6 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get brushFoldLength => '折り返し長さ';
-
-  @override
-  String get filterAuroraHologramPresetBlueHologram => 'サファイアホログラム';
-
-  @override
-  String get filterAuroraHologramPresetLightBlueHologram => 'アイスホログラム';
-
-  @override
-  String get filterAuroraHologramPresetPurpleHologram => 'アメジストホログラム';
-
-  @override
-  String get filterAuroraHologramPresetBlueGreenHologram => 'ターコイズホログラム';
-
-  @override
-  String get filterAuroraHologramPresetMoonlightPearl => 'ムーンライトパール';
-
-  @override
-  String get filterAuroraHologramPresetRainbowPearl => 'ミストレインボー';
-
-  @override
-  String get filterAuroraHologramPresetWarmHologram => 'サンライズホログラム';
 
   @override
   String get brushFoldMode => '折り畳みタイプ';

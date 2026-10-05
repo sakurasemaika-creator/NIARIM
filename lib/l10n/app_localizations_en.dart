@@ -3078,13 +3078,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get brushSettingsBlurRadiusLabel => 'Blur radius';
 
   @override
-  String get brushSettingsStabilizationTitle => 'Stroke stabilization';
-
-  @override
-  String get brushSettingsStabilizationStrengthLabel =>
-      'Stabilization strength';
-
-  @override
   String get brushSettingsPixelModeTitle => 'Pixel mode';
 
   @override
@@ -3132,9 +3125,6 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get brushSettingsMixingBleed => 'Bleed';
-
-  @override
-  String get brushSettingsMixingRateLabel => 'Mixing rate';
 
   @override
   String get projectDetailNotFoundTitle => 'Project';
@@ -5080,9 +5070,6 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String get frameStripFrameListModeLabel => 'Frames';
-
-  @override
   String get frameStripTimelineModeLabel => 'Timeline';
 
   @override
@@ -5578,31 +5565,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get filterAuroraHologramPresetSilverHologram => 'Aurora Hologram';
 
   @override
-  String get filterAuroraHologramPresetOpalPearl => 'Opal Pearl';
-
-  @override
-  String get filterAuroraHologramPresetDarkHologram => 'Dark Hologram';
-
-  @override
-  String get filterAuroraHologramPresetSoapBubble => 'Fairy Pearl';
-
-  @override
-  String get filterAuroraHologramPresetCyberNeon => 'Neon Prism';
-
-  @override
-  String get filterAuroraHologramPresetPastelDream => 'Pastel Candy';
-
-  @override
-  String get filterAuroraHologramPresetPearl2 => 'Prism Pearl';
-
-  @override
-  String get filterAuroraHologramPresetSunsetGold => 'Amber Gold';
-
-  @override
   String get filterAuroraHologramPresetSilverFoil => 'Platinum Silver';
-
-  @override
-  String get filterAuroraHologramPresetClassicHologram => 'Rainbow Hologram';
 
   @override
   String get filterNameBackgroundBlend => 'Background Blend';
@@ -6271,13 +6234,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get brushSettingsEdgeJitterTitle => 'Edge jitter';
 
   @override
-  String get brushSettingsEdgeJitterSubtitle =>
-      'Slightly roughens the edge to mimic ink bleeding';
-
-  @override
-  String get brushSettingsEdgeJitterStrengthLabel => 'Jitter strength';
-
-  @override
   String get filterNameInkPool => 'Ink Pooling';
 
   @override
@@ -6544,28 +6500,6 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get brushFoldLength => 'Fold length';
-
-  @override
-  String get filterAuroraHologramPresetBlueHologram => 'Sapphire Hologram';
-
-  @override
-  String get filterAuroraHologramPresetLightBlueHologram => 'Ice Hologram';
-
-  @override
-  String get filterAuroraHologramPresetPurpleHologram => 'Amethyst Hologram';
-
-  @override
-  String get filterAuroraHologramPresetBlueGreenHologram =>
-      'Turquoise Hologram';
-
-  @override
-  String get filterAuroraHologramPresetMoonlightPearl => 'Moonlight Pearl';
-
-  @override
-  String get filterAuroraHologramPresetRainbowPearl => 'Mist Rainbow';
-
-  @override
-  String get filterAuroraHologramPresetWarmHologram => 'Sunrise Hologram';
 
   @override
   String get brushFoldMode => 'Fold type';

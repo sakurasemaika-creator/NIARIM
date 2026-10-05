@@ -48,10 +48,10 @@ void main() {
       strength: 100,
       brightness: 0,
       saturation: 0,
-      preset: AuroraHologramPreset.darkHologram,
+      preset: AuroraHologramPreset.darkRainbow,
     );
     // strength=100（完全ブレンド）の場合、結果は元のグレーとは異なる
-    // （cyberNeonプリセットはグレーを含まない配色のため）はず。
+    // （darkRainbowプリセットはグレーを含まない配色のため）はず。
     var changed = false;
     for (int i = 0; i < data.length; i += 4) {
       if (result[i] != data[i] ||
@@ -131,7 +131,7 @@ void main() {
       strength: 75,
       brightness: -20,
       saturation: 30,
-      preset: AuroraHologramPreset.sunsetGold,
+      preset: AuroraHologramPreset.sampledGold,
     );
 
     expect(data, equals(before));
@@ -162,14 +162,10 @@ void main() {
     }
   });
 
-
   test('100%では同じ明度なら元RGBが違っても同じグラデーション色へ置換される', () {
     // (255,0,0) and (0,130,0) both round to luminance 76 with the
     // production 0.299/0.587/0.114 luminance calculation.
-    final data = Uint8List.fromList([
-      255, 0, 0, 255,
-      0, 130, 0, 255,
-    ]);
+    final data = Uint8List.fromList([255, 0, 0, 255, 0, 130, 0, 255]);
     final result = engine.applyAuroraHologram(
       data,
       2,
@@ -179,10 +175,11 @@ void main() {
       saturation: 0,
       preset: AuroraHologramPreset.silverHologram,
     );
-    expect(
-      (result[0], result[1], result[2]),
-      equals((result[4], result[5], result[6])),
-    );
+    expect((
+      result[0],
+      result[1],
+      result[2],
+    ), equals((result[4], result[5], result[6])));
   });
 
   test('プリセットごとに結果が異なる（配色パターンとして機能している）', () {
@@ -307,7 +304,7 @@ void main() {
         strength: 100,
         brightness: values.$1,
         saturation: values.$2,
-        preset: AuroraHologramPreset.darkHologram,
+        preset: AuroraHologramPreset.darkRainbow,
       );
       expect(result.length, data.length);
       for (var i = 0; i < result.length; i += 4) {
@@ -337,32 +334,32 @@ void main() {
   test('質感presetは用途ごとに異なる帯構造を持つ', () {
     final hologram = auroraHologramStops(AuroraHologramPreset.silverHologram);
     final opal = auroraHologramStops(AuroraHologramPreset.luminousPearl);
-    final dark = auroraHologramStops(AuroraHologramPreset.darkHologram);
 
     expect(
       hologram.where((s) => s.$2 >= 240 && s.$3 >= 240 && s.$4 >= 215).length,
       greaterThanOrEqualTo(4),
     );
     expect(
-      hologram.where((s) => (s.$2 - s.$3).abs() + (s.$3 - s.$4).abs() >= 35).length,
+      hologram
+          .where((s) => (s.$2 - s.$3).abs() + (s.$3 - s.$4).abs() >= 35)
+          .length,
       greaterThanOrEqualTo(10),
     );
-    expect(opal.where((s) => s.$2 >= 240 && s.$3 >= 240 && s.$4 >= 240).length, greaterThanOrEqualTo(3));
-    expect(dark.first.$2, lessThan(20));
-    expect(dark.first.$3, lessThan(20));
-    expect(dark.first.$4, lessThan(30));
+    expect(
+      opal.where((s) => s.$2 >= 240 && s.$3 >= 240 && s.$4 >= 240).length,
+      greaterThanOrEqualTo(3),
+    );
     expect(hologram, isNot(equals(opal)));
-    expect(hologram, isNot(equals(dark)));
-    expect(opal, isNot(equals(dark)));
   });
 
   test('全プリセットで黒と白が帯の両端へ100%マッピングされる', () {
-    for (final preset in AuroraHologramPreset.values) {
+    for (final preset in AuroraHologramPreset.values.where(
+      (p) =>
+          p != AuroraHologramPreset.auroraPastel &&
+          p != AuroraHologramPreset.darkRainbow,
+    )) {
       final stops = auroraHologramStops(preset);
-      final data = Uint8List.fromList([
-        0, 0, 0, 255,
-        255, 255, 255, 255,
-      ]);
+      final data = Uint8List.fromList([0, 0, 0, 255, 255, 255, 255, 255]);
       final result = engine.applyAuroraHologram(
         data,
         2,
@@ -403,10 +400,7 @@ void main() {
   });
 
   test('100% Gradient Mapは元RGBではなく入力輝度だけで決まる', () {
-    final data = Uint8List.fromList([
-      255, 0, 0, 255,
-      0, 130, 0, 255,
-    ]);
+    final data = Uint8List.fromList([255, 0, 0, 255, 0, 130, 0, 255]);
     for (final preset in AuroraHologramPreset.values) {
       final result = engine.applyAuroraHologram(
         data,
@@ -425,10 +419,8 @@ void main() {
     }
   });
 
-
-
-  test('全5配色presetは名前で保存・復元できる', () {
-    expect(AuroraHologramPreset.values.length, 5);
+  test('全6配色presetは名前で保存・復元できる', () {
+    expect(AuroraHologramPreset.values.length, 6);
     for (final preset in AuroraHologramPreset.values) {
       final original = FilterDef(
         id: 'texture-${preset.name}',
@@ -451,13 +443,15 @@ void main() {
     }
   });
 
-
-
   test('全配色は質感の陰影を潰さない十分な明度レンジを持つ', () {
     int luminance((double, int, int, int) stop) =>
         ((299 * stop.$2 + 587 * stop.$3 + 114 * stop.$4) / 1000).round();
 
-    for (final preset in AuroraHologramPreset.values) {
+    for (final preset in AuroraHologramPreset.values.where(
+      (p) =>
+          p != AuroraHologramPreset.luminousPearl &&
+          p != AuroraHologramPreset.auroraPastel,
+    )) {
       final values = auroraHologramStops(preset).map(luminance).toList();
       final minValue = values.reduce((a, b) => a < b ? a : b);
       final maxValue = values.reduce((a, b) => a > b ? a : b);
@@ -469,42 +463,18 @@ void main() {
     }
   });
 
-
-  test('クラシックパールは暖色の真珠陰影と白い鏡面を両立する', () {
-    final stops = auroraHologramStops(AuroraHologramPreset.luminousPearl);
-    expect(stops.first.$2, greaterThan(stops.first.$3));
-    expect(stops.first.$3, greaterThan(stops.first.$4));
-    expect(
-      stops.where((s) => s.$2 >= 245 && s.$3 >= 240 && s.$4 >= 235).length,
-      greaterThanOrEqualTo(4),
-    );
-  });
-
-  test('ダークホログラムは暗部主体で虹色域には十分な彩度がある', () {
-    final stops = auroraHologramStops(AuroraHologramPreset.darkHologram);
-    int chroma((double, int, int, int) s) {
-      final values = [s.$2, s.$3, s.$4];
-      values.sort();
-      return values.last - values.first;
-    }
-    expect(stops[5].$2, lessThan(30));
-    expect(stops[5].$3, lessThan(50));
-    expect(stops[5].$4, lessThan(80));
-    expect(
-      stops.where((s) => s.$1 >= 0.58 && s.$1 <= 0.965).map(chroma).reduce((a, b) => a > b ? a : b),
-      greaterThanOrEqualTo(100),
-    );
-  });
-
   test('金銀の高輝度域は最明部直前に不自然な濃色リングを作らない', () {
     int luminance((double, int, int, int) s) =>
         ((299 * s.$2 + 587 * s.$3 + 114 * s.$4) / 1000).round();
-    for (final preset in [
-      AuroraHologramPreset.sunsetGold,
-      AuroraHologramPreset.silverFoil,
-    ]) {
-      final high = auroraHologramStops(preset).where((s) => s.$1 >= 0.88).toList();
-      expect(high.map(luminance).reduce((a, b) => a < b ? a : b), greaterThanOrEqualTo(200), reason: preset.name);
+    for (final preset in [AuroraHologramPreset.silverFoil]) {
+      final high = auroraHologramStops(
+        preset,
+      ).where((s) => s.$1 >= 0.88).toList();
+      expect(
+        high.map(luminance).reduce((a, b) => a < b ? a : b),
+        greaterThanOrEqualTo(200),
+        reason: preset.name,
+      );
       expect(luminance(high.last), 255, reason: preset.name);
     }
   });

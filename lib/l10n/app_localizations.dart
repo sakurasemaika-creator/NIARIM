@@ -5501,18 +5501,6 @@ abstract class AppLocalizations {
   /// **'ぼかし半径'**
   String get brushSettingsBlurRadiusLabel;
 
-  /// No description provided for @brushSettingsStabilizationTitle.
-  ///
-  /// In ja, this message translates to:
-  /// **'手ブレ補正'**
-  String get brushSettingsStabilizationTitle;
-
-  /// No description provided for @brushSettingsStabilizationStrengthLabel.
-  ///
-  /// In ja, this message translates to:
-  /// **'補正強度'**
-  String get brushSettingsStabilizationStrengthLabel;
-
   /// No description provided for @brushSettingsPixelModeTitle.
   ///
   /// In ja, this message translates to:
@@ -5608,12 +5596,6 @@ abstract class AppLocalizations {
   /// In ja, this message translates to:
   /// **'にじみ'**
   String get brushSettingsMixingBleed;
-
-  /// No description provided for @brushSettingsMixingRateLabel.
-  ///
-  /// In ja, this message translates to:
-  /// **'混色率'**
-  String get brushSettingsMixingRateLabel;
 
   /// No description provided for @projectDetailNotFoundTitle.
   ///
@@ -9029,12 +9011,6 @@ abstract class AppLocalizations {
   /// **'F{n} 保持セル数'**
   String frameStripHoldDialogTitle(int n);
 
-  /// No description provided for @frameStripFrameListModeLabel.
-  ///
-  /// In ja, this message translates to:
-  /// **'フレーム一覧'**
-  String get frameStripFrameListModeLabel;
-
   /// No description provided for @frameStripTimelineModeLabel.
   ///
   /// In ja, this message translates to:
@@ -9899,59 +9875,11 @@ abstract class AppLocalizations {
   /// **'オーロラホログラム'**
   String get filterAuroraHologramPresetSilverHologram;
 
-  /// No description provided for @filterAuroraHologramPresetOpalPearl.
-  ///
-  /// In ja, this message translates to:
-  /// **'オパールパール'**
-  String get filterAuroraHologramPresetOpalPearl;
-
-  /// No description provided for @filterAuroraHologramPresetDarkHologram.
-  ///
-  /// In ja, this message translates to:
-  /// **'ダークホログラム'**
-  String get filterAuroraHologramPresetDarkHologram;
-
-  /// No description provided for @filterAuroraHologramPresetSoapBubble.
-  ///
-  /// In ja, this message translates to:
-  /// **'フェアリーパール'**
-  String get filterAuroraHologramPresetSoapBubble;
-
-  /// No description provided for @filterAuroraHologramPresetCyberNeon.
-  ///
-  /// In ja, this message translates to:
-  /// **'ネオンプリズム'**
-  String get filterAuroraHologramPresetCyberNeon;
-
-  /// No description provided for @filterAuroraHologramPresetPastelDream.
-  ///
-  /// In ja, this message translates to:
-  /// **'パステルキャンディ'**
-  String get filterAuroraHologramPresetPastelDream;
-
-  /// No description provided for @filterAuroraHologramPresetPearl2.
-  ///
-  /// In ja, this message translates to:
-  /// **'プリズムパール'**
-  String get filterAuroraHologramPresetPearl2;
-
-  /// No description provided for @filterAuroraHologramPresetSunsetGold.
-  ///
-  /// In ja, this message translates to:
-  /// **'アンバーゴールド'**
-  String get filterAuroraHologramPresetSunsetGold;
-
   /// No description provided for @filterAuroraHologramPresetSilverFoil.
   ///
   /// In ja, this message translates to:
   /// **'プラチナシルバー'**
   String get filterAuroraHologramPresetSilverFoil;
-
-  /// No description provided for @filterAuroraHologramPresetClassicHologram.
-  ///
-  /// In ja, this message translates to:
-  /// **'レインボーホログラム'**
-  String get filterAuroraHologramPresetClassicHologram;
 
   /// No description provided for @filterNameBackgroundBlend.
   ///
@@ -11129,18 +11057,6 @@ abstract class AppLocalizations {
   /// **'ふち滲み'**
   String get brushSettingsEdgeJitterTitle;
 
-  /// No description provided for @brushSettingsEdgeJitterSubtitle.
-  ///
-  /// In ja, this message translates to:
-  /// **'ふちをわずかにがたがたさせてインクの滲みを再現する'**
-  String get brushSettingsEdgeJitterSubtitle;
-
-  /// No description provided for @brushSettingsEdgeJitterStrengthLabel.
-  ///
-  /// In ja, this message translates to:
-  /// **'滲み強度'**
-  String get brushSettingsEdgeJitterStrengthLabel;
-
   /// No description provided for @filterNameInkPool.
   ///
   /// In ja, this message translates to:
@@ -11638,48 +11554,6 @@ abstract class AppLocalizations {
   /// In ja, this message translates to:
   /// **'折り返し長さ'**
   String get brushFoldLength;
-
-  /// No description provided for @filterAuroraHologramPresetBlueHologram.
-  ///
-  /// In ja, this message translates to:
-  /// **'サファイアホログラム'**
-  String get filterAuroraHologramPresetBlueHologram;
-
-  /// No description provided for @filterAuroraHologramPresetLightBlueHologram.
-  ///
-  /// In ja, this message translates to:
-  /// **'アイスホログラム'**
-  String get filterAuroraHologramPresetLightBlueHologram;
-
-  /// No description provided for @filterAuroraHologramPresetPurpleHologram.
-  ///
-  /// In ja, this message translates to:
-  /// **'アメジストホログラム'**
-  String get filterAuroraHologramPresetPurpleHologram;
-
-  /// No description provided for @filterAuroraHologramPresetBlueGreenHologram.
-  ///
-  /// In ja, this message translates to:
-  /// **'ターコイズホログラム'**
-  String get filterAuroraHologramPresetBlueGreenHologram;
-
-  /// No description provided for @filterAuroraHologramPresetMoonlightPearl.
-  ///
-  /// In ja, this message translates to:
-  /// **'ムーンライトパール'**
-  String get filterAuroraHologramPresetMoonlightPearl;
-
-  /// No description provided for @filterAuroraHologramPresetRainbowPearl.
-  ///
-  /// In ja, this message translates to:
-  /// **'ミストレインボー'**
-  String get filterAuroraHologramPresetRainbowPearl;
-
-  /// No description provided for @filterAuroraHologramPresetWarmHologram.
-  ///
-  /// In ja, this message translates to:
-  /// **'サンライズホログラム'**
-  String get filterAuroraHologramPresetWarmHologram;
 
   /// No description provided for @brushFoldMode.
   ///

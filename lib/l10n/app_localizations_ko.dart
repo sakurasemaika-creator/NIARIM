@@ -2983,12 +2983,6 @@ class AppLocalizationsKo extends AppLocalizations {
   String get brushSettingsBlurRadiusLabel => '흐림 반경';
 
   @override
-  String get brushSettingsStabilizationTitle => '손떨림 보정';
-
-  @override
-  String get brushSettingsStabilizationStrengthLabel => '보정 강도';
-
-  @override
   String get brushSettingsPixelModeTitle => '픽셀 모드';
 
   @override
@@ -3035,9 +3029,6 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get brushSettingsMixingBleed => '번짐';
-
-  @override
-  String get brushSettingsMixingRateLabel => '혼색 비율';
 
   @override
   String get projectDetailNotFoundTitle => '프로젝트';
@@ -4939,9 +4930,6 @@ class AppLocalizationsKo extends AppLocalizations {
   }
 
   @override
-  String get frameStripFrameListModeLabel => '프레임 목록';
-
-  @override
   String get frameStripTimelineModeLabel => '타임라인';
 
   @override
@@ -5415,31 +5403,7 @@ class AppLocalizationsKo extends AppLocalizations {
   String get filterAuroraHologramPresetSilverHologram => '오로라 홀로그램';
 
   @override
-  String get filterAuroraHologramPresetOpalPearl => '오팔 펄';
-
-  @override
-  String get filterAuroraHologramPresetDarkHologram => '다크 홀로그램';
-
-  @override
-  String get filterAuroraHologramPresetSoapBubble => '페어리 펄';
-
-  @override
-  String get filterAuroraHologramPresetCyberNeon => '네온 프리즘';
-
-  @override
-  String get filterAuroraHologramPresetPastelDream => '파스텔 캔디';
-
-  @override
-  String get filterAuroraHologramPresetPearl2 => '프리즘 펄';
-
-  @override
-  String get filterAuroraHologramPresetSunsetGold => '앰버 골드';
-
-  @override
   String get filterAuroraHologramPresetSilverFoil => '플래티넘 실버';
-
-  @override
-  String get filterAuroraHologramPresetClassicHologram => '오로라 홀로그램';
 
   @override
   String get filterNameBackgroundBlend => '배경 어우러짐';
@@ -6090,12 +6054,6 @@ class AppLocalizationsKo extends AppLocalizations {
   String get brushSettingsEdgeJitterTitle => '가장자리 번짐';
 
   @override
-  String get brushSettingsEdgeJitterSubtitle => '가장자리를 약간 거칠게 하여 잉크 번짐을 재현';
-
-  @override
-  String get brushSettingsEdgeJitterStrengthLabel => '번짐 강도';
-
-  @override
   String get filterNameInkPool => '먹물 고임';
 
   @override
@@ -6354,27 +6312,6 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get brushFoldLength => '접힘 길이';
-
-  @override
-  String get filterAuroraHologramPresetBlueHologram => '사파이어 홀로그램';
-
-  @override
-  String get filterAuroraHologramPresetLightBlueHologram => '아이스 홀로그램';
-
-  @override
-  String get filterAuroraHologramPresetPurpleHologram => '아메시스트 홀로그램';
-
-  @override
-  String get filterAuroraHologramPresetBlueGreenHologram => '터쿼이즈 홀로그램';
-
-  @override
-  String get filterAuroraHologramPresetMoonlightPearl => '문라이트 펄';
-
-  @override
-  String get filterAuroraHologramPresetRainbowPearl => '미스트 레인보우';
-
-  @override
-  String get filterAuroraHologramPresetWarmHologram => '선라이즈 홀로그램';
 
   @override
   String get brushFoldMode => '접힘 유형';

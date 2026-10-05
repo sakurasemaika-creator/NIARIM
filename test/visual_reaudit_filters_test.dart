@@ -164,7 +164,7 @@ FilterDef _def(FilterKind kind) => FilterDef(
   ],
   hologramBrightness: 12,
   hologramSaturation: 28,
-  hologramPreset: AuroraHologramPreset.aurora,
+  hologramPreset: AuroraHologramPreset.silverHologram,
   bgBlendColor: 0xFF78A9C8,
   bgBlendDirection: 35,
   bgBlendLength: 14,

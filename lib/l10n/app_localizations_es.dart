@@ -3117,13 +3117,6 @@ class AppLocalizationsEs extends AppLocalizations {
   String get brushSettingsBlurRadiusLabel => 'Radio de desenfoque';
 
   @override
-  String get brushSettingsStabilizationTitle => 'Estabilización del trazo';
-
-  @override
-  String get brushSettingsStabilizationStrengthLabel =>
-      'Intensidad de estabilización';
-
-  @override
   String get brushSettingsPixelModeTitle => 'Modo píxel';
 
   @override
@@ -3171,9 +3164,6 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get brushSettingsMixingBleed => 'Sangrado';
-
-  @override
-  String get brushSettingsMixingRateLabel => 'Tasa de mezcla';
 
   @override
   String get projectDetailNotFoundTitle => 'Proyecto';
@@ -5151,9 +5141,6 @@ class AppLocalizationsEs extends AppLocalizations {
   }
 
   @override
-  String get frameStripFrameListModeLabel => 'Fotogramas';
-
-  @override
   String get frameStripTimelineModeLabel => 'Línea de tiempo';
 
   @override
@@ -5668,31 +5655,7 @@ class AppLocalizationsEs extends AppLocalizations {
   String get filterAuroraHologramPresetSilverHologram => 'Holograma aurora';
 
   @override
-  String get filterAuroraHologramPresetOpalPearl => 'Perla ópalo';
-
-  @override
-  String get filterAuroraHologramPresetDarkHologram => 'Holograma oscuro';
-
-  @override
-  String get filterAuroraHologramPresetSoapBubble => 'Perla de hada';
-
-  @override
-  String get filterAuroraHologramPresetCyberNeon => 'Prisma neón';
-
-  @override
-  String get filterAuroraHologramPresetPastelDream => 'Caramelo pastel';
-
-  @override
-  String get filterAuroraHologramPresetPearl2 => 'Perla prisma';
-
-  @override
-  String get filterAuroraHologramPresetSunsetGold => 'Oro ámbar';
-
-  @override
   String get filterAuroraHologramPresetSilverFoil => 'Plata platino';
-
-  @override
-  String get filterAuroraHologramPresetClassicHologram => 'Holograma arcoíris';
 
   @override
   String get filterNameBackgroundBlend => 'Mimetismo de fondo';
@@ -6376,13 +6339,6 @@ class AppLocalizationsEs extends AppLocalizations {
   String get brushSettingsEdgeJitterTitle => 'Sangrado de borde';
 
   @override
-  String get brushSettingsEdgeJitterSubtitle =>
-      'Rugosidad leve en el borde para imitar el sangrado de tinta';
-
-  @override
-  String get brushSettingsEdgeJitterStrengthLabel => 'Intensidad';
-
-  @override
   String get filterNameInkPool => 'Acumulación de tinta';
 
   @override
@@ -6653,28 +6609,6 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get brushFoldLength => 'Longitud del pliegue';
-
-  @override
-  String get filterAuroraHologramPresetBlueHologram => 'Holograma zafiro';
-
-  @override
-  String get filterAuroraHologramPresetLightBlueHologram => 'Holograma hielo';
-
-  @override
-  String get filterAuroraHologramPresetPurpleHologram => 'Holograma amatista';
-
-  @override
-  String get filterAuroraHologramPresetBlueGreenHologram =>
-      'Holograma turquesa';
-
-  @override
-  String get filterAuroraHologramPresetMoonlightPearl => 'Perla lunar';
-
-  @override
-  String get filterAuroraHologramPresetRainbowPearl => 'Arcoíris brumoso';
-
-  @override
-  String get filterAuroraHologramPresetWarmHologram => 'Holograma amanecer';
 
   @override
   String get brushFoldMode => 'Tipo de pliegue';

@@ -11,15 +11,7 @@ void main() {
     final service = File('lib/services/filter_service.dart').readAsStringSync();
 
     expect(ja, contains('"filterNameAuroraHologram": "質感変更フィルター"'));
-    expect(
-      ja,
-      contains('"filterAuroraHologramPresetClassicHologram": "レインボーホログラム"'),
-    );
     expect(en, contains('"filterNameAuroraHologram": "Texture Filter"'));
-    expect(
-      en,
-      contains('"filterAuroraHologramPresetClassicHologram": "Rainbow Hologram"'),
-    );
     expect(service, contains("id: 'Filter0019'"));
     expect(service, contains("name: '質感変更フィルター'"));
 
@@ -33,7 +25,5 @@ void main() {
       expect(stop.$2, greaterThanOrEqualTo(stop.$3), reason: '$stop');
       expect(stop.$3, greaterThan(stop.$4), reason: '$stop');
     }
-  });
-    expect(stops.last, brightest);
   });
 }
