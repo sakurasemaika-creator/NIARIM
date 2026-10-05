@@ -39,7 +39,8 @@ next_action: current HEAD `770e2c57d0a77c11c1a174b5a07243a71383f369` からS5d�
 
 ### 最新dev_branch基準
 
-- 最新確認HEAD: `ac5ec59e6f96fa87a0d84f59e09db238ed61a5e5`
+- 最新確認された製品HEAD（追補前）: `ac5ec59e6f96fa87a0d84f59e09db238ed61a5e5`
+- 監査state追補後HEAD: `0205cf5823676ff6111968f3409f1edd95bc0ab2`
 - 直近の通常開発では、Filter系、選択系、Auto Lineart、Blend/Prism、Pixel Art、Community等に仕様追加・実装変更が入っている。
 - したがって旧bootstrap snapshotのSHAを「現在の製品状態」として扱わない。
 - 既存Routeの番号・順序・完了状態は変更せず、追加機能は末尾のlock後差分回帰または対応する既存TODOへ割り当てる。
