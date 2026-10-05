@@ -792,3 +792,46 @@ lock integrityは`AUDIT_ROUTE_LOCK.json`の本文定義SHA256/順序/coverage ha
 
 ### 監査への取り込み
 既存A/W IDを並べ替えない。既存IDで表現できる対象はそのIDへ紐付け、独立した検証が必要な上記新規対象はlock後差分回帰の末尾へ明示的な子TODOとして追加する。全面監査のcurrent_idをこの追補だけで飛ばさない。
+
+
+## Lock-after delta formal TODOs — 2026-10-06
+
+以下は上記の追補台帳を「正式に追跡できる監査TODO」へ展開したもの。既存のlock済みA001–A104のID・順序・完了状態、AUDIT_ROUTE_LOCK.json のbaseline/definition hashは変更しない。これらは**lock後差分フェーズの追加ID**であり、既存Routeへ割り込ませない。
+
+| ID | 対象 | 前提状態 | 実操作・確認 | 完了条件 / 証拠 | scope | status |
+|---|---|---|---|---|---|---|
+| A105 | **全フィルター総 inventory** | 最新dev_branchの実装 | FilterKind/FilterDef/FilterService/production UI/プリセット等を実装実体から再探索し、現存する全フィルターを一覧化。通常フィルターだけでなく質感変更系・**質感偏光フィルター**を含める。削除済み/到達不能/重複名も区別 | 最新HEADに存在・到達可能な全フィルター集合が一次ソース付きで固定され、旧PDFの一覧漏れを残さない | APP | todo |
+| A105.01 | 全フィルター個別TODO割当 | A105 inventory完了 | inventoryで確定した**各フィルターを1項目ずつ**子TODOへ割り当てる。名称変更/別名/プリセット専用実装を照合 | 全フィルターに重複なしの子TODOがあり、未割当0 | APP | todo |
+| A105.02 | 全フィルター共通UI/処理契約 | A105.01 | 各フィルターでUI到達、全設定、Apply/Cancel、Undo/Redo、境界値、実処理結果を実操作 | UIとengineの値が一致し、設定だけ存在して実処理されない項目がない | APP | todo |
+| A105.03 | 全フィルター保存/復元・7言語・端末差 | 各フィルター実装済み | 保存→再起動/再読込→復元、7言語、PC/SP、必要なPremium/権限制御を確認 | 設定・結果・表示文言が再現し、未翻訳/端末固有欠落なし | APP | todo |
+| A105.04 | **質感変更系フィルター** | A105.01 | Gradient Map/質感変更系を旧監査の除外扱いに戻さず、全項目を実描画・設定・保存復元・Visualで確認 | 質感変更系が全て個別子TODOへ割当・実結果確認済み | APP | todo |
+| A105.05 | **質感偏光フィルター** | A105.01 | 偏光フィルターの到達、全設定、適用前後、境界、保存復元、7言語、PC/SP、実描画を確認 | 偏光フィルター単独で実結果が証拠化され、他の質感変更と混同されない | APP | todo |
+| A105.06 | 全フィルターVisual closure | A105.01–A105.05 | 最新HEADで各フィルターのBEFORE/SETTINGS/AFTERをcapture。機能名・preset/mode・主要設定値を画像へ焼き込み、PDF全ページrender＋実画像目視 | 全フィルターの実画像証拠あり。旧2026-09-29 PDFを代替にしない | VISUAL | todo |
+| A106 | **ブラシカスタム総合** | 最新Brush Custom UI | 作成、編集、複製、削除、保存/復元、import/export、各設定、実描画、Undo/Redoを実操作 | production UI→engine→保存復元→再描画が一貫し、壊れたpreset/設定がない | APP | todo |
+| A106.01 | Brush Custom設定・境界・履歴 | A106 | 各設定値のmin/max/境界、無効値、Undo/Redo、Cancel/Applyを確認 | 設定が勝手に変化せず、履歴が正しく戻る | APP | todo |
+| A106.02 | Brush Custom永続化・import/export | A106 | 保存→再起動→復元、import/export、既存presetとの互換性を確認 | 全設定が欠落なく復元され、順序/参照切れなし | APP | todo |
+| A107 | **縁取りペン** | Brush Custom到達可能 | 通常描画、線幅、内側侵食threshold、色/alpha、境界、保存復元、Undo/Redoを確認 | 縁取りペンが単独で仕様通り描画し、作業レイヤー直描画禁止などの実装契約を満たす | APP | todo |
+| A107.01 | 縁取りペン処理契約 | A107 | 作業レイヤー直描画をせず、必要な新規下層レイヤー生成、gap/threshold→engine接続を確認 | UI設定がengine結果へ反映し、対象レイヤー構造も正しい | APP | todo |
+| A107.02 | 縁取りペンVisual | A107.01 | 線幅/threshold/色/alphaを変えた実描画をBEFORE/SETTINGS/AFTERでcapture | 線幅・侵食・隙間処理が画像で確認できる | VISUAL | todo |
+| A108 | **折りたたみモード（Hair Fold）総合** | 縁取りペン拡張として到達可能 | Hair Foldを太い塗りリボンではなく**縁取りペンの拡張**として確認。5モード、共通設定、境界、保存復元、Undo/Redoを確認 | 全5モードが独立に実描画・保存復元・Visual確認済み | APP | todo |
+| A108.01 | Hair Fold — ウェーブ俯瞰 | A108 | 実描画、taper、曲率/折り返し、方向変化、連続性、境界を確認 | 急な太さ変化や不自然な破綻なし。Visual証拠あり | VISUAL | todo |
+| A108.02 | Hair Fold — ウェーブ煽り | A108 | 同上 | 同上 | VISUAL | todo |
+| A108.03 | Hair Fold — 右カール | A108 | 同上 | 同上 | VISUAL | todo |
+| A108.04 | Hair Fold — 左カール | A108 | 同上 | 同上 | VISUAL | todo |
+| A108.05 | Hair Fold — 三日月カール | A108 | 内外曲線、中心線、終端接続、smooth tangent、急激な太さ変化なし、ブラシ太さ追従を重点確認 | 三日月形状が自然で、直線的な閉じ線・急変・中心点破綻なし | VISUAL | todo |
+| A108.06 | Hair Fold共通再現性・ブラシ太さ | A108.01–A108.05 | 太/細ブラシでの発動基準、taper 0%終端、方向変化/連続曲率、境界、同一設定再現性を確認 | ブラシ太さは実際の形状/線幅を不意に変更せず、必要な判定だけに使われる | APP | todo |
+| A108.07 | Hair Fold保存/復元・Undo/Redo | A108 | 各mode/settingsを保存→復元→再描画、Undo/Redo | mode/設定/描画結果が保持される | APP | todo |
+| A109 | **プリセット髪の毛ブラシ** | 現在のproduction preset一覧 | 最新HEADの髪の毛ブラシpresetを全件inventoryし、**1プリセット=1個別子TODO**として固定。各presetを実描画 | 全髪の毛presetが漏れなく個別監査される | APP | todo |
+| A109.01 | 髪の毛preset設定・再現性 | A109 | 各presetの設定値を記録し、縁取りペン＋Hair Foldの一般設定で同等結果を再現できるか確認 | preset専用の隠し処理でしか再現できない場合は一般機能側の改善対象として記録 | APP | todo |
+| A109.02 | 髪の毛preset保存復元・Visual | A109 | 各presetの保存/復元と実描画BEFORE/SETTINGS/AFTERをcapture | 全presetに画像証拠あり | VISUAL | todo |
+| A110 | **プリセット前髪ブラシ** | 現在のproduction preset一覧 | 最新HEADの前髪ブラシpresetを全件inventoryし、**1プリセット=1個別子TODO**として固定。各presetを実描画 | 全前髪presetが漏れなく個別監査される | APP | todo |
+| A110.01 | 前髪preset設定・再現性 | A110 | 各presetの設定値を記録し、縁取りペン＋Hair Foldの一般設定で同等結果を再現できるか確認 | preset専用の隠し処理でしか再現できない場合は一般機能側の改善対象として記録 | APP | todo |
+| A110.02 | 前髪preset保存復元・Visual | A110 | 各presetの保存/復元と実描画BEFORE/SETTINGS/AFTERをcapture | 全presetに画像証拠あり | VISUAL | todo |
+| A111 | **ブラシ/フィルター追加対象の最終Visual closure** | A105–A110の実装/回帰完了後 | 全フィルター、質感偏光、Brush Custom、縁取りペン、Hair Fold 5モード、髪の毛preset、前髪presetを同一最新HEADで再capture。7言語/PC/SPを必要ケースで確認 | ラベル焼込PDF、全ページrender、実画像目視、manifest-backed evidenceが揃うまで未完了 | VISUAL | todo |
+| A112 | **追加TODO coverage締め** | A105–A111 | 実装実体とformal TODOを再照合。新たに発見したfilter/presetはこのdelta配下へ即時子TODO化 | unassigned feature/filter/preset = 0。過去PDF・旧session申告だけでPASSしない | CROSS | todo |
+
+### Lock-after delta IDの運用規則
+- A105以降は既存lockを改変するIDではなく、**lock後差分として正式に追跡するID**。
+- A105.01で確定した全フィルター一覧、A109/A110で確定した全プリセット一覧については、実装inventory完了時に**1対象=1子TODO**へ展開し、対象名・source anchor・production UI導線を記録する。
+- 追加子TODOの完了判定は、実操作・targeted regression・保存/復元・必要な7言語/PC/SP・Visual evidenceの全条件を満たすこと。登録だけで完了にはしない。
+- 既存 AUDIT_ROUTE_LOCK.json のID/definition/inventory metadataは変更しない。既存Routeの順序/current_idも変更しない。
