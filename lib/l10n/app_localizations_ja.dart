@@ -9,7 +9,7 @@ class AppLocalizationsJa extends AppLocalizations {
   AppLocalizationsJa([String locale = 'ja']) : super(locale);
 
   @override
-  String get brushFoldCrescentWidthRatio => '深さに対する三日月の太さ';
+  String get brushFoldCrescentDepthThreshold => '三日月にするカーブの深さ（ペン幅比）';
 
   @override
   String get homeTabProjects => 'プロジェクト';
@@ -6475,29 +6475,30 @@ class AppLocalizationsJa extends AppLocalizations {
   String get filterNoiseSeed => '模様のシード値';
 
   @override
-  String get communityContentFilterTitle => "表示フィルター";
+  String get communityContentFilterTitle => '表示フィルター';
 
   @override
-  String get communityHideGenerativeAiImageVideo => "「AI画像・AI動画使用」の作品を非表示";
+  String get communityHideGenerativeAiImageVideo => '「AI画像・AI動画使用」の作品を非表示';
 
   @override
-  String get communityMutedWords => "ミュートワード";
+  String get communityMutedWords => 'ミュートタイトル登録';
 
   @override
-  String get communityMutedWordsHint => "作品タイトルに含まれる語句をカンマ区切りで指定";
+  String get communityMutedWordsHint => '非表示にする作品タイトル内の語句をカンマ区切りで指定';
 
   @override
-  String get communityMutedTags => "ミュートタグ登録";
+  String get communityMutedTags => 'ミュートタグ登録';
 
   @override
-  String get communityMutedTagsHint => "タグ名をカンマ区切りで指定";
+  String get communityMutedTagsHint => 'タグ名をカンマ区切りで指定';
 
   @override
-  String get communityContainsGenerativeAiImageVideo => "AI画像・AI動画使用";
+  String get communityContainsGenerativeAiImageVideo => 'AI画像・AI動画使用';
 
   @override
-  String get communityContainsGenerativeAiImageVideoHelp => "画像または動画の生成に生成AIを使用した作品でONにしてください。音声合成ソフト等は「AI画像・AI動画使用」の対象外です。";
+  String get communityContainsGenerativeAiImageVideoHelp =>
+      '画像または動画の生成に生成AIを使用した作品でONにしてください。音声合成ソフト等は「AI画像・AI動画使用」の対象外です。';
 
   @override
-  String get canvasLassoSnapToLines => "線に吸着";
+  String get canvasLassoSnapToLines => '線に吸着';
 }

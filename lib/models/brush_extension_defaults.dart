@@ -13,7 +13,9 @@ abstract final class BrushExtensionDefaults {
   // Fold crease controls, expressed as effective-brush-width ratios.
   static const double foldCurveStartRatio = 0.25;
   static const int foldCurveStrength = 5;
-  static const double foldCrescentWidthRatio = 0.5;
+  // Minimum curve depth, as a ratio of the pen width, for a crescent.
+  static const double foldCrescentDepthThreshold = 1.0;
+  static const double maxFoldCrescentDepthThreshold = 3.0;
   static const double foldLengthRatio = 0.8;
   static const double foldEndTaperRatio = 0.35;
 

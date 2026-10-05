@@ -107,8 +107,11 @@ abstract class AppLocalizations {
     Locale.fromSubtags(languageCode: 'zh', scriptCode: 'Hant'),
   ];
 
-  /// Crescent body thickness as a proportion of authored curve depth.
-  String get brushFoldCrescentWidthRatio;
+  /// No description provided for @brushFoldCrescentDepthThreshold.
+  ///
+  /// In ja, this message translates to:
+  /// **'三日月にするカーブの深さ（ペン幅比）'**
+  String get brushFoldCrescentDepthThreshold;
 
   /// No description provided for @homeTabProjects.
   ///
@@ -6230,7 +6233,10 @@ abstract class AppLocalizations {
   /// **'入力：白'**
   String get filterLevelsInputWhite;
 
-  /// Gamma / midtone adjustment for Levels.
+  /// No description provided for @filterLevelsGamma.
+  ///
+  /// In ja, this message translates to:
+  /// **'ガンマ'**
   String get filterLevelsGamma;
 
   /// No description provided for @filterLevelsOutputBlack.
@@ -11745,8 +11751,6 @@ abstract class AppLocalizations {
   ///
   /// In ja, this message translates to:
   /// **'作業レイヤーのみ'**
-  String get canvasLassoSnapToLines;
-
   String get canvasSelectionReferenceWorkingLayer;
 
   /// No description provided for @canvasSelectionReferenceVisibleLayers.
@@ -11909,15 +11913,6 @@ abstract class AppLocalizations {
   ///
   /// In ja, this message translates to:
   /// **'ノイズの種類'**
-  String get communityContentFilterTitle;
-  String get communityHideGenerativeAiImageVideo;
-  String get communityMutedWords;
-  String get communityMutedWordsHint;
-  String get communityMutedTags;
-  String get communityMutedTagsHint;
-  String get communityContainsGenerativeAiImageVideo;
-  String get communityContainsGenerativeAiImageVideoHelp;
-
   String get filterNoiseStyle;
 
   /// No description provided for @filterNoiseFilmGrain.
@@ -11937,6 +11932,60 @@ abstract class AppLocalizations {
   /// In ja, this message translates to:
   /// **'模様のシード値'**
   String get filterNoiseSeed;
+
+  /// No description provided for @communityContentFilterTitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'表示フィルター'**
+  String get communityContentFilterTitle;
+
+  /// No description provided for @communityHideGenerativeAiImageVideo.
+  ///
+  /// In ja, this message translates to:
+  /// **'「AI画像・AI動画使用」の作品を非表示'**
+  String get communityHideGenerativeAiImageVideo;
+
+  /// No description provided for @communityMutedWords.
+  ///
+  /// In ja, this message translates to:
+  /// **'ミュートタイトル登録'**
+  String get communityMutedWords;
+
+  /// No description provided for @communityMutedWordsHint.
+  ///
+  /// In ja, this message translates to:
+  /// **'非表示にする作品タイトル内の語句をカンマ区切りで指定'**
+  String get communityMutedWordsHint;
+
+  /// No description provided for @communityMutedTags.
+  ///
+  /// In ja, this message translates to:
+  /// **'ミュートタグ登録'**
+  String get communityMutedTags;
+
+  /// No description provided for @communityMutedTagsHint.
+  ///
+  /// In ja, this message translates to:
+  /// **'タグ名をカンマ区切りで指定'**
+  String get communityMutedTagsHint;
+
+  /// No description provided for @communityContainsGenerativeAiImageVideo.
+  ///
+  /// In ja, this message translates to:
+  /// **'AI画像・AI動画使用'**
+  String get communityContainsGenerativeAiImageVideo;
+
+  /// No description provided for @communityContainsGenerativeAiImageVideoHelp.
+  ///
+  /// In ja, this message translates to:
+  /// **'画像または動画の生成に生成AIを使用した作品でONにしてください。音声合成ソフト等は「AI画像・AI動画使用」の対象外です。'**
+  String get communityContainsGenerativeAiImageVideoHelp;
+
+  /// No description provided for @canvasLassoSnapToLines.
+  ///
+  /// In ja, this message translates to:
+  /// **'線に吸着'**
+  String get canvasLassoSnapToLines;
 }
 
 class _AppLocalizationsDelegate

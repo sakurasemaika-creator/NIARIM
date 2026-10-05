@@ -102,11 +102,12 @@ def main():
     text(32, 44, "始点・終点間のふくらみを基準に両輪郭を生成。内側だけが鋭く曲がる法線オフセットを撤去。", 10)
     end()
 
-    begin("三日月の太さ：カーブの深さに比例", "共通設定「深さに対する三日月の太さ」。初期値50%、10〜100%で調整。筆圧とフェードも反映。")
-    panel(current, "hair_crescent_depth_scaling", "髪 / 深さが変わる入力", 32, 63, 245, 425, (205, 55, 530, 640))
-    panel(current, "bangs_crescent_depth_scaling", "前髪 / 同じ入力と設定", 294, 63, 245, 425, (205, 55, 530, 640))
-    panel(current, "crescent_ratio_settings_ja", "共通の太さ設定", 567, 63, 240, 425)
-    text(32, 44, "50%なら深さ40 pxで太さ20 px、深さ80 pxで太さ40 px。プリセット専用の描画処理はありません。", 10)
+    begin("三日月にする基準：ペン幅に対するカーブの深さ", "共通設定「三日月にするカーブの深さ（ペン幅比）」。初期値100%、0〜300%。太さは常にペン設定どおり。")
+    panel(current, "hair_crescent_small_wave_thick_pen", "64 px / 小さな波→通常線", 32, 63, 170, 425, (205, 55, 530, 640))
+    panel(current, "hair_crescent_small_wave_thin_pen", "12 px / 同じ波→三日月", 210, 63, 170, 425, (205, 55, 530, 640))
+    panel(current, "hair_crescent_deep_wave_keeps_pen_width", "64 px / 深い波→太さ64 px", 388, 63, 170, 425, (205, 55, 530, 640))
+    panel(current, "crescent_depth_threshold_settings_ja", "共通の基準設定", 567, 63, 240, 425)
+    text(32, 44, "深さがペン幅に届かない波は通常線のまま。三日月の太さはカーブの深さで変わりません。", 10)
     end()
 
     begin("ウェーブ・巻き髪：終点まで0%の抜き", "前回の毛先修正を維持。フェードOFFでも確定時に幅と濃度を0%まで滑らかに下げます。")

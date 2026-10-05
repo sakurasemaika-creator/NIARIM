@@ -1,5 +1,5 @@
 {
-  "brushFoldCrescentWidthRatio": "月牙厚度 / 曲线深度",
+  "brushFoldCrescentDepthThreshold": "形成月牙的曲线深度（相对笔宽）",
   "@@locale": "zh",
   "homeTabProjects": "项目",
   "homeTabShared": "共享",

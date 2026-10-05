@@ -9,7 +9,8 @@ class AppLocalizationsFr extends AppLocalizations {
   AppLocalizationsFr([String locale = 'fr']) : super(locale);
 
   @override
-  String get brushFoldCrescentWidthRatio => 'Épaisseur / profondeur du croissant';
+  String get brushFoldCrescentDepthThreshold =>
+      'Profondeur de courbe pour le croissant (× largeur du trait)';
 
   @override
   String get homeTabProjects => 'Projets';
@@ -6820,29 +6821,34 @@ class AppLocalizationsFr extends AppLocalizations {
   String get filterNoiseSeed => 'Graine du motif';
 
   @override
-  String get communityContentFilterTitle => "Filtres d’affichage";
+  String get communityContentFilterTitle => 'Filtres d’affichage';
 
   @override
-  String get communityHideGenerativeAiImageVideo => "Masquer les œuvres contenant des images ou vidéos générées par IA";
+  String get communityHideGenerativeAiImageVideo =>
+      'Masquer les œuvres contenant des images ou vidéos générées par IA';
 
   @override
-  String get communityMutedWords => "Mots masqués";
+  String get communityMutedWords => 'Titres masqués';
 
   @override
-  String get communityMutedWordsHint => "Mots séparés par des virgules à masquer s’ils figurent dans le titre";
+  String get communityMutedWordsHint =>
+      'Texte séparé par des virgules à masquer lorsqu’il apparaît dans le titre d’une œuvre';
 
   @override
-  String get communityMutedTags => "Tags masqués";
+  String get communityMutedTags => 'Tags masqués';
 
   @override
-  String get communityMutedTagsHint => "Noms de tags séparés par des virgules à masquer";
+  String get communityMutedTagsHint =>
+      'Noms de tags séparés par des virgules à masquer';
 
   @override
-  String get communityContainsGenerativeAiImageVideo => "Contient des images ou vidéos générées par IA";
+  String get communityContainsGenerativeAiImageVideo =>
+      'Contient des images ou vidéos générées par IA';
 
   @override
-  String get communityContainsGenerativeAiImageVideoHelp => "Activez cette option si une IA générative a servi à créer des images ou une vidéo de l’œuvre. Les logiciels de synthèse vocale ne sont pas concernés.";
+  String get communityContainsGenerativeAiImageVideoHelp =>
+      'Activez cette option si une IA générative a servi à créer des images ou une vidéo de l’œuvre. Les logiciels de synthèse vocale ne sont pas concernés.';
 
   @override
-  String get canvasLassoSnapToLines => "Magnétiser aux lignes";
+  String get canvasLassoSnapToLines => 'Magnétiser aux lignes';
 }

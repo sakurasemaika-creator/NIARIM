@@ -7,6 +7,7 @@ import 'package:niarim/engine/brush_texture_cache.dart';
 import 'package:niarim/engine/hair_fold_raster.dart';
 import 'package:niarim/engine/tile_manager.dart';
 import 'package:niarim/models/brush.dart';
+import 'package:niarim/models/brush_extension_defaults.dart';
 
 TileManager draw({double frontOpacity = 1, int? textureAlpha}) {
   final tiles = TileManager(canvasWidth: 128, canvasHeight: 200);
@@ -69,7 +70,7 @@ TileManager crescent({
   double rotation = 0,
   int strength = 5,
   double triggerAngle = 90,
-  double ratio = .5,
+  double threshold = 0,
   double pressure = 1,
   bool continuous = false,
   int? steps,
@@ -137,7 +138,7 @@ TileManager crescent({
       foldMode: HairFoldMode.crescent,
       foldCurveStrength: strength,
       foldTriggerAngle: triggerAngle,
-      foldCrescentWidthRatio: ratio,
+      foldCrescentDepthThreshold: threshold,
       rotation: false,
     ),
     fillColor: const Color(0xffffffff),
@@ -238,6 +239,7 @@ void main() {
         width: 64,
         strength: strength,
         triggerAngle: 30,
+        threshold: 0,
         input: sine(20),
       );
       addTearDown(tiles.dispose);
@@ -424,9 +426,9 @@ void main() {
       }
     }
   });
-  test('crescent thickness scales with authored bow depth', () {
+  test('crescent apex keeps the pen width whatever the curve depth', () {
     for (final radius in [40.0, 80.0]) {
-      final tiles = crescent(radius: radius, width: 60);
+      final tiles = crescent(radius: radius, width: 30);
       addTearDown(tiles.dispose);
       final apex = 180 + radius;
       final fill = inkAt(
@@ -435,23 +437,49 @@ void main() {
         (apex - 40).floor(),
         (apex + 40).ceil() + 1,
       );
-      expect(fill.length, closeTo(radius * .5 - 2, 2));
+      expect(fill.length, closeTo(30 - 2, 2));
       expect((fill.first + fill.last + 1) / 2, closeTo(apex, 1));
     }
   });
-  test('crescent ratio and pressure independently control its thickness', () {
-    for (final settings in [(.25, 1.0), (.5, 1.0), (1.0, 1.0), (.5, .5)]) {
+  test('crescent thickness follows pen size and pressure only', () {
+    for (final settings in [(20.0, 1.0), (40.0, 1.0), (40.0, .5)]) {
       final tiles = crescent(
         radius: 80,
-        width: 60,
-        ratio: settings.$1,
+        width: settings.$1,
         pressure: settings.$2,
       );
       addTearDown(tiles.dispose);
       final fill = inkAt(tiles, 180, 200, 321);
-      expect(fill.length, closeTo(80 * settings.$1 * settings.$2 - 2, 2));
+      expect(fill.length, closeTo(settings.$1 * settings.$2 - 2, 2));
       expect((fill.first + fill.last + 1) / 2, closeTo(260, 1));
     }
+  });
+  bool hasInk(TileManager tiles) => tiles
+      .exportAll()
+      .values
+      .expand((layer) => layer.values)
+      .any((tile) => tile.any((value) => value != 0));
+  test('a wave shallower than a thick pen stays an ordinary stroke', () {
+    // The same 20 px wave: hidden inside a 64 px pen, visible on an 8 px pen.
+    final thick = crescent(
+      width: 64,
+      threshold: BrushExtensionDefaults.foldCrescentDepthThreshold,
+      input: sine(20),
+    );
+    addTearDown(thick.dispose);
+    expect(hasInk(thick), isFalse);
+    final thin = crescent(
+      width: 8,
+      threshold: BrushExtensionDefaults.foldCrescentDepthThreshold,
+      input: [
+        for (final p in sine(20)) HairRibbonPoint(p.position, 8, p.opacity),
+      ],
+    );
+    addTearDown(thin.dispose);
+    expect(hasInk(thin), isTrue);
+    final lowered = crescent(width: 64, threshold: .25, input: sine(20));
+    addTearDown(lowered.dispose);
+    expect(hasInk(lowered), isTrue);
   });
   for (final textureKind in ['none', 'opaque', 'bangs']) {
     test(

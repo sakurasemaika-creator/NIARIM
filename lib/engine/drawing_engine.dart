@@ -132,7 +132,9 @@ class DrawingEngine {
     // 区間を描画してから終点を履歴へ追加する。これにより
     // _renderStrokeSegment() が取得するbaseStrokeLengthは必ず区間開始時点までの
     // 累積距離となり、OSから届くmoveイベント数に依存しない。
-    if (_foldEvents.isEmpty) {
+    // A crescent waits until its curve is deep enough for the pen width;
+    // until then the stroke keeps drawing as an ordinary line.
+    if (_foldEvents.isEmpty || !(_foldRaster?.replacesStroke ?? false)) {
       _renderStrokeSegment(from, effective, layerId);
     }
     _currentStroke.add(effective);
@@ -294,7 +296,9 @@ class DrawingEngine {
           ? null
           : getCachedBrushTexture(texture, mode: brush.imageInkMode),
     );
-    _strokeCoverageByTile.clear();
+    // A waiting crescent leaves the ordinary stroke and its shared outline
+    // coverage in place; clearing it would outline every stamp separately.
+    if (raster.replacesStroke) _strokeCoverageByTile.clear();
   }
 
   StrokePoint _applyPointConstraint(StrokePoint point) {

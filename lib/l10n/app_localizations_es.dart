@@ -9,7 +9,8 @@ class AppLocalizationsEs extends AppLocalizations {
   AppLocalizationsEs([String locale = 'es']) : super(locale);
 
   @override
-  String get brushFoldCrescentWidthRatio => 'Grosor / profundidad de la media luna';
+  String get brushFoldCrescentDepthThreshold =>
+      'Profundidad de curva para media luna (× ancho del trazo)';
 
   @override
   String get homeTabProjects => 'Proyectos';
@@ -6807,29 +6808,34 @@ class AppLocalizationsEs extends AppLocalizations {
   String get filterNoiseSeed => 'Semilla del patrón';
 
   @override
-  String get communityContentFilterTitle => "Filtros de visualización";
+  String get communityContentFilterTitle => 'Filtros de visualización';
 
   @override
-  String get communityHideGenerativeAiImageVideo => "Ocultar obras con imágenes o vídeo de IA generativa";
+  String get communityHideGenerativeAiImageVideo =>
+      'Ocultar obras con imágenes o vídeo de IA generativa';
 
   @override
-  String get communityMutedWords => "Palabras silenciadas";
+  String get communityMutedWords => 'Títulos silenciados';
 
   @override
-  String get communityMutedWordsHint => "Palabras separadas por comas que se ocultarán si aparecen en el título";
+  String get communityMutedWordsHint =>
+      'Texto separado por comas para ocultar cuando aparezca en el título de una obra';
 
   @override
-  String get communityMutedTags => "Etiquetas silenciadas";
+  String get communityMutedTags => 'Etiquetas silenciadas';
 
   @override
-  String get communityMutedTagsHint => "Etiquetas separadas por comas que se ocultarán";
+  String get communityMutedTagsHint =>
+      'Etiquetas separadas por comas que se ocultarán';
 
   @override
-  String get communityContainsGenerativeAiImageVideo => "Contiene imágenes o vídeo de IA generativa";
+  String get communityContainsGenerativeAiImageVideo =>
+      'Contiene imágenes o vídeo de IA generativa';
 
   @override
-  String get communityContainsGenerativeAiImageVideoHelp => "Actívalo si se utilizó IA generativa para crear imágenes o vídeo de la obra. El software de síntesis de voz no está incluido.";
+  String get communityContainsGenerativeAiImageVideoHelp =>
+      'Actívalo si se utilizó IA generativa para crear imágenes o vídeo de la obra. El software de síntesis de voz no está incluido.';
 
   @override
-  String get canvasLassoSnapToLines => "Ajustar a las líneas";
+  String get canvasLassoSnapToLines => 'Ajustar a las líneas';
 }

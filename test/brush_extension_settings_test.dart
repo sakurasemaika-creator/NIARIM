@@ -63,17 +63,18 @@ void main() {
       ),
     );
     await tester.pumpAndSettle();
-    final control = find.byKey(const Key('brush-crescent-width-ratio'));
+    final control = find.byKey(const Key('brush-crescent-depth-threshold'));
     expect(control, findsOneWidget);
     await tester.ensureVisible(control);
-    expect(find.text('深さに対する三日月の太さ'), findsOneWidget);
+    expect(find.text('三日月にするカーブの深さ（ペン幅比）'), findsOneWidget);
     final slider = tester.widget<Slider>(
       find.descendant(of: control, matching: find.byType(Slider)),
     );
-    expect(slider.value, .5);
+    expect(slider.value, 1);
+    expect(slider.max, 3);
     slider.onChanged!(.35);
     await tester.pump();
-    expect(changes.last.toJson()['foldCrescentWidthRatio'], .35);
+    expect(changes.last.toJson()['foldCrescentDepthThreshold'], .35);
   });
   testWidgets('lateral repeat dependants are hidden while disabled', (
     tester,

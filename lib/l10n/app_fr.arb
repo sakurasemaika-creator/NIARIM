@@ -1,5 +1,5 @@
 {
-  "brushFoldCrescentWidthRatio": "Épaisseur / profondeur du croissant",
+  "brushFoldCrescentDepthThreshold": "Profondeur de courbe pour le croissant (× largeur du trait)",
   "@@locale": "fr",
   "homeTabProjects": "Projets",
   "homeTabShared": "Partagés",

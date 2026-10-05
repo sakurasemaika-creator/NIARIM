@@ -1,5 +1,5 @@
 {
-  "brushFoldCrescentWidthRatio": "Crescent thickness / depth",
+  "brushFoldCrescentDepthThreshold": "Curve depth for crescent (× pen width)",
   "@@locale": "en",
   "homeTabProjects": "Projects",
   "homeTabShared": "Shared",

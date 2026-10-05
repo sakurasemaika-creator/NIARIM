@@ -1,5 +1,5 @@
 {
-  "brushFoldCrescentWidthRatio": "초승달 두께 / 곡선 깊이",
+  "brushFoldCrescentDepthThreshold": "초승달로 만들 곡선 깊이(펜 두께 대비)",
   "@@locale": "ko",
   "homeTabProjects": "프로젝트",
   "homeTabShared": "공유",

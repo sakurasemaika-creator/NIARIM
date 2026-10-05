@@ -9,7 +9,7 @@ class AppLocalizationsKo extends AppLocalizations {
   AppLocalizationsKo([String locale = 'ko']) : super(locale);
 
   @override
-  String get brushFoldCrescentWidthRatio => '초승달 두께 / 곡선 깊이';
+  String get brushFoldCrescentDepthThreshold => '초승달로 만들 곡선 깊이(펜 두께 대비)';
 
   @override
   String get homeTabProjects => '프로젝트';
@@ -6505,29 +6505,31 @@ class AppLocalizationsKo extends AppLocalizations {
   String get filterNoiseSeed => '패턴 시드';
 
   @override
-  String get communityContentFilterTitle => "표시 필터";
+  String get communityContentFilterTitle => '표시 필터';
 
   @override
-  String get communityHideGenerativeAiImageVideo => "생성형 AI 이미지·동영상이 포함된 작품 숨기기";
+  String get communityHideGenerativeAiImageVideo =>
+      '생성형 AI 이미지·동영상이 포함된 작품 숨기기';
 
   @override
-  String get communityMutedWords => "뮤트 단어";
+  String get communityMutedWords => '뮤트 제목';
 
   @override
-  String get communityMutedWordsHint => "작품 제목에 포함되면 숨길 단어를 쉼표로 구분해 입력";
+  String get communityMutedWordsHint => '작품 제목에 포함되면 숨길 문구를 쉼표로 구분하여 지정';
 
   @override
-  String get communityMutedTags => "뮤트 태그";
+  String get communityMutedTags => '뮤트 태그';
 
   @override
-  String get communityMutedTagsHint => "숨길 태그 이름을 쉼표로 구분해 입력";
+  String get communityMutedTagsHint => '숨길 태그 이름을 쉼표로 구분해 입력';
 
   @override
-  String get communityContainsGenerativeAiImageVideo => "생성형 AI 이미지·동영상 포함";
+  String get communityContainsGenerativeAiImageVideo => '생성형 AI 이미지·동영상 포함';
 
   @override
-  String get communityContainsGenerativeAiImageVideoHelp => "작품의 이미지 또는 동영상 생성에 생성형 AI를 사용한 경우 켜 주세요. 음성 합성 소프트웨어는 이 항목의 대상이 아닙니다.";
+  String get communityContainsGenerativeAiImageVideoHelp =>
+      '작품의 이미지 또는 동영상 생성에 생성형 AI를 사용한 경우 켜 주세요. 음성 합성 소프트웨어는 이 항목의 대상이 아닙니다.';
 
   @override
-  String get canvasLassoSnapToLines => "선에 스냅";
+  String get canvasLassoSnapToLines => '선에 스냅';
 }

@@ -84,9 +84,9 @@ void main() {
     await tester.tap(find.text('三日月カール').last);
     await tester.pumpAndSettle();
     await tester.ensureVisible(
-      find.byKey(const Key('brush-crescent-width-ratio')),
+      find.byKey(const Key('brush-crescent-depth-threshold')),
     );
-    await save('crescent_ratio_settings_ja');
+    await save('crescent_depth_threshold_settings_ja');
     expect(tester.takeException(), isNull);
   });
   testWidgets('capture shared tip and image controls for custom brushes', (

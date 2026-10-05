@@ -1,5 +1,5 @@
 {
-  "brushFoldCrescentWidthRatio": "深さに対する三日月の太さ",
+  "brushFoldCrescentDepthThreshold": "三日月にするカーブの深さ（ペン幅比）",
   "@@locale": "ja",
   "homeTabProjects": "プロジェクト",
   "homeTabShared": "共有",

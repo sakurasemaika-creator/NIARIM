@@ -18,22 +18,22 @@ Brush _baseBrush() => const Brush(
 
 void main() {
   group('hair fold settings', () {
-    test('crescent width ratio is a persisted common setting', () {
+    test('crescent depth threshold is a persisted common setting', () {
       final json = _baseBrush().toJson();
-      expect(json['foldCrescentWidthRatio'], .5);
-      json['foldCrescentWidthRatio'] = .35;
+      expect(json['foldCrescentDepthThreshold'], 1);
+      json['foldCrescentDepthThreshold'] = .35;
       expect(
         Brush.fromJson(
           json,
-        ).copyWith(name: 'My crescent').toJson()['foldCrescentWidthRatio'],
+        ).copyWith(name: 'My crescent').toJson()['foldCrescentDepthThreshold'],
         .35,
       );
-      json['foldCrescentWidthRatio'] = 10;
-      expect(Brush.fromJson(json).toJson()['foldCrescentWidthRatio'], 1);
-      json['foldCrescentWidthRatio'] = -2;
-      expect(Brush.fromJson(json).toJson()['foldCrescentWidthRatio'], .1);
-      json.remove('foldCrescentWidthRatio');
-      expect(Brush.fromJson(json).toJson()['foldCrescentWidthRatio'], .5);
+      json['foldCrescentDepthThreshold'] = 10;
+      expect(Brush.fromJson(json).toJson()['foldCrescentDepthThreshold'], 3);
+      json['foldCrescentDepthThreshold'] = -2;
+      expect(Brush.fromJson(json).toJson()['foldCrescentDepthThreshold'], 0);
+      json.remove('foldCrescentDepthThreshold');
+      expect(Brush.fromJson(json).toJson()['foldCrescentDepthThreshold'], 1);
     });
     test('custom brush defaults to fold disabled and top-view mode', () {
       final brush = _baseBrush();

@@ -70,7 +70,8 @@ List<Brush> brushExtensionPresets() => const <Brush>[
     foldTriggerAngle: BrushExtensionDefaults.foldTriggerAngle,
     foldCurveStartRatio: BrushExtensionDefaults.foldCurveStartRatio,
     foldCurveStrength: BrushExtensionDefaults.foldCurveStrength,
-    foldCrescentWidthRatio: BrushExtensionDefaults.foldCrescentWidthRatio,
+    foldCrescentDepthThreshold:
+        BrushExtensionDefaults.foldCrescentDepthThreshold,
     foldLengthRatio: BrushExtensionDefaults.foldLengthRatio,
     foldEndTaperRatio: BrushExtensionDefaults.foldEndTaperRatio,
     tags: <String>[AssetTagKeys.clothing],
@@ -117,7 +118,8 @@ List<Brush> brushExtensionPresets() => const <Brush>[
     foldTriggerAngle: BrushExtensionDefaults.foldTriggerAngle,
     foldCurveStartRatio: BrushExtensionDefaults.foldCurveStartRatio,
     foldCurveStrength: BrushExtensionDefaults.foldCurveStrength,
-    foldCrescentWidthRatio: BrushExtensionDefaults.foldCrescentWidthRatio,
+    foldCrescentDepthThreshold:
+        BrushExtensionDefaults.foldCrescentDepthThreshold,
     foldLengthRatio: BrushExtensionDefaults.foldLengthRatio,
     foldEndTaperRatio: BrushExtensionDefaults.foldEndTaperRatio,
     tags: <String>[AssetTagKeys.clothing],

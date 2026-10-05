@@ -8,6 +8,7 @@ import 'package:niarim/engine/brush_texture_cache.dart';
 import 'package:niarim/engine/drawing_engine.dart';
 import 'package:niarim/engine/tile_manager.dart';
 import 'package:niarim/models/brush.dart';
+import 'package:niarim/models/brush_extension_defaults.dart';
 import 'package:niarim/models/brush_presets_extension.dart';
 
 const modeNames = <HairFoldMode, String>{
@@ -99,7 +100,7 @@ void main() {
       ..addFont(rootBundle.load('assets/fonts/NotoSerifJP.ttf'));
     await loader.load();
   });
-  test('crescent shallow bows and short wide ordinary leads', () async {
+  test('crescent depth threshold, shallow bows and short wide leads', () async {
     final presets = brushExtensionPresets();
     for (final id in ['Brush0023', 'Brush0024']) {
       final brush = presets
@@ -112,12 +113,51 @@ void main() {
             foldTriggerAngle: 30,
             foldMode: HairFoldMode.crescent,
             foldCurveStrength: 10,
+            foldCrescentDepthThreshold: 0,
             customImageSelectionMode: BrushImageSelectionMode.sequential,
           );
       final prefix = id == 'Brush0023' ? 'hair' : 'bangs';
+      final smallWave = [
+        for (var i = 0; i <= 120; i++)
+          ui.Offset(350 + 20 * math.sin(i * math.pi / 60), 95 + i * 170 / 60),
+      ];
+      // A 20 px wave is hidden inside a 64 px pen: it stays an ordinary
+      // stroke. The same wave on a 12 px pen is worth a crescent.
+      final thick = await capture(
+        brush.copyWith(
+          foldCrescentDepthThreshold:
+              BrushExtensionDefaults.foldCrescentDepthThreshold,
+        ),
+        '${prefix}_crescent_small_wave_thick_pen',
+        input: smallWave,
+      );
+      final ordinary = await capture(
+        brush.copyWith(foldEnabled: false),
+        '${prefix}_ordinary_small_wave_thick_pen',
+        input: smallWave,
+      );
+      expect(thick, ordinary);
+      final thin = await capture(
+        brush.copyWith(
+          size: 12,
+          foldCrescentDepthThreshold:
+              BrushExtensionDefaults.foldCrescentDepthThreshold,
+        ),
+        '${prefix}_crescent_small_wave_thin_pen',
+        input: smallWave,
+      );
+      final thinOrdinary = await capture(
+        brush.copyWith(size: 12, foldEnabled: false),
+        '${prefix}_ordinary_small_wave_thin_pen',
+        input: smallWave,
+      );
+      expect(thin, isNot(thinOrdinary));
       await capture(
-        brush,
-        '${prefix}_crescent_depth_scaling',
+        brush.copyWith(
+          foldCrescentDepthThreshold:
+              BrushExtensionDefaults.foldCrescentDepthThreshold,
+        ),
+        '${prefix}_crescent_deep_wave_keeps_pen_width',
         input: [
           for (var i = 0; i <= 180; i++)
             ui.Offset(

@@ -24,10 +24,16 @@ class HairFoldRaster {
   final Map<String, Uint8List?> _before = {};
   final Map<int, _RunCache> _runs = {};
   Brush? _cachedBrush;
+  bool _crescentActive = false;
   Uint8List? _cachedTexture;
   double _textureLeft = 0;
   double _textureRight = brushTextureSize - 1;
   HairFoldRaster(this.tiles, this.layer);
+
+  /// Whether this stroke is drawn by the fold surface instead of ordinary
+  /// stamps. A crescent only takes over once its curve is deep enough.
+  bool get replacesStroke =>
+      _cachedBrush?.foldMode != HairFoldMode.crescent || _crescentActive;
 
   void rememberTile(int tx, int ty) {
     final key = '$tx,$ty';
@@ -353,6 +359,32 @@ class HairFoldRaster {
               ? (i > 1 ? crescentSides[indices[i - 2]]! : 1)
               : signedTurn.sign;
         }
+        if (!_crescentActive) {
+          // A wave shallower than the pen is mostly hidden inside its own
+          // stroke, so a thick pen needs a deeper curve to become a crescent.
+          // Once activated, the stroke stays a crescent: nothing was drawn
+          // before this point, so no stale fold surface can remain.
+          final threshold = Brush.clampFoldCrescentDepthThreshold(
+            brush.foldCrescentDepthThreshold,
+          );
+          var deepEnough = false;
+          for (var i = 1; i < indices.length && !deepEnough; i++) {
+            final start = indices[i - 1], end = indices[i];
+            final chord = points[end].position - points[start].position;
+            final apex = points[crescentApices[start]!].position;
+            final depth = chord.distance < 1e-6
+                ? (apex - points[start].position).distance
+                : _cross(chord, apex - points[start].position).abs() /
+                      chord.distance;
+            var width = 0.0;
+            for (var index = start; index <= end; index++) {
+              width = math.max(width, points[index].width);
+            }
+            deepEnough = depth >= width * threshold;
+          }
+          if (!deepEnough) return;
+          _crescentActive = true;
+        }
         final transitionTurn = math.max(
           .15,
           math.min(math.pi / 3, turns[crescentApices[0]!] * .75),
@@ -378,15 +410,10 @@ class HairFoldRaster {
         final bowDepth = apexBow.abs();
         final strength = (brush.foldCurveStrength - 1) / 9;
         final innerPower = 1 + strength * .35;
-        // Partial curls already have a smaller authored depth. No extra
-        // turn-based multiplier may change the selected proportional ratio.
-        final curveDiameter =
-            bowDepth *
-            Brush.clampFoldCrescentWidthRatio(brush.foldCrescentWidthRatio);
-        final widthScale = curveDiameter / math.max(.001, brush.size);
+        // The apex keeps the pen's own pressure-resolved width; curve depth
+        // only shapes the bows and never thickens or thins the crescent.
         final widestHalf = [
-          for (var i = run.start; i <= run.end; i++)
-            points[i].width * widthScale / 2,
+          for (var i = run.start; i <= run.end; i++) points[i].width / 2,
         ].reduce(math.max);
         // One bound per run prevents hooks with unusually large pressure
         // widths. The remaining diameter is distributed outside.
@@ -514,7 +541,7 @@ class HairFoldRaster {
                         along *
                         _ordinaryLeadFade(q, along.abs() / leadSpan);
               }
-              final curveWidth = point.width * widthScale;
+              final curveWidth = point.width;
               final outerEdge =
                   point.position +
                   ordinary +

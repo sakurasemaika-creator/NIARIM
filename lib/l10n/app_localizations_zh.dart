@@ -9,7 +9,7 @@ class AppLocalizationsZh extends AppLocalizations {
   AppLocalizationsZh([String locale = 'zh']) : super(locale);
 
   @override
-  String get brushFoldCrescentWidthRatio => '月牙厚度 / 曲线深度';
+  String get brushFoldCrescentDepthThreshold => '形成月牙的曲线深度（相对笔宽）';
 
   @override
   String get homeTabProjects => '项目';
@@ -6440,10 +6440,10 @@ class AppLocalizationsZh extends AppLocalizations {
   String get communityHideGenerativeAiImageVideo => '隐藏包含生成式 AI 图像或视频的作品';
 
   @override
-  String get communityMutedWords => '屏蔽词';
+  String get communityMutedWords => '屏蔽标题';
 
   @override
-  String get communityMutedWordsHint => '输入以逗号分隔的词语；作品标题包含时将隐藏';
+  String get communityMutedWordsHint => '用逗号分隔要在作品标题中匹配并隐藏的文字';
 
   @override
   String get communityMutedTags => '屏蔽标签';
@@ -6464,12 +6464,10 @@ class AppLocalizationsZh extends AppLocalizations {
 
 /// The translations for Chinese, using the Han script (`zh_Hant`).
 class AppLocalizationsZhHant extends AppLocalizationsZh {
-  @override
-  String get brushFoldCrescentWidthRatio => '月牙厚度 / 曲線深度';
+  AppLocalizationsZhHant() : super('zh_Hant');
 
   @override
-  String get filterLevelsGamma => '伽瑪';
-  AppLocalizationsZhHant() : super('zh_Hant');
+  String get brushFoldCrescentDepthThreshold => '形成月牙的曲線深度（相對筆寬）';
 
   @override
   String get homeTabProjects => '專案';
@@ -9801,6 +9799,9 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get filterLevelsInputWhite => '輸入：白';
 
   @override
+  String get filterLevelsGamma => '伽瑪';
+
+  @override
   String get filterLevelsOutputBlack => '輸出：黑';
 
   @override
@@ -12891,39 +12892,30 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get filterNoiseSeed => '圖案種子';
 
   @override
-  String get communityContentFilterTitle => localeName == 'zh_Hant' ? '顯示篩選' : '显示筛选';
+  String get communityContentFilterTitle => '顯示篩選';
 
   @override
-  String get communityHideGenerativeAiImageVideo => localeName == 'zh_Hant'
-      ? '隱藏包含生成式 AI 圖像或影片的作品'
-      : '隐藏包含生成式 AI 图像或视频的作品';
+  String get communityHideGenerativeAiImageVideo => '隱藏包含生成式 AI 圖像或影片的作品';
 
   @override
-  String get communityMutedWords => localeName == 'zh_Hant' ? '封鎖詞' : '屏蔽词';
+  String get communityMutedWords => '靜音標題';
 
   @override
-  String get communityMutedWordsHint => localeName == 'zh_Hant'
-      ? '輸入以逗號分隔的詞語；作品標題包含時將隱藏'
-      : '输入以逗号分隔的词语；作品标题包含时将隐藏';
+  String get communityMutedWordsHint => '以逗號分隔要在作品標題中比對並隱藏的文字';
 
   @override
-  String get communityMutedTags => localeName == 'zh_Hant' ? '封鎖標籤' : '屏蔽标签';
+  String get communityMutedTags => '封鎖標籤';
 
   @override
-  String get communityMutedTagsHint => localeName == 'zh_Hant'
-      ? '輸入以逗號分隔的標籤名稱'
-      : '输入以逗号分隔的标签名称';
+  String get communityMutedTagsHint => '輸入以逗號分隔的標籤名稱';
 
   @override
-  String get communityContainsGenerativeAiImageVideo => localeName == 'zh_Hant'
-      ? '包含生成式 AI 圖像或影片'
-      : '包含生成式 AI 图像或视频';
+  String get communityContainsGenerativeAiImageVideo => '包含生成式 AI 圖像或影片';
 
   @override
-  String get communityContainsGenerativeAiImageVideoHelp => localeName == 'zh_Hant'
-      ? '作品中的圖像或影片使用生成式 AI 製作時請開啟。語音合成軟體不屬於此項範圍。'
-      : '作品中的图像或视频使用生成式 AI 制作时请开启。语音合成软件不属于此项范围。';
+  String get communityContainsGenerativeAiImageVideoHelp =>
+      '作品中的圖像或影片使用生成式 AI 製作時請開啟。語音合成軟體不屬於此項範圍。';
 
   @override
-  String get canvasLassoSnapToLines => localeName == 'zh_Hant' ? '吸附到線條' : '吸附到线条';
+  String get canvasLassoSnapToLines => '吸附到線條';
 }

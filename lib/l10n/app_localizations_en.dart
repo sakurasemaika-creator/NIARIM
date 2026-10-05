@@ -9,7 +9,8 @@ class AppLocalizationsEn extends AppLocalizations {
   AppLocalizationsEn([String locale = 'en']) : super(locale);
 
   @override
-  String get brushFoldCrescentWidthRatio => 'Crescent thickness / depth';
+  String get brushFoldCrescentDepthThreshold =>
+      'Curve depth for crescent (× pen width)';
 
   @override
   String get homeTabProjects => 'Projects';
@@ -6697,29 +6698,33 @@ class AppLocalizationsEn extends AppLocalizations {
   String get filterNoiseSeed => 'Pattern seed';
 
   @override
-  String get communityContentFilterTitle => "Display filters";
+  String get communityContentFilterTitle => 'Display filters';
 
   @override
-  String get communityHideGenerativeAiImageVideo => "Hide works containing generative-AI images or video";
+  String get communityHideGenerativeAiImageVideo =>
+      'Hide works containing generative-AI images or video';
 
   @override
-  String get communityMutedWords => "Muted words";
+  String get communityMutedWords => 'Muted titles';
 
   @override
-  String get communityMutedWordsHint => "Comma-separated words to hide when found in a work title";
+  String get communityMutedWordsHint =>
+      'Comma-separated text to hide when found in a work title';
 
   @override
-  String get communityMutedTags => "Muted tags";
+  String get communityMutedTags => 'Muted tags';
 
   @override
-  String get communityMutedTagsHint => "Comma-separated tag names to hide";
+  String get communityMutedTagsHint => 'Comma-separated tag names to hide';
 
   @override
-  String get communityContainsGenerativeAiImageVideo => "Contains generative-AI images or video";
+  String get communityContainsGenerativeAiImageVideo =>
+      'Contains generative-AI images or video';
 
   @override
-  String get communityContainsGenerativeAiImageVideoHelp => "Turn this on when generative AI was used to create images or video in the work. Voice-synthesis software is not covered by this setting.";
+  String get communityContainsGenerativeAiImageVideoHelp =>
+      'Turn this on when generative AI was used to create images or video in the work. Voice-synthesis software is not covered by this setting.';
 
   @override
-  String get canvasLassoSnapToLines => "Snap to lines";
+  String get canvasLassoSnapToLines => 'Snap to lines';
 }

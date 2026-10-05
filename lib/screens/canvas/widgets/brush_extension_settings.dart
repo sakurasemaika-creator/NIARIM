@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../../../l10n/app_localizations.dart';
 
 import '../../../models/brush.dart';
+import '../../../models/brush_extension_defaults.dart';
 import '../../../widgets/help_button.dart';
 
 class BrushExtensionLabels {
@@ -19,7 +20,7 @@ class BrushExtensionLabels {
   final String foldCurveStart;
   final String foldLength;
   final String foldCurveStrength;
-  final String foldCrescentWidthRatio;
+  final String foldCrescentDepthThreshold;
   final String foldMode;
   final String foldModeWaveTopView;
   final String foldModeWaveLowAngle;
@@ -41,7 +42,7 @@ class BrushExtensionLabels {
     required this.foldCurveStart,
     required this.foldLength,
     required this.foldCurveStrength,
-    this.foldCrescentWidthRatio = 'Crescent thickness / depth',
+    this.foldCrescentDepthThreshold = 'Crescent minimum depth / pen width',
     required this.foldMode,
     required this.foldModeWaveTopView,
     required this.foldModeWaveLowAngle,
@@ -65,7 +66,7 @@ class BrushExtensionLabels {
         foldCurveStart: l.brushFoldCurveStart,
         foldLength: l.brushFoldLength,
         foldCurveStrength: l.brushFoldCurveStrength,
-        foldCrescentWidthRatio: l.brushFoldCrescentWidthRatio,
+        foldCrescentDepthThreshold: l.brushFoldCrescentDepthThreshold,
         foldMode: l.brushFoldMode,
         foldModeWaveTopView: l.brushFoldModeWaveTopView,
         foldModeWaveLowAngle: l.brushFoldModeWaveLowAngle,
@@ -88,7 +89,7 @@ class BrushExtensionLabels {
       foldCurveStart = 'カーブ開始位置',
       foldLength = '折り返し長さ',
       foldCurveStrength = 'カーブ強度',
-      foldCrescentWidthRatio = '深さに対する三日月の太さ',
+      foldCrescentDepthThreshold = '三日月にするカーブの深さ（ペン幅比）',
       foldMode = '折りたたみタイプ',
       foldModeWaveTopView = 'ウェーブ俯瞰',
       foldModeWaveLowAngle = 'ウェーブ煽り',
@@ -274,16 +275,16 @@ class _BrushExtensionSettingsState extends State<BrushExtensionSettings> {
             ),
             if (_brush.foldMode == HairFoldMode.crescent)
               KeyedSubtree(
-                key: const Key('brush-crescent-width-ratio'),
+                key: const Key('brush-crescent-depth-threshold'),
                 child: _slider(
-                  l.foldCrescentWidthRatio,
-                  _brush.foldCrescentWidthRatio,
-                  .1,
-                  1,
-                  (v) => _set(_brush.copyWith(foldCrescentWidthRatio: v)),
-                  divisions: 90,
+                  l.foldCrescentDepthThreshold,
+                  _brush.foldCrescentDepthThreshold,
+                  0,
+                  BrushExtensionDefaults.maxFoldCrescentDepthThreshold,
+                  (v) => _set(_brush.copyWith(foldCrescentDepthThreshold: v)),
+                  divisions: 60,
                   displayValue:
-                      '${(_brush.foldCrescentWidthRatio * 100).round()}%',
+                      '${(_brush.foldCrescentDepthThreshold * 100).round()}%',
                 ),
               ),
           ],

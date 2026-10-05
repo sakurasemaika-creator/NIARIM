@@ -49,7 +49,7 @@ class Brush {
   final double foldTriggerAngle;
   final double foldCurveStartRatio;
   final int foldCurveStrength;
-  final double foldCrescentWidthRatio;
+  final double foldCrescentDepthThreshold;
   final double foldLengthRatio;
   final double foldEndTaperRatio;
   final HairFoldMode foldMode;
@@ -101,7 +101,8 @@ class Brush {
     this.foldTriggerAngle = 90.0,
     this.foldCurveStartRatio = 0.25,
     this.foldCurveStrength = 5,
-    this.foldCrescentWidthRatio = BrushExtensionDefaults.foldCrescentWidthRatio,
+    this.foldCrescentDepthThreshold =
+        BrushExtensionDefaults.foldCrescentDepthThreshold,
     this.foldLengthRatio = 0.8,
     this.foldEndTaperRatio = 0.35,
     this.foldMode = HairFoldMode.waveTopView,
@@ -121,9 +122,11 @@ class Brush {
   static int clampLateralRepeatCount(int value) => value.clamp(1, 10).toInt();
   static double clampFoldRatio(double value, double fallback) =>
       value.isFinite ? value.clamp(0.0, 1.0).toDouble() : fallback;
-  static double clampFoldCrescentWidthRatio(double value) => value.isFinite
-      ? value.clamp(.1, 1.0).toDouble()
-      : BrushExtensionDefaults.foldCrescentWidthRatio;
+  static double clampFoldCrescentDepthThreshold(double value) => value.isFinite
+      ? value
+            .clamp(0.0, BrushExtensionDefaults.maxFoldCrescentDepthThreshold)
+            .toDouble()
+      : BrushExtensionDefaults.foldCrescentDepthThreshold;
   static int clampFoldCurveStrength(int value) => value.clamp(1, 10).toInt();
   static double clampFoldAngle(double value, double fallback) =>
       value.isFinite ? value.clamp(1.0, 180.0).toDouble() : fallback;
@@ -172,7 +175,7 @@ class Brush {
     double? foldTriggerAngle,
     double? foldCurveStartRatio,
     int? foldCurveStrength,
-    double? foldCrescentWidthRatio,
+    double? foldCrescentDepthThreshold,
     double? foldLengthRatio,
     double? foldEndTaperRatio,
     HairFoldMode? foldMode,
@@ -237,8 +240,8 @@ class Brush {
     foldCurveStrength: clampFoldCurveStrength(
       foldCurveStrength ?? this.foldCurveStrength,
     ),
-    foldCrescentWidthRatio: clampFoldCrescentWidthRatio(
-      foldCrescentWidthRatio ?? this.foldCrescentWidthRatio,
+    foldCrescentDepthThreshold: clampFoldCrescentDepthThreshold(
+      foldCrescentDepthThreshold ?? this.foldCrescentDepthThreshold,
     ),
     foldLengthRatio: clampFoldRatio(
       foldLengthRatio ?? this.foldLengthRatio,
@@ -298,8 +301,8 @@ class Brush {
     'foldTriggerAngle': foldTriggerAngle,
     'foldCurveStartRatio': clampFoldRatio(foldCurveStartRatio, .25),
     'foldCurveStrength': clampFoldCurveStrength(foldCurveStrength),
-    'foldCrescentWidthRatio': clampFoldCrescentWidthRatio(
-      foldCrescentWidthRatio,
+    'foldCrescentDepthThreshold': clampFoldCrescentDepthThreshold(
+      foldCrescentDepthThreshold,
     ),
     'foldLengthRatio': clampFoldRatio(foldLengthRatio, .8),
     'foldEndTaperRatio': clampFoldRatio(foldEndTaperRatio, .35),
@@ -397,9 +400,9 @@ class Brush {
     foldCurveStrength: clampFoldCurveStrength(
       (j['foldCurveStrength'] as num?)?.toInt() ?? 5,
     ),
-    foldCrescentWidthRatio: clampFoldCrescentWidthRatio(
-      (j['foldCrescentWidthRatio'] as num?)?.toDouble() ??
-          BrushExtensionDefaults.foldCrescentWidthRatio,
+    foldCrescentDepthThreshold: clampFoldCrescentDepthThreshold(
+      (j['foldCrescentDepthThreshold'] as num?)?.toDouble() ??
+          BrushExtensionDefaults.foldCrescentDepthThreshold,
     ),
     foldLengthRatio: clampFoldRatio(
       (j['foldLengthRatio'] as num?)?.toDouble() ?? .8,
