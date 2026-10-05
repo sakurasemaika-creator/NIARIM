@@ -194,8 +194,14 @@ class _CommunityScreenState extends State<CommunityScreen>
             ),
           ),
           actions: [
-            TextButton(onPressed: () => Navigator.pop(context, false), child: const Text('キャンセル')),
-            FilledButton(onPressed: () => Navigator.pop(context, true), child: const Text('保存')),
+            TextButton(
+              onPressed: () => Navigator.pop(context, false),
+              child: const Text('キャンセル'),
+            ),
+            FilledButton(
+              onPressed: () => Navigator.pop(context, true),
+              child: const Text('保存'),
+            ),
           ],
         ),
       ),
@@ -305,7 +311,8 @@ class _CommunityScreenState extends State<CommunityScreen>
                 onPressed: () => _openShortsMode(allWorks),
               ),
             IconButton(
-              icon: const Icon(Icons.filter_alt_outlined),
+              // Distinct from the video-type filter's funnel next to it.
+              icon: const Icon(Icons.visibility_off_outlined),
               tooltip: l10n.communityContentFilterTitle,
               onPressed: () => _showContentFilters(communityService),
             ),

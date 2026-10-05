@@ -6,6 +6,7 @@ import 'package:niarim/l10n/app_localizations.dart';
 import 'package:niarim/screens/community/community_author_works_screen.dart';
 import 'package:niarim/screens/community/widgets/community_shorts_viewer.dart';
 import 'package:niarim/services/community_service.dart';
+import 'package:niarim/services/premium_service.dart';
 import 'package:niarim/services/settings_service.dart';
 
 void main() {
@@ -22,6 +23,10 @@ void main() {
         providers: [
           ChangeNotifierProvider<CommunityService>.value(value: service),
           ChangeNotifierProvider<SettingsService>.value(value: settings),
+          // The author page it opens frames itself with the ad banner.
+          ChangeNotifierProvider<PremiumService>(
+            create: (_) => PremiumService(),
+          ),
         ],
         child: MaterialApp(
           localizationsDelegates: AppLocalizations.localizationsDelegates,
@@ -112,5 +117,4 @@ void main() {
     expect(find.text(aiWork.title), findsNothing);
     expect(find.text(normalWork.title), findsOneWidget);
   });
-
 }

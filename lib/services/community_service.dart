@@ -137,23 +137,31 @@ class CommunityService extends ChangeNotifier {
   Set<String> get mutedWords => Set.unmodifiable(_mutedWords);
   Set<String> get mutedTags => Set.unmodifiable(_mutedTags);
 
+  /// Never completes with an error: unreadable settings fall back to
+  /// showing everything, so the setters below, which wait for this, keep
+  /// working.
   Future<void> _loadContentFilters() async {
-    final prefs = await SharedPreferences.getInstance();
-    _hideGenerativeAiImageVideo = prefs.getBool(_hideAiImageVideoKey) ?? false;
-    _mutedWords
-      ..clear()
-      ..addAll(
-        (prefs.getStringList(_mutedWordsKey) ?? const [])
-            .map((e) => e.trim().toLowerCase())
-            .where((e) => e.isNotEmpty),
-      );
-    _mutedTags
-      ..clear()
-      ..addAll(
-        (prefs.getStringList(_mutedTagsKey) ?? const [])
-            .map((e) => e.trim().toLowerCase())
-            .where((e) => e.isNotEmpty),
-      );
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      _hideGenerativeAiImageVideo =
+          prefs.getBool(_hideAiImageVideoKey) ?? false;
+      _mutedWords
+        ..clear()
+        ..addAll(
+          (prefs.getStringList(_mutedWordsKey) ?? const [])
+              .map((e) => e.trim().toLowerCase())
+              .where((e) => e.isNotEmpty),
+        );
+      _mutedTags
+        ..clear()
+        ..addAll(
+          (prefs.getStringList(_mutedTagsKey) ?? const [])
+              .map((e) => e.trim().toLowerCase())
+              .where((e) => e.isNotEmpty),
+        );
+    } catch (error) {
+      debugPrint('Community content filters could not be restored: $error');
+    }
     notifyListeners();
   }
 
@@ -169,7 +177,9 @@ class CommunityService extends ChangeNotifier {
     await contentFiltersReady;
     _mutedWords
       ..clear()
-      ..addAll(values.map((e) => e.trim().toLowerCase()).where((e) => e.isNotEmpty));
+      ..addAll(
+        values.map((e) => e.trim().toLowerCase()).where((e) => e.isNotEmpty),
+      );
     notifyListeners();
     final prefs = await SharedPreferences.getInstance();
     await prefs.setStringList(_mutedWordsKey, _mutedWords.toList()..sort());
@@ -179,7 +189,9 @@ class CommunityService extends ChangeNotifier {
     await contentFiltersReady;
     _mutedTags
       ..clear()
-      ..addAll(values.map((e) => e.trim().toLowerCase()).where((e) => e.isNotEmpty));
+      ..addAll(
+        values.map((e) => e.trim().toLowerCase()).where((e) => e.isNotEmpty),
+      );
     notifyListeners();
     final prefs = await SharedPreferences.getInstance();
     await prefs.setStringList(_mutedTagsKey, _mutedTags.toList()..sort());
@@ -200,6 +212,7 @@ class CommunityService extends ChangeNotifier {
     if (communityTags.any(_mutedTags.contains)) return false;
     return true;
   }
+
   // リポスト（Task#145の調査を受けた新機能）。誰が・どの作品を・いつ
   // リポストしたかの記録。自分（kDummySelfAuthorId）のリポストは実際に
   // ボタン操作で追加・削除できるが、他のダミー作者のリポストは

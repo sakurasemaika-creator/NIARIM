@@ -75,6 +75,7 @@ void main() {
       'youtubeAccessToken': 'YT_TOKEN',
       'isShort': true,
       'isNiarimPublished': true,
+      'containsGenerativeAiImageOrVideo': false,
       'projectFps': 24,
       'projectFrameCount': 288,
       'projectWorkSeconds': 7380,
@@ -104,6 +105,8 @@ void main() {
       'youtubeAccessToken': 'YT_TOKEN',
       'isShort': false,
       'isNiarimPublished': true,
+      // The AI usage declaration is always sent; it is not project metadata.
+      'containsGenerativeAiImageOrVideo': false,
     });
   });
 

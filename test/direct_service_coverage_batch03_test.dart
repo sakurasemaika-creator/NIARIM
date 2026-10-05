@@ -114,7 +114,8 @@ void main() {
       () async {
         final service = FilterService();
         await service.init();
-        expect(service.filters.length, 24);
+        // 26 shipped filters, Mosaic and the generic noise preset included.
+        expect(service.filters.length, 26);
         expect(
           service.filters.map((f) => f.id),
           contains(FilterService.prismFilterId),
