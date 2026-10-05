@@ -186,6 +186,47 @@ void main() {
     return count;
   }
 
+  // Inside the zigzag's own fill, within the white strand: its silhouette
+  // drawn on its own with the outline in the fill color, shrunk past the
+  // outline.
+  Future<int> holesInZigzag(Uint8List pixels) async {
+    final alone = await base;
+    final silhouette = await draw([
+      for (var pass = 0; pass < 3; pass++)
+        (
+          [
+            ui.Offset(40, 120 + pass * 4.0),
+            ui.Offset(100, 200 + pass * 4.0),
+            ui.Offset(160, 120 + pass * 4.0),
+            ui.Offset(220, 200 + pass * 4.0),
+            const ui.Offset(300, 330),
+            const ui.Offset(360, 240),
+          ],
+          red,
+          outlinePen(outline: red, keep: true, fold: true, size: 26),
+        ),
+    ]);
+    bool redAt(int x, int y) =>
+        colorAt(silhouette, x.clamp(0, size - 1), y.clamp(0, size - 1)) == red;
+    var count = 0, inside = 0;
+    for (var y = 90; y <= 240; y++) {
+      for (var x = 20; x <= 380; x++) {
+        if (!whiteAt(alone, x, y)) continue;
+        if (![
+          for (var dy = -7; dy <= 7; dy++)
+            for (var dx = -7; dx <= 7; dx++)
+              if (dx * dx + dy * dy <= 49) redAt(x + dx, y + dy),
+        ].every((r) => r)) {
+          continue;
+        }
+        inside++;
+        if (colorAt(pixels, x, y) != red) count++;
+      }
+    }
+    expect(inside, greaterThan(1000));
+    return count;
+  }
+
   test('without keeping overlaps, fold lines vanish with the outline where '
       'strokes merge', () async {
     final merged = await layered(false);
@@ -193,6 +234,13 @@ void main() {
       await blueInside(merged),
       0,
       reason: 'no outline or fold line floats inside the merged strands',
+    );
+    expect(
+      await holesInZigzag(merged),
+      0,
+      reason:
+          'a hidden fold line leaves the strand filled, not notched '
+          'down to the earlier picture',
     );
     expect(blueOutside(merged), greaterThan(100), reason: 'on its own');
     final kept = await layered(true);

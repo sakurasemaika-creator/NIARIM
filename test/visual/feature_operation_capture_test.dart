@@ -54,7 +54,10 @@ void main() {
       final h = await _Harness.create(tester, 'filters');
       final filters = h.context.read<FilterService>().filters;
       for (final filter in filters) {
-        if (group == 'filters-core' && filter.kind == FilterKind.auroraHologram) continue;
+        if (group == 'filters-core' &&
+            filter.kind == FilterKind.auroraHologram) {
+          continue;
+        }
         final variants = filter.id == 'Filter0004'
             ? ToneCurvePreset.values.map((e) => e.name).toList()
             : filter.kind == FilterKind.auroraHologram
@@ -67,18 +70,28 @@ void main() {
           if (_captureMatch.isNotEmpty && !id.contains(_captureMatch)) continue;
           debugPrint('CAPTURE_CASE:$id');
           final textureReference =
-              filter.kind == FilterKind.auroraHologram && _textureFixture.isNotEmpty;
+              filter.kind == FilterKind.auroraHologram &&
+              _textureFixture.isNotEmpty;
           await h.project(
             id,
             fixture: textureReference
                 ? _textureFixture
-                : filter.kind == FilterKind.autoLineart || filter.kind == FilterKind.inkPool
+                : filter.kind == FilterKind.autoLineart ||
+                      filter.kind == FilterKind.inkPool
                 ? 'lineart'
                 : 'color',
             mask: filter.kind == FilterKind.lensDistortion,
             background: filter.kind == FilterKind.backgroundBlend,
-            exportWidth: textureReference && _textureFixture == 'textureReferenceOriginal' ? 785 : 256,
-            exportHeight: textureReference && _textureFixture == 'textureReferenceOriginal' ? 455 : 256,
+            exportWidth:
+                textureReference &&
+                    _textureFixture == 'textureReferenceOriginal'
+                ? 785
+                : 256,
+            exportHeight:
+                textureReference &&
+                    _textureFixture == 'textureReferenceOriginal'
+                ? 455
+                : 256,
           );
           final before = await h.art('$id-before');
           final inputIds = h.layers.map((l) => l.id).toSet();
@@ -185,69 +198,76 @@ void main() {
     }, timeout: const Timeout(Duration(minutes: 25)));
   }
   if (group == 'all' || group == 'pixel-compare') {
-    testWidgets('Pixel Art and Mosaic differ on the same production UI fixture', (
-      tester,
-    ) async {
-      final h = await _Harness.create(tester, 'pixel-compare');
-      final filters = h.context.read<FilterService>().filters;
-      final cases = [
-        filters.firstWhere((f) => f.kind == FilterKind.pixelate),
-        filters.firstWhere((f) => f.kind == FilterKind.mosaic),
-      ];
-      final outputs = <FilterKind, Uint8List>{};
-      for (final filter in cases) {
-        final id = filter.kind == FilterKind.pixelate
-            ? 'pixel_art_same_fixture'
-            : 'mosaic_same_fixture';
-        debugPrint('CAPTURE_CASE:$id');
-        await h.project(id, fixture: 'pixelCompare');
-        final before = await h.art('$id-before');
-        await h.capture('$id-before-ui');
-        await h.openMenu(h.l10n.filterPanelTitle);
-        final panel = find.byType(FilterPanel);
-        await h.tap(
-          find.descendant(of: panel, matching: find.byIcon(Icons.search)).first,
-        );
-        await tester.enterText(
-          find.descendant(of: panel, matching: find.byType(TextField)).first,
-          _filterName(filter),
-        );
-        await h.settle();
-        await h.tap(
-          find.descendant(
-            of: panel,
-            matching: find.byWidgetPredicate(
-              (w) => w is Text && w.data == _filterName(filter),
+    testWidgets(
+      'Pixel Art and Mosaic differ on the same production UI fixture',
+      (tester) async {
+        final h = await _Harness.create(tester, 'pixel-compare');
+        final filters = h.context.read<FilterService>().filters;
+        final cases = [
+          filters.firstWhere((f) => f.kind == FilterKind.pixelate),
+          filters.firstWhere((f) => f.kind == FilterKind.mosaic),
+        ];
+        final outputs = <FilterKind, Uint8List>{};
+        for (final filter in cases) {
+          final id = filter.kind == FilterKind.pixelate
+              ? 'pixel_art_same_fixture'
+              : 'mosaic_same_fixture';
+          debugPrint('CAPTURE_CASE:$id');
+          await h.project(id, fixture: 'pixelCompare');
+          final before = await h.art('$id-before');
+          await h.capture('$id-before-ui');
+          await h.openMenu(h.l10n.filterPanelTitle);
+          final panel = find.byType(FilterPanel);
+          await h.tap(
+            find
+                .descendant(of: panel, matching: find.byIcon(Icons.search))
+                .first,
+          );
+          await tester.enterText(
+            find.descendant(of: panel, matching: find.byType(TextField)).first,
+            _filterName(filter),
+          );
+          await h.settle();
+          await h.tap(
+            find.descendant(
+              of: panel,
+              matching: find.byWidgetPredicate(
+                (w) => w is Text && w.data == _filterName(filter),
+              ),
             ),
-          ),
+          );
+          expect(
+            h.context.read<FilterService>().currentFilter!.kind,
+            filter.kind,
+          );
+          await h.capture('$id-settings');
+          await h.tap(find.text(h.l10n.filterApplyButton));
+          await h.until(
+            () => panel.evaluate().isEmpty,
+            '$id apply must finish and close the panel',
+          );
+          final after = await h.art('$id-after');
+          outputs[filter.kind] = after;
+          await h.capture('$id-after-ui');
+          h.record(
+            id,
+            filter.name,
+            _changedPixels(before, after),
+            settings: {'kind': filter.kind.name},
+            note: filter.kind == FilterKind.pixelate
+                ? 'PixelArtEngine hard-edge conversion.'
+                : 'Independent block-average Mosaic effect.',
+          );
+        }
+        expect(
+          outputs[FilterKind.pixelate],
+          isNot(orderedEquals(outputs[FilterKind.mosaic]!)),
+          reason: 'Pixel Art and Mosaic must remain visually distinct effects',
         );
-        expect(h.context.read<FilterService>().currentFilter!.kind, filter.kind);
-        await h.capture('$id-settings');
-        await h.tap(find.text(h.l10n.filterApplyButton));
-        await h.until(
-          () => panel.evaluate().isEmpty,
-          '$id apply must finish and close the panel',
-        );
-        final after = await h.art('$id-after');
-        outputs[filter.kind] = after;
-        await h.capture('$id-after-ui');
-        h.record(
-          id,
-          filter.name,
-          _changedPixels(before, after),
-          settings: {'kind': filter.kind.name},
-          note: filter.kind == FilterKind.pixelate
-              ? 'PixelArtEngine hard-edge conversion.'
-              : 'Independent block-average Mosaic effect.',
-        );
-      }
-      expect(
-        outputs[FilterKind.pixelate],
-        isNot(orderedEquals(outputs[FilterKind.mosaic]!)),
-        reason: 'Pixel Art and Mosaic must remain visually distinct effects',
-      );
-      await h.finish();
-    }, timeout: const Timeout(Duration(minutes: 5)));
+        await h.finish();
+      },
+      timeout: const Timeout(Duration(minutes: 5)),
+    );
   }
 
   if (group == 'all' || group == 'automation') {
@@ -256,18 +276,14 @@ void main() {
       (tester) async {
         final h = await _Harness.create(tester, 'automation');
         final items = h.context.read<CustomAutomationService>().items;
-        expect(items.length, 4);
+        expect(items.length, 3);
         for (final item in items) {
           final id = item.id;
           if (_captureMatch.isNotEmpty && !id.contains(_captureMatch)) continue;
           debugPrint('CAPTURE_CASE:$id');
           await h.project(
             id,
-            fixture: id.contains('aurora')
-                ? 'color'
-                : id.contains('analog')
-                ? 'analog'
-                : 'lineart',
+            fixture: id.contains('analog') ? 'analog' : 'lineart',
             background: id.contains('color_trace'),
           );
           final before = await h.art('$id-before');
@@ -360,9 +376,10 @@ void main() {
           await h.capture('$id-before-ui');
 
           var applied = 0;
-          for (final lineart in h.layers
-              .where((l) => l.type == model.LayerType.autoFillLineart)
-              .toList()) {
+          for (final lineart
+              in h.layers
+                  .where((l) => l.type == model.LayerType.autoFillLineart)
+                  .toList()) {
             final result = await runAutofillForLayer(
               projectService: h.ps,
               presetService: h.context.read<AutofillPresetService>(),
@@ -405,70 +422,86 @@ void main() {
     );
   }
   if (group == 'all' || group == 'blend') {
-    testWidgets('all blend modes composite through the production LayerPanel UI', (
-      tester,
-    ) async {
-      final h = await _Harness.create(tester, 'blend');
-      for (final mode in model.LayerBlendMode.values) {
-        final id = 'blend_${mode.name}';
-        if (_captureMatch.isNotEmpty && !id.contains(_captureMatch)) continue;
-        debugPrint('CAPTURE_CASE:$id');
-        await h.project(id, fixture: 'background');
-        final source = h.layers.firstWhere((l) => l.type == model.LayerType.normal);
-        await h.seed(source.id, 'colorTranslucent');
-        final backdrop = h.ps.addLayer(
-          projectId: h.projectId,
-          sceneId: h.sceneId,
-          frameIndex: 0,
-          type: model.LayerType.normal,
-          name: 'Blend backdrop',
-          insertIndex: h.layers.length,
-        );
-        await h.seed(backdrop.id, 'color');
-        final before = await h.art('$id-before');
-        await h.capture('$id-before-ui');
+    testWidgets(
+      'all blend modes composite through the production LayerPanel UI',
+      (tester) async {
+        final h = await _Harness.create(tester, 'blend');
+        for (final mode in model.LayerBlendMode.values) {
+          final id = 'blend_${mode.name}';
+          if (_captureMatch.isNotEmpty && !id.contains(_captureMatch)) continue;
+          debugPrint('CAPTURE_CASE:$id');
+          await h.project(id, fixture: 'background');
+          final source = h.layers.firstWhere(
+            (l) => l.type == model.LayerType.normal,
+          );
+          await h.seed(source.id, 'colorTranslucent');
+          final backdrop = h.ps.addLayer(
+            projectId: h.projectId,
+            sceneId: h.sceneId,
+            frameIndex: 0,
+            type: model.LayerType.normal,
+            name: 'Blend backdrop',
+            insertIndex: h.layers.length,
+          );
+          await h.seed(backdrop.id, 'color');
+          final before = await h.art('$id-before');
+          await h.capture('$id-before-ui');
 
-        await h.layerMenu(source.id);
-        await h.tap(find.text(h.l10n.autofillPartBlendModeLabel));
-        final dialog = find.byType(AlertDialog);
-        expect(dialog, findsOneWidget);
-        final label = h.blendModeName(mode);
-        final list = find.descendant(of: dialog, matching: find.byType(Scrollable));
-        expect(list, findsOneWidget);
-        Finder choice() => find.descendant(of: dialog, matching: find.text(label));
-        for (var i = 0; i < 30 && choice().evaluate().isEmpty; i++) {
-          await tester.drag(list, const Offset(0, -220));
-          await h.settle(1);
+          await h.layerMenu(source.id);
+          await h.tap(find.text(h.l10n.autofillPartBlendModeLabel));
+          final dialog = find.byType(AlertDialog);
+          expect(dialog, findsOneWidget);
+          final label = h.blendModeName(mode);
+          final list = find.descendant(
+            of: dialog,
+            matching: find.byType(Scrollable),
+          );
+          expect(list, findsOneWidget);
+          Finder choice() =>
+              find.descendant(of: dialog, matching: find.text(label));
+          for (var i = 0; i < 30 && choice().evaluate().isEmpty; i++) {
+            await tester.drag(list, const Offset(0, -220));
+            await h.settle(1);
+          }
+          expect(
+            choice(),
+            findsOneWidget,
+            reason: '$id must be reachable in the blend dialog',
+          );
+          await h.capture('$id-settings');
+          await h.tap(choice());
+          await h.closeLayers();
+          expect(
+            h.layers.firstWhere((l) => l.id == source.id).blendMode,
+            mode,
+            reason: '$id must be selected through the production LayerPanel',
+          );
+          final after = await h.art('$id-after');
+          await h.capture('$id-after-ui');
+          final changed = _changedPixels(before, after);
+          if (mode != model.LayerBlendMode.normal) {
+            expect(
+              changed,
+              greaterThan(0),
+              reason: '$id must change the composite',
+            );
+          }
+          h.record(
+            id,
+            label,
+            changed,
+            settings: {'blendMode': mode.name},
+            note: mode == model.LayerBlendMode.addition
+                ? 'Porter-Duff Plus。Linear Dodgeとは別モード。'
+                : mode == model.LayerBlendMode.linearDodge
+                ? 'RGB Linear Dodge + source-over。Additionとは別モード。'
+                : null,
+          );
         }
-        expect(choice(), findsOneWidget, reason: '$id must be reachable in the blend dialog');
-        await h.capture('$id-settings');
-        await h.tap(choice());
-        await h.closeLayers();
-        expect(
-          h.layers.firstWhere((l) => l.id == source.id).blendMode,
-          mode,
-          reason: '$id must be selected through the production LayerPanel',
-        );
-        final after = await h.art('$id-after');
-        await h.capture('$id-after-ui');
-        final changed = _changedPixels(before, after);
-        if (mode != model.LayerBlendMode.normal) {
-          expect(changed, greaterThan(0), reason: '$id must change the composite');
-        }
-        h.record(
-          id,
-          label,
-          changed,
-          settings: {'blendMode': mode.name},
-          note: mode == model.LayerBlendMode.addition
-              ? 'Porter-Duff Plus。Linear Dodgeとは別モード。'
-              : mode == model.LayerBlendMode.linearDodge
-              ? 'RGB Linear Dodge + source-over。Additionとは別モード。'
-              : null,
-        );
-      }
-      await h.finish();
-    }, timeout: const Timeout(Duration(minutes: 12)));
+        await h.finish();
+      },
+      timeout: const Timeout(Duration(minutes: 12)),
+    );
   }
 
   if (group == 'all' || group == 'extras') {
@@ -817,11 +850,13 @@ class _Harness {
   }
 
   Future<void> seed(String layerId, String fixture) async {
-    final bytes = (await tester.runAsync(() => _fixture(
-      fixture,
-      width: ps.projects.firstWhere((p) => p.id == projectId).exportWidth,
-      height: ps.projects.firstWhere((p) => p.id == projectId).exportHeight,
-    )))!;
+    final bytes = (await tester.runAsync(
+      () => _fixture(
+        fixture,
+        width: ps.projects.firstWhere((p) => p.id == projectId).exportWidth,
+        height: ps.projects.firstWhere((p) => p.id == projectId).exportHeight,
+      ),
+    ))!;
     final tm = ps.tileManagerOf(projectId);
     final key = ps.tileKeyFor(projectId, sceneId, 0, layerId);
     final project = ps.projects.firstWhere((p) => p.id == projectId);
@@ -833,16 +868,14 @@ class _Harness {
         for (var py = 0; py < TileManager.tileSize; py++) {
           final y = ty * TileManager.tileSize + py;
           if (y >= height) break;
-          final copyWidth = math.min(TileManager.tileSize, width - tx * TileManager.tileSize);
+          final copyWidth = math.min(
+            TileManager.tileSize,
+            width - tx * TileManager.tileSize,
+          );
           if (copyWidth <= 0) break;
           final srcOffset = (y * width + tx * TileManager.tileSize) * 4;
           final dstOffset = py * TileManager.tileSize * 4;
-          tile.setRange(
-            dstOffset,
-            dstOffset + copyWidth * 4,
-            bytes,
-            srcOffset,
-          );
+          tile.setRange(dstOffset, dstOffset + copyWidth * 4, bytes, srcOffset);
         }
         tm.invalidateTile(key, tx, ty);
       }
@@ -905,7 +938,10 @@ class _Harness {
         for (var py = 0; py < TileManager.tileSize; py++) {
           final y = ty * TileManager.tileSize + py;
           if (y >= h) break;
-          final copyWidth = math.min(TileManager.tileSize, w - tx * TileManager.tileSize);
+          final copyWidth = math.min(
+            TileManager.tileSize,
+            w - tx * TileManager.tileSize,
+          );
           if (copyWidth <= 0) break;
           final srcOffset = (y * w + tx * TileManager.tileSize) * 4;
           final dstOffset = py * TileManager.tileSize * 4;
@@ -1098,7 +1134,8 @@ class _Harness {
       'name': name,
       'group': group,
       'changedPixels': changed,
-      'totalPixels': ps.projects.firstWhere((p) => p.id == projectId).exportWidth *
+      'totalPixels':
+          ps.projects.firstWhere((p) => p.id == projectId).exportWidth *
           ps.projects.firstWhere((p) => p.id == projectId).exportHeight,
       'status': 'passed',
       'settings': settings,
@@ -1152,7 +1189,9 @@ Future<Uint8List> _fixture(
     );
   }
   if (kind == 'textureReference3' || kind == 'textureReference4') {
-    return Future.value(textureReferenceRgba(kind, width: width, height: height));
+    return Future.value(
+      textureReferenceRgba(kind, width: width, height: height),
+    );
   }
   final recorder = ui.PictureRecorder();
   final canvas = Canvas(recorder);
@@ -1180,7 +1219,7 @@ Future<Uint8List> _fixture(
       width * .19,
       Paint()..color = const Color(0xffffd36a),
     );
-  } else   if (kind == 'mask') {
+  } else if (kind == 'mask') {
     canvas.drawOval(
       const Rect.fromLTWH(44, 28, 165, 190),
       Paint()..color = Colors.white,

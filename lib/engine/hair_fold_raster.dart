@@ -1040,11 +1040,15 @@ class HairFoldRaster {
               // Not keeping overlaps, the strand's outline and fold lines go
               // behind what the layer showed before the stroke (restored just
               // above), so where it merges with earlier strokes they vanish
-              // together; its fill stays on top.
-              final outline = mix * (1 - target[p * 4 + 3] / 255);
-              final kept = 1 - mix + outline;
+              // together; its fill stays on top. Only the silhouette's
+              // perimeter lies outside the fill, so only there does the
+              // earlier picture show through; fold lines and section edges
+              // lie on the strand's own fill, which shows in their place
+              // rather than a notch.
+              final earlier = target[p * 4 + 3] / 255;
+              final kept = 1 - perimeter * earlier;
               if (kept <= 0) continue;
-              mix = outline / kept;
+              mix = mix * (1 - earlier) / kept;
               cover *= kept;
             }
             final alpha = (255 * cover * channel(3, mix)).round().clamp(0, 255);
