@@ -6727,6 +6727,10 @@ class AppLocalizationsEn extends AppLocalizations {
       'Turn this on when generative AI was used to create images or video in the work. Voice-synthesis software is not covered by this setting.';
 
   @override
+  String get communityAiImageVideoUpdateFailed =>
+      'Couldn’t change “Contains generative-AI images or video”. Check your connection and try again.';
+
+  @override
   String get canvasLassoSnapToLines => 'Snap to lines';
 
   @override

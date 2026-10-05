@@ -30,6 +30,28 @@ class _CommunityWorkDetailScreenState extends State<CommunityWorkDetailScreen> {
   static const double _minPreviewHeight = 140;
   static const double _defaultPreviewHeight = 220;
   double _previewHeight = _defaultPreviewHeight;
+  bool _aiDisclosureBusy = false;
+
+  Future<void> _setAiImageVideoDisclosure(
+    CommunityService service,
+    String workId,
+    bool value,
+  ) async {
+    if (_aiDisclosureBusy) return;
+    final messenger = ScaffoldMessenger.of(context);
+    final failed = AppLocalizations.of(
+      context,
+    )!.communityAiImageVideoUpdateFailed;
+    setState(() => _aiDisclosureBusy = true);
+    try {
+      await service.setAiImageVideoDisclosure(workId, value);
+    } catch (error) {
+      debugPrint('AI image/video disclosure update failed: $error');
+      messenger.showSnackBar(SnackBar(content: Text(failed)));
+    } finally {
+      if (mounted) setState(() => _aiDisclosureBusy = false);
+    }
+  }
 
   void _openAuthorWorks(CommunityWork work) {
     Navigator.of(context).push(
@@ -212,7 +234,7 @@ class _CommunityWorkDetailScreenState extends State<CommunityWorkDetailScreen> {
     final l10n = AppLocalizations.of(context)!;
     final communityService = context.watch<CommunityService>();
     final work = communityService.byId(widget.workId);
-    final isOwner = work?.authorId == kDummySelfAuthorId;
+    final isOwner = work != null && communityService.isOwnWork(work);
     if (work == null ||
         (!isOwner && !communityService.isDiscoverableForViewer(work))) {
       return Scaffold(
@@ -223,7 +245,7 @@ class _CommunityWorkDetailScreenState extends State<CommunityWorkDetailScreen> {
     final scheme = Theme.of(context).colorScheme;
     final languageCode = Localizations.localeOf(context).languageCode;
     final isBookmarked = communityService.isBookmarked(work.id);
-    final isAuthorSelf = work.authorId == kDummySelfAuthorId;
+    final isAuthorSelf = isOwner;
     final isReposted = communityService.isRepostedBySelf(work.id);
     final canAddTag = work.tags.length < CommunityService.maxTagsPerWork;
     final maxPreviewHeight = (MediaQuery.sizeOf(context).height * 0.55).clamp(
@@ -417,9 +439,26 @@ class _CommunityWorkDetailScreenState extends State<CommunityWorkDetailScreen> {
                   onChanged: () =>
                       communityService.toggleNiarimVisibility(work.id),
                 ),
-              ] else if (!work.isNiarimPublished) ...[
-                const SizedBox(height: 12),
-                _NiarimHiddenNotice(),
+                const SizedBox(height: 8),
+                _AiImageVideoSwitch(
+                  value: work.containsGenerativeAiImageOrVideo,
+                  onChanged: _aiDisclosureBusy
+                      ? null
+                      : (value) => _setAiImageVideoDisclosure(
+                          communityService,
+                          work.id,
+                          value,
+                        ),
+                ),
+              ] else ...[
+                if (!work.isNiarimPublished) ...[
+                  const SizedBox(height: 12),
+                  _NiarimHiddenNotice(),
+                ],
+                if (work.containsGenerativeAiImageOrVideo) ...[
+                  const SizedBox(height: 12),
+                  const _AiImageVideoLabel(),
+                ],
               ],
               const SizedBox(height: 16),
               Wrap(
@@ -745,6 +784,106 @@ class _NiarimVisibilitySwitch extends StatelessWidget {
             ],
           ),
         ),
+      ),
+    );
+  }
+}
+
+/// The poster's 「AI画像・AI動画使用」 declaration, changeable after posting.
+class _AiImageVideoSwitch extends StatelessWidget {
+  final bool value;
+  final ValueChanged<bool>? onChanged;
+
+  const _AiImageVideoSwitch({required this.value, required this.onChanged});
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    final scheme = Theme.of(context).colorScheme;
+    return Material(
+      color: scheme.surfaceContainerLow,
+      borderRadius: BorderRadius.circular(12),
+      clipBehavior: Clip.antiAlias,
+      child: InkWell(
+        onTap: onChanged == null ? null : () => onChanged!(!value),
+        child: Padding(
+          padding: const EdgeInsets.all(12),
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Icon(
+                Icons.auto_awesome_outlined,
+                color: value ? scheme.primary : scheme.onSurfaceVariant,
+              ),
+              const SizedBox(width: 10),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      l10n.communityContainsGenerativeAiImageVideo,
+                      style: const TextStyle(
+                        fontSize: 13,
+                        fontWeight: FontWeight.bold,
+                        fontFamily: 'Kuramubon',
+                        fontFamilyFallback: kHeadingFontFallback,
+                      ),
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      l10n.communityContainsGenerativeAiImageVideoHelp,
+                      style: TextStyle(
+                        fontSize: 11,
+                        color: scheme.onSurfaceVariant,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(width: 8),
+              Switch(
+                key: const ValueKey('communityDetailAiImageVideoSwitch'),
+                value: value,
+                onChanged: onChanged,
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+/// Tells viewers that the poster declared AI-generated images or video.
+class _AiImageVideoLabel extends StatelessWidget {
+  const _AiImageVideoLabel();
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    final scheme = Theme.of(context).colorScheme;
+    return Container(
+      key: const ValueKey('communityDetailAiImageVideoLabel'),
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+      decoration: BoxDecoration(
+        color: scheme.surfaceContainerLow,
+        borderRadius: BorderRadius.circular(8),
+      ),
+      child: Row(
+        children: [
+          Icon(
+            Icons.auto_awesome_outlined,
+            size: 16,
+            color: scheme.onSurfaceVariant,
+          ),
+          const SizedBox(width: 6),
+          Flexible(
+            child: Text(
+              l10n.communityContainsGenerativeAiImageVideo,
+              style: TextStyle(fontSize: 12, color: scheme.onSurfaceVariant),
+            ),
+          ),
+        ],
       ),
     );
   }

@@ -13,6 +13,7 @@ vi.mock("../src/lib/dynamo", async (original) => ({
 vi.mock("../src/lib/auth", () => ({
   authenticate: vi.fn(async () => ({ niarimUserId: "Nauthor" })),
 }));
+import { authenticate } from "../src/lib/auth";
 import { updateWork } from "../src/api/routes/worksUpdate";
 
 const work: WorkItem = {
@@ -174,4 +175,89 @@ describe("work editing concurrency", () => {
     ).rejects.toMatchObject({ statusCode: 409, code: "WORK_CHANGED" });
     expect(updates()).toHaveLength(3);
   });
+});
+
+describe("AI image/video disclosure flag", () => {
+  // Echo the written flag back like DynamoDB's ReturnValues: "ALL_NEW".
+  const storeWith = (stored: Partial<WorkItem>) =>
+    send.mockImplementation(async (c) =>
+      c instanceof GetCommand
+        ? { Item: { ...work, ...stored } }
+        : {
+            Attributes: {
+              ...work,
+              ...stored,
+              containsGenerativeAiImageOrVideo:
+                c.input.ExpressionAttributeValues[":aiImageVideo"],
+            },
+          },
+    );
+  const responseWork = (result: { body?: string }) =>
+    JSON.parse(result.body ?? "{}").work;
+
+  it("lets the poster turn the flag on without touching publication or ranking indexes", async () => {
+    storeWith({});
+    const result = await updateWork(
+      event({ containsGenerativeAiImageOrVideo: true }),
+      work.workId,
+    );
+    expect(result.statusCode).toBe(200);
+    expect(updates()).toHaveLength(1);
+    const input = updates()[0].input;
+    expect(input.UpdateExpression).toBe(
+      "SET containsGenerativeAiImageOrVideo = :aiImageVideo",
+    );
+    expect(input.UpdateExpression).not.toMatch(/gsi|rankingScore|REMOVE/);
+    expect(input.ExpressionAttributeValues).toEqual({
+      ":aiImageVideo": true,
+      ":workType": "WORK",
+      ":authorId": "Nauthor",
+    });
+    expect(input.ConditionExpression).toContain("authorId = :authorId");
+    expect(input.ConditionExpression).not.toContain("youtubePrivacyStatus");
+    expect(responseWork(result).containsGenerativeAiImageOrVideo).toBe(true);
+  });
+
+  it("lets the poster turn a previously set flag back off", async () => {
+    storeWith({ containsGenerativeAiImageOrVideo: true });
+    const result = await updateWork(
+      event({ containsGenerativeAiImageOrVideo: false }),
+      work.workId,
+    );
+    expect(result.statusCode).toBe(200);
+    expect(updates()).toHaveLength(1);
+    expect(
+      updates()[0].input.ExpressionAttributeValues?.[":aiImageVideo"],
+    ).toBe(false);
+    expect(responseWork(result).containsGenerativeAiImageOrVideo).toBe(false);
+  });
+
+  it("forbids another signed-in user from changing the flag", async () => {
+    storeWith({});
+    vi.mocked(authenticate).mockResolvedValueOnce({
+      niarimUserId: "Nintruder",
+      googleSub: "intruder-sub",
+      membershipTier: "free",
+    });
+    await expect(
+      updateWork(
+        event({ containsGenerativeAiImageOrVideo: true }),
+        work.workId,
+      ),
+    ).rejects.toMatchObject({ statusCode: 403, code: "FORBIDDEN" });
+    expect(updates()).toHaveLength(0);
+  });
+
+  it.each(["yes", 1, null])(
+    "rejects a non-boolean flag (%j) before reading the work",
+    async (value) => {
+      await expect(
+        updateWork(
+          event({ containsGenerativeAiImageOrVideo: value }),
+          work.workId,
+        ),
+      ).rejects.toMatchObject({ statusCode: 400 });
+      expect(send).not.toHaveBeenCalled();
+    },
+  );
 });

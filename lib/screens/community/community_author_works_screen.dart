@@ -169,7 +169,7 @@ class _CommunityAuthorWorksScreenState extends State<CommunityAuthorWorksScreen>
     final l10n = AppLocalizations.of(context)!;
     final scheme = Theme.of(context).colorScheme;
     final communityService = context.watch<CommunityService>();
-    final isSelf = widget.authorId == kDummySelfAuthorId;
+    final isSelf = communityService.isOwnAuthor(widget.authorId);
     final isFavorite = communityService.isFavoriteAuthor(widget.authorId);
     final works = communityService.worksByAuthor(
       widget.authorId,

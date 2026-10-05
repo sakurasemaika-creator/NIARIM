@@ -6838,6 +6838,10 @@ class AppLocalizationsEs extends AppLocalizations {
       'Actívalo si se utilizó IA generativa para crear imágenes o vídeo de la obra. El software de síntesis de voz no está incluido.';
 
   @override
+  String get communityAiImageVideoUpdateFailed =>
+      'No se pudo cambiar «Contiene imágenes o vídeo de IA generativa». Comprueba la conexión e inténtalo de nuevo.';
+
+  @override
   String get canvasLassoSnapToLines => 'Ajustar a las líneas';
 
   @override

@@ -6460,6 +6460,10 @@ class AppLocalizationsZh extends AppLocalizations {
       '作品中的图像或视频使用生成式 AI 制作时请开启。语音合成软件不属于此项范围。';
 
   @override
+  String get communityAiImageVideoUpdateFailed =>
+      '无法更改“包含生成式 AI 图像或视频”。请检查连接后重试。';
+
+  @override
   String get canvasLassoSnapToLines => '吸附到线条';
 
   @override
@@ -12942,6 +12946,10 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   @override
   String get communityContainsGenerativeAiImageVideoHelp =>
       '作品中的圖像或影片使用生成式 AI 製作時請開啟。語音合成軟體不屬於此項範圍。';
+
+  @override
+  String get communityAiImageVideoUpdateFailed =>
+      '無法變更「包含生成式 AI 圖像或影片」。請檢查網路連線後再試一次。';
 
   @override
   String get canvasLassoSnapToLines => '吸附到線條';

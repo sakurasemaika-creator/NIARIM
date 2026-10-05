@@ -6501,6 +6501,10 @@ class AppLocalizationsJa extends AppLocalizations {
       '画像または動画の生成に生成AIを使用した作品でONにしてください。音声合成ソフト等は「AI画像・AI動画使用」の対象外です。';
 
   @override
+  String get communityAiImageVideoUpdateFailed =>
+      '「AI画像・AI動画使用」を変更できませんでした。通信状態を確認して、もう一度お試しください。';
+
+  @override
   String get canvasLassoSnapToLines => '線に吸着';
 
   @override

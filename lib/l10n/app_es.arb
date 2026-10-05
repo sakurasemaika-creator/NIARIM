@@ -2791,6 +2791,7 @@
   "communityMutedTagsHint": "Etiquetas separadas por comas que se ocultarán",
   "communityContainsGenerativeAiImageVideo": "Contiene imágenes o vídeo de IA generativa",
   "communityContainsGenerativeAiImageVideoHelp": "Actívalo si se utilizó IA generativa para crear imágenes o vídeo de la obra. El software de síntesis de voz no está incluido.",
+  "communityAiImageVideoUpdateFailed": "No se pudo cambiar «Contiene imágenes o vídeo de IA generativa». Comprueba la conexión e inténtalo de nuevo.",
   "canvasLassoSnapToLines": "Ajustar a las líneas",
   "filterBackToList": "Volver a los filtros",
   "customAutomationShowAll": "Mostrar todo",

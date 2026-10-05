@@ -251,12 +251,13 @@ class _CommunityPostScreenState extends State<CommunityPostScreen> {
       // upload scopeを要求しないので、既に登録済みなら不要な再認可を出さない。
       if (videoId != null) {
         final ownWorks = await api.myWorks();
+        community.setCurrentUserId(ownWorks.authorId);
         if (auth.account?.id != uploadAccountId) {
           throw StateError(
             '登録状況の確認中にGoogleアカウントが変更されました。$uploadAccountEmailへ戻して再試行してください',
           );
         }
-        for (final work in ownWorks) {
+        for (final work in ownWorks.works) {
           if (work.workId != videoId) continue;
           // 既にNIARIM登録済みでも、同期バッチがYouTube削除を検知している
           // 場合は復旧扱いにしない。削除済み動画は公開状態をPATCHしても
@@ -361,14 +362,26 @@ class _CommunityPostScreenState extends State<CommunityPostScreen> {
         youtubeAccessToken: youtubeToken,
         isShort: _isShort,
         isNiarimPublished: _isNiarimPublished,
-        containsGenerativeAiImageOrVideo:
-            _containsGenerativeAiImageOrVideo,
+        containsGenerativeAiImageOrVideo: _containsGenerativeAiImageOrVideo,
       );
 
-      if (registeredWork.isNiarimPublished != _isNiarimPublished) {
-        if (auth.account?.id != uploadAccountId) {
-          throw StateError('公開状態の更新前にGoogleアカウントが変更されました');
-        }
+      // POST /works is idempotent: a work registered by an earlier attempt
+      // comes back with its stored settings, not the ones chosen now.
+      final syncAi =
+          registeredWork.containsGenerativeAiImageOrVideo !=
+          _containsGenerativeAiImageOrVideo;
+      final syncVisibility =
+          registeredWork.isNiarimPublished != _isNiarimPublished;
+      if ((syncAi || syncVisibility) && auth.account?.id != uploadAccountId) {
+        throw StateError('公開状態の更新前にGoogleアカウントが変更されました');
+      }
+      if (syncAi) {
+        await api.updateWorkAiImageVideoDisclosure(
+          registeredVideoId,
+          containsGenerativeAiImageOrVideo: _containsGenerativeAiImageOrVideo,
+        );
+      }
+      if (syncVisibility) {
         await api.updateWorkVisibility(
           registeredVideoId,
           isNiarimPublished: _isNiarimPublished,

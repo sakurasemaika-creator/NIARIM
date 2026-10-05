@@ -40,12 +40,9 @@ class CommunityApi {
   /// The backend resolves the generated NIARIM user id from the Google ID token,
   /// so changing Google accounts immediately changes the owner list without a local
   /// author-id cache.
-  Future<List<ApiWork>> myWorks() async {
+  Future<ApiMyWorks> myWorks() async {
     final json = await _client.getJson('/me/works', authenticated: true);
-    return (json['works'] as List? ?? const [])
-        .whereType<Map<String, dynamic>>()
-        .map(ApiWork.fromJson)
-        .toList();
+    return ApiMyWorks.fromJson(json);
   }
 
   Future<List<ApiWork>> worksByAuthor(

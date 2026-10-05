@@ -316,6 +316,66 @@ class CommunityService extends ChangeNotifier {
 
   int _indexOf(String workId) => _works.indexWhere((w) => w.id == workId);
 
+  /// The signed-in poster's NIARIM user id, from GET /me/works. Without a
+  /// backend the dummy self author stands in; with one, nothing is the
+  /// viewer's own until it is known.
+  String? get currentUserId => _currentUserId;
+  String? _currentUserId;
+
+  void setCurrentUserId(String? id) {
+    if (_currentUserId == id) return;
+    _currentUserId = id;
+    notifyListeners();
+  }
+
+  /// Whether the viewer posted [work], and so may change its settings and
+  /// still sees it when it is hidden or filtered out.
+  bool isOwnWork(CommunityWork work) => isOwnAuthor(work.authorId);
+
+  bool isOwnAuthor(String authorId) =>
+      authorId == (_currentUserId ?? (api == null ? kDummySelfAuthorId : null));
+
+  /// Puts the server's copy of a work in place of the local one, so every
+  /// surface reading this service sees the change at once without
+  /// refetching the latest list, which may not contain the work at all.
+  void applyServerWork(CommunityWork work) {
+    final index = _indexOf(work.id);
+    if (index == -1) {
+      final at = _works.indexWhere((w) => w.postedAt.isBefore(work.postedAt));
+      _works.insert(at == -1 ? _works.length : at, work);
+    } else {
+      _works[index] = work;
+    }
+    notifyListeners();
+  }
+
+  /// Sets the poster's 「AI画像・AI動画使用」 declaration on [workId]. Only the
+  /// poster may change it; with a backend the server checks that as well,
+  /// and its reply is applied.
+  Future<CommunityWork> setAiImageVideoDisclosure(
+    String workId,
+    bool value,
+  ) async {
+    final known = byId(workId);
+    if (known != null && !isOwnWork(known)) {
+      throw StateError('Only the poster can change $workId');
+    }
+    final client = api;
+    if (client != null) {
+      final updated = (await client.updateWorkAiImageVideoDisclosure(
+        workId,
+        containsGenerativeAiImageOrVideo: value,
+      )).toCommunityWork();
+      applyServerWork(updated);
+      return updated;
+    }
+    if (known == null) throw StateError('Unknown work: $workId');
+    final updated = known.copyWith(containsGenerativeAiImageOrVideo: value);
+    _works[_indexOf(workId)] = updated;
+    notifyListeners();
+    return updated;
+  }
+
   bool isBookmarked(String workId) => _bookmarkedIds.contains(workId);
 
   void toggleBookmark(String workId) {

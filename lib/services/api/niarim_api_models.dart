@@ -80,7 +80,8 @@ class ApiWork {
     tags: _stringList(json['tags']),
     lockedTags: _stringList(json['lockedTags']).toSet(),
     isNiarimPublished: json['isNiarimPublished'] != false,
-    containsGenerativeAiImageOrVideo: json['containsGenerativeAiImageOrVideo'] == true,
+    containsGenerativeAiImageOrVideo:
+        json['containsGenerativeAiImageOrVideo'] == true,
     youtubePrivacyStatus: json['youtubePrivacyStatus'] as String?,
     projectFps: _int(json['projectFps']),
     projectFrameCount: _int(json['projectFrameCount']),
@@ -166,6 +167,20 @@ class ApiRankingPage {
         ? null
         : _dateTime(json['computedAt']),
     windowId: json['windowId'] as String?,
+  );
+}
+
+/// GET /me/works: the signed-in account's works and its NIARIM user id, which
+/// the server derives from the ID token (the app never generates it).
+class ApiMyWorks {
+  final String? authorId;
+  final List<ApiWork> works;
+
+  const ApiMyWorks({required this.authorId, required this.works});
+
+  factory ApiMyWorks.fromJson(Map<String, dynamic> json) => ApiMyWorks(
+    authorId: json['authorId'] as String?,
+    works: _works(json['works']),
   );
 }
 

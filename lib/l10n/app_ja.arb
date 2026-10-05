@@ -3096,6 +3096,7 @@
   "communityMutedTagsHint": "タグ名をカンマ区切りで指定",
   "communityContainsGenerativeAiImageVideo": "AI画像・AI動画使用",
   "communityContainsGenerativeAiImageVideoHelp": "画像または動画の生成に生成AIを使用した作品でONにしてください。音声合成ソフト等は「AI画像・AI動画使用」の対象外です。",
+  "communityAiImageVideoUpdateFailed": "「AI画像・AI動画使用」を変更できませんでした。通信状態を確認して、もう一度お試しください。",
   "canvasLassoSnapToLines": "線に吸着",
   "filterBackToList": "フィルター一覧へ戻る",
   "customAutomationShowAll": "すべて表示",

@@ -40,8 +40,10 @@ class _CommunityMyWorksScreenState extends State<CommunityMyWorksScreen> {
   Future<void> _reloadOwnerWorks() async {
     if (!mounted) return;
     final auth = context.read<GoogleAuthService>();
-    final api = context.read<CommunityService>().api;
+    final community = context.read<CommunityService>();
+    final api = community.api;
     if (api == null || !auth.isSignedIn) {
+      community.setCurrentUserId(null);
       setState(() {
         _ownerWorks = null;
         _youtubePrivacyById = const <String, String>{};
@@ -56,7 +58,9 @@ class _CommunityMyWorksScreenState extends State<CommunityMyWorksScreen> {
       _worksError = null;
     });
     try {
-      final works = await api.myWorks();
+      final page = await api.myWorks();
+      final works = page.works;
+      community.setCurrentUserId(page.authorId);
       final converted = works.map((w) => w.toCommunityWork()).toList()
         ..sort((a, b) => b.postedAt.compareTo(a.postedAt));
       final privacy = <String, String>{
@@ -143,28 +147,30 @@ class _CommunityMyWorksScreenState extends State<CommunityMyWorksScreen> {
     await _reloadOwnerWorks();
   }
 
-  Future<void> _setAiImageVideoDisclosure(CommunityWork work, bool value) async {
-    final api = context.read<CommunityService>().api;
-    if (api == null || _visibilityBusy.contains(work.id)) return;
+  Future<void> _setAiImageVideoDisclosure(
+    CommunityWork work,
+    bool value,
+  ) async {
+    if (_visibilityBusy.contains(work.id)) return;
+    final community = context.read<CommunityService>();
+    final l10n = AppLocalizations.of(context)!;
     setState(() => _visibilityBusy.add(work.id));
     try {
-      final updated = await api.updateWorkAiImageVideoDisclosure(
-        work.id,
-        containsGenerativeAiImageOrVideo: value,
-      );
+      // The service applies the server's reply, so every browsing surface
+      // reflects it at once.
+      final next = await community.setAiImageVideoDisclosure(work.id, value);
       if (!mounted) return;
-      final next = updated.toCommunityWork();
       setState(() {
         final works = _ownerWorks;
         if (works == null) return;
         final i = works.indexWhere((w) => w.id == next.id);
         if (i >= 0) works[i] = next;
       });
-      await context.read<CommunityService>().refreshFromBackend();
     } catch (error) {
+      debugPrint('AI image/video disclosure update failed: $error');
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('「AI画像・AI動画使用」フラグを変更できませんでした: $error')),
+        SnackBar(content: Text(l10n.communityAiImageVideoUpdateFailed)),
       );
     } finally {
       if (mounted) setState(() => _visibilityBusy.remove(work.id));
@@ -457,12 +463,18 @@ class _CommunityMyWorksScreenState extends State<CommunityMyWorksScreen> {
                                   maxLines: 2,
                                   overflow: TextOverflow.ellipsis,
                                 ),
-                                if (usingBackendOwnerList)
+                                if (usingBackendOwnerList ||
+                                    communityService.api == null)
                                   CheckboxListTile(
+                                    key: ValueKey(
+                                      'communityMyWorksAi-${work.id}',
+                                    ),
                                     contentPadding: EdgeInsets.zero,
                                     dense: true,
-                                    controlAffinity: ListTileControlAffinity.leading,
-                                    value: work.containsGenerativeAiImageOrVideo,
+                                    controlAffinity:
+                                        ListTileControlAffinity.leading,
+                                    value:
+                                        work.containsGenerativeAiImageOrVideo,
                                     onChanged: busy
                                         ? null
                                         : (v) => _setAiImageVideoDisclosure(
