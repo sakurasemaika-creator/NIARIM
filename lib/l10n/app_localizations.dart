@@ -3182,7 +3182,7 @@ abstract class AppLocalizations {
   /// No description provided for @helpDrawingFilterDesc.
   ///
   /// In ja, this message translates to:
-  /// **'選択中のレイヤーに直接適用するフィルターです（演出フィルターがタイムライン全体・シーン単位に適用されるのに対し、描画フィルターはレイヤー単位）。ガウスぼかし・レンズぼかし・アニメ風加工・トーンカーブ・レベル補正・縁取り・シャープ・アンシャープマスク・周辺減光・フィルムグレイン・レトロアニメ・ブラウン管・単色化・二値化・魚眼レンズ・色収差・眼鏡断層・ドット絵・質感変更フィルター・背景馴染ませ・墨溜まり・自動線画・プリズム・VHSノイズ・色反転の25種類が用意されています。縁取りは元のレイヤーを書き換えず、縁どった内容だけを新規レイヤーへ描画します。眼鏡断層フィルターは、選択レイヤーで塗った範囲だけに、度数の強い眼鏡レンズのような局所的な歪みをかけられます。ドット絵は配色方式（色を指定しない・色を指定する・色数を指定する・パレットから選ぶ）も選べます。 自動線画では適用前の一時Vector制御点を直接編集できます。点をドラッグするとその点だけを移動し、線分をタップすると制御点を追加、点をタップすると確認後に削除できます。編集した形状がそのまま適用結果になります。'**
+  /// **'選択中のレイヤーに直接適用するフィルターです（演出フィルターがタイムライン全体・シーン単位に適用されるのに対し、描画フィルターはレイヤー単位）。ガウスぼかし・レンズぼかし・アニメ風加工・トーンカーブ・レベル補正・縁取り・シャープ・アンシャープマスク・周辺減光・フィルムグレイン・レトロアニメ・ブラウン管・二値化・魚眼レンズ・色収差・眼鏡断層・ドット絵・質感変更フィルター・背景馴染ませ・墨溜まり・自動線画・プリズム・VHSノイズ・色反転・モザイク・ノイズの26種類が用意されています。縁取りは元のレイヤーを書き換えず、縁どった内容だけを新規レイヤーへ描画します。眼鏡断層フィルターは、選択レイヤーで塗った範囲だけに、度数の強い眼鏡レンズのような局所的な歪みをかけられます。ドット絵は配色方式（色を指定しない・色を指定する・色数を指定する・パレットから選ぶ）も選べます。 自動線画では適用前の一時Vector制御点を直接編集できます。点をドラッグするとその点だけを移動し、線分をタップすると制御点を追加、点をタップすると確認後に削除できます。編集した形状がそのまま適用結果になります。'**
   String get helpDrawingFilterDesc;
 
   /// No description provided for @helpLayerKeyframeTitle.
@@ -9545,12 +9545,6 @@ abstract class AppLocalizations {
   /// **'下描きレイヤーに誤って線画を重ねて描いてしまっても、レイヤーを消さずに線画だけを取り出せます。①新しいレイヤーを追加し、ブレンドモードを「除算」にする。②スポイトで下描きの色を拾い、その除算レイヤー全体を塗りつぶす（下描きが薄くなります）。③除算レイヤーを複製すると、下描きが完全に消えます。④レイヤーパネルの「表示中の全レイヤーを結合」で1枚にまとめる。⑤結合したレイヤーの三点メニューから「明度で透過（グレー）」を選べば、白い部分が透明になり線画だけが残ります。'**
   String get tipsRoughLayerRescueDesc;
 
-  /// No description provided for @filterNameMonochrome.
-  ///
-  /// In ja, this message translates to:
-  /// **'単色化フィルター'**
-  String get filterNameMonochrome;
-
   /// No description provided for @timelineEffectTypeMonochrome.
   ///
   /// In ja, this message translates to:
@@ -9814,12 +9808,6 @@ abstract class AppLocalizations {
   /// In ja, this message translates to:
   /// **'二値化フィルター'**
   String get filterNameThreshold;
-
-  /// No description provided for @filterMonochromeStrength.
-  ///
-  /// In ja, this message translates to:
-  /// **'単色化の強さ'**
-  String get filterMonochromeStrength;
 
   /// No description provided for @filterMonochromeColorLabel.
   ///
@@ -11404,6 +11392,18 @@ abstract class AppLocalizations {
   /// In ja, this message translates to:
   /// **'VHSノイズ'**
   String get filterNameVhsNoise;
+
+  /// No description provided for @filterNameMosaic.
+  ///
+  /// In ja, this message translates to:
+  /// **'モザイク'**
+  String get filterNameMosaic;
+
+  /// No description provided for @filterNameGenericNoise.
+  ///
+  /// In ja, this message translates to:
+  /// **'ノイズ'**
+  String get filterNameGenericNoise;
 
   /// No description provided for @filterVhsNoiseStrength.
   ///

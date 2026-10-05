@@ -151,7 +151,6 @@ FilterDef _def(FilterKind kind) => FilterDef(
   caSaturation: 42,
   caBrightness: 15,
   caContrast: 28,
-  monochromeColor: 0xFF72B9FF,
   thresholdValue: 126,
   lensCenterOffsetX: 8,
   lensCenterOffsetY: -4,

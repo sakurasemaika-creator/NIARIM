@@ -687,7 +687,6 @@ int _changedPixels(Uint8List a, Uint8List b) {
 }
 
 String _filterName(FilterDef filter) => switch (filter.id) {
-  'Filter0013' => '単色化フィルター',
   'Filter0014' => '二値化フィルター',
   'Filter0015' => '魚眼レンズフィルター',
   'Filter0016' => '色収差フィルター',

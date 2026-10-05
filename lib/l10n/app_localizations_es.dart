@@ -1734,7 +1734,7 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get helpDrawingFilterDesc =>
-      'Filtros aplicados directamente a la capa seleccionada (a diferencia de los filtros de efecto, que se aplican a toda la línea de tiempo o a una escena, los filtros de dibujo actúan por capa). Los 25 filtros incluidos son Desenfoque gaussiano, Desenfoque de lente, Estilo anime, Curva de tonos, Niveles, Contorno, Nitidez, Máscara de enfoque, Viñeta, Grano de película, Anime retro, CRT, Monocromo, Umbral, Ojo de pez, Aberración cromática, Distorsión óptica, Pixel art, Filtro de textura, Integración con el fondo, Acumulación de tinta, Dibujo lineal automático, Prisma, Ruido VHS e Invertir colores. Contorno no reescribe la capa original: dibuja solo el resultado en una capa nueva. Distorsión óptica aplica una deformación localizada, como a través de una lente de gafas de gran graduación, únicamente al área pintada en la capa de selección. Pixel art también permite elegir un modo de color (sin límite, colores específicos, número de colores o paleta). En Dibujo lineal automático puedes editar los puntos de control vectoriales temporales antes de aplicar el filtro. Arrastra un punto para mover solo ese punto, toca un segmento para añadir un punto de control o toca un punto y confirma para eliminarlo. La geometría editada se usa directamente en el resultado aplicado.';
+      'Filtros aplicados directamente a la capa seleccionada (a diferencia de los filtros de efecto, que se aplican a toda la línea de tiempo o a una escena, los filtros de dibujo actúan por capa). Los 26 filtros incluidos son Desenfoque gaussiano, Desenfoque de lente, Estilo anime, Curva de tonos, Niveles, Contorno, Nitidez, Máscara de enfoque, Viñeta, Grano de película, Anime retro, CRT, Umbral, Ojo de pez, Aberración cromática, Distorsión óptica, Pixel art, Filtro de textura, Integración con el fondo, Acumulación de tinta, Dibujo lineal automático, Prisma, Ruido VHS, Invertir colores, Mosaico y Ruido. Contorno no reescribe la capa original: dibuja solo el resultado en una capa nueva. Distorsión óptica aplica una deformación localizada, como a través de una lente de gafas de gran graduación, únicamente al área pintada en la capa de selección. Pixel art también permite elegir un modo de color (sin límite, colores específicos, número de colores o paleta). En Dibujo lineal automático puedes editar los puntos de control vectoriales temporales antes de aplicar el filtro. Arrastra un punto para mover solo ese punto, toca un segmento para añadir un punto de control o toca un punto y confirma para eliminarlo. La geometría editada se usa directamente en el resultado aplicado.';
 
   @override
   String get helpLayerKeyframeTitle =>
@@ -5476,9 +5476,6 @@ class AppLocalizationsEs extends AppLocalizations {
       'Aunque hayas dibujado el lineart por accidente encima de la capa de boceto, puedes recuperar solo el lineart sin borrar nada. 1) Añade una nueva capa y pon su modo de fusión en Dividir. 2) Toma el color del boceto con el cuentagotas y rellena toda esa capa Dividir con él (esto desvanece el boceto). 3) Duplica la capa Dividir y el boceto desaparece por completo. 4) Usa \"Combinar todas las capas visibles\" en el panel de capas para aplanar todo en una sola capa. 5) Desde el menú de tres puntos de esa capa combinada, elige \"Transparencia por brillo (Gris)\": las zonas blancas se vuelven transparentes y solo queda el lineart.';
 
   @override
-  String get filterNameMonochrome => 'Filtro monocromo';
-
-  @override
   String get timelineEffectTypeMonochrome => 'Filtro monocromo';
 
   @override
@@ -5621,9 +5618,6 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get filterNameThreshold => 'Filtro de umbral';
-
-  @override
-  String get filterMonochromeStrength => 'Intensidad del monocromo';
 
   @override
   String get filterMonochromeColorLabel => 'Color del monocromo';
@@ -6525,6 +6519,12 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get filterNameVhsNoise => 'Ruido VHS';
+
+  @override
+  String get filterNameMosaic => 'Mosaico';
+
+  @override
+  String get filterNameGenericNoise => 'Ruido';
 
   @override
   String get filterVhsNoiseStrength => 'Ruido';

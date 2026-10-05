@@ -1250,23 +1250,6 @@ class _FilterPanelState extends State<FilterPanel> {
           100,
           (v) => service.updateFilterParams(current.id, strength: v),
         );
-      case FilterKind.monochrome:
-        return Column(
-          children: [
-            _paramSlider(
-              l10n.filterMonochromeStrength,
-              current.strength,
-              0,
-              100,
-              (v) => service.updateFilterParams(current.id, strength: v),
-            ),
-            _colorControl(
-              l10n.filterMonochromeColorLabel,
-              current.monochromeColor,
-              (c) => service.updateFilterParams(current.id, monochromeColor: c),
-            ),
-          ],
-        );
       case FilterKind.colorAdjust:
         return Column(
           children: [
@@ -1686,6 +1669,11 @@ class _FilterPanelState extends State<FilterPanel> {
 
   String _filterDisplayName(AppLocalizations l10n, FilterDef filter) {
     if (filter.id == 'Filter0025') return l10n.filterNameInvert;
+    // Its noise style can be changed, so it is named by its preset rather
+    // than by style; otherwise it shares Film Grain's name.
+    if (filter.id == FilterService.genericNoiseFilterId) {
+      return l10n.filterNameGenericNoise;
+    }
     if (_isPrism(filter)) return l10n.filterNamePrism;
     if (_isVhs(filter)) return l10n.filterNameVhsNoise;
     return switch (filter.kind) {
@@ -1702,14 +1690,13 @@ class _FilterPanelState extends State<FilterPanel> {
       FilterKind.noise => l10n.filterNameNoise,
       FilterKind.retroAnime => l10n.filterNameRetroAnime,
       FilterKind.crt => l10n.filterNameCrt,
-      FilterKind.monochrome => l10n.filterNameMonochrome,
       FilterKind.colorAdjust => l10n.filterNameColorAdjust,
       FilterKind.threshold => l10n.filterNameThreshold,
       FilterKind.fisheye => l10n.filterNameFisheye,
       FilterKind.chromaticAberration => l10n.filterNameChromaticAberration,
       FilterKind.lensDistortion => l10n.filterNameLensDistortion,
       FilterKind.pixelate => l10n.filterNamePixelate,
-      FilterKind.mosaic => 'モザイク',
+      FilterKind.mosaic => l10n.filterNameMosaic,
       FilterKind.auroraHologram => l10n.filterNameAuroraHologram,
       FilterKind.backgroundBlend => l10n.filterNameBackgroundBlend,
       FilterKind.inkPool => l10n.filterNameInkPool,
@@ -1758,7 +1745,6 @@ class _FilterPanelState extends State<FilterPanel> {
       FilterKind.noise => Icons.grain,
       FilterKind.retroAnime => Icons.movie_filter,
       FilterKind.crt => Icons.tv,
-      FilterKind.monochrome => Icons.filter_b_and_w,
       FilterKind.colorAdjust => Icons.tune,
       FilterKind.threshold => Icons.contrast,
       FilterKind.fisheye => Icons.panorama_fish_eye,
@@ -1920,14 +1906,6 @@ class _FilterPanelState extends State<FilterPanel> {
         return _engine.applyRetroAnime(data, width, height, filter.strength);
       case FilterKind.crt:
         return _engine.applyCrt(data, width, height, filter.strength);
-      case FilterKind.monochrome:
-        return _engine.applyMonochrome(
-          data,
-          width,
-          height,
-          (filter.strength / 100).clamp(0.0, 1.0),
-          targetColor: filter.monochromeColor,
-        );
       case FilterKind.colorAdjust:
         return _engine.applyColorAdjust(
           data,

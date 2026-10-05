@@ -13,7 +13,6 @@ enum FilterKind {
   noise,
   retroAnime,
   crt,
-  monochrome,
   colorAdjust,
   threshold,
   fisheye,
@@ -67,6 +66,7 @@ class FilterDef {
   final double inputGamma;
   final int outputBlack;
   final int outputWhite;
+
   /// Optional per-channel Levels overrides: [inputBlack, inputWhite, gamma, outputBlack, outputWhite].
   final List<double> levelsRed;
   final List<double> levelsGreen;
@@ -82,7 +82,6 @@ class FilterDef {
   final double caSaturation;
   final double caBrightness;
   final double caContrast;
-  final int monochromeColor;
   final double thresholdValue;
   final double lensCenterOffsetX;
   final double lensCenterOffsetY;
@@ -157,7 +156,6 @@ class FilterDef {
     this.caSaturation = 0,
     this.caBrightness = 0,
     this.caContrast = 0,
-    this.monochromeColor = 0xFFFFFFFF,
     this.thresholdValue = 128,
     this.lensCenterOffsetX = 0,
     this.lensCenterOffsetY = 0,
@@ -233,7 +231,6 @@ class FilterDef {
     double? caSaturation,
     double? caBrightness,
     double? caContrast,
-    int? monochromeColor,
     double? thresholdValue,
     double? lensCenterOffsetX,
     double? lensCenterOffsetY,
@@ -308,7 +305,6 @@ class FilterDef {
       caSaturation: caSaturation ?? this.caSaturation,
       caBrightness: caBrightness ?? this.caBrightness,
       caContrast: caContrast ?? this.caContrast,
-      monochromeColor: monochromeColor ?? this.monochromeColor,
       thresholdValue: thresholdValue ?? this.thresholdValue,
       lensCenterOffsetX: lensCenterOffsetX ?? this.lensCenterOffsetX,
       lensCenterOffsetY: lensCenterOffsetY ?? this.lensCenterOffsetY,
@@ -396,7 +392,6 @@ class FilterDef {
     'caSaturation': caSaturation,
     'caBrightness': caBrightness,
     'caContrast': caContrast,
-    'monochromeColor': monochromeColor,
     'thresholdValue': thresholdValue,
     'lensCenterOffsetX': lensCenterOffsetX,
     'lensCenterOffsetY': lensCenterOffsetY,
@@ -443,16 +438,28 @@ class FilterDef {
     'prismDirectionDegrees': prismDirectionDegrees,
   };
 
+  /// The stored kind name; Prism snapshots written before schemaVersion
+  /// existed carried another kind.
+  static String? _kindName(Map<String, dynamic> j) =>
+      j['schemaVersion'] == null && j['id'] == 'Filter0022'
+      ? 'prism'
+      : j['kind'] as String?;
+
+  /// Whether [j] names a filter kind this app still has.
+  static bool hasKnownKind(Map<String, dynamic> j) {
+    final name = _kindName(j);
+    return FilterKind.values.any((e) => e.name == name);
+  }
+
+  /// Throws a [FormatException] for a kind the app no longer has, so a
+  /// recorded automation step reports it instead of applying another filter.
   factory FilterDef.fromJson(Map<String, dynamic> j) => FilterDef(
     id: j['id'] as String,
     name: j['name'] as String,
     kind: FilterKind.values.firstWhere(
-      (e) =>
-          e.name ==
-          (j['schemaVersion'] == null && j['id'] == 'Filter0022'
-              ? 'prism'
-              : j['kind']),
-      orElse: () => FilterKind.gaussianBlur,
+      (e) => e.name == _kindName(j),
+      orElse: () =>
+          throw FormatException('Unknown filter kind: ${_kindName(j)}'),
     ),
     isFavorite: j['isFavorite'] as bool? ?? false,
     strength: (j['strength'] as num?)?.toDouble() ?? 8,
@@ -480,9 +487,19 @@ class FilterDef {
     inputGamma: (j['inputGamma'] as num?)?.toDouble() ?? 1.0,
     outputBlack: j['outputBlack'] as int? ?? 0,
     outputWhite: j['outputWhite'] as int? ?? 255,
-    levelsRed: (j['levelsRed'] as List?)?.map((e) => (e as num).toDouble()).toList() ?? const [],
-    levelsGreen: (j['levelsGreen'] as List?)?.map((e) => (e as num).toDouble()).toList() ?? const [],
-    levelsBlue: (j['levelsBlue'] as List?)?.map((e) => (e as num).toDouble()).toList() ?? const [],
+    levelsRed:
+        (j['levelsRed'] as List?)?.map((e) => (e as num).toDouble()).toList() ??
+        const [],
+    levelsGreen:
+        (j['levelsGreen'] as List?)
+            ?.map((e) => (e as num).toDouble())
+            .toList() ??
+        const [],
+    levelsBlue:
+        (j['levelsBlue'] as List?)
+            ?.map((e) => (e as num).toDouble())
+            .toList() ??
+        const [],
     caSaturation: (j['caSaturation'] as num?)?.toDouble() ?? 0,
     caBrightness: (j['caBrightness'] as num?)?.toDouble() ?? 0,
     caContrast: (j['caContrast'] as num?)?.toDouble() ?? 0,
@@ -490,14 +507,29 @@ class FilterDef {
       (e) => e.name == j['toneCurvePreset'],
       orElse: () => ToneCurvePreset.linear,
     ),
-    toneCurvePoints: (j['toneCurvePoints'] as List?)?.map((e) => (e as num).toDouble()).toList() ?? const [],
-    toneCurveRedPoints: (j['toneCurveRedPoints'] as List?)?.map((e) => (e as num).toDouble()).toList() ?? const [],
-    toneCurveGreenPoints: (j['toneCurveGreenPoints'] as List?)?.map((e) => (e as num).toDouble()).toList() ?? const [],
-    toneCurveBluePoints: (j['toneCurveBluePoints'] as List?)?.map((e) => (e as num).toDouble()).toList() ?? const [],
+    toneCurvePoints:
+        (j['toneCurvePoints'] as List?)
+            ?.map((e) => (e as num).toDouble())
+            .toList() ??
+        const [],
+    toneCurveRedPoints:
+        (j['toneCurveRedPoints'] as List?)
+            ?.map((e) => (e as num).toDouble())
+            .toList() ??
+        const [],
+    toneCurveGreenPoints:
+        (j['toneCurveGreenPoints'] as List?)
+            ?.map((e) => (e as num).toDouble())
+            .toList() ??
+        const [],
+    toneCurveBluePoints:
+        (j['toneCurveBluePoints'] as List?)
+            ?.map((e) => (e as num).toDouble())
+            .toList() ??
+        const [],
     outlineColor: j['outlineColor'] as int? ?? 0xFF000000,
     outlineWidth: (j['outlineWidth'] as num?)?.toDouble() ?? 6,
     vignetteColor: j['vignetteColor'] as int? ?? 0xFF000000,
-    monochromeColor: j['monochromeColor'] as int? ?? 0xFFFFFFFF,
     thresholdValue: (j['thresholdValue'] as num?)?.toDouble() ?? 128,
     lensCenterOffsetX: (j['lensCenterOffsetX'] as num?)?.toDouble() ?? 0,
     lensCenterOffsetY: (j['lensCenterOffsetY'] as num?)?.toDouble() ?? 0,

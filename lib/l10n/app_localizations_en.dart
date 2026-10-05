@@ -1706,7 +1706,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get helpDrawingFilterDesc =>
-      'Filters applied directly to the selected layer (as opposed to effect filters, which apply across the whole timeline or a scene, draw filters work per layer). The 25 included filters are Gaussian Blur, Lens Blur, Anime Style, Tone Curve, Levels, Outline, Sharpen, Unsharp Mask, Vignette, Film Grain, Retro Anime, CRT, Monochrome, Threshold, Fisheye Lens, Chromatic Aberration, Lens Distortion, Pixel Art, Texture Filter, Background Blend, Ink Pool, Auto Line Art, Prism, VHS Noise, and Invert. Outline does not rewrite the original layer — it draws just the outlined result onto a new layer. Lens Distortion applies a localized warp, like looking through a strong eyeglass lens, only to the area painted on the selection layer. Pixel Art also lets you choose a color mode (no limit, specify colors, specify color count, or choose from a palette). Auto Line Art lets you edit temporary vector control points before applying the filter. Drag a point to move only that point, tap a segment to add a control point, or tap a point and confirm to delete it. The edited geometry is used directly for the applied result.';
+      'Filters applied directly to the selected layer (as opposed to effect filters, which apply across the whole timeline or a scene, draw filters work per layer). The 26 included filters are Gaussian Blur, Lens Blur, Anime Style, Tone Curve, Levels, Outline, Sharpen, Unsharp Mask, Vignette, Film Grain, Retro Anime, CRT, Threshold, Fisheye Lens, Chromatic Aberration, Lens Distortion, Pixel Art, Texture Filter, Background Blend, Ink Pool, Auto Line Art, Prism, VHS Noise, Invert, Mosaic, and Noise. Outline does not rewrite the original layer — it draws just the outlined result onto a new layer. Lens Distortion applies a localized warp, like looking through a strong eyeglass lens, only to the area painted on the selection layer. Pixel Art also lets you choose a color mode (no limit, specify colors, specify color count, or choose from a palette). Auto Line Art lets you edit temporary vector control points before applying the filter. Drag a point to move only that point, tap a segment to add a control point, or tap a point and confirm to delete it. The edited geometry is used directly for the applied result.';
 
   @override
   String get helpLayerKeyframeTitle => 'Layer keyframes (per-part animation)';
@@ -5394,9 +5394,6 @@ class AppLocalizationsEn extends AppLocalizations {
       'Even if you accidentally drew your line art on top of your rough sketch layer, you can pull the line art back out without deleting anything. 1) Add a new layer and set its blend mode to Divide. 2) Pick up the sketch\'s color with the eyedropper and fill that whole Divide layer with it (this fades the sketch). 3) Duplicate the Divide layer and the sketch disappears completely. 4) Use \"Merge all visible layers\" in the layer panel to flatten everything into one layer. 5) From that merged layer\'s three-dot menu, choose \"Transparency from Brightness (Gray)\" — the white areas become transparent, leaving just the line art.';
 
   @override
-  String get filterNameMonochrome => 'Monochrome Filter';
-
-  @override
   String get timelineEffectTypeMonochrome => 'Monochrome Filter';
 
   @override
@@ -5533,9 +5530,6 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get filterNameThreshold => 'Threshold Filter';
-
-  @override
-  String get filterMonochromeStrength => 'Monochrome strength';
 
   @override
   String get filterMonochromeColorLabel => 'Monochrome color';
@@ -6418,6 +6412,12 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get filterNameVhsNoise => 'VHS Noise';
+
+  @override
+  String get filterNameMosaic => 'Mosaic';
+
+  @override
+  String get filterNameGenericNoise => 'Noise';
 
   @override
   String get filterVhsNoiseStrength => 'Noise';

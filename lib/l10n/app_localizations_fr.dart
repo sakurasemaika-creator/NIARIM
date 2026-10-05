@@ -1728,7 +1728,7 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get helpDrawingFilterDesc =>
-      'Filtres appliqués directement au calque sélectionné (contrairement aux filtres d’effet, qui s’appliquent à toute la timeline ou à une scène, les filtres de dessin agissent par calque). Les 25 filtres inclus sont Flou gaussien, Flou d’objectif, Style anime, Courbe de tons, Niveaux, Contour, Netteté, Masque flou, Vignettage, Grain de pellicule, Anime rétro, Tube cathodique, Monochrome, Seuil, Objectif fisheye, Aberration chromatique, Distorsion optique, Pixel art, Filtre de texture, Intégration à l’arrière-plan, Accumulation d’encre, Trait automatique, Prisme, Bruit VHS et Inversion des couleurs. Contour ne réécrit pas le calque d’origine : il dessine seulement le résultat sur un nouveau calque. Distorsion optique applique une déformation localisée, comme à travers un verre de lunettes très correcteur, uniquement sur la zone peinte du calque de sélection. Pixel art permet aussi de choisir un mode de couleur (sans limite, couleurs définies, nombre de couleurs ou palette). Le Trait automatique permet de modifier les points de contrôle vectoriels temporaires avant d’appliquer le filtre. Faites glisser un point pour déplacer uniquement ce point, touchez un segment pour ajouter un point de contrôle, ou touchez un point puis confirmez pour le supprimer. La géométrie modifiée est utilisée directement dans le résultat appliqué.';
+      'Filtres appliqués directement au calque sélectionné (contrairement aux filtres d’effet, qui s’appliquent à toute la timeline ou à une scène, les filtres de dessin agissent par calque). Les 26 filtres inclus sont Flou gaussien, Flou d’objectif, Style anime, Courbe de tons, Niveaux, Contour, Netteté, Masque flou, Vignettage, Grain de pellicule, Anime rétro, Tube cathodique, Seuil, Objectif fisheye, Aberration chromatique, Distorsion optique, Pixel art, Filtre de texture, Intégration à l’arrière-plan, Accumulation d’encre, Trait automatique, Prisme, Bruit VHS, Inversion des couleurs, Mosaïque et Bruit. Contour ne réécrit pas le calque d’origine : il dessine seulement le résultat sur un nouveau calque. Distorsion optique applique une déformation localisée, comme à travers un verre de lunettes très correcteur, uniquement sur la zone peinte du calque de sélection. Pixel art permet aussi de choisir un mode de couleur (sans limite, couleurs définies, nombre de couleurs ou palette). Le Trait automatique permet de modifier les points de contrôle vectoriels temporaires avant d’appliquer le filtre. Faites glisser un point pour déplacer uniquement ce point, touchez un segment pour ajouter un point de contrôle, ou touchez un point puis confirmez pour le supprimer. La géométrie modifiée est utilisée directement dans le résultat appliqué.';
 
   @override
   String get helpLayerKeyframeTitle =>
@@ -5485,9 +5485,6 @@ class AppLocalizationsFr extends AppLocalizations {
       'Même si vous avez dessiné l\'encrage par erreur sur le calque de brouillon, vous pouvez récupérer uniquement l\'encrage sans rien supprimer. 1) Ajoutez un nouveau calque et réglez son mode de fusion sur Diviser. 2) Prélevez la couleur du brouillon à la pipette et remplissez tout ce calque Diviser avec (le brouillon s\'estompe). 3) Dupliquez le calque Diviser et le brouillon disparaît complètement. 4) Utilisez « Fusionner tous les calques visibles » dans le panneau des calques pour tout aplatir en un seul calque. 5) Depuis le menu à trois points de ce calque fusionné, choisissez « Transparence par luminosité (Gris) » : les zones blanches deviennent transparentes, ne laissant que l\'encrage.';
 
   @override
-  String get filterNameMonochrome => 'Filtre monochrome';
-
-  @override
   String get timelineEffectTypeMonochrome => 'Filtre monochrome';
 
   @override
@@ -5630,9 +5627,6 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get filterNameThreshold => 'Filtre de seuil';
-
-  @override
-  String get filterMonochromeStrength => 'Intensité du monochrome';
 
   @override
   String get filterMonochromeColorLabel => 'Couleur du monochrome';
@@ -6536,6 +6530,12 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get filterNameVhsNoise => 'Bruit VHS';
+
+  @override
+  String get filterNameMosaic => 'Mosaïque';
+
+  @override
+  String get filterNameGenericNoise => 'Bruit';
 
   @override
   String get filterVhsNoiseStrength => 'Bruit';

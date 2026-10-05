@@ -1683,7 +1683,7 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get helpDrawingFilterDesc =>
-      '선택한 레이어에 직접 적용하는 필터입니다(연출 필터가 타임라인 전체나 장면 단위로 적용되는 것과 달리 그리기 필터는 레이어 단위로 작동합니다). 제공되는 25종은 가우시안 블러, 렌즈 블러, 애니메이션풍, 톤 커브, 레벨 보정, 윤곽선, 샤프, 언샤프 마스크, 비네트, 필름 그레인, 레트로 애니메이션, 브라운관, 모노크롬, 이진화, 어안 렌즈, 색수차, 안경 단면, 픽셀 아트, 질감 변경 필터, 배경 어우러짐, 잉크 고임, 자동 선화, 프리즘, VHS 노이즈, 색상 반전입니다. 윤곽선은 원본 레이어를 다시 쓰지 않고 결과만 새 레이어에 그립니다. 안경 단면은 선택 레이어에서 칠한 범위에만 도수가 강한 안경 렌즈 같은 국소 왜곡을 적용합니다. 픽셀 아트는 배색 방식(제한 없음, 색 지정, 색 수 지정, 팔레트 선택)도 고를 수 있습니다. 자동 선화에서는 필터를 적용하기 전에 임시 Vector 제어점을 직접 편집할 수 있습니다. 점을 드래그하면 해당 점만 이동하고, 선분을 탭하면 제어점을 추가하며, 점을 탭한 뒤 확인하면 삭제할 수 있습니다. 편집한 형상이 그대로 적용 결과에 사용됩니다.';
+      '선택한 레이어에 직접 적용하는 필터입니다(연출 필터가 타임라인 전체나 장면 단위로 적용되는 것과 달리 그리기 필터는 레이어 단위로 작동합니다). 제공되는 26종은 가우시안 블러, 렌즈 블러, 애니메이션풍, 톤 커브, 레벨 보정, 윤곽선, 샤프, 언샤프 마스크, 비네트, 필름 그레인, 레트로 애니메이션, 브라운관, 이진화, 어안 렌즈, 색수차, 안경 단면, 픽셀 아트, 질감 변경 필터, 배경 어우러짐, 잉크 고임, 자동 선화, 프리즘, VHS 노이즈, 색상 반전, 모자이크, 노이즈입니다. 윤곽선은 원본 레이어를 다시 쓰지 않고 결과만 새 레이어에 그립니다. 안경 단면은 선택 레이어에서 칠한 범위에만 도수가 강한 안경 렌즈 같은 국소 왜곡을 적용합니다. 픽셀 아트는 배색 방식(제한 없음, 색 지정, 색 수 지정, 팔레트 선택)도 고를 수 있습니다. 자동 선화에서는 필터를 적용하기 전에 임시 Vector 제어점을 직접 편집할 수 있습니다. 점을 드래그하면 해당 점만 이동하고, 선분을 탭하면 제어점을 추가하며, 점을 탭한 뒤 확인하면 삭제할 수 있습니다. 편집한 형상이 그대로 적용 결과에 사용됩니다.';
 
   @override
   String get helpLayerKeyframeTitle => '레이어 키프레임（파츠 단위 애니메이션）';
@@ -5234,9 +5234,6 @@ class AppLocalizationsKo extends AppLocalizations {
       '러프 스케치 레이어 위에 실수로 선화를 그려버려도, 아무것도 지우지 않고 선화만 꺼낼 수 있습니다. ①새 레이어를 추가하고 블렌드 모드를 「나누기」로 설정. ②스포이드로 러프의 색을 추출해 그 나누기 레이어 전체를 채운다（러프가 옅어집니다）. ③나누기 레이어를 복제하면 러프가 완전히 사라집니다. ④레이어 패널의 「표시 중인 모든 레이어 결합」으로 한 장으로 합친다. ⑤합친 레이어의 세 점 메뉴에서 「명도로 투명화（그레이）」를 선택하면 흰 부분이 투명해지고 선화만 남습니다.';
 
   @override
-  String get filterNameMonochrome => '단색화 필터';
-
-  @override
   String get timelineEffectTypeMonochrome => '단색화 필터';
 
   @override
@@ -5371,9 +5368,6 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get filterNameThreshold => '이진화 필터';
-
-  @override
-  String get filterMonochromeStrength => '단색화 강도';
 
   @override
   String get filterMonochromeColorLabel => '단색화 색상';
@@ -6231,6 +6225,12 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get filterNameVhsNoise => 'VHS 노이즈';
+
+  @override
+  String get filterNameMosaic => '모자이크';
+
+  @override
+  String get filterNameGenericNoise => '노이즈';
 
   @override
   String get filterVhsNoiseStrength => '노이즈';

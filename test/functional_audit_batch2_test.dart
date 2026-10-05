@@ -367,7 +367,6 @@ FilterDef _filterFor(FilterKind kind) {
     caSaturation: 35,
     caBrightness: 12,
     caContrast: 25,
-    monochromeColor: 0xFFFFC080,
     thresholdValue: 128,
     lensCenterOffsetX: 2,
     lensCenterOffsetY: -2,
@@ -608,18 +607,13 @@ List<int> _blendReference(
         final b = cb[i], s = cs[i];
         if (s <= 0.5) {
           final doubled = 2 * s;
-          return doubled <= 0
-              ? 0
-              : 1 - math.min(1.0, (1 - b) / doubled);
+          return doubled <= 0 ? 0 : 1 - math.min(1.0, (1 - b) / doubled);
         }
         final doubled = 2 * (s - 0.5);
         return doubled >= 1 ? 1 : math.min(1.0, b / (1 - doubled));
       });
     case LayerBlendMode.linearLight:
-      o = List.generate(
-        3,
-        (i) => (cb[i] + 2 * cs[i] - 1).clamp(0.0, 1.0),
-      );
+      o = List.generate(3, (i) => (cb[i] + 2 * cs[i] - 1).clamp(0.0, 1.0));
     case LayerBlendMode.pinLight:
       o = List.generate(
         3,
@@ -633,9 +627,7 @@ List<int> _blendReference(
         double vivid;
         if (s <= 0.5) {
           final doubled = 2 * s;
-          vivid = doubled <= 0
-              ? 0
-              : 1 - math.min(1.0, (1 - b) / doubled);
+          vivid = doubled <= 0 ? 0 : 1 - math.min(1.0, (1 - b) / doubled);
         } else {
           final doubled = 2 * (s - 0.5);
           vivid = doubled >= 1 ? 1 : math.min(1.0, b / (1 - doubled));

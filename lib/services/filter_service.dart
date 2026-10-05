@@ -217,10 +217,15 @@ class FilterService extends ChangeNotifier {
       _filters.addAll(_defaultFilters());
       await _persist();
     } else {
-      var migratedFilterState = false;
+      final stored = raw
+          .map((s) => jsonDecode(s) as Map<String, dynamic>)
+          .toList();
+      // A filter kind that has been removed from the app is dropped rather
+      // than shown as some other filter under its old name.
+      final known = stored.where(FilterDef.hasKnownKind).toList();
+      var migratedFilterState = known.length != stored.length;
       _filters.addAll(
-        raw.map((s) {
-          final json = jsonDecode(s) as Map<String, dynamic>;
+        known.map((json) {
           var filter = FilterDef.fromJson(json);
           if (filter.id == prismFilterId) {
             final usesLegacyDefaults =
@@ -306,7 +311,6 @@ class FilterService extends ChangeNotifier {
     double? caSaturation,
     double? caBrightness,
     double? caContrast,
-    int? monochromeColor,
     double? thresholdValue,
     double? lensCenterOffsetX,
     double? lensCenterOffsetY,
@@ -382,7 +386,6 @@ class FilterService extends ChangeNotifier {
       caSaturation: caSaturation,
       caBrightness: caBrightness,
       caContrast: caContrast,
-      monochromeColor: monochromeColor,
       thresholdValue: thresholdValue,
       lensCenterOffsetX: lensCenterOffsetX,
       lensCenterOffsetY: lensCenterOffsetY,

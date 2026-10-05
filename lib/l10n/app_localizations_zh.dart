@@ -1670,7 +1670,7 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get helpDrawingFilterDesc =>
-      '直接应用于所选图层的滤镜（演出滤镜作用于整条时间线或整个场景，而绘图滤镜按图层生效）。内置25种滤镜：高斯模糊、镜头模糊、动画风、色调曲线、色阶、描边、锐化、USM锐化、暗角、胶片颗粒、复古动画、显像管、单色、二值化、鱼眼镜头、色差、眼镜断层、像素画、质感变换滤镜、背景融合、积墨、自动线稿、棱镜、VHS噪点和颜色反转。描边不会改写原图层，只会把结果绘制到新图层。眼镜断层只对选区图层中涂抹的范围施加类似高度数眼镜镜片的局部变形。像素画还可选择配色方式（不限制、指定颜色、指定颜色数或从调色板选择）。 自动线稿可在应用滤镜前直接编辑临时Vector控制点。拖动控制点时只移动该点，点击线段可添加控制点，点击控制点并确认后可删除。编辑后的形状会直接用于最终应用结果。';
+      '直接应用于所选图层的滤镜（演出滤镜作用于整条时间线或整个场景，而绘图滤镜按图层生效）。内置26种滤镜：高斯模糊、镜头模糊、动画风、色调曲线、色阶、描边、锐化、USM锐化、暗角、胶片颗粒、复古动画、显像管、二值化、鱼眼镜头、色差、眼镜断层、像素画、质感变换滤镜、背景融合、积墨、自动线稿、棱镜、VHS噪点、颜色反转、马赛克和噪点。描边不会改写原图层，只会把结果绘制到新图层。眼镜断层只对选区图层中涂抹的范围施加类似高度数眼镜镜片的局部变形。像素画还可选择配色方式（不限制、指定颜色、指定颜色数或从调色板选择）。 自动线稿可在应用滤镜前直接编辑临时Vector控制点。拖动控制点时只移动该点，点击线段可添加控制点，点击控制点并确认后可删除。编辑后的形状会直接用于最终应用结果。';
 
   @override
   String get helpLayerKeyframeTitle => '图层关键帧（分部件动画）';
@@ -5175,9 +5175,6 @@ class AppLocalizationsZh extends AppLocalizations {
       '即使不小心把线稿画在了草图图层上，也能在不删除任何内容的情况下把线稿单独取出来。①新建一个图层，将其混合模式设为「除法」。②用取色器吸取草图的颜色，将整个除法图层填满该颜色（草图会变淡）。③复制该除法图层，草图会完全消失。④在图层面板中使用「合并所有可见图层」将其合并为一层。⑤在合并后图层的三点菜单中选择「按明度透明化（灰色）」，白色部分就会变透明，只留下线稿。';
 
   @override
-  String get filterNameMonochrome => '单色化滤镜';
-
-  @override
   String get timelineEffectTypeMonochrome => '单色化滤镜';
 
   @override
@@ -5310,9 +5307,6 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get filterNameThreshold => '二值化滤镜';
-
-  @override
-  String get filterMonochromeStrength => '单色化强度';
 
   @override
   String get filterMonochromeColorLabel => '单色化颜色';
@@ -6162,6 +6156,12 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get filterNameVhsNoise => 'VHS 噪点';
+
+  @override
+  String get filterNameMosaic => '马赛克';
+
+  @override
+  String get filterNameGenericNoise => '噪点';
 
   @override
   String get filterVhsNoiseStrength => '噪点';
@@ -8154,7 +8154,7 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get helpDrawingFilterDesc =>
-      '直接套用於所選圖層的濾鏡（演出濾鏡作用於整條時間軸或整個場景，而繪圖濾鏡按圖層生效）。內建25種濾鏡：高斯模糊、鏡頭模糊、動畫風、色調曲線、色階、外框、銳化、USM銳化、暗角、膠片顆粒、復古動畫、映像管、單色、二值化、魚眼鏡頭、色差、眼鏡斷層、像素畫、質感變換濾鏡、背景融合、積墨、自動線稿、稜鏡、VHS雜訊和色彩反轉。外框不會改寫原圖層，只會把結果繪製到新圖層。眼鏡斷層只對選取圖層中塗抹的範圍套用類似高度數眼鏡鏡片的局部變形。像素畫還可選擇配色方式（不限制、指定顏色、指定顏色數或從調色盤選擇）。 自動線稿可在套用濾鏡前直接編輯暫時Vector控制點。拖曳控制點時只移動該點，點擊線段可新增控制點，點擊控制點並確認後可刪除。編輯後的形狀會直接用於最終套用結果。';
+      '直接套用於所選圖層的濾鏡（演出濾鏡作用於整條時間軸或整個場景，而繪圖濾鏡按圖層生效）。內建26種濾鏡：高斯模糊、鏡頭模糊、動畫風、色調曲線、色階、外框、銳化、USM銳化、暗角、膠片顆粒、復古動畫、映像管、二值化、魚眼鏡頭、色差、眼鏡斷層、像素畫、質感變換濾鏡、背景融合、積墨、自動線稿、稜鏡、VHS雜訊、色彩反轉、馬賽克和雜訊。外框不會改寫原圖層，只會把結果繪製到新圖層。眼鏡斷層只對選取圖層中塗抹的範圍套用類似高度數眼鏡鏡片的局部變形。像素畫還可選擇配色方式（不限制、指定顏色、指定顏色數或從調色盤選擇）。 自動線稿可在套用濾鏡前直接編輯暫時Vector控制點。拖曳控制點時只移動該點，點擊線段可新增控制點，點擊控制點並確認後可刪除。編輯後的形狀會直接用於最終套用結果。';
 
   @override
   String get helpLayerKeyframeTitle => '圖層關鍵影格（分部件動畫）';
@@ -11659,9 +11659,6 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
       '即使不小心把線稿畫在了草圖圖層上，也能在不刪除任何內容的情況下把線稿單獨取出來。①新增一個圖層，將其混合模式設為「除法」。②用滴管吸取草圖的顏色，將整個除法圖層填滿該顏色（草圖會變淡）。③複製該除法圖層，草圖會完全消失。④在圖層面板中使用「合併所有可見圖層」將其合併為一層。⑤在合併後圖層的三點選單中選擇「依明度透明化（灰色）」，白色部分就會變透明，只留下線稿。';
 
   @override
-  String get filterNameMonochrome => '單色化濾鏡';
-
-  @override
   String get timelineEffectTypeMonochrome => '單色化濾鏡';
 
   @override
@@ -11794,9 +11791,6 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get filterNameThreshold => '二值化濾鏡';
-
-  @override
-  String get filterMonochromeStrength => '單色化強度';
 
   @override
   String get filterMonochromeColorLabel => '單色化顏色';
@@ -12646,6 +12640,12 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get filterNameVhsNoise => 'VHS 雜訊';
+
+  @override
+  String get filterNameMosaic => '馬賽克';
+
+  @override
+  String get filterNameGenericNoise => '雜訊';
 
   @override
   String get filterVhsNoiseStrength => '雜訊';

@@ -95,7 +95,13 @@ Uint8List applyDrawFilterInIsolate(
       width,
       height,
       filter.toneCurvePoints.length >= 4
-          ? [for (var i = 0; i + 1 < filter.toneCurvePoints.length; i += 2) ui.Offset(filter.toneCurvePoints[i], filter.toneCurvePoints[i + 1])]
+          ? [
+              for (var i = 0; i + 1 < filter.toneCurvePoints.length; i += 2)
+                ui.Offset(
+                  filter.toneCurvePoints[i],
+                  filter.toneCurvePoints[i + 1],
+                ),
+            ]
           : toneCurvePoints(filter.toneCurvePreset),
       redPoints: _storedCurve(filter.toneCurveRedPoints),
       greenPoints: _storedCurve(filter.toneCurveGreenPoints),
@@ -139,13 +145,6 @@ Uint8List applyDrawFilterInIsolate(
       filter.strength,
     ),
     FilterKind.crt => engine.applyCrt(data, width, height, filter.strength),
-    FilterKind.monochrome => engine.applyMonochrome(
-      data,
-      width,
-      height,
-      (filter.strength / 100).clamp(0.0, 1.0),
-      targetColor: filter.monochromeColor,
-    ),
     FilterKind.colorAdjust => engine.applyColorAdjust(
       data,
       width,
@@ -161,15 +160,27 @@ Uint8List applyDrawFilterInIsolate(
       filter.thresholdValue,
     ),
     FilterKind.fisheye => engine.applyFisheye(
-      data, width, height, filter.strength,
+      data,
+      width,
+      height,
+      filter.strength,
       radiusPercent: filter.fisheyeRadius,
       centerOffsetX: filter.fisheyeCenterX,
       centerOffsetY: filter.fisheyeCenterY,
     ),
     FilterKind.chromaticAberration => engine.applyChromaticAberration(
-      data, width, height,
-      math.max(filter.strength, math.sqrt(filter.chromaticShiftX * filter.chromaticShiftX + filter.chromaticShiftY * filter.chromaticShiftY)),
-      math.atan2(filter.chromaticShiftY, filter.chromaticShiftX) + filter.chromaticShiftZ * math.pi / 180.0,
+      data,
+      width,
+      height,
+      math.max(
+        filter.strength,
+        math.sqrt(
+          filter.chromaticShiftX * filter.chromaticShiftX +
+              filter.chromaticShiftY * filter.chromaticShiftY,
+        ),
+      ),
+      math.atan2(filter.chromaticShiftY, filter.chromaticShiftX) +
+          filter.chromaticShiftZ * math.pi / 180.0,
     ),
     FilterKind.lensDistortion => engine.applyLensDistortion(
       data,
@@ -252,7 +263,10 @@ Uint8List applyDrawFilterInIsolate(
 /// トーンカーブのプリセット形状を制御点（0.0〜1.0の正規化座標）へ変換する。
 /// プレビュー・本適用の両方から共通利用する。
 List<ui.Offset>? _storedCurve(List<double> values) => values.length >= 4
-    ? [for (var i = 0; i + 1 < values.length; i += 2) ui.Offset(values[i], values[i + 1])]
+    ? [
+        for (var i = 0; i + 1 < values.length; i += 2)
+          ui.Offset(values[i], values[i + 1]),
+      ]
     : null;
 
 List<ui.Offset> toneCurvePoints(ToneCurvePreset preset) {
@@ -350,7 +364,8 @@ List<(double, int, int, int)> auroraHologramStops(AuroraHologramPreset preset) {
       (0.95, 254, 249, 163),
       (0.98, 255, 252, 205),
       (1.00, 255, 255, 244),
-    ],    AuroraHologramPreset.silverFoil => const [
+    ],
+    AuroraHologramPreset.silverFoil => const [
       // Silver keeps most of the sphere below near-white. Narrow reflection
       // ramps provide a harder metallic boundary while preventing broad
       // clipped-white regions.
@@ -902,7 +917,10 @@ class FilterEngine {
     final cx = width / 2.0 + centerOffsetX;
     final cy = height / 2.0 + centerOffsetY;
     final maxCanvasR = math.sqrt(width * width + height * height) / 2.0;
-    final maxR = math.max(1.0, maxCanvasR * (radiusPercent / 100.0).clamp(0.01, 1.0));
+    final maxR = math.max(
+      1.0,
+      maxCanvasR * (radiusPercent / 100.0).clamp(0.01, 1.0),
+    );
     final result = Uint8List(data.length);
     for (int y = 0; y < height; y++) {
       for (int x = 0; x < width; x++) {
@@ -911,8 +929,11 @@ class FilterEngine {
         final r = math.sqrt(nx * nx + ny * ny);
         double srcX, srcY;
         if (r > 1.0) {
-          final q=(y*width+x)*4;
-          result[q]=data[q]; result[q+1]=data[q+1]; result[q+2]=data[q+2]; result[q+3]=data[q+3];
+          final q = (y * width + x) * 4;
+          result[q] = data[q];
+          result[q + 1] = data[q + 1];
+          result[q + 2] = data[q + 2];
+          result[q + 3] = data[q + 3];
           continue;
         } else if (r <= 1e-6) {
           srcX = cx;
@@ -1065,7 +1086,6 @@ class FilterEngine {
     return result;
   }
 
-
   Uint8List applyFilmGrain(
     Uint8List data,
     int width,
@@ -1099,7 +1119,10 @@ class FilterEngine {
     for (var i = 0; i < result.length; i += 4) {
       if (result[i + 3] == 0) continue;
       for (var c = 0; c < 3; c++) {
-        final n = (_gaussianRandom(rng) * amount).round().clamp(-amount, amount);
+        final n = (_gaussianRandom(rng) * amount).round().clamp(
+          -amount,
+          amount,
+        );
         result[i + c] = (result[i + c] + n).clamp(0, 255);
       }
     }
@@ -1566,8 +1589,7 @@ class FilterEngine {
         // Re-introduce only luminance detail, never the source hue. The
         // gradient map remains deterministic for colour while highlights,
         // rounded shading and cloth creases retain their material relief.
-        final mappedLuma =
-            outR * 0.299 + outG * 0.587 + outB * 0.114;
+        final mappedLuma = outR * 0.299 + outG * 0.587 + outB * 0.114;
         final lumaDelta = (luminanceIdx - mappedLuma) * preserveLuma;
         outR = (outR + lumaDelta).clamp(0.0, 255.0);
         outG = (outG + lumaDelta).clamp(0.0, 255.0);
@@ -1598,8 +1620,7 @@ class FilterEngine {
             sourceLumaAt(x, y + 4) -
             sourceLumaAt(x, y - 4);
         final edge =
-            math.sqrt((gx * gx + gy * gy).toDouble()).clamp(0.0, 180.0) /
-            180.0;
+            math.sqrt((gx * gx + gy * gy).toDouble()).clamp(0.0, 180.0) / 180.0;
 
         // A second, much wider derivative approximates the orientation of the
         // whole material face. Blend it with the local fold normal so a sphere
@@ -1622,7 +1643,10 @@ class FilterEngine {
             220.0;
         final localAngle = math.atan2(gy.toDouble(), gx.toDouble());
         final planeAngle = math.atan2(planeGy.toDouble(), planeGx.toDouble());
-        final orientationBlend = (0.28 + planeStrength * 0.58).clamp(0.28, 0.78);
+        final orientationBlend = (0.28 + planeStrength * 0.58).clamp(
+          0.28,
+          0.78,
+        );
         final vx =
             math.cos(localAngle) * (1.0 - orientationBlend) +
             math.cos(planeAngle) * orientationBlend;
@@ -1634,14 +1658,15 @@ class FilterEngine {
         // Measure how consistently the wide material face points in one
         // direction. Cloth facets should hold one reflection family across
         // the face, while rounded surfaces keep a continuous orientation.
-        final planeCoherence =
-            (planeStrength * (1.0 - edge * 0.34)).clamp(0.0, 1.0);
+        final planeCoherence = (planeStrength * (1.0 - edge * 0.34)).clamp(
+          0.0,
+          1.0,
+        );
         // Quantize only coherent planar regions. This prevents a cloth facet
         // from cycling through several rainbow colours because of tiny luma
         // changes, but leaves spheres/soft curves continuous.
         const facetSteps = 12.0;
-        final rawMaterialPhase =
-            (materialAngle + math.pi) / (2 * math.pi);
+        final rawMaterialPhase = (materialAngle + math.pi) / (2 * math.pi);
         final facetPhase =
             (rawMaterialPhase * facetSteps).roundToDouble() / facetSteps;
         final coherentPhase =
@@ -1662,8 +1687,10 @@ class FilterEngine {
         final faceSpecular = math.pow(edge, 1.65).toDouble() * 0.30;
         final ridgeSpecular = math.pow(ridge, 2.25).toDouble() * 0.80;
         final specular =
-            (faceSpecular + ridgeSpecular - faceSpecular * ridgeSpecular)
-                .clamp(0.0, 0.84);
+            (faceSpecular + ridgeSpecular - faceSpecular * ridgeSpecular).clamp(
+              0.0,
+              0.84,
+            );
         outR += (255.0 - outR) * specular;
         outG += (255.0 - outG) * specular;
         outB += (255.0 - outB) * specular;
@@ -1693,10 +1720,11 @@ class FilterEngine {
           // Preserve quiet transparent faces. Strong colour appears mainly
           // where a coherent facet catches the light; weak/flat regions keep
           // the pale transmission map instead of receiving a uniform rainbow.
-          final reflectionGate =
-              (edge * 0.62 + planeStrength * 0.38).clamp(0.0, 1.0);
-          final gatedReflection =
-              math.pow(reflectionGate, 1.35).toDouble();
+          final reflectionGate = (edge * 0.62 + planeStrength * 0.38).clamp(
+            0.0,
+            1.0,
+          );
+          final gatedReflection = math.pow(reflectionGate, 1.35).toDouble();
           final colourMix =
               ((edge - 0.055) / 0.945).clamp(0.0, 1.0) *
               (0.62 + planeStrength * 0.38) *
@@ -1710,21 +1738,18 @@ class FilterEngine {
           // Keep the body pale and transparent, but let a very narrow fringe
           // beside the white reflection become genuinely high-chroma.
           final fringe =
-              math.pow((edge * 0.70 + ridge * 0.30).clamp(0.0, 1.0), 3.1)
+              math
+                  .pow((edge * 0.70 + ridge * 0.30).clamp(0.0, 1.0), 3.1)
                   .toDouble() *
               (1.0 - math.pow(ridge.clamp(0.0, 1.0), 5.0).toDouble()) *
               (0.52 + planeStrength * 0.48);
-          final spectralMean =
-              (spectral.$1 + spectral.$2 + spectral.$3) / 3.0;
-          final vividR =
-              (spectralMean + (spectral.$1 - spectralMean) * 1.55)
-                  .clamp(0.0, 255.0);
-          final vividG =
-              (spectralMean + (spectral.$2 - spectralMean) * 1.55)
-                  .clamp(0.0, 255.0);
-          final vividB =
-              (spectralMean + (spectral.$3 - spectralMean) * 1.55)
-                  .clamp(0.0, 255.0);
+          final spectralMean = (spectral.$1 + spectral.$2 + spectral.$3) / 3.0;
+          final vividR = (spectralMean + (spectral.$1 - spectralMean) * 1.55)
+              .clamp(0.0, 255.0);
+          final vividG = (spectralMean + (spectral.$2 - spectralMean) * 1.55)
+              .clamp(0.0, 255.0);
+          final vividB = (spectralMean + (spectral.$3 - spectralMean) * 1.55)
+              .clamp(0.0, 255.0);
           final fringeMix = (fringe * 0.54).clamp(0.0, 0.46);
           outR += (vividR - outR) * fringeMix;
           outG += (vividG - outG) * fringeMix;
@@ -2132,10 +2157,8 @@ class FilterEngine {
     for (var i = 0; i < work.length; i += 4) {
       if (work[i + 3] == 0) continue;
       work[i] = (work[i] * 0.95 + (255 - work[i]) * 0.05).round();
-      work[i + 1] =
-          (work[i + 1] * 0.95 + (255 - work[i + 1]) * 0.05).round();
-      work[i + 2] =
-          (work[i + 2] * 0.95 + (255 - work[i + 2]) * 0.05).round();
+      work[i + 1] = (work[i + 1] * 0.95 + (255 - work[i + 1]) * 0.05).round();
+      work[i + 2] = (work[i + 2] * 0.95 + (255 - work[i + 2]) * 0.05).round();
     }
 
     // 4) Unsharp mask: radius 5 px, amount 70%.
@@ -2146,8 +2169,9 @@ class FilterEngine {
     for (var i = 0; i < work.length; i += 4) {
       if (work[i + 3] == 0) continue;
       for (var ch = 0; ch < 3; ch++) {
-        work[i + ch] =
-            (work[i + ch] * 0.73 + glow[i + ch] * 0.27).round().clamp(0, 255);
+        work[i + ch] = (work[i + ch] * 0.73 + glow[i + ch] * 0.27)
+            .round()
+            .clamp(0, 255);
       }
     }
 
@@ -2163,10 +2187,8 @@ class FilterEngine {
         final e = edges[sy * width + sx] / 255.0;
         final multiplier = 1.0 - e * 0.28;
         edged[dst] = (work[dst] * multiplier).round().clamp(0, 255);
-        edged[dst + 1] =
-            (work[dst + 1] * multiplier).round().clamp(0, 255);
-        edged[dst + 2] =
-            (work[dst + 2] * multiplier).round().clamp(0, 255);
+        edged[dst + 1] = (work[dst + 1] * multiplier).round().clamp(0, 255);
+        edged[dst + 2] = (work[dst + 2] * multiplier).round().clamp(0, 255);
       }
     }
     work = edged;
@@ -2185,8 +2207,8 @@ class FilterEngine {
         final sy = (y + jitterY).clamp(0, height - 1);
         final s = (sy * width + sx) * 4;
         for (var ch = 0; ch < 3; ch++) {
-          degraded[i + ch] =
-              (work[i + ch] * 0.75 + work[s + ch] * 0.25).round();
+          degraded[i + ch] = (work[i + ch] * 0.75 + work[s + ch] * 0.25)
+              .round();
         }
         final rx = (x + 2).clamp(0, width - 1);
         final bx = (x - 2).clamp(0, width - 1);
@@ -2212,7 +2234,13 @@ class FilterEngine {
     }
 
     // 10) Overlay-like neutral grain: grayscale body plus sparse colour grain.
-    final grayGrain = applyFilmGrain(work, width, height, 0.17, seed: seed ?? 43098);
+    final grayGrain = applyFilmGrain(
+      work,
+      width,
+      height,
+      0.17,
+      seed: seed ?? 43098,
+    );
     final colorGrain = applyColorNoise(
       grayGrain,
       width,
@@ -2228,8 +2256,7 @@ class FilterEngine {
         final overlay = base < 128
             ? (2 * base * grain / 255.0)
             : (255 - 2 * (255 - base) * (255 - grain) / 255.0);
-        work[i + ch] =
-            (base * 0.25 + overlay * 0.75).round().clamp(0, 255);
+        work[i + ch] = (base * 0.25 + overlay * 0.75).round().clamp(0, 255);
       }
     }
 
@@ -2340,9 +2367,7 @@ class FilterEngine {
           if (x >= p0.dx && x <= p1.dx) {
             final span = p1.dx - p0.dx;
             final t = span.abs() < 1e-9 ? 0.0 : (x - p0.dx) / span;
-            return ((p0.dy + t * (p1.dy - p0.dy)) * 255)
-                .round()
-                .clamp(0, 255);
+            return ((p0.dy + t * (p1.dy - p0.dy)) * 255).round().clamp(0, 255);
           }
         }
         return (sorted.last.dy * 255).round().clamp(0, 255);
@@ -2592,11 +2617,21 @@ class FilterEngine {
     for (int i = 0; i < result.length; i += 4) {
       for (int c = 0; c < 3; c++) {
         final values = overrides[c];
-        final ib = values != null && values.length >= 5 ? values[0].round() : inputBlack;
-        final iw = values != null && values.length >= 5 ? values[1].round() : inputWhite;
-        final gamma = values != null && values.length >= 5 ? values[2] : inputGamma;
-        final ob = values != null && values.length >= 5 ? values[3].round() : outputBlack;
-        final ow = values != null && values.length >= 5 ? values[4].round() : outputWhite;
+        final ib = values != null && values.length >= 5
+            ? values[0].round()
+            : inputBlack;
+        final iw = values != null && values.length >= 5
+            ? values[1].round()
+            : inputWhite;
+        final gamma = values != null && values.length >= 5
+            ? values[2]
+            : inputGamma;
+        final ob = values != null && values.length >= 5
+            ? values[3].round()
+            : outputBlack;
+        final ow = values != null && values.length >= 5
+            ? values[4].round()
+            : outputWhite;
         final inRange = (iw - ib).clamp(1, 255);
         final outRange = ow - ob;
         final normalized = ((result[i + c] - ib) / inRange).clamp(0.0, 1.0);
