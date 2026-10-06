@@ -527,3 +527,34 @@ Required:
 - static translation key exists
 - route/inventory assignment exists
 - advisor says safe
+
+
+## D032 — 全機能・全操作の実操作最終確認 + プロダクトブラッシュアップ
+
+このIDは「テストが通るか」だけでなく、**ユーザーが実際に使うのと同じ順序・入力・ジェスチャー・確定/取消を行ったとき、意図した動き・見た目・フィードバックになるか**を最終確認するための明示的な実操作工程。
+
+### 実操作の対象
+- 全App/Web画面、route、dialog、sheet、popover、menu、context menu、toolbar、panel、tab、設定、onboarding、empty/loading/error/offline/disabled
+- 全機能・全visible control
+- 各機能の主要成功経路だけでなく、取消、戻る、再入力、境界値、無効値、二重操作、連打、途中離脱、再訪、保存/復元、Undo/Redo、import/export、共有/公開、権限拒否、失敗→retry/cancel
+- touch / mouse / stylus / keyboard / IME / hover / long-press / drag / pinch/zoom / scroll / resize 等、実際に存在する操作方式
+- 制作系機能では実際の絵・レイヤー・フレーム・ブラシ・選択範囲・タイムライン等を使った実データ操作
+
+### 判定
+各操作で以下を別々に確認する。
+1. **機能結果** — データ/画像/状態が仕様どおり変化する。
+2. **意図した挙動** — 操作中の追従、境界、遷移、feedback、Undo/Redo、Cancel、再実行、focus/selection等がユーザーの期待どおり。
+3. **見た目** — 操作前/中/後のlayout、spacing、typography、icon、color、contrast、animation、overlay、clipping、overflow、alignment、theme、density、touch targetが自然で崩れない。
+4. **継続性** — その場を離れて再訪・保存復元・再起動した後も意味と状態が壊れない。
+5. **製品品質** — 手数、理解しやすさ、発見可能性、誤操作耐性、操作の気持ちよさ、制作効率を世界水準の商用製品として評価する。
+
+### ブラッシュアップ
+明確なバグだけでなく、**仕様上動いていてもUX/UI・情報設計・視覚品質・操作効率・フィードバック・一貫性をさらに改善できる箇所は、重大製品全体rewriteに当たらない限り遠慮なく修正する。**
+改善を行った場合は必ず、修正前→修正→targeted test→同じ実操作の再実行→Visual再確認→関連regressionまで行う。
+「好みの問題」だけの変更は避け、具体的な利用上の問題・品質差・一貫性・アクセシビリティ・商用製品としての合理性を根拠に判断する。
+既存の良いUI/UXを理由なく壊さず、改善による副作用を確認する。
+
+### 完了条件
+全画面・全機能・全visible controlについて、未説明の実操作未確認が0。
+機能結果・意図挙動・見た目のいずれかに問題がある場合、修正可能なものは修正して再操作する。
+環境上実操作できない対象はPASSにせず、blocked/未確認理由と必要環境をEvidenceへ記録する。
