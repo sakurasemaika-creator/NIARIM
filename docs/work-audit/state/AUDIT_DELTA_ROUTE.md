@@ -580,6 +580,7 @@ Required:
 - theme colorを複数系統変更し、文字、icon、outline、slider、background、selected/disabled/error、overlay、dialog、canvas chrome等の全theme依存部分が連動するか確認。
 - light/dark/custom、textScale、language、reduced-motion、workspace/panel、performance/quality設定等を切り替え、画面遷移・再訪・再起動後も一貫するか確認。
 - save schema/versionを変更する場合はlegacy→current、current round-trip、unknown/newer、invalid、truncated、corruptを隔離データで検証。指定したversion/schemaそのもの、順序、参照、embedded asset、画像/音声、undo/redoが正しく保存・復元されることを確認。
+- project saveだけでなく、実装されているexport/output formatも全件確認する。拡張子・MIME・codec/encoding、canvas size、alpha、color/profile、frame/audio、metadata、透明部分、ファイル名/保存先、cancel/error、再読込可能性を実出力で確認し、指定形式と実ファイルが一致することを確認。
 - UI→model→serialization→service→engine→render→reloadの往復で値が欠落・丸め・無視されないことを確認。
 - mutation後の見た目と実操作を再確認し、1箇所だけ変わるhalf-updated stateを許容しない。
 
@@ -588,6 +589,7 @@ Required:
 主要なユーザー操作について、cold/warm起動、画面遷移、設定適用、描画、filter、blur、undo/redo、save/load、import/export、検索、一覧取得、共有/公開等の実行時間を実測する。
 
 各測定は入力サイズ、端末/環境、fixture、測定方法、反復回数、p50/p95等を記録する。jank/frame drop、UI freeze、memory spike、不要なrebuild/allocation/clone、I/O待ち、同期処理も確認する。
+入力イベントから最初の視覚的feedbackまでの遅延も必要な操作で測定し、「処理完了まで」だけでなくユーザーが待たされている体感遅延を評価する。
 
 遅い操作はprofile/traceでroot causeを特定し、同じ結果・互換性・安全性を維持できる範囲でキャッシュ、差分更新、非同期化、allocation/clone削減、アルゴリズム改善、バッファ削減、widget rebuild削減、I/O batching、serialization最適化等を実施する。最適化前後を同一条件で比較し、速度だけでなく画像、state、保存、undo/redo、境界条件が一致することを再確認する。
 
