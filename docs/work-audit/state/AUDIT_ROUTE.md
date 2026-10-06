@@ -736,3 +736,19 @@ Baseline A001–A104のlocked order/definitionは不変。Route lock後の製品
 - Deltaは実操作・実描画・保存/復元・targeted regression・必要な7言語/PC-SP/Premium・Visual evidenceまで確認してdoneとする。
 - Delta inventoryで新対象を発見した場合はD-series末尾へ安定した子TODOとして追加する。BaselineのA/W IDを並べ替えない。
 - Baseline完了後にDiscovery（DISC-ID）を消化し、その後D-seriesを番号順に消化する。
+## 2026-10-06 全面監査実行契約の正式同期
+
+全面監査依頼を受けた場合は、既存Baseline A001–A104、Discovery、lock後Delta D001以降に加えて、docs/work-audit/state/FULL_AUDIT_EXECUTION_STANDARD.md を必ず適用する。
+
+全面監査は「テスト実行」や「既存監査PDFの再確認」ではなく、最新 dev_branch の実装実体を再inventoryしたうえで、**全画面・全route・全dialog/sheet/menu/panel/tab・全visible control・全機能・全プリセット・全実在操作方式**をproduction UIで実操作するものとする。
+
+各対象について、機能結果だけでなく、**意図した操作中の挙動、見た目、継続性、使いやすさ、導線、制作効率、体感速度**を独立判定する。バグだけでなく、UX/UI・情報設計・視覚品質・操作効率・一貫性・アクセシビリティ・性能に明確な改善余地があれば、根拠を記録したうえで監査中に修正してよい。修正後は同じ実操作と関連regression、Visual確認を必ずやり直す。
+
+**全プリセットは代表抽出せず個別監査する。** built-in/custom brush、髪/前髪、縁取りペン/Hair Fold、filter、質感変更、質感偏光、blend、automation/action/workflow、size/pressure、theme/color、timeline/animation、canvas size等、最新HEADで選択・適用・保存可能な全preset/catalogを対象とする。
+
+さらに監査中に、theme color、light/dark/custom、textScale、language、reduced-motion、workspace/panel、performance/quality、save schema/version、project save、全export/output format等を意図的に変更し、変更内容がUI・model・serialization・service・engine・render・reloadへ正しく連動するかを再確認する。
+
+主要操作の処理時間だけでなく入力から最初の視覚的feedbackまでを実測し、遅い箇所はprofile/trace後に、同一結果・安全性・互換性を維持する範囲で軽量化する。unused import/dead code/obsolete route・model・service、debug/temporary artifact、不要コメント等も横断確認し、production commentはコードの意味・不変条件・恒久的制約・license等に限定する。監査専用workflow/証跡ファイルはproduction dead codeと誤認して削除しない。
+
+「全面監査」と明示された依頼では、依頼文に個別機能が列挙されていなくても上記を既定範囲とする。単体test、widget test、CI GREEN、snapshot、旧PDF、過去の完了申告、source reviewだけでは全面監査完了とはしない。
+
