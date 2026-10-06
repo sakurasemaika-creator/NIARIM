@@ -648,7 +648,8 @@ class _FrameThumbnailState extends State<_FrameThumbnail> {
   Widget build(BuildContext context) {
     final image = _image;
     if (image == null) return const SizedBox.shrink();
-    // FramePreviewBackground has already sized this to the picture.
-    return RawImage(image: image, fit: BoxFit.fill);
+    // Keeps the canvas's proportions (FramePreviewBackground has already
+    // given it the picture's own rectangle, so it fills that exactly).
+    return RawImage(image: image, fit: BoxFit.contain);
   }
 }
