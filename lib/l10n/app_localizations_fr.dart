@@ -3487,6 +3487,10 @@ class AppLocalizationsFr extends AppLocalizations {
   String get filterEdgeStrength => 'Accentuation des contours';
 
   @override
+  String get filterAnimeLineWidth =>
+      'Épaississement des traits (0 = largeur inchangée)';
+
+  @override
   String get filterOutlineColor => 'Couleur du contour';
 
   @override

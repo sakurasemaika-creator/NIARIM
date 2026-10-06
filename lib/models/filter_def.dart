@@ -113,6 +113,9 @@ class FilterDef {
   /// Cathode-ray tube: colour misregistration and beam bleed, 0 to 100.
   final double crtAberration;
   final double crtBleed;
+
+  /// Anime style: how many px the outlines grow by (0 = line widths stay).
+  final double animeLineWidth;
   final double hologramBrightness;
   final double hologramSaturation;
   final AuroraHologramPreset hologramPreset;
@@ -190,6 +193,7 @@ class FilterDef {
     this.pixelArtByDots = false,
     this.crtAberration = 30,
     this.crtBleed = 30,
+    this.animeLineWidth = 0,
     this.hologramBrightness = 0,
     this.hologramSaturation = 0,
     this.hologramPreset = AuroraHologramPreset.silverHologram,
@@ -287,6 +291,7 @@ class FilterDef {
     bool? pixelArtByDots,
     double? crtAberration,
     double? crtBleed,
+    double? animeLineWidth,
     double? hologramBrightness,
     double? hologramSaturation,
     AuroraHologramPreset? hologramPreset,
@@ -364,6 +369,7 @@ class FilterDef {
       pixelArtByDots: pixelArtByDots ?? this.pixelArtByDots,
       crtAberration: crtAberration ?? this.crtAberration,
       crtBleed: crtBleed ?? this.crtBleed,
+      animeLineWidth: animeLineWidth ?? this.animeLineWidth,
       hologramBrightness: hologramBrightness ?? this.hologramBrightness,
       hologramSaturation: hologramSaturation ?? this.hologramSaturation,
       hologramPreset: hologramPreset ?? this.hologramPreset,
@@ -454,6 +460,7 @@ class FilterDef {
     'pixelArtByDots': pixelArtByDots,
     'crtAberration': crtAberration,
     'crtBleed': crtBleed,
+    'animeLineWidth': animeLineWidth,
     'hologramBrightness': hologramBrightness,
     'hologramSaturation': hologramSaturation,
     'hologramPreset': hologramPreset.name,
@@ -600,6 +607,7 @@ class FilterDef {
     pixelArtByDots: j['pixelArtByDots'] as bool? ?? false,
     crtAberration: (j['crtAberration'] as num?)?.toDouble() ?? 30,
     crtBleed: (j['crtBleed'] as num?)?.toDouble() ?? 30,
+    animeLineWidth: (j['animeLineWidth'] as num?)?.toDouble() ?? 0,
     hologramBrightness: (j['hologramBrightness'] as num?)?.toDouble() ?? 0,
     hologramSaturation: (j['hologramSaturation'] as num?)?.toDouble() ?? 0,
     hologramPreset: AuroraHologramPreset.values.firstWhere(

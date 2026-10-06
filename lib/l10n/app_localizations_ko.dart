@@ -3339,6 +3339,9 @@ class AppLocalizationsKo extends AppLocalizations {
   String get filterEdgeStrength => '엣지 강조';
 
   @override
+  String get filterAnimeLineWidth => '선 굵히기(0이면 선 굵기 그대로)';
+
+  @override
   String get filterOutlineColor => '테두리 색상';
 
   @override

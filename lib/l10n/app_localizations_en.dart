@@ -3441,6 +3441,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get filterEdgeStrength => 'Edge strength';
 
   @override
+  String get filterAnimeLineWidth => 'Line thickening (0 keeps line widths)';
+
+  @override
   String get filterOutlineColor => 'Outline color';
 
   @override

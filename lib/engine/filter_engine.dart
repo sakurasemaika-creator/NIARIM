@@ -79,6 +79,7 @@ Uint8List applyDrawFilterInIsolate(
       strength: filter.strength,
       colorCount: filter.colorLevels,
       edgeStrength: filter.edgeStrength,
+      lineWidth: filter.animeLineWidth,
     ),
     // 本適用は選択レイヤーを書き換えず新規レイヤーへ縁取りリングのみを
     // 描画するため、applyOutline（元の描画内容を保持した合成結果。
@@ -1309,6 +1310,10 @@ class FilterEngine {
     return result;
   }
 
+  /// アニメ調：色数を減らし（ポスタリゼーション）、輪郭を暗くする。
+  /// 輪郭は境目の**暗い側だけ**を暗くするので、[lineWidth]が0なら元の線の
+  /// 太さは変わらない（境目の両側を暗くすると、線の両脇が1pxずつ太る）。
+  /// [lineWidth]（px）を上げると、暗くする範囲をその幅だけ広げて線を太らせる。
   Uint8List applyAnimeStyle(
     Uint8List data,
     int width,
@@ -1316,6 +1321,7 @@ class FilterEngine {
     required double strength,
     required int colorCount,
     required double edgeStrength,
+    double lineWidth = 0,
   }) {
     // ① 色数削減（ポスタリゼーション）
     final step = (256 / colorCount.clamp(2, 32)).round();
@@ -1334,8 +1340,42 @@ class FilterEngine {
     // ② エッジ検出（Sobelフィルタ）して輪郭を黒く
     if (edgeStrength > 0) {
       final edges = _sobelEdge(data, width, height);
-      for (int i = 0; i < posterized.length; i += 4) {
-        final e = (edges[i ~/ 4] * edgeStrength).clamp(0, 255).round();
+      final gray = Float64List(width * height);
+      for (var p = 0; p < gray.length; p++) {
+        final i = p * 4;
+        gray[p] = data[i] * 0.299 + data[i + 1] * 0.587 + data[i + 2] * 0.114;
+      }
+      // How much each pixel darkens: only on the darker side of an edge
+      // (at or below the brightness around it).
+      var darken = Uint8List(width * height);
+      for (var y = 0; y < height; y++) {
+        for (var x = 0; x < width; x++) {
+          var sum = 0.0, n = 0;
+          for (
+            var ny = math.max(0, y - 1);
+            ny <= math.min(height - 1, y + 1);
+            ny++
+          ) {
+            for (
+              var nx = math.max(0, x - 1);
+              nx <= math.min(width - 1, x + 1);
+              nx++
+            ) {
+              sum += gray[ny * width + nx];
+              n++;
+            }
+          }
+          final p = y * width + x;
+          if (gray[p] > sum / n) continue;
+          darken[p] = (edges[p] * edgeStrength).clamp(0, 255).round();
+        }
+      }
+      final grow = lineWidth.round();
+      if (grow > 0) darken = _maxFilter(darken, width, height, grow);
+      for (var p = 0; p < darken.length; p++) {
+        final e = darken[p];
+        if (e == 0) continue;
+        final i = p * 4;
         posterized[i] = (posterized[i] - e).clamp(0, 255);
         posterized[i + 1] = (posterized[i + 1] - e).clamp(0, 255);
         posterized[i + 2] = (posterized[i + 2] - e).clamp(0, 255);
@@ -2603,6 +2643,31 @@ class FilterEngine {
       }
     }
     return result;
+  }
+
+  /// The largest value within [radius] px (a round brush) of each pixel.
+  Uint8List _maxFilter(Uint8List values, int width, int height, int radius) {
+    // Separable passes would make a square; a disc keeps lines round-ended.
+    final out = Uint8List(values.length);
+    final r2 = radius * radius;
+    for (var y = 0; y < height; y++) {
+      for (var x = 0; x < width; x++) {
+        var best = 0;
+        for (var dy = -radius; dy <= radius; dy++) {
+          final ny = y + dy;
+          if (ny < 0 || ny >= height) continue;
+          for (var dx = -radius; dx <= radius; dx++) {
+            if (dx * dx + dy * dy > r2) continue;
+            final nx = x + dx;
+            if (nx < 0 || nx >= width) continue;
+            final v = values[ny * width + nx];
+            if (v > best) best = v;
+          }
+        }
+        out[y * width + x] = best;
+      }
+    }
+    return out;
   }
 
   List<int> _sobelEdge(Uint8List data, int width, int height) {

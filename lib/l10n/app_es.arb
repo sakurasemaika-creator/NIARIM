@@ -1269,6 +1269,7 @@
   "filterStrengthBlurRadius": "Intensidad (radio de desenfoque)",
   "filterColorLevels": "Número de colores",
   "filterEdgeStrength": "Realce de bordes",
+  "filterAnimeLineWidth": "Engrosar líneas (0 no cambia el grosor)",
   "filterOutlineColor": "Color del contorno",
   "filterOutlineWidth": "Grosor del contorno",
   "filterToneCurveLinear": "Estándar",

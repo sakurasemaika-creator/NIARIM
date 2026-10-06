@@ -1269,6 +1269,7 @@
   "filterStrengthBlurRadius": "强度（模糊半径）",
   "filterColorLevels": "颜色数",
   "filterEdgeStrength": "边缘强调",
+  "filterAnimeLineWidth": "线条加粗（0为不改变线宽）",
   "filterOutlineColor": "描边颜色",
   "filterOutlineWidth": "描边宽度",
   "filterToneCurveLinear": "标准",

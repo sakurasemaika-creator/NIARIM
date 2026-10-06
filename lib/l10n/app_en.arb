@@ -1269,6 +1269,7 @@
   "filterStrengthBlurRadius": "Strength (blur radius)",
   "filterColorLevels": "Color levels",
   "filterEdgeStrength": "Edge strength",
+  "filterAnimeLineWidth": "Line thickening (0 keeps line widths)",
   "filterOutlineColor": "Outline color",
   "filterOutlineWidth": "Outline width",
   "filterToneCurveLinear": "Standard",

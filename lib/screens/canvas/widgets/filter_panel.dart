@@ -1046,6 +1046,16 @@ class _FilterPanelState extends State<FilterPanel> {
               (v) => service.updateFilterParams(current.id, edgeStrength: v),
               decimals: 2,
             ),
+            _paramSlider(
+              l10n.filterAnimeLineWidth,
+              current.animeLineWidth,
+              0,
+              5,
+              (v) => service.updateFilterParams(
+                current.id,
+                animeLineWidth: v.roundToDouble(),
+              ),
+            ),
           ],
         );
       case FilterKind.outline:
@@ -2002,6 +2012,7 @@ class _FilterPanelState extends State<FilterPanel> {
           strength: filter.strength,
           colorCount: filter.colorLevels,
           edgeStrength: filter.edgeStrength,
+          lineWidth: filter.animeLineWidth * _previewScale,
         );
       case FilterKind.outline:
         return _engine.applyOutline(

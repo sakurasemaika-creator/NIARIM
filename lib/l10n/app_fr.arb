@@ -1269,6 +1269,7 @@
   "filterStrengthBlurRadius": "Intensité (rayon de flou)",
   "filterColorLevels": "Nombre de couleurs",
   "filterEdgeStrength": "Accentuation des contours",
+  "filterAnimeLineWidth": "Épaississement des traits (0 = largeur inchangée)",
   "filterOutlineColor": "Couleur du contour",
   "filterOutlineWidth": "Épaisseur du contour",
   "filterToneCurveLinear": "Standard",

@@ -3491,6 +3491,9 @@ class AppLocalizationsEs extends AppLocalizations {
   String get filterEdgeStrength => 'Realce de bordes';
 
   @override
+  String get filterAnimeLineWidth => 'Engrosar líneas (0 no cambia el grosor)';
+
+  @override
   String get filterOutlineColor => 'Color del contorno';
 
   @override

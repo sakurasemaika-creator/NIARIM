@@ -3312,6 +3312,9 @@ class AppLocalizationsZh extends AppLocalizations {
   String get filterEdgeStrength => '边缘强调';
 
   @override
+  String get filterAnimeLineWidth => '线条加粗（0为不改变线宽）';
+
+  @override
   String get filterOutlineColor => '描边颜色';
 
   @override
@@ -10136,6 +10139,9 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get filterEdgeStrength => '邊緣強調';
+
+  @override
+  String get filterAnimeLineWidth => '線條加粗（0為不改變線寬）';
 
   @override
   String get filterOutlineColor => '描邊顏色';

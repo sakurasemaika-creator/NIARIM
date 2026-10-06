@@ -3325,6 +3325,9 @@ class AppLocalizationsJa extends AppLocalizations {
   String get filterEdgeStrength => 'エッジ強調';
 
   @override
+  String get filterAnimeLineWidth => '線の太らせ（0で線幅を変えない）';
+
+  @override
   String get filterOutlineColor => '縁取り色';
 
   @override

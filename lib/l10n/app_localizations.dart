@@ -6173,6 +6173,12 @@ abstract class AppLocalizations {
   /// **'エッジ強調'**
   String get filterEdgeStrength;
 
+  /// No description provided for @filterAnimeLineWidth.
+  ///
+  /// In ja, this message translates to:
+  /// **'線の太らせ（0で線幅を変えない）'**
+  String get filterAnimeLineWidth;
+
   /// No description provided for @filterOutlineColor.
   ///
   /// In ja, this message translates to:

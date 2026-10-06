@@ -1525,6 +1525,7 @@
   "filterStrengthBlurRadius": "強さ（ぼかし半径）",
   "filterColorLevels": "色数",
   "filterEdgeStrength": "エッジ強調",
+  "filterAnimeLineWidth": "線の太らせ（0で線幅を変えない）",
   "filterOutlineColor": "縁取り色",
   "filterOutlineWidth": "縁取り線幅",
   "filterToneCurveLinear": "標準",
