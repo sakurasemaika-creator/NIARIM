@@ -1728,7 +1728,7 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get helpDrawingFilterDesc =>
-      'Filtres appliqués directement au calque sélectionné (contrairement aux filtres d’effet, qui s’appliquent à toute la timeline ou à une scène, les filtres de dessin agissent par calque). Les 26 filtres inclus sont Flou gaussien, Flou d’objectif, Style anime, Courbe de tons, Niveaux, Contour, Netteté, Masque flou, Vignettage, Grain de pellicule, Anime rétro, Tube cathodique, Seuil, Objectif fisheye, Aberration chromatique, Distorsion optique, Pixel art, Filtre de texture, Intégration à l’arrière-plan, Accumulation d’encre, Trait automatique, Prisme, Bruit VHS, Inversion des couleurs, Mosaïque et Bruit. Contour ne réécrit pas le calque d’origine : il dessine seulement le résultat sur un nouveau calque. Distorsion optique applique une déformation localisée, comme à travers un verre de lunettes très correcteur, uniquement sur la zone peinte du calque de sélection. Pixel art permet aussi de choisir un mode de couleur (sans limite, couleurs définies, nombre de couleurs ou palette). Sa taille se règle par la taille des blocs (100 crans, de 1 à 100) ou par un nombre de points en largeur ou en hauteur (de 1 à la résolution du canevas) ; modifier l’un met l’autre à jour. Dans les deux cas, les points restent carrés, sans bord semi-transparent. Le Trait automatique permet de modifier les points de contrôle vectoriels temporaires avant d’appliquer le filtre. Faites glisser un point pour déplacer uniquement ce point, touchez un segment pour ajouter un point de contrôle, ou touchez un point puis confirmez pour le supprimer. La géométrie modifiée est utilisée directement dans le résultat appliqué.';
+      'Filtres appliqués directement au calque sélectionné (contrairement aux filtres d’effet, qui s’appliquent à toute la timeline ou à une scène, les filtres de dessin agissent par calque). Les 26 filtres inclus sont Flou gaussien, Flou d’objectif, Style anime, Courbe de tons, Niveaux, Contour, Netteté, Masque flou, Vignettage, Grain de pellicule, Anime rétro, Tube cathodique, Seuil, Objectif fisheye, Aberration chromatique, Distorsion optique, Pixel art, Filtre de texture, Intégration à l’arrière-plan, Accumulation d’encre, Trait automatique, Prisme, Bruit VHS, Inversion des couleurs, Mosaïque et Bruit. Contour ne réécrit pas le calque d’origine : il dessine seulement le résultat sur un nouveau calque. Distorsion optique applique une déformation localisée, comme à travers un verre de lunettes très correcteur, uniquement sur la zone peinte du calque de sélection. Pixel art permet aussi de choisir un mode de couleur (sans limite, couleurs définies, nombre de couleurs ou palette). Sa taille se règle par la taille des blocs (100 crans, de 1 à 100) ou par des curseurs de points en largeur et en hauteur (1 tout à gauche, la taille du canevas tout à droite) ; déplacer l’un déplace l’autre en gardant les proportions du dessin, et les deux réglages restent liés. Dans les deux cas, les points restent carrés, sans bord semi-transparent. Le Trait automatique permet de modifier les points de contrôle vectoriels temporaires avant d’appliquer le filtre. Faites glisser un point pour déplacer uniquement ce point, touchez un segment pour ajouter un point de contrôle, ou touchez un point puis confirmez pour le supprimer. La géométrie modifiée est utilisée directement dans le résultat appliqué.';
 
   @override
   String get helpLayerKeyframeTitle =>
@@ -5716,10 +5716,6 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get filterPixelateDotsHigh => 'Points en hauteur';
-
-  @override
-  String get filterPixelateDotsHint =>
-      'Saisissez l’un des deux ; l’autre et la taille des blocs suivent (de 1 à la résolution du canevas).';
 
   @override
   String filterPixelateDotsSummary(int wide, int high) {

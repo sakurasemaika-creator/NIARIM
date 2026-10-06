@@ -258,25 +258,43 @@ void main() {
             );
             expect(current().pixelArtByDots, byDots);
             if (byDots) {
-              // As many dots across as the canvas has pixels.
-              final across = find.byKey(const ValueKey('pixel-art-dots-wide'));
+              // Drag "dots across" to its right end: the canvas's own size.
+              final across = find.descendant(
+                of: find.byKey(const ValueKey('pixel-art-dots-wide')),
+                matching: find.byType(Slider),
+              );
               await tester.ensureVisible(across);
-              await tester.enterText(across, '256');
-              await tester.testTextInput.receiveAction(TextInputAction.done);
+              await tester.pump();
+              final rect = tester.getRect(across);
+              await tester.dragFrom(rect.center, Offset(rect.width, 0));
               await h.settle();
+              for (final key in [
+                'pixel-art-dots-wide',
+                'pixel-art-dots-high',
+              ]) {
+                expect(
+                  tester
+                      .widget<Slider>(
+                        find.descendant(
+                          of: find.byKey(ValueKey(key)),
+                          matching: find.byType(Slider),
+                        ),
+                      )
+                      .value,
+                  256,
+                  reason: '$key follows, keeping the proportions',
+                );
+              }
+            } else {
+              expect(
+                find.descendant(
+                  of: panel,
+                  matching: find.text(h.l10n.filterPixelateDotsSummary(32, 32)),
+                ),
+                findsOneWidget,
+              );
             }
             expect(current().pixelArtCellSize(256, 256), byDots ? 1 : 8);
-            expect(
-              find.descendant(
-                of: panel,
-                matching: find.text(
-                  byDots
-                      ? h.l10n.filterPixelateDotsSummary(256, 256)
-                      : h.l10n.filterPixelateDotsSummary(32, 32),
-                ),
-              ),
-              findsOneWidget,
-            );
           }
           await h.capture('$id-settings');
           await h.tap(find.text(h.l10n.filterApplyButton));
@@ -335,7 +353,7 @@ void main() {
             note: switch (id) {
               'pixel_art_blocks_six_colours' => '8pxの正方形ブロック・黒白赤黄青緑の6色・半透明なし。',
               'pixel_art_dots_canvas_resolution' =>
-                'ドット数で横256（キャンバスの画素数）を指定＝1画素1ドット・6色・半透明なし。',
+                '横のドット数のスライダーを右端（キャンバスの画素数256）まで動かし、縦も256に連動＝1画素1ドット・6色・半透明なし。',
               _ => 'ブロック内の色と不透明度を平均する別効果。',
             },
           );

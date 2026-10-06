@@ -100,18 +100,41 @@ void main() {
   Finder inPanel(Finder finder) =>
       find.descendant(of: find.byType(FilterPanel), matching: finder);
 
-  Future<void> type(WidgetTester tester, String key, String value) async {
-    final field = find.byKey(ValueKey(key));
-    await tester.ensureVisible(field);
-    await tester.enterText(field, value);
-    await tester.testTextInput.receiveAction(TextInputAction.done);
+  Finder dotSlider(String key) => find.descendant(
+    of: find.byKey(ValueKey(key)),
+    matching: find.byType(Slider),
+  );
+
+  /// The dot count a slider shows.
+  int dots(WidgetTester tester, String key) =>
+      tester.widget<Slider>(dotSlider(key)).value.round();
+
+  /// Drags a dot slider all the way to one end, as a user would.
+  Future<void> dragToEnd(
+    WidgetTester tester,
+    String key, {
+    required bool right,
+  }) async {
+    final slider = dotSlider(key);
+    await tester.ensureVisible(slider);
+    await tester.pump();
+    final rect = tester.getRect(slider);
+    await tester.dragFrom(
+      Offset(rect.center.dx, rect.center.dy),
+      Offset(right ? rect.width : -rect.width, 0),
+    );
     await tester.pump();
   }
 
-  String fieldText(WidgetTester tester, String key) =>
-      tester.widget<TextField>(find.byKey(ValueKey(key))).controller!.text;
+  /// Sets a dot slider to an exact count through its own callback (dragging
+  /// to an exact value on a 1 - 96 track is not reliable).
+  Future<void> setTo(WidgetTester tester, String key, int count) async {
+    tester.widget<Slider>(dotSlider(key)).onChanged!(count.toDouble());
+    await tester.pump();
+  }
 
-  testWidgets('the slider and the dot counts stay in step', (tester) async {
+  testWidgets('the block-size slider and the dot sliders stay in step, and the '
+      'dot sliders keep the picture\'s proportions', (tester) async {
     final (service, l10n) = await openPanel(tester, 'Filter0018');
     FilterDef current() => service.currentFilter!;
     double cell() => current().pixelArtCellSize(_w, _h);
@@ -120,6 +143,10 @@ void main() {
       findsOneWidget,
       reason: '$wide × $high dots',
     );
+    void expectDots(int wide, int high) {
+      expect(dots(tester, 'pixel-art-dots-wide'), wide, reason: 'across');
+      expect(dots(tester, 'pixel-art-dots-high'), high, reason: 'down');
+    }
 
     // Block size 8 on a 96 × 60 canvas: 12 × 8 dots.
     expect(current().pixelArtByDots, isFalse);
@@ -137,38 +164,54 @@ void main() {
     // 10 whole dots and a narrower last one across, 6 + 1 down.
     expectSummary(11, 7);
 
-    // Switch to the dot count: it shows the same size.
+    // Switch to the dot sliders: they show the same size.
     await tester.tap(inPanel(find.text(l10n.filterPixelateModeDots)));
     await tester.pump();
     expect(current().pixelArtByDots, isTrue);
     expect(cell(), 9, reason: 'switching changes nothing');
-    expect(fieldText(tester, 'pixel-art-dots-wide'), '11');
-    expect(fieldText(tester, 'pixel-art-dots-high'), '7');
+    expectDots(11, 7);
+    final across = tester.widget<Slider>(dotSlider('pixel-art-dots-wide'));
+    final down = tester.widget<Slider>(dotSlider('pixel-art-dots-high'));
+    expect((across.min, across.max), (1, _w), reason: '1 px to the canvas');
+    expect((down.min, down.max), (1, _h));
 
-    // 24 dots across: blocks of 4, so 15 dots down.
-    await type(tester, 'pixel-art-dots-wide', '24');
-    expect(cell(), 4);
-    expect(fieldText(tester, 'pixel-art-dots-high'), '15');
-    expectSummary(24, 15);
-
-    // 6 dots down: blocks of 10, so 10 dots across.
-    await type(tester, 'pixel-art-dots-high', '6');
-    expect(cell(), 10);
-    expect(fieldText(tester, 'pixel-art-dots-wide'), '10');
-    expectSummary(10, 6);
-
-    // A count beyond the canvas stops at its resolution: one dot per pixel.
-    await type(tester, 'pixel-art-dots-wide', '500');
-    expect(fieldText(tester, 'pixel-art-dots-wide'), '$_w');
+    // All the way right: the canvas's own size, one dot per pixel.
+    await dragToEnd(tester, 'pixel-art-dots-wide', right: true);
     expect(cell(), 1);
-    expectSummary(_w, _h);
+    expectDots(_w, _h);
 
-    // An exact count that doesn't divide the canvas: 7 dots down 60 pixels.
-    await type(tester, 'pixel-art-dots-high', '7');
+    // All the way left on "down": 1px tall, so the picture is one dot.
+    await dragToEnd(tester, 'pixel-art-dots-high', right: false);
+    expect(cell(), _h);
+    expectDots(2, 1);
+
+    // 24 across: dots of 4, so 15 down — the proportions are kept.
+    await setTo(tester, 'pixel-art-dots-wide', 24);
+    expect(cell(), 4);
+    expectDots(24, 15);
+
+    // 6 down: dots of 10, so 10 across.
+    await setTo(tester, 'pixel-art-dots-high', 6);
+    expect(cell(), 10);
+    expectDots(10, 6);
+
+    // The − button: 5 down, dots of 12, 8 across.
+    final minus = find.descendant(
+      of: find.byKey(const ValueKey('pixel-art-dots-high')),
+      matching: find.byIcon(Icons.remove_rounded),
+    );
+    await tester.ensureVisible(minus);
+    await tester.tap(minus);
+    await tester.pump();
+    expect(cell(), 12);
+    expectDots(8, 5);
+
+    // A count that doesn't divide the canvas: 7 down 60 pixels.
+    await setTo(tester, 'pixel-art-dots-high', 7);
     expect(cell(), closeTo(60 / 7, 1e-9));
-    expectSummary(12, 7);
+    expectDots(12, 7);
 
-    // Back to the slider: same size, and the slider shows it.
+    // Back to the block-size slider: same size, and it shows it.
     await tester.tap(inPanel(find.text(l10n.filterPixelateModeBlock)));
     await tester.pump();
     expect(cell(), closeTo(60 / 7, 1e-9));
@@ -184,7 +227,7 @@ void main() {
     expect(current().pixelArtByDots, isTrue);
     service.undoFilterEdit();
     await tester.pump();
-    expect(cell(), 1, reason: 'back to one dot per pixel');
+    expect(cell(), 12, reason: 'back to 5 down');
     await tester.pumpWidget(const SizedBox());
   });
 

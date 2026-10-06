@@ -6,7 +6,6 @@ import 'dart:ui' as ui;
 import 'package:flutter/foundation.dart' show compute;
 import 'package:flutter/gestures.dart' show DragStartBehavior;
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart' show FilteringTextInputFormatter;
 import 'package:provider/provider.dart';
 
 import '../../../config/font_fallback.dart';
@@ -893,7 +892,6 @@ class _FilterPanelState extends State<FilterPanel> {
             current.id,
             strength: side / count.clamp(1, side),
           );
-          _updatePreview();
         }
 
         return Column(
@@ -919,23 +917,26 @@ class _FilterPanelState extends State<FilterPanel> {
             ),
             const SizedBox(height: 6),
             if (current.pixelArtByDots) ...[
-              _PixelArtDotFields(
-                key: const ValueKey('pixel-art-dot-fields'),
-                wide: wide,
-                high: high,
-                maxWide: canvasW,
-                maxHigh: canvasH,
-                wideLabel: l10n.filterPixelateDotsWide,
-                highLabel: l10n.filterPixelateDotsHigh,
-                onWide: (n) => setDots(n, vertical: false),
-                onHigh: (n) => setDots(n, vertical: true),
+              // Dots across and down, from 1 to the canvas's own size. Both
+              // set the same square dot, so moving one moves the other and
+              // the picture keeps its proportions.
+              _integerStepperSlider(
+                l10n.filterPixelateDotsWide,
+                wide,
+                1,
+                canvasW,
+                (n) => setDots(n, vertical: false),
+                key: const ValueKey('pixel-art-dots-wide'),
               ),
-              const SizedBox(height: 4),
-              Text(
-                l10n.filterPixelateDotsHint,
-                style: Theme.of(context).textTheme.bodySmall,
+              _integerStepperSlider(
+                l10n.filterPixelateDotsHigh,
+                high,
+                1,
+                canvasH,
+                (n) => setDots(n, vertical: true),
+                key: const ValueKey('pixel-art-dots-high'),
               ),
-            ] else
+            ] else ...[
               _paramSlider(
                 l10n.filterPixelateBlockSize,
                 cell,
@@ -947,11 +948,12 @@ class _FilterPanelState extends State<FilterPanel> {
                 ),
                 shownValue: cell,
               ),
-            Text(
-              l10n.filterPixelateDotsSummary(wide, high),
-              key: const ValueKey('pixel-art-dots-summary'),
-              style: Theme.of(context).textTheme.bodySmall,
-            ),
+              Text(
+                l10n.filterPixelateDotsSummary(wide, high),
+                key: const ValueKey('pixel-art-dots-summary'),
+                style: Theme.of(context).textTheme.bodySmall,
+              ),
+            ],
             const SizedBox(height: 6),
             PixelColorModeSelector(
               mode: current.pixelColorMode,
@@ -1811,6 +1813,7 @@ class _FilterPanelState extends State<FilterPanel> {
     ValueChanged<int> onChanged, {
     String suffix = '',
     bool wrap = false,
+    Key? key,
   }) {
     int normalize(int next) {
       if (!wrap) return next.clamp(min, max);
@@ -1825,6 +1828,7 @@ class _FilterPanelState extends State<FilterPanel> {
 
     final shown = normalize(value);
     return Padding(
+      key: key,
       padding: const EdgeInsets.symmetric(vertical: 2),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -2761,145 +2765,4 @@ class _ToneCurvePainter extends CustomPainter {
       oldDelegate.histogramChannel != histogramChannel ||
       oldDelegate.color != color ||
       oldDelegate.gridColor != gridColor;
-}
-
-/// The pixel-art dot count across and down the canvas. Typing either one
-/// (committed on Enter or when the field loses focus) sets the size; the other
-/// then follows from it.
-class _PixelArtDotFields extends StatefulWidget {
-  const _PixelArtDotFields({
-    super.key,
-    required this.wide,
-    required this.high,
-    required this.maxWide,
-    required this.maxHigh,
-    required this.wideLabel,
-    required this.highLabel,
-    required this.onWide,
-    required this.onHigh,
-  });
-
-  final int wide;
-  final int high;
-  final int maxWide;
-  final int maxHigh;
-  final String wideLabel;
-  final String highLabel;
-  final ValueChanged<int> onWide;
-  final ValueChanged<int> onHigh;
-
-  @override
-  State<_PixelArtDotFields> createState() => _PixelArtDotFieldsState();
-}
-
-class _PixelArtDotFieldsState extends State<_PixelArtDotFields> {
-  late final _wide = TextEditingController(text: '${widget.wide}');
-  late final _high = TextEditingController(text: '${widget.high}');
-  final _wideFocus = FocusNode();
-  final _highFocus = FocusNode();
-
-  @override
-  void initState() {
-    super.initState();
-    _wideFocus.addListener(() {
-      if (!_wideFocus.hasFocus) _commitWide();
-    });
-    _highFocus.addListener(() {
-      if (!_highFocus.hasFocus) _commitHigh();
-    });
-  }
-
-  @override
-  void didUpdateWidget(_PixelArtDotFields oldWidget) {
-    super.didUpdateWidget(oldWidget);
-    // Follow the other field (or Undo) unless the user is typing here.
-    if (!_wideFocus.hasFocus && _wide.text != '${widget.wide}') {
-      _wide.text = '${widget.wide}';
-    }
-    if (!_highFocus.hasFocus && _high.text != '${widget.high}') {
-      _high.text = '${widget.high}';
-    }
-  }
-
-  void _commitWide() =>
-      _commit(_wide, widget.wide, widget.maxWide, widget.onWide);
-
-  void _commitHigh() =>
-      _commit(_high, widget.high, widget.maxHigh, widget.onHigh);
-
-  void _commit(
-    TextEditingController field,
-    int current,
-    int max,
-    ValueChanged<int> onChanged,
-  ) {
-    final typed = int.tryParse(field.text.trim());
-    if (typed == null) {
-      field.text = '$current';
-      return;
-    }
-    final count = typed.clamp(1, max);
-    field.text = '$count';
-    if (count != current) onChanged(count);
-  }
-
-  @override
-  void dispose() {
-    _wide.dispose();
-    _high.dispose();
-    _wideFocus.dispose();
-    _highFocus.dispose();
-    super.dispose();
-  }
-
-  Widget _field(
-    Key key,
-    TextEditingController controller,
-    FocusNode focus,
-    String label,
-    int max,
-    VoidCallback commit,
-  ) => TextField(
-    key: key,
-    controller: controller,
-    focusNode: focus,
-    keyboardType: TextInputType.number,
-    inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-    textInputAction: TextInputAction.done,
-    style: const TextStyle(fontSize: 12),
-    decoration: InputDecoration(
-      isDense: true,
-      labelText: label,
-      helperText: '1 - $max',
-    ),
-    onSubmitted: (_) => commit(),
-  );
-
-  @override
-  Widget build(BuildContext context) => Row(
-    crossAxisAlignment: CrossAxisAlignment.start,
-    children: [
-      Expanded(
-        child: _field(
-          const ValueKey('pixel-art-dots-wide'),
-          _wide,
-          _wideFocus,
-          widget.wideLabel,
-          widget.maxWide,
-          _commitWide,
-        ),
-      ),
-      const SizedBox(width: 12),
-      Expanded(
-        child: _field(
-          const ValueKey('pixel-art-dots-high'),
-          _high,
-          _highFocus,
-          widget.highLabel,
-          widget.maxHigh,
-          _commitHigh,
-        ),
-      ),
-    ],
-  );
 }
