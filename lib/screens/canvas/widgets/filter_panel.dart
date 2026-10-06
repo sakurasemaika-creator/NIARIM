@@ -1398,13 +1398,38 @@ class _FilterPanelState extends State<FilterPanel> {
           (v) => service.updateFilterParams(current.id, strength: v),
         );
       case FilterKind.retroAnime:
-      case FilterKind.crt:
         return _paramSlider(
           l10n.filterRetroStrength,
           current.strength,
           0,
           100,
           (v) => service.updateFilterParams(current.id, strength: v),
+        );
+      case FilterKind.crt:
+        return Column(
+          children: [
+            _paramSlider(
+              l10n.filterCrtScreenStrength,
+              current.strength,
+              0,
+              100,
+              (v) => service.updateFilterParams(current.id, strength: v),
+            ),
+            _paramSlider(
+              l10n.filterCrtAberration,
+              current.crtAberration,
+              0,
+              100,
+              (v) => service.updateFilterParams(current.id, crtAberration: v),
+            ),
+            _paramSlider(
+              l10n.filterCrtBleed,
+              current.crtBleed,
+              0,
+              100,
+              (v) => service.updateFilterParams(current.id, crtBleed: v),
+            ),
+          ],
         );
       case FilterKind.colorAdjust:
         return Column(
@@ -1483,25 +1508,26 @@ class _FilterPanelState extends State<FilterPanel> {
               30,
               (v) => service.updateFilterParams(current.id, strength: v),
             ),
+            // How much of the shift goes sideways (X, Y) and radially (Z).
             _paramSlider(
               l10n.filterAxisX,
               current.chromaticShiftX,
-              -30,
-              30,
+              -100,
+              100,
               (v) => service.updateFilterParams(current.id, chromaticShiftX: v),
             ),
             _paramSlider(
               l10n.filterAxisY,
               current.chromaticShiftY,
-              -30,
-              30,
+              -100,
+              100,
               (v) => service.updateFilterParams(current.id, chromaticShiftY: v),
             ),
             _paramSlider(
               l10n.filterAxisZ,
               current.chromaticShiftZ,
-              -180,
-              180,
+              -100,
+              100,
               (v) => service.updateFilterParams(current.id, chromaticShiftZ: v),
             ),
           ],
@@ -2074,7 +2100,15 @@ class _FilterPanelState extends State<FilterPanel> {
       case FilterKind.retroAnime:
         return _engine.applyRetroAnime(data, width, height, filter.strength);
       case FilterKind.crt:
-        return _engine.applyCrt(data, width, height, filter.strength);
+        // The misregistration and bleed are in canvas pixels.
+        return _engine.applyCrt(
+          data,
+          width,
+          height,
+          filter.strength,
+          aberration: filter.crtAberration * _previewScale,
+          bleed: filter.crtBleed * _previewScale,
+        );
       case FilterKind.colorAdjust:
         return _engine.applyColorAdjust(
           data,
@@ -2102,19 +2136,14 @@ class _FilterPanelState extends State<FilterPanel> {
           centerOffsetY: filter.fisheyeCenterY * _previewScale,
         );
       case FilterKind.chromaticAberration:
-        return _engine.applyChromaticAberration(
+        final (dx, dy, radial) = filter.chromaticDisplacement;
+        return _engine.applyChromaticShift(
           data,
           width,
           height,
-          math.max(
-            filter.strength,
-            math.sqrt(
-              filter.chromaticShiftX * filter.chromaticShiftX +
-                  filter.chromaticShiftY * filter.chromaticShiftY,
-            ),
-          ),
-          math.atan2(filter.chromaticShiftY, filter.chromaticShiftX) +
-              filter.chromaticShiftZ * math.pi / 180.0,
+          shiftX: dx * _previewScale,
+          shiftY: dy * _previewScale,
+          radial: radial * _previewScale,
         );
       case FilterKind.lensDistortion:
         return _engine.applyLensDistortion(

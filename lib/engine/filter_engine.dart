@@ -147,7 +147,14 @@ Uint8List applyDrawFilterInIsolate(
       height,
       filter.strength,
     ),
-    FilterKind.crt => engine.applyCrt(data, width, height, filter.strength),
+    FilterKind.crt => engine.applyCrt(
+      data,
+      width,
+      height,
+      filter.strength,
+      aberration: filter.crtAberration,
+      bleed: filter.crtBleed,
+    ),
     FilterKind.colorAdjust => engine.applyColorAdjust(
       data,
       width,
@@ -171,19 +178,13 @@ Uint8List applyDrawFilterInIsolate(
       centerOffsetX: filter.fisheyeCenterX,
       centerOffsetY: filter.fisheyeCenterY,
     ),
-    FilterKind.chromaticAberration => engine.applyChromaticAberration(
+    FilterKind.chromaticAberration => engine.applyChromaticShift(
       data,
       width,
       height,
-      math.max(
-        filter.strength,
-        math.sqrt(
-          filter.chromaticShiftX * filter.chromaticShiftX +
-              filter.chromaticShiftY * filter.chromaticShiftY,
-        ),
-      ),
-      math.atan2(filter.chromaticShiftY, filter.chromaticShiftX) +
-          filter.chromaticShiftZ * math.pi / 180.0,
+      shiftX: filter.chromaticDisplacement.$1,
+      shiftY: filter.chromaticDisplacement.$2,
+      radial: filter.chromaticDisplacement.$3,
     ),
     FilterKind.lensDistortion => engine.applyLensDistortion(
       data,
@@ -874,6 +875,9 @@ class FilterEngine {
     return result;
   }
 
+  /// 色収差（[strength]px、[direction]ラジアンの向き）。演出フィルター・
+  /// ブラウン管が使う。向きと量を横・縦のずれに直して[applyChromaticShift]へ
+  /// 渡す。
   Uint8List applyChromaticAberration(
     Uint8List data,
     int width,
@@ -881,21 +885,75 @@ class FilterEngine {
     double strength,
     double direction,
   ) {
-    final shift = strength.round().clamp(1, 30);
-    final dx = (math.cos(direction) * shift).round();
-    final dy = (math.sin(direction) * shift).round();
-    final result = Uint8List.fromList(data);
-    for (int y = 0; y < height; y++) {
-      for (int x = 0; x < width; x++) {
-        final idx = (y * width + x) * 4;
-        // Rチャンネルをdx,dyずらす
-        final rx = (x + dx).clamp(0, width - 1);
-        final ry = (y + dy).clamp(0, height - 1);
-        result[idx] = data[(ry * width + rx) * 4];
-        // Bチャンネルを逆方向にずらす
-        final bx = (x - dx).clamp(0, width - 1);
-        final by = (y - dy).clamp(0, height - 1);
-        result[idx + 2] = data[(by * width + bx) * 4 + 2];
+    final shift = strength.clamp(1, 30).toDouble();
+    return applyChromaticShift(
+      data,
+      width,
+      height,
+      shiftX: math.cos(direction) * shift,
+      shiftY: math.sin(direction) * shift,
+    );
+  }
+
+  /// Chromatic aberration: red is displaced one way and blue the other, green
+  /// stays put. [shiftX]/[shiftY] move them sideways (canvas px); [radial]
+  /// moves them apart along the line from the centre, by [radial] px at the
+  /// corners and proportionally less inwards (a lens magnifying each colour
+  /// slightly differently), so the centre stays sharp.
+  ///
+  /// Pixels are premultiplied, so each channel is sampled together with the
+  /// alpha it was painted with and the result takes the strongest of them:
+  /// the coloured fringes may extend past the shape's edge instead of being
+  /// clipped to it, and stay valid premultiplied colours.
+  Uint8List applyChromaticShift(
+    Uint8List data,
+    int width,
+    int height, {
+    double shiftX = 0,
+    double shiftY = 0,
+    double radial = 0,
+  }) {
+    if (width <= 0 || height <= 0) return Uint8List.fromList(data);
+    if (shiftX == 0 && shiftY == 0 && radial == 0) {
+      return Uint8List.fromList(data);
+    }
+    final cx = (width - 1) / 2.0, cy = (height - 1) / 2.0;
+    final corner = math.max(1.0, math.sqrt(cx * cx + cy * cy));
+    final perPixel = radial / corner;
+    final result = Uint8List(data.length);
+    // Bilinear sample of one channel and its alpha, clamped at the edges so
+    // a picture that fills the canvas doesn't gain a dark border.
+    (double, double) sample(double x, double y, int channel) {
+      final fx = x.clamp(0.0, width - 1.0), fy = y.clamp(0.0, height - 1.0);
+      final x0 = fx.floor(), y0 = fy.floor();
+      final x1 = math.min(x0 + 1, width - 1), y1 = math.min(y0 + 1, height - 1);
+      final tx = fx - x0, ty = fy - y0;
+      double at(int px, int py, int c) => data[(py * width + px) * 4 + c] * 1.0;
+      double mix(int c) {
+        final top = at(x0, y0, c) * (1 - tx) + at(x1, y0, c) * tx;
+        final bottom = at(x0, y1, c) * (1 - tx) + at(x1, y1, c) * tx;
+        return top * (1 - ty) + bottom * ty;
+      }
+
+      return (mix(channel), mix(3));
+    }
+
+    for (var y = 0; y < height; y++) {
+      for (var x = 0; x < width; x++) {
+        final i = (y * width + x) * 4;
+        final dx = shiftX + (x - cx) * perPixel;
+        final dy = shiftY + (y - cy) * perPixel;
+        // Red appears moved by (dx, dy): read it from the opposite side.
+        final (red, redAlpha) = sample(x - dx, y - dy, 0);
+        final (blue, blueAlpha) = sample(x + dx, y + dy, 2);
+        final alpha = math.max(
+          data[i + 3] * 1.0,
+          math.max(redAlpha, blueAlpha),
+        );
+        result[i] = red.round().clamp(0, 255);
+        result[i + 1] = data[i + 1];
+        result[i + 2] = blue.round().clamp(0, 255);
+        result[i + 3] = alpha.round().clamp(0, 255);
       }
     }
     return result;
@@ -2090,31 +2148,49 @@ class FilterEngine {
     return result;
   }
 
-  /// ブラウン管（CRT）風：色収差・周辺減光・走査線を組み合わせた昔のテレビ・
-  /// モニター表示のような質感。いずれも既存メソッドの組み合わせ＋1画素
-  /// ごとの単純な走査線処理のみで、負荷は軽い。
-  Uint8List applyCrt(Uint8List data, int width, int height, double strength) {
+  /// ブラウン管：電子ビームのにじみ（横方向のぼかし）→色ずれ（RとBの横ずれ）
+  /// →RGBの蛍光体の縦じま＋走査線→周辺減光の順に重ねる。VHS（時間で揺れる
+  /// トラッキング・色のにじみ・ノイズ）とは違い、画面そのものの構造を見せる。
+  /// [strength]は蛍光体・走査線・周辺減光の濃さ、[aberration]は色ずれ
+  /// （100で4px）、[bleed]はにじみ（100で半径4pxの横ぼかし）。いずれも0〜100。
+  Uint8List applyCrt(
+    Uint8List data,
+    int width,
+    int height,
+    double strength, {
+    double aberration = 30,
+    double bleed = 30,
+  }) {
     final amount = (strength / 100.0).clamp(0.0, 1.0);
-    if (amount <= 0) return Uint8List.fromList(data);
-    var result = applyChromaticAberration(
-      data,
-      width,
-      height,
-      1 + amount * 2,
-      0,
-    );
-    result = applyVignette(result, width, height, 20 + amount * 30);
-    final darken = 1.0 - amount * 0.35;
-    for (int y = 0; y < height; y += 2) {
-      for (int x = 0; x < width; x++) {
-        final idx = (y * width + x) * 4;
-        if (result[idx + 3] == 0) continue;
-        result[idx] = (result[idx] * darken).round().clamp(0, 255);
-        result[idx + 1] = (result[idx + 1] * darken).round().clamp(0, 255);
-        result[idx + 2] = (result[idx + 2] * darken).round().clamp(0, 255);
+    final shift = (aberration / 100.0).clamp(0.0, 1.0) * 4;
+    final smear = ((bleed / 100.0).clamp(0.0, 1.0) * 4).round();
+    var result = smear > 0
+        ? _convolveH(data, width, height, _gaussianKernel(smear))
+        : Uint8List.fromList(data);
+    if (shift > 0) {
+      result = applyChromaticShift(result, width, height, shiftX: shift);
+    }
+    if (amount <= 0) return result;
+    // Each column shows one phosphor colour more than the other two (an
+    // aperture grille), and every other row (the even ones) is a darker gap
+    // between scan lines. The lit colour is lifted a little so the screen doesn't just
+    // get darker; premultiplied channels never exceed their alpha.
+    final dim = 1 - amount * 0.45;
+    final lift = 1 + amount * 0.25;
+    final gap = 1 - amount * 0.35;
+    for (var y = 0; y < height; y++) {
+      for (var x = 0; x < width; x++) {
+        final i = (y * width + x) * 4;
+        final a = result[i + 3];
+        if (a == 0) continue;
+        for (var c = 0; c < 3; c++) {
+          var f = c == x % 3 ? lift : dim;
+          if (y.isEven) f *= gap;
+          result[i + c] = (result[i + c] * f).round().clamp(0, a);
+        }
       }
     }
-    return result;
+    return applyVignette(result, width, height, 20 + amount * 30);
   }
 
   /// モザイク化（[mosaicSize]）＋配色処理（[colorMode]）を組み合わせた

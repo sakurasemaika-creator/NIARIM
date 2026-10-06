@@ -6131,6 +6131,24 @@ abstract class AppLocalizations {
   /// **'強さ'**
   String get filterRetroStrength;
 
+  /// No description provided for @filterCrtScreenStrength.
+  ///
+  /// In ja, this message translates to:
+  /// **'走査線・蛍光体の濃さ'**
+  String get filterCrtScreenStrength;
+
+  /// No description provided for @filterCrtAberration.
+  ///
+  /// In ja, this message translates to:
+  /// **'色ずれの強さ'**
+  String get filterCrtAberration;
+
+  /// No description provided for @filterCrtBleed.
+  ///
+  /// In ja, this message translates to:
+  /// **'にじみの強さ'**
+  String get filterCrtBleed;
+
   /// No description provided for @filterOutlineLayerNameSuffix.
   ///
   /// In ja, this message translates to:

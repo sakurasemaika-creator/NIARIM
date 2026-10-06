@@ -3468,6 +3468,15 @@ class AppLocalizationsEs extends AppLocalizations {
   String get filterRetroStrength => 'Intensidad';
 
   @override
+  String get filterCrtScreenStrength => 'Líneas de barrido y fósforo';
+
+  @override
+  String get filterCrtAberration => 'Desajuste de color';
+
+  @override
+  String get filterCrtBleed => 'Sangrado del haz';
+
+  @override
   String filterOutlineLayerNameSuffix(String name) {
     return '$name (Contorno)';
   }

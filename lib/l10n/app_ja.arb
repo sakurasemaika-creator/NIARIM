@@ -1511,6 +1511,9 @@
   "filterNameRetroAnime": "レトロアニメ",
   "filterNameCrt": "ブラウン管",
   "filterRetroStrength": "強さ",
+  "filterCrtScreenStrength": "走査線・蛍光体の濃さ",
+  "filterCrtAberration": "色ずれの強さ",
+  "filterCrtBleed": "にじみの強さ",
   "filterOutlineLayerNameSuffix": "{name}（縁取り）",
   "@filterOutlineLayerNameSuffix": {
     "placeholders": {

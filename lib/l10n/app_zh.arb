@@ -1255,6 +1255,9 @@
   "filterNameRetroAnime": "复古动漫",
   "filterNameCrt": "老电视",
   "filterRetroStrength": "强度",
+  "filterCrtScreenStrength": "扫描线・荧光体浓度",
+  "filterCrtAberration": "色偏强度",
+  "filterCrtBleed": "晕染强度",
   "filterOutlineLayerNameSuffix": "{name}（描边）",
   "@filterOutlineLayerNameSuffix": {
     "placeholders": {

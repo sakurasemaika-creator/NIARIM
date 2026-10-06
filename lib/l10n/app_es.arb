@@ -1255,6 +1255,9 @@
   "filterNameRetroAnime": "Anime retro",
   "filterNameCrt": "Tubo de rayos catódicos",
   "filterRetroStrength": "Intensidad",
+  "filterCrtScreenStrength": "Líneas de barrido y fósforo",
+  "filterCrtAberration": "Desajuste de color",
+  "filterCrtBleed": "Sangrado del haz",
   "filterOutlineLayerNameSuffix": "{name} (Contorno)",
   "@filterOutlineLayerNameSuffix": {
     "placeholders": {

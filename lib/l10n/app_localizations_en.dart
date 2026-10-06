@@ -3418,6 +3418,15 @@ class AppLocalizationsEn extends AppLocalizations {
   String get filterRetroStrength => 'Strength';
 
   @override
+  String get filterCrtScreenStrength => 'Scanlines & phosphor';
+
+  @override
+  String get filterCrtAberration => 'Colour misregistration';
+
+  @override
+  String get filterCrtBleed => 'Beam bleed';
+
+  @override
   String filterOutlineLayerNameSuffix(String name) {
     return '$name (Outline)';
   }

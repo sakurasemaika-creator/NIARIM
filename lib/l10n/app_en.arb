@@ -1255,6 +1255,9 @@
   "filterNameRetroAnime": "Retro Anime",
   "filterNameCrt": "CRT",
   "filterRetroStrength": "Strength",
+  "filterCrtScreenStrength": "Scanlines & phosphor",
+  "filterCrtAberration": "Colour misregistration",
+  "filterCrtBleed": "Beam bleed",
   "filterOutlineLayerNameSuffix": "{name} (Outline)",
   "@filterOutlineLayerNameSuffix": {
     "placeholders": {

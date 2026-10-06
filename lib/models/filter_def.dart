@@ -109,6 +109,10 @@ class FilterDef {
   /// down the canvas rather than as the block-size slider. Either way the
   /// size itself is [strength] (see [pixelArtCellSize]).
   final bool pixelArtByDots;
+
+  /// Cathode-ray tube: colour misregistration and beam bleed, 0 to 100.
+  final double crtAberration;
+  final double crtBleed;
   final double hologramBrightness;
   final double hologramSaturation;
   final AuroraHologramPreset hologramPreset;
@@ -178,12 +182,14 @@ class FilterDef {
     this.fisheyeRadius = 100,
     this.fisheyeCenterX = 0,
     this.fisheyeCenterY = 0,
-    this.chromaticShiftX = 8,
+    this.chromaticShiftX = 100,
     this.chromaticShiftY = 0,
     this.chromaticShiftZ = 0,
     this.pixelColorMode = PixelColorMode.count,
     this.pixelExplicitColors = const [0xFF000000],
     this.pixelArtByDots = false,
+    this.crtAberration = 30,
+    this.crtBleed = 30,
     this.hologramBrightness = 0,
     this.hologramSaturation = 0,
     this.hologramPreset = AuroraHologramPreset.silverHologram,
@@ -218,6 +224,16 @@ class FilterDef {
     this.prismBlurPx = 17,
     this.prismDirectionDegrees = 90,
   });
+
+  /// Chromatic aberration as canvas-pixel displacements of red (blue goes
+  /// the other way): sideways (x, y) and radial (outwards at the corners).
+  /// [strength] is how far, [chromaticShiftX]/[chromaticShiftY]/
+  /// [chromaticShiftZ] how much of it goes each way (-100 to 100 %).
+  (double, double, double) get chromaticDisplacement => (
+    strength * chromaticShiftX / 100,
+    strength * chromaticShiftY / 100,
+    strength * chromaticShiftZ / 100,
+  );
 
   /// The size of a pixel-art dot in canvas pixels on a canvas of this size.
   /// It is [strength], which may be fractional when it was set as a dot
@@ -269,6 +285,8 @@ class FilterDef {
     PixelColorMode? pixelColorMode,
     List<int>? pixelExplicitColors,
     bool? pixelArtByDots,
+    double? crtAberration,
+    double? crtBleed,
     double? hologramBrightness,
     double? hologramSaturation,
     AuroraHologramPreset? hologramPreset,
@@ -344,6 +362,8 @@ class FilterDef {
       pixelColorMode: pixelColorMode ?? this.pixelColorMode,
       pixelExplicitColors: pixelExplicitColors ?? this.pixelExplicitColors,
       pixelArtByDots: pixelArtByDots ?? this.pixelArtByDots,
+      crtAberration: crtAberration ?? this.crtAberration,
+      crtBleed: crtBleed ?? this.crtBleed,
       hologramBrightness: hologramBrightness ?? this.hologramBrightness,
       hologramSaturation: hologramSaturation ?? this.hologramSaturation,
       hologramPreset: hologramPreset ?? this.hologramPreset,
@@ -432,6 +452,8 @@ class FilterDef {
     'pixelColorMode': pixelColorMode.name,
     'pixelExplicitColors': pixelExplicitColors,
     'pixelArtByDots': pixelArtByDots,
+    'crtAberration': crtAberration,
+    'crtBleed': crtBleed,
     'hologramBrightness': hologramBrightness,
     'hologramSaturation': hologramSaturation,
     'hologramPreset': hologramPreset.name,
@@ -565,7 +587,7 @@ class FilterDef {
     fisheyeRadius: (j['fisheyeRadius'] as num?)?.toDouble() ?? 100,
     fisheyeCenterX: (j['fisheyeCenterX'] as num?)?.toDouble() ?? 0,
     fisheyeCenterY: (j['fisheyeCenterY'] as num?)?.toDouble() ?? 0,
-    chromaticShiftX: (j['chromaticShiftX'] as num?)?.toDouble() ?? 8,
+    chromaticShiftX: (j['chromaticShiftX'] as num?)?.toDouble() ?? 100,
     chromaticShiftY: (j['chromaticShiftY'] as num?)?.toDouble() ?? 0,
     chromaticShiftZ: (j['chromaticShiftZ'] as num?)?.toDouble() ?? 0,
     pixelColorMode: PixelColorMode.values.firstWhere(
@@ -576,6 +598,8 @@ class FilterDef {
         (j['pixelExplicitColors'] as List<dynamic>?)?.cast<int>() ??
         const [0xFF000000],
     pixelArtByDots: j['pixelArtByDots'] as bool? ?? false,
+    crtAberration: (j['crtAberration'] as num?)?.toDouble() ?? 30,
+    crtBleed: (j['crtBleed'] as num?)?.toDouble() ?? 30,
     hologramBrightness: (j['hologramBrightness'] as num?)?.toDouble() ?? 0,
     hologramSaturation: (j['hologramSaturation'] as num?)?.toDouble() ?? 0,
     hologramPreset: AuroraHologramPreset.values.firstWhere(

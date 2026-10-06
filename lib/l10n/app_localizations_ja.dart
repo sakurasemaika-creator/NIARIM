@@ -3302,6 +3302,15 @@ class AppLocalizationsJa extends AppLocalizations {
   String get filterRetroStrength => '強さ';
 
   @override
+  String get filterCrtScreenStrength => '走査線・蛍光体の濃さ';
+
+  @override
+  String get filterCrtAberration => '色ずれの強さ';
+
+  @override
+  String get filterCrtBleed => 'にじみの強さ';
+
+  @override
   String filterOutlineLayerNameSuffix(String name) {
     return '$name（縁取り）';
   }

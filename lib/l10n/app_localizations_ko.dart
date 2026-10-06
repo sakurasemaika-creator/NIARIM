@@ -3316,6 +3316,15 @@ class AppLocalizationsKo extends AppLocalizations {
   String get filterRetroStrength => '강도';
 
   @override
+  String get filterCrtScreenStrength => '주사선・형광체 농도';
+
+  @override
+  String get filterCrtAberration => '색 어긋남 강도';
+
+  @override
+  String get filterCrtBleed => '번짐 강도';
+
+  @override
   String filterOutlineLayerNameSuffix(String name) {
     return '$name(테두리)';
   }

@@ -1255,6 +1255,9 @@
   "filterNameRetroAnime": "레트로 애니메",
   "filterNameCrt": "브라운관",
   "filterRetroStrength": "강도",
+  "filterCrtScreenStrength": "주사선・형광체 농도",
+  "filterCrtAberration": "색 어긋남 강도",
+  "filterCrtBleed": "번짐 강도",
   "filterOutlineLayerNameSuffix": "{name}(테두리)",
   "@filterOutlineLayerNameSuffix": {
     "placeholders": {

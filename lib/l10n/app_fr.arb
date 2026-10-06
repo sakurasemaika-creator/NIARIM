@@ -1255,6 +1255,9 @@
   "filterNameRetroAnime": "Anime rétro",
   "filterNameCrt": "Tube cathodique",
   "filterRetroStrength": "Intensité",
+  "filterCrtScreenStrength": "Lignes de balayage et phosphore",
+  "filterCrtAberration": "Décalage des couleurs",
+  "filterCrtBleed": "Bavure du faisceau",
   "filterOutlineLayerNameSuffix": "{name} (Contour)",
   "@filterOutlineLayerNameSuffix": {
     "placeholders": {

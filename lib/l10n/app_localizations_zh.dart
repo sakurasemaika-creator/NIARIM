@@ -3289,6 +3289,15 @@ class AppLocalizationsZh extends AppLocalizations {
   String get filterRetroStrength => '强度';
 
   @override
+  String get filterCrtScreenStrength => '扫描线・荧光体浓度';
+
+  @override
+  String get filterCrtAberration => '色偏强度';
+
+  @override
+  String get filterCrtBleed => '晕染强度';
+
+  @override
   String filterOutlineLayerNameSuffix(String name) {
     return '$name（描边）';
   }
@@ -10107,6 +10116,15 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get filterRetroStrength => '強度';
+
+  @override
+  String get filterCrtScreenStrength => '掃描線・螢光體濃度';
+
+  @override
+  String get filterCrtAberration => '色偏強度';
+
+  @override
+  String get filterCrtBleed => '暈染強度';
 
   @override
   String filterOutlineLayerNameSuffix(String name) {

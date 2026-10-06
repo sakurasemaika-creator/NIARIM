@@ -3464,6 +3464,15 @@ class AppLocalizationsFr extends AppLocalizations {
   String get filterRetroStrength => 'Intensité';
 
   @override
+  String get filterCrtScreenStrength => 'Lignes de balayage et phosphore';
+
+  @override
+  String get filterCrtAberration => 'Décalage des couleurs';
+
+  @override
+  String get filterCrtBleed => 'Bavure du faisceau';
+
+  @override
   String filterOutlineLayerNameSuffix(String name) {
     return '$name (Contour)';
   }
