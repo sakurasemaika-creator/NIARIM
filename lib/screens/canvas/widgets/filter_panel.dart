@@ -2263,6 +2263,7 @@ class _FilterPanelState extends State<FilterPanel> {
         result,
         generatedLayerId,
         l10n!.filterOutlineLayerNameSuffix,
+        FilterKind.outline,
       );
     }
     if (!_isPrism(filter) && filter.kind == FilterKind.inkPool) {
@@ -2274,6 +2275,7 @@ class _FilterPanelState extends State<FilterPanel> {
         result,
         generatedLayerId,
         l10n!.filterInkPoolLayerNameSuffix,
+        FilterKind.inkPool,
       );
     }
     if (!_isPrism(filter) && filter.kind == FilterKind.autoLineart) {
@@ -2285,6 +2287,7 @@ class _FilterPanelState extends State<FilterPanel> {
         result,
         generatedLayerId,
         l10n!.filterAutoLineartLayerNameSuffix,
+        FilterKind.autoLineart,
       );
     }
 
@@ -2313,6 +2316,7 @@ class _FilterPanelState extends State<FilterPanel> {
     Uint8List pixels,
     String? generatedLayerId,
     String Function(String) nameBuilder,
+    FilterKind kind,
   ) async {
     final sourceLayer = ps
         .layersOf(widget.projectId, widget.sceneId, frameIndex)
@@ -2329,7 +2333,7 @@ class _FilterPanelState extends State<FilterPanel> {
       type: model.LayerType.normal,
       name: nameBuilder(sourceName),
       id: generatedLayerId,
-      insertIndex: sourceIndex + 1,
+      insertIndex: generatedLayerInsertIndex(kind, sourceIndex),
     );
     final key = ps.tileKeyFor(
       widget.projectId,

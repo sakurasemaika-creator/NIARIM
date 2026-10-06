@@ -167,7 +167,7 @@ class RecordedFilterApplyService {
       frameIndex: frameIndex,
       type: model.LayerType.normal,
       name: _generatedLayerName(sourceName, filter),
-      insertIndex: sourceIndex + 1,
+      insertIndex: generatedLayerInsertIndex(filter.kind, sourceIndex),
     );
     final key = projectService.tileKeyFor(
       projectId,

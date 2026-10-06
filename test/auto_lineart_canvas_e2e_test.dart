@@ -56,7 +56,7 @@ void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
   testWidgets(
-    'actual Canvas applies auto line art directly beneath its source and Undo/Redo preserves order and pixels',
+    'actual Canvas applies auto line art directly above its source and Undo/Redo preserves order and pixels',
     (tester) async {
       tester.view.physicalSize = const Size(1080, 2280);
       tester.view.devicePixelRatio = 2.0;
@@ -179,7 +179,8 @@ void main() {
       expect(layers, hasLength(2));
       final generated = layers.singleWhere((l) => l.id != source.id);
       expect(generated.type, LayerType.normal);
-      expect(layers.indexOf(generated), layers.indexOf(source) + 1);
+      // Index 0 is the top layer: the line art sits directly above.
+      expect(layers.indexOf(generated), layers.indexOf(source) - 1);
       expect(undo.canUndo, isTrue);
 
       final generatedKey = ps.tileKeyFor(project.id, scene.id, 0, generated.id);
@@ -211,7 +212,7 @@ void main() {
       expect(layers, hasLength(2));
       final redone = layers.singleWhere((l) => l.id != source.id);
       expect(redone.id, generated.id);
-      expect(layers.indexOf(redone), layers.indexOf(source) + 1);
+      expect(layers.indexOf(redone), layers.indexOf(source) - 1);
 
       final redoneBytes = await tester.runAsync(() async {
         final image = await tm.compositeLayerToImage(

@@ -167,9 +167,9 @@ void main() {
         ('線画色トレス', 'lineart_color_trace', true, _Placement.top),
         // Adjusts, thresholds and keys out the current layer in place.
         ('線画抽出（アナログ）', 'line_extraction', false, _Placement.inPlace),
-        // Generated line art goes directly beneath its source, like every
-        // layer a filter generates (outline, ink pool, auto line art).
-        ('線画作成（デジタル）', 'line_creation', true, _Placement.beneathSource),
+        // Generated line art goes directly above its source, so the clean
+        // lines show over the rough sketch.
+        ('線画作成（デジタル）', 'line_creation', true, _Placement.aboveSource),
       ];
 
       for (final entry in cases) {
@@ -252,8 +252,8 @@ void main() {
             );
             expect(
               afterLayers.indexOf(generatedLayer),
-              sourceIndex + 1,
-              reason: '$name output must sit directly beneath its source',
+              sourceIndex - 1,
+              reason: '$name output must sit directly above its source',
             );
           }
           final generatedPixels = harness.layerPixels(generatedLayer.id);
@@ -694,7 +694,7 @@ class _ProductionHarness {
   }
 }
 
-enum _Placement { top, beneathSource, inPlace }
+enum _Placement { top, aboveSource, inPlace }
 
 int _changedBytes(Uint8List before, Uint8List after) {
   expect(after.length, before.length);

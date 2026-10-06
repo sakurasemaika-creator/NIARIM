@@ -51,6 +51,13 @@ enum AuroraHologramPreset {
 /// Serializable drawing-filter definition.
 /// Prism uses [prismBlurPx] as Gaussian blur radius in pixels and
 /// [prismDirectionDegrees] as the dark-rainbow gradient direction in degrees.
+/// Where a filter that draws onto a new layer puts that layer, given the
+/// source layer's index (0 = the top layer): auto line art goes directly
+/// above the source so the clean lines show over the rough sketch; outline
+/// and ink pool go directly beneath it.
+int generatedLayerInsertIndex(FilterKind kind, int sourceIndex) =>
+    kind == FilterKind.autoLineart ? sourceIndex : sourceIndex + 1;
+
 class FilterDef {
   final String id;
   final String name;
