@@ -55,3 +55,11 @@ status: in_progress
 - monetization gateにより2027-01-01前はstore/AdMob SDK起動へ進まないことはsourceで確認済みだが、A001完了には残るlifecycle条件の検証が必要。
 
 next_action: HEAD `770e2c57d0a77c11c1a174b5a07243a71383f369` 以降でS5dを実装/検証し、S5e→S6へ進む。A001はまだdoneにしない。advisor requestなし。
+
+
+## 2026-10-06 state freshness synchronization
+
+- Latest observed App dev_branch during audit-state maintenance: `2ecec1e304b72154d31f49df8118241ba01fe409`.
+- Latest observed Web dev_branch during audit-state maintenance: `a72a72e6ee85d2366e4335850b019f8dbd5f310f`.
+- These heads contain audit-state synchronization commits after the latest product implementation snapshot; therefore the audit must still re-read the current dev_branch at execution start and compare non-audit-path changes before trusting any prior Evidence.
+- Historical next_action references to `770e2c57...` are stale and are not current product-head evidence. A001 remains `in_progress`; no audit completion is inferred from the newer state-maintenance commits.
