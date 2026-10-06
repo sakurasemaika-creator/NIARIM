@@ -7,6 +7,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:niarim/l10n/app_localizations.dart';
 import 'package:niarim/models/custom_automation.dart';
 import 'package:niarim/services/custom_automation_service.dart';
+import 'package:niarim/widgets/custom_automation_draft_sheet.dart';
 import 'package:niarim/widgets/custom_automation_manager_sheet.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -104,10 +105,9 @@ void main() {
     await tester.pumpWidget(
       app(
         service,
-        CustomAutomationDraftEditorSheet(
+        CustomAutomationDraftSheet(
           surface: CustomAutomationSurface.canvas,
           onResumeRecording: () {},
-          onSaved: () {},
         ),
         key,
       ),

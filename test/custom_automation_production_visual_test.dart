@@ -17,6 +17,7 @@ import 'package:niarim/screens/canvas/widgets/filter_panel.dart';
 import 'package:niarim/services/custom_automation_service.dart';
 import 'package:niarim/services/project_service.dart';
 import 'package:niarim/services/theme_service.dart';
+import 'package:niarim/widgets/custom_automation_draft_sheet.dart';
 import 'package:niarim/widgets/custom_automation_manager_sheet.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -111,7 +112,12 @@ void main() {
 
       harness.showDraftEditor();
       await tester.pump(const Duration(milliseconds: 250));
-      expect(find.text('canvas.filterApply'), findsOneWidget);
+      // The draft sheet lists each step by its label (here the filter's
+      // name) and where it was recorded.
+      final step = automation.draft!.steps.single;
+      expect(step.command, 'canvas.filterApply');
+      expect(find.text(step.label), findsOneWidget);
+      expect(find.text(l10n.customAutomationCanvasStep), findsOneWidget);
       expect(find.byIcon(Icons.drag_handle), findsOneWidget);
       expect(find.byIcon(Icons.delete_outline), findsOneWidget);
 
@@ -661,15 +667,28 @@ class _ProductionHarness {
   }
 
   void showDraftEditor() {
+    // The sheet closes itself with Navigator.pop on Save, as over the real
+    // canvas, so it sits on top of an empty page it can return to.
     _setSurface(
-      _localNavigator(
-        _sheetPage(
-          CustomAutomationDraftEditorSheet(
-            surface: CustomAutomationSurface.canvas,
-            onResumeRecording: _hideSurface,
-            onSaved: _hideSurface,
+      Navigator(
+        // A fresh navigator, not the manager's reused with its old pages.
+        key: UniqueKey(),
+        onGenerateInitialRoutes: (_, _) => [
+          PageRouteBuilder<void>(
+            pageBuilder: (_, _, _) => const SizedBox.shrink(),
+            transitionDuration: Duration.zero,
           ),
-        ),
+          PageRouteBuilder<void>(
+            pageBuilder: (_, _, _) => _sheetPage(
+              CustomAutomationDraftSheet(
+                surface: CustomAutomationSurface.canvas,
+                onResumeRecording: _hideSurface,
+              ),
+            ),
+            transitionDuration: Duration.zero,
+            reverseTransitionDuration: Duration.zero,
+          ),
+        ],
       ),
     );
   }
