@@ -1431,7 +1431,7 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get helpCommunityDesc =>
-      '애니메이션・일러스트 작품을 YouTube 동영상으로 커뮤니티에 게시하고, 다른 사용자의 작품을 둘러볼 수 있는 기능입니다. 「신작」・「랭킹」・「팔로잉」 탭을 전환할 수 있으며, 작품 제목 또는 게시자 이름으로 검색할 수 있습니다. 태그 검색 모드로 전환하면 태그로 작품을 좁혀볼 수 있으며, 태그는 게시자 외의 사용자도 자유롭게 추가・삭제할 수 있습니다（게시자가 잠근 태그는 게시자 본인만 해제할 수 있습니다）. 태그를 탭하기만 해도 같은 태그의 작품으로 좁혀집니다. 작품 카드를 탭하면 드래그・크기 조절이 가능한 플로팅 미리보기 창이 열려 다른 화면을 조작하면서도 계속 시청할 수 있습니다. 「상세보기」 버튼으로 작품의 상세 화면（게시자・게시일・태그 편집・북마크・리포스트 등）을 열 수 있습니다. 게시자 이름 옆의 「팔로우」 버튼을 누르면 팔로우가 되어, 「팔로잉」 탭에서 그 작가의 게시물만 최신순으로 모아 볼 수 있습니다. 누군가 나를 팔로우하면 화면 오른쪽 위 종 모양 아이콘의 알림 목록에 표시됩니다. 자신의 팔로잉/팔로워 목록을 다른 사용자에게 공개할지 여부를 설정할 수 있으며（기본값은 비공개）, 공개로 설정한 다른 사용자의 목록도 볼 수 있습니다. 다른 사람의 작품（자신의 게시물은 제외）은 「리포스트」 버튼으로 재게시할 수 있으며, 팔로우 중인 작가가 누군가의 작품을 리포스트하면 그 작품도 「게시일」과 「리포스트한 날짜」 중 더 최근인 쪽을 기준으로 「팔로잉」 탭에 섞여 표시됩니다（카드에 「○○님이 리포스트함」이라고 표시）. 북마크한 작품은 홈 화면의 「북마크됨」 탭에 모아서 표시되며, 게시자별 작품 목록 화면의 「북마크」 탭에서도 확인할 수 있습니다. 자신의 북마크 목록을 다른 사용자에게 공개할지 여부를 설정할 수 있으며（기본값은 비공개）, 공개로 설정한 다른 사용자의 북마크 목록도 볼 수 있습니다. 부적절한 작품은 사유를 첨부해 신고할 수 있으며, 신고 후에는 해당 게시자를 차단할지 선택할 수 있습니다. 세로로 긴 동영상은 「세로 화면 모드」에서 연속 재생으로 시청할 수 있습니다. 하루에 게시할 수 있는 작품 수에는 상한이 있으며, 무료 회원은 하루 1개, 프리미엄 회원은 하루 3개까지입니다.';
+      '애니메이션・일러스트 작품을 YouTube 동영상으로 커뮤니티에 게시하고, 다른 사용자의 작품을 둘러볼 수 있는 기능입니다. 「신작」・「랭킹」・「팔로잉」 탭을 전환할 수 있으며, 작품 제목 또는 게시자 이름으로 검색할 수 있습니다. 태그 검색 모드로 전환하면 태그로 작품을 좁혀볼 수 있으며, 태그는 게시자 외의 사용자도 자유롭게 추가・삭제할 수 있습니다（게시자가 잠근 태그는 게시자 본인만 해제할 수 있습니다）. 태그를 탭하기만 해도 같은 태그의 작품으로 좁혀집니다. 작품 카드를 탭하면 드래그・크기 조절이 가능한 플로팅 미리보기 창이 열려 다른 화면을 조작하면서도 계속 시청할 수 있습니다. 「상세보기」 버튼으로 작품의 상세 화면（게시자・게시일・태그 편집・북마크・리포스트 등）을 열 수 있습니다. 게시자 이름 옆의 「팔로우」 버튼을 누르면 팔로우가 되어, 「팔로잉」 탭에서 그 작가의 게시물만 최신순으로 모아 볼 수 있습니다. 누군가 나를 팔로우하면 화면 오른쪽 위 종 모양 아이콘의 알림 목록에 표시됩니다. 자신의 팔로잉/팔로워 목록을 다른 사용자에게 공개할지 여부를 설정할 수 있으며（기본값은 비공개）, 공개로 설정한 다른 사용자의 목록도 볼 수 있습니다. 다른 사람의 작품（자신의 게시물은 제외）은 「리포스트」 버튼으로 재게시할 수 있으며, 팔로우 중인 작가가 누군가의 작품을 리포스트하면 그 작품도 「게시일」과 「리포스트한 날짜」 중 더 최근인 쪽을 기준으로 「팔로잉」 탭에 섞여 표시됩니다（카드에 「○○님이 리포스트함」이라고 표시）. 북마크한 작품은 홈 화면의 「북마크됨」 탭에 모아서 표시되며, 게시자별 작품 목록 화면의 「북마크」 탭에서도 확인할 수 있습니다. 자신의 북마크 목록을 다른 사용자에게 공개할지 여부를 설정할 수 있으며（기본값은 비공개）, 공개로 설정한 다른 사용자의 북마크 목록도 볼 수 있습니다. 부적절한 작품은 사유를 첨부해 신고할 수 있으며, 신고 후에는 해당 게시자를 차단할지 선택할 수 있습니다. 세로로 긴 동영상은 「세로 화면 모드」에서 연속 재생으로 시청할 수 있습니다. 하루에 게시할 수 있는 작품 수에는 상한이 있으며, 무료 회원은 하루 1개, 프리미엄 회원은 하루 3개까지입니다. 화면 오른쪽 위의 표시 필터 버튼（사선이 그어진 눈 아이콘）으로 보고 싶지 않은 작품을 숨길 수 있습니다. 「생성형 AI 이미지·동영상 포함」 작품을 숨기는 설정 외에도, 작품 제목만을 대상으로 하는 뮤트 제목과 작품 광장에서 작품에 붙은 태그만을 대상으로 하는 뮤트 태그（앞의 #은 무시됨）를 쉼표나 줄바꿈으로 구분해 등록할 수 있습니다. 이 필터는 신착・랭킹・팔로잉（리포스트 포함）・세로 화면 모드・게시자 페이지・작품 상세・북마크에 적용됩니다. 「생성형 AI 이미지·동영상 포함」은 게시할 때 게시자가 직접 표시하는 항목이며, 게시한 후에도 게시자 본인만 변경할 수 있습니다（「내 게시물」 또는 작품 상세 화면에서 변경）.';
 
   @override
   String get helpWatermarkEntryTitle => '워터마크';
@@ -6460,13 +6460,15 @@ class AppLocalizationsKo extends AppLocalizations {
   String get communityMutedWords => '뮤트 제목';
 
   @override
-  String get communityMutedWordsHint => '작품 제목에 포함되면 숨길 문구를 쉼표로 구분하여 지정';
+  String get communityMutedWordsHint =>
+      '작품 제목에 이 문구가 포함된 작품을 표시하지 않습니다(투고자 이름・태그는 제외). 여러 개는 쉼표나 줄바꿈으로 구분해 입력하세요.';
 
   @override
   String get communityMutedTags => '뮤트 태그';
 
   @override
-  String get communityMutedTagsHint => '숨길 태그 이름을 쉼표로 구분해 입력';
+  String get communityMutedTagsHint =>
+      '작품 광장에서 작품에 붙은 태그가 일치하는 작품을 표시하지 않습니다(앞의 #은 무시). 여러 개는 쉼표나 줄바꿈으로 구분해 입력하세요.';
 
   @override
   String get communityContainsGenerativeAiImageVideo => '생성형 AI 이미지·동영상 포함';
@@ -6478,6 +6480,290 @@ class AppLocalizationsKo extends AppLocalizations {
   @override
   String get communityAiImageVideoUpdateFailed =>
       '‘생성형 AI 이미지·동영상 포함’을 변경하지 못했습니다. 연결 상태를 확인하고 다시 시도해 주세요.';
+
+  @override
+  String get communityRetry => '다시 시도';
+
+  @override
+  String get communityReloadTooltip => '새로고침';
+
+  @override
+  String get communityGoogleSignInNotConfigured => 'Google 로그인이 아직 설정되지 않았습니다';
+
+  @override
+  String get communityGoogleAccountBusy =>
+      '다른 Google 계정 작업을 처리하는 중입니다. 완료된 후 다시 시도해 주세요.';
+
+  @override
+  String get communityMyWorksTitle => '내 게시물';
+
+  @override
+  String get communityMyWorksAccountNotConnected => '연결된 Google 계정 없음';
+
+  @override
+  String get communityMyWorksAddAccount => 'Google 계정 추가';
+
+  @override
+  String get communityMyWorksSwitchAccount => 'Google 계정 전환・추가';
+
+  @override
+  String get communityMyWorksLoading => '게시물을 불러오는 중…';
+
+  @override
+  String communityMyWorksLoadFailed(String reason) {
+    return '내 게시물을 불러오지 못했습니다. $reason';
+  }
+
+  @override
+  String communityAccountSwitchFailed(String reason) {
+    return 'Google 계정을 전환하지 못했습니다. $reason';
+  }
+
+  @override
+  String communitySignInFailed(String reason) {
+    return 'Google 계정으로 로그인하지 못했습니다. $reason';
+  }
+
+  @override
+  String communityVisibilityChangeFailed(String reason) {
+    return '공개 상태를 변경하지 못했습니다. $reason';
+  }
+
+  @override
+  String get communityMyWorksDeletedCannotPublish =>
+      'YouTube에서 삭제된 동영상은 작품 광장에 다시 공개할 수 없습니다';
+
+  @override
+  String get communityMyWorksStatusDeletedOnYoutube =>
+      'YouTube에서 삭제됨 • 다시 공개할 수 없음';
+
+  @override
+  String get communityMyWorksStatusYoutubePrivate =>
+      '작품 광장 공개 중 • YouTube 동영상이 비공개라 일시적으로 숨겨짐';
+
+  @override
+  String get communityMyWorksStatusHiddenYoutubePrivate =>
+      '작품 광장 비공개 • YouTube도 비공개';
+
+  @override
+  String get communityVisibilityPublishedBadge => '공개 중';
+
+  @override
+  String communityYoutubeVideoIdLabel(String videoId) {
+    return 'YouTube 동영상 ID: $videoId';
+  }
+
+  @override
+  String get communityPostTitleLabel => '제목';
+
+  @override
+  String get communityPostPickVideo => '동영상 선택';
+
+  @override
+  String get communityPostAsShort => '세로 화면 동영상으로 게시';
+
+  @override
+  String get communityPostShowInPlaza => '작품 광장에 공개';
+
+  @override
+  String get communityPostShowInPlazaHelp =>
+      'YouTube에는 「일부 공개」로 업로드됩니다. 작품 광장에서의 공개 여부는 이와 별도로 관리됩니다.';
+
+  @override
+  String get communityPostUploadedHeading => 'YouTube에 업로드됨';
+
+  @override
+  String communityPostUploadedAccount(String email) {
+    return 'Google 계정: $email';
+  }
+
+  @override
+  String get communityPostNoReupload => '다시 시도해도 동영상은 다시 업로드되지 않습니다.';
+
+  @override
+  String get communityPostDiscardPending => '작품 광장 등록 취소';
+
+  @override
+  String get communityPostPendingDiscarded =>
+      '보류 중이던 작품 광장 등록을 취소했습니다. YouTube의 동영상은 삭제되지 않았습니다.';
+
+  @override
+  String get communityPostSubmitUpload => 'YouTube에 업로드하고 게시';
+
+  @override
+  String get communityPostSubmitRetry => '작품 광장 등록 다시 시도';
+
+  @override
+  String communityPostErrorLabel(String message) {
+    return '오류: $message';
+  }
+
+  @override
+  String communityPostDoneSnackbar(String videoId) {
+    return '게시했습니다(YouTube 동영상 ID: $videoId)';
+  }
+
+  @override
+  String communityPostRecoveredSnackbar(String videoId) {
+    return '게시한 작품을 복구했습니다(YouTube 동영상 ID: $videoId)';
+  }
+
+  @override
+  String get communityPostStatusPendingRestored =>
+      '지난번에 YouTube에 업로드한 동영상이 있습니다. 작품 광장 등록만 다시 시도할 수 있습니다.';
+
+  @override
+  String get communityPostStatusPendingUnavailable =>
+      '보류 중인 YouTube 동영상이 삭제되었거나 찾을 수 없어 복구할 수 없습니다. 새 동영상을 선택해 주세요.';
+
+  @override
+  String get communityPostStatusRecovered => '게시한 작품을 복구했습니다';
+
+  @override
+  String get communityPostStatusCompleted => '게시가 완료되었습니다';
+
+  @override
+  String get communityPostStatusCheckingAccount => 'Google 계정을 확인하는 중…';
+
+  @override
+  String get communityPostStatusCheckingRegistration => '작품 광장 등록 상태를 확인하는 중…';
+
+  @override
+  String get communityPostStatusSyncingAiFlag =>
+      '게시한 작품의 ‘생성형 AI 이미지·동영상 포함’ 설정을 동기화하는 중…';
+
+  @override
+  String get communityPostStatusSyncingVisibility => '게시한 작품의 공개 상태를 동기화하는 중…';
+
+  @override
+  String get communityPostStatusUploading => 'YouTube에 업로드하는 중…';
+
+  @override
+  String get communityPostStatusRegistering =>
+      'YouTube 업로드가 완료되었습니다. 작품 광장에 등록하는 중…';
+
+  @override
+  String get communityPostStatusUploadFailed => '업로드에 실패했습니다';
+
+  @override
+  String get communityPostStatusRegistrationRetryable =>
+      'YouTube에 동영상이 저장되어 있습니다. 작품 광장 등록만 다시 시도할 수 있습니다.';
+
+  @override
+  String get communityPostErrorNoVideo => '게시할 동영상을 선택해 주세요';
+
+  @override
+  String get communityPostErrorNoTitle => '제목을 입력해 주세요';
+
+  @override
+  String get communityPostErrorServerNotConfigured =>
+      '작품 광장 서버가 설정되어 있지 않아 게시할 수 없습니다';
+
+  @override
+  String get communityPostErrorPendingVideoUnavailable =>
+      'YouTube 동영상을 찾을 수 없습니다. 이 동영상의 작품 광장 등록은 다시 시도할 수 없습니다.';
+
+  @override
+  String communityPostErrorUploadedByAccount(String email) {
+    return '이 동영상은 $email 계정으로 업로드되었습니다. 해당 Google 계정으로 전환한 후 작품 광장 등록을 다시 시도해 주세요.';
+  }
+
+  @override
+  String get communityPostErrorUploadedByAnotherAccount =>
+      '이 동영상은 다른 Google 계정으로 업로드되었습니다. 해당 계정으로 전환한 후 작품 광장 등록을 다시 시도해 주세요.';
+
+  @override
+  String communityPostErrorAccountChanged(String email) {
+    return '처리 도중에 Google 계정이 바뀌었습니다. $email 계정으로 돌아간 후 다시 시도해 주세요.';
+  }
+
+  @override
+  String get communityPostErrorYoutubePermission => 'YouTube 게시 권한을 받지 못했습니다';
+
+  @override
+  String get communityPostErrorNoVideoId => 'YouTube에서 동영상 ID를 받지 못했습니다';
+
+  @override
+  String get communityShortsEndBehaviorTooltip => '재생 종료 시 동작';
+
+  @override
+  String get communityShortsEndBehaviorLoop => '같은 동영상 반복 재생';
+
+  @override
+  String get communityShortsEndBehaviorAutoAdvance => '다음 동영상으로 자동 이동';
+
+  @override
+  String get communityErrorNetwork => '연결하지 못했습니다. 연결 상태를 확인하고 다시 시도해 주세요.';
+
+  @override
+  String get communityErrorSignInRequired =>
+      'Google 계정으로 로그인해야 합니다. 다시 로그인한 후 시도해 주세요.';
+
+  @override
+  String get communityErrorForbidden => '이 작업을 할 권한이 없습니다.';
+
+  @override
+  String get communityErrorNotFound => '대상을 찾을 수 없습니다. 삭제되었을 수 있습니다.';
+
+  @override
+  String get communityErrorRateLimited => '요청이 너무 많습니다. 잠시 후 다시 시도해 주세요.';
+
+  @override
+  String get communityErrorServer => '서버에 문제가 발생했습니다. 잠시 후 다시 시도해 주세요.';
+
+  @override
+  String get communityErrorGeneric => '문제가 발생했습니다. 다시 시도해 주세요.';
+
+  @override
+  String communityErrorTagLimitExceeded(int max) {
+    return '태그는 작품당 최대 $max개까지 붙일 수 있습니다.';
+  }
+
+  @override
+  String get communityErrorTagTooLong =>
+      '태그가 너무 길어서 등록할 수 없습니다. 짧게 줄인 후 다시 시도해 주세요.';
+
+  @override
+  String get communityErrorTagUpdateConflict =>
+      '다른 사람이 동시에 태그를 변경했습니다. 다시 시도해 주세요.';
+
+  @override
+  String get communityErrorWorkChanged => '작품이 다른 작업으로 업데이트되었습니다. 다시 시도해 주세요.';
+
+  @override
+  String get communityErrorVideoNotFound => 'YouTube 동영상을 찾을 수 없습니다.';
+
+  @override
+  String get communityErrorVideoAlreadyRegistered =>
+      '이 동영상은 이미 다른 사용자가 작품 광장에 등록했습니다.';
+
+  @override
+  String get communityErrorWorkDeleted => '이 동영상은 작품 광장에서 삭제되어 다시 등록할 수 없습니다.';
+
+  @override
+  String get communityErrorVideoRegistrationConflict =>
+      '다른 요청이 동시에 이 동영상을 등록하고 있었습니다. 내 게시물을 새로고침한 후 다시 시도해 주세요.';
+
+  @override
+  String get communityErrorPostQuotaExceeded =>
+      '오늘의 게시 한도에 도달했습니다. 날짜가 바뀌면 다시 게시할 수 있습니다.';
+
+  @override
+  String get communityErrorSignInCanceled => '로그인이 취소되었습니다.';
+
+  @override
+  String get communityErrorGoogleSignIn =>
+      'Google 로그인을 완료하지 못했습니다. 다시 시도해 주세요.';
+
+  @override
+  String get communityErrorYoutubeUpload =>
+      'YouTube 업로드에 실패했습니다. 연결 상태를 확인하고 다시 시도해 주세요.';
+
+  @override
+  String get communityErrorVideoFile => '동영상 파일을 읽지 못했습니다. 동영상을 다시 선택해 주세요.';
+
+  @override
+  String get communityErrorUnsupported => '이 기기에서는 지원되지 않는 작업입니다.';
 
   @override
   String get canvasLassoSnapToLines => '선에 스냅';

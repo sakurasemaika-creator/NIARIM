@@ -1453,7 +1453,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get helpCommunityDesc =>
-      'Post your animations and illustrations to the community as YouTube videos, and browse works by other users. Switch between the “New”, “Ranking”, and “Following” tabs, and search by work title or creator name. Switch to tag search mode to filter works by tag — anyone (not just the creator) can add or remove tags, though a tag the creator has locked can only be removed by the creator, and tapping a tag instantly filters to matching works. Tapping a work card opens a draggable, resizable floating preview window, so you can keep browsing other screens while it plays. The “View Details” button opens the work\'s detail screen (creator, post date, tag editing, bookmarking, reposting, and more). Tap the “Follow” button next to a creator\'s name to follow them — the “Following” tab then gathers just that creator\'s posts in chronological order. When someone follows you, it shows up in the notification list under the bell icon at the top of the screen. You can choose whether your own following/followers lists are visible to other users (private by default), and view other users\' lists if they\'ve made theirs public. You can repost anyone else\'s work (except your own) with the “Repost” button; when a creator you follow reposts someone else\'s work, that work also appears in your “Following” tab, sorted by whichever is more recent — its original post date or its repost date (the card shows “Reposted by …”). Bookmarked works appear together under the “Bookmarked” tab on the Home screen, and also under the “Bookmarks” tab on a creator\'s work list screen. You can choose whether your own bookmark list is visible to other users (private by default), and you can view other users\' bookmark lists if they\'ve made theirs public. You can report a work with a reason, and after submitting you\'ll be asked whether to block that creator. Portrait videos can be watched in “Portrait mode”, which plays them back-to-back like a short-form video feed. There is a daily limit on how many works you can post: 1 per day for free members, 3 per day for Premium members.';
+      'Post your animations and illustrations to the community as YouTube videos, and browse works by other users. Switch between the “New”, “Ranking”, and “Following” tabs, and search by work title or creator name. Switch to tag search mode to filter works by tag — anyone (not just the creator) can add or remove tags, though a tag the creator has locked can only be removed by the creator, and tapping a tag instantly filters to matching works. Tapping a work card opens a draggable, resizable floating preview window, so you can keep browsing other screens while it plays. The “View Details” button opens the work\'s detail screen (creator, post date, tag editing, bookmarking, reposting, and more). Tap the “Follow” button next to a creator\'s name to follow them — the “Following” tab then gathers just that creator\'s posts in chronological order. When someone follows you, it shows up in the notification list under the bell icon at the top of the screen. You can choose whether your own following/followers lists are visible to other users (private by default), and view other users\' lists if they\'ve made theirs public. You can repost anyone else\'s work (except your own) with the “Repost” button; when a creator you follow reposts someone else\'s work, that work also appears in your “Following” tab, sorted by whichever is more recent — its original post date or its repost date (the card shows “Reposted by …”). Bookmarked works appear together under the “Bookmarked” tab on the Home screen, and also under the “Bookmarks” tab on a creator\'s work list screen. You can choose whether your own bookmark list is visible to other users (private by default), and you can view other users\' bookmark lists if they\'ve made theirs public. You can report a work with a reason, and after submitting you\'ll be asked whether to block that creator. Portrait videos can be watched in “Portrait mode”, which plays them back-to-back like a short-form video feed. There is a daily limit on how many works you can post: 1 per day for free members, 3 per day for Premium members. The display filter button at the top right (the eye icon with a slash) lets you hide works you don\'t want to see. You can hide works marked “Contains generative-AI images or video”, and add muted titles (matched against work titles only) and muted tags (matched only against tags set on the work in the Work Plaza; a leading # is ignored), separated by commas or new lines. These filters apply to New, Ranking, Following (including reposts), portrait mode, creator pages, work details, and bookmarks. “Contains generative-AI images or video” is declared by the poster when posting, and only the poster can change it afterwards (from “My posts” or the work\'s detail screen).';
 
   @override
   String get helpWatermarkEntryTitle => 'Watermark';
@@ -6652,13 +6652,14 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get communityMutedWordsHint =>
-      'Comma-separated text to hide when found in a work title';
+      'Hides works whose title contains this text (creator names and tags aren’t checked). Separate multiple entries with commas or new lines.';
 
   @override
   String get communityMutedTags => 'Muted tags';
 
   @override
-  String get communityMutedTagsHint => 'Comma-separated tag names to hide';
+  String get communityMutedTagsHint =>
+      'Hides works that have this tag in the Work Plaza (a leading # is ignored). Separate multiple entries with commas or new lines.';
 
   @override
   String get communityContainsGenerativeAiImageVideo =>
@@ -6671,6 +6672,307 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get communityAiImageVideoUpdateFailed =>
       'Couldn’t change “Contains generative-AI images or video”. Check your connection and try again.';
+
+  @override
+  String get communityRetry => 'Retry';
+
+  @override
+  String get communityReloadTooltip => 'Reload';
+
+  @override
+  String get communityGoogleSignInNotConfigured =>
+      'Google sign-in isn’t set up yet';
+
+  @override
+  String get communityGoogleAccountBusy =>
+      'Another Google account action is in progress. Try again when it finishes.';
+
+  @override
+  String get communityMyWorksTitle => 'My posts';
+
+  @override
+  String get communityMyWorksAccountNotConnected =>
+      'No Google account connected';
+
+  @override
+  String get communityMyWorksAddAccount => 'Add a Google account';
+
+  @override
+  String get communityMyWorksSwitchAccount => 'Switch or add a Google account';
+
+  @override
+  String get communityMyWorksLoading => 'Loading your posts…';
+
+  @override
+  String communityMyWorksLoadFailed(String reason) {
+    return 'Couldn’t load your posts. $reason';
+  }
+
+  @override
+  String communityAccountSwitchFailed(String reason) {
+    return 'Couldn’t switch Google accounts. $reason';
+  }
+
+  @override
+  String communitySignInFailed(String reason) {
+    return 'Couldn’t sign in with your Google account. $reason';
+  }
+
+  @override
+  String communityVisibilityChangeFailed(String reason) {
+    return 'Couldn’t change the visibility. $reason';
+  }
+
+  @override
+  String get communityMyWorksDeletedCannotPublish =>
+      'A video deleted from YouTube can’t be made visible in the Work Plaza again';
+
+  @override
+  String get communityMyWorksStatusDeletedOnYoutube =>
+      'Deleted from YouTube • Can’t be made visible again';
+
+  @override
+  String get communityMyWorksStatusYoutubePrivate =>
+      'Visible in the Work Plaza • Temporarily hidden because the YouTube video is private';
+
+  @override
+  String get communityMyWorksStatusHiddenYoutubePrivate =>
+      'Hidden in the Work Plaza • Also private on YouTube';
+
+  @override
+  String get communityVisibilityPublishedBadge => 'Visible';
+
+  @override
+  String communityYoutubeVideoIdLabel(String videoId) {
+    return 'YouTube video ID: $videoId';
+  }
+
+  @override
+  String get communityPostTitleLabel => 'Title';
+
+  @override
+  String get communityPostPickVideo => 'Choose a video';
+
+  @override
+  String get communityPostAsShort => 'Post as a portrait short';
+
+  @override
+  String get communityPostShowInPlaza => 'Show in the Work Plaza';
+
+  @override
+  String get communityPostShowInPlazaHelp =>
+      'The video is uploaded to YouTube as “Unlisted”. Its visibility in the Work Plaza is managed separately.';
+
+  @override
+  String get communityPostUploadedHeading => 'Uploaded to YouTube';
+
+  @override
+  String communityPostUploadedAccount(String email) {
+    return 'Google account: $email';
+  }
+
+  @override
+  String get communityPostNoReupload =>
+      'Retrying won’t upload the video again.';
+
+  @override
+  String get communityPostDiscardPending => 'Cancel Work Plaza registration';
+
+  @override
+  String get communityPostPendingDiscarded =>
+      'The pending Work Plaza registration was discarded. The video on YouTube was not deleted.';
+
+  @override
+  String get communityPostSubmitUpload => 'Upload to YouTube and post';
+
+  @override
+  String get communityPostSubmitRetry => 'Retry Work Plaza registration';
+
+  @override
+  String communityPostErrorLabel(String message) {
+    return 'Error: $message';
+  }
+
+  @override
+  String communityPostDoneSnackbar(String videoId) {
+    return 'Posted (YouTube video ID: $videoId)';
+  }
+
+  @override
+  String communityPostRecoveredSnackbar(String videoId) {
+    return 'Recovered your posted work (YouTube video ID: $videoId)';
+  }
+
+  @override
+  String get communityPostStatusPendingRestored =>
+      'A video from your last attempt is already on YouTube. You can retry just the Work Plaza registration.';
+
+  @override
+  String get communityPostStatusPendingUnavailable =>
+      'The pending YouTube video was deleted or can’t be found, so it can’t be recovered. Choose a new video.';
+
+  @override
+  String get communityPostStatusRecovered => 'Recovered your posted work';
+
+  @override
+  String get communityPostStatusCompleted => 'Posting complete';
+
+  @override
+  String get communityPostStatusCheckingAccount =>
+      'Checking your Google account…';
+
+  @override
+  String get communityPostStatusCheckingRegistration =>
+      'Checking the Work Plaza registration…';
+
+  @override
+  String get communityPostStatusSyncingAiFlag =>
+      'Syncing “Contains generative-AI images or video” for the posted work…';
+
+  @override
+  String get communityPostStatusSyncingVisibility =>
+      'Syncing the posted work’s visibility…';
+
+  @override
+  String get communityPostStatusUploading => 'Uploading to YouTube…';
+
+  @override
+  String get communityPostStatusRegistering =>
+      'Upload to YouTube complete. Registering in the Work Plaza…';
+
+  @override
+  String get communityPostStatusUploadFailed => 'Upload failed';
+
+  @override
+  String get communityPostStatusRegistrationRetryable =>
+      'The video is saved on YouTube. You can retry just the Work Plaza registration.';
+
+  @override
+  String get communityPostErrorNoVideo => 'Choose a video to post';
+
+  @override
+  String get communityPostErrorNoTitle => 'Enter a title';
+
+  @override
+  String get communityPostErrorServerNotConfigured =>
+      'Posting isn’t available because the Work Plaza server isn’t configured';
+
+  @override
+  String get communityPostErrorPendingVideoUnavailable =>
+      'The YouTube video can’t be found. Registering this video in the Work Plaza can’t be retried.';
+
+  @override
+  String communityPostErrorUploadedByAccount(String email) {
+    return 'This video was uploaded with $email. Switch to that Google account, then retry the Work Plaza registration.';
+  }
+
+  @override
+  String get communityPostErrorUploadedByAnotherAccount =>
+      'This video was uploaded with a different Google account. Switch to that account, then retry the Work Plaza registration.';
+
+  @override
+  String communityPostErrorAccountChanged(String email) {
+    return 'Your Google account changed partway through. Switch back to $email and try again.';
+  }
+
+  @override
+  String get communityPostErrorYoutubePermission =>
+      'Couldn’t get permission to post to YouTube';
+
+  @override
+  String get communityPostErrorNoVideoId => 'YouTube didn’t return a video ID';
+
+  @override
+  String get communityShortsEndBehaviorTooltip => 'When the video ends';
+
+  @override
+  String get communityShortsEndBehaviorLoop => 'Loop this video';
+
+  @override
+  String get communityShortsEndBehaviorAutoAdvance =>
+      'Auto-scroll to the next video';
+
+  @override
+  String get communityErrorNetwork =>
+      'Couldn’t connect. Check your connection and try again.';
+
+  @override
+  String get communityErrorSignInRequired =>
+      'You need to sign in with your Google account. Sign in again and retry.';
+
+  @override
+  String get communityErrorForbidden => 'You don’t have permission to do this.';
+
+  @override
+  String get communityErrorNotFound =>
+      'It couldn’t be found. It may have been deleted.';
+
+  @override
+  String get communityErrorRateLimited =>
+      'Too many requests. Wait a moment and try again.';
+
+  @override
+  String get communityErrorServer =>
+      'Something went wrong on the server. Wait a while and try again.';
+
+  @override
+  String get communityErrorGeneric => 'Something went wrong. Please try again.';
+
+  @override
+  String communityErrorTagLimitExceeded(int max) {
+    return 'A work can have up to $max tags.';
+  }
+
+  @override
+  String get communityErrorTagTooLong =>
+      'The tag is too long. Shorten it and try again.';
+
+  @override
+  String get communityErrorTagUpdateConflict =>
+      'Someone else changed the tags at the same time. Please try again.';
+
+  @override
+  String get communityErrorWorkChanged =>
+      'The work was updated by another change. Please try again.';
+
+  @override
+  String get communityErrorVideoNotFound =>
+      'The YouTube video couldn’t be found.';
+
+  @override
+  String get communityErrorVideoAlreadyRegistered =>
+      'This video has already been registered in the Work Plaza by another user.';
+
+  @override
+  String get communityErrorWorkDeleted =>
+      'This video was deleted from the Work Plaza and can’t be registered again.';
+
+  @override
+  String get communityErrorVideoRegistrationConflict =>
+      'This video was being registered by another request at the same time. Reload your posts and try again.';
+
+  @override
+  String get communityErrorPostQuotaExceeded =>
+      'You’ve reached today’s posting limit. You can post again after the date changes.';
+
+  @override
+  String get communityErrorSignInCanceled => 'Sign-in was canceled.';
+
+  @override
+  String get communityErrorGoogleSignIn =>
+      'Google sign-in couldn’t be completed. Please try again.';
+
+  @override
+  String get communityErrorYoutubeUpload =>
+      'Uploading to YouTube failed. Check your connection and try again.';
+
+  @override
+  String get communityErrorVideoFile =>
+      'Couldn’t read the video file. Choose the video again.';
+
+  @override
+  String get communityErrorUnsupported =>
+      'This isn’t supported on this device.';
 
   @override
   String get canvasLassoSnapToLines => 'Snap to lines';

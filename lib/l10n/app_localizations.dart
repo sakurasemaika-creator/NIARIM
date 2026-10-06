@@ -2750,7 +2750,7 @@ abstract class AppLocalizations {
   /// No description provided for @helpCommunityDesc.
   ///
   /// In ja, this message translates to:
-  /// **'アニメ・イラスト作品をYouTube動画としてコミュニティに投稿し、他のユーザーの作品を閲覧できる機能です。「新着」「ランキング」「フォロー中」の3タブで一覧を切り替えられ、作品タイトルまたは投稿者名で検索できるほか、タグ検索モードに切り替えるとタグから作品を絞り込めます。タグは投稿者以外のユーザーも自由に追加・削除でき（投稿者がロックしたタグは投稿者本人にしか外せません）、タグをタップするだけでも同じタグの作品に絞り込めます。作品カードをタップするとドラッグ・リサイズできるフローティングプレビューウィンドウが開き、他の画面を操作しながら視聴を続けられます。「詳細へ」ボタンで作品の詳細画面（投稿者・投稿日・タグ編集・ブックマーク・リポストなど）を開けます。作者名の横の「フォロー」ボタンでフォローすると、「フォロー中」タブでその作者の投稿だけを新着順にまとめて追いかけられます。フォローされると画面右上のベルアイコンの通知一覧に届きます。自分のフォロー中/フォロワー一覧を全体公開するかどうかも設定でき（既定は非公開）、公開設定にしている他のユーザーの一覧も閲覧できます。他者の作品（自分の投稿を除く）は「リポスト」ボタンで再投稿でき、フォロー中の作者が誰かの作品をリポストすると、その作品も「投稿日時」と「リポスト日時」のうちより新しい方を基準に「フォロー中」タブへ混ざって表示されます（カードに「○○さんがリポスト」と表示）。ブックマークした作品はホーム画面の「ブクマ済み」タブにまとめて表示されるほか、投稿者別の作品一覧画面の「ブックマーク」タブでも確認できます。自分のブックマーク一覧はユーザー全体へ公開するかどうかを設定でき（既定は非公開）、公開設定にしている他のユーザーのブックマーク一覧も閲覧できます。不適切な作品は理由を添えて通報でき、送信後にはその投稿者をブロックするか選べます。縦長の動画は「縦画面モード」でTikTok風に連続再生して視聴できます。投稿できる本数には1日あたりの上限があり、無料会員は1日1本、プレミアム会員は1日3本までです。'**
+  /// **'アニメ・イラスト作品をYouTube動画としてコミュニティに投稿し、他のユーザーの作品を閲覧できる機能です。「新着」「ランキング」「フォロー中」の3タブで一覧を切り替えられ、作品タイトルまたは投稿者名で検索できるほか、タグ検索モードに切り替えるとタグから作品を絞り込めます。タグは投稿者以外のユーザーも自由に追加・削除でき（投稿者がロックしたタグは投稿者本人にしか外せません）、タグをタップするだけでも同じタグの作品に絞り込めます。作品カードをタップするとドラッグ・リサイズできるフローティングプレビューウィンドウが開き、他の画面を操作しながら視聴を続けられます。「詳細へ」ボタンで作品の詳細画面（投稿者・投稿日・タグ編集・ブックマーク・リポストなど）を開けます。作者名の横の「フォロー」ボタンでフォローすると、「フォロー中」タブでその作者の投稿だけを新着順にまとめて追いかけられます。フォローされると画面右上のベルアイコンの通知一覧に届きます。自分のフォロー中/フォロワー一覧を全体公開するかどうかも設定でき（既定は非公開）、公開設定にしている他のユーザーの一覧も閲覧できます。他者の作品（自分の投稿を除く）は「リポスト」ボタンで再投稿でき、フォロー中の作者が誰かの作品をリポストすると、その作品も「投稿日時」と「リポスト日時」のうちより新しい方を基準に「フォロー中」タブへ混ざって表示されます（カードに「○○さんがリポスト」と表示）。ブックマークした作品はホーム画面の「ブクマ済み」タブにまとめて表示されるほか、投稿者別の作品一覧画面の「ブックマーク」タブでも確認できます。自分のブックマーク一覧はユーザー全体へ公開するかどうかを設定でき（既定は非公開）、公開設定にしている他のユーザーのブックマーク一覧も閲覧できます。不適切な作品は理由を添えて通報でき、送信後にはその投稿者をブロックするか選べます。縦長の動画は「縦画面モード」でTikTok風に連続再生して視聴できます。投稿できる本数には1日あたりの上限があり、無料会員は1日1本、プレミアム会員は1日3本までです。画面右上の表示フィルターボタン（斜線の入った目のアイコン）では、見たくない作品を非表示にできます。「AI画像・AI動画使用」の作品を非表示にする設定のほか、作品タイトルだけを対象にするミュートタイトルと、作品広場で作品に設定されたタグだけを対象にするミュートタグ（先頭の#は無視されます）を、カンマ・「、」・改行で区切って登録できます。これらのフィルターは新着・ランキング・フォロー中（リポストを含む）・縦画面モード・投稿者ページ・作品詳細・ブックマークに適用されます。「AI画像・AI動画使用」は投稿時に投稿者が申告するもので、投稿後に変更できるのも投稿者本人だけです（「自分の投稿」または作品詳細画面から変更できます）。'**
   String get helpCommunityDesc;
 
   /// No description provided for @helpWatermarkEntryTitle.
@@ -11840,7 +11840,7 @@ abstract class AppLocalizations {
   /// No description provided for @communityMutedWordsHint.
   ///
   /// In ja, this message translates to:
-  /// **'非表示にする作品タイトル内の語句をカンマ区切りで指定'**
+  /// **'作品タイトルにこの語句を含む作品を非表示にします（投稿者名・タグは対象外）。カンマ・「、」・改行で区切って複数指定できます'**
   String get communityMutedWordsHint;
 
   /// No description provided for @communityMutedTags.
@@ -11852,7 +11852,7 @@ abstract class AppLocalizations {
   /// No description provided for @communityMutedTagsHint.
   ///
   /// In ja, this message translates to:
-  /// **'タグ名をカンマ区切りで指定'**
+  /// **'作品広場で作品に設定されたタグが一致すると非表示にします（先頭の#は無視されます）。カンマ・「、」・改行で区切って複数指定できます'**
   String get communityMutedTagsHint;
 
   /// No description provided for @communityContainsGenerativeAiImageVideo.
@@ -11872,6 +11872,480 @@ abstract class AppLocalizations {
   /// In ja, this message translates to:
   /// **'「AI画像・AI動画使用」を変更できませんでした。通信状態を確認して、もう一度お試しください。'**
   String get communityAiImageVideoUpdateFailed;
+
+  /// No description provided for @communityRetry.
+  ///
+  /// In ja, this message translates to:
+  /// **'再試行'**
+  String get communityRetry;
+
+  /// No description provided for @communityReloadTooltip.
+  ///
+  /// In ja, this message translates to:
+  /// **'再読み込み'**
+  String get communityReloadTooltip;
+
+  /// No description provided for @communityGoogleSignInNotConfigured.
+  ///
+  /// In ja, this message translates to:
+  /// **'Googleログインがまだ設定されていません'**
+  String get communityGoogleSignInNotConfigured;
+
+  /// No description provided for @communityGoogleAccountBusy.
+  ///
+  /// In ja, this message translates to:
+  /// **'Googleアカウントの別の操作を処理中です。完了してから、もう一度お試しください。'**
+  String get communityGoogleAccountBusy;
+
+  /// No description provided for @communityMyWorksTitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'自分の投稿'**
+  String get communityMyWorksTitle;
+
+  /// No description provided for @communityMyWorksAccountNotConnected.
+  ///
+  /// In ja, this message translates to:
+  /// **'Googleアカウント未接続'**
+  String get communityMyWorksAccountNotConnected;
+
+  /// No description provided for @communityMyWorksAddAccount.
+  ///
+  /// In ja, this message translates to:
+  /// **'Googleアカウントを追加'**
+  String get communityMyWorksAddAccount;
+
+  /// No description provided for @communityMyWorksSwitchAccount.
+  ///
+  /// In ja, this message translates to:
+  /// **'Googleアカウントを切り替え・追加'**
+  String get communityMyWorksSwitchAccount;
+
+  /// No description provided for @communityMyWorksLoading.
+  ///
+  /// In ja, this message translates to:
+  /// **'投稿を読み込んでいます…'**
+  String get communityMyWorksLoading;
+
+  /// No description provided for @communityMyWorksLoadFailed.
+  ///
+  /// In ja, this message translates to:
+  /// **'自分の投稿を読み込めませんでした。{reason}'**
+  String communityMyWorksLoadFailed(String reason);
+
+  /// No description provided for @communityAccountSwitchFailed.
+  ///
+  /// In ja, this message translates to:
+  /// **'Googleアカウントを切り替えられませんでした。{reason}'**
+  String communityAccountSwitchFailed(String reason);
+
+  /// No description provided for @communitySignInFailed.
+  ///
+  /// In ja, this message translates to:
+  /// **'Googleアカウントでログインできませんでした。{reason}'**
+  String communitySignInFailed(String reason);
+
+  /// No description provided for @communityVisibilityChangeFailed.
+  ///
+  /// In ja, this message translates to:
+  /// **'公開状態を変更できませんでした。{reason}'**
+  String communityVisibilityChangeFailed(String reason);
+
+  /// No description provided for @communityMyWorksDeletedCannotPublish.
+  ///
+  /// In ja, this message translates to:
+  /// **'YouTubeから削除された動画は、作品広場で再公開できません'**
+  String get communityMyWorksDeletedCannotPublish;
+
+  /// No description provided for @communityMyWorksStatusDeletedOnYoutube.
+  ///
+  /// In ja, this message translates to:
+  /// **'YouTubeから削除済み • 作品広場で再公開できません'**
+  String get communityMyWorksStatusDeletedOnYoutube;
+
+  /// No description provided for @communityMyWorksStatusYoutubePrivate.
+  ///
+  /// In ja, this message translates to:
+  /// **'作品広場で公開中 • YouTubeが非公開のため一時的に非表示'**
+  String get communityMyWorksStatusYoutubePrivate;
+
+  /// No description provided for @communityMyWorksStatusHiddenYoutubePrivate.
+  ///
+  /// In ja, this message translates to:
+  /// **'作品広場で非公開 • YouTubeも非公開'**
+  String get communityMyWorksStatusHiddenYoutubePrivate;
+
+  /// No description provided for @communityVisibilityPublishedBadge.
+  ///
+  /// In ja, this message translates to:
+  /// **'公開中'**
+  String get communityVisibilityPublishedBadge;
+
+  /// No description provided for @communityYoutubeVideoIdLabel.
+  ///
+  /// In ja, this message translates to:
+  /// **'YouTube動画ID: {videoId}'**
+  String communityYoutubeVideoIdLabel(String videoId);
+
+  /// No description provided for @communityPostTitleLabel.
+  ///
+  /// In ja, this message translates to:
+  /// **'タイトル'**
+  String get communityPostTitleLabel;
+
+  /// No description provided for @communityPostPickVideo.
+  ///
+  /// In ja, this message translates to:
+  /// **'動画を選択'**
+  String get communityPostPickVideo;
+
+  /// No description provided for @communityPostAsShort.
+  ///
+  /// In ja, this message translates to:
+  /// **'縦画面ショートとして投稿'**
+  String get communityPostAsShort;
+
+  /// No description provided for @communityPostShowInPlaza.
+  ///
+  /// In ja, this message translates to:
+  /// **'作品広場で公開'**
+  String get communityPostShowInPlaza;
+
+  /// No description provided for @communityPostShowInPlazaHelp.
+  ///
+  /// In ja, this message translates to:
+  /// **'YouTubeには限定公開でアップロードされます。作品広場での公開・非公開は、これとは別に管理します。'**
+  String get communityPostShowInPlazaHelp;
+
+  /// No description provided for @communityPostUploadedHeading.
+  ///
+  /// In ja, this message translates to:
+  /// **'YouTubeへアップロード済み'**
+  String get communityPostUploadedHeading;
+
+  /// No description provided for @communityPostUploadedAccount.
+  ///
+  /// In ja, this message translates to:
+  /// **'Googleアカウント: {email}'**
+  String communityPostUploadedAccount(String email);
+
+  /// No description provided for @communityPostNoReupload.
+  ///
+  /// In ja, this message translates to:
+  /// **'再試行しても、動画が再アップロードされることはありません。'**
+  String get communityPostNoReupload;
+
+  /// No description provided for @communityPostDiscardPending.
+  ///
+  /// In ja, this message translates to:
+  /// **'作品広場への登録をやめる'**
+  String get communityPostDiscardPending;
+
+  /// No description provided for @communityPostPendingDiscarded.
+  ///
+  /// In ja, this message translates to:
+  /// **'保留中だった作品広場への登録を取りやめました。YouTubeの動画は削除していません。'**
+  String get communityPostPendingDiscarded;
+
+  /// No description provided for @communityPostSubmitUpload.
+  ///
+  /// In ja, this message translates to:
+  /// **'YouTubeへアップロードして投稿'**
+  String get communityPostSubmitUpload;
+
+  /// No description provided for @communityPostSubmitRetry.
+  ///
+  /// In ja, this message translates to:
+  /// **'作品広場への登録を再試行'**
+  String get communityPostSubmitRetry;
+
+  /// No description provided for @communityPostErrorLabel.
+  ///
+  /// In ja, this message translates to:
+  /// **'エラー: {message}'**
+  String communityPostErrorLabel(String message);
+
+  /// No description provided for @communityPostDoneSnackbar.
+  ///
+  /// In ja, this message translates to:
+  /// **'投稿しました（YouTube動画ID: {videoId}）'**
+  String communityPostDoneSnackbar(String videoId);
+
+  /// No description provided for @communityPostRecoveredSnackbar.
+  ///
+  /// In ja, this message translates to:
+  /// **'投稿済みの作品を復旧しました（YouTube動画ID: {videoId}）'**
+  String communityPostRecoveredSnackbar(String videoId);
+
+  /// No description provided for @communityPostStatusPendingRestored.
+  ///
+  /// In ja, this message translates to:
+  /// **'前回YouTubeへアップロードした動画があります。作品広場への登録だけを再試行できます。'**
+  String get communityPostStatusPendingRestored;
+
+  /// No description provided for @communityPostStatusPendingUnavailable.
+  ///
+  /// In ja, this message translates to:
+  /// **'保留中のYouTube動画は削除されたか見つからないため、復旧できません。新しい動画を選択してください。'**
+  String get communityPostStatusPendingUnavailable;
+
+  /// No description provided for @communityPostStatusRecovered.
+  ///
+  /// In ja, this message translates to:
+  /// **'投稿済みの作品を復旧しました'**
+  String get communityPostStatusRecovered;
+
+  /// No description provided for @communityPostStatusCompleted.
+  ///
+  /// In ja, this message translates to:
+  /// **'投稿が完了しました'**
+  String get communityPostStatusCompleted;
+
+  /// No description provided for @communityPostStatusCheckingAccount.
+  ///
+  /// In ja, this message translates to:
+  /// **'Googleアカウントを確認しています…'**
+  String get communityPostStatusCheckingAccount;
+
+  /// No description provided for @communityPostStatusCheckingRegistration.
+  ///
+  /// In ja, this message translates to:
+  /// **'作品広場への登録状況を確認しています…'**
+  String get communityPostStatusCheckingRegistration;
+
+  /// No description provided for @communityPostStatusSyncingAiFlag.
+  ///
+  /// In ja, this message translates to:
+  /// **'投稿済み作品の「AI画像・AI動画使用」を同期しています…'**
+  String get communityPostStatusSyncingAiFlag;
+
+  /// No description provided for @communityPostStatusSyncingVisibility.
+  ///
+  /// In ja, this message translates to:
+  /// **'投稿済み作品の公開状態を同期しています…'**
+  String get communityPostStatusSyncingVisibility;
+
+  /// No description provided for @communityPostStatusUploading.
+  ///
+  /// In ja, this message translates to:
+  /// **'YouTubeへアップロードしています…'**
+  String get communityPostStatusUploading;
+
+  /// No description provided for @communityPostStatusRegistering.
+  ///
+  /// In ja, this message translates to:
+  /// **'YouTubeへのアップロードが完了しました。作品広場へ登録しています…'**
+  String get communityPostStatusRegistering;
+
+  /// No description provided for @communityPostStatusUploadFailed.
+  ///
+  /// In ja, this message translates to:
+  /// **'アップロードに失敗しました'**
+  String get communityPostStatusUploadFailed;
+
+  /// No description provided for @communityPostStatusRegistrationRetryable.
+  ///
+  /// In ja, this message translates to:
+  /// **'YouTubeの動画は保存されています。作品広場への登録だけを再試行できます。'**
+  String get communityPostStatusRegistrationRetryable;
+
+  /// No description provided for @communityPostErrorNoVideo.
+  ///
+  /// In ja, this message translates to:
+  /// **'投稿する動画を選択してください'**
+  String get communityPostErrorNoVideo;
+
+  /// No description provided for @communityPostErrorNoTitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'タイトルを入力してください'**
+  String get communityPostErrorNoTitle;
+
+  /// No description provided for @communityPostErrorServerNotConfigured.
+  ///
+  /// In ja, this message translates to:
+  /// **'作品広場の接続先が設定されていないため、投稿できません'**
+  String get communityPostErrorServerNotConfigured;
+
+  /// No description provided for @communityPostErrorPendingVideoUnavailable.
+  ///
+  /// In ja, this message translates to:
+  /// **'YouTube動画が見つかりません。この動画の作品広場への登録は再試行できません'**
+  String get communityPostErrorPendingVideoUnavailable;
+
+  /// No description provided for @communityPostErrorUploadedByAccount.
+  ///
+  /// In ja, this message translates to:
+  /// **'この動画は{email}でアップロードされています。そのGoogleアカウントに切り替えてから、作品広場への登録を再試行してください'**
+  String communityPostErrorUploadedByAccount(String email);
+
+  /// No description provided for @communityPostErrorUploadedByAnotherAccount.
+  ///
+  /// In ja, this message translates to:
+  /// **'この動画は別のGoogleアカウントでアップロードされています。そのアカウントに切り替えてから、作品広場への登録を再試行してください'**
+  String get communityPostErrorUploadedByAnotherAccount;
+
+  /// No description provided for @communityPostErrorAccountChanged.
+  ///
+  /// In ja, this message translates to:
+  /// **'処理の途中でGoogleアカウントが切り替わりました。{email}に戻してから、もう一度お試しください'**
+  String communityPostErrorAccountChanged(String email);
+
+  /// No description provided for @communityPostErrorYoutubePermission.
+  ///
+  /// In ja, this message translates to:
+  /// **'YouTubeへの投稿権限を取得できませんでした'**
+  String get communityPostErrorYoutubePermission;
+
+  /// No description provided for @communityPostErrorNoVideoId.
+  ///
+  /// In ja, this message translates to:
+  /// **'YouTubeから動画IDを受け取れませんでした'**
+  String get communityPostErrorNoVideoId;
+
+  /// No description provided for @communityShortsEndBehaviorTooltip.
+  ///
+  /// In ja, this message translates to:
+  /// **'再生終了時の動作'**
+  String get communityShortsEndBehaviorTooltip;
+
+  /// No description provided for @communityShortsEndBehaviorLoop.
+  ///
+  /// In ja, this message translates to:
+  /// **'同じ動画をループ再生'**
+  String get communityShortsEndBehaviorLoop;
+
+  /// No description provided for @communityShortsEndBehaviorAutoAdvance.
+  ///
+  /// In ja, this message translates to:
+  /// **'次の動画へ自動スクロール'**
+  String get communityShortsEndBehaviorAutoAdvance;
+
+  /// No description provided for @communityErrorNetwork.
+  ///
+  /// In ja, this message translates to:
+  /// **'通信できませんでした。通信状態を確認して、もう一度お試しください。'**
+  String get communityErrorNetwork;
+
+  /// No description provided for @communityErrorSignInRequired.
+  ///
+  /// In ja, this message translates to:
+  /// **'Googleアカウントでのログインが必要です。ログインし直してから、もう一度お試しください。'**
+  String get communityErrorSignInRequired;
+
+  /// No description provided for @communityErrorForbidden.
+  ///
+  /// In ja, this message translates to:
+  /// **'この操作を行う権限がありません。'**
+  String get communityErrorForbidden;
+
+  /// No description provided for @communityErrorNotFound.
+  ///
+  /// In ja, this message translates to:
+  /// **'対象が見つかりませんでした。削除された可能性があります。'**
+  String get communityErrorNotFound;
+
+  /// No description provided for @communityErrorRateLimited.
+  ///
+  /// In ja, this message translates to:
+  /// **'操作が集中しています。しばらく待ってから、もう一度お試しください。'**
+  String get communityErrorRateLimited;
+
+  /// No description provided for @communityErrorServer.
+  ///
+  /// In ja, this message translates to:
+  /// **'サーバーで問題が発生しました。しばらく待ってから、もう一度お試しください。'**
+  String get communityErrorServer;
+
+  /// No description provided for @communityErrorGeneric.
+  ///
+  /// In ja, this message translates to:
+  /// **'問題が発生しました。もう一度お試しください。'**
+  String get communityErrorGeneric;
+
+  /// No description provided for @communityErrorTagLimitExceeded.
+  ///
+  /// In ja, this message translates to:
+  /// **'タグは1作品につき{max}個までです。'**
+  String communityErrorTagLimitExceeded(int max);
+
+  /// No description provided for @communityErrorTagTooLong.
+  ///
+  /// In ja, this message translates to:
+  /// **'タグが長すぎます。短くしてから、もう一度お試しください。'**
+  String get communityErrorTagTooLong;
+
+  /// No description provided for @communityErrorTagUpdateConflict.
+  ///
+  /// In ja, this message translates to:
+  /// **'ほかの人が同時にタグを変更しました。もう一度お試しください。'**
+  String get communityErrorTagUpdateConflict;
+
+  /// No description provided for @communityErrorWorkChanged.
+  ///
+  /// In ja, this message translates to:
+  /// **'作品がほかの操作で更新されました。もう一度お試しください。'**
+  String get communityErrorWorkChanged;
+
+  /// No description provided for @communityErrorVideoNotFound.
+  ///
+  /// In ja, this message translates to:
+  /// **'YouTube動画が見つかりませんでした。'**
+  String get communityErrorVideoNotFound;
+
+  /// No description provided for @communityErrorVideoAlreadyRegistered.
+  ///
+  /// In ja, this message translates to:
+  /// **'この動画は、既に別のユーザーが作品広場に登録しています。'**
+  String get communityErrorVideoAlreadyRegistered;
+
+  /// No description provided for @communityErrorWorkDeleted.
+  ///
+  /// In ja, this message translates to:
+  /// **'この動画は作品広場から削除済みのため、再登録できません。'**
+  String get communityErrorWorkDeleted;
+
+  /// No description provided for @communityErrorVideoRegistrationConflict.
+  ///
+  /// In ja, this message translates to:
+  /// **'この動画は同時に別の登録処理で使われました。自分の投稿を再読み込みしてから、もう一度お試しください。'**
+  String get communityErrorVideoRegistrationConflict;
+
+  /// No description provided for @communityErrorPostQuotaExceeded.
+  ///
+  /// In ja, this message translates to:
+  /// **'本日の投稿上限に達しました。日付が変わると、また投稿できます。'**
+  String get communityErrorPostQuotaExceeded;
+
+  /// No description provided for @communityErrorSignInCanceled.
+  ///
+  /// In ja, this message translates to:
+  /// **'ログインがキャンセルされました。'**
+  String get communityErrorSignInCanceled;
+
+  /// No description provided for @communityErrorGoogleSignIn.
+  ///
+  /// In ja, this message translates to:
+  /// **'Googleアカウントでのログインを完了できませんでした。もう一度お試しください。'**
+  String get communityErrorGoogleSignIn;
+
+  /// No description provided for @communityErrorYoutubeUpload.
+  ///
+  /// In ja, this message translates to:
+  /// **'YouTubeへのアップロードに失敗しました。通信状態を確認して、もう一度お試しください。'**
+  String get communityErrorYoutubeUpload;
+
+  /// No description provided for @communityErrorVideoFile.
+  ///
+  /// In ja, this message translates to:
+  /// **'動画ファイルを読み込めませんでした。動画を選び直してください。'**
+  String get communityErrorVideoFile;
+
+  /// No description provided for @communityErrorUnsupported.
+  ///
+  /// In ja, this message translates to:
+  /// **'この端末では、この操作に対応していません。'**
+  String get communityErrorUnsupported;
 
   /// No description provided for @canvasLassoSnapToLines.
   ///

@@ -9,6 +9,7 @@ import '../../widgets/dispose_on_unmount.dart';
 import '../../widgets/ad_banner_mock_widget.dart';
 import '../../widgets/responsive.dart';
 import 'community_author_works_screen.dart';
+import 'community_error_text.dart';
 import 'widgets/community_work_card.dart';
 import '../../config/font_fallback.dart';
 
@@ -43,12 +44,16 @@ class _CommunityWorkDetailScreenState extends State<CommunityWorkDetailScreen> {
     // Only an edit the server refused or never received (false) is
     // reported; null means there was nothing to change.
     if (await edit != false) return;
+    final error = service.lastError;
     messenger.showSnackBar(
       SnackBar(
         content: Text(
-          service.lastError?.isUnauthorized ?? false
+          error?.isUnauthorized ?? false
               ? l10n.communityEditSignInRequired
-              : l10n.communityEditFailed,
+              // A refusal the server explains (tag limit, a concurrent
+              // change...) says so; anything else asks to retry.
+              : communityApiErrorCodeText(l10n, error?.code) ??
+                    l10n.communityEditFailed,
         ),
       ),
     );

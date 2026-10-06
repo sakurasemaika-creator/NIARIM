@@ -8,6 +8,7 @@ import '../../services/community_service.dart';
 import '../../services/google_auth_service.dart';
 import '../../widgets/ad_banner_mock_widget.dart';
 import '../../widgets/responsive.dart';
+import 'community_error_text.dart';
 import 'community_post_screen.dart';
 
 /// Owner hub opened from the community square.
@@ -75,6 +76,7 @@ class _CommunityMyWorksScreenState extends State<CommunityMyWorksScreen> {
         _youtubePrivacyById = privacy;
       });
     } catch (error) {
+      debugPrint('Own works could not be loaded: $error');
       if (!mounted) return;
       setState(() => _worksError = error);
     } finally {
@@ -82,13 +84,31 @@ class _CommunityMyWorksScreenState extends State<CommunityMyWorksScreen> {
     }
   }
 
+  void _showSnackBar(String message) {
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(SnackBar(content: Text(message)));
+  }
+
+  /// Why a Google sign-in step failed. A refusal because another account
+  /// operation is still running is told apart by that operation's flag.
+  String _googleErrorText(
+    AppLocalizations l10n,
+    GoogleAuthService auth,
+    Object error,
+  ) => auth.authOperationInProgress
+      ? l10n.communityGoogleAccountBusy
+      : communityErrorText(l10n, error);
+
   Future<void> _switchOrAddGoogleAccount() async {
     final auth = context.read<GoogleAuthService>();
+    final l10n = AppLocalizations.of(context)!;
     if (!auth.isConfigured) {
-      if (!mounted) return;
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(const SnackBar(content: Text('Google認証がまだ設定されていません')));
+      _showSnackBar(l10n.communityGoogleSignInNotConfigured);
+      return;
+    }
+    if (auth.authOperationInProgress) {
+      _showSnackBar(l10n.communityGoogleAccountBusy);
       return;
     }
 
@@ -106,10 +126,11 @@ class _CommunityMyWorksScreenState extends State<CommunityMyWorksScreen> {
       await auth.signInInteractively();
       await _reloadOwnerWorks();
     } catch (error) {
+      debugPrint('Google account switch failed: $error');
       if (!mounted) return;
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text('Googleアカウントを変更できませんでした: $error')));
+      _showSnackBar(
+        l10n.communityAccountSwitchFailed(_googleErrorText(l10n, auth, error)),
+      );
     } finally {
       if (mounted) setState(() => _switchingAccount = false);
     }
@@ -117,22 +138,26 @@ class _CommunityMyWorksScreenState extends State<CommunityMyWorksScreen> {
 
   Future<void> _handlePostTap() async {
     final auth = context.read<GoogleAuthService>();
+    final l10n = AppLocalizations.of(context)!;
     if (!auth.isConfigured) {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(const SnackBar(content: Text('Google認証がまだ設定されていません')));
+      _showSnackBar(l10n.communityGoogleSignInNotConfigured);
       return;
     }
 
     if (!auth.isSignedIn) {
+      if (auth.authOperationInProgress) {
+        _showSnackBar(l10n.communityGoogleAccountBusy);
+        return;
+      }
       try {
         await auth.signInInteractively();
         await _reloadOwnerWorks();
       } catch (error) {
+        debugPrint('Google sign-in failed: $error');
         if (!mounted) return;
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text('Googleログインに失敗しました: $error')));
+        _showSnackBar(
+          l10n.communitySignInFailed(_googleErrorText(l10n, auth, error)),
+        );
         return;
       }
     }
@@ -179,11 +204,10 @@ class _CommunityMyWorksScreenState extends State<CommunityMyWorksScreen> {
   }
 
   Future<void> _setVisibility(CommunityWork work, bool published) async {
+    final l10n = AppLocalizations.of(context)!;
     final youtubePrivacy = _youtubePrivacyById[work.id];
     if (published && youtubePrivacy == 'deleted') {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('YouTubeから削除された動画はNIARIMで再公開できません')),
-      );
+      _showSnackBar(l10n.communityMyWorksDeletedCannotPublish);
       return;
     }
 
@@ -201,27 +225,29 @@ class _CommunityMyWorksScreenState extends State<CommunityMyWorksScreen> {
         if (i >= 0) works[i] = next;
       });
     } catch (error) {
+      debugPrint('Visibility update failed: $error');
       if (!mounted) return;
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text('公開状態を変更できませんでした: $error')));
+      _showSnackBar(
+        l10n.communityVisibilityChangeFailed(communityErrorText(l10n, error)),
+      );
     } finally {
       if (mounted) setState(() => _visibilityBusy.remove(work.id));
     }
   }
 
-  String _visibilityLabel(CommunityWork work) {
+  String _visibilityLabel(AppLocalizations l10n, CommunityWork work) {
     final youtubePrivacy = _youtubePrivacyById[work.id];
     if (youtubePrivacy == 'deleted') {
-      return 'YouTubeから削除済み • NIARIMでは再公開できません';
+      return l10n.communityMyWorksStatusDeletedOnYoutube;
     }
     if (youtubePrivacy == 'private') {
-      if (work.isNiarimPublished) {
-        return 'NIARIM公開ON • YouTube非公開のため一時非表示';
-      }
-      return 'NIARIM非公開 • YouTubeも非公開';
+      return work.isNiarimPublished
+          ? l10n.communityMyWorksStatusYoutubePrivate
+          : l10n.communityMyWorksStatusHiddenYoutubePrivate;
     }
-    return work.isNiarimPublished ? '公開中' : '非公開';
+    return work.isNiarimPublished
+        ? l10n.communityVisibilityPublishedBadge
+        : l10n.communityVisibilityHiddenBadge;
   }
 
   IconData _visibilityIcon(CommunityWork work) {
@@ -241,7 +267,7 @@ class _CommunityMyWorksScreenState extends State<CommunityMyWorksScreen> {
     final auth = context.watch<GoogleAuthService>();
     final account = auth.account;
     final accountLabel = account == null
-        ? 'Googleアカウント未接続'
+        ? l10n.communityMyWorksAccountNotConnected
         : (account.displayName?.trim().isNotEmpty ?? false)
         ? account.displayName!.trim()
         : account.email;
@@ -257,10 +283,10 @@ class _CommunityMyWorksScreenState extends State<CommunityMyWorksScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('自分の投稿'),
+        title: Text(l10n.communityMyWorksTitle),
         actions: [
           IconButton(
-            tooltip: '再読み込み',
+            tooltip: l10n.communityReloadTooltip,
             onPressed: _loadingWorks ? null : _reloadOwnerWorks,
             icon: const Icon(Icons.refresh),
           ),
@@ -351,8 +377,8 @@ class _CommunityMyWorksScreenState extends State<CommunityMyWorksScreen> {
                                 : const Icon(Icons.manage_accounts_outlined),
                             label: Text(
                               account == null
-                                  ? 'Googleアカウントを追加'
-                                  : 'Googleアカウントを切り替え・追加',
+                                  ? l10n.communityMyWorksAddAccount
+                                  : l10n.communityMyWorksSwitchAccount,
                             ),
                           ),
                         ],
@@ -391,11 +417,15 @@ class _CommunityMyWorksScreenState extends State<CommunityMyWorksScreen> {
                   vertical: 4,
                 ),
                 child: MaterialBanner(
-                  content: Text('自分の投稿を読み込めませんでした: $_worksError'),
+                  content: Text(
+                    l10n.communityMyWorksLoadFailed(
+                      communityErrorText(l10n, _worksError!),
+                    ),
+                  ),
                   actions: [
                     TextButton(
                       onPressed: _reloadOwnerWorks,
-                      child: const Text('再試行'),
+                      child: Text(l10n.communityRetry),
                     ),
                   ],
                 ),
@@ -416,7 +446,7 @@ class _CommunityMyWorksScreenState extends State<CommunityMyWorksScreen> {
                             const SizedBox(height: 12),
                             Text(
                               usingBackendOwnerList && _loadingWorks
-                                  ? '投稿を読み込んでいます…'
+                                  ? l10n.communityMyWorksLoading
                                   : l10n.communityEmptyState,
                               textAlign: TextAlign.center,
                               style: TextStyle(color: scheme.onSurfaceVariant),
@@ -456,7 +486,8 @@ class _CommunityMyWorksScreenState extends State<CommunityMyWorksScreen> {
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 Text(
-                                  '${_visibilityLabel(work)}  •  videoId: ${work.id}',
+                                  '${_visibilityLabel(l10n, work)}  •  '
+                                  '${l10n.communityYoutubeVideoIdLabel(work.id)}',
                                   maxLines: 2,
                                   overflow: TextOverflow.ellipsis,
                                 ),

@@ -6,6 +6,7 @@ import '../../services/community_preview_service.dart';
 import '../../services/community_service.dart';
 import '../../services/api/community_api.dart' show RankingPeriod;
 import '../../widgets/ad_banner_mock_widget.dart';
+import '../../widgets/dispose_on_unmount.dart';
 import '../../widgets/help_button.dart';
 import '../../widgets/responsive.dart';
 import 'community_author_works_screen.dart';
@@ -196,63 +197,91 @@ class _CommunityScreenState extends State<CommunityScreen>
   }
 
   Future<void> _showContentFilters(CommunityService service) async {
+    // Pre-fill with the saved filters, not the empty ones before they load.
+    await service.contentFiltersReady;
+    if (!mounted) return;
     final l10n = AppLocalizations.of(context)!;
+    // The dialog disposes these once it has really left the tree: its
+    // closing transition still reads them after showDialog returns.
     final words = TextEditingController(text: service.mutedWords.join(', '));
     final tags = TextEditingController(text: service.mutedTags.join(', '));
     var hideAi = service.hideGenerativeAiImageVideo;
-    final save = await showDialog<bool>(
+    final result = await showDialog<_ContentFilterInput>(
       context: context,
-      builder: (context) => StatefulBuilder(
-        builder: (context, setDialogState) => AlertDialog(
-          title: Text(l10n.communityContentFilterTitle),
-          content: SingleChildScrollView(
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                SwitchListTile(
-                  contentPadding: EdgeInsets.zero,
-                  value: hideAi,
-                  onChanged: (v) => setDialogState(() => hideAi = v),
-                  title: Text(l10n.communityHideGenerativeAiImageVideo),
+      builder: (context) => DisposeOnUnmount(
+        controller: words,
+        builder: (context) => DisposeOnUnmount(
+          controller: tags,
+          builder: (context) => StatefulBuilder(
+            builder: (context, setDialogState) => AlertDialog(
+              title: Text(l10n.communityContentFilterTitle),
+              content: SingleChildScrollView(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    SwitchListTile(
+                      contentPadding: EdgeInsets.zero,
+                      value: hideAi,
+                      onChanged: (v) => setDialogState(() => hideAi = v),
+                      title: Text(l10n.communityHideGenerativeAiImageVideo),
+                    ),
+                    TextField(
+                      key: const Key('communityMutedWordsField'),
+                      controller: words,
+                      keyboardType: TextInputType.multiline,
+                      minLines: 1,
+                      maxLines: 4,
+                      decoration: InputDecoration(
+                        labelText: l10n.communityMutedWords,
+                        helperText: l10n.communityMutedWordsHint,
+                        helperMaxLines: 5,
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    TextField(
+                      key: const Key('communityMutedTagsField'),
+                      controller: tags,
+                      keyboardType: TextInputType.multiline,
+                      minLines: 1,
+                      maxLines: 4,
+                      decoration: InputDecoration(
+                        labelText: l10n.communityMutedTags,
+                        helperText: l10n.communityMutedTagsHint,
+                        helperMaxLines: 5,
+                      ),
+                    ),
+                  ],
                 ),
-                TextField(
-                  controller: words,
-                  decoration: InputDecoration(
-                    labelText: l10n.communityMutedWords,
-                    helperText: l10n.communityMutedWordsHint,
-                  ),
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.pop(context),
+                  child: Text(l10n.commonCancel),
                 ),
-                const SizedBox(height: 12),
-                TextField(
-                  controller: tags,
-                  decoration: InputDecoration(
-                    labelText: l10n.communityMutedTags,
-                    helperText: l10n.communityMutedTagsHint,
+                FilledButton(
+                  key: const Key('communityContentFilterSaveButton'),
+                  onPressed: () => Navigator.pop(
+                    context,
+                    _ContentFilterInput(
+                      hideAi: hideAi,
+                      words: words.text,
+                      tags: tags.text,
+                    ),
                   ),
+                  child: Text(l10n.commonSave),
                 ),
               ],
             ),
           ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(context, false),
-              child: const Text('キャンセル'),
-            ),
-            FilledButton(
-              onPressed: () => Navigator.pop(context, true),
-              child: const Text('保存'),
-            ),
-          ],
         ),
       ),
     );
-    if (save == true) {
-      await service.setHideGenerativeAiImageVideo(hideAi);
-      await service.setMutedWords(words.text.split(','));
-      await service.setMutedTags(tags.text.split(','));
-    }
-    words.dispose();
-    tags.dispose();
+    if (result == null) return;
+    await service.setHideGenerativeAiImageVideo(result.hideAi);
+    await service.setMutedWords(
+      CommunityService.parseFilterInput(result.words),
+    );
+    await service.setMutedTags(CommunityService.parseFilterInput(result.tags));
   }
 
   void _openMyWorks() {
@@ -352,6 +381,7 @@ class _CommunityScreenState extends State<CommunityScreen>
               ),
             IconButton(
               // Distinct from the video-type filter's funnel next to it.
+              key: const Key('communityContentFilterButton'),
               icon: const Icon(Icons.visibility_off_outlined),
               tooltip: l10n.communityContentFilterTitle,
               onPressed: () => _showContentFilters(communityService),
@@ -425,7 +455,7 @@ class _CommunityScreenState extends State<CommunityScreen>
         key: const Key('communityMyWorksButton'),
         onPressed: _openMyWorks,
         icon: const Icon(Icons.video_library_outlined),
-        label: const Text('自分の投稿'),
+        label: Text(l10n.communityMyWorksTitle),
         shape: const StadiumBorder(),
       ),
       body: desktopCentered(
@@ -643,4 +673,18 @@ class _CommunityScreenState extends State<CommunityScreen>
       _RankingPeriod.daily => l10n.communityRankingPeriodDaily,
     };
   }
+}
+
+/// What the viewer entered in the display-filter dialog, read before the
+/// dialog's text controllers are disposed.
+class _ContentFilterInput {
+  const _ContentFilterInput({
+    required this.hideAi,
+    required this.words,
+    required this.tags,
+  });
+
+  final bool hideAi;
+  final String words;
+  final String tags;
 }

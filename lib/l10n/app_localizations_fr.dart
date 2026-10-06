@@ -1472,7 +1472,7 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get helpCommunityDesc =>
-      'Publiez vos animations et illustrations dans la communauté sous forme de vidéos YouTube, et parcourez les œuvres des autres utilisateurs. Basculez entre les onglets « Nouveautés », « Classement » et « Abonnements », et effectuez une recherche par titre d’œuvre ou nom du créateur. Passez en mode recherche par tag pour filtrer les œuvres par tag : n’importe quel utilisateur (pas seulement le créateur) peut ajouter ou retirer des tags, mais un tag verrouillé par le créateur ne peut être retiré que par lui, et toucher un tag filtre instantanément les œuvres correspondantes. Toucher une carte d’œuvre ouvre une fenêtre d’aperçu flottante déplaçable et redimensionnable, pour continuer à naviguer sur d’autres écrans pendant la lecture. Le bouton « Voir les détails » ouvre l’écran de détails de l’œuvre (créateur, date de publication, modification des tags, mise en favori, republication, etc.). Toucher le bouton « Suivre » à côté du nom d’un créateur l’ajoute à vos abonnements : l’onglet « Abonnements » regroupe alors uniquement les publications de ce créateur, triées par date. Lorsque quelqu’un vous suit, cela apparaît dans la liste de notifications sous l’icône de cloche en haut de l’écran. Vous pouvez choisir si vos listes d’abonnements/abonnés sont visibles par les autres utilisateurs (privées par défaut), et consulter les listes des autres utilisateurs si elles sont publiques. Vous pouvez repartager l’œuvre de n’importe qui d’autre (sauf la vôtre) avec le bouton « Repartager » ; lorsqu’un créateur que vous suivez repartage l’œuvre de quelqu’un d’autre, cette œuvre apparaît aussi dans votre onglet « Abonnements », triée selon la date la plus récente — sa date de publication d’origine ou sa date de republication (la carte affiche « Repartagé par… »). Les œuvres mises en favori apparaissent regroupées dans l’onglet « Favoris » de l’écran d’accueil, ainsi que dans l’onglet « Favoris » de l’écran des œuvres d’un créateur. Vous pouvez choisir si votre propre liste de favoris est visible par les autres utilisateurs (privée par défaut), et consulter la liste de favoris des autres utilisateurs si elle est rendue publique. Vous pouvez signaler une œuvre en indiquant un motif, et après l’envoi, il vous sera demandé si vous souhaitez bloquer ce créateur. Les vidéos verticales peuvent être visionnées en « mode vertical », qui les enchaîne comme un flux de vidéos courtes. Le nombre de publications par jour est limité : 1 par jour pour les membres gratuits, 3 par jour pour les membres Premium.';
+      'Publiez vos animations et illustrations dans la communauté sous forme de vidéos YouTube, et parcourez les œuvres des autres utilisateurs. Basculez entre les onglets « Nouveautés », « Classement » et « Abonnements », et effectuez une recherche par titre d’œuvre ou nom du créateur. Passez en mode recherche par tag pour filtrer les œuvres par tag : n’importe quel utilisateur (pas seulement le créateur) peut ajouter ou retirer des tags, mais un tag verrouillé par le créateur ne peut être retiré que par lui, et toucher un tag filtre instantanément les œuvres correspondantes. Toucher une carte d’œuvre ouvre une fenêtre d’aperçu flottante déplaçable et redimensionnable, pour continuer à naviguer sur d’autres écrans pendant la lecture. Le bouton « Voir les détails » ouvre l’écran de détails de l’œuvre (créateur, date de publication, modification des tags, mise en favori, republication, etc.). Toucher le bouton « Suivre » à côté du nom d’un créateur l’ajoute à vos abonnements : l’onglet « Abonnements » regroupe alors uniquement les publications de ce créateur, triées par date. Lorsque quelqu’un vous suit, cela apparaît dans la liste de notifications sous l’icône de cloche en haut de l’écran. Vous pouvez choisir si vos listes d’abonnements/abonnés sont visibles par les autres utilisateurs (privées par défaut), et consulter les listes des autres utilisateurs si elles sont publiques. Vous pouvez repartager l’œuvre de n’importe qui d’autre (sauf la vôtre) avec le bouton « Repartager » ; lorsqu’un créateur que vous suivez repartage l’œuvre de quelqu’un d’autre, cette œuvre apparaît aussi dans votre onglet « Abonnements », triée selon la date la plus récente — sa date de publication d’origine ou sa date de republication (la carte affiche « Repartagé par… »). Les œuvres mises en favori apparaissent regroupées dans l’onglet « Favoris » de l’écran d’accueil, ainsi que dans l’onglet « Favoris » de l’écran des œuvres d’un créateur. Vous pouvez choisir si votre propre liste de favoris est visible par les autres utilisateurs (privée par défaut), et consulter la liste de favoris des autres utilisateurs si elle est rendue publique. Vous pouvez signaler une œuvre en indiquant un motif, et après l’envoi, il vous sera demandé si vous souhaitez bloquer ce créateur. Les vidéos verticales peuvent être visionnées en « mode vertical », qui les enchaîne comme un flux de vidéos courtes. Le nombre de publications par jour est limité : 1 par jour pour les membres gratuits, 3 par jour pour les membres Premium. Le bouton des filtres d’affichage en haut à droite (l’icône d’œil barré) permet de masquer les œuvres que vous ne souhaitez pas voir. Vous pouvez masquer les œuvres marquées « Contient des images ou vidéos générées par IA », et ajouter des titres masqués (comparés uniquement au titre de l’œuvre) et des tags masqués (comparés uniquement aux tags attribués à l’œuvre sur la Place des œuvres ; le # initial est ignoré), séparés par des virgules ou des retours à la ligne. Ces filtres s’appliquent aux onglets « Nouveautés », « Classement » et « Abonnements » (repartages compris), au mode vertical, aux pages des créateurs, aux détails des œuvres et aux favoris. La mention « Contient des images ou vidéos générées par IA » est déclarée par l’auteur au moment de la publication, et lui seul peut la modifier ensuite (depuis « Mes publications » ou l’écran de détails de l’œuvre).';
 
   @override
   String get helpWatermarkEntryTitle => 'Filigrane';
@@ -6773,14 +6773,14 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get communityMutedWordsHint =>
-      'Texte séparé par des virgules à masquer lorsqu’il apparaît dans le titre d’une œuvre';
+      'Masque les œuvres dont le titre contient ce texte (les noms des créateurs et les tags ne sont pas pris en compte). Séparez plusieurs entrées par des virgules ou des retours à la ligne.';
 
   @override
   String get communityMutedTags => 'Tags masqués';
 
   @override
   String get communityMutedTagsHint =>
-      'Noms de tags séparés par des virgules à masquer';
+      'Masque les œuvres qui portent ce tag sur la Place des œuvres (le # initial est ignoré). Séparez plusieurs entrées par des virgules ou des retours à la ligne.';
 
   @override
   String get communityContainsGenerativeAiImageVideo =>
@@ -6793,6 +6793,315 @@ class AppLocalizationsFr extends AppLocalizations {
   @override
   String get communityAiImageVideoUpdateFailed =>
       'Impossible de modifier « Contient des images ou vidéos générées par IA ». Vérifiez votre connexion et réessayez.';
+
+  @override
+  String get communityRetry => 'Réessayer';
+
+  @override
+  String get communityReloadTooltip => 'Actualiser';
+
+  @override
+  String get communityGoogleSignInNotConfigured =>
+      'La connexion avec Google n’est pas encore configurée';
+
+  @override
+  String get communityGoogleAccountBusy =>
+      'Une autre opération sur le compte Google est en cours. Réessayez une fois qu’elle sera terminée.';
+
+  @override
+  String get communityMyWorksTitle => 'Mes publications';
+
+  @override
+  String get communityMyWorksAccountNotConnected =>
+      'Aucun compte Google connecté';
+
+  @override
+  String get communityMyWorksAddAccount => 'Ajouter un compte Google';
+
+  @override
+  String get communityMyWorksSwitchAccount =>
+      'Changer ou ajouter un compte Google';
+
+  @override
+  String get communityMyWorksLoading => 'Chargement de vos publications…';
+
+  @override
+  String communityMyWorksLoadFailed(String reason) {
+    return 'Impossible de charger vos publications. $reason';
+  }
+
+  @override
+  String communityAccountSwitchFailed(String reason) {
+    return 'Impossible de changer de compte Google. $reason';
+  }
+
+  @override
+  String communitySignInFailed(String reason) {
+    return 'Impossible de se connecter avec votre compte Google. $reason';
+  }
+
+  @override
+  String communityVisibilityChangeFailed(String reason) {
+    return 'Impossible de modifier la visibilité. $reason';
+  }
+
+  @override
+  String get communityMyWorksDeletedCannotPublish =>
+      'Une vidéo supprimée de YouTube ne peut plus être rendue visible sur la Place des œuvres';
+
+  @override
+  String get communityMyWorksStatusDeletedOnYoutube =>
+      'Supprimé de YouTube • Ne peut plus être rendu visible';
+
+  @override
+  String get communityMyWorksStatusYoutubePrivate =>
+      'Visible sur la Place des œuvres • Masqué temporairement, car la vidéo YouTube est privée';
+
+  @override
+  String get communityMyWorksStatusHiddenYoutubePrivate =>
+      'Masqué sur la Place des œuvres • Également privé sur YouTube';
+
+  @override
+  String get communityVisibilityPublishedBadge => 'Visible';
+
+  @override
+  String communityYoutubeVideoIdLabel(String videoId) {
+    return 'ID de la vidéo YouTube : $videoId';
+  }
+
+  @override
+  String get communityPostTitleLabel => 'Titre';
+
+  @override
+  String get communityPostPickVideo => 'Choisir une vidéo';
+
+  @override
+  String get communityPostAsShort =>
+      'Publier en tant que vidéo courte verticale';
+
+  @override
+  String get communityPostShowInPlaza => 'Afficher sur la Place des œuvres';
+
+  @override
+  String get communityPostShowInPlazaHelp =>
+      'La vidéo est mise en ligne sur YouTube en « Non répertoriée ». Sa visibilité sur la Place des œuvres est gérée séparément.';
+
+  @override
+  String get communityPostUploadedHeading => 'Vidéo mise en ligne sur YouTube';
+
+  @override
+  String communityPostUploadedAccount(String email) {
+    return 'Compte Google : $email';
+  }
+
+  @override
+  String get communityPostNoReupload =>
+      'Réessayer ne remettra pas la vidéo en ligne.';
+
+  @override
+  String get communityPostDiscardPending =>
+      'Annuler l’enregistrement sur la Place des œuvres';
+
+  @override
+  String get communityPostPendingDiscarded =>
+      'L’enregistrement en attente sur la Place des œuvres a été abandonné. La vidéo sur YouTube n’a pas été supprimée.';
+
+  @override
+  String get communityPostSubmitUpload =>
+      'Mettre en ligne sur YouTube et publier';
+
+  @override
+  String get communityPostSubmitRetry =>
+      'Réessayer l’enregistrement sur la Place des œuvres';
+
+  @override
+  String communityPostErrorLabel(String message) {
+    return 'Erreur : $message';
+  }
+
+  @override
+  String communityPostDoneSnackbar(String videoId) {
+    return 'Publié (ID de la vidéo YouTube : $videoId)';
+  }
+
+  @override
+  String communityPostRecoveredSnackbar(String videoId) {
+    return 'Votre œuvre publiée a été récupérée (ID de la vidéo YouTube : $videoId)';
+  }
+
+  @override
+  String get communityPostStatusPendingRestored =>
+      'Une vidéo de votre dernière tentative est déjà sur YouTube. Vous pouvez réessayer uniquement l’enregistrement sur la Place des œuvres.';
+
+  @override
+  String get communityPostStatusPendingUnavailable =>
+      'La vidéo YouTube en attente a été supprimée ou est introuvable : elle ne peut pas être récupérée. Choisissez une nouvelle vidéo.';
+
+  @override
+  String get communityPostStatusRecovered =>
+      'Votre œuvre publiée a été récupérée';
+
+  @override
+  String get communityPostStatusCompleted => 'Publication terminée';
+
+  @override
+  String get communityPostStatusCheckingAccount =>
+      'Vérification de votre compte Google…';
+
+  @override
+  String get communityPostStatusCheckingRegistration =>
+      'Vérification de l’enregistrement sur la Place des œuvres…';
+
+  @override
+  String get communityPostStatusSyncingAiFlag =>
+      'Synchronisation de « Contient des images ou vidéos générées par IA » pour l’œuvre publiée…';
+
+  @override
+  String get communityPostStatusSyncingVisibility =>
+      'Synchronisation de la visibilité de l’œuvre publiée…';
+
+  @override
+  String get communityPostStatusUploading => 'Mise en ligne sur YouTube…';
+
+  @override
+  String get communityPostStatusRegistering =>
+      'Mise en ligne sur YouTube terminée. Enregistrement sur la Place des œuvres…';
+
+  @override
+  String get communityPostStatusUploadFailed => 'Échec de la mise en ligne';
+
+  @override
+  String get communityPostStatusRegistrationRetryable =>
+      'La vidéo est enregistrée sur YouTube. Vous pouvez réessayer uniquement l’enregistrement sur la Place des œuvres.';
+
+  @override
+  String get communityPostErrorNoVideo => 'Choisissez une vidéo à publier';
+
+  @override
+  String get communityPostErrorNoTitle => 'Saisissez un titre';
+
+  @override
+  String get communityPostErrorServerNotConfigured =>
+      'Impossible de publier : le serveur de la Place des œuvres n’est pas configuré';
+
+  @override
+  String get communityPostErrorPendingVideoUnavailable =>
+      'La vidéo YouTube est introuvable. L’enregistrement de cette vidéo sur la Place des œuvres ne peut pas être réessayé.';
+
+  @override
+  String communityPostErrorUploadedByAccount(String email) {
+    return 'Cette vidéo a été mise en ligne avec $email. Passez à ce compte Google, puis réessayez l’enregistrement sur la Place des œuvres.';
+  }
+
+  @override
+  String get communityPostErrorUploadedByAnotherAccount =>
+      'Cette vidéo a été mise en ligne avec un autre compte Google. Passez à ce compte, puis réessayez l’enregistrement sur la Place des œuvres.';
+
+  @override
+  String communityPostErrorAccountChanged(String email) {
+    return 'Votre compte Google a changé en cours de route. Revenez à $email, puis réessayez.';
+  }
+
+  @override
+  String get communityPostErrorYoutubePermission =>
+      'Impossible d’obtenir l’autorisation de publier sur YouTube';
+
+  @override
+  String get communityPostErrorNoVideoId =>
+      'YouTube n’a pas renvoyé d’ID de vidéo';
+
+  @override
+  String get communityShortsEndBehaviorTooltip => 'Action à la fin de la vidéo';
+
+  @override
+  String get communityShortsEndBehaviorLoop => 'Répéter la même vidéo';
+
+  @override
+  String get communityShortsEndBehaviorAutoAdvance =>
+      'Passer automatiquement à la vidéo suivante';
+
+  @override
+  String get communityErrorNetwork =>
+      'Connexion impossible. Vérifiez votre connexion et réessayez.';
+
+  @override
+  String get communityErrorSignInRequired =>
+      'Vous devez vous connecter avec votre compte Google. Reconnectez-vous, puis réessayez.';
+
+  @override
+  String get communityErrorForbidden =>
+      'Vous n’avez pas l’autorisation d’effectuer cette action.';
+
+  @override
+  String get communityErrorNotFound =>
+      'Élément introuvable. Il a peut-être été supprimé.';
+
+  @override
+  String get communityErrorRateLimited =>
+      'Trop de requêtes. Patientez un instant, puis réessayez.';
+
+  @override
+  String get communityErrorServer =>
+      'Un problème est survenu sur le serveur. Patientez un peu, puis réessayez.';
+
+  @override
+  String get communityErrorGeneric =>
+      'Un problème est survenu. Veuillez réessayer.';
+
+  @override
+  String communityErrorTagLimitExceeded(int max) {
+    return 'Une œuvre peut avoir au maximum $max tags.';
+  }
+
+  @override
+  String get communityErrorTagTooLong =>
+      'Le tag est trop long. Raccourcissez-le, puis réessayez.';
+
+  @override
+  String get communityErrorTagUpdateConflict =>
+      'Quelqu’un d’autre a modifié les tags en même temps. Veuillez réessayer.';
+
+  @override
+  String get communityErrorWorkChanged =>
+      'L’œuvre a été modifiée entre-temps. Veuillez réessayer.';
+
+  @override
+  String get communityErrorVideoNotFound => 'La vidéo YouTube est introuvable.';
+
+  @override
+  String get communityErrorVideoAlreadyRegistered =>
+      'Cette vidéo a déjà été enregistrée sur la Place des œuvres par un autre utilisateur.';
+
+  @override
+  String get communityErrorWorkDeleted =>
+      'Cette vidéo a été supprimée de la Place des œuvres et ne peut pas être réenregistrée.';
+
+  @override
+  String get communityErrorVideoRegistrationConflict =>
+      'Une autre demande enregistrait cette vidéo au même moment. Actualisez vos publications, puis réessayez.';
+
+  @override
+  String get communityErrorPostQuotaExceeded =>
+      'Vous avez atteint la limite de publications du jour. Vous pourrez publier à nouveau après le changement de date.';
+
+  @override
+  String get communityErrorSignInCanceled => 'La connexion a été annulée.';
+
+  @override
+  String get communityErrorGoogleSignIn =>
+      'La connexion avec Google n’a pas pu aboutir. Veuillez réessayer.';
+
+  @override
+  String get communityErrorYoutubeUpload =>
+      'La mise en ligne sur YouTube a échoué. Vérifiez votre connexion et réessayez.';
+
+  @override
+  String get communityErrorVideoFile =>
+      'Impossible de lire le fichier vidéo. Choisissez à nouveau la vidéo.';
+
+  @override
+  String get communityErrorUnsupported =>
+      'Cette action n’est pas prise en charge sur cet appareil.';
 
   @override
   String get canvasLassoSnapToLines => 'Magnétiser aux lignes';

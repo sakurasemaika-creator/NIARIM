@@ -2,15 +2,65 @@ import 'dart:io';
 
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
-import '../../l10n/app_localizations.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import '../../l10n/app_localizations.dart';
 import '../../services/api/niarim_api_exception.dart';
 import '../../services/community_service.dart';
 import '../../services/google_auth_service.dart';
 import '../../services/youtube_upload_service.dart';
 import '../../widgets/responsive.dart';
+import 'community_error_text.dart';
+
+/// Where posting stands, shown under the form.
+enum _PostStatus {
+  pendingRestored,
+  pendingVideoUnavailable,
+  recovered,
+  completed,
+  checkingAccount,
+  checkingRegistration,
+  syncingAiFlag,
+  syncingVisibility,
+  uploading,
+  registering,
+  uploadFailed,
+  registrationRetryable,
+}
+
+enum _PostFailureKind {
+  noVideo,
+  noTitle,
+  googleNotConfigured,
+  serverNotConfigured,
+  googleAccountBusy,
+  pendingVideoUnavailable,
+  uploadedByOtherAccount,
+  accountChanged,
+  youtubePermissionDenied,
+  noVideoId,
+}
+
+/// A posting failure this screen detects itself; [email] names the Google
+/// account involved, when there is one.
+class _PostFailure implements Exception {
+  const _PostFailure(this.kind) : email = null;
+
+  /// The pending video belongs to another account ([email], when known).
+  const _PostFailure.uploadedByOtherAccount(this.email)
+    : kind = _PostFailureKind.uploadedByOtherAccount;
+
+  /// The signed-in account changed midway; [email] is the one to go back to.
+  const _PostFailure.accountChanged(String this.email)
+    : kind = _PostFailureKind.accountChanged;
+
+  final _PostFailureKind kind;
+  final String? email;
+
+  @override
+  String toString() => '_PostFailure($kind)';
+}
 
 /// YouTubeへ動画を実アップロードし、返却されたvideoIdをNIARIMのworkIdとして
 /// 登録する。YouTubeアップロード成功後はvideoIdとアップロード元Google
@@ -46,7 +96,7 @@ class _CommunityPostScreenState extends State<CommunityPostScreen> {
   bool _busy = false;
   bool _restoringPending = true;
   double _progress = 0;
-  String? _status;
+  _PostStatus? _status;
   Object? _error;
 
   @override
@@ -76,7 +126,7 @@ class _CommunityPostScreenState extends State<CommunityPostScreen> {
           _containsGenerativeAiImageOrVideo =
               prefs.getBool(_pendingAiImageVideoKey) ?? false;
           _titleController.text = prefs.getString(_pendingTitleKey) ?? '';
-          _status = '前回YouTubeへアップロード済みの動画があります。NIARIM登録だけ再試行できます';
+          _status = _PostStatus.pendingRestored;
         });
       }
     } finally {
@@ -128,8 +178,8 @@ class _CommunityPostScreenState extends State<CommunityPostScreen> {
       _uploadAccountEmail = null;
       _videoFile = null;
       _progress = 0;
-      _status = '保留中のYouTube動画は削除済み、または見つからないため復旧できません。新しい動画を選択してください';
-      _error = 'YouTube動画が見つかりません。このvideoIdのNIARIM登録は再試行できません';
+      _status = _PostStatus.pendingVideoUnavailable;
+      _error = const _PostFailure(_PostFailureKind.pendingVideoUnavailable);
     });
   }
 
@@ -151,8 +201,10 @@ class _CommunityPostScreenState extends State<CommunityPostScreen> {
       _progress = 0;
     });
     ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('保留中のNIARIM登録情報を破棄しました。YouTube動画自体は削除していません。'),
+      SnackBar(
+        content: Text(
+          AppLocalizations.of(context)!.communityPostPendingDiscarded,
+        ),
       ),
     );
   }
@@ -181,13 +233,16 @@ class _CommunityPostScreenState extends State<CommunityPostScreen> {
     await _clearPendingUpload();
     await community.refreshFromBackend();
     if (!mounted) return;
-    setState(() => _status = recovered ? '投稿済みの作品を復旧しました' : '投稿が完了しました');
+    final l10n = AppLocalizations.of(context)!;
+    setState(
+      () => _status = recovered ? _PostStatus.recovered : _PostStatus.completed,
+    );
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(
           recovered
-              ? '投稿済みの作品を復旧しました（videoId: $registeredVideoId）'
-              : '投稿しました（videoId: $registeredVideoId）',
+              ? l10n.communityPostRecoveredSnackbar(registeredVideoId)
+              : l10n.communityPostDoneSnackbar(registeredVideoId),
         ),
       ),
     );
@@ -199,11 +254,11 @@ class _CommunityPostScreenState extends State<CommunityPostScreen> {
     final file = _videoFile;
     final title = _titleController.text.trim();
     if (_youtubeVideoId == null && file == null) {
-      setState(() => _error = '投稿する動画を選択してください');
+      setState(() => _error = const _PostFailure(_PostFailureKind.noVideo));
       return;
     }
     if (title.isEmpty) {
-      setState(() => _error = 'タイトルを入力してください');
+      setState(() => _error = const _PostFailure(_PostFailureKind.noTitle));
       return;
     }
 
@@ -211,11 +266,15 @@ class _CommunityPostScreenState extends State<CommunityPostScreen> {
     final community = context.read<CommunityService>();
     final api = community.api;
     if (!auth.isConfigured) {
-      setState(() => _error = 'Google認証が設定されていません');
+      setState(
+        () => _error = const _PostFailure(_PostFailureKind.googleNotConfigured),
+      );
       return;
     }
     if (api == null) {
-      setState(() => _error = 'NIARIM APIの接続先が設定されていません');
+      setState(
+        () => _error = const _PostFailure(_PostFailureKind.serverNotConfigured),
+      );
       return;
     }
 
@@ -223,8 +282,8 @@ class _CommunityPostScreenState extends State<CommunityPostScreen> {
       _busy = true;
       _error = null;
       _status = _youtubeVideoId == null
-          ? 'Googleアカウントを確認しています…'
-          : 'NIARIMへの登録状況を確認しています…';
+          ? _PostStatus.checkingAccount
+          : _PostStatus.checkingRegistration;
     });
 
     try {
@@ -236,10 +295,7 @@ class _CommunityPostScreenState extends State<CommunityPostScreen> {
           retainedAccountId != null &&
           retainedAccountId.isNotEmpty &&
           retainedAccountId != postingAccount.id) {
-        throw StateError(
-          'この動画は${_uploadAccountEmail ?? '別のGoogleアカウント'}でアップロード済みです。'
-          'そのアカウントへ切り替えてからNIARIM登録を再試行してください',
-        );
+        throw _PostFailure.uploadedByOtherAccount(_uploadAccountEmail);
       }
 
       var videoId = _youtubeVideoId;
@@ -253,9 +309,7 @@ class _CommunityPostScreenState extends State<CommunityPostScreen> {
         final ownWorks = await api.myWorks();
         community.setCurrentUserId(ownWorks.authorId);
         if (auth.account?.id != uploadAccountId) {
-          throw StateError(
-            '登録状況の確認中にGoogleアカウントが変更されました。$uploadAccountEmailへ戻して再試行してください',
-          );
+          throw _PostFailure.accountChanged(uploadAccountEmail);
         }
         for (final work in ownWorks.works) {
           if (work.workId != videoId) continue;
@@ -268,7 +322,7 @@ class _CommunityPostScreenState extends State<CommunityPostScreen> {
           }
           if (work.containsGenerativeAiImageOrVideo !=
               _containsGenerativeAiImageOrVideo) {
-            setState(() => _status = '投稿済み作品のAI画像・AI動画使用フラグを同期しています…');
+            setState(() => _status = _PostStatus.syncingAiFlag);
             await api.updateWorkAiImageVideoDisclosure(
               videoId,
               containsGenerativeAiImageOrVideo:
@@ -276,7 +330,7 @@ class _CommunityPostScreenState extends State<CommunityPostScreen> {
             );
           }
           if (work.isNiarimPublished != _isNiarimPublished) {
-            setState(() => _status = '投稿済み作品の公開状態を同期しています…');
+            setState(() => _status = _PostStatus.syncingVisibility);
             await api.updateWorkVisibility(
               videoId,
               isNiarimPublished: _isNiarimPublished,
@@ -293,18 +347,16 @@ class _CommunityPostScreenState extends State<CommunityPostScreen> {
         promptIfNecessary: true,
       );
       if (youtubeToken == null || youtubeToken.isEmpty) {
-        throw StateError('YouTubeへの投稿権限を取得できませんでした');
+        throw const _PostFailure(_PostFailureKind.youtubePermissionDenied);
       }
       if (auth.account?.id != uploadAccountId) {
-        throw StateError(
-          'YouTube投稿権限の確認中にGoogleアカウントが変更されました。$uploadAccountEmailへ戻して再試行してください',
-        );
+        throw _PostFailure.accountChanged(uploadAccountEmail);
       }
 
       if (videoId == null) {
         if (!mounted) return;
         setState(() {
-          _status = 'YouTubeへアップロードしています…';
+          _status = _PostStatus.uploading;
           _progress = 0;
         });
         final uploader = YoutubeUploadService();
@@ -337,7 +389,7 @@ class _CommunityPostScreenState extends State<CommunityPostScreen> {
             _uploadAccountId = uploadAccountId;
             _uploadAccountEmail = uploadAccountEmail;
             _progress = 1;
-            _status = 'YouTubeアップロード完了。NIARIMへ登録しています…';
+            _status = _PostStatus.registering;
           });
         } finally {
           uploader.close();
@@ -346,15 +398,13 @@ class _CommunityPostScreenState extends State<CommunityPostScreen> {
 
       final registeredVideoId = videoId;
       if (registeredVideoId.isEmpty) {
-        throw StateError('YouTube videoIdを取得できませんでした');
+        throw const _PostFailure(_PostFailureKind.noVideoId);
       }
 
       // 外部認証イベント等でアカウントが変わった場合、YouTube tokenと
       // NIARIM ID tokenを別アカウントで混在させずPOST前に止める。
       if (auth.account?.id != uploadAccountId) {
-        throw StateError(
-          '投稿中にGoogleアカウントが変更されました。$uploadAccountEmailへ戻してNIARIM登録を再試行してください',
-        );
+        throw _PostFailure.accountChanged(uploadAccountEmail);
       }
 
       final registeredWork = await api.createWork(
@@ -373,7 +423,7 @@ class _CommunityPostScreenState extends State<CommunityPostScreen> {
       final syncVisibility =
           registeredWork.isNiarimPublished != _isNiarimPublished;
       if ((syncAi || syncVisibility) && auth.account?.id != uploadAccountId) {
-        throw StateError('公開状態の更新前にGoogleアカウントが変更されました');
+        throw _PostFailure.accountChanged(uploadAccountEmail);
       }
       if (syncAi) {
         await api.updateWorkAiImageVideoDisclosure(
@@ -397,16 +447,67 @@ class _CommunityPostScreenState extends State<CommunityPostScreen> {
         await _markPendingVideoUnavailable();
         return;
       }
+      debugPrint('Community post failed: $error');
+      // A Google operation already running (e.g. an account switch started
+      // elsewhere) refuses this one; say so instead of a generic failure.
+      final failure = error is! _PostFailure && auth.authOperationInProgress
+          ? const _PostFailure(_PostFailureKind.googleAccountBusy)
+          : error;
       if (!mounted) return;
       setState(() {
-        _error = error;
+        _error = failure;
         _status = _youtubeVideoId == null
-            ? 'アップロードに失敗しました'
-            : 'YouTube動画は保存済みです。NIARIM登録だけ再試行できます';
+            ? _PostStatus.uploadFailed
+            : _PostStatus.registrationRetryable;
       });
     } finally {
       if (mounted) setState(() => _busy = false);
     }
+  }
+
+  String _statusText(AppLocalizations l10n, _PostStatus status) =>
+      switch (status) {
+        _PostStatus.pendingRestored => l10n.communityPostStatusPendingRestored,
+        _PostStatus.pendingVideoUnavailable =>
+          l10n.communityPostStatusPendingUnavailable,
+        _PostStatus.recovered => l10n.communityPostStatusRecovered,
+        _PostStatus.completed => l10n.communityPostStatusCompleted,
+        _PostStatus.checkingAccount => l10n.communityPostStatusCheckingAccount,
+        _PostStatus.checkingRegistration =>
+          l10n.communityPostStatusCheckingRegistration,
+        _PostStatus.syncingAiFlag => l10n.communityPostStatusSyncingAiFlag,
+        _PostStatus.syncingVisibility =>
+          l10n.communityPostStatusSyncingVisibility,
+        _PostStatus.uploading => l10n.communityPostStatusUploading,
+        _PostStatus.registering => l10n.communityPostStatusRegistering,
+        _PostStatus.uploadFailed => l10n.communityPostStatusUploadFailed,
+        _PostStatus.registrationRetryable =>
+          l10n.communityPostStatusRegistrationRetryable,
+      };
+
+  String _errorText(AppLocalizations l10n, Object error) {
+    if (error is! _PostFailure) return communityErrorText(l10n, error);
+    return switch (error.kind) {
+      _PostFailureKind.noVideo => l10n.communityPostErrorNoVideo,
+      _PostFailureKind.noTitle => l10n.communityPostErrorNoTitle,
+      _PostFailureKind.googleNotConfigured =>
+        l10n.communityGoogleSignInNotConfigured,
+      _PostFailureKind.serverNotConfigured =>
+        l10n.communityPostErrorServerNotConfigured,
+      _PostFailureKind.googleAccountBusy => l10n.communityGoogleAccountBusy,
+      _PostFailureKind.pendingVideoUnavailable =>
+        l10n.communityPostErrorPendingVideoUnavailable,
+      _PostFailureKind.uploadedByOtherAccount => switch (error.email) {
+        final email? => l10n.communityPostErrorUploadedByAccount(email),
+        null => l10n.communityPostErrorUploadedByAnotherAccount,
+      },
+      _PostFailureKind.accountChanged => l10n.communityPostErrorAccountChanged(
+        error.email!,
+      ),
+      _PostFailureKind.youtubePermissionDenied =>
+        l10n.communityPostErrorYoutubePermission,
+      _PostFailureKind.noVideoId => l10n.communityPostErrorNoVideoId,
+    };
   }
 
   @override
@@ -417,7 +518,7 @@ class _CommunityPostScreenState extends State<CommunityPostScreen> {
     return PopScope(
       canPop: !_busy,
       child: Scaffold(
-        appBar: AppBar(title: const Text('投稿する')),
+        appBar: AppBar(title: Text(l10n.communityPostButton)),
         body: desktopCentered(
           context,
           SingleChildScrollView(
@@ -429,9 +530,9 @@ class _CommunityPostScreenState extends State<CommunityPostScreen> {
                   controller: _titleController,
                   enabled: !_busy && retainedVideoId == null,
                   maxLength: 100,
-                  decoration: const InputDecoration(
-                    labelText: 'タイトル',
-                    border: OutlineInputBorder(),
+                  decoration: InputDecoration(
+                    labelText: l10n.communityPostTitleLabel,
+                    border: const OutlineInputBorder(),
                   ),
                 ),
                 const SizedBox(height: 12),
@@ -442,7 +543,7 @@ class _CommunityPostScreenState extends State<CommunityPostScreen> {
                   icon: const Icon(Icons.video_file_outlined),
                   label: Text(
                     _videoFile == null
-                        ? '動画を選択'
+                        ? l10n.communityPostPickVideo
                         : _videoFile!.path.split(Platform.pathSeparator).last,
                     overflow: TextOverflow.ellipsis,
                   ),
@@ -454,7 +555,7 @@ class _CommunityPostScreenState extends State<CommunityPostScreen> {
                   onChanged: _busy || retainedVideoId != null
                       ? null
                       : (value) => setState(() => _isShort = value),
-                  title: const Text('縦画面ショートとして投稿'),
+                  title: Text(l10n.communityPostAsShort),
                 ),
                 SwitchListTile(
                   contentPadding: EdgeInsets.zero,
@@ -487,10 +588,8 @@ class _CommunityPostScreenState extends State<CommunityPostScreen> {
                             await prefs.setBool(_pendingPublishedKey, value);
                           }
                         },
-                  title: const Text('作品広場で公開'),
-                  subtitle: const Text(
-                    'YouTube側は限定公開でアップロードし、NIARIM側の公開状態を別に管理します',
-                  ),
+                  title: Text(l10n.communityPostShowInPlaza),
+                  subtitle: Text(l10n.communityPostShowInPlazaHelp),
                 ),
                 if (retainedVideoId != null) ...[
                   const SizedBox(height: 8),
@@ -510,9 +609,15 @@ class _CommunityPostScreenState extends State<CommunityPostScreen> {
                               const SizedBox(width: 10),
                               Expanded(
                                 child: Text(
-                                  'YouTubeアップロード済み\nvideoId: $retainedVideoId'
-                                  '${_uploadAccountEmail == null ? '' : '\nGoogle: $_uploadAccountEmail'}\n'
-                                  '再試行しても動画は再アップロードしません。',
+                                  [
+                                    l10n.communityPostUploadedHeading,
+                                    l10n.communityYoutubeVideoIdLabel(
+                                      retainedVideoId,
+                                    ),
+                                    if (_uploadAccountEmail case final email?)
+                                      l10n.communityPostUploadedAccount(email),
+                                    l10n.communityPostNoReupload,
+                                  ].join('\n'),
                                   style: TextStyle(
                                     color: scheme.onSecondaryContainer,
                                   ),
@@ -525,7 +630,7 @@ class _CommunityPostScreenState extends State<CommunityPostScreen> {
                             alignment: Alignment.centerRight,
                             child: TextButton(
                               onPressed: _busy ? null : _discardPendingUpload,
-                              child: const Text('NIARIM登録をやめる'),
+                              child: Text(l10n.communityPostDiscardPending),
                             ),
                           ),
                         ],
@@ -546,13 +651,16 @@ class _CommunityPostScreenState extends State<CommunityPostScreen> {
                 if (_status != null) ...[
                   const SizedBox(height: 12),
                   Text(
-                    _status!,
+                    _statusText(l10n, _status!),
                     style: TextStyle(color: scheme.onSurfaceVariant),
                   ),
                 ],
                 if (_error != null) ...[
                   const SizedBox(height: 8),
-                  Text('エラー: $_error', style: TextStyle(color: scheme.error)),
+                  Text(
+                    l10n.communityPostErrorLabel(_errorText(l10n, _error!)),
+                    style: TextStyle(color: scheme.error),
+                  ),
                 ],
                 const SizedBox(height: 20),
                 FilledButton.icon(
@@ -571,8 +679,8 @@ class _CommunityPostScreenState extends State<CommunityPostScreen> {
                         ),
                   label: Text(
                     retainedVideoId == null
-                        ? 'YouTubeへアップロードして投稿'
-                        : 'NIARIM登録を再試行',
+                        ? l10n.communityPostSubmitUpload
+                        : l10n.communityPostSubmitRetry,
                   ),
                 ),
               ],

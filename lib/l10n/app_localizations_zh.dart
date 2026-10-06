@@ -1419,7 +1419,7 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get helpCommunityDesc =>
-      '可以将动画・插画作品以YouTube视频的形式发布到社区，并浏览其他用户的作品。可以切换「最新」「排行榜」「关注」三个标签页，也可以按作品标题或投稿者名称搜索。切换到标签搜索模式后可按标签筛选作品，标签不仅投稿者本人，其他用户也可以自由添加或删除（投稿者锁定的标签只能由投稿者本人解锁），点击标签即可筛选出相同标签的作品。点击作品卡片会打开可拖动、可调整大小的悬浮预览窗口，可以在继续操作其他画面的同时观看。点击「查看详情」按钮可打开作品详情画面（投稿者、发布日期、标签编辑、收藏、转发等）。点击投稿者名称旁的「关注」按钮即可将其加入关注列表，「关注」标签页会按时间顺序汇总显示该作者的作品。有人关注你时，会显示在画面右上角铃铛图标的通知列表中。你可以分别设置自己的关注列表/粉丝列表是否对所有用户公开（默认非公开），也可以查看已公开的其他用户的列表。除自己发布的作品外，都可以用「转发」按钮转发；当关注的作者转发了他人的作品时，该作品也会以「发布日期」和「转发日期」中较新的一方为基准，混入「关注」标签页中显示（卡片上会显示「○○转发了」）。收藏的作品会汇总显示在主页的「已收藏」标签页中，也可以在投稿者作品列表画面的「收藏」标签页中查看。可以设置自己的收藏列表是否对其他用户公开（默认不公开），也可以查看已设为公开的其他用户的收藏列表。对不当作品可以附上理由进行举报，举报提交后会询问你是否要屏蔽该投稿者。竖屏视频可以在「竖屏模式」中连续播放观看。每日可发布的作品数量有上限，免费会员每天1个，高级会员每天3个。';
+      '可以将动画・插画作品以YouTube视频的形式发布到社区，并浏览其他用户的作品。可以切换「最新」「排行榜」「关注」三个标签页，也可以按作品标题或投稿者名称搜索。切换到标签搜索模式后可按标签筛选作品，标签不仅投稿者本人，其他用户也可以自由添加或删除（投稿者锁定的标签只能由投稿者本人解锁），点击标签即可筛选出相同标签的作品。点击作品卡片会打开可拖动、可调整大小的悬浮预览窗口，可以在继续操作其他画面的同时观看。点击「查看详情」按钮可打开作品详情画面（投稿者、发布日期、标签编辑、收藏、转发等）。点击投稿者名称旁的「关注」按钮即可将其加入关注列表，「关注」标签页会按时间顺序汇总显示该作者的作品。有人关注你时，会显示在画面右上角铃铛图标的通知列表中。你可以分别设置自己的关注列表/粉丝列表是否对所有用户公开（默认非公开），也可以查看已公开的其他用户的列表。除自己发布的作品外，都可以用「转发」按钮转发；当关注的作者转发了他人的作品时，该作品也会以「发布日期」和「转发日期」中较新的一方为基准，混入「关注」标签页中显示（卡片上会显示「○○转发了」）。收藏的作品会汇总显示在主页的「已收藏」标签页中，也可以在投稿者作品列表画面的「收藏」标签页中查看。可以设置自己的收藏列表是否对其他用户公开（默认不公开），也可以查看已设为公开的其他用户的收藏列表。对不当作品可以附上理由进行举报，举报提交后会询问你是否要屏蔽该投稿者。竖屏视频可以在「竖屏模式」中连续播放观看。每日可发布的作品数量有上限，免费会员每天1个，高级会员每天3个。点击画面右上角的显示筛选按钮（带斜线的眼睛图标），可以隐藏不想看到的作品。除了可以隐藏「包含生成式 AI 图像或视频」的作品外，还可以用逗号、顿号或换行分隔，登记只匹配作品标题的静音标题，以及只匹配作品在作品广场中所设标签的静音标签（开头的 # 会被忽略）。这些筛选适用于「最新」「排行榜」「关注」（含转发）、竖屏模式、投稿者页面、作品详情和收藏。「包含生成式 AI 图像或视频」由投稿者在发布时自行声明，发布后也只有投稿者本人可以更改（可在「我的投稿」或作品详情画面中更改）。';
 
   @override
   String get helpWatermarkEntryTitle => '水印';
@@ -6384,16 +6384,18 @@ class AppLocalizationsZh extends AppLocalizations {
   String get communityHideGenerativeAiImageVideo => '隐藏包含生成式 AI 图像或视频的作品';
 
   @override
-  String get communityMutedWords => '屏蔽标题';
+  String get communityMutedWords => '静音标题';
 
   @override
-  String get communityMutedWordsHint => '用逗号分隔要在作品标题中匹配并隐藏的文字';
+  String get communityMutedWordsHint =>
+      '隐藏标题中包含这些文字的作品（不检查投稿者名称和标签）。多个条目可用逗号、顿号或换行分隔。';
 
   @override
-  String get communityMutedTags => '屏蔽标签';
+  String get communityMutedTags => '静音标签';
 
   @override
-  String get communityMutedTagsHint => '输入以逗号分隔的标签名称';
+  String get communityMutedTagsHint =>
+      '隐藏在作品广场中带有这些标签的作品（开头的 # 会被忽略）。多个条目可用逗号、顿号或换行分隔。';
 
   @override
   String get communityContainsGenerativeAiImageVideo => '包含生成式 AI 图像或视频';
@@ -6405,6 +6407,278 @@ class AppLocalizationsZh extends AppLocalizations {
   @override
   String get communityAiImageVideoUpdateFailed =>
       '无法更改“包含生成式 AI 图像或视频”。请检查连接后重试。';
+
+  @override
+  String get communityRetry => '重试';
+
+  @override
+  String get communityReloadTooltip => '刷新';
+
+  @override
+  String get communityGoogleSignInNotConfigured => '尚未设置Google登录';
+
+  @override
+  String get communityGoogleAccountBusy => '正在处理其他Google账号操作，请完成后重试。';
+
+  @override
+  String get communityMyWorksTitle => '我的投稿';
+
+  @override
+  String get communityMyWorksAccountNotConnected => '未连接Google账号';
+
+  @override
+  String get communityMyWorksAddAccount => '添加Google账号';
+
+  @override
+  String get communityMyWorksSwitchAccount => '切换或添加Google账号';
+
+  @override
+  String get communityMyWorksLoading => '正在加载投稿…';
+
+  @override
+  String communityMyWorksLoadFailed(String reason) {
+    return '无法加载我的投稿。$reason';
+  }
+
+  @override
+  String communityAccountSwitchFailed(String reason) {
+    return '无法切换Google账号。$reason';
+  }
+
+  @override
+  String communitySignInFailed(String reason) {
+    return '无法使用Google账号登录。$reason';
+  }
+
+  @override
+  String communityVisibilityChangeFailed(String reason) {
+    return '无法更改公开状态。$reason';
+  }
+
+  @override
+  String get communityMyWorksDeletedCannotPublish =>
+      '已从YouTube删除的视频无法在作品广场重新公开';
+
+  @override
+  String get communityMyWorksStatusDeletedOnYoutube => '已从YouTube删除 • 无法重新公开';
+
+  @override
+  String get communityMyWorksStatusYoutubePrivate =>
+      '在作品广场公开中 • 因YouTube视频设为私享，暂时隐藏';
+
+  @override
+  String get communityMyWorksStatusHiddenYoutubePrivate =>
+      '在作品广场非公开 • YouTube也设为私享';
+
+  @override
+  String get communityVisibilityPublishedBadge => '公开中';
+
+  @override
+  String communityYoutubeVideoIdLabel(String videoId) {
+    return 'YouTube视频ID：$videoId';
+  }
+
+  @override
+  String get communityPostTitleLabel => '标题';
+
+  @override
+  String get communityPostPickVideo => '选择视频';
+
+  @override
+  String get communityPostAsShort => '作为竖屏短视频发布';
+
+  @override
+  String get communityPostShowInPlaza => '在作品广场公开';
+
+  @override
+  String get communityPostShowInPlazaHelp =>
+      '视频会以“不公开列出”上传到YouTube，在作品广场是否公开则单独管理。';
+
+  @override
+  String get communityPostUploadedHeading => '已上传到YouTube';
+
+  @override
+  String communityPostUploadedAccount(String email) {
+    return 'Google账号：$email';
+  }
+
+  @override
+  String get communityPostNoReupload => '重试时不会重新上传视频。';
+
+  @override
+  String get communityPostDiscardPending => '取消在作品广场登记';
+
+  @override
+  String get communityPostPendingDiscarded => '已取消待处理的作品广场登记。YouTube上的视频并未删除。';
+
+  @override
+  String get communityPostSubmitUpload => '上传到YouTube并发布';
+
+  @override
+  String get communityPostSubmitRetry => '重试作品广场登记';
+
+  @override
+  String communityPostErrorLabel(String message) {
+    return '错误：$message';
+  }
+
+  @override
+  String communityPostDoneSnackbar(String videoId) {
+    return '已发布（YouTube视频ID：$videoId）';
+  }
+
+  @override
+  String communityPostRecoveredSnackbar(String videoId) {
+    return '已恢复已发布的作品（YouTube视频ID：$videoId）';
+  }
+
+  @override
+  String get communityPostStatusPendingRestored =>
+      '上次已上传到YouTube的视频仍保留。可以只重试作品广场登记。';
+
+  @override
+  String get communityPostStatusPendingUnavailable =>
+      '待处理的YouTube视频已被删除或无法找到，无法恢复。请选择新的视频。';
+
+  @override
+  String get communityPostStatusRecovered => '已恢复已发布的作品';
+
+  @override
+  String get communityPostStatusCompleted => '发布完成';
+
+  @override
+  String get communityPostStatusCheckingAccount => '正在确认Google账号…';
+
+  @override
+  String get communityPostStatusCheckingRegistration => '正在确认作品广场登记状态…';
+
+  @override
+  String get communityPostStatusSyncingAiFlag =>
+      '正在同步已发布作品的“包含生成式 AI 图像或视频”设置…';
+
+  @override
+  String get communityPostStatusSyncingVisibility => '正在同步已发布作品的公开状态…';
+
+  @override
+  String get communityPostStatusUploading => '正在上传到YouTube…';
+
+  @override
+  String get communityPostStatusRegistering => '已上传到YouTube。正在登记到作品广场…';
+
+  @override
+  String get communityPostStatusUploadFailed => '上传失败';
+
+  @override
+  String get communityPostStatusRegistrationRetryable =>
+      '视频已保存在YouTube上。可以只重试作品广场登记。';
+
+  @override
+  String get communityPostErrorNoVideo => '请选择要发布的视频';
+
+  @override
+  String get communityPostErrorNoTitle => '请输入标题';
+
+  @override
+  String get communityPostErrorServerNotConfigured => '由于未设置作品广场的服务器，无法发布';
+
+  @override
+  String get communityPostErrorPendingVideoUnavailable =>
+      '找不到YouTube视频。无法重试此视频的作品广场登记。';
+
+  @override
+  String communityPostErrorUploadedByAccount(String email) {
+    return '此视频是用$email上传的。请切换到该Google账号后，再重试作品广场登记。';
+  }
+
+  @override
+  String get communityPostErrorUploadedByAnotherAccount =>
+      '此视频是用其他Google账号上传的。请切换到该账号后，再重试作品广场登记。';
+
+  @override
+  String communityPostErrorAccountChanged(String email) {
+    return '处理过程中Google账号发生了切换。请切换回$email后重试。';
+  }
+
+  @override
+  String get communityPostErrorYoutubePermission => '无法获取发布到YouTube的权限';
+
+  @override
+  String get communityPostErrorNoVideoId => '未能从YouTube获取视频ID';
+
+  @override
+  String get communityShortsEndBehaviorTooltip => '播放结束时的操作';
+
+  @override
+  String get communityShortsEndBehaviorLoop => '循环播放当前视频';
+
+  @override
+  String get communityShortsEndBehaviorAutoAdvance => '自动滚动到下一个视频';
+
+  @override
+  String get communityErrorNetwork => '无法连接。请检查连接后重试。';
+
+  @override
+  String get communityErrorSignInRequired => '需要使用Google账号登录。请重新登录后重试。';
+
+  @override
+  String get communityErrorForbidden => '你没有执行此操作的权限。';
+
+  @override
+  String get communityErrorNotFound => '未找到对象，可能已被删除。';
+
+  @override
+  String get communityErrorRateLimited => '请求过于频繁。请稍候再试。';
+
+  @override
+  String get communityErrorServer => '服务器出现问题。请稍后重试。';
+
+  @override
+  String get communityErrorGeneric => '出现问题。请重试。';
+
+  @override
+  String communityErrorTagLimitExceeded(int max) {
+    return '每件作品最多可添加$max个标签。';
+  }
+
+  @override
+  String get communityErrorTagTooLong => '标签过长。请缩短后重试。';
+
+  @override
+  String get communityErrorTagUpdateConflict => '其他人同时修改了标签。请重试。';
+
+  @override
+  String get communityErrorWorkChanged => '作品已被其他操作更新。请重试。';
+
+  @override
+  String get communityErrorVideoNotFound => '找不到YouTube视频。';
+
+  @override
+  String get communityErrorVideoAlreadyRegistered => '此视频已由其他用户登记到作品广场。';
+
+  @override
+  String get communityErrorWorkDeleted => '此视频已从作品广场删除，无法重新登记。';
+
+  @override
+  String get communityErrorVideoRegistrationConflict =>
+      '另一个请求正在同时登记此视频。请刷新我的投稿后重试。';
+
+  @override
+  String get communityErrorPostQuotaExceeded => '已达到今日的发布上限。日期变更后即可再次发布。';
+
+  @override
+  String get communityErrorSignInCanceled => '已取消登录。';
+
+  @override
+  String get communityErrorGoogleSignIn => '无法完成Google登录。请重试。';
+
+  @override
+  String get communityErrorYoutubeUpload => '上传到YouTube失败。请检查连接后重试。';
+
+  @override
+  String get communityErrorVideoFile => '无法读取视频文件。请重新选择视频。';
+
+  @override
+  String get communityErrorUnsupported => '此设备不支持该操作。';
 
   @override
   String get canvasLassoSnapToLines => '吸附到线条';
@@ -7850,7 +8124,7 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get helpCommunityDesc =>
-      '可以將動畫・插畫作品以YouTube影片的形式發佈到社群，並瀏覽其他使用者的作品。可以切換「最新」「排行榜」「追蹤」三個分頁，也可以依作品標題或投稿者名稱搜尋。切換到標籤搜尋模式後可依標籤篩選作品，標籤不僅投稿者本人，其他使用者也可以自由新增或刪除（投稿者鎖定的標籤只能由投稿者本人解鎖），點擊標籤即可篩選出相同標籤的作品。點擊作品卡片會開啟可拖曳、可調整大小的浮動預覽視窗，可以在繼續操作其他畫面的同時觀看。點擊「查看詳情」按鈕可開啟作品詳情畫面（投稿者、發佈日期、標籤編輯、收藏、轉發等）。點擊投稿者名稱旁的「追蹤」按鈕即可將其加入追蹤清單，「追蹤」分頁會依時間順序彙整顯示該作者的作品。有人追蹤你時，會顯示在畫面右上角鈴鐺圖示的通知清單中。你可以分別設定自己的追蹤清單/粉絲清單是否對所有使用者公開（預設為非公開），也可以查看已公開的其他使用者的清單。除自己發佈的作品外，都可以用「轉發」按鈕轉發；當追蹤的作者轉發了他人的作品時，該作品也會以「發佈日期」和「轉發日期」中較新的一方為基準，混入「追蹤」分頁中顯示（卡片上會顯示「○○轉發了」）。收藏的作品會彙整顯示在主畫面的「已收藏」分頁中，也可以在投稿者作品清單畫面的「收藏」分頁中查看。可以設定自己的收藏清單是否對其他使用者公開（預設不公開），也可以查看已設為公開的其他使用者的收藏清單。對不當作品可以附上理由進行檢舉，檢舉送出後會詢問你是否要封鎖該投稿者。直向影片可以在「直向模式」中連續播放觀看。每日可發佈的作品數量有上限，免費會員每天1個，進階會員每天3個。';
+      '可以將動畫・插畫作品以YouTube影片的形式發佈到社群，並瀏覽其他使用者的作品。可以切換「最新」「排行榜」「追蹤」三個分頁，也可以依作品標題或投稿者名稱搜尋。切換到標籤搜尋模式後可依標籤篩選作品，標籤不僅投稿者本人，其他使用者也可以自由新增或刪除（投稿者鎖定的標籤只能由投稿者本人解鎖），點擊標籤即可篩選出相同標籤的作品。點擊作品卡片會開啟可拖曳、可調整大小的浮動預覽視窗，可以在繼續操作其他畫面的同時觀看。點擊「查看詳情」按鈕可開啟作品詳情畫面（投稿者、發佈日期、標籤編輯、收藏、轉發等）。點擊投稿者名稱旁的「追蹤」按鈕即可將其加入追蹤清單，「追蹤」分頁會依時間順序彙整顯示該作者的作品。有人追蹤你時，會顯示在畫面右上角鈴鐺圖示的通知清單中。你可以分別設定自己的追蹤清單/粉絲清單是否對所有使用者公開（預設為非公開），也可以查看已公開的其他使用者的清單。除自己發佈的作品外，都可以用「轉發」按鈕轉發；當追蹤的作者轉發了他人的作品時，該作品也會以「發佈日期」和「轉發日期」中較新的一方為基準，混入「追蹤」分頁中顯示（卡片上會顯示「○○轉發了」）。收藏的作品會彙整顯示在主畫面的「已收藏」分頁中，也可以在投稿者作品清單畫面的「收藏」分頁中查看。可以設定自己的收藏清單是否對其他使用者公開（預設不公開），也可以查看已設為公開的其他使用者的收藏清單。對不當作品可以附上理由進行檢舉，檢舉送出後會詢問你是否要封鎖該投稿者。直向影片可以在「直向模式」中連續播放觀看。每日可發佈的作品數量有上限，免費會員每天1個，進階會員每天3個。點擊畫面右上角的顯示篩選按鈕（帶斜線的眼睛圖示），可以隱藏不想看到的作品。除了可以隱藏「包含生成式 AI 圖像或影片」的作品外，還可以用逗號、頓號或換行分隔，登錄只比對作品標題的靜音標題，以及只比對作品在作品廣場中所設標籤的靜音標籤（開頭的 # 會被忽略）。這些篩選適用於「最新」「排行榜」「追蹤」（含轉發）、直向模式、投稿者頁面、作品詳情和收藏。「包含生成式 AI 圖像或影片」由投稿者在發佈時自行聲明，發佈後也只有投稿者本人可以變更（可在「我的投稿」或作品詳情畫面中變更）。';
 
   @override
   String get helpWatermarkEntryTitle => '浮水印';
@@ -12818,13 +13092,15 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get communityMutedWords => '靜音標題';
 
   @override
-  String get communityMutedWordsHint => '以逗號分隔要在作品標題中比對並隱藏的文字';
+  String get communityMutedWordsHint =>
+      '隱藏標題中包含這些文字的作品（不檢查投稿者名稱和標籤）。多個項目可用逗號、頓號或換行分隔。';
 
   @override
-  String get communityMutedTags => '封鎖標籤';
+  String get communityMutedTags => '靜音標籤';
 
   @override
-  String get communityMutedTagsHint => '輸入以逗號分隔的標籤名稱';
+  String get communityMutedTagsHint =>
+      '隱藏在作品廣場中帶有這些標籤的作品（開頭的 # 會被忽略）。多個項目可用逗號、頓號或換行分隔。';
 
   @override
   String get communityContainsGenerativeAiImageVideo => '包含生成式 AI 圖像或影片';
@@ -12836,6 +13112,278 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   @override
   String get communityAiImageVideoUpdateFailed =>
       '無法變更「包含生成式 AI 圖像或影片」。請檢查網路連線後再試一次。';
+
+  @override
+  String get communityRetry => '重試';
+
+  @override
+  String get communityReloadTooltip => '重新整理';
+
+  @override
+  String get communityGoogleSignInNotConfigured => '尚未設定Google登入';
+
+  @override
+  String get communityGoogleAccountBusy => '正在處理其他Google帳號操作，請完成後再試一次。';
+
+  @override
+  String get communityMyWorksTitle => '我的投稿';
+
+  @override
+  String get communityMyWorksAccountNotConnected => '未連結Google帳號';
+
+  @override
+  String get communityMyWorksAddAccount => '新增Google帳號';
+
+  @override
+  String get communityMyWorksSwitchAccount => '切換或新增Google帳號';
+
+  @override
+  String get communityMyWorksLoading => '正在載入投稿…';
+
+  @override
+  String communityMyWorksLoadFailed(String reason) {
+    return '無法載入我的投稿。$reason';
+  }
+
+  @override
+  String communityAccountSwitchFailed(String reason) {
+    return '無法切換Google帳號。$reason';
+  }
+
+  @override
+  String communitySignInFailed(String reason) {
+    return '無法使用Google帳號登入。$reason';
+  }
+
+  @override
+  String communityVisibilityChangeFailed(String reason) {
+    return '無法變更公開狀態。$reason';
+  }
+
+  @override
+  String get communityMyWorksDeletedCannotPublish =>
+      '已從YouTube刪除的影片無法在作品廣場重新公開';
+
+  @override
+  String get communityMyWorksStatusDeletedOnYoutube => '已從YouTube刪除 • 無法重新公開';
+
+  @override
+  String get communityMyWorksStatusYoutubePrivate =>
+      '在作品廣場公開中 • 因YouTube影片設為私人，暫時隱藏';
+
+  @override
+  String get communityMyWorksStatusHiddenYoutubePrivate =>
+      '在作品廣場非公開 • YouTube也設為私人';
+
+  @override
+  String get communityVisibilityPublishedBadge => '公開中';
+
+  @override
+  String communityYoutubeVideoIdLabel(String videoId) {
+    return 'YouTube影片ID：$videoId';
+  }
+
+  @override
+  String get communityPostTitleLabel => '標題';
+
+  @override
+  String get communityPostPickVideo => '選擇影片';
+
+  @override
+  String get communityPostAsShort => '以直向短影片發佈';
+
+  @override
+  String get communityPostShowInPlaza => '在作品廣場公開';
+
+  @override
+  String get communityPostShowInPlazaHelp =>
+      '影片會以「非公開條列」上傳到YouTube，在作品廣場是否公開則另外管理。';
+
+  @override
+  String get communityPostUploadedHeading => '已上傳到YouTube';
+
+  @override
+  String communityPostUploadedAccount(String email) {
+    return 'Google帳號：$email';
+  }
+
+  @override
+  String get communityPostNoReupload => '重試時不會重新上傳影片。';
+
+  @override
+  String get communityPostDiscardPending => '取消在作品廣場登錄';
+
+  @override
+  String get communityPostPendingDiscarded => '已取消待處理的作品廣場登錄。YouTube上的影片並未刪除。';
+
+  @override
+  String get communityPostSubmitUpload => '上傳到YouTube並發佈';
+
+  @override
+  String get communityPostSubmitRetry => '重試作品廣場登錄';
+
+  @override
+  String communityPostErrorLabel(String message) {
+    return '錯誤：$message';
+  }
+
+  @override
+  String communityPostDoneSnackbar(String videoId) {
+    return '已發佈（YouTube影片ID：$videoId）';
+  }
+
+  @override
+  String communityPostRecoveredSnackbar(String videoId) {
+    return '已復原已發佈的作品（YouTube影片ID：$videoId）';
+  }
+
+  @override
+  String get communityPostStatusPendingRestored =>
+      '上次已上傳到YouTube的影片仍保留。可以只重試作品廣場登錄。';
+
+  @override
+  String get communityPostStatusPendingUnavailable =>
+      '待處理的YouTube影片已被刪除或找不到，無法復原。請選擇新的影片。';
+
+  @override
+  String get communityPostStatusRecovered => '已復原已發佈的作品';
+
+  @override
+  String get communityPostStatusCompleted => '發佈完成';
+
+  @override
+  String get communityPostStatusCheckingAccount => '正在確認Google帳號…';
+
+  @override
+  String get communityPostStatusCheckingRegistration => '正在確認作品廣場登錄狀態…';
+
+  @override
+  String get communityPostStatusSyncingAiFlag =>
+      '正在同步已發佈作品的「包含生成式 AI 圖像或影片」設定…';
+
+  @override
+  String get communityPostStatusSyncingVisibility => '正在同步已發佈作品的公開狀態…';
+
+  @override
+  String get communityPostStatusUploading => '正在上傳到YouTube…';
+
+  @override
+  String get communityPostStatusRegistering => '已上傳到YouTube。正在登錄到作品廣場…';
+
+  @override
+  String get communityPostStatusUploadFailed => '上傳失敗';
+
+  @override
+  String get communityPostStatusRegistrationRetryable =>
+      '影片已保存在YouTube上。可以只重試作品廣場登錄。';
+
+  @override
+  String get communityPostErrorNoVideo => '請選擇要發佈的影片';
+
+  @override
+  String get communityPostErrorNoTitle => '請輸入標題';
+
+  @override
+  String get communityPostErrorServerNotConfigured => '由於未設定作品廣場的伺服器，無法發佈';
+
+  @override
+  String get communityPostErrorPendingVideoUnavailable =>
+      '找不到YouTube影片。無法重試此影片的作品廣場登錄。';
+
+  @override
+  String communityPostErrorUploadedByAccount(String email) {
+    return '此影片是以$email上傳的。請切換到該Google帳號後，再重試作品廣場登錄。';
+  }
+
+  @override
+  String get communityPostErrorUploadedByAnotherAccount =>
+      '此影片是以其他Google帳號上傳的。請切換到該帳號後，再重試作品廣場登錄。';
+
+  @override
+  String communityPostErrorAccountChanged(String email) {
+    return '處理過程中Google帳號已切換。請切換回$email後再試一次。';
+  }
+
+  @override
+  String get communityPostErrorYoutubePermission => '無法取得發佈到YouTube的權限';
+
+  @override
+  String get communityPostErrorNoVideoId => '未能從YouTube取得影片ID';
+
+  @override
+  String get communityShortsEndBehaviorTooltip => '播放結束時的操作';
+
+  @override
+  String get communityShortsEndBehaviorLoop => '循環播放目前的影片';
+
+  @override
+  String get communityShortsEndBehaviorAutoAdvance => '自動捲動到下一部影片';
+
+  @override
+  String get communityErrorNetwork => '無法連線。請檢查網路連線後再試一次。';
+
+  @override
+  String get communityErrorSignInRequired => '需要使用Google帳號登入。請重新登入後再試一次。';
+
+  @override
+  String get communityErrorForbidden => '你沒有執行此操作的權限。';
+
+  @override
+  String get communityErrorNotFound => '找不到對象，可能已被刪除。';
+
+  @override
+  String get communityErrorRateLimited => '請求過於頻繁。請稍候再試一次。';
+
+  @override
+  String get communityErrorServer => '伺服器發生問題。請稍後再試一次。';
+
+  @override
+  String get communityErrorGeneric => '發生問題。請再試一次。';
+
+  @override
+  String communityErrorTagLimitExceeded(int max) {
+    return '每件作品最多可新增$max個標籤。';
+  }
+
+  @override
+  String get communityErrorTagTooLong => '標籤過長。請縮短後再試一次。';
+
+  @override
+  String get communityErrorTagUpdateConflict => '其他人同時變更了標籤。請再試一次。';
+
+  @override
+  String get communityErrorWorkChanged => '作品已被其他操作更新。請再試一次。';
+
+  @override
+  String get communityErrorVideoNotFound => '找不到YouTube影片。';
+
+  @override
+  String get communityErrorVideoAlreadyRegistered => '此影片已由其他使用者登錄到作品廣場。';
+
+  @override
+  String get communityErrorWorkDeleted => '此影片已從作品廣場刪除，無法重新登錄。';
+
+  @override
+  String get communityErrorVideoRegistrationConflict =>
+      '另一個請求正在同時登錄此影片。請重新整理我的投稿後再試一次。';
+
+  @override
+  String get communityErrorPostQuotaExceeded => '已達到今日的發佈上限。日期變更後即可再次發佈。';
+
+  @override
+  String get communityErrorSignInCanceled => '已取消登入。';
+
+  @override
+  String get communityErrorGoogleSignIn => '無法完成Google登入。請再試一次。';
+
+  @override
+  String get communityErrorYoutubeUpload => '上傳到YouTube失敗。請檢查網路連線後再試一次。';
+
+  @override
+  String get communityErrorVideoFile => '無法讀取影片檔案。請重新選擇影片。';
+
+  @override
+  String get communityErrorUnsupported => '此裝置不支援該操作。';
 
   @override
   String get canvasLassoSnapToLines => '吸附到線條';

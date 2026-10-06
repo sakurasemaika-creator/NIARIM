@@ -1427,7 +1427,7 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get helpCommunityDesc =>
-      'アニメ・イラスト作品をYouTube動画としてコミュニティに投稿し、他のユーザーの作品を閲覧できる機能です。「新着」「ランキング」「フォロー中」の3タブで一覧を切り替えられ、作品タイトルまたは投稿者名で検索できるほか、タグ検索モードに切り替えるとタグから作品を絞り込めます。タグは投稿者以外のユーザーも自由に追加・削除でき（投稿者がロックしたタグは投稿者本人にしか外せません）、タグをタップするだけでも同じタグの作品に絞り込めます。作品カードをタップするとドラッグ・リサイズできるフローティングプレビューウィンドウが開き、他の画面を操作しながら視聴を続けられます。「詳細へ」ボタンで作品の詳細画面（投稿者・投稿日・タグ編集・ブックマーク・リポストなど）を開けます。作者名の横の「フォロー」ボタンでフォローすると、「フォロー中」タブでその作者の投稿だけを新着順にまとめて追いかけられます。フォローされると画面右上のベルアイコンの通知一覧に届きます。自分のフォロー中/フォロワー一覧を全体公開するかどうかも設定でき（既定は非公開）、公開設定にしている他のユーザーの一覧も閲覧できます。他者の作品（自分の投稿を除く）は「リポスト」ボタンで再投稿でき、フォロー中の作者が誰かの作品をリポストすると、その作品も「投稿日時」と「リポスト日時」のうちより新しい方を基準に「フォロー中」タブへ混ざって表示されます（カードに「○○さんがリポスト」と表示）。ブックマークした作品はホーム画面の「ブクマ済み」タブにまとめて表示されるほか、投稿者別の作品一覧画面の「ブックマーク」タブでも確認できます。自分のブックマーク一覧はユーザー全体へ公開するかどうかを設定でき（既定は非公開）、公開設定にしている他のユーザーのブックマーク一覧も閲覧できます。不適切な作品は理由を添えて通報でき、送信後にはその投稿者をブロックするか選べます。縦長の動画は「縦画面モード」でTikTok風に連続再生して視聴できます。投稿できる本数には1日あたりの上限があり、無料会員は1日1本、プレミアム会員は1日3本までです。';
+      'アニメ・イラスト作品をYouTube動画としてコミュニティに投稿し、他のユーザーの作品を閲覧できる機能です。「新着」「ランキング」「フォロー中」の3タブで一覧を切り替えられ、作品タイトルまたは投稿者名で検索できるほか、タグ検索モードに切り替えるとタグから作品を絞り込めます。タグは投稿者以外のユーザーも自由に追加・削除でき（投稿者がロックしたタグは投稿者本人にしか外せません）、タグをタップするだけでも同じタグの作品に絞り込めます。作品カードをタップするとドラッグ・リサイズできるフローティングプレビューウィンドウが開き、他の画面を操作しながら視聴を続けられます。「詳細へ」ボタンで作品の詳細画面（投稿者・投稿日・タグ編集・ブックマーク・リポストなど）を開けます。作者名の横の「フォロー」ボタンでフォローすると、「フォロー中」タブでその作者の投稿だけを新着順にまとめて追いかけられます。フォローされると画面右上のベルアイコンの通知一覧に届きます。自分のフォロー中/フォロワー一覧を全体公開するかどうかも設定でき（既定は非公開）、公開設定にしている他のユーザーの一覧も閲覧できます。他者の作品（自分の投稿を除く）は「リポスト」ボタンで再投稿でき、フォロー中の作者が誰かの作品をリポストすると、その作品も「投稿日時」と「リポスト日時」のうちより新しい方を基準に「フォロー中」タブへ混ざって表示されます（カードに「○○さんがリポスト」と表示）。ブックマークした作品はホーム画面の「ブクマ済み」タブにまとめて表示されるほか、投稿者別の作品一覧画面の「ブックマーク」タブでも確認できます。自分のブックマーク一覧はユーザー全体へ公開するかどうかを設定でき（既定は非公開）、公開設定にしている他のユーザーのブックマーク一覧も閲覧できます。不適切な作品は理由を添えて通報でき、送信後にはその投稿者をブロックするか選べます。縦長の動画は「縦画面モード」でTikTok風に連続再生して視聴できます。投稿できる本数には1日あたりの上限があり、無料会員は1日1本、プレミアム会員は1日3本までです。画面右上の表示フィルターボタン（斜線の入った目のアイコン）では、見たくない作品を非表示にできます。「AI画像・AI動画使用」の作品を非表示にする設定のほか、作品タイトルだけを対象にするミュートタイトルと、作品広場で作品に設定されたタグだけを対象にするミュートタグ（先頭の#は無視されます）を、カンマ・「、」・改行で区切って登録できます。これらのフィルターは新着・ランキング・フォロー中（リポストを含む）・縦画面モード・投稿者ページ・作品詳細・ブックマークに適用されます。「AI画像・AI動画使用」は投稿時に投稿者が申告するもので、投稿後に変更できるのも投稿者本人だけです（「自分の投稿」または作品詳細画面から変更できます）。';
 
   @override
   String get helpWatermarkEntryTitle => 'ウォーターマーク';
@@ -6428,13 +6428,15 @@ class AppLocalizationsJa extends AppLocalizations {
   String get communityMutedWords => 'ミュートタイトル登録';
 
   @override
-  String get communityMutedWordsHint => '非表示にする作品タイトル内の語句をカンマ区切りで指定';
+  String get communityMutedWordsHint =>
+      '作品タイトルにこの語句を含む作品を非表示にします（投稿者名・タグは対象外）。カンマ・「、」・改行で区切って複数指定できます';
 
   @override
   String get communityMutedTags => 'ミュートタグ登録';
 
   @override
-  String get communityMutedTagsHint => 'タグ名をカンマ区切りで指定';
+  String get communityMutedTagsHint =>
+      '作品広場で作品に設定されたタグが一致すると非表示にします（先頭の#は無視されます）。カンマ・「、」・改行で区切って複数指定できます';
 
   @override
   String get communityContainsGenerativeAiImageVideo => 'AI画像・AI動画使用';
@@ -6446,6 +6448,289 @@ class AppLocalizationsJa extends AppLocalizations {
   @override
   String get communityAiImageVideoUpdateFailed =>
       '「AI画像・AI動画使用」を変更できませんでした。通信状態を確認して、もう一度お試しください。';
+
+  @override
+  String get communityRetry => '再試行';
+
+  @override
+  String get communityReloadTooltip => '再読み込み';
+
+  @override
+  String get communityGoogleSignInNotConfigured => 'Googleログインがまだ設定されていません';
+
+  @override
+  String get communityGoogleAccountBusy =>
+      'Googleアカウントの別の操作を処理中です。完了してから、もう一度お試しください。';
+
+  @override
+  String get communityMyWorksTitle => '自分の投稿';
+
+  @override
+  String get communityMyWorksAccountNotConnected => 'Googleアカウント未接続';
+
+  @override
+  String get communityMyWorksAddAccount => 'Googleアカウントを追加';
+
+  @override
+  String get communityMyWorksSwitchAccount => 'Googleアカウントを切り替え・追加';
+
+  @override
+  String get communityMyWorksLoading => '投稿を読み込んでいます…';
+
+  @override
+  String communityMyWorksLoadFailed(String reason) {
+    return '自分の投稿を読み込めませんでした。$reason';
+  }
+
+  @override
+  String communityAccountSwitchFailed(String reason) {
+    return 'Googleアカウントを切り替えられませんでした。$reason';
+  }
+
+  @override
+  String communitySignInFailed(String reason) {
+    return 'Googleアカウントでログインできませんでした。$reason';
+  }
+
+  @override
+  String communityVisibilityChangeFailed(String reason) {
+    return '公開状態を変更できませんでした。$reason';
+  }
+
+  @override
+  String get communityMyWorksDeletedCannotPublish =>
+      'YouTubeから削除された動画は、作品広場で再公開できません';
+
+  @override
+  String get communityMyWorksStatusDeletedOnYoutube =>
+      'YouTubeから削除済み • 作品広場で再公開できません';
+
+  @override
+  String get communityMyWorksStatusYoutubePrivate =>
+      '作品広場で公開中 • YouTubeが非公開のため一時的に非表示';
+
+  @override
+  String get communityMyWorksStatusHiddenYoutubePrivate =>
+      '作品広場で非公開 • YouTubeも非公開';
+
+  @override
+  String get communityVisibilityPublishedBadge => '公開中';
+
+  @override
+  String communityYoutubeVideoIdLabel(String videoId) {
+    return 'YouTube動画ID: $videoId';
+  }
+
+  @override
+  String get communityPostTitleLabel => 'タイトル';
+
+  @override
+  String get communityPostPickVideo => '動画を選択';
+
+  @override
+  String get communityPostAsShort => '縦画面ショートとして投稿';
+
+  @override
+  String get communityPostShowInPlaza => '作品広場で公開';
+
+  @override
+  String get communityPostShowInPlazaHelp =>
+      'YouTubeには限定公開でアップロードされます。作品広場での公開・非公開は、これとは別に管理します。';
+
+  @override
+  String get communityPostUploadedHeading => 'YouTubeへアップロード済み';
+
+  @override
+  String communityPostUploadedAccount(String email) {
+    return 'Googleアカウント: $email';
+  }
+
+  @override
+  String get communityPostNoReupload => '再試行しても、動画が再アップロードされることはありません。';
+
+  @override
+  String get communityPostDiscardPending => '作品広場への登録をやめる';
+
+  @override
+  String get communityPostPendingDiscarded =>
+      '保留中だった作品広場への登録を取りやめました。YouTubeの動画は削除していません。';
+
+  @override
+  String get communityPostSubmitUpload => 'YouTubeへアップロードして投稿';
+
+  @override
+  String get communityPostSubmitRetry => '作品広場への登録を再試行';
+
+  @override
+  String communityPostErrorLabel(String message) {
+    return 'エラー: $message';
+  }
+
+  @override
+  String communityPostDoneSnackbar(String videoId) {
+    return '投稿しました（YouTube動画ID: $videoId）';
+  }
+
+  @override
+  String communityPostRecoveredSnackbar(String videoId) {
+    return '投稿済みの作品を復旧しました（YouTube動画ID: $videoId）';
+  }
+
+  @override
+  String get communityPostStatusPendingRestored =>
+      '前回YouTubeへアップロードした動画があります。作品広場への登録だけを再試行できます。';
+
+  @override
+  String get communityPostStatusPendingUnavailable =>
+      '保留中のYouTube動画は削除されたか見つからないため、復旧できません。新しい動画を選択してください。';
+
+  @override
+  String get communityPostStatusRecovered => '投稿済みの作品を復旧しました';
+
+  @override
+  String get communityPostStatusCompleted => '投稿が完了しました';
+
+  @override
+  String get communityPostStatusCheckingAccount => 'Googleアカウントを確認しています…';
+
+  @override
+  String get communityPostStatusCheckingRegistration => '作品広場への登録状況を確認しています…';
+
+  @override
+  String get communityPostStatusSyncingAiFlag =>
+      '投稿済み作品の「AI画像・AI動画使用」を同期しています…';
+
+  @override
+  String get communityPostStatusSyncingVisibility => '投稿済み作品の公開状態を同期しています…';
+
+  @override
+  String get communityPostStatusUploading => 'YouTubeへアップロードしています…';
+
+  @override
+  String get communityPostStatusRegistering =>
+      'YouTubeへのアップロードが完了しました。作品広場へ登録しています…';
+
+  @override
+  String get communityPostStatusUploadFailed => 'アップロードに失敗しました';
+
+  @override
+  String get communityPostStatusRegistrationRetryable =>
+      'YouTubeの動画は保存されています。作品広場への登録だけを再試行できます。';
+
+  @override
+  String get communityPostErrorNoVideo => '投稿する動画を選択してください';
+
+  @override
+  String get communityPostErrorNoTitle => 'タイトルを入力してください';
+
+  @override
+  String get communityPostErrorServerNotConfigured =>
+      '作品広場の接続先が設定されていないため、投稿できません';
+
+  @override
+  String get communityPostErrorPendingVideoUnavailable =>
+      'YouTube動画が見つかりません。この動画の作品広場への登録は再試行できません';
+
+  @override
+  String communityPostErrorUploadedByAccount(String email) {
+    return 'この動画は$emailでアップロードされています。そのGoogleアカウントに切り替えてから、作品広場への登録を再試行してください';
+  }
+
+  @override
+  String get communityPostErrorUploadedByAnotherAccount =>
+      'この動画は別のGoogleアカウントでアップロードされています。そのアカウントに切り替えてから、作品広場への登録を再試行してください';
+
+  @override
+  String communityPostErrorAccountChanged(String email) {
+    return '処理の途中でGoogleアカウントが切り替わりました。$emailに戻してから、もう一度お試しください';
+  }
+
+  @override
+  String get communityPostErrorYoutubePermission => 'YouTubeへの投稿権限を取得できませんでした';
+
+  @override
+  String get communityPostErrorNoVideoId => 'YouTubeから動画IDを受け取れませんでした';
+
+  @override
+  String get communityShortsEndBehaviorTooltip => '再生終了時の動作';
+
+  @override
+  String get communityShortsEndBehaviorLoop => '同じ動画をループ再生';
+
+  @override
+  String get communityShortsEndBehaviorAutoAdvance => '次の動画へ自動スクロール';
+
+  @override
+  String get communityErrorNetwork => '通信できませんでした。通信状態を確認して、もう一度お試しください。';
+
+  @override
+  String get communityErrorSignInRequired =>
+      'Googleアカウントでのログインが必要です。ログインし直してから、もう一度お試しください。';
+
+  @override
+  String get communityErrorForbidden => 'この操作を行う権限がありません。';
+
+  @override
+  String get communityErrorNotFound => '対象が見つかりませんでした。削除された可能性があります。';
+
+  @override
+  String get communityErrorRateLimited => '操作が集中しています。しばらく待ってから、もう一度お試しください。';
+
+  @override
+  String get communityErrorServer => 'サーバーで問題が発生しました。しばらく待ってから、もう一度お試しください。';
+
+  @override
+  String get communityErrorGeneric => '問題が発生しました。もう一度お試しください。';
+
+  @override
+  String communityErrorTagLimitExceeded(int max) {
+    return 'タグは1作品につき$max個までです。';
+  }
+
+  @override
+  String get communityErrorTagTooLong => 'タグが長すぎます。短くしてから、もう一度お試しください。';
+
+  @override
+  String get communityErrorTagUpdateConflict =>
+      'ほかの人が同時にタグを変更しました。もう一度お試しください。';
+
+  @override
+  String get communityErrorWorkChanged => '作品がほかの操作で更新されました。もう一度お試しください。';
+
+  @override
+  String get communityErrorVideoNotFound => 'YouTube動画が見つかりませんでした。';
+
+  @override
+  String get communityErrorVideoAlreadyRegistered =>
+      'この動画は、既に別のユーザーが作品広場に登録しています。';
+
+  @override
+  String get communityErrorWorkDeleted => 'この動画は作品広場から削除済みのため、再登録できません。';
+
+  @override
+  String get communityErrorVideoRegistrationConflict =>
+      'この動画は同時に別の登録処理で使われました。自分の投稿を再読み込みしてから、もう一度お試しください。';
+
+  @override
+  String get communityErrorPostQuotaExceeded =>
+      '本日の投稿上限に達しました。日付が変わると、また投稿できます。';
+
+  @override
+  String get communityErrorSignInCanceled => 'ログインがキャンセルされました。';
+
+  @override
+  String get communityErrorGoogleSignIn =>
+      'Googleアカウントでのログインを完了できませんでした。もう一度お試しください。';
+
+  @override
+  String get communityErrorYoutubeUpload =>
+      'YouTubeへのアップロードに失敗しました。通信状態を確認して、もう一度お試しください。';
+
+  @override
+  String get communityErrorVideoFile => '動画ファイルを読み込めませんでした。動画を選び直してください。';
+
+  @override
+  String get communityErrorUnsupported => 'この端末では、この操作に対応していません。';
 
   @override
   String get canvasLassoSnapToLines => '線に吸着';

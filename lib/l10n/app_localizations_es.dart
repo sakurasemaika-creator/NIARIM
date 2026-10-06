@@ -1478,7 +1478,7 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get helpCommunityDesc =>
-      'Publica tus animaciones e ilustraciones en la comunidad como vídeos de YouTube y explora las obras de otros usuarios. Cambia entre las pestañas «Nuevas», «Ranking» y «Siguiendo», y busca por título de la obra o nombre del creador. Cambia al modo de búsqueda por etiquetas para filtrar obras por etiqueta: cualquier usuario (no solo el creador) puede añadir o quitar etiquetas, aunque las etiquetas bloqueadas por el creador solo él puede quitarlas, y tocar una etiqueta filtra al instante las obras con la misma etiqueta. Al tocar una tarjeta de obra se abre una ventana de vista previa flotante que se puede arrastrar y redimensionar, para seguir explorando otras pantallas mientras se reproduce. El botón «Ver detalles» abre la pantalla de detalles de la obra (creador, fecha de publicación, edición de etiquetas, marcador, republicación y más). Toca el botón «Seguir» junto al nombre de un creador para añadirlo a tus seguidos: la pestaña «Siguiendo» reúne entonces solo las publicaciones de ese creador, ordenadas por fecha. Cuando alguien te sigue, aparece en la lista de notificaciones bajo el icono de la campana en la parte superior de la pantalla. Puedes elegir si tus listas de seguidos/seguidores son visibles para otros usuarios (privadas por defecto), y puedes ver las listas de otros usuarios si las han hecho públicas. Puedes republicar la obra de cualquier otra persona (excepto la tuya propia) con el botón «Republicar»; cuando un creador al que sigues republica la obra de otra persona, esa obra también aparece en tu pestaña «Siguiendo», ordenada según lo que sea más reciente —su fecha de publicación original o su fecha de republicación— (la tarjeta muestra «Republicado por…»). Las obras marcadas aparecen juntas en la pestaña «Guardadas» de la pantalla de inicio, y también en la pestaña «Marcadores» de la pantalla de obras de un creador. Puedes elegir si tu propia lista de marcadores es visible para otros usuarios (privada de forma predeterminada), y puedes ver las listas de marcadores de otros usuarios si las han hecho públicas. Puedes denunciar una obra indicando un motivo, y tras enviarla se te preguntará si quieres bloquear a ese creador. Los vídeos verticales se pueden ver en «modo vertical», que los reproduce uno tras otro como un feed de vídeos cortos. Hay un límite diario de publicaciones: 1 al día para miembros gratuitos y 3 al día para miembros Premium.';
+      'Publica tus animaciones e ilustraciones en la comunidad como vídeos de YouTube y explora las obras de otros usuarios. Cambia entre las pestañas «Nuevas», «Ranking» y «Siguiendo», y busca por título de la obra o nombre del creador. Cambia al modo de búsqueda por etiquetas para filtrar obras por etiqueta: cualquier usuario (no solo el creador) puede añadir o quitar etiquetas, aunque las etiquetas bloqueadas por el creador solo él puede quitarlas, y tocar una etiqueta filtra al instante las obras con la misma etiqueta. Al tocar una tarjeta de obra se abre una ventana de vista previa flotante que se puede arrastrar y redimensionar, para seguir explorando otras pantallas mientras se reproduce. El botón «Ver detalles» abre la pantalla de detalles de la obra (creador, fecha de publicación, edición de etiquetas, marcador, republicación y más). Toca el botón «Seguir» junto al nombre de un creador para añadirlo a tus seguidos: la pestaña «Siguiendo» reúne entonces solo las publicaciones de ese creador, ordenadas por fecha. Cuando alguien te sigue, aparece en la lista de notificaciones bajo el icono de la campana en la parte superior de la pantalla. Puedes elegir si tus listas de seguidos/seguidores son visibles para otros usuarios (privadas por defecto), y puedes ver las listas de otros usuarios si las han hecho públicas. Puedes republicar la obra de cualquier otra persona (excepto la tuya propia) con el botón «Republicar»; cuando un creador al que sigues republica la obra de otra persona, esa obra también aparece en tu pestaña «Siguiendo», ordenada según lo que sea más reciente —su fecha de publicación original o su fecha de republicación— (la tarjeta muestra «Republicado por…»). Las obras marcadas aparecen juntas en la pestaña «Guardadas» de la pantalla de inicio, y también en la pestaña «Marcadores» de la pantalla de obras de un creador. Puedes elegir si tu propia lista de marcadores es visible para otros usuarios (privada de forma predeterminada), y puedes ver las listas de marcadores de otros usuarios si las han hecho públicas. Puedes denunciar una obra indicando un motivo, y tras enviarla se te preguntará si quieres bloquear a ese creador. Los vídeos verticales se pueden ver en «modo vertical», que los reproduce uno tras otro como un feed de vídeos cortos. Hay un límite diario de publicaciones: 1 al día para miembros gratuitos y 3 al día para miembros Premium. El botón de filtros de visualización de la parte superior derecha (el icono de un ojo tachado) te permite ocultar las obras que no quieras ver. Puedes ocultar las obras marcadas con «Contiene imágenes o vídeo de IA generativa» y añadir títulos silenciados (solo se comparan con el título de la obra) y etiquetas silenciadas (solo se comparan con las etiquetas asignadas a la obra en la Plaza de Obras; se ignora el # inicial), separados por comas o saltos de línea. Estos filtros se aplican a «Nuevas», «Ranking», «Siguiendo» (incluidas las republicaciones), el modo vertical, las páginas de los creadores, los detalles de las obras y los marcadores. «Contiene imágenes o vídeo de IA generativa» lo declara quien publica en el momento de publicar, y después solo esa persona puede cambiarlo (desde «Mis publicaciones» o la pantalla de detalles de la obra).';
 
   @override
   String get helpWatermarkEntryTitle => 'Marca de agua';
@@ -6762,14 +6762,14 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get communityMutedWordsHint =>
-      'Texto separado por comas para ocultar cuando aparezca en el título de una obra';
+      'Oculta las obras cuyo título contiene este texto (no se comprueban los nombres de los creadores ni las etiquetas). Separa varias entradas con comas o saltos de línea.';
 
   @override
   String get communityMutedTags => 'Etiquetas silenciadas';
 
   @override
   String get communityMutedTagsHint =>
-      'Etiquetas separadas por comas que se ocultarán';
+      'Oculta las obras que tienen esta etiqueta en la Plaza de Obras (se ignora el # inicial). Separa varias entradas con comas o saltos de línea.';
 
   @override
   String get communityContainsGenerativeAiImageVideo =>
@@ -6782,6 +6782,313 @@ class AppLocalizationsEs extends AppLocalizations {
   @override
   String get communityAiImageVideoUpdateFailed =>
       'No se pudo cambiar «Contiene imágenes o vídeo de IA generativa». Comprueba la conexión e inténtalo de nuevo.';
+
+  @override
+  String get communityRetry => 'Reintentar';
+
+  @override
+  String get communityReloadTooltip => 'Recargar';
+
+  @override
+  String get communityGoogleSignInNotConfigured =>
+      'El inicio de sesión con Google aún no está configurado';
+
+  @override
+  String get communityGoogleAccountBusy =>
+      'Hay otra operación de la cuenta de Google en curso. Inténtalo de nuevo cuando termine.';
+
+  @override
+  String get communityMyWorksTitle => 'Mis publicaciones';
+
+  @override
+  String get communityMyWorksAccountNotConnected =>
+      'No hay ninguna cuenta de Google conectada';
+
+  @override
+  String get communityMyWorksAddAccount => 'Añadir una cuenta de Google';
+
+  @override
+  String get communityMyWorksSwitchAccount =>
+      'Cambiar o añadir una cuenta de Google';
+
+  @override
+  String get communityMyWorksLoading => 'Cargando tus publicaciones…';
+
+  @override
+  String communityMyWorksLoadFailed(String reason) {
+    return 'No se pudieron cargar tus publicaciones. $reason';
+  }
+
+  @override
+  String communityAccountSwitchFailed(String reason) {
+    return 'No se pudo cambiar de cuenta de Google. $reason';
+  }
+
+  @override
+  String communitySignInFailed(String reason) {
+    return 'No se pudo iniciar sesión con tu cuenta de Google. $reason';
+  }
+
+  @override
+  String communityVisibilityChangeFailed(String reason) {
+    return 'No se pudo cambiar la visibilidad. $reason';
+  }
+
+  @override
+  String get communityMyWorksDeletedCannotPublish =>
+      'Un vídeo eliminado de YouTube no se puede volver a mostrar en la Plaza de Obras';
+
+  @override
+  String get communityMyWorksStatusDeletedOnYoutube =>
+      'Eliminado de YouTube • No se puede volver a mostrar';
+
+  @override
+  String get communityMyWorksStatusYoutubePrivate =>
+      'Visible en la Plaza de Obras • Oculto temporalmente porque el vídeo de YouTube es privado';
+
+  @override
+  String get communityMyWorksStatusHiddenYoutubePrivate =>
+      'Oculto en la Plaza de Obras • También privado en YouTube';
+
+  @override
+  String get communityVisibilityPublishedBadge => 'Visible';
+
+  @override
+  String communityYoutubeVideoIdLabel(String videoId) {
+    return 'ID del vídeo de YouTube: $videoId';
+  }
+
+  @override
+  String get communityPostTitleLabel => 'Título';
+
+  @override
+  String get communityPostPickVideo => 'Elegir un vídeo';
+
+  @override
+  String get communityPostAsShort => 'Publicar como vídeo corto vertical';
+
+  @override
+  String get communityPostShowInPlaza => 'Mostrar en la Plaza de Obras';
+
+  @override
+  String get communityPostShowInPlazaHelp =>
+      'El vídeo se sube a YouTube como «No listado». Su visibilidad en la Plaza de Obras se gestiona por separado.';
+
+  @override
+  String get communityPostUploadedHeading => 'Subido a YouTube';
+
+  @override
+  String communityPostUploadedAccount(String email) {
+    return 'Cuenta de Google: $email';
+  }
+
+  @override
+  String get communityPostNoReupload =>
+      'Al reintentar, el vídeo no se volverá a subir.';
+
+  @override
+  String get communityPostDiscardPending =>
+      'Cancelar el registro en la Plaza de Obras';
+
+  @override
+  String get communityPostPendingDiscarded =>
+      'Se ha descartado el registro pendiente en la Plaza de Obras. El vídeo de YouTube no se ha eliminado.';
+
+  @override
+  String get communityPostSubmitUpload => 'Subir a YouTube y publicar';
+
+  @override
+  String get communityPostSubmitRetry =>
+      'Reintentar el registro en la Plaza de Obras';
+
+  @override
+  String communityPostErrorLabel(String message) {
+    return 'Error: $message';
+  }
+
+  @override
+  String communityPostDoneSnackbar(String videoId) {
+    return 'Publicado (ID del vídeo de YouTube: $videoId)';
+  }
+
+  @override
+  String communityPostRecoveredSnackbar(String videoId) {
+    return 'Se ha recuperado tu obra publicada (ID del vídeo de YouTube: $videoId)';
+  }
+
+  @override
+  String get communityPostStatusPendingRestored =>
+      'Ya hay en YouTube un vídeo de tu intento anterior. Puedes reintentar solo el registro en la Plaza de Obras.';
+
+  @override
+  String get communityPostStatusPendingUnavailable =>
+      'El vídeo de YouTube pendiente se eliminó o no se encuentra, por lo que no se puede recuperar. Elige un vídeo nuevo.';
+
+  @override
+  String get communityPostStatusRecovered =>
+      'Se ha recuperado tu obra publicada';
+
+  @override
+  String get communityPostStatusCompleted => 'Publicación completada';
+
+  @override
+  String get communityPostStatusCheckingAccount =>
+      'Comprobando tu cuenta de Google…';
+
+  @override
+  String get communityPostStatusCheckingRegistration =>
+      'Comprobando el registro en la Plaza de Obras…';
+
+  @override
+  String get communityPostStatusSyncingAiFlag =>
+      'Sincronizando «Contiene imágenes o vídeo de IA generativa» de la obra publicada…';
+
+  @override
+  String get communityPostStatusSyncingVisibility =>
+      'Sincronizando la visibilidad de la obra publicada…';
+
+  @override
+  String get communityPostStatusUploading => 'Subiendo a YouTube…';
+
+  @override
+  String get communityPostStatusRegistering =>
+      'Subida a YouTube completada. Registrando en la Plaza de Obras…';
+
+  @override
+  String get communityPostStatusUploadFailed => 'No se pudo subir el vídeo';
+
+  @override
+  String get communityPostStatusRegistrationRetryable =>
+      'El vídeo está guardado en YouTube. Puedes reintentar solo el registro en la Plaza de Obras.';
+
+  @override
+  String get communityPostErrorNoVideo => 'Elige un vídeo para publicar';
+
+  @override
+  String get communityPostErrorNoTitle => 'Introduce un título';
+
+  @override
+  String get communityPostErrorServerNotConfigured =>
+      'No se puede publicar porque el servidor de la Plaza de Obras no está configurado';
+
+  @override
+  String get communityPostErrorPendingVideoUnavailable =>
+      'No se encuentra el vídeo de YouTube. No se puede reintentar el registro de este vídeo en la Plaza de Obras.';
+
+  @override
+  String communityPostErrorUploadedByAccount(String email) {
+    return 'Este vídeo se subió con $email. Cambia a esa cuenta de Google y vuelve a intentar el registro en la Plaza de Obras.';
+  }
+
+  @override
+  String get communityPostErrorUploadedByAnotherAccount =>
+      'Este vídeo se subió con otra cuenta de Google. Cambia a esa cuenta y vuelve a intentar el registro en la Plaza de Obras.';
+
+  @override
+  String communityPostErrorAccountChanged(String email) {
+    return 'Tu cuenta de Google cambió durante el proceso. Vuelve a $email e inténtalo de nuevo.';
+  }
+
+  @override
+  String get communityPostErrorYoutubePermission =>
+      'No se pudo obtener permiso para publicar en YouTube';
+
+  @override
+  String get communityPostErrorNoVideoId =>
+      'YouTube no devolvió un ID de vídeo';
+
+  @override
+  String get communityShortsEndBehaviorTooltip => 'Acción al terminar el vídeo';
+
+  @override
+  String get communityShortsEndBehaviorLoop => 'Repetir el mismo vídeo';
+
+  @override
+  String get communityShortsEndBehaviorAutoAdvance =>
+      'Ir automáticamente al siguiente vídeo';
+
+  @override
+  String get communityErrorNetwork =>
+      'No se pudo conectar. Comprueba la conexión e inténtalo de nuevo.';
+
+  @override
+  String get communityErrorSignInRequired =>
+      'Debes iniciar sesión con tu cuenta de Google. Vuelve a iniciar sesión e inténtalo de nuevo.';
+
+  @override
+  String get communityErrorForbidden => 'No tienes permiso para hacer esto.';
+
+  @override
+  String get communityErrorNotFound =>
+      'No se encontró. Es posible que se haya eliminado.';
+
+  @override
+  String get communityErrorRateLimited =>
+      'Demasiadas solicitudes. Espera un momento e inténtalo de nuevo.';
+
+  @override
+  String get communityErrorServer =>
+      'Se produjo un problema en el servidor. Espera un rato e inténtalo de nuevo.';
+
+  @override
+  String get communityErrorGeneric =>
+      'Se produjo un problema. Inténtalo de nuevo.';
+
+  @override
+  String communityErrorTagLimitExceeded(int max) {
+    return 'Una obra puede tener como máximo $max etiquetas.';
+  }
+
+  @override
+  String get communityErrorTagTooLong =>
+      'La etiqueta es demasiado larga. Acórtala e inténtalo de nuevo.';
+
+  @override
+  String get communityErrorTagUpdateConflict =>
+      'Otra persona cambió las etiquetas al mismo tiempo. Inténtalo de nuevo.';
+
+  @override
+  String get communityErrorWorkChanged =>
+      'La obra se actualizó con otro cambio. Inténtalo de nuevo.';
+
+  @override
+  String get communityErrorVideoNotFound =>
+      'No se encontró el vídeo de YouTube.';
+
+  @override
+  String get communityErrorVideoAlreadyRegistered =>
+      'Otro usuario ya registró este vídeo en la Plaza de Obras.';
+
+  @override
+  String get communityErrorWorkDeleted =>
+      'Este vídeo se eliminó de la Plaza de Obras y no se puede volver a registrar.';
+
+  @override
+  String get communityErrorVideoRegistrationConflict =>
+      'Otra solicitud estaba registrando este vídeo al mismo tiempo. Recarga tus publicaciones e inténtalo de nuevo.';
+
+  @override
+  String get communityErrorPostQuotaExceeded =>
+      'Has alcanzado el límite de publicaciones de hoy. Podrás volver a publicar cuando cambie el día.';
+
+  @override
+  String get communityErrorSignInCanceled => 'Se canceló el inicio de sesión.';
+
+  @override
+  String get communityErrorGoogleSignIn =>
+      'No se pudo completar el inicio de sesión con Google. Inténtalo de nuevo.';
+
+  @override
+  String get communityErrorYoutubeUpload =>
+      'No se pudo subir a YouTube. Comprueba la conexión e inténtalo de nuevo.';
+
+  @override
+  String get communityErrorVideoFile =>
+      'No se pudo leer el archivo de vídeo. Vuelve a elegir el vídeo.';
+
+  @override
+  String get communityErrorUnsupported =>
+      'Esto no es compatible con este dispositivo.';
 
   @override
   String get canvasLassoSnapToLines => 'Ajustar a las líneas';

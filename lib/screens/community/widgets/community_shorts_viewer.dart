@@ -175,7 +175,7 @@ class _CommunityShortsScreenState extends State<CommunityShortsScreen> {
             top: MediaQuery.paddingOf(context).top + 8,
             right: 8,
             child: PopupMenuButton<CommunityShortsEndBehavior>(
-              tooltip: _settingsTooltip(context),
+              tooltip: l10n.communityShortsEndBehaviorTooltip,
               initialValue: _endBehavior,
               onSelected: _setEndBehavior,
               itemBuilder: (context) => [
@@ -185,10 +185,7 @@ class _CommunityShortsScreenState extends State<CommunityShortsScreen> {
                     selected:
                         _endBehavior == CommunityShortsEndBehavior.loopCurrent,
                     icon: Icons.repeat_one_rounded,
-                    label: _endBehaviorLabel(
-                      context,
-                      CommunityShortsEndBehavior.loopCurrent,
-                    ),
+                    label: l10n.communityShortsEndBehaviorLoop,
                   ),
                 ),
                 PopupMenuItem(
@@ -197,10 +194,7 @@ class _CommunityShortsScreenState extends State<CommunityShortsScreen> {
                     selected:
                         _endBehavior == CommunityShortsEndBehavior.autoAdvance,
                     icon: Icons.vertical_align_bottom_rounded,
-                    label: _endBehaviorLabel(
-                      context,
-                      CommunityShortsEndBehavior.autoAdvance,
-                    ),
+                    label: l10n.communityShortsEndBehaviorAutoAdvance,
                   ),
                 ),
               ],
@@ -553,38 +547,4 @@ class _InfoItem extends StatelessWidget {
       ],
     );
   }
-}
-
-String _settingsTooltip(BuildContext context) {
-  return switch (Localizations.localeOf(context).languageCode) {
-    'ja' => '再生終了時の動作',
-    'es' => 'Acción al terminar el vídeo',
-    'fr' => 'Action à la fin de la vidéo',
-    'ko' => '재생 종료 동작',
-    'zh' => '播放结束时的操作',
-    _ => 'When video ends',
-  };
-}
-
-String _endBehaviorLabel(
-  BuildContext context,
-  CommunityShortsEndBehavior behavior,
-) {
-  final languageCode = Localizations.localeOf(context).languageCode;
-  return switch ((languageCode, behavior)) {
-    ('ja', CommunityShortsEndBehavior.loopCurrent) => '同じ動画をループ再生',
-    ('ja', CommunityShortsEndBehavior.autoAdvance) => '次の動画へ自動スクロール',
-    ('es', CommunityShortsEndBehavior.loopCurrent) => 'Repetir el mismo vídeo',
-    ('es', CommunityShortsEndBehavior.autoAdvance) =>
-      'Ir automáticamente al siguiente vídeo',
-    ('fr', CommunityShortsEndBehavior.loopCurrent) => 'Répéter la même vidéo',
-    ('fr', CommunityShortsEndBehavior.autoAdvance) =>
-      'Passer automatiquement à la vidéo suivante',
-    ('ko', CommunityShortsEndBehavior.loopCurrent) => '같은 동영상 반복 재생',
-    ('ko', CommunityShortsEndBehavior.autoAdvance) => '다음 동영상으로 자동 이동',
-    ('zh', CommunityShortsEndBehavior.loopCurrent) => '循环播放当前视频',
-    ('zh', CommunityShortsEndBehavior.autoAdvance) => '自动滚动到下一个视频',
-    (_, CommunityShortsEndBehavior.loopCurrent) => 'Loop this video',
-    (_, CommunityShortsEndBehavior.autoAdvance) => 'Auto-scroll to next video',
-  };
 }
