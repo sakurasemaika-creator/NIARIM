@@ -13,6 +13,43 @@
 - 実装inventory、実操作、実描画、保存復元、targeted regression、実画面目視、必要な7言語・PC/SP・Premium、Visual evidence、修正後回帰まで揃って初めてdone。
 - 最新dev_branchを毎回取得し、過去PDF・過去CI・過去会話だけで完了扱いしない。
 
+## Formal delta status tracker
+
+| ID | status |
+|---|---|
+| D001 | todo |
+| D002 | todo |
+| D003 | todo |
+| D004 | todo |
+| D005 | todo |
+| D006 | todo |
+| D007 | todo |
+| D008 | todo |
+| D009 | todo |
+| D010 | todo |
+| D011 | todo |
+| D012 | todo |
+| D013 | todo |
+| D014 | todo |
+| D015 | todo |
+| D016 | todo |
+| D017 | todo |
+| D018 | todo |
+| D019 | todo |
+| D020 | todo |
+| D021 | todo |
+| D022 | todo |
+| D023 | todo |
+| D024 | todo |
+| D025 | todo |
+| D026 | todo |
+| D027 | todo |
+| D028 | todo |
+| D029 | todo |
+| D030 | todo |
+| D031 | todo |
+
+delta_current_id は、この表の先頭未完了D-IDと一致させる。`not_started` はBaseline/Discoveryが未完了の間だけ使用し、D001以降へ入ったら必ずD-IDを記録する。
 ## 実行順
 
 1. D001で最新HEADの変更差分と実装実体を再inventoryする。
