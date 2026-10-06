@@ -116,6 +116,9 @@ Uint8List applyDrawFilterInIsolate(
       inputGamma: filter.inputGamma,
       outputBlack: filter.outputBlack,
       outputWhite: filter.outputWhite,
+      redLevels: filter.levelsRed.length >= 5 ? filter.levelsRed : null,
+      greenLevels: filter.levelsGreen.length >= 5 ? filter.levelsGreen : null,
+      blueLevels: filter.levelsBlue.length >= 5 ? filter.levelsBlue : null,
     ),
     FilterKind.sharpen => engine.applySharpen(
       data,
