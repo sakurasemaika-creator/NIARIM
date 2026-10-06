@@ -39,3 +39,6 @@ save schema/versionを変更・移行する場合、legacy/current/unknown/newer
 ## 証跡
 
 inventoryには対象画面/状態、操作、PC/SP、入力方式、確認方法、結果、未確認理由を追跡できる証跡を残す。Visual evidenceは機能名、BEFORE/SETTINGS/AFTER、preset/mode、主要設定を識別可能にする。環境制約で実操作/実画面ができない場合はPASSにせずblockedと理由・必要環境を記録する。
+
+## 最新全面監査との統合
+実操作では機能の存在だけでなく「その場所にあることが自然か」まで確認する。parent-child、menu/panel/tab/dialog/settings/navigation/shortcutの階層、頻用機能の発見性、重複導線、操作密度を評価し必要なら再設計する。button/touch target、位置、spacing、destructive action安全距離、one-handed/handedness、gesture競合、PC mouse/drag、小画面、text scaling、boundary widthを確認する。theme/appearance変更後の不可視化も実画面で確認する。描画/演出filter、blend、blur、light/shadow/glow、noise/film/CRT/VHS、brush、material、presetは処理成功だけでなく実出力の強度・色・透明度・反射・質感・edge・detail・blur spread等を目視評価する。
