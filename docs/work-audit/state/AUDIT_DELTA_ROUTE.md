@@ -48,6 +48,12 @@
 | D029 | todo |
 | D030 | todo |
 | D031 | todo |
+| D032 | todo |
+| D033 | todo |
+| D034 | todo |
+| D035 | todo |
+| D036 | todo |
+| D037 | todo |
 
 delta_current_id は、この表の先頭未完了D-IDと一致させる。`not_started` はBaseline/Discoveryが未完了の間だけ使用し、D001以降へ入ったら必ずD-IDを記録する。
 ## 実行順
