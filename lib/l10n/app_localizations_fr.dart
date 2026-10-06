@@ -5655,7 +5655,7 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get filterLensDistortionStrength =>
-      'Puissance de la lentille (négatif = concave, positif = convexe)';
+      'Intensité de la lentille (négatif = concave, positif = convexe)';
 
   @override
   String get filterLensDistortionOffsetX =>
@@ -5756,7 +5756,7 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get tipsLensDistortionDesc =>
-      'Ajoutez un « Calque de sélection » à la liste des calques et peignez la zone des verres de lunettes avec n\'importe quel outil de dessin habituel : la déformation locale du filtre de distorsion de lentille s\'applique alors uniquement à cette zone peinte. Le curseur de puissance rétrécit la zone dans un sens concave (myopie) pour les valeurs négatives et l\'agrandit dans un sens convexe (hypermétropie) pour les valeurs positives ; vous pouvez aussi ajuster finement la position du centre. Vous pouvez peindre les deux verres à la fois et appliquer l\'effet aux deux en même temps. Le calque de sélection lui-même n\'apparaît jamais dans les exports ni dans l\'œuvre finale. Il est aussi pratique pour recréer l\'aspect d\'un paysage vu à travers l\'objectif d\'un appareil photo : peignez une large zone, comme l\'arrière-plan, avec un calque de sélection et appliquez une puissance légère.';
+      'Ajoutez un « Calque de sélection » à la liste des calques et peignez la zone des verres de lunettes avec n\'importe quel outil de dessin habituel : la déformation locale du filtre de distorsion de lentille s\'applique alors uniquement à cette zone peinte. Le curseur d’intensité rétrécit la zone dans un sens concave (myopie) pour les valeurs négatives et l\'agrandit dans un sens convexe (hypermétropie) pour les valeurs positives ; vous pouvez aussi ajuster finement la position du centre. Vous pouvez peindre les deux verres à la fois et appliquer l\'effet aux deux en même temps. Le calque de sélection lui-même n\'apparaît jamais dans les exports ni dans l\'œuvre finale. Il est aussi pratique pour recréer l\'aspect d\'un paysage vu à travers l\'objectif d\'un appareil photo : peignez une large zone, comme l\'arrière-plan, avec un calque de sélection et appliquez une intensité légère.';
 
   @override
   String get tipsLineArtExtractionTitle =>

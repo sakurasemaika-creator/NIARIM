@@ -5645,7 +5645,7 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get filterLensDistortionStrength =>
-      'Potencia de la lente (negativo = cóncava, positivo = convexa)';
+      'Intensidad de la lente (negativo = cóncava, positivo = convexa)';
 
   @override
   String get filterLensDistortionOffsetX =>
@@ -5747,7 +5747,7 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get tipsLensDistortionDesc =>
-      'Añada una «Capa de selección» a la lista de capas y pinte el área de las lentes de unas gafas con cualquier herramienta de dibujo normal; el filtro de distorsión de lente aplicará entonces su deformación local solo a esa área pintada. El control de potencia reduce el área en dirección cóncava (miopía) con valores negativos y la amplía en dirección convexa (hipermetropía) con valores positivos, y también puede ajustar la posición del centro. Puede pintar ambas lentes a la vez y aplicar el efecto a las dos juntas. La capa de selección en sí nunca aparece en las exportaciones ni en la obra final. También resulta útil para recrear el aspecto de un paisaje visto a través del objetivo de una cámara: pinte una zona amplia, como el fondo, con una capa de selección y aplique una potencia suave.';
+      'Añada una «Capa de selección» a la lista de capas y pinte el área de las lentes de unas gafas con cualquier herramienta de dibujo normal; el filtro de distorsión de lente aplicará entonces su deformación local solo a esa área pintada. El control de intensidad reduce el área en dirección cóncava (miopía) con valores negativos y la amplía en dirección convexa (hipermetropía) con valores positivos, y también puede ajustar la posición del centro. Puede pintar ambas lentes a la vez y aplicar el efecto a las dos juntas. La capa de selección en sí nunca aparece en las exportaciones ni en la obra final. También resulta útil para recrear el aspecto de un paisaje visto a través del objetivo de una cámara: pinte una zona amplia, como el fondo, con una capa de selección y aplique una intensidad suave.';
 
   @override
   String get tipsLineArtExtractionTitle =>

@@ -5556,7 +5556,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get filterLensDistortionStrength =>
-      'Lens power (negative = concave, positive = convex)';
+      'Lens strength (negative = concave, positive = convex)';
 
   @override
   String get filterLensDistortionOffsetX => 'Center fine-tune (horizontal)';
@@ -5656,7 +5656,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get tipsLensDistortionDesc =>
-      'Add a \"Selection layer\" to the layer list and paint the lens area of a pair of glasses with any normal drawing tool — the Lens Distortion filter\'s local warp then applies only to that painted area. The power slider shrinks the area in a concave (myopia) direction for negative values and magnifies it in a convex (hyperopia) direction for positive values, and you can also fine-tune the center position. You can paint both lenses at once and apply the effect to both together. The Selection layer itself never appears in exports or the final artwork. It\'s also handy for reproducing the look of scenery seen through a camera lens — try painting a wide area, such as the background, with a Selection layer and using a mild power value.';
+      'Add a \"Selection layer\" to the layer list and paint the lens area of a pair of glasses with any normal drawing tool — the Lens Distortion filter\'s local warp then applies only to that painted area. The lens strength slider shrinks the area in a concave (myopia) direction for negative values and magnifies it in a convex (hyperopia) direction for positive values, and you can also fine-tune the center position. You can paint both lenses at once and apply the effect to both together. The Selection layer itself never appears in exports or the final artwork. It\'s also handy for reproducing the look of scenery seen through a camera lens — try painting a wide area, such as the background, with a Selection layer and using a mild strength.';
 
   @override
   String get tipsLineArtExtractionTitle =>
