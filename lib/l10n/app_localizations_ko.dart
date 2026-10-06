@@ -6177,9 +6177,6 @@ class AppLocalizationsKo extends AppLocalizations {
   }
 
   @override
-  String get customAutomationReturnToRecording => '작업 기록으로 돌아가기';
-
-  @override
   String get customAutomationStopConfirmTitle => '자동 작업 등록을 중지할까요?';
 
   @override
@@ -6808,4 +6805,89 @@ class AppLocalizationsKo extends AppLocalizations {
   @override
   String get brushFoldCurveStartHelp =>
       '접힘선이 구부러지기 시작하는 위치를 조정해 머리카락이나 리본의 두께를 표현합니다. 0%에서는 갈라지는 위치에서 바로 구부러집니다.';
+
+  @override
+  String get filterAutoLineartAddPointTooltip => '제어점 추가';
+
+  @override
+  String get filterAutoLineartDeletePointTooltip => '제어점 삭제';
+
+  @override
+  String get filterPrismDescription =>
+      '참조 레이어의 불투명 영역을 6등분해 색칠 → 가우시안 블러 → 선형 닷지';
+
+  @override
+  String get filterPrismBlurAmount => '블러 양';
+
+  @override
+  String get filterPrismColorDirection => '색 방향';
+
+  @override
+  String get filterFisheyeRadius => '반경';
+
+  @override
+  String get filterCenterX => '중심 X';
+
+  @override
+  String get filterCenterY => '중심 Y';
+
+  @override
+  String get filterAxisX => 'X축';
+
+  @override
+  String get filterAxisY => 'Y축';
+
+  @override
+  String get filterAxisZ => 'Z축';
+
+  @override
+  String get filterBgBlendAutoLight => '광원 방향 자동 추정';
+
+  @override
+  String get filterBgBlendStrength => '어우러짐 강도';
+
+  @override
+  String get filterBgBlendLightStrength => '주광원 강도';
+
+  @override
+  String get filterBgBlendShadowStrength => '그림자 강도';
+
+  @override
+  String get filterBgBlendAmbient => '환경광';
+
+  @override
+  String get filterBgBlendBounce => '아래쪽 반사광';
+
+  @override
+  String get filterBgBlendColorSpill => '국소적인 색 번짐';
+
+  @override
+  String get filterBgBlendSoftness => '빛의 부드러움';
+
+  @override
+  String get filterBgBlendSecondary => '보조 광원';
+
+  @override
+  String get filterBgBlendMaterialProtection => '재질 보호';
+
+  @override
+  String get filterBgBlendSamplingBand => '주변 샘플링 범위';
+
+  @override
+  String get canvasAutofillCheckView => '자동 채색 확인 표시';
+
+  @override
+  String get canvasAutofillCheckNormal => '일반 표시';
+
+  @override
+  String get canvasAutofillCheckParts => '파트 구분 확인';
+
+  @override
+  String get canvasAutofillCheckSilhouette => '실루엣 확인';
+
+  @override
+  String get canvasBackgroundColorChoices => '흰색 / 검정 / 투명 / 베이지';
+
+  @override
+  String get canvasTimelineModeTooltip => '타임라인 모드';
 }

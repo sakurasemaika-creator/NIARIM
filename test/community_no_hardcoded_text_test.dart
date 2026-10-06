@@ -159,6 +159,34 @@ final d = """三重""";
     );
   });
 
+  test('キャンバスの描画フィルターパネルとキャンバス画面に日本語の文字列リテラルが'
+      '残っていない', () {
+    // 識別子・書式の例として日本語を使っているもの（画面の文言ではない）。
+    const allowed = {
+      // ルビ記法の書式例。どの言語でも同じ記法を示すため、そのまま埋め込む。
+      '{漢字|かんじ}',
+    };
+    final offenders = <String>[];
+    for (final path in const [
+      'lib/screens/canvas/widgets/filter_panel.dart',
+      'lib/screens/canvas/canvas_screen.dart',
+    ]) {
+      for (final (line, text) in stringLiterals(
+        File(path).readAsStringSync(),
+      )) {
+        if (!_japanese.hasMatch(text) || allowed.contains(text)) continue;
+        offenders.add('$path:$line  $text');
+      }
+    }
+    expect(
+      offenders,
+      isEmpty,
+      reason:
+          '画面の文言はARBへ追加し、AppLocalizationsから引いてください:\n'
+          '${offenders.join('\n')}',
+    );
+  });
+
   test('許可リストの文字列は実際にソースに残っている', () {
     for (final MapEntry(key: name, value: allowed) in _allowed.entries) {
       final file = Directory('lib/screens/community')

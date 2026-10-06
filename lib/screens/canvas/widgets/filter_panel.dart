@@ -633,7 +633,7 @@ class _FilterPanelState extends State<FilterPanel> {
                               : AutoLineartControlMode.add,
                         ),
                         icon: const Icon(Icons.add_circle_outline, size: 20),
-                        tooltip: '制御点追加',
+                        tooltip: l10n.filterAutoLineartAddPointTooltip,
                         isSelected:
                             _autoLineartControlMode ==
                             AutoLineartControlMode.add,
@@ -648,7 +648,7 @@ class _FilterPanelState extends State<FilterPanel> {
                               : AutoLineartControlMode.delete,
                         ),
                         icon: const Icon(Icons.remove_circle_outline, size: 20),
-                        tooltip: '制御点削除',
+                        tooltip: l10n.filterAutoLineartDeletePointTooltip,
                         isSelected:
                             _autoLineartControlMode ==
                             AutoLineartControlMode.delete,
@@ -673,13 +673,13 @@ class _FilterPanelState extends State<FilterPanel> {
       return Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text(
-            '参照レイヤーのα領域を6等分で着色 → ガウスぼかし → 覆い焼きリニア',
-            style: TextStyle(fontSize: 10),
+          Text(
+            l10n.filterPrismDescription,
+            style: const TextStyle(fontSize: 10),
           ),
           const SizedBox(height: 6),
           _integerStepperSlider(
-            'ぼかし量',
+            l10n.filterPrismBlurAmount,
             current.prismBlurPx.round(),
             PrismFilterEngine.minBlurPx.toInt(),
             PrismFilterEngine.maxBlurPx.toInt(),
@@ -690,7 +690,7 @@ class _FilterPanelState extends State<FilterPanel> {
             suffix: 'px',
           ),
           _integerStepperSlider(
-            '色方向',
+            l10n.filterPrismColorDirection,
             PrismFilterEngine.normalizeDirectionDegrees(
                   current.prismDirectionDegrees,
                 ).round() %
@@ -1304,21 +1304,21 @@ class _FilterPanelState extends State<FilterPanel> {
               (v) => service.updateFilterParams(current.id, strength: v),
             ),
             _paramSlider(
-              '半径',
+              l10n.filterFisheyeRadius,
               current.fisheyeRadius,
               1,
               100,
               (v) => service.updateFilterParams(current.id, fisheyeRadius: v),
             ),
             _paramSlider(
-              '中心 X',
+              l10n.filterCenterX,
               current.fisheyeCenterX,
               -100,
               100,
               (v) => service.updateFilterParams(current.id, fisheyeCenterX: v),
             ),
             _paramSlider(
-              '中心 Y',
+              l10n.filterCenterY,
               current.fisheyeCenterY,
               -100,
               100,
@@ -1337,21 +1337,21 @@ class _FilterPanelState extends State<FilterPanel> {
               (v) => service.updateFilterParams(current.id, strength: v),
             ),
             _paramSlider(
-              'X 軸',
+              l10n.filterAxisX,
               current.chromaticShiftX,
               -30,
               30,
               (v) => service.updateFilterParams(current.id, chromaticShiftX: v),
             ),
             _paramSlider(
-              'Y 軸',
+              l10n.filterAxisY,
               current.chromaticShiftY,
               -30,
               30,
               (v) => service.updateFilterParams(current.id, chromaticShiftY: v),
             ),
             _paramSlider(
-              'Z 軸',
+              l10n.filterAxisZ,
               current.chromaticShiftZ,
               -180,
               180,
@@ -1423,7 +1423,10 @@ class _FilterPanelState extends State<FilterPanel> {
             SwitchListTile.adaptive(
               dense: true,
               contentPadding: EdgeInsets.zero,
-              title: const Text('光源方向を自動推定', style: TextStyle(fontSize: 11)),
+              title: Text(
+                l10n.filterBgBlendAutoLight,
+                style: const TextStyle(fontSize: 11),
+              ),
               value: current.bgBlendAutoLight,
               onChanged: (v) {
                 service.updateFilterParams(current.id, bgBlendAutoLight: v);
@@ -1431,14 +1434,14 @@ class _FilterPanelState extends State<FilterPanel> {
               },
             ),
             _paramSlider(
-              '馴染み強度',
+              l10n.filterBgBlendStrength,
               current.bgBlendStrength,
               0,
               100,
               (v) => service.updateFilterParams(current.id, bgBlendStrength: v),
             ),
             _paramSlider(
-              '主光源の強さ',
+              l10n.filterBgBlendLightStrength,
               current.bgBlendLightStrength,
               0,
               100,
@@ -1448,7 +1451,7 @@ class _FilterPanelState extends State<FilterPanel> {
               ),
             ),
             _paramSlider(
-              '影の強さ',
+              l10n.filterBgBlendShadowStrength,
               current.bgBlendShadowStrength,
               0,
               100,
@@ -1458,7 +1461,7 @@ class _FilterPanelState extends State<FilterPanel> {
               ),
             ),
             _paramSlider(
-              '環境光',
+              l10n.filterBgBlendAmbient,
               current.bgBlendAmbientStrength,
               0,
               100,
@@ -1468,7 +1471,7 @@ class _FilterPanelState extends State<FilterPanel> {
               ),
             ),
             _paramSlider(
-              '下方反射光',
+              l10n.filterBgBlendBounce,
               current.bgBlendReflectionStrength,
               0,
               100,
@@ -1478,7 +1481,7 @@ class _FilterPanelState extends State<FilterPanel> {
               ),
             ),
             _paramSlider(
-              '局所的な色移り',
+              l10n.filterBgBlendColorSpill,
               current.bgBlendColorBleed,
               0,
               100,
@@ -1486,14 +1489,14 @@ class _FilterPanelState extends State<FilterPanel> {
                   service.updateFilterParams(current.id, bgBlendColorBleed: v),
             ),
             _paramSlider(
-              '光の柔らかさ',
+              l10n.filterBgBlendSoftness,
               current.bgBlendSoftness,
               0,
               100,
               (v) => service.updateFilterParams(current.id, bgBlendSoftness: v),
             ),
             _paramSlider(
-              '副光源',
+              l10n.filterBgBlendSecondary,
               current.bgBlendSecondaryStrength,
               0,
               100,
@@ -1503,7 +1506,7 @@ class _FilterPanelState extends State<FilterPanel> {
               ),
             ),
             _paramSlider(
-              '素材保護',
+              l10n.filterBgBlendMaterialProtection,
               current.bgBlendMaterialProtection,
               0,
               100,
@@ -1513,7 +1516,7 @@ class _FilterPanelState extends State<FilterPanel> {
               ),
             ),
             _paramSlider(
-              '環境サンプリング帯',
+              l10n.filterBgBlendSamplingBand,
               current.bgBlendSamplingBand,
               4,
               120,

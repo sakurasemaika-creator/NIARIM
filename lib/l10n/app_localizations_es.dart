@@ -6467,10 +6467,6 @@ class AppLocalizationsEs extends AppLocalizations {
   }
 
   @override
-  String get customAutomationReturnToRecording =>
-      'Volver al registro de operaciones';
-
-  @override
   String get customAutomationStopConfirmTitle =>
       '¿Dejar de registrar esta automatización?';
 
@@ -7135,4 +7131,92 @@ class AppLocalizationsEs extends AppLocalizations {
   @override
   String get brushFoldCurveStartHelp =>
       'Define dónde empieza a curvarse la línea de pliegue para expresar el grosor del cabello o la cinta. Al 0 % se curva justo desde donde se ramifica.';
+
+  @override
+  String get filterAutoLineartAddPointTooltip => 'Añadir punto de control';
+
+  @override
+  String get filterAutoLineartDeletePointTooltip => 'Eliminar punto de control';
+
+  @override
+  String get filterPrismDescription =>
+      'Colorea el área opaca de la capa de referencia en seis franjas → desenfoque gaussiano → sobreexposición lineal';
+
+  @override
+  String get filterPrismBlurAmount => 'Cantidad de desenfoque';
+
+  @override
+  String get filterPrismColorDirection => 'Dirección del color';
+
+  @override
+  String get filterFisheyeRadius => 'Radio';
+
+  @override
+  String get filterCenterX => 'Centro X';
+
+  @override
+  String get filterCenterY => 'Centro Y';
+
+  @override
+  String get filterAxisX => 'Eje X';
+
+  @override
+  String get filterAxisY => 'Eje Y';
+
+  @override
+  String get filterAxisZ => 'Eje Z';
+
+  @override
+  String get filterBgBlendAutoLight =>
+      'Detectar la dirección de la luz automáticamente';
+
+  @override
+  String get filterBgBlendStrength => 'Intensidad de integración';
+
+  @override
+  String get filterBgBlendLightStrength => 'Intensidad de la luz principal';
+
+  @override
+  String get filterBgBlendShadowStrength => 'Intensidad de la sombra';
+
+  @override
+  String get filterBgBlendAmbient => 'Luz ambiental';
+
+  @override
+  String get filterBgBlendBounce => 'Luz reflejada desde abajo';
+
+  @override
+  String get filterBgBlendColorSpill => 'Transferencia de color local';
+
+  @override
+  String get filterBgBlendSoftness => 'Suavidad de la luz';
+
+  @override
+  String get filterBgBlendSecondary => 'Luz secundaria';
+
+  @override
+  String get filterBgBlendMaterialProtection => 'Proteger el material';
+
+  @override
+  String get filterBgBlendSamplingBand => 'Franja de muestreo del entorno';
+
+  @override
+  String get canvasAutofillCheckView =>
+      'Vista de comprobación del relleno automático';
+
+  @override
+  String get canvasAutofillCheckNormal => 'Normal';
+
+  @override
+  String get canvasAutofillCheckParts => 'Comprobar las partes';
+
+  @override
+  String get canvasAutofillCheckSilhouette => 'Comprobar la silueta';
+
+  @override
+  String get canvasBackgroundColorChoices =>
+      'Blanco / Negro / Transparente / Beige';
+
+  @override
+  String get canvasTimelineModeTooltip => 'Modo línea de tiempo';
 }

@@ -11291,12 +11291,6 @@ abstract class AppLocalizations {
   /// **'{count} 手順'**
   String customAutomationStepCount(int count);
 
-  /// No description provided for @customAutomationReturnToRecording.
-  ///
-  /// In ja, this message translates to:
-  /// **'操作記録に戻る'**
-  String get customAutomationReturnToRecording;
-
   /// No description provided for @customAutomationStopConfirmTitle.
   ///
   /// In ja, this message translates to:
@@ -12430,6 +12424,174 @@ abstract class AppLocalizations {
   /// In ja, this message translates to:
   /// **'折り返し線が曲がり始める位置を調整し、髪やリボンの厚みを表現します。0%では分岐位置からすぐにカーブします。'**
   String get brushFoldCurveStartHelp;
+
+  /// No description provided for @filterAutoLineartAddPointTooltip.
+  ///
+  /// In ja, this message translates to:
+  /// **'制御点追加'**
+  String get filterAutoLineartAddPointTooltip;
+
+  /// No description provided for @filterAutoLineartDeletePointTooltip.
+  ///
+  /// In ja, this message translates to:
+  /// **'制御点削除'**
+  String get filterAutoLineartDeletePointTooltip;
+
+  /// No description provided for @filterPrismDescription.
+  ///
+  /// In ja, this message translates to:
+  /// **'参照レイヤーのα領域を6等分で着色 → ガウスぼかし → 覆い焼き（リニア）'**
+  String get filterPrismDescription;
+
+  /// No description provided for @filterPrismBlurAmount.
+  ///
+  /// In ja, this message translates to:
+  /// **'ぼかし量'**
+  String get filterPrismBlurAmount;
+
+  /// No description provided for @filterPrismColorDirection.
+  ///
+  /// In ja, this message translates to:
+  /// **'色方向'**
+  String get filterPrismColorDirection;
+
+  /// No description provided for @filterFisheyeRadius.
+  ///
+  /// In ja, this message translates to:
+  /// **'半径'**
+  String get filterFisheyeRadius;
+
+  /// No description provided for @filterCenterX.
+  ///
+  /// In ja, this message translates to:
+  /// **'中心 X'**
+  String get filterCenterX;
+
+  /// No description provided for @filterCenterY.
+  ///
+  /// In ja, this message translates to:
+  /// **'中心 Y'**
+  String get filterCenterY;
+
+  /// No description provided for @filterAxisX.
+  ///
+  /// In ja, this message translates to:
+  /// **'X 軸'**
+  String get filterAxisX;
+
+  /// No description provided for @filterAxisY.
+  ///
+  /// In ja, this message translates to:
+  /// **'Y 軸'**
+  String get filterAxisY;
+
+  /// No description provided for @filterAxisZ.
+  ///
+  /// In ja, this message translates to:
+  /// **'Z 軸'**
+  String get filterAxisZ;
+
+  /// No description provided for @filterBgBlendAutoLight.
+  ///
+  /// In ja, this message translates to:
+  /// **'光源方向を自動推定'**
+  String get filterBgBlendAutoLight;
+
+  /// No description provided for @filterBgBlendStrength.
+  ///
+  /// In ja, this message translates to:
+  /// **'馴染み強度'**
+  String get filterBgBlendStrength;
+
+  /// No description provided for @filterBgBlendLightStrength.
+  ///
+  /// In ja, this message translates to:
+  /// **'主光源の強さ'**
+  String get filterBgBlendLightStrength;
+
+  /// No description provided for @filterBgBlendShadowStrength.
+  ///
+  /// In ja, this message translates to:
+  /// **'影の強さ'**
+  String get filterBgBlendShadowStrength;
+
+  /// No description provided for @filterBgBlendAmbient.
+  ///
+  /// In ja, this message translates to:
+  /// **'環境光'**
+  String get filterBgBlendAmbient;
+
+  /// No description provided for @filterBgBlendBounce.
+  ///
+  /// In ja, this message translates to:
+  /// **'下方反射光'**
+  String get filterBgBlendBounce;
+
+  /// No description provided for @filterBgBlendColorSpill.
+  ///
+  /// In ja, this message translates to:
+  /// **'局所的な色移り'**
+  String get filterBgBlendColorSpill;
+
+  /// No description provided for @filterBgBlendSoftness.
+  ///
+  /// In ja, this message translates to:
+  /// **'光の柔らかさ'**
+  String get filterBgBlendSoftness;
+
+  /// No description provided for @filterBgBlendSecondary.
+  ///
+  /// In ja, this message translates to:
+  /// **'副光源'**
+  String get filterBgBlendSecondary;
+
+  /// No description provided for @filterBgBlendMaterialProtection.
+  ///
+  /// In ja, this message translates to:
+  /// **'素材保護'**
+  String get filterBgBlendMaterialProtection;
+
+  /// No description provided for @filterBgBlendSamplingBand.
+  ///
+  /// In ja, this message translates to:
+  /// **'環境サンプリング帯'**
+  String get filterBgBlendSamplingBand;
+
+  /// No description provided for @canvasAutofillCheckView.
+  ///
+  /// In ja, this message translates to:
+  /// **'自動塗り確認表示'**
+  String get canvasAutofillCheckView;
+
+  /// No description provided for @canvasAutofillCheckNormal.
+  ///
+  /// In ja, this message translates to:
+  /// **'通常表示'**
+  String get canvasAutofillCheckNormal;
+
+  /// No description provided for @canvasAutofillCheckParts.
+  ///
+  /// In ja, this message translates to:
+  /// **'パーツ分け確認'**
+  String get canvasAutofillCheckParts;
+
+  /// No description provided for @canvasAutofillCheckSilhouette.
+  ///
+  /// In ja, this message translates to:
+  /// **'シルエット確認'**
+  String get canvasAutofillCheckSilhouette;
+
+  /// No description provided for @canvasBackgroundColorChoices.
+  ///
+  /// In ja, this message translates to:
+  /// **'白 / 黒 / 透明 / ベージュ'**
+  String get canvasBackgroundColorChoices;
+
+  /// No description provided for @canvasTimelineModeTooltip.
+  ///
+  /// In ja, this message translates to:
+  /// **'タイムラインモード'**
+  String get canvasTimelineModeTooltip;
 }
 
 class _AppLocalizationsDelegate

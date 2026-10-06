@@ -689,22 +689,22 @@ class _CanvasScreenState extends State<CanvasScreen> {
                       ? Icons.palette_outlined
                       : Icons.contrast,
                 ),
-                title: const Text('自動塗り確認表示'),
+                title: Text(l10n.canvasAutofillCheckView),
                 trailing: DropdownButton<AutofillCheckMode>(
                   value: _autofillCheckMode,
                   underline: const SizedBox.shrink(),
-                  items: const [
+                  items: [
                     DropdownMenuItem(
                       value: AutofillCheckMode.normal,
-                      child: Text('通常表示'),
+                      child: Text(l10n.canvasAutofillCheckNormal),
                     ),
                     DropdownMenuItem(
                       value: AutofillCheckMode.partSeparation,
-                      child: Text('パーツ分け確認'),
+                      child: Text(l10n.canvasAutofillCheckParts),
                     ),
                     DropdownMenuItem(
                       value: AutofillCheckMode.silhouette,
-                      child: Text('シルエット確認'),
+                      child: Text(l10n.canvasAutofillCheckSilhouette),
                     ),
                   ],
                   onChanged: (mode) {
@@ -762,7 +762,7 @@ class _CanvasScreenState extends State<CanvasScreen> {
                   ),
                 ),
                 title: Text(l10n.newProjectBackgroundColorLabel),
-                subtitle: const Text('白 / 黒 / 透明 / ベージュ'),
+                subtitle: Text(l10n.canvasBackgroundColorChoices),
                 onTap: () {
                   Navigator.pop(ctx);
                   _showBackgroundColorPicker(context);
@@ -2711,7 +2711,7 @@ class _CanvasScreenState extends State<CanvasScreen> {
             onPressed: () => _runAutomationBlockedAction(
               () => context.go('/timeline/${widget.projectId}'),
             ),
-            tooltip: 'タイムラインモード',
+            tooltip: l10n.canvasTimelineModeTooltip,
           ),
         ],
       ),

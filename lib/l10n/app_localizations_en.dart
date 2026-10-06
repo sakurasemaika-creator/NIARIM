@@ -6361,9 +6361,6 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String get customAutomationReturnToRecording => 'Return to recording';
-
-  @override
   String get customAutomationStopConfirmTitle =>
       'Stop registering this automation?';
 
@@ -7018,4 +7015,90 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get brushFoldCurveStartHelp =>
       'Sets where the fold line starts to curve, expressing the thickness of hair or ribbon. At 0% it curves right from where it branches.';
+
+  @override
+  String get filterAutoLineartAddPointTooltip => 'Add control point';
+
+  @override
+  String get filterAutoLineartDeletePointTooltip => 'Delete control point';
+
+  @override
+  String get filterPrismDescription =>
+      'Colors the opaque area of the reference layer in six bands → Gaussian blur → Linear Dodge';
+
+  @override
+  String get filterPrismBlurAmount => 'Blur amount';
+
+  @override
+  String get filterPrismColorDirection => 'Color direction';
+
+  @override
+  String get filterFisheyeRadius => 'Radius';
+
+  @override
+  String get filterCenterX => 'Center X';
+
+  @override
+  String get filterCenterY => 'Center Y';
+
+  @override
+  String get filterAxisX => 'X axis';
+
+  @override
+  String get filterAxisY => 'Y axis';
+
+  @override
+  String get filterAxisZ => 'Z axis';
+
+  @override
+  String get filterBgBlendAutoLight => 'Detect light direction automatically';
+
+  @override
+  String get filterBgBlendStrength => 'Blend strength';
+
+  @override
+  String get filterBgBlendLightStrength => 'Main light strength';
+
+  @override
+  String get filterBgBlendShadowStrength => 'Shadow strength';
+
+  @override
+  String get filterBgBlendAmbient => 'Ambient light';
+
+  @override
+  String get filterBgBlendBounce => 'Light bounced from below';
+
+  @override
+  String get filterBgBlendColorSpill => 'Local color spill';
+
+  @override
+  String get filterBgBlendSoftness => 'Light softness';
+
+  @override
+  String get filterBgBlendSecondary => 'Secondary light';
+
+  @override
+  String get filterBgBlendMaterialProtection => 'Protect material';
+
+  @override
+  String get filterBgBlendSamplingBand => 'Surrounding sampling band';
+
+  @override
+  String get canvasAutofillCheckView => 'Autofill check view';
+
+  @override
+  String get canvasAutofillCheckNormal => 'Normal';
+
+  @override
+  String get canvasAutofillCheckParts => 'Check parts';
+
+  @override
+  String get canvasAutofillCheckSilhouette => 'Check silhouette';
+
+  @override
+  String get canvasBackgroundColorChoices =>
+      'White / Black / Transparent / Beige';
+
+  @override
+  String get canvasTimelineModeTooltip => 'Timeline mode';
 }

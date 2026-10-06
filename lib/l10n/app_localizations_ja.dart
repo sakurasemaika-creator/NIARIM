@@ -6147,9 +6147,6 @@ class AppLocalizationsJa extends AppLocalizations {
   }
 
   @override
-  String get customAutomationReturnToRecording => '操作記録に戻る';
-
-  @override
   String get customAutomationStopConfirmTitle => '自動操作の登録をやめますか？';
 
   @override
@@ -6775,4 +6772,88 @@ class AppLocalizationsJa extends AppLocalizations {
   @override
   String get brushFoldCurveStartHelp =>
       '折り返し線が曲がり始める位置を調整し、髪やリボンの厚みを表現します。0%では分岐位置からすぐにカーブします。';
+
+  @override
+  String get filterAutoLineartAddPointTooltip => '制御点追加';
+
+  @override
+  String get filterAutoLineartDeletePointTooltip => '制御点削除';
+
+  @override
+  String get filterPrismDescription => '参照レイヤーのα領域を6等分で着色 → ガウスぼかし → 覆い焼き（リニア）';
+
+  @override
+  String get filterPrismBlurAmount => 'ぼかし量';
+
+  @override
+  String get filterPrismColorDirection => '色方向';
+
+  @override
+  String get filterFisheyeRadius => '半径';
+
+  @override
+  String get filterCenterX => '中心 X';
+
+  @override
+  String get filterCenterY => '中心 Y';
+
+  @override
+  String get filterAxisX => 'X 軸';
+
+  @override
+  String get filterAxisY => 'Y 軸';
+
+  @override
+  String get filterAxisZ => 'Z 軸';
+
+  @override
+  String get filterBgBlendAutoLight => '光源方向を自動推定';
+
+  @override
+  String get filterBgBlendStrength => '馴染み強度';
+
+  @override
+  String get filterBgBlendLightStrength => '主光源の強さ';
+
+  @override
+  String get filterBgBlendShadowStrength => '影の強さ';
+
+  @override
+  String get filterBgBlendAmbient => '環境光';
+
+  @override
+  String get filterBgBlendBounce => '下方反射光';
+
+  @override
+  String get filterBgBlendColorSpill => '局所的な色移り';
+
+  @override
+  String get filterBgBlendSoftness => '光の柔らかさ';
+
+  @override
+  String get filterBgBlendSecondary => '副光源';
+
+  @override
+  String get filterBgBlendMaterialProtection => '素材保護';
+
+  @override
+  String get filterBgBlendSamplingBand => '環境サンプリング帯';
+
+  @override
+  String get canvasAutofillCheckView => '自動塗り確認表示';
+
+  @override
+  String get canvasAutofillCheckNormal => '通常表示';
+
+  @override
+  String get canvasAutofillCheckParts => 'パーツ分け確認';
+
+  @override
+  String get canvasAutofillCheckSilhouette => 'シルエット確認';
+
+  @override
+  String get canvasBackgroundColorChoices => '白 / 黒 / 透明 / ベージュ';
+
+  @override
+  String get canvasTimelineModeTooltip => 'タイムラインモード';
 }

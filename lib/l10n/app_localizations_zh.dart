@@ -6107,9 +6107,6 @@ class AppLocalizationsZh extends AppLocalizations {
   }
 
   @override
-  String get customAutomationReturnToRecording => '返回操作记录';
-
-  @override
   String get customAutomationStopConfirmTitle => '要停止注册此自动操作吗？';
 
   @override
@@ -6722,6 +6719,90 @@ class AppLocalizationsZh extends AppLocalizations {
   @override
   String get brushFoldCurveStartHelp =>
       '调整折返线开始弯曲的位置，用以表现头发或丝带的厚度。0%时从分叉处立即弯曲。';
+
+  @override
+  String get filterAutoLineartAddPointTooltip => '添加控制点';
+
+  @override
+  String get filterAutoLineartDeletePointTooltip => '删除控制点';
+
+  @override
+  String get filterPrismDescription => '将参考图层的不透明区域分成6份着色 → 高斯模糊 → 线性减淡';
+
+  @override
+  String get filterPrismBlurAmount => '模糊量';
+
+  @override
+  String get filterPrismColorDirection => '色彩方向';
+
+  @override
+  String get filterFisheyeRadius => '半径';
+
+  @override
+  String get filterCenterX => '中心 X';
+
+  @override
+  String get filterCenterY => '中心 Y';
+
+  @override
+  String get filterAxisX => 'X 轴';
+
+  @override
+  String get filterAxisY => 'Y 轴';
+
+  @override
+  String get filterAxisZ => 'Z 轴';
+
+  @override
+  String get filterBgBlendAutoLight => '自动估计光源方向';
+
+  @override
+  String get filterBgBlendStrength => '融合强度';
+
+  @override
+  String get filterBgBlendLightStrength => '主光源强度';
+
+  @override
+  String get filterBgBlendShadowStrength => '阴影强度';
+
+  @override
+  String get filterBgBlendAmbient => '环境光';
+
+  @override
+  String get filterBgBlendBounce => '下方反射光';
+
+  @override
+  String get filterBgBlendColorSpill => '局部串色';
+
+  @override
+  String get filterBgBlendSoftness => '光线柔和度';
+
+  @override
+  String get filterBgBlendSecondary => '辅助光源';
+
+  @override
+  String get filterBgBlendMaterialProtection => '材质保护';
+
+  @override
+  String get filterBgBlendSamplingBand => '环境采样带';
+
+  @override
+  String get canvasAutofillCheckView => '自动上色检查显示';
+
+  @override
+  String get canvasAutofillCheckNormal => '正常显示';
+
+  @override
+  String get canvasAutofillCheckParts => '检查部件区分';
+
+  @override
+  String get canvasAutofillCheckSilhouette => '检查剪影';
+
+  @override
+  String get canvasBackgroundColorChoices => '白 / 黑 / 透明 / 米色';
+
+  @override
+  String get canvasTimelineModeTooltip => '时间轴模式';
 }
 
 /// The translations for Chinese, using the Han script (`zh_Hant`).
@@ -12827,9 +12908,6 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   }
 
   @override
-  String get customAutomationReturnToRecording => '返回操作記錄';
-
-  @override
   String get customAutomationStopConfirmTitle => '要停止登錄此自動操作嗎？';
 
   @override
@@ -13442,4 +13520,88 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   @override
   String get brushFoldCurveStartHelp =>
       '調整折返線開始彎曲的位置，用以表現頭髮或緞帶的厚度。0%時從分岔處立即彎曲。';
+
+  @override
+  String get filterAutoLineartAddPointTooltip => '新增控制點';
+
+  @override
+  String get filterAutoLineartDeletePointTooltip => '刪除控制點';
+
+  @override
+  String get filterPrismDescription => '將參考圖層的不透明區域分成6份著色 → 高斯模糊 → 線性減淡';
+
+  @override
+  String get filterPrismBlurAmount => '模糊量';
+
+  @override
+  String get filterPrismColorDirection => '色彩方向';
+
+  @override
+  String get filterFisheyeRadius => '半徑';
+
+  @override
+  String get filterCenterX => '中心 X';
+
+  @override
+  String get filterCenterY => '中心 Y';
+
+  @override
+  String get filterAxisX => 'X 軸';
+
+  @override
+  String get filterAxisY => 'Y 軸';
+
+  @override
+  String get filterAxisZ => 'Z 軸';
+
+  @override
+  String get filterBgBlendAutoLight => '自動估計光源方向';
+
+  @override
+  String get filterBgBlendStrength => '融合強度';
+
+  @override
+  String get filterBgBlendLightStrength => '主光源強度';
+
+  @override
+  String get filterBgBlendShadowStrength => '陰影強度';
+
+  @override
+  String get filterBgBlendAmbient => '環境光';
+
+  @override
+  String get filterBgBlendBounce => '下方反射光';
+
+  @override
+  String get filterBgBlendColorSpill => '局部串色';
+
+  @override
+  String get filterBgBlendSoftness => '光線柔和度';
+
+  @override
+  String get filterBgBlendSecondary => '輔助光源';
+
+  @override
+  String get filterBgBlendMaterialProtection => '材質保護';
+
+  @override
+  String get filterBgBlendSamplingBand => '環境取樣帶';
+
+  @override
+  String get canvasAutofillCheckView => '自動上色檢查顯示';
+
+  @override
+  String get canvasAutofillCheckNormal => '正常顯示';
+
+  @override
+  String get canvasAutofillCheckParts => '檢查部件區分';
+
+  @override
+  String get canvasAutofillCheckSilhouette => '檢查剪影';
+
+  @override
+  String get canvasBackgroundColorChoices => '白 / 黑 / 透明 / 米色';
+
+  @override
+  String get canvasTimelineModeTooltip => '時間軸模式';
 }
