@@ -65,7 +65,7 @@ def main(root: Path, peer: Path | None = None) -> int:
             f=[x.strip() for x in line.strip("|").split("|")]
             if len(f)==2: drows.append(f)
     dids=[r[0] for r in drows]
-    expected=[f"D{i:03d}" for i in range(1,32)]
+    expected=[f"D{i:03d}" for i in range(1,33)]
     if dids != expected: errors.append("Delta status tracker IDs are missing, duplicated, or reordered")
     allowed={"todo","in_progress","blocked","done"}
     if any(r[1] not in allowed for r in drows): errors.append("Invalid Delta status")
