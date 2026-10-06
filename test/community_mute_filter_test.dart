@@ -56,29 +56,32 @@ void main() {
     expect(visible.any((w) => w.tags.contains('手描き')), isFalse);
   });
 
-  test('content filters restore and later writes win over async restore', () async {
-    SharedPreferences.setMockInitialValues({
-      'community.hideGenerativeAiImageVideo': true,
-      'community.mutedWords': ['old title'],
-      'community.mutedTags': ['old-tag'],
-    });
+  test(
+    'content filters restore and later writes win over async restore',
+    () async {
+      SharedPreferences.setMockInitialValues({
+        'community.hideGenerativeAiImageVideo': true,
+        'community.mutedWords': ['old title'],
+        'community.mutedTags': ['old-tag'],
+      });
 
-    final service = CommunityService();
-    await service.contentFiltersReady;
-    expect(service.hideGenerativeAiImageVideo, isTrue);
-    expect(service.mutedWords, contains('old title'));
-    expect(service.mutedTags, contains('old-tag'));
+      final service = CommunityService();
+      await service.contentFiltersReady;
+      expect(service.hideGenerativeAiImageVideo, isTrue);
+      expect(service.mutedWords, contains('old title'));
+      expect(service.mutedTags, contains('old-tag'));
 
-    await service.setHideGenerativeAiImageVideo(false);
-    await service.setMutedWords(['New Title']);
-    await service.setMutedTags(['New-Tag']);
+      await service.setHideGenerativeAiImageVideo(false);
+      await service.setMutedWords(['New Title']);
+      await service.setMutedTags(['New-Tag']);
 
-    final restored = CommunityService();
-    await restored.contentFiltersReady;
-    expect(restored.hideGenerativeAiImageVideo, isFalse);
-    expect(restored.mutedWords, {'new title'});
-    expect(restored.mutedTags, {'new-tag'});
-  });
+      final restored = CommunityService();
+      await restored.contentFiltersReady;
+      expect(restored.hideGenerativeAiImageVideo, isFalse);
+      expect(restored.mutedWords, {'new title'});
+      expect(restored.mutedTags, {'new-tag'});
+    },
+  );
 
   test('restored mute values are normalized before matching', () async {
     SharedPreferences.setMockInitialValues({
@@ -99,30 +102,31 @@ void main() {
     expect(service.discoverableWorks.map((w) => w.title), ['keep me']);
   });
 
-  test('author lists apply viewer filters but owner list can still manage hidden works', () async {
-    final service = CommunityService();
-    await service.setMutedWords(['mute']);
-    service.replaceWorksForTest([
-      makeWork(title: 'visible'),
-      makeWork(title: 'mute this'),
-    ]);
+  test(
+    'author lists apply viewer filters but owner list can still manage hidden works',
+    () async {
+      final service = CommunityService();
+      await service.setMutedWords(['mute']);
+      service.replaceWorksForTest([
+        makeWork(title: 'visible'),
+        makeWork(title: 'mute this'),
+      ]);
 
-    expect(
-      service.worksByAuthor('author_x').map((w) => w.title),
-      ['visible'],
-    );
-    expect(
-      service.worksByAuthor('author_x', includeHidden: true).map((w) => w.title),
-      containsAll(['visible', 'mute this']),
-    );
-  });
+      expect(service.worksByAuthor('author_x').map((w) => w.title), [
+        'visible',
+      ]);
+      expect(
+        service
+            .worksByAuthor('author_x', includeHidden: true)
+            .map((w) => w.title),
+        containsAll(['visible', 'mute this']),
+      );
+    },
+  );
 
   test('viewer predicate follows AI, title, and tag filters', () async {
     final service = CommunityService();
-    final ai = makeWork(
-      title: 'ai',
-      containsGenerativeAiImageOrVideo: true,
-    );
+    final ai = makeWork(title: 'ai', containsGenerativeAiImageOrVideo: true);
     final mutedTitle = makeWork(title: 'blocked title');
     final mutedTag = makeWork(title: 'tagged', tags: const ['blocked-tag']);
     final visible = makeWork(title: 'visible', tags: const ['safe']);
@@ -144,11 +148,36 @@ void main() {
       makeWork(title: '通常作品'),
     ]);
 
-    expect(service.discoverableWorks.map((w) => w.title), containsAll(['AI使用作品', '通常作品']));
+    expect(
+      service.discoverableWorks.map((w) => w.title),
+      containsAll(['AI使用作品', '通常作品']),
+    );
 
     await service.setHideGenerativeAiImageVideo(true);
     final visible = service.discoverableWorks;
     expect(visible.map((w) => w.title), contains('通常作品'));
     expect(visible.map((w) => w.title), isNot(contains('AI使用作品')));
+  });
+
+  test('typed mute entries split on ASCII/full-width commas, 、 and new '
+      'lines', () {
+    expect(CommunityService.parseFilterInput(' Spoiler, 作画，背景、\nネタバレ ,, '), [
+      'spoiler',
+      '作画',
+      '背景',
+      'ネタバレ',
+    ]);
+  });
+
+  test('a leading # never stops a tag from being muted', () async {
+    final service = CommunityService();
+    service.replaceWorksForTest([
+      makeWork(title: 'tagged', tags: const ['#作画']),
+      makeWork(title: 'plain', tags: const ['作画']),
+      makeWork(title: 'other', tags: const ['背景']),
+    ]);
+    await service.setMutedTags(['＃作画']);
+    expect(service.mutedTags, {'作画'});
+    expect(service.discoverableWorks.map((w) => w.title), ['other']);
   });
 }

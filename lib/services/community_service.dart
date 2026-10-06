@@ -165,7 +165,7 @@ class CommunityService extends ChangeNotifier {
         ..clear()
         ..addAll(
           (prefs.getStringList(_mutedTagsKey) ?? const [])
-              .map((e) => e.trim().toLowerCase())
+              .map(_tagKey)
               .where((e) => e.isNotEmpty),
         );
     } catch (error) {
@@ -181,6 +181,19 @@ class CommunityService extends ChangeNotifier {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setBool(_hideAiImageVideoKey, value);
   }
+
+  /// Splits what the viewer typed into mute entries: separated by commas
+  /// (ASCII or full-width), 「、」 or new lines, trimmed and lower-cased.
+  static List<String> parseFilterInput(String raw) => [
+    for (final part in raw.split(RegExp(r'[,，、\n]')))
+      if (part.trim().toLowerCase() case final entry when entry.isNotEmpty)
+        entry,
+  ];
+
+  /// A tag as compared for muting: a leading # (ASCII or full-width) is not
+  /// part of it, so 「#作画」 mutes the tag 「作画」.
+  static String _tagKey(String tag) =>
+      tag.trim().toLowerCase().replaceFirst(RegExp(r'^[#＃]+'), '');
 
   Future<void> setMutedWords(Iterable<String> values) async {
     await contentFiltersReady;
@@ -198,9 +211,7 @@ class CommunityService extends ChangeNotifier {
     await contentFiltersReady;
     _mutedTags
       ..clear()
-      ..addAll(
-        values.map((e) => e.trim().toLowerCase()).where((e) => e.isNotEmpty),
-      );
+      ..addAll(values.map(_tagKey).where((e) => e.isNotEmpty));
     notifyListeners();
     final prefs = await SharedPreferences.getInstance();
     await prefs.setStringList(_mutedTagsKey, _mutedTags.toList()..sort());
@@ -217,7 +228,7 @@ class CommunityService extends ChangeNotifier {
 
     // ミュートタグは作品広場で作品に設定されたタグだけが対象。
     // YouTube側のメタデータやタイトル中の #文字列 はタグ扱いしない。
-    final communityTags = work.tags.map((e) => e.trim().toLowerCase());
+    final communityTags = work.tags.map(_tagKey);
     if (communityTags.any(_mutedTags.contains)) return false;
     return true;
   }
