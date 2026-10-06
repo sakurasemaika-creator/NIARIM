@@ -97,3 +97,48 @@ SEO/ASOコピーはローカライゼーション品質基準と同様、日本�
 ## 完了条件
 
 重大・高優先度問題を未解決のまま「完了」としない。未監査領域、未実行の必要テスト、未確認の実画面/言語/viewport、queued/running CI、既知regression、法務上の未確認/専門家確認事項を明示する。完了とは、監査範囲を一巡し、必要な修正とregressionを終え、残余リスクと外部制約がcheckpointに記録されている状態を指す。
+## 全画面・全操作・全分岐の実操作網羅強化
+
+全面監査では「代表画面を触った」「主要happy pathを通した」だけを網羅完了としない。最新実装から、各画面・各route・各dialog/sheet/menu/panel/tab/toolbar/overlayについて、ユーザーが実際に実行可能な**固有の操作を全件inventory**し、存在する操作は実際の入力方式で少なくとも一度ずつ実行する。
+
+操作はhappy pathだけでなく、状態・分岐ごとに、open/close、確定/取消、back、再実行、連打、二重tap、長押し、drag開始/途中/終了、slider微調整、数値直接入力、focus/Tab/IME、hover、context menu、選択/解除、undo/redo、save/load/import/export、share/publish、permission、retry/cancelなど、実装上存在する全分岐を確認する。制作系では実際のcanvas/layer/frame/timeline/selection/dataを使う。
+
+数学的な全直積（全操作×全viewport×全言語×全設定値）を人手で無限反復することは要求しない。その代わり、**操作の種類・状態遷移・境界・分岐は全件、表示条件と値の組合せは自動matrix＋境界/代表差分ケースで全ての異常パターンを覆う**。ある言語、PC/SP、theme、textScale、input deviceで挙動が変わる場合はその条件を別操作ケースとして追加する。
+
+自動化した操作と、担当者が実際に手で操作して目視した操作はEvidenceで別管理する。自動化だけで人間操作の自然さ・見た目・フィードバック・使いやすさをPASSにしない。
+
+## 全プリセット監査
+
+「全プリセット」は髪/前髪だけを意味しない。最新HEADのproduction UI、model、preset repository、asset/catalog、serializationから**全てのプリセットカテゴリをinventory**する。対象には、built-in/custom brush、髪/前髪、filter preset、texture/material preset、theme/color preset、automation/action/workflow preset、size/pressure preset、timeline/animation preset、その他UIから選択・適用・保存できるpresetを含める。
+
+各プリセットは1対象ごとに、表示名・説明・設定値・既定値・適用結果・編集可否・複製/削除・保存/復元・import/export・互換性・権限制御・7言語・PC/SP・実描画/実結果を確認する。プリセット専用hidden behaviorでしか成立しないものは一般機能の改善候補として記録し、プリセット名が違うだけの別経路で重複実装しない。
+
+## 設定・テーマ・保存形式の変更耐性
+
+品質設定を固定値のまま確認せず、監査中に意味のある設定を**意図的に変更して再監査**する。テーマカラーを複数系統で変更し、文字・outline・icon・slider・background・selected/disabled/error/overlay等の全連動箇所へ伝播するかを確認する。light/dark/custom、textScale、アクセシビリティ設定、言語、PC/SP、reduced-motion等の変更後に画面遷移・保存・再起動を跨いでも一貫するか確認する。
+
+セーブ形式/serialization version/schemaを変更する場合は、現在形式だけでなくlegacy→current、current→current、unknown/newer/invalid/truncated/corruptの隔離・復旧を検証する。保存前後のデータ内容・hash・version/schema・順序・参照・画像/音声等のembedded assetを比較し、「保存できた」だけでなく**指定した形式そのものになっているか、復元した内容が完全一致するか**を確認する。migration後は旧データ由来のUI/state/undo/asset参照も再確認する。
+
+設定値を変えたときにengine/model/service/UIのどこか一段だけが更新される不整合を許容しない。UI→model→serialization→service→engine→render→reloadの往復を必要箇所で通す。
+
+## 実行時間・性能・軽量化
+
+主要なユーザー操作について、cold/warm起動、画面遷移、設定反映、描画、filter/apply、blur、undo/redo、save/load、import/export、一覧取得、検索、共有/公開等の**実測時間**を記録する。操作ごとに入力サイズ、端末/環境、測定方法、p50/p95等の再現可能な指標を残し、体感遅延・frame drop・jank・メモリ増加・不要な再描画・同期処理によるUI停止も確認する。
+
+時間がかかる箇所は、まずprofile/traceで原因を特定し、同じ結果が得られる範囲で、アルゴリズム変更、キャッシュ、差分更新、非同期化、不要なallocation/clone削減、巨大画像/バッファの縮小、widget rebuild抑制、I/O batching、serialization最適化等を検討する。コードを短くすること自体を目的にせず、**最終結果・互換性・安定性を維持したまま、低性能端末でも軽くなることを実測で確認**する。
+
+最適化後は同一fixture/同一環境で変更前後を比較し、速度改善だけでなく画像品質、state、保存内容、メモリ、安全性、undo/redo、境界条件に退行がないことを確認する。
+
+## ソース衛生・不要コード・コメント
+
+全面監査には、未使用import、dead code、到達不能route、obsolete model/service、未使用asset、debug print/log、temporary workaround、生成物、古いtest/fixture/workflow参照、TODO/FIXME/HACK/placeholderを実装全体から探索する工程を含める。
+
+同一結果をより単純・安全・高速・保守しやすい方法で実現できる場合は、既存コードを温存せず適切にrefactor/rewriteする。削除・統合の後はanalyze/lint/test/buildと実画面regressionを行い、参照切れや間接利用を残さない。
+
+production sourceのコメントは、コードの意味、設計上の不変条件、非自明な制約、公開API/ライセンス等の恒久的情報に限定する。開発中の経緯、誰が何を修正したか、過去の失敗記録、チャット由来の作業メモはsource commentへ残さない。法的/ライセンス上必要なattributionは保持する。
+
+## UX・導線・デザインの積極的ブラッシュアップ
+
+機能仕様どおり動作していても、操作手数が多い、入口が見つけにくい、情報階層が不自然、戻る/取消が分かりにくい、設定が散在する、PC/SPの強みを活かせない、theme変更で一部だけ古い色が残る、feedbackが弱い等、**利用者の成功率・理解速度・制作効率を明確に改善できる余地**があれば改善する。
+
+改善は好みだけで行わず、実操作上の負荷、視認性、アクセシビリティ、誤操作、discoverability、手数、consistency、実測性能、商用製品としての情報設計を根拠にする。改善した箇所は必ず同じ操作を再実行し、Visual/functional/regressionで副作用がないことを確認する。
