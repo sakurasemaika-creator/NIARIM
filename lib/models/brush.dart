@@ -6,6 +6,11 @@ enum BrushImageInkMode { dark, light, alpha }
 
 enum HairFoldMode { waveTopView, waveLowAngle, curlRight, curlLeft, crescent }
 
+/// The widest stamp spacing (canvas px) the brush settings offer. Built-in
+/// brushes stay within it so a copy of any of them can be reproduced there
+/// (the four-panel comic brush spaces its frames 125 px apart).
+const int kBrushSpacingMax = 200;
+
 class Brush {
   final String id;
   final String name;
@@ -351,10 +356,13 @@ class Brush {
       (e) => e.name == j['fadeMode'],
       orElse: () => FadeMode.off,
     ),
-    fadeIn: FadeEndpointSettings.fromJson(j['fadeIn'] as Map<String, dynamic>),
-    fadeOut: FadeEndpointSettings.fromJson(
-      j['fadeOut'] as Map<String, dynamic>,
-    ),
+    // Brushes saved before fade-in/out existed have neither.
+    fadeIn: j['fadeIn'] is Map<String, dynamic>
+        ? FadeEndpointSettings.fromJson(j['fadeIn'] as Map<String, dynamic>)
+        : FadeEndpointSettings.full,
+    fadeOut: j['fadeOut'] is Map<String, dynamic>
+        ? FadeEndpointSettings.fromJson(j['fadeOut'] as Map<String, dynamic>)
+        : FadeEndpointSettings.full,
     strokeDecay: j['strokeDecay'] as bool,
     isFavorite: j['isFavorite'] as bool? ?? false,
     folderId: j['folderId'] as String?,

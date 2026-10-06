@@ -3,6 +3,7 @@ import 'dart:typed_data';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:niarim/engine/procedural_texture.dart';
 import 'package:niarim/models/asset_tags.dart';
+import 'package:niarim/models/brush.dart';
 import 'package:niarim/services/brush_service.dart';
 import 'package:niarim/services/stamp_service.dart';
 import 'package:niarim/services/tone_service.dart';
@@ -194,7 +195,11 @@ void main() {
       for (final b in service.brushes) {
         expect(b.size, inInclusiveRange(1, 200), reason: b.name);
         expect(b.opacity, inInclusiveRange(1, 100), reason: b.name);
-        expect(b.spacing, inInclusiveRange(1, 50), reason: b.name);
+        expect(
+          b.spacing,
+          inInclusiveRange(1, kBrushSpacingMax),
+          reason: b.name,
+        );
         for (final range in [
           b.pressureOn.size,
           b.pressureOn.opacity,

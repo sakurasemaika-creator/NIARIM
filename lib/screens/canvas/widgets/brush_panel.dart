@@ -670,7 +670,7 @@ class _BrushSettingsSheetState extends State<_BrushSettingsSheet> {
                 l10n.brushSettingsSpacingLabel,
                 _brush.spacing.toDouble(),
                 1,
-                100,
+                kBrushSpacingMax.toDouble(),
                 (v) => setState(
                   () => _brush = _brush.copyWith(spacing: v.round()),
                 ),

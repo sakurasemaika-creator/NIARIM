@@ -2,10 +2,35 @@ import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:niarim/l10n/app_localizations.dart';
+import 'package:niarim/services/premium_service.dart';
 import 'package:niarim/widgets/ad_banner_mock_widget.dart';
 import 'package:niarim/widgets/progress_dialog.dart';
+import 'package:provider/provider.dart';
 
-Widget _localizedApp(Widget home) {
+/// A free (non-premium) user outside the launch campaign: the only one who
+/// sees the ad slot.
+class _FreePremiumService extends PremiumService {
+  @override
+  bool get isPremium => false;
+
+  @override
+  bool get isLaunchCampaignActive => false;
+}
+
+/// A paying member (during the launch campaign, everyone).
+class _MemberPremiumService extends PremiumService {
+  @override
+  bool get isPremium => true;
+}
+
+Widget _localizedApp(Widget home, {bool premium = false}) {
+  return ChangeNotifierProvider<PremiumService>(
+    create: (_) => premium ? _MemberPremiumService() : _FreePremiumService(),
+    child: _app(home),
+  );
+}
+
+Widget _app(Widget home) {
   return MaterialApp(
     locale: const Locale('ja'),
     supportedLocales: AppLocalizations.supportedLocales,
@@ -126,6 +151,20 @@ void main() {
     expect(
       find.byKey(const Key('persistent-horizontal-ad-mock')),
       findsOneWidget,
+    );
+  });
+
+  testWidgets('プレミアム会員（リリース記念キャンペーン中は全員）には広告枠を出さない', (tester) async {
+    await tester.pumpWidget(
+      _localizedApp(
+        const AdMockPageFrame(child: Scaffold(body: Text('page'))),
+        premium: true,
+      ),
+    );
+    expect(find.text('page'), findsOneWidget);
+    expect(
+      find.byKey(const Key('persistent-horizontal-ad-mock')),
+      findsNothing,
     );
   });
 }
