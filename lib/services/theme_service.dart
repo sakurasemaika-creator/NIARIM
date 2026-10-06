@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../models/app_theme_preset.dart';
+import '../utils/color_contrast.dart';
 
 class ThemeService extends ChangeNotifier {
   static const _prefsPresetsKey = 'theme_presets';
@@ -478,6 +479,15 @@ class ThemeService extends ChangeNotifier {
     final brightness = preset.panelBgColor.computeLuminance() > 0.5
         ? Brightness.light
         : Brightness.dark;
+    // ダイアログ・ボトムシート・トースト（SnackBar）・吹き出しのように画面の
+    // 上へ重なって出るものの下地は、必ず不透明にする。テーマの色はカラー
+    // ピッカーで透明度まで選べるため、メニュー背景色をそのまま使うと後ろの
+    // 画面が透けて文字が読みにくくなる。パネル背景色の上に重ねたときの色
+    // （＝パネルの上で実際に見えている色）へ平たくしてから使う。
+    final panelColor = opaqueOver(preset.panelBgColor, Colors.black);
+    final popupColor = opaqueOver(preset.menuBgColor, panelColor);
+    // 初回の吹き出し・説明の吹き出しはアクセント色を下地にするので同様。
+    final accentColor = opaqueOver(preset.accentColor, panelColor);
     // 「文字色」（UI全体の文字色）はonSurface系にも反映し、
     // ColorScheme.fromSeedが自動算出する既定の文字色（accentColorから
     // 逆算される、ユーザーが選んだtextColorとは無関係の値）で上書きされて
@@ -487,7 +497,7 @@ class ThemeService extends ChangeNotifier {
           seedColor: preset.accentColor,
           brightness: brightness,
         ).copyWith(
-          primary: preset.accentColor,
+          primary: accentColor,
           secondary: preset.selectionColor,
           onSurface: preset.textColor,
           onSurfaceVariant: preset.textColor.withValues(alpha: 0.7),
@@ -568,9 +578,11 @@ class ThemeService extends ChangeNotifier {
               fontWeight: FontWeight.w700,
             ),
       ),
+      // カードはカラーピッカー等のダイアログの本体にも使う（Dialog側は透明に
+      // してカードの角丸を見せている）ので、下地はポップアップと同じ不透明色。
       cardTheme: CardThemeData(
         elevation: 0,
-        color: preset.menuBgColor,
+        color: popupColor,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(radius),
         ),
@@ -654,19 +666,20 @@ class ThemeService extends ChangeNotifier {
       // くらむぼんへ揃える。個別のTextウィジェットが独自styleを指定して
       // いれば、そちらが優先されるため既存の明示指定箇所への影響はない。
       dialogTheme: DialogThemeData(
-        backgroundColor: preset.menuBgColor,
+        backgroundColor: popupColor,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(28)),
         titleTextStyle: textTheme.titleLarge?.copyWith(color: preset.textColor),
       ),
       bottomSheetTheme: BottomSheetThemeData(
-        backgroundColor: preset.menuBgColor,
+        backgroundColor: popupColor,
+        modalBackgroundColor: popupColor,
         shape: const RoundedRectangleBorder(
           borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
         ),
       ),
       snackBarTheme: SnackBarThemeData(
         behavior: SnackBarBehavior.floating,
-        backgroundColor: preset.menuBgColor,
+        backgroundColor: popupColor,
         // AppBarのtitleTextStyle・FilledButtonのtextStyleとまったく同じ罠。
         // 素のTextStyle()を渡すとそれが本文の書式を丸ごと決めてしまい、
         // ThemeData.fontFamily='HakkouMincho'は継承されない。その結果
@@ -679,6 +692,16 @@ class ThemeService extends ChangeNotifier {
         ),
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(radius),
+        ),
+      ),
+      // Flutter既定のツールチップは下地が90%の不透明度で、後ろの画面が
+      // 透ける。色と形は既定のまま、不透明にする。
+      tooltipTheme: TooltipThemeData(
+        decoration: BoxDecoration(
+          color: brightness == Brightness.dark
+              ? Colors.white
+              : Colors.grey.shade700,
+          borderRadius: const BorderRadius.all(Radius.circular(4)),
         ),
       ),
       chipTheme: ChipThemeData(

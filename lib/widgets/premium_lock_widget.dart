@@ -186,16 +186,14 @@ class _PremiumBannerDialog extends StatelessWidget {
           // 画像の絵柄しだいでほとんど見えなくなる（実際に、画像が読めない
           // ときのプレースホルダー上でほぼ判別できない状態だった）。
           // 画像に左右されないよう、surface/onSurfaceの組み合わせの丸い
-          // 下地を必ず敷く。
+          // 下地を必ず敷く（ポップアップの一部なので透かさない）。
           Positioned(
             right: 4,
             top: 4,
             child: DecoratedBox(
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                color: ThemeService.activeColorScheme.surface.withValues(
-                  alpha: 0.85,
-                ),
+                color: ThemeService.activeColorScheme.surface,
               ),
               child: IconButton(
                 visualDensity: VisualDensity.compact,
