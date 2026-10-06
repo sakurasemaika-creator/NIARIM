@@ -127,3 +127,10 @@ lock後の追加監査対象は A105 等のBaseline IDではなく、docs/work-a
 ## 2026-10-06 state freshness rule
 
 このProgressは監査開始時に必ず両repoの最新dev_branch HEADを再取得して比較する。ここに記録されたlast_observed_*は再開位置の補助情報であり、現在HEADの代用ではない。製品変更があった場合は、current_idを勝手にdoneへ進めず、現在IDの前提をscope-boundedに再確認し、変更が監査対象ならD-seriesまたはDiscoveryへ登録する。
+## 2026-10-06 全面監査実行契約同期
+- 「全面監査」依頼時は docs/work-audit/state/FULL_AUDIT_EXECUTION_STANDARD.md を既定実行標準として適用する。
+- 全画面・全visible control・全実在操作方式・全プリセットをproduction UIで実操作し、機能結果／意図挙動／見た目／継続性／UX・導線／性能を別判定する。
+- theme・quality・save schema/version・export format等を意図的にmutationして再監査し、source hygieneとperformance optimizationも監査対象に含める。
+- 明確な品質改善は監査中に修正し、同一操作・Visual・関連regressionを再実行する。
+- D032〜D037をこの契約の実行担当として扱い、Baseline/Discovery/Deltaの未確認を隠さない。
+
