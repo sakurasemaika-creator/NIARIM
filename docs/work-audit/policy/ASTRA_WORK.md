@@ -142,12 +142,17 @@ State更新commitには `[audit-state]`、policy/guard変更にはユーザー�
 3. Baseline verifierとDelta verifierを先に実行し、lock integrity、mirror、current_id、delta route integrityを確認する。違反があればstate構造を修正してから製品監査へ進む。
 4. current_id の未完了Baselineを番号順に実行する。必要なら実装を修正し、root cause→fix→targeted test→analyze/build→production UI実操作→visual inspection→save/restore→regressionまで完結させる。current_idはAUDIT_ROUTE verifierと一致させる。
 5. 途中で未登録の画面・状態・操作・分岐・品質リスクを発見したらDISC-IDとして追加し、現在IDへ影響するものを先に処理し、それ以外は固定順序へ戻る。
-6. Baseline完了後、DISC backlogを消化し、その後D001からDeltaを順番に消化する。D002の全フィルターinventory、D026/D027のpreset inventoryで対象数が変わる場合、子TODOを最新HEADへ合わせる。
+6. Baseline完了後、DISC backlogを消化し、その後D001からD037までDeltaを順番に消化する。D002の全フィルターinventory、D026/D027のpreset inventoryで対象数が変わる場合、子TODOを最新HEADへ合わせる。
 7. 不具合を見つけた場合は問題の列挙だけで止めず、修正可能なものはroot cause→fix→test→実画面→regressionまで行う。外部依存・実機不足のみblockedとし、未確認をblockedへ隠さない。
 8. Visual closureは最新HEADで再生成する。旧PDF・旧CI・旧sessionは補助証拠に留め、今回の最終closureを代替しない。画像には機能名、BEFORE/SETTINGS/AFTER、preset/mode、主要設定値を焼き込み、PDF全ページrenderと実画像目視を行う。
-9. 完了宣言前にD031のcoverage gateを通し、Baseline/DISC/Delta全ての未完了、advisor-pending、未登録Discovery、必須証拠のqueued/runningを0へ収束させる。できないものは完了と宣言せず、blocking reasonをEvidenceへ残す。
+9. 完了宣言前にD037の最終closure gateを通し、Baseline/DISC/Delta全ての未完了、advisor-pending、未登録Discovery、必須証拠のqueued/runningを0へ収束させる。できないものは完了と宣言せず、blocking reasonをEvidenceへ残す。
 
 
 ### Full-audit preflight validator
 
 全面監査開始時は `docs/work-audit/state/verify_full_audit_state.py` を最初に実行し、Baseline lock integrity、Progress cursors、Discovery section、Delta status tracker、App/Web mirrorを一括確認する。個別の `verify_audit_route.py` / `verify_audit_delta.py` は詳細診断として併用してよい。
+
+
+### Delta scope expansion
+
+D032以降では、全固有操作の実操作、全プリセット、品質設定・テーマ・保存形式のmutation、実行時間と軽量化、ソース衛生を独立した監査工程として扱う。最終判定はD037で行う。
