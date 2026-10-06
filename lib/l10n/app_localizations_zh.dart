@@ -3321,6 +3321,9 @@ class AppLocalizationsZh extends AppLocalizations {
   String get filterOutlineWidth => '描边宽度';
 
   @override
+  String get filterOutlineErosion => '向内延伸（0为仅在原轮廓外侧）';
+
+  @override
   String get filterToneCurveLinear => '标准';
 
   @override
@@ -10148,6 +10151,9 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get filterOutlineWidth => '描邊寬度';
+
+  @override
+  String get filterOutlineErosion => '向內延伸（0為僅在原輪廓外側）';
 
   @override
   String get filterToneCurveLinear => '標準';

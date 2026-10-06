@@ -1528,6 +1528,7 @@
   "filterAnimeLineWidth": "線の太らせ（0で線幅を変えない）",
   "filterOutlineColor": "縁取り色",
   "filterOutlineWidth": "縁取り線幅",
+  "filterOutlineErosion": "内側への食い込み（0で元の輪郭の外側だけ）",
   "filterToneCurveLinear": "標準",
   "filterToneCurveBrighten": "明るく",
   "filterToneCurveDarken": "暗く",

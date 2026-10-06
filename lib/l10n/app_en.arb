@@ -1272,6 +1272,7 @@
   "filterAnimeLineWidth": "Line thickening (0 keeps line widths)",
   "filterOutlineColor": "Outline color",
   "filterOutlineWidth": "Outline width",
+  "filterOutlineErosion": "Reach inside (0 = only outside the original edge)",
   "filterToneCurveLinear": "Standard",
   "filterToneCurveBrighten": "Brighten",
   "filterToneCurveDarken": "Darken",

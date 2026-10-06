@@ -3497,6 +3497,10 @@ class AppLocalizationsFr extends AppLocalizations {
   String get filterOutlineWidth => 'Épaisseur du contour';
 
   @override
+  String get filterOutlineErosion =>
+      'Empiètement vers l’intérieur (0 = seulement hors du bord d’origine)';
+
+  @override
   String get filterToneCurveLinear => 'Standard';
 
   @override

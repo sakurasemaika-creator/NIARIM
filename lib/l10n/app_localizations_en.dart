@@ -3450,6 +3450,10 @@ class AppLocalizationsEn extends AppLocalizations {
   String get filterOutlineWidth => 'Outline width';
 
   @override
+  String get filterOutlineErosion =>
+      'Reach inside (0 = only outside the original edge)';
+
+  @override
   String get filterToneCurveLinear => 'Standard';
 
   @override

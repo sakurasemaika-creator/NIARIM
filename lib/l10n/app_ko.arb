@@ -1272,6 +1272,7 @@
   "filterAnimeLineWidth": "선 굵히기(0이면 선 굵기 그대로)",
   "filterOutlineColor": "테두리 색상",
   "filterOutlineWidth": "테두리 두께",
+  "filterOutlineErosion": "안쪽으로 파고들기(0이면 원래 윤곽 바깥만)",
   "filterToneCurveLinear": "표준",
   "filterToneCurveBrighten": "밝게",
   "filterToneCurveDarken": "어둡게",

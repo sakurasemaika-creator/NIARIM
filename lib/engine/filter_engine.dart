@@ -90,6 +90,7 @@ Uint8List applyDrawFilterInIsolate(
       height,
       color: filter.outlineColor,
       widthPx: filter.outlineWidth,
+      erosion: filter.outlineErosion,
     ),
     FilterKind.toneCurve => engine.applyToneCurve(
       data,
@@ -1395,12 +1396,14 @@ class FilterEngine {
     int height, {
     required int color,
     required double widthPx,
+    double erosion = 0,
   }) => _outlineFill(
     data,
     width,
     height,
     color: color,
     widthPx: widthPx,
+    erosion: erosion,
     keepSource: true,
   );
 
@@ -1414,21 +1417,30 @@ class FilterEngine {
     int height, {
     required int color,
     required double widthPx,
+    double erosion = 0,
   }) => _outlineFill(
     data,
     width,
     height,
     color: color,
     widthPx: widthPx,
+    erosion: erosion,
     keepSource: false,
   );
 
-  /// 縁取り計算の共通処理。[keepSource]がtrueなら元の不透明画素をそのまま
-  /// 結果へコピーする（[applyOutline]）。falseなら縁取りリング部分だけを
-  /// 書き込み、それ以外は透明のまま返す（[applyOutlineLayer]）。
-  /// いずれも元画像側で不透明だった画素はリングの対象から除外するため、
-  /// 元の描画内容の上にリングが重なって隠すことはない。
+  /// 縁取り計算の共通処理。[keepSource]がtrueなら元の絵を縁取りの上に
+  /// 重ねた結果を返す（[applyOutline]、適用後の見た目と同じ）。falseなら
+  /// 縁取りリング部分だけを書き込み、それ以外は透明のまま返す
+  /// （[applyOutlineLayer]）。形と見なした画素はリングの対象から除外する
+  /// ため、元の描画内容がリングで隠れることはない。
   /// [color]はARGB32形式のint値（FilterDef.outlineColorと同じ表現）。
+  ///
+  /// [erosion]（0〜100）は、どこまで薄い画素を「形」と見なすかのしきい値。
+  /// 0では不透明度10より濃い画素がすべて形で、縁取りはその外側だけに付く
+  /// （従来どおり）。上げるほど薄い画素を形から外すので、縁取りがぼかした
+  /// 縁の薄い部分の下まで食い込み、見えている本体に沿うようになる
+  /// （縁取りは元のレイヤーの下に置くので、薄い部分から透けて見える）。
+  /// 100では完全に不透明な画素だけが形になる。
   Uint8List _outlineFill(
     Uint8List data,
     int width,
@@ -1436,16 +1448,16 @@ class FilterEngine {
     required int color,
     required double widthPx,
     required bool keepSource,
+    double erosion = 0,
   }) {
     final radius = widthPx.round().clamp(1, 100);
-    final result = keepSource
-        ? Uint8List.fromList(data)
-        : Uint8List(data.length);
+    final result = Uint8List(data.length);
     final ca = (color >> 24) & 0xFF;
     final cr = (color >> 16) & 0xFF;
     final cg = (color >> 8) & 0xFF;
     final cb = color & 0xFF;
-    const alphaThreshold = 10;
+    final alphaThreshold = (10 + (erosion / 100).clamp(0.0, 1.0) * (254 - 10))
+        .round();
 
     // 元画像の不透明部分のバウンディングボックスを求め、縁取り半径分広げた
     // 範囲だけを探索する（全画面を毎回スキャンする無駄を避けるための最適化）。
@@ -1471,7 +1483,7 @@ class FilterEngine {
     for (int y = startY; y <= endY; y++) {
       for (int x = startX; x <= endX; x++) {
         final idx = (y * width + x) * 4;
-        if (data[idx + 3] > alphaThreshold) continue; // 元々の描画部分は保持
+        if (data[idx + 3] > alphaThreshold) continue; // 形の中には付けない
         bool hit = false;
         for (int dy = -radius; dy <= radius && !hit; dy++) {
           final ny = y + dy;
@@ -1490,11 +1502,22 @@ class FilterEngine {
           }
         }
         if (hit) {
-          result[idx] = cr;
-          result[idx + 1] = cg;
-          result[idx + 2] = cb;
+          // Premultiplied, like the layers.
+          result[idx] = (cr * ca + 127) ~/ 255;
+          result[idx + 1] = (cg * ca + 127) ~/ 255;
+          result[idx + 2] = (cb * ca + 127) ~/ 255;
           result[idx + 3] = ca;
         }
+      }
+    }
+    if (!keepSource) return result;
+    // The preview shows the picture over its outline, as the applied result
+    // (the outline on its own layer beneath) looks.
+    for (var i = 0; i < result.length; i += 4) {
+      final keep = 255 - data[i + 3];
+      for (var c = 0; c < 4; c++) {
+        result[i + c] = (data[i + c] + (result[i + c] * keep + 127) ~/ 255)
+            .clamp(0, 255);
       }
     }
     return result;

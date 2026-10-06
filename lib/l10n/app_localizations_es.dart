@@ -3500,6 +3500,10 @@ class AppLocalizationsEs extends AppLocalizations {
   String get filterOutlineWidth => 'Grosor del contorno';
 
   @override
+  String get filterOutlineErosion =>
+      'Alcance hacia dentro (0 = solo fuera del borde original)';
+
+  @override
   String get filterToneCurveLinear => 'Estándar';
 
   @override

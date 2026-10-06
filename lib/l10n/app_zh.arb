@@ -1272,6 +1272,7 @@
   "filterAnimeLineWidth": "线条加粗（0为不改变线宽）",
   "filterOutlineColor": "描边颜色",
   "filterOutlineWidth": "描边宽度",
+  "filterOutlineErosion": "向内延伸（0为仅在原轮廓外侧）",
   "filterToneCurveLinear": "标准",
   "filterToneCurveBrighten": "变亮",
   "filterToneCurveDarken": "变暗",

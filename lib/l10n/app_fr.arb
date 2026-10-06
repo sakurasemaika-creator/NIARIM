@@ -1272,6 +1272,7 @@
   "filterAnimeLineWidth": "Épaississement des traits (0 = largeur inchangée)",
   "filterOutlineColor": "Couleur du contour",
   "filterOutlineWidth": "Épaisseur du contour",
+  "filterOutlineErosion": "Empiètement vers l’intérieur (0 = seulement hors du bord d’origine)",
   "filterToneCurveLinear": "Standard",
   "filterToneCurveBrighten": "Éclaircir",
   "filterToneCurveDarken": "Assombrir",

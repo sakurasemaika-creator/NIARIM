@@ -1074,6 +1074,13 @@ class _FilterPanelState extends State<FilterPanel> {
               60,
               (v) => service.updateFilterParams(current.id, outlineWidth: v),
             ),
+            _paramSlider(
+              l10n.filterOutlineErosion,
+              current.outlineErosion,
+              0,
+              100,
+              (v) => service.updateFilterParams(current.id, outlineErosion: v),
+            ),
           ],
         );
       case FilterKind.autoLineart:
@@ -2020,7 +2027,9 @@ class _FilterPanelState extends State<FilterPanel> {
           width,
           height,
           color: filter.outlineColor,
-          widthPx: filter.outlineWidth,
+          // In canvas pixels; the preview is scaled down.
+          widthPx: filter.outlineWidth * _previewScale,
+          erosion: filter.outlineErosion,
         );
       case FilterKind.toneCurve:
         return _engine.applyToneCurve(

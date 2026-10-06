@@ -3348,6 +3348,9 @@ class AppLocalizationsKo extends AppLocalizations {
   String get filterOutlineWidth => '테두리 두께';
 
   @override
+  String get filterOutlineErosion => '안쪽으로 파고들기(0이면 원래 윤곽 바깥만)';
+
+  @override
   String get filterToneCurveLinear => '표준';
 
   @override

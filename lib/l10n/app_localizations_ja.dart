@@ -3334,6 +3334,9 @@ class AppLocalizationsJa extends AppLocalizations {
   String get filterOutlineWidth => '縁取り線幅';
 
   @override
+  String get filterOutlineErosion => '内側への食い込み（0で元の輪郭の外側だけ）';
+
+  @override
   String get filterToneCurveLinear => '標準';
 
   @override

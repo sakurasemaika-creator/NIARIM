@@ -116,6 +116,11 @@ class FilterDef {
 
   /// Anime style: how many px the outlines grow by (0 = line widths stay).
   final double animeLineWidth;
+
+  /// Outline: how faint a pixel may be and still count as the shape, 0 to
+  /// 100 (see FilterEngine's outline): higher lets the outline reach in
+  /// under a soft edge.
+  final double outlineErosion;
   final double hologramBrightness;
   final double hologramSaturation;
   final AuroraHologramPreset hologramPreset;
@@ -194,6 +199,7 @@ class FilterDef {
     this.crtAberration = 30,
     this.crtBleed = 30,
     this.animeLineWidth = 0,
+    this.outlineErosion = 0,
     this.hologramBrightness = 0,
     this.hologramSaturation = 0,
     this.hologramPreset = AuroraHologramPreset.silverHologram,
@@ -292,6 +298,7 @@ class FilterDef {
     double? crtAberration,
     double? crtBleed,
     double? animeLineWidth,
+    double? outlineErosion,
     double? hologramBrightness,
     double? hologramSaturation,
     AuroraHologramPreset? hologramPreset,
@@ -370,6 +377,7 @@ class FilterDef {
       crtAberration: crtAberration ?? this.crtAberration,
       crtBleed: crtBleed ?? this.crtBleed,
       animeLineWidth: animeLineWidth ?? this.animeLineWidth,
+      outlineErosion: outlineErosion ?? this.outlineErosion,
       hologramBrightness: hologramBrightness ?? this.hologramBrightness,
       hologramSaturation: hologramSaturation ?? this.hologramSaturation,
       hologramPreset: hologramPreset ?? this.hologramPreset,
@@ -461,6 +469,7 @@ class FilterDef {
     'crtAberration': crtAberration,
     'crtBleed': crtBleed,
     'animeLineWidth': animeLineWidth,
+    'outlineErosion': outlineErosion,
     'hologramBrightness': hologramBrightness,
     'hologramSaturation': hologramSaturation,
     'hologramPreset': hologramPreset.name,
@@ -608,6 +617,7 @@ class FilterDef {
     crtAberration: (j['crtAberration'] as num?)?.toDouble() ?? 30,
     crtBleed: (j['crtBleed'] as num?)?.toDouble() ?? 30,
     animeLineWidth: (j['animeLineWidth'] as num?)?.toDouble() ?? 0,
+    outlineErosion: (j['outlineErosion'] as num?)?.toDouble() ?? 0,
     hologramBrightness: (j['hologramBrightness'] as num?)?.toDouble() ?? 0,
     hologramSaturation: (j['hologramSaturation'] as num?)?.toDouble() ?? 0,
     hologramPreset: AuroraHologramPreset.values.firstWhere(

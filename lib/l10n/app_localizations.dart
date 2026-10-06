@@ -6191,6 +6191,12 @@ abstract class AppLocalizations {
   /// **'縁取り線幅'**
   String get filterOutlineWidth;
 
+  /// No description provided for @filterOutlineErosion.
+  ///
+  /// In ja, this message translates to:
+  /// **'内側への食い込み（0で元の輪郭の外側だけ）'**
+  String get filterOutlineErosion;
+
   /// No description provided for @filterToneCurveLinear.
   ///
   /// In ja, this message translates to:

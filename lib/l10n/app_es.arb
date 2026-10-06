@@ -1272,6 +1272,7 @@
   "filterAnimeLineWidth": "Engrosar líneas (0 no cambia el grosor)",
   "filterOutlineColor": "Color del contorno",
   "filterOutlineWidth": "Grosor del contorno",
+  "filterOutlineErosion": "Alcance hacia dentro (0 = solo fuera del borde original)",
   "filterToneCurveLinear": "Estándar",
   "filterToneCurveBrighten": "Aclarar",
   "filterToneCurveDarken": "Oscurecer",
