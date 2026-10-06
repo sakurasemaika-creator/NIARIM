@@ -180,22 +180,35 @@ void main() {
   }
   if (group == 'all' || group == 'pixel-compare') {
     testWidgets(
-      'Pixel Art and Mosaic differ on the same production UI fixture',
+      'Pixel Art (blocks / canvas resolution) and Mosaic differ on the same '
+      'production UI fixture',
       (tester) async {
         final h = await _Harness.create(tester, 'pixel-compare');
         final filters = h.context.read<FilterService>().filters;
-        final cases = [
-          filters.firstWhere((f) => f.kind == FilterKind.pixelate),
-          filters.firstWhere((f) => f.kind == FilterKind.mosaic),
+        final pixelArt = filters.firstWhere(
+          (f) => f.kind == FilterKind.pixelate,
+        );
+        final mosaic = filters.firstWhere((f) => f.kind == FilterKind.mosaic);
+        const sixColours = [
+          0xFF000000,
+          0xFFFFFFFF,
+          0xFFFF0000,
+          0xFFFFFF00,
+          0xFF0000FF,
+          0xFF00FF00,
         ];
-        final outputs = <FilterKind, Uint8List>{};
-        for (final filter in cases) {
-          final id = filter.kind == FilterKind.pixelate
-              ? 'pixel_art_same_fixture'
-              : 'mosaic_same_fixture';
+        final cases = [
+          ('pixel_art_blocks_six_colours', pixelArt, false),
+          ('pixel_art_canvas_resolution', pixelArt, true),
+          ('mosaic_same_fixture', mosaic, false),
+        ];
+        final outputs = <String, Uint8List>{};
+        Uint8List? original;
+        for (final (id, filter, matchCanvas) in cases) {
           debugPrint('CAPTURE_CASE:$id');
-          await h.project(id, fixture: 'pixelCompare');
+          await h.project(id, fixture: 'pixelArtSix');
           final before = await h.art('$id-before');
+          original ??= before;
           await h.capture('$id-before-ui');
           await h.openMenu(h.l10n.filterPanelTitle);
           final panel = find.byType(FilterPanel);
@@ -217,10 +230,42 @@ void main() {
               ),
             ),
           );
-          expect(
-            h.context.read<FilterService>().currentFilter!.kind,
-            filter.kind,
-          );
+          FilterDef current() => h.context.read<FilterService>().currentFilter!;
+          expect(current().kind, filter.kind);
+          if (filter.kind == FilterKind.pixelate) {
+            if (current().pixelColorMode != PixelColorMode.explicit) {
+              await h.tap(
+                find.descendant(
+                  of: panel,
+                  matching: find.byType(
+                    DropdownButtonFormField<PixelColorMode>,
+                  ),
+                ),
+              );
+              await h.tap(find.text(h.l10n.pixelColorModeExplicit).last);
+            }
+            expect(current().pixelColorMode, PixelColorMode.explicit);
+            expect(current().pixelExplicitColors, sixColours);
+            await h.tap(
+              find.descendant(
+                of: panel,
+                matching: find.text(
+                  matchCanvas
+                      ? h.l10n.filterPixelateModeCanvas
+                      : h.l10n.filterPixelateModeBlock,
+                ),
+              ),
+            );
+            expect(current().pixelArtMatchCanvas, matchCanvas);
+            expect(current().pixelArtBlockSize, matchCanvas ? 1 : 8);
+            expect(
+              find.descendant(
+                of: panel,
+                matching: find.text(h.l10n.filterPixelateModeCanvasHint),
+              ),
+              matchCanvas ? findsOneWidget : findsNothing,
+            );
+          }
           await h.capture('$id-settings');
           await h.tap(find.text(h.l10n.filterApplyButton));
           await h.until(
@@ -228,26 +273,75 @@ void main() {
             '$id apply must finish and close the panel',
           );
           final after = await h.art('$id-after');
-          outputs[filter.kind] = after;
+          outputs[id] = after;
           await h.capture('$id-after-ui');
+          final alphas = {for (var i = 3; i < after.length; i += 4) after[i]};
+          if (filter.kind == FilterKind.pixelate) {
+            expect(alphas, {0, 255}, reason: '$id leaves no soft edge');
+            for (var i = 0; i < after.length; i += 4) {
+              if (after[i + 3] == 0) continue;
+              final argb =
+                  0xFF000000 |
+                  (after[i] << 16) |
+                  (after[i + 1] << 8) |
+                  after[i + 2];
+              expect(sixColours, contains(argb), reason: '$id palette');
+            }
+            if (!matchCanvas) {
+              for (var y = 0; y < 256; y++) {
+                for (var x = 0; x < 256; x++) {
+                  final i = (y * 256 + x) * 4;
+                  final j = ((y ~/ 8 * 8) * 256 + x ~/ 8 * 8) * 4;
+                  expect(
+                    after.sublist(i, i + 4),
+                    after.sublist(j, j + 4),
+                    reason: 'square 8px blocks at ($x, $y)',
+                  );
+                }
+              }
+            }
+          } else {
+            expect(
+              alphas.where((a) => a != 0 && a != 255),
+              isNotEmpty,
+              reason: 'Mosaic averages alpha along soft edges',
+            );
+          }
           h.record(
             id,
             filter.name,
             _changedPixels(before, after),
-            settings: {'kind': filter.kind.name},
-            note: filter.kind == FilterKind.pixelate
-                ? 'PixelArtEngine hard-edge conversion.'
-                : 'Independent block-average Mosaic effect.',
+            settings: {
+              'kind': filter.kind.name,
+              if (filter.kind == FilterKind.pixelate) ...{
+                'pixelArtMatchCanvas': matchCanvas,
+                'blockSize': current().pixelArtBlockSize,
+                'colorMode': current().pixelColorMode.name,
+                'colors': current().pixelExplicitColors,
+              },
+            },
+            note: switch (id) {
+              'pixel_art_blocks_six_colours' => '8pxの正方形ブロック・黒白赤黄青緑の6色・半透明なし。',
+              'pixel_art_canvas_resolution' => 'キャンバスの1画素＝1ドット・6色・半透明なし。',
+              _ => 'ブロック内の色と不透明度を平均する別効果。',
+            },
           );
         }
-        expect(
-          outputs[FilterKind.pixelate],
-          isNot(orderedEquals(outputs[FilterKind.mosaic]!)),
-          reason: 'Pixel Art and Mosaic must remain visually distinct effects',
-        );
+        final results = [original!, ...outputs.values];
+        for (var a = 0; a < results.length; a++) {
+          for (var b = a + 1; b < results.length; b++) {
+            expect(
+              results[a],
+              isNot(orderedEquals(results[b])),
+              reason:
+                  'Original / Pixel Art (blocks) / Pixel Art (canvas) / '
+                  'Mosaic must all differ ($a vs $b)',
+            );
+          }
+        }
         await h.finish();
       },
-      timeout: const Timeout(Duration(minutes: 5)),
+      timeout: const Timeout(Duration(minutes: 8)),
     );
   }
 
@@ -1177,23 +1271,55 @@ Future<Uint8List> _fixture(
       Paint()..color = const Color.fromRGBO(255, 255, 255, 0.62),
     );
   }
-  if (kind == 'pixelCompare') {
-    canvas.drawColor(Colors.white, BlendMode.src);
-    final paint = Paint();
-    for (var y = 0; y < height; y++) {
-      for (var x = 0; x < width; x++) {
-        final diagonal = x > y;
-        final stripe = (x ~/ 3 + y ~/ 5).isEven;
-        paint.color = diagonal
-            ? (stripe ? const Color(0xffe45b78) : const Color(0xffb73f91))
-            : (stripe ? const Color(0xff278bc1) : const Color(0xff36b49a));
-        canvas.drawRect(Rect.fromLTWH(x.toDouble(), y.toDouble(), 1, 1), paint);
-      }
-    }
+  if (kind == 'pixelArtSix') {
+    // Black, white, red, yellow, blue and green strokes, anti-aliased, on a
+    // transparent layer: thick and thin, slanted and round.
+    void stroke(Offset a, Offset b, double width, Color color) =>
+        canvas.drawLine(
+          a,
+          b,
+          Paint()
+            ..color = color
+            ..strokeWidth = width
+            ..strokeCap = StrokeCap.round,
+        );
     canvas.drawCircle(
-      Offset(width * .5, height * .5),
-      width * .19,
-      Paint()..color = const Color(0xffffd36a),
+      const Offset(78, 82),
+      52,
+      Paint()..color = const Color(0xff141414),
+    );
+    canvas.drawCircle(
+      const Offset(78, 82),
+      38,
+      Paint()..color = const Color(0xfff4f4f0),
+    );
+    stroke(
+      const Offset(150, 20),
+      const Offset(236, 120),
+      14,
+      const Color(0xffe0262c),
+    );
+    stroke(
+      const Offset(140, 132),
+      const Offset(240, 150),
+      3,
+      const Color(0xff1e2ad0),
+    );
+    stroke(
+      const Offset(24, 236),
+      const Offset(120, 160),
+      2,
+      const Color(0xff101010),
+    );
+    stroke(
+      const Offset(130, 240),
+      const Offset(230, 180),
+      22,
+      const Color(0xffe8d424),
+    );
+    canvas.drawOval(
+      const Rect.fromLTWH(40, 170, 70, 40),
+      Paint()..color = const Color(0xff2cbc44),
     );
   } else if (kind == 'mask') {
     canvas.drawOval(

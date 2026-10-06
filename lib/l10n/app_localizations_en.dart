@@ -1706,7 +1706,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get helpDrawingFilterDesc =>
-      'Filters applied directly to the selected layer (as opposed to effect filters, which apply across the whole timeline or a scene, draw filters work per layer). The 26 included filters are Gaussian Blur, Lens Blur, Anime Style, Tone Curve, Levels, Outline, Sharpen, Unsharp Mask, Vignette, Film Grain, Retro Anime, CRT, Threshold, Fisheye Lens, Chromatic Aberration, Lens Distortion, Pixel Art, Texture Filter, Background Blend, Ink Pool, Auto Line Art, Prism, VHS Noise, Invert, Mosaic, and Noise. Outline does not rewrite the original layer — it draws just the outlined result onto a new layer. Lens Distortion applies a localized warp, like looking through a strong eyeglass lens, only to the area painted on the selection layer. Pixel Art also lets you choose a color mode (no limit, specify colors, specify color count, or choose from a palette). Auto Line Art lets you edit temporary vector control points before applying the filter. Drag a point to move only that point, tap a segment to add a control point, or tap a point and confirm to delete it. The edited geometry is used directly for the applied result.';
+      'Filters applied directly to the selected layer (as opposed to effect filters, which apply across the whole timeline or a scene, draw filters work per layer). The 26 included filters are Gaussian Blur, Lens Blur, Anime Style, Tone Curve, Levels, Outline, Sharpen, Unsharp Mask, Vignette, Film Grain, Retro Anime, CRT, Threshold, Fisheye Lens, Chromatic Aberration, Lens Distortion, Pixel Art, Texture Filter, Background Blend, Ink Pool, Auto Line Art, Prism, VHS Noise, Invert, Mosaic, and Noise. Outline does not rewrite the original layer — it draws just the outlined result onto a new layer. Lens Distortion applies a localized warp, like looking through a strong eyeglass lens, only to the area painted on the selection layer. Pixel Art also lets you choose a color mode (no limit, specify colors, specify color count, or choose from a palette). Its size can be set as a block size or matched to the canvas resolution (one canvas pixel per dot); either way the dots stay square, with no semi-transparent edge. Auto Line Art lets you edit temporary vector control points before applying the filter. Drag a point to move only that point, tap a segment to add a control point, or tap a point and confirm to delete it. The edited geometry is used directly for the applied result.';
 
   @override
   String get helpLayerKeyframeTitle => 'Layer keyframes (per-part animation)';
@@ -5597,6 +5597,16 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get filterPixelateBlockSize => 'Block size';
+
+  @override
+  String get filterPixelateModeBlock => 'Set block size';
+
+  @override
+  String get filterPixelateModeCanvas => 'Match canvas resolution';
+
+  @override
+  String get filterPixelateModeCanvasHint =>
+      'Treats each canvas pixel as one dot: only the colors and outline become pixel art, without grouping pixels into blocks.';
 
   @override
   String get filterLensDistortionOffsetY => 'Center fine-tune (vertical)';

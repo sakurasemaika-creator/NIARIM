@@ -1670,7 +1670,7 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get helpDrawingFilterDesc =>
-      '直接应用于所选图层的滤镜（演出滤镜作用于整条时间线或整个场景，而绘图滤镜按图层生效）。内置26种滤镜：高斯模糊、镜头模糊、动画风、色调曲线、色阶、描边、锐化、USM锐化、暗角、胶片颗粒、复古动画、显像管、二值化、鱼眼镜头、色差、眼镜断层、像素画、质感变换滤镜、背景融合、积墨、自动线稿、棱镜、VHS噪点、颜色反转、马赛克和噪点。描边不会改写原图层，只会把结果绘制到新图层。眼镜断层只对选区图层中涂抹的范围施加类似高度数眼镜镜片的局部变形。像素画还可选择配色方式（不限制、指定颜色、指定颜色数或从调色板选择）。 自动线稿可在应用滤镜前直接编辑临时Vector控制点。拖动控制点时只移动该点，点击线段可添加控制点，点击控制点并确认后可删除。编辑后的形状会直接用于最终应用结果。';
+      '直接应用于所选图层的滤镜（演出滤镜作用于整条时间线或整个场景，而绘图滤镜按图层生效）。内置26种滤镜：高斯模糊、镜头模糊、动画风、色调曲线、色阶、描边、锐化、USM锐化、暗角、胶片颗粒、复古动画、显像管、二值化、鱼眼镜头、色差、眼镜断层、像素画、质感变换滤镜、背景融合、积墨、自动线稿、棱镜、VHS噪点、颜色反转、马赛克和噪点。描边不会改写原图层，只会把结果绘制到新图层。眼镜断层只对选区图层中涂抹的范围施加类似高度数眼镜镜片的局部变形。像素画还可选择配色方式（不限制、指定颜色、指定颜色数或从调色板选择）。大小可在“指定色块大小”和“匹配画布分辨率”（画布的1个像素＝1个点）之间切换，两种方式下点都保持正方形，不会产生半透明的边缘。 自动线稿可在应用滤镜前直接编辑临时Vector控制点。拖动控制点时只移动该点，点击线段可添加控制点，点击控制点并确认后可删除。编辑后的形状会直接用于最终应用结果。';
 
   @override
   String get helpLayerKeyframeTitle => '图层关键帧（分部件动画）';
@@ -5375,6 +5375,16 @@ class AppLocalizationsZh extends AppLocalizations {
   String get filterPixelateBlockSize => '色块大小';
 
   @override
+  String get filterPixelateModeBlock => '指定色块大小';
+
+  @override
+  String get filterPixelateModeCanvas => '匹配画布分辨率';
+
+  @override
+  String get filterPixelateModeCanvasHint =>
+      '将画布的每个像素视为一个点，不合并为色块，只把颜色和轮廓转换为像素画。';
+
+  @override
   String get filterLensDistortionOffsetY => '中心位置微调（上下）';
 
   @override
@@ -8471,7 +8481,7 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get helpDrawingFilterDesc =>
-      '直接套用於所選圖層的濾鏡（演出濾鏡作用於整條時間軸或整個場景，而繪圖濾鏡按圖層生效）。內建26種濾鏡：高斯模糊、鏡頭模糊、動畫風、色調曲線、色階、外框、銳化、USM銳化、暗角、膠片顆粒、復古動畫、映像管、二值化、魚眼鏡頭、色差、眼鏡斷層、像素畫、質感變換濾鏡、背景融合、積墨、自動線稿、稜鏡、VHS雜訊、色彩反轉、馬賽克和雜訊。外框不會改寫原圖層，只會把結果繪製到新圖層。眼鏡斷層只對選取圖層中塗抹的範圍套用類似高度數眼鏡鏡片的局部變形。像素畫還可選擇配色方式（不限制、指定顏色、指定顏色數或從調色盤選擇）。 自動線稿可在套用濾鏡前直接編輯暫時Vector控制點。拖曳控制點時只移動該點，點擊線段可新增控制點，點擊控制點並確認後可刪除。編輯後的形狀會直接用於最終套用結果。';
+      '直接套用於所選圖層的濾鏡（演出濾鏡作用於整條時間軸或整個場景，而繪圖濾鏡按圖層生效）。內建26種濾鏡：高斯模糊、鏡頭模糊、動畫風、色調曲線、色階、外框、銳化、USM銳化、暗角、膠片顆粒、復古動畫、映像管、二值化、魚眼鏡頭、色差、眼鏡斷層、像素畫、質感變換濾鏡、背景融合、積墨、自動線稿、稜鏡、VHS雜訊、色彩反轉、馬賽克和雜訊。外框不會改寫原圖層，只會把結果繪製到新圖層。眼鏡斷層只對選取圖層中塗抹的範圍套用類似高度數眼鏡鏡片的局部變形。像素畫還可選擇配色方式（不限制、指定顏色、指定顏色數或從調色盤選擇）。大小可在「指定色塊大小」和「配合畫布解析度」（畫布的1個像素＝1個點）之間切換，兩種方式下點都維持正方形，不會產生半透明的邊緣。 自動線稿可在套用濾鏡前直接編輯暫時Vector控制點。拖曳控制點時只移動該點，點擊線段可新增控制點，點擊控制點並確認後可刪除。編輯後的形狀會直接用於最終套用結果。';
 
   @override
   String get helpLayerKeyframeTitle => '圖層關鍵影格（分部件動畫）';
@@ -12174,6 +12184,16 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get filterPixelateBlockSize => '色塊大小';
+
+  @override
+  String get filterPixelateModeBlock => '指定色塊大小';
+
+  @override
+  String get filterPixelateModeCanvas => '配合畫布解析度';
+
+  @override
+  String get filterPixelateModeCanvasHint =>
+      '將畫布的每個像素視為一個點，不合併為色塊，只把顏色和輪廓轉換為像素畫。';
 
   @override
   String get filterLensDistortionOffsetY => '中心位置微調（上下）';

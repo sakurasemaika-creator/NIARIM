@@ -372,6 +372,15 @@ FONT_LICENSES.txt`への本文・著作権表示の追記、`license_screen.dart
   画素は個別に記録せず、レイヤー追加のUndo/Redoが最終状態ごと戻す。部分的な
   タイル差分を再生すると、途中の結合結果を古いタイルで上書きしてしまう）。
   検証は`test/layer_pixels_replace_test.dart`。
+- **レイヤーの画素は「乗算済み（premultiplied）」RGBAである**：タイルは
+  `toByteData(format: ImageByteFormat.rawRgba)`（乗算済み）で読み、
+  `ImageDescriptor.raw`（乗算済みとして解釈）で描くため、描画フィルター等が
+  受け取る`Uint8List`のRGBは**既に不透明度が掛かっている**（不透明度50%の
+  黄色は`[128, 128, 0, 128]`）。不透明度を変える処理（ドット絵の縁を
+  不透明にする等）でRGBをそのまま書き戻すと、縁だけ暗い色になり、
+  パレットへ寄せると別の色（黄色の縁が赤）になる（ドット絵で実際に踏んだ）。
+  色を判定するときは`RGB×255÷α`で戻し、書き戻すときは新しいαを掛けること
+  （`pixel_art_engine.dart`が実例）。テストの入力画素も乗算済みで作ること。
 - **アイコンの縁取りに`Icon`を8個重ねない**：`CanvasIconButton`は
   `Icon.shadows`（ぼかし半径0のShadow×8）で1ウィジェットにしてある。
   `Positioned`で重ねる方式に戻すと、1ボタン9ウィジェット×常時20個前後＝

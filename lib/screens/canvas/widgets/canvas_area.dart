@@ -1767,6 +1767,7 @@ class _CanvasAreaState extends State<CanvasArea> {
         colorMode: brush.pixelColorMode,
         colorLevels: brush.pixelColorLevels,
         paletteColors: brush.pixelExplicitColors,
+        squareBlocks: false,
       );
       tile.setAll(0, quantized);
       // getTileのバッファを直接書き換えているため、TileManager側の

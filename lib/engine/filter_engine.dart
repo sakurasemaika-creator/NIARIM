@@ -198,7 +198,7 @@ Uint8List applyDrawFilterInIsolate(
       data,
       width,
       height,
-      mosaicSize: filter.strength.round().clamp(1, 64),
+      mosaicSize: filter.pixelArtBlockSize,
       colorMode: filter.pixelColorMode,
       colorLevels: filter.colorLevels,
       paletteColors: filter.pixelExplicitColors,
@@ -524,6 +524,7 @@ Uint8List quantizeColors(
     colorMode: colorMode,
     colorLevels: colorLevels,
     paletteColors: paletteColors,
+    squareBlocks: false,
   );
 }
 

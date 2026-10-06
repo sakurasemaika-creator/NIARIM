@@ -3182,7 +3182,7 @@ abstract class AppLocalizations {
   /// No description provided for @helpDrawingFilterDesc.
   ///
   /// In ja, this message translates to:
-  /// **'選択中のレイヤーに直接適用するフィルターです（演出フィルターがタイムライン全体・シーン単位に適用されるのに対し、描画フィルターはレイヤー単位）。ガウスぼかし・レンズぼかし・アニメ風加工・トーンカーブ・レベル補正・縁取り・シャープ・アンシャープマスク・周辺減光・フィルムグレイン・レトロアニメ・ブラウン管・二値化・魚眼レンズ・色収差・眼鏡断層・ドット絵・質感変更フィルター・背景馴染ませ・墨溜まり・自動線画・プリズム・VHSノイズ・色反転・モザイク・ノイズの26種類が用意されています。縁取りは元のレイヤーを書き換えず、縁どった内容だけを新規レイヤーへ描画します。眼鏡断層フィルターは、選択レイヤーで塗った範囲だけに、度数の強い眼鏡レンズのような局所的な歪みをかけられます。ドット絵は配色方式（色を指定しない・色を指定する・色数を指定する・パレットから選ぶ）も選べます。 自動線画では適用前の一時Vector制御点を直接編集できます。点をドラッグするとその点だけを移動し、線分をタップすると制御点を追加、点をタップすると確認後に削除できます。編集した形状がそのまま適用結果になります。'**
+  /// **'選択中のレイヤーに直接適用するフィルターです（演出フィルターがタイムライン全体・シーン単位に適用されるのに対し、描画フィルターはレイヤー単位）。ガウスぼかし・レンズぼかし・アニメ風加工・トーンカーブ・レベル補正・縁取り・シャープ・アンシャープマスク・周辺減光・フィルムグレイン・レトロアニメ・ブラウン管・二値化・魚眼レンズ・色収差・眼鏡断層・ドット絵・質感変更フィルター・背景馴染ませ・墨溜まり・自動線画・プリズム・VHSノイズ・色反転・モザイク・ノイズの26種類が用意されています。縁取りは元のレイヤーを書き換えず、縁どった内容だけを新規レイヤーへ描画します。眼鏡断層フィルターは、選択レイヤーで塗った範囲だけに、度数の強い眼鏡レンズのような局所的な歪みをかけられます。ドット絵は配色方式（色を指定しない・色を指定する・色数を指定する・パレットから選ぶ）も選べます。大きさは「ブロックサイズを指定」と「キャンバス解像度に合わせる」（キャンバスの1画素＝1ドット）を切り替えられ、どちらも正方形のドットのまま半透明の縁を作りません。 自動線画では適用前の一時Vector制御点を直接編集できます。点をドラッグするとその点だけを移動し、線分をタップすると制御点を追加、点をタップすると確認後に削除できます。編集した形状がそのまま適用結果になります。'**
   String get helpDrawingFilterDesc;
 
   /// No description provided for @helpLayerKeyframeTitle.
@@ -9940,6 +9940,24 @@ abstract class AppLocalizations {
   /// In ja, this message translates to:
   /// **'ブロックサイズ'**
   String get filterPixelateBlockSize;
+
+  /// No description provided for @filterPixelateModeBlock.
+  ///
+  /// In ja, this message translates to:
+  /// **'ブロックサイズを指定'**
+  String get filterPixelateModeBlock;
+
+  /// No description provided for @filterPixelateModeCanvas.
+  ///
+  /// In ja, this message translates to:
+  /// **'キャンバス解像度に合わせる'**
+  String get filterPixelateModeCanvas;
+
+  /// No description provided for @filterPixelateModeCanvasHint.
+  ///
+  /// In ja, this message translates to:
+  /// **'キャンバスの1画素を1ドットとして扱い、ブロックにまとめずに色と輪郭だけをドット絵にします。'**
+  String get filterPixelateModeCanvasHint;
 
   /// No description provided for @filterLensDistortionOffsetY.
   ///

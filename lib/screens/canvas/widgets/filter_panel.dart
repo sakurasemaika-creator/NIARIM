@@ -799,13 +799,42 @@ class _FilterPanelState extends State<FilterPanel> {
       case FilterKind.pixelate:
         return Column(
           children: [
-            _paramSlider(
-              l10n.filterPixelateBlockSize,
-              current.strength,
-              1,
-              64,
-              (v) => service.updateFilterParams(current.id, strength: v),
+            SegmentedButton<bool>(
+              key: const ValueKey('pixel-art-size-mode'),
+              segments: [
+                ButtonSegment(
+                  value: false,
+                  label: Text(l10n.filterPixelateModeBlock),
+                ),
+                ButtonSegment(
+                  value: true,
+                  label: Text(l10n.filterPixelateModeCanvas),
+                ),
+              ],
+              selected: {current.pixelArtMatchCanvas},
+              showSelectedIcon: false,
+              onSelectionChanged: (v) {
+                service.updateFilterParams(
+                  current.id,
+                  pixelArtMatchCanvas: v.first,
+                );
+                _updatePreview();
+              },
             ),
+            const SizedBox(height: 6),
+            if (current.pixelArtMatchCanvas)
+              Text(
+                l10n.filterPixelateModeCanvasHint,
+                style: Theme.of(context).textTheme.bodySmall,
+              )
+            else
+              _paramSlider(
+                l10n.filterPixelateBlockSize,
+                current.strength,
+                1,
+                64,
+                (v) => service.updateFilterParams(current.id, strength: v),
+              ),
             PixelColorModeSelector(
               mode: current.pixelColorMode,
               colorLevels: current.colorLevels,
@@ -1974,11 +2003,16 @@ class _FilterPanelState extends State<FilterPanel> {
           centerOffsetY: filter.lensCenterOffsetY * _previewScale,
         );
       case FilterKind.pixelate:
+        // Blocks are measured in canvas pixels; the preview is a scaled-down
+        // copy, so scale them with it.
         return _engine.applyPixelate(
           data,
           width,
           height,
-          mosaicSize: filter.strength.round().clamp(1, 64),
+          mosaicSize: (filter.pixelArtBlockSize * _previewScale).round().clamp(
+            1,
+            64,
+          ),
           colorMode: filter.pixelColorMode,
           colorLevels: filter.colorLevels,
           paletteColors: filter.pixelExplicitColors,
@@ -1988,7 +2022,7 @@ class _FilterPanelState extends State<FilterPanel> {
           data,
           width,
           height,
-          filter.strength.round().clamp(1, 64),
+          (filter.strength * _previewScale).round().clamp(1, 64),
         );
       case FilterKind.auroraHologram:
         return _engine.applyAuroraHologram(

@@ -63,14 +63,15 @@ void main() {
     expect(out.sublist(12, 15), [0, 0, 255]);
   });
 
-  test('opaque source pixels stay opaque and transparent pixels stay transparent', () {
+  test('a block half covered by opaque pixels stays a whole opaque square', () {
     final input = Uint8List.fromList([
       20, 40, 60, 255, 0, 0, 0, 0,
       80, 100, 120, 255, 0, 0, 0, 0,
     ]);
     final out = engine.convert(input, 2, 2,
         pixelSize: 2, colorMode: PixelColorMode.none);
-    expect([out[3], out[7], out[11], out[15]], [255, 0, 255, 0]);
+    expect([out[3], out[7], out[11], out[15]], [255, 255, 255, 255]);
+    expect(out.sublist(0, 3), out.sublist(4, 7));
   });
 
   test('one-color explicit palette does not create semi-transparent fringe', () {
@@ -86,9 +87,10 @@ void main() {
       colorMode: PixelColorMode.explicit,
       paletteColors: const [0xff336699],
     );
-    expect([out[3], out[7], out[11], out[15]], [255, 0, 255, 0]);
-    expect(out.sublist(0, 3), [0x33, 0x66, 0x99]);
-    expect(out.sublist(8, 11), [0x33, 0x66, 0x99]);
+    expect([out[3], out[7], out[11], out[15]], [255, 255, 255, 255]);
+    for (var i = 0; i < out.length; i += 4) {
+      expect(out.sublist(i, i + 3), [0x33, 0x66, 0x99]);
+    }
   });
 
   test('opaque diagonal crossing may use a middle color', () {

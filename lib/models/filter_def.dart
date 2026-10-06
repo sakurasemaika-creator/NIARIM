@@ -93,6 +93,10 @@ class FilterDef {
   final double chromaticShiftZ;
   final PixelColorMode pixelColorMode;
   final List<int> pixelExplicitColors;
+
+  /// Pixel art: one pixel-art pixel per canvas pixel instead of
+  /// [strength]-sized blocks (for pictures drawn at their final resolution).
+  final bool pixelArtMatchCanvas;
   final double hologramBrightness;
   final double hologramSaturation;
   final AuroraHologramPreset hologramPreset;
@@ -167,6 +171,7 @@ class FilterDef {
     this.chromaticShiftZ = 0,
     this.pixelColorMode = PixelColorMode.count,
     this.pixelExplicitColors = const [0xFF000000],
+    this.pixelArtMatchCanvas = false,
     this.hologramBrightness = 0,
     this.hologramSaturation = 0,
     this.hologramPreset = AuroraHologramPreset.silverHologram,
@@ -201,6 +206,10 @@ class FilterDef {
     this.prismBlurPx = 17,
     this.prismDirectionDegrees = 90,
   });
+
+  /// Pixel art block size in canvas pixels.
+  int get pixelArtBlockSize =>
+      pixelArtMatchCanvas ? 1 : strength.round().clamp(1, 64);
 
   FilterDef copyWith({
     String? id,
@@ -242,6 +251,7 @@ class FilterDef {
     double? chromaticShiftZ,
     PixelColorMode? pixelColorMode,
     List<int>? pixelExplicitColors,
+    bool? pixelArtMatchCanvas,
     double? hologramBrightness,
     double? hologramSaturation,
     AuroraHologramPreset? hologramPreset,
@@ -316,6 +326,7 @@ class FilterDef {
       chromaticShiftZ: chromaticShiftZ ?? this.chromaticShiftZ,
       pixelColorMode: pixelColorMode ?? this.pixelColorMode,
       pixelExplicitColors: pixelExplicitColors ?? this.pixelExplicitColors,
+      pixelArtMatchCanvas: pixelArtMatchCanvas ?? this.pixelArtMatchCanvas,
       hologramBrightness: hologramBrightness ?? this.hologramBrightness,
       hologramSaturation: hologramSaturation ?? this.hologramSaturation,
       hologramPreset: hologramPreset ?? this.hologramPreset,
@@ -403,6 +414,7 @@ class FilterDef {
     'chromaticShiftZ': chromaticShiftZ,
     'pixelColorMode': pixelColorMode.name,
     'pixelExplicitColors': pixelExplicitColors,
+    'pixelArtMatchCanvas': pixelArtMatchCanvas,
     'hologramBrightness': hologramBrightness,
     'hologramSaturation': hologramSaturation,
     'hologramPreset': hologramPreset.name,
@@ -546,6 +558,7 @@ class FilterDef {
     pixelExplicitColors:
         (j['pixelExplicitColors'] as List<dynamic>?)?.cast<int>() ??
         const [0xFF000000],
+    pixelArtMatchCanvas: j['pixelArtMatchCanvas'] as bool? ?? false,
     hologramBrightness: (j['hologramBrightness'] as num?)?.toDouble() ?? 0,
     hologramSaturation: (j['hologramSaturation'] as num?)?.toDouble() ?? 0,
     hologramPreset: AuroraHologramPreset.values.firstWhere(
