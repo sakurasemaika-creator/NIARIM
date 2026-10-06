@@ -142,3 +142,74 @@ production sourceのコメントは、コードの意味、設計上の不変条
 機能仕様どおり動作していても、操作手数が多い、入口が見つけにくい、情報階層が不自然、戻る/取消が分かりにくい、設定が散在する、PC/SPの強みを活かせない、theme変更で一部だけ古い色が残る、feedbackが弱い等、**利用者の成功率・理解速度・制作効率を明確に改善できる余地**があれば改善する。
 
 改善は好みだけで行わず、実操作上の負荷、視認性、アクセシビリティ、誤操作、discoverability、手数、consistency、実測性能、商用製品としての情報設計を根拠にする。改善した箇所は必ず同じ操作を再実行し、Visual/functional/regressionで副作用がないことを確認する。
+
+## 世界最高水準のクオリティアップ方針（Award-level benchmark）
+
+全面監査の最終目的は、バグを一つずつ潰して「問題がない」状態にすることではない。**不具合・クラッシュ・データ損失・セキュリティ問題等が発生しないことを最低条件とし、その上で、製品全体を世界最高水準の商用アプリ／Web体験へ引き上げることを最終目的とする。** 「仕様どおり動く」「崩れていない」「テストに通る」だけで満足せず、明確にクオリティを上げられる箇所を積極的に発見し、必要なら既存実装を大きく改善する。
+
+レベル感を「かっこよく」「洗練させて」などの曖昧な形だけで指定しない。実在する国際的なデザイン賞・評価基準を具体的な外部ベンチマークとして使う。
+
+### Webの基準
+
+Webは **The Webby Awards** と **CSS Design Awards（CSSDA）** の受賞・評価水準をベンチマークとする。WebbyはWebサイト／モバイルサイトをContent、Structure and Navigation、Visual Design、Functionality、Interactivity、Innovation、Overall Experience等で評価し、CSS AwardsもDesign、Usability、Creativity、Content、Developmentを横断して評価している。したがって、トップページ1枚だけが印象的でも不十分で、**サイト全体の完成度、導線、内容、インタラクション、技術品質、独自性、総合体験が一貫して高水準であること**を目標にする。
+
+評価時は、受賞作を単に模倣したり流行の演出を足したりせず、NIARIMのブランド・目的・アニメーション制作という専門性に合う形で、次を積極的に改善する。
+
+- 一目で価値と差別化が伝わる情報設計
+- 迷いの少ないnavigation / IA / CTA
+- typography、spacing、grid、composition、art directionの精度
+- responsive時の構図・情報密度・操作性の最適化
+- animation / motion / hover / transitionの意味のある活用
+- contentの質、見出し、説明、proof、ストーリー性
+- interactionの自然さ、feedback、状態変化、micro-interaction
+- performance、semantic structure、accessibility、cross-platform品質
+- ブランドとしての一貫性と記憶に残るdistinctiveness
+- 「綺麗」だけでなく、**実際に使いやすく、理解しやすく、また訪れたくなる体験**になっているか
+
+「賞に出せそう」という印象評価だけで合格にせず、上記観点ごとに具体的な改善余地を探し、必要なら情報設計・レイアウト・コピー・interaction・実装構造まで見直す。
+
+### Appの基準
+
+Appは **Apple Design Awards** と **The Webby Awards の Apps, Software & Immersive 部門**を主なベンチマークとする。Apple Design AwardsはInnovation、Ingenuity、Technical Achievementを評価し、2026年もDelight and Fun、Inclusivity、Innovation、Interaction、Social Impact、Visuals and Graphics等の観点で受賞作を選んでいる。WebbyのApps, Software & ImmersiveもContent、Structure and Navigation、Visual Design、Functionality、Interactivity、Execution、Innovation、Overall Experience等を評価する。
+
+したがってNIARIM Appでは、単に機能数を増やすのではなく、**制作ソフトとしての道具としての完成度と、使う瞬間の気持ちよさを同時に引き上げる**。特に次を評価・改善する。
+
+- 目的達成までの手数と認知負荷
+- tool / panel / timeline / canvasの情報階層
+- touch / stylus / mouse / keyboardそれぞれの自然さ
+- precisionとspeedを両立したinteraction
+- undo/redo、cancel、retry、failure recoveryの安心感
+- state / feedback / loading / progressの明快さ
+- motion、gesture、selection、focus、drag等の気持ちよい応答
+- visual hierarchy、iconography、typography、density、contrast
+- Inclusivity / accessibility
+- 低性能端末を含む性能・安定性
+- 「このアプリだから使いたい」と感じる独自性
+- 新機能追加後も全体の一貫性が上がるarchitecture / design system
+
+「機能があるからOK」ではなく、**その機能を使う体験が既存の一般的な作画・アニメーションアプリより明確に優れているか**を問い、合理的な改善余地があれば改善する。
+
+### 受賞基準を使う際の重要な制約
+
+賞名を基準にすることは、受賞作品のデザインやブランドをそのままコピーすることを意味しない。NIARIM固有の目的、既存ブランド、専門性、ユーザー資産、アクセシビリティ、互換性を維持しながら、**受賞作で見られるレベルの完成度・一貫性・創意性・技術的完成度を到達目標として使う**。
+
+また、派手さを品質と取り違えない。AppleのDesign Principlesでも、Simplicity、Flexibility、Craft、Delightを重視し、Delightは装飾のための装飾ではなく、目的達成を邪魔しない範囲で体験を豊かにすることとされている。したがって、派手な演出を追加するより、1つの操作を自然にする、説明を分かりやすくする、余白や階層を整える、待ち時間を減らす、失敗から安全に戻れるようにする、といった改善も同じかそれ以上に高く評価する。
+
+### 監査時の実務ルール
+
+各Route項目で「不具合なし」だけを終了条件にしない。実画面・実操作を確認したうえで、
+
+1. **Correctness** — 正しく動くか
+2. **Reliability** — 失敗・境界・再試行に強いか
+3. **Usability** — 迷わず自然に使えるか
+4. **Accessibility / Internationalization** — 誰にとっても扱いやすいか
+5. **Performance** — 速く滑らかか
+6. **Visual / Interaction Craft** — 細部まで完成されているか
+7. **Distinctiveness / Innovation** — NIARIMらしい価値があるか
+8. **Overall Experience** — 使い終わったときに「わざわざ使いたい」と思えるか
+
+を順に問い、7または8で明確な改善余地がある場合も改善候補として残す。
+
+改善提案が「好み」にしか基づかない場合は無理に変更しない。一方、操作手数、理解時間、誤操作、視認性、性能、アクセシビリティ、ブランド一貫性、競合との差別化、実際の制作効率などの観察可能な根拠がある場合は、**既存コードを温存することより最終品質を優先して改善する**。
+
+この品質アップフェーズは、Baseline Route完了後だけに限定しない。各画面・機能を監査する時点で改善余地を発見したら、その場で改善してよい。ただしBaselineの固定順序を壊さず、実装変更後は必ず該当Routeの再検証と必要なregressionを行う。
