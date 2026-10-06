@@ -588,7 +588,7 @@ Required:
 
 主要なユーザー操作について、cold/warm起動、画面遷移、設定適用、描画、filter、blur、undo/redo、save/load、import/export、検索、一覧取得、共有/公開等の実行時間を実測する。
 
-各測定は入力サイズ、端末/環境、fixture、測定方法、反復回数、p50/p95等を記録する。jank/frame drop、UI freeze、memory spike、不要なrebuild/allocation/clone、I/O待ち、同期処理も確認する。
+各測定は入力サイズ、端末/環境、fixture、測定方法、反復回数、p50/p95等を記録する。jank/frame drop、UI freeze、memory spike、不要なrebuild/allocation/clone、I/O待ち、同期処理も確認する。 操作inventoryに存在する各操作について、測定可能な処理時間または入力→最初の視覚的feedbackまでの遅延を記録し、測定対象外はN/A理由をEvidenceへ残す。
 入力イベントから最初の視覚的feedbackまでの遅延も必要な操作で測定し、「処理完了まで」だけでなくユーザーが待たされている体感遅延を評価する。
 
 遅い操作はprofile/traceでroot causeを特定し、同じ結果・互換性・安全性を維持できる範囲でキャッシュ、差分更新、非同期化、allocation/clone削減、アルゴリズム改善、バッファ削減、widget rebuild削減、I/O batching、serialization最適化等を実施する。最適化前後を同一条件で比較し、速度だけでなく画像、state、保存、undo/redo、境界条件が一致することを再確認する。
