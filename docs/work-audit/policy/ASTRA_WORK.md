@@ -55,6 +55,21 @@ route lock後の製品変更と、全面監査開始時点で明示的に追加�
 
 開始時刻記録だけのcommit/push、理由のない再監査・重いsuite再実行、復元のためだけの広範な履歴探索をしない。
 
+## 4.1 全画面・全機能・全操作の実操作優先とブラッシュアップ
+
+全面監査では「各画面を見た」「各widgetがテストで存在した」を完了条件にしない。**ユーザーが実際に使うのと同じ操作経路で、全画面・全機能・全露出controlを実操作すること**を必須とする。組合せが有限かつ実行可能な範囲では全通りを実行し、状態・入力値・操作方式が組み合わせ爆発する場合は、重要な直交軸を網羅する自動matrix＋各代表組合せの直接実操作・目視で「未説明の未確認」を残さない。
+
+各機能では少なくとも、入口→設定→入力→操作中の追従→確定→結果確認→Undo/Redo→Cancel/Back→再実行→保存/復元→再訪の一連を実際に通す。対象に存在するtouch、mouse、stylus、keyboard、IME、hover、long-press、drag、scroll、pinch/zoom、resize等を操作し、成功だけでなく境界値、無効値、空/長大データ、disabled、loading、error、offline、permission denied、二重実行、連打、途中離脱、retry/cancelも確認する。
+
+**判定を3層に分ける。**
+- 機能が正しいか：データ・画像・状態・計算結果が意図仕様どおりか。
+- 動きが正しいか：操作中の追従、遷移、feedback、focus、selection、gesture、undo/redo、cancel、再実行が自然か。
+- 見た目が正しいか：操作前/中/後のlayout、spacing、typography、icon、color、overlay、animation、theme、clipping、overflow、alignment、density、tap target等が意図どおりか。
+
+さらに、上記3層すべてで**「仕様どおりには動くが、商用品質としてもっと良くできる」箇所を積極的に探す。** UI/UX、情報設計、導線、操作手数、発見可能性、フィードバック、視覚階層、アクセシビリティ、レスポンシブ、パフォーマンス、制作効率等について明確な改善余地があれば、単なる好みではなく具体的な利用価値を根拠に修正する。修正後は同じ実操作を再実行し、targeted test、visual確認、関連regressionまで行う。
+
+自動化は網羅性を高めるために使ってよいが、**自動test/snapshot/screenshot/DOM/widget treeだけで実操作・意図挙動・visual qualityをPASSにしてはならない。** 実操作できない対象は未確認として残し、必要な実行環境を記録する。
+
 ## 4. 実装・監査品質
 
 NIARIMを世界最高水準の商用製品へ仕上げることを優先し、App/Webを1製品として扱う。必要に応じて再現→影響範囲→root cause→修正→検証→実画面→regressionまで完結させる。品質上有利なら影響を理解した上でrefactor/rewriteしてよい。重大な製品全体変更のみ事前確認する。
