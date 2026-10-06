@@ -118,6 +118,7 @@ lock後の追加監査対象は A105 等のBaseline IDではなく、docs/work-a
 - D029: 最新Visual closure
 - D030: 全品質cross-matrix
 - D031: 最終coverage/completion gate
+- D032: hands-on full-product review and polish
 
 他のD-IDもD001→D031の順序で実行する。登録だけではdoneにせず、実操作・実描画・保存復元・回帰・必要なVisual evidenceを揃える。D-ID中の新発見は末尾へ子TODO化する。
 
