@@ -33,7 +33,10 @@ blockers:
 - advisor blocker: none。S5dはSolで継続可能な通常のlifecycle設計/検証論点。
 - execution: none。S4/S5 queued runnersは双方successを生ログ確認済み。
 
-next_action: current HEAD `770e2c57d0a77c11c1a174b5a07243a71383f369` からS5dを継続し、partial bootstrap failureを注入できる最小test seamとcleanup ownershipを確定する。retry UIを追加する場合はcleanup safetyのtargeted testを先に成立させる。
+last_observed_app_head: `2ecec1e304b72154d31f49df8118241ba01fe409` (audit-state change only; product-head must be refreshed at audit start)
+last_observed_web_head: `a72a72e6ee85d2366e4335850b019f8dbd5f310f` (audit-state change only; product-head must be refreshed at audit start)
+
+next_action: 最新dev_branchを再取得したうえでA001/S5dを継続し、partial bootstrap failureを注入できる最小test seamとcleanup ownershipを確定する。旧 `770e2c57...` を現在HEADとして扱わない。
 
 ## 2026-10-06 product-delta synchronization note
 
@@ -118,3 +121,8 @@ lock後の追加監査対象は A105 等のBaseline IDではなく、docs/work-a
 
 他のD-IDもD001→D031の順序で実行する。登録だけではdoneにせず、実操作・実描画・保存復元・回帰・必要なVisual evidenceを揃える。D-ID中の新発見は末尾へ子TODO化する。
 
+
+
+## 2026-10-06 state freshness rule
+
+このProgressは監査開始時に必ず両repoの最新dev_branch HEADを再取得して比較する。ここに記録されたlast_observed_*は再開位置の補助情報であり、現在HEADの代用ではない。製品変更があった場合は、current_idを勝手にdoneへ進めず、現在IDの前提をscope-boundedに再確認し、変更が監査対象ならD-seriesまたはDiscoveryへ登録する。
