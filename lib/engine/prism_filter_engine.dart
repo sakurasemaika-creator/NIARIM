@@ -39,8 +39,6 @@ class PrismFilterEngine {
   static const double minBlurPx = 0;
   static const double maxBlurPx = 40;
   static const double defaultBlurPx = 17;
-  static const double minDirectionDegrees = 0;
-  static const double maxDirectionDegrees = 359;
   static const double defaultDirectionDegrees = 90;
 
   final FilterEngine _filterEngine;

@@ -9,7 +9,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:provider/provider.dart';
 
-import '../../../engine/autofill_engine.dart' show AutofillCheckMode, applyAutofillCheckColor, autofillCheckColor;
+import '../../../engine/autofill_engine.dart'
+    show AutofillCheckMode, applyAutofillCheckColor, autofillCheckColor;
 import '../../../engine/bucket_fill_engine.dart';
 import '../../../engine/drawing_engine.dart';
 import '../../../engine/filter_engine.dart' show FilterEngine;
@@ -44,9 +45,7 @@ import '../../../services/tone_service.dart';
 import '../canvas_screen.dart';
 import 'pen_sub_tool_panel.dart' show PenSubTool;
 
-/// 選択範囲の変形の内部モード（移動・拡大縮小・回転）。
-/// 外部（キャンバス左下のモード切替ボタン）からは[SelectionTransformMode]で
-/// 指定され、[_modeOf]でこの内部表現へ変換される。
+/// 選択範囲の変形のモード（移動・拡大縮小・回転）。
 enum _TransformMode { translate, scale, rotate }
 
 /// キャンバスウィジェット上で、実際にプロジェクトの内容
@@ -368,8 +367,10 @@ class CanvasArea extends StatefulWidget {
   final int invertSelectionToken;
   final int selectAllSelectionToken;
   final int clearSelectionToken;
+
   /// 自動選択の参照元。false=作業レイヤーのみ、true=表示中レイヤーすべて。
   final bool selectionReferenceAllVisible;
+
   /// When true, freehand selection follows nearby line-art contours.
   final bool lassoSnapToLines;
   final ValueChanged<bool>? onSelectionActiveChanged;
@@ -908,9 +909,9 @@ class _CanvasAreaState extends State<CanvasArea> {
     _setSelectionMask(mask, w, h);
   }
 
-
   Future<void> _prepareLassoSnapReference() async {
-    if (!widget.lassoSnapToLines || widget.currentTool != DrawingTool.selectLasso) {
+    if (!widget.lassoSnapToLines ||
+        widget.currentTool != DrawingTool.selectLasso) {
       _lassoSnapReference = null;
       return;
     }
@@ -1485,7 +1486,9 @@ class _CanvasAreaState extends State<CanvasArea> {
     if (widget.currentTool == DrawingTool.selectLasso) {
       var points = List<Offset>.of(_lassoPoints);
       final reference = _lassoSnapReference;
-      if (widget.lassoSnapToLines && reference != null && _lassoGuidePoints.length >= 3) {
+      if (widget.lassoSnapToLines &&
+          reference != null &&
+          _lassoGuidePoints.length >= 3) {
         points = _lassoLineSnapEngine.snapPath(
           guide: _lassoGuidePoints,
           rgba: reference,
@@ -3360,7 +3363,9 @@ class _CanvasAreaState extends State<CanvasArea> {
   /// レイヤー一覧と参照が変わっていない限り再合成をスキップする（低スペック
   /// 端末対策）。
   Future<ui.Image> _autofillCheckImage(ui.Image source, int argb) async {
-    final data = await source.toByteData(format: ui.ImageByteFormat.rawStraightRgba);
+    final data = await source.toByteData(
+      format: ui.ImageByteFormat.rawStraightRgba,
+    );
     if (data == null) return source.clone();
     final recolored = applyAutofillCheckColor(data.buffer.asUint8List(), argb);
     final buffer = await ui.ImmutableBuffer.fromUint8List(recolored);
@@ -3387,12 +3392,18 @@ class _CanvasAreaState extends State<CanvasArea> {
     for (var i = layers.length - 1; i >= 0; i--) {
       final layer = layers[i];
       if (!layer.isVisible || layer.type != LayerType.autoFill) continue;
-      final raw = await _tileManager.compositeLayerToImage(_tileKeyFor(layer.id));
+      final raw = await _tileManager.compositeLayerToImage(
+        _tileKeyFor(layer.id),
+      );
       final color = autofillCheckColor(widget.autofillCheckMode, partIndex++);
       final preview = await _autofillCheckImage(raw, color);
       raw.dispose();
       final opacity = (layer.opacity.clamp(0, 100) * 255 / 100).round();
-      canvas.drawImage(preview, ui.Offset.zero, ui.Paint()..color = ui.Color.fromARGB(opacity, 255, 255, 255));
+      canvas.drawImage(
+        preview,
+        ui.Offset.zero,
+        ui.Paint()..color = ui.Color.fromARGB(opacity, 255, 255, 255),
+      );
       preview.dispose();
     }
     final picture = recorder.endRecording();

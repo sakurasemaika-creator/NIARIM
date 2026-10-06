@@ -1,7 +1,5 @@
 import 'package:flutter/widgets.dart';
 
-enum TwoFingerVerticalSwipeDirection { up, down }
-
 /// Detects deliberate two-finger vertical swipes without entering Flutter's
 /// gesture arena. Single-finger taps, scrolling, and the layer reorder handle
 /// therefore keep their existing behavior.

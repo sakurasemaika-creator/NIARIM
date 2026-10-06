@@ -48,7 +48,6 @@ class ShortcutWidgetDesign {
   static const double tileSize = 150;
   static const double cornerRadius = 24;
   static const double horizontalPadding = 14;
-  static const double verticalPadding = 16;
   static const double iconSize = 60;
   static const double labelSize = 18;
   static const double subLabelSize = 12;

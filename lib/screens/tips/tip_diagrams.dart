@@ -162,8 +162,8 @@ class _TipDiagramPainter extends CustomPainter {
     ..strokeWidth = 1.8;
 
   /// [icon]の実際のグリフ（Material Icons）をCanvasへ直接描画する
-  /// （help_diagrams.dartの_drawIconと同じ手法。実アイコンを使うことで
-  /// 抽象的な図形だけよりも実画面に近い印象にする）。
+  /// （実アイコンを使うことで、抽象的な図形だけよりも実画面に近い印象に
+  /// する）。
   void _drawIcon(
     Canvas canvas,
     IconData icon,

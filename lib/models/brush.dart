@@ -747,6 +747,4 @@ class FadeEndpointSettings {
       );
 }
 
-const List<int> kMixingRateOptions = [0, 20, 40, 60, 80, 100];
-
 enum BrushMixingMode { off, simple, bleed }

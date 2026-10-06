@@ -22,16 +22,33 @@ int autofillCheckColor(AutofillCheckMode mode, int partIndex) {
       final h = hue / 60.0;
       final x = 1.0 - ((h % 2.0) - 1.0).abs();
       double r = 0, g = 0, b = 0;
-      if (h < 1) { r = 1; g = x; }
-      else if (h < 2) { r = x; g = 1; }
-      else if (h < 3) { g = 1; b = x; }
-      else if (h < 4) { g = x; b = 1; }
-      else if (h < 5) { r = x; b = 1; }
-      else { r = 1; b = x; }
+      if (h < 1) {
+        r = 1;
+        g = x;
+      } else if (h < 2) {
+        r = x;
+        g = 1;
+      } else if (h < 3) {
+        g = 1;
+        b = x;
+      } else if (h < 4) {
+        g = x;
+        b = 1;
+      } else if (h < 5) {
+        r = x;
+        b = 1;
+      } else {
+        r = 1;
+        b = x;
+      }
       // saturation=0.88, value=0.95 相当。黒背景でも白背景でも判別しやすい。
       const saturation = 0.88;
       const value = 0.95;
-      int channel(double v) => (((1 - saturation) + saturation * v) * value * 255).round().clamp(0, 255);
+      int channel(double v) =>
+          (((1 - saturation) + saturation * v) * value * 255).round().clamp(
+            0,
+            255,
+          );
       return 0xFF000000 | (channel(r) << 16) | (channel(g) << 8) | channel(b);
   }
 }
@@ -578,12 +595,6 @@ class AutofillEngine {
     }
     return visited;
   }
-
-  bool isUpToDate({
-    required int lineartHash,
-    required int presetHash,
-    required int lastUpdateHash,
-  }) => (lineartHash ^ presetHash) == lastUpdateHash;
 
   // ─── グラデーション（塗り色設定・グラデーション） ─────────────
 

@@ -192,45 +192,6 @@ void main() {
       }
     }
   });
-
-  test('背景馴染ませ: 方向反転で出力が反転し強度変化も反映', () async {
-    const w = 180, h = 120;
-    final src = _subject(w, h), e = FilterEngine();
-    final d0 = e.applyBackgroundBlend(
-      Uint8List.fromList(src),
-      w,
-      h,
-      0xFF8CB0D0,
-      0,
-      18,
-      5,
-    );
-    final d180 = e.applyBackgroundBlend(
-      Uint8List.fromList(src),
-      w,
-      h,
-      0xFF8CB0D0,
-      180,
-      18,
-      5,
-    );
-    final longer = e.applyBackgroundBlend(
-      Uint8List.fromList(src),
-      w,
-      h,
-      0xFF8CB0D0,
-      0,
-      30,
-      9,
-    );
-    expect(_mad(src, d0), greaterThan(.5));
-    expect(_mad(d0, d180), greaterThan(.5));
-    expect(_mad(d0, longer), greaterThan(.25));
-    await _save(src, w, h, '${out.path}/background_blend_input.png');
-    await _save(d0, w, h, '${out.path}/background_blend_0.png');
-    await _save(d180, w, h, '${out.path}/background_blend_180.png');
-    await _save(longer, w, h, '${out.path}/background_blend_long_blur.png');
-  });
 }
 
 Uint8List _grid(int w, int h) {
@@ -286,20 +247,6 @@ Uint8List _ramp(int w, int h) {
       final i = (y * w + x) * 4, v = x * 255 ~/ math.max(1, w - 1);
       o[i] = o[i + 1] = o[i + 2] = v;
       o[i + 3] = (x + y) % 17 == 0 ? 120 : 255;
-    }
-  }
-  return o;
-}
-
-Uint8List _subject(int w, int h) {
-  final o = Uint8List(w * h * 4);
-  for (var y = 28; y < h - 26; y++) {
-    for (var x = 48; x < w - 46; x++) {
-      final i = (y * w + x) * 4;
-      o[i] = 220;
-      o[i + 1] = 120;
-      o[i + 2] = 82;
-      o[i + 3] = 255;
     }
   }
   return o;

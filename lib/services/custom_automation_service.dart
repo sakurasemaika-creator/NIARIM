@@ -209,13 +209,6 @@ class CustomAutomationService extends ChangeNotifier {
     notifyListeners();
   }
 
-  void renameDraft(String name) {
-    final draft = _draft;
-    if (draft == null) return;
-    draft.name = name.trim();
-    notifyListeners();
-  }
-
   Future<CustomAutomation?> saveDraft() async {
     final draft = _draft;
     if (draft == null || draft.name.trim().isEmpty || draft.steps.isEmpty) {

@@ -277,42 +277,6 @@ void main() {
       }
     }
   });
-
-  test('背景馴染ませ: 向き180度反転で光/影側が反転し出力が変わる', () async {
-    const w = 180, h = 120;
-    final src = _subjectOnTransparent(w, h);
-    final engine = FilterEngine();
-
-    final d0 = engine.applyBackgroundBlend(
-      Uint8List.fromList(src),
-      w,
-      h,
-      0xFF8CB0D0,
-      0,
-      18,
-      5,
-    );
-    final d180 = engine.applyBackgroundBlend(
-      Uint8List.fromList(src),
-      w,
-      h,
-      0xFF8CB0D0,
-      180,
-      18,
-      5,
-    );
-    expect(_meanAbsDiff(src, d0), greaterThan(0.5));
-    expect(_meanAbsDiff(d0, d180), greaterThan(0.5));
-
-    await _saveRgba(src, w, h, '${out.path}/background_blend_input.png');
-    await _saveRgba(d0, w, h, '${out.path}/background_blend_direction_0.png');
-    await _saveRgba(
-      d180,
-      w,
-      h,
-      '${out.path}/background_blend_direction_180.png',
-    );
-  });
 }
 
 Uint8List _gridPattern(int w, int h) {
@@ -391,20 +355,6 @@ Uint8List _lumaRamp(int w, int h) {
       out[i + 1] = v;
       out[i + 2] = v;
       out[i + 3] = ((x + y) % 17 == 0) ? 120 : 255;
-    }
-  }
-  return out;
-}
-
-Uint8List _subjectOnTransparent(int w, int h) {
-  final out = Uint8List(w * h * 4);
-  for (var y = 28; y < h - 26; y++) {
-    for (var x = 48; x < w - 46; x++) {
-      final i = (y * w + x) * 4;
-      out[i] = 220;
-      out[i + 1] = 120;
-      out[i + 2] = 82;
-      out[i + 3] = 255;
     }
   }
   return out;

@@ -53,7 +53,6 @@ class ShortcutBinding {
   LogicalKeyboardKey get key => LogicalKeyboardKey(keyId);
 
   bool get isToolAction => toolKey != null;
-  bool get isAutomationAction => automationId != null;
 
   SingleActivator get activator => SingleActivator(
     key,

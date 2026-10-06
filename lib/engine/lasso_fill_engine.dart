@@ -1,6 +1,5 @@
 import 'dart:typed_data';
 import 'dart:ui' as ui;
-import 'dart:math' as math;
 
 /// 投げ縄塗りの確定処理（低スペック端末でのUIスレッドブロック防止のため
 /// compute()経由のバックグラウンドisolateで実行する想定のトップレベル関数）。
@@ -244,19 +243,5 @@ class LassoFillEngine {
       if (y < height - 1) tryAdd(pos + width);
     }
     return result;
-  }
-
-  /// 投げ縄の境界ボックスを取得
-  ui.Rect getBoundingBox(List<ui.Offset> points) {
-    if (points.isEmpty) return ui.Rect.zero;
-    double minX = points.first.dx, maxX = points.first.dx;
-    double minY = points.first.dy, maxY = points.first.dy;
-    for (final p in points) {
-      minX = math.min(minX, p.dx);
-      maxX = math.max(maxX, p.dx);
-      minY = math.min(minY, p.dy);
-      maxY = math.max(maxY, p.dy);
-    }
-    return ui.Rect.fromLTRB(minX, minY, maxX, maxY);
   }
 }

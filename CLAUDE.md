@@ -360,7 +360,8 @@ FONT_LICENSES.txt`への本文・著作権表示の追記、`license_screen.dart
   1ボタンにつき9件ヒットして`findsOneWidget`が使えなくなる。
   同様に、`CustomPainter`で同じ字形を何度も描くときは`TextPainter`を
   1回だけ`layout()`して使い回すこと（`layout()`はテキストシェーピングを
-  伴う重い処理。`help_diagrams.dart`の`_drawOutlinedIcon`が参考）。
+  伴う重い処理。縁取りなら、1回`layout()`した`TextPainter`をオフセットだけ
+  変えて8回`paint()`する）。
 - **`TransformationController`にblanketなリスナーを張らない**：
   `addListener(() => setState(() {}))`にすると、パン・ピンチのたびに
   `CanvasArea`全体（build()は150行超）が再ビルドされる。変換値に依存するのは

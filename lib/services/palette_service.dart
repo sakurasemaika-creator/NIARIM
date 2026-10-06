@@ -190,21 +190,4 @@ class PaletteService extends ChangeNotifier {
     await _persistPalettes();
     notifyListeners();
   }
-
-  Future<void> reorderColorInPalette(
-    String paletteId,
-    int oldIndex,
-    int newIndex,
-  ) async {
-    final idx = _palettes.indexWhere((p) => p.id == paletteId);
-    if (idx < 0) return;
-    final colors = List<int>.from(_palettes[idx].colors);
-    if (oldIndex < 0 || oldIndex >= colors.length) return;
-    final item = colors.removeAt(oldIndex);
-    final target = newIndex > oldIndex ? newIndex - 1 : newIndex;
-    colors.insert(target.clamp(0, colors.length), item);
-    _palettes[idx] = _palettes[idx].copyWith(colors: colors);
-    await _persistPalettes();
-    notifyListeners();
-  }
 }
