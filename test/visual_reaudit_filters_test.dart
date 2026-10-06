@@ -219,7 +219,7 @@ void main() {
 
     expect(
       kinds.length,
-      24,
+      25,
       reason: '新しいFilterKind追加時はVisual Audit対象を自動的に増やすこと',
     );
   }, timeout: const Timeout(Duration(minutes: 3)));
