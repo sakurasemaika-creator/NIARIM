@@ -43,7 +43,7 @@ class _CommunityMyWorksScreenState extends State<CommunityMyWorksScreen> {
     final community = context.read<CommunityService>();
     final api = community.api;
     if (api == null || !auth.isSignedIn) {
-      community.setCurrentUserId(null);
+      community.forgetOwner();
       setState(() {
         _ownerWorks = null;
         _youtubePrivacyById = const <String, String>{};
@@ -58,9 +58,10 @@ class _CommunityMyWorksScreenState extends State<CommunityMyWorksScreen> {
       _worksError = null;
     });
     try {
-      final page = await api.myWorks();
+      // Also tells the service who the poster is and keeps their works,
+      // hidden ones included, in its store.
+      final page = (await community.loadOwnWorks())!;
       final works = page.works;
-      community.setCurrentUserId(page.authorId);
       final converted = works.map((w) => w.toCommunityWork()).toList()
         ..sort((a, b) => b.postedAt.compareTo(a.postedAt));
       final privacy = <String, String>{
@@ -186,23 +187,19 @@ class _CommunityMyWorksScreenState extends State<CommunityMyWorksScreen> {
       return;
     }
 
-    final api = context.read<CommunityService>().api;
-    if (api == null || _visibilityBusy.contains(work.id)) return;
+    final community = context.read<CommunityService>();
+    if (community.api == null || _visibilityBusy.contains(work.id)) return;
     setState(() => _visibilityBusy.add(work.id));
     try {
-      final updated = await api.updateWorkVisibility(
-        work.id,
-        isNiarimPublished: published,
-      );
+      // The service applies the reply, so every surface follows at once.
+      final next = await community.setNiarimVisibility(work.id, published);
       if (!mounted) return;
-      final next = updated.toCommunityWork();
       setState(() {
         final works = _ownerWorks;
         if (works == null) return;
         final i = works.indexWhere((w) => w.id == next.id);
         if (i >= 0) works[i] = next;
       });
-      await context.read<CommunityService>().refreshFromBackend();
     } catch (error) {
       if (!mounted) return;
       ScaffoldMessenger.of(

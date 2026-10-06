@@ -5672,6 +5672,9 @@ class AppLocalizationsKo extends AppLocalizations {
       '변경 사항을 저장하지 못했습니다. 연결 상태를 확인하고 다시 시도해 주세요.';
 
   @override
+  String get communityEditSignInRequired => '변경하려면 Google 계정으로 로그인해 주세요';
+
+  @override
   String get communityFloatingPreviewDetailButton => '상세보기';
 
   @override

@@ -2430,6 +2430,7 @@
   "communityWorkNotFoundMessage": "未找到该作品",
   "communityWorkHiddenByFilterMessage": "该作品已按显示筛选设置隐藏",
   "communityEditFailed": "无法保存更改。请检查连接后重试。",
+  "communityEditSignInRequired": "请使用Google账号登录后再进行更改",
   "communityFloatingPreviewDetailButton": "详情",
   "communityFloatingPreviewPlayTooltip": "播放",
   "communityFloatingPreviewPauseTooltip": "暂停",

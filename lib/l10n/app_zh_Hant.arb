@@ -2429,6 +2429,7 @@
   "communityWorkNotFoundMessage": "找不到該作品",
   "communityWorkHiddenByFilterMessage": "該作品已依顯示篩選設定隱藏",
   "communityEditFailed": "無法儲存變更。請檢查網路連線後再試一次。",
+  "communityEditSignInRequired": "請使用Google帳號登入後再進行變更",
   "communityFloatingPreviewDetailButton": "詳情",
   "communityFloatingPreviewPlayTooltip": "播放",
   "communityFloatingPreviewPauseTooltip": "暫停",

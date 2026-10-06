@@ -5646,6 +5646,9 @@ class AppLocalizationsJa extends AppLocalizations {
   String get communityEditFailed => '変更を保存できませんでした。通信状態を確認して、もう一度お試しください。';
 
   @override
+  String get communityEditSignInRequired => '変更するにはGoogleアカウントでログインしてください';
+
+  @override
   String get communityFloatingPreviewDetailButton => '詳細へ';
 
   @override

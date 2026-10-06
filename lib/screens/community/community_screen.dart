@@ -145,6 +145,18 @@ class _CommunityScreenState extends State<CommunityScreen>
   };
 
   List<CommunityWork> _rankingWorks(List<CommunityWork> allWorks) {
+    final service = context.read<CommunityService>();
+    if (service.isBackendConnected) {
+      // The server's ranking for the period, in its order, as the viewer's
+      // filters allow. It ranks by views; the bookmark order is its own
+      // all-time ranking, or the period's works re-sorted by bookmarks.
+      final ranked = [..._applySearch(service.rankedWorks)];
+      if (_sort == _RankingSort.bookmarks &&
+          _period != _RankingPeriod.allTime) {
+        ranked.sort((a, b) => b.bookmarkCount.compareTo(a.bookmarkCount));
+      }
+      return _sortAscending ? ranked.reversed.toList() : ranked;
+    }
     final filtered = _applySearch(allWorks.toList());
     final window = _periodWindow(_period);
     final now = DateTime.now();

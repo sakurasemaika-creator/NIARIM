@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart' show debugPrint;
 import 'package:provider/provider.dart';
 import 'package:provider/single_child_widget.dart';
 
@@ -130,6 +131,29 @@ Future<List<SingleChildWidget>> buildAppProviders() async {
     ),
   );
   final communityPreviewService = CommunityPreviewService();
+  // The poster's identity follows the signed-in Google account: signing out
+  // or switching accounts forgets it, and signing in learns it again.
+  String? signedInAccountId = googleAuthService.account?.id;
+  void followSignedInAccount() {
+    final accountId = googleAuthService.account?.id;
+    if (accountId == signedInAccountId) return;
+    signedInAccountId = accountId;
+    communityService.forgetOwner();
+    if (accountId != null && communityService.isBackendConnected) {
+      communityService.loadOwnWorks().catchError((Object error) {
+        debugPrint('Could not load the poster\'s own works: $error');
+        return null;
+      });
+    }
+  }
+
+  googleAuthService.addListener(followSignedInAccount);
+  if (signedInAccountId != null && communityService.isBackendConnected) {
+    communityService.loadOwnWorks().catchError((Object error) {
+      debugPrint('Could not load the poster\'s own works: $error');
+      return null;
+    });
+  }
 
   final shareIntentService = ShareIntentService();
   await shareIntentService.init();

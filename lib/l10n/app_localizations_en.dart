@@ -5841,6 +5841,10 @@ class AppLocalizationsEn extends AppLocalizations {
       'Couldn’t save the change. Check your connection and try again.';
 
   @override
+  String get communityEditSignInRequired =>
+      'Sign in with your Google account to make this change';
+
+  @override
   String get communityFloatingPreviewDetailButton => 'Details';
 
   @override

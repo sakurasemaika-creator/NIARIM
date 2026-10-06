@@ -2430,6 +2430,7 @@
   "communityWorkNotFoundMessage": "This work could not be found",
   "communityWorkHiddenByFilterMessage": "This work is hidden by your display filters",
   "communityEditFailed": "Couldn’t save the change. Check your connection and try again.",
+  "communityEditSignInRequired": "Sign in with your Google account to make this change",
   "communityFloatingPreviewDetailButton": "Details",
   "communityFloatingPreviewPlayTooltip": "Play",
   "communityFloatingPreviewPauseTooltip": "Pause",

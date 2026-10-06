@@ -2430,6 +2430,7 @@
   "communityWorkNotFoundMessage": "No se pudo encontrar esta obra",
   "communityWorkHiddenByFilterMessage": "Esta obra está oculta por tus filtros de visualización",
   "communityEditFailed": "No se pudo guardar el cambio. Comprueba la conexión e inténtalo de nuevo.",
+  "communityEditSignInRequired": "Inicia sesión con tu cuenta de Google para hacer este cambio",
   "communityFloatingPreviewDetailButton": "Detalles",
   "communityFloatingPreviewPlayTooltip": "Reproducir",
   "communityFloatingPreviewPauseTooltip": "Pausar",

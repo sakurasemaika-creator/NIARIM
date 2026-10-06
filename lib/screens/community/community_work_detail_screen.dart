@@ -36,15 +36,22 @@ class _CommunityWorkDetailScreenState extends State<CommunityWorkDetailScreen> {
   /// viewer is told.
   Future<void> _reportFailedEdit(
     CommunityService service,
-    Future<bool> edit,
+    Future<bool?> edit,
   ) async {
     final messenger = ScaffoldMessenger.of(context);
-    final failed = AppLocalizations.of(context)!.communityEditFailed;
-    if (!await edit &&
-        service.isBackendConnected &&
-        service.lastError != null) {
-      messenger.showSnackBar(SnackBar(content: Text(failed)));
-    }
+    final l10n = AppLocalizations.of(context)!;
+    // Only an edit the server refused or never received (false) is
+    // reported; null means there was nothing to change.
+    if (await edit != false) return;
+    messenger.showSnackBar(
+      SnackBar(
+        content: Text(
+          service.lastError?.isUnauthorized ?? false
+              ? l10n.communityEditSignInRequired
+              : l10n.communityEditFailed,
+        ),
+      ),
+    );
   }
 
   Future<void> _setAiImageVideoDisclosure(

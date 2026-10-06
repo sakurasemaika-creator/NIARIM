@@ -5942,6 +5942,10 @@ class AppLocalizationsEs extends AppLocalizations {
       'No se pudo guardar el cambio. Comprueba la conexión e inténtalo de nuevo.';
 
   @override
+  String get communityEditSignInRequired =>
+      'Inicia sesión con tu cuenta de Google para hacer este cambio';
+
+  @override
   String get communityFloatingPreviewDetailButton => 'Detalles';
 
   @override

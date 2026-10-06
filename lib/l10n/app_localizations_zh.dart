@@ -5608,6 +5608,9 @@ class AppLocalizationsZh extends AppLocalizations {
   String get communityEditFailed => '无法保存更改。请检查连接后重试。';
 
   @override
+  String get communityEditSignInRequired => '请使用Google账号登录后再进行更改';
+
+  @override
   String get communityFloatingPreviewDetailButton => '详情';
 
   @override
@@ -12034,6 +12037,9 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get communityEditFailed => '無法儲存變更。請檢查網路連線後再試一次。';
+
+  @override
+  String get communityEditSignInRequired => '請使用Google帳號登入後再進行變更';
 
   @override
   String get communityFloatingPreviewDetailButton => '詳情';

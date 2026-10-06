@@ -2430,6 +2430,7 @@
   "communityWorkNotFoundMessage": "Cette œuvre est introuvable",
   "communityWorkHiddenByFilterMessage": "Cette œuvre est masquée par vos filtres d’affichage",
   "communityEditFailed": "Impossible d’enregistrer la modification. Vérifiez votre connexion et réessayez.",
+  "communityEditSignInRequired": "Connectez-vous avec votre compte Google pour effectuer cette modification",
   "communityFloatingPreviewDetailButton": "Détails",
   "communityFloatingPreviewPlayTooltip": "Lecture",
   "communityFloatingPreviewPauseTooltip": "Pause",

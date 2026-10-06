@@ -5952,6 +5952,10 @@ class AppLocalizationsFr extends AppLocalizations {
       'Impossible d’enregistrer la modification. Vérifiez votre connexion et réessayez.';
 
   @override
+  String get communityEditSignInRequired =>
+      'Connectez-vous avec votre compte Google pour effectuer cette modification';
+
+  @override
   String get communityFloatingPreviewDetailButton => 'Détails';
 
   @override

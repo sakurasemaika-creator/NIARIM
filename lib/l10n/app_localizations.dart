@@ -10361,6 +10361,12 @@ abstract class AppLocalizations {
   /// **'変更を保存できませんでした。通信状態を確認して、もう一度お試しください。'**
   String get communityEditFailed;
 
+  /// No description provided for @communityEditSignInRequired.
+  ///
+  /// In ja, this message translates to:
+  /// **'変更するにはGoogleアカウントでログインしてください'**
+  String get communityEditSignInRequired;
+
   /// No description provided for @communityFloatingPreviewDetailButton.
   ///
   /// In ja, this message translates to:

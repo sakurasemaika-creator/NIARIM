@@ -2430,6 +2430,7 @@
   "communityWorkNotFoundMessage": "작품을 찾을 수 없습니다",
   "communityWorkHiddenByFilterMessage": "표시 필터 설정에 따라 이 작품은 숨겨져 있습니다",
   "communityEditFailed": "변경 사항을 저장하지 못했습니다. 연결 상태를 확인하고 다시 시도해 주세요.",
+  "communityEditSignInRequired": "변경하려면 Google 계정으로 로그인해 주세요",
   "communityFloatingPreviewDetailButton": "상세보기",
   "communityFloatingPreviewPlayTooltip": "재생",
   "communityFloatingPreviewPauseTooltip": "일시정지",

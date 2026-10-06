@@ -2728,6 +2728,7 @@
   "communityWorkNotFoundMessage": "作品が見つかりませんでした",
   "communityWorkHiddenByFilterMessage": "表示フィルターの設定により、この作品は非表示になっています",
   "communityEditFailed": "変更を保存できませんでした。通信状態を確認して、もう一度お試しください。",
+  "communityEditSignInRequired": "変更するにはGoogleアカウントでログインしてください",
   "communityFloatingPreviewDetailButton": "詳細へ",
   "communityFloatingPreviewPlayTooltip": "再生",
   "communityFloatingPreviewPauseTooltip": "一時停止",

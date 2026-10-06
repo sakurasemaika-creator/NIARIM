@@ -113,11 +113,10 @@ class CommunityService extends ChangeNotifier {
       for (final work in ranked) {
         _upsert(work);
       }
+      _rankingIds = [for (final work in ranked) work.id];
+      _pruneUnconfirmed();
       notifyListeners();
-      return [
-        for (final work in ranked)
-          if (isDiscoverableForViewer(byId(work.id)!)) byId(work.id)!,
-      ];
+      return rankedWorks;
     } on NiarimApiException catch (e) {
       _lastError = e;
       notifyListeners();
@@ -229,7 +228,11 @@ class CommunityService extends ChangeNotifier {
   // 「フォロー中の作者タブに他者の作品が混ざる」見た目を最初から確認
   // できるよう、_buildDummyRepostsで固定シードの乱数によりあらかじめ
   // 何件か生成しておく。
-  late final List<CommunityRepost> _reposts = _buildDummyReposts(_works);
+  // Demo social data exists only without a backend: it must never be
+  // attributed to real users' works.
+  late final List<CommunityRepost> _reposts = api == null
+      ? _buildDummyReposts(_works)
+      : <CommunityRepost>[];
   // 各authorIdの「自分のブックマーク一覧を他ユーザーに公開するか」設定。
   // ユーザー別ブックマーク一覧の実現可否調査（Task#145・29_動画投稿・
   // ランキング機能仕様.md 21.2節）でプライバシー面から既定非公開を推奨
@@ -241,14 +244,16 @@ class CommunityService extends ChangeNotifier {
   // ダミーデータ。実際のマルチユーザーバックエンドが無いため、自分の
   // ブックマーク（_bookmarkedIds、実際にトグル可能）とは別に固定シードの
   // 乱数で生成する。
-  late final Map<String, Set<String>> _dummyBookmarksByOtherAuthor =
-      _buildDummyBookmarksByAuthor(_works);
+  late final Map<String, Set<String>> _dummyBookmarksByOtherAuthor = api == null
+      ? _buildDummyBookmarksByAuthor(_works)
+      : {};
   // フォロワー一覧（Task#134継続：本人選択制で公開できる妥協案。22.5節）。
   // 他のダミー作者同士が誰をフォローしているかの表示確認用ダミーデータ
   // （固定シードの乱数で生成）。表示時はここへ「自分がフォローして
   // いれば自分自身のID」を加算する（followerIdsOf参照）。
-  late final Map<String, Set<String>> _dummyFollowersByAuthor =
-      _buildDummyFollowersByAuthor(_works);
+  late final Map<String, Set<String>> _dummyFollowersByAuthor = api == null
+      ? _buildDummyFollowersByAuthor(_works)
+      : {};
   // 各authorIdの「自分のフォロワー一覧を他ユーザーに公開するか」設定。
   // ブックマーク一覧の公開設定（_bookmarksPublicByAuthor）と同じパターン。
   // 既定は非公開、他のダミー作者は公開/非公開どちらの見た目も確認できる
@@ -263,7 +268,7 @@ class CommunityService extends ChangeNotifier {
   // 過去に届いた通知として初期化時に生成し、アプリ内通知一覧
   // （21.3節で推奨された方式）として表示する。詳細は22.6節参照。
   late final List<CommunityFollowNotification> _followNotifications =
-      _buildFollowNotifications();
+      api == null ? _buildFollowNotifications() : [];
 
   @visibleForTesting
   void replaceWorksForTest(Iterable<CommunityWork> works) {
@@ -341,6 +346,19 @@ class CommunityService extends ChangeNotifier {
   String? get currentUserId => _currentUserId;
   String? _currentUserId;
 
+  // With a backend the store holds what the server last confirmed: the
+  // latest page, the last ranking and the signed-in poster's own works.
+  Set<String> _latestIds = {};
+  List<String> _rankingIds = const [];
+  final Set<String> _ownIds = {};
+
+  /// The last fetched ranking in the server's order, as the viewer's
+  /// filters allow.
+  List<CommunityWork> get rankedWorks => [
+    for (final id in _rankingIds)
+      if (byId(id) case final work? when isDiscoverableForViewer(work)) work,
+  ];
+
   void setCurrentUserId(String? id) {
     if (_currentUserId == id) return;
     _currentUserId = id;
@@ -353,6 +371,46 @@ class CommunityService extends ChangeNotifier {
 
   bool isOwnAuthor(String authorId) =>
       authorId == (_currentUserId ?? (api == null ? kDummySelfAuthorId : null));
+
+  /// Learns who the signed-in poster is from GET /me/works and keeps their
+  /// works, hidden ones included, in the store so their detail and author
+  /// pages open. Returns the page, or null without a backend.
+  Future<ApiMyWorks?> loadOwnWorks() async {
+    final client = api;
+    if (client == null) return null;
+    final page = await client.myWorks();
+    _currentUserId = page.authorId;
+    _ownIds.clear();
+    for (final apiWork in page.works) {
+      final work = _plazaCopy(apiWork);
+      _ownIds.add(work.id);
+      _upsert(work);
+    }
+    _pruneUnconfirmed();
+    notifyListeners();
+    return page;
+  }
+
+  /// Signing out or switching accounts: the viewer is nobody's poster until
+  /// [loadOwnWorks] runs again, and their hidden works leave the store.
+  void forgetOwner() {
+    if (_currentUserId == null && _ownIds.isEmpty) return;
+    _currentUserId = null;
+    _ownIds.clear();
+    _pruneUnconfirmed();
+    notifyListeners();
+  }
+
+  /// The plaza's copy of a work the server sent: one private or deleted on
+  /// YouTube is not public, whatever its own setting (the owner's API
+  /// replies include such works).
+  static CommunityWork _plazaCopy(ApiWork work) {
+    final converted = work.toCommunityWork();
+    final youtube = work.youtubePrivacyStatus;
+    return youtube == 'private' || youtube == 'deleted'
+        ? converted.copyWith(isNiarimPublished: false)
+        : converted;
+  }
 
   /// Puts the server's copy of a work in place of the local one, so every
   /// surface reading this service sees the change at once without
@@ -372,25 +430,32 @@ class CommunityService extends ChangeNotifier {
     }
   }
 
-  /// Takes in the latest page, in the server's order. Works fetched
-  /// elsewhere (ranking) that are older than the page stay; a known work
-  /// the page should contain but does not is no longer public and goes.
+  /// Takes in the latest page, in the server's order, ahead of the other
+  /// works the server still confirms.
   void _mergeLatest(List<CommunityWork> page) {
-    final ids = {for (final w in page) w.id};
-    final oldest = page.isEmpty
-        ? null
-        : page.map((w) => w.postedAt).reduce((a, b) => a.isBefore(b) ? a : b);
-    final kept = [
+    _latestIds = {for (final w in page) w.id};
+    final others = [
       for (final w in _works)
-        if (!ids.contains(w.id) &&
-            oldest != null &&
-            w.postedAt.isBefore(oldest))
-          w,
+        if (!_latestIds.contains(w.id)) w,
     ];
     _works
       ..clear()
       ..addAll(page)
-      ..addAll(kept);
+      ..addAll(others);
+    _pruneUnconfirmed();
+  }
+
+  /// Drops works the server no longer confirms (one hidden or deleted since
+  /// it was fetched), so no surface keeps showing a stale public copy.
+  void _pruneUnconfirmed() {
+    if (api == null) return;
+    final ranked = _rankingIds.toSet();
+    _works.removeWhere(
+      (w) =>
+          !_latestIds.contains(w.id) &&
+          !ranked.contains(w.id) &&
+          !_ownIds.contains(w.id),
+    );
   }
 
   /// Sets the poster's 「AI画像・AI動画使用」 declaration on [workId]. Only the
@@ -406,18 +471,40 @@ class CommunityService extends ChangeNotifier {
     }
     final client = api;
     if (client != null) {
-      final updated = (await client.updateWorkAiImageVideoDisclosure(
+      final reply = await client.updateWorkAiImageVideoDisclosure(
         workId,
         containsGenerativeAiImageOrVideo: value,
-      )).toCommunityWork();
-      applyServerWork(updated);
-      return updated;
+      );
+      _ownIds.add(workId);
+      applyServerWork(_plazaCopy(reply));
+      return reply.toCommunityWork();
     }
     if (known == null) throw StateError('Unknown work: $workId');
     final updated = known.copyWith(containsGenerativeAiImageOrVideo: value);
     _works[_indexOf(workId)] = updated;
     notifyListeners();
     return updated;
+  }
+
+  /// The poster's NIARIM visibility setting, sent and applied; used by the
+  /// owner list, which knows the setting it wants rather than a toggle.
+  Future<CommunityWork> setNiarimVisibility(String workId, bool value) async {
+    final client = api;
+    if (client == null) {
+      final known = byId(workId);
+      if (known == null) throw StateError('Unknown work: $workId');
+      if (known.isNiarimPublished != value) {
+        await toggleNiarimVisibility(workId);
+      }
+      return byId(workId)!;
+    }
+    final reply = await client.updateWorkVisibility(
+      workId,
+      isNiarimPublished: value,
+    );
+    _ownIds.add(workId);
+    applyServerWork(_plazaCopy(reply));
+    return reply.toCommunityWork();
   }
 
   bool isBookmarked(String workId) => _bookmarkedIds.contains(workId);
@@ -438,22 +525,29 @@ class CommunityService extends ChangeNotifier {
 
   /// Adds a community tag to [workId]. Tag edits, lock changes and the
   /// visibility toggle below apply locally at once; with a backend they are
-  /// then sent, the server's copy replaces the local one, and a refused
-  /// change is undone ([lastError] says why). They return whether the change
-  /// took effect.
-  Future<bool> addTag(String workId, String tag) async {
+  /// then sent and the server's copy replaces the local one. A refused edit
+  /// undoes only itself on the current copy (so a change that succeeded
+  /// meanwhile stays), and [lastError] says why. They return true when the
+  /// edit took effect, false when it was refused, and null when there was
+  /// nothing to do.
+  Future<bool?> addTag(String workId, String tag) async {
     final trimmed = tag.trim();
     final current = byId(workId);
     if (trimmed.isEmpty ||
         current == null ||
         current.tags.contains(trimmed) ||
         current.tags.length >= maxTagsPerWork) {
-      return false;
+      return null;
     }
     return _edit(
-      current,
-      current.copyWith(tags: [...current.tags, trimmed]),
-      (client) => client.updateTag(
+      workId,
+      apply: (w) =>
+          w.tags.contains(trimmed) ? w : w.copyWith(tags: [...w.tags, trimmed]),
+      undo: (w) => w.copyWith(
+        tags: w.tags.where((t) => t != trimmed).toList(),
+        lockedTags: {...w.lockedTags}..remove(trimmed),
+      ),
+      send: (client) => client.updateTag(
         workId,
         action: CommunityTagAction.add,
         tag: trimmed,
@@ -463,32 +557,41 @@ class CommunityService extends ChangeNotifier {
 
   /// Removes a tag. A locked tag cannot be removed (the UI offers no remove
   /// button for it).
-  Future<bool> removeTag(String workId, String tag) async {
+  Future<bool?> removeTag(String workId, String tag) async {
     final current = byId(workId);
-    if (current == null || current.lockedTags.contains(tag)) return false;
+    final at = current?.tags.indexOf(tag) ?? -1;
+    if (current == null || at == -1 || current.lockedTags.contains(tag)) {
+      return null;
+    }
     return _edit(
-      current,
-      current.copyWith(
-        tags: current.tags.where((t) => t != tag).toList(),
-        lockedTags: current.lockedTags.where((t) => t != tag).toSet(),
+      workId,
+      apply: (w) => w.copyWith(
+        tags: w.tags.where((t) => t != tag).toList(),
+        lockedTags: {...w.lockedTags}..remove(tag),
       ),
-      (client) =>
+      undo: (w) => w.tags.contains(tag)
+          ? w
+          : w.copyWith(
+              tags: [...w.tags]..insert(at.clamp(0, w.tags.length), tag),
+            ),
+      send: (client) =>
           client.updateTag(workId, action: CommunityTagAction.remove, tag: tag),
     );
   }
 
   /// Locks or unlocks a tag; only the poster may (the UI offers it to them
   /// alone, and the server refuses anyone else).
-  Future<bool> toggleTagLock(String workId, String tag) async {
+  Future<bool?> toggleTagLock(String workId, String tag) async {
     final current = byId(workId);
-    if (current == null) return false;
-    final lockedTags = {...current.lockedTags};
-    final lock = !lockedTags.remove(tag);
-    if (lock) lockedTags.add(tag);
+    if (current == null) return null;
+    final lock = !current.lockedTags.contains(tag);
+    Set<String> locked(CommunityWork w, bool on) =>
+        on ? {...w.lockedTags, tag} : ({...w.lockedTags}..remove(tag));
     return _edit(
-      current,
-      current.copyWith(lockedTags: lockedTags),
-      (client) => client.updateTag(
+      workId,
+      apply: (w) => w.copyWith(lockedTags: locked(w, lock)),
+      undo: (w) => w.copyWith(lockedTags: locked(w, !lock)),
+      send: (client) => client.updateTag(
         workId,
         action: lock ? CommunityTagAction.lock : CommunityTagAction.unlock,
         tag: tag,
@@ -498,35 +601,38 @@ class CommunityService extends ChangeNotifier {
 
   /// Toggles the work-plaza visibility of the poster's own work
   /// (29_動画投稿・ランキング機能仕様.md, chapter 13).
-  Future<bool> toggleNiarimVisibility(String workId) async {
+  Future<bool?> toggleNiarimVisibility(String workId) async {
     final current = byId(workId);
-    if (current == null) return false;
+    if (current == null) return null;
     final published = !current.isNiarimPublished;
     return _edit(
-      current,
-      current.copyWith(isNiarimPublished: published),
-      (client) =>
+      workId,
+      apply: (w) => w.copyWith(isNiarimPublished: published),
+      undo: (w) => w.copyWith(isNiarimPublished: !published),
+      send: (client) =>
           client.updateWorkVisibility(workId, isNiarimPublished: published),
     );
   }
 
   Future<bool> _edit(
-    CommunityWork before,
-    CommunityWork optimistic,
-    Future<ApiWork> Function(CommunityApi client) send,
-  ) async {
-    _works[_indexOf(before.id)] = optimistic;
+    String workId, {
+    required CommunityWork Function(CommunityWork work) apply,
+    required CommunityWork Function(CommunityWork work) undo,
+    required Future<ApiWork> Function(CommunityApi client) send,
+  }) async {
+    final index = _indexOf(workId);
+    _works[index] = apply(_works[index]);
     notifyListeners();
     final client = api;
     if (client == null) return true;
     _lastError = null;
     try {
-      applyServerWork((await send(client)).toCommunityWork());
+      applyServerWork(_plazaCopy(await send(client)));
       return true;
     } on NiarimApiException catch (error) {
       _lastError = error;
-      final index = _indexOf(before.id);
-      if (index != -1) _works[index] = before;
+      final at = _indexOf(workId);
+      if (at != -1) _works[at] = undo(_works[at]);
       notifyListeners();
       return false;
     }
