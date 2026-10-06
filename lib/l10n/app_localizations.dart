@@ -6251,6 +6251,12 @@ abstract class AppLocalizations {
   /// **'フィルターがありません'**
   String get filterEmpty;
 
+  /// No description provided for @filterPickHint.
+  ///
+  /// In ja, this message translates to:
+  /// **'上の一覧から使うフィルターを選んでください'**
+  String get filterPickHint;
+
   /// No description provided for @filterApplyingTitle.
   ///
   /// In ja, this message translates to:

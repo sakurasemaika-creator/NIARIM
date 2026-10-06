@@ -1289,6 +1289,7 @@
     }
   },
   "filterEmpty": "沒有濾鏡",
+  "filterPickHint": "請從上方列表中選擇濾鏡",
   "filterApplyingTitle": "套用濾鏡中",
   "filterApplyingSubtitle": "{name}　{count}格",
   "@filterApplyingSubtitle": {

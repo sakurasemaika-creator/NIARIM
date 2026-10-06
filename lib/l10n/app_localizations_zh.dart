@@ -3353,6 +3353,9 @@ class AppLocalizationsZh extends AppLocalizations {
   String get filterEmpty => '没有滤镜';
 
   @override
+  String get filterPickHint => '请从上方列表中选择滤镜';
+
+  @override
   String get filterApplyingTitle => '正在应用滤镜';
 
   @override
@@ -10067,6 +10070,9 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get filterEmpty => '沒有濾鏡';
+
+  @override
+  String get filterPickHint => '請從上方列表中選擇濾鏡';
 
   @override
   String get filterApplyingTitle => '套用濾鏡中';

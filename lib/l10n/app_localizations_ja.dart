@@ -3366,6 +3366,9 @@ class AppLocalizationsJa extends AppLocalizations {
   String get filterEmpty => 'フィルターがありません';
 
   @override
+  String get filterPickHint => '上の一覧から使うフィルターを選んでください';
+
+  @override
   String get filterApplyingTitle => 'フィルター適用中';
 
   @override

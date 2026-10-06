@@ -174,7 +174,10 @@ void main() {
     Future<void> closeOpenPanel() async {
       final closeBar = find.byType(PanelCenterCloseBar);
       if (closeBar.evaluate().isEmpty) return;
-      await tester.tap(closeBar.first);
+      // The × sits at the bar's right end; the middle of the bar is empty.
+      await tester.tap(
+        find.descendant(of: closeBar.first, matching: find.byType(IconButton)),
+      );
       await tester.pump(const Duration(milliseconds: 400));
     }
 

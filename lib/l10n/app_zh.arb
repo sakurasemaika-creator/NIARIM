@@ -1289,6 +1289,7 @@
     }
   },
   "filterEmpty": "没有滤镜",
+  "filterPickHint": "请从上方列表中选择滤镜",
   "filterApplyingTitle": "正在应用滤镜",
   "filterApplyingSubtitle": "{name}　{count}帧",
   "@filterApplyingSubtitle": {

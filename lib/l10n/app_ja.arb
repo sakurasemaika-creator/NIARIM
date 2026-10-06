@@ -1545,6 +1545,7 @@
     }
   },
   "filterEmpty": "フィルターがありません",
+  "filterPickHint": "上の一覧から使うフィルターを選んでください",
   "filterApplyingTitle": "フィルター適用中",
   "filterApplyingSubtitle": "{name}　{count}フレーム",
   "@filterApplyingSubtitle": {

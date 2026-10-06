@@ -3380,6 +3380,9 @@ class AppLocalizationsKo extends AppLocalizations {
   String get filterEmpty => '필터가 없습니다';
 
   @override
+  String get filterPickHint => '위 목록에서 사용할 필터를 고르세요';
+
+  @override
   String get filterApplyingTitle => '필터 적용 중';
 
   @override

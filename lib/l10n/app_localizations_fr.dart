@@ -3528,6 +3528,9 @@ class AppLocalizationsFr extends AppLocalizations {
   String get filterEmpty => 'Aucun filtre';
 
   @override
+  String get filterPickHint => 'Choisissez un filtre dans la liste ci-dessus';
+
+  @override
   String get filterApplyingTitle => 'Application du filtre';
 
   @override

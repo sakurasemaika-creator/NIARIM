@@ -1289,6 +1289,7 @@
     }
   },
   "filterEmpty": "필터가 없습니다",
+  "filterPickHint": "위 목록에서 사용할 필터를 고르세요",
   "filterApplyingTitle": "필터 적용 중",
   "filterApplyingSubtitle": "{name}　{count}프레임",
   "@filterApplyingSubtitle": {

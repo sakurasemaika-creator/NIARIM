@@ -1289,6 +1289,7 @@
     }
   },
   "filterEmpty": "Aucun filtre",
+  "filterPickHint": "Choisissez un filtre dans la liste ci-dessus",
   "filterApplyingTitle": "Application du filtre",
   "filterApplyingSubtitle": "{name}　{count} images",
   "@filterApplyingSubtitle": {

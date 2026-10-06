@@ -1289,6 +1289,7 @@
     }
   },
   "filterEmpty": "No filters",
+  "filterPickHint": "Choose a filter from the list above",
   "filterApplyingTitle": "Applying filter",
   "filterApplyingSubtitle": "{name}　{count} frames",
   "@filterApplyingSubtitle": {

@@ -496,7 +496,16 @@ class _FilterPanelState extends State<FilterPanel> {
                 ),
               if (current == null) const Divider(),
               if (current == null)
-                Expanded(child: Center(child: Text(l10n.filterEmpty)))
+                Expanded(
+                  child: Center(
+                    // "No filters" only when the search or favourites leave
+                    // none; otherwise point at the list above.
+                    child: Text(
+                      filters.isEmpty ? l10n.filterEmpty : l10n.filterPickHint,
+                      textAlign: TextAlign.center,
+                    ),
+                  ),
+                )
               else ...[
                 Expanded(
                   child: SingleChildScrollView(

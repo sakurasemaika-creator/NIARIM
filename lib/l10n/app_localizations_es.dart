@@ -3532,6 +3532,9 @@ class AppLocalizationsEs extends AppLocalizations {
   String get filterEmpty => 'No hay filtros';
 
   @override
+  String get filterPickHint => 'Elige un filtro de la lista de arriba';
+
+  @override
   String get filterApplyingTitle => 'Aplicando filtro';
 
   @override

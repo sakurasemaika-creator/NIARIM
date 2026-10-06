@@ -1289,6 +1289,7 @@
     }
   },
   "filterEmpty": "No hay filtros",
+  "filterPickHint": "Elige un filtro de la lista de arriba",
   "filterApplyingTitle": "Aplicando filtro",
   "filterApplyingSubtitle": "{name}　{count} fotogramas",
   "@filterApplyingSubtitle": {
