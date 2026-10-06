@@ -23,9 +23,15 @@ def main(root: Path) -> int:
     errors = []
     if len(ids) != len(set(ids)):
         errors.append("Duplicate delta TODO IDs")
-    missing = [x for x in REQUIRED if x not in ids]
+    expected = [f"D{i:03d}" for i in range(1, 38)]
+    missing = [x for x in expected if x not in ids]
     if missing:
         errors.append("Missing required delta IDs: " + ", ".join(missing))
+    top_level = [x for x in ids if re.fullmatch(r"D\d{3}", x)]
+    if top_level[:len(expected)] != expected:
+        errors.append("Delta top-level IDs are missing or out of order")
+    if "## D037 — 最終全面closure gate" not in text:
+        errors.append("D037 final closure gate missing")
     if "状態: `active`" not in text:
         errors.append("Delta route is not active")
     if "全フィルター" not in text or "質感偏光フィルター" not in text:
