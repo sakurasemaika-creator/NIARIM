@@ -33,8 +33,8 @@ blockers:
 - advisor blocker: none。S5dはSolで継続可能な通常のlifecycle設計/検証論点。
 - execution: none。S4/S5 queued runnersは双方successを生ログ確認済み。
 
-last_observed_app_head: `2ecec1e304b72154d31f49df8118241ba01fe409` (audit-state change only; product-head must be refreshed at audit start)
-last_observed_web_head: `a72a72e6ee85d2366e4335850b019f8dbd5f310f` (audit-state change only; product-head must be refreshed at audit start)
+latest_observed_product_head_app: `ce94a15597f213a168abc682a8f49d53fa3c8508`
+latest_observed_product_head_web: `ed944b291732f5d9bc4ca0617b7213f8ec212be4`
 
 next_action: 最新dev_branchを再取得したうえでA001/S5dを継続し、partial bootstrap failureを注入できる最小test seamとcleanup ownershipを確定する。旧 `770e2c57...` を現在HEADとして扱わない。
 
