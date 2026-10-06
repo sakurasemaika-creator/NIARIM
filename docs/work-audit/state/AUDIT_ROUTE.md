@@ -715,93 +715,13 @@ lock integrityは`AUDIT_ROUTE_LOCK.json`の本文定義SHA256/順序/coverage ha
 | W041 | 一周完了・品質証拠・修正後回帰の閉鎖 | これより前の全ID done・必要証拠あり | 全操作/状態/336/言語/法務/CIの未確認ゼロを検証；重大不具合修正→再操作；テスト自体の妥当性・source coverage再照合 | 未確認・queued/running/既知regressionを隠さない；次の差分回帰へ進める条件を満たす | CROSS | docs/work-audit/state/AUDIT_ROUTE.md | todo |
 | W042 | lock以後の差分回帰フェーズ | 全巡回ID完了・両repo開始SHA→最終HEAD | この時点だけ全差分を列挙；新画面/機能は末尾ID追記；影響UI/保存/API/法務の回帰；最終build/test/matrix・再操作 | 巡回順を動かさず新変更まで検証；未解決/未確認があれば全面completeにしない | CROSS | docs/work-audit/state/AUDIT_ROUTE.md | todo |
 
-## Post-lock product delta registry — 2026-10-06
+## Lock-after comprehensive-audit delta
 
-このRouteの既存順序・既存ID・lock後の完了判定は変更しない。Route lock後に通常開発で追加・変更された機能について、次回の該当TODOまたはlock後差分回帰で必ず監査対象へ取り込むための追補台帳。
+Baseline A001–A104のlocked order/definitionは不変。Route lock後の製品変更と今回明示追加された監査対象は、専用の docs/work-audit/state/AUDIT_DELTA_ROUTE.md を正式なD-series delta routeとして追跡する。
 
-### 最新製品状態
-- App `dev_branch` 最新確認HEAD: `ac5ec59e6f96fa87a0d84f59e09db238ed61a5e5`
-- 旧bootstrap基準SHAは履歴上の監査基準であり、現在の製品状態を示すものではない。
-- 通常開発で追加された新機能・変更は、過去の監査PDFや旧CIのGREENだけで完了扱いしない。
-
-### 追加・変更監査対象
-- 範囲選択の対象レイヤー切替：作業レイヤーのみ／表示レイヤーすべて。
-- 投げ縄「線に吸着」：軌跡・連続性・進行方向・交差角を考慮し、横切る別線へ誤吸着しない。複数領域＋大雑把な外周囲いをVisual fixture化。
-- 球体陰影フィルター：影色／光色、透明色、個別blend mode、楕円光領域、X/Yサイズ、位置、blur、±1操作、数値入力、Canvas drag、逆領域の影、保存復元、Undo/Redo。
-- Gaussian／Lens／Prism：描画領域外へblurを展開し、元alpha境界で再clipしない。
-- Anime Style：線幅変更がある場合の調整slider。
-- Tone Curve：任意control points、graph、histogram、RGB/R/G/B、追加・移動・削除、preset fallback、保存復元、実描画。
-- Levels：Input Black/Gamma/White、Output Black/White、RGB/R/G/B、保存復元、実描画。
-- Filter編集画面：選択後の検索／カード領域を隠してCanvasを最大化、透過UI、テーマカラー文字＋outline。
-- Filter編集Undo/Redo。
-- Outline：線幅＋内側侵食threshold、作業レイヤー直描画禁止、1つ下へ新規レイヤー追加。
-- 「縁取り＋塗り色と同じ線画色」の隙間thresholdをUI→engineまで接続。
-- Vignette：四隅をぼんやり暗くし、strength default 50。
-- Retro Anime：指定手順を自動適用、彩度だけ+5%。Film Grainとの差をVisual確認。
-- CRT：色収差強度＋にじみblur強度。VHSとの視覚差を明確化。
-- Monochrome：UI非表示だけでなく旧FilterKind／engine routeも整理。
-- Fisheye：radius、distortion、center X/Y、Canvas上＋drag。
-- Chromatic Aberration：strength＋X/Y/Z方向調整。
-- 眼鏡断層：diopter／「眼鏡の度数」と表記しない。Filter内maskをpen/eraser/bucketで編集。
-- Pixel Art：範囲外に重なるblockを切断せず正方形維持。黒・白・赤・黄・青・緑の6色。block size／resolution-fit切替。Mosaicとの差をVisual確認。
-- 背景なじませ：縁だけでなく対象全体へ色を適用。必要に応じHard Light等で一括陰影。
-- 墨溜まり：range＋最大太さ、外周端1pxへ滑らかに減衰。
-- Auto Lineart：Apply隣の制御点追加／削除mode、tap追加／削除、既存drag編集、Undo/Redo。
-- 線画色トレス：実結果を確認して原因特定・修正。
-- Blend picker preview：各modeの実プレビュー。25 mode、特にAddition／Linear Dodgeを比較。
-- Prism：Linear Dodgeの明るさ＋外側blurをVisual確認。
-- Automation：オーロラホログラムを削除。Gradient Map側の同名質感変更とは別。
-- Auto Fill：プリセットごとに全パーツが一度に塗られた完成状態をcapture。
-- 作品広場：「AI画像・AI動画使用」フラグを投稿時・投稿後に投稿者本人がON/OFF。AI非表示設定を新着／ランキング／フォロー中／リポスト／Shorts等へ一貫適用。
-- 作品広場：ミュートタイトル／ミュートタグを全表示経路へ一貫適用。SharedPreferences復元時もtrim/lowercase/空項目除外。作者本人の管理表示を不必要にfilterしない。
-- Community backend/API：投稿後の「AI画像・AI動画使用」変更がlocal modelだけで終わらずservice/API/backend→再取得→全閲覧面まで反映。
-- 7言語Help/Tips、保存復元、targeted regression、analyze、Visual PDFを最新HEADで再確認。
-
-### Visual closure
-旧 `NIARIM-functional-visual-closure-2026-09-29-labeled.pdf` は履歴証拠として保持するが、追加仕様を含む最終closureの代替にはしない。最新HEADで再captureし、機能名・BEFORE/SETTINGS/AFTER・preset/mode・主要設定値を画像へ焼き込む。全ページrender確認と実画像目視が終わるまで追加Visual機能は完了扱いにしない。
-
-### 監査への取り込み
-既存IDを並べ替えない。既存TODOに対応するものはそのIDへ紐付け、既存IDで表現できない新規機能はRoute末尾のlock後差分回帰へ追加する。通常全面監査のcurrent_idをこの追補だけで飛ばさない。
-
-
-## Post-lock comprehensive-audit expansion — 2026-10-06
-
-今回の「全面監査」対象として、既存Routeで明示的に網羅されていなかった以下を追加する。既存の監査順序・既存ID・current_id・lock判定は変更しない。これは「監査対象へ追加する」ものであり、実装済み／監査済みを意味しない。実装状態・実操作・保存復元・回帰・Visual evidenceを最新HEADで確認して初めて完了とする。
-
-### 全フィルター
-- 最新HEADで到達可能な**全フィルターを実装実体から再inventory**し、通常フィルターだけでなく、質感変更系を含めて漏れなく監査対象へ割り当てる。
-- **質感偏光フィルター**も明示的に対象へ含める。
-- 各フィルターについて、UI到達、全設定値、適用／取消、Undo/Redo、境界値、保存／復元、実描画結果、7言語、PC/SP、必要なPremium条件、Visual evidenceを確認する。
-- 「全フィルター」は旧PDFや過去の一覧を根拠に固定せず、最新HEADの実装から対象集合を確定する。Gradient Map／質感変更系を監査対象から除外する旧扱いは、この全面監査追加対象には適用しない。
-
-### ブラシカスタム／縁取りペン／折りたたみ
-- **ブラシカスタム全体**：作成、編集、複製、削除、保存／復元、import/export、各設定、実描画、Undo/Redoを監査。
-- **縁取りペン**：通常描画、線幅、内側侵食threshold、色／alpha、境界、保存／復元、実描画、Undo/Redoを独立して監査。
-- **折りたたみモード（Hair Fold）**：縁取りペンの拡張として監査し、別の太い塗りリボンとして扱わない。以下5モードを個別に確認する。
-  - ウェーブ俯瞰
-  - ウェーブ煽り
-  - 右カール
-  - 左カール
-  - 三日月カール
-- Hair Foldは、ユーザー設定のブラシ太さ、taper、曲率／折り返し、方向変化、連続性、境界、保存／復元、実描画を確認する。特に三日月カールの形状・内外曲線・終端接続・急激な太さ変化がないことをVisual確認する。
-- **プリセットの髪の毛ブラシ／前髪ブラシ**：各プリセットを個別の監査対象として、プリセット設定、実描画結果、髪／前髪用途での形状、縁取りペン＋折りたたみモードとの再現性、保存／復元、Visual evidenceを確認する。
-- プリセットが一般ユーザーの設定操作で同等結果を再現できるかも確認し、再現できない場合は特殊なプリセット専用ロジックで隠さず、一般機能として監査・改善対象にする。
-
-### Visual closure
-上記追加対象は、機能名・BEFORE/SETTINGS/AFTER・preset/mode・主要設定値を画像へ焼き込んだ最新Visual PDFへ含める。特に全フィルター、質感偏光、縁取りペン、Hair Fold 5モード、髪の毛ブラシ、前髪ブラシは、実際の適用結果が確認できるVisual evidenceなしに完了扱いにしない。
-
-### 監査への取り込み
-既存A/W IDを並べ替えない。既存IDで表現できる対象はそのIDへ紐付け、独立した検証が必要な上記新規対象はlock後差分回帰の末尾へ明示的な子TODOとして追加する。全面監査のcurrent_idをこの追補だけで飛ばさない。
-
-
-## Lock-after comprehensive-audit delta reference — 2026-10-06
-
-Route lock integrityを壊さないため、lock後の追加監査対象はBaselineのA001–A104行へ割り込ませず、専用の AUDIT_DELTA_ROUTE.md で正式に追跡する。
-
-- Delta TODOの正本: docs/work-audit/state/AUDIT_DELTA_ROUTE.md
-- 既存Baseline: A001–A104（本ファイルのlocked rows）
-- Delta formal TODO: D001 以降。A/WのBaseline IDとして扱わず、lock order / definition hashへ影響させない。
-- 全フィルターは最新HEADから再inventoryし、その時点で1対象=1子TODOへ展開する。**質感変更系／質感偏光フィルターを除外しない。**
-- Brush Custom、縁取りペン、Hair Fold 5モード、髪の毛ブラシpreset、前髪ブラシpresetも個別監査対象とする。
-- Deltaの完了条件はBaselineと同じく、実操作・実描画・保存復元・回帰・必要な7言語/PC-SP/Premium・Visual evidenceを含む。登録だけで完了にしない。
-- Baseline全件完了後、D001以降を番号順に消化する。監査中に新発見があればD番号を末尾へ追加する。
+- D001〜D031はBaseline A/W IDとは別系統で、locked order/definition hashを変更しない。
+- 全フィルターを最新HEADから再inventoryし、質感変更系・Gradient Map系・**質感偏光フィルター**を除外しない。
+- Brush Custom、縁取りペン、Hair Fold 5モード、髪の毛ブラシpreset、前髪ブラシpresetを個別監査対象とする。
+- Deltaは実操作・実描画・保存/復元・targeted regression・必要な7言語/PC-SP/Premium・Visual evidenceまで確認してdoneとする。
+- Delta inventoryで新対象を発見した場合はD-series末尾へ安定した子TODOとして追加する。BaselineのA/W IDを並べ替えない。
+- Baseline完了後にDiscovery（DISC-ID）を消化し、その後D-seriesを番号順に消化する。
