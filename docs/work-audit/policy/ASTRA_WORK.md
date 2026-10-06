@@ -4,7 +4,7 @@
 
 > 起動判定は明示トリガー制。「監査」「PNG監査」「最終green」等の語、作業範囲の広さ、前回作業の継続だけから全面監査へ昇格しない。「以下の会話の続きから」「引き続き」「前回の続き」も全面監査トリガーではない。
 
-> ファイル名 `ASTRA_WORK.md` / `ASTRA_CONTINUATION.md` / `ASTRA_AUDIT_STATE.md` は既存参照を壊さないため当面維持するlegacy nameであり、Astra専用を意味しない。このpolicyに入った明示的な全面監査セッションは、モデルに関係なくRoute/Progress/Evidenceを正規にread/writeできる。
+> ファイル名 `ASTRA_WORK.md` / `ASTRA_CONTINUATION.md` / `ASTRA_AUDIT_STATE.md` は既存参照を壊さないため当面維持するlegacy nameであり、特定のモデル専用を意味しない。このpolicyに入った明示的な全面監査セッションは、モデルに関係なくRoute/Progress/Evidenceを正規にread/writeできる。
 
 ## 0. 正本と分離
 
