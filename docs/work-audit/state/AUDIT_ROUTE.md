@@ -4,7 +4,7 @@
 
 Route version: `2026-09-09-initial-v1`
 
-このファイルはApp/Web共通のBaseline監査順序正本。両repoに同一内容を保存する。lock後deltaの追加対象はAUDIT_DELTA_ROUTE.mdを正本とする。初回bootstrapは今回の明示依頼・両AGENTS・現行ASTRA_WORK・QUALITY/HANDS_ON_UI/LEGAL_IPと以下の実装snapshotだけから構築した。旧ASTRA_CONTINUATION/ASTRA_AUDIT_STATE、audit-dashboardの途中進捗・過去会話・別sessionの話題は参照/転記していない。
+このファイルはApp/Web共通の唯一の監査順序正本。両repoに同一内容を保存する。初回bootstrapは今回の明示依頼・両AGENTS・現行ASTRA_WORK・QUALITY/HANDS_ON_UI/LEGAL_IPと以下の実装snapshotだけから構築した。旧ASTRA_CONTINUATION/ASTRA_AUDIT_STATE、audit-dashboardの途中進捗・過去会話・別sessionの話題は参照/転記していない。
 
 | 実装基準 | dev_branch SHA |
 | --- | --- |
