@@ -1247,7 +1247,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get helpSelectToolDesc =>
-      'Selects part of the canvas so you can move, rotate, or scale just that area. Long-press to choose from three selection methods: \"Rectangle Select,\" \"Lasso Select\" (freeform enclosure), or \"Auto Select\" (magic wand — automatically groups areas of similar color). While a selection is active, an outline marks the selected area on the canvas, and the same area stays fixed across all frames and layers until you deselect.';
+      'Selects part of the canvas so you can move, rotate, or scale just that area. Long-press to choose from three selection methods: \"Rectangle Select,\" \"Lasso Select\" (freeform enclosure), or \"Auto Select\" (magic wand — automatically groups areas of similar color). While a selection is active, an outline marks the selected area on the canvas, and the same area stays fixed across all frames and layers until you deselect. In Lasso Select, turning on \"Snap to lines\" pulls the selection onto the outline of the line art near a roughly drawn lasso. It does not jump to lines inside the shape or to lines crossing the outline. The lines are taken from the selection reference (\"Working layer only\" / \"All visible layers\").';
 
   @override
   String get helpFingerToolTitle => 'Finger Tool (Warp Tool)';

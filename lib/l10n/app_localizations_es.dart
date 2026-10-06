@@ -1271,7 +1271,7 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get helpSelectToolDesc =>
-      'Selecciona parte del lienzo para poder mover, rotar o escalar solo esa área. Mantén pulsado para elegir entre tres métodos de selección: \"Selección rectangular\", \"Selección de lazo\" (contorno libre), o \"Selección automática\" (varita mágica: agrupa automáticamente áreas de color similar). Mientras hay una selección activa, un contorno marca el área seleccionada en el lienzo, y la misma área permanece fija en todos los fotogramas y capas hasta que la deselecciones.';
+      'Selecciona parte del lienzo para poder mover, rotar o escalar solo esa área. Mantén pulsado para elegir entre tres métodos de selección: \"Selección rectangular\", \"Selección de lazo\" (contorno libre), o \"Selección automática\" (varita mágica: agrupa automáticamente áreas de color similar). Mientras hay una selección activa, un contorno marca el área seleccionada en el lienzo, y la misma área permanece fija en todos los fotogramas y capas hasta que la deselecciones. En la selección de lazo, al activar \"Ajustar a las líneas\", la selección se adhiere al contorno del dibujo de líneas cercano a un lazo trazado a grandes rasgos. No salta a las líneas interiores ni a las que cruzan el contorno. Las líneas se toman de la referencia de selección (\"Solo capa de trabajo\" / \"Todas las capas visibles\").';
 
   @override
   String get helpFingerToolTitle => 'Herramienta de dedo (distorsión)';

@@ -1266,7 +1266,7 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get helpSelectToolDesc =>
-      'Sélectionne une partie du canevas afin de pouvoir déplacer, faire pivoter ou redimensionner uniquement cette zone. Un appui long permet de choisir parmi trois méthodes de sélection : « Sélection rectangulaire », « Sélection au lasso » (contour libre), ou « Sélection automatique » (baguette magique — regroupe automatiquement les zones de couleur similaire). Pendant une sélection, un contour marque la zone sélectionnée sur le canevas, et la même zone reste fixée sur toutes les images et tous les calques jusqu\'à ce que vous désélectionniez.';
+      'Sélectionne une partie du canevas afin de pouvoir déplacer, faire pivoter ou redimensionner uniquement cette zone. Un appui long permet de choisir parmi trois méthodes de sélection : « Sélection rectangulaire », « Sélection au lasso » (contour libre), ou « Sélection automatique » (baguette magique — regroupe automatiquement les zones de couleur similaire). Pendant une sélection, un contour marque la zone sélectionnée sur le canevas, et la même zone reste fixée sur toutes les images et tous les calques jusqu\'à ce que vous désélectionniez. En sélection au lasso, activer « Magnétiser aux lignes » colle la sélection au contour du dessin au trait proche d\'un lasso tracé grossièrement. Elle ne passe ni aux traits intérieurs ni aux traits qui croisent le contour. Les traits sont pris dans la référence de sélection (« Calque de travail uniquement » / « Tous les calques visibles »).';
 
   @override
   String get helpFingerToolTitle => 'Outil doigt (déformation)';
