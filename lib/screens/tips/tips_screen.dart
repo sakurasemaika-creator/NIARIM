@@ -621,6 +621,15 @@ List<_TipCategory> _buildTipCategories(AppLocalizations l10n) => [
         l10n.tipsLensDistortionTitle,
         l10n.tipsLensDistortionDesc,
       ),
+      _Tip(
+        TipDiagramSpec(
+          TipDiagramKind.pairCombo,
+          iconA: Icons.brightness_medium,
+          iconB: Icons.layers,
+        ),
+        l10n.tipsSphereShadingTitle,
+        l10n.tipsSphereShadingDesc,
+      ),
     ],
   ),
   _TipCategory(

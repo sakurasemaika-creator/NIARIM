@@ -25,6 +25,7 @@ import '../../../services/filter_service.dart';
 import '../../../services/premium_service.dart';
 import '../../../services/project_service.dart';
 import '../../../services/theme_service.dart';
+import '../../../utils/blend_mode_label.dart';
 import '../../../widgets/editable_slider_value.dart';
 import '../../../widgets/grab_pan_gesture_recognizer.dart';
 import '../../../widgets/pixel_color_mode_selector.dart';
@@ -72,6 +73,10 @@ class _FilterPanelState extends State<FilterPanel> {
   bool _applying = false;
   int _toneCurveChannel = 0; // 0=RGB, 1=R, 2=G, 3=B
   int _levelsChannel = 0; // 0=RGB, 1=R, 2=G, 3=B
+  // While editing, the controls can be folded away to leave only the name
+  // and Undo / Redo / Apply over the canvas (to see it, and to reach what a
+  // filter shows on it, such as sphere shading's light).
+  bool _collapsed = false;
 
   Uint8List? _previewBase;
   Uint8List? _previewMask;
@@ -91,7 +96,7 @@ class _FilterPanelState extends State<FilterPanel> {
   int _canvasW = 1;
   int _canvasH = 1;
   ui.Image? _previewImage;
-  String? _previewFilterId;
+  FilterDef? _previewRequestedFor;
   final Set<int> _editPointers = {};
   FilterService? _editGroupService;
 
@@ -253,6 +258,7 @@ class _FilterPanelState extends State<FilterPanel> {
   Future<void> _updatePreview() async {
     final base = _previewBase;
     final filter = context.read<FilterService>().currentFilter;
+    _previewRequestedFor = filter;
     if (base == null || filter == null || !mounted) return;
     final previewRevision = ++_autoLineartPreviewRevision;
     final Uint8List filtered;
@@ -335,7 +341,6 @@ class _FilterPanelState extends State<FilterPanel> {
     setState(() {
       _previewImage?.dispose();
       _previewImage = image;
-      _previewFilterId = filter.id;
     });
   }
 
@@ -353,23 +358,39 @@ class _FilterPanelState extends State<FilterPanel> {
     final bulk = widget.bulkFrameIndices;
     final previewSide = current?.kind == FilterKind.autoLineart ? 200.0 : 120.0;
 
-    if (current != null && current.id != _previewFilterId) {
-      WidgetsBinding.instance.addPostFrameCallback((_) => _updatePreview());
+    // Also follows changes made outside the panel (dragging sphere
+    // shading's light or the fisheye's centre on the canvas). Every change
+    // replaces the filter, so identity says whether this one was previewed.
+    if (current != null && !identical(current, _previewRequestedFor)) {
+      _previewRequestedFor = current;
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) _updatePreview();
+      });
     }
 
-    return Card(
-      elevation: current == null ? 8 : 0,
-      color: current == null ? null : Colors.transparent,
-      surfaceTintColor: Colors.transparent,
-      child: SizedBox(
+    // While a filter is edited the panel floats over the canvas with no
+    // background, and touches on its empty parts go through to the canvas
+    // (a Card would take them, as would the scroll view's own area).
+    final shell = current == null
+        ? (Widget child) => Card(
+            elevation: 8,
+            surfaceTintColor: Colors.transparent,
+            child: child,
+          )
+        : (Widget child) =>
+              Material(type: MaterialType.transparency, child: child);
+    final collapsed = current != null && _collapsed;
+    return shell(
+      SizedBox(
         width: 300,
-        height: 520,
+        height: collapsed ? null : 520,
         child: Padding(
           padding: const EdgeInsets.all(12),
           child: _outlinedOverCanvas(
             context,
             enabled: current != null,
             child: Column(
+              mainAxisSize: collapsed ? MainAxisSize.min : MainAxisSize.max,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 if (current == null)
@@ -403,6 +424,24 @@ class _FilterPanelState extends State<FilterPanel> {
                             fontFamilyFallback: kHeadingFontFallback,
                           ),
                         ),
+                      ),
+                      IconButton(
+                        key: const ValueKey('filter-collapse-button'),
+                        icon: Icon(
+                          collapsed ? Icons.expand_more : Icons.expand_less,
+                          size: 18,
+                        ),
+                        tooltip: collapsed
+                            ? l10n.filterPanelExpand
+                            : l10n.filterPanelCollapse,
+                        visualDensity: VisualDensity.compact,
+                        padding: EdgeInsets.zero,
+                        constraints: const BoxConstraints(
+                          minWidth: 44,
+                          minHeight: 44,
+                        ),
+                        onPressed: () =>
+                            setState(() => _collapsed = !_collapsed),
                       ),
                       PanelCenterCloseBar(onClose: widget.onClose),
                     ],
@@ -537,91 +576,89 @@ class _FilterPanelState extends State<FilterPanel> {
                     ),
                   )
                 else ...[
-                  Expanded(
-                    // One touch on the controls (a slider drag, a curve drag)
-                    // is one step for the filter's Undo.
-                    child: Listener(
-                      onPointerDown: (e) => _editPointerDown(e.pointer),
-                      onPointerUp: (e) => _editPointerUp(e.pointer),
-                      onPointerCancel: (e) => _editPointerUp(e.pointer),
-                      child: SingleChildScrollView(
-                        child: Column(
-                          children: [
-                            Center(
-                              child: Container(
-                                width: previewSide,
-                                height: previewSide,
-                                decoration: BoxDecoration(
-                                  color: Theme.of(
-                                    context,
-                                  ).colorScheme.surfaceContainerHighest,
-                                  borderRadius: BorderRadius.circular(6),
-                                ),
-                                child: _previewImage == null
-                                    ? const Center(
-                                        child: SizedBox(
-                                          width: 20,
-                                          height: 20,
-                                          child: CircularProgressIndicator(
-                                            strokeWidth: 2,
+                  if (!collapsed)
+                    Expanded(
+                      // One touch on the controls (a slider drag, a curve drag)
+                      // is one step for the filter's Undo.
+                      child: Listener(
+                        onPointerDown: (e) => _editPointerDown(e.pointer),
+                        onPointerUp: (e) => _editPointerUp(e.pointer),
+                        onPointerCancel: (e) => _editPointerUp(e.pointer),
+                        child: SingleChildScrollView(
+                          hitTestBehavior: HitTestBehavior.deferToChild,
+                          child: Column(
+                            children: [
+                              Center(
+                                child: Container(
+                                  width: previewSide,
+                                  height: previewSide,
+                                  decoration: BoxDecoration(
+                                    color: Theme.of(
+                                      context,
+                                    ).colorScheme.surfaceContainerHighest,
+                                    borderRadius: BorderRadius.circular(6),
+                                  ),
+                                  child: _previewImage == null
+                                      ? const Center(
+                                          child: SizedBox(
+                                            width: 20,
+                                            height: 20,
+                                            child: CircularProgressIndicator(
+                                              strokeWidth: 2,
+                                            ),
                                           ),
+                                        )
+                                      : ClipRRect(
+                                          borderRadius: BorderRadius.circular(
+                                            6,
+                                          ),
+                                          child:
+                                              current.kind ==
+                                                      FilterKind.autoLineart &&
+                                                  _autoLineartPreviewGraph !=
+                                                      null &&
+                                                  (bulk == null ||
+                                                      bulk.length <= 1)
+                                              ? AutoLineartControlOverlay(
+                                                  image: _previewImage!,
+                                                  graph:
+                                                      _autoLineartPreviewGraph!,
+                                                  mode: _autoLineartControlMode,
+                                                  onPointMoved: (pathIndex, pointIndex, point) {
+                                                    _autoLineartPreviewGraph =
+                                                        AutoLineartEngine.moveControlPoint(
+                                                          _autoLineartPreviewGraph!,
+                                                          pathIndex: pathIndex,
+                                                          pointIndex:
+                                                              pointIndex,
+                                                          point: point,
+                                                        );
+                                                    _autoLineartManualEdited =
+                                                        true;
+                                                    _scheduleAutoLineartPreviewUpdate();
+                                                  },
+                                                  onGraphChanged: (graph) {
+                                                    _autoLineartPreviewGraph =
+                                                        graph;
+                                                    _autoLineartManualEdited =
+                                                        true;
+                                                    _scheduleAutoLineartPreviewUpdate();
+                                                  },
+                                                )
+                                              : RawImage(
+                                                  image: _previewImage,
+                                                  fit: BoxFit.contain,
+                                                ),
                                         ),
-                                      )
-                                    : ClipRRect(
-                                        borderRadius: BorderRadius.circular(6),
-                                        child:
-                                            current.kind ==
-                                                    FilterKind.autoLineart &&
-                                                _autoLineartPreviewGraph !=
-                                                    null &&
-                                                (bulk == null ||
-                                                    bulk.length <= 1)
-                                            ? AutoLineartControlOverlay(
-                                                image: _previewImage!,
-                                                graph:
-                                                    _autoLineartPreviewGraph!,
-                                                mode: _autoLineartControlMode,
-                                                onPointMoved:
-                                                    (
-                                                      pathIndex,
-                                                      pointIndex,
-                                                      point,
-                                                    ) {
-                                                      _autoLineartPreviewGraph =
-                                                          AutoLineartEngine.moveControlPoint(
-                                                            _autoLineartPreviewGraph!,
-                                                            pathIndex:
-                                                                pathIndex,
-                                                            pointIndex:
-                                                                pointIndex,
-                                                            point: point,
-                                                          );
-                                                      _autoLineartManualEdited =
-                                                          true;
-                                                      _scheduleAutoLineartPreviewUpdate();
-                                                    },
-                                                onGraphChanged: (graph) {
-                                                  _autoLineartPreviewGraph =
-                                                      graph;
-                                                  _autoLineartManualEdited =
-                                                      true;
-                                                  _scheduleAutoLineartPreviewUpdate();
-                                                },
-                                              )
-                                            : RawImage(
-                                                image: _previewImage,
-                                                fit: BoxFit.contain,
-                                              ),
-                                      ),
+                                ),
                               ),
-                            ),
-                            const SizedBox(height: 6),
-                            _buildControls(l10n, service, current),
-                          ],
+                              const SizedBox(height: 6),
+                              _buildControls(l10n, service, current),
+                            ],
+                          ),
                         ),
                       ),
                     ),
-                  ),
                   const SizedBox(height: 8),
                   Row(
                     children: [
@@ -790,7 +827,8 @@ class _FilterPanelState extends State<FilterPanel> {
         children: [
           DropdownButtonFormField<NoiseStyle>(
             key: ValueKey('noise-style-${current.noiseStyle.name}'),
-            decoration: InputDecoration(labelText: l10n.filterNoiseStyle),
+            decoration: _overCanvasDecoration(label: l10n.filterNoiseStyle),
+            style: _overCanvasTextStyle(),
             initialValue: current.noiseStyle,
             items: [
               DropdownMenuItem(
@@ -855,6 +893,8 @@ class _FilterPanelState extends State<FilterPanel> {
     }
 
     switch (current.kind) {
+      case FilterKind.sphereShading:
+        return _sphereShadingControls(l10n, service, current);
       case FilterKind.gaussianBlur:
       case FilterKind.lensBlur:
       case FilterKind.prism:
@@ -956,6 +996,8 @@ class _FilterPanelState extends State<FilterPanel> {
             ],
             const SizedBox(height: 6),
             PixelColorModeSelector(
+              decoration: _overCanvasDecoration(),
+              style: _overCanvasTextStyle(),
               mode: current.pixelColorMode,
               colorLevels: current.colorLevels,
               explicitColors: current.pixelExplicitColors,
@@ -1501,20 +1543,23 @@ class _FilterPanelState extends State<FilterPanel> {
               100,
               (v) => service.updateFilterParams(current.id, fisheyeRadius: v),
             ),
+            // Moves the centre from the middle by a percentage of the
+            // canvas: ±50 reaches the edges.
             _paramSlider(
               l10n.filterCenterX,
               current.fisheyeCenterX,
-              -100,
-              100,
+              -50,
+              50,
               (v) => service.updateFilterParams(current.id, fisheyeCenterX: v),
             ),
             _paramSlider(
               l10n.filterCenterY,
               current.fisheyeCenterY,
-              -100,
-              100,
+              -50,
+              50,
               (v) => service.updateFilterParams(current.id, fisheyeCenterY: v),
             ),
+            _hint(l10n.filterFisheyeCanvasHint),
           ],
         );
       case FilterKind.chromaticAberration:
@@ -1722,6 +1767,187 @@ class _FilterPanelState extends State<FilterPanel> {
     }
   }
 
+  /// A dropdown over the canvas: no filled box behind it (the panel is
+  /// see-through while a filter is edited), only a line under it.
+  InputDecoration _overCanvasDecoration({String? label}) {
+    final line = UnderlineInputBorder(
+      borderSide: BorderSide(
+        color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.5),
+      ),
+    );
+    return InputDecoration(
+      labelText: label,
+      isDense: true,
+      filled: false,
+      border: line,
+      enabledBorder: line,
+      labelStyle: _overCanvasTextStyle(),
+    );
+  }
+
+  /// The panel's text over the canvas: outlined in the menu colour, as
+  /// [_outlinedOverCanvas] gives the rest of the editing controls.
+  TextStyle _overCanvasTextStyle() =>
+      Theme.of(context).textTheme.bodyMedium!.copyWith(
+        fontSize: 12,
+        shadows: CanvasIconButton.outlineShadows(
+          context.read<ThemeService>().current.menuBgColor,
+        ),
+      );
+
+  /// A short note under a filter's controls.
+  Widget _hint(String text) => Padding(
+    padding: const EdgeInsets.symmetric(vertical: 4),
+    child: Text(
+      text,
+      style: TextStyle(
+        fontSize: 10,
+        color: Theme.of(context).colorScheme.onSurfaceVariant,
+      ),
+    ),
+  );
+
+  /// A blend mode picker (all of the layer blend modes).
+  Widget _blendModeControl(
+    String label,
+    model.LayerBlendMode value,
+    ValueChanged<model.LayerBlendMode> onChanged, {
+    required String keyName,
+  }) {
+    final l10n = AppLocalizations.of(context)!;
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 3),
+      child: DropdownButtonFormField<model.LayerBlendMode>(
+        // The value is part of the key so Undo, which changes it from
+        // outside, shows the restored mode.
+        key: ValueKey('$keyName-${value.name}'),
+        decoration: _overCanvasDecoration(label: label),
+        style: _overCanvasTextStyle(),
+        initialValue: value,
+        isExpanded: true,
+        items: [
+          for (final mode in model.LayerBlendMode.values)
+            DropdownMenuItem(
+              value: mode,
+              child: Text(
+                blendModeLabel(l10n, mode),
+                style: const TextStyle(fontSize: 12),
+              ),
+            ),
+        ],
+        onChanged: (mode) {
+          if (mode == null) return;
+          onChanged(mode);
+          _updatePreview();
+        },
+      ),
+    );
+  }
+
+  /// Sphere shading: the two colours and their blend modes (each its own,
+  /// or both as one map in one mode), and the light ellipse, which can also
+  /// be dragged on the canvas.
+  Widget _sphereShadingControls(
+    AppLocalizations l10n,
+    FilterService service,
+    FilterDef current,
+  ) {
+    final combined = current.sphereCombined;
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        SegmentedButton<bool>(
+          key: const ValueKey('sphere-shading-mode'),
+          segments: [
+            ButtonSegment(
+              value: false,
+              label: Text(l10n.filterSphereModeSeparate),
+            ),
+            ButtonSegment(
+              value: true,
+              label: Text(l10n.filterSphereModeCombined),
+            ),
+          ],
+          selected: {combined},
+          showSelectedIcon: false,
+          onSelectionChanged: (v) {
+            service.updateFilterParams(current.id, sphereCombined: v.first);
+            _updatePreview();
+          },
+        ),
+        if (combined) _hint(l10n.filterSphereCombinedHint),
+        _colorControl(
+          l10n.filterSphereShadowColor,
+          current.sphereShadowColor,
+          (c) => service.updateFilterParams(current.id, sphereShadowColor: c),
+        ),
+        if (!combined)
+          _blendModeControl(
+            l10n.filterSphereShadowBlend,
+            current.sphereShadowBlend,
+            (m) => service.updateFilterParams(current.id, sphereShadowBlend: m),
+            keyName: 'sphere-shadow-blend',
+          ),
+        _colorControl(
+          l10n.filterSphereLightColor,
+          current.sphereLightColor,
+          (c) => service.updateFilterParams(current.id, sphereLightColor: c),
+        ),
+        if (!combined)
+          _blendModeControl(
+            l10n.filterSphereLightBlend,
+            current.sphereLightBlend,
+            (m) => service.updateFilterParams(current.id, sphereLightBlend: m),
+            keyName: 'sphere-light-blend',
+          )
+        else
+          _blendModeControl(
+            l10n.filterSphereBlend,
+            current.sphereCombinedBlend,
+            (m) =>
+                service.updateFilterParams(current.id, sphereCombinedBlend: m),
+            keyName: 'sphere-combined-blend',
+          ),
+        _paramSlider(
+          l10n.filterSphereLightX,
+          current.sphereLightX,
+          0,
+          100,
+          (v) => service.updateFilterParams(current.id, sphereLightX: v),
+        ),
+        _paramSlider(
+          l10n.filterSphereLightY,
+          current.sphereLightY,
+          0,
+          100,
+          (v) => service.updateFilterParams(current.id, sphereLightY: v),
+        ),
+        _paramSlider(
+          l10n.filterSphereLightWidth,
+          current.sphereLightWidth,
+          1,
+          200,
+          (v) => service.updateFilterParams(current.id, sphereLightWidth: v),
+        ),
+        _paramSlider(
+          l10n.filterSphereLightHeight,
+          current.sphereLightHeight,
+          1,
+          200,
+          (v) => service.updateFilterParams(current.id, sphereLightHeight: v),
+        ),
+        _paramSlider(
+          l10n.filterSphereLightBlur,
+          current.sphereLightBlur,
+          0,
+          100,
+          (v) => service.updateFilterParams(current.id, sphereLightBlur: v),
+        ),
+        _hint(l10n.filterSphereCanvasHint),
+      ],
+    );
+  }
+
   Widget _colorControl(
     String label,
     int value,
@@ -1913,6 +2139,7 @@ class _FilterPanelState extends State<FilterPanel> {
       FilterKind.backgroundBlend => l10n.filterNameBackgroundBlend,
       FilterKind.inkPool => l10n.filterNameInkPool,
       FilterKind.autoLineart => l10n.filterNameAutoLineart,
+      FilterKind.sphereShading => l10n.filterNameSphereShading,
     };
   }
 
@@ -1972,6 +2199,7 @@ class _FilterPanelState extends State<FilterPanel> {
       FilterKind.backgroundBlend => Icons.wb_twilight,
       FilterKind.inkPool => Icons.gesture_rounded,
       FilterKind.autoLineart => Icons.auto_fix_high,
+      FilterKind.sphereShading => Icons.brightness_medium,
     };
   }
 
@@ -2150,14 +2378,25 @@ class _FilterPanelState extends State<FilterPanel> {
           filter.thresholdValue,
         );
       case FilterKind.fisheye:
+        // The centre is a proportion of the canvas, so the preview's own
+        // size places it.
+        final center = filter.fisheyeCenter(width, height);
         return _engine.applyFisheye(
           data,
           width,
           height,
           filter.strength,
           radiusPercent: filter.fisheyeRadius,
-          centerOffsetX: filter.fisheyeCenterX * _previewScale,
-          centerOffsetY: filter.fisheyeCenterY * _previewScale,
+          centerOffsetX: center.x - width / 2,
+          centerOffsetY: center.y - height / 2,
+        );
+      case FilterKind.sphereShading:
+        return applySphereShadingFilter(
+          data,
+          width,
+          height,
+          filter,
+          _previewMask,
         );
       case FilterKind.chromaticAberration:
         final (dx, dy, radial) = filter.chromaticDisplacement;
@@ -2352,7 +2591,7 @@ class _FilterPanelState extends State<FilterPanel> {
       ));
     } else {
       Uint8List? maskData;
-      if (filter.kind == FilterKind.lensDistortion) {
+      if (filterUsesSelectionMask(filter.kind)) {
         final selectionLayer = ps
             .layersOf(widget.projectId, widget.sceneId, frameIndex)
             .where((l) => l.type == model.LayerType.selection)

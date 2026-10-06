@@ -53,7 +53,7 @@ class CustomAutomationFilterRunner {
       ));
     } else {
       Uint8List? auxiliary;
-      if (filter.kind == FilterKind.lensDistortion) {
+      if (filterUsesSelectionMask(filter.kind)) {
         final selectionLayer = projectService
             .layersOf(projectId, sceneId, frameIndex)
             .where((layer) => layer.type == model.LayerType.selection)

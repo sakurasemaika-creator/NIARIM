@@ -25,6 +25,11 @@ class PixelColorModeSelector extends StatelessWidget {
   final ValueChanged<List<int>> onExplicitColorsChanged;
   final int maxColorLevels;
 
+  /// How the mode dropdown looks (the filter panel draws it without a box
+  /// over the canvas); null keeps the default look.
+  final InputDecoration? decoration;
+  final TextStyle? style;
+
   const PixelColorModeSelector({
     super.key,
     required this.mode,
@@ -34,6 +39,8 @@ class PixelColorModeSelector extends StatelessWidget {
     required this.onColorLevelsChanged,
     required this.onExplicitColorsChanged,
     this.maxColorLevels = 256,
+    this.decoration,
+    this.style,
   });
 
   Future<void> _openPalettePicker(BuildContext context) async {
@@ -65,10 +72,13 @@ class PixelColorModeSelector extends StatelessWidget {
         DropdownButtonFormField<PixelColorMode>(
           initialValue: mode,
           isExpanded: true,
-          decoration: const InputDecoration(
-            isDense: true,
-            contentPadding: EdgeInsets.zero,
-          ),
+          style: style,
+          decoration:
+              decoration ??
+              const InputDecoration(
+                isDense: true,
+                contentPadding: EdgeInsets.zero,
+              ),
           items: [
             for (final m in PixelColorMode.values)
               DropdownMenuItem(value: m, child: Text(_label(l10n, m))),

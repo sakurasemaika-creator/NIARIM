@@ -3,7 +3,9 @@ import 'dart:convert';
 import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import '../models/filter_canvas_gizmo.dart';
 import '../models/filter_def.dart';
+import '../models/layer.dart';
 import '../models/pixel_color_mode.dart';
 
 class FilterService extends ChangeNotifier {
@@ -12,6 +14,7 @@ class FilterService extends ChangeNotifier {
   static const vhsNoiseFilterId = 'Filter0024';
   static const mosaicFilterId = 'Filter0026';
   static const genericNoiseFilterId = 'Filter0027';
+  static const sphereShadingFilterId = 'Filter0028';
 
   final List<FilterDef> _filters = [];
   String? _currentFilterId;
@@ -209,6 +212,11 @@ class FilterService extends ChangeNotifier {
       noiseStyle: NoiseStyle.color,
       strength: 15,
     ),
+    FilterDef(
+      id: sphereShadingFilterId,
+      name: '球体陰影',
+      kind: FilterKind.sphereShading,
+    ),
   ];
 
   Future<void> init() async {
@@ -362,6 +370,17 @@ class FilterService extends ChangeNotifier {
     int? autoLineartColor,
     double? prismBlurPx,
     double? prismDirectionDegrees,
+    int? sphereShadowColor,
+    int? sphereLightColor,
+    LayerBlendMode? sphereShadowBlend,
+    LayerBlendMode? sphereLightBlend,
+    bool? sphereCombined,
+    LayerBlendMode? sphereCombinedBlend,
+    double? sphereLightX,
+    double? sphereLightY,
+    double? sphereLightWidth,
+    double? sphereLightHeight,
+    double? sphereLightBlur,
   }) {
     final idx = _filters.indexWhere((f) => f.id == id);
     if (idx < 0) return;
@@ -440,6 +459,17 @@ class FilterService extends ChangeNotifier {
       autoLineartColor: autoLineartColor,
       prismBlurPx: prismBlurPx,
       prismDirectionDegrees: prismDirectionDegrees,
+      sphereShadowColor: sphereShadowColor,
+      sphereLightColor: sphereLightColor,
+      sphereShadowBlend: sphereShadowBlend,
+      sphereLightBlend: sphereLightBlend,
+      sphereCombined: sphereCombined,
+      sphereCombinedBlend: sphereCombinedBlend,
+      sphereLightX: sphereLightX,
+      sphereLightY: sphereLightY,
+      sphereLightWidth: sphereLightWidth,
+      sphereLightHeight: sphereLightHeight,
+      sphereLightBlur: sphereLightBlur,
     );
     if (jsonEncode(after.toJson()) == jsonEncode(before.toJson())) return;
     // Inside an edit group (one drag) only the first change is recorded, so
@@ -453,6 +483,44 @@ class FilterService extends ChangeNotifier {
     _filters[idx] = after;
     notifyListeners();
     _persist();
+  }
+
+  /// Moves what [id]'s filter shows on the canvas (see [filterCanvasGizmoFor])
+  /// to [gizmo], on a canvas of this size: sphere shading's light, the
+  /// fisheye's centre. Kept within the ranges its sliders show.
+  void moveCanvasGizmo(
+    String id,
+    FilterCanvasGizmo gizmo,
+    int canvasWidth,
+    int canvasHeight,
+  ) {
+    final filter = _filters.where((f) => f.id == id).firstOrNull;
+    if (filter == null || canvasWidth <= 0 || canvasHeight <= 0) return;
+    final x = gizmo.center.dx / canvasWidth * 100;
+    final y = gizmo.center.dy / canvasHeight * 100;
+    switch (filter.kind) {
+      case FilterKind.sphereShading:
+        final side = canvasWidth < canvasHeight ? canvasWidth : canvasHeight;
+        updateFilterParams(
+          id,
+          sphereLightX: x.clamp(0, 100).toDouble(),
+          sphereLightY: y.clamp(0, 100).toDouble(),
+          sphereLightWidth: ((gizmo.radiusX ?? 0) * 200 / side)
+              .clamp(1, 200)
+              .toDouble(),
+          sphereLightHeight: ((gizmo.radiusY ?? 0) * 200 / side)
+              .clamp(1, 200)
+              .toDouble(),
+        );
+      case FilterKind.fisheye:
+        updateFilterParams(
+          id,
+          fisheyeCenterX: (x - 50).clamp(-50, 50).toDouble(),
+          fisheyeCenterY: (y - 50).clamp(-50, 50).toDouble(),
+        );
+      default:
+        break;
+    }
   }
 
   /// Starts a run of edits (a drag on a slider or a curve) that Undo takes

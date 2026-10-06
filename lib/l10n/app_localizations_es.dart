@@ -1734,7 +1734,7 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get helpDrawingFilterDesc =>
-      'Filtros aplicados directamente a la capa seleccionada (a diferencia de los filtros de efecto, que se aplican a toda la línea de tiempo o a una escena, los filtros de dibujo actúan por capa). Los 26 filtros incluidos son Desenfoque gaussiano, Desenfoque de lente, Estilo anime, Curva de tonos, Niveles, Contorno, Nitidez, Máscara de enfoque, Viñeta, Grano de película, Anime retro, CRT, Umbral, Ojo de pez, Aberración cromática, Distorsión óptica, Pixel art, Filtro de textura, Integración con el fondo, Acumulación de tinta, Dibujo lineal automático, Prisma, Ruido VHS, Invertir colores, Mosaico y Ruido. Contorno no reescribe la capa original: dibuja solo el resultado en una capa nueva. Distorsión óptica aplica una deformación localizada, como a través de una lente de gafas de gran graduación, únicamente al área pintada en la capa de selección. Pixel art también permite elegir un modo de color (sin límite, colores específicos, número de colores o paleta). Su tamaño puede fijarse con el tamaño de bloque (100 pasos, de 1 a 100) o con controles deslizantes de puntos a lo ancho y a lo alto (1 en el extremo izquierdo, el tamaño del lienzo en el derecho); al mover uno, el otro cambia conservando las proporciones del dibujo, y ambas formas de ajuste van a la par. En ambos casos los puntos siguen siendo cuadrados y sin bordes semitransparentes. En Dibujo lineal automático puedes editar los puntos de control vectoriales temporales antes de aplicar el filtro. Arrastra un punto para mover solo ese punto, toca un segmento para añadir un punto de control o toca un punto y confirma para eliminarlo. La geometría editada se usa directamente en el resultado aplicado.';
+      'Filtros aplicados directamente a la capa seleccionada (a diferencia de los filtros de efecto, que se aplican a toda la línea de tiempo o a una escena, los filtros de dibujo actúan por capa). Los 27 filtros incluidos son Desenfoque gaussiano, Desenfoque de lente, Estilo anime, Curva de tonos, Niveles, Contorno, Nitidez, Máscara de enfoque, Viñeta, Grano de película, Anime retro, CRT, Umbral, Ojo de pez, Aberración cromática, Distorsión óptica, Pixel art, Filtro de textura, Integración con el fondo, Acumulación de tinta, Dibujo lineal automático, Prisma, Ruido VHS, Invertir colores, Mosaico, Ruido y Sombreado esférico. Sombreado esférico aplica un color de luz dentro de una luz elíptica y un color de sombra fuera de ella, solo donde hay dibujo (la luz también se puede arrastrar en el lienzo). Contorno no reescribe la capa original: dibuja solo el resultado en una capa nueva. Distorsión óptica aplica una deformación localizada, como a través de una lente de gafas de gran graduación, únicamente al área pintada en la capa de selección. Pixel art también permite elegir un modo de color (sin límite, colores específicos, número de colores o paleta). Su tamaño puede fijarse con el tamaño de bloque (100 pasos, de 1 a 100) o con controles deslizantes de puntos a lo ancho y a lo alto (1 en el extremo izquierdo, el tamaño del lienzo en el derecho); al mover uno, el otro cambia conservando las proporciones del dibujo, y ambas formas de ajuste van a la par. En ambos casos los puntos siguen siendo cuadrados y sin bordes semitransparentes. En Dibujo lineal automático puedes editar los puntos de control vectoriales temporales antes de aplicar el filtro. Arrastra un punto para mover solo ese punto, toca un segmento para añadir un punto de control o toca un punto y confirma para eliminarlo. La geometría editada se usa directamente en el resultado aplicado.';
 
   @override
   String get helpLayerKeyframeTitle =>
@@ -5743,7 +5743,7 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get tipsFisheyeChromaticDesc =>
-      'El filtro de ojo de pez abomba el centro del encuadre y comprime los bordes, recreando la curvatura de una toma con lente gran angular o de ojo de pez. El filtro de aberración cromática desplaza ligeramente los canales RGB para recrear las franjas de color de una lente barata. Ambos están disponibles como filtros de dibujo (aplicados directamente a una capa) y como filtros de efecto (aplicados a un rango en la línea de tiempo).';
+      'El filtro de ojo de pez abomba el centro del encuadre y comprime los bordes, recreando la curvatura de una toma con lente gran angular o de ojo de pez. El filtro de aberración cromática desplaza ligeramente los canales RGB para recrear las franjas de color de una lente barata. Ambos están disponibles como filtros de dibujo (aplicados directamente a una capa) y como filtros de efecto (aplicados a un rango en la línea de tiempo). El centro del ojo de pez también se puede mover arrastrando el + del lienzo.';
 
   @override
   String get tipsLensDistortionTitle =>
@@ -5752,6 +5752,14 @@ class AppLocalizationsEs extends AppLocalizations {
   @override
   String get tipsLensDistortionDesc =>
       'Añada una «Capa de selección» a la lista de capas y pinte el área de las lentes de unas gafas con cualquier herramienta de dibujo normal; el filtro de distorsión de lente aplicará entonces su deformación local solo a esa área pintada. El control de intensidad reduce el área en dirección cóncava (miopía) con valores negativos y la amplía en dirección convexa (hipermetropía) con valores positivos, y también puede ajustar la posición del centro. Puede pintar ambas lentes a la vez y aplicar el efecto a las dos juntas. La capa de selección en sí nunca aparece en las exportaciones ni en la obra final. También resulta útil para recrear el aspecto de un paisaje visto a través del objetivo de una cámara: pinte una zona amplia, como el fondo, con una capa de selección y aplique una intensidad suave.';
+
+  @override
+  String get tipsSphereShadingTitle =>
+      'Da volumen redondo de una vez con el Sombreado esférico';
+
+  @override
+  String get tipsSphereShadingDesc =>
+      'El filtro Sombreado esférico aplica el color de luz dentro de una luz elíptica y el color de sombra fuera de ella, solo donde hay dibujo. Mueve y redimensiona la luz con los deslizadores o arrastrando en el lienzo el + (posición) y los tiradores redondos (tamaño), y suaviza el borde con Desenfoque del borde para lograr un sombreado redondeado como el de una esfera. Cada color tiene su propio modo de fusión (por ejemplo, Multiplicar para la sombra y Trama para la luz); con «Ambas en una fusión», un degradado del color de sombra al de luz se aplica con un solo modo de fusión, como Luz fuerte. Un color puede ser transparente, y entonces ese lado queda igual. Si la capa de selección está pintada, el sombreado se aplica solo allí.';
 
   @override
   String get tipsLineArtExtractionTitle =>
@@ -7141,6 +7149,12 @@ class AppLocalizationsEs extends AppLocalizations {
   String get filterBackToList => 'Volver a los filtros';
 
   @override
+  String get filterPanelCollapse => 'Reducir el panel';
+
+  @override
+  String get filterPanelExpand => 'Ampliar el panel';
+
+  @override
   String get customAutomationShowAll => 'Mostrar todo';
 
   @override
@@ -7183,6 +7197,57 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get filterFisheyeRadius => 'Radio';
+
+  @override
+  String get filterNameSphereShading => 'Sombreado esférico';
+
+  @override
+  String get filterSphereModeSeparate => 'Sombra y luz por separado';
+
+  @override
+  String get filterSphereModeCombined => 'Ambas en una fusión';
+
+  @override
+  String get filterSphereCombinedHint =>
+      'Aplica un degradado del color de sombra al de luz con un solo modo de fusión. Con Luz fuerte, los colores más oscuros que el gris medio oscurecen y los más claros iluminan.';
+
+  @override
+  String get filterSphereShadowColor => 'Color de sombra';
+
+  @override
+  String get filterSphereLightColor => 'Color de luz';
+
+  @override
+  String get filterSphereShadowBlend => 'Modo de fusión de la sombra';
+
+  @override
+  String get filterSphereLightBlend => 'Modo de fusión de la luz';
+
+  @override
+  String get filterSphereBlend => 'Modo de fusión';
+
+  @override
+  String get filterSphereLightX => 'Posición X de la luz';
+
+  @override
+  String get filterSphereLightY => 'Posición Y de la luz';
+
+  @override
+  String get filterSphereLightWidth => 'Tamaño X de la luz';
+
+  @override
+  String get filterSphereLightHeight => 'Tamaño Y de la luz';
+
+  @override
+  String get filterSphereLightBlur => 'Desenfoque del borde';
+
+  @override
+  String get filterSphereCanvasHint =>
+      'Arrastra el + del lienzo para mover la luz y los tiradores redondos para cambiar su tamaño. La sombra y la luz solo se aplican donde hay dibujo.';
+
+  @override
+  String get filterFisheyeCanvasHint =>
+      'También puedes arrastrar el + del lienzo para mover el centro.';
 
   @override
   String get filterCenterX => 'Centro X';

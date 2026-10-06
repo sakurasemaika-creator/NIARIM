@@ -29,6 +29,7 @@ import '../../../engine/stamp_engine.dart';
 import '../../../engine/tile_manager.dart';
 import '../../../engine/tone_engine.dart';
 import '../../../engine/undo_manager.dart' as app_undo;
+import '../../../models/filter_canvas_gizmo.dart';
 import '../../../models/layer.dart';
 import '../../../models/layer_keyframe.dart';
 import '../../../models/onion_skin_settings.dart';
@@ -323,6 +324,15 @@ class CanvasArea extends StatefulWidget {
   final ValueChanged<Offset>? onTapForText;
   final ValueChanged<Color>? onEyedropper;
   final bool filterEyedropperActive;
+
+  /// What the filter being edited shows on the canvas to drag (sphere
+  /// shading's light, the fisheye's centre), with what a drag reports: each
+  /// new position, and its start and end (so the filter's Undo takes a
+  /// whole drag back in one step).
+  final FilterCanvasGizmo? filterGizmo;
+  final ValueChanged<FilterCanvasGizmo>? onFilterGizmoChanged;
+  final VoidCallback? onFilterGizmoDragStart;
+  final VoidCallback? onFilterGizmoDragEnd;
   final AutofillCheckMode autofillCheckMode;
   final Project? project;
   final CanvasBackground background;
@@ -400,6 +410,10 @@ class CanvasArea extends StatefulWidget {
     this.onTapForText,
     this.onEyedropper,
     this.filterEyedropperActive = false,
+    this.filterGizmo,
+    this.onFilterGizmoChanged,
+    this.onFilterGizmoDragStart,
+    this.onFilterGizmoDragEnd,
     this.autofillCheckMode = AutofillCheckMode.normal,
     this.project,
     this.background = CanvasBackground.white,
@@ -1260,6 +1274,11 @@ class _CanvasAreaState extends State<CanvasArea> {
       _pickColor(canvasPos);
       return;
     }
+    if (_beginFilterGizmoDrag(canvasPos, event.pointer)) return;
+    // フィルターのつまみを操作している間は、つまみを外したタッチで
+    // レイヤーへ描いてしまわないよう何もしない（2本指の拡大・移動は
+    // この手前で処理済みなので、つまみを画面内へ持ってくることはできる）。
+    if (widget.filterGizmo != null) return;
 
     // 制作時間カウント：キャンバスへの操作のたびに無操作タイマーをリセットする
     if (widget.project != null) {
@@ -1442,6 +1461,10 @@ class _CanvasAreaState extends State<CanvasArea> {
     }
     final type = _inputHandler.classifyInput(event);
     final canvasPos = _canvasPosition(event.localPosition);
+    if (event.pointer == _gizmoPointer) {
+      _dragFilterGizmo(canvasPos);
+      return;
+    }
     if (_inputHandler.shouldRejectPalmTouch(
       type,
       palmRejectionEnabled: context
@@ -1563,6 +1586,10 @@ class _CanvasAreaState extends State<CanvasArea> {
     if (_middleClickPanning) {
       _middleClickPanning = false;
       _middleClickLastScreenPos = null;
+      return;
+    }
+    if (event.pointer == _gizmoPointer) {
+      _endFilterGizmoDrag();
       return;
     }
     final type = _inputHandler.classifyInput(event);
@@ -3163,6 +3190,59 @@ class _CanvasAreaState extends State<CanvasArea> {
   String? _rulerHandleId;
   Ruler? _rulerDragStartRuler;
 
+  // ─── フィルターのキャンバス上のつまみ ─────────────────────────────────
+
+  int? _gizmoPointer;
+  FilterGizmoHandle? _gizmoHandle;
+  // つまみの中心から押した位置までのずれ（掴んだ瞬間に跳ばないように）。
+  Offset _gizmoGrabOffset = Offset.zero;
+
+  /// フィルター編集中のつまみ（中心・幅・高さ）を押したらドラッグを始める。
+  /// 当たり判定は定規のつまみと同じく画面上で指28px相当。
+  bool _beginFilterGizmoDrag(Offset canvasPos, int pointer) {
+    final gizmo = widget.filterGizmo;
+    if (gizmo == null || _gizmoPointer != null) return false;
+    FilterGizmoHandle? best;
+    var bestDistance = _rulerHitTolerance;
+    for (final entry in gizmo.handles.entries) {
+      final distance = (entry.value - canvasPos).distance;
+      if (distance <= bestDistance) {
+        best = entry.key;
+        bestDistance = distance;
+      }
+    }
+    if (best == null) return false;
+    _gizmoPointer = pointer;
+    _gizmoHandle = best;
+    _gizmoGrabOffset = canvasPos - gizmo.handles[best]!;
+    widget.onFilterGizmoDragStart?.call();
+    return true;
+  }
+
+  void _dragFilterGizmo(Offset canvasPos) {
+    final gizmo = widget.filterGizmo;
+    final handle = _gizmoHandle;
+    if (gizmo == null || handle == null) return;
+    final target = canvasPos - _gizmoGrabOffset;
+    final moved = switch (handle) {
+      FilterGizmoHandle.center => gizmo.copyWith(center: target),
+      FilterGizmoHandle.radiusX => gizmo.copyWith(
+        radiusX: math.max(1.0, (target.dx - gizmo.center.dx).abs()),
+      ),
+      FilterGizmoHandle.radiusY => gizmo.copyWith(
+        radiusY: math.max(1.0, (target.dy - gizmo.center.dy).abs()),
+      ),
+    };
+    widget.onFilterGizmoChanged?.call(moved);
+  }
+
+  void _endFilterGizmoDrag() {
+    if (_gizmoPointer == null) return;
+    _gizmoPointer = null;
+    _gizmoHandle = null;
+    widget.onFilterGizmoDragEnd?.call();
+  }
+
   /// ハンドルの当たり判定許容範囲（プロジェクトピクセル単位）。
   /// ハンドル座標・_canvasPositionの戻り値ともプロジェクトピクセル
   /// （export解像度基準）で表されるため、画面上で指28px相当のタップ
@@ -3791,6 +3871,7 @@ class _CanvasAreaState extends State<CanvasArea> {
           }
           _disarmHoldEyedropper(e.pointer);
           _toolHandledPointers.remove(e.pointer);
+          if (e.pointer == _gizmoPointer) _endFilterGizmoDrag();
         },
         onPointerSignal: _handlePointerSignal,
         // Flutter標準のInteractiveViewerは回転ジェスチャーに対応していない
@@ -3866,6 +3947,7 @@ class _CanvasAreaState extends State<CanvasArea> {
                     handleOutlineColor: theme.menuBgColor,
                     extendedAreaWarningColor: theme.updateMarkColor,
                     viewTransform: _transformController.value,
+                    filterGizmo: widget.filterGizmo,
                   ),
                   foregroundPainter: _PixelGridPainter(
                     project: widget.project,
@@ -4058,6 +4140,8 @@ class _CanvasPainter extends CustomPainter {
   // いまのピンチズーム・パンの行列。回転ハンドルを「指が届く範囲」の内側へ
   // 寄せる計算に使う（縮小すれば余白が増え、拡大すれば減るため）。
   final Matrix4 viewTransform;
+  // 編集中のフィルターのつまみ（無ければnull）。
+  final FilterCanvasGizmo? filterGizmo;
 
   static const double _checkerSize = 16.0;
 
@@ -4097,6 +4181,7 @@ class _CanvasPainter extends CustomPainter {
     required this.handleOutlineColor,
     required this.extendedAreaWarningColor,
     required this.viewTransform,
+    this.filterGizmo,
   });
 
   @override
@@ -4507,6 +4592,73 @@ class _CanvasPainter extends CustomPainter {
 
     // 定規オーバーレイ
     _paintRuler(canvas, size, drawingRect);
+    _paintFilterGizmo(canvas, drawingRect);
+  }
+
+  /// 編集中のフィルターのつまみ（球体陰影の光の楕円、魚眼の中心と効く範囲）。
+  /// 線の太さ・つまみの大きさはズームしても画面上で同じに見えるよう、
+  /// 拡大率で割り戻す。どの絵の上でも見えるよう、縁取り色で縁を付ける。
+  void _paintFilterGizmo(Canvas canvas, Rect drawingRect) {
+    final gizmo = filterGizmo;
+    if (gizmo == null) return;
+    final canvasPx = canvasPixelSizeOf(project);
+    if (canvasPx.width <= 0 || canvasPx.height <= 0) return;
+    final sx = drawingRect.width / canvasPx.width;
+    final sy = drawingRect.height / canvasPx.height;
+    Offset ts(Offset p) => drawingRect.topLeft + Offset(p.dx * sx, p.dy * sy);
+    final zoom = viewTransform.getMaxScaleOnAxis();
+    final px = 1 / (zoom > 0 ? zoom : 1);
+    final outline = Paint()
+      ..color = handleOutlineColor
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 4 * px;
+    final line = Paint()
+      ..color = handleColor
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 1.8 * px;
+    void stroke(void Function(Paint paint) draw) {
+      draw(outline);
+      draw(line);
+    }
+
+    final center = ts(gizmo.center);
+    if (gizmo.resizable) {
+      final oval = Rect.fromCenter(
+        center: center,
+        width: gizmo.radiusX! * 2 * sx,
+        height: gizmo.radiusY! * 2 * sy,
+      );
+      stroke((paint) => canvas.drawOval(oval, paint));
+    }
+    final reach = gizmo.reach;
+    if (reach != null) {
+      final oval = Rect.fromCenter(
+        center: center,
+        width: reach * 2 * sx,
+        height: reach * 2 * sy,
+      );
+      stroke((paint) => canvas.drawOval(oval, paint));
+    }
+    // 中心は「＋」。
+    final arm = 12 * px;
+    stroke((paint) {
+      canvas.drawLine(center - Offset(arm, 0), center + Offset(arm, 0), paint);
+      canvas.drawLine(center - Offset(0, arm), center + Offset(0, arm), paint);
+    });
+    // 幅・高さのつまみ。
+    for (final entry in gizmo.handles.entries) {
+      if (entry.key == FilterGizmoHandle.center) continue;
+      final p = ts(entry.value);
+      canvas.drawCircle(p, 8 * px, Paint()..color = handleColor);
+      canvas.drawCircle(
+        p,
+        8 * px,
+        Paint()
+          ..color = handleOutlineColor
+          ..style = PaintingStyle.stroke
+          ..strokeWidth = 1.5 * px,
+      );
+    }
   }
 
   void _paintRuler(Canvas canvas, Size size, Rect drawingRect) {
@@ -4767,5 +4919,6 @@ class _CanvasPainter extends CustomPainter {
       old.project?.drawingAreaScale != project?.drawingAreaScale ||
       old.handleColor != handleColor ||
       old.handleOutlineColor != handleOutlineColor ||
-      old.extendedAreaWarningColor != extendedAreaWarningColor;
+      old.extendedAreaWarningColor != extendedAreaWarningColor ||
+      old.filterGizmo != filterGizmo;
 }

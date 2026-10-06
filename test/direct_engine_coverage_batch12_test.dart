@@ -67,6 +67,7 @@ void main() {
       FilterKind.inkPool,
       FilterKind.autoLineart,
       FilterKind.prism,
+      FilterKind.sphereShading,
     ];
     expect(FilterKind.values, allKinds);
 

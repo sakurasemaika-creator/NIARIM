@@ -3182,7 +3182,7 @@ abstract class AppLocalizations {
   /// No description provided for @helpDrawingFilterDesc.
   ///
   /// In ja, this message translates to:
-  /// **'選択中のレイヤーに直接適用するフィルターです（演出フィルターがタイムライン全体・シーン単位に適用されるのに対し、描画フィルターはレイヤー単位）。ガウスぼかし・レンズぼかし・アニメ風加工・トーンカーブ・レベル補正・縁取り・シャープ・アンシャープマスク・周辺減光・フィルムグレイン・レトロアニメ・ブラウン管・二値化・魚眼レンズ・色収差・眼鏡断層・ドット絵・質感変更フィルター・背景馴染ませ・墨溜まり・自動線画・プリズム・VHSノイズ・色反転・モザイク・ノイズの26種類が用意されています。縁取りは元のレイヤーを書き換えず、縁どった内容だけを新規レイヤーへ描画します。眼鏡断層フィルターは、選択レイヤーで塗った範囲だけに、強い眼鏡レンズのような局所的な歪みをかけられます。ドット絵は配色方式（色を指定しない・色を指定する・色数を指定する・パレットから選ぶ）も選べます。大きさは「ブロックサイズを指定」（1〜100の100段階）と「ドット数を指定」（横・縦のドット数のスライダー。左端で1、右端でキャンバスの画素数）を切り替えられ、縦横比を保ったまま横と縦が一緒に変わります。どちらの指定も連動します。どちらも正方形のドットのまま半透明の縁を作りません。 自動線画では適用前の一時Vector制御点を直接編集できます。点をドラッグするとその点だけを移動し、線分をタップすると制御点を追加、点をタップすると確認後に削除できます。編集した形状がそのまま適用結果になります。'**
+  /// **'選択中のレイヤーに直接適用するフィルターです（演出フィルターがタイムライン全体・シーン単位に適用されるのに対し、描画フィルターはレイヤー単位）。ガウスぼかし・レンズぼかし・アニメ風加工・トーンカーブ・レベル補正・縁取り・シャープ・アンシャープマスク・周辺減光・フィルムグレイン・レトロアニメ・ブラウン管・二値化・魚眼レンズ・色収差・眼鏡断層・ドット絵・質感変更フィルター・背景馴染ませ・墨溜まり・自動線画・プリズム・VHSノイズ・色反転・モザイク・ノイズ・球体陰影の27種類が用意されています。球体陰影は、楕円の光の内側を光色、外側を影色で、描いてあるところにだけ重ねます（光の位置・大きさはキャンバス上でもドラッグできます）。縁取りは元のレイヤーを書き換えず、縁どった内容だけを新規レイヤーへ描画します。眼鏡断層フィルターは、選択レイヤーで塗った範囲だけに、強い眼鏡レンズのような局所的な歪みをかけられます。ドット絵は配色方式（色を指定しない・色を指定する・色数を指定する・パレットから選ぶ）も選べます。大きさは「ブロックサイズを指定」（1〜100の100段階）と「ドット数を指定」（横・縦のドット数のスライダー。左端で1、右端でキャンバスの画素数）を切り替えられ、縦横比を保ったまま横と縦が一緒に変わります。どちらの指定も連動します。どちらも正方形のドットのまま半透明の縁を作りません。 自動線画では適用前の一時Vector制御点を直接編集できます。点をドラッグするとその点だけを移動し、線分をタップすると制御点を追加、点をタップすると確認後に削除できます。編集した形状がそのまま適用結果になります。'**
   String get helpDrawingFilterDesc;
 
   /// No description provided for @helpLayerKeyframeTitle.
@@ -10034,7 +10034,7 @@ abstract class AppLocalizations {
   /// No description provided for @tipsFisheyeChromaticDesc.
   ///
   /// In ja, this message translates to:
-  /// **'魚眼レンズフィルターは画面中心を膨らませ、周辺を圧縮することで広角・魚眼レンズで撮ったような湾曲を再現します。色収差フィルターはRGBチャンネルを少しずつずらすことで、安いレンズで撮影したときのような色のにじみを再現します。どちらも描画フィルター（レイヤーへ直接適用）・演出フィルター（タイムライン上で範囲指定して適用）の両方から使えます。'**
+  /// **'魚眼レンズフィルターは画面中心を膨らませ、周辺を圧縮することで広角・魚眼レンズで撮ったような湾曲を再現します。色収差フィルターはRGBチャンネルを少しずつずらすことで、安いレンズで撮影したときのような色のにじみを再現します。どちらも描画フィルター（レイヤーへ直接適用）・演出フィルター（タイムライン上で範囲指定して適用）の両方から使えます。魚眼レンズの中心は、キャンバス上の＋をドラッグしても動かせます。'**
   String get tipsFisheyeChromaticDesc;
 
   /// No description provided for @tipsLensDistortionTitle.
@@ -10048,6 +10048,18 @@ abstract class AppLocalizations {
   /// In ja, this message translates to:
   /// **'レイヤー一覧に「選択レイヤー」を追加し、眼鏡のレンズ部分を通常の描画ツールで塗ると、その範囲だけに眼鏡断層フィルターの局所的な歪みをかけられます。レンズの強さのスライダーは負の値で凹レンズ（近視）風に縮小、正の値で凸レンズ（遠視）風に拡大し、中心位置も微調整できます。両目分のレンズを同時に塗って一括で適用することも可能です。選択レイヤー自体は書き出し・最終的な絵には写り込みません。眼鏡以外にも、カメラのレンズ越しに景色を見ているような歪みを再現したいときにも使えます。背景など広い範囲を選択レイヤーで塗り、弱めの強さにするのがおすすめです。'**
   String get tipsLensDistortionDesc;
+
+  /// No description provided for @tipsSphereShadingTitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'球体陰影フィルターで丸い立体感を一度に付ける'**
+  String get tipsSphereShadingTitle;
+
+  /// No description provided for @tipsSphereShadingDesc.
+  ///
+  /// In ja, this message translates to:
+  /// **'球体陰影フィルターは、楕円の光の内側を光色、外側を影色で、描いてあるところにだけ重ねます。光の位置と大きさはスライダーのほか、キャンバス上の＋（位置）と丸いつまみ（大きさ）のドラッグでも変えられ、境目のぼかしで球のような柔らかい陰影にできます。影色・光色はそれぞれブレンドモードを選べ（例：影は乗算、光はスクリーン）、「まとめて1つで」にすると影色から光色へのグラデーションを1つのブレンドモード（ハードライト等）で重ねます。色は透明にもでき、透明にした側は何もしません。選択レイヤーを塗ってあれば、その範囲だけに付きます。'**
+  String get tipsSphereShadingDesc;
 
   /// No description provided for @tipsLineArtExtractionTitle.
   ///
@@ -12443,6 +12455,18 @@ abstract class AppLocalizations {
   /// **'フィルター一覧へ戻る'**
   String get filterBackToList;
 
+  /// No description provided for @filterPanelCollapse.
+  ///
+  /// In ja, this message translates to:
+  /// **'パネルをたたむ'**
+  String get filterPanelCollapse;
+
+  /// No description provided for @filterPanelExpand.
+  ///
+  /// In ja, this message translates to:
+  /// **'パネルを広げる'**
+  String get filterPanelExpand;
+
   /// No description provided for @customAutomationShowAll.
   ///
   /// In ja, this message translates to:
@@ -12520,6 +12544,102 @@ abstract class AppLocalizations {
   /// In ja, this message translates to:
   /// **'半径'**
   String get filterFisheyeRadius;
+
+  /// No description provided for @filterNameSphereShading.
+  ///
+  /// In ja, this message translates to:
+  /// **'球体陰影'**
+  String get filterNameSphereShading;
+
+  /// No description provided for @filterSphereModeSeparate.
+  ///
+  /// In ja, this message translates to:
+  /// **'影と光を別々に'**
+  String get filterSphereModeSeparate;
+
+  /// No description provided for @filterSphereModeCombined.
+  ///
+  /// In ja, this message translates to:
+  /// **'まとめて1つで'**
+  String get filterSphereModeCombined;
+
+  /// No description provided for @filterSphereCombinedHint.
+  ///
+  /// In ja, this message translates to:
+  /// **'影色から光色へのグラデーションを1つのブレンドモードで重ねます。ハードライトなら、中間の灰色より暗い色は暗く、明るい色は明るくします。'**
+  String get filterSphereCombinedHint;
+
+  /// No description provided for @filterSphereShadowColor.
+  ///
+  /// In ja, this message translates to:
+  /// **'影色'**
+  String get filterSphereShadowColor;
+
+  /// No description provided for @filterSphereLightColor.
+  ///
+  /// In ja, this message translates to:
+  /// **'光色'**
+  String get filterSphereLightColor;
+
+  /// No description provided for @filterSphereShadowBlend.
+  ///
+  /// In ja, this message translates to:
+  /// **'影のブレンドモード'**
+  String get filterSphereShadowBlend;
+
+  /// No description provided for @filterSphereLightBlend.
+  ///
+  /// In ja, this message translates to:
+  /// **'光のブレンドモード'**
+  String get filterSphereLightBlend;
+
+  /// No description provided for @filterSphereBlend.
+  ///
+  /// In ja, this message translates to:
+  /// **'ブレンドモード'**
+  String get filterSphereBlend;
+
+  /// No description provided for @filterSphereLightX.
+  ///
+  /// In ja, this message translates to:
+  /// **'光の位置 X'**
+  String get filterSphereLightX;
+
+  /// No description provided for @filterSphereLightY.
+  ///
+  /// In ja, this message translates to:
+  /// **'光の位置 Y'**
+  String get filterSphereLightY;
+
+  /// No description provided for @filterSphereLightWidth.
+  ///
+  /// In ja, this message translates to:
+  /// **'光の大きさ X'**
+  String get filterSphereLightWidth;
+
+  /// No description provided for @filterSphereLightHeight.
+  ///
+  /// In ja, this message translates to:
+  /// **'光の大きさ Y'**
+  String get filterSphereLightHeight;
+
+  /// No description provided for @filterSphereLightBlur.
+  ///
+  /// In ja, this message translates to:
+  /// **'境目のぼかし'**
+  String get filterSphereLightBlur;
+
+  /// No description provided for @filterSphereCanvasHint.
+  ///
+  /// In ja, this message translates to:
+  /// **'キャンバス上の＋で光を動かし、丸いつまみで大きさを変えられます。影と光は描いてあるところにだけ付きます。'**
+  String get filterSphereCanvasHint;
+
+  /// No description provided for @filterFisheyeCanvasHint.
+  ///
+  /// In ja, this message translates to:
+  /// **'キャンバス上の＋をドラッグしても中心を動かせます。'**
+  String get filterFisheyeCanvasHint;
 
   /// No description provided for @filterCenterX.
   ///

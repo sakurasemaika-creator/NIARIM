@@ -30,6 +30,7 @@ import 'layer_keyframe_sheet.dart';
 import 'panel_close_bar.dart';
 import 'two_finger_vertical_swipe_detector.dart';
 import '../../../config/font_fallback.dart';
+import '../../../utils/blend_mode_label.dart';
 import '../../../utils/reorder_index.dart';
 
 class LayerPanel extends StatefulWidget {
@@ -2278,33 +2279,7 @@ class _LayerPanelState extends State<LayerPanel> {
   }
 
   String _blendModeName(AppLocalizations l10n, model.LayerBlendMode mode) =>
-      switch (mode) {
-        model.LayerBlendMode.normal => l10n.blendModeNormal,
-        model.LayerBlendMode.multiply => l10n.blendModeMultiply,
-        model.LayerBlendMode.screen => l10n.blendModeScreen,
-        model.LayerBlendMode.overlay => l10n.blendModeOverlay,
-        model.LayerBlendMode.addition => l10n.blendModeAddition,
-        model.LayerBlendMode.subtract => l10n.blendModeSubtract,
-        model.LayerBlendMode.darken => l10n.blendModeDarken,
-        model.LayerBlendMode.lighten => l10n.blendModeLighten,
-        model.LayerBlendMode.colorBurn => l10n.blendModeColorBurn,
-        model.LayerBlendMode.colorDodge => l10n.blendModeColorDodge,
-        model.LayerBlendMode.hardLight => l10n.blendModeHardLight,
-        model.LayerBlendMode.softLight => l10n.blendModeSoftLight,
-        model.LayerBlendMode.difference => l10n.blendModeDifference,
-        model.LayerBlendMode.hue => l10n.blendModeHue,
-        model.LayerBlendMode.saturation => l10n.blendModeSaturation,
-        model.LayerBlendMode.color => l10n.blendModeColor,
-        model.LayerBlendMode.luminosity => l10n.blendModeLuminosity,
-        model.LayerBlendMode.linearBurn => l10n.blendModeLinearBurn,
-        model.LayerBlendMode.linearDodge => l10n.blendModeLinearDodge,
-        model.LayerBlendMode.vividLight => l10n.blendModeVividLight,
-        model.LayerBlendMode.linearLight => l10n.blendModeLinearLight,
-        model.LayerBlendMode.pinLight => l10n.blendModePinLight,
-        model.LayerBlendMode.hardMix => l10n.blendModeHardMix,
-        model.LayerBlendMode.exclusion => l10n.blendModeExclusion,
-        model.LayerBlendMode.divide => l10n.blendModeDivide,
-      };
+      blendModeLabel(l10n, mode);
 
   void _showHelp(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;

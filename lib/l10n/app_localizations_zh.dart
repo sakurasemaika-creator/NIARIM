@@ -1670,7 +1670,7 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get helpDrawingFilterDesc =>
-      '直接应用于所选图层的滤镜（演出滤镜作用于整条时间线或整个场景，而绘图滤镜按图层生效）。内置26种滤镜：高斯模糊、镜头模糊、动画风、色调曲线、色阶、描边、锐化、USM锐化、暗角、胶片颗粒、复古动画、显像管、二值化、鱼眼镜头、色差、眼镜断层、像素画、质感变换滤镜、背景融合、积墨、自动线稿、棱镜、VHS噪点、颜色反转、马赛克和噪点。描边不会改写原图层，只会把结果绘制到新图层。眼镜断层只对选区图层中涂抹的范围施加类似强力眼镜镜片的局部变形。像素画还可选择配色方式（不限制、指定颜色、指定颜色数或从调色板选择）。大小可在“指定色块大小”（1～100共100级）和“指定点数”（横向・纵向点数滑块，最左为1，最右为画布尺寸）之间切换，横向和纵向会在保持画面宽高比的同时一起变化，两种指定方式也会联动。两种方式下点都保持正方形，不会产生半透明的边缘。 自动线稿可在应用滤镜前直接编辑临时Vector控制点。拖动控制点时只移动该点，点击线段可添加控制点，点击控制点并确认后可删除。编辑后的形状会直接用于最终应用结果。';
+      '直接应用于所选图层的滤镜（演出滤镜作用于整条时间线或整个场景，而绘图滤镜按图层生效）。内置27种滤镜：高斯模糊、镜头模糊、动画风、色调曲线、色阶、描边、锐化、USM锐化、暗角、胶片颗粒、复古动画、显像管、二值化、鱼眼镜头、色差、眼镜断层、像素画、质感变换滤镜、背景融合、积墨、自动线稿、棱镜、VHS噪点、颜色反转、马赛克、噪点和球体阴影。球体阴影会在椭圆形光的内侧叠加光色、外侧叠加阴影色，且只加在已绘制的地方（也可以在画布上拖动光）。描边不会改写原图层，只会把结果绘制到新图层。眼镜断层只对选区图层中涂抹的范围施加类似强力眼镜镜片的局部变形。像素画还可选择配色方式（不限制、指定颜色、指定颜色数或从调色板选择）。大小可在“指定色块大小”（1～100共100级）和“指定点数”（横向・纵向点数滑块，最左为1，最右为画布尺寸）之间切换，横向和纵向会在保持画面宽高比的同时一起变化，两种指定方式也会联动。两种方式下点都保持正方形，不会产生半透明的边缘。 自动线稿可在应用滤镜前直接编辑临时Vector控制点。拖动控制点时只移动该点，点击线段可添加控制点，点击控制点并确认后可删除。编辑后的形状会直接用于最终应用结果。';
 
   @override
   String get helpLayerKeyframeTitle => '图层关键帧（分部件动画）';
@@ -5425,7 +5425,7 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get tipsFisheyeChromaticDesc =>
-      '鱼眼镜头滤镜会让画面中心膨胀、边缘压缩，重现广角・鱼眼镜头拍摄般的弯曲效果。色差滤镜会让RGB通道略微错开，重现廉价镜头拍摄时常见的彩色边缘。两者都可以作为绘图滤镜（直接应用于图层）和演出滤镜（在时间轴上指定范围应用）使用。';
+      '鱼眼镜头滤镜会让画面中心膨胀、边缘压缩，重现广角・鱼眼镜头拍摄般的弯曲效果。色差滤镜会让RGB通道略微错开，重现廉价镜头拍摄时常见的彩色边缘。两者都可以作为绘图滤镜（直接应用于图层）和演出滤镜（在时间轴上指定范围应用）使用。鱼眼镜头的中心也可以拖动画布上的＋来移动。';
 
   @override
   String get tipsLensDistortionTitle => '用选择图层＋眼镜断层滤镜再现度数镜片的光学畸变';
@@ -5433,6 +5433,13 @@ class AppLocalizationsZh extends AppLocalizations {
   @override
   String get tipsLensDistortionDesc =>
       '在图层列表中添加「选择图层」，用普通绘图工具涂抹眼镜的镜片部分，即可只对该涂抹范围应用眼镜断层滤镜的局部畸变。镜片强度滑块在负值时呈凹透镜（近视）般缩小，在正值时呈凸透镜（远视）般放大，中心位置也可微调。也可以同时涂抹两片镜片并一次性应用效果。选择图层本身不会出现在导出结果或最终画面中。除了眼镜之外，也可以用来再现透过相机镜头看风景般的畸变效果，建议用选择图层涂抹背景等较大范围，并使用较弱的强度。';
+
+  @override
+  String get tipsSphereShadingTitle => '用球体阴影滤镜一次加上圆润的立体感';
+
+  @override
+  String get tipsSphereShadingDesc =>
+      '球体阴影滤镜会在椭圆形光的内侧叠加光色、外侧叠加阴影色，而且只加在已绘制的地方。光的位置和大小除了用滑块调整，也可以在画布上拖动＋（位置）和圆形手柄（大小）来改变，再用边界模糊做出像球体一样柔和的阴影。阴影色和光色可分别选择混合模式（例如阴影用正片叠底、光用滤色）；选择“合并为一种”时，会用一种混合模式（如强光）叠加从阴影色到光色的渐变。颜色也可以设为透明，透明的一侧不做任何改变。如果涂了选区图层，就只应用在该范围内。';
 
   @override
   String get tipsLineArtExtractionTitle => '组合色调调整・二值化・明度转透明来提取线稿';
@@ -6731,6 +6738,12 @@ class AppLocalizationsZh extends AppLocalizations {
   String get filterBackToList => '返回滤镜列表';
 
   @override
+  String get filterPanelCollapse => '收起面板';
+
+  @override
+  String get filterPanelExpand => '展开面板';
+
+  @override
   String get customAutomationShowAll => '显示全部';
 
   @override
@@ -6769,6 +6782,56 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get filterFisheyeRadius => '半径';
+
+  @override
+  String get filterNameSphereShading => '球体阴影';
+
+  @override
+  String get filterSphereModeSeparate => '阴影和光分开';
+
+  @override
+  String get filterSphereModeCombined => '合并为一种';
+
+  @override
+  String get filterSphereCombinedHint =>
+      '用一种混合模式叠加从阴影色到光色的渐变。使用强光时，比中灰暗的颜色会变暗，比中灰亮的颜色会变亮。';
+
+  @override
+  String get filterSphereShadowColor => '阴影色';
+
+  @override
+  String get filterSphereLightColor => '光色';
+
+  @override
+  String get filterSphereShadowBlend => '阴影的混合模式';
+
+  @override
+  String get filterSphereLightBlend => '光的混合模式';
+
+  @override
+  String get filterSphereBlend => '混合模式';
+
+  @override
+  String get filterSphereLightX => '光的位置 X';
+
+  @override
+  String get filterSphereLightY => '光的位置 Y';
+
+  @override
+  String get filterSphereLightWidth => '光的大小 X';
+
+  @override
+  String get filterSphereLightHeight => '光的大小 Y';
+
+  @override
+  String get filterSphereLightBlur => '边界模糊';
+
+  @override
+  String get filterSphereCanvasHint =>
+      '拖动画布上的＋可移动光，拖动圆形手柄可改变大小。阴影和光只会加在已绘制的地方。';
+
+  @override
+  String get filterFisheyeCanvasHint => '也可以拖动画布上的＋来移动中心。';
 
   @override
   String get filterCenterX => '中心 X';
@@ -8503,7 +8566,7 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get helpDrawingFilterDesc =>
-      '直接套用於所選圖層的濾鏡（演出濾鏡作用於整條時間軸或整個場景，而繪圖濾鏡按圖層生效）。內建26種濾鏡：高斯模糊、鏡頭模糊、動畫風、色調曲線、色階、外框、銳化、USM銳化、暗角、膠片顆粒、復古動畫、映像管、二值化、魚眼鏡頭、色差、眼鏡斷層、像素畫、質感變換濾鏡、背景融合、積墨、自動線稿、稜鏡、VHS雜訊、色彩反轉、馬賽克和雜訊。外框不會改寫原圖層，只會把結果繪製到新圖層。眼鏡斷層只對選取圖層中塗抹的範圍套用類似強力眼鏡鏡片的局部變形。像素畫還可選擇配色方式（不限制、指定顏色、指定顏色數或從調色盤選擇）。大小可在「指定色塊大小」（1～100共100級）和「指定點數」（橫向・縱向點數滑桿，最左為1，最右為畫布尺寸）之間切換，橫向和縱向會在維持畫面長寬比的同時一起變化，兩種指定方式也會連動。兩種方式下點都維持正方形，不會產生半透明的邊緣。 自動線稿可在套用濾鏡前直接編輯暫時Vector控制點。拖曳控制點時只移動該點，點擊線段可新增控制點，點擊控制點並確認後可刪除。編輯後的形狀會直接用於最終套用結果。';
+      '直接套用於所選圖層的濾鏡（演出濾鏡作用於整條時間軸或整個場景，而繪圖濾鏡按圖層生效）。內建27種濾鏡：高斯模糊、鏡頭模糊、動畫風、色調曲線、色階、外框、銳化、USM銳化、暗角、膠片顆粒、復古動畫、映像管、二值化、魚眼鏡頭、色差、眼鏡斷層、像素畫、質感變換濾鏡、背景融合、積墨、自動線稿、稜鏡、VHS雜訊、色彩反轉、馬賽克、雜訊和球體陰影。球體陰影會在橢圓形光的內側疊加光色、外側疊加陰影色，且只加在已繪製的地方（也可以在畫布上拖曳光）。外框不會改寫原圖層，只會把結果繪製到新圖層。眼鏡斷層只對選取圖層中塗抹的範圍套用類似強力眼鏡鏡片的局部變形。像素畫還可選擇配色方式（不限制、指定顏色、指定顏色數或從調色盤選擇）。大小可在「指定色塊大小」（1～100共100級）和「指定點數」（橫向・縱向點數滑桿，最左為1，最右為畫布尺寸）之間切換，橫向和縱向會在維持畫面長寬比的同時一起變化，兩種指定方式也會連動。兩種方式下點都維持正方形，不會產生半透明的邊緣。 自動線稿可在套用濾鏡前直接編輯暫時Vector控制點。拖曳控制點時只移動該點，點擊線段可新增控制點，點擊控制點並確認後可刪除。編輯後的形狀會直接用於最終套用結果。';
 
   @override
   String get helpLayerKeyframeTitle => '圖層關鍵影格（分部件動畫）';
@@ -12258,7 +12321,7 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get tipsFisheyeChromaticDesc =>
-      '魚眼鏡頭濾鏡會讓畫面中心膨脹、邊緣壓縮，重現廣角・魚眼鏡頭拍攝般的彎曲效果。色差濾鏡會讓RGB色版略微錯開，重現廉價鏡頭拍攝時常見的彩色邊緣。兩者都可作為繪圖濾鏡（直接套用於圖層）與演出濾鏡（在時間軸上指定範圍套用）使用。';
+      '魚眼鏡頭濾鏡會讓畫面中心膨脹、邊緣壓縮，重現廣角・魚眼鏡頭拍攝般的彎曲效果。色差濾鏡會讓RGB色版略微錯開，重現廉價鏡頭拍攝時常見的彩色邊緣。兩者都可作為繪圖濾鏡（直接套用於圖層）與演出濾鏡（在時間軸上指定範圍套用）使用。魚眼鏡頭的中心也可以拖曳畫布上的＋來移動。';
 
   @override
   String get tipsLensDistortionTitle => '用選取圖層＋眼鏡斷層濾鏡重現度數鏡片的光學畸變';
@@ -12266,6 +12329,13 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   @override
   String get tipsLensDistortionDesc =>
       '在圖層清單中新增「選取圖層」，用一般繪圖工具塗抹眼鏡的鏡片部分，即可僅對該塗抹範圍套用眼鏡斷層濾鏡的局部畸變。鏡片強度滑桿在負值時呈凹透鏡（近視）般縮小，在正值時呈凸透鏡（遠視）般放大，中心位置也可微調。也可以同時塗抹兩片鏡片並一次套用效果。選取圖層本身不會出現在匯出結果或最終畫面中。除了眼鏡之外，也可以用來重現透過相機鏡頭看風景般的畸變效果，建議用選取圖層塗抹背景等較大範圍，並套用較弱的強度。';
+
+  @override
+  String get tipsSphereShadingTitle => '用球體陰影濾鏡一次加上圓潤的立體感';
+
+  @override
+  String get tipsSphereShadingDesc =>
+      '球體陰影濾鏡會在橢圓形光的內側疊加光色、外側疊加陰影色，而且只加在已繪製的地方。光的位置和大小除了用滑桿調整，也可以在畫布上拖曳＋（位置）和圓形控點（大小）來改變，再用邊界模糊做出像球體一樣柔和的陰影。陰影色和光色可分別選擇混合模式（例如陰影用色彩增值、光用濾色）；選擇「合併為一種」時，會用一種混合模式（如實光）疊加從陰影色到光色的漸層。顏色也可以設為透明，透明的一側不做任何改變。如果塗了選取圖層，就只套用在該範圍內。';
 
   @override
   String get tipsLineArtExtractionTitle => '組合色調調整・二值化・明度轉透明來擷取線稿';
@@ -13564,6 +13634,12 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get filterBackToList => '返回濾鏡列表';
 
   @override
+  String get filterPanelCollapse => '收合面板';
+
+  @override
+  String get filterPanelExpand => '展開面板';
+
+  @override
   String get customAutomationShowAll => '顯示全部';
 
   @override
@@ -13602,6 +13678,56 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get filterFisheyeRadius => '半徑';
+
+  @override
+  String get filterNameSphereShading => '球體陰影';
+
+  @override
+  String get filterSphereModeSeparate => '陰影和光分開';
+
+  @override
+  String get filterSphereModeCombined => '合併為一種';
+
+  @override
+  String get filterSphereCombinedHint =>
+      '用一種混合模式疊加從陰影色到光色的漸層。使用實光時，比中灰暗的顏色會變暗，比中灰亮的顏色會變亮。';
+
+  @override
+  String get filterSphereShadowColor => '陰影色';
+
+  @override
+  String get filterSphereLightColor => '光色';
+
+  @override
+  String get filterSphereShadowBlend => '陰影的混合模式';
+
+  @override
+  String get filterSphereLightBlend => '光的混合模式';
+
+  @override
+  String get filterSphereBlend => '混合模式';
+
+  @override
+  String get filterSphereLightX => '光的位置 X';
+
+  @override
+  String get filterSphereLightY => '光的位置 Y';
+
+  @override
+  String get filterSphereLightWidth => '光的大小 X';
+
+  @override
+  String get filterSphereLightHeight => '光的大小 Y';
+
+  @override
+  String get filterSphereLightBlur => '邊界模糊';
+
+  @override
+  String get filterSphereCanvasHint =>
+      '拖曳畫布上的＋可移動光，拖曳圓形控點可改變大小。陰影和光只會加在已繪製的地方。';
+
+  @override
+  String get filterFisheyeCanvasHint => '也可以拖曳畫布上的＋來移動中心。';
 
   @override
   String get filterCenterX => '中心 X';

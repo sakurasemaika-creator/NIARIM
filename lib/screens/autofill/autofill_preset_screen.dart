@@ -15,6 +15,7 @@ import '../../l10n/app_localizations.dart';
 import '../../models/autofill_gradient.dart';
 import '../../models/autofill_preset.dart';
 import '../../models/layer.dart' show LayerBlendMode;
+import '../../utils/blend_mode_label.dart';
 import '../../services/autofill_preset_service.dart';
 import '../../services/project_service.dart';
 import '../../services/tone_service.dart';
@@ -1364,23 +1365,26 @@ class _PresetDetailScreenState extends State<_PresetDetailScreen> {
   };
 
   Map<LayerBlendMode, String> _blendModeLabels(AppLocalizations l10n) => {
-    LayerBlendMode.normal: l10n.blendModeNormal,
-    LayerBlendMode.multiply: l10n.blendModeMultiply,
-    LayerBlendMode.screen: l10n.blendModeScreen,
-    LayerBlendMode.overlay: l10n.blendModeOverlay,
-    LayerBlendMode.addition: l10n.blendModeAddition,
-    LayerBlendMode.subtract: l10n.blendModeSubtract,
-    LayerBlendMode.darken: l10n.blendModeDarken,
-    LayerBlendMode.lighten: l10n.blendModeLighten,
-    LayerBlendMode.colorBurn: l10n.blendModeColorBurn,
-    LayerBlendMode.colorDodge: l10n.blendModeColorDodge,
-    LayerBlendMode.hardLight: l10n.blendModeHardLight,
-    LayerBlendMode.softLight: l10n.blendModeSoftLight,
-    LayerBlendMode.difference: l10n.blendModeDifference,
-    LayerBlendMode.hue: l10n.blendModeHue,
-    LayerBlendMode.saturation: l10n.blendModeSaturation,
-    LayerBlendMode.color: l10n.blendModeColor,
-    LayerBlendMode.luminosity: l10n.blendModeLuminosity,
+    for (final mode in const [
+      LayerBlendMode.normal,
+      LayerBlendMode.multiply,
+      LayerBlendMode.screen,
+      LayerBlendMode.overlay,
+      LayerBlendMode.addition,
+      LayerBlendMode.subtract,
+      LayerBlendMode.darken,
+      LayerBlendMode.lighten,
+      LayerBlendMode.colorBurn,
+      LayerBlendMode.colorDodge,
+      LayerBlendMode.hardLight,
+      LayerBlendMode.softLight,
+      LayerBlendMode.difference,
+      LayerBlendMode.hue,
+      LayerBlendMode.saturation,
+      LayerBlendMode.color,
+      LayerBlendMode.luminosity,
+    ])
+      mode: blendModeLabel(l10n, mode),
   };
 
   /// 詳細設定ポップアップ（色チップタップ時。塗り色・線画色・

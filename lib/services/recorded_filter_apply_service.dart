@@ -63,7 +63,7 @@ class RecordedFilterApplyService {
       ));
     } else {
       Uint8List? auxiliaryData;
-      if (filter.kind == FilterKind.lensDistortion) {
+      if (filterUsesSelectionMask(filter.kind)) {
         final selectionLayer = projectService
             .layersOf(projectId, sceneId, frameIndex)
             .where((layer) => layer.type == model.LayerType.selection)

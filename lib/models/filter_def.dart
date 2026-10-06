@@ -1,3 +1,6 @@
+import 'dart:math' as math;
+
+import 'layer.dart';
 import 'pixel_color_mode.dart';
 
 enum FilterKind {
@@ -25,6 +28,7 @@ enum FilterKind {
   inkPool,
   autoLineart,
   prism,
+  sphereShading,
 }
 
 /// Shared noise algorithm, independent of preset identity.
@@ -61,6 +65,18 @@ const int kPixelArtMaxBlockSize = 100;
 /// and ink pool go directly beneath it.
 int generatedLayerInsertIndex(FilterKind kind, int sourceIndex) =>
     kind == FilterKind.autoLineart ? sourceIndex : sourceIndex + 1;
+
+/// Whether a filter of this kind works only where the selection layer is
+/// painted (the glasses lens, and sphere shading when one is painted), so
+/// applying it needs the selection layer's pixels.
+bool filterUsesSelectionMask(FilterKind kind) =>
+    kind == FilterKind.lensDistortion || kind == FilterKind.sphereShading;
+
+LayerBlendMode _blendModeNamed(Object? name, LayerBlendMode fallback) =>
+    LayerBlendMode.values.firstWhere(
+      (mode) => mode.name == name,
+      orElse: () => fallback,
+    );
 
 class FilterDef {
   final String id;
@@ -155,6 +171,27 @@ class FilterDef {
   final double prismBlurPx;
   final double prismDirectionDegrees;
 
+  /// Sphere shading: the colours (ARGB; their alpha is how strongly they go
+  /// on, so transparent leaves that side alone) and the blend modes they go
+  /// on in, either each its own ([sphereCombined] false) or both as one map
+  /// in [sphereCombinedBlend].
+  final int sphereShadowColor;
+  final int sphereLightColor;
+  final LayerBlendMode sphereShadowBlend;
+  final LayerBlendMode sphereLightBlend;
+  final bool sphereCombined;
+  final LayerBlendMode sphereCombinedBlend;
+
+  /// Sphere shading's light ellipse: its centre as a percentage of the
+  /// canvas width and height, its width and height as a percentage of the
+  /// canvas's shorter side (so equal sizes make a circle), and how much of
+  /// its radius its edge fades over (0 to 100).
+  final double sphereLightX;
+  final double sphereLightY;
+  final double sphereLightWidth;
+  final double sphereLightHeight;
+  final double sphereLightBlur;
+
   const FilterDef({
     required this.id,
     required this.name,
@@ -233,7 +270,38 @@ class FilterDef {
     this.autoLineartColor = 0xFF000000,
     this.prismBlurPx = 17,
     this.prismDirectionDegrees = 90,
+    this.sphereShadowColor = 0x994B4270,
+    this.sphereLightColor = 0x99FFF0C8,
+    this.sphereShadowBlend = LayerBlendMode.multiply,
+    this.sphereLightBlend = LayerBlendMode.screen,
+    this.sphereCombined = false,
+    this.sphereCombinedBlend = LayerBlendMode.hardLight,
+    this.sphereLightX = 40,
+    this.sphereLightY = 35,
+    this.sphereLightWidth = 60,
+    this.sphereLightHeight = 60,
+    this.sphereLightBlur = 30,
   });
+
+  /// Sphere shading's light ellipse on a canvas of this size, in pixels.
+  ({double centerX, double centerY, double radiusX, double radiusY})
+  sphereLight(int width, int height) {
+    final side = math.min(width, height).toDouble();
+    return (
+      centerX: width * sphereLightX / 100,
+      centerY: height * sphereLightY / 100,
+      radiusX: side * sphereLightWidth / 200,
+      radiusY: side * sphereLightHeight / 200,
+    );
+  }
+
+  /// The fisheye's centre on a canvas of this size, in pixels:
+  /// [fisheyeCenterX] and [fisheyeCenterY] move it from the middle by a
+  /// percentage of the width and height (±50 reaches the edges).
+  ({double x, double y}) fisheyeCenter(int width, int height) => (
+    x: width * (0.5 + fisheyeCenterX / 100),
+    y: height * (0.5 + fisheyeCenterY / 100),
+  );
 
   /// Chromatic aberration as canvas-pixel displacements of red (blue goes
   /// the other way): sideways (x, y) and radial (outwards at the corners).
@@ -332,6 +400,17 @@ class FilterDef {
     int? autoLineartColor,
     double? prismBlurPx,
     double? prismDirectionDegrees,
+    int? sphereShadowColor,
+    int? sphereLightColor,
+    LayerBlendMode? sphereShadowBlend,
+    LayerBlendMode? sphereLightBlend,
+    bool? sphereCombined,
+    LayerBlendMode? sphereCombinedBlend,
+    double? sphereLightX,
+    double? sphereLightY,
+    double? sphereLightWidth,
+    double? sphereLightHeight,
+    double? sphereLightBlur,
   }) {
     return FilterDef(
       id: id ?? this.id,
@@ -421,6 +500,17 @@ class FilterDef {
       prismBlurPx: prismBlurPx ?? this.prismBlurPx,
       prismDirectionDegrees:
           prismDirectionDegrees ?? this.prismDirectionDegrees,
+      sphereShadowColor: sphereShadowColor ?? this.sphereShadowColor,
+      sphereLightColor: sphereLightColor ?? this.sphereLightColor,
+      sphereShadowBlend: sphereShadowBlend ?? this.sphereShadowBlend,
+      sphereLightBlend: sphereLightBlend ?? this.sphereLightBlend,
+      sphereCombined: sphereCombined ?? this.sphereCombined,
+      sphereCombinedBlend: sphereCombinedBlend ?? this.sphereCombinedBlend,
+      sphereLightX: sphereLightX ?? this.sphereLightX,
+      sphereLightY: sphereLightY ?? this.sphereLightY,
+      sphereLightWidth: sphereLightWidth ?? this.sphereLightWidth,
+      sphereLightHeight: sphereLightHeight ?? this.sphereLightHeight,
+      sphereLightBlur: sphereLightBlur ?? this.sphereLightBlur,
     );
   }
 
@@ -503,6 +593,17 @@ class FilterDef {
     'autoLineartColor': autoLineartColor,
     'prismBlurPx': prismBlurPx,
     'prismDirectionDegrees': prismDirectionDegrees,
+    'sphereShadowColor': sphereShadowColor,
+    'sphereLightColor': sphereLightColor,
+    'sphereShadowBlend': sphereShadowBlend.name,
+    'sphereLightBlend': sphereLightBlend.name,
+    'sphereCombined': sphereCombined,
+    'sphereCombinedBlend': sphereCombinedBlend.name,
+    'sphereLightX': sphereLightX,
+    'sphereLightY': sphereLightY,
+    'sphereLightWidth': sphereLightWidth,
+    'sphereLightHeight': sphereLightHeight,
+    'sphereLightBlur': sphereLightBlur,
   };
 
   /// The stored kind name; Prism snapshots written before schemaVersion
@@ -663,5 +764,25 @@ class FilterDef {
     prismBlurPx: (j['prismBlurPx'] as num?)?.toDouble() ?? 17,
     prismDirectionDegrees:
         (j['prismDirectionDegrees'] as num?)?.toDouble() ?? 90,
+    sphereShadowColor: j['sphereShadowColor'] as int? ?? 0x994B4270,
+    sphereLightColor: j['sphereLightColor'] as int? ?? 0x99FFF0C8,
+    sphereShadowBlend: _blendModeNamed(
+      j['sphereShadowBlend'],
+      LayerBlendMode.multiply,
+    ),
+    sphereLightBlend: _blendModeNamed(
+      j['sphereLightBlend'],
+      LayerBlendMode.screen,
+    ),
+    sphereCombined: j['sphereCombined'] as bool? ?? false,
+    sphereCombinedBlend: _blendModeNamed(
+      j['sphereCombinedBlend'],
+      LayerBlendMode.hardLight,
+    ),
+    sphereLightX: (j['sphereLightX'] as num?)?.toDouble() ?? 40,
+    sphereLightY: (j['sphereLightY'] as num?)?.toDouble() ?? 35,
+    sphereLightWidth: (j['sphereLightWidth'] as num?)?.toDouble() ?? 60,
+    sphereLightHeight: (j['sphereLightHeight'] as num?)?.toDouble() ?? 60,
+    sphereLightBlur: (j['sphereLightBlur'] as num?)?.toDouble() ?? 30,
   );
 }

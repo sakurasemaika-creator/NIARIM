@@ -1728,7 +1728,7 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get helpDrawingFilterDesc =>
-      'Filtres appliqués directement au calque sélectionné (contrairement aux filtres d’effet, qui s’appliquent à toute la timeline ou à une scène, les filtres de dessin agissent par calque). Les 26 filtres inclus sont Flou gaussien, Flou d’objectif, Style anime, Courbe de tons, Niveaux, Contour, Netteté, Masque flou, Vignettage, Grain de pellicule, Anime rétro, Tube cathodique, Seuil, Objectif fisheye, Aberration chromatique, Distorsion optique, Pixel art, Filtre de texture, Intégration à l’arrière-plan, Accumulation d’encre, Trait automatique, Prisme, Bruit VHS, Inversion des couleurs, Mosaïque et Bruit. Contour ne réécrit pas le calque d’origine : il dessine seulement le résultat sur un nouveau calque. Distorsion optique applique une déformation localisée, comme à travers un verre de lunettes très correcteur, uniquement sur la zone peinte du calque de sélection. Pixel art permet aussi de choisir un mode de couleur (sans limite, couleurs définies, nombre de couleurs ou palette). Sa taille se règle par la taille des blocs (100 crans, de 1 à 100) ou par des curseurs de points en largeur et en hauteur (1 tout à gauche, la taille du canevas tout à droite) ; déplacer l’un déplace l’autre en gardant les proportions du dessin, et les deux réglages restent liés. Dans les deux cas, les points restent carrés, sans bord semi-transparent. Le Trait automatique permet de modifier les points de contrôle vectoriels temporaires avant d’appliquer le filtre. Faites glisser un point pour déplacer uniquement ce point, touchez un segment pour ajouter un point de contrôle, ou touchez un point puis confirmez pour le supprimer. La géométrie modifiée est utilisée directement dans le résultat appliqué.';
+      'Filtres appliqués directement au calque sélectionné (contrairement aux filtres d’effet, qui s’appliquent à toute la timeline ou à une scène, les filtres de dessin agissent par calque). Les 27 filtres inclus sont Flou gaussien, Flou d’objectif, Style anime, Courbe de tons, Niveaux, Contour, Netteté, Masque flou, Vignettage, Grain de pellicule, Anime rétro, Tube cathodique, Seuil, Objectif fisheye, Aberration chromatique, Distorsion optique, Pixel art, Filtre de texture, Intégration à l’arrière-plan, Accumulation d’encre, Trait automatique, Prisme, Bruit VHS, Inversion des couleurs, Mosaïque, Bruit et Ombrage sphérique. L’Ombrage sphérique applique une couleur de lumière à l’intérieur d’une lumière elliptique et une couleur d’ombre à l’extérieur, uniquement sur le dessin (la lumière peut aussi être déplacée sur le canevas). Contour ne réécrit pas le calque d’origine : il dessine seulement le résultat sur un nouveau calque. Distorsion optique applique une déformation localisée, comme à travers un verre de lunettes très correcteur, uniquement sur la zone peinte du calque de sélection. Pixel art permet aussi de choisir un mode de couleur (sans limite, couleurs définies, nombre de couleurs ou palette). Sa taille se règle par la taille des blocs (100 crans, de 1 à 100) ou par des curseurs de points en largeur et en hauteur (1 tout à gauche, la taille du canevas tout à droite) ; déplacer l’un déplace l’autre en gardant les proportions du dessin, et les deux réglages restent liés. Dans les deux cas, les points restent carrés, sans bord semi-transparent. Le Trait automatique permet de modifier les points de contrôle vectoriels temporaires avant d’appliquer le filtre. Faites glisser un point pour déplacer uniquement ce point, touchez un segment pour ajouter un point de contrôle, ou touchez un point puis confirmez pour le supprimer. La géométrie modifiée est utilisée directement dans le résultat appliqué.';
 
   @override
   String get helpLayerKeyframeTitle =>
@@ -5752,7 +5752,7 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get tipsFisheyeChromaticDesc =>
-      'Le filtre œil de poisson bombe le centre de l\'image et comprime les bords, recréant la courbure d\'une prise de vue grand angle ou fisheye. Le filtre d\'aberration chromatique décale légèrement les canaux RVB pour recréer le liseré coloré typique d\'un objectif bon marché. Les deux sont disponibles à la fois comme filtres de dessin (appliqués directement à un calque) et comme filtres d\'effet (appliqués sur une plage de la timeline).';
+      'Le filtre œil de poisson bombe le centre de l\'image et comprime les bords, recréant la courbure d\'une prise de vue grand angle ou fisheye. Le filtre d\'aberration chromatique décale légèrement les canaux RVB pour recréer le liseré coloré typique d\'un objectif bon marché. Les deux sont disponibles à la fois comme filtres de dessin (appliqués directement à un calque) et comme filtres d\'effet (appliqués sur une plage de la timeline). Le centre du fisheye peut aussi être déplacé en faisant glisser le + sur le canevas.';
 
   @override
   String get tipsLensDistortionTitle =>
@@ -5761,6 +5761,14 @@ class AppLocalizationsFr extends AppLocalizations {
   @override
   String get tipsLensDistortionDesc =>
       'Ajoutez un « Calque de sélection » à la liste des calques et peignez la zone des verres de lunettes avec n\'importe quel outil de dessin habituel : la déformation locale du filtre de distorsion de lentille s\'applique alors uniquement à cette zone peinte. Le curseur d’intensité rétrécit la zone dans un sens concave (myopie) pour les valeurs négatives et l\'agrandit dans un sens convexe (hypermétropie) pour les valeurs positives ; vous pouvez aussi ajuster finement la position du centre. Vous pouvez peindre les deux verres à la fois et appliquer l\'effet aux deux en même temps. Le calque de sélection lui-même n\'apparaît jamais dans les exports ni dans l\'œuvre finale. Il est aussi pratique pour recréer l\'aspect d\'un paysage vu à travers l\'objectif d\'un appareil photo : peignez une large zone, comme l\'arrière-plan, avec un calque de sélection et appliquez une intensité légère.';
+
+  @override
+  String get tipsSphereShadingTitle =>
+      'Donner du volume d’un coup avec l’Ombrage sphérique';
+
+  @override
+  String get tipsSphereShadingDesc =>
+      'Le filtre Ombrage sphérique applique la couleur de lumière à l’intérieur d’une lumière elliptique et la couleur d’ombre à l’extérieur, uniquement sur le dessin. Déplacez et redimensionnez la lumière avec les curseurs ou en faisant glisser sur le canevas le + (position) et les poignées rondes (taille), puis adoucissez le bord avec Flou du bord pour un ombrage arrondi comme celui d’une sphère. Chaque couleur a son propre mode de fusion (par exemple Produit pour l’ombre et Écran pour la lumière) ; avec « Les deux en une fusion », un dégradé de la couleur d’ombre à la couleur de lumière s’applique avec un seul mode de fusion, comme Lumière crue. Une couleur peut être transparente : ce côté reste alors inchangé. Si le calque de sélection est peint, l’ombrage ne s’applique qu’à cet endroit.';
 
   @override
   String get tipsLineArtExtractionTitle =>
@@ -7155,6 +7163,12 @@ class AppLocalizationsFr extends AppLocalizations {
   String get filterBackToList => 'Retour aux filtres';
 
   @override
+  String get filterPanelCollapse => 'Réduire le panneau';
+
+  @override
+  String get filterPanelExpand => 'Agrandir le panneau';
+
+  @override
   String get customAutomationShowAll => 'Tout afficher';
 
   @override
@@ -7198,6 +7212,57 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get filterFisheyeRadius => 'Rayon';
+
+  @override
+  String get filterNameSphereShading => 'Ombrage sphérique';
+
+  @override
+  String get filterSphereModeSeparate => 'Ombre et lumière séparées';
+
+  @override
+  String get filterSphereModeCombined => 'Les deux en une fusion';
+
+  @override
+  String get filterSphereCombinedHint =>
+      'Applique un dégradé de la couleur d’ombre à la couleur de lumière avec un seul mode de fusion. En Lumière crue, les couleurs plus sombres que le gris moyen assombrissent et les plus claires éclaircissent.';
+
+  @override
+  String get filterSphereShadowColor => 'Couleur d’ombre';
+
+  @override
+  String get filterSphereLightColor => 'Couleur de lumière';
+
+  @override
+  String get filterSphereShadowBlend => 'Mode de fusion de l’ombre';
+
+  @override
+  String get filterSphereLightBlend => 'Mode de fusion de la lumière';
+
+  @override
+  String get filterSphereBlend => 'Mode de fusion';
+
+  @override
+  String get filterSphereLightX => 'Position X de la lumière';
+
+  @override
+  String get filterSphereLightY => 'Position Y de la lumière';
+
+  @override
+  String get filterSphereLightWidth => 'Taille X de la lumière';
+
+  @override
+  String get filterSphereLightHeight => 'Taille Y de la lumière';
+
+  @override
+  String get filterSphereLightBlur => 'Flou du bord';
+
+  @override
+  String get filterSphereCanvasHint =>
+      'Faites glisser le + sur le canevas pour déplacer la lumière et les poignées rondes pour la redimensionner. L’ombre et la lumière ne s’appliquent qu’au dessin.';
+
+  @override
+  String get filterFisheyeCanvasHint =>
+      'Vous pouvez aussi faire glisser le + sur le canevas pour déplacer le centre.';
 
   @override
   String get filterCenterX => 'Centre X';

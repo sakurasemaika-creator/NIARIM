@@ -32,6 +32,7 @@ import '../../engine/undo_manager.dart';
 import '../../engine/custom_automation_executor.dart';
 import '../../l10n/app_localizations.dart';
 import '../../models/bundled_fonts.dart';
+import '../../models/filter_canvas_gizmo.dart';
 import '../../models/layer.dart' as model;
 import '../../models/onion_skin_settings.dart';
 import '../../models/project.dart';
@@ -1247,6 +1248,15 @@ class _CanvasScreenState extends State<CanvasScreen> {
                                       _filterColorEyedropperTarget != null ||
                                       _textColorEyedropperTarget != null ||
                                       _brushOutlineEyedropperActive,
+                                  filterGizmo: _filterCanvasGizmo(project),
+                                  onFilterGizmoChanged: (gizmo) =>
+                                      _moveFilterGizmo(project, gizmo),
+                                  onFilterGizmoDragStart: () => context
+                                      .read<FilterService>()
+                                      .beginFilterEditGroup(),
+                                  onFilterGizmoDragEnd: () => context
+                                      .read<FilterService>()
+                                      .endFilterEditGroup(),
                                   project: project,
                                   background: _canvasBackground,
                                   currentLayerId: _currentLayerId,
@@ -1616,11 +1626,19 @@ class _CanvasScreenState extends State<CanvasScreen> {
                 ),
                 // パネル表示中は、パネル外をタップすると閉じられるようにする
                 // 透明バリア（パネル本体より下、Columnより上に敷く）。
+                // フィルターパネルがキャンバスを使っている間（球体陰影の光・
+                // 魚眼の中心のドラッグ、キャンバスからの色取り）は、タッチを
+                // キャンバスへ通す。バリア自体は外さずIgnorePointerで素通し
+                // にすること（外すとStackの並びがずれ、パネルが作り直されて
+                // 編集中のフィルターが一覧へ戻ってしまう）。
                 if (_anyToolPanelOpen && !isDesktop)
                   Positioned.fill(
-                    child: GestureDetector(
-                      behavior: HitTestBehavior.opaque,
-                      onTap: () => setState(_closeAllOverlayPanels),
+                    child: IgnorePointer(
+                      ignoring: _filterPanelUsesCanvas(),
+                      child: GestureDetector(
+                        behavior: HitTestBehavior.opaque,
+                        onTap: () => setState(_closeAllOverlayPanels),
+                      ),
                     ),
                   ),
                 if (_showLayerPanel && !isDesktop)
@@ -2038,6 +2056,41 @@ class _CanvasScreenState extends State<CanvasScreen> {
         after: newRuler,
         onApply: _setActiveRulerLive,
       ),
+    );
+  }
+
+  /// Whether the filter panel is working on the canvas: dragging sphere
+  /// shading's light or the fisheye's centre there, or picking a colour
+  /// from it. Touches must then reach the canvas, so the barrier that closes
+  /// panels on a tap outside them is left out.
+  bool _filterPanelUsesCanvas() {
+    if (!_showFilterPanel) return false;
+    if (_filterColorEyedropperTarget != null) return true;
+    final filter = context.watch<FilterService>().currentFilter;
+    return filter != null && filterHasCanvasGizmo(filter.kind);
+  }
+
+  /// What the filter being edited shows on the canvas to drag (sphere
+  /// shading's light, the fisheye's centre), while the filter panel is open.
+  FilterCanvasGizmo? _filterCanvasGizmo(Project? project) {
+    final filter = context.watch<FilterService>().currentFilter;
+    if (!_showFilterPanel || filter == null || project == null) return null;
+    return filterCanvasGizmoFor(
+      filter,
+      project.drawingWidth,
+      project.drawingHeight,
+    );
+  }
+
+  void _moveFilterGizmo(Project? project, FilterCanvasGizmo gizmo) {
+    final service = context.read<FilterService>();
+    final filter = service.currentFilter;
+    if (filter == null || project == null) return;
+    service.moveCanvasGizmo(
+      filter.id,
+      gizmo,
+      project.drawingWidth,
+      project.drawingHeight,
     );
   }
 

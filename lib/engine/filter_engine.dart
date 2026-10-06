@@ -9,6 +9,7 @@ import 'background_acclimation_engine.dart';
 import 'auto_lineart_engine.dart';
 import 'prism_filter_engine.dart';
 import 'pixel_art_engine.dart';
+import 'sphere_shading_engine.dart';
 import 'vhs_noise_engine.dart';
 
 /// Preview, apply and recorded replay share the same seeded noise settings.
@@ -49,10 +50,41 @@ Uint8List applyNoiseFilter(
   };
 }
 
+/// Sphere shading as [filter] describes it, on a canvas of this size (the
+/// preview passes its own smaller size: the light is measured in
+/// proportions of the canvas, so it lands in the same place).
+Uint8List applySphereShadingFilter(
+  Uint8List data,
+  int width,
+  int height,
+  FilterDef filter,
+  Uint8List? mask,
+) {
+  final light = filter.sphereLight(width, height);
+  return applySphereShading(
+    data,
+    width,
+    height,
+    shadowColor: filter.sphereShadowColor,
+    lightColor: filter.sphereLightColor,
+    shadowBlend: filter.sphereShadowBlend,
+    lightBlend: filter.sphereLightBlend,
+    combined: filter.sphereCombined,
+    combinedBlend: filter.sphereCombinedBlend,
+    centerX: light.centerX,
+    centerY: light.centerY,
+    radiusX: light.radiusX,
+    radiusY: light.radiusY,
+    blur: filter.sphereLightBlur,
+    mask: mask,
+  );
+}
+
 /// 描画フィルターの本適用（低スペック端末でのUIスレッドブロック防止のため
 /// compute()経由でバックグラウンドisolate実行する想定のトップレベル関数）。
-/// [maskData]はlensDistortion（眼鏡断層フィルター）専用（選択レイヤーを
-/// 単体合成したrawRgba画像）で、それ以外のフィルター種別では無視される。
+/// [maskData]は、眼鏡断層フィルター・球体陰影では選択レイヤーを単体合成した
+/// rawRgba画像（[filterUsesSelectionMask]）、背景なじませでは対象レイヤー以外を
+/// 合成した画像で、それ以外のフィルター種別では無視される。
 Uint8List applyDrawFilterInIsolate(
   (Uint8List data, int width, int height, FilterDef filter, Uint8List? maskData)
   args,
@@ -177,8 +209,15 @@ Uint8List applyDrawFilterInIsolate(
       height,
       filter.strength,
       radiusPercent: filter.fisheyeRadius,
-      centerOffsetX: filter.fisheyeCenterX,
-      centerOffsetY: filter.fisheyeCenterY,
+      centerOffsetX: filter.fisheyeCenter(width, height).x - width / 2,
+      centerOffsetY: filter.fisheyeCenter(width, height).y - height / 2,
+    ),
+    FilterKind.sphereShading => applySphereShadingFilter(
+      data,
+      width,
+      height,
+      filter,
+      maskData,
     ),
     FilterKind.chromaticAberration => engine.applyChromaticShift(
       data,
