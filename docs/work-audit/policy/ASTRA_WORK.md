@@ -1,6 +1,6 @@
 # NIARIM Full Audit — execution policy
 
-> このpolicyは、ユーザーが現在のトップレベル依頼でNIARIMの全面監査/全面監査再開を明示した場合だけ有効化する。通常タスクはこのpolicy/state領域を実行指示として使わない。実行場所がWorkか通常Chatか、担当モデルがAstra/Sol/その他かは問わない。
+> このpolicyは、ユーザーが現在のトップレベル依頼でNIARIMの全面監査/全面監査再開を明示した場合だけ有効化する。通常タスクはこのpolicy/state領域を実行指示として使わない。実行場所がWorkか通常Chatか、担当モデルの種類・世代・名称は問わない。
 
 > 起動判定は明示トリガー制。「監査」「PNG監査」「最終green」等の語、作業範囲の広さ、前回作業の継続だけから全面監査へ昇格しない。「以下の会話の続きから」「引き続き」「前回の続き」も全面監査トリガーではない。
 
@@ -82,9 +82,9 @@ NIARIMを世界最高水準の商用製品へ仕上げることを優先し、Ap
 
 ### 5.1 主担当と上位advisorの役割
 
-- Astraは必須ではない。Sol等を通常のRoute executor（主担当）として使い、調査、再現、通常の設計判断、実装、テスト、実画面確認、Evidence整理、checkpoint、Route進行は原則として主担当が行う。
-- 上位モデルを使う場合も、Baseline/Discovery IDを丸ごと委譲してはならない。`A001全部をAstraへ` のような委譲は禁止する。
-- Astra等の上位モデルは、高価な専門advisor/reviewerとして、現在の担当モデルだけでは十分な確度を得にくい**最小の判断単位**に限定して使う。例: 重大securityの攻撃成立性、複雑なrace/concurrencyの安全性、不可逆なarchitecture trade-off、複数回の合理的試行でもroot causeを確定できない難問、独立frontier reviewに明確な価値がある箇所。
+- 特定のモデルを必須としない。通常のRoute executor（主担当）を1つ定め、調査、再現、通常の設計判断、実装、テスト、実画面確認、Evidence整理、checkpoint、Route進行は原則として主担当が行う。
+- 上位モデルを使う場合も、Baseline/Discovery IDを丸ごと委譲してはならない。`A001全部を上位モデルへ` のような委譲は禁止する。
+- 上位モデルは、高価な専門advisor/reviewerとして、現在の担当モデルだけでは十分な確度を得にくい**最小の判断単位**に限定して使う。例: 重大securityの攻撃成立性、複雑なrace/concurrencyの安全性、不可逆なarchitecture trade-off、複数回の合理的試行でもroot causeを確定できない難問、独立frontier reviewに明確な価値がある箇所。
 - 単なるコード読解、通常のバグ修正、一般的なテスト失敗、UI確認、翻訳、反復検証等を「念のため」で上位モデルへ送らない。
 
 ### 5.2 ID内部substepとcheckpoint
@@ -109,16 +109,16 @@ NIARIMを世界最高水準の商用製品へ仕上げることを優先し、Ap
 - advisorに求めるoutput（判断、リスク、選択肢、追加検証案等）
 - `status: advisor-pending | advisor-answered | verified`
 
-Route全体、無関係な過去会話、巨大な作業中contextをpacketへコピーしない。Codex系advisorを呼べる場合は原則fresh context (`fork_turns:"none"`) とし、明示的に利用したい上位モデルを指定する。advisorは他agentをspawnしない。
+Route全体、無関係な過去会話、巨大な作業中contextをpacketへコピーしない。advisorを呼べる場合は原則fresh context (`fork_turns:"none"`) とし、必要な能力・推論精度を満たす上位モデルを必要最小限で指定する。advisorは他agentをspawnしない。
 
 advisorは原則read-onlyで、ファイル編集、Route/Progress/Evidenceの直接更新、done判定を行わない。回答は助言であり、主担当が必要な実装・targeted test・実画面確認等で検証してからEvidenceへ反映する。advisor回答だけでTODOをdoneにしない。
 
 ### 5.4 上位モデルが利用できない場合
 
-- Astra等が利用不可・利用枠切れ・現在のツールからモデル指定不可の場合、呼んだふりをしない。packetを `advisor-pending` としてGitへ永続化し、ユーザーへ簡潔に「この最小論点はAstra確認待ち、Solは他の検証を継続」と報告する。
+- 上位advisorが利用不可・利用枠切れ・現在のツールからモデル指定不可の場合、呼んだふりをしない。packetを `advisor-pending` としてGitへ永続化し、ユーザーへ簡潔に「この最小論点はadvisor確認待ち、主担当は他の検証を継続」と報告する。
 - advisor待ちでも同じID内で独立して進められるsubstepは主担当が継続する。advisor回答がなくても安全に検証可能な後続Baseline IDは、固定Route順序を壊さない形で先行監査してよい。この場合、元IDは `sol-complete/advisor-pending` 等の非done状態として残し、飛ばした理由と依存関係をProgress/Evidenceへ明記する。
 - advisor待ちIDをdone扱いしてはならない。後続を先行した場合も、最終的なBaseline完了判定ではpending IDへ戻る。
-- 上位モデル利用可能時は、溜まったpacketだけを処理対象とし、親ID全体や628件Route全体を上位モデルに再読させない。複数packetがある場合は重大度/依存性を優先しつつ、同条件ならrequest ID順に処理する。
+- 上位advisorが利用可能になった時は、溜まったpacketだけを処理対象とし、親ID全体や628件Route全体を上位モデルに再読させない。複数packetがある場合は重大度/依存性を優先しつつ、同条件ならrequest ID順に処理する。
 - 全面監査completeには `advisor-pending=0` が必要。
 
 ### 5.5 サブエージェント一般
@@ -127,7 +127,7 @@ advisorは原則read-onlyで、ファイル編集、Route/Progress/Evidenceの�
 
 ## 6. State更新と完了条件
 
-Route/Progress/Evidenceは**明示的な全面監査モードで実際に検証した事実だけ**更新する。Workか通常Chatか、AstraかSolかではなく、現在の依頼が全面監査モードかどうかで権限を決める。通常タスクの成果だけでTODOをdoneにしない。
+Route/Progress/Evidenceは**明示的な全面監査モードで実際に検証した事実だけ**更新する。Workか通常Chatか、モデルの種類・世代・名称ではなく、現在の依頼が全面監査モードかどうかで権限を決める。通常タスクの成果だけでTODOをdoneにしない。
 
 State更新commitには `[audit-state]`、policy/guard変更にはユーザーの明示依頼のもと `[audit-policy-approved]` を使う。
 
