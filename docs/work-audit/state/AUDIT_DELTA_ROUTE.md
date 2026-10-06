@@ -67,6 +67,8 @@ blockedは環境・実機・外部サービス等の実在制約だけに使用�
 
 ## D001 — 最新HEAD差分・全追加対象 inventory
 
+製品実装snapshotとして直近に確認した基準は App `ce94a15597f213a168abc682a8f49d53fa3c8508`、Web `ed944b291732f5d9bc4ca0617b7213f8ec212be4`。これ以後の `[audit-*]` commit は監査Stateのみを変更している。実行開始時には必ず現在のdev_branch HEADへ再取得・再照合し、非監査ファイルの変更があればD001の対象範囲を更新する。
+
 対象:
 - 最新App/Web dev_branch
 - lock baseline以後の全commit差分
