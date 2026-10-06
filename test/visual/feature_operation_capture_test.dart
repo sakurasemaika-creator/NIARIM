@@ -39,6 +39,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import '../helpers/first_use_tooltips.dart';
 import '../helpers/load_app_fonts.dart';
+import '../helpers/pick_filter_card.dart';
 
 const _captureMatch = String.fromEnvironment('CAPTURE_MATCH');
 
@@ -501,6 +502,8 @@ void main() {
       await tester.enterText(find.byType(TextField).last, '記録したぼかし');
       await h.tap(find.text(h.l10n.customAutomationStartRecording));
       await h.openMenu(h.l10n.filterPanelTitle);
+      await pickFilterCard(tester, 'Filter0001');
+      await h.settle();
       await h.tap(find.text(h.l10n.filterApplyButton));
       await h.until(
         () => find.byType(FilterPanel).evaluate().isEmpty,

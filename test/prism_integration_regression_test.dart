@@ -33,30 +33,34 @@ void main() {
   });
 
   test('production prism apply selects Linear Dodge, never Addition', () {
-    final source = File('lib/screens/canvas/widgets/filter_panel.dart')
-        .readAsStringSync();
+    final source = File(
+      'lib/screens/canvas/widgets/filter_panel.dart',
+    ).readAsStringSync();
     expect(
       source,
-      contains(
-        'layer.copyWith(blendMode: model.LayerBlendMode.linearDodge)',
-      ),
+      contains('layer.copyWith(blendMode: model.LayerBlendMode.linearDodge)'),
     );
     expect(
       source,
       isNot(
-        contains(
-          'layer.copyWith(blendMode: model.LayerBlendMode.addition)',
-        ),
+        contains('layer.copyWith(blendMode: model.LayerBlendMode.addition)'),
       ),
       reason: 'Prism Linear Dodge must remain distinct from Addition',
     );
   });
 
   test('prism directly repaints the selected source layer', () {
-    final source = File('lib/screens/canvas/widgets/filter_panel.dart')
-        .readAsStringSync();
+    final source = File(
+      'lib/screens/canvas/widgets/filter_panel.dart',
+    ).readAsStringSync();
     expect(source, contains('else if (_isPrism(filter))'));
-    expect(source, contains('tm.replaceLayerPixels(key, result);'));
+    // Through ProjectService so the repaint is one Undo step, the canvas
+    // redraws at once, and the source layer switches to Linear Dodge with it.
+    expect(source, contains('ps.replaceLayerPixels('));
+    expect(
+      source,
+      contains('layer.copyWith(blendMode: model.LayerBlendMode.linearDodge)'),
+    );
     expect(
       source,
       isNot(
