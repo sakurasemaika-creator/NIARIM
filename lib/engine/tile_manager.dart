@@ -120,7 +120,21 @@ class TileManager {
     _invalidateComposite(layerId);
     final prefix = '$layerId|';
     _invalidateTileImagesWhere((k) => k.startsWith(prefix));
+    for (final listener in List.of(_layerContentListeners)) {
+      listener(layerId);
+    }
   }
+
+  final List<void Function(String layerId)> _layerContentListeners = [];
+
+  /// Calls [listener] with a layer's key whenever its pixels change as a
+  /// whole (replaced by a filter, moved, restored by Undo...). Strokes, which
+  /// write tile by tile, do not call it; whoever draws them redraws itself.
+  void addLayerContentListener(void Function(String layerId) listener) =>
+      _layerContentListeners.add(listener);
+
+  void removeLayerContentListener(void Function(String layerId) listener) =>
+      _layerContentListeners.remove(listener);
 
   void _touchCache(String layerId, ui.Image image) {
     // 既存エントリを削除してから再挿入することでLRU順（末尾=最新）を保つ

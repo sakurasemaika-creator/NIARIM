@@ -6,8 +6,9 @@ void main() {
   late String source;
 
   setUpAll(() {
-    source = File('lib/screens/canvas/widgets/canvas_area.dart')
-        .readAsStringSync();
+    source = File(
+      'lib/screens/canvas/widgets/canvas_area.dart',
+    ).readAsStringSync();
   });
 
   String methodBody(String signature, String nextMarker) {
@@ -69,7 +70,9 @@ void main() {
     for (final expected in <String>[
       '_updateSelectionTransform(canvasPos);',
       '_selectionEnd = canvasPos',
-      '_lassoPoints.add(canvasPos)',
+      // A new list each move (the painter compares it by identity).
+      '[..._lassoPoints, canvasPos]',
+      'tracker?.add(canvasPos);',
       'canvasPos,\n          widget.shapeKind',
       '_moveDelta = canvasPos - _moveStart!',
       'updated[idx] = canvasPos;',

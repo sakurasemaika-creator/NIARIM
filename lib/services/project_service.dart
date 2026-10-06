@@ -152,9 +152,30 @@ class ProjectService extends ChangeNotifier {
   Future<T> runWithGroupedUndo<T>({
     required String description,
     required Future<T> Function() operation,
-  }) {
+  }) async {
     final undo = _undoManager;
     if (undo == null) return operation();
+    final outermost = _layersAddedInGroup == null;
+    _layersAddedInGroup ??= <String>{};
+    try {
+      return await _runGroupedUndo(undo, description, operation);
+    } finally {
+      if (outermost) _layersAddedInGroup = null;
+    }
+  }
+
+  /// Layers (as `projectId/layerId`) created while a grouped Undo is being
+  /// recorded. Their whole existence is undone and redone by their add
+  /// action, which keeps the pixels they ended with, so in-place changes to
+  /// them are not recorded separately: replaying those partial tile
+  /// snapshots on Redo would overwrite what later steps (a merge) left.
+  Set<String>? _layersAddedInGroup;
+
+  Future<T> _runGroupedUndo<T>(
+    UndoManager undo,
+    String description,
+    Future<T> Function() operation,
+  ) {
     return undo.runGrouped(
       description: description,
       operation: operation,
@@ -702,6 +723,7 @@ class ProjectService extends ChangeNotifier {
     Layer layer,
     int insertIndex,
   ) {
+    _layersAddedInGroup?.add('$projectId/${layer.id}');
     final scenes = _scenes[projectId];
     if (scenes == null) return;
     final sceneIdx = scenes.indexWhere((s) => s.id == sceneId);
@@ -958,6 +980,67 @@ class ProjectService extends ChangeNotifier {
     if (layerIdx < 0) return;
     final newLayers = List<Layer>.from(frame.layers)..[layerIdx] = layer;
     _applyFrameUpdate(projectId, sceneIdx, home.frameIndex, newLayers);
+  }
+
+  /// Replaces a layer's pixels in one go (a filter applied in place) as a
+  /// single Undo step. [updatedLayer] carries any change to the layer's own
+  /// settings made with it (Prism switches the blend mode); Undo restores
+  /// both.
+  void replaceLayerPixels({
+    required String projectId,
+    required String sceneId,
+    required int frameIndex,
+    required String layerId,
+    required Uint8List pixels,
+    Layer? updatedLayer,
+  }) {
+    final tm = tileManagerOf(projectId);
+    final key = tileKeyFor(projectId, sceneId, frameIndex, layerId);
+    final layerBefore = layersOf(
+      projectId,
+      sceneId,
+      frameIndex,
+    ).where((layer) => layer.id == layerId).firstOrNull;
+    // Never take over a recording someone else (a stroke, a selection
+    // transform) has open on this tile manager.
+    final record =
+        _undoManager != null &&
+        tm.recordingTouchedTiles == null &&
+        !(_layersAddedInGroup?.contains('$projectId/$layerId') ?? false);
+    if (record) tm.beginUndoRecording(key);
+    tm.replaceLayerPixels(key, pixels);
+    final snapshot = record
+        ? tm.endUndoRecording()
+        : (
+            before: const <String, Uint8List?>{},
+            after: const <String, Uint8List?>{},
+          );
+    final layerChanged =
+        updatedLayer != null &&
+        layerBefore != null &&
+        !identical(updatedLayer, layerBefore);
+    if (updatedLayer != null) {
+      updateLayer(
+        projectId: projectId,
+        sceneId: sceneId,
+        frameIndex: frameIndex,
+        layer: updatedLayer,
+      );
+    }
+    if (!record || (snapshot.before.isEmpty && !layerChanged)) return;
+    _undoManager!.push(
+      _LayerPixelsUndoAction(
+        projects: this,
+        projectId: projectId,
+        sceneId: sceneId,
+        frameIndex: frameIndex,
+        layerKey: key,
+        before: snapshot.before,
+        after: snapshot.after,
+        layerBefore: layerChanged ? layerBefore : null,
+        layerAfter: layerChanged ? updatedLayer : null,
+      ),
+    );
   }
 
   /// レイヤーを並び替える。[oldIndex]が現在フレームに物理的に存在しない
@@ -2819,4 +2902,53 @@ class ProjectService extends ChangeNotifier {
       // 保存失敗時も続行（次回操作時に再試行される）
     }
   }
+}
+
+/// Undo for [ProjectService.replaceLayerPixels]: the replaced tiles and,
+/// when they changed with them, the layer's own settings.
+class _LayerPixelsUndoAction extends UndoAction {
+  _LayerPixelsUndoAction({
+    required this.projects,
+    required this.projectId,
+    required this.sceneId,
+    required this.frameIndex,
+    required this.layerKey,
+    required this.before,
+    required this.after,
+    this.layerBefore,
+    this.layerAfter,
+  });
+
+  final ProjectService projects;
+  final String projectId;
+  final String sceneId;
+  final int frameIndex;
+  final String layerKey;
+  final Map<String, Uint8List?> before;
+  final Map<String, Uint8List?> after;
+  final Layer? layerBefore;
+  final Layer? layerAfter;
+
+  void _restore(Map<String, Uint8List?> tiles, Layer? layer) {
+    if (tiles.isNotEmpty) {
+      projects.tileManagerOf(projectId).applyTileSnapshot(layerKey, tiles);
+    }
+    if (layer != null) {
+      projects.updateLayer(
+        projectId: projectId,
+        sceneId: sceneId,
+        frameIndex: frameIndex,
+        layer: layer,
+      );
+    }
+  }
+
+  @override
+  void undo() => _restore(before, layerBefore);
+
+  @override
+  void redo() => _restore(after, layerAfter);
+
+  @override
+  String get description => 'Filter on $layerKey';
 }

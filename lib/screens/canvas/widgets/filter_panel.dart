@@ -2215,21 +2215,20 @@ class _FilterPanelState extends State<FilterPanel> {
       );
     }
 
-    tm.replaceLayerPixels(key, result);
     final layer = ps
         .layersOf(widget.projectId, widget.sceneId, frameIndex)
         .where((l) => l.id == layerId)
         .firstOrNull;
-    if (layer != null) {
-      ps.updateLayer(
-        projectId: widget.projectId,
-        sceneId: widget.sceneId,
-        frameIndex: frameIndex,
-        layer: _isPrism(filter)
-            ? layer.copyWith(blendMode: model.LayerBlendMode.linearDodge)
-            : layer,
-      );
-    }
+    ps.replaceLayerPixels(
+      projectId: widget.projectId,
+      sceneId: widget.sceneId,
+      frameIndex: frameIndex,
+      layerId: layerId,
+      pixels: result,
+      updatedLayer: layer != null && _isPrism(filter)
+          ? layer.copyWith(blendMode: model.LayerBlendMode.linearDodge)
+          : null,
+    );
     return null;
   }
 
@@ -2310,20 +2309,29 @@ class _FilterPanelState extends State<FilterPanel> {
     await Future.delayed(const Duration(milliseconds: 16));
 
     String? generatedLayerId;
-    for (var i = 0; i < sorted.length; i++) {
-      final created = await _applyToFrame(
-        ps,
-        tm,
-        layerId,
-        filter,
-        sorted[i],
-        generatedLayerId: generatedLayerId,
+    try {
+      // One Undo takes the filter off every frame it was applied to.
+      await ps.runWithGroupedUndo(
+        description: 'Filter on ${sorted.length} frames',
+        operation: () async {
+          for (var i = 0; i < sorted.length; i++) {
+            final created = await _applyToFrame(
+              ps,
+              tm,
+              layerId,
+              filter,
+              sorted[i],
+              generatedLayerId: generatedLayerId,
+            );
+            generatedLayerId ??= created;
+            progress = (i + 1) / sorted.length;
+            setDialogState?.call(() {});
+          }
+        },
       );
-      generatedLayerId ??= created;
-      progress = (i + 1) / sorted.length;
-      setDialogState?.call(() {});
+    } finally {
+      if (mounted) Navigator.of(context, rootNavigator: true).pop();
     }
-    if (mounted) Navigator.of(context, rootNavigator: true).pop();
   }
 }
 

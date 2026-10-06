@@ -129,14 +129,15 @@ class RecordedFilterApplyService {
       );
     }
 
-    tileManager.replaceLayerPixels(key, result);
-    projectService.updateLayer(
+    projectService.replaceLayerPixels(
       projectId: projectId,
       sceneId: sceneId,
       frameIndex: frameIndex,
-      layer: filter.kind == FilterKind.prism
+      layerId: layerId,
+      pixels: result,
+      updatedLayer: filter.kind == FilterKind.prism
           ? sourceLayer.copyWith(blendMode: model.LayerBlendMode.linearDodge)
-          : sourceLayer,
+          : null,
     );
     return null;
   }

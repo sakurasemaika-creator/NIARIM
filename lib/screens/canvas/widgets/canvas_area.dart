@@ -511,6 +511,13 @@ class _CanvasAreaState extends State<CanvasArea> {
       widget.currentTool != DrawingTool.meshTransform;
 
   late TileManager _tileManager;
+  bool _hasTileManager = false;
+
+  /// Layers whose pixels changed as a whole outside this widget (a filter
+  /// applied, an automation step, Undo) since the canvas last redrew them.
+  bool _currentLayerChangedOutside = false;
+  bool _otherLayerChangedOutside = false;
+  Timer? _outsideChangeRefresh;
   late DrawingEngine _drawingEngine;
 
   ui.Image? _compositeImage;
@@ -652,11 +659,16 @@ class _CanvasAreaState extends State<CanvasArea> {
 
   void _initEngine() {
     final project = widget.project;
+    if (_hasTileManager) {
+      _tileManager.removeLayerContentListener(_onLayerContentChanged);
+    }
     if (project != null) {
       _tileManager = context.read<ProjectService>().tileManagerOf(project.id);
     } else {
       _tileManager = TileManager(canvasWidth: 1920, canvasHeight: 1080);
     }
+    _hasTileManager = true;
+    _tileManager.addLayerContentListener(_onLayerContentChanged);
     _drawingEngine = DrawingEngine(tileManager: _tileManager)
       ..pointConstraint = _rulerEngine.snapToRuler;
     // 初回マウント時点ですでに定規が選択されている場合も、didUpdateWidget待ちに
@@ -776,6 +788,10 @@ class _CanvasAreaState extends State<CanvasArea> {
 
   @override
   void dispose() {
+    _outsideChangeRefresh?.cancel();
+    if (_hasTileManager) {
+      _tileManager.removeLayerContentListener(_onLayerContentChanged);
+    }
     if (_selectionTransformActive && _undoRecordingLayerKey != null) {
       _tileManager.cancelUndoRecordingAndRestore();
       _undoRecordingLayerKey = null;
@@ -983,6 +999,44 @@ class _CanvasAreaState extends State<CanvasArea> {
     final w = _tileManager.canvasWidth;
     final h = _tileManager.canvasHeight;
     _setSelectionMask(_polygonSelectionMask(points, w, h), w, h);
+  }
+
+  /// Redraws a layer of this frame whose pixels were replaced from outside
+  /// (a filter applied, an automation step, Undo of either). Without this the
+  /// canvas kept showing the old picture until something else redrew it.
+  void _onLayerContentChanged(String layerKey) {
+    if (!mounted) return;
+    if (layerKey == _tileKeyFor(_layerId)) {
+      _currentLayerChangedOutside = true;
+    } else if (_layers.any((layer) => _tileKeyFor(layer.id) == layerKey)) {
+      _otherLayerChangedOutside = true;
+    } else {
+      return;
+    }
+    // Several layers can change in one go; redraw once, after they have.
+    _outsideChangeRefresh ??= Timer(Duration.zero, _redrawLayersChangedOutside);
+  }
+
+  void _redrawLayersChangedOutside() {
+    _outsideChangeRefresh = null;
+    if (!mounted) return;
+    // A redraw already under way may have read the old pixels: try again
+    // once it is done.
+    if (_isCompositing || _isComposingSurroundings) {
+      _outsideChangeRefresh = Timer(
+        const Duration(milliseconds: 16),
+        _redrawLayersChangedOutside,
+      );
+      return;
+    }
+    if (_currentLayerChangedOutside) {
+      _currentLayerChangedOutside = false;
+      _scheduleComposite();
+    }
+    if (_otherLayerChangedOutside) {
+      _otherLayerChangedOutside = false;
+      _recomposeSurroundings(force: true);
+    }
   }
 
   LassoLineSnapTracker _newLassoSnapTracker(Uint8List reference) =>

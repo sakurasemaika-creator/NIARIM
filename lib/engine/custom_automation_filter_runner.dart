@@ -110,7 +110,6 @@ class CustomAutomationFilterRunner {
       );
     }
 
-    tm.replaceLayerPixels(key, result);
     final sourceLayer = projectService
         .layersOf(projectId, sceneId, frameIndex)
         .where((layer) => layer.id == sourceLayerId)
@@ -118,14 +117,15 @@ class CustomAutomationFilterRunner {
     if (sourceLayer == null) {
       throw StateError('Recorded filter source layer disappeared');
     }
-    final isPrism = filter.kind == FilterKind.prism;
-    projectService.updateLayer(
+    projectService.replaceLayerPixels(
       projectId: projectId,
       sceneId: sceneId,
       frameIndex: frameIndex,
-      layer: isPrism
+      layerId: sourceLayerId,
+      pixels: result,
+      updatedLayer: filter.kind == FilterKind.prism
           ? sourceLayer.copyWith(blendMode: model.LayerBlendMode.linearDodge)
-          : sourceLayer,
+          : null,
     );
     return sourceLayerId;
   }

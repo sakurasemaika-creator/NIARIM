@@ -358,6 +358,20 @@ FONT_LICENSES.txt`への本文・著作権表示の追記、`license_screen.dart
   キャンバスに出ていなかった（`test/lasso_snap_canvas_test.dart`が、
   ドラッグ途中の画面に線が描かれていることを見張る）。中身が変わったら
   新しいリストを代入すること。
+- **キャンバスの外からレイヤーの画素を丸ごと書き換えるときは
+  `ProjectService.replaceLayerPixels`を使うこと**：描画フィルターの適用・
+  自動操作の手順など、`CanvasArea`の外で`TileManager.replaceLayerPixels`を
+  直接呼ぶと、（1）Undoに何も積まれず元に戻せない、（2）`CanvasArea`は
+  自分の操作以外では現在レイヤーを合成し直さないため、**画面には古い絵が
+  出たまま**になる、の2つが同時に起きる（実際に、フィルターを「適用」しても
+  キャンバスが変わらず、取り消しもできなかった）。`ProjectService.
+  replaceLayerPixels`はタイル差分のUndo（プリズムの合成モード変更も含めて
+  1手）を積み、`TileManager.addLayerContentListener`経由で`CanvasArea`が
+  そのレイヤーを描き直す。自動操作のようにレイヤーを作ってから加工する
+  一連の処理は`runWithGroupedUndo`の中で行うこと（その中で作ったレイヤーの
+  画素は個別に記録せず、レイヤー追加のUndo/Redoが最終状態ごと戻す。部分的な
+  タイル差分を再生すると、途中の結合結果を古いタイルで上書きしてしまう）。
+  検証は`test/layer_pixels_replace_test.dart`。
 - **アイコンの縁取りに`Icon`を8個重ねない**：`CanvasIconButton`は
   `Icon.shadows`（ぼかし半径0のShadow×8）で1ウィジェットにしてある。
   `Positioned`で重ねる方式に戻すと、1ボタン9ウィジェット×常時20個前後＝
