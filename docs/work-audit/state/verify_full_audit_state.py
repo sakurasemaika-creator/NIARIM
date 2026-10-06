@@ -41,6 +41,21 @@ def main(root: Path, peer: Path | None = None) -> int:
     if not dm: errors.append("Missing discovery_current_id")
     if not xm: errors.append("Missing delta_current_id")
 
+    disc_rows=[]
+    for line in route.splitlines():
+        if re.match(r"^\\| DISC\\d{3} \\|", line):
+            f=[x.strip() for x in line.strip("|").split("|")]
+            if len(f)==6: disc_rows.append(f)
+    if disc_rows:
+        disc_ids=[r[0] for r in disc_rows]
+        disc_unfinished=[r[0] for r in disc_rows if r[5]!="done"]
+        disc_first=disc_unfinished[0] if disc_unfinished else "none"
+        if dm and dm.group(1)!=disc_first: errors.append(f"discovery_current_id mismatch: expected {disc_first}")
+        if len(disc_ids)!=len(set(disc_ids)): errors.append("Duplicate Discovery IDs")
+        if "none" in disc_ids and len(disc_ids)>1: errors.append("Discovery table still contains none row")
+        for row in disc_rows:
+            if row[5] not in {"todo","in_progress","blocked","done"}: errors.append(f"Invalid Discovery status: {row[0]}")
+
     drows=[]
     for line in delta.splitlines():
         if re.match(r"^\| D\d{3}(?:\.\d+)? \|", line):
