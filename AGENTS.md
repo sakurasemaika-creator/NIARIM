@@ -46,3 +46,8 @@
 ユーザーが監査policy/guard/State分離等の**監査システム変更を明示した場合**は、必要な監査policy/guardファイルだけアクセス・変更してよい。Route/Stateのread/writeは、その依頼がRoute/State移行・復元・修復にも明示的に関係する場合だけ行う。監査システム保守を全面監査の進捗更新と混同しない。
 
 この境界は、通常タスクが全面監査専用Route/Stateをcontinuationとして読んだり、未監査TODOを勝手に監査済み扱いしたり、全面監査セッションが通常タスクの作業を監査正史へ無検証で取り込んだりすることを防ぐ恒久ルールとする。
+
+
+## 4. 全面監査のlock後delta
+
+全面監査モードでは、locked Baseline A001–A104の後段にある追加監査対象を `docs/work-audit/state/AUDIT_DELTA_ROUTE.md` で確認する。D001以降はA/WのBaseline IDではなくlock後delta専用IDであり、Baselineのlock order/definition hashを変更しない。ユーザーが「NIARIMの全面監査をしてください」と明示した場合は、Policyの実行契約に従い、Baseline→Discovery→Delta→最終Visual/coverageまで実行する。
