@@ -43,7 +43,7 @@ def main(root: Path, peer: Path | None = None) -> int:
 
     disc_rows=[]
     for line in route.splitlines():
-        if re.match(r"^\\| DISC\\d{3} \\|", line):
+        if re.match(r"^\| DISC\d{3} \|", line):
             f=[x.strip() for x in line.strip("|").split("|")]
             if len(f)==6: disc_rows.append(f)
     if disc_rows:
@@ -53,8 +53,11 @@ def main(root: Path, peer: Path | None = None) -> int:
         if dm and dm.group(1)!=disc_first: errors.append(f"discovery_current_id mismatch: expected {disc_first}")
         if len(disc_ids)!=len(set(disc_ids)): errors.append("Duplicate Discovery IDs")
         if "none" in disc_ids and len(disc_ids)>1: errors.append("Discovery table still contains none row")
+        if len([r for r in disc_rows if r[5] in {"in_progress","blocked"}]) > 1: errors.append("Multiple active Discovery IDs")
         for row in disc_rows:
             if row[5] not in {"todo","in_progress","blocked","done"}: errors.append(f"Invalid Discovery status: {row[0]}")
+    elif dm and dm.group(1)!="none":
+        errors.append("discovery_current_id must be none when Discovery has no rows")
 
     drows=[]
     for line in delta.splitlines():
@@ -66,6 +69,12 @@ def main(root: Path, peer: Path | None = None) -> int:
     if dids != expected: errors.append("Delta status tracker IDs are missing, duplicated, or reordered")
     allowed={"todo","in_progress","blocked","done"}
     if any(r[1] not in allowed for r in drows): errors.append("Invalid Delta status")
+    if len([r for r in drows if r[1] in {"in_progress","blocked"}]) > 1: errors.append("Multiple active Delta IDs")
+    d_unfinished=[r[0] for r in drows if r[1]!="done"]
+    d_first=d_unfinished[0] if d_unfinished else "complete"
+    if xm:
+        expected_delta = "not_started" if first!="complete" or (dm and dm.group(1)!="none") else d_first
+        if xm.group(1)!=expected_delta: errors.append(f"delta_current_id mismatch: expected {expected_delta}")
     unfinished=[r[0] for r in drows if r[1]!="done"]
     if unfinished and dm and dm.group(1)=="none" and first=="complete":
         errors.append("Discovery must be exhausted before Delta starts")
