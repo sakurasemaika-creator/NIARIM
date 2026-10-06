@@ -9,6 +9,7 @@ import '../../../l10n/app_localizations.dart';
 import '../../../services/premium_service.dart';
 import '../../../services/project_service.dart';
 import '../../../services/theme_service.dart';
+import '../../../widgets/frame_preview_background.dart';
 
 class FrameStripWidget extends StatefulWidget {
   final int currentFrame;
@@ -19,6 +20,10 @@ class FrameStripWidget extends StatefulWidget {
   final bool multiSelectMode;
   final Set<int> selectedFrames;
   final ValueChanged<int>? onFrameToggle;
+
+  /// Whether the canvas is showing transparency (its checkerboard) instead
+  /// of the project's background colour; the previews follow it.
+  final bool showTransparency;
   const FrameStripWidget({
     super.key,
     required this.currentFrame,
@@ -29,6 +34,7 @@ class FrameStripWidget extends StatefulWidget {
     this.multiSelectMode = false,
     this.selectedFrames = const {},
     this.onFrameToggle,
+    this.showTransparency = false,
   });
   @override
   State<FrameStripWidget> createState() => _FrameStripWidgetState();
@@ -310,6 +316,9 @@ class _FrameStripWidgetState extends State<FrameStripWidget> {
     final service = context.watch<ProjectService>();
     final total = service.frameCount(widget.projectId, widget.sceneId);
     final scheme = Theme.of(context).colorScheme;
+    final project = service.projects
+        .where((p) => p.id == widget.projectId)
+        .firstOrNull;
     return Container(
       height: 64,
       color: scheme.surface.withValues(alpha: 0),
@@ -405,13 +414,25 @@ class _FrameStripWidgetState extends State<FrameStripWidget> {
                                 child: Stack(
                                   fit: StackFit.expand,
                                   children: [
-                                    _FrameThumbnail(
-                                      key: ValueKey(
-                                        '$index-${_refreshTick[index] ?? 0}',
+                                    // The background behind the picture's
+                                    // own rectangle, as on the canvas.
+                                    FramePreviewBackground(
+                                      backgroundColor:
+                                          project?.backgroundColor ??
+                                          0xFFFFFFFF,
+                                      showTransparency: widget.showTransparency,
+                                      aspectRatio: project == null
+                                          ? null
+                                          : project.exportWidth /
+                                                project.exportHeight,
+                                      child: _FrameThumbnail(
+                                        key: ValueKey(
+                                          '$index-${_refreshTick[index] ?? 0}',
+                                        ),
+                                        projectId: widget.projectId,
+                                        sceneId: widget.sceneId,
+                                        frameIndex: index,
                                       ),
-                                      projectId: widget.projectId,
-                                      sceneId: widget.sceneId,
-                                      frameIndex: index,
                                     ),
                                     if (hold > 1)
                                       Center(
@@ -627,6 +648,7 @@ class _FrameThumbnailState extends State<_FrameThumbnail> {
   Widget build(BuildContext context) {
     final image = _image;
     if (image == null) return const SizedBox.shrink();
-    return RawImage(image: image, fit: BoxFit.contain);
+    // FramePreviewBackground has already sized this to the picture.
+    return RawImage(image: image, fit: BoxFit.fill);
   }
 }

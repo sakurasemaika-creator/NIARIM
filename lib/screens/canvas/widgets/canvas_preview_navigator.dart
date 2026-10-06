@@ -7,6 +7,7 @@ import '../../../l10n/app_localizations.dart';
 import '../../../services/project_service.dart';
 import '../../../services/theme_service.dart';
 import '../../../config/font_fallback.dart';
+import '../../../widgets/frame_preview_background.dart';
 
 /// キャンバスプレビュー（ナビゲーター）：拡大表示中でも作品全体を縮小した
 /// 状態で常に確認できる、プロ向けペイントソフトのナビゲーターパネルに
@@ -159,7 +160,19 @@ class _CanvasPreviewNavigatorState extends State<CanvasPreviewNavigator> {
                   ? const Center(
                       child: CircularProgressIndicator(strokeWidth: 2),
                     )
-                  : RawImage(image: _image, fit: BoxFit.contain),
+                  // The project's own background, as on the canvas.
+                  : FramePreviewBackground(
+                      backgroundColor:
+                          context
+                              .watch<ProjectService>()
+                              .projects
+                              .where((p) => p.id == widget.projectId)
+                              .firstOrNull
+                              ?.backgroundColor ??
+                          0xFFFFFFFF,
+                      aspectRatio: _image!.width / _image!.height,
+                      child: RawImage(image: _image, fit: BoxFit.fill),
+                    ),
             ),
           ),
         ],

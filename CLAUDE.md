@@ -381,6 +381,18 @@ FONT_LICENSES.txt`への本文・著作権表示の追記、`license_screen.dart
   パレットへ寄せると別の色（黄色の縁が赤）になる（ドット絵で実際に踏んだ）。
   色を判定するときは`RGB×255÷α`で戻し、書き戻すときは新しいαを掛けること
   （`pixel_art_engine.dart`が実例）。テストの入力画素も乗算済みで作ること。
+- **合成画像（`LayerCompositor.composite`）には背景が入っていない**：
+  レイヤーだけを重ねた透明な画像なので、プレビュー・サムネイルにそのまま
+  出すと、透明な所に**パネルの色**が透けて見え、キャンバスと見え方が
+  食い違う（フレーム一覧がテーマ色、タイムラインのプレビューがテーマの
+  文字色になっていて、黒やベージュの背景が反映されていなかった）。
+  背景を描き込むのはキャンバス（`_paintBackground`）と書き出し
+  （`ExportEngine.renderFrame`）だけ。プレビューを新しく作るときは
+  `lib/widgets/frame_preview_background.dart`の`FramePreviewBackground`で
+  **プロジェクトごとの背景色**（`Project.backgroundColor`、作成時・編集時に
+  選ぶもの）を絵の矩形の後ろへ敷くこと（透明なら市松模様）。画像へ
+  焼き込むと背景色の変更で作り直しが要るが、ウィジェットで敷けば
+  ProjectServiceの通知だけで即座に追従する。
 - **アイコンの縁取りに`Icon`を8個重ねない**：`CanvasIconButton`は
   `Icon.shadows`（ぼかし半径0のShadow×8）で1ウィジェットにしてある。
   `Positioned`で重ねる方式に戻すと、1ボタン9ウィジェット×常時20個前後＝

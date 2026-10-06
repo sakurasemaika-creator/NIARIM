@@ -1588,6 +1588,8 @@ class _CanvasScreenState extends State<CanvasScreen> {
                         currentFrame: _currentFrame,
                         projectId: widget.projectId,
                         sceneId: _currentSceneId,
+                        showTransparency:
+                            _canvasBackground == CanvasBackground.transparent,
                         onFrameSelected: (idx) {
                           setState(() => _currentFrame = idx);
                           _recordCanvasAutomation(

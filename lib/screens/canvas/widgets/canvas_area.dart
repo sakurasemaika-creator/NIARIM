@@ -4679,6 +4679,11 @@ class _CanvasPainter extends CustomPainter {
       final color = project != null
           ? Color(project!.backgroundColor)
           : ThemeService.activeColorScheme.onSurface;
+      // A see-through background colour shows the checkerboard under it,
+      // as the frame previews and the colour choices do.
+      if (project != null && (project!.backgroundColor >>> 24) != 0xFF) {
+        _paintChecker(canvas, rect);
+      }
       canvas.drawRect(rect, Paint()..color = color);
     } else {
       _paintChecker(canvas, rect);

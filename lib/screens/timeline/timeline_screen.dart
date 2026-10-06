@@ -54,12 +54,14 @@ import '../../services/settings_service.dart';
 import '../../services/theme_service.dart';
 import '../../services/tone_service.dart';
 import '../../services/watermark_service.dart';
+import '../canvas/widgets/canvas_icon_button.dart';
 import '../canvas/widgets/color_picker_panel.dart';
 import '../../widgets/confirm_delete.dart';
 import '../../widgets/dispose_on_unmount.dart';
 import '../../widgets/editable_slider_value.dart';
 import '../../widgets/stepped_slider.dart';
 import '../../widgets/first_use_tooltip.dart';
+import '../../widgets/frame_preview_background.dart';
 import '../../widgets/pixel_color_mode_selector.dart';
 import '../../widgets/premium_lock_widget.dart';
 import '../../widgets/progress_dialog.dart';
@@ -1162,12 +1164,11 @@ class _TimelineScreenState extends State<TimelineScreen> {
     final sceneId = _selectedSceneId;
     final preview = Container(
       margin: EdgeInsets.symmetric(horizontal: 8),
-      // プレビュー画像自体は透明部分を含むため、背景は実際のキャンバス背景
-      // （既定は白）に合わせる必要がある（濃色にすると透明部分の見え方が
-      // 実際のキャンバス画面と一致しなくなるため、ここは色固定のままにする
-      // ——テーマ連動にはしない、意図的な例外）。
+      // Around the picture, the canvas's surroundings (the canvas's
+      // kCanvasOutsideColor); behind it, the project's background (see
+      // _TimelinePreview), as on the canvas.
       decoration: BoxDecoration(
-        color: ThemeService.activeColorScheme.onSurface,
+        color: ThemeService.activeColorScheme.surfaceContainerHighest,
         borderRadius: BorderRadius.circular(4),
       ),
       child: Stack(
@@ -1188,6 +1189,10 @@ class _TimelineScreenState extends State<TimelineScreen> {
                 : ValueListenableBuilder<int>(
                     valueListenable: _currentFrameNotifier,
                     builder: (context, frameIndex, _) => _TimelinePreview(
+                      backgroundColor: _projectBackgroundOf(
+                        ps,
+                        widget.projectId,
+                      ),
                       tileManager: ps.tileManagerOf(widget.projectId),
                       layers: ps.layersOf(
                         widget.projectId,
@@ -1948,7 +1953,13 @@ class _TimelineScreenState extends State<TimelineScreen> {
                 borderRadius: BorderRadius.circular(4),
               ),
               child: _moveThumbnail != null
-                  ? RawImage(image: _moveThumbnail, fit: BoxFit.cover)
+                  ? FramePreviewBackground(
+                      backgroundColor: _projectBackgroundOf(
+                        context.read<ProjectService>(),
+                        widget.projectId,
+                      ),
+                      child: RawImage(image: _moveThumbnail, fit: BoxFit.cover),
+                    )
                   : Icon(
                       Icons.movie,
                       size: 20,
@@ -2722,6 +2733,10 @@ class _TimelineScreenState extends State<TimelineScreen> {
     final l10n = AppLocalizations.of(context)!;
     final total = _totalFrames;
     final projectService = context.watch<ProjectService>();
+    final backgroundColor = _projectBackgroundOf(
+      projectService,
+      widget.projectId,
+    );
     final frameListSceneId = _selectedSceneId;
     // 中央寄せは_currentFrameNotifierのリスナー（_onCurrentFrameChanged）で
     // 行う。以前はここで呼んでいたが、buildの中でスクロールという副作用を
@@ -2979,17 +2994,6 @@ class _TimelineScreenState extends State<TimelineScreen> {
                                         horizontal: _frameMargin,
                                       ),
                                       decoration: BoxDecoration(
-                                        // サムネイル画像自体は透明部分を含むため、セルの
-                                        // 背景は実際のキャンバス背景（既定は白）に合わせる。
-                                        // 濃いグレーのままだと透明部分の見え方が実際の
-                                        // キャンバス画面と一致しなかったため修正。
-                                        color: isChecked
-                                            ? Theme.of(
-                                                context,
-                                              ).colorScheme.primaryContainer
-                                            : ThemeService
-                                                  .activeColorScheme
-                                                  .onSurface,
                                         border: Border.all(
                                           color: isChecked
                                               ? Theme.of(
@@ -3005,6 +3009,15 @@ class _TimelineScreenState extends State<TimelineScreen> {
                                         borderRadius: BorderRadius.circular(2),
                                         child: Stack(
                                           children: [
+                                            // The project's background behind the
+                                            // picture, as on the canvas and in
+                                            // the playback preview.
+                                            Positioned.fill(
+                                              child: FramePreviewBackground(
+                                                backgroundColor:
+                                                    backgroundColor,
+                                              ),
+                                            ),
                                             // フレームの実プレビュー（ただの四角形では
                                             // なくちゃんとしたプレビューにする）。
                                             if (frameListSceneId != null)
@@ -3015,9 +3028,20 @@ class _TimelineScreenState extends State<TimelineScreen> {
                                                   frameIndex: index,
                                                 ),
                                               ),
+                                            if (isChecked)
+                                              Positioned.fill(
+                                                child: ColoredBox(
+                                                  color: Theme.of(context)
+                                                      .colorScheme
+                                                      .primaryContainer
+                                                      .withValues(alpha: 0.35),
+                                                ),
+                                              ),
                                             Positioned(
                                               left: 1,
                                               bottom: 1,
+                                              // Outlined, to read over any
+                                              // project background colour.
                                               child: Text(
                                                 '${index + 1}',
                                                 style: TextStyle(
@@ -3025,14 +3049,12 @@ class _TimelineScreenState extends State<TimelineScreen> {
                                                   color: ThemeService
                                                       .activeColorScheme
                                                       .onSurface,
-                                                  shadows: [
-                                                    Shadow(
-                                                      color: ThemeService
-                                                          .activeColorScheme
-                                                          .onSurface,
-                                                      blurRadius: 2,
-                                                    ),
-                                                  ],
+                                                  shadows:
+                                                      CanvasIconButton.outlineShadows(
+                                                        ThemeService
+                                                            .activeColorScheme
+                                                            .surface,
+                                                      ),
                                                 ),
                                               ),
                                             ),
@@ -3163,7 +3185,13 @@ class _TimelineScreenState extends State<TimelineScreen> {
                 borderRadius: BorderRadius.circular(4),
               ),
               child: _moveThumbnail != null
-                  ? RawImage(image: _moveThumbnail, fit: BoxFit.cover)
+                  ? FramePreviewBackground(
+                      backgroundColor: _projectBackgroundOf(
+                        context.read<ProjectService>(),
+                        widget.projectId,
+                      ),
+                      child: RawImage(image: _moveThumbnail, fit: BoxFit.cover),
+                    )
                   : Icon(
                       Icons.movie_filter,
                       size: 18,
@@ -6956,6 +6984,10 @@ class _CanvasSizeChangeDialogState extends State<_CanvasSizeChangeDialog> {
                       child: Transform.rotate(
                         angle: angle * math.pi / 180,
                         child: _TimelinePreview(
+                          backgroundColor: _projectBackgroundOf(
+                            ps,
+                            widget.projectId,
+                          ),
                           tileManager: ps.tileManagerOf(widget.projectId),
                           layers: ps.layersOf(
                             widget.projectId,
@@ -7075,6 +7107,12 @@ class _CanvasSizeChangeDialogState extends State<_CanvasSizeChangeDialog> {
 
 // ─── タイムラインプレビューウィジェット ───────────────────────────────────
 
+/// The background colour chosen for the project (when creating or editing
+/// it), which the canvas, the export and every preview show.
+int _projectBackgroundOf(ProjectService ps, String projectId) =>
+    ps.projects.where((p) => p.id == projectId).firstOrNull?.backgroundColor ??
+    0xFFFFFFFF;
+
 class _TimelinePreview extends StatefulWidget {
   final TileManager tileManager;
   final List<Layer> layers;
@@ -7085,7 +7123,11 @@ class _TimelinePreview extends StatefulWidget {
   final Map<String, LayerHome> layerHomes;
   final List<LayerGroup> groups;
 
+  /// The project's background colour, shown behind the picture.
+  final int backgroundColor;
+
   const _TimelinePreview({
+    required this.backgroundColor,
     required this.tileManager,
     required this.layers,
     required this.sceneId,
@@ -7229,7 +7271,14 @@ class _TimelinePreviewState extends State<_TimelinePreview> {
     if (img == null) {
       return const Center(child: CircularProgressIndicator(strokeWidth: 2));
     }
-    return RawImage(image: img, fit: BoxFit.contain);
+    // The picture carries no background: show the project's behind it, over
+    // the picture's own rectangle only, as the canvas does.
+    return FramePreviewBackground(
+      backgroundColor: widget.backgroundColor,
+      aspectRatio: img.width / img.height,
+      checkerSize: 10,
+      child: RawImage(image: img, fit: BoxFit.fill),
+    );
   }
 }
 
@@ -8640,15 +8689,15 @@ class _CameraKfSheetState extends State<_CameraKfSheet> {
     return Container(
       margin: EdgeInsets.fromLTRB(16, 4, 16, 8),
       height: 140,
-      // _TimelinePreviewは透明部分を含む合成結果をそのまま描画するため、
-      // 背景はテーマ色ではなく実際のキャンバス背景色に合わせる必要がある
-      // （上の_buildPreviewContent()と同じ理由で、ここは意図的に色固定）。
+      // Around the picture, the canvas's surroundings; _TimelinePreview
+      // shows the project's background behind the picture itself.
       decoration: BoxDecoration(
-        color: ThemeService.activeColorScheme.onSurface,
+        color: ThemeService.activeColorScheme.surfaceContainerHighest,
         borderRadius: BorderRadius.circular(6),
       ),
       clipBehavior: Clip.antiAlias,
       child: _TimelinePreview(
+        backgroundColor: _projectBackgroundOf(ps, widget.projectId),
         tileManager: tileManager,
         layers: layers,
         sceneId: widget.sceneId,
