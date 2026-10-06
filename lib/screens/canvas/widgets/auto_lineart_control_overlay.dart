@@ -4,6 +4,7 @@ import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
 
 import '../../../engine/auto_lineart_engine.dart';
+import '../../../widgets/grab_pan_gesture_recognizer.dart';
 
 enum AutoLineartControlMode { move, add, delete }
 
@@ -211,70 +212,89 @@ class _AutoLineartControlOverlayState extends State<AutoLineartControlOverlay> {
       builder: (context, constraints) {
         final size = Size(constraints.maxWidth, constraints.maxHeight);
         final rect = _imageRect(size);
-        return Listener(
-          behavior: HitTestBehavior.opaque,
-          onPointerDown: (event) {
-            final active = _hit(event.localPosition, rect);
-            if (widget.mode == AutoLineartControlMode.delete) {
-              if (active != null) {
-                _publishGraph(_withPointDeleted(active.$1, active.$2));
-              }
-              return;
-            }
-            if (widget.mode == AutoLineartControlMode.add) {
-              final segment = _hitSegment(event.localPosition, rect);
-              if (segment == null) return;
-              final point = _toGraph(event.localPosition, rect);
-              _publishGraph(_withPointInserted(segment.$1, segment.$2, point));
-              return;
-            }
-            if (active != null) {
-              _active = active;
-              _activePointer = event.pointer;
-              _pointerDown = event.localPosition;
-              _dragged = false;
-              return;
-            }
-          },
-          onPointerMove: (event) {
-            final active = _active;
-            if (active == null || _activePointer != event.pointer) return;
-            final down = _pointerDown;
-            if (down != null && (event.localPosition - down).distance > 4) {
-              _dragged = true;
-            }
-            final point = _toGraph(event.localPosition, rect);
-            setState(() {
-              // Keep the editor graph immutable. FilterPanel retains the
-              // pre-edit graph as the baseline used to transfer manual edits
-              // across smoothing/rough-width changes, so mutating the shared
-              // graph here would erase the very displacement we need to
-              // preserve. A fresh graph also makes CustomPainter repaint
-              // immediately while each control remains independently editable.
-              _displayGraph = AutoLineartEngine.moveControlPoint(
-                _displayGraph,
-                pathIndex: active.$1,
-                pointIndex: active.$2,
-                point: point,
-              );
-            });
-            widget.onPointMoved(active.$1, active.$2, point);
-          },
-          onPointerUp: (event) => _finishPointer(event.pointer),
-          onPointerCancel: (event) =>
-              _finishPointer(event.pointer, cancelled: true),
-          child: Stack(
-            fit: StackFit.expand,
-            children: [
-              RawImage(image: widget.image, fit: BoxFit.contain),
-              CustomPaint(
-                painter: _ControlPainter(
-                  graph: _displayGraph,
-                  imageRect: rect,
-                  color: Theme.of(context).colorScheme.primary,
+        // The Listener moves the points; this only keeps a grabbed point's
+        // drag from also scrolling the panel the preview sits in.
+        return RawGestureDetector(
+          gestures: {
+            GrabPanGestureRecognizer:
+                GestureRecognizerFactoryWithHandlers<GrabPanGestureRecognizer>(
+                  () => GrabPanGestureRecognizer(grabSlop: 0),
+                  (recognizer) {
+                    recognizer.grabs = (local) =>
+                        widget.mode == AutoLineartControlMode.move &&
+                        _hit(local, rect) != null;
+                    // A pan with no handlers never takes part.
+                    recognizer.onStart = (_) {};
+                  },
                 ),
-              ),
-            ],
+          },
+          child: Listener(
+            behavior: HitTestBehavior.opaque,
+            onPointerDown: (event) {
+              final active = _hit(event.localPosition, rect);
+              if (widget.mode == AutoLineartControlMode.delete) {
+                if (active != null) {
+                  _publishGraph(_withPointDeleted(active.$1, active.$2));
+                }
+                return;
+              }
+              if (widget.mode == AutoLineartControlMode.add) {
+                final segment = _hitSegment(event.localPosition, rect);
+                if (segment == null) return;
+                final point = _toGraph(event.localPosition, rect);
+                _publishGraph(
+                  _withPointInserted(segment.$1, segment.$2, point),
+                );
+                return;
+              }
+              if (active != null) {
+                _active = active;
+                _activePointer = event.pointer;
+                _pointerDown = event.localPosition;
+                _dragged = false;
+                return;
+              }
+            },
+            onPointerMove: (event) {
+              final active = _active;
+              if (active == null || _activePointer != event.pointer) return;
+              final down = _pointerDown;
+              if (down != null && (event.localPosition - down).distance > 4) {
+                _dragged = true;
+              }
+              final point = _toGraph(event.localPosition, rect);
+              setState(() {
+                // Keep the editor graph immutable. FilterPanel retains the
+                // pre-edit graph as the baseline used to transfer manual edits
+                // across smoothing/rough-width changes, so mutating the shared
+                // graph here would erase the very displacement we need to
+                // preserve. A fresh graph also makes CustomPainter repaint
+                // immediately while each control remains independently editable.
+                _displayGraph = AutoLineartEngine.moveControlPoint(
+                  _displayGraph,
+                  pathIndex: active.$1,
+                  pointIndex: active.$2,
+                  point: point,
+                );
+              });
+              widget.onPointMoved(active.$1, active.$2, point);
+            },
+            onPointerUp: (event) => _finishPointer(event.pointer),
+            onPointerCancel: (event) =>
+                _finishPointer(event.pointer, cancelled: true),
+            child: Stack(
+              fit: StackFit.expand,
+              children: [
+                RawImage(image: widget.image, fit: BoxFit.contain),
+                CustomPaint(
+                  painter: _ControlPainter(
+                    graph: _displayGraph,
+                    imageRect: rect,
+                    color: Theme.of(context).colorScheme.primary,
+                  ),
+                ),
+              ],
+            ),
           ),
         );
       },

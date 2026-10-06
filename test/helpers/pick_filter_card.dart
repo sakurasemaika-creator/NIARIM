@@ -19,5 +19,8 @@ Future<void> pickFilterCard(WidgetTester tester, String filterId) async {
       ),
     ),
   );
+  // A card only partly inside the strip would take the tap off-screen.
+  await tester.ensureVisible(card);
+  await tester.pump();
   await tester.tap(card);
 }

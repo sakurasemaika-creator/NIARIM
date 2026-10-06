@@ -76,6 +76,80 @@ void main() {
     image.dispose();
   });
 
+  testWidgets('inside scrolling controls, dragging a point moves the point '
+      'and not the controls; dragging elsewhere still scrolls', (tester) async {
+    final image = await tester.runAsync(() => _makeImage(100, 100));
+    final moves = <AutoLineartPoint>[];
+    const graph = AutoLineartGraph(
+      width: 100,
+      height: 100,
+      paths: [
+        AutoLineartPath(
+          points: [
+            AutoLineartPoint(20, 50),
+            AutoLineartPoint(50, 50),
+            AutoLineartPoint(80, 50),
+          ],
+          startIsJunction: false,
+          endIsJunction: false,
+          persistence: 1,
+        ),
+      ],
+    );
+    final controller = ScrollController(initialScrollOffset: 100);
+    addTearDown(controller.dispose);
+    await tester.pumpWidget(
+      MaterialApp(
+        home: Center(
+          child: SizedBox(
+            width: 200,
+            height: 300,
+            child: SingleChildScrollView(
+              controller: controller,
+              child: Column(
+                children: [
+                  const SizedBox(height: 150),
+                  SizedBox(
+                    width: 200,
+                    height: 200,
+                    child: AutoLineartControlOverlay(
+                      image: image!,
+                      graph: graph,
+                      onPointMoved: (_, _, point) => moves.add(point),
+                    ),
+                  ),
+                  const SizedBox(height: 400),
+                ],
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+
+    Future<void> dragDown(Offset from) async {
+      final gesture = await tester.startGesture(from);
+      for (var i = 0; i < 8; i++) {
+        await gesture.moveBy(const Offset(0, 8));
+        await tester.pump();
+      }
+      await gesture.up();
+      await tester.pump();
+    }
+
+    final box = tester.getRect(find.byType(AutoLineartControlOverlay));
+    await dragDown(box.center);
+    expect(controller.offset, 100, reason: 'the controls stayed put');
+    expect(moves, isNotEmpty);
+    expect(moves.last.y, greaterThan(50), reason: 'the point moved down');
+
+    moves.clear();
+    await dragDown(box.topLeft + const Offset(10, 10));
+    expect(moves, isEmpty);
+    expect(controller.offset, lessThan(100), reason: 'empty preview scrolls');
+    image.dispose();
+  });
+
   testWidgets(
     'SP-sized transparent hit target reaches 20px from a control point',
     (tester) async {

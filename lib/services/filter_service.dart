@@ -19,6 +19,8 @@ class FilterService extends ChangeNotifier {
   bool _favoritesOnly = false;
   final List<FilterDef> _filterEditUndo = [];
   final List<FilterDef> _filterEditRedo = [];
+  int _editGroupDepth = 0;
+  bool _editGroupRecorded = false;
 
   List<FilterDef> get filters => List.unmodifiable(_filters);
   FilterDef? get currentFilter =>
@@ -359,10 +361,8 @@ class FilterService extends ChangeNotifier {
   }) {
     final idx = _filters.indexWhere((f) => f.id == id);
     if (idx < 0) return;
-    _filterEditUndo.add(_filters[idx]);
-    if (_filterEditUndo.length > 100) _filterEditUndo.removeAt(0);
-    _filterEditRedo.clear();
-    _filters[idx] = _filters[idx].copyWith(
+    final before = _filters[idx];
+    final after = before.copyWith(
       strength: strength,
       noiseStyle: noiseStyle,
       noiseSeed: noiseSeed,
@@ -433,8 +433,28 @@ class FilterService extends ChangeNotifier {
       prismBlurPx: prismBlurPx,
       prismDirectionDegrees: prismDirectionDegrees,
     );
+    if (jsonEncode(after.toJson()) == jsonEncode(before.toJson())) return;
+    // Inside an edit group (one drag) only the first change is recorded, so
+    // Undo takes the whole drag back in one step.
+    if (_editGroupDepth == 0 || !_editGroupRecorded) {
+      _filterEditUndo.add(before);
+      if (_filterEditUndo.length > 100) _filterEditUndo.removeAt(0);
+      _filterEditRedo.clear();
+      _editGroupRecorded = _editGroupDepth > 0;
+    }
+    _filters[idx] = after;
     notifyListeners();
     _persist();
+  }
+
+  /// Starts a run of edits (a drag on a slider or a curve) that Undo takes
+  /// back in one step. Calls nest; every call needs an [endFilterEditGroup].
+  void beginFilterEditGroup() {
+    if (_editGroupDepth++ == 0) _editGroupRecorded = false;
+  }
+
+  void endFilterEditGroup() {
+    if (_editGroupDepth > 0) _editGroupDepth--;
   }
 
   void undoFilterEdit() {

@@ -4,6 +4,7 @@ import 'dart:typed_data';
 import 'dart:ui' as ui;
 
 import 'package:flutter/foundation.dart' show compute;
+import 'package:flutter/gestures.dart' show DragStartBehavior;
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -23,6 +24,7 @@ import '../../../services/filter_service.dart';
 import '../../../services/premium_service.dart';
 import '../../../services/project_service.dart';
 import '../../../services/theme_service.dart';
+import '../../../widgets/grab_pan_gesture_recognizer.dart';
 import '../../../widgets/editable_slider_value.dart';
 import '../../../widgets/pixel_color_mode_selector.dart';
 import '../../../widgets/premium_lock_widget.dart';
@@ -86,6 +88,8 @@ class _FilterPanelState extends State<FilterPanel> {
   double _previewScale = 1;
   ui.Image? _previewImage;
   String? _previewFilterId;
+  final Set<int> _editPointers = {};
+  FilterService? _editGroupService;
 
   bool _isPrism(FilterDef filter) => filter.kind == FilterKind.prism;
   bool _isVhs(FilterDef filter) =>
@@ -103,7 +107,21 @@ class _FilterPanelState extends State<FilterPanel> {
   @override
   void dispose() {
     _previewImage?.dispose();
+    _editGroupService?.endFilterEditGroup();
     super.dispose();
+  }
+
+  void _editPointerDown(int pointer) {
+    if (_editPointers.add(pointer) && _editPointers.length == 1) {
+      _editGroupService = context.read<FilterService>()..beginFilterEditGroup();
+    }
+  }
+
+  void _editPointerUp(int pointer) {
+    if (_editPointers.remove(pointer) && _editPointers.isEmpty) {
+      _editGroupService?.endFilterEditGroup();
+      _editGroupService = null;
+    }
   }
 
   Future<Uint8List?> _downscaleToBytes(
@@ -508,67 +526,76 @@ class _FilterPanelState extends State<FilterPanel> {
                 )
               else ...[
                 Expanded(
-                  child: SingleChildScrollView(
-                    child: Column(
-                      children: [
-                        Center(
-                          child: Container(
-                            width: previewSide,
-                            height: previewSide,
-                            decoration: BoxDecoration(
-                              color: Theme.of(
-                                context,
-                              ).colorScheme.surfaceContainerHighest,
-                              borderRadius: BorderRadius.circular(6),
-                            ),
-                            child: _previewImage == null
-                                ? const Center(
-                                    child: SizedBox(
-                                      width: 20,
-                                      height: 20,
-                                      child: CircularProgressIndicator(
-                                        strokeWidth: 2,
+                  // One touch on the controls (a slider drag, a curve drag)
+                  // is one step for the filter's Undo.
+                  child: Listener(
+                    onPointerDown: (e) => _editPointerDown(e.pointer),
+                    onPointerUp: (e) => _editPointerUp(e.pointer),
+                    onPointerCancel: (e) => _editPointerUp(e.pointer),
+                    child: SingleChildScrollView(
+                      child: Column(
+                        children: [
+                          Center(
+                            child: Container(
+                              width: previewSide,
+                              height: previewSide,
+                              decoration: BoxDecoration(
+                                color: Theme.of(
+                                  context,
+                                ).colorScheme.surfaceContainerHighest,
+                                borderRadius: BorderRadius.circular(6),
+                              ),
+                              child: _previewImage == null
+                                  ? const Center(
+                                      child: SizedBox(
+                                        width: 20,
+                                        height: 20,
+                                        child: CircularProgressIndicator(
+                                          strokeWidth: 2,
+                                        ),
                                       ),
+                                    )
+                                  : ClipRRect(
+                                      borderRadius: BorderRadius.circular(6),
+                                      child:
+                                          current.kind ==
+                                                  FilterKind.autoLineart &&
+                                              _autoLineartPreviewGraph !=
+                                                  null &&
+                                              (bulk == null || bulk.length <= 1)
+                                          ? AutoLineartControlOverlay(
+                                              image: _previewImage!,
+                                              graph: _autoLineartPreviewGraph!,
+                                              mode: _autoLineartControlMode,
+                                              onPointMoved: (pathIndex, pointIndex, point) {
+                                                _autoLineartPreviewGraph =
+                                                    AutoLineartEngine.moveControlPoint(
+                                                      _autoLineartPreviewGraph!,
+                                                      pathIndex: pathIndex,
+                                                      pointIndex: pointIndex,
+                                                      point: point,
+                                                    );
+                                                _autoLineartManualEdited = true;
+                                                _scheduleAutoLineartPreviewUpdate();
+                                              },
+                                              onGraphChanged: (graph) {
+                                                _autoLineartPreviewGraph =
+                                                    graph;
+                                                _autoLineartManualEdited = true;
+                                                _scheduleAutoLineartPreviewUpdate();
+                                              },
+                                            )
+                                          : RawImage(
+                                              image: _previewImage,
+                                              fit: BoxFit.contain,
+                                            ),
                                     ),
-                                  )
-                                : ClipRRect(
-                                    borderRadius: BorderRadius.circular(6),
-                                    child:
-                                        current.kind ==
-                                                FilterKind.autoLineart &&
-                                            _autoLineartPreviewGraph != null &&
-                                            (bulk == null || bulk.length <= 1)
-                                        ? AutoLineartControlOverlay(
-                                            image: _previewImage!,
-                                            graph: _autoLineartPreviewGraph!,
-                                            mode: _autoLineartControlMode,
-                                            onPointMoved: (pathIndex, pointIndex, point) {
-                                              _autoLineartPreviewGraph =
-                                                  AutoLineartEngine.moveControlPoint(
-                                                    _autoLineartPreviewGraph!,
-                                                    pathIndex: pathIndex,
-                                                    pointIndex: pointIndex,
-                                                    point: point,
-                                                  );
-                                              _autoLineartManualEdited = true;
-                                              _scheduleAutoLineartPreviewUpdate();
-                                            },
-                                            onGraphChanged: (graph) {
-                                              _autoLineartPreviewGraph = graph;
-                                              _autoLineartManualEdited = true;
-                                              _scheduleAutoLineartPreviewUpdate();
-                                            },
-                                          )
-                                        : RawImage(
-                                            image: _previewImage,
-                                            fit: BoxFit.contain,
-                                          ),
-                                  ),
+                            ),
                           ),
-                        ),
-                        const SizedBox(height: 6),
-                        _buildControls(l10n, service, current),
-                      ],
+                          const SizedBox(height: 6),
+                          _buildControls(l10n, service, current),
+                        ],
+                      ),
                     ),
                   ),
                 ),
@@ -2442,48 +2469,69 @@ class _ToneCurveEditorState extends State<_ToneCurveEditor> {
       child: LayoutBuilder(
         builder: (context, constraints) {
           final size = Size(constraints.maxWidth, constraints.maxHeight);
-          return GestureDetector(
+          // A grabbed point takes the drag from the scrolling controls
+          // around the editor, in any direction.
+          return RawGestureDetector(
             behavior: HitTestBehavior.opaque,
-            onTapUp: (details) {
-              final n = _normalize(details.localPosition, size);
-              if (_nearest(points, n) >= 0) return;
-              _emit([...points, n]);
+            gestures: {
+              GrabPanGestureRecognizer:
+                  GestureRecognizerFactoryWithHandlers<
+                    GrabPanGestureRecognizer
+                  >(GrabPanGestureRecognizer.new, (recognizer) {
+                    recognizer.dragStartBehavior = DragStartBehavior.down;
+                    recognizer.grabs = (local) =>
+                        _nearest(points, _normalize(local, size), max: .10) >=
+                        0;
+                    recognizer.onStart = (details) {
+                      final n = _normalize(details.localPosition, size);
+                      _dragIndex = _nearest(_points, n, max: .10);
+                    };
+                    recognizer.onUpdate = (details) {
+                      final i = _dragIndex;
+                      if (i == null || i < 0) return;
+                      final next = [..._points];
+                      if (i >= next.length) return;
+                      var n = _normalize(details.localPosition, size);
+                      if (i == 0) n = Offset(0, n.dy);
+                      if (i == next.length - 1) n = Offset(1, n.dy);
+                      if (i > 0 && i < next.length - 1) {
+                        n = Offset(
+                          n.dx.clamp(
+                            next[i - 1].dx + .001,
+                            next[i + 1].dx - .001,
+                          ),
+                          n.dy,
+                        );
+                      }
+                      next[i] = n;
+                      _emit(next);
+                    };
+                    recognizer.onEnd = (_) => _dragIndex = null;
+                    recognizer.onCancel = () => _dragIndex = null;
+                  }),
             },
-            onLongPressStart: (details) {
-              final n = _normalize(details.localPosition, size);
-              final i = _nearest(points, n);
-              if (i <= 0 || i >= points.length - 1) return;
-              final next = [...points]..removeAt(i);
-              _emit(next);
-            },
-            onPanStart: (details) {
-              final n = _normalize(details.localPosition, size);
-              _dragIndex = _nearest(points, n, max: .10);
-            },
-            onPanUpdate: (details) {
-              final i = _dragIndex;
-              if (i == null || i < 0) return;
-              final next = [...points];
-              var n = _normalize(details.localPosition, size);
-              if (i == 0) n = Offset(0, n.dy);
-              if (i == next.length - 1) n = Offset(1, n.dy);
-              if (i > 0 && i < next.length - 1) {
-                n = Offset(
-                  n.dx.clamp(next[i - 1].dx + .001, next[i + 1].dx - .001),
-                  n.dy,
-                );
-              }
-              next[i] = n;
-              _emit(next);
-            },
-            onPanEnd: (_) => _dragIndex = null,
-            child: CustomPaint(
-              painter: _ToneCurvePainter(
-                points: points,
-                sourceRgba: widget.sourceRgba,
-                histogramChannel: widget.histogramChannel,
-                color: Theme.of(context).colorScheme.primary,
-                gridColor: Theme.of(context).colorScheme.outlineVariant,
+            child: GestureDetector(
+              behavior: HitTestBehavior.opaque,
+              onTapUp: (details) {
+                final n = _normalize(details.localPosition, size);
+                if (_nearest(points, n) >= 0) return;
+                _emit([...points, n]);
+              },
+              onLongPressStart: (details) {
+                final n = _normalize(details.localPosition, size);
+                final i = _nearest(points, n);
+                if (i <= 0 || i >= points.length - 1) return;
+                final next = [...points]..removeAt(i);
+                _emit(next);
+              },
+              child: CustomPaint(
+                painter: _ToneCurvePainter(
+                  points: points,
+                  sourceRgba: widget.sourceRgba,
+                  histogramChannel: widget.histogramChannel,
+                  color: Theme.of(context).colorScheme.primary,
+                  gridColor: Theme.of(context).colorScheme.outlineVariant,
+                ),
               ),
             ),
           );
