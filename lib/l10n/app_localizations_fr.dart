@@ -5667,6 +5667,18 @@ class AppLocalizationsFr extends AppLocalizations {
   String get filterAuroraHologramPresetSilverFoil => 'Argent platine';
 
   @override
+  String get filterAuroraHologramPresetSampledGold => 'Or échantillonné';
+
+  @override
+  String get filterAuroraHologramPresetLuminousPearl => 'Perle lumineuse';
+
+  @override
+  String get filterAuroraHologramPresetAuroraPastel => 'Pastel aurore';
+
+  @override
+  String get filterAuroraHologramPresetDarkRainbow => 'Arc-en-ciel sombre';
+
+  @override
   String get filterNameBackgroundBlend => 'Fondu d\'arrière-plan';
 
   @override
@@ -6578,7 +6590,7 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get tipsTexturePrismVhsDesc =>
-      'Filtre de texture part d’Aurore, Bulle de savon, Néon cyber, Rêve pastel, Or du couchant, Feuille argentée, Hologramme aurore ou Perle 2, puis permet d’ajuster luminosité et saturation. Prisme crée une bande lumineuse avec le flou et la direction de l’arc-en-ciel ; Bruit VHS combine bruit, saturation, luminosité et contraste pour évoquer une vieille cassette. Tester chaque effet sur un calque dupliqué facilite la comparaison ; ajoutez vos réglages favoris aux favoris pour les réutiliser rapidement.';
+      'Filtre de texture part d’Hologramme aurore, Or échantillonné, Argent platine, Perle lumineuse, Pastel aurore ou Arc-en-ciel sombre, puis permet d’ajuster luminosité et saturation. Prisme crée une bande lumineuse avec le flou et la direction de l’arc-en-ciel ; Bruit VHS combine bruit, saturation, luminosité et contraste pour évoquer une vieille cassette. Tester chaque effet sur un calque dupliqué facilite la comparaison ; ajoutez vos réglages favoris aux favoris pour les réutiliser rapidement.';
 
   @override
   String get customAutomationExecutionFailed =>

@@ -5406,6 +5406,18 @@ class AppLocalizationsKo extends AppLocalizations {
   String get filterAuroraHologramPresetSilverFoil => '플래티넘 실버';
 
   @override
+  String get filterAuroraHologramPresetSampledGold => '추출 골드';
+
+  @override
+  String get filterAuroraHologramPresetLuminousPearl => '빛나는 진주';
+
+  @override
+  String get filterAuroraHologramPresetAuroraPastel => '오로라 파스텔';
+
+  @override
+  String get filterAuroraHologramPresetDarkRainbow => '다크 레인보우';
+
+  @override
   String get filterNameBackgroundBlend => '배경 어우러짐';
 
   @override
@@ -6270,7 +6282,7 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get tipsTexturePrismVhsDesc =>
-      '질감 변경 필터는 오로라, 비눗방울, 사이버 네온, 파스텔 드림, 선셋 골드, 실버 포일, 오로라 홀로그램, 펄 2를 바탕으로 밝기와 채도를 조정합니다. 프리즘은 블러와 무지개 방향으로 빛 띠를 만들고, VHS 노이즈는 노이즈·채도·밝기·대비를 조합해 오래된 테이프 느낌을 냅니다. 복제 레이어에서 하나씩 시험하면 비교하기 쉽고 마음에 든 설정을 즐겨찾기에 넣으면 빠르게 재사용할 수 있습니다.';
+      '질감 변경 필터는 오로라 홀로그램, 추출 골드, 플래티넘 실버, 빛나는 진주, 오로라 파스텔, 다크 레인보우를 바탕으로 밝기와 채도를 조정합니다. 프리즘은 블러와 무지개 방향으로 빛 띠를 만들고, VHS 노이즈는 노이즈·채도·밝기·대비를 조합해 오래된 테이프 느낌을 냅니다. 복제 레이어에서 하나씩 시험하면 비교하기 쉽고 마음에 든 설정을 즐겨찾기에 넣으면 빠르게 재사용할 수 있습니다.';
 
   @override
   String get customAutomationExecutionFailed =>

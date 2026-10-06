@@ -5568,6 +5568,18 @@ class AppLocalizationsEn extends AppLocalizations {
   String get filterAuroraHologramPresetSilverFoil => 'Platinum Silver';
 
   @override
+  String get filterAuroraHologramPresetSampledGold => 'Sampled Gold';
+
+  @override
+  String get filterAuroraHologramPresetLuminousPearl => 'Luminous Pearl';
+
+  @override
+  String get filterAuroraHologramPresetAuroraPastel => 'Aurora Pastel';
+
+  @override
+  String get filterAuroraHologramPresetDarkRainbow => 'Dark Rainbow';
+
+  @override
   String get filterNameBackgroundBlend => 'Background Blend';
 
   @override
@@ -6459,7 +6471,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get tipsTexturePrismVhsDesc =>
-      'Texture Filter starts from Aurora, Pearl 1, Vaporwave, Pastel Dream, Sunset Gold, Silver Foil, Aurora Hologram, or Pearl 2, then lets you tune brightness and saturation. Prism creates a band of light with blur and rainbow direction, while VHS Noise combines noise, saturation, brightness, and contrast for an aged-tape look. Trying each on a duplicate layer makes comparison easy; favorite the settings you like for faster reuse.';
+      'Texture Filter starts from Aurora Hologram, Sampled Gold, Platinum Silver, Luminous Pearl, Aurora Pastel, or Dark Rainbow, then lets you tune brightness and saturation. Prism creates a band of light with blur and rainbow direction, while VHS Noise combines noise, saturation, brightness, and contrast for an aged-tape look. Trying each on a duplicate layer makes comparison easy; favorite the settings you like for faster reuse.';
 
   @override
   String get customAutomationExecutionFailed =>

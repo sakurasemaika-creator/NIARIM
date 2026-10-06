@@ -5658,6 +5658,18 @@ class AppLocalizationsEs extends AppLocalizations {
   String get filterAuroraHologramPresetSilverFoil => 'Plata platino';
 
   @override
+  String get filterAuroraHologramPresetSampledGold => 'Oro muestreado';
+
+  @override
+  String get filterAuroraHologramPresetLuminousPearl => 'Perla luminosa';
+
+  @override
+  String get filterAuroraHologramPresetAuroraPastel => 'Pastel aurora';
+
+  @override
+  String get filterAuroraHologramPresetDarkRainbow => 'Arcoíris oscuro';
+
+  @override
   String get filterNameBackgroundBlend => 'Mimetismo de fondo';
 
   @override
@@ -6568,7 +6580,7 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get tipsTexturePrismVhsDesc =>
-      'Filtro de textura parte de Aurora, Pompa de jabón, Neón cibernético, Sueño pastel, Oro del atardecer, Papel plateado, Holograma aurora o Perla 2, y permite ajustar brillo y saturación. Prisma crea una banda de luz con el desenfoque y la dirección del arcoíris; Ruido VHS combina ruido, saturación, brillo y contraste para imitar una cinta antigua. Probar cada efecto en una capa duplicada facilita la comparación; marca como favoritos los ajustes que quieras reutilizar.';
+      'Filtro de textura parte de Holograma aurora, Oro muestreado, Plata platino, Perla luminosa, Pastel aurora o Arcoíris oscuro, y permite ajustar brillo y saturación. Prisma crea una banda de luz con el desenfoque y la dirección del arcoíris; Ruido VHS combina ruido, saturación, brillo y contraste para imitar una cinta antigua. Probar cada efecto en una capa duplicada facilita la comparación; marca como favoritos los ajustes que quieras reutilizar.';
 
   @override
   String get customAutomationExecutionFailed =>

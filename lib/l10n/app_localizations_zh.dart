@@ -5342,7 +5342,19 @@ class AppLocalizationsZh extends AppLocalizations {
   String get filterAuroraHologramPresetSilverHologram => '极光全息';
 
   @override
-  String get filterAuroraHologramPresetSilverFoil => '铂金银';
+  String get filterAuroraHologramPresetSilverFoil => '白金银';
+
+  @override
+  String get filterAuroraHologramPresetSampledGold => '采样金';
+
+  @override
+  String get filterAuroraHologramPresetLuminousPearl => '流光珍珠';
+
+  @override
+  String get filterAuroraHologramPresetAuroraPastel => '极光粉彩';
+
+  @override
+  String get filterAuroraHologramPresetDarkRainbow => '暗色彩虹';
 
   @override
   String get filterNameBackgroundBlend => '背景融入';
@@ -6200,7 +6212,7 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get tipsTexturePrismVhsDesc =>
-      '质感变换滤镜可从极光、肥皂泡、赛博霓虹、粉彩梦境、日落金、银箔、极光全息或珍珠2开始，再调整亮度和饱和度。棱镜用模糊量和虹彩方向制作光带；VHS噪点将噪点、饱和度、亮度和对比度结合成旧磁带效果。在复制图层上逐个尝试便于比较；将满意的设置加入收藏可更快复用。';
+      '质感变换滤镜可从极光全息、采样金、白金银、流光珍珠、极光粉彩或暗色彩虹开始，再调整亮度和饱和度。棱镜用模糊量和虹彩方向制作光带；VHS噪点将噪点、饱和度、亮度和对比度结合成旧磁带效果。在复制图层上逐个尝试便于比较；将满意的设置加入收藏可更快复用。';
 
   @override
   String get customAutomationExecutionFailed => '无法完成自动操作。请检查设置和目标图层。';
@@ -12050,6 +12062,18 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get filterAuroraHologramPresetSilverFoil => '鉑金銀';
 
   @override
+  String get filterAuroraHologramPresetSampledGold => '取樣金';
+
+  @override
+  String get filterAuroraHologramPresetLuminousPearl => '流光珍珠';
+
+  @override
+  String get filterAuroraHologramPresetAuroraPastel => '極光粉彩';
+
+  @override
+  String get filterAuroraHologramPresetDarkRainbow => '暗色彩虹';
+
+  @override
   String get filterNameBackgroundBlend => '背景融入';
 
   @override
@@ -12905,7 +12929,7 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get tipsTexturePrismVhsDesc =>
-      '質感變換濾鏡可從極光、肥皂泡、賽博霓虹、粉彩夢境、日落金、銀箔、極光全息或珍珠2開始，再調整亮度和飽和度。稜鏡用模糊量和虹彩方向製作光帶；VHS雜訊將雜訊、飽和度、亮度和對比度結合成舊磁帶效果。在複製圖層上逐一嘗試便於比較；將滿意的設定加入收藏可更快重複使用。';
+      '質感變換濾鏡可從極光全息、取樣金、鉑金銀、流光珍珠、極光粉彩或暗色彩虹開始，再調整亮度和飽和度。稜鏡用模糊量和虹彩方向製作光帶；VHS雜訊將雜訊、飽和度、亮度和對比度結合成舊磁帶效果。在複製圖層上逐一嘗試便於比較；將滿意的設定加入收藏可更快重複使用。';
 
   @override
   String get customAutomationExecutionFailed => '無法完成自動操作。請檢查設定與目標圖層。';

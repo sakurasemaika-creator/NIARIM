@@ -5381,6 +5381,18 @@ class AppLocalizationsJa extends AppLocalizations {
   String get filterAuroraHologramPresetSilverFoil => 'プラチナシルバー';
 
   @override
+  String get filterAuroraHologramPresetSampledGold => 'サンプルゴールド';
+
+  @override
+  String get filterAuroraHologramPresetLuminousPearl => 'ルミナスパール';
+
+  @override
+  String get filterAuroraHologramPresetAuroraPastel => 'オーロラパステル';
+
+  @override
+  String get filterAuroraHologramPresetDarkRainbow => 'ダークレインボー';
+
+  @override
   String get filterNameBackgroundBlend => '背景馴染ませ';
 
   @override
@@ -6240,7 +6252,7 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get tipsTexturePrismVhsDesc =>
-      '質感変更フィルターはオーロラ・パール1・ヴェイパーウェイヴ・パステルドリーム・サンセットゴールド・シルバーホイル・オーロラホログラム・パール2から土台を選び、明るさと彩度で調整できます。プリズムはぼかし量と虹の向きで光の帯を作り、VHSノイズはノイズ・彩度・明るさ・コントラストをまとめて古いテープ風にします。複製したレイヤーで一つずつ試すと比較しやすく、気に入った設定をお気に入りにすると再利用も速くなります。';
+      '質感変更フィルターはオーロラホログラム・サンプルゴールド・プラチナシルバー・ルミナスパール・オーロラパステル・ダークレインボーから土台を選び、明るさと彩度で調整できます。プリズムはぼかし量と虹の向きで光の帯を作り、VHSノイズはノイズ・彩度・明るさ・コントラストをまとめて古いテープ風にします。複製したレイヤーで一つずつ試すと比較しやすく、気に入った設定をお気に入りにすると再利用も速くなります。';
 
   @override
   String get customAutomationExecutionFailed =>
