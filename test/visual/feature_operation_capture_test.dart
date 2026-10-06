@@ -98,11 +98,7 @@ void main() {
               (w) => w is Text && w.data == _filterSearchLabel(h, filter),
             ),
           );
-          await h.tap(
-            filter.id == FilterService.genericNoiseFilterId
-                ? filterCards.last
-                : filterCards,
-          );
+          await h.tap(filterCards);
           expect(h.context.read<FilterService>().currentFilter!.id, filter.id);
           if (filter.id == 'Filter0004' ||
               filter.kind == FilterKind.auroraHologram) {
@@ -364,15 +360,20 @@ void main() {
               in h.layers
                   .where((l) => l.type == model.LayerType.autoFillLineart)
                   .toList()) {
-            final result = await runAutofillForLayer(
-              projectService: h.ps,
-              presetService: h.context.read<AutofillPresetService>(),
-              toneService: h.context.read<ToneService>(),
-              projectId: h.projectId,
-              sceneId: h.sceneId,
-              frameIndex: 0,
-              lineartLayer: lineart,
-              mode: AutofillMode.repaint,
+            // Filling decodes and composites images on the engine's real
+            // clock, which FakeAsync never advances: awaited directly, this
+            // never finished.
+            final result = await tester.runAsync(
+              () => runAutofillForLayer(
+                projectService: h.ps,
+                presetService: h.context.read<AutofillPresetService>(),
+                toneService: h.context.read<ToneService>(),
+                projectId: h.projectId,
+                sceneId: h.sceneId,
+                frameIndex: 0,
+                lineartLayer: lineart,
+                mode: AutofillMode.repaint,
+              ),
             );
             if (result == AutofillBatchResult.applied) applied++;
           }
@@ -681,7 +682,7 @@ String _filterName(FilterDef filter) => switch (filter.id) {
 
 String _filterSearchLabel(_Harness h, FilterDef filter) {
   if (filter.id == FilterService.genericNoiseFilterId) {
-    return h.l10n.filterNameNoise;
+    return h.l10n.filterNameGenericNoise;
   }
   return _filterName(filter);
 }
@@ -908,10 +909,13 @@ class _Harness {
         ..strokeWidth = 3,
     );
     final picture = recorder.endRecording();
-    final image = await picture.toImage(w, h);
-    picture.dispose();
-    final data = await image.toByteData(format: ui.ImageByteFormat.rawRgba);
-    image.dispose();
+    final data = await tester.runAsync(() async {
+      final image = await picture.toImage(w, h);
+      picture.dispose();
+      final rgba = await image.toByteData(format: ui.ImageByteFormat.rawRgba);
+      image.dispose();
+      return rgba;
+    });
     final bytes = data!.buffer.asUint8List();
     final tm = ps.tileManagerOf(projectId);
     final key = ps.tileKeyFor(projectId, sceneId, 0, layerId);

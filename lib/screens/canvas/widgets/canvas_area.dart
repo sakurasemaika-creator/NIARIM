@@ -513,6 +513,11 @@ class _CanvasAreaState extends State<CanvasArea> {
   late TileManager _tileManager;
   bool _hasTileManager = false;
 
+  /// Kept from [didChangeDependencies] so tile keys can still be worked out
+  /// by a composite that finishes after this widget has gone (its result is
+  /// then discarded, but reading `context` there would throw).
+  late ProjectService _projects;
+
   /// Layers whose pixels changed as a whole outside this widget (a filter
   /// applied, an automation step, Undo) since the canvas last redrew them.
   bool _currentLayerChangedOutside = false;
@@ -651,6 +656,7 @@ class _CanvasAreaState extends State<CanvasArea> {
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
+    _projects = context.read<ProjectService>();
     if (!_engineInitialized) {
       _initEngine();
       _engineInitialized = true;
@@ -1086,7 +1092,7 @@ class _CanvasAreaState extends State<CanvasArea> {
   String _tileKeyFor(String layerId, {int? frameIndex}) {
     final project = widget.project;
     if (project != null) {
-      return context.read<ProjectService>().tileKeyFor(
+      return _projects.tileKeyFor(
         project.id,
         widget.sceneId,
         frameIndex ?? widget.currentFrame,
