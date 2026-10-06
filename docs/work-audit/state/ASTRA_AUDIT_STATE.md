@@ -59,7 +59,8 @@ next_action: HEAD `770e2c57d0a77c11c1a174b5a07243a71383f369` 以降でS5dを実�
 
 ## 2026-10-06 state freshness synchronization
 
-- Latest observed App dev_branch during audit-state maintenance: `2ecec1e304b72154d31f49df8118241ba01fe409`.
-- Latest observed Web dev_branch during audit-state maintenance: `a72a72e6ee85d2366e4335850b019f8dbd5f310f`.
-- These heads contain audit-state synchronization commits after the latest product implementation snapshot; therefore the audit must still re-read the current dev_branch at execution start and compare non-audit-path changes before trusting any prior Evidence.
-- Historical next_action references to `770e2c57...` are stale and are not current product-head evidence. A001 remains `in_progress`; no audit completion is inferred from the newer state-maintenance commits.
+- 最新の**製品実装**として確認したApp `dev_branch` は `ce94a15597f213a168abc682a8f49d53fa3c8508`。
+- 最新の**製品実装**として確認したWeb `dev_branch` は `ed944b291732f5d9bc4ca0617b7213f8ec212be4`。
+- その後の `dev_branch` の先端には監査Policy/Route/Progress/Evidence/Verifierだけを変更する `[audit-*]` commit が積まれている。したがってbranchの最新SHAと製品実装snapshot SHAは同一とは限らない。
+- 監査開始時は必ず現在の `dev_branch` HEADを取得し、開始時点以降の変更について監査対象コードが変わっていないか確認する。
+- 以前の `770e2c57...` を現在製品HEADとして扱わない。A001は依然 `in_progress` であり、過去のEvidenceから完了を推定しない。
