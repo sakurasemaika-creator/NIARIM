@@ -49,9 +49,9 @@ route lock後の製品変更と、全面監査開始時点で明示的に追加�
 
 1. 両repoの最新 `dev_branch` と現在HEADを確認し、安全に追従する。
 2. `AUDIT_ROUTE.md` を読む。bootstrap-requiredならSection 1だけを行う。lockedなら `ASTRA_CONTINUATION.md` の `current_id` を読む。
-3. current IDに必要な仕様/品質基準の該当節だけ確認し、直ちにそのTODOを実行する。
+3. current_id（Baseline）の未完了IDに必要な仕様/品質基準の該当節だけ確認し、直ちにそのTODOを実行する。Baselineが全件doneになった後はcurrent_idを`complete`へ変更し、ASTRA_CONTINUATIONの`delta_current_id`でD-seriesの再開位置を管理する。Discoveryは`discovery_current_id`で管理する。
 4. checkpoint後のremote差分は現在IDの前提を壊すかだけscope-boundedに確認する。全commit・全CIを網羅的に再調査してStateを再構築しない。
-5. 完了条件を満たしたIDだけdoneにして次IDへ進む。Baseline完了後は未完了DISC-IDを番号順に消化し、その後に未完了D-ID（lock後delta）の最小番号へ進む。利用枠終了時は現在IDを保存する。
+5. 完了条件を満たしたBaseline IDだけdoneにして次IDへ進む。Baseline完了後はcurrent_id=`complete`を維持し、未完了DISC-IDを`discovery_current_id`で番号順に消化し、その後に未完了D-IDを`delta_current_id`で番号順に消化する。利用枠終了時は各再開位置を保存する。
 
 開始時刻記録だけのcommit/push、理由のない再監査・重いsuite再実行、復元のためだけの広範な履歴探索をしない。
 
@@ -116,7 +116,7 @@ Route/Progress/Evidenceは**明示的な全面監査モードで実際に検証�
 
 State更新commitには `[audit-state]`、policy/guard変更にはユーザーの明示依頼のもと `[audit-policy-approved]` を使う。
 
-全面監査completeには、少なくとも **Baseline未完了=0、Discovery（DISC）未完了=0、Delta（D）未完了=0、advisor-pending=0、現在認識している未登録Discovery=0** を満たし、各品質正本の完了条件と最終回帰フェーズも完了していることが必要。Baseline coverageの通過だけを「これ以上発見対象はない」「監査complete」の根拠にしてはならない。
+全面監査completeには、少なくとも **Baseline未完了=0、Discovery（DISC）未完了=0、Delta（D）未完了=0、advisor-pending=0、現在認識している未登録Discovery=0** を満たし、`current_id=complete`、かつDiscovery/Deltaの再開位置も完了状態であることを満たし、各品質正本の完了条件と最終回帰フェーズも完了していることが必要。Baseline coverageの通過だけを「これ以上発見対象はない」「監査complete」の根拠にしてはならない。
 
 ## 7. 「NIARIMの全面監査をしてください」だけで起動できる実行契約
 
@@ -125,7 +125,7 @@ State更新commitには `[audit-state]`、policy/guard変更にはユーザー�
 1. App sakurasemaika-creator/NIARIM と Web sakurasemaika-creator/NIARIM-web の dev_branch 最新HEADを取得し、作業開始SHAをEvidenceへ記録する。
 2. AGENTS.md → 本Policy → locked Baseline AUDIT_ROUTE.md → ASTRA_CONTINUATION.md / ASTRA_AUDIT_STATE.md → AUDIT_DELTA_ROUTE.md の順に読み、Baseline/Progress/Evidence/Deltaの役割を混同しない。
 3. Baseline verifierとDelta verifierを先に実行し、lock integrity、mirror、current_id、delta route integrityを確認する。違反があればstate構造を修正してから製品監査へ進む。
-4. current_id の未完了Baselineを番号順に実行する。必要なら実装を修正し、root cause→fix→targeted test→analyze/build→production UI実操作→visual inspection→save/restore→regressionまで完結させる。
+4. current_id の未完了Baselineを番号順に実行する。必要なら実装を修正し、root cause→fix→targeted test→analyze/build→production UI実操作→visual inspection→save/restore→regressionまで完結させる。current_idはAUDIT_ROUTE verifierと一致させる。
 5. 途中で未登録の画面・状態・操作・分岐・品質リスクを発見したらDISC-IDとして追加し、現在IDへ影響するものを先に処理し、それ以外は固定順序へ戻る。
 6. Baseline完了後、DISC backlogを消化し、その後D001からDeltaを順番に消化する。D002の全フィルターinventory、D026/D027のpreset inventoryで対象数が変わる場合、子TODOを最新HEADへ合わせる。
 7. 不具合を見つけた場合は問題の列挙だけで止めず、修正可能なものはroot cause→fix→test→実画面→regressionまで行う。外部依存・実機不足のみblockedとし、未確認をblockedへ隠さない。
