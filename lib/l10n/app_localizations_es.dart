@@ -1734,7 +1734,7 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get helpDrawingFilterDesc =>
-      'Filtros aplicados directamente a la capa seleccionada (a diferencia de los filtros de efecto, que se aplican a toda la línea de tiempo o a una escena, los filtros de dibujo actúan por capa). Los 26 filtros incluidos son Desenfoque gaussiano, Desenfoque de lente, Estilo anime, Curva de tonos, Niveles, Contorno, Nitidez, Máscara de enfoque, Viñeta, Grano de película, Anime retro, CRT, Umbral, Ojo de pez, Aberración cromática, Distorsión óptica, Pixel art, Filtro de textura, Integración con el fondo, Acumulación de tinta, Dibujo lineal automático, Prisma, Ruido VHS, Invertir colores, Mosaico y Ruido. Contorno no reescribe la capa original: dibuja solo el resultado en una capa nueva. Distorsión óptica aplica una deformación localizada, como a través de una lente de gafas de gran graduación, únicamente al área pintada en la capa de selección. Pixel art también permite elegir un modo de color (sin límite, colores específicos, número de colores o paleta). Su tamaño puede fijarse como tamaño de bloque o ajustarse a la resolución del lienzo (un píxel del lienzo por punto); en ambos casos los puntos siguen siendo cuadrados y sin bordes semitransparentes. En Dibujo lineal automático puedes editar los puntos de control vectoriales temporales antes de aplicar el filtro. Arrastra un punto para mover solo ese punto, toca un segmento para añadir un punto de control o toca un punto y confirma para eliminarlo. La geometría editada se usa directamente en el resultado aplicado.';
+      'Filtros aplicados directamente a la capa seleccionada (a diferencia de los filtros de efecto, que se aplican a toda la línea de tiempo o a una escena, los filtros de dibujo actúan por capa). Los 26 filtros incluidos son Desenfoque gaussiano, Desenfoque de lente, Estilo anime, Curva de tonos, Niveles, Contorno, Nitidez, Máscara de enfoque, Viñeta, Grano de película, Anime retro, CRT, Umbral, Ojo de pez, Aberración cromática, Distorsión óptica, Pixel art, Filtro de textura, Integración con el fondo, Acumulación de tinta, Dibujo lineal automático, Prisma, Ruido VHS, Invertir colores, Mosaico y Ruido. Contorno no reescribe la capa original: dibuja solo el resultado en una capa nueva. Distorsión óptica aplica una deformación localizada, como a través de una lente de gafas de gran graduación, únicamente al área pintada en la capa de selección. Pixel art también permite elegir un modo de color (sin límite, colores específicos, número de colores o paleta). Su tamaño puede fijarse con el tamaño de bloque (100 pasos, de 1 a 100) o con el número de puntos a lo ancho o a lo alto (de 1 a la resolución del lienzo); al cambiar uno, el otro se ajusta. En ambos casos los puntos siguen siendo cuadrados y sin bordes semitransparentes. En Dibujo lineal automático puedes editar los puntos de control vectoriales temporales antes de aplicar el filtro. Arrastra un punto para mover solo ese punto, toca un segmento para añadir un punto de control o toca un punto y confirma para eliminarlo. La geometría editada se usa directamente en el resultado aplicado.';
 
   @override
   String get helpLayerKeyframeTitle =>
@@ -5693,11 +5693,22 @@ class AppLocalizationsEs extends AppLocalizations {
   String get filterPixelateModeBlock => 'Tamaño de bloque';
 
   @override
-  String get filterPixelateModeCanvas => 'Resolución del lienzo';
+  String get filterPixelateModeDots => 'Número de puntos';
 
   @override
-  String get filterPixelateModeCanvasHint =>
-      'Cada píxel del lienzo cuenta como un punto: solo los colores y el contorno pasan a pixel art, sin agrupar píxeles en bloques.';
+  String get filterPixelateDotsWide => 'Puntos a lo ancho';
+
+  @override
+  String get filterPixelateDotsHigh => 'Puntos a lo alto';
+
+  @override
+  String get filterPixelateDotsHint =>
+      'Escribe uno de los dos; el otro y el tamaño de bloque se ajustan solos (de 1 a la resolución del lienzo).';
+
+  @override
+  String filterPixelateDotsSummary(int wide, int high) {
+    return '$wide × $high puntos';
+  }
 
   @override
   String get filterLensDistortionOffsetY => 'Ajuste fino del centro (vertical)';

@@ -199,12 +199,12 @@ void main() {
         ];
         final cases = [
           ('pixel_art_blocks_six_colours', pixelArt, false),
-          ('pixel_art_canvas_resolution', pixelArt, true),
+          ('pixel_art_dots_canvas_resolution', pixelArt, true),
           ('mosaic_same_fixture', mosaic, false),
         ];
         final outputs = <String, Uint8List>{};
         Uint8List? original;
-        for (final (id, filter, matchCanvas) in cases) {
+        for (final (id, filter, byDots) in cases) {
           debugPrint('CAPTURE_CASE:$id');
           await h.project(id, fixture: 'pixelArtSix');
           final before = await h.art('$id-before');
@@ -250,20 +250,32 @@ void main() {
               find.descendant(
                 of: panel,
                 matching: find.text(
-                  matchCanvas
-                      ? h.l10n.filterPixelateModeCanvas
+                  byDots
+                      ? h.l10n.filterPixelateModeDots
                       : h.l10n.filterPixelateModeBlock,
                 ),
               ),
             );
-            expect(current().pixelArtMatchCanvas, matchCanvas);
-            expect(current().pixelArtBlockSize, matchCanvas ? 1 : 8);
+            expect(current().pixelArtByDots, byDots);
+            if (byDots) {
+              // As many dots across as the canvas has pixels.
+              final across = find.byKey(const ValueKey('pixel-art-dots-wide'));
+              await tester.ensureVisible(across);
+              await tester.enterText(across, '256');
+              await tester.testTextInput.receiveAction(TextInputAction.done);
+              await h.settle();
+            }
+            expect(current().pixelArtCellSize(256, 256), byDots ? 1 : 8);
             expect(
               find.descendant(
                 of: panel,
-                matching: find.text(h.l10n.filterPixelateModeCanvasHint),
+                matching: find.text(
+                  byDots
+                      ? h.l10n.filterPixelateDotsSummary(256, 256)
+                      : h.l10n.filterPixelateDotsSummary(32, 32),
+                ),
               ),
-              matchCanvas ? findsOneWidget : findsNothing,
+              findsOneWidget,
             );
           }
           await h.capture('$id-settings');
@@ -287,7 +299,7 @@ void main() {
                   after[i + 2];
               expect(sixColours, contains(argb), reason: '$id palette');
             }
-            if (!matchCanvas) {
+            if (!byDots) {
               for (var y = 0; y < 256; y++) {
                 for (var x = 0; x < 256; x++) {
                   final i = (y * 256 + x) * 4;
@@ -314,15 +326,16 @@ void main() {
             settings: {
               'kind': filter.kind.name,
               if (filter.kind == FilterKind.pixelate) ...{
-                'pixelArtMatchCanvas': matchCanvas,
-                'blockSize': current().pixelArtBlockSize,
+                'pixelArtByDots': byDots,
+                'cellSize': current().pixelArtCellSize(256, 256),
                 'colorMode': current().pixelColorMode.name,
                 'colors': current().pixelExplicitColors,
               },
             },
             note: switch (id) {
               'pixel_art_blocks_six_colours' => '8pxの正方形ブロック・黒白赤黄青緑の6色・半透明なし。',
-              'pixel_art_canvas_resolution' => 'キャンバスの1画素＝1ドット・6色・半透明なし。',
+              'pixel_art_dots_canvas_resolution' =>
+                'ドット数で横256（キャンバスの画素数）を指定＝1画素1ドット・6色・半透明なし。',
               _ => 'ブロック内の色と不透明度を平均する別効果。',
             },
           );

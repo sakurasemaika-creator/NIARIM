@@ -98,7 +98,11 @@ void main() {
             .layersOf(project.id, scene.id, 0)
             .map((layer) => layer.id)
             .toList();
-        final expectedOrder = [below.id, source.id, generatedId!, above.id];
+        // Index 0 is the top layer: auto line art goes directly above its
+        // source, outline and ink pool directly beneath it.
+        final expectedOrder = kind == FilterKind.autoLineart
+            ? [below.id, generatedId!, source.id, above.id]
+            : [below.id, source.id, generatedId!, above.id];
         expect(order(), expectedOrder);
         expect(undo.undoCount, 1);
         Future<Uint8List> generatedPixels() async {
@@ -117,8 +121,9 @@ void main() {
 
         final before = await generatedPixels();
         expect(
-          Iterable<int>.generate(before.length ~/ 4)
-              .any((i) => before[i * 4 + 3] > 0),
+          Iterable<int>.generate(
+            before.length ~/ 4,
+          ).any((i) => before[i * 4 + 3] > 0),
           isTrue,
         );
         for (var cycle = 0; cycle < 2; cycle++) {

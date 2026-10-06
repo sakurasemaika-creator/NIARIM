@@ -33,7 +33,8 @@ import '../../l10n/app_localizations.dart';
 import '../../models/audio_clip.dart';
 import '../../models/camera_keyframe.dart';
 import '../../models/effect_filter_instance.dart';
-import '../../models/filter_def.dart' show AuroraHologramPreset;
+import '../../models/filter_def.dart'
+    show AuroraHologramPreset, kPixelArtMaxBlockSize;
 import '../../models/layer.dart';
 import '../../models/layer_group.dart';
 import '../../models/layer_keyframe.dart';
@@ -7600,7 +7601,9 @@ class _EffectFilterSheet extends StatelessWidget {
     final label = e.type == EffectFilterType.mosaic
         ? l10n.timelineEffectSizeLabel
         : l10n.timelineEffectStrengthLabel;
-    final maxVal = e.type == EffectFilterType.mosaic ? 64.0 : 20.0;
+    final maxVal = e.type == EffectFilterType.mosaic
+        ? kPixelArtMaxBlockSize.toDouble()
+        : 20.0;
     return [
       Row(
         children: [
@@ -8066,8 +8069,8 @@ class _EffectFilterSheet extends StatelessWidget {
         l10n.filterPixelateBlockSize,
         e.param1,
         1,
-        64,
-        63,
+        kPixelArtMaxBlockSize.toDouble(),
+        kPixelArtMaxBlockSize - 1,
         (v) => _update(context, e.copyWith(param1: v)),
       ),
       PixelColorModeSelector(

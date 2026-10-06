@@ -526,34 +526,101 @@ void main() {
     }
   });
 
-  group('"Match canvas resolution" mode', () {
+  group('size set by a dot count', () {
     const filter = FilterDef(
-      id: 'pixel-canvas',
+      id: 'pixel-dots',
       name: 'Pixel art',
       kind: FilterKind.pixelate,
-      strength: 12,
+      // 100 dots across 1920 pixels.
+      strength: 19.2,
       pixelColorMode: PixelColorMode.none,
-      pixelArtMatchCanvas: true,
+      pixelArtByDots: true,
     );
 
     test('is saved and restored with the filter', () {
       final restored = FilterDef.fromJson(filter.toJson());
-      expect(restored.pixelArtMatchCanvas, isTrue);
-      expect(restored.strength, 12, reason: 'the block size is kept for later');
-      expect(restored.pixelArtBlockSize, 1);
+      expect(restored.pixelArtByDots, isTrue);
+      expect(restored.pixelArtCellSize(1920, 1080), 19.2);
       expect(
-        FilterDef.fromJson(
-          filter.copyWith(pixelArtMatchCanvas: false).toJson(),
-        ).pixelArtBlockSize,
-        12,
+        PixelArtEngine.cellEdges(1920, restored.pixelArtCellSize(1920, 1080)),
+        hasLength(101),
+        reason: '100 dots across',
+      );
+      expect(
+        restored.copyWith(pixelArtByDots: false).pixelArtCellSize(1920, 1080),
+        19.2,
+        reason: 'switching to the slider keeps the size',
+      );
+      expect(
+        restored.copyWith(strength: 5000).pixelArtCellSize(1920, 1080),
+        1920,
+        reason: 'one dot at most covers the canvas',
       );
     });
 
-    test('applies one dot per canvas pixel', () {
+    test('splits the canvas into exactly that many dots', () {
+      for (final (side, dots) in [(1920, 100), (1080, 7), (64, 64), (97, 13)]) {
+        final edges = PixelArtEngine.cellEdges(side, side / dots);
+        expect(edges.length - 1, dots, reason: '$dots dots over $side');
+        expect(edges.first, 0);
+        expect(edges.last, side);
+        for (var i = 1; i < edges.length; i++) {
+          expect(edges[i] - edges[i - 1], greaterThanOrEqualTo(1));
+        }
+      }
+    });
+
+    test('applies blocks of the fractional size the count asks for', () {
+      const w = 96, h = 60;
+      final rgba = Uint8List(w * h * 4);
+      paint(rgba, w, h, disc(48, 30, 22), [10, 10, 10]);
+      // 10 dots across 96 pixels: dots 9 or 10 pixels wide.
+      final tenAcross = filter.copyWith(strength: w / 10);
+      final applied = applyDrawFilterInIsolate((rgba, w, h, tenAcross, null));
+      expect(
+        applied,
+        orderedEquals(
+          engine.convert(
+            rgba,
+            w,
+            h,
+            pixelSize: 9.6,
+            colorMode: PixelColorMode.none,
+          ),
+        ),
+      );
+      expect(alphas(applied), {0, 255});
+      // Every block is flat: compare each pixel with its block's corner.
+      final xs = PixelArtEngine.cellEdges(w, 9.6);
+      final ys = PixelArtEngine.cellEdges(h, 9.6);
+      expect(xs.length - 1, 10);
+      for (var cy = 0; cy + 1 < ys.length; cy++) {
+        for (var cx = 0; cx + 1 < xs.length; cx++) {
+          final corner = (ys[cy] * w + xs[cx]) * 4;
+          for (var y = ys[cy]; y < ys[cy + 1]; y++) {
+            for (var x = xs[cx]; x < xs[cx + 1]; x++) {
+              final i = (y * w + x) * 4;
+              expect(
+                applied.sublist(i, i + 4),
+                applied.sublist(corner, corner + 4),
+              );
+            }
+          }
+        }
+      }
+    });
+
+    test('as many dots as canvas pixels hardens the edge pixel by pixel', () {
       const w = 48, h = 48;
       final rgba = Uint8List(w * h * 4);
       paint(rgba, w, h, disc(24, 24, 15), [10, 10, 10]);
-      final applied = applyDrawFilterInIsolate((rgba, w, h, filter, null));
+      final applied = applyDrawFilterInIsolate((
+        rgba,
+        w,
+        h,
+        filter.copyWith(strength: 1),
+        null,
+      ));
       expect(
         applied,
         orderedEquals(

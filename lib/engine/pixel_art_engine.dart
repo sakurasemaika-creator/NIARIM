@@ -14,6 +14,10 @@ import '../models/pixel_color_mode.dart';
 /// one canvas pixel at a time) only the colours change and the source alpha
 /// is kept exactly.
 ///
+/// [pixelSize] is the size of a dot in canvas pixels and may be fractional,
+/// so a picture can be split into an exact number of dots (100 dots across
+/// 1920 pixels makes dots 19 or 20 pixels wide).
+///
 /// Pixels are premultiplied RGBA, as layers store them: colours are judged
 /// unpremultiplied and written back premultiplied by the new alpha.
 ///
@@ -27,16 +31,21 @@ class PixelArtEngine {
     Uint8List data,
     int width,
     int height, {
-    int pixelSize = 8,
+    num pixelSize = 8,
     PixelColorMode colorMode = PixelColorMode.count,
     int colorLevels = 6,
     List<int> paletteColors = const [],
     bool squareBlocks = true,
   }) {
-    final size = pixelSize.clamp(1, 64);
+    final size = pixelSize.toDouble().clamp(
+      1.0,
+      math.max(1, math.max(width, height)).toDouble(),
+    );
     final result = Uint8List.fromList(data);
-    final cellsX = (width + size - 1) ~/ size;
-    final cellsY = (height + size - 1) ~/ size;
+    final xs = cellEdges(width, size);
+    final ys = cellEdges(height, size);
+    final cellsX = xs.length - 1;
+    final cellsY = ys.length - 1;
     final cellCount = cellsX * cellsY;
     final rawColors = List<int?>.filled(cellCount, null);
     final alphaSum = Int32List(cellCount);
@@ -50,10 +59,10 @@ class PixelArtEngine {
       for (var cx = 0; cx < cellsX; cx++) {
         var wr = 0, wg = 0, wb = 0, aw = 0, top = 0, n = 0;
         var sx = 0, sy = 0, sxx = 0, syy = 0;
-        for (var dy = 0; dy < size && cy * size + dy < height; dy++) {
-          for (var dx = 0; dx < size && cx * size + dx < width; dx++) {
+        for (var dy = 0; dy < ys[cy + 1] - ys[cy]; dy++) {
+          for (var dx = 0; dx < xs[cx + 1] - xs[cx]; dx++) {
             n++;
-            final i = (((cy * size + dy) * width) + cx * size + dx) * 4;
+            final i = (((ys[cy] + dy) * width) + xs[cx] + dx) * 4;
             final a = data[i + 3];
             if (a == 0) continue;
             // Premultiplied channels are the colour already weighted by alpha.
@@ -92,10 +101,9 @@ class PixelArtEngine {
         ? _bridgeGaps(
             data,
             width,
-            height,
             size,
-            cellsX,
-            cellsY,
+            xs,
+            ys,
             alphaMax,
             _blockAlphas(
               cellsX,
@@ -155,9 +163,9 @@ class PixelArtEngine {
         final r = color == null ? 0 : (color >> 16) & 0xff;
         final g = color == null ? 0 : (color >> 8) & 0xff;
         final b = color == null ? 0 : color & 0xff;
-        for (var dy = 0; dy < size && cy * size + dy < height; dy++) {
-          for (var dx = 0; dx < size && cx * size + dx < width; dx++) {
-            final i = (((cy * size + dy) * width) + cx * size + dx) * 4;
+        for (var y = ys[cy]; y < ys[cy + 1]; y++) {
+          for (var x = xs[cx]; x < xs[cx + 1]; x++) {
+            final i = (y * width + x) * 4;
             // Colours only (no blocks): the source alpha is kept exactly.
             final a = blockAlpha == null ? data[i + 3] : blockAlpha[c];
             if (blockAlpha == null && a == 0) continue;
@@ -170,6 +178,15 @@ class PixelArtEngine {
       }
     }
     return result;
+  }
+
+  /// Where the cells of a [length]-pixel side start, plus [length] itself:
+  /// cells [size] pixels long (rounded down where [size] is fractional).
+  static List<int> cellEdges(int length, double size) {
+    // The small margin keeps an exact division (1920 / 100 dots) from
+    // gaining a sliver of an extra cell to rounding.
+    final count = math.max(1, (length / size - 1e-9).ceil());
+    return [for (var i = 0; i < count; i++) (i * size).floor(), length];
   }
 
   /// Decides, for every cell, whether it becomes a pixel-art pixel and with
@@ -324,14 +341,14 @@ class PixelArtEngine {
   Uint8List _bridgeGaps(
     Uint8List data,
     int width,
-    int height,
-    int size,
-    int cellsX,
-    int cellsY,
+    double size,
+    List<int> xs,
+    List<int> ys,
     Uint8List alphaMax,
     Uint8List kept,
   ) {
     if (size < 2) return kept;
+    final cellsX = xs.length - 1, cellsY = ys.length - 1;
     for (var pass = 0; pass < 2; pass++) {
       final bridges = <int, int>{};
       for (var cy = 0; cy < cellsY; cy++) {
@@ -371,7 +388,7 @@ class PixelArtEngine {
           if (group.where((g) => g >= 0).toSet().length < 2) continue;
           final level = _strongestAround(kept, cellsX, cellsY, cx, cy);
           if (alphaMax[c] * 2 < level) continue;
-          if (_paintJoins(data, width, height, size, cx, cy, level, group)) {
+          if (_paintJoins(data, width, xs, ys, cx, cy, level, group)) {
             bridges[c] = level;
           }
         }
@@ -404,18 +421,15 @@ class PixelArtEngine {
   static bool _paintJoins(
     Uint8List data,
     int width,
-    int height,
-    int size,
+    List<int> xs,
+    List<int> ys,
     int cx,
     int cy,
     int level,
     List<int> group,
   ) {
-    final x0 = cx * size, y0 = cy * size;
-    final w = math.min(size, width - x0), h = math.min(size, height - y0);
-    // A diagonal neighbour is reached through the half of each side nearer
-    // to it.
-    final corner = math.max(1, (size + 1) ~/ 2);
+    final x0 = xs[cx], y0 = ys[cy];
+    final w = xs[cx + 1] - x0, h = ys[cy + 1] - y0;
     final seen = Uint8List(w * h);
     final stack = <int>[];
     for (var start = 0; start < w * h; start++) {
@@ -434,8 +448,7 @@ class PixelArtEngine {
           final onX = ox < 0 ? px == 0 : (ox > 0 ? px == w - 1 : true);
           final onY = oy < 0 ? py == 0 : (oy > 0 ? py == h - 1 : true);
           final touches = ox != 0 && oy != 0
-              ? (onX && _near(py, oy, h, corner)) ||
-                    (onY && _near(px, ox, w, corner))
+              ? (onX && _near(py, oy, h)) || (onY && _near(px, ox, w))
               : onX && onY;
           if (touches) reached.add(group[k]);
         }
@@ -457,10 +470,13 @@ class PixelArtEngine {
     return false;
   }
 
-  /// Whether [v] lies within [corner] of the end of a side of length [n]
-  /// that faces direction [o] (-1: the start, 1: the end).
-  static bool _near(int v, int o, int n, int corner) =>
-      o < 0 ? v < corner : v >= n - corner;
+  /// Whether [v] lies in the half of a side of length [n] nearer the end it
+  /// faces ([o] -1: the start, 1: the end): a diagonal neighbour is reached
+  /// through that half of each side.
+  static bool _near(int v, int o, int n) {
+    final half = math.max(1, (n + 1) ~/ 2);
+    return o < 0 ? v < half : v >= n - half;
+  }
 
   /// Alphas within a fifth of each other count as the same strength.
   static bool _similar(int a, int b) => a * 5 >= b * 4 && a * 4 <= b * 5;

@@ -198,7 +198,7 @@ Uint8List applyDrawFilterInIsolate(
       data,
       width,
       height,
-      mosaicSize: filter.pixelArtBlockSize,
+      mosaicSize: filter.pixelArtCellSize(width, height),
       colorMode: filter.pixelColorMode,
       colorLevels: filter.colorLevels,
       paletteColors: filter.pixelExplicitColors,
@@ -207,7 +207,7 @@ Uint8List applyDrawFilterInIsolate(
       data,
       width,
       height,
-      filter.strength.round().clamp(1, 64),
+      filter.strength.round().clamp(1, kPixelArtMaxBlockSize),
     ),
     FilterKind.auroraHologram => engine.applyAuroraHologram(
       data,
@@ -668,7 +668,7 @@ class FilterEngine {
           result,
           width,
           height,
-          mosaicSize: e.param1.round().clamp(1, 64),
+          mosaicSize: e.param1.round().clamp(1, kPixelArtMaxBlockSize),
           colorMode: e.pixelColorMode,
           colorLevels: e.param2.round().clamp(1, 256),
           paletteColors: e.pixelExplicitColors,
@@ -839,7 +839,8 @@ class FilterEngine {
   }
 
   Uint8List applyMosaic(Uint8List data, int width, int height, int mosaicSize) {
-    final size = mosaicSize.clamp(2, 64);
+    // 1 leaves every pixel as it is.
+    final size = mosaicSize.clamp(1, kPixelArtMaxBlockSize);
     final result = Uint8List.fromList(data);
     for (int y = 0; y < height; y += size) {
       for (int x = 0; x < width; x += size) {
@@ -2124,7 +2125,7 @@ class FilterEngine {
     Uint8List data,
     int width,
     int height, {
-    int mosaicSize = 8,
+    num mosaicSize = 8,
     PixelColorMode colorMode = PixelColorMode.count,
     int colorLevels = 6,
     List<int> paletteColors = const [],

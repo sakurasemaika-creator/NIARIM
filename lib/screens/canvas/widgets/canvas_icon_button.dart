@@ -52,6 +52,12 @@ class CanvasIconButton extends StatelessWidget {
     Offset(1, 1),
   ];
 
+  /// [color]の1px縁取り（文字やアイコンの`shadows`に渡す）。キャンバスの
+  /// 上へ背景なしで浮かべる文字・アイコンを、絵柄に関係なく読めるようにする。
+  static List<Shadow> outlineShadows(Color color) => [
+    for (final o in _offsets) Shadow(color: color, offset: o, blurRadius: 0),
+  ];
+
   /// アイコン本体＋縁取りを描く。
   Widget _renderIcon(Color iconColor, Color outlineColor) {
     if (iconBuilder != null) {
@@ -72,10 +78,7 @@ class CanvasIconButton extends StatelessWidget {
       icon,
       size: iconSize,
       color: iconColor,
-      shadows: [
-        for (final o in _offsets)
-          Shadow(color: outlineColor, offset: o, blurRadius: 0),
-      ],
+      shadows: outlineShadows(outlineColor),
     );
   }
 

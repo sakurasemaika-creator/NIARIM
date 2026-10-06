@@ -51,6 +51,10 @@ enum AuroraHologramPreset {
 /// Serializable drawing-filter definition.
 /// Prism uses [prismBlurPx] as Gaussian blur radius in pixels and
 /// [prismDirectionDegrees] as the dark-rainbow gradient direction in degrees.
+/// The largest block size the Mosaic and Pixel Art sliders reach, in canvas
+/// pixels (100 steps from 1).
+const int kPixelArtMaxBlockSize = 100;
+
 /// Where a filter that draws onto a new layer puts that layer, given the
 /// source layer's index (0 = the top layer): auto line art goes directly
 /// above the source so the clean lines show over the rough sketch; outline
@@ -101,9 +105,10 @@ class FilterDef {
   final PixelColorMode pixelColorMode;
   final List<int> pixelExplicitColors;
 
-  /// Pixel art: one pixel-art pixel per canvas pixel instead of
-  /// [strength]-sized blocks (for pictures drawn at their final resolution).
-  final bool pixelArtMatchCanvas;
+  /// Pixel art: whether the panel shows the size as a dot count across and
+  /// down the canvas rather than as the block-size slider. Either way the
+  /// size itself is [strength] (see [pixelArtCellSize]).
+  final bool pixelArtByDots;
   final double hologramBrightness;
   final double hologramSaturation;
   final AuroraHologramPreset hologramPreset;
@@ -178,7 +183,7 @@ class FilterDef {
     this.chromaticShiftZ = 0,
     this.pixelColorMode = PixelColorMode.count,
     this.pixelExplicitColors = const [0xFF000000],
-    this.pixelArtMatchCanvas = false,
+    this.pixelArtByDots = false,
     this.hologramBrightness = 0,
     this.hologramSaturation = 0,
     this.hologramPreset = AuroraHologramPreset.silverHologram,
@@ -214,9 +219,14 @@ class FilterDef {
     this.prismDirectionDegrees = 90,
   });
 
-  /// Pixel art block size in canvas pixels.
-  int get pixelArtBlockSize =>
-      pixelArtMatchCanvas ? 1 : strength.round().clamp(1, 64);
+  /// The size of a pixel-art dot in canvas pixels on a canvas of this size.
+  /// It is [strength], which may be fractional when it was set as a dot
+  /// count (100 dots across 1920 pixels is 19.2), and may exceed the
+  /// slider's [kPixelArtMaxBlockSize] when set that way.
+  double pixelArtCellSize(int canvasWidth, int canvasHeight) {
+    final longest = canvasWidth > canvasHeight ? canvasWidth : canvasHeight;
+    return strength.clamp(1, longest < 1 ? 1 : longest).toDouble();
+  }
 
   FilterDef copyWith({
     String? id,
@@ -258,7 +268,7 @@ class FilterDef {
     double? chromaticShiftZ,
     PixelColorMode? pixelColorMode,
     List<int>? pixelExplicitColors,
-    bool? pixelArtMatchCanvas,
+    bool? pixelArtByDots,
     double? hologramBrightness,
     double? hologramSaturation,
     AuroraHologramPreset? hologramPreset,
@@ -333,7 +343,7 @@ class FilterDef {
       chromaticShiftZ: chromaticShiftZ ?? this.chromaticShiftZ,
       pixelColorMode: pixelColorMode ?? this.pixelColorMode,
       pixelExplicitColors: pixelExplicitColors ?? this.pixelExplicitColors,
-      pixelArtMatchCanvas: pixelArtMatchCanvas ?? this.pixelArtMatchCanvas,
+      pixelArtByDots: pixelArtByDots ?? this.pixelArtByDots,
       hologramBrightness: hologramBrightness ?? this.hologramBrightness,
       hologramSaturation: hologramSaturation ?? this.hologramSaturation,
       hologramPreset: hologramPreset ?? this.hologramPreset,
@@ -421,7 +431,7 @@ class FilterDef {
     'chromaticShiftZ': chromaticShiftZ,
     'pixelColorMode': pixelColorMode.name,
     'pixelExplicitColors': pixelExplicitColors,
-    'pixelArtMatchCanvas': pixelArtMatchCanvas,
+    'pixelArtByDots': pixelArtByDots,
     'hologramBrightness': hologramBrightness,
     'hologramSaturation': hologramSaturation,
     'hologramPreset': hologramPreset.name,
@@ -565,7 +575,7 @@ class FilterDef {
     pixelExplicitColors:
         (j['pixelExplicitColors'] as List<dynamic>?)?.cast<int>() ??
         const [0xFF000000],
-    pixelArtMatchCanvas: j['pixelArtMatchCanvas'] as bool? ?? false,
+    pixelArtByDots: j['pixelArtByDots'] as bool? ?? false,
     hologramBrightness: (j['hologramBrightness'] as num?)?.toDouble() ?? 0,
     hologramSaturation: (j['hologramSaturation'] as num?)?.toDouble() ?? 0,
     hologramPreset: AuroraHologramPreset.values.firstWhere(
