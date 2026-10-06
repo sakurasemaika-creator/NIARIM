@@ -6,6 +6,8 @@ current_id: A001
 current_status: in_progress
 last_completed_id: none
 next_id: A001
+discovery_current_id: none
+delta_current_id: not_started
 app_baseline: 46949156156850f8e49dcd9919ca6a7eeaf3bfac
 web_baseline: 2a44dd9007e4a764e489a42a70f96ac5da6b3b8a
 
