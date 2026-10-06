@@ -621,3 +621,6 @@ D001〜D036とBaseline/Discoveryを再照合し、**最新dev_branch HEAD**で�
 - Baseline未完了=0、Discovery未完了=0、Delta未完了=0、advisor-pending=0、未登録Discovery=0。
 
 これらを満たさない場合は全面監査completeを宣言しない。
+## 2026-10-06 全面監査依頼の起動契約
+全面監査依頼では、D001〜D037を正式に実行対象とし、docs/work-audit/state/FULL_AUDIT_EXECUTION_STANDARD.md を適用する。特にD032（全機能・全操作のhands-on + polish）、D033（全preset個別監査）、D034（theme/quality/save-format mutation）、D035（実行時間・軽量化）、D036（source hygiene）、D037（最終closure）を省略しない。
+
