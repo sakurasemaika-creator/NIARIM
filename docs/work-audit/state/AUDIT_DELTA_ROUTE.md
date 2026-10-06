@@ -469,7 +469,7 @@ For all completed Baseline + Delta IDs:
 
 Do not interpret a passing automated matrix as proof of direct interaction or visual quality.
 
-## D031 — Delta coverage and completion gate
+## D031 — Delta coverage and pre-final completion gate
 
 Re-inventory latest HEAD and compare against:
 - Baseline A001–A104
@@ -558,3 +558,58 @@ Required:
 全画面・全機能・全visible controlについて、未説明の実操作未確認が0。
 機能結果・意図挙動・見た目のいずれかに問題がある場合、修正可能なものは修正して再操作する。
 環境上実操作できない対象はPASSにせず、blocked/未確認理由と必要環境をEvidenceへ記録する。
+
+## D033 — 全プリセット総inventory + 個別実操作
+
+髪/前髪だけでなく、最新HEADで利用者が選択・適用・保存できる**全プリセット**をコード、production UI、asset/catalog、model、serializationから再inventoryする。
+
+対象例: built-in/custom brush、髪/前髪、filter、texture/material、theme/color、automation/action/workflow、size/pressure、timeline/animation、その他のpreset/catalog。未知のカテゴリも対象から除外しない。
+
+各プリセットを1対象=1子TODOとして固定し、production UIで実際に選択→適用→結果確認→必要なら編集→確定/取消→再適用を行う。設定値、実結果、保存/復元、import/export、legacy互換、削除/複製、権限制御、7言語、PC/SP、Visualを確認する。プリセット一覧そのものの件数・名称・並び順・重複・dead entryも確認する。
+
+## D034 — 品質設定・テーマ・保存形式のmutation audit
+
+監査中に品質に影響する設定を意図的に変更して、その変更が製品全体へ正しく連動するかを確認する。
+
+- theme colorを複数系統変更し、文字、icon、outline、slider、background、selected/disabled/error、overlay、dialog、canvas chrome等の全theme依存部分が連動するか確認。
+- light/dark/custom、textScale、language、reduced-motion、workspace/panel、performance/quality設定等を切り替え、画面遷移・再訪・再起動後も一貫するか確認。
+- save schema/versionを変更する場合はlegacy→current、current round-trip、unknown/newer、invalid、truncated、corruptを隔離データで検証。指定したversion/schemaそのもの、順序、参照、embedded asset、画像/音声、undo/redoが正しく保存・復元されることを確認。
+- UI→model→serialization→service→engine→render→reloadの往復で値が欠落・丸め・無視されないことを確認。
+- mutation後の見た目と実操作を再確認し、1箇所だけ変わるhalf-updated stateを許容しない。
+
+## D035 — 全主要操作の実行時間・軽量化
+
+主要なユーザー操作について、cold/warm起動、画面遷移、設定適用、描画、filter、blur、undo/redo、save/load、import/export、検索、一覧取得、共有/公開等の実行時間を実測する。
+
+各測定は入力サイズ、端末/環境、fixture、測定方法、反復回数、p50/p95等を記録する。jank/frame drop、UI freeze、memory spike、不要なrebuild/allocation/clone、I/O待ち、同期処理も確認する。
+
+遅い操作はprofile/traceでroot causeを特定し、同じ結果・互換性・安全性を維持できる範囲でキャッシュ、差分更新、非同期化、allocation/clone削減、アルゴリズム改善、バッファ削減、widget rebuild削減、I/O batching、serialization最適化等を実施する。最適化前後を同一条件で比較し、速度だけでなく画像、state、保存、undo/redo、境界条件が一致することを再確認する。
+
+低性能端末でも実用的に動くことを優先し、単にsource codeを短くすることは目的にしない。必要なら同じ結果を得る別実装へ置換する。
+
+## D036 — ソース衛生・不要コード・コメント品質
+
+App/Web/Backendを横断して、未使用import、dead code、到達不能route、obsolete service/model、未使用asset、debug print/log、temporary workaround、古いtest/fixture/workflow参照、不要なgenerated artifact、TODO/FIXME/HACK/placeholderを探索する。
+
+同じ結果が得られるなら、より単純・安全・高速・保守しやすい実装へrefactor/rewriteする。削除・統合後はanalyze/lint/test/buildと関連実画面regressionを行い、間接参照・dynamic loading・serialization名による参照切れも確認する。
+
+production sourceのコメントはコードの意味、設計上の不変条件、非自明な制約、公開API/ライセンス等の恒久情報に限定する。開発経緯、修正履歴、作業メモ、チャット由来の説明は削除する。ただし法的/ライセンス上必要なattributionは保持する。
+
+## D037 — 最終全面closure gate
+
+D001〜D036とBaseline/Discoveryを再照合し、**最新dev_branch HEAD**で最終的に全対象が完了しているかを確認する。
+
+必要条件:
+- 全画面・全route・全dialog/sheet/menu/panel/tab・全visible controlの実操作inventoryで未確認0。
+- 全固有操作・状態遷移・分岐・境界・cancel/retry/undo/redo等の未確認0。
+- 全プリセットinventoryで未割当/未実操作0。
+- 全フィルターinventoryで未割当0。質感変更/質感偏光を含む。
+- theme/settings/save-format mutationで未確認0。
+- performance measurement / optimization regressionで未確認0。
+- source hygiene scanで重大なdead/unused/temporary artifactが未処理のまま残っていない。
+- 7言語・PC/SP・必要な336表示matrix、Premium/free/campaign、accessibility条件を満たす。
+- targeted test/analyze/build、production UI実操作、Visual inspection、最新Visual PDFを全て最新HEADへ再照合。
+- 修正後の関連regressionが完了し、queued/running evidenceがない。
+- Baseline未完了=0、Discovery未完了=0、Delta未完了=0、advisor-pending=0、未登録Discovery=0。
+
+これらを満たさない場合は全面監査completeを宣言しない。
