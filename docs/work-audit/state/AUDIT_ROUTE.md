@@ -715,6 +715,17 @@ lock integrityは`AUDIT_ROUTE_LOCK.json`の本文定義SHA256/順序/coverage ha
 | W041 | 一周完了・品質証拠・修正後回帰の閉鎖 | これより前の全ID done・必要証拠あり | 全操作/状態/336/言語/法務/CIの未確認ゼロを検証；重大不具合修正→再操作；テスト自体の妥当性・source coverage再照合 | 未確認・queued/running/既知regressionを隠さない；次の差分回帰へ進める条件を満たす | CROSS | docs/work-audit/state/AUDIT_ROUTE.md | todo |
 | W042 | lock以後の差分回帰フェーズ | 全巡回ID完了・両repo開始SHA→最終HEAD | この時点だけ全差分を列挙；新画面/機能は末尾ID追記；影響UI/保存/API/法務の回帰；最終build/test/matrix・再操作 | 巡回順を動かさず新変更まで検証；未解決/未確認があれば全面completeにしない | CROSS | docs/work-audit/state/AUDIT_ROUTE.md | todo |
 
+
+## Discovery — auditor-found out-of-route targets
+
+Baseline監査中に、既存A/W IDの意味へ無理に押し込めない新しい画面・状態・操作・分岐・品質リスクを発見した場合は、ここへ `DISC001`, `DISC002`... を末尾追記する。D-seriesはlock後delta専用なのでDiscoveryには使わない。
+
+| ID | discovered_from | 対象 | 前提/再現 | 必要な検証 | status |
+|---|---|---|---|---|---|
+| none | — | 現時点で未登録 | — | — | — |
+
+Discoveryは発見した順ではなく安定した番号で追跡し、重複IDを作らない。重大security/data-loss/privacyや現在IDの完了を直接妨げるものは優先処理し、それ以外はBaseline順を壊さずbacklogとして残す。Baseline完了後にDISC-IDを番号順で消化する。
+
 ## Lock-after comprehensive-audit delta
 
 Baseline A001–A104のlocked order/definitionは不変。Route lock後の製品変更と今回明示追加された監査対象は、専用の docs/work-audit/state/AUDIT_DELTA_ROUTE.md を正式なD-series delta routeとして追跡する。
