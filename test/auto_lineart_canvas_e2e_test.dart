@@ -17,6 +17,7 @@ import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'helpers/first_use_tooltips.dart';
+import 'helpers/pick_filter_card.dart';
 import 'helpers/pump_real_async.dart';
 
 void _drawRough(Uint8List bytes, int width, int height) {
@@ -55,7 +56,7 @@ void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
   testWidgets(
-    'actual Canvas applies auto line art above source and Undo/Redo preserves order and pixels',
+    'actual Canvas applies auto line art directly beneath its source and Undo/Redo preserves order and pixels',
     (tester) async {
       tester.view.physicalSize = const Size(1080, 2280);
       tester.view.devicePixelRatio = 2.0;
@@ -135,7 +136,6 @@ void main() {
         rough,
       );
 
-      fs.selectFilter('Filter0023');
       fs.updateFilterParams(
         'Filter0023',
         autoLineartSmoothing: 5,
@@ -153,8 +153,10 @@ void main() {
       await tester.ensureVisible(filterMenuEntry);
       await pumpRealAsync(tester, const Duration(milliseconds: 300));
       await tester.tap(filterMenuEntry);
-      await pumpRealAsync(tester, const Duration(milliseconds: 900));
+      await pumpRealAsync(tester, const Duration(milliseconds: 300));
       expect(find.byType(FilterPanel), findsOneWidget);
+      await pickFilterCard(tester, 'Filter0023');
+      await pumpRealAsync(tester, const Duration(milliseconds: 900));
       expect(find.byType(AutoLineartControlOverlay), findsOneWidget);
 
       final apply = find.descendant(
@@ -190,8 +192,9 @@ void main() {
       expect(generatedBytes, isNotNull);
       final data = generatedBytes!.buffer.asUint8List();
       expect(
-        Iterable<int>.generate(data.length ~/ 4)
-            .any((n) => data[n * 4 + 3] > 0),
+        Iterable<int>.generate(
+          data.length ~/ 4,
+        ).any((n) => data[n * 4 + 3] > 0),
         isTrue,
       );
 
@@ -221,8 +224,9 @@ void main() {
       expect(redoneBytes, isNotNull);
       expect(redoneBytes!.buffer.asUint8List(), orderedEquals(data));
       expect(
-        Iterable<int>.generate(redoneBytes.lengthInBytes ~/ 4)
-            .any((n) => redoneBytes.getUint8(n * 4 + 3) > 0),
+        Iterable<int>.generate(
+          redoneBytes.lengthInBytes ~/ 4,
+        ).any((n) => redoneBytes.getUint8(n * 4 + 3) > 0),
         isTrue,
       );
     },

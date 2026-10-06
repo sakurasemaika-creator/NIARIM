@@ -15,7 +15,6 @@ import 'package:niarim/screens/canvas/canvas_screen.dart';
 import 'package:niarim/screens/canvas/widgets/canvas_area.dart';
 import 'package:niarim/screens/canvas/widgets/filter_panel.dart';
 import 'package:niarim/services/custom_automation_service.dart';
-import 'package:niarim/services/filter_service.dart';
 import 'package:niarim/services/project_service.dart';
 import 'package:niarim/services/theme_service.dart';
 import 'package:niarim/widgets/custom_automation_manager_sheet.dart';
@@ -24,6 +23,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import 'helpers/first_use_tooltips.dart';
 import 'helpers/load_app_fonts.dart';
+import 'helpers/pick_filter_card.dart';
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
@@ -74,11 +74,11 @@ void main() {
       await tester.pump(const Duration(milliseconds: 300));
       expect(automation.isRecording, isTrue);
 
-      final filterService = harness.canvasContext.read<FilterService>();
-      filterService.selectFilter('Filter0019');
       harness.showFilterPanel();
       await tester.pump(const Duration(milliseconds: 300));
       expect(find.byType(FilterPanel), findsOneWidget);
+      await pickFilterCard(tester, 'Filter0019');
+      await tester.pump(const Duration(milliseconds: 300));
 
       final beforeApply = harness.activeLayerPixels();
       await tester.tap(find.text(l10n.filterApplyButton));
@@ -128,7 +128,12 @@ void main() {
       await tester.pump(const Duration(milliseconds: 250));
       expect(find.text('visual-audit-automation'), findsOneWidget);
       await tester.tap(find.text('visual-audit-automation'));
-      await tester.pump(const Duration(milliseconds: 200));
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 300));
+      // Tapping an automation opens its menu; running it is the first entry.
+      await tester.tap(find.text(l10n.customAutomationRunAction));
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 300));
       expect(find.text(l10n.customAutomationRunConfirmTitle), findsOneWidget);
       await tester.tap(find.text(l10n.customAutomationYes));
       await harness.waitForPixelChange(
@@ -150,17 +155,26 @@ void main() {
     'three starter automations execute through real manager UI and produce visible Canvas output',
     (tester) async {
       final harness = await _ProductionHarness.create(tester, out);
-      final cases = <(String, String, bool)>[
-        ('線画色トレス', 'lineart_color_trace', true),
-        ('線画抽出', 'line_extraction', true),
-        ('線画作成', 'line_creation', true),
+      // (name, capture slug, creates a layer, where the output goes).
+      final cases = <(String, String, bool, _Placement)>[
+        // Merges the visible layers into a new layer on top.
+        ('線画色トレス', 'lineart_color_trace', true, _Placement.top),
+        // Adjusts, thresholds and keys out the current layer in place.
+        ('線画抽出（アナログ）', 'line_extraction', false, _Placement.inPlace),
+        // Generated line art goes directly beneath its source, like every
+        // layer a filter generates (outline, ink pool, auto line art).
+        ('線画作成（デジタル）', 'line_creation', true, _Placement.beneathSource),
       ];
 
       for (final entry in cases) {
         final name = entry.$1;
         final slug = entry.$2;
         final createsLayer = entry.$3;
+        final placement = entry.$4;
         await harness.createAndShowProject('preset-$slug', showCanvas: true);
+        // Auto line art traces pen strokes on a transparent layer; the
+        // shared seed is one opaque block with nothing stroke-like in it.
+        if (slug == 'line_creation') await harness.seedRoughStrokes();
         final beforePixels = harness.activeLayerPixels();
         final canvas = harness.canvasWidget;
         final beforeLayers = harness.projectService
@@ -175,7 +189,11 @@ void main() {
         expect(find.text(name), findsOneWidget);
         await harness.capture('preset_${slug}_01_manager');
         await tester.tap(find.text(name));
-        await tester.pump(const Duration(milliseconds: 180));
+        await tester.pump();
+        await tester.pump(const Duration(milliseconds: 300));
+        await tester.tap(find.text(harness.l10n.customAutomationRunAction));
+        await tester.pump();
+        await tester.pump(const Duration(milliseconds: 300));
         expect(
           find.text(harness.l10n.customAutomationRunConfirmTitle),
           findsOneWidget,
@@ -214,11 +232,24 @@ void main() {
             reason: '$name must create an output layer',
           );
           final generatedLayer = generated.first;
-          expect(
-            afterLayers.first.id,
-            generatedLayer.id,
-            reason: '$name output must be placed at the top of the layer stack',
-          );
+          if (placement == _Placement.top) {
+            expect(
+              afterLayers.first.id,
+              generatedLayer.id,
+              reason:
+                  '$name output must be placed at the top of the layer stack',
+            );
+          } else {
+            // Index 0 is the frontmost layer.
+            final sourceIndex = afterLayers.indexWhere(
+              (layer) => layer.id == canvas.currentLayerId,
+            );
+            expect(
+              afterLayers.indexOf(generatedLayer),
+              sourceIndex + 1,
+              reason: '$name output must sit directly beneath its source',
+            );
+          }
           final generatedPixels = harness.layerPixels(generatedLayer.id);
           expect(
             _nonTransparentPixels(generatedPixels),
@@ -226,6 +257,8 @@ void main() {
             reason: '$name output layer must contain visible pixels',
           );
         }
+        // Let the confirmation dialog finish fading out first.
+        await tester.pump(const Duration(milliseconds: 400));
         await harness.capture('preset_${slug}_02_after');
       }
       expect(tester.takeException(), isNull);
@@ -397,10 +430,61 @@ class _ProductionHarness {
     await tester.pump(const Duration(milliseconds: 100));
     final boundary =
         rootKey.currentContext!.findRenderObject()! as RenderRepaintBoundary;
-    final image = await boundary.toImage(pixelRatio: 1);
-    final bytes = await image.toByteData(format: ui.ImageByteFormat.png);
-    File('${out.path}/$name.png').writeAsBytesSync(bytes!.buffer.asUint8List());
-    image.dispose();
+    // toImage/toByteData complete on the engine's real clock, which
+    // FakeAsync never advances.
+    await tester.runAsync(() async {
+      final image = await boundary.toImage(pixelRatio: 1);
+      final bytes = await image.toByteData(format: ui.ImageByteFormat.png);
+      File(
+        '${out.path}/$name.png',
+      ).writeAsBytesSync(bytes!.buffer.asUint8List());
+      image.dispose();
+    });
+  }
+
+  /// Replaces the active layer with rough 8px pen strokes on transparency:
+  /// a square outline crossed by a diagonal.
+  Future<void> seedRoughStrokes() async {
+    final tm = projectService.tileManagerOf(projectId);
+    final key = projectService.tileKeyFor(
+      projectId,
+      _sceneId!,
+      _frame,
+      _layerId!,
+    );
+    final tile = tm.getOrCreateTile(key, 0, 0);
+    tile.fillRange(0, tile.length, 0);
+    bool onStroke(int x, int y) {
+      const lo = 60, hi = 200, half = 4;
+      final inBox =
+          x >= lo - half && x <= hi + half && y >= lo - half && y <= hi + half;
+      final onOutline =
+          inBox &&
+          ((x - lo).abs() <= half ||
+              (x - hi).abs() <= half ||
+              (y - lo).abs() <= half ||
+              (y - hi).abs() <= half);
+      final onDiagonal =
+          x >= lo && x <= hi && (x + y - (lo + hi)).abs() <= half;
+      return onOutline || onDiagonal;
+    }
+
+    for (var y = 0; y < 256; y++) {
+      for (var x = 0; x < 256; x++) {
+        if (!onStroke(x, y)) continue;
+        final i = (y * TileManager.tileSize + x) * 4;
+        tile[i] = 24;
+        tile[i + 1] = 24;
+        tile[i + 2] = 24;
+        tile[i + 3] = 255;
+      }
+    }
+    tm.invalidateTile(key, 0, 0);
+    await tester.runAsync(() async {
+      final image = await tm.compositeLayerToImage(key);
+      image.dispose();
+    });
+    await tester.pump();
   }
 
   Uint8List activeLayerPixels() => layerPixels(_layerId!);
@@ -590,6 +674,8 @@ class _ProductionHarness {
     );
   }
 }
+
+enum _Placement { top, beneathSource, inPlace }
 
 int _changedBytes(Uint8List before, Uint8List after) {
   expect(after.length, before.length);

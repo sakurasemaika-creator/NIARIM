@@ -15,6 +15,7 @@ import 'package:niarim/services/theme_service.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import 'helpers/pick_filter_card.dart';
 import 'helpers/pump_real_async.dart';
 
 void _rough(Uint8List data, int w, int h) {
@@ -169,13 +170,14 @@ void main() {
         ps.tileKeyFor(project.id, scene.id, 0, layerId),
         data,
       );
-      fs.selectFilter('Filter0023');
       fs.updateFilterParams(
         'Filter0023',
         autoLineartSmoothing: 5,
         autoLineartRoughWidth: 12,
       );
       show.notifyListeners();
+      await pumpRealAsync(tester, const Duration(milliseconds: 300));
+      await pickFilterCard(tester, 'Filter0023');
       await pumpRealAsync(tester, const Duration(milliseconds: 900));
       expect(find.byType(AutoLineartControlOverlay), findsOneWidget);
 
@@ -226,6 +228,9 @@ void main() {
       await tester.pump(const Duration(milliseconds: 100));
       expect(ps.layersOf(project.id, scene.id, 0), hasLength(1));
       show.value = true;
+      await pumpRealAsync(tester, const Duration(milliseconds: 300));
+      expect(fs.currentFilter, isNull, reason: 'reopening shows the list');
+      await pickFilterCard(tester, 'Filter0023');
       await pumpRealAsync(tester, const Duration(milliseconds: 900));
       final freshWide = graph();
       expect(

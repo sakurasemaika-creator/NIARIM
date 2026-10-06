@@ -15,6 +15,7 @@ import 'package:niarim/services/theme_service.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import 'helpers/pick_filter_card.dart';
 import 'helpers/pump_real_async.dart';
 
 Uint8List _rough(int w, int h) {
@@ -151,9 +152,10 @@ void main() {
           Uint8List.fromList(rough),
         );
       }
-      fs.selectFilter('Filter0023');
       fs.updateFilterParams('Filter0023', autoLineartSmoothing: 5);
       bulk.notifyListeners();
+      await pumpRealAsync(tester, const Duration(milliseconds: 300));
+      await pickFilterCard(tester, 'Filter0023');
       await pumpRealAsync(tester, const Duration(milliseconds: 900));
       expect(find.byType(AutoLineartControlOverlay), findsOneWidget);
 

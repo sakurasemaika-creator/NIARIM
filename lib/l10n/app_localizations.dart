@@ -11462,7 +11462,7 @@ abstract class AppLocalizations {
   /// No description provided for @tipsOfficialAutomationPresetsDesc.
   ///
   /// In ja, this message translates to:
-  /// **'「線画作成（デジタル）」は自動線画→墨溜まり、「線画抽出（アナログ）」は色調補正→二値化→明度で透過、「線画色トレス」は表示レイヤーの統合→ぼかしと複製・結合→色トレス補正、「オーロラホログラム」は質感変更を一手順で実行する公式プリセットです。再記録では記録に対応した操作を追加できます。確認画面では手順の並べ替え・削除ができます。元の設定へ戻せるよう、編集前に書き出しておくと安心です。'**
+  /// **'「線画作成（デジタル）」は自動線画→墨溜まり、「線画抽出（アナログ）」は色調補正→二値化→明度で透過、「線画色トレス」は表示レイヤーの統合→ぼかしと複製・結合→色トレス補正を実行する公式プリセットです。再記録では記録に対応した操作を追加できます。確認画面では手順の並べ替え・削除ができます。元の設定へ戻せるよう、編集前に書き出しておくと安心です。'**
   String get tipsOfficialAutomationPresetsDesc;
 
   /// No description provided for @tipsTexturePrismVhsTitle.

@@ -6451,7 +6451,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get tipsOfficialAutomationPresetsDesc =>
-      'The official presets are 「線画作成（デジタル）」 (Auto Line Art → Ink Pool), 「線画抽出（アナログ）」 (Color Adjust → Threshold → Brightness to Alpha), 「線画色トレス」 (merge visible layers → blur, duplicate, and merge → color-trace adjustment), and 「オーロラホログラム」 (a one-step texture filter). Re-recording appends supported actions. In the review screen, you can reorder or remove steps. Export it before editing if you want an easy way back to the original settings.';
+      'The official presets are 「線画作成（デジタル）」 (Auto Line Art → Ink Pool), 「線画抽出（アナログ）」 (Color Adjust → Threshold → Brightness to Alpha), and 「線画色トレス」 (merge visible layers → blur, duplicate, and merge → color-trace adjustment). Re-recording appends supported actions. In the review screen, you can reorder or remove steps. Export it before editing if you want an easy way back to the original settings.';
 
   @override
   String get tipsTexturePrismVhsTitle =>

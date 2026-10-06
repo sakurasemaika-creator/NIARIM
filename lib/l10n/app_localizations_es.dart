@@ -6560,7 +6560,7 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get tipsOfficialAutomationPresetsDesc =>
-      'Los ajustes oficiales son 「線画作成（デジタル）」 (líneas automáticas → acumulación de tinta), 「線画抽出（アナログ）」 (ajuste de color → umbral → brillo a alfa), 「線画色トレス」 (combinar capas visibles → desenfocar, duplicar y combinar → ajustar calco de color) y 「オーロラホログラム」 (filtro de textura en un paso). Al volver a grabar se añaden acciones compatibles. En la pantalla de revisión puedes reordenar o eliminar pasos. Expórtalo antes de editarlo si quieres conservar una forma sencilla de volver a la configuración original.';
+      'Los ajustes oficiales son 「線画作成（デジタル）」 (líneas automáticas → acumulación de tinta), 「線画抽出（アナログ）」 (ajuste de color → umbral → brillo a alfa) y 「線画色トレス」 (combinar capas visibles → desenfocar, duplicar y combinar → ajustar calco de color). Al volver a grabar se añaden acciones compatibles. En la pantalla de revisión puedes reordenar o eliminar pasos. Expórtalo antes de editarlo si quieres conservar una forma sencilla de volver a la configuración original.';
 
   @override
   String get tipsTexturePrismVhsTitle =>

@@ -28,6 +28,7 @@ import 'package:niarim/screens/community/widgets/community_shorts_viewer.dart';
 import 'package:niarim/screens/community/widgets/community_work_card.dart';
 import 'package:niarim/services/community_service.dart';
 import 'package:niarim/services/performance_service.dart';
+import 'package:niarim/services/premium_service.dart';
 import 'package:niarim/services/project_service.dart';
 import 'package:niarim/services/save_tree_service.dart';
 import 'package:niarim/services/settings_service.dart';
@@ -154,6 +155,20 @@ void main() {
     addTearDown(tester.view.resetDevicePixelRatio);
   }
 
+  /// 横長広告の専用領域は無料会員の画面にだけ出る（プレミアム会員と、
+  /// 全員へプレミアム機能を開放しているリリース記念キャンペーン中は出ない）。
+  void expectAdSlotFollowsPremium(WidgetTester tester, String reason) {
+    final isPremium = tester
+        .element(find.byType(Scaffold).first)
+        .read<PremiumService>()
+        .isPremium;
+    expect(
+      find.byKey(const Key('persistent-horizontal-ad-mock')),
+      isPremium ? findsNothing : findsWidgets,
+      reason: reason,
+    );
+  }
+
   /// アプリを起動し、起動画面の「作品をつくる」ボタンでホーム画面へ
   /// 遷移した上で、初回起動時の案内ダイアログが出ていれば閉じる。
   /// 以降の各テストケースの共通の出発点。
@@ -165,11 +180,7 @@ void main() {
     );
     await tester.pump(const Duration(milliseconds: 500));
     expect(tester.takeException(), isNull, reason: '起動画面の描画で例外');
-    expect(
-      find.byKey(const Key('persistent-horizontal-ad-mock')),
-      findsWidgets,
-      reason: '起動画面の最上部に横長広告モックが必要',
-    );
+    expectAdSlotFollowsPremium(tester, '起動画面の最上部の横長広告モック');
 
     final createButtonFinder = find.byIcon(Icons.brush_outlined);
     expect(createButtonFinder, findsOneWidget);
@@ -178,11 +189,7 @@ void main() {
     await tester.pump(const Duration(milliseconds: 300));
     expect(tester.takeException(), isNull, reason: 'ホーム画面への遷移で例外');
     expect(find.byType(Scaffold), findsWidgets);
-    expect(
-      find.byKey(const Key('persistent-horizontal-ad-mock')),
-      findsWidgets,
-      reason: 'ホーム画面の最上部に横長広告モックが必要',
-    );
+    expectAdSlotFollowsPremium(tester, 'ホーム画面の最上部の横長広告モック');
 
     final firstLaunchDialogButton = find.text('はじめる');
     if (firstLaunchDialogButton.evaluate().isNotEmpty) {
@@ -533,11 +540,7 @@ void main() {
       await tester.pump(settleDelay);
       expect(tester.takeException(), isNull, reason: '$route への遷移で例外');
       expect(find.byType(Scaffold), findsWidgets);
-      expect(
-        find.byKey(const Key('persistent-horizontal-ad-mock')),
-        findsWidgets,
-        reason: '$route の最上部に横長広告モックが必要',
-      );
+      expectAdSlotFollowsPremium(tester, '$route の最上部の横長広告モック');
 
       await probeAllControls(tester);
 
@@ -2343,9 +2346,9 @@ void main() {
     // 捕捉される想定（アプリ側の設計）。
     final exportsDir = await tester.runAsync(ExportEngine.exportsDir);
     await tester.runAsync(
-      () =>
-          File('${exportsDir!.path}/smoke_test_dummy.mp4')
-              .writeAsBytes(const [0]),
+      () => File(
+        '${exportsDir!.path}/smoke_test_dummy.mp4',
+      ).writeAsBytes(const [0]),
     );
     // ExportEngine.listExportedFilesは結果を静的にキャッシュしており、
     // 起動画面のプリフェッチ（他のテストケースも含め、アプリを起動する

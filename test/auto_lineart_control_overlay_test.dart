@@ -242,7 +242,9 @@ void main() {
       },
     );
   }
-  testWidgets('dragging a control point never opens the delete dialog', (tester) async {
+  testWidgets('dragging a control point never opens the delete dialog', (
+    tester,
+  ) async {
     final image = await _makeImage(100, 100);
     const graph = AutoLineartGraph(
       width: 100,
@@ -283,7 +285,9 @@ void main() {
     image.dispose();
   });
 
-  testWidgets('tap on vector segment adds a control point', (tester) async {
+  testWidgets('in add mode a tap on a vector segment adds a control point', (
+    tester,
+  ) async {
     final image = await _makeImage(100, 100);
     AutoLineartGraph? changed;
     const graph = AutoLineartGraph(
@@ -307,6 +311,7 @@ void main() {
             child: AutoLineartControlOverlay(
               image: image,
               graph: graph,
+              mode: AutoLineartControlMode.add,
               onPointMoved: (_, _, _) {},
               onGraphChanged: (value) => changed = value,
             ),

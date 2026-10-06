@@ -13,6 +13,7 @@ import 'package:niarim/screens/canvas/canvas_screen.dart';
 import 'package:niarim/screens/canvas/widgets/canvas_area.dart';
 import 'package:niarim/screens/canvas/widgets/canvas_icon_button.dart';
 import 'package:niarim/screens/canvas/widgets/filter_panel.dart';
+import 'package:niarim/services/custom_automation_service.dart';
 import 'package:niarim/services/project_service.dart';
 import 'package:niarim/services/theme_service.dart';
 import 'package:provider/provider.dart';
@@ -20,6 +21,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import 'helpers/first_use_tooltips.dart';
 import 'helpers/load_app_fonts.dart';
+import 'helpers/pick_filter_card.dart';
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
@@ -139,12 +141,16 @@ void main() {
         final boundary =
             rootKey.currentContext!.findRenderObject()!
                 as RenderRepaintBoundary;
-        final image = await boundary.toImage(pixelRatio: 1);
-        final data = await image.toByteData(format: ui.ImageByteFormat.png);
-        File(
-          '${out.path}/$name.png',
-        ).writeAsBytesSync(data!.buffer.asUint8List());
-        image.dispose();
+        // toImage/toByteData complete on the engine's real clock, which
+        // FakeAsync never advances.
+        await tester.runAsync(() async {
+          final image = await boundary.toImage(pixelRatio: 1);
+          final data = await image.toByteData(format: ui.ImageByteFormat.png);
+          File(
+            '${out.path}/$name.png',
+          ).writeAsBytesSync(data!.buffer.asUint8List());
+          image.dispose();
+        });
         stage('capture:$name:done');
       }
 
@@ -214,6 +220,18 @@ void main() {
         );
       }
 
+      /// Applying a filter alternates real image work with frames, so both
+      /// clocks have to advance until the layer changes.
+      Future<void> waitForPixelChange(Uint8List before) async {
+        for (var attempt = 0; attempt < 300; attempt++) {
+          if (changedBytes(before, activeLayerPixels()) > 100) return;
+          await tester.runAsync(
+            () => Future<void>.delayed(const Duration(milliseconds: 20)),
+          );
+          await tester.pump();
+        }
+      }
+
       Future<void> openCanvasSettings() async {
         stage('settings-helper:find');
         final settingsButton = find.byWidgetPredicate(
@@ -224,6 +242,9 @@ void main() {
         expect(settingsButton, findsOneWidget);
         stage('settings-helper:tap');
         await tester.tap(settingsButton);
+        // The first frame starts the sheet's opening animation; the second
+        // runs it to the end so later taps land on settled entries.
+        await tester.pump();
         await tester.pump(const Duration(milliseconds: 350));
         stage('settings-helper:opened');
       }
@@ -267,6 +288,7 @@ void main() {
       await tester.tap(filterEntry.last);
       await tester.pump(const Duration(milliseconds: 300));
       expect(find.byType(FilterPanel), findsOneWidget);
+      await pickFilterCard(tester, 'Filter0001');
       await letProductionAsyncWorkFinish();
       await capture('04_filter_panel_open_during_recording');
 
@@ -275,7 +297,7 @@ void main() {
       expect(apply, findsOneWidget);
       stage('filter:apply-through-ui');
       await tester.tap(apply);
-      await letProductionAsyncWorkFinish();
+      await waitForPixelChange(beforeRecordedAction);
       final afterRecordedAction = activeLayerPixels();
       expect(
         changedBytes(beforeRecordedAction, afterRecordedAction),
@@ -285,12 +307,7 @@ void main() {
       await prewarmActiveLayer();
       await capture('05_real_filter_applied_and_recorded');
 
-      final closeFilter = find.descendant(
-        of: find.byType(FilterPanel),
-        matching: find.byIcon(Icons.close),
-      );
-      expect(closeFilter, findsOneWidget);
-      await tester.tap(closeFilter);
+      // Applying closes the panel by itself.
       await tester.pump(const Duration(milliseconds: 250));
       expect(find.byType(FilterPanel), findsNothing);
 
@@ -303,12 +320,18 @@ void main() {
       await capture('06_recording_stopped_draft');
 
       expect(find.byIcon(Icons.delete_outline), findsWidgets);
+      final draft = tester
+          .element(find.byType(CanvasScreen))
+          .read<CustomAutomationService>()
+          .draft;
       expect(
-        find.text('canvas.filterApply'),
-        findsOneWidget,
+        draft?.steps.map((step) => step.command),
+        ['canvas.filterApply'],
         reason:
             'Draft must contain the replayable filter operation recorded by FilterPanel',
       );
+      // The draft sheet lists the step by its label (the filter's name).
+      expect(find.text(draft!.steps.single.label), findsOneWidget);
       await capture('07_draft_edit');
 
       final save = find.text(l10n.commonSave);
@@ -330,13 +353,20 @@ void main() {
       final savedItem = find.text(automationName);
       expect(savedItem, findsOneWidget);
       await tester.tap(savedItem);
-      await tester.pump(const Duration(milliseconds: 250));
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 300));
+      // Tapping an automation opens its menu; running it is the first entry.
+      final run = find.text(l10n.customAutomationRunAction);
+      expect(run, findsOneWidget);
+      await tester.tap(run);
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 300));
       expect(find.text(l10n.customAutomationRunConfirmTitle), findsOneWidget);
       final yes = find.text(l10n.customAutomationYes);
       expect(yes, findsOneWidget);
       stage('replay:confirm');
       await tester.tap(yes);
-      await letProductionAsyncWorkFinish();
+      await waitForPixelChange(beforeReplay);
       final afterReplay = activeLayerPixels();
       expect(
         changedBytes(beforeReplay, afterReplay),

@@ -6570,7 +6570,7 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get tipsOfficialAutomationPresetsDesc =>
-      'Les préréglages officiels sont 「線画作成（デジタル）」 (trait automatique → accumulation d’encre), 「線画抽出（アナログ）」 (réglage des couleurs → seuil → luminosité vers alpha), 「線画色トレス」 (fusion des calques visibles → flou, duplication et fusion → réglage du calque de couleur) et 「オーロラホログラム」 (filtre de texture en une étape). Le réenregistrement ajoute des actions prises en charge. L’écran de révision permet de réordonner ou de supprimer des étapes. Exportez-le avant modification si vous souhaitez pouvoir retrouver facilement les réglages d’origine.';
+      'Les préréglages officiels sont 「線画作成（デジタル）」 (trait automatique → accumulation d’encre), 「線画抽出（アナログ）」 (réglage des couleurs → seuil → luminosité vers alpha) et 「線画色トレス」 (fusion des calques visibles → flou, duplication et fusion → réglage du calque de couleur). Le réenregistrement ajoute des actions prises en charge. L’écran de révision permet de réordonner ou de supprimer des étapes. Exportez-le avant modification si vous souhaitez pouvoir retrouver facilement les réglages d’origine.';
 
   @override
   String get tipsTexturePrismVhsTitle =>
