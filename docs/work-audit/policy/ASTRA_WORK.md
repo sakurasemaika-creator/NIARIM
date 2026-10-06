@@ -131,3 +131,8 @@ State更新commitには `[audit-state]`、policy/guard変更にはユーザー�
 7. 不具合を見つけた場合は問題の列挙だけで止めず、修正可能なものはroot cause→fix→test→実画面→regressionまで行う。外部依存・実機不足のみblockedとし、未確認をblockedへ隠さない。
 8. Visual closureは最新HEADで再生成する。旧PDF・旧CI・旧sessionは補助証拠に留め、今回の最終closureを代替しない。画像には機能名、BEFORE/SETTINGS/AFTER、preset/mode、主要設定値を焼き込み、PDF全ページrenderと実画像目視を行う。
 9. 完了宣言前にD031のcoverage gateを通し、Baseline/DISC/Delta全ての未完了、advisor-pending、未登録Discovery、必須証拠のqueued/runningを0へ収束させる。できないものは完了と宣言せず、blocking reasonをEvidenceへ残す。
+
+
+### Full-audit preflight validator
+
+全面監査開始時は `docs/work-audit/state/verify_full_audit_state.py` を最初に実行し、Baseline lock integrity、Progress cursors、Discovery section、Delta status tracker、App/Web mirrorを一括確認する。個別の `verify_audit_route.py` / `verify_audit_delta.py` は詳細診断として併用してよい。
