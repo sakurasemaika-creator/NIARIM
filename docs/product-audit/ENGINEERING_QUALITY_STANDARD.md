@@ -39,3 +39,6 @@ resource lifecycle、listener/controller/stream/timer/worker/image/buffer/cache�
 このStandard追加を理由にlock済みBaseline Routeを再bootstrapしない。Astra全面監査Workは、現在以降の該当Baseline IDでこの基準を適用する。既に完了済みBaselineに対して、この新基準の実証的検証が必要だが証拠がない領域は、既存doneを推測で書き換えたり通常チャットの成果を流用したりせず、PolicyのDiscovery TODOとして追加して監査する。
 
 全面監査completeには、このStandardの各領域について未説明の未確認事項がなく、発見した問題の必要な修正・検証・regressionが完了していることを要求する。
+
+## 最新全面監査との統合
+このStandardは最新の全面監査実行標準と併用する。UIのtheme不可視化、UI操作性/IA、PC/SP、responsive boundary、実操作、save/load、Visual output、preset、性能、source hygieneも、該当する技術品質リスクとして扱う。UI→model→serialization→service→engine→render→reloadの境界とfailure lifecycle、race/concurrency、resource lifecycle、データ整合性を確認し、改善後は同じ実操作と関連regressionを再実行する。
