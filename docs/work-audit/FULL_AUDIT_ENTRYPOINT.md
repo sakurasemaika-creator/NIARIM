@@ -20,3 +20,5 @@
 ## 重要
 
 過去会話、旧PDF、旧CI、旧checkpoint、Stateに書かれた古いHEADは現在製品状態の代用にしない。現在のdev_branchを常に一次事実として扱う。
+
+最終Deltaには、全固有操作の実操作、全プリセット、theme/設定/save schema mutation、実行時間・軽量化、source hygieneまで含む。
