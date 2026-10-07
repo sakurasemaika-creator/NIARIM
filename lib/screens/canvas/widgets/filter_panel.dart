@@ -128,9 +128,73 @@ class _FilterPanelState extends State<FilterPanel> {
 
   void _editPointerUp(int pointer) {
     if (_editPointers.remove(pointer) && _editPointers.isEmpty) {
+      _recordAutoLineartHandEdit();
       _editGroupService?.endFilterEditGroup();
       _editGroupService = null;
     }
+  }
+
+  // Auto line art's control points as they were before the touch (or the
+  // confirmed delete) now editing them by hand; null when none is pending.
+  ({AutoLineartGraph? graph, bool manual})? _autoLineartBeforeHandEdit;
+
+  void _moveAutoLineartPoint(
+    int pathIndex,
+    int pointIndex,
+    AutoLineartPoint point,
+  ) {
+    _autoLineartBeforeHandEdit ??= (
+      graph: _autoLineartPreviewGraph,
+      manual: _autoLineartManualEdited,
+    );
+    _autoLineartPreviewGraph = AutoLineartEngine.moveControlPoint(
+      _autoLineartPreviewGraph!,
+      pathIndex: pathIndex,
+      pointIndex: pointIndex,
+      point: point,
+    );
+    _autoLineartManualEdited = true;
+    _scheduleAutoLineartPreviewUpdate();
+  }
+
+  void _replaceAutoLineartGraph(AutoLineartGraph graph) {
+    _autoLineartBeforeHandEdit ??= (
+      graph: _autoLineartPreviewGraph,
+      manual: _autoLineartManualEdited,
+    );
+    _autoLineartPreviewGraph = graph;
+    _autoLineartManualEdited = true;
+    _scheduleAutoLineartPreviewUpdate();
+    // A delete confirmed in a dialog comes after the touch has ended.
+    if (_editPointers.isEmpty) _recordAutoLineartHandEdit();
+  }
+
+  /// Puts the control-point edit just finished into the filter's Undo
+  /// history, in order with the settings' own steps: one drag, one tap or
+  /// one confirmed delete is one step.
+  void _recordAutoLineartHandEdit() {
+    final before = _autoLineartBeforeHandEdit;
+    _autoLineartBeforeHandEdit = null;
+    if (before == null || identical(before.graph, _autoLineartPreviewGraph)) {
+      return;
+    }
+    final after = (
+      graph: _autoLineartPreviewGraph,
+      manual: _autoLineartManualEdited,
+    );
+    void restore(({AutoLineartGraph? graph, bool manual}) state) {
+      if (!mounted) return;
+      setState(() {
+        _autoLineartPreviewGraph = state.graph;
+        _autoLineartManualEdited = state.manual;
+      });
+      _scheduleAutoLineartPreviewUpdate();
+    }
+
+    context.read<FilterService>().recordFilterEdit(
+      undo: () => restore(before),
+      redo: () => restore(after),
+    );
   }
 
   Future<Uint8List?> _downscaleToBytes(
@@ -624,26 +688,10 @@ class _FilterPanelState extends State<FilterPanel> {
                                                   graph:
                                                       _autoLineartPreviewGraph!,
                                                   mode: _autoLineartControlMode,
-                                                  onPointMoved: (pathIndex, pointIndex, point) {
-                                                    _autoLineartPreviewGraph =
-                                                        AutoLineartEngine.moveControlPoint(
-                                                          _autoLineartPreviewGraph!,
-                                                          pathIndex: pathIndex,
-                                                          pointIndex:
-                                                              pointIndex,
-                                                          point: point,
-                                                        );
-                                                    _autoLineartManualEdited =
-                                                        true;
-                                                    _scheduleAutoLineartPreviewUpdate();
-                                                  },
-                                                  onGraphChanged: (graph) {
-                                                    _autoLineartPreviewGraph =
-                                                        graph;
-                                                    _autoLineartManualEdited =
-                                                        true;
-                                                    _scheduleAutoLineartPreviewUpdate();
-                                                  },
+                                                  onPointMoved:
+                                                      _moveAutoLineartPoint,
+                                                  onGraphChanged:
+                                                      _replaceAutoLineartGraph,
                                                 )
                                               : RawImage(
                                                   image: _previewImage,

@@ -4,6 +4,7 @@ import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
 
 import '../../../engine/auto_lineart_engine.dart';
+import '../../../l10n/app_localizations.dart';
 import '../../../widgets/grab_pan_gesture_recognizer.dart';
 
 enum AutoLineartControlMode { move, add, delete }
@@ -176,20 +177,23 @@ class _AutoLineartControlOverlayState extends State<AutoLineartControlOverlay> {
   Future<void> _confirmDelete((int, int) active) async {
     final confirmed = await showDialog<bool>(
       context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('制御点を削除'),
-        content: const Text('この制御点を削除しますか？'),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(false),
-            child: const Text('キャンセル'),
-          ),
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(true),
-            child: const Text('削除'),
-          ),
-        ],
-      ),
+      builder: (context) {
+        final l10n = AppLocalizations.of(context)!;
+        return AlertDialog(
+          title: Text(l10n.filterAutoLineartDeletePointTooltip),
+          content: Text(l10n.filterAutoLineartDeletePointConfirm),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(false),
+              child: Text(l10n.commonCancel),
+            ),
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(true),
+              child: Text(l10n.commonDelete),
+            ),
+          ],
+        );
+      },
     );
     if (!mounted || confirmed != true) return;
     _publishGraph(_withPointDeleted(active.$1, active.$2));

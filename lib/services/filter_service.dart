@@ -20,8 +20,8 @@ class FilterService extends ChangeNotifier {
   String? _currentFilterId;
   String _searchQuery = '';
   bool _favoritesOnly = false;
-  final List<FilterDef> _filterEditUndo = [];
-  final List<FilterDef> _filterEditRedo = [];
+  final List<_FilterEditStep> _filterEditUndo = [];
+  final List<_FilterEditStep> _filterEditRedo = [];
   int _editGroupDepth = 0;
   bool _editGroupRecorded = false;
 
@@ -475,9 +475,7 @@ class FilterService extends ChangeNotifier {
     // Inside an edit group (one drag) only the first change is recorded, so
     // Undo takes the whole drag back in one step.
     if (_editGroupDepth == 0 || !_editGroupRecorded) {
-      _filterEditUndo.add(before);
-      if (_filterEditUndo.length > 100) _filterEditUndo.removeAt(0);
-      _filterEditRedo.clear();
+      _pushUndo(_FilterEditStep.settings(before));
       _editGroupRecorded = _editGroupDepth > 0;
     }
     _filters[idx] = after;
@@ -533,15 +531,40 @@ class FilterService extends ChangeNotifier {
     if (_editGroupDepth > 0) _editGroupDepth--;
   }
 
+  void _pushUndo(_FilterEditStep step) {
+    _filterEditUndo.add(step);
+    if (_filterEditUndo.length > 100) _filterEditUndo.removeAt(0);
+    _filterEditRedo.clear();
+  }
+
+  /// Adds an edit kept outside the filter's settings (auto line art's
+  /// hand-moved control points) to the filter's Undo history, in order with
+  /// the settings' own steps: Undo calls [undo], Redo calls [redo].
+  void recordFilterEdit({
+    required VoidCallback undo,
+    required VoidCallback redo,
+  }) {
+    if (_currentFilterId == null) return;
+    _pushUndo(_FilterEditStep.external(undo, redo));
+    notifyListeners();
+  }
+
   void undoFilterEdit() {
     final id = _currentFilterId;
     if (id == null || _filterEditUndo.isEmpty) return;
     final idx = _filters.indexWhere((f) => f.id == id);
     if (idx < 0) return;
-    _filterEditRedo.add(_filters[idx]);
-    _filters[idx] = _filterEditUndo.removeLast();
+    final step = _filterEditUndo.removeLast();
+    final settings = step.settings;
+    if (settings == null) {
+      step.undo!();
+      _filterEditRedo.add(step);
+    } else {
+      _filterEditRedo.add(_FilterEditStep.settings(_filters[idx]));
+      _filters[idx] = settings;
+      _persist();
+    }
     notifyListeners();
-    _persist();
   }
 
   void redoFilterEdit() {
@@ -549,10 +572,17 @@ class FilterService extends ChangeNotifier {
     if (id == null || _filterEditRedo.isEmpty) return;
     final idx = _filters.indexWhere((f) => f.id == id);
     if (idx < 0) return;
-    _filterEditUndo.add(_filters[idx]);
-    _filters[idx] = _filterEditRedo.removeLast();
+    final step = _filterEditRedo.removeLast();
+    final settings = step.settings;
+    if (settings == null) {
+      step.redo!();
+      _filterEditUndo.add(step);
+    } else {
+      _filterEditUndo.add(_FilterEditStep.settings(_filters[idx]));
+      _filters[idx] = settings;
+      _persist();
+    }
     notifyListeners();
-    _persist();
   }
 
   void toggleFavorite(String id) {
@@ -623,4 +653,20 @@ class FilterService extends ChangeNotifier {
     notifyListeners();
     _persist();
   }
+}
+
+/// One step of the filter editor's Undo history: either the filter's
+/// settings as they were, or an edit kept outside them with its own way
+/// back and forth.
+class _FilterEditStep {
+  const _FilterEditStep.settings(FilterDef this.settings)
+    : undo = null,
+      redo = null;
+
+  const _FilterEditStep.external(VoidCallback this.undo, VoidCallback this.redo)
+    : settings = null;
+
+  final FilterDef? settings;
+  final VoidCallback? undo;
+  final VoidCallback? redo;
 }

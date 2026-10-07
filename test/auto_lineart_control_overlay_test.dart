@@ -3,6 +3,7 @@ import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:niarim/engine/auto_lineart_engine.dart';
+import 'package:niarim/l10n/app_localizations.dart';
 import 'package:niarim/screens/canvas/widgets/auto_lineart_control_overlay.dart';
 
 Future<ui.Image> _makeImage(int width, int height) async {
@@ -354,8 +355,7 @@ void main() {
     final rect = tester.getRect(find.byType(AutoLineartControlOverlay));
     await tester.dragFrom(rect.center, const Offset(28, -24));
     await tester.pumpAndSettle();
-    expect(find.text('制御点を削除'), findsNothing);
-    expect(find.text('キャンセル'), findsNothing);
+    expect(find.byType(AlertDialog), findsNothing);
     image.dispose();
   });
 
@@ -424,6 +424,9 @@ void main() {
       );
       await tester.pumpWidget(
         MaterialApp(
+          locale: const Locale('ja'),
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
           home: Center(
             child: SizedBox(
               width: 200,
@@ -441,16 +444,18 @@ void main() {
       final rect = tester.getRect(find.byType(AutoLineartControlOverlay));
       await tester.tapAt(rect.center);
       await tester.pumpAndSettle();
-      expect(find.text('制御点を削除'), findsOneWidget);
-      expect(find.text('キャンセル'), findsOneWidget);
-      expect(find.text('削除'), findsOneWidget);
-      await tester.tap(find.text('キャンセル'));
+      // In the app's language.
+      final ja = lookupAppLocalizations(const Locale('ja'));
+      expect(find.text(ja.filterAutoLineartDeletePointTooltip), findsOneWidget);
+      expect(find.text(ja.filterAutoLineartDeletePointConfirm), findsOneWidget);
+      expect(find.text(ja.commonDelete), findsOneWidget);
+      await tester.tap(find.text(ja.commonCancel));
       await tester.pumpAndSettle();
       expect(changed, isNull);
 
       await tester.tapAt(rect.center);
       await tester.pumpAndSettle();
-      await tester.tap(find.text('削除'));
+      await tester.tap(find.text(ja.commonDelete));
       await tester.pumpAndSettle();
       expect(changed, isNotNull);
       expect(changed!.paths.single.points, hasLength(2));
