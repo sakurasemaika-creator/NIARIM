@@ -211,6 +211,7 @@ class LayerCompositor {
     String Function(Layer layer) keyOf,
     int width,
     int height, {
+    bool Function(Layer layer, int index)? shouldRender,
     LayerKeyframe? Function(Layer layer)? keyframeOf,
     LayerKeyframe? Function(Layer layer)? groupKeyframeOf,
   }) async {
@@ -220,6 +221,7 @@ class LayerCompositor {
       final layer = layers[i];
       if (!layer.isVisible) continue;
       if (!pixelLayerTypes.contains(layer.type)) continue;
+      if (shouldRender != null && !shouldRender(layer, i)) continue;
       await _drawLayer(
         canvas,
         tileManager,

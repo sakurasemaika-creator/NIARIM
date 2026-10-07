@@ -89,6 +89,34 @@ void main() {
     return data!.buffer.asUint8List();
   }
 
+  /// A green layer painted beneath the source (the line art), as the
+  /// colour trace samples the colours under the lines.
+  Future<String> addFillBelow() async {
+    final fill = service.addLayer(
+      projectId: projectId,
+      sceneId: sceneId,
+      frameIndex: 0,
+      type: LayerType.normal,
+      name: 'fill',
+      insertIndex:
+          service
+              .layersOf(projectId, sceneId, 0)
+              .indexWhere((l) => l.id == sourceId) +
+          1,
+    );
+    final green = Uint8List(32 * 32 * 4);
+    for (var i = 0; i < green.length; i += 4) {
+      green.setAll(i, const [40, 160, 90, 255]);
+    }
+    service
+        .tileManagerOf(projectId)
+        .replaceLayerPixels(
+          service.tileKeyFor(projectId, sceneId, 0, fill.id),
+          green,
+        );
+    return fill.id;
+  }
+
   Future<String?> execute(CustomAutomation item) =>
       CustomAutomationExecutor.executeCanvas(
         automation: item,
@@ -103,8 +131,9 @@ void main() {
       );
 
   test(
-    'color trace completes its layer recipe while preserving source pixels',
+    'color trace recolours the line art with the colours beneath it',
     () async {
+      final fill = await addFillBelow();
       final before = await pixels(sourceId);
       final result = await execute(
         CustomAutomationBuiltinPresets.all().singleWhere(
@@ -112,17 +141,27 @@ void main() {
         ),
       );
       expect(result, isNot(sourceId));
-      expect(service.layersOf(projectId, sceneId, 0), hasLength(2));
+      // Directly above the line art, clipped to it.
+      final layers = service.layersOf(projectId, sceneId, 0);
+      expect(layers.map((l) => l.id), [result, sourceId, fill]);
+      expect(layers.first.hasClipping, isTrue);
       expect(await pixels(sourceId), before);
       final output = await pixels(result!);
-      expect(output, isNot(before));
       expect(output.where((byte) => byte != 0), isNotEmpty);
+      // It takes the fill's green, deepened, not the line's own orange.
+      const centre = (16 * 32 + 16) * 4;
+      expect(output[centre + 3], greaterThan(0));
+      expect(output[centre + 1], greaterThan(output[centre]));
+      expect(output[centre + 1], greaterThan(output[centre + 2]));
+      final straightGreen = output[centre + 1] * 255 / output[centre + 3];
+      expect(straightGreen, lessThan(160), reason: 'darker than the fill');
     },
   );
 
   test(
     'color trace Undo removes its output without empty history entries and Redo preserves pixels',
     () async {
+      final fill = await addFillBelow();
       final undo = UndoManager();
       service.setUndoManager(undo);
       addTearDown(undo.dispose);
@@ -146,7 +185,7 @@ void main() {
         undo.undo();
         expect(
           service.layersOf(projectId, sceneId, 0).map((layer) => layer.id),
-          [earlier.id, sourceId],
+          [earlier.id, sourceId, fill],
           reason:
               'One Undo must remove the recipe output, not a merged-away duplicate',
         );
@@ -155,7 +194,12 @@ void main() {
         undo.redo();
         expect(
           service.layersOf(projectId, sceneId, 0).map((layer) => layer.id),
-          [result, earlier.id, sourceId],
+          [earlier.id, result, sourceId, fill],
+        );
+        expect(
+          service.layersOf(projectId, sceneId, 0)[1].hasClipping,
+          isTrue,
+          reason: 'still clipped after Redo',
         );
         expect(await pixels(result), output);
         expect(undo.redoCount, 0);
@@ -165,6 +209,7 @@ void main() {
       undo.undo();
       expect(service.layersOf(projectId, sceneId, 0).map((layer) => layer.id), [
         sourceId,
+        fill,
       ], reason: 'The edit preceding the recipe must remain undoable');
     },
   );

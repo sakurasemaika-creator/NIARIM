@@ -4,7 +4,12 @@ import 'dart:typed_data';
 import 'premultiplied.dart';
 
 /// Pixel-wise HSL adjustment used by the official line-art color-trace
-/// automation. Defaults intentionally match Autofill's trace-adjust values.
+/// automation: each line takes a deeper tone of the colour beside it. The
+/// hue turns by [hueShift] degrees; saturation and lightness move by a
+/// share of the way they can go ([lightnessShift] −50 makes a colour half
+/// as light, [saturationShift] 60 takes it 60 % of the way to full
+/// saturation), so every colour keeps its own character. Subtracting a
+/// fixed amount instead turned most colours black.
 Uint8List applyColorTraceAdjust(
   Uint8List src, {
   double hueShift = -10,
@@ -24,14 +29,20 @@ Uint8List applyColorTraceAdjust(
     );
     var h = (rgb.$1 + hueShift) % 360.0;
     if (h < 0) h += 360.0;
-    final s = (rgb.$2 + saturationShift / 100.0).clamp(0.0, 1.0);
-    final l = (rgb.$3 + lightnessShift / 100.0).clamp(0.0, 1.0);
+    final s = _towards(rgb.$2, saturationShift / 100.0);
+    final l = _towards(rgb.$3, lightnessShift / 100.0);
     final adjusted = _hslToRgb(h, s, l);
     out[i] = premultipliedChannel(adjusted.$1, a);
     out[i + 1] = premultipliedChannel(adjusted.$2, a);
     out[i + 2] = premultipliedChannel(adjusted.$3, a);
   }
   return out;
+}
+
+/// [v] (0..1) moved [share] of the way to 1 (positive) or to 0 (negative).
+double _towards(double v, double share) {
+  final t = share.clamp(-1.0, 1.0);
+  return (t >= 0 ? v + (1 - v) * t : v * (1 + t)).clamp(0.0, 1.0);
 }
 
 (double, double, double) _rgbToHsl(int r8, int g8, int b8) {

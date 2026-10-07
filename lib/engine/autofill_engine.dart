@@ -500,10 +500,13 @@ class AutofillEngine {
     final useTone = part.useTone && toneTexture != null;
 
     final visited = List<bool>.filled(width * height, false);
+    // How opaque a line pixel must be to stop the fill (the part's gap
+    // setting).
+    final lineLimit = part.lineAlphaLimit;
 
     bool isLineart(int x, int y) {
       final idx = (y * width + x) * 4;
-      return lineartData[idx + 3] > 128;
+      return lineartData[idx + 3] > lineLimit;
     }
 
     void fill(int startX, int startY) {

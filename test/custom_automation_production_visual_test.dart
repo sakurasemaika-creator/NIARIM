@@ -163,8 +163,9 @@ void main() {
       final harness = await _ProductionHarness.create(tester, out);
       // (name, capture slug, creates a layer, where the output goes).
       final cases = <(String, String, bool, _Placement)>[
-        // Merges the visible layers into a new layer on top.
-        ('線画色トレス', 'lineart_color_trace', true, _Placement.top),
+        // Run on the line art: the colours painted beneath it, on a layer
+        // clipped directly above it.
+        ('線画色トレス', 'lineart_color_trace', true, _Placement.aboveSource),
         // Adjusts, thresholds and keys out the current layer in place.
         ('線画抽出（アナログ）', 'line_extraction', false, _Placement.inPlace),
         // Generated line art goes directly above its source, so the clean
@@ -181,6 +182,11 @@ void main() {
         // Auto line art traces pen strokes on a transparent layer; the
         // shared seed is one opaque block with nothing stroke-like in it.
         if (slug == 'line_creation') await harness.seedRoughStrokes();
+        // Colour trace runs on line art over the colours it takes.
+        if (slug == 'lineart_color_trace') {
+          await harness.seedRoughStrokes();
+          await harness.seedColoursBelow();
+        }
         final beforePixels = harness.activeLayerPixels();
         final canvas = harness.canvasWidget;
         final beforeLayers = harness.projectService
@@ -483,6 +489,43 @@ class _ProductionHarness {
         tile[i + 1] = 24;
         tile[i + 2] = 24;
         tile[i + 3] = 255;
+      }
+    }
+    tm.invalidateTile(key, 0, 0);
+    await tester.runAsync(() async {
+      final image = await tm.compositeLayerToImage(key);
+      image.dispose();
+    });
+    await tester.pump();
+  }
+
+  /// Puts a new layer beneath the active one, painted red on the left half
+  /// and blue on the right (the colours a colour trace takes).
+  Future<void> seedColoursBelow() async {
+    final layers = projectService.layersOf(projectId, _sceneId!, _frame);
+    final below = projectService.addLayer(
+      projectId: projectId,
+      sceneId: _sceneId!,
+      frameIndex: _frame,
+      type: model.LayerType.normal,
+      name: 'colours',
+      insertIndex: layers.indexWhere((l) => l.id == _layerId) + 1,
+    );
+    final tm = projectService.tileManagerOf(projectId);
+    final key = projectService.tileKeyFor(
+      projectId,
+      _sceneId!,
+      _frame,
+      below.id,
+    );
+    final tile = tm.getOrCreateTile(key, 0, 0);
+    for (var y = 0; y < 256; y++) {
+      for (var x = 0; x < 256; x++) {
+        final i = (y * TileManager.tileSize + x) * 4;
+        tile.setAll(
+          i,
+          x < 130 ? const [220, 60, 60, 255] : const [60, 90, 220, 255],
+        );
       }
     }
     tm.invalidateTile(key, 0, 0);

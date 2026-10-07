@@ -2,6 +2,7 @@ import 'dart:math' as math;
 import 'dart:typed_data';
 
 import '../models/filter_def.dart';
+import 'premultiplied.dart';
 
 /// 背景馴染ませ v2 の解析結果。画像認識やネットワーク処理には頼らず、
 /// 対象シルエット周囲の画素だけから環境光を推定する。
@@ -82,9 +83,15 @@ class _SectorAccumulator {
 /// 1. 対象の周囲を16方向へ分けて環境サンプリング
 /// 2. 明度・近さ・面積の一貫性から主光源と副光源を推定
 /// 3. 周囲全体から環境光、反対側から影色、下側から反射色を独立推定
-/// 4. 対象の輪郭法線と光源方向の一致度で光/影を乗せる
-/// 5. 輪郭から内側へ距離減衰させ、局所背景色の色移りも加える
+/// 4. 対象全体に環境光をかけ、光源側から影側へ対象全体にわたる明暗の
+///    勾配を付ける（縁だけでなく描いた内容全体が背景の色になじむ）
+/// 5. 輪郭では法線と光源方向の一致度で光/影を強め、局所背景色の色移りも
+///    加える
 /// 6. 元画素の明度・彩度を見て黒つぶれ・白飛び・高彩度破壊を抑制
+///
+/// レイヤーの画素は乗算済みなので、色は元の色（不透明度で割り戻した色）で
+/// 扱い、書き戻すときに不透明度を掛け直す。結果は画素へ直接焼き込むので、
+/// 合成モードを重ねて統合したときに見え方が変わることはない。
 ///
 /// すべて決定論的な画素処理で、AI画像認識・通信は不要。
 class BackgroundAcclimationEngine {
@@ -303,12 +310,32 @@ class BackgroundAcclimationEngine {
         subject.length < width * height * 4) {
       return Uint8List.fromList(subject);
     }
+    final premultipliedSubject = subject;
+    // Layer pixels are premultiplied: colours are judged and blended as
+    // the colours they are, then multiplied back by their own opacity.
+    subject = unpremultiplied(subject);
+    background = unpremultiplied(background);
     final env = analysis ?? analyze(subject, background, width, height, filter);
-    final result = Uint8List.fromList(subject);
+    final result = Uint8List.fromList(premultipliedSubject);
     final count = width * height;
     final inside = Uint8List(count);
+    var sumX = 0.0, sumY = 0.0, insideCount = 0;
     for (int p = 0; p < count; p++) {
-      inside[p] = subject[p * 4 + 3] >= 16 ? 1 : 0;
+      if (subject[p * 4 + 3] < 16) continue;
+      inside[p] = 1;
+      sumX += p % width;
+      sumY += p ~/ width;
+      insideCount++;
+    }
+    if (insideCount == 0) return result;
+    // The body's centre and reach, for the light-to-shadow gradient that
+    // runs across the whole drawing.
+    final centreX = sumX / insideCount, centreY = sumY / insideCount;
+    var reach = 1.0;
+    for (int p = 0; p < count; p++) {
+      if (inside[p] == 0) continue;
+      final dx = p % width - centreX, dy = p ~/ width - centreY;
+      reach = math.max(reach, math.sqrt(dx * dx + dy * dy));
     }
 
     // 3-4 chamfer近似の距離変換。輪郭から内側への減衰をO(N)で得る。
@@ -399,6 +426,11 @@ class BackgroundAcclimationEngine {
       return subject[(y * width + x) * 4 + 3];
     }
 
+    int distAt(int x, int y) {
+      if (x < 0 || y < 0 || x >= width || y >= height) return 0;
+      return dist[y * width + x];
+    }
+
     for (int y = 0; y < height; y++) {
       for (int x = 0; x < width; x++) {
         final p = y * width + x;
@@ -411,29 +443,50 @@ class BackgroundAcclimationEngine {
         // アルファ勾配の逆向き＝外向き輪郭法線。
         var nx = (alphaAt(x - 1, y) - alphaAt(x + 1, y)).toDouble();
         var ny = (alphaAt(x, y - 1) - alphaAt(x, y + 1)).toDouble();
-        final nlen = math.sqrt(nx * nx + ny * ny);
+        var nlen = math.sqrt(nx * nx + ny * ny);
+        if (nlen <= 0.001) {
+          // Inside the shape the alpha is flat: the way out is where the
+          // distance to the outline falls, so each side faces its own way
+          // (the far side does not count as lit).
+          nx = (distAt(x - 1, y) - distAt(x + 1, y)).toDouble();
+          ny = (distAt(x, y - 1) - distAt(x, y + 1)).toDouble();
+          nlen = math.sqrt(nx * nx + ny * ny);
+        }
         if (nlen > 0.001) {
           nx /= nlen;
           ny /= nlen;
         } else {
-          // 内側画素では近似的に主光源方向を使い、環境光中心の処理にする。
-          nx = lx;
-          ny = ly;
+          nx = 0;
+          ny = 0;
         }
 
-        final facingLight = math.max(0.0, nx * lx + ny * ly);
-        final facingShadow = math.max(0.0, -(nx * lx + ny * ly));
+        // Across the whole body the light falls off from the side towards
+        // it to the far side, and the shadow the other way, so the middle
+        // takes some of both (as under a large light source). At the outline
+        // the edge's own facing takes over where it is stronger.
+        final along = (((x - centreX) * lx + (y - centreY) * ly) / reach).clamp(
+          -1.0,
+          1.0,
+        );
+        final facingLight = math.max(
+          math.max(0.0, nx * lx + ny * ly) * edgeFalloff,
+          (0.5 + 0.5 * along) * _bodyShading,
+        );
+        final facingShadow = math.max(
+          math.max(0.0, -(nx * lx + ny * ly)) * edgeFalloff,
+          (0.5 - 0.5 * along) * _bodyShading,
+        );
         var r = subject[idx].toDouble();
         var g = subject[idx + 1].toDouble();
         var b = subject[idx + 2].toDouble();
         final originalLuma = _luma(r.round(), g.round(), b.round());
         final originalChroma = _rgbChroma(r, g, b);
 
-        // 環境光は対象全体へごく弱く。中央まで均一に強く染めない。
+        // 環境光は対象全体へ。縁ほど少し強くする。
         final ambientAmount =
             global *
             ambientStrength *
-            (0.22 + edgeFalloff * 0.30) *
+            (0.70 + edgeFalloff * 0.30) *
             _materialFactor(
               originalLuma,
               originalChroma,
@@ -455,7 +508,6 @@ class BackgroundAcclimationEngine {
             global *
             lightStrength *
             facingLight *
-            edgeFalloff *
             _materialFactor(
               originalLuma,
               originalChroma,
@@ -499,7 +551,6 @@ class BackgroundAcclimationEngine {
             global *
             shadowStrength *
             facingShadow *
-            edgeFalloff *
             _materialFactor(
               originalLuma,
               originalChroma,
@@ -517,10 +568,14 @@ class BackgroundAcclimationEngine {
           false,
         );
 
-        // 画面下から来る反射光。下向きの輪郭法線ほど強くする。
-        final reflectionFacing = math.max(0.0, ny);
+        // 画面下から来る反射光。下向きの輪郭法線ほど強く、対象の下側
+        // 全体にも弱く返す。
+        final reflectionFacing = math.max(
+          math.max(0.0, ny) * edgeFalloff,
+          math.max(0.0, (y - centreY) / reach) * _bodyShading * 0.5,
+        );
         final reflectionAmount =
-            global * reflectionStrength * reflectionFacing * edgeFalloff * 0.72;
+            global * reflectionStrength * reflectionFacing * 0.72;
         (r, g, b) = _blendProtected(
           r,
           g,
@@ -564,14 +619,28 @@ class BackgroundAcclimationEngine {
           }
         }
 
-        result[idx] = r.round().clamp(0, 255);
-        result[idx + 1] = g.round().clamp(0, 255);
-        result[idx + 2] = b.round().clamp(0, 255);
+        final nr = r.round().clamp(0, 255);
+        final ng = g.round().clamp(0, 255);
+        final nb = b.round().clamp(0, 255);
+        // A pixel left as it was keeps its exact bytes.
+        if (nr == subject[idx] &&
+            ng == subject[idx + 1] &&
+            nb == subject[idx + 2]) {
+          continue;
+        }
         // alphaは絶対に変更しない。
+        final a = subject[idx + 3];
+        result[idx] = premultipliedChannel(nr, a);
+        result[idx + 1] = premultipliedChannel(ng, a);
+        result[idx + 2] = premultipliedChannel(nb, a);
       }
     }
     return result;
   }
+
+  /// How strongly the light-to-shadow gradient across the whole body lights
+  /// and shades the drawing, relative to the outline facing the light.
+  static const double _bodyShading = 0.8;
 
   static BackgroundAcclimationAnalysis _fallback(FilterDef filter) {
     final base = filter.bgBlendColor == -1 ? 0xFF808080 : filter.bgBlendColor;

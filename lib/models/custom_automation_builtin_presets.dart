@@ -98,11 +98,15 @@ class CustomAutomationBuiltinPresets {
     createdAt: _epoch,
     updatedAt: _epoch,
     steps: [
+      // Run on the line art: the colours painted beneath it, on a layer
+      // clipped to it, spread under the lines (blur), thickened (two
+      // duplicates merged down) and darkened, so each line takes a deeper
+      // tone of the colours beside it.
       const CustomAutomationStep(
         id: 'builtin_lineart_color_trace_1',
         surface: CustomAutomationSurface.canvas,
-        command: 'canvas.visibleCompositeToNewTop',
-        label: '表示中レイヤーを複製した全統合',
+        command: 'canvas.colorsBelowClippedAbove',
+        label: '下の塗りの色を線画にクリッピング',
         recordedFrame: 0,
       ),
       _filterStep(

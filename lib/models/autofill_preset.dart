@@ -102,6 +102,13 @@ class AutofillPart {
   final int outlineColor; // ARGB32
   final double outlineWidth; // px、既定6
 
+  /// How far under the line art's soft edge the fill reaches (0〜100,
+  /// default 50): a line pixel stops the fill when its opacity is above
+  /// [lineAlphaLimit]. Higher values fill further under the edge, so the
+  /// gap between the line and the fill (which shows with an outline, or a
+  /// line in the fill's colour) gets narrower.
+  final double lineGapFill;
+
   final bool isFavorite;
 
   const AutofillPart({
@@ -122,8 +129,15 @@ class AutofillPart {
     this.outlineEnabled = false,
     this.outlineColor = 0xFF000000,
     this.outlineWidth = 6,
+    this.lineGapFill = 50,
     this.isFavorite = false,
   });
+
+  /// The opacity above which a line-art pixel stops the fill: 128 at the
+  /// default, 1 at 0 (any trace of line stops it) and 254 at 100 (only a
+  /// fully opaque line does).
+  int get lineAlphaLimit =>
+      (1 + lineGapFill.clamp(0.0, 100.0) / 100 * 253).round();
 
   AutofillPart copyWith({
     String? id,
@@ -143,6 +157,7 @@ class AutofillPart {
     bool? outlineEnabled,
     int? outlineColor,
     double? outlineWidth,
+    double? lineGapFill,
     bool? isFavorite,
   }) {
     return AutofillPart(
@@ -165,6 +180,7 @@ class AutofillPart {
       outlineEnabled: outlineEnabled ?? this.outlineEnabled,
       outlineColor: outlineColor ?? this.outlineColor,
       outlineWidth: outlineWidth ?? this.outlineWidth,
+      lineGapFill: lineGapFill ?? this.lineGapFill,
       isFavorite: isFavorite ?? this.isFavorite,
     );
   }
@@ -192,6 +208,7 @@ class AutofillPart {
     'outlineEnabled': outlineEnabled,
     'outlineColor': outlineColor,
     'outlineWidth': outlineWidth,
+    'lineGapFill': lineGapFill,
     'isFavorite': isFavorite,
   };
 
@@ -221,6 +238,7 @@ class AutofillPart {
     outlineEnabled: j['outlineEnabled'] as bool? ?? false,
     outlineColor: j['outlineColor'] as int? ?? 0xFF000000,
     outlineWidth: (j['outlineWidth'] as num?)?.toDouble() ?? 6,
+    lineGapFill: (j['lineGapFill'] as num?)?.toDouble() ?? 50,
     isFavorite: j['isFavorite'] as bool? ?? false,
   );
 }

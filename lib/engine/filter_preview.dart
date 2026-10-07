@@ -314,20 +314,12 @@ Uint8List runFilterPreview(FilterPreviewJob job) {
         bgBlendLength: filter.bgBlendLength * scale,
         bgBlendSamplingBand: filter.bgBlendSamplingBand * scale,
       );
-      final analysis = BackgroundAcclimationEngine.analyze(
-        data,
-        others,
-        width,
-        height,
-        previewFilter,
-      );
       return BackgroundAcclimationEngine.apply(
         data,
         others,
         width,
         height,
         previewFilter,
-        analysis: analysis,
       );
   }
 }

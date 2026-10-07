@@ -25,6 +25,9 @@ class CustomAutomationDraft {
 class CustomAutomationService extends ChangeNotifier {
   static const _prefsKey = 'custom_automations_v1';
   static const _favoritesPrefsKey = 'custom_automation_favorites_v1';
+  // The official presets this device's list has been given, so one the user
+  // deleted is not brought back and a newly shipped one is added once.
+  static const _offeredBuiltinsKey = 'custom_automation_offered_builtins_v1';
 
   static const Set<String> _coalescibleCommands = {
     'canvas.brushSize',
@@ -60,6 +63,10 @@ class CustomAutomationService extends ChangeNotifier {
     _items.clear();
     if (raw == null) {
       _items.addAll(CustomAutomationBuiltinPresets.all());
+      await prefs.setStringList(
+        _offeredBuiltinsKey,
+        _items.map((item) => item.id).toList(),
+      );
       await _persist();
     } else {
       _items.addAll(
@@ -73,6 +80,7 @@ class CustomAutomationService extends ChangeNotifier {
           }
         }).whereType<CustomAutomation>(),
       );
+      if (await _refreshBuiltins(prefs)) await _persist();
     }
     _favoriteIds
       ..clear()
@@ -80,6 +88,52 @@ class CustomAutomationService extends ChangeNotifier {
     _favoriteIds.removeWhere((id) => _items.every((item) => item.id != id));
     await _persistFavorites();
     notifyListeners();
+  }
+
+  /// Brings the official presets in a saved list up to date: a copy the
+  /// user has not edited (still dated as shipped) is replaced by the current
+  /// recipe, or dropped when it is no longer shipped (the aurora hologram);
+  /// an official preset this list has never been given is added once. Edited
+  /// copies and the user's own automations stay as they are. Returns whether
+  /// the list changed.
+  Future<bool> _refreshBuiltins(SharedPreferences prefs) async {
+    final shipped = {
+      for (final preset in CustomAutomationBuiltinPresets.all())
+        preset.id: preset,
+    };
+    var changed = false;
+    for (var i = _items.length - 1; i >= 0; i--) {
+      final item = _items[i];
+      final unedited =
+          item.id.startsWith('builtin_') &&
+          item.updatedAt.millisecondsSinceEpoch == 0;
+      if (!unedited) continue;
+      final latest = shipped[item.id];
+      if (latest == null) {
+        _items.removeAt(i);
+        changed = true;
+      } else if (jsonEncode(latest.toJson()) != jsonEncode(item.toJson())) {
+        _items[i] = latest;
+        changed = true;
+      }
+    }
+    // A list saved before this record was kept had every preset shipped so
+    // far offered to it.
+    final offered =
+        prefs.getStringList(_offeredBuiltinsKey)?.toSet() ??
+        shipped.keys.toSet();
+    for (final preset in shipped.values) {
+      if (offered.contains(preset.id)) continue;
+      if (_items.every((item) => item.id != preset.id)) {
+        _items.add(preset);
+        changed = true;
+      }
+    }
+    await prefs.setStringList(
+      _offeredBuiltinsKey,
+      {...offered, ...shipped.keys}.toList(),
+    );
+    return changed;
   }
 
   Future<void> _persist() async {

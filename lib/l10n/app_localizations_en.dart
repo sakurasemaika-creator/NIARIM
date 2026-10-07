@@ -1316,7 +1316,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get helpAutoFillDesc =>
-      'Creates an auto-fill layer beneath the auto-fill line art layer and automatically colors it based on a pre-made \"autofill setting\" (a combination of colors and screentones per part). Since you can color everything at once after finishing the line art, it greatly reduces coloring effort in hand-drawn animation where the same character is drawn repeatedly. If you redraw the line art, an update mark appears on the timeline and layer panel to let you know the auto-fill needs to be reapplied. Choosing \"Run autofill\" from the timeline screen’s three-dot menu recalculates every autofill layer flagged with the update mark at once. Saves you from running it one layer at a time in the layer panel after redrawing lineart. Each part in an autofill setting has a setting for how to handle the lineart color — a specified color, matching the fill color, or color tracing. Choosing color tracing shifts the lineart color’s HSL to match the fill color, so the line doesn’t stand out and blends in naturally. As settings pile up, the list shown when assigning parts gets long and harder to browse. From project settings (or the part-assignment dialog in the layer panel), you can narrow it down to only the settings used in this project, keeping the list tidy and easy to pick from.';
+      'Creates an auto-fill layer beneath the auto-fill line art layer and automatically colors it based on a pre-made \"autofill setting\" (a combination of colors and screentones per part). Since you can color everything at once after finishing the line art, it greatly reduces coloring effort in hand-drawn animation where the same character is drawn repeatedly. If you redraw the line art, an update mark appears on the timeline and layer panel to let you know the auto-fill needs to be reapplied. Choosing \"Run autofill\" from the timeline screen’s three-dot menu recalculates every autofill layer flagged with the update mark at once. Saves you from running it one layer at a time in the layer panel after redrawing lineart. Each part in an autofill setting has a setting for how to handle the lineart color — a specified color, matching the fill color, or color tracing. Choosing color tracing shifts the lineart color’s HSL to match the fill color, so the line doesn’t stand out and blends in naturally. As settings pile up, the list shown when assigning parts gets long and harder to browse. From project settings (or the part-assignment dialog in the layer panel), you can narrow it down to only the settings used in this project, keeping the list tidy and easy to pick from. Raising 「Fill under line edges」 fills further under the soft edge of the lines, narrowing the gap between line art and fill that shows with an outline or a line color matching the fill.';
 
   @override
   String get helpOnionSkinTitle => 'Onion Skin';
@@ -3794,6 +3794,15 @@ class AppLocalizationsEn extends AppLocalizations {
   String autofillPartOutlineWidthLabel(int value) {
     return 'Outline width: ${value}px';
   }
+
+  @override
+  String autofillPartLineGapLabel(int value) {
+    return 'Fill under line edges: $value';
+  }
+
+  @override
+  String get autofillPartLineGapHint =>
+      'Higher values fill further under the soft edge of the lines, narrowing the gap between line art and fill (useful when an outline, or a line color matching the fill, makes the gap visible).';
 
   @override
   String get autofillEyedropperFromThumbnailButton => 'Pick from image';
@@ -6531,7 +6540,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get tipsOfficialAutomationPresetsDesc =>
-      'The official presets are 「線画作成（デジタル）」 (Auto Line Art → Ink Pool), 「線画抽出（アナログ）」 (Color Adjust → Threshold → Brightness to Alpha), and 「線画色トレス」 (merge visible layers → blur, duplicate, and merge → color-trace adjustment). Re-recording appends supported actions. In the review screen, you can reorder or remove steps. Export it before editing if you want an easy way back to the original settings.';
+      'The official presets are 「線画作成（デジタル）」 (Auto Line Art → Ink Pool), 「線画抽出（アナログ）」 (Color Adjust → Threshold → Brightness to Alpha), and 「線画色トレス」 (run it on the line art: the colors painted beneath it on a new layer clipped to it → blur, duplicate, and merge → color-trace adjustment, so each line takes a deeper tone of the color beside it). Re-recording appends supported actions. In the review screen, you can reorder or remove steps. Export it before editing if you want an easy way back to the original settings.';
 
   @override
   String get tipsTexturePrismVhsTitle =>

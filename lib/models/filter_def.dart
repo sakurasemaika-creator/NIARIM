@@ -66,6 +66,31 @@ const int kPixelArtMaxBlockSize = 100;
 int generatedLayerInsertIndex(FilterKind kind, int sourceIndex) =>
     kind == FilterKind.autoLineart ? sourceIndex : sourceIndex + 1;
 
+/// [created], a filter's new layer inserted at [insertIndex] among
+/// [before] (the layers before it was added, index 0 = the top), set up to
+/// fit there: it joins [source]'s folder, and it is clipped when the layer
+/// directly above it is clipped. Otherwise it would become that layer's
+/// clipping base: a clipped source would clip to its own outline beneath
+/// it, and a layer clipped to the source to the line art put above it.
+Layer generatedLayerFitted(
+  Layer created,
+  Layer source,
+  List<Layer> before,
+  int insertIndex,
+) {
+  final above = insertIndex > 0 && insertIndex <= before.length
+      ? before[insertIndex - 1]
+      : null;
+  final clipped =
+      above != null &&
+      above.hasClipping &&
+      above.parentFolderId == source.parentFolderId;
+  return created.copyWith(
+    parentFolderId: source.parentFolderId,
+    hasClipping: clipped,
+  );
+}
+
 /// Whether a filter of this kind works only where the selection layer is
 /// painted (the glasses lens, and sphere shading when one is painted), so
 /// applying it needs the selection layer's pixels.

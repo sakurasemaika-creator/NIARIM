@@ -1335,7 +1335,7 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get helpAutoFillDesc =>
-      'Crée un calque de coloriage automatique sous le calque de trait pour coloriage automatique et le colore automatiquement selon un « réglage de coloriage automatique » préétabli (une combinaison de couleurs et de trames par partie). Comme vous pouvez tout colorer en une fois après avoir terminé le trait, cela réduit considérablement l’effort de coloriage dans une animation dessinée à la main où le même personnage est dessiné à répétition. Si vous redessinez le trait, une marque de mise à jour apparaît sur la chronologie et le panneau de calques pour vous indiquer que le coloriage automatique doit être réappliqué. Choisir « Exécuter le remplissage automatique » dans le menu à trois points de l’écran timeline recalcule d’un coup tous les calques de remplissage automatique marqués de l’indicateur de mise à jour . Vous évite de le relancer calque par calque dans le panneau des calques après avoir retracé le trait. Chaque partie d’un réglage de remplissage automatique a un réglage pour la gestion de la couleur du trait — une couleur spécifiée, identique à la couleur de remplissage, ou calque de couleur. Choisir le calque de couleur décale la teinte du trait pour correspondre à la couleur de remplissage, afin que le trait ne ressorte pas et se fonde naturellement. À mesure que les réglages s’accumulent, la liste affichée lors de l’attribution des parties s’allonge et devient difficile à parcourir. Depuis les réglages du projet (ou la boîte de dialogue d’attribution des parties dans le panneau des calques), vous pouvez la limiter aux seuls réglages utilisés dans ce projet, gardant la liste claire et facile à choisir.';
+      'Crée un calque de coloriage automatique sous le calque de trait pour coloriage automatique et le colore automatiquement selon un « réglage de coloriage automatique » préétabli (une combinaison de couleurs et de trames par partie). Comme vous pouvez tout colorer en une fois après avoir terminé le trait, cela réduit considérablement l’effort de coloriage dans une animation dessinée à la main où le même personnage est dessiné à répétition. Si vous redessinez le trait, une marque de mise à jour apparaît sur la chronologie et le panneau de calques pour vous indiquer que le coloriage automatique doit être réappliqué. Choisir « Exécuter le remplissage automatique » dans le menu à trois points de l’écran timeline recalcule d’un coup tous les calques de remplissage automatique marqués de l’indicateur de mise à jour . Vous évite de le relancer calque par calque dans le panneau des calques après avoir retracé le trait. Chaque partie d’un réglage de remplissage automatique a un réglage pour la gestion de la couleur du trait — une couleur spécifiée, identique à la couleur de remplissage, ou calque de couleur. Choisir le calque de couleur décale la teinte du trait pour correspondre à la couleur de remplissage, afin que le trait ne ressorte pas et se fonde naturellement. À mesure que les réglages s’accumulent, la liste affichée lors de l’attribution des parties s’allonge et devient difficile à parcourir. Depuis les réglages du projet (ou la boîte de dialogue d’attribution des parties dans le panneau des calques), vous pouvez la limiter aux seuls réglages utilisés dans ce projet, gardant la liste claire et facile à choisir. En augmentant « Remplir sous le bord des traits », l’aplat passe plus loin sous le bord adouci des traits et l’écart entre le trait et l’aplat, visible avec un contour ou une couleur de trait identique à l’aplat, se réduit.';
 
   @override
   String get helpOnionSkinTitle => 'Papier calque';
@@ -3844,6 +3844,15 @@ class AppLocalizationsFr extends AppLocalizations {
   String autofillPartOutlineWidthLabel(int value) {
     return 'Épaisseur du contour : ${value}px';
   }
+
+  @override
+  String autofillPartLineGapLabel(int value) {
+    return 'Remplir sous le bord des traits : $value';
+  }
+
+  @override
+  String get autofillPartLineGapHint =>
+      'Plus la valeur est élevée, plus le remplissage passe sous le bord adouci des traits et plus l’écart entre le trait et l’aplat se réduit (utile quand un contour ou une couleur de trait identique à l’aplat rend l’écart visible).';
 
   @override
   String get autofillEyedropperFromThumbnailButton =>
@@ -6651,7 +6660,7 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get tipsOfficialAutomationPresetsDesc =>
-      'Les préréglages officiels sont 「線画作成（デジタル）」 (trait automatique → accumulation d’encre), 「線画抽出（アナログ）」 (réglage des couleurs → seuil → luminosité vers alpha) et 「線画色トレス」 (fusion des calques visibles → flou, duplication et fusion → réglage du calque de couleur). Le réenregistrement ajoute des actions prises en charge. L’écran de révision permet de réordonner ou de supprimer des étapes. Exportez-le avant modification si vous souhaitez pouvoir retrouver facilement les réglages d’origine.';
+      'Les préréglages officiels sont 「線画作成（デジタル）」 (trait automatique → accumulation d’encre), 「線画抽出（アナログ）」 (réglage des couleurs → seuil → luminosité vers alpha) et 「線画色トレス」 (à lancer sur le trait : les couleurs peintes en dessous, sur un nouveau calque en écrêtage sur le trait → flou, duplication et fusion → réglage du calque de couleur, pour que chaque trait prenne une teinte plus profonde de la couleur voisine). Le réenregistrement ajoute des actions prises en charge. L’écran de révision permet de réordonner ou de supprimer des étapes. Exportez-le avant modification si vous souhaitez pouvoir retrouver facilement les réglages d’origine.';
 
   @override
   String get tipsTexturePrismVhsTitle =>

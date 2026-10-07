@@ -183,16 +183,16 @@ class CustomAutomationFilterRunner {
     if (source == null) {
       throw StateError('Recorded filter source layer disappeared');
     }
-    final sourceIndex = projectService
-        .layersOf(projectId, sceneId, frameIndex)
-        .indexWhere((layer) => layer.id == sourceLayerId);
+    final before = projectService.layersOf(projectId, sceneId, frameIndex);
+    final sourceIndex = before.indexWhere((layer) => layer.id == sourceLayerId);
+    final insertIndex = generatedLayerInsertIndex(filter.kind, sourceIndex);
     final created = projectService.addLayer(
       projectId: projectId,
       sceneId: sceneId,
       frameIndex: frameIndex,
       type: model.LayerType.normal,
       name: _generatedLayerName(source.name, filter),
-      insertIndex: generatedLayerInsertIndex(filter.kind, sourceIndex),
+      insertIndex: insertIndex,
     );
 
     final key = projectService.tileKeyFor(
@@ -206,7 +206,7 @@ class CustomAutomationFilterRunner {
       projectId: projectId,
       sceneId: sceneId,
       frameIndex: frameIndex,
-      layer: created,
+      layer: generatedLayerFitted(created, source, before, insertIndex),
     );
     return created.id;
   }

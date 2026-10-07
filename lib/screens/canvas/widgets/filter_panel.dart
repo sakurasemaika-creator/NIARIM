@@ -3021,9 +3021,9 @@ class _FilterPanelState extends State<FilterPanel> {
         .where((l) => l.id == sourceLayerId)
         .firstOrNull;
     final sourceName = sourceLayer?.name ?? 'Layer';
-    final sourceIndex = ps
-        .layersOf(widget.projectId, widget.sceneId, frameIndex)
-        .indexWhere((layer) => layer.id == sourceLayerId);
+    final before = ps.layersOf(widget.projectId, widget.sceneId, frameIndex);
+    final sourceIndex = before.indexWhere((layer) => layer.id == sourceLayerId);
+    final insertIndex = generatedLayerInsertIndex(kind, sourceIndex);
     final created = ps.addLayer(
       projectId: widget.projectId,
       sceneId: widget.sceneId,
@@ -3031,7 +3031,7 @@ class _FilterPanelState extends State<FilterPanel> {
       type: model.LayerType.normal,
       name: nameBuilder(sourceName),
       id: generatedLayerId,
-      insertIndex: generatedLayerInsertIndex(kind, sourceIndex),
+      insertIndex: insertIndex,
     );
     final key = ps.tileKeyFor(
       widget.projectId,
@@ -3044,7 +3044,9 @@ class _FilterPanelState extends State<FilterPanel> {
       projectId: widget.projectId,
       sceneId: widget.sceneId,
       frameIndex: frameIndex,
-      layer: created,
+      layer: sourceLayer == null
+          ? created
+          : generatedLayerFitted(created, sourceLayer, before, insertIndex),
     );
     return created.id;
   }

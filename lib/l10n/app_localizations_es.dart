@@ -1340,7 +1340,7 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get helpAutoFillDesc =>
-      'Crea una capa de coloreado automático debajo de la capa de líneas para coloreado automático y la colorea automáticamente según un \"ajuste de coloreado automático\" ya creado (una combinación de colores y tramas por parte). Como puedes colorear todo de una vez después de terminar las líneas, reduce enormemente el esfuerzo de coloreado en animación dibujada a mano donde se dibuja repetidamente el mismo personaje. Si vuelves a dibujar las líneas, aparece una marca de actualización en la línea de tiempo y el panel de capas para indicarte que hay que volver a aplicar el coloreado automático. Elegir \"Ejecutar relleno automático\" en el menú de tres puntos de la pantalla de línea de tiempo recalcula de una vez todas las capas de relleno automático marcadas con el indicador de actualización . Te ahorra ejecutarlo capa por capa en el panel de capas tras volver a dibujar la línea. Cada parte de un ajuste de relleno automático tiene un ajuste sobre cómo tratar el color de la línea: un color especificado, igual al color de relleno, o calco de color. Elegir calco de color desplaza el HSL del color de línea para que coincida con el de relleno, de modo que la línea no destaque y se integre de forma natural. A medida que se acumulan ajustes, la lista mostrada al asignar partes se alarga y cuesta más recorrerla. Desde los ajustes del proyecto (o el diálogo de asignación de partes en el panel de capas) puedes limitarla a solo los ajustes usados en este proyecto, manteniendo la lista ordenada y fácil de elegir.';
+      'Crea una capa de coloreado automático debajo de la capa de líneas para coloreado automático y la colorea automáticamente según un \"ajuste de coloreado automático\" ya creado (una combinación de colores y tramas por parte). Como puedes colorear todo de una vez después de terminar las líneas, reduce enormemente el esfuerzo de coloreado en animación dibujada a mano donde se dibuja repetidamente el mismo personaje. Si vuelves a dibujar las líneas, aparece una marca de actualización en la línea de tiempo y el panel de capas para indicarte que hay que volver a aplicar el coloreado automático. Elegir \"Ejecutar relleno automático\" en el menú de tres puntos de la pantalla de línea de tiempo recalcula de una vez todas las capas de relleno automático marcadas con el indicador de actualización . Te ahorra ejecutarlo capa por capa en el panel de capas tras volver a dibujar la línea. Cada parte de un ajuste de relleno automático tiene un ajuste sobre cómo tratar el color de la línea: un color especificado, igual al color de relleno, o calco de color. Elegir calco de color desplaza el HSL del color de línea para que coincida con el de relleno, de modo que la línea no destaque y se integre de forma natural. A medida que se acumulan ajustes, la lista mostrada al asignar partes se alarga y cuesta más recorrerla. Desde los ajustes del proyecto (o el diálogo de asignación de partes en el panel de capas) puedes limitarla a solo los ajustes usados en este proyecto, manteniendo la lista ordenada y fácil de elegir. Al subir «Rellenar bajo el borde de las líneas», el relleno llega más bajo el borde suave de las líneas y se reduce el hueco entre el dibujo lineal y el relleno que se ve con un contorno o un color de línea igual al relleno.';
 
   @override
   String get helpOnionSkinTitle => 'Papel cebolla';
@@ -3843,6 +3843,15 @@ class AppLocalizationsEs extends AppLocalizations {
   String autofillPartOutlineWidthLabel(int value) {
     return 'Grosor del contorno: ${value}px';
   }
+
+  @override
+  String autofillPartLineGapLabel(int value) {
+    return 'Rellenar bajo el borde de las líneas: $value';
+  }
+
+  @override
+  String get autofillPartLineGapHint =>
+      'Cuanto mayor es el valor, más se rellena bajo el borde suave de las líneas y menor es el hueco entre el dibujo lineal y el relleno (útil cuando el contorno o un color de línea igual al relleno hacen visible el hueco).';
 
   @override
   String get autofillEyedropperFromThumbnailButton => 'Extraer de la imagen';
@@ -6639,7 +6648,7 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get tipsOfficialAutomationPresetsDesc =>
-      'Los ajustes oficiales son 「線画作成（デジタル）」 (líneas automáticas → acumulación de tinta), 「線画抽出（アナログ）」 (ajuste de color → umbral → brillo a alfa) y 「線画色トレス」 (combinar capas visibles → desenfocar, duplicar y combinar → ajustar calco de color). Al volver a grabar se añaden acciones compatibles. En la pantalla de revisión puedes reordenar o eliminar pasos. Expórtalo antes de editarlo si quieres conservar una forma sencilla de volver a la configuración original.';
+      'Los ajustes oficiales son 「線画作成（デジタル）」 (líneas automáticas → acumulación de tinta), 「線画抽出（アナログ）」 (ajuste de color → umbral → brillo a alfa) y 「線画色トレス」 (se ejecuta sobre el dibujo lineal: los colores pintados debajo, en una capa nueva con recorte al dibujo lineal → desenfocar, duplicar y combinar → ajustar calco de color, para que cada línea tome un tono más profundo del color contiguo). Al volver a grabar se añaden acciones compatibles. En la pantalla de revisión puedes reordenar o eliminar pasos. Expórtalo antes de editarlo si quieres conservar una forma sencilla de volver a la configuración original.';
 
   @override
   String get tipsTexturePrismVhsTitle =>

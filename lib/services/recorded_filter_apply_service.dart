@@ -158,16 +158,16 @@ class RecordedFilterApplyService {
     required Uint8List pixels,
   }) {
     final tileManager = projectService.tileManagerOf(projectId);
-    final sourceIndex = projectService
-        .layersOf(projectId, sceneId, frameIndex)
-        .indexWhere((layer) => layer.id == sourceLayerId);
+    final before = projectService.layersOf(projectId, sceneId, frameIndex);
+    final sourceIndex = before.indexWhere((layer) => layer.id == sourceLayerId);
+    final insertIndex = generatedLayerInsertIndex(filter.kind, sourceIndex);
     final created = projectService.addLayer(
       projectId: projectId,
       sceneId: sceneId,
       frameIndex: frameIndex,
       type: model.LayerType.normal,
       name: _generatedLayerName(sourceName, filter),
-      insertIndex: generatedLayerInsertIndex(filter.kind, sourceIndex),
+      insertIndex: insertIndex,
     );
     final key = projectService.tileKeyFor(
       projectId,
@@ -180,7 +180,14 @@ class RecordedFilterApplyService {
       projectId: projectId,
       sceneId: sceneId,
       frameIndex: frameIndex,
-      layer: created,
+      layer: sourceIndex < 0
+          ? created
+          : generatedLayerFitted(
+              created,
+              before[sourceIndex],
+              before,
+              insertIndex,
+            ),
     );
     return created.id;
   }

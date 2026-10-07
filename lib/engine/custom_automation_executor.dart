@@ -176,6 +176,69 @@ class CustomAutomationExecutor {
                 frameIndex: frameIndex,
                 layer: created,
               );
+            case 'canvas.colorsBelowClippedAbove':
+              // Colour trace: the colours of what is painted beneath the
+              // active layer (the line art), on a new layer directly above
+              // it, clipped to it, so the steps that follow only recolour
+              // the lines (and never the line's own colour is sampled).
+              final layers = projectService.layersOf(
+                projectId,
+                sceneId,
+                frameIndex,
+              );
+              final index = layers.indexWhere(
+                (layer) => layer.id == activeLayerId,
+              );
+              if (index < 0) throw StateError('No active layer');
+              final lineArt = layers[index];
+              final tm = projectService.tileManagerOf(projectId);
+              final image = await LayerCompositor.composite(
+                tm,
+                layers,
+                (layer) => projectService.tileKeyFor(
+                  projectId,
+                  sceneId,
+                  frameIndex,
+                  layer.id,
+                ),
+                tm.canvasWidth,
+                tm.canvasHeight,
+                shouldRender: (_, i) => i > index,
+              );
+              final bytes = await image.toByteData(
+                format: ui.ImageByteFormat.rawRgba,
+              );
+              image.dispose();
+              if (bytes == null) {
+                throw StateError('Could not read the colours below');
+              }
+              final created = projectService.addLayer(
+                projectId: projectId,
+                sceneId: sceneId,
+                frameIndex: frameIndex,
+                type: model.LayerType.normal,
+                name: automation.name,
+                insertIndex: index,
+              );
+              activeLayerId = created.id;
+              tm.replaceLayerPixels(
+                projectService.tileKeyFor(
+                  projectId,
+                  sceneId,
+                  frameIndex,
+                  created.id,
+                ),
+                bytes.buffer.asUint8List(),
+              );
+              projectService.updateLayer(
+                projectId: projectId,
+                sceneId: sceneId,
+                frameIndex: frameIndex,
+                layer: created.copyWith(
+                  hasClipping: true,
+                  parentFolderId: lineArt.parentFolderId,
+                ),
+              );
             case 'canvas.layerDuplicate':
               if (activeLayerId == null) throw StateError('No active layer');
               final copy = projectService.duplicateLayer(

@@ -756,6 +756,22 @@ onTap: ...)`だったために
   `_beginLensMaskEdit`がペン・消しゴム・バケツとして受ける。範囲の変更は
   `FilterLensMask.edit`でフィルター編集のUndoへ1手ずつ積むこと
   （`test/filter_selection_lens_mask_e2e_test.dart`）。
+- **フィルターが作る新規レイヤーは`generatedLayerFitted`を通すこと**：縁取り・
+  墨溜まり（元の直下）・自動線画（元の直上）の新規レイヤーをそのまま挿入すると、
+  クリッピングしている元レイヤーのクリッピング先が新規レイヤーに変わる
+  （元が自分の縁取りに切り抜かれる）。`filter_def.dart`の
+  `generatedLayerFitted`が元のフォルダを引き継ぎ、直上がクリッピングなら
+  自分もクリッピングにする。作る場所はFilterPanel・記録再生・自動操作の
+  3か所（`test/generated_layer_clipping_test.dart`）。
+  同じ理由で、キャンバスの「現在レイヤーより上」は**全レイヤーの一覧を
+  `shouldRender`で絞って**合成すること（部分リストにすると、現在レイヤーへ
+  クリッピングしたレイヤーのクリッピング先が見つからず、全面に描かれる）。
+- **公式の自動操作プリセットは端末に保存されたコピーが動く**：
+  `CustomAutomationService.init`の`_refreshBuiltins`が、編集されていない
+  （`updatedAt`が配布時のエポックのままの）公式プリセットを最新の手順に
+  置き換え、配布をやめたものを消し、新しいものを1回だけ足す。手順を変えた
+  公式プリセットは`updatedAt`をエポックのままにすること（変えると更新が
+  届かない）。
 - **縦スクロールのスクロールバーはアプリ全体で常時表示（個別に`Scrollbar`で
   包まない）**：`app.dart`の`scrollBehavior: const AppScrollBehavior()`
   （`lib/widgets/app_scroll_behavior.dart`）が、縦スクロールすべての右端に

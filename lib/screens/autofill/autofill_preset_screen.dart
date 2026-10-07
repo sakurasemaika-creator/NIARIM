@@ -1808,6 +1808,39 @@ class _PresetDetailScreenState extends State<_PresetDetailScreen> {
                             current = current.copyWith(lineOpacity: v.round()),
                       ),
                     ),
+                    // How far the fill reaches under the line's soft edge
+                    // (the gap between line and fill).
+                    EditableSliderValue(
+                      key: const ValueKey('autofill-line-gap'),
+                      text: l10n.autofillPartLineGapLabel(
+                        current.lineGapFill.round(),
+                      ),
+                      style: const TextStyle(fontSize: 12),
+                      value: current.lineGapFill,
+                      min: 0,
+                      max: 100,
+                      onChanged: (v) => setS(
+                        () => current = current.copyWith(
+                          lineGapFill: v.toDouble(),
+                        ),
+                      ),
+                    ),
+                    SteppedSlider(
+                      value: current.lineGapFill,
+                      min: 0,
+                      max: 100,
+                      divisions: 100,
+                      onChanged: (v) => setS(
+                        () => current = current.copyWith(lineGapFill: v),
+                      ),
+                    ),
+                    Text(
+                      l10n.autofillPartLineGapHint,
+                      style: TextStyle(
+                        fontSize: 11,
+                        color: Theme.of(ctx).colorScheme.onSurfaceVariant,
+                      ),
+                    ),
                     const Divider(),
                     Text(
                       l10n.autofillPartToneLabel,

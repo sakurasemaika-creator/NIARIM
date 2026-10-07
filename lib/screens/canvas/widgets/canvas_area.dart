@@ -3943,7 +3943,6 @@ class _CanvasAreaState extends State<CanvasArea> {
     _isComposingSurroundings = true;
 
     final idx = layers.indexWhere((l) => l.id == _layerId);
-    final above = idx < 0 ? const <Layer>[] : layers.sublist(0, idx);
     final below = idx < 0 ? layers : layers.sublist(idx + 1);
     final w = _tileManager.canvasWidth;
     final h = _tileManager.canvasHeight;
@@ -3976,12 +3975,15 @@ class _CanvasAreaState extends State<CanvasArea> {
       _isComposingSurroundings = false;
       return;
     }
+    // The whole list, drawing only the layers above: a layer clipped to the
+    // current layer (or to one below it) finds its clipping base there.
     final abovePicture = await LayerCompositor.compositeToPicture(
       _tileManager,
-      above,
+      layers,
       (l) => _tileKeyFor(l.id),
       w,
       h,
+      shouldRender: (_, i) => i < idx,
       keyframeOf: _keyframeOf,
       groupKeyframeOf: groupKf,
     );
