@@ -349,6 +349,8 @@ void main() {
                 'colorMode': current().pixelColorMode.name,
                 'colors': current().pixelExplicitColors,
               },
+              if (filter.kind == FilterKind.mosaic)
+                'blockSize': current().strength,
             },
             note: switch (id) {
               'pixel_art_blocks_six_colours' => '8pxの正方形ブロック・黒白赤黄青緑の6色・半透明なし。',
@@ -545,7 +547,10 @@ void main() {
           final source = h.layers.firstWhere(
             (l) => l.type == model.LayerType.normal,
           );
-          await h.seed(source.id, 'colorTranslucent');
+          // Colour bars over the character: each mode's effect on light,
+          // dark and coloured ground is visible, and the half-opaque lower
+          // part tells Addition from Linear Dodge.
+          await h.seed(source.id, 'blendSwatches');
           final backdrop = h.ps.addLayer(
             projectId: h.projectId,
             sceneId: h.sceneId,
@@ -1302,7 +1307,26 @@ Future<Uint8List> _fixture(
       Paint()..color = const Color.fromRGBO(255, 255, 255, 0.62),
     );
   }
-  if (kind == 'pixelArtSix') {
+  if (kind == 'blendSwatches') {
+    const colours = [
+      Color(0xffe63a3a),
+      Color(0xfff2d23c),
+      Color(0xff3a5ee6),
+      Color(0xffffffff),
+      Color(0xff000000),
+    ];
+    for (var i = 0; i < colours.length; i++) {
+      final left = 16.0 + i * 46;
+      canvas.drawRect(
+        Rect.fromLTWH(left, 20, 38, 140),
+        Paint()..color = colours[i],
+      );
+      canvas.drawRect(
+        Rect.fromLTWH(left, 160, 38, 76),
+        Paint()..color = colours[i].withValues(alpha: 0.5),
+      );
+    }
+  } else if (kind == 'pixelArtSix') {
     // Black, white, red, yellow, blue and green strokes, anti-aliased, on a
     // transparent layer: thick and thin, slanted and round.
     void stroke(Offset a, Offset b, double width, Color color) =>

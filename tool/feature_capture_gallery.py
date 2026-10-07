@@ -1,38 +1,60 @@
 #!/usr/bin/env python3
-"""Package real Flutter UI captures into a comparison PDF and offline gallery.
+"""Package real Flutter UI captures into a labelled PDF and offline gallery.
 
-Run test/visual/feature_operation_capture_test.dart first. Requires Pillow and
-ReportLab; no network requests, generated screenshots, or production data.
+Run test/visual/feature_operation_capture_test.dart first. Requires Pillow
+only; no network requests. Every case becomes one card image with the
+feature's name, its settings (named as the filter panel names them) and the
+before/after artwork burned in; the PDF's pages are made of those cards.
 """
 
 import argparse
 import html
 import json
 from pathlib import Path
+import re
 import shutil
 import zipfile
 
-from PIL import Image, ImageDraw
-from reportlab.lib.colors import HexColor
-from reportlab.lib.pagesizes import A4, landscape
-from reportlab.lib.utils import ImageReader
-from reportlab.pdfbase import pdfmetrics
-from reportlab.pdfbase.ttfonts import TTFont
-from reportlab.pdfgen import canvas
+from PIL import Image, ImageDraw, ImageFont
 
+ROOT = Path(__file__).resolve().parents[1]
 GROUP_ORDER = ["filters", "pixel-compare", "blend", "automation", "autofill", "extras"]
 GROUPS = {
     "filters": "フィルター（質感変更を除外）",
     "pixel-compare": "Pixel Art / Mosaic 同一fixture比較",
-    "blend": "ブレンドモード",
+    "blend": "ブレンドモード（全25種）",
     "automation": "公式の自動操作",
-    "autofill": "自動塗りプリセット",
+    "autofill": "自動塗りプリセット（完成状態）",
     "extras": "記録・再実行と自動塗りの追加確認",
 }
-FONT = "NIARIM-Report-JP"
+# Work of other sessions that this capture set must leave out: the texture
+# change filter (質感変更 / Gradient Map) and the brush fold modes.
+EXCLUDED_FILTER_IDS = {"Filter0019"}
+EXCLUDED_KINDS = {"auroraHologram"}
+
+HEADING_FONT = ROOT / "assets/fonts/Kuramubon.otf"
+BODY_FONT = ROOT / "assets/fonts/NotoSerifJP.ttf"
+PAGE_W, PAGE_H = 1754, 1240  # A4 landscape at 150 dpi
+CARD_W, CARD_H = 817, 520
+INK = "#253047"
+MUTED = "#64748b"
+
+
+def font(path, size):
+    return ImageFont.truetype(str(path), size)
 
 
 def display_name(case, labels):
+    settings = case.get("settings") or {}
+    if case["group"] == "pixel-compare" and settings.get("kind") == "pixelate":
+        how = (
+            labels["filterPixelateModeDots"]
+            if settings.get("pixelArtByDots")
+            else labels["filterPixelateModeBlock"]
+        )
+        return f"{labels['filterNamePixelate']} / {how}"
+    if case["group"] == "pixel-compare" and settings.get("kind") == "mosaic":
+        return labels["filterNameMosaic"]
     if case["group"] != "filters":
         return case["name"]
     filter_id, variant = case["id"].split("_", 1)
@@ -47,19 +69,199 @@ def display_name(case, labels):
     name = labels.get(names.get(filter_id), name)
     prefix = {
         "Filter0004": "filterToneCurve",
-        "Filter0019": "filterAuroraHologramPreset",
         "Filter0018": "pixelColorMode",
     }.get(filter_id)
     label = "初期設定" if variant == "default" else variant
     if prefix:
-        label = labels[prefix + variant[0].upper() + variant[1:]]
+        label = labels.get(prefix + variant[0].upper() + variant[1:], variant)
     return f"{name} / {label}"
 
 
-def wrapped(text, width, size):
+def panel_fields():
+    """The settings each filter kind's panel shows, as (label key, field),
+    read from the panel's own source so the names match the app."""
+    src = (ROOT / "lib/screens/canvas/widgets/filter_panel.dart").read_text(
+        encoding="utf-8"
+    )
+    start = src.index("    switch (current.kind) {")
+    body = src[start : src.index("Widget _hint(String text)")]
+    parts = re.split(r"\n\s*case FilterKind\.(\w+):", body)
+    fields, pending = {}, []
+    for i in range(1, len(parts), 2):
+        pending.append(parts[i])
+        block = parts[i + 1]
+        if not block.strip():
+            continue
+        pairs = re.findall(r"l10n\.(\w+),\s*current\.(\w+)", block)
+        for kind in pending:
+            fields[kind] = pairs
+        pending = []
+    sphere = src[src.index("Widget _sphereShadingControls") :]
+    sphere = sphere[: sphere.index("\n  }\n")]
+    fields["sphereShading"] = re.findall(r"l10n\.(\w+),\s*current\.(\w+)", sphere)
+    # Settings the panel shows through its own widgets rather than a
+    # labelled slider.
+    fields["pixelate"] = [
+        ("filterPixelateBlockSize", "strength"),
+        ("pixelColorModeLabel", "pixelColorMode"),
+        ("pixelColorModeExplicit", "pixelExplicitColors"),
+    ]
+    fields["prism"] = [
+        ("filterPrismBlurAmount", "prismBlurPx"),
+        ("filterPrismColorDirection", "prismDirectionDegrees"),
+    ]
+    fields["toneCurve"] = [
+        ("filterNameToneCurve", "toneCurvePreset"),
+        ("RGB", "toneCurvePoints"),
+        ("R", "toneCurveRedPoints"),
+        ("G", "toneCurveGreenPoints"),
+        ("B", "toneCurveBluePoints"),
+    ]
+    fields["levels"] = [
+        ("filterLevelsInputBlack", "inputBlack"),
+        ("filterLevelsInputWhite", "inputWhite"),
+        ("filterLevelsGamma", "inputGamma"),
+        ("filterLevelsOutputBlack", "outputBlack"),
+        ("filterLevelsOutputWhite", "outputWhite"),
+    ]
+    return fields
+
+
+def format_value(field, value):
+    if isinstance(value, bool):
+        return "ON" if value else "OFF"
+    if isinstance(value, int) and (field.endswith("Color") or value > 0xFFFFFF):
+        rgb = f"#{value & 0xFFFFFF:06X}"
+        alpha = (value >> 24) & 0xFF
+        return rgb if alpha == 0xFF else f"{rgb} α{round(alpha / 2.55)}%"
+    if isinstance(value, float):
+        return str(int(value)) if value == int(value) else f"{value:.2f}".rstrip("0")
+    if isinstance(value, list):
+        if not value:
+            return "なし"
+        if all(isinstance(v, int) for v in value) and field.endswith("Colors"):
+            return " ".join(f"#{v & 0xFFFFFF:06X}" for v in value)
+        pts = [
+            f"({format_value('', value[i])},{format_value('', value[i + 1])})"
+            for i in range(0, len(value) - 1, 2)
+        ]
+        return " ".join(pts) if len(pts) == len(value) // 2 else str(value)
+    return str(value)
+
+
+ENUM_PREFIXES = {
+    "Blend": "blendMode",
+    "blendMode": "blendMode",
+    "lineColorMode": "autofillLineColorMode",
+    "pixelColorMode": "pixelColorMode",
+    "toneCurvePreset": "filterToneCurve",
+}
+
+
+def enum_label(field, value, labels):
+    """A setting's value, with enum values named as the app names them."""
+    if isinstance(value, str) and value:
+        for suffix, prefix in ENUM_PREFIXES.items():
+            if field.endswith(suffix) or field == suffix:
+                key = prefix + value[0].upper() + value[1:]
+                if key in labels:
+                    return labels[key]
+    return format_value(field, value)
+
+
+AUTOFILL_PART_FIELDS = [
+    ("color", "autofillPartFillColorLabel"),
+    ("opacity", "autofillPartFillOpacityLabel"),
+    ("blendMode", "autofillPartBlendModeLabel"),
+    ("gradient", "autofillPartGradientTypeLabel"),
+    ("lineColorMode", "autofillPartLineColorLabel"),
+    ("lineColor", "autofillPartLineColorLabel"),
+    ("lineOpacity", "autofillPartLineOpacityLabel"),
+    ("traceHue", "autofillPartTraceHueLabel"),
+    ("traceSaturation", "autofillPartTraceSaturationLabel"),
+    ("traceLightness", "autofillPartTraceLightnessLabel"),
+    ("outlineEnabled", "autofillPartOutlineLabel"),
+    ("outlineColor", "autofillPartOutlineLabel"),
+    ("outlineWidth", "autofillPartOutlineWidthLabel"),
+    ("lineGapFill", "autofillPartLineGapLabel"),
+]
+
+
+def settings_summary(case, labels, fields):
+    settings = case.get("settings") or {}
+    if case["group"] == "filters":
+        kind = settings.get("kind")
+        parts = []
+        for key, field in fields.get(kind, []):
+            if field not in settings:
+                continue
+            value = settings[field]
+            if isinstance(value, list) and not value:
+                continue
+            # Sphere shading shows one combined blend mode or one per colour.
+            combined = settings.get("sphereCombined")
+            if field == "sphereCombinedBlend" and not combined:
+                continue
+            if field in ("sphereShadowBlend", "sphereLightBlend") and combined:
+                continue
+            # Pixel art shows the colours only where the mode uses them.
+            mode = settings.get("pixelColorMode")
+            if field == "pixelExplicitColors" and mode not in ("explicit", "palette"):
+                continue
+            name = labels.get(key, key)
+            parts.append(f"{name}: {enum_label(field, value, labels)}")
+            if field == "pixelColorMode" and value == "count":
+                count = settings.get("colorLevels")
+                parts.append(f"{labels.get('filterColorLevels', '色数')}: {count}")
+        return "設定値  " + " / ".join(parts) if parts else "設定値  初期値"
+    if case["group"] == "blend":
+        return f"合成モード: {case['name']}（{settings.get('blendMode')}）"
+    if case["group"] == "pixel-compare":
+        if settings.get("kind") != "pixelate":
+            size = format_value("", settings.get("blockSize", "?"))
+            return f"設定値  {labels['filterPixelateBlockSize']}: {size}px"
+        colors = " ".join(f"#{c & 0xFFFFFF:06X}" for c in settings.get("colors", []))
+        mode = enum_label("pixelColorMode", settings.get("colorMode"), labels)
+        return (
+            f"設定値  {labels['filterPixelateBlockSize']}: "
+            f"{format_value('', settings.get('cellSize'))}px / "
+            f"{labels['pixelColorModeLabel']}: {mode} / {colors}"
+        )
+    if "parts" in settings:
+        names = [part.get("name", "") for part in settings["parts"]]
+        return f"パーツ{len(names)}件: " + "、".join(names)
+    if case["group"] == "automation":
+        steps = settings.get("steps", [])
+        return "手順  " + " → ".join(step.get("label", "") for step in steps)
+    if "steps" in settings:
+        steps = settings.get("steps", [])
+        return "手順  " + " → ".join(step.get("label", "") for step in steps)
+    # An auto-fill part, named as its settings screen names each field.
+    parts = []
+    for field, key in AUTOFILL_PART_FIELDS:
+        if field not in settings or settings[field] is None:
+            continue
+        mode = settings.get("lineColorMode")
+        if field.startswith("trace") and mode != "traceAdjust":
+            continue
+        if field == "lineColor" and mode != "specified":
+            continue
+        if field in ("outlineColor", "outlineWidth") and not settings.get(
+            "outlineEnabled"
+        ):
+            continue
+        value = settings[field]
+        if isinstance(value, dict):
+            value = value.get("type", "ON")
+        label = re.sub(r"[:：]?\s*\{value\}.*$", "", labels.get(key, field))
+        parts.append(f"{label}: {enum_label(field, value, labels)}")
+    return "設定値  " + " / ".join(parts) if parts else ""
+
+
+def wrap(draw, text, fnt, width):
     lines, line = [], ""
     for ch in text:
-        if ch == "\n" or pdfmetrics.stringWidth(line + ch, FONT, size) > width:
+        if ch == "\n" or draw.textlength(line + ch, font=fnt) > width:
             lines.append(line)
             line = "" if ch == "\n" else ch
         else:
@@ -69,166 +271,305 @@ def wrapped(text, width, size):
     return lines
 
 
-def draw_text(c, text, x, y, width, size=11, leading=16, color="#253047"):
-    c.setFont(FONT, size)
-    c.setFillColor(HexColor(color))
-    for line in wrapped(text, width, size):
-        c.drawString(x, y, line)
-        y -= leading
-    return y
-
-
-def thumbnail(path):
-    """Add a checkerboard only behind artwork thumbnails, keeping PNGs intact."""
+def artwork(path, size):
+    """The artwork over a checkerboard (its transparent parts): at its own
+    size when it fits, so pixels stay as rendered, else scaled down."""
     im = Image.open(path).convert("RGBA")
-    background = Image.new("RGBA", im.size, "#ffffff")
-    d = ImageDraw.Draw(background)
-    for y in range(0, im.height, 12):
-        for x in range(0, im.width, 12):
-            if (x // 12 + y // 12) % 2:
-                d.rectangle((x, y, x + 11, y + 11), fill="#e8edf2")
-    return ImageReader(Image.alpha_composite(background, im).convert("RGB"))
+    im.thumbnail((size, size), Image.LANCZOS)
+    board = Image.new("RGBA", im.size, "#ffffff")
+    d = ImageDraw.Draw(board)
+    for y in range(0, im.height, 14):
+        for x in range(0, im.width, 14):
+            if (x // 14 + y // 14) % 2:
+                d.rectangle((x, y, x + 13, y + 13), fill="#e8edf2")
+    return Image.alpha_composite(board, im).convert("RGB")
 
 
-def build_pdf(path, gallery, groups, revision):
-    # Embed the app's licensed Japanese font so PDF readers need no CJK fallback.
-    font = Path(__file__).resolve().parents[1] / "assets/fonts/NotoSerifJP.ttf"
-    pdfmetrics.registerFont(TTFont(FONT, str(font)))
-    w, h = landscape(A4)
-    c = canvas.Canvas(str(path), pagesize=(w, h))
-    c.setTitle("NIARIM 操作キャプチャ - 全プリセット比較")
-    c.setAuthor("NIARIM development verification")
-    page = 0
-
-    def start(title):
-        nonlocal page
-        page += 1
-        c.setFillColor(HexColor("#f4f6fa"))
-        c.rect(0, 0, w, h, fill=1, stroke=0)
-        draw_text(c, title, 28, h - 33, w - 56, size=17, leading=23)
-        draw_text(
-            c,
-            f"NIARIM / UI操作から取得 / {revision[:12]}",
-            28,
-            18,
-            w - 90,
-            size=8,
-            color="#64748b",
+def build_card(gallery, group, case, labels, fields):
+    """One case as an image: its name, settings, and before/after."""
+    card = Image.new("RGB", (CARD_W, CARD_H), "#ffffff")
+    d = ImageDraw.Draw(card)
+    title_font, body_font = font(HEADING_FONT, 26), font(BODY_FONT, 17)
+    small = font(BODY_FONT, 15)
+    y = 14
+    for line in wrap(d, case["displayName"], title_font, CARD_W - 32)[:2]:
+        d.text((16, y), line, font=title_font, fill=INK)
+        y += 34
+    summary = settings_summary(case, labels, fields)
+    lines = wrap(d, summary, small, CARD_W - 32)
+    if len(lines) > 4:
+        lines = lines[:4]
+        lines[-1] = lines[-1][:-1] + "…"
+    for line in lines:
+        d.text((16, y), line, font=small, fill=MUTED)
+        y += 21
+    side = 330
+    top = CARD_H - 256 - 52
+    after_key = "generated" if "generated" in case else "after"
+    for i, (key, label) in enumerate(
+        [
+            ("before", "適用前"),
+            (
+                after_key,
+                "生成レイヤー（元画像を非表示）"
+                if after_key == "generated"
+                else "適用後",
+            ),
+        ]
+    ):
+        x = 40 + i * (side + 77)
+        d.text((x + (side - 256) // 2, top - 26), label, font=body_font, fill=INK)
+        image = artwork(gallery / group / case[key], side)
+        ix = x + (side - image.width) // 2
+        card.paste(image, (ix, top))
+        d.rectangle(
+            (ix - 1, top - 1, ix + image.width, top + image.height),
+            outline="#cbd5e1",
         )
-        c.drawRightString(w - 28, 18, str(page))
-
-    start("NIARIM 操作キャプチャ")
-    y = h - 93
-    total = sum(len(cases) for cases in groups.values())
-    y = (
-        draw_text(
-            c,
-            f"質感変更を除くVisual closure / {total}ケース",
-            38,
-            y,
-            w - 76,
-            size=18,
-            leading=27,
+    if (case.get("settings") or {}).get("kind") == "prism" and not case.get("note"):
+        case["note"] = (
+            "レイヤー単体の表示。キャンバスでは合成モード「"
+            + labels.get("blendModeLinearDodge", "linearDodge")
+            + "」で下の絵を明るくする。"
         )
-        - 28
+    note = case.get("note") or (
+        "初期値は恒等変換（画素変化なし）"
+        if case["changedPixels"] == 0
+        else f"本番UIで実行・出力確認済み（変化画素 {case['changedPixels']:,}）"
     )
+    note_lines = wrap(d, note, small, CARD_W - 32)[:2]
+    for n, line in enumerate(note_lines):
+        d.text(
+            (16, CARD_H - 14 - 21 * (len(note_lines) - n)), line, font=small, fill=MUTED
+        )
+    return card
+
+
+# Screens of the new and reworked features, written by their own tests
+# (paths under build/). Each page shows one feature, labelled in the image.
+FEATURE_PAGES = [
+    (
+        "投げ縄「線に吸着」",
+        "赤＝大まかに描いた投げ縄、青＝線に吸着した境界。内部線や交差する線へ乗り移らず外周の輪郭を追う。",
+        [
+            ("lasso-snap/regions_and_internal_lines.png", "複数領域・内部線のある線画"),
+            (
+                "lasso-snap/clothing_rough_enclosure.png",
+                "衣服を外側から大まかに囲んだ場合",
+            ),
+            ("lasso-snap/canvas_raw.png", "キャンバス：吸着なし"),
+            ("lasso-snap/canvas_snap.png", "キャンバス：線に吸着"),
+        ],
+    ),
+    (
+        "球体陰影フィルター・魚眼の中心（キャンバス上で操作）",
+        "調整中はキャンバス自体がプレビュー。光の位置・大きさ、魚眼の中心はキャンバス上の＋とつまみでドラッグできる。",
+        [
+            ("sphere-shading/canvas_1_opened.png", "球体陰影を開いた直後"),
+            ("sphere-shading/canvas_2_dragged.png", "光をドラッグで移動"),
+            (
+                "sphere-shading/canvas_3_combined.png",
+                "影色→光色をまとめて1つのブレンドで",
+            ),
+            ("sphere-shading/canvas_6_fisheye_moved.png", "魚眼の中心をドラッグで移動"),
+        ],
+    ),
+    (
+        "選択範囲の中だけに適用・眼鏡断層のレンズ範囲",
+        "選択範囲があると描画フィルターはその内側だけを変える。眼鏡断層はパネルのペン・消しゴム・バケツで塗った範囲だけを歪ませる。",
+        [
+            (
+                "filter-selection/01_threshold_preview_in_selection.png",
+                "二値化：選択範囲内のプレビュー",
+            ),
+            (
+                "filter-selection/02_threshold_applied.png",
+                "二値化：適用後（外側はそのまま）",
+            ),
+            (
+                "filter-selection/05_lens_area_painted.png",
+                "眼鏡断層：ペンでレンズ範囲を塗る",
+            ),
+            ("filter-selection/06_lens_applied.png", "眼鏡断層：適用後"),
+        ],
+    ),
+    (
+        "ブレンドモード",
+        "レイヤーのブレンドモード一覧に、各モードで重ねた見本を表示（下の方は半透明で重ねた見え方）。",
+        [
+            ("blend-preview/picker.png", "ブレンドモードの選択一覧（見本付き）"),
+        ],
+    ),
+    (
+        "自動塗り「線画との隙間を埋める」・線画色トレス",
+        "隙間を埋める量を上げるほど、線の薄いふちの下まで塗る。線画色トレスは線を隣の塗りより深い色にする公式の自動操作。",
+        [
+            ("autofill-line-gap/small.png", "線画との隙間を埋める：0"),
+            ("autofill-line-gap/medium.png", "線画との隙間を埋める：50"),
+            ("autofill-line-gap/large.png", "線画との隙間を埋める：100"),
+            ("lineart-color-trace/before.png", "線画色トレス：実行前"),
+            ("lineart-color-trace/after.png", "線画色トレス：実行後"),
+        ],
+    ),
+    (
+        "魚眼パース定規・背景馴染ませ",
+        "魚眼パース定規は円の中で横・縦の線が弧を描く5点の曲線透視。背景馴染ませは内容全体に背景の光と色をなじませる。",
+        [
+            ("fisheye-ruler/1_guide.png", "魚眼パース定規のガイド"),
+            ("fisheye-ruler/2_stroke.png", "定規に沿って描いた線"),
+            ("background-acclimation-v2/sunset.png", "背景馴染ませ：夕焼け"),
+            ("background-acclimation-v2/snow.png", "背景馴染ませ：雪景色"),
+        ],
+    ),
+]
+
+
+def feature_pages(build_dir, revision, start_number):
+    pages, number = [], start_number
+    title_font, body = font(HEADING_FONT, 22), font(BODY_FONT, 19)
+    for title, desc, shots in FEATURE_PAGES:
+        shots = [(build_dir / path, label) for path, label in shots]
+        shots = [(path, label) for path, label in shots if path.is_file()]
+        if not shots:
+            continue
+        number += 1
+        im, d = page(title, revision, number)
+        y = 92
+        for line in wrap(d, desc, body, PAGE_W - 96):
+            d.text((48, y), line, font=body, fill=MUTED)
+            y += 28
+        top = y + 20
+        column = (PAGE_W - 96 - 24 * (len(shots) - 1)) // len(shots)
+        height = PAGE_H - top - 110
+        for i, (path, label) in enumerate(shots):
+            x = 48 + i * (column + 24)
+            lines = wrap(d, label, title_font, column)
+            for n, line in enumerate(lines[:2]):
+                d.text((x, top + n * 28), line, font=title_font, fill=INK)
+            shot = Image.open(path).convert("RGB")
+            # Small engine outputs are enlarged with hard pixel edges.
+            scale = min(column / shot.width, (height - 60) / shot.height)
+            size = (max(1, int(shot.width * scale)), max(1, int(shot.height * scale)))
+            shot = shot.resize(size, Image.NEAREST if scale >= 2 else Image.LANCZOS)
+            sx, sy = x + (column - shot.width) // 2, top + 62
+            im.paste(shot, (sx, sy))
+            d.rectangle(
+                (sx - 1, sy - 1, sx + shot.width, sy + shot.height),
+                outline="#cbd5e1",
+            )
+        pages.append(im)
+    return pages
+
+
+def page(title, revision, number):
+    im = Image.new("RGB", (PAGE_W, PAGE_H), "#f4f6fa")
+    d = ImageDraw.Draw(im)
+    d.text((48, 30), title, font=font(HEADING_FONT, 34), fill=INK)
+    footer = font(BODY_FONT, 16)
+    d.text(
+        (48, PAGE_H - 40),
+        f"NIARIM / 本番UIの操作から取得 / {revision[:12]}",
+        font=footer,
+        fill=MUTED,
+    )
+    d.text((PAGE_W - 80, PAGE_H - 40), str(number), font=footer, fill=MUTED)
+    return im, d
+
+
+def build_pdf(path, gallery, groups, revision, labels, screens):
+    fields = panel_fields()
+    cards_dir = gallery / "labelled"
+    cards_dir.mkdir(exist_ok=True)
+    pages = []
+    total = sum(len(cases) for cases in groups.values())
+    cover, d = page("NIARIM 操作キャプチャ", revision, 1)
+    body, head = font(BODY_FONT, 21), font(HEADING_FONT, 24)
+    y = 120
+    d.text(
+        (70, y),
+        f"{total}ケース（質感変更・折り畳みモードは別作業のため除外）",
+        font=head,
+        fill=INK,
+    )
+    y += 70
     for label, desc in [
         (
             "収録対象",
-            "通常フィルター、Pixel Art / Mosaic、全ブレンドモード、公式自動操作、自動塗り、記録・再実行。質感変更フィルターはユーザー指定により除外。",
+            "描画フィルター（トーンカーブ6種・ドット絵4種を含む）、Pixel Art / Mosaicの同一fixture比較、全25ブレンドモード、公式の自動操作3種、出荷済み自動塗りプリセットの完成状態、記録・再実行。",
         ),
         (
             "確認方法",
-            "本番のNiarimAppと画面ルートをFlutterテスト環境で起動し、ボタン・選択肢を操作。適用前後の画素と生成レイヤーを検証しました。",
+            "本番のNiarimAppと画面ルートをFlutterテスト環境で起動し、ボタン・選択肢をタップして実行。適用前後の画素と生成レイヤーを検証しました。",
+        ),
+        (
+            "焼き込み",
+            "各カードの見出しが機能名、その下が設定値（フィルターパネルと同じ項目名）。カード画像はZIPのlabelled/にも1枚ずつ収録しています。",
         ),
         (
             "撮影条件",
-            "Flutter 3.47.3 / Linuxレンダラー。画面480×960、画像960×1920。比較用の入力画像と保存先はテスト用です。Android・iOS実機での撮影ではありません。",
-        ),
-        (
-            "画像の読み方",
-            "左が適用前、右が適用後。別レイヤーを作る処理は、元画像を非表示にした生成レイヤーを右側に掲載。通常の合成表示もZIPに収録しています。市松模様は透明部分です。",
-        ),
-        (
-            "比較重点",
-            "Pixel ArtとMosaic、AdditionとLinear Dodge、GaussianとLens/Bokeh、NoiseとFilm Grain、CRTとVHSなど、見た目の差が仕様となる項目を同一成果物で確認できます。",
-        ),
-        (
-            "原本",
-            "ZIP内のindex.htmlで全ケースを検索できます。適用前後・設定画面・生成レイヤーのPNGと、設定値を記録したmanifest.jsonを収録しています。",
+            "Flutter 3.47.3 / Linuxレンダラー。作品256×256。Android・iOS実機での撮影ではありません。市松模様は透明部分です。",
         ),
     ]:
-        y = draw_text(c, label, 38, y, 145, size=12, leading=17)
-        # Body occupies the same starting baseline in a separate column.
-        y = draw_text(c, desc, 188, y + 17, w - 230, size=11, leading=17) - 23
-    c.showPage()
-
+        d.text((70, y), label, font=head, fill=INK)
+        for line in wrap(d, desc, body, PAGE_W - 420):
+            d.text((300, y + 2), line, font=body, fill=INK)
+            y += 32
+        y += 30
+    pages.append(cover)
+    number = 1
     for group, cases in groups.items():
         for offset in range(0, len(cases), 4):
-            start(
-                f"{GROUPS[group]}  {offset + 1}-{min(offset + 4, len(cases))} / {len(cases)}"
+            number += 1
+            im, _ = page(
+                f"{GROUPS[group]}  {offset + 1}-{min(offset + 4, len(cases))} / {len(cases)}",
+                revision,
+                number,
             )
             for n, case in enumerate(cases[offset : offset + 4]):
+                card = build_card(gallery, group, case, labels, fields)
+                card.save(cards_dir / f"{case['id']}.png")
                 col, row = n % 2, n // 2
-                x, top = 28 + col * ((w - 68) / 2 + 12), h - 65 - row * 251
-                cw = (w - 68) / 2
-                c.setFillColor(HexColor("#ffffff"))
-                c.roundRect(x, top - 242, cw, 242, 8, fill=1, stroke=0)
-                title = case["displayName"]
-                draw_text(c, title, x + 12, top - 18, cw - 24, size=10, leading=13)
-                image_size = 160
-                ix = [x + 12, x + cw - image_size - 12]
-                iy = top - 213
-                after = case.get("generated", case["after"])
-                for px, filename in zip(ix, [case["before"], after]):
-                    c.drawImage(
-                        thumbnail(gallery / group / filename),
-                        px,
-                        iy,
-                        image_size,
-                        image_size,
-                    )
-                draw_text(c, "適用前", ix[0], top - 46, 150, size=9)
-                label = (
-                    "生成レイヤー（元画像を非表示）"
-                    if "generated" in case
-                    else "適用後"
-                )
-                draw_text(c, label, ix[1], top - 46, 163, size=8)
-                note = (
-                    "初期値は恒等変換（画素変化なし）"
-                    if case["changedPixels"] == 0
-                    else "UI実行・出力確認済み"
-                )
-                draw_text(c, note, x + 12, top - 230, cw - 24, size=8, color="#64748b")
-            c.showPage()
-
-    help_pages = [
+                im.paste(card, (48 + col * (CARD_W + 24), 100 + row * (CARD_H + 24)))
+            pages.append(im)
+    features = feature_pages(screens, revision, number)
+    pages.extend(features)
+    number += len(features)
+    for title, images in [
         (
-            "ヘルプ",
+            "更新したヘルプ画面",
             [
                 ("help-custom-automation", "自動操作（操作記録）"),
                 ("help-filters", "全フィルターの説明"),
             ],
         ),
         (
-            "Tips",
+            "更新したTips画面",
             [
                 ("tips-automation", "公式の自動操作プリセット"),
-                ("tips-texture", "質感・プリズム・VHS"),
             ],
         ),
-    ]
-    for title, images in help_pages:
-        start(f"更新した{title}画面")
-        for i, (name, label) in enumerate(images):
-            x = 112 + i * 375
-            draw_text(c, label, x, h - 66, 260, size=11)
-            c.drawImage(
-                str(gallery / "extras" / f"{name}.png"), x, 40, width=235, height=470
-            )
-        c.showPage()
-    c.save()
+    ]:
+        shots = [(gallery / "extras" / f"{n}.png", label) for n, label in images]
+        if not all(p.is_file() for p, _ in shots):
+            continue
+        number += 1
+        im, d = page(title, revision, number)
+        for i, (shot, label) in enumerate(shots):
+            x = 260 + i * 640
+            d.text((x, 100), label, font=head, fill=INK)
+            screen = Image.open(shot).convert("RGB")
+            screen.thumbnail((500, 1000), Image.LANCZOS)
+            im.paste(screen, (x, 150))
+        pages.append(im)
+    pages[0].save(
+        path,
+        save_all=True,
+        append_images=pages[1:],
+        resolution=150,
+        title="NIARIM 操作キャプチャ",
+        author="NIARIM development verification",
+    )
+    return len(pages)
 
 
 def build_html(gallery, groups):
@@ -269,7 +610,9 @@ input{padding:12px;width:min(90%,600px);font-size:16px}main{display:grid;grid-te
 article{background:white;padding:20px;border-radius:12px;min-width:0}h2{font-size:18px}small{color:#64748b}.images{display:flex;gap:12px}
 figure{margin:0;width:50%}figcaption{font-size:12px;min-height:34px}img{width:100%;background:repeating-conic-gradient(#e8edf2 0% 25%,white 0% 50%) 50%/16px 16px}
 pre{font-size:12px;overflow:auto}a{color:#284f9b}p{font-size:13px;line-height:1.7}[hidden]{display:none!important}</style>
-<h1>NIARIM 操作キャプチャ</h1><p>全106ケース。Flutter本番UI / Linuxレンダラー。実機撮影ではありません。詳細はREADME.mdをご覧ください。</p>
+<h1>NIARIM 操作キャプチャ</h1><p>全"""
+        + str(sum(len(c) for c in groups.values()))
+        + """ケース。Flutter本番UI / Linuxレンダラー。実機撮影ではありません。詳細はREADME.mdをご覧ください。</p>
 <input aria-label="キャプチャを検索" placeholder="機能名で検索" oninput="document.querySelectorAll('article').forEach(x=>x.hidden=!x.dataset.search.toLowerCase().includes(this.value.toLowerCase()))">
 <main>"""
         + "\n".join(cards)
@@ -295,13 +638,19 @@ def main():
         if not manifest_path.is_file():
             continue
         manifest = json.loads(manifest_path.read_text())
-        cases = manifest["cases"]
+        cases = [
+            case
+            for case in manifest["cases"]
+            if case["id"].split("_", 1)[0] not in EXCLUDED_FILTER_IDS
+            and (case.get("settings") or {}).get("kind") not in EXCLUDED_KINDS
+        ]
         assert cases, f"{group} capture group is empty"
         assert len({case["id"] for case in cases}) == len(cases)
         assert all(case["status"] == "passed" for case in cases)
         if group == "pixel-compare":
             assert {case["id"] for case in cases} == {
-                "pixel_art_same_fixture",
+                "pixel_art_blocks_six_colours",
+                "pixel_art_dots_canvas_resolution",
                 "mosaic_same_fixture",
             }
         if group == "blend":
@@ -311,10 +660,25 @@ def main():
         for case in cases:
             case["displayName"] = display_name(case, labels)
         groups[group] = cases
-        shutil.copytree(args.input / group, gallery / group, dirs_exist_ok=True)
+        excluded = {case["id"] for case in manifest["cases"]} - {
+            case["id"] for case in cases
+        }
+        shutil.copytree(
+            args.input / group,
+            gallery / group,
+            dirs_exist_ok=True,
+            ignore=lambda _, names: [
+                n for n in names if any(n.startswith(e) for e in excluded)
+            ],
+        )
+        if excluded:
+            print(f"{group}: excluded {sorted(excluded)}")
         for case in cases:
-            for key in ["before", "after", "beforeUI", "afterUI", "configurationUI"]:
+            for key in ["before", "after", "beforeUI", "afterUI"]:
                 assert (gallery / group / case[key]).is_file(), (case["id"], key)
+            # Not every group opens a settings screen of its own.
+            if not (gallery / group / case.get("configurationUI", "")).is_file():
+                case.pop("configurationUI", None)
     required = {"filters", "pixel-compare", "blend", "automation", "autofill"}
     assert required.issubset(groups), ("missing capture groups", required - set(groups))
     (gallery / "manifest.json").write_text(
@@ -335,7 +699,8 @@ def main():
 
 検証ソース: {args.revision}
 
-質感変更フィルターを除外したVisual closure成果物です。
+質感変更フィルター（と別作業の折り畳みモード）を除外したVisual closure成果物です。
+labelled/には、機能名・設定値・適用前後を1枚に焼き込んだカード画像があります。
 通常フィルター、Pixel Art / Mosaic同一fixture比較、全25ブレンドモード、
 公式自動操作、自動塗り、記録・再実行を収録します。
 連続スライダーの全数値の組合せを網羅するものではありません。
@@ -361,7 +726,7 @@ extrasの自動塗り設定は機能比較用であり、出荷プリセット�
     )
     build_html(gallery, groups)
     pdf = args.output / "NIARIM-operation-captures.pdf"
-    build_pdf(pdf, gallery, groups, args.revision)
+    pages = build_pdf(pdf, gallery, groups, args.revision, labels, args.input.parent)
     archive = args.output / "NIARIM-captures.zip"
     with zipfile.ZipFile(archive, "w", zipfile.ZIP_DEFLATED) as z:
         for path in sorted(gallery.rglob("*")):
@@ -373,6 +738,7 @@ extrasの自動塗り設定は機能比較用であり、出荷プリセット�
                 "cases": sum(len(cases) for cases in groups.values()),
                 "pdf": str(pdf.resolve()),
                 "zip": str(archive.resolve()),
+                "pages": pages,
                 "pngs": len(list(gallery.rglob("*.png"))),
             },
             ensure_ascii=False,
