@@ -951,8 +951,9 @@ signingConfigs.getByName("debug") }`がTODOのまま）に、
      に同じ内容がある。バックエンドのデプロイ手順全体・前提条件・
      `youtube.upload`スコープのGoogle審査についてはそちらを参照）。
 
-9. **作品広場のAPIクライアント層は実装済み。残るのはGoogleログインと
-   デプロイ**：`lib/services/api/`にバックエンドの**21エンドポイント全て**を
+9. **作品広場のAPIクライアント層・書き込みの配線は実装済み。残るのは
+   デプロイと通報・ブロックの画面**：`lib/services/api/`にバックエンドの
+   **22エンドポイント全て**を
    型付きで呼ぶ層がある（`community_api.dart`＋HTTP下請けの
    `niarim_api_client.dart`＋DTOの`niarim_api_models.dart`）。接続先は
    ビルド時の`--dart-define=NIARIM_API_BASE_URL=https://...`で渡し、
@@ -960,14 +961,18 @@ signingConfigs.getByName("debug") }`がTODOのまま）に、
    （デプロイ前でも画面確認・スクリーンショット・テストが一通りできる
    状態を保つため）。読み取り系（新着一覧・ランキング）は
    `CommunityService.refreshFromBackend()`・`fetchRanking()`で配線済み。
-   **残っているのは次の2つ**：
-   - **Googleログイン（NIARIM User ID発行フロー）が未実装**。書き込み系
-     （投稿・ブックマーク・フォロー・通報・ブロック）はIDトークンが要る。
-     クライアント側は`NiarimAuthTokenProvider`（`Future<String?>`を返す
-     関数）を受け取る形で口を開けてあるので、ログイン基盤ができたら
-     `NiarimApiConfig.createApi(tokenProvider: ...)`へ渡し、
-     `CommunityService`のトグル系メソッドをAPI呼び出し＋楽観更新へ
-     差し替える。これはユーザー操作ではなく純粋な追加開発work。
+   状況は次のとおり：
+   - 書き込み系（投稿・タグ・公開設定・「AI画像・AI動画使用」・
+     ブックマーク・リポスト・フォロー）は`GoogleAuthService.backendIdToken`
+     のIDトークンで送る形まで配線済み（手元へ即反映→送信→サーバーの返事で
+     置き換え、断られたら巻き戻して`lastError`）。起動時はGoogleアカウント
+     ごとに覚えた投稿者IDを`restoreOwner`で先に戻し、`/me/works`→
+     `loadSocial`（ブックマーク・フォロー中・リポスト→フォロー中フィード）の
+     順に取り込む。作者ページは開いたときに`refreshAuthorWorks`で取得する。
+     ストアの作品は「サーバーが確認したもの」だけに絞る
+     （`_pruneUnconfirmed`）ので、新しい取得経路を足すときは確認済みIDの
+     集合にも足すこと（足さないと次の新着取得で消える）。
+     通報・ブロックはまだ画面から呼んでいない。
    - 上記8のAPIキー発行と、`backend/`の実デプロイ（Task#175）。
 10. **規約・法令コンプライアンス監査（2026年9月実施）で見つかった、
     人間の判断・ストア管理画面操作が必要な項目**（コード側で対応できる

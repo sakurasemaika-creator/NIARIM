@@ -102,6 +102,17 @@ class CommunityApi {
         .toList();
   }
 
+  /// A user's reposts, newest first (public, no sign-in).
+  Future<List<ApiRepost>> repostsOf(String userId) async {
+    final json = await _client.getJson(
+      '/users/${Uri.encodeComponent(userId)}/reposts',
+    );
+    return (json['reposts'] as List? ?? const [])
+        .whereType<Map<String, dynamic>>()
+        .map(ApiRepost.fromJson)
+        .toList();
+  }
+
   Future<ApiWork> createWork({
     required String youtubeVideoId,
     required String youtubeAccessToken,

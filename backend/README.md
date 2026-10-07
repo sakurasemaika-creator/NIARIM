@@ -104,6 +104,7 @@ backend/
 | POST     | `/users/{id}/follow`                  | 22.5節                                                                                   | 必須                                             |
 | GET      | `/users/{id}/followers`               | 22.5節・22.7節                                                                           | 任意（非公開なら本人のみ、22.7節のフィルタ適用） |
 | GET      | `/users/{id}/following`               | 22.5節                                                                                   | 任意（非公開なら本人のみ）                       |
+| GET      | `/users/{id}/reposts`                 | 8.5bis節（リポスト一覧。フォロー中タブで使う）                                           | 不要（リポストは公開。非公開化された作品は除外） |
 | PATCH    | `/users/{id}/follow-visibility`       | 22.5節                                                                                   | 必須（本人のみ）                                 |
 | GET      | `/users/{id}/notifications`           | 22.6節                                                                                   | 必須（本人のみ）                                 |
 | POST     | `/users/{id}/notifications/mark-read` | 22.6節                                                                                   | 必須（本人のみ）                                 |

@@ -46,11 +46,16 @@ class FavoriteFeedEntry {
 /// **デプロイ前でもアプリの画面確認・スクリーンショット・テストが一通り
 /// できる状態を保つ**ようにしてある。
 ///
-/// 書き込み系（投稿・ブックマーク・フォロー・通報）はGoogleログインで
-/// 得たIDトークンが要る。ログイン基盤自体はまだ無いため、[api]の
-/// 書き込みメソッドは層としては用意済みだが、このサービスからはまだ
-/// 呼んでいない（呼ぶと401になる）。ログインを実装したら、下の
-/// トグル系メソッドをAPI呼び出し＋楽観更新へ差し替えること。
+/// 書き込み系（タグ・公開設定・「AI画像・AI動画使用」・ブックマーク・
+/// リポスト・フォロー）は、手元へ即座に反映してからサーバーへ送り、
+/// サーバーの返事で置き換える（断られたら自分の変更だけを戻し、理由を
+/// [lastError]に入れる）。IDトークンはGoogleログインから得る。
+///
+/// バックエンド接続時に手元へ置く作品は、サーバーが最後に確認したもの
+/// だけ（新着・ランキング・自分の作品・フォロー中の作者の作品とリポスト・
+/// ブックマーク・開いた作者ページ）。どの一覧も同じ1つのストアを読み、
+/// 閲覧者のフィルター（AI画像・AI動画使用の非表示・ミュートタイトル・
+/// ミュートタグ）を同じ判定で通す。
 class CommunityService extends ChangeNotifier {
   /// バックエンドのAPIクライアント。未設定（デプロイ前）ならnull。
   final CommunityApi? api;
@@ -119,6 +124,9 @@ class CommunityService extends ChangeNotifier {
       return rankedWorks;
     } on NiarimApiException catch (e) {
       _lastError = e;
+      // The previous period's order must not stand in for this one.
+      _rankingIds = const [];
+      _pruneUnconfirmed();
       notifyListeners();
       return const [];
     }
@@ -131,9 +139,12 @@ class CommunityService extends ChangeNotifier {
       : <CommunityWork>[];
   final Set<String> _bookmarkedIds = {};
   // お気に入り作者（フォロー、Task#144）のNIARIM User ID集合。
-  // ブックマークと同じくバックエンド未実装のためアプリ内一時状態のみ
-  // （SharedPreferences等への永続化は行わない）。
+  // バックエンド接続時はサーバーのフォロー中一覧（[loadSocial]）で
+  // 埋め、トグルはサーバーへ送る。未接続時はアプリ内一時状態のみ。
   final Set<String> _favoriteAuthorIds = {};
+  // Followed authors' names from the server's following list, for the
+  // 「○○さんがリポスト」 label of their reposts.
+  final Map<String, String> _followedNames = {};
 
   static const _hideAiImageVideoKey = 'community.hideGenerativeAiImageVideo';
   static const _mutedWordsKey = 'community.mutedWords';
@@ -358,10 +369,15 @@ class CommunityService extends ChangeNotifier {
   String? _currentUserId;
 
   // With a backend the store holds what the server last confirmed: the
-  // latest page, the last ranking and the signed-in poster's own works.
+  // latest page, the last ranking, the signed-in poster's own works, the
+  // following feed (followed authors' works and reposts), the viewer's
+  // bookmarks and the author pages opened.
   Set<String> _latestIds = {};
   List<String> _rankingIds = const [];
   final Set<String> _ownIds = {};
+  Set<String> _feedIds = {};
+  Set<String> _bookmarkWorkIds = {};
+  final Map<String, Set<String>> _authorPageIds = {};
 
   /// The last fetched ranking in the server's order, as the viewer's
   /// filters allow.
@@ -380,13 +396,39 @@ class CommunityService extends ChangeNotifier {
   /// still sees it when it is hidden or filtered out.
   bool isOwnWork(CommunityWork work) => isOwnAuthor(work.authorId);
 
-  bool isOwnAuthor(String authorId) =>
-      authorId == (_currentUserId ?? (api == null ? kDummySelfAuthorId : null));
+  bool isOwnAuthor(String authorId) => authorId == _selfId;
+
+  /// Who the viewer is as a reposter, follower or bookmarker: the signed-in
+  /// poster with a backend (null until known), the dummy self without one.
+  String? get _selfId =>
+      _currentUserId ?? (api == null ? kDummySelfAuthorId : null);
+
+  static const _ownerByAccountPrefix = 'community.ownerByAccount.';
+
+  /// Takes back the NIARIM user id this device last learned for the Google
+  /// account [accountKey], so the poster is recognised as such (their own
+  /// settings, their hidden works) from the start, before GET /me/works
+  /// answers. A Google account always maps to the same NIARIM user, so
+  /// the remembered id cannot belong to someone else.
+  Future<void> restoreOwner(String accountKey) async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final id = prefs.getString('$_ownerByAccountPrefix$accountKey');
+      if (id != null && _currentUserId == null) {
+        _currentUserId = id;
+        notifyListeners();
+      }
+    } catch (error) {
+      debugPrint('Community owner could not be restored: $error');
+    }
+  }
 
   /// Learns who the signed-in poster is from GET /me/works and keeps their
   /// works, hidden ones included, in the store so their detail and author
-  /// pages open. Returns the page, or null without a backend.
-  Future<ApiMyWorks?> loadOwnWorks() async {
+  /// pages open. With [accountKey] (the Google account) the id is
+  /// remembered for [restoreOwner]. Returns the page, or null without a
+  /// backend.
+  Future<ApiMyWorks?> loadOwnWorks({String? accountKey}) async {
     final client = api;
     if (client == null) return null;
     final page = await client.myWorks();
@@ -399,7 +441,137 @@ class CommunityService extends ChangeNotifier {
     }
     _pruneUnconfirmed();
     notifyListeners();
+    final id = page.authorId;
+    if (accountKey != null && id != null) {
+      try {
+        final prefs = await SharedPreferences.getInstance();
+        await prefs.setString('$_ownerByAccountPrefix$accountKey', id);
+      } catch (error) {
+        debugPrint('Community owner could not be remembered: $error');
+      }
+    }
     return page;
+  }
+
+  /// With a backend and a known poster, takes in the viewer's bookmarks and
+  /// follows from the server, then the following feed ([refreshFollowingFeed]).
+  /// Returns false when there is nothing to load or it failed ([lastError]).
+  Future<bool> loadSocial() async {
+    final client = api;
+    final me = _currentUserId;
+    if (client == null || me == null) return false;
+    final List<ApiWork> bookmarks;
+    final List<ApiUserRef> following;
+    try {
+      final results = await Future.wait<Object>([
+        client.bookmarksOf(me, asOwner: true),
+        client.following(me, asOwner: true),
+      ]);
+      bookmarks = results[0] as List<ApiWork>;
+      following = results[1] as List<ApiUserRef>;
+    } on NiarimApiException catch (error) {
+      _lastError = error;
+      notifyListeners();
+      return false;
+    }
+    final bookmarked = [for (final w in bookmarks) _plazaCopy(w)];
+    for (final work in bookmarked) {
+      _upsert(work);
+    }
+    _bookmarkWorkIds = {for (final w in bookmarked) w.id};
+    // The server lists newest first; the set keeps oldest first.
+    _bookmarkedIds
+      ..clear()
+      ..addAll(bookmarked.reversed.map((w) => w.id));
+    _favoriteAuthorIds
+      ..clear()
+      ..addAll(following.map((u) => u.niarimUserId));
+    _followedNames
+      ..clear()
+      ..addAll({for (final u in following) u.niarimUserId: ?u.channelName});
+    return refreshFollowingFeed();
+  }
+
+  /// The following feed from the server: the followed authors' works and
+  /// reposts, and the viewer's own reposts (so 「リポスト済み」 shows). They
+  /// join the one store, so the viewer's filters apply to them like to
+  /// every other surface. Without a backend the dummy feed stays.
+  Future<bool> refreshFollowingFeed() async {
+    final client = api;
+    if (client == null) return false;
+    final me = _currentUserId;
+    final authors = {..._favoriteAuthorIds};
+    try {
+      final works = await Future.wait([
+        for (final id in authors) client.worksByAuthor(id),
+      ]);
+      final reposters = [...authors, ?me];
+      final reposts = await Future.wait([
+        for (final id in reposters) client.repostsOf(id),
+      ]);
+      final feed = <String>{};
+      for (final page in works) {
+        for (final apiWork in page) {
+          final work = _plazaCopy(apiWork);
+          _upsert(work);
+          feed.add(work.id);
+        }
+      }
+      _reposts.clear();
+      for (var i = 0; i < reposters.length; i++) {
+        final reposterId = reposters[i];
+        for (final entry in reposts[i]) {
+          final work = _plazaCopy(entry.work);
+          _upsert(work);
+          feed.add(work.id);
+          _reposts.add(
+            CommunityRepost(
+              workId: work.id,
+              reposterId: reposterId,
+              reposterName:
+                  _followedNames[reposterId] ?? authorNameOf(reposterId) ?? '',
+              repostedAt: entry.repostedAt,
+            ),
+          );
+        }
+      }
+      _feedIds = feed;
+      _lastError = null;
+      _pruneUnconfirmed();
+      notifyListeners();
+      return true;
+    } on NiarimApiException catch (error) {
+      _lastError = error;
+      notifyListeners();
+      return false;
+    }
+  }
+
+  /// An author's page from the server (the owner's own page includes their
+  /// hidden works). The works join the one store; [worksByAuthor] then lists
+  /// them through the viewer's filters. Without a backend nothing changes.
+  Future<bool> refreshAuthorWorks(String authorId) async {
+    final client = api;
+    if (client == null) return false;
+    try {
+      final fetched = await client.worksByAuthor(
+        authorId,
+        asOwner: isOwnAuthor(authorId),
+      );
+      final works = [for (final w in fetched) _plazaCopy(w)];
+      for (final work in works) {
+        _upsert(work);
+      }
+      _authorPageIds[authorId] = {for (final w in works) w.id};
+      _lastError = null;
+      _pruneUnconfirmed();
+      notifyListeners();
+      return true;
+    } on NiarimApiException catch (error) {
+      _lastError = error;
+      notifyListeners();
+      return false;
+    }
   }
 
   /// Signing out or switching accounts: the viewer is nobody's poster until
@@ -408,6 +580,15 @@ class CommunityService extends ChangeNotifier {
     if (_currentUserId == null && _ownIds.isEmpty) return;
     _currentUserId = null;
     _ownIds.clear();
+    if (api != null) {
+      // The signed-out viewer has no bookmarks, follows or reposts.
+      _bookmarkedIds.clear();
+      _bookmarkWorkIds = {};
+      _favoriteAuthorIds.clear();
+      _followedNames.clear();
+      _reposts.clear();
+      _feedIds = {};
+    }
     _pruneUnconfirmed();
     notifyListeners();
   }
@@ -460,13 +641,15 @@ class CommunityService extends ChangeNotifier {
   /// it was fetched), so no surface keeps showing a stale public copy.
   void _pruneUnconfirmed() {
     if (api == null) return;
-    final ranked = _rankingIds.toSet();
-    _works.removeWhere(
-      (w) =>
-          !_latestIds.contains(w.id) &&
-          !ranked.contains(w.id) &&
-          !_ownIds.contains(w.id),
-    );
+    final confirmed = {
+      ..._latestIds,
+      ..._rankingIds,
+      ..._ownIds,
+      ..._feedIds,
+      ..._bookmarkWorkIds,
+      for (final ids in _authorPageIds.values) ...ids,
+    };
+    _works.removeWhere((w) => !confirmed.contains(w.id));
   }
 
   /// Sets the poster's 「AI画像・AI動画使用」 declaration on [workId]. Only the
@@ -520,13 +703,47 @@ class CommunityService extends ChangeNotifier {
 
   bool isBookmarked(String workId) => _bookmarkedIds.contains(workId);
 
-  void toggleBookmark(String workId) {
-    if (_bookmarkedIds.contains(workId)) {
-      _bookmarkedIds.remove(workId);
-    } else {
-      _bookmarkedIds.add(workId);
-    }
+  /// Bookmarks or un-bookmarks [workId]. Like the follow and repost toggles
+  /// below: applied at once, then (with a backend) sent; the server's answer
+  /// is kept, and a refused toggle is undone with [lastError] set. Returns
+  /// true when it took effect and false when it was refused.
+  Future<bool> toggleBookmark(String workId) => _toggleSocial(
+    isOn: () => _bookmarkedIds.contains(workId),
+    set: (on) {
+      if (on) {
+        _bookmarkedIds.add(workId);
+        _bookmarkWorkIds = {..._bookmarkWorkIds, workId};
+      } else {
+        _bookmarkedIds.remove(workId);
+      }
+    },
+    send: (client) => client.toggleBookmark(workId),
+  );
+
+  Future<bool> _toggleSocial({
+    required bool Function() isOn,
+    required void Function(bool on) set,
+    required Future<bool> Function(CommunityApi client) send,
+  }) async {
+    final wanted = !isOn();
+    set(wanted);
     notifyListeners();
+    final client = api;
+    if (client == null) return true;
+    _lastError = null;
+    try {
+      // The server toggles its own record; its answer is the truth even
+      // when the local copy was out of step.
+      final serverOn = await send(client);
+      if (serverOn != isOn()) set(serverOn);
+      notifyListeners();
+      return true;
+    } on NiarimApiException catch (error) {
+      _lastError = error;
+      if (isOn() == wanted) set(!wanted);
+      notifyListeners();
+      return false;
+    }
   }
 
   /// バックエンド（backend/src/api/routes/tags.ts）と共通の1作品タグ上限。
@@ -660,13 +877,19 @@ class CommunityService extends ChangeNotifier {
   bool isFavoriteAuthor(String authorId) =>
       _favoriteAuthorIds.contains(authorId);
 
-  void toggleFavoriteAuthor(String authorId) {
-    if (_favoriteAuthorIds.contains(authorId)) {
-      _favoriteAuthorIds.remove(authorId);
-    } else {
-      _favoriteAuthorIds.add(authorId);
-    }
-    notifyListeners();
+  /// Follows or unfollows [authorId] (see [toggleBookmark]). With a
+  /// backend, a new follow brings the author's works and reposts into the
+  /// following feed.
+  Future<bool> toggleFavoriteAuthor(String authorId) async {
+    final done = await _toggleSocial(
+      isOn: () => _favoriteAuthorIds.contains(authorId),
+      set: (on) => on
+          ? _favoriteAuthorIds.add(authorId)
+          : _favoriteAuthorIds.remove(authorId),
+      send: (client) => client.toggleFollow(authorId),
+    );
+    if (done && api != null) await refreshFollowingFeed();
+    return done;
   }
 
   /// [authorId]のフォロワーID一覧。ダミーの固定フォロワー（他の作者同士の
@@ -840,41 +1063,64 @@ class CommunityService extends ChangeNotifier {
 
   // ─── リポスト（Task#145の調査を受けた実装） ─────────────────────────
 
-  /// 自分（kDummySelfAuthorId）がこの作品をリポスト済みかどうか。
-  bool isRepostedBySelf(String workId) => _reposts.any(
-    (r) => r.workId == workId && r.reposterId == kDummySelfAuthorId,
-  );
+  /// 閲覧者自身がこの作品をリポスト済みかどうか。
+  bool isRepostedBySelf(String workId) {
+    final self = _selfId;
+    return self != null &&
+        _reposts.any((r) => r.workId == workId && r.reposterId == self);
+  }
 
   /// この作品をリポストした人数（自分・ダミー他作者を問わない）。
   int repostCountOf(String workId) =>
       _reposts.where((r) => r.workId == workId).length;
 
-  /// リポストの追加・取り消しを切り替える。[authorId]を省略すると自分
-  /// （kDummySelfAuthorId）としてリポストする。自分自身が投稿した作品も
-  /// リポスト可能（Xの「引用リポスト」のようにフォロワーへ改めて周知する
-  /// 用途を想定し、投稿者本人にも制限しない）。
-  void toggleRepost(String workId, {String authorId = kDummySelfAuthorId}) {
+  /// リポストの追加・取り消しを切り替える。[authorId]を省略すると閲覧者
+  /// 自身としてリポストする（バックエンド接続時はサーバーへ送る。
+  /// [toggleBookmark]参照）。他の作者を指定できるのはダミーデータだけ。
+  /// 自分自身が投稿した作品もリポスト可能（Xの「引用リポスト」のように
+  /// フォロワーへ改めて周知する用途を想定し、投稿者本人にも制限しない）。
+  /// 何もしなかった（作品が無い）ときはnullを返す。
+  Future<bool?> toggleRepost(String workId, {String? authorId}) async {
     final work = byId(workId);
-    if (work == null) return;
-    final existingIndex = _reposts.indexWhere(
-      (r) => r.workId == workId && r.reposterId == authorId,
-    );
-    if (existingIndex != -1) {
-      _reposts.removeAt(existingIndex);
-    } else {
-      final reposterName = _works
-          .firstWhere((w) => w.authorId == authorId, orElse: () => work)
-          .authorName;
+    if (work == null) return null;
+    final reposterId = authorId ?? _selfId ?? '';
+    bool isOn() =>
+        _reposts.any((r) => r.workId == workId && r.reposterId == reposterId);
+    void set(bool on) {
+      if (!on) {
+        _reposts.removeWhere(
+          (r) => r.workId == workId && r.reposterId == reposterId,
+        );
+        return;
+      }
+      if (isOn()) return;
+      final reposterName =
+          _works
+              .where((w) => w.authorId == reposterId)
+              .map((w) => w.authorName)
+              .firstOrNull ??
+          (api == null ? work.authorName : '');
       _reposts.add(
         CommunityRepost(
           workId: workId,
-          reposterId: authorId,
+          reposterId: reposterId,
           reposterName: reposterName,
           repostedAt: DateTime.now(),
         ),
       );
     }
-    notifyListeners();
+
+    if (authorId != null && authorId != _selfId) {
+      // Someone else's repost exists only in the dummy data.
+      set(!isOn());
+      notifyListeners();
+      return true;
+    }
+    return _toggleSocial(
+      isOn: isOn,
+      set: set,
+      send: (client) => client.toggleRepost(workId),
+    );
   }
 
   static List<CommunityRepost> _buildDummyReposts(List<CommunityWork> works) {

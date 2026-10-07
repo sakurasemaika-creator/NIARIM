@@ -1,8 +1,13 @@
 import type { APIGatewayProxyEventV2 } from "aws-lambda";
-import { GetCommand, TransactWriteCommand } from "@aws-sdk/lib-dynamodb";
+import {
+  GetCommand,
+  QueryCommand,
+  TransactWriteCommand,
+} from "@aws-sdk/lib-dynamodb";
 import { TransactionCanceledException } from "@aws-sdk/client-dynamodb";
 import { ddb, tableName, Keys } from "../../lib/dynamo";
 import { authenticate } from "../../lib/auth";
+import { toPublicWork } from "./_publicWork";
 import { notFound, ok } from "../../lib/response";
 import type { RepostItem, WorkItem } from "../../lib/types";
 import { TABLE_ITEM_TYPE } from "../../lib/types";
@@ -110,4 +115,45 @@ export async function toggleRepost(
   }
 
   return ok({ reposted: !isReposted });
+}
+
+/**
+ * `GET /users/{id}/reposts`. A user's reposts, newest first, with each
+ * reposted work as the public sees it. Reposts are public like the
+ * repost count (they exist to show the work to the reposter's followers),
+ * so no sign-in is needed; works hidden since they were reposted are left
+ * out. The records live under the user's own partition key
+ * (`USER#{id}` / `REPOST#{workId}`), so this is one Query without an index.
+ */
+export async function getUserReposts(
+  _event: APIGatewayProxyEventV2,
+  userId: string,
+) {
+  const result = await ddb.send(
+    new QueryCommand({
+      TableName: tableName(),
+      KeyConditionExpression: "pk = :pk AND begins_with(sk, :prefix)",
+      ExpressionAttributeValues: {
+        ":pk": `USER#${userId}`,
+        ":prefix": "REPOST#",
+      },
+    }),
+  );
+  const records = ((result.Items ?? []) as RepostItem[]).sort((a, b) =>
+    b.repostedAt.localeCompare(a.repostedAt),
+  );
+  const works = await Promise.all(
+    records.map((r) =>
+      ddb.send(
+        new GetCommand({ TableName: tableName(), Key: Keys.work(r.workId) }),
+      ),
+    ),
+  );
+  const reposts = records.flatMap((record, i) => {
+    const work = works[i].Item as WorkItem | undefined;
+    return work && isWorkPublic(work)
+      ? [{ repostedAt: record.repostedAt, work: toPublicWork(work) }]
+      : [];
+  });
+  return ok({ userId, reposts });
 }

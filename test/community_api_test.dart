@@ -513,6 +513,7 @@ void main() {
     await api.bookmarksOf('U');
     await api.followers('U');
     await api.following('U');
+    await api.repostsOf('U');
     await api.createWork(youtubeVideoId: 'V', youtubeAccessToken: 'T');
     await api.updateWorkVisibility('W', isNiarimPublished: false);
     await api.updateWorkAiImageVideoDisclosure(

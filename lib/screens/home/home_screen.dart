@@ -32,6 +32,7 @@ import 'widgets/project_list_widget.dart';
 import 'widgets/home_drawer.dart';
 import '../../config/font_fallback.dart';
 import '../../widgets/scrollable_sheet_body.dart';
+import '../community/community_edit_feedback.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -1670,7 +1671,11 @@ class _BookmarkedTab extends StatelessWidget {
         works: bookmarkedWorks,
         bookmarkedIds: communityService.bookmarkedIds,
         onTapWork: (work) => context.read<CommunityPreviewService>().show(work),
-        onToggleBookmark: (work) => communityService.toggleBookmark(work.id),
+        onToggleBookmark: (work) => reportFailedCommunityEdit(
+          context,
+          communityService,
+          communityService.toggleBookmark(work.id),
+        ),
       ),
     );
   }

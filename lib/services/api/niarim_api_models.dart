@@ -184,6 +184,24 @@ class ApiMyWorks {
   );
 }
 
+/// One entry of GET /users/{id}/reposts: a work the user reposted (as the
+/// public sees it) and when.
+class ApiRepost {
+  final DateTime repostedAt;
+  final ApiWork work;
+
+  const ApiRepost({required this.repostedAt, required this.work});
+
+  factory ApiRepost.fromJson(Map<String, dynamic> json) => ApiRepost(
+    repostedAt: _dateTime(json['repostedAt']),
+    work: ApiWork.fromJson(
+      json['work'] is Map<String, dynamic>
+          ? json['work'] as Map<String, dynamic>
+          : const <String, dynamic>{},
+    ),
+  );
+}
+
 class ApiBookmarkers {
   final String workId;
   final int totalCount;

@@ -134,25 +134,33 @@ Future<List<SingleChildWidget>> buildAppProviders() async {
   // The poster's identity follows the signed-in Google account: signing out
   // or switching accounts forgets it, and signing in learns it again.
   String? signedInAccountId = googleAuthService.account?.id;
+  // The remembered poster id is restored first so their own works and
+  // settings are theirs from the start; GET /me/works then confirms it, and
+  // their bookmarks, follows and reposts follow.
+  Future<void> learnPoster(String accountId) async {
+    try {
+      await communityService.restoreOwner(accountId);
+      await communityService.loadOwnWorks(accountKey: accountId);
+      await communityService.loadSocial();
+    } catch (error) {
+      debugPrint('Could not load the poster\'s community data: $error');
+    }
+  }
+
   void followSignedInAccount() {
     final accountId = googleAuthService.account?.id;
     if (accountId == signedInAccountId) return;
     signedInAccountId = accountId;
     communityService.forgetOwner();
     if (accountId != null && communityService.isBackendConnected) {
-      communityService.loadOwnWorks().catchError((Object error) {
-        debugPrint('Could not load the poster\'s own works: $error');
-        return null;
-      });
+      learnPoster(accountId);
     }
   }
 
   googleAuthService.addListener(followSignedInAccount);
-  if (signedInAccountId != null && communityService.isBackendConnected) {
-    communityService.loadOwnWorks().catchError((Object error) {
-      debugPrint('Could not load the poster\'s own works: $error');
-      return null;
-    });
+  if (signedInAccountId case final accountId?
+      when communityService.isBackendConnected) {
+    learnPoster(accountId);
   }
 
   final shareIntentService = ShareIntentService();

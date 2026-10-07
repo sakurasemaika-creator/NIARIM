@@ -10,6 +10,7 @@ import '../../../services/community_service.dart';
 import '../../../widgets/ad_banner_mock_widget.dart';
 import '../community_author_works_screen.dart';
 import 'community_work_card.dart' show communityThumbnailGradient;
+import '../community_edit_feedback.dart';
 
 enum CommunityShortsEndBehavior { loopCurrent, autoAdvance }
 
@@ -152,8 +153,11 @@ class _CommunityShortsScreenState extends State<CommunityShortsScreen> {
                 work: work,
                 isCurrentPage: index == _currentIndex,
                 isBookmarked: communityService.isBookmarked(work.id),
-                onToggleBookmark: () =>
-                    communityService.toggleBookmark(work.id),
+                onToggleBookmark: () => reportFailedCommunityEdit(
+                  context,
+                  communityService,
+                  communityService.toggleBookmark(work.id),
+                ),
                 onPlaybackEnded: (onLoopCurrent) => _handlePlaybackEnded(
                   index,
                   visibleWorks,

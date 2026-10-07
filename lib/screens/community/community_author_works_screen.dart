@@ -7,6 +7,7 @@ import '../../services/community_preview_service.dart';
 import '../../services/community_service.dart';
 import '../../widgets/responsive.dart';
 import '../../widgets/ad_banner_mock_widget.dart';
+import 'community_edit_feedback.dart';
 import 'widgets/community_shorts_viewer.dart';
 import 'widgets/community_work_card.dart';
 import 'widgets/video_type_filter.dart';
@@ -55,6 +56,20 @@ class _CommunityAuthorWorksScreenState extends State<CommunityAuthorWorksScreen>
   VideoTypeFilter _videoTypeFilter = VideoTypeFilter.all;
 
   @override
+  void initState() {
+    super.initState();
+    // With a backend the page lists the author's works as the server has
+    // them now, not only those another list happened to bring in.
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      final service = context.read<CommunityService>();
+      if (service.isBackendConnected) {
+        service.refreshAuthorWorks(widget.authorId);
+      }
+    });
+  }
+
+  @override
   void dispose() {
     _tabController.dispose();
     super.dispose();
@@ -78,8 +93,11 @@ class _CommunityAuthorWorksScreenState extends State<CommunityAuthorWorksScreen>
             widget.authorId,
           ),
           bookmarkedIds: bookmarkedIds,
-          onToggleBookmark: (w) =>
-              context.read<CommunityService>().toggleBookmark(w.id),
+          onToggleBookmark: (w) => reportFailedCommunityEdit(
+            context,
+            context.read<CommunityService>(),
+            context.read<CommunityService>().toggleBookmark(w.id),
+          ),
         ),
       ),
     );
@@ -195,8 +213,11 @@ class _CommunityAuthorWorksScreenState extends State<CommunityAuthorWorksScreen>
         ? communityService.bookmarkedWorksOf(widget.authorId)
         : const <CommunityWork>[];
 
-    void toggleBookmark(CommunityWork work) =>
-        communityService.toggleBookmark(work.id);
+    void toggleBookmark(CommunityWork work) => reportFailedCommunityEdit(
+      context,
+      communityService,
+      communityService.toggleBookmark(work.id),
+    );
     void openWork(CommunityWork work) =>
         context.read<CommunityPreviewService>().show(work);
 
@@ -353,8 +374,10 @@ class _CommunityAuthorWorksScreenState extends State<CommunityAuthorWorksScreen>
                   // （Task#144：お気に入り作者機能）。
                   if (!isSelf)
                     OutlinedButton.icon(
-                      onPressed: () => communityService.toggleFavoriteAuthor(
-                        widget.authorId,
+                      onPressed: () => reportFailedCommunityEdit(
+                        context,
+                        communityService,
+                        communityService.toggleFavoriteAuthor(widget.authorId),
                       ),
                       icon: Icon(
                         isFavorite

@@ -9,6 +9,7 @@ import '../../widgets/ad_banner_mock_widget.dart';
 import '../../widgets/dispose_on_unmount.dart';
 import '../../widgets/help_button.dart';
 import '../../widgets/responsive.dart';
+import 'community_edit_feedback.dart';
 import 'community_author_works_screen.dart';
 import 'community_follow_notifications_screen.dart';
 import 'community_my_works_screen.dart';
@@ -54,7 +55,8 @@ class _CommunityScreenState extends State<CommunityScreen>
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 3, vsync: this);
+    _tabController = TabController(length: 3, vsync: this)
+      ..addListener(_onTabChanged);
     final initialTag = widget.initialTagFilter;
     if (initialTag != null && initialTag.isNotEmpty) {
       _isSearching = true;
@@ -71,6 +73,14 @@ class _CommunityScreenState extends State<CommunityScreen>
       service.refreshFromBackend();
       _fetchRanking();
     });
+  }
+
+  /// The following tab shows the followed authors' works and reposts as
+  /// the server has them now.
+  void _onTabChanged() {
+    if (_tabController.indexIsChanging || _tabController.index != 2) return;
+    final service = context.read<CommunityService>();
+    if (service.isBackendConnected) service.refreshFollowingFeed();
   }
 
   /// Brings the selected ranking into the service's store; the ranking tab
@@ -313,7 +323,11 @@ class _CommunityScreenState extends State<CommunityScreen>
         builder: (_) => CommunityShortsScreen(
           works: target,
           bookmarkedIds: communityService.bookmarkedIds,
-          onToggleBookmark: (w) => communityService.toggleBookmark(w.id),
+          onToggleBookmark: (w) => reportFailedCommunityEdit(
+            context,
+            communityService,
+            communityService.toggleBookmark(w.id),
+          ),
         ),
       ),
     );
@@ -472,8 +486,11 @@ class _CommunityScreenState extends State<CommunityScreen>
                     works: works,
                     bookmarkedIds: bookmarkedIds,
                     onTapWork: _openFloatingPreview,
-                    onToggleBookmark: (w) =>
-                        communityService.toggleBookmark(w.id),
+                    onToggleBookmark: (w) => reportFailedCommunityEdit(
+                      context,
+                      communityService,
+                      communityService.toggleBookmark(w.id),
+                    ),
                     onTapAuthor: _openAuthorWorks,
                     bottomPadding: 88,
                   ),
@@ -556,8 +573,11 @@ class _CommunityScreenState extends State<CommunityScreen>
                         works: ranked,
                         bookmarkedIds: bookmarkedIds,
                         onTapWork: _openFloatingPreview,
-                        onToggleBookmark: (w) =>
-                            communityService.toggleBookmark(w.id),
+                        onToggleBookmark: (w) => reportFailedCommunityEdit(
+                          context,
+                          communityService,
+                          communityService.toggleBookmark(w.id),
+                        ),
                         onTapAuthor: _openAuthorWorks,
                         rankNumbers: rankNumbers,
                         bottomPadding: 88,
@@ -585,8 +605,11 @@ class _CommunityScreenState extends State<CommunityScreen>
                     works: works,
                     bookmarkedIds: bookmarkedIds,
                     onTapWork: _openFloatingPreview,
-                    onToggleBookmark: (w) =>
-                        communityService.toggleBookmark(w.id),
+                    onToggleBookmark: (w) => reportFailedCommunityEdit(
+                      context,
+                      communityService,
+                      communityService.toggleBookmark(w.id),
+                    ),
                     onTapAuthor: _openAuthorWorks,
                     repostedByNames: repostedByNames,
                     bottomPadding: 88,
