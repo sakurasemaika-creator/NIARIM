@@ -36,6 +36,17 @@ save schema/versionを変更・移行する場合、legacy/current/unknown/newer
 
 未使用コード、dead route、obsolete service/model、debug output、temporary workaround、古いtest/fixture/workflow参照、TODO/FIXME/HACK/placeholder等を全体探索する。production commentはコードの意味・不変条件・恒久的制約・公開API/ライセンス情報に限定し、開発経緯やチャット由来メモは残さない。削除/refactor後はanalyze/lint/test/buildと関連実画面regressionを実行する。
 
+## 外部サービス連携の実操作・接続準備確認
+
+YouTube API、Google AdMob等の外部連携について、実credentialを監査環境へ投入できない場合でも、製品側の本番経路を可能な範囲で実操作する。設定画面→認証/consent→接続開始→callback→API/SDK結果→成功表示→失敗→retry→権限拒否→offline/reconnect→設定変更→再起動/再訪まで、実装されている状態を確認する。
+
+実接続そのものが外部コンソール操作に依存する場合は、sandbox/test credential/mock boundaryでproduction code pathと同じUI/状態遷移を検証し、mockだけを理由にPASSにはしない。human-action-pendingとして残す場合でも、**人間が最後にcredential・ID・外部設定を投入すれば動くこと、投入後にコード修正が不要であること**を確認する。
+
+AdMob等の広告・第三者SDKが表示UIを持つ場合は、通常表示、loading、no-fill/取得失敗、権限/consent、画面サイズ差、safe area、overflow、テーマ、7言語、PC/SP（該当する方）を実画面で確認する。YouTube API等では認証、公開/取得操作、permission/error/quota、再試行、ユーザー向けエラー文言等を確認する。
+
+human-action-pendingは未実装の言い換えに使用せず、外部サービス側でしか行えない登録・credential/secret投入・承認・契約同意・公開操作等に限定する。未実装箇所がある場合は通常の監査issueとして修正・regression対象とする。
+
+
 ## 証跡
 
 inventoryには対象画面/状態、操作、PC/SP、入力方式、確認方法、結果、未確認理由を追跡できる証跡を残す。Visual evidenceは機能名、BEFORE/SETTINGS/AFTER、preset/mode、主要設定を識別可能にする。環境制約で実操作/実画面ができない場合はPASSにせずblockedと理由・必要環境を記録する。
