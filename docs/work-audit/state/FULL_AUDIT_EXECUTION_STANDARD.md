@@ -36,6 +36,17 @@ cold/warm startup、route transition、filter/brush apply、drawing、slider/dra
 ## 11. Accessibility / Security / Legal / Source
 各Standardに従い、contrast、screen reader、keyboard/focus、text scaling、reduced motion、auth/authz、validation、API abuse、race/concurrency、resource lifecycle、PII/token/secret、OSS/license、copyright、trademark、patent/utility model、GUI design rights、privacy、consumer/contract等を確認する。法務はAIで保証せず、不確実事項を専門家確認候補として記録する。
 
+## 法令・規制・申請/届出・許認可・ルール適合性ゲート
+
+全面監査では、知財・privacyだけでなく、製品の実際の提供形態から適用され得る**法令、政省令、ガイドライン、届出・登録・許認可、契約上の義務、業界ルール、App Store/Google Play/外部API/広告ネットワーク等のプラットフォーム規約**を洗い出す。
+
+特に日本法について、電気通信事業法を含むオンライン/通信サービス関連法令、個人情報保護法、消費者契約法、特定商取引法、景品表示法、資金決済・課金関連法令、知的財産法、不正競争防止法等を、NIARIMの機能・データフロー・料金・広告・通信・共有/公開・外部サービス利用状況に照らして適用可能性を判定する。該当する場合は届出、登録、許認可、表示、同意、契約、報告、保存等の義務を確認する。対象市場が日本以外に及ぶ場合は各法域を追加する。
+
+各論点について、applicable / likely-applicable / likely-not-applicable / unresolved 等の状態、法域、根拠一次資料、確認日、必要対応、専門家確認要否をEvidenceに残す。**「法律名を調べた」だけでは完了とせず、実装・UI・規約・Privacy Policy・運用・申請準備まで整合しているかを確認する。**
+
+必要な申請・届出・登録・許認可がある場合、製品側で準備可能な資料・設定・表示・技術対応は監査中に完了させ、外部機関への提出、本人確認、契約同意、手数料支払い、審査、行政/プラットフォームへの最終提出等だけをhuman-action-pendingとして残す。申請前提の実装不足をhuman-action-pendingに隠してはならない。
+
+
 ## 12. ブラッシュアップ
 明確な改善余地があれば、root cause→fix→targeted test/analyze→同じ実操作→Visual再確認→関連regressionまで行う。refactor/rewrite/redesignを妨げない。機能削除は、目的、入力、出力、精度、UX、速度、自由度、保存互換性、undo/redo、share/export、Free/Premium差を確認して判断する。
 
