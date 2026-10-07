@@ -34,11 +34,24 @@ resource lifecycle、listener/controller/stream/timer/worker/image/buffer/cache�
 
 対応7言語は日本語原文の意味・意図・温度感を基準に、自然さ、register、専門用語、スラング混入、切断/overflow、複数形、日付/時刻/数値/単位等を確認する。単なる文字列キー一致や機械翻訳済みを合格根拠にしない。
 
+## 外部サービス連携の接続準備品質
+
+人間操作が必要な外部サービスについても、App/Webのエンジニアリング実装を途中で止めない。YouTube API、Google AdMob等を含む連携は、**人間が最後に外部コンソール設定とcredential投入を行えば接続できる状態**までコード側を完成させる。
+
+- client/SDK/adapter、config/env/secret boundary、認証/OAuth、scope、redirect/callback、API/SDK invocation、serialization、error/retry/timeout/rate/quota、offline/reconnect、permission、logging/redaction、privacy/consentまでを production path として実装・テストする。
+- TODO: connect later、仮の固定値、mock-only implementation、未実装callback、未処理の失敗状態、未定義の設定キー等を残して「接続準備完了」としない。
+- 本物のcredentialが監査環境で利用できない場合でも、sandbox/test credentialまたはmock boundaryで本番と同じコード経路・設定構造・状態遷移を確認し、credential投入以外の追加実装が不要であることを検証する。
+- YouTube APIは、必要API/endpoint、認証、scope、redirect/callback、quota/error/retry、secret管理、公開失敗時のrecoveryまでinventoryする。
+- Google AdMobは、SDK/adapter、app/ad-unit等の設定注入、test/production切替、広告表示状態、consent/privacy、failure/fallback、layout/size/refresh等の実装上必要な範囲をinventoryする。
+- 実際の外部接続が人間の権限・契約・コンソール操作に依存する場合はhuman-action-pendingとして明示し、コード未完成を同じ箱に隠さない。
+
+**完成定義：implementation-pending = 0。残せるのは外部サービス側でしか実行できない登録、credential/secret投入、審査/承認、契約同意、公開操作等のみ。**
+
 ## Routeへの適用
 
 このStandard追加を理由にlock済みBaseline Routeを再bootstrapしない。Astra全面監査Workは、現在以降の該当Baseline IDでこの基準を適用する。既に完了済みBaselineに対して、この新基準の実証的検証が必要だが証拠がない領域は、既存doneを推測で書き換えたり通常チャットの成果を流用したりせず、PolicyのDiscovery TODOとして追加して監査する。
 
-全面監査completeには、このStandardの各領域について未説明の未確認事項がなく、発見した問題の必要な修正・検証・regressionが完了していることを要求する。
+全面監査completeには、このStandardの各領域について未説明の未確認事項がなく、発見した問題の必要な修正・検証・regressionが完了し、外部サービス連携もimplementation-pending = 0まで接続準備を完了していることを要求する。
 
 ## 最新全面監査との統合
 このStandardは最新の全面監査実行標準と併用する。UIのtheme不可視化、UI操作性/IA、PC/SP、responsive boundary、実操作、save/load、Visual output、preset、性能、source hygieneも、該当する技術品質リスクとして扱う。UI→model→serialization→service→engine→render→reloadの境界とfailure lifecycle、race/concurrency、resource lifecycle、データ整合性を確認し、改善後は同じ実操作と関連regressionを再実行する。
