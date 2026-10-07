@@ -1157,6 +1157,7 @@ class _CanvasScreenState extends State<CanvasScreen> {
     // 排他にせず、開いているものをすべて縦に積んで同時表示する。
     final isDesktop = isWideScreen(context);
     final filterAdjusting = _showFilterPanel && !isDesktop;
+    final selectionEditingHidden = _selectionEditingGivesWay(isDesktop);
     final openToolPanels = isDesktop
         ? _openToolOptionPanels()
         : const <Widget>[];
@@ -1271,7 +1272,7 @@ class _CanvasScreenState extends State<CanvasScreen> {
                                       _filterCanvasPreviewShown(),
                                   currentLayerPreviewBlendMode:
                                       _filterCanvasPreviewBlendMode(),
-                                  lockToolInput: _showFilterPanel,
+                                  lockToolInput: selectionEditingHidden,
                                   onFilterGizmoChanged: (gizmo) =>
                                       _moveFilterGizmo(project, gizmo),
                                   onFilterGizmoDragStart: () => context
@@ -1408,7 +1409,7 @@ class _CanvasScreenState extends State<CanvasScreen> {
                                     // canvas shows the preview. Hidden, not
                                     // removed, so the Stack keeps its order.
                                     child: Visibility(
-                                      visible: !_showFilterPanel,
+                                      visible: !selectionEditingHidden,
                                       child: SafeArea(
                                         child: Align(
                                           alignment: Alignment.bottomLeft,
@@ -1516,7 +1517,9 @@ class _CanvasScreenState extends State<CanvasScreen> {
                     // 選択ツール中は出ないので場所は競合しない。
                     if (filterAdjusting)
                       _filterPanel(bottomBar: true)
-                    else if (_isSelectionToolActive && _hasActiveSelection)
+                    else if (_isSelectionToolActive &&
+                        _hasActiveSelection &&
+                        !selectionEditingHidden)
                       SelectionTransformSliders(
                         moveX: _selectionMoveX,
                         moveY: _selectionMoveY,
@@ -2107,6 +2110,18 @@ class _CanvasScreenState extends State<CanvasScreen> {
   /// closes panels on a tap outside them is left out (on phones the panel
   /// is a bar under the canvas with its own close button).
   bool _filterPanelUsesCanvas() => _showFilterPanel;
+
+  /// Whether the filter's UI has the screen, so the selection's own editing
+  /// UI (its tool bar, transform sliders, handles on the canvas and the
+  /// invert button) steps aside: on a phone while the filter panel is open
+  /// (it runs along the bottom), on a wide screen while a filter is being
+  /// adjusted in the docked panel. Both are never shown together; applying,
+  /// cancelling or closing the filter brings the selection's UI back, with
+  /// the selection as it was. Touches on the canvas then only reach the
+  /// filter's handles.
+  bool _selectionEditingGivesWay(bool isDesktop) =>
+      _showFilterPanel &&
+      (!isDesktop || context.watch<FilterService>().currentFilter != null);
 
   /// The filter's preview to show on the canvas in place of the current
   /// layer, while a filter is being adjusted.
@@ -2809,7 +2824,9 @@ class _CanvasScreenState extends State<CanvasScreen> {
             ),
           ],
           // 範囲選択中にのみ使える「選択範囲を反転」ボタン。
-          if (_isSelectionToolActive && _hasActiveSelection) ...[
+          if (_isSelectionToolActive &&
+              _hasActiveSelection &&
+              !_selectionEditingGivesWay(isWideScreen(context))) ...[
             const SizedBox(width: 8),
             _topBarIconButton(
               context,

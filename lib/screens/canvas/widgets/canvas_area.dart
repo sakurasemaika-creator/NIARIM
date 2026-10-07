@@ -4368,8 +4368,11 @@ class _CanvasAreaState extends State<CanvasArea> {
                     // 選択範囲がある間は、掴む前からハンドルを描いておく
                     // （何ができるか画面に出ていないと使われないため）。
                     // 変形中は上のselectionTransformBoundsの枠を描くので出さない。
+                    // While a filter is adjusted its own UI has the canvas.
                     selectionAffordanceBounds:
-                        _isSelectionTool && !_selectionTransformActive
+                        _isSelectionTool &&
+                            !_selectionTransformActive &&
+                            !widget.lockToolInput
                         ? _selectionMaskBounds()
                         : null,
                     meshRows: meshRows,

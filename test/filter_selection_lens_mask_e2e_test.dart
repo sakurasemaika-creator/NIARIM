@@ -14,6 +14,7 @@ import 'package:niarim/models/project.dart';
 import 'package:niarim/screens/canvas/canvas_screen.dart';
 import 'package:niarim/screens/canvas/widgets/canvas_area.dart';
 import 'package:niarim/screens/canvas/widgets/filter_panel.dart';
+import 'package:niarim/screens/canvas/widgets/selection_transform_sliders.dart';
 import 'package:niarim/services/filter_service.dart';
 import 'package:niarim/services/project_service.dart';
 import 'package:niarim/services/theme_service.dart';
@@ -217,6 +218,44 @@ void main() {
     await pumpRealAsync(tester, const Duration(milliseconds: 400));
     await capture('00_selection');
 
+    /// Whether the selection's editing UI (its tool bar and transform
+    /// sliders) is on the screen.
+    void expectSelectionEditing(bool shown, String when) {
+      final matcher = shown ? findsOneWidget : findsNothing;
+      expect(
+        find.text(l10n.canvasSelectionFreeTransform),
+        matcher,
+        reason: 'selection tool bar $when',
+      );
+      expect(
+        find.byType(SelectionTransformSliders),
+        matcher,
+        reason: 'selection sliders $when',
+      );
+      expect(
+        tester.widget<CanvasArea>(canvasFinder).lockToolInput,
+        !shown,
+        reason: 'canvas handles $when',
+      );
+    }
+
+    expectSelectionEditing(true, 'with the selection made');
+
+    // ── Opening the filter panel and closing it again (cancel) ──
+    await openFilterPanel();
+    expectSelectionEditing(false, 'while the filter panel is open');
+    await tester.tap(
+      find
+          .descendant(
+            of: find.byType(FilterPanel),
+            matching: find.byIcon(Icons.close),
+          )
+          .first,
+    );
+    await pumpRealAsync(tester, const Duration(milliseconds: 400));
+    expect(find.byType(FilterPanel), findsNothing);
+    expectSelectionEditing(true, 'after the filter panel is closed');
+
     // ── Threshold, inside the selection only ──
     await openFilterPanel();
     expect(
@@ -228,13 +267,10 @@ void main() {
     await pumpRealAsync(tester, const Duration(milliseconds: 800));
     expect(fs.currentFilter!.kind, FilterKind.threshold);
     expect(find.text(l10n.filterSelectionOnlyHint), findsOneWidget);
-    expect(
-      find.text(l10n.canvasSelectionFreeTransform),
-      findsNothing,
-      reason: 'the selection tool bar is out of the way while adjusting',
-    );
+    expectSelectionEditing(false, 'while a filter is adjusted');
     await capture('01_threshold_preview_in_selection');
     await applyFilter();
+    expectSelectionEditing(true, 'after the filter is applied');
     final thresholded = await layerPixels();
     // Inside: black or white; outside: as it was.
     final inside = px(thresholded, 80, 80);
@@ -367,6 +403,7 @@ void main() {
     expect(changedInside, greaterThan(50), reason: 'the stripes bend');
     expect(changedElsewhere, 0, reason: 'nothing outside the lens area');
     await capture('06_lens_applied');
+    expectSelectionEditing(true, 'after the glasses filter is applied');
     expect(tester.takeException(), isNull);
     // The lens area is forgotten with the panel.
     expect(tester.widget<CanvasArea>(canvasFinder).filterLensMask, isNull);
