@@ -22,8 +22,9 @@ Uint8List applyNoiseFilter(
   Uint8List data,
   int width,
   int height,
-  FilterDef filter,
-) {
+  FilterDef filter, {
+  int frameIndex = 0,
+}) {
   final engine = FilterEngine();
   final strength = (filter.strength / 100).clamp(0.0, 1.0);
   // Grain is added to the straight colour (premultiplied pixels would get
@@ -60,7 +61,9 @@ Uint8List applyNoiseFilter(
         colorBleed: filter.caBrightness,
         tracking: filter.caContrast,
         seed: filter.noiseSeed,
-        frameIndex: 0,
+        // Each frame takes its own noise, so applied to several frames
+        // the VHS flickers as a tape does.
+        frameIndex: frameIndex,
       ),
     ),
   };
@@ -107,6 +110,30 @@ Uint8List applyDrawFilterInIsolate(
   args,
 ) {
   final (data, width, height, filter, maskData) = args;
+  return applyDrawFilterForFrameInIsolate((
+    data,
+    width,
+    height,
+    filter,
+    maskData,
+    0,
+  ));
+}
+
+/// [applyDrawFilterInIsolate] for frame [frameIndex] of the scene (filters
+/// that change over time, such as the VHS noise, take that frame's state).
+Uint8List applyDrawFilterForFrameInIsolate(
+  (
+    Uint8List data,
+    int width,
+    int height,
+    FilterDef filter,
+    Uint8List? maskData,
+    int frameIndex,
+  )
+  args,
+) {
+  final (data, width, height, filter, maskData, frameIndex) = args;
   final engine = FilterEngine();
   return switch (filter.kind) {
     FilterKind.gaussianBlur => engine.applyGaussianBlur(
@@ -191,7 +218,13 @@ Uint8List applyDrawFilterInIsolate(
       filter.strength,
       color: filter.vignetteColor,
     ),
-    FilterKind.noise => applyNoiseFilter(data, width, height, filter),
+    FilterKind.noise => applyNoiseFilter(
+      data,
+      width,
+      height,
+      filter,
+      frameIndex: frameIndex,
+    ),
     FilterKind.retroAnime => engine.applyRetroAnime(
       data,
       width,
@@ -1539,11 +1572,22 @@ class FilterEngine {
     }
     // ② エッジ検出（Sobelフィルタ）して輪郭を黒く
     if (edgeStrength > 0) {
-      final edges = _sobelEdge(data, width, height);
+      // Edges are found in the picture as it looks on white paper, so line
+      // art drawn on a transparent layer has edges too (its see-through
+      // pixels carry no colour of their own).
+      final flat = Uint8List(data.length);
+      for (var i = 0; i < data.length; i += 4) {
+        final a = data[i + 3];
+        for (var c = 0; c < 3; c++) {
+          flat[i + c] = (data[i + c] * a + 255 * (255 - a)) ~/ 255;
+        }
+        flat[i + 3] = 255;
+      }
+      final edges = _sobelEdge(flat, width, height);
       final gray = Float64List(width * height);
       for (var p = 0; p < gray.length; p++) {
         final i = p * 4;
-        gray[p] = data[i] * 0.299 + data[i + 1] * 0.587 + data[i + 2] * 0.114;
+        gray[p] = flat[i] * 0.299 + flat[i + 1] * 0.587 + flat[i + 2] * 0.114;
       }
       // How much each pixel darkens: only on the darker side of an edge
       // (at or below the brightness around it).
@@ -1571,6 +1615,7 @@ class FilterEngine {
         }
       }
       final grow = lineWidth.round();
+      final base = darken;
       if (grow > 0) darken = _maxFilter(darken, width, height, grow);
       for (var p = 0; p < darken.length; p++) {
         final e = darken[p];
@@ -1579,6 +1624,10 @@ class FilterEngine {
         posterized[i] = (posterized[i] - e).clamp(0, 255);
         posterized[i + 1] = (posterized[i + 1] - e).clamp(0, 255);
         posterized[i + 2] = (posterized[i + 2] - e).clamp(0, 255);
+        // Where the line width grew the line into see-through pixels, the
+        // line is drawn there (as opaque as it is dark), so the lines of
+        // line art on a transparent layer thicken too. Width 0 adds none.
+        if (e > base[p] && e > posterized[i + 3]) posterized[i + 3] = e;
       }
     }
     return posterized;

@@ -89,12 +89,13 @@ class CustomAutomationFilterRunner {
         background.dispose();
         auxiliary = backgroundBytes?.buffer.asUint8List();
       }
-      result = await compute(applyDrawFilterInIsolate, (
+      result = await compute(applyDrawFilterForFrameInIsolate, (
         data,
         tm.canvasWidth,
         tm.canvasHeight,
         filter,
         auxiliary,
+        frameIndex,
       ));
     }
 

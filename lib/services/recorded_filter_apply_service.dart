@@ -104,12 +104,13 @@ class RecordedFilterApplyService {
         otherImage.dispose();
         auxiliaryData = otherBytes?.buffer.asUint8List();
       }
-      result = await compute(applyDrawFilterInIsolate, (
+      result = await compute(applyDrawFilterForFrameInIsolate, (
         data,
         tileManager.canvasWidth,
         tileManager.canvasHeight,
         filter,
         auxiliaryData,
+        frameIndex,
       ));
     }
 

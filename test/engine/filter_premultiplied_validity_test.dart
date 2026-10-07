@@ -63,6 +63,7 @@ void main() {
         canvasHeight: 48,
         mask: null,
         background: null,
+        frameIndex: 0,
       ));
       var bad = 0;
       for (var i = 0; i < out.length; i += 4) {

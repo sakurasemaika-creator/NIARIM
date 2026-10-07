@@ -36,6 +36,12 @@ class _AutoLineartControlOverlayState extends State<AutoLineartControlOverlay> {
   int? _activePointer;
   Offset? _pointerDown;
   bool _dragged = false;
+  // A press in add mode, waiting to see whether it is a tap.
+  int? _addPointer;
+  Offset? _addDown;
+
+  /// How far a finger may move and still be tapping.
+  static const double _tapSlop = 4;
   late AutoLineartGraph _displayGraph;
 
   @override
@@ -243,12 +249,10 @@ class _AutoLineartControlOverlayState extends State<AutoLineartControlOverlay> {
                 return;
               }
               if (widget.mode == AutoLineartControlMode.add) {
-                final segment = _hitSegment(event.localPosition, rect);
-                if (segment == null) return;
-                final point = _toGraph(event.localPosition, rect);
-                _publishGraph(
-                  _withPointInserted(segment.$1, segment.$2, point),
-                );
+                // Added when the tap ends, so a finger that lands on the
+                // line to scroll adds nothing.
+                _addPointer = event.pointer;
+                _addDown = event.localPosition;
                 return;
               }
               if (active != null) {
@@ -260,12 +264,22 @@ class _AutoLineartControlOverlayState extends State<AutoLineartControlOverlay> {
               }
             },
             onPointerMove: (event) {
+              if (event.pointer == _addPointer &&
+                  _addDown != null &&
+                  (event.localPosition - _addDown!).distance > _tapSlop) {
+                _addPointer = null;
+                _addDown = null;
+              }
               final active = _active;
               if (active == null || _activePointer != event.pointer) return;
               final down = _pointerDown;
-              if (down != null && (event.localPosition - down).distance > 4) {
+              if (down != null &&
+                  (event.localPosition - down).distance > _tapSlop) {
                 _dragged = true;
               }
+              // A press that only wobbles is a tap (it asks to delete the
+              // point): the point stays put until the finger really moves.
+              if (!_dragged) return;
               final point = _toGraph(event.localPosition, rect);
               setState(() {
                 // Keep the editor graph immutable. FilterPanel retains the
@@ -283,9 +297,32 @@ class _AutoLineartControlOverlayState extends State<AutoLineartControlOverlay> {
               });
               widget.onPointMoved(active.$1, active.$2, point);
             },
-            onPointerUp: (event) => _finishPointer(event.pointer),
-            onPointerCancel: (event) =>
-                _finishPointer(event.pointer, cancelled: true),
+            onPointerUp: (event) {
+              if (event.pointer == _addPointer) {
+                final down = _addDown;
+                _addPointer = null;
+                _addDown = null;
+                final segment = down == null ? null : _hitSegment(down, rect);
+                if (segment != null) {
+                  _publishGraph(
+                    _withPointInserted(
+                      segment.$1,
+                      segment.$2,
+                      _toGraph(down!, rect),
+                    ),
+                  );
+                }
+                return;
+              }
+              _finishPointer(event.pointer);
+            },
+            onPointerCancel: (event) {
+              if (event.pointer == _addPointer) {
+                _addPointer = null;
+                _addDown = null;
+              }
+              _finishPointer(event.pointer, cancelled: true);
+            },
             child: Stack(
               fit: StackFit.expand,
               children: [

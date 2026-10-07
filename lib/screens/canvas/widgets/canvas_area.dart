@@ -455,6 +455,12 @@ class CanvasArea extends StatefulWidget {
   final FilterLensMask? filterLensMask;
   final ValueChanged<Uint8List>? onFilterLensMaskEdited;
 
+  /// What the Undo and Redo gestures (two- and three-finger taps) do, when
+  /// the screen decides (a filter being adjusted takes back its own edits);
+  /// otherwise they use the canvas's history.
+  final VoidCallback? onUndoGesture;
+  final VoidCallback? onRedoGesture;
+
   /// 画面下部のスライダーで指定する、選択範囲の変形量。
   ///
   /// いずれも「いまの状態を0」とした**相対量**で、スライダーを離した時点で
@@ -514,6 +520,8 @@ class CanvasArea extends StatefulWidget {
     this.onSelectionMaskChanged,
     this.filterLensMask,
     this.onFilterLensMaskEdited,
+    this.onUndoGesture,
+    this.onRedoGesture,
     this.selectionMoveX = 0,
     this.selectionMoveY = 0,
     this.selectionScale = 1,
@@ -4214,7 +4222,10 @@ class _CanvasAreaState extends State<CanvasArea> {
             // 優先して渡す。フレーム送りは他ツールでは従来通り有効。
             final transformNeedsEdge =
                 widget.currentTool == DrawingTool.meshTransform;
-            if (edgeSide != null && !transformNeedsEdge) {
+            // Not while a filter is adjusted: its preview is of this frame.
+            if (edgeSide != null &&
+                !transformNeedsEdge &&
+                !widget.lockToolInput) {
               _handleEdgeZoneTap(edgeSide);
               return;
             }
@@ -4412,9 +4423,11 @@ class _CanvasAreaState extends State<CanvasArea> {
     final undoManager = context.read<app_undo.UndoManager>();
     switch (action) {
       case GestureAction.undo:
-        undoManager.undo();
+        final undo = widget.onUndoGesture;
+        undo != null ? undo() : undoManager.undo();
       case GestureAction.redo:
-        undoManager.redo();
+        final redo = widget.onRedoGesture;
+        redo != null ? redo() : undoManager.redo();
       case GestureAction.eyedropper:
         // スポイトは次のタップ座標が必要なため、ツールをスポイトへ直接切り替える
         widget.onGestureToolChange?.call(DrawingTool.eyedropper);

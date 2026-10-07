@@ -618,6 +618,7 @@ class _FilterPanelState extends State<FilterPanel> {
           canvasHeight: _canvasH,
           mask: mask,
           background: _previewBackgroundBytes,
+          frameIndex: widget.frameIndex,
         ),
         filter.kind == FilterKind.lensDistortion ? null : selection,
       ));
@@ -2463,20 +2464,30 @@ class _FilterPanelState extends State<FilterPanel> {
           else
             Expanded(child: Text(label, style: const TextStyle(fontSize: 11))),
           InkWell(
-            onTap: () => showDialog(
-              context: context,
-              builder: (ctx) => Dialog(
-                backgroundColor: Colors.transparent,
-                child: ColorPickerPanel(
-                  currentColor: Color(value),
-                  onColorChanged: (color) {
-                    onChanged(color.toARGB32());
-                    _updatePreview();
-                  },
-                  onClose: () => Navigator.of(ctx).pop(),
-                ),
-              ),
-            ),
+            // Everything changed in one visit to the colour picker is one
+            // step of the filter's Undo (not one per tick of a drag).
+            onTap: () async {
+              final service = context.read<FilterService>()
+                ..beginFilterEditGroup();
+              try {
+                await showDialog(
+                  context: context,
+                  builder: (ctx) => Dialog(
+                    backgroundColor: Colors.transparent,
+                    child: ColorPickerPanel(
+                      currentColor: Color(value),
+                      onColorChanged: (color) {
+                        onChanged(color.toARGB32());
+                        _updatePreview();
+                      },
+                      onClose: () => Navigator.of(ctx).pop(),
+                    ),
+                  ),
+                );
+              } finally {
+                service.endFilterEditGroup();
+              }
+            },
             child: Container(
               width: 26,
               height: 26,
@@ -2934,12 +2945,13 @@ class _FilterPanelState extends State<FilterPanel> {
         otherImage.dispose();
         maskData = otherData?.buffer.asUint8List();
       }
-      result = await compute(applyDrawFilterInIsolate, (
+      result = await compute(applyDrawFilterForFrameInIsolate, (
         data,
         tm.canvasWidth,
         tm.canvasHeight,
         filter,
         maskData,
+        frameIndex,
       ));
     }
 

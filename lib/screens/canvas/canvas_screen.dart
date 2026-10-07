@@ -1336,6 +1336,8 @@ class _CanvasScreenState extends State<CanvasScreen> {
                                     setState(() => _canvasSelectionMask = mask);
                                   },
                                   filterLensMask: _filterLensMaskShown(),
+                                  onUndoGesture: _undo,
+                                  onRedoGesture: _redo,
                                   onFilterLensMaskEdited: _editFilterLensMask,
                                   selectionMoveX: _selectionMoveX,
                                   selectionMoveY: _selectionMoveY,
@@ -2111,6 +2113,27 @@ class _CanvasScreenState extends State<CanvasScreen> {
   /// is a bar under the canvas with its own close button).
   bool _filterPanelUsesCanvas() => _showFilterPanel;
 
+  /// Undo from the keyboard or a two-finger tap: while a filter is being
+  /// adjusted it takes back the filter's last edit (the canvas's own history
+  /// is left alone until the filter is applied or closed).
+  void _undo() {
+    final filters = context.read<FilterService>();
+    if (_showFilterPanel && filters.currentFilter != null) {
+      filters.undoFilterEdit();
+    } else {
+      context.read<UndoManager>().undo();
+    }
+  }
+
+  void _redo() {
+    final filters = context.read<FilterService>();
+    if (_showFilterPanel && filters.currentFilter != null) {
+      filters.redoFilterEdit();
+    } else {
+      context.read<UndoManager>().redo();
+    }
+  }
+
   /// Whether the filter's UI has the screen, so the selection's own editing
   /// UI (its tool bar, transform sliders, handles on the canvas and the
   /// invert button) steps aside: on a phone while the filter panel is open
@@ -2416,9 +2439,9 @@ class _CanvasScreenState extends State<CanvasScreen> {
       }
       switch (b.command) {
         case ShortcutCommand.undo:
-          result[b.activator] = () => context.read<UndoManager>().undo();
+          result[b.activator] = _undo;
         case ShortcutCommand.redo:
-          result[b.activator] = () => context.read<UndoManager>().redo();
+          result[b.activator] = _redo;
         case ShortcutCommand.toggleLayerPanel:
           result[b.activator] = _toggleLayerPanel;
         case ShortcutCommand.selectAll:

@@ -24,6 +24,7 @@ typedef FilterPreviewJob = ({
   int canvasHeight,
   Uint8List? mask,
   Uint8List? background,
+  int frameIndex,
 });
 
 /// [runFilterPreview] kept inside the canvas selection: the coverage at the
@@ -52,6 +53,7 @@ Uint8List runFilterPreview(FilterPreviewJob job) {
     :canvasHeight,
     :mask,
     :background,
+    :frameIndex,
   ) = job;
   final engine = FilterEngine();
   if (filter.kind == FilterKind.prism) {
@@ -189,7 +191,13 @@ Uint8List runFilterPreview(FilterPreviewJob job) {
         color: filter.vignetteColor,
       );
     case FilterKind.noise:
-      return applyNoiseFilter(data, width, height, filter);
+      return applyNoiseFilter(
+        data,
+        width,
+        height,
+        filter,
+        frameIndex: frameIndex,
+      );
     case FilterKind.retroAnime:
       return engine.applyRetroAnime(data, width, height, filter.strength);
     case FilterKind.crt:
