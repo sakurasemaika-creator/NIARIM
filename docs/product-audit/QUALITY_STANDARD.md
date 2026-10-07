@@ -38,6 +38,17 @@ App/Webを別々ではなく1つの製品として横断的に扱う。重大バ
 
 `docs/work-audit/state/ASTRA_AUDIT_STATE.md` で明確に監査済みかつ、その後の変更で前提が変わっていない領域は同等レベルの上位advisor/Hermes監査成果として引き継ぎ、理由なく再監査しない。未記録領域を推測で完了扱いせず、変更の影響を受けた監査済み領域だけ必要な範囲を再確認する。
 
+## 外部連携を「あと接続するだけ」まで完成させる製品品質
+
+YouTube API、Google AdMob等、人間による外部コンソール操作・credential/secret投入・審査/承認等が必要な機能は、全面監査の対象外として残さず、App/Webの製品実装を**人間が最後の外部設定を行えば接続できる完成状態**まで引き上げる。
+
+ここでいう完成状態は、UIだけ存在することではない。production code path、設定注入、認証/OAuth、callback、API/SDK呼出し、成功/error/retry、permission、quota/rate、privacy/consent、ログ/secret保護、保存/復元、必要なanalytics/store disclosure等、製品側で制御できる要素が実装・検証済みであり、実credential等を投入する以外のcode/design修正が不要な状態を意味する。
+
+実credentialを監査環境に置けない場合はsandbox/test/mock boundaryを使って可能な限りproductionと同じ経路を実操作し、未接続部分を「人間しかできない外部操作」と「まだ製品側に残っている未完成」に分離する。後者は完了扱いにしない。
+
+監査終了時は、残存する人間作業をhuman-action-pendingとして一括整理する。最終報告には、作業名、サービス、App/Web、実施場所、必要なcredential/設定、前提、具体的手順、完了確認方法、必要証跡、実施前に解決すべき依存関係を記載し、ユーザーが作業項目を見ただけで「最後に何を接続・設定すればよいか」が分かる状態にする。
+
+
 ## UI/UX・デザイン
 
 UI/UX、product design、visual qualityは「動く」「崩れていない」「テストが通る」だけで合格にせず、十分なデザイン・開発リソースを持つ企業の世界水準の商用製品と比較しても見劣りしない完成度を目標にする。
