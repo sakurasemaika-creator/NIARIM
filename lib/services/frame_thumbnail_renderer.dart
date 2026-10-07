@@ -52,12 +52,17 @@ Future<ui.Image?> compositeFrameThumbnail(
   final exportW = (project?.exportWidth ?? drawW).clamp(1, drawW).toInt();
   final exportH = (project?.exportHeight ?? drawH).clamp(1, drawH).toInt();
 
+  final layers = projectService.layersOf(projectId, scene.id, position);
   final fullImage = await LayerCompositor.composite(
     tileManager,
-    projectService.layersOf(projectId, scene.id, position),
+    layers,
     (l) => projectService.tileKeyFor(projectId, scene.id, position, l.id),
     drawW,
     drawH,
+    paperColor: LayerCompositor.paperForBlendModes(
+      layers,
+      project?.backgroundColor,
+    ),
   );
   final offsetX = (drawW - exportW) / 2;
   final offsetY = (drawH - exportH) / 2;

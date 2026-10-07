@@ -59,10 +59,16 @@ Uint8List runFilterPreview(FilterPreviewJob job) {
         blurPx: filter.prismBlurPx * scale,
         gradientDirectionDegrees: filter.prismDirectionDegrees,
       );
+    // Radii are in canvas pixels; the preview is scaled down.
     case FilterKind.gaussianBlur:
-      return engine.applyGaussianBlur(data, width, height, filter.strength);
+      return engine.applyGaussianBlur(
+        data,
+        width,
+        height,
+        filter.strength * scale,
+      );
     case FilterKind.lensBlur:
-      return engine.applyLensBlur(data, width, height, filter.strength);
+      return engine.applyLensBlur(data, width, height, filter.strength * scale);
     case FilterKind.animeStyle:
       return engine.applyAnimeStyle(
         data,

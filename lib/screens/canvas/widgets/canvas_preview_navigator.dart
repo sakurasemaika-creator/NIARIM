@@ -97,6 +97,13 @@ class _CanvasPreviewNavigatorState extends State<CanvasPreviewNavigator> {
         ),
         outW,
         outH,
+        paperColor: LayerCompositor.paperForBlendModes(
+          layers,
+          ps.projects
+              .where((p) => p.id == widget.projectId)
+              .firstOrNull
+              ?.backgroundColor,
+        ),
       );
       if (!mounted) {
         img.dispose();

@@ -95,6 +95,28 @@ String? findClipSourceLayerId(List<Layer> layers, int index) {
 /// レイヤー群をタイル方式のピクセルデータから合成し1枚のui.Imageを生成する
 /// 共通処理。キャンバス表示・書き出し・オニオンスキン・バケツ参照などで共有する。
 class LayerCompositor {
+  /// The paper a preview needs to composite under [layers]: the opaque
+  /// [backgroundColor] when a visible layer blends with a mode other than
+  /// Normal (so it acts on the paper, as on the canvas and in the export);
+  /// null otherwise, when drawing the background behind the transparent
+  /// picture gives the same result and follows a background change at once.
+  static int? paperForBlendModes(List<Layer> layers, int? backgroundColor) {
+    if (backgroundColor == null || (backgroundColor >>> 24) != 0xFF) {
+      return null;
+    }
+    final blends = layers.any(
+      (l) =>
+          l.isVisible &&
+          pixelLayerTypes.contains(l.type) &&
+          l.blendMode != LayerBlendMode.normal,
+    );
+    return blends ? backgroundColor : null;
+  }
+
+  /// The layers composited into one image. With an opaque [paperColor] the
+  /// layers are composited onto the paper, so blend modes act on it as on
+  /// any layer below (a Linear Dodge or Screen layer brightens the paper,
+  /// as in other painting apps); without one, onto transparency.
   static Future<ui.Image> composite(
     TileManager tileManager,
     List<Layer> layers,
@@ -104,9 +126,16 @@ class LayerCompositor {
     bool Function(Layer layer, int index)? shouldRender,
     LayerKeyframe? Function(Layer layer)? keyframeOf,
     LayerKeyframe? Function(Layer layer)? groupKeyframeOf,
+    int? paperColor,
   }) async {
     var recorder = ui.PictureRecorder();
     var canvas = ui.Canvas(recorder);
+    if (paperColor != null && (paperColor >>> 24) == 0xFF) {
+      canvas.drawRect(
+        ui.Rect.fromLTWH(0, 0, width.toDouble(), height.toDouble()),
+        ui.Paint()..color = ui.Color(paperColor),
+      );
+    }
 
     for (int i = layers.length - 1; i >= 0; i--) {
       final layer = layers[i];
@@ -169,6 +198,110 @@ class LayerCompositor {
     final image = await picture.toImage(width, height);
     picture.dispose();
     return image;
+  }
+
+  /// The layers as drawing commands rather than pixels: played back onto a
+  /// canvas that already holds what lies below them (the canvas screen's
+  /// lower layers and current layer), each layer blends onto it with its
+  /// own mode, as in [composite]. Modes the GPU cannot draw
+  /// ([requiresCpuBlend]) are drawn with [displayBlendMode]'s nearest one.
+  static Future<ui.Picture> compositeToPicture(
+    TileManager tileManager,
+    List<Layer> layers,
+    String Function(Layer layer) keyOf,
+    int width,
+    int height, {
+    LayerKeyframe? Function(Layer layer)? keyframeOf,
+    LayerKeyframe? Function(Layer layer)? groupKeyframeOf,
+  }) async {
+    final recorder = ui.PictureRecorder();
+    final canvas = ui.Canvas(recorder);
+    for (int i = layers.length - 1; i >= 0; i--) {
+      final layer = layers[i];
+      if (!layer.isVisible) continue;
+      if (!pixelLayerTypes.contains(layer.type)) continue;
+      await _drawLayer(
+        canvas,
+        tileManager,
+        layers,
+        keyOf,
+        layer,
+        i,
+        width,
+        height,
+        keyframeOf,
+        groupKeyframeOf,
+        blendModeOverride: displayBlendMode(layer.blendMode),
+      );
+    }
+    return recorder.endRecording();
+  }
+
+  /// Whether [mode] has no GPU blend mode and is composited on the CPU.
+  static bool requiresCpuBlend(LayerBlendMode mode) => _requiresCpuBlend(mode);
+
+  /// The GPU blend mode that draws [mode], or for a CPU-only mode the
+  /// nearest one, for live display while the exact result is computed
+  /// ([blendOnto]). Linear Dodge draws as Plus, which matches it exactly
+  /// wherever the sum stays below white.
+  static ui.BlendMode displayBlendMode(LayerBlendMode mode) => switch (mode) {
+    LayerBlendMode.linearDodge => ui.BlendMode.plus,
+    LayerBlendMode.subtract => ui.BlendMode.difference,
+    LayerBlendMode.linearBurn => ui.BlendMode.multiply,
+    LayerBlendMode.vividLight ||
+    LayerBlendMode.linearLight ||
+    LayerBlendMode.pinLight ||
+    LayerBlendMode.hardMix => ui.BlendMode.hardLight,
+    LayerBlendMode.divide => ui.BlendMode.colorDodge,
+    _ => mapLayerBlendMode(mode),
+  };
+
+  /// [source] (a layer's own pixels, at the canvas size) blended onto
+  /// [backdrop] with [mode] at [opacityPercent], exactly as [composite]
+  /// does it, including the CPU-only modes.
+  static Future<ui.Image> blendOnto(
+    ui.Image backdrop,
+    ui.Image source,
+    LayerBlendMode mode, {
+    int opacityPercent = 100,
+  }) async {
+    final width = backdrop.width, height = backdrop.height;
+    final recorder = ui.PictureRecorder();
+    final canvas = ui.Canvas(recorder);
+    final rect = ui.Rect.fromLTWH(0, 0, width.toDouble(), height.toDouble());
+    final opacityByte = (opacityPercent.clamp(0, 100) * 255 / 100).round();
+    if (!_requiresCpuBlend(mode)) {
+      canvas.drawImage(backdrop, ui.Offset.zero, ui.Paint());
+      canvas.drawImageRect(
+        source,
+        ui.Rect.fromLTWH(
+          0,
+          0,
+          source.width.toDouble(),
+          source.height.toDouble(),
+        ),
+        rect,
+        ui.Paint()
+          ..color = ui.Color.fromARGB(opacityByte, 255, 255, 255)
+          ..blendMode = mapLayerBlendMode(mode),
+      );
+      final picture = recorder.endRecording();
+      final image = await picture.toImage(width, height);
+      picture.dispose();
+      return image;
+    }
+    canvas.drawImageRect(
+      source,
+      ui.Rect.fromLTWH(0, 0, source.width.toDouble(), source.height.toDouble()),
+      rect,
+      ui.Paint()..color = ui.Color.fromARGB(opacityByte, 255, 255, 255),
+    );
+    final picture = recorder.endRecording();
+    final faded = await picture.toImage(width, height);
+    picture.dispose();
+    final blended = await _blendImages(backdrop, faded, width, height, mode);
+    faded.dispose();
+    return blended;
   }
 
   /// 減算対象レイヤーを、opacity・クリッピング・位置/回転/拡縮をすべて
@@ -308,19 +441,23 @@ class LayerCompositor {
     _ => false,
   };
 
-  static double _blendChannel(LayerBlendMode mode, double b, double s) => switch (mode) {
-    LayerBlendMode.subtract => (b - s).clamp(0.0, 1.0),
-    LayerBlendMode.linearDodge => (b + s).clamp(0.0, 1.0),
-    LayerBlendMode.linearBurn => (b + s - 1.0).clamp(0.0, 1.0),
-    LayerBlendMode.vividLight => s <= 0.5
-        ? (s <= 0 ? 0.0 : 1.0 - ((1.0 - b) / (2.0 * s)).clamp(0.0, 1.0))
-        : (s >= 1 ? 1.0 : (b / (2.0 * (1.0 - s))).clamp(0.0, 1.0)),
-    LayerBlendMode.linearLight => (b + 2.0 * s - 1.0).clamp(0.0, 1.0),
-    LayerBlendMode.pinLight => s < 0.5 ? b.clamp(0.0, 2.0 * s) : b.clamp(2.0 * s - 1.0, 1.0),
-    LayerBlendMode.hardMix => _blendChannel(LayerBlendMode.vividLight, b, s) < 0.5 ? 0.0 : 1.0,
-    LayerBlendMode.divide => s <= 0 ? 1.0 : (b / s).clamp(0.0, 1.0),
-    _ => s,
-  };
+  static double _blendChannel(LayerBlendMode mode, double b, double s) =>
+      switch (mode) {
+        LayerBlendMode.subtract => (b - s).clamp(0.0, 1.0),
+        LayerBlendMode.linearDodge => (b + s).clamp(0.0, 1.0),
+        LayerBlendMode.linearBurn => (b + s - 1.0).clamp(0.0, 1.0),
+        LayerBlendMode.vividLight =>
+          s <= 0.5
+              ? (s <= 0 ? 0.0 : 1.0 - ((1.0 - b) / (2.0 * s)).clamp(0.0, 1.0))
+              : (s >= 1 ? 1.0 : (b / (2.0 * (1.0 - s))).clamp(0.0, 1.0)),
+        LayerBlendMode.linearLight => (b + 2.0 * s - 1.0).clamp(0.0, 1.0),
+        LayerBlendMode.pinLight =>
+          s < 0.5 ? b.clamp(0.0, 2.0 * s) : b.clamp(2.0 * s - 1.0, 1.0),
+        LayerBlendMode.hardMix =>
+          _blendChannel(LayerBlendMode.vividLight, b, s) < 0.5 ? 0.0 : 1.0,
+        LayerBlendMode.divide => s <= 0 ? 1.0 : (b / s).clamp(0.0, 1.0),
+        _ => s,
+      };
 
   static Future<ui.Image> _blendImages(
     ui.Image backdrop,

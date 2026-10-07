@@ -1112,7 +1112,7 @@ class _FilterPanelState extends State<FilterPanel> {
           l10n.filterStrengthBlurRadius,
           current.strength,
           1,
-          20,
+          60,
           (v) => service.updateFilterParams(current.id, strength: v),
         );
       case FilterKind.mosaic:

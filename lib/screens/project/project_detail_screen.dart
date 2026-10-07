@@ -86,6 +86,13 @@ class _ProjectDetailScreenState extends State<ProjectDetailScreen> {
       ),
       tileManager.canvasWidth,
       tileManager.canvasHeight,
+      paperColor: LayerCompositor.paperForBlendModes(
+        layers,
+        ps.projects
+            .where((p) => p.id == widget.projectId)
+            .firstOrNull
+            ?.backgroundColor,
+      ),
     );
     _rendering = false;
     if (!mounted) {

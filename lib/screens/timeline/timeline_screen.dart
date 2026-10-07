@@ -557,12 +557,17 @@ class _TimelineScreenState extends State<TimelineScreen> {
     final h = tileManager.canvasHeight;
     if (w <= 0 || h <= 0) return;
     const size = 48;
+    final layers = ps.layersOf(widget.projectId, sceneId, frame.index);
     final fullImage = await LayerCompositor.composite(
       tileManager,
-      ps.layersOf(widget.projectId, sceneId, frame.index),
+      layers,
       (l) => ps.tileKeyFor(widget.projectId, sceneId, frame.index, l.id),
       w,
       h,
+      paperColor: LayerCompositor.paperForBlendModes(
+        layers,
+        _projectBackgroundOf(ps, widget.projectId),
+      ),
     );
     final recorder = ui.PictureRecorder();
     final canvas = ui.Canvas(recorder);
@@ -3026,6 +3031,8 @@ class _TimelineScreenState extends State<TimelineScreen> {
                                                   projectId: widget.projectId,
                                                   sceneId: frameListSceneId,
                                                   frameIndex: index,
+                                                  backgroundColor:
+                                                      backgroundColor,
                                                 ),
                                               ),
                                             if (isChecked)
@@ -7164,7 +7171,8 @@ class _TimelinePreviewState extends State<_TimelinePreview> {
         old.frameIndex != widget.frameIndex ||
         old.cameraKeyframes != widget.cameraKeyframes ||
         old.effectFilters != widget.effectFilters ||
-        old.groups != widget.groups) {
+        old.groups != widget.groups ||
+        old.backgroundColor != widget.backgroundColor) {
       _rebuild();
     }
   }
@@ -7199,6 +7207,10 @@ class _TimelinePreviewState extends State<_TimelinePreview> {
           ? null
           : _layerKeyframeEngine.valueAt(l.keyframes, widget.frameIndex),
       groupKeyframeOf: _groupKeyframeOf,
+      paperColor: LayerCompositor.paperForBlendModes(
+        widget.layers,
+        widget.backgroundColor,
+      ),
     );
 
     // カメラ変換を適用する（カメラは表示のみを変更する）
@@ -8903,10 +8915,14 @@ class _TimelineFrameThumbnail extends StatefulWidget {
   final String sceneId;
   final int frameIndex;
 
+  /// The project's background: blend modes act on it.
+  final int backgroundColor;
+
   const _TimelineFrameThumbnail({
     required this.projectId,
     required this.sceneId,
     required this.frameIndex,
+    required this.backgroundColor,
   });
 
   @override
@@ -8928,7 +8944,8 @@ class _TimelineFrameThumbnailState extends State<_TimelineFrameThumbnail> {
     super.didUpdateWidget(old);
     if (old.projectId != widget.projectId ||
         old.sceneId != widget.sceneId ||
-        old.frameIndex != widget.frameIndex) {
+        old.frameIndex != widget.frameIndex ||
+        old.backgroundColor != widget.backgroundColor) {
       _generate();
     }
   }
@@ -8977,6 +8994,10 @@ class _TimelineFrameThumbnailState extends State<_TimelineFrameThumbnail> {
           widget.frameIndex,
         );
       },
+      paperColor: LayerCompositor.paperForBlendModes(
+        layers,
+        widget.backgroundColor,
+      ),
     );
 
     final offsetX = (drawW - exportW) / 2;

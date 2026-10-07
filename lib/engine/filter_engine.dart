@@ -15,6 +15,9 @@ import 'premultiplied.dart';
 import 'tone_curve.dart';
 
 /// Preview, apply and recorded replay share the same seeded noise settings.
+/// The largest blur radius the drawing filters take, in canvas pixels.
+const int kMaxBlurRadius = 100;
+
 Uint8List applyNoiseFilter(
   Uint8List data,
   int width,
@@ -772,16 +775,80 @@ class FilterEngine {
     return result;
   }
 
+  /// Gaussian blur of radius [strength] px (1..[kMaxBlurRadius]). All four
+  /// premultiplied channels are blurred, so the blur spreads out of the
+  /// drawn shape into the transparent pixels around it as far as it eats
+  /// into it. Radii up to 20 use the exact kernel; larger ones three box
+  /// passes (the usual fast approximation), which keeps the cost flat.
   Uint8List applyGaussianBlur(
     Uint8List data,
     int width,
     int height,
     double strength,
   ) {
-    final radius = strength.round().clamp(1, 20);
+    final radius = strength.round().clamp(1, kMaxBlurRadius);
+    if (radius > 20) return _boxGaussian(data, width, height, radius / 3.0);
     final kernel = _gaussianKernel(radius);
     final tmp = _convolveH(data, width, height, kernel);
     return _convolveV(tmp, width, height, kernel);
+  }
+
+  /// A Gaussian of [sigma] approximated by three box blurs.
+  Uint8List _boxGaussian(Uint8List data, int width, int height, double sigma) {
+    // Box widths whose three passes match the Gaussian's variance.
+    const n = 3;
+    final ideal = math.sqrt(12 * sigma * sigma / n + 1);
+    var lower = ideal.floor();
+    if (lower.isEven) lower--;
+    final upper = lower + 2;
+    final m =
+        ((12 * sigma * sigma - n * lower * lower - 4 * n * lower - 3 * n) /
+                (-4 * lower - 4))
+            .round();
+    var out = data;
+    for (var i = 0; i < n; i++) {
+      final r = ((i < m ? lower : upper) - 1) ~/ 2;
+      out = _boxPass(out, width, height, r, horizontal: true);
+      out = _boxPass(out, width, height, r, horizontal: false);
+    }
+    return out;
+  }
+
+  /// One running-sum box blur of radius [r] along rows or columns (edges
+  /// extend the outermost pixel, as the exact kernel does).
+  Uint8List _boxPass(
+    Uint8List data,
+    int width,
+    int height,
+    int r, {
+    required bool horizontal,
+  }) {
+    if (r <= 0) return Uint8List.fromList(data);
+    final out = Uint8List(data.length);
+    final lines = horizontal ? height : width;
+    final length = horizontal ? width : height;
+    final step = horizontal ? 4 : width * 4;
+    final window = 2 * r + 1;
+    final sum = Int32List(4);
+    for (var line = 0; line < lines; line++) {
+      final base = horizontal ? line * width * 4 : line * 4;
+      int at(int i) => base + i.clamp(0, length - 1) * step;
+      for (var c = 0; c < 4; c++) {
+        var acc = 0;
+        for (var k = -r; k <= r; k++) {
+          acc += data[at(k) + c];
+        }
+        sum[c] = acc;
+      }
+      for (var i = 0; i < length; i++) {
+        final o = base + i * step;
+        for (var c = 0; c < 4; c++) {
+          out[o + c] = (sum[c] / window).round();
+          sum[c] += data[at(i + r + 1) + c] - data[at(i - r) + c];
+        }
+      }
+    }
+    return out;
   }
 
   /// シャープ化：3x3の固定小カーネルによる畳み込み（負荷はガウスぼかし
@@ -858,37 +925,91 @@ class FilterEngine {
     return clampChannelsToAlpha(result);
   }
 
+  /// Lens blur (bokeh) of radius [strength] px (1..[kMaxBlurRadius]): each
+  /// pixel takes the average over a disc, like an out-of-focus lens, and
+  /// brighter pixels count for more, so highlights open into round bright
+  /// discs instead of melting away as in [applyGaussianBlur]. Like it, it
+  /// spreads into the transparent pixels around the drawing. Each row of
+  /// the disc is summed from running row totals, so the cost grows with the
+  /// radius, not with its square.
   Uint8List applyLensBlur(
     Uint8List data,
     int width,
     int height,
     double strength,
   ) {
-    // レンズぼかし = 円形カーネルによるボックスブラー近似
-    final radius = strength.round().clamp(1, 20);
-    final result = Uint8List.fromList(data);
-    for (int y = 0; y < height; y++) {
-      for (int x = 0; x < width; x++) {
-        int r = 0, g = 0, b = 0, a = 0, count = 0;
-        for (int dy = -radius; dy <= radius; dy++) {
-          for (int dx = -radius; dx <= radius; dx++) {
-            if (dx * dx + dy * dy > radius * radius) continue;
-            final nx = (x + dx).clamp(0, width - 1);
-            final ny = (y + dy).clamp(0, height - 1);
-            final idx = (ny * width + nx) * 4;
-            r += data[idx];
-            g += data[idx + 1];
-            b += data[idx + 2];
-            a += data[idx + 3];
-            count++;
+    final radius = strength.round().clamp(1, kMaxBlurRadius);
+    final pixels = width * height;
+    // Weight 1 for black up to 16 for white (luma to the 4th power).
+    final weight = Int32List(pixels);
+    for (var p = 0; p < pixels; p++) {
+      final i = p * 4;
+      final luma = (data[i] * 77 + data[i + 1] * 150 + data[i + 2] * 29) >> 8;
+      final t = luma / 255;
+      weight[p] = 1 + (15 * t * t * t * t).round();
+    }
+    final rowLength = width + 1;
+    final ring = 2 * radius + 1;
+    // Running totals of weight×channel (and of weight) along each of the
+    // last [ring] rows.
+    final totals = List.generate(5, (_) => Int32List(ring * rowLength));
+    void buildRow(int y) {
+      final slot = (y % ring) * rowLength;
+      var r = 0, g = 0, b = 0, a = 0, w = 0;
+      for (var x = 0; x < width; x++) {
+        final p = y * width + x;
+        final i = p * 4;
+        final wt = weight[p];
+        r += data[i] * wt;
+        g += data[i + 1] * wt;
+        b += data[i + 2] * wt;
+        a += data[i + 3] * wt;
+        w += wt;
+        totals[0][slot + x + 1] = r;
+        totals[1][slot + x + 1] = g;
+        totals[2][slot + x + 1] = b;
+        totals[3][slot + x + 1] = a;
+        totals[4][slot + x + 1] = w;
+      }
+    }
+
+    final halfWidths = [
+      for (var dy = -radius; dy <= radius; dy++)
+        math.sqrt(radius * radius - dy * dy).floor(),
+    ];
+    final result = Uint8List(data.length);
+    var built = -1;
+    final sums = List<int>.filled(5, 0);
+    for (var y = 0; y < height; y++) {
+      final last = math.min(height - 1, y + radius);
+      while (built < last) {
+        built++;
+        buildRow(built);
+      }
+      for (var x = 0; x < width; x++) {
+        sums.fillRange(0, 5, 0);
+        for (var dy = -radius; dy <= radius; dy++) {
+          final ny = y + dy;
+          if (ny < 0 || ny >= height) continue;
+          final half = halfWidths[dy + radius];
+          final x0 = math.max(0, x - half);
+          final x1 = math.min(width - 1, x + half);
+          final slot = (ny % ring) * rowLength;
+          for (var c = 0; c < 5; c++) {
+            final row = totals[c];
+            sums[c] += row[slot + x1 + 1] - row[slot + x0];
           }
         }
-        if (count == 0) continue;
-        final idx = (y * width + x) * 4;
-        result[idx] = (r / count).round();
-        result[idx + 1] = (g / count).round();
-        result[idx + 2] = (b / count).round();
-        result[idx + 3] = (a / count).round();
+        final w = sums[4];
+        if (w == 0) continue;
+        final o = (y * width + x) * 4;
+        final a = (sums[3] / w).round().clamp(0, 255);
+        result[o + 3] = a;
+        // A weighted average of valid premultiplied pixels stays valid;
+        // the clamp only absorbs rounding.
+        result[o] = math.min(a, (sums[0] / w).round());
+        result[o + 1] = math.min(a, (sums[1] / w).round());
+        result[o + 2] = math.min(a, (sums[2] / w).round());
       }
     }
     return result;

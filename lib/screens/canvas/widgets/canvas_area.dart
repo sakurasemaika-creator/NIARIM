@@ -593,7 +593,18 @@ class _CanvasAreaState extends State<CanvasArea> {
 
   ui.Image? _compositeImage;
   ui.Image? _belowImage;
-  ui.Image? _aboveImage;
+  // The layers above the current one as drawing commands, so each blends
+  // with its own mode onto what is drawn below it (a picture of their own
+  // composite would blend them only with each other).
+  ui.Picture? _abovePicture;
+  // For a current layer in a mode the GPU cannot draw (Linear Dodge, Linear
+  // Burn...): the lower layers and the current layer blended exactly, and
+  // the inputs it was made from. Until it catches up with the latest
+  // inputs, the canvas shows the nearest GPU mode.
+  ui.Image? _exactBlend;
+  Object? _exactBlendKey;
+  bool _exactBlendRunning = false;
+  bool _exactBlendAgain = false;
   final Map<int, ui.Image> _onionImages = {};
 
   /// [_onionImages]をCustomPaintへ渡すための不変ビュー。**中身が変わった
@@ -759,12 +770,28 @@ class _CanvasAreaState extends State<CanvasArea> {
       _compositeImage = null;
       _belowImage?.dispose();
       _belowImage = null;
-      _aboveImage?.dispose();
-      _aboveImage = null;
+      _abovePicture?.dispose();
+      _abovePicture = null;
+      _exactBlend?.dispose();
+      _exactBlend = null;
+      _exactBlendKey = null;
       _layers = const [];
       _initEngine();
     }
     _drawingEngine.isEraser = widget.isEraser;
+    if (old.currentLayerPreview != widget.currentLayerPreview ||
+        old.currentLayerPreviewBlendMode !=
+            widget.currentLayerPreviewBlendMode) {
+      // A filter preview in a CPU-only mode (Prism's Linear Dodge) is
+      // shown exactly too, once blended.
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) _scheduleExactBlend();
+      });
+    }
+    if (old.background != widget.background ||
+        old.project?.backgroundColor != widget.project?.backgroundColor) {
+      _recomposeSurroundings(force: true);
+    }
     if (old.activeRuler != widget.activeRuler) {
       _rulerEngine.setActiveRuler(widget.activeRuler);
     }
@@ -873,7 +900,8 @@ class _CanvasAreaState extends State<CanvasArea> {
     _transformController.dispose();
     _compositeImage?.dispose();
     _belowImage?.dispose();
-    _aboveImage?.dispose();
+    _abovePicture?.dispose();
+    _exactBlend?.dispose();
     _selectionOverlayImage?.dispose();
     _selectionLayerOverlayImage?.dispose();
     _floatingSelectionImage?.dispose();
@@ -3602,6 +3630,7 @@ class _CanvasAreaState extends State<CanvasArea> {
         _compositeImage = img;
         _isCompositing = false;
       });
+      _scheduleExactBlend();
       // 現在レイヤーが選択レイヤー自体の場合、たった今描いたストロークを
       // オーバーレイへも反映する（存在しない・別レイヤーの場合はキャッシュ
       // 済みの合成結果を返すだけなので軽量）。
@@ -3737,6 +3766,8 @@ class _CanvasAreaState extends State<CanvasArea> {
             h,
             keyframeOf: _keyframeOf,
             groupKeyframeOf: groupKf,
+            // The paper takes part in the blending, as in the export.
+            paperColor: _paperColor,
           )
         : await _composeAutofillCheckLayers(layers);
     if (!mounted) {
@@ -3744,7 +3775,7 @@ class _CanvasAreaState extends State<CanvasArea> {
       _isComposingSurroundings = false;
       return;
     }
-    final aboveImg = await LayerCompositor.composite(
+    final abovePicture = await LayerCompositor.compositeToPicture(
       _tileManager,
       above,
       (l) => _tileKeyFor(l.id),
@@ -3755,23 +3786,108 @@ class _CanvasAreaState extends State<CanvasArea> {
     );
     if (!mounted) {
       belowImg.dispose();
-      aboveImg.dispose();
+      abovePicture.dispose();
       _isComposingSurroundings = false;
       return;
     }
     setState(() {
       _belowImage?.dispose();
       _belowImage = belowImg;
-      _aboveImage?.dispose();
-      _aboveImage = aboveImg;
+      _abovePicture?.dispose();
+      _abovePicture = abovePicture;
       _isComposingSurroundings = false;
     });
+    _scheduleExactBlend();
     // レイヤー一覧が変わった（追加・削除・並び替え・レイヤー切替）ため、
     // 選択レイヤーのオーバーレイも合わせて確認し直す。
     _refreshSelectionLayerOverlay();
     // 合成中にさらに変更があった場合に備えて再チェック
     final latest = ps.layersOf(project.id, widget.sceneId, widget.currentFrame);
     if (!_sameLayerList(_layers, latest)) _recomposeSurroundings();
+  }
+
+  /// The paper colour when the canvas shows the project's background (not
+  /// the transparency checkerboard) and it is opaque; null otherwise.
+  int? get _paperColor {
+    final project = widget.project;
+    if (project == null || widget.background != CanvasBackground.white) {
+      return null;
+    }
+    return (project.backgroundColor >>> 24) == 0xFF
+        ? project.backgroundColor
+        : null;
+  }
+
+  /// The blend mode the current layer is shown with: the filter preview's
+  /// own while one is shown, otherwise the layer's.
+  LayerBlendMode get _currentDisplayBlendMode =>
+      (widget.currentLayerPreview != null
+          ? widget.currentLayerPreviewBlendMode
+          : null) ??
+      _layers.where((l) => l.id == _layerId).firstOrNull?.blendMode ??
+      LayerBlendMode.normal;
+
+  int get _currentDisplayOpacity =>
+      _layers.where((l) => l.id == _layerId).firstOrNull?.opacity ?? 100;
+
+  /// What the exact blend of the current layer is made from now, or null
+  /// when the current layer's mode needs none.
+  (ui.Image, ui.Image, LayerBlendMode, int)? get _exactBlendInputs {
+    final mode = _currentDisplayBlendMode;
+    if (!LayerCompositor.requiresCpuBlend(mode)) return null;
+    final below = _belowImage;
+    final source = widget.currentLayerPreview ?? _compositeImage;
+    if (below == null || source == null) return null;
+    return (below, source, mode, _currentDisplayOpacity);
+  }
+
+  /// Brings [_exactBlend] up to date with [_exactBlendInputs], one at a time
+  /// (a run started meanwhile waits and then takes the latest inputs).
+  void _scheduleExactBlend() {
+    final inputs = _exactBlendInputs;
+    if (inputs == null) {
+      if (_exactBlend != null) {
+        _exactBlend!.dispose();
+        _exactBlend = null;
+        _exactBlendKey = null;
+      }
+      return;
+    }
+    if (_exactBlendKey == inputs) return;
+    if (_exactBlendRunning) {
+      _exactBlendAgain = true;
+      return;
+    }
+    _exactBlendRunning = true;
+    final (below, source, mode, opacity) = inputs;
+    final belowCopy = below.clone();
+    final sourceCopy = source.clone();
+    LayerCompositor.blendOnto(
+          belowCopy,
+          sourceCopy,
+          mode,
+          opacityPercent: opacity,
+        )
+        .then((image) {
+          if (!mounted) {
+            image.dispose();
+            return;
+          }
+          setState(() {
+            _exactBlend?.dispose();
+            _exactBlend = image;
+            _exactBlendKey = inputs;
+          });
+        })
+        .whenComplete(() {
+          belowCopy.dispose();
+          sourceCopy.dispose();
+          _exactBlendRunning = false;
+          if (_exactBlendAgain && mounted) {
+            _exactBlendAgain = false;
+            _scheduleExactBlend();
+          }
+        });
   }
 
   /// レイヤーキーフレーム（パーツ単位アニメーション）を現在フレームで補間する。
@@ -3992,7 +4108,12 @@ class _CanvasAreaState extends State<CanvasArea> {
                     compositeImage:
                         widget.currentLayerPreview ?? _compositeImage,
                     belowImage: _belowImage,
-                    aboveImage: _aboveImage,
+                    abovePicture: _abovePicture,
+                    exactCurrentBlend:
+                        _exactBlendKey != null &&
+                            _exactBlendKey == _exactBlendInputs
+                        ? _exactBlend
+                        : null,
                     currentLayerOpacity:
                         _layers
                             .where((l) => l.id == _layerId)
@@ -4194,7 +4315,10 @@ class _CanvasPainter extends CustomPainter {
   final Matrix4 transform;
   final ui.Image? compositeImage;
   final ui.Image? belowImage;
-  final ui.Image? aboveImage;
+  final ui.Picture? abovePicture;
+  // The lower layers and the current layer blended exactly (a CPU-only
+  // blend mode), drawn in place of both when present.
+  final ui.Image? exactCurrentBlend;
   final int currentLayerOpacity;
   final LayerBlendMode currentLayerBlendMode;
   final Map<int, ui.Image> onionImages;
@@ -4263,7 +4387,8 @@ class _CanvasPainter extends CustomPainter {
     this.project,
     this.compositeImage,
     this.belowImage,
-    this.aboveImage,
+    this.abovePicture,
+    this.exactCurrentBlend,
     this.currentLayerOpacity = 100,
     this.currentLayerBlendMode = LayerBlendMode.normal,
     this.selectionStart,
@@ -4307,8 +4432,12 @@ class _CanvasPainter extends CustomPainter {
     // 親の固定背景をそのまま透過させる。
     _paintBackground(canvas, drawingRect);
 
-    // 現在レイヤーより奥（背面）のレイヤー群
-    _drawFrameImage(canvas, drawingRect, belowImage, Paint());
+    // 現在レイヤーより奥（背面）のレイヤー群。現在レイヤーがGPUで描けない
+    // 合成モードのときは、下のレイヤーと現在レイヤーを正確に合成した1枚。
+    final exact = moveDelta == null && meshSourceImage == null
+        ? exactCurrentBlend
+        : null;
+    _drawFrameImage(canvas, drawingRect, exact ?? belowImage, Paint());
 
     // オニオンスキン（前フレーム）
     for (final entry in onionImages.entries) {
@@ -4328,7 +4457,7 @@ class _CanvasPainter extends CustomPainter {
           255,
           255,
         )
-        ..blendMode = mapLayerBlendMode(currentLayerBlendMode);
+        ..blendMode = LayerCompositor.displayBlendMode(currentLayerBlendMode);
       final sx = drawingRect.width / meshSourceImage!.width;
       final sy = drawingRect.height / meshSourceImage!.height;
       canvas.save();
@@ -4349,7 +4478,7 @@ class _CanvasPainter extends CustomPainter {
       );
       canvas.drawVertices(vertices, BlendMode.srcOver, meshCurrentPaint);
       canvas.restore();
-    } else if (compositeImage != null) {
+    } else if (compositeImage != null && exact == null) {
       final currentPaint = Paint()
         ..color = Color.fromARGB(
           (currentLayerOpacity.clamp(0, 100) * 255 / 100).round(),
@@ -4357,7 +4486,7 @@ class _CanvasPainter extends CustomPainter {
           255,
           255,
         )
-        ..blendMode = mapLayerBlendMode(currentLayerBlendMode);
+        ..blendMode = LayerCompositor.displayBlendMode(currentLayerBlendMode);
       final sx = drawingRect.width / compositeImage!.width;
       final sy = drawingRect.height / compositeImage!.height;
       if (moveDelta != null) {
@@ -4401,8 +4530,21 @@ class _CanvasPainter extends CustomPainter {
       _drawOnionFrame(canvas, drawingRect, entry.value, entry.key);
     }
 
-    // 現在レイヤーより手前（前面）のレイヤー群
-    _drawFrameImage(canvas, drawingRect, aboveImage, Paint());
+    // 現在レイヤーより手前（前面）のレイヤー群。描画命令のまま再生するので、
+    // 各レイヤーが自分の合成モードで下の絵へ重なる。
+    final above = abovePicture;
+    if (above != null) {
+      final canvasPx = canvasPixelSizeOf(project);
+      canvas.save();
+      canvas.translate(drawingRect.left, drawingRect.top);
+      canvas.scale(
+        drawingRect.width / canvasPx.width,
+        drawingRect.height / canvasPx.height,
+      );
+      canvas.clipRect(Offset.zero & canvasPx);
+      canvas.drawPicture(above);
+      canvas.restore();
+    }
 
     // 選択レイヤー（内容そのものは最終成果物に含まれないマスク専用
     // レイヤーのため、通常合成には含めず、常にテーマの選択色で半透明
@@ -5017,7 +5159,8 @@ class _CanvasPainter extends CustomPainter {
   bool shouldRepaint(_CanvasPainter old) =>
       old.compositeImage != compositeImage ||
       old.belowImage != belowImage ||
-      old.aboveImage != aboveImage ||
+      old.abovePicture != abovePicture ||
+      old.exactCurrentBlend != exactCurrentBlend ||
       old.currentLayerOpacity != currentLayerOpacity ||
       old.currentLayerBlendMode != currentLayerBlendMode ||
       old.background != background ||

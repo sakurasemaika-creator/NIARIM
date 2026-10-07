@@ -400,6 +400,18 @@ FONT_LICENSES.txt`への本文・著作権表示の追記、`license_screen.dart
   選ぶもの）を絵の矩形の後ろへ敷くこと（透明なら市松模様）。画像へ
   焼き込むと背景色の変更で作り直しが要るが、ウィジェットで敷けば
   ProjectServiceの通知だけで即座に追従する。
+  **ただし合成モードは用紙（背景色）にも効く**：加算（発光）・スクリーン等の
+  レイヤーは用紙を明るくする（プリズムの光が暗い色のまま見えていた）。
+  `composite(paperColor:)`へ不透明な背景色を渡すと用紙を一番下に敷いてから
+  合成する。キャンバス（背景表示中）と書き出しは常に渡し、プレビューは
+  `LayerCompositor.paperForBlendModes(layers, 背景色)`（通常以外の合成モードの
+  レイヤーがあるときだけ背景色、無ければnull＝従来どおりウィジェットで敷く）
+  を渡して、背景色が変わったら作り直すこと。
+  キャンバスは現在レイヤーより**上のレイヤーを`compositeToPicture`の
+  Picture**で描く（画像にすると下の絵と合成されず、乗算レイヤーが
+  下を暗くしなかった）。GPUに無い合成モード（減算・リニアライト等）は
+  ライブ表示では`displayBlendMode`の近似、確定後は`blendOnto`の正確な
+  CPU合成に差し替える（`test/canvas_blend_mode_display_test.dart`）。
 - **アイコンの縁取りに`Icon`を8個重ねない**：`CanvasIconButton`は
   `Icon.shadows`（ぼかし半径0のShadow×8）で1ウィジェットにしてある。
   `Positioned`で重ねる方式に戻すと、1ボタン9ウィジェット×常時20個前後＝

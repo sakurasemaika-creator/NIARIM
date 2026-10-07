@@ -46,12 +46,17 @@ Future<Uint8List?> _generateSaveNodeThumbnail(
   final tw = (w * scale).round().clamp(1, thumbMax);
   final th = (h * scale).round().clamp(1, thumbMax);
 
+  final layers = ps.layersOf(projectId, scene.id, frame.index);
   final fullImage = await LayerCompositor.composite(
     tileManager,
-    ps.layersOf(projectId, scene.id, frame.index),
+    layers,
     (l) => ps.tileKeyFor(projectId, scene.id, frame.index, l.id),
     w,
     h,
+    paperColor: LayerCompositor.paperForBlendModes(
+      layers,
+      ps.projects.where((p) => p.id == projectId).firstOrNull?.backgroundColor,
+    ),
   );
   final recorder = ui.PictureRecorder();
   final canvas = ui.Canvas(recorder);

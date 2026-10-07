@@ -432,6 +432,9 @@ class _FrameStripWidgetState extends State<FrameStripWidget> {
                                         projectId: widget.projectId,
                                         sceneId: widget.sceneId,
                                         frameIndex: index,
+                                        backgroundColor: widget.showTransparency
+                                            ? null
+                                            : project?.backgroundColor,
                                       ),
                                     ),
                                     if (hold > 1)
@@ -562,11 +565,16 @@ class _FrameThumbnail extends StatefulWidget {
   final String projectId;
   final String sceneId;
   final int frameIndex;
+
+  /// The project's opaque background, when the strip shows it (not the
+  /// transparency checkerboard): blend modes act on it.
+  final int? backgroundColor;
   const _FrameThumbnail({
     super.key,
     required this.projectId,
     required this.sceneId,
     required this.frameIndex,
+    this.backgroundColor,
   });
   @override
   State<_FrameThumbnail> createState() => _FrameThumbnailState();
@@ -578,6 +586,13 @@ class _FrameThumbnailState extends State<_FrameThumbnail> {
   void initState() {
     super.initState();
     _generate();
+  }
+
+  @override
+  void didUpdateWidget(covariant _FrameThumbnail old) {
+    super.didUpdateWidget(old);
+    // Blend modes act on the paper, so a new background is drawn again.
+    if (old.backgroundColor != widget.backgroundColor) _generate();
   }
 
   Future<void> _generate() async {
@@ -607,6 +622,10 @@ class _FrameThumbnailState extends State<_FrameThumbnail> {
       ),
       drawW,
       drawH,
+      paperColor: LayerCompositor.paperForBlendModes(
+        layers,
+        widget.backgroundColor,
+      ),
     );
     final offsetX = (drawW - exportW) / 2;
     final offsetY = (drawH - exportH) / 2;

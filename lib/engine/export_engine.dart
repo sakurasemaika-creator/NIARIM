@@ -136,6 +136,8 @@ class ExportEngine {
           ? null
           : _layerKeyframeEngine.valueAt(l.keyframes, frameIndex),
       groupKeyframeOf: groupKeyframeOf,
+      // The paper takes part in blend modes (Linear Dodge brightens it).
+      paperColor: backgroundColor,
     );
 
     final recorder = ui.PictureRecorder();
