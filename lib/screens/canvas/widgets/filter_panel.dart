@@ -9,9 +9,9 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../../../config/font_fallback.dart';
-import '../../../engine/background_acclimation_engine.dart';
 import '../../../engine/auto_lineart_engine.dart';
 import '../../../engine/filter_engine.dart';
+import '../../../engine/filter_preview.dart';
 import '../../../engine/layer_compositor.dart';
 import '../../../engine/pixel_art_engine.dart';
 import '../../../engine/prism_filter_engine.dart';
@@ -49,6 +49,17 @@ class FilterPanel extends StatefulWidget {
   final ValueChanged<FilterColorEyedropperTarget>? onStartCanvasEyedropper;
   final FilterColorEyedropperTarget? activeCanvasEyedropperTarget;
 
+  /// Laid out as a full-width bar along the bottom of the screen (phones,
+  /// where the canvas chrome is hidden while a filter is adjusted) rather
+  /// than as a narrow floating or docked panel.
+  final bool bottomBar;
+
+  /// Receives each new preview of the filter (the layer as it would look),
+  /// to be shown on the canvas in place of the layer; the receiver owns the
+  /// image. When set, the panel shows no preview of its own (auto line
+  /// art's control-point editor aside).
+  final ValueChanged<ui.Image>? onCanvasPreviewChanged;
+
   const FilterPanel({
     super.key,
     required this.projectId,
@@ -59,15 +70,28 @@ class FilterPanel extends StatefulWidget {
     required this.onClose,
     this.onStartCanvasEyedropper,
     this.activeCanvasEyedropperTarget,
+    this.bottomBar = false,
+    this.onCanvasPreviewChanged,
   });
 
   @override
   State<FilterPanel> createState() => _FilterPanelState();
 }
 
+/// The longest side of a filter's preview, in pixels. It is shown on the
+/// canvas, so it is large enough to judge the result there; the filter runs
+/// in a background isolate so the controls stay smooth.
+const int kFilterPreviewMaxSide = 640;
+
+/// The longest side auto line art analyses its rough lines at for the
+/// preview (the analysis is the slow part; the lines render at any size).
+const int _kLineartAnalysisMaxSide = 150;
+
+/// The width of a setting's name (and value) in front of its slider when
+/// the panel runs along the bottom of the screen.
+const double _kBottomLabelWidth = 112;
+
 class _FilterPanelState extends State<FilterPanel> {
-  final FilterEngine _engine = FilterEngine();
-  final PrismFilterEngine _prismEngine = PrismFilterEngine();
   bool _showFavoritesOnly = false;
   bool _showSearch = false;
   bool _applying = false;
@@ -77,8 +101,18 @@ class _FilterPanelState extends State<FilterPanel> {
   // and Undo / Redo / Apply over the canvas (to see it, and to reach what a
   // filter shows on it, such as sphere shading's light).
   bool _collapsed = false;
+  final ScrollController _controlsScroll = ScrollController();
 
   Uint8List? _previewBase;
+  // Auto line art's analysis copy of the layer (see _kLineartAnalysisMaxSide).
+  Uint8List? _lineartBase;
+  int _lineartW = 0;
+  int _lineartH = 0;
+  double _lineartScale = 1;
+  // Only one preview runs in the background at a time; a change while it
+  // runs asks for one more run with the latest settings.
+  bool _previewRunning = false;
+  bool _previewAgain = false;
   Uint8List? _previewMask;
   Uint8List? _previewBackgroundBytes;
   AutoLineartGraph? _autoLineartBaseGraph;
@@ -115,6 +149,7 @@ class _FilterPanelState extends State<FilterPanel> {
 
   @override
   void dispose() {
+    _controlsScroll.dispose();
     _previewImage?.dispose();
     _editGroupService?.endFilterEditGroup();
     super.dispose();
@@ -236,10 +271,29 @@ class _FilterPanelState extends State<FilterPanel> {
       layerId,
     );
     final image = await tm.compositeLayerToImage(key);
-    const maxSize = 150;
+    const maxSize = kFilterPreviewMaxSide;
     final scale = math.min(1.0, maxSize / math.max(width, height));
     final previewWidth = (width * scale).round().clamp(1, maxSize);
     final previewHeight = (height * scale).round().clamp(1, maxSize);
+    final lineartScale = math.min(
+      1.0,
+      _kLineartAnalysisMaxSide / math.max(width, height),
+    );
+    final lineartWidth = (width * lineartScale).round().clamp(
+      1,
+      _kLineartAnalysisMaxSide,
+    );
+    final lineartHeight = (height * lineartScale).round().clamp(
+      1,
+      _kLineartAnalysisMaxSide,
+    );
+    final lineartBytes = await _downscaleToBytes(
+      image.clone(),
+      width,
+      height,
+      lineartWidth,
+      lineartHeight,
+    );
     final bytes = await _downscaleToBytes(
       image,
       width,
@@ -303,6 +357,10 @@ class _FilterPanelState extends State<FilterPanel> {
     _canvasW = width;
     _canvasH = height;
     _previewBase = bytes;
+    _lineartBase = lineartBytes;
+    _lineartW = lineartWidth;
+    _lineartH = lineartHeight;
+    _lineartScale = lineartScale;
     _previewMask = maskBytes;
     _previewBackgroundBytes = backgroundBytes;
     _previewW = previewWidth;
@@ -324,9 +382,27 @@ class _FilterPanelState extends State<FilterPanel> {
     final filter = context.read<FilterService>().currentFilter;
     _previewRequestedFor = filter;
     if (base == null || filter == null || !mounted) return;
+    if (_previewRunning) {
+      _previewAgain = true;
+      return;
+    }
+    _previewRunning = true;
+    try {
+      await _runPreview(base, filter);
+    } finally {
+      _previewRunning = false;
+    }
+    if (_previewAgain && mounted) {
+      _previewAgain = false;
+      await _updatePreview();
+    }
+  }
+
+  Future<void> _runPreview(Uint8List base, FilterDef filter) async {
     final previewRevision = ++_autoLineartPreviewRevision;
     final Uint8List filtered;
-    if (filter.kind == FilterKind.autoLineart) {
+    final lineartBase = _lineartBase;
+    if (filter.kind == FilterKind.autoLineart && lineartBase != null) {
       final smoothingLevel = filter.autoLineartSmoothing.round().clamp(0, 10);
       final roughChanged =
           _autoLineartBaseGraph == null ||
@@ -343,13 +419,14 @@ class _FilterPanelState extends State<FilterPanel> {
             previousBaseline != null &&
             previousEdited != null;
         if (roughChanged) {
+          // Analysed on a small copy; the graph renders at any size.
           _autoLineartBaseGraph = AutoLineartEngine.analyze(
-            base,
-            _previewW,
-            _previewH,
+            lineartBase,
+            _lineartW,
+            _lineartH,
             roughWidthPx: math.max(
               2.0,
-              filter.autoLineartRoughWidth * _previewScale,
+              filter.autoLineartRoughWidth * _lineartScale,
             ),
           );
           _autoLineartPreviewRoughWidth = filter.autoLineartRoughWidth;
@@ -387,7 +464,18 @@ class _FilterPanelState extends State<FilterPanel> {
         roughOpacity: 0.4,
       );
     } else {
-      filtered = _runFilter(filter, base, _previewW, _previewH);
+      filtered = await compute(runFilterPreview, (
+        filter: filter,
+        data: base,
+        width: _previewW,
+        height: _previewH,
+        scale: _previewScale,
+        canvasWidth: _canvasW,
+        canvasHeight: _canvasH,
+        mask: _previewMask,
+        background: _previewBackgroundBytes,
+      ));
+      if (!mounted) return;
     }
     final completer = Completer<ui.Image>();
     ui.decodeImageFromPixels(
@@ -406,6 +494,7 @@ class _FilterPanelState extends State<FilterPanel> {
       _previewImage?.dispose();
       _previewImage = image;
     });
+    widget.onCanvasPreviewChanged?.call(image.clone());
   }
 
   @override
@@ -419,8 +508,6 @@ class _FilterPanelState extends State<FilterPanel> {
       return _filterDisplayName(l10n, f).contains(query);
     }).toList();
     final current = service.currentFilter;
-    final bulk = widget.bulkFrameIndices;
-    final previewSide = current?.kind == FilterKind.autoLineart ? 200.0 : 120.0;
 
     // Also follows changes made outside the panel (dragging sphere
     // shading's light or the fisheye's centre on the canvas). Every change
@@ -430,6 +517,10 @@ class _FilterPanelState extends State<FilterPanel> {
       WidgetsBinding.instance.addPostFrameCallback((_) {
         if (mounted) _updatePreview();
       });
+    }
+
+    if (widget.bottomBar) {
+      return _buildBottomBar(context, l10n, service, filters, current);
     }
 
     // While a filter is edited the panel floats over the canvas with no
@@ -456,352 +547,427 @@ class _FilterPanelState extends State<FilterPanel> {
             child: Column(
               mainAxisSize: collapsed ? MainAxisSize.min : MainAxisSize.max,
               crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                if (current == null)
-                  PanelCenterCloseBar(onClose: widget.onClose)
-                else
-                  // While editing, the filter list stays hidden to keep the
-                  // canvas visible; this returns to it without closing.
-                  Row(
-                    children: [
-                      IconButton(
-                        key: const ValueKey('filter-back-to-list'),
-                        icon: const Icon(Icons.arrow_back, size: 18),
-                        tooltip: l10n.filterBackToList,
-                        visualDensity: VisualDensity.compact,
-                        padding: EdgeInsets.zero,
-                        constraints: const BoxConstraints(
-                          minWidth: 44,
-                          minHeight: 44,
-                        ),
-                        onPressed: service.clearCurrentFilter,
-                      ),
-                      Expanded(
-                        child: Text(
-                          _filterDisplayName(l10n, current),
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                          style: const TextStyle(
-                            fontWeight: FontWeight.bold,
-                            fontSize: 13,
-                            fontFamily: 'Kuramubon',
-                            fontFamilyFallback: kHeadingFontFallback,
-                          ),
-                        ),
-                      ),
-                      IconButton(
-                        key: const ValueKey('filter-collapse-button'),
-                        icon: Icon(
-                          collapsed ? Icons.expand_more : Icons.expand_less,
-                          size: 18,
-                        ),
-                        tooltip: collapsed
-                            ? l10n.filterPanelExpand
-                            : l10n.filterPanelCollapse,
-                        visualDensity: VisualDensity.compact,
-                        padding: EdgeInsets.zero,
-                        constraints: const BoxConstraints(
-                          minWidth: 44,
-                          minHeight: 44,
-                        ),
-                        onPressed: () =>
-                            setState(() => _collapsed = !_collapsed),
-                      ),
+              children: current == null
+                  ? [
                       PanelCenterCloseBar(onClose: widget.onClose),
-                    ],
-                  ),
-                if (current == null)
-                  Row(
-                    children: [
+                      _listTitleRow(l10n),
+                      if (_showSearch) _searchField(l10n, service),
+                      const Divider(),
+                      _filterCards(l10n, service, filters, current),
+                      const Divider(),
                       Expanded(
-                        child: Text(
-                          bulk != null
-                              ? l10n.filterPanelTitleBulk(bulk.length)
-                              : l10n.filterPanelTitle,
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                          style: const TextStyle(
-                            fontWeight: FontWeight.bold,
-                            fontSize: 13,
-                            fontFamily: 'Kuramubon',
-                            fontFamilyFallback: kHeadingFontFallback,
+                        child: Center(
+                          // "No filters" only when the search or favourites
+                          // leave none; otherwise point at the list above.
+                          child: Text(
+                            filters.isEmpty
+                                ? l10n.filterEmpty
+                                : l10n.filterPickHint,
+                            textAlign: TextAlign.center,
                           ),
                         ),
                       ),
-                      IconButton(
-                        visualDensity: VisualDensity.compact,
-                        icon: Icon(
-                          _showFavoritesOnly ? Icons.star : Icons.star_outline,
-                          size: 18,
-                        ),
-                        onPressed: () => setState(
-                          () => _showFavoritesOnly = !_showFavoritesOnly,
-                        ),
-                      ),
-                      IconButton(
-                        visualDensity: VisualDensity.compact,
-                        icon: const Icon(Icons.search, size: 18),
-                        onPressed: () =>
-                            setState(() => _showSearch = !_showSearch),
-                      ),
+                    ]
+                  : [
+                      _editHeader(l10n, service, current, collapsed),
+                      if (!collapsed)
+                        Expanded(child: _editControls(l10n, service, current)),
+                      const SizedBox(height: 8),
+                      _actionRow(l10n, service, current),
                     ],
-                  ),
-                if (current == null && _showSearch)
-                  TextField(
-                    decoration: InputDecoration(
-                      isDense: true,
-                      hintText: l10n.filterSearchHint,
-                      prefixIcon: const Icon(Icons.search, size: 16),
-                    ),
-                    style: const TextStyle(fontSize: 12),
-                    onChanged: service.setSearchQuery,
-                  ),
-                if (current == null) const Divider(),
-                if (current == null)
-                  SizedBox(
-                    height: 88,
-                    child: ListView.builder(
-                      scrollDirection: Axis.horizontal,
-                      itemCount: filters.length,
-                      itemBuilder: (context, index) {
-                        final filter = filters[index];
-                        final premium = _premiumFeatureFor(filter.kind);
-                        final locked =
-                            premium != null &&
-                            !context.watch<PremiumService>().isFeatureAvailable(
-                              premium,
-                            );
-                        final selected = filter.id == current?.id;
-                        final child = GestureDetector(
-                          key: ValueKey('filter-card-${filter.id}'),
-                          onTap: locked
-                              ? null
-                              : () => service.selectFilter(filter.id),
-                          child: Container(
-                            width: 78,
-                            margin: const EdgeInsets.only(right: 6),
-                            padding: const EdgeInsets.all(6),
-                            decoration: BoxDecoration(
-                              border: Border.all(
-                                color: selected
-                                    ? Theme.of(context).colorScheme.primary
-                                    : ThemeService
-                                          .activeColorScheme
-                                          .outlineVariant,
-                                width: selected ? 2 : 1,
-                              ),
-                              borderRadius: BorderRadius.circular(8),
-                            ),
-                            child: Column(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                Icon(_iconForFilter(filter), size: 22),
-                                const SizedBox(height: 4),
-                                Text(
-                                  _filterDisplayName(l10n, filter),
-                                  maxLines: 2,
-                                  textAlign: TextAlign.center,
-                                  overflow: TextOverflow.ellipsis,
-                                  style: const TextStyle(fontSize: 9),
-                                ),
-                                const SizedBox(height: 2),
-                                InkWell(
-                                  onTap: () =>
-                                      service.toggleFavorite(filter.id),
-                                  child: Icon(
-                                    filter.isFavorite
-                                        ? Icons.star
-                                        : Icons.star_outline,
-                                    size: 13,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        );
-                        return locked
-                            ? PremiumLockWidget(feature: premium, child: child)
-                            : child;
-                      },
-                    ),
-                  ),
-                if (current == null) const Divider(),
-                if (current == null)
-                  Expanded(
-                    child: Center(
-                      // "No filters" only when the search or favourites leave
-                      // none; otherwise point at the list above.
-                      child: Text(
-                        filters.isEmpty
-                            ? l10n.filterEmpty
-                            : l10n.filterPickHint,
-                        textAlign: TextAlign.center,
-                      ),
-                    ),
-                  )
-                else ...[
-                  if (!collapsed)
-                    Expanded(
-                      // One touch on the controls (a slider drag, a curve drag)
-                      // is one step for the filter's Undo.
-                      child: Listener(
-                        onPointerDown: (e) => _editPointerDown(e.pointer),
-                        onPointerUp: (e) => _editPointerUp(e.pointer),
-                        onPointerCancel: (e) => _editPointerUp(e.pointer),
-                        child: SingleChildScrollView(
-                          hitTestBehavior: HitTestBehavior.deferToChild,
-                          child: Column(
-                            children: [
-                              Center(
-                                child: Container(
-                                  width: previewSide,
-                                  height: previewSide,
-                                  decoration: BoxDecoration(
-                                    color: Theme.of(
-                                      context,
-                                    ).colorScheme.surfaceContainerHighest,
-                                    borderRadius: BorderRadius.circular(6),
-                                  ),
-                                  child: _previewImage == null
-                                      ? const Center(
-                                          child: SizedBox(
-                                            width: 20,
-                                            height: 20,
-                                            child: CircularProgressIndicator(
-                                              strokeWidth: 2,
-                                            ),
-                                          ),
-                                        )
-                                      : ClipRRect(
-                                          borderRadius: BorderRadius.circular(
-                                            6,
-                                          ),
-                                          child:
-                                              current.kind ==
-                                                      FilterKind.autoLineart &&
-                                                  _autoLineartPreviewGraph !=
-                                                      null &&
-                                                  (bulk == null ||
-                                                      bulk.length <= 1)
-                                              ? AutoLineartControlOverlay(
-                                                  image: _previewImage!,
-                                                  graph:
-                                                      _autoLineartPreviewGraph!,
-                                                  mode: _autoLineartControlMode,
-                                                  onPointMoved:
-                                                      _moveAutoLineartPoint,
-                                                  onGraphChanged:
-                                                      _replaceAutoLineartGraph,
-                                                )
-                                              : RawImage(
-                                                  image: _previewImage,
-                                                  fit: BoxFit.contain,
-                                                ),
-                                        ),
-                                ),
-                              ),
-                              const SizedBox(height: 6),
-                              _buildControls(l10n, service, current),
-                            ],
-                          ),
-                        ),
-                      ),
-                    ),
-                  const SizedBox(height: 8),
-                  Row(
-                    children: [
-                      IconButton(
-                        key: const ValueKey('filter-undo-button'),
-                        onPressed: service.canUndoFilterEdit
-                            ? () {
-                                service.undoFilterEdit();
-                                _updatePreview();
-                              }
-                            : null,
-                        icon: const Icon(Icons.undo, size: 18),
-                        tooltip: 'Undo',
-                      ),
-                      IconButton(
-                        key: const ValueKey('filter-redo-button'),
-                        onPressed: service.canRedoFilterEdit
-                            ? () {
-                                service.redoFilterEdit();
-                                _updatePreview();
-                              }
-                            : null,
-                        icon: const Icon(Icons.redo, size: 18),
-                        tooltip: 'Redo',
-                      ),
-                      Expanded(
-                        child: FilledButton.icon(
-                          key: const ValueKey('filter-apply-button'),
-                          onPressed: widget.layerId == null || _applying
-                              ? null
-                              : _applyFilter,
-                          icon: _applying
-                              ? SizedBox(
-                                  width: 14,
-                                  height: 14,
-                                  child: CircularProgressIndicator(
-                                    strokeWidth: 2,
-                                    color: Theme.of(
-                                      context,
-                                    ).colorScheme.onPrimary,
-                                  ),
-                                )
-                              : const Icon(Icons.check, size: 16),
-                          label: Text(
-                            bulk != null
-                                ? l10n.filterApplyBulkButton(bulk.length)
-                                : l10n.filterApplyButton,
-                          ),
-                        ),
-                      ),
-                      if (current.kind == FilterKind.autoLineart) ...[
-                        IconButton(
-                          key: const ValueKey('auto-lineart-add-point-button'),
-                          onPressed: () => setState(
-                            () => _autoLineartControlMode =
-                                _autoLineartControlMode ==
-                                    AutoLineartControlMode.add
-                                ? AutoLineartControlMode.move
-                                : AutoLineartControlMode.add,
-                          ),
-                          icon: const Icon(Icons.add_circle_outline, size: 20),
-                          tooltip: l10n.filterAutoLineartAddPointTooltip,
-                          isSelected:
-                              _autoLineartControlMode ==
-                              AutoLineartControlMode.add,
-                        ),
-                        IconButton(
-                          key: const ValueKey(
-                            'auto-lineart-delete-point-button',
-                          ),
-                          onPressed: () => setState(
-                            () => _autoLineartControlMode =
-                                _autoLineartControlMode ==
-                                    AutoLineartControlMode.delete
-                                ? AutoLineartControlMode.move
-                                : AutoLineartControlMode.delete,
-                          ),
-                          icon: const Icon(
-                            Icons.remove_circle_outline,
-                            size: 20,
-                          ),
-                          tooltip: l10n.filterAutoLineartDeletePointTooltip,
-                          isSelected:
-                              _autoLineartControlMode ==
-                              AutoLineartControlMode.delete,
-                        ),
-                      ],
-                    ],
-                  ),
-                ],
-              ],
             ),
           ),
         ),
       ),
+    );
+  }
+
+  /// Phones: the panel runs along the bottom of the screen at full width,
+  /// under the canvas (whose chrome is hidden meanwhile), so it never covers
+  /// the picture, and the preview shows on the canvas itself.
+  Widget _buildBottomBar(
+    BuildContext context,
+    AppLocalizations l10n,
+    FilterService service,
+    List<FilterDef> filters,
+    FilterDef? current,
+  ) {
+    final collapsed = current != null && _collapsed;
+    final maxControls = MediaQuery.sizeOf(context).height * 0.3;
+    return Material(
+      key: const ValueKey('filter-bottom-bar'),
+      type: MaterialType.transparency,
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(12, 0, 12, 6),
+        child: _outlinedOverCanvas(
+          context,
+          enabled: current != null,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: current == null
+                ? [
+                    _listTitleRow(l10n, withClose: true),
+                    if (_showSearch) _searchField(l10n, service),
+                    _filterCards(l10n, service, filters, current),
+                    if (filters.isEmpty)
+                      Padding(
+                        padding: const EdgeInsets.all(8),
+                        child: Text(
+                          l10n.filterEmpty,
+                          textAlign: TextAlign.center,
+                        ),
+                      ),
+                  ]
+                : [
+                    _editHeader(l10n, service, current, collapsed),
+                    if (!collapsed)
+                      ConstrainedBox(
+                        constraints: BoxConstraints(maxHeight: maxControls),
+                        child: _editControls(l10n, service, current),
+                      ),
+                    const SizedBox(height: 4),
+                    _actionRow(l10n, service, current),
+                  ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  /// The list's title, favourites-only and search toggles (and, in the
+  /// bottom bar, the close button).
+  Widget _listTitleRow(AppLocalizations l10n, {bool withClose = false}) {
+    final bulk = widget.bulkFrameIndices;
+    return Row(
+      children: [
+        Expanded(
+          child: Text(
+            bulk != null
+                ? l10n.filterPanelTitleBulk(bulk.length)
+                : l10n.filterPanelTitle,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: const TextStyle(
+              fontWeight: FontWeight.bold,
+              fontSize: 13,
+              fontFamily: 'Kuramubon',
+              fontFamilyFallback: kHeadingFontFallback,
+            ),
+          ),
+        ),
+        IconButton(
+          visualDensity: VisualDensity.compact,
+          icon: Icon(
+            _showFavoritesOnly ? Icons.star : Icons.star_outline,
+            size: 18,
+          ),
+          onPressed: () =>
+              setState(() => _showFavoritesOnly = !_showFavoritesOnly),
+        ),
+        IconButton(
+          visualDensity: VisualDensity.compact,
+          icon: const Icon(Icons.search, size: 18),
+          onPressed: () => setState(() => _showSearch = !_showSearch),
+        ),
+        if (withClose) PanelCenterCloseBar(onClose: widget.onClose),
+      ],
+    );
+  }
+
+  Widget _searchField(AppLocalizations l10n, FilterService service) =>
+      TextField(
+        decoration: InputDecoration(
+          isDense: true,
+          hintText: l10n.filterSearchHint,
+          prefixIcon: const Icon(Icons.search, size: 16),
+        ),
+        style: const TextStyle(fontSize: 12),
+        onChanged: service.setSearchQuery,
+      );
+
+  /// The filters to choose from, as a row of cards.
+  Widget _filterCards(
+    AppLocalizations l10n,
+    FilterService service,
+    List<FilterDef> filters,
+    FilterDef? current,
+  ) {
+    return SizedBox(
+      height: 88,
+      child: ListView.builder(
+        scrollDirection: Axis.horizontal,
+        itemCount: filters.length,
+        itemBuilder: (context, index) {
+          final filter = filters[index];
+          final premium = _premiumFeatureFor(filter.kind);
+          final locked =
+              premium != null &&
+              !context.watch<PremiumService>().isFeatureAvailable(premium);
+          final selected = filter.id == current?.id;
+          final child = GestureDetector(
+            key: ValueKey('filter-card-${filter.id}'),
+            onTap: locked ? null : () => service.selectFilter(filter.id),
+            child: Container(
+              width: 78,
+              margin: const EdgeInsets.only(right: 6),
+              padding: const EdgeInsets.all(6),
+              decoration: BoxDecoration(
+                border: Border.all(
+                  color: selected
+                      ? Theme.of(context).colorScheme.primary
+                      : ThemeService.activeColorScheme.outlineVariant,
+                  width: selected ? 2 : 1,
+                ),
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(_iconForFilter(filter), size: 22),
+                  const SizedBox(height: 4),
+                  Text(
+                    _filterDisplayName(l10n, filter),
+                    maxLines: 2,
+                    textAlign: TextAlign.center,
+                    overflow: TextOverflow.ellipsis,
+                    style: const TextStyle(fontSize: 9),
+                  ),
+                  const SizedBox(height: 2),
+                  InkWell(
+                    onTap: () => service.toggleFavorite(filter.id),
+                    child: Icon(
+                      filter.isFavorite ? Icons.star : Icons.star_outline,
+                      size: 13,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          );
+          return locked
+              ? PremiumLockWidget(feature: premium, child: child)
+              : child;
+        },
+      ),
+    );
+  }
+
+  /// The edited filter's name, with the way back to the list, the button
+  /// that folds the controls away and the close button.
+  Widget _editHeader(
+    AppLocalizations l10n,
+    FilterService service,
+    FilterDef current,
+    bool collapsed,
+  ) {
+    return Row(
+      children: [
+        // While editing, the filter list stays hidden to keep the canvas
+        // visible; this returns to it without closing.
+        IconButton(
+          key: const ValueKey('filter-back-to-list'),
+          icon: const Icon(Icons.arrow_back, size: 18),
+          tooltip: l10n.filterBackToList,
+          visualDensity: VisualDensity.compact,
+          padding: EdgeInsets.zero,
+          constraints: const BoxConstraints(minWidth: 44, minHeight: 44),
+          onPressed: service.clearCurrentFilter,
+        ),
+        Expanded(
+          child: Text(
+            _filterDisplayName(l10n, current),
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: const TextStyle(
+              fontWeight: FontWeight.bold,
+              fontSize: 13,
+              fontFamily: 'Kuramubon',
+              fontFamilyFallback: kHeadingFontFallback,
+            ),
+          ),
+        ),
+        IconButton(
+          key: const ValueKey('filter-collapse-button'),
+          icon: Icon(
+            collapsed ? Icons.expand_less : Icons.expand_more,
+            size: 18,
+          ),
+          tooltip: collapsed
+              ? l10n.filterPanelExpand
+              : l10n.filterPanelCollapse,
+          visualDensity: VisualDensity.compact,
+          padding: EdgeInsets.zero,
+          constraints: const BoxConstraints(minWidth: 44, minHeight: 44),
+          onPressed: () => setState(() => _collapsed = !_collapsed),
+        ),
+        PanelCenterCloseBar(onClose: widget.onClose),
+      ],
+    );
+  }
+
+  /// The edited filter's controls, scrolling when they don't fit. When the
+  /// canvas shows the preview there is no preview box here, except auto
+  /// line art's control-point editor.
+  Widget _editControls(
+    AppLocalizations l10n,
+    FilterService service,
+    FilterDef current,
+  ) {
+    final bulk = widget.bulkFrameIndices;
+    final lineartEditor =
+        current.kind == FilterKind.autoLineart &&
+        (bulk == null || bulk.length <= 1);
+    final showPreviewBox =
+        lineartEditor || widget.onCanvasPreviewChanged == null;
+    final previewSide = current.kind == FilterKind.autoLineart ? 200.0 : 120.0;
+    // One touch on the controls (a slider drag, a curve drag) is one step
+    // for the filter's Undo.
+    return Listener(
+      onPointerDown: (e) => _editPointerDown(e.pointer),
+      onPointerUp: (e) => _editPointerUp(e.pointer),
+      onPointerCancel: (e) => _editPointerUp(e.pointer),
+      child: Scrollbar(
+        controller: _controlsScroll,
+        thumbVisibility: true,
+        child: SingleChildScrollView(
+          controller: _controlsScroll,
+          hitTestBehavior: HitTestBehavior.deferToChild,
+          padding: const EdgeInsets.only(right: 10),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              if (showPreviewBox) ...[
+                Center(
+                  child: Container(
+                    width: previewSide,
+                    height: previewSide,
+                    decoration: BoxDecoration(
+                      color: Theme.of(
+                        context,
+                      ).colorScheme.surfaceContainerHighest,
+                      borderRadius: BorderRadius.circular(6),
+                    ),
+                    child: _previewImage == null
+                        ? const Center(
+                            child: SizedBox(
+                              width: 20,
+                              height: 20,
+                              child: CircularProgressIndicator(strokeWidth: 2),
+                            ),
+                          )
+                        : ClipRRect(
+                            borderRadius: BorderRadius.circular(6),
+                            child:
+                                lineartEditor &&
+                                    _autoLineartPreviewGraph != null
+                                ? AutoLineartControlOverlay(
+                                    image: _previewImage!,
+                                    graph: _autoLineartPreviewGraph!,
+                                    mode: _autoLineartControlMode,
+                                    onPointMoved: _moveAutoLineartPoint,
+                                    onGraphChanged: _replaceAutoLineartGraph,
+                                  )
+                                : RawImage(
+                                    image: _previewImage,
+                                    fit: BoxFit.contain,
+                                  ),
+                          ),
+                  ),
+                ),
+                const SizedBox(height: 6),
+              ],
+              _buildControls(l10n, service, current),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  /// Undo / Redo of the filter's settings, Apply, and auto line art's
+  /// control-point modes.
+  Widget _actionRow(
+    AppLocalizations l10n,
+    FilterService service,
+    FilterDef current,
+  ) {
+    final bulk = widget.bulkFrameIndices;
+    return Row(
+      children: [
+        IconButton(
+          key: const ValueKey('filter-undo-button'),
+          onPressed: service.canUndoFilterEdit
+              ? () {
+                  service.undoFilterEdit();
+                  _updatePreview();
+                }
+              : null,
+          icon: const Icon(Icons.undo, size: 18),
+          tooltip: l10n.commonUndo,
+        ),
+        IconButton(
+          key: const ValueKey('filter-redo-button'),
+          onPressed: service.canRedoFilterEdit
+              ? () {
+                  service.redoFilterEdit();
+                  _updatePreview();
+                }
+              : null,
+          icon: const Icon(Icons.redo, size: 18),
+          tooltip: l10n.commonRedo,
+        ),
+        Expanded(
+          child: FilledButton.icon(
+            key: const ValueKey('filter-apply-button'),
+            onPressed: widget.layerId == null || _applying
+                ? null
+                : _applyFilter,
+            icon: _applying
+                ? SizedBox(
+                    width: 14,
+                    height: 14,
+                    child: CircularProgressIndicator(
+                      strokeWidth: 2,
+                      color: Theme.of(context).colorScheme.onPrimary,
+                    ),
+                  )
+                : const Icon(Icons.check, size: 16),
+            label: Text(
+              bulk != null
+                  ? l10n.filterApplyBulkButton(bulk.length)
+                  : l10n.filterApplyButton,
+            ),
+          ),
+        ),
+        if (current.kind == FilterKind.autoLineart) ...[
+          IconButton(
+            key: const ValueKey('auto-lineart-add-point-button'),
+            onPressed: () => setState(
+              () => _autoLineartControlMode =
+                  _autoLineartControlMode == AutoLineartControlMode.add
+                  ? AutoLineartControlMode.move
+                  : AutoLineartControlMode.add,
+            ),
+            icon: const Icon(Icons.add_circle_outline, size: 20),
+            tooltip: l10n.filterAutoLineartAddPointTooltip,
+            isSelected: _autoLineartControlMode == AutoLineartControlMode.add,
+          ),
+          IconButton(
+            key: const ValueKey('auto-lineart-delete-point-button'),
+            onPressed: () => setState(
+              () => _autoLineartControlMode =
+                  _autoLineartControlMode == AutoLineartControlMode.delete
+                  ? AutoLineartControlMode.move
+                  : AutoLineartControlMode.delete,
+            ),
+            icon: const Icon(Icons.remove_circle_outline, size: 20),
+            tooltip: l10n.filterAutoLineartDeletePointTooltip,
+            isSelected:
+                _autoLineartControlMode == AutoLineartControlMode.delete,
+          ),
+        ],
+      ],
     );
   }
 
@@ -1577,10 +1743,11 @@ class _FilterPanelState extends State<FilterPanel> {
       case FilterKind.fisheye:
         return Column(
           children: [
+            // Above 0 the middle bulges (a fisheye), below 0 it pinches.
             _paramSlider(
               l10n.filterFisheyeStrength,
               current.strength,
-              0,
+              -100,
               100,
               (v) => service.updateFilterParams(current.id, strength: v),
             ),
@@ -1924,31 +2091,40 @@ class _FilterPanelState extends State<FilterPanel> {
           },
         ),
         if (combined) _hint(l10n.filterSphereCombinedHint),
+        // Each colour with its blend mode on the same row.
         _colorControl(
           l10n.filterSphereShadowColor,
           current.sphereShadowColor,
           (c) => service.updateFilterParams(current.id, sphereShadowColor: c),
+          trailing: combined
+              ? null
+              : _blendModeControl(
+                  l10n.filterSphereShadowBlend,
+                  current.sphereShadowBlend,
+                  (m) => service.updateFilterParams(
+                    current.id,
+                    sphereShadowBlend: m,
+                  ),
+                  keyName: 'sphere-shadow-blend',
+                ),
         ),
-        if (!combined)
-          _blendModeControl(
-            l10n.filterSphereShadowBlend,
-            current.sphereShadowBlend,
-            (m) => service.updateFilterParams(current.id, sphereShadowBlend: m),
-            keyName: 'sphere-shadow-blend',
-          ),
         _colorControl(
           l10n.filterSphereLightColor,
           current.sphereLightColor,
           (c) => service.updateFilterParams(current.id, sphereLightColor: c),
+          trailing: combined
+              ? null
+              : _blendModeControl(
+                  l10n.filterSphereLightBlend,
+                  current.sphereLightBlend,
+                  (m) => service.updateFilterParams(
+                    current.id,
+                    sphereLightBlend: m,
+                  ),
+                  keyName: 'sphere-light-blend',
+                ),
         ),
-        if (!combined)
-          _blendModeControl(
-            l10n.filterSphereLightBlend,
-            current.sphereLightBlend,
-            (m) => service.updateFilterParams(current.id, sphereLightBlend: m),
-            keyName: 'sphere-light-blend',
-          )
-        else
+        if (combined)
           _blendModeControl(
             l10n.filterSphereBlend,
             current.sphereCombinedBlend,
@@ -1991,6 +2167,13 @@ class _FilterPanelState extends State<FilterPanel> {
           100,
           (v) => service.updateFilterParams(current.id, sphereLightBlur: v),
         ),
+        _paramSlider(
+          l10n.filterSphereShadowBlur,
+          current.sphereShadowBlur,
+          0,
+          100,
+          (v) => service.updateFilterParams(current.id, sphereShadowBlur: v),
+        ),
         _hint(l10n.filterSphereCanvasHint),
       ],
     );
@@ -2001,12 +2184,20 @@ class _FilterPanelState extends State<FilterPanel> {
     int value,
     ValueChanged<int> onChanged, {
     FilterColorEyedropperTarget? eyedropperTarget,
+    // Shown after the colour chip on the same row (a blend mode for it).
+    Widget? trailing,
   }) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 3),
       child: Row(
         children: [
-          Expanded(child: Text(label, style: const TextStyle(fontSize: 11))),
+          if (widget.bottomBar)
+            SizedBox(
+              width: _kBottomLabelWidth,
+              child: Text(label, style: const TextStyle(fontSize: 11)),
+            )
+          else
+            Expanded(child: Text(label, style: const TextStyle(fontSize: 11))),
           InkWell(
             onTap: () => showDialog(
               context: context,
@@ -2041,6 +2232,11 @@ class _FilterPanelState extends State<FilterPanel> {
               onPressed: () =>
                   widget.onStartCanvasEyedropper?.call(eyedropperTarget),
             ),
+          if (trailing != null) ...[
+            const SizedBox(width: 10),
+            Expanded(child: trailing),
+          ] else if (widget.bottomBar)
+            const Spacer(),
         ],
       ),
     );
@@ -2064,6 +2260,47 @@ class _FilterPanelState extends State<FilterPanel> {
         : shownValue != null && shown != shown.roundToDouble()
         ? shown.toStringAsFixed(1)
         : shown.round().toString();
+    if (widget.bottomBar) {
+      // One row per setting along the bottom of the screen: the name and
+      // value (tap to type it) beside the slider and its −/+ buttons.
+      return Row(
+        children: [
+          SizedBox(
+            width: _kBottomLabelWidth,
+            // Room on the right for the value's pencil mark, which sits
+            // just past the text.
+            child: Padding(
+              padding: const EdgeInsets.only(right: 12),
+              child: EditableSliderValue(
+                text: '$label: $valueLabel',
+                style: const TextStyle(fontSize: 11),
+                value: safeValue,
+                min: min,
+                max: max,
+                isInt: decimals == 0,
+                onChanged: (v) {
+                  onChanged(v.toDouble());
+                  _updatePreview();
+                },
+              ),
+            ),
+          ),
+          Expanded(
+            child: SteppedSlider(
+              value: safeValue,
+              min: min,
+              max: max,
+              step: decimals > 0 ? 0.1 : 1,
+              compact: true,
+              onChanged: (v) {
+                onChanged(v);
+                _updatePreview();
+              },
+            ),
+          ),
+        ],
+      );
+    }
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 2),
       child: Column(
@@ -2118,6 +2355,39 @@ class _FilterPanelState extends State<FilterPanel> {
     }
 
     final shown = normalize(value);
+    if (widget.bottomBar) {
+      return Row(
+        key: key,
+        children: [
+          SizedBox(
+            width: _kBottomLabelWidth,
+            child: Text(
+              '$label: $shown$suffix',
+              style: const TextStyle(fontSize: 11),
+            ),
+          ),
+          IconButton(
+            visualDensity: VisualDensity.compact,
+            icon: const Icon(Icons.remove_rounded, size: 18),
+            onPressed: wrap || shown > min ? () => change(shown - 1) : null,
+          ),
+          Expanded(
+            child: SteppedSlider(
+              value: shown.toDouble(),
+              min: min.toDouble(),
+              max: max.toDouble(),
+              step: 1,
+              onChanged: (v) => change(v.round()),
+            ),
+          ),
+          IconButton(
+            visualDensity: VisualDensity.compact,
+            icon: const Icon(Icons.add_rounded, size: 18),
+            onPressed: wrap || shown < max ? () => change(shown + 1) : null,
+          ),
+        ],
+      );
+    }
     return Padding(
       key: key,
       padding: const EdgeInsets.symmetric(vertical: 2),
@@ -2257,303 +2527,6 @@ class _FilterPanelState extends State<FilterPanel> {
       FilterKind.levels => PremiumFeature.levelAdjustment,
       _ => null,
     };
-  }
-
-  Uint8List _runFilter(
-    FilterDef filter,
-    Uint8List data,
-    int width,
-    int height,
-  ) {
-    if (_isPrism(filter)) {
-      return _prismEngine.apply(
-        data,
-        width,
-        height,
-        blurPx: filter.prismBlurPx * _previewScale,
-        gradientDirectionDegrees: filter.prismDirectionDegrees,
-      );
-    }
-    switch (filter.kind) {
-      case FilterKind.prism:
-        return _prismEngine.apply(
-          data,
-          width,
-          height,
-          blurPx: filter.prismBlurPx * _previewScale,
-          gradientDirectionDegrees: filter.prismDirectionDegrees,
-        );
-      case FilterKind.gaussianBlur:
-        return _engine.applyGaussianBlur(data, width, height, filter.strength);
-      case FilterKind.lensBlur:
-        return _engine.applyLensBlur(data, width, height, filter.strength);
-      case FilterKind.animeStyle:
-        return _engine.applyAnimeStyle(
-          data,
-          width,
-          height,
-          strength: filter.strength,
-          colorCount: filter.colorLevels,
-          edgeStrength: filter.edgeStrength,
-          lineWidth: filter.animeLineWidth * _previewScale,
-        );
-      case FilterKind.outline:
-        return _engine.applyOutline(
-          data,
-          width,
-          height,
-          color: filter.outlineColor,
-          // In canvas pixels; the preview is scaled down.
-          widthPx: filter.outlineWidth * _previewScale,
-          erosion: filter.outlineErosion,
-        );
-      case FilterKind.toneCurve:
-        return _engine.applyToneCurve(
-          data,
-          width,
-          height,
-          filter.toneCurvePoints.length >= 4
-              ? [
-                  for (var i = 0; i + 1 < filter.toneCurvePoints.length; i += 2)
-                    Offset(
-                      filter.toneCurvePoints[i],
-                      filter.toneCurvePoints[i + 1],
-                    ),
-                ]
-              : toneCurvePoints(filter.toneCurvePreset),
-          redPoints: filter.toneCurveRedPoints.length >= 4
-              ? [
-                  for (
-                    var i = 0;
-                    i + 1 < filter.toneCurveRedPoints.length;
-                    i += 2
-                  )
-                    Offset(
-                      filter.toneCurveRedPoints[i],
-                      filter.toneCurveRedPoints[i + 1],
-                    ),
-                ]
-              : null,
-          greenPoints: filter.toneCurveGreenPoints.length >= 4
-              ? [
-                  for (
-                    var i = 0;
-                    i + 1 < filter.toneCurveGreenPoints.length;
-                    i += 2
-                  )
-                    Offset(
-                      filter.toneCurveGreenPoints[i],
-                      filter.toneCurveGreenPoints[i + 1],
-                    ),
-                ]
-              : null,
-          bluePoints: filter.toneCurveBluePoints.length >= 4
-              ? [
-                  for (
-                    var i = 0;
-                    i + 1 < filter.toneCurveBluePoints.length;
-                    i += 2
-                  )
-                    Offset(
-                      filter.toneCurveBluePoints[i],
-                      filter.toneCurveBluePoints[i + 1],
-                    ),
-                ]
-              : null,
-        );
-      case FilterKind.levels:
-        return _engine.applyLevels(
-          data,
-          width,
-          height,
-          inputBlack: filter.inputBlack,
-          inputWhite: filter.inputWhite,
-          inputGamma: filter.inputGamma,
-          outputBlack: filter.outputBlack,
-          outputWhite: filter.outputWhite,
-          redLevels: filter.levelsRed.length >= 5 ? filter.levelsRed : null,
-          greenLevels: filter.levelsGreen.length >= 5
-              ? filter.levelsGreen
-              : null,
-          blueLevels: filter.levelsBlue.length >= 5 ? filter.levelsBlue : null,
-        );
-      case FilterKind.sharpen:
-        return _engine.applySharpen(data, width, height, filter.strength);
-      case FilterKind.unsharpMask:
-        return _engine.applyUnsharpMask(
-          data,
-          width,
-          height,
-          filter.strength,
-          filter.edgeStrength,
-        );
-      case FilterKind.vignette:
-        return _engine.applyVignette(
-          data,
-          width,
-          height,
-          filter.strength,
-          color: filter.vignetteColor,
-        );
-      case FilterKind.noise:
-        return applyNoiseFilter(data, width, height, filter);
-      case FilterKind.retroAnime:
-        return _engine.applyRetroAnime(data, width, height, filter.strength);
-      case FilterKind.crt:
-        // The misregistration and bleed are in canvas pixels.
-        return _engine.applyCrt(
-          data,
-          width,
-          height,
-          filter.strength,
-          aberration: filter.crtAberration * _previewScale,
-          bleed: filter.crtBleed * _previewScale,
-        );
-      case FilterKind.colorAdjust:
-        return _engine.applyColorAdjust(
-          data,
-          width,
-          height,
-          saturation: filter.caSaturation,
-          brightness: filter.caBrightness,
-          contrast: filter.caContrast,
-        );
-      case FilterKind.threshold:
-        return _engine.applyThreshold(
-          data,
-          width,
-          height,
-          filter.thresholdValue,
-        );
-      case FilterKind.fisheye:
-        // The centre is a proportion of the canvas, so the preview's own
-        // size places it.
-        final center = filter.fisheyeCenter(width, height);
-        return _engine.applyFisheye(
-          data,
-          width,
-          height,
-          filter.strength,
-          radiusPercent: filter.fisheyeRadius,
-          centerOffsetX: center.x - width / 2,
-          centerOffsetY: center.y - height / 2,
-        );
-      case FilterKind.sphereShading:
-        return applySphereShadingFilter(
-          data,
-          width,
-          height,
-          filter,
-          _previewMask,
-        );
-      case FilterKind.chromaticAberration:
-        final (dx, dy, radial) = filter.chromaticDisplacement;
-        return _engine.applyChromaticShift(
-          data,
-          width,
-          height,
-          shiftX: dx * _previewScale,
-          shiftY: dy * _previewScale,
-          radial: radial * _previewScale,
-        );
-      case FilterKind.lensDistortion:
-        return _engine.applyLensDistortion(
-          data,
-          width,
-          height,
-          filter.strength,
-          _previewMask,
-          centerOffsetX: filter.lensCenterOffsetX * _previewScale,
-          centerOffsetY: filter.lensCenterOffsetY * _previewScale,
-        );
-      case FilterKind.pixelate:
-        // Blocks are measured in canvas pixels; the preview is a scaled-down
-        // copy, so scale them with it.
-        return _engine.applyPixelate(
-          data,
-          width,
-          height,
-          mosaicSize: math.max(
-            1.0,
-            filter.pixelArtCellSize(_canvasW, _canvasH) * _previewScale,
-          ),
-          colorMode: filter.pixelColorMode,
-          colorLevels: filter.colorLevels,
-          paletteColors: filter.pixelExplicitColors,
-        );
-      case FilterKind.mosaic:
-        return _engine.applyMosaic(
-          data,
-          width,
-          height,
-          (filter.strength * _previewScale).round().clamp(
-            1,
-            kPixelArtMaxBlockSize,
-          ),
-        );
-      case FilterKind.auroraHologram:
-        return _engine.applyAuroraHologram(
-          data,
-          width,
-          height,
-          strength: filter.strength,
-          brightness: filter.hologramBrightness,
-          saturation: filter.hologramSaturation,
-          preset: filter.hologramPreset,
-        );
-      case FilterKind.autoLineart:
-        return AutoLineartEngine.render(
-          AutoLineartEngine.prepareEditableGraph(
-            AutoLineartEngine.analyze(
-              data,
-              width,
-              height,
-              roughWidthPx: filter.autoLineartRoughWidth * _previewScale,
-            ),
-            smoothingLevel: filter.autoLineartSmoothing.round().clamp(0, 10),
-          ),
-          width,
-          height,
-          outputWidthPx: math.max(
-            1.0,
-            filter.autoLineartOutputWidth * _previewScale,
-          ),
-          taperLengthPx: filter.autoLineartTaperLength * _previewScale,
-          smoothing: 0,
-          color: filter.autoLineartColor,
-        );
-      case FilterKind.inkPool:
-        return _engine.applyInkPoolComposite(
-          data,
-          width,
-          height,
-          color: filter.inkPoolColor,
-          rangePx: filter.inkPoolRange * _previewScale,
-          centerWidthPx: filter.inkPoolCenterWidth * _previewScale,
-        );
-      case FilterKind.backgroundBlend:
-        final background = _previewBackgroundBytes;
-        if (background == null) return Uint8List.fromList(data);
-        final previewFilter = filter.copyWith(
-          bgBlendLength: filter.bgBlendLength * _previewScale,
-          bgBlendSamplingBand: filter.bgBlendSamplingBand * _previewScale,
-        );
-        final analysis = BackgroundAcclimationEngine.analyze(
-          data,
-          background,
-          width,
-          height,
-          previewFilter,
-        );
-        return BackgroundAcclimationEngine.apply(
-          data,
-          background,
-          width,
-          height,
-          previewFilter,
-          analysis: analysis,
-        );
-    }
   }
 
   Future<void> _applyFilter() async {

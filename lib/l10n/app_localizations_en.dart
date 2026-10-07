@@ -5547,7 +5547,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get filterNameFisheye => 'Fisheye Filter';
 
   @override
-  String get filterFisheyeStrength => 'Curvature strength';
+  String get filterFisheyeStrength => 'Distortion';
 
   @override
   String get filterNameChromaticAberration => 'Chromatic Aberration Filter';
@@ -7127,7 +7127,10 @@ class AppLocalizationsEn extends AppLocalizations {
   String get filterSphereLightHeight => 'Light size Y';
 
   @override
-  String get filterSphereLightBlur => 'Edge blur';
+  String get filterSphereLightBlur => 'Blur into light';
+
+  @override
+  String get filterSphereShadowBlur => 'Blur into shadow';
 
   @override
   String get filterSphereCanvasHint =>
@@ -7135,7 +7138,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get filterFisheyeCanvasHint =>
-      'You can also drag the + on the canvas to move the center.';
+      'Drag the + on the canvas to move the center and the round handle on the circle to change the radius.';
 
   @override
   String get filterCenterX => 'Center X';

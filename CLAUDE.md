@@ -710,9 +710,23 @@ onTap: ...)`だったために
   パネルのElementが作り直され、編集中のフィルターが一覧へ戻る（実際に
   踏んだ）。同種の機能を足すときはこの判定に足すこと
   （`test/sphere_shading_canvas_e2e_test.dart`が見張る）。あわせて、
-  編集中のフィルターパネルは`Material(type: transparency)`＋
+  PC/DeXの横に出す編集中のフィルターパネルは`Material(type: transparency)`＋
   `hitTestBehavior: deferToChild`のスクロールで、**何も無い所のタッチは
   下のキャンバスへ通す**（`Card`や既定のScrollableは全面で吸う）。
+- **スマホのフィルター調整中は「調整モード」：キャンバスモードの表示を
+  隠し、プレビューはキャンバスへ直接出す**：`canvas_screen.dart`の
+  `filterAdjusting`（`_showFilterPanel && !isDesktop`）の間は、上部バー
+  （独自のUndo/Redoを持つ）・太さ/不透明度スライダー・ツールバー・
+  フレーム一覧を出さず、`FilterPanel(bottomBar: true)`を画面下部に
+  横幅いっぱいで出す（Undo/Redoボタンを2か所に出さない、というユーザー
+  指定）。プレビューは別枠ではなく、`FilterPanel.onCanvasPreviewChanged`
+  で受けた縮小画像を`CanvasArea.currentLayerPreview`へ渡し、**編集中の
+  レイヤーの合成画像だけを差し替えて**描く（レイヤーの画素は適用まで
+  変えない）。この間`CanvasArea.lockToolInput`で描画を止め、つまみ以外は
+  反応しない。プレビュー計算は`lib/engine/filter_preview.dart`の
+  `runFilterPreview`を`compute`で回す純関数で、パネル側は実行中に来た
+  要求を1つに畳んで最新だけ描く。調整モードの出入りで画像を破棄し忘れる
+  と`ui.Image`がリークするので、`onClose`と`dispose`の両方で捨てている。
 - **フィルターでブレンドモードを使うときは`lib/engine/blend_math.dart`**：
   レイヤー合成（GPUの`BlendMode`と一部CPU）と同じ式を純Dartで持つ。
   25種すべてが実際の合成結果と一致することを

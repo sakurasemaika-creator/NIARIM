@@ -5324,7 +5324,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get filterNameFisheye => '鱼眼镜头滤镜';
 
   @override
-  String get filterFisheyeStrength => '弯曲强度';
+  String get filterFisheyeStrength => '扭曲';
 
   @override
   String get filterNameChromaticAberration => '色差滤镜';
@@ -6827,14 +6827,17 @@ class AppLocalizationsZh extends AppLocalizations {
   String get filterSphereLightHeight => '光的大小 Y';
 
   @override
-  String get filterSphereLightBlur => '边界模糊';
+  String get filterSphereLightBlur => '光侧模糊';
+
+  @override
+  String get filterSphereShadowBlur => '阴影侧模糊';
 
   @override
   String get filterSphereCanvasHint =>
       '拖动画布上的＋可移动光，拖动圆形手柄可改变大小。阴影和光只会加在已绘制的地方。';
 
   @override
-  String get filterFisheyeCanvasHint => '也可以拖动画布上的＋来移动中心。';
+  String get filterFisheyeCanvasHint => '拖动画布上的＋可移动中心，拖动圆上的圆形手柄可改变半径。';
 
   @override
   String get filterCenterX => '中心 X';
@@ -12223,7 +12226,7 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get filterNameFisheye => '魚眼鏡頭濾鏡';
 
   @override
-  String get filterFisheyeStrength => '彎曲強度';
+  String get filterFisheyeStrength => '扭曲';
 
   @override
   String get filterNameChromaticAberration => '色差濾鏡';
@@ -13726,14 +13729,17 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get filterSphereLightHeight => '光的大小 Y';
 
   @override
-  String get filterSphereLightBlur => '邊界模糊';
+  String get filterSphereLightBlur => '光側模糊';
+
+  @override
+  String get filterSphereShadowBlur => '陰影側模糊';
 
   @override
   String get filterSphereCanvasHint =>
       '拖曳畫布上的＋可移動光，拖曳圓形控點可改變大小。陰影和光只會加在已繪製的地方。';
 
   @override
-  String get filterFisheyeCanvasHint => '也可以拖曳畫布上的＋來移動中心。';
+  String get filterFisheyeCanvasHint => '拖曳畫布上的＋可移動中心，拖曳圓上的圓形控點可改變半徑。';
 
   @override
   String get filterCenterX => '中心 X';

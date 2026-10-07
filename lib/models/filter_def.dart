@@ -185,12 +185,14 @@ class FilterDef {
   /// Sphere shading's light ellipse: its centre as a percentage of the
   /// canvas width and height, its width and height as a percentage of the
   /// canvas's shorter side (so equal sizes make a circle), and how much of
-  /// its radius its edge fades over (0 to 100).
+  /// its radius the edge fades over into the light ([sphereLightBlur]) and
+  /// out into the shadow ([sphereShadowBlur]), 0 to 100 each.
   final double sphereLightX;
   final double sphereLightY;
   final double sphereLightWidth;
   final double sphereLightHeight;
   final double sphereLightBlur;
+  final double sphereShadowBlur;
 
   const FilterDef({
     required this.id,
@@ -281,6 +283,7 @@ class FilterDef {
     this.sphereLightWidth = 60,
     this.sphereLightHeight = 60,
     this.sphereLightBlur = 30,
+    this.sphereShadowBlur = 30,
   });
 
   /// Sphere shading's light ellipse on a canvas of this size, in pixels.
@@ -411,6 +414,7 @@ class FilterDef {
     double? sphereLightWidth,
     double? sphereLightHeight,
     double? sphereLightBlur,
+    double? sphereShadowBlur,
   }) {
     return FilterDef(
       id: id ?? this.id,
@@ -511,6 +515,7 @@ class FilterDef {
       sphereLightWidth: sphereLightWidth ?? this.sphereLightWidth,
       sphereLightHeight: sphereLightHeight ?? this.sphereLightHeight,
       sphereLightBlur: sphereLightBlur ?? this.sphereLightBlur,
+      sphereShadowBlur: sphereShadowBlur ?? this.sphereShadowBlur,
     );
   }
 
@@ -604,6 +609,7 @@ class FilterDef {
     'sphereLightWidth': sphereLightWidth,
     'sphereLightHeight': sphereLightHeight,
     'sphereLightBlur': sphereLightBlur,
+    'sphereShadowBlur': sphereShadowBlur,
   };
 
   /// The stored kind name; Prism snapshots written before schemaVersion
@@ -784,5 +790,6 @@ class FilterDef {
     sphereLightWidth: (j['sphereLightWidth'] as num?)?.toDouble() ?? 60,
     sphereLightHeight: (j['sphereLightHeight'] as num?)?.toDouble() ?? 60,
     sphereLightBlur: (j['sphereLightBlur'] as num?)?.toDouble() ?? 30,
+    sphereShadowBlur: (j['sphereShadowBlur'] as num?)?.toDouble() ?? 30,
   );
 }

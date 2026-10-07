@@ -75,7 +75,8 @@ Uint8List applySphereShadingFilter(
     centerY: light.centerY,
     radiusX: light.radiusX,
     radiusY: light.radiusY,
-    blur: filter.sphereLightBlur,
+    lightBlur: filter.sphereLightBlur,
+    shadowBlur: filter.sphereShadowBlur,
     mask: mask,
   );
 }
@@ -1002,10 +1003,11 @@ class FilterEngine {
 
   /// 魚眼レンズ風の湾曲。中心を膨らませ、外側ほど圧縮して見せることで、
   /// 魚眼・広角レンズで撮影したような歪みを再現する。中心から各画素までの
-  /// 距離（対角線の半分を1.0とする正規化距離）を[exponent]乗することで
-  /// サンプリング元の位置をずらす（[exponent]が1より小さいほど、外側の
-  /// 画素も中心付近の画素からサンプリングされるため、中心が拡大されて
-  /// 見える）。[strength]は0〜100（%）。
+  /// 距離（効く範囲の半径を1.0とする正規化距離）を[exponent]乗した位置から
+  /// サンプリングする。[strength]（歪み）は-100〜100（%）で、正なら
+  /// [exponent]が1より大きくなり、中心付近の画素ほど中心寄りから取られる
+  /// ＝中心が膨らんで周辺が圧縮される魚眼（樽型）、負なら逆に中心がすぼまる
+  /// （糸巻き型）。
   Uint8List applyFisheye(
     Uint8List data,
     int width,
@@ -1015,9 +1017,9 @@ class FilterEngine {
     double centerOffsetX = 0,
     double centerOffsetY = 0,
   }) {
-    final amount = (strength / 100.0).clamp(0.0, 1.0);
-    if (amount <= 0) return Uint8List.fromList(data);
-    final exponent = (1.0 - amount * 0.85).clamp(0.15, 1.0);
+    final amount = (strength / 100.0).clamp(-1.0, 1.0);
+    if (amount == 0) return Uint8List.fromList(data);
+    final exponent = amount > 0 ? 1.0 + amount * 1.5 : 1.0 + amount * 0.85;
     final cx = width / 2.0 + centerOffsetX;
     final cy = height / 2.0 + centerOffsetY;
     final maxCanvasR = math.sqrt(width * width + height * height) / 2.0;

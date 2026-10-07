@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:math' as math;
 
 import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -381,6 +382,7 @@ class FilterService extends ChangeNotifier {
     double? sphereLightWidth,
     double? sphereLightHeight,
     double? sphereLightBlur,
+    double? sphereShadowBlur,
   }) {
     final idx = _filters.indexWhere((f) => f.id == id);
     if (idx < 0) return;
@@ -470,6 +472,7 @@ class FilterService extends ChangeNotifier {
       sphereLightWidth: sphereLightWidth,
       sphereLightHeight: sphereLightHeight,
       sphereLightBlur: sphereLightBlur,
+      sphereShadowBlur: sphereShadowBlur,
     );
     if (jsonEncode(after.toJson()) == jsonEncode(before.toJson())) return;
     // Inside an edit group (one drag) only the first change is recorded, so
@@ -511,10 +514,16 @@ class FilterService extends ChangeNotifier {
               .toDouble(),
         );
       case FilterKind.fisheye:
+        final halfDiagonal =
+            math.sqrt(canvasWidth * canvasWidth + canvasHeight * canvasHeight) /
+            2;
         updateFilterParams(
           id,
           fisheyeCenterX: (x - 50).clamp(-50, 50).toDouble(),
           fisheyeCenterY: (y - 50).clamp(-50, 50).toDouble(),
+          fisheyeRadius: gizmo.reach == null
+              ? null
+              : (gizmo.reach! / halfDiagonal * 100).clamp(1, 100).toDouble(),
         );
       default:
         break;

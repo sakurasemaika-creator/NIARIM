@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:ui' as ui;
 
 import 'package:niarim/services/theme_service.dart';
 import 'package:flutter/material.dart';
@@ -33,6 +34,7 @@ import '../../engine/custom_automation_executor.dart';
 import '../../l10n/app_localizations.dart';
 import '../../models/bundled_fonts.dart';
 import '../../models/filter_canvas_gizmo.dart';
+import '../../models/filter_def.dart';
 import '../../models/layer.dart' as model;
 import '../../models/onion_skin_settings.dart';
 import '../../models/project.dart';
@@ -110,6 +112,9 @@ class _CanvasScreenState extends State<CanvasScreen> {
   bool _showQuickToolPanel = false;
   bool _showColorAdjustPanel = false;
   FilterColorEyedropperTarget? _filterColorEyedropperTarget;
+  // The filter being adjusted, as the current layer would look with it
+  // (shown on the canvas in the layer's place).
+  ui.Image? _filterCanvasPreview;
   _TextColorEyedropperTarget? _textColorEyedropperTarget;
   ValueChanged<Color>? _pendingTextColorEyedropper;
   Completer<int?>? _pendingBrushOutlineEyedropper;
@@ -1033,6 +1038,7 @@ class _CanvasScreenState extends State<CanvasScreen> {
 
   @override
   void dispose() {
+    _filterCanvasPreview?.dispose();
     _customAutomationRecordingOverlay?.remove();
     _customAutomationRecordingOverlay = null;
     ImmersiveMode.exitWorkspace();
@@ -1143,6 +1149,7 @@ class _CanvasScreenState extends State<CanvasScreen> {
     // サブツール系パネル（ブラシ・トーン・スタンプ等）もPC版では互いに
     // 排他にせず、開いているものをすべて縦に積んで同時表示する。
     final isDesktop = isWideScreen(context);
+    final filterAdjusting = _showFilterPanel && !isDesktop;
     final openToolPanels = isDesktop
         ? _openToolOptionPanels()
         : const <Widget>[];
@@ -1181,7 +1188,11 @@ class _CanvasScreenState extends State<CanvasScreen> {
               children: [
                 Column(
                   children: [
-                    _buildTopBar(),
+                    // フィルターの調整中（スマホ）は、上部バー・ツールバー・
+                    // フレーム一覧を畳み、調整パネルを画面下部へ横幅いっぱいに
+                    // 出す（プレビューはキャンバスそのものに出る）。Undo/Redoも
+                    // 調整パネル側だけにして、同じ役割のボタンを重ねて出さない。
+                    if (!filterAdjusting) _buildTopBar(),
                     Expanded(
                       child: Row(
                         children: [
@@ -1249,6 +1260,11 @@ class _CanvasScreenState extends State<CanvasScreen> {
                                       _textColorEyedropperTarget != null ||
                                       _brushOutlineEyedropperActive,
                                   filterGizmo: _filterCanvasGizmo(project),
+                                  currentLayerPreview:
+                                      _filterCanvasPreviewShown(),
+                                  currentLayerPreviewBlendMode:
+                                      _filterCanvasPreviewBlendMode(),
+                                  lockToolInput: _showFilterPanel,
                                   onFilterGizmoChanged: (gizmo) =>
                                       _moveFilterGizmo(project, gizmo),
                                   onFilterGizmoDragStart: () => context
@@ -1475,7 +1491,9 @@ class _CanvasScreenState extends State<CanvasScreen> {
                     // 画面下部へ出す（ハンドルのドラッグと同じ操作を、
                     // 細かく指定したいとき用）。ブラシ設定スライダーは
                     // 選択ツール中は出ないので場所は競合しない。
-                    if (_isSelectionToolActive && _hasActiveSelection)
+                    if (filterAdjusting)
+                      _filterPanel(bottomBar: true)
+                    else if (_isSelectionToolActive && _hasActiveSelection)
                       SelectionTransformSliders(
                         moveX: _selectionMoveX,
                         moveY: _selectionMoveY,
@@ -1496,7 +1514,7 @@ class _CanvasScreenState extends State<CanvasScreen> {
                           _resetSelectionSliders();
                         }),
                       ),
-                    if (_usesBrushSize(_currentTool))
+                    if (!filterAdjusting && _usesBrushSize(_currentTool))
                       BrushSizeSlider(
                         brushSize: _brushSize,
                         opacity: _brushOpacity,
@@ -1525,7 +1543,8 @@ class _CanvasScreenState extends State<CanvasScreen> {
                       ),
                     // メッシュ変形中は分割数のスライダーだけを画面下部へ出す
                     // （自由変形＝分割数1のときは何も出さない）。
-                    if (_currentTool == DrawingTool.meshTransform &&
+                    if (!filterAdjusting &&
+                        _currentTool == DrawingTool.meshTransform &&
                         _meshDensity > 1)
                       _meshDensitySlider(context),
                     // ツールバーの折りたたみ用ハンドル（フレーム一覧と
@@ -1540,7 +1559,9 @@ class _CanvasScreenState extends State<CanvasScreen> {
                     // 16→22pxへ）。フルの48px（Material推奨タップ領域）まで
                     // 広げると常時表示のバーとして描画領域を圧迫しすぎるため、
                     // 誤タップしにくくなる範囲での妥協値としている。
-                    if (!isDesktop && !_isSelectionToolActive)
+                    if (!isDesktop &&
+                        !_isSelectionToolActive &&
+                        !filterAdjusting)
                       GestureDetector(
                         behavior: HitTestBehavior.opaque,
                         onTap: () =>
@@ -1561,9 +1582,13 @@ class _CanvasScreenState extends State<CanvasScreen> {
                       ),
                     // デスクトップでは左側（左利きモードでは右側）の常設縦レールとして
                     // 表示するため、下部の横並びバーはモバイルレイアウトのみで表示する。
-                    if (_showToolbar && !isDesktop && !_isSelectionToolActive)
+                    if (_showToolbar &&
+                        !isDesktop &&
+                        !_isSelectionToolActive &&
+                        !filterAdjusting)
                       _buildToolbarWidget(vertical: false),
-                    if (_frameMultiSelectMode) _buildFrameMultiSelectBar(),
+                    if (_frameMultiSelectMode && !filterAdjusting)
+                      _buildFrameMultiSelectBar(),
                     // フレーム一覧の折りたたみ用ハンドル（描画領域を
                     // できるだけ広げるため、任意のタイミングで開閉できるようにする）。
                     // 高さ16→28px・アイコン16→22pxへ拡大（ツールバー折りたたみ
@@ -1571,7 +1596,7 @@ class _CanvasScreenState extends State<CanvasScreen> {
                     //
                     // 選択ツール使用中は、キャンバス左下の操作バーへ集中できるよう
                     // ツールバー・フレーム一覧ごと畳む（開閉ハンドルも隠す）。
-                    if (!_isSelectionToolActive)
+                    if (!_isSelectionToolActive && !filterAdjusting)
                       GestureDetector(
                         behavior: HitTestBehavior.opaque,
                         onTap: () =>
@@ -1593,7 +1618,9 @@ class _CanvasScreenState extends State<CanvasScreen> {
                           ),
                         ),
                       ),
-                    if (_showFrameStrip && !_isSelectionToolActive)
+                    if (_showFrameStrip &&
+                        !_isSelectionToolActive &&
+                        !filterAdjusting)
                       FrameStripWidget(
                         currentFrame: _currentFrame,
                         projectId: widget.projectId,
@@ -1719,15 +1746,6 @@ class _CanvasScreenState extends State<CanvasScreen> {
                     top: 56,
                     bottom: null,
                     child: _rulerPanel(),
-                  ),
-                // フィルターパネル（描画フィルター）
-                if (_showFilterPanel && !isDesktop)
-                  _sidedPanel(
-                    anchorLeft: false,
-                    leftHanded: leftHanded,
-                    top: 56,
-                    bottom: null,
-                    child: _filterPanel(),
                   ),
                 // 早替えツール設定パネル
                 if (_showQuickToolPanel && !isDesktop)
@@ -2059,15 +2077,38 @@ class _CanvasScreenState extends State<CanvasScreen> {
     );
   }
 
-  /// Whether the filter panel is working on the canvas: dragging sphere
-  /// shading's light or the fisheye's centre there, or picking a colour
-  /// from it. Touches must then reach the canvas, so the barrier that closes
-  /// panels on a tap outside them is left out.
-  bool _filterPanelUsesCanvas() {
-    if (!_showFilterPanel) return false;
-    if (_filterColorEyedropperTarget != null) return true;
+  /// Whether the filter panel is working on the canvas — always, while it is
+  /// open: the canvas shows the filter's preview, and a touch there moves
+  /// the filter's handles (sphere shading's light, the fisheye's centre) or
+  /// picks a colour. Touches must reach the canvas, so the barrier that
+  /// closes panels on a tap outside them is left out (on phones the panel
+  /// is a bar under the canvas with its own close button).
+  bool _filterPanelUsesCanvas() => _showFilterPanel;
+
+  /// The filter's preview to show on the canvas in place of the current
+  /// layer, while a filter is being adjusted.
+  ui.Image? _filterCanvasPreviewShown() {
     final filter = context.watch<FilterService>().currentFilter;
-    return filter != null && filterHasCanvasGizmo(filter.kind);
+    if (!_showFilterPanel || filter == null) return null;
+    return _filterCanvasPreview;
+  }
+
+  /// Prism's result goes on in Linear Dodge (the layer is switched to it
+  /// when applied), so its preview is drawn that way too.
+  model.LayerBlendMode? _filterCanvasPreviewBlendMode() =>
+      context.watch<FilterService>().currentFilter?.kind == FilterKind.prism
+      ? model.LayerBlendMode.linearDodge
+      : null;
+
+  void _setFilterCanvasPreview(ui.Image? image) {
+    if (!mounted) {
+      image?.dispose();
+      return;
+    }
+    setState(() {
+      _filterCanvasPreview?.dispose();
+      _filterCanvasPreview = image;
+    });
   }
 
   /// What the filter being edited shows on the canvas to drag (sphere
@@ -2094,7 +2135,7 @@ class _CanvasScreenState extends State<CanvasScreen> {
     );
   }
 
-  Widget _filterPanel() => FilterPanel(
+  Widget _filterPanel({bool bottomBar = false}) => FilterPanel(
     projectId: widget.projectId,
     sceneId: _currentSceneId,
     layerId: _currentLayerId,
@@ -2102,7 +2143,11 @@ class _CanvasScreenState extends State<CanvasScreen> {
     bulkFrameIndices: _filterBulkFrames,
     activeCanvasEyedropperTarget: _filterColorEyedropperTarget,
     onStartCanvasEyedropper: _toggleFilterColorEyedropper,
+    bottomBar: bottomBar,
+    onCanvasPreviewChanged: _setFilterCanvasPreview,
     onClose: () => setState(() {
+      _filterCanvasPreview?.dispose();
+      _filterCanvasPreview = null;
       _showFilterPanel = false;
       _filterBulkFrames = null;
       if (_frameMultiSelectMode) {

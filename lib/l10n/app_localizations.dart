@@ -9842,7 +9842,7 @@ abstract class AppLocalizations {
   /// No description provided for @filterFisheyeStrength.
   ///
   /// In ja, this message translates to:
-  /// **'湾曲の強さ'**
+  /// **'歪み'**
   String get filterFisheyeStrength;
 
   /// No description provided for @filterNameChromaticAberration.
@@ -12632,8 +12632,14 @@ abstract class AppLocalizations {
   /// No description provided for @filterSphereLightBlur.
   ///
   /// In ja, this message translates to:
-  /// **'境目のぼかし'**
+  /// **'光側のぼかし'**
   String get filterSphereLightBlur;
+
+  /// No description provided for @filterSphereShadowBlur.
+  ///
+  /// In ja, this message translates to:
+  /// **'影側のぼかし'**
+  String get filterSphereShadowBlur;
 
   /// No description provided for @filterSphereCanvasHint.
   ///
@@ -12644,7 +12650,7 @@ abstract class AppLocalizations {
   /// No description provided for @filterFisheyeCanvasHint.
   ///
   /// In ja, this message translates to:
-  /// **'キャンバス上の＋をドラッグしても中心を動かせます。'**
+  /// **'キャンバス上の＋で中心を、円の上の丸いつまみで半径を動かせます。'**
   String get filterFisheyeCanvasHint;
 
   /// No description provided for @filterCenterX.

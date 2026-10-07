@@ -5385,7 +5385,7 @@ class AppLocalizationsKo extends AppLocalizations {
   String get filterNameFisheye => '어안 렌즈 필터';
 
   @override
-  String get filterFisheyeStrength => '왜곡 강도';
+  String get filterFisheyeStrength => '왜곡';
 
   @override
   String get filterNameChromaticAberration => '색수차 필터';
@@ -6914,14 +6914,18 @@ class AppLocalizationsKo extends AppLocalizations {
   String get filterSphereLightHeight => '빛 크기 Y';
 
   @override
-  String get filterSphereLightBlur => '경계 흐림';
+  String get filterSphereLightBlur => '빛 쪽 흐림';
+
+  @override
+  String get filterSphereShadowBlur => '그림자 쪽 흐림';
 
   @override
   String get filterSphereCanvasHint =>
       '캔버스 위의 +로 빛을 옮기고, 둥근 손잡이로 크기를 바꿀 수 있습니다. 그림자와 빛은 그려진 곳에만 들어갑니다.';
 
   @override
-  String get filterFisheyeCanvasHint => '캔버스 위의 +를 드래그해도 중심을 옮길 수 있습니다.';
+  String get filterFisheyeCanvasHint =>
+      '캔버스 위의 +로 중심을, 원 위의 둥근 손잡이로 반경을 바꿀 수 있습니다.';
 
   @override
   String get filterCenterX => '중심 X';

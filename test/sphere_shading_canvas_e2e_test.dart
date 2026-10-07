@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'dart:math' as math;
 import 'dart:ui' as ui;
 
 import 'package:flutter/gestures.dart';
@@ -15,6 +16,8 @@ import 'package:niarim/models/project.dart';
 import 'package:niarim/screens/canvas/canvas_screen.dart';
 import 'package:niarim/screens/canvas/widgets/canvas_area.dart';
 import 'package:niarim/screens/canvas/widgets/filter_panel.dart';
+import 'package:niarim/screens/canvas/widgets/frame_strip_widget.dart';
+import 'package:niarim/screens/canvas/widgets/toolbar_widget.dart';
 import 'package:niarim/services/filter_service.dart';
 import 'package:niarim/services/project_service.dart';
 import 'package:niarim/services/theme_service.dart';
@@ -141,6 +144,12 @@ void main() {
     }
 
     final canvasFinder = find.byType(CanvasArea);
+    Future<Uint8List> layerPixels() async => (await tester.runAsync(() async {
+      final image = await tm.compositeLayerToImage(key);
+      final data = await image.toByteData(format: ui.ImageByteFormat.rawRgba);
+      image.dispose();
+      return data!.buffer.asUint8List();
+    }))!;
     Project currentProject() =>
         ps.projects.firstWhere((p) => p.id == project.id);
 
@@ -190,6 +199,62 @@ void main() {
     expect(gizmoOnCanvas(), filterCanvasGizmoFor(sphere(), _size, _size));
     final l10n = AppLocalizations.of(tester.element(canvasFinder))!;
     expect(find.text(l10n.filterSphereCanvasHint), findsOneWidget);
+
+    // While adjusting, the canvas chrome is folded away: no top bar (with
+    // its own Undo/Redo), toolbar or frame list; the panel runs along the
+    // bottom at full width, under the canvas.
+    expect(find.byIcon(Icons.settings), findsNothing);
+    expect(find.byType(ToolbarWidget), findsNothing);
+    expect(find.byType(FrameStripWidget), findsNothing);
+    final bar = find.byKey(const ValueKey('filter-bottom-bar'));
+    expect(bar, findsOneWidget);
+    final screen = tester.getSize(find.byType(CanvasScreen));
+    expect(tester.getSize(bar).width, greaterThan(screen.width - 40));
+    expect(
+      tester.getRect(bar).top,
+      greaterThanOrEqualTo(tester.getRect(canvasFinder).bottom - 1),
+      reason: 'below the canvas, not over it',
+    );
+    expect(
+      find.byKey(const ValueKey('filter-undo-button')),
+      findsOneWidget,
+      reason: 'one Undo button only',
+    );
+
+    // The preview is the canvas itself: the layer shows lit inside the
+    // light and shaded outside it, before anything is applied.
+    expect(
+      tester.widget<CanvasArea>(canvasFinder).currentLayerPreview,
+      isNotNull,
+    );
+    Future<List<int>> onScreenColour(Offset canvasPoint) async {
+      final p = onScreen(canvasPoint);
+      final pixels = await tester.runAsync(() async {
+        final render =
+            boundary.currentContext!.findRenderObject()!
+                as RenderRepaintBoundary;
+        final image = await render.toImage(pixelRatio: 1);
+        final data = await image.toByteData(format: ui.ImageByteFormat.rawRgba);
+        final i = (p.dy.round() * image.width + p.dx.round()) * 4;
+        image.dispose();
+        return data!.buffer.asUint8List().sublist(i, i + 4);
+      });
+      return pixels!;
+    }
+
+    // Off the light's + (drawn right at its centre), still well inside it.
+    final insideLight = gizmoOnCanvas()!.center + const Offset(12, 12);
+    expect(
+      (await onScreenColour(insideLight))[2],
+      greaterThan(_disc[2] + 10),
+      reason: 'lit on the canvas',
+    );
+    expect(
+      (await onScreenColour(const Offset(128, 225)))[2],
+      lessThan(_disc[2] - 10),
+      reason: 'shaded on the canvas',
+    );
+    expect(await layerPixels(), orderedEquals(disc), reason: 'not applied');
     await capture('canvas_1_opened');
 
     // ── Drag the light's + on the canvas ──
@@ -275,12 +340,10 @@ void main() {
     await pumpRealAsync(tester, const Duration(milliseconds: 1200));
     expect(find.byType(FilterPanel), findsNothing);
     expect(gizmoOnCanvas(), isNull, reason: 'gone with the panel');
-    Future<Uint8List> layerPixels() async => (await tester.runAsync(() async {
-      final image = await tm.compositeLayerToImage(key);
-      final data = await image.toByteData(format: ui.ImageByteFormat.rawRgba);
-      image.dispose();
-      return data!.buffer.asUint8List();
-    }))!;
+    expect(tester.widget<CanvasArea>(canvasFinder).currentLayerPreview, isNull);
+    expect(find.byIcon(Icons.settings), findsWidgets, reason: 'top bar back');
+    expect(find.byType(ToolbarWidget), findsOneWidget);
+    expect(find.byType(FrameStripWidget), findsOneWidget);
     final applied = await layerPixels();
     final light = shaded.sphereLight(_size, _size);
     int at(Uint8List data, double x, double y) =>
@@ -314,8 +377,8 @@ void main() {
     expect(eye.resizable, isFalse);
     expect(eye.center, const Offset(_size / 2, _size / 2));
     expect(find.text(l10n.filterFisheyeCanvasHint), findsOneWidget);
-    // On a phone the panel covers the middle of the canvas: fold it away to
-    // reach the centre. Folded, only the name and Undo / Redo / Apply stay.
+    // Folding the panel gives the canvas more room: folded, only the name
+    // and Undo / Redo / Apply stay.
     final collapse = find.byKey(const ValueKey('filter-collapse-button'));
     await tester.tap(collapse);
     await pumpRealAsync(tester, const Duration(milliseconds: 300));
@@ -331,6 +394,31 @@ void main() {
     await tester.tap(collapse);
     await pumpRealAsync(tester, const Duration(milliseconds: 300));
     expect(find.text(l10n.filterFisheyeCanvasHint), findsOneWidget);
+
+    // At 100 % the reach circle is the canvas's half-diagonal and runs off
+    // the screen on the right; its handle is drawn where it can be grabbed,
+    // and dragging it in shrinks the radius.
+    expect(fs.currentFilter!.fisheyeRadius, 100);
+    final shown = filterGizmoForView(
+      gizmoOnCanvas()!,
+      tester.getSize(canvasFinder),
+      Matrix4.identity(),
+      currentProject(),
+    );
+    final reachHandle = onScreen(shown.handles[FilterGizmoHandle.reach]!);
+    expect(
+      tester.getRect(canvasFinder).deflate(10).contains(reachHandle),
+      isTrue,
+      reason: 'the radius handle is on the screen: $reachHandle',
+    );
+    final towardCentre = onScreen(shown.center) - reachHandle;
+    await drag(reachHandle, towardCentre / towardCentre.distance * 120);
+    final halfDiagonal = math.sqrt(2) * _size / 2;
+    expect(
+      fs.currentFilter!.fisheyeRadius,
+      closeTo((shown.reach! - 120 / scale) / halfDiagonal * 100, 1),
+    );
+    expect(fs.currentFilter!.fisheyeRadius, lessThan(100));
     await capture('canvas_6_fisheye_moved');
 
     // ── Picking a colour from the canvas reaches the canvas ──

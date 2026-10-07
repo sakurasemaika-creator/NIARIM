@@ -5360,7 +5360,7 @@ class AppLocalizationsJa extends AppLocalizations {
   String get filterNameFisheye => '魚眼レンズフィルター';
 
   @override
-  String get filterFisheyeStrength => '湾曲の強さ';
+  String get filterFisheyeStrength => '歪み';
 
   @override
   String get filterNameChromaticAberration => '色収差フィルター';
@@ -6880,14 +6880,17 @@ class AppLocalizationsJa extends AppLocalizations {
   String get filterSphereLightHeight => '光の大きさ Y';
 
   @override
-  String get filterSphereLightBlur => '境目のぼかし';
+  String get filterSphereLightBlur => '光側のぼかし';
+
+  @override
+  String get filterSphereShadowBlur => '影側のぼかし';
 
   @override
   String get filterSphereCanvasHint =>
       'キャンバス上の＋で光を動かし、丸いつまみで大きさを変えられます。影と光は描いてあるところにだけ付きます。';
 
   @override
-  String get filterFisheyeCanvasHint => 'キャンバス上の＋をドラッグしても中心を動かせます。';
+  String get filterFisheyeCanvasHint => 'キャンバス上の＋で中心を、円の上の丸いつまみで半径を動かせます。';
 
   @override
   String get filterCenterX => '中心 X';

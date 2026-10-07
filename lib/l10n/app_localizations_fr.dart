@@ -5645,7 +5645,7 @@ class AppLocalizationsFr extends AppLocalizations {
   String get filterNameFisheye => 'Filtre œil de poisson';
 
   @override
-  String get filterFisheyeStrength => 'Intensité de la courbure';
+  String get filterFisheyeStrength => 'Distorsion';
 
   @override
   String get filterNameChromaticAberration =>
@@ -7258,7 +7258,10 @@ class AppLocalizationsFr extends AppLocalizations {
   String get filterSphereLightHeight => 'Taille Y de la lumière';
 
   @override
-  String get filterSphereLightBlur => 'Flou du bord';
+  String get filterSphereLightBlur => 'Flou côté lumière';
+
+  @override
+  String get filterSphereShadowBlur => 'Flou côté ombre';
 
   @override
   String get filterSphereCanvasHint =>
@@ -7266,7 +7269,7 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get filterFisheyeCanvasHint =>
-      'Vous pouvez aussi faire glisser le + sur le canevas pour déplacer le centre.';
+      'Faites glisser le + sur le canevas pour déplacer le centre et la poignée ronde du cercle pour changer le rayon.';
 
   @override
   String get filterCenterX => 'Centre X';

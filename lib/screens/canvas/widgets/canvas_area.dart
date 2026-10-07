@@ -273,6 +273,46 @@ Rect reachableCanvasRectFor(
   );
 }
 
+/// フィルターのつまみが画面の縁から離れておく距離（画面px）。
+const double kFilterGizmoEdgeMargin = 14;
+
+/// [gizmo]の「効く範囲」の円のつまみを、指が届く場所（ズーム・パン後の
+/// 画面内）へ置き直したもの。円の上ならどこを掴んでも同じ半径になるので、
+/// 既定の右端が画面外へはみ出す大きな円では、届く位置へ回して描く。
+/// 当たり判定と描画の両方がこれを通すので、見えている所で掴める。
+/// [reachAngleFixed]ならドラッグ中で、指の向き（[preferredReachAngle]）の
+/// まま動かさない。
+FilterCanvasGizmo filterGizmoForView(
+  FilterCanvasGizmo gizmo,
+  Size size,
+  Matrix4 viewTransform,
+  Project? project, {
+  double? preferredReachAngle,
+  bool reachAngleFixed = false,
+}) {
+  if (gizmo.reach == null) return gizmo;
+  if (reachAngleFixed && preferredReachAngle != null) {
+    return gizmo.copyWith(reachAngle: preferredReachAngle);
+  }
+  final drawingRect = canvasDrawingRectFor(size, project);
+  final canvasW = canvasPixelSizeOf(project).width;
+  final zoom = viewTransform.getMaxScaleOnAxis();
+  final scale = drawingRect.width / canvasW * (zoom > 0 ? zoom : 1);
+  if (!(scale > 0)) return gizmo;
+  final bounds = reachableCanvasRectFor(
+    visibleWidgetRectFor(size, viewTransform),
+    drawingRect,
+    project,
+  ).deflate(kFilterGizmoEdgeMargin / scale);
+  return gizmo.copyWith(
+    reachAngle: reachHandleAngleWithin(
+      gizmo,
+      bounds,
+      preferred: preferredReachAngle,
+    ),
+  );
+}
+
 /// キャンバスのピクセル寸法。**書き出しサイズではなく描画範囲サイズ**
 /// （＝書き出しサイズ×drawingAreaScale）で、TileManagerの実寸・選択マスクの
 /// 寸法・ポインター座標系のすべてがこれで揃っている。
@@ -333,6 +373,14 @@ class CanvasArea extends StatefulWidget {
   final ValueChanged<FilterCanvasGizmo>? onFilterGizmoChanged;
   final VoidCallback? onFilterGizmoDragStart;
   final VoidCallback? onFilterGizmoDragEnd;
+
+  /// While a filter is adjusted: what the current layer would look like
+  /// with it (drawn in the layer's place, scaled to the canvas, in
+  /// [currentLayerPreviewBlendMode] if given), and no drawing — a touch only
+  /// moves the filter's handles (two-finger zoom and pan still work).
+  final ui.Image? currentLayerPreview;
+  final LayerBlendMode? currentLayerPreviewBlendMode;
+  final bool lockToolInput;
   final AutofillCheckMode autofillCheckMode;
   final Project? project;
   final CanvasBackground background;
@@ -414,6 +462,9 @@ class CanvasArea extends StatefulWidget {
     this.onFilterGizmoChanged,
     this.onFilterGizmoDragStart,
     this.onFilterGizmoDragEnd,
+    this.currentLayerPreview,
+    this.currentLayerPreviewBlendMode,
+    this.lockToolInput = false,
     this.autofillCheckMode = AutofillCheckMode.normal,
     this.project,
     this.background = CanvasBackground.white,
@@ -1275,10 +1326,10 @@ class _CanvasAreaState extends State<CanvasArea> {
       return;
     }
     if (_beginFilterGizmoDrag(canvasPos, event.pointer)) return;
-    // フィルターのつまみを操作している間は、つまみを外したタッチで
-    // レイヤーへ描いてしまわないよう何もしない（2本指の拡大・移動は
-    // この手前で処理済みなので、つまみを画面内へ持ってくることはできる）。
-    if (widget.filterGizmo != null) return;
+    // フィルターの調整中は、つまみを外したタッチでレイヤーへ描いてしまわない
+    // よう何もしない（2本指の拡大・移動はこの手前で処理済みなので、
+    // つまみを画面内へ持ってくることはできる）。
+    if (widget.lockToolInput || widget.filterGizmo != null) return;
 
     // 制作時間カウント：キャンバスへの操作のたびに無操作タイマーをリセットする
     if (widget.project != null) {
@@ -3196,11 +3247,29 @@ class _CanvasAreaState extends State<CanvasArea> {
   FilterGizmoHandle? _gizmoHandle;
   // つまみの中心から押した位置までのずれ（掴んだ瞬間に跳ばないように）。
   Offset _gizmoGrabOffset = Offset.zero;
+  // 効く範囲の円のつまみを最後に置いた向き。画面内にある限りそこへ置き続け、
+  // 半径を変えただけで別の場所へ跳ばないようにする。
+  double? _gizmoReachAngle;
+
+  /// いまの表示（大きさ・ズーム・パン）で描く・掴むつまみ。
+  FilterCanvasGizmo? get _shownFilterGizmo {
+    final gizmo = widget.filterGizmo;
+    final size = context.size;
+    if (gizmo == null || size == null) return gizmo;
+    return filterGizmoForView(
+      gizmo,
+      size,
+      _transformController.value,
+      widget.project,
+      preferredReachAngle: _gizmoReachAngle,
+      reachAngleFixed: _gizmoHandle == FilterGizmoHandle.reach,
+    );
+  }
 
   /// フィルター編集中のつまみ（中心・幅・高さ）を押したらドラッグを始める。
   /// 当たり判定は定規のつまみと同じく画面上で指28px相当。
   bool _beginFilterGizmoDrag(Offset canvasPos, int pointer) {
-    final gizmo = widget.filterGizmo;
+    final gizmo = _shownFilterGizmo;
     if (gizmo == null || _gizmoPointer != null) return false;
     FilterGizmoHandle? best;
     var bestDistance = _rulerHitTolerance;
@@ -3215,6 +3284,7 @@ class _CanvasAreaState extends State<CanvasArea> {
     _gizmoPointer = pointer;
     _gizmoHandle = best;
     _gizmoGrabOffset = canvasPos - gizmo.handles[best]!;
+    if (best == FilterGizmoHandle.reach) _gizmoReachAngle = gizmo.reachAngle;
     widget.onFilterGizmoDragStart?.call();
     return true;
   }
@@ -3232,7 +3302,14 @@ class _CanvasAreaState extends State<CanvasArea> {
       FilterGizmoHandle.radiusY => gizmo.copyWith(
         radiusY: math.max(1.0, (target.dy - gizmo.center.dy).abs()),
       ),
+      FilterGizmoHandle.reach => gizmo.copyWith(
+        reach: math.max(1.0, (target - gizmo.center).distance),
+      ),
     };
+    if (handle == FilterGizmoHandle.reach) {
+      // つまみは指の向きについて回る。
+      setState(() => _gizmoReachAngle = (target - gizmo.center).direction);
+    }
     widget.onFilterGizmoChanged?.call(moved);
   }
 
@@ -3892,7 +3969,8 @@ class _CanvasAreaState extends State<CanvasArea> {
                     project: widget.project,
                     background: widget.background,
                     transform: _transformController.value,
-                    compositeImage: _compositeImage,
+                    compositeImage:
+                        widget.currentLayerPreview ?? _compositeImage,
                     belowImage: _belowImage,
                     aboveImage: _aboveImage,
                     currentLayerOpacity:
@@ -3902,6 +3980,9 @@ class _CanvasAreaState extends State<CanvasArea> {
                             ?.opacity ??
                         100,
                     currentLayerBlendMode:
+                        (widget.currentLayerPreview != null
+                            ? widget.currentLayerPreviewBlendMode
+                            : null) ??
                         _layers
                             .where((l) => l.id == _layerId)
                             .firstOrNull
@@ -3948,6 +4029,9 @@ class _CanvasAreaState extends State<CanvasArea> {
                     extendedAreaWarningColor: theme.updateMarkColor,
                     viewTransform: _transformController.value,
                     filterGizmo: widget.filterGizmo,
+                    filterGizmoReachAngle: _gizmoReachAngle,
+                    filterGizmoReachAngleFixed:
+                        _gizmoHandle == FilterGizmoHandle.reach,
                   ),
                   foregroundPainter: _PixelGridPainter(
                     project: widget.project,
@@ -4142,6 +4226,9 @@ class _CanvasPainter extends CustomPainter {
   final Matrix4 viewTransform;
   // 編集中のフィルターのつまみ（無ければnull）。
   final FilterCanvasGizmo? filterGizmo;
+  // 効く範囲の円のつまみの向き（filterGizmoForViewへ渡す）。
+  final double? filterGizmoReachAngle;
+  final bool filterGizmoReachAngleFixed;
 
   static const double _checkerSize = 16.0;
 
@@ -4182,6 +4269,8 @@ class _CanvasPainter extends CustomPainter {
     required this.extendedAreaWarningColor,
     required this.viewTransform,
     this.filterGizmo,
+    this.filterGizmoReachAngle,
+    this.filterGizmoReachAngleFixed = false,
   });
 
   @override
@@ -4592,15 +4681,23 @@ class _CanvasPainter extends CustomPainter {
 
     // 定規オーバーレイ
     _paintRuler(canvas, size, drawingRect);
-    _paintFilterGizmo(canvas, drawingRect);
+    _paintFilterGizmo(canvas, size, drawingRect);
   }
 
   /// 編集中のフィルターのつまみ（球体陰影の光の楕円、魚眼の中心と効く範囲）。
   /// 線の太さ・つまみの大きさはズームしても画面上で同じに見えるよう、
   /// 拡大率で割り戻す。どの絵の上でも見えるよう、縁取り色で縁を付ける。
-  void _paintFilterGizmo(Canvas canvas, Rect drawingRect) {
-    final gizmo = filterGizmo;
-    if (gizmo == null) return;
+  void _paintFilterGizmo(Canvas canvas, Size size, Rect drawingRect) {
+    final given = filterGizmo;
+    if (given == null) return;
+    final gizmo = filterGizmoForView(
+      given,
+      size,
+      viewTransform,
+      project,
+      preferredReachAngle: filterGizmoReachAngle,
+      reachAngleFixed: filterGizmoReachAngleFixed,
+    );
     final canvasPx = canvasPixelSizeOf(project);
     if (canvasPx.width <= 0 || canvasPx.height <= 0) return;
     final sx = drawingRect.width / canvasPx.width;
@@ -4645,7 +4742,7 @@ class _CanvasPainter extends CustomPainter {
       canvas.drawLine(center - Offset(arm, 0), center + Offset(arm, 0), paint);
       canvas.drawLine(center - Offset(0, arm), center + Offset(0, arm), paint);
     });
-    // 幅・高さのつまみ。
+    // 幅・高さ・効く範囲のつまみ。
     for (final entry in gizmo.handles.entries) {
       if (entry.key == FilterGizmoHandle.center) continue;
       final p = ts(entry.value);
@@ -4920,5 +5017,7 @@ class _CanvasPainter extends CustomPainter {
       old.handleColor != handleColor ||
       old.handleOutlineColor != handleOutlineColor ||
       old.extendedAreaWarningColor != extendedAreaWarningColor ||
-      old.filterGizmo != filterGizmo;
+      old.filterGizmo != filterGizmo ||
+      old.filterGizmoReachAngle != filterGizmoReachAngle ||
+      old.filterGizmoReachAngleFixed != filterGizmoReachAngleFixed;
 }

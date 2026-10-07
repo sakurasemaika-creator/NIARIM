@@ -49,7 +49,8 @@ Uint8List _shade(
   double cy = 30,
   double rx = 16,
   double ry = 12,
-  double blur = 0,
+  double lightBlur = 0,
+  double shadowBlur = 0,
   Uint8List? mask,
 }) => applySphereShading(
   data,
@@ -65,7 +66,8 @@ Uint8List _shade(
   centerY: cy,
   radiusX: rx,
   radiusY: ry,
-  blur: blur,
+  lightBlur: lightBlur,
+  shadowBlur: shadowBlur,
   mask: mask,
 );
 
@@ -104,9 +106,22 @@ void main() {
     }
 
     final sharp = softPixels(_shade(_disc([120, 120, 120])));
-    final soft = softPixels(_shade(_disc([120, 120, 120]), blur: 60));
+    final soft = softPixels(
+      _shade(_disc([120, 120, 120]), lightBlur: 60, shadowBlur: 60),
+    );
     expect(sharp, lessThanOrEqualTo(2), reason: 'one antialiased pixel');
     expect(soft, greaterThan(12));
+  });
+
+  test('the light-side blur fades into the light only, the shadow-side '
+      'blur out into the shadow only', () {
+    // The light's right edge is at x = 66 (centre 50, radius 16).
+    final intoLight = _shade(_disc([120, 120, 120]), lightBlur: 60);
+    expect(_px(intoLight, 60, 30)[0], inInclusiveRange(6, 249));
+    expect(_px(intoLight, 70, 30), [0, 0, 0, 255], reason: 'shadow is crisp');
+    final intoShadow = _shade(_disc([120, 120, 120]), shadowBlur: 60);
+    expect(_px(intoShadow, 60, 30), [255, 255, 255, 255]);
+    expect(_px(intoShadow, 70, 30)[0], inInclusiveRange(6, 249));
   });
 
   test(
@@ -189,6 +204,7 @@ void main() {
       sphereLightWidth: 50,
       sphereLightHeight: 30,
       sphereLightBlur: 12,
+      sphereShadowBlur: 44,
     );
     final restored = FilterDef.fromJson(filter.toJson());
     expect(restored.toJson(), filter.toJson());
@@ -304,22 +320,22 @@ void main() {
         ),
       ),
       (
-        'blur 0',
+        'blur 0 / 0',
         applySphereShadingFilter(
           base,
           _w,
           _h,
-          f.copyWith(sphereLightBlur: 0),
+          f.copyWith(sphereLightBlur: 0, sphereShadowBlur: 0),
           null,
         ),
       ),
       (
-        'blur 90',
+        'blur 90 / 90',
         applySphereShadingFilter(
           base,
           _w,
           _h,
-          f.copyWith(sphereLightBlur: 90),
+          f.copyWith(sphereLightBlur: 90, sphereShadowBlur: 90),
           null,
         ),
       ),

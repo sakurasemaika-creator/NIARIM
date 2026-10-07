@@ -5635,7 +5635,7 @@ class AppLocalizationsEs extends AppLocalizations {
   String get filterNameFisheye => 'Filtro de ojo de pez';
 
   @override
-  String get filterFisheyeStrength => 'Intensidad de curvatura';
+  String get filterFisheyeStrength => 'Distorsión';
 
   @override
   String get filterNameChromaticAberration => 'Filtro de aberración cromática';
@@ -7243,7 +7243,10 @@ class AppLocalizationsEs extends AppLocalizations {
   String get filterSphereLightHeight => 'Tamaño Y de la luz';
 
   @override
-  String get filterSphereLightBlur => 'Desenfoque del borde';
+  String get filterSphereLightBlur => 'Desenfoque hacia la luz';
+
+  @override
+  String get filterSphereShadowBlur => 'Desenfoque hacia la sombra';
 
   @override
   String get filterSphereCanvasHint =>
@@ -7251,7 +7254,7 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get filterFisheyeCanvasHint =>
-      'También puedes arrastrar el + del lienzo para mover el centro.';
+      'Arrastra el + del lienzo para mover el centro y el tirador redondo del círculo para cambiar el radio.';
 
   @override
   String get filterCenterX => 'Centro X';

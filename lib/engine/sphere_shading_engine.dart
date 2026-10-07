@@ -6,9 +6,9 @@ import 'blend_math.dart';
 
 /// Shades what is drawn on a layer like a lit sphere: an elliptical light
 /// (centre [centerX], [centerY], radii [radiusX], [radiusY], in pixels)
-/// gets the light colour and everything outside it the shadow colour, with
-/// a soft edge of [blur] (0 to 100: how much of the radius the edge fades
-/// over, inwards and outwards).
+/// gets the light colour and everything outside it the shadow colour. The
+/// edge between them fades over [lightBlur] of the radius into the light and
+/// [shadowBlur] of it out into the shadow (0 to 100 each).
 ///
 /// The colours go on like a clipping layer in a blend mode: only over what
 /// is already drawn, never changing its opacity. Each colour's own alpha is
@@ -37,7 +37,8 @@ Uint8List applySphereShading(
   required double centerY,
   required double radiusX,
   required double radiusY,
-  double blur = 0,
+  double lightBlur = 0,
+  double shadowBlur = 0,
   Uint8List? mask,
 }) {
   final out = Uint8List.fromList(data);
@@ -45,9 +46,11 @@ Uint8List applySphereShading(
   final useMask = mask != null && mask.length >= data.length && _any(mask);
   final rx = math.max(0.5, radiusX);
   final ry = math.max(0.5, radiusY);
-  // The edge fades from 1 - band to 1 + band (in units of the radius); with
-  // no blur it is still one pixel wide so it is not jagged.
-  final band = math.max((blur / 100).clamp(0.0, 1.0), 0.5 / math.min(rx, ry));
+  // The edge fades from 1 - inner to 1 + outer (in units of the radius);
+  // with no blur it is still one pixel wide so it is not jagged.
+  final aa = 0.5 / math.min(rx, ry);
+  final inner = math.max((lightBlur / 100).clamp(0.0, 1.0), aa);
+  final outer = math.max((shadowBlur / 100).clamp(0.0, 1.0), aa);
 
   final (sa, sr, sg, sb) = _straight(shadowColor);
   final (la, lr, lg, lb) = _straight(lightColor);
@@ -64,7 +67,7 @@ Uint8List applySphereShading(
       if (m <= 0) continue;
       final dx = (x + 0.5 - centerX) / rx;
       final d = math.sqrt(dx * dx + dy * dy);
-      final light = 1 - _smoothstep(1 - band, 1 + band, d);
+      final light = 1 - _smoothstep(1 - inner, 1 + outer, d);
 
       final alpha = a / 255;
       final br = math.min(1.0, data[i] / 255 / alpha);
