@@ -19,6 +19,7 @@ import 'package:niarim/services/project_service.dart';
 import 'package:niarim/services/theme_service.dart';
 import 'package:niarim/widgets/custom_automation_draft_sheet.dart';
 import 'package:niarim/widgets/custom_automation_manager_sheet.dart';
+import 'package:niarim/utils/custom_automation_labels.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -112,11 +113,11 @@ void main() {
 
       harness.showDraftEditor();
       await tester.pump(const Duration(milliseconds: 250));
-      // The draft sheet lists each step by its label (here the filter's
-      // name) and where it was recorded.
+      // The draft sheet lists each step by what it does (here applying
+      // the filter, by its name) and where it was recorded.
       final step = automation.draft!.steps.single;
       expect(step.command, 'canvas.filterApply');
-      expect(find.text(step.label), findsOneWidget);
+      expect(find.text(customAutomationStepLabel(l10n, step)), findsOneWidget);
       expect(find.text(l10n.customAutomationCanvasStep), findsOneWidget);
       expect(find.byIcon(Icons.drag_handle), findsOneWidget);
       expect(find.byIcon(Icons.delete_outline), findsOneWidget);

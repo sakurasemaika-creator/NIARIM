@@ -772,6 +772,12 @@ onTap: ...)`だったために
   置き換え、配布をやめたものを消し、新しいものを1回だけ足す。手順を変えた
   公式プリセットは`updatedAt`をエポックのままにすること（変えると更新が
   届かない）。
+  公式プリセットの名前・手順名は保存データでは日本語のままで、**表示時に**
+  `lib/utils/custom_automation_labels.dart`が訳す（名前は配布時の日本語名と
+  一致したときだけ訳すので、配布名を変えるならそこの対応表も直すこと）。
+  手順名は保存された`label`ではなく手順の種類と設定から作るため、テストで
+  `find.text(step.label)`を探しても見つからない。`customAutomationStepLabel`
+  で表示名を求めること。
 - **縦スクロールのスクロールバーはアプリ全体で常時表示（個別に`Scrollbar`で
   包まない）**：`app.dart`の`scrollBehavior: const AppScrollBehavior()`
   （`lib/widgets/app_scroll_behavior.dart`）が、縦スクロールすべての右端に

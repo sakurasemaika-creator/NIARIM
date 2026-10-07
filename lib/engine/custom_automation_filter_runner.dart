@@ -25,6 +25,7 @@ class CustomAutomationFilterRunner {
     required int frameIndex,
     required String sourceLayerId,
     required FilterDef filter,
+    GeneratedLayerNamer? layerName,
   }) async {
     final tm = projectService.tileManagerOf(projectId);
     final key = projectService.tileKeyFor(
@@ -108,6 +109,7 @@ class CustomAutomationFilterRunner {
         sourceLayerId: sourceLayerId,
         pixels: result,
         filter: filter,
+        layerName: layerName,
       );
     }
 
@@ -176,6 +178,7 @@ class CustomAutomationFilterRunner {
     required String sourceLayerId,
     required Uint8List pixels,
     required FilterDef filter,
+    GeneratedLayerNamer? layerName,
   }) {
     final source = projectService
         .layersOf(projectId, sceneId, frameIndex)
@@ -192,7 +195,9 @@ class CustomAutomationFilterRunner {
       sceneId: sceneId,
       frameIndex: frameIndex,
       type: model.LayerType.normal,
-      name: _generatedLayerName(source.name, filter),
+      name:
+          layerName?.call(source.name, filter) ??
+          _generatedLayerName(source.name, filter),
       insertIndex: insertIndex,
     );
 

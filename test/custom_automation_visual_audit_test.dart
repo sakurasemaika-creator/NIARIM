@@ -16,6 +16,7 @@ import 'package:niarim/screens/canvas/widgets/filter_panel.dart';
 import 'package:niarim/services/custom_automation_service.dart';
 import 'package:niarim/services/project_service.dart';
 import 'package:niarim/services/theme_service.dart';
+import 'package:niarim/utils/custom_automation_labels.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -330,8 +331,12 @@ void main() {
         reason:
             'Draft must contain the replayable filter operation recorded by FilterPanel',
       );
-      // The draft sheet lists the step by its label (the filter's name).
-      expect(find.text(draft!.steps.single.label), findsOneWidget);
+      // The draft sheet lists the step by what it does (applying the
+      // filter, by its name).
+      expect(
+        find.text(customAutomationStepLabel(l10n, draft!.steps.single)),
+        findsOneWidget,
+      );
       await capture('07_draft_edit');
 
       final save = find.text(l10n.commonSave);

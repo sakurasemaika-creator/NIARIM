@@ -38,6 +38,7 @@ class CustomAutomationExecutor {
     List<int>? targetFrames,
     required String? currentLayerId,
     required AutomationToolHandler handleCanvasStateCommand,
+    GeneratedLayerNamer? layerName,
   }) => projectService.runWithGroupedUndo(
     description: automation.name,
     operation: () => _executeCanvasSteps(
@@ -50,6 +51,7 @@ class CustomAutomationExecutor {
       targetFrames: targetFrames,
       currentLayerId: currentLayerId,
       handleCanvasStateCommand: handleCanvasStateCommand,
+      layerName: layerName,
     ),
   );
 
@@ -63,6 +65,7 @@ class CustomAutomationExecutor {
     List<int>? targetFrames,
     required String? currentLayerId,
     required AutomationToolHandler handleCanvasStateCommand,
+    GeneratedLayerNamer? layerName,
   }) async {
     if (!automation.isCanvasOnly) {
       throw const CustomAutomationExecutionException(
@@ -131,6 +134,7 @@ class CustomAutomationExecutor {
                 frameIndex: frameIndex,
                 sourceLayerId: activeLayerId,
                 filter: filter,
+                layerName: layerName,
               );
             case 'canvas.visibleCompositeToNewTop':
               final tm = projectService.tileManagerOf(projectId);

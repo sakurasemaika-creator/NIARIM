@@ -1273,7 +1273,7 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get helpBlendModeDesc =>
-      '레이어의 합성 방법을 바꾸는 기능입니다. 스크린톤이나 색상 효과를 레이어로 겹칠 때 자주 사용됩니다.\n표준: 그대로 겹칩니다.\n곱하기: 아래 레이어와 곱해 어둡게 합니다. 그림자, 음영 표현의 정석입니다.\n스크린: 밝기를 더해 밝게 합니다. 빛 표현에 적합합니다.\n오버레이: 어두운 부분은 더 어둡게, 밝은 부분은 더 밝게 해 대비를 강조합니다.\n더하기: 색을 단순히 더합니다. 빛 효과선 등에 적합합니다.\n빼기: 색을 뺀 값으로, 어둡게 가라앉은 효과가 됩니다.\n어둡게 비교: 위아래 레이어 중 어두운 쪽 색을 채택합니다.\n밝게 비교: 위아래 레이어 중 밝은 쪽 색을 채택합니다.\n색상 번: 아래 색을 어둡게 가라앉히며 진하게 발색시킵니다.\n색상 닷지: 아래 색을 밝게 날리며 발색시킵니다.\n하드 라이트: 오버레이보다 강하게 대비가 붙습니다.\n소프트 라이트: 오버레이보다 부드럽게 대비가 붙습니다. 부드러운 음영에 적합합니다.\n차이: 위아래 색의 차이를 표시합니다. 색상 어긋남 확인 등에 씁니다.\n색조, 채도, 색상, 광도: 각각 색조, 채도, 색감, 밝기만을 아래 레이어에 반영합니다.\n선형 번: 두 색을 더한 뒤 기준값을 빼 강하게 어둡게 합니다.\n선형 닷지: 두 색을 선형으로 더해 밝게 합니다. 더하기와는 별도의 블렌드 모드로, 레이어가 반투명할 때는 더하기 쪽이 더 밝아집니다.\n비비드 라이트: 위 색에 따라 번과 닷지를 전환해 매우 강한 대비를 만듭니다.\n선형 라이트: 위 색을 기준으로 밝기를 선형으로 높이거나 낮춥니다.\n핀 라이트: 위 색에 따라 더 어두운 쪽 또는 더 밝은 쪽으로 바꿉니다.\n하드 믹스: 비비드 라이트 결과를 임계값으로 나눠 강한 원색 분리를 만듭니다.\n제외: 차이보다 부드러운 반전·차이 효과입니다.\n나누기: 아래 색을 위 색으로 나누어 밝기 보정이나 색 차이 강조에 사용합니다.';
+      '레이어의 합성 방법을 바꾸는 기능입니다. 스크린톤이나 색상 효과를 레이어로 겹칠 때 자주 사용됩니다.\n표준: 그대로 겹칩니다.\n곱하기: 아래 레이어와 곱해 어둡게 합니다. 그림자, 음영 표현의 정석입니다.\n스크린: 밝기를 더해 밝게 합니다. 빛 표현에 적합합니다.\n오버레이: 어두운 부분은 더 어둡게, 밝은 부분은 더 밝게 해 대비를 강조합니다.\n더하기: 색을 단순히 더합니다. 빛 효과선 등에 적합합니다.\n빼기: 색을 뺀 값으로, 어둡게 가라앉은 효과가 됩니다.\n어둡게 비교: 위아래 레이어 중 어두운 쪽 색을 채택합니다.\n밝게 비교: 위아래 레이어 중 밝은 쪽 색을 채택합니다.\n색상 번: 아래 색을 어둡게 가라앉히며 진하게 발색시킵니다.\n색상 닷지: 아래 색을 밝게 날리며 발색시킵니다.\n하드 라이트: 오버레이보다 강하게 대비가 붙습니다.\n소프트 라이트: 오버레이보다 부드럽게 대비가 붙습니다. 부드러운 음영에 적합합니다.\n차이: 위아래 색의 차이를 표시합니다. 색상 어긋남 확인 등에 씁니다.\n색조, 채도, 색상, 광도: 각각 색조, 채도, 색감, 밝기만을 아래 레이어에 반영합니다.\n선형 번: 두 색을 더한 뒤 기준값을 빼 강하게 어둡게 합니다.\n선형 닷지: 두 색을 선형으로 더해 밝게 합니다. 더하기와는 별도의 블렌드 모드로, 레이어가 반투명할 때는 더하기 쪽이 더 밝아집니다.\n비비드 라이트: 위 색에 따라 번과 닷지를 전환해 매우 강한 대비를 만듭니다.\n선형 라이트: 위 색을 기준으로 밝기를 선형으로 높이거나 낮춥니다.\n핀 라이트: 위 색에 따라 더 어두운 쪽 또는 더 밝은 쪽으로 바꿉니다.\n하드 믹스: 비비드 라이트 결과를 임계값으로 나눠 강한 원색 분리를 만듭니다.\n제외: 차이보다 부드러운 반전·차이 효과입니다.\n나누기: 아래 색을 위 색으로 나누어 밝기 보정이나 색 차이 강조에 사용합니다.\n블렌드 모드 목록에서는 각 모드 옆에 빨강·노랑·파랑·흰색·검정을 어두운 색부터 밝은 색 위에 겹친 견본이 표시됩니다(견본의 아래쪽은 반투명으로 겹친 모습입니다).';
 
   @override
   String get helpClippingTitle => '클리핑';
@@ -6358,7 +6358,7 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get tipsOfficialAutomationPresetsDesc =>
-      '공식 프리셋은 「線画作成（デジタル）」(자동 선화 → 잉크 고임), 「線画抽出（アナログ）」(색조 보정 → 이진화 → 밝기로 투명도 변환), 「線画色トレス」(선화 레이어에서 실행: 아래에 칠한 색을 선화에 클리핑한 새 레이어로 가져오기 → 블러·복제·병합 → 색 트레이스 보정으로 선이 옆 채색보다 깊은 색이 됩니다)입니다. 다시 기록하면 지원되는 작업이 추가됩니다. 확인 화면에서 단계 순서를 바꾸거나 삭제할 수 있습니다. 원래 설정으로 쉽게 돌아가려면 편집 전에 내보내 두세요.';
+      '공식 프리셋은 「선화 작성(디지털)」(자동 선화 → 잉크 고임), 「선화 추출(아날로그)」(색조 보정 → 이진화 → 밝기로 투명도 변환), 「선화 색 트레이스」(선화 레이어에서 실행: 아래에 칠한 색을 선화에 클리핑한 새 레이어로 가져오기 → 블러·복제·병합 → 색 트레이스 보정으로 선이 옆 채색보다 깊은 색이 됩니다)입니다. 다시 기록하면 지원되는 작업이 추가됩니다. 확인 화면에서 단계 순서를 바꾸거나 삭제할 수 있습니다. 원래 설정으로 쉽게 돌아가려면 편집 전에 내보내 두세요.';
 
   @override
   String get tipsTexturePrismVhsTitle => '질감·프리즘·VHS는 복제 레이어에서 시험하기';
@@ -6877,6 +6877,64 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get customAutomationFavoritesOnly => '즐겨찾기만';
+
+  @override
+  String get customAutomationBuiltinDraftToLineart => '선화 작성(디지털)';
+
+  @override
+  String get customAutomationBuiltinAnalogLineart => '선화 추출(아날로그)';
+
+  @override
+  String get customAutomationBuiltinLineartColorTrace => '선화 색 트레이스';
+
+  @override
+  String customAutomationStepFrame(int frame) {
+    return '$frame번 프레임으로 이동';
+  }
+
+  @override
+  String get customAutomationStepAddFrame => '프레임 추가';
+
+  @override
+  String customAutomationStepBrushSize(String size) {
+    return '브러시 굵기 ${size}px';
+  }
+
+  @override
+  String customAutomationStepBrushOpacity(int opacity) {
+    return '브러시 불투명도 $opacity%';
+  }
+
+  @override
+  String customAutomationStepTool(String tool) {
+    return '도구: $tool';
+  }
+
+  @override
+  String customAutomationStepColor(String color) {
+    return '그리기 색 $color';
+  }
+
+  @override
+  String customAutomationStepFilter(String name) {
+    return '필터 적용: $name';
+  }
+
+  @override
+  String get customAutomationStepColorsBelowClipped => '아래 채색의 색을 선화에 클리핑';
+
+  @override
+  String get customAutomationStepDuplicateLayer => '레이어 복제';
+
+  @override
+  String get customAutomationStepMergeDown => '아래 레이어와 병합';
+
+  @override
+  String get customAutomationStepColorTraceAdjust => '색 트레이스 보정';
+
+  @override
+  String get customAutomationStepVisibleComposite =>
+      '보이는 레이어를 합친 새 레이어를 맨 위에 만들기';
 
   @override
   String get brushFoldAngle => '접힘 각도';

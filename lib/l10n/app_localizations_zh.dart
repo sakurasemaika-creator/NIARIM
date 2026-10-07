@@ -1261,7 +1261,7 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get helpBlendModeDesc =>
-      '用于更改图层与下方图层的合成方式，常用于叠加网点或颜色效果的图层。\n正常：直接叠加。\n正片叠底：与下方图层相乘后变暗，是阴影表现的经典手法。\n滤色：叠加亮度后变亮，适合表现光效。\n叠加：暗部更暗、亮部更亮，增强对比度。\n相加：直接相加颜色，适合光效线条等。\n减去：相减颜色，呈现暗沉的效果。\n变暗：取上下两图层中较暗的颜色。\n变亮：取上下两图层中较亮的颜色。\n颜色加深：使下方颜色变暗并加深发色。\n颜色减淡：使下方颜色变亮并加深发色。\n强光：比叠加更强烈的对比效果。\n柔光：比叠加更柔和的对比效果，适合柔和的阴影。\n差值：显示上下两色的差异，可用于检查颜色偏差等。\n色相、饱和度、颜色、明度：分别仅将该图层的色相、饱和度、色彩或明度反映到下方图层。\n线性加深：将上下颜色相加后减去基准值，产生更强的变暗效果。\n线性减淡：线性相加上下颜色使其变亮。它与“相加”是不同的混合模式，图层半透明时“相加”会更亮。\n亮光：根据上层颜色在加深与减淡之间切换，产生很强的对比。\n线性光：根据上层颜色线性提高或降低亮度。\n点光：根据上层颜色向较暗或较亮一侧替换。\n实色混合：对亮光结果进行阈值化，形成强烈的原色分离。\n排除：比“差值”更柔和的反相与差异效果。\n划分：用上层颜色除下层颜色，可用于提亮校正和强调色差。';
+      '用于更改图层与下方图层的合成方式，常用于叠加网点或颜色效果的图层。\n正常：直接叠加。\n正片叠底：与下方图层相乘后变暗，是阴影表现的经典手法。\n滤色：叠加亮度后变亮，适合表现光效。\n叠加：暗部更暗、亮部更亮，增强对比度。\n相加：直接相加颜色，适合光效线条等。\n减去：相减颜色，呈现暗沉的效果。\n变暗：取上下两图层中较暗的颜色。\n变亮：取上下两图层中较亮的颜色。\n颜色加深：使下方颜色变暗并加深发色。\n颜色减淡：使下方颜色变亮并加深发色。\n强光：比叠加更强烈的对比效果。\n柔光：比叠加更柔和的对比效果，适合柔和的阴影。\n差值：显示上下两色的差异，可用于检查颜色偏差等。\n色相、饱和度、颜色、明度：分别仅将该图层的色相、饱和度、色彩或明度反映到下方图层。\n线性加深：将上下颜色相加后减去基准值，产生更强的变暗效果。\n线性减淡：线性相加上下颜色使其变亮。它与“相加”是不同的混合模式，图层半透明时“相加”会更亮。\n亮光：根据上层颜色在加深与减淡之间切换，产生很强的对比。\n线性光：根据上层颜色线性提高或降低亮度。\n点光：根据上层颜色向较暗或较亮一侧替换。\n实色混合：对亮光结果进行阈值化，形成强烈的原色分离。\n排除：比“差值”更柔和的反相与差异效果。\n划分：用上层颜色除下层颜色，可用于提亮校正和强调色差。\n在混合模式列表中，每种模式旁会显示将红、黄、蓝、白、黑叠加在由暗到亮的颜色上的样例（样例下方为半透明叠加时的效果）。';
 
   @override
   String get helpClippingTitle => '剪贴蒙版';
@@ -6288,7 +6288,7 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get tipsOfficialAutomationPresetsDesc =>
-      '官方预设包括「線画作成（デジタル）」（自动线稿→积墨）、「線画抽出（アナログ）」（色彩调整→二值化→亮度转透明）以及「線画色トレス」（在线稿图层上执行：把下方的填色取到剪贴到线稿的新图层→模糊、复制与合并→色彩描线调整，使线条成为相邻填色更深的颜色）。重新录制会追加支持录制的操作。在确认画面中可以调整步骤顺序或删除步骤。若希望轻松恢复原始设置，可在编辑前先导出一份。';
+      '官方预设包括「线稿制作（数字）」（自动线稿→积墨）、「线稿提取（模拟）」（色彩调整→二值化→亮度转透明）以及「线稿颜色描线」（在线稿图层上执行：把下方的填色取到剪贴到线稿的新图层→模糊、复制与合并→色彩描线调整，使线条成为相邻填色更深的颜色）。重新录制会追加支持录制的操作。在确认画面中可以调整步骤顺序或删除步骤。若希望轻松恢复原始设置，可在编辑前先导出一份。';
 
   @override
   String get tipsTexturePrismVhsTitle => '在复制图层上尝试质感、棱镜和VHS';
@@ -6792,6 +6792,63 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get customAutomationFavoritesOnly => '仅显示收藏';
+
+  @override
+  String get customAutomationBuiltinDraftToLineart => '线稿制作（数字）';
+
+  @override
+  String get customAutomationBuiltinAnalogLineart => '线稿提取（模拟）';
+
+  @override
+  String get customAutomationBuiltinLineartColorTrace => '线稿颜色描线';
+
+  @override
+  String customAutomationStepFrame(int frame) {
+    return '转到第 $frame 帧';
+  }
+
+  @override
+  String get customAutomationStepAddFrame => '添加帧';
+
+  @override
+  String customAutomationStepBrushSize(String size) {
+    return '画笔粗细 ${size}px';
+  }
+
+  @override
+  String customAutomationStepBrushOpacity(int opacity) {
+    return '画笔不透明度 $opacity%';
+  }
+
+  @override
+  String customAutomationStepTool(String tool) {
+    return '工具：$tool';
+  }
+
+  @override
+  String customAutomationStepColor(String color) {
+    return '绘图颜色 $color';
+  }
+
+  @override
+  String customAutomationStepFilter(String name) {
+    return '应用滤镜：$name';
+  }
+
+  @override
+  String get customAutomationStepColorsBelowClipped => '将下方填色剪贴到线稿';
+
+  @override
+  String get customAutomationStepDuplicateLayer => '复制图层';
+
+  @override
+  String get customAutomationStepMergeDown => '与下方图层合并';
+
+  @override
+  String get customAutomationStepColorTraceAdjust => '颜色描线调整';
+
+  @override
+  String get customAutomationStepVisibleComposite => '用所有可见图层在顶部新建图层';
 
   @override
   String get brushFoldAngle => '折返角度';
@@ -8207,7 +8264,7 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get helpBlendModeDesc =>
-      '用於變更圖層與下方圖層的合成方式，常用於疊加網點或顏色效果的圖層。\n正常：直接疊加。\n色彩增值：與下方圖層相乘後變暗，是陰影表現的經典手法。\n濾色：疊加亮度後變亮，適合表現光效。\n覆蓋：暗部更暗、亮部更亮，增強對比度。\n相加：直接相加顏色，適合光效線條等。\n差異化減去：相減顏色，呈現暗沉的效果。\n變暗：取上下兩圖層中較暗的顏色。\n變亮：取上下兩圖層中較亮的顏色。\n顏色加深：使下方顏色變暗並加深發色。\n顏色減淡：使下方顏色變亮並加深發色。\n實光：比覆蓋更強烈的對比效果。\n柔光：比覆蓋更柔和的對比效果，適合柔和的陰影。\n差異化：顯示上下兩色的差異，可用於檢查顏色偏差等。\n色相、飽和度、顏色、明度：分別僅將該圖層的色相、飽和度、色彩或明度反映到下方圖層。\n線性加深：將上下顏色相加後減去基準值，產生更強的變暗效果。\n線性減淡：線性相加上下顏色使其變亮。與「相加」是不同的混合模式，圖層半透明時「相加」會更亮。\n亮光：依上層顏色在加深與減淡之間切換，產生很強的對比。\n線性光：依上層顏色線性提高或降低亮度。\n小光源：依上層顏色向較暗或較亮一側替換。\n實色疊印混合：對亮光結果套用閾值，形成強烈的原色分離。\n排除：比「差異化」更柔和的反相與差異效果。\n劃分：用上層顏色除下層顏色，可用於提亮校正和強調色差。';
+      '用於變更圖層與下方圖層的合成方式，常用於疊加網點或顏色效果的圖層。\n正常：直接疊加。\n色彩增值：與下方圖層相乘後變暗，是陰影表現的經典手法。\n濾色：疊加亮度後變亮，適合表現光效。\n覆蓋：暗部更暗、亮部更亮，增強對比度。\n相加：直接相加顏色，適合光效線條等。\n差異化減去：相減顏色，呈現暗沉的效果。\n變暗：取上下兩圖層中較暗的顏色。\n變亮：取上下兩圖層中較亮的顏色。\n顏色加深：使下方顏色變暗並加深發色。\n顏色減淡：使下方顏色變亮並加深發色。\n實光：比覆蓋更強烈的對比效果。\n柔光：比覆蓋更柔和的對比效果，適合柔和的陰影。\n差異化：顯示上下兩色的差異，可用於檢查顏色偏差等。\n色相、飽和度、顏色、明度：分別僅將該圖層的色相、飽和度、色彩或明度反映到下方圖層。\n線性加深：將上下顏色相加後減去基準值，產生更強的變暗效果。\n線性減淡：線性相加上下顏色使其變亮。與「相加」是不同的混合模式，圖層半透明時「相加」會更亮。\n亮光：依上層顏色在加深與減淡之間切換，產生很強的對比。\n線性光：依上層顏色線性提高或降低亮度。\n小光源：依上層顏色向較暗或較亮一側替換。\n實色疊印混合：對亮光結果套用閾值，形成強烈的原色分離。\n排除：比「差異化」更柔和的反相與差異效果。\n劃分：用上層顏色除下層顏色，可用於提亮校正和強調色差。\n在混合模式列表中，每種模式旁會顯示將紅、黃、藍、白、黑疊加在由暗到亮的顏色上的範例（範例下方為半透明疊加時的效果）。';
 
   @override
   String get helpClippingTitle => '剪裁遮罩';
@@ -13234,7 +13291,7 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get tipsOfficialAutomationPresetsDesc =>
-      '官方預設包括「線画作成（デジタル）」（自動線稿→積墨）、「線画抽出（アナログ）」（色彩調整→二值化→亮度轉透明）以及「線画色トレス」（在線稿圖層上執行：把下方的填色取到剪裁到線稿的新圖層→模糊、複製與合併→色彩描線調整，使線條成為相鄰填色更深的顏色）。重新錄製會追加支援錄製的操作。在確認畫面中可以調整步驟順序或刪除步驟。若希望輕鬆恢復原始設定，可在編輯前先匯出一份。';
+      '官方預設包括「線稿製作（數位）」（自動線稿→積墨）、「線稿擷取（類比）」（色彩調整→二值化→亮度轉透明）以及「線稿顏色描線」（在線稿圖層上執行：把下方的填色取到剪裁到線稿的新圖層→模糊、複製與合併→色彩描線調整，使線條成為相鄰填色更深的顏色）。重新錄製會追加支援錄製的操作。在確認畫面中可以調整步驟順序或刪除步驟。若希望輕鬆恢復原始設定，可在編輯前先匯出一份。';
 
   @override
   String get tipsTexturePrismVhsTitle => '在複製圖層上嘗試質感、稜鏡和VHS';
@@ -13738,6 +13795,63 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get customAutomationFavoritesOnly => '僅顯示收藏';
+
+  @override
+  String get customAutomationBuiltinDraftToLineart => '線稿製作（數位）';
+
+  @override
+  String get customAutomationBuiltinAnalogLineart => '線稿擷取（類比）';
+
+  @override
+  String get customAutomationBuiltinLineartColorTrace => '線稿顏色描線';
+
+  @override
+  String customAutomationStepFrame(int frame) {
+    return '移至第 $frame 影格';
+  }
+
+  @override
+  String get customAutomationStepAddFrame => '新增影格';
+
+  @override
+  String customAutomationStepBrushSize(String size) {
+    return '筆刷粗細 ${size}px';
+  }
+
+  @override
+  String customAutomationStepBrushOpacity(int opacity) {
+    return '筆刷不透明度 $opacity%';
+  }
+
+  @override
+  String customAutomationStepTool(String tool) {
+    return '工具：$tool';
+  }
+
+  @override
+  String customAutomationStepColor(String color) {
+    return '繪圖顏色 $color';
+  }
+
+  @override
+  String customAutomationStepFilter(String name) {
+    return '套用濾鏡：$name';
+  }
+
+  @override
+  String get customAutomationStepColorsBelowClipped => '將下方填色剪裁到線稿';
+
+  @override
+  String get customAutomationStepDuplicateLayer => '複製圖層';
+
+  @override
+  String get customAutomationStepMergeDown => '與下方圖層合併';
+
+  @override
+  String get customAutomationStepColorTraceAdjust => '顏色描線調整';
+
+  @override
+  String get customAutomationStepVisibleComposite => '以所有可見圖層在頂部新增圖層';
 
   @override
   String get brushFoldAngle => '折返角度';

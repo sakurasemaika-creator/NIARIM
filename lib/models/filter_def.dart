@@ -66,6 +66,11 @@ const int kPixelArtMaxBlockSize = 100;
 int generatedLayerInsertIndex(FilterKind kind, int sourceIndex) =>
     kind == FilterKind.autoLineart ? sourceIndex : sourceIndex + 1;
 
+/// Names the layer a filter that draws onto a new layer makes from the
+/// layer called [sourceName] (in the app's language, where one is known).
+typedef GeneratedLayerNamer =
+    String Function(String sourceName, FilterDef filter);
+
 /// [created], a filter's new layer inserted at [insertIndex] among
 /// [before] (the layers before it was added, index 0 = the top), set up to
 /// fit there: it joins [source]'s folder, and it is clipped when the layer

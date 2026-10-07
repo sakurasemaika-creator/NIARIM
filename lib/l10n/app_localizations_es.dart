@@ -1319,7 +1319,7 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get helpBlendModeDesc =>
-      'Cambia como se combina una capa con las capas de debajo. Se usa a menudo al superponer tramas o efectos de color.\nNormal: superpone tal cual.\nMultiplicar: oscurece multiplicando con la capa inferior. La opcion clasica para sombras.\nTrama: aclara sumando luz. Bueno para efectos de brillo.\nSuperponer: oscurece las zonas oscuras y aclara las claras, aumentando el contraste.\nSumar: suma los colores directamente. Bueno para destellos de luz.\nRestar: resta colores, dando un aspecto oscuro y apagado.\nOscurecer: conserva el color mas oscuro entre ambas capas.\nAclarar: conserva el color mas claro entre ambas capas.\nSubexposicion de color: oscurece y satura el color inferior.\nSobreexposicion de color: aclara y satura el color inferior.\nLuz fuerte: una version mas intensa del contraste de Superponer.\nLuz suave: una version mas suave del contraste de Superponer. Buena para sombreados suaves.\nDiferencia: muestra la diferencia entre los dos colores. Util para comprobar desajustes de color.\nMatiz / Saturacion / Color / Luminosidad: aplica solo esa propiedad (matiz, saturacion, color o brillo) de esta capa sobre la de abajo.\nSubexposición lineal: suma ambos colores y resta el valor base para oscurecer con fuerza.\nSobreexposición lineal: suma linealmente ambos colores para aclarar. Es un modo distinto de Sumar: con la capa semitransparente, Sumar resulta más claro.\nLuz intensa: alterna entre subexposición y sobreexposición según el color superior para crear un contraste muy fuerte.\nLuz lineal: aumenta o reduce linealmente el brillo según el color superior.\nLuz focal: sustituye hacia el lado más oscuro o más claro según el color superior.\nMezcla definida: aplica un umbral al resultado de Luz intensa para separar los colores con dureza.\nExclusión: efecto de inversión y diferencia más suave que Diferencia.\nDividir: divide el color inferior por el superior, útil para aclarar y destacar diferencias de color.';
+      'Cambia como se combina una capa con las capas de debajo. Se usa a menudo al superponer tramas o efectos de color.\nNormal: superpone tal cual.\nMultiplicar: oscurece multiplicando con la capa inferior. La opcion clasica para sombras.\nTrama: aclara sumando luz. Bueno para efectos de brillo.\nSuperponer: oscurece las zonas oscuras y aclara las claras, aumentando el contraste.\nSumar: suma los colores directamente. Bueno para destellos de luz.\nRestar: resta colores, dando un aspecto oscuro y apagado.\nOscurecer: conserva el color mas oscuro entre ambas capas.\nAclarar: conserva el color mas claro entre ambas capas.\nSubexposicion de color: oscurece y satura el color inferior.\nSobreexposicion de color: aclara y satura el color inferior.\nLuz fuerte: una version mas intensa del contraste de Superponer.\nLuz suave: una version mas suave del contraste de Superponer. Buena para sombreados suaves.\nDiferencia: muestra la diferencia entre los dos colores. Util para comprobar desajustes de color.\nMatiz / Saturacion / Color / Luminosidad: aplica solo esa propiedad (matiz, saturacion, color o brillo) de esta capa sobre la de abajo.\nSubexposición lineal: suma ambos colores y resta el valor base para oscurecer con fuerza.\nSobreexposición lineal: suma linealmente ambos colores para aclarar. Es un modo distinto de Sumar: con la capa semitransparente, Sumar resulta más claro.\nLuz intensa: alterna entre subexposición y sobreexposición según el color superior para crear un contraste muy fuerte.\nLuz lineal: aumenta o reduce linealmente el brillo según el color superior.\nLuz focal: sustituye hacia el lado más oscuro o más claro según el color superior.\nMezcla definida: aplica un umbral al resultado de Luz intensa para separar los colores con dureza.\nExclusión: efecto de inversión y diferencia más suave que Diferencia.\nDividir: divide el color inferior por el superior, útil para aclarar y destacar diferencias de color.\nEn la lista de modos de fusión, cada modo muestra un ejemplo de rojo, amarillo, azul, blanco y negro superpuestos sobre colores de oscuro a claro (la parte inferior del ejemplo los muestra semitransparentes).';
 
   @override
   String get helpClippingTitle => 'Recorte';
@@ -6656,7 +6656,7 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get tipsOfficialAutomationPresetsDesc =>
-      'Los ajustes oficiales son 「線画作成（デジタル）」 (líneas automáticas → acumulación de tinta), 「線画抽出（アナログ）」 (ajuste de color → umbral → brillo a alfa) y 「線画色トレス」 (se ejecuta sobre el dibujo lineal: los colores pintados debajo, en una capa nueva con recorte al dibujo lineal → desenfocar, duplicar y combinar → ajustar calco de color, para que cada línea tome un tono más profundo del color contiguo). Al volver a grabar se añaden acciones compatibles. En la pantalla de revisión puedes reordenar o eliminar pasos. Expórtalo antes de editarlo si quieres conservar una forma sencilla de volver a la configuración original.';
+      'Los ajustes oficiales son «Dibujo lineal (digital)» (líneas automáticas → acumulación de tinta), «Extracción de dibujo lineal (analógico)» (ajuste de color → umbral → brillo a alfa) y «Trazado de color del dibujo lineal» (se ejecuta sobre el dibujo lineal: los colores pintados debajo, en una capa nueva con recorte al dibujo lineal → desenfocar, duplicar y combinar → ajustar calco de color, para que cada línea tome un tono más profundo del color contiguo). Al volver a grabar se añaden acciones compatibles. En la pantalla de revisión puedes reordenar o eliminar pasos. Expórtalo antes de editarlo si quieres conservar una forma sencilla de volver a la configuración original.';
 
   @override
   String get tipsTexturePrismVhsTitle =>
@@ -7203,6 +7203,68 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get customAutomationFavoritesOnly => 'Solo favoritos';
+
+  @override
+  String get customAutomationBuiltinDraftToLineart => 'Dibujo lineal (digital)';
+
+  @override
+  String get customAutomationBuiltinAnalogLineart =>
+      'Extracción de dibujo lineal (analógico)';
+
+  @override
+  String get customAutomationBuiltinLineartColorTrace =>
+      'Trazado de color del dibujo lineal';
+
+  @override
+  String customAutomationStepFrame(int frame) {
+    return 'Ir al fotograma $frame';
+  }
+
+  @override
+  String get customAutomationStepAddFrame => 'Añadir un fotograma';
+
+  @override
+  String customAutomationStepBrushSize(String size) {
+    return 'Tamaño del pincel ${size}px';
+  }
+
+  @override
+  String customAutomationStepBrushOpacity(int opacity) {
+    return 'Opacidad del pincel $opacity%';
+  }
+
+  @override
+  String customAutomationStepTool(String tool) {
+    return 'Herramienta: $tool';
+  }
+
+  @override
+  String customAutomationStepColor(String color) {
+    return 'Color de dibujo $color';
+  }
+
+  @override
+  String customAutomationStepFilter(String name) {
+    return 'Aplicar filtro: $name';
+  }
+
+  @override
+  String get customAutomationStepColorsBelowClipped =>
+      'Recortar al dibujo lineal los colores de debajo';
+
+  @override
+  String get customAutomationStepDuplicateLayer => 'Duplicar la capa';
+
+  @override
+  String get customAutomationStepMergeDown => 'Combinar con la capa inferior';
+
+  @override
+  String get customAutomationStepColorTraceAdjust =>
+      'Ajuste de trazado de color';
+
+  @override
+  String get customAutomationStepVisibleComposite =>
+      'Nueva capa superior con todas las capas visibles';
 
   @override
   String get brushFoldAngle => 'Ángulo del pliegue';

@@ -1314,7 +1314,7 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get helpBlendModeDesc =>
-      'Modifie la facon dont un calque se combine avec les calques en dessous. Souvent utilise pour superposer des trames ou des effets de couleur.\nNormal : superpose tel quel.\nProduit : assombrit en multipliant avec le calque du dessous. Le choix classique pour les ombres.\nSuperposition (Ecran) : eclaircit en ajoutant de la lumiere. Bon pour les effets lumineux.\nIncrustation : assombrit les zones sombres et eclaircit les zones claires, augmentant le contraste.\nAddition : additionne simplement les couleurs. Bon pour les traits de lumiere.\nSoustraction : soustrait les couleurs, donnant un aspect sombre et etouffe.\nAssombrir : conserve la couleur la plus sombre entre les deux calques.\nEclaircir : conserve la couleur la plus claire entre les deux calques.\nDensite couleur -: assombrit et sature la couleur du dessous.\nDensite couleur +: eclaircit et sature la couleur du dessous.\nLumiere crue : une version plus intense du contraste d\'Incrustation.\nLumiere douce : une version plus douce du contraste d\'Incrustation. Bonne pour des ombrages doux.\nDifference : affiche la difference entre les deux couleurs. Utile pour verifier un decalage de couleur.\nTeinte / Saturation / Couleur / Luminosite : applique uniquement cette propriete (teinte, saturation, couleur ou luminosite) de ce calque sur celui du dessous.\nDensité linéaire + : additionne les deux couleurs puis retire la valeur de base pour assombrir fortement.\nDensité linéaire - : additionne linéairement les deux couleurs pour éclaircir. Ce mode est distinct d’Addition : lorsque le calque est semi-transparent, Addition donne un résultat plus clair.\nLumière vive : alterne entre densité et éclaircissement selon la couleur supérieure pour un contraste très fort.\nLumière linéaire : augmente ou réduit linéairement la luminosité selon la couleur supérieure.\nLumière ponctuelle : remplace vers le côté sombre ou clair selon la couleur supérieure.\nMélange maximal : applique un seuil au résultat de Lumière vive pour une séparation très franche des couleurs.\nExclusion : effet d’inversion et de différence plus doux que Différence.\nDivision : divise la couleur inférieure par la couleur supérieure, utile pour éclaircir et accentuer les écarts de couleur.';
+      'Modifie la facon dont un calque se combine avec les calques en dessous. Souvent utilise pour superposer des trames ou des effets de couleur.\nNormal : superpose tel quel.\nProduit : assombrit en multipliant avec le calque du dessous. Le choix classique pour les ombres.\nSuperposition (Ecran) : eclaircit en ajoutant de la lumiere. Bon pour les effets lumineux.\nIncrustation : assombrit les zones sombres et eclaircit les zones claires, augmentant le contraste.\nAddition : additionne simplement les couleurs. Bon pour les traits de lumiere.\nSoustraction : soustrait les couleurs, donnant un aspect sombre et etouffe.\nAssombrir : conserve la couleur la plus sombre entre les deux calques.\nEclaircir : conserve la couleur la plus claire entre les deux calques.\nDensite couleur -: assombrit et sature la couleur du dessous.\nDensite couleur +: eclaircit et sature la couleur du dessous.\nLumiere crue : une version plus intense du contraste d\'Incrustation.\nLumiere douce : une version plus douce du contraste d\'Incrustation. Bonne pour des ombrages doux.\nDifference : affiche la difference entre les deux couleurs. Utile pour verifier un decalage de couleur.\nTeinte / Saturation / Couleur / Luminosite : applique uniquement cette propriete (teinte, saturation, couleur ou luminosite) de ce calque sur celui du dessous.\nDensité linéaire + : additionne les deux couleurs puis retire la valeur de base pour assombrir fortement.\nDensité linéaire - : additionne linéairement les deux couleurs pour éclaircir. Ce mode est distinct d’Addition : lorsque le calque est semi-transparent, Addition donne un résultat plus clair.\nLumière vive : alterne entre densité et éclaircissement selon la couleur supérieure pour un contraste très fort.\nLumière linéaire : augmente ou réduit linéairement la luminosité selon la couleur supérieure.\nLumière ponctuelle : remplace vers le côté sombre ou clair selon la couleur supérieure.\nMélange maximal : applique un seuil au résultat de Lumière vive pour une séparation très franche des couleurs.\nExclusion : effet d’inversion et de différence plus doux que Différence.\nDivision : divise la couleur inférieure par la couleur supérieure, utile pour éclaircir et accentuer les écarts de couleur.\nDans la liste des modes de fusion, chaque mode affiche un aperçu du rouge, du jaune, du bleu, du blanc et du noir posés sur des couleurs allant du sombre au clair (le bas de l’aperçu les montre semi-transparents).';
 
   @override
   String get helpClippingTitle => 'Écrêtage';
@@ -6668,7 +6668,7 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get tipsOfficialAutomationPresetsDesc =>
-      'Les préréglages officiels sont 「線画作成（デジタル）」 (trait automatique → accumulation d’encre), 「線画抽出（アナログ）」 (réglage des couleurs → seuil → luminosité vers alpha) et 「線画色トレス」 (à lancer sur le trait : les couleurs peintes en dessous, sur un nouveau calque en écrêtage sur le trait → flou, duplication et fusion → réglage du calque de couleur, pour que chaque trait prenne une teinte plus profonde de la couleur voisine). Le réenregistrement ajoute des actions prises en charge. L’écran de révision permet de réordonner ou de supprimer des étapes. Exportez-le avant modification si vous souhaitez pouvoir retrouver facilement les réglages d’origine.';
+      'Les préréglages officiels sont « Trait (numérique) » (trait automatique → accumulation d’encre), « Extraction du trait (analogique) » (réglage des couleurs → seuil → luminosité vers alpha) et « Trace de couleur du trait » (à lancer sur le trait : les couleurs peintes en dessous, sur un nouveau calque en écrêtage sur le trait → flou, duplication et fusion → réglage du calque de couleur, pour que chaque trait prenne une teinte plus profonde de la couleur voisine). Le réenregistrement ajoute des actions prises en charge. L’écran de révision permet de réordonner ou de supprimer des étapes. Exportez-le avant modification si vous souhaitez pouvoir retrouver facilement les réglages d’origine.';
 
   @override
   String get tipsTexturePrismVhsTitle =>
@@ -7218,6 +7218,69 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get customAutomationFavoritesOnly => 'Favoris uniquement';
+
+  @override
+  String get customAutomationBuiltinDraftToLineart => 'Trait (numérique)';
+
+  @override
+  String get customAutomationBuiltinAnalogLineart =>
+      'Extraction du trait (analogique)';
+
+  @override
+  String get customAutomationBuiltinLineartColorTrace =>
+      'Trace de couleur du trait';
+
+  @override
+  String customAutomationStepFrame(int frame) {
+    return 'Aller à l’image $frame';
+  }
+
+  @override
+  String get customAutomationStepAddFrame => 'Ajouter une image';
+
+  @override
+  String customAutomationStepBrushSize(String size) {
+    return 'Taille du pinceau ${size}px';
+  }
+
+  @override
+  String customAutomationStepBrushOpacity(int opacity) {
+    return 'Opacité du pinceau $opacity%';
+  }
+
+  @override
+  String customAutomationStepTool(String tool) {
+    return 'Outil : $tool';
+  }
+
+  @override
+  String customAutomationStepColor(String color) {
+    return 'Couleur de dessin $color';
+  }
+
+  @override
+  String customAutomationStepFilter(String name) {
+    return 'Appliquer le filtre : $name';
+  }
+
+  @override
+  String get customAutomationStepColorsBelowClipped =>
+      'Écrêter au trait les couleurs du dessous';
+
+  @override
+  String get customAutomationStepDuplicateLayer => 'Dupliquer le calque';
+
+  @override
+  String get customAutomationStepMergeDown =>
+      'Fusionner avec le calque inférieur';
+
+  @override
+  String get customAutomationStepColorTraceAdjust =>
+      'Réglage de la trace de couleur';
+
+  @override
+  String get customAutomationStepVisibleComposite =>
+      'Nouveau calque en haut à partir des calques visibles';
 
   @override
   String get brushFoldAngle => 'Angle du pli';

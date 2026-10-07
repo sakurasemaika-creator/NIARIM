@@ -27,6 +27,7 @@ class RecordedFilterApplyService {
     required String layerId,
     required int frameIndex,
     required Map<String, Object?> filterSnapshot,
+    GeneratedLayerNamer? layerName,
   }) async {
     final filter = parseSnapshot(filterSnapshot);
     final tileManager = projectService.tileManagerOf(projectId);
@@ -127,6 +128,7 @@ class RecordedFilterApplyService {
         sourceName: sourceLayer.name,
         filter: filter,
         pixels: result,
+        layerName: layerName,
       );
     }
 
@@ -157,6 +159,7 @@ class RecordedFilterApplyService {
     required String sourceName,
     required FilterDef filter,
     required Uint8List pixels,
+    GeneratedLayerNamer? layerName,
   }) {
     final tileManager = projectService.tileManagerOf(projectId);
     final before = projectService.layersOf(projectId, sceneId, frameIndex);
@@ -167,7 +170,9 @@ class RecordedFilterApplyService {
       sceneId: sceneId,
       frameIndex: frameIndex,
       type: model.LayerType.normal,
-      name: _generatedLayerName(sourceName, filter),
+      name:
+          layerName?.call(sourceName, filter) ??
+          _generatedLayerName(sourceName, filter),
       insertIndex: insertIndex,
     );
     final key = projectService.tileKeyFor(

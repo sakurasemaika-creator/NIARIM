@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 import '../l10n/app_localizations.dart';
 import '../models/custom_automation.dart';
 import '../services/custom_automation_service.dart';
+import '../utils/custom_automation_labels.dart';
 
 /// Converts Flutter's final reorder index back to the pre-removal index contract
 /// used by [CustomAutomationService.reorderDraftStep].
@@ -32,7 +33,7 @@ class CustomAutomationDraftSheet extends StatelessWidget {
         child: Column(
           children: [
             ListTile(
-              title: Text(draft.name),
+              title: Text(customAutomationDisplayName(l10n, draft.name)),
               subtitle: Text(l10n.customAutomationReviewHint),
             ),
             const Divider(height: 1),
@@ -63,7 +64,7 @@ class CustomAutomationDraftSheet extends StatelessWidget {
                               style: const TextStyle(fontSize: 11),
                             ),
                           ),
-                          title: Text(step.label),
+                          title: Text(customAutomationStepLabel(l10n, step)),
                           subtitle: Text(
                             step.surface == CustomAutomationSurface.canvas
                                 ? l10n.customAutomationCanvasStep

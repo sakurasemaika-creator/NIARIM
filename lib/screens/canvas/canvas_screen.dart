@@ -28,6 +28,8 @@ import '../../widgets/dispose_on_unmount.dart';
 import '../../widgets/editable_slider_value.dart';
 import '../../widgets/stepped_slider.dart';
 import '../../utils/immersive_mode.dart';
+import '../../utils/custom_automation_labels.dart';
+import '../../utils/filter_display_name.dart';
 import '../../engine/autofill_engine.dart' show AutofillCheckMode;
 import '../../engine/text_render.dart';
 import '../../engine/undo_manager.dart';
@@ -159,8 +161,6 @@ class _CanvasScreenState extends State<CanvasScreen> {
   int _invertSelectionToken = 0;
   int _selectAllSelectionToken = 0;
   int _clearSelectionToken = 0;
-  bool _selectionReferenceAllVisible = false;
-  bool _lassoSnapToLines = false;
 
   bool get _isSelectionToolActive =>
       _currentTool == DrawingTool.selectRect ||
@@ -495,7 +495,7 @@ class _CanvasScreenState extends State<CanvasScreen> {
         canPop: false,
         child: AlertDialog(
           key: const ValueKey('custom-automation-progress'),
-          title: Text(automation.name),
+          title: Text(customAutomationDisplayName(l10n, automation.name)),
           content: const Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [CircularProgressIndicator()],
@@ -533,11 +533,17 @@ class _CanvasScreenState extends State<CanvasScreen> {
       currentFrame: _currentFrame,
       currentLayerId: _currentLayerId,
       handleCanvasStateCommand: _executeSemanticCanvasStateCommand,
+      layerName: _generatedLayerName,
     );
     if (activeLayerId != null && mounted) {
       setState(() => _currentLayerId = activeLayerId);
     }
   }
+
+  /// The name of a layer a filter run by an automation adds, in the app's
+  /// language (as the filter panel names it).
+  String _generatedLayerName(String sourceName, FilterDef filter) =>
+      generatedLayerName(AppLocalizations.of(context)!, sourceName, filter);
 
   Future<void> _executeSemanticCanvasStateCommand(
     String command,
@@ -598,6 +604,7 @@ class _CanvasScreenState extends State<CanvasScreen> {
           layerId: layerId,
           frameIndex: targetFrame,
           filterSnapshot: Map<String, Object?>.from(rawSnapshot),
+          layerName: _generatedLayerName,
         );
         if (generatedLayerId != null && mounted) {
           setState(() => _currentLayerId = generatedLayerId);
@@ -1315,9 +1322,12 @@ class _CanvasScreenState extends State<CanvasScreen> {
                                   selectAllSelectionToken:
                                       _selectAllSelectionToken,
                                   clearSelectionToken: _clearSelectionToken,
-                                  selectionReferenceAllVisible:
-                                      _selectionReferenceAllVisible,
-                                  lassoSnapToLines: _lassoSnapToLines,
+                                  selectionReferenceAllVisible: context
+                                      .watch<SettingsService>()
+                                      .selectionReferenceAllVisible,
+                                  lassoSnapToLines: context
+                                      .watch<SettingsService>()
+                                      .lassoSnapToLines,
                                   onSelectionActiveChanged: (v) {
                                     if (_hasActiveSelection == v) return;
                                     setState(() {
@@ -2514,6 +2524,7 @@ class _CanvasScreenState extends State<CanvasScreen> {
   /// （これが無いとツールを切り替えられなくなる）。
   Widget _selectionToolBar(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
+    final settings = context.watch<SettingsService>();
     final scheme = Theme.of(context).colorScheme;
 
     // 1段目・2段目とも同じ形・同じ大きさのボタンを3つずつ並べる。
@@ -2626,10 +2637,9 @@ class _CanvasScreenState extends State<CanvasScreen> {
                       ),
                     ),
                   ],
-                  selected: {_selectionReferenceAllVisible},
-                  onSelectionChanged: (value) => setState(
-                    () => _selectionReferenceAllVisible = value.first,
-                  ),
+                  selected: {settings.selectionReferenceAllVisible},
+                  onSelectionChanged: (value) =>
+                      settings.setSelectionReferenceAllVisible(value.first),
                   showSelectedIcon: false,
                   style: const ButtonStyle(
                     visualDensity: VisualDensity.compact,
@@ -2639,8 +2649,9 @@ class _CanvasScreenState extends State<CanvasScreen> {
                 if (_currentTool == DrawingTool.selectLasso)
                   InkWell(
                     key: const ValueKey('lasso-snap-to-lines'),
-                    onTap: () =>
-                        setState(() => _lassoSnapToLines = !_lassoSnapToLines),
+                    onTap: () => settings.setLassoSnapToLines(
+                      !settings.lassoSnapToLines,
+                    ),
                     borderRadius: BorderRadius.circular(6),
                     child: Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 2),
@@ -2648,10 +2659,9 @@ class _CanvasScreenState extends State<CanvasScreen> {
                         mainAxisSize: MainAxisSize.min,
                         children: [
                           Checkbox(
-                            value: _lassoSnapToLines,
-                            onChanged: (value) => setState(
-                              () => _lassoSnapToLines = value ?? false,
-                            ),
+                            value: settings.lassoSnapToLines,
+                            onChanged: (value) =>
+                                settings.setLassoSnapToLines(value ?? false),
                             visualDensity: VisualDensity.compact,
                           ),
                           Text(

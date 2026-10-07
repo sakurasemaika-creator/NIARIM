@@ -1269,7 +1269,7 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get helpBlendModeDesc =>
-      'レイヤーの合成方法を変更する機能です。トーンやカラー効果をレイヤーとして重ねる時によく使われます。\n通常：そのまま重ねます。\n乗算：下のレイヤーと掛け合わせて暗くします。影・陰影づけの定番です。\nスクリーン：明るさを足し合わせて明るくします。光の表現に向きます。\nオーバーレイ：暗い部分はより暗く、明るい部分はより明るくしてコントラストを強めます。\n加算：色を単純に足し合わせます。光の効果線などに向きます。\n減算：色を差し引き、暗く沈んだ効果になります。\n比較（暗）：上下のレイヤーで暗い方の色を採用します。\n比較（明）：上下のレイヤーで明るい方の色を採用します。\n焼き込みカラー：下の色を暗く沈めながら濃く発色させます。\n覆い焼きカラー：下の色を明るく飛ばしながら発色させます。\nハードライト：オーバーレイより強くコントラストが付きます。\nソフトライト：オーバーレイより穏やかにコントラストが付きます。柔らかい陰影に向きます。\n差の絶対値：上下の色の差を表示します。色のズレ確認などに使えます。\n色相・彩度・カラー・輝度：それぞれ色相・彩度・色味・明るさだけを下のレイヤーへ反映します。\n焼き込み（リニア）：上下の色を足してから基準値を引き、強く暗くします。\n覆い焼き（リニア）：上下の色を線形に加算して明るくします。加算とは別のブレンドモードで、レイヤーが半透明のときは加算の方が明るくなります。\nビビッドライト：上の色に応じて焼き込みと覆い焼きを切り替え、強いコントラストを作ります。\nリニアライト：上の色を基準に明るさを線形に増減します。\nピンライト：上の色に応じて暗い側または明るい側へ置き換えます。\nハードミックス：ビビッドライトの結果を二値化し、原色的な強い色分離を作ります。\n除外：差の絶対値より穏やかな反転・差分効果です。\n除算：下の色を上の色で割り、明るい補正や色差の強調に使えます。';
+      'レイヤーの合成方法を変更する機能です。トーンやカラー効果をレイヤーとして重ねる時によく使われます。\n通常：そのまま重ねます。\n乗算：下のレイヤーと掛け合わせて暗くします。影・陰影づけの定番です。\nスクリーン：明るさを足し合わせて明るくします。光の表現に向きます。\nオーバーレイ：暗い部分はより暗く、明るい部分はより明るくしてコントラストを強めます。\n加算：色を単純に足し合わせます。光の効果線などに向きます。\n減算：色を差し引き、暗く沈んだ効果になります。\n比較（暗）：上下のレイヤーで暗い方の色を採用します。\n比較（明）：上下のレイヤーで明るい方の色を採用します。\n焼き込みカラー：下の色を暗く沈めながら濃く発色させます。\n覆い焼きカラー：下の色を明るく飛ばしながら発色させます。\nハードライト：オーバーレイより強くコントラストが付きます。\nソフトライト：オーバーレイより穏やかにコントラストが付きます。柔らかい陰影に向きます。\n差の絶対値：上下の色の差を表示します。色のズレ確認などに使えます。\n色相・彩度・カラー・輝度：それぞれ色相・彩度・色味・明るさだけを下のレイヤーへ反映します。\n焼き込み（リニア）：上下の色を足してから基準値を引き、強く暗くします。\n覆い焼き（リニア）：上下の色を線形に加算して明るくします。加算とは別のブレンドモードで、レイヤーが半透明のときは加算の方が明るくなります。\nビビッドライト：上の色に応じて焼き込みと覆い焼きを切り替え、強いコントラストを作ります。\nリニアライト：上の色を基準に明るさを線形に増減します。\nピンライト：上の色に応じて暗い側または明るい側へ置き換えます。\nハードミックス：ビビッドライトの結果を二値化し、原色的な強い色分離を作ります。\n除外：差の絶対値より穏やかな反転・差分効果です。\n除算：下の色を上の色で割り、明るい補正や色差の強調に使えます。\nブレンドモードの選択一覧では、各モードの横に、赤・黄・青・白・黒を暗い色から明るい色の上へ重ねた見本が出ます（見本の下の方は半透明で重ねた見え方です）。';
 
   @override
   String get helpClippingTitle => 'クリッピング';
@@ -6844,6 +6844,64 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get customAutomationFavoritesOnly => 'お気に入りのみ';
+
+  @override
+  String get customAutomationBuiltinDraftToLineart => '線画作成（デジタル）';
+
+  @override
+  String get customAutomationBuiltinAnalogLineart => '線画抽出（アナログ）';
+
+  @override
+  String get customAutomationBuiltinLineartColorTrace => '線画色トレス';
+
+  @override
+  String customAutomationStepFrame(int frame) {
+    return 'フレーム$frameへ移動';
+  }
+
+  @override
+  String get customAutomationStepAddFrame => 'フレームを追加';
+
+  @override
+  String customAutomationStepBrushSize(String size) {
+    return 'ブラシの太さ ${size}px';
+  }
+
+  @override
+  String customAutomationStepBrushOpacity(int opacity) {
+    return 'ブラシの不透明度 $opacity%';
+  }
+
+  @override
+  String customAutomationStepTool(String tool) {
+    return 'ツール：$tool';
+  }
+
+  @override
+  String customAutomationStepColor(String color) {
+    return '描画色 $color';
+  }
+
+  @override
+  String customAutomationStepFilter(String name) {
+    return 'フィルター「$name」を適用';
+  }
+
+  @override
+  String get customAutomationStepColorsBelowClipped => '下の塗りの色を線画にクリッピング';
+
+  @override
+  String get customAutomationStepDuplicateLayer => 'レイヤーを複製';
+
+  @override
+  String get customAutomationStepMergeDown => '下のレイヤーと結合';
+
+  @override
+  String get customAutomationStepColorTraceAdjust => '色トレス補正';
+
+  @override
+  String get customAutomationStepVisibleComposite =>
+      '表示中のレイヤーを結合した新規レイヤーを一番上に作成';
 
   @override
   String get brushFoldAngle => '折り返し角度';

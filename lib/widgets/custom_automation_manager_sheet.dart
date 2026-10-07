@@ -8,6 +8,7 @@ import 'package:provider/provider.dart';
 import '../l10n/app_localizations.dart';
 import '../models/custom_automation.dart';
 import '../services/custom_automation_service.dart';
+import '../utils/custom_automation_labels.dart';
 import 'scrollable_sheet_body.dart';
 
 class CustomAutomationManagerSheet extends StatelessWidget {
@@ -93,7 +94,7 @@ class CustomAutomationManagerSheet extends StatelessWidget {
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(automation.name),
+              Text(customAutomationDisplayName(l10n, automation.name)),
               if (automation.supportsFrameScopeChoice) ...[
                 const SizedBox(height: 12),
                 RadioGroup<CustomAutomationExecutionScope>(
@@ -211,13 +212,13 @@ class CustomAutomationManagerSheet extends StatelessWidget {
 
   Future<void> _rename(BuildContext context, CustomAutomation item) async {
     final l10n = AppLocalizations.of(context)!;
-    var draftName = item.name;
+    var draftName = customAutomationDisplayName(l10n, item.name);
     final value = await showDialog<String>(
       context: context,
       builder: (dialogContext) => AlertDialog(
         title: Text(l10n.customAutomationRenameTitle),
         content: TextFormField(
-          initialValue: item.name,
+          initialValue: draftName,
           autofocus: true,
           onChanged: (value) => draftName = value,
         ),
@@ -244,7 +245,7 @@ class CustomAutomationManagerSheet extends StatelessWidget {
       context: context,
       builder: (dialogContext) => AlertDialog(
         title: Text(l10n.customAutomationDeleteTitle),
-        content: Text(item.name),
+        content: Text(customAutomationDisplayName(l10n, item.name)),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(dialogContext, false),
@@ -264,10 +265,14 @@ class CustomAutomationManagerSheet extends StatelessWidget {
 
   Future<void> _export(BuildContext context, CustomAutomation item) async {
     final service = context.read<CustomAutomationService>();
+    final name = customAutomationDisplayName(
+      AppLocalizations.of(context)!,
+      item.name,
+    );
     final bytes = Uint8List.fromList(utf8.encode(service.exportJson(item.id)));
     await FilePicker.platform.saveFile(
-      dialogTitle: item.name,
-      fileName: '${item.name}.niarim-action.json',
+      dialogTitle: name,
+      fileName: '$name.niarim-action.json',
       type: FileType.custom,
       allowedExtensions: const ['json'],
       bytes: bytes,
@@ -323,7 +328,7 @@ class CustomAutomationManagerSheet extends StatelessWidget {
           mainAxisSize: MainAxisSize.min,
           children: [
             ListTile(
-              title: Text(item.name),
+              title: Text(customAutomationDisplayName(l10n, item.name)),
               subtitle: Text(l10n.customAutomationStepCount(item.steps.length)),
             ),
             const Divider(height: 1),
@@ -442,7 +447,9 @@ class CustomAutomationManagerSheet extends StatelessWidget {
                         return ListTile(
                           key: ValueKey(item.id),
                           onTap: () => _showItemManager(context, item),
-                          title: Text(item.name),
+                          title: Text(
+                            customAutomationDisplayName(l10n, item.name),
+                          ),
                           subtitle: Text(
                             l10n.customAutomationStepCount(item.steps.length),
                           ),

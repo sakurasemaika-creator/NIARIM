@@ -5,13 +5,15 @@ on:
     branches:
       - dev_branch
     paths:
-      - 'lib/models/custom_automation_presets.dart'
+      - 'lib/models/custom_automation_builtin_presets.dart'
+      - 'lib/utils/custom_automation_labels.dart'
       - 'lib/services/custom_automation_service.dart'
       - 'lib/engine/custom_automation_executor.dart'
       - 'lib/engine/custom_automation_filter_runner.dart'
       - 'lib/screens/canvas/widgets/filter_panel.dart'
       - 'lib/widgets/custom_automation_manager_sheet.dart'
-      - 'test/custom_automation_presets_test.dart'
+      - 'test/custom_automation_builtin_refresh_test.dart'
+      - 'test/custom_automation_labels_test.dart'
       - 'test/custom_automation_service_test.dart'
       - 'test/custom_automation_production_visual_test.dart'
       - 'test/custom_automation_favorite_visual_test.dart'
@@ -30,8 +32,8 @@ jobs:
           cache: true
       - run: flutter pub get
       - name: Analyze Custom Automation production and tests
-        run: flutter analyze lib/models/custom_automation_presets.dart lib/services/custom_automation_service.dart lib/engine/custom_automation_executor.dart lib/engine/custom_automation_filter_runner.dart lib/screens/canvas/widgets/filter_panel.dart lib/widgets/custom_automation_manager_sheet.dart test/custom_automation_presets_test.dart test/custom_automation_service_test.dart test/custom_automation_production_visual_test.dart test/custom_automation_favorite_visual_test.dart --no-fatal-warnings --no-fatal-infos
-      - run: flutter test test/custom_automation_presets_test.dart test/custom_automation_service_test.dart --reporter expanded
+        run: flutter analyze lib/models/custom_automation_builtin_presets.dart lib/utils/custom_automation_labels.dart lib/services/custom_automation_service.dart lib/engine/custom_automation_executor.dart lib/engine/custom_automation_filter_runner.dart lib/screens/canvas/widgets/filter_panel.dart lib/widgets/custom_automation_manager_sheet.dart test/custom_automation_builtin_refresh_test.dart test/custom_automation_labels_test.dart test/custom_automation_service_test.dart test/custom_automation_production_visual_test.dart test/custom_automation_favorite_visual_test.dart --no-fatal-warnings --no-fatal-infos
+      - run: flutter test test/custom_automation_builtin_refresh_test.dart test/custom_automation_labels_test.dart test/custom_automation_service_test.dart --reporter expanded
       - name: Run favorite lifecycle UI and capture every requested state
         run: flutter test test/custom_automation_favorite_visual_test.dart --reporter expanded
       - name: Upload favorite lifecycle PNG evidence

@@ -28,6 +28,7 @@ import '../../../services/premium_service.dart';
 import '../../../services/project_service.dart';
 import '../../../services/theme_service.dart';
 import '../../../utils/blend_mode_label.dart';
+import '../../../utils/filter_display_name.dart';
 import '../../../widgets/editable_slider_value.dart';
 import '../../../widgets/grab_pan_gesture_recognizer.dart';
 import '../../../widgets/pixel_color_mode_selector.dart';
@@ -652,7 +653,7 @@ class _FilterPanelState extends State<FilterPanel> {
     final filters = service.filters.where((f) {
       if (_showFavoritesOnly && !f.isFavorite) return false;
       if (query.isEmpty) return true;
-      return _filterDisplayName(l10n, f).contains(query);
+      return filterDisplayName(l10n, f).contains(query);
     }).toList();
     final current = service.currentFilter;
 
@@ -888,7 +889,7 @@ class _FilterPanelState extends State<FilterPanel> {
                   Icon(_iconForFilter(filter), size: 22),
                   const SizedBox(height: 4),
                   Text(
-                    _filterDisplayName(l10n, filter),
+                    filterDisplayName(l10n, filter),
                     maxLines: 2,
                     textAlign: TextAlign.center,
                     overflow: TextOverflow.ellipsis,
@@ -937,7 +938,7 @@ class _FilterPanelState extends State<FilterPanel> {
         ),
         Expanded(
           child: Text(
-            _filterDisplayName(l10n, current),
+            filterDisplayName(l10n, current),
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
             style: const TextStyle(
@@ -2700,44 +2701,6 @@ class _FilterPanelState extends State<FilterPanel> {
     );
   }
 
-  String _filterDisplayName(AppLocalizations l10n, FilterDef filter) {
-    if (filter.id == 'Filter0025') return l10n.filterNameInvert;
-    // Its noise style can be changed, so it is named by its preset rather
-    // than by style; otherwise it shares Film Grain's name.
-    if (filter.id == FilterService.genericNoiseFilterId) {
-      return l10n.filterNameGenericNoise;
-    }
-    if (_isPrism(filter)) return l10n.filterNamePrism;
-    if (_isVhs(filter)) return l10n.filterNameVhsNoise;
-    return switch (filter.kind) {
-      FilterKind.prism => l10n.filterNamePrism,
-      FilterKind.gaussianBlur => l10n.filterNameGaussianBlur,
-      FilterKind.lensBlur => l10n.filterNameLensBlur,
-      FilterKind.animeStyle => l10n.filterNameAnimeStyle,
-      FilterKind.outline => l10n.filterNameOutline,
-      FilterKind.toneCurve => l10n.filterNameToneCurve,
-      FilterKind.levels => l10n.filterNameLevels,
-      FilterKind.sharpen => l10n.filterNameSharpen,
-      FilterKind.unsharpMask => l10n.filterNameUnsharpMask,
-      FilterKind.vignette => l10n.filterNameVignette,
-      FilterKind.noise => l10n.filterNameNoise,
-      FilterKind.retroAnime => l10n.filterNameRetroAnime,
-      FilterKind.crt => l10n.filterNameCrt,
-      FilterKind.colorAdjust => l10n.filterNameColorAdjust,
-      FilterKind.threshold => l10n.filterNameThreshold,
-      FilterKind.fisheye => l10n.filterNameFisheye,
-      FilterKind.chromaticAberration => l10n.filterNameChromaticAberration,
-      FilterKind.lensDistortion => l10n.filterNameLensDistortion,
-      FilterKind.pixelate => l10n.filterNamePixelate,
-      FilterKind.mosaic => l10n.filterNameMosaic,
-      FilterKind.auroraHologram => l10n.filterNameAuroraHologram,
-      FilterKind.backgroundBlend => l10n.filterNameBackgroundBlend,
-      FilterKind.inkPool => l10n.filterNameInkPool,
-      FilterKind.autoLineart => l10n.filterNameAutoLineart,
-      FilterKind.sphereShading => l10n.filterNameSphereShading,
-    };
-  }
-
   String _toneCurveLabel(AppLocalizations l10n, ToneCurvePreset preset) =>
       switch (preset) {
         ToneCurvePreset.linear => l10n.filterToneCurveLinear,
@@ -3089,7 +3052,7 @@ class _FilterPanelState extends State<FilterPanel> {
               title: l10n.filterApplyingTitle,
               progress: progress,
               subtitle: l10n.filterApplyingSubtitle(
-                _filterDisplayName(l10n, filter),
+                filterDisplayName(l10n, filter),
                 sorted.length,
               ),
             );

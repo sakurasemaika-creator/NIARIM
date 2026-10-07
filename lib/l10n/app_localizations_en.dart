@@ -1295,7 +1295,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get helpBlendModeDesc =>
-      'Changes how a layer is composited with the layers below it. Often used when layering screentones or color effects.\nNormal: Layers as-is.\nMultiply: Darkens by multiplying with the layer below. The standard choice for shadows.\nScreen: Brightens by adding light. Good for glow effects.\nOverlay: Darkens dark areas and brightens light areas, increasing contrast.\nAddition: Simply adds colors together. Good for light streak effects.\nSubtract: Subtracts colors, producing a dark, sunken look.\nDarken: Keeps whichever color is darker between the two layers.\nLighten: Keeps whichever color is lighter between the two layers.\nColor Burn: Darkens and saturates the color below.\nColor Dodge: Brightens and saturates the color below.\nHard Light: A stronger version of Overlay contrast.\nSoft Light: A gentler version of Overlay contrast. Good for soft shading.\nDifference: Shows the difference between the two colors. Useful for checking color misalignment.\nHue / Saturation / Color / Luminosity: Applies only that one property (hue, saturation, color, or brightness) from this layer onto the one below.\nLinear Burn: Adds the two colors then subtracts the baseline, producing a strong darkening effect.\nLinear Dodge: Linearly adds the two colors to brighten. This is a separate blend mode from Addition: when the layer is semi-transparent, Addition comes out brighter.\nVivid Light: Switches between burn and dodge based on the upper color for very strong contrast.\nLinear Light: Linearly raises or lowers brightness based on the upper color.\nPin Light: Replaces toward the darker or lighter side depending on the upper color.\nHard Mix: Thresholds the Vivid Light result for hard, primary-color separation.\nExclusion: A softer inversion/difference effect than Difference.\nDivide: Divides the lower color by the upper color, useful for bright correction and emphasizing color differences.';
+      'Changes how a layer is composited with the layers below it. Often used when layering screentones or color effects.\nNormal: Layers as-is.\nMultiply: Darkens by multiplying with the layer below. The standard choice for shadows.\nScreen: Brightens by adding light. Good for glow effects.\nOverlay: Darkens dark areas and brightens light areas, increasing contrast.\nAddition: Simply adds colors together. Good for light streak effects.\nSubtract: Subtracts colors, producing a dark, sunken look.\nDarken: Keeps whichever color is darker between the two layers.\nLighten: Keeps whichever color is lighter between the two layers.\nColor Burn: Darkens and saturates the color below.\nColor Dodge: Brightens and saturates the color below.\nHard Light: A stronger version of Overlay contrast.\nSoft Light: A gentler version of Overlay contrast. Good for soft shading.\nDifference: Shows the difference between the two colors. Useful for checking color misalignment.\nHue / Saturation / Color / Luminosity: Applies only that one property (hue, saturation, color, or brightness) from this layer onto the one below.\nLinear Burn: Adds the two colors then subtracts the baseline, producing a strong darkening effect.\nLinear Dodge: Linearly adds the two colors to brighten. This is a separate blend mode from Addition: when the layer is semi-transparent, Addition comes out brighter.\nVivid Light: Switches between burn and dodge based on the upper color for very strong contrast.\nLinear Light: Linearly raises or lowers brightness based on the upper color.\nPin Light: Replaces toward the darker or lighter side depending on the upper color.\nHard Mix: Thresholds the Vivid Light result for hard, primary-color separation.\nExclusion: A softer inversion/difference effect than Difference.\nDivide: Divides the lower color by the upper color, useful for bright correction and emphasizing color differences.\nIn the blend mode list, each mode shows a sample of red, yellow, blue, white and black laid over colors from dark to light (the lower part of the sample shows them half transparent).';
 
   @override
   String get helpClippingTitle => 'Clipping';
@@ -6548,7 +6548,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get tipsOfficialAutomationPresetsDesc =>
-      'The official presets are 「線画作成（デジタル）」 (Auto Line Art → Ink Pool), 「線画抽出（アナログ）」 (Color Adjust → Threshold → Brightness to Alpha), and 「線画色トレス」 (run it on the line art: the colors painted beneath it on a new layer clipped to it → blur, duplicate, and merge → color-trace adjustment, so each line takes a deeper tone of the color beside it). Re-recording appends supported actions. In the review screen, you can reorder or remove steps. Export it before editing if you want an easy way back to the original settings.';
+      'The official presets are “Line Art (Digital)” (Auto Line Art → Ink Pool), “Line Art Extraction (Analog)” (Color Adjust → Threshold → Brightness to Alpha), and “Line Art Color Trace” (run it on the line art: the colors painted beneath it on a new layer clipped to it → blur, duplicate, and merge → color-trace adjustment, so each line takes a deeper tone of the color beside it). Re-recording appends supported actions. In the review screen, you can reorder or remove steps. Export it before editing if you want an easy way back to the original settings.';
 
   @override
   String get tipsTexturePrismVhsTitle =>
@@ -7088,6 +7088,66 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get customAutomationFavoritesOnly => 'Favorites only';
+
+  @override
+  String get customAutomationBuiltinDraftToLineart => 'Line Art (Digital)';
+
+  @override
+  String get customAutomationBuiltinAnalogLineart =>
+      'Line Art Extraction (Analog)';
+
+  @override
+  String get customAutomationBuiltinLineartColorTrace => 'Line Art Color Trace';
+
+  @override
+  String customAutomationStepFrame(int frame) {
+    return 'Go to frame $frame';
+  }
+
+  @override
+  String get customAutomationStepAddFrame => 'Add a frame';
+
+  @override
+  String customAutomationStepBrushSize(String size) {
+    return 'Brush size ${size}px';
+  }
+
+  @override
+  String customAutomationStepBrushOpacity(int opacity) {
+    return 'Brush opacity $opacity%';
+  }
+
+  @override
+  String customAutomationStepTool(String tool) {
+    return 'Tool: $tool';
+  }
+
+  @override
+  String customAutomationStepColor(String color) {
+    return 'Drawing color $color';
+  }
+
+  @override
+  String customAutomationStepFilter(String name) {
+    return 'Apply filter: $name';
+  }
+
+  @override
+  String get customAutomationStepColorsBelowClipped =>
+      'Clip the colors beneath to the line art';
+
+  @override
+  String get customAutomationStepDuplicateLayer => 'Duplicate the layer';
+
+  @override
+  String get customAutomationStepMergeDown => 'Merge with the layer below';
+
+  @override
+  String get customAutomationStepColorTraceAdjust => 'Color trace adjustment';
+
+  @override
+  String get customAutomationStepVisibleComposite =>
+      'New top layer from all visible layers';
 
   @override
   String get brushFoldAngle => 'Fold angle';

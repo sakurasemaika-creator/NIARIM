@@ -23,6 +23,8 @@ class SettingsService extends ChangeNotifier {
   // 左利きモード：ONの場合、キャンバスのドッキングパネルを
   // 左右反転して配置する。
   bool _isLeftHanded = false;
+  bool _lassoSnapToLines = false;
+  bool _selectionReferenceAllVisible = false;
   // ツールバー編集（表示するツールをチェックボックスで選択・ドラッグで並び替え）
   List<ToolbarItemId> _toolbarOrder = List.of(ToolbarItemId.values);
   Set<ToolbarItemId> _hiddenToolbarItems = {};
@@ -43,6 +45,13 @@ class SettingsService extends ChangeNotifier {
   double get defaultDrawingAreaScale => _defaultDrawingAreaScale;
   bool? get forcePcMode => _forcePcMode;
   bool get isLeftHanded => _isLeftHanded;
+
+  /// The lasso selection follows the line art near the drawn path.
+  bool get lassoSnapToLines => _lassoSnapToLines;
+
+  /// The selection tools look at every visible layer rather than only the
+  /// working one.
+  bool get selectionReferenceAllVisible => _selectionReferenceAllVisible;
   List<ToolbarItemId> get toolbarOrder => List.unmodifiable(_toolbarOrder);
   Set<ToolbarItemId> get hiddenToolbarItems =>
       Set.unmodifiable(_hiddenToolbarItems);
@@ -523,6 +532,9 @@ class SettingsService extends ChangeNotifier {
     final pcModeValue = prefs.getInt('force_pc_mode') ?? -1;
     _forcePcMode = pcModeValue == -1 ? null : pcModeValue == 1;
     _isLeftHanded = prefs.getBool('is_left_handed') ?? false;
+    _lassoSnapToLines = prefs.getBool('lasso_snap_to_lines') ?? false;
+    _selectionReferenceAllVisible =
+        prefs.getBool('selection_reference_all_visible') ?? false;
     _bucketTolerance = prefs.getDouble('bucket_tolerance') ?? 30.0;
     _bucketExpandPx = prefs.getInt('bucket_expand_px') ?? 0;
     _bucketFillUnderLine = prefs.getBool('bucket_fill_under_line') ?? false;
@@ -738,6 +750,20 @@ class SettingsService extends ChangeNotifier {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setBool('is_left_handed', value);
     notifyListeners();
+  }
+
+  Future<void> setLassoSnapToLines(bool value) async {
+    _lassoSnapToLines = value;
+    notifyListeners();
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool('lasso_snap_to_lines', value);
+  }
+
+  Future<void> setSelectionReferenceAllVisible(bool value) async {
+    _selectionReferenceAllVisible = value;
+    notifyListeners();
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool('selection_reference_all_visible', value);
   }
 
   /// ツールバーの表示順を変更する（ドラッグで並び替え）。
