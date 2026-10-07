@@ -42,6 +42,20 @@ cold/warm startup、route transition、filter/brush apply、drawing、slider/dra
 ## 13. Evidence / Visual closure
 Audit ID、target、precondition、procedure、expected、actual、environment、PC/SP、viewport、language、theme、preset/mode、settings、test/visual result、regression、evidence location、未確認理由を追跡可能にする。Visual evidenceはBEFORE/SETTINGS/AFTER、feature、preset/mode、主要設定を識別可能にし、captureしただけでPASSにしない。最新HEADで最終Visual closureを再生成し、全ページrender＋実画像目視を行う。
 
+## 外部サービス連携を「あと接続するだけ」にする基準
+
+人間操作が必須となる外部サービス連携は、「外部サービスへまだログインしていない」ことと「アプリ/Web側が未完成」であることを明確に分離する。YouTube API、Google AdMob等を含む該当連携について、全面監査では次を実装・検証する。
+
+- production code path、client/SDK/adapter、設定注入、環境変数/secret参照、認証・OAuth、scope、redirect/callback、API/SDK呼出し、成功/error/retry/timeout/rate/quota、権限拒否、offline/再接続、ログ・secret redaction、analytics/privacy/consent連携まで、必要なコード側を完成させる。
+- 外部コンソールでしか作成できないID、secret、OAuth credential、ad unit、API有効化、redirect URI登録、審査/承認、契約同意等は、最後に人間が投入・実行する前提のhuman-action-pendingとして整理してよい。ただし、それを理由にコード上のTODO、placeholder、未接続経路、未検証error stateを残さない。
+- 実credentialが監査環境に置けない場合は、test/sandbox/mock boundary等で本番経路と同一の設定・状態遷移を可能な範囲で実操作し、実credential投入後に追加実装が不要であることを確認する。
+- YouTube APIは、必要なAPI有効化、認証/credential、scope、callback、対象endpoint、quota/error/retry、secret管理等をinventoryし、コード側を接続-readyにする。
+- Google AdMobは、必要なSDK/adapter、app/ad-unit等の設定注入、test/production切替、広告表示、consent/privacy、レイアウト/表示崩れ、失敗時の安全なフォールバック等をinventoryし、コード側を接続-readyにする。
+- 連携に必要なPrivacy Policy、Terms、consent、store disclosure、third-party notices等がある場合は、機能だけでなく法務/IP監査と同時に整合性を確認する。
+- 人間作業として残した項目にはhuman-action-pendingを付け、**作業名 / サービス / App-Web / 実施場所 / 必要なID・secret・設定 / 前提 / 実施手順 / 完了確認 / evidence / 実施できない理由**を記録する。
+
+全面監査の最終状態では、implementation-pending = 0 を必須とし、human-action-pendingは「外部サービス側でしか実行できない操作」に限定する。監査後の人間作業は最終報告に一括して提示し、ユーザーがそのまま実行できる粒度まで具体化する。
+
 ## 14. 完了gate
 Baseline incomplete、Discovery incomplete、Delta incomplete、unregistered Discovery、advisor-pending、required evidence/regression incompleteを0にする。重大な機能・安定性・データ損失・security・legal/IP問題を残さない。見送る改善は理由と残余リスクをEvidenceに残す。
 
