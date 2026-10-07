@@ -245,6 +245,17 @@ void main() {
       current = service.currentFilter!;
       expect(current.toneCurveRedPoints.length, greaterThan(4));
       expect(current.toneCurvePoints.length, greaterThan(4));
+      // A long press on a point (not an end) deletes it, as the hint says.
+      final l10n = AppLocalizations.of(panelContext)!;
+      expect(find.text(l10n.filterToneCurveHint), findsOneWidget);
+      await tester.longPressAt(
+        Offset(
+          redBox.left + redBox.width * .4,
+          redBox.top + redBox.height * .6,
+        ),
+      );
+      await tester.pump();
+      expect(service.currentFilter!.toneCurveRedPoints, const [0, 0, 1, 1]);
 
       final levels = service.filters.firstWhere(
         (f) => f.kind == FilterKind.levels,
@@ -270,6 +281,7 @@ void main() {
       );
       await tester.tap(find.text('R'));
       await tester.pump();
+      expect(find.text(l10n.filterLevelsHint), findsOneWidget);
       expect(tester.takeException(), isNull);
     },
   );

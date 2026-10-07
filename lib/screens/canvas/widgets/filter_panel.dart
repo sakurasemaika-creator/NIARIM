@@ -1697,6 +1697,7 @@ class _FilterPanelState extends State<FilterPanel> {
                 _updatePreview();
               },
             ),
+            _hint(l10n.filterToneCurveHint),
           ],
         );
       case FilterKind.levels:
@@ -1805,6 +1806,7 @@ class _FilterPanelState extends State<FilterPanel> {
               255,
               (v) => updateLevel(4, v),
             ),
+            _hint(l10n.filterLevelsHint),
           ],
         );
       case FilterKind.sharpen:

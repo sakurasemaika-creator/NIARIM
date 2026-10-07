@@ -1712,7 +1712,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get helpDrawingFilterDesc =>
-      'Filters applied directly to the selected layer (as opposed to effect filters, which apply across the whole timeline or a scene, draw filters work per layer). The 27 included filters are Gaussian Blur, Lens Blur, Anime Style, Tone Curve, Levels, Outline, Sharpen, Unsharp Mask, Vignette, Film Grain, Retro Anime, CRT, Threshold, Fisheye Lens, Chromatic Aberration, Lens Distortion, Pixel Art, Texture Filter, Background Blend, Ink Pool, Auto Line Art, Prism, VHS Noise, Invert, Mosaic, Noise, and Sphere Shading. Sphere Shading lays a light color inside an elliptical light and a shadow color outside it, only where something is drawn (the light can also be dragged on the canvas). Outline does not rewrite the original layer — it draws just the outlined result onto a new layer. Lens Distortion applies a localized warp, like looking through a strong eyeglass lens, only to the area painted on the canvas with the panel\'s \"Pen\" and \"Bucket\" (corrected with \"Eraser\"; it starts from the selection or Selection layer if there is one). When the canvas has a selection, drawing filters apply only inside it. Pixel Art also lets you choose a color mode (no limit, specify colors, specify color count, or choose from a palette). Its size can be set with the block size (100 steps, 1 to 100) or with sliders for the dots across and down (1 at the left end, the canvas size at the right); moving one moves the other, keeping the picture’s proportions, and the two ways of setting it stay in step. Either way the dots stay square, with no semi-transparent edge. Auto Line Art lets you edit temporary vector control points before applying the filter. Drag a point to move only that point. Choose \"Add control point\" next to Apply and tap a line to add a point, or choose \"Delete control point\" and tap a point to delete it (with neither chosen, tapping a point asks before deleting it). The edited geometry is used directly for the applied result, and moving, adding or deleting points can be undone and redone one at a time with the filter editor\'s Undo and Redo.';
+      'Filters applied directly to the selected layer (as opposed to effect filters, which apply across the whole timeline or a scene, draw filters work per layer). The 27 included filters are Gaussian Blur, Lens Blur, Anime Style, Tone Curve, Levels, Outline, Sharpen, Unsharp Mask, Vignette, Film Grain, Retro Anime, CRT, Threshold, Fisheye Lens, Chromatic Aberration, Lens Distortion, Pixel Art, Texture Filter, Background Blend, Ink Pool, Auto Line Art, Prism, VHS Noise, Invert, Mosaic, Noise, and Sphere Shading. Sphere Shading lays a light color inside an elliptical light and a shadow color outside it, only where something is drawn (the light can also be dragged on the canvas). Outline does not rewrite the original layer — it draws just the outlined result onto a new layer. Lens Distortion applies a localized warp, like looking through a strong eyeglass lens, only to the area painted on the canvas with the panel\'s \"Pen\" and \"Bucket\" (corrected with \"Eraser\"; it starts from the selection or Selection layer if there is one). When the canvas has a selection, drawing filters apply only inside it. Pixel Art also lets you choose a color mode (no limit, specify colors, specify color count, or choose from a palette). Its size can be set with the block size (100 steps, 1 to 100) or with sliders for the dots across and down (1 at the left end, the canvas size at the right); moving one moves the other, keeping the picture’s proportions, and the two ways of setting it stay in step. Either way the dots stay square, with no semi-transparent edge. Auto Line Art lets you edit temporary vector control points before applying the filter. Drag a point to move only that point. Choose \"Add control point\" next to Apply and tap a line to add a point, or choose \"Delete control point\" and tap a point to delete it (with neither chosen, tapping a point asks before deleting it). The edited geometry is used directly for the applied result, and moving, adding or deleting points can be undone and redone one at a time with the filter editor\'s Undo and Redo. On the Tone Curve, tap an empty spot to add a point, drag a point to move it and long-press it to delete it; the R, G and B curves apply after the RGB curve. Levels can also be set for R, G and B on their own, and Gamma changes the midtones. The Outline\'s \"Reach inside\" widens the edge into the original shape, and the outline\'s new layer is placed right below the original layer. Chromatic Aberration lets you share the shift between X (sideways), Y (up and down) and Z (outward from the centre). The Fisheye\'s centre and radius can also be dragged on the canvas, with the + and the knob on the circle.';
 
   @override
   String get helpLayerKeyframeTitle => 'Layer keyframes (per-part animation)';
@@ -3478,6 +3478,10 @@ class AppLocalizationsEn extends AppLocalizations {
   String get filterToneCurveInvert => 'Invert';
 
   @override
+  String get filterToneCurveHint =>
+      'Tap an empty spot on the curve to add a point, drag a point to move it, and long-press any point except the two ends to delete it. R, G and B are curves for each colour, applied after the RGB curve.';
+
+  @override
   String get filterLevelsInputBlack => 'Input: Black';
 
   @override
@@ -3491,6 +3495,10 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get filterLevelsOutputWhite => 'Output: White';
+
+  @override
+  String get filterLevelsHint =>
+      'R, G and B adjust each colour on its own, after the RGB settings. Gamma changes the midtones (above 1 brightens, below 1 darkens).';
 
   @override
   String get filterApplyButton => 'Apply';
