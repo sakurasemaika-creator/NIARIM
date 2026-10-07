@@ -81,28 +81,27 @@ Uint8List applySphereShading(
         final mr = (sr * sa + (lr * la - sr * sa) * light) / ma;
         final mg = (sg * sa + (lg * la - sg * sa) * light) / ma;
         final mb = (sb * sa + (lb * la - sb * sa) * light) / ma;
-        blendRgb(combinedBlend, br, bg, bb, mr, mg, mb, mixed);
-        final w = ma * m;
-        r = br + (mixed[0] - br) * w;
-        g = bg + (mixed[1] - bg) * w;
-        b = bb + (mixed[2] - bb) * w;
+        blendRgbOver(combinedBlend, br, bg, bb, mr, mg, mb, ma * m, mixed);
+        r = mixed[0];
+        g = mixed[1];
+        b = mixed[2];
       } else {
         final ws = (1 - light) * sa * m;
         r = br;
         g = bg;
         b = bb;
         if (ws > 0) {
-          blendRgb(shadowBlend, r, g, b, sr, sg, sb, first);
-          r += (first[0] - r) * ws;
-          g += (first[1] - g) * ws;
-          b += (first[2] - b) * ws;
+          blendRgbOver(shadowBlend, r, g, b, sr, sg, sb, ws, first);
+          r = first[0];
+          g = first[1];
+          b = first[2];
         }
         final wl = light * la * m;
         if (wl > 0) {
-          blendRgb(lightBlend, r, g, b, lr, lg, lb, mixed);
-          r += (mixed[0] - r) * wl;
-          g += (mixed[1] - g) * wl;
-          b += (mixed[2] - b) * wl;
+          blendRgbOver(lightBlend, r, g, b, lr, lg, lb, wl, mixed);
+          r = mixed[0];
+          g = mixed[1];
+          b = mixed[2];
         }
       }
       out[i] = (r.clamp(0.0, 1.0) * a).round();

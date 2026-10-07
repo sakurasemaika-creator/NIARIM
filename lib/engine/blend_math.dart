@@ -40,6 +40,36 @@ void blendRgb(
   }
 }
 
+/// [blendRgb] composited onto the backdrop at [weight] (the source's
+/// opacity, 0 to 1), as the layer compositor draws it: Addition is the
+/// GPU's Plus, so the source scaled by its weight is added and clipped at
+/// white; every other mode, Linear Dodge included, mixes its blended colour
+/// in by the weight. The two only differ below full opacity: at 50 %, a
+/// mid-grey plus a bright colour comes out much lighter in Addition.
+void blendRgbOver(
+  LayerBlendMode mode,
+  double br,
+  double bg,
+  double bb,
+  double sr,
+  double sg,
+  double sb,
+  double weight,
+  Float64List out,
+) {
+  final w = weight.clamp(0.0, 1.0);
+  if (mode == LayerBlendMode.addition) {
+    out[0] = math.min(1.0, br + sr * w);
+    out[1] = math.min(1.0, bg + sg * w);
+    out[2] = math.min(1.0, bb + sb * w);
+    return;
+  }
+  blendRgb(mode, br, bg, bb, sr, sg, sb, out);
+  out[0] = br + (out[0] - br) * w;
+  out[1] = bg + (out[1] - bg) * w;
+  out[2] = bb + (out[2] - bb) * w;
+}
+
 /// One channel of a separable blend mode (see [blendRgb]). The
 /// non-separable modes (hue, saturation, color, luminosity) are not
 /// per-channel; for them this returns the source.

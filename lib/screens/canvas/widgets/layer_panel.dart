@@ -20,6 +20,7 @@ import '../../../services/autofill_preset_service.dart';
 import '../../../services/project_service.dart';
 import '../../../services/layer_clipboard_service.dart';
 import '../../../services/tone_service.dart';
+import '../../../widgets/blend_mode_preview.dart';
 import '../../../widgets/confirm_delete.dart';
 import '../../../widgets/autofill_preset_selection_sheet.dart';
 import '../../../widgets/dispose_on_unmount.dart';
@@ -2256,12 +2257,14 @@ class _LayerPanelState extends State<LayerPanel> {
           ],
         ),
         content: SizedBox(
-          width: 280,
+          width: 300,
           child: ListView.builder(
             shrinkWrap: true,
             itemCount: modes.length,
             itemBuilder: (ctx, i) => ListTile(
               dense: true,
+              // What the mode does, to choose it by its look.
+              leading: BlendModePreview(modes[i]),
               title: Text(
                 _blendModeName(l10n, modes[i]),
                 style: const TextStyle(fontSize: 13),
@@ -2479,15 +2482,11 @@ class _LayerPanelState extends State<LayerPanel> {
             FilledButton(
               onPressed: () {
                 Navigator.pop(ctx);
-                _executeAutofill(
-                  context,
-                  resolvedLineart,
-                  switch (selected) {
-                    1 => autofill.AutofillMode.repaint,
-                    2 => autofill.AutofillMode.colorUpdate,
-                    _ => autofill.AutofillMode.smartUpdate,
-                  },
-                );
+                _executeAutofill(context, resolvedLineart, switch (selected) {
+                  1 => autofill.AutofillMode.repaint,
+                  2 => autofill.AutofillMode.colorUpdate,
+                  _ => autofill.AutofillMode.smartUpdate,
+                });
               },
               child: Text(l10n.layerPanelExecuteButton),
             ),
