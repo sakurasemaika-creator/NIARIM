@@ -43,8 +43,10 @@
    `test/helpers/color_channels.dart`の`.red8`/`.green8`/`.blue8`/
    `.alpha8`を使う。テスト内のデバッグ出力は`print`ではなく
    `debugPrint`を使う）
-3. `flutter test`（ベースライン：**691 tests**、全成功。うち大半は
-   `test/app_smoke_test.dart`の自律スモークテスト。詳細は後述）
+3. `flutter test`（ベースライン：2026-10-07時点で**成功1693・スキップ5・
+   失敗3**。失敗3件は監査担当の`test/app_web_reference_*`で、通常タスクでは
+   直さない。全件で約25分かかるので、変更に関係するテストを先に流し、
+   最後に全件を流す）
 4. **コード変更後は`dart format lib test tool`をかける**。
    リポジトリ全体を一度フォーマッタに通してあるので（コミット
    `0319d57`）、整形済みの状態が正。手で字下げを合わせようとしないこと。
