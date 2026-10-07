@@ -11,6 +11,8 @@ import 'package:provider/provider.dart';
 
 import '../../../engine/autofill_engine.dart'
     show AutofillCheckMode, applyAutofillCheckColor, autofillCheckColor;
+import '../../../engine/filter_lens_mask.dart';
+import '../../../engine/filter_selection.dart';
 import '../../../engine/bucket_fill_engine.dart';
 import '../../../engine/drawing_engine.dart';
 import '../../../engine/filter_engine.dart' show FilterEngine;
@@ -441,6 +443,18 @@ class CanvasArea extends StatefulWidget {
   final bool lassoSnapToLines;
   final ValueChanged<bool>? onSelectionActiveChanged;
 
+  /// The selection, each time it is made, changed or cleared: one byte per
+  /// canvas pixel (non-zero inside), or null when there is none. Drawing
+  /// filters apply only inside it.
+  final ValueChanged<Uint8List?>? onSelectionMaskChanged;
+
+  /// While the glasses filter is adjusted: the lens area it bends, shown
+  /// tinted on the canvas; a touch paints, erases or fills it with its tool
+  /// (instead of moving the filter's handles), and each finished stroke or
+  /// fill is reported with [onFilterLensMaskEdited] as the new coverage.
+  final FilterLensMask? filterLensMask;
+  final ValueChanged<Uint8List>? onFilterLensMaskEdited;
+
   /// 画面下部のスライダーで指定する、選択範囲の変形量。
   ///
   /// いずれも「いまの状態を0」とした**相対量**で、スライダーを離した時点で
@@ -497,6 +511,9 @@ class CanvasArea extends StatefulWidget {
     this.selectionReferenceAllVisible = false,
     this.lassoSnapToLines = false,
     this.onSelectionActiveChanged,
+    this.onSelectionMaskChanged,
+    this.filterLensMask,
+    this.onFilterLensMaskEdited,
     this.selectionMoveX = 0,
     this.selectionMoveY = 0,
     this.selectionScale = 1,
@@ -728,6 +745,8 @@ class _CanvasAreaState extends State<CanvasArea> {
     // 無駄になっていた。実際に変換値へ依存しているのはbuild()内のTransform
     // 以下だけなので、そこをAnimatedBuilderで囲って必要な範囲だけを
     // 描き直すようにしてある（下のbuild()参照）。
+    widget.filterLensMask?.addListener(_onLensMaskChanged);
+    _onLensMaskChanged();
   }
 
   @override
@@ -798,6 +817,12 @@ class _CanvasAreaState extends State<CanvasArea> {
     if (old.onionSkinSettings != widget.onionSkinSettings ||
         old.currentFrame != widget.currentFrame) {
       _buildOnionImages();
+    }
+    if (old.filterLensMask != widget.filterLensMask) {
+      old.filterLensMask?.removeListener(_onLensMaskChanged);
+      widget.filterLensMask?.addListener(_onLensMaskChanged);
+      _abandonLensMaskEdit();
+      _onLensMaskChanged();
     }
     // フレーム・シーン・現在レイヤーが変わった場合は現在レイヤー画像も
     // 合成し直す（他のレイヤー変更検知は_recomposeSurroundings内で行う）。
@@ -887,6 +912,8 @@ class _CanvasAreaState extends State<CanvasArea> {
 
   @override
   void dispose() {
+    widget.filterLensMask?.removeListener(_onLensMaskChanged);
+    _lensMaskImage?.dispose();
     _outsideChangeRefresh?.cancel();
     if (_hasTileManager) {
       _tileManager.removeLayerContentListener(_onLayerContentChanged);
@@ -930,16 +957,24 @@ class _CanvasAreaState extends State<CanvasArea> {
   /// 出ないバグになっていた）。ビルド中はフレーム後まで遅らせる。
   void _notifySelectionActive(bool active) {
     final callback = widget.onSelectionActiveChanged;
-    if (callback == null) return;
+    final maskCallback = widget.onSelectionMaskChanged;
+    if (callback == null && maskCallback == null) return;
+    // The mask goes with it (the filters apply inside it), as it is when
+    // the notice is delivered.
+    void notify() {
+      callback?.call(active);
+      maskCallback?.call(active ? _selectionMask : null);
+    }
+
     final phase = SchedulerBinding.instance.schedulerPhase;
     if (phase == SchedulerPhase.persistentCallbacks ||
         phase == SchedulerPhase.midFrameMicrotasks) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
-        if (mounted) callback(active);
+        if (mounted) notify();
       });
       return;
     }
-    callback(active);
+    notify();
   }
 
   /// キャンバスの全ピクセルを選択する。UIの「全選択」から呼ばれる。
@@ -1355,6 +1390,7 @@ class _CanvasAreaState extends State<CanvasArea> {
       return;
     }
     if (_beginFilterGizmoDrag(canvasPos, event.pointer)) return;
+    if (_beginLensMaskEdit(canvasPos, event.pointer)) return;
     // フィルターの調整中は、つまみを外したタッチでレイヤーへ描いてしまわない
     // よう何もしない（2本指の拡大・移動はこの手前で処理済みなので、
     // つまみを画面内へ持ってくることはできる）。
@@ -1546,6 +1582,10 @@ class _CanvasAreaState extends State<CanvasArea> {
       _dragFilterGizmo(canvasPos);
       return;
     }
+    if (event.pointer == _lensPointer) {
+      _dragLensMaskEdit(canvasPos);
+      return;
+    }
     if (_inputHandler.shouldRejectPalmTouch(
       type,
       palmRejectionEnabled: context
@@ -1671,6 +1711,10 @@ class _CanvasAreaState extends State<CanvasArea> {
     }
     if (event.pointer == _gizmoPointer) {
       _endFilterGizmoDrag();
+      return;
+    }
+    if (event.pointer == _lensPointer) {
+      _endLensMaskEdit();
       return;
     }
     final type = _inputHandler.classifyInput(event);
@@ -3350,6 +3394,163 @@ class _CanvasAreaState extends State<CanvasArea> {
     widget.onFilterGizmoDragEnd?.call();
   }
 
+  // ─── 眼鏡断層フィルターのレンズの範囲 ─────────────────────────────────
+
+  int? _lensPointer;
+  // The stroke being painted or erased, in canvas pixels (a new list each
+  // time, so the painter sees the change).
+  List<Offset> _lensStroke = const [];
+  Offset? _lensDownAt;
+  // The lens area, tinted, for the canvas; and the coverage it shows.
+  ui.Image? _lensMaskImage;
+  Uint8List? _lensMaskImageOf;
+
+  /// The pen's radius in canvas pixels: the tool's screen size at the
+  /// current zoom, so it feels the same under the finger at any zoom.
+  double get _lensBrushCanvasRadius =>
+      (widget.filterLensMask?.brushRadius ?? 16) / _canvasToScreenScale;
+
+  void _onLensMaskChanged() {
+    final mask = widget.filterLensMask;
+    final coverage = mask?.coverage;
+    if (identical(coverage, _lensMaskImageOf)) {
+      if (mounted) setState(() {});
+      return;
+    }
+    _lensMaskImageOf = coverage;
+    if (coverage == null || mask == null) {
+      _lensMaskImage?.dispose();
+      _lensMaskImage = null;
+      if (mounted) setState(() {});
+      return;
+    }
+    // Pink at 40 %, premultiplied, so it is told apart from the blue of the
+    // selection.
+    final rgba = Uint8List(coverage.length * 4);
+    for (var p = 0; p < coverage.length; p++) {
+      final a = coverage[p] * 102 ~/ 255;
+      if (a == 0) continue;
+      final i = p * 4;
+      rgba[i] = a;
+      rgba[i + 1] = a * 64 ~/ 255;
+      rgba[i + 2] = a * 129 ~/ 255;
+      rgba[i + 3] = a;
+    }
+    ui.decodeImageFromPixels(
+      rgba,
+      mask.width,
+      mask.height,
+      ui.PixelFormat.rgba8888,
+      (image) {
+        if (!mounted || !identical(_lensMaskImageOf, coverage)) {
+          image.dispose();
+          return;
+        }
+        setState(() {
+          _lensMaskImage?.dispose();
+          _lensMaskImage = image;
+        });
+      },
+    );
+  }
+
+  /// Starts painting, erasing or filling the lens area when its tool is on.
+  bool _beginLensMaskEdit(Offset canvasPos, int pointer) {
+    final mask = widget.filterLensMask;
+    if (mask == null || mask.tool == null || _lensPointer != null) {
+      return false;
+    }
+    _lensPointer = pointer;
+    _lensDownAt = canvasPos;
+    if (mask.tool != FilterLensMaskTool.bucket) {
+      setState(() => _lensStroke = [canvasPos]);
+    }
+    return true;
+  }
+
+  void _dragLensMaskEdit(Offset canvasPos) {
+    final mask = widget.filterLensMask;
+    if (mask == null || mask.tool == FilterLensMaskTool.bucket) return;
+    setState(() => _lensStroke = [..._lensStroke, canvasPos]);
+  }
+
+  /// Ends the touch: the stroke goes into the area, or the bucket fills the
+  /// region tapped (as the magic wand would select it).
+  void _endLensMaskEdit() {
+    final mask = widget.filterLensMask;
+    final stroke = _lensStroke;
+    final downAt = _lensDownAt;
+    _lensPointer = null;
+    _lensDownAt = null;
+    if (mask == null || mask.tool == null) {
+      setState(() => _lensStroke = const []);
+      return;
+    }
+    final w = _tileManager.canvasWidth;
+    final h = _tileManager.canvasHeight;
+    if (mask.tool == FilterLensMaskTool.bucket) {
+      if (downAt != null) unawaited(_fillLensMaskAt(downAt));
+      return;
+    }
+    final coverage = mask.coverage != null && mask.coverage!.length == w * h
+        ? Uint8List.fromList(mask.coverage!)
+        : Uint8List(w * h);
+    paintCoverageStroke(
+      coverage,
+      w,
+      h,
+      [for (final p in stroke) (p.dx, p.dy)],
+      radius: _lensBrushCanvasRadius,
+      erase: mask.tool == FilterLensMaskTool.eraser,
+    );
+    widget.onFilterLensMaskEdited?.call(coverage);
+    setState(() => _lensStroke = const []);
+  }
+
+  /// Drops a stroke without changing the area (a second finger turned the
+  /// touch into a zoom, or the touch was cancelled).
+  void _abandonLensMaskEdit() {
+    if (_lensPointer == null && _lensStroke.isEmpty) return;
+    _lensPointer = null;
+    _lensDownAt = null;
+    if (mounted) setState(() => _lensStroke = const []);
+  }
+
+  Future<void> _fillLensMaskAt(Offset canvasPos) async {
+    final w = _tileManager.canvasWidth;
+    final h = _tileManager.canvasHeight;
+    final x = canvasPos.dx.round();
+    final y = canvasPos.dy.round();
+    if (x < 0 || x >= w || y < 0 || y >= h) return;
+    final Uint8List buffer;
+    if (widget.selectionReferenceAllVisible) {
+      buffer = await _flattenVisibleLayers();
+    } else {
+      final image = await _tileManager.compositeLayerToImage(
+        _tileKeyFor(_layerId),
+      );
+      final bytes = await image.toByteData(format: ui.ImageByteFormat.rawRgba);
+      image.dispose();
+      buffer = bytes?.buffer.asUint8List() ?? Uint8List(w * h * 4);
+    }
+    final mask = widget.filterLensMask;
+    if (!mounted || mask == null) return;
+    final region = _bucketEngine.selectionMask(
+      canvasData: buffer,
+      width: w,
+      height: h,
+      startX: x,
+      startY: y,
+    );
+    final coverage = mask.coverage != null && mask.coverage!.length == w * h
+        ? Uint8List.fromList(mask.coverage!)
+        : Uint8List(w * h);
+    for (var i = 0; i < region.length; i++) {
+      if (region[i] != 0) coverage[i] = 255;
+    }
+    widget.onFilterLensMaskEdited?.call(coverage);
+  }
+
   /// ハンドルの当たり判定許容範囲（プロジェクトピクセル単位）。
   /// ハンドル座標・_canvasPositionの戻り値ともプロジェクトピクセル
   /// （export解像度基準）で表されるため、画面上で指28px相当のタップ
@@ -4029,6 +4230,8 @@ class _CanvasAreaState extends State<CanvasArea> {
               // 2本指目が触れた時点で、既存の1本指用の長押しスポイト保留は
               // 変形操作の意図と衝突するため解除する。
               _disarmHoldEyedropper();
+              // A lens-area stroke started by the first finger is a zoom.
+              _abandonLensMaskEdit();
             }
             // 2本指以上でのキャンバス操作モード中は、この指を描画ツールへ
             // 渡さない（複数指での誤描画・二重ストローク防止）。
@@ -4085,6 +4288,7 @@ class _CanvasAreaState extends State<CanvasArea> {
           _disarmHoldEyedropper(e.pointer);
           _toolHandledPointers.remove(e.pointer);
           if (e.pointer == _gizmoPointer) _endFilterGizmoDrag();
+          if (e.pointer == _lensPointer) _abandonLensMaskEdit();
         },
         onPointerSignal: _handlePointerSignal,
         // Flutter標準のInteractiveViewerは回転ジェスチャーに対応していない
@@ -4140,6 +4344,15 @@ class _CanvasAreaState extends State<CanvasArea> {
                         ? null
                         : _selectionOverlayImage,
                     selectionLayerOverlayImage: _selectionLayerOverlayImage,
+                    lensMaskImage: widget.filterLensMask == null
+                        ? null
+                        : _lensMaskImage,
+                    lensStroke: _lensStroke,
+                    lensStrokeScreenRadius:
+                        widget.filterLensMask?.brushRadius ?? 0,
+                    lensStrokeErases:
+                        widget.filterLensMask?.tool ==
+                        FilterLensMaskTool.eraser,
                     lassoPoints: _lassoPoints,
                     subToolStrokePoints: _subToolStrokePoints,
                     activeRuler: widget.activeRuler,
@@ -4327,6 +4540,14 @@ class _CanvasPainter extends CustomPainter {
   final Offset? selectionStart;
   final Offset? selectionEnd;
   final ui.Image? selectionOverlayImage;
+
+  /// The glasses filter's lens area (tinted) and the stroke being painted
+  /// or erased into it, in canvas pixels.
+  final ui.Image? lensMaskImage;
+  final List<Offset> lensStroke;
+  // The pen's radius on the screen (it keeps that size at any zoom).
+  final double lensStrokeScreenRadius;
+  final bool lensStrokeErases;
   // 「選択レイヤー」（LayerType.selection、眼鏡断層フィルター等のマスク
   // 専用レイヤー）の内容。通常の合成（LayerCompositor.pixelLayerTypes）
   // からは除外され最終成果物には写り込まないが、除外したままだと塗って
@@ -4395,6 +4616,10 @@ class _CanvasPainter extends CustomPainter {
     this.selectionEnd,
     this.selectionOverlayImage,
     this.selectionLayerOverlayImage,
+    this.lensMaskImage,
+    this.lensStroke = const [],
+    this.lensStrokeScreenRadius = 0,
+    this.lensStrokeErases = false,
     this.activeRuler,
     this.shapeKind = ShapeKind.off,
     this.shapeStart,
@@ -4568,6 +4793,8 @@ class _CanvasPainter extends CustomPainter {
     if (selectionOverlayImage != null) {
       _drawFrameImage(canvas, drawingRect, selectionOverlayImage, Paint());
     }
+
+    _paintLensMask(canvas, drawingRect);
 
     // 矩形選択プレビュー
     if (selectionStart != null && selectionEnd != null) {
@@ -5057,6 +5284,43 @@ class _CanvasPainter extends CustomPainter {
   /// belowImage/aboveImage（フレーム全体サイズの合成済み画像）を描画領域へ
   /// スケールして描画する。不透明度・ブレンドモードは合成時に既に各レイヤーへ
   /// 適用済みのため、ここではスケーリングのみ行う。
+  /// The glasses filter's lens area, with the stroke in progress painted
+  /// on it (or, for the eraser, cut out of it).
+  void _paintLensMask(Canvas canvas, Rect drawingRect) {
+    if (lensMaskImage == null && lensStroke.isEmpty) return;
+    final canvasPx = canvasPixelSizeOf(project);
+    final sx = drawingRect.width / canvasPx.width;
+    final sy = drawingRect.height / canvasPx.height;
+    canvas.saveLayer(drawingRect, Paint());
+    _drawFrameImage(canvas, drawingRect, lensMaskImage, Paint());
+    if (lensStroke.isNotEmpty) {
+      Offset at(Offset p) => drawingRect.topLeft + Offset(p.dx * sx, p.dy * sy);
+      final paint = Paint()
+        ..color = const Color(0x66FF4081)
+        ..blendMode = lensStrokeErases ? BlendMode.clear : BlendMode.src
+        ..style = PaintingStyle.stroke
+        ..strokeCap = StrokeCap.round
+        ..strokeJoin = StrokeJoin.round
+        // The canvas is drawn zoomed by [transform]; the pen is not.
+        ..strokeWidth =
+            lensStrokeScreenRadius *
+            2 /
+            math.max(transform.getMaxScaleOnAxis(), 1e-6);
+      if (lensStroke.length == 1) {
+        canvas.drawPoints(ui.PointMode.points, [at(lensStroke.first)], paint);
+      } else {
+        final path = Path()
+          ..moveTo(at(lensStroke.first).dx, at(lensStroke.first).dy);
+        for (final p in lensStroke.skip(1)) {
+          final q = at(p);
+          path.lineTo(q.dx, q.dy);
+        }
+        canvas.drawPath(path, paint);
+      }
+    }
+    canvas.restore();
+  }
+
   void _drawFrameImage(
     Canvas canvas,
     Rect drawingRect,
@@ -5174,6 +5438,10 @@ class _CanvasPainter extends CustomPainter {
       old.selectionEnd != selectionEnd ||
       old.selectionOverlayImage != selectionOverlayImage ||
       old.selectionLayerOverlayImage != selectionLayerOverlayImage ||
+      old.lensMaskImage != lensMaskImage ||
+      old.lensStroke != lensStroke ||
+      old.lensStrokeScreenRadius != lensStrokeScreenRadius ||
+      old.lensStrokeErases != lensStrokeErases ||
       old.lassoPoints != lassoPoints ||
       old.subToolStrokePoints != subToolStrokePoints ||
       old.activeRuler != activeRuler ||

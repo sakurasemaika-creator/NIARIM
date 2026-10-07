@@ -1740,7 +1740,7 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get helpDrawingFilterDesc =>
-      'Filtros aplicados directamente a la capa seleccionada (a diferencia de los filtros de efecto, que se aplican a toda la línea de tiempo o a una escena, los filtros de dibujo actúan por capa). Los 27 filtros incluidos son Desenfoque gaussiano, Desenfoque de lente, Estilo anime, Curva de tonos, Niveles, Contorno, Nitidez, Máscara de enfoque, Viñeta, Grano de película, Anime retro, CRT, Umbral, Ojo de pez, Aberración cromática, Distorsión óptica, Pixel art, Filtro de textura, Integración con el fondo, Acumulación de tinta, Dibujo lineal automático, Prisma, Ruido VHS, Invertir colores, Mosaico, Ruido y Sombreado esférico. Sombreado esférico aplica un color de luz dentro de una luz elíptica y un color de sombra fuera de ella, solo donde hay dibujo (la luz también se puede arrastrar en el lienzo). Contorno no reescribe la capa original: dibuja solo el resultado en una capa nueva. Distorsión óptica aplica una deformación localizada, como a través de una lente de gafas de gran graduación, únicamente al área pintada en la capa de selección. Pixel art también permite elegir un modo de color (sin límite, colores específicos, número de colores o paleta). Su tamaño puede fijarse con el tamaño de bloque (100 pasos, de 1 a 100) o con controles deslizantes de puntos a lo ancho y a lo alto (1 en el extremo izquierdo, el tamaño del lienzo en el derecho); al mover uno, el otro cambia conservando las proporciones del dibujo, y ambas formas de ajuste van a la par. En ambos casos los puntos siguen siendo cuadrados y sin bordes semitransparentes. En Dibujo lineal automático puedes editar los puntos de control vectoriales temporales antes de aplicar el filtro. Arrastra un punto para mover solo ese punto. Elige «Añadir punto de control» junto a Aplicar y toca una línea para añadir un punto, o elige «Eliminar punto de control» y toca un punto para eliminarlo (sin ninguno elegido, tocar un punto pide confirmación antes de eliminarlo). La geometría editada se usa directamente en el resultado aplicado, y mover, añadir o eliminar puntos se puede deshacer y rehacer de uno en uno con Deshacer y Rehacer del editor de filtros.';
+      'Filtros aplicados directamente a la capa seleccionada (a diferencia de los filtros de efecto, que se aplican a toda la línea de tiempo o a una escena, los filtros de dibujo actúan por capa). Los 27 filtros incluidos son Desenfoque gaussiano, Desenfoque de lente, Estilo anime, Curva de tonos, Niveles, Contorno, Nitidez, Máscara de enfoque, Viñeta, Grano de película, Anime retro, CRT, Umbral, Ojo de pez, Aberración cromática, Distorsión óptica, Pixel art, Filtro de textura, Integración con el fondo, Acumulación de tinta, Dibujo lineal automático, Prisma, Ruido VHS, Invertir colores, Mosaico, Ruido y Sombreado esférico. Sombreado esférico aplica un color de luz dentro de una luz elíptica y un color de sombra fuera de ella, solo donde hay dibujo (la luz también se puede arrastrar en el lienzo). Contorno no reescribe la capa original: dibuja solo el resultado en una capa nueva. Distorsión óptica aplica una deformación localizada, como a través de una lente de gafas potente, únicamente al área pintada en el lienzo con el «Pincel» y el «Cubo de pintura» del panel (se corrige con la «Goma de borrar»; parte de la selección o de la capa de selección si la hay). Cuando el lienzo tiene una selección, los filtros de dibujo se aplican solo dentro de ella. Pixel art también permite elegir un modo de color (sin límite, colores específicos, número de colores o paleta). Su tamaño puede fijarse con el tamaño de bloque (100 pasos, de 1 a 100) o con controles deslizantes de puntos a lo ancho y a lo alto (1 en el extremo izquierdo, el tamaño del lienzo en el derecho); al mover uno, el otro cambia conservando las proporciones del dibujo, y ambas formas de ajuste van a la par. En ambos casos los puntos siguen siendo cuadrados y sin bordes semitransparentes. En Dibujo lineal automático puedes editar los puntos de control vectoriales temporales antes de aplicar el filtro. Arrastra un punto para mover solo ese punto. Elige «Añadir punto de control» junto a Aplicar y toca una línea para añadir un punto, o elige «Eliminar punto de control» y toca un punto para eliminarlo (sin ninguno elegido, tocar un punto pide confirmación antes de eliminarlo). La geometría editada se usa directamente en el resultado aplicado, y mover, añadir o eliminar puntos se puede deshacer y rehacer de uno en uno con Deshacer y Rehacer del editor de filtros.';
 
   @override
   String get helpLayerKeyframeTitle =>
@@ -5733,7 +5733,28 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get filterLensDistortionNoMaskHint =>
-      'Solo se aplica a las áreas pintadas en una capa de selección. Primero añada una «Capa de selección» en la lista de capas y pinte el área que desea convertir en lente (por ejemplo, los cristales de unas gafas).';
+      'Pinte en el lienzo, con «Pincel» o «Cubo de pintura», el área que quiere convertir en lente (por ejemplo, los cristales de unas gafas). Si hay una selección o una capa de selección, se parte de esa área.';
+
+  @override
+  String get filterLensMaskTitle => 'Área de la lente';
+
+  @override
+  String get filterLensMaskPen => 'Pincel';
+
+  @override
+  String get filterLensMaskEraser => 'Goma de borrar';
+
+  @override
+  String get filterLensMaskBucket => 'Cubo de pintura';
+
+  @override
+  String get filterLensMaskBrushSize => 'Tamaño del pincel';
+
+  @override
+  String get filterLensMaskClear => 'Borrar área';
+
+  @override
+  String get filterSelectionOnlyHint => 'Se aplica solo dentro de la selección';
 
   @override
   String get tipsStockingDenierTitle =>
@@ -5753,11 +5774,11 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get tipsLensDistortionTitle =>
-      'Recrea la distorsión de lentes graduados con una capa de selección y el filtro de distorsión de lente';
+      'Recrea la distorsión vista a través de unas gafas con el filtro de distorsión de lente';
 
   @override
   String get tipsLensDistortionDesc =>
-      'Añada una «Capa de selección» a la lista de capas y pinte el área de las lentes de unas gafas con cualquier herramienta de dibujo normal; el filtro de distorsión de lente aplicará entonces su deformación local solo a esa área pintada. El control de intensidad reduce el área en dirección cóncava (miopía) con valores negativos y la amplía en dirección convexa (hipermetropía) con valores positivos, y también puede ajustar la posición del centro. Puede pintar ambas lentes a la vez y aplicar el efecto a las dos juntas. La capa de selección en sí nunca aparece en las exportaciones ni en la obra final. También resulta útil para recrear el aspecto de un paisaje visto a través del objetivo de una cámara: pinte una zona amplia, como el fondo, con una capa de selección y aplique una intensidad suave.';
+      'Elija el filtro de distorsión de lente y pinte en el lienzo el área de la lente (por ejemplo, los cristales de unas gafas) con el «Pincel» del panel, o toque con el «Cubo de pintura» una zona rodeada de líneas; la deformación local del filtro se aplicará solo a esa área. Lo que se salga se borra con la «Goma de borrar», y cada trazo se puede deshacer y rehacer de uno en uno. Si hay una selección o una capa de selección, el área parte de ella. El control de intensidad reduce el área como una lente cóncava con valores negativos y la amplía como una lente convexa con valores positivos, y también puede ajustar la posición del centro. Puede pintar ambas lentes y aplicar el efecto a las dos juntas. El área pintada nunca aparece en las exportaciones ni en la obra final. También resulta útil para recrear el aspecto de un paisaje visto a través del objetivo de una cámara: pinte una zona amplia, como el fondo, y aplique una intensidad suave.';
 
   @override
   String get tipsSphereShadingTitle =>
@@ -5765,7 +5786,7 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get tipsSphereShadingDesc =>
-      'El filtro Sombreado esférico aplica el color de luz dentro de una luz elíptica y el color de sombra fuera de ella, solo donde hay dibujo. Mueve y redimensiona la luz con los deslizadores o arrastrando en el lienzo el + (posición) y los tiradores redondos (tamaño), y suaviza el borde con Desenfoque del borde para lograr un sombreado redondeado como el de una esfera. Cada color tiene su propio modo de fusión (por ejemplo, Multiplicar para la sombra y Trama para la luz); con «Ambas en una fusión», un degradado del color de sombra al de luz se aplica con un solo modo de fusión, como Luz fuerte. Un color puede ser transparente, y entonces ese lado queda igual. Si la capa de selección está pintada, el sombreado se aplica solo allí.';
+      'El filtro Sombreado esférico aplica el color de luz dentro de una luz elíptica y el color de sombra fuera de ella, solo donde hay dibujo. Mueve y redimensiona la luz con los deslizadores o arrastrando en el lienzo el + (posición) y los tiradores redondos (tamaño), y suaviza el borde con Desenfoque del borde para lograr un sombreado redondeado como el de una esfera. Cada color tiene su propio modo de fusión (por ejemplo, Multiplicar para la sombra y Trama para la luz); con «Ambas en una fusión», un degradado del color de sombra al de luz se aplica con un solo modo de fusión, como Luz fuerte. Un color puede ser transparente, y entonces ese lado queda igual. Si hay una selección o una capa de selección pintada, el sombreado se aplica solo allí.';
 
   @override
   String get tipsLineArtExtractionTitle =>

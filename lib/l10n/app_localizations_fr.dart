@@ -1734,7 +1734,7 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get helpDrawingFilterDesc =>
-      'Filtres appliqués directement au calque sélectionné (contrairement aux filtres d’effet, qui s’appliquent à toute la timeline ou à une scène, les filtres de dessin agissent par calque). Les 27 filtres inclus sont Flou gaussien, Flou d’objectif, Style anime, Courbe de tons, Niveaux, Contour, Netteté, Masque flou, Vignettage, Grain de pellicule, Anime rétro, Tube cathodique, Seuil, Objectif fisheye, Aberration chromatique, Distorsion optique, Pixel art, Filtre de texture, Intégration à l’arrière-plan, Accumulation d’encre, Trait automatique, Prisme, Bruit VHS, Inversion des couleurs, Mosaïque, Bruit et Ombrage sphérique. L’Ombrage sphérique applique une couleur de lumière à l’intérieur d’une lumière elliptique et une couleur d’ombre à l’extérieur, uniquement sur le dessin (la lumière peut aussi être déplacée sur le canevas). Contour ne réécrit pas le calque d’origine : il dessine seulement le résultat sur un nouveau calque. Distorsion optique applique une déformation localisée, comme à travers un verre de lunettes très correcteur, uniquement sur la zone peinte du calque de sélection. Pixel art permet aussi de choisir un mode de couleur (sans limite, couleurs définies, nombre de couleurs ou palette). Sa taille se règle par la taille des blocs (100 crans, de 1 à 100) ou par des curseurs de points en largeur et en hauteur (1 tout à gauche, la taille du canevas tout à droite) ; déplacer l’un déplace l’autre en gardant les proportions du dessin, et les deux réglages restent liés. Dans les deux cas, les points restent carrés, sans bord semi-transparent. Le Trait automatique permet de modifier les points de contrôle vectoriels temporaires avant d’appliquer le filtre. Faites glisser un point pour déplacer uniquement ce point. Choisissez « Ajouter un point de contrôle » à côté d’Appliquer et touchez une ligne pour ajouter un point, ou choisissez « Supprimer un point de contrôle » et touchez un point pour le supprimer (sans aucun des deux choisi, toucher un point demande confirmation avant de le supprimer). La géométrie modifiée est utilisée directement dans le résultat appliqué, et le déplacement, l’ajout ou la suppression de points peuvent être annulés et rétablis un par un avec Annuler et Rétablir de l’éditeur de filtres.';
+      'Filtres appliqués directement au calque sélectionné (contrairement aux filtres d’effet, qui s’appliquent à toute la timeline ou à une scène, les filtres de dessin agissent par calque). Les 27 filtres inclus sont Flou gaussien, Flou d’objectif, Style anime, Courbe de tons, Niveaux, Contour, Netteté, Masque flou, Vignettage, Grain de pellicule, Anime rétro, Tube cathodique, Seuil, Objectif fisheye, Aberration chromatique, Distorsion optique, Pixel art, Filtre de texture, Intégration à l’arrière-plan, Accumulation d’encre, Trait automatique, Prisme, Bruit VHS, Inversion des couleurs, Mosaïque, Bruit et Ombrage sphérique. L’Ombrage sphérique applique une couleur de lumière à l’intérieur d’une lumière elliptique et une couleur d’ombre à l’extérieur, uniquement sur le dessin (la lumière peut aussi être déplacée sur le canevas). Contour ne réécrit pas le calque d’origine : il dessine seulement le résultat sur un nouveau calque. Distorsion optique applique une déformation localisée, comme à travers un verre de lunettes puissant, uniquement sur la zone peinte sur le canevas avec le « Pinceau » et le « Pot de peinture » du panneau (corrigée avec la « Gomme » ; elle part de la sélection ou du calque de sélection s’il y en a un). Lorsque le canevas comporte une sélection, les filtres de dessin ne s’appliquent qu’à l’intérieur. Pixel art permet aussi de choisir un mode de couleur (sans limite, couleurs définies, nombre de couleurs ou palette). Sa taille se règle par la taille des blocs (100 crans, de 1 à 100) ou par des curseurs de points en largeur et en hauteur (1 tout à gauche, la taille du canevas tout à droite) ; déplacer l’un déplace l’autre en gardant les proportions du dessin, et les deux réglages restent liés. Dans les deux cas, les points restent carrés, sans bord semi-transparent. Le Trait automatique permet de modifier les points de contrôle vectoriels temporaires avant d’appliquer le filtre. Faites glisser un point pour déplacer uniquement ce point. Choisissez « Ajouter un point de contrôle » à côté d’Appliquer et touchez une ligne pour ajouter un point, ou choisissez « Supprimer un point de contrôle » et touchez un point pour le supprimer (sans aucun des deux choisi, toucher un point demande confirmation avant de le supprimer). La géométrie modifiée est utilisée directement dans le résultat appliqué, et le déplacement, l’ajout ou la suppression de points peuvent être annulés et rétablis un par un avec Annuler et Rétablir de l’éditeur de filtres.';
 
   @override
   String get helpLayerKeyframeTitle =>
@@ -5742,7 +5742,29 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get filterLensDistortionNoMaskHint =>
-      'S\'applique uniquement aux zones peintes sur un calque de sélection. Ajoutez d\'abord un « Calque de sélection » dans la liste des calques, puis peignez la zone que vous souhaitez transformer en lentille (par exemple les verres de lunettes).';
+      'Peignez sur le canevas, avec « Pinceau » ou « Pot de peinture », la zone à transformer en lentille (par exemple les verres de lunettes). S\'il existe une sélection ou un calque de sélection, la zone part de celle-ci.';
+
+  @override
+  String get filterLensMaskTitle => 'Zone de la lentille';
+
+  @override
+  String get filterLensMaskPen => 'Pinceau';
+
+  @override
+  String get filterLensMaskEraser => 'Gomme';
+
+  @override
+  String get filterLensMaskBucket => 'Pot de peinture';
+
+  @override
+  String get filterLensMaskBrushSize => 'Taille du pinceau';
+
+  @override
+  String get filterLensMaskClear => 'Effacer la zone';
+
+  @override
+  String get filterSelectionOnlyHint =>
+      'S’applique uniquement à l’intérieur de la sélection';
 
   @override
   String get tipsStockingDenierTitle =>
@@ -5762,11 +5784,11 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get tipsLensDistortionTitle =>
-      'Recréez la distorsion des verres correcteurs avec un calque de sélection et le filtre de distorsion de lentille';
+      'Recréez la distorsion vue à travers des lunettes avec le filtre de distorsion de lentille';
 
   @override
   String get tipsLensDistortionDesc =>
-      'Ajoutez un « Calque de sélection » à la liste des calques et peignez la zone des verres de lunettes avec n\'importe quel outil de dessin habituel : la déformation locale du filtre de distorsion de lentille s\'applique alors uniquement à cette zone peinte. Le curseur d’intensité rétrécit la zone dans un sens concave (myopie) pour les valeurs négatives et l\'agrandit dans un sens convexe (hypermétropie) pour les valeurs positives ; vous pouvez aussi ajuster finement la position du centre. Vous pouvez peindre les deux verres à la fois et appliquer l\'effet aux deux en même temps. Le calque de sélection lui-même n\'apparaît jamais dans les exports ni dans l\'œuvre finale. Il est aussi pratique pour recréer l\'aspect d\'un paysage vu à travers l\'objectif d\'un appareil photo : peignez une large zone, comme l\'arrière-plan, avec un calque de sélection et appliquez une intensité légère.';
+      'Choisissez le filtre de distorsion de lentille et peignez la zone de la lentille (par exemple les verres de lunettes) sur le canevas avec le « Pinceau » du panneau, ou touchez une zone entourée de traits avec le « Pot de peinture » : la déformation locale du filtre s\'applique alors uniquement à cette zone. Ce qui déborde s\'efface avec la « Gomme », et chaque tracé peut être annulé et rétabli un par un. S\'il existe une sélection ou un calque de sélection, la zone part de celle-ci. Le curseur d’intensité rétrécit la zone comme une lentille concave pour les valeurs négatives et l\'agrandit comme une lentille convexe pour les valeurs positives ; vous pouvez aussi ajuster finement la position du centre. Vous pouvez peindre les deux verres et appliquer l\'effet aux deux en même temps. La zone peinte n\'apparaît jamais dans les exports ni dans l\'œuvre finale. Il est aussi pratique pour recréer l\'aspect d\'un paysage vu à travers l\'objectif d\'un appareil photo : peignez une large zone, comme l\'arrière-plan, et appliquez une intensité légère.';
 
   @override
   String get tipsSphereShadingTitle =>
@@ -5774,7 +5796,7 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get tipsSphereShadingDesc =>
-      'Le filtre Ombrage sphérique applique la couleur de lumière à l’intérieur d’une lumière elliptique et la couleur d’ombre à l’extérieur, uniquement sur le dessin. Déplacez et redimensionnez la lumière avec les curseurs ou en faisant glisser sur le canevas le + (position) et les poignées rondes (taille), puis adoucissez le bord avec Flou du bord pour un ombrage arrondi comme celui d’une sphère. Chaque couleur a son propre mode de fusion (par exemple Produit pour l’ombre et Écran pour la lumière) ; avec « Les deux en une fusion », un dégradé de la couleur d’ombre à la couleur de lumière s’applique avec un seul mode de fusion, comme Lumière crue. Une couleur peut être transparente : ce côté reste alors inchangé. Si le calque de sélection est peint, l’ombrage ne s’applique qu’à cet endroit.';
+      'Le filtre Ombrage sphérique applique la couleur de lumière à l’intérieur d’une lumière elliptique et la couleur d’ombre à l’extérieur, uniquement sur le dessin. Déplacez et redimensionnez la lumière avec les curseurs ou en faisant glisser sur le canevas le + (position) et les poignées rondes (taille), puis adoucissez le bord avec Flou du bord pour un ombrage arrondi comme celui d’une sphère. Chaque couleur a son propre mode de fusion (par exemple Produit pour l’ombre et Écran pour la lumière) ; avec « Les deux en une fusion », un dégradé de la couleur d’ombre à la couleur de lumière s’applique avec un seul mode de fusion, comme Lumière crue. Une couleur peut être transparente : ce côté reste alors inchangé. S’il y a une sélection ou un calque de sélection peint, l’ombrage ne s’applique qu’à cet endroit.';
 
   @override
   String get tipsLineArtExtractionTitle =>

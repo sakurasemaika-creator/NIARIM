@@ -1712,7 +1712,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get helpDrawingFilterDesc =>
-      'Filters applied directly to the selected layer (as opposed to effect filters, which apply across the whole timeline or a scene, draw filters work per layer). The 27 included filters are Gaussian Blur, Lens Blur, Anime Style, Tone Curve, Levels, Outline, Sharpen, Unsharp Mask, Vignette, Film Grain, Retro Anime, CRT, Threshold, Fisheye Lens, Chromatic Aberration, Lens Distortion, Pixel Art, Texture Filter, Background Blend, Ink Pool, Auto Line Art, Prism, VHS Noise, Invert, Mosaic, Noise, and Sphere Shading. Sphere Shading lays a light color inside an elliptical light and a shadow color outside it, only where something is drawn (the light can also be dragged on the canvas). Outline does not rewrite the original layer — it draws just the outlined result onto a new layer. Lens Distortion applies a localized warp, like looking through a strong eyeglass lens, only to the area painted on the selection layer. Pixel Art also lets you choose a color mode (no limit, specify colors, specify color count, or choose from a palette). Its size can be set with the block size (100 steps, 1 to 100) or with sliders for the dots across and down (1 at the left end, the canvas size at the right); moving one moves the other, keeping the picture’s proportions, and the two ways of setting it stay in step. Either way the dots stay square, with no semi-transparent edge. Auto Line Art lets you edit temporary vector control points before applying the filter. Drag a point to move only that point. Choose \"Add control point\" next to Apply and tap a line to add a point, or choose \"Delete control point\" and tap a point to delete it (with neither chosen, tapping a point asks before deleting it). The edited geometry is used directly for the applied result, and moving, adding or deleting points can be undone and redone one at a time with the filter editor\'s Undo and Redo.';
+      'Filters applied directly to the selected layer (as opposed to effect filters, which apply across the whole timeline or a scene, draw filters work per layer). The 27 included filters are Gaussian Blur, Lens Blur, Anime Style, Tone Curve, Levels, Outline, Sharpen, Unsharp Mask, Vignette, Film Grain, Retro Anime, CRT, Threshold, Fisheye Lens, Chromatic Aberration, Lens Distortion, Pixel Art, Texture Filter, Background Blend, Ink Pool, Auto Line Art, Prism, VHS Noise, Invert, Mosaic, Noise, and Sphere Shading. Sphere Shading lays a light color inside an elliptical light and a shadow color outside it, only where something is drawn (the light can also be dragged on the canvas). Outline does not rewrite the original layer — it draws just the outlined result onto a new layer. Lens Distortion applies a localized warp, like looking through a strong eyeglass lens, only to the area painted on the canvas with the panel\'s \"Pen\" and \"Bucket\" (corrected with \"Eraser\"; it starts from the selection or Selection layer if there is one). When the canvas has a selection, drawing filters apply only inside it. Pixel Art also lets you choose a color mode (no limit, specify colors, specify color count, or choose from a palette). Its size can be set with the block size (100 steps, 1 to 100) or with sliders for the dots across and down (1 at the left end, the canvas size at the right); moving one moves the other, keeping the picture’s proportions, and the two ways of setting it stay in step. Either way the dots stay square, with no semi-transparent edge. Auto Line Art lets you edit temporary vector control points before applying the filter. Drag a point to move only that point. Choose \"Add control point\" next to Apply and tap a line to add a point, or choose \"Delete control point\" and tap a point to delete it (with neither chosen, tapping a point asks before deleting it). The edited geometry is used directly for the applied result, and moving, adding or deleting points can be undone and redone one at a time with the filter editor\'s Undo and Redo.';
 
   @override
   String get helpLayerKeyframeTitle => 'Layer keyframes (per-part animation)';
@@ -5642,7 +5642,28 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get filterLensDistortionNoMaskHint =>
-      'Only applies to areas painted on a Selection layer. First add a \"Selection layer\" in the layer list and paint the area you want to turn into a lens (e.g. the lenses of a pair of glasses).';
+      'Paint the area to turn into a lens (such as the lenses of a pair of glasses) on the canvas with \"Pen\" or \"Bucket\". If there is a selection or a Selection layer, it starts from that area.';
+
+  @override
+  String get filterLensMaskTitle => 'Lens area';
+
+  @override
+  String get filterLensMaskPen => 'Pen';
+
+  @override
+  String get filterLensMaskEraser => 'Eraser';
+
+  @override
+  String get filterLensMaskBucket => 'Bucket';
+
+  @override
+  String get filterLensMaskBrushSize => 'Pen size';
+
+  @override
+  String get filterLensMaskClear => 'Clear area';
+
+  @override
+  String get filterSelectionOnlyHint => 'Applies only inside the selection';
 
   @override
   String get tipsStockingDenierTitle =>
@@ -5662,11 +5683,11 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get tipsLensDistortionTitle =>
-      'Recreate the distortion of prescription lenses with a Selection layer + Lens Distortion filter';
+      'Recreate the distortion seen through glasses with the Lens Distortion filter';
 
   @override
   String get tipsLensDistortionDesc =>
-      'Add a \"Selection layer\" to the layer list and paint the lens area of a pair of glasses with any normal drawing tool — the Lens Distortion filter\'s local warp then applies only to that painted area. The lens strength slider shrinks the area in a concave (myopia) direction for negative values and magnifies it in a convex (hyperopia) direction for positive values, and you can also fine-tune the center position. You can paint both lenses at once and apply the effect to both together. The Selection layer itself never appears in exports or the final artwork. It\'s also handy for reproducing the look of scenery seen through a camera lens — try painting a wide area, such as the background, with a Selection layer and using a mild strength.';
+      'Choose the Lens Distortion filter and paint the lens area (such as the lenses of a pair of glasses) on the canvas with the panel\'s \"Pen\", or tap an area enclosed by lines with \"Bucket\" — the filter\'s local warp then applies only to that area. Remove overflow with \"Eraser\"; each stroke can be undone and redone one at a time. If there is a selection or a Selection layer, the area starts from it. The lens strength slider shrinks the area like a concave lens for negative values and magnifies it like a convex lens for positive values, and you can also fine-tune the center position. You can paint both lenses and apply the effect to both together. The painted area never appears in exports or the final artwork. It\'s also handy for reproducing the look of scenery seen through a camera lens — try painting a wide area, such as the background, and using a mild strength.';
 
   @override
   String get tipsSphereShadingTitle =>
@@ -5674,7 +5695,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get tipsSphereShadingDesc =>
-      'The Sphere Shading filter lays the light color inside an elliptical light and the shadow color outside it, only where something is drawn. Move and resize the light with the sliders or by dragging the + (position) and the round handles (size) on the canvas, and soften the edge with Edge blur for a rounded, sphere-like shade. Each color has its own blend mode (for example Multiply for the shadow and Screen for the light); with \"Both in one blend\" a gradient from the shadow color to the light color goes on in a single blend mode such as Hard Light. A color can be transparent, which leaves that side as it is. If the selection layer is painted, the shading goes only there.';
+      'The Sphere Shading filter lays the light color inside an elliptical light and the shadow color outside it, only where something is drawn. Move and resize the light with the sliders or by dragging the + (position) and the round handles (size) on the canvas, and soften the edge with Edge blur for a rounded, sphere-like shade. Each color has its own blend mode (for example Multiply for the shadow and Screen for the light); with \"Both in one blend\" a gradient from the shadow color to the light color goes on in a single blend mode such as Hard Light. A color can be transparent, which leaves that side as it is. If there is a selection or a painted selection layer, the shading goes only there.';
 
   @override
   String get tipsLineArtExtractionTitle =>

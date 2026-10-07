@@ -3194,7 +3194,7 @@ abstract class AppLocalizations {
   /// No description provided for @helpDrawingFilterDesc.
   ///
   /// In ja, this message translates to:
-  /// **'選択中のレイヤーに直接適用するフィルターです（演出フィルターがタイムライン全体・シーン単位に適用されるのに対し、描画フィルターはレイヤー単位）。ガウスぼかし・レンズぼかし・アニメ風加工・トーンカーブ・レベル補正・縁取り・シャープ・アンシャープマスク・周辺減光・フィルムグレイン・レトロアニメ・ブラウン管・二値化・魚眼レンズ・色収差・眼鏡断層・ドット絵・質感変更フィルター・背景馴染ませ・墨溜まり・自動線画・プリズム・VHSノイズ・色反転・モザイク・ノイズ・球体陰影の27種類が用意されています。球体陰影は、楕円の光の内側を光色、外側を影色で、描いてあるところにだけ重ねます（光の位置・大きさはキャンバス上でもドラッグできます）。縁取りは元のレイヤーを書き換えず、縁どった内容だけを新規レイヤーへ描画します。眼鏡断層フィルターは、選択レイヤーで塗った範囲だけに、強い眼鏡レンズのような局所的な歪みをかけられます。ドット絵は配色方式（色を指定しない・色を指定する・色数を指定する・パレットから選ぶ）も選べます。大きさは「ブロックサイズを指定」（1〜100の100段階）と「ドット数を指定」（横・縦のドット数のスライダー。左端で1、右端でキャンバスの画素数）を切り替えられ、縦横比を保ったまま横と縦が一緒に変わります。どちらの指定も連動します。どちらも正方形のドットのまま半透明の縁を作りません。 自動線画では適用前の一時Vector制御点を直接編集できます。点をドラッグするとその点だけを移動します。「適用」の右の「制御点追加」を選んで線をタップすると制御点を追加、「制御点削除」を選んで点をタップすると削除できます（どちらも選んでいないときに点をタップすると、確認してから削除します）。編集した形状がそのまま適用結果になり、制御点の移動・追加・削除もフィルター編集の元に戻す・やり直すで1つずつ戻せます。'**
+  /// **'選択中のレイヤーに直接適用するフィルターです（演出フィルターがタイムライン全体・シーン単位に適用されるのに対し、描画フィルターはレイヤー単位）。ガウスぼかし・レンズぼかし・アニメ風加工・トーンカーブ・レベル補正・縁取り・シャープ・アンシャープマスク・周辺減光・フィルムグレイン・レトロアニメ・ブラウン管・二値化・魚眼レンズ・色収差・眼鏡断層・ドット絵・質感変更フィルター・背景馴染ませ・墨溜まり・自動線画・プリズム・VHSノイズ・色反転・モザイク・ノイズ・球体陰影の27種類が用意されています。球体陰影は、楕円の光の内側を光色、外側を影色で、描いてあるところにだけ重ねます（光の位置・大きさはキャンバス上でもドラッグできます）。縁取りは元のレイヤーを書き換えず、縁どった内容だけを新規レイヤーへ描画します。眼鏡断層フィルターは、パネルの「ペン」「バケツ」でキャンバスに塗った範囲（「消しゴム」で修正）だけに、強い眼鏡レンズのような局所的な歪みをかけられます（選択範囲・選択レイヤーがあればその範囲から始まります）。キャンバスで選択範囲を作ってあると、描画フィルターはその中だけに適用されます。ドット絵は配色方式（色を指定しない・色を指定する・色数を指定する・パレットから選ぶ）も選べます。大きさは「ブロックサイズを指定」（1〜100の100段階）と「ドット数を指定」（横・縦のドット数のスライダー。左端で1、右端でキャンバスの画素数）を切り替えられ、縦横比を保ったまま横と縦が一緒に変わります。どちらの指定も連動します。どちらも正方形のドットのまま半透明の縁を作りません。 自動線画では適用前の一時Vector制御点を直接編集できます。点をドラッグするとその点だけを移動します。「適用」の右の「制御点追加」を選んで線をタップすると制御点を追加、「制御点削除」を選んで点をタップすると削除できます（どちらも選んでいないときに点をタップすると、確認してから削除します）。編集した形状がそのまま適用結果になり、制御点の移動・追加・削除もフィルター編集の元に戻す・やり直すで1つずつ戻せます。'**
   String get helpDrawingFilterDesc;
 
   /// No description provided for @helpLayerKeyframeTitle.
@@ -10022,8 +10022,50 @@ abstract class AppLocalizations {
   /// No description provided for @filterLensDistortionNoMaskHint.
   ///
   /// In ja, this message translates to:
-  /// **'選択レイヤーで塗った範囲にのみ適用されます。先にレイヤー一覧で「選択レイヤー」を追加し、レンズにしたい範囲（眼鏡のレンズ部分等）を塗ってください。'**
+  /// **'レンズにする範囲（眼鏡のレンズ部分など）を、「ペン」か「バケツ」でキャンバスに塗ってください。選択範囲や選択レイヤーがあれば、その範囲から始まります。'**
   String get filterLensDistortionNoMaskHint;
+
+  /// No description provided for @filterLensMaskTitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'レンズの範囲'**
+  String get filterLensMaskTitle;
+
+  /// No description provided for @filterLensMaskPen.
+  ///
+  /// In ja, this message translates to:
+  /// **'ペン'**
+  String get filterLensMaskPen;
+
+  /// No description provided for @filterLensMaskEraser.
+  ///
+  /// In ja, this message translates to:
+  /// **'消しゴム'**
+  String get filterLensMaskEraser;
+
+  /// No description provided for @filterLensMaskBucket.
+  ///
+  /// In ja, this message translates to:
+  /// **'バケツ'**
+  String get filterLensMaskBucket;
+
+  /// No description provided for @filterLensMaskBrushSize.
+  ///
+  /// In ja, this message translates to:
+  /// **'ペンの太さ'**
+  String get filterLensMaskBrushSize;
+
+  /// No description provided for @filterLensMaskClear.
+  ///
+  /// In ja, this message translates to:
+  /// **'範囲を消す'**
+  String get filterLensMaskClear;
+
+  /// No description provided for @filterSelectionOnlyHint.
+  ///
+  /// In ja, this message translates to:
+  /// **'選択範囲の中だけに適用されます'**
+  String get filterSelectionOnlyHint;
 
   /// No description provided for @tipsStockingDenierTitle.
   ///
@@ -10052,13 +10094,13 @@ abstract class AppLocalizations {
   /// No description provided for @tipsLensDistortionTitle.
   ///
   /// In ja, this message translates to:
-  /// **'選択レイヤー＋眼鏡断層フィルターで、度入りレンズの歪みを再現'**
+  /// **'眼鏡断層フィルターで、眼鏡のレンズ越しの歪みを再現'**
   String get tipsLensDistortionTitle;
 
   /// No description provided for @tipsLensDistortionDesc.
   ///
   /// In ja, this message translates to:
-  /// **'レイヤー一覧に「選択レイヤー」を追加し、眼鏡のレンズ部分を通常の描画ツールで塗ると、その範囲だけに眼鏡断層フィルターの局所的な歪みをかけられます。レンズの強さのスライダーは負の値で凹レンズ（近視）風に縮小、正の値で凸レンズ（遠視）風に拡大し、中心位置も微調整できます。両目分のレンズを同時に塗って一括で適用することも可能です。選択レイヤー自体は書き出し・最終的な絵には写り込みません。眼鏡以外にも、カメラのレンズ越しに景色を見ているような歪みを再現したいときにも使えます。背景など広い範囲を選択レイヤーで塗り、弱めの強さにするのがおすすめです。'**
+  /// **'眼鏡断層フィルターを選び、レンズにする範囲（眼鏡のレンズ部分など）をパネルの「ペン」でキャンバスに塗るか、「バケツ」で線に囲まれた所をタップすると、その範囲だけに局所的な歪みをかけられます。はみ出したら「消しゴム」で消せ、塗った範囲は元に戻す・やり直すで1手ずつ戻せます。選択範囲や選択レイヤーがあれば、その範囲から始まります。レンズの強さのスライダーは負の値で凹レンズ風に縮小、正の値で凸レンズ風に拡大し、中心位置も微調整できます。両目分のレンズを塗って一括で適用することも可能です。塗った範囲は書き出し・最終的な絵には写り込みません。眼鏡以外にも、カメラのレンズ越しに景色を見ているような歪みを再現したいときにも使えます。背景など広い範囲を塗り、弱めの強さにするのがおすすめです。'**
   String get tipsLensDistortionDesc;
 
   /// No description provided for @tipsSphereShadingTitle.
@@ -10070,7 +10112,7 @@ abstract class AppLocalizations {
   /// No description provided for @tipsSphereShadingDesc.
   ///
   /// In ja, this message translates to:
-  /// **'球体陰影フィルターは、楕円の光の内側を光色、外側を影色で、描いてあるところにだけ重ねます。光の位置と大きさはスライダーのほか、キャンバス上の＋（位置）と丸いつまみ（大きさ）のドラッグでも変えられ、境目のぼかしで球のような柔らかい陰影にできます。影色・光色はそれぞれブレンドモードを選べ（例：影は乗算、光はスクリーン）、「まとめて1つで」にすると影色から光色へのグラデーションを1つのブレンドモード（ハードライト等）で重ねます。色は透明にもでき、透明にした側は何もしません。選択レイヤーを塗ってあれば、その範囲だけに付きます。'**
+  /// **'球体陰影フィルターは、楕円の光の内側を光色、外側を影色で、描いてあるところにだけ重ねます。光の位置と大きさはスライダーのほか、キャンバス上の＋（位置）と丸いつまみ（大きさ）のドラッグでも変えられ、境目のぼかしで球のような柔らかい陰影にできます。影色・光色はそれぞれブレンドモードを選べ（例：影は乗算、光はスクリーン）、「まとめて1つで」にすると影色から光色へのグラデーションを1つのブレンドモード（ハードライト等）で重ねます。色は透明にもでき、透明にした側は何もしません。選択範囲か選択レイヤーがあれば、その範囲だけに付きます。'**
   String get tipsSphereShadingDesc;
 
   /// No description provided for @tipsLineArtExtractionTitle.

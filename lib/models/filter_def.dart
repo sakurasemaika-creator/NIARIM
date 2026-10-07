@@ -69,6 +69,13 @@ int generatedLayerInsertIndex(FilterKind kind, int sourceIndex) =>
 /// Whether a filter of this kind works only where the selection layer is
 /// painted (the glasses lens, and sphere shading when one is painted), so
 /// applying it needs the selection layer's pixels.
+/// Whether the filter draws its result on a new layer (beside the source)
+/// rather than changing the layer itself.
+bool filterGeneratesLayer(FilterKind kind) =>
+    kind == FilterKind.outline ||
+    kind == FilterKind.inkPool ||
+    kind == FilterKind.autoLineart;
+
 bool filterUsesSelectionMask(FilterKind kind) =>
     kind == FilterKind.lensDistortion || kind == FilterKind.sphereShading;
 

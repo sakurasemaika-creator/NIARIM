@@ -6,6 +6,7 @@ import '../models/filter_def.dart';
 import 'auto_lineart_engine.dart';
 import 'background_acclimation_engine.dart';
 import 'filter_engine.dart';
+import 'filter_selection.dart';
 import 'prism_filter_engine.dart';
 
 /// What a filter's preview is run with: the layer's pixels at the preview's
@@ -24,6 +25,18 @@ typedef FilterPreviewJob = ({
   Uint8List? mask,
   Uint8List? background,
 });
+
+/// [runFilterPreview] kept inside the canvas selection: the coverage at the
+/// preview's size, or null for the whole layer.
+Uint8List runFilterPreviewInSelection(
+  (FilterPreviewJob job, Uint8List? selection) args,
+) {
+  final (job, selection) = args;
+  final out = runFilterPreview(job);
+  return selection == null
+      ? out
+      : restrictToSelection(job.data, out, selection);
+}
 
 /// A filter's preview: [job]'s layer as the filter would leave it, at the
 /// preview's size. A plain function of its input so it can run in a

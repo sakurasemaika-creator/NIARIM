@@ -746,6 +746,16 @@ onTap: ...)`だったために
   `runFilterPreview`を`compute`で回す純関数で、パネル側は実行中に来た
   要求を1つに畳んで最新だけ描く。調整モードの出入りで画像を破棄し忘れる
   と`ui.Image`がリークするので、`onClose`と`dispose`の両方で捨てている。
+  **キャンバスの選択範囲は描画フィルターを内側に限る**：`CanvasArea.
+  onSelectionMaskChanged`→`canvas_screen`→`FilterPanel.selectionMask`と渡り、
+  プレビューは`runFilterPreviewInSelection`、適用は`restrictToSelection`
+  （新規レイヤーを作る種類は`clearOutsideSelection`）で外側を元のまま残す
+  （`lib/engine/filter_selection.dart`）。眼鏡断層だけは自分の「レンズの範囲」
+  （`FilterLensMask`、`canvas_screen`が持ちCanvasAreaとFilterPanelへ渡す）を
+  使い、調整中のタッチはつまみより後・描画ロックより前に
+  `_beginLensMaskEdit`がペン・消しゴム・バケツとして受ける。範囲の変更は
+  `FilterLensMask.edit`でフィルター編集のUndoへ1手ずつ積むこと
+  （`test/filter_selection_lens_mask_e2e_test.dart`）。
 - **縦スクロールのスクロールバーはアプリ全体で常時表示（個別に`Scrollbar`で
   包まない）**：`app.dart`の`scrollBehavior: const AppScrollBehavior()`
   （`lib/widgets/app_scroll_behavior.dart`）が、縦スクロールすべての右端に

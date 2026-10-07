@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:typed_data';
 import 'dart:ui' as ui;
 
 import 'package:niarim/services/theme_service.dart';
@@ -31,6 +32,7 @@ import '../../engine/autofill_engine.dart' show AutofillCheckMode;
 import '../../engine/text_render.dart';
 import '../../engine/undo_manager.dart';
 import '../../engine/custom_automation_executor.dart';
+import '../../engine/filter_lens_mask.dart';
 import '../../l10n/app_localizations.dart';
 import '../../models/bundled_fonts.dart';
 import '../../models/filter_canvas_gizmo.dart';
@@ -115,6 +117,10 @@ class _CanvasScreenState extends State<CanvasScreen> {
   // The filter being adjusted, as the current layer would look with it
   // (shown on the canvas in the layer's place).
   ui.Image? _filterCanvasPreview;
+  // The canvas selection (drawing filters apply only inside it) and the
+  // glasses filter's lens area, painted on the canvas while it is adjusted.
+  Uint8List? _canvasSelectionMask;
+  final FilterLensMask _filterLensMask = FilterLensMask();
   _TextColorEyedropperTarget? _textColorEyedropperTarget;
   ValueChanged<Color>? _pendingTextColorEyedropper;
   Completer<int?>? _pendingBrushOutlineEyedropper;
@@ -1039,6 +1045,7 @@ class _CanvasScreenState extends State<CanvasScreen> {
   @override
   void dispose() {
     _filterCanvasPreview?.dispose();
+    _filterLensMask.dispose();
     _customAutomationRecordingOverlay?.remove();
     _customAutomationRecordingOverlay = null;
     ImmersiveMode.exitWorkspace();
@@ -1321,6 +1328,14 @@ class _CanvasScreenState extends State<CanvasScreen> {
                                       _resetSelectionSliders();
                                     });
                                   },
+                                  onSelectionMaskChanged: (mask) {
+                                    if (identical(_canvasSelectionMask, mask)) {
+                                      return;
+                                    }
+                                    setState(() => _canvasSelectionMask = mask);
+                                  },
+                                  filterLensMask: _filterLensMaskShown(),
+                                  onFilterLensMaskEdited: _editFilterLensMask,
                                   selectionMoveX: _selectionMoveX,
                                   selectionMoveY: _selectionMoveY,
                                   selectionScale: _selectionScale,
@@ -1387,14 +1402,22 @@ class _CanvasScreenState extends State<CanvasScreen> {
                                     left: 12,
                                     bottom: 12,
                                     right: 12,
-                                    child: SafeArea(
-                                      child: Align(
-                                        alignment: Alignment.bottomLeft,
-                                        child:
-                                            _currentTool ==
-                                                DrawingTool.meshTransform
-                                            ? _meshCancelBar(context)
-                                            : _selectionToolBar(context),
+                                    // Out of the way while a filter is
+                                    // adjusted: the selection stays as it is
+                                    // (the filter keeps to it) and the
+                                    // canvas shows the preview. Hidden, not
+                                    // removed, so the Stack keeps its order.
+                                    child: Visibility(
+                                      visible: !_showFilterPanel,
+                                      child: SafeArea(
+                                        child: Align(
+                                          alignment: Alignment.bottomLeft,
+                                          child:
+                                              _currentTool ==
+                                                  DrawingTool.meshTransform
+                                              ? _meshCancelBar(context)
+                                              : _selectionToolBar(context),
+                                        ),
                                       ),
                                     ),
                                   ),
@@ -2123,6 +2146,27 @@ class _CanvasScreenState extends State<CanvasScreen> {
     );
   }
 
+  /// The glasses filter's lens area, while that filter is adjusted.
+  FilterLensMask? _filterLensMaskShown() {
+    final filter = context.watch<FilterService>().currentFilter;
+    if (!_showFilterPanel || filter?.kind != FilterKind.lensDistortion) {
+      return null;
+    }
+    return _filterLensMask;
+  }
+
+  /// A stroke or fill on the canvas finished: the new lens area, one step
+  /// of the filter's Undo.
+  void _editFilterLensMask(Uint8List coverage) {
+    final tm = context.read<ProjectService>().tileManagerOf(widget.projectId);
+    _filterLensMask.edit(
+      coverage,
+      tm.canvasWidth,
+      tm.canvasHeight,
+      context.read<FilterService>().recordFilterEdit,
+    );
+  }
+
   void _moveFilterGizmo(Project? project, FilterCanvasGizmo gizmo) {
     final service = context.read<FilterService>();
     final filter = service.currentFilter;
@@ -2145,7 +2189,10 @@ class _CanvasScreenState extends State<CanvasScreen> {
     onStartCanvasEyedropper: _toggleFilterColorEyedropper,
     bottomBar: bottomBar,
     onCanvasPreviewChanged: _setFilterCanvasPreview,
+    selectionMask: _canvasSelectionMask,
+    lensMask: _filterLensMask,
     onClose: () => setState(() {
+      _filterLensMask.reset();
       _filterCanvasPreview?.dispose();
       _filterCanvasPreview = null;
       _showFilterPanel = false;

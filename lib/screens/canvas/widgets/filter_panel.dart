@@ -11,7 +11,9 @@ import 'package:provider/provider.dart';
 import '../../../config/font_fallback.dart';
 import '../../../engine/auto_lineart_engine.dart';
 import '../../../engine/filter_engine.dart';
+import '../../../engine/filter_lens_mask.dart';
 import '../../../engine/filter_preview.dart';
+import '../../../engine/filter_selection.dart';
 import '../../../engine/layer_compositor.dart';
 import '../../../engine/pixel_art_engine.dart';
 import '../../../engine/prism_filter_engine.dart';
@@ -62,6 +64,14 @@ class FilterPanel extends StatefulWidget {
   /// art's control-point editor aside).
   final ValueChanged<ui.Image>? onCanvasPreviewChanged;
 
+  /// The canvas selection (one byte per canvas pixel, non-zero inside), or
+  /// null: when set, the filter changes only what is inside it.
+  final Uint8List? selectionMask;
+
+  /// The glasses filter's lens area, painted on the canvas with the tools
+  /// the panel offers while that filter is adjusted.
+  final FilterLensMask? lensMask;
+
   const FilterPanel({
     super.key,
     required this.projectId,
@@ -74,6 +84,8 @@ class FilterPanel extends StatefulWidget {
     this.activeCanvasEyedropperTarget,
     this.bottomBar = false,
     this.onCanvasPreviewChanged,
+    this.selectionMask,
+    this.lensMask,
   });
 
   @override
@@ -116,6 +128,15 @@ class _FilterPanelState extends State<FilterPanel> {
   bool _previewAgain = false;
   Uint8List? _previewMask;
   Uint8List? _previewBackgroundBytes;
+  // The canvas selection and the glasses filter's lens area at the
+  // preview's size (coverage, and the lens area as the RGBA mask the
+  // filter reads), and the lens coverage that was scaled.
+  Uint8List? _previewSelection;
+  Uint8List? _previewLensMask;
+  Uint8List? _previewLensMaskOf;
+  // The glasses filter whose lens area has been started (from the
+  // selection layer or the canvas selection), so it is started once.
+  String? _lensMaskStartedFor;
   AutoLineartGraph? _autoLineartBaseGraph;
   AutoLineartGraph? _autoLineartPreviewGraph;
   AutoLineartGraph? _autoLineartEditBaselineGraph;
@@ -145,11 +166,112 @@ class _FilterPanelState extends State<FilterPanel> {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (mounted) context.read<FilterService>().clearCurrentFilter();
     });
+    widget.lensMask?.addListener(_onLensMaskChanged);
     _loadPreviewBase();
   }
 
   @override
+  void didUpdateWidget(FilterPanel old) {
+    super.didUpdateWidget(old);
+    if (old.lensMask != widget.lensMask) {
+      old.lensMask?.removeListener(_onLensMaskChanged);
+      widget.lensMask?.addListener(_onLensMaskChanged);
+    }
+    if (!identical(old.selectionMask, widget.selectionMask)) {
+      _refreshPreviewSelection();
+      _updatePreview();
+    }
+  }
+
+  /// The canvas selection at the preview's size, or null when there is
+  /// none (or it is not the canvas's size).
+  void _refreshPreviewSelection() {
+    final mask = widget.selectionMask;
+    _previewSelection =
+        mask == null || mask.length != _canvasW * _canvasH || _previewW == 0
+        ? null
+        : scaleSelectionCoverage(
+            selectionCoverage(mask),
+            _canvasW,
+            _canvasH,
+            _previewW,
+            _previewH,
+          );
+  }
+
+  /// The canvas selection at full size, as coverage, or null.
+  Uint8List? _canvasSelectionCoverage(TileManager tm) {
+    final mask = widget.selectionMask;
+    if (mask == null || mask.length != tm.canvasWidth * tm.canvasHeight) {
+      return null;
+    }
+    return selectionCoverage(mask);
+  }
+
+  void _onLensMaskChanged() {
+    final mask = widget.lensMask;
+    final coverage = mask?.coverage;
+    if (!identical(coverage, _previewLensMaskOf)) {
+      _previewLensMaskOf = coverage;
+      _previewLensMask =
+          coverage == null ||
+              mask == null ||
+              _previewW == 0 ||
+              coverage.length != mask.width * mask.height
+          ? null
+          : coverageAsRgbaMask(
+              scaleSelectionCoverage(
+                coverage,
+                mask.width,
+                mask.height,
+                _previewW,
+                _previewH,
+              ),
+            );
+      _updatePreview();
+    }
+    if (mounted) setState(() {});
+  }
+
+  /// Starts the glasses filter's lens area from what is already marked:
+  /// the selection layer's paint, else the canvas selection, else nothing
+  /// (with the pen ready, to paint it).
+  Future<void> _startLensMask() async {
+    final mask = widget.lensMask;
+    if (mask == null) return;
+    final ps = context.read<ProjectService>();
+    final tm = ps.tileManagerOf(widget.projectId);
+    final w = tm.canvasWidth, h = tm.canvasHeight;
+    Uint8List? initial;
+    final selectionLayer = ps
+        .layersOf(widget.projectId, widget.sceneId, widget.frameIndex)
+        .where((l) => l.type == model.LayerType.selection)
+        .firstOrNull;
+    if (selectionLayer != null) {
+      final image = await tm.compositeLayerToImage(
+        ps.tileKeyFor(
+          widget.projectId,
+          widget.sceneId,
+          widget.frameIndex,
+          selectionLayer.id,
+        ),
+      );
+      final bytes = await image.toByteData(format: ui.ImageByteFormat.rawRgba);
+      image.dispose();
+      if (bytes != null) {
+        final coverage = rgbaMaskCoverage(bytes.buffer.asUint8List());
+        if (selectsAnything(coverage)) initial = coverage;
+      }
+    }
+    initial ??= _canvasSelectionCoverage(tm);
+    if (!mounted || widget.lensMask != mask) return;
+    mask.replace(selectsAnything(initial) ? initial : null, w, h);
+    mask.setTool(FilterLensMaskTool.pen);
+  }
+
+  @override
   void dispose() {
+    widget.lensMask?.removeListener(_onLensMaskChanged);
     _previewImage?.dispose();
     _editGroupService?.endFilterEditGroup();
     super.dispose();
@@ -365,6 +487,11 @@ class _FilterPanelState extends State<FilterPanel> {
     _previewBackgroundBytes = backgroundBytes;
     _previewW = previewWidth;
     _previewH = previewHeight;
+    _refreshPreviewSelection();
+    // The lens area may have been started before the preview's size was
+    // known.
+    _previewLensMaskOf = null;
+    _onLensMaskChanged();
     await _updatePreview();
   }
 
@@ -458,22 +585,41 @@ class _FilterPanelState extends State<FilterPanel> {
         smoothing: 0,
         color: filter.autoLineartColor,
       );
-      filtered = AutoLineartEngine.composePreview(
+      final composed = AutoLineartEngine.composePreview(
         base,
         line,
         roughOpacity: 0.4,
       );
+      final selection = _previewSelection;
+      filtered = selection == null
+          ? composed
+          : restrictToSelection(base, composed, selection);
     } else {
-      filtered = await compute(runFilterPreview, (
-        filter: filter,
-        data: base,
-        width: _previewW,
-        height: _previewH,
-        scale: _previewScale,
-        canvasWidth: _canvasW,
-        canvasHeight: _canvasH,
-        mask: _previewMask,
-        background: _previewBackgroundBytes,
+      final selection = _previewSelection;
+      // The glasses filter bends its own lens area (started from the
+      // selection); sphere shading takes the selection as its area when no
+      // selection layer is painted.
+      final mask = switch (filter.kind) {
+        FilterKind.lensDistortion when widget.lensMask != null =>
+          _previewLensMask,
+        FilterKind.sphereShading
+            when _previewMask == null && selection != null =>
+          coverageAsRgbaMask(selection),
+        _ => _previewMask,
+      };
+      filtered = await compute(runFilterPreviewInSelection, (
+        (
+          filter: filter,
+          data: base,
+          width: _previewW,
+          height: _previewH,
+          scale: _previewScale,
+          canvasWidth: _canvasW,
+          canvasHeight: _canvasH,
+          mask: mask,
+          background: _previewBackgroundBytes,
+        ),
+        filter.kind == FilterKind.lensDistortion ? null : selection,
       ));
       if (!mounted) return;
     }
@@ -516,6 +662,20 @@ class _FilterPanelState extends State<FilterPanel> {
       _previewRequestedFor = current;
       WidgetsBinding.instance.addPostFrameCallback((_) {
         if (mounted) _updatePreview();
+      });
+    }
+    final lensFilterId = current?.kind == FilterKind.lensDistortion
+        ? current!.id
+        : null;
+    if (lensFilterId != _lensMaskStartedFor && widget.lensMask != null) {
+      _lensMaskStartedFor = lensFilterId;
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (!mounted) return;
+        if (lensFilterId == null) {
+          widget.lensMask?.reset();
+        } else {
+          unawaited(_startLensMask());
+        }
       });
     }
 
@@ -874,6 +1034,27 @@ class _FilterPanelState extends State<FilterPanel> {
               ),
               const SizedBox(height: 6),
             ],
+            if (widget.selectionMask != null &&
+                current.kind != FilterKind.lensDistortion)
+              Padding(
+                padding: const EdgeInsets.only(bottom: 4),
+                child: Row(
+                  children: [
+                    Icon(
+                      Icons.highlight_alt,
+                      size: 14,
+                      color: Theme.of(context).colorScheme.primary,
+                    ),
+                    const SizedBox(width: 4),
+                    Expanded(
+                      child: Text(
+                        l10n.filterSelectionOnlyHint,
+                        style: const TextStyle(fontSize: 10),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
             _buildControls(l10n, service, current),
           ],
         ),
@@ -1820,7 +2001,8 @@ class _FilterPanelState extends State<FilterPanel> {
       case FilterKind.lensDistortion:
         return Column(
           children: [
-            if (_previewMask == null)
+            _lensMaskControls(l10n),
+            if (widget.lensMask?.isEmpty ?? _previewMask == null)
               Text(
                 l10n.filterLensDistortionNoMaskHint,
                 style: TextStyle(
@@ -2017,6 +2199,82 @@ class _FilterPanelState extends State<FilterPanel> {
       );
 
   /// A short note under a filter's controls.
+  /// The glasses filter's lens area: the tool a touch on the canvas uses
+  /// (pen, eraser, or the bucket, which adds the region tapped as the magic
+  /// wand would select it), the pen's size, and clearing it. Each stroke,
+  /// fill or clear is one step of the filter's Undo.
+  Widget _lensMaskControls(AppLocalizations l10n) {
+    final mask = widget.lensMask;
+    if (mask == null) return const SizedBox.shrink();
+    final tool = mask.tool;
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          l10n.filterLensMaskTitle,
+          style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w600),
+        ),
+        const SizedBox(height: 4),
+        Row(
+          children: [
+            Expanded(
+              child: FittedBox(
+                fit: BoxFit.scaleDown,
+                alignment: Alignment.centerLeft,
+                child: SegmentedButton<FilterLensMaskTool>(
+                  key: const ValueKey('lens-mask-tool'),
+                  segments: [
+                    ButtonSegment(
+                      value: FilterLensMaskTool.pen,
+                      icon: const Icon(Icons.brush, size: 16),
+                      label: Text(l10n.filterLensMaskPen),
+                    ),
+                    ButtonSegment(
+                      value: FilterLensMaskTool.eraser,
+                      icon: const Icon(Icons.auto_fix_normal, size: 16),
+                      label: Text(l10n.filterLensMaskEraser),
+                    ),
+                    ButtonSegment(
+                      value: FilterLensMaskTool.bucket,
+                      icon: const Icon(Icons.format_color_fill, size: 16),
+                      label: Text(l10n.filterLensMaskBucket),
+                    ),
+                  ],
+                  selected: {?tool},
+                  emptySelectionAllowed: true,
+                  showSelectedIcon: false,
+                  onSelectionChanged: (v) =>
+                      mask.setTool(v.isEmpty ? null : v.first),
+                ),
+              ),
+            ),
+            IconButton(
+              key: const ValueKey('lens-mask-clear'),
+              tooltip: l10n.filterLensMaskClear,
+              icon: const Icon(Icons.delete_sweep_outlined),
+              onPressed: mask.isEmpty
+                  ? null
+                  : () => mask.edit(
+                      null,
+                      mask.width,
+                      mask.height,
+                      context.read<FilterService>().recordFilterEdit,
+                    ),
+            ),
+          ],
+        ),
+        if (tool == FilterLensMaskTool.pen || tool == FilterLensMaskTool.eraser)
+          _paramSlider(
+            l10n.filterLensMaskBrushSize,
+            mask.brushRadius,
+            2,
+            80,
+            mask.setBrushRadius,
+          ),
+      ],
+    );
+  }
+
   Widget _hint(String text) => Padding(
     padding: const EdgeInsets.symmetric(vertical: 4),
     child: Text(
@@ -2591,6 +2849,7 @@ class _FilterPanelState extends State<FilterPanel> {
     final data = byteData.buffer.asUint8List();
 
     Uint8List result;
+    final selection = _canvasSelectionCoverage(tm);
     final canUseManualAutoLineart =
         filter.kind == FilterKind.autoLineart &&
         _autoLineartManualEdited &&
@@ -2618,7 +2877,15 @@ class _FilterPanelState extends State<FilterPanel> {
       ));
     } else {
       Uint8List? maskData;
-      if (filterUsesSelectionMask(filter.kind)) {
+      final lensMask = widget.lensMask;
+      if (filter.kind == FilterKind.lensDistortion && lensMask != null) {
+        // The lens area painted on the canvas (started from the selection
+        // layer or the canvas selection).
+        final coverage = lensMask.coverage;
+        maskData = coverage == null || coverage.length != data.length ~/ 4
+            ? null
+            : coverageAsRgbaMask(coverage);
+      } else if (filterUsesSelectionMask(filter.kind)) {
         final selectionLayer = ps
             .layersOf(widget.projectId, widget.sceneId, frameIndex)
             .where((l) => l.type == model.LayerType.selection)
@@ -2637,6 +2904,9 @@ class _FilterPanelState extends State<FilterPanel> {
           );
           maskImage.dispose();
           maskData = maskByteData?.buffer.asUint8List();
+        }
+        if (maskData == null && selection != null) {
+          maskData = coverageAsRgbaMask(selection);
         }
       }
       if (filter.kind == FilterKind.backgroundBlend) {
@@ -2671,6 +2941,15 @@ class _FilterPanelState extends State<FilterPanel> {
         filter,
         maskData,
       ));
+    }
+
+    // A canvas selection keeps the filter inside it: a new layer is empty
+    // outside it, a layer changed in place keeps its pixels there. The
+    // glasses filter bends its own lens area instead.
+    if (selection != null && filter.kind != FilterKind.lensDistortion) {
+      result = filterGeneratesLayer(filter.kind)
+          ? clearOutsideSelection(result, selection)
+          : restrictToSelection(data, result, selection);
     }
 
     if (!_isPrism(filter) && filter.kind == FilterKind.outline) {
