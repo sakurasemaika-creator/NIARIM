@@ -381,6 +381,13 @@ FONT_LICENSES.txt`への本文・著作権表示の追記、`license_screen.dart
   パレットへ寄せると別の色（黄色の縁が赤）になる（ドット絵で実際に踏んだ）。
   色を判定するときは`RGB×255÷α`で戻し、書き戻すときは新しいαを掛けること
   （`pixel_art_engine.dart`が実例）。テストの入力画素も乗算済みで作ること。
+  色を変える処理は`lib/engine/premultiplied.dart`の`onStraightColour`
+  （戻す→処理→掛け直す）か`applyStraightChannelLuts`を通し、輪郭強調の
+  ように画素をまたぐ処理は最後に`clampChannelsToAlpha`で抑えること。
+  トーンカーブ・レベル補正・ノイズ・2値化・アニメ調など9種がこの誤りで
+  透明部分に色を出し（反転で透明部分が白くなる等）、縁を光らせていた。
+  `test/engine/filter_premultiplied_validity_test.dart`が全描画フィルターの
+  出力を「どのチャンネルもα以下」で見張っている。
 - **合成画像（`LayerCompositor.composite`）には背景が入っていない**：
   レイヤーだけを重ねた透明な画像なので、プレビュー・サムネイルにそのまま
   出すと、透明な所に**パネルの色**が透けて見え、キャンバスと見え方が

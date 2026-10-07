@@ -36,6 +36,8 @@ import 'auto_lineart_control_overlay.dart';
 import 'canvas_icon_button.dart';
 import 'color_picker_panel.dart';
 import 'panel_close_bar.dart';
+import '../../../engine/premultiplied.dart';
+import '../../../engine/tone_curve.dart';
 
 enum FilterColorEyedropperTarget { inkPool, outline }
 
@@ -1522,16 +1524,26 @@ class _FilterPanelState extends State<FilterPanel> {
           3 => current.levelsBlue,
           _ => const <double>[],
         };
+        // A channel's own levels apply on top of the RGB ones, so an
+        // untouched channel starts at the defaults (no change).
         final values = channelValues.length >= 5
             ? channelValues
-            : <double>[
+            : _levelsChannel == 0
+            ? <double>[
                 current.inputBlack.toDouble(),
                 current.inputWhite.toDouble(),
                 current.inputGamma,
                 current.outputBlack.toDouble(),
                 current.outputWhite.toDouble(),
-              ];
-        void updateLevel(int index, double value) {
+              ]
+            : const <double>[0, 255, 1, 0, 255];
+        void updateLevel(int index, double rawValue) {
+          // The input black stays below the input white.
+          final value = switch (index) {
+            0 => math.min(rawValue, values[1] - 1),
+            1 => math.max(rawValue, values[0] + 1),
+            _ => rawValue,
+          };
           if (_levelsChannel == 0) {
             if (index == 0) {
               service.updateFilterParams(current.id, inputBlack: value.round());
@@ -2984,12 +2996,17 @@ class _ToneCurvePainter extends CustomPainter {
       final bins = List<int>.filled(64, 0);
       var peak = 1;
       for (var i = 0; i + 3 < rgba.length; i += 4) {
-        if (rgba[i + 3] == 0) continue;
+        final a = rgba[i + 3];
+        if (a == 0) continue;
+        // The curve works on the straight colour, so the histogram counts it.
+        final r = straightChannel(rgba[i], a);
+        final g = straightChannel(rgba[i + 1], a);
+        final b2 = straightChannel(rgba[i + 2], a);
         final value = switch (histogramChannel) {
-          1 => rgba[i],
-          2 => rgba[i + 1],
-          3 => rgba[i + 2],
-          _ => ((rgba[i] * 77 + rgba[i + 1] * 150 + rgba[i + 2] * 29) >> 8),
+          1 => r,
+          2 => g,
+          3 => b2,
+          _ => ((r * 77 + g * 150 + b2 * 29) >> 8),
         };
         final b = (value * 63 ~/ 255).clamp(0, 63);
         bins[b]++;
@@ -3013,10 +3030,13 @@ class _ToneCurvePainter extends CustomPainter {
 
     Offset toCanvas(Offset p) =>
         Offset(p.dx * size.width, (1 - p.dy) * size.height);
-    final curve = Path()
-      ..moveTo(toCanvas(points.first).dx, toCanvas(points.first).dy);
-    for (var i = 1; i < points.length; i++) {
-      final p = toCanvas(points[i]);
+    // The same smooth curve the filter applies, sampled every 2 px.
+    final tone = ToneCurve(points);
+    final steps = math.max(2, size.width ~/ 2);
+    final curve = Path()..moveTo(0, toCanvas(Offset(0, tone.valueAt(0))).dy);
+    for (var i = 1; i <= steps; i++) {
+      final x = i / steps;
+      final p = toCanvas(Offset(x, tone.valueAt(x)));
       curve.lineTo(p.dx, p.dy);
     }
     canvas.drawPath(

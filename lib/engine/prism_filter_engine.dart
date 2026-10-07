@@ -2,6 +2,7 @@ import 'dart:math' as math;
 import 'dart:typed_data';
 
 import 'filter_engine.dart';
+import 'premultiplied.dart';
 
 /// Isolate entry point used by full-resolution prism application.
 Uint8List applyPrismFilterInIsolate(
@@ -119,9 +120,10 @@ class PrismFilterEngine {
             .clamp(0.0, 1.0)
             .toDouble();
         final rgb = _sixBandColorAt(t);
-        out[i] = rgb.$1;
-        out[i + 1] = rgb.$2;
-        out[i + 2] = rgb.$3;
+        // Premultiplied like every layer pixel.
+        out[i] = premultipliedChannel(rgb.$1, sourceAlpha);
+        out[i + 1] = premultipliedChannel(rgb.$2, sourceAlpha);
+        out[i + 2] = premultipliedChannel(rgb.$3, sourceAlpha);
         out[i + 3] = sourceAlpha;
       }
     }

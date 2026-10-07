@@ -1,6 +1,8 @@
 import 'dart:math' as math;
 import 'dart:typed_data';
 
+import 'premultiplied.dart';
+
 /// Pixel-wise HSL adjustment used by the official line-art color-trace
 /// automation. Defaults intentionally match Autofill's trace-adjust values.
 Uint8List applyColorTraceAdjust(
@@ -11,16 +13,23 @@ Uint8List applyColorTraceAdjust(
 }) {
   final out = Uint8List.fromList(src);
   for (var i = 0; i < out.length; i += 4) {
-    if (out[i + 3] == 0) continue;
-    final rgb = _rgbToHsl(out[i], out[i + 1], out[i + 2]);
+    final a = out[i + 3];
+    if (a == 0) continue;
+    // Layer pixels are premultiplied: adjust the straight colour, so a
+    // half-transparent edge gets the same colour as solid paint.
+    final rgb = _rgbToHsl(
+      straightChannel(out[i], a),
+      straightChannel(out[i + 1], a),
+      straightChannel(out[i + 2], a),
+    );
     var h = (rgb.$1 + hueShift) % 360.0;
     if (h < 0) h += 360.0;
     final s = (rgb.$2 + saturationShift / 100.0).clamp(0.0, 1.0);
     final l = (rgb.$3 + lightnessShift / 100.0).clamp(0.0, 1.0);
     final adjusted = _hslToRgb(h, s, l);
-    out[i] = adjusted.$1;
-    out[i + 1] = adjusted.$2;
-    out[i + 2] = adjusted.$3;
+    out[i] = premultipliedChannel(adjusted.$1, a);
+    out[i + 1] = premultipliedChannel(adjusted.$2, a);
+    out[i + 2] = premultipliedChannel(adjusted.$3, a);
   }
   return out;
 }

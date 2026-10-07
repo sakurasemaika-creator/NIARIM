@@ -2,6 +2,7 @@ import 'dart:math' as math;
 import 'dart:typed_data';
 import '../models/autofill_gradient.dart';
 import '../models/autofill_preset.dart';
+import 'premultiplied.dart';
 
 enum AutofillMode { smartUpdate, repaint, colorUpdate }
 
@@ -269,9 +270,10 @@ class AutofillEngine {
             : gradient != null
             ? _gradientColorAt(gradient, x, y, width, height)
             : part.color;
-        result[i] = (argb >> 16) & 0xFF;
-        result[i + 1] = (argb >> 8) & 0xFF;
-        result[i + 2] = argb & 0xFF;
+        final a = result[i + 3];
+        result[i] = premultipliedChannel((argb >> 16) & 0xFF, a);
+        result[i + 1] = premultipliedChannel((argb >> 8) & 0xFF, a);
+        result[i + 2] = premultipliedChannel(argb & 0xFF, a);
       }
     }
     return result;
@@ -319,9 +321,9 @@ class AutofillEngine {
         }
         if (hit) {
           final idx = i * 4;
-          data[idx] = cr;
-          data[idx + 1] = cg;
-          data[idx + 2] = cb;
+          data[idx] = premultipliedChannel(cr, ca);
+          data[idx + 1] = premultipliedChannel(cg, ca);
+          data[idx + 2] = premultipliedChannel(cb, ca);
           data[idx + 3] = ca;
         }
       }
@@ -468,9 +470,12 @@ class AutofillEngine {
               part.traceLightness,
             );
         }
-        result[idx] = (argb >> 16) & 0xFF;
-        result[idx + 1] = (argb >> 8) & 0xFF;
-        result[idx + 2] = argb & 0xFF;
+        // Layer pixels are premultiplied: the new colour takes the line's
+        // own coverage, so anti-aliased edges stay the same colour.
+        final a = result[idx + 3];
+        result[idx] = premultipliedChannel((argb >> 16) & 0xFF, a);
+        result[idx + 1] = premultipliedChannel((argb >> 8) & 0xFF, a);
+        result[idx + 2] = premultipliedChannel(argb & 0xFF, a);
       }
     }
     return result;
@@ -521,10 +526,11 @@ class AutofillEngine {
             // 書き込む（塗り色の不透明度は100%固定だが、グラデーション
             // の各色は個別に不透明度を設定できる）。
             final argb = _gradientColorAt(gradient, cx, cy, width, height);
-            outputData[idx] = (argb >> 16) & 0xFF;
-            outputData[idx + 1] = (argb >> 8) & 0xFF;
-            outputData[idx + 2] = argb & 0xFF;
-            outputData[idx + 3] = (argb >> 24) & 0xFF;
+            final a = (argb >> 24) & 0xFF;
+            outputData[idx] = premultipliedChannel((argb >> 16) & 0xFF, a);
+            outputData[idx + 1] = premultipliedChannel((argb >> 8) & 0xFF, a);
+            outputData[idx + 2] = premultipliedChannel(argb & 0xFF, a);
+            outputData[idx + 3] = a;
           } else {
             outputData[idx] = fr;
             outputData[idx + 1] = fg;

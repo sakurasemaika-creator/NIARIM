@@ -11,6 +11,8 @@ import 'prism_filter_engine.dart';
 import 'pixel_art_engine.dart';
 import 'sphere_shading_engine.dart';
 import 'vhs_noise_engine.dart';
+import 'premultiplied.dart';
+import 'tone_curve.dart';
 
 /// Preview, apply and recorded replay share the same seeded noise settings.
 Uint8List applyNoiseFilter(
@@ -21,31 +23,42 @@ Uint8List applyNoiseFilter(
 ) {
   final engine = FilterEngine();
   final strength = (filter.strength / 100).clamp(0.0, 1.0);
+  // Grain is added to the straight colour (premultiplied pixels would get
+  // colour in their transparent parts); the VHS shifts and smears across
+  // pixels, so it is kept within each pixel's alpha instead.
   return switch (filter.noiseStyle) {
-    NoiseStyle.filmGrain => engine.applyFilmGrain(
+    NoiseStyle.filmGrain => onStraightColour(
       data,
-      width,
-      height,
-      strength,
-      seed: filter.noiseSeed,
+      (straight) => engine.applyFilmGrain(
+        straight,
+        width,
+        height,
+        strength,
+        seed: filter.noiseSeed,
+      ),
     ),
-    NoiseStyle.color => engine.applyColorNoise(
+    NoiseStyle.color => onStraightColour(
       data,
-      width,
-      height,
-      strength,
-      seed: filter.noiseSeed,
+      (straight) => engine.applyColorNoise(
+        straight,
+        width,
+        height,
+        strength,
+        seed: filter.noiseSeed,
+      ),
     ),
-    NoiseStyle.vhs => VhsNoiseEngine.apply(
-      data,
-      width,
-      height,
-      noiseStrength: filter.strength,
-      scanlineStrength: filter.caSaturation,
-      colorBleed: filter.caBrightness,
-      tracking: filter.caContrast,
-      seed: filter.noiseSeed,
-      frameIndex: 0,
+    NoiseStyle.vhs => clampChannelsToAlpha(
+      VhsNoiseEngine.apply(
+        data,
+        width,
+        height,
+        noiseStrength: filter.strength,
+        scanlineStrength: filter.caSaturation,
+        colorBleed: filter.caBrightness,
+        tracking: filter.caContrast,
+        seed: filter.noiseSeed,
+        frameIndex: 0,
+      ),
     ),
   };
 }
@@ -815,7 +828,7 @@ class FilterEngine {
         }
       }
     }
-    return result;
+    return clampChannelsToAlpha(result);
   }
 
   /// アンシャープマスク：元画像からガウスぼかし版を引いた差分（＝輪郭付近の
@@ -842,7 +855,7 @@ class FilterEngine {
         result[i + c] = sharpened.round().clamp(0, 255);
       }
     }
-    return result;
+    return clampChannelsToAlpha(result);
   }
 
   Uint8List applyLensBlur(
@@ -1356,7 +1369,31 @@ class FilterEngine {
   /// 輪郭は境目の**暗い側だけ**を暗くするので、[lineWidth]が0なら元の線の
   /// 太さは変わらない（境目の両側を暗くすると、線の両脇が1pxずつ太る）。
   /// [lineWidth]（px）を上げると、暗くする範囲をその幅だけ広げて線を太らせる。
+  /// Anime style on the straight colour of the premultiplied layer (see
+  /// [onStraightColour]): colours are quantised as painted, not darkened by
+  /// their edge transparency.
   Uint8List applyAnimeStyle(
+    Uint8List data,
+    int width,
+    int height, {
+    required double strength,
+    required int colorCount,
+    required double edgeStrength,
+    double lineWidth = 0,
+  }) => onStraightColour(
+    data,
+    (straight) => _animeStyleStraight(
+      straight,
+      width,
+      height,
+      strength: strength,
+      colorCount: colorCount,
+      edgeStrength: edgeStrength,
+      lineWidth: lineWidth,
+    ),
+  );
+
+  Uint8List _animeStyleStraight(
     Uint8List data,
     int width,
     int height, {
@@ -1606,16 +1643,22 @@ class FilterEngine {
         if (dist <= innerRadius) continue;
         final t = ((dist - innerRadius) / (1.0 - innerRadius)).clamp(0.0, 1.0);
         final mix = t * amount;
-        result[idx] = (data[idx] + (cr - data[idx]) * mix).round().clamp(
-          0,
-          255,
-        );
-        result[idx + 1] = (data[idx + 1] + (cg - data[idx + 1]) * mix)
-            .round()
-            .clamp(0, 255);
-        result[idx + 2] = (data[idx + 2] + (cb - data[idx + 2]) * mix)
-            .round()
-            .clamp(0, 255);
+        // Towards the colour at this pixel's own opacity (premultiplied).
+        final a = data[idx + 3];
+        result[idx] =
+            (data[idx] + (premultipliedChannel(cr, a) - data[idx]) * mix)
+                .round()
+                .clamp(0, 255);
+        result[idx + 1] =
+            (data[idx + 1] +
+                    (premultipliedChannel(cg, a) - data[idx + 1]) * mix)
+                .round()
+                .clamp(0, 255);
+        result[idx + 2] =
+            (data[idx + 2] +
+                    (premultipliedChannel(cb, a) - data[idx + 2]) * mix)
+                .round()
+                .clamp(0, 255);
       }
     }
     return result;
@@ -1678,7 +1721,30 @@ class FilterEngine {
   /// [strength]（0〜100、ブレンド比率）・[brightness]・[saturation]
   /// （いずれも-100〜100、グラデーションマップ結果へのHSL調整量）は独立に
   /// 効く。配色パターン自体はプリセットのみ選択可能（ユーザー個別指定不可）。
+  /// On the straight colour of the premultiplied layer (see
+  /// [onStraightColour]).
   Uint8List applyAuroraHologram(
+    Uint8List data,
+    int width,
+    int height, {
+    required double strength,
+    required double brightness,
+    required double saturation,
+    required AuroraHologramPreset preset,
+  }) => onStraightColour(
+    data,
+    (straight) => _auroraHologramStraight(
+      straight,
+      width,
+      height,
+      strength: strength,
+      brightness: brightness,
+      saturation: saturation,
+      preset: preset,
+    ),
+  );
+
+  Uint8List _auroraHologramStraight(
     Uint8List data,
     int width,
     int height, {
@@ -2016,7 +2082,19 @@ class FilterEngine {
   /// 二値化：輝度が[threshold]（0〜255）以上の画素を白、未満を黒に分ける。
   /// アルファはそのまま維持する。色調調整・単色化・「明度で透過」と組み合わせて
   /// 線画抽出に使うことを想定している。
+  /// Threshold on the straight colour (see [onStraightColour]): a
+  /// half-transparent edge turns black or white like the solid paint.
   Uint8List applyThreshold(
+    Uint8List data,
+    int width,
+    int height,
+    double threshold,
+  ) => onStraightColour(
+    data,
+    (straight) => _thresholdStraight(straight, width, height, threshold),
+  );
+
+  Uint8List _thresholdStraight(
     Uint8List data,
     int width,
     int height,
@@ -2089,7 +2167,21 @@ class FilterEngine {
   /// 組み合わせた、昔のセルアニメ・VHS録画のような質感。1画素あたりの
   /// 色変換とノイズ処理1回分のみで、既存のanimeStyle（ポスタリゼーション＋
   /// Sobelエッジ検出）より軽い。
+  /// Retro anime on the straight colour of the premultiplied layer (see
+  /// [onStraightColour]).
   Uint8List applyRetroAnime(
+    Uint8List data,
+    int width,
+    int height,
+    double strength, {
+    int? seed,
+  }) => onStraightColour(
+    data,
+    (straight) =>
+        _retroAnimeStraight(straight, width, height, strength, seed: seed),
+  );
+
+  Uint8List _retroAnimeStraight(
     Uint8List data,
     int width,
     int height,
@@ -2339,6 +2431,10 @@ class FilterEngine {
     return result;
   }
 
+  /// The tone curve: [curvePoints] (the master, RGB) and then each channel's
+  /// own curve, as smooth curves ([ToneCurve]) on the straight colour, so a
+  /// half-transparent edge changes like solid paint and transparent pixels
+  /// stay transparent.
   Uint8List applyToneCurve(
     Uint8List data,
     int width,
@@ -2348,40 +2444,22 @@ class FilterEngine {
     List<ui.Offset>? greenPoints,
     List<ui.Offset>? bluePoints,
   }) {
-    List<int> makeLut(List<ui.Offset>? points) {
-      if (points == null || points.length < 2) {
-        return List<int>.generate(256, (i) => i);
-      }
-      final sorted = [...points]..sort((a, b) => a.dx.compareTo(b.dx));
-      return List<int>.generate(256, (i) {
-        final x = i / 255.0;
-        if (x <= sorted.first.dx) {
-          return (sorted.first.dy * 255).round().clamp(0, 255);
-        }
-        for (int j = 0; j < sorted.length - 1; j++) {
-          final p0 = sorted[j];
-          final p1 = sorted[j + 1];
-          if (x >= p0.dx && x <= p1.dx) {
-            final span = p1.dx - p0.dx;
-            final t = span.abs() < 1e-9 ? 0.0 : (x - p0.dx) / span;
-            return ((p0.dy + t * (p1.dy - p0.dy)) * 255).round().clamp(0, 255);
-          }
-        }
-        return (sorted.last.dy * 255).round().clamp(0, 255);
-      });
+    List<int> lutOf(List<ui.Offset>? points) =>
+        points == null || points.length < 2
+        ? List<int>.generate(256, (i) => i)
+        : ToneCurve(points).lut();
+    final master = lutOf(curvePoints);
+    List<int> through(List<ui.Offset>? channel) {
+      final own = lutOf(channel);
+      return [for (var i = 0; i < 256; i++) own[master[i]]];
     }
 
-    final master = makeLut(curvePoints);
-    final red = makeLut(redPoints);
-    final green = makeLut(greenPoints);
-    final blue = makeLut(bluePoints);
-    final result = Uint8List.fromList(data);
-    for (int i = 0; i < result.length; i += 4) {
-      result[i] = red[master[result[i]]];
-      result[i + 1] = green[master[result[i + 1]]];
-      result[i + 2] = blue[master[result[i + 2]]];
-    }
-    return result;
+    return applyStraightChannelLuts(
+      data,
+      through(redPoints),
+      through(greenPoints),
+      through(bluePoints),
+    );
   }
 
   /// 墨溜まりフィルターの「効果レイヤー」だけを生成する。
@@ -2596,6 +2674,11 @@ class FilterEngine {
     return out;
   }
 
+  /// Levels: the master (RGB) settings first, then each channel's own on
+  /// top, as in other painting apps (a channel left at its defaults changes
+  /// nothing). Applied to the straight colour, like [applyToneCurve].
+  /// A channel's values are `[inputBlack, inputWhite, gamma, outputBlack,
+  /// outputWhite]`.
   Uint8List applyLevels(
     Uint8List data,
     int width,
@@ -2609,34 +2692,49 @@ class FilterEngine {
     List<double>? greenLevels,
     List<double>? blueLevels,
   }) {
-    final result = Uint8List.fromList(data);
-    final overrides = [redLevels, greenLevels, blueLevels];
-    for (int i = 0; i < result.length; i += 4) {
-      for (int c = 0; c < 3; c++) {
-        final values = overrides[c];
-        final ib = values != null && values.length >= 5
-            ? values[0].round()
-            : inputBlack;
-        final iw = values != null && values.length >= 5
-            ? values[1].round()
-            : inputWhite;
-        final gamma = values != null && values.length >= 5
-            ? values[2]
-            : inputGamma;
-        final ob = values != null && values.length >= 5
-            ? values[3].round()
-            : outputBlack;
-        final ow = values != null && values.length >= 5
-            ? values[4].round()
-            : outputWhite;
-        final inRange = (iw - ib).clamp(1, 255);
-        final outRange = ow - ob;
-        final normalized = ((result[i + c] - ib) / inRange).clamp(0.0, 1.0);
-        final corrected = math.pow(normalized, 1.0 / gamma.clamp(0.1, 10.0));
-        result[i + c] = (corrected * outRange + ob).round().clamp(0, 255);
-      }
+    final master = levelsLut(
+      inputBlack,
+      inputWhite,
+      inputGamma,
+      outputBlack,
+      outputWhite,
+    );
+    List<int> through(List<double>? values) {
+      if (values == null || values.length < 5) return master;
+      final own = levelsLut(
+        values[0].round(),
+        values[1].round(),
+        values[2],
+        values[3].round(),
+        values[4].round(),
+      );
+      return [for (var i = 0; i < 256; i++) own[master[i]]];
     }
-    return result;
+
+    return applyStraightChannelLuts(
+      data,
+      through(redLevels),
+      through(greenLevels),
+      through(blueLevels),
+    );
+  }
+
+  /// One channel's levels as a lookup table.
+  static List<int> levelsLut(
+    int inputBlack,
+    int inputWhite,
+    double gamma,
+    int outputBlack,
+    int outputWhite,
+  ) {
+    final inRange = (inputWhite - inputBlack).clamp(1, 255);
+    final outRange = outputWhite - outputBlack;
+    final g = gamma.clamp(0.1, 10.0);
+    return List<int>.generate(256, (v) {
+      final normalized = ((v - inputBlack) / inRange).clamp(0.0, 1.0);
+      final corrected = math.pow(normalized, 1.0 / g);
+      return (corrected * outRange + outputBlack).round().clamp(0, 255);
+    });
   }
 
   // ─── ヘルパー ─────────────────────────────────────────────────────────
