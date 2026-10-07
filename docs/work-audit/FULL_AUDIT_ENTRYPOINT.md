@@ -41,6 +41,16 @@
 
 数値はminimum / maximum / boundary / representative middle / invalid / empty / largeを、相互作用がある場合は組合せを確認する。
 
+## 外部サービス連携を「あと接続するだけ」にする最終確認
+
+全面監査では、YouTube API、Google AdMobを含む、**人間による外部コンソール操作・認証情報登録・審査/承認等が必要な外部サービス連携について、アプリ側・Web側の実装を「人間が最後に接続操作を行えば本番接続できる」状態まで完成させる**。人間が必要だからという理由で、コード側のTODO、仮実装、未接続の本番経路、未定義の設定、未処理のerror/retry、未検証のconsent/privacy、未実装のcallback等を残してはならない。
+
+監査中は、実際の資格情報を扱えない場合でも、production相当の接続経路を検証できるsandbox/test credential/mock boundary等を使って、設定→認証→callback→API/SDK呼出し→成功→失敗→retry→quota/rate→権限/consent→ログ/secret保護まで確認する。最終的に人間に残す作業は、**外部サービス側でしか実行できない登録・秘密情報投入・承認・契約同意・公開操作等に限定**する。
+
+代表例としてYouTube APIでは、API有効化、credential/OAuth、scope、redirect/callback、アップロード/取得等の必要経路、quota/error/retry、secret管理まで実装・検証済みとする。Google AdMobでは、SDK/adapter、app/ad unit等の設定注入、広告表示経路、test/production切替、consent/privacy連携、fail-safe、配置・レイアウト、production設定の受け渡しまで実装・検証済みとする。実際の接続値や外部コンソール操作そのものは人間作業として残してよいが、そこから先に**コード修正が必要になる状態を完成扱いにしない**。
+
+監査終了時には「人間が残り何をすれば公開・接続できるか」を、作業名、対象サービス、App/Web、実施場所、必要なcredential/設定、事前条件、完了確認方法、証跡、実施できない理由まで具体的にまとめる。人間作業が0件である必要はないが、**human-action-pending以外のimplementation-pendingを残さない**ことを完成条件とする。
+
 ## 完了条件
 
 - Baseline incomplete = 0
@@ -52,6 +62,7 @@
 - 必要regression未完了 = 0
 - 重大な機能・安定性・データ損失・セキュリティ・法務/IPリスクが未処理で残っていない
 - 商用品質として明確な改善候補を放置していない、または放置理由をEvidenceへ記録している
+- 外部連携のimplementation-pending = 0、human-action-pendingは外部サービス側でしかできない作業に限定され、最終報告へ集約されている
 
 過去会話、旧PDF、旧CI、旧checkpoint、古いHEADだけで現在の完了を判定しない。現在のdev_branchが一次事実である。
 
