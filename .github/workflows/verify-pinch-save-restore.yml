@@ -29,9 +29,9 @@ jobs:
           - case: zoom-in
             plain: '2本指を狭めるとキャンバスが縮小される'
           - case: min-clamp
-            plain: '下限未満の縮小要求は0.2倍へ正確にクランプされる'
+            plain: '下限未満の縮小要求は0.01倍へ正確にクランプされる'
           - case: min-rotate
-            plain: '0.2倍へ到達する同一ジェスチャーでも45度回転は保持される'
+            plain: '0.01倍へ到達する同一ジェスチャーでも45度回転は保持される'
           - case: max-clamp
             plain: '拡大率の上限を超える要求は10倍へクランプされ、暴走しない'
           - case: single-pointer
