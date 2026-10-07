@@ -14,6 +14,7 @@ import '../../../engine/autofill_engine.dart'
 import '../../../engine/bucket_fill_engine.dart';
 import '../../../engine/drawing_engine.dart';
 import '../../../engine/filter_engine.dart' show FilterEngine;
+import '../../../engine/fisheye_perspective.dart';
 import '../../../engine/pixel_art_engine.dart';
 import '../../../engine/input_handler.dart';
 import '../../../engine/lasso_fill_engine.dart';
@@ -1481,7 +1482,8 @@ class _CanvasAreaState extends State<CanvasArea> {
 
     _syncBrushAndColor();
     // 透視定規：新しいストロークの開始点として、消失点スナップの基準をリセットする。
-    _rulerEngine.beginStroke();
+    // 魚眼パースは画面上で10px動いた向きで沿う線を決める。
+    _rulerEngine.beginStroke(directionDistance: 10 / _canvasToScreenScale);
     // 定規ツール自身も、ハンドル以外をドラッグした場合はガイド沿いに描く。
     // MoveだけでなくDownの最初の点から同じsnap経路へ通し、ストローク先頭に
     // 定規外の点が残らないようにする。透視定規はRulerEngine側で最初の点を
@@ -3388,6 +3390,14 @@ class _CanvasAreaState extends State<CanvasArea> {
           'vp2': r.settings.vanishingPoint2 ?? const Offset(1720, 540),
           'vp3': r.settings.vanishingPoint3 ?? const Offset(960, 100),
         };
+      case RulerType.fisheyePerspective:
+        final radius = r.settings.radiusX ?? 300;
+        return {
+          'move': r.position,
+          'radius': r.position + _rotatePoint(Offset(radius, 0), r.rotation),
+          // レンズの上の消失点。回すと全体が傾く。
+          'rotateUp': r.position + _rotatePoint(Offset(0, -radius), r.rotation),
+        };
       case RulerType.circle:
         return {'move': r.position};
     }
@@ -3433,6 +3443,16 @@ class _CanvasAreaState extends State<CanvasArea> {
       case 'vp3':
         return r.copyWith(
           settings: r.settings.copyWith(vanishingPoint3: canvasPos),
+        );
+      case 'radius':
+        return r.copyWith(
+          settings: r.settings.copyWith(
+            radiusX: (canvasPos - r.position).distance.clamp(10.0, 8000.0),
+          ),
+        );
+      case 'rotateUp':
+        return r.copyWith(
+          rotation: (canvasPos - r.position).direction + math.pi / 2,
         );
       default:
         return r;
@@ -4863,6 +4883,24 @@ class _CanvasPainter extends CustomPainter {
           }
           handle(vp);
         }
+      case RulerType.fisheyePerspective:
+        final radius = r.settings.radiusX ?? 300;
+        final c = ts(r.position);
+        canvas.save();
+        canvas.translate(c.dx, c.dy);
+        canvas.rotate(r.rotation);
+        canvas.scale(sx, sy);
+        canvas.drawPath(
+          fisheyeGuidePath(radius),
+          Paint()
+            ..color = paint.color
+            ..style = PaintingStyle.stroke
+            ..strokeWidth = paint.strokeWidth / sx,
+        );
+        canvas.restore();
+        handle(c);
+        handle(c + _rotateOffset(Offset(radius * sx, 0), r.rotation));
+        handle(c + _rotateOffset(Offset(0, -radius * sy), r.rotation));
       case RulerType.circle:
         break;
     }

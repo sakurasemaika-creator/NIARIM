@@ -568,6 +568,12 @@ class AppLocalizationsEn extends AppLocalizations {
   String get rulerTypeThreePoint => 'Three-Point Perspective';
 
   @override
+  String get rulerTypeFisheye => 'Fisheye Perspective';
+
+  @override
+  String get rulerSnap => 'Snap to ruler';
+
+  @override
   String get rulerDivisions => 'Divisions';
 
   @override
@@ -1324,7 +1330,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get helpRulerDesc =>
-      'A guide for drawing precise lines that are hard to achieve freehand, including straight, circle, ellipse, and perspective rulers (using vanishing points for perspective drawing). The pen tip automatically snaps to the placed ruler, making even compositions with challenging depth easier to draw than without a ruler. Rulers can be moved, rotated, and resized using their handles.';
+      'A guide for drawing precise lines that are hard to achieve freehand, including straight, circle, ellipse, and perspective rulers (using vanishing points for perspective drawing). The pen tip automatically snaps to the placed ruler, making even compositions with challenging depth easier to draw than without a ruler. Rulers can be moved, rotated, and resized using their handles. The fisheye perspective ruler is a curvilinear (five-point) perspective: horizontal and vertical lines bend into arcs within the lens circle and depth lines meet at the center. Each stroke follows the line that matches the direction you start drawing in; drag the handles to move the center, change the radius (the dot on the right of the circle) and tilt it (the dot at the top).';
 
   @override
   String get helpFadeTitle => 'Fade';

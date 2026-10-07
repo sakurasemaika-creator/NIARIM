@@ -557,6 +557,12 @@ class AppLocalizationsKo extends AppLocalizations {
   String get rulerTypeThreePoint => '3점 투시';
 
   @override
+  String get rulerTypeFisheye => '어안 투시';
+
+  @override
+  String get rulerSnap => '자에 스냅';
+
+  @override
   String get rulerDivisions => '분할 수';
 
   @override
@@ -1302,7 +1308,7 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get helpRulerDesc =>
-      '직선・원・타원・투시자（소실점을 이용한 투시도법용 자） 등, 프리핸드로는 그리기 어려운 정확한 선을 보조하는 기능입니다. 배치한 자를 따라 펜 끝이 자동으로 스냅되므로, 자가 없으면 어려운 원근감 있는 구도도 그리기 쉬워집니다. 자는 핸들을 조작하여 이동・회전・크기 변경을 할 수 있습니다.';
+      '직선・원・타원・투시자（소실점을 이용한 투시도법용 자） 등, 프리핸드로는 그리기 어려운 정확한 선을 보조하는 기능입니다. 배치한 자를 따라 펜 끝이 자동으로 스냅되므로, 자가 없으면 어려운 원근감 있는 구도도 그리기 쉬워집니다. 자는 핸들을 조작하여 이동・회전・크기 변경을 할 수 있습니다. 어안 투시자는 렌즈 원 안에서 가로・세로 선이 호를 그리고 깊이 방향의 선이 중심으로 모이는 5점 곡선 투시입니다. 그리기 시작한 방향에 맞는 선을 따라 그려지며, 핸들로 중심 이동・반경 변경（원 오른쪽의 점）・기울기 변경（원 위쪽의 점）을 할 수 있습니다.';
 
   @override
   String get helpFadeTitle => '페이드';

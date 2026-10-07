@@ -553,6 +553,12 @@ class AppLocalizationsZh extends AppLocalizations {
   String get rulerTypeThreePoint => '三点透视';
 
   @override
+  String get rulerTypeFisheye => '鱼眼透视';
+
+  @override
+  String get rulerSnap => '吸附到标尺';
+
+  @override
   String get rulerDivisions => '分割数';
 
   @override
@@ -1290,7 +1296,7 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get helpRulerDesc =>
-      '直线・圆・椭圆・透视标尺（使用消失点的透视图法专用标尺）等，用于辅助绘制徒手难以画出的精确线条的功能。放置的标尺会使笔尖自动吸附，即使是没有标尺就难以绘制的具有纵深感的构图也会更容易画出。标尺可以通过操作控制柄进行移动・旋转・调整大小。';
+      '直线・圆・椭圆・透视标尺（使用消失点的透视图法专用标尺）等，用于辅助绘制徒手难以画出的精确线条的功能。放置的标尺会使笔尖自动吸附，即使是没有标尺就难以绘制的具有纵深感的构图也会更容易画出。标尺可以通过操作控制柄进行移动・旋转・调整大小。鱼眼透视标尺是五点曲线透视：在镜头圆内，横线和竖线弯成圆弧，纵深方向的线汇聚到中心。笔画会沿着与开始绘制方向相符的线条，拖动控制柄可移动中心、改变半径（圆右侧的点）和倾斜（圆上方的点）。';
 
   @override
   String get helpFadeTitle => '淡出';
@@ -7455,6 +7461,12 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get rulerTypeThreePoint => '三點透視';
 
   @override
+  String get rulerTypeFisheye => '魚眼透視';
+
+  @override
+  String get rulerSnap => '吸附到尺規';
+
+  @override
   String get rulerDivisions => '分割數';
 
   @override
@@ -8192,7 +8204,7 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get helpRulerDesc =>
-      '直線・圓・橢圓・透視尺規（使用消失點的透視圖法專用尺規）等，用於輔助繪製徒手難以畫出的精確線條的功能。放置的尺規會使筆尖自動吸附，即使是沒有尺規就難以繪製的具有縱深感的構圖也會更容易畫出。尺規可以透過操作控制點進行移動・旋轉・調整大小。';
+      '直線・圓・橢圓・透視尺規（使用消失點的透視圖法專用尺規）等，用於輔助繪製徒手難以畫出的精確線條的功能。放置的尺規會使筆尖自動吸附，即使是沒有尺規就難以繪製的具有縱深感的構圖也會更容易畫出。尺規可以透過操作控制點進行移動・旋轉・調整大小。魚眼透視尺規是五點曲線透視：在鏡頭圓內，橫線和豎線彎成圓弧，縱深方向的線匯聚到中心。筆畫會沿著與開始繪製方向相符的線條，拖曳控制點可移動中心、改變半徑（圓右側的點）和傾斜（圓上方的點）。';
 
   @override
   String get helpFadeTitle => '淡出';

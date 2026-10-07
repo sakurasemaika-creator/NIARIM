@@ -54,6 +54,10 @@ enum RulerType {
   onePointPerspective,
   twoPointPerspective,
   threePointPerspective,
+
+  /// 魚眼パース（5点の曲線透視）。[Ruler.position]がレンズの中心、
+  /// [RulerSettings.radiusX]がレンズの縁の半径、[Ruler.rotation]が傾き。
+  fisheyePerspective,
 }
 
 class RulerSettings {

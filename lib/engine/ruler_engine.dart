@@ -1,6 +1,7 @@
 import 'dart:math';
 import 'dart:ui';
 import '../models/ruler.dart';
+import 'fisheye_perspective.dart';
 
 class RulerEngine {
   Ruler? _activeRuler;
@@ -11,18 +12,28 @@ class RulerEngine {
   Offset? _strokeAnchor;
   Offset? _strokeVp;
 
+  // 魚眼パース定規用：ストロークが沿う線（描き始めの向きで決める）と、
+  // 向きを決めるまでに動く距離（キャンバスpx）。
+  FisheyeCurve? _strokeCurve;
+  double _directionDistance = 8;
+
   void setActiveRuler(Ruler? ruler) {
     _activeRuler = ruler;
     _strokeAnchor = null;
     _strokeVp = null;
+    _strokeCurve = null;
   }
 
   /// 1回のドラッグ（ストローク）開始時に呼び出す。透視定規のスナップ基準を
   /// リセットし、次のsnapToRuler呼び出しが新しいストロークの開始点として
-  /// 扱われるようにする。
-  void beginStroke() {
+  /// 扱われるようにする。[directionDistance]は、魚眼パース定規でどの線に
+  /// 沿うかを決めるまでに動く距離（キャンバスpx。画面上で一定になるよう
+  /// 呼び出し側が拡大率から決める）。
+  void beginStroke({double? directionDistance}) {
     _strokeAnchor = null;
     _strokeVp = null;
+    _strokeCurve = null;
+    if (directionDistance != null) _directionDistance = directionDistance;
   }
 
   Offset snapToRuler(Offset point) {
@@ -49,7 +60,41 @@ class RulerEngine {
         settings.vanishingPoint2 ?? const Offset(1720, 540),
         settings.vanishingPoint3 ?? const Offset(960, 100),
       ]),
+      RulerType.fisheyePerspective => _snapToFisheye(point, ruler),
     };
+  }
+
+  /// 魚眼パース定規：描き始めの点を通る3本の線（横の円弧・縦の円弧・
+  /// 中心を通る直線）のうち、描き始めた向きに最も近い1本に沿わせる。
+  /// 向きが決まるまで（[_directionDistance]動くまで）は描き始めの点に
+  /// 留め、決まった後は同じ線の上へ投影し続ける。
+  Offset _snapToFisheye(Offset point, Ruler ruler) {
+    final radius = ruler.settings.radiusX ?? 300;
+    final c = cos(ruler.rotation);
+    final s = sin(ruler.rotation);
+    Offset toLocal(Offset p) {
+      final d = p - ruler.position;
+      return Offset(d.dx * c + d.dy * s, -d.dx * s + d.dy * c);
+    }
+
+    Offset toWorld(Offset p) =>
+        ruler.position + Offset(p.dx * c - p.dy * s, p.dx * s + p.dy * c);
+
+    final anchor = _strokeAnchor;
+    if (anchor == null) {
+      _strokeAnchor = point;
+      return point;
+    }
+    var curve = _strokeCurve;
+    if (curve == null) {
+      if ((point - anchor).distance < _directionDistance) return anchor;
+      curve = _strokeCurve = fisheyeCurveAlong(
+        toLocal(anchor),
+        toLocal(point) - toLocal(anchor),
+        radius,
+      );
+    }
+    return toWorld(curve.project(toLocal(point)));
   }
 
   Offset _snapToLine(Offset point) {

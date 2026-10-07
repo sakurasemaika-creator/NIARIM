@@ -574,6 +574,12 @@ class AppLocalizationsFr extends AppLocalizations {
   String get rulerTypeThreePoint => 'Perspective à trois points';
 
   @override
+  String get rulerTypeFisheye => 'Perspective fish-eye';
+
+  @override
+  String get rulerSnap => 'Aimanter à la règle';
+
+  @override
   String get rulerDivisions => 'Divisions';
 
   @override
@@ -1343,7 +1349,7 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get helpRulerDesc =>
-      'Un guide pour dessiner des lignes précises difficiles à réaliser à main levée, y compris des règles droites, circulaires, elliptiques et de perspective (utilisant des points de fuite pour le dessin en perspective). La pointe du stylet s\'aligne automatiquement sur la règle placée, rendant même les compositions avec une profondeur difficile plus faciles à dessiner que sans règle. Les règles peuvent être déplacées, pivotées et redimensionnées à l\'aide de leurs poignées.';
+      'Un guide pour dessiner des lignes précises difficiles à réaliser à main levée, y compris des règles droites, circulaires, elliptiques et de perspective (utilisant des points de fuite pour le dessin en perspective). La pointe du stylet s\'aligne automatiquement sur la règle placée, rendant même les compositions avec une profondeur difficile plus faciles à dessiner que sans règle. Les règles peuvent être déplacées, pivotées et redimensionnées à l\'aide de leurs poignées. La règle de perspective fish-eye est une perspective curviligne à cinq points : les lignes horizontales et verticales se courbent en arcs dans le cercle de l\'objectif et les lignes de profondeur se rejoignent au centre. Chaque trait suit la ligne qui correspond à la direction dans laquelle vous commencez à dessiner ; faites glisser les poignées pour déplacer le centre, changer le rayon (le point à droite du cercle) et l\'incliner (le point du haut).';
 
   @override
   String get helpFadeTitle => 'Fondu';

@@ -576,6 +576,12 @@ class AppLocalizationsEs extends AppLocalizations {
   String get rulerTypeThreePoint => 'Perspectiva de tres puntos';
 
   @override
+  String get rulerTypeFisheye => 'Perspectiva de ojo de pez';
+
+  @override
+  String get rulerSnap => 'Ajustar a la regla';
+
+  @override
   String get rulerDivisions => 'Divisiones';
 
   @override
@@ -1348,7 +1354,7 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get helpRulerDesc =>
-      'Una guía para dibujar líneas precisas difíciles de lograr a mano alzada, incluidas reglas rectas, circulares, elípticas y de perspectiva (que usan puntos de fuga para el dibujo en perspectiva). La punta del lápiz se ajusta automáticamente a la regla colocada, facilitando incluso composiciones con profundidad difícil de dibujar sin regla. Las reglas se pueden mover, rotar y redimensionar usando sus controladores.';
+      'Una guía para dibujar líneas precisas difíciles de lograr a mano alzada, incluidas reglas rectas, circulares, elípticas y de perspectiva (que usan puntos de fuga para el dibujo en perspectiva). La punta del lápiz se ajusta automáticamente a la regla colocada, facilitando incluso composiciones con profundidad difícil de dibujar sin regla. Las reglas se pueden mover, rotar y redimensionar usando sus controladores. La regla de perspectiva de ojo de pez es una perspectiva curvilínea de cinco puntos: las líneas horizontales y verticales se curvan en arcos dentro del círculo de la lente y las líneas de profundidad se juntan en el centro. Cada trazo sigue la línea que coincide con la dirección en la que empiezas a dibujar; arrastra los controladores para mover el centro, cambiar el radio (el punto a la derecha del círculo) e inclinarla (el punto de arriba).';
 
   @override
   String get helpFadeTitle => 'Desvanecido';

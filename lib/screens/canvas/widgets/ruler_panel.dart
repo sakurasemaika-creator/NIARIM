@@ -1,3 +1,5 @@
+import 'dart:math' as math;
+
 import 'package:niarim/services/theme_service.dart';
 import 'package:flutter/material.dart';
 import '../../../l10n/app_localizations.dart';
@@ -28,8 +30,12 @@ class RulerPanel extends StatelessWidget {
       elevation: 4,
       borderRadius: BorderRadius.circular(8),
       color: Theme.of(context).colorScheme.surfaceContainerHigh,
-      child: SizedBox(
-        width: 200,
+      // On a short screen (or with large text) the list scrolls instead of
+      // running off the bottom.
+      child: ConstrainedBox(
+        constraints: BoxConstraints.tightFor(
+          width: 200,
+        ).copyWith(maxHeight: MediaQuery.sizeOf(context).height * 0.75),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
@@ -68,11 +74,17 @@ class RulerPanel extends StatelessWidget {
             if (activeRuler != null) ...[
               const Divider(height: 1),
               Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 2),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 12,
+                  vertical: 2,
+                ),
                 child: Row(
                   children: [
-                    const Expanded(
-                      child: Text('Snap', style: TextStyle(fontSize: 12)),
+                    Expanded(
+                      child: Text(
+                        l10n.rulerSnap,
+                        style: const TextStyle(fontSize: 12),
+                      ),
                     ),
                     Switch(
                       key: const ValueKey('ruler-snap-switch'),
@@ -86,17 +98,62 @@ class RulerPanel extends StatelessWidget {
               ),
             ],
             const Divider(height: 1),
-            _rulerTile(context, RulerType.line, Icons.straighten, l10n.rulerTypeLine),
-            _rulerTile(context, RulerType.ellipse, Icons.circle_outlined, l10n.rulerTypeEllipse),
-            _rulerTile(context, RulerType.radial, Icons.hub_outlined, l10n.rulerTypeRadial),
-            const Divider(height: 1),
-            _rulerTile(context, RulerType.onePointPerspective, Icons.filter_center_focus, l10n.rulerTypeOnePoint),
-            _rulerTile(context, RulerType.twoPointPerspective, Icons.compare_arrows, l10n.rulerTypeTwoPoint),
-            _rulerTile(context, RulerType.threePointPerspective, Icons.grid_3x3, l10n.rulerTypeThreePoint),
-            if (activeRuler?.type == RulerType.radial) ...[
-              const Divider(height: 1),
-              _divisionsRow(context),
-            ],
+            Flexible(
+              child: SingleChildScrollView(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    _rulerTile(
+                      context,
+                      RulerType.line,
+                      Icons.straighten,
+                      l10n.rulerTypeLine,
+                    ),
+                    _rulerTile(
+                      context,
+                      RulerType.ellipse,
+                      Icons.circle_outlined,
+                      l10n.rulerTypeEllipse,
+                    ),
+                    _rulerTile(
+                      context,
+                      RulerType.radial,
+                      Icons.hub_outlined,
+                      l10n.rulerTypeRadial,
+                    ),
+                    const Divider(height: 1),
+                    _rulerTile(
+                      context,
+                      RulerType.onePointPerspective,
+                      Icons.filter_center_focus,
+                      l10n.rulerTypeOnePoint,
+                    ),
+                    _rulerTile(
+                      context,
+                      RulerType.twoPointPerspective,
+                      Icons.compare_arrows,
+                      l10n.rulerTypeTwoPoint,
+                    ),
+                    _rulerTile(
+                      context,
+                      RulerType.threePointPerspective,
+                      Icons.grid_3x3,
+                      l10n.rulerTypeThreePoint,
+                    ),
+                    _rulerTile(
+                      context,
+                      RulerType.fisheyePerspective,
+                      Icons.language,
+                      l10n.rulerTypeFisheye,
+                    ),
+                    if (activeRuler?.type == RulerType.radial) ...[
+                      const Divider(height: 1),
+                      _divisionsRow(context),
+                    ],
+                  ],
+                ),
+              ),
+            ),
             const SizedBox(height: 4),
           ],
         ),
@@ -110,27 +167,64 @@ class RulerPanel extends StatelessWidget {
     final divisions = r.settings.divisions ?? 12;
     void update(int newDivisions) {
       final clamped = newDivisions.clamp(2, 360);
-      onRulerChanged(r.copyWith(settings: r.settings.copyWith(divisions: clamped)));
+      onRulerChanged(
+        r.copyWith(settings: r.settings.copyWith(divisions: clamped)),
+      );
     }
+
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
-      child: Row(children: [
-        Text(l10n.rulerDivisions, style: const TextStyle(fontSize: 12)),
-        const Spacer(),
-        IconButton(icon: const Icon(Icons.remove, size: 16), tooltip: l10n.commonDecrease, onPressed: () => update(divisions - 1), padding: EdgeInsets.zero, constraints: const BoxConstraints()),
-        SizedBox(width: 28, child: Text('$divisions', textAlign: TextAlign.center, style: const TextStyle(fontSize: 12))),
-        IconButton(icon: const Icon(Icons.add, size: 16), tooltip: l10n.commonIncrease, onPressed: () => update(divisions + 1), padding: EdgeInsets.zero, constraints: const BoxConstraints()),
-      ]),
+      child: Row(
+        children: [
+          Text(l10n.rulerDivisions, style: const TextStyle(fontSize: 12)),
+          const Spacer(),
+          IconButton(
+            icon: const Icon(Icons.remove, size: 16),
+            tooltip: l10n.commonDecrease,
+            onPressed: () => update(divisions - 1),
+            padding: EdgeInsets.zero,
+            constraints: const BoxConstraints(),
+          ),
+          SizedBox(
+            width: 28,
+            child: Text(
+              '$divisions',
+              textAlign: TextAlign.center,
+              style: const TextStyle(fontSize: 12),
+            ),
+          ),
+          IconButton(
+            icon: const Icon(Icons.add, size: 16),
+            tooltip: l10n.commonIncrease,
+            onPressed: () => update(divisions + 1),
+            padding: EdgeInsets.zero,
+            constraints: const BoxConstraints(),
+          ),
+        ],
+      ),
     );
   }
 
-  Widget _rulerTile(BuildContext context, RulerType type, IconData icon, String label) {
+  Widget _rulerTile(
+    BuildContext context,
+    RulerType type,
+    IconData icon,
+    String label,
+  ) {
     final isActive = activeRuler?.type == type;
     final primary = Theme.of(context).colorScheme.primary;
     return ListTile(
       dense: true,
       leading: Icon(icon, size: 18, color: isActive ? primary : null),
-      title: Text(label, style: TextStyle(fontSize: 12, fontFamily: 'Kuramubon', fontFamilyFallback: kHeadingFontFallback, color: isActive ? primary : null)),
+      title: Text(
+        label,
+        style: TextStyle(
+          fontSize: 12,
+          fontFamily: 'Kuramubon',
+          fontFamilyFallback: kHeadingFontFallback,
+          color: isActive ? primary : null,
+        ),
+      ),
       selected: isActive,
       selectedTileColor: primary.withValues(alpha: 0.1),
       onTap: () {
@@ -139,7 +233,9 @@ class RulerPanel extends StatelessWidget {
         } else {
           // Snap is a user mode, not a ruler-type default. Carry it across type
           // changes so line -> perspective etc. never silently turns snapping on.
-          onRulerChanged(_defaultRuler(type, snapEnabled: activeRuler?.snapEnabled ?? true));
+          onRulerChanged(
+            _defaultRuler(type, snapEnabled: activeRuler?.snapEnabled ?? true),
+          );
         }
         onClose();
       },
@@ -150,14 +246,38 @@ class RulerPanel extends StatelessWidget {
     final sx = canvasWidth / 1920.0;
     final sy = canvasHeight / 1080.0;
     final center = Offset(canvasWidth / 2, canvasHeight / 2);
-    Ruler make(RulerSettings settings) => Ruler(type: type, position: center, snapEnabled: snapEnabled, settings: settings);
+    Ruler make(RulerSettings settings) => Ruler(
+      type: type,
+      position: center,
+      snapEnabled: snapEnabled,
+      settings: settings,
+    );
     return switch (type) {
       RulerType.line => make(const RulerSettings()),
-      RulerType.ellipse => make(RulerSettings(radiusX: 200 * sx, radiusY: 120 * sy)),
+      RulerType.ellipse => make(
+        RulerSettings(radiusX: 200 * sx, radiusY: 120 * sy),
+      ),
       RulerType.radial => make(const RulerSettings(divisions: 12)),
-      RulerType.onePointPerspective => make(RulerSettings(vanishingPoint1: center)),
-      RulerType.twoPointPerspective => make(RulerSettings(vanishingPoint1: Offset(200 * sx, 540 * sy), vanishingPoint2: Offset(1720 * sx, 540 * sy))),
-      RulerType.threePointPerspective => make(RulerSettings(vanishingPoint1: Offset(200 * sx, 540 * sy), vanishingPoint2: Offset(1720 * sx, 540 * sy), vanishingPoint3: Offset(960 * sx, 100 * sy))),
+      RulerType.onePointPerspective => make(
+        RulerSettings(vanishingPoint1: center),
+      ),
+      RulerType.twoPointPerspective => make(
+        RulerSettings(
+          vanishingPoint1: Offset(200 * sx, 540 * sy),
+          vanishingPoint2: Offset(1720 * sx, 540 * sy),
+        ),
+      ),
+      RulerType.threePointPerspective => make(
+        RulerSettings(
+          vanishingPoint1: Offset(200 * sx, 540 * sy),
+          vanishingPoint2: Offset(1720 * sx, 540 * sy),
+          vanishingPoint3: Offset(960 * sx, 100 * sy),
+        ),
+      ),
+      // The lens fills most of the canvas's shorter side.
+      RulerType.fisheyePerspective => make(
+        RulerSettings(radiusX: math.min(canvasWidth, canvasHeight) * 0.45),
+      ),
       _ => make(const RulerSettings()),
     };
   }

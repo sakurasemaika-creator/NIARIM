@@ -555,6 +555,12 @@ class AppLocalizationsJa extends AppLocalizations {
   String get rulerTypeThreePoint => '3点透視';
 
   @override
+  String get rulerTypeFisheye => '魚眼パース';
+
+  @override
+  String get rulerSnap => '定規に吸着';
+
+  @override
   String get rulerDivisions => '分割数';
 
   @override
@@ -1298,7 +1304,7 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get helpRulerDesc =>
-      '直線・円・楕円・パース定規（消失点を使った透視図法用の定規）など、フリーハンドでは描きにくい正確な線を補助するための機能です。配置した定規に沿ってペン先が自動でスナップするため、定規なしでは難しい奥行きのある構図も描きやすくなります。定規はハンドルを操作して移動・回転・サイズ変更ができます。';
+      '直線・円・楕円・パース定規（消失点を使った透視図法用の定規）など、フリーハンドでは描きにくい正確な線を補助するための機能です。配置した定規に沿ってペン先が自動でスナップするため、定規なしでは難しい奥行きのある構図も描きやすくなります。定規はハンドルを操作して移動・回転・サイズ変更ができます。魚眼パースは、レンズの縁の円の中で横・縦の線が弧を描き、奥行きの線が中心へ集まる5点の曲線透視です。描き始めた向きに合う線に沿って描け、ハンドルで中心の移動・半径（円の右の丸）・傾き（円の上の丸）を変えられます。';
 
   @override
   String get helpFadeTitle => 'フェード';
