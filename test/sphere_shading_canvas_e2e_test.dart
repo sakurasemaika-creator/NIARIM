@@ -21,6 +21,7 @@ import 'package:niarim/screens/canvas/widgets/toolbar_widget.dart';
 import 'package:niarim/services/filter_service.dart';
 import 'package:niarim/services/project_service.dart';
 import 'package:niarim/services/theme_service.dart';
+import 'package:niarim/widgets/app_scroll_behavior.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -80,6 +81,7 @@ void main() {
                 valueListenable: activeProject,
                 builder: (context, id, _) => MaterialApp(
                   theme: context.watch<ThemeService>().themeData,
+                  scrollBehavior: const AppScrollBehavior(),
                   locale: const Locale('ja'),
                   localizationsDelegates:
                       AppLocalizations.localizationsDelegates,

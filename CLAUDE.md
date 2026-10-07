@@ -727,6 +727,18 @@ onTap: ...)`だったために
   `runFilterPreview`を`compute`で回す純関数で、パネル側は実行中に来た
   要求を1つに畳んで最新だけ描く。調整モードの出入りで画像を破棄し忘れる
   と`ui.Image`がリークするので、`onClose`と`dispose`の両方で捨てている。
+- **縦スクロールのスクロールバーはアプリ全体で常時表示（個別に`Scrollbar`で
+  包まない）**：`app.dart`の`scrollBehavior: const AppScrollBehavior()`
+  （`lib/widgets/app_scroll_behavior.dart`）が、縦スクロールすべての右端に
+  つまみを出す（ユーザー指定）。画面側でさらに`Scrollbar`で包むと二重に出る。
+  スマホでは表示だけの`AlwaysShownScrollIndicator`を使っていて、Flutterの
+  `Scrollbar(thumbVisibility: true)`は使っていない。後者はコントローラーが
+  1つのスクロールにだけ付いていることを要求するが、スマホではコントローラーを
+  渡していない縦スクロールが画面ごとの`PrimaryScrollController`を共有するため、
+  同じ画面に2つあるだけで例外になる。テストで自前の`MaterialApp`を組むと
+  この振る舞いが入らないので、本番と同じ見た目を撮るときは
+  `scrollBehavior: const AppScrollBehavior()`を渡すこと
+  （`test/app_scroll_behavior_test.dart`が見張る）。
 - **フィルターでブレンドモードを使うときは`lib/engine/blend_math.dart`**：
   レイヤー合成（GPUの`BlendMode`と一部CPU）と同じ式を純Dartで持つ。
   25種すべてが実際の合成結果と一致することを

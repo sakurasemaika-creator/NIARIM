@@ -1,4 +1,3 @@
-import 'package:flutter/gestures.dart' show PointerDeviceKind;
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:provider/provider.dart';
@@ -11,22 +10,7 @@ import 'services/home_widget_service.dart';
 import 'services/project_service.dart';
 import 'services/settings_service.dart';
 import 'services/theme_service.dart';
-
-/// タッチだけでなくマウス・トラックパッドのドラッグでもスクロール・
-/// PageViewのスワイプができるようにする（Flutterの既定のScrollBehaviorは
-/// マウスドラッグを対象外にしており、Chrome等デスクトップ環境でTipsの
-/// 詳細ポップアップ（PageView）を横スワイプできなくなっていた不具合の
-/// 原因だった）。
-class _AppScrollBehavior extends MaterialScrollBehavior {
-  @override
-  Set<PointerDeviceKind> get dragDevices => {
-    PointerDeviceKind.touch,
-    PointerDeviceKind.mouse,
-    PointerDeviceKind.stylus,
-    PointerDeviceKind.invertedStylus,
-    PointerDeviceKind.trackpad,
-  };
-}
+import 'widgets/app_scroll_behavior.dart';
 
 class NiarimApp extends StatefulWidget {
   const NiarimApp({super.key});
@@ -105,7 +89,7 @@ class _NiarimAppState extends State<NiarimApp> {
       title: 'NIARIM',
       debugShowCheckedModeBanner: false,
       theme: themeService.themeData,
-      scrollBehavior: _AppScrollBehavior(),
+      scrollBehavior: const AppScrollBehavior(),
       routerConfig: appRouter,
       locale: _localeFromCode(language),
       supportedLocales: AppLocalizations.supportedLocales,

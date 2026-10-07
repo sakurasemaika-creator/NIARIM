@@ -101,7 +101,6 @@ class _FilterPanelState extends State<FilterPanel> {
   // and Undo / Redo / Apply over the canvas (to see it, and to reach what a
   // filter shows on it, such as sphere shading's light).
   bool _collapsed = false;
-  final ScrollController _controlsScroll = ScrollController();
 
   Uint8List? _previewBase;
   // Auto line art's analysis copy of the layer (see _kLineartAnalysisMaxSide).
@@ -149,7 +148,6 @@ class _FilterPanelState extends State<FilterPanel> {
 
   @override
   void dispose() {
-    _controlsScroll.dispose();
     _previewImage?.dispose();
     _editGroupService?.endFilterEditGroup();
     super.dispose();
@@ -827,59 +825,55 @@ class _FilterPanelState extends State<FilterPanel> {
       onPointerDown: (e) => _editPointerDown(e.pointer),
       onPointerUp: (e) => _editPointerUp(e.pointer),
       onPointerCancel: (e) => _editPointerUp(e.pointer),
-      child: Scrollbar(
-        controller: _controlsScroll,
-        thumbVisibility: true,
-        child: SingleChildScrollView(
-          controller: _controlsScroll,
-          hitTestBehavior: HitTestBehavior.deferToChild,
-          padding: const EdgeInsets.only(right: 10),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              if (showPreviewBox) ...[
-                Center(
-                  child: Container(
-                    width: previewSide,
-                    height: previewSide,
-                    decoration: BoxDecoration(
-                      color: Theme.of(
-                        context,
-                      ).colorScheme.surfaceContainerHighest,
-                      borderRadius: BorderRadius.circular(6),
-                    ),
-                    child: _previewImage == null
-                        ? const Center(
-                            child: SizedBox(
-                              width: 20,
-                              height: 20,
-                              child: CircularProgressIndicator(strokeWidth: 2),
-                            ),
-                          )
-                        : ClipRRect(
-                            borderRadius: BorderRadius.circular(6),
-                            child:
-                                lineartEditor &&
-                                    _autoLineartPreviewGraph != null
-                                ? AutoLineartControlOverlay(
-                                    image: _previewImage!,
-                                    graph: _autoLineartPreviewGraph!,
-                                    mode: _autoLineartControlMode,
-                                    onPointMoved: _moveAutoLineartPoint,
-                                    onGraphChanged: _replaceAutoLineartGraph,
-                                  )
-                                : RawImage(
-                                    image: _previewImage,
-                                    fit: BoxFit.contain,
-                                  ),
-                          ),
+      // The app's scroll behaviour shows the scrollbar on the right; the
+      // padding keeps the controls clear of it.
+      child: SingleChildScrollView(
+        hitTestBehavior: HitTestBehavior.deferToChild,
+        padding: const EdgeInsets.only(right: 10),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            if (showPreviewBox) ...[
+              Center(
+                child: Container(
+                  width: previewSide,
+                  height: previewSide,
+                  decoration: BoxDecoration(
+                    color: Theme.of(
+                      context,
+                    ).colorScheme.surfaceContainerHighest,
+                    borderRadius: BorderRadius.circular(6),
                   ),
+                  child: _previewImage == null
+                      ? const Center(
+                          child: SizedBox(
+                            width: 20,
+                            height: 20,
+                            child: CircularProgressIndicator(strokeWidth: 2),
+                          ),
+                        )
+                      : ClipRRect(
+                          borderRadius: BorderRadius.circular(6),
+                          child:
+                              lineartEditor && _autoLineartPreviewGraph != null
+                              ? AutoLineartControlOverlay(
+                                  image: _previewImage!,
+                                  graph: _autoLineartPreviewGraph!,
+                                  mode: _autoLineartControlMode,
+                                  onPointMoved: _moveAutoLineartPoint,
+                                  onGraphChanged: _replaceAutoLineartGraph,
+                                )
+                              : RawImage(
+                                  image: _previewImage,
+                                  fit: BoxFit.contain,
+                                ),
+                        ),
                 ),
-                const SizedBox(height: 6),
-              ],
-              _buildControls(l10n, service, current),
+              ),
+              const SizedBox(height: 6),
             ],
-          ),
+            _buildControls(l10n, service, current),
+          ],
         ),
       ),
     );
