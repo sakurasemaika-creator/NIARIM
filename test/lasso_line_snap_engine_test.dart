@@ -410,6 +410,30 @@ void main() {
     expect(_iou(selection, expected), greaterThan(.98));
   });
 
+  test('small gaps between line-art segments are bridged naturally', () {
+    final art = _LineArt(100, 80)
+      ..stroke([const Offset(12, 40.5), const Offset(46, 40.5)], 2)
+      ..stroke([const Offset(51, 40.5), const Offset(88, 40.5)], 2);
+    final guide = [
+      for (var x = 10; x <= 90; x += 2) Offset(x.toDouble(), 45),
+    ];
+    final snapped = engine.snapPath(
+      guide: guide,
+      rgba: art.rgba,
+      width: art.width,
+      height: art.height,
+      radius: 10,
+    );
+    final gapPoints = snapped.where((p) => p.dx >= 45 && p.dx <= 53);
+    expect(gapPoints, isNotEmpty);
+    expect(
+      gapPoints.every((p) => (p.dy - 40.5).abs() <= 2.0),
+      isTrue,
+      reason: 'the selection boundary should cross the small line-art gap '
+          'without jumping away from the contour',
+    );
+  });
+
   test('the live preview is the final route, closed at the end', () {
     final art = _LineArt(80, 80)
       ..stroke([const Offset(5, 40.5), const Offset(75, 40.5)], 2);
