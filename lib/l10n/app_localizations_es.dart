@@ -7190,6 +7190,9 @@ class AppLocalizationsEs extends AppLocalizations {
   String get canvasLassoSnapToLines => 'Ajustar a las líneas';
 
   @override
+  String get canvasLassoGapTolerance => 'Tolerancia de huecos';
+
+  @override
   String get filterBackToList => 'Volver a los filtros';
 
   @override
