@@ -5371,7 +5371,7 @@ class AppLocalizationsJa extends AppLocalizations {
   String get filterNamePrism => 'プリズム';
 
   @override
-  String get filterNameThreshold => '二値化フィルター';
+  String get filterNameThreshold => '二値化';
 
   @override
   String get filterMonochromeColorLabel => '単色化の色';
@@ -5380,19 +5380,19 @@ class AppLocalizationsJa extends AppLocalizations {
   String get filterThresholdLabel => '閾値';
 
   @override
-  String get filterNameFisheye => '魚眼レンズフィルター';
+  String get filterNameFisheye => '魚眼レンズ';
 
   @override
   String get filterFisheyeStrength => '歪み';
 
   @override
-  String get filterNameChromaticAberration => '色収差フィルター';
+  String get filterNameChromaticAberration => '色収差';
 
   @override
   String get filterChromaticAberrationStrength => 'ずれの強さ';
 
   @override
-  String get filterNameLensDistortion => '眼鏡断層フィルター';
+  String get filterNameLensDistortion => '眼鏡断層';
 
   @override
   String get filterLensDistortionStrength => 'レンズの強さ（負で凹レンズ、正で凸レンズ）';
@@ -5401,10 +5401,10 @@ class AppLocalizationsJa extends AppLocalizations {
   String get filterLensDistortionOffsetX => '中心位置の微調整（左右）';
 
   @override
-  String get filterNamePixelate => 'ドット絵フィルター';
+  String get filterNamePixelate => 'ドット絵';
 
   @override
-  String get filterNameAuroraHologram => '質感変更フィルター';
+  String get filterNameAuroraHologram => '質感変更';
 
   @override
   String get filterAuroraHologramStrength => 'フィルター強度';
