@@ -253,24 +253,30 @@ class LassoLineSnapTracker {
         found = current;
         break;
       }
-      for (var dy = -1; dy <= 1; dy++) {
-        for (var dx = -1; dx <= 1; dx++) {
-          if (dx == 0 && dy == 0) continue;
-          final x = cx + dx;
-          final y = cy + dy;
-          if (x < left || x > right || y < top || y > bottom) continue;
-          final ink = _isInkAt(Offset(x + .5, y + .5));
-          final nextGapRun = ink ? 0 : gapRun + 1;
-          if (nextGapRun > _maxGapPixels) continue;
-          final nextTotalGap = totalGap[current] + (ink ? 0 : 1);
-          if (nextTotalGap > _maxTotalGapPixels) continue;
-          final next = stateIndex(pixelIndex(x, y), nextGapRun);
-          if (cameFrom[next] != -1) continue;
-          cameFrom[next] = current;
-          totalGap[next] = nextTotalGap;
-          queue.add(next);
-        }
+      // 4-connected traversal makes the tolerance correspond to the
+      // actual horizontal/vertical pixel distance of the line-art break.
+      const neighbors = <(int, int)>[
+        (1, 0),
+        (-1, 0),
+        (0, 1),
+        (0, -1),
+      ];
+      for (final (dx, dy) in neighbors) {
+        final x = cx + dx;
+        final y = cy + dy;
+        if (x < left || x > right || y < top || y > bottom) continue;
+        final ink = _isInkAt(Offset(x + .5, y + .5));
+        final nextGapRun = ink ? 0 : gapRun + 1;
+        if (nextGapRun > _maxGapPixels) continue;
+        final nextTotalGap = totalGap[current] + (ink ? 0 : 1);
+        if (nextTotalGap > _maxTotalGapPixels) continue;
+        final next = stateIndex(pixelIndex(x, y), nextGapRun);
+        if (cameFrom[next] != -1) continue;
+        cameFrom[next] = current;
+        totalGap[next] = nextTotalGap;
+        queue.add(next);
       }
+
     }
     if (found < 0) return null;
 
