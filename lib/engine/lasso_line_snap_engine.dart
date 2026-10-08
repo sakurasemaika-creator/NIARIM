@@ -342,6 +342,14 @@ class LassoLineSnapTracker {
       var from = 0;
       for (var a = 0; a < previous.points.length; a++) {
         final aOnGuide = a == previous.guideState;
+        if (!aOnGuide &&
+            !bOnGuide &&
+            _offInkLength(previous.points[a], sample.points[b]) >
+                _maxGapPixels) {
+          // Do not jump directly between separate ink segments when their
+          // open break is larger than the user's configured tolerance.
+          continue;
+        }
         // Leaving or rejoining the line pays for drifting towards or away
         // from the guide, so the guide is never a free way across to some
         // other line.
