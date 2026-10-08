@@ -434,6 +434,43 @@ void main() {
     );
   });
 
+  test('lasso gap tolerance controls how much line-art break is bridged', () {
+    final art = _LineArt(100, 80)
+      ..stroke([const Offset(12, 40.5), const Offset(46, 40.5)], 2)
+      ..stroke([const Offset(51, 40.5), const Offset(88, 40.5)], 2);
+    final guide = [
+      for (var x = 10; x <= 90; x += 2) Offset(x.toDouble(), 45),
+    ];
+
+    final strict = engine.snapPath(
+      guide: guide,
+      rgba: art.rgba,
+      width: art.width,
+      height: art.height,
+      radius: 10,
+      gapTolerancePx: 3,
+    );
+    final permissive = engine.snapPath(
+      guide: guide,
+      rgba: art.rgba,
+      width: art.width,
+      height: art.height,
+      radius: 10,
+      gapTolerancePx: 4,
+    );
+
+    expect(
+      strict.where((p) => p.dx > 46.5 && p.dx < 50.5 && (p.dy - 40.5).abs() <= 2),
+      isEmpty,
+      reason: 'a 4px line-art gap should remain open when the tolerance is 3px',
+    );
+    expect(
+      permissive.where((p) => p.dx > 46.5 && p.dx < 50.5 && (p.dy - 40.5).abs() <= 2),
+      isNotEmpty,
+      reason: 'a 4px line-art gap should bridge when the tolerance is 4px',
+    );
+  });
+
   test('the live preview is the final route, closed at the end', () {
     final art = _LineArt(80, 80)
       ..stroke([const Offset(5, 40.5), const Offset(75, 40.5)], 2);
