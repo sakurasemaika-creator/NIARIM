@@ -1328,6 +1328,9 @@ class _CanvasScreenState extends State<CanvasScreen> {
                                   lassoSnapToLines: context
                                       .watch<SettingsService>()
                                       .lassoSnapToLines,
+                                  lassoGapTolerancePx: context
+                                      .watch<SettingsService>()
+                                      .lassoGapTolerancePx,
                                   onSelectionActiveChanged: (v) {
                                     if (_hasActiveSelection == v) return;
                                     setState(() {
@@ -2690,6 +2693,7 @@ class _CanvasScreenState extends State<CanvasScreen> {
                               SizedBox(
                                 width: 92,
                                 child: SteppedSlider(
+                                  key: const ValueKey('lasso-gap-tolerance'),
                                   value: settings.lassoGapTolerancePx.toDouble(),
                                   min: 0,
                                   max: 12,
