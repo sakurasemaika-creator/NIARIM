@@ -85,6 +85,12 @@ class LassoLineSnapTracker {
   static const double _guideCost = 1.5;
   static const double _switchCost = 1.0;
 
+  // Small breaks in hand-drawn line art should behave like a continuous
+  // contour while snapping, but a real open space must remain open.  The
+  // bridge is therefore limited both per gap and over the whole traced route.
+  static const int _maxGapPixels = 6;
+  static const int _maxTotalGapPixels = 8;
+
   /// Pixel offsets within [radius], nearest first.
   final List<(int, int)> _disk;
 
@@ -210,45 +216,61 @@ class LassoLineSnapTracker {
     final start = _inkPixelNear(a);
     final goal = _inkPixelNear(b);
     if (start == null || goal == null) return null;
-    final margin = ((budget - chord) / 2).ceil() + 2;
+    final margin = ((budget - chord) / 2).ceil() + _maxGapPixels + 2;
     final left = math.max(0, math.min(start.$1, goal.$1) - margin);
     final top = math.max(0, math.min(start.$2, goal.$2) - margin);
     final right = math.min(width - 1, math.max(start.$1, goal.$1) + margin);
     final bottom = math.min(height - 1, math.max(start.$2, goal.$2) + margin);
     final w = right - left + 1;
     final h = bottom - top + 1;
-    final cameFrom = Int32List(w * h)..fillRange(0, w * h, -1);
-    int index(int x, int y) => (y - top) * w + (x - left);
-    final startIndex = index(start.$1, start.$2);
-    final goalIndex = index(goal.$1, goal.$2);
-    cameFrom[startIndex] = startIndex;
-    final queue = <int>[startIndex];
-    var found = startIndex == goalIndex;
-    for (var head = 0; head < queue.length && !found; head++) {
+    final gapStride = _maxGapPixels + 1;
+    final stateCount = w * h * gapStride;
+    final cameFrom = Int32List(stateCount)..fillRange(0, stateCount, -1);
+    final totalGap = Int16List(stateCount)..fillRange(0, stateCount, 32767);
+    int pixelIndex(int x, int y) => (y - top) * w + (x - left);
+    int stateIndex(int pixel, int gapRun) => pixel * gapStride + gapRun;
+    final startPixel = pixelIndex(start.$1, start.$2);
+    final goalPixel = pixelIndex(goal.$1, goal.$2);
+    final startState = stateIndex(startPixel, 0);
+    cameFrom[startState] = startState;
+    totalGap[startState] = 0;
+    final queue = <int>[startState];
+    var found = -1;
+    for (var head = 0; head < queue.length && found < 0; head++) {
       final current = queue[head];
-      final cx = current % w + left;
-      final cy = current ~/ w + top;
-      for (var dy = -1; dy <= 1 && !found; dy++) {
+      final pixel = current ~/ gapStride;
+      final gapRun = current % gapStride;
+      final cx = pixel % w + left;
+      final cy = pixel ~/ w + top;
+      if (pixel == goalPixel) {
+        found = current;
+        break;
+      }
+      for (var dy = -1; dy <= 1; dy++) {
         for (var dx = -1; dx <= 1; dx++) {
+          if (dx == 0 && dy == 0) continue;
           final x = cx + dx;
           final y = cy + dy;
           if (x < left || x > right || y < top || y > bottom) continue;
-          final next = index(x, y);
+          final ink = _isInkAt(Offset(x + .5, y + .5));
+          final nextGapRun = ink ? 0 : gapRun + 1;
+          if (nextGapRun > _maxGapPixels) continue;
+          final nextTotalGap = totalGap[current] + (ink ? 0 : 1);
+          if (nextTotalGap > _maxTotalGapPixels) continue;
+          final next = stateIndex(pixelIndex(x, y), nextGapRun);
           if (cameFrom[next] != -1) continue;
-          if (!_isInkAt(Offset(x + .5, y + .5))) continue;
           cameFrom[next] = current;
-          if (next == goalIndex) {
-            found = true;
-            break;
-          }
+          totalGap[next] = nextTotalGap;
           queue.add(next);
         }
       }
     }
-    if (!found) return null;
+    if (found < 0) return null;
+
     final pixels = <Offset>[];
-    for (var k = goalIndex; k != startIndex; k = cameFrom[k]) {
-      pixels.add(Offset(k % w + left + .5, k ~/ w + top + .5));
+    for (var state = found; state != startState; state = cameFrom[state]) {
+      final pixel = state ~/ gapStride;
+      pixels.add(Offset(pixel % w + left + .5, pixel ~/ w + top + .5));
     }
     pixels.add(Offset(start.$1 + .5, start.$2 + .5));
     final traced = pixels.reversed.toList();
@@ -257,6 +279,15 @@ class LassoLineSnapTracker {
       length += (traced[k] - traced[k - 1]).distance;
     }
     if (length > budget) return null;
+
+    // Only return the route when the amount of empty space crossed is small.
+    // This makes a 2–6 px break in one contour join naturally, while a large
+    // open region still falls back to the user's lasso path.
+    var offInk = 0;
+    for (var k = 1; k < traced.length - 1; k++) {
+      if (!_isInkAt(traced[k])) offInk++;
+    }
+    if (offInk > _maxTotalGapPixels) return null;
     return [for (var k = 0; k < traced.length; k += 2) traced[k]];
   }
 
