@@ -216,6 +216,37 @@ void main() {
       await pumpRealAsync(tester, const Duration(milliseconds: 350));
       expect(_points(graph()), stableBefore);
 
+      // 入り抜き can be turned off with its switch: the length slider goes,
+      // the saved setting follows, and the hand-moved controls stay.
+      final l10n = AppLocalizations.of(
+        tester.element(find.byType(FilterPanel)),
+      )!;
+      final taperToggle = find.byKey(
+        const ValueKey('auto-lineart-taper-toggle'),
+      );
+      expect(find.text(l10n.filterAutoLineartTaper), findsOneWidget);
+      await tester.ensureVisible(taperToggle);
+      await tester.pump();
+      await tester.tap(taperToggle);
+      await pumpRealAsync(tester, const Duration(milliseconds: 350));
+      expect(
+        fs.filters.firstWhere((f) => f.id == 'Filter0023').autoLineartTaper,
+        isFalse,
+      );
+      expect(
+        find.textContaining(l10n.filterAutoLineartTaperLength),
+        findsNothing,
+      );
+      expect(_points(graph()), stableBefore);
+      await tester.ensureVisible(taperToggle);
+      await tester.pump();
+      await tester.tap(taperToggle);
+      await pumpRealAsync(tester, const Duration(milliseconds: 350));
+      expect(
+        fs.filters.firstWhere((f) => f.id == 'Filter0023').autoLineartTaper,
+        isTrue,
+      );
+
       fs.updateFilterParams('Filter0023', autoLineartSmoothing: 7);
       await pumpRealAsync(tester, const Duration(milliseconds: 450));
       final edited7 = graph();

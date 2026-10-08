@@ -42,6 +42,7 @@ void main() {
       inkPoolRange: 23,
       inkPoolCenterWidth: 9,
       animeLineWidth: 3,
+      autoLineartTaper: false,
       crtAberration: 61,
       crtBleed: 33,
       sphereShadowColor: 0x80102030,
@@ -87,6 +88,7 @@ void main() {
     expect(restored.inkPoolRange, 23);
     expect(restored.inkPoolCenterWidth, 9);
     expect(restored.animeLineWidth, 3);
+    expect(restored.autoLineartTaper, isFalse);
     expect(restored.crtAberration, 61);
     expect(restored.crtBleed, 33);
     expect(restored.sphereShadowColor, 0x80102030);

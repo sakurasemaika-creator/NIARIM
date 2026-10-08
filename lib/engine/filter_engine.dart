@@ -7,6 +7,7 @@ import '../models/filter_def.dart';
 import '../models/pixel_color_mode.dart';
 import 'background_acclimation_engine.dart';
 import 'auto_lineart_engine.dart';
+import 'ink_pool_engine.dart';
 import 'prism_filter_engine.dart';
 import 'pixel_art_engine.dart';
 import 'sphere_shading_engine.dart';
@@ -348,7 +349,9 @@ Uint8List applyDrawFilterForFrameInIsolate(
       width,
       height,
       outputWidthPx: filter.autoLineartOutputWidth,
-      taperLengthPx: filter.autoLineartTaperLength,
+      taperLengthPx: filter.autoLineartTaper
+          ? filter.autoLineartTaperLength
+          : 0,
       smoothing: 0,
       color: filter.autoLineartColor,
     ),
@@ -1230,22 +1233,23 @@ class FilterEngine {
     return result;
   }
 
-  /// 眼鏡断層フィルター（選択レイヤーで塗った範囲に、度の強い
-  /// レンズの光学屈折を模した局所的な放射状ワープをかける）。
-  /// [maskData]は選択レイヤー（LayerType.selection）を単体合成した
-  /// rawRgba画像（[data]と同じ幅・高さ）で、アルファ値0の画素は対象外、
-  /// それ以外の画素が塗られた範囲となる。[maskData]がnull・全画素透明
-  /// （＝選択レイヤー無し・未使用）の場合は何もしない。
+  /// 眼鏡断層フィルター：塗った範囲（[maskData]、眼鏡のレンズ部分）を、
+  /// 度の強い眼鏡のレンズ越しに見たように写す。[maskData]は[data]と同じ
+  /// 大きさのrawRgbaで、アルファ0の画素は対象外。null・全画素透明なら
+  /// 何もしない。
   ///
-  /// マスクを4連結の連結成分（フラッドフィル）ごとに分け、各成分の
-  /// 重心（＋[centerOffsetX]・[centerOffsetY]による手動オフセット）を
-  /// 中心として、その成分に含まれる画素だけを対象にapplyFisheyeと同じ
-  /// r^exponent型の放射状ワープを適用する（正規化半径は成分内の最大距離
-  /// を1とする＝魚眼フィルターの画像全体版を、成分1つぶんの局所範囲へ
-  /// 縮小適用したもの）。[strength]は-100〜100（0で無効。負で凹レンズ風に
-  /// 縮小、正で凸レンズ風に拡大）。マスクの縁が半透明（フェザリング）の
-  /// 画素は、ワープ後の色と元の色をアルファでブレンドし、境界の継ぎ目を
-  /// 目立たなくする。
+  /// 本物のレンズと同じく、レンズ越しの景色は**レンズの中心を基準に一様に**
+  /// 縮む（凹レンズ＝近視用、[strength]が負）か、膨らむ（凸レンズ＝遠視用、
+  /// 正）だけで、渦のように吸い込まれる歪みにはならない。縮んだ分レンズの
+  /// 縁の外側の景色がレンズ内に入り込むので、顔の輪郭がレンズの縁で内側へ
+  /// ずれる「断層」になる。縁へ行くほど少しだけ倍率が変わる（凹レンズの
+  /// 樽型・凸レンズの糸巻き型の歪み）。
+  ///
+  /// マスクを4連結の連結成分（＝レンズ1枚）ごとに分け、各成分の重心
+  /// （＋[centerOffsetX]・[centerOffsetY]）をレンズの中心とする。
+  /// [strength]は-100〜100で、倍率は中心で1＋strength/400（-100で0.75倍、
+  /// -50で約0.88倍＝強度近視の眼鏡程度）。マスクの縁が半透明の画素は、
+  /// レンズ越しの色と元の色をアルファでブレンドする。
   Uint8List applyLensDistortion(
     Uint8List data,
     int width,
@@ -1258,25 +1262,27 @@ class FilterEngine {
     if (maskData == null) return Uint8List.fromList(data);
     final amount = (strength / 100.0).clamp(-1.0, 1.0);
     if (amount == 0) return Uint8List.fromList(data);
-    // fisheyeと同じ換算式を符号付きへ拡張：0で1（無変化）、+100で0.15
-    // （凸レンズ・魚眼と同じ最大湾曲）、-100で1.85（凹レンズ・逆方向へ
-    // 同程度の湾曲）。
-    final exponent = (1.0 - amount * 0.85).clamp(0.15, 1.85);
+    // Magnification at the centre, and how much it changes towards the rim
+    // (barrel distortion for a minus lens, pincushion for a plus lens).
+    final centreScale = 1.0 + amount * 0.25;
+    final rimChange = amount * 0.08;
     final result = Uint8List.fromList(data);
     final total = width * height;
-    final visited = List<bool>.filled(total, false);
+    final visited = Uint8List(total);
     final queue = <int>[];
+    final pixels = <int>[];
     for (int start = 0; start < total; start++) {
-      if (visited[start] || maskData[start * 4 + 3] == 0) {
-        visited[start] = true;
+      if (visited[start] != 0) continue;
+      if (maskData[start * 4 + 3] == 0) {
+        visited[start] = 1;
         continue;
       }
       // このマスク画素を起点に4連結のフラッドフィルで連結成分を集める。
       queue
         ..clear()
         ..add(start);
-      visited[start] = true;
-      final pixels = <int>[];
+      visited[start] = 1;
+      pixels.clear();
       double sumX = 0, sumY = 0;
       while (queue.isNotEmpty) {
         final idx = queue.removeLast();
@@ -1285,78 +1291,85 @@ class FilterEngine {
         pixels.add(idx);
         sumX += px;
         sumY += py;
-        if (px > 0) {
-          final n = idx - 1;
-          if (!visited[n] && maskData[n * 4 + 3] != 0) {
-            visited[n] = true;
+        void visit(int n) {
+          if (visited[n] == 0 && maskData[n * 4 + 3] != 0) {
+            visited[n] = 1;
             queue.add(n);
           }
         }
-        if (px < width - 1) {
-          final n = idx + 1;
-          if (!visited[n] && maskData[n * 4 + 3] != 0) {
-            visited[n] = true;
-            queue.add(n);
-          }
-        }
-        if (py > 0) {
-          final n = idx - width;
-          if (!visited[n] && maskData[n * 4 + 3] != 0) {
-            visited[n] = true;
-            queue.add(n);
-          }
-        }
-        if (py < height - 1) {
-          final n = idx + width;
-          if (!visited[n] && maskData[n * 4 + 3] != 0) {
-            visited[n] = true;
-            queue.add(n);
-          }
-        }
+
+        if (px > 0) visit(idx - 1);
+        if (px < width - 1) visit(idx + 1);
+        if (py > 0) visit(idx - width);
+        if (py < height - 1) visit(idx + width);
       }
       if (pixels.isEmpty) continue;
       final cx = (sumX / pixels.length) + centerOffsetX;
       final cy = (sumY / pixels.length) + centerOffsetY;
-      double maxR = 1.0;
+      double rimRadius = 1.0;
       for (final idx in pixels) {
         final dx = (idx % width) - cx;
         final dy = (idx ~/ width) - cy;
         final r = math.sqrt(dx * dx + dy * dy);
-        if (r > maxR) maxR = r;
+        if (r > rimRadius) rimRadius = r;
       }
+      final sample = Uint8List(4);
       for (final idx in pixels) {
-        final px = (idx % width).toDouble();
-        final py = (idx ~/ width).toDouble();
-        final nx = (px - cx) / maxR;
-        final ny = (py - cy) / maxR;
-        final r = math.sqrt(nx * nx + ny * ny);
-        double srcX, srcY;
-        if (r <= 1e-6) {
-          srcX = cx;
-          srcY = cy;
-        } else {
-          final newR = math.pow(r, exponent).toDouble();
-          final theta = math.atan2(ny, nx);
-          srcX = cx + math.cos(theta) * newR * maxR;
-          srcY = cy + math.sin(theta) * newR * maxR;
-        }
-        final sx = srcX.round().clamp(0, width - 1);
-        final sy = srcY.round().clamp(0, height - 1);
-        final srcIdx = (sy * width + sx) * 4;
+        final dx = (idx % width) - cx;
+        final dy = (idx ~/ width) - cy;
+        final rr = (dx * dx + dy * dy) / (rimRadius * rimRadius);
+        // What is seen here lies 1/scale times as far from the centre.
+        final scale = centreScale * (1 + rimChange * rr);
+        _sampleBilinear(
+          data,
+          width,
+          height,
+          cx + dx / scale,
+          cy + dy / scale,
+          sample,
+        );
         final dstIdx = idx * 4;
-        // マスクの縁（フェザリング済みの半透明画素）は、ワープ後の色と
+        // マスクの縁（フェザリング済みの半透明画素）は、レンズ越しの色と
         // 元の色をアルファでブレンドして継ぎ目を目立たなくする。
-        final maskAlpha = maskData[idx * 4 + 3] / 255.0;
+        final maskAlpha = maskData[dstIdx + 3] / 255.0;
         for (int c = 0; c < 4; c++) {
-          final warped = data[srcIdx + c];
-          final original = data[dstIdx + c];
-          result[dstIdx + c] = (warped * maskAlpha + original * (1 - maskAlpha))
+          result[dstIdx +
+              c] = (sample[c] * maskAlpha + data[dstIdx + c] * (1 - maskAlpha))
               .round()
               .clamp(0, 255);
         }
       }
     }
     return result;
+  }
+
+  /// Bilinear sample of premultiplied RGBA at ([x], [y]) (pixel centres at
+  /// integer coordinates), clamped to the image, into [out].
+  static void _sampleBilinear(
+    Uint8List data,
+    int width,
+    int height,
+    double x,
+    double y,
+    Uint8List out,
+  ) {
+    final fx = x.clamp(0.0, width - 1.0);
+    final fy = y.clamp(0.0, height - 1.0);
+    final x0 = fx.floor();
+    final y0 = fy.floor();
+    final x1 = math.min(x0 + 1, width - 1);
+    final y1 = math.min(y0 + 1, height - 1);
+    final tx = fx - x0;
+    final ty = fy - y0;
+    final i00 = (y0 * width + x0) * 4;
+    final i10 = (y0 * width + x1) * 4;
+    final i01 = (y1 * width + x0) * 4;
+    final i11 = (y1 * width + x1) * 4;
+    for (var c = 0; c < 4; c++) {
+      final top = data[i00 + c] + (data[i10 + c] - data[i00 + c]) * tx;
+      final bottom = data[i01 + c] + (data[i11 + c] - data[i01 + c]) * tx;
+      out[c] = (top + (bottom - top) * ty).round().clamp(0, 255);
+    }
   }
 
   Uint8List applyFilmGrain(
@@ -1778,17 +1791,21 @@ class FilterEngine {
   /// 済む単色描画）と異なり、スタンプ画像は任意の多色RGBA画像のため、
   /// 単純な二値化だけでは真のドット絵にはならず、実際に低解像度化＋
   /// 色数削減の両方が必要になる。
-  /// 周辺減光（ビネット）：画面中心からの距離に応じて周辺を[color]（既定は
-  /// 黒）へ寄せる、イラスト・漫画の演出で定番の効果。中心からの距離計算のみの
-  /// 単純な1パス処理で負荷は軽い。[strength]は0〜100（%）で減光の強さを
-  /// 調整する。[color]に黒以外を指定すると、暗くするのではなく指定色を
-  /// 周辺へかぶせる（夕焼けオレンジ・夜の青など）演出にも使える。
+  /// 周辺減光（ビネット）：画面中心からの距離に応じて四隅を[color]（既定は
+  /// 黒）で覆う、イラスト・漫画の演出で定番の効果。キャンバス全体が対象で、
+  /// 透明な所にも四隅の影を描く（描いた絵の上だけに限らない）。中心からの
+  /// 距離計算のみの単純な1パス処理で負荷は軽い。[strength]は0〜100（%）で
+  /// 減光の強さを調整する。[color]に黒以外を指定すると、暗くするのではなく
+  /// 指定色を周辺へかぶせる（夕焼けオレンジ・夜の青など）演出にも使える。
+  /// [onlyOnPaint]がtrueなら描いた絵の上だけを、その不透明度のまま暗くする
+  /// （ブラウン管の画面の縁など、絵の一部として使うとき）。
   Uint8List applyVignette(
     Uint8List data,
     int width,
     int height,
     double strength, {
     int color = 0xFF000000,
+    bool onlyOnPaint = false,
   }) {
     final amount = (strength / 100.0).clamp(0.0, 1.0);
     if (amount <= 0) return Uint8List.fromList(data);
@@ -1804,31 +1821,48 @@ class FilterEngine {
     final maxDist = math.sqrt(cx * cx + cy * cy);
     const innerRadius = 0.6;
     for (int y = 0; y < height; y++) {
-      final dy = (y - cy) / maxDist;
+      final dy = (y + .5 - cy) / maxDist;
       for (int x = 0; x < width; x++) {
         final idx = (y * width + x) * 4;
-        if (data[idx + 3] == 0) continue;
-        final dx = (x - cx) / maxDist;
+        final a = data[idx + 3];
+        if (onlyOnPaint && a == 0) continue;
+        final dx = (x + .5 - cx) / maxDist;
         final dist = math.sqrt(dx * dx + dy * dy);
         if (dist <= innerRadius) continue;
         final t = ((dist - innerRadius) / (1.0 - innerRadius)).clamp(0.0, 1.0);
-        final mix = t * amount;
-        // Towards the colour at this pixel's own opacity (premultiplied).
-        final a = data[idx + 3];
-        result[idx] =
-            (data[idx] + (premultipliedChannel(cr, a) - data[idx]) * mix)
-                .round()
-                .clamp(0, 255);
-        result[idx + 1] =
-            (data[idx + 1] +
-                    (premultipliedChannel(cg, a) - data[idx + 1]) * mix)
-                .round()
-                .clamp(0, 255);
-        result[idx + 2] =
-            (data[idx + 2] +
-                    (premultipliedChannel(cb, a) - data[idx + 2]) * mix)
-                .round()
-                .clamp(0, 255);
+        // A smooth ramp, so the shadow has no visible inner edge.
+        final mix = t * t * (3 - 2 * t) * amount;
+        if (onlyOnPaint) {
+          // Towards the colour at this pixel's own opacity (premultiplied).
+          result[idx] =
+              (data[idx] + (premultipliedChannel(cr, a) - data[idx]) * mix)
+                  .round()
+                  .clamp(0, 255);
+          result[idx + 1] =
+              (data[idx + 1] +
+                      (premultipliedChannel(cg, a) - data[idx + 1]) * mix)
+                  .round()
+                  .clamp(0, 255);
+          result[idx + 2] =
+              (data[idx + 2] +
+                      (premultipliedChannel(cb, a) - data[idx + 2]) * mix)
+                  .round()
+                  .clamp(0, 255);
+          continue;
+        }
+        // The shadow, of opacity [mix], laid over the pixel (premultiplied
+        // source-over): on transparent canvas it is the shadow itself.
+        final keep = 1 - mix;
+        result[idx] = (cr * mix + data[idx] * keep).round().clamp(0, 255);
+        result[idx + 1] = (cg * mix + data[idx + 1] * keep).round().clamp(
+          0,
+          255,
+        );
+        result[idx + 2] = (cb * mix + data[idx + 2] * keep).round().clamp(
+          0,
+          255,
+        );
+        result[idx + 3] = (255 * mix + a * keep).round().clamp(0, 255);
       }
     }
     return result;
@@ -2556,7 +2590,13 @@ class FilterEngine {
         }
       }
     }
-    return applyVignette(result, width, height, 20 + amount * 30);
+    return applyVignette(
+      result,
+      width,
+      height,
+      20 + amount * 30,
+      onlyOnPaint: true,
+    );
   }
 
   /// モザイク化（[mosaicSize]）＋配色処理（[colorMode]）を組み合わせた
@@ -2632,17 +2672,11 @@ class FilterEngine {
     );
   }
 
-  /// 墨溜まりフィルターの「効果レイヤー」だけを生成する。
-  ///
-  /// 線画の不透明画素（全面不透明画像では暗い画素）を線として二値化し、各線上の
-  /// 点から一定半径の円周を36方向サンプリングする。滑らかな1本線なら円周上の
-  /// 方向クラスタはほぼ180°離れた2方向になるが、交差・折れ点では90°以下の
-  /// 方向対が現れる。その点だけを墨溜まり中心として採用する。
-  ///
-  /// 採用した中心から[rangePx]以内の元線に沿って局所的な太線を描き、中心の
-  /// 太さを[centerWidthPx]、範囲端を1pxとして線形にテーパーさせる。返り値は
-  /// 透明背景＋墨溜まり色だけなので、描画フィルターでは参照レイヤーの直下へ
-  /// そのまま新規レイヤーとして置ける。
+  /// 墨溜まりフィルターの「効果レイヤー」だけを生成する（[InkPoolEngine]）。
+  /// 線が出会う所（角・T字・交差）の中心線に沿って、出会う点で
+  /// [centerWidthPx]の太さ、そこから[rangePx]離れた両端で1pxになるよう
+  /// 直線的に細くなる墨溜まりを描く。返り値は透明背景＋墨溜まり色だけ
+  /// なので、描画フィルターでは参照レイヤーの直下へ新規レイヤーとして置ける。
   Uint8List applyInkPoolLayer(
     Uint8List data,
     int width,
@@ -2650,162 +2684,14 @@ class FilterEngine {
     required int color,
     required double rangePx,
     required double centerWidthPx,
-  }) {
-    final result = Uint8List(data.length);
-    if (width <= 2 || height <= 2 || data.length < width * height * 4) {
-      return result;
-    }
-    final range = rangePx.round().clamp(1, 80);
-    final centerWidth = centerWidthPx.round().clamp(1, 60);
-    const alphaThreshold = 24;
-    final pixels = width * height;
-    var opaque = 0;
-    for (var i = 3; i < data.length; i += 4) {
-      if (data[i] > alphaThreshold) opaque++;
-    }
-    final mostlyOpaque = opaque / pixels > 0.85;
-    final mask = Uint8List(pixels);
-    for (var p = 0; p < pixels; p++) {
-      final i = p * 4;
-      final a = data[i + 3];
-      if (a <= alphaThreshold) continue;
-      if (!mostlyOpaque) {
-        mask[p] = 1;
-      } else {
-        final lum = data[i] * 0.299 + data[i + 1] * 0.587 + data[i + 2] * 0.114;
-        if (lum < 210) mask[p] = 1;
-      }
-    }
-
-    const bins = 36;
-    final sampleRadius = math.max(4, math.min(12, centerWidth + 2));
-    if (width <= sampleRadius * 2 || height <= sampleRadius * 2) return result;
-
-    List<double> clusterCenters(List<bool> hits) {
-      if (!hits.any((v) => v) || hits.every((v) => v)) return const [];
-      var start = hits.indexWhere((v) => !v);
-      final centers = <double>[];
-      var inRun = false;
-      var sx = 0.0, sy = 0.0;
-      for (var step = 1; step <= bins; step++) {
-        final b = (start + step) % bins;
-        if (hits[b]) {
-          final a = 2 * math.pi * b / bins;
-          sx += math.cos(a);
-          sy += math.sin(a);
-          inRun = true;
-        } else if (inRun) {
-          centers.add(math.atan2(sy, sx));
-          sx = 0;
-          sy = 0;
-          inRun = false;
-        }
-      }
-      if (inRun) centers.add(math.atan2(sy, sx));
-      return centers;
-    }
-
-    final candidates = <({int x, int y, double score})>[];
-    for (var y = sampleRadius; y < height - sampleRadius; y++) {
-      for (var x = sampleRadius; x < width - sampleRadius; x++) {
-        if (mask[y * width + x] == 0) continue;
-        final hits = List<bool>.filled(bins, false);
-        for (var b = 0; b < bins; b++) {
-          final a = 2 * math.pi * b / bins;
-          final sx = (x + math.cos(a) * sampleRadius).round();
-          final sy = (y + math.sin(a) * sampleRadius).round();
-          // 1px線のアンチエイリアスや丸め誤差を吸収するため、サンプル点の
-          // 3x3近傍に線があればその方向を「枝あり」とする。
-          var hit = false;
-          for (var oy = -1; oy <= 1 && !hit; oy++) {
-            for (var ox = -1; ox <= 1; ox++) {
-              final nx = sx + ox, ny = sy + oy;
-              if (nx >= 0 &&
-                  nx < width &&
-                  ny >= 0 &&
-                  ny < height &&
-                  mask[ny * width + nx] != 0) {
-                hit = true;
-                break;
-              }
-            }
-          }
-          hits[b] = hit;
-        }
-        final centers = clusterCenters(hits);
-        if (centers.length < 2) continue;
-        var minSep = math.pi;
-        for (var i = 0; i < centers.length; i++) {
-          for (var j = i + 1; j < centers.length; j++) {
-            var d = (centers[i] - centers[j]).abs();
-            if (d > math.pi) d = 2 * math.pi - d;
-            if (d < minSep) minSep = d;
-          }
-        }
-        // 約5°の許容を持たせ、90°ジャストのラスタ線も確実に拾う。
-        if (minSep <= math.pi / 2 + 0.09) {
-          candidates.add((x: x, y: y, score: math.pi / 2 - minSep));
-        }
-      }
-    }
-    if (candidates.isEmpty) return result;
-    candidates.sort((a, b) => b.score.compareTo(a.score));
-    final seeds = <({int x, int y})>[];
-    final suppress = math.max(2, centerWidth ~/ 2);
-    final suppress2 = suppress * suppress;
-    for (final c in candidates) {
-      var near = false;
-      for (final s in seeds) {
-        final dx = c.x - s.x, dy = c.y - s.y;
-        if (dx * dx + dy * dy <= suppress2) {
-          near = true;
-          break;
-        }
-      }
-      if (!near) seeds.add((x: c.x, y: c.y));
-    }
-
-    final ca = (color >> 24) & 0xFF;
-    final cr = (color >> 16) & 0xFF;
-    final cg = (color >> 8) & 0xFF;
-    final cb = color & 0xFF;
-    void put(int x, int y) {
-      if (x < 0 || x >= width || y < 0 || y >= height) return;
-      final i = (y * width + x) * 4;
-      result[i] = cr;
-      result[i + 1] = cg;
-      result[i + 2] = cb;
-      result[i + 3] = ca;
-    }
-
-    for (final s in seeds) {
-      final minX = math.max(0, s.x - range);
-      final maxX = math.min(width - 1, s.x + range);
-      final minY = math.max(0, s.y - range);
-      final maxY = math.min(height - 1, s.y + range);
-      for (var y = minY; y <= maxY; y++) {
-        for (var x = minX; x <= maxX; x++) {
-          if (mask[y * width + x] == 0) continue;
-          final dx = x - s.x, dy = y - s.y;
-          final d = math.sqrt((dx * dx + dy * dy).toDouble());
-          if (d > range) continue;
-          final t = (d / range).clamp(0.0, 1.0);
-          final thickness = 1.0 + (centerWidth - 1) * (1.0 - t);
-          final radius = math.max(0.0, (thickness - 1.0) / 2.0);
-          final rr = math.max(0, radius.ceil());
-          for (var oy = -rr; oy <= rr; oy++) {
-            for (var ox = -rr; ox <= rr; ox++) {
-              if (ox * ox + oy * oy <= radius * radius + 0.35) {
-                put(x + ox, y + oy);
-              }
-            }
-          }
-          if (rr == 0) put(x, y);
-        }
-      }
-    }
-    return result;
-  }
+  }) => InkPoolEngine.layer(
+    data,
+    width,
+    height,
+    color: color,
+    rangePx: rangePx,
+    centreWidthPx: centerWidthPx,
+  );
 
   /// 演出フィルター向け墨溜まり。上の効果レイヤーをフレーム合成結果へ
   /// アルファ合成する。描画フィルター版と違いプロジェクトのレイヤー構造は

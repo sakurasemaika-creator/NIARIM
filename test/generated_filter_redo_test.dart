@@ -70,9 +70,12 @@ void main() {
         final tm = service.tileManagerOf(project.id);
         addTearDown(tm.dispose);
         final pixels = Uint8List(tm.canvasWidth * tm.canvasHeight * 4);
-        for (var y = 29; y <= 35; y++) {
+        // A cross: lines meeting, so the ink pool has somewhere to pool.
+        for (var y = 8; y <= 56; y++) {
           for (var x = 8; x <= 56; x++) {
-            pixels[(y * tm.canvasWidth + x) * 4 + 3] = 255;
+            if ((y >= 29 && y <= 35) || (x >= 29 && x <= 35)) {
+              pixels[(y * tm.canvasWidth + x) * 4 + 3] = 255;
+            }
           }
         }
         tm.replaceLayerPixels(

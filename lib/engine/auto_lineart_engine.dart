@@ -224,21 +224,14 @@ class AutoLineartEngine {
     final base = _buildForegroundMask(rgba, width, height);
 
     final rough = roughWidthPx.clamp(2.0, 80.0);
-    final closeRadius = (rough * 0.10).round().clamp(0, 3);
-    final scaleRadius = math.max(1, (rough * 0.08).round());
 
-    // Expensive morphology + three skeletonizations are restricted to the rough
-    // artwork's bounding box. Padding covers every local morphology radius and
-    // keeps endpoints/junctions away from an artificial crop edge.
-    final analysisPadding = math.max(
-      4,
-      closeRadius * 2 + scaleRadius * 2 + (rough * 0.25).ceil(),
-    );
+    // Thinning runs only inside the rough artwork's bounding box (plus a
+    // margin, so ends and junctions are not cut by the crop's edge).
     final crop = _cropForegroundMask(
       base,
       width,
       height,
-      padding: analysisPadding,
+      padding: math.max(4, rough.ceil() + 2),
     );
     if (crop == null) {
       return AutoLineartGraph(width: width, height: height, paths: const []);
@@ -247,20 +240,20 @@ class AutoLineartEngine {
     final localWidth = crop.width;
     final localHeight = crop.height;
 
-    // Merge tiny holes/gaps inside a scribbly rough while avoiding a large
-    // dilation that would incorrectly connect unrelated nearby strokes.
-    final cleaned = closeRadius == 0
-        ? localBase
-        : _erode(
-            _dilate(localBase, localWidth, localHeight, closeRadius),
-            localWidth,
-            localHeight,
-            closeRadius,
-          );
+    // Strokes running closer together than the rough width are one line:
+    // the narrow gaps between them (and the specks of paper inside a
+    // scribble) are filled, so they thin to a single centre line instead of
+    // two lines joined by little loops. Wider spaces (inside a face, between
+    // separate lines) are left alone.
+    final cleaned = _fillNarrowGaps(localBase, localWidth, localHeight, rough);
 
-    // Generate a normal centerline from the cleaned rough. Overlap/interference
-    // preservation is intentionally left to the editable temporary vector graph.
+    // The centre line, without the short branches thinning sprouts at a
+    // bump or a rounded end (anything shorter than the rough width off a
+    // line).
     final skeleton = _thinZhangSuen(cleaned, localWidth, localHeight);
+    _removeRedundantSteps(skeleton, localWidth, localHeight);
+    _keepVanishedDots(cleaned, skeleton, localWidth, localHeight);
+    _pruneBranches(skeleton, localWidth, localHeight, rough);
 
     final rawPaths = _traceSkeleton(skeleton, localWidth, localHeight);
     if (rawPaths.isEmpty) {
@@ -273,20 +266,22 @@ class AutoLineartEngine {
       );
     }
 
-    final minBranchLength = math.max(3.0, rough * 0.55);
     final paths = <AutoLineartPath>[];
     for (final raw in rawPaths) {
       if (raw.points.length < 2) continue;
-      final length = _polylineLength(raw.points);
-      if (length < minBranchLength) continue;
       const persistence = 1.0;
 
       // Compress exact pixel stepping into direction-change points. Smoothing is
       // intentionally deferred to render(), so its slider does not rerun image
       // analysis. Restore full-canvas coordinates only after all local topology
       // work is complete.
-      final simplified = _simplifyCollinear(raw.points)
-          .map((p) => AutoLineartPoint(p.x + crop.offsetX, p.y + crop.offsetY))
+      final simplified = _simplifyCollinear(_restoreCorners(raw.points, rough))
+          .map(
+            (p) => AutoLineartPoint(
+              (p.x + crop.offsetX).clamp(0.0, width - 1.0),
+              (p.y + crop.offsetY).clamp(0.0, height - 1.0),
+            ),
+          )
           .toList(growable: false);
       paths.add(
         AutoLineartPath(
@@ -339,39 +334,51 @@ class AutoLineartEngine {
         continue;
       }
 
-      var work = List<AutoLineartPoint>.from(original);
+      // Smooth along the line itself, a couple of pixels at a time, so that
+      // only jitter is evened out: averaging the sparse control points
+      // directly pulled a zigzag's corners towards each other and flattened
+      // it. Each control point then takes the smoothed line's position at
+      // the same distance along it.
+      final along = <double>[0];
+      for (var i = 1; i < original.length; i++) {
+        along.add(along.last + _distance(original[i - 1], original[i]));
+      }
+      final dense = _resample(original, 2.0);
       final passes = math.max(1, level);
       final amount = 0.12 + level * 0.025;
+      var smooth = dense;
       for (var pass = 0; pass < passes; pass++) {
-        final next = List<AutoLineartPoint>.from(work);
-        for (var i = 1; i < work.length - 1; i++) {
-          final prev = work[i - 1];
-          final cur = work[i];
-          final after = work[i + 1];
+        final next = List<AutoLineartPoint>.from(smooth);
+        for (var i = 1; i < smooth.length - 1; i++) {
+          final prev = smooth[i - 1];
+          final cur = smooth[i];
+          final after = smooth[i + 1];
           next[i] = AutoLineartPoint(
             cur.x + (((prev.x + after.x) * 0.5) - cur.x) * amount,
             cur.y + (((prev.y + after.y) * 0.5) - cur.y) * amount,
           );
         }
-        next[0] = original.first;
-        next[next.length - 1] = original.last;
-        work = next;
+        smooth = next;
       }
+      final work = <AutoLineartPoint>[
+        original.first,
+        for (var i = 1; i < original.length - 1; i++)
+          _pointAlong(smooth, along[i] / along.last),
+        original.last,
+      ];
 
+      // Keep the controls that shape the line most (a corner), dropping the
+      // least telling first (Visvalingam), until the level's share is left.
       final interiorCount = original.length - 2;
       final keepInterior = (interiorCount * (1.0 - level / 10.0)).round().clamp(
         0,
         interiorCount,
       );
-      final reduced = <AutoLineartPoint>[work.first];
-      for (var i = 1; i <= keepInterior; i++) {
-        final index = (i * (work.length - 1) / (keepInterior + 1)).round();
-        final point = work[index.clamp(1, work.length - 2)];
-        if (reduced.last.x != point.x || reduced.last.y != point.y) {
-          reduced.add(point);
-        }
-      }
-      reduced.add(work.last);
+      final reduced = _keepMostTelling(
+        work,
+        keepInterior,
+        maxDeviation: level * 0.6,
+      );
 
       paths.add(
         AutoLineartPath(
@@ -622,6 +629,7 @@ class AutoLineartEngine {
         lockStart: path.startIsJunction,
         lockEnd: path.endIsJunction,
       );
+      points = _curveThrough(points);
       _rasterizePath(
         out,
         width,
@@ -668,6 +676,222 @@ class AutoLineartEngine {
       work = next;
     }
     return work;
+  }
+
+  /// Thinning a thick stroke cuts its sharp corners short (the corner of a
+  /// thick V thins to a flat bottom a few pixels inside). Where the thinned
+  /// line turns sharply between two straight arms, put the corner back where
+  /// the arms, extended, meet. A curve, whose arms are not straight, and a
+  /// gentle bend are left alone.
+  static List<AutoLineartPoint> _restoreCorners(
+    List<AutoLineartPoint> chain,
+    double rough,
+  ) {
+    final arm = math.max(5, (rough * 0.8).round());
+    final n = chain.length;
+    if (n < arm * 4 + 1) return chain;
+    double turnAt(int i) {
+      final a = chain[i - arm], b = chain[i], c = chain[i + arm];
+      final ux = b.x - a.x, uy = b.y - a.y, vx = c.x - b.x, vy = c.y - b.y;
+      final lu = math.sqrt(ux * ux + uy * uy),
+          lv = math.sqrt(vx * vx + vy * vy);
+      if (lu == 0 || lv == 0) return 0;
+      return math.acos(((ux * vx + uy * vy) / (lu * lv)).clamp(-1.0, 1.0));
+    }
+
+    final corners = <(int, double)>[];
+    for (var i = arm * 2; i < n - arm * 2; i++) {
+      final turn = turnAt(i);
+      if (turn >= 1.2) corners.add((i, turn));
+    }
+    corners.sort((a, b) => b.$2.compareTo(a.$2));
+    final taken = <int>[];
+    final replacements = <int, AutoLineartPoint>{};
+    for (final (i, _) in corners) {
+      if (taken.any((t) => (t - i).abs() < arm * 2)) continue;
+      // Each arm, from twice the arm length out to half of it, must be
+      // straight to within a pixel.
+      bool straight(int from, int to) {
+        final a = chain[from], b = chain[to];
+        final dx = b.x - a.x, dy = b.y - a.y;
+        final length = math.sqrt(dx * dx + dy * dy);
+        if (length < 1) return false;
+        for (var k = math.min(from, to); k <= math.max(from, to); k++) {
+          final p = chain[k];
+          final off = ((p.x - a.x) * dy - (p.y - a.y) * dx).abs() / length;
+          if (off > 1.0) return false;
+        }
+        return true;
+      }
+
+      final inFrom = i - arm * 2, inTo = i - arm ~/ 2;
+      final outFrom = i + arm ~/ 2, outTo = i + arm * 2;
+      if (!straight(inFrom, inTo) || !straight(outFrom, outTo)) continue;
+      final a1 = chain[inFrom], a2 = chain[inTo];
+      final b1 = chain[outTo], b2 = chain[outFrom];
+      final d1x = a2.x - a1.x, d1y = a2.y - a1.y;
+      final d2x = b2.x - b1.x, d2y = b2.y - b1.y;
+      final denominator = d1x * d2y - d1y * d2x;
+      if (denominator.abs() < 1e-6) continue;
+      final t = ((b1.x - a1.x) * d2y - (b1.y - a1.y) * d2x) / denominator;
+      final corner = AutoLineartPoint(a1.x + d1x * t, a1.y + d1y * t);
+      final shift = _distance(corner, chain[i]);
+      if (shift > rough * 0.75) continue;
+      taken.add(i);
+      replacements[i] = corner;
+    }
+    if (replacements.isEmpty) return chain;
+    final out = <AutoLineartPoint>[];
+    var k = 0;
+    while (k < n) {
+      final corner = replacements[k];
+      if (corner == null) {
+        // Inside a corner's span the points give way to the corner itself.
+        final inSpan = replacements.keys.any(
+          (c) => k > c - arm ~/ 2 && k < c + arm ~/ 2,
+        );
+        if (!inSpan) out.add(chain[k]);
+        k++;
+        continue;
+      }
+      out.add(corner);
+      k++;
+    }
+    return out;
+  }
+
+  /// A smooth curve through the control points (Catmull-Rom), so a circle
+  /// with few controls stays round instead of becoming a polygon; at a sharp
+  /// corner the curve keeps the corner.
+  static List<AutoLineartPoint> _curveThrough(List<AutoLineartPoint> points) {
+    final n = points.length;
+    if (n < 3) return points;
+    final closed = _distance(points.first, points.last) < 1e-6;
+    bool corner(int k) {
+      if (k <= 0 || k >= n - 1) return true;
+      final a = points[k - 1], b = points[k], c = points[k + 1];
+      final ux = b.x - a.x, uy = b.y - a.y, vx = c.x - b.x, vy = c.y - b.y;
+      final lu = math.sqrt(ux * ux + uy * uy),
+          lv = math.sqrt(vx * vx + vy * vy);
+      if (lu == 0 || lv == 0) return true;
+      return (ux * vx + uy * vy) / (lu * lv) < 0.5;
+    }
+
+    // Tangents (per unit of the segment), one-sided at a corner and at the
+    // ends of an open line.
+    (double, double) tangentIn(int k) {
+      if (closed && (k == 0 || k == n - 1)) {
+        final a = points[n - 2], c = points[1];
+        return ((c.x - a.x) / 2, (c.y - a.y) / 2);
+      }
+      if (corner(k)) {
+        final a = points[math.max(0, k - 1)], b = points[k];
+        return (b.x - a.x, b.y - a.y);
+      }
+      final a = points[k - 1], c = points[k + 1];
+      return ((c.x - a.x) / 2, (c.y - a.y) / 2);
+    }
+
+    (double, double) tangentOut(int k) {
+      if (closed && (k == 0 || k == n - 1)) return tangentIn(k);
+      if (corner(k)) {
+        final b = points[k], c = points[math.min(n - 1, k + 1)];
+        return (c.x - b.x, c.y - b.y);
+      }
+      return tangentIn(k);
+    }
+
+    final out = <AutoLineartPoint>[points.first];
+    for (var k = 0; k + 1 < n; k++) {
+      final p0 = points[k], p1 = points[k + 1];
+      final (m0x, m0y) = tangentOut(k);
+      final (m1x, m1y) = tangentIn(k + 1);
+      final steps = math.max(1, (_distance(p0, p1) / 1.5).ceil());
+      for (var j = 1; j <= steps; j++) {
+        final t = j / steps;
+        final t2 = t * t, t3 = t2 * t;
+        final h00 = 2 * t3 - 3 * t2 + 1;
+        final h10 = t3 - 2 * t2 + t;
+        final h01 = -2 * t3 + 3 * t2;
+        final h11 = t3 - t2;
+        out.add(
+          AutoLineartPoint(
+            h00 * p0.x + h10 * m0x + h01 * p1.x + h11 * m1x,
+            h00 * p0.y + h10 * m0y + h01 * p1.y + h11 * m1y,
+          ),
+        );
+      }
+    }
+    return out;
+  }
+
+  static double _distance(AutoLineartPoint a, AutoLineartPoint b) {
+    final dx = b.x - a.x, dy = b.y - a.y;
+    return math.sqrt(dx * dx + dy * dy);
+  }
+
+  /// The point a fraction [t] (0..1) of the way along [points] by length.
+  static AutoLineartPoint _pointAlong(List<AutoLineartPoint> points, double t) {
+    if (points.length == 1) return points.first;
+    var total = 0.0;
+    for (var i = 1; i < points.length; i++) {
+      total += _distance(points[i - 1], points[i]);
+    }
+    var target = t.clamp(0.0, 1.0) * total;
+    for (var i = 1; i < points.length; i++) {
+      final seg = _distance(points[i - 1], points[i]);
+      if (target <= seg || i == points.length - 1) {
+        final f = seg <= 1e-9 ? 0.0 : (target / seg).clamp(0.0, 1.0);
+        final a = points[i - 1], b = points[i];
+        return AutoLineartPoint(a.x + (b.x - a.x) * f, a.y + (b.y - a.y) * f);
+      }
+      target -= seg;
+    }
+    return points.last;
+  }
+
+  /// [points] with at most [keepInterior] of its interior points left: the
+  /// ones whose removal would change the line least go first (Visvalingam),
+  /// but never one standing more than [maxDeviation] px off the line its
+  /// neighbours make, so a corner (a zigzag's points) survives every level
+  /// while jitter goes.
+  static List<AutoLineartPoint> _keepMostTelling(
+    List<AutoLineartPoint> points,
+    int keepInterior, {
+    required double maxDeviation,
+  }) {
+    final kept = List<AutoLineartPoint>.from(points);
+    double deviation(int i) {
+      final a = kept[i - 1], b = kept[i], c = kept[i + 1];
+      final twiceArea = ((b.x - a.x) * (c.y - a.y) - (c.x - a.x) * (b.y - a.y))
+          .abs();
+      final base = _distance(a, c);
+      return base < 1e-9 ? _distance(a, b) : twiceArea / base;
+    }
+
+    while (kept.length - 2 > keepInterior) {
+      var weakest = -1;
+      var weakestDeviation = double.infinity;
+      for (var i = 1; i < kept.length - 1; i++) {
+        final d = deviation(i);
+        if (d < weakestDeviation) {
+          weakestDeviation = d;
+          weakest = i;
+        }
+      }
+      if (weakest < 0 || weakestDeviation > maxDeviation) break;
+      kept.removeAt(weakest);
+    }
+    // Two controls at the same place are one.
+    final result = <AutoLineartPoint>[kept.first];
+    for (var i = 1; i < kept.length; i++) {
+      final p = kept[i];
+      if (i < kept.length - 1 && p.x == result.last.x && p.y == result.last.y) {
+        continue;
+      }
+      result.add(p);
+    }
+    return result;
   }
 
   static List<AutoLineartPoint> _resample(
@@ -727,6 +951,9 @@ class AutoLineartEngine {
     }
     final total = cumulative.last;
     if (total <= 1e-6) return;
+    // A short stroke (or a dot) keeps its full width in the middle instead
+    // of tapering away to nothing.
+    final tapered = math.min(taperLength, total / 3);
 
     for (var i = 1; i < points.length; i++) {
       final a = points[i - 1];
@@ -759,17 +986,17 @@ class AutoLineartEngine {
           final along = segStart + (segEnd - segStart) * t;
 
           var widthFactor = 1.0;
-          if (taperLength > 0) {
+          if (tapered > 0) {
             if (taperStart) {
               widthFactor = math.min(
                 widthFactor,
-                (along / taperLength).clamp(0.08, 1.0),
+                (along / tapered).clamp(0.08, 1.0),
               );
             }
             if (taperEnd) {
               widthFactor = math.min(
                 widthFactor,
-                ((total - along) / taperLength).clamp(0.08, 1.0),
+                ((total - along) / tapered).clamp(0.08, 1.0),
               );
             }
           }
@@ -783,9 +1010,10 @@ class AutoLineartEngine {
           final colorAlpha = (color >> 24) & 0xFF;
           final finalAlpha = (alpha * colorAlpha / 255).round();
           if (finalAlpha > out[index + 3]) {
-            out[index] = (color >> 16) & 0xFF;
-            out[index + 1] = (color >> 8) & 0xFF;
-            out[index + 2] = color & 0xFF;
+            // Layer pixels are premultiplied.
+            out[index] = (((color >> 16) & 0xFF) * finalAlpha / 255).round();
+            out[index + 1] = (((color >> 8) & 0xFF) * finalAlpha / 255).round();
+            out[index + 2] = ((color & 0xFF) * finalAlpha / 255).round();
             out[index + 3] = finalAlpha;
           }
         }
@@ -823,16 +1051,6 @@ class AutoLineartEngine {
     return out;
   }
 
-  static double _polylineLength(List<AutoLineartPoint> points) {
-    var total = 0.0;
-    for (var i = 1; i < points.length; i++) {
-      final dx = points[i].x - points[i - 1].x;
-      final dy = points[i].y - points[i - 1].y;
-      total += math.sqrt(dx * dx + dy * dy);
-    }
-    return total;
-  }
-
   static List<AutoLineartPoint> _simplifyCollinear(
     List<AutoLineartPoint> points,
   ) {
@@ -861,33 +1079,52 @@ class AutoLineartEngine {
     int width,
     int height,
   ) {
-    int degree(int index) {
-      final x = index % width;
-      final y = index ~/ width;
-      var count = 0;
-      for (final (dx, dy) in _neighbors) {
-        final nx = x + dx;
-        final ny = y + dy;
-        if (nx < 0 || nx >= width || ny < 0 || ny >= height) continue;
-        if (skeleton[ny * width + nx] != 0) count++;
-      }
-      return count;
-    }
+    bool on(int x, int y) =>
+        x >= 0 &&
+        y >= 0 &&
+        x < width &&
+        y < height &&
+        skeleton[y * width + x] != 0;
 
     final degrees = Int8List(width * height);
     final anchors = <int>{};
     for (var i = 0; i < skeleton.length; i++) {
       if (skeleton[i] == 0) continue;
-      final d = degree(i);
+      final d = _lineDegree(skeleton, width, height, i % width, i ~/ width);
       degrees[i] = d;
       if (d != 2) anchors.add(i);
     }
 
-    // A closed loop has no degree!=2 pixel. Seed one point so the loop is still
-    // represented instead of disappearing.
-    if (anchors.isEmpty) {
-      final first = skeleton.indexWhere((v) => v != 0);
-      if (first >= 0) anchors.add(first);
+    // A junction is often a small knot of junction pixels: treat each knot
+    // as one point (its middle), so its pixels are not joined to each other
+    // by a mesh of tiny paths, and the lines meeting there meet at one place.
+    final knot = Int32List(width * height)..fillRange(0, width * height, -1);
+    final knotMiddles = <AutoLineartPoint>[];
+    for (final start in anchors) {
+      if (degrees[start] < 3 || knot[start] != -1) continue;
+      final id = knotMiddles.length;
+      final members = <int>[start];
+      knot[start] = id;
+      for (var head = 0; head < members.length; head++) {
+        final p = members[head];
+        final x = p % width, y = p ~/ width;
+        for (final (dx, dy) in _neighbors) {
+          if (!on(x + dx, y + dy)) continue;
+          final q = (y + dy) * width + x + dx;
+          if (degrees[q] >= 3 && knot[q] == -1) {
+            knot[q] = id;
+            members.add(q);
+          }
+        }
+      }
+      var sx = 0.0, sy = 0.0;
+      for (final p in members) {
+        sx += p % width + 0.5;
+        sy += p ~/ width + 0.5;
+      }
+      knotMiddles.add(
+        AutoLineartPoint(sx / members.length, sy / members.length),
+      );
     }
 
     final usedEdges = <int>{};
@@ -911,119 +1148,379 @@ class AutoLineartEngine {
       return result;
     }
 
+    final traced = Uint8List(skeleton.length);
     final paths = <_RawPath>[];
-    for (final start in anchors.toList()) {
-      for (final first in neighborsOf(start)) {
-        final ek = edgeKey(start, first);
-        if (usedEdges.contains(ek)) continue;
-        usedEdges.add(ek);
-        final chain = <int>[start, first];
-        var previous = start;
-        var current = first;
-        while (!anchors.contains(current)) {
-          final options = neighborsOf(
-            current,
-          ).where((n) => n != previous).toList();
-          if (options.isEmpty) break;
-          // Degree-2 pixels should have one onward neighbor. If raster topology
-          // produces more, choose the direction that continues most straight.
-          var next = options.first;
-          if (options.length > 1) {
-            final px = previous % width;
-            final py = previous ~/ width;
-            final cx = current % width;
-            final cy = current ~/ width;
-            final inX = cx - px;
-            final inY = cy - py;
-            var bestDot = -999.0;
-            for (final candidate in options) {
-              final nx = candidate % width;
-              final ny = candidate ~/ width;
-              final outX = nx - cx;
-              final outY = ny - cy;
-              final dot = inX * outX + inY * outY.toDouble();
-              if (dot > bestDot) {
-                bestDot = dot;
-                next = candidate;
-              }
-            }
+    void trace(int start, int first, Set<int> stops) {
+      final ek = edgeKey(start, first);
+      if (usedEdges.contains(ek)) return;
+      usedEdges.add(ek);
+      final chain = <int>[start, first];
+      var previous = start;
+      var current = first;
+      while (!stops.contains(current)) {
+        // Step to the next pixel along the line: not back, and not to a
+        // pixel touching where we came from (the corner of a diagonal step).
+        final px = previous % width, py = previous ~/ width;
+        final options = neighborsOf(current).where((n) {
+          if (n == previous) return false;
+          if (traced[n] != 0 && !stops.contains(n)) return false;
+          final nx = n % width, ny = n ~/ width;
+          return (nx - px).abs() > 1 ||
+              (ny - py).abs() > 1 ||
+              stops.contains(n);
+        }).toList();
+        if (options.isEmpty) break;
+        // Prefer an edge-neighbour, then the straightest continuation.
+        final cx = current % width, cy = current ~/ width;
+        final inX = cx - px, inY = cy - py;
+        var next = options.first;
+        var best = -999.0;
+        for (final candidate in options) {
+          final nx = candidate % width, ny = candidate ~/ width;
+          final outX = nx - cx, outY = ny - cy;
+          var score = (inX * outX + inY * outY).toDouble();
+          if (outX == 0 || outY == 0) score += .5;
+          if (stops.contains(candidate)) score += 4;
+          if (score > best) {
+            best = score;
+            next = candidate;
           }
-          final nextEdge = edgeKey(current, next);
-          if (usedEdges.contains(nextEdge)) break;
-          usedEdges.add(nextEdge);
-          previous = current;
-          current = next;
-          chain.add(current);
-          if (chain.length > skeleton.length) break;
         }
-        if (chain.length >= 2) {
-          paths.add(
-            _RawPath(
-              points: chain
-                  .map(
-                    (i) =>
-                        AutoLineartPoint((i % width) + 0.5, (i ~/ width) + 0.5),
-                  )
-                  .toList(growable: false),
-              startIsJunction: degrees[start] >= 3,
-              endIsJunction: degrees[current] >= 3,
-            ),
-          );
-        }
+        final nextEdge = edgeKey(current, next);
+        if (usedEdges.contains(nextEdge)) break;
+        usedEdges.add(nextEdge);
+        traced[current] = 1;
+        previous = current;
+        current = next;
+        chain.add(current);
+        if (chain.length > skeleton.length) break;
       }
+      for (final i in chain) {
+        traced[i] = 1;
+      }
+      // Within one knot: not a line of its own.
+      final sameKnot = knot[start] != -1 && knot[start] == knot[current];
+      if (chain.length >= 2 && !(sameKnot && start != current)) {
+        final points = chain
+            .map((i) => AutoLineartPoint((i % width) + 0.5, (i ~/ width) + 0.5))
+            .toList();
+        if (knot[start] != -1) points[0] = knotMiddles[knot[start]];
+        if (knot[current] != -1) {
+          points[points.length - 1] = knotMiddles[knot[current]];
+        }
+        paths.add(
+          _RawPath(
+            points: List.unmodifiable(points),
+            startIsJunction: degrees[start] >= 3 || start == current,
+            endIsJunction: degrees[current] >= 3 || start == current,
+          ),
+        );
+      }
+    }
+
+    for (final start in anchors.toList()) {
+      traced[start] = 1;
+      final around = neighborsOf(start);
+      if (around.isEmpty) {
+        // A dot (an eye, say) thins to a single pixel: keep it as a dot.
+        final x = (start % width) + 0.5, y = (start ~/ width) + 0.5;
+        paths.add(
+          _RawPath(
+            points: [
+              AutoLineartPoint(x - .25, y),
+              AutoLineartPoint(x + .25, y),
+            ],
+            startIsJunction: true,
+            endIsJunction: true,
+          ),
+        );
+        continue;
+      }
+      for (final first in around) {
+        if (traced[first] != 0 && !anchors.contains(first)) continue;
+        trace(start, first, anchors);
+      }
+    }
+    // Closed loops (a circle that touches nothing) have no end or junction
+    // to start from: start anywhere on them and go round back to it.
+    for (var i = 0; i < skeleton.length; i++) {
+      if (skeleton[i] == 0 || traced[i] != 0) continue;
+      traced[i] = 1;
+      final around = neighborsOf(i);
+      if (around.isEmpty) continue;
+      trace(i, around.first, {i});
     }
     return paths;
   }
 
-  static Uint8List _dilate(Uint8List input, int width, int height, int radius) {
-    if (radius <= 0) return Uint8List.fromList(input);
-    final out = Uint8List(input.length);
+  /// [mask] with every enclosed patch of background narrower than [rough]
+  /// (no point of it further than half the rough width from a stroke)
+  /// filled in.
+  static Uint8List _fillNarrowGaps(
+    Uint8List mask,
+    int width,
+    int height,
+    double rough,
+  ) {
+    final out = Uint8List.fromList(mask);
+    final n = width * height;
+    // How far each background pixel is from a stroke (chamfer 3-4, so 3 per
+    // pixel).
+    const cap = 1 << 15;
+    final distance = Int32List(n);
+    for (var p = 0; p < n; p++) {
+      distance[p] = mask[p] != 0 ? 0 : cap;
+    }
+    int at(int x, int y) => x < 0 || y < 0 || x >= width || y >= height
+        ? cap
+        : distance[y * width + x];
     for (var y = 0; y < height; y++) {
       for (var x = 0; x < width; x++) {
-        var on = false;
-        for (var oy = -radius; oy <= radius && !on; oy++) {
-          for (var ox = -radius; ox <= radius; ox++) {
-            if (ox * ox + oy * oy > radius * radius) continue;
-            final nx = x + ox;
-            final ny = y + oy;
-            if (nx < 0 || nx >= width || ny < 0 || ny >= height) continue;
-            if (input[ny * width + nx] != 0) {
-              on = true;
-              break;
-            }
-          }
+        final p = y * width + x;
+        if (distance[p] == 0) continue;
+        var d = distance[p];
+        d = math.min(d, at(x - 1, y) + 3);
+        d = math.min(d, at(x, y - 1) + 3);
+        d = math.min(d, at(x - 1, y - 1) + 4);
+        d = math.min(d, at(x + 1, y - 1) + 4);
+        distance[p] = d;
+      }
+    }
+    for (var y = height - 1; y >= 0; y--) {
+      for (var x = width - 1; x >= 0; x--) {
+        final p = y * width + x;
+        if (distance[p] == 0) continue;
+        var d = distance[p];
+        d = math.min(d, at(x + 1, y) + 3);
+        d = math.min(d, at(x, y + 1) + 3);
+        d = math.min(d, at(x + 1, y + 1) + 4);
+        d = math.min(d, at(x - 1, y + 1) + 4);
+        distance[p] = d;
+      }
+    }
+    final limit = rough / 2 * 3;
+    final seen = Uint8List(n);
+    final patch = <int>[];
+    for (var start = 0; start < n; start++) {
+      if (mask[start] != 0 || seen[start] != 0) continue;
+      patch
+        ..clear()
+        ..add(start);
+      seen[start] = 1;
+      var enclosed = true;
+      var narrow = true;
+      for (var head = 0; head < patch.length; head++) {
+        final p = patch[head];
+        final x = p % width, y = p ~/ width;
+        if (x == 0 || y == 0 || x == width - 1 || y == height - 1) {
+          enclosed = false;
         }
-        if (on) out[y * width + x] = 1;
+        if (distance[p] > limit) narrow = false;
+        for (final q in [p - 1, p + 1, p - width, p + width]) {
+          if (q < 0 || q >= n) continue;
+          if ((q - p).abs() == 1 && q ~/ width != y) continue;
+          if (mask[q] != 0 || seen[q] != 0) continue;
+          seen[q] = 1;
+          patch.add(q);
+        }
+      }
+      if (!enclosed || !narrow) continue;
+      for (final p in patch) {
+        out[p] = 1;
       }
     }
     return out;
   }
 
-  static Uint8List _erode(Uint8List input, int width, int height, int radius) {
-    if (radius <= 0) return Uint8List.fromList(input);
-    final out = Uint8List(input.length);
-    for (var y = 0; y < height; y++) {
-      for (var x = 0; x < width; x++) {
-        var on = true;
-        for (var oy = -radius; oy <= radius && on; oy++) {
-          for (var ox = -radius; ox <= radius; ox++) {
-            if (ox * ox + oy * oy > radius * radius) continue;
-            final nx = x + ox;
-            final ny = y + oy;
-            if (nx < 0 ||
-                nx >= width ||
-                ny < 0 ||
-                ny >= height ||
-                input[ny * width + nx] == 0) {
-              on = false;
-              break;
+  /// Removes, from the thinned line [skeleton], the short branches that
+  /// thinning sprouts off a line at a bump or a rounded end: a piece running
+  /// from a free end to a junction in fewer than [rough] pixels. A short
+  /// stroke on its own (no junction) stays.
+  static void _pruneBranches(
+    Uint8List skeleton,
+    int width,
+    int height,
+    double rough,
+  ) {
+    bool on(int x, int y) =>
+        x >= 0 &&
+        y >= 0 &&
+        x < width &&
+        y < height &&
+        skeleton[y * width + x] != 0;
+    int lines(int x, int y) => _lineDegree(skeleton, width, height, x, y);
+
+    for (var round = 0; round < 3; round++) {
+      var removed = false;
+      for (var p = 0; p < skeleton.length; p++) {
+        if (skeleton[p] == 0) continue;
+        final x0 = p % width, y0 = p ~/ width;
+        if (lines(x0, y0) != 1) continue;
+        // Walk from this free end along the line.
+        final walked = <int>[p];
+        var length = 0.0;
+        var reachedJunction = false;
+        var current = p;
+        var previous = -1;
+        while (length < rough) {
+          final cx = current % width, cy = current ~/ width;
+          var next = -1;
+          var nextStraight = false;
+          for (final (dx, dy) in _neighbors) {
+            if (!on(cx + dx, cy + dy)) continue;
+            final q = (cy + dy) * width + cx + dx;
+            if (q == previous || walked.contains(q)) continue;
+            // Prefer a side neighbour (the corner of a diagonal step is
+            // the same line).
+            final straight = dx == 0 || dy == 0;
+            if (next == -1 || (straight && !nextStraight)) {
+              next = q;
+              nextStraight = straight;
             }
           }
+          if (next == -1) break;
+          final nx = next % width, ny = next ~/ width;
+          length += (nx != cx && ny != cy) ? math.sqrt2 : 1.0;
+          if (lines(nx, ny) >= 3) {
+            reachedJunction = true;
+            break;
+          }
+          walked.add(next);
+          previous = current;
+          current = next;
         }
-        if (on) out[y * width + x] = 1;
+        if (!reachedJunction) continue;
+        for (final q in walked) {
+          skeleton[q] = 0;
+        }
+        removed = true;
+      }
+      if (!removed) break;
+    }
+  }
+
+  /// How many lines leave pixel ([x], [y]) of the thinned [skeleton]: the
+  /// groups of touching line pixels round it (a diagonal step's corner
+  /// pixel touches both sides, so it is one line, not two). A pixel of a
+  /// 2 x 2 knot, where thinning leaves two crossing lines, is a junction.
+  static int _lineDegree(
+    Uint8List skeleton,
+    int width,
+    int height,
+    int x,
+    int y,
+  ) {
+    bool on(int px, int py) =>
+        px >= 0 &&
+        py >= 0 &&
+        px < width &&
+        py < height &&
+        skeleton[py * width + px] != 0;
+    final around = <(int, int)>[
+      for (final (dx, dy) in _neighbors)
+        if (on(x + dx, y + dy)) (dx, dy),
+    ];
+    if (around.isEmpty) return 0;
+    for (final (kx, ky) in const [(0, 0), (-1, 0), (0, -1), (-1, -1)]) {
+      if (on(x + kx, y + ky) &&
+          on(x + kx + 1, y + ky) &&
+          on(x + kx, y + ky + 1) &&
+          on(x + kx + 1, y + ky + 1)) {
+        return 3;
       }
     }
-    return out;
+    final group = List<int>.generate(around.length, (k) => k);
+    int find(int k) {
+      while (group[k] != k) {
+        k = group[k] = group[group[k]];
+      }
+      return k;
+    }
+
+    for (var a = 0; a < around.length; a++) {
+      for (var b = a + 1; b < around.length; b++) {
+        final (ax, ay) = around[a];
+        final (bx, by) = around[b];
+        if ((ax - bx).abs() <= 1 && (ay - by).abs() <= 1) {
+          group[find(a)] = find(b);
+        }
+      }
+    }
+    return {for (var k = 0; k < around.length; k++) find(k)}.length;
+  }
+
+  /// Thinning leaves the odd extra pixel at a diagonal step (the corner of
+  /// an L of three pixels): take those out, so every pixel along a line
+  /// touches just the one before and the one after.
+  static void _removeRedundantSteps(Uint8List skeleton, int width, int height) {
+    for (var pass = 0; pass < 8; pass++) {
+      var removed = false;
+      for (var p = 0; p < skeleton.length; p++) {
+        if (skeleton[p] == 0) continue;
+        final x = p % width, y = p ~/ width;
+        var count = 0;
+        for (final (dx, dy) in _neighbors) {
+          final nx = x + dx, ny = y + dy;
+          if (nx < 0 || ny < 0 || nx >= width || ny >= height) continue;
+          if (skeleton[ny * width + nx] != 0) count++;
+        }
+        if (count < 2 || count > 3) continue;
+        if (_lineDegree(skeleton, width, height, x, y) != 1) continue;
+        skeleton[p] = 0;
+        removed = true;
+      }
+      if (!removed) break;
+    }
+  }
+
+  /// Thinning can wipe out a small round blob (an eye drawn as a dot)
+  /// entirely: give every blob of [mask] left without a centre pixel one, at
+  /// the blob pixel nearest its middle, so it is drawn as a dot.
+  static void _keepVanishedDots(
+    Uint8List mask,
+    Uint8List skeleton,
+    int width,
+    int height,
+  ) {
+    final seen = Uint8List(mask.length);
+    final queue = <int>[];
+    for (var start = 0; start < mask.length; start++) {
+      if (mask[start] == 0 || seen[start] != 0) continue;
+      queue
+        ..clear()
+        ..add(start);
+      seen[start] = 1;
+      var hasCentre = false;
+      var sx = 0.0, sy = 0.0;
+      for (var head = 0; head < queue.length; head++) {
+        final p = queue[head];
+        if (skeleton[p] != 0) hasCentre = true;
+        final x = p % width, y = p ~/ width;
+        sx += x;
+        sy += y;
+        for (final (dx, dy) in _neighbors) {
+          final nx = x + dx, ny = y + dy;
+          if (nx < 0 || ny < 0 || nx >= width || ny >= height) continue;
+          final q = ny * width + nx;
+          if (mask[q] == 0 || seen[q] != 0) continue;
+          seen[q] = 1;
+          queue.add(q);
+        }
+      }
+      if (hasCentre) continue;
+      final cx = sx / queue.length, cy = sy / queue.length;
+      var best = queue.first;
+      var bestDistance = double.infinity;
+      for (final p in queue) {
+        final dx = p % width - cx, dy = p ~/ width - cy;
+        final d = dx * dx + dy * dy;
+        if (d < bestDistance) {
+          bestDistance = d;
+          best = p;
+        }
+      }
+      skeleton[best] = 1;
+    }
   }
 
   static Uint8List _thinZhangSuen(Uint8List input, int width, int height) {

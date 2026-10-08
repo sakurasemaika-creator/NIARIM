@@ -582,7 +582,9 @@ class _FilterPanelState extends State<FilterPanel> {
           1.0,
           filter.autoLineartOutputWidth * _previewScale,
         ),
-        taperLengthPx: filter.autoLineartTaperLength * _previewScale,
+        taperLengthPx: filter.autoLineartTaper
+            ? filter.autoLineartTaperLength * _previewScale
+            : 0,
         smoothing: 0,
         color: filter.autoLineartColor,
       );
@@ -1555,20 +1557,35 @@ class _FilterPanelState extends State<FilterPanel> {
               },
               suffix: 'px',
             ),
-            _integerStepperSlider(
-              l10n.filterAutoLineartTaperLength,
-              current.autoLineartTaperLength.round(),
-              0,
-              100,
-              (v) {
-                service.updateFilterParams(
-                  current.id,
-                  autoLineartTaperLength: v.toDouble(),
-                );
+            SwitchListTile.adaptive(
+              key: const ValueKey('auto-lineart-taper-toggle'),
+              dense: true,
+              contentPadding: EdgeInsets.zero,
+              title: Text(
+                l10n.filterAutoLineartTaper,
+                style: const TextStyle(fontSize: 11),
+              ),
+              value: current.autoLineartTaper,
+              onChanged: (v) {
+                service.updateFilterParams(current.id, autoLineartTaper: v);
                 _updatePreview();
               },
-              suffix: 'px',
             ),
+            if (current.autoLineartTaper)
+              _integerStepperSlider(
+                l10n.filterAutoLineartTaperLength,
+                current.autoLineartTaperLength.round(),
+                0,
+                100,
+                (v) {
+                  service.updateFilterParams(
+                    current.id,
+                    autoLineartTaperLength: v.toDouble(),
+                  );
+                  _updatePreview();
+                },
+                suffix: 'px',
+              ),
             _integerStepperSlider(
               l10n.filterAutoLineartSmoothing,
               current.autoLineartSmoothing.round().clamp(0, 10),
@@ -2839,7 +2856,9 @@ class _FilterPanelState extends State<FilterPanel> {
         tm.canvasWidth,
         tm.canvasHeight,
         outputWidthPx: filter.autoLineartOutputWidth,
-        taperLengthPx: filter.autoLineartTaperLength,
+        taperLengthPx: filter.autoLineartTaper
+            ? filter.autoLineartTaperLength
+            : 0,
         smoothing: 0,
         color: filter.autoLineartColor,
       );

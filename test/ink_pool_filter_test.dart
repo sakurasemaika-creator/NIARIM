@@ -42,7 +42,7 @@ void main() {
     return n;
   }
 
-  test('墨溜まり: 90度の交差だけに指定色のテーパー効果レイヤーを作る', () {
+  test('墨溜まり: 90度の角の内側だけに指定色のテーパー効果レイヤーを作る', () {
     const w = 80, h = 80;
     final src = lineCanvas(w, h, (b) {
       line(b, w, 15, 40, 40, 40);
@@ -57,13 +57,15 @@ void main() {
       centerWidthPx: 8,
     );
     expect(alphaCount(ink), greaterThan(30));
-    final center = (40 * w + 40) * 4;
-    expect(ink[center], 0x7A);
-    expect(ink[center + 1], 0x20);
-    expect(ink[center + 2], 0x38);
-    expect(ink[center + 3], 255);
-    // 元線から外れた中心近傍にも太りが発生する。
-    expect(ink[((38) * w + 38) * 4 + 3], greaterThan(0));
+    // 角の内側（左下）だけに溜まり、指定色（乗算済み）で塗られる。
+    final inside = (43 * w + 37) * 4;
+    final a = ink[inside + 3];
+    expect(a, greaterThan(200));
+    expect(ink[inside] * 255 / a, closeTo(0x7A, 3));
+    expect(ink[inside + 1] * 255 / a, closeTo(0x20, 3));
+    expect(ink[inside + 2] * 255 / a, closeTo(0x38, 3));
+    // 角の外側（右上）へははみ出さない。
+    expect(ink[((37) * w + 43) * 4 + 3], 0);
     // 範囲外は透明。
     expect(ink[(10 * w + 10) * 4 + 3], 0);
   });

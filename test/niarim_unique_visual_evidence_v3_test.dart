@@ -185,12 +185,18 @@ void main() {
     expect(_alphaCount(longRange), greaterThan(_alphaCount(narrow)));
     expect(_alphaCount(thickCenter), greaterThan(_alphaCount(longRange)));
 
-    // 出力に使われる不透明色は指定色そのもの。
+    // 出力の色は指定色そのもの（縁のなめらかな半透明画素は、乗算済みの
+    // 値を不透明度で戻すと指定色になる）。
     for (var i = 0; i < thickCenter.length; i += 4) {
-      if (thickCenter[i + 3] == 0) continue;
-      expect(thickCenter[i], 0x7B);
-      expect(thickCenter[i + 1], 0x23);
-      expect(thickCenter[i + 2], 0x48);
+      final a = thickCenter[i + 3];
+      if (a == 0) continue;
+      if (a == 255) {
+        expect(thickCenter.sublist(i, i + 3), [0x7B, 0x23, 0x48]);
+      } else if (a >= 64) {
+        expect(thickCenter[i] * 255 / a, closeTo(0x7B, 4));
+        expect(thickCenter[i + 1] * 255 / a, closeTo(0x23, 4));
+        expect(thickCenter[i + 2] * 255 / a, closeTo(0x48, 4));
+      }
     }
 
     // 交点付近ほど太く、枝を外側へ辿るほど細くなる（端1pxテーパー）ことを
@@ -203,7 +209,9 @@ void main() {
     // 「テーパーが効いていない」と誤検知していた）。
     final cx = w ~/ 2;
     final cy = h ~/ 2;
-    final centerRun = _branchInkRun(thickCenter, w, h, cx, cy);
+    // 墨溜まりは角の内側だけに溜まる。60度の角の頂点のすぐそばは角の内側が
+    // 狭いので、頂点から左へ8px（角の内側が十分広がった所）で測る。
+    final centerRun = _branchInkRun(thickCenter, w, h, cx - 8, cy);
     final midRun = _branchInkRun(thickCenter, w, h, cx - 18, cy);
     final nearEdgeRun = _branchInkRun(thickCenter, w, h, cx - 24, cy);
     final edgeRun = _branchInkRun(thickCenter, w, h, cx - 28, cy);

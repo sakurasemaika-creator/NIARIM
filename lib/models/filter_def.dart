@@ -203,6 +203,9 @@ class FilterDef {
   final double autoLineartRoughWidth;
   final double autoLineartOutputWidth;
   final double autoLineartTaperLength;
+
+  /// Whether the lines' ends taper (入り抜き) over [autoLineartTaperLength].
+  final bool autoLineartTaper;
   final double autoLineartSmoothing;
   final int autoLineartColor;
   final double prismBlurPx;
@@ -305,6 +308,7 @@ class FilterDef {
     this.autoLineartRoughWidth = 12,
     this.autoLineartOutputWidth = 2,
     this.autoLineartTaperLength = 8,
+    this.autoLineartTaper = true,
     this.autoLineartSmoothing = 5,
     this.autoLineartColor = 0xFF000000,
     this.prismBlurPx = 17,
@@ -436,6 +440,7 @@ class FilterDef {
     double? autoLineartRoughWidth,
     double? autoLineartOutputWidth,
     double? autoLineartTaperLength,
+    bool? autoLineartTaper,
     double? autoLineartSmoothing,
     int? autoLineartColor,
     double? prismBlurPx,
@@ -536,6 +541,7 @@ class FilterDef {
           autoLineartOutputWidth ?? this.autoLineartOutputWidth,
       autoLineartTaperLength:
           autoLineartTaperLength ?? this.autoLineartTaperLength,
+      autoLineartTaper: autoLineartTaper ?? this.autoLineartTaper,
       autoLineartSmoothing: autoLineartSmoothing ?? this.autoLineartSmoothing,
       autoLineartColor: autoLineartColor ?? this.autoLineartColor,
       prismBlurPx: prismBlurPx ?? this.prismBlurPx,
@@ -631,6 +637,7 @@ class FilterDef {
     'autoLineartRoughWidth': autoLineartRoughWidth,
     'autoLineartOutputWidth': autoLineartOutputWidth,
     'autoLineartTaperLength': autoLineartTaperLength,
+    'autoLineartTaper': autoLineartTaper,
     'autoLineartSmoothing': autoLineartSmoothing,
     'autoLineartColor': autoLineartColor,
     'prismBlurPx': prismBlurPx,
@@ -802,6 +809,7 @@ class FilterDef {
         (j['autoLineartOutputWidth'] as num?)?.toDouble() ?? 2,
     autoLineartTaperLength:
         (j['autoLineartTaperLength'] as num?)?.toDouble() ?? 8,
+    autoLineartTaper: j['autoLineartTaper'] as bool? ?? true,
     autoLineartSmoothing: (j['autoLineartSmoothing'] as num?)?.toDouble() ?? 5,
     autoLineartColor: j['autoLineartColor'] as int? ?? 0xFF000000,
     prismBlurPx: (j['prismBlurPx'] as num?)?.toDouble() ?? 17,

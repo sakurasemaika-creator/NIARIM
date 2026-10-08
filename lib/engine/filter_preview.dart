@@ -302,7 +302,9 @@ Uint8List runFilterPreview(FilterPreviewJob job) {
         width,
         height,
         outputWidthPx: math.max(1.0, filter.autoLineartOutputWidth * scale),
-        taperLengthPx: filter.autoLineartTaperLength * scale,
+        taperLengthPx: filter.autoLineartTaper
+            ? filter.autoLineartTaperLength * scale
+            : 0,
         smoothing: 0,
         color: filter.autoLineartColor,
       );
