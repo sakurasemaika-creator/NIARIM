@@ -100,7 +100,9 @@ void _write(String name, Uint8List rough, Uint8List out) {
 /// 自動線画 takes the centre line of a rough and draws it thin. A rough drawn
 /// at a constant width comes out as one unbroken line: the thinned line's
 /// diagonal steps are not junctions to cut it at, and short pieces between
-/// two junctions are not thrown away. A dot stays a dot.
+/// two junctions are not thrown away. A dot stays a dot. Two strokes with
+/// paper between them stay two lines, however close; only specks of paper
+/// inside a stroke are filled.
 void main() {
   test('constant-width strokes come out as unbroken centre lines', () {
     final rough = _Rough()
@@ -193,6 +195,100 @@ void main() {
         middle += out[(y * _w + 110) * 4 + 3] / 255;
       }
       expect(middle, closeTo(2, .6));
+    }
+  });
+
+  test('two strokes close together stay two lines, each on its own centre', () {
+    const cx = 110.0, cy = 70.0, r = 50.0;
+    final rough = _Rough()
+      // A long narrow loop: two 8 px strokes with 6 px of paper between.
+      ..stroke([(30, 120), (190, 120), (190, 134), (30, 134), (30, 120)], 8)
+      // Two parallel 8 px strokes only 2 px apart.
+      ..stroke([(30, 160), (190, 160)], 8)
+      ..stroke([(30, 170), (190, 170)], 8)
+      // A head and the hairline inside it, 6 px lines: they meet at the
+      // sides and run 4 px apart at the top.
+      ..stroke([
+        for (var a = math.pi; a <= 2 * math.pi + .01; a += .04)
+          (cx + r * math.cos(a), cy + r * math.sin(a)),
+      ], 6)
+      ..stroke([
+        for (var a = math.pi; a <= 2 * math.pi + .01; a += .04)
+          (
+            cx + (r - 10 * -math.sin(a)) * math.cos(a),
+            cy + (r - 10 * -math.sin(a)) * math.sin(a),
+          ),
+      ], 6);
+    final out = _autoLineart(rough.rgba);
+    _write('close_lines', rough.rgba, out);
+
+    for (var x = 50; x <= 170; x += 4) {
+      final at = x.toDouble();
+      for (final (y, line) in [
+        (120.0, true),
+        (127.0, false),
+        (134.0, true),
+        (160.0, true),
+        (165.0, false),
+        (170.0, true),
+      ]) {
+        expect(
+          _lineNear(out, at, y, reach: line ? 2 : 1),
+          line,
+          reason: line ? 'a line at ($x, $y)' : 'no line between, ($x, $y)',
+        );
+      }
+    }
+    // The head and the hairline, over the top.
+    for (var a = 1.25 * math.pi; a <= 1.75 * math.pi; a += .05) {
+      final inner = r - 10 * -math.sin(a);
+      final between = (r + inner) / 2;
+      expect(
+        _lineNear(out, cx + r * math.cos(a), cy + r * math.sin(a)),
+        isTrue,
+        reason: 'the head at ${(a * 180 / math.pi).round()} degrees',
+      );
+      expect(
+        _lineNear(out, cx + inner * math.cos(a), cy + inner * math.sin(a)),
+        isTrue,
+        reason: 'the hairline at ${(a * 180 / math.pi).round()} degrees',
+      );
+      if (r - inner >= 8.5) {
+        expect(
+          _lineNear(
+            out,
+            cx + between * math.cos(a),
+            cy + between * math.sin(a),
+            reach: 1,
+          ),
+          isFalse,
+          reason: 'between them at ${(a * 180 / math.pi).round()} degrees',
+        );
+      }
+    }
+  });
+
+  test('a speck of paper inside a stroke is filled: one line, no loop', () {
+    final rough = _Rough()..stroke([(30, 90), (190, 90)], 12);
+    // Specks: 3 x 3, 2 x 4 and a single pixel.
+    for (final (x0, y0, w, h) in [
+      (80, 89, 3, 3),
+      (110, 88, 2, 4),
+      (140, 91, 1, 1),
+    ]) {
+      for (var y = y0; y < y0 + h; y++) {
+        for (var x = x0; x < x0 + w; x++) {
+          rough.rgba[(y * _w + x) * 4 + 3] = 0;
+        }
+      }
+    }
+    final out = _autoLineart(rough.rgba);
+    _write('speck', rough.rgba, out);
+    for (var x = 50; x <= 170; x += 2) {
+      final at = x.toDouble();
+      expect(_lineNear(out, at, 90), isTrue, reason: 'the line at $x');
+      expect(_lineNear(out, at, 85, reach: 1), isFalse, reason: 'above, $x');
+      expect(_lineNear(out, at, 95, reach: 1), isFalse, reason: 'below, $x');
     }
   });
 }

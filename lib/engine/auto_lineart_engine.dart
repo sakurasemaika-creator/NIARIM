@@ -240,12 +240,10 @@ class AutoLineartEngine {
     final localWidth = crop.width;
     final localHeight = crop.height;
 
-    // Strokes running closer together than the rough width are one line:
-    // the narrow gaps between them (and the specks of paper inside a
-    // scribble) are filled, so they thin to a single centre line instead of
-    // two lines joined by little loops. Wider spaces (inside a face, between
-    // separate lines) are left alone.
-    final cleaned = _fillNarrowGaps(localBase, localWidth, localHeight, rough);
+    // Only the specks of paper inside a stroke are filled, so a scribbled
+    // stroke thins to one centre line instead of little loops. Two strokes
+    // with paper between them stay two lines, however close they run.
+    final cleaned = _fillPinholes(localBase, localWidth, localHeight, rough);
 
     // The centre line, without the short branches thinning sprouts at a
     // bump or a rounded end (anything shorter than the rough width off a
@@ -254,6 +252,8 @@ class AutoLineartEngine {
     _removeRedundantSteps(skeleton, localWidth, localHeight);
     _keepVanishedDots(cleaned, skeleton, localWidth, localHeight);
     _pruneBranches(skeleton, localWidth, localHeight, rough);
+    // A branch taken off a junction can leave a corner pixel there.
+    _removeRedundantSteps(skeleton, localWidth, localHeight);
 
     final rawPaths = _traceSkeleton(skeleton, localWidth, localHeight);
     if (rawPaths.isEmpty) {
@@ -767,9 +767,14 @@ class AutoLineartEngine {
     final n = points.length;
     if (n < 3) return points;
     final closed = _distance(points.first, points.last) < 1e-6;
+    // The points either side of [k]; round the seam of a closed line.
+    AutoLineartPoint before(int k) =>
+        k > 0 ? points[k - 1] : (closed ? points[n - 2] : points[k]);
+    AutoLineartPoint after(int k) =>
+        k < n - 1 ? points[k + 1] : (closed ? points[1] : points[k]);
     bool corner(int k) {
-      if (k <= 0 || k >= n - 1) return true;
-      final a = points[k - 1], b = points[k], c = points[k + 1];
+      if (!closed && (k <= 0 || k >= n - 1)) return true;
+      final a = before(k), b = points[k], c = after(k);
       final ux = b.x - a.x, uy = b.y - a.y, vx = c.x - b.x, vy = c.y - b.y;
       final lu = math.sqrt(ux * ux + uy * uy),
           lv = math.sqrt(vx * vx + vy * vy);
@@ -777,28 +782,27 @@ class AutoLineartEngine {
       return (ux * vx + uy * vy) / (lu * lv) < 0.5;
     }
 
-    // Tangents (per unit of the segment), one-sided at a corner and at the
-    // ends of an open line.
+    // Tangents per unit of the segment they shape: one-sided at a corner
+    // and at the ends of an open line; elsewhere along the chord through the
+    // neighbours, in proportion to this segment's share of the two, so a
+    // short segment next to a long one does not overshoot.
+    (double, double) smooth(int k, double share) {
+      final a = before(k), c = after(k);
+      return ((c.x - a.x) * share, (c.y - a.y) * share);
+    }
+
     (double, double) tangentIn(int k) {
-      if (closed && (k == 0 || k == n - 1)) {
-        final a = points[n - 2], c = points[1];
-        return ((c.x - a.x) / 2, (c.y - a.y) / 2);
-      }
-      if (corner(k)) {
-        final a = points[math.max(0, k - 1)], b = points[k];
-        return (b.x - a.x, b.y - a.y);
-      }
-      final a = points[k - 1], c = points[k + 1];
-      return ((c.x - a.x) / 2, (c.y - a.y) / 2);
+      final a = before(k), b = points[k];
+      if (corner(k)) return (b.x - a.x, b.y - a.y);
+      final lin = _distance(a, b), lout = _distance(b, after(k));
+      return smooth(k, lin / (lin + lout));
     }
 
     (double, double) tangentOut(int k) {
-      if (closed && (k == 0 || k == n - 1)) return tangentIn(k);
-      if (corner(k)) {
-        final b = points[k], c = points[math.min(n - 1, k + 1)];
-        return (c.x - b.x, c.y - b.y);
-      }
-      return tangentIn(k);
+      final b = points[k], c = after(k);
+      if (corner(k)) return (c.x - b.x, c.y - b.y);
+      final lin = _distance(before(k), b), lout = _distance(b, c);
+      return smooth(k, lout / (lin + lout));
     }
 
     final out = <AutoLineartPoint>[points.first];
@@ -1090,7 +1094,7 @@ class AutoLineartEngine {
     final anchors = <int>{};
     for (var i = 0; i < skeleton.length; i++) {
       if (skeleton[i] == 0) continue;
-      final d = _lineDegree(skeleton, width, height, i % width, i ~/ width);
+      final d = _branchDegree(skeleton, width, height, i % width, i ~/ width);
       degrees[i] = d;
       if (d != 2) anchors.add(i);
     }
@@ -1253,10 +1257,11 @@ class AutoLineartEngine {
     return paths;
   }
 
-  /// [mask] with every enclosed patch of background narrower than [rough]
-  /// (no point of it further than half the rough width from a stroke)
-  /// filled in.
-  static Uint8List _fillNarrowGaps(
+  /// [mask] with the specks of background inside a stroke filled in: an
+  /// enclosed patch at most half the [rough] width across and a third of it
+  /// square in area. A gap between two strokes (long, however narrow) or the
+  /// inside of a small loop is left alone.
+  static Uint8List _fillPinholes(
     Uint8List mask,
     int width,
     int height,
@@ -1264,41 +1269,8 @@ class AutoLineartEngine {
   ) {
     final out = Uint8List.fromList(mask);
     final n = width * height;
-    // How far each background pixel is from a stroke (chamfer 3-4, so 3 per
-    // pixel).
-    const cap = 1 << 15;
-    final distance = Int32List(n);
-    for (var p = 0; p < n; p++) {
-      distance[p] = mask[p] != 0 ? 0 : cap;
-    }
-    int at(int x, int y) => x < 0 || y < 0 || x >= width || y >= height
-        ? cap
-        : distance[y * width + x];
-    for (var y = 0; y < height; y++) {
-      for (var x = 0; x < width; x++) {
-        final p = y * width + x;
-        if (distance[p] == 0) continue;
-        var d = distance[p];
-        d = math.min(d, at(x - 1, y) + 3);
-        d = math.min(d, at(x, y - 1) + 3);
-        d = math.min(d, at(x - 1, y - 1) + 4);
-        d = math.min(d, at(x + 1, y - 1) + 4);
-        distance[p] = d;
-      }
-    }
-    for (var y = height - 1; y >= 0; y--) {
-      for (var x = width - 1; x >= 0; x--) {
-        final p = y * width + x;
-        if (distance[p] == 0) continue;
-        var d = distance[p];
-        d = math.min(d, at(x + 1, y) + 3);
-        d = math.min(d, at(x, y + 1) + 3);
-        d = math.min(d, at(x + 1, y + 1) + 4);
-        d = math.min(d, at(x - 1, y + 1) + 4);
-        distance[p] = d;
-      }
-    }
-    final limit = rough / 2 * 3;
+    final maxSide = math.max(2, (rough / 2).floor());
+    final maxArea = math.max(4, (rough * rough / 9).floor());
     final seen = Uint8List(n);
     final patch = <int>[];
     for (var start = 0; start < n; start++) {
@@ -1308,14 +1280,17 @@ class AutoLineartEngine {
         ..add(start);
       seen[start] = 1;
       var enclosed = true;
-      var narrow = true;
+      var minX = width, minY = height, maxX = -1, maxY = -1;
       for (var head = 0; head < patch.length; head++) {
         final p = patch[head];
         final x = p % width, y = p ~/ width;
         if (x == 0 || y == 0 || x == width - 1 || y == height - 1) {
           enclosed = false;
         }
-        if (distance[p] > limit) narrow = false;
+        if (x < minX) minX = x;
+        if (x > maxX) maxX = x;
+        if (y < minY) minY = y;
+        if (y > maxY) maxY = y;
         for (final q in [p - 1, p + 1, p - width, p + width]) {
           if (q < 0 || q >= n) continue;
           if ((q - p).abs() == 1 && q ~/ width != y) continue;
@@ -1324,7 +1299,8 @@ class AutoLineartEngine {
           patch.add(q);
         }
       }
-      if (!enclosed || !narrow) continue;
+      if (!enclosed || patch.length > maxArea) continue;
+      if (maxX - minX + 1 > maxSide || maxY - minY + 1 > maxSide) continue;
       for (final p in patch) {
         out[p] = 1;
       }
@@ -1348,7 +1324,7 @@ class AutoLineartEngine {
         x < width &&
         y < height &&
         skeleton[y * width + x] != 0;
-    int lines(int x, int y) => _lineDegree(skeleton, width, height, x, y);
+    int lines(int x, int y) => _branchDegree(skeleton, width, height, x, y);
 
     for (var round = 0; round < 3; round++) {
       var removed = false;
@@ -1397,6 +1373,29 @@ class AutoLineartEngine {
       }
       if (!removed) break;
     }
+  }
+
+  /// [_lineDegree] on a cleaned skeleton (no diagonal steps' extra corner
+  /// pixels left): there a pixel touching three or more line pixels is a
+  /// junction. Two lines joining at a shallow angle meet in a triangle of
+  /// three pixels, each touching the other two and its own line: counted in
+  /// groups, each seems to lie on one line, and the junction would be missed.
+  static int _branchDegree(
+    Uint8List skeleton,
+    int width,
+    int height,
+    int x,
+    int y,
+  ) {
+    final degree = _lineDegree(skeleton, width, height, x, y);
+    if (degree != 2) return degree;
+    var count = 0;
+    for (final (dx, dy) in _neighbors) {
+      final nx = x + dx, ny = y + dy;
+      if (nx < 0 || ny < 0 || nx >= width || ny >= height) continue;
+      if (skeleton[ny * width + nx] != 0) count++;
+    }
+    return count >= 3 ? 3 : 2;
   }
 
   /// How many lines leave pixel ([x], [y]) of the thinned [skeleton]: the
