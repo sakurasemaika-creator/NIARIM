@@ -2882,6 +2882,7 @@
   "communityErrorVideoFile": "无法读取视频文件。请重新选择视频。",
   "communityErrorUnsupported": "此设备不支持该操作。",
   "canvasLassoSnapToLines": "吸附到线条",
+  "canvasLassoGapTolerance": "线条间隙容差",
   "filterBackToList": "返回滤镜列表",
   "filterPanelCollapse": "收起面板",
   "filterPanelExpand": "展开面板",
