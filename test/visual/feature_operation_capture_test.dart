@@ -76,7 +76,11 @@ void main() {
                 ? 'lineart'
                 : 'color',
             mask: filter.kind == FilterKind.lensDistortion,
-            background: filter.kind == FilterKind.backgroundBlend,
+            // Prism adds light (Linear Dodge): over nothing it shows its own
+            // dark colours, so it gets a picture to shine on, as in use.
+            background:
+                filter.kind == FilterKind.backgroundBlend ||
+                filter.kind == FilterKind.prism,
           );
           final before = await h.art('$id-before');
           final inputIds = h.layers.map((l) => l.id).toSet();
@@ -198,17 +202,26 @@ void main() {
           0xFF00FF00,
         ];
         final cases = [
-          ('pixel_art_blocks_six_colours', pixelArt, false),
-          ('pixel_art_dots_canvas_resolution', pixelArt, true),
-          ('mosaic_same_fixture', mosaic, false),
+          ('pixel_art_blocks_six_colours', pixelArt, false, 256, 256),
+          ('pixel_art_dots_canvas_resolution', pixelArt, true, 256, 256),
+          ('mosaic_same_fixture', mosaic, false, 256, 256),
+          // The colour-specified samples on a 320 x 240 canvas too.
+          ('pixel_art_blocks_six_colours_320x240', pixelArt, false, 320, 240),
+          ('pixel_art_dots_canvas_resolution_320x240', pixelArt, true, 320, 240),
         ];
         final outputs = <String, Uint8List>{};
         Uint8List? original;
-        for (final (id, filter, byDots) in cases) {
+        for (final (id, filter, byDots, width, height) in cases) {
           debugPrint('CAPTURE_CASE:$id');
-          await h.project(id, fixture: 'pixelArtSix');
+          final square = width == 256 && height == 256;
+          await h.project(
+            id,
+            fixture: 'pixelArtSix',
+            exportWidth: width,
+            exportHeight: height,
+          );
           final before = await h.art('$id-before');
-          original ??= before;
+          if (square) original ??= before;
           await h.capture('$id-before-ui');
           await h.openMenu(h.l10n.filterPanelTitle);
           final panel = find.byType(FilterPanel);
@@ -268,9 +281,9 @@ void main() {
               final rect = tester.getRect(across);
               await tester.dragFrom(rect.center, Offset(rect.width, 0));
               await h.settle();
-              for (final key in [
-                'pixel-art-dots-wide',
-                'pixel-art-dots-high',
+              for (final (key, size) in [
+                ('pixel-art-dots-wide', width),
+                ('pixel-art-dots-high', height),
               ]) {
                 expect(
                   tester
@@ -281,7 +294,7 @@ void main() {
                         ),
                       )
                       .value,
-                  256,
+                  size,
                   reason: '$key follows, keeping the proportions',
                 );
               }
@@ -289,12 +302,14 @@ void main() {
               expect(
                 find.descendant(
                   of: panel,
-                  matching: find.text(h.l10n.filterPixelateDotsSummary(32, 32)),
+                  matching: find.text(
+                    h.l10n.filterPixelateDotsSummary(width ~/ 8, height ~/ 8),
+                  ),
                 ),
                 findsOneWidget,
               );
             }
-            expect(current().pixelArtCellSize(256, 256), byDots ? 1 : 8);
+            expect(current().pixelArtCellSize(width, height), byDots ? 1 : 8);
           }
           await h.capture('$id-settings');
           await h.tap(find.text(h.l10n.filterApplyButton));
@@ -303,7 +318,7 @@ void main() {
             '$id apply must finish and close the panel',
           );
           final after = await h.art('$id-after');
-          outputs[id] = after;
+          if (square) outputs[id] = after;
           await h.capture('$id-after-ui');
           final alphas = {for (var i = 3; i < after.length; i += 4) after[i]};
           if (filter.kind == FilterKind.pixelate) {
@@ -318,10 +333,10 @@ void main() {
               expect(sixColours, contains(argb), reason: '$id palette');
             }
             if (!byDots) {
-              for (var y = 0; y < 256; y++) {
-                for (var x = 0; x < 256; x++) {
-                  final i = (y * 256 + x) * 4;
-                  final j = ((y ~/ 8 * 8) * 256 + x ~/ 8 * 8) * 4;
+              for (var y = 0; y < height; y++) {
+                for (var x = 0; x < width; x++) {
+                  final i = (y * width + x) * 4;
+                  final j = ((y ~/ 8 * 8) * width + x ~/ 8 * 8) * 4;
                   expect(
                     after.sublist(i, i + 4),
                     after.sublist(j, j + 4),
@@ -345,7 +360,8 @@ void main() {
               'kind': filter.kind.name,
               if (filter.kind == FilterKind.pixelate) ...{
                 'pixelArtByDots': byDots,
-                'cellSize': current().pixelArtCellSize(256, 256),
+                'cellSize': current().pixelArtCellSize(width, height),
+                'canvas': '$width x $height',
                 'colorMode': current().pixelColorMode.name,
                 'colors': current().pixelExplicitColors,
               },
@@ -356,6 +372,10 @@ void main() {
               'pixel_art_blocks_six_colours' => '8pxの正方形ブロック・黒白赤黄青緑の6色・半透明なし。',
               'pixel_art_dots_canvas_resolution' =>
                 '横のドット数のスライダーを右端（キャンバスの画素数256）まで動かし、縦も256に連動＝1画素1ドット・6色・半透明なし。',
+              'pixel_art_blocks_six_colours_320x240' =>
+                'キャンバス320×240。8pxの正方形ブロック（40×30ドット）・6色・半透明なし。',
+              'pixel_art_dots_canvas_resolution_320x240' =>
+                'キャンバス320×240。横のドット数を右端（320）まで動かし、縦も240に連動＝1画素1ドット・6色・半透明なし。',
               _ => 'ブロック内の色と不透明度を平均する別効果。',
             },
           );
@@ -389,10 +409,12 @@ void main() {
           final id = item.id;
           if (_captureMatch.isNotEmpty && !id.contains(_captureMatch)) continue;
           debugPrint('CAPTURE_CASE:$id');
+          // Line colour trace takes its colours from the character's fills
+          // on the layer under the line art; nothing else is on the canvas.
           await h.project(
             id,
             fixture: id.contains('analog') ? 'analog' : 'lineart',
-            background: id.contains('color_trace'),
+            underlay: id.contains('color_trace') ? 'fill' : null,
           );
           final before = await h.art('$id-before');
           final inputIds = h.layers.map((l) => l.id).toSet();
@@ -917,6 +939,7 @@ class _Harness {
     required String fixture,
     bool mask = false,
     bool background = false,
+    String? underlay,
     int exportWidth = 256,
     int exportHeight = 256,
   }) async {
@@ -936,6 +959,17 @@ class _Harness {
     sceneId = ps.scenesOf(projectId).first.id;
     final source = layers.firstWhere((l) => l.type == model.LayerType.normal);
     await seed(source.id, fixture);
+    if (underlay != null) {
+      final under = ps.addLayer(
+        projectId: projectId,
+        sceneId: sceneId,
+        frameIndex: 0,
+        type: model.LayerType.normal,
+        name: '塗り',
+        insertIndex: layers.length,
+      );
+      await seed(under.id, underlay);
+    }
     if (background) {
       final bg = ps.addLayer(
         projectId: projectId,
@@ -1214,12 +1248,18 @@ class _Harness {
 
   Future<Uint8List> art(String name) async => (await tester.runAsync(() async {
     final project = ps.projects.firstWhere((p) => p.id == projectId);
+    // Blend modes act on the paper too (as on the canvas): give it when a
+    // layer is not in the normal mode.
     final image = await LayerCompositor.composite(
       ps.tileManagerOf(projectId),
       layers,
       (l) => ps.tileKeyFor(projectId, sceneId, 0, l.id),
       project.exportWidth,
       project.exportHeight,
+      paperColor: LayerCompositor.paperForBlendModes(
+        layers,
+        project.backgroundColor,
+      ),
     );
     final rgba = await image.toByteData(format: ui.ImageByteFormat.rawRgba);
     final png = await image.toByteData(format: ui.ImageByteFormat.png);
@@ -1301,7 +1341,45 @@ Future<Uint8List> _fixture(
 }) async {
   final recorder = ui.PictureRecorder();
   final canvas = Canvas(recorder);
-  if (kind == 'colorTranslucent') {
+  // The pictures are drawn for 256 x 256; on another canvas size they are
+  // scaled to fit, centred.
+  final fit = math.min(width / 256, height / 256);
+  canvas
+    ..translate((width - 256 * fit) / 2, (height - 256 * fit) / 2)
+    ..scale(fit);
+  if (kind == 'fill') {
+    // The character's fills alone, without lines: what line colour trace
+    // takes its colours from.
+    canvas.drawPath(
+      Path()
+        ..moveTo(64, 145)
+        ..lineTo(165, 145)
+        ..lineTo(194, 217)
+        ..quadraticBezierTo(115, 240, 35, 217)
+        ..close(),
+      Paint()
+        ..shader = ui.Gradient.linear(
+          const Offset(30, 140),
+          const Offset(195, 235),
+          [const Color(0xffdc7295), const Color(0xff653a9e)],
+        ),
+    );
+    canvas.drawOval(
+      const Rect.fromLTWH(55, 33, 120, 120),
+      Paint()..color = const Color(0xffffd8b4),
+    );
+    canvas.drawPath(
+      Path()
+        ..moveTo(55, 95)
+        ..quadraticBezierTo(48, 20, 115, 27)
+        ..quadraticBezierTo(186, 20, 178, 98)
+        ..lineTo(145, 66)
+        ..lineTo(114, 86)
+        ..lineTo(94, 63)
+        ..close(),
+      Paint()..color = const Color(0xff36455e),
+    );
+  } else if (kind == 'colorTranslucent') {
     canvas.saveLayer(
       const Rect.fromLTWH(0, 0, 256, 256),
       Paint()..color = const Color.fromRGBO(255, 255, 255, 0.62),
@@ -1470,7 +1548,7 @@ Future<Uint8List> _fixture(
   }
   if (kind == 'colorTranslucent') canvas.restore();
   final picture = recorder.endRecording();
-  final image = await picture.toImage(256, 256);
+  final image = await picture.toImage(width, height);
   picture.dispose();
   final data = await image.toByteData(format: ui.ImageByteFormat.rawRgba);
   image.dispose();

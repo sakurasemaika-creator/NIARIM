@@ -29,11 +29,12 @@ Uint8List _softRing() {
   return out;
 }
 
-/// The Auto Fill part's 「線画との隙間を埋める」 setting decides how far the
+/// The Auto Fill part's 「線画と塗りの隙間を埋める」 setting decides how far the
 /// fill reaches under the line art's soft edge: the gap between the line and
 /// the fill narrows as it goes up (small → medium → large), it is saved and
 /// restored, and 50 is the old fixed threshold. The three are also drawn to
-/// PNG (line in the fill's colour with an outline, where the gap shows).
+/// PNG as the layers stack: the black line art above the fill, so the paper
+/// showing between them is the gap.
 void main() {
   final engine = AutofillEngine();
   final line = _softRing();
@@ -93,7 +94,7 @@ void main() {
     expect(AutofillPart.fromJson(legacy).lineGapFill, 50);
   });
 
-  test('small, medium and large drawn with the line in the fill colour', () {
+  test('small, medium and large drawn with the line art above the fill', () {
     final dir = Directory('build/autofill-line-gap')
       ..createSync(recursive: true);
     for (final (name, g) in const [
@@ -101,7 +102,7 @@ void main() {
       ('medium', 50.0),
       ('large', 100.0),
     ]) {
-      final p = part(g, outline: true);
+      final p = part(g);
       final fill = engine.repaint(
         lineartData: line,
         width: _size,
@@ -114,15 +115,15 @@ void main() {
         height: _size,
         part: p,
       );
-      // White paper, the fill, then the line above it (as the layers are
-      // stacked), scaled up 3× to see the edge.
+      // White paper, the fill, then the black line art above it (as the
+      // layers are stacked), scaled up 3× to see the edge.
       const scale = 3;
       final image = img.Image(width: _size * scale, height: _size * scale);
       for (var y = 0; y < _size; y++) {
         for (var x = 0; x < _size; x++) {
           final i = (y * _size + x) * 4;
           final rgb = [255, 255, 255];
-          for (final layer in [fill, lineLayer]) {
+          for (final layer in [fill, line]) {
             final a = layer[i + 3];
             for (var c = 0; c < 3; c++) {
               rgb[c] = (layer[i + c] + rgb[c] * (255 - a) / 255).round().clamp(

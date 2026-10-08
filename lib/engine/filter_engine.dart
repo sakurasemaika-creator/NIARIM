@@ -965,7 +965,10 @@ class FilterEngine {
   /// pixel takes the average over a disc, like an out-of-focus lens, and
   /// brighter pixels count for more, so highlights open into round bright
   /// discs instead of melting away as in [applyGaussianBlur]. Like it, it
-  /// spreads into the transparent pixels around the drawing. Each row of
+  /// spreads into the transparent pixels around the drawing, as far out as
+  /// in: the opacity is a plain average over the disc, and only the colour
+  /// is weighted by brightness (transparent pixels add no colour, so they
+  /// do not count as black). Each row of
   /// the disc is summed from running row totals, so the cost grows with the
   /// radius, not with its square.
   Uint8List applyLensBlur(
@@ -976,22 +979,28 @@ class FilterEngine {
   ) {
     final radius = strength.round().clamp(1, kMaxBlurRadius);
     final pixels = width * height;
-    // Weight 1 for black up to 16 for white (luma to the 4th power).
+    // Weight 1 for black up to 16 for white (the colour's own luma, before
+    // its opacity, to the 4th power).
     final weight = Int32List(pixels);
     for (var p = 0; p < pixels; p++) {
       final i = p * 4;
+      final alpha = data[i + 3];
+      if (alpha == 0) {
+        weight[p] = 1;
+        continue;
+      }
       final luma = (data[i] * 77 + data[i + 1] * 150 + data[i + 2] * 29) >> 8;
-      final t = luma / 255;
+      final t = (luma / alpha).clamp(0.0, 1.0);
       weight[p] = 1 + (15 * t * t * t * t).round();
     }
     final rowLength = width + 1;
     final ring = 2 * radius + 1;
-    // Running totals of weight×channel (and of weight) along each of the
-    // last [ring] rows.
+    // Running totals along each of the last [ring] rows: weight × each
+    // premultiplied colour channel, weight × opacity, and opacity.
     final totals = List.generate(5, (_) => Int32List(ring * rowLength));
     void buildRow(int y) {
       final slot = (y % ring) * rowLength;
-      var r = 0, g = 0, b = 0, a = 0, w = 0;
+      var r = 0, g = 0, b = 0, wa = 0, a = 0;
       for (var x = 0; x < width; x++) {
         final p = y * width + x;
         final i = p * 4;
@@ -999,13 +1008,13 @@ class FilterEngine {
         r += data[i] * wt;
         g += data[i + 1] * wt;
         b += data[i + 2] * wt;
-        a += data[i + 3] * wt;
-        w += wt;
+        wa += data[i + 3] * wt;
+        a += data[i + 3];
         totals[0][slot + x + 1] = r;
         totals[1][slot + x + 1] = g;
         totals[2][slot + x + 1] = b;
-        totals[3][slot + x + 1] = a;
-        totals[4][slot + x + 1] = w;
+        totals[3][slot + x + 1] = wa;
+        totals[4][slot + x + 1] = a;
       }
     }
 
@@ -1024,28 +1033,30 @@ class FilterEngine {
       }
       for (var x = 0; x < width; x++) {
         sums.fillRange(0, 5, 0);
+        var count = 0;
         for (var dy = -radius; dy <= radius; dy++) {
           final ny = y + dy;
           if (ny < 0 || ny >= height) continue;
           final half = halfWidths[dy + radius];
           final x0 = math.max(0, x - half);
           final x1 = math.min(width - 1, x + half);
+          count += x1 - x0 + 1;
           final slot = (ny % ring) * rowLength;
           for (var c = 0; c < 5; c++) {
             final row = totals[c];
             sums[c] += row[slot + x1 + 1] - row[slot + x0];
           }
         }
-        final w = sums[4];
-        if (w == 0) continue;
+        final weightedAlpha = sums[3];
+        if (weightedAlpha == 0 || count == 0) continue;
         final o = (y * width + x) * 4;
-        final a = (sums[3] / w).round().clamp(0, 255);
+        final a = (sums[4] / count).round().clamp(0, 255);
         result[o + 3] = a;
-        // A weighted average of valid premultiplied pixels stays valid;
-        // the clamp only absorbs rounding.
-        result[o] = math.min(a, (sums[0] / w).round());
-        result[o + 1] = math.min(a, (sums[1] / w).round());
-        result[o + 2] = math.min(a, (sums[2] / w).round());
+        // The brightness-weighted straight colour, at the disc's opacity.
+        final scale = a / weightedAlpha;
+        result[o] = math.min(a, (sums[0] * scale).round());
+        result[o + 1] = math.min(a, (sums[1] * scale).round());
+        result[o + 2] = math.min(a, (sums[2] * scale).round());
       }
     }
     return result;
@@ -2471,7 +2482,7 @@ class FilterEngine {
     // 7/8) Degraded glass + 2 px RGB glitch. A deterministic seed keeps
     // preview, apply and recorded replay visually stable.
     final rng = math.Random(seed ?? 43098);
-    final degraded = Uint8List.fromList(work);
+    final glass = Uint8List.fromList(work);
     for (var y = 0; y < height; y++) {
       for (var x = 0; x < width; x++) {
         final i = (y * width + x) * 4;
@@ -2482,13 +2493,21 @@ class FilterEngine {
         final sy = (y + jitterY).clamp(0, height - 1);
         final s = (sy * width + sx) * 4;
         for (var ch = 0; ch < 3; ch++) {
-          degraded[i + ch] = (work[i + ch] * 0.75 + work[s + ch] * 0.25)
-              .round();
+          glass[i + ch] = (work[i + ch] * 0.75 + work[s + ch] * 0.25).round();
         }
+      }
+    }
+    // The glitch reads the glass result only (never a pixel this pass has
+    // already shifted, which smeared one blue along whole rows).
+    final degraded = Uint8List.fromList(glass);
+    for (var y = 0; y < height; y++) {
+      for (var x = 0; x < width; x++) {
+        final i = (y * width + x) * 4;
+        if (glass[i + 3] == 0) continue;
         final rx = (x + 2).clamp(0, width - 1);
         final bx = (x - 2).clamp(0, width - 1);
-        degraded[i] = degraded[(y * width + rx) * 4];
-        degraded[i + 2] = degraded[(y * width + bx) * 4 + 2];
+        degraded[i] = glass[(y * width + rx) * 4];
+        degraded[i + 2] = glass[(y * width + bx) * 4 + 2];
       }
     }
     work = degraded;

@@ -1,7 +1,11 @@
 import 'dart:math' as math;
 import 'dart:typed_data';
 
+import 'package:flutter/foundation.dart' show visibleForTesting;
+
 import '../models/filter_def.dart';
+import '../models/layer.dart';
+import 'blend_math.dart';
 import 'premultiplied.dart';
 
 /// 背景馴染ませ v2 の解析結果。画像認識やネットワーク処理には頼らず、
@@ -681,6 +685,18 @@ class BackgroundAcclimationEngine {
     return 1.0 + (guarded - 1.0) * protection;
   }
 
+  static final Float64List _blendScratch = Float64List(3);
+
+  /// [_blendProtected], for tests.
+  @visibleForTesting
+  static (double, double, double) blendForTest(
+    double r,
+    double g,
+    double b,
+    int color,
+    double amount,
+  ) => _blendProtected(r, g, b, color, amount, 0, 0, true);
+
   static (double, double, double) _blendProtected(
     double r,
     double g,
@@ -693,12 +709,24 @@ class BackgroundAcclimationEngine {
   ) {
     final t = amount.clamp(0.0, 1.0);
     if (t <= 0) return (r, g, b);
-    final tr = ((color >> 16) & 0xFF).toDouble();
-    final tg = ((color >> 8) & 0xFF).toDouble();
-    final tb = (color & 0xFF).toDouble();
-    var nr = r + (tr - r) * t;
-    var ng = g + (tg - g) * t;
-    var nb = b + (tb - b) * t;
+    // The background's light and colour are laid over in Hard Light, as a
+    // layer in that blend mode would be: light colours brighten, dark ones
+    // deepen, and the picture's own shading shows through.
+    final out = _blendScratch;
+    blendRgbOver(
+      LayerBlendMode.hardLight,
+      r / 255,
+      g / 255,
+      b / 255,
+      ((color >> 16) & 0xFF) / 255,
+      ((color >> 8) & 0xFF) / 255,
+      (color & 0xFF) / 255,
+      t,
+      out,
+    );
+    var nr = out[0] * 255;
+    var ng = out[1] * 255;
+    var nb = out[2] * 255;
     if (protection > 0) {
       final nl = _luma(nr.round(), ng.round(), nb.round());
       final maxDelta = isLight

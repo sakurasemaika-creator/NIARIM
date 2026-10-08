@@ -52,7 +52,13 @@ def display_name(case, labels):
             if settings.get("pixelArtByDots")
             else labels["filterPixelateModeBlock"]
         )
-        return f"{labels['filterNamePixelate']} / {how}"
+        size = settings.get("canvas")
+        suffix = (
+            f"（キャンバス{size.replace(' x ', '×')}）"
+            if size and size != "256 x 256"
+            else ""
+        )
+        return f"{labels['filterNamePixelate']} / {how}{suffix}"
     if case["group"] == "pixel-compare" and settings.get("kind") == "mosaic":
         return labels["filterNameMosaic"]
     if case["group"] != "filters":
@@ -328,9 +334,9 @@ def build_card(gallery, group, case, labels, fields):
         )
     if (case.get("settings") or {}).get("kind") == "prism" and not case.get("note"):
         case["note"] = (
-            "レイヤー単体の表示。キャンバスでは合成モード「"
+            "背景の絵の上に合成モード「"
             + labels.get("blendModeLinearDodge", "linearDodge")
-            + "」で下の絵を明るくする。"
+            + "」で重ねた見え方（キャンバスと同じ）。"
         )
     note = case.get("note") or (
         "初期値は恒等変換（画素変化なし）"
@@ -350,13 +356,13 @@ def build_card(gallery, group, case, labels, fields):
 FEATURE_PAGES = [
     (
         "投げ縄「線に吸着」",
-        "赤＝大まかに描いた投げ縄、青＝線に吸着した境界。内部線や交差する線へ乗り移らず外周の輪郭を追う。",
+        "赤＝大まかに描いた投げ縄、青＝選ばれた範囲。バケツ塗りと同じように線画で区切られた領域のうち投げ縄の内側に大部分が入るものを選び、縁は線の中央にぴったり沿う。",
         [
-            ("lasso-snap/regions_and_internal_lines.png", "複数領域・内部線のある線画"),
             (
-                "lasso-snap/clothing_rough_enclosure.png",
-                "衣服を外側から大まかに囲んだ場合",
+                "lasso-snap/regions_bucket_edge.png",
+                "人物をざっくり囲む（内側の線ごと）",
             ),
+            ("lasso-snap/shared_line.png", "線を共有する2つの形：大部分が内側の方だけ"),
             ("lasso-snap/canvas_raw.png", "キャンバス：吸着なし"),
             ("lasso-snap/canvas_snap.png", "キャンバス：線に吸着"),
         ],
@@ -401,14 +407,31 @@ FEATURE_PAGES = [
         ],
     ),
     (
-        "自動塗り「線画との隙間を埋める」・線画色トレス",
-        "隙間を埋める量を上げるほど、線の薄いふちの下まで塗る。線画色トレスは線を隣の塗りより深い色にする公式の自動操作。",
+        "自動塗り「線画と塗りの隙間を埋める」・線画色トレス",
+        "黒い線画を塗りの上に重ねた状態。隙間を埋める量を上げるほど、線の薄いふちの下まで塗り、白い隙間が消える。線画色トレスは背景透過の線画の下にキャラクターの塗りレイヤーだけを置き、線を隣の塗りより深い色にする公式の自動操作。",
         [
-            ("autofill-line-gap/small.png", "線画との隙間を埋める：0"),
-            ("autofill-line-gap/medium.png", "線画との隙間を埋める：50"),
-            ("autofill-line-gap/large.png", "線画との隙間を埋める：100"),
-            ("lineart-color-trace/before.png", "線画色トレス：実行前"),
-            ("lineart-color-trace/after.png", "線画色トレス：実行後"),
+            ("autofill-line-gap/small.png", "線画と塗りの隙間を埋める：0"),
+            ("autofill-line-gap/medium.png", "線画と塗りの隙間を埋める：50"),
+            ("autofill-line-gap/large.png", "線画と塗りの隙間を埋める：100"),
+            (
+                "feature-captures/automation/builtin_lineart_color_trace-before.png",
+                "線画色トレス：実行前",
+            ),
+            (
+                "feature-captures/automation/builtin_lineart_color_trace-after.png",
+                "線画色トレス：実行後",
+            ),
+        ],
+    ),
+    (
+        "墨溜まり・自動線画・眼鏡断層",
+        "墨溜まりは線が出会う角の内側だけに、中央の太さから1pxまで直線的に細く溜まる（左＝墨溜まりだけ、右＝線画の下に重ねた状態）。自動線画は一定の太さのラフから途切れない中心線を描き、入り抜きはオン・オフできる。眼鏡断層はレンズ越しの景色を一様に縮め、縁で輪郭が段になる（本物の強度近視の眼鏡と同じ）。",
+        [
+            ("ink-pool/t_junction.png", "墨溜まり：T字（棒の下の左右だけ）"),
+            ("ink-pool/corner.png", "墨溜まり：角（内側だけ）"),
+            ("auto-lineart/continuity.png", "自動線画：一定幅のラフ→中心線"),
+            ("auto-lineart/taper_off.png", "自動線画：入り抜きオフ"),
+            ("filter-glasses/minus_lens.png", "眼鏡断層：レンズ越しに約0.88倍"),
         ],
     ),
     (
@@ -652,6 +675,8 @@ def main():
                 "pixel_art_blocks_six_colours",
                 "pixel_art_dots_canvas_resolution",
                 "mosaic_same_fixture",
+                "pixel_art_blocks_six_colours_320x240",
+                "pixel_art_dots_canvas_resolution_320x240",
             }
         if group == "blend":
             assert len(cases) == 25, ("blend", len(cases), 25)
