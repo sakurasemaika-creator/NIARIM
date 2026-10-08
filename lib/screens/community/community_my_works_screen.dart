@@ -274,8 +274,14 @@ class _CommunityMyWorksScreenState extends State<CommunityMyWorksScreen> {
 
     final usingBackendOwnerList =
         communityService.api != null && auth.isSignedIn;
+    // The owner list keeps its own order and the works hidden from others,
+    // but each row shows the store's copy, so an edit made anywhere (a
+    // tag, the AI image/video flag, the visibility) shows here too.
     final works = usingBackendOwnerList
-        ? (_ownerWorks ?? const <CommunityWork>[])
+        ? [
+            for (final w in _ownerWorks ?? const <CommunityWork>[])
+              communityService.byId(w.id) ?? w,
+          ]
         : (communityService.worksByAuthor(
             kDummySelfAuthorId,
             includeHidden: true,

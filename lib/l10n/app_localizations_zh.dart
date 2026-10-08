@@ -1219,7 +1219,7 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get helpSelectToolDesc =>
-      '选取画布的一部分区域，仅对所选区域进行移动・旋转・缩放的工具。长按可以从“矩形选择”“套索选择（自由形状包围）”“自动选择（魔术棒，自动合并相近颜色的区域）”三种选择方式中选择。选择中会在画布上显示表示所选范围的边框，在取消选择之前，所有帧・所有图层都会固定显示相同的范围。在套索选择中开启“吸附到线条”后，选区会吸附到大致圈出的轨迹附近的线稿轮廓上，不会转到内部的线条或横穿轮廓的线条上。吸附的线条取自选择参照（“仅工作图层”／“所有可见图层”）。';
+      '选取画布的一部分区域，仅对所选区域进行移动・旋转・缩放的工具。长按可以从“矩形选择”“套索选择（自由形状包围）”“自动选择（魔术棒，自动合并相近颜色的区域）”三种选择方式中选择。选择中会在画布上显示表示所选范围的边框，在取消选择之前，所有帧・所有图层都会固定显示相同的范围。在套索选择中开启“吸附到线条”后，会像油漆桶填充一样查看线稿划分出的区域，只选择大部分位于套索内的区域。选区边缘会精确沿着线条的中央，这些区域内部的线条也会一并选中。线条中不超过“线条间隙容差”宽度的断口会被视为相连。套索内没有线稿时，按圈出的形状原样选择。线稿取自选择参照（“仅工作图层”／“所有可见图层”）。';
 
   @override
   String get helpFingerToolTitle => '手指工具（扭曲工具）';
@@ -5344,7 +5344,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get filterThresholdLabel => '阈值';
 
   @override
-  String get filterNameFisheye => '魚眼鏡頭';
+  String get filterNameFisheye => '鱼眼镜头';
 
   @override
   String get filterFisheyeStrength => '扭曲';
@@ -5356,7 +5356,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get filterChromaticAberrationStrength => '偏移强度';
 
   @override
-  String get filterNameLensDistortion => '眼鏡斷層';
+  String get filterNameLensDistortion => '眼镜断层';
 
   @override
   String get filterLensDistortionStrength => '镜片强度（负值为凹透镜，正值为凸透镜）';
@@ -5365,7 +5365,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get filterLensDistortionOffsetX => '中心位置微调（左右）';
 
   @override
-  String get filterNamePixelate => '像素畫';
+  String get filterNamePixelate => '像素画';
 
   @override
   String get filterNameAuroraHologram => '彩虹全息';
@@ -8225,7 +8225,7 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get helpSelectToolDesc =>
-      '選取畫布的一部分範圍，僅對所選範圍進行移動・旋轉・縮放的工具。長按可以從「矩形選取」「套索選取（自由形狀包圍）」「自動選取（魔術棒，自動合併相近顏色的範圍）」三種選取方式中選擇。選取中會在畫布上顯示表示所選範圍的框線，在取消選取之前，所有影格・所有圖層都會固定顯示相同的範圍。在套索選取中開啟「吸附到線條」後，選取範圍會吸附到大致圈出的軌跡附近的線稿輪廓上，不會轉到內部的線條或橫越輪廓的線條上。吸附的線條取自選取參照（「僅工作圖層」／「所有可見圖層」）。';
+      '選取畫布的一部分範圍，僅對所選範圍進行移動・旋轉・縮放的工具。長按可以從「矩形選取」「套索選取（自由形狀包圍）」「自動選取（魔術棒，自動合併相近顏色的範圍）」三種選取方式中選擇。選取中會在畫布上顯示表示所選範圍的框線，在取消選取之前，所有影格・所有圖層都會固定顯示相同的範圍。在套索選取中開啟「吸附到線條」後，會像油漆桶填色一樣查看線稿劃分出的區域，只選取大部分位於套索內的區域。選取範圍的邊緣會精確沿著線條的中央，這些區域內部的線條也會一併選取。線條中不超過「線條間隙容差」寬度的斷口會視為相連。套索內沒有線稿時，按圈出的形狀原樣選取。線稿取自選取參照（「僅工作圖層」／「所有可見圖層」）。';
 
   @override
   String get helpFingerToolTitle => '手指工具（扭曲工具）';
@@ -12341,7 +12341,6 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get filterNamePrism => '稜鏡';
 
   @override
-
   String get filterNameThreshold => '二值化';
 
   @override
@@ -12351,21 +12350,18 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get filterThresholdLabel => '閾值';
 
   @override
-
   String get filterNameFisheye => '魚眼鏡頭';
 
   @override
   String get filterFisheyeStrength => '扭曲';
 
   @override
-
   String get filterNameChromaticAberration => '色差';
 
   @override
   String get filterChromaticAberrationStrength => '偏移強度';
 
   @override
-
   String get filterNameLensDistortion => '眼鏡斷層';
 
   @override
@@ -12375,7 +12371,6 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get filterLensDistortionOffsetX => '中心位置微調（左右）';
 
   @override
-
   String get filterNamePixelate => '像素畫';
 
   @override
@@ -13788,6 +13783,9 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get canvasLassoSnapToLines => '吸附到線條';
+
+  @override
+  String get canvasLassoGapTolerance => '線條間隙容差';
 
   @override
   String get filterBackToList => '返回濾鏡列表';

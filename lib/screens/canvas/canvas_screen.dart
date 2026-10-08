@@ -2667,8 +2667,8 @@ class _CanvasScreenState extends State<CanvasScreen> {
                             children: [
                               Checkbox(
                                 value: settings.lassoSnapToLines,
-                                onChanged: (value) =>
-                                    settings.setLassoSnapToLines(value ?? false),
+                                onChanged: (value) => settings
+                                    .setLassoSnapToLines(value ?? false),
                                 visualDensity: VisualDensity.compact,
                               ),
                               Text(
@@ -2694,7 +2694,8 @@ class _CanvasScreenState extends State<CanvasScreen> {
                                 width: 92,
                                 child: SteppedSlider(
                                   key: const ValueKey('lasso-gap-tolerance'),
-                                  value: settings.lassoGapTolerancePx.toDouble(),
+                                  value: settings.lassoGapTolerancePx
+                                      .toDouble(),
                                   min: 0,
                                   max: 12,
                                   divisions: 12,
@@ -2709,7 +2710,8 @@ class _CanvasScreenState extends State<CanvasScreen> {
                                 width: 28,
                                 child: EditableSliderValue(
                                   text: settings.lassoGapTolerancePx.toString(),
-                                  value: settings.lassoGapTolerancePx.toDouble(),
+                                  value: settings.lassoGapTolerancePx
+                                      .toDouble(),
                                   min: 0,
                                   max: 12,
                                   onChanged: (value) => settings

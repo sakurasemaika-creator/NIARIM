@@ -2408,7 +2408,7 @@ abstract class AppLocalizations {
   /// No description provided for @helpSelectToolDesc.
   ///
   /// In ja, this message translates to:
-  /// **'キャンバスの一部分を範囲選択し、選択した範囲だけを移動・回転・拡大縮小できるツールです。長押しすると「矩形選択」「投げ縄選択（自由な形で囲む）」「自動選択（マジックワンド、似た色の範囲を自動でまとめて選択）」の3種類から選択方法を選べます。選択中は選択範囲を示す枠線がキャンバス上に表示され、選択を解除するまで全フレーム・全レイヤーで同じ範囲が固定表示されます。投げ縄選択では「線に吸着」をオンにすると、おおまかに囲んだ軌跡の近くにある線画の輪郭へ選択範囲が吸い付きます。内側の線や輪郭を横切る線へは乗り移りません。吸着する線は選択の参照先（「作業レイヤーのみ」／「表示レイヤーすべて」）から探します。'**
+  /// **'キャンバスの一部分を範囲選択し、選択した範囲だけを移動・回転・拡大縮小できるツールです。長押しすると「矩形選択」「投げ縄選択（自由な形で囲む）」「自動選択（マジックワンド、似た色の範囲を自動でまとめて選択）」の3種類から選択方法を選べます。選択中は選択範囲を示す枠線がキャンバス上に表示され、選択を解除するまで全フレーム・全レイヤーで同じ範囲が固定表示されます。投げ縄選択では「線に吸着」をオンにすると、バケツ塗りと同じように線画で区切られた領域を見て、囲みの内側に大部分が入っている領域だけを選択します。選択範囲の縁は線の中央にぴったり沿い、領域の内側にある線も一緒に選択されます。「線画の隙間許容」で指定した幅までの線の途切れは、つながっているものとして扱います。囲みの中に線画が無いときは、囲んだ形のまま選択します。線画は選択の参照先（「作業レイヤーのみ」／「表示レイヤーすべて」）から探します。'**
   String get helpSelectToolDesc;
 
   /// No description provided for @helpFingerToolTitle.
@@ -9854,7 +9854,7 @@ abstract class AppLocalizations {
   /// No description provided for @filterNameThreshold.
   ///
   /// In ja, this message translates to:
-  /// **'二値化フィルター'**
+  /// **'二値化'**
   String get filterNameThreshold;
 
   /// No description provided for @filterMonochromeColorLabel.
@@ -9872,7 +9872,7 @@ abstract class AppLocalizations {
   /// No description provided for @filterNameFisheye.
   ///
   /// In ja, this message translates to:
-  /// **'魚眼レンズフィルター'**
+  /// **'魚眼レンズ'**
   String get filterNameFisheye;
 
   /// No description provided for @filterFisheyeStrength.
@@ -9884,7 +9884,7 @@ abstract class AppLocalizations {
   /// No description provided for @filterNameChromaticAberration.
   ///
   /// In ja, this message translates to:
-  /// **'色収差フィルター'**
+  /// **'色収差'**
   String get filterNameChromaticAberration;
 
   /// No description provided for @filterChromaticAberrationStrength.
@@ -9896,7 +9896,7 @@ abstract class AppLocalizations {
   /// No description provided for @filterNameLensDistortion.
   ///
   /// In ja, this message translates to:
-  /// **'眼鏡断層フィルター'**
+  /// **'眼鏡断層'**
   String get filterNameLensDistortion;
 
   /// No description provided for @filterLensDistortionStrength.
@@ -9914,13 +9914,13 @@ abstract class AppLocalizations {
   /// No description provided for @filterNamePixelate.
   ///
   /// In ja, this message translates to:
-  /// **'ドット絵フィルター'**
+  /// **'ドット絵'**
   String get filterNamePixelate;
 
   /// No description provided for @filterNameAuroraHologram.
   ///
   /// In ja, this message translates to:
-  /// **'質感変更フィルター'**
+  /// **'質感変更'**
   String get filterNameAuroraHologram;
 
   /// No description provided for @filterAuroraHologramStrength.

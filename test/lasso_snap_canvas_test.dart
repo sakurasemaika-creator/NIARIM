@@ -21,9 +21,10 @@ const _w = 120, _h = 100;
 const _decoys = [(25, 49), (44, 26), (84, 50), (60, 72)];
 
 /// The real canvas: a rough lasso drawn around an outlined shape with
-/// 「線に吸着」 on selects the shape along its outline, so a dot lying between
-/// the finger's path and the outline is left out, while the inside is
-/// selected. (Without snapping the same lasso takes the dot.)
+/// 「線に吸着」 on selects the shape up to the middle of its outline, like a
+/// bucket fill would fill it, so a dot lying between the finger's path and
+/// the outline is left out, while the inside is selected. (Without snapping
+/// the same lasso takes the dot.)
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
   final out = Directory('build/lasso-snap');
@@ -142,7 +143,8 @@ void main() {
             await tester.pump();
           }
         }
-        // The live preview already shows where the selection will go.
+        // While the lasso is drawn it follows the finger; the selection
+        // snaps to the line art once it is let go.
         final preview = await tester.runAsync(() => _pixels(boundaryKey));
         await tester.runAsync(
           () => _shot(
@@ -153,20 +155,19 @@ void main() {
         final drawn = _changedCanvasPixels(beforeLasso!, preview!);
         expect(drawn, isNotEmpty, reason: 'the lasso preview is drawn');
         final onOutline = drawn.where((p) => _distanceToOutline(p) <= 2);
-        if (snap) {
-          expect(
-            onOutline.length / drawn.length,
-            greaterThan(.9),
-            reason: 'the preview follows the outline',
-          );
-        } else {
-          expect(
-            onOutline.length / drawn.length,
-            lessThan(.1),
-            reason: 'the preview follows the finger',
-          );
-        }
+        expect(
+          onOutline.length / drawn.length,
+          lessThan(.1),
+          reason: 'the preview follows the finger',
+        );
         await lasso.up();
+        // The snap runs in the background.
+        for (var i = 0; i < 100 && !active; i++) {
+          await tester.runAsync(
+            () => Future<void>.delayed(const Duration(milliseconds: 20)),
+          );
+          await tester.pump();
+        }
         await tester.runAsync(
           () => Future<void>.delayed(const Duration(milliseconds: 50)),
         );

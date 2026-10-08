@@ -20,7 +20,7 @@ import '../../../engine/fisheye_perspective.dart';
 import '../../../engine/pixel_art_engine.dart';
 import '../../../engine/input_handler.dart';
 import '../../../engine/lasso_fill_engine.dart';
-import '../../../engine/lasso_line_snap_engine.dart';
+import '../../../engine/lasso_region_snap_engine.dart';
 import '../../../engine/layer_compositor.dart';
 import '../../../engine/layer_keyframe_engine.dart';
 import '../../../engine/mesh_warp_engine.dart';
@@ -158,13 +158,6 @@ Matrix4 constrainCanvasViewTransform(
 /// 高解像度のプロジェクトではハンドルが極端に小さく、低解像度では巨大に
 /// 見えてしまう（指の大きさは画面基準なので、掴みやすさも画面基準が正しい）。
 const double kSelectionHandleScreenRadius = 7.0;
-
-/// 投げ縄の「線に吸着」が線を探す範囲（**画面px**での半径）。
-///
-/// 指でざっくり囲った軌跡から、この範囲にある線へ吸着する。選択範囲の
-/// ハンドルと同じく、指の大きさは画面基準なのでキャンバスの解像度や
-/// ズームに左右されないよう画面pxで決め、キャンバスpxへ割り戻して使う。
-const double kLassoSnapScreenRadius = 28.0;
 
 /// 回転ハンドルだけは他より大きくする（画面pxでの半径）。
 /// 四隅の拡大縮小ハンドルと役割が違うことが一目で分かるようにするのと、
@@ -519,6 +512,7 @@ class CanvasArea extends StatefulWidget {
     this.clearSelectionToken = 0,
     this.selectionReferenceAllVisible = false,
     this.lassoSnapToLines = false,
+    this.lassoGapTolerancePx = 6,
     this.onSelectionActiveChanged,
     this.onSelectionMaskChanged,
     this.filterLensMask,
@@ -665,11 +659,6 @@ class _CanvasAreaState extends State<CanvasArea> {
   Offset? _selectionStart;
   Offset? _selectionEnd;
   List<Offset> _lassoPoints = [];
-  List<Offset> _lassoGuidePoints = [];
-
-  /// Follows the line art while a lasso with 「線に吸着」 is drawn; null until
-  /// the reference image is ready (or when snapping is off).
-  LassoLineSnapTracker? _lassoSnapTracker;
 
   /// The reference image the current lasso snaps to, while it loads.
   Future<Uint8List?>? _lassoSnapReference;
@@ -1107,37 +1096,35 @@ class _CanvasAreaState extends State<CanvasArea> {
     return bytes?.buffer.asUint8List() ?? Uint8List(w * h * 4);
   }
 
-  /// Starts following the line art once the reference for lasso [generation]
-  /// is ready, catching up with what was drawn meanwhile.
-  void _startLassoSnapTracker(int generation, Uint8List? reference) {
-    if (!mounted ||
-        reference == null ||
-        generation != _lassoGeneration ||
-        _lassoGuidePoints.isEmpty) {
-      return;
-    }
-    final tracker = _newLassoSnapTracker(reference);
-    _lassoGuidePoints.forEach(tracker.add);
-    setState(() {
-      _lassoSnapTracker = tracker;
-      _lassoPoints = tracker.path;
-    });
-  }
-
-  Future<void> _commitLassoAfterReference(
-    List<Offset> guide,
+  /// 「線に吸着」: selects the areas the line art divides the lasso into, the
+  /// way a bucket fill sees them, with the edge along the middle of the
+  /// lines; where the line art gives nothing to snap to, the lasso as drawn.
+  Future<void> _commitSnappedLasso(
+    List<Offset> lasso,
     Future<Uint8List?> pendingReference,
   ) async {
     final generation = _lassoGeneration;
     final reference = await pendingReference;
     if (!mounted || generation != _lassoGeneration) return;
-    if (reference == null) {
-      _commitLassoSelection(guide);
+    if (reference == null || lasso.length < 3) {
+      _commitLassoSelection(lasso);
       return;
     }
-    final tracker = _newLassoSnapTracker(reference);
-    guide.forEach(tracker.add);
-    _commitLassoSelection(tracker.closedPath);
+    final w = _tileManager.canvasWidth;
+    final h = _tileManager.canvasHeight;
+    final mask = await compute(lassoRegionSnapInIsolate, (
+      lasso: lasso,
+      rgba: reference,
+      width: w,
+      height: h,
+      gapTolerancePx: widget.lassoGapTolerancePx,
+    ));
+    if (!mounted || generation != _lassoGeneration) return;
+    if (mask == null) {
+      _commitLassoSelection(lasso);
+    } else {
+      _setSelectionMask(mask, w, h);
+    }
   }
 
   void _commitLassoSelection(List<Offset> points) {
@@ -1184,14 +1171,6 @@ class _CanvasAreaState extends State<CanvasArea> {
       _recomposeSurroundings(force: true);
     }
   }
-
-  LassoLineSnapTracker _newLassoSnapTracker(Uint8List reference) =>
-      LassoLineSnapTracker(
-        rgba: reference,
-        width: _tileManager.canvasWidth,
-        height: _tileManager.canvasHeight,
-        radius: kLassoSnapScreenRadius / _canvasToScreenScale,
-      );
 
   /// 選択範囲マスクを確定し、プレビュー用オーバーレイ画像を非同期で生成する。
   void _setSelectionMask(Uint8List mask, int w, int h) {
@@ -1467,17 +1446,12 @@ class _CanvasAreaState extends State<CanvasArea> {
     }
     if (widget.currentTool == DrawingTool.selectLasso) {
       _clearSelectionMask();
-      _lassoSnapTracker = null;
-      final generation = ++_lassoGeneration;
-      setState(() {
-        _lassoGuidePoints = [canvasPos];
-        _lassoPoints = [canvasPos];
-      });
-      final reference = _loadLassoSnapReference();
-      _lassoSnapReference = reference;
-      unawaited(
-        reference.then((buffer) => _startLassoSnapTracker(generation, buffer)),
-      );
+      _lassoGeneration++;
+      setState(() => _lassoPoints = [canvasPos]);
+      // Loaded while the lasso is drawn, so the snap is quick on release.
+      _lassoSnapReference = widget.lassoSnapToLines
+          ? _loadLassoSnapReference()
+          : null;
       return;
     }
     if (widget.currentTool == DrawingTool.selectMagicWand) {
@@ -1628,15 +1602,8 @@ class _CanvasAreaState extends State<CanvasArea> {
       return;
     }
     if (widget.currentTool == DrawingTool.selectLasso) {
-      final tracker = _lassoSnapTracker;
-      tracker?.add(canvasPos);
-      setState(() {
-        _lassoGuidePoints.add(canvasPos);
-        // A new list each time: the painter compares it by identity.
-        _lassoPoints = tracker != null
-            ? tracker.path
-            : [..._lassoPoints, canvasPos];
-      });
+      // A new list each time: the painter compares it by identity.
+      setState(() => _lassoPoints = [..._lassoPoints, canvasPos]);
       return;
     }
     if (widget.currentTool == DrawingTool.shape && _shapeStart != null) {
@@ -1762,24 +1729,14 @@ class _CanvasAreaState extends State<CanvasArea> {
       return;
     }
     if (widget.currentTool == DrawingTool.selectLasso) {
-      // With snapping, the boundary is the tracker's route through the whole
-      // lasso, the same one the live preview showed.
-      final tracker = _lassoSnapTracker;
-      final guide = List<Offset>.of(_lassoGuidePoints);
+      final lasso = List<Offset>.of(_lassoPoints);
       final pendingReference = _lassoSnapReference;
-      setState(() {
-        _lassoPoints = [];
-        _lassoGuidePoints = [];
-      });
-      _lassoSnapTracker = null;
+      setState(() => _lassoPoints = []);
       _lassoSnapReference = null;
-      if (widget.lassoSnapToLines && tracker != null) {
-        _commitLassoSelection(tracker.closedPath);
-      } else if (widget.lassoSnapToLines && pendingReference != null) {
-        // Released before the reference was ready: snap once it is.
-        unawaited(_commitLassoAfterReference(guide, pendingReference));
+      if (widget.lassoSnapToLines && pendingReference != null) {
+        unawaited(_commitSnappedLasso(lasso, pendingReference));
       } else {
-        _commitLassoSelection(guide);
+        _commitLassoSelection(lasso);
       }
       return;
     }

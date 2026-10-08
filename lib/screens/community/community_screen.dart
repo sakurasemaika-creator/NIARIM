@@ -101,6 +101,41 @@ class _CommunityScreenState extends State<CommunityScreen>
     );
   }
 
+  /// Pulling down on any tab takes the latest works, the selected ranking
+  /// and the following feed from the server again, so an edit made since
+  /// (a poster's AI image/video declaration, tags, a work hidden) shows.
+  Future<void> _refreshAll() async {
+    final service = context.read<CommunityService>();
+    if (!service.isBackendConnected) return;
+    await Future.wait([
+      service.refreshFromBackend(),
+      _fetchRanking(),
+      service.refreshFollowingFeed(),
+    ]);
+  }
+
+  /// [child] scrolls even when it fits, so it can always be pulled down to
+  /// refresh; without a backend there is nothing to fetch.
+  Widget _pullToRefresh(CommunityService service, Widget child) {
+    if (!service.isBackendConnected) return child;
+    return RefreshIndicator(
+      key: const Key('communityPullToRefresh'),
+      onRefresh: _refreshAll,
+      child: child,
+    );
+  }
+
+  /// An empty state that can still be pulled down.
+  Widget _scrollableEmptyState(Widget child) => LayoutBuilder(
+    builder: (context, constraints) => SingleChildScrollView(
+      physics: const AlwaysScrollableScrollPhysics(),
+      child: ConstrainedBox(
+        constraints: BoxConstraints(minHeight: constraints.maxHeight),
+        child: child,
+      ),
+    ),
+  );
+
   @override
   void didUpdateWidget(covariant CommunityScreen oldWidget) {
     super.didUpdateWidget(oldWidget);
@@ -480,111 +515,125 @@ class _CommunityScreenState extends State<CommunityScreen>
             Builder(
               builder: (context) {
                 final works = _newArrivals(allWorks);
-                if (works.isEmpty) return _buildSearchEmptyState(l10n);
-                return SingleChildScrollView(
-                  child: CommunityWorkGrid(
-                    works: works,
-                    bookmarkedIds: bookmarkedIds,
-                    onTapWork: _openFloatingPreview,
-                    onToggleBookmark: (w) => reportFailedCommunityEdit(
-                      context,
-                      communityService,
-                      communityService.toggleBookmark(w.id),
+                if (works.isEmpty) {
+                  return _pullToRefresh(
+                    communityService,
+                    _scrollableEmptyState(_buildSearchEmptyState(l10n)),
+                  );
+                }
+                return _pullToRefresh(
+                  communityService,
+                  SingleChildScrollView(
+                    physics: const AlwaysScrollableScrollPhysics(),
+                    child: CommunityWorkGrid(
+                      works: works,
+                      bookmarkedIds: bookmarkedIds,
+                      onTapWork: _openFloatingPreview,
+                      onToggleBookmark: (w) => reportFailedCommunityEdit(
+                        context,
+                        communityService,
+                        communityService.toggleBookmark(w.id),
+                      ),
+                      onTapAuthor: _openAuthorWorks,
+                      bottomPadding: 88,
                     ),
-                    onTapAuthor: _openAuthorWorks,
-                    bottomPadding: 88,
                   ),
                 );
               },
             ),
-            SingleChildScrollView(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  Padding(
-                    padding: const EdgeInsets.fromLTRB(12, 12, 12, 0),
-                    child: Wrap(
-                      spacing: 6,
-                      runSpacing: 6,
-                      children: [
-                        for (final period in _RankingPeriod.values)
+            _pullToRefresh(
+              communityService,
+              SingleChildScrollView(
+                physics: const AlwaysScrollableScrollPhysics(),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    Padding(
+                      padding: const EdgeInsets.fromLTRB(12, 12, 12, 0),
+                      child: Wrap(
+                        spacing: 6,
+                        runSpacing: 6,
+                        children: [
+                          for (final period in _RankingPeriod.values)
+                            ChoiceChip(
+                              label: Text(_periodLabel(l10n, period)),
+                              selected: _period == period,
+                              onSelected: (_) {
+                                setState(() => _period = period);
+                                _fetchRanking();
+                              },
+                            ),
+                        ],
+                      ),
+                    ),
+                    Padding(
+                      padding: const EdgeInsets.fromLTRB(12, 8, 12, 0),
+                      child: Row(
+                        children: [
                           ChoiceChip(
-                            label: Text(_periodLabel(l10n, period)),
-                            selected: _period == period,
+                            avatar: const Icon(
+                              Icons.play_arrow_rounded,
+                              size: 16,
+                            ),
+                            label: Text(l10n.communityRankingSortViews),
+                            selected: _sort == _RankingSort.views,
                             onSelected: (_) {
-                              setState(() => _period = period);
+                              setState(() => _sort = _RankingSort.views);
                               _fetchRanking();
                             },
                           ),
-                      ],
-                    ),
-                  ),
-                  Padding(
-                    padding: const EdgeInsets.fromLTRB(12, 8, 12, 0),
-                    child: Row(
-                      children: [
-                        ChoiceChip(
-                          avatar: const Icon(
-                            Icons.play_arrow_rounded,
-                            size: 16,
+                          const SizedBox(width: 8),
+                          ChoiceChip(
+                            avatar: const Icon(Icons.bookmark, size: 16),
+                            label: Text(l10n.communityRankingSortBookmarks),
+                            selected: _sort == _RankingSort.bookmarks,
+                            onSelected: (_) {
+                              setState(() => _sort = _RankingSort.bookmarks);
+                              _fetchRanking();
+                            },
                           ),
-                          label: Text(l10n.communityRankingSortViews),
-                          selected: _sort == _RankingSort.views,
-                          onSelected: (_) {
-                            setState(() => _sort = _RankingSort.views);
-                            _fetchRanking();
-                          },
-                        ),
-                        const SizedBox(width: 8),
-                        ChoiceChip(
-                          avatar: const Icon(Icons.bookmark, size: 16),
-                          label: Text(l10n.communityRankingSortBookmarks),
-                          selected: _sort == _RankingSort.bookmarks,
-                          onSelected: (_) {
-                            setState(() => _sort = _RankingSort.bookmarks);
-                            _fetchRanking();
-                          },
-                        ),
-                        const Spacer(),
-                        IconButton(
-                          icon: Icon(
-                            _sortAscending
-                                ? Icons.arrow_upward
-                                : Icons.arrow_downward,
+                          const Spacer(),
+                          IconButton(
+                            icon: Icon(
+                              _sortAscending
+                                  ? Icons.arrow_upward
+                                  : Icons.arrow_downward,
+                            ),
+                            tooltip: _sortAscending
+                                ? l10n.communityRankingSortAscendingTooltip
+                                : l10n.communityRankingSortDescendingTooltip,
+                            onPressed: () => setState(
+                              () => _sortAscending = !_sortAscending,
+                            ),
                           ),
-                          tooltip: _sortAscending
-                              ? l10n.communityRankingSortAscendingTooltip
-                              : l10n.communityRankingSortDescendingTooltip,
-                          onPressed: () =>
-                              setState(() => _sortAscending = !_sortAscending),
-                        ),
-                      ],
+                        ],
+                      ),
                     ),
-                  ),
-                  Builder(
-                    builder: (context) {
-                      final ranked = _rankingWorks(allWorks);
-                      if (ranked.isEmpty) return _buildSearchEmptyState(l10n);
-                      final rankNumbers = {
-                        for (int i = 0; i < ranked.length; i++)
-                          ranked[i].id: i + 1,
-                      };
-                      return CommunityWorkGrid(
-                        works: ranked,
-                        bookmarkedIds: bookmarkedIds,
-                        onTapWork: _openFloatingPreview,
-                        onToggleBookmark: (w) => reportFailedCommunityEdit(
-                          context,
-                          communityService,
-                          communityService.toggleBookmark(w.id),
-                        ),
-                        onTapAuthor: _openAuthorWorks,
-                        rankNumbers: rankNumbers,
-                        bottomPadding: 88,
-                      );
-                    },
-                  ),
-                ],
+                    Builder(
+                      builder: (context) {
+                        final ranked = _rankingWorks(allWorks);
+                        if (ranked.isEmpty) return _buildSearchEmptyState(l10n);
+                        final rankNumbers = {
+                          for (int i = 0; i < ranked.length; i++)
+                            ranked[i].id: i + 1,
+                        };
+                        return CommunityWorkGrid(
+                          works: ranked,
+                          bookmarkedIds: bookmarkedIds,
+                          onTapWork: _openFloatingPreview,
+                          onToggleBookmark: (w) => reportFailedCommunityEdit(
+                            context,
+                            communityService,
+                            communityService.toggleBookmark(w.id),
+                          ),
+                          onTapAuthor: _openAuthorWorks,
+                          rankNumbers: rankNumbers,
+                          bottomPadding: 88,
+                        );
+                      },
+                    ),
+                  ],
+                ),
               ),
             ),
             Builder(
@@ -597,22 +646,34 @@ class _CommunityScreenState extends State<CommunityScreen>
                       e.work.id: e.repostedByAuthorName!,
                 };
                 if (communityService.favoriteAuthorIds.isEmpty) {
-                  return _buildNoFavoriteAuthorsState(l10n);
+                  return _pullToRefresh(
+                    communityService,
+                    _scrollableEmptyState(_buildNoFavoriteAuthorsState(l10n)),
+                  );
                 }
-                if (works.isEmpty) return _buildSearchEmptyState(l10n);
-                return SingleChildScrollView(
-                  child: CommunityWorkGrid(
-                    works: works,
-                    bookmarkedIds: bookmarkedIds,
-                    onTapWork: _openFloatingPreview,
-                    onToggleBookmark: (w) => reportFailedCommunityEdit(
-                      context,
-                      communityService,
-                      communityService.toggleBookmark(w.id),
+                if (works.isEmpty) {
+                  return _pullToRefresh(
+                    communityService,
+                    _scrollableEmptyState(_buildSearchEmptyState(l10n)),
+                  );
+                }
+                return _pullToRefresh(
+                  communityService,
+                  SingleChildScrollView(
+                    physics: const AlwaysScrollableScrollPhysics(),
+                    child: CommunityWorkGrid(
+                      works: works,
+                      bookmarkedIds: bookmarkedIds,
+                      onTapWork: _openFloatingPreview,
+                      onToggleBookmark: (w) => reportFailedCommunityEdit(
+                        context,
+                        communityService,
+                        communityService.toggleBookmark(w.id),
+                      ),
+                      onTapAuthor: _openAuthorWorks,
+                      repostedByNames: repostedByNames,
+                      bottomPadding: 88,
                     ),
-                    onTapAuthor: _openAuthorWorks,
-                    repostedByNames: repostedByNames,
-                    bottomPadding: 88,
                   ),
                 );
               },
