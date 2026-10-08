@@ -6,19 +6,30 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:image/image.dart' as img;
 import 'package:niarim/engine/filter_engine.dart';
 
-const _w = 200, _h = 160;
-
 /// Black line art on a transparent layer, as round-capped strokes.
 class _Art {
-  final rgba = Uint8List(_w * _h * 4);
+  _Art(this.width, this.height) : rgba = Uint8List(width * height * 4);
 
-  void stroke(List<(double, double)> points, double thickness) {
+  final int width, height;
+  final Uint8List rgba;
+
+  /// Round-capped strokes; [soft] ones have anti-aliased edges, as a 1 px
+  /// pen draws them.
+  void stroke(
+    List<(double, double)> points,
+    double thickness, {
+    bool soft = false,
+  }) {
     final half = thickness / 2;
     for (var k = 0; k + 1 < points.length; k++) {
       final (ax, ay) = points[k];
       final (bx, by) = points[k + 1];
-      for (var y = 0; y < _h; y++) {
-        for (var x = 0; x < _w; x++) {
+      final minX = math.max(0, (math.min(ax, bx) - half - 1).floor());
+      final maxX = math.min(width - 1, (math.max(ax, bx) + half + 1).ceil());
+      final minY = math.max(0, (math.min(ay, by) - half - 1).floor());
+      final maxY = math.min(height - 1, (math.max(ay, by) + half + 1).ceil());
+      for (var y = minY; y <= maxY; y++) {
+        for (var x = minX; x <= maxX; x++) {
           final px = x + .5, py = y + .5;
           final dx = bx - ax, dy = by - ay;
           final len2 = dx * dx + dy * dy;
@@ -26,8 +37,18 @@ class _Art {
               ? 0.0
               : (((px - ax) * dx + (py - ay) * dy) / len2).clamp(0.0, 1.0);
           final ex = px - (ax + dx * t), ey = py - (ay + dy * t);
-          if (ex * ex + ey * ey <= half * half) {
-            final i = (y * _w + x) * 4;
+          final i = (y * width + x) * 4;
+          if (soft) {
+            final cover = (half + .5 - math.sqrt(ex * ex + ey * ey)).clamp(
+              0.0,
+              1.0,
+            );
+            final a = (cover * 255).round();
+            if (a > rgba[i + 3]) {
+              rgba[i] = rgba[i + 1] = rgba[i + 2] = 0;
+              rgba[i + 3] = a;
+            }
+          } else if (ex * ex + ey * ey <= half * half) {
             rgba[i] = rgba[i + 1] = rgba[i + 2] = 0;
             rgba[i + 3] = 255;
           }
@@ -35,49 +56,135 @@ class _Art {
       }
     }
   }
+
+  void ring(
+    double cx,
+    double cy,
+    double r,
+    double thickness, {
+    bool soft = false,
+  }) => stroke(
+    [
+      for (var a = 0.0; a <= 2 * math.pi + .02; a += .02)
+        (cx + r * math.cos(a), cy + r * math.sin(a)),
+    ],
+    thickness,
+    soft: soft,
+  );
+
+  /// A straight line through ([x], [y]) at [degrees] (screen angle: 0 is
+  /// to the right, 90 down), [length] px each way.
+  void lineThrough(
+    double x,
+    double y,
+    double degrees,
+    double length,
+    double thickness, {
+    bool soft = false,
+  }) {
+    final a = degrees * math.pi / 180;
+    final dx = math.cos(a) * length, dy = math.sin(a) * length;
+    stroke([(x - dx, y - dy), (x + dx, y + dy)], thickness, soft: soft);
+  }
 }
 
-/// The pool's thickness across column [x] (summed coverage).
-double _thicknessAcrossColumn(Uint8List pool, int x, int fromY, int toY) {
+const _black = 0xFF000000;
+final _engine = FilterEngine();
+
+Uint8List _pool(
+  _Art art, {
+  double range = 30,
+  double width = 10,
+  int color = _black,
+}) => _engine.applyInkPoolLayer(
+  art.rgba,
+  art.width,
+  art.height,
+  color: color,
+  rangePx: range,
+  centerWidthPx: width,
+);
+
+/// The pool's coverage summed down column [x] from row [fromY] to [toY].
+double _column(_Art art, Uint8List pool, int x, int fromY, int toY) {
   var sum = 0.0;
   for (var y = fromY; y <= toY; y++) {
-    sum += pool[(y * _w + x) * 4 + 3] / 255;
+    sum += pool[(y * art.width + x) * 4 + 3] / 255;
   }
   return sum;
 }
 
-void _write(String name, Uint8List art, Uint8List pool) {
+/// The pool's coverage summed over a disc of [radius] round ([x], [y]); with
+/// [visible], only what the line art over it leaves showing.
+double _around(
+  _Art art,
+  Uint8List pool,
+  double x,
+  double y,
+  double radius, {
+  bool visible = false,
+}) {
+  var sum = 0.0;
+  for (var py = (y - radius).floor(); py <= (y + radius).ceil(); py++) {
+    for (var px = (x - radius).floor(); px <= (x + radius).ceil(); px++) {
+      if (px < 0 || py < 0 || px >= art.width || py >= art.height) continue;
+      final dx = px + .5 - x, dy = py + .5 - y;
+      if (dx * dx + dy * dy > radius * radius) continue;
+      final i = (py * art.width + px) * 4 + 3;
+      sum += pool[i] / 255 * (visible ? 1 - art.rgba[i] / 255 : 1);
+    }
+  }
+  return sum;
+}
+
+double _total(Uint8List pool) {
+  var sum = 0.0;
+  for (var i = 3; i < pool.length; i += 4) {
+    sum += pool[i] / 255;
+  }
+  return sum;
+}
+
+/// Three panels: the pool alone (red), the pool (red) under the line art,
+/// and how it really looks: the pool in the line's own black under it.
+void _write(String name, _Art art, Uint8List pool) {
   const scale = 3;
-  final image = img.Image(width: _w * scale * 2 + 12, height: _h * scale);
+  const gap = 12;
+  final w = art.width, h = art.height;
+  final image = img.Image(
+    width: (w * scale + gap) * 3 - gap,
+    height: h * scale,
+  );
   img.fill(image, color: img.ColorRgb8(255, 255, 255));
-  for (var y = 0; y < _h; y++) {
-    for (var x = 0; x < _w; x++) {
-      final i = (y * _w + x) * 4;
-      final line = art[i + 3] > 0;
+  for (var y = 0; y < h; y++) {
+    for (var x = 0; x < w; x++) {
+      final i = (y * w + x) * 4;
+      final line = art.rgba[i + 3] / 255;
       final a = pool[i + 3] / 255;
-      // Left: the pool alone (red). Right: the pool under the line art.
-      final poolColour = (
-        (255 - (255 - 200) * a).round(),
+      final red = (
+        (255 - 55 * a).round(),
         (255 - 255 * a).round(),
         (255 - 255 * a).round(),
       );
-      final under = line ? (20, 20, 20) : poolColour;
-      for (var sy = 0; sy < scale; sy++) {
-        for (var sx = 0; sx < scale; sx++) {
-          image.setPixelRgb(
-            x * scale + sx,
-            y * scale + sy,
-            poolColour.$1,
-            poolColour.$2,
-            poolColour.$3,
-          );
-          image.setPixelRgb(
-            _w * scale + 12 + x * scale + sx,
-            y * scale + sy,
-            under.$1,
-            under.$2,
-            under.$3,
-          );
+      int over(int c, double ink) => (c * (1 - ink) + 20 * ink).round();
+      final ink = math.min(1.0, line + a * (1 - line));
+      final panels = [
+        red,
+        (over(red.$1, line), over(red.$2, line), over(red.$3, line)),
+        (over(255, ink), over(255, ink), over(255, ink)),
+      ];
+      for (var p = 0; p < 3; p++) {
+        final (r, g, b) = panels[p];
+        for (var sy = 0; sy < scale; sy++) {
+          for (var sx = 0; sx < scale; sx++) {
+            image.setPixelRgb(
+              p * (w * scale + gap) + x * scale + sx,
+              y * scale + sy,
+              r,
+              g,
+              b,
+            );
+          }
         }
       }
     }
@@ -86,166 +193,313 @@ void _write(String name, Uint8List art, Uint8List pool) {
   File('${dir.path}/$name.png').writeAsBytesSync(img.encodePng(image));
 }
 
-/// 墨溜まり: ink pools inside the angles where lines meet (inside a corner,
-/// under the bar of a T on both sides of its stem), never outside. At the
-/// meeting point the pool shows the set width beyond the line's edge; along
-/// each line it thins in a straight slope ("like a slide") to 1 px at the
-/// end of the range, and nothing beyond, whether the line is thin or thick.
-/// Curves and straight lines get none.
-void main() {
-  final engine = FilterEngine();
+/// Five rings in the Olympic layout (line centre radius 34) with lines
+/// [thickness] px wide, under the filter's own defaults (range 12, centre
+/// width 6): every crossing pools in its two narrow angles and nowhere else.
+void _olympicRings(double thickness) {
+  const r = 34.0;
+  const centres = [
+    (60.0, 54.0),
+    (143.0, 54.0),
+    (226.0, 54.0),
+    (101.5, 89.0),
+    (184.5, 89.0),
+  ];
+  final art = _Art(290, 150);
+  for (final (x, y) in centres) {
+    art.ring(x, y, r, thickness, soft: thickness < 2);
+  }
+  // The filter's own defaults: range 12, centre width 6.
+  final pool = _pool(art, range: 12, width: 6);
+  _write(thickness < 2 ? 'olympic_rings_1px' : 'olympic_rings', art, pool);
 
-  test('the pool slopes from the set width to 1 px along every line', () {
-    final art = _Art()
-      // A T: a horizontal line with a line going down from its middle.
-      ..stroke([(20, 50), (120, 50)], 3)
-      ..stroke([(70, 50), (70, 140)], 3)
-      // A smile and a straight line elsewhere: no pools.
-      ..stroke([
-        for (var a = 0.3; a <= math.pi - .3; a += .05)
-          (160 + 18 * math.cos(a), 110 + 12 * math.sin(a)),
-      ], 3)
-      ..stroke([(140, 20), (190, 20)], 3);
-    const range = 30.0, width = 10.0;
-    final pool = engine.applyInkPoolLayer(
-      art.rgba,
-      _w,
-      _h,
-      color: 0xFF000000,
-      rangePx: range,
-      centerWidthPx: width,
-    );
-    _write('t_junction', art.rgba, pool);
+  (double, double) unit((double, double) v) {
+    final l = math.sqrt(v.$1 * v.$1 + v.$2 * v.$2);
+    return (v.$1 / l, v.$2 / l);
+  }
 
-    // Along the horizontal line, both ways from the meeting point. The bar
-    // covers rows 48 to 51; what shows is below it.
-    for (final side in [-1, 1]) {
-      for (final d in [12, 18, 24]) {
-        final x = 70 + side * d;
-        // All of it under the bar (the stem's side), none above.
-        final expected = 1 + (width - 1) * (1 - d / range);
-        expect(
-          _thicknessAcrossColumn(pool, x, 52, 70),
-          closeTo(expected, 1),
-          reason: '$d px from the meeting point (side $side)',
+  var narrow = 0, crossings = 0;
+  for (var i = 0; i < centres.length; i++) {
+    for (var j = i + 1; j < centres.length; j++) {
+      final (ax, ay) = centres[i];
+      final (bx, by) = centres[j];
+      final dx = bx - ax, dy = by - ay;
+      final d = math.sqrt(dx * dx + dy * dy);
+      if (d >= 2 * r) continue;
+      final h = math.sqrt(r * r - d * d / 4);
+      for (final s in [-1.0, 1.0]) {
+        crossings++;
+        final px = ax + dx / 2 - s * h * dy / d;
+        final py = ay + dy / 2 + s * h * dx / d;
+        // The rings' directions there, and the middles of the angles
+        // between them.
+        final t1 = (-(py - ay) / r, (px - ax) / r);
+        final t2 = (-(py - by) / r, (px - bx) / r);
+        final dot = t1.$1 * t2.$1 + t1.$2 * t2.$2;
+        final angle = math.acos(dot.abs());
+        expect(angle, lessThan(80 * math.pi / 180));
+        final acute = unit(
+          dot > 0
+              ? (t1.$1 + t2.$1, t1.$2 + t2.$2)
+              : (t1.$1 - t2.$1, t1.$2 - t2.$2),
         );
-        // Under the line art it reaches back to the line's centre, so no
-        // gap shows along the line's edge.
-        expect(
-          _thicknessAcrossColumn(pool, x, 50, 51),
-          greaterThan(1.5),
-          reason: 'under the bar at $d px (side $side)',
+        final wide = unit(
+          dot > 0
+              ? (t1.$1 - t2.$1, t1.$2 - t2.$2)
+              : (t1.$1 + t2.$1, t1.$2 + t2.$2),
         );
-        expect(
-          _thicknessAcrossColumn(pool, x, 30, 47),
-          0,
-          reason: 'nothing above the bar at $d px (side $side)',
-        );
+        // Points inside each angle, clear of the lines' edges.
+        final inAcute = (thickness / 2 + 2.5) / math.sin(angle / 2);
+        final inWide = (thickness / 2 + 3) / math.sin((math.pi - angle) / 2);
+        for (final k in [-1.0, 1.0]) {
+          final ink = _around(
+            art,
+            pool,
+            px + k * acute.$1 * inAcute,
+            py + k * acute.$2 * inAcute,
+            1.5,
+          );
+          if (ink > 2) narrow++;
+          expect(
+            ink,
+            greaterThan(2),
+            reason: 'narrow angle at (${px.round()}, ${py.round()})',
+          );
+          expect(
+            _around(
+              art,
+              pool,
+              px + k * wide.$1 * inWide,
+              py + k * wide.$2 * inWide,
+              2,
+              visible: true,
+            ),
+            lessThan(.3),
+            reason: 'wide angle at (${px.round()}, ${py.round()})',
+          );
+        }
       }
-      // Beyond the range there is no pool.
-      expect(_thicknessAcrossColumn(pool, 70 + side * 34, 30, 70), 0);
+    }
+  }
+  expect(crossings, 8);
+  expect(narrow, 16);
+  // Away from the crossings the rings get none: along the top of each
+  // ring and the bottom of the lower ones.
+  for (final (x, y) in centres) {
+    expect(_around(art, pool, x, y - r + 6, 4), 0);
+  }
+  for (final (x, y) in centres.skip(3)) {
+    expect(_around(art, pool, x, y + r - 6, 4), 0);
+  }
+}
+
+/// 墨溜まり: ink pools only inside acute angles, where lines meet sharper than
+/// a right angle (a V, a fork, the narrow side of a crossing), never inside
+/// a right angle (a T, a square corner) or a wider one. At the meeting point
+/// the pool shows the set width beyond the line's edge; along each line it
+/// thins in a straight slope ("like a slide") to 1 px at the end of the
+/// range, and nothing beyond, whether the line is thin or thick. It works on
+/// curved lines crossing each other too (the Olympic rings).
+void main() {
+  test('in a 40 degree crossing: the narrow angles slope from the set width '
+      'to 1 px, the wide angles stay clear', () {
+    final art = _Art(220, 160)
+      ..stroke([(20, 80), (200, 80)], 3)
+      // Up to the right at 40 degrees, through (110, 80).
+      ..lineThrough(110, 80, -40, 80, 3);
+    const range = 30.0, width = 10.0;
+    final pool = _pool(art, range: range, width: width);
+    _write('crossing_40', art, pool);
+
+    // The bar covers rows 78 to 81. The narrow angles are above the bar to
+    // the right of the crossing and below it to the left. From 21 px out,
+    // the slanted line's own pool has left the rows next to the bar.
+    for (final d in [21, 24, 27]) {
+      final expected = 1 + (width - 1) * (1 - d / range);
+      expect(
+        _column(art, pool, 110 + d, 71, 77),
+        closeTo(expected, 1.5),
+        reason: 'above the bar $d px to the right',
+      );
+      expect(
+        _column(art, pool, 110 - d, 82, 88),
+        closeTo(expected, 1.5),
+        reason: 'below the bar $d px to the left',
+      );
+      // The wide angles: below the bar to the right, above it to the left.
+      expect(_column(art, pool, 110 + d, 82, 110), 0, reason: 'wide, right');
+      expect(_column(art, pool, 110 - d, 40, 77), 0, reason: 'wide, left');
     }
     // It keeps getting thinner: a slope, not a blob.
     final profile = [
-      for (var d = 4; d <= 28; d += 2)
-        _thicknessAcrossColumn(pool, 70 + d, 30, 70),
+      for (var d = 20; d <= 28; d += 2) _column(art, pool, 110 + d, 71, 77),
     ];
     for (var k = 1; k < profile.length; k++) {
       expect(profile[k], lessThanOrEqualTo(profile[k - 1] + .3));
     }
-    // Next to the meeting point, the stem gets the pool on both sides
-    // (inside both angles of the T), the bar only underneath.
-    var left = 0.0, right = 0.0;
-    for (var x = 55; x < 70; x++) {
-      left += pool[(56 * _w + x) * 4 + 3] / 255;
+    // Beyond the range, nothing.
+    expect(_column(art, pool, 110 + 34, 40, 120), 0);
+    expect(_column(art, pool, 110 - 34, 40, 120), 0);
+    // Under the line art it reaches back to the line's centre (the bar's
+    // upper half is rows 78 and 79), so no gap shows along the line's edge.
+    expect(_column(art, pool, 110 + 21, 78, 79), greaterThan(1.5));
+  });
+
+  test('a right angle gets none: a T, a square corner, at any rotation, '
+      'thin or thick', () {
+    for (final thickness in [3.0, 8.0]) {
+      final t = _Art(200, 160)
+        ..stroke([(20, 50), (150, 50)], thickness)
+        ..stroke([(85, 50), (85, 150)], thickness);
+      final pool = _pool(t);
+      if (thickness == 8) _write('t_junction_thick', t, pool);
+      expect(_total(pool), 0, reason: 'a T of $thickness px lines');
     }
-    for (var x = 71; x <= 85; x++) {
-      right += pool[(56 * _w + x) * 4 + 3] / 255;
-    }
-    expect(left, greaterThan(3));
-    expect(right, greaterThan(3));
-    expect(left, closeTo(right, 2.5));
-    // The smile and the straight line get no pool.
-    for (var y = 0; y < _h; y++) {
-      for (var x = 135; x < _w; x++) {
-        expect(pool[(y * _w + x) * 4 + 3], 0, reason: '($x, $y)');
-      }
+    final corner = _Art(200, 160)..stroke([(30, 30), (150, 30), (150, 140)], 3);
+    expect(_total(_pool(corner)), 0, reason: 'a square corner');
+    for (var degrees = 5; degrees < 90; degrees += 10) {
+      final a = degrees * math.pi / 180;
+      const cx = 100.0, cy = 80.0;
+      final ux = math.cos(a), uy = math.sin(a);
+      final t = _Art(200, 160)
+        ..stroke([
+          (cx - 60 * ux, cy - 60 * uy),
+          (cx + 60 * ux, cy + 60 * uy),
+        ], 4)
+        ..stroke([(cx, cy), (cx - 60 * uy, cy + 60 * ux)], 4);
+      expect(_total(_pool(t)), 0, reason: 'a T turned $degrees degrees');
     }
   });
 
-  test('on a thick line the pool shows the same width beyond its edge', () {
-    const range = 30.0, width = 10.0;
-    final art = _Art()
-      ..stroke([(20, 50), (150, 50)], 8)
-      ..stroke([(85, 50), (85, 150)], 8);
-    final pool = engine.applyInkPoolLayer(
-      art.rgba,
-      _w,
-      _h,
-      color: 0xFF000000,
-      rangePx: range,
-      centerWidthPx: width,
-    );
-    _write('t_junction_thick', art.rgba, pool);
-    // The bar covers rows 46 to 53.
-    for (final side in [-1, 1]) {
-      for (final d in [12, 18, 24]) {
-        final x = 85 + side * d;
-        expect(
-          _thicknessAcrossColumn(pool, x, 54, 74),
-          closeTo(1 + (width - 1) * (1 - d / range), 1.5),
-          reason: '$d px from the meeting point (side $side)',
-        );
-        expect(
-          _thicknessAcrossColumn(pool, x, 26, 45),
-          0,
-          reason: 'nothing above the bar at $d px (side $side)',
-        );
-      }
-      expect(_thicknessAcrossColumn(pool, 85 + side * 36, 26, 80), 0);
-    }
-    // Next to the stem, the pool shows on both sides of it too.
-    var left = 0.0, right = 0.0;
-    for (var x = 60; x < 81; x++) {
-      left += pool[(62 * _w + x) * 4 + 3] / 255;
-    }
-    for (var x = 89; x <= 110; x++) {
-      right += pool[(62 * _w + x) * 4 + 3] / 255;
-    }
-    expect(left, greaterThan(4));
-    expect(left, closeTo(right, 2.5));
-  });
-
-  test('a corner pools too, in the pool colour', () {
-    final art = _Art()..stroke([(30, 30), (110, 30), (110, 120)], 3);
-    final pool = engine.applyInkPoolLayer(
-      art.rgba,
-      _w,
-      _h,
-      color: 0xFF7A2038,
-      rangePx: 24,
-      centerWidthPx: 8,
-    );
-    _write('corner', art.rgba, pool);
-    // The corner itself is covered, in the pool colour (premultiplied).
-    final corner = (31 * _w + 109) * 4;
-    final a = pool[corner + 3];
-    expect(a, greaterThan(180));
-    expect(pool[corner] * 255 / a, closeTo(0x7A, 3));
-    expect(pool[corner + 1] * 255 / a, closeTo(0x20, 3));
-    expect(pool[corner + 2] * 255 / a, closeTo(0x38, 3));
-    // Valid premultiplied colour everywhere.
-    for (var i = 0; i < pool.length; i += 4) {
+  test('a sharp corner pools inside it, in the pool colour', () {
+    // A V opening to the left, 50 degrees wide, its point at (150, 80).
+    final art = _Art(200, 160);
+    final a = 25 * math.pi / 180;
+    art.stroke([
+      (150 - 110 * math.cos(a), 80 - 110 * math.sin(a)),
+      (150, 80),
+      (150 - 110 * math.cos(a), 80 + 110 * math.sin(a)),
+    ], 3);
+    final pool = _pool(art, range: 24, width: 8, color: 0xFF7A2038);
+    _write('corner', art, pool);
+    // Inside the V, near its point: covered, in the pool colour.
+    final i = (80 * art.width + 141) * 4;
+    final alpha = pool[i + 3];
+    expect(alpha, greaterThan(180));
+    expect(pool[i] * 255 / alpha, closeTo(0x7A, 3));
+    expect(pool[i + 1] * 255 / alpha, closeTo(0x20, 3));
+    expect(pool[i + 2] * 255 / alpha, closeTo(0x38, 3));
+    for (var k = 0; k < pool.length; k += 4) {
       for (var c = 0; c < 3; c++) {
-        expect(pool[i + c], lessThanOrEqualTo(pool[i + 3]));
+        expect(pool[k + c], lessThanOrEqualTo(pool[k + 3]));
       }
     }
-    // Inside the corner only: below the top line and left of the side.
-    expect(pool[(36 * _w + 104) * 4 + 3], greaterThan(0), reason: 'inside');
-    expect(pool[(25 * _w + 104) * 4 + 3], 0, reason: 'above the corner');
-    expect(pool[(36 * _w + 115) * 4 + 3], 0, reason: 'right of the corner');
-    // Far along either line, none.
-    expect(pool[(30 * _w + 60) * 4 + 3], 0);
-    expect(pool[(90 * _w + 110) * 4 + 3], 0);
+    // Outside the V (beyond its point, above and below the arms): none.
+    expect(_around(art, pool, 158, 80, 4), 0, reason: 'beyond the point');
+    expect(_around(art, pool, 135, 64, 3), 0, reason: 'outside the top arm');
+    expect(_around(art, pool, 135, 96, 3), 0, reason: 'outside the bottom');
+    // Far along the arms, none.
+    expect(_around(art, pool, 80, 80 - 70 * math.tan(a), 5), 0);
+  });
+
+  for (final thickness in [6.0, 1.0]) {
+    test('the Olympic rings (${thickness.round()} px lines): every crossing '
+        'pools in its two narrow angles only', () {
+      _olympicRings(thickness);
+    });
+  }
+
+  test('on 1 px line art, where nothing hides it: the narrow angles of a '
+      'crossing and a sharp corner pool, a T and a square corner do not', () {
+    const range = 30.0, width = 10.0;
+    // The bar runs along row 80; the other line crosses it at 40 degrees.
+    final crossing = _Art(220, 160)
+      ..stroke([(20, 80.5), (200, 80.5)], 1, soft: true)
+      ..lineThrough(110, 80.5, -40, 80, 1, soft: true);
+    final pool = _pool(crossing, range: range, width: width);
+    _write('crossing_40_1px', crossing, pool);
+    for (final d in [21, 24, 27]) {
+      final expected = 1 + (width - 1) * (1 - d / range);
+      expect(
+        _column(crossing, pool, 110 + d, 72, 79),
+        closeTo(expected, 1.5),
+        reason: 'above the bar $d px to the right',
+      );
+      expect(
+        _column(crossing, pool, 110 - d, 81, 88),
+        closeTo(expected, 1.5),
+        reason: 'below the bar $d px to the left',
+      );
+      expect(_column(crossing, pool, 110 + d, 81, 110), 0);
+      expect(_column(crossing, pool, 110 - d, 40, 79), 0);
+    }
+    expect(_column(crossing, pool, 110 + 34, 40, 120), 0);
+    // Right inside the narrow angle, by the crossing: ink.
+    final bisector = -20 * math.pi / 180;
+    expect(
+      _around(
+        crossing,
+        pool,
+        110 + 7 * math.cos(bisector),
+        80.5 + 7 * math.sin(bisector),
+        1.5,
+      ),
+      greaterThan(3),
+    );
+
+    // A sharp corner, 50 degrees, its point at (150, 80).
+    final a = 25 * math.pi / 180;
+    final corner = _Art(200, 160)
+      ..stroke(
+        [
+          (150 - 110 * math.cos(a), 80.5 - 110 * math.sin(a)),
+          (150, 80.5),
+          (150 - 110 * math.cos(a), 80.5 + 110 * math.sin(a)),
+        ],
+        1,
+        soft: true,
+      );
+    final cornerPool = _pool(corner, range: 24, width: 8);
+    _write('corner_1px', corner, cornerPool);
+    expect(_around(corner, cornerPool, 143, 80.5, 2), greaterThan(8));
+    expect(_around(corner, cornerPool, 155, 80.5, 3), 0, reason: 'outside');
+    expect(_around(corner, cornerPool, 135, 70, 2), 0, reason: 'outside');
+
+    // A T and a square corner.
+    final t = _Art(200, 160)
+      ..stroke([(20, 50.5), (150, 50.5)], 1, soft: true)
+      ..stroke([(85.5, 50.5), (85.5, 150)], 1, soft: true)
+      ..stroke([(30, 120.5), (60, 120.5), (60.5, 150)], 1, soft: true);
+    final tPool = _pool(t, range: range, width: width);
+    _write('t_junction_1px', t, tPool);
+    expect(_total(tPool), 0);
+    for (var degrees = 5; degrees < 90; degrees += 10) {
+      final r = degrees * math.pi / 180;
+      const cx = 100.0, cy = 80.0;
+      final ux = math.cos(r), uy = math.sin(r);
+      final turned = _Art(200, 160)
+        ..stroke(
+          [(cx - 60 * ux, cy - 60 * uy), (cx + 60 * ux, cy + 60 * uy)],
+          1,
+          soft: true,
+        )
+        ..stroke([(cx, cy), (cx - 60 * uy, cy + 60 * ux)], 1, soft: true);
+      expect(
+        _total(_pool(turned, range: range, width: width)),
+        0,
+        reason: 'a 1 px T turned $degrees degrees',
+      );
+    }
+  });
+
+  test('curves and straight lines get none', () {
+    final art = _Art(200, 160)
+      ..stroke([
+        for (var a = 0.3; a <= math.pi - .3; a += .05)
+          (100 + 50 * math.cos(a), 60 + 30 * math.sin(a)),
+      ], 3)
+      ..stroke([(20, 130), (180, 130)], 3)
+      ..ring(28, 36, 16, 3);
+    expect(_total(_pool(art)), 0);
   });
 }

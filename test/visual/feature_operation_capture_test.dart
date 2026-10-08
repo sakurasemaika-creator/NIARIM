@@ -71,9 +71,11 @@ void main() {
           debugPrint('CAPTURE_CASE:$id');
           await h.project(
             id,
-            fixture:
-                filter.kind == FilterKind.autoLineart ||
-                    filter.kind == FilterKind.inkPool
+            // 墨溜まり on 1 px line art, where nothing hides the pool: the
+            // Olympic rings, crossing at sharp and wide angles alike.
+            fixture: filter.kind == FilterKind.inkPool
+                ? 'olympicRings'
+                : filter.kind == FilterKind.autoLineart
                 ? 'lineart'
                 : 'color',
             mask: filter.kind == FilterKind.lensDistortion,
@@ -1467,6 +1469,20 @@ Future<Uint8List> _fixture(
       const Rect.fromLTWH(40, 170, 70, 40),
       Paint()..color = const Color(0xff2cbc44),
     );
+  } else if (kind == 'olympicRings') {
+    final line = Paint()
+      ..color = const Color(0xff242739)
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 1;
+    for (final centre in const [
+      Offset(54.8, 100),
+      Offset(128, 100),
+      Offset(201.2, 100),
+      Offset(91.4, 130.9),
+      Offset(164.6, 130.9),
+    ]) {
+      canvas.drawCircle(centre, 30, line);
+    }
   } else if (kind == 'mask') {
     canvas.drawOval(
       const Rect.fromLTWH(44, 28, 165, 190),

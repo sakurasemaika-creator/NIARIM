@@ -42,11 +42,11 @@ void main() {
     return n;
   }
 
-  test('墨溜まり: 90度の角の内側だけに指定色のテーパー効果レイヤーを作る', () {
+  test('墨溜まり: 鋭角（45度）の角の内側だけに指定色のテーパー効果レイヤーを作る', () {
     const w = 80, h = 80;
     final src = lineCanvas(w, h, (b) {
       line(b, w, 15, 40, 40, 40);
-      line(b, w, 40, 40, 40, 65);
+      line(b, w, 40, 40, 15, 65);
     });
     final ink = FilterEngine().applyInkPoolLayer(
       src,
@@ -57,17 +57,41 @@ void main() {
       centerWidthPx: 8,
     );
     expect(alphaCount(ink), greaterThan(30));
-    // 角の内側（左下）だけに溜まり、指定色（乗算済み）で塗られる。
-    final inside = (43 * w + 37) * 4;
+    // 角の内側（左）だけに溜まり、指定色（乗算済み）で塗られる。
+    final inside = (43 * w + 33) * 4;
     final a = ink[inside + 3];
     expect(a, greaterThan(200));
     expect(ink[inside] * 255 / a, closeTo(0x7A, 3));
     expect(ink[inside + 1] * 255 / a, closeTo(0x20, 3));
     expect(ink[inside + 2] * 255 / a, closeTo(0x38, 3));
-    // 角の外側（右上）へははみ出さない。
-    expect(ink[((37) * w + 43) * 4 + 3], 0);
+    // 角の外側（右・上）へははみ出さない。
+    expect(ink[(40 * w + 44) * 4 + 3], 0);
+    expect(ink[(36 * w + 33) * 4 + 3], 0);
     // 範囲外は透明。
     expect(ink[(10 * w + 10) * 4 + 3], 0);
+  });
+
+  test('墨溜まり: 直角の角とT字には発生しない', () {
+    const w = 80, h = 80;
+    final corner = lineCanvas(w, h, (b) {
+      line(b, w, 15, 40, 40, 40);
+      line(b, w, 40, 40, 40, 65);
+    });
+    final t = lineCanvas(w, h, (b) {
+      line(b, w, 10, 30, 70, 30);
+      line(b, w, 40, 30, 40, 70);
+    });
+    for (final src in [corner, t]) {
+      final ink = FilterEngine().applyInkPoolLayer(
+        src,
+        w,
+        h,
+        color: 0xFF000000,
+        rangePx: 16,
+        centerWidthPx: 8,
+      );
+      expect(alphaCount(ink), 0);
+    }
   });
 
   test('墨溜まり: 直線だけでは発生しない', () {
@@ -88,7 +112,7 @@ void main() {
     const w = 64, h = 64;
     final src = lineCanvas(w, h, (b) {
       line(b, w, 10, 32, 32, 32);
-      line(b, w, 32, 32, 32, 54);
+      line(b, w, 32, 32, 12, 52);
     });
     final effect = EffectFilterInstance(
       id: 'ink',

@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'dart:math' as math;
 import 'dart:ui' as ui;
 
 import 'package:flutter/services.dart' hide UndoManager;
@@ -70,10 +71,14 @@ void main() {
         final tm = service.tileManagerOf(project.id);
         addTearDown(tm.dispose);
         final pixels = Uint8List(tm.canvasWidth * tm.canvasHeight * 4);
-        // A cross: lines meeting, so the ink pool has somewhere to pool.
+        // Two lines crossing at 35 degrees, so the ink pool has an acute
+        // angle to pool in.
+        final slant = 35 * math.pi / 180;
         for (var y = 8; y <= 56; y++) {
           for (var x = 8; x <= 56; x++) {
-            if ((y >= 29 && y <= 35) || (x >= 29 && x <= 35)) {
+            final across =
+                (x - 32) * math.sin(slant) - (y - 32) * math.cos(slant);
+            if ((y >= 29 && y <= 35) || across.abs() <= 3.5) {
               pixels[(y * tm.canvasWidth + x) * 4 + 3] = 255;
             }
           }
