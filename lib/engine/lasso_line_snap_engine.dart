@@ -30,6 +30,7 @@ class LassoLineSnapEngine {
     required int width,
     required int height,
     double radius = 18,
+    int gapTolerancePx = 6,
   }) {
     if (guide.length < 2 || rgba.length < width * height * 4) {
       return List.of(guide);
@@ -39,6 +40,7 @@ class LassoLineSnapEngine {
       width: width,
       height: height,
       radius: radius,
+      gapTolerancePx: gapTolerancePx,
     );
     guide.forEach(tracker.add);
     return tracker.closedPath;
@@ -57,6 +59,7 @@ class LassoLineSnapTracker {
     required this.width,
     required this.height,
     required double radius,
+    this.gapTolerancePx = 6,
   }) : radius = math.max(2, radius),
        step = (math.max(2, radius) / 8).clamp(1.5, 6.0),
        _disk = _diskOffsets(math.max(2, radius));
@@ -72,6 +75,16 @@ class LassoLineSnapTracker {
   /// Distance between consecutive samples of the guide, in canvas px.
   final double step;
 
+  /// User-configurable maximum consecutive empty pixels that may be crossed
+  /// while treating a break in line art as one continuous contour.
+  final int gapTolerancePx;
+
+  int get _maxGapPixels => gapTolerancePx.clamp(0, 12);
+
+  /// Keep a small additional budget for multiple tiny breaks on one route,
+  /// while still making the single user setting the primary control.
+  int get _maxTotalGapPixels => _maxGapPixels == 0 ? 0 : _maxGapPixels + 2;
+
   /// Most places considered across one sample.
   static const int _maxCandidates = 40;
 
@@ -84,12 +97,6 @@ class LassoLineSnapTracker {
   static const double _gapWeight = 1.5;
   static const double _guideCost = 1.5;
   static const double _switchCost = 1.0;
-
-  // Small breaks in hand-drawn line art should behave like a continuous
-  // contour while snapping, but a real open space must remain open.  The
-  // bridge is therefore limited both per gap and over the whole traced route.
-  static const int _maxGapPixels = 6;
-  static const int _maxTotalGapPixels = 8;
 
   /// Pixel offsets within [radius], nearest first.
   final List<(int, int)> _disk;
