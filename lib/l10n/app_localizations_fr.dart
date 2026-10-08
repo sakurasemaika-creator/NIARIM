@@ -5656,7 +5656,7 @@ class AppLocalizationsFr extends AppLocalizations {
   String get filterNamePrism => 'Prisme';
 
   @override
-  String get filterNameThreshold => 'Filtre de seuil';
+  String get filterNameThreshold => 'Seuil';
 
   @override
   String get filterMonochromeColorLabel => 'Couleur du monochrome';
@@ -5665,20 +5665,19 @@ class AppLocalizationsFr extends AppLocalizations {
   String get filterThresholdLabel => 'Seuil';
 
   @override
-  String get filterNameFisheye => 'Filtre œil de poisson';
+  String get filterNameFisheye => 'Œil de poisson';
 
   @override
   String get filterFisheyeStrength => 'Distorsion';
 
   @override
-  String get filterNameChromaticAberration =>
-      'Filtre d\'aberration chromatique';
+  String get filterNameChromaticAberration => 'Aberration chromatique';
 
   @override
   String get filterChromaticAberrationStrength => 'Intensité du décalage';
 
   @override
-  String get filterNameLensDistortion => 'Filtre de distorsion de lentille';
+  String get filterNameLensDistortion => 'Distorsion de lentille';
 
   @override
   String get filterLensDistortionStrength =>
@@ -5689,7 +5688,7 @@ class AppLocalizationsFr extends AppLocalizations {
       'Ajustement fin du centre (horizontal)';
 
   @override
-  String get filterNamePixelate => 'Filtre pixellisation';
+  String get filterNamePixelate => 'Pixellisation';
 
   @override
   String get filterNameAuroraHologram => 'Hologramme Aurore';
