@@ -3288,6 +3288,7 @@
   "communityErrorVideoFile": "動画ファイルを読み込めませんでした。動画を選び直してください。",
   "communityErrorUnsupported": "この端末では、この操作に対応していません。",
   "canvasLassoSnapToLines": "線に吸着",
+  "canvasLassoGapTolerance": "線画の隙間許容",
   "filterBackToList": "フィルター一覧へ戻る",
   "filterPanelCollapse": "パネルをたたむ",
   "filterPanelExpand": "パネルを広げる",
