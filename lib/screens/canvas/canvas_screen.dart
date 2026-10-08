@@ -2647,30 +2647,75 @@ class _CanvasScreenState extends State<CanvasScreen> {
                   ),
                 ),
                 if (_currentTool == DrawingTool.selectLasso)
-                  InkWell(
-                    key: const ValueKey('lasso-snap-to-lines'),
-                    onTap: () => settings.setLassoSnapToLines(
-                      !settings.lassoSnapToLines,
-                    ),
-                    borderRadius: BorderRadius.circular(6),
-                    child: Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 2),
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Checkbox(
-                            value: settings.lassoSnapToLines,
-                            onChanged: (value) =>
-                                settings.setLassoSnapToLines(value ?? false),
-                            visualDensity: VisualDensity.compact,
+                  Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      InkWell(
+                        key: const ValueKey('lasso-snap-to-lines'),
+                        onTap: () => settings.setLassoSnapToLines(
+                          !settings.lassoSnapToLines,
+                        ),
+                        borderRadius: BorderRadius.circular(6),
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 2),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Checkbox(
+                                value: settings.lassoSnapToLines,
+                                onChanged: (value) =>
+                                    settings.setLassoSnapToLines(value ?? false),
+                                visualDensity: VisualDensity.compact,
+                              ),
+                              Text(
+                                l10n.canvasLassoSnapToLines,
+                                style: const TextStyle(fontSize: 10),
+                              ),
+                            ],
                           ),
-                          Text(
-                            l10n.canvasLassoSnapToLines,
-                            style: const TextStyle(fontSize: 10),
-                          ),
-                        ],
+                        ),
                       ),
-                    ),
+                      if (settings.lassoSnapToLines)
+                        Padding(
+                          padding: const EdgeInsets.only(left: 8, right: 2),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Text(
+                                l10n.canvasLassoGapTolerance,
+                                style: const TextStyle(fontSize: 9),
+                              ),
+                              const SizedBox(width: 4),
+                              SizedBox(
+                                width: 92,
+                                child: SteppedSlider(
+                                  value: settings.lassoGapTolerancePx.toDouble(),
+                                  min: 0,
+                                  max: 12,
+                                  divisions: 12,
+                                  onChanged: (value) => settings
+                                      .setLassoGapTolerancePx(value.round()),
+                                ),
+                              ),
+                              const SizedBox(width: 4),
+                              SizedBox(
+                                width: 28,
+                                child: EditableSliderValue(
+                                  text: settings.lassoGapTolerancePx.toString(),
+                                  value: settings.lassoGapTolerancePx.toDouble(),
+                                  min: 0,
+                                  max: 12,
+                                  onChanged: (value) => settings
+                                      .setLassoGapTolerancePx(value.round()),
+                                ),
+                              ),
+                              const SizedBox(width: 2),
+                              const Text('px', style: TextStyle(fontSize: 9)),
+                            ],
+                          ),
+                        ),
+                    ],
                   ),
                 const SizedBox(height: 4),
                 chip(
