@@ -4,8 +4,9 @@ import 'package:niarim/l10n/app_localizations.dart';
 import 'package:niarim/screens/help/help_screen.dart';
 
 /// A screen's help button opens Help on its own topic. The topic is an
-/// internal Japanese key; what the search box shows is the topic's title in
-/// the display language, and the topic is still the one found and opened.
+/// internal Japanese key, so it is not put in the search box: the box stays
+/// empty, ready to type in, and the topic's entry is shown on its own and
+/// opened, in the display language. Typing searches everything again.
 void main() {
   for (final locale in AppLocalizations.supportedLocales) {
     testWidgets('the search box shows the topic in $locale', (tester) async {
@@ -20,16 +21,25 @@ void main() {
       await tester.pumpAndSettle();
       final l10n = AppLocalizations.of(tester.element(find.byType(Scaffold)))!;
       final field = tester.widget<TextField>(find.byType(TextField));
-      expect(field.controller!.text, l10n.helpNewProjectTitle);
-      // The entry is listed and opened.
-      final tile = tester.widget<ExpansionTile>(
-        find.ancestor(
-          of: find.text(l10n.helpNewProjectTitle).last,
-          matching: find.byType(ExpansionTile),
-        ),
+      expect(field.controller!.text, isEmpty);
+      // The entry alone, opened.
+      final tiles = tester.widgetList<ExpansionTile>(
+        find.byType(ExpansionTile),
       );
-      expect(tile.initiallyExpanded, isTrue);
+      expect(tiles, hasLength(1));
+      expect(tiles.single.initiallyExpanded, isTrue);
+      expect(find.text(l10n.helpNewProjectTitle), findsOneWidget);
       expect(find.text(l10n.helpNewProjectDesc), findsOneWidget);
+      // Typing searches all the entries again: another tool is found.
+      await tester.enterText(find.byType(TextField), l10n.helpEraserToolTitle);
+      await tester.pumpAndSettle();
+      expect(
+        find.descendant(
+          of: find.byType(ExpansionTile),
+          matching: find.text(l10n.helpEraserToolTitle),
+        ),
+        findsWidgets,
+      );
     });
   }
 

@@ -19,22 +19,26 @@ class HelpScreen extends StatefulWidget {
 class _HelpScreenState extends State<HelpScreen> {
   final _searchController = TextEditingController();
   String _searchQuery = '';
-  bool _topicShown = false;
+
+  /// The screen's own topic, shown alone until something is typed. It is an
+  /// internal Japanese key, so it is not put in the search box.
+  String? _topic;
+  bool _topicChecked = false;
 
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
     final topic = widget.initialTopic;
-    if (_topicShown || topic == null || topic.isEmpty) return;
-    _topicShown = true;
-    // The topic is an internal Japanese key: the search box shows the
-    // topic's title in the display language instead.
+    if (_topicChecked || topic == null || topic.isEmpty) return;
+    _topicChecked = true;
     final l10n = AppLocalizations.of(context)!;
-    final entry = _buildEntries(
-      l10n,
-    ).where((e) => e.topicKey == topic).firstOrNull;
-    _searchQuery = entry?.title ?? topic;
-    _searchController.text = _searchQuery;
+    if (_buildEntries(l10n).any((e) => e.topicKey == topic)) {
+      _topic = topic;
+    } else {
+      // Not one of the topics: search for it as typed.
+      _searchQuery = topic;
+      _searchController.text = topic;
+    }
   }
 
   // ヘルプの説明文は、チュートリアル（初回タップ時に出る短い吹き出し）とは
@@ -576,7 +580,9 @@ class _HelpScreenState extends State<HelpScreen> {
   }
 
   List<_HelpEntry> _filtered(List<_HelpEntry> entries) => _searchQuery.isEmpty
-      ? entries
+      ? _topic == null
+            ? entries
+            : entries.where((e) => e.topicKey == _topic).toList()
       : entries
             .where(
               (e) =>
@@ -612,7 +618,10 @@ class _HelpScreenState extends State<HelpScreen> {
                   ),
                   isDense: true,
                 ),
-                onChanged: (v) => setState(() => _searchQuery = v),
+                onChanged: (v) => setState(() {
+                  _searchQuery = v;
+                  _topic = null;
+                }),
               ),
             ),
             Expanded(
