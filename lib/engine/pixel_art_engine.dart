@@ -26,10 +26,10 @@ import '../models/pixel_color_mode.dart';
 /// it; callers can use the same converter for filters, brushes, and stamps.
 ///
 /// With [dither] and a limited set of colours, a dot whose colour no single
-/// colour of the set comes close to mixes the two that, side by side, look
-/// nearest to it, in a fixed 4 x 4 pattern (ordered dithering, which stays
-/// put from one animation frame to the next). A dot a colour of the set
-/// already matches well stays that one colour.
+/// colour of the set comes close to is made of up to three of them that,
+/// side by side, look nearest to it, in a fixed 4 x 4 pattern (ordered
+/// dithering, which stays put from one animation frame to the next). A dot
+/// a colour of the set already matches well stays that one colour.
 class PixelArtEngine {
   const PixelArtEngine();
 
@@ -179,14 +179,14 @@ class PixelArtEngine {
           }
           color = like;
         }
-        final mix = ditherer.mixFor(color);
-        if (mix.share == 0) {
-          colors[c] = mix.a;
+        final plan = ditherer.planFor(color);
+        if (plan.first == plan.last) {
+          colors[c] = plan.first;
           continue;
         }
         mixed[c] = 1;
         final cx = c % cellsX, cy = c ~/ cellsX;
-        colors[c] = _bayer[(cy & 3) * 4 + (cx & 3)] < mix.share ? mix.b : mix.a;
+        colors[c] = plan[_bayer[(cy & 3) * 4 + (cx & 3)]];
       }
     } else {
       colors = rawColors
@@ -829,21 +829,22 @@ class PixelArtEngine {
 
   static int _opaque(int rgb) => 0xff000000 | (rgb & 0xffffff);
 
-  /// The 4 x 4 ordered-dithering thresholds (Bayer): a dot shows the second
-  /// colour of its mix where its threshold is below the mix's share (of 16),
-  /// so any share is spread evenly over each 4 x 4 square.
+  /// The 4 x 4 ordered-dithering pattern (Bayer): which of the 16 colours of
+  /// a mix (darkest first) each dot of a 4 x 4 square shows, so every share
+  /// of the mix is spread evenly over the square.
   static const _bayer = [0, 8, 2, 10, 12, 4, 14, 6, 3, 11, 1, 9, 15, 7, 13, 5];
 }
 
-/// For each colour, the two colours of a limited set that, mixed in a share
-/// of 16 dots, look nearest to it (or the one colour, when no mix looks
-/// clearly nearer): Yliluoma's ordered dithering. Mixing is in linear light
-/// (as the eye averages neighbouring dots); nearness is how different the
-/// colours look (CIELAB). Mixing two very different colours costs extra, so
-/// a dot that one colour of the set already comes close to is not broken up
-/// into a coarse pattern for a slight gain, and a mix keeps to two colours
-/// (more, picked for the closest average alone, sprinkled distant colours
-/// over areas no colour of the set is near).
+/// For each colour, how 16 dots of a limited set of colours (up to three of
+/// them) look nearest to it side by side (ordered dithering, after
+/// Yliluoma), or the one colour when no mix looks clearly nearer. Mixing is
+/// in linear light (as the eye averages neighbouring dots); nearness is how
+/// different the colours look (CIELAB). Three colours are allowed because
+/// two cannot make many colours at all (a light skin from white, yellow and
+/// red); each mix also costs by how much its dots stand out from each other
+/// (their spread in lightness counting most, as the eye sees a pattern of
+/// light and dark far more than one of hues), so a light sky is not turned
+/// into a black-and-white checker for a slightly nearer grey.
 class _Ditherer {
   _Ditherer(List<int> palette)
     : _colors = [for (final c in palette.toSet()) 0xff000000 | c] {
@@ -859,21 +860,36 @@ class _Ditherer {
     }
   }
 
-  /// How many of the nearest colours are tried in pairs.
-  static const _candidates = 8;
+  /// How many of the nearest colours a mix is made from.
+  static const _candidates = 6;
 
-  /// What mixing two colours costs, per unit of how different they look.
-  static const _penalty = 0.05;
+  /// What a mix costs per unit of its dots' spread (variance) in lightness
+  /// and in hue and colourfulness (CIELAB a and b).
+  static const _lightSpread = 0.15, _hueSpread = 0.08;
 
-  /// A mix is used only when it looks at most this much as different from
-  /// the colour wanted as the nearest single colour does (squared): a small
-  /// gain is not worth dots of another colour, which show up as specks.
-  static const _gain = 0.36;
+  /// A mix is used only when it looks at most this share as different from
+  /// the colour wanted as the nearest single colour does: a small gain is not
+  /// worth dots of another colour, which show up as specks. The further off
+  /// the nearest colour is (in CIELAB), the readier a mix is taken: from
+  /// [_closeRatio] where it is [_close] away to [_farRatio] from [_far].
+  static const _closeRatio = 0.5, _farRatio = 0.8;
+  static const double _close = 15, _far = 30;
+
+  /// A colour this near (CIELAB) to one of the set is that colour: dots of
+  /// another colour would only freckle it.
+  static const double _enough = 10;
+
+  /// The largest squared share of [single] (squared) a mix may keep.
+  static double _gain(double single) {
+    final t = ((math.sqrt(single) - _close) / (_far - _close)).clamp(0.0, 1.0);
+    final ratio = _closeRatio + (_farRatio - _closeRatio) * t;
+    return ratio * ratio;
+  }
 
   final List<int> _colors;
   final _linear = <Float64List>[];
   final _labs = <Float64List>[];
-  final _cache = <int, ({int a, int b, int share})>{};
+  final _cache = <int, Int32List>{};
 
   /// CIELAB of an sRGB colour.
   static Float64List labOf(int color) => _labOfLinear(
@@ -899,12 +915,14 @@ class _Ditherer {
     return _colors[best];
   }
 
-  /// The mix for [color]: colour [a] in 16 - share of 16 dots and [b] in
-  /// share of them ([a] alone when share is 0); [a] is the darker.
-  ({int a, int b, int share}) mixFor(int color) {
-    final rgb = color & 0xffffff;
-    final cached = _cache[rgb];
+  /// The 16 colours of the mix for [color], darkest first (all the same
+  /// when it is not mixed). Colours a step of 4 apart share a mix: no mix
+  /// can tell them apart.
+  Int32List planFor(int color) {
+    final key = (color >> 2) & 0x3f3f3f;
+    final cached = _cache[key];
     if (cached != null) return cached;
+    final rgb = color & 0xffffff;
     final lr = _toLinear((rgb >> 16) & 0xff),
         lg = _toLinear((rgb >> 8) & 0xff),
         lb = _toLinear(rgb & 0xff);
@@ -931,58 +949,141 @@ class _Ditherer {
         nearDistance.removeLast();
       }
     }
-    var best = (a: _colors[near.first], b: _colors[near.first], share: 0);
     final single = nearDistance.first;
-    var bestError = single;
+    final gain = _gain(single);
+    var best = <int, int>{near.first: 16};
+    var bestCost = single;
+    if (single <= _enough * _enough) near.length = 1;
+
+    // How far the mix of [counts] dots of [colours] (16 in all) looks from
+    // the colour wanted.
+    double off(List<int> colours, List<int> counts) {
+      var r = 0.0, g = 0.0, b = 0.0;
+      for (var k = 0; k < colours.length; k++) {
+        final c = _linear[colours[k]], n = counts[k];
+        r += c[0] * n;
+        g += c[1] * n;
+        b += c[2] * n;
+      }
+      return _distanceOfLinear(r / 16, g / 16, b / 16, lab);
+    }
+
+    // From [start] (counts for one set of colours), move one dot at a time
+    // from one colour to another while that brings the mix nearer; then the
+    // mix is weighed against the best so far, with what its pattern costs
+    // (left out of choosing the counts, where it would pull every mix
+    // towards fewer dots of the odd colour).
+    void consider(List<int> colours, List<int> start) {
+      final counts = List<int>.of(start);
+      for (var k = 0; k < counts.length; k++) {
+        if (counts[k] < 1) counts[k] = 1;
+      }
+      var total = counts.fold(0, (a, b) => a + b);
+      // Back to 16 dots, from or to the largest share.
+      while (total != 16) {
+        var k = 0;
+        for (var i = 1; i < counts.length; i++) {
+          if (counts[i] > counts[k]) k = i;
+        }
+        if (total > 16 && counts[k] <= 1) return;
+        counts[k] += total > 16 ? -1 : 1;
+        total += total > 16 ? -1 : 1;
+      }
+      var nearestOff = off(colours, counts);
+      for (var step = 0; step < 16; step++) {
+        var moved = false;
+        var bestFrom = -1, bestTo = -1;
+        var bestOff = nearestOff;
+        for (var from = 0; from < counts.length; from++) {
+          if (counts[from] <= 1) continue;
+          for (var to = 0; to < counts.length; to++) {
+            if (to == from) continue;
+            counts[from]--;
+            counts[to]++;
+            final o = off(colours, counts);
+            counts[from]++;
+            counts[to]--;
+            if (o < bestOff) {
+              bestOff = o;
+              bestFrom = from;
+              bestTo = to;
+              moved = true;
+            }
+          }
+        }
+        if (!moved) break;
+        counts[bestFrom]--;
+        counts[bestTo]++;
+        nearestOff = bestOff;
+      }
+      if (nearestOff > single * gain) return;
+      var l = 0.0, a = 0.0, bb = 0.0;
+      for (var k = 0; k < colours.length; k++) {
+        final x = _labs[colours[k]], n = counts[k];
+        l += x[0] * n;
+        a += x[1] * n;
+        bb += x[2] * n;
+      }
+      l /= 16;
+      a /= 16;
+      bb /= 16;
+      var light = 0.0, hue = 0.0;
+      for (var k = 0; k < colours.length; k++) {
+        final x = _labs[colours[k]], n = counts[k];
+        light += n * (x[0] - l) * (x[0] - l);
+        hue += n * ((x[1] - a) * (x[1] - a) + (x[2] - bb) * (x[2] - bb));
+      }
+      final cost = nearestOff + (_lightSpread * light + _hueSpread * hue) / 16;
+      if (cost < bestCost) {
+        bestCost = cost;
+        best = {for (var k = 0; k < colours.length; k++) colours[k]: counts[k]};
+      }
+    }
+
     for (var i = 0; i < near.length; i++) {
       for (var j = i + 1; j < near.length; j++) {
-        // The darker first, so the pattern of a mix does not depend on
-        // which of the two is the nearer.
-        final (p, q) = _labs[near[i]][0] <= _labs[near[j]][0]
-            ? (near[i], near[j])
-            : (near[j], near[i]);
+        final p = near[i], q = near[j];
         final a = _linear[p], b = _linear[q];
         final dr = b[0] - a[0], dg = b[1] - a[1], db = b[2] - a[2];
         final length = dr * dr + dg * dg + db * db;
         if (length == 0) continue;
         final t =
             ((lr - a[0]) * dr + (lg - a[1]) * dg + (lb - a[2]) * db) / length;
-        final centre = (t * 16).round();
-        final la = _labs[p], lq = _labs[q];
-        final apart =
-            (la[0] - lq[0]) * (la[0] - lq[0]) +
-            (la[1] - lq[1]) * (la[1] - lq[1]) +
-            (la[2] - lq[2]) * (la[2] - lq[2]);
-        // The share that looks nearest; then whether this pair beats the
-        // others, its cost included (left out of choosing the share, where
-        // it would pull every mix towards half and half).
-        var pairShare = 0;
-        var pairOff = double.infinity;
-        for (var share = centre - 1; share <= centre + 1; share++) {
-          if (share < 1 || share > 15) continue;
-          final f = share / 16;
-          final off = _distanceOfLinear(
-            a[0] + dr * f,
-            a[1] + dg * f,
-            a[2] + db * f,
-            lab,
-          );
-          if (off < pairOff) {
-            pairOff = off;
-            pairShare = share;
-          }
-        }
-        if (pairShare == 0 || pairOff > single * _gain) continue;
-        final f = pairShare / 16;
-        final error = pairOff + apart * _penalty * ((f - .5).abs() + .5);
-        if (error < bestError) {
-          bestError = error;
-          best = (a: _colors[p], b: _colors[q], share: pairShare);
+        final n = (t * 16).round();
+        consider([p, q], [16 - n, n]);
+        for (var k = j + 1; k < near.length; k++) {
+          // Least squares in linear light for the shares of the three (they
+          // add up to one), as a start.
+          final c = _linear[near[k]];
+          final ux = a[0] - c[0], uy = a[1] - c[1], uz = a[2] - c[2];
+          final vx = b[0] - c[0], vy = b[1] - c[1], vz = b[2] - c[2];
+          final wx = lr - c[0], wy = lg - c[1], wz = lb - c[2];
+          final uu = ux * ux + uy * uy + uz * uz;
+          final uv = ux * vx + uy * vy + uz * vz;
+          final vv = vx * vx + vy * vy + vz * vz;
+          final uw = ux * wx + uy * wy + uz * wz;
+          final vw = vx * wx + vy * wy + vz * wz;
+          final det = uu * vv - uv * uv;
+          if (det.abs() < 1e-12) continue;
+          final sa = (uw * vv - vw * uv) / det, sb = (vw * uu - uw * uv) / det;
+          final na = (sa * 16).round().clamp(1, 14);
+          final nb = (sb * 16).round().clamp(1, 14);
+          consider([p, q, near[k]], [na, nb, 16 - na - nb]);
         }
       }
     }
+
+    final plan = Int32List(16);
+    final order = best.keys.toList()
+      ..sort((p, q) => _labs[p][0].compareTo(_labs[q][0]));
+    var at = 0;
+    for (final k in order) {
+      for (var n = 0; n < best[k]!; n++) {
+        plan[at++] = _colors[k];
+      }
+    }
     if (_cache.length >= 1 << 16) _cache.clear();
-    return _cache[rgb] = best;
+    return _cache[key] = plan;
   }
 
   /// sRGB channel values in linear light.

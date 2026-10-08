@@ -141,10 +141,11 @@ void main() {
     final mixed = _meanSeen(dithered, ramp, w, h, 4);
     final plain = _meanSeen(flat, ramp, w, h, 4);
     expect(mixed, lessThan(plain / 3), reason: 'mixed $mixed, flat $plain');
-    // Mid greys seen from afar are close to the original (near either end,
-    // where the original is close to black or white, a dot stays solid
-    // rather than speckled).
-    for (var x = 64; x + 16 <= 208; x += 16) {
+    // Mid greys seen from afar are close to the original (16 dots make only
+    // coarse steps in the dark, and a light grey stays white rather than a
+    // black-and-white checker, whose contrast would show more than the
+    // grey).
+    for (var x = 96; x + 16 <= 192; x += 16) {
       expect(
         _seenDifference(dithered, ramp, w, x, 0, 16),
         lessThan(6),
@@ -165,6 +166,24 @@ void main() {
     final plain = _meanSeen(flat, orange, w, h, 4);
     expect(mixed, lessThan(8));
     expect(plain, greaterThan(mixed * 3));
+  });
+
+  test('a light skin, which no two of the set can make, is made of three', () {
+    // White, yellow and red: no pair of them comes near it.
+    const w = 64, h = 64;
+    final skin = _picture(w, h, (_, _) => (255, 216, 180));
+    final dithered = _pixelArt(skin, w, h);
+    final flat = _pixelArt(skin, w, h, dither: false);
+    expect(_colours(dithered), {0xFFFFFFFF, 0xFFFFFF00, 0xFFFF0000});
+    expect(_meanSeen(dithered, skin, w, h, 4), lessThan(4));
+    expect(_meanSeen(flat, skin, w, h, 4), greaterThan(20));
+  });
+
+  test('a light sky stays white rather than a black-and-white checker', () {
+    const w = 64, h = 64;
+    final sky = _picture(w, h, (_, _) => (190, 210, 230));
+    final out = _pixelArt(sky, w, h);
+    expect(_colours(out), isNot(contains(0xFF000000)));
   });
 
   test('a colour the set already matches stays one colour', () {
@@ -220,10 +239,8 @@ void main() {
 
   test('a hard edge stays clean: each side keeps its own mix up to it', () {
     // An orange disc on a light blue ground: neither colour is in the set,
-    // so both are mixed (red and yellow, blue and white).
+    // so both are mixed.
     const w = 160, h = 160;
-    const red = 0xFFFF0000, yellow = 0xFFFFFF00;
-    const blue = 0xFF0000FF, white = 0xFFFFFFFF;
     bool inDisc(num x, num y) =>
         (x - 80) * (x - 80) + (y - 80) * (y - 80) < 50 * 50;
     final picture = _picture(
@@ -232,32 +249,34 @@ void main() {
       (x, y) => inDisc(x + .5, y + .5) ? (255, 140, 0) : (120, 150, 245),
     );
     final out = _pixelArt(picture, w, h);
+    int colourAt(int x, int y) {
+      final i = (y * w + x) * 4;
+      return 0xFF000000 | (out[i] << 16) | (out[i + 1] << 8) | out[i + 2];
+    }
+
+    // The colours deep inside each side.
+    final disc = <int>{}, ground = <int>{};
     for (var y = 0; y < h; y += 4) {
       for (var x = 0; x < w; x += 4) {
-        final i = (y * w + x) * 4;
-        final colour =
-            0xFF000000 | (out[i] << 16) | (out[i + 1] << 8) | out[i + 2];
-        // The dot's middle, and whether all of it is on one side.
-        final inside = [
-          for (final (dx, dy) in const [(0, 0), (4, 0), (0, 4), (4, 4)])
-            inDisc(x + dx, y + dy),
-        ];
-        if (inside.every((v) => v)) {
-          expect([red, yellow], contains(colour), reason: 'disc ($x, $y)');
-        } else if (inside.every((v) => !v)) {
-          expect([blue, white], contains(colour), reason: 'ground ($x, $y)');
-        } else {
-          // Across the edge: one side's colours, never a third.
-          expect(
-            [red, yellow, blue, white],
-            contains(colour),
-            reason: 'edge ($x, $y)',
-          );
-        }
+        final r = ((x + 2 - 80) * (x + 2 - 80) + (y + 2 - 80) * (y + 2 - 80))
+            .toDouble();
+        if (r < 40 * 40) disc.add(colourAt(x, y));
+        if (r > 60 * 60) ground.add(colourAt(x, y));
       }
     }
-    // Both are really mixed.
-    expect(_colours(out), {red, yellow, blue, white});
+    expect(disc, {0xFFFF0000, 0xFFFFFF00}, reason: 'orange: red and yellow');
+    expect(ground.length, greaterThan(1), reason: 'the ground is mixed too');
+    expect(disc.intersection(ground), isEmpty);
+    // Along the edge, only those: no dots of some third colour.
+    for (var y = 0; y < h; y += 4) {
+      for (var x = 0; x < w; x += 4) {
+        expect(
+          disc.union(ground),
+          contains(colourAt(x, y)),
+          reason: '($x, $y)',
+        );
+      }
+    }
   });
 
   test('the pattern stays put between animation frames', () {
