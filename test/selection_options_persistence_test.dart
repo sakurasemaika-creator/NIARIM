@@ -78,6 +78,7 @@ void main() {
     final ps = context.read<ProjectService>();
     final settings = context.read<SettingsService>();
     expect(settings.lassoSnapToLines, isFalse);
+    expect(settings.lassoGapTolerancePx, 6);
     expect(settings.selectionReferenceAllVisible, isFalse);
 
     final project = (await tester.runAsync(
@@ -113,12 +114,18 @@ void main() {
     final l10n = AppLocalizations.of(tester.element(find.byType(CanvasArea)))!;
     expect(snap, findsOneWidget, reason: 'shown with the lasso');
     expect(snapChecked(), isFalse);
+    expect(find.text(l10n.canvasLassoGapTolerance), findsNothing);
     expect(canvas().lassoSnapToLines, isFalse);
     expect(canvas().selectionReferenceAllVisible, isFalse);
 
     await tester.tap(snap);
     await tester.pump();
     expect(snapChecked(), isTrue);
+    expect(find.byKey(const ValueKey('lasso-gap-tolerance')), findsOneWidget);
+    expect(find.text(l10n.canvasLassoGapTolerance), findsOneWidget);
+    await tester.runAsync(() => settings.setLassoGapTolerancePx(9));
+    await tester.pump();
+    expect(settings.lassoGapTolerancePx, 9);
     expect(canvas().lassoSnapToLines, isTrue);
     await tester.tap(find.text(l10n.canvasSelectionReferenceVisibleLayers));
     await tester.pump();
@@ -133,12 +140,14 @@ void main() {
     await openCanvas();
     expect(snapChecked(), isTrue);
     expect(canvas().lassoSnapToLines, isTrue);
+    expect(canvas().lassoGapTolerancePx, 9);
     expect(canvas().selectionReferenceAllVisible, isTrue);
 
     // So does a restart: a fresh settings service reads them back.
     final restarted = SettingsService();
     await tester.runAsync(restarted.init);
     expect(restarted.lassoSnapToLines, isTrue);
+    expect(restarted.lassoGapTolerancePx, 9);
     expect(restarted.selectionReferenceAllVisible, isTrue);
 
     // And turning them off is remembered too.
