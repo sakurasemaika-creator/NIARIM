@@ -6779,6 +6779,9 @@ class AppLocalizationsZh extends AppLocalizations {
   String get canvasLassoSnapToLines => '吸附到线条';
 
   @override
+  String get canvasLassoGapTolerance => '线条间隙容差';
+
+  @override
   String get filterBackToList => '返回滤镜列表';
 
   @override
