@@ -7205,6 +7205,9 @@ class AppLocalizationsFr extends AppLocalizations {
   String get canvasLassoSnapToLines => 'Magnétiser aux lignes';
 
   @override
+  String get canvasLassoGapTolerance => 'Tolérance des espaces';
+
+  @override
   String get filterBackToList => 'Retour aux filtres';
 
   @override
