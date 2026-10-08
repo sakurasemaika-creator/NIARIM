@@ -2882,6 +2882,7 @@
   "communityErrorVideoFile": "동영상 파일을 읽지 못했습니다. 동영상을 다시 선택해 주세요.",
   "communityErrorUnsupported": "이 기기에서는 지원되지 않는 작업입니다.",
   "canvasLassoSnapToLines": "선에 스냅",
+  "canvasLassoGapTolerance": "선화 간격 허용",
   "filterBackToList": "필터 목록으로",
   "filterPanelCollapse": "패널 접기",
   "filterPanelExpand": "패널 펼치기",
