@@ -2882,6 +2882,7 @@
   "communityErrorVideoFile": "Impossible de lire le fichier vidéo. Choisissez à nouveau la vidéo.",
   "communityErrorUnsupported": "Cette action n’est pas prise en charge sur cet appareil.",
   "canvasLassoSnapToLines": "Magnétiser aux lignes",
+  "canvasLassoGapTolerance": "Tolérance des espaces",
   "filterBackToList": "Retour aux filtres",
   "filterPanelCollapse": "Réduire le panneau",
   "filterPanelExpand": "Agrandir le panneau",
