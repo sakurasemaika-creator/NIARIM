@@ -31,6 +31,7 @@ import 'package:niarim/services/custom_automation_service.dart';
 import 'package:niarim/services/filter_service.dart';
 import 'package:niarim/services/pixel_art_palette_service.dart';
 import 'package:niarim/services/project_service.dart';
+import 'package:niarim/utils/filter_display_name.dart';
 import 'package:niarim/services/tone_service.dart';
 import 'package:niarim/widgets/custom_automation_draft_sheet.dart';
 import 'package:niarim/widgets/pixel_art_palette_picker_dialog.dart';
@@ -201,13 +202,21 @@ void main() {
           0xFF0000FF,
           0xFF00FF00,
         ];
+        // The block cases come first: they use the filter's default block
+        // size, which the dot cases then change (the panel keeps it).
         final cases = [
           ('pixel_art_blocks_six_colours', pixelArt, false, 256, 256),
-          ('pixel_art_dots_canvas_resolution', pixelArt, true, 256, 256),
-          ('mosaic_same_fixture', mosaic, false, 256, 256),
           // The colour-specified samples on a 320 x 240 canvas too.
           ('pixel_art_blocks_six_colours_320x240', pixelArt, false, 320, 240),
-          ('pixel_art_dots_canvas_resolution_320x240', pixelArt, true, 320, 240),
+          ('pixel_art_dots_canvas_resolution', pixelArt, true, 256, 256),
+          (
+            'pixel_art_dots_canvas_resolution_320x240',
+            pixelArt,
+            true,
+            320,
+            240,
+          ),
+          ('mosaic_same_fixture', mosaic, false, 256, 256),
         ];
         final outputs = <String, Uint8List>{};
         Uint8List? original;
@@ -232,14 +241,14 @@ void main() {
           );
           await tester.enterText(
             find.descendant(of: panel, matching: find.byType(TextField)).first,
-            _filterName(filter),
+            _filterName(h, filter),
           );
           await h.settle();
           await h.tap(
             find.descendant(
               of: panel,
               matching: find.byWidgetPredicate(
-                (w) => w is Text && w.data == _filterName(filter),
+                (w) => w is Text && w.data == _filterName(h, filter),
               ),
             ),
           );
@@ -279,7 +288,16 @@ void main() {
               await tester.ensureVisible(across);
               await tester.pump();
               final rect = tester.getRect(across);
-              await tester.dragFrom(rect.center, Offset(rect.width, 0));
+              // A frame between the moves, as on a device: the slider only
+              // reports a value that differs from the one it was built
+              // with, so a drag that never rebuilds it would lose the last
+              // step when the thumb started at the end.
+              final drag = await tester.startGesture(rect.center);
+              await drag.moveBy(const Offset(kDragSlopDefault, 0));
+              await tester.pump();
+              await drag.moveBy(Offset(rect.width, 0));
+              await tester.pump();
+              await drag.up();
               await h.settle();
               for (final (key, size) in [
                 ('pixel-art-dots-wide', width),
@@ -826,20 +844,15 @@ int _changedPixels(Uint8List a, Uint8List b) {
   return count;
 }
 
-String _filterName(FilterDef filter) => switch (filter.id) {
-  'Filter0014' => '二値化フィルター',
-  'Filter0015' => '魚眼レンズフィルター',
-  'Filter0016' => '色収差フィルター',
-  'Filter0017' => '眼鏡断層フィルター',
-  'Filter0018' => 'ドット絵フィルター',
-  _ => filter.name,
-};
+/// The filter's name as the panel shows it.
+String _filterName(_Harness h, FilterDef filter) =>
+    filterDisplayName(h.l10n, filter);
 
 String _filterSearchLabel(_Harness h, FilterDef filter) {
   if (filter.id == FilterService.genericNoiseFilterId) {
     return h.l10n.filterNameGenericNoise;
   }
-  return _filterName(filter);
+  return _filterName(h, filter);
 }
 
 class _Harness {

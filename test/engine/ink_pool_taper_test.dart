@@ -88,9 +88,10 @@ void _write(String name, Uint8List art, Uint8List pool) {
 
 /// 墨溜まり: ink pools inside the angles where lines meet (inside a corner,
 /// under the bar of a T on both sides of its stem), never outside. At the
-/// meeting point the pool is the set width; along each line it thins in a
-/// straight slope ("like a slide") to 1 px at the end of the range, and
-/// nothing beyond. Curves and straight lines get none.
+/// meeting point the pool shows the set width beyond the line's edge; along
+/// each line it thins in a straight slope ("like a slide") to 1 px at the
+/// end of the range, and nothing beyond, whether the line is thin or thick.
+/// Curves and straight lines get none.
 void main() {
   final engine = FilterEngine();
 
@@ -116,16 +117,24 @@ void main() {
     );
     _write('t_junction', art.rgba, pool);
 
-    // Along the horizontal line, both ways from the meeting point.
+    // Along the horizontal line, both ways from the meeting point. The bar
+    // covers rows 48 to 51; what shows is below it.
     for (final side in [-1, 1]) {
       for (final d in [12, 18, 24]) {
         final x = 70 + side * d;
         // All of it under the bar (the stem's side), none above.
-        final expected = 1 + (width - 1) * (1 - d / range) - .5;
+        final expected = 1 + (width - 1) * (1 - d / range);
         expect(
-          _thicknessAcrossColumn(pool, x, 49, 70),
-          closeTo(expected, 1.5),
+          _thicknessAcrossColumn(pool, x, 52, 70),
+          closeTo(expected, 1),
           reason: '$d px from the meeting point (side $side)',
+        );
+        // Under the line art it reaches back to the line's centre, so no
+        // gap shows along the line's edge.
+        expect(
+          _thicknessAcrossColumn(pool, x, 50, 51),
+          greaterThan(1.5),
+          reason: 'under the bar at $d px (side $side)',
         );
         expect(
           _thicknessAcrossColumn(pool, x, 30, 47),
@@ -162,6 +171,49 @@ void main() {
         expect(pool[(y * _w + x) * 4 + 3], 0, reason: '($x, $y)');
       }
     }
+  });
+
+  test('on a thick line the pool shows the same width beyond its edge', () {
+    const range = 30.0, width = 10.0;
+    final art = _Art()
+      ..stroke([(20, 50), (150, 50)], 8)
+      ..stroke([(85, 50), (85, 150)], 8);
+    final pool = engine.applyInkPoolLayer(
+      art.rgba,
+      _w,
+      _h,
+      color: 0xFF000000,
+      rangePx: range,
+      centerWidthPx: width,
+    );
+    _write('t_junction_thick', art.rgba, pool);
+    // The bar covers rows 46 to 53.
+    for (final side in [-1, 1]) {
+      for (final d in [12, 18, 24]) {
+        final x = 85 + side * d;
+        expect(
+          _thicknessAcrossColumn(pool, x, 54, 74),
+          closeTo(1 + (width - 1) * (1 - d / range), 1.5),
+          reason: '$d px from the meeting point (side $side)',
+        );
+        expect(
+          _thicknessAcrossColumn(pool, x, 26, 45),
+          0,
+          reason: 'nothing above the bar at $d px (side $side)',
+        );
+      }
+      expect(_thicknessAcrossColumn(pool, 85 + side * 36, 26, 80), 0);
+    }
+    // Next to the stem, the pool shows on both sides of it too.
+    var left = 0.0, right = 0.0;
+    for (var x = 60; x < 81; x++) {
+      left += pool[(62 * _w + x) * 4 + 3] / 255;
+    }
+    for (var x = 89; x <= 110; x++) {
+      right += pool[(62 * _w + x) * 4 + 3] / 255;
+    }
+    expect(left, greaterThan(4));
+    expect(left, closeTo(right, 2.5));
   });
 
   test('a corner pools too, in the pool colour', () {

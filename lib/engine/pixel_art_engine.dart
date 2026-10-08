@@ -562,11 +562,46 @@ class PixelArtEngine {
     return _rgb((best >> 16) & 0xff, (best >> 8) & 0xff, best & 0xff);
   }
 
+  /// How different two colours look: the squared CIELAB distance (x100).
+  /// Plain RGB distance puts a mid grey as near yellow as white or black, so
+  /// the grey edge between a white shape and its dark outline came out as
+  /// yellow dots.
   int _distance(int a, int b) {
-    final dr = ((a >> 16) & 0xff) - ((b >> 16) & 0xff);
-    final dg = ((a >> 8) & 0xff) - ((b >> 8) & 0xff);
-    final db = (a & 0xff) - (b & 0xff);
-    return dr * dr + dg * dg + db * db;
+    final x = _lab(a), y = _lab(b);
+    final dl = x[0] - y[0], da = x[1] - y[1], db = x[2] - y[2];
+    return (100 * (dl * dl + da * da + db * db)).round();
+  }
+
+  static final Map<int, Float64List> _labCache = {};
+
+  static Float64List _lab(int color) {
+    final rgb = color & 0xffffff;
+    final cached = _labCache[rgb];
+    if (cached != null) return cached;
+    if (_labCache.length >= 1 << 16) _labCache.clear();
+    double linear(int c) {
+      final v = c / 255;
+      return v <= 0.04045
+          ? v / 12.92
+          : math.pow((v + 0.055) / 1.055, 2.4).toDouble();
+    }
+
+    final r = linear((rgb >> 16) & 0xff);
+    final g = linear((rgb >> 8) & 0xff);
+    final b = linear(rgb & 0xff);
+    // sRGB (D65) to XYZ, relative to the white point.
+    final x = (0.4124 * r + 0.3576 * g + 0.1805 * b) / 0.95047;
+    final y = 0.2126 * r + 0.7152 * g + 0.0722 * b;
+    final z = (0.0193 * r + 0.1192 * g + 0.9505 * b) / 1.08883;
+    double f(double t) => t > 216 / 24389
+        ? math.pow(t, 1 / 3).toDouble()
+        : (24389 / 27 * t + 16) / 116;
+    final fx = f(x), fy = f(y), fz = f(z);
+    return _labCache[rgb] = Float64List.fromList([
+      116 * fy - 16,
+      500 * (fx - fy),
+      200 * (fy - fz),
+    ]);
   }
 
   int _rgb(int r, int g, int b) =>

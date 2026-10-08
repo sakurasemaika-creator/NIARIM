@@ -72,7 +72,6 @@ void main() {
       '_selectionEnd = canvasPos',
       // A new list each move (the painter compares it by identity).
       '[..._lassoPoints, canvasPos]',
-      'tracker?.add(canvasPos);',
       'canvasPos,\n          widget.shapeKind',
       '_moveDelta = canvasPos - _moveStart!',
       'updated[idx] = canvasPos;',

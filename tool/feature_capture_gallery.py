@@ -13,6 +13,7 @@ import json
 from pathlib import Path
 import re
 import shutil
+import subprocess
 import zipfile
 
 from PIL import Image, ImageDraw, ImageFont
@@ -353,10 +354,15 @@ def build_card(gallery, group, case, labels, fields):
 
 # Screens of the new and reworked features, written by their own tests
 # (paths under build/). Each page shows one feature, labelled in the image.
+# Pages of shots taken by the feature's own tests (paths are relative to the
+# build directory). Each says how its shots were made, so an engine's output
+# is not mistaken for a screen of the app.
+UI = "本番の画面をFlutterテスト環境で実操作"
 FEATURE_PAGES = [
     (
         "投げ縄「線に吸着」",
         "赤＝大まかに描いた投げ縄、青＝選ばれた範囲。バケツ塗りと同じように線画で区切られた領域のうち投げ縄の内側に大部分が入るものを選び、縁は線の中央にぴったり沿う。",
+        "上2枚：選択エンジンへテスト用の線画を直接入力／下2枚：本番のキャンバス部品を実ドラッグ",
         [
             (
                 "lasso-snap/regions_bucket_edge.png",
@@ -370,6 +376,7 @@ FEATURE_PAGES = [
     (
         "球体陰影フィルター・魚眼の中心（キャンバス上で操作）",
         "調整中はキャンバス自体がプレビュー。光の位置・大きさ、魚眼の中心はキャンバス上の＋とつまみでドラッグできる。",
+        UI,
         [
             ("sphere-shading/canvas_1_opened.png", "球体陰影を開いた直後"),
             ("sphere-shading/canvas_2_dragged.png", "光をドラッグで移動"),
@@ -383,6 +390,7 @@ FEATURE_PAGES = [
     (
         "選択範囲の中だけに適用・眼鏡断層のレンズ範囲",
         "選択範囲があると描画フィルターはその内側だけを変える。眼鏡断層はパネルのペン・消しゴム・バケツで塗った範囲だけを歪ませる。",
+        UI,
         [
             (
                 "filter-selection/01_threshold_preview_in_selection.png",
@@ -400,15 +408,36 @@ FEATURE_PAGES = [
         ],
     ),
     (
-        "ブレンドモード",
-        "レイヤーのブレンドモード一覧に、各モードで重ねた見本を表示（下の方は半透明で重ねた見え方）。",
+        "ブレンドモードの選択ダイアログ",
+        "レイヤー設定の「ブレンドモード」から開く本番のダイアログ。各モードの左に、そのモードで色の帯を重ねた見本が出る（下半分は半透明で重ねた見え方）。",
+        UI,
         [
-            ("blend-preview/picker.png", "ブレンドモードの選択一覧（見本付き）"),
+            ("feature-captures/blend/blend_normal-settings.png", "一覧の先頭"),
+            ("feature-captures/blend/blend_addition-settings.png", "加算・発光"),
+            (
+                "feature-captures/blend/blend_linearDodge-settings.png",
+                "覆い焼き（リニア）",
+            ),
+            ("feature-captures/blend/blend_divide-settings.png", "一覧の末尾"),
+        ],
+    ),
+    (
+        "「加算・発光」と「覆い焼き（リニア）」の違い",
+        "どちらも不透明な所では同じ明るさになる。違いは半透明の所で、加算・発光は上の色に不透明度を掛けた分をそのまま足すので、覆い焼き（リニア）より明るく光る。",
+        UI,
+        [
+            ("feature-captures/blend/blend_addition-before.png", "重ねる前"),
+            ("feature-captures/blend/blend_addition-after.png", "加算・発光"),
+            (
+                "feature-captures/blend/blend_linearDodge-after.png",
+                "覆い焼き（リニア）",
+            ),
         ],
     ),
     (
         "自動塗り「線画と塗りの隙間を埋める」・線画色トレス",
         "黒い線画を塗りの上に重ねた状態。隙間を埋める量を上げるほど、線の薄いふちの下まで塗り、白い隙間が消える。線画色トレスは背景透過の線画の下にキャラクターの塗りレイヤーだけを置き、線を隣の塗りより深い色にする公式の自動操作。",
+        "隙間の3枚：自動塗りエンジンへテスト用の線画を直接入力／線画色トレス：本番の自動操作をタップで実行",
         [
             ("autofill-line-gap/small.png", "線画と塗りの隙間を埋める：0"),
             ("autofill-line-gap/medium.png", "線画と塗りの隙間を埋める：50"),
@@ -424,19 +453,30 @@ FEATURE_PAGES = [
         ],
     ),
     (
-        "墨溜まり・自動線画・眼鏡断層",
-        "墨溜まりは線が出会う角の内側だけに、中央の太さから1pxまで直線的に細く溜まる（左＝墨溜まりだけ、右＝線画の下に重ねた状態）。自動線画は一定の太さのラフから途切れない中心線を描き、入り抜きはオン・オフできる。眼鏡断層はレンズ越しの景色を一様に縮め、縁で輪郭が段になる（本物の強度近視の眼鏡と同じ）。",
+        "墨溜まり",
+        "線が出会う角の内側だけに溜まる。出会う点では線の内側の縁から設定した太さ（ここでは10px）、そこから範囲の端まで直線的に細くなり1pxで終わる。線が太くても見える幅は同じ（左＝墨溜まりだけ、右＝線画の下に重ねた状態）。",
+        "フィルターエンジンへテスト用の線画を直接入力",
         [
-            ("ink-pool/t_junction.png", "墨溜まり：T字（棒の下の左右だけ）"),
-            ("ink-pool/corner.png", "墨溜まり：角（内側だけ）"),
+            ("ink-pool/t_junction.png", "T字・線3px（棒の下の左右だけ）"),
+            ("ink-pool/t_junction_thick.png", "T字・線8px"),
+            ("ink-pool/corner.png", "角（内側だけ）"),
+        ],
+    ),
+    (
+        "自動線画・眼鏡断層",
+        "自動線画は一定の太さのラフから途切れない中心線を描き、入り抜きはオン・オフできる。眼鏡断層はレンズ越しの景色を一様に縮め、縁で輪郭が段になる（本物の強度近視の眼鏡と同じ）。",
+        "フィルターエンジンへテスト用の絵を直接入力",
+        [
             ("auto-lineart/continuity.png", "自動線画：一定幅のラフ→中心線"),
+            ("auto-lineart/taper_on.png", "自動線画：入り抜きオン"),
             ("auto-lineart/taper_off.png", "自動線画：入り抜きオフ"),
             ("filter-glasses/minus_lens.png", "眼鏡断層：レンズ越しに約0.88倍"),
         ],
     ),
     (
         "魚眼パース定規・背景馴染ませ",
-        "魚眼パース定規は円の中で横・縦の線が弧を描く5点の曲線透視。背景馴染ませは内容全体に背景の光と色をなじませる。",
+        "魚眼パース定規は円の中で横・縦の線が弧を描く5点の曲線透視。背景馴染ませは内容全体に背景の光と色をハードライトでなじませる。",
+        "定規：本番のキャンバス部品を実操作／背景馴染ませ：フィルターエンジンへ直接入力",
         [
             ("fisheye-ruler/1_guide.png", "魚眼パース定規のガイド"),
             ("fisheye-ruler/2_stroke.png", "定規に沿って描いた線"),
@@ -447,16 +487,19 @@ FEATURE_PAGES = [
 ]
 
 
+def feature_shot_paths(build_dir):
+    return [build_dir / path for _, _, _, shots in FEATURE_PAGES for path, _ in shots]
+
+
 def feature_pages(build_dir, revision, start_number):
     pages, number = [], start_number
     title_font, body = font(HEADING_FONT, 22), font(BODY_FONT, 19)
-    for title, desc, shots in FEATURE_PAGES:
+    for title, desc, source, shots in FEATURE_PAGES:
         shots = [(build_dir / path, label) for path, label in shots]
-        shots = [(path, label) for path, label in shots if path.is_file()]
-        if not shots:
-            continue
+        missing = [str(path) for path, _ in shots if not path.is_file()]
+        assert not missing, (title, "missing shots", missing)
         number += 1
-        im, d = page(title, revision, number)
+        im, d = page(title, revision, number, source=source)
         y = 92
         for line in wrap(d, desc, body, PAGE_W - 96):
             d.text((48, y), line, font=body, fill=MUTED)
@@ -484,14 +527,14 @@ def feature_pages(build_dir, revision, start_number):
     return pages
 
 
-def page(title, revision, number):
+def page(title, revision, number, source="本番UIの操作から取得"):
     im = Image.new("RGB", (PAGE_W, PAGE_H), "#f4f6fa")
     d = ImageDraw.Draw(im)
     d.text((48, 30), title, font=font(HEADING_FONT, 34), fill=INK)
     footer = font(BODY_FONT, 16)
     d.text(
         (48, PAGE_H - 40),
-        f"NIARIM / 本番UIの操作から取得 / {revision[:12]}",
+        f"NIARIM / {source} / {revision[:12]}",
         font=footer,
         fill=MUTED,
     )
@@ -530,7 +573,7 @@ def build_pdf(path, gallery, groups, revision, labels, screens):
         ),
         (
             "撮影条件",
-            "Flutter 3.47.3 / Linuxレンダラー。作品256×256。Android・iOS実機での撮影ではありません。市松模様は透明部分です。",
+            "Flutter 3.47.3 / Linuxレンダラー。作品256×256（ドット絵の比較のみ320×240も）。Android・iOS実機での撮影ではありません。市松模様は透明部分です。各ページの下端に、その画像の撮り方（本番画面の実操作か、エンジンへの直接入力か）を記載。",
         ),
     ]:
         d.text((70, y), label, font=head, fill=INK)
@@ -644,11 +687,36 @@ pre{font-size:12px;overflow:auto}a{color:#284f9b}p{font-size:13px;line-height:1.
     (gallery / "index.html").write_text(document, encoding="utf-8")
 
 
+def check_revision(revision, shots):
+    """The shots must show [revision]: it is the checked-out commit, the code
+    has no changes on top of it, and every shot was taken after it."""
+
+    def git(*command):
+        return subprocess.run(
+            ["git", *command], cwd=ROOT, check=True, capture_output=True, text=True
+        ).stdout.strip()
+
+    head = git("rev-parse", "HEAD")
+    assert git("rev-parse", revision) == head, (revision, "is not HEAD", head)
+    changed = git(
+        "status", "--porcelain", "--", "lib", "test", "assets", "pubspec.yaml"
+    )
+    assert not changed, ("uncommitted code changes", changed)
+    committed = int(git("log", "-1", "--format=%ct", head))
+    stale = [str(p) for p in shots if p.stat().st_mtime < committed]
+    assert not stale, ("shots older than", revision, stale[:10], len(stale))
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--input", type=Path, default=Path("build/feature-captures"))
     parser.add_argument("--output", type=Path, required=True)
     parser.add_argument("--revision", required=True)
+    parser.add_argument(
+        "--allow-stale",
+        action="store_true",
+        help="skip checking that the shots were taken at --revision",
+    )
     args = parser.parse_args()
     gallery = args.output / "NIARIM-captures"
     gallery.mkdir(parents=True, exist_ok=True)
@@ -706,6 +774,12 @@ def main():
                 case.pop("configurationUI", None)
     required = {"filters", "pixel-compare", "blend", "automation", "autofill"}
     assert required.issubset(groups), ("missing capture groups", required - set(groups))
+    if not args.allow_stale:
+        check_revision(
+            args.revision,
+            [p for g in groups for p in (args.input / g).glob("*.png")]
+            + feature_shot_paths(args.input.parent),
+        )
     (gallery / "manifest.json").write_text(
         json.dumps(
             {
@@ -734,7 +808,7 @@ Flutter 3.47.3のLinuxテストレンダラーで、本番NiarimAppと画面ル�
 選択・適用・自動操作実行・自動塗り割当は画面のタップで行いました。
 保存先と比較用入力画像のみテスト用です。実機撮影ではありません。
 画面: 480×960 logical pixels / DPR 2 / PNG 960×1920。
-作品: 256×256 / 原寸RGBA。beforeとafterで比較できます。
+作品: 256×256（ドット絵の比較のみ320×240も） / 原寸RGBA。beforeとafterで比較できます。
 
 index.htmlを開くとオフラインで検索・比較できます。
 各フォルダに操作前・設定・操作後の画面を収録。

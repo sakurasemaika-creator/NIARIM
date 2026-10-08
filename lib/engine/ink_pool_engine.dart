@@ -3,11 +3,12 @@ import 'dart:typed_data';
 
 /// 墨溜まり: where lines meet (a corner, a T, a crossing), ink pools inside
 /// the angles between them. Along each line, on the side facing its
-/// neighbour, the pool is as thick as [centreWidthPx] at the meeting point
-/// and thins in a straight slope to 1 px at [rangePx], like a slide; it
-/// never bulges out on the outside of a corner or above the bar of a T. The
-/// result is the pool alone on a transparent layer (premultiplied RGBA), to
-/// go under the line art.
+/// neighbour, the pool shows [centreWidthPx] beyond the line's edge at the
+/// meeting point and thins in a straight slope to 1 px at [rangePx], like a
+/// slide, however thick the line is; it never bulges out on the outside of a
+/// corner or above the bar of a T. The result is the pool alone on a
+/// transparent layer (premultiplied RGBA), to go under the line art: it
+/// reaches back to the line's centre so no gap shows along the edge.
 class InkPoolEngine {
   InkPoolEngine._();
 
@@ -28,6 +29,7 @@ class InkPoolEngine {
     final centreWidth = centreWidthPx.clamp(1.0, 60.0);
 
     final mask = _lineMask(data, n);
+    final halfWidth = _distanceToBackground(mask, width, height);
     final centre = _thin(mask, width, height);
     final seeds = _meetingPoints(centre, width, height, centreWidth);
     if (seeds.isEmpty) return result;
@@ -118,10 +120,11 @@ class InkPoolEngine {
         if (length == 0) continue;
         tx /= length;
         ty /= length;
-        // The pool's thickness here: the full width at the meeting point,
-        // 1 px at the end of the range, all of it on the inner side.
+        // The pool's thickness beyond the line's edge here: the full width
+        // at the meeting point, 1 px at the end of the range, all of it on
+        // the inner side.
         final thickness = 1 + (centreWidth - 1) * (1 - d / range);
-        final radius = math.max(.25, (thickness - .5) / 2);
+        final radius = thickness / 2;
         for (final (nx, ny) in sides[id]) {
           // The side of the line facing the neighbouring line.
           final along = nx * tx + ny * ty;
@@ -130,14 +133,27 @@ class InkPoolEngine {
           if (ol < 1e-6) continue;
           ox /= ol;
           oy /= ol;
-          // From just across the centre line out to the pool's edge.
-          final reach = math.max(0.0, radius - .5);
-          _stampAt(
+          // From just across the centre line, under the line, out past its
+          // inner edge by the pool's thickness.
+          final edge = _edgeAlong(
+            mask,
+            width,
+            height,
+            q,
+            ox,
+            oy,
+            halfWidth[q] + 1,
+          );
+          final from = radius - .5;
+          final to = edge + thickness - radius;
+          _stampCapsule(
             coverage,
             width,
             height,
-            x + .5 + ox * reach,
-            y + .5 + oy * reach,
+            x + .5 + ox * from,
+            y + .5 + oy * from,
+            x + .5 + ox * to,
+            y + .5 + oy * to,
             radius,
             // Near the meeting point a disc could reach round to the
             // outside: keep to the angle between the two lines there.
@@ -146,7 +162,7 @@ class InkPoolEngine {
               py - (seed ~/ width + .5),
               branches[id],
               (dx: nx, dy: ny),
-              guard: centreWidth + 2,
+              guard: centreWidth + 2 * halfWidth[seed] + 2,
             ),
           );
         }
@@ -510,27 +526,106 @@ class InkPoolEngine {
     return sideOfA > -1 && sideOfB > -1;
   }
 
-  /// An anti-aliased disc of [radius] centred on ([cx], [cy]), kept where it
-  /// covers more than what is already there.
-  static void _stampAt(
+  /// How far the line reaches from the centre of pixel [p] in direction
+  /// ([ox], [oy]): the distance to its edge, at most [limit] (so that near a
+  /// meeting point the walk does not run on down the other line).
+  static double _edgeAlong(
+    Uint8List mask,
+    int width,
+    int height,
+    int p,
+    double ox,
+    double oy,
+    double limit,
+  ) {
+    final cx = p % width + .5, cy = p ~/ width + .5;
+    for (var s = .25; s < limit; s += .25) {
+      final x = (cx + ox * s).floor(), y = (cy + oy * s).floor();
+      if (x < 0 || y < 0 || x >= width || y >= height) return s;
+      if (mask[y * width + x] == 0) return s;
+    }
+    return limit;
+  }
+
+  /// For each line pixel, the distance from its centre to the nearest pixel
+  /// that is not line (chamfer 3-4, in pixels): about half the line's width
+  /// on its centre line.
+  static Float32List _distanceToBackground(
+    Uint8List mask,
+    int width,
+    int height,
+  ) {
+    const big = 1 << 28;
+    final d = Int32List(width * height);
+    for (var p = 0; p < d.length; p++) {
+      d[p] = mask[p] == 0 ? 0 : big;
+    }
+    for (var y = 0; y < height; y++) {
+      for (var x = 0; x < width; x++) {
+        final p = y * width + x;
+        if (d[p] == 0) continue;
+        var best = d[p];
+        if (x > 0) best = math.min(best, d[p - 1] + 3);
+        if (y > 0) {
+          best = math.min(best, d[p - width] + 3);
+          if (x > 0) best = math.min(best, d[p - width - 1] + 4);
+          if (x < width - 1) best = math.min(best, d[p - width + 1] + 4);
+        }
+        d[p] = best;
+      }
+    }
+    for (var y = height - 1; y >= 0; y--) {
+      for (var x = width - 1; x >= 0; x--) {
+        final p = y * width + x;
+        if (d[p] == 0) continue;
+        var best = d[p];
+        if (x < width - 1) best = math.min(best, d[p + 1] + 3);
+        if (y < height - 1) {
+          best = math.min(best, d[p + width] + 3);
+          if (x < width - 1) best = math.min(best, d[p + width + 1] + 4);
+          if (x > 0) best = math.min(best, d[p + width - 1] + 4);
+        }
+        d[p] = best;
+      }
+    }
+    final out = Float32List(d.length);
+    for (var p = 0; p < d.length; p++) {
+      // Pixels on the image's border with no background in reach count as
+      // a line one pixel wide.
+      out[p] = d[p] >= big ? 1 : d[p] / 3;
+    }
+    return out;
+  }
+
+  /// An anti-aliased capsule of [radius] round the segment from ([ax], [ay])
+  /// to ([bx], [by]), kept where it covers more than what is already there.
+  static void _stampCapsule(
     Float32List coverage,
     int width,
     int height,
-    double cx,
-    double cy,
+    double ax,
+    double ay,
+    double bx,
+    double by,
     double radius, {
     bool Function(double x, double y)? inside,
   }) {
-    final minX = math.max(0, (cx - radius - 1).floor());
-    final maxX = math.min(width - 1, (cx + radius + 1).ceil());
-    final minY = math.max(0, (cy - radius - 1).floor());
-    final maxY = math.min(height - 1, (cy + radius + 1).ceil());
+    final minX = math.max(0, (math.min(ax, bx) - radius - 1).floor());
+    final maxX = math.min(width - 1, (math.max(ax, bx) + radius + 1).ceil());
+    final minY = math.max(0, (math.min(ay, by) - radius - 1).floor());
+    final maxY = math.min(height - 1, (math.max(ay, by) + radius + 1).ceil());
+    final sx = bx - ax, sy = by - ay;
+    final length2 = sx * sx + sy * sy;
     for (var y = minY; y <= maxY; y++) {
       for (var x = minX; x <= maxX; x++) {
-        final dx = x + .5 - cx, dy = y + .5 - cy;
+        final px = x + .5, py = y + .5;
+        final t = length2 == 0
+            ? 0.0
+            : (((px - ax) * sx + (py - ay) * sy) / length2).clamp(0.0, 1.0);
+        final dx = px - (ax + sx * t), dy = py - (ay + sy * t);
         final c = (radius + .5 - math.sqrt(dx * dx + dy * dy)).clamp(0.0, 1.0);
         if (c <= 0) continue;
-        if (inside != null && !inside(x + .5, y + .5)) continue;
+        if (inside != null && !inside(px, py)) continue;
         final q = y * width + x;
         if (c > coverage[q]) coverage[q] = c;
       }
