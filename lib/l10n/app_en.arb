@@ -2889,6 +2889,7 @@
   "communityErrorVideoFile": "Couldn’t read the video file. Choose the video again.",
   "communityErrorUnsupported": "This isn’t supported on this device.",
   "canvasLassoSnapToLines": "Snap to lines",
+  "canvasLassoGapTolerance": "Gap tolerance",
   "filterBackToList": "Back to filters",
   "filterPanelCollapse": "Shrink the panel",
   "filterPanelExpand": "Expand the panel",
