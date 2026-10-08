@@ -2882,6 +2882,7 @@
   "communityErrorVideoFile": "No se pudo leer el archivo de vídeo. Vuelve a elegir el vídeo.",
   "communityErrorUnsupported": "Esto no es compatible con este dispositivo.",
   "canvasLassoSnapToLines": "Ajustar a las líneas",
+  "canvasLassoGapTolerance": "Tolerancia de huecos",
   "filterBackToList": "Volver a los filtros",
   "filterPanelCollapse": "Reducir el panel",
   "filterPanelExpand": "Ampliar el panel",
