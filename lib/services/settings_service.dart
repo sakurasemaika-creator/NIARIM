@@ -24,6 +24,10 @@ class SettingsService extends ChangeNotifier {
   // 左右反転して配置する。
   bool _isLeftHanded = false;
   bool _lassoSnapToLines = false;
+  // Maximum consecutive line-art pixels that the lasso snap may cross as an
+  // intentional small break in the contour. Stored globally with other app
+  // settings so users can tune it to their line-art style.
+  int _lassoGapTolerancePx = 6;
   bool _selectionReferenceAllVisible = false;
   // ツールバー編集（表示するツールをチェックボックスで選択・ドラッグで並び替え）
   List<ToolbarItemId> _toolbarOrder = List.of(ToolbarItemId.values);
@@ -48,6 +52,9 @@ class SettingsService extends ChangeNotifier {
 
   /// The lasso selection follows the line art near the drawn path.
   bool get lassoSnapToLines => _lassoSnapToLines;
+
+  /// Maximum gap, in canvas pixels, that line-art snapping may bridge.
+  int get lassoGapTolerancePx => _lassoGapTolerancePx;
 
   /// The selection tools look at every visible layer rather than only the
   /// working one.
@@ -533,6 +540,8 @@ class SettingsService extends ChangeNotifier {
     _forcePcMode = pcModeValue == -1 ? null : pcModeValue == 1;
     _isLeftHanded = prefs.getBool('is_left_handed') ?? false;
     _lassoSnapToLines = prefs.getBool('lasso_snap_to_lines') ?? false;
+    _lassoGapTolerancePx =
+        (prefs.getInt('lasso_gap_tolerance_px') ?? 6).clamp(0, 12);
     _selectionReferenceAllVisible =
         prefs.getBool('selection_reference_all_visible') ?? false;
     _bucketTolerance = prefs.getDouble('bucket_tolerance') ?? 30.0;
@@ -757,6 +766,13 @@ class SettingsService extends ChangeNotifier {
     notifyListeners();
     final prefs = await SharedPreferences.getInstance();
     await prefs.setBool('lasso_snap_to_lines', value);
+  }
+
+  Future<void> setLassoGapTolerancePx(int value) async {
+    _lassoGapTolerancePx = value.clamp(0, 12);
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setInt('lasso_gap_tolerance_px', _lassoGapTolerancePx);
+    notifyListeners();
   }
 
   Future<void> setSelectionReferenceAllVisible(bool value) async {
