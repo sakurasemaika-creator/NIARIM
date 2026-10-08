@@ -412,8 +412,8 @@ void main() {
 
   test('small gaps between line-art segments are bridged naturally', () {
     final art = _LineArt(100, 80)
-      ..stroke([const Offset(12, 40.5), const Offset(46, 40.5)], 2)
-      ..stroke([const Offset(51, 40.5), const Offset(88, 40.5)], 2);
+      ..stroke([const Offset(12, 40.5), const Offset(45.5, 40.5)], 2)
+      ..stroke([const Offset(52.5, 40.5), const Offset(88, 40.5)], 2);
     final guide = [
       for (var x = 10; x <= 90; x += 2) Offset(x.toDouble(), 45),
     ];
