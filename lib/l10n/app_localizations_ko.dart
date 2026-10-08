@@ -5396,7 +5396,7 @@ class AppLocalizationsKo extends AppLocalizations {
   String get filterNamePrism => '프리즘';
 
   @override
-  String get filterNameThreshold => '이진화 필터';
+  String get filterNameThreshold => '이진화';
 
   @override
   String get filterMonochromeColorLabel => '단색화 색상';
@@ -5405,19 +5405,19 @@ class AppLocalizationsKo extends AppLocalizations {
   String get filterThresholdLabel => '임계값';
 
   @override
-  String get filterNameFisheye => '어안 렌즈 필터';
+  String get filterNameFisheye => '어안 렌즈';
 
   @override
   String get filterFisheyeStrength => '왜곡';
 
   @override
-  String get filterNameChromaticAberration => '색수차 필터';
+  String get filterNameChromaticAberration => '색수차';
 
   @override
   String get filterChromaticAberrationStrength => '어긋남 강도';
 
   @override
-  String get filterNameLensDistortion => '안경 렌즈 왜곡 필터';
+  String get filterNameLensDistortion => '안경 렌즈 왜곡';
 
   @override
   String get filterLensDistortionStrength => '렌즈 강도（음수＝오목렌즈, 양수＝볼록렌즈）';
@@ -5426,7 +5426,7 @@ class AppLocalizationsKo extends AppLocalizations {
   String get filterLensDistortionOffsetX => '중심 위치 미세 조정（좌우）';
 
   @override
-  String get filterNamePixelate => '도트 그림 필터';
+  String get filterNamePixelate => '도트 그림';
 
   @override
   String get filterNameAuroraHologram => '레인보우 홀로그램';
