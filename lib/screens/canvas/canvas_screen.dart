@@ -2698,6 +2698,8 @@ class _CanvasScreenState extends State<CanvasScreen> {
                                   min: 0,
                                   max: 12,
                                   divisions: 12,
+                                  showSteppers: false,
+                                  compact: true,
                                   onChanged: (value) => settings
                                       .setLassoGapTolerancePx(value.round()),
                                 ),
