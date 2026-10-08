@@ -77,7 +77,7 @@ void main() {
     await _save(offset, w, h, '${out.path}/lens_face_offset_plus10_minus5.png');
   });
 
-  test('墨溜まり: 鋭角45°には発生し、直角90°・鈍角135°・直線には発生しない', () async {
+  test('墨溜まり: 鋭角45°・直角90°には発生し、鈍角135°・直線には発生しない', () async {
     const w = 150, h = 120;
     final engine = FilterEngine();
 
@@ -120,8 +120,8 @@ void main() {
     );
 
     expect(_alphaCount(a45), greaterThan(50));
-    // ユーザー仕様は鋭角の内側だけ。直角・135°・直線には出さない。
-    expect(_alphaCount(a90), 0);
+    // ユーザー仕様は鋭角と直角の内側だけ。135°・直線には出さない。
+    expect(_alphaCount(a90), greaterThan(50));
     expect(_alphaCount(a135), 0);
     expect(_alphaCount(a180), 0);
 
@@ -137,7 +137,7 @@ void main() {
       _composite(right90, a90),
       w,
       h,
-      '${out.path}/ink_angle90_no_effect.png',
+      '${out.path}/ink_angle90_after.png',
     );
     await _save(
       _composite(obtuse135, a135),

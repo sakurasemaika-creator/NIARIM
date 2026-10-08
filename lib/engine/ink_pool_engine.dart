@@ -1,9 +1,9 @@
 import 'dart:math' as math;
 import 'dart:typed_data';
 
-/// 墨溜まり: where lines meet at an acute angle (a V, a fork, the narrow
-/// side of a crossing), ink pools inside that angle; right angles (a T, a
-/// square corner) and wider ones get none. Along each of the two lines, on
+/// 墨溜まり: where lines meet at an acute or a right angle (a V, a fork, the
+/// narrow side of a crossing, a T, a square corner), ink pools inside that
+/// angle; wider ones get none. Along each of the two lines, on
 /// the side facing the other, the pool shows [centreWidthPx] beyond the
 /// line's edge at the meeting point and thins in a straight slope to 1 px at
 /// [rangePx], like a slide, however thick the line is. The result is the
@@ -15,9 +15,10 @@ class InkPoolEngine {
 
   static const int _alphaThreshold = 24;
 
-  /// Lines meeting at less than this pool ink between them. A right angle
-  /// does not, with a little to spare for lines drawn by hand.
-  static const double _acuteLimit = 85 * math.pi / 180;
+  /// Lines meeting at less than this pool ink between them: up to a right
+  /// angle, with a little to spare for lines drawn by hand, and short of the
+  /// wide side of two rings crossing (106 degrees in the Olympic rings).
+  static const double _angleLimit = 96 * math.pi / 180;
 
   static Uint8List layer(
     Uint8List data,
@@ -132,8 +133,9 @@ class InkPoolEngine {
       );
       if (branches.length < 2) continue;
 
-      // The pool lies inside each acute angle between two neighbouring
-      // lines, on each line's side facing the other (+1: to its left).
+      // The pool lies inside each acute or right angle between two
+      // neighbouring lines, on each line's side facing the other (+1: to its
+      // left).
       final order = List.generate(branches.length, (k) => k)
         ..sort((a, b) => branches[a].angle.compareTo(branches[b].angle));
       final sides = List.generate(
@@ -145,12 +147,12 @@ class InkPoolEngine {
         if (a == b) continue;
         var gap = branches[b].angle - branches[a].angle;
         if (gap <= 0) gap += 2 * math.pi;
-        if (gap >= _acuteLimit) continue;
+        if (gap >= _angleLimit) continue;
         // Where the two lines really meet: thinning moves the seed a little
         // off it. A crossing thins to forks round it; a corner is where the
         // two lines run into each other.
         final (mx, my) = forks ?? _meeting(branches[a], branches[b], merge);
-        // b lies counterclockwise of a, by less than a right angle.
+        // b lies counterclockwise of a, by up to a right angle.
         sides[a].add((side: 1, other: b, mx: mx, my: my));
         sides[b].add((side: -1, other: a, mx: mx, my: my));
       }

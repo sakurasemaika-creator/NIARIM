@@ -71,27 +71,52 @@ void main() {
     expect(ink[(10 * w + 10) * 4 + 3], 0);
   });
 
-  test('墨溜まり: 直角の角とT字には発生しない', () {
+  test('墨溜まり: 直角の角とT字にも角の内側に発生し、鈍角には発生しない', () {
     const w = 80, h = 80;
-    final corner = lineCanvas(w, h, (b) {
-      line(b, w, 15, 40, 40, 40);
-      line(b, w, 40, 40, 40, 65);
-    });
-    final t = lineCanvas(w, h, (b) {
-      line(b, w, 10, 30, 70, 30);
-      line(b, w, 40, 30, 40, 70);
-    });
-    for (final src in [corner, t]) {
-      final ink = FilterEngine().applyInkPoolLayer(
-        src,
-        w,
-        h,
-        color: 0xFF000000,
-        rangePx: 16,
-        centerWidthPx: 8,
-      );
-      expect(alphaCount(ink), 0);
+    Uint8List pool(Uint8List src) => FilterEngine().applyInkPoolLayer(
+      src,
+      w,
+      h,
+      color: 0xFF000000,
+      rangePx: 16,
+      centerWidthPx: 8,
+    );
+    int alphaAt(Uint8List b, int x, int y) => b[(y * w + x) * 4 + 3];
+
+    // 直角の角：横線の下・縦線の左（内側）だけ。
+    final corner = pool(
+      lineCanvas(w, h, (b) {
+        line(b, w, 15, 40, 40, 40);
+        line(b, w, 40, 40, 40, 65);
+      }),
+    );
+    expect(alphaAt(corner, 36, 43), greaterThan(200));
+    expect(alphaAt(corner, 36, 36), 0);
+    expect(alphaAt(corner, 44, 44), 0);
+
+    // T字：縦線の両側、横線の下だけ。横線の上（まっすぐな側）には出ない。
+    final t = pool(
+      lineCanvas(w, h, (b) {
+        line(b, w, 10, 30, 70, 30);
+        line(b, w, 40, 30, 40, 70);
+      }),
+    );
+    expect(alphaAt(t, 36, 33), greaterThan(200));
+    expect(alphaAt(t, 44, 33), greaterThan(200));
+    for (var x = 10; x <= 70; x++) {
+      for (var y = 0; y < 30; y++) {
+        expect(alphaAt(t, x, y), 0, reason: '横線の上 ($x, $y)');
+      }
     }
+
+    // 鈍角（135°）：出ない。
+    final obtuse = pool(
+      lineCanvas(w, h, (b) {
+        line(b, w, 15, 40, 40, 40);
+        line(b, w, 40, 40, 60, 60);
+      }),
+    );
+    expect(alphaCount(obtuse), 0);
   });
 
   test('墨溜まり: 直線だけでは発生しない', () {

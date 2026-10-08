@@ -114,6 +114,15 @@ double _column(_Art art, Uint8List pool, int x, int fromY, int toY) {
   return sum;
 }
 
+/// The pool's coverage summed along row [y] from column [fromX] to [toX].
+double _row(_Art art, Uint8List pool, int y, int fromX, int toX) {
+  var sum = 0.0;
+  for (var x = fromX; x <= toX; x++) {
+    sum += pool[(y * art.width + x) * 4 + 3] / 255;
+  }
+  return sum;
+}
+
 /// The pool's coverage summed over a disc of [radius] round ([x], [y]); with
 /// [visible], only what the line art over it leaves showing.
 double _around(
@@ -293,9 +302,9 @@ void _olympicRings(double thickness) {
   }
 }
 
-/// 墨溜まり: ink pools only inside acute angles, where lines meet sharper than
-/// a right angle (a V, a fork, the narrow side of a crossing), never inside
-/// a right angle (a T, a square corner) or a wider one. At the meeting point
+/// 墨溜まり: ink pools only inside acute and right angles, where lines meet
+/// at a right angle or sharper (a V, a fork, the narrow side of a crossing, a
+/// T, a square corner), never inside a wider one. At the meeting point
 /// the pool shows the set width beyond the line's edge; along each line it
 /// thins in a straight slope ("like a slide") to 1 px at the end of the
 /// range, and nothing beyond, whether the line is thin or thick. It works on
@@ -345,29 +354,135 @@ void main() {
     expect(_column(art, pool, 110 + 21, 78, 79), greaterThan(1.5));
   });
 
-  test('a right angle gets none: a T, a square corner, at any rotation, '
-      'thin or thick', () {
+  test('a right angle pools too: a T on both sides of its stem, a square '
+      'corner inside it, at any rotation, thin or thick; a wider angle does '
+      'not', () {
+    const range = 30.0, width = 10.0;
     for (final thickness in [3.0, 8.0]) {
+      // The bar runs along row 50, the stem down column 85.
       final t = _Art(200, 160)
         ..stroke([(20, 50), (150, 50)], thickness)
         ..stroke([(85, 50), (85, 150)], thickness);
-      final pool = _pool(t);
-      if (thickness == 8) _write('t_junction_thick', t, pool);
-      expect(_total(pool), 0, reason: 'a T of $thickness px lines');
+      final pool = _pool(t, range: range, width: width);
+      _write(thickness == 8 ? 't_junction_thick' : 't_junction', t, pool);
+      // The lines' pixels: rows and columns 50 - e to 49 + e (85 - e to
+      // 84 + e).
+      final e = (thickness / 2 + .5).floor();
+      for (final d in [16, 20, 24, 28]) {
+        final expected = 1 + (width - 1) * (1 - d / range);
+        for (final side in [-1, 1]) {
+          // Below the bar, on both sides of the stem.
+          expect(
+            _column(t, pool, 85 + side * d, 50 + e, 50 + e + 12),
+            closeTo(expected, 1.5),
+            reason:
+                'below the bar, $d px ${side < 0 ? 'left' : 'right'} '
+                '($thickness px lines)',
+          );
+          // Beside the stem, on both sides.
+          expect(
+            _row(
+              t,
+              pool,
+              50 + d,
+              side < 0 ? 85 - e - 13 : 85 + e,
+              side < 0 ? 85 - e - 1 : 85 + e + 12,
+            ),
+            closeTo(expected, 1.5),
+            reason:
+                'beside the stem, $d px down, '
+                '${side < 0 ? 'left' : 'right'} ($thickness px lines)',
+          );
+        }
+      }
+      // Above the bar, the straight side: none.
+      expect(_around(t, pool, 85, 50.0 - e - 4, 4), 0);
+      for (var x = 20; x < 150; x++) {
+        expect(_column(t, pool, x, 0, 49 - e), 0, reason: 'above the bar');
+      }
+      // Beyond the range, none.
+      expect(_column(t, pool, 85 + 34, 0, 159), 0);
+      expect(_row(t, pool, 50 + 34, 0, 199), 0);
     }
+
+    // A square corner: inside it only.
     final corner = _Art(200, 160)..stroke([(30, 30), (150, 30), (150, 140)], 3);
-    expect(_total(_pool(corner)), 0, reason: 'a square corner');
+    final cornerPool = _pool(corner, range: range, width: width);
+    _write('square_corner', corner, cornerPool);
+    expect(_around(corner, cornerPool, 140, 37, 2), greaterThan(4));
+    expect(_column(corner, cornerPool, 130, 32, 44), closeTo(1 + 9 / 3, 1.5));
+    expect(_row(corner, cornerPool, 50, 136, 147), closeTo(1 + 9 / 3, 1.5));
+    expect(_around(corner, cornerPool, 140, 22, 4), 0, reason: 'above');
+    expect(_around(corner, cornerPool, 158, 40, 4), 0, reason: 'right');
+    expect(_around(corner, cornerPool, 158, 22, 4), 0, reason: 'outside');
+
+    // Turned: still both sides of the stem, never across the bar.
     for (var degrees = 5; degrees < 90; degrees += 10) {
       final a = degrees * math.pi / 180;
       const cx = 100.0, cy = 80.0;
       final ux = math.cos(a), uy = math.sin(a);
-      final t = _Art(200, 160)
+      // The stem leaves the bar towards (-uy, ux).
+      final nx = -uy, ny = ux;
+      final turned = _Art(200, 160)
         ..stroke([
           (cx - 60 * ux, cy - 60 * uy),
           (cx + 60 * ux, cy + 60 * uy),
         ], 4)
-        ..stroke([(cx, cy), (cx - 60 * uy, cy + 60 * ux)], 4);
-      expect(_total(_pool(t)), 0, reason: 'a T turned $degrees degrees');
+        ..stroke([(cx, cy), (cx + 60 * nx, cy + 60 * ny)], 4);
+      final pool = _pool(turned, range: range, width: width);
+      for (final k in [-1.0, 1.0]) {
+        for (final d in [8.0, 16.0]) {
+          expect(
+            _around(
+              turned,
+              pool,
+              cx + k * d * ux + 5 * nx,
+              cy + k * d * uy + 5 * ny,
+              1.5,
+            ),
+            greaterThan(2),
+            reason: 'by the bar, $d px along, T turned $degrees degrees',
+          );
+          expect(
+            _around(
+              turned,
+              pool,
+              cx + d * nx + k * 5 * ux,
+              cy + d * ny + k * 5 * uy,
+              1.5,
+            ),
+            greaterThan(2),
+            reason: 'by the stem, $d px along, T turned $degrees degrees',
+          );
+          expect(
+            _around(
+              turned,
+              pool,
+              cx + k * d * ux - 5 * nx,
+              cy + k * d * uy - 5 * ny,
+              3,
+            ),
+            0,
+            reason: 'across the bar, T turned $degrees degrees',
+          );
+        }
+      }
+    }
+
+    // Wider than a right angle: none.
+    for (final degrees in [110.0, 120.0, 135.0]) {
+      final a = degrees * math.pi / 180;
+      final wide = _Art(200, 160)
+        ..stroke([
+          (40, 80),
+          (100, 80),
+          (100 - 60 * math.cos(a), 80 + 60 * math.sin(a)),
+        ], 3);
+      expect(
+        _total(_pool(wide, range: range, width: width)),
+        0,
+        reason: 'a $degrees degree corner',
+      );
     }
   });
 
@@ -410,7 +525,8 @@ void main() {
   }
 
   test('on 1 px line art, where nothing hides it: the narrow angles of a '
-      'crossing and a sharp corner pool, a T and a square corner do not', () {
+      'crossing, a sharp corner, a T and a square corner pool, wider '
+      'corners do not', () {
     const range = 30.0, width = 10.0;
     // The bar runs along row 80; the other line crosses it at 40 degrees.
     final crossing = _Art(220, 160)
@@ -465,31 +581,94 @@ void main() {
     expect(_around(corner, cornerPool, 155, 80.5, 3), 0, reason: 'outside');
     expect(_around(corner, cornerPool, 135, 70, 2), 0, reason: 'outside');
 
-    // A T and a square corner.
+    // A T and a square corner: inside the right angles too. The bar runs
+    // along row 50, the stem down column 85; the corner's lines along row
+    // 120 and down column 60.
     final t = _Art(200, 160)
       ..stroke([(20, 50.5), (150, 50.5)], 1, soft: true)
       ..stroke([(85.5, 50.5), (85.5, 150)], 1, soft: true)
-      ..stroke([(30, 120.5), (60, 120.5), (60.5, 150)], 1, soft: true);
+      ..stroke([(30, 120.5), (60.5, 120.5), (60.5, 150)], 1, soft: true);
     final tPool = _pool(t, range: range, width: width);
     _write('t_junction_1px', t, tPool);
-    expect(_total(tPool), 0);
+    for (final d in [16, 20, 24]) {
+      final expected = 1 + (width - 1) * (1 - d / range);
+      for (final side in [-1, 1]) {
+        expect(
+          _column(t, tPool, 85 + side * d, 51, 63),
+          closeTo(expected, 1.5),
+          reason: 'below the bar, $d px ${side < 0 ? 'left' : 'right'}',
+        );
+        expect(
+          _row(t, tPool, 50 + d, side < 0 ? 72 : 86, side < 0 ? 84 : 98),
+          closeTo(expected, 1.5),
+          reason:
+              'beside the stem, $d px down, '
+              '${side < 0 ? 'left' : 'right'}',
+        );
+      }
+    }
+    for (var x = 20; x < 150; x++) {
+      expect(_column(t, tPool, x, 0, 49), 0, reason: 'above the bar');
+    }
+    // The corner: inside it (below the line, left of the other) only.
+    expect(_around(t, tPool, 55, 125.5, 2), greaterThan(4));
+    expect(_column(t, tPool, 40, 121, 133), closeTo(1 + 9 / 3, 1.5));
+    expect(_around(t, tPool, 50, 114, 4), 0, reason: 'above the corner');
+    expect(_around(t, tPool, 67, 135, 4), 0, reason: 'right of the corner');
     for (var degrees = 5; degrees < 90; degrees += 10) {
       final r = degrees * math.pi / 180;
       const cx = 100.0, cy = 80.0;
       final ux = math.cos(r), uy = math.sin(r);
+      final nx = -uy, ny = ux;
       final turned = _Art(200, 160)
         ..stroke(
           [(cx - 60 * ux, cy - 60 * uy), (cx + 60 * ux, cy + 60 * uy)],
           1,
           soft: true,
         )
-        ..stroke([(cx, cy), (cx - 60 * uy, cy + 60 * ux)], 1, soft: true);
-      expect(
-        _total(_pool(turned, range: range, width: width)),
-        0,
-        reason: 'a 1 px T turned $degrees degrees',
+        ..stroke([(cx, cy), (cx + 60 * nx, cy + 60 * ny)], 1, soft: true);
+      final pool = _pool(turned, range: range, width: width);
+      for (final k in [-1.0, 1.0]) {
+        expect(
+          _around(
+            turned,
+            pool,
+            cx + k * 12 * ux + 3 * nx,
+            cy + k * 12 * uy + 3 * ny,
+            1.5,
+          ),
+          greaterThan(2),
+          reason: 'by the bar of a 1 px T turned $degrees degrees',
+        );
+        expect(
+          _around(
+            turned,
+            pool,
+            cx + k * 12 * ux - 4 * nx,
+            cy + k * 12 * uy - 4 * ny,
+            2.5,
+          ),
+          0,
+          reason: 'across the bar of a 1 px T turned $degrees degrees',
+        );
+      }
+    }
+
+    // Wider than a right angle: none, at 110, 120 and 135 degrees.
+    final wide = _Art(200, 160);
+    for (final (k, degrees) in [(0, 110.0), (1, 120.0), (2, 135.0)]) {
+      final a = degrees * math.pi / 180;
+      const x = 100.0;
+      final y = 15.5 + 48 * k;
+      wide.stroke(
+        [(x - 60, y), (x, y), (x - 36 * math.cos(a), y + 36 * math.sin(a))],
+        1,
+        soft: true,
       );
     }
+    final widePool = _pool(wide, range: range, width: width);
+    _write('obtuse_1px', wide, widePool);
+    expect(_total(widePool), 0);
   });
 
   test('curves and straight lines get none', () {
