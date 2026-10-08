@@ -5335,7 +5335,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get filterNamePrism => '棱镜';
 
   @override
-  String get filterNameThreshold => '二值化滤镜';
+  String get filterNameThreshold => '二值化';
 
   @override
   String get filterMonochromeColorLabel => '单色化颜色';
@@ -5344,19 +5344,19 @@ class AppLocalizationsZh extends AppLocalizations {
   String get filterThresholdLabel => '阈值';
 
   @override
-  String get filterNameFisheye => '鱼眼镜头滤镜';
+  String get filterNameFisheye => '魚眼鏡頭';
 
   @override
   String get filterFisheyeStrength => '扭曲';
 
   @override
-  String get filterNameChromaticAberration => '色差滤镜';
+  String get filterNameChromaticAberration => '色差';
 
   @override
   String get filterChromaticAberrationStrength => '偏移强度';
 
   @override
-  String get filterNameLensDistortion => '眼镜断层滤镜';
+  String get filterNameLensDistortion => '眼鏡斷層';
 
   @override
   String get filterLensDistortionStrength => '镜片强度（负值为凹透镜，正值为凸透镜）';
@@ -5365,7 +5365,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get filterLensDistortionOffsetX => '中心位置微调（左右）';
 
   @override
-  String get filterNamePixelate => '像素画滤镜';
+  String get filterNamePixelate => '像素畫';
 
   @override
   String get filterNameAuroraHologram => '彩虹全息';
