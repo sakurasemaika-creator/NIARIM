@@ -6864,6 +6864,9 @@ class AppLocalizationsKo extends AppLocalizations {
   String get canvasLassoSnapToLines => '선에 스냅';
 
   @override
+  String get canvasLassoGapTolerance => '선화 간격 허용';
+
+  @override
   String get filterBackToList => '필터 목록으로';
 
   @override
