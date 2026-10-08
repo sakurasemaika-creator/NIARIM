@@ -441,6 +441,9 @@ class CanvasArea extends StatefulWidget {
 
   /// When true, freehand selection follows nearby line-art contours.
   final bool lassoSnapToLines;
+
+  /// Maximum line-art gap, in canvas pixels, that snapping may bridge.
+  final int lassoGapTolerancePx;
   final ValueChanged<bool>? onSelectionActiveChanged;
 
   /// The selection, each time it is made, changed or cleared: one byte per
