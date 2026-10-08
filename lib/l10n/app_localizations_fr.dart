@@ -2949,6 +2949,9 @@ class AppLocalizationsFr extends AppLocalizations {
   }
 
   @override
+  String get newProjectDurationUnit => 's';
+
+  @override
   String newProjectDurationHms(int h, int m, int s) {
     return '$h h $m min $s s';
   }
@@ -5196,6 +5199,12 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get frameStripTimelineModeLabel => 'Timeline';
+
+  @override
+  String get frameStripBulkAddTitle => 'Ajouter des images en lot';
+
+  @override
+  String get frameStripBulkAddUnit => 'images';
 
   @override
   String get progressDialogAdLoading => 'Chargement de la publicité…';

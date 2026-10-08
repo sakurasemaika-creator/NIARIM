@@ -935,6 +935,7 @@
       }
     }
   },
+  "newProjectDurationUnit": "秒",
   "newProjectDurationHms": "{h}小時{m}分{s}秒",
   "@newProjectDurationHms": {
     "placeholders": {
@@ -2169,6 +2170,8 @@
     }
   },
   "frameStripTimelineModeLabel": "時間軸",
+  "frameStripBulkAddTitle": "批次新增畫格",
+  "frameStripBulkAddUnit": "張",
   "progressDialogAdLoading": "廣告載入中…",
   "adMockPlaceholderLabel": "廣告橫幅（用於版位試驗的模型）",
   "adMediumRectangleMockPlaceholderLabel": "中型矩形廣告（300×250 版位測試模型）",

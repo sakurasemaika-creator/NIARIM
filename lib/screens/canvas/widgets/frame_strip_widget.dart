@@ -179,7 +179,7 @@ class _FrameStripWidgetState extends State<FrameStripWidget> {
                   color: Theme.of(ctx).colorScheme.primary,
                 ),
                 const SizedBox(width: 8),
-                const Expanded(child: Text('フレームを一括追加')),
+                Expanded(child: Text(l10n.frameStripBulkAddTitle)),
               ],
             ),
             content: Column(
@@ -208,8 +208,8 @@ class _FrameStripWidgetState extends State<FrameStripWidget> {
                         inputFormatters: [
                           FilteringTextInputFormatter.digitsOnly,
                         ],
-                        decoration: const InputDecoration(
-                          suffixText: '枚',
+                        decoration: InputDecoration(
+                          suffixText: l10n.frameStripBulkAddUnit,
                           isDense: true,
                         ),
                         onChanged: (value) {

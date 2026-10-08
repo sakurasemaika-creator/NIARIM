@@ -935,6 +935,7 @@
       }
     }
   },
+  "newProjectDurationUnit": "s",
   "newProjectDurationHms": "{h}h {m}m {s}s",
   "@newProjectDurationHms": {
     "placeholders": {
@@ -2169,6 +2170,8 @@
     }
   },
   "frameStripTimelineModeLabel": "Timeline",
+  "frameStripBulkAddTitle": "Add Frames in Bulk",
+  "frameStripBulkAddUnit": "frames",
   "progressDialogAdLoading": "Loading ad…",
   "adMockPlaceholderLabel": "Ad banner (placement trial mock)",
   "adMediumRectangleMockPlaceholderLabel": "Medium rectangle ad (300×250 placement mock)",

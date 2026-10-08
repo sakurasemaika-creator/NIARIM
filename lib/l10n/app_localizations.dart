@@ -5237,6 +5237,12 @@ abstract class AppLocalizations {
   /// **'{n}秒'**
   String newProjectDurationSeconds(int n);
 
+  /// Unit after the duration in seconds.
+  ///
+  /// In ja, this message translates to:
+  /// **'秒'**
+  String get newProjectDurationUnit;
+
   /// No description provided for @newProjectDurationHms.
   ///
   /// In ja, this message translates to:
@@ -9088,6 +9094,18 @@ abstract class AppLocalizations {
   /// In ja, this message translates to:
   /// **'タイムライン'**
   String get frameStripTimelineModeLabel;
+
+  /// Title of the dialog that adds several frames at once.
+  ///
+  /// In ja, this message translates to:
+  /// **'フレームを一括追加'**
+  String get frameStripBulkAddTitle;
+
+  /// Unit after the number of frames to add.
+  ///
+  /// In ja, this message translates to:
+  /// **'枚'**
+  String get frameStripBulkAddUnit;
 
   /// No description provided for @progressDialogAdLoading.
   ///

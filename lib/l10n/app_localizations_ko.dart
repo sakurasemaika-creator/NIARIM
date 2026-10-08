@@ -2822,6 +2822,9 @@ class AppLocalizationsKo extends AppLocalizations {
   }
 
   @override
+  String get newProjectDurationUnit => '초';
+
+  @override
   String newProjectDurationHms(int h, int m, int s) {
     return '$h시간 $m분 $s초';
   }
@@ -4972,6 +4975,12 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get frameStripTimelineModeLabel => '타임라인';
+
+  @override
+  String get frameStripBulkAddTitle => '프레임 일괄 추가';
+
+  @override
+  String get frameStripBulkAddUnit => '장';
 
   @override
   String get progressDialogAdLoading => '광고 불러오는 중…';

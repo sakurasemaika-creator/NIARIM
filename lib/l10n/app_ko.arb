@@ -935,6 +935,7 @@
       }
     }
   },
+  "newProjectDurationUnit": "초",
   "newProjectDurationHms": "{h}시간 {m}분 {s}초",
   "@newProjectDurationHms": {
     "placeholders": {
@@ -2169,6 +2170,8 @@
     }
   },
   "frameStripTimelineModeLabel": "타임라인",
+  "frameStripBulkAddTitle": "프레임 일괄 추가",
+  "frameStripBulkAddUnit": "장",
   "progressDialogAdLoading": "광고 불러오는 중…",
   "adMockPlaceholderLabel": "광고 배너(배치 검토용 목업)",
   "adMediumRectangleMockPlaceholderLabel": "중형 직사각형 광고(300×250 배치 검토용 목업)",

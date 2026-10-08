@@ -2800,6 +2800,9 @@ class AppLocalizationsZh extends AppLocalizations {
   }
 
   @override
+  String get newProjectDurationUnit => '秒';
+
+  @override
   String newProjectDurationHms(int h, int m, int s) {
     return '$h小时$m分$s秒';
   }
@@ -4916,6 +4919,12 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get frameStripTimelineModeLabel => '时间轴';
+
+  @override
+  String get frameStripBulkAddTitle => '批量添加帧';
+
+  @override
+  String get frameStripBulkAddUnit => '张';
 
   @override
   String get progressDialogAdLoading => '广告加载中…';
@@ -9808,6 +9817,9 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   }
 
   @override
+  String get newProjectDurationUnit => '秒';
+
+  @override
   String newProjectDurationHms(int h, int m, int s) {
     return '$h小時$m分$s秒';
   }
@@ -11925,6 +11937,12 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get frameStripTimelineModeLabel => '時間軸';
+
+  @override
+  String get frameStripBulkAddTitle => '批次新增畫格';
+
+  @override
+  String get frameStripBulkAddUnit => '張';
 
   @override
   String get progressDialogAdLoading => '廣告載入中…';

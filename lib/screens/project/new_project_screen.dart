@@ -587,9 +587,9 @@ class _NewProjectScreenState extends State<NewProjectScreen> {
                               controller: _durationController,
                               keyboardType: TextInputType.number,
                               textAlign: TextAlign.center,
-                              decoration: const InputDecoration(
+                              decoration: InputDecoration(
                                 isDense: true,
-                                suffixText: '秒',
+                                suffixText: l10n.newProjectDurationUnit,
                               ),
                               onChanged: (v) {
                                 final parsed = int.tryParse(v);

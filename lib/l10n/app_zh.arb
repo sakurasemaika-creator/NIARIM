@@ -935,6 +935,7 @@
       }
     }
   },
+  "newProjectDurationUnit": "秒",
   "newProjectDurationHms": "{h}小时{m}分{s}秒",
   "@newProjectDurationHms": {
     "placeholders": {
@@ -2169,6 +2170,8 @@
     }
   },
   "frameStripTimelineModeLabel": "时间轴",
+  "frameStripBulkAddTitle": "批量添加帧",
+  "frameStripBulkAddUnit": "张",
   "progressDialogAdLoading": "广告加载中…",
   "adMockPlaceholderLabel": "广告横幅（用于位置试验的模型）",
   "adMediumRectangleMockPlaceholderLabel": "中矩形广告（300×250 位置测试模型）",

@@ -2953,6 +2953,9 @@ class AppLocalizationsEs extends AppLocalizations {
   }
 
   @override
+  String get newProjectDurationUnit => 's';
+
+  @override
   String newProjectDurationHms(int h, int m, int s) {
     return '$h h $m min $s s';
   }
@@ -5184,6 +5187,12 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get frameStripTimelineModeLabel => 'Línea de tiempo';
+
+  @override
+  String get frameStripBulkAddTitle => 'Añadir fotogramas en bloque';
+
+  @override
+  String get frameStripBulkAddUnit => 'fotogramas';
 
   @override
   String get progressDialogAdLoading => 'Cargando anuncio…';

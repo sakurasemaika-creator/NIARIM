@@ -32,4 +32,33 @@ void main() {
       reason: '表示名はARBへ足してl10n経由で出すこと:\n${offenders.join('\n')}',
     );
   });
+
+  test('画面の文言・接尾辞・ヒントに日本語を直書きしていない', () {
+    // `Text('日本語')`・`suffixText: '枚'`等。英語や韓国語等の表示でも日本語の
+    // まま出る（フレームの一括追加の題名と「枚」、新規作成の「秒」が実際に
+    // そうなっていた）。
+    final pattern = RegExp(
+      r"(Text\(|suffixText:|prefixText:|hintText:|labelText:|helperText:|"
+      r"tooltip:|semanticsLabel:|message:)\s*'[^']*"
+      r"[\u3040-\u30ff\u4e00-\u9fff][^']*'",
+    );
+    final offenders = <String>[];
+    for (final dir in ['lib/screens', 'lib/widgets']) {
+      for (final entity in Directory(dir).listSync(recursive: true)) {
+        if (entity is! File || !entity.path.endsWith('.dart')) continue;
+        final lines = entity.readAsLinesSync();
+        for (var i = 0; i < lines.length; i++) {
+          if (lines[i].trimLeft().startsWith('//')) continue;
+          if (pattern.hasMatch(lines[i])) {
+            offenders.add('${entity.path}:${i + 1}: ${lines[i].trim()}');
+          }
+        }
+      }
+    }
+    expect(
+      offenders,
+      isEmpty,
+      reason: '文言はARBへ足してl10n経由で出すこと:\n${offenders.join('\n')}',
+    );
+  });
 }

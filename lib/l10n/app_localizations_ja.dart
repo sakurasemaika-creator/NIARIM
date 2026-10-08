@@ -2812,6 +2812,9 @@ class AppLocalizationsJa extends AppLocalizations {
   }
 
   @override
+  String get newProjectDurationUnit => '秒';
+
+  @override
   String newProjectDurationHms(int h, int m, int s) {
     return '$h時間$m分$s秒';
   }
@@ -4949,6 +4952,12 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get frameStripTimelineModeLabel => 'タイムライン';
+
+  @override
+  String get frameStripBulkAddTitle => 'フレームを一括追加';
+
+  @override
+  String get frameStripBulkAddUnit => '枚';
 
   @override
   String get progressDialogAdLoading => '広告読み込み中…';

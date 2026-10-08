@@ -2915,6 +2915,9 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
+  String get newProjectDurationUnit => 's';
+
+  @override
   String newProjectDurationHms(int h, int m, int s) {
     return '${h}h ${m}m ${s}s';
   }
@@ -5113,6 +5116,12 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get frameStripTimelineModeLabel => 'Timeline';
+
+  @override
+  String get frameStripBulkAddTitle => 'Add Frames in Bulk';
+
+  @override
+  String get frameStripBulkAddUnit => 'frames';
 
   @override
   String get progressDialogAdLoading => 'Loading ad…';

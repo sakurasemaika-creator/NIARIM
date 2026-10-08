@@ -935,6 +935,7 @@
       }
     }
   },
+  "newProjectDurationUnit": "s",
   "newProjectDurationHms": "{h} h {m} min {s} s",
   "@newProjectDurationHms": {
     "placeholders": {
@@ -2169,6 +2170,8 @@
     }
   },
   "frameStripTimelineModeLabel": "Línea de tiempo",
+  "frameStripBulkAddTitle": "Añadir fotogramas en bloque",
+  "frameStripBulkAddUnit": "fotogramas",
   "progressDialogAdLoading": "Cargando anuncio…",
   "adMockPlaceholderLabel": "Banner publicitario (maqueta de prueba de ubicación)",
   "adMediumRectangleMockPlaceholderLabel": "Anuncio rectangular mediano (maqueta de ubicación 300×250)",

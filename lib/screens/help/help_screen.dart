@@ -19,15 +19,22 @@ class HelpScreen extends StatefulWidget {
 class _HelpScreenState extends State<HelpScreen> {
   final _searchController = TextEditingController();
   String _searchQuery = '';
+  bool _topicShown = false;
 
   @override
-  void initState() {
-    super.initState();
+  void didChangeDependencies() {
+    super.didChangeDependencies();
     final topic = widget.initialTopic;
-    if (topic != null && topic.isNotEmpty) {
-      _searchQuery = topic;
-      _searchController.text = topic;
-    }
+    if (_topicShown || topic == null || topic.isEmpty) return;
+    _topicShown = true;
+    // The topic is an internal Japanese key: the search box shows the
+    // topic's title in the display language instead.
+    final l10n = AppLocalizations.of(context)!;
+    final entry = _buildEntries(
+      l10n,
+    ).where((e) => e.topicKey == topic).firstOrNull;
+    _searchQuery = entry?.title ?? topic;
+    _searchController.text = _searchQuery;
   }
 
   // ヘルプの説明文は、チュートリアル（初回タップ時に出る短い吹き出し）とは
