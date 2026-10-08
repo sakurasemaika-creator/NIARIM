@@ -312,18 +312,17 @@ def build_card(gallery, group, case, labels, fields):
         y += 21
     side = 330
     top = CARD_H - 256 - 52
-    after_key = "generated" if "generated" in case else "after"
-    for i, (key, label) in enumerate(
-        [
-            ("before", "適用前"),
-            (
-                after_key,
-                "生成レイヤー（元画像を非表示）"
-                if after_key == "generated"
-                else "適用後",
-            ),
-        ]
-    ):
+    # 墨溜まり lies under the line art: it reads only together with it.
+    with_lines = (case.get("settings") or {}).get("kind") == "inkPool"
+    after_key = "generated" if "generated" in case and not with_lines else "after"
+    after_label = (
+        "生成レイヤー（元画像を非表示）"
+        if after_key == "generated"
+        else "適用後（線画の下に墨溜まりのレイヤー）"
+        if with_lines
+        else "適用後"
+    )
+    for i, (key, label) in enumerate([("before", "適用前"), (after_key, after_label)]):
         x = 40 + i * (side + 77)
         d.text((x + (side - 256) // 2, top - 26), label, font=body_font, fill=INK)
         image = artwork(gallery / group / case[key], side)
@@ -465,6 +464,7 @@ FEATURE_PAGES = [
             ("ink-pool/corner_1px.png", "50°のV字：内側"),
             ("ink-pool/t_junction_1px.png", "T字・直角の角：溜まらない"),
         ],
+        "rows",
     ),
     (
         "墨溜まり：中央の太さ（W）×範囲（R）",
@@ -486,6 +486,7 @@ FEATURE_PAGES = [
             ("ink-pool/crossing_40.png", "40°の交差（線3px）"),
             ("ink-pool/t_junction_thick.png", "T字（線8px）：溜まらない"),
         ],
+        "rows",
     ),
     (
         "自動線画・眼鏡断層",
@@ -513,13 +514,15 @@ FEATURE_PAGES = [
 
 
 def feature_shot_paths(build_dir):
-    return [build_dir / path for _, _, _, shots in FEATURE_PAGES for path, _ in shots]
+    return [build_dir / path for entry in FEATURE_PAGES for path, _ in entry[3]]
 
 
 def feature_pages(build_dir, revision, start_number):
     pages, number = [], start_number
     title_font, body = font(HEADING_FONT, 22), font(BODY_FONT, 19)
-    for title, desc, source, shots in FEATURE_PAGES:
+    for entry in FEATURE_PAGES:
+        title, desc, source, shots = entry[:4]
+        rows = len(entry) > 4 and entry[4] == "rows"
         shots = [(build_dir / path, label) for path, label in shots]
         missing = [str(path) for path, _ in shots if not path.is_file()]
         assert not missing, (title, "missing shots", missing)
@@ -530,6 +533,30 @@ def feature_pages(build_dir, revision, start_number):
             d.text((48, y), line, font=body, fill=MUTED)
             y += 28
         top = y + 20
+        if rows:
+            # Wide strips, one to a row, so thin lines keep their width.
+            label_w = 280
+            row_h = (PAGE_H - top - 70) // len(shots)
+            for i, (path, label) in enumerate(shots):
+                ry = top + i * row_h
+                for n, line in enumerate(wrap(d, label, title_font, label_w - 20)[:4]):
+                    d.text((48, ry + 8 + n * 28), line, font=title_font, fill=INK)
+                shot = Image.open(path).convert("RGB")
+                area_w = PAGE_W - 96 - label_w
+                scale = min(area_w / shot.width, (row_h - 16) / shot.height)
+                size = (
+                    max(1, int(shot.width * scale)),
+                    max(1, int(shot.height * scale)),
+                )
+                shot = shot.resize(size, Image.NEAREST if scale >= 2 else Image.LANCZOS)
+                sx, sy = 48 + label_w, ry + 4
+                im.paste(shot, (sx, sy))
+                d.rectangle(
+                    (sx - 1, sy - 1, sx + shot.width, sy + shot.height),
+                    outline="#cbd5e1",
+                )
+            pages.append(im)
+            continue
         column = (PAGE_W - 96 - 24 * (len(shots) - 1)) // len(shots)
         height = PAGE_H - top - 110
         for i, (path, label) in enumerate(shots):
