@@ -529,7 +529,7 @@ Future<Uint8List> generateBuiltInStampTexture(
     texture = byteData!.buffer.asUint8List();
   }
   if (stamp.pixelMode) {
-    texture = FilterEngine().applyPixelate(texture, size, size);
+    texture = FilterEngine().applyPixelate(texture, size, size, dither: false);
   }
   final opacityScale = stamp.opacity.clamp(1, 100) / 100.0;
   if (opacityScale < 1.0) {

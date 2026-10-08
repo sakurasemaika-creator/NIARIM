@@ -2619,9 +2619,8 @@ class FilterEngine {
   }
 
   /// モザイク化（[mosaicSize]）＋配色処理（[colorMode]）を組み合わせた
-  /// ドット絵化。配色の実際の処理は[quantizeColors]（モザイク化と分離した
-  /// 純粋な減色関数。ブラシのピクセルモードのストローク確定直後の色スナップ
-  /// でも共用する）に委譲する。
+  /// ドット絵化。色を限るときは、[dither]なら1色では遠いドットを2色の
+  /// 組み合わせ（4×4の規則的な配置）で近づける。
   Uint8List applyPixelate(
     Uint8List data,
     int width,
@@ -2630,6 +2629,7 @@ class FilterEngine {
     PixelColorMode colorMode = PixelColorMode.count,
     int colorLevels = 6,
     List<int> paletteColors = const [],
+    bool dither = true,
   }) => const PixelArtEngine().convert(
     data,
     width,
@@ -2638,6 +2638,7 @@ class FilterEngine {
     colorMode: colorMode,
     colorLevels: colorLevels,
     paletteColors: paletteColors,
+    dither: dither,
   );
 
   Uint8List applyFade(

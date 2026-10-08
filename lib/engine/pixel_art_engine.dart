@@ -24,6 +24,12 @@ import '../models/pixel_color_mode.dart';
 /// Horizontal/vertical internal boundaries stay hard. Diagonal opaque-color
 /// boundaries may use a middle color only when the active color policy allows
 /// it; callers can use the same converter for filters, brushes, and stamps.
+///
+/// With [dither] and a limited set of colours, a dot whose colour no single
+/// colour of the set comes close to mixes the two that, side by side, look
+/// nearest to it, in a fixed 4 x 4 pattern (ordered dithering, which stays
+/// put from one animation frame to the next). A dot a colour of the set
+/// already matches well stays that one colour.
 class PixelArtEngine {
   const PixelArtEngine();
 
@@ -36,6 +42,7 @@ class PixelArtEngine {
     int colorLevels = 6,
     List<int> paletteColors = const [],
     bool squareBlocks = true,
+    bool dither = false,
   }) {
     final size = pixelSize.toDouble().clamp(
       1.0,
@@ -124,13 +131,77 @@ class PixelArtEngine {
     final countPalette = colorMode == PixelColorMode.count
         ? _buildCountPalette(rawColors.whereType<int>().toList(), colorLevels)
         : const <int>[];
-    final colors = rawColors
-        .map(
-          (color) => color == null
-              ? null
-              : _constrainColor(color, colorMode, paletteColors, countPalette),
-        )
-        .toList();
+    final limited = switch (colorMode) {
+      PixelColorMode.count => countPalette,
+      PixelColorMode.explicit || PixelColorMode.palette => paletteColors,
+      PixelColorMode.none => const <int>[],
+    };
+    // Dots whose colour is a mix of two (dithered): left out of the diagonal
+    // smoothing below, whose pattern a dither is full of.
+    final mixed = Uint8List(cellCount);
+    final List<int?> colors;
+    if (dither && limited.length >= 2) {
+      final ditherer = _Ditherer(limited);
+      colors = List<int?>.filled(cellCount, null);
+      final labs = Float64List(cellCount * 3);
+      for (var c = 0; c < cellCount; c++) {
+        final color = rawColors[c];
+        if (color == null) continue;
+        labs.setAll(c * 3, _Ditherer.labOf(color));
+      }
+      final edge = Uint8List(cellCount);
+      for (var c = 0; c < cellCount; c++) {
+        if (rawColors[c] != null &&
+            _onEdge(rawColors, labs, cellsX, cellsY, c)) {
+          edge[c] = 1;
+        }
+      }
+      for (var c = 0; c < cellCount; c++) {
+        var color = rawColors[c];
+        if (color == null) continue;
+        // A dot on a hard edge between two colours (often a blend of both)
+        // takes the colour of its most alike neighbour off the edge, so the
+        // pattern runs right up to the edge and no dots of some third colour
+        // are scattered along it. A thin line, with no such neighbour, is
+        // one colour.
+        if (edge[c] != 0) {
+          final like = _mostAlikeInside(
+            rawColors,
+            labs,
+            edge,
+            cellsX,
+            cellsY,
+            c,
+          );
+          if (like == null) {
+            colors[c] = ditherer.nearest(color);
+            continue;
+          }
+          color = like;
+        }
+        final mix = ditherer.mixFor(color);
+        if (mix.share == 0) {
+          colors[c] = mix.a;
+          continue;
+        }
+        mixed[c] = 1;
+        final cx = c % cellsX, cy = c ~/ cellsX;
+        colors[c] = _bayer[(cy & 3) * 4 + (cx & 3)] < mix.share ? mix.b : mix.a;
+      }
+    } else {
+      colors = rawColors
+          .map(
+            (color) => color == null
+                ? null
+                : _constrainColor(
+                    color,
+                    colorMode,
+                    paletteColors,
+                    countPalette,
+                  ),
+          )
+          .toList();
+    }
 
     // Only a true diagonal A/B crossing is eligible for a middle color.
     // Transparency blocks smoothing. Horizontal/vertical A/B boundaries never
@@ -142,6 +213,12 @@ class PixelArtEngine {
         final bl = colors[(cy + 1) * cellsX + cx];
         final br = colors[(cy + 1) * cellsX + cx + 1];
         if (tl == null || tr == null || bl == null || br == null) continue;
+        if (mixed[cy * cellsX + cx] != 0 ||
+            mixed[cy * cellsX + cx + 1] != 0 ||
+            mixed[(cy + 1) * cellsX + cx] != 0 ||
+            mixed[(cy + 1) * cellsX + cx + 1] != 0) {
+          continue;
+        }
         if (tl == br && tr == bl && tl != tr) {
           final middle = _middleColor(
             tl,
@@ -478,6 +555,74 @@ class PixelArtEngine {
     return o < 0 ? v < half : v >= n - half;
   }
 
+  /// How different dots [a] and [b] look: the squared CIELAB distance, from
+  /// [labs] (three per dot).
+  static double _apart(Float64List labs, int a, int b) {
+    final dl = labs[a * 3] - labs[b * 3],
+        da = labs[a * 3 + 1] - labs[b * 3 + 1],
+        db = labs[a * 3 + 2] - labs[b * 3 + 2];
+    return dl * dl + da * da + db * db;
+  }
+
+  /// Whether dot [c] differs sharply in colour from a side neighbour (more
+  /// than [_edge] apart in CIELAB); transparent neighbours do not count.
+  static bool _onEdge(
+    List<int?> colors,
+    Float64List labs,
+    int cellsX,
+    int cellsY,
+    int c,
+  ) {
+    final cx = c % cellsX, cy = c ~/ cellsX;
+    for (final (nx, ny) in [
+      (cx - 1, cy),
+      (cx + 1, cy),
+      (cx, cy - 1),
+      (cx, cy + 1),
+    ]) {
+      if (nx < 0 || ny < 0 || nx >= cellsX || ny >= cellsY) continue;
+      final n = ny * cellsX + nx;
+      if (colors[n] == null) continue;
+      if (_apart(labs, c, n) > _edge * _edge) return true;
+    }
+    return false;
+  }
+
+  /// The colour of the side neighbour of dot [c] that is not itself on an
+  /// edge and looks most like it, if there is one.
+  static int? _mostAlikeInside(
+    List<int?> colors,
+    Float64List labs,
+    Uint8List edge,
+    int cellsX,
+    int cellsY,
+    int c,
+  ) {
+    final cx = c % cellsX, cy = c ~/ cellsX;
+    int? best;
+    var bestDistance = double.infinity;
+    for (final (nx, ny) in [
+      (cx - 1, cy),
+      (cx + 1, cy),
+      (cx, cy - 1),
+      (cx, cy + 1),
+    ]) {
+      if (nx < 0 || ny < 0 || nx >= cellsX || ny >= cellsY) continue;
+      final n = ny * cellsX + nx;
+      final other = colors[n];
+      if (other == null || edge[n] != 0) continue;
+      final d = _apart(labs, c, n);
+      if (d < bestDistance) {
+        bestDistance = d;
+        best = other;
+      }
+    }
+    return best;
+  }
+
+  /// How different neighbouring dots must look to make an edge.
+  static const double _edge = 20;
+
   /// Alphas within a fifth of each other count as the same strength.
   static bool _similar(int a, int b) => a * 5 >= b * 4 && a * 4 <= b * 5;
 
@@ -522,31 +667,106 @@ class PixelArtEngine {
     return middle;
   }
 
+  /// The [requestedCount] colours that best stand for [colors] (one entry
+  /// per dot): spread out first (each next one the colour furthest from
+  /// those chosen, starting from the commonest), then each moved to the
+  /// middle of the dots nearest it, weighted by how many there are (k-means,
+  /// by how different the colours look), and finally to the real colour of
+  /// those dots nearest that middle. Picking the most different colours alone
+  /// left a large area of a middle colour (a face) to the nearest extreme.
   List<int> _buildCountPalette(List<int> colors, int requestedCount) {
     if (colors.isEmpty) return const [];
-    final unique = colors.toSet().toList()..sort();
+    final weights = <int, int>{};
+    for (final color in colors) {
+      final rgb = color & 0xffffff;
+      weights[rgb] = (weights[rgb] ?? 0) + 1;
+    }
+    final unique = weights.keys.toList()..sort();
     final count = requestedCount.clamp(1, 256);
-    if (unique.length <= count) return unique;
+    if (unique.length <= count) return [for (final c in unique) _opaque(c)];
 
-    final palette = <int>[unique.first];
-    while (palette.length < count) {
-      var best = unique.first;
-      var bestDistance = -1;
-      for (final color in unique) {
-        var nearestDistance = 1 << 30;
-        for (final chosen in palette) {
-          final d = _distance(color, chosen);
-          if (d < nearestDistance) nearestDistance = d;
-        }
-        if (nearestDistance > bestDistance) {
-          bestDistance = nearestDistance;
-          best = color;
+    final labs = [for (final c in unique) _lab(c)];
+    final weight = [for (final c in unique) weights[c]!];
+    double distance(Float64List a, Float64List b) {
+      final dl = a[0] - b[0], da = a[1] - b[1], db = a[2] - b[2];
+      return dl * dl + da * da + db * db;
+    }
+
+    // Spread out, from the commonest colour.
+    var first = 0;
+    for (var i = 1; i < unique.length; i++) {
+      if (weight[i] > weight[first]) first = i;
+    }
+    final chosen = <int>[first];
+    final nearest = Float64List(unique.length)
+      ..fillRange(0, unique.length, double.infinity);
+    while (chosen.length < count) {
+      final last = labs[chosen.last];
+      var best = -1;
+      var bestDistance = 0.0;
+      for (var i = 0; i < unique.length; i++) {
+        final d = distance(labs[i], last);
+        if (d < nearest[i]) nearest[i] = d;
+        if (nearest[i] > bestDistance) {
+          bestDistance = nearest[i];
+          best = i;
         }
       }
-      if (palette.contains(best)) break;
-      palette.add(best);
+      if (best < 0) break;
+      chosen.add(best);
     }
-    return palette;
+
+    // k-means on how the colours look, weighted by the number of dots.
+    final centres = [for (final i in chosen) Float64List.fromList(labs[i])];
+    final owner = Int32List(unique.length);
+    final rounds = count > 64 ? 4 : 8;
+    for (var round = 0; round <= rounds; round++) {
+      for (var i = 0; i < unique.length; i++) {
+        var best = 0;
+        var bestDistance = double.infinity;
+        for (var k = 0; k < centres.length; k++) {
+          final d = distance(labs[i], centres[k]);
+          if (d < bestDistance) {
+            bestDistance = d;
+            best = k;
+          }
+        }
+        owner[i] = best;
+      }
+      if (round == rounds) break;
+      final sums = List.generate(centres.length, (_) => Float64List(4));
+      for (var i = 0; i < unique.length; i++) {
+        final sum = sums[owner[i]], w = weight[i].toDouble();
+        sum[0] += labs[i][0] * w;
+        sum[1] += labs[i][1] * w;
+        sum[2] += labs[i][2] * w;
+        sum[3] += w;
+      }
+      for (var k = 0; k < centres.length; k++) {
+        final sum = sums[k];
+        if (sum[3] == 0) continue;
+        centres[k]
+          ..[0] = sum[0] / sum[3]
+          ..[1] = sum[1] / sum[3]
+          ..[2] = sum[2] / sum[3];
+      }
+    }
+    // Each centre becomes the real colour of its dots nearest it.
+    final palette = <int>[];
+    for (var k = 0; k < centres.length; k++) {
+      var best = -1;
+      var bestDistance = double.infinity;
+      for (var i = 0; i < unique.length; i++) {
+        if (owner[i] != k) continue;
+        final d = distance(labs[i], centres[k]);
+        if (d < bestDistance) {
+          bestDistance = d;
+          best = i;
+        }
+      }
+      if (best >= 0) palette.add(_opaque(unique[best]));
+    }
+    return palette.toSet().toList();
   }
 
   int _nearestColor(int color, List<int> palette) {
@@ -606,4 +826,223 @@ class PixelArtEngine {
 
   int _rgb(int r, int g, int b) =>
       0xff000000 | ((r & 0xff) << 16) | ((g & 0xff) << 8) | (b & 0xff);
+
+  static int _opaque(int rgb) => 0xff000000 | (rgb & 0xffffff);
+
+  /// The 4 x 4 ordered-dithering thresholds (Bayer): a dot shows the second
+  /// colour of its mix where its threshold is below the mix's share (of 16),
+  /// so any share is spread evenly over each 4 x 4 square.
+  static const _bayer = [0, 8, 2, 10, 12, 4, 14, 6, 3, 11, 1, 9, 15, 7, 13, 5];
+}
+
+/// For each colour, the two colours of a limited set that, mixed in a share
+/// of 16 dots, look nearest to it (or the one colour, when no mix looks
+/// clearly nearer): Yliluoma's ordered dithering. Mixing is in linear light
+/// (as the eye averages neighbouring dots); nearness is how different the
+/// colours look (CIELAB). Mixing two very different colours costs extra, so
+/// a dot that one colour of the set already comes close to is not broken up
+/// into a coarse pattern for a slight gain, and a mix keeps to two colours
+/// (more, picked for the closest average alone, sprinkled distant colours
+/// over areas no colour of the set is near).
+class _Ditherer {
+  _Ditherer(List<int> palette)
+    : _colors = [for (final c in palette.toSet()) 0xff000000 | c] {
+    for (final c in _colors) {
+      _linear.add(
+        Float64List.fromList([
+          _toLinear((c >> 16) & 0xff),
+          _toLinear((c >> 8) & 0xff),
+          _toLinear(c & 0xff),
+        ]),
+      );
+      _labs.add(PixelArtEngine._lab(c));
+    }
+  }
+
+  /// How many of the nearest colours are tried in pairs.
+  static const _candidates = 8;
+
+  /// What mixing two colours costs, per unit of how different they look.
+  static const _penalty = 0.05;
+
+  /// A mix is used only when it looks at most this much as different from
+  /// the colour wanted as the nearest single colour does (squared): a small
+  /// gain is not worth dots of another colour, which show up as specks.
+  static const _gain = 0.36;
+
+  final List<int> _colors;
+  final _linear = <Float64List>[];
+  final _labs = <Float64List>[];
+  final _cache = <int, ({int a, int b, int share})>{};
+
+  /// CIELAB of an sRGB colour.
+  static Float64List labOf(int color) => _labOfLinear(
+    _toLinear((color >> 16) & 0xff),
+    _toLinear((color >> 8) & 0xff),
+    _toLinear(color & 0xff),
+  );
+
+  /// The colour of the set that looks nearest to [color].
+  int nearest(int color) {
+    final lab = labOf(color);
+    var best = 0;
+    var bestDistance = double.infinity;
+    for (var k = 0; k < _labs.length; k++) {
+      final l = _labs[k];
+      final dl = l[0] - lab[0], da = l[1] - lab[1], db = l[2] - lab[2];
+      final d = dl * dl + da * da + db * db;
+      if (d < bestDistance) {
+        bestDistance = d;
+        best = k;
+      }
+    }
+    return _colors[best];
+  }
+
+  /// The mix for [color]: colour [a] in 16 - share of 16 dots and [b] in
+  /// share of them ([a] alone when share is 0); [a] is the darker.
+  ({int a, int b, int share}) mixFor(int color) {
+    final rgb = color & 0xffffff;
+    final cached = _cache[rgb];
+    if (cached != null) return cached;
+    final lr = _toLinear((rgb >> 16) & 0xff),
+        lg = _toLinear((rgb >> 8) & 0xff),
+        lb = _toLinear(rgb & 0xff);
+    final lab = _labOfLinear(lr, lg, lb);
+    double distance(Float64List x) {
+      final dl = x[0] - lab[0], da = x[1] - lab[1], db = x[2] - lab[2];
+      return dl * dl + da * da + db * db;
+    }
+
+    // The nearest few colours, nearest first.
+    final near = <int>[];
+    final nearDistance = <double>[];
+    for (var k = 0; k < _colors.length; k++) {
+      final d = distance(_labs[k]);
+      if (near.length == _candidates && d >= nearDistance.last) continue;
+      var at = near.length;
+      while (at > 0 && nearDistance[at - 1] > d) {
+        at--;
+      }
+      near.insert(at, k);
+      nearDistance.insert(at, d);
+      if (near.length > _candidates) {
+        near.removeLast();
+        nearDistance.removeLast();
+      }
+    }
+    var best = (a: _colors[near.first], b: _colors[near.first], share: 0);
+    final single = nearDistance.first;
+    var bestError = single;
+    for (var i = 0; i < near.length; i++) {
+      for (var j = i + 1; j < near.length; j++) {
+        // The darker first, so the pattern of a mix does not depend on
+        // which of the two is the nearer.
+        final (p, q) = _labs[near[i]][0] <= _labs[near[j]][0]
+            ? (near[i], near[j])
+            : (near[j], near[i]);
+        final a = _linear[p], b = _linear[q];
+        final dr = b[0] - a[0], dg = b[1] - a[1], db = b[2] - a[2];
+        final length = dr * dr + dg * dg + db * db;
+        if (length == 0) continue;
+        final t =
+            ((lr - a[0]) * dr + (lg - a[1]) * dg + (lb - a[2]) * db) / length;
+        final centre = (t * 16).round();
+        final la = _labs[p], lq = _labs[q];
+        final apart =
+            (la[0] - lq[0]) * (la[0] - lq[0]) +
+            (la[1] - lq[1]) * (la[1] - lq[1]) +
+            (la[2] - lq[2]) * (la[2] - lq[2]);
+        // The share that looks nearest; then whether this pair beats the
+        // others, its cost included (left out of choosing the share, where
+        // it would pull every mix towards half and half).
+        var pairShare = 0;
+        var pairOff = double.infinity;
+        for (var share = centre - 1; share <= centre + 1; share++) {
+          if (share < 1 || share > 15) continue;
+          final f = share / 16;
+          final off = _distanceOfLinear(
+            a[0] + dr * f,
+            a[1] + dg * f,
+            a[2] + db * f,
+            lab,
+          );
+          if (off < pairOff) {
+            pairOff = off;
+            pairShare = share;
+          }
+        }
+        if (pairShare == 0 || pairOff > single * _gain) continue;
+        final f = pairShare / 16;
+        final error = pairOff + apart * _penalty * ((f - .5).abs() + .5);
+        if (error < bestError) {
+          bestError = error;
+          best = (a: _colors[p], b: _colors[q], share: pairShare);
+        }
+      }
+    }
+    if (_cache.length >= 1 << 16) _cache.clear();
+    return _cache[rgb] = best;
+  }
+
+  /// sRGB channel values in linear light.
+  static final Float64List _linearOf = Float64List.fromList([
+    for (var c = 0; c < 256; c++)
+      c / 255 <= 0.04045
+          ? c / 255 / 12.92
+          : math.pow((c / 255 + 0.055) / 1.055, 2.4).toDouble(),
+  ]);
+
+  static double _toLinear(int c) => _linearOf[c];
+
+  /// Cube roots over 0..1, for the CIELAB conversion of every mix tried:
+  /// read between entries, they are good to a millionth.
+  static const _rootSteps = 4096;
+  static final Float64List _roots = Float64List.fromList([
+    for (var k = 0; k <= _rootSteps; k++)
+      math.pow(k / _rootSteps, 1 / 3).toDouble(),
+  ]);
+
+  static double _cubeRoot(double t) {
+    if (t >= 1) return math.pow(t, 1 / 3).toDouble();
+    final x = t * _rootSteps;
+    final k = x.floor();
+    final f = x - k;
+    return _roots[k] * (1 - f) + _roots[k + 1] * f;
+  }
+
+  /// How different linear-light colour ([r], [g], [b]) looks from [lab]:
+  /// the squared CIELAB distance, worked out without building the colour.
+  static double _distanceOfLinear(
+    double r,
+    double g,
+    double b,
+    Float64List lab,
+  ) {
+    final x = (0.4124 * r + 0.3576 * g + 0.1805 * b) / 0.95047;
+    final y = 0.2126 * r + 0.7152 * g + 0.0722 * b;
+    final z = (0.0193 * r + 0.1192 * g + 0.9505 * b) / 1.08883;
+    const e = 216 / 24389, k = 24389 / 27;
+    final fx = x > e ? _cubeRoot(x) : (k * x + 16) / 116;
+    final fy = y > e ? _cubeRoot(y) : (k * y + 16) / 116;
+    final fz = z > e ? _cubeRoot(z) : (k * z + 16) / 116;
+    final dl = 116 * fy - 16 - lab[0],
+        da = 500 * (fx - fy) - lab[1],
+        db = 200 * (fy - fz) - lab[2];
+    return dl * dl + da * da + db * db;
+  }
+
+  static Float64List _labOfLinear(double r, double g, double b) {
+    final x = (0.4124 * r + 0.3576 * g + 0.1805 * b) / 0.95047;
+    final y = 0.2126 * r + 0.7152 * g + 0.0722 * b;
+    final z = (0.0193 * r + 0.1192 * g + 0.9505 * b) / 1.08883;
+    double f(double t) =>
+        t > 216 / 24389 ? _cubeRoot(t) : (24389 / 27 * t + 16) / 116;
+    final fx = f(x), fy = f(y), fz = f(z);
+    return Float64List.fromList([
+      116 * fy - 16,
+      500 * (fx - fy),
+      200 * (fy - fz),
+    ]);
+  }
 }
