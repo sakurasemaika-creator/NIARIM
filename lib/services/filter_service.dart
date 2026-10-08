@@ -149,7 +149,7 @@ class FilterService extends ChangeNotifier {
     ),
     FilterDef(
       id: 'Filter0019',
-      name: '質感変更フィルター',
+      name: '質感変更',
       kind: FilterKind.auroraHologram,
       strength: 100,
     ),
