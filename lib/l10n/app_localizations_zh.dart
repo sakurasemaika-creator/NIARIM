@@ -12342,7 +12342,7 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
 
-  String get filterNameThreshold => '二値化';
+  String get filterNameThreshold => '二值化';
 
   @override
   String get filterMonochromeColorLabel => '單色化顏色';
