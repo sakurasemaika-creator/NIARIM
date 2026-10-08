@@ -6831,6 +6831,9 @@ class AppLocalizationsJa extends AppLocalizations {
   String get canvasLassoSnapToLines => '線に吸着';
 
   @override
+  String get canvasLassoGapTolerance => '線画の隙間許容';
+
+  @override
   String get filterBackToList => 'フィルター一覧へ戻る';
 
   @override
