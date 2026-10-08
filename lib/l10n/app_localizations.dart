@@ -12527,6 +12527,12 @@ abstract class AppLocalizations {
   /// **'線に吸着'**
   String get canvasLassoSnapToLines;
 
+  /// No description provided for @canvasLassoGapTolerance.
+  ///
+  /// In ja, this message translates to:
+  /// **'線画の隙間許容'**
+  String get canvasLassoGapTolerance;
+
   /// No description provided for @filterBackToList.
   ///
   /// In ja, this message translates to:
