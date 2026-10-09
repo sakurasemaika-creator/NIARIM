@@ -19,8 +19,21 @@ void main() {
     for (final locale in locales.values) {
       final l10n = await AppLocalizations.delegate.load(locale);
       expect(l10n.tipsAutofillManualPartColorTitle.trim(), isNotEmpty);
-      expect(l10n.tipsAutofillManualPartColorDesc.trim(), isNotEmpty);
+      final autofillTip = l10n.tipsAutofillManualPartColorDesc;
+      expect(autofillTip.trim(), isNotEmpty);
+      expect(autofillTip, contains(l10n.layerPanelMenuLineartLayer));
+      expect(autofillTip, contains(l10n.layerPanelMenuAutofillLayer));
+      expect(autofillTip, contains(l10n.layerPanelMenuRunAutofill));
+      expect(autofillTip, contains(l10n.layerPanelAutofillColorUpdateTitle));
       expect(l10n.tipsLineColorUsageDesc.trim(), isNotEmpty);
+      expect(
+        l10n.tipsLineColorUsageDesc,
+        contains(l10n.autofillPartLineColorLabel),
+      );
+      expect(
+        l10n.tipsLineColorUsageDesc,
+        contains(l10n.autofillLineColorModeSameAsFill),
+      );
     }
   });
 
