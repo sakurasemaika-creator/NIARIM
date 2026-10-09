@@ -6642,6 +6642,16 @@ class AppLocalizationsEn extends AppLocalizations {
       'On: outlines are drawn where strokes overlap, too. Off: overlapping strokes merge; where they overlap, neither outlines nor fold lines are drawn, and only the outside of the combined shape is outlined.';
 
   @override
+  String get brushOutlineAccent => 'Weight variation';
+
+  @override
+  String get brushOutlineAccentWidth => 'Outline width at the apex';
+
+  @override
+  String get brushOutlineAccentHelp =>
+      'Thickens the outline toward the apex of each curve in the stroke: it keeps the outline width where the curve begins and ends, and gradually reaches this width at the apex (pressure and taper never change the outline\'s width, so this is how the outline gets its own variation). Applied when you lift the pen.';
+
+  @override
   String get brushFold => 'Fold mode';
 
   @override
@@ -6673,7 +6683,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get helpBrushFoldDesc =>
-      'Turn on Outline in the brush settings to use Fold mode. With it off, the brush draws exactly like the normal outline pen. With it on, the outline pen\'s own line folds and curls along the direction and bends of the stroke you draw; it does not generate waves automatically. At each bend, a fold line branches from the inner edge, curves and fades out. A stroke that keeps turning the same way gets a subtler fold line every 270°. There are five fold types. Wave (top view) brings the earlier part of the stroke forward, and Wave (low angle) the later part. Right curl decides front and back as if rolling to the right of the drawing direction, and Left curl to the left; they follow the stroke, not the screen. Crescent curl follows the C-shaped curves you draw to form connected crescents. Fold length sets the length of the fold line (it scales with the brush size), Fold angle sets how strongly it follows the stroke\'s curve (50% follows it naturally), and Fold line curve start sets how thick the material looks (at 0% it curves right from where it branches). On the outline pen, pressure and Fade (entry and exit) change only the overall shape, outline included; the outline keeps its width and the color never gets lighter. Turn off Keep overlaps under Outline to merge overlapping strokes: their joins are not outlined and no fold lines are drawn where they overlap, only the outside of the combined shape is outlined.';
+      'Turn on Outline in the brush settings to use Fold mode. With it off, the brush draws exactly like the normal outline pen. With it on, the outline pen\'s own line folds and curls along the direction and bends of the stroke you draw; it does not generate waves automatically. At each bend, a fold line branches from the inner edge, curves and fades out. A stroke that keeps turning the same way gets a subtler fold line every 270°. There are five fold types. Wave (top view) brings the earlier part of the stroke forward, and Wave (low angle) the later part. Right curl decides front and back as if rolling to the right of the drawing direction, and Left curl to the left; they follow the stroke, not the screen. Crescent curl follows the C-shaped curves you draw to form connected crescents. Fold length sets the length of the fold line (it scales with the brush size), Fold angle sets how strongly it follows the stroke\'s curve (50% follows it naturally), and Fold line curve start sets how thick the material looks (at 0% it curves right from where it branches). On the outline pen, pressure and Fade (entry and exit) change only the overall shape, outline included; the outline keeps its width and the color never gets lighter. Turn off Keep overlaps under Outline to merge overlapping strokes: their joins are not outlined and no fold lines are drawn where they overlap, only the outside of the combined shape is outlined. Turn on Weight variation under Outline to thicken the outline toward the apex of each curve: it keeps the outline width where the curve begins and ends and gradually reaches the Outline width at the apex (applied when you lift the pen).';
 
   @override
   String get tipsBrushFoldTitle =>

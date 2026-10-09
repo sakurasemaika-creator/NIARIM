@@ -425,4 +425,60 @@ void main() {
       expect((tile.subtitle! as Text).data, isNotEmpty);
     });
   }
+  testWidgets('強弱 is an outline checkbox that shows its px slider', (
+    tester,
+  ) async {
+    final changes = <Brush>[];
+    var brush = base.copyWith(outlineEnabled: true);
+    await tester.pumpWidget(
+      host(brush, (b) {
+        changes.add(b);
+        brush = b;
+      }),
+    );
+    await tester.pumpAndSettle();
+    final control = find.byKey(const Key('brush-outline-accent'));
+    final slider = find.byKey(const Key('brush-outline-accent-width'));
+    expect(control, findsOneWidget);
+    expect(find.text('強弱'), findsOneWidget);
+    expect(tester.widget<CheckboxListTile>(control).value, isFalse);
+    expect(slider, findsNothing, reason: 'only once 強弱 is checked');
+    await tester.ensureVisible(control);
+    await tester.tap(control);
+    await tester.pumpAndSettle();
+    expect(changes.last.outlineAccentEnabled, isTrue);
+    expect(slider, findsOneWidget);
+    expect(find.text('頂点の縁取り幅'), findsOneWidget);
+    expect(find.text('4px'), findsOneWidget);
+    await tester.ensureVisible(slider);
+    final bar = find.descendant(of: slider, matching: find.byType(Slider));
+    await tester.tapAt(tester.getTopRight(bar) + const Offset(-30, 24));
+    await tester.pumpAndSettle();
+    expect(changes.last.outlineAccentWidth, greaterThan(20));
+    expect(changes.last.toJson()['outlineAccentEnabled'], isTrue);
+  });
+  for (final locale in AppLocalizations.supportedLocales) {
+    testWidgets('強弱 is labelled in ${locale.toLanguageTag()}', (tester) async {
+      await tester.pumpWidget(
+        host(
+          base.copyWith(outlineEnabled: true, outlineAccentEnabled: true),
+          (_) {},
+          locale: locale,
+        ),
+      );
+      await tester.pumpAndSettle();
+      final tile = tester.widget<CheckboxListTile>(
+        find.byKey(const Key('brush-outline-accent')),
+      );
+      expect((tile.title! as Text).data, isNotEmpty);
+      expect((tile.subtitle! as Text).data, isNotEmpty);
+      expect(
+        find.descendant(
+          of: find.byKey(const Key('brush-outline-accent-width')),
+          matching: find.byType(Slider),
+        ),
+        findsOneWidget,
+      );
+    });
+  }
 }

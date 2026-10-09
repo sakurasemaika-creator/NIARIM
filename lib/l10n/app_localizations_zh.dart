@@ -6376,6 +6376,16 @@ class AppLocalizationsZh extends AppLocalizations {
       '开启时，笔画重叠处也会描边。关闭时，重叠处既不描边也不画折返线，只描整体的外围。';
 
   @override
+  String get brushOutlineAccent => '强弱';
+
+  @override
+  String get brushOutlineAccentWidth => '顶点处的描边宽度';
+
+  @override
+  String get brushOutlineAccentHelp =>
+      '朝笔画中每段曲线的顶点加粗描边：曲线的起点和终点保持描边宽度，到顶点逐渐变为此宽度（压感和起收笔不会改变描边的宽度，因此用它来表现描边的强弱）。抬起笔时生效。';
+
+  @override
   String get brushFold => '折叠模式';
 
   @override
@@ -6407,7 +6417,7 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get helpBrushFoldDesc =>
-      '在画笔设置中开启「描边」后即可使用「折叠模式」。关闭时与普通描边笔的绘制完全相同。开启后，描边笔的线条本身会根据所画笔画的方向和弯曲而折叠、卷曲；它不会自动生成波浪。每个弯曲处都会出现一条从内侧轮廓分出、弯曲后渐渐消失的折返线。若笔画持续朝同一方向转动，每转270°会加入一条较含蓄的折返线。折叠类型有5种。「波浪俯视」让先画的一侧在前，「波浪仰视」让后画的一侧在前。「右卷」按照朝笔画前进方向右侧卷入的方式决定前后，「左卷」则朝左侧；依据的是所画方向而不是屏幕方向。「月牙卷」会沿着所画的C形曲线整理成相连的月牙形。「折返长度」调整折返线的长度（与画笔大小联动），「折返角度」调整跟随笔画弯曲的强度（50%时自然联动），「折返线的弯曲起点」调整材质看起来的厚度（0%时从分叉处立即弯曲）。描边笔的笔压和淡出（入笔与收笔）只改变包括描边在内的整体形状，描边线的粗细和颜色都不会改变。关闭「描边」中的「保持重叠」后，重叠的笔画在交界处不描边而连成一体（重叠处也不画折返线），只描整体的外围。';
+      '在画笔设置中开启「描边」后即可使用「折叠模式」。关闭时与普通描边笔的绘制完全相同。开启后，描边笔的线条本身会根据所画笔画的方向和弯曲而折叠、卷曲；它不会自动生成波浪。每个弯曲处都会出现一条从内侧轮廓分出、弯曲后渐渐消失的折返线。若笔画持续朝同一方向转动，每转270°会加入一条较含蓄的折返线。折叠类型有5种。「波浪俯视」让先画的一侧在前，「波浪仰视」让后画的一侧在前。「右卷」按照朝笔画前进方向右侧卷入的方式决定前后，「左卷」则朝左侧；依据的是所画方向而不是屏幕方向。「月牙卷」会沿着所画的C形曲线整理成相连的月牙形。「折返长度」调整折返线的长度（与画笔大小联动），「折返角度」调整跟随笔画弯曲的强度（50%时自然联动），「折返线的弯曲起点」调整材质看起来的厚度（0%时从分叉处立即弯曲）。描边笔的笔压和淡出（入笔与收笔）只改变包括描边在内的整体形状，描边线的粗细和颜色都不会改变。关闭「描边」中的「保持重叠」后，重叠的笔画在交界处不描边而连成一体（重叠处也不画折返线），只描整体的外围。开启「描边」中的「强弱」后，描边线会朝笔画中每段曲线的顶点变粗（曲线的起点和终点保持描边宽度，到顶点逐渐变为「顶点处的描边宽度」，抬起笔时生效）。';
 
   @override
   String get tipsBrushFoldTitle => '选择头发折返时显示在前的部分';
@@ -13395,25 +13405,25 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get customAutomationExecutionFailed => '無法完成自動操作。請檢查設定與目標圖層。';
 
   @override
-  String get brushLateralRepeat => '横向重复';
+  String get brushLateralRepeat => '橫向重複';
 
   @override
-  String get brushLateralRepeatCount => '重复数量';
+  String get brushLateralRepeatCount => '重複數量';
 
   @override
-  String get brushLateralRepeatSpacing => '横向间距';
+  String get brushLateralRepeatSpacing => '橫向間距';
 
   @override
-  String get brushOutline => '描边';
+  String get brushOutline => '描邊';
 
   @override
-  String get brushOutlineWidth => '描边宽度';
+  String get brushOutlineWidth => '描邊寬度';
 
   @override
-  String get brushOutlineColor => '描边颜色';
+  String get brushOutlineColor => '描邊顏色';
 
   @override
-  String get brushOutlineColorPicker => '颜色选择器';
+  String get brushOutlineColorPicker => '顏色選擇器';
 
   @override
   String get brushOutlineEyedropper => '吸管';
@@ -13424,6 +13434,16 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   @override
   String get brushOutlineKeepOverlapHelp =>
       '開啟時，筆畫重疊處也會描邊。關閉時，重疊處既不描邊也不畫折返線，只描整體的外圍。';
+
+  @override
+  String get brushOutlineAccent => '強弱';
+
+  @override
+  String get brushOutlineAccentWidth => '頂點處的描邊寬度';
+
+  @override
+  String get brushOutlineAccentHelp =>
+      '朝筆畫中每段曲線的頂點加粗描邊：曲線的起點和終點保持描邊寬度，到頂點逐漸變為此寬度（壓感和起收筆不會改變描邊的寬度，因此用它來表現描邊的強弱）。抬起筆時生效。';
 
   @override
   String get brushFold => '折疊模式';
@@ -13457,7 +13477,7 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get helpBrushFoldDesc =>
-      '在筆刷設定中開啟「描边」後即可使用「折疊模式」。關閉時與一般描邊筆的繪製完全相同。開啟後，描邊筆的線條本身會依照所畫筆畫的方向與彎曲而折疊、捲曲；它不會自動產生波浪。每個彎曲處都會出現一條從內側輪廓分出、彎曲後漸漸消失的折返線。若筆畫持續朝同一方向轉動，每轉270°會加入一條較含蓄的折返線。折疊類型有5種。「波浪俯視」讓先畫的一側在前，「波浪仰視」讓後畫的一側在前。「右捲」依照朝筆畫前進方向右側捲入的方式決定前後，「左捲」則朝左側；依據的是所畫方向而不是螢幕方向。「月牙捲」會沿著所畫的C形曲線整理成相連的月牙形。「折返長度」調整折返線的長度（與筆刷大小連動），「折返角度」調整跟隨筆畫彎曲的強度（50%時自然連動），「折返線的彎曲起點」調整材質看起來的厚度（0%時從分岔處立即彎曲）。描邊筆的筆壓與淡出（入筆與收筆）只改變包含描邊在內的整體形狀，描邊線的粗細與顏色都不會改變。關閉「描边」中的「保持重疊」後，重疊的筆畫在交界處不描邊而連成一體（重疊處也不畫折返線），只描整體的外圍。';
+      '在筆刷設定中開啟「描邊」後即可使用「折疊模式」。關閉時與一般描邊筆的繪製完全相同。開啟後，描邊筆的線條本身會依照所畫筆畫的方向與彎曲而折疊、捲曲；它不會自動產生波浪。每個彎曲處都會出現一條從內側輪廓分出、彎曲後漸漸消失的折返線。若筆畫持續朝同一方向轉動，每轉270°會加入一條較含蓄的折返線。折疊類型有5種。「波浪俯視」讓先畫的一側在前，「波浪仰視」讓後畫的一側在前。「右捲」依照朝筆畫前進方向右側捲入的方式決定前後，「左捲」則朝左側；依據的是所畫方向而不是螢幕方向。「月牙捲」會沿著所畫的C形曲線整理成相連的月牙形。「折返長度」調整折返線的長度（與筆刷大小連動），「折返角度」調整跟隨筆畫彎曲的強度（50%時自然連動），「折返線的彎曲起點」調整材質看起來的厚度（0%時從分岔處立即彎曲）。描邊筆的筆壓與淡出（入筆與收筆）只改變包含描邊在內的整體形狀，描邊線的粗細與顏色都不會改變。關閉「描邊」中的「保持重疊」後，重疊的筆畫在交界處不描邊而連成一體（重疊處也不畫折返線），只描整體的外圍。開啟「描邊」中的「強弱」後，描邊線會朝筆畫中每段曲線的頂點變粗（曲線的起點和終點保持描邊寬度，到頂點逐漸變為「頂點處的描邊寬度」，抬起筆時生效）。';
 
   @override
   String get tipsBrushFoldTitle => '選擇頭髮折返時顯示在前的部分';

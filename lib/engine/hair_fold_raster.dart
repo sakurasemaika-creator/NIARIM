@@ -20,19 +20,34 @@ class HairRibbonPoint {
   /// strand as a whole, outline included, while the outline keeps its width
   /// (see [outlinedStrokeRadii]).
   final double scale;
+
+  /// This point's own outline width (the outline's 強弱), or null for the
+  /// brush's.
+  final double? outline;
   const HairRibbonPoint(
     this.position,
     this.width,
     this.opacity, [
     this.scale = 1,
+    this.outline,
   ]);
+
+  /// The outline's width here: its own, or else [outlineWidth].
+  double outlineOr(double outlineWidth) => outline ?? outlineWidth;
 
   /// The fill radius before [outlinedFill] snaps it.
   double fillRadius(double outlineWidth) =>
-      outlinedFillRadius(width, scale, outlineWidth);
+      outlinedFillRadius(width, scale, outlineOr(outlineWidth));
 
   double outerRadius(double outlineWidth) =>
-      outlinedOuterRadius(width, scale, outlineWidth);
+      outlinedOuterRadius(width, scale, outlineOr(outlineWidth));
+}
+
+/// The own outline width between [a] and [b], [t] of the way.
+double? _outlineBetween(HairRibbonPoint a, HairRibbonPoint b, double t) {
+  final from = a.outline ?? b.outline;
+  final to = b.outline ?? a.outline;
+  return from == null || to == null ? null : from + (to - from) * t;
 }
 
 /// Replaces this stroke over its original tiles, so the front surface can hide
@@ -187,6 +202,7 @@ class HairFoldRaster {
               a.width + (b.width - a.width) * t,
               a.opacity + (b.opacity - a.opacity) * t,
               a.scale + (b.scale - a.scale) * t,
+              _outlineBetween(a, b, t),
             ),
           );
         }
@@ -301,6 +317,7 @@ class HairFoldRaster {
             // strand, outline included; it never fades it.
             p.opacity,
             p.scale * taper,
+            p.outline,
           );
         });
       }
@@ -340,6 +357,7 @@ class HairFoldRaster {
                 p.width,
                 p.opacity,
                 p.scale,
+                p.outline,
               );
             });
       // The engine already resolved stabilization. Keep these authored centers
@@ -361,7 +379,8 @@ class HairFoldRaster {
           final incoming = fold.incoming, outgoing = fold.outgoing;
           // The start depends only on samples a few widths from the fold, so
           // a stroke growing further on keeps it cached.
-          final reachable = (p.width + brush.outlineWidth * 2) * 6 + 8;
+          final reachable =
+              (p.width + p.outlineOr(brush.outlineWidth) * 2) * 6 + 8;
           int within(int end) {
             final step = end < pivot ? -1 : 1;
             var j = pivot;
@@ -411,7 +430,9 @@ class HairFoldRaster {
           );
           hidden[pivot] = math.max(
             p.width,
-            (start.origin - p.position).distance + brush.outlineWidth + 1,
+            (start.origin - p.position).distance +
+                p.outlineOr(brush.outlineWidth) +
+                1,
           );
         }
       }
@@ -617,6 +638,7 @@ class HairFoldRaster {
               first.width,
               first.opacity,
               first.scale,
+              first.outline,
             ),
             brush.outlineWidth,
           );
@@ -628,13 +650,15 @@ class HairFoldRaster {
           var textureAngleB = crescentAngles[i];
           if (brush.foldMode != HairFoldMode.crescent &&
               a.width == b.width &&
-              a.opacity == b.opacity) {
+              a.opacity == b.opacity &&
+              a.outline == b.outline) {
             final direction = b.position - a.position;
             while (i < run.end && direction.distanceSquared > 1e-10) {
               final next = points[i + 1],
                   delta = points[i + 1].position - a.position;
               if (next.width != a.width ||
                   next.opacity != a.opacity ||
+                  next.outline != a.outline ||
                   _cross(direction, delta).abs() > 1e-7 ||
                   _dot(delta, direction) <
                       _dot(b.position - a.position, direction)) {
@@ -704,6 +728,7 @@ class HairFoldRaster {
                   (outerEdge - innerEdge).distance,
                   point.opacity,
                   point.scale,
+                  point.outline,
                 ),
                 outer: outerEdge,
                 inner: innerEdge,
@@ -757,6 +782,7 @@ class HairFoldRaster {
                   a.width + (b.width - a.width) * t,
                   a.opacity + (b.opacity - a.opacity) * t,
                   a.scale + (b.scale - a.scale) * t,
+                  _outlineBetween(a, b, t),
                 );
                 // The bowed edges bound the strand; pressure and taper inset
                 // its fill so the outline keeps its width.
@@ -764,13 +790,13 @@ class HairFoldRaster {
                   previousOuter,
                   previousInner,
                   previous.scale,
-                  brush.outlineWidth,
+                  previous.outlineOr(brush.outlineWidth),
                 );
                 final to = _insetEdges(
                   outer,
                   inner,
                   current.scale,
-                  brush.outlineWidth,
+                  current.outlineOr(brush.outlineWidth),
                 );
                 if (from.fill > 0 || to.fill > 0) {
                   _ribbonSegment(envelope, previous, current, [
@@ -788,12 +814,14 @@ class HairFoldRaster {
                       (previousOuter - previousInner).distance,
                       previous.opacity,
                       previous.scale,
+                      previous.outline,
                     ),
                     HairRibbonPoint(
                       (outer + inner) / 2,
                       (outer - inner).distance,
                       current.opacity,
                       current.scale,
+                      current.outline,
                     ),
                     brush.outlineWidth,
                   );
@@ -957,7 +985,7 @@ class HairFoldRaster {
             // Never past the strand's own contour.
             if (step > 1 && !_covered(result, at)) break;
             final lineWidth =
-                brush.outlineWidth *
+                p.outlineOr(brush.outlineWidth) *
                 (1 - ((t - (1 - taper)) / taper).clamp(0.0, 1.0));
             creases.add(
               _CreaseSegment(previous, at, lineWidth, ownerBase + i, p.opacity),
@@ -1470,15 +1498,12 @@ class HairFoldRaster {
       right = math.max(right, p.dx);
       top = math.min(top, p.dy);
       bottom = math.max(bottom, p.dy);
-      margin = math.max(margin, points[i].width);
+      margin = math.max(
+        margin,
+        points[i].width + points[i].outlineOr(brush.outlineWidth) * 2,
+      );
     }
-    return _areaOf(
-      left,
-      top,
-      right,
-      bottom,
-      margin + brush.outlineWidth * 2 + 2,
-    );
+    return _areaOf(left, top, right, bottom, margin + 2);
   }
 
   /// The canvas rectangle, grown by [margin], split into per-tile areas.
@@ -1710,7 +1735,8 @@ bool _samePoint(HairRibbonPoint a, HairRibbonPoint b) =>
     a.position == b.position &&
     a.width == b.width &&
     a.opacity == b.opacity &&
-    a.scale == b.scale;
+    a.scale == b.scale &&
+    a.outline == b.outline;
 
 // Bilinear alpha avoids stair-stepping when a tip rotates through a curve.
 double _textureAlpha(Uint8List texture, double x, double y) {
@@ -1829,12 +1855,12 @@ _foldSides(
 ) {
   final vertex = lengths[pivot];
   final away = frontEnd < pivot ? -1.0 : 1.0;
-  final width = points[pivot].width + outlineWidth * 2;
+  final width = points[pivot].width + points[pivot].outlineOr(outlineWidth) * 2;
   // The centre of the outline band, which keeps the outline's width unless
   // the whole strand has narrowed below it.
   double outlineCentre(HairRibbonPoint p) {
     final outer = p.outerRadius(outlineWidth);
-    return outer - math.min(outlineWidth, outer) / 2;
+    return outer - math.min(p.outlineOr(outlineWidth), outer) / 2;
   }
 
   // Tangents are taken over a few pixels, so jittery input still gives clean
@@ -1924,6 +1950,7 @@ _foldSides(
           a.width + (b.width - a.width) * t,
           1,
           a.scale + (b.scale - a.scale) * t,
+          _outlineBetween(a, b, t),
         ),
       );
       if ((q - (a.position + d * t)).distance < half - .01) return true;
@@ -2024,6 +2051,7 @@ HairRibbonPoint _pointAtDistance(
     a.width + (b.width - a.width) * t,
     a.opacity + (b.opacity - a.opacity) * t,
     a.scale + (b.scale - a.scale) * t,
+    _outlineBetween(a, b, t),
   );
 }
 

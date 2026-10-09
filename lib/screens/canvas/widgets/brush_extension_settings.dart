@@ -15,6 +15,9 @@ class BrushExtensionLabels {
   final String outlineColor;
   final String outlineKeepOverlap;
   final String outlineKeepOverlapHelp;
+  final String outlineAccent;
+  final String outlineAccentWidth;
+  final String outlineAccentHelp;
   final String colorPicker;
   final String eyedropper;
   final String fold;
@@ -42,6 +45,9 @@ class BrushExtensionLabels {
     required this.outlineColor,
     this.outlineKeepOverlap = 'Keep overlaps',
     this.outlineKeepOverlapHelp = '',
+    this.outlineAccent = 'Weight variation',
+    this.outlineAccentWidth = 'Outline width at the apex',
+    this.outlineAccentHelp = '',
     required this.colorPicker,
     required this.eyedropper,
     required this.fold,
@@ -71,6 +77,9 @@ class BrushExtensionLabels {
         outlineColor: l.brushOutlineColor,
         outlineKeepOverlap: l.brushOutlineKeepOverlap,
         outlineKeepOverlapHelp: l.brushOutlineKeepOverlapHelp,
+        outlineAccent: l.brushOutlineAccent,
+        outlineAccentWidth: l.brushOutlineAccentWidth,
+        outlineAccentHelp: l.brushOutlineAccentHelp,
         colorPicker: l.brushOutlineColorPicker,
         eyedropper: l.brushOutlineEyedropper,
         fold: l.brushFold,
@@ -102,6 +111,12 @@ class BrushExtensionLabels {
           'オンでは、ストローク同士が重なった所にも縁取りを描きます。'
           'オフでは、重なった所は縁取りも折り返し線も描かず、'
           '全体の周りだけを縁取ります。',
+      outlineAccent = '強弱',
+      outlineAccentWidth = '頂点の縁取り幅',
+      outlineAccentHelp =
+          'ストロークのカーブの頂点に向かって縁取り線を太くします。'
+          'カーブの始まりと終わりは縁取り幅のまま、頂点でこの太さになるよう'
+          '徐々に太くなります。',
       colorPicker = 'カラーピッカー',
       eyedropper = 'スポイト',
       fold = '折り畳みモード',
@@ -250,6 +265,30 @@ class _BrushExtensionSettingsState extends State<BrushExtensionSettings> {
             onChanged: (v) =>
                 _set(_brush.copyWith(outlineKeepOverlap: v ?? true)),
           ),
+          CheckboxListTile(
+            key: const Key('brush-outline-accent'),
+            dense: true,
+            title: Text(l.outlineAccent),
+            subtitle: l.outlineAccentHelp.isEmpty
+                ? null
+                : Text(l.outlineAccentHelp),
+            value: _brush.outlineAccentEnabled,
+            onChanged: (v) =>
+                _set(_brush.copyWith(outlineAccentEnabled: v ?? false)),
+          ),
+          if (_brush.outlineAccentEnabled)
+            KeyedSubtree(
+              key: const Key('brush-outline-accent-width'),
+              child: _slider(
+                l.outlineAccentWidth,
+                _brush.outlineAccentWidth,
+                0.25,
+                24,
+                (v) => _set(_brush.copyWith(outlineAccentWidth: v)),
+                divisions: 95,
+                suffix: 'px',
+              ),
+            ),
           SwitchListTile(
             dense: true,
             title: Text(l.fold),

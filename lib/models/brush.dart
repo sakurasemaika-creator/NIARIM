@@ -55,6 +55,14 @@ class Brush {
   /// one another. Off, a stroke merges with what the layer already shows:
   /// only the outside of the combined shape is outlined.
   final bool outlineKeepOverlap;
+
+  /// 強弱: the outline thickens towards the apex of every curve of the
+  /// stroke, from [outlineWidth] where the curve begins and ends to
+  /// [outlineAccentWidth] (px) at its apex. Pressure and taper shape the
+  /// stroke as a whole but never the outline's width, so this is how an
+  /// outline pen's outline gets its own rhythm.
+  final bool outlineAccentEnabled;
+  final double outlineAccentWidth;
   final bool foldEnabled;
   final double foldTriggerAngle;
   final double foldCurveStartRatio;
@@ -108,6 +116,8 @@ class Brush {
     this.outlineWidth = 1.5,
     this.outlineColor = 0xFF000000,
     this.outlineKeepOverlap = true,
+    this.outlineAccentEnabled = false,
+    this.outlineAccentWidth = 4.0,
     this.foldEnabled = false,
     this.foldTriggerAngle = 90.0,
     this.foldCurveStartRatio = BrushExtensionDefaults.foldCurveStartRatio,
@@ -182,6 +192,8 @@ class Brush {
     double? outlineWidth,
     int? outlineColor,
     bool? outlineKeepOverlap,
+    bool? outlineAccentEnabled,
+    double? outlineAccentWidth,
     bool? foldEnabled,
     double? foldTriggerAngle,
     double? foldCurveStartRatio,
@@ -243,6 +255,8 @@ class Brush {
     outlineWidth: outlineWidth ?? this.outlineWidth,
     outlineColor: outlineColor ?? this.outlineColor,
     outlineKeepOverlap: outlineKeepOverlap ?? this.outlineKeepOverlap,
+    outlineAccentEnabled: outlineAccentEnabled ?? this.outlineAccentEnabled,
+    outlineAccentWidth: outlineAccentWidth ?? this.outlineAccentWidth,
     foldEnabled: foldEnabled ?? this.foldEnabled,
     foldTriggerAngle: foldTriggerAngle ?? this.foldTriggerAngle,
     foldCurveStartRatio: clampFoldRatio(
@@ -311,6 +325,8 @@ class Brush {
     'outlineWidth': outlineWidth,
     'outlineColor': outlineColor,
     'outlineKeepOverlap': outlineKeepOverlap,
+    'outlineAccentEnabled': outlineAccentEnabled,
+    'outlineAccentWidth': outlineAccentWidth,
     'foldEnabled': foldEnabled,
     'foldTriggerAngle': foldTriggerAngle,
     'foldCurveStartRatio': clampFoldRatio(
@@ -418,6 +434,8 @@ class Brush {
     outlineWidth: (j['outlineWidth'] as num?)?.toDouble() ?? 1.5,
     outlineColor: (j['outlineColor'] as num?)?.toInt() ?? 0xFF000000,
     outlineKeepOverlap: j['outlineKeepOverlap'] as bool? ?? true,
+    outlineAccentEnabled: j['outlineAccentEnabled'] as bool? ?? false,
+    outlineAccentWidth: (j['outlineAccentWidth'] as num?)?.toDouble() ?? 4,
     foldEnabled: j['foldEnabled'] as bool? ?? false,
     foldTriggerAngle: (j['foldTriggerAngle'] as num?)?.toDouble() ?? 90,
     foldCurveStartRatio: clampFoldRatio(

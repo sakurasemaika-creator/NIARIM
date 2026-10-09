@@ -8,6 +8,7 @@ import 'brush_texture_cache.dart';
 import 'brush_texture_selector.dart';
 import 'brush_render_plan.dart';
 import 'hair_fold_raster.dart';
+import 'outline_accent.dart';
 import 'tile_manager.dart';
 
 final _jitterRng = math.Random();
@@ -44,6 +45,9 @@ class DrawingEngine {
   final BrushTextureSelector _brushTextureSelector = BrushTextureSelector();
   double? _finalizedStrokeLengthOverride;
   bool _replayingFinalStroke = false;
+  // 縁取りの強弱：ストローク全体の形から決まるので、ペンを離した後の
+  // 描き直し（replayCurrentStrokeWithFinalFade）でだけ設定する。
+  OutlineAccent? _outlineAccent;
   final List<ui.Offset> _strokeScreenPositions = [];
 
   String? get debugActiveBrushTexturePath => _brushTextureSelector.activePath;
@@ -139,8 +143,28 @@ class DrawingEngine {
     _rebuildHairFold();
   }
 
+  /// Whether the stroke is drawn again once it is complete: a custom fade
+  /// needs its total length, and an outline's 強弱 the whole stroke's
+  /// curves.
   bool get needsFinalFadeReplay =>
-      currentBrush?.fadeMode == FadeMode.custom && _currentStroke.isNotEmpty;
+      _currentStroke.isNotEmpty &&
+      (currentBrush?.fadeMode == FadeMode.custom || _accentsOutline);
+
+  bool get _accentsOutline {
+    final brush = currentBrush;
+    return brush != null &&
+        brush.outlineEnabled &&
+        brush.outlineAccentEnabled &&
+        !isEraser;
+  }
+
+  OutlineAccent _accentOf(Brush brush, List<StrokePoint> points) =>
+      OutlineAccent.of(
+        [for (final p in points) ui.Offset(p.x, p.y)],
+        base: brush.outlineWidth,
+        apex: brush.outlineAccentWidth,
+        span: brush.size,
+      );
 
   void replayCurrentStrokeWithFinalFade() {
     if (!needsFinalFadeReplay || _activeLayerId == null) return;
@@ -157,6 +181,10 @@ class DrawingEngine {
     _distanceSinceLastBrushStamp = 0.0;
     _hasStampedCurrentStroke = false;
     _finalizedStrokeLengthOverride = totalLength;
+    final brush = currentBrush;
+    _outlineAccent = brush != null && _accentsOutline
+        ? _accentOf(brush, points)
+        : null;
     _replayingFinalStroke = true;
     try {
       beginStroke(points.first, layerId, screenPosition: screen.first);
@@ -200,6 +228,7 @@ class DrawingEngine {
     _strokeScreenPositions.clear();
     _brushTextureSelector.endStroke();
     _finalizedStrokeLengthOverride = null;
+    _outlineAccent = null;
   }
 
   void _rebuildHairFold({bool finalize = false}) {
@@ -210,6 +239,11 @@ class DrawingEngine {
     final raster = _foldRaster;
     if (brush == null || raster == null) return;
     final samples = <HairRibbonPoint>[];
+    // 強弱 while drawing follows the curves drawn so far; once the stroke
+    // is complete, its final curves.
+    final accent =
+        _outlineAccent ??
+        (_accentsOutline ? _accentOf(brush, _currentStroke) : null);
     var distance = 0.0;
     for (var i = 0; i < _currentStroke.length; i++) {
       final point = _currentStroke[i];
@@ -237,6 +271,7 @@ class DrawingEngine {
               .clamp(0.0, 1.0)
               .toDouble(),
           scale,
+          accent?.at(distance),
         ),
       );
     }
@@ -470,7 +505,8 @@ class DrawingEngine {
         ? outlinedStrokeRadii(
             width: size,
             scale: brush.size > 0 ? size / brush.size : 1.0,
-            outlineWidth: brush.outlineWidth,
+            outlineWidth:
+                _outlineAccent?.at(strokeLength) ?? brush.outlineWidth,
           )
         : null;
     size = size.clamp(0.5, 2000.0);
