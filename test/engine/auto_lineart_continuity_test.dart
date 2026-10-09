@@ -268,6 +268,65 @@ void main() {
     }
   });
 
+  test('two lines that run into each other come together gradually, as in '
+      'the rough, instead of bending into one line down the middle', () {
+    // From the first to the last pixel of line in column [x], between
+    // [from] and [to].
+    int span(Uint8List out, int x, int from, int to) {
+      int? first, last;
+      for (var y = from; y <= to; y++) {
+        if (out[(y * _w + x) * 4 + 3] <= 100) continue;
+        first ??= y;
+        last = y;
+      }
+      return first == null ? 0 : last! - first + 1;
+    }
+
+    // A Y: two 8 px strokes meet at (130, 84) and run on as one. Their ink
+    // touches from x = 112 on and has merged into one stroke by x = 130.
+    final y = _Rough()
+      ..stroke([(20, 60), (130, 84), (200, 84)], 8)
+      ..stroke([(20, 108), (130, 84), (200, 84)], 8);
+    final merging = _autoLineart(y.rgba);
+    _write('merge_y', y.rgba, merging);
+    double apart(double x) => 48 * (130 - x) / 110;
+    for (final x in [90, 100, 108, 116, 120, 124]) {
+      // Each line on its own stroke's middle: as far apart as the strokes.
+      expect(
+        span(merging, x, 40, 130),
+        closeTo(apart(x.toDouble()) + 2, 1.6),
+        reason: 'two lines at x = $x',
+      );
+    }
+    for (final x in [140, 160, 180]) {
+      expect(span(merging, x, 40, 130), inInclusiveRange(2, 3), reason: '$x');
+    }
+    // No bend: the upper line stays on its stroke's middle into the merge.
+    for (var x = 60; x <= 122; x += 2) {
+      final centre = 60 + 24 * (x - 20) / 110;
+      expect(
+        _lineNear(merging, x.toDouble(), centre, reach: 1),
+        isTrue,
+        reason: 'upper line at x = $x',
+      );
+    }
+
+    // A narrow V: two 8 px strokes closing to 4 px apart at their ends.
+    final v = _Rough()
+      ..stroke([(20, 70), (200, 88)], 8)
+      ..stroke([(20, 110), (200, 92)], 8);
+    final closing = _autoLineart(v.rgba);
+    _write('merge_v', v.rgba, closing);
+    for (final x in [170, 180, 186, 190]) {
+      final gap = 40 - 36 * (x - 20) / 180;
+      expect(
+        span(closing, x, 40, 140),
+        closeTo(gap + 2, 1.6),
+        reason: 'two lines closing in at x = $x',
+      );
+    }
+  });
+
   test('a speck of paper inside a stroke is filled: one line, no loop', () {
     final rough = _Rough()..stroke([(30, 90), (190, 90)], 12);
     // Specks: 3 x 3, 2 x 4 and a single pixel.

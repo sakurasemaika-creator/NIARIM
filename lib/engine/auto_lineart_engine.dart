@@ -255,7 +255,12 @@ class AutoLineartEngine {
     // A branch taken off a junction can leave a corner pixel there.
     _removeRedundantSteps(skeleton, localWidth, localHeight);
 
-    final rawPaths = _traceSkeleton(skeleton, localWidth, localHeight);
+    final rawPaths = _separateMerges(
+      _traceSkeleton(skeleton, localWidth, localHeight),
+      cleaned,
+      localWidth,
+      localHeight,
+    );
     if (rawPaths.isEmpty) {
       return AutoLineartGraph(
         width: width,
@@ -1255,6 +1260,325 @@ class AutoLineartEngine {
       trace(i, around.first, {i});
     }
     return paths;
+  }
+
+  /// Where two rough lines run into each other, their ink merges into one
+  /// stroke as wide as both, narrowing as they come together, and thinning
+  /// leaves a Y: the two lines bend into a junction and one line runs on
+  /// down the middle of the merged ink. Draw them as the rough has them
+  /// instead: each line runs on along its own side of the merged ink, half
+  /// the extra width out from its middle, so the two come together
+  /// gradually where the ink narrows to one line's width (or end side by
+  /// side where it never does).
+  ///
+  /// A merge is a junction of three lines where two of them come in at an
+  /// acute angle from the same side and the ink at the junction is clearly
+  /// wider than either of them; an ordinary fork or a line ending on
+  /// another is left as it is.
+  static List<_RawPath> _separateMerges(
+    List<_RawPath> paths,
+    Uint8List mask,
+    int width,
+    int height,
+  ) {
+    if (paths.length < 3) return paths;
+    final paper = _distanceToPaper(mask, width, height);
+    double inkWidth(AutoLineartPoint p) {
+      final x = p.x.floor().clamp(0, width - 1);
+      final y = p.y.floor().clamp(0, height - 1);
+      return math.max(1.0, 2 * paper[y * width + x] - 1);
+    }
+
+    var result = List<_RawPath>.of(paths);
+    // Each merge replaces three paths (and leaves a junction that is no
+    // merge); a line may meet the next merge further on, so look again
+    // until nothing changes.
+    for (var round = 0; round < paths.length; round++) {
+      final merge = _findMerge(result, inkWidth);
+      if (merge == null) break;
+      result = merge;
+    }
+    return result;
+  }
+
+  static List<_RawPath>? _findMerge(
+    List<_RawPath> paths,
+    double Function(AutoLineartPoint p) inkWidth,
+  ) {
+    final ends = <(double, double), List<(int, bool)>>{};
+    for (var i = 0; i < paths.length; i++) {
+      final path = paths[i];
+      if (path.points.length < 2) continue;
+      if (path.startIsJunction) {
+        final p = path.points.first;
+        (ends[(p.x, p.y)] ??= []).add((i, true));
+      }
+      if (path.endIsJunction) {
+        final p = path.points.last;
+        (ends[(p.x, p.y)] ??= []).add((i, false));
+      }
+    }
+    for (final MapEntry(key: (jx, jy), value: meeting) in ends.entries) {
+      if (meeting.length != 3) continue;
+      if ({for (final (i, _) in meeting) i}.length != 3) continue;
+      final junction = AutoLineartPoint(jx, jy);
+      final across = inkWidth(junction);
+      // Each line from the junction outwards.
+      final lines = [
+        for (final (i, atStart) in meeting)
+          atStart
+              ? paths[i].points
+              : paths[i].points.reversed.toList(growable: false),
+      ];
+      // Which way each heads, a little way out (past the junction's knot).
+      final headings = [
+        for (final line in lines) _headingFrom(line, across * 1.5),
+      ];
+      if (headings.any((h) => h == null)) continue;
+      // The two coming in together: the pair at the smallest angle.
+      var a = 0, b = 1, c = 2;
+      var best = -2.0;
+      for (final (x, y, z) in const [(0, 1, 2), (0, 2, 1), (1, 2, 0)]) {
+        final cos = _dot(headings[x]!, headings[y]!);
+        if (cos > best) {
+          best = cos;
+          (a, b, c) = (x, y, z);
+        }
+      }
+      // Acute between them, and the third leaving the other way.
+      if (best < math.cos(75 * math.pi / 180)) continue;
+      final bisector = _normalized(
+        AutoLineartPoint(
+          headings[a]!.x + headings[b]!.x,
+          headings[a]!.y + headings[b]!.y,
+        ),
+      );
+      if (bisector == null || _dot(bisector, headings[c]!) > -.5) continue;
+      // One line's width: the two coming in, away from the junction.
+      final lineWidth =
+          (_medianWidth(lines[a], across * 1.5, inkWidth) +
+              _medianWidth(lines[b], across * 1.5, inkWidth)) /
+          2;
+      if (across < lineWidth * 1.4) continue;
+      // Each side of the merged ink, along the line leaving it, half the
+      // extra width out from its middle.
+      final merged = lines[c];
+      final count = merged.length;
+      final raw = [
+        for (final p in merged) math.max(0.0, (inkWidth(p) - lineWidth) / 2),
+      ];
+      final offsets = List<double>.generate(count, (k) {
+        var sum = 0.0, n = 0;
+        for (var o = -2; o <= 2; o++) {
+          final i = k + o;
+          if (i < 0 || i >= count) continue;
+          sum += raw[i];
+          n++;
+        }
+        return sum / n;
+      });
+      offsets[0] = raw[0];
+      // Where the two have come together (the ink one line wide).
+      var meet = count - 1;
+      for (var k = 1; k < count; k++) {
+        if (offsets[k] <= .5) {
+          meet = k;
+          break;
+        }
+      }
+      final mergedPath = paths[meeting[c].$1];
+      final farIsJunction = meeting[c].$2
+          ? mergedPath.endIsJunction
+          : mergedPath.startIsJunction;
+      if (meet == count - 1 && farIsJunction) {
+        // Still apart at the next junction: close in on it.
+        var run = 0.0;
+        for (var k = count - 1; k > 0; k--) {
+          offsets[k] = math.min(offsets[k], run / 2);
+          run += _distance(merged[k], merged[k - 1]);
+          if (run > lineWidth * 3) break;
+        }
+        offsets[count - 1] = 0;
+      }
+      AutoLineartPoint tangentAt(int k) {
+        final from = merged[math.max(0, k - 2)];
+        final to = merged[math.min(count - 1, k + 2)];
+        return _normalized(AutoLineartPoint(to.x - from.x, to.y - from.y)) ??
+            const AutoLineartPoint(1, 0);
+      }
+
+      final leaving = tangentAt(0);
+      double side(AutoLineartPoint heading) =>
+          leaving.x * heading.y - leaving.y * heading.x >= 0 ? 1 : -1;
+      final sideA = side(headings[a]!), sideB = side(headings[b]!);
+      if (sideA == sideB) continue;
+      List<AutoLineartPoint> along(double sign) => [
+        for (var k = 0; k <= meet; k++)
+          () {
+            final t = tangentAt(k);
+            return AutoLineartPoint(
+              merged[k].x - t.y * offsets[k] * sign,
+              merged[k].y + t.x * offsets[k] * sign,
+            );
+          }(),
+      ];
+      // The incoming lines without their last bend into the junction.
+      List<AutoLineartPoint>? trimmed(List<AutoLineartPoint> line) {
+        final reach = (across + lineWidth) / 2;
+        var from = 0;
+        while (from < line.length && _distance(line[from], junction) < reach) {
+          from++;
+        }
+        if (line.length - from < 2) return null;
+        return line.sublist(from).reversed.toList(growable: false);
+      }
+
+      final inA = trimmed(lines[a]), inB = trimmed(lines[b]);
+      if (inA == null || inB == null) continue;
+      final together = offsets[meet] <= .5;
+      final rest = meet < count - 1;
+      _RawPath incoming(int which, List<AutoLineartPoint> line, double sign) {
+        final path = paths[meeting[which].$1];
+        // The line's own far end keeps what it was.
+        final farEnd = meeting[which].$2
+            ? path.endIsJunction
+            : path.startIsJunction;
+        return _RawPath(
+          points: [...line, ...along(sign)],
+          startIsJunction: farEnd,
+          endIsJunction: together || rest || farIsJunction,
+        );
+      }
+
+      final replaced = {for (final (i, _) in meeting) i};
+      return [
+        for (var i = 0; i < paths.length; i++)
+          if (!replaced.contains(i)) paths[i],
+        incoming(a, inA, sideA),
+        incoming(b, inB, sideB),
+        if (rest)
+          _RawPath(
+            points: merged.sublist(meet),
+            startIsJunction: true,
+            endIsJunction: farIsJunction,
+          ),
+      ];
+    }
+    return null;
+  }
+
+  /// The unit direction from the start of [line] to its point [reach] px
+  /// along (or its end), or null for a line with no length.
+  static AutoLineartPoint? _headingFrom(
+    List<AutoLineartPoint> line,
+    double reach,
+  ) {
+    var travelled = 0.0;
+    var to = line.last;
+    for (var i = 1; i < line.length; i++) {
+      travelled += _distance(line[i - 1], line[i]);
+      if (travelled >= reach) {
+        to = line[i];
+        break;
+      }
+    }
+    return _normalized(
+      AutoLineartPoint(to.x - line.first.x, to.y - line.first.y),
+    );
+  }
+
+  /// The middle ink width along [line] from [from] px out to three times
+  /// that, or along its outer half when it is shorter.
+  static double _medianWidth(
+    List<AutoLineartPoint> line,
+    double from,
+    double Function(AutoLineartPoint p) inkWidth,
+  ) {
+    final widths = <double>[];
+    var travelled = 0.0;
+    for (var i = 1; i < line.length; i++) {
+      travelled += _distance(line[i - 1], line[i]);
+      if (travelled >= from && travelled <= from * 3) {
+        widths.add(inkWidth(line[i]));
+      }
+    }
+    if (widths.isEmpty) {
+      for (var i = line.length ~/ 2; i < line.length; i++) {
+        widths.add(inkWidth(line[i]));
+      }
+    }
+    widths.sort();
+    return widths[widths.length ~/ 2];
+  }
+
+  static double _dot(AutoLineartPoint a, AutoLineartPoint b) =>
+      a.x * b.x + a.y * b.y;
+
+  static AutoLineartPoint? _normalized(AutoLineartPoint v) {
+    final length = math.sqrt(v.x * v.x + v.y * v.y);
+    if (length < 1e-9) return null;
+    return AutoLineartPoint(v.x / length, v.y / length);
+  }
+
+  /// The distance from each pixel of [mask] to the nearest pixel of paper
+  /// (exact, Euclidean; Felzenszwalb and Huttenlocher's two passes).
+  static Float64List _distanceToPaper(Uint8List mask, int width, int height) {
+    const far = 1e20;
+    final grid = Float64List(width * height);
+    for (var i = 0; i < grid.length; i++) {
+      grid[i] = mask[i] != 0 ? far : 0;
+    }
+    final size = math.max(width, height);
+    final f = Float64List(size), d = Float64List(size);
+    final v = Int32List(size), z = Float64List(size + 1);
+    void pass(int n) {
+      var k = 0;
+      v[0] = 0;
+      z[0] = -far;
+      z[1] = far;
+      for (var q = 1; q < n; q++) {
+        double meet(int at) =>
+            ((f[q] + q * q) - (f[at] + at * at)) / (2 * q - 2 * at);
+        var s = meet(v[k]);
+        // z[0] is far below any meeting point, so this stops at k = 0.
+        while (s <= z[k]) {
+          k--;
+          s = meet(v[k]);
+        }
+        k++;
+        v[k] = q;
+        z[k] = s;
+        z[k + 1] = far;
+      }
+      k = 0;
+      for (var q = 0; q < n; q++) {
+        while (z[k + 1] < q) {
+          k++;
+        }
+        final dq = q - v[k];
+        d[q] = dq * dq + f[v[k]];
+      }
+    }
+
+    for (var x = 0; x < width; x++) {
+      for (var y = 0; y < height; y++) {
+        f[y] = grid[y * width + x];
+      }
+      pass(height);
+      for (var y = 0; y < height; y++) {
+        grid[y * width + x] = d[y];
+      }
+    }
+    for (var y = 0; y < height; y++) {
+      for (var x = 0; x < width; x++) {
+        f[x] = grid[y * width + x];
+      }
+      pass(width);
+      for (var x = 0; x < width; x++) {
+        grid[y * width + x] = math.sqrt(d[x]);
+      }
+    }
+    return grid;
   }
 
   /// [mask] with the specks of background inside a stroke filled in: an
