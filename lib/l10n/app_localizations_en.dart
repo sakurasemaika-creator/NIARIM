@@ -1787,7 +1787,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get tipsAutofillManualPartColorDesc =>
-      'If you plan to repaint with the final colours afterward, you do not need to split the lineart into separate “Auto-fill lineart layer” layers. Keep all lineart on one normal layer. On each “Auto-fill layer,” manually paint each part as a solid area—not as a line—using a bright temporary colour. Correct any misfilled areas, then run the update from the Auto-fill layer’s menu to keep the painted shape and replace its colour with the colour in the autofill settings. If a matching “Auto-fill lineart layer” is present, choose “Update color while keeping shape” as the execution method. If you want autofill to detect and colour the parts directly from the lineart in one pass, use an “Auto-fill lineart layer.”';
+      'If you plan to replace temporary colours with final colours, you do not need to split the lineart across multiple “Auto-fill lineart layer” layers. Keep the lineart on one normal layer. On a separate “Auto-fill layer” for each part, manually paint a bright temporary colour as a filled area—not just a line. Correct any shape mistakes, then choose “Run autofill” from each Auto-fill layer’s menu. If an associated “Auto-fill lineart layer” exists, choose “Update color while keeping shape” as the method. If no associated lineart layer exists, the Auto-fill layer can still update its existing painted shape to the colours in the autofill settings without redetecting the region. Use an “Auto-fill lineart layer” when you want autofill to identify the parts from lineart and colour them in one go.';
 
   @override
   String get tipsBrushFavoriteTitle =>
