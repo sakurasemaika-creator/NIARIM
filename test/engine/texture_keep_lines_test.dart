@@ -1,7 +1,9 @@
+import 'dart:io';
 import 'dart:math' as math;
 import 'dart:typed_data';
 
 import 'package:flutter_test/flutter_test.dart';
+import 'package:image/image.dart' as img;
 import 'package:niarim/engine/filter_engine.dart';
 import 'package:niarim/models/filter_def.dart';
 
@@ -129,6 +131,47 @@ void main() {
       }
     }
     expect(changed / ink, greaterThan(.95));
+  });
+
+  test('drawn for review: every preset with the lines kept and not', () {
+    final (shirt, _) = _shirt();
+    final sphere = _sphere();
+    // Rows: the original, then each preset. Columns: the shirt and the
+    // sphere with the lines not kept, then kept.
+    const scale = 2, gap = 4;
+    final rows = AuroraHologramPreset.values.length + 1;
+    final sheet = img.Image(
+      width: (4 * (_w + gap)) * scale,
+      height: (rows * (_h + gap)) * scale,
+    );
+    img.fill(sheet, color: img.ColorRgb8(200, 200, 210));
+    void put(Uint8List rgba, int column, int row) {
+      for (var y = 0; y < _h * scale; y++) {
+        for (var x = 0; x < _w * scale; x++) {
+          final i = ((y ~/ scale) * _w + x ~/ scale) * 4;
+          final a = rgba[i + 3] / 255;
+          int c(int v) => (v + 255 * (1 - a)).round().clamp(0, 255);
+          sheet.setPixelRgb(
+            column * (_w + gap) * scale + x,
+            row * (_h + gap) * scale + y,
+            c(rgba[i]),
+            c(rgba[i + 1]),
+            c(rgba[i + 2]),
+          );
+        }
+      }
+    }
+
+    for (final (k, picture) in [(0, shirt), (1, sphere)]) {
+      put(picture, k, 0);
+      put(picture, k + 2, 0);
+      for (final (r, preset) in AuroraHologramPreset.values.indexed) {
+        put(texture(picture, keepLines: false, preset: preset), k, r + 1);
+        put(texture(picture, keepLines: true, preset: preset), k + 2, r + 1);
+      }
+    }
+    final dir = Directory('build/texture')..createSync(recursive: true);
+    File('${dir.path}/keep_lines.png').writeAsBytesSync(img.encodePng(sheet));
   });
 
   test('shading that darkens to a shape\'s edge is not a line', () {

@@ -21,17 +21,17 @@ from PIL import Image, ImageDraw, ImageFont
 ROOT = Path(__file__).resolve().parents[1]
 GROUP_ORDER = ["filters", "pixel-compare", "blend", "automation", "autofill", "extras"]
 GROUPS = {
-    "filters": "フィルター（質感変更を除外）",
+    "filters": "フィルター",
     "pixel-compare": "Pixel Art / Mosaic 同一fixture比較",
     "blend": "ブレンドモード（全25種）",
     "automation": "公式の自動操作",
     "autofill": "自動塗りプリセット（完成状態）",
     "extras": "記録・再実行と自動塗りの追加確認",
 }
-# Work of other sessions that this capture set must leave out: the texture
-# change filter (質感変更 / Gradient Map) and the brush fold modes.
-EXCLUDED_FILTER_IDS = {"Filter0019"}
-EXCLUDED_KINDS = {"auroraHologram"}
+# Filters or kinds to leave out of the capture set (none at present: the
+# texture change filter and the brush fold modes are included).
+EXCLUDED_FILTER_IDS = set()
+EXCLUDED_KINDS = set()
 
 HEADING_FONT = ROOT / "assets/fonts/Kuramubon.otf"
 BODY_FONT = ROOT / "assets/fonts/NotoSerifJP.ttf"
@@ -425,16 +425,16 @@ FEATURE_PAGES = [
     ),
     (
         "ブレンドモードの選択ダイアログ",
-        "レイヤー設定の「ブレンドモード」から開く本番のダイアログ。各モードの左に、そのモードで色の帯を重ねた見本が出る（下半分は半透明で重ねた見え方）。",
+        "レイヤー設定の「ブレンドモード」から開く本番のダイアログ。上からタイトルと閉じるボタン・キャンバスのプレビュー・2列のタイル・「適用」。タイルをタップすると、そのレイヤーをそのモードにしたときのフレームが上のプレビューに出て（左下にモード名）、「適用」で決まる。スクロールで動くのはタイルだけ。各タイルは名前が上端、その下にそのモードで色の帯を重ねた見本（下の帯は半透明で重ねた見え方）。",
         UI,
         [
-            ("feature-captures/blend/blend_normal-settings.png", "一覧の先頭"),
+            ("feature-captures/blend/blend_multiply-settings.png", "乗算をタップ"),
             ("feature-captures/blend/blend_addition-settings.png", "加算・発光"),
             (
                 "feature-captures/blend/blend_linearDodge-settings.png",
                 "覆い焼き（リニア）",
             ),
-            ("feature-captures/blend/blend_divide-settings.png", "一覧の末尾"),
+            ("feature-captures/blend/blend_divide-settings.png", "一覧の末尾（除算）"),
         ],
     ),
     (
@@ -531,13 +531,56 @@ FEATURE_PAGES = [
     ),
     (
         "自動線画",
-        "一定の太さのラフから途切れない中心線を描く。近くに並んだ線も、間に紙が見えていれば2本のまま（細長い輪・2px離れた平行線・頭の輪郭と生え際）。入り抜きはオン・オフできる。左＝ラフ、右＝結果。",
+        "一定の太さのラフから途切れない中心線を描く。近くに並んだ線も、間に紙が見えていれば2本のまま（細長い輪・2px離れた平行線・頭の輪郭と生え際）。2本の線がくっついて1本の太さになっていく所は、真ん中に1本を引くのではなく、ラフのように2本が徐々に近づいて合わさる（Y字は合流点まで各自の線の中央、V字は先まで2本）。入り抜きはオン・オフできる。左＝ラフ、右＝結果。",
         "フィルターエンジンへテスト用の絵を直接入力",
         [
             ("auto-lineart/continuity.png", "一定幅のラフ→中心線"),
             ("auto-lineart/close_lines.png", "近い2本の線は2本のまま"),
-            ("auto-lineart/taper_on.png", "入り抜きオン"),
-            ("auto-lineart/taper_off.png", "入り抜きオフ"),
+            ("auto-lineart/merge_y.png", "くっついて1本になる2本の線（Y字）"),
+            ("auto-lineart/merge_v.png", "先へ向かって近づく2本の線（V字）"),
+        ],
+    ),
+    (
+        "質感変更：線画を残す",
+        "同じレイヤーに描いた線画（黒に近い細い線）は元の色のまま残し、面にだけ質感をかける（スイッチ、既定オン）。線は「両側に明るい所があり、そこへ段になって上がる・片側は塗った面・ある程度つながっている」もので見分けるので、形の縁へ向かって暗くなる陰影（右の球）は線として残らない。上段が元の絵、下へオーロラホログラム・サンプルゴールド・プラチナシルバー・ルミナスパール・オーロラパステル・ダークレインボー。左2列＝線画を残さない、右2列＝残す。",
+        "フィルターエンジンへテスト用の絵を直接入力",
+        [("texture/keep_lines.png", "線画を残す：オフ（左2列）／オン（右2列）")],
+    ),
+    (
+        "髪の毛ブラシの折り畳み：5つのモード",
+        "同じ波線（入力は5モード共通）を髪の毛プリセットで描いた結果。左から、上から見た波・あおりの波・右巻き・左巻き・三日月。折り返しでは手前の縁取りが折り返し線へつながり、奥の区間に隠れる。",
+        "描画エンジンへテスト用の入力点を直接入力",
+        [
+            ("hair_fold_visual/hair_wave_top_view_same_curve.png", "上から見た波"),
+            ("hair_fold_visual/hair_wave_low_angle_same_curve.png", "あおりの波"),
+            ("hair_fold_visual/hair_curl_right_same_curve.png", "右巻き"),
+            ("hair_fold_visual/hair_curl_left_same_curve.png", "左巻き"),
+        ],
+    ),
+    (
+        "髪の毛ブラシの折り畳み：三日月・前髪・毛先",
+        "三日月モードと、前髪プリセット（毛束の画像を貼ったブラシ）。右端は髪の毛プリセットそのまま（抜き80px）：抜きの太さを直線ではなく、先端は同じだけ尖り全幅とは水平につながる曲線で細くするので、抜きの始まりに角ができない。",
+        "描画エンジンへテスト用の入力点を直接入力",
+        [
+            ("hair_fold_visual/hair_crescent_same_curve.png", "三日月"),
+            (
+                "hair_fold_visual/bangs_wave_top_view_same_curve.png",
+                "前髪：上から見た波",
+            ),
+            ("hair_fold_visual/bangs_curl_right_same_curve.png", "前髪：右巻き"),
+            (
+                "hair_fold_visual/hair_production_preset.png",
+                "髪の毛プリセット（抜き80px）",
+            ),
+        ],
+    ),
+    (
+        "縁取りペンの「強弱」",
+        "縁取りの太さをカーブの頂点へ向かって太くする（曲がり始め・終わりは縁取り幅のまま、頂点で「頂点の縁取り幅」）。まっすぐな所は太らない。折り畳みの髪でも同じ。各画像の左＝強弱オフ、右＝オン。",
+        "描画エンジンへテスト用の入力点を直接入力",
+        [
+            ("outline-accent/u_off_on.png", "U字：オフ／オン"),
+            ("outline-accent/fold_off_on.png", "折り畳み：オフ／オン"),
         ],
     ),
     (
@@ -654,7 +697,7 @@ def build_pdf(path, gallery, groups, revision, labels, screens):
     y = 120
     d.text(
         (70, y),
-        f"{total}ケース（質感変更・折り畳みモードは別作業のため除外）",
+        f"{total}ケース",
         font=head,
         fill=INK,
     )
@@ -662,7 +705,7 @@ def build_pdf(path, gallery, groups, revision, labels, screens):
     for label, desc in [
         (
             "収録対象",
-            "描画フィルター（トーンカーブ6種・ドット絵4種を含む）、Pixel Art / Mosaicの同一fixture比較、全25ブレンドモード、公式の自動操作3種、出荷済み自動塗りプリセットの完成状態、記録・再実行。",
+            "描画フィルター（質感変更・トーンカーブ6種・ドット絵4種を含む）、Pixel Art / Mosaicの同一fixture比較、全25ブレンドモード、公式の自動操作3種、出荷済み自動塗りプリセットの完成状態、記録・再実行、髪の毛ブラシの折り畳み5モード・縁取りの強弱。",
         ),
         (
             "確認方法",
@@ -899,7 +942,7 @@ def main():
 
 検証ソース: {args.revision}
 
-質感変更フィルター（と別作業の折り畳みモード）を除外したVisual closure成果物です。
+Visual closure成果物です（質感変更フィルター・髪の毛ブラシの折り畳みモードを含む）。
 labelled/には、機能名・設定値・適用前後を1枚に焼き込んだカード画像があります。
 通常フィルター、Pixel Art / Mosaic同一fixture比較、全25ブレンドモード、
 公式自動操作、自動塗り、記録・再実行を収録します。
