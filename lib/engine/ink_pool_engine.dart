@@ -12,6 +12,15 @@ import 'dart:typed_data';
 /// (see `taperOf`). The result is the pool alone on a transparent layer
 /// (premultiplied RGBA), to go under the line art: it reaches back to the
 /// line's centre so no gap shows along the edge.
+void Function(
+  Uint8List centre,
+  Uint8List mask,
+  Uint8List junction,
+  int w,
+  int h,
+)?
+inkDebug;
+
 class InkPoolEngine {
   InkPoolEngine._();
 
@@ -64,7 +73,13 @@ class InkPoolEngine {
     final mask = _lineMask(data, n);
     final ink = _ink(data, n);
     final halfWidth = _distanceToBackground(mask, width, height);
-    final centre = _thin(mask, width, height);
+    final centre = _restoreVanished(
+      _thin(mask, width, height),
+      mask,
+      halfWidth,
+      width,
+      height,
+    );
     final junction = Uint8List(n);
     for (var p = 0; p < n; p++) {
       if (centre[p] == 0) continue;
@@ -72,6 +87,7 @@ class InkPoolEngine {
       if (x == 0 || y == 0 || x == width - 1 || y == height - 1) continue;
       if (_branchCount(centre, width, p) >= 3) junction[p] = 1;
     }
+    _addKnotJunctions(centre, junction, width, height);
     final near = math.max(4, math.min(12, centreWidth.round() + 2));
     final seeds = _meetingPoints(
       centre,
@@ -477,7 +493,19 @@ class InkPoolEngine {
   }
 
   /// The lines thinned to their 1 px centre (Zhang-Suen).
-  static Uint8List _thin(Uint8List mask, int width, int height) {
+  static Uint8List _thin(Uint8List mask, int width, int height) =>
+      _thinZhangSuen(mask, width, height);
+
+  /// Zhang-Suen thinning; with [lwCorrection] (Lü and Wang's) a pixel goes
+  /// only with at least 3 neighbours, so a diagonal line is never eaten from
+  /// its end, but one direction of diagonal stays a 2 px staircase, which
+  /// [_thinGuoHall] finishes.
+  static Uint8List _thinZhangSuen(
+    Uint8List mask,
+    int width,
+    int height, {
+    bool lwCorrection = false,
+  }) {
     final image = Uint8List.fromList(mask);
     var foreground = <int>[
       for (var p = 0; p < image.length; p++)
@@ -502,7 +530,7 @@ class InkPoolEngine {
           final p8 = image[p - 1];
           final p9 = image[p - width - 1];
           final neighbours = p2 + p3 + p4 + p5 + p6 + p7 + p8 + p9;
-          if (neighbours < 2 || neighbours > 6) continue;
+          if (neighbours < (lwCorrection ? 3 : 2) || neighbours > 6) continue;
           final ring = [p2, p3, p4, p5, p6, p7, p8, p9, p2];
           var transitions = 0;
           for (var k = 0; k < 8; k++) {
@@ -528,6 +556,150 @@ class InkPoolEngine {
       ];
     }
     return image;
+  }
+
+  /// [_thinZhangSuen]'s result (with Lü and Wang's correction) thinned to
+  /// 1 px where it is left 2 px wide (Guo and Hall's two-pass thinning,
+  /// which thins a diagonal staircase without eating it).
+  static Uint8List _thinGuoHall(Uint8List input, int width, int height) {
+    final image = Uint8List.fromList(input);
+    var foreground = <int>[
+      for (var y = 1; y < height - 1; y++)
+        for (var x = 1; x < width - 1; x++)
+          if (image[y * width + x] != 0) y * width + x,
+    ];
+    final remove = <int>[];
+    var changed = true;
+    while (changed) {
+      changed = false;
+      for (var pass = 0; pass < 2; pass++) {
+        remove.clear();
+        for (final p in foreground) {
+          if (image[p] == 0) continue;
+          final p2 = image[p - width] != 0 ? 1 : 0;
+          final p3 = image[p - width + 1] != 0 ? 1 : 0;
+          final p4 = image[p + 1] != 0 ? 1 : 0;
+          final p5 = image[p + width + 1] != 0 ? 1 : 0;
+          final p6 = image[p + width] != 0 ? 1 : 0;
+          final p7 = image[p + width - 1] != 0 ? 1 : 0;
+          final p8 = image[p - 1] != 0 ? 1 : 0;
+          final p9 = image[p - width - 1] != 0 ? 1 : 0;
+          // One run of neighbours (the pixel joins nothing else together).
+          final runs =
+              (p2 == 0 && (p3 | p4) != 0 ? 1 : 0) +
+              (p4 == 0 && (p5 | p6) != 0 ? 1 : 0) +
+              (p6 == 0 && (p7 | p8) != 0 ? 1 : 0) +
+              (p8 == 0 && (p9 | p2) != 0 ? 1 : 0);
+          if (runs != 1) continue;
+          // Not a line's end, and on the edge of the ink.
+          final n1 = (p9 | p2) + (p3 | p4) + (p5 | p6) + (p7 | p8);
+          final n2 = (p2 | p3) + (p4 | p5) + (p6 | p7) + (p8 | p9);
+          final count = math.min(n1, n2);
+          if (count < 2 || count > 3) continue;
+          // The first pass peels the south-east side, the second the
+          // north-west, so a line keeps its middle.
+          final side = pass == 0
+              ? (p6 | p7 | (1 - p9)) & p8
+              : (p2 | p3 | (1 - p5)) & p4;
+          if (side != 0) continue;
+          remove.add(p);
+        }
+        if (remove.isNotEmpty) {
+          changed = true;
+          for (final p in remove) {
+            image[p] = 0;
+          }
+        }
+      }
+      if (changed) {
+        foreground = [
+          for (final p in foreground)
+            if (image[p] != 0) p,
+        ];
+      }
+    }
+    return image;
+  }
+
+  /// Zhang-Suen can eat a whole line: a diagonal peeled down to a 2 px
+  /// staircase loses its end pixel pass after pass (one stroke of a right
+  /// angled X crossing vanished, and none of its corners pooled). Where
+  /// part of the [mask] is left far from any centre line, the centre line
+  /// there is taken from a thinning that does not eat lines (Zhang-Suen
+  /// with Lü and Wang's correction, finished with Guo and Hall's) and joined
+  /// on to [centre]. Where nothing vanished, [centre] is returned as it is.
+  static Uint8List _restoreVanished(
+    Uint8List centre,
+    Uint8List mask,
+    Float32List halfWidth,
+    int width,
+    int height,
+  ) {
+    final n = width * height;
+    // Steps through the ink from the nearest centre pixel.
+    final steps = Int32List(n)..fillRange(0, n, -1);
+    var queue = <int>[];
+    for (var p = 0; p < n; p++) {
+      if (centre[p] != 0) {
+        steps[p] = 0;
+        queue.add(p);
+      }
+    }
+    for (var head = 0; head < queue.length; head++) {
+      final p = queue[head];
+      final x = p % width, y = p ~/ width;
+      for (var dy = -1; dy <= 1; dy++) {
+        for (var dx = -1; dx <= 1; dx++) {
+          final nx = x + dx, ny = y + dy;
+          if (nx < 0 || ny < 0 || nx >= width || ny >= height) continue;
+          final q = ny * width + nx;
+          if (mask[q] == 0 || steps[q] >= 0) continue;
+          steps[q] = steps[p] + 1;
+          queue.add(q);
+        }
+      }
+    }
+    // Further from a centre line than the ink is wide: a line is missing.
+    bool far(int p) => steps[p] < 0 || steps[p] > halfWidth[p] + 3;
+    var anyFar = false;
+    for (var p = 0; p < n && !anyFar; p++) {
+      if (mask[p] != 0 && far(p)) anyFar = true;
+    }
+    if (!anyFar) return centre;
+
+    final other = _thinGuoHall(
+      _thinZhangSuen(mask, width, height, lwCorrection: true),
+      width,
+      height,
+    );
+    final result = Uint8List.fromList(centre);
+    final added = Uint8List(n);
+    queue = <int>[];
+    for (var p = 0; p < n; p++) {
+      if (other[p] != 0 && far(p)) {
+        added[p] = 1;
+        result[p] = 1;
+        queue.add(p);
+      }
+    }
+    // On along the other centre line until it touches [centre].
+    for (var head = 0; head < queue.length; head++) {
+      final p = queue[head];
+      if (steps[p] >= 0 && steps[p] <= 1) continue;
+      final x = p % width, y = p ~/ width;
+      for (var dy = -1; dy <= 1; dy++) {
+        for (var dx = -1; dx <= 1; dx++) {
+          final nx = x + dx, ny = y + dy;
+          if (nx < 0 || ny < 0 || nx >= width || ny >= height) continue;
+          final q = ny * width + nx;
+          if (other[q] == 0 || added[q] != 0) continue;
+          added[q] = 1;
+          result[q] = 1;
+          queue.add(q);
+        }
+      }
+    }
+    return result;
   }
 
   /// How close two forks are taken as one crossing: within [near], or
@@ -664,6 +836,56 @@ class InkPoolEngine {
       if (ring[k] == 0 && ring[(k + 1) % 8] != 0) runs++;
     }
     return runs;
+  }
+
+  /// Two lines crossing at a right angle can thin to a small knot where no
+  /// pixel has three lines leaving it (each pixel's neighbours form one or
+  /// two runs), so no junction is found and no corner pools. Around such a
+  /// knot, three or more lines cross the square 2 px out: mark the knot's
+  /// pixels as junctions, where no junction is already near.
+  static void _addKnotJunctions(
+    Uint8List centre,
+    Uint8List junction,
+    int width,
+    int height,
+  ) {
+    // The 16 pixels of the square 2 px out, in order round it.
+    const ring = <(int, int)>[
+      (-2, -2), (-1, -2), (0, -2), (1, -2), (2, -2), //
+      (2, -1), (2, 0), (2, 1), (2, 2), //
+      (1, 2), (0, 2), (-1, 2), (-2, 2), //
+      (-2, 1), (-2, 0), (-2, -1),
+    ];
+    final knots = <int>[];
+    for (var y = 3; y < height - 3; y++) {
+      for (var x = 3; x < width - 3; x++) {
+        final p = y * width + x;
+        if (centre[p] == 0) continue;
+        var runs = 0;
+        for (var k = 0; k < ring.length; k++) {
+          final (ax, ay) = ring[k];
+          final (bx, by) = ring[(k + 1) % ring.length];
+          if (centre[(y + ay) * width + x + ax] == 0 &&
+              centre[(y + by) * width + x + bx] != 0) {
+            runs++;
+          }
+        }
+        if (runs < 3) continue;
+        var near = false;
+        for (var dy = -3; dy <= 3 && !near; dy++) {
+          for (var dx = -3; dx <= 3; dx++) {
+            if (junction[(y + dy) * width + x + dx] != 0) {
+              near = true;
+              break;
+            }
+          }
+        }
+        if (!near) knots.add(p);
+      }
+    }
+    for (final p in knots) {
+      junction[p] = 1;
+    }
   }
 
   /// Following each line leaving centre pixel [p] for [length] px along the
