@@ -1807,11 +1807,11 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get tipsAutofillManualPartColorTitle =>
-      'Gardez le trait sur un seul calque normal et peignez les aplats à la main';
+      'Gardez le trait réel sur un seul calque normal et séparez les aplats à la main';
 
   @override
   String get tipsAutofillManualPartColorDesc =>
-      'Si vous comptez remplacer les couleurs provisoires par les couleurs finales, il n’est pas nécessaire de répartir le trait sur plusieurs calques « Calque de trait pour remplissage auto ». Gardez tout le trait sur un seul calque normal. Sur un « Calque de remplissage auto » pour chaque partie, peignez manuellement une couleur provisoire vive en aplat, et non en simple ligne. Corrigez les formes mal remplies, puis choisissez « Exécuter le remplissage automatique » dans le menu de chaque calque. Si un « Calque de trait pour remplissage auto » associé existe, choisissez « Actualiser la couleur en conservant la forme ». Sinon, le calque de remplissage auto peut tout de même actualiser la couleur de la forme déjà peinte sans redétecter la zone. Si vous voulez que le remplissage auto détecte les parties depuis le trait et les colore en une seule passe, utilisez un « Calque de trait pour remplissage auto ».';
+      'Si vous comptez remplacer les couleurs provisoires par les couleurs finales, gardez tout le trait réel sur un seul calque normal. Pour chaque partie, ajoutez un « Calque de trait pour remplissage auto », choisissez « Attribuer une partie » dans son menu à trois points pour associer la partie correspondante, puis lancez une fois « Exécuter le remplissage automatique » depuis ce menu afin de créer le « Calque de remplissage auto » associé. Ces calques de trait servent uniquement à associer le réglage de partie ; vous n’avez pas besoin d’y dessiner le trait réel, ils peuvent donc rester vides. Dessinez le trait réel sur l’unique calque normal, placez-le au-dessus des calques de remplissage et peignez manuellement chaque Calque de remplissage auto en aplat — pas en simple ligne — avec une couleur provisoire vive. Corrigez les formes mal remplies, puis, depuis le menu du Calque de trait pour remplissage auto associé, lancez « Exécuter le remplissage automatique » et choisissez « Actualiser la couleur en conservant la forme ». Les couleurs finales du réglage sont appliquées sans redétecter ni remplacer les formes peintes. Si vous souhaitez que le remplissage auto détecte et colore les parties directement depuis le trait en une seule passe, dessinez le trait réel sur les Calques de trait pour remplissage auto.';
 
   @override
   String get tipsBrushFavoriteTitle =>

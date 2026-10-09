@@ -1783,11 +1783,11 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get tipsAutofillManualPartColorTitle =>
-      'Keep lineart on one normal layer and paint part shapes manually';
+      'Keep actual lineart on one normal layer; split fills manually';
 
   @override
   String get tipsAutofillManualPartColorDesc =>
-      'If you plan to replace temporary colours with final colours, you do not need to split the lineart across multiple “Auto-fill lineart layer” layers. Keep the lineart on one normal layer. On a separate “Auto-fill layer” for each part, manually paint a bright temporary colour as a filled area—not just a line. Correct any shape mistakes, then choose “Run auto-fill” from each Auto-fill layer’s menu. If an associated “Auto-fill lineart layer” exists, choose “Update color while keeping shape” as the method. If no associated lineart layer exists, the Auto-fill layer can still update its existing painted shape to the colours in the autofill settings without redetecting the region. Use an “Auto-fill lineart layer” when you want autofill to identify the parts from lineart and colour them in one go.';
+      'If you plan to replace temporary colours with final colours, keep the actual lineart on one normal layer. For each part, add an “Auto-fill lineart layer,” choose “Assign part” from its three-dot menu to link the matching part, then run “Run auto-fill” once from that menu to create its paired “Auto-fill layer.” These lineart layers are only helpers for linking the part setting; you do not need to draw the actual lineart on them, so they can stay empty. Draw the real lineart on the single normal layer, keep it above the fill layers, and manually paint each Auto-fill layer as a filled area—not a line—using a bright temporary colour. Fix any mistakes, then open “Run auto-fill” from the associated Auto-fill lineart layer’s menu and select “Update color while keeping shape.” This updates the filled area to the final colours in the autofill settings without redetecting or replacing your hand-painted shapes. If you want autofill to identify and colour the parts directly from the lineart in one pass, draw the actual lineart on the Auto-fill lineart layers instead.';
 
   @override
   String get tipsBrushFavoriteTitle =>

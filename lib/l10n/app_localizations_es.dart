@@ -1813,11 +1813,11 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get tipsAutofillManualPartColorTitle =>
-      'Mantén la línea en una sola capa normal y pinta las partes a mano';
+      'Deja la línea real en una capa normal y separa los rellenos a mano';
 
   @override
   String get tipsAutofillManualPartColorDesc =>
-      'Si vas a sustituir los colores provisionales por los definitivos, no hace falta dividir la línea en varias «Capas de líneas para relleno automático». Deja toda la línea en una sola capa normal. En una «Capa de relleno automático» para cada parte, pinta manualmente un color provisional llamativo como una superficie rellena, no como un simple trazo. Corrige las formas mal pintadas y elige «Ejecutar relleno automático» en el menú de cada capa. Si hay una «Capa de líneas para relleno automático» asociada, elige «Actualizar solo el color conservando la forma». Si no existe una capa de líneas asociada, la capa de relleno automático también puede actualizar el color de la forma ya pintada sin volver a detectar la región. Si quieres que el relleno automático detecte las partes directamente desde la línea y las coloree de una vez, utiliza una «Capa de líneas para relleno automático».';
+      'Si vas a sustituir los colores provisionales por los definitivos, mantén toda la línea real en una sola capa normal. Para cada parte, añade una «Capa de líneas para relleno automático», elige «Asignar parte» en su menú de tres puntos para vincular la parte correspondiente y ejecuta una vez «Ejecutar relleno automático» desde ese menú para crear su «Capa de relleno automático». Estas capas de líneas solo sirven como apoyo para vincular la parte; no necesitas dibujar en ellas la línea real, así que pueden quedarse vacías. Dibuja la línea real en la única capa normal, colócala por encima de las capas de relleno y pinta manualmente cada Capa de relleno automático como una superficie rellena —no como una línea— con un color provisional llamativo. Corrige las formas mal pintadas y, desde el menú de la Capa de líneas para relleno automático asociada, ejecuta «Ejecutar relleno automático» y selecciona «Actualizar solo el color conservando la forma». Así se aplican los colores definitivos del ajuste sin volver a detectar ni sustituir las formas pintadas. Si quieres que el relleno automático identifique y coloree las partes directamente a partir de la línea en un solo paso, dibuja la línea real en las capas de líneas para relleno automático.';
 
   @override
   String get tipsBrushFavoriteTitle =>

@@ -22,6 +22,7 @@ void main() {
       final autofillTip = l10n.tipsAutofillManualPartColorDesc;
       expect(autofillTip.trim(), isNotEmpty);
       expect(autofillTip, contains(l10n.layerPanelMenuLineartLayer));
+      expect(autofillTip, contains(l10n.layerPanelMenuPartAssign));
       expect(autofillTip, contains(l10n.layerPanelMenuAutofillLayer));
       expect(autofillTip, contains(l10n.layerPanelMenuRunAutofill));
       expect(autofillTip, contains(l10n.layerPanelAutofillColorUpdateTitle));
