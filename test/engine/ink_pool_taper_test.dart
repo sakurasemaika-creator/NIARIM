@@ -671,6 +671,95 @@ void main() {
     expect(_total(widePool), 0);
   });
 
+  for (final thickness in [3.0, 1.0]) {
+    test('a line that ends within the range ends its pool there, at 1 px; '
+        'the other line keeps the whole range (${thickness.round()} px '
+        'lines)', () {
+      const range = 30.0, width = 10.0;
+      final soft = thickness < 2;
+      final o = soft ? .5 : 0.0;
+      // A T whose stem stops 15 px below the bar (row 50, stem column 85),
+      // and a 50 degree V, its point at (150, 130), whose upper arm stops 20
+      // px out while the lower one runs on.
+      const a = 25 * math.pi / 180;
+      final art = _Art(220, 190)
+        ..stroke([(20, 50 + o), (200, 50 + o)], thickness, soft: soft)
+        ..stroke([(85 + o, 50 + o), (85 + o, 65 + o)], thickness, soft: soft)
+        ..stroke(
+          [
+            (150 - 20 * math.cos(a), 130 + o - 20 * math.sin(a)),
+            (150, 130 + o),
+            (150 - 120 * math.cos(a), 130 + o + 120 * math.sin(a)),
+          ],
+          thickness,
+          soft: soft,
+        );
+      final pool = _pool(art, range: range, width: width);
+      _write(soft ? 'line_end_1px' : 'line_end', art, pool);
+
+      // The stem's pool, beside it, where the bar's pool is out of the way
+      // (from row 62): just before the stem's round end begins, about 1 to
+      // 2 px, not the 6 px the whole range would leave there; past the end,
+      // nothing.
+      final e = soft ? 1 : 2;
+      for (final side in [-1, 1]) {
+        final from = side < 0 ? 85 - e - 12 : 85 + e;
+        final to = side < 0 ? 85 - e : 85 + e + 12;
+        for (final y in [62, 63]) {
+          final s = y - 50.0;
+          final thin = _row(art, pool, y, from, to);
+          expect(
+            thin,
+            lessThan(1 + (width - 1) * (1 - s / 15) + 1.2),
+            reason: 'beside the stem, row $y, ${side < 0 ? 'left' : 'right'}',
+          );
+          expect(thin, greaterThan(.3), reason: 'still there at row $y');
+        }
+        for (var y = 66; y < 100; y++) {
+          expect(_row(art, pool, y, from, to), 0, reason: 'past the end, $y');
+        }
+      }
+      // The bar's pool keeps the whole range.
+      for (final d in [20, 25]) {
+        expect(
+          _column(art, pool, 85 + d, 50 + e, 50 + e + 12),
+          closeTo(1 + (width - 1) * (1 - d / range), 1.5),
+          reason: 'below the bar, $d px right',
+        );
+      }
+
+      // The V: along the lower arm, past where the upper arm's pool ended,
+      // the whole range's slope, measured straight across from its edge.
+      double across(double s) {
+        // From the lower arm's centre at s along it, towards the inside.
+        final px = 150 - s * math.cos(a), py = 130 + o + s * math.sin(a);
+        final nx = -math.sin(a), ny = -math.cos(a);
+        var sum = 0.0;
+        for (var h = thickness / 2 + .5; h <= thickness / 2 + 14; h += .1) {
+          final x = (px + nx * h).floor(), y = (py + ny * h).floor();
+          sum += pool[(y * art.width + x) * 4 + 3] / 255 * .1;
+        }
+        return sum;
+      }
+
+      for (final s in [24.0, 27.0]) {
+        expect(
+          across(s),
+          closeTo(1 + (width - 1) * (1 - s / range), 1.2),
+          reason: 'the lower arm, $s px along',
+        );
+      }
+      // The upper arm's own pool stops at its end: nothing beside where it
+      // would have gone on.
+      final ux = 150 - 26 * math.cos(a), uy = 130 + o - 26 * math.sin(a);
+      expect(
+        _around(art, pool, ux + 3 * math.sin(a), uy + 3 * math.cos(a), 2),
+        0,
+        reason: 'past the upper arm\'s end',
+      );
+    });
+  }
+
   test('curves and straight lines get none', () {
     final art = _Art(200, 160)
       ..stroke([

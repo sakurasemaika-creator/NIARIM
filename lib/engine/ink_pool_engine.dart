@@ -6,7 +6,8 @@ import 'dart:typed_data';
 /// angle; wider ones get none. Along each of the two lines, on
 /// the side facing the other, the pool shows [centreWidthPx] beyond the
 /// line's edge at the meeting point and thins in a straight slope to 1 px at
-/// [rangePx], like a slide, however thick the line is. The result is the
+/// [rangePx], or where the line ends if that is nearer, like a slide,
+/// however thick the line is. The result is the
 /// pool alone on a transparent layer (premultiplied RGBA), to go under the
 /// line art: it reaches back to the line's centre so no gap shows along the
 /// edge.
@@ -156,6 +157,61 @@ class InkPoolEngine {
         sides[a].add((side: 1, other: b, mx: mx, my: my));
         sides[b].add((side: -1, other: a, mx: mx, my: my));
       }
+      // A line that breaks off within the range ends its pool where it ends:
+      // there the pool is down to 1 px. Each line has its own reach, so the
+      // two sides of an angle can end at different lengths.
+      final stopSet = stops.toSet();
+      final last = List<int>.filled(branches.length, -1);
+      final blocked = List<bool>.filled(branches.length, false);
+      for (final q in touched) {
+        final id = label[q];
+        if (id < 0) continue;
+        // A line running on into another meeting point has not ended.
+        if (stopSet.contains(q)) blocked[id] = true;
+        if (last[id] < 0 || distance[q] > distance[last[id]]) last[id] = q;
+      }
+      double reachOf(int id, double mx, double my) {
+        final q = last[id];
+        if (q < 0 || blocked[id] || distance[q] >= explore - 2) return range;
+        final x = q % width, y = q ~/ width;
+        if (x == 0 || y == 0 || x == width - 1 || y == height - 1) {
+          return range;
+        }
+        if (_branchCount(centre, width, q) > 1) return range;
+        final ex = x - sx - mx, ey = y - sy - my;
+        final along = math.max(
+          math.sqrt(ex * ex + ey * ey),
+          (distance[q] - math.sqrt(mx * mx + my * my)) * .85,
+        );
+        // Thinning stops short of the end, inside its cap: on along the line
+        // to where the ink ends, less the cap, is where the line's side ends.
+        var back = q;
+        for (var k = 0; k < 3; k++) {
+          back = parent[back];
+        }
+        var dx = (x - back % width).toDouble();
+        var dy = (y - back ~/ width).toDouble();
+        final length = math.sqrt(dx * dx + dy * dy);
+        var beyond = 0.0;
+        if (length > 0) {
+          dx /= length;
+          dy /= length;
+          final tip = _edgeAlong(ink, width, height, q, dx, dy, lineHalf + 4);
+          // The line's half width, from its ink straight across a little
+          // way back from the end.
+          final half =
+              (_edgeAlong(ink, width, height, back, -dy, dx, lineHalf + 2) +
+                  _edgeAlong(ink, width, height, back, dy, -dx, lineHalf + 2)) /
+              2;
+          beyond = math.max(0.0, tip - half);
+        }
+        return (along + beyond).clamp(1.0, range);
+      }
+
+      final reach = [
+        for (var id = 0; id < branches.length; id++)
+          [for (final entry in sides[id]) reachOf(id, entry.mx, entry.my)],
+      ];
       final guard = centreWidth + 2 * lineHalf + 2;
       // The distance to the nearest pixel off the line overstates its half
       // width (by a pixel where the edge is anti-aliased): the pool may run
@@ -219,7 +275,7 @@ class InkPoolEngine {
             (d - math.sqrt(mx * mx + my * my)) * .85,
           );
           // Slices just past the end still carry its last pixel.
-          if (along > range + 1.5) continue;
+          if (along > reach[id][entry] + 1.5) continue;
           // Towards the other line: this line's left or right, wherever the
           // line curves to.
           final ox = -ty * side, oy = tx * side;
@@ -277,7 +333,7 @@ class InkPoolEngine {
           edge: edge,
           along: st.along,
           centreWidth: centreWidth,
-          range: range,
+          range: reach[st.id][st.entry],
           // Near the meeting point a slice could reach round to the
           // outside: keep to the angle between the two lines there.
           inside: (px, py) => _withinAngle(
