@@ -13,19 +13,23 @@ List<int> _px(Uint8List d, int x, int y) {
   return d.sublist(i, i + 4);
 }
 
-Uint8List _vignette(Uint8List input, {double strength = 50}) =>
-    applyDrawFilterInIsolate((
-      input,
-      _w,
-      _h,
-      FilterDef(
-        id: 'Filter0009',
-        name: '周辺減光',
-        kind: FilterKind.vignette,
-        strength: strength,
-      ),
-      null,
-    ));
+Uint8List _vignette(
+  Uint8List input, {
+  double strength = 50,
+  double range = 40,
+}) => applyDrawFilterInIsolate((
+  input,
+  _w,
+  _h,
+  FilterDef(
+    id: 'Filter0009',
+    name: '周辺減光',
+    kind: FilterKind.vignette,
+    strength: strength,
+    vignetteRange: range,
+  ),
+  null,
+));
 
 /// 周辺減光 darkens the four corners of the whole canvas, softly, like a
 /// camera's vignette: transparent canvas gets the shadow too (it is not
@@ -124,5 +128,41 @@ void main() {
       onlyOnPaint: true,
     );
     expect(out.every((v) => v == 0), isTrue);
+  });
+
+  // 「範囲」 and 「濃さ」 work on their own: the range sets how far in from
+  // the corners the shade reaches, the density how dark the corners are.
+  test('the range sets how far in it reaches, the density how dark', () {
+    final white = Uint8List(_w * _h * 4)..fillRange(0, _w * _h * 4, 255);
+    int shade(Uint8List d, int x, int y) => 255 - _px(d, x, y)[0];
+    // Halfway from the middle to a corner (along the diagonal).
+    final hx = (_w * .75).round(), hy = (_h * .75).round();
+
+    final narrow = _vignette(white, range: 20);
+    final wide = _vignette(white, range: 80);
+    expect(shade(narrow, hx, hy), 0, reason: 'a 20 % range stops short');
+    expect(shade(wide, hx, hy), greaterThan(20), reason: '80 % reaches it');
+    // The corners are as dark either way: that is the density's.
+    expect(shade(narrow, 0, 0), closeTo(shade(wide, 0, 0), 3));
+    expect(shade(_vignette(white), _w ~/ 2, _h ~/ 2), 0);
+
+    final light = _vignette(white, strength: 20);
+    final dark = _vignette(white, strength: 90);
+    expect(shade(dark, 0, 0), greaterThan(shade(light, 0, 0) * 3));
+    expect(_vignette(white, range: 0), white, reason: 'no range, no shade');
+  });
+
+  test('the range is saved and restored (40 for older settings)', () {
+    const filter = FilterDef(
+      id: 'v',
+      name: 'v',
+      kind: FilterKind.vignette,
+      strength: 50,
+    );
+    expect(filter.vignetteRange, 40);
+    final changed = filter.copyWith(vignetteRange: 75);
+    expect(FilterDef.fromJson(changed.toJson()).vignetteRange, 75);
+    final old = changed.toJson()..remove('vignetteRange');
+    expect(FilterDef.fromJson(old).vignetteRange, 40);
   });
 }

@@ -1897,12 +1897,20 @@ class _FilterPanelState extends State<FilterPanel> {
               (c) => service.updateFilterParams(current.id, vignetteColor: c),
             ),
             _paramSlider(
-              l10n.filterVignetteStrength,
+              l10n.filterVignetteRange,
+              current.vignetteRange,
+              0,
+              100,
+              (v) => service.updateFilterParams(current.id, vignetteRange: v),
+            ),
+            _paramSlider(
+              l10n.filterVignetteDensity,
               current.strength,
               0,
               100,
               (v) => service.updateFilterParams(current.id, strength: v),
             ),
+            _hint(l10n.filterVignetteHint),
           ],
         );
       case FilterKind.noise:

@@ -189,6 +189,7 @@ Uint8List runFilterPreview(FilterPreviewJob job) {
         height,
         filter.strength,
         color: filter.vignetteColor,
+        range: filter.vignetteRange,
       );
     case FilterKind.noise:
       return applyNoiseFilter(

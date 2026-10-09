@@ -218,6 +218,7 @@ Uint8List applyDrawFilterForFrameInIsolate(
       height,
       filter.strength,
       color: filter.vignetteColor,
+      range: filter.vignetteRange,
     ),
     FilterKind.noise => applyNoiseFilter(
       data,
@@ -1808,8 +1809,10 @@ class FilterEngine {
   /// 周辺減光（ビネット）：画面中心からの距離に応じて四隅を[color]（既定は
   /// 黒）で覆う、イラスト・漫画の演出で定番の効果。キャンバス全体が対象で、
   /// 透明な所にも四隅の影を描く（描いた絵の上だけに限らない）。中心からの
-  /// 距離計算のみの単純な1パス処理で負荷は軽い。[strength]は0〜100（%）で
-  /// 減光の強さを調整する。[color]に黒以外を指定すると、暗くするのではなく
+  /// 距離計算のみの単純な1パス処理で負荷は軽い。[strength]（濃さ）は
+  /// 0〜100（%）で四隅の暗さ、[range]（範囲）は0〜100（%）で四隅から中心へ
+  /// 向かってどこまで暗くするか（既定40＝中心から6割の所までは変えない）。
+  /// [color]に黒以外を指定すると、暗くするのではなく
   /// 指定色を周辺へかぶせる（夕焼けオレンジ・夜の青など）演出にも使える。
   /// [onlyOnPaint]がtrueなら描いた絵の上だけを、その不透明度のまま暗くする
   /// （ブラウン管の画面の縁など、絵の一部として使うとき）。
@@ -1820,9 +1823,11 @@ class FilterEngine {
     double strength, {
     int color = 0xFF000000,
     bool onlyOnPaint = false,
+    double range = 40,
   }) {
     final amount = (strength / 100.0).clamp(0.0, 1.0);
-    if (amount <= 0) return Uint8List.fromList(data);
+    final reach = (range / 100.0).clamp(0.0, 1.0);
+    if (amount <= 0 || reach <= 0) return Uint8List.fromList(data);
     final result = Uint8List.fromList(data);
     final cr = (color >> 16) & 0xFF;
     final cg = (color >> 8) & 0xFF;
@@ -1830,10 +1835,10 @@ class FilterEngine {
     final cx = width / 2.0;
     final cy = height / 2.0;
     // 対角線の半分を最大距離とし、中心付近は影響なし・外周に近づくほど
-    // 指定色へ寄っていくようにする（中心60%程度までは変化なし、そこから
+    // 指定色へ寄っていくようにする（中心から1−範囲までは変化なし、そこから
     // 外周へ滑らかに変化する古典的なビネット形状）。
     final maxDist = math.sqrt(cx * cx + cy * cy);
-    const innerRadius = 0.6;
+    final innerRadius = 1 - reach;
     for (int y = 0; y < height; y++) {
       final dy = (y + .5 - cy) / maxDist;
       for (int x = 0; x < width; x++) {

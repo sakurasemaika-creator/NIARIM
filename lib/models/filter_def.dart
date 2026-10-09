@@ -143,6 +143,10 @@ class FilterDef {
   final int outlineColor;
   final double outlineWidth;
   final int vignetteColor;
+
+  /// How far in from the corners the vignette reaches (0 to 100 % of the
+  /// way to the centre; its darkness is [strength]).
+  final double vignetteRange;
   final double caSaturation;
   final double caBrightness;
   final double caContrast;
@@ -269,6 +273,7 @@ class FilterDef {
     this.outlineColor = 0xFF000000,
     this.outlineWidth = 6,
     this.vignetteColor = 0xFF000000,
+    this.vignetteRange = 40,
     this.caSaturation = 0,
     this.caBrightness = 0,
     this.caContrast = 0,
@@ -403,6 +408,7 @@ class FilterDef {
     int? outlineColor,
     double? outlineWidth,
     int? vignetteColor,
+    double? vignetteRange,
     double? caSaturation,
     double? caBrightness,
     double? caContrast,
@@ -497,6 +503,7 @@ class FilterDef {
       outlineColor: outlineColor ?? this.outlineColor,
       outlineWidth: outlineWidth ?? this.outlineWidth,
       vignetteColor: vignetteColor ?? this.vignetteColor,
+      vignetteRange: vignetteRange ?? this.vignetteRange,
       caSaturation: caSaturation ?? this.caSaturation,
       caBrightness: caBrightness ?? this.caBrightness,
       caContrast: caContrast ?? this.caContrast,
@@ -604,6 +611,7 @@ class FilterDef {
     'outlineColor': outlineColor,
     'outlineWidth': outlineWidth,
     'vignetteColor': vignetteColor,
+    'vignetteRange': vignetteRange,
     'caSaturation': caSaturation,
     'caBrightness': caBrightness,
     'caContrast': caContrast,
@@ -765,6 +773,7 @@ class FilterDef {
     outlineColor: j['outlineColor'] as int? ?? 0xFF000000,
     outlineWidth: (j['outlineWidth'] as num?)?.toDouble() ?? 6,
     vignetteColor: j['vignetteColor'] as int? ?? 0xFF000000,
+    vignetteRange: (j['vignetteRange'] as num?)?.toDouble() ?? 40,
     thresholdValue: (j['thresholdValue'] as num?)?.toDouble() ?? 128,
     lensCenterOffsetX: (j['lensCenterOffsetX'] as num?)?.toDouble() ?? 0,
     lensCenterOffsetY: (j['lensCenterOffsetY'] as num?)?.toDouble() ?? 0,
