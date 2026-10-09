@@ -176,8 +176,13 @@ class FilterDef {
   final double crtAberration;
   final double crtBleed;
 
-  /// Anime style: how many px the outlines grow by (0 = line widths stay).
-  final double animeLineWidth;
+  /// Anime style: how wide (px) the border lines drawn where colours
+  /// change are (0 = none).
+  final double animeBorderWidth;
+
+  /// Anime style: how different (ΔE in CIELAB) two neighbouring colours
+  /// must be for a border line between them.
+  final double animeBorderThreshold;
 
   /// Outline: how faint a pixel may be and still count as the shape, 0 to
   /// 100 (see FilterEngine's outline): higher lets the outline reach in
@@ -292,7 +297,8 @@ class FilterDef {
     this.pixelArtByDots = false,
     this.crtAberration = 30,
     this.crtBleed = 30,
-    this.animeLineWidth = 0,
+    this.animeBorderWidth = 2,
+    this.animeBorderThreshold = 20,
     this.outlineErosion = 0,
     this.hologramBrightness = 0,
     this.hologramSaturation = 0,
@@ -427,7 +433,8 @@ class FilterDef {
     bool? pixelArtByDots,
     double? crtAberration,
     double? crtBleed,
-    double? animeLineWidth,
+    double? animeBorderWidth,
+    double? animeBorderThreshold,
     double? outlineErosion,
     double? hologramBrightness,
     double? hologramSaturation,
@@ -522,7 +529,8 @@ class FilterDef {
       pixelArtByDots: pixelArtByDots ?? this.pixelArtByDots,
       crtAberration: crtAberration ?? this.crtAberration,
       crtBleed: crtBleed ?? this.crtBleed,
-      animeLineWidth: animeLineWidth ?? this.animeLineWidth,
+      animeBorderWidth: animeBorderWidth ?? this.animeBorderWidth,
+      animeBorderThreshold: animeBorderThreshold ?? this.animeBorderThreshold,
       outlineErosion: outlineErosion ?? this.outlineErosion,
       hologramBrightness: hologramBrightness ?? this.hologramBrightness,
       hologramSaturation: hologramSaturation ?? this.hologramSaturation,
@@ -630,7 +638,8 @@ class FilterDef {
     'pixelArtByDots': pixelArtByDots,
     'crtAberration': crtAberration,
     'crtBleed': crtBleed,
-    'animeLineWidth': animeLineWidth,
+    'animeBorderWidth': animeBorderWidth,
+    'animeBorderThreshold': animeBorderThreshold,
     'outlineErosion': outlineErosion,
     'hologramBrightness': hologramBrightness,
     'hologramSaturation': hologramSaturation,
@@ -794,7 +803,8 @@ class FilterDef {
     pixelArtByDots: j['pixelArtByDots'] as bool? ?? false,
     crtAberration: (j['crtAberration'] as num?)?.toDouble() ?? 30,
     crtBleed: (j['crtBleed'] as num?)?.toDouble() ?? 30,
-    animeLineWidth: (j['animeLineWidth'] as num?)?.toDouble() ?? 0,
+    animeBorderWidth: (j['animeBorderWidth'] as num?)?.toDouble() ?? 2,
+    animeBorderThreshold: (j['animeBorderThreshold'] as num?)?.toDouble() ?? 20,
     outlineErosion: (j['outlineErosion'] as num?)?.toDouble() ?? 0,
     hologramBrightness: (j['hologramBrightness'] as num?)?.toDouble() ?? 0,
     hologramSaturation: (j['hologramSaturation'] as num?)?.toDouble() ?? 0,

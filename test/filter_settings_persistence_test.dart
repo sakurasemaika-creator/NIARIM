@@ -41,7 +41,10 @@ void main() {
       inkPoolColor: 0xFF201010,
       inkPoolRange: 23,
       inkPoolCenterWidth: 9,
-      animeLineWidth: 3,
+      animeBorderWidth: 3.5,
+      animeBorderThreshold: 35,
+      inkPoolMaxAngle: 120,
+      vignetteRange: 70,
       autoLineartTaper: false,
       crtAberration: 61,
       crtBleed: 33,
@@ -87,7 +90,10 @@ void main() {
     expect(restored.inkPoolColor, 0xFF201010);
     expect(restored.inkPoolRange, 23);
     expect(restored.inkPoolCenterWidth, 9);
-    expect(restored.animeLineWidth, 3);
+    expect(restored.animeBorderWidth, 3.5);
+    expect(restored.animeBorderThreshold, 35);
+    expect(restored.inkPoolMaxAngle, 120);
+    expect(restored.vignetteRange, 70);
     expect(restored.autoLineartTaper, isFalse);
     expect(restored.crtAberration, 61);
     expect(restored.crtBleed, 33);

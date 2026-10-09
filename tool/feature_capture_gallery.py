@@ -78,7 +78,7 @@ def display_name(case, labels):
         "Filter0004": "filterToneCurve",
         "Filter0018": "pixelColorMode",
     }.get(filter_id)
-    label = "初期設定" if variant == "default" else variant
+    label = {"default": "初期設定", "bold": "線を濃く・太く"}.get(variant, variant)
     flat = filter_id == "Filter0018" and variant.endswith("_flat")
     if flat:
         variant = variant.removesuffix("_flat")

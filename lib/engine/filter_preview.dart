@@ -92,7 +92,8 @@ Uint8List runFilterPreview(FilterPreviewJob job) {
         strength: filter.strength,
         colorCount: filter.colorLevels,
         edgeStrength: filter.edgeStrength,
-        lineWidth: filter.animeLineWidth * scale,
+        borderWidth: filter.animeBorderWidth * scale,
+        borderThreshold: filter.animeBorderThreshold,
       );
     case FilterKind.outline:
       return engine.applyOutline(

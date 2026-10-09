@@ -5,6 +5,7 @@ import 'dart:ui' as ui;
 import '../models/effect_filter_instance.dart';
 import '../models/filter_def.dart';
 import '../models/pixel_color_mode.dart';
+import 'anime_border_lines.dart';
 import 'background_acclimation_engine.dart';
 import 'auto_lineart_engine.dart';
 import 'ink_pool_engine.dart';
@@ -156,7 +157,8 @@ Uint8List applyDrawFilterForFrameInIsolate(
       strength: filter.strength,
       colorCount: filter.colorLevels,
       edgeStrength: filter.edgeStrength,
-      lineWidth: filter.animeLineWidth,
+      borderWidth: filter.animeBorderWidth,
+      borderThreshold: filter.animeBorderThreshold,
     ),
     // 本適用は選択レイヤーを書き換えず新規レイヤーへ縁取りリングのみを
     // 描画するため、applyOutline（元の描画内容を保持した合成結果。
@@ -1547,10 +1549,11 @@ class FilterEngine {
     return result;
   }
 
-  /// アニメ調：色数を減らし（ポスタリゼーション）、輪郭を暗くする。
-  /// 輪郭は境目の**暗い側だけ**を暗くするので、[lineWidth]が0なら元の線の
-  /// 太さは変わらない（境目の両側を暗くすると、線の両脇が1pxずつ太る）。
-  /// [lineWidth]（px）を上げると、暗くする範囲をその幅だけ広げて線を太らせる。
+  /// アニメ調：色数を減らし（ポスタリゼーション）、色が変わる境目に
+  /// 境界線を引く（[animeBorderLines]）。境界線は隣どうしの色の差が
+  /// [borderThreshold]（CIELABのΔE）以上の所に、幅[borderWidth]（px）で、
+  /// 境目の**暗い側**へ引く（線画の黒い線は太らない）。[edgeStrength]は
+  /// 線の濃さ（0〜1、1で黒）。
   /// Anime style on the straight colour of the premultiplied layer (see
   /// [onStraightColour]): colours are quantised as painted, not darkened by
   /// their edge transparency.
@@ -1561,7 +1564,8 @@ class FilterEngine {
     required double strength,
     required int colorCount,
     required double edgeStrength,
-    double lineWidth = 0,
+    double borderWidth = 2,
+    double borderThreshold = 20,
   }) => onStraightColour(
     data,
     (straight) => _animeStyleStraight(
@@ -1571,7 +1575,8 @@ class FilterEngine {
       strength: strength,
       colorCount: colorCount,
       edgeStrength: edgeStrength,
-      lineWidth: lineWidth,
+      borderWidth: borderWidth,
+      borderThreshold: borderThreshold,
     ),
   );
 
@@ -1582,7 +1587,8 @@ class FilterEngine {
     required double strength,
     required int colorCount,
     required double edgeStrength,
-    double lineWidth = 0,
+    required double borderWidth,
+    required double borderThreshold,
   }) {
     // ① 色数削減（ポスタリゼーション）
     final step = (256 / colorCount.clamp(2, 32)).round();
@@ -1598,64 +1604,30 @@ class FilterEngine {
         255,
       );
     }
-    // ② エッジ検出（Sobelフィルタ）して輪郭を黒く
-    if (edgeStrength > 0) {
-      // Edges are found in the picture as it looks on white paper, so line
-      // art drawn on a transparent layer has edges too (its see-through
-      // pixels carry no colour of their own).
-      final flat = Uint8List(data.length);
-      for (var i = 0; i < data.length; i += 4) {
-        final a = data[i + 3];
-        for (var c = 0; c < 3; c++) {
-          flat[i + c] = (data[i + c] * a + 255 * (255 - a)) ~/ 255;
-        }
-        flat[i + 3] = 255;
-      }
-      final edges = _sobelEdge(flat, width, height);
-      final gray = Float64List(width * height);
-      for (var p = 0; p < gray.length; p++) {
-        final i = p * 4;
-        gray[p] = flat[i] * 0.299 + flat[i + 1] * 0.587 + flat[i + 2] * 0.114;
-      }
-      // How much each pixel darkens: only on the darker side of an edge
-      // (at or below the brightness around it).
-      var darken = Uint8List(width * height);
-      for (var y = 0; y < height; y++) {
-        for (var x = 0; x < width; x++) {
-          var sum = 0.0, n = 0;
-          for (
-            var ny = math.max(0, y - 1);
-            ny <= math.min(height - 1, y + 1);
-            ny++
-          ) {
-            for (
-              var nx = math.max(0, x - 1);
-              nx <= math.min(width - 1, x + 1);
-              nx++
-            ) {
-              sum += gray[ny * width + nx];
-              n++;
-            }
-          }
-          final p = y * width + x;
-          if (gray[p] > sum / n) continue;
-          darken[p] = (edges[p] * edgeStrength).clamp(0, 255).round();
-        }
-      }
-      final grow = lineWidth.round();
-      final base = darken;
-      if (grow > 0) darken = _maxFilter(darken, width, height, grow);
-      for (var p = 0; p < darken.length; p++) {
-        final e = darken[p];
-        if (e == 0) continue;
-        final i = p * 4;
-        posterized[i] = (posterized[i] - e).clamp(0, 255);
-        posterized[i + 1] = (posterized[i + 1] - e).clamp(0, 255);
-        posterized[i + 2] = (posterized[i + 2] - e).clamp(0, 255);
-        // Where the line width grew the line into see-through pixels, the
-        // line is drawn there (as opaque as it is dark), so the lines of
-        // line art on a transparent layer thicken too. Width 0 adds none.
-        if (e > base[p] && e > posterized[i + 3]) posterized[i + 3] = e;
+    // ② 色が変わる境目に境界線
+    if (edgeStrength <= 0 || borderWidth <= 0) return posterized;
+    // Borders are found in the picture as it looks on white paper, so a
+    // shape on a transparent layer has one along its edge too (its
+    // see-through pixels carry no colour of their own).
+    final lines = animeBorderLines(
+      data,
+      width,
+      height,
+      lineWidth: borderWidth,
+      threshold: borderThreshold,
+    );
+    final darkness = edgeStrength.clamp(0.0, 1.0);
+    for (var p = 0; p < lines.coverage.length; p++) {
+      final cover = lines.coverage[p];
+      if (cover <= 0) continue;
+      final i = p * 4;
+      if (posterized[i + 3] == 0) continue;
+      // Only the darker colour's share of an anti-aliased pixel darkens.
+      for (var c = 0; c < 3; c++) {
+        final ink = math.max(0.0, posterized[i + c] - lines.light[p * 3 + c]);
+        posterized[i + c] = (posterized[i + c] - ink * darkness * cover)
+            .round()
+            .clamp(0, 255);
       }
     }
     return posterized;
@@ -2894,31 +2866,6 @@ class FilterEngine {
       }
     }
     return result;
-  }
-
-  /// The largest value within [radius] px (a round brush) of each pixel.
-  Uint8List _maxFilter(Uint8List values, int width, int height, int radius) {
-    // Separable passes would make a square; a disc keeps lines round-ended.
-    final out = Uint8List(values.length);
-    final r2 = radius * radius;
-    for (var y = 0; y < height; y++) {
-      for (var x = 0; x < width; x++) {
-        var best = 0;
-        for (var dy = -radius; dy <= radius; dy++) {
-          final ny = y + dy;
-          if (ny < 0 || ny >= height) continue;
-          for (var dx = -radius; dx <= radius; dx++) {
-            if (dx * dx + dy * dy > r2) continue;
-            final nx = x + dx;
-            if (nx < 0 || nx >= width) continue;
-            final v = values[ny * width + nx];
-            if (v > best) best = v;
-          }
-        }
-        out[y * width + x] = best;
-      }
-    }
-    return out;
   }
 
   List<int> _sobelEdge(Uint8List data, int width, int height) {

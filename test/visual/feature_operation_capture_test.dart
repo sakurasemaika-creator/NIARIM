@@ -72,6 +72,9 @@ void main() {
                   if (mode != PixelColorMode.none) '${mode.name}_flat',
                 ],
               ]
+            : filter.kind == FilterKind.animeStyle
+            // The initial settings, and the border lines dark and wide.
+            ? ['default', 'bold']
             : <String>['default'];
         for (final variant in variants) {
           final id = '${filter.id}_$variant';
@@ -173,6 +176,14 @@ void main() {
                 dither,
               );
             }
+          }
+          if (filter.kind == FilterKind.animeStyle) {
+            final bold = variant == 'bold';
+            h.context.read<FilterService>().updateFilterParams(
+              filter.id,
+              edgeStrength: bold ? 1 : filter.edgeStrength,
+              animeBorderWidth: bold ? 3 : filter.animeBorderWidth,
+            );
           }
           await h.settle(6);
           final settings = h.context.read<FilterService>().currentFilter!;

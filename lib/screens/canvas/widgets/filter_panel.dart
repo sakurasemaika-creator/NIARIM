@@ -1505,15 +1505,27 @@ class _FilterPanelState extends State<FilterPanel> {
               decimals: 2,
             ),
             _paramSlider(
-              l10n.filterAnimeLineWidth,
-              current.animeLineWidth,
+              l10n.filterAnimeBorderWidth,
+              current.animeBorderWidth,
               0,
-              5,
+              10,
               (v) => service.updateFilterParams(
                 current.id,
-                animeLineWidth: v.roundToDouble(),
+                animeBorderWidth: (v * 10).roundToDouble() / 10,
+              ),
+              decimals: 1,
+            ),
+            _paramSlider(
+              l10n.filterAnimeBorderThreshold,
+              current.animeBorderThreshold,
+              1,
+              100,
+              (v) => service.updateFilterParams(
+                current.id,
+                animeBorderThreshold: v.roundToDouble(),
               ),
             ),
+            _hint(l10n.filterAnimeBorderHint),
           ],
         );
       case FilterKind.outline:
