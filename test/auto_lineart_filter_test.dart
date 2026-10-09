@@ -160,18 +160,21 @@ void main() {
       },
     );
 
-    test('keeps an X crossing as connected topology', () {
+    test('an X crossing stays two strokes running on through it', () {
       const w = 96, h = 96;
       final src = _canvas(w, h);
       _line(src, w, h, 14, 14, 82, 82, 4);
       _line(src, w, h, 82, 14, 14, 82, 4);
 
       final graph = AutoLineartEngine.analyze(src, w, h, roughWidthPx: 9);
-      expect(graph.paths.length, greaterThanOrEqualTo(4));
-      expect(
-        graph.paths.where((p) => p.startIsJunction || p.endIsJunction),
-        isNotEmpty,
-      );
+      // Each stroke whole, end to end: not four pieces bent into the middle.
+      expect(graph.paths, hasLength(2));
+      for (final path in graph.paths) {
+        final a = path.points.first, b = path.points.last;
+        expect((a.x - b.x).abs(), greaterThan(60));
+        expect((a.y - b.y).abs(), greaterThan(60));
+        expect(path.startIsJunction || path.endIsJunction, isFalse);
+      }
 
       final out = AutoLineartEngine.render(
         graph,
@@ -196,10 +199,13 @@ void main() {
       _line(src, w, h, 48, 48, 48, 82, 4);
 
       final graph = AutoLineartEngine.analyze(src, w, h, roughWidthPx: 9);
-      final junctionPaths = graph.paths
-          .where((p) => p.startIsJunction || p.endIsJunction)
-          .toList();
-      expect(junctionPaths.length, greaterThanOrEqualTo(3));
+      // The stem carries on into one arm; the other arm ends at the junction
+      // (marked so, so it is not tapered there).
+      expect(graph.paths, hasLength(2));
+      expect(
+        graph.paths.where((p) => p.startIsJunction || p.endIsJunction),
+        hasLength(1),
+      );
 
       final out = AutoLineartEngine.render(
         graph,
@@ -211,6 +217,10 @@ void main() {
       );
       // Junction is a locked topology anchor; taper is only applied at free ends.
       expect(_alpha(out, w, 48, 48), greaterThan(200));
+      // All three arms are there.
+      expect(_alpha(out, w, 30, 28), greaterThan(100));
+      expect(_alpha(out, w, 66, 28), greaterThan(100));
+      expect(_alpha(out, w, 48, 70), greaterThan(100));
     });
 
     test('prunes a very short unstable terminal nub', () {
@@ -270,34 +280,37 @@ void main() {
       },
     );
 
-    test('rasterizer preserves a clean centerline without requiring partial alpha', () {
-      const w = 80, h = 64;
-      final graph = AutoLineartGraph(
-        width: w,
-        height: h,
-        paths: [
-          AutoLineartPath(
-            points: const [
-              AutoLineartPoint(10.25, 16.25),
-              AutoLineartPoint(69.25, 48.75),
-            ],
-            startIsJunction: false,
-            endIsJunction: false,
-            persistence: 1,
-          ),
-        ],
-      );
-      final out = AutoLineartEngine.render(
-        graph,
-        w,
-        h,
-        outputWidthPx: 3,
-        taperLengthPx: 0,
-        smoothing: 0,
-      );
-      expect(_opaqueCount(out), greaterThan(50));
-      expect(_alpha(out, w, 40, 33), greaterThan(0));
-    });
+    test(
+      'rasterizer preserves a clean centerline without requiring partial alpha',
+      () {
+        const w = 80, h = 64;
+        final graph = AutoLineartGraph(
+          width: w,
+          height: h,
+          paths: [
+            AutoLineartPath(
+              points: const [
+                AutoLineartPoint(10.25, 16.25),
+                AutoLineartPoint(69.25, 48.75),
+              ],
+              startIsJunction: false,
+              endIsJunction: false,
+              persistence: 1,
+            ),
+          ],
+        );
+        final out = AutoLineartEngine.render(
+          graph,
+          w,
+          h,
+          outputWidthPx: 3,
+          taperLengthPx: 0,
+          smoothing: 0,
+        );
+        expect(_opaqueCount(out), greaterThan(50));
+        expect(_alpha(out, w, 40, 33), greaterThan(0));
+      },
+    );
 
     test('restricts expensive topology work to a sparse rough bounding box', () {
       const w = 512, h = 512;

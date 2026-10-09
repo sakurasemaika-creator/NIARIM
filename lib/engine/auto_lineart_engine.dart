@@ -15,11 +15,17 @@ class AutoLineartPath {
   final bool endIsJunction;
   final double persistence;
 
+  /// For a dot in the rough (an eye, say): its radius in canvas pixels. A
+  /// dot is drawn filled at its own size rather than as a line; 0 for a
+  /// line.
+  final double dotRadius;
+
   const AutoLineartPath({
     required this.points,
     required this.startIsJunction,
     required this.endIsJunction,
     required this.persistence,
+    this.dotRadius = 0,
   });
 }
 
@@ -248,16 +254,28 @@ class AutoLineartEngine {
     // The centre line, without the short branches thinning sprouts at a
     // bump or a rounded end (anything shorter than the rough width off a
     // line).
-    final skeleton = _thinZhangSuen(cleaned, localWidth, localHeight);
+    final skeleton = _thinGuoHall(
+      _thinZhangSuen(cleaned, localWidth, localHeight),
+      localWidth,
+      localHeight,
+    );
     _removeRedundantSteps(skeleton, localWidth, localHeight);
     _keepVanishedDots(cleaned, skeleton, localWidth, localHeight);
     _pruneBranches(skeleton, localWidth, localHeight, rough);
     // A branch taken off a junction can leave a corner pixel there.
     _removeRedundantSteps(skeleton, localWidth, localHeight);
 
-    final rawPaths = _separateMerges(
-      _traceSkeleton(skeleton, localWidth, localHeight),
-      cleaned,
+    // How far each pixel of the ink is from the paper: the ink's width
+    // along the lines, where they merge and overlap.
+    final paper = _distanceToPaper(cleaned, localWidth, localHeight);
+    final rawPaths = _resolveJunctions(
+      _separateMerges(
+        _traceSkeleton(skeleton, localWidth, localHeight),
+        paper,
+        localWidth,
+        localHeight,
+      ),
+      paper,
       localWidth,
       localHeight,
     );
@@ -271,29 +289,69 @@ class AutoLineartEngine {
       );
     }
 
+    // One line's width: the middle of the ink widths along the lines.
+    final inkWidths = <double>[
+      for (final raw in rawPaths)
+        for (final p in raw.points)
+          math.max(
+            1.0,
+            2 *
+                    paper[p.y.floor().clamp(0, localHeight - 1) * localWidth +
+                        p.x.floor().clamp(0, localWidth - 1)] -
+                1,
+          ),
+    ]..sort();
+    final lineWidth = inkWidths.isEmpty
+        ? rough
+        : inkWidths[inkWidths.length ~/ 2];
+
     final paths = <AutoLineartPath>[];
     for (final raw in rawPaths) {
       if (raw.points.length < 2) continue;
       const persistence = 1.0;
 
-      // Compress exact pixel stepping into direction-change points. Smoothing is
-      // intentionally deferred to render(), so its slider does not rerun image
-      // analysis. Restore full-canvas coordinates only after all local topology
-      // work is complete.
-      final simplified = _simplifyCollinear(_restoreCorners(raw.points, rough))
-          .map(
-            (p) => AutoLineartPoint(
-              (p.x + crop.offsetX).clamp(0.0, width - 1.0),
-              (p.y + crop.offsetY).clamp(0.0, height - 1.0),
-            ),
-          )
-          .toList(growable: false);
+      // Corners put back, the line evened out between them, then thinned to
+      // the points that keep its shape. The smoothing slider's own
+      // smoothing is deferred to render(), so it does not rerun image
+      // analysis. Restore full-canvas coordinates only after all local
+      // topology work is complete.
+      final cornered = _restoreCorners(raw.points, rough);
+      final simplified =
+          (raw.points.length <= 2
+                  ? cornered
+                  : _keepShape(_evenOut(cornered, lineWidth), .3))
+              .map(
+                (p) => AutoLineartPoint(
+                  (p.x + crop.offsetX).clamp(0.0, width - 1.0),
+                  (p.y + crop.offsetY).clamp(0.0, height - 1.0),
+                ),
+              )
+              .toList(growable: false);
+      // A dot (thinned to one pixel) keeps the size it has in the rough.
+      final first = raw.points.first, last = raw.points.last;
+      final isDot =
+          raw.points.length == 2 &&
+          raw.startIsJunction &&
+          raw.endIsJunction &&
+          _distance(first, last) < 1;
+      final dotRadius = isDot
+          ? math.max(
+              .5,
+              paper[first.y.floor().clamp(0, localHeight - 1) * localWidth +
+                      ((first.x + last.x) / 2).floor().clamp(
+                        0,
+                        localWidth - 1,
+                      )] -
+                  .5,
+            )
+          : 0.0;
       paths.add(
         AutoLineartPath(
           points: simplified,
           startIsJunction: raw.startIsJunction,
           endIsJunction: raw.endIsJunction,
           persistence: persistence,
+          dotRadius: dotRadius,
         ),
       );
     }
@@ -334,6 +392,7 @@ class AutoLineartEngine {
             startIsJunction: path.startIsJunction,
             endIsJunction: path.endIsJunction,
             persistence: path.persistence,
+            dotRadius: path.dotRadius,
           ),
         );
         continue;
@@ -391,6 +450,7 @@ class AutoLineartEngine {
           startIsJunction: path.startIsJunction,
           endIsJunction: path.endIsJunction,
           persistence: path.persistence,
+          dotRadius: path.dotRadius,
         ),
       );
     }
@@ -489,6 +549,7 @@ class AutoLineartEngine {
             startIsJunction: editedPath.startIsJunction,
             endIsJunction: editedPath.endIsJunction,
             persistence: editedPath.persistence,
+            dotRadius: editedPath.dotRadius,
           ),
         );
         continue;
@@ -545,6 +606,7 @@ class AutoLineartEngine {
           startIsJunction: targetPath.startIsJunction,
           endIsJunction: targetPath.endIsJunction,
           persistence: targetPath.persistence,
+          dotRadius: targetPath.dotRadius,
         ),
       );
     }
@@ -589,6 +651,7 @@ class AutoLineartEngine {
           startIsJunction: oldPath.startIsJunction,
           endIsJunction: oldPath.endIsJunction,
           persistence: oldPath.persistence,
+          dotRadius: oldPath.dotRadius,
         ),
       );
     }
@@ -635,13 +698,17 @@ class AutoLineartEngine {
         lockEnd: path.endIsJunction,
       );
       points = _curveThrough(points);
+      // A dot is filled at its own size, never thinner than the lines.
+      final dot = path.dotRadius > 0;
       _rasterizePath(
         out,
         width,
         height,
         points,
-        lineWidth: lineWidth,
-        taperLength: taper * scale,
+        lineWidth: dot
+            ? math.max(lineWidth, path.dotRadius * 2 * scale)
+            : lineWidth,
+        taperLength: dot ? 0 : taper * scale,
         taperStart: !path.startIsJunction,
         taperEnd: !path.endIsJunction,
         color: color,
@@ -704,10 +771,22 @@ class AutoLineartEngine {
       return math.acos(((ux * vx + uy * vy) / (lu * lv)).clamp(-1.0, 1.0));
     }
 
+    // How far the arms turn, each taken away from the corner: the flat
+    // bottom thinning leaves at a corner would make it look gentler.
+    double armTurn(int i) {
+      final a = chain[i - arm * 2], b = chain[i - arm ~/ 2];
+      final c = chain[i + arm ~/ 2], d = chain[i + arm * 2];
+      final ux = b.x - a.x, uy = b.y - a.y, vx = d.x - c.x, vy = d.y - c.y;
+      final lu = math.sqrt(ux * ux + uy * uy),
+          lv = math.sqrt(vx * vx + vy * vy);
+      if (lu == 0 || lv == 0) return 0;
+      return math.acos(((ux * vx + uy * vy) / (lu * lv)).clamp(-1.0, 1.0));
+    }
+
+    // The sharpest point of each corner first.
     final corners = <(int, double)>[];
     for (var i = arm * 2; i < n - arm * 2; i++) {
-      final turn = turnAt(i);
-      if (turn >= 1.2) corners.add((i, turn));
+      if (armTurn(i) >= 1.2) corners.add((i, turnAt(i)));
     }
     corners.sort((a, b) => b.$2.compareTo(a.$2));
     final taken = <int>[];
@@ -1060,27 +1139,115 @@ class AutoLineartEngine {
     return out;
   }
 
-  static List<AutoLineartPoint> _simplifyCollinear(
+  /// [points] with the wobble of a hand-drawn line, and the bends thinning
+  /// leaves next to junctions and joins, evened out: each point moved to
+  /// the average of the line around it (a Gaussian over half a line's
+  /// [width]). The ends stay put, and so do corners (where the line turns
+  /// 40° or more within a line's width), with the smoothing easing off
+  /// towards them.
+  static List<AutoLineartPoint> _evenOut(
     List<AutoLineartPoint> points,
+    double width,
   ) {
-    if (points.length < 3) return points;
-    final out = <AutoLineartPoint>[points.first];
-    var prevDx = 0;
-    var prevDy = 0;
-    for (var i = 1; i < points.length; i++) {
-      final dx = (points[i].x - points[i - 1].x).sign.toInt();
-      final dy = (points[i].y - points[i - 1].y).sign.toInt();
-      if (i == 1) {
-        prevDx = dx;
-        prevDy = dy;
-      } else if (dx != prevDx || dy != prevDy) {
-        out.add(points[i - 1]);
-        prevDx = dx;
-        prevDy = dy;
+    final dense = _resample(points, 1);
+    final n = dense.length;
+    if (n < 5) return points;
+    final k = math.max(3, width.round());
+    final sigma = math.max(1.5, width / 2);
+    double turnAt(int i) {
+      if (i - k < 0 || i + k >= n) return 0;
+      final a = dense[i - k], b = dense[i], c = dense[i + k];
+      final h1 = math.atan2(b.y - a.y, b.x - a.x);
+      final h2 = math.atan2(c.y - b.y, c.x - b.x);
+      return _wrapAngle(h2 - h1).abs();
+    }
+
+    final turns = [for (var i = 0; i < n; i++) turnAt(i)];
+    final anchors = <int>[0];
+    for (var i = 1; i < n - 1; i++) {
+      if (turns[i] < 40 * math.pi / 180) continue;
+      var peak = true;
+      for (var o = -k; o <= k && peak; o++) {
+        final j = i + o;
+        if (j <= 0 || j >= n - 1 || j == i) continue;
+        if (turns[j] > turns[i] || (turns[j] == turns[i] && j < i)) {
+          peak = false;
+        }
+      }
+      if (peak) anchors.add(i);
+    }
+    anchors.add(n - 1);
+    final out = <AutoLineartPoint>[];
+    final reach = (sigma * 2).ceil();
+    for (var a = 0; a + 1 < anchors.length; a++) {
+      final from = anchors[a], to = anchors[a + 1];
+      for (var i = from; i < to; i++) {
+        final ease = (math.min(i - from, to - i) / (sigma * 2)).clamp(0.0, 1.0);
+        if (ease == 0) {
+          out.add(dense[i]);
+          continue;
+        }
+        var sx = 0.0, sy = 0.0, total = 0.0;
+        for (var o = -reach; o <= reach; o++) {
+          final j = i + o;
+          if (j < from || j > to) continue;
+          final w = math.exp(-o * o / (2 * sigma * sigma));
+          sx += dense[j].x * w;
+          sy += dense[j].y * w;
+          total += w;
+        }
+        out.add(
+          AutoLineartPoint(
+            dense[i].x + (sx / total - dense[i].x) * ease,
+            dense[i].y + (sy / total - dense[i].y) * ease,
+          ),
+        );
       }
     }
-    out.add(points.last);
+    out.add(dense.last);
     return out;
+  }
+
+  /// [points] thinned to those that keep its shape within [tolerance] px
+  /// (Douglas–Peucker).
+  static List<AutoLineartPoint> _keepShape(
+    List<AutoLineartPoint> points,
+    double tolerance,
+  ) {
+    if (points.length < 3) return points;
+    final keep = List<bool>.filled(points.length, false)
+      ..[0] = true
+      ..[points.length - 1] = true;
+    final stack = <(int, int)>[(0, points.length - 1)];
+    while (stack.isNotEmpty) {
+      final (a, b) = stack.removeLast();
+      if (b - a < 2) continue;
+      final pa = points[a], pb = points[b];
+      final dx = pb.x - pa.x, dy = pb.y - pa.y;
+      final length = math.sqrt(dx * dx + dy * dy);
+      var worst = -1.0;
+      var at = -1;
+      for (var i = a + 1; i < b; i++) {
+        final p = points[i];
+        final d = length < 1e-9
+            ? _distance(p, pa)
+            : ((p.x - pa.x) * dy - (p.y - pa.y) * dx).abs() / length;
+        if (d > worst) {
+          worst = d;
+          at = i;
+        }
+      }
+      if (worst > tolerance) {
+        keep[at] = true;
+        stack
+          ..add((a, at))
+          ..add((at, b));
+      }
+    }
+    return [
+      for (var i = 0; i < points.length; i++)
+        if (keep[i]) points[i],
+    ];
   }
 
   static List<_RawPath> _traceSkeleton(
@@ -1277,12 +1444,11 @@ class AutoLineartEngine {
   /// another is left as it is.
   static List<_RawPath> _separateMerges(
     List<_RawPath> paths,
-    Uint8List mask,
+    Float64List paper,
     int width,
     int height,
   ) {
     if (paths.length < 3) return paths;
-    final paper = _distanceToPaper(mask, width, height);
     double inkWidth(AutoLineartPoint p) {
       final x = p.x.floor().clamp(0, width - 1);
       final y = p.y.floor().clamp(0, height - 1);
@@ -1364,6 +1530,17 @@ class AutoLineartEngine {
       // extra width out from its middle.
       final merged = lines[c];
       final count = merged.length;
+      final mergedPath = paths[meeting[c].$1];
+      final farIsJunction = meeting[c].$2
+          ? mergedPath.endIsJunction
+          : mergedPath.startIsJunction;
+      // Two lines lying over each other on to the next junction, coming
+      // together only for a moment where they cross (a head's round bottom
+      // under a collar line): _resolveJunctions carries each on through the
+      // ink.
+      if (farIsJunction && _overlapping(merged, lineWidth, inkWidth)) {
+        continue;
+      }
       final raw = [
         for (final p in merged) math.max(0.0, (inkWidth(p) - lineWidth) / 2),
       ];
@@ -1386,20 +1563,9 @@ class AutoLineartEngine {
           break;
         }
       }
-      final mergedPath = paths[meeting[c].$1];
-      final farIsJunction = meeting[c].$2
-          ? mergedPath.endIsJunction
-          : mergedPath.startIsJunction;
-      if (meet == count - 1 && farIsJunction) {
-        // Still apart at the next junction: close in on it.
-        var run = 0.0;
-        for (var k = count - 1; k > 0; k--) {
-          offsets[k] = math.min(offsets[k], run / 2);
-          run += _distance(merged[k], merged[k - 1]);
-          if (run > lineWidth * 3) break;
-        }
-        offsets[count - 1] = 0;
-      }
+      // Still apart at the next junction: lines overlapping between two
+      // junctions, which _resolveJunctions joins up through the ink.
+      if (meet == count - 1 && farIsJunction) continue;
       AutoLineartPoint tangentAt(int k) {
         final from = merged[math.max(0, k - 2)];
         final to = merged[math.min(count - 1, k + 2)];
@@ -1465,6 +1631,550 @@ class AutoLineartEngine {
       ];
     }
     return null;
+  }
+
+  /// Whether [line] (between two junctions) is two lines of [lineWidth]
+  /// lying over each other: not too long, and its ink, away from the
+  /// junctions, mostly clearly wider than one line.
+  static bool _overlapping(
+    List<AutoLineartPoint> line,
+    double lineWidth,
+    double Function(AutoLineartPoint p) inkWidth,
+  ) {
+    var length = 0.0;
+    for (var k = 1; k < line.length; k++) {
+      length += _distance(line[k - 1], line[k]);
+    }
+    if (length > lineWidth * 14) return false;
+    final inner = <double>[];
+    var travelled = 0.0;
+    for (var k = 1; k < line.length; k++) {
+      travelled += _distance(line[k - 1], line[k]);
+      if (travelled >= lineWidth && travelled <= length - lineWidth) {
+        inner.add(inkWidth(line[k]));
+      }
+    }
+    if (inner.isEmpty) return false;
+    inner.sort();
+    return inner[inner.length ~/ 2] >= lineWidth * 1.4;
+  }
+
+  /// Where lines cross, meet or lie over each other, thinning bends each one
+  /// into the junction, and where two lines overlap between two junctions
+  /// it runs a single line down the middle of their ink (the bottom of a
+  /// head drawn over a collar line becomes one line, the sides of the head
+  /// bending into it). Resolve each junction as the rough was drawn:
+  ///
+  /// * Each line is cut back to where the junction stops bending it.
+  /// * The lines that carry on through a junction most smoothly are joined
+  ///   by a smooth curve, provided the curve stays inside the ink (a collar
+  ///   line straight across, a head's curve round under it). The smoothest
+  ///   joins are taken first, each line end at most once.
+  /// * The single middle line of two overlapping lines is dropped when the
+  ///   joins account for its ink.
+  /// * A line that only reaches a junction runs straight on until it meets
+  ///   another line there.
+  static List<_RawPath> _resolveJunctions(
+    List<_RawPath> paths,
+    Float64List paper,
+    int width,
+    int height,
+  ) {
+    if (paths.length < 2) return paths;
+    double paperAt(double x, double y) {
+      final px = x.floor(), py = y.floor();
+      if (px < 0 || py < 0 || px >= width || py >= height) return 0;
+      return paper[py * width + px];
+    }
+
+    double inkWidth(AutoLineartPoint p) =>
+        math.max(1.0, 2 * paperAt(p.x, p.y) - 1);
+    double lengthOf(List<AutoLineartPoint> points) {
+      var length = 0.0;
+      for (var i = 1; i < points.length; i++) {
+        length += _distance(points[i - 1], points[i]);
+      }
+      return length;
+    }
+
+    // One line's width: the middle of the ink widths along all the lines.
+    final widths = <double>[
+      for (final path in paths)
+        for (var i = 2; i + 2 < path.points.length; i++)
+          inkWidth(path.points[i]),
+    ]..sort();
+    if (widths.isEmpty) return paths;
+    final line = math.max(2.0, widths[widths.length ~/ 2]);
+
+    // The junctions, as clusters: two junctions joined by a line shorter
+    // than one line's width are one place.
+    final ids = <(double, double), int>{};
+    final parent = <int>[];
+    int idOf(AutoLineartPoint p) => ids.putIfAbsent((p.x, p.y), () {
+      parent.add(parent.length);
+      return parent.length - 1;
+    });
+    int find(int a) {
+      while (parent[a] != a) {
+        parent[a] = parent[parent[a]];
+        a = parent[a];
+      }
+      return a;
+    }
+
+    const keep = 0, link = 1, overlap = 2;
+    final role = List<int>.filled(paths.length, keep);
+    // How many line ends meet at each junction point (a dot's two ends are
+    // junctions that meet nothing).
+    final meeting = <(double, double), int>{};
+    for (final path in paths) {
+      if (path.points.length < 2) continue;
+      if (path.startIsJunction) {
+        final p = path.points.first;
+        meeting[(p.x, p.y)] = (meeting[(p.x, p.y)] ?? 0) + 1;
+      }
+      if (path.endIsJunction) {
+        final p = path.points.last;
+        meeting[(p.x, p.y)] = (meeting[(p.x, p.y)] ?? 0) + 1;
+      }
+    }
+    bool meets(AutoLineartPoint p) => (meeting[(p.x, p.y)] ?? 0) >= 2;
+    for (var i = 0; i < paths.length; i++) {
+      final path = paths[i];
+      if (path.points.length < 2) continue;
+      if (path.startIsJunction) idOf(path.points.first);
+      if (path.endIsJunction) idOf(path.points.last);
+      if (!path.startIsJunction || !path.endIsJunction) continue;
+      if (!meets(path.points.first) || !meets(path.points.last)) continue;
+      final a = idOf(path.points.first), b = idOf(path.points.last);
+      if (a == b) continue;
+      final length = lengthOf(path.points);
+      if (length < line) {
+        role[i] = link;
+        parent[find(a)] = find(b);
+      }
+    }
+    // Two lines lying over each other between two junctions: their ink is
+    // clearly wider than one line all along.
+    final partners = <(int, int)>{};
+    for (var i = 0; i < paths.length; i++) {
+      final path = paths[i];
+      if (role[i] != keep || !path.startIsJunction || !path.endIsJunction) {
+        continue;
+      }
+      if (!meets(path.points.first) || !meets(path.points.last)) continue;
+      final a = find(idOf(path.points.first));
+      final b = find(idOf(path.points.last));
+      if (a == b) continue;
+      final length = lengthOf(path.points);
+      if (length > line * 14) continue;
+      final inner = <double>[];
+      var travelled = 0.0;
+      for (var k = 1; k < path.points.length; k++) {
+        travelled += _distance(path.points[k - 1], path.points[k]);
+        if (travelled >= line && travelled <= length - line) {
+          inner.add(inkWidth(path.points[k]));
+        }
+      }
+      if (inner.isEmpty) continue;
+      inner.sort();
+      if (inner[inner.length ~/ 2] < line * 1.4) continue;
+      role[i] = overlap;
+      partners
+        ..add((a, b))
+        ..add((b, a));
+    }
+
+    // Each line end at a junction, cut back to where the junction stops
+    // bending it, with the way it heads there.
+    final ends = <_JunctionEnd>[];
+    final trims = List<List<int>>.generate(
+      paths.length,
+      (i) => [0, paths[i].points.length - 1],
+    );
+    for (var i = 0; i < paths.length; i++) {
+      final path = paths[i];
+      if (role[i] != keep || path.points.length < 2) continue;
+      for (final atStart in const [true, false]) {
+        if (atStart ? !path.startIsJunction : !path.endIsJunction) continue;
+        final junction = atStart ? path.points.first : path.points.last;
+        if (!meets(junction)) continue;
+        final outward = atStart
+            ? path.points
+            : path.points.reversed.toList(growable: false);
+        final reach = inkWidth(junction) / 2 + line / 2;
+        var cut = 0;
+        while (cut < outward.length &&
+            _distance(outward[cut], junction) < reach) {
+          cut++;
+        }
+        // Both ends' cuts must leave a line between them.
+        final other = atStart ? trims[i][1] : outward.length - 1 - trims[i][0];
+        if (cut >= other - 2) continue;
+        final from = outward[cut];
+        final heading = _headingAtCut(outward, cut, line);
+        if (heading == null) continue;
+        if (atStart) {
+          trims[i][0] = cut;
+        } else {
+          trims[i][1] = outward.length - 1 - cut;
+        }
+        ends.add(
+          _JunctionEnd(
+            i,
+            atStart,
+            find(idOf(junction)),
+            junction,
+            from,
+            heading,
+          ),
+        );
+      }
+    }
+    if (ends.length < 2) return paths;
+
+    // The joins, smoothest first.
+    final joins = <(double, int, int, List<AutoLineartPoint>)>[];
+    for (var a = 0; a < ends.length; a++) {
+      for (var b = a + 1; b < ends.length; b++) {
+        final ea = ends[a], eb = ends[b];
+        if (ea.cluster != eb.cluster &&
+            !partners.contains((ea.cluster, eb.cluster))) {
+          continue;
+        }
+        final span = _distance(ea.point, eb.point);
+        if (span > line * 14) continue;
+        final curve = _junctionCurve(ea, eb, span);
+        // Inside the ink all the way.
+        if (curve.any((p) => paperAt(p.x, p.y) < 1)) continue;
+        var turn = 0.0;
+        var heading = math.atan2(ea.heading.y, ea.heading.x);
+        final through = [ea.point, ...curve, eb.point];
+        for (var k = 1; k < through.length; k++) {
+          final dx = through[k].x - through[k - 1].x;
+          final dy = through[k].y - through[k - 1].y;
+          if (dx * dx + dy * dy < 1e-6) continue;
+          final next = math.atan2(dy, dx);
+          turn += _wrapAngle(next - heading).abs();
+          heading = next;
+        }
+        turn += _wrapAngle(
+          math.atan2(-eb.heading.y, -eb.heading.x) - heading,
+        ).abs();
+        if (turn > 110 * math.pi / 180) continue;
+        joins.add((turn + span * 1e-4, a, b, curve));
+      }
+    }
+    joins.sort((x, y) => x.$1.compareTo(y.$1));
+    final joined = <int, (int, List<AutoLineartPoint>)>{};
+    for (final (_, a, b, curve) in joins) {
+      if (joined.containsKey(a) || joined.containsKey(b)) continue;
+      joined[a] = (b, curve);
+      joined[b] = (a, curve.reversed.toList(growable: false));
+    }
+
+    // The middle line of overlapping lines goes only when the joins run
+    // through its ink.
+    for (var i = 0; i < paths.length; i++) {
+      if (role[i] != overlap) continue;
+      final through = [for (final j in joined.values) ...j.$2];
+      var covered = 0;
+      for (final p in paths[i].points) {
+        final reach = inkWidth(p) / 2 + 1;
+        if (through.any((q) => _distance(p, q) <= reach)) covered++;
+      }
+      if (covered < paths[i].points.length * .8) role[i] = keep;
+    }
+
+    // A line end left over runs straight on until it meets another line.
+    final others = <AutoLineartPoint>[
+      for (final j in joined.values) ...j.$2,
+      for (var i = 0; i < paths.length; i++)
+        if (role[i] == keep)
+          for (var k = trims[i][0]; k <= trims[i][1]; k++) paths[i].points[k],
+    ];
+    final extended = <int, List<AutoLineartPoint>>{};
+    for (var e = 0; e < ends.length; e++) {
+      if (joined.containsKey(e)) continue;
+      final end = ends[e];
+      final reach = _distance(end.point, end.junction) * 2.5 + 1;
+      final own = paths[end.path].points;
+      AutoLineartPoint? meets;
+      for (var step = 1.0; step <= reach && meets == null; step += .5) {
+        final q = AutoLineartPoint(
+          end.point.x + end.heading.x * step,
+          end.point.y + end.heading.y * step,
+        );
+        if (paperAt(q.x, q.y) < 1) break;
+        for (final o in others) {
+          if (_distance(o, q) <= .75 && !own.contains(o)) {
+            meets = q;
+            break;
+          }
+        }
+      }
+      extended[e] = [meets ?? end.junction];
+    }
+
+    // Each line, cut back, joined end to end with its joins.
+    final pieceEnds = <(int, bool), int>{
+      for (var e = 0; e < ends.length; e++) (ends[e].path, ends[e].atStart): e,
+    };
+    List<AutoLineartPoint> piece(int i, bool forward) {
+      final points = paths[i].points.sublist(trims[i][0], trims[i][1] + 1);
+      final startEnd = pieceEnds[(i, true)];
+      final endEnd = pieceEnds[(i, false)];
+      final full = [
+        if (startEnd != null && extended.containsKey(startEnd))
+          ...extended[startEnd]!.reversed,
+        ...points,
+        if (endEnd != null && extended.containsKey(endEnd))
+          ...extended[endEnd]!,
+      ];
+      return forward ? full : full.reversed.toList(growable: false);
+    }
+
+    bool flagOf(int i, bool atStart) {
+      final e = pieceEnds[(i, atStart)];
+      // A line end cut back at a junction meets another line there.
+      if (e != null) return true;
+      return atStart ? paths[i].startIsJunction : paths[i].endIsJunction;
+    }
+
+    int? joinAt(int i, bool atStart) => pieceEnds[(i, atStart)] == null
+        ? null
+        : joined[pieceEnds[(i, atStart)]!]?.$1;
+
+    final result = <_RawPath>[];
+    final visited = List<bool>.filled(paths.length, false);
+    void walk(int first, bool forward) {
+      final points = <AutoLineartPoint>[];
+      var current = first;
+      var ahead = forward;
+      final startFlag = flagOf(first, forward);
+      var endFlag = true;
+      while (true) {
+        visited[current] = true;
+        points.addAll(piece(current, ahead));
+        final exitAtStart = !ahead;
+        final e = pieceEnds[(current, exitAtStart)];
+        final next = e == null ? null : joined[e];
+        if (next == null) {
+          endFlag = flagOf(current, exitAtStart);
+          break;
+        }
+        final target = ends[next.$1];
+        points.addAll(next.$2);
+        if (visited[target.path]) {
+          // Round to where the line began: a closed loop.
+          points.add(points.first);
+          break;
+        }
+        current = target.path;
+        ahead = target.atStart;
+      }
+      if (points.length >= 2) {
+        result.add(
+          _RawPath(
+            points: List.unmodifiable(points),
+            startIsJunction: startFlag,
+            endIsJunction: endFlag,
+          ),
+        );
+      }
+    }
+
+    for (var i = 0; i < paths.length; i++) {
+      if (visited[i] || role[i] != keep) continue;
+      if (joinAt(i, true) == null) {
+        walk(i, true);
+      } else if (joinAt(i, false) == null) {
+        walk(i, false);
+      }
+    }
+    // What is left are closed loops of joined lines.
+    for (var i = 0; i < paths.length; i++) {
+      if (visited[i] || role[i] != keep) continue;
+      walk(i, true);
+    }
+    return result;
+  }
+
+  /// The way a line heads at its point [cut] (towards [outward]'s start, the
+  /// junction), as it runs further out: a curve fitted to the line beyond
+  /// the junction's pull (from half a line's [width] on, up to three widths
+  /// or a corner) and followed back to the cut, so a curve keeps its
+  /// curvature. Where too little line is left before a corner, its heading
+  /// over a few pixels on the junction's side of the cut.
+  static AutoLineartPoint? _headingAtCut(
+    List<AutoLineartPoint> outward,
+    int cut,
+    double width,
+  ) {
+    final reach = width * 3;
+    final samples = <(double, AutoLineartPoint)>[];
+    double? firstHeading;
+    var turned = 0.0;
+    double? lastHeading;
+    AutoLineartPoint previous = outward[cut];
+    for (var d = 2.0; d <= reach; d += 2) {
+      final p = _alongFrom(outward, cut, d);
+      final dx = p.x - previous.x, dy = p.y - previous.y;
+      if (dx * dx + dy * dy < 1e-6) break;
+      final heading = math.atan2(dy, dx);
+      firstHeading ??= heading;
+      if (lastHeading != null) {
+        turned += _wrapAngle(heading - lastHeading).abs();
+      }
+      // A corner: the line beyond is another line.
+      if (turned > 35 * math.pi / 180 &&
+          _wrapAngle(heading - firstHeading).abs() > 25 * math.pi / 180) {
+        break;
+      }
+      lastHeading = heading;
+      samples.add((d, p));
+      previous = p;
+    }
+    final fit = [
+      for (final (d, p) in samples)
+        if (d >= width * .5) (d, p),
+    ];
+    if (fit.length >= 4 && fit.last.$1 - fit.first.$1 >= width) {
+      // x(s) and y(s) as quadratics in the distance s along the line.
+      double sum(double Function(double s) f) {
+        var total = 0.0;
+        for (final (d, _) in fit) {
+          total += f(d);
+        }
+        return total;
+      }
+
+      final n = fit.length.toDouble();
+      final s1 = sum((s) => s), s2 = sum((s) => s * s);
+      final s3 = sum((s) => s * s * s), s4 = sum((s) => s * s * s * s);
+      List<double>? solve(double Function(AutoLineartPoint p) of) {
+        var b0 = 0.0, b1 = 0.0, b2 = 0.0;
+        for (final (d, p) in fit) {
+          final v = of(p);
+          b0 += v;
+          b1 += v * d;
+          b2 += v * d * d;
+        }
+        final m = [
+          [n, s1, s2, b0],
+          [s1, s2, s3, b1],
+          [s2, s3, s4, b2],
+        ];
+        for (var col = 0; col < 3; col++) {
+          var pivot = col;
+          for (var row = col + 1; row < 3; row++) {
+            if (m[row][col].abs() > m[pivot][col].abs()) pivot = row;
+          }
+          if (m[pivot][col].abs() < 1e-9) return null;
+          final swap = m[col];
+          m[col] = m[pivot];
+          m[pivot] = swap;
+          for (var row = 0; row < 3; row++) {
+            if (row == col) continue;
+            final f = m[row][col] / m[col][col];
+            for (var k = col; k < 4; k++) {
+              m[row][k] -= f * m[col][k];
+            }
+          }
+        }
+        return [for (var k = 0; k < 3; k++) m[k][3] / m[k][k]];
+      }
+
+      final fx = solve((p) => p.x), fy = solve((p) => p.y);
+      if (fx != null && fy != null) {
+        // The fitted line's direction at the cut, towards the junction.
+        final heading = _normalized(AutoLineartPoint(-fx[1], -fy[1]));
+        if (heading != null) return heading;
+      }
+    }
+    // A corner close beyond the cut: the line's heading on the junction's
+    // side of the cut.
+    final inner = _alongFrom(outward, cut, -4);
+    final at = outward[cut];
+    return _normalized(AutoLineartPoint(inner.x - at.x, inner.y - at.y));
+  }
+
+  /// The point [distance] px along [points] from its point [from]: towards
+  /// its end for a positive distance, its start for a negative one (or the
+  /// end point it reaches first).
+  static AutoLineartPoint _alongFrom(
+    List<AutoLineartPoint> points,
+    int from,
+    double distance,
+  ) {
+    final step = distance >= 0 ? 1 : -1;
+    var left = distance.abs();
+    var i = from;
+    while (i + step >= 0 && i + step < points.length) {
+      final run = _distance(points[i], points[i + step]);
+      if (run >= left && run > 0) {
+        final t = left / run;
+        return AutoLineartPoint(
+          points[i].x + (points[i + step].x - points[i].x) * t,
+          points[i].y + (points[i + step].y - points[i].y) * t,
+        );
+      }
+      left -= run;
+      i += step;
+    }
+    return points[i];
+  }
+
+  /// A smooth curve from line end [a] to line end [b] (across [span] px),
+  /// leaving and arriving the way each line heads: its points between them.
+  static List<AutoLineartPoint> _junctionCurve(
+    _JunctionEnd a,
+    _JunctionEnd b,
+    double span,
+  ) {
+    // Handles as for a circular arc turning as much as the two headings do
+    // (a third of the span for a straight join).
+    final turn = math.acos(
+      (-(a.heading.x * b.heading.x + a.heading.y * b.heading.y)).clamp(
+        -1.0,
+        1.0,
+      ),
+    );
+    final c = math.cos(turn / 4);
+    final handle = span / (3 * c * c);
+    final p0 = a.point, p3 = b.point;
+    final p1 = AutoLineartPoint(
+      p0.x + a.heading.x * handle,
+      p0.y + a.heading.y * handle,
+    );
+    final p2 = AutoLineartPoint(
+      p3.x + b.heading.x * handle,
+      p3.y + b.heading.y * handle,
+    );
+    final count = math.max(2, span.ceil());
+    return [
+      for (var k = 1; k < count; k++)
+        () {
+          final t = k / count, u = 1 - t;
+          final w0 = u * u * u, w1 = 3 * u * u * t;
+          final w2 = 3 * u * t * t, w3 = t * t * t;
+          return AutoLineartPoint(
+            p0.x * w0 + p1.x * w1 + p2.x * w2 + p3.x * w3,
+            p0.y * w0 + p1.y * w1 + p2.y * w2 + p3.y * w3,
+          );
+        }(),
+    ];
+  }
+
+  static double _wrapAngle(double a) {
+    var angle = a;
+    while (angle > math.pi) {
+      angle -= 2 * math.pi;
+    }
+    while (angle < -math.pi) {
+      angle += 2 * math.pi;
+    }
+    return angle;
   }
 
   /// The unit direction from the start of [line] to its point [reach] px
@@ -1789,6 +2499,19 @@ class AutoLineartEngine {
         }
         if (count < 2 || count > 3) continue;
         if (_lineDegree(skeleton, width, height, x, y) != 1) continue;
+        // A step's corner touches the line both above or below and to a
+        // side. A line's end pixel beside the next one does not, and taking
+        // it would shorten the line (a 2 px staircase from its end on).
+        bool on(int dx, int dy) {
+          final nx = x + dx, ny = y + dy;
+          return nx >= 0 &&
+              ny >= 0 &&
+              nx < width &&
+              ny < height &&
+              skeleton[ny * width + nx] != 0;
+        }
+
+        if (!(on(0, -1) || on(0, 1)) || !(on(-1, 0) || on(1, 0))) continue;
         skeleton[p] = 0;
         removed = true;
       }
@@ -1846,6 +2569,75 @@ class AutoLineartEngine {
     }
   }
 
+  /// [_thinZhangSuen]'s result thinned to 1 px where it is left 2 px wide
+  /// (Guo and Hall's two-pass thinning, which thins a diagonal staircase
+  /// without eating it). Guo-Hall on the whole rough puts the centre lines
+  /// of merged and crossing strokes elsewhere than the rest of the analysis
+  /// is made for, so it only finishes Zhang-Suen's work.
+  static Uint8List _thinGuoHall(Uint8List input, int width, int height) {
+    final img = Uint8List.fromList(input);
+    if (width < 3 || height < 3) return img;
+    var foreground = <int>[
+      for (var y = 1; y < height - 1; y++)
+        for (var x = 1; x < width - 1; x++)
+          if (img[y * width + x] != 0) y * width + x,
+    ];
+    final remove = <int>[];
+    var changed = true;
+    while (changed) {
+      changed = false;
+      for (var pass = 0; pass < 2; pass++) {
+        remove.clear();
+        for (final i in foreground) {
+          if (img[i] == 0) continue;
+          final p2 = img[i - width] != 0 ? 1 : 0;
+          final p3 = img[i - width + 1] != 0 ? 1 : 0;
+          final p4 = img[i + 1] != 0 ? 1 : 0;
+          final p5 = img[i + width + 1] != 0 ? 1 : 0;
+          final p6 = img[i + width] != 0 ? 1 : 0;
+          final p7 = img[i + width - 1] != 0 ? 1 : 0;
+          final p8 = img[i - 1] != 0 ? 1 : 0;
+          final p9 = img[i - width - 1] != 0 ? 1 : 0;
+          // One run of neighbours (the pixel joins nothing else together).
+          final runs =
+              (p2 == 0 && (p3 | p4) != 0 ? 1 : 0) +
+              (p4 == 0 && (p5 | p6) != 0 ? 1 : 0) +
+              (p6 == 0 && (p7 | p8) != 0 ? 1 : 0) +
+              (p8 == 0 && (p9 | p2) != 0 ? 1 : 0);
+          if (runs != 1) continue;
+          // Not a line's end, and on the edge of the ink.
+          final n1 = (p9 | p2) + (p3 | p4) + (p5 | p6) + (p7 | p8);
+          final n2 = (p2 | p3) + (p4 | p5) + (p6 | p7) + (p8 | p9);
+          final n = math.min(n1, n2);
+          if (n < 2 || n > 3) continue;
+          // The first pass peels the south-east side, the second the
+          // north-west, so a line keeps its middle.
+          final side = pass == 0
+              ? (p6 | p7 | (1 - p9)) & p8
+              : (p2 | p3 | (1 - p5)) & p4;
+          if (side != 0) continue;
+          remove.add(i);
+        }
+        if (remove.isNotEmpty) {
+          changed = true;
+          for (final i in remove) {
+            img[i] = 0;
+          }
+        }
+      }
+      if (changed) {
+        foreground = [
+          for (final i in foreground)
+            if (img[i] != 0) i,
+        ];
+      }
+    }
+    return img;
+  }
+
+  /// The centre lines of [input] (Zhang and Suen's two-pass thinning,
+  /// with Lü and Wang's correction): 1 px wide, except a diagonal line in
+  /// one direction stays a 2 px staircase, which [_thinGuoHall] finishes.
   static Uint8List _thinZhangSuen(Uint8List input, int width, int height) {
     final img = Uint8List.fromList(input);
     if (width < 3 || height < 3) return img;
@@ -1868,7 +2660,11 @@ class AutoLineartEngine {
             final p8 = img[y * width + x - 1];
             final p9 = img[(y - 1) * width + x - 1];
             final ns = p2 + p3 + p4 + p5 + p6 + p7 + p8 + p9;
-            if (ns < 2 || ns > 6) continue;
+            // At least 3 neighbours (Lü and Wang's correction): a diagonal
+            // line peeled down to a 2 px staircase has 2 at its end, and
+            // taking that end pass after pass eats the whole line (one
+            // stroke of an X vanished, a 45° line came out shorter).
+            if (ns < 3 || ns > 6) continue;
             final ring = [p2, p3, p4, p5, p6, p7, p8, p9, p2];
             var transitions = 0;
             for (var r = 0; r < 8; r++) {
@@ -1893,6 +2689,28 @@ class AutoLineartEngine {
     }
     return img;
   }
+}
+
+/// A line's end at a junction, cut back to where the junction stops bending
+/// it: [path] and which end, the junction [cluster] and [junction] point,
+/// the cut-back [point] and the unit [heading] the line has there, towards
+/// the junction.
+class _JunctionEnd {
+  final int path;
+  final bool atStart;
+  final int cluster;
+  final AutoLineartPoint junction;
+  final AutoLineartPoint point;
+  final AutoLineartPoint heading;
+
+  const _JunctionEnd(
+    this.path,
+    this.atStart,
+    this.cluster,
+    this.junction,
+    this.point,
+    this.heading,
+  );
 }
 
 class _RawPath {

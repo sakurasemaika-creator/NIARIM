@@ -139,6 +139,7 @@ class _AutoLineartControlOverlayState extends State<AutoLineartControlOverlay> {
       startIsJunction: old.startIsJunction,
       endIsJunction: old.endIsJunction,
       persistence: old.persistence,
+      dotRadius: old.dotRadius,
     );
     return AutoLineartGraph(
       width: _displayGraph.width,
@@ -164,6 +165,7 @@ class _AutoLineartControlOverlayState extends State<AutoLineartControlOverlay> {
             ? false
             : old.endIsJunction,
         persistence: old.persistence,
+        dotRadius: old.dotRadius,
       );
     }
     return AutoLineartGraph(
