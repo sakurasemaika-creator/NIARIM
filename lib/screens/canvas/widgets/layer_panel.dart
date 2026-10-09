@@ -2229,56 +2229,21 @@ class _LayerPanelState extends State<LayerPanel> {
     );
   }
 
-  void _showBlendModeDialog(
+  Future<void> _showBlendModeDialog(
     BuildContext context,
     model.Layer layer,
     void Function(model.Layer Function(model.Layer)) update,
-  ) {
+  ) async {
     final l10n = AppLocalizations.of(context)!;
-    const modes = model.LayerBlendMode.values;
-    showDialog(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        // popup-standard-close: タイトル行の右端へ寄せた閉じるボタン。
-        // AlertDialogの`icon:`スロットへ入れると、Flutterが
-        // タイトルを強制的に中央寄せにするため（dialog.dartの
-        // `textAlign: icon == null ? TextAlign.start : TextAlign.center`）、
-        // 他のダイアログと不揃いになる。タイトル行へ直接置くこと。
-        title: Row(
-          children: [
-            Expanded(child: Text(l10n.autofillPartBlendModeLabel)),
-            IconButton(
-              visualDensity: VisualDensity.compact,
-              iconSize: 18,
-              tooltip: MaterialLocalizations.of(context).closeButtonTooltip,
-              onPressed: () => Navigator.of(context, rootNavigator: true).pop(),
-              icon: const Icon(Icons.close),
-            ),
-          ],
-        ),
-        content: SizedBox(
-          width: 300,
-          child: ListView.builder(
-            shrinkWrap: true,
-            itemCount: modes.length,
-            itemBuilder: (ctx, i) => ListTile(
-              dense: true,
-              // What the mode does, to choose it by its look.
-              leading: BlendModePreview(modes[i]),
-              title: Text(
-                _blendModeName(l10n, modes[i]),
-                style: const TextStyle(fontSize: 13),
-              ),
-              selected: layer.blendMode == modes[i],
-              onTap: () {
-                update((l) => l.copyWith(blendMode: modes[i]));
-                Navigator.pop(ctx);
-              },
-            ),
-          ),
-        ),
-      ),
+    // Two columns of tiles, each mode's name above a large picture of its
+    // look, to choose it by the look.
+    final mode = await showBlendModePicker(
+      context,
+      current: layer.blendMode,
+      title: l10n.autofillPartBlendModeLabel,
+      label: (mode) => _blendModeName(l10n, mode),
     );
+    if (mode != null) update((l) => l.copyWith(blendMode: mode));
   }
 
   String _blendModeName(AppLocalizations l10n, model.LayerBlendMode mode) =>

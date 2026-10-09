@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:math' as math;
 import 'dart:typed_data';
 import 'dart:ui' as ui;
 
@@ -7,9 +8,10 @@ import 'package:flutter/material.dart';
 import '../engine/blend_math.dart';
 import '../models/layer.dart';
 
-/// The size of a blend mode preview's picture, in pixels.
-const int kBlendPreviewWidth = 100;
-const int kBlendPreviewHeight = 60;
+/// The size of a blend mode preview's picture, in pixels: large enough to
+/// stay sharp in the picker's tiles.
+const int kBlendPreviewWidth = 200;
+const int kBlendPreviewHeight = 120;
 
 // Five colour swatches side by side (red, yellow, blue, white, black), each
 // over a backdrop that runs from dark to light across the swatch and from
@@ -23,7 +25,8 @@ const List<(double, double, double)> _swatches = [
   (1.0, 1.0, 1.0),
   (0.0, 0.0, 0.0),
 ];
-const int _band = 8;
+// The backdrop-only rows at the top and bottom.
+const int _band = kBlendPreviewHeight * 2 ~/ 15;
 
 /// The preview picture of [mode] as RGBA (opaque, so premultiplied and
 /// straight are the same): a layer in that mode over a backdrop, drawn with
@@ -127,4 +130,121 @@ class BlendModePreview extends StatelessWidget {
       ),
     );
   }
+}
+
+/// The blend modes as a grid of two columns, each mode's name above a large
+/// picture of its look, [current] marked (and scrolled into view). Returns
+/// the chosen mode, or null when closed without choosing.
+Future<LayerBlendMode?> showBlendModePicker(
+  BuildContext context, {
+  required LayerBlendMode current,
+  required String title,
+  required String Function(LayerBlendMode mode) label,
+}) {
+  return showDialog<LayerBlendMode>(
+    context: context,
+    builder: (ctx) {
+      final screen = MediaQuery.sizeOf(ctx);
+      const spacing = 8.0, padding = 6.0;
+      final width = math.min(screen.width - 56, 460.0);
+      final tile = (width - spacing) / 2;
+      final picture =
+          (tile - padding * 2) * kBlendPreviewHeight / kBlendPreviewWidth;
+      final name = MediaQuery.textScalerOf(ctx).scale(13) * 2.7;
+      final extent = padding * 2 + name + 4 + picture;
+      const modes = LayerBlendMode.values;
+      final row = modes.indexOf(current) ~/ 2;
+      return AlertDialog(
+        insetPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
+        contentPadding: const EdgeInsets.fromLTRB(12, 12, 12, 16),
+        // popup-standard-close: タイトル行の右端へ寄せた閉じるボタン。
+        // AlertDialogの`icon:`スロットへ入れると、Flutterが
+        // タイトルを強制的に中央寄せにするため（dialog.dartの
+        // `textAlign: icon == null ? TextAlign.start : TextAlign.center`）、
+        // 他のダイアログと不揃いになる。タイトル行へ直接置くこと。
+        title: Row(
+          children: [
+            Expanded(child: Text(title)),
+            IconButton(
+              visualDensity: VisualDensity.compact,
+              iconSize: 18,
+              tooltip: MaterialLocalizations.of(ctx).closeButtonTooltip,
+              onPressed: () => Navigator.of(ctx).pop(),
+              icon: const Icon(Icons.close),
+            ),
+          ],
+        ),
+        content: SizedBox(
+          width: width,
+          height: math.min(screen.height * .62, 640.0),
+          child: GridView.builder(
+            key: const ValueKey('blend-mode-picker-grid'),
+            controller: ScrollController(
+              initialScrollOffset: math.max(0, (row - 1) * (extent + spacing)),
+            ),
+            gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+              crossAxisCount: 2,
+              mainAxisSpacing: spacing,
+              crossAxisSpacing: spacing,
+              mainAxisExtent: extent,
+            ),
+            itemCount: modes.length,
+            itemBuilder: (ctx, i) {
+              final mode = modes[i];
+              final selected = mode == current;
+              final scheme = Theme.of(ctx).colorScheme;
+              return Material(
+                key: ValueKey('blend-mode-tile-${mode.name}'),
+                color: selected
+                    ? scheme.primaryContainer.withValues(alpha: .45)
+                    : Colors.transparent,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(8),
+                  side: BorderSide(
+                    color: selected ? scheme.primary : scheme.outlineVariant,
+                    width: selected ? 2 : 1,
+                  ),
+                ),
+                child: InkWell(
+                  borderRadius: BorderRadius.circular(8),
+                  onTap: () => Navigator.of(ctx).pop(mode),
+                  child: Padding(
+                    padding: const EdgeInsets.all(padding),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        SizedBox(
+                          height: name,
+                          child: Align(
+                            alignment: Alignment.bottomLeft,
+                            child: Text(
+                              label(mode),
+                              maxLines: 2,
+                              overflow: TextOverflow.ellipsis,
+                              style: TextStyle(
+                                fontSize: 13,
+                                fontWeight: selected
+                                    ? FontWeight.bold
+                                    : FontWeight.normal,
+                              ),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(height: 4),
+                        BlendModePreview(
+                          mode,
+                          width: tile - padding * 2,
+                          height: picture,
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              );
+            },
+          ),
+        ),
+      );
+    },
+  );
 }

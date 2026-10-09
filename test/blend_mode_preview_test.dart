@@ -59,7 +59,7 @@ void main() {
 
     // The red swatch over a mid backdrop: same at full opacity…
     const x = w ~/ 10;
-    const full = 12, half = h - 12;
+    const full = h ~/ 5, half = h - h ~/ 5;
     expect(luma(add, x, full), luma(dodge, x, full));
     // …Addition brighter at half.
     expect(luma(add, x, half), greaterThan(luma(dodge, x, half) + 20));
@@ -67,17 +67,19 @@ void main() {
 
   test('Normal shows the swatches themselves', () {
     final normal = blendModePreviewPixels(LayerBlendMode.normal);
-    final i = (12 * w + w ~/ 10) * 4;
+    final i = (h ~/ 5 * w + w ~/ 10) * 4;
     expect(normal.sublist(i, i + 3), [230, 51, 51]);
   });
 
-  testWidgets('the picker rows, drawn for review', (tester) async {
-    tester.view.physicalSize = const Size(720, 1400);
-    tester.view.devicePixelRatio = 2;
+  testWidgets('the picker: two columns, each name above a large picture, '
+      'the current mode marked; drawn for review', (tester) async {
+    tester.view.physicalSize = const Size(1080, 2280);
+    tester.view.devicePixelRatio = 3;
     addTearDown(tester.view.resetPhysicalSize);
     addTearDown(tester.view.resetDevicePixelRatio);
     await loadAppFonts(tester);
     final boundary = GlobalKey();
+    LayerBlendMode? chosen;
     await tester.pumpWidget(
       MaterialApp(
         theme: ThemeData(
@@ -87,37 +89,62 @@ void main() {
         locale: const Locale('ja'),
         localizationsDelegates: AppLocalizations.localizationsDelegates,
         supportedLocales: AppLocalizations.supportedLocales,
-        home: RepaintBoundary(
-          key: boundary,
-          child: Builder(
-            builder: (context) {
-              final l10n = AppLocalizations.of(context)!;
-              return Scaffold(
-                body: GridView.count(
-                  crossAxisCount: 2,
-                  childAspectRatio: 3.6,
-                  children: [
-                    for (final mode in LayerBlendMode.values)
-                      ListTile(
-                        dense: true,
-                        leading: BlendModePreview(mode),
-                        title: Text(
-                          blendModeLabel(l10n, mode),
-                          style: const TextStyle(fontSize: 12),
-                        ),
-                      ),
-                  ],
+        builder: (context, child) =>
+            RepaintBoundary(key: boundary, child: child),
+        home: Builder(
+          builder: (context) {
+            final l10n = AppLocalizations.of(context)!;
+            return Scaffold(
+              body: Center(
+                child: FilledButton(
+                  onPressed: () async {
+                    chosen = await showBlendModePicker(
+                      context,
+                      current: LayerBlendMode.multiply,
+                      title: l10n.autofillPartBlendModeLabel,
+                      label: (mode) => blendModeLabel(l10n, mode),
+                    );
+                  },
+                  child: const Text('open'),
                 ),
-              );
-            },
-          ),
+              ),
+            );
+          },
         ),
       ),
     );
+    await tester.tap(find.text('open'));
     await pumpRealAsync(tester, const Duration(milliseconds: 300));
     await pumpRealAsync(tester, const Duration(milliseconds: 200));
-    expect(find.byType(BlendModePreview), findsNWidgets(25));
-    expect(find.byType(RawImage), findsNWidgets(25));
+    final tiles = find.byWidgetPredicate(
+      (w) =>
+          w.key is ValueKey<String> &&
+          (w.key! as ValueKey<String>).value.startsWith('blend-mode-tile-'),
+    );
+    expect(tiles, findsAtLeastNWidgets(6));
+    final lefts = {
+      for (final e in tiles.evaluate())
+        tester.getTopLeft(find.byWidget(e.widget)).dx.round(),
+    };
+    expect(lefts, hasLength(2), reason: 'two columns');
+    // The picture is far larger than the old 60 x 36 and sits below the
+    // name.
+    final multiply = find.byKey(const ValueKey('blend-mode-tile-multiply'));
+    final picture = find.descendant(
+      of: multiply,
+      matching: find.byType(BlendModePreview),
+    );
+    final size = tester.getSize(picture);
+    expect(size.width, greaterThan(120));
+    expect(size.height, greaterThan(70));
+    final name = find.descendant(of: multiply, matching: find.byType(Text));
+    expect(
+      tester.getBottomLeft(name).dy,
+      lessThanOrEqualTo(tester.getTopLeft(picture).dy),
+    );
+    final shape =
+        tester.widget<Material>(multiply).shape! as RoundedRectangleBorder;
+    expect(shape.side.width, 2, reason: 'the current mode is marked');
     await tester.runAsync(() async {
       final render =
           boundary.currentContext!.findRenderObject()! as RenderRepaintBoundary;
@@ -129,5 +156,8 @@ void main() {
         'build/blend-preview/picker.png',
       ).writeAsBytesSync(png!.buffer.asUint8List());
     });
+    await tester.tap(find.byKey(const ValueKey('blend-mode-tile-screen')));
+    await pumpRealAsync(tester, const Duration(milliseconds: 300));
+    expect(chosen, LayerBlendMode.screen);
   });
 }

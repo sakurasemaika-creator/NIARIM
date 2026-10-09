@@ -42,6 +42,9 @@ class FilterService extends ChangeNotifier {
     }).toList();
   }
 
+  /// The filters the app comes with, at their initial settings.
+  static List<FilterDef> get builtInFilters => _defaultFilters();
+
   static List<FilterDef> _defaultFilters() => const [
     FilterDef(
       id: 'Filter0001',

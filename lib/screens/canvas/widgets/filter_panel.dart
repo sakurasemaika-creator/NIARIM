@@ -30,6 +30,7 @@ import '../../../services/project_service.dart';
 import '../../../services/theme_service.dart';
 import '../../../utils/blend_mode_label.dart';
 import '../../../utils/filter_display_name.dart';
+import '../../../widgets/filter_sample_preview.dart';
 import '../../../widgets/editable_slider_value.dart';
 import '../../../widgets/grab_pan_gesture_recognizer.dart';
 import '../../../widgets/pixel_color_mode_selector.dart';
@@ -859,7 +860,7 @@ class _FilterPanelState extends State<FilterPanel> {
     FilterDef? current,
   ) {
     return SizedBox(
-      height: 88,
+      height: 112,
       child: ListView.builder(
         scrollDirection: Axis.horizontal,
         itemCount: filters.length,
@@ -874,9 +875,9 @@ class _FilterPanelState extends State<FilterPanel> {
             key: ValueKey('filter-card-${filter.id}'),
             onTap: locked ? null : () => service.selectFilter(filter.id),
             child: Container(
-              width: 78,
+              width: 84,
               margin: const EdgeInsets.only(right: 6),
-              padding: const EdgeInsets.all(6),
+              padding: const EdgeInsets.all(5),
               decoration: BoxDecoration(
                 border: Border.all(
                   color: selected
@@ -889,8 +890,28 @@ class _FilterPanelState extends State<FilterPanel> {
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Icon(_iconForFilter(filter), size: 22),
-                  const SizedBox(height: 4),
+                  // What the filter does with its settings, on a sample
+                  // picture, with its icon in the corner.
+                  Stack(
+                    children: [
+                      FilterSamplePreview(filter, width: 72, height: 46),
+                      Positioned(
+                        right: 1,
+                        bottom: 1,
+                        child: Container(
+                          padding: const EdgeInsets.all(1),
+                          decoration: BoxDecoration(
+                            color: Theme.of(
+                              context,
+                            ).colorScheme.surface.withValues(alpha: .85),
+                            borderRadius: BorderRadius.circular(3),
+                          ),
+                          child: Icon(_iconForFilter(filter), size: 12),
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 3),
                   Text(
                     filterDisplayName(l10n, filter),
                     maxLines: 2,
