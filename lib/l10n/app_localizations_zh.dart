@@ -1742,8 +1742,7 @@ class AppLocalizationsZh extends AppLocalizations {
       '自动上色本来是用来按部位分别上色的功能，但不必细致地划分部位，只要用一个单色设置把整张线稿当作一张底色图层来涂，也已经很方便了。它能一次性把线内全部涂满，可以防止手动用油漆桶涂色时常见的漏涂（线条缝隙露出下层颜色的失误）。之后再在上面手动叠加颜色，就能不花分部位的功夫，也能获得自动上色的好处。';
 
   @override
-  String get tipsAutofillManualPartColorTitle =>
-      '实际线稿保留在一张普通图层上，手动分开填色块';
+  String get tipsAutofillManualPartColorTitle => '实际线稿保留在一张普通图层上，手动分开填色块';
 
   @override
   String get tipsAutofillManualPartColorDesc =>
@@ -8774,8 +8773,7 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
       '自動上色本來是用來按部位分別上色的功能，但不必細緻地劃分部位，只要用一個單色設定把整張線稿當作一張底色圖層來塗，也已經很方便了。它能一次性把線內全部塗滿，可以防止手動用油漆桶塗色時常見的漏塗（線條縫隙露出下層顏色的失誤）。之後再在上面手動疊加顏色，就能不花分部位的功夫，也能獲得自動上色的好處。';
 
   @override
-  String get tipsAutofillManualPartColorTitle =>
-      '實際線稿保留在一張普通圖層上，手動畫分色塊';
+  String get tipsAutofillManualPartColorTitle => '實際線稿保留在一張普通圖層上，手動畫分色塊';
 
   @override
   String get tipsAutofillManualPartColorDesc =>
