@@ -1,0 +1,31 @@
+name: Autofill Manual Part Color Tips
+
+on:
+  push:
+    branches: [dev_branch]
+    paths:
+      - '.github/workflows/autofill-manual-part-color-tips.yml'
+      - 'lib/l10n/**'
+      - 'lib/screens/tips/tips_screen.dart'
+      - 'test/autofill_manual_part_color_tips_test.dart'
+
+jobs:
+  verify-autofill-tips:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          ref: dev_branch
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+      - name: Resolve dependencies
+        run: flutter pub get
+      - name: Test autofill tips in all supported languages
+        run: flutter test test/autofill_manual_part_color_tips_test.dart --reporter expanded
+      - name: Analyze the Tips screen and contract test
+        run: flutter analyze lib/screens/tips/tips_screen.dart test/autofill_manual_part_color_tips_test.dart --no-fatal-infos --no-fatal-warnings
