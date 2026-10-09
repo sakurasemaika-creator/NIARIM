@@ -205,6 +205,11 @@ class BackgroundAcclimationEngine {
     final lower = _SectorAccumulator();
     // Every sample, for the background's tones.
     final toneSamples = <(double, double, int, double)>[];
+    // Each direction's samples, for the colour of the light there.
+    final sectorSamples = List.generate(
+      sectorCount,
+      (_) => <(double, double, int, double)>[],
+    );
 
     // 大画像でも境界全点×bandにならないよう境界を最大4096点へ間引く。
     final stride = math.max(1, (boundary.length / 4096).ceil());
@@ -242,12 +247,14 @@ class BackgroundAcclimationEngine {
         if (ry > 0.35) lower.add(r, g, b, w * ry);
         final hi = math.max(r, math.max(g, b));
         final lo = math.min(r, math.min(g, b));
-        toneSamples.add((
+        final sample = (
           _luma(r, g, b),
           hi == 0 ? 0.0 : (hi - lo) / hi,
           _argb(r, g, b),
           w,
-        ));
+        );
+        toneSamples.add(sample);
+        sectorSamples[sector].add(sample);
       }
     }
 
@@ -279,7 +286,7 @@ class BackgroundAcclimationEngine {
         ? autoDirection
         : filter.bgBlendDirection;
     final primaryColor = filter.bgBlendLightColor == -1
-        ? sectors[best].color
+        ? _lightColour(sectorSamples[best], sectors[best].color)
         : filter.bgBlendLightColor;
     final ambientColor = filter.bgBlendAmbientColor != -1
         ? filter.bgBlendAmbientColor
@@ -335,7 +342,7 @@ class BackgroundAcclimationEngine {
         secondary.add(
           BackgroundAcclimationLight(
             directionDegrees: (i + 0.5) * 360.0 / sectorCount,
-            color: sectors[i].color,
+            color: _lightColour(sectorSamples[i], sectors[i].color),
             score: scores[i] / math.max(bestScore, 0.0001),
           ),
         );
@@ -359,6 +366,28 @@ class BackgroundAcclimationEngine {
       confidence: confidence,
       tones: tones,
     );
+  }
+
+  /// The colour of the light in one direction: the average of its
+  /// brightest quarter of [samples] (luminance, saturation, colour, weight),
+  /// not of all of them, so a neon sign among dark walls is a cyan light
+  /// rather than a dull teal one, which Hard Light would darken with.
+  /// [otherwise] without samples.
+  static int _lightColour(
+    List<(double, double, int, double)> samples,
+    int otherwise,
+  ) {
+    if (samples.isEmpty) return otherwise;
+    final sorted = [...samples]..sort((a, b) => b.$1.compareTo(a.$1));
+    final total = sorted.fold(0.0, (sum, s) => sum + s.$4);
+    final acc = _SectorAccumulator();
+    var taken = 0.0;
+    for (final s in sorted) {
+      if (taken >= total * .25 && acc.weight > 0) break;
+      acc.add((s.$3 >> 16) & 0xFF, (s.$3 >> 8) & 0xFF, s.$3 & 0xFF, s.$4);
+      taken += s.$4;
+    }
+    return acc.weight > 0 ? acc.color : otherwise;
   }
 
   /// The background's tones from its samples (luminance, saturation,
@@ -589,9 +618,15 @@ class BackgroundAcclimationEngine {
         if (nlen <= 0.001) {
           // Inside the shape the alpha is flat: the way out is where the
           // distance to the outline falls, so each side faces its own way
-          // (the far side does not count as lit).
-          nx = (distAt(x - 1, y) - distAt(x + 1, y)).toDouble();
-          ny = (distAt(x, y - 1) - distAt(x, y + 1)).toDouble();
+          // (the far side does not count as lit). Taken over 5 x 5 pixels:
+          // the stepped distance's own slope fans out in streaks where two
+          // edges' distances meet (a glowing light showed them as rays).
+          nx = 0;
+          ny = 0;
+          for (var k = -2; k <= 2; k++) {
+            nx += distAt(x - 2, y + k) - distAt(x + 2, y + k);
+            ny += distAt(x + k, y - 2) - distAt(x + k, y + 2);
+          }
           nlen = math.sqrt(nx * nx + ny * ny);
         }
         if (nlen > 0.001) {

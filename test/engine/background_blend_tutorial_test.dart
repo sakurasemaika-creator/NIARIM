@@ -1,6 +1,10 @@
+import 'dart:io';
 import 'dart:typed_data';
+import 'dart:ui' as ui;
 
+import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:image/image.dart' as img;
 import 'package:niarim/engine/background_acclimation_engine.dart';
 import 'package:niarim/engine/premultiplied.dart';
 import 'package:niarim/models/filter_def.dart';
@@ -47,6 +51,123 @@ double _saturation(List<int> c) {
   final lo = c.reduce((a, b) => a < b ? a : b);
   return hi == 0 ? 0 : (hi - lo) / hi;
 }
+
+/// The sample character of the feature captures, and four scenes to set it
+/// in, drawn at 256 x 256.
+Future<Uint8List> _render(void Function(Canvas canvas) paint) async {
+  final recorder = ui.PictureRecorder();
+  paint(Canvas(recorder));
+  final image = await recorder.endRecording().toImage(256, 256);
+  final data = await image.toByteData(format: ui.ImageByteFormat.rawRgba);
+  return data!.buffer.asUint8List();
+}
+
+void _character(Canvas canvas) {
+  final line = Paint()
+    ..color = const Color(0xff242739)
+    ..style = PaintingStyle.stroke
+    ..strokeWidth = 3
+    ..strokeJoin = StrokeJoin.round
+    ..strokeCap = StrokeCap.round;
+  const head = Rect.fromLTWH(55, 33, 120, 120);
+  final body = Path()
+    ..moveTo(64, 145)
+    ..lineTo(165, 145)
+    ..lineTo(194, 217)
+    ..quadraticBezierTo(115, 240, 35, 217)
+    ..close();
+  canvas
+    ..drawPath(
+      body,
+      Paint()
+        ..shader = ui.Gradient.linear(
+          const Offset(30, 140),
+          const Offset(195, 235),
+          [const Color(0xffdc7295), const Color(0xff653a9e)],
+        ),
+    )
+    ..drawOval(head, Paint()..color = const Color(0xffffd8b4))
+    ..drawPath(body, line)
+    ..drawOval(head, line);
+  final hair = Path()
+    ..moveTo(55, 95)
+    ..quadraticBezierTo(48, 20, 115, 27)
+    ..quadraticBezierTo(186, 20, 178, 98)
+    ..lineTo(145, 66)
+    ..lineTo(114, 86)
+    ..lineTo(94, 63)
+    ..close();
+  canvas
+    ..drawPath(hair, Paint()..color = const Color(0xff36455e))
+    ..drawPath(hair, line)
+    ..drawCircle(const Offset(91, 104), 4, Paint()..color = line.color)
+    ..drawCircle(const Offset(141, 104), 4, Paint()..color = line.color)
+    ..drawArc(const Rect.fromLTWH(102, 111, 27, 22), 0.2, 2.7, false, line);
+}
+
+final _scenes = <void Function(Canvas)>[
+  // The capture sample: orange to purple.
+  (c) => c.drawRect(
+    const Rect.fromLTWH(0, 0, 256, 256),
+    Paint()
+      ..shader = ui.Gradient.linear(Offset.zero, const Offset(256, 256), [
+        const Color(0xffdd8443),
+        const Color(0xff54359e),
+      ]),
+  ),
+  // Day: sky and grass, the sun at the top left.
+  (c) => c
+    ..drawRect(
+      const Rect.fromLTWH(0, 0, 256, 170),
+      Paint()
+        ..shader = ui.Gradient.linear(Offset.zero, const Offset(0, 170), [
+          const Color(0xff4f9be8),
+          const Color(0xffcde6f7),
+        ]),
+    )
+    ..drawRect(
+      const Rect.fromLTWH(0, 170, 256, 86),
+      Paint()..color = const Color(0xff5c9a3c),
+    )
+    ..drawCircle(
+      const Offset(30, 30),
+      22,
+      Paint()..color = const Color(0xfffff6d8),
+    ),
+  // Night: a cyan neon sign right beside the character (within the
+  // default sampling band of 28 px).
+  (c) => c
+    ..drawRect(
+      const Rect.fromLTWH(0, 0, 256, 256),
+      Paint()..color = const Color(0xff141a33),
+    )
+    ..drawRect(
+      const Rect.fromLTWH(0, 40, 30, 120),
+      Paint()..color = const Color(0xffff2fb4),
+    )
+    ..drawRect(
+      const Rect.fromLTWH(186, 60, 70, 110),
+      Paint()..color = const Color(0xff27e0ff),
+    )
+    ..drawRect(
+      const Rect.fromLTWH(0, 220, 256, 36),
+      Paint()..color = const Color(0xff262a40),
+    ),
+  // Sunset: a bright horizon over dark ground.
+  (c) => c
+    ..drawRect(
+      const Rect.fromLTWH(0, 0, 256, 150),
+      Paint()
+        ..shader = ui.Gradient.linear(Offset.zero, const Offset(0, 150), [
+          const Color(0xff3b2a6b),
+          const Color(0xffff9a4a),
+        ]),
+    )
+    ..drawRect(
+      const Rect.fromLTWH(0, 150, 256, 106),
+      Paint()..color = const Color(0xff2c1d3a),
+    ),
+];
 
 /// Only [toneMatch] at work: everything else at 0.
 FilterDef _onlyTones(double toneMatch) => FilterDef(
@@ -238,6 +359,56 @@ void main() {
       expect(soft[(50 * _size + x) * 4], closeTo(128, 20), reason: 'x = $x');
       expect(soft[(50 * _size + x) * 4 + 3], 255);
     }
+  });
+
+  testWidgets('drawn for review: the sample character in four scenes, before '
+      'and after', (tester) async {
+    const filter = FilterDef(
+      id: 'Filter0020',
+      name: '背景馴染ませ',
+      kind: FilterKind.backgroundBlend,
+    );
+    final character = (await tester.runAsync(() => _render(_character)))!;
+    const scale = 2, gap = 8, side = 256 * scale;
+    final sheet = img.Image(
+      width: (side + gap) * _scenes.length - gap,
+      height: side * 2 + gap,
+    );
+    img.fill(sheet, color: img.ColorRgb8(255, 255, 255));
+    for (final (k, scene) in _scenes.indexed) {
+      final background = (await tester.runAsync(() => _render(scene)))!;
+      final out = BackgroundAcclimationEngine.apply(
+        character,
+        background,
+        256,
+        256,
+        filter,
+      );
+      // Before above, after below, each over its scene.
+      for (final (row, picture) in [(0, character), (1, out)]) {
+        for (var y = 0; y < side; y++) {
+          for (var x = 0; x < side; x++) {
+            final i = ((y ~/ scale) * 256 + x ~/ scale) * 4;
+            final a = picture[i + 3] / 255;
+            int over(int c) => (picture[i + c] + background[i + c] * (1 - a))
+                .round()
+                .clamp(0, 255);
+            sheet.setPixelRgb(
+              k * (side + gap) + x,
+              row * (side + gap) + y,
+              over(0),
+              over(1),
+              over(2),
+            );
+          }
+        }
+      }
+    }
+    final dir = Directory('build/background-acclimation-v2')
+      ..createSync(recursive: true);
+    File(
+      '${dir.path}/character_scenes.png',
+    ).writeAsBytesSync(img.encodePng(sheet));
   });
 
   test('the setting is saved, restored and 50 for older filters', () {

@@ -1,6 +1,8 @@
+import 'dart:io';
 import 'dart:typed_data';
 
 import 'package:flutter_test/flutter_test.dart';
+import 'package:image/image.dart' as img;
 import 'package:niarim/engine/ink_pool_engine.dart';
 
 const _w = 120;
@@ -78,6 +80,39 @@ void main() {
         }
       }
     }
+  });
+
+  test('drawn for review: the pool in red under the lines', () {
+    const scale = 2, gap = 8;
+    final cases = [4.0, 6.0, 8.0, 10.0];
+    final sheet = img.Image(
+      width: (_w * scale + gap) * cases.length - gap,
+      height: _w * scale,
+    );
+    img.fill(sheet, color: img.ColorRgb8(255, 255, 255));
+    for (final (k, thickness) in cases.indexed) {
+      final art = _strokes(thickness, const [
+        (20, 20, 100, 100),
+        (100, 20, 20, 100),
+      ]);
+      final pool = _pool(art);
+      for (var y = 0; y < _w * scale; y++) {
+        for (var x = 0; x < _w * scale; x++) {
+          final i = ((y ~/ scale) * _w + x ~/ scale) * 4 + 3;
+          final line = art[i] / 255, a = pool[i] / 255;
+          int over(double c) => (c * (1 - line) + 20 * line).round();
+          sheet.setPixelRgb(
+            k * (_w * scale + gap) + x,
+            y,
+            over(255 - 55 * a),
+            over(255 - 255 * a),
+            over(255 - 255 * a),
+          );
+        }
+      }
+    }
+    final dir = Directory('build/ink-pool')..createSync(recursive: true);
+    File('${dir.path}/x_crossing.png').writeAsBytesSync(img.encodePng(sheet));
   });
 
   test('a straight diagonal line on its own does not pool', () {
