@@ -27,12 +27,15 @@ Uint8List applyPrismFilterInIsolate(
 
 /// Prism effect pixels for a single layer.
 ///
-/// The source alpha is the clipping mask. Across the selected shape's actual alpha
-/// extent, six equal bands are painted red -> green -> cyan -> blue -> purple -> red
-/// at HSV saturation 100% and value/brightness 30%. The alpha lock is then considered
-/// released and Gaussian blur is applied, so the glow may extend beyond the original
-/// alpha boundary. The caller replaces the selected/reference layer pixels with this
-/// result and switches that layer to the app's Linear Dodge/additive blend mode.
+/// The source alpha is the clipping mask. Across each separate shape of the
+/// layer (each connected area of its alpha), six equal bands are painted red
+/// -> green -> cyan -> blue -> purple -> red at HSV saturation 100% and
+/// value/brightness 30%, so every small streak drawn on the layer gets the
+/// whole rainbow, as when one prism layer is duplicated many times. The
+/// alpha lock is then considered released and Gaussian blur is applied, so
+/// the glow may extend beyond the original alpha boundary. The caller
+/// replaces the selected/reference layer pixels with this result and
+/// switches that layer to the app's Linear Dodge/additive blend mode.
 class PrismFilterEngine {
   PrismFilterEngine({FilterEngine? filterEngine})
     : _filterEngine = filterEngine ?? FilterEngine();
@@ -72,7 +75,9 @@ class PrismFilterEngine {
     final safeBlurPx = clampBlurPx(blurPx);
     return safeBlurPx <= 0
         ? clippedBands
-        : _filterEngine.applyGaussianBlur(
+        // As in other painting apps, the blur amount is the Gaussian's
+        // standard deviation: 17 px blends the bands into one soft streak.
+        : _filterEngine.applyGaussianBlurSigma(
             clippedBands,
             width,
             height,
@@ -92,40 +97,62 @@ class PrismFilterEngine {
     final dx = math.cos(radians);
     final dy = math.sin(radians);
 
-    // The six equal sections belong to the selected shape, not to the whole canvas.
-    // Determine the projected extent using only pixels that participate in the source
-    // alpha mask. This is especially important for narrow prism shapes and non-square
-    // canvases, where canvas-corner bounds would otherwise compress or omit bands.
-    var minProjection = double.infinity;
-    var maxProjection = double.negativeInfinity;
-    for (var y = 0; y < height; y++) {
-      for (var x = 0; x < width; x++) {
-        final i = (y * width + x) * 4;
-        if (source[i + 3] == 0) continue;
+    // The six equal sections belong to each shape, not to the whole canvas
+    // or layer: every connected area of the source alpha (8-neighbour) has
+    // its own projected extent along the colour direction.
+    final n = width * height;
+    final shapeOf = Int32List(n)..fillRange(0, n, -1);
+    final low = <double>[], high = <double>[];
+    final queue = Int32List(n);
+    for (var start = 0; start < n; start++) {
+      if (source[start * 4 + 3] == 0 || shapeOf[start] >= 0) continue;
+      final shape = low.length;
+      var minProjection = double.infinity;
+      var maxProjection = double.negativeInfinity;
+      var head = 0, tail = 0;
+      queue[tail++] = start;
+      shapeOf[start] = shape;
+      while (head < tail) {
+        final p = queue[head++];
+        final x = p % width, y = p ~/ width;
         final projection = x * dx + y * dy;
         minProjection = math.min(minProjection, projection);
         maxProjection = math.max(maxProjection, projection);
+        for (
+          var ny = math.max(0, y - 1);
+          ny <= math.min(height - 1, y + 1);
+          ny++
+        ) {
+          for (
+            var nx = math.max(0, x - 1);
+            nx <= math.min(width - 1, x + 1);
+            nx++
+          ) {
+            final q = ny * width + nx;
+            if (shapeOf[q] >= 0 || source[q * 4 + 3] == 0) continue;
+            shapeOf[q] = shape;
+            queue[tail++] = q;
+          }
+        }
       }
+      low.add(minProjection);
+      high.add(maxProjection);
     }
-    if (!minProjection.isFinite || !maxProjection.isFinite) return out;
-    final span = math.max(1e-9, maxProjection - minProjection).toDouble();
 
-    for (var y = 0; y < height; y++) {
-      for (var x = 0; x < width; x++) {
-        final i = (y * width + x) * 4;
-        final sourceAlpha = source[i + 3];
-        if (sourceAlpha == 0) continue;
-        final projection = x * dx + y * dy;
-        final t = ((projection - minProjection) / span)
-            .clamp(0.0, 1.0)
-            .toDouble();
-        final rgb = _sixBandColorAt(t);
-        // Premultiplied like every layer pixel.
-        out[i] = premultipliedChannel(rgb.$1, sourceAlpha);
-        out[i + 1] = premultipliedChannel(rgb.$2, sourceAlpha);
-        out[i + 2] = premultipliedChannel(rgb.$3, sourceAlpha);
-        out[i + 3] = sourceAlpha;
-      }
+    for (var p = 0; p < n; p++) {
+      final shape = shapeOf[p];
+      if (shape < 0) continue;
+      final i = p * 4;
+      final sourceAlpha = source[i + 3];
+      final projection = (p % width) * dx + (p ~/ width) * dy;
+      final span = math.max(1e-9, high[shape] - low[shape]);
+      final t = ((projection - low[shape]) / span).clamp(0.0, 1.0).toDouble();
+      final rgb = _sixBandColorAt(t);
+      // Premultiplied like every layer pixel.
+      out[i] = premultipliedChannel(rgb.$1, sourceAlpha);
+      out[i + 1] = premultipliedChannel(rgb.$2, sourceAlpha);
+      out[i + 2] = premultipliedChannel(rgb.$3, sourceAlpha);
+      out[i + 3] = sourceAlpha;
     }
     return out;
   }

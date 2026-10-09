@@ -350,9 +350,10 @@ def build_card(gallery, group, case, labels, fields):
         )
     if (case.get("settings") or {}).get("kind") == "prism" and not case.get("note"):
         case["note"] = (
-            "背景の絵の上に合成モード「"
+            "暗い赤の細い葉の形を描いたレイヤーに適用（形ごとに虹の6色）。"
+            "絵の上に合成モード「"
             + labels.get("blendModeLinearDodge", "linearDodge")
-            + "」で重ねた見え方（キャンバスと同じ）。"
+            + "」で重ねた見え方（キャンバスと同じ、768×768）。"
         )
     note = case.get("note") or (
         "初期値は恒等変換（画素変化なし）"

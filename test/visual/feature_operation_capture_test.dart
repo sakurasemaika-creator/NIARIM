@@ -88,13 +88,25 @@ void main() {
                 ? 'olympicRings'
                 : filter.kind == FilterKind.autoLineart
                 ? 'lineart'
+                // Prism as it is drawn: small slender leaves of dark red on
+                // their own layer, which become rainbow streaks.
+                : filter.kind == FilterKind.prism
+                ? 'prismLeaves'
                 : 'color',
             mask: filter.kind == FilterKind.lensDistortion,
             // Prism adds light (Linear Dodge): over nothing it shows its own
             // dark colours, so it gets a picture to shine on, as in use.
+            underlay: filter.kind == FilterKind.prism ? 'color' : null,
             background:
                 filter.kind == FilterKind.backgroundBlend ||
                 filter.kind == FilterKind.prism,
+            backgroundFixture: filter.kind == FilterKind.prism
+                ? 'grey'
+                : 'background',
+            // At three times the size, the leaves are as large next to the
+            // default blur (17 px) as on a phone-sized canvas.
+            exportWidth: filter.kind == FilterKind.prism ? 768 : 256,
+            exportHeight: filter.kind == FilterKind.prism ? 768 : 256,
           );
           final before = await h.art('$id-before');
           final inputIds = h.layers.map((l) => l.id).toSet();
@@ -991,6 +1003,7 @@ class _Harness {
     required String fixture,
     bool mask = false,
     bool background = false,
+    String backgroundFixture = 'background',
     String? underlay,
     int exportWidth = 256,
     int exportHeight = 256,
@@ -1031,7 +1044,7 @@ class _Harness {
         name: '比較用の背景',
         insertIndex: layers.length,
       );
-      await seed(bg.id, 'background');
+      await seed(bg.id, backgroundFixture);
     }
     if (mask) {
       final selection = ps.addLayer(
@@ -1520,6 +1533,37 @@ Future<Uint8List> _fixture(
     ]) {
       canvas.drawCircle(centre, 30, line);
     }
+  } else if (kind == 'prismLeaves') {
+    // Slender leaves of dark red (HSV value 30%), the way a prism is drawn:
+    // a large one over the paper, small ones over the face and clothes.
+    void leaf(Offset centre, double length, double width, double degrees) {
+      canvas
+        ..save()
+        ..translate(centre.dx, centre.dy)
+        ..rotate(degrees * math.pi / 180);
+      final half = length / 2;
+      canvas
+        ..drawPath(
+          Path()
+            ..moveTo(0, -half)
+            ..quadraticBezierTo(width, 0, 0, half)
+            ..quadraticBezierTo(-width, 0, 0, -half)
+            ..close(),
+          Paint()..color = const Color(0xff4d0000),
+        )
+        ..restore();
+    }
+
+    leaf(const Offset(28, 92), 110, 26, 14);
+    leaf(const Offset(92, 112), 44, 12, -26);
+    leaf(const Offset(142, 118), 36, 10, 32);
+    leaf(const Offset(116, 194), 56, 13, 22);
+    leaf(const Offset(80, 64), 40, 11, 10);
+  } else if (kind == 'grey') {
+    canvas.drawRect(
+      const Rect.fromLTWH(0, 0, 256, 256),
+      Paint()..color = const Color(0xffa9a5a6),
+    );
   } else if (kind == 'mask') {
     canvas.drawOval(
       const Rect.fromLTWH(44, 28, 165, 190),

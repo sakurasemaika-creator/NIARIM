@@ -835,6 +835,21 @@ class FilterEngine {
     return _convolveV(tmp, width, height, kernel);
   }
 
+  /// A Gaussian blur of standard deviation [sigma] px, the way most painting
+  /// apps measure a Gaussian blur's size ([applyGaussianBlur]'s strength is
+  /// three times it).
+  Uint8List applyGaussianBlurSigma(
+    Uint8List data,
+    int width,
+    int height,
+    double sigma,
+  ) {
+    if (sigma <= 0) return Uint8List.fromList(data);
+    return sigma * 3 <= 20
+        ? applyGaussianBlur(data, width, height, sigma * 3)
+        : _boxGaussian(data, width, height, sigma);
+  }
+
   /// A Gaussian of [sigma] approximated by three box blurs.
   Uint8List _boxGaussian(Uint8List data, int width, int height, double sigma) {
     // Box widths whose three passes match the Gaussian's variance.

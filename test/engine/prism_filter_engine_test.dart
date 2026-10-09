@@ -5,6 +5,45 @@ import 'package:niarim/engine/prism_filter_engine.dart';
 
 void main() {
   group('PrismFilterEngine', () {
+    test('every separate shape gets the whole rainbow', () {
+      // Two slender shapes, one short and high, one long and low, as when
+      // several small streaks are drawn on one prism layer.
+      const w = 40, h = 120;
+      final source = Uint8List(w * h * 4);
+      void bar(int x0, int y0, int y1) {
+        for (var y = y0; y < y1; y++) {
+          for (var x = x0; x < x0 + 6; x++) {
+            source[(y * w + x) * 4 + 3] = 255;
+          }
+        }
+      }
+
+      bar(4, 4, 34);
+      bar(24, 40, 116);
+      final out = PrismFilterEngine().apply(
+        source,
+        w,
+        h,
+        blurPx: 0,
+        gradientDirectionDegrees: 90,
+      );
+      List<int> rgb(int x, int y) {
+        final i = (y * w + x) * 4;
+        return [out[i], out[i + 1], out[i + 2]];
+      }
+
+      for (final (x, y0, y1) in [(6, 4, 34), (26, 40, 116)]) {
+        final length = y1 - y0;
+        int at(double t) => y0 + (length * t).floor();
+        expect(rgb(x, y0), [77, 0, 0], reason: 'red at the top of $x');
+        expect(rgb(x, at(1.5 / 6)), [0, 77, 0], reason: 'then green');
+        expect(rgb(x, at(2.5 / 6)), [0, 77, 77], reason: 'cyan');
+        expect(rgb(x, at(3.5 / 6)), [0, 0, 77], reason: 'blue');
+        expect(rgb(x, at(4.5 / 6)), [77, 0, 77], reason: 'purple');
+        expect(rgb(x, y1 - 1), [77, 0, 0], reason: 'red at the bottom');
+      }
+    });
+
     test('gradientDirectionDegrees rotates the fill gradient', () {
       final source = Uint8List(3 * 3 * 4);
       for (var i = 0; i < source.length; i += 4) {
