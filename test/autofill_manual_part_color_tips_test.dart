@@ -44,13 +44,23 @@ void main() {
     expect(source, contains('l10n.tipsAutofillManualPartColorDesc'));
   });
 
-  test('Japanese tip names actual autofill layers and the shape-preserving color update', () async {
+  test('Japanese tip distinguishes manual fill shapes from lineart-driven autofill', () async {
     final l10n = await AppLocalizations.delegate.load(const Locale('ja'));
     final tip = l10n.tipsAutofillManualPartColorDesc;
+    expect(tip, contains('通常レイヤー1枚'));
     expect(tip, contains('自動塗り用線画レイヤー'));
+    expect(tip, contains('パーツ設定'));
     expect(tip, contains('自動塗りレイヤー'));
+    expect(tip, contains('線ではなく面'));
     expect(tip, contains('自動塗り実行'));
     expect(tip, contains('形状を保ったまま色だけ更新'));
+    expect(tip, contains('線画からパーツを自動判定'));
+  });
+
+  test('Tips page registers the separate line-color usage tip', () {
+    final source = File('lib/screens/tips/tips_screen.dart').readAsStringSync();
+    expect(source, contains('l10n.tipsLineColorUsageTitle'));
+    expect(source, contains('l10n.tipsLineColorUsageDesc'));
   });
 
   test('line-color tip recommends Same as fill for shadows and highlights', () async {
