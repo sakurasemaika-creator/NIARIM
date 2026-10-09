@@ -55,3 +55,10 @@ String generatedLayerName(
   FilterKind.autoLineart => l10n.filterAutoLineartLayerNameSuffix(sourceName),
   _ => '$sourceName ${filterDisplayName(l10n, filter)}',
 };
+
+/// Whether a filter named [name] is found by the search [query]: anywhere
+/// in the name, regardless of case ("blur" finds Gaussian Blur).
+bool filterNameMatches(String name, String query) {
+  final wanted = query.trim().toLowerCase();
+  return wanted.isEmpty || name.toLowerCase().contains(wanted);
+}

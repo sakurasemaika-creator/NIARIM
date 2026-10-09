@@ -656,8 +656,7 @@ class _FilterPanelState extends State<FilterPanel> {
     final query = service.searchQuery;
     final filters = service.filters.where((f) {
       if (_showFavoritesOnly && !f.isFavorite) return false;
-      if (query.isEmpty) return true;
-      return filterDisplayName(l10n, f).contains(query);
+      return filterNameMatches(filterDisplayName(l10n, f), query);
     }).toList();
     final current = service.currentFilter;
 
@@ -1887,12 +1886,15 @@ class _FilterPanelState extends State<FilterPanel> {
               255,
               (v) => updateLevel(1, v),
             ),
+            // The gamma is a fraction (1.40): shown, stepped and typed with
+            // its decimals.
             _paramSlider(
               l10n.filterLevelsGamma,
               values[2],
               0.1,
               10.0,
               (v) => updateLevel(2, v),
+              decimals: 2,
             ),
             _paramSlider(
               l10n.filterLevelsOutputBlack,

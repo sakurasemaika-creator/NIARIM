@@ -8,6 +8,16 @@ import 'package:niarim/engine/filter_engine.dart';
 /// blue follows the ramp (shifted), instead of one blue being smeared
 /// along the whole row.
 void main() {
+  test('the final colour correction: contrast down 3%, saturation up 5% '
+      '(the user asked for +5% where the recipe has -2%)', () {
+    // Grey only moves towards the middle.
+    expect(retroAnimeColourCorrection(200, 200, 200), (198, 198, 198));
+    expect(retroAnimeColourCorrection(40, 40, 40), (43, 43, 43));
+    // A colour, after the contrast step (197.8, 100.8, 52.3; its grey
+    // 124.3), moves 5% further from its grey.
+    expect(retroAnimeColourCorrection(200, 100, 50), (202, 100, 49));
+  });
+
   test('the blue of a ramp is shifted, not smeared along the row', () {
     const w = 120, h = 20;
     final data = Uint8List(w * h * 4);

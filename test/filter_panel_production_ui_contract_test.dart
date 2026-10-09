@@ -279,6 +279,11 @@ void main() {
         find.byKey(const ValueKey('levels-channel-selector')),
         findsOneWidget,
       );
+      // The gamma is a fraction and shows its decimals (1.4 is not "1").
+      expect(find.text('${l10n.filterLevelsGamma}: 1.00'), findsOneWidget);
+      service.updateFilterParams(service.currentFilter!.id, inputGamma: 1.4);
+      await tester.pump();
+      expect(find.text('${l10n.filterLevelsGamma}: 1.40'), findsOneWidget);
       await tester.tap(find.text('R'));
       await tester.pump();
       expect(find.text(l10n.filterLevelsHint), findsOneWidget);

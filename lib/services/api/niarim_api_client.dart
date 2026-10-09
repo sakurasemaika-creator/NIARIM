@@ -103,6 +103,12 @@ class NiarimApiClient {
     retries: 0,
   );
 
+  /// Whether a request turned away as unauthorised may be sent once more
+  /// with a fresh token. The server did not carry it out, so this is not
+  /// the retry after a lost response that only reads may make (see
+  /// [_sendWithRetry]'s `retries`): reads, and the writes that come out the
+  /// same however often they are made (a work is posted under its video's
+  /// id; PATCH sets its fields to the values sent).
   bool _canRetryUnauthorized(String method, Uri uri) {
     if (method == 'GET') return true;
     if (method == 'POST' && uri.path == '/works') return true;

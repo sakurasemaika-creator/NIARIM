@@ -102,6 +102,23 @@ Uint8List applySphereShadingFilter(
   );
 }
 
+/// レトロアニメの仕上げの色補正：コントラスト−3%のあと彩度＋5%（参考の手順は
+/// −2%だが、ユーザー指定で＋5%にしている）。
+(int, int, int) retroAnimeColourCorrection(int red, int green, int blue) {
+  var r = 128 + (red - 128) * 0.97;
+  var g = 128 + (green - 128) * 0.97;
+  var b = 128 + (blue - 128) * 0.97;
+  final gray = r * 0.299 + g * 0.587 + b * 0.114;
+  r = gray + (r - gray) * 1.05;
+  g = gray + (g - gray) * 1.05;
+  b = gray + (b - gray) * 1.05;
+  return (
+    r.round().clamp(0, 255),
+    g.round().clamp(0, 255),
+    b.round().clamp(0, 255),
+  );
+}
+
 /// 描画フィルターの本適用（低スペック端末でのUIスレッドブロック防止のため
 /// compute()経由でバックグラウンドisolate実行する想定のトップレベル関数）。
 /// [maskData]は、眼鏡断層フィルター・球体陰影では選択レイヤーを単体合成した
@@ -406,18 +423,17 @@ List<ui.Offset> toneCurvePoints(ToneCurvePreset preset) {
 /// 右端(1.0)は元絵の白いハイライトに対応するため、各配色で最も明るい色を置く。
 /// プレビュー・本適用の両方から共通利用する。
 /// 各プリセットの配色意図：
-/// - aurora（オーロラ）：夜空を思わせる藍色から、オーロラらしい緑〜水色〜
-///   薄紫へ抜ける配色。
-/// - soapBubble（シャボン玉）：石鹸膜・オイルスリックのような、ピンク→
-///   紫→水色→緑→黄と巡る虹色。
-/// - cyberNeon（サイバーネオン）：濃紺からマゼンタ・シアンへ抜ける、
-///   高彩度でくっきりした配色。
-/// - pastelDream（パステルドリーム）：ラベンダー→ミント→ピーチと、
-///   全体的に明るく淡い配色。
-/// - sunsetGold（サンセットゴールド）：紫がかった夕焼けからピンク・
-///   ゴールドへ抜ける暖色寄りの配色。
-/// - silverFoil（シルバーホイル）：スレートグレー→白→薄紫グレーと、
-///   彩度を抑えたホログラム箔紙のような配色。
+/// - silverHologram（オーロラホログラム）：水色・クリーム・ピンク・薄紫が
+///   細かく巡る、銀地のホログラム箔。
+/// - sampledGold（サンプルゴールド）：焦げ茶から山吹色・淡い金へ抜ける、
+///   金属の金。
+/// - silverFoil（プラチナシルバー）：スレートグレーから白へ抜ける、
+///   彩度を抑えた銀。
+/// - luminousPearl（ルミナスパール）：白に近い明るさの中に淡い虹色が
+///   のる真珠。
+/// - auroraPastel（オーロラパステル）：淡い虹色のフィルム。線の脇にだけ
+///   縁の光（干渉色）がのる。
+/// - darkRainbow（ダークレインボー）：暗い地から青・緑・紫へ光る虹。
 List<(double, int, int, int)> auroraHologramStops(AuroraHologramPreset preset) {
   return switch (preset) {
     AuroraHologramPreset.silverHologram => const [
@@ -2702,16 +2718,14 @@ class FilterEngine {
     // 9) Contrast -3%, saturation +5% (user-requested deviation from recipe).
     for (var i = 0; i < work.length; i += 4) {
       if (work[i + 3] == 0) continue;
-      var r = 128 + (work[i] - 128) * 0.97;
-      var g = 128 + (work[i + 1] - 128) * 0.97;
-      var b = 128 + (work[i + 2] - 128) * 0.97;
-      final gray = r * 0.299 + g * 0.587 + b * 0.114;
-      r = gray + (r - gray) * 1.05;
-      g = gray + (g - gray) * 1.05;
-      b = gray + (b - gray) * 1.05;
-      work[i] = r.round().clamp(0, 255);
-      work[i + 1] = g.round().clamp(0, 255);
-      work[i + 2] = b.round().clamp(0, 255);
+      final (r, g, b) = retroAnimeColourCorrection(
+        work[i],
+        work[i + 1],
+        work[i + 2],
+      );
+      work[i] = r;
+      work[i + 1] = g;
+      work[i + 2] = b;
     }
 
     // 10) Overlay-like neutral grain: grayscale body plus sparse colour grain.
