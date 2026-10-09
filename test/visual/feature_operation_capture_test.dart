@@ -63,7 +63,15 @@ void main() {
             : filter.kind == FilterKind.auroraHologram
             ? AuroraHologramPreset.values.map((e) => e.name).toList()
             : filter.kind == FilterKind.pixelate
-            ? PixelColorMode.values.map((e) => e.name).toList()
+            ? [
+                // Each colour mode, then the same with the dithering switch
+                // off (before the palette case, which copies its colours
+                // over the specified ones).
+                for (final mode in PixelColorMode.values) ...[
+                  mode.name,
+                  if (mode != PixelColorMode.none) '${mode.name}_flat',
+                ],
+              ]
             : <String>['default'];
         for (final variant in variants) {
           final id = '${filter.id}_$variant';
@@ -122,7 +130,7 @@ void main() {
             await h.tap(chip);
           } else if (filter.kind == FilterKind.pixelate) {
             final mode = PixelColorMode.values.firstWhere(
-              (e) => e.name == variant,
+              (e) => e.name == variant.split('_').first,
             );
             final label = switch (mode) {
               PixelColorMode.none => h.l10n.pixelColorModeNone,
@@ -147,6 +155,23 @@ void main() {
                 ),
               );
               expect(find.byType(PixelArtPalettePickerDialog), findsNothing);
+            }
+            if (mode != PixelColorMode.none) {
+              // The dithering switch, set as the case asks (the filter keeps
+              // it from the case before).
+              final dither = !variant.endsWith('_flat');
+              final toggle = find.byKey(
+                const ValueKey('pixel-art-dither-toggle'),
+              );
+              await tester.ensureVisible(toggle);
+              if (h.context.read<FilterService>().currentFilter!.pixelDither !=
+                  dither) {
+                await h.tap(toggle);
+              }
+              expect(
+                h.context.read<FilterService>().currentFilter!.pixelDither,
+                dither,
+              );
             }
           }
           await h.settle(6);
@@ -176,7 +201,7 @@ void main() {
             settings: settings.toJson(),
             note: neutral
                 ? '初期値は恒等変換。画素が変わらないことを確認。'
-                : variant == 'palette'
+                : variant.startsWith('palette')
                 ? '選んだパレットの4色を複製して使用する仕様。'
                 : null,
           );
@@ -384,6 +409,7 @@ void main() {
                 'canvas': '$width x $height',
                 'colorMode': current().pixelColorMode.name,
                 'colors': current().pixelExplicitColors,
+                'dither': current().pixelDither,
               },
               if (filter.kind == FilterKind.mosaic)
                 'blockSize': current().strength,

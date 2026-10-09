@@ -79,8 +79,13 @@ def display_name(case, labels):
         "Filter0018": "pixelColorMode",
     }.get(filter_id)
     label = "初期設定" if variant == "default" else variant
+    flat = filter_id == "Filter0018" and variant.endswith("_flat")
+    if flat:
+        variant = variant.removesuffix("_flat")
     if prefix:
         label = labels.get(prefix + variant[0].upper() + variant[1:], variant)
+    if filter_id == "Filter0018" and variant != "none":
+        label += f"（{labels['filterPixelateDither']} {'OFF' if flat else 'ON'}）"
     return f"{name} / {label}"
 
 
@@ -112,6 +117,7 @@ def panel_fields():
         ("filterPixelateBlockSize", "strength"),
         ("pixelColorModeLabel", "pixelColorMode"),
         ("pixelColorModeExplicit", "pixelExplicitColors"),
+        ("filterPixelateDither", "pixelDither"),
     ]
     fields["prism"] = [
         ("filterPrismBlurAmount", "prismBlurPx"),
@@ -215,6 +221,10 @@ def settings_summary(case, labels, fields):
             mode = settings.get("pixelColorMode")
             if field == "pixelExplicitColors" and mode not in ("explicit", "palette"):
                 continue
+            # The dithering switch only shows (and matters) when colours are
+            # limited.
+            if field == "pixelDither" and mode in (None, "none"):
+                continue
             name = labels.get(key, key)
             parts.append(f"{name}: {enum_label(field, value, labels)}")
             if field == "pixelColorMode" and value == "count":
@@ -229,10 +239,16 @@ def settings_summary(case, labels, fields):
             return f"設定値  {labels['filterPixelateBlockSize']}: {size}px"
         colors = " ".join(f"#{c & 0xFFFFFF:06X}" for c in settings.get("colors", []))
         mode = enum_label("pixelColorMode", settings.get("colorMode"), labels)
+        dither = (
+            f" / {labels['filterPixelateDither']}: "
+            f"{format_value('', settings['dither'])}"
+            if "dither" in settings and settings.get("colorMode") != "none"
+            else ""
+        )
         return (
             f"設定値  {labels['filterPixelateBlockSize']}: "
             f"{format_value('', settings.get('cellSize'))}px / "
-            f"{labels['pixelColorModeLabel']}: {mode} / {colors}"
+            f"{labels['pixelColorModeLabel']}: {mode} / {colors}{dither}"
         )
     if "parts" in settings:
         names = [part.get("name", "") for part in settings["parts"]]

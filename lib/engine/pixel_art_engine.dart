@@ -127,6 +127,7 @@ class PixelArtEngine {
         if (blockAlpha[c] == 0) rawColors[c] = null;
       }
     }
+    _keepDetails(data, width, xs, ys, cellsX, cellsY, rawColors);
 
     final countPalette = colorMode == PixelColorMode.count
         ? _buildCountPalette(rawColors.whereType<int>().toList(), colorLevels)
@@ -255,6 +256,92 @@ class PixelArtEngine {
       }
     }
     return result;
+  }
+
+  /// Makes each dot's colour keep the small details inside it: an eye or a
+  /// mouth is a few dark pixels in a block of skin, and the plain average
+  /// of the block is barely darker than the skin, so the face came out
+  /// blank. Each pixel instead counts by how far its colour is from the
+  /// colours around the dot (the mean of the dot and its eight neighbours;
+  /// Weber et al. 2016, "Rapid, Detail-Preserving Image Downscaling", with
+  /// an exponent of 1: at 0.5 the mouth still vanished): the colour of a
+  /// large area, which is also the surroundings', counts little next to a
+  /// feature that stands out from them, while a dot on the edge between two
+  /// large areas keeps about their average. A dot of one even colour is
+  /// left as it is.
+  void _keepDetails(
+    Uint8List data,
+    int width,
+    List<int> xs,
+    List<int> ys,
+    int cellsX,
+    int cellsY,
+    List<int?> colors,
+  ) {
+    final around = Float64List(cellsX * cellsY * 3);
+    for (var cy = 0; cy < cellsY; cy++) {
+      for (var cx = 0; cx < cellsX; cx++) {
+        var r = 0.0, g = 0.0, b = 0.0, n = 0;
+        for (
+          var ny = math.max(0, cy - 1);
+          ny <= math.min(cellsY - 1, cy + 1);
+          ny++
+        ) {
+          for (
+            var nx = math.max(0, cx - 1);
+            nx <= math.min(cellsX - 1, cx + 1);
+            nx++
+          ) {
+            final color = colors[ny * cellsX + nx];
+            if (color == null) continue;
+            r += (color >> 16) & 0xff;
+            g += (color >> 8) & 0xff;
+            b += color & 0xff;
+            n++;
+          }
+        }
+        final c = cy * cellsX + cx;
+        if (n == 0) continue;
+        around[c * 3] = r / n;
+        around[c * 3 + 1] = g / n;
+        around[c * 3 + 2] = b / n;
+      }
+    }
+    const span = 255 * 1.7320508075688772;
+    for (var cy = 0; cy < cellsY; cy++) {
+      for (var cx = 0; cx < cellsX; cx++) {
+        final c = cy * cellsX + cx;
+        if (colors[c] == null) continue;
+        final ar = around[c * 3],
+            ag = around[c * 3 + 1],
+            ab = around[c * 3 + 2];
+        var wr = 0.0, wg = 0.0, wb = 0.0, total = 0.0;
+        for (var y = ys[cy]; y < ys[cy + 1]; y++) {
+          for (var x = xs[cx]; x < xs[cx + 1]; x++) {
+            final i = (y * width + x) * 4;
+            final a = data[i + 3];
+            if (a == 0) continue;
+            final r = data[i] * 255 / a;
+            final g = data[i + 1] * 255 / a;
+            final b = data[i + 2] * 255 / a;
+            final dr = r - ar, dg = g - ag, db = b - ab;
+            final far = math.sqrt(dr * dr + dg * dg + db * db) / span;
+            final w = far * a;
+            wr += r * w;
+            wg += g * w;
+            wb += b * w;
+            total += w;
+          }
+        }
+        // An even area (every pixel the colour around it) keeps its mean.
+        if (total < 1e-3) continue;
+        colors[c] = _rgb(
+          (wr / total).round().clamp(0, 255),
+          (wg / total).round().clamp(0, 255),
+          (wb / total).round().clamp(0, 255),
+        );
+      }
+    }
   }
 
   /// Where the cells of a [length]-pixel side start, plus [length] itself:

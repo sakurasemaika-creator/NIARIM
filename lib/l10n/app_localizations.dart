@@ -3315,15 +3315,13 @@ abstract class AppLocalizations {
   ///
   /// In ja, this message translates to:
   /// **'仮色で塗り分けて色更新するなら、線画は通常レイヤー1枚でOK'**
-  
-String get tipsAutofillManualPartColorTitle;
+  String get tipsAutofillManualPartColorTitle;
 
   /// No description provided for @tipsAutofillManualPartColorDesc.
   ///
   /// In ja, this message translates to:
   /// **'この方法は、目立つ仮色でパーツを手動で塗り分けてから、本来の色に更新したい場合に向いています。実際の線画は通常レイヤー1枚にまとめて描き、塗りレイヤーより上に置きます。\nパーツごとに「自動塗り用線画レイヤー」を追加し、その三点メニューの「パーツ設定」でパーツを割り当てます。この方法では補助用なので線画を描かず、空のままで構いません。同じメニューから「自動塗り実行」を一度行い、対応する「自動塗りレイヤー」を作ります。\n各「自動塗りレイヤー」には、線ではなく面として、パーツごとの目立つ仮色を手動で塗ります。輪郭線を引くのではなく、あとで色を更新したい領域を塗りつぶしてください。\n形を整えたら、対応する「自動塗り用線画レイヤー」の三点メニューから「自動塗り実行」を選び、実行方法で「形状を保ったまま色だけ更新」を選択します。手動で塗った形を保ったまま「自動塗り設定」の本来の色に更新できます。線画からパーツを自動判定して一度で塗りたい場合は、この方法ではなく、実際の線画を「自動塗り用線画レイヤー」に描いてください。'**
-  
-String get tipsAutofillManualPartColorDesc;
+  String get tipsAutofillManualPartColorDesc;
 
   /// No description provided for @tipsBrushFavoriteTitle.
   ///
@@ -10205,8 +10203,7 @@ String get tipsAutofillManualPartColorDesc;
   ///
   /// In ja, this message translates to:
   /// **'パーツの輪郭をはっきり見せつつ線を周囲になじませたい場合は、「線画色」を「色トレス・線画馴染ませ」にします。影やハイライトを塗るパーツでは、「線画色」を「塗り色と同じ」にすると、線画も塗り色に合わせて色づき、線だけが濃く浮くのを防げます。意図的に別の線色を使いたい場合は「指定色」を選びます。'**
-  
-String get tipsLineColorUsageDesc;
+  String get tipsLineColorUsageDesc;
 
   /// No description provided for @tipsBlushAutofillTitle.
   ///
