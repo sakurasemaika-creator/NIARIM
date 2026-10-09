@@ -244,14 +244,11 @@ class DrawingEngine {
     final accent =
         _outlineAccent ??
         (_accentsOutline ? _accentOf(brush, _currentStroke) : null);
-    var distance = 0.0;
-    for (var i = 0; i < _currentStroke.length; i++) {
-      final point = _currentStroke[i];
-      if (i > 0) distance += _distance(_currentStroke[i - 1], point);
+    void add(ui.Offset position, double curvedPressure, double distance) {
       final pressure = resolveBrushPressure(
         brush: brush,
         pressureEnabled: pressureEnabled,
-        curvedPressure: point.pressure,
+        curvedPressure: curvedPressure,
       );
       final fade = _calculateFade(
         brush,
@@ -261,7 +258,7 @@ class DrawingEngine {
       final scale = pressure.sizeScale * fade;
       samples.add(
         HairRibbonPoint(
-          ui.Offset(point.x, point.y),
+          position,
           (brush.size * scale).clamp(0, 2000).toDouble(),
           // Pressure and taper shape the strand, outline included
           // (outlinedStrokeRadii); they never fade it.
@@ -274,6 +271,42 @@ class DrawingEngine {
           accent?.at(distance),
         ),
       );
+    }
+
+    // Within a custom taper the width follows a curve, while the strand
+    // is drawn with widths straight between its points: a long segment
+    // there (a fast flick) gets points every 2px, so the tail has the same
+    // shape as the ordinary stamps give it.
+    final total = _finalizedStrokeLengthOverride;
+    bool inTaper(double from, double to) =>
+        brush.fadeMode == FadeMode.custom &&
+        ((brush.fadeIn.rangePx > 0 && from < brush.fadeIn.rangePx) ||
+            (total != null &&
+                brush.fadeOut.rangePx > 0 &&
+                to > total - brush.fadeOut.rangePx));
+    var distance = 0.0;
+    for (var i = 0; i < _currentStroke.length; i++) {
+      final point = _currentStroke[i];
+      if (i > 0) {
+        final previous = _currentStroke[i - 1];
+        final length = _distance(previous, point);
+        if (length > 4 && inTaper(distance, distance + length)) {
+          final steps = (length / 2).ceil();
+          for (var k = 1; k < steps; k++) {
+            final t = k / steps;
+            add(
+              ui.Offset(
+                previous.x + (point.x - previous.x) * t,
+                previous.y + (point.y - previous.y) * t,
+              ),
+              previous.pressure + (point.pressure - previous.pressure) * t,
+              distance + length * t,
+            );
+          }
+        }
+        distance += length;
+      }
+      add(ui.Offset(point.x, point.y), point.pressure, distance);
     }
     final texture = _brushTextureSelector.activePath;
     raster.render(
@@ -1003,13 +1036,13 @@ class DrawingEngine {
         final fadeOutRange = brush.fadeOut.rangePx;
         final fadeInProgress = fadeInRange <= 0
             ? 1.0
-            : (strokeLength / fadeInRange).clamp(0.0, 1.0);
+            : _taperShoulder((strokeLength / fadeInRange).clamp(0.0, 1.0));
         final distanceFromEnd = totalLength == null
             ? double.infinity
             : math.max(0.0, totalLength - strokeLength);
         final fadeOutProgress = fadeOutRange <= 0
             ? 1.0
-            : (distanceFromEnd / fadeOutRange).clamp(0.0, 1.0);
+            : _taperShoulder((distanceFromEnd / fadeOutRange).clamp(0.0, 1.0));
         final fadeIn =
             brush.fadeIn.value / 100 +
             (1.0 - brush.fadeIn.value / 100) * fadeInProgress;
@@ -1020,6 +1053,14 @@ class DrawingEngine {
       FadeMode.off => 1.0,
     };
   }
+
+  /// How far a custom taper has grown at [progress] (0 at the tip, 1 where
+  /// it meets the full stroke): as steep at the tip as a straight ramp (just
+  /// as sharp a point), and level where it meets the full width, so the
+  /// outline does not turn a corner where the taper begins (a straight ramp
+  /// does). Still [rangePx] long.
+  static double _taperShoulder(double progress) =>
+      progress + progress * progress * (1 - progress);
 
   double _calculateDecay(double strokeLength) =>
       (1.0 - strokeLength / 2000).clamp(0.05, 1.0);

@@ -578,8 +578,11 @@ void main() {
               pen(mode: mode, fold: fold, fade: FadeMode.custom);
           final off = await render(tapered(false), straight, samples: samples);
           final on = await render(tapered(true), straight, samples: samples);
-          // 60px and 30px before the end the taper has halved / quartered the
-          // width, yet the centre stays fully opaque.
+          // 60px and 30px before the end (halfway and a quarter of the way
+          // into the 120px taper, as steep at the tip as a straight ramp and
+          // rounding into the full width) the taper has narrowed the width to
+          // five eighths and under a third, yet the centre stays fully
+          // opaque.
           for (final x in [460, 490]) {
             expect(
               on.alpha(ui.Offset(x.toDouble(), 300)),
@@ -593,8 +596,8 @@ void main() {
           ];
           expect(
             tail.length,
-            inInclusiveRange(32, 38),
-            reason: 'half the whole width, outline included',
+            inInclusiveRange(41, 48),
+            reason: 'five eighths of the whole width, outline included',
           );
           // Column by column, the tail has the ordinary outline pen's width
           // and solid outline ink, up to the sharp tip.
@@ -846,12 +849,40 @@ void main() {
       expect(pixels.bytes[i] == 0 || pixels.bytes[i] == 255, isTrue);
     }
   });
+  test('a custom taper rounds into the full width, with no corner where it '
+      'begins, and still ends in a point', () async {
+    for (final fold in [false, true]) {
+      final pixels = await render(
+        pen(fold: fold, fade: FadeMode.custom),
+        straight,
+      );
+      int width(int x) => [
+        for (var y = 250; y <= 350; y++)
+          if (pixels.alpha(ui.Offset(x.toDouble(), y.toDouble())) > 127) y,
+      ].length;
+      // The 120px taper begins at x = 400. A straight ramp would already
+      // have taken a tenth of the width 12px in, and a fifth 24px in.
+      final full = width(380);
+      expect(width(400), closeTo(full, 2), reason: 'fold $fold');
+      expect(full - width(412), lessThanOrEqualTo(3), reason: 'fold $fold');
+      expect(full - width(424), lessThanOrEqualTo(7), reason: 'fold $fold');
+      // Halfway, five eighths of the width (a little more where the
+      // shrinking pen's edge sweeps past).
+      expect(
+        width(460),
+        inInclusiveRange(full * .6, full * .7),
+        reason: 'fold $fold',
+      );
+      expect(width(516), lessThanOrEqualTo(6), reason: 'fold $fold');
+    }
+  });
   test('other brushes keep fading their opacity', () async {
     final pixels = await render(
       pen(fold: false, outlined: false, fade: FadeMode.custom),
       straight,
     );
-    final alpha = pixels.alpha(const ui.Offset(460, 300));
+    // A quarter of the way into the taper: under a third of the opacity.
+    final alpha = pixels.alpha(const ui.Offset(490, 300));
     expect(alpha, lessThan(200));
     expect(alpha, greaterThan(40));
   });
