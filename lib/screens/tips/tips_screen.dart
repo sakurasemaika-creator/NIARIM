@@ -639,6 +639,15 @@ List<_TipCategory> _buildTipCategories(AppLocalizations l10n) => [
         l10n.tipsSphereShadingTitle,
         l10n.tipsSphereShadingDesc,
       ),
+      _Tip(
+        TipDiagramSpec(
+          TipDiagramKind.pairCombo,
+          iconA: Icons.landscape_outlined,
+          iconB: Icons.person_outline,
+        ),
+        l10n.tipsBackgroundBlendTitle,
+        l10n.tipsBackgroundBlendDesc,
+      ),
     ],
   ),
   _TipCategory(

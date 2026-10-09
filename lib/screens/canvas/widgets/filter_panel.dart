@@ -2226,6 +2226,14 @@ class _FilterPanelState extends State<FilterPanel> {
               ),
             ),
             _paramSlider(
+              l10n.filterBgBlendToneMatch,
+              current.bgBlendToneMatch,
+              0,
+              100,
+              (v) =>
+                  service.updateFilterParams(current.id, bgBlendToneMatch: v),
+            ),
+            _paramSlider(
               l10n.filterBgBlendBounce,
               current.bgBlendReflectionStrength,
               0,

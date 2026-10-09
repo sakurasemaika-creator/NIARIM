@@ -328,6 +328,7 @@ Uint8List runFilterPreview(FilterPreviewJob job) {
       final previewFilter = filter.copyWith(
         bgBlendLength: filter.bgBlendLength * scale,
         bgBlendSamplingBand: filter.bgBlendSamplingBand * scale,
+        bgBlendBlur: filter.bgBlendBlur * scale,
       );
       return BackgroundAcclimationEngine.apply(
         data,

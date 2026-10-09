@@ -19,6 +19,13 @@ class BackgroundAcclimationAnalysis {
   final List<BackgroundAcclimationLight> secondaryLights;
   final double confidence;
 
+  /// The background's tones around the subject: how dark its shadows and
+  /// how bright its highlights are (luminance 0 to 1, a few percent in from
+  /// each end), how saturated its most saturated colours are (0 to 1), and
+  /// its average colour in the shadows, the middle tones and the
+  /// highlights.
+  final BackgroundTones tones;
+
   const BackgroundAcclimationAnalysis({
     required this.primaryDirectionDegrees,
     required this.primaryColor,
@@ -27,7 +34,37 @@ class BackgroundAcclimationAnalysis {
     required this.reflectionColor,
     required this.secondaryLights,
     required this.confidence,
+    this.tones = BackgroundTones.neutral,
   });
+}
+
+/// [BackgroundAcclimationAnalysis.tones].
+class BackgroundTones {
+  final double low;
+  final double high;
+  final double saturation;
+  final int shadow;
+  final int middle;
+  final int highlight;
+
+  const BackgroundTones({
+    required this.low,
+    required this.high,
+    required this.saturation,
+    required this.shadow,
+    required this.middle,
+    required this.highlight,
+  });
+
+  /// No background to go by: the full range, no colour cast.
+  static const neutral = BackgroundTones(
+    low: 0,
+    high: 1,
+    saturation: 1,
+    shadow: 0xFF404040,
+    middle: 0xFF808080,
+    highlight: 0xFFC0C0C0,
+  );
 }
 
 class BackgroundAcclimationLight {
@@ -84,14 +121,21 @@ class _SectorAccumulator {
 
 /// 背景馴染ませ v2。
 ///
-/// 1. 対象の周囲を16方向へ分けて環境サンプリング
+/// 1. 対象の周囲を16方向へ分けて環境サンプリング（「ぼかし具合」だけ
+///    ぼかした背景から）
 /// 2. 明度・近さ・面積の一貫性から主光源と副光源を推定
-/// 3. 周囲全体から環境光、反対側から影色、下側から反射色を独立推定
-/// 4. 対象全体に環境光をかけ、光源側から影側へ対象全体にわたる明暗の
-///    勾配を付ける（縁だけでなく描いた内容全体が背景の色になじむ）
-/// 5. 輪郭では法線と光源方向の一致度で光/影を強め、局所背景色の色移りも
-///    加える
-/// 6. 元画素の明度・彩度を見て黒つぶれ・白飛び・高彩度破壊を抑制
+/// 3. 周囲全体から環境光、下側から反射色を推定し、周囲の明るさの分布から
+///    影・中間・ハイライトの色と明るさ・彩度の範囲を求める。影色は黒や
+///    灰色ではなく、背景の影の部分の色を暗くしたもの
+/// 4. 描いた色の明るさ・彩度を背景の範囲へ寄せ、明るさごとに背景の
+///    同じ明るさの色みへ寄せる（カラーバランス）
+/// 5. 環境光を対象全体にオーバーレイで重ね（全体の色の方向）、光源側から
+///    影側へ対象全体にわたる明暗をハードライトで付ける（縁だけでなく描いた
+///    内容全体が背景の色になじむ）
+/// 6. 輪郭では法線と光源方向の一致度で光/影を強め、下からの照り返しと
+///    局所背景色の色移りをスクリーンで、強い有色光（ネオン等）の副光源を
+///    加算・発光で加える
+/// 7. 元画素の明度・彩度を見て黒つぶれ・白飛び・高彩度破壊を抑制
 ///
 /// レイヤーの画素は乗算済みなので、色は元の色（不透明度で割り戻した色）で
 /// 扱い、書き戻すときに不透明度を掛け直す。結果は画素へ直接焼き込むので、
@@ -159,6 +203,8 @@ class BackgroundAcclimationEngine {
     final sectors = List.generate(sectorCount, (_) => _SectorAccumulator());
     final ambient = _SectorAccumulator();
     final lower = _SectorAccumulator();
+    // Every sample, for the background's tones.
+    final toneSamples = <(double, double, int, double)>[];
 
     // 大画像でも境界全点×bandにならないよう境界を最大4096点へ間引く。
     final stride = math.max(1, (boundary.length / 4096).ceil());
@@ -194,6 +240,14 @@ class BackgroundAcclimationEngine {
         sectors[sector].add(r, g, b, w);
         ambient.add(r, g, b, w);
         if (ry > 0.35) lower.add(r, g, b, w * ry);
+        final hi = math.max(r, math.max(g, b));
+        final lo = math.min(r, math.min(g, b));
+        toneSamples.add((
+          _luma(r, g, b),
+          hi == 0 ? 0.0 : (hi - lo) / hi,
+          _argb(r, g, b),
+          w,
+        ));
       }
     }
 
@@ -244,9 +298,14 @@ class BackgroundAcclimationEngine {
       shadowAcc.weight += s.weight;
       shadowAcc.samples += s.samples;
     }
-    final autoShadow = shadowAcc.weight > 0
-        ? _darkenPreserveHue(shadowAcc.color, 0.24)
-        : _darkenPreserveHue(ambientColor, 0.28);
+    final tones = _tonesOf(toneSamples);
+    // Not black or grey: the colour of the background's own shadows (or,
+    // where it has none to speak of, of the side away from the light),
+    // dark enough that Hard Light deepens with it.
+    final autoShadow = _shadowColour(
+      tones.shadow,
+      shadowAcc.weight > 0 ? shadowAcc.color : ambientColor,
+    );
     final shadowColor = filter.bgBlendShadowColor == -1
         ? autoShadow
         : filter.bgBlendShadowColor;
@@ -298,6 +357,77 @@ class BackgroundAcclimationEngine {
       reflectionColor: reflectionColor,
       secondaryLights: secondary,
       confidence: confidence,
+      tones: tones,
+    );
+  }
+
+  /// The background's tones from its samples (luminance, saturation,
+  /// colour, weight): the luminance 5 % and 95 % of the way up, the
+  /// saturation 90 % of the way up, and the average colours of the darkest
+  /// third, the middle third and the lightest third.
+  static BackgroundTones _tonesOf(List<(double, double, int, double)> samples) {
+    if (samples.isEmpty) return BackgroundTones.neutral;
+    final total = samples.fold(0.0, (sum, s) => sum + s.$4);
+    if (total <= 0) return BackgroundTones.neutral;
+    double percentile(List<(double, double)> values, double at) {
+      values.sort((a, b) => a.$1.compareTo(b.$1));
+      var reached = 0.0;
+      for (final (value, weight) in values) {
+        reached += weight;
+        if (reached >= total * at) return value;
+      }
+      return values.last.$1;
+    }
+
+    final lumas = [for (final s in samples) (s.$1, s.$4)];
+    final low = percentile(lumas, .05);
+    final third = percentile(lumas, 1 / 3);
+    final twoThirds = percentile(lumas, 2 / 3);
+    final high = percentile(lumas, .95);
+    final saturation = percentile([for (final s in samples) (s.$2, s.$4)], .9);
+    // The average colour of the samples [take] keeps, or [otherwise] if it
+    // keeps none.
+    int average(bool Function(double luma) take, int otherwise) {
+      final acc = _SectorAccumulator();
+      for (final s in samples) {
+        if (!take(s.$1)) continue;
+        acc.add((s.$3 >> 16) & 0xFF, (s.$3 >> 8) & 0xFF, s.$3 & 0xFF, s.$4);
+      }
+      return acc.weight > 0 ? acc.color : otherwise;
+    }
+
+    final overall = average((l) => true, 0xFF808080);
+    return BackgroundTones(
+      low: low,
+      high: high,
+      saturation: saturation,
+      shadow: average((l) => l <= third, overall),
+      middle: average((l) => l > third && l < twoThirds, overall),
+      highlight: average((l) => l >= twoThirds, overall),
+    );
+  }
+
+  /// A shadow colour from the background's shadow [tone]: its hue and a
+  /// little more of its saturation, at most a quarter as light (Hard Light
+  /// deepens with a colour darker than middle grey). A tone too grey to
+  /// carry a hue takes the hue of [fallback].
+  static int _shadowColour(int tone, int fallback) {
+    var source = tone;
+    if (_chroma(source) < .06 && _chroma(fallback) >= .06) source = fallback;
+    var r = ((source >> 16) & 0xFF) / 255;
+    var g = ((source >> 8) & 0xFF) / 255;
+    var b = (source & 0xFF) / 255;
+    final l = r * 0.2126 + g * 0.7152 + b * 0.0722;
+    // A little more saturated: shadows keep their colour.
+    r = l + (r - l) * 1.2;
+    g = l + (g - l) * 1.2;
+    b = l + (b - l) * 1.2;
+    final target = math.min(l, 0.25);
+    final scale = l <= 0.0001 ? 0.0 : target / l;
+    return _argb(
+      (r * scale * 255).round(),
+      (g * scale * 255).round(),
+      (b * scale * 255).round(),
     );
   }
 
@@ -318,7 +448,12 @@ class BackgroundAcclimationEngine {
     // Layer pixels are premultiplied: colours are judged and blended as
     // the colours they are, then multiplied back by their own opacity.
     subject = unpremultiplied(subject);
-    background = unpremultiplied(background);
+    // The background softened by 「ぼかし具合」: its light and colours are
+    // taken from the blurred picture, so small details do not speckle the
+    // drawing.
+    background = unpremultiplied(
+      blurredBackground(background, width, height, filter.bgBlendBlur),
+    );
     final env = analysis ?? analyze(subject, background, width, height, filter);
     final result = Uint8List.fromList(premultipliedSubject);
     final count = width * height;
@@ -416,6 +551,9 @@ class BackgroundAcclimationEngine {
       0.0,
       1.0,
     );
+    final toneMatch = global * (filter.bgBlendToneMatch / 100).clamp(0.0, 1.0);
+    final primaryGlows = isGlowingLight(env.primaryColor);
+    final tones = env.tones;
 
     final primaryRad = env.primaryDirectionDegrees * math.pi / 180.0;
     final lx = math.cos(primaryRad);
@@ -472,9 +610,11 @@ class BackgroundAcclimationEngine {
           -1.0,
           1.0,
         );
+        // A glowing light lights mostly the outline facing it: in Add, the
+        // whole body lit by it would glow.
         final facingLight = math.max(
           math.max(0.0, nx * lx + ny * ly) * edgeFalloff,
-          (0.5 + 0.5 * along) * _bodyShading,
+          (0.5 + 0.5 * along) * _bodyShading * (primaryGlows ? .35 : 1),
         );
         final facingShadow = math.max(
           math.max(0.0, -(nx * lx + ny * ly)) * edgeFalloff,
@@ -483,10 +623,12 @@ class BackgroundAcclimationEngine {
         var r = subject[idx].toDouble();
         var g = subject[idx + 1].toDouble();
         var b = subject[idx + 2].toDouble();
+        if (toneMatch > 0) (r, g, b) = _matchTones(r, g, b, tones, toneMatch);
         final originalLuma = _luma(r.round(), g.round(), b.round());
         final originalChroma = _rgbChroma(r, g, b);
 
-        // 環境光は対象全体へ。縁ほど少し強くする。
+        // 環境光は対象全体へオーバーレイで（全体の色の方向）。縁ほど少し
+        // 強くする。
         final ambientAmount =
             global *
             ambientStrength *
@@ -506,6 +648,7 @@ class BackgroundAcclimationEngine {
           originalLuma,
           materialProtection,
           false,
+          mode: LayerBlendMode.overlay,
         );
 
         final lightAmount =
@@ -518,6 +661,8 @@ class BackgroundAcclimationEngine {
               materialProtection,
               true,
             );
+        // The main light in Hard Light, or, a strong coloured light (neon),
+        // glowing in Add.
         (r, g, b) = _blendProtected(
           r,
           g,
@@ -527,8 +672,13 @@ class BackgroundAcclimationEngine {
           originalLuma,
           materialProtection,
           true,
+          mode: primaryGlows
+              ? LayerBlendMode.addition
+              : LayerBlendMode.hardLight,
         );
 
+        // Other lights: a strong coloured light (neon) glows in Add, the
+        // rest light up in Screen.
         for (final entry in secondaryVectors) {
           final facing = math.max(0.0, nx * entry.$1 + ny * entry.$2);
           if (facing <= 0) continue;
@@ -548,6 +698,9 @@ class BackgroundAcclimationEngine {
             originalLuma,
             materialProtection,
             true,
+            mode: isGlowingLight(entry.$3.color)
+                ? LayerBlendMode.addition
+                : LayerBlendMode.screen,
           );
         }
 
@@ -572,8 +725,8 @@ class BackgroundAcclimationEngine {
           false,
         );
 
-        // 画面下から来る反射光。下向きの輪郭法線ほど強く、対象の下側
-        // 全体にも弱く返す。
+        // 画面下から来る反射光（照り返し）をスクリーンで。下向きの輪郭
+        // 法線ほど強く、対象の下側全体にも弱く返す。
         final reflectionFacing = math.max(
           math.max(0.0, ny) * edgeFalloff,
           math.max(0.0, (y - centreY) / reach) * _bodyShading * 0.5,
@@ -589,10 +742,12 @@ class BackgroundAcclimationEngine {
           originalLuma,
           materialProtection,
           true,
+          mode: LayerBlendMode.screen,
         );
 
-        // 輪郭直近の背景色を局所的な色移りとして加える。近傍の実色を使うため
-        // 「足元は地面色」などの意味認識を決め打ちしない。
+        // 輪郭直近の背景色を局所的な色移り（周りからの反射）としてスクリーンで
+        // 加える。近傍の実色を使うため「足元は地面色」などの意味認識を決め打ち
+        // しない。
         if (bleedStrength > 0 && edgeFalloff > 0.05 && nlen > 0.001) {
           final sampleDistance = math.max(
             2.0,
@@ -618,6 +773,7 @@ class BackgroundAcclimationEngine {
                 originalLuma,
                 materialProtection,
                 false,
+                mode: LayerBlendMode.screen,
               );
             }
           }
@@ -694,8 +850,20 @@ class BackgroundAcclimationEngine {
     double g,
     double b,
     int color,
-    double amount,
-  ) => _blendProtected(r, g, b, color, amount, 0, 0, true);
+    double amount, {
+    LayerBlendMode mode = LayerBlendMode.hardLight,
+  }) => _blendProtected(r, g, b, color, amount, 0, 0, true, mode: mode);
+
+  /// Whether a light of [color] is a strong coloured light (a neon sign, a
+  /// lamp), which glows in Add rather than lighting up in Screen.
+  @visibleForTesting
+  static bool isGlowingLight(int color) {
+    final hi = math.max(
+      (color >> 16) & 0xFF,
+      math.max((color >> 8) & 0xFF, color & 0xFF),
+    );
+    return _chroma(color) >= .6 && hi >= 180;
+  }
 
   static (double, double, double) _blendProtected(
     double r,
@@ -705,16 +873,19 @@ class BackgroundAcclimationEngine {
     double amount,
     double originalLuma,
     double protection,
-    bool isLight,
-  ) {
+    bool isLight, {
+    LayerBlendMode mode = LayerBlendMode.hardLight,
+  }) {
     final t = amount.clamp(0.0, 1.0);
     if (t <= 0) return (r, g, b);
-    // The background's light and colour are laid over in Hard Light, as a
-    // layer in that blend mode would be: light colours brighten, dark ones
-    // deepen, and the picture's own shading shows through.
+    // The background's light and colour are laid over as a layer in [mode]
+    // would be: the light and shadow in Hard Light (light colours brighten,
+    // dark ones deepen, and the picture's own shading shows through), the
+    // surroundings' colour in Overlay, reflected light in Screen and a
+    // glowing light in Add.
     final out = _blendScratch;
     blendRgbOver(
-      LayerBlendMode.hardLight,
+      mode,
       r / 255,
       g / 255,
       b / 255,
@@ -743,6 +914,125 @@ class BackgroundAcclimationEngine {
       }
     }
     return (nr.clamp(0.0, 255.0), ng.clamp(0.0, 255.0), nb.clamp(0.0, 255.0));
+  }
+
+  /// The drawing's colour ([r], [g], [b], 0 to 255) brought into the
+  /// background's [tones] by [amount] (0 to 1): highlights brighter than
+  /// the background's brightest are drawn back towards them, colours more
+  /// saturated than the background's most saturated are toned down, and
+  /// each tone takes some of the background's colour cast in that tone
+  /// (its shadows', middle tones' or highlights'), keeping its brightness.
+  /// Dark lines keep their darkness and colour.
+  static (double, double, double) _matchTones(
+    double r,
+    double g,
+    double b,
+    BackgroundTones tones,
+    double amount,
+  ) {
+    var l = (r * 0.2126 + g * 0.7152 + b * 0.0722) / 255;
+    if (l <= 0.0001) return (r, g, b);
+    // Brightness: what is brighter than the background's highlights comes
+    // most of the way down to them.
+    final ceiling = math.min(1.0, tones.high + .05);
+    if (l > ceiling) {
+      final target = ceiling + (l - ceiling) * .35;
+      final scale = (l + (target - l) * amount) / l;
+      r *= scale;
+      g *= scale;
+      b *= scale;
+      l *= scale;
+    }
+    final grey = l * 255;
+    // Saturation: more saturated than the background's most saturated
+    // colours, most of the way back to them.
+    final hi = math.max(r, math.max(g, b));
+    final lo = math.min(r, math.min(g, b));
+    final saturation = hi <= 0 ? 0.0 : (hi - lo) / hi;
+    final limit = math.min(1.0, tones.saturation + .08);
+    if (saturation > limit) {
+      final target =
+          saturation +
+          (limit + (saturation - limit) * .4 - saturation) * amount;
+      // How much of the colour's distance from its grey keeps it at the
+      // target saturation (the brightest channel comes down with the rest).
+      final keep = (target * grey / ((hi - lo) - target * (hi - grey))).clamp(
+        0.0,
+        1.0,
+      );
+      r = grey + (r - grey) * keep;
+      g = grey + (g - grey) * keep;
+      b = grey + (b - grey) * keep;
+    }
+    // Colour balance: the background's colour in this tone, without its
+    // brightness, so the drawing's brightness stays.
+    final span = math.max(.05, tones.high - tones.low);
+    final t = ((l - tones.low) / span).clamp(0.0, 1.0);
+    final (from, to, k) = t < .5
+        ? (tones.shadow, tones.middle, t * 2)
+        : (tones.middle, tones.highlight, t * 2 - 1);
+    double channel(int shift) =>
+        ((from >> shift) & 0xFF) * (1 - k) + ((to >> shift) & 0xFF) * k;
+    final tr = channel(16), tg = channel(8), tb = channel(0);
+    final tl = tr * 0.2126 + tg * 0.7152 + tb * 0.0722;
+    // Lines and other near-black stay as they are.
+    final dark = ((l - .08) / .17).clamp(0.0, 1.0);
+    final cast = amount * .3 * dark * dark * (3 - 2 * dark);
+    return (
+      (r + (tr - tl) * cast).clamp(0.0, 255.0),
+      (g + (tg - tl) * cast).clamp(0.0, 255.0),
+      (b + (tb - tl) * cast).clamp(0.0, 255.0),
+    );
+  }
+
+  /// [background] (premultiplied RGBA) blurred by [radius] px: two passes
+  /// of a box blur each way, close to a Gaussian. 0 leaves it as it is.
+  @visibleForTesting
+  static Uint8List blurredBackground(
+    Uint8List background,
+    int width,
+    int height,
+    double radius,
+  ) {
+    final box = (radius / 2).round();
+    if (box <= 0 || width <= 0 || height <= 0) return background;
+    var work = Float64List(width * height * 4);
+    for (var i = 0; i < work.length; i++) {
+      work[i] = background[i].toDouble();
+    }
+    var next = Float64List(work.length);
+    void pass(int length, int lines, int Function(int line, int at) index) {
+      final size = box * 2 + 1;
+      for (var line = 0; line < lines; line++) {
+        for (var c = 0; c < 4; c++) {
+          var sum = 0.0;
+          for (var k = -box; k <= box; k++) {
+            sum += work[index(line, k.clamp(0, length - 1)) * 4 + c];
+          }
+          for (var at = 0; at < length; at++) {
+            next[index(line, at) * 4 + c] = sum / size;
+            final out = (at - box).clamp(0, length - 1);
+            final into = (at + box + 1).clamp(0, length - 1);
+            sum +=
+                work[index(line, into) * 4 + c] -
+                work[index(line, out) * 4 + c];
+          }
+        }
+      }
+      final swap = work;
+      work = next;
+      next = swap;
+    }
+
+    for (var round = 0; round < 2; round++) {
+      pass(width, height, (y, x) => y * width + x);
+      pass(height, width, (x, y) => y * width + x);
+    }
+    final out = Uint8List(background.length);
+    for (var i = 0; i < out.length; i++) {
+      out[i] = work[i].round().clamp(0, 255);
+    }
+    return out;
   }
 
   static double _luma(int r, int g, int b) =>

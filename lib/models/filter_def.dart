@@ -209,6 +209,10 @@ class FilterDef {
   final double bgBlendSoftness;
   final double bgBlendSecondaryStrength;
   final double bgBlendMaterialProtection;
+
+  /// 背景馴染ませ: how far the drawing's brightness, saturation and colour
+  /// in each tone are brought into the background's (0 to 100).
+  final double bgBlendToneMatch;
   final double bgBlendSamplingBand;
   final int bgBlendLightColor;
   final int bgBlendAmbientColor;
@@ -322,6 +326,7 @@ class FilterDef {
     this.bgBlendSoftness = 55,
     this.bgBlendSecondaryStrength = 35,
     this.bgBlendMaterialProtection = 75,
+    this.bgBlendToneMatch = 50,
     this.bgBlendSamplingBand = 28,
     this.bgBlendLightColor = -1,
     this.bgBlendAmbientColor = -1,
@@ -459,6 +464,7 @@ class FilterDef {
     double? bgBlendSoftness,
     double? bgBlendSecondaryStrength,
     double? bgBlendMaterialProtection,
+    double? bgBlendToneMatch,
     double? bgBlendSamplingBand,
     int? bgBlendLightColor,
     int? bgBlendAmbientColor,
@@ -561,6 +567,7 @@ class FilterDef {
           bgBlendSecondaryStrength ?? this.bgBlendSecondaryStrength,
       bgBlendMaterialProtection:
           bgBlendMaterialProtection ?? this.bgBlendMaterialProtection,
+      bgBlendToneMatch: bgBlendToneMatch ?? this.bgBlendToneMatch,
       bgBlendSamplingBand: bgBlendSamplingBand ?? this.bgBlendSamplingBand,
       bgBlendLightColor: bgBlendLightColor ?? this.bgBlendLightColor,
       bgBlendAmbientColor: bgBlendAmbientColor ?? this.bgBlendAmbientColor,
@@ -666,6 +673,7 @@ class FilterDef {
     'bgBlendSoftness': bgBlendSoftness,
     'bgBlendSecondaryStrength': bgBlendSecondaryStrength,
     'bgBlendMaterialProtection': bgBlendMaterialProtection,
+    'bgBlendToneMatch': bgBlendToneMatch,
     'bgBlendSamplingBand': bgBlendSamplingBand,
     'bgBlendLightColor': bgBlendLightColor,
     'bgBlendAmbientColor': bgBlendAmbientColor,
@@ -840,6 +848,7 @@ class FilterDef {
         (j['bgBlendSecondaryStrength'] as num?)?.toDouble() ?? 35,
     bgBlendMaterialProtection:
         (j['bgBlendMaterialProtection'] as num?)?.toDouble() ?? 75,
+    bgBlendToneMatch: (j['bgBlendToneMatch'] as num?)?.toDouble() ?? 50,
     bgBlendSamplingBand: (j['bgBlendSamplingBand'] as num?)?.toDouble() ?? 28,
     bgBlendLightColor: j['bgBlendLightColor'] as int? ?? -1,
     bgBlendAmbientColor: j['bgBlendAmbientColor'] as int? ?? -1,
