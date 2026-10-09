@@ -158,6 +158,11 @@ class FilterDef {
   final PixelColorMode pixelColorMode;
   final List<int> pixelExplicitColors;
 
+  /// Pixel art with limited colours: whether dots no single colour comes
+  /// close to are made of a few of them in a regular pattern (dithering),
+  /// or filled with the nearest one.
+  final bool pixelDither;
+
   /// Pixel art: whether the panel shows the size as a dot count across and
   /// down the canvas rather than as the block-size slider. Either way the
   /// size itself is [strength] (see [pixelArtCellSize]).
@@ -274,6 +279,7 @@ class FilterDef {
     this.chromaticShiftZ = 0,
     this.pixelColorMode = PixelColorMode.count,
     this.pixelExplicitColors = const [0xFF000000],
+    this.pixelDither = true,
     this.pixelArtByDots = false,
     this.crtAberration = 30,
     this.crtBleed = 30,
@@ -406,6 +412,7 @@ class FilterDef {
     double? chromaticShiftZ,
     PixelColorMode? pixelColorMode,
     List<int>? pixelExplicitColors,
+    bool? pixelDither,
     bool? pixelArtByDots,
     double? crtAberration,
     double? crtBleed,
@@ -498,6 +505,7 @@ class FilterDef {
       chromaticShiftZ: chromaticShiftZ ?? this.chromaticShiftZ,
       pixelColorMode: pixelColorMode ?? this.pixelColorMode,
       pixelExplicitColors: pixelExplicitColors ?? this.pixelExplicitColors,
+      pixelDither: pixelDither ?? this.pixelDither,
       pixelArtByDots: pixelArtByDots ?? this.pixelArtByDots,
       crtAberration: crtAberration ?? this.crtAberration,
       crtBleed: crtBleed ?? this.crtBleed,
@@ -603,6 +611,7 @@ class FilterDef {
     'chromaticShiftZ': chromaticShiftZ,
     'pixelColorMode': pixelColorMode.name,
     'pixelExplicitColors': pixelExplicitColors,
+    'pixelDither': pixelDither,
     'pixelArtByDots': pixelArtByDots,
     'crtAberration': crtAberration,
     'crtBleed': crtBleed,
@@ -764,6 +773,7 @@ class FilterDef {
     pixelExplicitColors:
         (j['pixelExplicitColors'] as List<dynamic>?)?.cast<int>() ??
         const [0xFF000000],
+    pixelDither: j['pixelDither'] as bool? ?? true,
     pixelArtByDots: j['pixelArtByDots'] as bool? ?? false,
     crtAberration: (j['crtAberration'] as num?)?.toDouble() ?? 30,
     crtBleed: (j['crtBleed'] as num?)?.toDouble() ?? 30,

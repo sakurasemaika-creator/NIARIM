@@ -40,6 +40,7 @@ import '../../models/layer_group.dart';
 import '../../models/layer_keyframe.dart';
 import '../../models/timeline_marker.dart';
 import '../../models/material_asset.dart';
+import '../../models/pixel_color_mode.dart';
 import '../../models/scene.dart';
 import '../../models/text_object.dart';
 import '../../models/watermark_asset.dart';
@@ -7468,6 +7469,7 @@ class _EffectFilterSheet extends StatelessWidget {
       fadeColor: e.fadeColor,
       pixelColorMode: e.pixelColorMode,
       pixelExplicitColors: e.pixelExplicitColors,
+      pixelDither: e.pixelDither,
     );
     service.addEffectFilter(projectId, sceneId, copy);
     final index = effects.indexWhere((f) => f.id == e.id);
@@ -8144,6 +8146,17 @@ class _EffectFilterSheet extends StatelessWidget {
         onExplicitColorsChanged: (c) =>
             _update(context, e.copyWith(pixelExplicitColors: c)),
       ),
+      // Dithering only matters once the colours are limited.
+      if (e.pixelColorMode != PixelColorMode.none)
+        SwitchListTile.adaptive(
+          key: const ValueKey('effect-pixel-art-dither-toggle'),
+          dense: true,
+          contentPadding: EdgeInsets.zero,
+          title: Text(l10n.filterPixelateDither),
+          subtitle: Text(l10n.filterPixelateDitherHint),
+          value: e.pixelDither,
+          onChanged: (v) => _update(context, e.copyWith(pixelDither: v)),
+        ),
     ];
   }
 

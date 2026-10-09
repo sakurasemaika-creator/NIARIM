@@ -295,6 +295,7 @@ Uint8List applyDrawFilterForFrameInIsolate(
       colorMode: filter.pixelColorMode,
       colorLevels: filter.colorLevels,
       paletteColors: filter.pixelExplicitColors,
+      dither: filter.pixelDither,
     ),
     FilterKind.mosaic => engine.applyMosaic(
       data,
@@ -767,6 +768,7 @@ class FilterEngine {
           colorMode: e.pixelColorMode,
           colorLevels: e.param2.round().clamp(1, 256),
           paletteColors: e.pixelExplicitColors,
+          dither: e.pixelDither,
         ),
         // オーロラホログラム：param1=フィルター強度（0〜100）、
         // param2=明度、param3=彩度（いずれも-100〜100）、

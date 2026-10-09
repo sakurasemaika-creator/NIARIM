@@ -270,6 +270,7 @@ Uint8List runFilterPreview(FilterPreviewJob job) {
         colorMode: filter.pixelColorMode,
         colorLevels: filter.colorLevels,
         paletteColors: filter.pixelExplicitColors,
+        dither: filter.pixelDither,
       );
     case FilterKind.mosaic:
       return engine.applyMosaic(

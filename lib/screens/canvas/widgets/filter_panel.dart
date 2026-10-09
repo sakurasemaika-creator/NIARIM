@@ -22,6 +22,7 @@ import '../../../l10n/app_localizations.dart';
 import '../../../models/custom_automation.dart';
 import '../../../models/filter_def.dart';
 import '../../../models/layer.dart' as model;
+import '../../../models/pixel_color_mode.dart';
 import '../../../services/custom_automation_service.dart';
 import '../../../services/filter_service.dart';
 import '../../../services/premium_service.dart';
@@ -1409,6 +1410,26 @@ class _FilterPanelState extends State<FilterPanel> {
                 _updatePreview();
               },
             ),
+            // Dithering only matters once the colours are limited.
+            if (current.pixelColorMode != PixelColorMode.none)
+              SwitchListTile.adaptive(
+                key: const ValueKey('pixel-art-dither-toggle'),
+                dense: true,
+                contentPadding: EdgeInsets.zero,
+                title: Text(
+                  l10n.filterPixelateDither,
+                  style: const TextStyle(fontSize: 11),
+                ),
+                subtitle: Text(
+                  l10n.filterPixelateDitherHint,
+                  style: const TextStyle(fontSize: 10),
+                ),
+                value: current.pixelDither,
+                onChanged: (v) {
+                  service.updateFilterParams(current.id, pixelDither: v);
+                  _updatePreview();
+                },
+              ),
           ],
         );
       case FilterKind.auroraHologram:

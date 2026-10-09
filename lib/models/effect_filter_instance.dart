@@ -24,6 +24,9 @@ class EffectFilterInstance {
   // PixelColorMode参照）の場合はpixelExplicitColorsを使う。
   final PixelColorMode pixelColorMode;
   final List<int> pixelExplicitColors;
+  // ドット絵演出フィルターで色を限るとき、1色では遠い所を数色の規則的な
+  // 並び（ディザリング）で近づけるか。オフなら最も近い1色で塗る。
+  final bool pixelDither;
 
   const EffectFilterInstance({
     required this.id,
@@ -38,6 +41,7 @@ class EffectFilterInstance {
     this.fadeColor = const Color(0xFF000000),
     this.pixelColorMode = PixelColorMode.count,
     this.pixelExplicitColors = const [0xFF000000],
+    this.pixelDither = true,
   });
 
   EffectFilterInstance copyWith({
@@ -52,6 +56,7 @@ class EffectFilterInstance {
     Color? fadeColor,
     PixelColorMode? pixelColorMode,
     List<int>? pixelExplicitColors,
+    bool? pixelDither,
   }) {
     return EffectFilterInstance(
       id: id,
@@ -66,6 +71,7 @@ class EffectFilterInstance {
       fadeColor: fadeColor ?? this.fadeColor,
       pixelColorMode: pixelColorMode ?? this.pixelColorMode,
       pixelExplicitColors: pixelExplicitColors ?? this.pixelExplicitColors,
+      pixelDither: pixelDither ?? this.pixelDither,
     );
   }
 }
