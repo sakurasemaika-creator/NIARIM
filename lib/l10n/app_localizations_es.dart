@@ -4681,7 +4681,7 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get layerPanelHelpBlendModeBody =>
-      'Cambia cómo se compone la capa: multiplicar, trama, superposición, etc.';
+      'Cambia cómo se compone la capa: multiplicar, trama, superposición, etc. Toca un mosaico para ver arriba cómo queda este fotograma con ese modo y pulsa Aplicar para fijarlo.';
 
   @override
   String get layerPanelHelpClippingBody =>

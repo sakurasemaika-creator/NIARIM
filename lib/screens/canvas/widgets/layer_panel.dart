@@ -17,6 +17,7 @@ import '../../../l10n/app_localizations.dart';
 import '../../../models/layer.dart' as model;
 import '../../../models/layer_keyframe.dart';
 import '../../../services/autofill_preset_service.dart';
+import '../../../services/frame_thumbnail_renderer.dart';
 import '../../../services/project_service.dart';
 import '../../../services/layer_clipboard_service.dart';
 import '../../../services/tone_service.dart';
@@ -2235,13 +2236,34 @@ class _LayerPanelState extends State<LayerPanel> {
     void Function(model.Layer Function(model.Layer)) update,
   ) async {
     final l10n = AppLocalizations.of(context)!;
+    final projects = context.read<ProjectService>();
+    final project = projects.projects
+        .where((p) => p.id == widget.projectId)
+        .firstOrNull;
+    final exportWidth = project?.exportWidth ?? 0;
+    final exportHeight = project?.exportHeight ?? 0;
     // Two columns of tiles, each mode's name above a large picture of its
-    // look, to choose it by the look.
+    // look; the tapped mode shows on this frame above them.
     final mode = await showBlendModePicker(
       context,
       current: layer.blendMode,
       title: l10n.autofillPartBlendModeLabel,
       label: (mode) => _blendModeName(l10n, mode),
+      preview: (mode, maxSize) => compositeFrameThumbnail(
+        projects,
+        projectId: widget.projectId,
+        sceneId: widget.sceneId,
+        frameIndex: widget.frameIndex,
+        maxSize: maxSize,
+        editLayers: (layers) => [
+          for (final l in layers)
+            l.id == layer.id ? l.copyWith(blendMode: mode) : l,
+        ],
+      ),
+      previewBackground: project?.backgroundColor ?? 0xFFFFFFFF,
+      previewAspectRatio: exportWidth > 0 && exportHeight > 0
+          ? exportWidth / exportHeight
+          : 16 / 9,
     );
     if (mode != null) update((l) => l.copyWith(blendMode: mode));
   }

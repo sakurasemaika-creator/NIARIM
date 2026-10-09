@@ -1906,7 +1906,7 @@
   "layerPanelConvertOption2Subtitle": "Crea una capa común a partir del resultado combinado de todas las capas actualmente visibles",
   "layerPanelCommonRangeTitle": "Rango de la capa común",
   "layerPanelHelpDialogTitle": "Acerca de las capas",
-  "layerPanelHelpBlendModeBody": "Cambia cómo se compone la capa: multiplicar, trama, superposición, etc.",
+  "layerPanelHelpBlendModeBody": "Cambia cómo se compone la capa: multiplicar, trama, superposición, etc. Toca un mosaico para ver arriba cómo queda este fotograma con ese modo y pulsa Aplicar para fijarlo.",
   "layerPanelHelpClippingBody": "Dibuja solo dentro del área de píxeles opacos de la capa inferior. Úsalo para controlar el área de dibujo.",
   "layerPanelCommonLayerLabel": "Capa común",
   "layerPanelHelpCommonLayerBody": "Una capa cuyo contenido se comparte entre varios fotogramas. Puedes definir el rango de fotogramas en el que aparece.",

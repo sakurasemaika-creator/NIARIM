@@ -4467,7 +4467,7 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get layerPanelHelpBlendModeBody =>
-      'レイヤーの合成方法を変更します。乗算・スクリーン・オーバーレイなどがあります。';
+      'レイヤーの合成方法を変更します。乗算・スクリーン・オーバーレイなどがあります。タイルをタップすると、上のプレビューにこのフレームがその合成方法でどう見えるかが表示され、「適用」で決定します。';
 
   @override
   String get layerPanelHelpClippingBody =>

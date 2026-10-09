@@ -665,7 +665,7 @@ void main() {
           );
           expect(list, findsOneWidget);
           Finder choice() =>
-              find.descendant(of: dialog, matching: find.text(label));
+              find.descendant(of: list, matching: find.text(label));
           for (var i = 0; i < 30 && choice().evaluate().isEmpty; i++) {
             await tester.drag(list, const Offset(0, -220));
             await h.settle(1);
@@ -675,8 +675,12 @@ void main() {
             findsOneWidget,
             reason: '$id must be reachable in the blend dialog',
           );
-          await h.capture('$id-settings');
+          // Tapping a tile shows the frame in that mode above the tiles;
+          // 適用 sets it.
           await h.tap(choice());
+          await h.settle(4);
+          await h.capture('$id-settings');
+          await h.tap(find.byKey(const ValueKey('blend-mode-apply')));
           await h.closeLayers();
           expect(
             h.layers.firstWhere((l) => l.id == source.id).blendMode,

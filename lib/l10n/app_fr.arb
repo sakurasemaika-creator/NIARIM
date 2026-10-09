@@ -1906,7 +1906,7 @@
   "layerPanelConvertOption2Subtitle": "Crée un calque commun à partir du résultat fusionné de tous les calques actuellement visibles",
   "layerPanelCommonRangeTitle": "Plage du calque commun",
   "layerPanelHelpDialogTitle": "À propos des calques",
-  "layerPanelHelpBlendModeBody": "Modifie la façon dont le calque est composité : produit, filtre, incrustation, etc.",
+  "layerPanelHelpBlendModeBody": "Modifie la façon dont le calque est composité : produit, filtre, incrustation, etc. Touchez une vignette pour voir au-dessus l'image dans ce mode, puis touchez Appliquer pour le choisir.",
   "layerPanelHelpClippingBody": "Dessine uniquement dans la zone de pixels opaques du calque du dessous. Utilisez cette option pour contrôler la zone de dessin.",
   "layerPanelCommonLayerLabel": "Calque commun",
   "layerPanelHelpCommonLayerBody": "Un calque dont le contenu est partagé entre plusieurs images. Vous pouvez définir la plage d'images dans laquelle il apparaît.",

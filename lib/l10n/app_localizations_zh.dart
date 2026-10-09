@@ -4444,7 +4444,8 @@ class AppLocalizationsZh extends AppLocalizations {
   String get layerPanelHelpDialogTitle => '关于图层';
 
   @override
-  String get layerPanelHelpBlendModeBody => '更改图层的合成方式，包括正片叠底、滤色、叠加等。';
+  String get layerPanelHelpBlendModeBody =>
+      '更改图层的合成方式，包括正片叠底、滤色、叠加等。点按图块后，上方的预览会显示此帧使用该合成方式的效果，点按“应用”即可确定。';
 
   @override
   String get layerPanelHelpClippingBody => '仅在下方图层的不透明像素范围内绘制。需要控制绘制范围时请使用此功能。';
@@ -11510,7 +11511,8 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get layerPanelHelpDialogTitle => '關於圖層';
 
   @override
-  String get layerPanelHelpBlendModeBody => '變更圖層的合成方式，包括色彩增值、濾色、覆蓋等。';
+  String get layerPanelHelpBlendModeBody =>
+      '變更圖層的合成方式，包括色彩增值、濾色、覆蓋等。點按圖塊後，上方的預覽會顯示此影格使用該合成方式的效果，點按「套用」即可確定。';
 
   @override
   String get layerPanelHelpClippingBody => '僅在下方圖層的不透明像素範圍內繪製。需要控制繪製範圍時請使用此功能。';

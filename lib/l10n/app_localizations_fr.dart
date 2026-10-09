@@ -4691,7 +4691,7 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get layerPanelHelpBlendModeBody =>
-      'Modifie la façon dont le calque est composité : produit, filtre, incrustation, etc.';
+      'Modifie la façon dont le calque est composité : produit, filtre, incrustation, etc. Touchez une vignette pour voir au-dessus l\'image dans ce mode, puis touchez Appliquer pour le choisir.';
 
   @override
   String get layerPanelHelpClippingBody =>

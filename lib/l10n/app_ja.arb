@@ -2214,7 +2214,7 @@
   "layerPanelConvertOption2Subtitle": "表示中のすべてのレイヤーを統合した結果を共通レイヤーとして作成します",
   "layerPanelCommonRangeTitle": "共通レイヤー範囲",
   "layerPanelHelpDialogTitle": "レイヤーについて",
-  "layerPanelHelpBlendModeBody": "レイヤーの合成方法を変更します。乗算・スクリーン・オーバーレイなどがあります。",
+  "layerPanelHelpBlendModeBody": "レイヤーの合成方法を変更します。乗算・スクリーン・オーバーレイなどがあります。タイルをタップすると、上のプレビューにこのフレームがその合成方法でどう見えるかが表示され、「適用」で決定します。",
   "layerPanelHelpClippingBody": "下のレイヤーの不透明ピクセル範囲内のみ描画します。描画範囲を制御したい場合はこちらを使用してください。",
   "layerPanelCommonLayerLabel": "共通レイヤー",
   "layerPanelHelpCommonLayerBody": "複数のフレームで同じ内容を共有するレイヤーです。表示するフレーム範囲を設定できます。",

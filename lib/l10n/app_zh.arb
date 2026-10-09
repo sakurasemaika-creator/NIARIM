@@ -1906,7 +1906,7 @@
   "layerPanelConvertOption2Subtitle": "将当前显示中的所有图层合并后的结果创建为公共图层",
   "layerPanelCommonRangeTitle": "公共图层范围",
   "layerPanelHelpDialogTitle": "关于图层",
-  "layerPanelHelpBlendModeBody": "更改图层的合成方式，包括正片叠底、滤色、叠加等。",
+  "layerPanelHelpBlendModeBody": "更改图层的合成方式，包括正片叠底、滤色、叠加等。点按图块后，上方的预览会显示此帧使用该合成方式的效果，点按“应用”即可确定。",
   "layerPanelHelpClippingBody": "仅在下方图层的不透明像素范围内绘制。需要控制绘制范围时请使用此功能。",
   "layerPanelCommonLayerLabel": "公共图层",
   "layerPanelHelpCommonLayerBody": "在多个帧之间共享相同内容的图层。可以设置显示的帧范围。",

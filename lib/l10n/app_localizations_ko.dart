@@ -4488,7 +4488,7 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get layerPanelHelpBlendModeBody =>
-      '레이어의 합성 방식을 변경합니다. 곱하기・스크린・오버레이 등이 있습니다.';
+      '레이어의 합성 방식을 변경합니다. 곱하기・스크린・오버레이 등이 있습니다.타일을 탭하면 위의 미리보기에 이 프레임이 그 합성 방식으로 어떻게 보이는지 표시되고, 「적용」으로 확정합니다.';
 
   @override
   String get layerPanelHelpClippingBody =>

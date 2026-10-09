@@ -4620,7 +4620,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get layerPanelHelpBlendModeBody =>
-      'Changes how the layer is composited, such as Multiply, Screen, or Overlay.';
+      'Changes how the layer is composited, such as Multiply, Screen, or Overlay. Tap a tile to see this frame in that mode in the preview above, then tap Apply to set it.';
 
   @override
   String get layerPanelHelpClippingBody =>

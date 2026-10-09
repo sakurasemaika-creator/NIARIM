@@ -4,6 +4,7 @@ import 'dart:ui' as ui;
 import 'package:path_provider/path_provider.dart';
 
 import '../engine/layer_compositor.dart';
+import '../models/layer.dart';
 import 'project_service.dart';
 
 /// プロジェクト内の1フレームを合成し、指定した最大辺までダウンスケールした
@@ -20,12 +21,16 @@ import 'project_service.dart';
 ///
 /// プロジェクトが存在しない・シーンやフレームが1枚も無い等の理由で
 /// 合成できない場合はnullを返す。
+///
+/// [editLayers] changes the frame's layers for this picture only (to show
+/// what the frame would look like with a layer changed).
 Future<ui.Image?> compositeFrameThumbnail(
   ProjectService projectService, {
   required String projectId,
   String? sceneId,
   int? frameIndex,
   required int maxSize,
+  List<Layer> Function(List<Layer> layers)? editLayers,
 }) async {
   final project = projectService.projects
       .where((p) => p.id == projectId)
@@ -52,7 +57,8 @@ Future<ui.Image?> compositeFrameThumbnail(
   final exportW = (project?.exportWidth ?? drawW).clamp(1, drawW).toInt();
   final exportH = (project?.exportHeight ?? drawH).clamp(1, drawH).toInt();
 
-  final layers = projectService.layersOf(projectId, scene.id, position);
+  final frameLayers = projectService.layersOf(projectId, scene.id, position);
+  final layers = editLayers?.call(frameLayers) ?? frameLayers;
   final fullImage = await LayerCompositor.composite(
     tileManager,
     layers,

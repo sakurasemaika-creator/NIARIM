@@ -1906,7 +1906,7 @@
   "layerPanelConvertOption2Subtitle": "將目前顯示中所有圖層合併的結果建立為共用圖層",
   "layerPanelCommonRangeTitle": "共用圖層範圍",
   "layerPanelHelpDialogTitle": "關於圖層",
-  "layerPanelHelpBlendModeBody": "變更圖層的合成方式，包括色彩增值、濾色、覆蓋等。",
+  "layerPanelHelpBlendModeBody": "變更圖層的合成方式，包括色彩增值、濾色、覆蓋等。點按圖塊後，上方的預覽會顯示此影格使用該合成方式的效果，點按「套用」即可確定。",
   "layerPanelHelpClippingBody": "僅在下方圖層的不透明像素範圍內繪製。需要控制繪製範圍時請使用此功能。",
   "layerPanelCommonLayerLabel": "共用圖層",
   "layerPanelHelpCommonLayerBody": "在多個影格之間共用相同內容的圖層。可設定顯示的影格範圍。",

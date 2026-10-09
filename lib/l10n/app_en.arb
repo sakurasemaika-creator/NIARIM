@@ -1906,7 +1906,7 @@
   "layerPanelConvertOption2Subtitle": "Creates a common layer from the merged result of all currently visible layers",
   "layerPanelCommonRangeTitle": "Common layer range",
   "layerPanelHelpDialogTitle": "About layers",
-  "layerPanelHelpBlendModeBody": "Changes how the layer is composited, such as Multiply, Screen, or Overlay.",
+  "layerPanelHelpBlendModeBody": "Changes how the layer is composited, such as Multiply, Screen, or Overlay. Tap a tile to see this frame in that mode in the preview above, then tap Apply to set it.",
   "layerPanelHelpClippingBody": "Draws only within the opaque pixel area of the layer below. Use this to control the drawing area.",
   "layerPanelCommonLayerLabel": "Common layer",
   "layerPanelHelpCommonLayerBody": "A layer whose content is shared across multiple frames. You can set which frame range it appears in.",
