@@ -41,9 +41,15 @@ Uint8List _corner() {
   return rgba;
 }
 
+/// How far the ideal pool can reach from a line's edge per px before its
+/// end: the straight line between the two lines' pool ends, which a wide
+/// centre is flattened to rather than bulging past.
+final _flat = 1 / math.tan(_angle / 2);
+
 /// Where the ideal pool is: inside the corner, along each line, from the
 /// line's edge out by the centre width at the point, thinning in a straight
-/// line to nothing at [range] along it.
+/// line to nothing at [range] along it, and never past the straight line
+/// between the two lines' pool ends.
 bool _inIdeal(double x, double y, double width, double range) {
   const edge = .5;
   final (ax, ay) = _apex;
@@ -55,7 +61,7 @@ bool _inIdeal(double x, double y, double width, double range) {
   for (final (u, h) in [(_up, hUp), (_down, hDown)]) {
     final s = px * u.$1 + py * u.$2;
     if (s < 0 || s > range) continue;
-    final thickness = width * (1 - s / range);
+    final thickness = math.min(width * (1 - s / range), _flat * (range - s));
     if (h <= edge + thickness) return true;
   }
   return false;
@@ -153,10 +159,16 @@ void main() {
         // checked with the rest above).
         final profile = <(double, double)>[];
         for (var s = 1.0; s <= range - 1; s += 1) {
-          final expected = width * (1 - s / range);
+          final expected = math.min(
+            width * (1 - s / range),
+            _flat * (range - s),
+          );
           // The lower line's pool across this point's measuring line.
           final apart = s * math.sin(_angle);
-          final lowerReach = width * (1 - s * math.cos(_angle) / range);
+          final lowerReach = math.min(
+            width * (1 - s * math.cos(_angle) / range),
+            _flat * (range - s * math.cos(_angle)),
+          );
           if (apart - expected - lowerReach < 2) continue;
           final measured = _thicknessAt(pool, s, expected + 3);
           profile.add((s, measured));

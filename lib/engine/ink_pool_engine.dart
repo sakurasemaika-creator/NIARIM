@@ -256,23 +256,41 @@ class InkPoolEngine {
             partner = reach[other][k];
           }
         }
-        if (partner >= own - .5) return _Taper(centreWidth, own);
         // Where a point as far from both lines' edges lies along each line
         // (from the meeting point, its centre lines' crossing).
         final along = 1 / math.tan(gap / 2);
+        // However wide the centre is set, the pool never bulges past the
+        // straight line from where it ends on this line's edge to where it
+        // ends on the other's: at the widest it is flat across the middle.
+        // Along this line's edge (from where the two edges meet, lineHalf *
+        // along before the meeting point) that line is flatSlope * (own - s)
+        // from it; it runs outside this line altogether (no limit) where the
+        // other line reaches so much further at a sharp angle.
+        final ownEdge = own - lineHalf * along;
+        final partnerEdge = partner - lineHalf * along;
+        final across = ownEdge - partnerEdge * math.cos(gap);
+        final flatSlope = ownEdge > 0 && partnerEdge > 0 && across > 0
+            ? partnerEdge * math.sin(gap) / across
+            : null;
+        if (partner >= own - .5) {
+          return _Taper(centreWidth, own, flatSlope: flatSlope);
+        }
         final slope = centreWidth / partner;
         // The shorter line's pool there: slope * (partner - s), with
         // s = (depth + lineHalf) * along.
         final depth =
             slope * (partner - lineHalf * along) / (1 + slope * along);
         final at = (depth + lineHalf) * along;
-        if (depth <= 0 || at >= own - 1) return _Taper(centreWidth, own);
+        if (depth <= 0 || at >= own - 1) {
+          return _Taper(centreWidth, own, flatSlope: flatSlope);
+        }
         return _Taper(
           centreWidth,
           own,
           steepEnd: partner,
           kneeAt: at,
           kneeDepth: depth,
+          flatSlope: flatSlope,
         );
       }
 
@@ -1399,6 +1417,7 @@ class _Taper {
     this.steepEnd,
     this.kneeAt,
     this.kneeDepth = 0,
+    this.flatSlope,
   });
 
   final double centreWidth;
@@ -1407,14 +1426,23 @@ class _Taper {
   final double? kneeAt;
   final double kneeDepth;
 
+  /// No thicker than [flatSlope] * ([end] - s): within the straight line
+  /// between the two pools' ends, so a wide setting doesn't bulge.
+  final double? flatSlope;
+
   double at(double s) {
     final knee = kneeAt;
+    final double thickness;
     if (knee != null && s > knee) {
       final t = ((s - knee) / (end - knee)).clamp(0.0, 1.0);
-      return kneeDepth * (1 - t);
+      thickness = kneeDepth * (1 - t);
+    } else {
+      final r = steepEnd ?? end;
+      thickness = centreWidth * (1 - s.clamp(0.0, r) / r);
     }
-    final r = steepEnd ?? end;
-    return centreWidth * (1 - s.clamp(0.0, r) / r);
+    final flat = flatSlope;
+    if (flat == null) return thickness;
+    return math.min(thickness, math.max(0.0, flat * (end - s)));
   }
 }
 
