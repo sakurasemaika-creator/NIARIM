@@ -1788,7 +1788,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get tipsAutofillManualPartColorDesc =>
-      'If you plan to replace temporary guide colours with the final colours afterward, you do not need to split the lineart into multiple “Auto-fill lineart layer” layers. Keep all lineart on one normal layer, then manually paint each part as a filled area—not as a line—on its “Auto-fill layer,” using a bright temporary colour that stands out. Correct any misfilled areas, then run autofill with “Update color while keeping shape.” The painted shapes stay in place while their colours change to the colours in the autofill settings. If you want autofill to detect and colour the parts directly from lineart in one pass, use an “Auto-fill lineart layer.”';
+      'If you plan to repaint with the final colours afterward, you do not need to split the lineart into separate “Auto-fill lineart layer” layers. Keep all lineart on one normal layer. On each “Auto-fill layer,” manually paint each part as a solid area—not as a line—using a bright temporary colour. Correct any misfilled areas, then run the update from the Auto-fill layer’s menu to keep the painted shape and replace its colour with the colour in the autofill settings. If a matching “Auto-fill lineart layer” is present, choose “Update color while keeping shape” as the execution method. If you want autofill to detect and colour the parts directly from the lineart in one pass, use an “Auto-fill lineart layer.”';
   @override
   String get tipsBrushFavoriteTitle =>
       'Favorite your go-to brushes to switch without hunting';
