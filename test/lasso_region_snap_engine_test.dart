@@ -129,8 +129,8 @@ bool _on(Uint8List mask, int x, int y, [int width = 160]) =>
     mask[y * width + x] != 0;
 
 void main() {
-  test('a rough lasso around a figure selects it up to the middle of its '
-      'outline, with the lines inside it, like a bucket fill', () {
+  test('a rough lasso around a figure selects it out to the outer edge of '
+      'its outline, with the lines inside it, like a bucket fill', () {
     final art = _LineArt(160, 140);
     // The figure: a body with a collar line and a fold inside, and a 4px
     // outline.
@@ -175,22 +175,26 @@ void main() {
       expect(_on(s, x, y), isFalse, reason: '($x, $y) is outside the figure');
     }
     expect(_on(s, 136, 50), isFalse, reason: 'the line crossing the lasso');
-    // The edge runs along the middle of the 4px outline: on the left side
-    // (x 48-52 at y 70, the line's centre near x 45 + 5 * 40/80 = 45),
-    // the inner half is selected and the outer half not.
+    // The edge runs along the outer edge of the 4px outline: on the left
+    // side the whole line is selected and nothing outside it.
     final row = [for (var x = 30; x < 60; x++) _on(s, x, 70)];
     final first = row.indexOf(true) + 30;
     expect(art.isInk(first, 70), isTrue, reason: 'the edge is on the line');
-    expect(
-      art.isInk(first - 1, 70),
-      isTrue,
-      reason: 'and not at its outer edge',
-    );
-    expect(art.isInk(first - 3, 70), isFalse);
+    expect(art.isInk(first - 1, 70), isFalse, reason: 'at its outer edge');
+    // Every pixel of the outline, its corners included, is selected.
+    for (var y = 27; y < 114; y++) {
+      for (var x = 38; x < 124; x++) {
+        if (!art.isInk(x, y) || (x - 80).abs() < 30 && y > 40 && y < 105) {
+          continue;
+        }
+        expect(_on(s, x, y), isTrue, reason: 'outline at ($x, $y)');
+      }
+    }
   });
 
   test('of two shapes sharing a line, only the one mostly inside the lasso '
-      'is taken, cut along the middle of the shared line', () {
+      'is taken, with the whole shared line, and the other\'s sides cut '
+      'where they leave it', () {
     final art = _LineArt(160, 140);
     // A head on a body: they share the line at y = 60.
     art.stroke(
@@ -225,9 +229,65 @@ void main() {
     expect(_on(s, 80, 90), isTrue, reason: 'the body');
     expect(_on(s, 80, 52), isFalse, reason: 'the head, though in the lasso');
     expect(_on(s, 80, 30), isFalse);
-    // The shared line (y 58-61) is split down the middle.
+    // The shared line (y 58-61) belongs to the body's outline.
     expect(_on(s, 80, 61), isTrue);
-    expect(_on(s, 80, 58), isFalse);
+    expect(_on(s, 80, 58), isTrue);
+    // The head's sides run on up out of it: cut at the outline.
+    for (final y in [40, 50, 55]) {
+      expect(_on(s, 60, y), isFalse, reason: 'the head\'s side at y $y');
+      expect(_on(s, 100, y), isFalse, reason: 'the head\'s side at y $y');
+    }
+  });
+
+  test('a coloured shape: the fill with its border out to the outer edge, '
+      'the line sticking out of it cut off, nothing round it', () {
+    // A light blue fill with a blue border and a blue line sticking up out
+    // of its top, on a transparent layer, and the same flattened on white.
+    const width = 160, height = 140;
+    for (final flat in [false, true]) {
+      final rgba = Uint8List(width * height * 4);
+      if (flat) rgba.fillRange(0, rgba.length, 255);
+      void paint(int x, int y, List<int> c) =>
+          rgba.setAll((y * width + x) * 4, [...c, 255]);
+      bool border(int x, int y) =>
+          x >= 40 &&
+          x < 120 &&
+          y >= 40 &&
+          y < 110 &&
+          (x < 44 || x >= 116 || y < 44 || y >= 106);
+      bool stub(int x, int y) => x >= 78 && x < 82 && y >= 10 && y < 75;
+      for (var y = 0; y < height; y++) {
+        for (var x = 0; x < width; x++) {
+          if (border(x, y) || stub(x, y)) {
+            paint(x, y, const [30, 110, 220]);
+          } else if (x >= 44 && x < 116 && y >= 44 && y < 106) {
+            paint(x, y, const [150, 240, 250]);
+          }
+        }
+      }
+      final lasso = _roughLasso(const [
+        Offset(28, 24),
+        Offset(132, 22),
+        Offset(134, 122),
+        Offset(26, 124),
+      ]);
+      final s = LassoRegionSnap.select(
+        lasso: lasso,
+        rgba: rgba,
+        width: width,
+        height: height,
+      )!;
+      for (var y = 0; y < height; y++) {
+        for (var x = 0; x < width; x++) {
+          final inShape = x >= 40 && x < 120 && y >= 40 && y < 110;
+          if (inShape) {
+            expect(_on(s, x, y), isTrue, reason: 'flat $flat: ($x, $y)');
+          } else if (!stub(x, y) || y < 37) {
+            expect(_on(s, x, y), isFalse, reason: 'flat $flat: ($x, $y)');
+          }
+        }
+      }
+    }
   });
 
   test('the gap tolerance closes a break in the outline, like a bucket '
@@ -269,6 +329,32 @@ void main() {
     final open = withGap(2);
     _writeEvidence('gap_open', art, lasso, open);
     expect(open, isNull);
+  });
+
+  test('a lasso round almost the whole canvas still takes only the figure, '
+      'not the paper round it', () {
+    final art = _LineArt(120, 100);
+    art.stroke(
+      const [Offset(40, 30), Offset(80, 30), Offset(80, 70), Offset(40, 70)],
+      3,
+      closed: true,
+    );
+    final lasso = _roughLasso(const [
+      Offset(4, 4),
+      Offset(116, 4),
+      Offset(116, 96),
+      Offset(4, 96),
+    ], wobble: 1.5);
+    final s = LassoRegionSnap.select(
+      lasso: lasso,
+      rgba: art.rgba,
+      width: art.width,
+      height: art.height,
+    )!;
+    _writeEvidence('whole_canvas_lasso', art, lasso, s);
+    expect(_on(s, 60, 50, 120), isTrue);
+    expect(_on(s, 20, 50, 120), isFalse, reason: 'the paper round it');
+    expect(_on(s, 100, 90, 120), isFalse, reason: 'the paper round it');
   });
 
   test('with no line inside the lasso, the lasso is taken as drawn', () {

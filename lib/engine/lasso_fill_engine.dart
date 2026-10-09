@@ -99,7 +99,11 @@ class LassoFillEngine {
     return result;
   }
 
-  /// fillEnclosed の囲って塗るモード：囲った範囲内の閉領域をバケツ塗りエンジンで一括塗り
+  /// fillEnclosed の囲って塗るモード：囲った範囲内にある閉領域（線で閉じた
+  /// 透明な領域）をバケツ塗りと同じ考え方ですべて一括で塗る。閉領域は投げ縄の
+  /// 内側に半分以上入っているもので、その領域全体を塗る。投げ縄と絵の間の
+  /// 余白のようにキャンバスの端まで続く領域は、9割以上を囲んだときだけ塗る
+  /// （投げ縄をキャンバスいっぱいに描いても余白は塗らない）。
   /// 透明色選択時は消しゴム動作（仕様25番共通仕様）
   Uint8List fillEnclosed({
     required List<ui.Offset> points,
@@ -114,58 +118,80 @@ class LassoFillEngine {
   }) {
     if (points.length < 3) return canvasData;
     final result = Uint8List.fromList(canvasData);
+    final n = width * height;
+    final inside = Uint8List(n);
+    for (var y = 0; y < height; y++) {
+      for (var x = 0; x < width; x++) {
+        if (_isInsidePolygon(x + 0.5, y + 0.5, points)) {
+          inside[y * width + x] = 1;
+        }
+      }
+    }
     // Set<int>はハッシュ計算・ボクシングのオーバーヘッドが大きいため、
     // 訪問済み管理にはUint8Listのビットマップを使う（低スペック端末対策）。
-    final visited = Uint8List(width * height);
+    final visited = Uint8List(n);
+    final queue = Int32List(n);
     final isEraser = color.a == 0;
+    final r = (color.r * 255).round();
+    final g = (color.g * 255).round();
+    final b = (color.b * 255).round();
+    final a = (color.a * 255).round();
 
-    for (int y = 0; y < height; y++) {
-      for (int x = 0; x < width; x++) {
-        final pos = y * width + x;
-        if (visited[pos] != 0) continue;
-        if (!_isInsidePolygon(x + 0.5, y + 0.5, points)) continue;
-        if (selectionMask != null && selectionMask[pos] == 0) continue;
-
-        final idx = pos * 4;
-        if (result[idx + 3] != 0) continue; // 不透明ピクセルは境界
-
-        // 未訪問の透明ピクセル → フラッドフィルで閉領域を塗る。
-        // flood自体も投げ縄内へ制限し、囲みの外側へ接続している透明領域が
-        // 選択範囲外まで広がらないようにする。
-        final region = _floodFill(
-          result,
-          width,
-          height,
-          x,
-          y,
-          polygon: points,
-          selectionMask: selectionMask,
-        );
-        for (final pt in region) {
-          final rPos = pt.dy.round() * width + pt.dx.round();
-          visited[rPos] = 1;
-          final rIdx = rPos * 4;
-          if (isEraser) {
-            result[rIdx] = 0;
-            result[rIdx + 1] = 0;
-            result[rIdx + 2] = 0;
-            result[rIdx + 3] = 0;
-          } else if (toneTexture != null) {
-            final tx = pt.dx.round() % toneTextureWidth;
-            final ty = pt.dy.round() % toneTextureHeight;
-            final toneIdx = (ty * toneTextureWidth + tx) * 4;
-            if (toneTexture[toneIdx + 3] > 0) {
-              result[rIdx] = (color.r * 255).round();
-              result[rIdx + 1] = (color.g * 255).round();
-              result[rIdx + 2] = (color.b * 255).round();
-              result[rIdx + 3] = (color.a * 255).round();
-            }
-          } else {
-            result[rIdx] = (color.r * 255).round();
-            result[rIdx + 1] = (color.g * 255).round();
-            result[rIdx + 2] = (color.b * 255).round();
-            result[rIdx + 3] = (color.a * 255).round();
+    for (var seed = 0; seed < n; seed++) {
+      if (visited[seed] != 0 || inside[seed] == 0) continue;
+      if (canvasData[seed * 4 + 3] != 0) continue; // 不透明ピクセルは境界
+      // 透明な領域を投げ縄に関係なく最後までたどり、投げ縄の内側に
+      // 半分以上あれば閉領域として塗る。
+      var head = 0, tail = 0, within = 0;
+      var open = false;
+      visited[seed] = 1;
+      queue[tail++] = seed;
+      while (head < tail) {
+        final pos = queue[head++];
+        if (inside[pos] != 0) within++;
+        final x = pos % width;
+        if (x == 0 || x == width - 1 || pos < width || pos >= n - width) {
+          open = true;
+        }
+        void visit(int q) {
+          if (visited[q] == 0 && canvasData[q * 4 + 3] == 0) {
+            visited[q] = 1;
+            queue[tail++] = q;
           }
+        }
+
+        if (x > 0) visit(pos - 1);
+        if (x < width - 1) visit(pos + 1);
+        if (pos >= width) visit(pos - width);
+        if (pos < n - width) visit(pos + width);
+      }
+      // 投げ縄の外の余白（キャンバスの端まで続く領域）は、ほぼ全部を
+      // 囲んだときだけ閉領域とみなす。
+      if (open ? within * 10 < tail * 9 : within * 2 < tail) continue;
+      for (var k = 0; k < tail; k++) {
+        final pos = queue[k];
+        if (selectionMask != null && selectionMask[pos] == 0) continue;
+        final i = pos * 4;
+        if (isEraser) {
+          result[i] = 0;
+          result[i + 1] = 0;
+          result[i + 2] = 0;
+          result[i + 3] = 0;
+        } else if (toneTexture != null) {
+          final tx = (pos % width) % toneTextureWidth;
+          final ty = (pos ~/ width) % toneTextureHeight;
+          final toneIdx = (ty * toneTextureWidth + tx) * 4;
+          if (toneTexture[toneIdx + 3] > 0) {
+            result[i] = r;
+            result[i + 1] = g;
+            result[i + 2] = b;
+            result[i + 3] = a;
+          }
+        } else {
+          result[i] = r;
+          result[i + 1] = g;
+          result[i + 2] = b;
+          result[i + 3] = a;
         }
       }
     }
@@ -185,63 +211,5 @@ class LassoFillEngine {
       }
     }
     return crossings % 2 != 0;
-  }
-
-  /// スタックベースのフラッドフィル（透明領域を対象）
-  /// visitedチェックをstack.add()前に行い重複push防止。
-  /// [polygon]指定時は画素中心が投げ縄内のピクセルだけを探索する。
-  List<ui.Offset> _floodFill(
-    Uint8List data,
-    int width,
-    int height,
-    int startX,
-    int startY, {
-    List<ui.Offset>? polygon,
-    Uint8List? selectionMask,
-  }) {
-    final result = <ui.Offset>[];
-    if (startX < 0 || startX >= width || startY < 0 || startY >= height) {
-      return result;
-    }
-    if (polygon != null &&
-        !_isInsidePolygon(startX + 0.5, startY + 0.5, polygon)) {
-      return result;
-    }
-    final startIdx = (startY * width + startX) * 4;
-    if (data[startIdx + 3] != 0) return result;
-
-    final visited = Uint8List(width * height);
-    final startPos = startY * width + startX;
-    visited[startPos] = 1;
-    final stack = <int>[startPos];
-
-    while (stack.isNotEmpty) {
-      final pos = stack.removeLast();
-      final x = pos % width;
-      final y = pos ~/ width;
-
-      if (selectionMask != null && selectionMask[pos] == 0) continue;
-      if (polygon != null && !_isInsidePolygon(x + 0.5, y + 0.5, polygon)) {
-        continue;
-      }
-
-      final idx = pos * 4;
-      if (data[idx + 3] != 0) continue; // 不透明ピクセルは境界
-
-      result.add(ui.Offset(x.toDouble(), y.toDouble()));
-
-      void tryAdd(int newPos) {
-        if (visited[newPos] == 0) {
-          visited[newPos] = 1;
-          stack.add(newPos);
-        }
-      }
-
-      if (x > 0) tryAdd(pos - 1);
-      if (x < width - 1) tryAdd(pos + 1);
-      if (y > 0) tryAdd(pos - width);
-      if (y < height - 1) tryAdd(pos + width);
-    }
-    return result;
   }
 }

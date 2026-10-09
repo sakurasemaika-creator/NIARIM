@@ -324,6 +324,36 @@ void main() {
       0,
       reason: 'closed region outside lasso must remain unfilled',
     );
+    expect(
+      _pixel(result, 12, 12)[3],
+      0,
+      reason: 'the open space between the lasso and the shape is not closed',
+    );
+  });
+
+  test('囲って塗る：囲んだ中の閉じた線をすべて一括で塗り、外の余白は塗らない', () async {
+    final data = Uint8List(w * h * 4);
+    _drawRectBoundary(data, 14, 14, 34, 34);
+    _drawRectBoundary(data, 50, 14, 80, 40);
+    _drawRectBoundary(data, 20, 54, 70, 84);
+    final result = LassoFillEngine().fillEnclosed(
+      points: const [
+        ui.Offset(6, 6),
+        ui.Offset(90, 6),
+        ui.Offset(90, 90),
+        ui.Offset(6, 90),
+      ],
+      color: const ui.Color(0xFF70C040),
+      canvasData: data,
+      width: w,
+      height: h,
+    );
+    for (final (x, y) in const [(24, 24), (65, 27), (45, 69)]) {
+      expect(_pixel(result, x, y).sublist(0, 3), equals([112, 192, 64]));
+    }
+    for (final (x, y) in const [(10, 10), (44, 44), (85, 85)]) {
+      expect(_pixel(result, x, y)[3], 0, reason: 'open space at ($x, $y)');
+    }
   });
 }
 

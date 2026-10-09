@@ -235,7 +235,7 @@ void main() {
     tm.dispose();
   });
 
-  test('囲って塗る：空キャンバスでも投げ縄外へ一切漏れず選択範囲内だけ確定', () async {
+  test('囲って塗る：閉じた線の無い空キャンバスでは何も塗らない（投げ縄外へも漏れない）', () async {
     const polygon = [
       ui.Offset(15, 18),
       ui.Offset(79, 13),
@@ -267,7 +267,8 @@ void main() {
       }
     }
     expect(leaked, 0);
-    expect(filled, greaterThan(1500));
+    // 囲った中に閉じた線が無いので、塗る閉領域も無い。
+    expect(filled, 0);
   });
 }
 

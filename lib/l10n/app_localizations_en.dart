@@ -1239,7 +1239,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get helpLassoFillDesc =>
-      'Trace with your finger to form a polygonal area, then fill the inside all at once. Unlike the bucket tool, you can define the area yourself even where the line art isn\'t closed, making it well suited for complex shapes or areas with gaps in the lines.';
+      'Trace with your finger to form a polygonal area, then fill the inside all at once. Unlike the bucket tool, you can define the area yourself even where the line art isn\'t closed, making it well suited for complex shapes or areas with gaps in the lines. With \"Fill enclosed area\" on, every area closed by lines inside your lasso is filled at once, however many there are, as with the bucket (the space between the lasso and the drawing is left as it is).';
 
   @override
   String get helpEyedropperToolTitle => 'Eyedropper Tool';
@@ -1253,7 +1253,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get helpSelectToolDesc =>
-      'Selects part of the canvas so you can move, rotate, or scale just that area. Long-press to choose from three selection methods: \"Rectangle Select,\" \"Lasso Select\" (freeform enclosure), or \"Auto Select\" (magic wand — automatically groups areas of similar color). While a selection is active, an outline marks the selected area on the canvas, and the same area stays fixed across all frames and layers until you deselect. In Lasso Select, turning on \"Snap to lines\" looks at the areas the line art divides the canvas into, the way a bucket fill does, and selects only the areas lying mostly inside your lasso. The edge of the selection runs exactly along the middle of the lines, and lines inside those areas are selected with them. Breaks in a line up to the \"Gap tolerance\" width are treated as closed. If there is no line art inside the lasso, the lasso is selected as drawn. The lines are taken from the selection reference (\"Working layer only\" / \"All visible layers\").';
+      'Selects part of the canvas so you can move, rotate, or scale just that area. Long-press to choose from three selection methods: \"Rectangle Select,\" \"Lasso Select\" (freeform enclosure), or \"Auto Select\" (magic wand — automatically groups areas of similar color). While a selection is active, an outline marks the selected area on the canvas, and the same area stays fixed across all frames and layers until you deselect. In Lasso Select, turning on \"Snap to lines\" looks at the areas the line art divides the canvas into, the way a bucket fill does, and selects only the areas lying mostly inside your lasso. The edge of the selection runs exactly along the outer edge of the line art: the lines around those areas and inside them are selected with them (a line running on out of the outline is cut where it leaves it). Filled colors count as areas of their own, as for a bucket fill, so a layer with fills and lines is selected along the shape of the drawing too. Breaks in a line up to the \"Gap tolerance\" width are treated as closed. If there is no line art inside the lasso, the lasso is selected as drawn. The lines are taken from the selection reference (\"Working layer only\" / \"All visible layers\").';
 
   @override
   String get helpFingerToolTitle => 'Finger Tool (Warp Tool)';
