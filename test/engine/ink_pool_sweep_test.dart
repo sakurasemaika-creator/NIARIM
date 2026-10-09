@@ -43,8 +43,7 @@ Uint8List _corner() {
 
 /// Where the ideal pool is: inside the corner, along each line, from the
 /// line's edge out by the centre width at the point, thinning in a straight
-/// line to 1 px at [range] along it, and that 1 px right up to the end (its
-/// anti-aliased end half a pixel further on).
+/// line to nothing at [range] along it.
 bool _inIdeal(double x, double y, double width, double range) {
   const edge = .5;
   final (ax, ay) = _apex;
@@ -55,8 +54,8 @@ bool _inIdeal(double x, double y, double width, double range) {
   if (hUp < -edge || hDown < -edge) return false;
   for (final (u, h) in [(_up, hUp), (_down, hDown)]) {
     final s = px * u.$1 + py * u.$2;
-    if (s < 0 || s > range + .5) continue;
-    final thickness = 1 + (width - 1) * (1 - math.min(s, range) / range);
+    if (s < 0 || s > range) continue;
+    final thickness = width * (1 - s / range);
     if (h <= edge + thickness) return true;
   }
   return false;
@@ -100,7 +99,7 @@ double _thicknessAt(Uint8List pool, double s, double reach) {
 
 /// 墨溜まり's two settings, swept independently on a sharp corner of 1 px
 /// lines: at the point the pool reaches out from the line's edge by the
-/// centre width, it thins smoothly and evenly to 1 px at the end of the
+/// centre width, it thins smoothly and evenly to a point at the end of the
 /// range, and there is nothing else: no steps, no specks, nothing outside the
 /// corner or past the range.
 void main() {
@@ -150,15 +149,14 @@ void main() {
         );
 
         // Along the upper line, where the lower line's pool is out of the
-        // way: the set width tapering evenly to 1 px (the last pixel, where
-        // the pool's end is smoothed, is checked with the rest above).
+        // way: the set width tapering evenly to nothing (the last pixel is
+        // checked with the rest above).
         final profile = <(double, double)>[];
         for (var s = 1.0; s <= range - 1; s += 1) {
-          final expected = 1 + (width - 1) * (1 - s / range);
+          final expected = width * (1 - s / range);
           // The lower line's pool across this point's measuring line.
           final apart = s * math.sin(_angle);
-          final lowerReach =
-              1 + (width - 1) * (1 - s * math.cos(_angle) / range);
+          final lowerReach = width * (1 - s * math.cos(_angle) / range);
           if (apart - expected - lowerReach < 2) continue;
           final measured = _thicknessAt(pool, s, expected + 3);
           profile.add((s, measured));
@@ -177,7 +175,7 @@ void main() {
           );
           expect(
             step,
-            greaterThanOrEqualTo(-(width - 1) / range - .6),
+            greaterThanOrEqualTo(-width / range - .6),
             reason: 'no sudden drop at ${profile[k].$1} px: $profile',
           );
         }

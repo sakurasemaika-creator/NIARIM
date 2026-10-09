@@ -146,6 +146,40 @@ double _around(
   return sum;
 }
 
+/// The pool's coverage at ([x], [y]), read between pixel centres.
+double _sample(_Art art, Uint8List pool, double x, double y) {
+  final fx = x - .5, fy = y - .5;
+  final x0 = fx.floor(), y0 = fy.floor();
+  final tx = fx - x0, ty = fy - y0;
+  double at(int x, int y) => x < 0 || y < 0 || x >= art.width || y >= art.height
+      ? 0
+      : pool[(y * art.width + x) * 4 + 3] / 255;
+  return (at(x0, y0) * (1 - tx) + at(x0 + 1, y0) * tx) * (1 - ty) +
+      (at(x0, y0 + 1) * (1 - tx) + at(x0 + 1, y0 + 1) * tx) * ty;
+}
+
+/// The straight line `at0 + slope * x` nearest [points] (least squares),
+/// where it reaches zero, and how far the farthest point is from it.
+({double at0, double slope, double zero, double worst}) _fitLine(
+  List<(double, double)> points,
+) {
+  final n = points.length;
+  var sx = 0.0, sy = 0.0, sxx = 0.0, sxy = 0.0;
+  for (final (x, y) in points) {
+    sx += x;
+    sy += y;
+    sxx += x * x;
+    sxy += x * y;
+  }
+  final slope = (n * sxy - sx * sy) / (n * sxx - sx * sx);
+  final at0 = (sy - slope * sx) / n;
+  var worst = 0.0;
+  for (final (x, y) in points) {
+    worst = math.max(worst, (y - at0 - slope * x).abs());
+  }
+  return (at0: at0, slope: slope, zero: -at0 / slope, worst: worst);
+}
+
 double _total(Uint8List pool) {
   var sum = 0.0;
   for (var i = 3; i < pool.length; i += 4) {
@@ -258,7 +292,7 @@ void _olympicRings(double thickness) {
               : (t1.$1 + t2.$1, t1.$2 + t2.$2),
         );
         // Points inside each angle, clear of the lines' edges.
-        final inAcute = (thickness / 2 + 2.5) / math.sin(angle / 2);
+        final inAcute = (thickness / 2 + 1.5) / math.sin(angle / 2);
         final inWide = (thickness / 2 + 3) / math.sin((math.pi - angle) / 2);
         for (final k in [-1.0, 1.0]) {
           final ink = _around(
@@ -306,12 +340,14 @@ void _olympicRings(double thickness) {
 /// at a right angle or sharper (a V, a fork, the narrow side of a crossing, a
 /// T, a square corner), never inside a wider one. At the meeting point
 /// the pool shows the set width beyond the line's edge; along each line it
-/// thins in a straight slope ("like a slide") to 1 px at the end of the
-/// range, and nothing beyond, whether the line is thin or thick. It works on
-/// curved lines crossing each other too (the Olympic rings).
+/// thins in a straight slope ("like a slide") to nothing at the end of the
+/// range (or where the line ends, if sooner; then the other line's pool
+/// meets it as thick from its own line, and thins on from there), and
+/// nothing beyond, whether the line is thin or thick. It works on curved
+/// lines crossing each other too (the Olympic rings).
 void main() {
   test('in a 40 degree crossing: the narrow angles slope from the set width '
-      'to 1 px, the wide angles stay clear', () {
+      'to nothing, the wide angles stay clear', () {
     final art = _Art(220, 160)
       ..stroke([(20, 80), (200, 80)], 3)
       // Up to the right at 40 degrees, through (110, 80).
@@ -324,7 +360,7 @@ void main() {
     // the right of the crossing and below it to the left. From 21 px out,
     // the slanted line's own pool has left the rows next to the bar.
     for (final d in [21, 24, 27]) {
-      final expected = 1 + (width - 1) * (1 - d / range);
+      final expected = width * (1 - d / range);
       expect(
         _column(art, pool, 110 + d, 71, 77),
         closeTo(expected, 1.5),
@@ -369,7 +405,7 @@ void main() {
       // 84 + e).
       final e = (thickness / 2 + .5).floor();
       for (final d in [16, 20, 24, 28]) {
-        final expected = 1 + (width - 1) * (1 - d / range);
+        final expected = width * (1 - d / range);
         for (final side in [-1, 1]) {
           // Below the bar, on both sides of the stem.
           expect(
@@ -410,8 +446,14 @@ void main() {
     final cornerPool = _pool(corner, range: range, width: width);
     _write('square_corner', corner, cornerPool);
     expect(_around(corner, cornerPool, 140, 37, 2), greaterThan(4));
-    expect(_column(corner, cornerPool, 130, 32, 44), closeTo(1 + 9 / 3, 1.5));
-    expect(_row(corner, cornerPool, 50, 136, 147), closeTo(1 + 9 / 3, 1.5));
+    expect(
+      _column(corner, cornerPool, 130, 32, 44),
+      closeTo(width * (1 - 20 / range), 1.5),
+    );
+    expect(
+      _row(corner, cornerPool, 50, 136, 147),
+      closeTo(width * (1 - 20 / range), 1.5),
+    );
     expect(_around(corner, cornerPool, 140, 22, 4), 0, reason: 'above');
     expect(_around(corner, cornerPool, 158, 40, 4), 0, reason: 'right');
     expect(_around(corner, cornerPool, 158, 22, 4), 0, reason: 'outside');
@@ -535,7 +577,7 @@ void main() {
     final pool = _pool(crossing, range: range, width: width);
     _write('crossing_40_1px', crossing, pool);
     for (final d in [21, 24, 27]) {
-      final expected = 1 + (width - 1) * (1 - d / range);
+      final expected = width * (1 - d / range);
       expect(
         _column(crossing, pool, 110 + d, 72, 79),
         closeTo(expected, 1.5),
@@ -591,7 +633,7 @@ void main() {
     final tPool = _pool(t, range: range, width: width);
     _write('t_junction_1px', t, tPool);
     for (final d in [16, 20, 24]) {
-      final expected = 1 + (width - 1) * (1 - d / range);
+      final expected = width * (1 - d / range);
       for (final side in [-1, 1]) {
         expect(
           _column(t, tPool, 85 + side * d, 51, 63),
@@ -612,7 +654,10 @@ void main() {
     }
     // The corner: inside it (below the line, left of the other) only.
     expect(_around(t, tPool, 55, 125.5, 2), greaterThan(4));
-    expect(_column(t, tPool, 40, 121, 133), closeTo(1 + 9 / 3, 1.5));
+    expect(
+      _column(t, tPool, 40, 121, 133),
+      closeTo(width * (1 - 20 / range), 1.5),
+    );
     expect(_around(t, tPool, 50, 114, 4), 0, reason: 'above the corner');
     expect(_around(t, tPool, 67, 135, 4), 0, reason: 'right of the corner');
     for (var degrees = 5; degrees < 90; degrees += 10) {
@@ -672,9 +717,9 @@ void main() {
   });
 
   for (final thickness in [3.0, 1.0]) {
-    test('a line that ends within the range ends its pool there, at 1 px; '
-        'the other line keeps the whole range (${thickness.round()} px '
-        'lines)', () {
+    test('a line that ends within the range ends its pool there; the other '
+        'line meets it as thick, then thins to the end of the range '
+        '(${thickness.round()} px lines)', () {
       const range = 30.0, width = 10.0;
       final soft = thickness < 2;
       final o = soft ? .5 : 0.0;
@@ -697,58 +742,97 @@ void main() {
       final pool = _pool(art, range: range, width: width);
       _write(soft ? 'line_end_1px' : 'line_end', art, pool);
 
-      // The stem's pool, beside it, where the bar's pool is out of the way
-      // (from row 62): just before the stem's round end begins, about 1 to
-      // 2 px, not the 6 px the whole range would leave there; past the end,
-      // nothing.
-      final e = soft ? 1 : 2;
+      // Each side of the stem, the pools' outline, measured from the lines'
+      // edges: the bar's lower edge is row [edgeY], the stem's edge on that
+      // side column [edgeX].
+      final halfExtent = soft ? .5 : 2.0;
+      final edgeY = (50 + o + halfExtent).round();
       for (final side in [-1, 1]) {
-        final from = side < 0 ? 85 - e - 12 : 85 + e;
-        final to = side < 0 ? 85 - e : 85 + e + 12;
-        for (final y in [62, 63]) {
-          final s = y - 50.0;
-          final thin = _row(art, pool, y, from, to);
-          expect(
-            thin,
-            lessThan(1 + (width - 1) * (1 - s / 15) + 1.2),
-            reason: 'beside the stem, row $y, ${side < 0 ? 'left' : 'right'}',
-          );
-          expect(thin, greaterThan(.3), reason: 'still there at row $y');
+        final name = side < 0 ? 'left' : 'right';
+        final edgeX = (85 + o + side * halfExtent).round();
+        int columnAt(int k) => side > 0 ? edgeX + k : edgeX - 1 - k;
+        // How far the pool reaches beside the stem, [k] rows below the bar's
+        // edge, and below the bar, [k] columns out from the stem's edge.
+        double beside(int k) {
+          var sum = 0.0;
+          for (var j = 0; j < 13; j++) {
+            sum += pool[((edgeY + k) * art.width + columnAt(j)) * 4 + 3] / 255;
+          }
+          return sum;
         }
-        for (var y = 66; y < 100; y++) {
-          expect(_row(art, pool, y, from, to), 0, reason: 'past the end, $y');
-        }
-      }
-      // The bar's pool keeps the whole range.
-      for (final d in [20, 25]) {
+
+        double below(int k) =>
+            _column(art, pool, columnAt(k), edgeY, edgeY + 12);
+
+        // Beside the stem, where the pools have met: the stem's own pool,
+        // thinning in a straight line to nothing where the stem's straight
+        // sides end (15 px below the bar's centre), and nothing past it.
+        final stem = _fitLine([
+          for (var k = 6; k <= 10; k++) (k + .5, beside(k)),
+        ]);
         expect(
-          _column(art, pool, 85 + d, 50 + e, 50 + e + 12),
-          closeTo(1 + (width - 1) * (1 - d / range), 1.5),
-          reason: 'below the bar, $d px right',
+          stem.worst,
+          lessThan(.25),
+          reason:
+              'beside the stem, the stem\'s own slope (not the bar\'s pool '
+              'bulging over it), $name',
+        );
+        expect(
+          edgeY - 50 - o + stem.zero,
+          inInclusiveRange(13.0, 16.0),
+          reason: 'where the stem\'s pool ends, $name',
+        );
+        for (var k = 16; k < 50; k++) {
+          expect(beside(k), 0, reason: 'past the stem\'s end, $name');
+        }
+        // Below the bar, past where the pools have met: the bar's pool, on
+        // to the whole range, thinning in a straight line to nothing there
+        // (30 px from the stem's centre), and nothing beyond.
+        final bar = _fitLine([
+          for (var k = 8; k <= 24; k++) (k + .5, below(k)),
+        ]);
+        expect(bar.worst, lessThan(.25), reason: 'the bar\'s slope, $name');
+        expect(
+          side * (edgeX - 85 - o) + bar.zero,
+          closeTo(range, 1.5),
+          reason: 'where the bar\'s pool ends, $name',
+        );
+        for (var k = 32; k < 60; k++) {
+          expect(below(k), 0, reason: 'past the range, $name');
+        }
+        // The two outlines meet in the middle of the corner: there the pool
+        // is as thick from the bar as from the stem. Taken each alone, the
+        // bar's pool would still be thick where the stem's has thinned, and
+        // would bulge over it, down beside the stem.
+        final x =
+            (stem.at0 + stem.slope * bar.at0) / (1 - stem.slope * bar.slope);
+        final y = bar.at0 + bar.slope * x;
+        expect(
+          math.atan2(y, x) * 180 / math.pi,
+          closeTo(45, 5),
+          reason: 'where the outlines meet ($x, $y), $name',
         );
       }
 
-      // The V: along the lower arm, past where the upper arm's pool ended,
-      // the whole range's slope, measured straight across from its edge.
+      // The V: along the lower arm, past where the pools have met, its pool
+      // thins in a straight line to nothing at the end of the range,
+      // measured straight across from its edge.
       double across(double s) {
         // From the lower arm's centre at s along it, towards the inside.
         final px = 150 - s * math.cos(a), py = 130 + o + s * math.sin(a);
         final nx = -math.sin(a), ny = -math.cos(a);
         var sum = 0.0;
         for (var h = thickness / 2 + .5; h <= thickness / 2 + 14; h += .1) {
-          final x = (px + nx * h).floor(), y = (py + ny * h).floor();
-          sum += pool[(y * art.width + x) * 4 + 3] / 255 * .1;
+          sum += _sample(art, pool, px + nx * h, py + ny * h) * .1;
         }
         return sum;
       }
 
-      for (final s in [24.0, 27.0]) {
-        expect(
-          across(s),
-          closeTo(1 + (width - 1) * (1 - s / range), 1.2),
-          reason: 'the lower arm, $s px along',
-        );
-      }
+      final arm = _fitLine([
+        for (var s = 16.0; s <= 28; s += .5) (s, across(s)),
+      ]);
+      expect(arm.worst, lessThan(.35), reason: 'the lower arm\'s slope');
+      expect(arm.zero, closeTo(range, 1.5), reason: 'the lower arm\'s end');
       // The upper arm's own pool stops at its end: nothing beside where it
       // would have gone on.
       final ux = 150 - 26 * math.cos(a), uy = 130 + o - 26 * math.sin(a);

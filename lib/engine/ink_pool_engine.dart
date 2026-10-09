@@ -5,12 +5,13 @@ import 'dart:typed_data';
 /// narrow side of a crossing, a T, a square corner), ink pools inside that
 /// angle; wider ones get none. Along each of the two lines, on
 /// the side facing the other, the pool shows [centreWidthPx] beyond the
-/// line's edge at the meeting point and thins in a straight slope to 1 px at
-/// [rangePx], or where the line ends if that is nearer, like a slide,
-/// however thick the line is. The result is the
-/// pool alone on a transparent layer (premultiplied RGBA), to go under the
-/// line art: it reaches back to the line's centre so no gap shows along the
-/// edge.
+/// line's edge at the meeting point and thins in a straight slope to
+/// nothing (a smooth, anti-aliased point) at [rangePx], or where the line
+/// ends if that is nearer, like a slide, however thick the line is. Where
+/// one line ends sooner, the two pools still meet halfway between the lines
+/// (see `taperOf`). The result is the pool alone on a transparent layer
+/// (premultiplied RGBA), to go under the line art: it reaches back to the
+/// line's centre so no gap shows along the edge.
 class InkPoolEngine {
   InkPoolEngine._();
 
@@ -141,7 +142,7 @@ class InkPoolEngine {
         ..sort((a, b) => branches[a].angle.compareTo(branches[b].angle));
       final sides = List.generate(
         branches.length,
-        (_) => <({int side, int other, double mx, double my})>[],
+        (_) => <({int side, int other, double mx, double my, double gap})>[],
       );
       for (var k = 0; k < order.length; k++) {
         final a = order[k], b = order[(k + 1) % order.length];
@@ -154,12 +155,12 @@ class InkPoolEngine {
         // two lines run into each other.
         final (mx, my) = forks ?? _meeting(branches[a], branches[b], merge);
         // b lies counterclockwise of a, by up to a right angle.
-        sides[a].add((side: 1, other: b, mx: mx, my: my));
-        sides[b].add((side: -1, other: a, mx: mx, my: my));
+        sides[a].add((side: 1, other: b, mx: mx, my: my, gap: gap));
+        sides[b].add((side: -1, other: a, mx: mx, my: my, gap: gap));
       }
       // A line that breaks off within the range ends its pool where it ends:
-      // there the pool is down to 1 px. Each line has its own reach, so the
-      // two sides of an angle can end at different lengths.
+      // there the pool has thinned to nothing. Each line has its own reach,
+      // so the two sides of an angle can end at different lengths.
       final stopSet = stops.toSet();
       final last = List<int>.filled(branches.length, -1);
       final blocked = List<bool>.filled(branches.length, false);
@@ -211,6 +212,46 @@ class InkPoolEngine {
       final reach = [
         for (var id = 0; id < branches.length; id++)
           [for (final entry in sides[id]) reachOf(id, entry.mx, entry.my)],
+      ];
+      // In each angle the two pools meet on the line halfway between the two
+      // lines, as thick there from the one line as from the other, so the
+      // corner sits in the middle. Where one line ends sooner, its pool
+      // slopes down faster; the other line's pool takes the same slope as far
+      // as where the two meet, and only then thins more gently to its own
+      // end. (Each taken its own length, the longer line's pool would still
+      // be thick there and bulge over to the shorter line's side.)
+      _Taper taperOf(int id, int entry) {
+        final own = reach[id][entry];
+        final (:side, :other, :mx, :my, :gap) = sides[id][entry];
+        var partner = own;
+        for (var k = 0; k < sides[other].length; k++) {
+          if (sides[other][k].other == id && sides[other][k].side == -side) {
+            partner = reach[other][k];
+          }
+        }
+        if (partner >= own - .5) return _Taper(centreWidth, own);
+        // Where a point as far from both lines' edges lies along each line
+        // (from the meeting point, its centre lines' crossing).
+        final along = 1 / math.tan(gap / 2);
+        final slope = centreWidth / partner;
+        // The shorter line's pool there: slope * (partner - s), with
+        // s = (depth + lineHalf) * along.
+        final depth =
+            slope * (partner - lineHalf * along) / (1 + slope * along);
+        final at = (depth + lineHalf) * along;
+        if (depth <= 0 || at >= own - 1) return _Taper(centreWidth, own);
+        return _Taper(
+          centreWidth,
+          own,
+          steepEnd: partner,
+          kneeAt: at,
+          kneeDepth: depth,
+        );
+      }
+
+      final tapers = [
+        for (var id = 0; id < branches.length; id++)
+          [for (var k = 0; k < sides[id].length; k++) taperOf(id, k)],
       ];
       final guard = centreWidth + 2 * lineHalf + 2;
       // The distance to the nearest pixel off the line overstates its half
@@ -264,7 +305,7 @@ class InkPoolEngine {
           }
         }
         for (var entry = 0; entry < sides[id].length; entry++) {
-          final (:side, :other, :mx, :my) = sides[id][entry];
+          final (:side, :other, :mx, :my, gap: _) = sides[id][entry];
           // How far along the line this is from where the lines meet: in a
           // straight line from there, unless the line curls back (the walk
           // along it is then clearly longer; a walk of pixel steps along a
@@ -315,7 +356,7 @@ class InkPoolEngine {
           }
         }
         final edge = count == 0 ? st.edge : sum / count;
-        final (:side, :other, :mx, :my) = sides[st.id][st.entry];
+        final (:side, :other, :mx, :my, gap: _) = sides[st.id][st.entry];
         // A slice straight across the line, from just across its centre,
         // under the line, out past its inner edge by the pool's thickness;
         // the slices side by side along the line make the pool, so its
@@ -333,7 +374,7 @@ class InkPoolEngine {
           edge: edge,
           along: st.along,
           centreWidth: centreWidth,
-          range: reach[st.id][st.entry],
+          taper: tapers[st.id][st.entry],
           // Near the meeting point a slice could reach round to the
           // outside: keep to the angle between the two lines there.
           inside: (px, py) => _withinAngle(
@@ -1242,7 +1283,7 @@ class InkPoolEngine {
   /// An anti-aliased slice of the pool across a line at ([cx], [cy]), [along]
   /// px from where the lines meet: from the line's centre, under the line, out along ([ox], [oy]) past its edge (at [edge]) by the
   /// pool's thickness there, the full [centreWidth] where the lines meet
-  /// thinning in a straight slope to 1 px at [range]. The slice is about two
+  /// thinning in a straight slope to nothing ([taper]). The slice is about two
   /// pixels wide along the line ([tx], [ty], pointing away from where they
   /// meet) and tapers across that width too, so slices side by side (a
   /// diagonal pixel step apart too) join up and their outer edge is the
@@ -1260,11 +1301,11 @@ class InkPoolEngine {
     required double edge,
     required double along,
     required double centreWidth,
-    required double range,
+    required _Taper taper,
     bool Function(double x, double y)? inside,
   }) {
-    double thicknessAt(double s) =>
-        1 + (centreWidth - 1) * (1 - s.clamp(0.0, range) / range);
+    final range = taper.end;
+    double thicknessAt(double s) => taper.at(s);
     // Half the slice's width along the line: a diagonal step apart, and
     // wider further out, where slices round a curve fan apart.
     double halfAt(double b) => .9 + .1 * math.max(0.0, b);
@@ -1294,8 +1335,9 @@ class InkPoolEngine {
         // outline) need smoothing.
         if (a.abs() > halfAt(b)) continue;
         final s = along + a;
-        // 1 px thick right up to the end of the range, then gone.
-        var c = (range + 1 - s).clamp(0.0, 1.0);
+        // Past the end of the range, gone (the part beyond the line's edge
+        // has thinned to nothing there; this ends the part under the line).
+        var c = (range + .5 - s).clamp(0.0, 1.0);
         // From the line's centre (fading in over the half pixel before it,
         // which the line covers).
         c = math.min(c, (b + .5).clamp(0.0, 1.0));
@@ -1306,6 +1348,37 @@ class InkPoolEngine {
         if (c > coverage[q]) coverage[q] = c;
       }
     }
+  }
+}
+
+/// How thick a pool is along its line: [centreWidth] at the meeting point,
+/// thinning in a straight slope to nothing at [end]; or, beside a line that
+/// ends sooner (at [steepEnd]), on that line's slope as far as [kneeAt],
+/// where it is [kneeDepth], and from there straight down to nothing at
+/// [end].
+class _Taper {
+  const _Taper(
+    this.centreWidth,
+    this.end, {
+    this.steepEnd,
+    this.kneeAt,
+    this.kneeDepth = 0,
+  });
+
+  final double centreWidth;
+  final double end;
+  final double? steepEnd;
+  final double? kneeAt;
+  final double kneeDepth;
+
+  double at(double s) {
+    final knee = kneeAt;
+    if (knee != null && s > knee) {
+      final t = ((s - knee) / (end - knee)).clamp(0.0, 1.0);
+      return kneeDepth * (1 - t);
+    }
+    final r = steepEnd ?? end;
+    return centreWidth * (1 - s.clamp(0.0, r) / r);
   }
 }
 
