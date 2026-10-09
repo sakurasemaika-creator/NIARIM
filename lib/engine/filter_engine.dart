@@ -812,9 +812,77 @@ class FilterEngine {
           seed: VhsNoiseEngine.seedFromString(e.id),
           frameIndex: frameIndex,
         ),
+        // トーンカーブ：param1=プリセット（ToneCurvePreset.values）、
+        // param2=強さ（0〜100%、元の色との混ぜ具合）。
+        EffectFilterType.toneCurve => _mixWith(
+          result,
+          applyToneCurve(
+            result,
+            width,
+            height,
+            toneCurvePoints(
+              ToneCurvePreset.values[e.param1.round().clamp(
+                0,
+                ToneCurvePreset.values.length - 1,
+              )],
+            ),
+          ),
+          (e.param2 / 100).clamp(0.0, 1.0),
+        ),
+        // レベル補正：param1=入力の黒、param2=入力の白、param3=ガンマ、
+        // param4=出力の黒、param5=出力の白。
+        EffectFilterType.levels => applyLevels(
+          result,
+          width,
+          height,
+          inputBlack: e.param1.round().clamp(0, 254),
+          inputWhite: e.param2.round().clamp(
+            e.param1.round().clamp(0, 254) + 1,
+            255,
+          ),
+          inputGamma: e.param3.clamp(0.1, 9.99),
+          outputBlack: e.param4.round().clamp(0, 255),
+          outputWhite: e.param5.round().clamp(0, 255),
+        ),
+        // シャープ：param1=強さ（0〜100）。
+        EffectFilterType.sharpen => applySharpen(
+          result,
+          width,
+          height,
+          e.param1,
+        ),
+        // アンシャープマスク：param1=ぼかし半径（1〜20）、param2=量（0〜3）。
+        EffectFilterType.unsharpMask => applyUnsharpMask(
+          result,
+          width,
+          height,
+          e.param1.clamp(1.0, 20.0),
+          e.param2.clamp(0.0, 3.0),
+        ),
+        // 周辺減光：param1=範囲（0〜100%）、param2=濃さ（0〜100）、
+        // fadeColor=減光の色。
+        EffectFilterType.vignette => applyVignette(
+          result,
+          width,
+          height,
+          e.param2,
+          color: e.fadeColor.toARGB32(),
+          range: e.param1,
+        ),
       };
     }
     return result;
+  }
+
+  /// [filtered] mixed back towards [original] so only [amount] (0 to 1) of
+  /// the change is kept.
+  Uint8List _mixWith(Uint8List original, Uint8List filtered, double amount) {
+    if (amount >= 1) return filtered;
+    final out = Uint8List(original.length);
+    for (var i = 0; i < original.length; i++) {
+      out[i] = (original[i] + (filtered[i] - original[i]) * amount).round();
+    }
+    return out;
   }
 
   /// Gaussian blur of radius [strength] px (1..[kMaxBlurRadius]). All four
@@ -2943,4 +3011,9 @@ enum EffectFilterType {
   auroraHologram,
   inkPool,
   vhsNoise,
+  toneCurve,
+  levels,
+  sharpen,
+  unsharpMask,
+  vignette,
 }

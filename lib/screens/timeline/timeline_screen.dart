@@ -34,7 +34,7 @@ import '../../models/audio_clip.dart';
 import '../../models/camera_keyframe.dart';
 import '../../models/effect_filter_instance.dart';
 import '../../models/filter_def.dart'
-    show AuroraHologramPreset, kPixelArtMaxBlockSize;
+    show AuroraHologramPreset, ToneCurvePreset, kPixelArtMaxBlockSize;
 import '../../models/layer.dart';
 import '../../models/layer_group.dart';
 import '../../models/layer_keyframe.dart';
@@ -368,6 +368,23 @@ class _TimelineScreenState extends State<TimelineScreen> {
     final key = '${type.name}_$rowIndex';
     return _rowScrollCtrls.putIfAbsent(key, () {
       final ctrl = ScrollController();
+      ctrl.addListener(() => _syncFrom(ctrl));
+      return ctrl;
+    });
+  }
+
+  // 演出フィルタートラックはフィルターごとに1行。ScrollControllerは
+  // 1つのスクロールにしか付けられないので、2行目以降は専用のものを
+  // 作って他のトラックと同期させる（同じものを付けると、2件目を追加した
+  // 時点で「attached to multiple scroll views」になった）。
+  ScrollController _effectRowScrollCtrl(int rowIndex) {
+    if (rowIndex == 0) return _effectFilterScrollCtrl;
+    return _rowScrollCtrls.putIfAbsent('effect_$rowIndex', () {
+      final ctrl = ScrollController(
+        initialScrollOffset: _effectFilterScrollCtrl.hasClients
+            ? _effectFilterScrollCtrl.offset
+            : 0,
+      );
       ctrl.addListener(() => _syncFrom(ctrl));
       return ctrl;
     });
@@ -5046,7 +5063,7 @@ class _TimelineScreenState extends State<TimelineScreen> {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          for (final e in effects)
+          for (final (row, e) in effects.indexed)
             GestureDetector(
               onTap: _showEffectFilterDialog,
               child: SizedBox(
@@ -5061,7 +5078,7 @@ class _TimelineScreenState extends State<TimelineScreen> {
                       child: Stack(
                         children: [
                           ListView.builder(
-                            controller: _effectFilterScrollCtrl,
+                            controller: _effectRowScrollCtrl(row),
                             scrollDirection: Axis.horizontal,
                             physics: const ClampingScrollPhysics(),
                             itemCount: total,
@@ -5080,11 +5097,11 @@ class _TimelineScreenState extends State<TimelineScreen> {
                             ),
                           ),
                           AnimatedBuilder(
-                            animation: _effectFilterScrollCtrl,
+                            animation: _effectRowScrollCtrl(row),
                             builder: (ctx, child) {
-                              final scrollOffset =
-                                  _effectFilterScrollCtrl.hasClients
-                                  ? _effectFilterScrollCtrl.offset
+                              final ctrl = _effectRowScrollCtrl(row);
+                              final scrollOffset = ctrl.hasClients
+                                  ? ctrl.offset
                                   : 0.0;
                               final left = e.startFrame * _cellW - scrollOffset;
                               final width =
@@ -7334,6 +7351,11 @@ class _EffectFilterSheet extends StatelessWidget {
         EffectFilterType.auroraHologram => l10n.filterNameAuroraHologram,
         EffectFilterType.inkPool => l10n.filterNameInkPool,
         EffectFilterType.vhsNoise => l10n.timelineEffectTypeVhsNoise,
+        EffectFilterType.toneCurve => l10n.filterNameToneCurve,
+        EffectFilterType.levels => l10n.filterNameLevels,
+        EffectFilterType.sharpen => l10n.filterNameSharpen,
+        EffectFilterType.unsharpMask => l10n.filterNameUnsharpMask,
+        EffectFilterType.vignette => l10n.filterNameVignette,
       };
 
   static const _typeIcons = {
@@ -7357,6 +7379,11 @@ class _EffectFilterSheet extends StatelessWidget {
     EffectFilterType.auroraHologram: Icons.auto_awesome_mosaic,
     EffectFilterType.inkPool: Icons.gesture_rounded,
     EffectFilterType.vhsNoise: Icons.video_settings,
+    EffectFilterType.toneCurve: Icons.show_chart,
+    EffectFilterType.levels: Icons.equalizer,
+    EffectFilterType.sharpen: Icons.deblur,
+    EffectFilterType.unsharpMask: Icons.center_focus_strong,
+    EffectFilterType.vignette: Icons.vignette,
   };
 
   @override
@@ -7466,6 +7493,7 @@ class _EffectFilterSheet extends StatelessWidget {
       param2: e.param2,
       param3: e.param3,
       param4: e.param4,
+      param5: e.param5,
       fadeColor: e.fadeColor,
       pixelColorMode: e.pixelColorMode,
       pixelExplicitColors: e.pixelExplicitColors,
@@ -7608,6 +7636,23 @@ class _EffectFilterSheet extends StatelessWidget {
                   ..._inkPoolParams(context, l10n, e)
                 else if (e.type == EffectFilterType.vhsNoise)
                   ..._vhsNoiseParams(context, l10n, e)
+                else if (e.type == EffectFilterType.toneCurve)
+                  ..._toneCurveParams(context, l10n, e)
+                else if (e.type == EffectFilterType.levels)
+                  ..._levelsParams(context, l10n, e)
+                else if (e.type == EffectFilterType.sharpen)
+                  _paramRow(
+                    l10n.filterSharpenStrength,
+                    e.param1,
+                    0,
+                    100,
+                    100,
+                    (v) => _update(context, e.copyWith(param1: v)),
+                  )
+                else if (e.type == EffectFilterType.unsharpMask)
+                  ..._unsharpMaskParams(context, l10n, e)
+                else if (e.type == EffectFilterType.vignette)
+                  ..._vignetteParams(context, l10n, e)
                 else
                   ..._strengthParam(context, l10n, e),
               ],
@@ -8087,6 +8132,195 @@ class _EffectFilterSheet extends StatelessWidget {
     ];
   }
 
+  /// トーンカーブのプリセット（param1）と強さ（param2、0〜100%）。
+  List<Widget> _toneCurveParams(
+    BuildContext context,
+    AppLocalizations l10n,
+    EffectFilterInstance e,
+  ) {
+    final preset = ToneCurvePreset
+        .values[e.param1.round().clamp(0, ToneCurvePreset.values.length - 1)];
+    return [
+      Wrap(
+        spacing: 4,
+        runSpacing: 4,
+        children: [
+          for (final p in ToneCurvePreset.values)
+            ChoiceChip(
+              label: Text(switch (p) {
+                ToneCurvePreset.linear => l10n.filterToneCurveLinear,
+                ToneCurvePreset.brighten => l10n.filterToneCurveBrighten,
+                ToneCurvePreset.darken => l10n.filterToneCurveDarken,
+                ToneCurvePreset.highContrast =>
+                  l10n.filterToneCurveHighContrast,
+                ToneCurvePreset.lowContrast => l10n.filterToneCurveLowContrast,
+                ToneCurvePreset.invert => l10n.filterToneCurveInvert,
+              }, style: const TextStyle(fontSize: 10)),
+              selected: p == preset,
+              onSelected: (selected) {
+                if (!selected) return;
+                _update(context, e.copyWith(param1: p.index.toDouble()));
+              },
+            ),
+        ],
+      ),
+      _paramRow(
+        l10n.timelineEffectStrengthLabel,
+        e.param2,
+        0,
+        100,
+        100,
+        (v) => _update(context, e.copyWith(param2: v)),
+        valueText: '${e.param2.round()}%',
+      ),
+    ];
+  }
+
+  /// レベル補正（入力の黒・白、ガンマ、出力の黒・白）。
+  List<Widget> _levelsParams(
+    BuildContext context,
+    AppLocalizations l10n,
+    EffectFilterInstance e,
+  ) {
+    return [
+      _paramRow(
+        l10n.filterLevelsInputBlack,
+        e.param1,
+        0,
+        254,
+        254,
+        (v) => _update(
+          context,
+          e.copyWith(param1: v.clamp(0, e.param2 - 1).roundToDouble()),
+        ),
+      ),
+      _paramRow(
+        l10n.filterLevelsInputWhite,
+        e.param2,
+        1,
+        255,
+        254,
+        (v) => _update(
+          context,
+          e.copyWith(param2: v.clamp(e.param1 + 1, 255).roundToDouble()),
+        ),
+      ),
+      _paramRow(
+        l10n.filterLevelsGamma,
+        e.param3,
+        0.1,
+        3,
+        290,
+        (v) => _update(context, e.copyWith(param3: v)),
+        valueText: e.param3.toStringAsFixed(2),
+      ),
+      _paramRow(
+        l10n.filterLevelsOutputBlack,
+        e.param4,
+        0,
+        255,
+        255,
+        (v) => _update(context, e.copyWith(param4: v.roundToDouble())),
+      ),
+      _paramRow(
+        l10n.filterLevelsOutputWhite,
+        e.param5,
+        0,
+        255,
+        255,
+        (v) => _update(context, e.copyWith(param5: v.roundToDouble())),
+      ),
+    ];
+  }
+
+  /// アンシャープマスク（ぼかし半径・量）。
+  List<Widget> _unsharpMaskParams(
+    BuildContext context,
+    AppLocalizations l10n,
+    EffectFilterInstance e,
+  ) {
+    return [
+      _paramRow(
+        l10n.filterStrengthBlurRadius,
+        e.param1,
+        1,
+        20,
+        19,
+        (v) => _update(context, e.copyWith(param1: v.roundToDouble())),
+      ),
+      _paramRow(
+        l10n.filterUnsharpAmount,
+        e.param2,
+        0,
+        3,
+        300,
+        (v) => _update(context, e.copyWith(param2: v)),
+        valueText: e.param2.toStringAsFixed(2),
+      ),
+    ];
+  }
+
+  /// 周辺減光（色・範囲・濃さ）。
+  List<Widget> _vignetteParams(
+    BuildContext context,
+    AppLocalizations l10n,
+    EffectFilterInstance e,
+  ) {
+    return [
+      Padding(
+        padding: const EdgeInsets.symmetric(vertical: 4),
+        child: Row(
+          children: [
+            Text(
+              l10n.filterVignetteColor,
+              style: const TextStyle(fontSize: 11),
+            ),
+            const SizedBox(width: 8),
+            GestureDetector(
+              key: const ValueKey('effect-vignette-color'),
+              onTap: () => _pickInkPoolEffectColor(context, e),
+              child: Container(
+                width: 24,
+                height: 24,
+                decoration: BoxDecoration(
+                  color: e.fadeColor,
+                  border: Border.all(
+                    color: Theme.of(context).colorScheme.outline,
+                  ),
+                  borderRadius: BorderRadius.circular(4),
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+      _paramRow(
+        l10n.filterVignetteRange,
+        e.param1,
+        0,
+        100,
+        100,
+        (v) => _update(context, e.copyWith(param1: v)),
+        valueText: '${e.param1.round()}%',
+      ),
+      _paramRow(
+        l10n.filterVignetteDensity,
+        e.param2,
+        0,
+        100,
+        100,
+        (v) => _update(context, e.copyWith(param2: v)),
+      ),
+      Text(
+        l10n.filterVignetteHint,
+        style: TextStyle(
+          fontSize: 10,
+          color: Theme.of(context).colorScheme.onSurfaceVariant,
+        ),
+      ),
+    ];
+  }
+
   void _pickInkPoolEffectColor(BuildContext context, EffectFilterInstance e) {
     showDialog(
       context: context,
@@ -8325,6 +8559,15 @@ class _EffectFilterSheet extends StatelessWidget {
                             EffectFilterType.auroraHologram => 60.0,
                             EffectFilterType.inkPool => 12.0,
                             EffectFilterType.vhsNoise => 35.0,
+                            // トーンカーブは「明暗を強く」、レベル補正は
+                            // 入力の黒16から、シャープは強さ50、アンシャープ
+                            // マスクは半径4、周辺減光は範囲40%から始める。
+                            EffectFilterType.toneCurve =>
+                              ToneCurvePreset.highContrast.index.toDouble(),
+                            EffectFilterType.levels => 16.0,
+                            EffectFilterType.sharpen => 50.0,
+                            EffectFilterType.unsharpMask => 4.0,
+                            EffectFilterType.vignette => 40.0,
                             _ => 5.0,
                           },
                           // ドット絵のparam2は色数（2〜32）なので既定8から始める。
@@ -8342,11 +8585,23 @@ class _EffectFilterSheet extends StatelessWidget {
                               ? 6.0
                               : type == EffectFilterType.vhsNoise
                               ? 35.0
+                              // トーンカーブの強さ100%、レベル補正の入力の白
+                              // 240、アンシャープマスクの量1.0、周辺減光の
+                              // 濃さ50。
+                              : type == EffectFilterType.toneCurve
+                              ? 100.0
+                              : type == EffectFilterType.levels
+                              ? 240.0
+                              : type == EffectFilterType.unsharpMask
+                              ? 1.0
                               : 50.0,
                           // オーロラホログラムのparam3は彩度（-100〜100）なので
                           // 既定0（変化なし）から始める。
                           param3: type == EffectFilterType.vhsNoise
                               ? 35.0
+                              // レベル補正のガンマは1.0（変化なし）から。
+                              : type == EffectFilterType.levels
+                              ? 1.0
                               : type == EffectFilterType.colorAdjust ||
                                     type == EffectFilterType.auroraHologram
                               ? 0.0

@@ -773,6 +773,7 @@ class NiaproSerializer {
             'param2': e.param2,
             'param3': e.param3,
             'param4': e.param4,
+            'param5': e.param5,
             'fadeColor': e.fadeColor.toARGB32(),
             'pixelColorMode': e.pixelColorMode.name,
             'pixelExplicitColors': e.pixelExplicitColors,
@@ -940,6 +941,7 @@ class NiaproSerializer {
           param2: (m['param2'] as num?)?.toDouble() ?? 50.0,
           param3: (m['param3'] as num?)?.toDouble() ?? 2.0,
           param4: (m['param4'] as num?)?.toDouble() ?? 0.0,
+          param5: (m['param5'] as num?)?.toDouble() ?? 255.0,
           fadeColor: Color(m['fadeColor'] as int? ?? 0xFF000000),
           pixelColorMode: PixelColorMode.values.firstWhere(
             (e) => e.name == m['pixelColorMode'],

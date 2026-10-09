@@ -18,6 +18,8 @@ class EffectFilterInstance {
   final double param2;
   final double param3;
   final double param4;
+  // レベル補正の出力の白（0〜255）。他の種別では使わない。
+  final double param5;
   final Color fadeColor;
   // ドット絵演出フィルター（pixelate）の配色方式。countの場合はparam2
   // （色数）を、explicit（パレットから選んだ直後もこれになる。
@@ -38,6 +40,7 @@ class EffectFilterInstance {
     this.param2 = 50.0,
     this.param3 = 2.0,
     this.param4 = 0.0,
+    this.param5 = 255.0,
     this.fadeColor = const Color(0xFF000000),
     this.pixelColorMode = PixelColorMode.count,
     this.pixelExplicitColors = const [0xFF000000],
@@ -53,6 +56,7 @@ class EffectFilterInstance {
     double? param2,
     double? param3,
     double? param4,
+    double? param5,
     Color? fadeColor,
     PixelColorMode? pixelColorMode,
     List<int>? pixelExplicitColors,
@@ -68,6 +72,7 @@ class EffectFilterInstance {
       param2: param2 ?? this.param2,
       param3: param3 ?? this.param3,
       param4: param4 ?? this.param4,
+      param5: param5 ?? this.param5,
       fadeColor: fadeColor ?? this.fadeColor,
       pixelColorMode: pixelColorMode ?? this.pixelColorMode,
       pixelExplicitColors: pixelExplicitColors ?? this.pixelExplicitColors,
