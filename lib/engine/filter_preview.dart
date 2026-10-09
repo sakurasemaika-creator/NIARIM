@@ -317,6 +317,7 @@ Uint8List runFilterPreview(FilterPreviewJob job) {
         color: filter.inkPoolColor,
         rangePx: filter.inkPoolRange * scale,
         centerWidthPx: filter.inkPoolCenterWidth * scale,
+        maxAngleDegrees: filter.inkPoolMaxAngle,
       );
     case FilterKind.backgroundBlend:
       final others = background;

@@ -205,6 +205,10 @@ class FilterDef {
   final int inkPoolColor;
   final double inkPoolRange;
   final double inkPoolCenterWidth;
+
+  /// The widest angle (degrees, 0 to 180) between two lines at which ink
+  /// pools; 90 takes acute and right angles.
+  final double inkPoolMaxAngle;
   final double autoLineartRoughWidth;
   final double autoLineartOutputWidth;
   final double autoLineartTaperLength;
@@ -311,6 +315,7 @@ class FilterDef {
     this.inkPoolColor = 0xFF000000,
     this.inkPoolRange = 12,
     this.inkPoolCenterWidth = 6,
+    this.inkPoolMaxAngle = 90,
     this.autoLineartRoughWidth = 12,
     this.autoLineartOutputWidth = 2,
     this.autoLineartTaperLength = 8,
@@ -444,6 +449,7 @@ class FilterDef {
     int? inkPoolColor,
     double? inkPoolRange,
     double? inkPoolCenterWidth,
+    double? inkPoolMaxAngle,
     double? autoLineartRoughWidth,
     double? autoLineartOutputWidth,
     double? autoLineartTaperLength,
@@ -543,6 +549,7 @@ class FilterDef {
       inkPoolColor: inkPoolColor ?? this.inkPoolColor,
       inkPoolRange: inkPoolRange ?? this.inkPoolRange,
       inkPoolCenterWidth: inkPoolCenterWidth ?? this.inkPoolCenterWidth,
+      inkPoolMaxAngle: inkPoolMaxAngle ?? this.inkPoolMaxAngle,
       autoLineartRoughWidth:
           autoLineartRoughWidth ?? this.autoLineartRoughWidth,
       autoLineartOutputWidth:
@@ -643,6 +650,7 @@ class FilterDef {
     'inkPoolColor': inkPoolColor,
     'inkPoolRange': inkPoolRange,
     'inkPoolCenterWidth': inkPoolCenterWidth,
+    'inkPoolMaxAngle': inkPoolMaxAngle,
     'autoLineartRoughWidth': autoLineartRoughWidth,
     'autoLineartOutputWidth': autoLineartOutputWidth,
     'autoLineartTaperLength': autoLineartTaperLength,
@@ -813,6 +821,7 @@ class FilterDef {
     inkPoolColor: j['inkPoolColor'] as int? ?? 0xFF000000,
     inkPoolRange: (j['inkPoolRange'] as num?)?.toDouble() ?? 12,
     inkPoolCenterWidth: (j['inkPoolCenterWidth'] as num?)?.toDouble() ?? 6,
+    inkPoolMaxAngle: (j['inkPoolMaxAngle'] as num?)?.toDouble() ?? 90,
     autoLineartRoughWidth:
         (j['autoLineartRoughWidth'] as num?)?.toDouble() ?? 12,
     autoLineartOutputWidth:

@@ -329,6 +329,7 @@ Uint8List applyDrawFilterForFrameInIsolate(
       color: filter.inkPoolColor,
       rangePx: filter.inkPoolRange,
       centerWidthPx: filter.inkPoolCenterWidth,
+      maxAngleDegrees: filter.inkPoolMaxAngle,
     ),
     FilterKind.prism => PrismFilterEngine(filterEngine: engine).apply(
       data,
@@ -2695,7 +2696,8 @@ class FilterEngine {
   }
 
   /// 墨溜まりフィルターの「効果レイヤー」だけを生成する（[InkPoolEngine]）。
-  /// 線が出会う所（角・T字・交差）の中心線に沿って、出会う点で
+  /// 線が[maxAngleDegrees]以下の角度で出会う所（既定90°：角・T字・交差の
+  /// 狭い側）の中心線に沿って、出会う点で
   /// [centerWidthPx]の太さ、そこから[rangePx]離れた両端で0px（なめらかな
   /// 先端）になるよう直線的に細くなる墨溜まりを描く。返り値は透明背景＋墨溜まり色だけ
   /// なので、描画フィルターでは参照レイヤーの直下へ新規レイヤーとして置ける。
@@ -2706,6 +2708,7 @@ class FilterEngine {
     required int color,
     required double rangePx,
     required double centerWidthPx,
+    double maxAngleDegrees = 90,
   }) => InkPoolEngine.layer(
     data,
     width,
@@ -2713,6 +2716,7 @@ class FilterEngine {
     color: color,
     rangePx: rangePx,
     centreWidthPx: centerWidthPx,
+    maxAngleDegrees: maxAngleDegrees,
   );
 
   /// 演出フィルター向け墨溜まり。上の効果レイヤーをフレーム合成結果へ
@@ -2725,6 +2729,7 @@ class FilterEngine {
     required int color,
     required double rangePx,
     required double centerWidthPx,
+    double maxAngleDegrees = 90,
   }) {
     final ink = applyInkPoolLayer(
       data,
@@ -2733,6 +2738,7 @@ class FilterEngine {
       color: color,
       rangePx: rangePx,
       centerWidthPx: centerWidthPx,
+      maxAngleDegrees: maxAngleDegrees,
     );
     final out = Uint8List.fromList(data);
     for (var i = 0; i < out.length; i += 4) {

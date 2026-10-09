@@ -1653,6 +1653,18 @@ class _FilterPanelState extends State<FilterPanel> {
               ),
               suffix: 'px',
             ),
+            _integerStepperSlider(
+              l10n.filterInkPoolMaxAngle,
+              current.inkPoolMaxAngle.round(),
+              0,
+              180,
+              (v) => service.updateFilterParams(
+                current.id,
+                inkPoolMaxAngle: v.toDouble(),
+              ),
+              suffix: '°',
+            ),
+            _hint(l10n.filterInkPoolMaxAngleHint),
           ],
         );
       case FilterKind.toneCurve:

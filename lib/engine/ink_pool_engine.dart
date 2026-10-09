@@ -1,9 +1,9 @@
 import 'dart:math' as math;
 import 'dart:typed_data';
 
-/// 墨溜まり: where lines meet at an acute or a right angle (a V, a fork, the
-/// narrow side of a crossing, a T, a square corner), ink pools inside that
-/// angle; wider ones get none. Along each of the two lines, on
+/// 墨溜まり: where lines meet at an angle no wider than [maxAngleDegrees]
+/// (by default 90: a V, a fork, the narrow side of a crossing, a T, a square
+/// corner), ink pools inside that angle; wider ones get none. Along each of the two lines, on
 /// the side facing the other, the pool shows [centreWidthPx] beyond the
 /// line's edge at the meeting point and thins in a straight slope to
 /// nothing (a smooth, anti-aliased point) at [rangePx], or where the line
@@ -17,10 +17,32 @@ class InkPoolEngine {
 
   static const int _alphaThreshold = 24;
 
-  /// Lines meeting at less than this pool ink between them: up to a right
-  /// angle, with a little to spare for lines drawn by hand, and short of the
-  /// wide side of two rings crossing (106 degrees in the Olympic rings).
-  static const double _angleLimit = 96 * math.pi / 180;
+  /// The widest angle between two lines that pools ink, for an angle set
+  /// in degrees ([maxAngleDegrees], 0 to 180): with a little to spare for
+  /// lines drawn by hand (a tenth of the setting, up to 6 degrees: at the
+  /// default of 90 a hand-drawn right angle, 88 to 93 degrees, pools, but
+  /// not the wide side of two rings crossing, 106 degrees in the Olympic
+  /// rings), and never within 10 degrees of a straight line, which a line
+  /// drawn by hand wavers by.
+  static double angleLimit(double maxAngleDegrees) {
+    final setting = maxAngleDegrees.clamp(0.0, 180.0);
+    final limit = math.min(setting + math.min(6.0, setting / 10), 170.0);
+    return limit * math.pi / 180;
+  }
+
+  /// The angle limit at the default setting (90 degrees).
+  static final double _defaultLimit = angleLimit(90);
+
+  /// How much wider than [maxGap] a corner may measure on the thinned
+  /// lines, close to it ([near]) and further along: thinning cuts a sharp
+  /// corner off diagonally, so it measures wider (at the default, a right
+  /// angle and 0.35 / 0.3 radians to spare), which matters less the wider
+  /// the corner. Too much spare at a wide setting would take a point on a
+  /// line just past a corner, which sees the line bend, for a corner.
+  static double _slack(double maxGap, {required bool near}) {
+    final atDefault = math.pi / 2 + (near ? .35 : .3) - _defaultLimit;
+    return atDefault * (math.pi - maxGap) / (math.pi - _defaultLimit);
+  }
 
   static Uint8List layer(
     Uint8List data,
@@ -29,12 +51,15 @@ class InkPoolEngine {
     required int color,
     required double rangePx,
     required double centreWidthPx,
+    double maxAngleDegrees = 90,
   }) {
     final result = Uint8List(data.length);
     final n = width * height;
     if (width <= 2 || height <= 2 || data.length < n * 4) return result;
     final range = rangePx.clamp(1.0, 80.0);
     final centreWidth = centreWidthPx.clamp(1.0, 60.0);
+    final maxGap = angleLimit(maxAngleDegrees);
+    if (maxGap <= 0) return result;
 
     final mask = _lineMask(data, n);
     final ink = _ink(data, n);
@@ -55,6 +80,7 @@ class InkPoolEngine {
       width,
       height,
       near,
+      maxGap,
     );
     if (seeds.isEmpty) return result;
 
@@ -132,6 +158,7 @@ class InkPoolEngine {
         halfWidth: halfWidth,
         ink: ink,
         lineHalf: lineHalf,
+        maxGap: maxGap,
       );
       if (branches.length < 2) continue;
 
@@ -149,12 +176,12 @@ class InkPoolEngine {
         if (a == b) continue;
         var gap = branches[b].angle - branches[a].angle;
         if (gap <= 0) gap += 2 * math.pi;
-        if (gap >= _angleLimit) continue;
+        if (gap >= maxGap) continue;
         // Where the two lines really meet: thinning moves the seed a little
         // off it. A crossing thins to forks round it; a corner is where the
         // two lines run into each other.
         final (mx, my) = forks ?? _meeting(branches[a], branches[b], merge);
-        // b lies counterclockwise of a, by up to a right angle.
+        // b lies counterclockwise of a, by up to the angle limit.
         sides[a].add((side: 1, other: b, mx: mx, my: my, gap: gap));
         sides[b].add((side: -1, other: a, mx: mx, my: my, gap: gap));
       }
@@ -540,8 +567,8 @@ class InkPoolEngine {
 
   /// Where lines meet, on the lines' centres: a junction (three or more lines
   /// leave it: a T, a Y, a crossing), or a corner (two lines leave it at
-  /// about a right angle or sharper, near it and further along alike, so a
-  /// tight curve that only looks like a corner close up does not count).
+  /// about [maxGap] or sharper, near it and further along alike, so a tight
+  /// curve that only looks like a corner close up does not count).
   /// Whether ink pools there is decided later, from the angles between the
   /// lines measured more carefully.
   static List<int> _meetingPoints(
@@ -551,6 +578,7 @@ class InkPoolEngine {
     int width,
     int height,
     int near,
+    double maxGap,
   ) {
     final candidates = <({int p, double score})>[];
     for (var p = 0; p < centre.length; p++) {
@@ -569,13 +597,18 @@ class InkPoolEngine {
       if (close.length != 2 || close.any((e) => e.reach < near * .75)) {
         continue;
       }
-      // A right angle measures a little wider on the thinned line, whose
+      // A corner measures a little wider on the thinned line, whose
       // corner is cut off diagonally.
       final angle = _angleAt(x, y, close[0], close[1]);
-      if (angle > math.pi / 2 + .35) continue;
+      if (angle > maxGap + _slack(maxGap, near: true)) continue;
       final away = _branchEnds(centre, width, height, p, near * 2);
       if (away.length == 2 && away.every((e) => e.reach >= near * 1.5)) {
-        if (_angleAt(x, y, away[0], away[1]) > math.pi / 2 + .3) continue;
+        final further = _angleAt(x, y, away[0], away[1]);
+        if (further > maxGap + _slack(maxGap, near: false)) continue;
+        // A corner's arms run straight on, so it measures the same further
+        // along; a curve keeps turning and measures sharper. (Below the
+        // default limit, the sharpness test alone tells them apart.)
+        if (maxGap > _defaultLimit && angle - further > .26) continue;
       }
       candidates.add((p: p, score: math.pi - angle));
     }
@@ -735,6 +768,7 @@ class InkPoolEngine {
     required Float32List halfWidth,
     required Float32List ink,
     required double lineHalf,
+    required double maxGap,
   }) {
     for (final p in touched) {
       label[p] = -1;
@@ -885,7 +919,9 @@ class InkPoolEngine {
     // the meeting point (a crossing, the bar of a T): its direction there is
     // measured on both sides, the longer measurement counting for more, and
     // a side too short to see the line turn (the bit between two crossings
-    // close together) mostly takes the other side's.
+    // close together) mostly takes the other side's. "About" is within 30
+    // degrees, but never so wide that an angle the setting pools would be
+    // straightened out (a 160 degree corner pools at the widest setting).
     double weight(int id) {
       final span = fitted[id]?.span ?? 0;
       return span >= 10 ? span : span * .1 + .01;
@@ -893,7 +929,7 @@ class InkPoolEngine {
 
     int? oppositeOf(int id) {
       int? best;
-      var bestCos = -math.cos(math.pi / 6);
+      var bestCos = -math.cos(math.min(math.pi / 6, math.pi - maxGap));
       final (ux, uy) = directions[id];
       for (var other = 0; other < count; other++) {
         if (other == id) continue;
