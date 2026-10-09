@@ -5445,6 +5445,13 @@ class AppLocalizationsJa extends AppLocalizations {
   String get filterAuroraHologramSaturation => '彩度';
 
   @override
+  String get filterHologramKeepLines => '線画を残す';
+
+  @override
+  String get filterHologramKeepLinesHint =>
+      '黒に近い細い線（同じレイヤーに描いた線画）は元の色のまま残し、面にだけ質感をかけます。';
+
+  @override
   String get filterAuroraHologramPresetSilverHologram => 'オーロラホログラム';
 
   @override

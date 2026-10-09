@@ -2320,6 +2320,8 @@
   "filterAuroraHologramStrength": "强度",
   "filterAuroraHologramBrightness": "明度",
   "filterAuroraHologramSaturation": "饱和度",
+  "filterHologramKeepLines": "保留线稿",
+  "filterHologramKeepLinesHint": "接近黑色的细线（画在同一图层上的线稿）保持原来的颜色，只给面施加质感。",
   "filterAuroraHologramPresetSilverHologram": "极光全息",
   "filterAuroraHologramPresetSilverFoil": "白金银",
   "filterAuroraHologramPresetSampledGold": "采样金",

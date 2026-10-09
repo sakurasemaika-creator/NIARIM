@@ -2320,6 +2320,8 @@
   "filterAuroraHologramStrength": "Strength",
   "filterAuroraHologramBrightness": "Brightness",
   "filterAuroraHologramSaturation": "Saturation",
+  "filterHologramKeepLines": "Keep line art",
+  "filterHologramKeepLinesHint": "Thin, near-black lines (line art drawn on the same layer) keep their colour; only the surfaces take the texture.",
   "filterAuroraHologramPresetSilverHologram": "Aurora Hologram",
   "filterAuroraHologramPresetSilverFoil": "Platinum Silver",
   "filterAuroraHologramPresetSampledGold": "Sampled Gold",

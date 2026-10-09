@@ -5472,6 +5472,13 @@ class AppLocalizationsKo extends AppLocalizations {
   String get filterAuroraHologramSaturation => '채도';
 
   @override
+  String get filterHologramKeepLines => '선화 유지';
+
+  @override
+  String get filterHologramKeepLinesHint =>
+      '검은색에 가까운 가는 선(같은 레이어에 그린 선화)은 원래 색 그대로 두고, 면에만 질감을 줍니다.';
+
+  @override
   String get filterAuroraHologramPresetSilverHologram => '오로라 홀로그램';
 
   @override

@@ -290,6 +290,7 @@ Uint8List runFilterPreview(FilterPreviewJob job) {
         brightness: filter.hologramBrightness,
         saturation: filter.hologramSaturation,
         preset: filter.hologramPreset,
+        keepLines: filter.hologramKeepLines,
       );
     case FilterKind.autoLineart:
       return AutoLineartEngine.render(

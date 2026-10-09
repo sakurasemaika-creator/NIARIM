@@ -5635,6 +5635,13 @@ class AppLocalizationsEn extends AppLocalizations {
   String get filterAuroraHologramSaturation => 'Saturation';
 
   @override
+  String get filterHologramKeepLines => 'Keep line art';
+
+  @override
+  String get filterHologramKeepLinesHint =>
+      'Thin, near-black lines (line art drawn on the same layer) keep their colour; only the surfaces take the texture.';
+
+  @override
   String get filterAuroraHologramPresetSilverHologram => 'Aurora Hologram';
 
   @override

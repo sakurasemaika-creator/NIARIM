@@ -9995,6 +9995,18 @@ abstract class AppLocalizations {
   /// **'彩度'**
   String get filterAuroraHologramSaturation;
 
+  /// No description provided for @filterHologramKeepLines.
+  ///
+  /// In ja, this message translates to:
+  /// **'線画を残す'**
+  String get filterHologramKeepLines;
+
+  /// No description provided for @filterHologramKeepLinesHint.
+  ///
+  /// In ja, this message translates to:
+  /// **'黒に近い細い線（同じレイヤーに描いた線画）は元の色のまま残し、面にだけ質感をかけます。'**
+  String get filterHologramKeepLinesHint;
+
   /// No description provided for @filterAuroraHologramPresetSilverHologram.
   ///
   /// In ja, this message translates to:

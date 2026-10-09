@@ -314,6 +314,7 @@ Uint8List applyDrawFilterForFrameInIsolate(
       brightness: filter.hologramBrightness,
       saturation: filter.hologramSaturation,
       preset: filter.hologramPreset,
+      keepLines: filter.hologramKeepLines,
     ),
     // 背景馴染ませv2：maskDataは対象外の表示中レイヤーを合成した背景RGBA。
     FilterKind.backgroundBlend => BackgroundAcclimationEngine.apply(
@@ -789,6 +790,7 @@ class FilterEngine {
                 0,
                 AuroraHologramPreset.values.length - 1,
               )],
+          keepLines: true,
         ),
         // 墨溜まり：param1=範囲(px)、param2=鋭角中央の太さ(px)、
         // fadeColorスロットを色として共用する。演出フィルターでは
@@ -2009,6 +2011,7 @@ class FilterEngine {
     required double brightness,
     required double saturation,
     required AuroraHologramPreset preset,
+    bool keepLines = false,
   }) => onStraightColour(
     data,
     (straight) => _auroraHologramStraight(
@@ -2019,8 +2022,104 @@ class FilterEngine {
       brightness: brightness,
       saturation: saturation,
       preset: preset,
+      keepLines: keepLines,
     ),
   );
+
+  /// How much of each pixel is line art drawn on the layer (0 to 1): a
+  /// dark pixel (luminance under 100) with something clearly lighter (by 30
+  /// or more) within 5 px on both sides of it in some direction, as across
+  /// a line. The edge of a wide dark area is lighter on one side only, so
+  /// shadows and dark clothes are not lines; an outline next to shading is
+  /// still lighter on both sides. See-through pixels count as white paper.
+  /// The share fades out towards the lighter, anti-aliased edge of the line.
+  /// [data] is straight RGBA.
+  Float32List _lineArtShare(Uint8List data, int width, int height) {
+    final n = width * height;
+    final share = Float32List(n);
+    final luma = Float32List(n);
+    for (var p = 0; p < n; p++) {
+      final i = p * 4;
+      luma[p] = data[i + 3] == 0
+          ? 255
+          : data[i] * .299 + data[i + 1] * .587 + data[i + 2] * .114;
+    }
+    const reach = 5;
+    double lumaAt(int x, int y, int dx, int dy, int k) {
+      if (k <= 0) return luma[y * width + x];
+      return luma[(y + dy * k) * width + x + dx * k];
+    }
+
+    // A line ends in a step: most of the way up to the lighter side is
+    // climbed within the last two pixels (a pen's soft edge), where shading
+    // that darkens towards a shape's edge climbs gradually. 0: no step; 1: a
+    // step out to transparency; 2: a step up to a lighter surface.
+    int stepWithin(int x, int y, int dx, int dy, double than) {
+      for (var k = 1; k <= reach; k++) {
+        final qx = x + dx * k, qy = y + dy * k;
+        if (qx < 0 || qy < 0 || qx >= width || qy >= height) return 0;
+        final q = qy * width + qx;
+        final here = luma[q];
+        if (here < than) continue;
+        final rise = here - luma[y * width + x];
+        if (here - lumaAt(x, y, dx, dy, k - 2) < rise * .75) return 0;
+        return data[q * 4 + 3] == 0 ? 1 : 2;
+      }
+      return 0;
+    }
+
+    for (var y = 0; y < height; y++) {
+      for (var x = 0; x < width; x++) {
+        final p = y * width + x;
+        if (data[p * 4 + 3] == 0 || luma[p] >= 100) continue;
+        final than = luma[p] + 20;
+        var line = false;
+        for (final (dx, dy) in const [(1, 0), (0, 1), (1, 1), (1, -1)]) {
+          final ahead = stepWithin(x, y, dx, dy, than);
+          if (ahead == 0) continue;
+          final behind = stepWithin(x, y, -dx, -dy, than);
+          // Line art borders a surface on at least one side; a thin dark
+          // shape alone on the transparency is a surface itself.
+          if (behind != 0 && (ahead == 2 || behind == 2)) {
+            line = true;
+            break;
+          }
+        }
+        if (line) share[p] = ((100 - luma[p]) / 40).clamp(0.0, 1.0);
+      }
+    }
+    // Lines run on; a few pixels on their own are where shading turns
+    // steeply at a shape's edge.
+    final seen = Uint8List(n);
+    final stack = <int>[], piece = <int>[];
+    for (var start = 0; start < n; start++) {
+      if (share[start] == 0 || seen[start] != 0) continue;
+      seen[start] = 1;
+      stack.add(start);
+      piece.clear();
+      while (stack.isNotEmpty) {
+        final p = stack.removeLast();
+        piece.add(p);
+        final px = p % width, py = p ~/ width;
+        for (var dy = -1; dy <= 1; dy++) {
+          for (var dx = -1; dx <= 1; dx++) {
+            final qx = px + dx, qy = py + dy;
+            if (qx < 0 || qy < 0 || qx >= width || qy >= height) continue;
+            final q = qy * width + qx;
+            if (share[q] == 0 || seen[q] != 0) continue;
+            seen[q] = 1;
+            stack.add(q);
+          }
+        }
+      }
+      if (piece.length < 24) {
+        for (final p in piece) {
+          share[p] = 0;
+        }
+      }
+    }
+    return share;
+  }
 
   Uint8List _auroraHologramStraight(
     Uint8List data,
@@ -2030,10 +2129,14 @@ class FilterEngine {
     required double brightness,
     required double saturation,
     required AuroraHologramPreset preset,
+    bool keepLines = false,
   }) {
     final amount = (strength / 100).clamp(0.0, 1.0);
     if (amount <= 0) return Uint8List.fromList(data);
     final stops = auroraHologramStops(preset);
+    // Line art drawn on the layer keeps its own colour: the texture goes on
+    // the surfaces, not on the ink outlining them.
+    final lines = keepLines ? _lineArtShare(data, width, height) : null;
     final result = Uint8List.fromList(data);
     // 同じ明度の画素は同じ結果になるため、256階調ぶんだけ事前計算して
     // キャッシュする（フルHD相当の画素数でも1画素ずつHSL変換し直すより
@@ -2132,6 +2235,24 @@ class FilterEngine {
             sourceLumaAt(x, y - 4);
         final edge =
             math.sqrt((gx * gx + gy * gy).toDouble()).clamp(0.0, 180.0) / 180.0;
+        // Line art drawn on the same layer is ink, not a fold of the film:
+        // next to near-black ink the edge would light a white core and a
+        // rainbow fringe along both sides of every line (a doubled,
+        // glittering outline). Reflections fade out beside dark ink.
+        var darkest = luminanceIdx;
+        for (final (dx, dy) in const [
+          (2, 0),
+          (-2, 0),
+          (4, 0),
+          (-4, 0),
+          (0, 2),
+          (0, -2),
+          (0, 4),
+          (0, -4),
+        ]) {
+          darkest = math.min(darkest, sourceLumaAt(x + dx, y + dy));
+        }
+        final besideInk = ((darkest - 40) / 70).clamp(0.0, 1.0);
 
         // A second, much wider derivative approximates the orientation of the
         // whole material face. Blend it with the local fold normal so a sphere
@@ -2201,7 +2322,8 @@ class FilterEngine {
             (faceSpecular + ridgeSpecular - faceSpecular * ridgeSpecular).clamp(
               0.0,
               0.84,
-            );
+            ) *
+            besideInk;
         outR += (255.0 - outR) * specular;
         outG += (255.0 - outG) * specular;
         outB += (255.0 - outB) * specular;
@@ -2241,6 +2363,7 @@ class FilterEngine {
               (0.62 + planeStrength * 0.38) *
               gatedReflection *
               shoulder *
+              besideInk *
               0.52;
           outR += (spectral.$1 - outR) * colourMix;
           outG += (spectral.$2 - outG) * colourMix;
@@ -2261,15 +2384,16 @@ class FilterEngine {
               .clamp(0.0, 255.0);
           final vividB = (spectralMean + (spectral.$3 - spectralMean) * 1.55)
               .clamp(0.0, 255.0);
-          final fringeMix = (fringe * 0.54).clamp(0.0, 0.46);
+          final fringeMix = (fringe * 0.54).clamp(0.0, 0.46) * besideInk;
           outR += (vividR - outR) * fringeMix;
           outG += (vividG - outG) * fringeMix;
           outB += (vividB - outB) * fringeMix;
         }
       }
-      result[i] = (r + (outR - r) * amount).round().clamp(0, 255);
-      result[i + 1] = (g + (outG - g) * amount).round().clamp(0, 255);
-      result[i + 2] = (b + (outB - b) * amount).round().clamp(0, 255);
+      final mix = amount * (1 - (lines?[i ~/ 4] ?? 0));
+      result[i] = (r + (outR - r) * mix).round().clamp(0, 255);
+      result[i + 1] = (g + (outG - g) * mix).round().clamp(0, 255);
+      result[i + 2] = (b + (outB - b) * mix).round().clamp(0, 255);
     }
     return result;
   }

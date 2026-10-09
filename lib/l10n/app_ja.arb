@@ -2634,6 +2634,8 @@
   "filterAuroraHologramStrength": "フィルター強度",
   "filterAuroraHologramBrightness": "明度",
   "filterAuroraHologramSaturation": "彩度",
+  "filterHologramKeepLines": "線画を残す",
+  "filterHologramKeepLinesHint": "黒に近い細い線（同じレイヤーに描いた線画）は元の色のまま残し、面にだけ質感をかけます。",
   "filterAuroraHologramPresetSilverHologram": "オーロラホログラム",
   "filterAuroraHologramPresetSilverFoil": "プラチナシルバー",
   "filterAuroraHologramPresetSampledGold": "サンプルゴールド",

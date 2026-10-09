@@ -2320,6 +2320,8 @@
   "filterAuroraHologramStrength": "Intensidad",
   "filterAuroraHologramBrightness": "Brillo",
   "filterAuroraHologramSaturation": "Saturación",
+  "filterHologramKeepLines": "Conservar el dibujo de líneas",
+  "filterHologramKeepLinesHint": "Las líneas finas casi negras (el dibujo de líneas de la misma capa) conservan su color; solo las superficies reciben la textura.",
   "filterAuroraHologramPresetSilverHologram": "Holograma aurora",
   "filterAuroraHologramPresetSilverFoil": "Plata platino",
   "filterAuroraHologramPresetSampledGold": "Oro muestreado",

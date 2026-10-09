@@ -5408,6 +5408,13 @@ class AppLocalizationsZh extends AppLocalizations {
   String get filterAuroraHologramSaturation => '饱和度';
 
   @override
+  String get filterHologramKeepLines => '保留线稿';
+
+  @override
+  String get filterHologramKeepLinesHint =>
+      '接近黑色的细线（画在同一图层上的线稿）保持原来的颜色，只给面施加质感。';
+
+  @override
   String get filterAuroraHologramPresetSilverHologram => '极光全息';
 
   @override
@@ -12466,6 +12473,13 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get filterAuroraHologramSaturation => '飽和度';
+
+  @override
+  String get filterHologramKeepLines => '保留線稿';
+
+  @override
+  String get filterHologramKeepLinesHint =>
+      '接近黑色的細線（畫在同一圖層上的線稿）保持原本的顏色，只對面套用質感。';
 
   @override
   String get filterAuroraHologramPresetSilverHologram => '極光全息';

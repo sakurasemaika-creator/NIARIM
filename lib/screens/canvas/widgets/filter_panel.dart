@@ -1502,6 +1502,24 @@ class _FilterPanelState extends State<FilterPanel> {
                   )
                   .toList(),
             ),
+            SwitchListTile(
+              key: const ValueKey('hologram-keep-lines'),
+              dense: true,
+              contentPadding: EdgeInsets.zero,
+              title: Text(
+                l10n.filterHologramKeepLines,
+                style: const TextStyle(fontSize: 11),
+              ),
+              subtitle: Text(
+                l10n.filterHologramKeepLinesHint,
+                style: const TextStyle(fontSize: 10),
+              ),
+              value: current.hologramKeepLines,
+              onChanged: (v) {
+                service.updateFilterParams(current.id, hologramKeepLines: v);
+                _updatePreview();
+              },
+            ),
           ],
         );
       case FilterKind.animeStyle:

@@ -2320,6 +2320,8 @@
   "filterAuroraHologramStrength": "강도",
   "filterAuroraHologramBrightness": "명도",
   "filterAuroraHologramSaturation": "채도",
+  "filterHologramKeepLines": "선화 유지",
+  "filterHologramKeepLinesHint": "검은색에 가까운 가는 선(같은 레이어에 그린 선화)은 원래 색 그대로 두고, 면에만 질감을 줍니다.",
   "filterAuroraHologramPresetSilverHologram": "오로라 홀로그램",
   "filterAuroraHologramPresetSilverFoil": "플래티넘 실버",
   "filterAuroraHologramPresetSampledGold": "추출 골드",

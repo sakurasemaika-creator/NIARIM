@@ -5733,6 +5733,13 @@ class AppLocalizationsFr extends AppLocalizations {
   String get filterAuroraHologramSaturation => 'Saturation';
 
   @override
+  String get filterHologramKeepLines => 'Conserver le trait';
+
+  @override
+  String get filterHologramKeepLinesHint =>
+      'Les traits fins presque noirs (le dessin au trait du même calque) gardent leur couleur ; seules les surfaces reçoivent la texture.';
+
+  @override
   String get filterAuroraHologramPresetSilverHologram => 'Hologramme aurore';
 
   @override

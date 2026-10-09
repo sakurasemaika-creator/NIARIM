@@ -2320,6 +2320,8 @@
   "filterAuroraHologramStrength": "Intensité",
   "filterAuroraHologramBrightness": "Luminosité",
   "filterAuroraHologramSaturation": "Saturation",
+  "filterHologramKeepLines": "Conserver le trait",
+  "filterHologramKeepLinesHint": "Les traits fins presque noirs (le dessin au trait du même calque) gardent leur couleur ; seules les surfaces reçoivent la texture.",
   "filterAuroraHologramPresetSilverHologram": "Hologramme aurore",
   "filterAuroraHologramPresetSilverFoil": "Argent platine",
   "filterAuroraHologramPresetSampledGold": "Or échantillonné",

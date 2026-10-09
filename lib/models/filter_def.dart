@@ -191,6 +191,10 @@ class FilterDef {
   final double hologramBrightness;
   final double hologramSaturation;
   final AuroraHologramPreset hologramPreset;
+
+  /// 質感変更: thin near-black line art drawn on the layer keeps its own
+  /// colour, and only the surfaces take the texture.
+  final bool hologramKeepLines;
   final int bgBlendColor;
   final double bgBlendDirection;
   final double bgBlendLength;
@@ -303,6 +307,7 @@ class FilterDef {
     this.hologramBrightness = 0,
     this.hologramSaturation = 0,
     this.hologramPreset = AuroraHologramPreset.silverHologram,
+    this.hologramKeepLines = true,
     this.bgBlendColor = -1,
     this.bgBlendDirection = 315,
     this.bgBlendLength = 20,
@@ -439,6 +444,7 @@ class FilterDef {
     double? hologramBrightness,
     double? hologramSaturation,
     AuroraHologramPreset? hologramPreset,
+    bool? hologramKeepLines,
     int? bgBlendColor,
     double? bgBlendDirection,
     double? bgBlendLength,
@@ -535,6 +541,7 @@ class FilterDef {
       hologramBrightness: hologramBrightness ?? this.hologramBrightness,
       hologramSaturation: hologramSaturation ?? this.hologramSaturation,
       hologramPreset: hologramPreset ?? this.hologramPreset,
+      hologramKeepLines: hologramKeepLines ?? this.hologramKeepLines,
       bgBlendColor: bgBlendColor ?? this.bgBlendColor,
       bgBlendDirection: bgBlendDirection ?? this.bgBlendDirection,
       bgBlendLength: bgBlendLength ?? this.bgBlendLength,
@@ -644,6 +651,7 @@ class FilterDef {
     'hologramBrightness': hologramBrightness,
     'hologramSaturation': hologramSaturation,
     'hologramPreset': hologramPreset.name,
+    'hologramKeepLines': hologramKeepLines,
     'bgBlendColor': bgBlendColor,
     'bgBlendDirection': bgBlendDirection,
     'bgBlendLength': bgBlendLength,
@@ -812,6 +820,7 @@ class FilterDef {
       (e) => e.name == j['hologramPreset'],
       orElse: () => AuroraHologramPreset.silverHologram,
     ),
+    hologramKeepLines: j['hologramKeepLines'] as bool? ?? true,
     bgBlendColor: j['bgBlendColor'] as int? ?? -1,
     bgBlendDirection: (j['bgBlendDirection'] as num?)?.toDouble() ?? 315,
     bgBlendLength: (j['bgBlendLength'] as num?)?.toDouble() ?? 20,
