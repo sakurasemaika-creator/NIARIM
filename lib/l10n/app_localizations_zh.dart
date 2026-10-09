@@ -1741,6 +1741,13 @@ class AppLocalizationsZh extends AppLocalizations {
   String get tipsAutofillBaseCoatDesc =>
       '自动上色本来是用来按部位分别上色的功能，但不必细致地划分部位，只要用一个单色设置把整张线稿当作一张底色图层来涂，也已经很方便了。它能一次性把线内全部涂满，可以防止手动用油漆桶涂色时常见的漏涂（线条缝隙露出下层颜色的失误）。之后再在上面手动叠加颜色，就能不花分部位的功夫，也能获得自动上色的好处。';
 
+
+  @override
+  String get tipsAutofillManualPartColorTitle => '线稿保留在一张普通图层上，手动画分色块';
+
+  @override
+  String get tipsAutofillManualPartColorDesc =>
+      '如果你打算先用醒目的临时色区分部位，之后再换成正式颜色，就不必把线稿拆成多张“自动上色用线稿图层”。把所有线稿画在同一张普通图层上，再在各部位的“自动上色图层”中，用醒目的临时色手动画出实心色块，而不是只画线。修正涂错的区域后，执行自动上色并选择“保持形状，仅更新颜色”，即可保留已画好的形状，只把颜色更新为自动上色设置中的正式颜色。如果希望直接根据线稿自动判断部位并一次上色，请使用“自动上色用线稿图层”。';
   @override
   String get tipsBrushFavoriteTitle => '把常用笔刷加入收藏，切换时不用再找';
 
@@ -5512,7 +5519,7 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get tipsLineColorUsageDesc =>
-      '部件的轮廓线使用颜色描边·线稿融合后，不会与画面脏离，但边界仍然清晰。阴影和高光使用与填色相同的指定色，可以让线稿本身不引人注目；而故意使用不同的指定色，则能营造出该作品独有的世界观与统一感。';
+      '部位的轮廓线可将“线稿颜色”设为“颜色描线・与线稿融合”，让边界清楚又不显突兀。阴影和高光则将“线稿颜色”设为“与填色相同”，让线稿本身不那么醒目。若在“指定颜色”中刻意选择不同的颜色，也能营造作品独有的风格和统一感。';
 
   @override
   String get tipsBlushAutofillTitle => '脸颇的红晖也能用自动填色柔和地上色';
@@ -8765,6 +8772,13 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get tipsAutofillBaseCoatDesc =>
       '自動上色本來是用來按部位分別上色的功能，但不必細緻地劃分部位，只要用一個單色設定把整張線稿當作一張底色圖層來塗，也已經很方便了。它能一次性把線內全部塗滿，可以防止手動用油漆桶塗色時常見的漏塗（線條縫隙露出下層顏色的失誤）。之後再在上面手動疊加顏色，就能不花分部位的功夫，也能獲得自動上色的好處。';
 
+
+  @override
+  String get tipsAutofillManualPartColorTitle => '線稿保留在一張普通圖層上，手動畫分色塊';
+
+  @override
+  String get tipsAutofillManualPartColorDesc =>
+      '如果你打算先用醒目的暫用色區分部位，之後再換成正式顏色，就不必把線稿拆成多張「自動上色用線稿圖層」。把所有線稿畫在同一張普通圖層上，再在各部位的「自動上色圖層」中，用醒目的暫用色手動畫出實心色塊，而不是只畫線。修正塗錯的區域後，執行自動上色並選擇「保留形狀，只更新顏色」，即可保留已畫好的形狀，只把顏色更新為自動上色設定中的正式顏色。如果希望直接根據線稿自動判斷部位並一次上色，請使用「自動上色用線稿圖層」。';
   @override
   String get tipsBrushFavoriteTitle => '把常用筆刷加入我的最愛，切換時不用再找';
 
@@ -12536,7 +12550,7 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get tipsLineColorUsageDesc =>
-      '部件的輪廓線使用顏色描邊·線稿融合後，不會與畫面離體，但邊界仍然清晰。陽影和高光使用與填色相同的指定色，可讓線稿本身不引人注目；而故意使用不同的指定色，則能營造出該作品独有的世界觀與統一感。';
+      '部位的輪廓線可將「線稿顏色」設為「顏色描線・與線稿融合」，讓邊界清楚又不顯突兀。陰影和高光則將「線稿顏色」設為「與填色相同」，讓線稿本身不那麼醒目。若在「指定顏色」中刻意選擇不同的顏色，也能營造作品獨有的風格與統一感。';
 
   @override
   String get tipsBlushAutofillTitle => '臉頸的紅晖也能用自動填色柔和地上色';

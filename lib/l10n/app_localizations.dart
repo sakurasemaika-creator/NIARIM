@@ -3310,6 +3310,18 @@ abstract class AppLocalizations {
   /// In ja, this message translates to:
   /// **'自動塗りは本来パーツごとに色分けする機能ですが、丁寧に分けなくても、線画全体を1色で塗るだけの下塗りレイヤーとして使うだけで十分便利です。線の内側を一括で塗りつぶせるため、手動のバケツ塗りで起きがちな塗り残し（線の隙間から下の色が透けてしまうミス）を防げます。その上に手動で色を重ねれば、パーツ分けの手間をかけずに恩恵だけ得られます。'**
   String get tipsAutofillBaseCoatDesc;
+  /// No description provided for @tipsAutofillManualPartColorTitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'線画は通常レイヤー1枚に、塗りは面で手動のパーツ分け'**
+  String get tipsAutofillManualPartColorTitle;
+
+  /// No description provided for @tipsAutofillManualPartColorDesc.
+  ///
+  /// In ja, this message translates to:
+  /// **'後から本来の色に塗り直す前提なら、線画をパーツごとに「自動塗り用線画レイヤー」へ分ける必要はありません。線画は通常レイヤー1枚にまとめ、パーツごとの「自動塗りレイヤー」に、線ではなく面を目立つ仮色で手動で塗り分けます。塗り間違いを直してから「形状を保ったまま色だけ更新」で自動塗りを実行すると、塗った形は維持したまま、自動塗り設定に登録した本来の色に更新できます。線画からパーツ分けまで一度に自動化したい場合は、「自動塗り用線画レイヤー」を使ってください。'**
+  String get tipsAutofillManualPartColorDesc;
+
 
   /// No description provided for @tipsBrushFavoriteTitle.
   ///

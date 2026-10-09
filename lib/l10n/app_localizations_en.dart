@@ -1781,6 +1781,14 @@ class AppLocalizationsEn extends AppLocalizations {
   String get tipsAutofillBaseCoatDesc =>
       'Autofill is meant for coloring part by part, but you don\'t have to divide everything carefully — using it as a single, one-color base-coat layer over the whole lineart is plenty useful on its own. It fills everything inside the lines in one pass, which prevents the missed spots (gaps where the background shows through) that often happen with manual bucket fill. Paint your colors by hand on top of that, and you get the benefit without the part-splitting work.';
 
+
+  @override
+  String get tipsAutofillManualPartColorTitle =>
+      'Keep lineart on one normal layer and paint part shapes manually';
+
+  @override
+  String get tipsAutofillManualPartColorDesc =>
+      'If you plan to replace temporary guide colours with the final colours afterward, you do not need to split the lineart into multiple “Auto-fill lineart layer” layers. Keep all lineart on one normal layer, then manually paint each part as a filled area—not as a line—on its “Auto-fill layer,” using a bright temporary colour that stands out. Correct any misfilled areas, then run autofill with “Update color while keeping shape.” The painted shapes stay in place while their colours change to the colours in the autofill settings. If you want autofill to detect and colour the parts directly from lineart in one pass, use an “Auto-fill lineart layer.”';
   @override
   String get tipsBrushFavoriteTitle =>
       'Favorite your go-to brushes to switch without hunting';
@@ -5744,7 +5752,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get tipsLineColorUsageDesc =>
-      'For a part’s outline, Color Trace / Line Blend keeps the edge readable without it floating off the art. For shadows and highlights, matching the line color to the fill color makes the line itself disappear. And a deliberately distinct specified color can give a series its own signature look.';
+      'For a part’s outline, set “Line color” to “Color trace / blend with lines” to keep the boundary clear without making the line stand out. For shadows and highlights, set “Line color” to “Same as fill” so the line itself blends into the fill. Choosing a different “Specified color” can give the work its own distinctive look and cohesion.';
 
   @override
   String get tipsBlushAutofillTitle => 'Even soft blush can be auto-filled';

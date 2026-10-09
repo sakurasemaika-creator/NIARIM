@@ -1811,6 +1811,14 @@ class AppLocalizationsEs extends AppLocalizations {
   String get tipsAutofillBaseCoatDesc =>
       'El relleno automático está pensado para colorear parte por parte, pero no hace falta dividirlo todo con cuidado: usarlo como una única capa de base de un solo color sobre toda la línea ya es muy útil por sí solo. Rellena todo el interior de las líneas de una vez, lo que evita los huecos sin pintar (donde se transparenta el color de abajo) que suelen pasar al rellenar a mano con el cubo. Luego pinta los colores a mano encima, y obtienes el beneficio sin el trabajo de separar partes.';
 
+
+  @override
+  String get tipsAutofillManualPartColorTitle =>
+      'Mantén la línea en una sola capa normal y pinta las partes a mano';
+
+  @override
+  String get tipsAutofillManualPartColorDesc =>
+      'Si después vas a sustituir los colores provisionales por los definitivos, no hace falta dividir la línea en varias «Capas de líneas para relleno automático». Deja toda la línea en una sola capa normal y pinta manualmente cada parte como una superficie rellena, no como un trazo, en su «Capa de relleno automático», usando un color provisional vivo y fácil de distinguir. Corrige las zonas mal coloreadas y ejecuta el relleno automático con «Actualizar solo el color conservando la forma». Se conservarán las formas pintadas y solo se actualizarán sus colores según el ajuste de relleno automático. Si quieres detectar y colorear las partes directamente a partir de la línea en un solo paso, utiliza una «Capa de líneas para relleno automático».';
   @override
   String get tipsBrushFavoriteTitle =>
       'Marca tus pinceles favoritos para cambiarlos sin buscar';
@@ -5835,7 +5843,7 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get tipsLineColorUsageDesc =>
-      'Para el contorno de una parte, Trazado de color / Fusión de línea mantiene el borde legible sin que flote sobre el dibujo. Para sombras y luces, igualar el color de línea al de relleno hace que la línea desaparezca. Y un color especificado deliberadamente distinto puede darle a una serie su propio estilo.';
+      'Para el contorno de una parte, establece «Color del trazo» en «Trazado de color / mezcla con el trazo» para mantener el borde claro sin que la línea destaque demasiado. Para sombras y luces, establece «Color del trazo» en «Igual que el relleno» para que la línea se integre con el color. Elegir un color diferente en «Color especificado» puede aportar identidad y coherencia visual.';
 
   @override
   String get tipsBlushAutofillTitle =>

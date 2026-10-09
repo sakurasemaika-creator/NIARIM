@@ -1805,6 +1805,14 @@ class AppLocalizationsFr extends AppLocalizations {
   String get tipsAutofillBaseCoatDesc =>
       'Le remplissage automatique sert normalement à colorer partie par partie, mais inutile de tout découper soigneusement : l\'utiliser comme une seule couche de base d\'une couleur unie sur tout le trait est déjà bien utile en soi. Il remplit tout l\'intérieur du trait d\'un coup, ce qui évite les oublis de remplissage (les interstices où la couleur du dessous transparaît) fréquents avec le seau manuel. Peignez ensuite vos couleurs à la main par-dessus, et vous profitez du gain sans le travail de découpage par partie.';
 
+
+  @override
+  String get tipsAutofillManualPartColorTitle =>
+      'Gardez le trait sur un seul calque normal et peignez les aplats à la main';
+
+  @override
+  String get tipsAutofillManualPartColorDesc =>
+      'Si vous comptez remplacer ensuite les couleurs provisoires par les couleurs finales, il n’est pas nécessaire de répartir le trait sur plusieurs « calques de trait pour remplissage auto ». Dessinez tout le trait sur un seul calque normal, puis peignez manuellement chaque partie en aplat — pas en simples lignes — sur son « calque de remplissage auto », avec une couleur provisoire vive et facile à repérer. Corrigez les erreurs, puis lancez le remplissage auto avec « Actualiser la couleur en conservant la forme ». Les formes peintes restent intactes et seules leurs couleurs sont remplacées par celles du réglage de remplissage automatique. Si vous souhaitez détecter et colorer les parties directement depuis le trait en une seule passe, utilisez un « calque de trait pour remplissage auto ».';
   @override
   String get tipsBrushFavoriteTitle =>
       'Mettez vos pinceaux favoris en favori pour les retrouver sans chercher';
@@ -5844,7 +5852,7 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get tipsLineColorUsageDesc =>
-      'Pour le contour d’une partie, Tracé couleur / Fusion du trait garde le bord lisible sans qu’il flotte sur le dessin. Pour les ombres et les lumières, aligner la couleur du trait sur celle du remplissage fait disparaître le trait lui-même. Et une couleur spécifiée volontairement différente peut donner à une série son identité propre.';
+      'Pour le contour d’une partie, réglez « Couleur du trait » sur « Trace de couleur / fondu avec le trait » afin de garder une limite nette sans que le trait ressorte. Pour les ombres et les lumières, réglez « Couleur du trait » sur « Identique au remplissage » pour fondre le trait dans la couleur. Choisir une autre « Couleur spécifiée » peut donner à l’œuvre son identité et sa cohérence propres.';
 
   @override
   String get tipsBlushAutofillTitle =>

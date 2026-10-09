@@ -252,6 +252,15 @@ List<_TipCategory> _buildTipCategories(AppLocalizations l10n) => [
         l10n.tipsAutofillBaseCoatDesc,
       ),
       _Tip(
+        TipDiagramSpec(
+          TipDiagramKind.flowArrow,
+          iconA: Icons.edit_outlined,
+          iconB: Icons.palette_outlined,
+        ),
+        l10n.tipsAutofillManualPartColorTitle,
+        l10n.tipsAutofillManualPartColorDesc,
+      ),
+      _Tip(
         TipDiagramSpec(TipDiagramKind.brushFavorite),
         l10n.tipsBrushFavoriteTitle,
         l10n.tipsBrushFavoriteDesc,
