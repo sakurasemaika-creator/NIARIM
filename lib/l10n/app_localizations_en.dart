@@ -1782,12 +1782,10 @@ class AppLocalizationsEn extends AppLocalizations {
       'Autofill is meant for coloring part by part, but you don\'t have to divide everything carefully — using it as a single, one-color base-coat layer over the whole lineart is plenty useful on its own. It fills everything inside the lines in one pass, which prevents the missed spots (gaps where the background shows through) that often happen with manual bucket fill. Paint your colors by hand on top of that, and you get the benefit without the part-splitting work.';
 
   @override
-  String get tipsAutofillManualPartColorTitle =>
-      'Keep actual lineart on one normal layer; split fills manually';
+  String get tipsAutofillManualPartColorTitle => 'Separate temporary fill colours by hand; keep the real lineart on one normal layer'; split fills manually';
 
   @override
-  String get tipsAutofillManualPartColorDesc =>
-      'If you plan to replace temporary colours with final colours, keep the actual lineart on one normal layer. For each part, add an “Auto-fill lineart layer,” choose “Assign part” from its three-dot menu to link the matching part, then run “Run auto-fill” once from that menu to create its paired “Auto-fill layer.” These lineart layers are only helpers for linking the part setting; you do not need to draw the actual lineart on them, so they can stay empty. Draw the real lineart on the single normal layer, keep it above the fill layers, and manually paint each Auto-fill layer as a filled area—not a line—using a bright temporary colour. Fix any mistakes, then open “Run auto-fill” from the associated Auto-fill lineart layer’s menu and select “Update color while keeping shape.” This updates the filled area to the final colours in the autofill settings without redetecting or replacing your hand-painted shapes. If you want autofill to identify and colour the parts directly from the lineart in one pass, draw the actual lineart on the Auto-fill lineart layers instead.';
+  String get tipsAutofillManualPartColorDesc => 'Use this workflow when you want to separate parts with bright temporary colours first, then replace them with their final colours. Draw all real lineart on one normal layer and keep it above the fill layers.\nFor each part, add an “Auto-fill lineart layer” and use its three-dot menu > “Assign part” to link the part. These are helper layers for this workflow, so leave them empty—do not draw the real lineart on them. From the same menu, choose “Run auto-fill” once to create the paired “Auto-fill layer”.\nOn each “Auto-fill layer”, manually paint a solid area for the matching part using an easy-to-see temporary colour. Paint the area to be recoloured, not just its outline.\nWhen the shapes are right, open “Run auto-fill” from the corresponding “Auto-fill lineart layer” menu and select “Update color while keeping shape”. This keeps your hand-painted shapes and applies the final colours from “Autofill Settings”. If you want the app to detect the parts from the lineart and colour them automatically in one pass, use a different workflow: draw the actual lineart on the “Auto-fill lineart layers”.'; you do not need to draw the actual lineart on them, so they can stay empty. Draw the real lineart on the single normal layer, keep it above the fill layers, and manually paint each Auto-fill layer as a filled area—not a line—using a bright temporary colour. Fix any mistakes, then open “Run auto-fill” from the associated Auto-fill lineart layer’s menu and select “Update color while keeping shape.” This updates the filled area to the final colours in the autofill settings without redetecting or replacing your hand-painted shapes. If you want autofill to identify and colour the parts directly from the lineart in one pass, draw the actual lineart on the Auto-fill lineart layers instead.';
 
   @override
   String get tipsBrushFavoriteTitle =>
@@ -5751,8 +5749,7 @@ class AppLocalizationsEn extends AppLocalizations {
       'Pick line-color mode by purpose for a better finish';
 
   @override
-  String get tipsLineColorUsageDesc =>
-      'For a part’s outline, set “Line color” to “Color trace / blend with lines” to keep the boundary clear without making the line stand out. For shadows and highlights, set “Line color” to “Same as fill” so the line itself blends into the fill. Choosing a different “Specified color” can give the work its own distinctive look and cohesion.';
+  String get tipsLineColorUsageDesc => 'To keep a part’s outline clear without making the line stand out, set “Line color” to “Color trace / blend with lines”. For parts used for shadows or highlights, choose “Same as fill”: the line follows the fill colour instead of standing out as a darker line. Choose “Specified color” when you intentionally want a different line colour.';
 
   @override
   String get tipsBlushAutofillTitle => 'Even soft blush can be auto-filled';
