@@ -1900,11 +1900,12 @@ class AutoLineartEngine {
         ..add((b, a));
     }
 
-    // A band where the two lines stay apart all along (a hair outline
-    // running down just outside the head): each line on its own side, its
-    // centre half a line in from that side's edge of the ink, so each keeps
-    // its course. Where they cross inside the band (a head's bottom crossing
-    // a collar line) the joins through the band are made below instead.
+    // A band where the two lines run side by side (a hair outline running
+    // down just outside the head, a head's bottom under a collar line it
+    // crosses at either end): each line on its own side, its centre half a
+    // line in from that side's edge of the ink, so each keeps its course.
+    // Where they cross or touch in the middle of the band the joins through
+    // it are made below instead.
     final sides = <int, (int, int)>{};
     final sideClusters = <int, (int, int)>{};
     final sideHeadings = <int, (AutoLineartPoint, AutoLineartPoint)>{};
