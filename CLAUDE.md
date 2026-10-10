@@ -43,7 +43,7 @@
    `test/helpers/color_channels.dart`の`.red8`/`.green8`/`.blue8`/
    `.alpha8`を使う。テスト内のデバッグ出力は`print`ではなく
    `debugPrint`を使う）
-3. `flutter test`（ベースライン：2026-10-08時点で**成功1757・スキップ5・
+3. `flutter test`（ベースライン：2026-10-10時点で**成功1878・スキップ5・
    失敗4**。失敗は監査担当の`test/app_web_reference_*`3件と、別セッション
    （質感変更フィルターの名前変更）の`test/texture_filter_gold_palette_test.dart`
    1件で、通常タスクでは直さない。全件で約25分かかるので、変更に関係する
