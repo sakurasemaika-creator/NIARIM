@@ -1,6 +1,7 @@
 import 'dart:io';
 import 'dart:math' as math;
 import 'dart:typed_data';
+import 'dart:ui' as ui;
 
 import 'package:flutter_test/flutter_test.dart';
 import 'package:image/image.dart' as img;
@@ -47,7 +48,69 @@ final _hair = <_Pt>[..._hairOutline, (145, 66), (114, 86), (94, 63), (55, 95)];
 final _smile = _arc(115.5, 122, 13.5, .2, 2.9);
 const _eyes = <_Pt>[(91, 104), (141, 104)];
 
-Uint8List _rough({double ink = _ink}) {
+/// [line] with its centre wobbling up to [amount] px to either side, the
+/// way a hand-drawn stroke does ([seed] varies the wobble).
+List<_Pt> _wobbled(List<_Pt> line, double amount, int seed) {
+  var travelled = 0.0;
+  return [
+    for (var k = 0; k < line.length; k++)
+      () {
+        final (x, y) = line[k];
+        final (px, py) = line[math.max(0, k - 1)];
+        final (nx, ny) = line[math.min(line.length - 1, k + 1)];
+        travelled += math.sqrt((x - px) * (x - px) + (y - py) * (y - py));
+        var tx = nx - px, ty = ny - py;
+        final l = math.sqrt(tx * tx + ty * ty);
+        if (l > 0) {
+          tx /= l;
+          ty /= l;
+        }
+        final off =
+            amount *
+            (math.sin(travelled / 9 + seed) * .6 +
+                math.sin(travelled / 23 + seed * 2.3) * .4);
+        return (x - ty * off, y + tx * off);
+      }(),
+  ];
+}
+
+/// The character's strokes (head, shirt, hair, smile), each wobbling by
+/// [wobble] px.
+List<List<_Pt>> _strokes(double wobble) => [
+  _wobbled(_head, wobble, 2),
+  _wobbled(_shirt, wobble, 1),
+  _wobbled(_hair, wobble, 3),
+  _wobbled(_smile, wobble, 4),
+];
+
+/// [lines] and the eyes drawn with a [width] px pen the way the canvas
+/// strokes them: anti-aliased, with round ends and joins.
+Future<Uint8List> _penRough(List<List<_Pt>> lines, double width) async {
+  final recorder = ui.PictureRecorder();
+  final canvas = ui.Canvas(recorder);
+  final paint = ui.Paint()
+    ..color = const ui.Color(0xff242739)
+    ..style = ui.PaintingStyle.stroke
+    ..strokeWidth = width
+    ..strokeJoin = ui.StrokeJoin.round
+    ..strokeCap = ui.StrokeCap.round;
+  for (final line in lines) {
+    final path = ui.Path()..moveTo(line.first.$1, line.first.$2);
+    for (final (x, y) in line.skip(1)) {
+      path.lineTo(x, y);
+    }
+    canvas.drawPath(path, paint);
+  }
+  for (final (x, y) in _eyes) {
+    canvas.drawCircle(ui.Offset(x, y), 4, ui.Paint()..color = paint.color);
+  }
+  final image = await recorder.endRecording().toImage(_size, _size);
+  final data = await image.toByteData(format: ui.ImageByteFormat.rawRgba);
+  image.dispose();
+  return data!.buffer.asUint8List();
+}
+
+Uint8List _rough({double ink = _ink, List<List<_Pt>>? lines}) {
   final rgba = Uint8List(_size * _size * 4);
   void disc(double cx, double cy, double r) {
     for (var y = (cy - r - 1).floor(); y <= (cy + r + 1).ceil(); y++) {
@@ -64,7 +127,7 @@ Uint8List _rough({double ink = _ink}) {
     }
   }
 
-  for (final line in [_head, _shirt, _hair, _smile]) {
+  for (final line in lines ?? [_head, _shirt, _hair, _smile]) {
     for (var k = 0; k + 1 < line.length; k++) {
       final (ax, ay) = line[k];
       final (bx, by) = line[k + 1];
@@ -136,6 +199,25 @@ double _nearestLine(Uint8List out, double x, double y, {int reach = 5}) {
   return best;
 }
 
+/// Saves [rough] beside its 自動線画 [lines] (over the rough, faint) to
+/// build/auto-lineart/[name], for review.
+void _saveForReview(String name, Uint8List rough, Uint8List lines) {
+  final sheet = img.Image(width: _size * 2 + 8, height: _size);
+  img.fill(sheet, color: img.ColorRgb8(255, 255, 255));
+  for (var y = 0; y < _size; y++) {
+    for (var x = 0; x < _size; x++) {
+      final i = (y * _size + x) * 4;
+      final r = (255 - 200 * rough[i + 3] / 255).round();
+      sheet.setPixelRgb(x, y, r, r, r);
+      final g = (255 - .25 * rough[i + 3]).round();
+      final o = ((255 - lines[i + 3]) * g / 255).round();
+      sheet.setPixelRgb(_size + 8 + x, y, o, o, o);
+    }
+  }
+  final dir = Directory('build/auto-lineart')..createSync(recursive: true);
+  File('${dir.path}/$name').writeAsBytesSync(img.encodePng(sheet));
+}
+
 void main() {
   final rough = _rough();
   final out = _lineart(rough);
@@ -143,20 +225,7 @@ void main() {
   double nearestLine(double x, double y) => _nearestLine(out, x, y);
 
   test('drawn for review', () {
-    final sheet = img.Image(width: _size * 2 + 8, height: _size);
-    img.fill(sheet, color: img.ColorRgb8(255, 255, 255));
-    for (var y = 0; y < _size; y++) {
-      for (var x = 0; x < _size; x++) {
-        final i = (y * _size + x) * 4;
-        final r = (255 - 200 * rough[i + 3] / 255).round();
-        sheet.setPixelRgb(x, y, r, r, r);
-        final g = (255 - .25 * rough[i + 3]).round();
-        final o = ((255 - out[i + 3]) * g / 255).round();
-        sheet.setPixelRgb(_size + 8 + x, y, o, o, o);
-      }
-    }
-    final dir = Directory('build/auto-lineart')..createSync(recursive: true);
-    File('${dir.path}/fidelity.png').writeAsBytesSync(img.encodePng(sheet));
+    _saveForReview('fidelity.png', rough, out);
   });
 
   /// Whether ([x], [y]) on [own] is more than [gap] px from the other
@@ -353,7 +422,7 @@ void main() {
     // Where the head's outline runs 4 to 9 px inside the hair outline (their
     // ink one band, or nearly), each is on its own centre line: neither
     // merged into one line down the middle nor crossing the other.
-    for (final ink in [_ink, 6.0]) {
+    for (final ink in [_ink, 6.0, 10.0]) {
       final lines = ink == _ink ? out : _lineart(_rough(ink: ink));
       var checked = 0;
       for (var k = 0; k + 1 < _hairOutline.length; k++) {
@@ -379,6 +448,70 @@ void main() {
         }
       }
       expect(checked, greaterThan(30), reason: '$ink px');
+    }
+  });
+
+  test('a smile pressed on the collar by a thick pen stays a round smile, '
+      'with no line down to the collar', () {
+    for (final wobble in [0.0, 1.2]) {
+      final strokes = _strokes(wobble);
+      final pressed = _rough(ink: 10, lines: strokes);
+      final lines = _lineart(pressed);
+      if (wobble == 0) _saveForReview('thick_pen_smile.png', pressed, lines);
+      final smile = strokes[3];
+      for (final (x, y) in smile) {
+        if (_toLine([smile.first], x, y) < 6 ||
+            _toLine([smile.last], x, y) < 6) {
+          continue;
+        }
+        expect(
+          _nearestLine(lines, x, y),
+          lessThan(1.6),
+          reason: 'wobble $wobble: smile at (${x.round()}, ${y.round()})',
+        );
+      }
+      for (var y = 139; y <= 141; y++) {
+        for (var x = 106; x <= 126; x++) {
+          expect(
+            lines[(y * _size + x) * 4 + 3],
+            lessThanOrEqualTo(100),
+            reason: 'wobble $wobble: between smile and collar at ($x, $y)',
+          );
+        }
+      }
+    }
+  });
+
+  test('with a thick, wobbling pen the head runs on round past the slits of '
+      'paper between it and the hair outline, with no hook off it', () async {
+    final strokes = _strokes(1.2);
+    final thick = await _penRough(strokes, 10);
+    final lines = _lineart(thick);
+    _saveForReview('thick_pen.png', thick, lines);
+    final head = strokes[0], hair = strokes[2];
+    for (final (x, y) in head) {
+      if (y > 90) continue;
+      expect(
+        _nearestLine(lines, x, y),
+        lessThan(1.6),
+        reason: 'head at (${x.round()}, ${y.round()})',
+      );
+    }
+    // Over the top, above the hairline, every line is on the head or the
+    // hair outline (its soft edge within 3 px of their centre lines; the
+    // hook was 5 px off).
+    for (var y = 15; y < 60; y++) {
+      for (var x = 40; x < 190; x++) {
+        if (lines[(y * _size + x) * 4 + 3] <= 100) continue;
+        expect(
+          math.min(
+            _toLine(head, x + .5, y + .5),
+            _toLine(hair, x + .5, y + .5),
+          ),
+          lessThan(3),
+          reason: '($x, $y)',
+        );
+      }
     }
   });
 

@@ -1521,10 +1521,14 @@ class AutoLineartEngine {
       );
       if (bisector == null || _dot(bisector, headings[c]!) > -.5) continue;
       // One line's width: the two coming in, away from the junction.
-      final lineWidth =
-          (_medianWidth(lines[a], across * 1.5, inkWidth) +
-              _medianWidth(lines[b], across * 1.5, inkWidth)) /
-          2;
+      final widthA = _medianWidth(lines[a], across * 1.5, inkWidth);
+      final widthB = _medianWidth(lines[b], across * 1.5, inkWidth);
+      // One of them already two lines side by side (a hair outline coming
+      // down just outside the head, meeting the hairline at its tip): no
+      // merge of two lines; _resolveJunctions splits that band into its
+      // two lines.
+      if (math.max(widthA, widthB) >= math.min(widthA, widthB) * 1.4) continue;
+      final lineWidth = (widthA + widthB) / 2;
       if (across < lineWidth * 1.4) continue;
       // Each side of the merged ink, along the line leaving it, half the
       // extra width out from its middle.
@@ -1635,6 +1639,26 @@ class AutoLineartEngine {
       ];
     }
     return null;
+  }
+
+  /// Whether path [own] only bridges across between two other lines: at
+  /// each of its ends exactly two other lines, running on through the
+  /// junction (more than 100° apart) and each leaving it at least 75° from
+  /// [own], their headings taken [reach] px out.
+  static bool _bridgesAcross(List<_RawPath> paths, int own, double reach) {
+    final points = paths[own].points;
+    for (final atStart in const [true, false]) {
+      final junction = atStart ? points.first : points.last;
+      final out = _headingFrom(
+        atStart ? points : points.reversed.toList(growable: false),
+        reach,
+      );
+      if (out == null) return false;
+      final arms = _armsAt(paths, own, junction, reach);
+      if (arms.length != 2 || _dot(arms[0], arms[1]) > -.17) return false;
+      if (arms.any((arm) => _dot(arm, out) > .26)) return false;
+    }
+    return true;
   }
 
   /// The way each other line leaves [junction], where path [own] ends,
@@ -1844,8 +1868,9 @@ class AutoLineartEngine {
     }
     // Two lines only touching: thinning leaves a short line across the
     // narrow neck of ink between them, clearly narrower than a line in its
-    // middle (a smile's bottom brushing a collar line). No line was drawn
-    // there.
+    // middle (a smile's bottom brushing a collar line), or, where a thick
+    // pen pressed them together, a line about one line long across from
+    // one line running on to the other. No line was drawn there.
     for (var i = 0; i < paths.length; i++) {
       final path = paths[i];
       if (role[i] != keep || !path.startIsJunction || !path.endIsJunction) {
@@ -1857,7 +1882,11 @@ class AutoLineartEngine {
       for (var k = 1; k + 1 < path.points.length; k++) {
         narrowest = math.min(narrowest, inkWidth(path.points[k]));
       }
-      if (narrowest <= line * .7) role[i] = link;
+      if (narrowest <= line * .7 ||
+          (lengthOf(path.points) <= line * 1.6 &&
+              _bridgesAcross(paths, i, line * 1.5))) {
+        role[i] = link;
+      }
     }
     // Two lines lying over each other between two junctions: their ink is
     // clearly wider than one line all along.
@@ -2171,20 +2200,42 @@ class AutoLineartEngine {
     for (var i = 0; i < paths.length; i++) {
       final path = paths[i];
       if (role[i] != keep || path.points.length < 2) continue;
-      for (final atStart in const [true, false]) {
-        if (atStart ? !path.startIsJunction : !path.endIsJunction) continue;
+      int? cutAt(bool atStart) {
+        if (atStart ? !path.startIsJunction : !path.endIsJunction) return null;
         final junction = atStart ? path.points.first : path.points.last;
-        if (!meets(junction)) continue;
+        if (!meets(junction)) return null;
+        final reach = inkWidth(junction) / 2 + line / 2;
+        final n = path.points.length;
+        var cut = 0;
+        while (cut < n &&
+            _distance(path.points[atStart ? cut : n - 1 - cut], junction) <
+                reach) {
+          cut++;
+        }
+        return cut;
+      }
+
+      // Both ends' cuts must leave a line between them. A short line
+      // between two wide junctions (the inner side of a thin slit of
+      // paper between two strokes) is shared out between its two ends in
+      // proportion, so both still join on.
+      final cuts = [cutAt(true), cutAt(false)];
+      final room = path.points.length - 4;
+      if (cuts[0] != null && cuts[1] != null && cuts[0]! + cuts[1]! > room) {
+        final total = cuts[0]! + cuts[1]!;
+        if (room >= 2) {
+          final first = (room * cuts[0]! / total).round().clamp(1, room - 1);
+          cuts[0] = first;
+          cuts[1] = room - first;
+        }
+      }
+      for (final atStart in const [true, false]) {
+        final cut = cuts[atStart ? 0 : 1];
+        if (cut == null) continue;
+        final junction = atStart ? path.points.first : path.points.last;
         final outward = atStart
             ? path.points
             : path.points.reversed.toList(growable: false);
-        final reach = inkWidth(junction) / 2 + line / 2;
-        var cut = 0;
-        while (cut < outward.length &&
-            _distance(outward[cut], junction) < reach) {
-          cut++;
-        }
-        // Both ends' cuts must leave a line between them.
         final other = atStart ? trims[i][1] : outward.length - 1 - trims[i][0];
         if (cut >= other - 2) continue;
         final from = outward[cut];
