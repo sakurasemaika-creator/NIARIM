@@ -39,18 +39,15 @@ final _shirt = <_Pt>[
   ..._quad((194, 217), (115, 240), (35, 217)).skip(1),
   (64, 145),
 ];
-final _hair = <_Pt>[
+final _hairOutline = <_Pt>[
   ..._quad((55, 95), (48, 20), (115, 27)),
   ..._quad((115, 27), (186, 20), (178, 98)).skip(1),
-  (145, 66),
-  (114, 86),
-  (94, 63),
-  (55, 95),
 ];
+final _hair = <_Pt>[..._hairOutline, (145, 66), (114, 86), (94, 63), (55, 95)];
 final _smile = _arc(115.5, 122, 13.5, .2, 2.9);
 const _eyes = <_Pt>[(91, 104), (141, 104)];
 
-Uint8List _rough() {
+Uint8List _rough({double ink = _ink}) {
   final rgba = Uint8List(_size * _size * 4);
   void disc(double cx, double cy, double r) {
     for (var y = (cy - r - 1).floor(); y <= (cy + r + 1).ceil(); y++) {
@@ -75,7 +72,7 @@ Uint8List _rough() {
           .ceil();
       for (var s = 0; s <= steps; s++) {
         final t = steps == 0 ? 0.0 : s / steps;
-        disc(ax + (bx - ax) * t, ay + (by - ay) * t, _ink / 2);
+        disc(ax + (bx - ax) * t, ay + (by - ay) * t, ink / 2);
       }
     }
   }
@@ -106,39 +103,44 @@ double _toLine(List<_Pt> line, double x, double y) {
 /// stroke comes out on its own centre line, without wobbling off it, and
 /// where strokes cross or lie over each other they carry on as they were
 /// drawn.
+/// 自動線画 of [rough], as the filter applies it.
+Uint8List _lineart(Uint8List rough) => applyDrawFilterInIsolate((
+  rough,
+  _size,
+  _size,
+  const FilterDef(
+    id: 'Filter0023',
+    name: '自動線画',
+    kind: FilterKind.autoLineart,
+    autoLineartRoughWidth: 12,
+    autoLineartOutputWidth: 2,
+    autoLineartTaperLength: 8,
+    autoLineartSmoothing: 5,
+  ),
+  null,
+));
+
+/// How far the nearest line pixel of [out] is from ([x], [y]), up to
+/// [reach].
+double _nearestLine(Uint8List out, double x, double y, {int reach = 5}) {
+  var best = double.infinity;
+  for (var dy = -reach; dy <= reach; dy++) {
+    for (var dx = -reach; dx <= reach; dx++) {
+      final px = x.floor() + dx, py = y.floor() + dy;
+      if (px < 0 || py < 0 || px >= _size || py >= _size) continue;
+      if (out[(py * _size + px) * 4 + 3] <= 100) continue;
+      final ex = px + .5 - x, ey = py + .5 - y;
+      best = math.min(best, math.sqrt(ex * ex + ey * ey));
+    }
+  }
+  return best;
+}
+
 void main() {
   final rough = _rough();
-  final out = applyDrawFilterInIsolate((
-    rough,
-    _size,
-    _size,
-    const FilterDef(
-      id: 'Filter0023',
-      name: '自動線画',
-      kind: FilterKind.autoLineart,
-      autoLineartRoughWidth: 12,
-      autoLineartOutputWidth: 2,
-      autoLineartTaperLength: 8,
-      autoLineartSmoothing: 5,
-    ),
-    null,
-  ));
+  final out = _lineart(rough);
   bool lineAt(int x, int y) => out[(y * _size + x) * 4 + 3] > 100;
-
-  /// How far the nearest line pixel is from ([x], [y]), up to [reach].
-  double nearestLine(double x, double y, {int reach = 5}) {
-    var best = double.infinity;
-    for (var dy = -reach; dy <= reach; dy++) {
-      for (var dx = -reach; dx <= reach; dx++) {
-        final px = x.floor() + dx, py = y.floor() + dy;
-        if (px < 0 || py < 0 || px >= _size || py >= _size) continue;
-        if (!lineAt(px, py)) continue;
-        final ex = px + .5 - x, ey = py + .5 - y;
-        best = math.min(best, math.sqrt(ex * ex + ey * ey));
-      }
-    }
-    return best;
-  }
+  double nearestLine(double x, double y) => _nearestLine(out, x, y);
 
   test('drawn for review', () {
     final sheet = img.Image(width: _size * 2 + 8, height: _size);
@@ -344,5 +346,150 @@ void main() {
         }
       }
     }
+  });
+
+  test('the hair outline stays its own line just outside the head, over the '
+      'top and down both sides, with either pen', () {
+    // Where the head's outline runs 4 to 9 px inside the hair outline (their
+    // ink one band, or nearly), each is on its own centre line: neither
+    // merged into one line down the middle nor crossing the other.
+    for (final ink in [_ink, 6.0]) {
+      final lines = ink == _ink ? out : _lineart(_rough(ink: ink));
+      var checked = 0;
+      for (var k = 0; k + 1 < _hairOutline.length; k++) {
+        final (ax, ay) = _hairOutline[k];
+        final (bx, by) = _hairOutline[k + 1];
+        for (var t = 0.0; t < 1; t += .25) {
+          final x = ax + (bx - ax) * t, y = ay + (by - ay) * t;
+          final dx = x - 115, dy = y - 93;
+          final r = math.sqrt(dx * dx + dy * dy);
+          if (r - 60 < 4 || r - 60 > 9) continue;
+          checked++;
+          expect(
+            _nearestLine(lines, x, y),
+            lessThan(1.6),
+            reason: '$ink px: hair at (${x.round()}, ${y.round()})',
+          );
+          final hx = 115 + dx / r * 60, hy = 93 + dy / r * 60;
+          expect(
+            _nearestLine(lines, hx, hy),
+            lessThan(1.6),
+            reason: '$ink px: head inside it at (${hx.round()}, ${hy.round()})',
+          );
+        }
+      }
+      expect(checked, greaterThan(30), reason: '$ink px');
+    }
+  });
+
+  test('the hairline runs on into the tips of the hair outline', () {
+    for (final ((fx, fy), (tx, ty)) in const [
+      ((94.0, 63.0), (55.0, 95.0)),
+      ((145.0, 66.0), (178.0, 98.0)),
+    ]) {
+      for (final t in const [.7, .8, .9]) {
+        final x = fx + (tx - fx) * t, y = fy + (ty - fy) * t;
+        expect(
+          nearestLine(x, y),
+          lessThan(1.6),
+          reason: 'hairline at (${x.round()}, ${y.round()})',
+        );
+      }
+      expect(nearestLine(tx, ty), lessThan(3), reason: 'tip at ($tx, $ty)');
+    }
+  });
+
+  test('strokes crossing at a slant run straight on through their shared '
+      'ink', () {
+    const angles = [15.0, 20.0, 30.0, 45.0, 60.0];
+    // The strokes, for review: rough above, 自動線画 below, each angle cut
+    // to the strokes' height.
+    const top = 58, rows = 140;
+    final sheet = img.Image(width: _size * angles.length, height: rows * 2);
+    img.fill(sheet, color: img.ColorRgb8(255, 255, 255));
+    for (final (column, angle) in angles.indexed) {
+      for (final thickness in [6.0, 8.0]) {
+        const c = _size / 2, reach = 100.0;
+        final rough = Uint8List(_size * _size * 4);
+        final half = angle / 2 * math.pi / 180;
+        final strokes = [
+          (
+            c - reach * math.cos(half),
+            c - reach * math.sin(half),
+            c + reach * math.cos(half),
+            c + reach * math.sin(half),
+          ),
+          (
+            c - reach * math.cos(half),
+            c + reach * math.sin(half),
+            c + reach * math.cos(half),
+            c - reach * math.sin(half),
+          ),
+        ];
+        double toStroke(int s, double px, double py) {
+          final (ax, ay, bx, by) = strokes[s];
+          final dx = bx - ax, dy = by - ay;
+          final t = (((px - ax) * dx + (py - ay) * dy) / (dx * dx + dy * dy))
+              .clamp(0.0, 1.0);
+          final ex = px - ax - dx * t, ey = py - ay - dy * t;
+          return math.sqrt(ex * ex + ey * ey);
+        }
+
+        for (var py = 0; py < _size; py++) {
+          for (var px = 0; px < _size; px++) {
+            if (toStroke(0, px + .5, py + .5) <= thickness / 2 ||
+                toStroke(1, px + .5, py + .5) <= thickness / 2) {
+              rough
+                ..[(py * _size + px) * 4] = 20
+                ..[(py * _size + px) * 4 + 3] = 255;
+            }
+          }
+        }
+        final graph = AutoLineartEngine.analyze(
+          rough,
+          _size,
+          _size,
+          roughWidthPx: 12,
+        );
+        final reason = '$angle°, $thickness px';
+        expect(graph.paths, hasLength(2), reason: reason);
+        for (final path in graph.paths) {
+          final first = path.points.first, last = path.points.last;
+          // Each from one end of a stroke to its other end, on it all along.
+          expect(
+            math.sqrt(
+              math.pow(last.x - first.x, 2) + math.pow(last.y - first.y, 2),
+            ),
+            greaterThan(reach * 2 - thickness * 2),
+            reason: reason,
+          );
+          final own =
+              toStroke(0, first.x, first.y) < toStroke(1, first.x, first.y)
+              ? 0
+              : 1;
+          for (final p in path.points) {
+            expect(
+              toStroke(own, p.x, p.y),
+              lessThan(1.5),
+              reason: '$reason: (${p.x}, ${p.y})',
+            );
+          }
+        }
+        if (thickness != 8) continue;
+        final lines = _lineart(rough);
+        for (var y = 0; y < rows; y++) {
+          for (var x = 0; x < _size; x++) {
+            final i = ((top + y) * _size + x) * 4;
+            final r = (255 - 200 * rough[i + 3] / 255).round();
+            sheet.setPixelRgb(column * _size + x, y, r, r, r);
+            final g = (255 - .25 * rough[i + 3]).round();
+            final o = ((255 - lines[i + 3]) * g / 255).round();
+            sheet.setPixelRgb(column * _size + x, rows + y, o, o, o);
+          }
+        }
+      }
+    }
+    final dir = Directory('build/auto-lineart')..createSync(recursive: true);
+    File('${dir.path}/crossings.png').writeAsBytesSync(img.encodePng(sheet));
   });
 }
