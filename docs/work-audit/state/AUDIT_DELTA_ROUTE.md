@@ -1,6 +1,6 @@
 # NIARIM lock-after delta audit route
 
-状態: \`active\`
+状態: `active`
 
 ## 目的
 
@@ -68,7 +68,7 @@ delta_current_id は、この表の先頭未完了D-IDと一致させる。`not_
 
 ## 完了状態
 
-D-IDのstatusは \`todo / in_progress / blocked / done\`。
+D-IDのstatusは `todo / in_progress / blocked / done`。
 blockedは環境・実機・外部サービス等の実在制約だけに使用し、未確認をblockedへ隠さない。全面監査completeにはBaseline未完了=0、Discovery未完了=0、delta未完了=0、advisor-pending=0、未登録Discovery=0が必要。
 
 ## D001 — 最新HEAD差分・全追加対象 inventory

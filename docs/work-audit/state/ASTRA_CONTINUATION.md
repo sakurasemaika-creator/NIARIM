@@ -33,8 +33,8 @@ blockers:
 - advisor blocker: none。S5dはSolで継続可能な通常のlifecycle設計/検証論点。
 - execution: none。S4/S5 queued runnersは双方successを生ログ確認済み。
 
-latest_observed_product_head_app: `ce94a15597f213a168abc682a8f49d53fa3c8508`
-latest_observed_product_head_web: `ed944b291732f5d9bc4ca0617b7213f8ec212be4`
+latest_observed_product_head_app: `bbcb4293c37df925c15c98eaee90fafe0c58fd15`
+latest_observed_product_head_web: `ed8e5ceda0833c69d3838c3ca6bbbd8f456658a8`
 
 next_action: 最新dev_branchを再取得したうえでA001/S5dを継続し、partial bootstrap failureを注入できる最小test seamとcleanup ownershipを確定する。旧 `770e2c57...` を現在HEADとして扱わない。
 
@@ -133,4 +133,12 @@ lock後の追加監査対象は A105 等のBaseline IDではなく、docs/work-a
 - theme・quality・save schema/version・export format等を意図的にmutationして再監査し、source hygieneとperformance optimizationも監査対象に含める。
 - 明確な品質改善は監査中に修正し、同一操作・Visual・関連regressionを再実行する。
 - D032〜D037をこの契約の実行担当として扱い、Baseline/Discovery/Deltaの未確認を隠さない。
+
+## 2026-10-10 全面監査セッション開始（明示依頼）
+
+- 開始SHA: App `bbcb4293c37df925c15c98eaee90fafe0c58fd15` / Web `ed8e5ceda0833c69d3838c3ca6bbbd8f456658a8`（両repoとも `dev_branch` 最新をfetchして一致を確認）。
+- 読了した正本: AGENTS.md、docs/work-audit/README.md、FULL_AUDIT_ENTRYPOINT.md、policy/ASTRA_WORK.md、state/AUDIT_ROUTE.md、state/AUDIT_DELTA_ROUTE.md、state/FULL_AUDIT_EXECUTION_STANDARD.md、product-audit 4 standard、state/verifier群。policy文書はApp側が上位版（Web側は旧版）であり、App側を正本として適用。policy自体は変更していない。
+- preflight結果（修正前）: `verify_full_audit_state.py` = delta tracker範囲不一致（verifierがD001–D032固定、trackerはD001–D037）＋mirror差分（ASTRA_CONTINUATION.md / AUDIT_DELTA_ROUTE.md がWebへ未反映）、`verify_audit_route.py` = mirror差分、`verify_audit_delta.py` = `状態: \`active\`` のバックスラッシュ混入で active 判定失敗。
+- state構造修正: verifierのdelta範囲をD001–D037へ、AUDIT_DELTA_ROUTE.mdのエスケープ混入を除去、App側stateをWebへmirror。修正後に3 verifierとも ok を確認してから製品監査を再開。
+- 実行環境: Flutter 3.47.7 stable（CIのstable channelと同版）、Linux desktop debug buildをXvfb上で起動し実操作する。Android実機/エミュレータ（KVMなし）は本環境に無いため `NATIVE` 条件はblockedとして別記する。
 
