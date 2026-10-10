@@ -8,6 +8,11 @@ class ShareIntentService {
     'com.niarim.niarim/share_intent',
   );
 
+  /// チャンネルのハンドラーを今持っているインスタンス。チャンネルは
+  /// アプリで1つなので、後から作ったインスタンスのハンドラーを古い
+  /// インスタンスのdisposeで外さないようにする。
+  static ShareIntentService? _handlerOwner;
+
   final StreamController<String> _controller =
       StreamController<String>.broadcast();
 
@@ -19,6 +24,7 @@ class ShareIntentService {
   String? pendingInitialUri;
 
   Future<void> init() async {
+    _handlerOwner = this;
     _channel.setMethodCallHandler(_handleMethodCall);
     try {
       pendingInitialUri = await _channel.invokeMethod<String>('getInitialUri');
@@ -49,5 +55,11 @@ class ShareIntentService {
     }
   }
 
-  void dispose() => _controller.close();
+  void dispose() {
+    if (identical(_handlerOwner, this)) {
+      _handlerOwner = null;
+      _channel.setMethodCallHandler(null);
+    }
+    _controller.close();
+  }
 }

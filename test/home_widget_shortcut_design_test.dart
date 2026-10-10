@@ -280,12 +280,11 @@ void main() {
       (HomeWidgetKind.create, l10n.splashCreateButton),
     ]) {
       final (kind, labelText) = entry;
+      // グラデーションのタイルはInkで描いている（押したときの波紋や
+      // フォーカス表示をグラデーションの上へ出すため）。
       final tile = tester.getRect(
         find
-            .ancestor(
-              of: find.text(labelText),
-              matching: find.byType(DecoratedBox),
-            )
+            .ancestor(of: find.text(labelText), matching: find.byType(Ink))
             .first,
       );
       final expected = kind == HomeWidgetKind.plaza

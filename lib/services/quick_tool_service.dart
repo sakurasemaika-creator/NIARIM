@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../models/quick_tool_entry.dart';
+import '../utils/tolerant_preferences.dart';
 
 /// ツール早替え機能（「↺ ツール早替えボタン」）。
 /// 登録済みツールを順番にサイクルし、最後まで行くと先頭へループする。
@@ -17,7 +18,7 @@ class QuickToolService extends ChangeNotifier {
   Future<void> init() async {
     if (_entries.isNotEmpty) return;
     final prefs = await SharedPreferences.getInstance();
-    final raw = prefs.getStringList(_prefsKey);
+    final raw = prefs.readStringList(_prefsKey);
     if (raw == null || raw.isEmpty) {
       _entries.addAll(const [
         QuickToolEntry(

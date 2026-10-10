@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'project_service.dart' show ProjectFolder;
+import '../utils/tolerant_preferences.dart';
 
 /// ホーム画面「作品一覧」タブ（書き出し済み動画・GIFファイル）のフォルダ
 /// 整理機能。作品一覧のファイルはプロジェクトのようなDBエントリではなく
@@ -24,7 +25,7 @@ class WorkFolderService extends ChangeNotifier {
   Future<void> init() async {
     try {
       final prefs = await SharedPreferences.getInstance();
-      final rawFolders = prefs.getString(_foldersPrefsKey);
+      final rawFolders = prefs.readString(_foldersPrefsKey);
       if (rawFolders != null) {
         final list = jsonDecode(rawFolders) as List<dynamic>;
         _folders
@@ -33,7 +34,7 @@ class WorkFolderService extends ChangeNotifier {
             list.map((e) => ProjectFolder.fromJson(e as Map<String, dynamic>)),
           );
       }
-      final rawMap = prefs.getString(_fileFolderPrefsKey);
+      final rawMap = prefs.readString(_fileFolderPrefsKey);
       if (rawMap != null) {
         final map = jsonDecode(rawMap) as Map<String, dynamic>;
         _fileFolder

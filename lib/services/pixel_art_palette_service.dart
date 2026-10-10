@@ -4,6 +4,7 @@ import 'package:flutter/foundation.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../models/color_palette.dart';
+import '../utils/tolerant_preferences.dart';
 
 /// ドット絵専用パレット（ブラシのピクセルモード・ドット絵フィルターの
 /// 「パレットから選ぶ」で使う）を管理するサービス。
@@ -24,7 +25,7 @@ class PixelArtPaletteService extends ChangeNotifier {
 
   Future<void> init() async {
     final prefs = await SharedPreferences.getInstance();
-    final raw = prefs.getStringList(_prefsKey) ?? const [];
+    final raw = prefs.readStringList(_prefsKey) ?? const [];
     _palettes
       ..clear()
       ..addAll(

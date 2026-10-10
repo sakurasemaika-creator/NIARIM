@@ -6,6 +6,7 @@ import 'package:path_provider/path_provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../models/asset_tags.dart';
 import '../models/tone.dart';
+import '../utils/tolerant_preferences.dart';
 
 class ToneFolder {
   final String id;
@@ -420,7 +421,7 @@ class ToneService extends ChangeNotifier {
 
   Future<void> init() async {
     final prefs = await SharedPreferences.getInstance();
-    final raw = prefs.getStringList(_prefsKey);
+    final raw = prefs.readStringList(_prefsKey);
     _tones.clear();
     if (raw == null) {
       _tones.addAll(_defaultTones());
@@ -477,7 +478,7 @@ class ToneService extends ChangeNotifier {
       }
       if (changed) await _persist();
     }
-    final foldersRaw = prefs.getStringList(_foldersKey);
+    final foldersRaw = prefs.readStringList(_foldersKey);
     _folders.clear();
     if (foldersRaw != null) {
       _folders.addAll(

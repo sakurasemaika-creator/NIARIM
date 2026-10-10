@@ -1,5 +1,6 @@
 import 'package:niarim/services/theme_service.dart';
 import 'dart:async';
+import 'dart:math' as math;
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
@@ -11,6 +12,7 @@ import '../../services/project_service.dart';
 import '../../config/font_fallback.dart';
 import '../../models/app_theme_preset.dart';
 import '../../utils/color_contrast.dart';
+import '../../utils/line_break.dart';
 
 /// 起動画面。ロゴを中央に表示し、その上に「作品広場」（コミュニティ
 /// 画面への導線。1行目に大きく「作品広場」、2行目にやや小さく
@@ -74,10 +76,36 @@ class _SplashScreenState extends State<SplashScreen> {
     final isLandscape =
         MediaQuery.orientationOf(context) == Orientation.landscape;
 
+    // 韓国語は語の途中で折り返さない（「만들기」が「만들／기」に割れていた）。
+    final korean = Localizations.localeOf(context).languageCode == 'ko';
+    String wrapped(String text) =>
+        korean ? keepKoreanWordsTogether(text) : text;
+    final communityLabel = wrapped(l10n.splashCommunityButtonTitle);
+    final communitySubLabel = wrapped(l10n.splashCommunityButtonSubtitle);
+    final createLabel = wrapped(l10n.splashCreateButton);
+    // 2つのボタンは同じ大きさに揃える。言語によって文言が折り返すと
+    // 片方だけ縦に伸びて不揃いになるため、両方の中身の高さの大きい方に
+    // 合わせる。
+    // OSの文字サイズを大きくしている端末では、文字と一緒にタイルの幅も
+    // 広げる（幅が150pxのままだと「Animation」のような長い語が1行に
+    // 入らず、文言が省略されていた）。
+    final tileWidth = _SplashActionButton.widthFor(context);
+    final tileHeight = math.max(
+      _SplashActionButton.heightFor(
+        context,
+        communityLabel,
+        communitySubLabel,
+        tileWidth,
+      ),
+      _SplashActionButton.heightFor(context, createLabel, null, tileWidth),
+    );
+
     final communityButton = _SplashActionButton(
       icon: Icons.movie_filter_outlined,
-      label: l10n.splashCommunityButtonTitle,
-      subLabel: l10n.splashCommunityButtonSubtitle,
+      label: communityLabel,
+      subLabel: communitySubLabel,
+      width: tileWidth,
+      height: tileHeight,
       // secondaryはテーマ・外観設定の「選択色」（AppThemePreset.selectionColor）
       // を直接反映する。tertiaryはColorScheme.fromSeedによる自動算出値のため、
       // ユーザーが選んだ色との対応が分かりにくくなるのを避ける。
@@ -86,7 +114,9 @@ class _SplashScreenState extends State<SplashScreen> {
     );
     final createButton = _SplashActionButton(
       icon: Icons.brush_outlined,
-      label: l10n.splashCreateButton,
+      label: createLabel,
+      width: tileWidth,
+      height: tileHeight,
       colors: [scheme.primary, scheme.primaryContainer],
       // 作品広場と同じく起動画面を履歴へ残し、Android標準の戻る操作でも
       // 「作品をつくる」ホームからこの画面へ戻れるようにする。
@@ -141,9 +171,31 @@ class _SplashScreenState extends State<SplashScreen> {
     // 縦画面はロゴを挟んで上下にボタンを積む構成、横画面は画面の縦幅が
     // 狭くボタンが上下端に迫って見えるため、ロゴを挟んで左右にボタンを
     // 並べる構成へ切り替える（縦方向の余白を確保するのが目的）。
-    final content = isLandscape
+    // 横に並べると幅が約600pxになり、小さな端末の横画面（568〜640px）では
+    // 右端の「作品をつくる」が画面外へはみ出していた。縦に積む場合も、
+    // 文字サイズを大きくしてタイルが広がると狭い画面からはみ出す。
+    // 入りきらない幅では並びごと縮めて全体を収める（入るときは等倍）。
+    // 縦画面のボタンとロゴの間隔。小さな端末（高さ568px前後）では40pxの
+    // ままだと「作品をつくる」が画面の下へはみ出してスクロールしないと
+    // 見えなかったので、収まるまで12pxを下限に詰める。
+    final textEnlarged = MediaQuery.textScalerOf(context).scale(1) > 1.0;
+    final availableHeight =
+        MediaQuery.sizeOf(context).height -
+        MediaQuery.paddingOf(context).vertical -
+        32 -
+        MediaQuery.paddingOf(context).bottom;
+    final stackedHeight =
+        2 * (tileHeight + _SplashActionButton.focusRingInset * 2) +
+        logoSize +
+        10 +
+        220 * 690 / 3470;
+    final portraitGap = ((availableHeight - stackedHeight) / 2).clamp(
+      12.0,
+      40.0,
+    );
+    final arrangement = isLandscape
         ? Row(
-            mainAxisAlignment: MainAxisAlignment.center,
+            mainAxisSize: MainAxisSize.min,
             children: [
               communityButton,
               const SizedBox(width: 40),
@@ -153,15 +205,16 @@ class _SplashScreenState extends State<SplashScreen> {
             ],
           )
         : Column(
-            mainAxisAlignment: MainAxisAlignment.center,
+            mainAxisSize: MainAxisSize.min,
             children: [
               communityButton,
-              const SizedBox(height: 40),
+              SizedBox(height: portraitGap),
               logo,
-              const SizedBox(height: 40),
+              SizedBox(height: portraitGap),
               createButton,
             ],
           );
+    final content = FittedBox(fit: BoxFit.scaleDown, child: arrangement);
 
     // Android標準のナビゲーションバー（戻る・ホーム・タブ一覧）の高さぶん、
     // SafeAreaの余白に加えてさらに下部の余白を確保する。端末・OSバージョン
@@ -174,12 +227,24 @@ class _SplashScreenState extends State<SplashScreen> {
       body: SafeArea(
         child: Stack(
           children: [
-            Center(
-              child: SingleChildScrollView(
-                padding: EdgeInsets.fromLTRB(24, 16, 24, 16 + bottomInset),
-                child: content,
+            // 横画面と、標準の文字サイズの縦画面は、幅と高さの両方へ収めて
+            // スクロールさせない（小さな端末でも最初から両方のボタンが
+            // 見える）。OSの文字サイズを大きくしているときは、選んだ大きさを
+            // 縮めないよう、縦に収まらない分はスクロールで届くようにする。
+            if (isLandscape || !textEnlarged)
+              Positioned.fill(
+                child: Padding(
+                  padding: EdgeInsets.fromLTRB(24, 16, 24, 16 + bottomInset),
+                  child: Center(child: content),
+                ),
+              )
+            else
+              Center(
+                child: SingleChildScrollView(
+                  padding: EdgeInsets.fromLTRB(24, 16, 24, 16 + bottomInset),
+                  child: content,
+                ),
               ),
-            ),
             // テーマの文字色と背景色が潰れていて画面が読めない状態のときだけ、
             // 固定色（白地・黒文字・黒枠）のリセットボタンを右上に出す。
             // テーマ・外観設定側でこの組み合わせは弾いているが、引き継ぎ
@@ -250,8 +315,8 @@ class _ThemeRescueButton extends StatelessWidget {
 ///
 /// [subLabel]を指定すると、[label]を1行目に大きく・太字で、[subLabel]を
 /// 2行目にやや小さく添える2行構成になる（例：「作品広場」
-/// 「投稿作品をみる」）。省略時は[label]のみの1行構成（[createButton]
-/// が使う従来通りの表示）。
+/// 「投稿作品をみる」）。省略時は[label]のみの構成。どちらも長い言語では
+/// 折り返し、タイルは[height]まで縦に伸びる（文言を省略記号で切らない）。
 ///
 /// アイコン・文字の色はテーマの「メニュー背景色」
 /// （[AppThemePreset.menuBgColor]）。既定テーマでは白で、アクセント色の
@@ -260,12 +325,24 @@ class _ThemeRescueButton extends StatelessWidget {
 /// 分かりにくいため使わない。この色は
 /// `shortcut_widget_renderer.dart`が焼くホーム画面ウィジェットの意匠とも
 /// 揃えてあり、`test/home_widget_shortcut_design_test.dart`が一致を守る。
-class _SplashActionButton extends StatelessWidget {
+///
+/// グラデーションは`Ink`で描く。`Container`の装飾で描くと、押したときの
+/// 波紋・ホバー・キーボードのフォーカス表示（いずれもMaterialの面に描かれる）
+/// がグラデーションの下に隠れ、押しても何も変わらず、Tabで選んでも
+/// どちらが選ばれているか分からなかった。
+class _SplashActionButton extends StatefulWidget {
   final IconData icon;
   final String label;
   final String? subLabel;
   final List<Color> colors;
   final VoidCallback onTap;
+
+  /// タイルの幅（[widthFor]）。
+  final double width;
+
+  /// タイルの高さの下限（2つのボタンを同じ大きさに揃えるため、
+  /// [heightFor]で求めた大きい方を両方へ渡す）。
+  final double height;
 
   const _SplashActionButton({
     required this.icon,
@@ -273,71 +350,167 @@ class _SplashActionButton extends StatelessWidget {
     this.subLabel,
     required this.colors,
     required this.onTap,
+    required this.width,
+    required this.height,
   });
+
+  static const double _width = 150;
+
+  /// キーボードのフォーカス枠のために、タイルの外周へ確保している幅。
+  static const double focusRingInset = 6;
+  static const double _radius = 24;
+  static const EdgeInsets _padding = EdgeInsets.symmetric(
+    horizontal: 14,
+    vertical: 16,
+  );
+  static const double _iconSize = 60;
+  static const double _iconGap = 12;
+  static const int _maxLines = 3;
+
+  static TextStyle _labelStyle(Color color) => TextStyle(
+    color: color,
+    fontSize: 18,
+    fontWeight: FontWeight.bold,
+    fontFamily: 'Kuramubon',
+    fontFamilyFallback: kHeadingFontFallback,
+  );
+
+  static TextStyle _subLabelStyle(Color color) => TextStyle(
+    color: color,
+    fontSize: 12,
+    fontWeight: FontWeight.normal,
+    fontFamily: 'Kuramubon',
+    fontFamilyFallback: kHeadingFontFallback,
+  );
+
+  /// タイルの幅。OSの文字サイズの倍率（2倍まで）に合わせて広げる。
+  static double widthFor(BuildContext context) =>
+      _width * MediaQuery.textScalerOf(context).scale(1).clamp(1.0, 2.0);
+
+  /// [label]・[subLabel]を幅[width]のタイルに描いたときに要る高さ
+  /// （最低でも幅と同じ）。OSの文字サイズ設定（textScaler）も含めて実際の
+  /// 描画と同じ条件で測る。
+  static double heightFor(
+    BuildContext context,
+    String label,
+    String? sub,
+    double width,
+  ) {
+    final scaler = MediaQuery.textScalerOf(context);
+    // タイルの文字はMaterialの中にあり、テーマのbodyMedium（行の高さ等）を
+    // 土台に描かれる。測るときも同じ土台へ重ねる（重ねないと行の高さの
+    // ぶん低く見積もり、長い言語でボタンの高さが揃わなかった）。
+    final base = Theme.of(context).textTheme.bodyMedium ?? const TextStyle();
+    final textWidth = width - _padding.horizontal;
+    double measure(String text, TextStyle style) {
+      final painter = TextPainter(
+        text: TextSpan(text: text, style: base.merge(style)),
+        textAlign: TextAlign.center,
+        textDirection: Directionality.of(context),
+        textScaler: scaler,
+        textHeightBehavior: DefaultTextHeightBehavior.maybeOf(context),
+        locale: Localizations.maybeLocaleOf(context),
+        maxLines: _maxLines,
+      )..layout(maxWidth: textWidth);
+      final height = painter.height;
+      painter.dispose();
+      return height;
+    }
+
+    var content =
+        _iconSize + _iconGap + measure(label, _labelStyle(Colors.white));
+    if (sub != null) content += measure(sub, _subLabelStyle(Colors.white));
+    return math.max(width, content + _padding.vertical);
+  }
+
+  @override
+  State<_SplashActionButton> createState() => _SplashActionButtonState();
+}
+
+class _SplashActionButtonState extends State<_SplashActionButton> {
+  bool _focused = false;
 
   @override
   Widget build(BuildContext context) {
-    final foreground = context.watch<ThemeService>().current.menuBgColor;
-    return Material(
-      color: Colors.transparent,
-      borderRadius: BorderRadius.circular(28),
-      elevation: 4,
-      shadowColor: colors.first.withValues(alpha: 0.5),
-      child: InkWell(
-        borderRadius: BorderRadius.circular(28),
-        onTap: onTap,
-        child: Container(
-          width: 150,
-          // OSの文字サイズ設定（textScaler）を大きくしている端末では、
-          // 中のアイコン＋ラベルが150pxに収まらず縦方向のRenderFlex
-          // オーバーフローになっていた。高さ固定をやめ「最低150px・
-          // 文字が伸びたぶんだけ縦に広がる」形にする（縦画面では
-          // SingleChildScrollView、横画面ではRowの中にあるため、
-          // 縦に伸びてもレイアウトは破綻しない）。
-          constraints: const BoxConstraints(minHeight: 150),
-          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 16),
+    final theme = context.watch<ThemeService>().current;
+    final foreground = theme.menuBgColor;
+    const radius = BorderRadius.all(
+      Radius.circular(_SplashActionButton._radius),
+    );
+    // キーボードで選んだときの枠。タイルの外側（背景の上）に描くので、
+    // 背景に対して読める文字色を使う。常に3pxの余白を取っておき、
+    // 枠の有無でボタンの位置がずれないようにする。
+    return Container(
+      padding: const EdgeInsets.all(3),
+      decoration: BoxDecoration(
+        borderRadius: const BorderRadius.all(Radius.circular(27)),
+        border: Border.all(
+          color: _focused ? theme.textColor : Colors.transparent,
+          width: 3,
+        ),
+      ),
+      child: Material(
+        color: Colors.transparent,
+        borderRadius: radius,
+        elevation: 4,
+        shadowColor: widget.colors.first.withValues(alpha: 0.5),
+        child: Ink(
           decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(24),
+            borderRadius: radius,
             gradient: LinearGradient(
-              colors: colors,
+              colors: widget.colors,
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
             ),
           ),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Icon(icon, color: foreground, size: 60),
-              const SizedBox(height: 12),
-              Text(
-                label,
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                  color: foreground,
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                  fontFamily: 'Kuramubon',
-                  fontFamilyFallback: kHeadingFontFallback,
+          // InkWellだけではスクリーンリーダーに「ボタン」と伝わらない。
+          child: Semantics(
+            button: true,
+            child: InkWell(
+              borderRadius: radius,
+              onTap: widget.onTap,
+              onFocusChange: (focused) => setState(() => _focused = focused),
+              splashColor: foreground.withValues(alpha: 0.28),
+              highlightColor: foreground.withValues(alpha: 0.14),
+              hoverColor: foreground.withValues(alpha: 0.10),
+              focusColor: foreground.withValues(alpha: 0.14),
+              child: Container(
+                width: widget.width,
+                // OSの文字サイズ設定（textScaler）を大きくしている端末や、
+                // 文言の長い言語でも収まるよう、高さは固定せず下限だけ決める
+                // （縦画面はSingleChildScrollView、横画面は縮めて収めるので、
+                // 縦に伸びてもレイアウトは破綻しない）。
+                constraints: BoxConstraints(minHeight: widget.height),
+                padding: _SplashActionButton._padding,
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(
+                      widget.icon,
+                      color: foreground,
+                      size: _SplashActionButton._iconSize,
+                    ),
+                    const SizedBox(height: _SplashActionButton._iconGap),
+                    Text(
+                      widget.label,
+                      textAlign: TextAlign.center,
+                      style: _SplashActionButton._labelStyle(foreground),
+                      maxLines: _SplashActionButton._maxLines,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    if (widget.subLabel != null)
+                      Text(
+                        widget.subLabel!,
+                        textAlign: TextAlign.center,
+                        style: _SplashActionButton._subLabelStyle(foreground),
+                        maxLines: _SplashActionButton._maxLines,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                  ],
                 ),
-                maxLines: subLabel == null ? 2 : 1,
-                overflow: TextOverflow.ellipsis,
               ),
-              if (subLabel != null)
-                Text(
-                  subLabel!,
-                  textAlign: TextAlign.center,
-                  style: TextStyle(
-                    color: foreground,
-                    fontSize: 12,
-                    fontWeight: FontWeight.normal,
-                    fontFamily: 'Kuramubon',
-                    fontFamilyFallback: kHeadingFontFallback,
-                  ),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                ),
-            ],
+            ),
           ),
         ),
       ),

@@ -8,6 +8,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../models/canvas_dock_panel.dart';
 import '../models/canvas_size_preset.dart';
 import '../models/toolbar_item.dart';
+import '../utils/tolerant_preferences.dart';
 
 class SettingsService extends ChangeNotifier {
   int _defaultFps = 12;
@@ -526,37 +527,39 @@ class SettingsService extends ChangeNotifier {
 
   Future<void> init() async {
     final prefs = await SharedPreferences.getInstance();
-    _defaultFps = prefs.getInt('default_fps') ?? 12;
-    _undoLimit = prefs.getInt('undo_limit') ?? 50;
-    _trashAutoDeleteDays = prefs.getInt('trash_auto_delete') ?? 0;
-    _language = prefs.getString('language') ?? 'ja';
+    _defaultFps = prefs.readInt('default_fps') ?? 12;
+    _undoLimit = prefs.readInt('undo_limit') ?? 50;
+    _trashAutoDeleteDays = prefs.readInt('trash_auto_delete') ?? 0;
+    _language = prefs.readString('language') ?? 'ja';
     _defaultDrawingAreaEnabled =
-        prefs.getBool('default_drawing_area_enabled') ?? false;
+        prefs.readBool('default_drawing_area_enabled') ?? false;
     _defaultDrawingAreaScale =
-        prefs.getDouble('default_drawing_area_scale') ?? 2.0;
-    _isFirstLaunch = prefs.getBool('first_launch') ?? true;
+        prefs.readDouble('default_drawing_area_scale') ?? 2.0;
+    _isFirstLaunch = prefs.readBool('first_launch') ?? true;
     // -1=自動（未設定）、0=OFF、1=ON
-    final pcModeValue = prefs.getInt('force_pc_mode') ?? -1;
+    final pcModeValue = prefs.readInt('force_pc_mode') ?? -1;
     _forcePcMode = pcModeValue == -1 ? null : pcModeValue == 1;
-    _isLeftHanded = prefs.getBool('is_left_handed') ?? false;
-    _lassoSnapToLines = prefs.getBool('lasso_snap_to_lines') ?? false;
-    _lassoGapTolerancePx =
-        (prefs.getInt('lasso_gap_tolerance_px') ?? 6).clamp(0, 12);
+    _isLeftHanded = prefs.readBool('is_left_handed') ?? false;
+    _lassoSnapToLines = prefs.readBool('lasso_snap_to_lines') ?? false;
+    _lassoGapTolerancePx = (prefs.readInt('lasso_gap_tolerance_px') ?? 6).clamp(
+      0,
+      12,
+    );
     _selectionReferenceAllVisible =
-        prefs.getBool('selection_reference_all_visible') ?? false;
-    _bucketTolerance = prefs.getDouble('bucket_tolerance') ?? 30.0;
-    _bucketExpandPx = prefs.getInt('bucket_expand_px') ?? 0;
-    _bucketFillUnderLine = prefs.getBool('bucket_fill_under_line') ?? false;
-    _holdEyedropperEnabled = prefs.getBool('hold_eyedropper_enabled') ?? true;
-    _holdEyedropperSeconds = prefs.getDouble('hold_eyedropper_seconds') ?? 0.5;
+        prefs.readBool('selection_reference_all_visible') ?? false;
+    _bucketTolerance = prefs.readDouble('bucket_tolerance') ?? 30.0;
+    _bucketExpandPx = prefs.readInt('bucket_expand_px') ?? 0;
+    _bucketFillUnderLine = prefs.readBool('bucket_fill_under_line') ?? false;
+    _holdEyedropperEnabled = prefs.readBool('hold_eyedropper_enabled') ?? true;
+    _holdEyedropperSeconds = prefs.readDouble('hold_eyedropper_seconds') ?? 0.5;
     _timelinePreviewHeightFraction =
-        prefs.getDouble('timeline_preview_height_fraction') ?? 0.42;
+        prefs.readDouble('timeline_preview_height_fraction') ?? 0.42;
     _timelineTrackHeightLevel =
-        prefs.getInt('timeline_track_height_level') ?? 4;
-    _desktopPanelWidth = prefs.getDouble('desktop_panel_width') ?? 280.0;
+        prefs.readInt('timeline_track_height_level') ?? 4;
+    _desktopPanelWidth = prefs.readDouble('desktop_panel_width') ?? 280.0;
     _desktopToolPanelWidth =
-        prefs.getDouble('desktop_tool_panel_width') ?? 280.0;
-    final toolOptionDockOrderNames = prefs.getStringList(
+        prefs.readDouble('desktop_tool_panel_width') ?? 280.0;
+    final toolOptionDockOrderNames = prefs.readStringList(
       'tool_option_dock_order',
     );
     if (toolOptionDockOrderNames != null &&
@@ -571,7 +574,7 @@ class SettingsService extends ChangeNotifier {
       }
       _toolOptionDockOrder = restored;
     }
-    final rightDockOrderNames = prefs.getStringList('right_dock_order');
+    final rightDockOrderNames = prefs.readStringList('right_dock_order');
     if (rightDockOrderNames != null && rightDockOrderNames.isNotEmpty) {
       final map = CanvasDockPanel.values.asNameMap();
       final restored = rightDockOrderNames
@@ -583,7 +586,7 @@ class SettingsService extends ChangeNotifier {
       }
       _rightDockOrder = restored;
     }
-    final sizePresetStrings = prefs.getStringList('custom_size_presets') ?? [];
+    final sizePresetStrings = prefs.readStringList('custom_size_presets') ?? [];
     _customSizePresets = [];
     for (final encoded in sizePresetStrings) {
       try {
@@ -598,8 +601,8 @@ class SettingsService extends ChangeNotifier {
       }
     }
     _endCardDefaultHiddenForPremium =
-        prefs.getBool('endcard_default_hidden_for_premium') ?? false;
-    final toolbarOrderNames = prefs.getStringList('toolbar_order');
+        prefs.readBool('endcard_default_hidden_for_premium') ?? false;
+    final toolbarOrderNames = prefs.readStringList('toolbar_order');
     if (toolbarOrderNames != null && toolbarOrderNames.isNotEmpty) {
       final map = ToolbarItemId.values.asNameMap();
       final restored = toolbarOrderNames
@@ -612,12 +615,12 @@ class SettingsService extends ChangeNotifier {
       }
       _toolbarOrder = restored;
     }
-    final hiddenNames = prefs.getStringList('toolbar_hidden') ?? const [];
+    final hiddenNames = prefs.readStringList('toolbar_hidden') ?? const [];
     _hiddenToolbarItems = hiddenNames
         .map((n) => ToolbarItemId.values.asNameMap()[n])
         .whereType<ToolbarItemId>()
         .toSet();
-    final dockedPanelNames = prefs.getStringList('default_docked_panels');
+    final dockedPanelNames = prefs.readStringList('default_docked_panels');
     if (dockedPanelNames != null) {
       final map = CanvasDockPanel.values.asNameMap();
       _defaultDockedPanels = dockedPanelNames
@@ -626,33 +629,33 @@ class SettingsService extends ChangeNotifier {
           .toSet();
     }
     _twoFingerTap = _gestureActionFromName(
-      prefs.getString('gesture_two_finger_tap'),
+      prefs.readString('gesture_two_finger_tap'),
       GestureAction.undo,
     );
     _threeFingerTap = _gestureActionFromName(
-      prefs.getString('gesture_three_finger_tap'),
+      prefs.readString('gesture_three_finger_tap'),
       GestureAction.redo,
     );
     _fourOrMoreFingerTap = _gestureActionFromName(
-      prefs.getString('gesture_four_or_more_finger_tap'),
+      prefs.readString('gesture_four_or_more_finger_tap'),
       GestureAction.none,
     );
     _twoFingerSwipe = _gestureActionFromName(
-      prefs.getString('gesture_two_finger_swipe'),
+      prefs.readString('gesture_two_finger_swipe'),
       GestureAction.frameMove,
     );
     _longPress = _gestureActionFromName(
-      prefs.getString('gesture_long_press'),
+      prefs.readString('gesture_long_press'),
       GestureAction.eyedropper,
     );
-    _palmRejectionEnabled = prefs.getBool('palm_rejection_enabled') ?? true;
-    _penPressureEnabled = prefs.getBool('pen_pressure_enabled') ?? true;
+    _palmRejectionEnabled = prefs.readBool('palm_rejection_enabled') ?? true;
+    _penPressureEnabled = prefs.readBool('pen_pressure_enabled') ?? true;
     _penPressureCurve =
-        PenPressureCurve.values.asNameMap()[prefs.getString(
+        PenPressureCurve.values.asNameMap()[prefs.readString(
           'pen_pressure_curve',
         )] ??
         PenPressureCurve.normal;
-    final rawPoints = prefs.getStringList('pen_pressure_custom_points');
+    final rawPoints = prefs.readStringList('pen_pressure_custom_points');
     if (rawPoints != null && rawPoints.length >= 4 && rawPoints.length.isEven) {
       final values = rawPoints.map((s) => double.tryParse(s)).toList();
       if (values.every((v) => v != null)) {
@@ -665,18 +668,18 @@ class SettingsService extends ChangeNotifier {
     } else {
       // 旧バージョン（単一exponent値）からの引き継ぎ：以前の指数カーブの
       // 形状を、新しい制御点方式の3点（始点・中間点・終点）で近似する。
-      final legacyExponent = prefs.getDouble('pen_pressure_custom_exponent');
+      final legacyExponent = prefs.readDouble('pen_pressure_custom_exponent');
       if (legacyExponent != null && legacyExponent != 1.0) {
         final midY = math.pow(0.5, legacyExponent).toDouble().clamp(0.0, 1.0);
         _customPressurePoints = [(0.0, 0.0), (0.5, midY), (1.0, 1.0)];
       }
     }
     _penButton1 = _gestureActionFromName(
-      prefs.getString('pen_button_1'),
+      prefs.readString('pen_button_1'),
       GestureAction.eraserToggle,
     );
     _penButton2 = _gestureActionFromName(
-      prefs.getString('pen_button_2'),
+      prefs.readString('pen_button_2'),
       GestureAction.eyedropper,
     );
   }

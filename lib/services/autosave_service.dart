@@ -4,6 +4,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../engine/niapro_serializer.dart';
 import '../engine/undo_manager.dart';
 import 'project_service.dart';
+import '../utils/tolerant_preferences.dart';
 
 /// 自動保存（クラッシュ・ファイル破損時の復元専用）。
 /// 最大3件固定・古い順に自動削除。手動保存（セーブスロット・セーブツリー）とは完全に独立。
@@ -40,11 +41,11 @@ class AutosaveService extends ChangeNotifier {
 
   Future<void> init() async {
     final prefs = await SharedPreferences.getInstance();
-    final count = prefs.getInt('autosave_count') ?? 0;
+    final count = prefs.readInt('autosave_count') ?? 0;
     for (int i = 0; i < count; i++) {
-      final projectId = prefs.getString('autosave_${i}_project');
-      final savedAtMs = prefs.getInt('autosave_${i}_savedAt');
-      final slotIndex = prefs.getInt('autosave_${i}_slot');
+      final projectId = prefs.readString('autosave_${i}_project');
+      final savedAtMs = prefs.readInt('autosave_${i}_savedAt');
+      final slotIndex = prefs.readInt('autosave_${i}_slot');
       if (projectId != null && savedAtMs != null && slotIndex != null) {
         _slots.add(
           AutosaveSlot(
@@ -55,7 +56,7 @@ class AutosaveService extends ChangeNotifier {
         );
       }
     }
-    _nextSlotIndex = prefs.getInt('autosave_next_slot') ?? 0;
+    _nextSlotIndex = prefs.readInt('autosave_next_slot') ?? 0;
     notifyListeners();
   }
 

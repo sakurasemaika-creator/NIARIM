@@ -1,6 +1,7 @@
 import 'dart:io' show Platform;
 import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import '../utils/tolerant_preferences.dart';
 
 class PerformanceService extends ChangeNotifier {
   QualityLevel _qualityLevel = QualityLevel.medium;
@@ -84,7 +85,7 @@ class PerformanceService extends ChangeNotifier {
     final prefs = await SharedPreferences.getInstance();
 
     // 保存済み品質レベルを復元
-    final savedLevel = prefs.getString('quality_level');
+    final savedLevel = prefs.readString('quality_level');
     if (savedLevel != null) {
       _qualityLevel = QualityLevel.values.firstWhere(
         (e) => e.name == savedLevel,
@@ -98,7 +99,7 @@ class PerformanceService extends ChangeNotifier {
     }
 
     // 初回判定プリセットを保存・復元
-    final savedDefault = prefs.getString('default_preset');
+    final savedDefault = prefs.readString('default_preset');
     if (savedDefault != null) {
       _defaultPreset = QualityLevel.values.firstWhere(
         (e) => e.name == savedDefault,
@@ -113,17 +114,17 @@ class PerformanceService extends ChangeNotifier {
     }
 
     // カスタム設定を復元（保存済みがあれば）
-    final hasCustom = prefs.getBool('custom_saved') ?? false;
+    final hasCustom = prefs.readBool('custom_saved') ?? false;
     if (hasCustom) {
-      _customTiltEnabled = prefs.getBool('custom_tilt') ?? false;
-      _customShowPrev = prefs.getBool('custom_show_prev') ?? true;
-      _customShowNext = prefs.getBool('custom_show_next') ?? true;
-      _customOnionSkinPrev = prefs.getInt('custom_onion_prev') ?? 3;
-      _customOnionSkinNext = prefs.getInt('custom_onion_next') ?? 3;
-      _customSaveMode = (prefs.getString('custom_save_mode') == 'tree')
+      _customTiltEnabled = prefs.readBool('custom_tilt') ?? false;
+      _customShowPrev = prefs.readBool('custom_show_prev') ?? true;
+      _customShowNext = prefs.readBool('custom_show_next') ?? true;
+      _customOnionSkinPrev = prefs.readInt('custom_onion_prev') ?? 3;
+      _customOnionSkinNext = prefs.readInt('custom_onion_next') ?? 3;
+      _customSaveMode = (prefs.readString('custom_save_mode') == 'tree')
           ? SaveMode.tree
           : SaveMode.slot;
-      _customSlotCount = prefs.getInt('custom_slot_count') ?? 10;
+      _customSlotCount = prefs.readInt('custom_slot_count') ?? 10;
     } else {
       // 初回のみ：判定されたプリセット値をカスタム初期値としてコピー
       _copyPresetValues(_defaultPreset);

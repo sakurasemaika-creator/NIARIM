@@ -8,6 +8,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import '../models/asset_tags.dart';
 import '../models/stamp.dart';
+import '../utils/tolerant_preferences.dart';
 
 class StampFolder {
   final String id;
@@ -147,7 +148,7 @@ class StampService extends ChangeNotifier {
 
   Future<void> init() async {
     final prefs = await SharedPreferences.getInstance();
-    final raw = prefs.getStringList(_prefsKey);
+    final raw = prefs.readStringList(_prefsKey);
     _stamps.clear();
     if (raw == null) {
       _stamps.addAll(_defaultStamps());
@@ -193,7 +194,7 @@ class StampService extends ChangeNotifier {
       }
       if (changed) await _persist();
     }
-    final foldersRaw = prefs.getStringList(_foldersKey);
+    final foldersRaw = prefs.readStringList(_foldersKey);
     _folders.clear();
     if (foldersRaw != null) {
       _folders.addAll(

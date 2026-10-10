@@ -4,6 +4,7 @@ import 'package:flutter/foundation.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../models/color_palette.dart';
+import '../utils/tolerant_preferences.dart';
 
 /// カラーピッカーの「最近使った色」「パレット」を管理する。
 /// - 最近使った色：直近10色をタップで即座に選択できるよう保持する。
@@ -27,12 +28,12 @@ class PaletteService extends ChangeNotifier {
 
   Future<void> init() async {
     final prefs = await SharedPreferences.getInstance();
-    final rawRecent = prefs.getStringList(_recentKey) ?? const [];
+    final rawRecent = prefs.readStringList(_recentKey) ?? const [];
     _recentColors
       ..clear()
       ..addAll(rawRecent.map(int.parse));
 
-    final rawPalettes = prefs.getStringList(_palettesKey) ?? const [];
+    final rawPalettes = prefs.readStringList(_palettesKey) ?? const [];
     _palettes
       ..clear()
       ..addAll(
@@ -44,7 +45,7 @@ class PaletteService extends ChangeNotifier {
       // 初回起動時：デフォルトパレットを1つ用意する
       _palettes.add(const ColorPalette(id: 'default', name: 'マイパレット'));
     }
-    _activePaletteId = prefs.getString(_activeKey) ?? _palettes.first.id;
+    _activePaletteId = prefs.readString(_activeKey) ?? _palettes.first.id;
     if (!_palettes.any((p) => p.id == _activePaletteId)) {
       _activePaletteId = _palettes.first.id;
     }

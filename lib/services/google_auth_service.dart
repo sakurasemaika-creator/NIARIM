@@ -31,6 +31,11 @@ class GoogleAuthService extends ChangeNotifier {
   final GoogleSignIn _signIn;
   StreamSubscription<GoogleSignInAuthenticationEvent>? _authSubscription;
 
+  /// GoogleSignInごとの`initialize`。SDKは1プロセスにつき1回しか
+  /// `initialize`を呼べない（2回目は未定義動作）ため、起動に失敗して
+  /// Serviceを作り直した場合も、最初の呼び出しの結果を使い回す。
+  static final Expando<Future<void>> _sdkInitializations = Expando();
+
   GoogleSignInAccount? _account;
   bool _initialized = false;
   bool _authOperationInProgress = false;
@@ -56,7 +61,7 @@ class GoogleAuthService extends ChangeNotifier {
       return;
     }
 
-    await _signIn.initialize(serverClientId: googleClientId);
+    await _initializeSdkOnce();
     _initialized = true;
 
     _authSubscription = _signIn.authenticationEvents.listen(
@@ -83,6 +88,22 @@ class GoogleAuthService extends ChangeNotifier {
         _lastError = error;
         notifyListeners();
       }
+    }
+  }
+
+  Future<void> _initializeSdkOnce() async {
+    final pending =
+        _sdkInitializations[_signIn] ??
+        _signIn.initialize(serverClientId: googleClientId);
+    _sdkInitializations[_signIn] = pending;
+    try {
+      await pending;
+    } catch (_) {
+      // 失敗した初期化は使い回さず、次の起動の試行でやり直す。
+      if (identical(_sdkInitializations[_signIn], pending)) {
+        _sdkInitializations[_signIn] = null;
+      }
+      rethrow;
     }
   }
 

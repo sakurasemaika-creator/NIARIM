@@ -2982,5 +2982,14 @@
   "canvasAutofillCheckParts": "Check parts",
   "canvasAutofillCheckSilhouette": "Check silhouette",
   "canvasBackgroundColorChoices": "White / Black / Transparent / Beige",
-  "canvasTimelineModeTooltip": "Timeline mode"
+  "canvasTimelineModeTooltip": "Timeline mode",
+  "startupFailedTitle": "NIARIM couldn’t start",
+  "startupFailedBody": "Your saved works and settings are still there. Please try again. If this keeps happening, copy the details and send them to us.",
+  "startupFailedRetry": "Try again",
+  "startupFailedRetrying": "Starting…",
+  "startupFailedCopyDetails": "Copy details",
+  "startupFailedDetailsCopied": "Details copied",
+  "startupFailedDetails": "Details",
+  "errorViewTitle": "Something went wrong while showing this part",
+  "errorViewBody": "Your work in progress is kept. Go back to the previous screen and try again. Sending us the text below helps us find the cause."
 }

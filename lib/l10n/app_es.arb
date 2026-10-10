@@ -2975,5 +2975,14 @@
   "canvasAutofillCheckParts": "Comprobar las partes",
   "canvasAutofillCheckSilhouette": "Comprobar la silueta",
   "canvasBackgroundColorChoices": "Blanco / Negro / Transparente / Beige",
-  "canvasTimelineModeTooltip": "Modo línea de tiempo"
+  "canvasTimelineModeTooltip": "Modo línea de tiempo",
+  "startupFailedTitle": "No se pudo iniciar NIARIM",
+  "startupFailedBody": "Tus obras y ajustes guardados siguen intactos. Vuelve a intentarlo. Si sigue ocurriendo, copia los detalles y envíanoslos.",
+  "startupFailedRetry": "Volver a intentarlo",
+  "startupFailedRetrying": "Iniciando…",
+  "startupFailedCopyDetails": "Copiar detalles",
+  "startupFailedDetailsCopied": "Detalles copiados",
+  "startupFailedDetails": "Detalles",
+  "errorViewTitle": "Se produjo un error al mostrar esta parte",
+  "errorViewBody": "Tu trabajo en curso se conserva. Vuelve a la pantalla anterior e inténtalo de nuevo. Si nos envías el texto de abajo, nos ayudarás a encontrar la causa."
 }

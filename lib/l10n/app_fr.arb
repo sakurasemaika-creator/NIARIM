@@ -2975,5 +2975,14 @@
   "canvasAutofillCheckParts": "Vérifier les parties",
   "canvasAutofillCheckSilhouette": "Vérifier la silhouette",
   "canvasBackgroundColorChoices": "Blanc / Noir / Transparent / Beige",
-  "canvasTimelineModeTooltip": "Mode timeline"
+  "canvasTimelineModeTooltip": "Mode timeline",
+  "startupFailedTitle": "Impossible de démarrer NIARIM",
+  "startupFailedBody": "Vos œuvres et réglages enregistrés sont intacts. Veuillez réessayer. Si le problème persiste, copiez les détails et envoyez-les-nous.",
+  "startupFailedRetry": "Réessayer",
+  "startupFailedRetrying": "Démarrage…",
+  "startupFailedCopyDetails": "Copier les détails",
+  "startupFailedDetailsCopied": "Détails copiés",
+  "startupFailedDetails": "Détails",
+  "errorViewTitle": "Une erreur s’est produite lors de l’affichage de cette partie",
+  "errorViewBody": "Votre travail en cours est conservé. Revenez à l’écran précédent et réessayez. Nous envoyer le texte ci-dessous nous aidera à en trouver la cause."
 }

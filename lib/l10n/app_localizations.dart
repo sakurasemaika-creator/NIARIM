@@ -13090,6 +13090,60 @@ abstract class AppLocalizations {
   /// In ja, this message translates to:
   /// **'タイムラインモード'**
   String get canvasTimelineModeTooltip;
+
+  /// No description provided for @startupFailedTitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'NIARIMを起動できませんでした'**
+  String get startupFailedTitle;
+
+  /// No description provided for @startupFailedBody.
+  ///
+  /// In ja, this message translates to:
+  /// **'保存されている作品や設定はそのまま残っています。もう一度お試しください。何度も起きる場合は、詳細をコピーして開発元へお知らせください。'**
+  String get startupFailedBody;
+
+  /// No description provided for @startupFailedRetry.
+  ///
+  /// In ja, this message translates to:
+  /// **'もう一度試す'**
+  String get startupFailedRetry;
+
+  /// No description provided for @startupFailedRetrying.
+  ///
+  /// In ja, this message translates to:
+  /// **'起動しています…'**
+  String get startupFailedRetrying;
+
+  /// No description provided for @startupFailedCopyDetails.
+  ///
+  /// In ja, this message translates to:
+  /// **'詳細をコピー'**
+  String get startupFailedCopyDetails;
+
+  /// No description provided for @startupFailedDetailsCopied.
+  ///
+  /// In ja, this message translates to:
+  /// **'詳細をコピーしました'**
+  String get startupFailedDetailsCopied;
+
+  /// No description provided for @startupFailedDetails.
+  ///
+  /// In ja, this message translates to:
+  /// **'詳細'**
+  String get startupFailedDetails;
+
+  /// No description provided for @errorViewTitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'この部分の表示でエラーが発生しました'**
+  String get errorViewTitle;
+
+  /// No description provided for @errorViewBody.
+  ///
+  /// In ja, this message translates to:
+  /// **'作業中のデータは保持されています。前の画面へ戻ってからもう一度お試しください。以下の内容を開発元へお知らせいただけると原因の特定に役立ちます。'**
+  String get errorViewBody;
 }
 
 class _AppLocalizationsDelegate

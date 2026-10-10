@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../models/app_theme_preset.dart';
 import '../utils/color_contrast.dart';
+import '../utils/tolerant_preferences.dart';
 
 class ThemeService extends ChangeNotifier {
   static const _prefsPresetsKey = 'theme_presets';
@@ -308,7 +309,7 @@ class ThemeService extends ChangeNotifier {
 
   Future<void> init() async {
     final prefs = await SharedPreferences.getInstance();
-    final raw = prefs.getStringList(_prefsPresetsKey);
+    final raw = prefs.readStringList(_prefsPresetsKey);
     if (raw == null || raw.isEmpty) {
       _presets.addAll(_builtInPresets);
     } else {
@@ -334,7 +335,7 @@ class ThemeService extends ChangeNotifier {
       if (missing.isNotEmpty) _presets.addAll(missing);
     }
     // 現在の色は「一覧のどれか」とは限らないため、保存したJSONから復元する。
-    final currentJson = prefs.getString(_prefsCurrentJsonKey);
+    final currentJson = prefs.readString(_prefsCurrentJsonKey);
     AppThemePreset? restoredCurrent;
     if (currentJson != null) {
       try {

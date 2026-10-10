@@ -1,5 +1,6 @@
 import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import '../utils/tolerant_preferences.dart';
 
 /// 初回使用時の吹き出し説明の表示済み管理。
 /// 各機能ごとに一意なキーで「表示済みかどうか」を永続化する。表示は一度のみ・
@@ -11,7 +12,7 @@ class FirstUseTooltipService extends ChangeNotifier {
   Future<void> init() async {
     try {
       final prefs = await SharedPreferences.getInstance();
-      _seen.addAll(prefs.getStringList(_prefsKey) ?? const []);
+      _seen.addAll(prefs.readStringList(_prefsKey) ?? const []);
     } catch (_) {
       // 読み込み失敗時は「未表示」として続行（多少多めに出るだけで実害は小さい）
     }

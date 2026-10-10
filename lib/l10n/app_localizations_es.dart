@@ -7508,4 +7508,33 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get canvasTimelineModeTooltip => 'Modo línea de tiempo';
+
+  @override
+  String get startupFailedTitle => 'No se pudo iniciar NIARIM';
+
+  @override
+  String get startupFailedBody =>
+      'Tus obras y ajustes guardados siguen intactos. Vuelve a intentarlo. Si sigue ocurriendo, copia los detalles y envíanoslos.';
+
+  @override
+  String get startupFailedRetry => 'Volver a intentarlo';
+
+  @override
+  String get startupFailedRetrying => 'Iniciando…';
+
+  @override
+  String get startupFailedCopyDetails => 'Copiar detalles';
+
+  @override
+  String get startupFailedDetailsCopied => 'Detalles copiados';
+
+  @override
+  String get startupFailedDetails => 'Detalles';
+
+  @override
+  String get errorViewTitle => 'Se produjo un error al mostrar esta parte';
+
+  @override
+  String get errorViewBody =>
+      'Tu trabajo en curso se conserva. Vuelve a la pantalla anterior e inténtalo de nuevo. Si nos envías el texto de abajo, nos ayudarás a encontrar la causa.';
 }

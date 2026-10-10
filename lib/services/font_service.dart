@@ -7,6 +7,7 @@ import 'package:path_provider/path_provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../models/downloadable_font.dart';
 import '../models/font_asset.dart';
+import '../utils/tolerant_preferences.dart';
 
 /// フォント管理サービス（ユーザーフォント追加）。
 /// アプリ全体で共有するFonts/フォルダにTTF/OTFを保存し、FontLoaderで
@@ -43,7 +44,7 @@ class FontService extends ChangeNotifier {
     }
     try {
       final prefs = await SharedPreferences.getInstance();
-      final raw = prefs.getString(_prefsKey);
+      final raw = prefs.readString(_prefsKey);
       if (raw != null) {
         final list = jsonDecode(raw) as List<dynamic>;
         _fonts.addAll(
