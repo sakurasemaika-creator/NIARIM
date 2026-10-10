@@ -454,6 +454,90 @@ void main() {
       tiles.dispose();
     },
   );
+  // While drawing, each move redraws only what changed, on mask tiles
+  // reused from sections drawn again; the strand must end exactly as if it
+  // had been drawn in one go.
+  for (final mode in HairFoldMode.values) {
+    for (final pressure in [false, true]) {
+      test('${mode.name}${pressure ? ' with pressure' : ''}: drawn point by '
+          'point, it ends exactly as drawn at once', () {
+        final brush = Brush(
+          id: 'fold',
+          name: 'fold',
+          size: 36,
+          opacity: 100,
+          spacing: 2,
+          stabilization: false,
+          stabilizationStrength: 0,
+          pixelMode: false,
+          strokeDecay: false,
+          fadeMode: FadeMode.off,
+          outlineEnabled: true,
+          outlineWidth: 2,
+          foldEnabled: true,
+          foldMode: mode,
+        );
+        final arc = mode == HairFoldMode.crescent;
+        final points = [
+          for (var i = 0; i < 200; i++)
+            () {
+              final t = i / 199;
+              final scale = pressure
+                  ? .55 + .45 * math.pow(math.sin(i / 7), 2)
+                  : 1.0;
+              return HairRibbonPoint(
+                arc
+                    ? Offset(
+                        260 + 200 * math.cos(math.pi * (t - .5)),
+                        300 + 200 * math.sin(math.pi * (t - .5)),
+                      )
+                    : Offset(
+                        300 + 180 * math.sin(t * math.pi * 5),
+                        40 + 500 * t,
+                      ),
+                36 * scale,
+                pressure ? .6 + .4 * math.cos(i / 11).abs() : 1,
+                scale,
+              );
+            }(),
+        ];
+        Uint8List pixels(TileManager tiles) {
+          final all = BytesBuilder();
+          for (var ty = 0; ty < tiles.tilesY; ty++) {
+            for (var tx = 0; tx < tiles.tilesX; tx++) {
+              all.add(
+                tiles.getTile('test', tx, ty) ??
+                    Uint8List(TileManager.tileSize * TileManager.tileSize * 4),
+              );
+            }
+          }
+          return all.toBytes();
+        }
+
+        const fill = Color(0xfff0d0a0);
+        final moving = TileManager(canvasWidth: 600, canvasHeight: 600);
+        final raster = HairFoldRaster(moving, 'test');
+        for (var n = 2; n <= points.length; n++) {
+          raster.render(
+            points: points.sublist(0, n),
+            brush: brush,
+            fillColor: fill,
+            taperEnd: n == points.length,
+          );
+        }
+        final once = TileManager(canvasWidth: 600, canvasHeight: 600);
+        HairFoldRaster(
+          once,
+          'test',
+        ).render(points: points, brush: brush, fillColor: fill, taperEnd: true);
+        final drawn = pixels(moving);
+        expect(drawn.any((v) => v != 0), isTrue);
+        expect(drawn, orderedEquals(pixels(once)));
+        moving.dispose();
+        once.dispose();
+      });
+    }
+  }
   for (final opacity in [0.0, 0.1]) {
     test('front pressure opacity $opacity cannot erase opaque rear ink', () {
       final tiles = draw(frontOpacity: opacity);

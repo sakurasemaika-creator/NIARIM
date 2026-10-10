@@ -58,6 +58,9 @@ class HairFoldRaster {
   final String layer;
   final Map<String, Uint8List?> _before = {};
   final Map<int, _RunCache> _runs = {};
+  // Mask tiles of sections drawn again, kept to draw the next ones on: they
+  // are large, and a crescent being drawn is drawn again on every move.
+  final List<_MaskTile> _spareMasks = [];
   Brush? _cachedBrush;
   bool _crescentActive = false;
   // Set once this stroke has folded. The fold surface then keeps drawing the
@@ -68,6 +71,7 @@ class HairFoldRaster {
   final Map<int, _SurfaceTile> _surfaces = {};
   Map<int, Set<int>> _runTiles = {};
   Map<int, (double, int, double, double)> _runSignatures = {};
+  Map<int, int> _runEnds = {};
 
   /// Fold line starts by (repeat, vertex, front end, back end), with the
   /// samples they were found from: while drawing, only new folds search.
@@ -150,6 +154,16 @@ class HairFoldRaster {
       _active &&
       (_cachedBrush?.foldMode != HairFoldMode.crescent || _crescentActive);
 
+  _MaskTile _blankMask() =>
+      _spareMasks.isEmpty ? _MaskTile() : (_spareMasks.removeLast()..reset());
+
+  void _spare(Map<int, _MaskTile> masks) {
+    for (final m in masks.values) {
+      if (_spareMasks.length >= 16) return;
+      _spareMasks.add(m);
+    }
+  }
+
   void rememberTile(int tx, int ty) {
     final key = '$tx,$ty';
     if (_before.containsKey(key)) return;
@@ -215,6 +229,7 @@ class HairFoldRaster {
       _surfaces.clear();
       _runTiles = {};
       _runSignatures = {};
+      _runEnds = {};
       _foldStarts.clear();
       _creases = const [];
       _cachedBrush = brush;
@@ -335,6 +350,7 @@ class HairFoldRaster {
     final redrawn = <int, _Area>{};
     final runTiles = <int, Set<int>>{};
     final runSignatures = <int, (double, int, double, double)>{};
+    final runEnds = <int, int>{};
     final creases = <_CreaseSegment>[];
     var repeatIndex = 0;
     final foldStartsUsed = <(int, int, int, int)>{};
@@ -552,7 +568,16 @@ class HairFoldRaster {
       });
       // Each section with the area it changed this move: null when its mask
       // was rebuilt, otherwise only the area around its appended segments.
-      final built = <(_RibbonRun, Map<int, _MaskTile>, Map<int, _Area>?)>[];
+      // With the area its mask covered before, when it was drawn again.
+      final built =
+          <
+            (
+              _RibbonRun,
+              Map<int, _MaskTile>,
+              Map<int, _Area>?,
+              Map<int, _Area>?,
+            )
+          >[];
       for (final run in runs) {
         // A crescent is a pair of bows across the same authored chord.
         // Parallel normal offsets make the inside sharper than the input.
@@ -865,8 +890,14 @@ class HairFoldRaster {
               }
             }
           }
+          _spare(envelope);
         }
+        Map<int, _Area>? replaced;
         if (canCache) {
+          if (cached != null && !reusable) {
+            replaced = _extentOf(cached.mask);
+            _spare(cached.mask);
+          }
           _runs[run.start] = _RunCache(
             run.end,
             points[run.start],
@@ -883,6 +914,7 @@ class HairFoldRaster {
               : segmentStart > run.end
               ? const <int, _Area>{}
               : _areaAround(points, segmentStart - 1, run.end, brush),
+          replaced,
         ));
       }
       final dirty = <int, _Area>{};
@@ -892,7 +924,7 @@ class HairFoldRaster {
         }
       }
 
-      for (final (run, mask, changed) in built) {
+      for (final (run, mask, changed, replaced) in built) {
         final keys = mask.keys.toSet();
         final signature = (
           run.depth,
@@ -903,16 +935,55 @@ class HairFoldRaster {
         if (offset == 0) {
           runTiles[run.start] = keys;
           runSignatures[run.start] = signature;
+          runEnds[run.start] = run.end;
         }
         final previous = _runTiles[run.start];
+        final was = _runSignatures[run.start];
         if (!incremental ||
-            changed == null ||
+            (changed == null && replaced == null) ||
             previous == null ||
-            _runSignatures[run.start] != signature) {
+            was == null ||
+            was.$1 != signature.$1 ||
+            was.$2 != signature.$2 ||
+            (was.$4 != signature.$4 && _runEnds[run.start] != run.end)) {
           markWhole(keys);
           if (previous != null) markWhole(previous);
         } else {
-          _mergeAreas(dirty, changed);
+          // Drawn again, or where a fold hides its own edge moved: only in
+          // the tiles it is drawn on, as when they were all drawn again.
+          final drawn = changed == null || was != signature
+              ? {...keys, ...previous}
+              : null;
+          void mark(Map<int, _Area> areas) => _mergeAreas(
+            dirty,
+            drawn == null
+                ? areas
+                : {
+                    for (final MapEntry(:key, :value) in areas.entries)
+                      if (drawn.contains(key)) key: value,
+                  },
+          );
+          // What its mask covers now, and covered before when it was drawn
+          // again (a crescent being drawn, whose whole shape follows its
+          // newest point): anywhere else this section is not drawn.
+          mark(changed ?? _extentOf(mask));
+          if (replaced != null) mark(replaced);
+          // Where a fold hides the section's own edge moved (its fold line
+          // starts further on as the stroke grows): only pixels that close
+          // to the fold change.
+          for (final (index, before, after) in [
+            (run.start, was.$3, signature.$3),
+            (run.end, was.$4, signature.$4),
+          ]) {
+            if (before == after) continue;
+            final width = points[index].width;
+            final reach = math.max(
+              before < 0 ? width : before,
+              after < 0 ? width : after,
+            );
+            final at = points[index].position;
+            mark(_areaOf(at.dx, at.dy, at.dx, at.dy, reach + 2));
+          }
         }
       }
       if (incremental) {
@@ -925,7 +996,7 @@ class HairFoldRaster {
           final surface = incremental
               ? (result[key]?..reset()) ?? (result[key] = _SurfaceTile())
               : result.putIfAbsent(key, _SurfaceTile.new);
-          for (final (run, mask, _) in built) {
+          for (final (run, mask, _, _) in built) {
             final m = mask[key];
             if (m != null) {
               _composite(surface, key, m, run, points, brush, hidden);
@@ -1009,12 +1080,17 @@ class HairFoldRaster {
     for (final c in creases) {
       _crease(result, c.a, c.b, c.width, c.owner, c.opacity);
     }
-    _runs.removeWhere((start, _) => !indices.contains(start));
+    _runs.removeWhere((start, run) {
+      if (indices.contains(start)) return false;
+      _spare(run.mask);
+      return true;
+    });
     _foldStarts.removeWhere((key, _) => !foldStartsUsed.contains(key));
     final firstComposite = !incremental;
     _active = true;
     _runTiles = runTiles;
     _runSignatures = runSignatures;
+    _runEnds = runEnds;
     _creases = creases;
     // The first composite replaces the ordinary stroke drawn so far. Later
     // moves rewrite only the changed area of each changed tile, through
@@ -1022,10 +1098,15 @@ class HairFoldRaster {
     if (firstComposite) tiles.applyTileSnapshot(layer, _before);
     final outline = Color(brush.outlineColor);
     // Per-pixel Color.lerp allocates; mix the channels directly instead.
-    final fillChannels = [fillColor.r, fillColor.g, fillColor.b, fillColor.a];
-    final outlineChannels = [outline.r, outline.g, outline.b, outline.a];
-    double channel(int c, double t) =>
-        (fillChannels[c] * (1.0 - t) + outlineChannels[c] * t).clamp(0.0, 1.0);
+    final fillR = fillColor.r, fillG = fillColor.g;
+    final fillB = fillColor.b, fillA = fillColor.a;
+    final lineR = outline.r, lineG = outline.g;
+    final lineB = outline.b, lineA = outline.a;
+    double unit(double v) => v < 0
+        ? 0.0
+        : v > 1
+        ? 1.0
+        : v;
     final behind = !brush.outlineKeepOverlap;
     final keys = firstComposite ? result.keys.toList() : redrawn.keys.toList();
     for (final key in keys) {
@@ -1057,13 +1138,10 @@ class HairFoldRaster {
             p <= row * _size + lastColumn;
             p++
           ) {
-            if (s.cover[p] <= 0) continue;
-            final perimeter = ((s.outer[p] - s.fill[p]) / s.cover[p]).clamp(
-              0.0,
-              1.0,
-            );
-            var mix = math.max(s.outline[p], perimeter).clamp(0.0, 1.0);
             var cover = s.cover[p];
+            if (cover <= 0) continue;
+            final perimeter = unit((s.outer[p] - s.fill[p]) / cover);
+            var mix = unit(math.max(s.outline[p], perimeter));
             if (behind && mix > 0) {
               // Not keeping overlaps, the strand's outline and fold lines go
               // behind what the layer showed before the stroke (restored just
@@ -1079,23 +1157,34 @@ class HairFoldRaster {
               mix = mix * (1 - earlier) / kept;
               cover *= kept;
             }
-            final alpha = (255 * cover * channel(3, mix)).round().clamp(0, 255);
+            final rest = 1.0 - mix;
+            final alpha = (255 * cover * unit(fillA * rest + lineA * mix))
+                .round()
+                .clamp(0, 255);
             if (alpha == 0) continue;
-            tiles.blendPixel(
-              target,
-              p % _size,
-              p ~/ _size,
-              (channel(0, mix) * 255).round(),
-              (channel(1, mix) * 255).round(),
-              (channel(2, mix) * 255).round(),
-              alpha,
-            );
+            // TileManager.blendPixel, inline: this runs per pixel.
+            final r = (unit(fillR * rest + lineR * mix) * 255).round();
+            final g = (unit(fillG * rest + lineG * mix) * 255).round();
+            final b = (unit(fillB * rest + lineB * mix) * 255).round();
+            final i = p * 4, ig = i + 1, ib = i + 2, ia = i + 3;
+            final srcA = alpha / 255.0;
+            final dstA = target[ia] / 255.0;
+            final outA = srcA + dstA * (1.0 - srcA);
+            if (outA <= 0) continue;
+            target[i] = _over(r, target[i], srcA, dstA, outA);
+            target[ig] = _over(g, target[ig], srcA, dstA, outA);
+            target[ib] = _over(b, target[ib], srcA, dstA, outA);
+            target[ia] = (outA * 255).round().clamp(0, 255);
           }
         }
       }
       tiles.markDirty(layer, tx, ty);
     }
   }
+
+  /// One channel of [TileManager.blendPixel]: [c] over [under].
+  static int _over(int c, int under, double srcA, double dstA, double outA) =>
+      ((c * srcA + under * dstA * (1.0 - srcA)) / outA).round().clamp(0, 255);
 
   /// The fill and outer radii come from each end's width and scale
   /// ([outlinedStrokeRadii]); being linear in both, they are interpolated
@@ -1106,8 +1195,9 @@ class HairFoldRaster {
     HairRibbonPoint b,
     double outlineWidth,
   ) {
-    final d = b.position - a.position;
-    final squared = d.distanceSquared;
+    final dX = b.position.dx - a.position.dx,
+        dY = b.position.dy - a.position.dy;
+    final squared = dX * dX + dY * dY;
     if (squared < 1e-10) return;
     final outerA = a.outerRadius(outlineWidth);
     final outerB = b.outerRadius(outlineWidth);
@@ -1127,40 +1217,73 @@ class HairFoldRaster {
     final bottom = (math.max(a.position.dy, b.position.dy) + radius)
         .ceil()
         .clamp(0, tiles.canvasHeight - 1);
+    final ax = a.position.dx, ay = a.position.dy;
+    // The outer edge's cone.
+    final radiusDelta = outerB - outerA;
+    final length = math.sqrt(squared);
+    final slope = radiusDelta / length;
+    final steep = slope.abs() >= 1;
+    final lean = steep ? 0.0 : math.sqrt(1 - slope * slope);
+    final fillRise = fillB - fillA;
+    final opacityA = a.opacity, opacityRise = b.opacity - a.opacity;
+    // Nearer than this to the line through the segment, a pixel may be
+    // inked; any further, its distance from the segment is further still.
+    final within = math.max(outerA, outerB) + .5 + 1e-6;
+    final tilesX = tiles.tilesX;
+    var lastKey = -1;
+    _MaskTile? lastTile;
     for (var y = top; y <= bottom; y++) {
+      final deltaY = y + .5 - ay;
+      final row = (y % _size) * _size;
+      final tileRow = (y ~/ _size) * tilesX;
       for (var x = left; x <= right; x++) {
-        final delta = Offset(x + .5, y + .5) - a.position;
-        // The outer edge's cone.
-        final radiusDelta = outerB - outerA;
-        final length = math.sqrt(squared);
-        final projection = _dot(delta, d) / length;
-        final perpendicular = _cross(d, delta).abs() / length;
-        final slope = radiusDelta / length;
-        final t = slope.abs() >= 1
-            ? (slope > 0 ? 1.0 : 0.0)
-            : ((projection +
-                          slope *
-                              perpendicular /
-                              math.sqrt(1 - slope * slope)) /
-                      length)
-                  .clamp(0.0, 1.0);
-        final offset = delta - d * t;
-        final distance = offset.distance;
-        final reach = outerA + (outerB - outerA) * t;
-        final half = outlinedFill(fillA + (fillB - fillA) * t);
+        final deltaX = x + .5 - ax;
+        final perpendicular = (dX * deltaY - dY * deltaX).abs() / length;
+        if (perpendicular >= within) continue;
+        final projection = (deltaX * dX + deltaY * dY) / length;
+        double t;
+        if (steep) {
+          t = slope > 0 ? 1.0 : 0.0;
+        } else {
+          t = (projection + slope * perpendicular / lean) / length;
+          if (t < 0) {
+            t = 0.0;
+          } else if (t > 1) {
+            t = 1.0;
+          }
+        }
+        final offsetX = deltaX - dX * t, offsetY = deltaY - dY * t;
+        final distance = math.sqrt(offsetX * offsetX + offsetY * offsetY);
+        final reach = outerA + radiusDelta * t;
+        final half = outlinedFill(fillA + fillRise * t);
         // A tip thinner than a pixel covers only its own width of it, so a
         // tip tapered to nothing ends there and, with no fill left, is solid
         // outline even on its center line.
-        final outer = math.min(
-          (reach + .5 - distance).clamp(0.0, 1.0),
-          reach * 2,
-        );
+        var edge = reach + .5 - distance;
+        if (edge < 0) {
+          edge = 0.0;
+        } else if (edge > 1) {
+          edge = 1.0;
+        }
+        final outer = math.min(edge, reach * 2);
         if (outer <= 0) continue;
-        final fill = half <= 0 ? 0.0 : (half + .5 - distance).clamp(0.0, 1.0);
-        final opacity = a.opacity + (b.opacity - a.opacity) * t;
-        final key = (y ~/ _size) * tiles.tilesX + (x ~/ _size);
-        final m = masks.putIfAbsent(key, _MaskTile.new);
-        final p = (y % _size) * _size + (x % _size);
+        var fill = 0.0;
+        if (half > 0) {
+          fill = half + .5 - distance;
+          if (fill < 0) {
+            fill = 0.0;
+          } else if (fill > 1) {
+            fill = 1.0;
+          }
+        }
+        final opacity = opacityA + opacityRise * t;
+        final key = tileRow + x ~/ _size;
+        if (key != lastKey) {
+          lastKey = key;
+          lastTile = masks.putIfAbsent(key, _blankMask);
+        }
+        final m = lastTile!;
+        final p = row + x % _size;
         if (m.outer[p] <= 0) m.include(p);
         if (fill > m.fill[p]) {
           m.opacity[p] = opacity;
@@ -1183,33 +1306,37 @@ class HairFoldRaster {
     double outline,
   ) {
     final margin = outline + 1;
-    final left = (corners.map((p) => p.dx).reduce(math.min) - margin)
+    final c0 = corners[0], c1 = corners[1], c2 = corners[2], c3 = corners[3];
+    final x0 = c0.dx, y0 = c0.dy, x1 = c1.dx, y1 = c1.dy;
+    final x2 = c2.dx, y2 = c2.dy, x3 = c3.dx, y3 = c3.dy;
+    final left = (math.min(math.min(math.min(x0, x1), x2), x3) - margin)
         .floor()
         .clamp(0, tiles.canvasWidth - 1);
-    final right = (corners.map((p) => p.dx).reduce(math.max) + margin)
+    final right = (math.max(math.max(math.max(x0, x1), x2), x3) + margin)
         .ceil()
         .clamp(0, tiles.canvasWidth - 1);
-    final top = (corners.map((p) => p.dy).reduce(math.min) - margin)
+    final top = (math.min(math.min(math.min(y0, y1), y2), y3) - margin)
         .floor()
         .clamp(0, tiles.canvasHeight - 1);
-    final bottom = (corners.map((p) => p.dy).reduce(math.max) + margin)
+    final bottom = (math.max(math.max(math.max(y0, y1), y2), y3) + margin)
         .ceil()
         .clamp(0, tiles.canvasHeight - 1);
-    final delta = b.position - a.position;
-    final squared = delta.distanceSquared;
-    final cornerX = [for (final c in corners) c.dx];
-    final cornerY = [for (final c in corners) c.dy];
-    final edgeX = [
-      for (var i = 0; i < 4; i++) cornerX[(i + 1) % 4] - cornerX[i],
-    ];
-    final edgeY = [
-      for (var i = 0; i < 4; i++) cornerY[(i + 1) % 4] - cornerY[i],
-    ];
-    final edgeSquared = [
-      for (var i = 0; i < 4; i++) edgeX[i] * edgeX[i] + edgeY[i] * edgeY[i],
-    ];
+    final ax = a.position.dx, ay = a.position.dy;
+    final deltaX = b.position.dx - ax, deltaY = b.position.dy - ay;
+    final squared = deltaX * deltaX + deltaY * deltaY;
+    final opacityA = a.opacity, opacityRise = b.opacity - a.opacity;
+    // The four edges, corner i to corner i + 1.
+    final ex0 = x1 - x0, ey0 = y1 - y0, ex1 = x2 - x1, ey1 = y2 - y1;
+    final ex2 = x3 - x2, ey2 = y3 - y2, ex3 = x0 - x3, ey3 = y0 - y3;
+    final es0 = ex0 * ex0 + ey0 * ey0, es1 = ex1 * ex1 + ey1 * ey1;
+    final es2 = ex2 * ex2 + ey2 * ey2, es3 = ex3 * ex3 + ey3 * ey3;
+    final reach = outline + .5;
+    final tilesX = tiles.tilesX;
     var lastKey = -1;
     _MaskTile? lastTile;
+    // Per pixel, its squared distance from each edge and whether it is
+    // inside (a ray to its left crosses the edges an odd number of times),
+    // in plain doubles: this runs per pixel of every crescent strip.
     for (var y = top; y <= bottom; y++) {
       // Only the columns the quad (plus its outline margin) spans on this
       // row: a thin diagonal strip covers a small part of its bounding box.
@@ -1232,48 +1359,107 @@ class HairFoldRaster {
       final fromX = math.max(left, (rowLeft - margin).floor());
       final toX = math.min(right, (rowRight + margin).ceil());
       final cy = y + .5;
+      final fy0 = cy - y0, fy1 = cy - y1, fy2 = cy - y2, fy3 = cy - y3;
+      // Which edges a ray to the left of the pixel centre crosses on this
+      // row, and where.
+      final cross0 = (y0 > cy) != (y1 > cy);
+      final cross1 = (y1 > cy) != (y2 > cy);
+      final cross2 = (y2 > cy) != (y3 > cy);
+      final cross3 = (y3 > cy) != (y0 > cy);
+      final at0 = cross0 ? x0 + (cy - y0) * ex0 / ey0 : 0.0;
+      final at1 = cross1 ? x1 + (cy - y1) * ex1 / ey1 : 0.0;
+      final at2 = cross2 ? x2 + (cy - y2) * ex2 / ey2 : 0.0;
+      final at3 = cross3 ? x3 + (cy - y3) * ex3 / ey3 : 0.0;
+      final row = (y % _size) * _size;
+      final tileRow = (y ~/ _size) * tilesX;
       for (var x = fromX; x <= toX; x++) {
-        // Plain doubles: this loop runs per pixel of every crescent strip.
         final cx = x + .5;
         var inside = false;
-        var distance = double.infinity, sideDistance = double.infinity;
-        for (var i = 0; i < 4; i++) {
-          final fx = cx - cornerX[i], fy = cy - cornerY[i];
-          final ex = edgeX[i], ey = edgeY[i];
-          final along = edgeSquared[i] <= 1e-12
-              ? 0.0
-              : ((fx * ex + fy * ey) / edgeSquared[i]).clamp(0.0, 1.0);
-          final rx = fx - ex * along, ry = fy - ey * along;
+        double distance, sideDistance;
+        {
+          final fx = cx - x0;
+          var along = es0 <= 1e-12 ? 0.0 : (fx * ex0 + fy0 * ey0) / es0;
+          if (along < 0) {
+            along = 0.0;
+          } else if (along > 1) {
+            along = 1.0;
+          }
+          final rx = fx - ex0 * along, ry = fy0 - ey0 * along;
+          distance = sideDistance = rx * rx + ry * ry;
+          if (cross0 && cx < at0) inside = !inside;
+        }
+        {
+          final fx = cx - x1;
+          var along = es1 <= 1e-12 ? 0.0 : (fx * ex1 + fy1 * ey1) / es1;
+          if (along < 0) {
+            along = 0.0;
+          } else if (along > 1) {
+            along = 1.0;
+          }
+          final rx = fx - ex1 * along, ry = fy1 - ey1 * along;
           final d = rx * rx + ry * ry;
           if (d < distance) distance = d;
-          if (i.isEven && d < sideDistance) sideDistance = d;
-          final nextY = cornerY[(i + 1) % 4];
-          if ((cornerY[i] > cy) != (nextY > cy) &&
-              cx < cornerX[i] + (cy - cornerY[i]) * ex / ey) {
-            inside = !inside;
-          }
+          if (cross1 && cx < at1) inside = !inside;
         }
-        final outer = inside
-            ? 1.0
-            : (outline + .5 - math.sqrt(distance)).clamp(0.0, 1.0);
-        if (outer <= 0) continue;
-        final fill = inside
-            ? (.5 + math.sqrt(sideDistance)).clamp(0.0, 1.0)
-            : (.5 - math.sqrt(distance)).clamp(0.0, 1.0);
-        final t = squared < 1e-12
+        {
+          final fx = cx - x2;
+          var along = es2 <= 1e-12 ? 0.0 : (fx * ex2 + fy2 * ey2) / es2;
+          if (along < 0) {
+            along = 0.0;
+          } else if (along > 1) {
+            along = 1.0;
+          }
+          final rx = fx - ex2 * along, ry = fy2 - ey2 * along;
+          final d = rx * rx + ry * ry;
+          if (d < distance) distance = d;
+          if (d < sideDistance) sideDistance = d;
+          if (cross2 && cx < at2) inside = !inside;
+        }
+        {
+          final fx = cx - x3;
+          var along = es3 <= 1e-12 ? 0.0 : (fx * ex3 + fy3 * ey3) / es3;
+          if (along < 0) {
+            along = 0.0;
+          } else if (along > 1) {
+            along = 1.0;
+          }
+          final rx = fx - ex3 * along, ry = fy3 - ey3 * along;
+          final d = rx * rx + ry * ry;
+          if (d < distance) distance = d;
+          if (cross3 && cx < at3) inside = !inside;
+        }
+        double outer;
+        if (inside) {
+          outer = 1.0;
+        } else {
+          outer = reach - math.sqrt(distance);
+          if (outer <= 0) continue;
+          if (outer > 1) outer = 1.0;
+        }
+        var fill = inside
+            ? .5 + math.sqrt(sideDistance)
+            : .5 - math.sqrt(distance);
+        if (fill < 0) {
+          fill = 0.0;
+        } else if (fill > 1) {
+          fill = 1.0;
+        }
+        var t = squared < 1e-12
             ? 0.0
-            : (((cx - a.position.dx) * delta.dx +
-                          (cy - a.position.dy) * delta.dy) /
-                      squared)
-                  .clamp(0.0, 1.0);
-        final opacity = a.opacity + (b.opacity - a.opacity) * t;
-        final key = (y ~/ _size) * tiles.tilesX + x ~/ _size;
+            : ((cx - ax) * deltaX + (cy - ay) * deltaY) / squared;
+        if (t < 0) {
+          t = 0.0;
+        } else if (t > 1) {
+          t = 1.0;
+        }
+        final opacity = opacityA + opacityRise * t;
+        final key = tileRow + x ~/ _size;
         if (key != lastKey) {
           lastKey = key;
-          lastTile = masks.putIfAbsent(key, _MaskTile.new);
+          lastTile = masks.putIfAbsent(key, _blankMask);
         }
         final m = lastTile!;
-        final p = (y % _size) * _size + x % _size;
+        final p = row + x % _size;
         if (m.outer[p] <= 0) m.include(p);
         if (fill > m.fill[p]) {
           m.opacity[p] = opacity;
@@ -1378,7 +1564,7 @@ class HairFoldRaster {
           final outer = math.max(fill, coverage(outerRadius));
           if (outer <= 0) continue;
           final key = (y ~/ _size) * tiles.tilesX + x ~/ _size;
-          final mask = masks.putIfAbsent(key, _MaskTile.new);
+          final mask = masks.putIfAbsent(key, _blankMask);
           final p = (y % _size) * _size + x % _size;
           if (mask.outer[p] <= 0) mask.include(p);
           if (fill > mask.fill[p]) {
@@ -1414,13 +1600,14 @@ class HairFoldRaster {
     Brush brush,
     Map<int, double> hidden,
   ) {
-    final tileOrigin = Offset(
-      (key % tiles.tilesX) * _size.toDouble(),
-      (key ~/ tiles.tilesX) * _size.toDouble(),
-    );
+    final originX = (key % tiles.tilesX) * _size.toDouble();
+    final originY = (key ~/ tiles.tilesX) * _size.toDouble();
     final start = points[run.start].position, end = points[run.end].position;
     final startTangent = points[run.start + 1].position - start;
     final endTangent = end - points[run.end - 1].position;
+    final startX = start.dx, startY = start.dy, endX = end.dx, endY = end.dy;
+    final startTX = startTangent.dx, startTY = startTangent.dy;
+    final endTX = endTangent.dx, endTY = endTangent.dy;
     // How far from a fold the front's edge is hidden over the back section:
     // up to where the fold line starts.
     final startReach = math
@@ -1430,49 +1617,78 @@ class HairFoldRaster {
         .pow(hidden[run.end] ?? points[run.end].width, 2)
         .toDouble();
     final crescent = brush.foldMode == HairFoldMode.crescent;
+    final afterStart = run.start > 0, beforeEnd = run.end < points.length - 1;
+    final outer = m.outer, fills = m.fill, opacities = m.opacity;
+    final shape = surface.shape, covers = surface.cover;
+    final surfaceOuter = surface.outer, surfaceFill = surface.fill;
+    final outlines = surface.outline, owners = surface.owner;
     for (var row = m.top; row <= m.bottom; row++) {
-      for (
-        var p = row * _size + m.left[row];
-        p <= row * _size + m.right[row];
-        p++
-      ) {
-        final cover = m.outer[p];
+      // Plain doubles: this runs per pixel of every section's tiles.
+      final atY = originY + (row + .5);
+      final last = row * _size + m.right[row];
+      for (var p = row * _size + m.left[row]; p <= last; p++) {
+        final cover = outer[p];
         if (cover <= 0) continue;
-        final fill = m.fill[p];
-        final ink = cover * m.opacity[p];
+        final fill = fills[p];
+        final opacity = opacities[p];
+        final ink = cover * opacity;
         if (ink <= 0) continue;
-        final below = surface.fill[p];
-        if (surface.cover[p] <= 0) surface.include(p);
-        surface.shape[p] = math.max(surface.shape[p], cover);
-        surface.outer[p] = math.max(surface.outer[p], ink);
-        surface.fill[p] = math.max(surface.fill[p], fill * m.opacity[p]);
-        var edge = (cover - fill).clamp(0.0, 1.0);
+        final below = surfaceFill[p];
+        final covered = covers[p];
+        if (covered <= 0) surface.include(p);
+        shape[p] = math.max(shape[p], cover);
+        surfaceOuter[p] = math.max(surfaceOuter[p], ink);
+        surfaceFill[p] = math.max(below, fill * opacity);
+        var edge = cover - fill;
+        if (edge < 0) {
+          edge = 0.0;
+        } else if (edge > 1) {
+          edge = 1.0;
+        }
         if (edge > 0 && !crescent) {
-          final at = tileOrigin + Offset(p % _size + .5, p ~/ _size + .5);
-          if ((run.start > 0 && _dot(at - start, startTangent) < 0) ||
-              (run.end < points.length - 1 && _dot(at - end, endTangent) > 0)) {
+          final atX = originX + (p % _size + .5);
+          final fromStartX = atX - startX, fromStartY = atY - startY;
+          final fromEndX = atX - endX, fromEndY = atY - endY;
+          if ((afterStart && fromStartX * startTX + fromStartY * startTY < 0) ||
+              (beforeEnd && fromEndX * endTX + fromEndY * endTY > 0)) {
             edge = 0;
           } else if (below > .5 &&
-              ((run.start > 0 && (at - start).distanceSquared < startReach) ||
-                  (run.end < points.length - 1 &&
-                      (at - end).distanceSquared < endReach))) {
+              ((afterStart &&
+                      fromStartX * fromStartX + fromStartY * fromStartY <
+                          startReach) ||
+                  (beforeEnd &&
+                      fromEndX * fromEndX + fromEndY * fromEndY < endReach))) {
             // At a fold the curved fold line marks it. The front section's
             // own edge must not run straight across the section behind it;
             // how far it would run depends on the exact vertex sample.
             edge = 0;
           }
         }
-        final total = math.max(ink, surface.cover[p]);
+        final total = math.max(ink, covered);
         final front = ink / total;
         // Crescents form a single surface: only the union perimeter is
         // visible, never a cross-section cap between connected runs.
-        surface.outline[p] = crescent
+        outlines[p] = crescent
             ? 0
-            : edge / cover * front + surface.outline[p] * (1 - front);
-        surface.cover[p] = total;
-        if (front > .5) surface.owner[p] = run.id;
+            : edge / cover * front + outlines[p] * (1 - front);
+        covers[p] = total;
+        if (front > .5) owners[p] = run.id;
       }
     }
+  }
+
+  /// The rectangle each tile of [masks] covers.
+  static Map<int, _Area> _extentOf(Map<int, _MaskTile> masks) {
+    final result = <int, _Area>{};
+    for (final MapEntry(:key, value: m) in masks.entries) {
+      var left = _size, right = -1;
+      for (var row = m.top; row <= m.bottom; row++) {
+        if (m.left[row] < left) left = m.left[row];
+        if (m.right[row] > right) right = m.right[row];
+      }
+      if (right >= left) result[key] = _Area(left, m.top, right, m.bottom);
+    }
+    return result;
   }
 
   Map<int, _Area> _creaseArea(_CreaseSegment c) => _areaOf(
@@ -1596,6 +1812,22 @@ class _MaskTile extends _PixelSpans {
   final outer = Float32List(_pixels),
       fill = Float32List(_pixels),
       opacity = Float32List(_pixels);
+
+  /// Clears only the used span, as good as a fresh tile.
+  void reset() {
+    for (var row = top; row <= bottom; row++) {
+      final from = row * _size + left[row], to = row * _size + right[row] + 1;
+      if (to > from) {
+        outer.fillRange(from, to, 0);
+        fill.fillRange(from, to, 0);
+        opacity.fillRange(from, to, 0);
+      }
+      left[row] = _size;
+      right[row] = -1;
+    }
+    top = _size;
+    bottom = -1;
+  }
 }
 
 class _SurfaceTile extends _PixelSpans {
