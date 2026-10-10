@@ -987,8 +987,8 @@ class InkPoolEngine {
     return math.acos(((ax * bx + ay * by) / (la * lb)).clamp(-1.0, 1.0));
   }
 
-  /// The lines leaving [seed]: the centre pixels [ringDistance] along them
-  /// fall into one group per line. Every reached pixel is labelled with its
+  /// The lines leaving [seed]: the centre pixels [ringDistance] along them,
+  /// past the last fork, fall into one group per line. Every reached pixel is labelled with its
   /// line in [label] (-1 for none). Each line's direction at the meeting
   /// point is measured from its centre pixels between [fitFrom] and [fitTo]
   /// along it, stopping short of the next meeting point along it ([stops]),
@@ -1013,9 +1013,35 @@ class InkPoolEngine {
     for (final p in touched) {
       label[p] = -1;
     }
+    final stopSet = stops.toSet();
+    // A path can cut the corner past a fork pixel, so passing next to one
+    // counts.
+    bool atFork(int p) {
+      for (var dy = -1; dy <= 1; dy++) {
+        for (var dx = -1; dx <= 1; dx++) {
+          final q = p + dy * width + dx;
+          if (q < 0 || q >= junction.length) continue;
+          if (junction[q] != 0 && !stopSet.contains(q)) return true;
+        }
+      }
+      return false;
+    }
+
+    final order = List.of(touched)
+      ..sort((a, b) => distance[a].compareTo(distance[b]));
+    final lastFork = <int, double>{seed: 0};
+    for (final p in order) {
+      if (p == seed) continue;
+      lastFork[p] = atFork(p) ? distance[p] : lastFork[parent[p]] ?? 0;
+    }
+    // The lines are told apart [ringDistance] past the last fork on their
+    // way out: two lines crossing at a slant thin to two forks joined by a
+    // bridge, and just past the far fork its two lines still touch.
     final ring = [
       for (final p in touched)
-        if (distance[p] <= ringDistance && distance[p] > ringDistance - 1.5) p,
+        if (distance[p] - lastFork[p]! <= ringDistance &&
+            distance[p] - lastFork[p]! > ringDistance - 1.5)
+          p,
     ];
     final ringSet = ring.toSet();
     final ringDirections = <(double, double)>[];
@@ -1054,8 +1080,6 @@ class InkPoolEngine {
       }
     }
     // Beyond the groups, a pixel belongs to the line it was reached along.
-    final order = List.of(touched)
-      ..sort((a, b) => distance[a].compareTo(distance[b]));
     for (final p in order) {
       if (label[p] >= 0 || p == seed) continue;
       label[p] = label[parent[p]];
@@ -1068,30 +1092,11 @@ class InkPoolEngine {
     // point on its way out (a crossing of thick lines thins to two forks)
     // for as far again as from [fitFrom] to [fitTo], and stops short of the
     // next meeting point.
-    final stopSet = stops.toSet();
     final fitEnd = Float64List(count)..fillRange(0, count, double.infinity);
     for (final p in stops) {
       final id = label[p];
       if (id < 0) continue;
       fitEnd[id] = math.min(fitEnd[id], distance[p] - 1.5 * halfWidth[p] - 1);
-    }
-    // A path can cut the corner past a fork pixel, so passing next to one
-    // counts.
-    bool atFork(int p) {
-      for (var dy = -1; dy <= 1; dy++) {
-        for (var dx = -1; dx <= 1; dx++) {
-          final q = p + dy * width + dx;
-          if (q < 0 || q >= junction.length) continue;
-          if (junction[q] != 0 && !stopSet.contains(q)) return true;
-        }
-      }
-      return false;
-    }
-
-    final lastFork = <int, double>{seed: 0};
-    for (final p in order) {
-      if (p == seed) continue;
-      lastFork[p] = atFork(p) ? distance[p] : lastFork[parent[p]] ?? 0;
     }
     final fitStart = Float64List(count)..fillRange(0, count, double.infinity);
     var longest = fitTo;
