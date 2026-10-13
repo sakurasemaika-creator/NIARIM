@@ -5624,7 +5624,7 @@ abstract class AppLocalizations {
   /// No description provided for @brushSettingsMixingBleed.
   ///
   /// In ja, this message translates to:
-  /// **'にじみ混色'**
+  /// **'にじみ'**
   String get brushSettingsMixingBleed;
 
   /// No description provided for @brushSettingsMixingBrightnessCorrection.
