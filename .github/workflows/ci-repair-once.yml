@@ -78,29 +78,32 @@ jobs:
           );'''
           )
 
-          replace_once(
-              "test/app_web_reference_export_exact_test.dart",
-              '''final modeSwitch = find.byWidgetPredicate((widget) {
-              if (widget is! SegmentedButton<String>) return false;
-              return widget.segments.any((segment) => segment.value == 'timeline');
-          }, skipOffstage: false);
-          expect(modeSwitch, findsWidgets);
-          final switchWidget = tester.widget<SegmentedButton<String>>(
-              modeSwitch.last,
-          );
-          expect(switchWidget.onSelectionChanged, isNotNull);
-          switchWidget.onSelectionChanged!.call({'timeline'});
-          await tester.pump(const Duration(milliseconds: 700));
-          consumeOnlyKnownTimelineOverflow(tester, 'timeline');''',
-              '''final timelineModeButton = find.byIcon(
+          import re
+
+          def replace_timeline_mode_switch(path):
+              file = Path(path)
+              content = file.read_text(encoding="utf-8")
+              pattern = re.compile(
+                  r"(?ms)^    final modeSwitch = find\\.byWidgetPredicate\\(\\(widget\\) \\{.*?^    consumeOnlyKnownTimelineOverflow\\(tester, 'timeline'\\);"
+              )
+              replacement = """    final timelineModeButton = find.byIcon(
               Icons.movie_filter_outlined,
               skipOffstage: false,
           );
           expect(timelineModeButton, findsOneWidget);
           await tester.tap(timelineModeButton, warnIfMissed: false);
           await tester.pump(const Duration(milliseconds: 700));
-          consumeOnlyKnownTimelineOverflow(tester, 'timeline');'''
-          )
+          consumeOnlyKnownTimelineOverflow(tester, 'timeline');"""
+              updated, count = pattern.subn(replacement, content, count=1)
+              if count == 0:
+                  if "final timelineModeButton = find.byIcon(" in content:
+                      print(f"Already repaired: {path}")
+                      return
+                  raise RuntimeError(f"Expected timeline mode-switch block missing: {path}")
+              file.write_text(updated, encoding="utf-8")
+              print(f"Repaired: {path}")
+
+          replace_timeline_mode_switch("test/app_web_reference_export_exact_test.dart")
 
           replace_once(
               ".github/workflows/save-safety-audit.yml",
