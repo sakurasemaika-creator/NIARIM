@@ -103,25 +103,25 @@ void main() {
     expect(mixed.b, greaterThan(0.95));
   });
 
-  test('legacy simple setting round-trips and keeps perceptual rendering', () {
+  test('perceptual setting round-trips and renders through hue wheel', () {
     final setting = PressureMixingOffSetting.fromJson({
       'enabled': true,
-      'mode': 'simple',
+      'mode': 'perceptual',
       'rate': 60,
     });
 
-    expect(setting.mode, BrushMixingMode.simple);
+    expect(setting.mode, BrushMixingMode.perceptual);
     expect(setting.brightnessCorrection, 3);
-    expect(setting.toJson()['mode'], 'simple');
+    expect(setting.toJson()['mode'], 'perceptual');
     expect(PressureMixingOffSetting.fromJson(setting.toJson()), setting);
 
-    // Exercise the actual raster path with a legacy "simple" brush setting.
+    // Exercise the actual raster path with the perceptual brush setting.
     final engine = DrawingEngine(
       tileManager: TileManager(canvasWidth: 128, canvasHeight: 128),
     )
       ..currentBrush = Brush(
-        id: 'legacy-mixing',
-        name: 'Legacy Mixing',
+        id: 'perceptual-mixing',
+        name: 'Perceptual Mixing',
         size: 20,
         opacity: 100,
         spacing: 10,
@@ -133,7 +133,7 @@ void main() {
           edgeJitter: FixedBrushSetting(enabled: false, value: 0),
           mixing: PressureMixingOffSetting(
             enabled: true,
-            mode: BrushMixingMode.simple,
+            mode: BrushMixingMode.perceptual,
             rate: 50,
           ),
         ),
