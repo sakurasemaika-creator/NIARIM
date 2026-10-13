@@ -981,6 +981,7 @@ class DrawingEngine {
             if (isEraser) {
               tileManager.erasePixel(tile, px, py, incrementalAlpha);
             } else if (mixingMode == BrushMixingMode.bleed) {
+              final rate = mixingRate / 100.0;
               final mixed = bleedColor(
                 ui.Color.fromARGB(255, ri, gi, bi),
                 bleedSampleColor,
@@ -996,6 +997,7 @@ class DrawingEngine {
                 incrementalAlpha,
               );
             } else if (mixingMode == BrushMixingMode.perceptual) {
+              final rate = mixingRate / 100.0;
               final idx = (py * TileManager.tileSize + px) * 4;
               if (tile[idx + 3] > 0) {
                 final below = ui.Color.fromARGB(
