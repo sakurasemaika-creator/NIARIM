@@ -1108,7 +1108,7 @@
   "brushSettingsFadeDistanceLabel": "Distancia (px)",
   "brushSettingsStrokeDecayTitle": "Atenuación del trazo",
   "brushSettingsStrokeDecaySubtitle": "La opacidad disminuye cuanto más tiempo dibujas",
-  "brushSettingsMixingTitle": "Mezcla de color",
+  "brushSettingsMixingTitle": "Modo de mezcla",
   "brushSettingsMixingOff": "OFF",
   "brushSettingsMixingAnalog": "Estilo analógico",
   "brushSettingsMixingBleed": "Sangrado",
