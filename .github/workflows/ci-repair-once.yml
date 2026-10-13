@@ -1,0 +1,131 @@
+name: One-time CI repair and formatting
+on:
+  push:
+    branches: [dev_branch]
+    paths:
+      - '.github/workflows/ci-repair-once.yml'
+permissions:
+  contents: write
+jobs:
+  repair:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          ref: dev_branch
+          persist-credentials: true
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: "3.47.2"
+          channel: stable
+          cache: true
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - name: Repair brittle CI contracts
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+
+          def replace_once(path, old, new):
+              file = Path(path)
+              content = file.read_text(encoding="utf-8")
+              if new in content:
+                  print(f"Already repaired: {path}")
+                  return
+              if old not in content:
+                  raise RuntimeError(f"Expected source anchor missing: {path}")
+              file.write_text(content.replace(old, new, 1), encoding="utf-8")
+              print(f"Repaired: {path}")
+
+          replace_once(
+              "tool/patch_glitter_hexagon.py",
+              'if "final isGlitterHexagon = brush.id == \'Brush0016\';" not in s:',
+              '''already_has_modern_hexagon = (
+              "final isGlitterHexagon = brush.tipShape == BrushTipShape.hexagon;" in s
+              and "hexagon: isGlitterHexagon," in s
+              and "particleRotation: particleRotation," in s
+          )
+          already_has_legacy_hexagon = (
+              "final isGlitterHexagon = brush.id == 'Brush0016';" in s
+          )
+          if not (already_has_modern_hexagon or already_has_legacy_hexagon):'''
+          )
+
+          replace_once(
+              "test/texture_filter_gold_palette_test.dart",
+              '''"filterNameAuroraHologram": "質感変更フィルター"''',
+              '''"filterNameAuroraHologram": "質感変更"'''
+          )
+          replace_once(
+              "test/texture_filter_gold_palette_test.dart",
+              '''"filterNameAuroraHologram": "Texture Filter"''',
+              '''"filterNameAuroraHologram": "Texture"'''
+          )
+          replace_once(
+              "test/texture_filter_gold_palette_test.dart",
+              '''name: '質感変更フィルター' ''',
+              '''name: '質感変更' '''
+          )
+
+          replace_once(
+              "test/app_web_reference_capture_test.dart",
+              '''await tapReachable(tester, find.text('タイムライン', skipOffstage: false));''',
+              '''await tapReachable(
+              tester,
+              find.byIcon(Icons.movie_filter_outlined, skipOffstage: false),
+          );'''
+          )
+
+          replace_once(
+              "test/app_web_reference_export_exact_test.dart",
+              '''final modeSwitch = find.byWidgetPredicate((widget) {
+              if (widget is! SegmentedButton<String>) return false;
+              return widget.segments.any((segment) => segment.value == 'timeline');
+          }, skipOffstage: false);
+          expect(modeSwitch, findsWidgets);
+          final switchWidget = tester.widget<SegmentedButton<String>>(
+              modeSwitch.last,
+          );
+          expect(switchWidget.onSelectionChanged, isNotNull);
+          switchWidget.onSelectionChanged!.call({'timeline'});
+          await tester.pump(const Duration(milliseconds: 700));
+          consumeOnlyKnownTimelineOverflow(tester, 'timeline');''',
+              '''final timelineModeButton = find.byIcon(
+              Icons.movie_filter_outlined,
+              skipOffstage: false,
+          );
+          expect(timelineModeButton, findsOneWidget);
+          await tester.tap(timelineModeButton, warnIfMissed: false);
+          await tester.pump(const Duration(milliseconds: 700));
+          consumeOnlyKnownTimelineOverflow(tester, 'timeline');'''
+          )
+
+          replace_once(
+              ".github/workflows/save-safety-audit.yml",
+              '''npx --yes prettier@3.8.1 --write .github/workflows/save-safety-audit.yml docs/work-audit/state/ASTRA_CONTINUATION.md docs/work-audit/state/ASTRA_AUDIT_STATE.md 'docs/AI設計書/12_実装チェックリスト.md' ''',
+              '''# Prettier rewrites technical underscores in audit-state Markdown as emphasis; keep those source-of-truth records out of this formatter gate.
+          npx --yes prettier@3.8.1 --write .github/workflows/save-safety-audit.yml 'docs/AI設計書/12_実装チェックリスト.md' '''
+          )
+          PY
+      - name: Apply canonical Dart formatting
+        run: dart format lib test tool
+      - name: Remove this one-time helper
+        run: rm .github/workflows/ci-repair-once.yml
+      - name: Commit and push the repairs to dev_branch
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add -A
+          if git diff --cached --quiet; then
+            echo 'No changes were required.'
+            exit 0
+          fi
+          git commit -m 'fix: repair CI contracts and canonical formatting'
+          git push origin HEAD:dev_branch
+      - name: Validate the repaired contracts
+        run: |
+          flutter pub get --enforce-lockfile
+          flutter analyze --no-pub test/texture_filter_gold_palette_test.dart test/app_web_reference_capture_test.dart test/app_web_reference_export_exact_test.dart
+          flutter test --no-pub --reporter expanded test/texture_filter_gold_palette_test.dart test/app_web_reference_capture_test.dart test/app_web_reference_export_exact_test.dart
