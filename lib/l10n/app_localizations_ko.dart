@@ -2360,7 +2360,7 @@ class AppLocalizationsKo extends AppLocalizations {
   String get assetTagMixing => '혼색';
 
   @override
-  String get assetTagAnalog => '아날로그풍';
+  String get assetTagAnalog => '아날로그풍 혼색';
 
   @override
   String get assetTagDecoration => '장식';
@@ -3042,10 +3042,10 @@ class AppLocalizationsKo extends AppLocalizations {
   String get brushSettingsMixingOff => 'OFF';
 
   @override
-  String get brushSettingsMixingAnalog => '아날로그풍';
+  String get brushSettingsMixingAnalog => '아날로그풍 혼색';
 
   @override
-  String get brushSettingsMixingBleed => '번짐';
+  String get brushSettingsMixingBleed => '번짐 혼색';
 
   @override
   String get brushSettingsMixingBrightnessCorrection => '밝기 보정';
