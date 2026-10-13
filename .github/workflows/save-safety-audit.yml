@@ -172,13 +172,6 @@ jobs:
     timeout-minutes: 45
     steps:
       - uses: actions/checkout@v6
-      - name: Apply pending audit candidate when present
-        shell: bash
-        run: |
-          if [ -f docs/product-audit/pending/auto-lineart-repairs.patch ]; then
-            git apply --check docs/product-audit/pending/auto-lineart-repairs.patch
-            git apply docs/product-audit/pending/auto-lineart-repairs.patch
-          fi
       - uses: subosito/flutter-action@v2
         with:
           flutter-version: "3.47.2"
@@ -188,11 +181,22 @@ jobs:
         run: |
           mkdir -p artifacts/save-safety
           flutter pub get --enforce-lockfile
+      # Check committed source formatting before applying a pending, uncommitted audit candidate.
       - name: Global format gate
         shell: bash
         run: |
           set -o pipefail
           dart format --output=none --set-exit-if-changed lib test tool 2>&1 | tee artifacts/save-safety/format.log
+      - name: Apply pending audit candidate when present
+        shell: bash
+        run: |
+          if [ -f docs/product-audit/pending/auto-lineart-repairs.patch ]; then
+            git apply --check docs/product-audit/pending/auto-lineart-repairs.patch
+            git apply docs/product-audit/pending/auto-lineart-repairs.patch
+          fi
+      # Normalize only the temporary candidate after proving the committed tree is formatted.
+      - name: Format pending audit candidate
+        run: dart format lib test tool
       - name: Full analyzer gate
         if: always()
         shell: bash
