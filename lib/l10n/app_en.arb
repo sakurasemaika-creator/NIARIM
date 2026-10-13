@@ -1110,7 +1110,7 @@
   "brushSettingsStrokeDecaySubtitle": "Opacity decreases the longer you keep drawing",
   "brushSettingsMixingTitle": "Color mixing",
   "brushSettingsMixingOff": "OFF",
-  "brushSettingsMixingAnalog": "Analog-style mixing",
+  "brushSettingsMixingAnalog": "Analog-style",
   "brushSettingsMixingBleed": "Bleed",
   "brushSettingsMixingBrightnessCorrection": "Brightness correction",
   "projectDetailNotFoundTitle": "Project",
