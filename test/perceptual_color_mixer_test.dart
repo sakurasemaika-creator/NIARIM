@@ -1,11 +1,24 @@
 import 'dart:ui' as ui;
 
 import 'package:flutter_test/flutter_test.dart';
+import 'package:niarim/engine/drawing_engine.dart';
 import 'package:niarim/engine/perceptual_color_mixer.dart';
+import 'package:niarim/engine/tile_manager.dart';
 
 void main() {
   const yellow = ui.Color(0xFFFFFF00);
   const blue = ui.Color(0xFF0000FF);
+
+  test('DrawingEngine brush mixing uses the perceptual mixer', () {
+    final engine = DrawingEngine(
+      tileManager: TileManager(canvasWidth: 1, canvasHeight: 1),
+    );
+    final mixed = engine.mixColor(yellow, blue, 0.5);
+
+    expect(mixed.r, lessThan(0.05));
+    expect(mixed.g, greaterThan(0.95));
+    expect(mixed.b, greaterThan(0.35));
+  });
 
   test('yellow and blue mix through saturated green/cyan, not grey', () {
     final mixed = mixPerceptualColor(yellow, blue, 0.5);
