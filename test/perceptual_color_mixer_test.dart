@@ -28,16 +28,9 @@ void main() {
     expect(mixed.b, greaterThan(0.35));
     expect(mixed.g, greaterThan(mixed.b));
 
-    final chroma = [
-      mixed.r,
-      mixed.g,
-      mixed.b,
-    ].reduce((a, b) => a > b ? a : b) -
-        [
-          mixed.r,
-          mixed.g,
-          mixed.b,
-        ].reduce((a, b) => a < b ? a : b);
+    final chroma =
+        [mixed.r, mixed.g, mixed.b].reduce((a, b) => a > b ? a : b) -
+        [mixed.r, mixed.g, mixed.b].reduce((a, b) => a < b ? a : b);
     expect(chroma, greaterThan(0.9));
   });
 
@@ -76,16 +69,19 @@ void main() {
     expect(mixed.r, greaterThan(mixed.g));
     expect(mixed.r, greaterThan(mixed.b));
     expect(mixed.g, closeTo(mixed.b, 1e-6));
-    expect(mixed.alpha, closeTo(1, 1e-6));
+    expect(mixed.a, closeTo(1, 1e-6));
   });
 
-  test('hues near the red boundary travel through red, not around the long arc', () {
-    const magentaRed = ui.Color(0xFFFF0080);
-    const orangeRed = ui.Color(0xFFFF8000);
-    final mixed = mixPerceptualColor(magentaRed, orangeRed, 0.5);
+  test(
+    'hues near the red boundary travel through red, not around the long arc',
+    () {
+      const magentaRed = ui.Color(0xFFFF0080);
+      const orangeRed = ui.Color(0xFFFF8000);
+      final mixed = mixPerceptualColor(magentaRed, orangeRed, 0.5);
 
-    expect(mixed.r, greaterThan(0.95));
-    expect(mixed.g, lessThan(0.25));
-    expect(mixed.b, lessThan(0.25));
-  });
+      expect(mixed.r, greaterThan(0.95));
+      expect(mixed.g, lessThan(0.25));
+      expect(mixed.b, lessThan(0.25));
+    },
+  );
 }

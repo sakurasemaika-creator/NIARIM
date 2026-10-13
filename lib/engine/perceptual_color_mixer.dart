@@ -42,8 +42,7 @@ ui.Color mixPerceptualColor(
   final hue = _wrapHue(hueA + delta * selectedWeight);
   final saturation =
       a.saturation + (b.saturation - a.saturation) * selectedWeight;
-  final lightness =
-      a.lightness + (b.lightness - a.lightness) * selectedWeight;
+  final lightness = a.lightness + (b.lightness - a.lightness) * selectedWeight;
   return _hslToRgb(hue, saturation, lightness);
 }
 
