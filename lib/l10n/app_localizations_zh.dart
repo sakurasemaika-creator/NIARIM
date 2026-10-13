@@ -10123,7 +10123,7 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get brushSettingsMixingOff => 'OFF';
 
   @override
-  String get brushSettingsMixingAnalog => '類比風格混色';
+  String get brushSettingsMixingAnalog => '類比風';
 
   @override
   String get brushSettingsMixingBleed => '暈染';
