@@ -73,11 +73,8 @@ jobs:
 
           replace_once(
               "test/app_web_reference_capture_test.dart",
-              '''await tapReachable(tester, find.text('タイムライン', skipOffstage: false));''',
-              '''await tapReachable(
-              tester,
-              find.byIcon(Icons.movie_filter_outlined, skipOffstage: false),
-          );'''
+              "find.text('タイムライン', skipOffstage: false)",
+              "find.byIcon(Icons.movie_filter_outlined, skipOffstage: false)"
           )
 
           def replace_timeline_mode_switch(path):
