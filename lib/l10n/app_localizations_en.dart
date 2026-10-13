@@ -3138,10 +3138,10 @@ class AppLocalizationsEn extends AppLocalizations {
   String get brushSettingsMixingOff => 'OFF';
 
   @override
-  String get brushSettingsMixingAnalog => 'Analog-style';
+  String get brushSettingsMixingAnalog => 'Analog-style mixing';
 
   @override
-  String get brushSettingsMixingBleed => 'Bleed';
+  String get brushSettingsMixingBleed => 'Bleed mixing';
 
   @override
   String get brushSettingsMixingBrightnessCorrection => 'Brightness correction';
