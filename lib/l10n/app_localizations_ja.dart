@@ -2351,7 +2351,7 @@ class AppLocalizationsJa extends AppLocalizations {
   String get assetTagMixing => '混色';
 
   @override
-  String get assetTagAnalog => 'アナログ風混色';
+  String get assetTagAnalog => 'アナログ風';
 
   @override
   String get assetTagDecoration => '装飾';
