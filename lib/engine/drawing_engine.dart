@@ -1158,8 +1158,12 @@ class DrawingEngine {
     ui.Color? pickedUp,
     double rate,
   ) {
-    final weight = rate.clamp(0.0, 1.0).toDouble();
-    if (pickedUp == null || weight <= 0.0) return selected;
+    final rateWeight = rate.clamp(0.0, 1.0).toDouble();
+    if (pickedUp == null || rateWeight <= 0.0) return selected;
+    // A faint/partially transparent source should contribute less than an
+    // opaque pigment sample.
+    final weight = (rateWeight * pickedUp.a).clamp(0.0, 1.0).toDouble();
+    if (weight <= 0.0) return selected;
     final selectedWeight = 1.0 - weight;
     return ui.Color.from(
       alpha: 1.0,
