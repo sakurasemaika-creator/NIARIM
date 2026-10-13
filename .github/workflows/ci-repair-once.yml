@@ -72,31 +72,6 @@ jobs:
           )
 
 
-          def replace_timeline_mode_switch(path):
-              file = Path(path)
-              content = file.read_text(encoding="utf-8")
-              start = content.find("    final modeSwitch = find.byWidgetPredicate((widget) {")
-              end_marker = "    consumeOnlyKnownTimelineOverflow(tester, 'timeline');"
-              end = content.find(end_marker, start) if start >= 0 else -1
-              if start < 0 or end < 0:
-                  if "final timelineModeButton = find.byIcon(" in content:
-                      print(f"Already repaired: {path}")
-                      return
-                  raise RuntimeError(f"Expected timeline mode-switch block missing: {path}")
-              replacement = """    final timelineModeButton = find.byIcon(
-              Icons.movie_filter_outlined,
-              skipOffstage: false,
-          );
-          expect(timelineModeButton, findsOneWidget);
-          await tester.tap(timelineModeButton, warnIfMissed: false);
-          await tester.pump(const Duration(milliseconds: 700));
-          consumeOnlyKnownTimelineOverflow(tester, 'timeline');"""
-              updated = content[:start] + replacement + content[end + len(end_marker):]
-              file.write_text(updated, encoding="utf-8")
-              print(f"Repaired: {path}")
-
-          replace_timeline_mode_switch("test/app_web_reference_export_exact_test.dart")
-
           PY
       - name: Apply canonical Dart formatting
         run: dart format lib test tool
