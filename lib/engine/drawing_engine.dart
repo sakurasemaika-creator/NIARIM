@@ -9,6 +9,7 @@ import 'brush_texture_selector.dart';
 import 'brush_render_plan.dart';
 import 'hair_fold_raster.dart';
 import 'outline_accent.dart';
+import 'perceptual_color_mixer.dart';
 import 'tile_manager.dart';
 
 final _jitterRng = math.Random();
@@ -1065,12 +1066,11 @@ class DrawingEngine {
   double _calculateDecay(double strokeLength) =>
       (1.0 - strokeLength / 2000).clamp(0.05, 1.0);
 
-  ui.Color mixColor(ui.Color below, ui.Color selected, double rate) {
-    final r = (below.r * rate + selected.r * (1 - rate)).clamp(0.0, 1.0);
-    final g = (below.g * rate + selected.g * (1 - rate)).clamp(0.0, 1.0);
-    final b = (below.b * rate + selected.b * (1 - rate)).clamp(0.0, 1.0);
-    return ui.Color.from(alpha: 1.0, red: r, green: g, blue: b);
-  }
+  /// Brush mixing uses hue-wheel interpolation so intermediate colours retain
+  /// their chroma instead of passing through a desaturated RGB average.
+  /// [rate] retains the existing contract: contribution from the colour below.
+  ui.Color mixColor(ui.Color below, ui.Color selected, double rate) =>
+      mixPerceptualColor(below, selected, rate);
 
   ui.Color bleedColor(
     ui.Color below,
