@@ -3010,7 +3010,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get brushSettingsStrokeDecaySubtitle => '持续绘制不透明度会降低';
 
   @override
-  String get brushSettingsMixingTitle => '混色';
+  String get brushSettingsMixingTitle => '混色模式';
 
   @override
   String get brushSettingsMixingOff => 'OFF';
@@ -10117,7 +10117,7 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get brushSettingsStrokeDecaySubtitle => '持續繪製不透明度會降低';
 
   @override
-  String get brushSettingsMixingTitle => '混色';
+  String get brushSettingsMixingTitle => '混色模式';
 
   @override
   String get brushSettingsMixingOff => 'OFF';
