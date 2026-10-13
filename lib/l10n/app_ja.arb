@@ -1371,7 +1371,7 @@
   "brushSettingsMixingOff": "OFF",
   "brushSettingsMixingSimple": "知覚的混色",
   "brushSettingsMixingBleed": "にじみ",
-  "brushSettingsMixingBrightnessCorrection": "輝度の補正"
+  "brushSettingsMixingBrightnessCorrection": "輝度の補正",
   "projectDetailNotFoundTitle": "プロジェクト",
   "projectDetailNotFoundBody": "プロジェクトが見つかりません",
   "projectDetailFirstFrameTooltip": "先頭フレーム",

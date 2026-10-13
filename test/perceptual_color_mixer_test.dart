@@ -79,7 +79,7 @@ void main() {
 
     expect(darker.g, lessThan(neutral.g));
     expect(darker.b, lessThan(neutral.b));
-    expect(brighter.g, greaterThan(neutral.g));
+    expect(brighter.r, greaterThan(neutral.r));
     expect(brighter.b, greaterThan(neutral.b));
 
     final endpoint = mixPerceptualColor(

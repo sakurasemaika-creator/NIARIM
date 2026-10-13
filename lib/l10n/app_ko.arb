@@ -1112,7 +1112,7 @@
   "brushSettingsMixingOff": "OFF",
   "brushSettingsMixingSimple": "지각적 혼색",
   "brushSettingsMixingBleed": "번짐",
-  "brushSettingsMixingBrightnessCorrection": "밝기 보정"
+  "brushSettingsMixingBrightnessCorrection": "밝기 보정",
   "projectDetailNotFoundTitle": "프로젝트",
   "projectDetailNotFoundBody": "프로젝트를 찾을 수 없습니다",
   "projectDetailFirstFrameTooltip": "첫 프레임",
