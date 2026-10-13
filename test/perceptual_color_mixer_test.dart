@@ -103,6 +103,29 @@ void main() {
     expect(mixed.b, greaterThan(0.95));
   });
 
+  test('OFF mixing mode is persisted separately from the saved mode', () {
+    final pressureOff = PressureMixingOffSetting.fromJson({
+      'enabled': false,
+      'mode': 'off',
+      'rate': 0,
+    });
+    expect(pressureOff.enabled, isFalse);
+    expect(pressureOff.mode, BrushMixingMode.off);
+    expect(pressureOff.toJson()['mode'], 'off');
+    expect(PressureMixingOffSetting.fromJson(pressureOff.toJson()), pressureOff);
+
+    final pressureOn = PressureMixingOnSetting.fromJson({
+      'enabled': false,
+      'mode': 'off',
+      'weakRate': 0,
+      'strongRate': 0,
+    });
+    expect(pressureOn.enabled, isFalse);
+    expect(pressureOn.mode, BrushMixingMode.off);
+    expect(pressureOn.toJson()['mode'], 'off');
+    expect(PressureMixingOnSetting.fromJson(pressureOn.toJson()), pressureOn);
+  });
+
   test('perceptual setting round-trips and renders through hue wheel', () {
     final setting = PressureMixingOffSetting.fromJson({
       'enabled': true,
