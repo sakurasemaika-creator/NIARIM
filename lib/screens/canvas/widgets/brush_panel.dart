@@ -1037,7 +1037,7 @@ class _BrushSettingsSheetState extends State<_BrushSettingsSheet> {
               ),
             ),
           ),
-          if (_usesPerceptualMixing(setting.mode))
+          if (_usesAnalogStyleMixing(setting.mode))
             _sliderRow(
               l10n.brushSettingsMixingBrightnessCorrection,
               setting.brightnessCorrection.toDouble(),
@@ -1097,7 +1097,7 @@ class _BrushSettingsSheetState extends State<_BrushSettingsSheet> {
               ),
             ),
           ),
-          if (_usesPerceptualMixing(setting.mode))
+          if (_usesAnalogStyleMixing(setting.mode))
             _sliderRow(
               l10n.brushSettingsMixingBrightnessCorrection,
               setting.brightnessCorrection.toDouble(),
@@ -1226,7 +1226,7 @@ class _BrushSettingsSheetState extends State<_BrushSettingsSheet> {
     FadeMode.custom => l10n.brushSettingsFadeCustom,
   };
 
-  bool _usesPerceptualMixing(BrushMixingMode mode) =>
+  bool _usesAnalogStyleMixing(BrushMixingMode mode) =>
       mode == BrushMixingMode.perceptual;
 
   String _mixingModeLabel(AppLocalizations l10n, BrushMixingMode mode) =>
