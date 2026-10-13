@@ -2479,7 +2479,7 @@ class AppLocalizationsEs extends AppLocalizations {
   String get assetTagMixing => 'Mezcla';
 
   @override
-  String get assetTagAnalog => 'Mezcla estilo analógico';
+  String get assetTagAnalog => 'Analógico';
 
   @override
   String get assetTagDecoration => 'Decoración';
