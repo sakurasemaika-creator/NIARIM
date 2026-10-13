@@ -107,7 +107,7 @@ jobs:
               ".github/workflows/save-safety-audit.yml",
               """npx --yes prettier@3.8.1 --write .github/workflows/save-safety-audit.yml docs/work-audit/state/ASTRA_CONTINUATION.md docs/work-audit/state/ASTRA_AUDIT_STATE.md 'docs/AI設計書/12_実装チェックリスト.md'""",
               """# Prettier rewrites technical underscores in audit-state Markdown as emphasis; keep those source-of-truth records out of this formatter gate.
-          npx --yes prettier@3.8.1 --write .github/workflows/save-safety-audit.yml 'docs/AI設計書/12_実装チェックリスト.md'"""
+                    npx --yes prettier@3.8.1 --write .github/workflows/save-safety-audit.yml 'docs/AI設計書/12_実装チェックリスト.md'"""
           )
           PY
       - name: Apply canonical Dart formatting
