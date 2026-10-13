@@ -801,16 +801,14 @@ class FadeEndpointSettings {
 
 enum BrushMixingMode {
   off,
-  // Legacy on-disk value. Old "simple" brushes are migrated to perceptual.
+  // Legacy on-disk value; rendered with the perceptual hue-wheel mixer.
   simple,
   bleed,
   perceptual,
 }
 
-BrushMixingMode _parseBrushMixingMode(Object? value) {
-  if (value == 'simple') return BrushMixingMode.perceptual;
-  return BrushMixingMode.values.firstWhere(
-    (mode) => mode.name == value,
-    orElse: () => BrushMixingMode.perceptual,
-  );
-}
+BrushMixingMode _parseBrushMixingMode(Object? value) =>
+    BrushMixingMode.values.firstWhere(
+      (mode) => mode.name == value,
+      orElse: () => BrushMixingMode.perceptual,
+    );

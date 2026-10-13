@@ -103,17 +103,24 @@ void main() {
     expect(mixed.b, greaterThan(0.95));
   });
 
-  test('legacy simple mixing setting migrates to perceptual', () {
+  test('legacy simple setting round-trips and keeps perceptual rendering', () {
     final setting = PressureMixingOffSetting.fromJson({
       'enabled': true,
       'mode': 'simple',
       'rate': 60,
     });
 
-    expect(setting.mode, BrushMixingMode.perceptual);
+    expect(setting.mode, BrushMixingMode.simple);
     expect(setting.brightnessCorrection, 3);
-    expect(setting.toJson()['mode'], 'perceptual');
+    expect(setting.toJson()['mode'], 'simple');
     expect(PressureMixingOffSetting.fromJson(setting.toJson()), setting);
+
+    // The legacy enum value must still take the same hue-wheel mixer path.
+    final mixed = DrawingEngine(
+      tileManager: TileManager(canvasWidth: 1, canvasHeight: 1),
+    ).mixColor(yellow, blue, 0.5);
+    expect(mixed.g, greaterThan(mixed.b));
+    expect(mixed.g, greaterThan(0.95));
   });
 
   test('mixing a chromatic colour with white keeps its hue', () {
