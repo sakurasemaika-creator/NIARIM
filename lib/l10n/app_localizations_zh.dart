@@ -3016,7 +3016,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get brushSettingsMixingOff => 'OFF';
 
   @override
-  String get brushSettingsMixingAnalog => '模拟风格混色';
+  String get brushSettingsMixingAnalog => '模拟风';
 
   @override
   String get brushSettingsMixingBleed => '晕染';
