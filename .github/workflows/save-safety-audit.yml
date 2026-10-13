@@ -33,6 +33,14 @@ on:
       - "test/custom_automation_draft_reorder_test.dart"
       - "test/canvas_mesh_handle_scale_contract_test.dart"
       - "test/canvas_angle_boundary_visual_audit_test.dart"
+      - "test/app_web_reference_capture_test.dart"
+      - "test/app_web_reference_export_exact_test.dart"
+      - "test/texture_filter_gold_palette_test.dart"
+      - "test/filter_engine_aurora_hologram_test.dart"
+      - "test/visual/glitter_lame_render_capture_test.dart"
+      - "tool/patch_glitter_hexagon.py"
+      - ".github/workflows/one-shot-glitter-actual-capture.yml"
+      - ".github/workflows/texture-filter-captures.yml"
 
 permissions:
   contents: read
