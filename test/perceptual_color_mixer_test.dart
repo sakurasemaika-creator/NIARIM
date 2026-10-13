@@ -197,6 +197,33 @@ void main() {
     expect(midpoint.blue, 0);
     expect(engine.bleedColor(selected, null, 1), selected);
     expect(engine.bleedColor(selected, pickedUp, 0), selected);
+
+    const translucentRed = ui.Color(0x80FF0000);
+    final faintPickup = engine.bleedColor(selected, translucentRed, 1);
+    expect(faintPickup.red, closeTo(128, 2));
+    expect(faintPickup.green, closeTo(127, 2));
+  });
+
+  test('read-only global pixel sampling crosses tile boundaries without allocating tiles', () {
+    final manager = TileManager(
+      canvasWidth: TileManager.tileSize * 2,
+      canvasHeight: TileManager.tileSize,
+    );
+    expect(manager.getPixelColorAt('layer', TileManager.tileSize + 2, 10), isNull);
+    expect(manager.exportAll(), isEmpty);
+
+    final tile = manager.getOrCreateTile('layer', 1, 0);
+    final index = (10 * TileManager.tileSize + 2) * 4;
+    tile[index] = 12;
+    tile[index + 1] = 34;
+    tile[index + 2] = 56;
+    tile[index + 3] = 255;
+    final sampled = manager.getPixelColorAt('layer', TileManager.tileSize + 2, 10);
+
+    expect(sampled, isNotNull);
+    expect(sampled!.red, 12);
+    expect(sampled.green, 34);
+    expect(sampled.blue, 56);
   });
 
   test('bleed mode drags paint from the starting pixel along the stroke', () {
