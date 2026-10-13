@@ -2351,7 +2351,7 @@ class AppLocalizationsJa extends AppLocalizations {
   String get assetTagMixing => '混色';
 
   @override
-  String get assetTagAnalog => 'アナログ風';
+  String get assetTagAnalog => 'アナログ風混色';
 
   @override
   String get assetTagDecoration => '装飾';
@@ -3033,7 +3033,7 @@ class AppLocalizationsJa extends AppLocalizations {
   String get brushSettingsMixingAnalog => 'アナログ風';
 
   @override
-  String get brushSettingsMixingBleed => 'にじみ';
+  String get brushSettingsMixingBleed => 'にじみ混色';
 
   @override
   String get brushSettingsMixingBrightnessCorrection => '輝度の補正';
