@@ -71,11 +71,6 @@ jobs:
               """name: '質感変更'"""
           )
 
-          replace_once(
-              "test/app_web_reference_capture_test.dart",
-              "find.text('タイムライン', skipOffstage: false)",
-              "find.byIcon(Icons.movie_filter_outlined, skipOffstage: false)"
-          )
 
           def replace_timeline_mode_switch(path):
               file = Path(path)
