@@ -4388,7 +4388,7 @@ abstract class AppLocalizations {
   /// No description provided for @assetTagAnalog.
   ///
   /// In ja, this message translates to:
-  /// **'アナログ風'**
+  /// **'アナログ風混色'**
   String get assetTagAnalog;
 
   /// No description provided for @assetTagDecoration.
@@ -5624,7 +5624,7 @@ abstract class AppLocalizations {
   /// No description provided for @brushSettingsMixingBleed.
   ///
   /// In ja, this message translates to:
-  /// **'にじみ'**
+  /// **'にじみ混色'**
   String get brushSettingsMixingBleed;
 
   /// No description provided for @brushSettingsMixingBrightnessCorrection.
