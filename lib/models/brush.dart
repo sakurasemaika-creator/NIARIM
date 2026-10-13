@@ -801,10 +801,8 @@ class FadeEndpointSettings {
 
 enum BrushMixingMode {
   off,
-  // Legacy on-disk value; rendered with the perceptual hue-wheel mixer.
-  simple,
-  bleed,
   perceptual,
+  bleed,
 }
 
 BrushMixingMode _parseBrushMixingMode(Object? value) =>
