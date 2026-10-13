@@ -1123,8 +1123,7 @@ class _BrushSettingsSheetState extends State<_BrushSettingsSheet> {
   }) {
     const modes = [BrushMixingMode.perceptual, BrushMixingMode.bleed];
     return RadioGroup<BrushMixingMode>(
-      groupValue: mode == BrushMixingMode.off ||
-              mode == BrushMixingMode.simple
+      groupValue: mode == BrushMixingMode.off
           ? BrushMixingMode.perceptual
           : mode,
       onChanged: (v) {
@@ -1228,13 +1227,12 @@ class _BrushSettingsSheetState extends State<_BrushSettingsSheet> {
   };
 
   bool _usesPerceptualMixing(BrushMixingMode mode) =>
-      mode == BrushMixingMode.perceptual || mode == BrushMixingMode.simple;
+      mode == BrushMixingMode.perceptual;
 
   String _mixingModeLabel(AppLocalizations l10n, BrushMixingMode mode) =>
       switch (mode) {
         BrushMixingMode.off => l10n.brushSettingsMixingOff,
-        BrushMixingMode.simple || BrushMixingMode.perceptual =>
-          l10n.brushSettingsMixingSimple,
+        BrushMixingMode.perceptual => l10n.brushSettingsMixingSimple,
         BrushMixingMode.bleed => l10n.brushSettingsMixingBleed,
       };
 }
