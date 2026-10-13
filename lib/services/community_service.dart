@@ -7,6 +7,7 @@ import '../models/community_work.dart';
 import 'api/community_api.dart';
 import 'api/niarim_api_exception.dart';
 import 'api/niarim_api_models.dart';
+import '../utils/tolerant_preferences.dart';
 
 /// フォロー中の作者タブに表示する1件（[CommunityService.favoriteAuthorFeed]）。
 /// フォロー中の作者自身の投稿か、フォロー中の作者が他者の作品をリポスト
@@ -164,18 +165,18 @@ class CommunityService extends ChangeNotifier {
     try {
       final prefs = await SharedPreferences.getInstance();
       _hideGenerativeAiImageVideo =
-          prefs.getBool(_hideAiImageVideoKey) ?? false;
+          prefs.readBool(_hideAiImageVideoKey) ?? false;
       _mutedWords
         ..clear()
         ..addAll(
-          (prefs.getStringList(_mutedWordsKey) ?? const [])
+          (prefs.readStringList(_mutedWordsKey) ?? const [])
               .map((e) => e.trim().toLowerCase())
               .where((e) => e.isNotEmpty),
         );
       _mutedTags
         ..clear()
         ..addAll(
-          (prefs.getStringList(_mutedTagsKey) ?? const [])
+          (prefs.readStringList(_mutedTagsKey) ?? const [])
               .map(_tagKey)
               .where((e) => e.isNotEmpty),
         );
@@ -413,7 +414,7 @@ class CommunityService extends ChangeNotifier {
   Future<void> restoreOwner(String accountKey) async {
     try {
       final prefs = await SharedPreferences.getInstance();
-      final id = prefs.getString('$_ownerByAccountPrefix$accountKey');
+      final id = prefs.readString('$_ownerByAccountPrefix$accountKey');
       if (id != null && _currentUserId == null) {
         _currentUserId = id;
         notifyListeners();

@@ -1,6 +1,8 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
+import 'app_locale.dart';
+
 /// アプリ内で発生した「画面が壊れる種類のエラー」を握りつぶさず、
 /// ユーザーの目に見える形にするための仕組み。
 ///
@@ -75,7 +77,9 @@ class AppErrorReporter {
 /// [ErrorWidget]の置き換え。壊れた状態で描画されるため、Theme・
 /// Localizations・Provider等の祖先に依存せず、素のウィジェットだけで
 /// 組み立てる（それらを参照すると、このエラー表示自体がさらに例外を
-/// 投げて本当に何も出なくなる）。
+/// 投げて本当に何も出なくなる）。文言は、祖先にロケールがあればその
+/// 言語、無ければ端末の言語で、生成済みの訳を直接引く（例外を投げない
+/// `Localizations.maybeLocaleOf`だけを使う）。
 class _AppErrorView extends StatelessWidget {
   final FlutterErrorDetails details;
   const _AppErrorView({required this.details});
@@ -83,6 +87,10 @@ class _AppErrorView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final message = details.exceptionAsString();
+    final l10n = appLocalizationsFor(
+      Localizations.maybeLocaleOf(context) ??
+          WidgetsBinding.instance.platformDispatcher.locale,
+    );
     return Directionality(
       textDirection: TextDirection.ltr,
       child: Container(
@@ -93,20 +101,18 @@ class _AppErrorView extends StatelessWidget {
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Text(
-                'この部分の表示でエラーが発生しました',
-                style: TextStyle(
+              Text(
+                l10n.errorViewTitle,
+                style: const TextStyle(
                   color: Colors.white,
                   fontSize: 14,
                   fontWeight: FontWeight.bold,
                 ),
               ),
               const SizedBox(height: 6),
-              const Text(
-                '作業中のデータは保持されています。前の画面へ戻ってから'
-                'もう一度お試しください。以下の内容を開発元へお知らせ'
-                'いただけると原因の特定に役立ちます。',
-                style: TextStyle(color: Colors.white70, fontSize: 11),
+              Text(
+                l10n.errorViewBody,
+                style: const TextStyle(color: Colors.white70, fontSize: 11),
               ),
               const SizedBox(height: 10),
               Container(

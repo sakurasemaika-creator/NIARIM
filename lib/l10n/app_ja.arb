@@ -3432,5 +3432,14 @@
   "canvasAutofillCheckParts": "パーツ分け確認",
   "canvasAutofillCheckSilhouette": "シルエット確認",
   "canvasBackgroundColorChoices": "白 / 黒 / 透明 / ベージュ",
-  "canvasTimelineModeTooltip": "タイムラインモード"
+  "canvasTimelineModeTooltip": "タイムラインモード",
+  "startupFailedTitle": "NIARIMを起動できませんでした",
+  "startupFailedBody": "保存されている作品や設定はそのまま残っています。もう一度お試しください。何度も起きる場合は、詳細をコピーして開発元へお知らせください。",
+  "startupFailedRetry": "もう一度試す",
+  "startupFailedRetrying": "起動しています…",
+  "startupFailedCopyDetails": "詳細をコピー",
+  "startupFailedDetailsCopied": "詳細をコピーしました",
+  "startupFailedDetails": "詳細",
+  "errorViewTitle": "この部分の表示でエラーが発生しました",
+  "errorViewBody": "作業中のデータは保持されています。前の画面へ戻ってからもう一度お試しください。以下の内容を開発元へお知らせいただけると原因の特定に役立ちます。"
 }

@@ -5687,7 +5687,7 @@ class AppLocalizationsKo extends AppLocalizations {
   String get workspaceOverwriteButton => '덮어쓰기';
 
   @override
-  String get splashCommunityButtonTitle => 'NIARIM 갤러리';
+  String get splashCommunityButtonTitle => '작품 광장';
 
   @override
   String get splashCommunityButtonSubtitle => '게시 작품 보기';
@@ -7172,4 +7172,33 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get canvasTimelineModeTooltip => '타임라인 모드';
+
+  @override
+  String get startupFailedTitle => 'NIARIM을 시작할 수 없습니다';
+
+  @override
+  String get startupFailedBody =>
+      '저장된 작품과 설정은 그대로 남아 있습니다. 다시 시도해 주세요. 계속 발생하면 상세 내용을 복사해 개발자에게 알려 주세요.';
+
+  @override
+  String get startupFailedRetry => '다시 시도';
+
+  @override
+  String get startupFailedRetrying => '시작하는 중…';
+
+  @override
+  String get startupFailedCopyDetails => '상세 내용 복사';
+
+  @override
+  String get startupFailedDetailsCopied => '상세 내용을 복사했습니다';
+
+  @override
+  String get startupFailedDetails => '상세 내용';
+
+  @override
+  String get errorViewTitle => '이 부분을 표시하는 중 오류가 발생했습니다';
+
+  @override
+  String get errorViewBody =>
+      '작업 중인 데이터는 보존되어 있습니다. 이전 화면으로 돌아가 다시 시도해 주세요. 아래 내용을 개발자에게 알려 주시면 원인을 찾는 데 도움이 됩니다.';
 }

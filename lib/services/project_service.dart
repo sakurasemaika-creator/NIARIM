@@ -25,6 +25,7 @@ import '../models/scene.dart';
 import '../models/text_object.dart';
 import '../engine/undo_manager.dart';
 import '../utils/app_error_reporter.dart';
+import '../utils/tolerant_preferences.dart';
 
 class ProjectFolder {
   final String id;
@@ -254,7 +255,7 @@ class ProjectService extends ChangeNotifier {
   Future<void> _loadTrashState() async {
     try {
       final prefs = await SharedPreferences.getInstance();
-      final raw = prefs.getStringList(_trashPrefsKey) ?? [];
+      final raw = prefs.readStringList(_trashPrefsKey) ?? [];
       for (final entry in raw) {
         final sep = entry.indexOf('|');
         if (sep < 0) continue;
@@ -2842,7 +2843,7 @@ class ProjectService extends ChangeNotifier {
   Future<void> _loadSharedFolders() async {
     try {
       final prefs = await SharedPreferences.getInstance();
-      final raw = prefs.getString(_sharedFoldersPrefsKey);
+      final raw = prefs.readString(_sharedFoldersPrefsKey);
       if (raw == null) return;
       final list = jsonDecode(raw) as List<dynamic>;
       _sharedFolders
@@ -2878,7 +2879,7 @@ class ProjectService extends ChangeNotifier {
   Future<void> _loadFolders() async {
     try {
       final prefs = await SharedPreferences.getInstance();
-      final raw = prefs.getString(_foldersPrefsKey);
+      final raw = prefs.readString(_foldersPrefsKey);
       if (raw == null) return;
       final list = jsonDecode(raw) as List<dynamic>;
       _folders

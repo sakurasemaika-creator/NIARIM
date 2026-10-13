@@ -10,6 +10,7 @@ import 'services/home_widget_service.dart';
 import 'services/project_service.dart';
 import 'services/settings_service.dart';
 import 'services/theme_service.dart';
+import 'utils/app_locale.dart';
 import 'widgets/app_scroll_behavior.dart';
 
 class NiarimApp extends StatefulWidget {
@@ -84,14 +85,14 @@ class _NiarimAppState extends State<NiarimApp> {
     final themeService = context.watch<ThemeService>();
     // 表示言語（日本語・English・简体中文・한국어・繁體中文・Français・Españolの7言語対応）。
     final language = context.watch<SettingsService>().language;
-    _syncHomeWidgets(context, themeService, _localeFromCode(language));
+    _syncHomeWidgets(context, themeService, localeFromLanguageCode(language));
     return MaterialApp.router(
       title: 'NIARIM',
       debugShowCheckedModeBanner: false,
       theme: themeService.themeData,
       scrollBehavior: const AppScrollBehavior(),
       routerConfig: appRouter,
-      locale: _localeFromCode(language),
+      locale: localeFromLanguageCode(language),
       supportedLocales: AppLocalizations.supportedLocales,
       localizationsDelegates: const [
         AppLocalizations.delegate,
@@ -115,16 +116,4 @@ class _NiarimAppState extends State<NiarimApp> {
       ),
     );
   }
-}
-
-/// SettingsService.languageに保存されている言語コードからLocaleを組み立てる。
-/// 繁体字中国語（'zh_Hant'）はscriptCodeを伴うロケールのため、単純な
-/// Locale(code)コンストラクタでは正しく解決できず、
-/// Locale.fromSubtags(languageCode: 'zh', scriptCode: 'Hant')で
-/// 明示的に組み立てる必要がある。他の言語はlanguageCodeのみで解決できる。
-Locale _localeFromCode(String code) {
-  if (code == 'zh_Hant') {
-    return const Locale.fromSubtags(languageCode: 'zh', scriptCode: 'Hant');
-  }
-  return Locale(code);
 }

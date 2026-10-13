@@ -5623,7 +5623,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get workspaceOverwriteButton => '覆盖保存';
 
   @override
-  String get splashCommunityButtonTitle => 'NIARIM 作品广场';
+  String get splashCommunityButtonTitle => '作品广场';
 
   @override
   String get splashCommunityButtonSubtitle => '浏览投稿作品';
@@ -7080,6 +7080,33 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get canvasTimelineModeTooltip => '时间轴模式';
+
+  @override
+  String get startupFailedTitle => '无法启动 NIARIM';
+
+  @override
+  String get startupFailedBody => '已保存的作品和设置都完好无损。请重试。如果问题反复出现，请复制详细信息并告知开发者。';
+
+  @override
+  String get startupFailedRetry => '重试';
+
+  @override
+  String get startupFailedRetrying => '正在启动…';
+
+  @override
+  String get startupFailedCopyDetails => '复制详细信息';
+
+  @override
+  String get startupFailedDetailsCopied => '已复制详细信息';
+
+  @override
+  String get startupFailedDetails => '详细信息';
+
+  @override
+  String get errorViewTitle => '显示此部分时出错';
+
+  @override
+  String get errorViewBody => '正在编辑的数据已保留。请返回上一个画面后重试。将以下内容告知开发者，有助于查明原因。';
 }
 
 /// The translations for Chinese, using the Han script (`zh_Hant`).
@@ -12701,7 +12728,7 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get workspaceOverwriteButton => '覆蓋儲存';
 
   @override
-  String get splashCommunityButtonTitle => 'NIARIM 作品廣場';
+  String get splashCommunityButtonTitle => '作品廣場';
 
   @override
   String get splashCommunityButtonSubtitle => '瀏覽投稿作品';
@@ -14158,4 +14185,32 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get canvasTimelineModeTooltip => '時間軸模式';
+
+  @override
+  String get startupFailedTitle => '無法啟動 NIARIM';
+
+  @override
+  String get startupFailedBody =>
+      '已儲存的作品和設定都完好無缺。請再試一次。如果問題持續發生，請複製詳細資訊並告知開發者。';
+
+  @override
+  String get startupFailedRetry => '再試一次';
+
+  @override
+  String get startupFailedRetrying => '正在啟動…';
+
+  @override
+  String get startupFailedCopyDetails => '複製詳細資訊';
+
+  @override
+  String get startupFailedDetailsCopied => '已複製詳細資訊';
+
+  @override
+  String get startupFailedDetails => '詳細資訊';
+
+  @override
+  String get errorViewTitle => '顯示此部分時發生錯誤';
+
+  @override
+  String get errorViewBody => '編輯中的資料已保留。請返回上一個畫面後再試一次。將以下內容告知開發者，有助於找出原因。';
 }

@@ -4,6 +4,7 @@ import 'package:flutter/foundation.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../models/autofill_preset.dart';
+import '../utils/tolerant_preferences.dart';
 
 /// 自動塗りプリセットの管理サービス。
 /// プロジェクト保存とは独立してプリセットを保持し、SharedPreferencesへ
@@ -183,7 +184,7 @@ class AutofillPresetService extends ChangeNotifier {
 
   Future<void> init() async {
     final prefs = await SharedPreferences.getInstance();
-    final raw = prefs.getStringList(_prefsKey);
+    final raw = prefs.readStringList(_prefsKey);
     _presets.clear();
     if (raw == null) {
       // 初回起動：サンプルプリセットを投入して即座に永続化する

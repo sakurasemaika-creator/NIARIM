@@ -6,6 +6,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import '../config/monetization_gate.dart';
 import '../utils/runtime_platform.dart';
+import '../utils/tolerant_preferences.dart';
 
 /// プレミアム加入状態・課金処理を管理する。
 /// 実際の課金はGoogle Play Billing（in_app_purchase）経由で行い、
@@ -143,12 +144,12 @@ class PremiumService extends ChangeNotifier {
 
   Future<void> init() async {
     final prefs = await SharedPreferences.getInstance();
-    _isPremium = prefs.getBool('is_premium') ?? false;
-    final purchaseMillis = prefs.getInt('premium_purchase_date');
+    _isPremium = prefs.readBool('is_premium') ?? false;
+    final purchaseMillis = prefs.readInt('premium_purchase_date');
     if (purchaseMillis != null) {
       _purchaseDate = DateTime.fromMillisecondsSinceEpoch(purchaseMillis);
     }
-    _purchasedProductId = prefs.getString('premium_purchase_product_id');
+    _purchasedProductId = prefs.readString('premium_purchase_product_id');
 
     // in_app_purchaseのストア実装はAndroid/iOS専用。widget testや
     // デスクトップ、Flutter Webでinstanceへ触れると、isAvailable()の

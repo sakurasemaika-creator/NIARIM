@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import '../utils/tolerant_preferences.dart';
 
 /// ホーム画面ウィジェットの種類。
 enum HomeWidgetKind {
@@ -144,7 +145,7 @@ class HomeWidgetService extends ChangeNotifier {
 
   Future<void> init() async {
     final prefs = await SharedPreferences.getInstance();
-    final raw = prefs.getString(_prefsKey);
+    final raw = prefs.readString(_prefsKey);
     if (raw == null) return;
     try {
       final json = jsonDecode(raw) as Map<String, dynamic>;

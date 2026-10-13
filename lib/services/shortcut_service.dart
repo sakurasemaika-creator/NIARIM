@@ -3,6 +3,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../models/shortcut_binding.dart';
+import '../utils/tolerant_preferences.dart';
 
 /// キーボード・左手デバイス用ショートカット。ツール選択（早替えツールと
 /// 同じ粒度でツール＋ブラシ＋太さまで指定できる）と、Undo/Redoなどの
@@ -18,7 +19,7 @@ class ShortcutService extends ChangeNotifier {
   Future<void> init() async {
     if (_bindings.isNotEmpty) return;
     final prefs = await SharedPreferences.getInstance();
-    final raw = prefs.getStringList(_prefsKey);
+    final raw = prefs.readStringList(_prefsKey);
     if (raw == null || raw.isEmpty) {
       // 既定値：従来ハードコードされていたUndo/Redoのキー割り当てを
       // そのまま初期状態として引き継ぐ。

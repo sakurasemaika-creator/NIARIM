@@ -35,7 +35,20 @@
 ## 開発ワークフロー（毎回のセッションで踏襲する）
 
 1. `export PATH="$PATH:/opt/flutter-sdk/bin"`（このリモート実行環境では
-   flutterがデフォルトPATHに無い。`/opt/flutter-sdk/bin`に入っている）
+   flutterがデフォルトPATHに無い。`/opt/flutter-sdk/bin`に入っている）。
+   コンテナが新しく作り直されて`/opt/flutter-sdk`自体が無い場合は、CIと
+   同じstableを`https://storage.googleapis.com/flutter_infra_release/releases/stable/linux/flutter_linux_<版>-stable.tar.xz`
+   から取って`/opt/flutter-sdk`へ展開する（2026-10-10時点は3.47.7）。
+   **実画面で操作して確かめるとき**は、Linuxデスクトップのデバッグビルド
+   （`flutter build linux --debug`。`libgtk-3-dev`・`libgstreamer1.0-dev`・
+   `libgstreamer-plugins-base1.0-dev`・`libjson-glib-dev`が要る）を
+   Xvfb＋openbox（ウィンドウの大きさを`wmctrl`で変えるため）で起動し、
+   `xdotool`でクリック・キー入力、`import -window`で撮る。HOMEを作業用の
+   ディレクトリにして`~/.config/user-dirs.dirs`を置くこと（無いと
+   path_providerの書類フォルダが取れない。製品はAndroidのみなので製品の
+   不具合ではない）。設定は`$XDG_DATA_HOME/com.niarim.niarim/shared_preferences.json`
+   （キーに`flutter.`が付く）を書けば任意の状態から始められる。タッチ・
+   マルチタッチ・筆圧はこの方法では出せない。
 2. コード変更後は必ず`flutter analyze`（ベースライン：**0 issues**。
    info１件も出ていない状態が正なので、**1件でも増えたらそれは自分が
    足したもの**として必ず直すこと。`Color.red/green/blue`は非推奨なので、
@@ -43,11 +56,14 @@
    `test/helpers/color_channels.dart`の`.red8`/`.green8`/`.blue8`/
    `.alpha8`を使う。テスト内のデバッグ出力は`print`ではなく
    `debugPrint`を使う）
-3. `flutter test`（ベースライン：2026-10-10時点で**成功1892・スキップ5・
+3. `flutter test`（ベースライン：2026-10-10時点で**成功1910・スキップ8・
    失敗4**。失敗は監査担当の`test/app_web_reference_*`3件と、別セッション
    （質感変更フィルターの名前変更）の`test/texture_filter_gold_palette_test.dart`
-   1件で、通常タスクでは直さない。全件で約25分かかるので、変更に関係する
-   テストを先に流し、最後に全件を流す）
+   1件で、通常タスクでは直さない。スキップのうち3件は
+   `test/google_auth_init_once_test.dart`で、
+   `--dart-define=NIARIM_GOOGLE_CLIENT_ID=test`を付けたときだけ動く。
+   全件で約15〜25分かかるので、変更に関係するテストを先に流し、最後に
+   全件を流す）
 4. **コード変更後は`dart format lib test tool`をかける**。
    リポジトリ全体を一度フォーマッタに通してあるので（コミット
    `0319d57`）、整形済みの状態が正。手で字下げを合わせようとしないこと。
@@ -235,6 +251,30 @@ FONT_LICENSES.txt`への本文・著作権表示の追記、`license_screen.dart
   遭遇したら、まずR8のusage.txt（GitHub ActionsのArtifactに残る）や
   ユーザーに取得してもらうAndroidの「バグレポート」機能でのログ確認を
   早い段階で検討すること。
+- **保存済み設定は`prefs.getInt`等で読まず、`prefs.readInt`等で読むこと**：
+  SharedPreferencesの`getInt`/`getBool`/`getDouble`/`getString`/
+  `getStringList`は`as int?`でキャストするため、同じキーに別の型の値が
+  入っていると例外を投げる。起動処理（各Serviceの`init`）でこれが起きると
+  **起動失敗画面から何度やり直しても同じ所で止まり、二度と起動できない**
+  （版の間でキーの型を変えた・設定ファイルが壊れた場合。実際に再現した）。
+  `lib/utils/tolerant_preferences.dart`の`readInt`等は型が違えばnull
+  （＝未設定）を返し、値は書き換えずに`AppErrorReporter`へ記録する。
+  `test/startup_failure_recovery_test.dart`が、lib配下の全リテラルキーへ
+  別の型の値を入れて起動できること・`prefs.getXxx(`が残っていないことを
+  見張っている。
+- **起動処理（`buildAppProviders`）へServiceを足すときは`enter`と`own`を通す**：
+  途中の初期化が失敗すると、それまでに作ったServiceを逆順に破棄してから
+  `AppStartupException`を投げ、`main.dart`が起動失敗画面
+  （`lib/widgets/startup_failure_app.dart`、7言語・「もう一度試す」）を出す。
+  `own(...)`を通さないServiceは破棄されず、やり直しで購読やリスナーが
+  二重になる（課金の購入通知を二度処理する等）。**プロセスに1つしか無い
+  ものを握るService**はやり直しで作り直されても壊れないようにすること：
+  GoogleSignInの`initialize`は1プロセス1回しか呼べないので
+  `GoogleAuthService`が`Expando`で使い回し、共有チャンネルのハンドラーは
+  持ち主だけが外す（`ShareIntentService`）。実画面で確かめるときは
+  デバッグビルドを`--dart-define=NIARIM_DEBUG_FAIL_STARTUP_STEP=brush`
+  （処理名は`enter`の引数）で起動すると、最初の1回だけその処理の直前で
+  失敗する。
 - **`backend/`のDynamoDB容量はAlways Free枠25 RCU/25 WCUちょうど**：
   `lib/niarim-backend-stack.ts`の`CAPACITY_PLAN`はテーブル本体15＋GSI 7本
   合計10＝25で上限いっぱい。GSIを足すときは必ずどこかを減らすこと。
@@ -397,7 +437,7 @@ FONT_LICENSES.txt`への本文・著作権表示の追記、`license_screen.dart
   自分の操作以外では現在レイヤーを合成し直さないため、**画面には古い絵が
   出たまま**になる、の2つが同時に起きる（実際に、フィルターを「適用」しても
   キャンバスが変わらず、取り消しもできなかった）。`ProjectService.
-  replaceLayerPixels`はタイル差分のUndo（プリズムの合成モード変更も含めて
+replaceLayerPixels`はタイル差分のUndo（プリズムの合成モード変更も含めて
   1手）を積み、`TileManager.addLayerContentListener`経由で`CanvasArea`が
   そのレイヤーを描き直す。自動操作のようにレイヤーを作ってから加工する
   一連の処理は`runWithGroupedUndo`の中で行うこと（その中で作ったレイヤーの
@@ -779,7 +819,7 @@ onTap: ...)`だったために
   要求を1つに畳んで最新だけ描く。調整モードの出入りで画像を破棄し忘れる
   と`ui.Image`がリークするので、`onClose`と`dispose`の両方で捨てている。
   **キャンバスの選択範囲は描画フィルターを内側に限る**：`CanvasArea.
-  onSelectionMaskChanged`→`canvas_screen`→`FilterPanel.selectionMask`と渡り、
+onSelectionMaskChanged`→`canvas_screen`→`FilterPanel.selectionMask`と渡り、
   プレビューは`runFilterPreviewInSelection`、適用は`restrictToSelection`
   （新規レイヤーを作る種類は`clearOutsideSelection`）で外側を元のまま残す
   （`lib/engine/filter_selection.dart`）。眼鏡断層だけは自分の「レンズの範囲」

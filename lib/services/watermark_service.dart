@@ -4,6 +4,7 @@ import 'package:flutter/foundation.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../models/watermark_asset.dart';
+import '../utils/tolerant_preferences.dart';
 
 /// ユーザーウォーターマーク管理サービス（プレミアム限定）。
 /// ウォーターマークは専用機能ではなく画像素材と同じタイムライン素材として
@@ -25,7 +26,7 @@ class WatermarkService extends ChangeNotifier {
 
   Future<void> init() async {
     final prefs = await SharedPreferences.getInstance();
-    final raw = prefs.getStringList(_prefsKey) ?? const [];
+    final raw = prefs.readStringList(_prefsKey) ?? const [];
     _assets.addAll(
       raw.map(
         (s) => WatermarkAsset.fromJson(jsonDecode(s) as Map<String, dynamic>),

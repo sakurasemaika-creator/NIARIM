@@ -8,6 +8,7 @@ import '../models/filter_canvas_gizmo.dart';
 import '../models/filter_def.dart';
 import '../models/layer.dart';
 import '../models/pixel_color_mode.dart';
+import '../utils/tolerant_preferences.dart';
 
 class FilterService extends ChangeNotifier {
   static const _prefsKey = 'draw_filters';
@@ -225,7 +226,7 @@ class FilterService extends ChangeNotifier {
 
   Future<void> init() async {
     final prefs = await SharedPreferences.getInstance();
-    final raw = prefs.getStringList(_prefsKey);
+    final raw = prefs.readStringList(_prefsKey);
     _filters.clear();
     if (raw == null) {
       _filters.addAll(_defaultFilters());

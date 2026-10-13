@@ -11,6 +11,7 @@ import '../engine/brush_texture_cache.dart';
 import '../models/asset_tags.dart';
 import '../models/brush.dart';
 import '../models/brush_presets_extension.dart';
+import '../utils/tolerant_preferences.dart';
 
 /// ブラシ管理サービス。
 /// SharedPreferencesへ永続化する（端末単位。プロジェクトファイルには含めない）。
@@ -843,7 +844,7 @@ class BrushService extends ChangeNotifier {
 
   Future<void> init() async {
     final prefs = await SharedPreferences.getInstance();
-    final raw = prefs.getStringList(_prefsKey);
+    final raw = prefs.readStringList(_prefsKey);
     _brushes.clear();
     if (raw == null) {
       // 初回起動：初期ブラシ一式を投入して即座に永続化する
@@ -909,7 +910,7 @@ class BrushService extends ChangeNotifier {
         await _persist();
       }
     }
-    final foldersRaw = prefs.getStringList(_foldersKey);
+    final foldersRaw = prefs.readStringList(_foldersKey);
     _folders.clear();
     if (foldersRaw != null) {
       _folders.addAll(
@@ -918,7 +919,7 @@ class BrushService extends ChangeNotifier {
         ),
       );
     }
-    final currentId = prefs.getString(_currentIdKey);
+    final currentId = prefs.readString(_currentIdKey);
     _currentBrush =
         _brushes.where((b) => b.id == currentId).firstOrNull ??
         _brushes.firstOrNull;

@@ -12,6 +12,7 @@ import '../../services/google_auth_service.dart';
 import '../../services/youtube_upload_service.dart';
 import '../../widgets/responsive.dart';
 import 'community_error_text.dart';
+import '../../utils/tolerant_preferences.dart';
 
 /// Where posting stands, shown under the form.
 enum _PostStatus {
@@ -114,18 +115,18 @@ class _CommunityPostScreenState extends State<CommunityPostScreen> {
   Future<void> _restorePendingUpload() async {
     try {
       final prefs = await SharedPreferences.getInstance();
-      final videoId = prefs.getString(_pendingVideoIdKey);
+      final videoId = prefs.readString(_pendingVideoIdKey);
       if (!mounted) return;
       if (videoId != null && videoId.isNotEmpty) {
         setState(() {
           _youtubeVideoId = videoId;
-          _uploadAccountId = prefs.getString(_pendingAccountIdKey);
-          _uploadAccountEmail = prefs.getString(_pendingAccountEmailKey);
-          _isShort = prefs.getBool(_pendingIsShortKey) ?? false;
-          _isNiarimPublished = prefs.getBool(_pendingPublishedKey) ?? true;
+          _uploadAccountId = prefs.readString(_pendingAccountIdKey);
+          _uploadAccountEmail = prefs.readString(_pendingAccountEmailKey);
+          _isShort = prefs.readBool(_pendingIsShortKey) ?? false;
+          _isNiarimPublished = prefs.readBool(_pendingPublishedKey) ?? true;
           _containsGenerativeAiImageOrVideo =
-              prefs.getBool(_pendingAiImageVideoKey) ?? false;
-          _titleController.text = prefs.getString(_pendingTitleKey) ?? '';
+              prefs.readBool(_pendingAiImageVideoKey) ?? false;
+          _titleController.text = prefs.readString(_pendingTitleKey) ?? '';
           _status = _PostStatus.pendingRestored;
         });
       }

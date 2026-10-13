@@ -5,6 +5,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import '../models/custom_automation.dart';
 import '../models/custom_automation_builtin_presets.dart';
+import '../utils/tolerant_preferences.dart';
 
 class CustomAutomationDraft {
   final String id;
@@ -58,7 +59,7 @@ class CustomAutomationService extends ChangeNotifier {
 
   Future<void> init() async {
     final prefs = await SharedPreferences.getInstance();
-    final raw = prefs.getStringList(_prefsKey);
+    final raw = prefs.readStringList(_prefsKey);
 
     _items.clear();
     if (raw == null) {
@@ -84,7 +85,7 @@ class CustomAutomationService extends ChangeNotifier {
     }
     _favoriteIds
       ..clear()
-      ..addAll(prefs.getStringList(_favoritesPrefsKey) ?? const <String>[]);
+      ..addAll(prefs.readStringList(_favoritesPrefsKey) ?? const <String>[]);
     _favoriteIds.removeWhere((id) => _items.every((item) => item.id != id));
     await _persistFavorites();
     notifyListeners();
@@ -120,7 +121,7 @@ class CustomAutomationService extends ChangeNotifier {
     // A list saved before this record was kept had every preset shipped so
     // far offered to it.
     final offered =
-        prefs.getStringList(_offeredBuiltinsKey)?.toSet() ??
+        prefs.readStringList(_offeredBuiltinsKey)?.toSet() ??
         shipped.keys.toSet();
     for (final preset in shipped.values) {
       if (offered.contains(preset.id)) continue;

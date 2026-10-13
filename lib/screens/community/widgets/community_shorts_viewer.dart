@@ -11,6 +11,7 @@ import '../../../widgets/ad_banner_mock_widget.dart';
 import '../community_author_works_screen.dart';
 import 'community_work_card.dart' show communityThumbnailGradient;
 import '../community_edit_feedback.dart';
+import '../../../utils/tolerant_preferences.dart';
 
 enum CommunityShortsEndBehavior { loopCurrent, autoAdvance }
 
@@ -64,7 +65,7 @@ class _CommunityShortsScreenState extends State<CommunityShortsScreen> {
 
   Future<void> _loadEndBehavior() async {
     final prefs = await SharedPreferences.getInstance();
-    final saved = prefs.getString(_endBehaviorPreferenceKey);
+    final saved = prefs.readString(_endBehaviorPreferenceKey);
     if (!mounted || saved == null) return;
     final restored = CommunityShortsEndBehavior.values.where(
       (value) => value.name == saved,

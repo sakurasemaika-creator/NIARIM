@@ -2419,7 +2419,7 @@
       }
     }
   },
-  "splashCommunityButtonTitle": "NIARIM 作品广场",
+  "splashCommunityButtonTitle": "作品广场",
   "splashCommunityButtonSubtitle": "浏览投稿作品",
   "splashCreateButton": "制作动画",
   "communityScreenTitle": "作品广场",
@@ -2975,5 +2975,14 @@
   "canvasAutofillCheckParts": "检查部件区分",
   "canvasAutofillCheckSilhouette": "检查剪影",
   "canvasBackgroundColorChoices": "白 / 黑 / 透明 / 米色",
-  "canvasTimelineModeTooltip": "时间轴模式"
+  "canvasTimelineModeTooltip": "时间轴模式",
+  "startupFailedTitle": "无法启动 NIARIM",
+  "startupFailedBody": "已保存的作品和设置都完好无损。请重试。如果问题反复出现，请复制详细信息并告知开发者。",
+  "startupFailedRetry": "重试",
+  "startupFailedRetrying": "正在启动…",
+  "startupFailedCopyDetails": "复制详细信息",
+  "startupFailedDetailsCopied": "已复制详细信息",
+  "startupFailedDetails": "详细信息",
+  "errorViewTitle": "显示此部分时出错",
+  "errorViewBody": "正在编辑的数据已保留。请返回上一个画面后重试。将以下内容告知开发者，有助于查明原因。"
 }

@@ -4,6 +4,7 @@ import 'package:flutter/foundation.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../models/workspace_preset.dart';
+import '../utils/tolerant_preferences.dart';
 
 /// ワークスペース（左利き設定・PC/DeXモード）を名前を付けて保存・読込・削除する
 /// （ワークスペース保存・読込。例：アニメ用／線画用／背景用）。
@@ -15,7 +16,7 @@ class WorkspacePresetService extends ChangeNotifier {
 
   Future<void> init() async {
     final prefs = await SharedPreferences.getInstance();
-    final raw = prefs.getStringList(_prefsKey) ?? const [];
+    final raw = prefs.readStringList(_prefsKey) ?? const [];
     _presets
       ..clear()
       ..addAll(
