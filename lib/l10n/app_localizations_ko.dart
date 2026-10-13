@@ -3042,7 +3042,7 @@ class AppLocalizationsKo extends AppLocalizations {
   String get brushSettingsMixingOff => 'OFF';
 
   @override
-  String get brushSettingsMixingSimple => '간이 혼색';
+  String get brushSettingsMixingSimple => '지각적 혼색';
 
   @override
   String get brushSettingsMixingBleed => '번짐';

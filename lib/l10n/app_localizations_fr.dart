@@ -3173,7 +3173,7 @@ class AppLocalizationsFr extends AppLocalizations {
   String get brushSettingsMixingOff => 'OFF';
 
   @override
-  String get brushSettingsMixingSimple => 'Mélange simple';
+  String get brushSettingsMixingSimple => 'Mélange perceptif';
 
   @override
   String get brushSettingsMixingBleed => 'Effet de bavure';

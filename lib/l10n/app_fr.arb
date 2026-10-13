@@ -1110,7 +1110,7 @@
   "brushSettingsStrokeDecaySubtitle": "L'opacité diminue plus vous dessinez longtemps",
   "brushSettingsMixingTitle": "Mélange des couleurs",
   "brushSettingsMixingOff": "OFF",
-  "brushSettingsMixingSimple": "Mélange simple",
+  "brushSettingsMixingSimple": "Mélange perceptif",
   "brushSettingsMixingBleed": "Effet de bavure",
   "projectDetailNotFoundTitle": "Projet",
   "projectDetailNotFoundBody": "Projet introuvable",

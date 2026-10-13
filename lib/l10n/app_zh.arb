@@ -1110,7 +1110,7 @@
   "brushSettingsStrokeDecaySubtitle": "持续绘制不透明度会降低",
   "brushSettingsMixingTitle": "混色",
   "brushSettingsMixingOff": "OFF",
-  "brushSettingsMixingSimple": "简易混色",
+  "brushSettingsMixingSimple": "知觉混色",
   "brushSettingsMixingBleed": "晕染",
   "projectDetailNotFoundTitle": "项目",
   "projectDetailNotFoundBody": "找不到项目",

@@ -3030,7 +3030,7 @@ class AppLocalizationsJa extends AppLocalizations {
   String get brushSettingsMixingOff => 'OFF';
 
   @override
-  String get brushSettingsMixingSimple => '簡易混色';
+  String get brushSettingsMixingSimple => '知覚的混色';
 
   @override
   String get brushSettingsMixingBleed => 'にじみ';

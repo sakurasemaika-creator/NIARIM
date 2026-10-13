@@ -1369,7 +1369,7 @@
   "brushSettingsStrokeDecaySubtitle": "描き続けるほど不透明度が下がる",
   "brushSettingsMixingTitle": "混色",
   "brushSettingsMixingOff": "OFF",
-  "brushSettingsMixingSimple": "簡易混色",
+  "brushSettingsMixingSimple": "知覚的混色",
   "brushSettingsMixingBleed": "にじみ",
   "projectDetailNotFoundTitle": "プロジェクト",
   "projectDetailNotFoundBody": "プロジェクトが見つかりません",
