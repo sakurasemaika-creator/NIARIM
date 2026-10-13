@@ -2360,7 +2360,7 @@ class AppLocalizationsKo extends AppLocalizations {
   String get assetTagMixing => '혼색';
 
   @override
-  String get assetTagAnalog => '아날로그풍 혼색';
+  String get assetTagAnalog => '아날로그풍';
 
   @override
   String get assetTagDecoration => '장식';
