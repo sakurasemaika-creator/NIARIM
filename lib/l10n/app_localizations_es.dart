@@ -3177,10 +3177,10 @@ class AppLocalizationsEs extends AppLocalizations {
   String get brushSettingsMixingOff => 'OFF';
 
   @override
-  String get brushSettingsMixingAnalog => 'Mezcla estilo analógico';
+  String get brushSettingsMixingAnalog => 'Analógico';
 
   @override
-  String get brushSettingsMixingBleed => 'Mezcla con sangrado';
+  String get brushSettingsMixingBleed => 'Sangrado';
 
   @override
   String get brushSettingsMixingBrightnessCorrection => 'Corrección de luminosidad';
