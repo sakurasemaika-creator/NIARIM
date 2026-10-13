@@ -15,10 +15,22 @@ void main() {
         'one whole opaque block', () {
       final engine = FilterEngine();
       final input = Uint8List.fromList([
-        255, 0, 0, 255,
-        0, 0, 0, 0,
-        0, 0, 0, 0,
-        0, 0, 0, 0,
+        255,
+        0,
+        0,
+        255,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
       ]);
 
       final output = engine.applyPixelate(
@@ -39,10 +51,22 @@ void main() {
         'pixel', () {
       final engine = FilterEngine();
       final input = Uint8List.fromList([
-        240, 180, 90, 255,
-        240, 180, 90, 128,
-        0, 0, 0, 0,
-        240, 180, 90, 255,
+        240,
+        180,
+        90,
+        255,
+        240,
+        180,
+        90,
+        128,
+        0,
+        0,
+        0,
+        0,
+        240,
+        180,
+        90,
+        255,
       ]);
 
       final output = engine.applyPixelate(
@@ -59,29 +83,77 @@ void main() {
       }
     });
 
-    test('mosaic remains an alpha-averaging effect separate from pixel art', () {
-      final engine = FilterEngine();
-      final input = Uint8List.fromList([
-        255, 0, 0, 255,
-        0, 0, 0, 0,
-        0, 0, 0, 0,
-        0, 0, 0, 0,
-      ]);
+    test(
+      'mosaic remains an alpha-averaging effect separate from pixel art',
+      () {
+        final engine = FilterEngine();
+        final input = Uint8List.fromList([
+          255,
+          0,
+          0,
+          255,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+        ]);
 
-      final output = engine.applyMosaic(input, 2, 2, 2);
+        final output = engine.applyMosaic(input, 2, 2, 2);
 
-      expect(output[3], 64);
-      expect(output[7], 64);
-      expect(output[11], 64);
-      expect(output[15], 64);
-    });
+        expect(output[3], 64);
+        expect(output[7], 64);
+        expect(output[11], 64);
+        expect(output[15], 64);
+      },
+    );
 
     test('transparent diagonal outer edge never gains intermediate alpha', () {
       final engine = FilterEngine();
       final input = Uint8List.fromList([
-        255, 0, 0, 255, 0, 0, 0, 0, 0, 0, 0, 0,
-        255, 0, 0, 255, 255, 0, 0, 255, 0, 0, 0, 0,
-        255, 0, 0, 255, 255, 0, 0, 255, 255, 0, 0, 255,
+        255,
+        0,
+        0,
+        255,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        255,
+        0,
+        0,
+        255,
+        255,
+        0,
+        0,
+        255,
+        0,
+        0,
+        0,
+        0,
+        255,
+        0,
+        0,
+        255,
+        255,
+        0,
+        0,
+        255,
+        255,
+        0,
+        0,
+        255,
       ]);
 
       final output = engine.applyPixelate(
@@ -97,34 +169,84 @@ void main() {
       }
     });
 
-    test('axis-aligned opaque color boundary does not invent a middle color', () {
-      final engine = FilterEngine();
-      final input = Uint8List.fromList([
-        255, 0, 0, 255, 255, 0, 0, 255,
-        0, 0, 255, 255, 0, 0, 255, 255,
-      ]);
+    test(
+      'axis-aligned opaque color boundary does not invent a middle color',
+      () {
+        final engine = FilterEngine();
+        final input = Uint8List.fromList([
+          255,
+          0,
+          0,
+          255,
+          255,
+          0,
+          0,
+          255,
+          0,
+          0,
+          255,
+          255,
+          0,
+          0,
+          255,
+          255,
+        ]);
 
-      final output = engine.applyPixelate(
-        input,
-        2,
-        2,
-        mosaicSize: 1,
-        colorMode: PixelColorMode.none,
-      );
+        final output = engine.applyPixelate(
+          input,
+          2,
+          2,
+          mosaicSize: 1,
+          colorMode: PixelColorMode.none,
+        );
 
-      final rgb = <String>{};
-      for (var i = 0; i < output.length; i += 4) {
-        rgb.add('${output[i]},${output[i + 1]},${output[i + 2]}');
-      }
-      expect(rgb, {'255,0,0', '0,0,255'});
-    });
+        final rgb = <String>{};
+        for (var i = 0; i < output.length; i += 4) {
+          rgb.add('${output[i]},${output[i + 1]},${output[i + 2]}');
+        }
+        expect(rgb, {'255,0,0', '0,0,255'});
+      },
+    );
 
     test('explicit palette never synthesizes a color outside the palette', () {
       final engine = FilterEngine();
       final input = Uint8List.fromList([
-        255, 0, 0, 255, 0, 0, 255, 255, 0, 0, 255, 255,
-        255, 0, 0, 255, 255, 0, 0, 255, 0, 0, 255, 255,
-        255, 0, 0, 255, 255, 0, 0, 255, 255, 0, 0, 255,
+        255,
+        0,
+        0,
+        255,
+        0,
+        0,
+        255,
+        255,
+        0,
+        0,
+        255,
+        255,
+        255,
+        0,
+        0,
+        255,
+        255,
+        0,
+        0,
+        255,
+        0,
+        0,
+        255,
+        255,
+        255,
+        0,
+        0,
+        255,
+        255,
+        0,
+        0,
+        255,
+        255,
+        0,
+        0,
+        255,
       ]);
       const palette = [0xFFFF0000, 0xFF800080, 0xFF0000FF];
 
@@ -139,7 +261,10 @@ void main() {
 
       final allowed = {'255,0,0', '128,0,128', '0,0,255'};
       for (var i = 0; i < output.length; i += 4) {
-        expect(allowed, contains('${output[i]},${output[i + 1]},${output[i + 2]}'));
+        expect(
+          allowed,
+          contains('${output[i]},${output[i + 1]},${output[i + 2]}'),
+        );
       }
     });
   });

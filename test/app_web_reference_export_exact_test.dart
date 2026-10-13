@@ -146,8 +146,9 @@ void main() {
       await tester.pump(const Duration(milliseconds: 500));
     }
 
-    GoRouter.of(tester.element(find.byType(Scaffold).first))
-        .push('/new-project');
+    GoRouter.of(
+      tester.element(find.byType(Scaffold).first),
+    ).push('/new-project');
     await tester.pump(const Duration(milliseconds: 600));
     final create = find.widgetWithText(FilledButton, '作成', skipOffstage: false);
     await tester.dragUntilVisible(
@@ -159,16 +160,12 @@ void main() {
     await tester.tap(create.first, warnIfMissed: false);
     await tester.pump(const Duration(milliseconds: 900));
 
-    final modeSwitch = find.byWidgetPredicate((widget) {
-      if (widget is! SegmentedButton<String>) return false;
-      return widget.segments.any((segment) => segment.value == 'timeline');
-    }, skipOffstage: false);
-    expect(modeSwitch, findsWidgets);
-    final switchWidget = tester.widget<SegmentedButton<String>>(
-      modeSwitch.last,
+    final timelineModeButton = find.byIcon(
+      Icons.movie_filter_outlined,
+      skipOffstage: false,
     );
-    expect(switchWidget.onSelectionChanged, isNotNull);
-    switchWidget.onSelectionChanged!.call({'timeline'});
+    expect(timelineModeButton, findsOneWidget);
+    await tester.tap(timelineModeButton, warnIfMissed: false);
     await tester.pump(const Duration(milliseconds: 700));
     consumeOnlyKnownTimelineOverflow(tester, 'timeline');
 

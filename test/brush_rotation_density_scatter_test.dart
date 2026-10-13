@@ -80,22 +80,25 @@ Uint8List _drawLine(Brush brush, List<StrokePoint> points) {
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
-  test('Brush JSON round-trips rotation density and scatter with old-data defaults', () {
-    final brush = _brush(rotation: true, density: 2.4, scatter: 0.35);
-    final restored = Brush.fromJson(brush.toJson());
-    expect(restored.rotation, true);
-    expect(restored.density, 2.4);
-    expect(restored.scatter, 0.35);
+  test(
+    'Brush JSON round-trips rotation density and scatter with old-data defaults',
+    () {
+      final brush = _brush(rotation: true, density: 2.4, scatter: 0.35);
+      final restored = Brush.fromJson(brush.toJson());
+      expect(restored.rotation, true);
+      expect(restored.density, 2.4);
+      expect(restored.scatter, 0.35);
 
-    final legacy = Map<String, dynamic>.from(brush.toJson())
-      ..remove('rotation')
-      ..remove('density')
-      ..remove('scatter');
-    final legacyRestored = Brush.fromJson(legacy);
-    expect(legacyRestored.rotation, false);
-    expect(legacyRestored.density, 1.0);
-    expect(legacyRestored.scatter, 0.0);
-  });
+      final legacy = Map<String, dynamic>.from(brush.toJson())
+        ..remove('rotation')
+        ..remove('density')
+        ..remove('scatter');
+      final legacyRestored = Brush.fromJson(legacy);
+      expect(legacyRestored.rotation, false);
+      expect(legacyRestored.density, 1.0);
+      expect(legacyRestored.scatter, 0.0);
+    },
+  );
 
   test('higher brush density creates more separated stamp coverage', () {
     final normal = _drawLine(_brush(size: 2, spacing: 20, density: 1.0), const [

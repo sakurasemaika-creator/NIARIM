@@ -226,8 +226,9 @@ void main() {
     WidgetTester tester,
   ) async {
     await bootToHome(tester);
-    GoRouter.of(tester.element(find.byType(Scaffold).first))
-        .push('/new-project');
+    GoRouter.of(
+      tester.element(find.byType(Scaffold).first),
+    ).push('/new-project');
     await tester.pump(const Duration(milliseconds: 650));
     expectClean(tester, '新規プロジェクト画面');
     await tapReachable(tester, find.text('作成', skipOffstage: false));
@@ -246,7 +247,10 @@ void main() {
   }
 
   Future<void> openTimelineFromCanvas(WidgetTester tester) async {
-    await tapReachable(tester, find.text('タイムライン', skipOffstage: false));
+    await tapReachable(
+      tester,
+      find.byIcon(Icons.movie_filter_outlined, skipOffstage: false),
+    );
     await tester.pump(const Duration(milliseconds: 550));
     consumeKnownTimelineOverflow(tester);
   }
@@ -285,8 +289,9 @@ void main() {
       ),
     );
     await tester.pump(const Duration(milliseconds: 250));
-    GoRouter.of(tester.element(find.byType(Scaffold).first))
-        .go('/canvas/${ids.$1}');
+    GoRouter.of(
+      tester.element(find.byType(Scaffold).first),
+    ).go('/canvas/${ids.$1}');
     await tester.pump(const Duration(milliseconds: 700));
     await openTimelineFromCanvas(tester);
     await tapReachable(tester, find.text('比較用音声', skipOffstage: false));
@@ -306,8 +311,9 @@ void main() {
     await tester.pump(const Duration(milliseconds: 500));
     expectClean(tester, 'Canvas→SaveSlot');
     await capture(tester, '06_save_slot');
-    GoRouter.of(tester.element(find.byType(Scaffold).first))
-        .go('/canvas/${ids.$1}');
+    GoRouter.of(
+      tester.element(find.byType(Scaffold).first),
+    ).go('/canvas/${ids.$1}');
     await tester.pump(const Duration(milliseconds: 700));
     await openTimelineFromCanvas(tester);
     await tapReachable(
@@ -334,8 +340,9 @@ void main() {
     if (workspace.evaluate().isNotEmpty) {
       await tapReachable(tester, workspace);
     } else {
-      GoRouter.of(tester.element(find.byType(Scaffold).first))
-          .push('/settings/workspace');
+      GoRouter.of(
+        tester.element(find.byType(Scaffold).first),
+      ).push('/settings/workspace');
       await tester.pump(const Duration(milliseconds: 500));
     }
     expectClean(tester, '設定→ワークスペース');

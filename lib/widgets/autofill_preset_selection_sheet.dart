@@ -3,7 +3,6 @@ import '../l10n/app_localizations.dart';
 import '../models/autofill_preset.dart';
 import '../config/font_fallback.dart';
 
-
 /// パーツ割り当てUIに表示するプリセットを、プロジェクトの選択状態で絞り込む。
 /// nullは「現在および今後の全プリセット」を意味する。
 List<AutofillPreset> enabledAutofillPresets(

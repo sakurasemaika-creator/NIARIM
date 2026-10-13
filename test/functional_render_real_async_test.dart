@@ -414,19 +414,21 @@ List<int>? _reference(LayerBlendMode mode) {
     LayerBlendMode.difference => (cb - cs).abs(),
     LayerBlendMode.linearBurn => math.max(0, cb + cs - 1),
     LayerBlendMode.linearDodge => math.min(1, cb + cs),
-    LayerBlendMode.vividLight => cs <= .5
-        ? (2 * cs <= 0 ? 0 : 1 - math.min(1, (1 - cb) / (2 * cs)))
-        : (2 * (cs - .5) >= 1 ? 1 : math.min(1, cb / (1 - 2 * (cs - .5)))),
-    LayerBlendMode.linearLight => cs <= .5
-        ? math.max(0, cb + 2 * cs - 1)
-        : math.min(1, cb + 2 * (cs - .5)),
-    LayerBlendMode.pinLight => cs <= .5
-        ? math.min(cb, 2 * cs)
-        : math.max(cb, 2 * (cs - .5)),
+    LayerBlendMode.vividLight =>
+      cs <= .5
+          ? (2 * cs <= 0 ? 0 : 1 - math.min(1, (1 - cb) / (2 * cs)))
+          : (2 * (cs - .5) >= 1 ? 1 : math.min(1, cb / (1 - 2 * (cs - .5)))),
+    LayerBlendMode.linearLight =>
+      cs <= .5 ? math.max(0, cb + 2 * cs - 1) : math.min(1, cb + 2 * (cs - .5)),
+    LayerBlendMode.pinLight =>
+      cs <= .5 ? math.min(cb, 2 * cs) : math.max(cb, 2 * (cs - .5)),
     LayerBlendMode.hardMix =>
       (cs <= .5
-              ? (2 * cs <= 0 ? 0 : 1 - math.min(1, (1 - cb) / (2 * cs)))
-              : (2 * (cs - .5) >= 1 ? 1 : math.min(1, cb / (1 - 2 * (cs - .5))))) < .5
+                  ? (2 * cs <= 0 ? 0 : 1 - math.min(1, (1 - cb) / (2 * cs)))
+                  : (2 * (cs - .5) >= 1
+                        ? 1
+                        : math.min(1, cb / (1 - 2 * (cs - .5))))) <
+              .5
           ? 0
           : 1,
     LayerBlendMode.exclusion => cb + cs - 2 * cb * cs,

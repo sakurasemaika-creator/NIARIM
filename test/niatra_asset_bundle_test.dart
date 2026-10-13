@@ -217,20 +217,16 @@ void main() {
     final data =
         jsonDecode(utf8.decode(dataFile.content as List<int>))
             as Map<String, dynamic>;
-    final brushJson =
-        (data['brushes'] as List).single as Map<String, dynamic>;
+    final brushJson = (data['brushes'] as List).single as Map<String, dynamic>;
     expect(brushJson['customImagePath'], isNull);
     expect(brushJson['customImagePaths'], isEmpty);
-    expect(
-      brushJson['embeddedImagePaths'],
-      [
-        'CreativeAssets/Brushes/0/000.png',
-        'CreativeAssets/Brushes/0/001.png',
-        'CreativeAssets/Brushes/0/002.png',
-        'CreativeAssets/Brushes/0/003.png',
-        'CreativeAssets/Brushes/0/004.png',
-      ],
-    );
+    expect(brushJson['embeddedImagePaths'], [
+      'CreativeAssets/Brushes/0/000.png',
+      'CreativeAssets/Brushes/0/001.png',
+      'CreativeAssets/Brushes/0/002.png',
+      'CreativeAssets/Brushes/0/003.png',
+      'CreativeAssets/Brushes/0/004.png',
+    ]);
   });
 
   test('niatra restores multi-image brush files in order', () async {
@@ -295,5 +291,4 @@ void main() {
       expect((await file.readAsBytes()).first, i + 11);
     }
   });
-
 }

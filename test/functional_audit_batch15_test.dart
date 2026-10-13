@@ -101,7 +101,8 @@ void main() {
     expect(
       sparse,
       orderedEquals(dense),
-      reason: 'scatter RNG sequence and path normals must also be event-density invariant',
+      reason:
+          'scatter RNG sequence and path normals must also be event-density invariant',
     );
   });
 
@@ -128,7 +129,8 @@ void main() {
     expect(
       legacySampled.length,
       lessThan(raw.length),
-      reason: 'this demonstrates why pre-sampling before StampEngine loses geometry',
+      reason:
+          'this demonstrates why pre-sampling before StampEngine loses geometry',
     );
     expect(legacySampled, isNot(orderedEquals(raw)));
   });

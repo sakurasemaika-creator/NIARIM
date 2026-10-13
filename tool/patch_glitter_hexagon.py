@@ -4,7 +4,15 @@ from pathlib import Path
 p = Path('lib/engine/drawing_engine.dart')
 s = p.read_text()
 
-if "final isGlitterHexagon = brush.id == 'Brush0016';" not in s:
+already_has_modern_hexagon = (
+    "final isGlitterHexagon = brush.tipShape == BrushTipShape.hexagon;" in s
+    and "hexagon: isGlitterHexagon," in s
+    and "particleRotation: particleRotation," in s
+)
+already_has_legacy_hexagon = (
+    "final isGlitterHexagon = brush.id == 'Brush0016';" in s
+)
+if not (already_has_modern_hexagon or already_has_legacy_hexagon):
     old = """    final radius = size / 2.0;\n    final alphaInt = (opacity * 255).round().clamp(0, 255);\n    if (alphaInt == 0) return;\n"""
     new = """    final radius = size / 2.0;\n    final alphaInt = (opacity * 255).round().clamp(0, 255);\n    if (alphaInt == 0) return;\n\n    // グリッターペンは大きな六角形フレークとして描画する。粒ごとに向きを\n    // ランダム化し、同じ向きの六角形が機械的に並ぶ見た目を避ける。\n    // ラメペンを含む他ブラシは従来どおり円形スタンプのまま。\n    final isGlitterHexagon = brush.id == 'Brush0016';\n    final particleRotation = isGlitterHexagon\n        ? _scatterRng.nextDouble() * math.pi * 2.0\n        : 0.0;\n"""
     assert old in s, 'anchor 1 not found'

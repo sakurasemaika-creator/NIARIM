@@ -38,16 +38,27 @@ void main() {
     expect(service.isBuiltIn('Brush0025'), isTrue);
   });
 
-  test('existing saved brush list receives missing extension presets', () async {
-    SharedPreferences.setMockInitialValues(<String, Object>{
-      'brushes': <String>[],
-    });
-    final service = BrushService();
-    await service.init();
+  test(
+    'existing saved brush list receives missing extension presets',
+    () async {
+      SharedPreferences.setMockInitialValues(<String, Object>{
+        'brushes': <String>[],
+      });
+      final service = BrushService();
+      await service.init();
 
-    final ids = service.brushes.map((brush) => brush.id).toSet();
-    expect(ids, containsAll(<String>{'Brush0022', 'Brush0023', 'Brush0024', 'Brush0025'}));
-  });
+      final ids = service.brushes.map((brush) => brush.id).toSet();
+      expect(
+        ids,
+        containsAll(<String>{
+          'Brush0022',
+          'Brush0023',
+          'Brush0024',
+          'Brush0025',
+        }),
+      );
+    },
+  );
 
   test(
     'saved hair preset receives minimum exit while bangs and custom copies keep their settings',
@@ -57,8 +68,10 @@ void main() {
       final hair = first.brushes.singleWhere((b) => b.id == 'Brush0023');
       final bangs = first.brushes.singleWhere((b) => b.id == 'Brush0024');
       final oldHair = hair.copyWith(
-        fadeMode: FadeMode.weak, isFavorite: true,
-        folderId: 'my-folder', tags: ['my-hair-tag'],
+        fadeMode: FadeMode.weak,
+        isFavorite: true,
+        folderId: 'my-folder',
+        tags: ['my-hair-tag'],
       );
       final custom = oldHair.copyWith(id: 'CustomHair');
       SharedPreferences.setMockInitialValues({
@@ -92,41 +105,46 @@ void main() {
     },
   );
 
-  test('duplicate and persistence preserve multiple texture settings', () async {
-    final service = BrushService();
-    await service.init();
-    final base = service.brushes.firstWhere((brush) => brush.id == 'Brush0024');
-    final original = base.copyWith(
-      id: 'MultiTextureLifecycle',
-      name: 'Multi texture lifecycle',
-      customImagePaths: const ['a.png', 'b.png', 'c.png'],
-      customImageSelectionMode: BrushImageSelectionMode.sequential,
-    );
-    service.addBrush(original);
+  test(
+    'duplicate and persistence preserve multiple texture settings',
+    () async {
+      final service = BrushService();
+      await service.init();
+      final base = service.brushes.firstWhere(
+        (brush) => brush.id == 'Brush0024',
+      );
+      final original = base.copyWith(
+        id: 'MultiTextureLifecycle',
+        name: 'Multi texture lifecycle',
+        customImagePaths: const ['a.png', 'b.png', 'c.png'],
+        customImageSelectionMode: BrushImageSelectionMode.sequential,
+      );
+      service.addBrush(original);
 
-    service.duplicateBrush(original.id);
-    final duplicate = service.brushes.singleWhere(
-      (brush) =>
-          brush.id != original.id && brush.name == '${original.name} (コピー)',
-    );
-    expect(duplicate.customImagePaths, original.customImagePaths);
-    expect(
-      duplicate.customImageSelectionMode,
-      BrushImageSelectionMode.sequential,
-    );
+      service.duplicateBrush(original.id);
+      final duplicate = service.brushes.singleWhere(
+        (brush) =>
+            brush.id != original.id && brush.name == '${original.name} (コピー)',
+      );
+      expect(duplicate.customImagePaths, original.customImagePaths);
+      expect(
+        duplicate.customImageSelectionMode,
+        BrushImageSelectionMode.sequential,
+      );
 
-    await Future<void>.delayed(Duration.zero);
-    final reloaded = BrushService();
-    await reloaded.init();
-    final restored = reloaded.brushes.singleWhere(
-      (brush) => brush.id == original.id,
-    );
-    expect(restored.customImagePaths, original.customImagePaths);
-    expect(
-      restored.customImageSelectionMode,
-      BrushImageSelectionMode.sequential,
-    );
-  });
+      await Future<void>.delayed(Duration.zero);
+      final reloaded = BrushService();
+      await reloaded.init();
+      final restored = reloaded.brushes.singleWhere(
+        (brush) => brush.id == original.id,
+      );
+      expect(restored.customImagePaths, original.customImagePaths);
+      expect(
+        restored.customImageSelectionMode,
+        BrushImageSelectionMode.sequential,
+      );
+    },
+  );
 
   test('niabrush round trip preserves multiple texture variants', () async {
     final service = BrushService();
@@ -135,13 +153,17 @@ void main() {
     final sourceDir = await Directory.systemTemp.createTemp(
       'niarim-brush-textures-',
     );
-    const pathProviderChannel = MethodChannel('plugins.flutter.io/path_provider');
+    const pathProviderChannel = MethodChannel(
+      'plugins.flutter.io/path_provider',
+    );
     TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
         .setMockMethodCallHandler(pathProviderChannel, (call) async {
           if (call.method == 'getApplicationDocumentsDirectory') {
             return sourceDir.path;
           }
-          throw MissingPluginException('Unexpected path lookup: ${call.method}');
+          throw MissingPluginException(
+            'Unexpected path lookup: ${call.method}',
+          );
         });
     addTearDown(() async {
       TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger

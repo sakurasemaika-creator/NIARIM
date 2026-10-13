@@ -3,17 +3,17 @@ import 'package:niarim/models/brush.dart';
 
 void main() {
   Brush baseBrush() => const Brush(
-        id: 'test',
-        name: 'test',
-        size: 20,
-        opacity: 100,
-        spacing: 10,
-        stabilization: false,
-        stabilizationStrength: 0,
-        pixelMode: false,
-        fadeMode: FadeMode.off,
-        strokeDecay: false,
-      );
+    id: 'test',
+    name: 'test',
+    size: 20,
+    opacity: 100,
+    spacing: 10,
+    stabilization: false,
+    stabilizationStrength: 0,
+    pixelMode: false,
+    fadeMode: FadeMode.off,
+    strokeDecay: false,
+  );
 
   test('brush extension defaults are safe and disabled', () {
     final brush = baseBrush();

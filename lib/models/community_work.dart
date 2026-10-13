@@ -44,6 +44,7 @@ class CommunityWork {
   final bool isNiarimPublished;
   // ショート動画（縦長）かどうか。
   final bool isShort;
+
   /// 投稿者申告: 生成AIによる画像・動画を含む。
   final bool containsGenerativeAiImageOrVideo;
 
@@ -105,7 +106,9 @@ class CommunityWork {
       lockedTags: lockedTags ?? this.lockedTags,
       isNiarimPublished: isNiarimPublished ?? this.isNiarimPublished,
       isShort: isShort ?? this.isShort,
-      containsGenerativeAiImageOrVideo: containsGenerativeAiImageOrVideo ?? this.containsGenerativeAiImageOrVideo,
+      containsGenerativeAiImageOrVideo:
+          containsGenerativeAiImageOrVideo ??
+          this.containsGenerativeAiImageOrVideo,
     );
   }
 }

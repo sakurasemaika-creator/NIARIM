@@ -100,20 +100,34 @@ class Layer {
       isLocked: isLocked ?? this.isLocked,
       opacityLocked: opacityLocked ?? this.opacityLocked,
       hasClipping: hasClipping ?? this.hasClipping,
-      parentFolderId: parentFolderId == _sentinel ? this.parentFolderId : parentFolderId as String?,
+      parentFolderId: parentFolderId == _sentinel
+          ? this.parentFolderId
+          : parentFolderId as String?,
       needsAutofillUpdate: needsAutofillUpdate ?? this.needsAutofillUpdate,
       partId: partId == _sentinel ? this.partId : partId as String?,
       textObject: textObject ?? this.textObject,
       rangeMode: rangeMode ?? this.rangeMode,
-      rangeStart: rangeStart == _sentinel ? this.rangeStart : rangeStart as int?,
+      rangeStart: rangeStart == _sentinel
+          ? this.rangeStart
+          : rangeStart as int?,
       rangeEnd: rangeEnd == _sentinel ? this.rangeEnd : rangeEnd as int?,
-      rangeSceneId: rangeSceneId == _sentinel ? this.rangeSceneId : rangeSceneId as String?,
+      rangeSceneId: rangeSceneId == _sentinel
+          ? this.rangeSceneId
+          : rangeSceneId as String?,
       isExpanded: isExpanded ?? this.isExpanded,
-      materialId: materialId == _sentinel ? this.materialId : materialId as String?,
-      sourceTrimStart: sourceTrimStart == _sentinel ? this.sourceTrimStart : sourceTrimStart as int?,
-      sourceTrimEnd: sourceTrimEnd == _sentinel ? this.sourceTrimEnd : sourceTrimEnd as int?,
+      materialId: materialId == _sentinel
+          ? this.materialId
+          : materialId as String?,
+      sourceTrimStart: sourceTrimStart == _sentinel
+          ? this.sourceTrimStart
+          : sourceTrimStart as int?,
+      sourceTrimEnd: sourceTrimEnd == _sentinel
+          ? this.sourceTrimEnd
+          : sourceTrimEnd as int?,
       videoVolume: videoVolume ?? this.videoVolume,
-      watermarkAssetId: watermarkAssetId == _sentinel ? this.watermarkAssetId : watermarkAssetId as String?,
+      watermarkAssetId: watermarkAssetId == _sentinel
+          ? this.watermarkAssetId
+          : watermarkAssetId as String?,
       watermarkAngle: watermarkAngle ?? this.watermarkAngle,
       watermarkScale: watermarkScale ?? this.watermarkScale,
       trackRow: trackRow ?? this.trackRow,
@@ -123,6 +137,7 @@ class Layer {
 }
 
 enum LayerRangeMode { allFrames, currentScene, sceneRange, frameRange }
+
 const Object _sentinel = Object();
 
 enum LayerType {
@@ -139,9 +154,17 @@ enum LayerType {
 }
 
 bool isRangeLayerType(LayerType type) =>
-    type == LayerType.common || type == LayerType.timelineImage || type == LayerType.timelineVideo || type == LayerType.watermark;
+    type == LayerType.common ||
+    type == LayerType.timelineImage ||
+    type == LayerType.timelineVideo ||
+    type == LayerType.watermark;
 
-({int start, int end})? trimCommonLayerRange({required int start, required int end, required int frameIndex, bool? keepBefore}) {
+({int start, int end})? trimCommonLayerRange({
+  required int start,
+  required int end,
+  required int frameIndex,
+  bool? keepBefore,
+}) {
   if (start >= end) return null;
   if (frameIndex <= start) return (start: start + 1, end: end);
   if (frameIndex >= end) return (start: start, end: end - 1);

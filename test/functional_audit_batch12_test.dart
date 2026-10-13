@@ -90,7 +90,8 @@ void main() {
     expect(
       endSpan,
       inInclusiveRange(6, 12),
-      reason: 'near the finalized endpoint, 30% of 28px should be roughly 8px plus raster edge',
+      reason:
+          'near the finalized endpoint, 30% of 28px should be roughly 8px plus raster edge',
     );
     image.dispose();
     tm.dispose();
@@ -110,18 +111,30 @@ void main() {
           fadeMode: FadeMode.custom,
           fadeIn: fadeIn,
           fadeOut: fadeOut,
-          sizePressure: const PressureRangeSetting(enabled: true, weak: 50, strong: 100),
-          opacityPressure: const PressureRangeSetting(enabled: true, weak: 50, strong: 100),
+          sizePressure: const PressureRangeSetting(
+            enabled: true,
+            weak: 50,
+            strong: 100,
+          ),
+          opacityPressure: const PressureRangeSetting(
+            enabled: true,
+            weak: 50,
+            strong: 100,
+          ),
         )
         ..currentColor = const ui.Color(0xFF3050C0);
       tm.beginUndoRecording('fade');
       e.beginStroke(StrokePoint(x: 20, y: 50, pressure: pressure), 'fade');
       for (var i = 1; i <= 40; i++) {
         final t = i / 40;
-        e.continueStroke(StrokePoint(x: 20 + (endX - 20) * t, y: 50, pressure: pressure), 'fade');
+        e.continueStroke(
+          StrokePoint(x: 20 + (endX - 20) * t, y: 50, pressure: pressure),
+          'fade',
+        );
       }
       final preview = tm.endUndoRecording();
-      if (preview.before.isNotEmpty) tm.applyTileSnapshot('fade', preview.before);
+      if (preview.before.isNotEmpty)
+        tm.applyTileSnapshot('fade', preview.before);
       e.replayCurrentStrokeWithFinalFade();
       e.endStroke();
       final image = await tm.compositeLayerToImage('fade');

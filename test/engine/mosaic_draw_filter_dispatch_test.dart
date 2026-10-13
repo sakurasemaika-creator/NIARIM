@@ -7,10 +7,22 @@ import 'package:niarim/models/filter_def.dart';
 void main() {
   test('draw-filter mosaic dispatches to classic block averaging', () {
     final input = Uint8List.fromList([
-      255, 0, 0, 255,
-      0, 0, 255, 0,
-      0, 255, 0, 255,
-      255, 255, 255, 255,
+      255,
+      0,
+      0,
+      255,
+      0,
+      0,
+      255,
+      0,
+      0,
+      255,
+      0,
+      255,
+      255,
+      255,
+      255,
+      255,
     ]);
     final filter = FilterDef(
       id: 'mosaic-contract',

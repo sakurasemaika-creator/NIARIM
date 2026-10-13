@@ -40,8 +40,10 @@ void main() {
     );
     final out = FilterEngine().applyColorNoise(input, 4, 4, 0.5, seed: 7);
     expect(
-      List<int>.generate(16, (p) => p * 4)
-          .any((i) => out[i] != out[i + 1] || out[i + 1] != out[i + 2]),
+      List<int>.generate(
+        16,
+        (p) => p * 4,
+      ).any((i) => out[i] != out[i + 1] || out[i + 1] != out[i + 2]),
       isTrue,
     );
     for (var i = 3; i < out.length; i += 4) {

@@ -32,14 +32,14 @@ class ResolvedBrushPressure {
 
   @override
   int get hashCode => Object.hash(
-        sizeScale,
-        opacityScale,
-        blur,
-        edgeJitterEnabled,
-        edgeJitterStrength,
-        mixingMode,
-        mixingRate,
-      );
+    sizeScale,
+    opacityScale,
+    blur,
+    edgeJitterEnabled,
+    edgeJitterStrength,
+    mixingMode,
+    mixingRate,
+  );
 }
 
 int _interpolateInt(int weak, int strong, double t) =>
@@ -47,8 +47,8 @@ int _interpolateInt(int weak, int strong, double t) =>
 
 double _interpolatePercent(PressureRangeSetting setting, double t) =>
     setting.enabled
-        ? _interpolateInt(setting.weak, setting.strong, t) / 100.0
-        : 1.0;
+    ? _interpolateInt(setting.weak, setting.strong, t) / 100.0
+    : 1.0;
 
 ResolvedBrushPressure resolveBrushPressure({
   required Brush brush,
@@ -62,8 +62,9 @@ ResolvedBrushPressure resolveBrushPressure({
       opacityScale: 1,
       blur: off.blur.enabled ? off.blur.value.clamp(0, 100) : 0,
       edgeJitterEnabled: off.edgeJitter.enabled,
-      edgeJitterStrength:
-          off.edgeJitter.enabled ? off.edgeJitter.value.clamp(0, 100) : 0,
+      edgeJitterStrength: off.edgeJitter.enabled
+          ? off.edgeJitter.value.clamp(0, 100)
+          : 0,
       mixingMode: off.mixing.enabled ? off.mixing.mode : BrushMixingMode.off,
       mixingRate: off.mixing.enabled ? off.mixing.rate.clamp(0, 100) : 0,
     );

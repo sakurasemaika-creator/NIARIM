@@ -119,9 +119,9 @@ void main() {
         final archive = ZipDecoder().decodeBytes(await exported.readAsBytes());
         final dataFile = archive.findFile('data.json');
         expect(dataFile, isNotNull);
-        final json = jsonDecode(
-          utf8.decode(dataFile!.content as List<int>),
-        ) as Map<String, dynamic>;
+        final json =
+            jsonDecode(utf8.decode(dataFile!.content as List<int>))
+                as Map<String, dynamic>;
         final restored = Brush.fromJson(json);
 
         _expectProfilesPreserved(restored, original);

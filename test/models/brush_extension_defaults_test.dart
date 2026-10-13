@@ -3,17 +3,17 @@ import 'package:niarim/models/brush.dart';
 
 void main() {
   Brush base() => const Brush(
-        id: 'x',
-        name: 'x',
-        size: 20,
-        opacity: 100,
-        spacing: 1,
-        stabilization: false,
-        stabilizationStrength: 0,
-        pixelMode: false,
-        fadeMode: FadeMode.off,
-        strokeDecay: false,
-      );
+    id: 'x',
+    name: 'x',
+    size: 20,
+    opacity: 100,
+    spacing: 1,
+    stabilization: false,
+    stabilizationStrength: 0,
+    pixelMode: false,
+    fadeMode: FadeMode.off,
+    strokeDecay: false,
+  );
 
   test('approved outline and fold defaults are retained', () {
     final brush = base();

@@ -66,8 +66,9 @@ void main() {
   });
 
   test('選択ツールのバーの文言がハードコードされていない', () {
-    final source = File('lib/screens/canvas/canvas_screen.dart')
-        .readAsStringSync();
+    final source = File(
+      'lib/screens/canvas/canvas_screen.dart',
+    ).readAsStringSync();
     for (final literal in [
       "'全選択'",
       "'全解除'",

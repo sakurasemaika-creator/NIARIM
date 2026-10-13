@@ -67,7 +67,9 @@ void main() {
     final img = await tester.runAsync(image);
     final moves = <AutoLineartPoint>[];
     await mount(tester, img!, moves: moves, changes: []);
-    final centre = tester.getRect(find.byType(AutoLineartControlOverlay)).center;
+    final centre = tester
+        .getRect(find.byType(AutoLineartControlOverlay))
+        .center;
     final gesture = await tester.startGesture(centre);
     await gesture.moveBy(const Offset(2, 1));
     await gesture.moveBy(const Offset(1, -2));
@@ -84,7 +86,9 @@ void main() {
     final img = await tester.runAsync(image);
     final moves = <AutoLineartPoint>[];
     await mount(tester, img!, moves: moves, changes: []);
-    final centre = tester.getRect(find.byType(AutoLineartControlOverlay)).center;
+    final centre = tester
+        .getRect(find.byType(AutoLineartControlOverlay))
+        .center;
     final gesture = await tester.startGesture(centre);
     await gesture.moveBy(const Offset(3, 0));
     expect(moves, isEmpty, reason: 'not yet a drag');

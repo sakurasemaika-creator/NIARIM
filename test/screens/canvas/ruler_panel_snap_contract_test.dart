@@ -6,7 +6,9 @@ import 'package:niarim/models/ruler.dart';
 import 'package:niarim/screens/canvas/widgets/ruler_panel.dart';
 
 void main() {
-  testWidgets('snap switch keeps ruler visible and toggles constraint state', (tester) async {
+  testWidgets('snap switch keeps ruler visible and toggles constraint state', (
+    tester,
+  ) async {
     Ruler? ruler = const Ruler(
       type: RulerType.line,
       position: Offset(500, 500),
@@ -14,15 +16,17 @@ void main() {
       settings: RulerSettings(),
     );
 
-    Future<void> pump() => tester.pumpWidget(MaterialApp(
-          localizationsDelegates: const [
-            AppLocalizations.delegate,
-            GlobalMaterialLocalizations.delegate,
-            GlobalWidgetsLocalizations.delegate,
-            GlobalCupertinoLocalizations.delegate,
-          ],
-          supportedLocales: AppLocalizations.supportedLocales,
-          home: StatefulBuilder(builder: (context, setState) {
+    Future<void> pump() => tester.pumpWidget(
+      MaterialApp(
+        localizationsDelegates: const [
+          AppLocalizations.delegate,
+          GlobalMaterialLocalizations.delegate,
+          GlobalWidgetsLocalizations.delegate,
+          GlobalCupertinoLocalizations.delegate,
+        ],
+        supportedLocales: AppLocalizations.supportedLocales,
+        home: StatefulBuilder(
+          builder: (context, setState) {
             return RulerPanel(
               activeRuler: ruler,
               onRulerChanged: (value) => setState(() => ruler = value),
@@ -30,8 +34,10 @@ void main() {
               canvasWidth: 1000,
               canvasHeight: 1000,
             );
-          }),
-        ));
+          },
+        ),
+      ),
+    );
 
     await pump();
     expect(find.byKey(const ValueKey('ruler-snap-switch')), findsOneWidget);
@@ -51,24 +57,28 @@ void main() {
       settings: RulerSettings(),
     );
 
-    await tester.pumpWidget(MaterialApp(
-      localizationsDelegates: const [
-        AppLocalizations.delegate,
-        GlobalMaterialLocalizations.delegate,
-        GlobalWidgetsLocalizations.delegate,
-        GlobalCupertinoLocalizations.delegate,
-      ],
-      supportedLocales: AppLocalizations.supportedLocales,
-      home: StatefulBuilder(builder: (context, setState) {
-        return RulerPanel(
-          activeRuler: ruler,
-          onRulerChanged: (value) => setState(() => ruler = value),
-          onClose: () {},
-          canvasWidth: 1000,
-          canvasHeight: 1000,
-        );
-      }),
-    ));
+    await tester.pumpWidget(
+      MaterialApp(
+        localizationsDelegates: const [
+          AppLocalizations.delegate,
+          GlobalMaterialLocalizations.delegate,
+          GlobalWidgetsLocalizations.delegate,
+          GlobalCupertinoLocalizations.delegate,
+        ],
+        supportedLocales: AppLocalizations.supportedLocales,
+        home: StatefulBuilder(
+          builder: (context, setState) {
+            return RulerPanel(
+              activeRuler: ruler,
+              onRulerChanged: (value) => setState(() => ruler = value),
+              onClose: () {},
+              canvasWidth: 1000,
+              canvasHeight: 1000,
+            );
+          },
+        ),
+      ),
+    );
 
     await tester.tap(find.text('Ellipse Ruler'));
     await tester.pump();
