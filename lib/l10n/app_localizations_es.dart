@@ -2479,7 +2479,7 @@ class AppLocalizationsEs extends AppLocalizations {
   String get assetTagMixing => 'Mezcla';
 
   @override
-  String get assetTagAnalog => 'Analógico';
+  String get assetTagAnalog => 'Mezcla estilo analógico';
 
   @override
   String get assetTagDecoration => 'Decoración';
@@ -3180,7 +3180,7 @@ class AppLocalizationsEs extends AppLocalizations {
   String get brushSettingsMixingAnalog => 'Analógico';
 
   @override
-  String get brushSettingsMixingBleed => 'Sangrado';
+  String get brushSettingsMixingBleed => 'Mezcla con sangrado';
 
   @override
   String get brushSettingsMixingBrightnessCorrection => 'Corrección de luminosidad';
