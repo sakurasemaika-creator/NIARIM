@@ -70,13 +70,12 @@ jobs:
         run: flutter --version
       - name: Resolve dependencies
         run: flutter pub get --enforce-lockfile
-      - name: Targeted brush, ruler, and mosaic tests
+      - name: Targeted brush, mixing, ruler, and mosaic tests
         run: |
           flutter gen-l10n
           flutter test test/perceptual_color_mixer_test.dart --reporter expanded
           flutter test test/tile_manager_test.dart --reporter expanded
           flutter test test/models/brush_extensions_test.dart --reporter expanded
-        run: |
           flutter test test/models/brush_extension_defaults_test.dart --reporter expanded
           flutter test test/models/brush_extension_presets_test.dart --reporter expanded
           flutter test test/models/mosaic_filter_def_contract_test.dart --reporter expanded
