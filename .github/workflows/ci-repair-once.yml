@@ -23,6 +23,8 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: "22"
+      - name: Resolve dependencies for repository formatter
+        run: flutter pub get --enforce-lockfile
       - name: Repair brittle CI contracts
         run: |
           python3 - <<'PY'
@@ -103,17 +105,9 @@ jobs:
 
           replace_timeline_mode_switch("test/app_web_reference_export_exact_test.dart")
 
-          replace_once(
-              ".github/workflows/save-safety-audit.yml",
-              """npx --yes prettier@3.8.1 --write .github/workflows/save-safety-audit.yml docs/work-audit/state/ASTRA_CONTINUATION.md docs/work-audit/state/ASTRA_AUDIT_STATE.md 'docs/AI設計書/12_実装チェックリスト.md'""",
-              """# Prettier rewrites technical underscores in audit-state Markdown as emphasis; keep those source-of-truth records out of this formatter gate.
-                    npx --yes prettier@3.8.1 --write .github/workflows/save-safety-audit.yml 'docs/AI設計書/12_実装チェックリスト.md'"""
-          )
           PY
       - name: Apply canonical Dart formatting
         run: dart format lib test tool
-      - name: Remove this one-time helper
-        run: rm .github/workflows/ci-repair-once.yml
       - name: Commit and push the repairs to dev_branch
         run: |
           git config user.name 'github-actions[bot]'
