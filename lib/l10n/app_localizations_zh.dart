@@ -3016,7 +3016,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get brushSettingsMixingOff => 'OFF';
 
   @override
-  String get brushSettingsMixingSimple => '简易混色';
+  String get brushSettingsMixingSimple => '知觉混色';
 
   @override
   String get brushSettingsMixingBleed => '晕染';
@@ -10120,7 +10120,7 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get brushSettingsMixingOff => 'OFF';
 
   @override
-  String get brushSettingsMixingSimple => '簡易混色';
+  String get brushSettingsMixingSimple => '知覺混色';
 
   @override
   String get brushSettingsMixingBleed => '暈染';
