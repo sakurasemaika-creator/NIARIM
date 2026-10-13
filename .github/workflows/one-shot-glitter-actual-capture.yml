@@ -53,9 +53,10 @@ jobs:
               raise SystemExit('Actual DrawingEngine capture test is not bound to Brush0016')
           print('Committed Glitter hexagon implementation and preset contract verified.')
           PY
+      - name: Restore locked dependencies for repository formatter settings
+        run: flutter pub get --enforce-lockfile
       - name: Verify canonical formatting without mutating source
         run: dart format --output=none --set-exit-if-changed lib/engine/drawing_engine.dart lib/services/brush_service.dart test/visual/glitter_lame_render_capture_test.dart
-      - run: flutter pub get
       - name: Static analysis
         run: flutter analyze lib/engine/drawing_engine.dart lib/services/brush_service.dart test/visual/glitter_lame_render_capture_test.dart
       - name: Execute actual DrawingEngine capture
