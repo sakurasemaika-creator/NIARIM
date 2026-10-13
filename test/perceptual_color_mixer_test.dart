@@ -103,6 +103,29 @@ void main() {
     expect(mixed.b, greaterThan(0.95));
   });
 
+  test('OFF mixing mode is persisted separately from the saved mode', () {
+    final pressureOff = PressureMixingOffSetting.fromJson({
+      'enabled': false,
+      'mode': 'off',
+      'rate': 0,
+    });
+    expect(pressureOff.enabled, isFalse);
+    expect(pressureOff.mode, BrushMixingMode.off);
+    expect(pressureOff.toJson()['mode'], 'off');
+    expect(PressureMixingOffSetting.fromJson(pressureOff.toJson()), pressureOff);
+
+    final pressureOn = PressureMixingOnSetting.fromJson({
+      'enabled': false,
+      'mode': 'off',
+      'weakRate': 0,
+      'strongRate': 0,
+    });
+    expect(pressureOn.enabled, isFalse);
+    expect(pressureOn.mode, BrushMixingMode.off);
+    expect(pressureOn.toJson()['mode'], 'off');
+    expect(PressureMixingOnSetting.fromJson(pressureOn.toJson()), pressureOn);
+  });
+
   test('perceptual setting round-trips and renders through hue wheel', () {
     final setting = PressureMixingOffSetting.fromJson({
       'enabled': true,
@@ -183,4 +206,99 @@ void main() {
       expect(mixed.b, lessThan(0.25));
     },
   );
+  
+  test('bleed mixing carries picked-up colour with direct channel interpolation', () {
+    final engine = DrawingEngine(
+      tileManager: TileManager(canvasWidth: 8, canvasHeight: 8),
+    );
+    const selected = ui.Color(0xFF00FF00);
+    const pickedUp = ui.Color(0xFFFF0000);
+
+    final midpoint = engine.bleedColor(selected, pickedUp, 0.5);
+    expect(midpoint.red, closeTo(128, 1));
+    expect(midpoint.green, closeTo(128, 1));
+    expect(midpoint.blue, 0);
+    expect(engine.bleedColor(selected, null, 1), selected);
+    expect(engine.bleedColor(selected, pickedUp, 0), selected);
+
+    const translucentRed = ui.Color(0x80FF0000);
+    final faintPickup = engine.bleedColor(selected, translucentRed, 1);
+    expect(faintPickup.red, closeTo(128, 2));
+    expect(faintPickup.green, closeTo(127, 2));
+  });
+
+  test('read-only global pixel sampling crosses tile boundaries without allocating tiles', () {
+    final manager = TileManager(
+      canvasWidth: TileManager.tileSize * 2,
+      canvasHeight: TileManager.tileSize,
+    );
+    expect(manager.getPixelColorAt('layer', TileManager.tileSize + 2, 10), isNull);
+    expect(manager.exportAll(), isEmpty);
+
+    final tile = manager.getOrCreateTile('layer', 1, 0);
+    final index = (10 * TileManager.tileSize + 2) * 4;
+    tile[index] = 12;
+    tile[index + 1] = 34;
+    tile[index + 2] = 56;
+    tile[index + 3] = 255;
+    final sampled = manager.getPixelColorAt('layer', TileManager.tileSize + 2, 10);
+
+    expect(sampled, isNotNull);
+    expect(sampled!.red, 12);
+    expect(sampled.green, 34);
+    expect(sampled.blue, 56);
+  });
+
+  test('bleed mode drags paint from the starting pixel along the stroke', () {
+    final engine = DrawingEngine(
+      tileManager: TileManager(canvasWidth: 128, canvasHeight: 128),
+    )
+      ..currentBrush = Brush(
+        id: 'bleed-mixing',
+        name: 'Bleed Mixing',
+        size: 8,
+        opacity: 100,
+        spacing: 1,
+        stabilization: false,
+        stabilizationStrength: 0,
+        pixelMode: false,
+        pressureOff: const BrushPressureOffSettings(
+          blur: FixedBrushSetting(enabled: false, value: 0),
+          edgeJitter: FixedBrushSetting(enabled: false, value: 0),
+          mixing: PressureMixingOffSetting(
+            enabled: true,
+            mode: BrushMixingMode.bleed,
+            rate: 100,
+          ),
+        ),
+        fadeMode: FadeMode.off,
+        strokeDecay: false,
+      )
+      ..currentColor = const ui.Color(0xFF00FF00)
+      ..pressureEnabled = false;
+
+    final tile = engine.tileManager.getOrCreateTile('layer', 0, 0);
+    final seedIndex = (64 * TileManager.tileSize + 40) * 4;
+    tile[seedIndex] = 255;
+    tile[seedIndex + 1] = 0;
+    tile[seedIndex + 2] = 0;
+    tile[seedIndex + 3] = 255;
+
+    engine.beginStroke(
+      const StrokePoint(x: 40, y: 64, pressure: 1, tiltX: 0, tiltY: 0),
+      'layer',
+    );
+    engine.continueStroke(
+      const StrokePoint(x: 80, y: 64, pressure: 1, tiltX: 0, tiltY: 0),
+      'layer',
+    );
+    engine.endStroke();
+
+    final dragged = engine.tileManager.getPixelColorAt('layer', 70, 64);
+    expect(dragged, isNotNull);
+    expect(dragged!.red, greaterThan(240));
+    expect(dragged.green, lessThan(10));
+    expect(dragged.blue, lessThan(10));
+  });
+
 }

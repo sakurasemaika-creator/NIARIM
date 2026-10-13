@@ -3132,7 +3132,7 @@ class AppLocalizationsEn extends AppLocalizations {
       'Opacity decreases the longer you keep drawing';
 
   @override
-  String get brushSettingsMixingTitle => 'Color mixing';
+  String get brushSettingsMixingTitle => 'Mixing mode';
 
   @override
   String get brushSettingsMixingOff => 'OFF';

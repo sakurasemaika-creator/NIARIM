@@ -3171,13 +3171,13 @@ class AppLocalizationsEs extends AppLocalizations {
       'La opacidad disminuye cuanto más tiempo dibujas';
 
   @override
-  String get brushSettingsMixingTitle => 'Mezcla de color';
+  String get brushSettingsMixingTitle => 'Modo de mezcla';
 
   @override
   String get brushSettingsMixingOff => 'OFF';
 
   @override
-  String get brushSettingsMixingAnalog => 'Analógico';
+  String get brushSettingsMixingAnalog => 'Estilo analógico';
 
   @override
   String get brushSettingsMixingBleed => 'Sangrado';

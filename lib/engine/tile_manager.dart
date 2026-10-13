@@ -245,6 +245,28 @@ class TileManager {
   Uint8List? getTile(String layerId, int tx, int ty) =>
       _tiles[layerId]?[_tileKey(tx, ty)];
 
+  /// Reads a pixel by canvas coordinates without creating a tile or invalidating
+  /// drawing caches. Returns null when the pixel is outside the canvas or fully
+  /// transparent, which is useful for sampling paint for the bleed brush.
+  ui.Color? getPixelColorAt(String layerId, int x, int y) {
+    if (x < 0 || y < 0 || x >= canvasWidth || y >= canvasHeight) return null;
+    final tx = x ~/ tileSize;
+    final ty = y ~/ tileSize;
+    final tile = getTile(layerId, tx, ty);
+    if (tile == null) return null;
+    final localX = x % tileSize;
+    final localY = y % tileSize;
+    final index = (localY * tileSize + localX) * 4;
+    final alpha = tile[index + 3];
+    if (alpha == 0) return null;
+    return ui.Color.fromARGB(
+      alpha,
+      tile[index],
+      tile[index + 1],
+      tile[index + 2],
+    );
+  }
+
   /// [getTile]で得たバッファを直接書き換えたあとに呼び、そのタイルの
   /// キャッシュ（デコード済み画像とレイヤーの合成結果）を捨てる。
   void invalidateTile(String layerId, int tx, int ty) {

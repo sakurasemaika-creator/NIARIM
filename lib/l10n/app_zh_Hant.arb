@@ -1108,7 +1108,7 @@
   "brushSettingsFadeDistanceLabel": "距離(px)",
   "brushSettingsStrokeDecayTitle": "筆畫衰減",
   "brushSettingsStrokeDecaySubtitle": "持續繪製不透明度會降低",
-  "brushSettingsMixingTitle": "混色",
+  "brushSettingsMixingTitle": "混色模式",
   "brushSettingsMixingOff": "OFF",
   "brushSettingsMixingAnalog": "類比風格",
   "brushSettingsMixingBleed": "暈染",

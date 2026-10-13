@@ -438,6 +438,7 @@ class DrawingEngine {
         layerId,
         strokeLengthOverride: baseStrokeLength,
         pathAngle: pathAngle,
+        hasPathDirection: true,
       );
       _hasStampedCurrentStroke = true;
       _distanceSinceLastBrushStamp = 0.0;
@@ -463,6 +464,7 @@ class DrawingEngine {
         layerId,
         strokeLengthOverride: baseStrokeLength + consumed,
         pathAngle: pathAngle,
+        hasPathDirection: true,
       );
       _distanceSinceLastBrushStamp = 0.0;
     }
@@ -493,6 +495,7 @@ class DrawingEngine {
     String layerId, {
     double? strokeLengthOverride,
     double pathAngle = 0.0,
+    bool hasPathDirection = false,
     bool applyScatter = true,
   }) {
     if (currentBrush == null) return;
@@ -557,6 +560,21 @@ class DrawingEngine {
 
     final alphaInt = (opacity * 255).round().clamp(0, 255);
     if (alphaInt == 0) return;
+
+    // Pick up the paint before the current stamp changes any pixels. The first
+    // stamp samples its own centre; later stamps sample behind the stroke
+    // direction, so existing colour is carried forward instead of merely
+    // reducing the mix rate as the stroke gets longer.
+    final bleedSampleColor = resolvedPressure.mixingMode == BrushMixingMode.bleed
+        ? _sampleBleedColor(
+            layerId: layerId,
+            x: stampX,
+            y: stampY,
+            size: size,
+            pathAngle: pathAngle,
+            hasPathDirection: hasPathDirection && _hasStampedCurrentStroke,
+          )
+        : null;
 
     // グリッターペンは大きな六角形フレークとして描画する。粒ごとに向きを
     // ランダム化し、同じ向きの六角形が機械的に並ぶ見た目を避ける。
@@ -644,6 +662,7 @@ class DrawingEngine {
           mixingRate: resolvedPressure.mixingRate,
           mixingBrightnessCorrection:
               resolvedPressure.mixingBrightnessCorrection,
+          bleedSampleColor: bleedSampleColor,
           hexagon: isGlitterHexagon,
           particleRotation: particleRotation,
           chainLink: isChainLink,
@@ -678,6 +697,7 @@ class DrawingEngine {
           mixingRate: resolvedPressure.mixingRate,
           mixingBrightnessCorrection:
               resolvedPressure.mixingBrightnessCorrection,
+          bleedSampleColor: bleedSampleColor,
           hexagon: isGlitterHexagon,
           particleRotation: particleRotation,
           chainLink: isChainLink,
@@ -708,6 +728,7 @@ class DrawingEngine {
     BrushMixingMode mixingMode = BrushMixingMode.off,
     int mixingRate = 0,
     int mixingBrightnessCorrection = 3,
+    ui.Color? bleedSampleColor,
     bool hexagon = false,
     double particleRotation = 0.0,
     bool chainLink = false,
@@ -959,7 +980,24 @@ class DrawingEngine {
 
             if (isEraser) {
               tileManager.erasePixel(tile, px, py, incrementalAlpha);
-            } else if (mixingMode != BrushMixingMode.off) {
+            } else if (mixingMode == BrushMixingMode.bleed) {
+              final rate = mixingRate / 100.0;
+              final mixed = bleedColor(
+                ui.Color.fromARGB(255, ri, gi, bi),
+                bleedSampleColor,
+                rate,
+              );
+              tileManager.blendPixel(
+                tile,
+                px,
+                py,
+                (mixed.r * 255).round(),
+                (mixed.g * 255).round(),
+                (mixed.b * 255).round(),
+                incrementalAlpha,
+              );
+            } else if (mixingMode == BrushMixingMode.perceptual) {
+              final rate = mixingRate / 100.0;
               final idx = (py * TileManager.tileSize + px) * 4;
               if (tile[idx + 3] > 0) {
                 final below = ui.Color.fromARGB(
@@ -969,15 +1007,12 @@ class DrawingEngine {
                   tile[idx + 2],
                 );
                 final selected = ui.Color.fromARGB(255, ri, gi, bi);
-                final rate = mixingRate / 100.0;
-                final mixed = mixingMode == BrushMixingMode.bleed
-                    ? bleedColor(below, selected, rate, _currentStroke.length)
-                    : mixColor(
-                        below,
-                        selected,
-                        rate,
-                        brightnessCorrection: mixingBrightnessCorrection,
-                      );
+                final mixed = mixColor(
+                  below,
+                  selected,
+                  rate,
+                  brightnessCorrection: mixingBrightnessCorrection,
+                );
                 tileManager.blendPixel(
                   tile,
                   px,
@@ -1091,14 +1126,57 @@ class DrawingEngine {
     brightnessCorrection: brightnessCorrection,
   );
 
+  ui.Color? _sampleBleedColor({
+    required String layerId,
+    required double x,
+    required double y,
+    required double size,
+    required double pathAngle,
+    required bool hasPathDirection,
+  }) {
+    final pickupDistance = hasPathDirection
+        ? math.max(1.0, size * 0.35)
+        : 0.0;
+    final sampleX = hasPathDirection
+        ? x - math.cos(pathAngle) * pickupDistance
+        : x;
+    final sampleY = hasPathDirection
+        ? y - math.sin(pathAngle) * pickupDistance
+        : y;
+    return tileManager.getPixelColorAt(
+      layerId,
+      sampleX.floor(),
+      sampleY.floor(),
+    );
+  }
+
+  /// Pulls the picked-up colour into the selected paint. Unlike analog-style
+  /// mixing, bleed uses direct channel interpolation and has no stroke-length
+  /// decay; the source changes as the brush moves across the canvas.
   ui.Color bleedColor(
-    ui.Color below,
     ui.Color selected,
+    ui.Color? pickedUp,
     double rate,
-    int strokeStep,
   ) {
-    final decay = (1.0 - strokeStep * 0.01).clamp(0.0, 1.0);
-    return mixColor(below, selected, rate * decay);
+    final rateWeight = rate.clamp(0.0, 1.0).toDouble();
+    if (pickedUp == null || rateWeight <= 0.0) return selected;
+    // A faint/partially transparent source should contribute less than an
+    // opaque pigment sample.
+    final weight = (rateWeight * pickedUp.a).clamp(0.0, 1.0).toDouble();
+    if (weight <= 0.0) return selected;
+    final selectedWeight = 1.0 - weight;
+    return ui.Color.from(
+      alpha: 1.0,
+      red: (selected.r * selectedWeight + pickedUp.r * weight)
+          .clamp(0.0, 1.0)
+          .toDouble(),
+      green: (selected.g * selectedWeight + pickedUp.g * weight)
+          .clamp(0.0, 1.0)
+          .toDouble(),
+      blue: (selected.b * selectedWeight + pickedUp.b * weight)
+          .clamp(0.0, 1.0)
+          .toDouble(),
+    );
   }
 
   ({double scaleX, double scaleY, double angle}) calcTiltTransform(

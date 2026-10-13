@@ -1108,7 +1108,7 @@
   "brushSettingsFadeDistanceLabel": "Distance (px)",
   "brushSettingsStrokeDecayTitle": "Stroke decay",
   "brushSettingsStrokeDecaySubtitle": "Opacity decreases the longer you keep drawing",
-  "brushSettingsMixingTitle": "Color mixing",
+  "brushSettingsMixingTitle": "Mixing mode",
   "brushSettingsMixingOff": "OFF",
   "brushSettingsMixingAnalog": "Analog-style",
   "brushSettingsMixingBleed": "Bleed",

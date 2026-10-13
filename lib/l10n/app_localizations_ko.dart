@@ -3036,7 +3036,7 @@ class AppLocalizationsKo extends AppLocalizations {
   String get brushSettingsStrokeDecaySubtitle => '계속 그릴수록 불투명도가 낮아집니다';
 
   @override
-  String get brushSettingsMixingTitle => '혼색';
+  String get brushSettingsMixingTitle => '혼색 모드';
 
   @override
   String get brushSettingsMixingOff => 'OFF';
