@@ -133,8 +133,9 @@ void main() {
         );
       }
       final preview = tm.endUndoRecording();
-      if (preview.before.isNotEmpty)
+      if (preview.before.isNotEmpty) {
         tm.applyTileSnapshot('fade', preview.before);
+      }
       e.replayCurrentStrokeWithFinalFade();
       e.endStroke();
       final image = await tm.compositeLayerToImage('fade');
