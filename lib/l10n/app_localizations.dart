@@ -4388,7 +4388,7 @@ abstract class AppLocalizations {
   /// No description provided for @assetTagAnalog.
   ///
   /// In ja, this message translates to:
-  /// **'アナログ風混色'**
+  /// **'アナログ風'**
   String get assetTagAnalog;
 
   /// No description provided for @assetTagDecoration.
