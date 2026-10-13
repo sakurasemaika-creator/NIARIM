@@ -9,6 +9,8 @@ on:
       - "lib/engine/niapro_serializer.dart"
       - "lib/engine/tile_manager.dart"
       - "lib/services/project_service.dart"
+      - "lib/services/brush_service.dart"
+      - "test/functional_audit_batch12_test.dart"
       - "lib/services/recorded_filter_apply_service.dart"
       - "lib/services/autosave_service.dart"
       - "test/project_save_safety_test.dart"
