@@ -3024,7 +3024,7 @@ class AppLocalizationsJa extends AppLocalizations {
   String get brushSettingsStrokeDecaySubtitle => '描き続けるほど不透明度が下がる';
 
   @override
-  String get brushSettingsMixingTitle => '混色';
+  String get brushSettingsMixingTitle => '混色モード';
 
   @override
   String get brushSettingsMixingOff => 'OFF';
