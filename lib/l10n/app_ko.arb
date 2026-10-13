@@ -1108,7 +1108,7 @@
   "brushSettingsFadeDistanceLabel": "거리(px)",
   "brushSettingsStrokeDecayTitle": "스트로크 감쇠",
   "brushSettingsStrokeDecaySubtitle": "계속 그릴수록 불투명도가 낮아집니다",
-  "brushSettingsMixingTitle": "혼색",
+  "brushSettingsMixingTitle": "혼색 모드",
   "brushSettingsMixingOff": "OFF",
   "brushSettingsMixingAnalog": "아날로그풍",
   "brushSettingsMixingBleed": "번짐",
