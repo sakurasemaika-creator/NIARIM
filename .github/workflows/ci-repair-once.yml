@@ -101,14 +101,6 @@ jobs:
               print(f"Repaired: {path}")
 
           replace_timeline_mode_switch("test/app_web_reference_export_exact_test.dart")
-          replace_once(
-              "test/app_web_reference_export_exact_test.dart",
-              """final timelineModeButton = find.byIcon(
-              Icons.movie_filter_outlined,
-              skipOffstage: false,
-          );""",
-              """final timelineModeButton = find.byIcon(Icons.movie_filter_outlined);"""
-          )
 
           PY
       - name: Apply canonical Dart formatting
