@@ -160,10 +160,7 @@ void main() {
     await tester.tap(create.first, warnIfMissed: false);
     await tester.pump(const Duration(milliseconds: 900));
 
-    final timelineModeButton = find.byIcon(
-      Icons.movie_filter_outlined,
-      skipOffstage: false,
-    );
+    final timelineModeButton = find.byIcon(Icons.movie_filter_outlined);
     expect(timelineModeButton, findsOneWidget);
     await tester.tap(timelineModeButton, warnIfMissed: false);
     await tester.pump(const Duration(milliseconds: 700));
