@@ -203,6 +203,14 @@ jobs:
         run: |
           set -o pipefail
           flutter analyze --no-pub 2>&1 | tee artifacts/save-safety/analyze.log
+      - name: Upload full analyzer diagnostics immediately
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: full-analyzer-diagnostics-${{ github.sha }}
+          path: artifacts/save-safety/analyze.log
+          if-no-files-found: error
+          retention-days: 3
       - name: Full Flutter test gate
         if: always()
         shell: bash
