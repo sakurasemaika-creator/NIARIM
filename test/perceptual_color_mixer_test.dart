@@ -115,12 +115,49 @@ void main() {
     expect(setting.toJson()['mode'], 'simple');
     expect(PressureMixingOffSetting.fromJson(setting.toJson()), setting);
 
-    // The legacy enum value must still take the same hue-wheel mixer path.
-    final mixed = DrawingEngine(
-      tileManager: TileManager(canvasWidth: 1, canvasHeight: 1),
-    ).mixColor(yellow, blue, 0.5);
-    expect(mixed.g, greaterThan(mixed.b));
-    expect(mixed.g, greaterThan(0.95));
+    // Exercise the actual raster path with a legacy "simple" brush setting.
+    final engine = DrawingEngine(
+      tileManager: TileManager(canvasWidth: 128, canvasHeight: 128),
+    )
+      ..currentBrush = Brush(
+        id: 'legacy-mixing',
+        name: 'Legacy Mixing',
+        size: 20,
+        opacity: 100,
+        spacing: 10,
+        stabilization: false,
+        stabilizationStrength: 0,
+        pixelMode: false,
+        pressureOff: const BrushPressureOffSettings(
+          blur: FixedBrushSetting(enabled: false, value: 0),
+          edgeJitter: FixedBrushSetting(enabled: false, value: 0),
+          mixing: PressureMixingOffSetting(
+            enabled: true,
+            mode: BrushMixingMode.simple,
+            rate: 50,
+          ),
+        ),
+        fadeMode: FadeMode.off,
+        strokeDecay: false,
+      )
+      ..currentColor = blue
+      ..pressureEnabled = false;
+    final tile = engine.tileManager.getOrCreateTile('layer', 0, 0);
+    final index = (64 * TileManager.tileSize + 64) * 4;
+    tile[index] = 255;
+    tile[index + 1] = 255;
+    tile[index + 2] = 0;
+    tile[index + 3] = 255;
+
+    engine.beginStroke(
+      const StrokePoint(x: 64, y: 64, pressure: 1, tiltX: 0, tiltY: 0),
+      'layer',
+    );
+    engine.endStroke();
+
+    expect(tile[index], lessThan(13));
+    expect(tile[index + 1], greaterThan(240));
+    expect(tile[index + 2], greaterThan(90));
   });
 
   test('mixing a chromatic colour with white keeps its hue', () {
