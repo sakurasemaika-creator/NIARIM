@@ -104,26 +104,6 @@ jobs:
           flutter-version: "3.47.2"
           channel: stable
           cache: true
-      - name: Export committed-tree format differences immediately
-        if: always()
-        shell: bash
-        run: |
-          set -e
-          dart format lib test tool
-          git diff --name-only -- lib test tool > artifacts/save-safety/format-changed-files.txt
-          git diff --binary -- lib test tool > artifacts/save-safety/canonical-format.patch
-          git checkout -- lib test tool
-      - name: Upload format diagnostics immediately
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: global-format-diagnostics-${{ github.sha }}
-          path: |
-            artifacts/save-safety/format.log
-            artifacts/save-safety/format-changed-files.txt
-            artifacts/save-safety/canonical-format.patch
-          if-no-files-found: error
-          retention-days: 3
       - name: Apply pending audit candidate when present
         shell: bash
         run: |
@@ -207,6 +187,26 @@ jobs:
         run: |
           set -o pipefail
           dart format --output=none --set-exit-if-changed lib test tool 2>&1 | tee artifacts/save-safety/format.log
+      - name: Export committed-tree format differences immediately
+        if: always()
+        shell: bash
+        run: |
+          set -e
+          dart format lib test tool
+          git diff --name-only -- lib test tool > artifacts/save-safety/format-changed-files.txt
+          git diff --binary -- lib test tool > artifacts/save-safety/canonical-format.patch
+          git checkout -- lib test tool
+      - name: Upload format diagnostics immediately
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: global-format-diagnostics-${{ github.sha }}
+          path: |
+            artifacts/save-safety/format.log
+            artifacts/save-safety/format-changed-files.txt
+            artifacts/save-safety/canonical-format.patch
+          if-no-files-found: error
+          retention-days: 3
       - name: Apply pending audit candidate when present
         shell: bash
         run: |
