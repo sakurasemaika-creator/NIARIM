@@ -276,7 +276,8 @@ jobs:
       - name: Format checkpoint documents with the repository formatter
         run: |
           mkdir -p artifacts/save-safety-format
-          npx --yes prettier@3.8.1 --write .github/workflows/save-safety-audit.yml docs/work-audit/state/ASTRA_CONTINUATION.md docs/work-audit/state/ASTRA_AUDIT_STATE.md 'docs/AI設計書/12_実装チェックリスト.md'
+          # Prettier rewrites technical underscores in audit-state Markdown as emphasis; keep those source-of-truth records out of this formatter gate.
+          npx --yes prettier@3.8.1 --write .github/workflows/save-safety-audit.yml 'docs/AI設計書/12_実装チェックリスト.md'
           git diff --binary > artifacts/save-safety-format/format.patch
           git diff --exit-code
       - uses: actions/upload-artifact@v4
