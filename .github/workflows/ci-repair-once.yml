@@ -65,8 +65,8 @@ jobs:
           )
           replace_once(
               "test/texture_filter_gold_palette_test.dart",
-              '''name: '質感変更フィルター' ''',
-              '''name: '質感変更' '''
+              """name: '質感変更フィルター'""",
+              """name: '質感変更'"""
           )
 
           replace_once(
