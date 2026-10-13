@@ -3048,6 +3048,9 @@ class AppLocalizationsKo extends AppLocalizations {
   String get brushSettingsMixingBleed => '번짐';
 
   @override
+  String get brushSettingsMixingBrightnessCorrection => '밝기 보정';
+
+  @override
   String get projectDetailNotFoundTitle => '프로젝트';
 
   @override

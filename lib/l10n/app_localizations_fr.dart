@@ -3179,6 +3179,9 @@ class AppLocalizationsFr extends AppLocalizations {
   String get brushSettingsMixingBleed => 'Effet de bavure';
 
   @override
+  String get brushSettingsMixingBrightnessCorrection => 'Correction de luminosité';
+
+  @override
   String get projectDetailNotFoundTitle => 'Projet';
 
   @override

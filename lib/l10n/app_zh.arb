@@ -1112,6 +1112,7 @@
   "brushSettingsMixingOff": "OFF",
   "brushSettingsMixingSimple": "知觉混色",
   "brushSettingsMixingBleed": "晕染",
+  "brushSettingsMixingBrightnessCorrection": "亮度校正"
   "projectDetailNotFoundTitle": "项目",
   "projectDetailNotFoundBody": "找不到项目",
   "projectDetailFirstFrameTooltip": "第一帧",

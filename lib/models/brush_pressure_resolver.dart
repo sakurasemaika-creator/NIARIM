@@ -8,6 +8,7 @@ class ResolvedBrushPressure {
   final int edgeJitterStrength;
   final BrushMixingMode mixingMode;
   final int mixingRate;
+  final int mixingBrightnessCorrection;
 
   const ResolvedBrushPressure({
     required this.sizeScale,
@@ -17,6 +18,7 @@ class ResolvedBrushPressure {
     required this.edgeJitterStrength,
     required this.mixingMode,
     required this.mixingRate,
+    required this.mixingBrightnessCorrection,
   });
 
   @override
@@ -28,7 +30,8 @@ class ResolvedBrushPressure {
       edgeJitterEnabled == other.edgeJitterEnabled &&
       edgeJitterStrength == other.edgeJitterStrength &&
       mixingMode == other.mixingMode &&
-      mixingRate == other.mixingRate;
+      mixingRate == other.mixingRate &&
+      mixingBrightnessCorrection == other.mixingBrightnessCorrection;
 
   @override
   int get hashCode => Object.hash(
@@ -39,6 +42,7 @@ class ResolvedBrushPressure {
     edgeJitterStrength,
     mixingMode,
     mixingRate,
+    mixingBrightnessCorrection,
   );
 }
 
@@ -67,6 +71,9 @@ ResolvedBrushPressure resolveBrushPressure({
           : 0,
       mixingMode: off.mixing.enabled ? off.mixing.mode : BrushMixingMode.off,
       mixingRate: off.mixing.enabled ? off.mixing.rate.clamp(0, 100) : 0,
+      mixingBrightnessCorrection: off.mixing.enabled
+          ? off.mixing.brightnessCorrection.clamp(1, 5).toInt()
+          : 3,
     );
   }
 
@@ -86,5 +93,8 @@ ResolvedBrushPressure resolveBrushPressure({
     mixingRate: on.mixing.enabled
         ? _interpolateInt(on.mixing.weakRate, on.mixing.strongRate, t)
         : 0,
+    mixingBrightnessCorrection: on.mixing.enabled
+        ? on.mixing.brightnessCorrection.clamp(1, 5).toInt()
+        : 3,
   );
 }

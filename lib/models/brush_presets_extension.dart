@@ -20,7 +20,7 @@ List<Brush> brushExtensionPresets() => const <Brush>[
       edgeJitter: PressureRangeSetting(enabled: false, weak: 0, strong: 0),
       mixing: PressureMixingOnSetting(
         enabled: false,
-        mode: BrushMixingMode.simple,
+        mode: BrushMixingMode.perceptual,
         weakRate: 0,
         strongRate: 0,
       ),
@@ -52,7 +52,7 @@ List<Brush> brushExtensionPresets() => const <Brush>[
       edgeJitter: PressureRangeSetting(enabled: false, weak: 0, strong: 0),
       mixing: PressureMixingOnSetting(
         enabled: false,
-        mode: BrushMixingMode.simple,
+        mode: BrushMixingMode.perceptual,
         weakRate: 0,
         strongRate: 0,
       ),
@@ -93,7 +93,7 @@ List<Brush> brushExtensionPresets() => const <Brush>[
       edgeJitter: PressureRangeSetting(enabled: false, weak: 0, strong: 0),
       mixing: PressureMixingOnSetting(
         enabled: false,
-        mode: BrushMixingMode.simple,
+        mode: BrushMixingMode.perceptual,
         weakRate: 0,
         strongRate: 0,
       ),
@@ -140,7 +140,7 @@ List<Brush> brushExtensionPresets() => const <Brush>[
       edgeJitter: PressureRangeSetting(enabled: false, weak: 0, strong: 0),
       mixing: PressureMixingOnSetting(
         enabled: false,
-        mode: BrushMixingMode.simple,
+        mode: BrushMixingMode.perceptual,
         weakRate: 0,
         strongRate: 0,
       ),

@@ -540,38 +540,45 @@ class PressureMixingOnSetting {
   final BrushMixingMode mode;
   final int weakRate;
   final int strongRate;
+  /// 1 is darker, 3 is neutral, and 5 is brighter.
+  final int brightnessCorrection;
   const PressureMixingOnSetting({
     required this.enabled,
     required this.mode,
     required this.weakRate,
     required this.strongRate,
+    this.brightnessCorrection = 3,
   });
   PressureMixingOnSetting copyWith({
     bool? enabled,
     BrushMixingMode? mode,
     int? weakRate,
     int? strongRate,
+    int? brightnessCorrection,
   }) => PressureMixingOnSetting(
     enabled: enabled ?? this.enabled,
     mode: mode ?? this.mode,
     weakRate: weakRate ?? this.weakRate,
     strongRate: strongRate ?? this.strongRate,
+    brightnessCorrection: brightnessCorrection ?? this.brightnessCorrection,
   );
   Map<String, dynamic> toJson() => {
     'enabled': enabled,
     'mode': mode.name,
     'weakRate': weakRate,
     'strongRate': strongRate,
+    'brightnessCorrection': brightnessCorrection,
   };
   factory PressureMixingOnSetting.fromJson(Map<String, dynamic> j) =>
       PressureMixingOnSetting(
         enabled: j['enabled'] as bool,
-        mode: BrushMixingMode.values.firstWhere(
-          (e) => e.name == j['mode'],
-          orElse: () => BrushMixingMode.simple,
-        ),
+        mode: _parseBrushMixingMode(j['mode']),
         weakRate: j['weakRate'] as int,
         strongRate: j['strongRate'] as int,
+        brightnessCorrection:
+            ((j['brightnessCorrection'] as num?)?.toInt() ?? 3)
+                .clamp(1, 5)
+                .toInt(),
       );
   @override
   bool operator ==(Object other) =>
@@ -579,51 +586,70 @@ class PressureMixingOnSetting {
       enabled == other.enabled &&
       mode == other.mode &&
       weakRate == other.weakRate &&
-      strongRate == other.strongRate;
+      strongRate == other.strongRate &&
+      brightnessCorrection == other.brightnessCorrection;
   @override
-  int get hashCode => Object.hash(enabled, mode, weakRate, strongRate);
+  int get hashCode => Object.hash(
+    enabled,
+    mode,
+    weakRate,
+    strongRate,
+    brightnessCorrection,
+  );
 }
 
 class PressureMixingOffSetting {
   final bool enabled;
   final BrushMixingMode mode;
   final int rate;
+  final int brightnessCorrection;
   const PressureMixingOffSetting({
     required this.enabled,
     required this.mode,
     required this.rate,
+    this.brightnessCorrection = 3,
   });
   PressureMixingOffSetting copyWith({
     bool? enabled,
     BrushMixingMode? mode,
     int? rate,
+    int? brightnessCorrection,
   }) => PressureMixingOffSetting(
     enabled: enabled ?? this.enabled,
     mode: mode ?? this.mode,
     rate: rate ?? this.rate,
+    brightnessCorrection: brightnessCorrection ?? this.brightnessCorrection,
   );
   Map<String, dynamic> toJson() => {
     'enabled': enabled,
     'mode': mode.name,
     'rate': rate,
+    'brightnessCorrection': brightnessCorrection,
   };
   factory PressureMixingOffSetting.fromJson(Map<String, dynamic> j) =>
       PressureMixingOffSetting(
         enabled: j['enabled'] as bool,
-        mode: BrushMixingMode.values.firstWhere(
-          (e) => e.name == j['mode'],
-          orElse: () => BrushMixingMode.simple,
-        ),
+        mode: _parseBrushMixingMode(j['mode']),
         rate: j['rate'] as int,
+        brightnessCorrection:
+            ((j['brightnessCorrection'] as num?)?.toInt() ?? 3)
+                .clamp(1, 5)
+                .toInt(),
       );
   @override
   bool operator ==(Object other) =>
       other is PressureMixingOffSetting &&
       enabled == other.enabled &&
       mode == other.mode &&
-      rate == other.rate;
+      rate == other.rate &&
+      brightnessCorrection == other.brightnessCorrection;
   @override
-  int get hashCode => Object.hash(enabled, mode, rate);
+  int get hashCode => Object.hash(
+    enabled,
+    mode,
+    rate,
+    brightnessCorrection,
+  );
 }
 
 class BrushPressureOnSettings {
@@ -646,7 +672,7 @@ class BrushPressureOnSettings {
     edgeJitter: PressureRangeSetting(enabled: false, weak: 0, strong: 0),
     mixing: PressureMixingOnSetting(
       enabled: false,
-      mode: BrushMixingMode.simple,
+      mode: BrushMixingMode.perceptual,
       weakRate: 0,
       strongRate: 0,
     ),
@@ -711,7 +737,7 @@ class BrushPressureOffSettings {
     edgeJitter: FixedBrushSetting(enabled: false, value: 0),
     mixing: PressureMixingOffSetting(
       enabled: false,
-      mode: BrushMixingMode.simple,
+      mode: BrushMixingMode.perceptual,
       rate: 0,
     ),
   );
@@ -773,4 +799,18 @@ class FadeEndpointSettings {
       );
 }
 
-enum BrushMixingMode { off, simple, bleed }
+enum BrushMixingMode {
+  off,
+  // Legacy on-disk value. Old "simple" brushes are migrated to perceptual.
+  simple,
+  bleed,
+  perceptual,
+}
+
+BrushMixingMode _parseBrushMixingMode(Object? value) {
+  if (value == 'simple') return BrushMixingMode.perceptual;
+  return BrushMixingMode.values.firstWhere(
+    (mode) => mode.name == value,
+    orElse: () => BrushMixingMode.perceptual,
+  );
+}

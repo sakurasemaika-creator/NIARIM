@@ -4,6 +4,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:niarim/engine/drawing_engine.dart';
 import 'package:niarim/engine/perceptual_color_mixer.dart';
 import 'package:niarim/engine/tile_manager.dart';
+import 'package:niarim/models/brush.dart';
 
 void main() {
   const yellow = ui.Color(0xFFFFFF00);
@@ -59,6 +60,60 @@ void main() {
     expect(allSelected.r, closeTo(0, 1e-6));
     expect(allSelected.g, closeTo(0, 1e-6));
     expect(allSelected.b, closeTo(1, 1e-6));
+  });
+
+  test('brightness correction adjusts the mix but not endpoints', () {
+    final darker = mixPerceptualColor(
+      yellow,
+      blue,
+      0.5,
+      brightnessCorrection: 1,
+    );
+    final neutral = mixPerceptualColor(yellow, blue, 0.5);
+    final brighter = mixPerceptualColor(
+      yellow,
+      blue,
+      0.5,
+      brightnessCorrection: 5,
+    );
+
+    expect(darker.g, lessThan(neutral.g));
+    expect(darker.b, lessThan(neutral.b));
+    expect(brighter.g, greaterThan(neutral.g));
+    expect(brighter.b, greaterThan(neutral.b));
+
+    final endpoint = mixPerceptualColor(
+      yellow,
+      blue,
+      1,
+      brightnessCorrection: 1,
+    );
+    expect(endpoint.r, closeTo(1, 1e-6));
+    expect(endpoint.g, closeTo(1, 1e-6));
+    expect(endpoint.b, closeTo(0, 1e-6));
+  });
+
+  test('cyan and magenta travel through blue around the hue wheel', () {
+    const cyan = ui.Color(0xFF00FFFF);
+    const magenta = ui.Color(0xFFFF00FF);
+    final mixed = mixPerceptualColor(cyan, magenta, 0.5);
+
+    expect(mixed.r, lessThan(0.05));
+    expect(mixed.g, lessThan(0.05));
+    expect(mixed.b, greaterThan(0.95));
+  });
+
+  test('legacy simple mixing setting migrates to perceptual', () {
+    final setting = PressureMixingOffSetting.fromJson({
+      'enabled': true,
+      'mode': 'simple',
+      'rate': 60,
+    });
+
+    expect(setting.mode, BrushMixingMode.perceptual);
+    expect(setting.brightnessCorrection, 3);
+    expect(setting.toJson()['mode'], 'perceptual');
+    expect(PressureMixingOffSetting.fromJson(setting.toJson()), setting);
   });
 
   test('mixing a chromatic colour with white keeps its hue', () {

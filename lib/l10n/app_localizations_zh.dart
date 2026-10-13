@@ -3022,6 +3022,9 @@ class AppLocalizationsZh extends AppLocalizations {
   String get brushSettingsMixingBleed => '晕染';
 
   @override
+  String get brushSettingsMixingBrightnessCorrection => '亮度校正';
+
+  @override
   String get projectDetailNotFoundTitle => '项目';
 
   @override
@@ -10124,6 +10127,9 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get brushSettingsMixingBleed => '暈染';
+
+  @override
+  String get brushSettingsMixingBrightnessCorrection => '亮度校正';
 
   @override
   String get projectDetailNotFoundTitle => '專案';

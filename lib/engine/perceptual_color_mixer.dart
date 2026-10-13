@@ -14,11 +14,16 @@ import 'dart:ui' as ui;
 /// This is a practical perceptual/analog-style approximation for brush
 /// mixing, not an attempt to reproduce Clip Studio Paint's proprietary
 /// pigment-mixing implementation bit-for-bit.
+///
+/// [brightnessCorrection] ranges from 1 (darker), through 3 (neutral), to
+/// 5 (brighter). The correction fades near the mixing endpoints so 0% and
+/// 100% mixing still preserve the respective input colour.
 ui.Color mixPerceptualColor(
   ui.Color below,
   ui.Color selected,
-  double belowWeight,
-) {
+  double belowWeight, {
+  int brightnessCorrection = 3,
+}) {
   final weight = belowWeight.clamp(0.0, 1.0).toDouble();
   final selectedWeight = 1.0 - weight;
   final a = _rgbToHsl(below);
@@ -42,7 +47,21 @@ ui.Color mixPerceptualColor(
   final hue = _wrapHue(hueA + delta * selectedWeight);
   final saturation =
       a.saturation + (b.saturation - a.saturation) * selectedWeight;
-  final lightness = a.lightness + (b.lightness - a.lightness) * selectedWeight;
+  final baseLightness =
+      a.lightness + (b.lightness - a.lightness) * selectedWeight;
+  final inputDifference = math.max(
+    (below.r - selected.r).abs(),
+    math.max(
+      (below.g - selected.g).abs(),
+      (below.b - selected.b).abs(),
+    ),
+  ).toDouble();
+  final blendStrength = 4.0 * weight * selectedWeight;
+  final correction = (brightnessCorrection.clamp(1, 5).toDouble() - 3.0) *
+      0.035 *
+      blendStrength *
+      inputDifference;
+  final lightness = (baseLightness + correction).clamp(0.0, 1.0).toDouble();
   return _hslToRgb(hue, saturation, lightness);
 }
 

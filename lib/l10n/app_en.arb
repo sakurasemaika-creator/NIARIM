@@ -1112,6 +1112,7 @@
   "brushSettingsMixingOff": "OFF",
   "brushSettingsMixingSimple": "Perceptual mixing",
   "brushSettingsMixingBleed": "Bleed",
+  "brushSettingsMixingBrightnessCorrection": "Brightness correction"
   "projectDetailNotFoundTitle": "Project",
   "projectDetailNotFoundBody": "Project not found",
   "projectDetailFirstFrameTooltip": "First frame",

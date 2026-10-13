@@ -3144,6 +3144,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get brushSettingsMixingBleed => 'Bleed';
 
   @override
+  String get brushSettingsMixingBrightnessCorrection => 'Brightness correction';
+
+  @override
   String get projectDetailNotFoundTitle => 'Project';
 
   @override

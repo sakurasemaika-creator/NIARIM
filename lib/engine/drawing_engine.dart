@@ -642,6 +642,8 @@ class DrawingEngine {
           edgeJitterStrength: resolvedPressure.edgeJitterStrength,
           mixingMode: resolvedPressure.mixingMode,
           mixingRate: resolvedPressure.mixingRate,
+          mixingBrightnessCorrection:
+              resolvedPressure.mixingBrightnessCorrection,
           hexagon: isGlitterHexagon,
           particleRotation: particleRotation,
           chainLink: isChainLink,
@@ -674,6 +676,8 @@ class DrawingEngine {
           edgeJitterStrength: resolvedPressure.edgeJitterStrength,
           mixingMode: resolvedPressure.mixingMode,
           mixingRate: resolvedPressure.mixingRate,
+          mixingBrightnessCorrection:
+              resolvedPressure.mixingBrightnessCorrection,
           hexagon: isGlitterHexagon,
           particleRotation: particleRotation,
           chainLink: isChainLink,
@@ -703,6 +707,7 @@ class DrawingEngine {
     int edgeJitterStrength = 50,
     BrushMixingMode mixingMode = BrushMixingMode.off,
     int mixingRate = 0,
+    int mixingBrightnessCorrection = 3,
     bool hexagon = false,
     double particleRotation = 0.0,
     bool chainLink = false,
@@ -967,7 +972,12 @@ class DrawingEngine {
                 final rate = mixingRate / 100.0;
                 final mixed = mixingMode == BrushMixingMode.bleed
                     ? bleedColor(below, selected, rate, _currentStroke.length)
-                    : mixColor(below, selected, rate);
+                    : mixColor(
+                        below,
+                        selected,
+                        rate,
+                        brightnessCorrection: mixingBrightnessCorrection,
+                      );
                 tileManager.blendPixel(
                   tile,
                   px,
@@ -1069,8 +1079,17 @@ class DrawingEngine {
   /// Brush mixing uses hue-wheel interpolation so intermediate colours retain
   /// their chroma instead of passing through a desaturated RGB average.
   /// [rate] retains the existing contract: contribution from the colour below.
-  ui.Color mixColor(ui.Color below, ui.Color selected, double rate) =>
-      mixPerceptualColor(below, selected, rate);
+  ui.Color mixColor(
+    ui.Color below,
+    ui.Color selected,
+    double rate, {
+    int brightnessCorrection = 3,
+  }) => mixPerceptualColor(
+    below,
+    selected,
+    rate,
+    brightnessCorrection: brightnessCorrection,
+  );
 
   ui.Color bleedColor(
     ui.Color below,

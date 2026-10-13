@@ -3036,6 +3036,9 @@ class AppLocalizationsJa extends AppLocalizations {
   String get brushSettingsMixingBleed => 'にじみ';
 
   @override
+  String get brushSettingsMixingBrightnessCorrection => '輝度の補正';
+
+  @override
   String get projectDetailNotFoundTitle => 'プロジェクト';
 
   @override

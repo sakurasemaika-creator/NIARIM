@@ -1112,6 +1112,7 @@
   "brushSettingsMixingOff": "OFF",
   "brushSettingsMixingSimple": "Mélange perceptif",
   "brushSettingsMixingBleed": "Effet de bavure",
+  "brushSettingsMixingBrightnessCorrection": "Correction de luminosité"
   "projectDetailNotFoundTitle": "Projet",
   "projectDetailNotFoundBody": "Projet introuvable",
   "projectDetailFirstFrameTooltip": "Première image",

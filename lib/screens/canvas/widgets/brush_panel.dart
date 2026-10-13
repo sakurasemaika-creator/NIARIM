@@ -1037,6 +1037,20 @@ class _BrushSettingsSheetState extends State<_BrushSettingsSheet> {
               ),
             ),
           ),
+          if (_usesPerceptualMixing(setting.mode))
+            _sliderRow(
+              l10n.brushSettingsMixingBrightnessCorrection,
+              setting.brightnessCorrection.toDouble(),
+              1,
+              5,
+              (v) => setState(
+                () => _brush = _brush.copyWith(
+                  pressureOn: _brush.pressureOn.copyWith(
+                    mixing: setting.copyWith(brightnessCorrection: v.round()),
+                  ),
+                ),
+              ),
+            ),
         ],
       ],
     );
@@ -1083,6 +1097,20 @@ class _BrushSettingsSheetState extends State<_BrushSettingsSheet> {
               ),
             ),
           ),
+          if (_usesPerceptualMixing(setting.mode))
+            _sliderRow(
+              l10n.brushSettingsMixingBrightnessCorrection,
+              setting.brightnessCorrection.toDouble(),
+              1,
+              5,
+              (v) => setState(
+                () => _brush = _brush.copyWith(
+                  pressureOff: _brush.pressureOff.copyWith(
+                    mixing: setting.copyWith(brightnessCorrection: v.round()),
+                  ),
+                ),
+              ),
+            ),
         ],
       ],
     );
@@ -1093,9 +1121,12 @@ class _BrushSettingsSheetState extends State<_BrushSettingsSheet> {
     required BrushMixingMode mode,
     required ValueChanged<BrushMixingMode> onChanged,
   }) {
-    final modes = [BrushMixingMode.simple, BrushMixingMode.bleed];
+    const modes = [BrushMixingMode.perceptual, BrushMixingMode.bleed];
     return RadioGroup<BrushMixingMode>(
-      groupValue: mode == BrushMixingMode.off ? BrushMixingMode.simple : mode,
+      groupValue: mode == BrushMixingMode.off ||
+              mode == BrushMixingMode.simple
+          ? BrushMixingMode.perceptual
+          : mode,
       onChanged: (v) {
         if (v != null) onChanged(v);
       },
@@ -1196,10 +1227,14 @@ class _BrushSettingsSheetState extends State<_BrushSettingsSheet> {
     FadeMode.custom => l10n.brushSettingsFadeCustom,
   };
 
+  bool _usesPerceptualMixing(BrushMixingMode mode) =>
+      mode == BrushMixingMode.perceptual || mode == BrushMixingMode.simple;
+
   String _mixingModeLabel(AppLocalizations l10n, BrushMixingMode mode) =>
       switch (mode) {
         BrushMixingMode.off => l10n.brushSettingsMixingOff,
-        BrushMixingMode.simple => l10n.brushSettingsMixingSimple,
+        BrushMixingMode.simple || BrushMixingMode.perceptual =>
+          l10n.brushSettingsMixingSimple,
         BrushMixingMode.bleed => l10n.brushSettingsMixingBleed,
       };
 }
