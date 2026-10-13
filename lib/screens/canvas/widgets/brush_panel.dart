@@ -1232,7 +1232,7 @@ class _BrushSettingsSheetState extends State<_BrushSettingsSheet> {
   String _mixingModeLabel(AppLocalizations l10n, BrushMixingMode mode) =>
       switch (mode) {
         BrushMixingMode.off => l10n.brushSettingsMixingOff,
-        BrushMixingMode.perceptual => l10n.brushSettingsMixingSimple,
+        BrushMixingMode.perceptual => l10n.brushSettingsMixingAnalog,
         BrushMixingMode.bleed => l10n.brushSettingsMixingBleed,
       };
 }
