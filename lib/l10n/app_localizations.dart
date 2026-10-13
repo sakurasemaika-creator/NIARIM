@@ -5615,11 +5615,11 @@ abstract class AppLocalizations {
   /// **'OFF'**
   String get brushSettingsMixingOff;
 
-  /// No description provided for @brushSettingsMixingSimple.
+  /// No description provided for @brushSettingsMixingAnalog.
   ///
   /// In ja, this message translates to:
-  /// **'知覚的混色'**
-  String get brushSettingsMixingSimple;
+  /// **'アナログ風混色'**
+  String get brushSettingsMixingAnalog;
 
   /// No description provided for @brushSettingsMixingBleed.
   ///
