@@ -50,6 +50,9 @@ class DrawingEngine {
   // 描き直し（replayCurrentStrokeWithFinalFade）でだけ設定する。
   OutlineAccent? _outlineAccent;
   final List<ui.Offset> _strokeScreenPositions = [];
+  // アナログ風の混色は下の色ごとに混ざり方の経路を覚えておく（同じ色の上を
+  // 塗る間は1画素1回の参照で済む）。絵の具の色か明度補正が変わったら作り直す。
+  AnalogPaintMixer? _analogMixer;
 
   String? get debugActiveBrushTexturePath => _brushTextureSelector.activePath;
 
@@ -565,7 +568,8 @@ class DrawingEngine {
     // stamp samples its own centre; later stamps sample behind the stroke
     // direction, so existing colour is carried forward instead of merely
     // reducing the mix rate as the stroke gets longer.
-    final bleedSampleColor = resolvedPressure.mixingMode == BrushMixingMode.bleed
+    final bleedSampleColor =
+        resolvedPressure.mixingMode == BrushMixingMode.bleed
         ? _sampleBleedColor(
             layerId: layerId,
             x: stampX,
@@ -997,29 +1001,25 @@ class DrawingEngine {
                 incrementalAlpha,
               );
             } else if (mixingMode == BrushMixingMode.perceptual) {
-              final rate = mixingRate / 100.0;
               final idx = (py * TileManager.tileSize + px) * 4;
-              if (tile[idx + 3] > 0) {
-                final below = ui.Color.fromARGB(
-                  tile[idx + 3],
-                  tile[idx],
-                  tile[idx + 1],
-                  tile[idx + 2],
+              final belowAlpha = tile[idx + 3];
+              if (belowAlpha > 0) {
+                final mixer = _analogMixerFor(
+                  (ri << 16) | (gi << 8) | bi,
+                  mixingBrightnessCorrection,
                 );
-                final selected = ui.Color.fromARGB(255, ri, gi, bi);
-                final mixed = mixColor(
-                  below,
-                  selected,
-                  rate,
-                  brightnessCorrection: mixingBrightnessCorrection,
+                // A faint edge holds less paint to pick up than a solid area.
+                final mixed = mixer.mix(
+                  (tile[idx] << 16) | (tile[idx + 1] << 8) | tile[idx + 2],
+                  mixingRate / 100.0 * belowAlpha / 255.0,
                 );
                 tileManager.blendPixel(
                   tile,
                   px,
                   py,
-                  (mixed.r * 255).round(),
-                  (mixed.g * 255).round(),
-                  (mixed.b * 255).round(),
+                  mixed >> 16 & 0xFF,
+                  mixed >> 8 & 0xFF,
+                  mixed & 0xFF,
                   incrementalAlpha,
                 );
               } else {
@@ -1111,9 +1111,22 @@ class DrawingEngine {
   double _calculateDecay(double strokeLength) =>
       (1.0 - strokeLength / 2000).clamp(0.05, 1.0);
 
-  /// Brush mixing uses hue-wheel interpolation so intermediate colours retain
-  /// their chroma instead of passing through a desaturated RGB average.
-  /// [rate] retains the existing contract: contribution from the colour below.
+  AnalogPaintMixer _analogMixerFor(int paint, int brightnessCorrection) {
+    final current = _analogMixer;
+    if (current != null &&
+        current.selected == paint &&
+        current.brightnessCorrection == brightnessCorrection.clamp(1, 5)) {
+      return current;
+    }
+    return _analogMixer = AnalogPaintMixer(
+      selected: paint,
+      brightnessCorrection: brightnessCorrection,
+    );
+  }
+
+  /// Analog-style brush mixing: around the hue wheel like paint, keeping the
+  /// colours vivid (see [AnalogPaintMixer]). [rate] is the contribution of
+  /// the colour below.
   ui.Color mixColor(
     ui.Color below,
     ui.Color selected,
@@ -1134,9 +1147,7 @@ class DrawingEngine {
     required double pathAngle,
     required bool hasPathDirection,
   }) {
-    final pickupDistance = hasPathDirection
-        ? math.max(1.0, size * 0.35)
-        : 0.0;
+    final pickupDistance = hasPathDirection ? math.max(1.0, size * 0.35) : 0.0;
     final sampleX = hasPathDirection
         ? x - math.cos(pathAngle) * pickupDistance
         : x;
@@ -1153,11 +1164,7 @@ class DrawingEngine {
   /// Pulls the picked-up colour into the selected paint. Unlike analog-style
   /// mixing, bleed uses direct channel interpolation and has no stroke-length
   /// decay; the source changes as the brush moves across the canvas.
-  ui.Color bleedColor(
-    ui.Color selected,
-    ui.Color? pickedUp,
-    double rate,
-  ) {
+  ui.Color bleedColor(ui.Color selected, ui.Color? pickedUp, double rate) {
     final rateWeight = rate.clamp(0.0, 1.0).toDouble();
     if (pickedUp == null || rateWeight <= 0.0) return selected;
     // A faint/partially transparent source should contribute less than an

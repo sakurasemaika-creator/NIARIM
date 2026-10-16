@@ -4,6 +4,7 @@ import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'app.dart';
 import 'app_bootstrap.dart';
+import 'config/ported_code_licenses.dart';
 import 'utils/app_error_reporter.dart';
 import 'widgets/startup_failure_app.dart';
 
@@ -16,6 +17,7 @@ void main() async {
   AppErrorReporter.install();
 
   _registerBundledFontLicenses();
+  registerPortedCodeLicenses();
 
   await SystemChrome.setPreferredOrientations([
     DeviceOrientation.portraitUp,
