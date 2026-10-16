@@ -32,6 +32,14 @@ save schema/versionを変更・移行する場合、legacy/current/unknown/newer
 
 機能が動くだけで満足せず、導線、発見可能性、操作手数、feedback、視覚階層、spacing、typography、contrast、accessibility、PC/SP最適化、theme一貫性、制作効率まで評価する。明確な改善余地は遠慮なく修正し、修正後は同じ実操作とvisual/regressionを再実行する。
 
+## 画面ごとの大きさの比率・余白の釣り合い
+
+全画面について、機能・表示崩れの有無だけでなく**デザインの細かな釣り合い**まで実画面で評価し、調整する（2026-10-16 ユーザー指定。起動画面のPC表示が全体に小さく、ボタンとロゴの間隔も詰まって見えた指摘から）。
+
+- 画面に対する要素群の占有率、主要な操作（ボタン等）と装飾・ロゴ・見出しの大きさの比率、要素どうしの間隔と外周の余白の比を、SP・PC・タブレット（短辺600dp以上）ごとに評価する。
+- PC・タブレットを「スマホの寸法のまま中央に置いただけ」の状態にしない。広い画面では主要な操作を押しやすい大きさへ広げ、装飾は相対的に控えめにする。SPは基準の大きさを保ち、間隔・余白で整える。
+- 代表幅だけでなく境界幅・極端な縦横比・文字拡大でも釣り合いが崩れないことを確認し、修正前後の画像を並べて証跡に残す。決めた比率は、画面比・間隔の下限等をテストで固定して回帰を防ぐ。
+
 ## ソース衛生
 
 未使用コード、dead route、obsolete service/model、debug output、temporary workaround、古いtest/fixture/workflow参照、TODO/FIXME/HACK/placeholder等を全体探索する。production commentはコードの意味・不変条件・恒久的制約・公開API/ライセンス情報に限定し、開発経緯やチャット由来メモは残さない。削除/refactor後はanalyze/lint/test/buildと関連実画面regressionを実行する。

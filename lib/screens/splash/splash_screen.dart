@@ -13,6 +13,7 @@ import '../../config/font_fallback.dart';
 import '../../models/app_theme_preset.dart';
 import '../../utils/color_contrast.dart';
 import '../../utils/line_break.dart';
+import '../../widgets/responsive.dart';
 
 /// 起動画面。ロゴを中央に表示し、その上に「作品広場」（コミュニティ
 /// 画面への導線。1行目に大きく「作品広場」、2行目にやや小さく
@@ -136,7 +137,15 @@ class _SplashScreenState extends State<SplashScreen> {
     // 見えないようにする。タイトルロゴ（アプリ名の書き文字）は背景を
     // 持たない単色SVGのまま、モノグラムの下に元のSVGアスペクト比
     // （幅3470×高さ690相当）を保った横長サイズで添える。
-    const logoSize = 110.0;
+    // PC（DeX等）とタブレット（短辺600dp以上）では、ロゴを控えめにして
+    // ボタンを相対的に大きくする（マウスでも押しやすく、画面が広くても
+    // 導線が主役になるように）。組んだ後で全体を画面の大きさに合わせて
+    // 拡大する（下の`upscale`）。スマホはボタンの大きさを変えない。
+    final pc =
+        isWideScreen(context) || MediaQuery.sizeOf(context).shortestSide >= 600;
+    final logoSize = pc ? 82.0 : 110.0;
+    final titleWidth = pc ? 164.0 : 220.0;
+    final titleHeight = titleWidth * 690 / 3470;
     final logo = Column(
       mainAxisSize: MainAxisSize.min,
       children: [
@@ -161,8 +170,8 @@ class _SplashScreenState extends State<SplashScreen> {
         const SizedBox(height: 10),
         SvgPicture.asset(
           'assets/logo/title_logo.svg',
-          width: 220,
-          height: 220 * 690 / 3470,
+          width: titleWidth,
+          height: titleHeight,
           colorFilter: ColorFilter.mode(scheme.primary, BlendMode.srcIn),
         ),
       ],
@@ -175,32 +184,43 @@ class _SplashScreenState extends State<SplashScreen> {
     // 右端の「作品をつくる」が画面外へはみ出していた。縦に積む場合も、
     // 文字サイズを大きくしてタイルが広がると狭い画面からはみ出す。
     // 入りきらない幅では並びごと縮めて全体を収める（入るときは等倍）。
-    // 縦画面のボタンとロゴの間隔。小さな端末（高さ568px前後）では40pxの
-    // ままだと「作品をつくる」が画面の下へはみ出してスクロールしないと
-    // 見えなかったので、収まるまで12pxを下限に詰める。
     final textEnlarged = MediaQuery.textScalerOf(context).scale(1) > 1.0;
+    final screen = MediaQuery.sizeOf(context);
+    final padding = MediaQuery.paddingOf(context);
+    final availableWidth = screen.width - padding.horizontal - 48;
     final availableHeight =
-        MediaQuery.sizeOf(context).height -
-        MediaQuery.paddingOf(context).vertical -
-        32 -
-        MediaQuery.paddingOf(context).bottom;
-    final stackedHeight =
-        2 * (tileHeight + _SplashActionButton.focusRingInset * 2) +
-        logoSize +
-        10 +
-        220 * 690 / 3470;
-    final portraitGap = ((availableHeight - stackedHeight) / 2).clamp(
-      12.0,
-      40.0,
-    );
+        screen.height - padding.vertical - 32 - padding.bottom;
+    const ring = _SplashActionButton.focusRingInset * 2;
+    final tileOuterWidth = tileWidth + ring;
+    final tileOuterHeight = tileHeight + ring;
+    final logoWidth = math.max(logoSize, titleWidth);
+    final logoHeight = logoSize + 10 + titleHeight;
+    // ボタンとロゴの間隔。スマホは画面に余裕があれば広め（最大64px）に取り、
+    // 小さな端末（高さ568px前後・横画面568〜640px）では収まるまで詰める
+    // （縦は12px、横は40pxが下限。横で足りない分は並びごと縮める）。
+    // PCは拡大前の寸法での間隔（拡大後は約60px）。
+    final double gap;
+    if (pc) {
+      gap = 34;
+    } else if (isLandscape) {
+      gap = ((availableWidth - 2 * tileOuterWidth - logoWidth) / 4).clamp(
+        40.0,
+        64.0,
+      );
+    } else {
+      gap = ((availableHeight - 2 * tileOuterHeight - logoHeight) / 4).clamp(
+        12.0,
+        64.0,
+      );
+    }
     final arrangement = isLandscape
         ? Row(
             mainAxisSize: MainAxisSize.min,
             children: [
               communityButton,
-              const SizedBox(width: 40),
+              SizedBox(width: gap),
               logo,
-              const SizedBox(width: 40),
+              SizedBox(width: gap),
               createButton,
             ],
           )
@@ -208,13 +228,49 @@ class _SplashScreenState extends State<SplashScreen> {
             mainAxisSize: MainAxisSize.min,
             children: [
               communityButton,
-              SizedBox(height: portraitGap),
+              SizedBox(height: gap),
               logo,
-              SizedBox(height: portraitGap),
+              SizedBox(height: gap),
               createButton,
             ],
           );
-    final content = FittedBox(fit: BoxFit.scaleDown, child: arrangement);
+    // PC・タブレットの広い画面では、スマホと同じ寸法のままだと画面の中央に
+    // 小さく固まって見える。並び全体を、横並びなら画面幅の約8割、縦積みなら
+    // 高さの約3/4まで拡大する（文字・アイコンはベクターなので拡大しても
+    // 粗くならない）。拡大は2.2倍まで。
+    final arrangementWidth = isLandscape
+        ? 2 * tileOuterWidth + logoWidth + 2 * gap
+        : math.max(tileOuterWidth, logoWidth);
+    final arrangementHeight = isLandscape
+        ? math.max(tileOuterHeight, logoHeight)
+        : 2 * tileOuterHeight + logoHeight + 2 * gap;
+    final upscale = !pc
+        ? 1.0
+        : isLandscape
+        ? math.min(
+            math.min(
+              availableWidth * 0.8 / arrangementWidth,
+              availableHeight * 0.6 / arrangementHeight,
+            ),
+            2.2,
+          )
+        : math.min(
+            math.min(
+              availableWidth * 0.62 / arrangementWidth,
+              availableHeight * 0.75 / arrangementHeight,
+            ),
+            2.2,
+          );
+    final content = FittedBox(
+      fit: BoxFit.scaleDown,
+      child: upscale > 1
+          ? SizedBox(
+              width: arrangementWidth * upscale,
+              height: arrangementHeight * upscale,
+              child: FittedBox(child: arrangement),
+            )
+          : arrangement,
+    );
 
     // Android標準のナビゲーションバー（戻る・ホーム・タブ一覧）の高さぶん、
     // SafeAreaの余白に加えてさらに下部の余白を確保する。端末・OSバージョン
@@ -231,7 +287,7 @@ class _SplashScreenState extends State<SplashScreen> {
             // スクロールさせない（小さな端末でも最初から両方のボタンが
             // 見える）。OSの文字サイズを大きくしているときは、選んだ大きさを
             // 縮めないよう、縦に収まらない分はスクロールで届くようにする。
-            if (isLandscape || !textEnlarged)
+            if (isLandscape || !textEnlarged || upscale > 1)
               Positioned.fill(
                 child: Padding(
                   padding: EdgeInsets.fromLTRB(24, 16, 24, 16 + bottomInset),

@@ -9,6 +9,7 @@ import 'package:niarim/models/app_theme_preset.dart';
 import 'package:niarim/screens/settings/theme_settings_screen.dart';
 import 'package:niarim/screens/splash/splash_screen.dart';
 import 'package:niarim/services/project_service.dart';
+import 'package:niarim/services/settings_service.dart';
 import 'package:niarim/services/theme_service.dart';
 import 'package:niarim/utils/color_contrast.dart';
 import 'package:provider/provider.dart';
@@ -175,10 +176,14 @@ void main() {
 Future<Widget> _splashApp(WidgetTester tester, ThemeService service) async {
   final projects = ProjectService();
   await tester.runAsync(projects.init);
+  // 起動画面はPC（DeX等）かどうかで並びの大きさを変えるので設定も読む。
+  final settings = SettingsService();
+  await tester.runAsync(settings.init);
   return MultiProvider(
     providers: [
       ChangeNotifierProvider<ThemeService>.value(value: service),
       ChangeNotifierProvider<ProjectService>.value(value: projects),
+      ChangeNotifierProvider<SettingsService>.value(value: settings),
     ],
     child: Builder(
       builder: (context) => MaterialApp(

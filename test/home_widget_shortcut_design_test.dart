@@ -233,8 +233,10 @@ void main() {
       if (tempDir.existsSync()) tempDir.deleteSync(recursive: true);
     });
     await loadFonts(tester);
+    // スマホ（論理360×700）の起動画面と比べる。短辺600dp以上はタブレットの
+    // 釣り合い（ボタンを拡大）になるため、論理サイズで幅720にはしない。
     tester.view.physicalSize = const Size(720, 1400);
-    tester.view.devicePixelRatio = 1;
+    tester.view.devicePixelRatio = 2;
     addTearDown(tester.view.resetPhysicalSize);
     addTearDown(tester.view.resetDevicePixelRatio);
 
