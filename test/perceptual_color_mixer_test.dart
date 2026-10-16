@@ -468,7 +468,9 @@ void main() {
     expect(on.stretch, kDefaultMixingStretch);
     expect(on.water, kDefaultMixingWater);
     expect(on.pigment, kDefaultMixingPigment);
-    expect(on.edge, kDefaultMixingEdge);
+    expect(on.bleed, kDefaultMixingBleed);
+    expect(on.texture, kDefaultMixingTexture);
+    expect(on.softEdge, kDefaultMixingSoftEdge);
   });
 
   test('the new sliders round-trip and stay within 0–100', () {
@@ -481,7 +483,9 @@ void main() {
       stretch: 15,
       water: 80,
       pigment: 35,
-      edge: 90,
+      bleed: 90,
+      texture: 5,
+      softEdge: 70,
     );
     expect(PressureMixingOnSetting.fromJson(on.toJson()), on);
     const off = PressureMixingOffSetting(
@@ -491,7 +495,7 @@ void main() {
       stretch: 66,
       water: 1,
       pigment: 99,
-      edge: 0,
+      bleed: 0,
     );
     expect(PressureMixingOffSetting.fromJson(off.toJson()), off);
     final clamped = PressureMixingOffSetting.fromJson({

@@ -323,27 +323,34 @@ class ShortcutSettingsScreen extends StatelessWidget {
       builder: (ctx) => StatefulBuilder(
         builder: (ctx, setS) => AlertDialog(
           title: Text(l10n.quickToolSizeDialogTitle(brushName)),
-          content: Row(
+          // 項目名はダイアログのタイトルが兼ねるので、値だけを上の行の
+          // 右端へ置き、スライダーは下の行で横幅いっぱいを使う。
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              Expanded(
-                child: SteppedSlider(
-                  value: size.clamp(1, 200),
-                  min: 1,
-                  max: 200,
-                  label: '${size.round()}px',
-                  onChanged: (v) => setS(() => size = v),
+              Padding(
+                // 鉛筆マークが値の右へはみ出して描かれるぶん空ける。
+                padding: const EdgeInsetsDirectional.only(end: 14),
+                child: Align(
+                  alignment: AlignmentDirectional.centerEnd,
+                  child: EditableSliderValue(
+                    text: '${size.round()}px',
+                    textAlign: TextAlign.right,
+                    value: size,
+                    min: 1,
+                    max: 200,
+                    onChanged: (v) => setS(() => size = v.toDouble()),
+                  ),
                 ),
               ),
-              SizedBox(
-                width: 48,
-                child: EditableSliderValue(
-                  text: '${size.round()}px',
-                  textAlign: TextAlign.center,
-                  value: size,
-                  min: 1,
-                  max: 200,
-                  onChanged: (v) => setS(() => size = v.toDouble()),
-                ),
+              SteppedSlider(
+                value: size.clamp(1, 200),
+                min: 1,
+                max: 200,
+                compact: true,
+                label: '${size.round()}px',
+                onChanged: (v) => setS(() => size = v),
               ),
             ],
           ),

@@ -6,8 +6,7 @@ import 'package:share_plus/share_plus.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../../models/stamp.dart';
 import '../../../services/stamp_service.dart';
-import '../../../widgets/editable_slider_value.dart';
-import '../../../widgets/stepped_slider.dart';
+import '../../../widgets/labeled_slider.dart';
 import 'creative_folder_sheets.dart';
 import 'panel_close_bar.dart';
 import '../../../config/font_fallback.dart';
@@ -664,34 +663,13 @@ class _StampSettingsSheetState extends State<_StampSettingsSheet> {
     int max,
     ValueChanged<int> onChanged,
   ) {
-    return Row(
-      children: [
-        SizedBox(
-          width: 60,
-          child: Text(label, style: const TextStyle(fontSize: 12)),
-        ),
-        Expanded(
-          child: SteppedSlider(
-            min: min.toDouble(),
-            max: max.toDouble(),
-            value: value.toDouble().clamp(min.toDouble(), max.toDouble()),
-            step: 1,
-            onChanged: (v) => onChanged(v.round()),
-          ),
-        ),
-        SizedBox(
-          width: 40,
-          child: EditableSliderValue(
-            text: value.toString(),
-            style: const TextStyle(fontSize: 12),
-            value: value.toDouble(),
-            min: min.toDouble(),
-            max: max.toDouble(),
-            isInt: true,
-            onChanged: (v) => onChanged(v.round()),
-          ),
-        ),
-      ],
+    return LabeledSlider(
+      label: label,
+      value: value.toDouble(),
+      min: min.toDouble(),
+      max: max.toDouble(),
+      valueText: value.toString(),
+      onChanged: (v) => onChanged(v.round()),
     );
   }
 
@@ -702,34 +680,15 @@ class _StampSettingsSheetState extends State<_StampSettingsSheet> {
     double max,
     ValueChanged<double> onChanged,
   ) {
-    return Row(
-      children: [
-        SizedBox(
-          width: 60,
-          child: Text(label, style: const TextStyle(fontSize: 12)),
-        ),
-        Expanded(
-          child: SteppedSlider(
-            min: min,
-            max: max,
-            value: value.clamp(min, max),
-            step: 0.1,
-            onChanged: onChanged,
-          ),
-        ),
-        SizedBox(
-          width: 40,
-          child: EditableSliderValue(
-            text: value.toStringAsFixed(1),
-            style: const TextStyle(fontSize: 12),
-            value: value,
-            min: min,
-            max: max,
-            isInt: false,
-            onChanged: (v) => onChanged(v.toDouble()),
-          ),
-        ),
-      ],
+    return LabeledSlider(
+      label: label,
+      value: value,
+      min: min,
+      max: max,
+      step: 0.1,
+      isInt: false,
+      valueText: value.toStringAsFixed(1),
+      onChanged: onChanged,
     );
   }
 }

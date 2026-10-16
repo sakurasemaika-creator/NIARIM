@@ -11,15 +11,20 @@ import 'tile_manager.dart';
 /// (the stroke never builds up on itself, like one wet wash): light where
 /// there is more water, granulated by the paper and blotchy where the
 /// pigment settled unevenly. When the stroke ends ([finish]) the wash
-/// "dries": the pigment spreads a little past the brush with a ragged edge
-/// (more with more water), and gathers in a darker rim just inside the wet
-/// edge (縁の濃さ).
+/// "dries": the pigment spreads past the brush with a ragged edge (にじみ,
+/// and a little more with more water). The darker rim a dried wash leaves
+/// is the 水彩境界 draw filter's, so it can be tuned after painting.
 ///
 /// Over paint already on the layer the wash glazes: the colour under it
 /// turns towards the paint the way paint mixes ([AnalogPaintMixer]; a blue
 /// wash over yellow is green), and deepens as a transparent layer does, so a
-/// second wash of the same colour is deeper. 混色度合い makes the two run
-/// together wet instead, nearer to an even mix without deepening.
+/// second wash of the same colour at a lowered opacity is deeper. 混色度合い
+/// makes the two run together wet instead, nearer to an even mix without
+/// deepening. At full opacity a wash of the same colour as the paint under
+/// it joins it instead of glazing it: the area grows without getting darker
+/// where the strokes overlap, so a flat area laid in several strokes is even
+/// (the paper's blotches are fixed to the canvas, so overlapping washes
+/// share them).
 ///
 /// Tiles hold straight (not premultiplied) RGBA, as [TileManager.blendPixel]
 /// writes them.
@@ -30,12 +35,16 @@ class WatercolorStroke {
     required double brushSize,
     required int water,
     required int pigment,
-    required int edge,
+    int bleed = 50,
+    int texture = 50,
+    int softEdge = 0,
     required int brightnessCorrection,
     required this.seed,
   }) : _water = water.clamp(0, 100) / 100,
        _pigment = pigment.clamp(0, 100) / 100,
-       _edge = edge.clamp(0, 100) / 100,
+       _bleed = bleed.clamp(0, 100) / 100,
+       _textureAmount = texture.clamp(0, 100) / 50,
+       _soft = softEdge.clamp(0, 100) / 100,
        _size = math.max(1.0, brushSize),
        _mixer = AnalogPaintMixer(
          selected: paint,
@@ -57,7 +66,15 @@ class WatercolorStroke {
 
   final double _water;
   final double _pigment;
-  final double _edge;
+  final double _bleed;
+
+  /// How strong the paper grain and the blotches are, 0–2 (1 is the
+  /// default むら).
+  final double _textureAmount;
+
+  /// 境界のぼかし, 0–1: how much the dried wash fades out towards its edge
+  /// instead of ending crisply.
+  final double _soft;
   final double _size;
 
   /// Varies the blotches from stroke to stroke.
@@ -69,11 +86,14 @@ class WatercolorStroke {
   late final double _depth;
 
   /// Per tile ("tx:ty"): the tile before the stroke, how much the brush
-  /// covered (0–255) and its mixing rate (0–100) there.
+  /// covered (0–255), its mixing rate (0–100) and its opacity (0–255)
+  /// there.
   final Map<String, Uint8List> _before = {};
   final Map<String, Uint8List> _coverage = {};
   final Map<String, Uint8List> _rate = {};
+  final Map<String, Uint8List> _opacity = {};
   var _lastRate = 0;
+  var _lastOpacity = 255;
   var _minX = 1 << 30;
   var _minY = 1 << 30;
   var _maxX = -1;
@@ -82,8 +102,8 @@ class WatercolorStroke {
   static const int _size2 = TileManager.tileSize * TileManager.tileSize;
 
   /// How dense one wash is before texture: more pigment is deeper, more
-  /// water paler.
-  double get _density => (0.16 + 0.74 * _pigment) * (1 - 0.45 * _water);
+  /// water paler (all pigment and no water covers fully, for flat paint).
+  double get _density => (0.16 + 0.84 * _pigment) * (1 - 0.45 * _water);
 
   /// Remembers [tile] as it is before the stroke paints on it. Call before
   /// the first pixel of the tile changes.
@@ -93,11 +113,13 @@ class WatercolorStroke {
     _before[key] = Uint8List.fromList(tile);
     _coverage[key] = Uint8List(_size2);
     _rate[key] = Uint8List(_size2);
+    _opacity[key] = Uint8List(_size2);
   }
 
   /// The brush now covers pixel ([px], [py]) of tile ([tx], [ty]) by
   /// [coverage] (0–255, the most this stroke has covered it) with mixing
-  /// rate [rate] (0–100): shows the wet wash there.
+  /// rate [rate] (0–100) at the stamp's [opacity] (0–255): shows the wet
+  /// wash there.
   void cover(
     Uint8List tile,
     int tx,
@@ -105,15 +127,18 @@ class WatercolorStroke {
     int px,
     int py,
     int coverage,
-    int rate,
-  ) {
+    int rate, {
+    int opacity = 255,
+  }) {
     final key = '$tx:$ty';
     final before = _before[key];
     if (before == null) return;
     final pos = py * TileManager.tileSize + px;
     _coverage[key]![pos] = coverage;
     _rate[key]![pos] = rate;
+    _opacity[key]![pos] = opacity;
     _lastRate = rate;
+    _lastOpacity = opacity;
     final x = tx * TileManager.tileSize + px;
     final y = ty * TileManager.tileSize + py;
     if (x < _minX) _minX = x;
@@ -121,19 +146,20 @@ class WatercolorStroke {
     if (x > _maxX) _maxX = x;
     if (y > _maxY) _maxY = y;
     final alpha = coverage / 255 * _density * _texture(x, y);
-    _composite(tile, before, pos * 4, alpha.clamp(0.0, 1.0), rate);
+    _composite(tile, before, pos * 4, alpha.clamp(0.0, 1.0), rate, opacity);
   }
 
-  /// Dries the stroke: spreads it a little past the brush with a ragged
-  /// edge and darkens the rim inside the wet edge. Returns the tiles it
-  /// changed (as "tx:ty") so they can be redrawn.
+  /// Dries the stroke: spreads it past the brush with a ragged edge.
+  /// Returns the tiles it changed (as "tx:ty") so they can be redrawn.
   Set<String> finish(TileManager tiles) {
     final changed = <String>{};
     if (_maxX < _minX) return changed;
     const tileSize = TileManager.tileSize;
-    final spread = _size * (0.015 + 0.13 * _water);
-    final rim = math.max(1.0, _size * (0.018 + 0.03 * _water));
-    final margin = (spread * 2.5 + 2).ceil();
+    // にじみ carries the wash furthest; water only a little.
+    final spread = _size * (0.008 + 0.06 * _water + 0.14 * _bleed);
+    // 境界のぼかし fades the wash out over a band this wide.
+    final fade = _size * (0.04 + 0.3 * _soft);
+    final margin = (math.max(spread, _soft > 0 ? fade : 0) * 2.5 + 2).ceil();
     final left = math.max(0, _minX - margin);
     final top = math.max(0, _minY - margin);
     final right = math.min(tiles.canvasWidth - 1, _maxX + margin);
@@ -174,8 +200,8 @@ class WatercolorStroke {
         final i = y * w + x;
         final c = covered[i];
         // Too little water reaches here to carry pigment, whatever the edge
-        // does (the reach below is at most 1.85).
-        if (wet[i] < 0.086) {
+        // does (the reach below is at most 1.95).
+        if (wet[i] < 0.082) {
           amount[i] = c;
           continue;
         }
@@ -183,11 +209,11 @@ class WatercolorStroke {
         final wy = top + y;
         final reach =
             0.85 +
-            (0.35 + 0.5 * _water) *
+            (0.25 + 0.15 * _water + 0.45 * _bleed) *
                 (_fractalNoise(wx / reachScale, wy / reachScale, seed + 17) -
                     0.5) *
                 2 +
-            0.3 *
+            (0.2 + 0.3 * _bleed) *
                 (_valueNoise(wx / fringeScale, wy / fringeScale, seed + 23) -
                     0.5);
         // Where the water stops, the wash ends in an edge, not a fade.
@@ -196,14 +222,15 @@ class WatercolorStroke {
       }
     }
 
-    // Pigment gathers inside the edge of the wet area as it dries.
-    final footprint = Float32List(w * h);
-    for (var i = 0; i < footprint.length; i++) {
-      footprint[i] = math.min(1.0, amount[i] * 3);
+    if (_soft > 0) {
+      // A soft edge: the blurred footprint fades from the full wash inside
+      // to nothing outside, as a wash laid wet into a damp sheet does.
+      final faded = _blur(covered, w, h, fade);
+      for (var i = 0; i < amount.length; i++) {
+        final soft = _smoothstep(faded[i] * 1.15);
+        amount[i] += (soft - amount[i]) * _soft;
+      }
     }
-    final inner = _blur(footprint, w, h, rim);
-    final rimGain = 3.2 * _edge;
-    final rimScale = _size * 0.3;
 
     for (var ty = top ~/ tileSize; ty <= bottom ~/ tileSize; ty++) {
       for (var tx = left ~/ tileSize; tx <= right ~/ tileSize; tx++) {
@@ -230,6 +257,7 @@ class WatercolorStroke {
         touchTile(tx, ty, tile);
         final before = _before[key]!;
         final rates = _rate[key]!;
+        final opacities = _opacity[key]!;
         for (var y = y0; y <= y1; y++) {
           for (var x = x0; x <= x1; x++) {
             final i = (y - top) * w + x - left;
@@ -244,21 +272,16 @@ class WatercolorStroke {
               tile[p + 3] = before[p + 3];
               continue;
             }
-            final edgeShare = ((footprint[i] - inner[i]) * 3).clamp(0.0, 1.0);
-            // The rim is heavier in some places than others, not a line.
-            final rimHere =
-                rimGain *
-                (0.45 +
-                    1.1 * _valueNoise(x / rimScale, y / rimScale, seed + 31));
-            final alpha =
-                a *
-                _density *
-                (1 + rimHere * edgeShare * footprint[i]) *
-                _texture(x, y);
-            final rate = rates[pos] != 0 || covered[i] > 0
-                ? rates[pos]
-                : _lastRate;
-            _composite(tile, before, pos * 4, alpha.clamp(0.0, 1.0), rate);
+            final alpha = a * _density * _texture(x, y);
+            final brushed = rates[pos] != 0 || covered[i] > 0;
+            _composite(
+              tile,
+              before,
+              pos * 4,
+              alpha.clamp(0.0, 1.0),
+              brushed ? rates[pos] : _lastRate,
+              brushed ? opacities[pos] : _lastOpacity,
+            );
           }
         }
         tiles.markDirty(layerId, tx, ty);
@@ -268,8 +291,9 @@ class WatercolorStroke {
     return changed;
   }
 
-  /// Paper grain (fixed to the canvas, so every wash shows the same paper)
-  /// and the uneven settling of this wash's pigment.
+  /// Paper grain and the uneven settling of the pigment in its blotches,
+  /// both fixed to the canvas (as the paper's sizing is), so washes of the
+  /// same colour laid side by side join without a seam.
   double _texture(int x, int y) {
     final grain =
         (_valueNoise(x / 1.4, y / 1.4, 7) * 0.35 +
@@ -277,24 +301,26 @@ class WatercolorStroke {
         0.5;
     final blotchScale = _size * 0.75;
     var blotch =
-        (_fractalNoise(x / blotchScale, y / blotchScale, seed) - 0.5) * 2;
+        (_fractalNoise(x / blotchScale, y / blotchScale, 13) - 0.5) * 2;
     // Pigment settles in patches rather than in a gentle ripple.
     blotch = blotch.sign * math.pow(blotch.abs(), 0.7);
+    final amount = _textureAmount;
     return math.max(
       0.0,
-      (1 + (0.14 + 0.1 * _pigment) * grain * 2) *
-          (1 + (0.22 + 0.4 * _water) * blotch),
+      (1 + (0.14 + 0.1 * _pigment) * grain * 2 * amount) *
+          (1 + (0.22 + 0.4 * _water) * blotch * amount),
     );
   }
 
   /// Lays a wash of [alpha] over the pixel at [p] as it was [before] the
-  /// stroke.
+  /// stroke, at the brush's [opacity] (0–255).
   void _composite(
     Uint8List tile,
     Uint8List before,
     int p,
     double alpha,
     int rate,
+    int opacity,
   ) {
     final b = before[p + 3] / 255;
     if (alpha <= 0) {
@@ -313,6 +339,24 @@ class WatercolorStroke {
       tile[p + 3] = (outA * 255).round().clamp(0, 255);
       return;
     }
+    // At full opacity a wash over paint of its own colour joins it: the
+    // denser of the two shows and nothing deepens, so a flat area painted
+    // in several strokes stays even.
+    final join = opacity >= 250 ? _sameColourShare(before, p) : 0.0;
+    if (join >= 1) {
+      if (alpha <= b) {
+        tile[p] = before[p];
+        tile[p + 1] = before[p + 1];
+        tile[p + 2] = before[p + 2];
+        tile[p + 3] = before[p + 3];
+      } else {
+        tile[p] = paint >> 16 & 0xFF;
+        tile[p + 1] = paint >> 8 & 0xFF;
+        tile[p + 2] = paint & 0xFF;
+        tile[p + 3] = (alpha * 255).round().clamp(0, 255);
+      }
+      return;
+    }
     final share = (rate / 100).clamp(0.0, 1.0);
     final belowRgb = before[p] << 16 | before[p + 1] << 8 | before[p + 2];
     // The wash turns the colour under it towards the paint the way paint
@@ -323,12 +367,29 @@ class WatercolorStroke {
     // deepens it: more for a dark paint, so a second wash of a colour is
     // deeper than the first.
     final deepen = 1 - alpha * (1 - share) * _depth;
+    // Nearly the same colour: part of the way to joining.
+    final joinedA = math.max(alpha, b);
+    final finalA = outA + (joinedA - outA) * join;
     for (var c = 0; c < 3; c++) {
       final onPaint = linearFromSrgb8(mixed >> (16 - 8 * c)) * deepen;
       final premultiplied = b * onPaint + (1 - b) * alpha * paintLinear[c];
-      tile[p + c] = srgb8FromLinear(premultiplied / outA);
+      final glazed = premultiplied / outA;
+      final joined = alpha > b
+          ? paintLinear[c]
+          : linearFromSrgb8(before[p + c]);
+      tile[p + c] = srgb8FromLinear(glazed + (joined - glazed) * join);
     }
-    tile[p + 3] = (outA * 255).round().clamp(0, 255);
+    tile[p + 3] = (finalA * 255).round().clamp(0, 255);
+  }
+
+  /// How nearly the colour at [p] in [before] is the paint's own colour: 1
+  /// within a few levels, 0 from a clearly different colour.
+  double _sameColourShare(Uint8List before, int p) {
+    final dr = (before[p] - (paint >> 16 & 0xFF)).abs();
+    final dg = (before[p + 1] - (paint >> 8 & 0xFF)).abs();
+    final db = (before[p + 2] - (paint & 0xFF)).abs();
+    final d = math.max(dr, math.max(dg, db));
+    return 1 - _smoothstep((d - 4) / 16);
   }
 }
 

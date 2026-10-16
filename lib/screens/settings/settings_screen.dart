@@ -4,8 +4,7 @@ import 'package:provider/provider.dart';
 import '../../l10n/app_localizations.dart';
 import '../../services/settings_service.dart';
 import '../../services/premium_service.dart';
-import '../../widgets/editable_slider_value.dart';
-import '../../widgets/stepped_slider.dart';
+import '../../widgets/labeled_slider.dart';
 import '../../widgets/premium_lock_widget.dart';
 import '../../widgets/responsive.dart';
 import '../../widgets/help_button.dart';
@@ -494,50 +493,27 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   },
                 ),
                 if (enabled) ...[
-                  Row(
-                    children: [
-                      Text(l10n.settingsDrawingAreaScale),
-                      const SizedBox(width: 8),
-                      Expanded(
-                        child: SteppedSlider(
-                          min: 1.0,
-                          max: 10.0,
-                          value: scale,
-                          divisions: 18,
-                          step: 0.5,
-                          label: l10n.settingsScaleValue(
-                            scale.toStringAsFixed(1),
-                          ),
-                          onChanged: (v) {
-                            setS(() => scale = v);
-                            settings.setDefaultDrawingArea(
-                              enabled: enabled,
-                              scale: v,
-                            );
-                          },
-                        ),
-                      ),
-                      SizedBox(
-                        width: 48,
-                        child: EditableSliderValue(
-                          text: l10n.settingsScaleValue(
-                            scale.toStringAsFixed(1),
-                          ),
-                          textAlign: TextAlign.center,
-                          value: scale,
-                          min: 1.0,
-                          max: 10.0,
-                          isInt: false,
-                          onChanged: (v) {
-                            setS(() => scale = v.toDouble());
-                            settings.setDefaultDrawingArea(
-                              enabled: enabled,
-                              scale: v.toDouble(),
-                            );
-                          },
-                        ),
-                      ),
-                    ],
+                  LabeledSlider(
+                    label: l10n.settingsDrawingAreaScale,
+                    min: 1.0,
+                    max: 10.0,
+                    value: scale,
+                    divisions: 18,
+                    step: 0.5,
+                    isInt: false,
+                    sliderLabel: l10n.settingsScaleValue(
+                      scale.toStringAsFixed(1),
+                    ),
+                    valueText: l10n.settingsScaleValue(
+                      scale.toStringAsFixed(1),
+                    ),
+                    onChanged: (v) {
+                      setS(() => scale = v);
+                      settings.setDefaultDrawingArea(
+                        enabled: enabled,
+                        scale: v,
+                      );
+                    },
                   ),
                 ],
               ],

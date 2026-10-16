@@ -8,7 +8,7 @@ import '../../services/project_service.dart';
 import '../../services/settings_service.dart';
 import '../../widgets/autofill_preset_selection_sheet.dart';
 import '../../widgets/background_color_picker.dart';
-import '../../widgets/editable_slider_value.dart';
+import '../../widgets/labeled_slider.dart';
 import '../../widgets/stepped_slider.dart';
 import '../../widgets/responsive.dart';
 import '../../widgets/help_button.dart';
@@ -419,71 +419,23 @@ class _NewProjectScreenState extends State<NewProjectScreen> {
                   ],
                 ),
                 const SizedBox(height: 12),
-                Row(
-                  children: [
-                    SizedBox(
-                      width: 56,
-                      child: Text(
-                        l10n.newProjectWidthShort,
-                        textAlign: TextAlign.center,
-                      ),
-                    ),
-                    Expanded(
-                      child: SteppedSlider(
-                        min: 64,
-                        max: _maxCustomEdge.toDouble(),
-                        value: _exportWidth
-                            .clamp(64, _maxCustomEdge)
-                            .toDouble(),
-                        label: '${_exportWidth}px',
-                        onChanged: (v) => _setCustomSize(width: v.round()),
-                      ),
-                    ),
-                    SizedBox(
-                      width: 56,
-                      child: EditableSliderValue(
-                        text: '${_exportWidth}px',
-                        textAlign: TextAlign.center,
-                        value: _exportWidth,
-                        min: 64,
-                        max: _maxCustomEdge,
-                        onChanged: (v) => _setCustomSize(width: v.round()),
-                      ),
-                    ),
-                  ],
+                LabeledSlider(
+                  label: l10n.newProjectWidthShort,
+                  min: 64,
+                  max: _maxCustomEdge.toDouble(),
+                  value: _exportWidth.clamp(64, _maxCustomEdge).toDouble(),
+                  sliderLabel: '${_exportWidth}px',
+                  valueText: '${_exportWidth}px',
+                  onChanged: (v) => _setCustomSize(width: v.round()),
                 ),
-                Row(
-                  children: [
-                    SizedBox(
-                      width: 56,
-                      child: Text(
-                        l10n.newProjectHeightShort,
-                        textAlign: TextAlign.center,
-                      ),
-                    ),
-                    Expanded(
-                      child: SteppedSlider(
-                        min: 64,
-                        max: _maxCustomEdge.toDouble(),
-                        value: _exportHeight
-                            .clamp(64, _maxCustomEdge)
-                            .toDouble(),
-                        label: '${_exportHeight}px',
-                        onChanged: (v) => _setCustomSize(height: v.round()),
-                      ),
-                    ),
-                    SizedBox(
-                      width: 56,
-                      child: EditableSliderValue(
-                        text: '${_exportHeight}px',
-                        textAlign: TextAlign.center,
-                        value: _exportHeight,
-                        min: 64,
-                        max: _maxCustomEdge,
-                        onChanged: (v) => _setCustomSize(height: v.round()),
-                      ),
-                    ),
-                  ],
+                LabeledSlider(
+                  label: l10n.newProjectHeightShort,
+                  min: 64,
+                  max: _maxCustomEdge.toDouble(),
+                  value: _exportHeight.clamp(64, _maxCustomEdge).toDouble(),
+                  sliderLabel: '${_exportHeight}px',
+                  valueText: '${_exportHeight}px',
+                  onChanged: (v) => _setCustomSize(height: v.round()),
                 ),
                 const SizedBox(height: 8),
                 Align(
@@ -545,36 +497,27 @@ class _NewProjectScreenState extends State<NewProjectScreen> {
                   return Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(
-                        isPremium
-                            ? l10n.newProjectDurationLabel(maxDurationText)
-                            : l10n.newProjectDurationLabelWithPremiumHint(
-                                maxDurationText,
-                              ),
-                        style: const TextStyle(
-                          fontWeight: FontWeight.bold,
-                          fontFamily: 'Kuramubon',
-                          fontFamilyFallback: kHeadingFontFallback,
-                        ),
-                      ),
-                      const SizedBox(height: 8),
+                      // 1行目：項目名と数字入力欄、2行目：スライダーだけで
+                      // 横幅いっぱいを使う。
                       Row(
                         children: [
                           Expanded(
-                            child: SteppedSlider(
-                              min: 1,
-                              max: maxDuration.toDouble(),
-                              value: _durationSeconds
-                                  .clamp(1, maxDuration)
-                                  .toDouble(),
-                              divisions: maxDuration - 1,
-                              label: _formatDuration(l10n, _durationSeconds),
-                              onChanged: (v) => setState(() {
-                                _durationSeconds = v.round();
-                                _durationController.text = '$_durationSeconds';
-                              }),
+                            child: Text(
+                              isPremium
+                                  ? l10n.newProjectDurationLabel(
+                                      maxDurationText,
+                                    )
+                                  : l10n.newProjectDurationLabelWithPremiumHint(
+                                      maxDurationText,
+                                    ),
+                              style: const TextStyle(
+                                fontWeight: FontWeight.bold,
+                                fontFamily: 'Kuramubon',
+                                fontFamilyFallback: kHeadingFontFallback,
+                              ),
                             ),
                           ),
+                          const SizedBox(width: 8),
                           // 数字入力欄（秒単位。スライダーだけでなく
                           // 数字入力でも長さを指定できるようにする）。プレミアム会員は
                           // 最大7200（4桁）まで入力できるため、幅は「秒」の
@@ -608,6 +551,21 @@ class _NewProjectScreenState extends State<NewProjectScreen> {
                             ),
                           ),
                         ],
+                      ),
+                      const SizedBox(height: 4),
+                      SteppedSlider(
+                        min: 1,
+                        max: maxDuration.toDouble(),
+                        value: _durationSeconds
+                            .clamp(1, maxDuration)
+                            .toDouble(),
+                        divisions: maxDuration - 1,
+                        compact: true,
+                        label: _formatDuration(l10n, _durationSeconds),
+                        onChanged: (v) => setState(() {
+                          _durationSeconds = v.round();
+                          _durationController.text = '$_durationSeconds';
+                        }),
                       ),
                       const SizedBox(height: 2),
                       Text(
@@ -653,46 +611,26 @@ class _NewProjectScreenState extends State<NewProjectScreen> {
               ),
               if (_drawingAreaEnabled) ...[
                 const SizedBox(height: 8),
-                Row(
-                  children: [
-                    Text(
-                      l10n.newProjectScaleLabel,
-                      style: const TextStyle(
-                        fontWeight: FontWeight.bold,
-                        fontFamily: 'Kuramubon',
-                        fontFamilyFallback: kHeadingFontFallback,
-                      ),
-                    ),
-                    const SizedBox(width: 16),
-                    Expanded(
-                      child: SteppedSlider(
-                        min: 1.0,
-                        max: 10.0,
-                        value: _drawingAreaScale,
-                        divisions: 18, // 0.5刻み
-                        step: 0.5,
-                        label: l10n.newProjectScaleValue(
-                          _drawingAreaScale.toStringAsFixed(1),
-                        ),
-                        onChanged: (v) => setState(() => _drawingAreaScale = v),
-                      ),
-                    ),
-                    SizedBox(
-                      width: 48,
-                      child: EditableSliderValue(
-                        text: l10n.newProjectScaleValue(
-                          _drawingAreaScale.toStringAsFixed(1),
-                        ),
-                        textAlign: TextAlign.center,
-                        value: _drawingAreaScale,
-                        min: 1.0,
-                        max: 10.0,
-                        isInt: false,
-                        onChanged: (v) =>
-                            setState(() => _drawingAreaScale = v.toDouble()),
-                      ),
-                    ),
-                  ],
+                LabeledSlider(
+                  label: l10n.newProjectScaleLabel,
+                  labelStyle: const TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontFamily: 'Kuramubon',
+                    fontFamilyFallback: kHeadingFontFallback,
+                  ),
+                  min: 1.0,
+                  max: 10.0,
+                  value: _drawingAreaScale,
+                  divisions: 18, // 0.5刻み
+                  step: 0.5,
+                  isInt: false,
+                  sliderLabel: l10n.newProjectScaleValue(
+                    _drawingAreaScale.toStringAsFixed(1),
+                  ),
+                  valueText: l10n.newProjectScaleValue(
+                    _drawingAreaScale.toStringAsFixed(1),
+                  ),
+                  onChanged: (v) => setState(() => _drawingAreaScale = v),
                 ),
                 Text(
                   l10n.newProjectDrawableAreaInfo(

@@ -1364,27 +1364,10 @@ class _PresetDetailScreenState extends State<_PresetDetailScreen> {
     AutofillLineColorMode.traceAdjust: l10n.autofillLineColorModeTraceAdjust,
   };
 
+  // ドロップダウンはLayerBlendMode.valuesを全部並べるので、全種類の名前を
+  // 用意する（一部だけだと、無い種類の`[m]!`でダイアログが開かなくなる）。
   Map<LayerBlendMode, String> _blendModeLabels(AppLocalizations l10n) => {
-    for (final mode in const [
-      LayerBlendMode.normal,
-      LayerBlendMode.multiply,
-      LayerBlendMode.screen,
-      LayerBlendMode.overlay,
-      LayerBlendMode.addition,
-      LayerBlendMode.subtract,
-      LayerBlendMode.darken,
-      LayerBlendMode.lighten,
-      LayerBlendMode.colorBurn,
-      LayerBlendMode.colorDodge,
-      LayerBlendMode.hardLight,
-      LayerBlendMode.softLight,
-      LayerBlendMode.difference,
-      LayerBlendMode.hue,
-      LayerBlendMode.saturation,
-      LayerBlendMode.color,
-      LayerBlendMode.luminosity,
-    ])
-      mode: blendModeLabel(l10n, mode),
+    for (final mode in LayerBlendMode.values) mode: blendModeLabel(l10n, mode),
   };
 
   /// 詳細設定ポップアップ（色チップタップ時。塗り色・線画色・
@@ -1494,6 +1477,7 @@ class _PresetDetailScreenState extends State<_PresetDetailScreen> {
                       value: current.opacity.toDouble(),
                       min: 0,
                       max: 100,
+                      compact: true,
                       divisions: 100,
                       onChanged: (v) => setS(
                         () => current = current.copyWith(opacity: v.round()),
@@ -1549,33 +1533,28 @@ class _PresetDetailScreenState extends State<_PresetDetailScreen> {
                         ),
                       ),
                       const SizedBox(height: 4),
-                      Row(
-                        children: [
-                          Expanded(
-                            child: EditableSliderValue(
-                              text: l10n.autofillPartOutlineWidthLabel(
-                                current.outlineWidth.round(),
-                              ),
-                              style: const TextStyle(fontSize: 12),
-                              value: current.outlineWidth,
-                              min: 1,
-                              max: 100,
-                              title: l10n.autofillPartOutlineWidthLabel(
-                                current.outlineWidth.round(),
-                              ),
-                              onChanged: (v) => setS(
-                                () => current = current.copyWith(
-                                  outlineWidth: v.toDouble(),
-                                ),
-                              ),
-                            ),
+                      EditableSliderValue(
+                        text: l10n.autofillPartOutlineWidthLabel(
+                          current.outlineWidth.round(),
+                        ),
+                        style: const TextStyle(fontSize: 12),
+                        value: current.outlineWidth,
+                        min: 1,
+                        max: 100,
+                        title: l10n.autofillPartOutlineWidthLabel(
+                          current.outlineWidth.round(),
+                        ),
+                        onChanged: (v) => setS(
+                          () => current = current.copyWith(
+                            outlineWidth: v.toDouble(),
                           ),
-                        ],
+                        ),
                       ),
                       SteppedSlider(
                         value: current.outlineWidth,
                         min: 1,
                         max: 100,
+                        compact: true,
                         onChanged: (v) => setS(
                           () => current = current.copyWith(outlineWidth: v),
                         ),
@@ -1712,6 +1691,7 @@ class _PresetDetailScreenState extends State<_PresetDetailScreen> {
                         value: current.traceHue,
                         min: -180,
                         max: 180,
+                        compact: true,
                         onChanged: (v) =>
                             setS(() => current = current.copyWith(traceHue: v)),
                       ),
@@ -1734,6 +1714,7 @@ class _PresetDetailScreenState extends State<_PresetDetailScreen> {
                         value: current.traceSaturation,
                         min: -100,
                         max: 100,
+                        compact: true,
                         onChanged: (v) => setS(
                           () => current = current.copyWith(traceSaturation: v),
                         ),
@@ -1757,6 +1738,7 @@ class _PresetDetailScreenState extends State<_PresetDetailScreen> {
                         value: current.traceLightness,
                         min: -100,
                         max: 100,
+                        compact: true,
                         onChanged: (v) => setS(
                           () => current = current.copyWith(traceLightness: v),
                         ),
@@ -1802,6 +1784,7 @@ class _PresetDetailScreenState extends State<_PresetDetailScreen> {
                       value: current.lineOpacity.toDouble(),
                       min: 0,
                       max: 100,
+                      compact: true,
                       divisions: 100,
                       onChanged: (v) => setS(
                         () =>
@@ -1829,6 +1812,7 @@ class _PresetDetailScreenState extends State<_PresetDetailScreen> {
                       value: current.lineGapFill,
                       min: 0,
                       max: 100,
+                      compact: true,
                       divisions: 100,
                       onChanged: (v) => setS(
                         () => current = current.copyWith(lineGapFill: v),
@@ -2354,6 +2338,7 @@ class _PresetDetailScreenState extends State<_PresetDetailScreen> {
                         value: gradient.angle,
                         min: 0,
                         max: 359,
+                        compact: true,
                         onChanged: (v) =>
                             setS(() => gradient = gradient.copyWith(angle: v)),
                       ),
@@ -2363,7 +2348,9 @@ class _PresetDetailScreenState extends State<_PresetDetailScreen> {
                     // 100%＝滑らかなブレンド。
                     Row(
                       children: [
-                        Expanded(
+                        // Flexibleで文字の幅に縮め、鉛筆マークを数値のすぐ右へ
+                        // 出す（Expandedだと行の右端の説明アイコンに重なる）。
+                        Flexible(
                           child: EditableSliderValue(
                             text: l10n.autofillPartGradientFeatherLabel(
                               (gradient.feather * 100).round(),
@@ -2379,6 +2366,7 @@ class _PresetDetailScreenState extends State<_PresetDetailScreen> {
                             ),
                           ),
                         ),
+                        const SizedBox(width: 14),
                         InfoIconTooltip(
                           message: l10n.autofillPartGradientFeatherInfo,
                         ),
@@ -2388,6 +2376,7 @@ class _PresetDetailScreenState extends State<_PresetDetailScreen> {
                       value: gradient.feather,
                       min: 0,
                       max: 1,
+                      compact: true,
                       step: 0.01,
                       onChanged: (v) =>
                           setS(() => gradient = gradient.copyWith(feather: v)),

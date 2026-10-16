@@ -29,6 +29,7 @@ enum FilterKind {
   autoLineart,
   prism,
   sphereShading,
+  watercolorBorder,
 }
 
 /// Shared noise algorithm, independent of preset identity.
@@ -260,6 +261,16 @@ class FilterDef {
   final double sphereLightBlur;
   final double sphereShadowBlur;
 
+  /// 水彩境界: how far in from an edge the darker rim reaches and how much
+  /// it is softened (pixels), how much more transparent the inside becomes
+  /// and how much darker the rim is (0–100), and whether borders between
+  /// clearly different colours get a rim too (not just the paint's outline).
+  final double watercolorBorderRange;
+  final double watercolorBorderBlur;
+  final double watercolorBorderOpacity;
+  final double watercolorBorderDarken;
+  final bool watercolorBorderColorEdges;
+
   const FilterDef({
     required this.id,
     required this.name,
@@ -357,6 +368,11 @@ class FilterDef {
     this.sphereLightHeight = 60,
     this.sphereLightBlur = 30,
     this.sphereShadowBlur = 30,
+    this.watercolorBorderRange = 10,
+    this.watercolorBorderBlur = 2,
+    this.watercolorBorderOpacity = 45,
+    this.watercolorBorderDarken = 40,
+    this.watercolorBorderColorEdges = true,
   });
 
   /// Sphere shading's light ellipse on a canvas of this size, in pixels.
@@ -495,6 +511,11 @@ class FilterDef {
     double? sphereLightHeight,
     double? sphereLightBlur,
     double? sphereShadowBlur,
+    double? watercolorBorderRange,
+    double? watercolorBorderBlur,
+    double? watercolorBorderOpacity,
+    double? watercolorBorderDarken,
+    bool? watercolorBorderColorEdges,
   }) {
     return FilterDef(
       id: id ?? this.id,
@@ -603,6 +624,15 @@ class FilterDef {
       sphereLightHeight: sphereLightHeight ?? this.sphereLightHeight,
       sphereLightBlur: sphereLightBlur ?? this.sphereLightBlur,
       sphereShadowBlur: sphereShadowBlur ?? this.sphereShadowBlur,
+      watercolorBorderRange:
+          watercolorBorderRange ?? this.watercolorBorderRange,
+      watercolorBorderBlur: watercolorBorderBlur ?? this.watercolorBorderBlur,
+      watercolorBorderOpacity:
+          watercolorBorderOpacity ?? this.watercolorBorderOpacity,
+      watercolorBorderDarken:
+          watercolorBorderDarken ?? this.watercolorBorderDarken,
+      watercolorBorderColorEdges:
+          watercolorBorderColorEdges ?? this.watercolorBorderColorEdges,
     );
   }
 
@@ -704,6 +734,11 @@ class FilterDef {
     'sphereLightHeight': sphereLightHeight,
     'sphereLightBlur': sphereLightBlur,
     'sphereShadowBlur': sphereShadowBlur,
+    'watercolorBorderRange': watercolorBorderRange,
+    'watercolorBorderBlur': watercolorBorderBlur,
+    'watercolorBorderOpacity': watercolorBorderOpacity,
+    'watercolorBorderDarken': watercolorBorderDarken,
+    'watercolorBorderColorEdges': watercolorBorderColorEdges,
   };
 
   /// The stored kind name; Prism snapshots written before schemaVersion
@@ -892,5 +927,14 @@ class FilterDef {
     sphereLightHeight: (j['sphereLightHeight'] as num?)?.toDouble() ?? 60,
     sphereLightBlur: (j['sphereLightBlur'] as num?)?.toDouble() ?? 30,
     sphereShadowBlur: (j['sphereShadowBlur'] as num?)?.toDouble() ?? 30,
+    watercolorBorderRange:
+        (j['watercolorBorderRange'] as num?)?.toDouble() ?? 10,
+    watercolorBorderBlur: (j['watercolorBorderBlur'] as num?)?.toDouble() ?? 2,
+    watercolorBorderOpacity:
+        (j['watercolorBorderOpacity'] as num?)?.toDouble() ?? 45,
+    watercolorBorderDarken:
+        (j['watercolorBorderDarken'] as num?)?.toDouble() ?? 40,
+    watercolorBorderColorEdges:
+        j['watercolorBorderColorEdges'] as bool? ?? true,
   );
 }

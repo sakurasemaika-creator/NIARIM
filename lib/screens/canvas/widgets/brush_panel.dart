@@ -8,9 +8,8 @@ import '../../../l10n/app_localizations.dart';
 import '../../../models/brush.dart';
 import '../../../services/brush_service.dart';
 import '../../../services/settings_service.dart';
-import '../../../widgets/editable_slider_value.dart';
+import '../../../widgets/labeled_slider.dart';
 import '../../../widgets/pixel_color_mode_selector.dart';
-import '../../../widgets/stepped_slider.dart';
 import 'creative_folder_sheets.dart';
 import 'panel_close_bar.dart';
 import 'color_picker_panel.dart';
@@ -833,7 +832,7 @@ class _BrushSettingsSheetState extends State<_BrushSettingsSheet> {
                 ),
                 l10n: l10n,
               ),
-              _pressureRangeTile(
+              _amountRangeTile(
                 label: l10n.brushSettingsBlurRadiusLabel,
                 setting: _brush.pressureOn.blur,
                 onChanged: (v) => _brush = _brush.copyWith(
@@ -841,7 +840,7 @@ class _BrushSettingsSheetState extends State<_BrushSettingsSheet> {
                 ),
                 l10n: l10n,
               ),
-              _pressureRangeTile(
+              _amountRangeTile(
                 label: l10n.brushSettingsEdgeJitterTitle,
                 setting: _brush.pressureOn.edgeJitter,
                 onChanged: (v) => _brush = _brush.copyWith(
@@ -856,21 +855,19 @@ class _BrushSettingsSheetState extends State<_BrushSettingsSheet> {
             title: l10n.brushSettingsPressureOffSection,
             initiallyExpanded: !penPressureEnabled,
             children: [
-              _fixedPressureTile(
+              _fixedAmountTile(
                 label: l10n.brushSettingsBlurRadiusLabel,
                 setting: _brush.pressureOff.blur,
                 onChanged: (v) => _brush = _brush.copyWith(
                   pressureOff: _brush.pressureOff.copyWith(blur: v),
                 ),
-                l10n: l10n,
               ),
-              _fixedPressureTile(
+              _fixedAmountTile(
                 label: l10n.brushSettingsEdgeJitterTitle,
                 setting: _brush.pressureOff.edgeJitter,
                 onChanged: (v) => _brush = _brush.copyWith(
                   pressureOff: _brush.pressureOff.copyWith(edgeJitter: v),
                 ),
-                l10n: l10n,
               ),
               _pressureMixingOffTile(l10n),
             ],
@@ -955,31 +952,65 @@ class _BrushSettingsSheetState extends State<_BrushSettingsSheet> {
     );
   }
 
-  Widget _fixedPressureTile({
+  /// An amount that pressure varies, where 0 means none (ぼかし・ふち滲み):
+  /// both sliders are always shown and the setting is on while either is
+  /// above 0.
+  Widget _amountRangeTile({
+    required String label,
+    required PressureRangeSetting setting,
+    required ValueChanged<PressureRangeSetting> onChanged,
+    required AppLocalizations l10n,
+  }) {
+    final weak = setting.enabled ? setting.weak : 0;
+    final strong = setting.enabled ? setting.strong : 0;
+    void update(int nextWeak, int nextStrong) => setState(
+      () => onChanged(
+        PressureRangeSetting(
+          enabled: nextWeak > 0 || nextStrong > 0,
+          weak: nextWeak,
+          strong: nextStrong,
+        ),
+      ),
+    );
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        _mixingSubheading(label),
+        _sliderRow(
+          l10n.brushSettingsWeakPressureLabel,
+          weak.toDouble(),
+          0,
+          100,
+          (v) => update(v.round(), strong),
+        ),
+        _sliderRow(
+          l10n.brushSettingsStrongPressureLabel,
+          strong.toDouble(),
+          0,
+          100,
+          (v) => update(weak, v.round()),
+        ),
+      ],
+    );
+  }
+
+  /// A fixed amount where 0 means none (ぼかし・ふち滲み): one slider, on
+  /// while above 0.
+  Widget _fixedAmountTile({
     required String label,
     required FixedBrushSetting setting,
     required ValueChanged<FixedBrushSetting> onChanged,
-    required AppLocalizations l10n,
   }) {
-    return Column(
-      children: [
-        SwitchListTile(
-          dense: true,
-          title: Text(label),
-          value: setting.enabled,
-          onChanged: (v) =>
-              setState(() => onChanged(setting.copyWith(enabled: v))),
+    return _sliderRow(
+      label,
+      (setting.enabled ? setting.value : 0).toDouble(),
+      0,
+      100,
+      (v) => setState(
+        () => onChanged(
+          FixedBrushSetting(enabled: v.round() > 0, value: v.round()),
         ),
-        if (setting.enabled)
-          _sliderRow(
-            l10n.brushSettingsValueLabel,
-            setting.value.toDouble(),
-            0,
-            100,
-            (v) =>
-                setState(() => onChanged(setting.copyWith(value: v.round()))),
-          ),
-      ],
+      ),
     );
   }
 
@@ -1040,13 +1071,17 @@ class _BrushSettingsSheetState extends State<_BrushSettingsSheet> {
             stretch: setting.stretch,
             water: setting.water,
             pigment: setting.pigment,
-            edge: setting.edge,
+            bleed: setting.bleed,
+            texture: setting.texture,
+            softEdge: setting.softEdge,
             onBrightnessCorrection: (v) =>
                 update(setting.copyWith(brightnessCorrection: v)),
             onStretch: (v) => update(setting.copyWith(stretch: v)),
             onWater: (v) => update(setting.copyWith(water: v)),
             onPigment: (v) => update(setting.copyWith(pigment: v)),
-            onEdge: (v) => update(setting.copyWith(edge: v)),
+            onBleed: (v) => update(setting.copyWith(bleed: v)),
+            onTexture: (v) => update(setting.copyWith(texture: v)),
+            onSoftEdge: (v) => update(setting.copyWith(softEdge: v)),
           ),
         ],
       ],
@@ -1097,13 +1132,17 @@ class _BrushSettingsSheetState extends State<_BrushSettingsSheet> {
             stretch: setting.stretch,
             water: setting.water,
             pigment: setting.pigment,
-            edge: setting.edge,
+            bleed: setting.bleed,
+            texture: setting.texture,
+            softEdge: setting.softEdge,
             onBrightnessCorrection: (v) =>
                 update(setting.copyWith(brightnessCorrection: v)),
             onStretch: (v) => update(setting.copyWith(stretch: v)),
             onWater: (v) => update(setting.copyWith(water: v)),
             onPigment: (v) => update(setting.copyWith(pigment: v)),
-            onEdge: (v) => update(setting.copyWith(edge: v)),
+            onBleed: (v) => update(setting.copyWith(bleed: v)),
+            onTexture: (v) => update(setting.copyWith(texture: v)),
+            onSoftEdge: (v) => update(setting.copyWith(softEdge: v)),
           ),
         ],
       ],
@@ -1111,7 +1150,8 @@ class _BrushSettingsSheetState extends State<_BrushSettingsSheet> {
   }
 
   /// The sliders of the chosen mixing style: 油彩風 has 色延び and the
-  /// brightness correction, 水彩風 水分量・絵具量・縁の濃さ.
+  /// brightness correction, 水彩風 水分量・絵具量・にじみ・むら・境界のぼかし (the darker rim
+  /// of a dried wash is the 水彩境界 filter's).
   List<Widget> _mixingStyleSliders(
     AppLocalizations l10n,
     BrushMixingMode mode, {
@@ -1119,12 +1159,16 @@ class _BrushSettingsSheetState extends State<_BrushSettingsSheet> {
     required int stretch,
     required int water,
     required int pigment,
-    required int edge,
+    required int bleed,
+    required int texture,
+    required int softEdge,
     required ValueChanged<int> onBrightnessCorrection,
     required ValueChanged<int> onStretch,
     required ValueChanged<int> onWater,
     required ValueChanged<int> onPigment,
-    required ValueChanged<int> onEdge,
+    required ValueChanged<int> onBleed,
+    required ValueChanged<int> onTexture,
+    required ValueChanged<int> onSoftEdge,
   }) => switch (mode) {
     BrushMixingMode.off => const [],
     BrushMixingMode.oil => [
@@ -1159,11 +1203,25 @@ class _BrushSettingsSheetState extends State<_BrushSettingsSheet> {
         (v) => onPigment(v.round()),
       ),
       _sliderRow(
-        l10n.brushSettingsMixingEdge,
-        edge.toDouble(),
+        l10n.brushSettingsMixingBleed,
+        bleed.toDouble(),
         0,
         100,
-        (v) => onEdge(v.round()),
+        (v) => onBleed(v.round()),
+      ),
+      _sliderRow(
+        l10n.brushSettingsMixingTexture,
+        texture.toDouble(),
+        0,
+        100,
+        (v) => onTexture(v.round()),
+      ),
+      _sliderRow(
+        l10n.brushSettingsMixingSoftEdge,
+        softEdge.toDouble(),
+        0,
+        100,
+        (v) => onSoftEdge(v.round()),
       ),
     ],
   };
@@ -1237,32 +1295,13 @@ class _BrushSettingsSheetState extends State<_BrushSettingsSheet> {
     double max,
     ValueChanged<double> onChanged,
   ) {
-    return Row(
-      children: [
-        SizedBox(
-          width: 80,
-          child: Text(label, style: const TextStyle(fontSize: 12)),
-        ),
-        Expanded(
-          child: SteppedSlider(
-            min: min,
-            max: max,
-            value: value.clamp(min, max),
-            onChanged: onChanged,
-          ),
-        ),
-        SizedBox(
-          width: 40,
-          child: EditableSliderValue(
-            text: value.round().toString(),
-            style: const TextStyle(fontSize: 12),
-            value: value,
-            min: min,
-            max: max,
-            onChanged: (v) => onChanged(v.toDouble()),
-          ),
-        ),
-      ],
+    return LabeledSlider(
+      label: label,
+      min: min,
+      max: max,
+      value: value,
+      valueText: value.round().toString(),
+      onChanged: onChanged,
     );
   }
 
@@ -1274,34 +1313,15 @@ class _BrushSettingsSheetState extends State<_BrushSettingsSheet> {
     double step,
     ValueChanged<double> onChanged,
   ) {
-    return Row(
-      children: [
-        SizedBox(
-          width: 80,
-          child: Text(label, style: const TextStyle(fontSize: 12)),
-        ),
-        Expanded(
-          child: SteppedSlider(
-            min: min,
-            max: max,
-            value: value.clamp(min, max),
-            step: step,
-            onChanged: onChanged,
-          ),
-        ),
-        SizedBox(
-          width: 40,
-          child: EditableSliderValue(
-            text: value.toStringAsFixed(step < 0.1 ? 2 : 1),
-            style: const TextStyle(fontSize: 12),
-            value: value,
-            min: min,
-            max: max,
-            isInt: false,
-            onChanged: (v) => onChanged(v.toDouble()),
-          ),
-        ),
-      ],
+    return LabeledSlider(
+      label: label,
+      min: min,
+      max: max,
+      value: value,
+      step: step,
+      isInt: false,
+      valueText: value.toStringAsFixed(step < 0.1 ? 2 : 1),
+      onChanged: onChanged,
     );
   }
 

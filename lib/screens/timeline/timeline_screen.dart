@@ -59,7 +59,7 @@ import '../canvas/widgets/canvas_icon_button.dart';
 import '../canvas/widgets/color_picker_panel.dart';
 import '../../widgets/confirm_delete.dart';
 import '../../widgets/dispose_on_unmount.dart';
-import '../../widgets/editable_slider_value.dart';
+import '../../widgets/labeled_slider.dart';
 import '../../widgets/stepped_slider.dart';
 import '../../widgets/first_use_tooltip.dart';
 import '../../widgets/frame_preview_background.dart';
@@ -4524,82 +4524,34 @@ class _TimelineScreenState extends State<TimelineScreen> {
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
-                  l10n.timelineWatermarkAngleLabel,
-                  style: const TextStyle(fontSize: 12),
+                LabeledSlider(
+                  label: l10n.timelineWatermarkAngleLabel,
+                  value: angle,
+                  min: -180,
+                  max: 180,
+                  sliderLabel: '${angle.round()}°',
+                  valueText: '${angle.round()}°',
+                  onChanged: (v) => setS(() => angle = v),
                 ),
-                Row(
-                  children: [
-                    Expanded(
-                      child: SteppedSlider(
-                        value: angle,
-                        min: -180,
-                        max: 180,
-                        label: '${angle.round()}°',
-                        onChanged: (v) => setS(() => angle = v),
-                      ),
-                    ),
-                    EditableSliderValue(
-                      text: '${angle.round()}°',
-                      style: const TextStyle(fontSize: 12),
-                      value: angle,
-                      min: -180,
-                      max: 180,
-                      onChanged: (v) => setS(() => angle = v.toDouble()),
-                    ),
-                  ],
+                // 大きさ・不透明度は％で直接入力するので、スライダーも％の
+                // 目盛り（5〜100・0〜100）で持ち、0〜1の値へ戻して保存する。
+                LabeledSlider(
+                  label: l10n.timelineWatermarkSizeLabel,
+                  value: scale * 100,
+                  min: 5,
+                  max: 100,
+                  sliderLabel: '${(scale * 100).round()}%',
+                  valueText: '${(scale * 100).round()}%',
+                  onChanged: (v) => setS(() => scale = v / 100),
                 ),
-                Text(
-                  l10n.timelineWatermarkSizeLabel,
-                  style: const TextStyle(fontSize: 12),
-                ),
-                Row(
-                  children: [
-                    Expanded(
-                      child: SteppedSlider(
-                        value: scale,
-                        min: 0.05,
-                        max: 1.0,
-                        step: 0.01,
-                        label: '${(scale * 100).round()}%',
-                        onChanged: (v) => setS(() => scale = v),
-                      ),
-                    ),
-                    EditableSliderValue(
-                      text: '${(scale * 100).round()}%',
-                      style: const TextStyle(fontSize: 12),
-                      value: (scale * 100).round(),
-                      min: 5,
-                      max: 100,
-                      onChanged: (v) => setS(() => scale = v / 100),
-                    ),
-                  ],
-                ),
-                Text(
-                  l10n.timelineWatermarkOpacityLabel,
-                  style: const TextStyle(fontSize: 12),
-                ),
-                Row(
-                  children: [
-                    Expanded(
-                      child: SteppedSlider(
-                        value: opacity,
-                        min: 0,
-                        max: 1.0,
-                        step: 0.01,
-                        label: '${(opacity * 100).round()}%',
-                        onChanged: (v) => setS(() => opacity = v),
-                      ),
-                    ),
-                    EditableSliderValue(
-                      text: '${(opacity * 100).round()}%',
-                      style: const TextStyle(fontSize: 12),
-                      value: (opacity * 100).round(),
-                      min: 0,
-                      max: 100,
-                      onChanged: (v) => setS(() => opacity = v / 100),
-                    ),
-                  ],
+                LabeledSlider(
+                  label: l10n.timelineWatermarkOpacityLabel,
+                  value: opacity * 100,
+                  min: 0,
+                  max: 100,
+                  sliderLabel: '${(opacity * 100).round()}%',
+                  valueText: '${(opacity * 100).round()}%',
+                  onChanged: (v) => setS(() => opacity = v / 100),
                 ),
                 SwitchListTile(
                   dense: true,
@@ -5352,59 +5304,27 @@ class _TimelineScreenState extends State<TimelineScreen> {
                   ),
                 ),
                 const SizedBox(height: 8),
-                Row(
-                  children: [
-                    Text(
-                      l10n.timelineClipStartLabel,
-                      style: const TextStyle(fontSize: 12),
-                    ),
-                    const SizedBox(width: 8),
-                    Expanded(
-                      child: SteppedSlider(
-                        value: start.toDouble(),
-                        min: 0,
-                        max: (_totalFrames - 1).toDouble(),
-                        divisions: _totalFrames > 1 ? _totalFrames - 1 : 1,
-                        label: 'F${start + 1}',
-                        onChanged: (v) => setS(() => start = v.round()),
-                      ),
-                    ),
-                    EditableSliderValue(
-                      text: 'F${start + 1}',
-                      style: const TextStyle(fontSize: 11),
-                      value: start + 1,
-                      min: 1,
-                      max: _totalFrames,
-                      onChanged: (v) => setS(() => start = v.round() - 1),
-                    ),
-                  ],
+                // 開始フレームは画面上の表示（F1〜）と同じ1始まりの目盛りで
+                // 持ち、0始まりの添字へ戻して保存する。
+                LabeledSlider(
+                  label: l10n.timelineClipStartLabel,
+                  value: (start + 1).toDouble(),
+                  min: 1,
+                  max: _totalFrames.toDouble(),
+                  divisions: _totalFrames > 1 ? _totalFrames - 1 : 1,
+                  sliderLabel: 'F${start + 1}',
+                  valueText: 'F${start + 1}',
+                  onChanged: (v) => setS(() => start = v.round() - 1),
                 ),
-                Row(
-                  children: [
-                    Text(
-                      l10n.timelineClipLengthLabel,
-                      style: const TextStyle(fontSize: 12),
-                    ),
-                    const SizedBox(width: 8),
-                    Expanded(
-                      child: SteppedSlider(
-                        value: length.toDouble(),
-                        min: 1,
-                        max: _totalFrames.toDouble(),
-                        divisions: _totalFrames,
-                        label: '${length}F',
-                        onChanged: (v) => setS(() => length = v.round()),
-                      ),
-                    ),
-                    EditableSliderValue(
-                      text: '${length}F',
-                      style: const TextStyle(fontSize: 11),
-                      value: length,
-                      min: 1,
-                      max: _totalFrames,
-                      onChanged: (v) => setS(() => length = v.round()),
-                    ),
-                  ],
+                LabeledSlider(
+                  label: l10n.timelineClipLengthLabel,
+                  value: length.toDouble(),
+                  min: 1,
+                  max: _totalFrames.toDouble(),
+                  divisions: _totalFrames,
+                  sliderLabel: '${length}F',
+                  valueText: '${length}F',
+                  onChanged: (v) => setS(() => length = v.round()),
                 ),
               ],
             ),
@@ -6417,6 +6337,7 @@ class _TimelineScreenState extends State<TimelineScreen> {
                 value: frames.toDouble(),
                 min: 1,
                 max: maxFrames.toDouble(),
+                compact: true,
                 onChanged: (v) => setS(() {
                   frames = v.round();
                   framesController.text = '$frames';
@@ -7072,28 +6993,28 @@ class _CanvasSizeChangeDialogState extends State<_CanvasSizeChangeDialog> {
               ),
             ),
             const SizedBox(height: 12),
-            Text(l10n.newProjectWidthShort),
-            SteppedSlider(
+            LabeledSlider(
+              label: l10n.newProjectWidthShort,
               min: _minEdge.toDouble(),
               max: _maxEdge.toDouble(),
               value: newW.clamp(_minEdge, _maxEdge).toDouble(),
-              label: '${newW}px',
+              sliderLabel: '${newW}px',
               onChanged: (v) => setState(() => newW = v.round()),
             ),
-            Text(l10n.newProjectHeightShort),
-            SteppedSlider(
+            LabeledSlider(
+              label: l10n.newProjectHeightShort,
               min: _minEdge.toDouble(),
               max: _maxEdge.toDouble(),
               value: newH.clamp(_minEdge, _maxEdge).toDouble(),
-              label: '${newH}px',
+              sliderLabel: '${newH}px',
               onChanged: (v) => setState(() => newH = v.round()),
             ),
-            Text(l10n.timelineCanvasSizeAngleLabel),
-            SteppedSlider(
+            LabeledSlider(
+              label: l10n.timelineCanvasSizeAngleLabel,
               min: -180,
               max: 180,
               value: angle,
-              label: '${angle.round()}°',
+              sliderLabel: '${angle.round()}°',
               onChanged: (v) => setState(() => angle = v.abs() <= 2 ? 0 : v),
             ),
             Text(
@@ -7356,6 +7277,7 @@ class _EffectFilterSheet extends StatelessWidget {
         EffectFilterType.sharpen => l10n.filterNameSharpen,
         EffectFilterType.unsharpMask => l10n.filterNameUnsharpMask,
         EffectFilterType.vignette => l10n.filterNameVignette,
+        EffectFilterType.watercolorBorder => l10n.filterNameWatercolorBorder,
       };
 
   static const _typeIcons = {
@@ -7384,6 +7306,7 @@ class _EffectFilterSheet extends StatelessWidget {
     EffectFilterType.sharpen: Icons.deblur,
     EffectFilterType.unsharpMask: Icons.center_focus_strong,
     EffectFilterType.vignette: Icons.vignette,
+    EffectFilterType.watercolorBorder: Icons.water_drop_outlined,
   };
 
   @override
@@ -7653,6 +7576,8 @@ class _EffectFilterSheet extends StatelessWidget {
                   ..._unsharpMaskParams(context, l10n, e)
                 else if (e.type == EffectFilterType.vignette)
                   ..._vignetteParams(context, l10n, e)
+                else if (e.type == EffectFilterType.watercolorBorder)
+                  ..._watercolorBorderParams(context, l10n, e)
                 else
                   ..._strengthParam(context, l10n, e),
               ],
@@ -7663,6 +7588,8 @@ class _EffectFilterSheet extends StatelessWidget {
     );
   }
 
+  /// 開始・終了フレームの行。スライダーは表示（F1〜）と同じ1始まりの
+  /// 目盛りで持ち、0始まりの添字へ戻して渡す。
   Widget _rangeRow(
     String label,
     int value,
@@ -7670,34 +7597,15 @@ class _EffectFilterSheet extends StatelessWidget {
     int max,
     ValueChanged<int> onChanged,
   ) {
-    return Row(
-      children: [
-        SizedBox(
-          width: 36,
-          child: Text(label, style: const TextStyle(fontSize: 11)),
-        ),
-        Expanded(
-          child: SteppedSlider(
-            value: value.toDouble(),
-            min: min.toDouble(),
-            max: max.toDouble(),
-            divisions: max > min ? max - min : 1,
-            label: 'F${value + 1}',
-            onChanged: (v) => onChanged(v.round()),
-          ),
-        ),
-        SizedBox(
-          width: 36,
-          child: EditableSliderValue(
-            text: 'F${value + 1}',
-            style: const TextStyle(fontSize: 11),
-            value: value + 1,
-            min: min + 1,
-            max: max + 1,
-            onChanged: (v) => onChanged(v.round() - 1),
-          ),
-        ),
-      ],
+    return LabeledSlider(
+      label: label,
+      value: (value + 1).toDouble(),
+      min: (min + 1).toDouble(),
+      max: (max + 1).toDouble(),
+      divisions: max > min ? max - min : 1,
+      sliderLabel: 'F${value + 1}',
+      valueText: 'F${value + 1}',
+      onChanged: (v) => onChanged(v.round() - 1),
     );
   }
 
@@ -7713,35 +7621,15 @@ class _EffectFilterSheet extends StatelessWidget {
         ? kPixelArtMaxBlockSize.toDouble()
         : 20.0;
     return [
-      Row(
-        children: [
-          SizedBox(
-            width: 36,
-            child: Text(label, style: const TextStyle(fontSize: 11)),
-          ),
-          Expanded(
-            child: SteppedSlider(
-              value: e.param1.clamp(1, maxVal),
-              min: 1,
-              max: maxVal,
-              divisions: maxVal.round() - 1,
-              label: e.param1.round().toString(),
-              onChanged: (v) => _update(context, e.copyWith(param1: v)),
-            ),
-          ),
-          SizedBox(
-            width: 36,
-            child: EditableSliderValue(
-              text: e.param1.round().toString(),
-              style: const TextStyle(fontSize: 11),
-              value: e.param1,
-              min: 1,
-              max: maxVal,
-              onChanged: (v) =>
-                  _update(context, e.copyWith(param1: v.toDouble())),
-            ),
-          ),
-        ],
+      LabeledSlider(
+        label: label,
+        value: e.param1,
+        min: 1,
+        max: maxVal,
+        divisions: maxVal.round() - 1,
+        sliderLabel: e.param1.round().toString(),
+        valueText: e.param1.round().toString(),
+        onChanged: (v) => _update(context, e.copyWith(param1: v)),
       ),
     ];
   }
@@ -7756,35 +7644,17 @@ class _EffectFilterSheet extends StatelessWidget {
     ValueChanged<double> onChanged, {
     String? valueText,
   }) {
-    return Row(
-      children: [
-        SizedBox(
-          width: 56,
-          child: Text(label, style: const TextStyle(fontSize: 11)),
-        ),
-        Expanded(
-          child: SteppedSlider(
-            value: value.clamp(min, max),
-            min: min,
-            max: max,
-            divisions: divisions > 0 ? divisions : null,
-            label: valueText ?? value.round().toString(),
-            onChanged: onChanged,
-          ),
-        ),
-        SizedBox(
-          width: 44,
-          child: EditableSliderValue(
-            text: valueText ?? value.round().toString(),
-            style: const TextStyle(fontSize: 11),
-            value: value,
-            min: min,
-            max: max,
-            isInt: false,
-            onChanged: (v) => onChanged(v.toDouble()),
-          ),
-        ),
-      ],
+    final shown = valueText ?? value.round().toString();
+    return LabeledSlider(
+      label: label,
+      value: value,
+      min: min,
+      max: max,
+      divisions: divisions > 0 ? divisions : null,
+      isInt: false,
+      sliderLabel: shown,
+      valueText: shown,
+      onChanged: onChanged,
     );
   }
 
@@ -8059,35 +7929,15 @@ class _EffectFilterSheet extends StatelessWidget {
     ) {
       final v = value.round().clamp(min, max);
       void change(int next) => onChanged(next.clamp(min, max).toDouble());
-      return Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text('$label: ${v}px', style: const TextStyle(fontSize: 11)),
-          Row(
-            children: [
-              IconButton(
-                visualDensity: VisualDensity.compact,
-                icon: const Icon(Icons.remove_rounded, size: 18),
-                onPressed: v > min ? () => change(v - 1) : null,
-              ),
-              Expanded(
-                child: SteppedSlider(
-                  value: v.toDouble(),
-                  min: min.toDouble(),
-                  max: max.toDouble(),
-                  divisions: max - min,
-                  label: '${v}px',
-                  onChanged: (n) => change(n.round()),
-                ),
-              ),
-              IconButton(
-                visualDensity: VisualDensity.compact,
-                icon: const Icon(Icons.add_rounded, size: 18),
-                onPressed: v < max ? () => change(v + 1) : null,
-              ),
-            ],
-          ),
-        ],
+      return LabeledSlider(
+        label: label,
+        value: v.toDouble(),
+        min: min.toDouble(),
+        max: max.toDouble(),
+        divisions: max - min,
+        sliderLabel: '${v}px',
+        valueText: '${v}px',
+        onChanged: (n) => change(n.round()),
       );
     }
 
@@ -8261,6 +8111,61 @@ class _EffectFilterSheet extends StatelessWidget {
   }
 
   /// 周辺減光（色・範囲・濃さ）。
+  /// 水彩境界のパラメータ（範囲・縁の濃さ・透明度の影響・ぼかし幅・色の境目）。
+  List<Widget> _watercolorBorderParams(
+    BuildContext context,
+    AppLocalizations l10n,
+    EffectFilterInstance e,
+  ) {
+    return [
+      _paramRow(
+        l10n.filterWatercolorBorderRange,
+        e.param1,
+        1,
+        50,
+        49,
+        (v) => _update(context, e.copyWith(param1: v)),
+        valueText: '${e.param1.round()}px',
+      ),
+      _paramRow(
+        l10n.filterWatercolorBorderDarken,
+        e.param2,
+        0,
+        100,
+        100,
+        (v) => _update(context, e.copyWith(param2: v)),
+      ),
+      _paramRow(
+        l10n.filterWatercolorBorderOpacity,
+        e.param3,
+        0,
+        100,
+        100,
+        (v) => _update(context, e.copyWith(param3: v)),
+      ),
+      _paramRow(
+        l10n.filterWatercolorBorderBlur,
+        e.param4,
+        0,
+        20,
+        20,
+        (v) => _update(context, e.copyWith(param4: v)),
+        valueText: '${e.param4.round()}px',
+      ),
+      SwitchListTile(
+        key: const ValueKey('effect-watercolor-border-color-edges'),
+        dense: true,
+        contentPadding: EdgeInsets.zero,
+        title: Text(
+          l10n.filterWatercolorBorderColorEdges,
+          style: const TextStyle(fontSize: 12),
+        ),
+        value: e.param5 >= 0.5,
+        onChanged: (v) => _update(context, e.copyWith(param5: v ? 1 : 0)),
+      ),
+    ];
+  }
+
   List<Widget> _vignetteParams(
     BuildContext context,
     AppLocalizations l10n,
@@ -8568,6 +8473,8 @@ class _EffectFilterSheet extends StatelessWidget {
                             EffectFilterType.sharpen => 50.0,
                             EffectFilterType.unsharpMask => 4.0,
                             EffectFilterType.vignette => 40.0,
+                            // 水彩境界は範囲10pxから。
+                            EffectFilterType.watercolorBorder => 10.0,
                             _ => 5.0,
                           },
                           // ドット絵のparam2は色数（2〜32）なので既定8から始める。
@@ -8594,6 +8501,9 @@ class _EffectFilterSheet extends StatelessWidget {
                               ? 240.0
                               : type == EffectFilterType.unsharpMask
                               ? 1.0
+                              // 水彩境界の縁の濃さ40。
+                              : type == EffectFilterType.watercolorBorder
+                              ? 40.0
                               : 50.0,
                           // オーロラホログラムのparam3は彩度（-100〜100）なので
                           // 既定0（変化なし）から始める。
@@ -8605,9 +8515,15 @@ class _EffectFilterSheet extends StatelessWidget {
                               : type == EffectFilterType.colorAdjust ||
                                     type == EffectFilterType.auroraHologram
                               ? 0.0
+                              // 水彩境界の透明度の影響45。
+                              : type == EffectFilterType.watercolorBorder
+                              ? 45.0
                               : 2.0,
+                          // 水彩境界のぼかし幅2px。
                           param4: type == EffectFilterType.vhsNoise
                               ? 25.0
+                              : type == EffectFilterType.watercolorBorder
+                              ? 2.0
                               : 0.0,
                           // 単色化の色（fadeColorスロットを流用）：既定は白＝通常の
                           // グレースケール。fadeフィルター自体の既定色は黒のままにする。
@@ -8870,45 +8786,16 @@ class _ClipDetailSheetState extends State<_ClipDetailSheet> {
     String valueText, {
     double step = 1,
   }) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 5),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(label, style: const TextStyle(fontSize: 12)),
-          const SizedBox(height: 2),
-          Row(
-            children: [
-              Expanded(
-                child: SteppedSlider(
-                  value: value.clamp(min, max),
-                  min: min,
-                  max: max,
-                  divisions: divisions > 0 ? divisions : 1,
-                  step: step,
-                  compact: true,
-                  onChanged: onChanged,
-                ),
-              ),
-              const SizedBox(width: 1),
-              ConstrainedBox(
-                constraints: const BoxConstraints(minWidth: 34, maxWidth: 40),
-                child: EditableSliderValue(
-                  text: valueText,
-                  style: const TextStyle(fontSize: 11),
-                  textAlign: TextAlign.right,
-                  editIconRight: -4,
-                  value: value,
-                  min: min,
-                  max: max,
-                  isInt: false,
-                  onChanged: (v) => onChanged(v.toDouble()),
-                ),
-              ),
-            ],
-          ),
-        ],
-      ),
+    return LabeledSlider(
+      label: label,
+      value: value,
+      min: min,
+      max: max,
+      divisions: divisions > 0 ? divisions : 1,
+      step: step,
+      isInt: false,
+      valueText: valueText,
+      onChanged: onChanged,
     );
   }
 }
@@ -9080,44 +8967,19 @@ class _CameraKfSheetState extends State<_CameraKfSheet> {
                   '${_kf.rotation.toStringAsFixed(1)}°',
                 ),
                 const SizedBox(height: 8),
-                Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 4),
-                  child: Row(
-                    children: [
-                      SizedBox(
-                        width: 72,
-                        child: Text(
-                          l10n.timelineFrameTrackLabel,
-                          style: const TextStyle(fontSize: 12),
-                        ),
-                      ),
-                      Expanded(
-                        child: SteppedSlider(
-                          value: _kf.frameIndex.toDouble(),
-                          min: 0,
-                          max: (widget.totalFrames - 1).toDouble(),
-                          divisions: widget.totalFrames > 1
-                              ? widget.totalFrames - 1
-                              : 1,
-                          onChanged: (v) =>
-                              _update(_kf.copyWith(frameIndex: v.round())),
-                        ),
-                      ),
-                      SizedBox(
-                        width: 48,
-                        child: EditableSliderValue(
-                          text: 'F${_kf.frameIndex + 1}',
-                          style: const TextStyle(fontSize: 11),
-                          textAlign: TextAlign.right,
-                          value: _kf.frameIndex + 1,
-                          min: 1,
-                          max: widget.totalFrames,
-                          onChanged: (v) =>
-                              _update(_kf.copyWith(frameIndex: v.round() - 1)),
-                        ),
-                      ),
-                    ],
-                  ),
+                // フレームは表示（F1〜）と同じ1始まりの目盛りで持ち、
+                // 0始まりの添字へ戻して保存する。
+                LabeledSlider(
+                  label: l10n.timelineFrameTrackLabel,
+                  value: (_kf.frameIndex + 1).toDouble(),
+                  min: 1,
+                  max: widget.totalFrames.toDouble(),
+                  divisions: widget.totalFrames > 1
+                      ? widget.totalFrames - 1
+                      : 1,
+                  valueText: 'F${_kf.frameIndex + 1}',
+                  onChanged: (v) =>
+                      _update(_kf.copyWith(frameIndex: v.round() - 1)),
                 ),
               ],
             ),
@@ -9137,39 +8999,16 @@ class _CameraKfSheetState extends State<_CameraKfSheet> {
     double step = 1,
   }) {
     final divisions = ((max - min) * 10).round().clamp(1, 1000);
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 4),
-      child: Row(
-        children: [
-          SizedBox(
-            width: 72,
-            child: Text(label, style: const TextStyle(fontSize: 12)),
-          ),
-          Expanded(
-            child: SteppedSlider(
-              value: value.clamp(min, max),
-              min: min,
-              max: max,
-              divisions: divisions,
-              step: step,
-              onChanged: onChanged,
-            ),
-          ),
-          SizedBox(
-            width: 56,
-            child: EditableSliderValue(
-              text: valueText,
-              style: const TextStyle(fontSize: 11),
-              textAlign: TextAlign.right,
-              value: value,
-              min: min,
-              max: max,
-              isInt: false,
-              onChanged: (v) => onChanged(v.toDouble()),
-            ),
-          ),
-        ],
-      ),
+    return LabeledSlider(
+      label: label,
+      value: value,
+      min: min,
+      max: max,
+      divisions: divisions,
+      step: step,
+      isInt: false,
+      valueText: valueText,
+      onChanged: onChanged,
     );
   }
 }

@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../../l10n/app_localizations.dart';
-import '../../../widgets/stepped_slider.dart';
+import '../../../widgets/labeled_slider.dart';
 import 'panel_close_bar.dart';
 import '../../../config/font_fallback.dart';
 
@@ -11,6 +11,8 @@ import '../../../config/font_fallback.dart';
 /// のみを担う。範囲選択の変形と異なり、選択範囲なしで現在レイヤー全体を
 /// 対象にする。
 class MeshTransformPanel extends StatelessWidget {
+  static const _sliderPadding = EdgeInsets.symmetric(horizontal: 8);
+
   final int density;
   final double rotateDeg;
   final double scaleValue;
@@ -70,40 +72,37 @@ class MeshTransformPanel extends StatelessWidget {
               ),
             ),
             const Divider(height: 12),
-            _sliderRow(
-              context,
+            LabeledSlider(
+              padding: _sliderPadding,
               label: l10n.meshTransformDensityLabel,
               valueText: '$density×$density',
-              child: SteppedSlider(
-                value: density.toDouble(),
-                min: 1,
-                max: 10,
-                divisions: 9,
-                onChanged: (v) => onDensityChanged(v.round()),
-              ),
+              editable: false,
+              value: density.toDouble(),
+              min: 1,
+              max: 10,
+              divisions: 9,
+              onChanged: (v) => onDensityChanged(v.round()),
             ),
-            _sliderRow(
-              context,
+            LabeledSlider(
+              padding: _sliderPadding,
               label: l10n.meshTransformRotateLabel,
               valueText: '${rotateDeg.round()}°',
-              child: SteppedSlider(
-                value: rotateDeg,
-                min: -180,
-                max: 180,
-                onChanged: onRotateChanged,
-              ),
+              editable: false,
+              value: rotateDeg,
+              min: -180,
+              max: 180,
+              onChanged: onRotateChanged,
             ),
-            _sliderRow(
-              context,
+            LabeledSlider(
+              padding: _sliderPadding,
               label: l10n.meshTransformScaleLabel,
               valueText: '${scaleValue.toStringAsFixed(2)}×',
-              child: SteppedSlider(
-                value: scaleValue,
-                min: 0.2,
-                max: 3.0,
-                step: 0.05,
-                onChanged: onScaleChanged,
-              ),
+              editable: false,
+              value: scaleValue,
+              min: 0.2,
+              max: 3.0,
+              step: 0.05,
+              onChanged: onScaleChanged,
             ),
             const SizedBox(height: 4),
             Padding(
@@ -128,30 +127,6 @@ class MeshTransformPanel extends StatelessWidget {
             ),
           ],
         ),
-      ),
-    );
-  }
-
-  Widget _sliderRow(
-    BuildContext context, {
-    required String label,
-    required String valueText,
-    required Widget child,
-  }) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 12),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Text(label, style: const TextStyle(fontSize: 12)),
-              const Spacer(),
-              Text(valueText, style: const TextStyle(fontSize: 12)),
-            ],
-          ),
-          SizedBox(height: 24, child: child),
-        ],
       ),
     );
   }

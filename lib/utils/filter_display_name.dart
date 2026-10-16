@@ -40,6 +40,7 @@ String filterDisplayName(AppLocalizations l10n, FilterDef filter) {
     FilterKind.inkPool => l10n.filterNameInkPool,
     FilterKind.autoLineart => l10n.filterNameAutoLineart,
     FilterKind.sphereShading => l10n.filterNameSphereShading,
+    FilterKind.watercolorBorder => l10n.filterNameWatercolorBorder,
   };
 }
 

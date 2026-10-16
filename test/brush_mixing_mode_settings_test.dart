@@ -1,5 +1,6 @@
 // ブラシカスタムの混色モード（デジタル・油彩風混色・水彩風混色）を本番の
 // ブラシ設定シートで実際に切り替え、モードごとのスライダーが出ること・
+// ぼかし半径・ふち滲みがスライダーだけで変えられること・
 // 保存した値がブラシに残ることを確かめる。各モードの画面は
 // build/brush-mixing/settings_*.png へ焼く。
 import 'dart:io';
@@ -16,6 +17,7 @@ import 'package:niarim/screens/canvas/widgets/brush_panel.dart';
 import 'package:niarim/services/brush_service.dart';
 import 'package:niarim/services/settings_service.dart';
 import 'package:niarim/services/theme_service.dart';
+import 'package:niarim/widgets/labeled_slider.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -148,7 +150,11 @@ void main() {
         findsOneWidget,
       );
     }
-    expect(find.text('にじみ'), findsNothing);
+    // 旧「にじみ」モードは無い（にじみは水彩風混色のスライダー）。
+    expect(
+      find.widgetWithText(RadioListTile<BrushMixingMode>, 'にじみ'),
+      findsNothing,
+    );
 
     await choose('油彩風混色');
     expect(find.text('混色度合い'), findsWidgets);
@@ -162,21 +168,57 @@ void main() {
     await choose('水彩風混色');
     expect(find.text('水分量'), findsOneWidget);
     expect(find.text('絵具量'), findsOneWidget);
-    expect(find.text('縁の濃さ'), findsOneWidget);
+    // 縁の濃さは水彩境界フィルターで付けるので、ブラシには無い。
+    expect(find.text('縁の濃さ'), findsNothing);
+    expect(find.text('にじみ'), findsOneWidget);
+    expect(find.text('むら'), findsOneWidget);
+    expect(find.text('境界のぼかし'), findsOneWidget);
     expect(find.text('色延び'), findsNothing);
-    await tester.ensureVisible(find.text('縁の濃さ'));
+    await tester.ensureVisible(find.text('にじみ'));
     await tester.pumpAndSettle();
     await shoot('settings_watercolor.png');
 
+    // ぼかし半径・ふち滲みはスイッチを入れなくてもスライダーで直接変えられる
+    // （0でなし）。
+    Finder sliderFor(String label) => find.ancestor(
+      of: find.text(label),
+      matching: find.byType(LabeledSlider),
+    );
+    for (final label in ['ぼかし半径', 'ふち滲み']) {
+      await tester.scrollUntilVisible(
+        sliderFor(label),
+        200,
+        scrollable: sheetScroll,
+      );
+      expect(sliderFor(label), findsOneWidget);
+    }
+    expect(copy.pressureOff.blur.enabled, isFalse);
+    final blurPlus = find.descendant(
+      of: sliderFor('ぼかし半径'),
+      matching: find.byIcon(Icons.add_circle_outline),
+    );
+    await tester.ensureVisible(blurPlus);
+    await tester.pumpAndSettle();
+    await tester.tap(blurPlus);
+    await tester.pump();
+    await tester.tap(blurPlus);
+    await tester.pumpAndSettle();
+    await shoot('settings_blur.png');
+
     // 保存すると水彩風混色として残る。
-    final save = find.byType(FilledButton).last;
-    await tester.ensureVisible(save);
-    await tester.tap(save);
+    final save = find.byType(FilledButton);
+    await tester.scrollUntilVisible(save, 300, scrollable: sheetScroll);
+    await tester.tap(save.last);
     await tester.pumpAndSettle();
     final saved = brushes.brushes.firstWhere((b) => b.id == copy.id);
     expect(saved.pressureOff.mixing.enabled, isTrue);
     expect(saved.pressureOff.mixing.mode, BrushMixingMode.watercolor);
     expect(saved.pressureOff.mixing.water, kDefaultMixingWater);
+    expect(saved.pressureOff.mixing.bleed, kDefaultMixingBleed);
+    expect(saved.pressureOff.mixing.texture, kDefaultMixingTexture);
+    expect(saved.pressureOff.mixing.softEdge, kDefaultMixingSoftEdge);
+    expect(saved.pressureOff.blur.enabled, isTrue);
+    expect(saved.pressureOff.blur.value, 2);
 
     await tester.runAsync(() => Future<void>.delayed(Duration.zero));
   });

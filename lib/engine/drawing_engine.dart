@@ -593,7 +593,9 @@ class DrawingEngine {
         brushSize: brush.size.toDouble(),
         water: resolvedPressure.mixingWater,
         pigment: resolvedPressure.mixingPigment,
-        edge: resolvedPressure.mixingEdge,
+        bleed: resolvedPressure.mixingBleed,
+        texture: resolvedPressure.mixingTexture,
+        softEdge: resolvedPressure.mixingSoftEdge,
         brightnessCorrection: resolvedPressure.mixingBrightnessCorrection,
         seed: (stampX * 7919 + stampY * 104729).round(),
       );
@@ -1002,7 +1004,16 @@ class DrawingEngine {
                       .clamp(0, 255);
             coverage[coveragePos] = desiredAlpha;
             if (watercolor != null) {
-              watercolor.cover(tile, tx, ty, px, py, desiredAlpha, mixingRate);
+              watercolor.cover(
+                tile,
+                tx,
+                ty,
+                px,
+                py,
+                desiredAlpha,
+                mixingRate,
+                opacity: alpha,
+              );
               continue;
             }
             if (base != null && !isEraser) {

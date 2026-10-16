@@ -25,9 +25,8 @@ import '../../../widgets/blend_mode_preview.dart';
 import '../../../widgets/confirm_delete.dart';
 import '../../../widgets/autofill_preset_selection_sheet.dart';
 import '../../../widgets/dispose_on_unmount.dart';
-import '../../../widgets/editable_slider_value.dart';
 import '../../../widgets/first_use_tooltip.dart';
-import '../../../widgets/stepped_slider.dart';
+import '../../../widgets/labeled_slider.dart';
 import 'layer_keyframe_sheet.dart';
 import 'panel_close_bar.dart';
 import 'two_finger_vertical_swipe_detector.dart';
@@ -1750,12 +1749,17 @@ class _LayerPanelState extends State<LayerPanel> {
   /// 三点メニュー（[layer]を直接指定）の両方から呼び出せる。
   void _showLayerOptions(BuildContext context, model.Layer layer) {
     final l10n = AppLocalizations.of(context)!;
+    // The sheet edits the layer as it now is: each change builds on the
+    // previous one (a scale change after an opacity change keeps the new
+    // opacity), and the sliders show what was last set.
+    var latest = layer;
     void update(model.Layer Function(model.Layer) updater) {
+      latest = updater(latest);
       context.read<ProjectService>().updateLayer(
         projectId: widget.projectId,
         sceneId: widget.sceneId,
         frameIndex: widget.frameIndex,
-        layer: updater(layer),
+        layer: latest,
       );
     }
 
@@ -1779,131 +1783,93 @@ class _LayerPanelState extends State<LayerPanel> {
                 ),
               ),
               // 不透明度スライダー
-              Padding(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 16,
-                  vertical: 4,
-                ),
-                child: Row(
-                  children: [
-                    Text(
-                      l10n.layerPanelOpacityLabel,
-                      style: const TextStyle(fontSize: 13),
-                    ),
-                    Expanded(
-                      child: StatefulBuilder(
-                        builder: (ctx, setS) => SteppedSlider(
-                          value: layer.opacity.toDouble(),
-                          min: 0,
-                          max: 100,
-                          divisions: 100,
-                          label: '${layer.opacity}%',
-                          onChanged: (v) {
-                            setS(() {});
-                            update((l) => l.copyWith(opacity: v.round()));
-                          },
-                        ),
-                      ),
-                    ),
-                    EditableSliderValue(
-                      text: '${layer.opacity}%',
-                      style: const TextStyle(fontSize: 12),
-                      value: layer.opacity,
-                      min: 0,
-                      max: 100,
-                      onChanged: (v) =>
-                          update((l) => l.copyWith(opacity: v.round())),
-                    ),
-                  ],
+              StatefulBuilder(
+                builder: (ctx, setS) => LabeledSlider(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 4,
+                  ),
+                  label: l10n.layerPanelOpacityLabel,
+                  labelStyle: const TextStyle(fontSize: 13),
+                  value: latest.opacity.toDouble(),
+                  min: 0,
+                  max: 100,
+                  divisions: 100,
+                  sliderLabel: '${latest.opacity}%',
+                  valueText: '${latest.opacity}%',
+                  onChanged: (v) {
+                    setS(() {});
+                    update((l) => l.copyWith(opacity: v.round()));
+                  },
                 ),
               ),
               // 拡大縮小・回転スライダー：不透明度と同様、レイヤー
               // （素材）全体へ一気に適用する操作として直接編集できる
               // ようにする（アニメーション用のキーフレームを個別に
               // 打ちたい場合は引き続きキーフレーム設定シートを使う）。
-              Padding(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 16,
-                  vertical: 4,
-                ),
-                child: Row(
-                  children: [
-                    Text(
-                      l10n.layerKeyframeScaleLabel,
-                      style: const TextStyle(fontSize: 13),
+              StatefulBuilder(
+                builder: (ctx, setS) {
+                  final current = LayerKeyframeEngine()
+                      .valueAt(latest.keyframes, widget.frameIndex)
+                      .scale;
+                  return LabeledSlider(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 16,
+                      vertical: 4,
                     ),
-                    Expanded(
-                      child: StatefulBuilder(
-                        builder: (ctx, setS) {
-                          final current = LayerKeyframeEngine()
-                              .valueAt(layer.keyframes, widget.frameIndex)
-                              .scale;
-                          return SteppedSlider(
-                            value: current,
-                            min: 0.1,
-                            max: 3.0,
-                            divisions: 29,
-                            label: current.toStringAsFixed(2),
-                            onChanged: (v) {
-                              setS(() {});
-                              update(
-                                (l) => l.copyWith(
-                                  keyframes: _updateKeyframeAtCurrentFrame(
-                                    l.keyframes,
-                                    widget.frameIndex,
-                                    (base) => base.copyWith(scale: v),
-                                  ),
-                                ),
-                              );
-                            },
-                          );
-                        },
-                      ),
-                    ),
-                  ],
-                ),
+                    label: l10n.layerKeyframeScaleLabel,
+                    labelStyle: const TextStyle(fontSize: 13),
+                    value: current,
+                    min: 0.1,
+                    max: 3.0,
+                    divisions: 29,
+                    sliderLabel: current.toStringAsFixed(2),
+                    onChanged: (v) {
+                      setS(() {});
+                      update(
+                        (l) => l.copyWith(
+                          keyframes: _updateKeyframeAtCurrentFrame(
+                            l.keyframes,
+                            widget.frameIndex,
+                            (base) => base.copyWith(scale: v),
+                          ),
+                        ),
+                      );
+                    },
+                  );
+                },
               ),
-              Padding(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 16,
-                  vertical: 4,
-                ),
-                child: Row(
-                  children: [
-                    Text(
-                      l10n.layerKeyframeRotationLabel,
-                      style: const TextStyle(fontSize: 13),
+              StatefulBuilder(
+                builder: (ctx, setS) {
+                  final current = LayerKeyframeEngine()
+                      .valueAt(latest.keyframes, widget.frameIndex)
+                      .rotation;
+                  return LabeledSlider(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 16,
+                      vertical: 4,
                     ),
-                    Expanded(
-                      child: StatefulBuilder(
-                        builder: (ctx, setS) {
-                          final current = LayerKeyframeEngine()
-                              .valueAt(layer.keyframes, widget.frameIndex)
-                              .rotation;
-                          return SteppedSlider(
-                            value: current,
-                            min: -180,
-                            max: 180,
-                            divisions: 360,
-                            label: '${current.round()}°',
-                            onChanged: (v) {
-                              setS(() {});
-                              update(
-                                (l) => l.copyWith(
-                                  keyframes: _updateKeyframeAtCurrentFrame(
-                                    l.keyframes,
-                                    widget.frameIndex,
-                                    (base) => base.copyWith(rotation: v),
-                                  ),
-                                ),
-                              );
-                            },
-                          );
-                        },
-                      ),
-                    ),
-                  ],
-                ),
+                    label: l10n.layerKeyframeRotationLabel,
+                    labelStyle: const TextStyle(fontSize: 13),
+                    value: current,
+                    min: -180,
+                    max: 180,
+                    divisions: 360,
+                    sliderLabel: '${current.round()}°',
+                    onChanged: (v) {
+                      setS(() {});
+                      update(
+                        (l) => l.copyWith(
+                          keyframes: _updateKeyframeAtCurrentFrame(
+                            l.keyframes,
+                            widget.frameIndex,
+                            (base) => base.copyWith(rotation: v),
+                          ),
+                        ),
+                      );
+                    },
+                  );
+                },
               ),
               // ブレンドモード
               ListTile(
@@ -1926,12 +1892,12 @@ class _LayerPanelState extends State<LayerPanel> {
                 ),
                 onTap: () {
                   Navigator.pop(ctx);
-                  _showBlendModeDialog(context, layer, update);
+                  _showBlendModeDialog(context, latest, update);
                 },
               ),
               SwitchListTile(
                 title: Text(l10n.layerPanelLockLabel),
-                value: layer.isLocked,
+                value: latest.isLocked,
                 onChanged: (v) {
                   update((l) => l.copyWith(isLocked: v));
                   Navigator.pop(ctx);
@@ -1939,7 +1905,7 @@ class _LayerPanelState extends State<LayerPanel> {
               ),
               SwitchListTile(
                 title: Text(l10n.layerPanelOpacityLockLabel),
-                value: layer.opacityLocked,
+                value: latest.opacityLocked,
                 onChanged: (v) {
                   update((l) => l.copyWith(opacityLocked: v));
                   Navigator.pop(ctx);
@@ -1951,7 +1917,7 @@ class _LayerPanelState extends State<LayerPanel> {
                   l10n.layerPanelClippingDescription,
                   style: const TextStyle(fontSize: 11),
                 ),
-                value: layer.hasClipping,
+                value: latest.hasClipping,
                 onChanged: (v) {
                   update((l) => l.copyWith(hasClipping: v));
                   Navigator.pop(ctx);

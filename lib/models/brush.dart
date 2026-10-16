@@ -549,14 +549,23 @@ class PressureMixingOnSetting {
   /// 色延び（0〜100、油彩風）：拾った色をどこまで引きずるか。
   final int stretch;
 
-  /// 水分量（0〜100、水彩風）：多いほど薄く、にじみが広く、むらが出る。
+  /// 水分量（0〜100、水彩風）：多いほど薄く、むらが出て、少し広がる。
   final int water;
 
   /// 絵具量（0〜100、水彩風）：多いほど色が濃い。
   final int pigment;
 
-  /// 縁の濃さ（0〜100、水彩風）：乾いた縁に溜まる色の濃さ。
-  final int edge;
+  /// にじみ（0〜100、水彩風）：乾くときに筆の外へどこまで、どれだけ
+  /// 不揃いに広がるか。
+  final int bleed;
+
+  /// むら（0〜100、水彩風）：紙の目と顔料のむらの強さ。0なら均一に
+  /// パキッと塗れる。
+  final int texture;
+
+  /// 境界のぼかし（0〜100、水彩風）：0は縁がくっきり、大きいほど縁へ
+  /// 向かってなめらかに薄れるグラデーションになる。
+  final int softEdge;
   const PressureMixingOnSetting({
     required this.enabled,
     required this.mode,
@@ -566,7 +575,9 @@ class PressureMixingOnSetting {
     this.stretch = kDefaultMixingStretch,
     this.water = kDefaultMixingWater,
     this.pigment = kDefaultMixingPigment,
-    this.edge = kDefaultMixingEdge,
+    this.bleed = kDefaultMixingBleed,
+    this.texture = kDefaultMixingTexture,
+    this.softEdge = kDefaultMixingSoftEdge,
   });
   PressureMixingOnSetting copyWith({
     bool? enabled,
@@ -577,7 +588,9 @@ class PressureMixingOnSetting {
     int? stretch,
     int? water,
     int? pigment,
-    int? edge,
+    int? bleed,
+    int? texture,
+    int? softEdge,
   }) => PressureMixingOnSetting(
     enabled: enabled ?? this.enabled,
     mode: mode ?? this.mode,
@@ -587,7 +600,9 @@ class PressureMixingOnSetting {
     stretch: stretch ?? this.stretch,
     water: water ?? this.water,
     pigment: pigment ?? this.pigment,
-    edge: edge ?? this.edge,
+    bleed: bleed ?? this.bleed,
+    texture: texture ?? this.texture,
+    softEdge: softEdge ?? this.softEdge,
   );
   Map<String, dynamic> toJson() => {
     'enabled': enabled,
@@ -598,7 +613,9 @@ class PressureMixingOnSetting {
     'stretch': stretch,
     'water': water,
     'pigment': pigment,
-    'edge': edge,
+    'bleed': bleed,
+    'texture': texture,
+    'softEdge': softEdge,
   };
   factory PressureMixingOnSetting.fromJson(Map<String, dynamic> j) =>
       PressureMixingOnSetting(
@@ -613,7 +630,9 @@ class PressureMixingOnSetting {
         stretch: _percent(j['stretch'], kDefaultMixingStretch),
         water: _percent(j['water'], kDefaultMixingWater),
         pigment: _percent(j['pigment'], kDefaultMixingPigment),
-        edge: _percent(j['edge'], kDefaultMixingEdge),
+        bleed: _percent(j['bleed'], kDefaultMixingBleed),
+        texture: _percent(j['texture'], kDefaultMixingTexture),
+        softEdge: _percent(j['softEdge'], kDefaultMixingSoftEdge),
       );
   @override
   bool operator ==(Object other) =>
@@ -626,7 +645,9 @@ class PressureMixingOnSetting {
       stretch == other.stretch &&
       water == other.water &&
       pigment == other.pigment &&
-      edge == other.edge;
+      bleed == other.bleed &&
+      texture == other.texture &&
+      softEdge == other.softEdge;
   @override
   int get hashCode => Object.hash(
     enabled,
@@ -637,7 +658,9 @@ class PressureMixingOnSetting {
     stretch,
     water,
     pigment,
-    edge,
+    bleed,
+    texture,
+    softEdge,
   );
 }
 
@@ -660,8 +683,14 @@ class PressureMixingOffSetting {
   /// See [PressureMixingOnSetting.pigment].
   final int pigment;
 
-  /// See [PressureMixingOnSetting.edge].
-  final int edge;
+  /// See [PressureMixingOnSetting.bleed].
+  final int bleed;
+
+  /// See [PressureMixingOnSetting.texture].
+  final int texture;
+
+  /// See [PressureMixingOnSetting.softEdge].
+  final int softEdge;
   const PressureMixingOffSetting({
     required this.enabled,
     required this.mode,
@@ -670,7 +699,9 @@ class PressureMixingOffSetting {
     this.stretch = kDefaultMixingStretch,
     this.water = kDefaultMixingWater,
     this.pigment = kDefaultMixingPigment,
-    this.edge = kDefaultMixingEdge,
+    this.bleed = kDefaultMixingBleed,
+    this.texture = kDefaultMixingTexture,
+    this.softEdge = kDefaultMixingSoftEdge,
   });
   PressureMixingOffSetting copyWith({
     bool? enabled,
@@ -680,7 +711,9 @@ class PressureMixingOffSetting {
     int? stretch,
     int? water,
     int? pigment,
-    int? edge,
+    int? bleed,
+    int? texture,
+    int? softEdge,
   }) => PressureMixingOffSetting(
     enabled: enabled ?? this.enabled,
     mode: mode ?? this.mode,
@@ -689,7 +722,9 @@ class PressureMixingOffSetting {
     stretch: stretch ?? this.stretch,
     water: water ?? this.water,
     pigment: pigment ?? this.pigment,
-    edge: edge ?? this.edge,
+    bleed: bleed ?? this.bleed,
+    texture: texture ?? this.texture,
+    softEdge: softEdge ?? this.softEdge,
   );
   Map<String, dynamic> toJson() => {
     'enabled': enabled,
@@ -699,7 +734,9 @@ class PressureMixingOffSetting {
     'stretch': stretch,
     'water': water,
     'pigment': pigment,
-    'edge': edge,
+    'bleed': bleed,
+    'texture': texture,
+    'softEdge': softEdge,
   };
   factory PressureMixingOffSetting.fromJson(Map<String, dynamic> j) =>
       PressureMixingOffSetting(
@@ -713,7 +750,9 @@ class PressureMixingOffSetting {
         stretch: _percent(j['stretch'], kDefaultMixingStretch),
         water: _percent(j['water'], kDefaultMixingWater),
         pigment: _percent(j['pigment'], kDefaultMixingPigment),
-        edge: _percent(j['edge'], kDefaultMixingEdge),
+        bleed: _percent(j['bleed'], kDefaultMixingBleed),
+        texture: _percent(j['texture'], kDefaultMixingTexture),
+        softEdge: _percent(j['softEdge'], kDefaultMixingSoftEdge),
       );
   @override
   bool operator ==(Object other) =>
@@ -725,7 +764,9 @@ class PressureMixingOffSetting {
       stretch == other.stretch &&
       water == other.water &&
       pigment == other.pigment &&
-      edge == other.edge;
+      bleed == other.bleed &&
+      texture == other.texture &&
+      softEdge == other.softEdge;
   @override
   int get hashCode => Object.hash(
     enabled,
@@ -735,7 +776,9 @@ class PressureMixingOffSetting {
     stretch,
     water,
     pigment,
-    edge,
+    bleed,
+    texture,
+    softEdge,
   );
 }
 
@@ -919,5 +962,11 @@ const int kDefaultMixingWater = 50;
 /// 絵具量の初期値（水彩風）。
 const int kDefaultMixingPigment = 60;
 
-/// 縁の濃さの初期値（水彩風）。
-const int kDefaultMixingEdge = 50;
+/// にじみの初期値（水彩風）。
+const int kDefaultMixingBleed = 50;
+
+/// むらの初期値（水彩風）。
+const int kDefaultMixingTexture = 50;
+
+/// 境界のぼかしの初期値（水彩風。0＝くっきり）。
+const int kDefaultMixingSoftEdge = 0;

@@ -26,6 +26,7 @@ import '../../models/custom_automation.dart';
 import '../../widgets/background_color_picker.dart';
 import '../../widgets/dispose_on_unmount.dart';
 import '../../widgets/editable_slider_value.dart';
+import '../../widgets/labeled_slider.dart';
 import '../../widgets/stepped_slider.dart';
 import '../../utils/immersive_mode.dart';
 import '../../utils/custom_automation_labels.dart';
@@ -2679,20 +2680,52 @@ class _CanvasScreenState extends State<CanvasScreen> {
                           ),
                         ),
                       ),
+                      // 1行目に項目名と値、2行目にスライダーだけを置き、
+                      // スライダーを横幅いっぱいに広げる。幅の上限は「線に
+                      // 吸着」を切っているときの2段目（参照レイヤーの切替＋
+                      // チェックボックス）と同じくらいにし、バーがキャンバスへ
+                      // 広がりすぎないようにする。
                       if (settings.lassoSnapToLines)
-                        Padding(
-                          padding: const EdgeInsets.only(left: 8, right: 2),
-                          child: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Text(
-                                l10n.canvasLassoGapTolerance,
-                                style: const TextStyle(fontSize: 9),
-                              ),
-                              const SizedBox(width: 4),
-                              SizedBox(
-                                width: 92,
-                                child: SteppedSlider(
+                        ConstrainedBox(
+                          constraints: const BoxConstraints(maxWidth: 288),
+                          child: Padding(
+                            padding: const EdgeInsets.only(left: 8, right: 2),
+                            child: Column(
+                              mainAxisSize: MainAxisSize.min,
+                              crossAxisAlignment: CrossAxisAlignment.stretch,
+                              children: [
+                                Padding(
+                                  padding: const EdgeInsets.only(right: 10),
+                                  child: Row(
+                                    children: [
+                                      Expanded(
+                                        child: Text(
+                                          l10n.canvasLassoGapTolerance,
+                                          style: const TextStyle(fontSize: 9),
+                                        ),
+                                      ),
+                                      EditableSliderValue(
+                                        text: '${settings.lassoGapTolerancePx}',
+                                        style: const TextStyle(fontSize: 9),
+                                        value: settings.lassoGapTolerancePx
+                                            .toDouble(),
+                                        min: 0,
+                                        max: 12,
+                                        title: l10n.canvasLassoGapTolerance,
+                                        onChanged: (value) =>
+                                            settings.setLassoGapTolerancePx(
+                                              value.round(),
+                                            ),
+                                      ),
+                                      const SizedBox(width: 12),
+                                      const Text(
+                                        'px',
+                                        style: TextStyle(fontSize: 9),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                                SteppedSlider(
                                   key: const ValueKey('lasso-gap-tolerance'),
                                   value: settings.lassoGapTolerancePx
                                       .toDouble(),
@@ -2704,23 +2737,8 @@ class _CanvasScreenState extends State<CanvasScreen> {
                                   onChanged: (value) => settings
                                       .setLassoGapTolerancePx(value.round()),
                                 ),
-                              ),
-                              const SizedBox(width: 4),
-                              SizedBox(
-                                width: 28,
-                                child: EditableSliderValue(
-                                  text: settings.lassoGapTolerancePx.toString(),
-                                  value: settings.lassoGapTolerancePx
-                                      .toDouble(),
-                                  min: 0,
-                                  max: 12,
-                                  onChanged: (value) => settings
-                                      .setLassoGapTolerancePx(value.round()),
-                                ),
-                              ),
-                              const SizedBox(width: 2),
-                              const Text('px', style: TextStyle(fontSize: 9)),
-                            ],
+                              ],
+                            ),
                           ),
                         ),
                     ],
@@ -2825,39 +2843,18 @@ class _CanvasScreenState extends State<CanvasScreen> {
   Widget _meshDensitySlider(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     final scheme = Theme.of(context).colorScheme;
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 8),
-      child: Row(
-        children: [
-          SizedBox(
-            width: 62,
-            child: Text(
-              l10n.meshTransformDensityLabel,
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-              style: TextStyle(fontSize: 11, color: scheme.onSurface),
-            ),
-          ),
-          Expanded(
-            child: Slider(
-              value: _meshDensity.toDouble(),
-              min: 1,
-              max: 10,
-              divisions: 9,
-              onChanged: (v) => setState(() => _meshDensity = v.round()),
-            ),
-          ),
-          SizedBox(
-            width: 46,
-            child: Text(
-              '$_meshDensity×$_meshDensity',
-              textAlign: TextAlign.right,
-              maxLines: 1,
-              style: TextStyle(fontSize: 11, color: scheme.onSurfaceVariant),
-            ),
-          ),
-        ],
-      ),
+    return LabeledSlider(
+      label: l10n.meshTransformDensityLabel,
+      value: _meshDensity.toDouble(),
+      min: 1,
+      max: 10,
+      divisions: 9,
+      editable: false,
+      valueText: '$_meshDensity×$_meshDensity',
+      labelStyle: TextStyle(fontSize: 11, color: scheme.onSurface),
+      valueStyle: TextStyle(fontSize: 11, color: scheme.onSurfaceVariant),
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+      onChanged: (v) => setState(() => _meshDensity = v.round()),
     );
   }
 
@@ -3322,295 +3319,137 @@ class _CanvasScreenState extends State<CanvasScreen> {
         controller: controller,
         builder: (ctx) => StatefulBuilder(
           builder: (ctx, setS) => AlertDialog(
+            // スライダーを画面の横幅いっぱいに使えるよう、ダイアログを
+            // 既定（左右40px空け、内容が狭ければ幅280）より広く取る。
+            insetPadding: const EdgeInsets.symmetric(
+              horizontal: 16,
+              vertical: 24,
+            ),
             title: Text(
               existingLayerId == null
                   ? l10n.canvasTextInputTitle
                   : l10n.canvasTextEditTitle,
             ),
-            content: SingleChildScrollView(
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  TextField(
-                    controller: controller,
-                    autofocus: true,
-                    maxLines: null,
-                    decoration: InputDecoration(
-                      hintText: l10n.canvasTextInputHint,
-                    ),
-                  ),
-                  const SizedBox(height: 12),
-                  DropdownButtonFormField<String>(
-                    initialValue: fontFamily,
-                    isExpanded: true,
-                    decoration: InputDecoration(
-                      labelText: l10n.canvasTextFontLabel,
-                      isDense: true,
-                    ),
-                    items: [
-                      DropdownMenuItem(
-                        value: 'Roboto',
-                        child: Text(l10n.canvasTextStandardFont),
+            content: SizedBox(
+              width: 480,
+              child: SingleChildScrollView(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    TextField(
+                      controller: controller,
+                      autofocus: true,
+                      maxLines: null,
+                      decoration: InputDecoration(
+                        hintText: l10n.canvasTextInputHint,
                       ),
-                      // あらかじめ同梱しているフリーフォント（全てSIL Open Font
-                      // License、Google Fonts配布分。ライセンス表記は設定画面
-                      // 「利用規約・ライセンス」参照）
-                      for (final f in kBundledFonts)
+                    ),
+                    const SizedBox(height: 12),
+                    DropdownButtonFormField<String>(
+                      initialValue: fontFamily,
+                      isExpanded: true,
+                      decoration: InputDecoration(
+                        labelText: l10n.canvasTextFontLabel,
+                        isDense: true,
+                      ),
+                      items: [
                         DropdownMenuItem(
-                          value: f.family,
-                          child: Text(
-                            f.displayName,
-                            style: TextStyle(fontFamily: f.family),
-                          ),
+                          value: 'Roboto',
+                          child: Text(l10n.canvasTextStandardFont),
                         ),
-                      ...fontService.fonts.map(
-                        (f) => DropdownMenuItem(
-                          value: fontService.familyNameOf(f),
-                          child: Text(
-                            f.displayName,
-                            style: TextStyle(
-                              fontFamily: fontService.familyNameOf(f),
+                        // あらかじめ同梱しているフリーフォント（全てSIL Open Font
+                        // License、Google Fonts配布分。ライセンス表記は設定画面
+                        // 「利用規約・ライセンス」参照）
+                        for (final f in kBundledFonts)
+                          DropdownMenuItem(
+                            value: f.family,
+                            child: Text(
+                              f.displayName,
+                              style: TextStyle(fontFamily: f.family),
                             ),
                           ),
-                        ),
-                      ),
-                    ],
-                    onChanged: (v) => setS(() => fontFamily = v ?? 'Roboto'),
-                  ),
-                  const SizedBox(height: 8),
-                  Row(
-                    children: [
-                      Text(
-                        l10n.brushSettingsSizeLabel,
-                        style: const TextStyle(fontSize: 12),
-                      ),
-                      Expanded(
-                        child: SteppedSlider(
-                          value: fontSize,
-                          min: 8,
-                          max: 200,
-                          label: fontSize.round().toString(),
-                          onChanged: (v) => setS(() => fontSize = v),
-                        ),
-                      ),
-                      EditableSliderValue(
-                        text: '${fontSize.round()}',
-                        style: const TextStyle(fontSize: 12),
-                        value: fontSize,
-                        min: 8,
-                        max: 200,
-                        onChanged: (v) => setS(() => fontSize = v.toDouble()),
-                      ),
-                    ],
-                  ),
-                  Row(
-                    children: [
-                      FilterChip(
-                        label: Text(l10n.canvasTextBold),
-                        selected: isBold,
-                        onSelected: (v) => setS(() => isBold = v),
-                      ),
-                      const SizedBox(width: 8),
-                      FilterChip(
-                        label: Text(l10n.canvasTextItalic),
-                        selected: isItalic,
-                        onSelected: (v) => setS(() => isItalic = v),
-                      ),
-                      const SizedBox(width: 8),
-                      // 縦書き・横書きのワンタップ切替
-                      ActionChip(
-                        avatar: Icon(
-                          direction == model.TextWritingDirection.vertical
-                              ? Icons.text_rotate_vertical
-                              : Icons.text_rotation_none,
-                          size: 16,
-                        ),
-                        label: Text(
-                          direction == model.TextWritingDirection.vertical
-                              ? l10n.canvasTextVertical
-                              : l10n.canvasTextHorizontal,
-                        ),
-                        onPressed: () => setS(() {
-                          direction =
-                              direction == model.TextWritingDirection.vertical
-                              ? model.TextWritingDirection.horizontal
-                              : model.TextWritingDirection.vertical;
-                        }),
-                      ),
-                      // ルビ・縦中横・半角英数字回転の説明（ルビは縦書き・
-                      // 横書きどちらでも使えるため、書字方向によらず常に表示する）
-                      IconButton(
-                        icon: const Icon(Icons.help_outline, size: 18),
-                        tooltip: l10n.canvasTypesettingHelpTooltip,
-                        onPressed: () => _showVerticalTextHelp(context),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 8),
-                  Row(
-                    children: [
-                      GestureDetector(
-                        onTap: () => pickTextColor(
-                          ctx,
-                          color,
-                          (v) => setS(() => color = v),
-                        ),
-                        child: Container(
-                          width: 34,
-                          height: 34,
-                          decoration: BoxDecoration(
-                            color: Color(color),
-                            shape: BoxShape.circle,
-                            border: Border.all(
-                              color: Theme.of(ctx).colorScheme.outline,
-                              width: 2,
-                            ),
-                          ),
-                        ),
-                      ),
-                      const SizedBox(width: 6),
-                      IconButton(
-                        icon: const Icon(Icons.colorize),
-                        tooltip: l10n.toolbarItemEyedropper,
-                        onPressed: () => startTextCanvasEyedropper(
-                          _TextColorEyedropperTarget.body,
-                          ctx,
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 4),
-                  Wrap(
-                    spacing: 6,
-                    children: _textColorPalette
-                        .map(
-                          (c) => GestureDetector(
-                            onTap: () => setS(() => color = c),
-                            child: Container(
-                              width: 28,
-                              height: 28,
-                              decoration: BoxDecoration(
-                                color: Color(c),
-                                shape: BoxShape.circle,
-                                border: Border.all(
-                                  color: color == c
-                                      ? Theme.of(ctx).colorScheme.primary
-                                      : ThemeService
-                                            .activeColorScheme
-                                            .onSurfaceVariant,
-                                  width: color == c ? 2 : 1,
-                                ),
+                        ...fontService.fonts.map(
+                          (f) => DropdownMenuItem(
+                            value: fontService.familyNameOf(f),
+                            child: Text(
+                              f.displayName,
+                              style: TextStyle(
+                                fontFamily: fontService.familyNameOf(f),
                               ),
                             ),
                           ),
-                        )
-                        .toList(),
-                  ),
-                  const SizedBox(height: 12),
-                  Row(
-                    children: [
-                      Text(
-                        l10n.canvasTextLineHeight,
-                        style: const TextStyle(fontSize: 12),
-                      ),
-                      Expanded(
-                        child: SteppedSlider(
-                          value: lineHeight,
-                          min: 0.8,
-                          max: 3.0,
-                          step: 0.1,
-                          label: lineHeight.toStringAsFixed(1),
-                          onChanged: (v) => setS(() => lineHeight = v),
                         ),
-                      ),
-                      EditableSliderValue(
-                        text: lineHeight.toStringAsFixed(1),
-                        style: const TextStyle(fontSize: 12),
-                        value: lineHeight,
-                        min: 0.8,
-                        max: 3.0,
-                        isInt: false,
-                        onChanged: (v) => setS(() => lineHeight = v.toDouble()),
-                      ),
-                    ],
-                  ),
-                  Row(
-                    children: [
-                      Text(
-                        l10n.canvasTextLetterSpacing,
-                        style: const TextStyle(fontSize: 12),
-                      ),
-                      Expanded(
-                        child: SteppedSlider(
-                          value: letterSpacing,
-                          min: -2,
-                          max: 20,
-                          label: letterSpacing.toStringAsFixed(0),
-                          onChanged: (v) => setS(() => letterSpacing = v),
+                      ],
+                      onChanged: (v) => setS(() => fontFamily = v ?? 'Roboto'),
+                    ),
+                    const SizedBox(height: 8),
+                    LabeledSlider(
+                      label: l10n.brushSettingsSizeLabel,
+                      value: fontSize,
+                      min: 8,
+                      max: 200,
+                      sliderLabel: fontSize.round().toString(),
+                      valueText: '${fontSize.round()}',
+                      onChanged: (v) => setS(() => fontSize = v),
+                    ),
+                    Row(
+                      children: [
+                        FilterChip(
+                          label: Text(l10n.canvasTextBold),
+                          selected: isBold,
+                          onSelected: (v) => setS(() => isBold = v),
                         ),
-                      ),
-                      EditableSliderValue(
-                        text: letterSpacing.toStringAsFixed(0),
-                        style: const TextStyle(fontSize: 12),
-                        value: letterSpacing,
-                        min: -2,
-                        max: 20,
-                        onChanged: (v) =>
-                            setS(() => letterSpacing = v.toDouble()),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 8),
-                  Row(
-                    children: [
-                      Text(
-                        l10n.canvasTextAlign,
-                        style: const TextStyle(fontSize: 12),
-                      ),
-                      const SizedBox(width: 8),
-                      SegmentedButton<TextAlign>(
-                        segments: const [
-                          ButtonSegment(
-                            value: TextAlign.left,
-                            icon: Icon(Icons.format_align_left, size: 16),
+                        const SizedBox(width: 8),
+                        FilterChip(
+                          label: Text(l10n.canvasTextItalic),
+                          selected: isItalic,
+                          onSelected: (v) => setS(() => isItalic = v),
+                        ),
+                        const SizedBox(width: 8),
+                        // 縦書き・横書きのワンタップ切替
+                        ActionChip(
+                          avatar: Icon(
+                            direction == model.TextWritingDirection.vertical
+                                ? Icons.text_rotate_vertical
+                                : Icons.text_rotation_none,
+                            size: 16,
                           ),
-                          ButtonSegment(
-                            value: TextAlign.center,
-                            icon: Icon(Icons.format_align_center, size: 16),
+                          label: Text(
+                            direction == model.TextWritingDirection.vertical
+                                ? l10n.canvasTextVertical
+                                : l10n.canvasTextHorizontal,
                           ),
-                          ButtonSegment(
-                            value: TextAlign.right,
-                            icon: Icon(Icons.format_align_right, size: 16),
-                          ),
-                        ],
-                        selected: {textAlign},
-                        onSelectionChanged: (v) =>
-                            setS(() => textAlign = v.first),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 8),
-                  FilterChip(
-                    label: Text(l10n.canvasTextOutline),
-                    selected: outlineEnabled,
-                    onSelected: (v) => setS(() => outlineEnabled = v),
-                  ),
-                  if (outlineEnabled) ...[
-                    const SizedBox(height: 4),
+                          onPressed: () => setS(() {
+                            direction =
+                                direction == model.TextWritingDirection.vertical
+                                ? model.TextWritingDirection.horizontal
+                                : model.TextWritingDirection.vertical;
+                          }),
+                        ),
+                        // ルビ・縦中横・半角英数字回転の説明（ルビは縦書き・
+                        // 横書きどちらでも使えるため、書字方向によらず常に表示する）
+                        IconButton(
+                          icon: const Icon(Icons.help_outline, size: 18),
+                          tooltip: l10n.canvasTypesettingHelpTooltip,
+                          onPressed: () => _showVerticalTextHelp(context),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 8),
                     Row(
                       children: [
                         GestureDetector(
                           onTap: () => pickTextColor(
                             ctx,
-                            outlineColor,
-                            (v) => setS(() => outlineColor = v),
+                            color,
+                            (v) => setS(() => color = v),
                           ),
                           child: Container(
-                            width: 30,
-                            height: 30,
+                            width: 34,
+                            height: 34,
                             decoration: BoxDecoration(
-                              color: Color(outlineColor),
+                              color: Color(color),
                               shape: BoxShape.circle,
                               border: Border.all(
                                 color: Theme.of(ctx).colorScheme.outline,
@@ -3624,7 +3463,7 @@ class _CanvasScreenState extends State<CanvasScreen> {
                           icon: const Icon(Icons.colorize),
                           tooltip: l10n.toolbarItemEyedropper,
                           onPressed: () => startTextCanvasEyedropper(
-                            _TextColorEyedropperTarget.outline,
+                            _TextColorEyedropperTarget.body,
                             ctx,
                           ),
                         ),
@@ -3636,20 +3475,20 @@ class _CanvasScreenState extends State<CanvasScreen> {
                       children: _textColorPalette
                           .map(
                             (c) => GestureDetector(
-                              onTap: () => setS(() => outlineColor = c),
+                              onTap: () => setS(() => color = c),
                               child: Container(
-                                width: 22,
-                                height: 22,
+                                width: 28,
+                                height: 28,
                                 decoration: BoxDecoration(
                                   color: Color(c),
                                   shape: BoxShape.circle,
                                   border: Border.all(
-                                    color: outlineColor == c
+                                    color: color == c
                                         ? Theme.of(ctx).colorScheme.primary
                                         : ThemeService
                                               .activeColorScheme
                                               .onSurfaceVariant,
-                                    width: outlineColor == c ? 2 : 1,
+                                    width: color == c ? 2 : 1,
                                   ),
                                 ),
                               ),
@@ -3657,34 +3496,135 @@ class _CanvasScreenState extends State<CanvasScreen> {
                           )
                           .toList(),
                     ),
+                    const SizedBox(height: 12),
+                    LabeledSlider(
+                      label: l10n.canvasTextLineHeight,
+                      value: lineHeight,
+                      min: 0.8,
+                      max: 3.0,
+                      step: 0.1,
+                      isInt: false,
+                      sliderLabel: lineHeight.toStringAsFixed(1),
+                      valueText: lineHeight.toStringAsFixed(1),
+                      onChanged: (v) => setS(() => lineHeight = v),
+                    ),
+                    LabeledSlider(
+                      label: l10n.canvasTextLetterSpacing,
+                      value: letterSpacing,
+                      min: -2,
+                      max: 20,
+                      sliderLabel: letterSpacing.toStringAsFixed(0),
+                      valueText: letterSpacing.toStringAsFixed(0),
+                      onChanged: (v) => setS(() => letterSpacing = v),
+                    ),
+                    const SizedBox(height: 8),
                     Row(
                       children: [
                         Text(
-                          l10n.canvasOutlineWidthLabel,
+                          l10n.canvasTextAlign,
                           style: const TextStyle(fontSize: 12),
                         ),
-                        Expanded(
-                          child: SteppedSlider(
-                            value: outlineWidth,
-                            min: 0,
-                            max: 20,
-                            label: outlineWidth.round().toString(),
-                            onChanged: (v) => setS(() => outlineWidth = v),
-                          ),
-                        ),
-                        EditableSliderValue(
-                          text: '${outlineWidth.round()}',
-                          style: const TextStyle(fontSize: 12),
-                          value: outlineWidth,
-                          min: 0,
-                          max: 20,
-                          onChanged: (v) =>
-                              setS(() => outlineWidth = v.toDouble()),
+                        const SizedBox(width: 8),
+                        SegmentedButton<TextAlign>(
+                          segments: const [
+                            ButtonSegment(
+                              value: TextAlign.left,
+                              icon: Icon(Icons.format_align_left, size: 16),
+                            ),
+                            ButtonSegment(
+                              value: TextAlign.center,
+                              icon: Icon(Icons.format_align_center, size: 16),
+                            ),
+                            ButtonSegment(
+                              value: TextAlign.right,
+                              icon: Icon(Icons.format_align_right, size: 16),
+                            ),
+                          ],
+                          selected: {textAlign},
+                          onSelectionChanged: (v) =>
+                              setS(() => textAlign = v.first),
                         ),
                       ],
                     ),
+                    const SizedBox(height: 8),
+                    FilterChip(
+                      label: Text(l10n.canvasTextOutline),
+                      selected: outlineEnabled,
+                      onSelected: (v) => setS(() => outlineEnabled = v),
+                    ),
+                    if (outlineEnabled) ...[
+                      const SizedBox(height: 4),
+                      Row(
+                        children: [
+                          GestureDetector(
+                            onTap: () => pickTextColor(
+                              ctx,
+                              outlineColor,
+                              (v) => setS(() => outlineColor = v),
+                            ),
+                            child: Container(
+                              width: 30,
+                              height: 30,
+                              decoration: BoxDecoration(
+                                color: Color(outlineColor),
+                                shape: BoxShape.circle,
+                                border: Border.all(
+                                  color: Theme.of(ctx).colorScheme.outline,
+                                  width: 2,
+                                ),
+                              ),
+                            ),
+                          ),
+                          const SizedBox(width: 6),
+                          IconButton(
+                            icon: const Icon(Icons.colorize),
+                            tooltip: l10n.toolbarItemEyedropper,
+                            onPressed: () => startTextCanvasEyedropper(
+                              _TextColorEyedropperTarget.outline,
+                              ctx,
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 4),
+                      Wrap(
+                        spacing: 6,
+                        children: _textColorPalette
+                            .map(
+                              (c) => GestureDetector(
+                                onTap: () => setS(() => outlineColor = c),
+                                child: Container(
+                                  width: 22,
+                                  height: 22,
+                                  decoration: BoxDecoration(
+                                    color: Color(c),
+                                    shape: BoxShape.circle,
+                                    border: Border.all(
+                                      color: outlineColor == c
+                                          ? Theme.of(ctx).colorScheme.primary
+                                          : ThemeService
+                                                .activeColorScheme
+                                                .onSurfaceVariant,
+                                      width: outlineColor == c ? 2 : 1,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            )
+                            .toList(),
+                      ),
+                      LabeledSlider(
+                        label: l10n.canvasOutlineWidthLabel,
+                        value: outlineWidth,
+                        min: 0,
+                        max: 20,
+                        sliderLabel: outlineWidth.round().toString(),
+                        valueText: '${outlineWidth.round()}',
+                        onChanged: (v) => setS(() => outlineWidth = v),
+                      ),
+                    ],
                   ],
-                ],
+                ),
               ),
             ),
             actions: [

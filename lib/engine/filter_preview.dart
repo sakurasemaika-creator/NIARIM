@@ -8,6 +8,7 @@ import 'background_acclimation_engine.dart';
 import 'filter_engine.dart';
 import 'filter_selection.dart';
 import 'prism_filter_engine.dart';
+import 'watercolor_border_engine.dart';
 
 /// What a filter's preview is run with: the layer's pixels at the preview's
 /// own size, and how that size relates to the canvas ([scale] is preview
@@ -238,6 +239,18 @@ Uint8List runFilterPreview(FilterPreviewJob job) {
       );
     case FilterKind.sphereShading:
       return applySphereShadingFilter(data, width, height, filter, mask);
+    case FilterKind.watercolorBorder:
+      // The rim's reach and softness are in canvas pixels.
+      return applyWatercolorBorder(
+        data,
+        width,
+        height,
+        range: filter.watercolorBorderRange * scale,
+        blur: filter.watercolorBorderBlur * scale,
+        opacityEffect: filter.watercolorBorderOpacity,
+        darkenEffect: filter.watercolorBorderDarken,
+        colorEdges: filter.watercolorBorderColorEdges,
+      );
     case FilterKind.chromaticAberration:
       final (dx, dy, radial) = filter.chromaticDisplacement;
       return engine.applyChromaticShift(

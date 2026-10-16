@@ -10,11 +10,13 @@ class ResolvedBrushPressure {
   final int mixingRate;
   final int mixingBrightnessCorrection;
 
-  /// 色延び・水分量・絵具量・縁の濃さ（0〜100）。
+  /// 色延び・水分量・絵具量・にじみ・むら・境界のぼかし（0〜100）。
   final int mixingStretch;
   final int mixingWater;
   final int mixingPigment;
-  final int mixingEdge;
+  final int mixingBleed;
+  final int mixingTexture;
+  final int mixingSoftEdge;
 
   const ResolvedBrushPressure({
     required this.sizeScale,
@@ -28,7 +30,9 @@ class ResolvedBrushPressure {
     this.mixingStretch = kDefaultMixingStretch,
     this.mixingWater = kDefaultMixingWater,
     this.mixingPigment = kDefaultMixingPigment,
-    this.mixingEdge = kDefaultMixingEdge,
+    this.mixingBleed = kDefaultMixingBleed,
+    this.mixingTexture = kDefaultMixingTexture,
+    this.mixingSoftEdge = kDefaultMixingSoftEdge,
   });
 
   @override
@@ -45,7 +49,9 @@ class ResolvedBrushPressure {
       mixingStretch == other.mixingStretch &&
       mixingWater == other.mixingWater &&
       mixingPigment == other.mixingPigment &&
-      mixingEdge == other.mixingEdge;
+      mixingBleed == other.mixingBleed &&
+      mixingTexture == other.mixingTexture &&
+      mixingSoftEdge == other.mixingSoftEdge;
 
   @override
   int get hashCode => Object.hash(
@@ -60,7 +66,9 @@ class ResolvedBrushPressure {
     mixingStretch,
     mixingWater,
     mixingPigment,
-    mixingEdge,
+    mixingBleed,
+    mixingTexture,
+    mixingSoftEdge,
   );
 }
 
@@ -95,7 +103,9 @@ ResolvedBrushPressure resolveBrushPressure({
       mixingStretch: off.mixing.stretch.clamp(0, 100).toInt(),
       mixingWater: off.mixing.water.clamp(0, 100).toInt(),
       mixingPigment: off.mixing.pigment.clamp(0, 100).toInt(),
-      mixingEdge: off.mixing.edge.clamp(0, 100).toInt(),
+      mixingBleed: off.mixing.bleed.clamp(0, 100).toInt(),
+      mixingTexture: off.mixing.texture.clamp(0, 100).toInt(),
+      mixingSoftEdge: off.mixing.softEdge.clamp(0, 100).toInt(),
     );
   }
 
@@ -121,6 +131,8 @@ ResolvedBrushPressure resolveBrushPressure({
     mixingStretch: on.mixing.stretch.clamp(0, 100).toInt(),
     mixingWater: on.mixing.water.clamp(0, 100).toInt(),
     mixingPigment: on.mixing.pigment.clamp(0, 100).toInt(),
-    mixingEdge: on.mixing.edge.clamp(0, 100).toInt(),
+    mixingBleed: on.mixing.bleed.clamp(0, 100).toInt(),
+    mixingTexture: on.mixing.texture.clamp(0, 100).toInt(),
+    mixingSoftEdge: on.mixing.softEdge.clamp(0, 100).toInt(),
   );
 }

@@ -13,15 +13,16 @@ import 'package:niarim/models/brush.dart';
 
 Brush _watercolor({
   double size = 56,
+  int opacity = 100,
   int rate = 30,
   int water = 50,
   int pigment = 60,
-  int edge = 50,
+  int bleed = 50,
 }) => Brush(
   id: 'watercolor-review',
   name: 'Watercolor Review',
   size: size,
-  opacity: 100,
+  opacity: opacity,
   spacing: 4,
   stabilization: false,
   stabilizationStrength: 0,
@@ -35,7 +36,7 @@ Brush _watercolor({
       rate: rate,
       water: water,
       pigment: pigment,
-      edge: edge,
+      bleed: bleed,
     ),
   ),
   fadeMode: FadeMode.off,
@@ -124,7 +125,7 @@ void _write(String name, img.Image image) {
 void main() {
   test('washes like the reference', () {
     const width = 720;
-    const height = 300;
+    const height = 580;
     final tiles = TileManager(canvasWidth: width, canvasHeight: height);
     final engine = DrawingEngine(tileManager: tiles);
     const red = ui.Color(0xFFE8344A);
@@ -134,7 +135,12 @@ void main() {
     _paint(engine, _scribble(100, 80, 70, 55, 1), red, _watercolor());
     _paint(engine, _scribble(280, 80, 70, 55, 2), pink, _watercolor(water: 30));
     _paint(engine, _scribble(460, 80, 70, 55, 3), mint, _watercolor(water: 70));
-    _paint(engine, _scribble(630, 80, 65, 55, 4), sky, _watercolor(edge: 90));
+    _paint(
+      engine,
+      _scribble(630, 80, 65, 55, 4),
+      sky,
+      _watercolor(pigment: 85),
+    );
     // A second wash over the first, and two wet colours run together.
     _paint(engine, _scribble(110, 220, 75, 55, 5), red, _watercolor());
     _paint(engine, _scribble(150, 230, 55, 40, 6), red, _watercolor());
@@ -147,6 +153,39 @@ void main() {
       _watercolor(pigment: 90),
     );
     _paint(engine, _scribble(600, 230, 60, 45, 10), sky, _watercolor(rate: 0));
+    // にじみ 0, 30, 70 and 100.
+    _paint(engine, _scribble(100, 360, 60, 45, 11), sky, _watercolor(bleed: 0));
+    _paint(
+      engine,
+      _scribble(280, 360, 60, 45, 12),
+      sky,
+      _watercolor(bleed: 30),
+    );
+    _paint(
+      engine,
+      _scribble(460, 360, 60, 45, 13),
+      sky,
+      _watercolor(bleed: 70),
+    );
+    _paint(
+      engine,
+      _scribble(630, 360, 60, 45, 14),
+      sky,
+      _watercolor(bleed: 100),
+    );
+    // A flat area laid in four overlapping strokes: at full opacity they
+    // join into one even wash; at 60% each overlap is deeper.
+    for (final (left, opacity) in [(40.0, 100), (400.0, 60)]) {
+      for (var row = 0; row < 4; row++) {
+        final y = 470.0 + row * 26;
+        _paint(
+          engine,
+          [for (var x = left; x <= left + 280; x += 6) ui.Offset(x, y)],
+          mint,
+          _watercolor(size: 40, rate: 0, opacity: opacity),
+        );
+      }
+    }
     _write('watercolor_washes.png', _onPaper(tiles, width, height));
   });
 }

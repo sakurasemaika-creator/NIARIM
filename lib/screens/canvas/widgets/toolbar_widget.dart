@@ -6,11 +6,10 @@ import '../../../models/toolbar_item.dart';
 import '../../../services/settings_service.dart';
 import '../../../services/theme_service.dart';
 import '../../../services/tone_service.dart';
-import '../../../widgets/editable_slider_value.dart';
 import '../../../widgets/first_use_tooltip.dart';
 import '../../../widgets/help_button.dart';
+import '../../../widgets/labeled_slider.dart';
 import '../../../widgets/responsive.dart';
-import '../../../widgets/stepped_slider.dart';
 import '../canvas_screen.dart';
 import 'canvas_icon_button.dart';
 import '../../../config/font_fallback.dart';
@@ -566,33 +565,14 @@ class ToolbarWidget extends StatelessWidget {
     required int divisions,
     required ValueChanged<double> onChanged,
   }) {
-    return Row(
-      children: [
-        SizedBox(
-          width: 72,
-          child: Text(label, style: const TextStyle(fontSize: 12)),
-        ),
-        Expanded(
-          child: SteppedSlider(
-            value: value,
-            min: min,
-            max: max,
-            divisions: divisions,
-            onChanged: onChanged,
-          ),
-        ),
-        SizedBox(
-          width: 28,
-          child: EditableSliderValue(
-            text: value.round().toString(),
-            value: value,
-            min: min,
-            max: max,
-            title: label,
-            onChanged: (v) => onChanged(v.toDouble()),
-          ),
-        ),
-      ],
+    return LabeledSlider(
+      label: label,
+      value: value,
+      min: min,
+      max: max,
+      divisions: divisions,
+      onChanged: onChanged,
+      valueText: value.round().toString(),
     );
   }
 

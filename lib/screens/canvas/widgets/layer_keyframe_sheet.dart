@@ -4,8 +4,7 @@ import '../../../engine/layer_keyframe_engine.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../../models/layer.dart' as model;
 import '../../../models/layer_keyframe.dart';
-import '../../../widgets/editable_slider_value.dart';
-import '../../../widgets/stepped_slider.dart';
+import '../../../widgets/labeled_slider.dart';
 import '../../../config/font_fallback.dart';
 
 /// イージング種別の表示名（一覧の行・編集シートの選択チップの両方で使う）。
@@ -452,39 +451,17 @@ class _LayerKeyframeEditSheetState extends State<_LayerKeyframeEditSheet> {
     bool isInt = false,
     double step = 1,
   }) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 4),
-      child: Row(
-        children: [
-          SizedBox(
-            width: 56,
-            child: Text(label, style: const TextStyle(fontSize: 12)),
-          ),
-          Expanded(
-            child: SteppedSlider(
-              value: value.clamp(min, max),
-              min: min,
-              max: max,
-              divisions: divisions > 0 ? divisions : null,
-              step: step,
-              onChanged: onChanged,
-            ),
-          ),
-          SizedBox(
-            width: 56,
-            child: EditableSliderValue(
-              text: valueText,
-              style: const TextStyle(fontSize: 11),
-              textAlign: TextAlign.right,
-              value: value,
-              min: min,
-              max: max,
-              isInt: isInt,
-              onChanged: (v) => onChanged(v.toDouble()),
-            ),
-          ),
-        ],
-      ),
+    return LabeledSlider(
+      label: label,
+      value: value,
+      min: min,
+      max: max,
+      divisions: divisions > 0 ? divisions : null,
+      step: step,
+      onChanged: onChanged,
+      valueText: valueText,
+      valueStyle: const TextStyle(fontSize: 11),
+      isInt: isInt,
     );
   }
 }
