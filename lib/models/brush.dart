@@ -538,16 +538,35 @@ class FixedBrushSetting {
 class PressureMixingOnSetting {
   final bool enabled;
   final BrushMixingMode mode;
+
+  /// 混色度合い（0〜100）：筆圧が弱い時・強い時。
   final int weakRate;
   final int strongRate;
-  /// 1 is darker, 3 is neutral, and 5 is brighter.
+
+  /// 1 is darker, 3 is neutral, and 5 is brighter (油彩風).
   final int brightnessCorrection;
+
+  /// 色延び（0〜100、油彩風）：拾った色をどこまで引きずるか。
+  final int stretch;
+
+  /// 水分量（0〜100、水彩風）：多いほど薄く、にじみが広く、むらが出る。
+  final int water;
+
+  /// 絵具量（0〜100、水彩風）：多いほど色が濃い。
+  final int pigment;
+
+  /// 縁の濃さ（0〜100、水彩風）：乾いた縁に溜まる色の濃さ。
+  final int edge;
   const PressureMixingOnSetting({
     required this.enabled,
     required this.mode,
     required this.weakRate,
     required this.strongRate,
     this.brightnessCorrection = 3,
+    this.stretch = kDefaultMixingStretch,
+    this.water = kDefaultMixingWater,
+    this.pigment = kDefaultMixingPigment,
+    this.edge = kDefaultMixingEdge,
   });
   PressureMixingOnSetting copyWith({
     bool? enabled,
@@ -555,12 +574,20 @@ class PressureMixingOnSetting {
     int? weakRate,
     int? strongRate,
     int? brightnessCorrection,
+    int? stretch,
+    int? water,
+    int? pigment,
+    int? edge,
   }) => PressureMixingOnSetting(
     enabled: enabled ?? this.enabled,
     mode: mode ?? this.mode,
     weakRate: weakRate ?? this.weakRate,
     strongRate: strongRate ?? this.strongRate,
     brightnessCorrection: brightnessCorrection ?? this.brightnessCorrection,
+    stretch: stretch ?? this.stretch,
+    water: water ?? this.water,
+    pigment: pigment ?? this.pigment,
+    edge: edge ?? this.edge,
   );
   Map<String, dynamic> toJson() => {
     'enabled': enabled,
@@ -568,6 +595,10 @@ class PressureMixingOnSetting {
     'weakRate': weakRate,
     'strongRate': strongRate,
     'brightnessCorrection': brightnessCorrection,
+    'stretch': stretch,
+    'water': water,
+    'pigment': pigment,
+    'edge': edge,
   };
   factory PressureMixingOnSetting.fromJson(Map<String, dynamic> j) =>
       PressureMixingOnSetting(
@@ -579,6 +610,10 @@ class PressureMixingOnSetting {
             ((j['brightnessCorrection'] as num?)?.toInt() ?? 3)
                 .clamp(1, 5)
                 .toInt(),
+        stretch: _percent(j['stretch'], kDefaultMixingStretch),
+        water: _percent(j['water'], kDefaultMixingWater),
+        pigment: _percent(j['pigment'], kDefaultMixingPigment),
+        edge: _percent(j['edge'], kDefaultMixingEdge),
       );
   @override
   bool operator ==(Object other) =>
@@ -587,7 +622,11 @@ class PressureMixingOnSetting {
       mode == other.mode &&
       weakRate == other.weakRate &&
       strongRate == other.strongRate &&
-      brightnessCorrection == other.brightnessCorrection;
+      brightnessCorrection == other.brightnessCorrection &&
+      stretch == other.stretch &&
+      water == other.water &&
+      pigment == other.pigment &&
+      edge == other.edge;
   @override
   int get hashCode => Object.hash(
     enabled,
@@ -595,36 +634,72 @@ class PressureMixingOnSetting {
     weakRate,
     strongRate,
     brightnessCorrection,
+    stretch,
+    water,
+    pigment,
+    edge,
   );
 }
 
 class PressureMixingOffSetting {
   final bool enabled;
   final BrushMixingMode mode;
+
+  /// 混色度合い（0〜100）。
   final int rate;
+
+  /// See [PressureMixingOnSetting.brightnessCorrection].
   final int brightnessCorrection;
+
+  /// See [PressureMixingOnSetting.stretch].
+  final int stretch;
+
+  /// See [PressureMixingOnSetting.water].
+  final int water;
+
+  /// See [PressureMixingOnSetting.pigment].
+  final int pigment;
+
+  /// See [PressureMixingOnSetting.edge].
+  final int edge;
   const PressureMixingOffSetting({
     required this.enabled,
     required this.mode,
     required this.rate,
     this.brightnessCorrection = 3,
+    this.stretch = kDefaultMixingStretch,
+    this.water = kDefaultMixingWater,
+    this.pigment = kDefaultMixingPigment,
+    this.edge = kDefaultMixingEdge,
   });
   PressureMixingOffSetting copyWith({
     bool? enabled,
     BrushMixingMode? mode,
     int? rate,
     int? brightnessCorrection,
+    int? stretch,
+    int? water,
+    int? pigment,
+    int? edge,
   }) => PressureMixingOffSetting(
     enabled: enabled ?? this.enabled,
     mode: mode ?? this.mode,
     rate: rate ?? this.rate,
     brightnessCorrection: brightnessCorrection ?? this.brightnessCorrection,
+    stretch: stretch ?? this.stretch,
+    water: water ?? this.water,
+    pigment: pigment ?? this.pigment,
+    edge: edge ?? this.edge,
   );
   Map<String, dynamic> toJson() => {
     'enabled': enabled,
     'mode': mode.name,
     'rate': rate,
     'brightnessCorrection': brightnessCorrection,
+    'stretch': stretch,
+    'water': water,
+    'pigment': pigment,
+    'edge': edge,
   };
   factory PressureMixingOffSetting.fromJson(Map<String, dynamic> j) =>
       PressureMixingOffSetting(
@@ -635,6 +710,10 @@ class PressureMixingOffSetting {
             ((j['brightnessCorrection'] as num?)?.toInt() ?? 3)
                 .clamp(1, 5)
                 .toInt(),
+        stretch: _percent(j['stretch'], kDefaultMixingStretch),
+        water: _percent(j['water'], kDefaultMixingWater),
+        pigment: _percent(j['pigment'], kDefaultMixingPigment),
+        edge: _percent(j['edge'], kDefaultMixingEdge),
       );
   @override
   bool operator ==(Object other) =>
@@ -642,13 +721,21 @@ class PressureMixingOffSetting {
       enabled == other.enabled &&
       mode == other.mode &&
       rate == other.rate &&
-      brightnessCorrection == other.brightnessCorrection;
+      brightnessCorrection == other.brightnessCorrection &&
+      stretch == other.stretch &&
+      water == other.water &&
+      pigment == other.pigment &&
+      edge == other.edge;
   @override
   int get hashCode => Object.hash(
     enabled,
     mode,
     rate,
     brightnessCorrection,
+    stretch,
+    water,
+    pigment,
+    edge,
   );
 }
 
@@ -672,7 +759,7 @@ class BrushPressureOnSettings {
     edgeJitter: PressureRangeSetting(enabled: false, weak: 0, strong: 0),
     mixing: PressureMixingOnSetting(
       enabled: false,
-      mode: BrushMixingMode.perceptual,
+      mode: BrushMixingMode.oil,
       weakRate: 0,
       strongRate: 0,
     ),
@@ -737,7 +824,7 @@ class BrushPressureOffSettings {
     edgeJitter: FixedBrushSetting(enabled: false, value: 0),
     mixing: PressureMixingOffSetting(
       enabled: false,
-      mode: BrushMixingMode.perceptual,
+      mode: BrushMixingMode.oil,
       rate: 0,
     ),
   );
@@ -799,14 +886,38 @@ class FadeEndpointSettings {
       );
 }
 
+/// How a brush mixes with the paint already on the layer.
 enum BrushMixingMode {
+  /// デジタル：混ぜずにそのまま塗る。
   off,
-  perceptual,
-  bleed,
+
+  /// 油彩風混色：下の色と絵の具のように混ぜ、拾った色を引きずって伸ばす。
+  oil,
+
+  /// 水彩風混色：透明な絵の具を重ね、縁に色が溜まり紙の目が出る。
+  watercolor,
 }
 
-BrushMixingMode _parseBrushMixingMode(Object? value) =>
-    BrushMixingMode.values.firstWhere(
-      (mode) => mode.name == value,
-      orElse: () => BrushMixingMode.perceptual,
-    );
+/// Saved values from before the modes were 油彩風/水彩風: 'perceptual'
+/// (アナログ風) and the older 'simple' are oil-style, 'bleed' (にじみ, which
+/// was replaced by 水彩風) is watercolour-style.
+BrushMixingMode _parseBrushMixingMode(Object? value) => switch (value) {
+  'off' => BrushMixingMode.off,
+  'watercolor' || 'bleed' => BrushMixingMode.watercolor,
+  _ => BrushMixingMode.oil,
+};
+
+int _percent(Object? value, int fallback) =>
+    ((value as num?)?.toInt() ?? fallback).clamp(0, 100).toInt();
+
+/// 色延びの初期値（油彩風）。
+const int kDefaultMixingStretch = 30;
+
+/// 水分量の初期値（水彩風）。
+const int kDefaultMixingWater = 50;
+
+/// 絵具量の初期値（水彩風）。
+const int kDefaultMixingPigment = 60;
+
+/// 縁の濃さの初期値（水彩風）。
+const int kDefaultMixingEdge = 50;

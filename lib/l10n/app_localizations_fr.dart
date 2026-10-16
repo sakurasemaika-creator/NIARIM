@@ -1370,7 +1370,7 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get helpColorMixingDesc =>
-      'En peignant avec un pinceau, mélange la couleur déjà présente sous le pinceau avec la couleur que vous êtes sur le point d\'appliquer. Utilisez-le lorsque vous voulez que de nouvelles couleurs se fondent dans les couleurs existantes, comme à l\'aquarelle ou à l\'huile.';
+      'En peignant avec un pinceau, mélange la couleur déjà présente sous le pinceau avec la couleur que vous êtes sur le point d\'appliquer. Dans le mode de mélange des réglages du pinceau, choisissez Numérique pour peindre sans mélanger, Mélange façon huile pour mélanger comme de la peinture et étirer la couleur ramassée, ou Mélange façon aquarelle pour superposer des lavis transparents dont la couleur s\'accumule sur le bord en séchant.';
 
   @override
   String get helpPressureCurveTitle => 'Courbe de pression';
@@ -3170,16 +3170,40 @@ class AppLocalizationsFr extends AppLocalizations {
   String get brushSettingsMixingTitle => 'Mode de mélange';
 
   @override
-  String get brushSettingsMixingOff => 'OFF';
+  String get brushSettingsMixingOff => 'Numérique';
 
   @override
-  String get brushSettingsMixingAnalog => 'Style analogique';
+  String get brushSettingsMixingOil => 'Mélange façon huile';
 
   @override
-  String get brushSettingsMixingBleed => 'Bavure';
+  String get brushSettingsMixingWatercolor => 'Mélange façon aquarelle';
 
   @override
-  String get brushSettingsMixingBrightnessCorrection => 'Correction de luminosité';
+  String get brushSettingsMixingBrightnessCorrection =>
+      'Correction de luminosité';
+
+  @override
+  String get brushSettingsMixingAmount => 'Degré de mélange';
+
+  @override
+  String get brushSettingsMixingStretch => 'Étirement de la couleur';
+
+  @override
+  String get brushSettingsMixingWater => 'Quantité d\'eau';
+
+  @override
+  String get brushSettingsMixingPigment => 'Quantité de pigment';
+
+  @override
+  String get brushSettingsMixingEdge => 'Intensité du bord';
+
+  @override
+  String get brushSettingsMixingOilHint =>
+      'Se mélange aux couleurs du dessous comme de la peinture et étire la couleur ramassée le long du trait.';
+
+  @override
+  String get brushSettingsMixingWatercolorHint =>
+      'Pose des lavis transparents. Quand vous levez le stylet, le lavis sèche et la couleur s\'accumule sur son bord.';
 
   @override
   String get projectDetailNotFoundTitle => 'Projet';

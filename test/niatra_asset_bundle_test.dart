@@ -62,7 +62,7 @@ void main() {
             ),
             mixing: PressureMixingOnSetting(
               enabled: true,
-              mode: BrushMixingMode.bleed,
+              mode: BrushMixingMode.watercolor,
               weakRate: 60,
               strongRate: 60,
             ),
@@ -72,7 +72,7 @@ void main() {
             edgeJitter: FixedBrushSetting(enabled: true, value: 77),
             mixing: PressureMixingOffSetting(
               enabled: true,
-              mode: BrushMixingMode.bleed,
+              mode: BrushMixingMode.watercolor,
               rate: 60,
             ),
           ),

@@ -124,45 +124,53 @@ void main() {
     }
   });
 
-  test('色伸び：青下地を赤ブラシで連続ストロークすると開始側ほど下地色を拾い後半で選択色へ寄る', () async {
-    final tm = TileManager(canvasWidth: 120, canvasHeight: 64);
-    final tile = tm.getOrCreateTile('bleed', 0, 0);
-    for (var y = 0; y < 64; y++) {
-      for (var x = 0; x < 120; x++) {
-        tm.setPixel(tile, x, y, 20, 60, 220, 255);
+  test('色延び：青い絵の具から何もない所へ赤ブラシで引くと、拾った青を色延びの分だけ運ぶ', () async {
+    Future<(List<int>, List<int>)> drag(int stretch) async {
+      final tm = TileManager(canvasWidth: 120, canvasHeight: 64);
+      final tile = tm.getOrCreateTile('stretch', 0, 0);
+      for (var y = 0; y < 64; y++) {
+        for (var x = 0; x < 40; x++) {
+          tm.setPixel(tile, x, y, 20, 60, 220, 255);
+        }
       }
+      tm.markDirty('stretch', 0, 0);
+      final e = DrawingEngine(tileManager: tm)
+        ..currentBrush = _brush(
+          size: 10,
+          opacity: 100,
+          mixingMode: BrushMixingMode.oil,
+          mixingRate: 80,
+          mixingStretch: stretch,
+        )
+        ..currentColor = const ui.Color(0xFFDC2814);
+      e.beginStroke(const StrokePoint(x: 12, y: 32), 'stretch');
+      for (var x = 16.0; x <= 108; x += 4) {
+        e.continueStroke(StrokePoint(x: x, y: 32), 'stretch');
+      }
+      e.endStroke();
+      final image = await tm.compositeLayerToImage('stretch');
+      await _save(image, '${out.path}/brush_oil_stretch_$stretch.png');
+      final d = await _rgba(image);
+      final result = (_pixel(d, 120, 52, 32), _pixel(d, 120, 104, 32));
+      image.dispose();
+      tm.dispose();
+      return result;
     }
-    tm.markDirty('bleed', 0, 0);
-    final e = DrawingEngine(tileManager: tm)
-      ..currentBrush = _brush(
-        size: 10,
-        opacity: 100,
-        mixingMode: BrushMixingMode.bleed,
-        mixingRate: 80,
-      )
-      ..currentColor = const ui.Color(0xFFDC2814);
-    e.beginStroke(const StrokePoint(x: 12, y: 32), 'bleed');
-    for (var x = 16.0; x <= 108; x += 4) {
-      e.continueStroke(StrokePoint(x: x, y: 32), 'bleed');
-    }
-    e.endStroke();
-    final image = await tm.compositeLayerToImage('bleed');
-    await _save(image, '${out.path}/brush_bleed_continuous.png');
-    final d = await _rgba(image);
-    final early = _pixel(d, 120, 20, 32);
-    final late = _pixel(d, 120, 100, 32);
-    expect(
-      late[0],
-      greaterThan(early[0]),
-      reason: 'later stroke should move toward selected red',
-    );
-    expect(
-      late[2],
-      lessThan(early[2]),
-      reason: 'later stroke should carry less picked-up blue',
-    );
-    image.dispose();
-    tm.dispose();
+
+    final (noneNear, noneFar) = await drag(0);
+    final (someNear, someFar) = await drag(40);
+    final (longNear, longFar) = await drag(100);
+    // 色延び0：青を出たらすぐ選択色の赤。
+    expect(noneNear[0], greaterThan(200));
+    expect(noneNear[2], lessThan(40));
+    // 色延びがあると、青を出た直後は拾った青が混ざって紫寄り。
+    expect(someNear[2], greaterThan(noneNear[2] + 30));
+    expect(longNear[2], greaterThan(someNear[2]));
+    // 遠くでは新しい絵の具が戻って赤へ近づく（色延びが長いほどゆっくり）。
+    expect(someFar[0], greaterThan(someNear[0]));
+    expect(someFar[2], lessThan(someNear[2]));
+    expect(longFar[2], greaterThanOrEqualTo(someFar[2]));
+    expect(noneFar[0], greaterThan(200));
   });
 
   test('テキスト：横書き/縦書き/縁取り/pixelModeを実ラスタライズして形状とalphaを確認', () async {
@@ -242,6 +250,7 @@ Brush _brush({
   ),
   BrushMixingMode mixingMode = BrushMixingMode.off,
   int mixingRate = 0,
+  int mixingStretch = 0,
 }) => Brush(
   id: 'audit',
   name: 'audit',
@@ -257,19 +266,21 @@ Brush _brush({
     mixing: PressureMixingOnSetting(
       enabled: mixingMode != BrushMixingMode.off,
       mode: mixingMode == BrushMixingMode.off
-          ? BrushMixingMode.simple
+          ? BrushMixingMode.oil
           : mixingMode,
       weakRate: mixingRate,
       strongRate: mixingRate,
+      stretch: mixingStretch,
     ),
   ),
   pressureOff: BrushPressureOffSettings.defaults.copyWith(
     mixing: PressureMixingOffSetting(
       enabled: mixingMode != BrushMixingMode.off,
       mode: mixingMode == BrushMixingMode.off
-          ? BrushMixingMode.simple
+          ? BrushMixingMode.oil
           : mixingMode,
       rate: mixingRate,
+      stretch: mixingStretch,
     ),
   ),
   fadeMode: FadeMode.off,

@@ -24,7 +24,7 @@ Brush _profiledBrush(String id) => Brush(
     edgeJitter: const PressureRangeSetting(enabled: true, weak: 64, strong: 8),
     mixing: const PressureMixingOnSetting(
       enabled: true,
-      mode: BrushMixingMode.bleed,
+      mode: BrushMixingMode.watercolor,
       weakRate: 79,
       strongRate: 17,
     ),
@@ -34,7 +34,7 @@ Brush _profiledBrush(String id) => Brush(
     edgeJitter: const FixedBrushSetting(enabled: true, value: 34),
     mixing: const PressureMixingOffSetting(
       enabled: true,
-      mode: BrushMixingMode.simple,
+      mode: BrushMixingMode.oil,
       rate: 45,
     ),
   ),

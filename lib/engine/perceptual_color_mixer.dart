@@ -4,8 +4,8 @@ import 'dart:ui' as ui;
 
 import 'spectral_pigment_data.dart';
 
-/// Mixes two opaque paint colours the way paint does: around the hue wheel
-/// instead of through its grey centre, keeping the colours vivid.
+/// Mixes two opaque paint colours the way paint mixes: around the painter's
+/// colour wheel instead of through its grey centre, keeping them vivid.
 ///
 /// [belowWeight] is the contribution of the colour already on the canvas:
 /// 0 produces [selected], 1 produces [below]. See [AnalogPaintMixer] for the
@@ -32,18 +32,20 @@ int _channel8(double value) => (value.clamp(0.0, 1.0) * 255).round().toInt();
 /// Paint-like mixing of one selected colour into the colours below it.
 ///
 /// Each pair of colours is joined by a path through OKLab:
-/// - The hue follows a Kubelka–Munk pigment mix of the two colours'
-///   reflectance spectra (spectral.js), so yellow and blue meet in green,
-///   red and blue in purple, red and yellow in orange — the way paint
-///   turns, whatever the exact shades — instead of taking whichever arc of
-///   the hue wheel happens to be shorter.
-/// - The chroma is kept up to the straight interpolation of the two
-///   colours' chroma (pigment mixing alone greys out the middle), but at
-///   most three times the pigment mix's own: where that is nearly grey its
-///   hue is unreliable, so opposite colours still mix to a soft neutral, as
-///   real paint does, and nearby colours never jump to another hue.
-/// - The lightness is halfway between the pigment mix (which darkens) and
-///   the straight interpolation; the brightness correction moves it.
+/// - The hue turns the short way round the painter's (red–yellow–blue)
+///   colour wheel, so red and blue make purple, yellow and blue green, red
+///   and yellow orange — whatever the exact shades: a warm red and a blue
+///   still make purple, not the brown a physical pigment mix gives. The more
+///   vivid colour leads, so mixing with white, grey or black only tints or
+///   shades.
+/// - The chroma is the straight interpolation of the two colours' chroma,
+///   so the middle stays as vivid as the ends. Colours nearly opposite on
+///   that wheel (red and green, blue and orange) instead mix towards a soft
+///   neutral, as paint does.
+/// - The lightness is halfway between a Kubelka–Munk pigment mix of the two
+///   colours' reflectance spectra (spectral.js), which darkens as paint
+///   does, and the straight interpolation; the brightness correction moves
+///   it.
 /// - A colour sRGB cannot show that vividly at that lightness first moves
 ///   towards the lightness where its hue is most vivid — up to 0.08 darker,
 ///   but never lighter than the straight interpolation of the two colours'
@@ -51,8 +53,7 @@ int _channel8(double value) => (value.clamp(0.0, 1.0) * 255).round().toInt();
 ///   chroma.
 ///
 /// The weight is measured along the path's length in OKLab, so 10% mixing
-/// changes the colour by a tenth of the way however unevenly the pigments
-/// tint each other (a little yellow changes blue paint a lot).
+/// changes the colour by a tenth of the way.
 ///
 /// Paths are cached per colour below, so painting over a flat area costs one
 /// lookup per pixel.
@@ -77,17 +78,24 @@ class AnalogPaintMixer {
 
   /// The colour [below] (0xRRGGBB) becomes when the paint is mixed into it
   /// with [belowWeight] (0 = the paint, 1 = [below]), as 0xRRGGBB.
-  int mix(int below, double belowWeight) {
+  int mix(int below, double belowWeight) =>
+      mixNear(below, belowWeight, selected);
+
+  /// [mix] for paint of colour [paint], a few levels from [selected]: the
+  /// difference is added back in linear light, in full where the result is
+  /// the paint and not at all where it is the colour below. Lets paint whose
+  /// colour keeps drifting (油彩風's picked-up colour) share one mixer.
+  int mixNear(int below, double belowWeight, int paint) {
     final colour = below & 0xFFFFFF;
+    final own = paint & 0xFFFFFF;
     final weight = belowWeight.isNaN
         ? 0.0
         : belowWeight.clamp(0.0, 1.0).toDouble();
-    if (weight <= 0.0 || colour == selected) return selected;
+    if (weight <= 0.0 || colour == own) return own;
     if (weight >= 1.0) return colour;
     // Colours one level apart share a path (a smooth gradient below would
     // otherwise need a new one for nearly every pixel); the level left over
-    // is added back in linear light, in full where the result is the colour
-    // below and not at all where it is the paint.
+    // is added back the same way.
     final shared = colour & 0xFEFEFE;
     var path = _paths[shared];
     if (path == null) {
@@ -95,22 +103,18 @@ class AnalogPaintMixer {
       path = _paths[shared] = _pathTo(_Paint(shared));
     }
     _pointOn(path, weight);
-    if (shared != colour) {
-      final lut = _linearLut;
-      if (colour & 0x010000 != 0) {
-        _scratch[0] += weight * (lut[colour >> 16] - lut[shared >> 16 & 0xFF]);
-      }
-      if (colour & 0x000100 != 0) {
-        _scratch[1] +=
-            weight * (lut[colour >> 8 & 0xFF] - lut[shared >> 8 & 0xFF]);
-      }
-      if (colour & 0x000001 != 0) {
-        _scratch[2] += weight * (lut[colour & 0xFF] - lut[shared & 0xFF]);
-      }
-    }
+    if (shared != colour) _addDifference(colour, shared, weight);
+    if (own != selected) _addDifference(own, selected, 1 - weight);
     return (_encode(_scratch[0]) << 16) |
         (_encode(_scratch[1]) << 8) |
         _encode(_scratch[2]);
+  }
+
+  static void _addDifference(int colour, int near, double share) {
+    final lut = _linearLut;
+    _scratch[0] += share * (lut[colour >> 16 & 0xFF] - lut[near >> 16 & 0xFF]);
+    _scratch[1] += share * (lut[colour >> 8 & 0xFF] - lut[near >> 8 & 0xFF]);
+    _scratch[2] += share * (lut[colour & 0xFF] - lut[near & 0xFF]);
   }
 
   /// Nodes (L, C, h, a, b, distance from the paint as a fraction of the
@@ -197,21 +201,36 @@ class AnalogPaintMixer {
       m[6] * x + m[7] * y + m[8] * z,
     );
     final mixedL = _scratch[0];
-    final mixedA = _scratch[1];
-    final mixedB = _scratch[2];
-    final mixedC = math.sqrt(mixedA * mixedA + mixedB * mixedB);
-    final hue = math.atan2(mixedB, mixedA);
-
     final straightL = paint.l + (below.l - paint.l) * t;
     final lightness = ((mixedL + straightL) / 2).clamp(0.0, 1.0).toDouble();
-    final straightC = paint.c + (below.c - paint.c) * t;
-    final chroma = math.min(math.max(mixedC, straightC), mixedC * 3);
 
+    // The hue turns the short way round the painter's colour wheel; the
+    // more vivid of the two colours leads, so a nearly grey one only tints.
+    var turn = below.ryb - paint.ryb;
+    if (turn > 180) turn -= 360;
+    if (turn < -180) turn += 360;
+    final lead = (1 - t) * paint.c + t * below.c;
+    final share = lead > 1e-9 ? t * below.c / lead : t;
+    final wheelHue = _fromRyb(paint.ryb + turn * share);
+    final chroma = paint.c + (below.c - paint.c) * t;
+    var a = chroma * math.cos(wheelHue);
+    var b = chroma * math.sin(wheelHue);
+    // Opposite colours on that wheel mix to a soft neutral, as paint does:
+    // the closer to opposite (and the more vivid both are), the more the mix
+    // follows the straight line between them, through grey.
+    final muddy =
+        _smoothstep((turn.abs() - 130) / 45) *
+        _smoothstep(math.min(paint.c, below.c) / 0.08);
+    if (muddy > 0) {
+      a += (paint.a + (below.a - paint.a) * t - a) * muddy;
+      b += (paint.b + (below.b - paint.b) * t - b) * muddy;
+    }
+    final hue = math.atan2(b, a);
     final cosH = math.cos(hue);
     final sinH = math.sin(hue);
     _fitToGamut(
       lightness,
-      chroma,
+      math.sqrt(a * a + b * b),
       hue,
       cosH,
       sinH,
@@ -290,6 +309,7 @@ class _Paint {
     a = _scratch[1];
     this.b = _scratch[2];
     c = math.sqrt(a * a + this.b * this.b);
+    ryb = _toRyb(math.atan2(this.b, a));
 
     // Split into white plus one secondary and one primary pigment, and
     // build the reflectance from spectral.js's base spectra.
@@ -328,7 +348,54 @@ class _Paint {
   late final double a;
   late final double b;
   late final double c;
+
+  /// The hue on the painter's colour wheel, in degrees.
+  late final double ryb;
   late final double luminance;
+}
+
+/// OKLab hues (degrees) of the sRGB primaries and secondaries (and violet),
+/// and where they sit on the painter's red–yellow–blue colour wheel: red,
+/// orange, yellow, green, cyan, blue, violet, magenta, red again.
+const List<double> _wheelOklab = [
+  29.2,
+  53.0,
+  109.8,
+  142.5,
+  194.8,
+  264.1,
+  293.9,
+  328.4,
+  389.2,
+];
+const List<double> _wheelRyb = [0, 60, 120, 180, 210, 240, 275, 315, 360];
+
+/// OKLab hue [radians] → angle on the painter's wheel (degrees, 0–360).
+double _toRyb(double radians) {
+  var h = radians * 180 / math.pi;
+  h %= 360;
+  if (h < _wheelOklab[0]) h += 360;
+  for (var i = 1; i < _wheelOklab.length; i++) {
+    if (h <= _wheelOklab[i]) {
+      final f =
+          (h - _wheelOklab[i - 1]) / (_wheelOklab[i] - _wheelOklab[i - 1]);
+      return (_wheelRyb[i - 1] + f * (_wheelRyb[i] - _wheelRyb[i - 1])) % 360;
+    }
+  }
+  return 0;
+}
+
+/// Angle on the painter's wheel (degrees) → OKLab hue in radians.
+double _fromRyb(double degrees) {
+  final r = degrees % 360;
+  for (var i = 1; i < _wheelRyb.length; i++) {
+    if (r <= _wheelRyb[i]) {
+      final f = (r - _wheelRyb[i - 1]) / (_wheelRyb[i] - _wheelRyb[i - 1]);
+      final h = _wheelOklab[i - 1] + f * (_wheelOklab[i] - _wheelOklab[i - 1]);
+      return h * math.pi / 180;
+    }
+  }
+  return _wheelOklab[0] * math.pi / 180;
 }
 
 /// No paint reflects nothing. spectral.js floors reflectance at machine
@@ -342,6 +409,12 @@ double _smoothstep(double x) {
   final v = x.clamp(0.0, 1.0).toDouble();
   return v * v * (3 - 2 * v);
 }
+
+/// sRGB 8-bit channel [value] → linear light (0–1).
+double linearFromSrgb8(int value) => _linearLut[value & 0xFF];
+
+/// Linear light → sRGB 8-bit channel, clamped.
+int srgb8FromLinear(double linear) => _encode(linear);
 
 /// sRGB 8-bit channel → linear light.
 final Float64List _linearLut = () {

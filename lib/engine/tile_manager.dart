@@ -247,7 +247,7 @@ class TileManager {
 
   /// Reads a pixel by canvas coordinates without creating a tile or invalidating
   /// drawing caches. Returns null when the pixel is outside the canvas or fully
-  /// transparent, which is useful for sampling paint for the bleed brush.
+  /// transparent (油彩風混色 picks up the paint under the brush with it).
   ui.Color? getPixelColorAt(String layerId, int x, int y) {
     if (x < 0 || y < 0 || x >= canvasWidth || y >= canvasHeight) return null;
     final tx = x ~/ tileSize;

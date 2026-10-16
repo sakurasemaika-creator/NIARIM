@@ -1351,7 +1351,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get helpColorMixingDesc =>
-      'While painting with a brush, blends the color already under the brush with the color you\'re about to apply. Use it when you want new colors to blend into existing ones, like watercolor or oil paint.';
+      'While painting with a brush, blends the color already under the brush with the color you\'re about to apply. In the brush settings\' mixing mode, choose Digital to paint without mixing, Oil-style mixing to mix like paint and drag the picked-up color along, or Watercolor-style mixing to layer transparent washes that gather color at their edges as they dry.';
 
   @override
   String get helpPressureCurveTitle => 'Pressure Curve';
@@ -3135,16 +3135,39 @@ class AppLocalizationsEn extends AppLocalizations {
   String get brushSettingsMixingTitle => 'Mixing mode';
 
   @override
-  String get brushSettingsMixingOff => 'OFF';
+  String get brushSettingsMixingOff => 'Digital';
 
   @override
-  String get brushSettingsMixingAnalog => 'Analog-style';
+  String get brushSettingsMixingOil => 'Oil-style mixing';
 
   @override
-  String get brushSettingsMixingBleed => 'Bleed';
+  String get brushSettingsMixingWatercolor => 'Watercolor-style mixing';
 
   @override
   String get brushSettingsMixingBrightnessCorrection => 'Brightness correction';
+
+  @override
+  String get brushSettingsMixingAmount => 'Mixing amount';
+
+  @override
+  String get brushSettingsMixingStretch => 'Color stretch';
+
+  @override
+  String get brushSettingsMixingWater => 'Water';
+
+  @override
+  String get brushSettingsMixingPigment => 'Pigment';
+
+  @override
+  String get brushSettingsMixingEdge => 'Edge depth';
+
+  @override
+  String get brushSettingsMixingOilHint =>
+      'Mixes with the colors below like paint and drags the picked-up color along the stroke.';
+
+  @override
+  String get brushSettingsMixingWatercolorHint =>
+      'Lays transparent washes. When you lift the pen the wash dries and color gathers at its edge.';
 
   @override
   String get projectDetailNotFoundTitle => 'Project';

@@ -1317,7 +1317,7 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get helpColorMixingDesc =>
-      '使用画笔上色时，将画笔正下方已有的颜色与即将涂上的选定颜色混合后再绘制的功能。适合想让新颜色与已有颜色自然融合时使用，如水彩或油画般的效果。';
+      '使用画笔上色时，将画笔正下方已有的颜色与即将涂上的选定颜色混合后再绘制的功能。可在画笔设置的混色模式中选择：不混合直接上色的“数字”、像颜料一样混合并把沾到的颜色拖开的“油画风混色”、叠加透明颜料且干后颜色聚集在边缘的“水彩风混色”。';
 
   @override
   String get helpPressureCurveTitle => '笔压曲线';
@@ -3013,16 +3013,37 @@ class AppLocalizationsZh extends AppLocalizations {
   String get brushSettingsMixingTitle => '混色模式';
 
   @override
-  String get brushSettingsMixingOff => 'OFF';
+  String get brushSettingsMixingOff => '数字';
 
   @override
-  String get brushSettingsMixingAnalog => '模拟风格';
+  String get brushSettingsMixingOil => '油画风混色';
 
   @override
-  String get brushSettingsMixingBleed => '晕染';
+  String get brushSettingsMixingWatercolor => '水彩风混色';
 
   @override
   String get brushSettingsMixingBrightnessCorrection => '亮度校正';
+
+  @override
+  String get brushSettingsMixingAmount => '混色程度';
+
+  @override
+  String get brushSettingsMixingStretch => '颜色延展';
+
+  @override
+  String get brushSettingsMixingWater => '水分量';
+
+  @override
+  String get brushSettingsMixingPigment => '颜料量';
+
+  @override
+  String get brushSettingsMixingEdge => '边缘浓度';
+
+  @override
+  String get brushSettingsMixingOilHint => '像颜料一样与下方的颜色混合，并把沾到的颜色沿笔画拖开。';
+
+  @override
+  String get brushSettingsMixingWatercolorHint => '叠加透明的颜料。抬笔后颜料变干，颜色聚集在边缘。';
 
   @override
   String get projectDetailNotFoundTitle => '项目';
@@ -8425,7 +8446,7 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get helpColorMixingDesc =>
-      '使用筆刷上色時，將筆刷正下方已有的顏色與即將塗上的選定顏色混合後再繪製的功能。適合想讓新顏色與既有顏色自然融合時使用，如水彩或油畫般的效果。';
+      '使用筆刷上色時，將筆刷正下方已有的顏色與即將塗上的選定顏色混合後再繪製的功能。可在筆刷設定的混色模式中選擇：不混合直接上色的「數位」、像顏料一樣混合並把沾到的顏色拖開的「油畫風混色」、疊加透明顏料且乾後顏色聚集在邊緣的「水彩風混色」。';
 
   @override
   String get helpPressureCurveTitle => '筆壓曲線';
@@ -10120,16 +10141,37 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get brushSettingsMixingTitle => '混色模式';
 
   @override
-  String get brushSettingsMixingOff => 'OFF';
+  String get brushSettingsMixingOff => '數位';
 
   @override
-  String get brushSettingsMixingAnalog => '類比風格';
+  String get brushSettingsMixingOil => '油畫風混色';
 
   @override
-  String get brushSettingsMixingBleed => '暈染';
+  String get brushSettingsMixingWatercolor => '水彩風混色';
 
   @override
   String get brushSettingsMixingBrightnessCorrection => '亮度校正';
+
+  @override
+  String get brushSettingsMixingAmount => '混色程度';
+
+  @override
+  String get brushSettingsMixingStretch => '顏色延展';
+
+  @override
+  String get brushSettingsMixingWater => '水分量';
+
+  @override
+  String get brushSettingsMixingPigment => '顏料量';
+
+  @override
+  String get brushSettingsMixingEdge => '邊緣濃度';
+
+  @override
+  String get brushSettingsMixingOilHint => '像顏料一樣與下方的顏色混合，並把沾到的顏色沿筆畫拖開。';
+
+  @override
+  String get brushSettingsMixingWatercolorHint => '疊加透明的顏料。抬筆後顏料變乾，顏色聚集在邊緣。';
 
   @override
   String get projectDetailNotFoundTitle => '專案';

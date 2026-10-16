@@ -18,7 +18,7 @@ Brush _brush() => Brush(
     edgeJitter: PressureRangeSetting(enabled: true, weak: 60, strong: 10),
     mixing: PressureMixingOnSetting(
       enabled: true,
-      mode: BrushMixingMode.bleed,
+      mode: BrushMixingMode.watercolor,
       weakRate: 70,
       strongRate: 30,
     ),
@@ -28,7 +28,7 @@ Brush _brush() => Brush(
     edgeJitter: FixedBrushSetting(enabled: true, value: 34),
     mixing: PressureMixingOffSetting(
       enabled: true,
-      mode: BrushMixingMode.simple,
+      mode: BrushMixingMode.oil,
       rate: 45,
     ),
   ),
@@ -51,7 +51,7 @@ void main() {
       expect(weak.blur, 80);
       expect(weak.edgeJitterEnabled, isTrue);
       expect(weak.edgeJitterStrength, 60);
-      expect(weak.mixingMode, BrushMixingMode.bleed);
+      expect(weak.mixingMode, BrushMixingMode.watercolor);
       expect(weak.mixingRate, 70);
 
       final midpoint = resolveBrushPressure(
@@ -96,7 +96,7 @@ void main() {
       expect(weak.blur, 23);
       expect(weak.edgeJitterEnabled, isTrue);
       expect(weak.edgeJitterStrength, 34);
-      expect(weak.mixingMode, BrushMixingMode.simple);
+      expect(weak.mixingMode, BrushMixingMode.oil);
       expect(weak.mixingRate, 45);
     });
 
@@ -125,7 +125,7 @@ void main() {
           ),
           mixing: const PressureMixingOnSetting(
             enabled: false,
-            mode: BrushMixingMode.bleed,
+            mode: BrushMixingMode.watercolor,
             weakRate: 90,
             strongRate: 10,
           ),

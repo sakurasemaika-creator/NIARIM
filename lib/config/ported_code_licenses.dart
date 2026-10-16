@@ -7,7 +7,7 @@ import '../engine/spectral_pigment_data.dart';
 /// ライセンス）へ登録する。
 ///
 /// pubのパッケージではないためLicenseRegistryの自動収集に入らない。
-/// 現在は、ブラシのアナログ風混色が使うspectral.js（MIT License）の
+/// 現在は、ブラシの油彩風・水彩風混色が使うspectral.js（MIT License）の
 /// 分光データのみ。MIT Licenseは再配布時に著作権表示と許諾表示の同梱を
 /// 求めている。
 void registerPortedCodeLicenses() {

@@ -986,6 +986,11 @@ class _BrushSettingsSheetState extends State<_BrushSettingsSheet> {
   Widget _pressureMixingOnTile(AppLocalizations l10n) {
     final setting = _brush.pressureOn.mixing;
     final selectedMode = _selectedMixingMode(setting.enabled, setting.mode);
+    void update(PressureMixingOnSetting next) => setState(
+      () => _brush = _brush.copyWith(
+        pressureOn: _brush.pressureOn.copyWith(mixing: next),
+      ),
+    );
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -993,67 +998,56 @@ class _BrushSettingsSheetState extends State<_BrushSettingsSheet> {
         _pressureMixingModeSelector(
           l10n: l10n,
           mode: selectedMode,
-          onChanged: (mode) => setState(() {
+          onChanged: (mode) {
             final turningOn =
                 selectedMode == BrushMixingMode.off &&
                 mode != BrushMixingMode.off;
-            _brush = _brush.copyWith(
-              pressureOn: _brush.pressureOn.copyWith(
-                mixing: setting.copyWith(
-                  enabled: mode != BrushMixingMode.off,
-                  mode: mode,
-                  weakRate: turningOn && setting.weakRate == 0
-                      ? 25
-                      : setting.weakRate,
-                  strongRate: turningOn && setting.strongRate == 0
-                      ? 75
-                      : setting.strongRate,
-                ),
+            update(
+              setting.copyWith(
+                enabled: mode != BrushMixingMode.off,
+                mode: mode,
+                weakRate: turningOn && setting.weakRate == 0
+                    ? 25
+                    : setting.weakRate,
+                strongRate: turningOn && setting.strongRate == 0
+                    ? 75
+                    : setting.strongRate,
               ),
             );
-          }),
+          },
         ),
         if (selectedMode != BrushMixingMode.off) ...[
+          _mixingModeHint(l10n, selectedMode),
+          _mixingSubheading(l10n.brushSettingsMixingAmount),
           _sliderRow(
             l10n.brushSettingsWeakPressureLabel,
             setting.weakRate.toDouble(),
             0,
             100,
-            (v) => setState(
-              () => _brush = _brush.copyWith(
-                pressureOn: _brush.pressureOn.copyWith(
-                  mixing: setting.copyWith(weakRate: v.round()),
-                ),
-              ),
-            ),
+            (v) => update(setting.copyWith(weakRate: v.round())),
           ),
           _sliderRow(
             l10n.brushSettingsStrongPressureLabel,
             setting.strongRate.toDouble(),
             0,
             100,
-            (v) => setState(
-              () => _brush = _brush.copyWith(
-                pressureOn: _brush.pressureOn.copyWith(
-                  mixing: setting.copyWith(strongRate: v.round()),
-                ),
-              ),
-            ),
+            (v) => update(setting.copyWith(strongRate: v.round())),
           ),
-          if (selectedMode == BrushMixingMode.perceptual)
-            _sliderRow(
-              l10n.brushSettingsMixingBrightnessCorrection,
-              setting.brightnessCorrection.toDouble(),
-              1,
-              5,
-              (v) => setState(
-                () => _brush = _brush.copyWith(
-                  pressureOn: _brush.pressureOn.copyWith(
-                    mixing: setting.copyWith(brightnessCorrection: v.round()),
-                  ),
-                ),
-              ),
-            ),
+          ..._mixingStyleSliders(
+            l10n,
+            selectedMode,
+            brightnessCorrection: setting.brightnessCorrection,
+            stretch: setting.stretch,
+            water: setting.water,
+            pigment: setting.pigment,
+            edge: setting.edge,
+            onBrightnessCorrection: (v) =>
+                update(setting.copyWith(brightnessCorrection: v)),
+            onStretch: (v) => update(setting.copyWith(stretch: v)),
+            onWater: (v) => update(setting.copyWith(water: v)),
+            onPigment: (v) => update(setting.copyWith(pigment: v)),
+            onEdge: (v) => update(setting.copyWith(edge: v)),
+          ),
         ],
       ],
     );
@@ -1062,6 +1056,11 @@ class _BrushSettingsSheetState extends State<_BrushSettingsSheet> {
   Widget _pressureMixingOffTile(AppLocalizations l10n) {
     final setting = _brush.pressureOff.mixing;
     final selectedMode = _selectedMixingMode(setting.enabled, setting.mode);
+    void update(PressureMixingOffSetting next) => setState(
+      () => _brush = _brush.copyWith(
+        pressureOff: _brush.pressureOff.copyWith(mixing: next),
+      ),
+    );
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -1069,53 +1068,129 @@ class _BrushSettingsSheetState extends State<_BrushSettingsSheet> {
         _pressureMixingModeSelector(
           l10n: l10n,
           mode: selectedMode,
-          onChanged: (mode) => setState(() {
+          onChanged: (mode) {
             final turningOn =
                 selectedMode == BrushMixingMode.off &&
                 mode != BrushMixingMode.off;
-            _brush = _brush.copyWith(
-              pressureOff: _brush.pressureOff.copyWith(
-                mixing: setting.copyWith(
-                  enabled: mode != BrushMixingMode.off,
-                  mode: mode,
-                  rate: turningOn && setting.rate == 0 ? 50 : setting.rate,
-                ),
+            update(
+              setting.copyWith(
+                enabled: mode != BrushMixingMode.off,
+                mode: mode,
+                rate: turningOn && setting.rate == 0 ? 50 : setting.rate,
               ),
             );
-          }),
+          },
         ),
         if (selectedMode != BrushMixingMode.off) ...[
+          _mixingModeHint(l10n, selectedMode),
           _sliderRow(
-            l10n.brushSettingsValueLabel,
+            l10n.brushSettingsMixingAmount,
             setting.rate.toDouble(),
             0,
             100,
-            (v) => setState(
-              () => _brush = _brush.copyWith(
-                pressureOff: _brush.pressureOff.copyWith(
-                  mixing: setting.copyWith(rate: v.round()),
-                ),
-              ),
-            ),
+            (v) => update(setting.copyWith(rate: v.round())),
           ),
-          if (selectedMode == BrushMixingMode.perceptual)
-            _sliderRow(
-              l10n.brushSettingsMixingBrightnessCorrection,
-              setting.brightnessCorrection.toDouble(),
-              1,
-              5,
-              (v) => setState(
-                () => _brush = _brush.copyWith(
-                  pressureOff: _brush.pressureOff.copyWith(
-                    mixing: setting.copyWith(brightnessCorrection: v.round()),
-                  ),
-                ),
-              ),
-            ),
+          ..._mixingStyleSliders(
+            l10n,
+            selectedMode,
+            brightnessCorrection: setting.brightnessCorrection,
+            stretch: setting.stretch,
+            water: setting.water,
+            pigment: setting.pigment,
+            edge: setting.edge,
+            onBrightnessCorrection: (v) =>
+                update(setting.copyWith(brightnessCorrection: v)),
+            onStretch: (v) => update(setting.copyWith(stretch: v)),
+            onWater: (v) => update(setting.copyWith(water: v)),
+            onPigment: (v) => update(setting.copyWith(pigment: v)),
+            onEdge: (v) => update(setting.copyWith(edge: v)),
+          ),
         ],
       ],
     );
   }
+
+  /// The sliders of the chosen mixing style: 油彩風 has 色延び and the
+  /// brightness correction, 水彩風 水分量・絵具量・縁の濃さ.
+  List<Widget> _mixingStyleSliders(
+    AppLocalizations l10n,
+    BrushMixingMode mode, {
+    required int brightnessCorrection,
+    required int stretch,
+    required int water,
+    required int pigment,
+    required int edge,
+    required ValueChanged<int> onBrightnessCorrection,
+    required ValueChanged<int> onStretch,
+    required ValueChanged<int> onWater,
+    required ValueChanged<int> onPigment,
+    required ValueChanged<int> onEdge,
+  }) => switch (mode) {
+    BrushMixingMode.off => const [],
+    BrushMixingMode.oil => [
+      _sliderRow(
+        l10n.brushSettingsMixingStretch,
+        stretch.toDouble(),
+        0,
+        100,
+        (v) => onStretch(v.round()),
+      ),
+      _sliderRow(
+        l10n.brushSettingsMixingBrightnessCorrection,
+        brightnessCorrection.toDouble(),
+        1,
+        5,
+        (v) => onBrightnessCorrection(v.round()),
+      ),
+    ],
+    BrushMixingMode.watercolor => [
+      _sliderRow(
+        l10n.brushSettingsMixingWater,
+        water.toDouble(),
+        0,
+        100,
+        (v) => onWater(v.round()),
+      ),
+      _sliderRow(
+        l10n.brushSettingsMixingPigment,
+        pigment.toDouble(),
+        0,
+        100,
+        (v) => onPigment(v.round()),
+      ),
+      _sliderRow(
+        l10n.brushSettingsMixingEdge,
+        edge.toDouble(),
+        0,
+        100,
+        (v) => onEdge(v.round()),
+      ),
+    ],
+  };
+
+  Widget _mixingModeHint(AppLocalizations l10n, BrushMixingMode mode) {
+    final text = switch (mode) {
+      BrushMixingMode.off => null,
+      BrushMixingMode.oil => l10n.brushSettingsMixingOilHint,
+      BrushMixingMode.watercolor => l10n.brushSettingsMixingWatercolorHint,
+    };
+    if (text == null) return const SizedBox.shrink();
+    final theme = Theme.of(context);
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(16, 0, 16, 4),
+      child: Text(
+        text,
+        style: theme.textTheme.bodySmall?.copyWith(
+          color: theme.colorScheme.onSurfaceVariant,
+        ),
+      ),
+    );
+  }
+
+  Widget _mixingSubheading(String text) => Padding(
+    padding: const EdgeInsets.fromLTRB(16, 4, 16, 0),
+    child: Text(text, style: const TextStyle(fontSize: 12)),
+  );
 
   Widget _mixingModeHeading(AppLocalizations l10n) => Padding(
     padding: const EdgeInsets.fromLTRB(16, 8, 16, 0),
@@ -1135,11 +1210,7 @@ class _BrushSettingsSheetState extends State<_BrushSettingsSheet> {
     required BrushMixingMode mode,
     required ValueChanged<BrushMixingMode> onChanged,
   }) {
-    const modes = [
-      BrushMixingMode.off,
-      BrushMixingMode.perceptual,
-      BrushMixingMode.bleed,
-    ];
+    const modes = BrushMixingMode.values;
     return RadioGroup<BrushMixingMode>(
       groupValue: mode,
       onChanged: (v) {
@@ -1242,13 +1313,10 @@ class _BrushSettingsSheetState extends State<_BrushSettingsSheet> {
     FadeMode.custom => l10n.brushSettingsFadeCustom,
   };
 
-  bool _usesAnalogStyleMixing(BrushMixingMode mode) =>
-      mode == BrushMixingMode.perceptual;
-
   String _mixingModeLabel(AppLocalizations l10n, BrushMixingMode mode) =>
       switch (mode) {
         BrushMixingMode.off => l10n.brushSettingsMixingOff,
-        BrushMixingMode.perceptual => l10n.brushSettingsMixingAnalog,
-        BrushMixingMode.bleed => l10n.brushSettingsMixingBleed,
+        BrushMixingMode.oil => l10n.brushSettingsMixingOil,
+        BrushMixingMode.watercolor => l10n.brushSettingsMixingWatercolor,
       };
 }

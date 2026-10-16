@@ -90,7 +90,7 @@ void _write(String name, img.Image image) {
   File('${dir.path}/$name').writeAsBytesSync(img.encodePng(image));
 }
 
-Brush _mixingBrush(BrushMixingMode mode, int rate) => Brush(
+Brush _mixingBrush(BrushMixingMode mode, int rate, {int stretch = 0}) => Brush(
   id: 'analog-review',
   name: 'Analog Review',
   size: 26,
@@ -106,6 +106,7 @@ Brush _mixingBrush(BrushMixingMode mode, int rate) => Brush(
       enabled: mode != BrushMixingMode.off,
       mode: mode,
       rate: rate,
+      stretch: stretch,
     ),
   ),
   fadeMode: FadeMode.off,
@@ -179,14 +180,21 @@ void main() {
     final engine = DrawingEngine(tileManager: tiles)
       ..currentColor = const ui.Color(0xFF2B31FF)
       ..pressureEnabled = false;
+    // デジタル, then 油彩風 at 混色度合い 50 with 色延び 0, 30 and 80: the
+    // longer the stretch, the further the brush carries the colours it
+    // picked up (yellow, then red) along the stroke.
     final rows = [
-      (BrushMixingMode.off, 0),
-      (BrushMixingMode.perceptual, 25),
-      (BrushMixingMode.perceptual, 50),
-      (BrushMixingMode.perceptual, 75),
+      (BrushMixingMode.off, 0, 0),
+      (BrushMixingMode.oil, 50, 0),
+      (BrushMixingMode.oil, 50, 30),
+      (BrushMixingMode.oil, 50, 80),
     ];
     for (var r = 0; r < rows.length; r++) {
-      engine.currentBrush = _mixingBrush(rows[r].$1, rows[r].$2);
+      engine.currentBrush = _mixingBrush(
+        rows[r].$1,
+        rows[r].$2,
+        stretch: rows[r].$3,
+      );
       final y = 45.0 + r * 70;
       engine.beginStroke(
         StrokePoint(x: 20, y: y, pressure: 1, tiltX: 0, tiltY: 0),
@@ -218,10 +226,14 @@ void main() {
     _write('strokes.png', sheet);
 
     // Over the yellow the blue stroke turns green; over the red, purple.
-    final green = tiles.getPixelColorAt('layer', 140, 185)!;
+    final green = tiles.getPixelColorAt('layer', 140, 115)!;
     expect(green.g, greaterThan(green.r + 0.3));
-    final purple = tiles.getPixelColorAt('layer', 420, 185)!;
+    final purple = tiles.getPixelColorAt('layer', 420, 115)!;
     expect(purple.b, greaterThan(purple.g + 0.3));
     expect(purple.r, greaterThan(purple.g + 0.2));
+    // With 色延び the brush carries yellow past the yellow paint.
+    final carried = tiles.getPixelColorAt('layer', 250, 255)!;
+    final clean = tiles.getPixelColorAt('layer', 250, 115)!;
+    expect(carried.g, greaterThan(clean.g + 0.15));
   });
 }

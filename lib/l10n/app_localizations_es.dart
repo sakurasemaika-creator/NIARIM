@@ -1375,7 +1375,7 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get helpColorMixingDesc =>
-      'Al pintar con un pincel, mezcla el color que ya hay justo debajo del pincel con el color que estás a punto de aplicar. Úsalo cuando quieras que los colores nuevos se mezclen con los existentes, como en acuarela u óleo.';
+      'Al pintar con un pincel, mezcla el color que ya hay justo debajo del pincel con el color que estás a punto de aplicar. En el modo de mezcla de los ajustes del pincel puedes elegir Digital para pintar sin mezclar, Mezcla estilo óleo para mezclar como la pintura y arrastrar el color recogido, o Mezcla estilo acuarela para superponer aguadas transparentes que, al secarse, acumulan color en el borde.';
 
   @override
   String get helpPressureCurveTitle => 'Curva de presión';
@@ -3174,16 +3174,40 @@ class AppLocalizationsEs extends AppLocalizations {
   String get brushSettingsMixingTitle => 'Modo de mezcla';
 
   @override
-  String get brushSettingsMixingOff => 'OFF';
+  String get brushSettingsMixingOff => 'Digital';
 
   @override
-  String get brushSettingsMixingAnalog => 'Estilo analógico';
+  String get brushSettingsMixingOil => 'Mezcla estilo óleo';
 
   @override
-  String get brushSettingsMixingBleed => 'Sangrado';
+  String get brushSettingsMixingWatercolor => 'Mezcla estilo acuarela';
 
   @override
-  String get brushSettingsMixingBrightnessCorrection => 'Corrección de luminosidad';
+  String get brushSettingsMixingBrightnessCorrection =>
+      'Corrección de luminosidad';
+
+  @override
+  String get brushSettingsMixingAmount => 'Grado de mezcla';
+
+  @override
+  String get brushSettingsMixingStretch => 'Arrastre del color';
+
+  @override
+  String get brushSettingsMixingWater => 'Cantidad de agua';
+
+  @override
+  String get brushSettingsMixingPigment => 'Cantidad de pigmento';
+
+  @override
+  String get brushSettingsMixingEdge => 'Intensidad del borde';
+
+  @override
+  String get brushSettingsMixingOilHint =>
+      'Se mezcla con los colores de debajo como la pintura y arrastra el color recogido a lo largo del trazo.';
+
+  @override
+  String get brushSettingsMixingWatercolorHint =>
+      'Aplica aguadas transparentes. Al levantar el lápiz, la aguada se seca y el color se acumula en su borde.';
 
   @override
   String get projectDetailNotFoundTitle => 'Proyecto';

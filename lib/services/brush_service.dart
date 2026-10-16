@@ -55,7 +55,7 @@ class BrushService extends ChangeNotifier {
         edgeJitter: PressureRangeSetting(enabled: false, weak: 50, strong: 50),
         mixing: PressureMixingOnSetting(
           enabled: false,
-          mode: BrushMixingMode.perceptual,
+          mode: BrushMixingMode.oil,
           weakRate: 0,
           strongRate: 0,
         ),
@@ -65,7 +65,7 @@ class BrushService extends ChangeNotifier {
         edgeJitter: FixedBrushSetting(enabled: false, value: 50),
         mixing: PressureMixingOffSetting(
           enabled: false,
-          mode: BrushMixingMode.perceptual,
+          mode: BrushMixingMode.oil,
           rate: 0,
         ),
       ),
@@ -89,7 +89,7 @@ class BrushService extends ChangeNotifier {
         edgeJitter: PressureRangeSetting(enabled: false, weak: 50, strong: 50),
         mixing: PressureMixingOnSetting(
           enabled: false,
-          mode: BrushMixingMode.perceptual,
+          mode: BrushMixingMode.oil,
           weakRate: 0,
           strongRate: 0,
         ),
@@ -99,7 +99,7 @@ class BrushService extends ChangeNotifier {
         edgeJitter: FixedBrushSetting(enabled: false, value: 50),
         mixing: PressureMixingOffSetting(
           enabled: false,
-          mode: BrushMixingMode.perceptual,
+          mode: BrushMixingMode.oil,
           rate: 0,
         ),
       ),
@@ -123,7 +123,7 @@ class BrushService extends ChangeNotifier {
         edgeJitter: PressureRangeSetting(enabled: false, weak: 50, strong: 50),
         mixing: PressureMixingOnSetting(
           enabled: false,
-          mode: BrushMixingMode.perceptual,
+          mode: BrushMixingMode.oil,
           weakRate: 0,
           strongRate: 0,
         ),
@@ -133,7 +133,7 @@ class BrushService extends ChangeNotifier {
         edgeJitter: FixedBrushSetting(enabled: false, value: 50),
         mixing: PressureMixingOffSetting(
           enabled: false,
-          mode: BrushMixingMode.perceptual,
+          mode: BrushMixingMode.oil,
           rate: 0,
         ),
       ),
@@ -157,7 +157,7 @@ class BrushService extends ChangeNotifier {
         edgeJitter: PressureRangeSetting(enabled: false, weak: 50, strong: 50),
         mixing: PressureMixingOnSetting(
           enabled: true,
-          mode: BrushMixingMode.perceptual,
+          mode: BrushMixingMode.oil,
           weakRate: 50,
           strongRate: 50,
         ),
@@ -167,7 +167,7 @@ class BrushService extends ChangeNotifier {
         edgeJitter: FixedBrushSetting(enabled: false, value: 50),
         mixing: PressureMixingOffSetting(
           enabled: true,
-          mode: BrushMixingMode.perceptual,
+          mode: BrushMixingMode.oil,
           rate: 50,
         ),
       ),
@@ -198,7 +198,7 @@ class BrushService extends ChangeNotifier {
         edgeJitter: PressureRangeSetting(enabled: true, weak: 50, strong: 50),
         mixing: PressureMixingOnSetting(
           enabled: true,
-          mode: BrushMixingMode.perceptual,
+          mode: BrushMixingMode.oil,
           weakRate: 15,
           strongRate: 15,
         ),
@@ -208,7 +208,7 @@ class BrushService extends ChangeNotifier {
         edgeJitter: FixedBrushSetting(enabled: true, value: 50),
         mixing: PressureMixingOffSetting(
           enabled: true,
-          mode: BrushMixingMode.perceptual,
+          mode: BrushMixingMode.oil,
           rate: 15,
         ),
       ),
@@ -236,7 +236,7 @@ class BrushService extends ChangeNotifier {
         edgeJitter: PressureRangeSetting(enabled: false, weak: 50, strong: 50),
         mixing: PressureMixingOnSetting(
           enabled: false,
-          mode: BrushMixingMode.perceptual,
+          mode: BrushMixingMode.oil,
           weakRate: 0,
           strongRate: 0,
         ),
@@ -246,7 +246,7 @@ class BrushService extends ChangeNotifier {
         edgeJitter: FixedBrushSetting(enabled: false, value: 50),
         mixing: PressureMixingOffSetting(
           enabled: false,
-          mode: BrushMixingMode.perceptual,
+          mode: BrushMixingMode.oil,
           rate: 0,
         ),
       ),
@@ -278,7 +278,7 @@ class BrushService extends ChangeNotifier {
         edgeJitter: PressureRangeSetting(enabled: true, weak: 70, strong: 70),
         mixing: PressureMixingOnSetting(
           enabled: false,
-          mode: BrushMixingMode.perceptual,
+          mode: BrushMixingMode.oil,
           weakRate: 0,
           strongRate: 0,
         ),
@@ -288,7 +288,7 @@ class BrushService extends ChangeNotifier {
         edgeJitter: FixedBrushSetting(enabled: true, value: 70),
         mixing: PressureMixingOffSetting(
           enabled: false,
-          mode: BrushMixingMode.perceptual,
+          mode: BrushMixingMode.oil,
           rate: 0,
         ),
       ),
@@ -314,7 +314,7 @@ class BrushService extends ChangeNotifier {
         edgeJitter: PressureRangeSetting(enabled: false, weak: 50, strong: 50),
         mixing: PressureMixingOnSetting(
           enabled: false,
-          mode: BrushMixingMode.perceptual,
+          mode: BrushMixingMode.oil,
           weakRate: 0,
           strongRate: 0,
         ),
@@ -324,7 +324,7 @@ class BrushService extends ChangeNotifier {
         edgeJitter: FixedBrushSetting(enabled: false, value: 50),
         mixing: PressureMixingOffSetting(
           enabled: false,
-          mode: BrushMixingMode.perceptual,
+          mode: BrushMixingMode.oil,
           rate: 0,
         ),
       ),
@@ -350,7 +350,7 @@ class BrushService extends ChangeNotifier {
         edgeJitter: PressureRangeSetting(enabled: false, weak: 50, strong: 50),
         mixing: PressureMixingOnSetting(
           enabled: true,
-          mode: BrushMixingMode.perceptual,
+          mode: BrushMixingMode.oil,
           weakRate: 25,
           strongRate: 25,
         ),
@@ -360,7 +360,7 @@ class BrushService extends ChangeNotifier {
         edgeJitter: FixedBrushSetting(enabled: false, value: 50),
         mixing: PressureMixingOffSetting(
           enabled: true,
-          mode: BrushMixingMode.perceptual,
+          mode: BrushMixingMode.oil,
           rate: 25,
         ),
       ),
@@ -369,13 +369,13 @@ class BrushService extends ChangeNotifier {
       calligraphyAngle: 90.0,
       tags: [AssetTagKeys.paint, AssetTagKeys.analog],
     ),
-    // 水彩：下の色をよく拾い（混色率高め）、ふちがにじんで薄く乗る。
-    // 重ねるほど濃くなるよう不透明度は低めにしてある。
+    // 水彩：水彩風混色。透明な絵の具が重なるほど深くなり、乾くと縁に
+    // 色が溜まり紙の目が出る。濃さは絵具量で決めるので不透明度は100。
     const Brush(
       id: 'Brush0010',
       name: '水彩',
       size: 24,
-      opacity: 45,
+      opacity: 100,
       spacing: 4,
       stabilization: false,
       stabilizationStrength: 0,
@@ -387,9 +387,9 @@ class BrushService extends ChangeNotifier {
         edgeJitter: PressureRangeSetting(enabled: true, weak: 40, strong: 40),
         mixing: PressureMixingOnSetting(
           enabled: true,
-          mode: BrushMixingMode.perceptual,
-          weakRate: 70,
-          strongRate: 70,
+          mode: BrushMixingMode.watercolor,
+          weakRate: 30,
+          strongRate: 30,
         ),
       ),
       pressureOff: BrushPressureOffSettings(
@@ -397,8 +397,8 @@ class BrushService extends ChangeNotifier {
         edgeJitter: FixedBrushSetting(enabled: true, value: 40),
         mixing: PressureMixingOffSetting(
           enabled: true,
-          mode: BrushMixingMode.perceptual,
-          rate: 70,
+          mode: BrushMixingMode.watercolor,
+          rate: 30,
         ),
       ),
       fadeMode: FadeMode.off,
@@ -423,7 +423,7 @@ class BrushService extends ChangeNotifier {
         edgeJitter: PressureRangeSetting(enabled: false, weak: 50, strong: 50),
         mixing: PressureMixingOnSetting(
           enabled: false,
-          mode: BrushMixingMode.perceptual,
+          mode: BrushMixingMode.oil,
           weakRate: 0,
           strongRate: 0,
         ),
@@ -433,7 +433,7 @@ class BrushService extends ChangeNotifier {
         edgeJitter: FixedBrushSetting(enabled: false, value: 50),
         mixing: PressureMixingOffSetting(
           enabled: false,
-          mode: BrushMixingMode.perceptual,
+          mode: BrushMixingMode.oil,
           rate: 0,
         ),
       ),
@@ -459,7 +459,7 @@ class BrushService extends ChangeNotifier {
         edgeJitter: PressureRangeSetting(enabled: true, weak: 100, strong: 100),
         mixing: PressureMixingOnSetting(
           enabled: false,
-          mode: BrushMixingMode.perceptual,
+          mode: BrushMixingMode.oil,
           weakRate: 0,
           strongRate: 0,
         ),
@@ -469,7 +469,7 @@ class BrushService extends ChangeNotifier {
         edgeJitter: FixedBrushSetting(enabled: true, value: 100),
         mixing: PressureMixingOffSetting(
           enabled: false,
-          mode: BrushMixingMode.perceptual,
+          mode: BrushMixingMode.oil,
           rate: 0,
         ),
       ),
@@ -497,7 +497,7 @@ class BrushService extends ChangeNotifier {
         edgeJitter: PressureRangeSetting(enabled: false, weak: 50, strong: 50),
         mixing: PressureMixingOnSetting(
           enabled: false,
-          mode: BrushMixingMode.perceptual,
+          mode: BrushMixingMode.oil,
           weakRate: 0,
           strongRate: 0,
         ),
@@ -507,7 +507,7 @@ class BrushService extends ChangeNotifier {
         edgeJitter: FixedBrushSetting(enabled: false, value: 50),
         mixing: PressureMixingOffSetting(
           enabled: false,
-          mode: BrushMixingMode.perceptual,
+          mode: BrushMixingMode.oil,
           rate: 0,
         ),
       ),
@@ -535,7 +535,7 @@ class BrushService extends ChangeNotifier {
         edgeJitter: PressureRangeSetting(enabled: false, weak: 50, strong: 50),
         mixing: PressureMixingOnSetting(
           enabled: false,
-          mode: BrushMixingMode.perceptual,
+          mode: BrushMixingMode.oil,
           weakRate: 0,
           strongRate: 0,
         ),
@@ -545,7 +545,7 @@ class BrushService extends ChangeNotifier {
         edgeJitter: FixedBrushSetting(enabled: false, value: 50),
         mixing: PressureMixingOffSetting(
           enabled: false,
-          mode: BrushMixingMode.perceptual,
+          mode: BrushMixingMode.oil,
           rate: 0,
         ),
       ),
@@ -571,7 +571,7 @@ class BrushService extends ChangeNotifier {
         edgeJitter: PressureRangeSetting(enabled: false, weak: 50, strong: 50),
         mixing: PressureMixingOnSetting(
           enabled: false,
-          mode: BrushMixingMode.perceptual,
+          mode: BrushMixingMode.oil,
           weakRate: 0,
           strongRate: 0,
         ),
@@ -581,7 +581,7 @@ class BrushService extends ChangeNotifier {
         edgeJitter: FixedBrushSetting(enabled: false, value: 50),
         mixing: PressureMixingOffSetting(
           enabled: false,
-          mode: BrushMixingMode.perceptual,
+          mode: BrushMixingMode.oil,
           rate: 0,
         ),
       ),
@@ -609,7 +609,7 @@ class BrushService extends ChangeNotifier {
         edgeJitter: PressureRangeSetting(enabled: false, weak: 0, strong: 0),
         mixing: PressureMixingOnSetting(
           enabled: false,
-          mode: BrushMixingMode.perceptual,
+          mode: BrushMixingMode.oil,
           weakRate: 0,
           strongRate: 0,
         ),
@@ -619,7 +619,7 @@ class BrushService extends ChangeNotifier {
         edgeJitter: FixedBrushSetting(enabled: false, value: 0),
         mixing: PressureMixingOffSetting(
           enabled: false,
-          mode: BrushMixingMode.perceptual,
+          mode: BrushMixingMode.oil,
           rate: 0,
         ),
       ),
@@ -647,7 +647,7 @@ class BrushService extends ChangeNotifier {
         edgeJitter: PressureRangeSetting(enabled: true, weak: 30, strong: 30),
         mixing: PressureMixingOnSetting(
           enabled: false,
-          mode: BrushMixingMode.perceptual,
+          mode: BrushMixingMode.oil,
           weakRate: 0,
           strongRate: 0,
         ),
@@ -657,7 +657,7 @@ class BrushService extends ChangeNotifier {
         edgeJitter: FixedBrushSetting(enabled: true, value: 30),
         mixing: PressureMixingOffSetting(
           enabled: false,
-          mode: BrushMixingMode.perceptual,
+          mode: BrushMixingMode.oil,
           rate: 0,
         ),
       ),
@@ -689,7 +689,7 @@ class BrushService extends ChangeNotifier {
         edgeJitter: PressureRangeSetting(enabled: false, weak: 50, strong: 50),
         mixing: PressureMixingOnSetting(
           enabled: false,
-          mode: BrushMixingMode.perceptual,
+          mode: BrushMixingMode.oil,
           weakRate: 0,
           strongRate: 0,
         ),
@@ -699,7 +699,7 @@ class BrushService extends ChangeNotifier {
         edgeJitter: FixedBrushSetting(enabled: false, value: 50),
         mixing: PressureMixingOffSetting(
           enabled: false,
-          mode: BrushMixingMode.perceptual,
+          mode: BrushMixingMode.oil,
           rate: 0,
         ),
       ),
@@ -736,7 +736,7 @@ class BrushService extends ChangeNotifier {
         edgeJitter: PressureRangeSetting(enabled: false, weak: 50, strong: 50),
         mixing: PressureMixingOnSetting(
           enabled: false,
-          mode: BrushMixingMode.perceptual,
+          mode: BrushMixingMode.oil,
           weakRate: 0,
           strongRate: 0,
         ),
@@ -746,7 +746,7 @@ class BrushService extends ChangeNotifier {
         edgeJitter: FixedBrushSetting(enabled: false, value: 50),
         mixing: PressureMixingOffSetting(
           enabled: false,
-          mode: BrushMixingMode.perceptual,
+          mode: BrushMixingMode.oil,
           rate: 0,
         ),
       ),
@@ -778,7 +778,7 @@ class BrushService extends ChangeNotifier {
         edgeJitter: PressureRangeSetting(enabled: false, weak: 50, strong: 50),
         mixing: PressureMixingOnSetting(
           enabled: false,
-          mode: BrushMixingMode.perceptual,
+          mode: BrushMixingMode.oil,
           weakRate: 0,
           strongRate: 0,
         ),
@@ -788,7 +788,7 @@ class BrushService extends ChangeNotifier {
         edgeJitter: FixedBrushSetting(enabled: false, value: 50),
         mixing: PressureMixingOffSetting(
           enabled: false,
-          mode: BrushMixingMode.perceptual,
+          mode: BrushMixingMode.oil,
           rate: 0,
         ),
       ),
@@ -818,7 +818,7 @@ class BrushService extends ChangeNotifier {
         edgeJitter: PressureRangeSetting(enabled: false, weak: 50, strong: 50),
         mixing: PressureMixingOnSetting(
           enabled: false,
-          mode: BrushMixingMode.perceptual,
+          mode: BrushMixingMode.oil,
           weakRate: 0,
           strongRate: 0,
         ),
@@ -828,7 +828,7 @@ class BrushService extends ChangeNotifier {
         edgeJitter: FixedBrushSetting(enabled: false, value: 50),
         mixing: PressureMixingOffSetting(
           enabled: false,
-          mode: BrushMixingMode.perceptual,
+          mode: BrushMixingMode.oil,
           rate: 0,
         ),
       ),
@@ -1198,7 +1198,7 @@ class BrushService extends ChangeNotifier {
         edgeJitter: PressureRangeSetting(enabled: false, weak: 50, strong: 50),
         mixing: PressureMixingOnSetting(
           enabled: false,
-          mode: BrushMixingMode.perceptual,
+          mode: BrushMixingMode.oil,
           weakRate: 0,
           strongRate: 0,
         ),
@@ -1208,7 +1208,7 @@ class BrushService extends ChangeNotifier {
         edgeJitter: FixedBrushSetting(enabled: false, value: 50),
         mixing: PressureMixingOffSetting(
           enabled: false,
-          mode: BrushMixingMode.perceptual,
+          mode: BrushMixingMode.oil,
           rate: 0,
         ),
       ),

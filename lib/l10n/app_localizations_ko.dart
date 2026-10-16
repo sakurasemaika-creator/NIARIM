@@ -1329,7 +1329,7 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get helpColorMixingDesc =>
-      '브러시로 칠할 때, 브러시 바로 아래에 이미 있는 색과 지금 칠하려는 선택 색을 섞으면서 그리는 기능입니다. 수채화나 유화처럼 기존 색에 새로운 색을 자연스럽게 섞고 싶을 때 사용합니다.';
+      '브러시로 칠할 때, 브러시 바로 아래에 이미 있는 색과 지금 칠하려는 선택 색을 섞으면서 그리는 기능입니다. 브러시 설정의 혼색 모드에서 섞지 않고 칠하는 디지털, 물감처럼 섞이며 묻어난 색을 끌어서 늘이는 유화풍 혼색, 투명한 물감을 겹치고 마르면 가장자리에 색이 고이는 수채화풍 혼색을 고를 수 있습니다.';
 
   @override
   String get helpPressureCurveTitle => '필압 곡선';
@@ -3039,16 +3039,38 @@ class AppLocalizationsKo extends AppLocalizations {
   String get brushSettingsMixingTitle => '혼색 모드';
 
   @override
-  String get brushSettingsMixingOff => 'OFF';
+  String get brushSettingsMixingOff => '디지털';
 
   @override
-  String get brushSettingsMixingAnalog => '아날로그풍';
+  String get brushSettingsMixingOil => '유화풍 혼색';
 
   @override
-  String get brushSettingsMixingBleed => '번짐';
+  String get brushSettingsMixingWatercolor => '수채화풍 혼색';
 
   @override
   String get brushSettingsMixingBrightnessCorrection => '밝기 보정';
+
+  @override
+  String get brushSettingsMixingAmount => '혼색 정도';
+
+  @override
+  String get brushSettingsMixingStretch => '색 늘이기';
+
+  @override
+  String get brushSettingsMixingWater => '수분량';
+
+  @override
+  String get brushSettingsMixingPigment => '물감량';
+
+  @override
+  String get brushSettingsMixingEdge => '테두리 농도';
+
+  @override
+  String get brushSettingsMixingOilHint => '아래 색과 물감처럼 섞이고, 묻어난 색을 끌어서 늘입니다.';
+
+  @override
+  String get brushSettingsMixingWatercolorHint =>
+      '투명한 물감을 겹쳐 칠합니다. 펜을 떼면 마르면서 가장자리에 색이 고입니다.';
 
   @override
   String get projectDetailNotFoundTitle => '프로젝트';

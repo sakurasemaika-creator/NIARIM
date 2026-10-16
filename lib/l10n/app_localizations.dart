@@ -2576,7 +2576,7 @@ abstract class AppLocalizations {
   /// No description provided for @helpColorMixingDesc.
   ///
   /// In ja, this message translates to:
-  /// **'ブラシで塗る際、ブラシの直下にすでにある色と、これから塗ろうとしている選択色を混ぜ合わせながら描画する機能です。水彩や油彩のように、既存の色に新しい色をなじませたい時に使います。'**
+  /// **'ブラシで塗る際、ブラシの直下にすでにある色と、これから塗ろうとしている選択色を混ぜ合わせながら描画する機能です。ブラシ設定の「混色モード」で、混ぜずに塗る「デジタル」、絵の具のように混ざり拾った色を引きずって伸ばす「油彩風混色」、透明な絵の具を重ねて乾くと縁に色が溜まる「水彩風混色」を選べます。'**
   String get helpColorMixingDesc;
 
   /// No description provided for @helpPressureCurveTitle.
@@ -5606,32 +5606,74 @@ abstract class AppLocalizations {
   /// No description provided for @brushSettingsMixingTitle.
   ///
   /// In ja, this message translates to:
-  /// **'混色'**
+  /// **'混色モード'**
   String get brushSettingsMixingTitle;
 
   /// No description provided for @brushSettingsMixingOff.
   ///
   /// In ja, this message translates to:
-  /// **'OFF'**
+  /// **'デジタル'**
   String get brushSettingsMixingOff;
 
-  /// No description provided for @brushSettingsMixingAnalog.
+  /// No description provided for @brushSettingsMixingOil.
   ///
   /// In ja, this message translates to:
-  /// **'アナログ風'**
-  String get brushSettingsMixingAnalog;
+  /// **'油彩風混色'**
+  String get brushSettingsMixingOil;
 
-  /// No description provided for @brushSettingsMixingBleed.
+  /// No description provided for @brushSettingsMixingWatercolor.
   ///
   /// In ja, this message translates to:
-  /// **'にじみ'**
-  String get brushSettingsMixingBleed;
+  /// **'水彩風混色'**
+  String get brushSettingsMixingWatercolor;
 
   /// No description provided for @brushSettingsMixingBrightnessCorrection.
   ///
   /// In ja, this message translates to:
   /// **'輝度の補正'**
   String get brushSettingsMixingBrightnessCorrection;
+
+  /// No description provided for @brushSettingsMixingAmount.
+  ///
+  /// In ja, this message translates to:
+  /// **'混色度合い'**
+  String get brushSettingsMixingAmount;
+
+  /// No description provided for @brushSettingsMixingStretch.
+  ///
+  /// In ja, this message translates to:
+  /// **'色延び'**
+  String get brushSettingsMixingStretch;
+
+  /// No description provided for @brushSettingsMixingWater.
+  ///
+  /// In ja, this message translates to:
+  /// **'水分量'**
+  String get brushSettingsMixingWater;
+
+  /// No description provided for @brushSettingsMixingPigment.
+  ///
+  /// In ja, this message translates to:
+  /// **'絵具量'**
+  String get brushSettingsMixingPigment;
+
+  /// No description provided for @brushSettingsMixingEdge.
+  ///
+  /// In ja, this message translates to:
+  /// **'縁の濃さ'**
+  String get brushSettingsMixingEdge;
+
+  /// No description provided for @brushSettingsMixingOilHint.
+  ///
+  /// In ja, this message translates to:
+  /// **'下の色と絵の具のように混ざり、拾った色を引きずって伸ばします。'**
+  String get brushSettingsMixingOilHint;
+
+  /// No description provided for @brushSettingsMixingWatercolorHint.
+  ///
+  /// In ja, this message translates to:
+  /// **'透明な絵の具を重ねて塗ります。ペンを離すと乾いて、縁に色が溜まります。'**
+  String get brushSettingsMixingWatercolorHint;
 
   /// No description provided for @projectDetailNotFoundTitle.
   ///

@@ -83,7 +83,7 @@ void main() {
           ),
           mixing: PressureMixingOnSetting(
             enabled: true,
-            mode: BrushMixingMode.bleed,
+            mode: BrushMixingMode.watercolor,
             weakRate: 40,
             strongRate: 40,
           ),
@@ -93,7 +93,7 @@ void main() {
           edgeJitter: FixedBrushSetting(enabled: false, value: 50),
           mixing: PressureMixingOffSetting(
             enabled: true,
-            mode: BrushMixingMode.bleed,
+            mode: BrushMixingMode.watercolor,
             rate: 40,
           ),
         ),
@@ -114,8 +114,8 @@ void main() {
       expect(restored.fadeIn.rangePx, 80);
       expect(restored.fadeOut.value, 20);
       expect(restored.fadeOut.rangePx, 160);
-      expect(restored.pressureOn.mixing.mode, BrushMixingMode.bleed);
-      expect(restored.pressureOff.mixing.mode, BrushMixingMode.bleed);
+      expect(restored.pressureOn.mixing.mode, BrushMixingMode.watercolor);
+      expect(restored.pressureOff.mixing.mode, BrushMixingMode.watercolor);
     });
 
     test('四コマ漫画ブラシの形状設定が複製・再起動後も保持される', () async {

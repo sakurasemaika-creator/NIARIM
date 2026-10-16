@@ -1325,7 +1325,7 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get helpColorMixingDesc =>
-      'ブラシで塗る際、ブラシの直下にすでにある色と、これから塗ろうとしている選択色を混ぜ合わせながら描画する機能です。水彩や油彩のように、既存の色に新しい色をなじませたい時に使います。';
+      'ブラシで塗る際、ブラシの直下にすでにある色と、これから塗ろうとしている選択色を混ぜ合わせながら描画する機能です。ブラシ設定の「混色モード」で、混ぜずに塗る「デジタル」、絵の具のように混ざり拾った色を引きずって伸ばす「油彩風混色」、透明な絵の具を重ねて乾くと縁に色が溜まる「水彩風混色」を選べます。';
 
   @override
   String get helpPressureCurveTitle => '筆圧カーブ';
@@ -3027,16 +3027,38 @@ class AppLocalizationsJa extends AppLocalizations {
   String get brushSettingsMixingTitle => '混色モード';
 
   @override
-  String get brushSettingsMixingOff => 'OFF';
+  String get brushSettingsMixingOff => 'デジタル';
 
   @override
-  String get brushSettingsMixingAnalog => 'アナログ風';
+  String get brushSettingsMixingOil => '油彩風混色';
 
   @override
-  String get brushSettingsMixingBleed => 'にじみ';
+  String get brushSettingsMixingWatercolor => '水彩風混色';
 
   @override
   String get brushSettingsMixingBrightnessCorrection => '輝度の補正';
+
+  @override
+  String get brushSettingsMixingAmount => '混色度合い';
+
+  @override
+  String get brushSettingsMixingStretch => '色延び';
+
+  @override
+  String get brushSettingsMixingWater => '水分量';
+
+  @override
+  String get brushSettingsMixingPigment => '絵具量';
+
+  @override
+  String get brushSettingsMixingEdge => '縁の濃さ';
+
+  @override
+  String get brushSettingsMixingOilHint => '下の色と絵の具のように混ざり、拾った色を引きずって伸ばします。';
+
+  @override
+  String get brushSettingsMixingWatercolorHint =>
+      '透明な絵の具を重ねて塗ります。ペンを離すと乾いて、縁に色が溜まります。';
 
   @override
   String get projectDetailNotFoundTitle => 'プロジェクト';

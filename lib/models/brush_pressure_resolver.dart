@@ -10,6 +10,12 @@ class ResolvedBrushPressure {
   final int mixingRate;
   final int mixingBrightnessCorrection;
 
+  /// 色延び・水分量・絵具量・縁の濃さ（0〜100）。
+  final int mixingStretch;
+  final int mixingWater;
+  final int mixingPigment;
+  final int mixingEdge;
+
   const ResolvedBrushPressure({
     required this.sizeScale,
     required this.opacityScale,
@@ -19,6 +25,10 @@ class ResolvedBrushPressure {
     required this.mixingMode,
     required this.mixingRate,
     required this.mixingBrightnessCorrection,
+    this.mixingStretch = kDefaultMixingStretch,
+    this.mixingWater = kDefaultMixingWater,
+    this.mixingPigment = kDefaultMixingPigment,
+    this.mixingEdge = kDefaultMixingEdge,
   });
 
   @override
@@ -31,7 +41,11 @@ class ResolvedBrushPressure {
       edgeJitterStrength == other.edgeJitterStrength &&
       mixingMode == other.mixingMode &&
       mixingRate == other.mixingRate &&
-      mixingBrightnessCorrection == other.mixingBrightnessCorrection;
+      mixingBrightnessCorrection == other.mixingBrightnessCorrection &&
+      mixingStretch == other.mixingStretch &&
+      mixingWater == other.mixingWater &&
+      mixingPigment == other.mixingPigment &&
+      mixingEdge == other.mixingEdge;
 
   @override
   int get hashCode => Object.hash(
@@ -43,6 +57,10 @@ class ResolvedBrushPressure {
     mixingMode,
     mixingRate,
     mixingBrightnessCorrection,
+    mixingStretch,
+    mixingWater,
+    mixingPigment,
+    mixingEdge,
   );
 }
 
@@ -74,6 +92,10 @@ ResolvedBrushPressure resolveBrushPressure({
       mixingBrightnessCorrection: off.mixing.enabled
           ? off.mixing.brightnessCorrection.clamp(1, 5).toInt()
           : 3,
+      mixingStretch: off.mixing.stretch.clamp(0, 100).toInt(),
+      mixingWater: off.mixing.water.clamp(0, 100).toInt(),
+      mixingPigment: off.mixing.pigment.clamp(0, 100).toInt(),
+      mixingEdge: off.mixing.edge.clamp(0, 100).toInt(),
     );
   }
 
@@ -96,5 +118,9 @@ ResolvedBrushPressure resolveBrushPressure({
     mixingBrightnessCorrection: on.mixing.enabled
         ? on.mixing.brightnessCorrection.clamp(1, 5).toInt()
         : 3,
+    mixingStretch: on.mixing.stretch.clamp(0, 100).toInt(),
+    mixingWater: on.mixing.water.clamp(0, 100).toInt(),
+    mixingPigment: on.mixing.pigment.clamp(0, 100).toInt(),
+    mixingEdge: on.mixing.edge.clamp(0, 100).toInt(),
   );
 }

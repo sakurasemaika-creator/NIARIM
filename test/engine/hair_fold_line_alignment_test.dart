@@ -785,7 +785,7 @@ void main() {
         edgeJitter: PressureRangeSetting(enabled: false, weak: 0, strong: 0),
         mixing: PressureMixingOnSetting(
           enabled: false,
-          mode: BrushMixingMode.simple,
+          mode: BrushMixingMode.oil,
           weakRate: 0,
           strongRate: 0,
         ),
