@@ -575,7 +575,7 @@
   "helpPressureCurveTitle": "筆圧カーブ",
   "helpPressureCurveDesc": "ペン入力設定にある機能で、実際の筆圧の強さと、ブラシの太さ・不透明度への反映のされ方の関係をグラフで自由に調整できます。弱い筆圧でも太く出したい人、逆に強く押さないと太くならないようにしたい人など、手癖に合わせて描き心地を細かくカスタマイズできます。設定変更後はその場で試し書きしながら確認できます。",
   "helpTimelineTitle": "タイムライン",
-  "helpTimelineDesc": "アニメーションの時間軸を管理する画面です。フレーム（静止画1コマ）を並べてパラパラ漫画のように再生することでアニメーションになります。テキスト・画像・動画・音声の素材トラック、共通レイヤートラック、カメラキーフレームも同じタイムライン上で管理します。テキスト・画像・動画とフレームのイラストの前後関係は「重なり順」で、シーン全体、または指定したフレームの範囲ごとに並べ替えられます。",
+  "helpTimelineDesc": "アニメーションの時間軸を管理する画面です。フレーム（静止画1コマ）を並べてパラパラ漫画のように再生することでアニメーションになります。テキスト・画像・動画・音声の素材トラック、共通レイヤートラック、カメラキーフレームも同じタイムライン上で管理します。テキスト・画像・動画とフレームのイラストの前後関係は「重なり順」で、シーン全体、または指定したフレームの範囲ごとに並べ替えられます。項目を長押しして複数選択し、まとめて動かすこともできます。",
   "helpSceneTitle": "シーン",
   "helpSceneDesc": "1つのプロジェクト（1本の動画）の中を、場面（カット）ごとに分割して管理する機能です。フォルダがプロジェクト単位の整理なのに対し、シーンは1本の動画の中の場面転換を表現するために使います。タイムラインのシーンタブでは、シーンの追加・複製・削除・名前変更・並び替えができます。複数選択モードにすると複数シーンをまとめて移動・複製・削除することも可能です。",
   "helpCameraKeyframeTitle": "カメラキーフレーム",
@@ -2392,6 +2392,19 @@
   "timelineStackFrameMaskHint": "描いた絵だけを切り抜きます。テキスト・画像・動画には効きません。キャンバスで描いている間は隠れません。",
   "timelineStackMoveUp": "手前へ",
   "timelineStackMoveDown": "奥へ",
+  "timelineStackSelectedCount": "{count}件選択中",
+  "@timelineStackSelectedCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "timelineStackBringToFront": "最前面へ",
+  "timelineStackSendToBack": "最背面へ",
+  "timelineStackDeselectAll": "全解除",
+  "timelineStackSelectAll": "全選択",
+  "timelineStackMultiSelectHint": "項目を長押しすると複数選択できます。選んだ項目は矢印・ドラッグ・下のボタンでまとめて動かせます。",
   "timelineWatermarkNotRegisteredTitle": "ウォーターマーク未登録",
   "timelineWatermarkNotRegisteredBody": "設定画面の「ウォーターマーク」からあらかじめ画像または文字を登録してください。",
   "timelineOpenSettingsButton": "設定を開く",

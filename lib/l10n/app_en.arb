@@ -467,7 +467,7 @@
   "helpPressureCurveTitle": "Pressure Curve",
   "helpPressureCurveDesc": "A feature in the pen input settings that lets you freely adjust, via a graph, the relationship between actual pen pressure and how it affects brush size and opacity. Whether you want thick lines even with light pressure, or the opposite — needing firm pressure to get thick lines — you can finely customize the feel to match your habits. You can try drawing right there to check the effect after changing the settings.",
   "helpTimelineTitle": "Timeline",
-  "helpTimelineDesc": "The screen for managing the time axis of your animation. Arranging frames (individual still images) and playing them back like a flipbook creates the animation. Text, image, video and audio material tracks, common layer tracks and camera keyframes are all managed on the same timeline. Which of the texts, images, videos and the frame's drawing is in front is set in \"Stacking order\", for the whole scene or for a range of frames.",
+  "helpTimelineDesc": "The screen for managing the time axis of your animation. Arranging frames (individual still images) and playing them back like a flipbook creates the animation. Text, image, video and audio material tracks, common layer tracks and camera keyframes are all managed on the same timeline. Which of the texts, images, videos and the frame's drawing is in front is set in \"Stacking order\", for the whole scene or for a range of frames. You can also long-press an item to select several and move them together.",
   "helpSceneTitle": "Scene",
   "helpSceneDesc": "Splits the inside of a single project (one video) into scenes (cuts) to manage them separately. While folders organize things at the project level, scenes represent scene changes within a single video. In the timeline’s scene tab you can add, duplicate, delete, rename, and reorder scenes. Switching to multi-select mode lets you move, duplicate, or delete multiple scenes at once.",
   "helpCameraKeyframeTitle": "Camera Keyframe",
@@ -2084,6 +2084,19 @@
   "timelineStackFrameMaskHint": "Crops only the drawing; text, images and video are not affected. The drawing is not hidden while you draw on the canvas.",
   "timelineStackMoveUp": "Bring forward",
   "timelineStackMoveDown": "Send backward",
+  "timelineStackSelectedCount": "{count} selected",
+  "@timelineStackSelectedCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "timelineStackBringToFront": "Bring to front",
+  "timelineStackSendToBack": "Send to back",
+  "timelineStackDeselectAll": "Deselect all",
+  "timelineStackSelectAll": "Select all",
+  "timelineStackMultiSelectHint": "Long-press an item to select several. The selected items move together with the arrows, by dragging or with the buttons below.",
   "timelineWatermarkNotRegisteredTitle": "No watermark registered",
   "timelineWatermarkNotRegisteredBody": "Register an image or text watermark in advance from \"Watermark\" in Settings.",
   "timelineOpenSettingsButton": "Open settings",

@@ -1331,7 +1331,7 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get helpTimelineDesc =>
-      '管理动画时间轴的画面。将帧（单张静止图像）排列并像翻页动画一样播放，就形成了动画。文字・图片・视频・音频素材轨道、公共图层轨道、摄像机关键帧也都在同一条时间轴上管理。文字・图片・视频与帧插画之间的前后关系可在「叠放顺序」中按整个场景或指定的帧范围调整。';
+      '管理动画时间轴的画面。将帧（单张静止图像）排列并像翻页动画一样播放，就形成了动画。文字・图片・视频・音频素材轨道、公共图层轨道、摄像机关键帧也都在同一条时间轴上管理。文字・图片・视频与帧插画之间的前后关系可在「叠放顺序」中按整个场景或指定的帧范围调整。也可以长按项目进行多选，一起移动。';
 
   @override
   String get helpSceneTitle => '场景';
@@ -4766,6 +4766,27 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get timelineStackMoveDown => '下移一层';
+
+  @override
+  String timelineStackSelectedCount(int count) {
+    return '已选择$count项';
+  }
+
+  @override
+  String get timelineStackBringToFront => '移到最前';
+
+  @override
+  String get timelineStackSendToBack => '移到最后';
+
+  @override
+  String get timelineStackDeselectAll => '取消全选';
+
+  @override
+  String get timelineStackSelectAll => '全选';
+
+  @override
+  String get timelineStackMultiSelectHint =>
+      '长按项目即可多选。选中的项目可以用箭头、拖动或下方的按钮一起移动。';
 
   @override
   String get timelineWatermarkNotRegisteredTitle => '尚未注册水印';
@@ -8658,7 +8679,7 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get helpTimelineDesc =>
-      '管理動畫時間軸的畫面。將影格（單張靜止影像）排列並像翻頁動畫一樣播放，就形成了動畫。文字・圖片・影片・音訊素材軌道、共用圖層軌道、攝影機關鍵影格也都在同一條時間軸上管理。文字・圖片・影片與影格插畫之間的前後關係可在「疊放順序」中依整個場景或指定的影格範圍調整。';
+      '管理動畫時間軸的畫面。將影格（單張靜止影像）排列並像翻頁動畫一樣播放，就形成了動畫。文字・圖片・影片・音訊素材軌道、共用圖層軌道、攝影機關鍵影格也都在同一條時間軸上管理。文字・圖片・影片與影格插畫之間的前後關係可在「疊放順序」中依整個場景或指定的影格範圍調整。也可以長按項目進行多選，一起移動。';
 
   @override
   String get helpSceneTitle => '場景';
@@ -12093,6 +12114,27 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get timelineStackMoveDown => '下移一層';
+
+  @override
+  String timelineStackSelectedCount(int count) {
+    return '已選擇$count項';
+  }
+
+  @override
+  String get timelineStackBringToFront => '移到最前';
+
+  @override
+  String get timelineStackSendToBack => '移到最後';
+
+  @override
+  String get timelineStackDeselectAll => '取消全選';
+
+  @override
+  String get timelineStackSelectAll => '全選';
+
+  @override
+  String get timelineStackMultiSelectHint =>
+      '長按項目即可多選。選取的項目可以用箭頭、拖曳或下方的按鈕一起移動。';
 
   @override
   String get timelineWatermarkNotRegisteredTitle => '尚未註冊浮水印';

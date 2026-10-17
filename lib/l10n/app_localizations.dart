@@ -2600,7 +2600,7 @@ abstract class AppLocalizations {
   /// No description provided for @helpTimelineDesc.
   ///
   /// In ja, this message translates to:
-  /// **'アニメーションの時間軸を管理する画面です。フレーム（静止画1コマ）を並べてパラパラ漫画のように再生することでアニメーションになります。テキスト・画像・動画・音声の素材トラック、共通レイヤートラック、カメラキーフレームも同じタイムライン上で管理します。テキスト・画像・動画とフレームのイラストの前後関係は「重なり順」で、シーン全体、または指定したフレームの範囲ごとに並べ替えられます。'**
+  /// **'アニメーションの時間軸を管理する画面です。フレーム（静止画1コマ）を並べてパラパラ漫画のように再生することでアニメーションになります。テキスト・画像・動画・音声の素材トラック、共通レイヤートラック、カメラキーフレームも同じタイムライン上で管理します。テキスト・画像・動画とフレームのイラストの前後関係は「重なり順」で、シーン全体、または指定したフレームの範囲ごとに並べ替えられます。項目を長押しして複数選択し、まとめて動かすこともできます。'**
   String get helpTimelineDesc;
 
   /// No description provided for @helpSceneTitle.
@@ -8818,6 +8818,42 @@ abstract class AppLocalizations {
   /// In ja, this message translates to:
   /// **'奥へ'**
   String get timelineStackMoveDown;
+
+  /// No description provided for @timelineStackSelectedCount.
+  ///
+  /// In ja, this message translates to:
+  /// **'{count}件選択中'**
+  String timelineStackSelectedCount(int count);
+
+  /// No description provided for @timelineStackBringToFront.
+  ///
+  /// In ja, this message translates to:
+  /// **'最前面へ'**
+  String get timelineStackBringToFront;
+
+  /// No description provided for @timelineStackSendToBack.
+  ///
+  /// In ja, this message translates to:
+  /// **'最背面へ'**
+  String get timelineStackSendToBack;
+
+  /// No description provided for @timelineStackDeselectAll.
+  ///
+  /// In ja, this message translates to:
+  /// **'全解除'**
+  String get timelineStackDeselectAll;
+
+  /// No description provided for @timelineStackSelectAll.
+  ///
+  /// In ja, this message translates to:
+  /// **'全選択'**
+  String get timelineStackSelectAll;
+
+  /// No description provided for @timelineStackMultiSelectHint.
+  ///
+  /// In ja, this message translates to:
+  /// **'項目を長押しすると複数選択できます。選んだ項目は矢印・ドラッグ・下のボタンでまとめて動かせます。'**
+  String get timelineStackMultiSelectHint;
 
   /// No description provided for @timelineWatermarkNotRegisteredTitle.
   ///

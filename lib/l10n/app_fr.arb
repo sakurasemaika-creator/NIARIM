@@ -467,7 +467,7 @@
   "helpPressureCurveTitle": "Courbe de pression",
   "helpPressureCurveDesc": "Une fonctionnalité des réglages de saisie au stylet qui permet d'ajuster librement, via un graphique, la relation entre la pression réelle du stylet et son effet sur la taille et l'opacité du pinceau. Que vous vouliez des lignes épaisses même avec une légère pression, ou l'inverse — nécessitant une pression ferme pour obtenir des lignes épaisses —, vous pouvez personnaliser finement la sensation pour l'adapter à vos habitudes. Vous pouvez essayer de dessiner directement pour vérifier l'effet après avoir modifié les réglages.",
   "helpTimelineTitle": "Chronologie",
-  "helpTimelineDesc": "L'écran de gestion de l'axe temporel de votre animation. Organiser des images (des images fixes individuelles) et les lire comme un folioscope crée l'animation. Les pistes de matériaux texte, image, vidéo et audio, les pistes de calques communs et les images clés de caméra sont toutes gérées sur la même chronologie. Ce qui passe devant parmi les textes, les images, les vidéos et le dessin de l'image se règle dans « Ordre d'empilement », pour toute la scène ou pour une plage d'images.",
+  "helpTimelineDesc": "L'écran de gestion de l'axe temporel de votre animation. Organiser des images (des images fixes individuelles) et les lire comme un folioscope crée l'animation. Les pistes de matériaux texte, image, vidéo et audio, les pistes de calques communs et les images clés de caméra sont toutes gérées sur la même chronologie. Ce qui passe devant parmi les textes, les images, les vidéos et le dessin de l'image se règle dans « Ordre d'empilement », pour toute la scène ou pour une plage d'images. Vous pouvez aussi appuyer longuement sur un élément pour en sélectionner plusieurs et les déplacer ensemble.",
   "helpSceneTitle": "Scène",
   "helpSceneDesc": "Divise l'intérieur d'un projet (une vidéo) en scènes (plans) pour les gérer séparément. Alors que les dossiers organisent au niveau du projet, les scènes représentent des changements de scène au sein d'une même vidéo. Dans l'onglet des scènes de la timeline, vous pouvez ajouter, dupliquer, supprimer, renommer et réorganiser les scènes. Passer en mode de sélection multiple permet de déplacer, dupliquer ou supprimer plusieurs scènes à la fois.",
   "helpCameraKeyframeTitle": "Image clé de caméra",
@@ -2084,6 +2084,19 @@
   "timelineStackFrameMaskHint": "Ne recadre que le dessin ; le texte, les images et la vidéo ne sont pas affectés. Le dessin n'est pas masqué pendant que vous dessinez sur le canevas.",
   "timelineStackMoveUp": "Avancer",
   "timelineStackMoveDown": "Reculer",
+  "timelineStackSelectedCount": "{count} sélectionné(s)",
+  "@timelineStackSelectedCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "timelineStackBringToFront": "Premier plan",
+  "timelineStackSendToBack": "Arrière-plan",
+  "timelineStackDeselectAll": "Tout désélectionner",
+  "timelineStackSelectAll": "Tout sélectionner",
+  "timelineStackMultiSelectHint": "Appuyez longuement sur un élément pour en sélectionner plusieurs. Les éléments sélectionnés se déplacent ensemble avec les flèches, en les faisant glisser ou avec les boutons ci-dessous.",
   "timelineWatermarkNotRegisteredTitle": "Aucun filigrane enregistré",
   "timelineWatermarkNotRegisteredBody": "Enregistrez d'abord une image ou un filigrane texte depuis « Filigrane » dans les réglages.",
   "timelineOpenSettingsButton": "Ouvrir les réglages",

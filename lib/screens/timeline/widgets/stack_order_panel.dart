@@ -67,6 +67,29 @@ class _TimelineStackOrderPanelState extends State<TimelineStackOrderPanel> {
   /// The scenes chosen for 「シーン複数選択」 (this scene to begin with).
   Set<String>? _chosenScenes;
 
+  /// Whether items are being picked (a long press on one starts it), and
+  /// the picked items' 重なり順 keys: the arrows, a drag and the bar below
+  /// move them together.
+  bool _selecting = false;
+  final Set<String> _picked = {};
+
+  /// The order list shown in this build and how to change it, for the
+  /// selection bar under the panel.
+  ({List<String> order, ValueChanged<List<String>> apply})? _shown;
+
+  void _toggle(String key) => setState(() {
+    if (!_picked.remove(key)) {
+      _picked.add(key);
+    } else if (_picked.isEmpty) {
+      _selecting = false;
+    }
+  });
+
+  void _deselectAll() => setState(() {
+    _picked.clear();
+    _selecting = false;
+  });
+
   /// The rows with materials in [scene], as 重なり順 keys, and the names of
   /// the materials on each.
   Map<String, List<String>> _rowsOf(Scene scene) {
@@ -180,41 +203,82 @@ class _TimelineStackOrderPanelState extends State<TimelineStackOrderPanel> {
   ) {
     final l10n = AppLocalizations.of(context)!;
     final scheme = Theme.of(context).colorScheme;
-    void move(int from, int to) {
-      if (to < 0 || to >= order.length || from == to) return;
-      final next = [...order];
-      final key = next.removeAt(from);
-      next.insert(to, key);
-      onReordered(next);
-    }
+    _shown = (order: order, apply: onReordered);
+    final picked = _picked.intersection(order.toSet());
+    // A picked item's arrows move every picked item; another item's move
+    // just that one.
+    List<String> step(String key, {required bool forward}) =>
+        stepStackSelection(
+          order,
+          picked.contains(key) ? picked : {key},
+          forward: forward,
+        );
 
-    return ReorderableListView.builder(
+    final list = ReorderableListView.builder(
       shrinkWrap: true,
       physics: const NeverScrollableScrollPhysics(),
       buildDefaultDragHandles: false,
       itemCount: order.length,
-      onReorderItem: move,
+      onReorderItem: (from, to) {
+        if (from != to) {
+          onReordered(dragStackSelection(order, picked, from, to));
+        }
+      },
       itemBuilder: (context, i) {
         final key = order[i];
         final names = rows[key] ?? const <String>[];
+        final isPicked = _selecting && picked.contains(key);
+        final up = step(key, forward: true);
+        final down = step(key, forward: false);
         return Card(
           key: ValueKey('stack-$key'),
           margin: const EdgeInsets.symmetric(vertical: 3),
           color: key == kStackFrame
               ? scheme.secondaryContainer
               : scheme.surfaceContainerHigh,
+          shape: isPicked
+              ? RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  side: BorderSide(color: scheme.primary, width: 2),
+                )
+              : null,
           child: ListTile(
             dense: true,
             contentPadding: const EdgeInsets.only(left: 4, right: 0),
-            leading: ReorderableDragStartListener(
-              index: i,
-              child: Padding(
-                padding: const EdgeInsets.all(8),
-                child: Icon(
-                  Icons.drag_indicator,
-                  color: scheme.onSurfaceVariant,
+            onLongPress: _selecting
+                ? null
+                : () => setState(() {
+                    _selecting = true;
+                    _picked
+                      ..clear()
+                      ..add(key);
+                  }),
+            onTap: _selecting ? () => _toggle(key) : null,
+            leading: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                ReorderableDragStartListener(
+                  index: i,
+                  child: Padding(
+                    padding: EdgeInsets.symmetric(
+                      horizontal: _selecting ? 4 : 8,
+                      vertical: 8,
+                    ),
+                    child: Icon(
+                      Icons.drag_indicator,
+                      color: scheme.onSurfaceVariant,
+                    ),
+                  ),
                 ),
-              ),
+                // The whole item toggles too, so the box can be small.
+                if (_selecting)
+                  Checkbox(
+                    value: isPicked,
+                    visualDensity: VisualDensity.compact,
+                    materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                    onChanged: (_) => _toggle(key),
+                  ),
+              ],
             ),
             title: Row(
               children: [
@@ -243,21 +307,122 @@ class _TimelineStackOrderPanelState extends State<TimelineStackOrderPanel> {
                   icon: const Icon(Icons.arrow_upward),
                   tooltip: l10n.timelineStackMoveUp,
                   visualDensity: VisualDensity.compact,
-                  onPressed: i == 0 ? null : () => move(i, i - 1),
+                  onPressed: listEquals(up, order)
+                      ? null
+                      : () => onReordered(up),
                 ),
                 IconButton(
                   icon: const Icon(Icons.arrow_downward),
                   tooltip: l10n.timelineStackMoveDown,
                   visualDensity: VisualDensity.compact,
-                  onPressed: i == order.length - 1
+                  onPressed: listEquals(down, order)
                       ? null
-                      : () => move(i, i + 1),
+                      : () => onReordered(down),
                 ),
               ],
             ),
           ),
         );
       },
+    );
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        list,
+        if (!_selecting) _hint(l10n.timelineStackMultiSelectHint),
+      ],
+    );
+  }
+
+  /// The bar under the panel while items are picked: how many, select or
+  /// deselect all, and moving them to the front, forward, backward or to
+  /// the back together.
+  Widget _selectionBar() {
+    final l10n = AppLocalizations.of(context)!;
+    final scheme = Theme.of(context).colorScheme;
+    final shown = _shown!;
+    final order = shown.order;
+    final picked = _picked.intersection(order.toSet());
+    Widget action(IconData icon, String label, List<String> next) => Expanded(
+      child: TextButton(
+        style: TextButton.styleFrom(
+          padding: const EdgeInsets.symmetric(horizontal: 2, vertical: 4),
+          minimumSize: const Size(0, 48),
+        ),
+        onPressed: listEquals(next, order) ? null : () => shown.apply(next),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(icon, size: 20),
+            Text(
+              label,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: const TextStyle(fontSize: 10),
+            ),
+          ],
+        ),
+      ),
+    );
+
+    return Material(
+      color: scheme.surfaceContainerHighest,
+      child: SafeArea(
+        top: false,
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(12, 2, 4, 2),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Row(
+                children: [
+                  Expanded(
+                    child: Text(
+                      l10n.timelineStackSelectedCount(picked.length),
+                      overflow: TextOverflow.ellipsis,
+                      style: const TextStyle(fontSize: 12),
+                    ),
+                  ),
+                  TextButton(
+                    onPressed: picked.length == order.length
+                        ? null
+                        : () => setState(() => _picked.addAll(order)),
+                    child: Text(l10n.timelineStackSelectAll),
+                  ),
+                  TextButton(
+                    onPressed: _deselectAll,
+                    child: Text(l10n.timelineStackDeselectAll),
+                  ),
+                ],
+              ),
+              Row(
+                children: [
+                  action(
+                    Icons.vertical_align_top,
+                    l10n.timelineStackBringToFront,
+                    stackSelectionToEnd(order, picked, front: true),
+                  ),
+                  action(
+                    Icons.arrow_upward,
+                    l10n.timelineStackMoveUp,
+                    stepStackSelection(order, picked, forward: true),
+                  ),
+                  action(
+                    Icons.arrow_downward,
+                    l10n.timelineStackMoveDown,
+                    stepStackSelection(order, picked, forward: false),
+                  ),
+                  action(
+                    Icons.vertical_align_bottom,
+                    l10n.timelineStackSendToBack,
+                    stackSelectionToEnd(order, picked, front: false),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ),
+      ),
     );
   }
 
@@ -513,6 +678,21 @@ class _TimelineStackOrderPanelState extends State<TimelineStackOrderPanel> {
               (inRange >= 0 ? _StackTarget.range : _StackTarget.currentScene);
           // Until one is picked, the range the shown frame is in.
           final selected = _selected ?? (inRange >= 0 ? inRange : null);
+          // Built first: it sets [_shown] for the selection bar.
+          _shown = null;
+          final section = switch (target) {
+            _StackTarget.currentScene => _scenesOrder(ps, scene, [
+              scene,
+            ], l10n.timelineStackOrderHint),
+            _StackTarget.range => _rangeSection(ps, scene, frame, selected),
+            _StackTarget.scenes => _chosenScenesSection(ps, scene),
+            _StackTarget.allFrames => _scenesOrder(
+              ps,
+              scene,
+              ps.scenesOf(widget.projectId),
+              l10n.timelineStackAllFramesHint,
+            ),
+          };
           return Column(
             children: [
               Padding(
@@ -598,24 +778,7 @@ class _TimelineStackOrderPanelState extends State<TimelineStackOrderPanel> {
                           ],
                         ),
                       ),
-                      ...switch (target) {
-                        _StackTarget.currentScene => _scenesOrder(ps, scene, [
-                          scene,
-                        ], l10n.timelineStackOrderHint),
-                        _StackTarget.range => _rangeSection(
-                          ps,
-                          scene,
-                          frame,
-                          selected,
-                        ),
-                        _StackTarget.scenes => _chosenScenesSection(ps, scene),
-                        _StackTarget.allFrames => _scenesOrder(
-                          ps,
-                          scene,
-                          ps.scenesOf(widget.projectId),
-                          l10n.timelineStackAllFramesHint,
-                        ),
-                      },
+                      ...section,
                       const Divider(height: 24),
                       Text(
                         l10n.timelineStackFrameMaskTitle,
@@ -635,6 +798,7 @@ class _TimelineStackOrderPanelState extends State<TimelineStackOrderPanel> {
                   ),
                 ),
               ),
+              if (_selecting && _shown != null) _selectionBar(),
             ],
           );
         },

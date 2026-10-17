@@ -1389,7 +1389,7 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get helpTimelineDesc =>
-      'La pantalla para gestionar el eje temporal de tu animación. Organizar fotogramas (imágenes fijas individuales) y reproducirlos como un flipbook crea la animación. Las pistas de material de texto, imagen, vídeo y audio, las pistas de capas comunes y los fotogramas clave de cámara se gestionan todos en la misma línea de tiempo. Qué se muestra delante entre los textos, imágenes, vídeos y el dibujo del fotograma se ajusta en «Orden de apilado», para toda la escena o para un rango de fotogramas.';
+      'La pantalla para gestionar el eje temporal de tu animación. Organizar fotogramas (imágenes fijas individuales) y reproducirlos como un flipbook crea la animación. Las pistas de material de texto, imagen, vídeo y audio, las pistas de capas comunes y los fotogramas clave de cámara se gestionan todos en la misma línea de tiempo. Qué se muestra delante entre los textos, imágenes, vídeos y el dibujo del fotograma se ajusta en «Orden de apilado», para toda la escena o para un rango de fotogramas. También puedes mantener pulsado un elemento para seleccionar varios y moverlos a la vez.';
 
   @override
   String get helpSceneTitle => 'Escena';
@@ -5032,6 +5032,27 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get timelineStackMoveDown => 'Enviar atrás';
+
+  @override
+  String timelineStackSelectedCount(int count) {
+    return '$count seleccionado(s)';
+  }
+
+  @override
+  String get timelineStackBringToFront => 'Traer al frente';
+
+  @override
+  String get timelineStackSendToBack => 'Enviar al fondo';
+
+  @override
+  String get timelineStackDeselectAll => 'Deseleccionar todo';
+
+  @override
+  String get timelineStackSelectAll => 'Seleccionar todo';
+
+  @override
+  String get timelineStackMultiSelectHint =>
+      'Mantén pulsado un elemento para seleccionar varios. Los seleccionados se mueven juntos con las flechas, arrastrando o con los botones de abajo.';
 
   @override
   String get timelineWatermarkNotRegisteredTitle =>

@@ -1339,7 +1339,7 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get helpTimelineDesc =>
-      'アニメーションの時間軸を管理する画面です。フレーム（静止画1コマ）を並べてパラパラ漫画のように再生することでアニメーションになります。テキスト・画像・動画・音声の素材トラック、共通レイヤートラック、カメラキーフレームも同じタイムライン上で管理します。テキスト・画像・動画とフレームのイラストの前後関係は「重なり順」で、シーン全体、または指定したフレームの範囲ごとに並べ替えられます。';
+      'アニメーションの時間軸を管理する画面です。フレーム（静止画1コマ）を並べてパラパラ漫画のように再生することでアニメーションになります。テキスト・画像・動画・音声の素材トラック、共通レイヤートラック、カメラキーフレームも同じタイムライン上で管理します。テキスト・画像・動画とフレームのイラストの前後関係は「重なり順」で、シーン全体、または指定したフレームの範囲ごとに並べ替えられます。項目を長押しして複数選択し、まとめて動かすこともできます。';
 
   @override
   String get helpSceneTitle => 'シーン';
@@ -4804,6 +4804,27 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get timelineStackMoveDown => '奥へ';
+
+  @override
+  String timelineStackSelectedCount(int count) {
+    return '$count件選択中';
+  }
+
+  @override
+  String get timelineStackBringToFront => '最前面へ';
+
+  @override
+  String get timelineStackSendToBack => '最背面へ';
+
+  @override
+  String get timelineStackDeselectAll => '全解除';
+
+  @override
+  String get timelineStackSelectAll => '全選択';
+
+  @override
+  String get timelineStackMultiSelectHint =>
+      '項目を長押しすると複数選択できます。選んだ項目は矢印・ドラッグ・下のボタンでまとめて動かせます。';
 
   @override
   String get timelineWatermarkNotRegisteredTitle => 'ウォーターマーク未登録';

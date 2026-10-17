@@ -467,7 +467,7 @@
   "helpPressureCurveTitle": "筆壓曲線",
   "helpPressureCurveDesc": "筆輸入設定中的功能，可透過圖表自由調整實際筆壓強度與筆刷粗細・不透明度反映方式之間的關係。無論是希望輕壓也能畫出粗線的人，還是相反希望必須用力按壓才會變粗的人，都能依自己的用筆習慣細緻自訂畫感。變更設定後可當場試畫確認效果。",
   "helpTimelineTitle": "時間軸",
-  "helpTimelineDesc": "管理動畫時間軸的畫面。將影格（單張靜止影像）排列並像翻頁動畫一樣播放，就形成了動畫。文字・圖片・影片・音訊素材軌道、共用圖層軌道、攝影機關鍵影格也都在同一條時間軸上管理。文字・圖片・影片與影格插畫之間的前後關係可在「疊放順序」中依整個場景或指定的影格範圍調整。",
+  "helpTimelineDesc": "管理動畫時間軸的畫面。將影格（單張靜止影像）排列並像翻頁動畫一樣播放，就形成了動畫。文字・圖片・影片・音訊素材軌道、共用圖層軌道、攝影機關鍵影格也都在同一條時間軸上管理。文字・圖片・影片與影格插畫之間的前後關係可在「疊放順序」中依整個場景或指定的影格範圍調整。也可以長按項目進行多選，一起移動。",
   "helpSceneTitle": "場景",
   "helpSceneDesc": "將一個專案（一段影片）內部按場景（分鏡）劃分管理的功能。資料夾是以專案為單位進行整理，而場景則用於表現一段影片內部的場景轉換。在時間軸的場景標籤中可以新增、複製、刪除、重新命名、重新排序場景。切換到多選模式後，還可以一次性移動、複製或刪除多個場景。",
   "helpCameraKeyframeTitle": "攝影機關鍵影格",
@@ -2084,6 +2084,19 @@
   "timelineStackFrameMaskHint": "只裁切繪製的畫面，不影響文字、圖片和影片。在畫布上繪製時不會被隱藏。",
   "timelineStackMoveUp": "上移一層",
   "timelineStackMoveDown": "下移一層",
+  "timelineStackSelectedCount": "已選擇{count}項",
+  "@timelineStackSelectedCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "timelineStackBringToFront": "移到最前",
+  "timelineStackSendToBack": "移到最後",
+  "timelineStackDeselectAll": "取消全選",
+  "timelineStackSelectAll": "全選",
+  "timelineStackMultiSelectHint": "長按項目即可多選。選取的項目可以用箭頭、拖曳或下方的按鈕一起移動。",
   "timelineWatermarkNotRegisteredTitle": "尚未註冊浮水印",
   "timelineWatermarkNotRegisteredBody": "請先在設定畫面的「浮水印」中註冊圖片或文字。",
   "timelineOpenSettingsButton": "開啟設定",

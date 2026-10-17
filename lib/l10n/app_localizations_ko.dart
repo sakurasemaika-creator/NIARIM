@@ -1343,7 +1343,7 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get helpTimelineDesc =>
-      '애니메이션의 시간축을 관리하는 화면입니다. 프레임（정지 화면 1컷）을 나열하여 플립북처럼 재생하면 애니메이션이 됩니다. 텍스트・이미지・동영상・오디오 소재 트랙, 공통 레이어 트랙, 카메라 키프레임도 같은 타임라인에서 관리합니다. 텍스트・이미지・동영상과 프레임 일러스트의 앞뒤 관계는 「겹침 순서」에서 장면 전체 또는 지정한 프레임 범위별로 바꿀 수 있습니다.';
+      '애니메이션의 시간축을 관리하는 화면입니다. 프레임（정지 화면 1컷）을 나열하여 플립북처럼 재생하면 애니메이션이 됩니다. 텍스트・이미지・동영상・오디오 소재 트랙, 공통 레이어 트랙, 카메라 키프레임도 같은 타임라인에서 관리합니다. 텍스트・이미지・동영상과 프레임 일러스트의 앞뒤 관계는 「겹침 순서」에서 장면 전체 또는 지정한 프레임 범위별로 바꿀 수 있습니다. 항목을 길게 눌러 여러 개를 선택하고 한꺼번에 옮길 수도 있습니다.';
 
   @override
   String get helpSceneTitle => '씬';
@@ -4828,6 +4828,27 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get timelineStackMoveDown => '뒤로';
+
+  @override
+  String timelineStackSelectedCount(int count) {
+    return '$count개 선택됨';
+  }
+
+  @override
+  String get timelineStackBringToFront => '맨 앞으로';
+
+  @override
+  String get timelineStackSendToBack => '맨 뒤로';
+
+  @override
+  String get timelineStackDeselectAll => '전체 해제';
+
+  @override
+  String get timelineStackSelectAll => '전체 선택';
+
+  @override
+  String get timelineStackMultiSelectHint =>
+      '항목을 길게 누르면 여러 개를 선택할 수 있습니다. 선택한 항목은 화살표, 드래그, 아래 버튼으로 한꺼번에 옮길 수 있습니다.';
 
   @override
   String get timelineWatermarkNotRegisteredTitle => '등록된 워터마크 없음';

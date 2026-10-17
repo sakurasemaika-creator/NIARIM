@@ -1365,7 +1365,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get helpTimelineDesc =>
-      'The screen for managing the time axis of your animation. Arranging frames (individual still images) and playing them back like a flipbook creates the animation. Text, image, video and audio material tracks, common layer tracks and camera keyframes are all managed on the same timeline. Which of the texts, images, videos and the frame\'s drawing is in front is set in \"Stacking order\", for the whole scene or for a range of frames.';
+      'The screen for managing the time axis of your animation. Arranging frames (individual still images) and playing them back like a flipbook creates the animation. Text, image, video and audio material tracks, common layer tracks and camera keyframes are all managed on the same timeline. Which of the texts, images, videos and the frame\'s drawing is in front is set in \"Stacking order\", for the whole scene or for a range of frames. You can also long-press an item to select several and move them together.';
 
   @override
   String get helpSceneTitle => 'Scene';
@@ -4968,6 +4968,27 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get timelineStackMoveDown => 'Send backward';
+
+  @override
+  String timelineStackSelectedCount(int count) {
+    return '$count selected';
+  }
+
+  @override
+  String get timelineStackBringToFront => 'Bring to front';
+
+  @override
+  String get timelineStackSendToBack => 'Send to back';
+
+  @override
+  String get timelineStackDeselectAll => 'Deselect all';
+
+  @override
+  String get timelineStackSelectAll => 'Select all';
+
+  @override
+  String get timelineStackMultiSelectHint =>
+      'Long-press an item to select several. The selected items move together with the arrows, by dragging or with the buttons below.';
 
   @override
   String get timelineWatermarkNotRegisteredTitle => 'No watermark registered';

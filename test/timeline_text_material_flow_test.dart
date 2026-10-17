@@ -416,6 +416,77 @@ void main() {
     await capture('10_frame_mask');
     expect(tester.takeException(), isNull);
 
+    // ── 複数選択: long-press text 1, add text 2, send both to the back ──
+    final sceneRadio = find.text(l10n.timelineStackScopeScene);
+    await tester.ensureVisible(sceneRadio);
+    await tester.tap(sceneRadio);
+    await tester.pump();
+    List<String> sceneOrder() =>
+        ps.sceneOf(project.id, sceneId)!.stack.order.toList();
+    expect(sceneOrder(), [
+      stackTrackKey(StackTrackKind.text, 0),
+      kStackFrame,
+      stackTrackKey(StackTrackKind.text, 1),
+    ]);
+    Finder rowOf(String label) =>
+        find.ancestor(of: find.text(label), matching: find.byType(ListTile));
+    final text1Row = rowOf('${l10n.timelineMaterialText}1');
+    final text2Row = rowOf('${l10n.timelineMaterialText}2');
+    expect(find.byType(Checkbox), findsNothing);
+    await tester.ensureVisible(text1Row);
+    await tester.longPress(text1Row);
+    await tester.pump();
+    // Selection mode: a box on every item, the bar under the panel.
+    expect(find.byType(Checkbox), findsNWidgets(3));
+    expect(find.text(l10n.timelineStackSelectedCount(1)), findsOneWidget);
+    await tester.ensureVisible(text2Row);
+    await tester.tap(text2Row);
+    await tester.pump();
+    expect(find.text(l10n.timelineStackSelectedCount(2)), findsOneWidget);
+    // The whole list in view, from its first item.
+    Future<void> showListTop() async {
+      final top = find.byKey(ValueKey('stack-${sceneOrder().first}'));
+      await tester.runAsync(
+        () => Scrollable.ensureVisible(tester.element(top), alignment: 0.02),
+      );
+      await tester.pump();
+    }
+
+    await showListTop();
+    await capture('11_multi_select');
+    await tester.tap(
+      find.widgetWithText(TextButton, l10n.timelineStackSendToBack),
+    );
+    await tester.pump();
+    expect(sceneOrder(), [
+      kStackFrame,
+      stackTrackKey(StackTrackKind.text, 0),
+      stackTrackKey(StackTrackKind.text, 1),
+    ]);
+    await showListTop();
+    await capture('12_multi_sent_back');
+    // A picked item's arrow moves both: up one place past the drawing.
+    final text2Up = find.descendant(
+      of: text2Row,
+      matching: find.byTooltip(l10n.timelineStackMoveUp),
+    );
+    await tester.ensureVisible(text2Up);
+    await tester.tap(text2Up);
+    await tester.pump();
+    expect(sceneOrder(), [
+      stackTrackKey(StackTrackKind.text, 0),
+      stackTrackKey(StackTrackKind.text, 1),
+      kStackFrame,
+    ]);
+    // 全解除 leaves selection mode.
+    await tester.tap(
+      find.widgetWithText(TextButton, l10n.timelineStackDeselectAll),
+    );
+    await tester.pump();
+    expect(find.byType(Checkbox), findsNothing);
+    expect(find.text(l10n.timelineStackSelectedCount(2)), findsNothing);
+    expect(tester.takeException(), isNull);
+
     // A range left past the last frame (frames deleted after it was set)
     // shows clamped to the scene and can still be edited.
     final frames = ps.frameCount(project.id, sceneId);

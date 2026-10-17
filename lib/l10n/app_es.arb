@@ -467,7 +467,7 @@
   "helpPressureCurveTitle": "Curva de presión",
   "helpPressureCurveDesc": "Una función en los ajustes de entrada de lápiz que permite ajustar libremente, mediante un gráfico, la relación entre la presión real del lápiz y cómo afecta al tamaño y la opacidad del pincel. Ya sea que quieras líneas gruesas incluso con poca presión, o lo contrario —necesitando presión firme para obtener líneas gruesas—, puedes personalizar finamente la sensación para adaptarla a tus hábitos. Puedes probar a dibujar en el momento para comprobar el efecto tras cambiar los ajustes.",
   "helpTimelineTitle": "Línea de tiempo",
-  "helpTimelineDesc": "La pantalla para gestionar el eje temporal de tu animación. Organizar fotogramas (imágenes fijas individuales) y reproducirlos como un flipbook crea la animación. Las pistas de material de texto, imagen, vídeo y audio, las pistas de capas comunes y los fotogramas clave de cámara se gestionan todos en la misma línea de tiempo. Qué se muestra delante entre los textos, imágenes, vídeos y el dibujo del fotograma se ajusta en «Orden de apilado», para toda la escena o para un rango de fotogramas.",
+  "helpTimelineDesc": "La pantalla para gestionar el eje temporal de tu animación. Organizar fotogramas (imágenes fijas individuales) y reproducirlos como un flipbook crea la animación. Las pistas de material de texto, imagen, vídeo y audio, las pistas de capas comunes y los fotogramas clave de cámara se gestionan todos en la misma línea de tiempo. Qué se muestra delante entre los textos, imágenes, vídeos y el dibujo del fotograma se ajusta en «Orden de apilado», para toda la escena o para un rango de fotogramas. También puedes mantener pulsado un elemento para seleccionar varios y moverlos a la vez.",
   "helpSceneTitle": "Escena",
   "helpSceneDesc": "Divide el interior de un proyecto (un vídeo) en escenas (cortes) para gestionarlas por separado. Mientras que las carpetas organizan a nivel de proyecto, las escenas representan cambios de escena dentro de un mismo vídeo. En la pestaña de escenas de la línea de tiempo puedes añadir, duplicar, eliminar, renombrar y reordenar escenas. Al cambiar al modo de selección múltiple puedes mover, duplicar o eliminar varias escenas a la vez.",
   "helpCameraKeyframeTitle": "Fotograma clave de cámara",
@@ -2084,6 +2084,19 @@
   "timelineStackFrameMaskHint": "Recorta solo el dibujo; no afecta al texto, las imágenes ni el vídeo. El dibujo no se oculta mientras dibujas en el lienzo.",
   "timelineStackMoveUp": "Traer adelante",
   "timelineStackMoveDown": "Enviar atrás",
+  "timelineStackSelectedCount": "{count} seleccionado(s)",
+  "@timelineStackSelectedCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "timelineStackBringToFront": "Traer al frente",
+  "timelineStackSendToBack": "Enviar al fondo",
+  "timelineStackDeselectAll": "Deseleccionar todo",
+  "timelineStackSelectAll": "Seleccionar todo",
+  "timelineStackMultiSelectHint": "Mantén pulsado un elemento para seleccionar varios. Los seleccionados se mueven juntos con las flechas, arrastrando o con los botones de abajo.",
   "timelineWatermarkNotRegisteredTitle": "No hay ninguna marca de agua registrada",
   "timelineWatermarkNotRegisteredBody": "Registra primero una imagen o una marca de agua de texto en «Marca de agua» dentro de Ajustes.",
   "timelineOpenSettingsButton": "Abrir ajustes",

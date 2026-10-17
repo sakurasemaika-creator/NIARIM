@@ -179,4 +179,94 @@ void main() {
     expect(back.frameMask, stack.frameMask);
     expect(SceneStack.fromJson(null).isEmpty, isTrue);
   });
+
+  group('moving several picked items together', () {
+    const order = ['a', 'b', 'c', 'd', 'e'];
+
+    test('one step: each passes its unpicked neighbour, runs move as one', () {
+      expect(stepStackSelection(order, {'c', 'e'}, forward: true), [
+        'a',
+        'c',
+        'b',
+        'e',
+        'd',
+      ]);
+      expect(stepStackSelection(order, {'c', 'd'}, forward: true), [
+        'a',
+        'c',
+        'd',
+        'b',
+        'e',
+      ]);
+      // Already at the front: it stays, the other one still moves.
+      expect(stepStackSelection(order, {'a', 'd'}, forward: true), [
+        'a',
+        'b',
+        'd',
+        'c',
+        'e',
+      ]);
+      expect(stepStackSelection(order, {'a', 'c'}, forward: false), [
+        'b',
+        'a',
+        'd',
+        'c',
+        'e',
+      ]);
+      // A run at the back stays where it is.
+      expect(stepStackSelection(order, {'d', 'e'}, forward: false), order);
+      // One item is a plain swap.
+      expect(stepStackSelection(order, {'b'}, forward: true), [
+        'b',
+        'a',
+        'c',
+        'd',
+        'e',
+      ]);
+    });
+
+    test('to the front or back, keeping their own order', () {
+      expect(stackSelectionToEnd(order, {'d', 'b'}, front: true), [
+        'b',
+        'd',
+        'a',
+        'c',
+        'e',
+      ]);
+      expect(stackSelectionToEnd(order, {'d', 'b'}, front: false), [
+        'a',
+        'c',
+        'e',
+        'b',
+        'd',
+      ]);
+    });
+
+    test('dragging a picked item brings the others along', () {
+      // b (picked with d) dragged to the back: d follows it.
+      expect(dragStackSelection(order, {'b', 'd'}, 1, 4), [
+        'a',
+        'c',
+        'e',
+        'b',
+        'd',
+      ]);
+      // d dragged to the front: b gathers in front of it (its own order).
+      expect(dragStackSelection(order, {'b', 'd'}, 3, 0), [
+        'b',
+        'd',
+        'a',
+        'c',
+        'e',
+      ]);
+      // An unpicked item moves on its own.
+      expect(dragStackSelection(order, {'b', 'd'}, 4, 0), [
+        'e',
+        'a',
+        'b',
+        'c',
+        'd',
+      ]);
+    });
+  });
 }

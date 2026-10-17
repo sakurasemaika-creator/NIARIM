@@ -70,6 +70,80 @@ List<String> normalizeStackOrder(List<String> chosen, Set<String> present) {
   return result;
 }
 
+/// [order] with the [selected] units one place toward the front
+/// ([forward]) or the back: each passes its nearest unselected neighbour, so
+/// the selected units keep their own order and a run of them moves as one.
+/// Units already at that end stay.
+List<String> stepStackSelection(
+  List<String> order,
+  Set<String> selected, {
+  required bool forward,
+}) {
+  final result = [...order];
+  void swapIfBlocked(int i, int toward) {
+    if (selected.contains(result[i]) && !selected.contains(result[toward])) {
+      final key = result[i];
+      result[i] = result[toward];
+      result[toward] = key;
+    }
+  }
+
+  if (forward) {
+    for (var i = 1; i < result.length; i++) {
+      swapIfBlocked(i, i - 1);
+    }
+  } else {
+    for (var i = result.length - 2; i >= 0; i--) {
+      swapIfBlocked(i, i + 1);
+    }
+  }
+  return result;
+}
+
+/// [order] with the [selected] units moved to the very front ([front]) or
+/// back, keeping their own order.
+List<String> stackSelectionToEnd(
+  List<String> order,
+  Set<String> selected, {
+  required bool front,
+}) {
+  final chosen = [
+    for (final k in order)
+      if (selected.contains(k)) k,
+  ];
+  final others = [
+    for (final k in order)
+      if (!selected.contains(k)) k,
+  ];
+  return front ? [...chosen, ...others] : [...others, ...chosen];
+}
+
+/// [order] after the unit at [from] is dragged to [to] (its place once it
+/// has been taken out). Dragging one of several [selected] units brings the
+/// others along: they gather around it in their own order.
+List<String> dragStackSelection(
+  List<String> order,
+  Set<String> selected,
+  int from,
+  int to,
+) {
+  final dragged = order[from];
+  final moved = [...order]
+    ..removeAt(from)
+    ..insert(to, dragged);
+  final group = [
+    for (final k in order)
+      if (selected.contains(k)) k,
+  ];
+  if (!selected.contains(dragged) || group.length < 2) return moved;
+  final rest = [
+    for (final k in moved)
+      if (k == dragged || !selected.contains(k)) k,
+  ];
+  final at = rest.indexOf(dragged);
+  return rest..replaceRange(at, at + 1, group);
+}
+
 /// The 重なり順 at [frameIndex] of [scene] for the units in [present] (the
 /// frame's drawing is always one of them), front first.
 List<String> stackOrderAt(Scene scene, int frameIndex, Set<String> present) =>

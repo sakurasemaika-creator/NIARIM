@@ -1384,7 +1384,7 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get helpTimelineDesc =>
-      'L\'écran de gestion de l\'axe temporel de votre animation. Organiser des images (des images fixes individuelles) et les lire comme un folioscope crée l\'animation. Les pistes de matériaux texte, image, vidéo et audio, les pistes de calques communs et les images clés de caméra sont toutes gérées sur la même chronologie. Ce qui passe devant parmi les textes, les images, les vidéos et le dessin de l\'image se règle dans « Ordre d\'empilement », pour toute la scène ou pour une plage d\'images.';
+      'L\'écran de gestion de l\'axe temporel de votre animation. Organiser des images (des images fixes individuelles) et les lire comme un folioscope crée l\'animation. Les pistes de matériaux texte, image, vidéo et audio, les pistes de calques communs et les images clés de caméra sont toutes gérées sur la même chronologie. Ce qui passe devant parmi les textes, les images, les vidéos et le dessin de l\'image se règle dans « Ordre d\'empilement », pour toute la scène ou pour une plage d\'images. Vous pouvez aussi appuyer longuement sur un élément pour en sélectionner plusieurs et les déplacer ensemble.';
 
   @override
   String get helpSceneTitle => 'Scène';
@@ -5043,6 +5043,27 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get timelineStackMoveDown => 'Reculer';
+
+  @override
+  String timelineStackSelectedCount(int count) {
+    return '$count sélectionné(s)';
+  }
+
+  @override
+  String get timelineStackBringToFront => 'Premier plan';
+
+  @override
+  String get timelineStackSendToBack => 'Arrière-plan';
+
+  @override
+  String get timelineStackDeselectAll => 'Tout désélectionner';
+
+  @override
+  String get timelineStackSelectAll => 'Tout sélectionner';
+
+  @override
+  String get timelineStackMultiSelectHint =>
+      'Appuyez longuement sur un élément pour en sélectionner plusieurs. Les éléments sélectionnés se déplacent ensemble avec les flèches, en les faisant glisser ou avec les boutons ci-dessous.';
 
   @override
   String get timelineWatermarkNotRegisteredTitle =>
