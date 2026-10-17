@@ -137,14 +137,18 @@ class _SplashScreenState extends State<SplashScreen> {
     // 見えないようにする。タイトルロゴ（アプリ名の書き文字）は背景を
     // 持たない単色SVGのまま、モノグラムの下に元のSVGアスペクト比
     // （幅3470×高さ690相当）を保った横長サイズで添える。
-    // PC（DeX等）とタブレット（短辺600dp以上）では、ロゴを控えめにして
-    // ボタンを相対的に大きくする（マウスでも押しやすく、画面が広くても
-    // 導線が主役になるように）。組んだ後で全体を画面の大きさに合わせて
-    // 拡大する（下の`upscale`）。スマホはボタンの大きさを変えない。
+    // どの画面でも、導線のボタンをアプリアイコン（モノグラム）とアプリ名の
+    // ロゴより大きく見せる（主役は「作品をつくる」「作品広場」）。ロゴは
+    // ボタンの基準幅に対する比で決める：モノグラムはボタンの0.6倍、
+    // アプリ名はボタンより一回り狭い0.9倍。並び全体を縮めたり（小さな
+    // 横画面）拡大したり（下の`upscale`）しても、比はそのまま保たれる。
+    // PC（DeX等）とタブレット（短辺600dp以上）では、画面が広くても導線が
+    // 主役になるよう、モノグラムをさらに控えめ（0.55倍）にする。
     final pc =
         isWideScreen(context) || MediaQuery.sizeOf(context).shortestSide >= 600;
-    final logoSize = pc ? 82.0 : 110.0;
-    final titleWidth = pc ? 164.0 : 220.0;
+    const tileBase = _SplashActionButton.baseWidth;
+    final logoSize = tileBase * (pc ? 0.55 : 0.6);
+    final titleWidth = tileBase * 0.9;
     final titleHeight = titleWidth * 690 / 3470;
     final logo = Column(
       mainAxisSize: MainAxisSize.min,
@@ -410,7 +414,7 @@ class _SplashActionButton extends StatefulWidget {
     required this.height,
   });
 
-  static const double _width = 150;
+  static const double baseWidth = 150;
 
   /// キーボードのフォーカス枠のために、タイルの外周へ確保している幅。
   static const double focusRingInset = 6;
@@ -441,7 +445,7 @@ class _SplashActionButton extends StatefulWidget {
 
   /// タイルの幅。OSの文字サイズの倍率（2倍まで）に合わせて広げる。
   static double widthFor(BuildContext context) =>
-      _width * MediaQuery.textScalerOf(context).scale(1).clamp(1.0, 2.0);
+      baseWidth * MediaQuery.textScalerOf(context).scale(1).clamp(1.0, 2.0);
 
   /// [label]・[subLabel]を幅[width]のタイルに描いたときに要る高さ
   /// （最低でも幅と同じ）。OSの文字サイズ設定（textScaler）も含めて実際の

@@ -40,6 +40,31 @@ void main() {
     if (tempDir.existsSync()) tempDir.deleteSync(recursive: true);
   });
 
+  // ロゴ（モノグラムとアプリ名）の矩形。導線のボタンより小さくあるべき。
+  Finder svgAsset(String name) => find.byWidgetPredicate(
+    (w) =>
+        w is SvgPicture &&
+        w.bytesLoader is SvgAssetLoader &&
+        (w.bytesLoader as SvgAssetLoader).assetName == name,
+  );
+  String? logoLargerThanTile(WidgetTester tester, Rect tile) {
+    final monogram = tester.getRect(
+      find
+          .ancestor(
+            of: svgAsset('assets/logo/app_logo.svg'),
+            matching: find.byType(Container),
+          )
+          .first,
+    );
+    final title = tester.getRect(svgAsset('assets/logo/title_logo.svg'));
+    for (final (name, rect) in [('icon', monogram), ('name', title)]) {
+      if (rect.width >= tile.width || rect.height >= tile.height) {
+        return 'app $name $rect not smaller than tile $tile';
+      }
+    }
+    return null;
+  }
+
   const sizes = {
     'portrait 390x844': Size(390, 844),
     'portrait 320x568': Size(320, 568),
@@ -111,6 +136,8 @@ void main() {
               (rects[0].width - rects[1].width).abs() > 0.5) {
             failures.add('$where: tiles differ ${rects[0]} vs ${rects[1]}');
           }
+          final logoProblem = logoLargerThanTile(tester, rects[0]);
+          if (logoProblem != null) failures.add('$where: $logoProblem');
           final screen = Offset.zero & size;
           for (final rect in rects) {
             if (!screen.contains(rect.topLeft) ||
@@ -231,6 +258,10 @@ void main() {
           final rects = [
             for (final e in tiles) tester.getRect(find.byWidget(e.widget)),
           ];
+          if (rects.isNotEmpty) {
+            final logoProblem = logoLargerThanTile(tester, rects[0]);
+            if (logoProblem != null) problems.add(logoProblem);
+          }
           if (rects.length == 2 &&
               ((rects[0].width - rects[1].width).abs() > 0.5 ||
                   (rects[0].height - rects[1].height).abs() > 0.5)) {
@@ -397,16 +428,13 @@ void main() {
         for (final e in find.byType(Ink).evaluate())
           tester.getRect(find.byWidget(e.widget)),
       ];
-      // モノグラム（アプリアイコンと同じ角丸の背景）の矩形。
-      final monogram = find.byWidgetPredicate(
-        (w) =>
-            w is SvgPicture &&
-            w.bytesLoader is SvgAssetLoader &&
-            (w.bytesLoader as SvgAssetLoader).assetName ==
-                'assets/logo/app_logo.svg',
-      );
       final logo = tester.getRect(
-        find.ancestor(of: monogram, matching: find.byType(Container)).first,
+        find
+            .ancestor(
+              of: svgAsset('assets/logo/app_logo.svg'),
+              matching: find.byType(Container),
+            )
+            .first,
       );
       return (a: tiles[0], b: tiles[1], logo: logo);
     }
