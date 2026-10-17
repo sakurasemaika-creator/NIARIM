@@ -1384,7 +1384,7 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get helpTimelineDesc =>
-      'L\'écran de gestion de l\'axe temporel de votre animation. Organiser des images (des images fixes individuelles) et les lire comme un folioscope crée l\'animation. Les pistes de matériaux image, vidéo et audio, les pistes de calques communs et les images clés de caméra sont tous gérés sur la même chronologie.';
+      'L\'écran de gestion de l\'axe temporel de votre animation. Organiser des images (des images fixes individuelles) et les lire comme un folioscope crée l\'animation. Les pistes de matériaux texte, image, vidéo et audio, les pistes de calques communs et les images clés de caméra sont toutes gérées sur la même chronologie. Ce qui passe devant parmi les textes, les images, les vidéos et le dessin de l\'image se règle dans « Ordre d\'empilement », pour toute la scène ou à partir de n\'importe quelle image.';
 
   @override
   String get helpSceneTitle => 'Scène';
@@ -1503,11 +1503,11 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get helpMaterialClipTitle =>
-      'Clips de matériel (image / vidéo / audio)';
+      'Clips de matériel (texte / image / vidéo / audio)';
 
   @override
   String get helpMaterialClipDesc =>
-      'Clips placés sur les pistes image, vidéo et audio de la timeline. Un appui long avec glisser sur le corps du clip déplace sa position de départ, et glisser les poignées à chaque extrémité change la portion utilisée. Toucher un clip ouvre sa fiche détaillée, où l\'icône de copie le duplique et l\'icône de corbeille le supprime. Les clips image et vidéo sont gérés en interne comme des calques, tandis que l\'audio est géré comme un clip rattaché directement à la scène.';
+      'Clips placés sur les pistes texte, image, vidéo et audio de la timeline. Un appui long avec glisser sur le corps du clip déplace sa position de départ, et glisser les poignées à chaque extrémité change la portion utilisée. Les matériaux affichés en même temps sont placés automatiquement sur des pistes distinctes. Toucher un clip texte, image ou vidéo ouvre son panneau d\'édition sous l\'aperçu : le texte, la police, la couleur et le contour ; la position, l\'échelle, la rotation sur les axes X/Y/Z et l\'opacité (on peut aussi le faire glisser sur l\'aperçu, et ajouter des images clés le fait bouger) ; son masque (rectangle ou ellipse, adouci, inversé) ; et la piste où il se trouve. On peut aussi le dupliquer ou le supprimer. Le volume et les fondus d\'un clip audio se règlent dans sa fiche détaillée.';
 
   @override
   String get helpGestureSettingsTitle => 'Réglages des gestes';
@@ -4865,6 +4865,144 @@ class AppLocalizationsFr extends AppLocalizations {
   String get timelineAddWatermarkTooltip => '+ Filigrane';
 
   @override
+  String get timelineMaterialRowLabel => 'Piste';
+
+  @override
+  String get timelineMaterialNewRow => 'Nouvelle piste';
+
+  @override
+  String get timelineAddTextTooltip => '+ Texte';
+
+  @override
+  String get timelineAddImageTooltip => '+ Image';
+
+  @override
+  String get timelineStackOrderTitle => 'Ordre d\'empilement';
+
+  @override
+  String get timelineMaterialText => 'Texte';
+
+  @override
+  String get timelineAddTextDialogTitle => 'Ajouter du texte';
+
+  @override
+  String get timelineEditSectionText => 'Texte';
+
+  @override
+  String get timelineEditSectionTransform => 'Position';
+
+  @override
+  String get timelineEditSectionMask => 'Masque';
+
+  @override
+  String get timelineTransformRotationX => 'Rotation X';
+
+  @override
+  String get timelineTransformRotationY => 'Rotation Y';
+
+  @override
+  String get timelineTransformRotationZ => 'Rotation Z';
+
+  @override
+  String get timelineTransformReset => 'Réinitialiser la position';
+
+  @override
+  String timelineKeyframeAddHere(int n) {
+    return 'Ajouter une image clé à F$n';
+  }
+
+  @override
+  String timelineKeyframeRemoveHere(int n) {
+    return 'Supprimer l\'image clé de F$n';
+  }
+
+  @override
+  String get timelineKeyframeWholeHint =>
+      'La même position est utilisée partout. Pour l\'animer, allez à une autre image et ajoutez une image clé.';
+
+  @override
+  String timelineKeyframeAnimHint(int count, int n) {
+    return '$count images clés : les modifications sont enregistrées à F$n et les images intermédiaires sont calculées automatiquement.';
+  }
+
+  @override
+  String get timelineGizmoHint =>
+      'Faites glisser sur l\'aperçu pour le déplacer, un point d\'angle pour le redimensionner et le point du haut pour le faire pivoter. Deux doigts fonctionnent aussi.';
+
+  @override
+  String timelineMaterialOutOfRange(int start, int end) {
+    return 'Non affiché à cette image (affiché de F$start à F$end)';
+  }
+
+  @override
+  String get timelineMaskNone => 'Aucun';
+
+  @override
+  String get timelineMaskRectangle => 'Rectangle';
+
+  @override
+  String get timelineMaskEllipse => 'Ellipse';
+
+  @override
+  String get timelineMaskCenterX => 'Centre X';
+
+  @override
+  String get timelineMaskCenterY => 'Centre Y';
+
+  @override
+  String get timelineMaskWidth => 'Largeur';
+
+  @override
+  String get timelineMaskHeight => 'Hauteur';
+
+  @override
+  String get timelineMaskFeather => 'Contour progressif';
+
+  @override
+  String get timelineMaskInvert => 'Inverser (masquer l\'intérieur)';
+
+  @override
+  String get timelineMaskHint =>
+      'N\'affiche que ce qui est à l\'intérieur du masque. Inversez-le pour masquer l\'intérieur.';
+
+  @override
+  String get timelineStackOrderHint =>
+      'Les éléments en haut de la liste passent devant. Faites glisser la poignée ou utilisez les flèches pour réorganiser.';
+
+  @override
+  String get timelineStackScopeScene => 'Toute la scène';
+
+  @override
+  String timelineStackScopeFromFrame(int n) {
+    return 'À partir de F$n';
+  }
+
+  @override
+  String get timelineStackFrameUnit => 'Image (dessin)';
+
+  @override
+  String get timelineStackChangesLabel => 'Images où l\'ordre change';
+
+  @override
+  String get timelineStackResetScene => 'Revenir à l\'ordre par défaut';
+
+  @override
+  String get timelineStackRemoveChange => 'Supprimer ce changement';
+
+  @override
+  String get timelineStackFrameMaskTitle => 'Masque de l\'image (dessin)';
+
+  @override
+  String get timelineStackFrameMaskHint =>
+      'Ne recadre que le dessin ; le texte, les images et la vidéo ne sont pas affectés. Le dessin n\'est pas masqué pendant que vous dessinez sur le canevas.';
+
+  @override
+  String get timelineStackMoveUp => 'Avancer';
+
+  @override
+  String get timelineStackMoveDown => 'Reculer';
+
+  @override
   String get timelineWatermarkNotRegisteredTitle =>
       'Aucun filigrane enregistré';
 
@@ -4949,7 +5087,7 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get timelineSceneDeleteConfirmBody =>
-      'Toutes les données de la scène seront supprimées : images, calques communs, matériaux vidéo, matériaux image et filigranes inclus.';
+      'Toutes les données de la scène seront supprimées : images, calques communs, matériaux texte, vidéo et image, et filigranes inclus.';
 
   @override
   String timelineSceneMultiDeleteConfirmTitle(int count) {

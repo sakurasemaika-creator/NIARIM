@@ -1339,7 +1339,7 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get helpTimelineDesc =>
-      'アニメーションの時間軸を管理する画面です。フレーム（静止画1コマ）を並べてパラパラ漫画のように再生することでアニメーションになります。画像・動画・音声などの素材トラック、共通レイヤートラック、カメラキーフレームも同じタイムライン上で管理します。';
+      'アニメーションの時間軸を管理する画面です。フレーム（静止画1コマ）を並べてパラパラ漫画のように再生することでアニメーションになります。テキスト・画像・動画・音声の素材トラック、共通レイヤートラック、カメラキーフレームも同じタイムライン上で管理します。テキスト・画像・動画とフレームのイラストの前後関係は「重なり順」で、シーン全体またはフレームごとに並べ替えられます。';
 
   @override
   String get helpSceneTitle => 'シーン';
@@ -1457,11 +1457,11 @@ class AppLocalizationsJa extends AppLocalizations {
       '端末の性能に応じて、低品質・中品質・高品質のプリセットから選ぶか、各項目を個別に設定（カスタム）できます。保存方式・動作の軽さ・オニオンスキン・傾き検知に加えて、Undo回数やゴミ箱の自動削除などアプリの容量・動作の重さに影響する設定もここにまとまっています。';
 
   @override
-  String get helpMaterialClipTitle => '素材クリップ（画像・動画・音声）';
+  String get helpMaterialClipTitle => '素材クリップ（テキスト・画像・動画・音声）';
 
   @override
   String get helpMaterialClipDesc =>
-      'タイムラインの画像・動画・音声トラックに配置したクリップです。クリップ本体を長押しドラッグすると表示開始位置を移動でき、左右端のハンドルをドラッグすると使用範囲（長さ）を変更できます。タップすると開く詳細シートのコピーアイコンから複製、ゴミ箱アイコンから削除もできます。画像・動画は内部的にはレイヤーとして扱われており、音声はシーンに直接紐づくクリップとして管理されます。';
+      'タイムラインのテキスト・画像・動画・音声トラックに配置したクリップです。クリップ本体を長押しドラッグすると表示開始位置を移動でき、左右端のハンドルをドラッグすると使用範囲（長さ）を変更できます。同じ時間に重なる素材は自動で別の列に置かれます。テキスト・画像・動画のクリップをタップすると、プレビューの下に編集パネルが開きます。文字の内容・フォント・色・縁取り、位置・拡大縮小・X軸／Y軸／Z軸回転・不透明度（プレビュー上のドラッグでも動かせます。キーフレームを追加すると動きになります）、マスク（四角・楕円・ぼかし・反転）、置く列を変えられ、複製・削除もここから行えます。音声クリップは詳細シートで音量・フェードを調整します。';
 
   @override
   String get helpGestureSettingsTitle => 'ジェスチャー設定';
@@ -4628,6 +4628,143 @@ class AppLocalizationsJa extends AppLocalizations {
   String get timelineAddWatermarkTooltip => '＋ウォーターマーク';
 
   @override
+  String get timelineMaterialRowLabel => '置く列';
+
+  @override
+  String get timelineMaterialNewRow => '新しい列';
+
+  @override
+  String get timelineAddTextTooltip => '＋テキスト';
+
+  @override
+  String get timelineAddImageTooltip => '＋画像';
+
+  @override
+  String get timelineStackOrderTitle => '重なり順';
+
+  @override
+  String get timelineMaterialText => 'テキスト';
+
+  @override
+  String get timelineAddTextDialogTitle => 'テキストを追加';
+
+  @override
+  String get timelineEditSectionText => '文字';
+
+  @override
+  String get timelineEditSectionTransform => '配置';
+
+  @override
+  String get timelineEditSectionMask => 'マスク';
+
+  @override
+  String get timelineTransformRotationX => 'X軸回転';
+
+  @override
+  String get timelineTransformRotationY => 'Y軸回転';
+
+  @override
+  String get timelineTransformRotationZ => 'Z軸回転';
+
+  @override
+  String get timelineTransformReset => '配置をリセット';
+
+  @override
+  String timelineKeyframeAddHere(int n) {
+    return 'F$nにキーフレームを追加';
+  }
+
+  @override
+  String timelineKeyframeRemoveHere(int n) {
+    return 'F$nのキーフレームを削除';
+  }
+
+  @override
+  String get timelineKeyframeWholeHint =>
+      '素材全体に同じ配置が使われます。動かすときは、フレームを移動してキーフレームを追加してください。';
+
+  @override
+  String timelineKeyframeAnimHint(int count, int n) {
+    return 'キーフレーム$count個：F$nの値として記録し、間は自動でつなぎます。';
+  }
+
+  @override
+  String get timelineGizmoHint =>
+      'プレビュー上でドラッグすると移動、角の丸で拡大縮小、上の丸で回転できます。2本指でも操作できます。';
+
+  @override
+  String timelineMaterialOutOfRange(int start, int end) {
+    return 'このフレームには表示されていません（F$start〜F$endに表示）';
+  }
+
+  @override
+  String get timelineMaskNone => 'なし';
+
+  @override
+  String get timelineMaskRectangle => '四角';
+
+  @override
+  String get timelineMaskEllipse => '楕円';
+
+  @override
+  String get timelineMaskCenterX => '中心 X';
+
+  @override
+  String get timelineMaskCenterY => '中心 Y';
+
+  @override
+  String get timelineMaskWidth => '幅';
+
+  @override
+  String get timelineMaskHeight => '高さ';
+
+  @override
+  String get timelineMaskFeather => 'ぼかし';
+
+  @override
+  String get timelineMaskInvert => '反転（内側を隠す）';
+
+  @override
+  String get timelineMaskHint => 'マスクの内側だけを見せます。反転すると内側を隠します。';
+
+  @override
+  String get timelineStackOrderHint =>
+      '上にあるものほど手前に表示されます。つまみをドラッグするか矢印で並べ替えます。';
+
+  @override
+  String get timelineStackScopeScene => 'シーン全体';
+
+  @override
+  String timelineStackScopeFromFrame(int n) {
+    return 'F$nから';
+  }
+
+  @override
+  String get timelineStackFrameUnit => 'フレーム（イラスト）';
+
+  @override
+  String get timelineStackChangesLabel => '途中から順番を変えたフレーム';
+
+  @override
+  String get timelineStackResetScene => '既定の順番に戻す';
+
+  @override
+  String get timelineStackRemoveChange => 'この変更を取り消す';
+
+  @override
+  String get timelineStackFrameMaskTitle => 'フレーム（イラスト）のマスク';
+
+  @override
+  String get timelineStackFrameMaskHint =>
+      '描いた絵だけを切り抜きます。テキスト・画像・動画には効きません。キャンバスで描いている間は隠れません。';
+
+  @override
+  String get timelineStackMoveUp => '手前へ';
+
+  @override
+  String get timelineStackMoveDown => '奥へ';
+
+  @override
   String get timelineWatermarkNotRegisteredTitle => 'ウォーターマーク未登録';
 
   @override
@@ -4709,7 +4846,7 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get timelineSceneDeleteConfirmBody =>
-      'シーン内の全フレーム・共通レイヤー・動画素材・画像素材・ウォーターマークを含むすべてのデータが削除されます。';
+      'シーン内の全フレーム・共通レイヤー・テキスト素材・動画素材・画像素材・ウォーターマークを含むすべてのデータが削除されます。';
 
   @override
   String timelineSceneMultiDeleteConfirmTitle(int count) {

@@ -467,7 +467,7 @@
   "helpPressureCurveTitle": "Pressure Curve",
   "helpPressureCurveDesc": "A feature in the pen input settings that lets you freely adjust, via a graph, the relationship between actual pen pressure and how it affects brush size and opacity. Whether you want thick lines even with light pressure, or the opposite — needing firm pressure to get thick lines — you can finely customize the feel to match your habits. You can try drawing right there to check the effect after changing the settings.",
   "helpTimelineTitle": "Timeline",
-  "helpTimelineDesc": "The screen for managing the time axis of your animation. Arranging frames (individual still images) and playing them back like a flipbook creates the animation. Image, video, and audio material tracks, common layer tracks, and camera keyframes are all managed on the same timeline.",
+  "helpTimelineDesc": "The screen for managing the time axis of your animation. Arranging frames (individual still images) and playing them back like a flipbook creates the animation. Text, image, video and audio material tracks, common layer tracks and camera keyframes are all managed on the same timeline. Which of the texts, images, videos and the frame's drawing is in front is set in \"Stacking order\", for the whole scene or from any frame on.",
   "helpSceneTitle": "Scene",
   "helpSceneDesc": "Splits the inside of a single project (one video) into scenes (cuts) to manage them separately. While folders organize things at the project level, scenes represent scene changes within a single video. In the timeline’s scene tab you can add, duplicate, delete, rename, and reorder scenes. Switching to multi-select mode lets you move, duplicate, or delete multiple scenes at once.",
   "helpCameraKeyframeTitle": "Camera Keyframe",
@@ -501,8 +501,8 @@
   "helpPremiumEntryDesc": "Premium membership extends the 90-second video length limit of the free version up to 2 hours and lets you remove the end card (app logo) automatically added at the end of every video. Ads are also hidden, and you gain access to the watermark, tone curve, and level correction features.",
   "helpPerformanceSettingsTitle": "Performance Settings",
   "helpPerformanceSettingsDesc": "Choose from low, medium, or high quality presets based on your device's capability, or configure each item individually (custom). In addition to save method, performance, onion skin, and tilt detection, settings that affect app size and how heavy it runs — such as undo history length and automatic trash deletion — are also gathered here.",
-  "helpMaterialClipTitle": "Material clips (image / video / audio)",
-  "helpMaterialClipDesc": "Clips placed on the timeline's image, video, and audio tracks. Long-press-drag a clip's body to move its start position, or drag the handles at either end to change how much of it is used. Tap a clip to open its detail sheet, where the copy icon duplicates it and the trash icon deletes it. Image and video clips are internally handled as layers, while audio clips are managed as clips attached directly to the scene.",
+  "helpMaterialClipTitle": "Material clips (text / image / video / audio)",
+  "helpMaterialClipDesc": "Clips placed on the timeline's text, image, video and audio tracks. Long-press-drag a clip's body to move its start position, or drag the handles at either end to change how much of it is used. Materials shown at the same time go on rows of their own automatically. Tapping a text, image or video clip opens its edit panel below the preview: the text, font, colour and outline; the position, scale, X/Y/Z-axis rotation and opacity (you can also drag it on the preview, and adding keyframes makes it move); its mask (rectangle or ellipse, feathered, inverted); and the row it sits on. It can be duplicated or deleted there too. An audio clip's volume and fades are set in its detail sheet.",
   "helpGestureSettingsTitle": "Gesture settings",
   "helpGestureSettingsDesc": "Lets you assign actions — undo/redo, frame move, eyedropper, and more — to a two-finger tap, three-finger tap, two-finger swipe, or long press. Pen buttons (on supported styluses) can also be assigned separately. Handy for triggering frequent actions with one touch instead of switching tools.",
   "helpBucketDetailSettingsTitle": "Bucket fill detail settings",
@@ -1974,6 +1974,88 @@
   "timelineEffectFilterLabel": "Effect filters",
   "timelineAddCameraKfTooltip": "Add camera keyframe",
   "timelineAddWatermarkTooltip": "+ Watermark",
+  "timelineMaterialRowLabel": "Row",
+  "timelineMaterialNewRow": "New row",
+  "timelineAddTextTooltip": "+ Text",
+  "timelineAddImageTooltip": "+ Image",
+  "timelineStackOrderTitle": "Stacking order",
+  "timelineMaterialText": "Text",
+  "timelineAddTextDialogTitle": "Add text",
+  "timelineEditSectionText": "Text",
+  "timelineEditSectionTransform": "Position",
+  "timelineEditSectionMask": "Mask",
+  "timelineTransformRotationX": "X-axis rotation",
+  "timelineTransformRotationY": "Y-axis rotation",
+  "timelineTransformRotationZ": "Z-axis rotation",
+  "timelineTransformReset": "Reset position",
+  "timelineKeyframeAddHere": "Add keyframe at F{n}",
+  "@timelineKeyframeAddHere": {
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
+  },
+  "timelineKeyframeRemoveHere": "Remove keyframe at F{n}",
+  "@timelineKeyframeRemoveHere": {
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
+  },
+  "timelineKeyframeWholeHint": "The same position is used throughout. To animate it, go to another frame and add a keyframe.",
+  "timelineKeyframeAnimHint": "{count} keyframes: changes are recorded at F{n}, and the frames in between are filled in automatically.",
+  "@timelineKeyframeAnimHint": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      },
+      "n": {
+        "type": "int"
+      }
+    }
+  },
+  "timelineGizmoHint": "Drag on the preview to move it, a corner dot to resize and the top dot to rotate. Two fingers work too.",
+  "timelineMaterialOutOfRange": "Not shown at this frame (shown from F{start} to F{end})",
+  "@timelineMaterialOutOfRange": {
+    "placeholders": {
+      "start": {
+        "type": "int"
+      },
+      "end": {
+        "type": "int"
+      }
+    }
+  },
+  "timelineMaskNone": "None",
+  "timelineMaskRectangle": "Rectangle",
+  "timelineMaskEllipse": "Ellipse",
+  "timelineMaskCenterX": "Center X",
+  "timelineMaskCenterY": "Center Y",
+  "timelineMaskWidth": "Width",
+  "timelineMaskHeight": "Height",
+  "timelineMaskFeather": "Feather",
+  "timelineMaskInvert": "Invert (hide the inside)",
+  "timelineMaskHint": "Shows only what is inside the mask. Invert it to hide the inside instead.",
+  "timelineStackOrderHint": "Items higher in the list appear in front. Drag a handle or use the arrows to reorder.",
+  "timelineStackScopeScene": "Whole scene",
+  "timelineStackScopeFromFrame": "From F{n}",
+  "@timelineStackScopeFromFrame": {
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
+  },
+  "timelineStackFrameUnit": "Frame (drawing)",
+  "timelineStackChangesLabel": "Frames where the order changes",
+  "timelineStackResetScene": "Back to the default order",
+  "timelineStackRemoveChange": "Remove this change",
+  "timelineStackFrameMaskTitle": "Frame (drawing) mask",
+  "timelineStackFrameMaskHint": "Crops only the drawing; text, images and video are not affected. The drawing is not hidden while you draw on the canvas.",
+  "timelineStackMoveUp": "Bring forward",
+  "timelineStackMoveDown": "Send backward",
   "timelineWatermarkNotRegisteredTitle": "No watermark registered",
   "timelineWatermarkNotRegisteredBody": "Register an image or text watermark in advance from \"Watermark\" in Settings.",
   "timelineOpenSettingsButton": "Open settings",
@@ -2012,7 +2094,7 @@
       }
     }
   },
-  "timelineSceneDeleteConfirmBody": "All data in the scene will be deleted, including every frame, common layers, video materials, image materials, and watermarks.",
+  "timelineSceneDeleteConfirmBody": "All data in the scene will be deleted, including every frame, common layers, text, video and image materials, and watermarks.",
   "timelineSceneMultiDeleteConfirmTitle": "Delete the {count} selected scenes?",
   "@timelineSceneMultiDeleteConfirmTitle": {
     "placeholders": {

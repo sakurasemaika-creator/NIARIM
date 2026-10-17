@@ -1231,6 +1231,22 @@ onSelectionMaskChanged`→`canvas_screen`→`FilterPanel.selectionMask`と渡り
   自分と掛け合わせた深い色（チャンネルごとの累乗）。色の境目を探す
   3×3の平均は不透明度で重み付けすること（不透明度半分未満の画素を
   黒として数え、薄い影の中に黒い筋の縁が出た）。
+- **タイムライン素材（テキスト・画像・動画）の前後はレイヤー一覧ではなく
+  `Scene.stack`（重なり順）で決まる**：素材はホームのフレームのレイヤーとして
+  持つが、合成はプレビュー・書き出し・キャンバスの表示とも
+  `stackFrameLayers`（`lib/engine/timeline_stack.dart`）を通す。素材を含む
+  フレームを新しく合成する処理を書くときは、`ProjectService.layersOf`
+  （レイヤーパレットの並び＝並び替え・結合の添字の基準）ではなく
+  `stackedLayersOf`（プレビュー・書き出し、フレームのマスク込み）か
+  `displayLayersOf`（キャンバス、マスク無し）を使い、`maskGroups`も
+  `LayerCompositor.composite`へ渡すこと。重なり順の単位は列なので、列を
+  消して番号を詰めるときは重なり順の列番号も詰める
+  （`ProjectService.removeTrackRow`の`_stackWithoutRow`）。
+  素材の編集はプレビューの下にパネルを出す方式（モーダルのシートだと
+  プレビューが隠れる）で、パネルを出している間はプレビューを
+  `ConstrainedBox`で45%までに抑えてパネルを`Expanded`にしてある。
+  プレビューは高さを使い切らない`Flexible(fit: loose)`なので、Flexの配分の
+  ままだと余りが空白になりパネルが細い帯になった（実際に踏んだ）。
 - **`dart format lib test tool`は他セッションの未整形ファイルまで書き換える**：
   別セッションがGitHub API経由で未整形のまま入れたファイル
   （`brush_texture_selector.dart`等）があり、全体にかけると無関係なファイルが

@@ -28,6 +28,8 @@ import '../../engine/layer_keyframe_engine.dart';
 import '../../engine/layer_range_resolver.dart';
 import '../../engine/text_render.dart';
 import '../../engine/tile_manager.dart';
+import '../../engine/timeline_material.dart';
+import '../../engine/timeline_stack.dart';
 import '../../engine/undo_manager.dart';
 import '../../l10n/app_localizations.dart';
 import '../../models/audio_clip.dart';
@@ -43,6 +45,7 @@ import '../../models/material_asset.dart';
 import '../../models/pixel_color_mode.dart';
 import '../../models/scene.dart';
 import '../../models/text_object.dart';
+import '../../models/timeline_row_kind.dart';
 import '../../models/watermark_asset.dart';
 import '../../models/custom_automation.dart';
 import '../../services/autofill_preset_service.dart';
@@ -73,9 +76,24 @@ import '../../utils/reorder_index.dart';
 import '../../widgets/scrollable_sheet_body.dart';
 import '../../widgets/custom_automation_manager_sheet.dart';
 import '../../widgets/custom_automation_draft_sheet.dart';
+import 'widgets/material_edit_panel.dart';
+import 'widgets/material_gizmo.dart';
+import 'widgets/stack_order_panel.dart';
 
 // タイムライントラッククリップ
-enum _ClipTrackType { audio, video, image }
+enum _ClipTrackType { audio, video, image, text }
+
+/// The colour of text clips on the timeline (amber, apart from the theme's
+/// colours that video, image and audio clips use).
+const Color _textClipColor = Color(0xFFE09A2C);
+
+/// The kind of timeline row a clip of [type] sits on.
+TimelineRowKind _rowKindOf(_ClipTrackType type) => switch (type) {
+  _ClipTrackType.audio => TimelineRowKind.audio,
+  _ClipTrackType.video => TimelineRowKind.video,
+  _ClipTrackType.image => TimelineRowKind.image,
+  _ClipTrackType.text => TimelineRowKind.text,
+};
 
 // クリップの長押しドラッグ操作の種別。
 enum _ClipDragMode { move, resizeLeft, resizeRight }
@@ -101,8 +119,8 @@ class _TrackClip {
   int useEnd; // 使用終了フレーム（素材内）
   double videoOpacity; // 0.0〜1.0
   // 素材種別ごとに複数行のタイムライン行を追加できるようにするための、
-  // このクリップが属する行番号（0始まり）。
-  final int trackRow;
+  // このクリップが属する行番号（0始まり）。編集パネルから別の行へ移せる。
+  int trackRow;
 
   _TrackClip({
     required this.id,
@@ -242,6 +260,18 @@ class _TimelineScreenState extends State<TimelineScreen> {
   final List<_TrackClip> _audioClips = [];
   final List<_TrackClip> _videoClips = [];
   final List<_TrackClip> _imageClips = [];
+  final List<_TrackClip> _textClips = [];
+
+  // 素材（テキスト・画像・動画）の編集中は、タイムラインの各トラックの
+  // 代わりにプレビューの下へ編集パネルを出す（プレビューを見ながら
+  // スライダーやプレビュー上のドラッグで調整できるようにするため。
+  // モーダルのシートだとプレビューが隠れる）。重なり順の編集も同じ場所に出す。
+  String? _editingMaterialId;
+  bool _showStackOrder = false;
+  // 編集中の素材の描かれている範囲（プレビューの枠の位置合わせ用）。
+  // 全画素を走査するので、素材か文字が変わったときだけ求め直す。
+  Rect? _editingBounds;
+  Object? _editingBoundsKey;
 
   // クリップの長押しドラッグ（表示開始位置の移動）・端のハンドルドラッグ
   // （使用範囲の変更）用の一時状態。ジェスチャー中は
@@ -346,6 +376,7 @@ class _TimelineScreenState extends State<TimelineScreen> {
   late final ScrollController _audioScrollCtrl;
   late final ScrollController _videoScrollCtrl;
   late final ScrollController _imageScrollCtrl;
+  late final ScrollController _textScrollCtrl;
   late final ScrollController _cameraScrollCtrl;
   late final ScrollController _markerScrollCtrl;
   late final ScrollController _commonLayerScrollCtrl;
@@ -357,12 +388,13 @@ class _TimelineScreenState extends State<TimelineScreen> {
   // _audioScrollCtrl等をそのまま使う。キー形式は'種別名_行番号'。
   final Map<String, ScrollController> _rowScrollCtrls = {};
 
-  ScrollController _rowScrollCtrl(MaterialType type, int rowIndex) {
+  ScrollController _rowScrollCtrl(TimelineRowKind type, int rowIndex) {
     if (rowIndex == 0) {
       return switch (type) {
-        MaterialType.image => _imageScrollCtrl,
-        MaterialType.video => _videoScrollCtrl,
-        MaterialType.audio => _audioScrollCtrl,
+        TimelineRowKind.image => _imageScrollCtrl,
+        TimelineRowKind.video => _videoScrollCtrl,
+        TimelineRowKind.audio => _audioScrollCtrl,
+        TimelineRowKind.text => _textScrollCtrl,
       };
     }
     final key = '${type.name}_$rowIndex';
@@ -500,6 +532,7 @@ class _TimelineScreenState extends State<TimelineScreen> {
     _audioScrollCtrl = ScrollController();
     _videoScrollCtrl = ScrollController();
     _imageScrollCtrl = ScrollController();
+    _textScrollCtrl = ScrollController();
     _cameraScrollCtrl = ScrollController();
     _markerScrollCtrl = ScrollController();
     _commonLayerScrollCtrl = ScrollController();
@@ -519,6 +552,7 @@ class _TimelineScreenState extends State<TimelineScreen> {
     _audioScrollCtrl,
     _videoScrollCtrl,
     _imageScrollCtrl,
+    _textScrollCtrl,
     _cameraScrollCtrl,
     _markerScrollCtrl,
     _commonLayerScrollCtrl,
@@ -963,80 +997,116 @@ class _TimelineScreenState extends State<TimelineScreen> {
                   return Column(
                     children: [
                       _buildTopBar(),
-                      Flexible(
-                        flex: 3,
-                        fit: FlexFit.loose,
-                        child: _buildPreviewWithHandle(
-                          outerConstraints.maxHeight,
+                      // 編集パネルを出している間は、プレビューを画面の45%までに
+                      // 抑えて残りをすべてパネルへ渡す（プレビューは高さを
+                      // 使い切らないFlexibleなので、Flexの配分のままだと余りが
+                      // 空白になりパネルが細い帯になった）。
+                      if (_isEditPanelOpen)
+                        ConstrainedBox(
+                          constraints: BoxConstraints(
+                            maxHeight: outerConstraints.maxHeight * 0.45,
+                          ),
+                          child: _buildPreviewWithHandle(
+                            outerConstraints.maxHeight,
+                          ),
+                        )
+                      else
+                        Flexible(
+                          flex: 3,
+                          fit: FlexFit.loose,
+                          child: _buildPreviewWithHandle(
+                            outerConstraints.maxHeight,
+                          ),
                         ),
-                      ),
                       _buildSeekBar(),
                       _buildPlaybackControls(),
-                      _buildToolbar(),
-                      _buildSceneTabs(),
-                      // ピンチイン・ピンチアウトでフレーム幅（拡大縮小）を
-                      // 変更できるよう、フレーム一覧から各トラックまでを
-                      // Listenerで包み2本指の距離変化を監視する。子孫の
-                      // 横スクロールを妨げないようtranslucentで通過させる。
-                      Listener(
-                        behavior: HitTestBehavior.translucent,
-                        onPointerDown: _onTimelinePinchPointerDown,
-                        onPointerMove: _onTimelinePinchPointerMove,
-                        onPointerUp: _onTimelinePinchPointerUp,
-                        onPointerCancel: _onTimelinePinchPointerUp,
-                        child: _buildFrameList(),
-                      ),
-                      // 各種タイムライン行：デフォルトではプレビュー・
-                      // フレーム一覧のみを表示し、それぞれ中身（共通レイヤー・動画・
-                      // 音源・カメラキーフレーム・タイムスタンプ・演出フィルター）が
-                      // 1つでも追加された行だけを表示する。最後の1件を削除すれば、
-                      // その行だけ最初と同じく非表示に戻る（画像素材は共通レイヤー
-                      // 機能とキャンバスモードの画像読み込みで代替できるため廃止）。
-                      // 表示順：フレーム・シーン・共通レイヤー・動画・音源・カメラ・
-                      // タイムスタンプ・演出フィルター・エンドカードの順。
-                      // プレビュー欄をドラッグハンドルで縮めた分だけ、この一覧が
-                      // スクロールで広く見られるようにExpanded+スクロールにしている。
-                      Expanded(
-                        child: Listener(
+                      if (_isEditPanelOpen)
+                        Expanded(child: _buildEditPanel())
+                      else ...[
+                        _buildToolbar(),
+                        _buildSceneTabs(),
+                        // ピンチイン・ピンチアウトでフレーム幅（拡大縮小）を
+                        // 変更できるよう、フレーム一覧から各トラックまでを
+                        // Listenerで包み2本指の距離変化を監視する。子孫の
+                        // 横スクロールを妨げないようtranslucentで通過させる。
+                        Listener(
                           behavior: HitTestBehavior.translucent,
                           onPointerDown: _onTimelinePinchPointerDown,
                           onPointerMove: _onTimelinePinchPointerMove,
                           onPointerUp: _onTimelinePinchPointerUp,
                           onPointerCancel: _onTimelinePinchPointerUp,
-                          child: SingleChildScrollView(
-                            child: Column(
-                              children: [
-                                _buildCommonLayerTrack(),
-                                // シーン・フレームの複数選択モード中の一括操作バー
-                                // （小さいボタンではなく素材タイムラインの上に大きな
-                                // 3分割ボタンで表示）
-                                _buildMultiSelectActionBar(),
-                                _buildClipToolbar(),
-                                _buildMaterialTrackGroup(
-                                  type: MaterialType.video,
-                                  icon: Icons.videocam,
-                                  defaultLabel: l10n.projectListMaterialVideo,
-                                  allClips: _videoClips,
-                                  addColor:
-                                      ThemeService.activeColorScheme.primary,
-                                ),
-                                _buildMaterialTrackGroup(
-                                  type: MaterialType.audio,
-                                  icon: Icons.audiotrack,
-                                  defaultLabel: l10n.projectListMaterialAudio,
-                                  allClips: _audioClips,
-                                  addColor:
-                                      ThemeService.activeColorScheme.tertiary,
-                                ),
-                                _buildCameraTrack(),
-                                _buildMarkerTrack(),
-                                _buildEffectFilterTrack(),
-                                _buildEndCardTrack(),
-                              ],
+                          child: _buildFrameList(),
+                        ),
+                        // 各種タイムライン行：デフォルトではプレビュー・
+                        // フレーム一覧のみを表示し、それぞれ中身（共通レイヤー・
+                        // テキスト・画像・動画・音源・カメラキーフレーム・
+                        // タイムスタンプ・演出フィルター）が1つでも追加された行だけを
+                        // 表示する。最後の1件を削除すれば、その行だけ最初と同じく
+                        // 非表示に戻る。
+                        // 表示順：フレーム・シーン・共通レイヤー・テキスト・画像・動画・
+                        // 音源・カメラ・タイムスタンプ・演出フィルター・エンドカードの順。
+                        // プレビュー欄をドラッグハンドルで縮めた分だけ、この一覧が
+                        // スクロールで広く見られるようにExpanded+スクロールにしている。
+                        Expanded(
+                          child: Listener(
+                            behavior: HitTestBehavior.translucent,
+                            onPointerDown: _onTimelinePinchPointerDown,
+                            onPointerMove: _onTimelinePinchPointerMove,
+                            onPointerUp: _onTimelinePinchPointerUp,
+                            onPointerCancel: _onTimelinePinchPointerUp,
+                            child: SingleChildScrollView(
+                              child: Column(
+                                children: [
+                                  _buildCommonLayerTrack(),
+                                  // シーン・フレームの複数選択モード中の一括操作バー
+                                  // （小さいボタンではなく素材タイムラインの上に大きな
+                                  // 3分割ボタンで表示）
+                                  _buildMultiSelectActionBar(),
+                                  _buildClipToolbar(),
+                                  // 並びは既定の重なり順（テキストが手前、
+                                  // フレームのイラスト、画像、動画）と同じ。
+                                  _buildMaterialTrackGroup(
+                                    type: TimelineRowKind.text,
+                                    icon: Icons.text_fields,
+                                    defaultLabel: l10n.timelineMaterialText,
+                                    allClips: _textClips,
+                                    addColor: _textClipColor,
+                                  ),
+                                  _buildMaterialTrackGroup(
+                                    type: TimelineRowKind.image,
+                                    icon: Icons.image,
+                                    defaultLabel: l10n.projectListMaterialImage,
+                                    allClips: _imageClips,
+                                    addColor: ThemeService
+                                        .activeColorScheme
+                                        .secondary,
+                                  ),
+                                  _buildMaterialTrackGroup(
+                                    type: TimelineRowKind.video,
+                                    icon: Icons.videocam,
+                                    defaultLabel: l10n.projectListMaterialVideo,
+                                    allClips: _videoClips,
+                                    addColor:
+                                        ThemeService.activeColorScheme.primary,
+                                  ),
+                                  _buildMaterialTrackGroup(
+                                    type: TimelineRowKind.audio,
+                                    icon: Icons.audiotrack,
+                                    defaultLabel: l10n.projectListMaterialAudio,
+                                    allClips: _audioClips,
+                                    addColor:
+                                        ThemeService.activeColorScheme.tertiary,
+                                  ),
+                                  _buildCameraTrack(),
+                                  _buildMarkerTrack(),
+                                  _buildEffectFilterTrack(),
+                                  _buildEndCardTrack(),
+                                ],
+                              ),
                             ),
                           ),
                         ),
-                      ),
+                      ],
                     ],
                   );
                 },
@@ -1045,6 +1115,258 @@ class _TimelineScreenState extends State<TimelineScreen> {
           ),
         ),
       ),
+    );
+  }
+
+  // ─── 素材の編集パネル・重なり順パネル ─────────────────────
+
+  bool get _isEditPanelOpen =>
+      _selectedSceneId != null &&
+      (_editingMaterialId != null || _showStackOrder);
+
+  /// The material being edited and the frame its layer lives in.
+  ({Layer layer, LayerHome home})? _editingMaterial(ProjectService ps) {
+    final id = _editingMaterialId;
+    if (id == null) return null;
+    final home = ps.homeOf(widget.projectId, id);
+    if (home == null || home.sceneId != _selectedSceneId) return null;
+    final layer = ps
+        .layersOf(widget.projectId, home.sceneId, home.frameIndex)
+        .where((l) => l.id == id)
+        .firstOrNull;
+    if (layer == null) return null;
+    return (layer: layer, home: home);
+  }
+
+  /// Opens the edit panel for material [layerId], showing a frame where it
+  /// is on screen so it can be seen (and dragged) in the preview.
+  void _openMaterialEditor(String layerId) {
+    final ps = context.read<ProjectService>();
+    final home = ps.homeOf(widget.projectId, layerId);
+    final layer = home == null
+        ? null
+        : ps
+              .layersOf(widget.projectId, home.sceneId, home.frameIndex)
+              .where((l) => l.id == layerId)
+              .firstOrNull;
+    setState(() {
+      _editingMaterialId = layerId;
+      _showStackOrder = false;
+      _isPlaying = false;
+      if (layer != null && layer.rangeMode == LayerRangeMode.frameRange) {
+        final start = (layer.rangeStart ?? 1) - 1;
+        final end = (layer.rangeEnd ?? start + 1) - 1;
+        if (_currentFrame < start || _currentFrame > end) {
+          _currentFrame = start.clamp(0, _totalFrames - 1);
+        }
+      }
+    });
+  }
+
+  void _closeEditPanels() {
+    setState(() {
+      _editingMaterialId = null;
+      _showStackOrder = false;
+      _editingBounds = null;
+      _editingBoundsKey = null;
+    });
+  }
+
+  _TrackClip? _clipById(String id) => [
+    ..._textClips,
+    ..._imageClips,
+    ..._videoClips,
+  ].where((c) => c.id == id).firstOrNull;
+
+  /// Mirrors an edited material into its clip on the track (its name, and
+  /// for a video the opacity, sound and part used that playback follows).
+  void _onMaterialLayerChanged(Layer layer) {
+    final clip = _clipById(layer.id);
+    if (clip == null) return;
+    setState(() {
+      clip.label = layer.name;
+      clip.videoOpacity = layer.opacity / 100.0;
+      if (clip.trackType == _ClipTrackType.video) {
+        clip.volume = layer.videoVolume.clamp(0.0, 1.0);
+        clip.useStart = layer.sourceTrimStart ?? clip.useStart;
+        clip.useEnd = layer.sourceTrimEnd ?? clip.useEnd;
+      }
+    });
+    if (clip.trackType == _ClipTrackType.video) _syncMediaPlayback();
+  }
+
+  Widget _buildEditPanel() {
+    final sceneId = _selectedSceneId!;
+    if (_showStackOrder) {
+      return TimelineStackOrderPanel(
+        projectId: widget.projectId,
+        sceneId: sceneId,
+        currentFrame: _currentFrameNotifier,
+        onSeek: (f) => setState(() {
+          _isPlaying = false;
+          _currentFrame = f;
+        }),
+        onClose: () {
+          // Back to the material being edited, if the order was opened from
+          // its panel.
+          if (_editingMaterialId != null) {
+            setState(() => _showStackOrder = false);
+          } else {
+            _closeEditPanels();
+          }
+        },
+      );
+    }
+    final ps = context.watch<ProjectService>();
+    final found = _editingMaterial(ps);
+    if (found == null) {
+      // Deleted (or undone) while open, or on another scene.
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted && _editingMaterialId != null) _closeEditPanels();
+      });
+      return const SizedBox.shrink();
+    }
+    final clip = _clipById(found.layer.id);
+    return TimelineMaterialEditPanel(
+      key: ValueKey('material-edit-${found.layer.id}'),
+      projectId: widget.projectId,
+      layerId: found.layer.id,
+      currentFrame: _currentFrameNotifier,
+      onLayerChanged: _onMaterialLayerChanged,
+      onSeek: (f) => setState(() {
+        _isPlaying = false;
+        _currentFrame = f;
+      }),
+      onShowStackOrder: () => setState(() => _showStackOrder = true),
+      onMoveToRow: (row) => _moveMaterialToRow(found.layer.id, row),
+      onClose: _closeEditPanels,
+      onDuplicate: clip == null ? () {} : () => _duplicateClip(clip),
+      onDelete: () {
+        final target = clip;
+        _closeEditPanels();
+        if (target == null) return;
+        setState(() {
+          _videoClips.remove(target);
+          _imageClips.remove(target);
+          _textClips.remove(target);
+        });
+        _deletePersistedClip(target, sceneId);
+      },
+    );
+  }
+
+  /// Moves material [layerId] to [row] of its kind (one past the last: a new
+  /// row), folding away the row it leaves when that is now empty.
+  void _moveMaterialToRow(String layerId, int row) {
+    final sceneId = _selectedSceneId;
+    final clip = _clipById(layerId);
+    if (sceneId == null || clip == null) return;
+    final ps = context.read<ProjectService>();
+    final found = _editingMaterial(ps);
+    if (found == null || found.layer.id != layerId) return;
+    final kind = _rowKindOf(clip.trackType);
+    final rows = ps.rowNamesOf(widget.projectId, sceneId, kind).length;
+    var target = row;
+    if (target >= rows) {
+      ps.addTrackRow(widget.projectId, sceneId, kind);
+      target = rows;
+    }
+    final oldRow = clip.trackRow;
+    ps.updateLayer(
+      projectId: widget.projectId,
+      sceneId: found.home.sceneId,
+      frameIndex: found.home.frameIndex,
+      layer: found.layer.copyWith(trackRow: target),
+    );
+    setState(() => clip.trackRow = target);
+    final stillUsed = _clipsOfType(
+      clip.trackType,
+    ).any((c) => c.trackRow == oldRow);
+    if (oldRow > 0 &&
+        !stillUsed &&
+        ps.removeTrackRow(widget.projectId, sceneId, kind, oldRow)) {
+      // The rows after it moved up one.
+      _loadClipsFromProject(sceneId);
+    }
+  }
+
+  /// The drag handles over the preview for the material being edited at
+  /// [frameIndex], or a note when it is not on screen at that frame.
+  Widget? _buildMaterialGizmo(ProjectService ps, int frameIndex) {
+    if (_showStackOrder) return null;
+    final found = _editingMaterial(ps);
+    if (found == null) return null;
+    final layer = found.layer;
+    final start = (layer.rangeStart ?? 1) - 1;
+    final end = (layer.rangeEnd ?? start + 1) - 1;
+    if (layer.rangeMode == LayerRangeMode.frameRange &&
+        (frameIndex < start || frameIndex > end)) {
+      final l10n = AppLocalizations.of(context)!;
+      return Align(
+        alignment: Alignment.bottomCenter,
+        child: Container(
+          margin: const EdgeInsets.all(6),
+          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+          decoration: BoxDecoration(
+            color: Theme.of(context).colorScheme.inverseSurface,
+            borderRadius: BorderRadius.circular(6),
+          ),
+          child: Text(
+            l10n.timelineMaterialOutOfRange(start + 1, end + 1),
+            style: TextStyle(
+              fontSize: 11,
+              color: Theme.of(context).colorScheme.onInverseSurface,
+            ),
+          ),
+        ),
+      );
+    }
+    final tm = ps.tileManagerOf(widget.projectId);
+    final boundsKey = (layer.id, identityHashCode(layer.textObject));
+    if (_editingBoundsKey != boundsKey) {
+      _editingBoundsKey = boundsKey;
+      _editingBounds = tm.contentBounds(
+        ps.tileKeyFor(
+          widget.projectId,
+          found.home.sceneId,
+          found.home.frameIndex,
+          layer.id,
+        ),
+      );
+    }
+    final cameraKeyframes = ps.cameraKeyframesOf(
+      widget.projectId,
+      found.home.sceneId,
+    );
+    return MaterialTransformGizmo(
+      canvasWidth: tm.canvasWidth,
+      canvasHeight: tm.canvasHeight,
+      contentBounds: _editingBounds,
+      value: materialTransformAt(layer, frameIndex),
+      camera: cameraKeyframes.isEmpty
+          ? null
+          : CameraEngine().valueAt(cameraKeyframes, frameIndex),
+      onChanged: (next) {
+        final current = _editingMaterial(ps);
+        if (current == null) return;
+        ps.updateLayer(
+          projectId: widget.projectId,
+          sceneId: current.home.sceneId,
+          frameIndex: current.home.frameIndex,
+          layer: current.layer.copyWith(
+            keyframes: editMaterialTransform(
+              current.layer,
+              frameIndex,
+              (k) => k.copyWith(
+                x: next.x,
+                y: next.y,
+                scale: next.scale,
+                rotation: next.rotation,
+              ),
+            ),
+          ),
+        );
+      },
     );
   }
 
@@ -1211,30 +1533,40 @@ class _TimelineScreenState extends State<TimelineScreen> {
                 // ValueListenableBuilderで包まないとプレビューが止まる。
                 : ValueListenableBuilder<int>(
                     valueListenable: _currentFrameNotifier,
-                    builder: (context, frameIndex, _) => _TimelinePreview(
-                      backgroundColor: _projectBackgroundOf(
-                        ps,
-                        widget.projectId,
-                      ),
-                      tileManager: ps.tileManagerOf(widget.projectId),
-                      layers: ps.layersOf(
+                    builder: (context, frameIndex, _) {
+                      final stacked = ps.stackedLayersOf(
                         widget.projectId,
                         sceneId,
                         frameIndex,
-                      ),
-                      sceneId: sceneId,
-                      frameIndex: frameIndex,
-                      cameraKeyframes: ps.cameraKeyframesOf(
-                        widget.projectId,
-                        sceneId,
-                      ),
-                      effectFilters: ps.effectFiltersOf(
-                        widget.projectId,
-                        sceneId,
-                      ),
-                      layerHomes: ps.layerHomesOf(widget.projectId),
-                      groups: ps.layerGroupsOf(widget.projectId, sceneId),
-                    ),
+                      );
+                      final gizmo = _buildMaterialGizmo(ps, frameIndex);
+                      final picture = _TimelinePreview(
+                        backgroundColor: _projectBackgroundOf(
+                          ps,
+                          widget.projectId,
+                        ),
+                        tileManager: ps.tileManagerOf(widget.projectId),
+                        layers: stacked.layers,
+                        maskGroups: stacked.maskGroups,
+                        sceneId: sceneId,
+                        frameIndex: frameIndex,
+                        cameraKeyframes: ps.cameraKeyframesOf(
+                          widget.projectId,
+                          sceneId,
+                        ),
+                        effectFilters: ps.effectFiltersOf(
+                          widget.projectId,
+                          sceneId,
+                        ),
+                        layerHomes: ps.layerHomesOf(widget.projectId),
+                        groups: ps.layerGroupsOf(widget.projectId, sceneId),
+                      );
+                      if (gizmo == null) return picture;
+                      return Stack(
+                        fit: StackFit.expand,
+                        children: [picture, gizmo],
+                      );
+                    },
                   ),
           ),
           // プレビュー全画面化ボタン（確認・仕上がり
@@ -1500,6 +1832,21 @@ class _TimelineScreenState extends State<TimelineScreen> {
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: [
                 IconButton(
+                  icon: const Icon(Icons.text_fields, size: 18),
+                  onPressed: _showAddTextDialog,
+                  tooltip: l10n.timelineAddTextTooltip,
+                ),
+                IconButton(
+                  icon: const Icon(Icons.image, size: 18),
+                  onPressed: () => _showAddClipDialog(
+                    l10n.projectListMaterialImage,
+                    _imageClips,
+                    ThemeService.activeColorScheme.secondary,
+                    _ClipTrackType.image,
+                  ),
+                  tooltip: l10n.timelineAddImageTooltip,
+                ),
+                IconButton(
                   icon: Icon(Icons.videocam, size: 18),
                   onPressed: () => _showAddClipDialog(
                     l10n.projectListMaterialVideo,
@@ -1535,6 +1882,16 @@ class _TimelineScreenState extends State<TimelineScreen> {
                   icon: const Icon(Icons.push_pin_outlined, size: 18),
                   onPressed: _showAddMarkerDialog,
                   tooltip: l10n.timelineMarkerTrackLabel,
+                ),
+                IconButton(
+                  icon: const Icon(Icons.layers_outlined, size: 18),
+                  onPressed: _selectedSceneId == null
+                      ? null
+                      : () => setState(() {
+                          _editingMaterialId = null;
+                          _showStackOrder = true;
+                        }),
+                  tooltip: l10n.timelineStackOrderTitle,
                 ),
                 IconButton(
                   icon: const Icon(Icons.upload_file, size: 18),
@@ -3488,7 +3845,7 @@ class _TimelineScreenState extends State<TimelineScreen> {
   /// 一覧のみ）、中身のある行だけを表示する。同じタイミングで重ねたい
   /// 素材がある場合のみ、最後尾の行の＋で新しい行を追加できる。
   Widget _buildMaterialTrackGroup({
-    required MaterialType type,
+    required TimelineRowKind type,
     required IconData icon,
     required String defaultLabel,
     required List<_TrackClip> allClips,
@@ -3528,7 +3885,7 @@ class _TimelineScreenState extends State<TimelineScreen> {
   }
 
   Widget _buildClipTrackRow({
-    required MaterialType type,
+    required TimelineRowKind type,
     required int rowIndex,
     required String rowLabel,
     required IconData icon,
@@ -3605,14 +3962,14 @@ class _TimelineScreenState extends State<TimelineScreen> {
     );
   }
 
-  void _addTrackRow(MaterialType type) {
+  void _addTrackRow(TimelineRowKind type) {
     final sceneId = _selectedSceneId;
     if (sceneId == null) return;
     context.read<ProjectService>().addTrackRow(widget.projectId, sceneId, type);
   }
 
   void _showRenameTrackRowDialog(
-    MaterialType type,
+    TimelineRowKind type,
     int rowIndex,
     String currentLabel,
   ) {
@@ -3894,12 +4251,13 @@ class _TimelineScreenState extends State<TimelineScreen> {
 
   void _endClipDrag(_TrackClip clip) {
     if (_draggingClipId != clip.id) return;
+    final moved = _clipDragMode == _ClipDragMode.move;
     setState(() {
       _draggingClipId = null;
       _clipDragMode = null;
     });
     final sceneId = _selectedSceneId;
-    if (sceneId != null) _persistClipUpdate(clip, sceneId);
+    if (sceneId != null) _persistClipUpdate(clip, sceneId, moved: moved);
   }
 
   /// シーン・フレームの複数選択モード中の一括操作バー。
@@ -4040,7 +4398,7 @@ class _TimelineScreenState extends State<TimelineScreen> {
   /// 入っていなくてもクリップボードに内容がある間はいつでも行える
   /// （貼り付け先は常に現在地=_currentFrame）。
   Widget _buildClipToolbar() {
-    if (_videoClips.isEmpty && _audioClips.isEmpty && _clipClipboard == null) {
+    if (_allClips.isEmpty && _clipClipboard == null) {
       return const SizedBox.shrink();
     }
     final l10n = AppLocalizations.of(context)!;
@@ -5216,6 +5574,190 @@ class _TimelineScreenState extends State<TimelineScreen> {
     );
   }
 
+  /// The first row of [type] where a clip from [start] for [length] frames
+  /// overlaps none on it; a new row when every row is taken there (so
+  /// texts shown at the same time go on rows of their own).
+  int _freeRowFor(_ClipTrackType type, int start, int length) {
+    final sceneId = _selectedSceneId;
+    if (sceneId == null) return 0;
+    final ps = context.read<ProjectService>();
+    final kind = _rowKindOf(type);
+    final clips = switch (type) {
+      _ClipTrackType.audio => _audioClips,
+      _ClipTrackType.video => _videoClips,
+      _ClipTrackType.image => _imageClips,
+      _ClipTrackType.text => _textClips,
+    };
+    final rows = ps.rowNamesOf(widget.projectId, sceneId, kind).length;
+    final end = start + length;
+    for (var row = 0; row < rows; row++) {
+      final taken = clips.any(
+        (c) =>
+            c.trackRow == row &&
+            c.startFrame < end &&
+            start < c.startFrame + c.lengthFrames,
+      );
+      if (!taken) return row;
+    }
+    ps.addTrackRow(widget.projectId, sceneId, kind);
+    return ps.rowNamesOf(widget.projectId, sceneId, kind).length - 1;
+  }
+
+  /// Asks for a text and when it shows, then adds it on a text row and opens
+  /// it for editing (its look, place and turn are set there, live).
+  void _showAddTextDialog() {
+    final sceneId = _selectedSceneId;
+    if (sceneId == null) return;
+    final l10n = AppLocalizations.of(context)!;
+    final ctrl = TextEditingController();
+    final total = _totalFrames;
+    var start = _currentFrame.clamp(0, total - 1);
+    var length = (total - start).clamp(1, 24);
+    showDialog<void>(
+      context: context,
+      builder: (ctx) => DisposeOnUnmount(
+        controller: ctrl,
+        builder: (ctx) => StatefulBuilder(
+          builder: (ctx, setS) => AlertDialog(
+            insetPadding: const EdgeInsets.symmetric(
+              horizontal: 16,
+              vertical: 24,
+            ),
+            title: Text(l10n.timelineAddTextDialogTitle),
+            content: SizedBox(
+              width: 480,
+              child: SingleChildScrollView(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    TextField(
+                      controller: ctrl,
+                      autofocus: true,
+                      minLines: 1,
+                      maxLines: 4,
+                      decoration: InputDecoration(
+                        hintText: l10n.canvasTextInputHint,
+                        border: const OutlineInputBorder(),
+                      ),
+                      onChanged: (_) => setS(() {}),
+                    ),
+                    const SizedBox(height: 8),
+                    LabeledSlider(
+                      label: l10n.timelineClipStartLabel,
+                      value: (start + 1).toDouble(),
+                      min: 1,
+                      max: math.max(2, total).toDouble(),
+                      divisions: math.max(1, total - 1),
+                      valueText: 'F${start + 1}',
+                      onChanged: (v) => setS(() {
+                        start = (v.round() - 1).clamp(0, total - 1);
+                        length = length.clamp(1, total - start);
+                      }),
+                    ),
+                    LabeledSlider(
+                      label: l10n.timelineClipLengthLabel,
+                      value: length.toDouble(),
+                      min: 1,
+                      // 残りが1フレームでもスライダーが成り立つよう幅を2以上に取り、
+                      // 値は残りのフレーム数までに抑える。
+                      max: math.max(2, total - start).toDouble(),
+                      divisions: math.max(1, total - start - 1),
+                      valueText: '${length}F',
+                      onChanged: (v) => setS(
+                        () => length = v.round().clamp(1, total - start),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(ctx),
+                child: Text(l10n.commonCancel),
+              ),
+              FilledButton(
+                onPressed: ctrl.text.trim().isEmpty
+                    ? null
+                    : () {
+                        final text = ctrl.text;
+                        Navigator.pop(ctx);
+                        _addTextClip(sceneId, text, start, length);
+                      },
+                child: Text(l10n.commonAdd),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Future<void> _addTextClip(
+    String sceneId,
+    String text,
+    int start,
+    int length,
+  ) async {
+    final l10n = AppLocalizations.of(context)!;
+    final ps = context.read<ProjectService>();
+    final tm = ps.tileManagerOf(widget.projectId);
+    final home = _currentFrame;
+    final row = _freeRowFor(_ClipTrackType.text, start, length);
+    final name = timelineTextName(text, l10n.timelineMaterialText);
+    final layer = ps.addLayer(
+      projectId: widget.projectId,
+      sceneId: sceneId,
+      frameIndex: home,
+      type: LayerType.timelineText,
+      name: name,
+    );
+    final textObject = newTimelineText(
+      id: layer.id,
+      text: text,
+      canvasWidth: tm.canvasWidth,
+      canvasHeight: tm.canvasHeight,
+    );
+    final bytes = await rasterizeTimelineText(
+      textObject,
+      tm.canvasWidth,
+      tm.canvasHeight,
+    );
+    if (!mounted) return;
+    if (bytes != null) {
+      tm.replaceLayerPixels(
+        ps.tileKeyFor(widget.projectId, sceneId, home, layer.id),
+        bytes,
+      );
+    }
+    ps.updateLayer(
+      projectId: widget.projectId,
+      sceneId: sceneId,
+      frameIndex: home,
+      layer: layer.copyWith(
+        rangeMode: LayerRangeMode.frameRange,
+        rangeStart: start + 1,
+        rangeEnd: start + length,
+        textObject: textObject,
+        trackRow: row,
+      ),
+    );
+    setState(() {
+      _textClips.add(
+        _TrackClip(
+          id: layer.id,
+          label: name,
+          startFrame: start,
+          lengthFrames: length,
+          color: _textClipColor,
+          trackType: _ClipTrackType.text,
+          trackRow: row,
+        ),
+      );
+    });
+    _openMaterialEditor(layer.id);
+  }
+
   Future<void> _showAddClipDialog(
     String trackName,
     List<_TrackClip> clips,
@@ -5248,7 +5790,11 @@ class _TimelineScreenState extends State<TimelineScreen> {
       _ClipTrackType.video => FileType.video,
 
       _ClipTrackType.image => FileType.image,
+
+      // Text has no file; it is added with its own dialog.
+      _ClipTrackType.text => null,
     };
+    if (fileType == null) return;
 
     final result = await FilePicker.platform.pickFiles(
       type: fileType,
@@ -5268,7 +5814,7 @@ class _TimelineScreenState extends State<TimelineScreen> {
     final materialType = switch (trackType) {
       _ClipTrackType.audio => MaterialType.audio,
       _ClipTrackType.video => MaterialType.video,
-      _ClipTrackType.image => MaterialType.image,
+      _ClipTrackType.image || _ClipTrackType.text => MaterialType.image,
     };
     final asset = await context.read<MaterialService>().addMaterial(
       projectId: widget.projectId,
@@ -5381,6 +5927,8 @@ class _TimelineScreenState extends State<TimelineScreen> {
     required MaterialAsset asset,
   }) async {
     final projectService = context.read<ProjectService>();
+    // 同じ時間に重なる素材があれば、空いている行（無ければ新しい行）へ置く。
+    final row = _freeRowFor(trackType, startFrame, lengthFrames);
 
     if (trackType == _ClipTrackType.audio) {
       final id = 'audio_${DateTime.now().microsecondsSinceEpoch}';
@@ -5393,6 +5941,7 @@ class _TimelineScreenState extends State<TimelineScreen> {
           materialId: asset.id,
           startFrame: startFrame,
           lengthFrames: lengthFrames,
+          trackRow: row,
         ),
       );
       return _TrackClip(
@@ -5405,6 +5954,7 @@ class _TimelineScreenState extends State<TimelineScreen> {
         filePath: filePath,
         materialId: asset.id,
         useEnd: lengthFrames - 1,
+        trackRow: row,
       );
     }
 
@@ -5447,6 +5997,7 @@ class _TimelineScreenState extends State<TimelineScreen> {
         rangeStart: startFrame + 1,
         rangeEnd: startFrame + lengthFrames,
         materialId: asset.id,
+        trackRow: row,
         sourceTrimStart: trackType == _ClipTrackType.video ? 0 : null,
         sourceTrimEnd: trackType == _ClipTrackType.video
             ? lengthFrames - 1
@@ -5464,6 +6015,7 @@ class _TimelineScreenState extends State<TimelineScreen> {
       filePath: filePath,
       materialId: asset.id,
       useEnd: lengthFrames - 1,
+      trackRow: row,
     );
   }
 
@@ -5551,20 +6103,18 @@ class _TimelineScreenState extends State<TimelineScreen> {
         _ClipTrackType.audio => _audioClips,
         _ClipTrackType.video => _videoClips,
         _ClipTrackType.image => _imageClips,
+        _ClipTrackType.text => _textClips,
       };
       final stillUsed = remaining.any((c) => c.trackRow == clip.trackRow);
-      if (!stillUsed) {
-        final materialType = switch (clip.trackType) {
-          _ClipTrackType.audio => MaterialType.audio,
-          _ClipTrackType.video => MaterialType.video,
-          _ClipTrackType.image => MaterialType.image,
-        };
-        projectService.removeTrackRow(
-          widget.projectId,
-          sceneId,
-          materialType,
-          clip.trackRow,
-        );
+      if (!stillUsed &&
+          projectService.removeTrackRow(
+            widget.projectId,
+            sceneId,
+            _rowKindOf(clip.trackType),
+            clip.trackRow,
+          )) {
+        // The rows after it moved up one: read the clips' rows again.
+        _loadClipsFromProject(sceneId);
       }
     }
   }
@@ -5667,25 +6217,26 @@ class _TimelineScreenState extends State<TimelineScreen> {
             newLayer.id,
           ),
         );
+    // 元の素材の設定（文字・配置のキーフレーム・マスク・不透明度・
+    // 動画の音量と使用範囲）をそのまま写し、表示範囲と行だけを変える。
+    // キーフレームは表示範囲と一緒にずらす。
+    final shift = newStart - clip.startFrame;
     projectService.updateLayer(
       projectId: widget.projectId,
       sceneId: home.sceneId,
       frameIndex: home.frameIndex,
-      layer: newLayer.copyWith(
+      layer: sourceLayer.copyWith(
+        id: newLayer.id,
+        name: clip.label,
         rangeMode: LayerRangeMode.frameRange,
         rangeStart: newStart + 1,
         rangeEnd: newStart + clip.lengthFrames,
-        materialId: clip.materialId,
-        opacity: (clip.videoOpacity * 100).round(),
-        videoVolume: clip.trackType == _ClipTrackType.video
-            ? clip.volume.clamp(0.0, 1.0)
-            : 1.0,
-        sourceTrimStart: clip.trackType == _ClipTrackType.video
-            ? clip.useStart
-            : null,
-        sourceTrimEnd: clip.trackType == _ClipTrackType.video
-            ? clip.useEnd
-            : null,
+        trackRow: targetRow,
+        textObject: sourceLayer.textObject?.copyWith(id: newLayer.id),
+        keyframes: [
+          for (final k in sourceLayer.keyframes)
+            k.copyWith(frameIndex: k.frameIndex + shift),
+        ],
       ),
     );
     if (!mounted) return;
@@ -5705,15 +6256,33 @@ class _TimelineScreenState extends State<TimelineScreen> {
       trackRow: targetRow,
     );
     setState(() {
-      if (clip.trackType == _ClipTrackType.video) {
-        _videoClips.add(newClip);
-      } else {
-        _imageClips.add(newClip);
+      switch (clip.trackType) {
+        case _ClipTrackType.video:
+          _videoClips.add(newClip);
+        case _ClipTrackType.text:
+          _textClips.add(newClip);
+        case _ClipTrackType.image || _ClipTrackType.audio:
+          _imageClips.add(newClip);
       }
     });
   }
 
   // ─── クリップの複数選択・コピー・切り取り・貼り付け ─────────
+
+  /// Every material clip of the scene (text, image, video and audio).
+  List<_TrackClip> get _allClips => [
+    ..._textClips,
+    ..._imageClips,
+    ..._videoClips,
+    ..._audioClips,
+  ];
+
+  List<_TrackClip> _clipsOfType(_ClipTrackType type) => switch (type) {
+    _ClipTrackType.audio => _audioClips,
+    _ClipTrackType.video => _videoClips,
+    _ClipTrackType.image => _imageClips,
+    _ClipTrackType.text => _textClips,
+  };
 
   void _toggleClipMultiSelect() {
     setState(() {
@@ -5726,8 +6295,7 @@ class _TimelineScreenState extends State<TimelineScreen> {
     setState(() {
       _selectedClipIds
         ..clear()
-        ..addAll(_videoClips.map((c) => c.id))
-        ..addAll(_audioClips.map((c) => c.id));
+        ..addAll(_allClips.map((c) => c.id));
     });
   }
 
@@ -5763,10 +6331,10 @@ class _TimelineScreenState extends State<TimelineScreen> {
   void _copySelectedClips() {
     final sceneId = _selectedSceneId;
     if (sceneId == null || _selectedClipIds.isEmpty) return;
-    final selected = [
-      ..._videoClips,
-      ..._audioClips,
-    ].where((c) => _selectedClipIds.contains(c.id)).map(_snapshotClip).toList();
+    final selected = _allClips
+        .where((c) => _selectedClipIds.contains(c.id))
+        .map(_snapshotClip)
+        .toList();
     if (selected.isEmpty) return;
     setState(() {
       _clipClipboard = (sourceSceneId: sceneId, clips: selected, isCut: false);
@@ -5776,10 +6344,10 @@ class _TimelineScreenState extends State<TimelineScreen> {
   void _cutSelectedClips() {
     final sceneId = _selectedSceneId;
     if (sceneId == null || _selectedClipIds.isEmpty) return;
-    final selected = [
-      ..._videoClips,
-      ..._audioClips,
-    ].where((c) => _selectedClipIds.contains(c.id)).map(_snapshotClip).toList();
+    final selected = _allClips
+        .where((c) => _selectedClipIds.contains(c.id))
+        .map(_snapshotClip)
+        .toList();
     if (selected.isEmpty) return;
     setState(() {
       _clipClipboard = (sourceSceneId: sceneId, clips: selected, isCut: true);
@@ -5789,14 +6357,15 @@ class _TimelineScreenState extends State<TimelineScreen> {
   void _deleteSelectedClips() {
     final sceneId = _selectedSceneId;
     if (sceneId == null || _selectedClipIds.isEmpty) return;
-    final targets = [
-      ..._videoClips,
-      ..._audioClips,
-    ].where((c) => _selectedClipIds.contains(c.id)).toList();
+    final targets = _allClips
+        .where((c) => _selectedClipIds.contains(c.id))
+        .toList();
     for (final clip in targets) {
       setState(() {
         _videoClips.remove(clip);
         _audioClips.remove(clip);
+        _imageClips.remove(clip);
+        _textClips.remove(clip);
       });
       _deletePersistedClip(clip, sceneId);
     }
@@ -5835,9 +6404,7 @@ class _TimelineScreenState extends State<TimelineScreen> {
     final conflicts = <({int start, int end})>[];
     final conflictingClipIds = <String>{};
     for (final c in clipboard.clips) {
-      final existingOfType = c.trackType == _ClipTrackType.audio
-          ? _audioClips
-          : _videoClips;
+      final existingOfType = _clipsOfType(c.trackType);
       final start = targets[c.id]!;
       final end = start + c.lengthFrames;
       for (final other in existingOfType) {
@@ -5884,12 +6451,10 @@ class _TimelineScreenState extends State<TimelineScreen> {
           .map((c) => c.trackType)
           .toSet();
       for (final type in conflictingTypes) {
-        final materialType = type == _ClipTrackType.audio
-            ? MaterialType.audio
-            : MaterialType.video;
-        ps.addTrackRow(widget.projectId, sceneId, materialType);
+        final rowKind = _rowKindOf(type);
+        ps.addTrackRow(widget.projectId, sceneId, rowKind);
         newRowForType[type] =
-            ps.rowNamesOf(widget.projectId, sceneId, materialType).length - 1;
+            ps.rowNamesOf(widget.projectId, sceneId, rowKind).length - 1;
       }
     }
 
@@ -5912,6 +6477,8 @@ class _TimelineScreenState extends State<TimelineScreen> {
         setState(() {
           _videoClips.removeWhere((x) => x.id == c.id);
           _audioClips.removeWhere((x) => x.id == c.id);
+          _imageClips.removeWhere((x) => x.id == c.id);
+          _textClips.removeWhere((x) => x.id == c.id);
         });
         _deletePersistedClip(c, sceneId);
       }
@@ -5957,11 +6524,15 @@ class _TimelineScreenState extends State<TimelineScreen> {
   /// クリップ詳細シートを閉じた時点で、編集内容（音量・フェード・不透明度・
   /// 使用範囲）をまとめて永続化する（スライダー操作のたびに保存すると低スペック
   /// 端末で負荷が高いため、シートを閉じた時点でまとめて反映する）。
-  void _persistClipUpdate(_TrackClip clip, String sceneId) {
-    final stillExists =
-        _audioClips.contains(clip) ||
-        _videoClips.contains(clip) ||
-        _imageClips.contains(clip);
+  ///
+  /// [moved]: the clip was moved as a whole, so its keyframes move with it
+  /// (resizing an end leaves them where they are).
+  void _persistClipUpdate(
+    _TrackClip clip,
+    String sceneId, {
+    bool moved = false,
+  }) {
+    final stillExists = _allClips.contains(clip);
     if (!stillExists) return; // 削除済みなら何もしない
     final projectService = context.read<ProjectService>();
     if (clip.trackType == _ClipTrackType.audio) {
@@ -5992,21 +6563,26 @@ class _TimelineScreenState extends State<TimelineScreen> {
           .where((l) => l.id == clip.id)
           .firstOrNull;
       if (layer == null) return;
+      // 不透明度・音量・使用範囲・文字・配置は編集パネルがレイヤーへ
+      // 直接書き込むので、ここでは表示範囲（タイムライン上のドラッグ移動・
+      // ハンドルによるリサイズ）だけを書き戻す（以前はドラッグ操作で
+      // 見た目上は移動・リサイズできても永続化されない不具合があった）。
+      // 素材ごと動かしたときは、配置のキーフレームも一緒にずらす。
+      final oldStart = (layer.rangeStart ?? 1) - 1;
+      final shift = moved ? clip.startFrame - oldStart : 0;
       projectService.updateLayer(
         projectId: widget.projectId,
         sceneId: home.sceneId,
         frameIndex: home.frameIndex,
         layer: layer.copyWith(
-          opacity: (clip.videoOpacity * 100).round(),
-          videoVolume: clip.volume.clamp(0.0, 1.0),
-          sourceTrimStart: clip.useStart,
-          sourceTrimEnd: clip.useEnd,
-          // 表示開始位置・使用範囲（タイムライン上のドラッグ移動・
-          // ハンドルによるリサイズ）。
-          // ドラッグ操作で見た目上は移動・リサイズできても実際には
-          // 永続化されない不具合があった。
           rangeStart: clip.startFrame + 1,
           rangeEnd: clip.startFrame + clip.lengthFrames,
+          keyframes: shift == 0
+              ? null
+              : [
+                  for (final k in layer.keyframes)
+                    k.copyWith(frameIndex: k.frameIndex + shift),
+                ],
         ),
       );
     }
@@ -6056,8 +6632,26 @@ class _TimelineScreenState extends State<TimelineScreen> {
 
     final video = <_TrackClip>[];
     final image = <_TrackClip>[];
+    final text = <_TrackClip>[];
     for (final frame in scene.frames) {
       for (final layer in frame.layers) {
+        if (layer.type == LayerType.timelineText) {
+          final start = (layer.rangeStart ?? 1) - 1;
+          final end = layer.rangeEnd ?? (start + 1);
+          text.add(
+            _TrackClip(
+              id: layer.id,
+              label: layer.name,
+              startFrame: start,
+              lengthFrames: (end - start).clamp(1, 1 << 30),
+              color: _textClipColor,
+              trackType: _ClipTrackType.text,
+              filePath: null,
+              trackRow: layer.trackRow,
+            ),
+          );
+          continue;
+        }
         if (layer.type != LayerType.timelineVideo &&
             layer.type != LayerType.timelineImage) {
           continue;
@@ -6108,12 +6702,20 @@ class _TimelineScreenState extends State<TimelineScreen> {
       _imageClips
         ..clear()
         ..addAll(image);
+      _textClips
+        ..clear()
+        ..addAll(text);
     });
   }
 
   void _showEditClipDialog(_TrackClip clip) {
     final sceneId = _selectedSceneId;
     if (sceneId == null) return;
+    if (clip.trackType != _ClipTrackType.audio) {
+      // テキスト・画像・動画は、プレビューを見ながら調整できる編集パネルで。
+      _openMaterialEditor(clip.id);
+      return;
+    }
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
@@ -6125,6 +6727,7 @@ class _TimelineScreenState extends State<TimelineScreen> {
             _audioClips.remove(clip);
             _videoClips.remove(clip);
             _imageClips.remove(clip);
+            _textClips.remove(clip);
           });
           _deletePersistedClip(clip, sceneId);
         },
@@ -6935,11 +7538,13 @@ class _CanvasSizeChangeDialogState extends State<_CanvasSizeChangeDialog> {
                             widget.projectId,
                           ),
                           tileManager: ps.tileManagerOf(widget.projectId),
-                          layers: ps.layersOf(
-                            widget.projectId,
-                            widget.sceneId,
-                            widget.frameIndex,
-                          ),
+                          layers: ps
+                              .stackedLayersOf(
+                                widget.projectId,
+                                widget.sceneId,
+                                widget.frameIndex,
+                              )
+                              .layers,
                           sceneId: widget.sceneId,
                           frameIndex: widget.frameIndex,
                           cameraKeyframes: ps.cameraKeyframesOf(
@@ -7061,7 +7666,11 @@ int _projectBackgroundOf(ProjectService ps, String projectId) =>
 
 class _TimelinePreview extends StatefulWidget {
   final TileManager tileManager;
+
+  /// The frame's layers in the scene's 重なり順 (front first) and the runs
+  /// of them masked together ([ProjectService.stackedLayersOf]).
   final List<Layer> layers;
+  final List<LayerMaskGroup> maskGroups;
   final String sceneId;
   final int frameIndex;
   final List<CameraKeyframe> cameraKeyframes;
@@ -7076,6 +7685,7 @@ class _TimelinePreview extends StatefulWidget {
     required this.backgroundColor,
     required this.tileManager,
     required this.layers,
+    this.maskGroups = const [],
     required this.sceneId,
     required this.frameIndex,
     this.cameraKeyframes = const [],
@@ -7094,6 +7704,9 @@ class _TimelinePreviewState extends State<_TimelinePreview> {
   final FilterEngine _filterEngine = FilterEngine();
   ui.Image? _image;
   bool _building = false;
+  // A change that came while a picture was being built: build again after
+  // (else dragging a slider or a material left the preview a step behind).
+  bool _rebuildPending = false;
 
   @override
   void initState() {
@@ -7105,6 +7718,7 @@ class _TimelinePreviewState extends State<_TimelinePreview> {
   void didUpdateWidget(_TimelinePreview old) {
     super.didUpdateWidget(old);
     if (old.layers != widget.layers ||
+        old.maskGroups != widget.maskGroups ||
         old.tileManager != widget.tileManager ||
         old.sceneId != widget.sceneId ||
         old.frameIndex != widget.frameIndex ||
@@ -7128,7 +7742,10 @@ class _TimelinePreviewState extends State<_TimelinePreview> {
   }
 
   Future<void> _rebuild() async {
-    if (_building) return;
+    if (_building) {
+      _rebuildPending = true;
+      return;
+    }
     _building = true;
     final tm = widget.tileManager;
     final layered = await LayerCompositor.composite(
@@ -7150,6 +7767,7 @@ class _TimelinePreviewState extends State<_TimelinePreview> {
         widget.layers,
         widget.backgroundColor,
       ),
+      maskGroups: widget.maskGroups,
     );
 
     // カメラ変換を適用する（カメラは表示のみを変更する）
@@ -7196,6 +7814,10 @@ class _TimelinePreviewState extends State<_TimelinePreview> {
       _image = img;
       _building = false;
     });
+    if (_rebuildPending) {
+      _rebuildPending = false;
+      _rebuild();
+    }
   }
 
   Future<ui.Image> _decodeRgba(Uint8List bytes, int width, int height) {
@@ -8572,9 +9194,6 @@ class _ClipDetailSheetState extends State<_ClipDetailSheet> {
   late double _initialVolume;
   late double _initialFadeIn;
   late double _initialFadeOut;
-  late double _initialVideoOpacity;
-  late int _initialUseStart;
-  late int _initialUseEnd;
 
   @override
   void initState() {
@@ -8584,9 +9203,6 @@ class _ClipDetailSheetState extends State<_ClipDetailSheet> {
     _initialVolume = _c.volume;
     _initialFadeIn = _c.fadeIn;
     _initialFadeOut = _c.fadeOut;
-    _initialVideoOpacity = _c.videoOpacity;
-    _initialUseStart = _c.useStart;
-    _initialUseEnd = _c.useEnd;
   }
 
   void _notify() {
@@ -8656,9 +9272,6 @@ class _ClipDetailSheetState extends State<_ClipDetailSheet> {
                     _c.volume = _initialVolume;
                     _c.fadeIn = _initialFadeIn;
                     _c.fadeOut = _initialFadeOut;
-                    _c.videoOpacity = _initialVideoOpacity;
-                    _c.useStart = _initialUseStart;
-                    _c.useEnd = _initialUseEnd;
                     widget.onChanged();
                     Navigator.pop(context);
                   },
@@ -8711,61 +9324,6 @@ class _ClipDetailSheetState extends State<_ClipDetailSheet> {
                     },
                     '${_c.fadeOut.toStringAsFixed(1)}s',
                     step: 0.1,
-                  ),
-                ],
-                if (_c.trackType == _ClipTrackType.video) ...[
-                  _row(
-                    l10n.timelineClipVolumeLabel,
-                    _c.volume,
-                    0,
-                    1,
-                    100,
-                    (v) {
-                      _c.volume = v;
-                      _notify();
-                    },
-                    '${(_c.volume * 100).round()}%',
-                    step: 0.01,
-                  ),
-                  _row(
-                    l10n.layerPanelOpacityLabel,
-                    _c.videoOpacity,
-                    0,
-                    1,
-                    100,
-                    (v) {
-                      _c.videoOpacity = v;
-                      _notify();
-                    },
-                    '${(_c.videoOpacity * 100).round()}%',
-                    step: 0.01,
-                  ),
-                  _row(
-                    l10n.timelineClipUseStartLabel,
-                    _c.useStart.toDouble(),
-                    0,
-                    (_c.lengthFrames - 1).toDouble(),
-                    _c.lengthFrames,
-                    (v) {
-                      _c.useStart = v.round().clamp(0, _c.useEnd);
-                      _notify();
-                    },
-                    'F${_c.useStart + 1}',
-                  ),
-                  _row(
-                    l10n.timelineClipUseEndLabel,
-                    _c.useEnd.toDouble(),
-                    0,
-                    (_c.lengthFrames - 1).toDouble(),
-                    _c.lengthFrames,
-                    (v) {
-                      _c.useEnd = v.round().clamp(
-                        _c.useStart,
-                        _c.lengthFrames - 1,
-                      );
-                      _notify();
-                    },
-                    'F${_c.useEnd + 1}',
                   ),
                 ],
               ],
@@ -8844,7 +9402,7 @@ class _CameraKfSheetState extends State<_CameraKfSheet> {
   Widget _buildLivePreview(BuildContext context) {
     final ps = context.watch<ProjectService>();
     final tileManager = ps.tileManagerOf(widget.projectId);
-    final layers = ps.layersOf(
+    final stacked = ps.stackedLayersOf(
       widget.projectId,
       widget.sceneId,
       _kf.frameIndex,
@@ -8866,7 +9424,8 @@ class _CameraKfSheetState extends State<_CameraKfSheet> {
       child: _TimelinePreview(
         backgroundColor: _projectBackgroundOf(ps, widget.projectId),
         tileManager: tileManager,
-        layers: layers,
+        layers: stacked.layers,
+        maskGroups: stacked.maskGroups,
         sceneId: widget.sceneId,
         frameIndex: _kf.frameIndex,
         cameraKeyframes: cameraKeyframes,

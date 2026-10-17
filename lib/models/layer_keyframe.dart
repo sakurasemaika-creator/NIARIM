@@ -29,7 +29,11 @@ class LayerKeyframe {
   final double x;
   final double y;
   final double scale;
-  final double rotation; // 度数法
+  final double rotation; // 度数法（Z軸回転＝画面内の回転）
+
+  /// X軸回転・Y軸回転（度）。奥行きのある回転で、上下・左右が奥へ倒れる。
+  final double rotationX;
+  final double rotationY;
   final LayerKeyframeEasing easing;
 
   const LayerKeyframe({
@@ -38,6 +42,8 @@ class LayerKeyframe {
     this.y = 0,
     this.scale = 1.0,
     this.rotation = 0,
+    this.rotationX = 0,
+    this.rotationY = 0,
     this.easing = LayerKeyframeEasing.linear,
   });
 
@@ -47,6 +53,8 @@ class LayerKeyframe {
     double? y,
     double? scale,
     double? rotation,
+    double? rotationX,
+    double? rotationY,
     LayerKeyframeEasing? easing,
   }) {
     return LayerKeyframe(
@@ -55,6 +63,8 @@ class LayerKeyframe {
       y: y ?? this.y,
       scale: scale ?? this.scale,
       rotation: rotation ?? this.rotation,
+      rotationX: rotationX ?? this.rotationX,
+      rotationY: rotationY ?? this.rotationY,
       easing: easing ?? this.easing,
     );
   }
@@ -69,6 +79,8 @@ class LayerKeyframe {
       y: a.y + (b.y - a.y) * t,
       scale: a.scale + (b.scale - a.scale) * t,
       rotation: a.rotation + (b.rotation - a.rotation) * t,
+      rotationX: a.rotationX + (b.rotationX - a.rotationX) * t,
+      rotationY: a.rotationY + (b.rotationY - a.rotationY) * t,
     );
   }
 
@@ -78,6 +90,8 @@ class LayerKeyframe {
     'y': y,
     'scale': scale,
     'rotation': rotation,
+    if (rotationX != 0) 'rotationX': rotationX,
+    if (rotationY != 0) 'rotationY': rotationY,
     'easing': easing.name,
   };
 
@@ -87,6 +101,8 @@ class LayerKeyframe {
     y: (j['y'] as num?)?.toDouble() ?? 0,
     scale: (j['scale'] as num?)?.toDouble() ?? 1.0,
     rotation: (j['rotation'] as num?)?.toDouble() ?? 0,
+    rotationX: (j['rotationX'] as num?)?.toDouble() ?? 0,
+    rotationY: (j['rotationY'] as num?)?.toDouble() ?? 0,
     // 未設定（古い保存データ）はlinear扱いにし、従来の挙動を保つ。
     easing: LayerKeyframeEasing.values.firstWhere(
       (e) => e.name == j['easing'],

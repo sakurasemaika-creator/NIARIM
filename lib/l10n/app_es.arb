@@ -467,7 +467,7 @@
   "helpPressureCurveTitle": "Curva de presión",
   "helpPressureCurveDesc": "Una función en los ajustes de entrada de lápiz que permite ajustar libremente, mediante un gráfico, la relación entre la presión real del lápiz y cómo afecta al tamaño y la opacidad del pincel. Ya sea que quieras líneas gruesas incluso con poca presión, o lo contrario —necesitando presión firme para obtener líneas gruesas—, puedes personalizar finamente la sensación para adaptarla a tus hábitos. Puedes probar a dibujar en el momento para comprobar el efecto tras cambiar los ajustes.",
   "helpTimelineTitle": "Línea de tiempo",
-  "helpTimelineDesc": "La pantalla para gestionar el eje temporal de tu animación. Organizar fotogramas (imágenes fijas individuales) y reproducirlos como un flipbook crea la animación. Las pistas de material de imagen, vídeo y audio, las pistas de capas comunes y los fotogramas clave de cámara se gestionan todos en la misma línea de tiempo.",
+  "helpTimelineDesc": "La pantalla para gestionar el eje temporal de tu animación. Organizar fotogramas (imágenes fijas individuales) y reproducirlos como un flipbook crea la animación. Las pistas de material de texto, imagen, vídeo y audio, las pistas de capas comunes y los fotogramas clave de cámara se gestionan todos en la misma línea de tiempo. Qué se muestra delante entre los textos, imágenes, vídeos y el dibujo del fotograma se ajusta en «Orden de apilado», para toda la escena o desde cualquier fotograma.",
   "helpSceneTitle": "Escena",
   "helpSceneDesc": "Divide el interior de un proyecto (un vídeo) en escenas (cortes) para gestionarlas por separado. Mientras que las carpetas organizan a nivel de proyecto, las escenas representan cambios de escena dentro de un mismo vídeo. En la pestaña de escenas de la línea de tiempo puedes añadir, duplicar, eliminar, renombrar y reordenar escenas. Al cambiar al modo de selección múltiple puedes mover, duplicar o eliminar varias escenas a la vez.",
   "helpCameraKeyframeTitle": "Fotograma clave de cámara",
@@ -501,8 +501,8 @@
   "helpPremiumEntryDesc": "La membresia premium amplia hasta 2 horas el limite de 90 segundos de duracion de video de la version gratuita y te permite quitar la tarjeta final (logotipo de la app) que se anade automaticamente al final de cada video. Tambien se ocultan los anuncios y obtienes acceso a la marca de agua, la curva de tonos y la correccion de niveles.",
   "helpPerformanceSettingsTitle": "Ajustes de rendimiento",
   "helpPerformanceSettingsDesc": "Elige entre los preajustes de calidad baja, media o alta según la capacidad de tu dispositivo, o configura cada elemento individualmente (personalizado). Además del método de guardado, el rendimiento, el papel cebolla y la detección de inclinación, aquí también se agrupan los ajustes que afectan al tamaño de la aplicación y a su fluidez, como la longitud del historial de deshacer y la eliminación automática de la papelera.",
-  "helpMaterialClipTitle": "Clips de material (imagen / vídeo / audio)",
-  "helpMaterialClipDesc": "Clips colocados en las pistas de imagen, vídeo y audio de la línea de tiempo. Mantén pulsado y arrastra el cuerpo del clip para mover su posición de inicio, o arrastra las asas de los extremos para cambiar cuánto se usa. Toca un clip para abrir su hoja de detalles, donde el icono de copia lo duplica y el icono de papelera lo elimina. Los clips de imagen y vídeo se gestionan internamente como capas, mientras que los de audio se gestionan como clips vinculados directamente a la escena.",
+  "helpMaterialClipTitle": "Clips de material (texto / imagen / vídeo / audio)",
+  "helpMaterialClipDesc": "Clips colocados en las pistas de texto, imagen, vídeo y audio de la línea de tiempo. Mantén pulsado y arrastra el cuerpo del clip para mover su posición de inicio, o arrastra las asas de los extremos para cambiar cuánto se usa. Los materiales que se muestran al mismo tiempo se colocan automáticamente en filas propias. Al tocar un clip de texto, imagen o vídeo se abre su panel de edición bajo la vista previa: el texto, la fuente, el color y el contorno; la posición, la escala, la rotación en los ejes X/Y/Z y la opacidad (también se puede arrastrar en la vista previa, y al añadir fotogramas clave se mueve); su máscara (rectángulo o elipse, difuminada, invertida); y la fila en la que está. Ahí también se puede duplicar o eliminar. El volumen y los fundidos de un clip de audio se ajustan en su hoja de detalles.",
   "helpGestureSettingsTitle": "Ajustes de gestos",
   "helpGestureSettingsDesc": "Permite asignar acciones —deshacer/rehacer, mover fotograma, cuentagotas y más— a un toque con dos dedos, un toque con tres dedos, un deslizamiento con dos dedos o una pulsación larga. Los botones del lápiz (en lápices compatibles) también se pueden asignar por separado. Útil para activar acciones frecuentes con un solo toque sin cambiar de herramienta.",
   "helpBucketDetailSettingsTitle": "Ajustes detallados de relleno con cubo",
@@ -1974,6 +1974,88 @@
   "timelineEffectFilterLabel": "Filtros de efecto",
   "timelineAddCameraKfTooltip": "Añadir fotograma clave de cámara",
   "timelineAddWatermarkTooltip": "+ Marca de agua",
+  "timelineMaterialRowLabel": "Fila",
+  "timelineMaterialNewRow": "Nueva fila",
+  "timelineAddTextTooltip": "+ Texto",
+  "timelineAddImageTooltip": "+ Imagen",
+  "timelineStackOrderTitle": "Orden de apilado",
+  "timelineMaterialText": "Texto",
+  "timelineAddTextDialogTitle": "Añadir texto",
+  "timelineEditSectionText": "Texto",
+  "timelineEditSectionTransform": "Posición",
+  "timelineEditSectionMask": "Máscara",
+  "timelineTransformRotationX": "Rotación en X",
+  "timelineTransformRotationY": "Rotación en Y",
+  "timelineTransformRotationZ": "Rotación en Z",
+  "timelineTransformReset": "Restablecer posición",
+  "timelineKeyframeAddHere": "Añadir fotograma clave en F{n}",
+  "@timelineKeyframeAddHere": {
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
+  },
+  "timelineKeyframeRemoveHere": "Quitar fotograma clave de F{n}",
+  "@timelineKeyframeRemoveHere": {
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
+  },
+  "timelineKeyframeWholeHint": "Se usa la misma posición en todo el material. Para animarlo, ve a otro fotograma y añade un fotograma clave.",
+  "timelineKeyframeAnimHint": "{count} fotogramas clave: los cambios se guardan en F{n} y los fotogramas intermedios se completan solos.",
+  "@timelineKeyframeAnimHint": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      },
+      "n": {
+        "type": "int"
+      }
+    }
+  },
+  "timelineGizmoHint": "Arrastra en la vista previa para moverlo, un punto de esquina para cambiar el tamaño y el punto superior para girarlo. También funciona con dos dedos.",
+  "timelineMaterialOutOfRange": "No se muestra en este fotograma (se muestra de F{start} a F{end})",
+  "@timelineMaterialOutOfRange": {
+    "placeholders": {
+      "start": {
+        "type": "int"
+      },
+      "end": {
+        "type": "int"
+      }
+    }
+  },
+  "timelineMaskNone": "Ninguna",
+  "timelineMaskRectangle": "Rectángulo",
+  "timelineMaskEllipse": "Elipse",
+  "timelineMaskCenterX": "Centro X",
+  "timelineMaskCenterY": "Centro Y",
+  "timelineMaskWidth": "Ancho",
+  "timelineMaskHeight": "Alto",
+  "timelineMaskFeather": "Difuminado",
+  "timelineMaskInvert": "Invertir (ocultar el interior)",
+  "timelineMaskHint": "Muestra solo lo que está dentro de la máscara. Inviértela para ocultar el interior.",
+  "timelineStackOrderHint": "Los elementos más arriba se muestran delante. Arrastra el asa o usa las flechas para reordenar.",
+  "timelineStackScopeScene": "Toda la escena",
+  "timelineStackScopeFromFrame": "Desde F{n}",
+  "@timelineStackScopeFromFrame": {
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
+  },
+  "timelineStackFrameUnit": "Fotograma (dibujo)",
+  "timelineStackChangesLabel": "Fotogramas donde cambia el orden",
+  "timelineStackResetScene": "Volver al orden predeterminado",
+  "timelineStackRemoveChange": "Quitar este cambio",
+  "timelineStackFrameMaskTitle": "Máscara del fotograma (dibujo)",
+  "timelineStackFrameMaskHint": "Recorta solo el dibujo; no afecta al texto, las imágenes ni el vídeo. El dibujo no se oculta mientras dibujas en el lienzo.",
+  "timelineStackMoveUp": "Traer adelante",
+  "timelineStackMoveDown": "Enviar atrás",
   "timelineWatermarkNotRegisteredTitle": "No hay ninguna marca de agua registrada",
   "timelineWatermarkNotRegisteredBody": "Registra primero una imagen o una marca de agua de texto en «Marca de agua» dentro de Ajustes.",
   "timelineOpenSettingsButton": "Abrir ajustes",
@@ -2012,7 +2094,7 @@
       }
     }
   },
-  "timelineSceneDeleteConfirmBody": "Se eliminarán todos los datos de la escena, incluidos cada fotograma, las capas comunes, los materiales de vídeo, los materiales de imagen y las marcas de agua.",
+  "timelineSceneDeleteConfirmBody": "Se eliminarán todos los datos de la escena, incluidos cada fotograma, las capas comunes, los materiales de texto, vídeo e imagen y las marcas de agua.",
   "timelineSceneMultiDeleteConfirmTitle": "¿Eliminar las {count} escenas seleccionadas?",
   "@timelineSceneMultiDeleteConfirmTitle": {
     "placeholders": {

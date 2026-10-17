@@ -2600,7 +2600,7 @@ abstract class AppLocalizations {
   /// No description provided for @helpTimelineDesc.
   ///
   /// In ja, this message translates to:
-  /// **'アニメーションの時間軸を管理する画面です。フレーム（静止画1コマ）を並べてパラパラ漫画のように再生することでアニメーションになります。画像・動画・音声などの素材トラック、共通レイヤートラック、カメラキーフレームも同じタイムライン上で管理します。'**
+  /// **'アニメーションの時間軸を管理する画面です。フレーム（静止画1コマ）を並べてパラパラ漫画のように再生することでアニメーションになります。テキスト・画像・動画・音声の素材トラック、共通レイヤートラック、カメラキーフレームも同じタイムライン上で管理します。テキスト・画像・動画とフレームのイラストの前後関係は「重なり順」で、シーン全体またはフレームごとに並べ替えられます。'**
   String get helpTimelineDesc;
 
   /// No description provided for @helpSceneTitle.
@@ -2804,13 +2804,13 @@ abstract class AppLocalizations {
   /// No description provided for @helpMaterialClipTitle.
   ///
   /// In ja, this message translates to:
-  /// **'素材クリップ（画像・動画・音声）'**
+  /// **'素材クリップ（テキスト・画像・動画・音声）'**
   String get helpMaterialClipTitle;
 
   /// No description provided for @helpMaterialClipDesc.
   ///
   /// In ja, this message translates to:
-  /// **'タイムラインの画像・動画・音声トラックに配置したクリップです。クリップ本体を長押しドラッグすると表示開始位置を移動でき、左右端のハンドルをドラッグすると使用範囲（長さ）を変更できます。タップすると開く詳細シートのコピーアイコンから複製、ゴミ箱アイコンから削除もできます。画像・動画は内部的にはレイヤーとして扱われており、音声はシーンに直接紐づくクリップとして管理されます。'**
+  /// **'タイムラインのテキスト・画像・動画・音声トラックに配置したクリップです。クリップ本体を長押しドラッグすると表示開始位置を移動でき、左右端のハンドルをドラッグすると使用範囲（長さ）を変更できます。同じ時間に重なる素材は自動で別の列に置かれます。テキスト・画像・動画のクリップをタップすると、プレビューの下に編集パネルが開きます。文字の内容・フォント・色・縁取り、位置・拡大縮小・X軸／Y軸／Z軸回転・不透明度（プレビュー上のドラッグでも動かせます。キーフレームを追加すると動きになります）、マスク（四角・楕円・ぼかし・反転）、置く列を変えられ、複製・削除もここから行えます。音声クリップは詳細シートで音量・フェードを調整します。'**
   String get helpMaterialClipDesc;
 
   /// No description provided for @helpGestureSettingsTitle.
@@ -8507,6 +8507,252 @@ abstract class AppLocalizations {
   /// **'＋ウォーターマーク'**
   String get timelineAddWatermarkTooltip;
 
+  /// No description provided for @timelineMaterialRowLabel.
+  ///
+  /// In ja, this message translates to:
+  /// **'置く列'**
+  String get timelineMaterialRowLabel;
+
+  /// No description provided for @timelineMaterialNewRow.
+  ///
+  /// In ja, this message translates to:
+  /// **'新しい列'**
+  String get timelineMaterialNewRow;
+
+  /// No description provided for @timelineAddTextTooltip.
+  ///
+  /// In ja, this message translates to:
+  /// **'＋テキスト'**
+  String get timelineAddTextTooltip;
+
+  /// No description provided for @timelineAddImageTooltip.
+  ///
+  /// In ja, this message translates to:
+  /// **'＋画像'**
+  String get timelineAddImageTooltip;
+
+  /// No description provided for @timelineStackOrderTitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'重なり順'**
+  String get timelineStackOrderTitle;
+
+  /// No description provided for @timelineMaterialText.
+  ///
+  /// In ja, this message translates to:
+  /// **'テキスト'**
+  String get timelineMaterialText;
+
+  /// No description provided for @timelineAddTextDialogTitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'テキストを追加'**
+  String get timelineAddTextDialogTitle;
+
+  /// No description provided for @timelineEditSectionText.
+  ///
+  /// In ja, this message translates to:
+  /// **'文字'**
+  String get timelineEditSectionText;
+
+  /// No description provided for @timelineEditSectionTransform.
+  ///
+  /// In ja, this message translates to:
+  /// **'配置'**
+  String get timelineEditSectionTransform;
+
+  /// No description provided for @timelineEditSectionMask.
+  ///
+  /// In ja, this message translates to:
+  /// **'マスク'**
+  String get timelineEditSectionMask;
+
+  /// No description provided for @timelineTransformRotationX.
+  ///
+  /// In ja, this message translates to:
+  /// **'X軸回転'**
+  String get timelineTransformRotationX;
+
+  /// No description provided for @timelineTransformRotationY.
+  ///
+  /// In ja, this message translates to:
+  /// **'Y軸回転'**
+  String get timelineTransformRotationY;
+
+  /// No description provided for @timelineTransformRotationZ.
+  ///
+  /// In ja, this message translates to:
+  /// **'Z軸回転'**
+  String get timelineTransformRotationZ;
+
+  /// No description provided for @timelineTransformReset.
+  ///
+  /// In ja, this message translates to:
+  /// **'配置をリセット'**
+  String get timelineTransformReset;
+
+  /// No description provided for @timelineKeyframeAddHere.
+  ///
+  /// In ja, this message translates to:
+  /// **'F{n}にキーフレームを追加'**
+  String timelineKeyframeAddHere(int n);
+
+  /// No description provided for @timelineKeyframeRemoveHere.
+  ///
+  /// In ja, this message translates to:
+  /// **'F{n}のキーフレームを削除'**
+  String timelineKeyframeRemoveHere(int n);
+
+  /// No description provided for @timelineKeyframeWholeHint.
+  ///
+  /// In ja, this message translates to:
+  /// **'素材全体に同じ配置が使われます。動かすときは、フレームを移動してキーフレームを追加してください。'**
+  String get timelineKeyframeWholeHint;
+
+  /// No description provided for @timelineKeyframeAnimHint.
+  ///
+  /// In ja, this message translates to:
+  /// **'キーフレーム{count}個：F{n}の値として記録し、間は自動でつなぎます。'**
+  String timelineKeyframeAnimHint(int count, int n);
+
+  /// No description provided for @timelineGizmoHint.
+  ///
+  /// In ja, this message translates to:
+  /// **'プレビュー上でドラッグすると移動、角の丸で拡大縮小、上の丸で回転できます。2本指でも操作できます。'**
+  String get timelineGizmoHint;
+
+  /// No description provided for @timelineMaterialOutOfRange.
+  ///
+  /// In ja, this message translates to:
+  /// **'このフレームには表示されていません（F{start}〜F{end}に表示）'**
+  String timelineMaterialOutOfRange(int start, int end);
+
+  /// No description provided for @timelineMaskNone.
+  ///
+  /// In ja, this message translates to:
+  /// **'なし'**
+  String get timelineMaskNone;
+
+  /// No description provided for @timelineMaskRectangle.
+  ///
+  /// In ja, this message translates to:
+  /// **'四角'**
+  String get timelineMaskRectangle;
+
+  /// No description provided for @timelineMaskEllipse.
+  ///
+  /// In ja, this message translates to:
+  /// **'楕円'**
+  String get timelineMaskEllipse;
+
+  /// No description provided for @timelineMaskCenterX.
+  ///
+  /// In ja, this message translates to:
+  /// **'中心 X'**
+  String get timelineMaskCenterX;
+
+  /// No description provided for @timelineMaskCenterY.
+  ///
+  /// In ja, this message translates to:
+  /// **'中心 Y'**
+  String get timelineMaskCenterY;
+
+  /// No description provided for @timelineMaskWidth.
+  ///
+  /// In ja, this message translates to:
+  /// **'幅'**
+  String get timelineMaskWidth;
+
+  /// No description provided for @timelineMaskHeight.
+  ///
+  /// In ja, this message translates to:
+  /// **'高さ'**
+  String get timelineMaskHeight;
+
+  /// No description provided for @timelineMaskFeather.
+  ///
+  /// In ja, this message translates to:
+  /// **'ぼかし'**
+  String get timelineMaskFeather;
+
+  /// No description provided for @timelineMaskInvert.
+  ///
+  /// In ja, this message translates to:
+  /// **'反転（内側を隠す）'**
+  String get timelineMaskInvert;
+
+  /// No description provided for @timelineMaskHint.
+  ///
+  /// In ja, this message translates to:
+  /// **'マスクの内側だけを見せます。反転すると内側を隠します。'**
+  String get timelineMaskHint;
+
+  /// No description provided for @timelineStackOrderHint.
+  ///
+  /// In ja, this message translates to:
+  /// **'上にあるものほど手前に表示されます。つまみをドラッグするか矢印で並べ替えます。'**
+  String get timelineStackOrderHint;
+
+  /// No description provided for @timelineStackScopeScene.
+  ///
+  /// In ja, this message translates to:
+  /// **'シーン全体'**
+  String get timelineStackScopeScene;
+
+  /// No description provided for @timelineStackScopeFromFrame.
+  ///
+  /// In ja, this message translates to:
+  /// **'F{n}から'**
+  String timelineStackScopeFromFrame(int n);
+
+  /// No description provided for @timelineStackFrameUnit.
+  ///
+  /// In ja, this message translates to:
+  /// **'フレーム（イラスト）'**
+  String get timelineStackFrameUnit;
+
+  /// No description provided for @timelineStackChangesLabel.
+  ///
+  /// In ja, this message translates to:
+  /// **'途中から順番を変えたフレーム'**
+  String get timelineStackChangesLabel;
+
+  /// No description provided for @timelineStackResetScene.
+  ///
+  /// In ja, this message translates to:
+  /// **'既定の順番に戻す'**
+  String get timelineStackResetScene;
+
+  /// No description provided for @timelineStackRemoveChange.
+  ///
+  /// In ja, this message translates to:
+  /// **'この変更を取り消す'**
+  String get timelineStackRemoveChange;
+
+  /// No description provided for @timelineStackFrameMaskTitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'フレーム（イラスト）のマスク'**
+  String get timelineStackFrameMaskTitle;
+
+  /// No description provided for @timelineStackFrameMaskHint.
+  ///
+  /// In ja, this message translates to:
+  /// **'描いた絵だけを切り抜きます。テキスト・画像・動画には効きません。キャンバスで描いている間は隠れません。'**
+  String get timelineStackFrameMaskHint;
+
+  /// No description provided for @timelineStackMoveUp.
+  ///
+  /// In ja, this message translates to:
+  /// **'手前へ'**
+  String get timelineStackMoveUp;
+
+  /// No description provided for @timelineStackMoveDown.
+  ///
+  /// In ja, this message translates to:
+  /// **'奥へ'**
+  String get timelineStackMoveDown;
+
   /// No description provided for @timelineWatermarkNotRegisteredTitle.
   ///
   /// In ja, this message translates to:
@@ -8654,7 +8900,7 @@ abstract class AppLocalizations {
   /// No description provided for @timelineSceneDeleteConfirmBody.
   ///
   /// In ja, this message translates to:
-  /// **'シーン内の全フレーム・共通レイヤー・動画素材・画像素材・ウォーターマークを含むすべてのデータが削除されます。'**
+  /// **'シーン内の全フレーム・共通レイヤー・テキスト素材・動画素材・画像素材・ウォーターマークを含むすべてのデータが削除されます。'**
   String get timelineSceneDeleteConfirmBody;
 
   /// No description provided for @timelineSceneMultiDeleteConfirmTitle.

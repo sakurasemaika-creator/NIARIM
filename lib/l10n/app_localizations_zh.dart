@@ -1331,7 +1331,7 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get helpTimelineDesc =>
-      '管理动画时间轴的画面。将帧（单张静止图像）排列并像翻页动画一样播放，就形成了动画。图片・视频・音频等素材轨道、公共图层轨道、摄像机关键帧也都在同一条时间轴上管理。';
+      '管理动画时间轴的画面。将帧（单张静止图像）排列并像翻页动画一样播放，就形成了动画。文字・图片・视频・音频素材轨道、公共图层轨道、摄像机关键帧也都在同一条时间轴上管理。文字・图片・视频与帧插画之间的前后关系可在「叠放顺序」中按整个场景或从任意帧开始调整。';
 
   @override
   String get helpSceneTitle => '场景';
@@ -1449,11 +1449,11 @@ class AppLocalizationsZh extends AppLocalizations {
       '可根据设备性能从低画质・中画质・高画质预设中选择，也可逐项单独设置（自定义）。除保存方式・运行速度・洋葱皮・倾斜检测外，撤销次数、回收站自动删除等影响应用容量与运行负载的设置也都集中在这里。';
 
   @override
-  String get helpMaterialClipTitle => '素材片段（图片・视频・音频）';
+  String get helpMaterialClipTitle => '素材片段（文字・图片・视频・音频）';
 
   @override
   String get helpMaterialClipDesc =>
-      '放置在时间轴图片、视频、音频轨道上的片段。长按拖动片段本身可移动其起始位置，拖动两端的手柄可改变使用范围（长度）。点击片段会打开详情面板，其中的复制图标用于复制、垃圾桶图标用于删除。图片・视频在内部作为图层处理，音频则作为直接挂在场景上的片段管理。';
+      '放置在时间轴文字、图片、视频、音频轨道上的片段。长按拖动片段本身可移动其起始位置，拖动两端的手柄可改变使用范围（长度）。同一时间重叠的素材会自动放到其他行。点击文字・图片・视频片段，会在预览下方打开编辑面板：可修改文字内容・字体・颜色・描边，位置・缩放・X轴／Y轴／Z轴旋转・不透明度（也可在预览上拖动，添加关键帧即可产生动画），蒙版（矩形・椭圆・羽化・反转）以及所在行，也可在此复制或删除。音频片段在详情面板中调整音量和淡入淡出。';
 
   @override
   String get helpGestureSettingsTitle => '手势设置';
@@ -4596,6 +4596,139 @@ class AppLocalizationsZh extends AppLocalizations {
   String get timelineAddWatermarkTooltip => '＋水印';
 
   @override
+  String get timelineMaterialRowLabel => '所在行';
+
+  @override
+  String get timelineMaterialNewRow => '新行';
+
+  @override
+  String get timelineAddTextTooltip => '＋文字';
+
+  @override
+  String get timelineAddImageTooltip => '＋图片';
+
+  @override
+  String get timelineStackOrderTitle => '叠放顺序';
+
+  @override
+  String get timelineMaterialText => '文字';
+
+  @override
+  String get timelineAddTextDialogTitle => '添加文字';
+
+  @override
+  String get timelineEditSectionText => '文字';
+
+  @override
+  String get timelineEditSectionTransform => '位置';
+
+  @override
+  String get timelineEditSectionMask => '蒙版';
+
+  @override
+  String get timelineTransformRotationX => 'X轴旋转';
+
+  @override
+  String get timelineTransformRotationY => 'Y轴旋转';
+
+  @override
+  String get timelineTransformRotationZ => 'Z轴旋转';
+
+  @override
+  String get timelineTransformReset => '重置位置';
+
+  @override
+  String timelineKeyframeAddHere(int n) {
+    return '在F$n添加关键帧';
+  }
+
+  @override
+  String timelineKeyframeRemoveHere(int n) {
+    return '删除F$n的关键帧';
+  }
+
+  @override
+  String get timelineKeyframeWholeHint => '整个素材使用相同的位置。要让它动起来，请移到其他帧并添加关键帧。';
+
+  @override
+  String timelineKeyframeAnimHint(int count, int n) {
+    return '$count个关键帧：修改会记录在F$n，中间的帧自动补间。';
+  }
+
+  @override
+  String get timelineGizmoHint => '在预览上拖动可移动，拖动角上的圆点可缩放，拖动上方的圆点可旋转。也可以用两指操作。';
+
+  @override
+  String timelineMaterialOutOfRange(int start, int end) {
+    return '此帧不显示（在F$start～F$end显示）';
+  }
+
+  @override
+  String get timelineMaskNone => '无';
+
+  @override
+  String get timelineMaskRectangle => '矩形';
+
+  @override
+  String get timelineMaskEllipse => '椭圆';
+
+  @override
+  String get timelineMaskCenterX => '中心 X';
+
+  @override
+  String get timelineMaskCenterY => '中心 Y';
+
+  @override
+  String get timelineMaskWidth => '宽度';
+
+  @override
+  String get timelineMaskHeight => '高度';
+
+  @override
+  String get timelineMaskFeather => '羽化';
+
+  @override
+  String get timelineMaskInvert => '反转（隐藏内侧）';
+
+  @override
+  String get timelineMaskHint => '只显示蒙版内侧。反转后改为隐藏内侧。';
+
+  @override
+  String get timelineStackOrderHint => '越靠上越显示在前面。拖动手柄或使用箭头调整顺序。';
+
+  @override
+  String get timelineStackScopeScene => '整个场景';
+
+  @override
+  String timelineStackScopeFromFrame(int n) {
+    return '从F$n开始';
+  }
+
+  @override
+  String get timelineStackFrameUnit => '帧（插画）';
+
+  @override
+  String get timelineStackChangesLabel => '中途改变顺序的帧';
+
+  @override
+  String get timelineStackResetScene => '恢复默认顺序';
+
+  @override
+  String get timelineStackRemoveChange => '取消此更改';
+
+  @override
+  String get timelineStackFrameMaskTitle => '帧（插画）蒙版';
+
+  @override
+  String get timelineStackFrameMaskHint => '只裁切绘制的画面，不影响文字、图片和视频。在画布上绘制时不会被隐藏。';
+
+  @override
+  String get timelineStackMoveUp => '上移一层';
+
+  @override
+  String get timelineStackMoveDown => '下移一层';
+
+  @override
   String get timelineWatermarkNotRegisteredTitle => '尚未注册水印';
 
   @override
@@ -4675,7 +4808,7 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get timelineSceneDeleteConfirmBody =>
-      '场景内的全部帧、公共图层、视频素材、图片素材、水印等全部数据都将被删除。';
+      '场景内的全部帧、公共图层、文字素材、视频素材、图片素材、水印等全部数据都将被删除。';
 
   @override
   String timelineSceneMultiDeleteConfirmTitle(int count) {
@@ -8486,7 +8619,7 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get helpTimelineDesc =>
-      '管理動畫時間軸的畫面。將影格（單張靜止影像）排列並像翻頁動畫一樣播放，就形成了動畫。圖片・影片・音訊等素材軌道、共用圖層軌道、攝影機關鍵影格也都在同一條時間軸上管理。';
+      '管理動畫時間軸的畫面。將影格（單張靜止影像）排列並像翻頁動畫一樣播放，就形成了動畫。文字・圖片・影片・音訊素材軌道、共用圖層軌道、攝影機關鍵影格也都在同一條時間軸上管理。文字・圖片・影片與影格插畫之間的前後關係可在「疊放順序」中依整個場景或從任意影格開始調整。';
 
   @override
   String get helpSceneTitle => '場景';
@@ -8604,11 +8737,11 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
       '可依裝置效能從低畫質・中畫質・高畫質預設中選擇，也可逐項單獨設定（自訂）。除儲存方式・運作速度・洋蔥皮・傾斜偵測外，復原次數、垃圾桶自動刪除等影響App容量與運作負擔的設定也都集中在這裡。';
 
   @override
-  String get helpMaterialClipTitle => '素材片段（圖片・影片・音訊）';
+  String get helpMaterialClipTitle => '素材片段（文字・圖片・影片・音訊）';
 
   @override
   String get helpMaterialClipDesc =>
-      '放置在時間軸圖片、影片、音訊軌道上的片段。長按拖曳片段本身可移動其起始位置，拖曳兩端的把手可改變使用範圍（長度）。點擊片段會開啟詳細面板，其中的複製圖示用於複製、垃圾桶圖示用於刪除。圖片・影片在內部作為圖層處理，音訊則作為直接掛在場景上的片段管理。';
+      '放置在時間軸文字、圖片、影片、音訊軌道上的片段。長按拖曳片段本身可移動其起始位置，拖曳兩端的把手可改變使用範圍（長度）。同一時間重疊的素材會自動放到其他列。點擊文字・圖片・影片片段，會在預覽下方開啟編輯面板：可修改文字內容・字型・顏色・描邊，位置・縮放・X軸／Y軸／Z軸旋轉・不透明度（也可在預覽上拖曳，新增關鍵影格即可產生動畫），遮罩（矩形・橢圓・羽化・反轉）以及所在列，也可在此複製或刪除。音訊片段在詳細面板中調整音量和淡入淡出。';
 
   @override
   String get helpGestureSettingsTitle => '手勢設定';
@@ -11751,6 +11884,139 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get timelineAddWatermarkTooltip => '＋浮水印';
 
   @override
+  String get timelineMaterialRowLabel => '所在列';
+
+  @override
+  String get timelineMaterialNewRow => '新列';
+
+  @override
+  String get timelineAddTextTooltip => '＋文字';
+
+  @override
+  String get timelineAddImageTooltip => '＋圖片';
+
+  @override
+  String get timelineStackOrderTitle => '疊放順序';
+
+  @override
+  String get timelineMaterialText => '文字';
+
+  @override
+  String get timelineAddTextDialogTitle => '新增文字';
+
+  @override
+  String get timelineEditSectionText => '文字';
+
+  @override
+  String get timelineEditSectionTransform => '位置';
+
+  @override
+  String get timelineEditSectionMask => '遮罩';
+
+  @override
+  String get timelineTransformRotationX => 'X軸旋轉';
+
+  @override
+  String get timelineTransformRotationY => 'Y軸旋轉';
+
+  @override
+  String get timelineTransformRotationZ => 'Z軸旋轉';
+
+  @override
+  String get timelineTransformReset => '重設位置';
+
+  @override
+  String timelineKeyframeAddHere(int n) {
+    return '在F$n新增關鍵影格';
+  }
+
+  @override
+  String timelineKeyframeRemoveHere(int n) {
+    return '刪除F$n的關鍵影格';
+  }
+
+  @override
+  String get timelineKeyframeWholeHint => '整個素材使用相同的位置。要讓它動起來，請移到其他影格並新增關鍵影格。';
+
+  @override
+  String timelineKeyframeAnimHint(int count, int n) {
+    return '$count個關鍵影格：修改會記錄在F$n，中間的影格自動補間。';
+  }
+
+  @override
+  String get timelineGizmoHint => '在預覽上拖曳可移動，拖曳角落的圓點可縮放，拖曳上方的圓點可旋轉。也可以用兩指操作。';
+
+  @override
+  String timelineMaterialOutOfRange(int start, int end) {
+    return '此影格不顯示（在F$start～F$end顯示）';
+  }
+
+  @override
+  String get timelineMaskNone => '無';
+
+  @override
+  String get timelineMaskRectangle => '矩形';
+
+  @override
+  String get timelineMaskEllipse => '橢圓';
+
+  @override
+  String get timelineMaskCenterX => '中心 X';
+
+  @override
+  String get timelineMaskCenterY => '中心 Y';
+
+  @override
+  String get timelineMaskWidth => '寬度';
+
+  @override
+  String get timelineMaskHeight => '高度';
+
+  @override
+  String get timelineMaskFeather => '羽化';
+
+  @override
+  String get timelineMaskInvert => '反轉（隱藏內側）';
+
+  @override
+  String get timelineMaskHint => '只顯示遮罩內側。反轉後改為隱藏內側。';
+
+  @override
+  String get timelineStackOrderHint => '越靠上越顯示在前面。拖曳把手或使用箭頭調整順序。';
+
+  @override
+  String get timelineStackScopeScene => '整個場景';
+
+  @override
+  String timelineStackScopeFromFrame(int n) {
+    return '從F$n開始';
+  }
+
+  @override
+  String get timelineStackFrameUnit => '影格（插畫）';
+
+  @override
+  String get timelineStackChangesLabel => '中途改變順序的影格';
+
+  @override
+  String get timelineStackResetScene => '恢復預設順序';
+
+  @override
+  String get timelineStackRemoveChange => '取消此變更';
+
+  @override
+  String get timelineStackFrameMaskTitle => '影格（插畫）遮罩';
+
+  @override
+  String get timelineStackFrameMaskHint => '只裁切繪製的畫面，不影響文字、圖片和影片。在畫布上繪製時不會被隱藏。';
+
+  @override
+  String get timelineStackMoveUp => '上移一層';
+
+  @override
+  String get timelineStackMoveDown => '下移一層';
+
+  @override
   String get timelineWatermarkNotRegisteredTitle => '尚未註冊浮水印';
 
   @override
@@ -11830,7 +12096,7 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get timelineSceneDeleteConfirmBody =>
-      '場景內的全部影格、共用圖層、影片素材、圖片素材、浮水印等全部資料都將被刪除。';
+      '場景內的全部影格、共用圖層、文字素材、影片素材、圖片素材、浮水印等全部資料都將被刪除。';
 
   @override
   String timelineSceneMultiDeleteConfirmTitle(int count) {

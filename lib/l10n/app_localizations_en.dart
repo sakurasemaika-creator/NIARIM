@@ -1365,7 +1365,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get helpTimelineDesc =>
-      'The screen for managing the time axis of your animation. Arranging frames (individual still images) and playing them back like a flipbook creates the animation. Image, video, and audio material tracks, common layer tracks, and camera keyframes are all managed on the same timeline.';
+      'The screen for managing the time axis of your animation. Arranging frames (individual still images) and playing them back like a flipbook creates the animation. Text, image, video and audio material tracks, common layer tracks and camera keyframes are all managed on the same timeline. Which of the texts, images, videos and the frame\'s drawing is in front is set in \"Stacking order\", for the whole scene or from any frame on.';
 
   @override
   String get helpSceneTitle => 'Scene';
@@ -1483,11 +1483,12 @@ class AppLocalizationsEn extends AppLocalizations {
       'Choose from low, medium, or high quality presets based on your device\'s capability, or configure each item individually (custom). In addition to save method, performance, onion skin, and tilt detection, settings that affect app size and how heavy it runs — such as undo history length and automatic trash deletion — are also gathered here.';
 
   @override
-  String get helpMaterialClipTitle => 'Material clips (image / video / audio)';
+  String get helpMaterialClipTitle =>
+      'Material clips (text / image / video / audio)';
 
   @override
   String get helpMaterialClipDesc =>
-      'Clips placed on the timeline\'s image, video, and audio tracks. Long-press-drag a clip\'s body to move its start position, or drag the handles at either end to change how much of it is used. Tap a clip to open its detail sheet, where the copy icon duplicates it and the trash icon deletes it. Image and video clips are internally handled as layers, while audio clips are managed as clips attached directly to the scene.';
+      'Clips placed on the timeline\'s text, image, video and audio tracks. Long-press-drag a clip\'s body to move its start position, or drag the handles at either end to change how much of it is used. Materials shown at the same time go on rows of their own automatically. Tapping a text, image or video clip opens its edit panel below the preview: the text, font, colour and outline; the position, scale, X/Y/Z-axis rotation and opacity (you can also drag it on the preview, and adding keyframes makes it move); its mask (rectangle or ellipse, feathered, inverted); and the row it sits on. It can be duplicated or deleted there too. An audio clip\'s volume and fades are set in its detail sheet.';
 
   @override
   String get helpGestureSettingsTitle => 'Gesture settings';
@@ -4789,6 +4790,144 @@ class AppLocalizationsEn extends AppLocalizations {
   String get timelineAddWatermarkTooltip => '+ Watermark';
 
   @override
+  String get timelineMaterialRowLabel => 'Row';
+
+  @override
+  String get timelineMaterialNewRow => 'New row';
+
+  @override
+  String get timelineAddTextTooltip => '+ Text';
+
+  @override
+  String get timelineAddImageTooltip => '+ Image';
+
+  @override
+  String get timelineStackOrderTitle => 'Stacking order';
+
+  @override
+  String get timelineMaterialText => 'Text';
+
+  @override
+  String get timelineAddTextDialogTitle => 'Add text';
+
+  @override
+  String get timelineEditSectionText => 'Text';
+
+  @override
+  String get timelineEditSectionTransform => 'Position';
+
+  @override
+  String get timelineEditSectionMask => 'Mask';
+
+  @override
+  String get timelineTransformRotationX => 'X-axis rotation';
+
+  @override
+  String get timelineTransformRotationY => 'Y-axis rotation';
+
+  @override
+  String get timelineTransformRotationZ => 'Z-axis rotation';
+
+  @override
+  String get timelineTransformReset => 'Reset position';
+
+  @override
+  String timelineKeyframeAddHere(int n) {
+    return 'Add keyframe at F$n';
+  }
+
+  @override
+  String timelineKeyframeRemoveHere(int n) {
+    return 'Remove keyframe at F$n';
+  }
+
+  @override
+  String get timelineKeyframeWholeHint =>
+      'The same position is used throughout. To animate it, go to another frame and add a keyframe.';
+
+  @override
+  String timelineKeyframeAnimHint(int count, int n) {
+    return '$count keyframes: changes are recorded at F$n, and the frames in between are filled in automatically.';
+  }
+
+  @override
+  String get timelineGizmoHint =>
+      'Drag on the preview to move it, a corner dot to resize and the top dot to rotate. Two fingers work too.';
+
+  @override
+  String timelineMaterialOutOfRange(int start, int end) {
+    return 'Not shown at this frame (shown from F$start to F$end)';
+  }
+
+  @override
+  String get timelineMaskNone => 'None';
+
+  @override
+  String get timelineMaskRectangle => 'Rectangle';
+
+  @override
+  String get timelineMaskEllipse => 'Ellipse';
+
+  @override
+  String get timelineMaskCenterX => 'Center X';
+
+  @override
+  String get timelineMaskCenterY => 'Center Y';
+
+  @override
+  String get timelineMaskWidth => 'Width';
+
+  @override
+  String get timelineMaskHeight => 'Height';
+
+  @override
+  String get timelineMaskFeather => 'Feather';
+
+  @override
+  String get timelineMaskInvert => 'Invert (hide the inside)';
+
+  @override
+  String get timelineMaskHint =>
+      'Shows only what is inside the mask. Invert it to hide the inside instead.';
+
+  @override
+  String get timelineStackOrderHint =>
+      'Items higher in the list appear in front. Drag a handle or use the arrows to reorder.';
+
+  @override
+  String get timelineStackScopeScene => 'Whole scene';
+
+  @override
+  String timelineStackScopeFromFrame(int n) {
+    return 'From F$n';
+  }
+
+  @override
+  String get timelineStackFrameUnit => 'Frame (drawing)';
+
+  @override
+  String get timelineStackChangesLabel => 'Frames where the order changes';
+
+  @override
+  String get timelineStackResetScene => 'Back to the default order';
+
+  @override
+  String get timelineStackRemoveChange => 'Remove this change';
+
+  @override
+  String get timelineStackFrameMaskTitle => 'Frame (drawing) mask';
+
+  @override
+  String get timelineStackFrameMaskHint =>
+      'Crops only the drawing; text, images and video are not affected. The drawing is not hidden while you draw on the canvas.';
+
+  @override
+  String get timelineStackMoveUp => 'Bring forward';
+
+  @override
+  String get timelineStackMoveDown => 'Send backward';
+
+  @override
   String get timelineWatermarkNotRegisteredTitle => 'No watermark registered';
 
   @override
@@ -4871,7 +5010,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get timelineSceneDeleteConfirmBody =>
-      'All data in the scene will be deleted, including every frame, common layers, video materials, image materials, and watermarks.';
+      'All data in the scene will be deleted, including every frame, common layers, text, video and image materials, and watermarks.';
 
   @override
   String timelineSceneMultiDeleteConfirmTitle(int count) {

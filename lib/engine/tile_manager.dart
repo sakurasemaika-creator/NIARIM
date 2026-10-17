@@ -649,6 +649,40 @@ class TileManager {
 
   bool hasLayer(String layerId) => _tiles.containsKey(layerId);
 
+  /// The smallest canvas rectangle holding every visible pixel of
+  /// [layerId], or null when the layer is empty (the timeline's handles go
+  /// around a material's drawn part, not the whole canvas).
+  ui.Rect? contentBounds(String layerId) {
+    final layerTiles = _tiles[layerId];
+    if (layerTiles == null) return null;
+    var left = canvasWidth, top = canvasHeight, right = -1, bottom = -1;
+    for (final entry in layerTiles.entries) {
+      final comma = entry.key.indexOf(',');
+      final tx = int.parse(entry.key.substring(0, comma));
+      final ty = int.parse(entry.key.substring(comma + 1));
+      final tile = entry.value;
+      for (var y = 0; y < tileSize; y++) {
+        final row = y * tileSize * 4;
+        for (var x = 0; x < tileSize; x++) {
+          if (tile[row + x * 4 + 3] == 0) continue;
+          final cx = tx * tileSize + x;
+          final cy = ty * tileSize + y;
+          if (cx < left) left = cx;
+          if (cx > right) right = cx;
+          if (cy < top) top = cy;
+          if (cy > bottom) bottom = cy;
+        }
+      }
+    }
+    if (right < 0) return null;
+    return ui.Rect.fromLTRB(
+      left.toDouble(),
+      top.toDouble(),
+      right + 1.0,
+      bottom + 1.0,
+    );
+  }
+
   Map<String, Uint8List> getDirtyTilesForLayer(String layerId) {
     final result = <String, Uint8List>{};
     final layerTiles = _tiles[layerId];

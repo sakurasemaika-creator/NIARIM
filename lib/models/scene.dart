@@ -3,6 +3,7 @@ import 'camera_keyframe.dart';
 import 'effect_filter_instance.dart';
 import 'layer.dart';
 import 'layer_group.dart';
+import 'scene_stack.dart';
 import 'timeline_marker.dart';
 
 class Scene {
@@ -25,6 +26,10 @@ class Scene {
   final List<String?> imageRowNames;
   final List<String?> videoRowNames;
   final List<String?> audioRowNames;
+  final List<String?> textRowNames;
+
+  /// 重なり順（フレーム（イラスト）と素材の列の前後）とフレームのマスク。
+  final SceneStack stack;
   // 複数レイヤーをまとめて1つのキーフレームで動かすグループ
   // （パーツ単位アニメーションの拡張）。シーンごとに管理する。
   final List<LayerGroup> groups;
@@ -44,6 +49,8 @@ class Scene {
     this.imageRowNames = const [],
     this.videoRowNames = const [],
     this.audioRowNames = const [],
+    this.textRowNames = const [],
+    this.stack = const SceneStack(),
     this.groups = const [],
     this.markers = const [],
   });
@@ -61,6 +68,8 @@ class Scene {
     List<String?>? imageRowNames,
     List<String?>? videoRowNames,
     List<String?>? audioRowNames,
+    List<String?>? textRowNames,
+    SceneStack? stack,
     List<LayerGroup>? groups,
     List<TimelineMarker>? markers,
   }) {
@@ -75,6 +84,8 @@ class Scene {
       imageRowNames: imageRowNames ?? this.imageRowNames,
       videoRowNames: videoRowNames ?? this.videoRowNames,
       audioRowNames: audioRowNames ?? this.audioRowNames,
+      textRowNames: textRowNames ?? this.textRowNames,
+      stack: stack ?? this.stack,
       groups: groups ?? this.groups,
       markers: markers ?? this.markers,
     );

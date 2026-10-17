@@ -12,6 +12,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../engine/layer_compositor.dart';
 import '../engine/layer_range_resolver.dart';
 import '../engine/niapro_serializer.dart';
+import '../engine/timeline_stack.dart';
 import '../engine/tile_manager.dart';
 import '../models/audio_clip.dart';
 import '../models/camera_keyframe.dart';
@@ -19,10 +20,11 @@ import '../models/layer_group.dart';
 import '../models/timeline_marker.dart';
 import '../models/effect_filter_instance.dart';
 import '../models/layer.dart';
-import '../models/material_asset.dart' show MaterialType;
 import '../models/project.dart';
 import '../models/scene.dart';
+import '../models/scene_stack.dart';
 import '../models/text_object.dart';
+import '../models/timeline_row_kind.dart';
 import '../engine/undo_manager.dart';
 import '../utils/app_error_reporter.dart';
 import '../utils/tolerant_preferences.dart';
@@ -606,6 +608,52 @@ class ProjectService extends ChangeNotifier {
         ownLayers,
       ),
     );
+  }
+
+  /// フレーム[frameIndex]のレイヤーを重ねる順（前面から）に並べたものと、
+  /// まとめてマスクするレイヤーの組。タイムラインのプレビュー・書き出しは
+  /// [applyFrameMask]をtrue、キャンバスの表示はfalse（描いている絵を隠さない）。
+  StackedFrameLayers stackedLayersOf(
+    String projectId,
+    String sceneId,
+    int frameIndex, {
+    bool applyFrameMask = true,
+  }) {
+    final scene = sceneOf(projectId, sceneId);
+    final layers = layersOf(projectId, sceneId, frameIndex);
+    if (scene == null) {
+      return (layers: layers, maskGroups: const <LayerMaskGroup>[]);
+    }
+    return stackFrameLayers(
+      scene,
+      frameIndex,
+      layers,
+      applyFrameMask: applyFrameMask,
+    );
+  }
+
+  /// キャンバスに表示する順（前面から）のレイヤー。[layersOf]はレイヤー
+  /// パレットの並び（並び替え・結合などの添字の基準）のまま。
+  List<Layer> displayLayersOf(
+    String projectId,
+    String sceneId,
+    int frameIndex,
+  ) => stackedLayersOf(
+    projectId,
+    sceneId,
+    frameIndex,
+    applyFrameMask: false,
+  ).layers;
+
+  /// シーンの重なり順とフレーム（イラスト）のマスクを置き換える。
+  void updateSceneStack(String projectId, String sceneId, SceneStack stack) {
+    final scenes = _scenes[projectId];
+    if (scenes == null) return;
+    final idx = scenes.indexWhere((s) => s.id == sceneId);
+    if (idx < 0) return;
+    scenes[idx] = scenes[idx].copyWith(stack: stack);
+    _saveAsync(projectId);
+    notifyListeners();
   }
 
   /// レイヤーIDから、表示範囲レイヤーの「ホーム位置」（実データが存在する
@@ -1980,24 +2028,29 @@ class ProjectService extends ChangeNotifier {
   List<String?> rowNamesOf(
     String projectId,
     String sceneId,
-    MaterialType type,
+    TimelineRowKind type,
   ) {
     final scene = sceneOf(projectId, sceneId);
     if (scene == null) return const [null];
     final names = switch (type) {
-      MaterialType.image => scene.imageRowNames,
-      MaterialType.video => scene.videoRowNames,
-      MaterialType.audio => scene.audioRowNames,
+      TimelineRowKind.image => scene.imageRowNames,
+      TimelineRowKind.video => scene.videoRowNames,
+      TimelineRowKind.audio => scene.audioRowNames,
+      TimelineRowKind.text => scene.textRowNames,
     };
     return names.isEmpty ? const [null] : names;
   }
 
-  Scene _applyRowNames(Scene scene, MaterialType type, List<String?> names) =>
-      switch (type) {
-        MaterialType.image => scene.copyWith(imageRowNames: names),
-        MaterialType.video => scene.copyWith(videoRowNames: names),
-        MaterialType.audio => scene.copyWith(audioRowNames: names),
-      };
+  Scene _applyRowNames(
+    Scene scene,
+    TimelineRowKind type,
+    List<String?> names,
+  ) => switch (type) {
+    TimelineRowKind.image => scene.copyWith(imageRowNames: names),
+    TimelineRowKind.video => scene.copyWith(videoRowNames: names),
+    TimelineRowKind.audio => scene.copyWith(audioRowNames: names),
+    TimelineRowKind.text => scene.copyWith(textRowNames: names),
+  };
 
   /// scene直下のtimelineImage/timelineVideoレイヤー（ホームがこのシーンに
   /// あるもの）を列挙する。素材タイムライン行のクリップ有無判定に使う。
@@ -2023,7 +2076,7 @@ class ProjectService extends ChangeNotifier {
     return result;
   }
 
-  void addTrackRow(String projectId, String sceneId, MaterialType type) {
+  void addTrackRow(String projectId, String sceneId, TimelineRowKind type) {
     final scenes = _scenes[projectId];
     if (scenes == null) return;
     final idx = scenes.indexWhere((s) => s.id == sceneId);
@@ -2039,19 +2092,18 @@ class ProjectService extends ChangeNotifier {
   bool removeTrackRow(
     String projectId,
     String sceneId,
-    MaterialType type,
+    TimelineRowKind type,
     int rowIndex,
   ) {
     final names = rowNamesOf(projectId, sceneId, type);
     if (rowIndex <= 0 || rowIndex >= names.length) return false;
-    final hasClips = type == MaterialType.audio
+    final layerType = type.layerType;
+    final hasClips = layerType == null
         ? audioClipsOf(projectId, sceneId).any((c) => c.trackRow == rowIndex)
         : _materialLayersInScene(
             projectId,
             sceneId,
-            type == MaterialType.image
-                ? LayerType.timelineImage
-                : LayerType.timelineVideo,
+            layerType,
           ).any((l) => l.trackRow == rowIndex);
     if (hasClips) return false;
 
@@ -2064,7 +2116,7 @@ class ProjectService extends ChangeNotifier {
     var scene = _applyRowNames(scenes[idx], type, updatedNames);
 
     // rowIndexより後ろの行の割り当てを1つずつ詰める
-    if (type == MaterialType.audio) {
+    if (layerType == null) {
       final updatedClips = scene.audioClips
           .map(
             (c) => c.trackRow > rowIndex
@@ -2074,9 +2126,7 @@ class ProjectService extends ChangeNotifier {
           .toList();
       scene = scene.copyWith(audioClips: updatedClips);
     } else {
-      final targetType = type == MaterialType.image
-          ? LayerType.timelineImage
-          : LayerType.timelineVideo;
+      final targetType = layerType;
       final newFrames = scene.frames.map((f) {
         final newLayers = f.layers.map((l) {
           if (l.type == targetType && l.trackRow > rowIndex) {
@@ -2088,6 +2138,9 @@ class ProjectService extends ChangeNotifier {
       }).toList();
       scene = scene.copyWith(frames: newFrames);
     }
+    scene = scene.copyWith(
+      stack: _stackWithoutRow(scene.stack, type, rowIndex),
+    );
 
     scenes[idx] = scene;
     _saveAsync(projectId);
@@ -2095,10 +2148,41 @@ class ProjectService extends ChangeNotifier {
     return true;
   }
 
+  /// [stack] after row [rowIndex] of [type] was removed: the row leaves
+  /// the order, and the rows after it move up one, as their materials do.
+  SceneStack _stackWithoutRow(
+    SceneStack stack,
+    TimelineRowKind type,
+    int rowIndex,
+  ) {
+    final kind = switch (type) {
+      TimelineRowKind.text => StackTrackKind.text,
+      TimelineRowKind.image => StackTrackKind.image,
+      TimelineRowKind.video => StackTrackKind.video,
+      TimelineRowKind.audio => null,
+    };
+    if (kind == null || stack.isEmpty) return stack;
+    List<String> renumber(List<String> order) => [
+      for (final key in order)
+        if (parseStackTrackKey(key) case final t?
+            when t.kind == kind && t.row >= rowIndex) ...[
+          if (t.row > rowIndex) stackTrackKey(kind, t.row - 1),
+        ] else
+          key,
+    ];
+    return stack.copyWith(
+      order: renumber(stack.order),
+      changes: [
+        for (final c in stack.changes)
+          StackChange(frameIndex: c.frameIndex, order: renumber(c.order)),
+      ],
+    );
+  }
+
   void renameTrackRow(
     String projectId,
     String sceneId,
-    MaterialType type,
+    TimelineRowKind type,
     int rowIndex,
     String? name,
   ) {

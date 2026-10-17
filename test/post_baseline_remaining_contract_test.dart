@@ -31,12 +31,18 @@ void main() {
       contains('controller.setVolume(clip.volume.clamp(0.0, 1.0))'),
     );
     expect(source, isNot(contains('controller.setVolume(clip.videoOpacity')));
-    final videoBranch = source.substring(
-      source.indexOf('if (_c.trackType == _ClipTrackType.video)'),
+    // A video is edited in the material edit panel (with the preview in
+    // view): its volume slider writes the layer's videoVolume, and the
+    // track's clip mirrors it for playback.
+    final panel = File(
+      'lib/screens/timeline/widgets/material_edit_panel.dart',
+    ).readAsStringSync();
+    final videoSection = panel.substring(
+      panel.indexOf('Widget _videoSection(Layer layer)'),
     );
-    expect(videoBranch, contains('l10n.timelineClipVolumeLabel'));
-    expect(videoBranch, contains('_c.volume = v'));
-    expect(source, contains('videoVolume: clip.volume.clamp(0.0, 1.0)'));
+    expect(videoSection, contains('l10n.timelineClipVolumeLabel'));
+    expect(videoSection, contains('videoVolume: v.round() / 100'));
+    expect(source, contains('clip.volume = layer.videoVolume.clamp(0.0, 1.0)'));
     expect(source, contains('volume: layer.type == LayerType.timelineVideo'));
   });
 

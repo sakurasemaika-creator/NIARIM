@@ -11,6 +11,7 @@ import '../engine/filter_engine.dart';
 import '../engine/layer_compositor.dart';
 import '../engine/layer_keyframe_engine.dart';
 import '../engine/layer_range_resolver.dart';
+import '../engine/timeline_stack.dart';
 import '../engine/tile_manager.dart';
 import '../models/camera_keyframe.dart';
 import '../models/effect_filter_instance.dart';
@@ -114,7 +115,12 @@ class ExportEngine {
     List<EffectFilterInstance> effectFilters = const [],
     Map<String, LayerHome> layerHomes = const {},
     List<LayerGroup> groups = const [],
+    Scene? scene,
   }) async {
+    // In the scene's 重なり順, with its frame mask.
+    final stacked = scene == null
+        ? (layers: layers, maskGroups: const <LayerMaskGroup>[])
+        : stackFrameLayers(scene, frameIndex, layers);
     LayerKeyframe? groupKeyframeOf(Layer layer) {
       for (final g in groups) {
         if (g.memberLayerIds.contains(layer.id)) {
@@ -128,7 +134,7 @@ class ExportEngine {
 
     final fullImage = await LayerCompositor.composite(
       tileManager,
-      layers,
+      stacked.layers,
       (l) => resolveTileKey(layerHomes, sceneId, frameIndex, l.id),
       drawingWidth,
       drawingHeight,
@@ -138,6 +144,7 @@ class ExportEngine {
       groupKeyframeOf: groupKeyframeOf,
       // The paper takes part in blend modes (Linear Dodge brightens it).
       paperColor: backgroundColor,
+      maskGroups: stacked.maskGroups,
     );
 
     final recorder = ui.PictureRecorder();
@@ -209,6 +216,7 @@ class ExportEngine {
       ),
       tileManager: tileManager,
       sceneId: sceneId,
+      scene: scene,
       frameIndex: frameIndex,
       drawingWidth: drawingWidth,
       drawingHeight: drawingHeight,
@@ -400,6 +408,7 @@ class ExportEngine {
           ),
           tileManager: tileManager,
           sceneId: scene.id,
+          scene: scene,
           frameIndex: frame.index,
           drawingWidth: drawingWidth,
           drawingHeight: drawingHeight,
@@ -489,6 +498,7 @@ class ExportEngine {
           ),
           tileManager: tileManager,
           sceneId: scene.id,
+          scene: scene,
           frameIndex: frame.index,
           drawingWidth: drawingWidth,
           drawingHeight: drawingHeight,
@@ -569,6 +579,7 @@ class ExportEngine {
           ),
           tileManager: tileManager,
           sceneId: scene.id,
+          scene: scene,
           frameIndex: frame.index,
           drawingWidth: drawingWidth,
           drawingHeight: drawingHeight,
@@ -674,6 +685,7 @@ class ExportEngine {
           ),
           tileManager: tileManager,
           sceneId: scene.id,
+          scene: scene,
           frameIndex: frame.index,
           drawingWidth: drawingWidth,
           drawingHeight: drawingHeight,

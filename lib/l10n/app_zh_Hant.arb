@@ -467,7 +467,7 @@
   "helpPressureCurveTitle": "筆壓曲線",
   "helpPressureCurveDesc": "筆輸入設定中的功能，可透過圖表自由調整實際筆壓強度與筆刷粗細・不透明度反映方式之間的關係。無論是希望輕壓也能畫出粗線的人，還是相反希望必須用力按壓才會變粗的人，都能依自己的用筆習慣細緻自訂畫感。變更設定後可當場試畫確認效果。",
   "helpTimelineTitle": "時間軸",
-  "helpTimelineDesc": "管理動畫時間軸的畫面。將影格（單張靜止影像）排列並像翻頁動畫一樣播放，就形成了動畫。圖片・影片・音訊等素材軌道、共用圖層軌道、攝影機關鍵影格也都在同一條時間軸上管理。",
+  "helpTimelineDesc": "管理動畫時間軸的畫面。將影格（單張靜止影像）排列並像翻頁動畫一樣播放，就形成了動畫。文字・圖片・影片・音訊素材軌道、共用圖層軌道、攝影機關鍵影格也都在同一條時間軸上管理。文字・圖片・影片與影格插畫之間的前後關係可在「疊放順序」中依整個場景或從任意影格開始調整。",
   "helpSceneTitle": "場景",
   "helpSceneDesc": "將一個專案（一段影片）內部按場景（分鏡）劃分管理的功能。資料夾是以專案為單位進行整理，而場景則用於表現一段影片內部的場景轉換。在時間軸的場景標籤中可以新增、複製、刪除、重新命名、重新排序場景。切換到多選模式後，還可以一次性移動、複製或刪除多個場景。",
   "helpCameraKeyframeTitle": "攝影機關鍵影格",
@@ -501,8 +501,8 @@
   "helpPremiumEntryDesc": "成為進階會員後，免費版限制的90秒影片長度將延長至最長2小時，並可移除每支影片結尾自動加入的片尾卡（應用程式Logo）。同時廣告也會隱藏，還可使用浮水印、色調曲線、色階校正功能。",
   "helpPerformanceSettingsTitle": "效能設定",
   "helpPerformanceSettingsDesc": "可依裝置效能從低畫質・中畫質・高畫質預設中選擇，也可逐項單獨設定（自訂）。除儲存方式・運作速度・洋蔥皮・傾斜偵測外，復原次數、垃圾桶自動刪除等影響App容量與運作負擔的設定也都集中在這裡。",
-  "helpMaterialClipTitle": "素材片段（圖片・影片・音訊）",
-  "helpMaterialClipDesc": "放置在時間軸圖片、影片、音訊軌道上的片段。長按拖曳片段本身可移動其起始位置，拖曳兩端的把手可改變使用範圍（長度）。點擊片段會開啟詳細面板，其中的複製圖示用於複製、垃圾桶圖示用於刪除。圖片・影片在內部作為圖層處理，音訊則作為直接掛在場景上的片段管理。",
+  "helpMaterialClipTitle": "素材片段（文字・圖片・影片・音訊）",
+  "helpMaterialClipDesc": "放置在時間軸文字、圖片、影片、音訊軌道上的片段。長按拖曳片段本身可移動其起始位置，拖曳兩端的把手可改變使用範圍（長度）。同一時間重疊的素材會自動放到其他列。點擊文字・圖片・影片片段，會在預覽下方開啟編輯面板：可修改文字內容・字型・顏色・描邊，位置・縮放・X軸／Y軸／Z軸旋轉・不透明度（也可在預覽上拖曳，新增關鍵影格即可產生動畫），遮罩（矩形・橢圓・羽化・反轉）以及所在列，也可在此複製或刪除。音訊片段在詳細面板中調整音量和淡入淡出。",
   "helpGestureSettingsTitle": "手勢設定",
   "helpGestureSettingsDesc": "可以將復原/重做、跳至影格、取色器等操作指派給雙指點擊、三指點擊、雙指滑動或長按。觸控筆按鍵（在支援的觸控筆上）也可以單獨指派操作。想不切換工具就用一個動作觸發常用操作時很方便。",
   "helpBucketDetailSettingsTitle": "填色工具詳細設定",
@@ -1974,6 +1974,88 @@
   "timelineEffectFilterLabel": "演出濾鏡",
   "timelineAddCameraKfTooltip": "新增相機關鍵影格",
   "timelineAddWatermarkTooltip": "＋浮水印",
+  "timelineMaterialRowLabel": "所在列",
+  "timelineMaterialNewRow": "新列",
+  "timelineAddTextTooltip": "＋文字",
+  "timelineAddImageTooltip": "＋圖片",
+  "timelineStackOrderTitle": "疊放順序",
+  "timelineMaterialText": "文字",
+  "timelineAddTextDialogTitle": "新增文字",
+  "timelineEditSectionText": "文字",
+  "timelineEditSectionTransform": "位置",
+  "timelineEditSectionMask": "遮罩",
+  "timelineTransformRotationX": "X軸旋轉",
+  "timelineTransformRotationY": "Y軸旋轉",
+  "timelineTransformRotationZ": "Z軸旋轉",
+  "timelineTransformReset": "重設位置",
+  "timelineKeyframeAddHere": "在F{n}新增關鍵影格",
+  "@timelineKeyframeAddHere": {
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
+  },
+  "timelineKeyframeRemoveHere": "刪除F{n}的關鍵影格",
+  "@timelineKeyframeRemoveHere": {
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
+  },
+  "timelineKeyframeWholeHint": "整個素材使用相同的位置。要讓它動起來，請移到其他影格並新增關鍵影格。",
+  "timelineKeyframeAnimHint": "{count}個關鍵影格：修改會記錄在F{n}，中間的影格自動補間。",
+  "@timelineKeyframeAnimHint": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      },
+      "n": {
+        "type": "int"
+      }
+    }
+  },
+  "timelineGizmoHint": "在預覽上拖曳可移動，拖曳角落的圓點可縮放，拖曳上方的圓點可旋轉。也可以用兩指操作。",
+  "timelineMaterialOutOfRange": "此影格不顯示（在F{start}～F{end}顯示）",
+  "@timelineMaterialOutOfRange": {
+    "placeholders": {
+      "start": {
+        "type": "int"
+      },
+      "end": {
+        "type": "int"
+      }
+    }
+  },
+  "timelineMaskNone": "無",
+  "timelineMaskRectangle": "矩形",
+  "timelineMaskEllipse": "橢圓",
+  "timelineMaskCenterX": "中心 X",
+  "timelineMaskCenterY": "中心 Y",
+  "timelineMaskWidth": "寬度",
+  "timelineMaskHeight": "高度",
+  "timelineMaskFeather": "羽化",
+  "timelineMaskInvert": "反轉（隱藏內側）",
+  "timelineMaskHint": "只顯示遮罩內側。反轉後改為隱藏內側。",
+  "timelineStackOrderHint": "越靠上越顯示在前面。拖曳把手或使用箭頭調整順序。",
+  "timelineStackScopeScene": "整個場景",
+  "timelineStackScopeFromFrame": "從F{n}開始",
+  "@timelineStackScopeFromFrame": {
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
+  },
+  "timelineStackFrameUnit": "影格（插畫）",
+  "timelineStackChangesLabel": "中途改變順序的影格",
+  "timelineStackResetScene": "恢復預設順序",
+  "timelineStackRemoveChange": "取消此變更",
+  "timelineStackFrameMaskTitle": "影格（插畫）遮罩",
+  "timelineStackFrameMaskHint": "只裁切繪製的畫面，不影響文字、圖片和影片。在畫布上繪製時不會被隱藏。",
+  "timelineStackMoveUp": "上移一層",
+  "timelineStackMoveDown": "下移一層",
   "timelineWatermarkNotRegisteredTitle": "尚未註冊浮水印",
   "timelineWatermarkNotRegisteredBody": "請先在設定畫面的「浮水印」中註冊圖片或文字。",
   "timelineOpenSettingsButton": "開啟設定",
@@ -2012,7 +2094,7 @@
       }
     }
   },
-  "timelineSceneDeleteConfirmBody": "場景內的全部影格、共用圖層、影片素材、圖片素材、浮水印等全部資料都將被刪除。",
+  "timelineSceneDeleteConfirmBody": "場景內的全部影格、共用圖層、文字素材、影片素材、圖片素材、浮水印等全部資料都將被刪除。",
   "timelineSceneMultiDeleteConfirmTitle": "要刪除已選取的{count}個場景嗎？",
   "@timelineSceneMultiDeleteConfirmTitle": {
     "placeholders": {

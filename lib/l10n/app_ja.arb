@@ -575,7 +575,7 @@
   "helpPressureCurveTitle": "筆圧カーブ",
   "helpPressureCurveDesc": "ペン入力設定にある機能で、実際の筆圧の強さと、ブラシの太さ・不透明度への反映のされ方の関係をグラフで自由に調整できます。弱い筆圧でも太く出したい人、逆に強く押さないと太くならないようにしたい人など、手癖に合わせて描き心地を細かくカスタマイズできます。設定変更後はその場で試し書きしながら確認できます。",
   "helpTimelineTitle": "タイムライン",
-  "helpTimelineDesc": "アニメーションの時間軸を管理する画面です。フレーム（静止画1コマ）を並べてパラパラ漫画のように再生することでアニメーションになります。画像・動画・音声などの素材トラック、共通レイヤートラック、カメラキーフレームも同じタイムライン上で管理します。",
+  "helpTimelineDesc": "アニメーションの時間軸を管理する画面です。フレーム（静止画1コマ）を並べてパラパラ漫画のように再生することでアニメーションになります。テキスト・画像・動画・音声の素材トラック、共通レイヤートラック、カメラキーフレームも同じタイムライン上で管理します。テキスト・画像・動画とフレームのイラストの前後関係は「重なり順」で、シーン全体またはフレームごとに並べ替えられます。",
   "helpSceneTitle": "シーン",
   "helpSceneDesc": "1つのプロジェクト（1本の動画）の中を、場面（カット）ごとに分割して管理する機能です。フォルダがプロジェクト単位の整理なのに対し、シーンは1本の動画の中の場面転換を表現するために使います。タイムラインのシーンタブでは、シーンの追加・複製・削除・名前変更・並び替えができます。複数選択モードにすると複数シーンをまとめて移動・複製・削除することも可能です。",
   "helpCameraKeyframeTitle": "カメラキーフレーム",
@@ -609,8 +609,8 @@
   "helpPremiumEntryDesc": "プレミアム会員になると、無料版で90秒までに制限されている動画の尺が最大2時間まで拡大され、動画の最後に自動追加されるエンドカード（アプリロゴ）を削除できます。広告も非表示になり、ウォーターマーク・トーンカーブ・レベル補正機能も利用できるようになります。",
   "helpPerformanceSettingsTitle": "パフォーマンス設定",
   "helpPerformanceSettingsDesc": "端末の性能に応じて、低品質・中品質・高品質のプリセットから選ぶか、各項目を個別に設定（カスタム）できます。保存方式・動作の軽さ・オニオンスキン・傾き検知に加えて、Undo回数やゴミ箱の自動削除などアプリの容量・動作の重さに影響する設定もここにまとまっています。",
-  "helpMaterialClipTitle": "素材クリップ（画像・動画・音声）",
-  "helpMaterialClipDesc": "タイムラインの画像・動画・音声トラックに配置したクリップです。クリップ本体を長押しドラッグすると表示開始位置を移動でき、左右端のハンドルをドラッグすると使用範囲（長さ）を変更できます。タップすると開く詳細シートのコピーアイコンから複製、ゴミ箱アイコンから削除もできます。画像・動画は内部的にはレイヤーとして扱われており、音声はシーンに直接紐づくクリップとして管理されます。",
+  "helpMaterialClipTitle": "素材クリップ（テキスト・画像・動画・音声）",
+  "helpMaterialClipDesc": "タイムラインのテキスト・画像・動画・音声トラックに配置したクリップです。クリップ本体を長押しドラッグすると表示開始位置を移動でき、左右端のハンドルをドラッグすると使用範囲（長さ）を変更できます。同じ時間に重なる素材は自動で別の列に置かれます。テキスト・画像・動画のクリップをタップすると、プレビューの下に編集パネルが開きます。文字の内容・フォント・色・縁取り、位置・拡大縮小・X軸／Y軸／Z軸回転・不透明度（プレビュー上のドラッグでも動かせます。キーフレームを追加すると動きになります）、マスク（四角・楕円・ぼかし・反転）、置く列を変えられ、複製・削除もここから行えます。音声クリップは詳細シートで音量・フェードを調整します。",
   "helpGestureSettingsTitle": "ジェスチャー設定",
   "helpGestureSettingsDesc": "2本指タップ・3本指タップ・2本指スワイプ・長押しに、Undo/Redo・フレーム移動・スポイトなどの操作を割り当てられる設定です。ペンボタン（対応スタイラス使用時）にも別途操作を割り当てられます。指を使わずワンタッチで頻用操作を呼び出したい場合に便利です。",
   "helpBucketDetailSettingsTitle": "バケツ塗り詳細設定",
@@ -2282,6 +2282,88 @@
   "timelineEffectFilterLabel": "演出フィルター",
   "timelineAddCameraKfTooltip": "カメラキーフレーム追加",
   "timelineAddWatermarkTooltip": "＋ウォーターマーク",
+  "timelineMaterialRowLabel": "置く列",
+  "timelineMaterialNewRow": "新しい列",
+  "timelineAddTextTooltip": "＋テキスト",
+  "timelineAddImageTooltip": "＋画像",
+  "timelineStackOrderTitle": "重なり順",
+  "timelineMaterialText": "テキスト",
+  "timelineAddTextDialogTitle": "テキストを追加",
+  "timelineEditSectionText": "文字",
+  "timelineEditSectionTransform": "配置",
+  "timelineEditSectionMask": "マスク",
+  "timelineTransformRotationX": "X軸回転",
+  "timelineTransformRotationY": "Y軸回転",
+  "timelineTransformRotationZ": "Z軸回転",
+  "timelineTransformReset": "配置をリセット",
+  "timelineKeyframeAddHere": "F{n}にキーフレームを追加",
+  "@timelineKeyframeAddHere": {
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
+  },
+  "timelineKeyframeRemoveHere": "F{n}のキーフレームを削除",
+  "@timelineKeyframeRemoveHere": {
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
+  },
+  "timelineKeyframeWholeHint": "素材全体に同じ配置が使われます。動かすときは、フレームを移動してキーフレームを追加してください。",
+  "timelineKeyframeAnimHint": "キーフレーム{count}個：F{n}の値として記録し、間は自動でつなぎます。",
+  "@timelineKeyframeAnimHint": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      },
+      "n": {
+        "type": "int"
+      }
+    }
+  },
+  "timelineGizmoHint": "プレビュー上でドラッグすると移動、角の丸で拡大縮小、上の丸で回転できます。2本指でも操作できます。",
+  "timelineMaterialOutOfRange": "このフレームには表示されていません（F{start}〜F{end}に表示）",
+  "@timelineMaterialOutOfRange": {
+    "placeholders": {
+      "start": {
+        "type": "int"
+      },
+      "end": {
+        "type": "int"
+      }
+    }
+  },
+  "timelineMaskNone": "なし",
+  "timelineMaskRectangle": "四角",
+  "timelineMaskEllipse": "楕円",
+  "timelineMaskCenterX": "中心 X",
+  "timelineMaskCenterY": "中心 Y",
+  "timelineMaskWidth": "幅",
+  "timelineMaskHeight": "高さ",
+  "timelineMaskFeather": "ぼかし",
+  "timelineMaskInvert": "反転（内側を隠す）",
+  "timelineMaskHint": "マスクの内側だけを見せます。反転すると内側を隠します。",
+  "timelineStackOrderHint": "上にあるものほど手前に表示されます。つまみをドラッグするか矢印で並べ替えます。",
+  "timelineStackScopeScene": "シーン全体",
+  "timelineStackScopeFromFrame": "F{n}から",
+  "@timelineStackScopeFromFrame": {
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
+  },
+  "timelineStackFrameUnit": "フレーム（イラスト）",
+  "timelineStackChangesLabel": "途中から順番を変えたフレーム",
+  "timelineStackResetScene": "既定の順番に戻す",
+  "timelineStackRemoveChange": "この変更を取り消す",
+  "timelineStackFrameMaskTitle": "フレーム（イラスト）のマスク",
+  "timelineStackFrameMaskHint": "描いた絵だけを切り抜きます。テキスト・画像・動画には効きません。キャンバスで描いている間は隠れません。",
+  "timelineStackMoveUp": "手前へ",
+  "timelineStackMoveDown": "奥へ",
   "timelineWatermarkNotRegisteredTitle": "ウォーターマーク未登録",
   "timelineWatermarkNotRegisteredBody": "設定画面の「ウォーターマーク」からあらかじめ画像または文字を登録してください。",
   "timelineOpenSettingsButton": "設定を開く",
@@ -2320,7 +2402,7 @@
       }
     }
   },
-  "timelineSceneDeleteConfirmBody": "シーン内の全フレーム・共通レイヤー・動画素材・画像素材・ウォーターマークを含むすべてのデータが削除されます。",
+  "timelineSceneDeleteConfirmBody": "シーン内の全フレーム・共通レイヤー・テキスト素材・動画素材・画像素材・ウォーターマークを含むすべてのデータが削除されます。",
   "timelineSceneMultiDeleteConfirmTitle": "選択中の{count}件のシーンを削除しますか？",
   "@timelineSceneMultiDeleteConfirmTitle": {
     "placeholders": {

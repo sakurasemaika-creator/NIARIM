@@ -1,6 +1,7 @@
 import 'dart:math' as math;
 import 'dart:ui' as ui;
 import '../models/layer_keyframe.dart';
+import 'perspective_transform.dart';
 
 /// レイヤー単位の位置・拡大縮小・回転をキーフレーム間で補間し、合成時に
 /// 適用するエンジン。CameraEngineと同じ補間方式だが、対象は画面全体では
@@ -70,11 +71,32 @@ class LayerKeyframeEngine {
   /// キーフレームが実質的に無変形（誰も動かしていない）かどうか。呼び出し側が
   /// 変形の要不要を判定して余計なcanvas.save/restoreを避けるために使う。
   bool isIdentity(LayerKeyframe kf) =>
-      kf.x == 0 && kf.y == 0 && kf.scale == 1.0 && kf.rotation == 0;
+      kf.x == 0 &&
+      kf.y == 0 &&
+      kf.scale == 1.0 &&
+      kf.rotation == 0 &&
+      kf.rotationX == 0 &&
+      kf.rotationY == 0;
 
   /// [width]x[height]の中心を基準にレイヤーの変形を[canvas]へ適用する。
   /// 呼び出し側は事前に`canvas.save()`し、描画後に`canvas.restore()`すること。
   void apply(ui.Canvas canvas, LayerKeyframe kf, double width, double height) {
+    if (kf.rotationX != 0 || kf.rotationY != 0) {
+      // Turning about the X or Y axis needs depth: a perspective matrix.
+      canvas.transform(
+        perspectiveLayerMatrix(
+          width: width,
+          height: height,
+          dx: kf.x,
+          dy: kf.y,
+          scale: kf.scale,
+          rotationX: kf.rotationX,
+          rotationY: kf.rotationY,
+          rotationZ: kf.rotation,
+        ),
+      );
+      return;
+    }
     final cx = width / 2;
     final cy = height / 2;
     canvas.translate(cx + kf.x, cy + kf.y);

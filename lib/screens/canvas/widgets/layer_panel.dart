@@ -816,6 +816,11 @@ class _LayerPanelState extends State<LayerPanel> {
         size: 12,
         color: ThemeService.activeColorScheme.primary,
       ),
+      model.LayerType.timelineText => Icon(
+        Icons.title,
+        size: 12,
+        color: ThemeService.activeColorScheme.secondary,
+      ),
       model.LayerType.watermark => Icon(
         Icons.branding_watermark,
         size: 12,
@@ -985,6 +990,7 @@ class _LayerPanelState extends State<LayerPanel> {
   bool _isTimelineMaterial(model.LayerType type) =>
       type == model.LayerType.timelineImage ||
       type == model.LayerType.timelineVideo ||
+      type == model.LayerType.timelineText ||
       type == model.LayerType.watermark;
 
   /// [layer]を各レイヤー行のゴミ箱アイコンから単体削除できるかどうか

@@ -1389,7 +1389,7 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get helpTimelineDesc =>
-      'La pantalla para gestionar el eje temporal de tu animación. Organizar fotogramas (imágenes fijas individuales) y reproducirlos como un flipbook crea la animación. Las pistas de material de imagen, vídeo y audio, las pistas de capas comunes y los fotogramas clave de cámara se gestionan todos en la misma línea de tiempo.';
+      'La pantalla para gestionar el eje temporal de tu animación. Organizar fotogramas (imágenes fijas individuales) y reproducirlos como un flipbook crea la animación. Las pistas de material de texto, imagen, vídeo y audio, las pistas de capas comunes y los fotogramas clave de cámara se gestionan todos en la misma línea de tiempo. Qué se muestra delante entre los textos, imágenes, vídeos y el dibujo del fotograma se ajusta en «Orden de apilado», para toda la escena o desde cualquier fotograma.';
 
   @override
   String get helpSceneTitle => 'Escena';
@@ -1509,11 +1509,11 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get helpMaterialClipTitle =>
-      'Clips de material (imagen / vídeo / audio)';
+      'Clips de material (texto / imagen / vídeo / audio)';
 
   @override
   String get helpMaterialClipDesc =>
-      'Clips colocados en las pistas de imagen, vídeo y audio de la línea de tiempo. Mantén pulsado y arrastra el cuerpo del clip para mover su posición de inicio, o arrastra las asas de los extremos para cambiar cuánto se usa. Toca un clip para abrir su hoja de detalles, donde el icono de copia lo duplica y el icono de papelera lo elimina. Los clips de imagen y vídeo se gestionan internamente como capas, mientras que los de audio se gestionan como clips vinculados directamente a la escena.';
+      'Clips colocados en las pistas de texto, imagen, vídeo y audio de la línea de tiempo. Mantén pulsado y arrastra el cuerpo del clip para mover su posición de inicio, o arrastra las asas de los extremos para cambiar cuánto se usa. Los materiales que se muestran al mismo tiempo se colocan automáticamente en filas propias. Al tocar un clip de texto, imagen o vídeo se abre su panel de edición bajo la vista previa: el texto, la fuente, el color y el contorno; la posición, la escala, la rotación en los ejes X/Y/Z y la opacidad (también se puede arrastrar en la vista previa, y al añadir fotogramas clave se mueve); su máscara (rectángulo o elipse, difuminada, invertida); y la fila en la que está. Ahí también se puede duplicar o eliminar. El volumen y los fundidos de un clip de audio se ajustan en su hoja de detalles.';
 
   @override
   String get helpGestureSettingsTitle => 'Ajustes de gestos';
@@ -4854,6 +4854,144 @@ class AppLocalizationsEs extends AppLocalizations {
   String get timelineAddWatermarkTooltip => '+ Marca de agua';
 
   @override
+  String get timelineMaterialRowLabel => 'Fila';
+
+  @override
+  String get timelineMaterialNewRow => 'Nueva fila';
+
+  @override
+  String get timelineAddTextTooltip => '+ Texto';
+
+  @override
+  String get timelineAddImageTooltip => '+ Imagen';
+
+  @override
+  String get timelineStackOrderTitle => 'Orden de apilado';
+
+  @override
+  String get timelineMaterialText => 'Texto';
+
+  @override
+  String get timelineAddTextDialogTitle => 'Añadir texto';
+
+  @override
+  String get timelineEditSectionText => 'Texto';
+
+  @override
+  String get timelineEditSectionTransform => 'Posición';
+
+  @override
+  String get timelineEditSectionMask => 'Máscara';
+
+  @override
+  String get timelineTransformRotationX => 'Rotación en X';
+
+  @override
+  String get timelineTransformRotationY => 'Rotación en Y';
+
+  @override
+  String get timelineTransformRotationZ => 'Rotación en Z';
+
+  @override
+  String get timelineTransformReset => 'Restablecer posición';
+
+  @override
+  String timelineKeyframeAddHere(int n) {
+    return 'Añadir fotograma clave en F$n';
+  }
+
+  @override
+  String timelineKeyframeRemoveHere(int n) {
+    return 'Quitar fotograma clave de F$n';
+  }
+
+  @override
+  String get timelineKeyframeWholeHint =>
+      'Se usa la misma posición en todo el material. Para animarlo, ve a otro fotograma y añade un fotograma clave.';
+
+  @override
+  String timelineKeyframeAnimHint(int count, int n) {
+    return '$count fotogramas clave: los cambios se guardan en F$n y los fotogramas intermedios se completan solos.';
+  }
+
+  @override
+  String get timelineGizmoHint =>
+      'Arrastra en la vista previa para moverlo, un punto de esquina para cambiar el tamaño y el punto superior para girarlo. También funciona con dos dedos.';
+
+  @override
+  String timelineMaterialOutOfRange(int start, int end) {
+    return 'No se muestra en este fotograma (se muestra de F$start a F$end)';
+  }
+
+  @override
+  String get timelineMaskNone => 'Ninguna';
+
+  @override
+  String get timelineMaskRectangle => 'Rectángulo';
+
+  @override
+  String get timelineMaskEllipse => 'Elipse';
+
+  @override
+  String get timelineMaskCenterX => 'Centro X';
+
+  @override
+  String get timelineMaskCenterY => 'Centro Y';
+
+  @override
+  String get timelineMaskWidth => 'Ancho';
+
+  @override
+  String get timelineMaskHeight => 'Alto';
+
+  @override
+  String get timelineMaskFeather => 'Difuminado';
+
+  @override
+  String get timelineMaskInvert => 'Invertir (ocultar el interior)';
+
+  @override
+  String get timelineMaskHint =>
+      'Muestra solo lo que está dentro de la máscara. Inviértela para ocultar el interior.';
+
+  @override
+  String get timelineStackOrderHint =>
+      'Los elementos más arriba se muestran delante. Arrastra el asa o usa las flechas para reordenar.';
+
+  @override
+  String get timelineStackScopeScene => 'Toda la escena';
+
+  @override
+  String timelineStackScopeFromFrame(int n) {
+    return 'Desde F$n';
+  }
+
+  @override
+  String get timelineStackFrameUnit => 'Fotograma (dibujo)';
+
+  @override
+  String get timelineStackChangesLabel => 'Fotogramas donde cambia el orden';
+
+  @override
+  String get timelineStackResetScene => 'Volver al orden predeterminado';
+
+  @override
+  String get timelineStackRemoveChange => 'Quitar este cambio';
+
+  @override
+  String get timelineStackFrameMaskTitle => 'Máscara del fotograma (dibujo)';
+
+  @override
+  String get timelineStackFrameMaskHint =>
+      'Recorta solo el dibujo; no afecta al texto, las imágenes ni el vídeo. El dibujo no se oculta mientras dibujas en el lienzo.';
+
+  @override
+  String get timelineStackMoveUp => 'Traer adelante';
+
+  @override
+  String get timelineStackMoveDown => 'Enviar atrás';
+
+  @override
   String get timelineWatermarkNotRegisteredTitle =>
       'No hay ninguna marca de agua registrada';
 
@@ -4939,7 +5077,7 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get timelineSceneDeleteConfirmBody =>
-      'Se eliminarán todos los datos de la escena, incluidos cada fotograma, las capas comunes, los materiales de vídeo, los materiales de imagen y las marcas de agua.';
+      'Se eliminarán todos los datos de la escena, incluidos cada fotograma, las capas comunes, los materiales de texto, vídeo e imagen y las marcas de agua.';
 
   @override
   String timelineSceneMultiDeleteConfirmTitle(int count) {

@@ -467,7 +467,7 @@
   "helpPressureCurveTitle": "Courbe de pression",
   "helpPressureCurveDesc": "Une fonctionnalité des réglages de saisie au stylet qui permet d'ajuster librement, via un graphique, la relation entre la pression réelle du stylet et son effet sur la taille et l'opacité du pinceau. Que vous vouliez des lignes épaisses même avec une légère pression, ou l'inverse — nécessitant une pression ferme pour obtenir des lignes épaisses —, vous pouvez personnaliser finement la sensation pour l'adapter à vos habitudes. Vous pouvez essayer de dessiner directement pour vérifier l'effet après avoir modifié les réglages.",
   "helpTimelineTitle": "Chronologie",
-  "helpTimelineDesc": "L'écran de gestion de l'axe temporel de votre animation. Organiser des images (des images fixes individuelles) et les lire comme un folioscope crée l'animation. Les pistes de matériaux image, vidéo et audio, les pistes de calques communs et les images clés de caméra sont tous gérés sur la même chronologie.",
+  "helpTimelineDesc": "L'écran de gestion de l'axe temporel de votre animation. Organiser des images (des images fixes individuelles) et les lire comme un folioscope crée l'animation. Les pistes de matériaux texte, image, vidéo et audio, les pistes de calques communs et les images clés de caméra sont toutes gérées sur la même chronologie. Ce qui passe devant parmi les textes, les images, les vidéos et le dessin de l'image se règle dans « Ordre d'empilement », pour toute la scène ou à partir de n'importe quelle image.",
   "helpSceneTitle": "Scène",
   "helpSceneDesc": "Divise l'intérieur d'un projet (une vidéo) en scènes (plans) pour les gérer séparément. Alors que les dossiers organisent au niveau du projet, les scènes représentent des changements de scène au sein d'une même vidéo. Dans l'onglet des scènes de la timeline, vous pouvez ajouter, dupliquer, supprimer, renommer et réorganiser les scènes. Passer en mode de sélection multiple permet de déplacer, dupliquer ou supprimer plusieurs scènes à la fois.",
   "helpCameraKeyframeTitle": "Image clé de caméra",
@@ -501,8 +501,8 @@
   "helpPremiumEntryDesc": "L'abonnement premium porte a 2 heures maximum la limite de 90 secondes de la version gratuite et permet de retirer la carte de fin (logo de l'application) ajoutee automatiquement a la fin de chaque video. Les publicites sont egalement masquees, et vous accedez au filigrane, a la courbe de tons et a la correction des niveaux.",
   "helpPerformanceSettingsTitle": "Réglages de performance",
   "helpPerformanceSettingsDesc": "Choisissez parmi les préréglages de qualité basse, moyenne ou haute selon les capacités de votre appareil, ou configurez chaque élément individuellement (personnalisé). En plus de la méthode d'enregistrement, des performances, du papier calque et de la détection d'inclinaison, les réglages qui affectent la taille de l'application et sa fluidité — comme la longueur de l'historique d'annulation et la suppression automatique de la corbeille — sont également regroupés ici.",
-  "helpMaterialClipTitle": "Clips de matériel (image / vidéo / audio)",
-  "helpMaterialClipDesc": "Clips placés sur les pistes image, vidéo et audio de la timeline. Un appui long avec glisser sur le corps du clip déplace sa position de départ, et glisser les poignées à chaque extrémité change la portion utilisée. Toucher un clip ouvre sa fiche détaillée, où l'icône de copie le duplique et l'icône de corbeille le supprime. Les clips image et vidéo sont gérés en interne comme des calques, tandis que l'audio est géré comme un clip rattaché directement à la scène.",
+  "helpMaterialClipTitle": "Clips de matériel (texte / image / vidéo / audio)",
+  "helpMaterialClipDesc": "Clips placés sur les pistes texte, image, vidéo et audio de la timeline. Un appui long avec glisser sur le corps du clip déplace sa position de départ, et glisser les poignées à chaque extrémité change la portion utilisée. Les matériaux affichés en même temps sont placés automatiquement sur des pistes distinctes. Toucher un clip texte, image ou vidéo ouvre son panneau d'édition sous l'aperçu : le texte, la police, la couleur et le contour ; la position, l'échelle, la rotation sur les axes X/Y/Z et l'opacité (on peut aussi le faire glisser sur l'aperçu, et ajouter des images clés le fait bouger) ; son masque (rectangle ou ellipse, adouci, inversé) ; et la piste où il se trouve. On peut aussi le dupliquer ou le supprimer. Le volume et les fondus d'un clip audio se règlent dans sa fiche détaillée.",
   "helpGestureSettingsTitle": "Réglages des gestes",
   "helpGestureSettingsDesc": "Permet d'associer des actions — annuler/rétablir, déplacement de fotogramme, pipette et plus — à un appui à deux doigts, un appui à trois doigts, un glissement à deux doigts ou un appui long. Les boutons du stylet (sur les modèles compatibles) peuvent aussi être associés séparément. Pratique pour déclencher des actions fréquentes d'un seul geste sans changer d'outil.",
   "helpBucketDetailSettingsTitle": "Réglages détaillés du seau de peinture",
@@ -1974,6 +1974,88 @@
   "timelineEffectFilterLabel": "Filtres d'effet",
   "timelineAddCameraKfTooltip": "Ajouter une image clé de caméra",
   "timelineAddWatermarkTooltip": "+ Filigrane",
+  "timelineMaterialRowLabel": "Piste",
+  "timelineMaterialNewRow": "Nouvelle piste",
+  "timelineAddTextTooltip": "+ Texte",
+  "timelineAddImageTooltip": "+ Image",
+  "timelineStackOrderTitle": "Ordre d'empilement",
+  "timelineMaterialText": "Texte",
+  "timelineAddTextDialogTitle": "Ajouter du texte",
+  "timelineEditSectionText": "Texte",
+  "timelineEditSectionTransform": "Position",
+  "timelineEditSectionMask": "Masque",
+  "timelineTransformRotationX": "Rotation X",
+  "timelineTransformRotationY": "Rotation Y",
+  "timelineTransformRotationZ": "Rotation Z",
+  "timelineTransformReset": "Réinitialiser la position",
+  "timelineKeyframeAddHere": "Ajouter une image clé à F{n}",
+  "@timelineKeyframeAddHere": {
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
+  },
+  "timelineKeyframeRemoveHere": "Supprimer l'image clé de F{n}",
+  "@timelineKeyframeRemoveHere": {
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
+  },
+  "timelineKeyframeWholeHint": "La même position est utilisée partout. Pour l'animer, allez à une autre image et ajoutez une image clé.",
+  "timelineKeyframeAnimHint": "{count} images clés : les modifications sont enregistrées à F{n} et les images intermédiaires sont calculées automatiquement.",
+  "@timelineKeyframeAnimHint": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      },
+      "n": {
+        "type": "int"
+      }
+    }
+  },
+  "timelineGizmoHint": "Faites glisser sur l'aperçu pour le déplacer, un point d'angle pour le redimensionner et le point du haut pour le faire pivoter. Deux doigts fonctionnent aussi.",
+  "timelineMaterialOutOfRange": "Non affiché à cette image (affiché de F{start} à F{end})",
+  "@timelineMaterialOutOfRange": {
+    "placeholders": {
+      "start": {
+        "type": "int"
+      },
+      "end": {
+        "type": "int"
+      }
+    }
+  },
+  "timelineMaskNone": "Aucun",
+  "timelineMaskRectangle": "Rectangle",
+  "timelineMaskEllipse": "Ellipse",
+  "timelineMaskCenterX": "Centre X",
+  "timelineMaskCenterY": "Centre Y",
+  "timelineMaskWidth": "Largeur",
+  "timelineMaskHeight": "Hauteur",
+  "timelineMaskFeather": "Contour progressif",
+  "timelineMaskInvert": "Inverser (masquer l'intérieur)",
+  "timelineMaskHint": "N'affiche que ce qui est à l'intérieur du masque. Inversez-le pour masquer l'intérieur.",
+  "timelineStackOrderHint": "Les éléments en haut de la liste passent devant. Faites glisser la poignée ou utilisez les flèches pour réorganiser.",
+  "timelineStackScopeScene": "Toute la scène",
+  "timelineStackScopeFromFrame": "À partir de F{n}",
+  "@timelineStackScopeFromFrame": {
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
+  },
+  "timelineStackFrameUnit": "Image (dessin)",
+  "timelineStackChangesLabel": "Images où l'ordre change",
+  "timelineStackResetScene": "Revenir à l'ordre par défaut",
+  "timelineStackRemoveChange": "Supprimer ce changement",
+  "timelineStackFrameMaskTitle": "Masque de l'image (dessin)",
+  "timelineStackFrameMaskHint": "Ne recadre que le dessin ; le texte, les images et la vidéo ne sont pas affectés. Le dessin n'est pas masqué pendant que vous dessinez sur le canevas.",
+  "timelineStackMoveUp": "Avancer",
+  "timelineStackMoveDown": "Reculer",
   "timelineWatermarkNotRegisteredTitle": "Aucun filigrane enregistré",
   "timelineWatermarkNotRegisteredBody": "Enregistrez d'abord une image ou un filigrane texte depuis « Filigrane » dans les réglages.",
   "timelineOpenSettingsButton": "Ouvrir les réglages",
@@ -2012,7 +2094,7 @@
       }
     }
   },
-  "timelineSceneDeleteConfirmBody": "Toutes les données de la scène seront supprimées : images, calques communs, matériaux vidéo, matériaux image et filigranes inclus.",
+  "timelineSceneDeleteConfirmBody": "Toutes les données de la scène seront supprimées : images, calques communs, matériaux texte, vidéo et image, et filigranes inclus.",
   "timelineSceneMultiDeleteConfirmTitle": "Supprimer les {count} scènes sélectionnées ?",
   "@timelineSceneMultiDeleteConfirmTitle": {
     "placeholders": {

@@ -1343,7 +1343,7 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get helpTimelineDesc =>
-      '애니메이션의 시간축을 관리하는 화면입니다. 프레임（정지 화면 1컷）을 나열하여 플립북처럼 재생하면 애니메이션이 됩니다. 이미지・동영상・오디오 등의 소재 트랙, 공통 레이어 트랙, 카메라 키프레임도 같은 타임라인에서 관리합니다.';
+      '애니메이션의 시간축을 관리하는 화면입니다. 프레임（정지 화면 1컷）을 나열하여 플립북처럼 재생하면 애니메이션이 됩니다. 텍스트・이미지・동영상・오디오 소재 트랙, 공통 레이어 트랙, 카메라 키프레임도 같은 타임라인에서 관리합니다. 텍스트・이미지・동영상과 프레임 일러스트의 앞뒤 관계는 「겹침 순서」에서 장면 전체 또는 프레임별로 바꿀 수 있습니다.';
 
   @override
   String get helpSceneTitle => '씬';
@@ -1461,11 +1461,11 @@ class AppLocalizationsKo extends AppLocalizations {
       '기기 성능에 따라 저품질・중품질・고품질 프리셋 중에서 선택하거나, 각 항목을 개별로 설정（커스텀）할 수 있습니다. 저장 방식・동작 속도・어니언 스킨・기울기 감지 외에도, 실행 취소 횟수나 휴지통 자동 삭제 등 앱의 용량・동작 부담에 영향을 주는 설정도 여기에 모여 있습니다.';
 
   @override
-  String get helpMaterialClipTitle => '소재 클립（이미지・동영상・오디오）';
+  String get helpMaterialClipTitle => '소재 클립（텍스트・이미지・동영상・오디오）';
 
   @override
   String get helpMaterialClipDesc =>
-      '타임라인의 이미지・동영상・오디오 트랙에 배치한 클립입니다. 클립 본체를 길게 눌러 드래그하면 표시 시작 위치를 옮길 수 있고, 좌우 끝의 손잡이를 드래그하면 사용 범위（길이）를 바꿀 수 있습니다. 클립을 탭하면 열리는 상세 시트의 복사 아이콘으로 복제, 휴지통 아이콘으로 삭제도 가능합니다. 이미지・동영상은 내부적으로 레이어로 취급되며, 오디오는 장면에 직접 연결된 클립으로 관리됩니다.';
+      '타임라인의 텍스트・이미지・동영상・오디오 트랙에 배치한 클립입니다. 클립 본체를 길게 눌러 드래그하면 표시 시작 위치를 옮길 수 있고, 좌우 끝의 손잡이를 드래그하면 사용 범위（길이）를 바꿀 수 있습니다. 같은 시간에 겹치는 소재는 자동으로 다른 줄에 놓입니다. 텍스트・이미지・동영상 클립을 탭하면 미리보기 아래에 편집 패널이 열립니다. 글자 내용・글꼴・색・외곽선, 위치・크기・X축／Y축／Z축 회전・불투명도（미리보기에서 드래그해도 움직일 수 있고, 키프레임을 추가하면 움직임이 됩니다）, 마스크（사각형・타원・흐림・반전）, 배치할 줄을 바꿀 수 있으며 복제・삭제도 여기서 할 수 있습니다. 오디오 클립은 상세 시트에서 음량・페이드를 조정합니다.';
 
   @override
   String get helpGestureSettingsTitle => '제스처 설정';
@@ -4652,6 +4652,143 @@ class AppLocalizationsKo extends AppLocalizations {
   String get timelineAddWatermarkTooltip => '＋워터마크';
 
   @override
+  String get timelineMaterialRowLabel => '배치할 줄';
+
+  @override
+  String get timelineMaterialNewRow => '새 줄';
+
+  @override
+  String get timelineAddTextTooltip => '＋텍스트';
+
+  @override
+  String get timelineAddImageTooltip => '＋이미지';
+
+  @override
+  String get timelineStackOrderTitle => '겹침 순서';
+
+  @override
+  String get timelineMaterialText => '텍스트';
+
+  @override
+  String get timelineAddTextDialogTitle => '텍스트 추가';
+
+  @override
+  String get timelineEditSectionText => '글자';
+
+  @override
+  String get timelineEditSectionTransform => '배치';
+
+  @override
+  String get timelineEditSectionMask => '마스크';
+
+  @override
+  String get timelineTransformRotationX => 'X축 회전';
+
+  @override
+  String get timelineTransformRotationY => 'Y축 회전';
+
+  @override
+  String get timelineTransformRotationZ => 'Z축 회전';
+
+  @override
+  String get timelineTransformReset => '배치 초기화';
+
+  @override
+  String timelineKeyframeAddHere(int n) {
+    return 'F$n에 키프레임 추가';
+  }
+
+  @override
+  String timelineKeyframeRemoveHere(int n) {
+    return 'F$n의 키프레임 삭제';
+  }
+
+  @override
+  String get timelineKeyframeWholeHint =>
+      '소재 전체에 같은 배치가 쓰입니다. 움직이려면 다른 프레임으로 이동해 키프레임을 추가하세요.';
+
+  @override
+  String timelineKeyframeAnimHint(int count, int n) {
+    return '키프레임 $count개: F$n의 값으로 기록하고, 사이는 자동으로 이어집니다.';
+  }
+
+  @override
+  String get timelineGizmoHint =>
+      '미리보기에서 드래그하면 이동, 모서리 점으로 크기 조절, 위쪽 점으로 회전합니다. 두 손가락으로도 조작할 수 있습니다.';
+
+  @override
+  String timelineMaterialOutOfRange(int start, int end) {
+    return '이 프레임에는 표시되지 않습니다 (F$start~F$end에 표시)';
+  }
+
+  @override
+  String get timelineMaskNone => '없음';
+
+  @override
+  String get timelineMaskRectangle => '사각형';
+
+  @override
+  String get timelineMaskEllipse => '타원';
+
+  @override
+  String get timelineMaskCenterX => '중심 X';
+
+  @override
+  String get timelineMaskCenterY => '중심 Y';
+
+  @override
+  String get timelineMaskWidth => '너비';
+
+  @override
+  String get timelineMaskHeight => '높이';
+
+  @override
+  String get timelineMaskFeather => '흐림';
+
+  @override
+  String get timelineMaskInvert => '반전 (안쪽 숨기기)';
+
+  @override
+  String get timelineMaskHint => '마스크 안쪽만 보여 줍니다. 반전하면 안쪽을 숨깁니다.';
+
+  @override
+  String get timelineStackOrderHint =>
+      '위에 있을수록 앞에 표시됩니다. 손잡이를 드래그하거나 화살표로 순서를 바꿉니다.';
+
+  @override
+  String get timelineStackScopeScene => '장면 전체';
+
+  @override
+  String timelineStackScopeFromFrame(int n) {
+    return 'F$n부터';
+  }
+
+  @override
+  String get timelineStackFrameUnit => '프레임 (일러스트)';
+
+  @override
+  String get timelineStackChangesLabel => '도중에 순서를 바꾼 프레임';
+
+  @override
+  String get timelineStackResetScene => '기본 순서로 되돌리기';
+
+  @override
+  String get timelineStackRemoveChange => '이 변경 취소';
+
+  @override
+  String get timelineStackFrameMaskTitle => '프레임 (일러스트) 마스크';
+
+  @override
+  String get timelineStackFrameMaskHint =>
+      '그린 그림만 잘라 냅니다. 텍스트·이미지·동영상에는 적용되지 않습니다. 캔버스에서 그리는 동안에는 숨겨지지 않습니다.';
+
+  @override
+  String get timelineStackMoveUp => '앞으로';
+
+  @override
+  String get timelineStackMoveDown => '뒤로';
+
+  @override
   String get timelineWatermarkNotRegisteredTitle => '등록된 워터마크 없음';
 
   @override
@@ -4733,7 +4870,7 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get timelineSceneDeleteConfirmBody =>
-      '씬 내의 모든 프레임・공통 레이어・동영상 소재・이미지 소재・워터마크를 포함한 모든 데이터가 삭제됩니다.';
+      '씬 내의 모든 프레임・공통 레이어・텍스트 소재・동영상 소재・이미지 소재・워터마크를 포함한 모든 데이터가 삭제됩니다.';
 
   @override
   String timelineSceneMultiDeleteConfirmTitle(int count) {
