@@ -1974,6 +1974,7 @@
   "timelineEffectFilterLabel": "Filtros de efecto",
   "timelineAddCameraKfTooltip": "Añadir fotograma clave de cámara",
   "timelineAddWatermarkTooltip": "+ Marca de agua",
+  "timelineAddMaterialTooltip": "Añadir material",
   "timelineMaterialRowLabel": "Fila",
   "timelineMaterialNewRow": "Nueva fila",
   "timelineAddTextTooltip": "+ Texto",

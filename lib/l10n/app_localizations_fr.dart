@@ -4865,6 +4865,9 @@ class AppLocalizationsFr extends AppLocalizations {
   String get timelineAddWatermarkTooltip => '+ Filigrane';
 
   @override
+  String get timelineAddMaterialTooltip => 'Ajouter un matériau';
+
+  @override
   String get timelineMaterialRowLabel => 'Piste';
 
   @override

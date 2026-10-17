@@ -1974,6 +1974,7 @@
   "timelineEffectFilterLabel": "演出濾鏡",
   "timelineAddCameraKfTooltip": "新增相機關鍵影格",
   "timelineAddWatermarkTooltip": "＋浮水印",
+  "timelineAddMaterialTooltip": "新增素材",
   "timelineMaterialRowLabel": "所在列",
   "timelineMaterialNewRow": "新列",
   "timelineAddTextTooltip": "＋文字",

@@ -4790,6 +4790,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get timelineAddWatermarkTooltip => '+ Watermark';
 
   @override
+  String get timelineAddMaterialTooltip => 'Add material';
+
+  @override
   String get timelineMaterialRowLabel => 'Row';
 
   @override

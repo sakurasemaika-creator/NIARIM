@@ -16,6 +16,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:niarim/app.dart';
 import 'package:niarim/app_bootstrap.dart';
 import 'package:niarim/l10n/app_localizations.dart';
+import 'package:niarim/models/bundled_fonts.dart';
 import 'package:niarim/models/layer.dart';
 import 'package:niarim/models/layer_mask.dart';
 import 'package:niarim/models/scene_stack.dart';
@@ -78,7 +79,8 @@ void main() {
       ..createSync(recursive: true);
     final rootKey = GlobalKey();
     Future<void> capture(String name) async {
-      await tester.pump();
+      // The preview composes the frame with real async work.
+      await pumpRealAsync(tester, const Duration(milliseconds: 300));
       await tester.runAsync(() async {
         final boundary =
             rootKey.currentContext!.findRenderObject()!
@@ -114,9 +116,39 @@ void main() {
         exportHeight: 180,
       ),
     ))!;
+    // A sky-blue band on the frame's drawing, across the left 62% of the
+    // middle, so the preview shows which texts are in front of it.
+    final drawingScene = ps.scenesOf(project.id).first.id;
+    final drawingLayer = ps
+        .layersOf(project.id, drawingScene, 0)
+        .firstWhere((l) => l.type == LayerType.normal);
+    final canvas = ps.tileManagerOf(project.id);
+    final band = Uint8List(canvas.canvasWidth * canvas.canvasHeight * 4);
+    for (
+      var y = canvas.canvasHeight * 35 ~/ 100;
+      y < canvas.canvasHeight * 65 ~/ 100;
+      y++
+    ) {
+      for (var x = 0; x < canvas.canvasWidth * 62 ~/ 100; x++) {
+        final i = (y * canvas.canvasWidth + x) * 4;
+        band
+          ..[i] = 0x7E
+          ..[i + 1] = 0xC8
+          ..[i + 2] = 0xE3
+          ..[i + 3] = 0xFF;
+      }
+    }
+    canvas.replaceLayerPixels(
+      ps.tileKeyFor(project.id, drawingScene, 0, drawingLayer.id),
+      band,
+    );
     appRouter.go('/timeline/${project.id}');
     await tester.pump();
     await tester.pump(const Duration(milliseconds: 900));
+    // Let the preview finish its first picture (the drawing's tiles decode
+    // with real async work; until then a progress spinner keeps
+    // pumpAndSettle from settling).
+    await pumpRealAsync(tester, const Duration(milliseconds: 600));
     expect(tester.takeException(), isNull);
     final l10n = AppLocalizations.of(
       tester.element(find.byType(Scaffold).last),
@@ -131,14 +163,24 @@ void main() {
     ];
 
     Future<void> addText(String text) async {
-      final button = find.byTooltip(l10n.timelineAddTextTooltip);
+      // 素材を追加 → ＋テキスト.
+      final button = find.byTooltip(l10n.timelineAddMaterialTooltip);
       await tester.ensureVisible(button);
       await tester.tap(button);
+      await tester.pumpAndSettle();
+      await tester.tap(find.text(l10n.timelineAddTextTooltip));
       await tester.pumpAndSettle();
       await tester.enterText(find.byType(TextField).last, text);
       await tester.pump();
       await tester.tap(find.widgetWithText(FilledButton, l10n.commonAdd));
       // Drawing the letters is real async work (Picture.toImage).
+      await pumpRealAsync(tester, const Duration(milliseconds: 600));
+      // The edit panel opens on the text: choose the bundled 源ノ明朝 (the
+      // test has no system fonts, so the captures show the letters).
+      await tester.tap(find.byType(DropdownButtonFormField<String>));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text(kBundledFonts.first.displayName).last);
+      await tester.pumpAndSettle();
       await pumpRealAsync(tester, const Duration(milliseconds: 600));
     }
 
@@ -147,6 +189,7 @@ void main() {
     expect(texts(), hasLength(1));
     final title = texts().single;
     expect(title.textObject?.text, 'タイトル');
+    expect(title.textObject?.fontFamily, kBundledFonts.first.family);
     expect(title.trackRow, 0);
     expect(title.rangeMode, LayerRangeMode.frameRange);
     expect(find.byType(TimelineMaterialEditPanel), findsOneWidget);

@@ -4854,6 +4854,9 @@ class AppLocalizationsEs extends AppLocalizations {
   String get timelineAddWatermarkTooltip => '+ Marca de agua';
 
   @override
+  String get timelineAddMaterialTooltip => 'Añadir material';
+
+  @override
   String get timelineMaterialRowLabel => 'Fila';
 
   @override

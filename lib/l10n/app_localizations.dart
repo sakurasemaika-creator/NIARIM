@@ -8507,6 +8507,12 @@ abstract class AppLocalizations {
   /// **'＋ウォーターマーク'**
   String get timelineAddWatermarkTooltip;
 
+  /// No description provided for @timelineAddMaterialTooltip.
+  ///
+  /// In ja, this message translates to:
+  /// **'素材を追加'**
+  String get timelineAddMaterialTooltip;
+
   /// No description provided for @timelineMaterialRowLabel.
   ///
   /// In ja, this message translates to:

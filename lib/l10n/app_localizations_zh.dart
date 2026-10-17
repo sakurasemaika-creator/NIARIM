@@ -4596,6 +4596,9 @@ class AppLocalizationsZh extends AppLocalizations {
   String get timelineAddWatermarkTooltip => '＋水印';
 
   @override
+  String get timelineAddMaterialTooltip => '添加素材';
+
+  @override
   String get timelineMaterialRowLabel => '所在行';
 
   @override
@@ -11882,6 +11885,9 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get timelineAddWatermarkTooltip => '＋浮水印';
+
+  @override
+  String get timelineAddMaterialTooltip => '新增素材';
 
   @override
   String get timelineMaterialRowLabel => '所在列';

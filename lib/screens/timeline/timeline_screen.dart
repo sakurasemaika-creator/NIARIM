@@ -1181,6 +1181,9 @@ class _TimelineScreenState extends State<TimelineScreen> {
   /// Mirrors an edited material into its clip on the track (its name, and
   /// for a video the opacity, sound and part used that playback follows).
   void _onMaterialLayerChanged(Layer layer) {
+    // The panel's last redraw of a text can finish after the timeline has
+    // been left.
+    if (!mounted) return;
     final clip = _clipById(layer.id);
     if (clip == null) return;
     setState(() {
@@ -1818,11 +1821,10 @@ class _TimelineScreenState extends State<TimelineScreen> {
           top: BorderSide(color: Theme.of(context).colorScheme.outlineVariant),
         ),
       ),
-      // ボタンが9個あり、320px幅級の小型端末では横に収まらない
-      // （無料会員で24px、キャンペーン中＝全員プレミアム扱いのときは
-      // ウォーターマークが通常のIconButtonになるぶん32pxはみ出していた）。
-      // 収まるときは従来どおり均等配置し、収まらないときだけ横スクロール
-      // させる。キャンバスモードのツールバーも同じ方式。
+      // ボタンは7個（素材の追加は1つのメニュー）で、360px幅なら収まるが
+      // 320px幅級の小型端末では横に収まらない。収まるときは均等配置し、
+      // 収まらないときだけ横スクロールさせる。キャンバスモードの
+      // ツールバーも同じ方式。
       child: LayoutBuilder(
         builder: (context, constraints) => SingleChildScrollView(
           scrollDirection: Axis.horizontal,
@@ -1831,40 +1833,47 @@ class _TimelineScreenState extends State<TimelineScreen> {
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: [
-                IconButton(
-                  icon: const Icon(Icons.text_fields, size: 18),
-                  onPressed: _showAddTextDialog,
-                  tooltip: l10n.timelineAddTextTooltip,
-                ),
-                IconButton(
-                  icon: const Icon(Icons.image, size: 18),
-                  onPressed: () => _showAddClipDialog(
-                    l10n.projectListMaterialImage,
-                    _imageClips,
-                    ThemeService.activeColorScheme.secondary,
-                    _ClipTrackType.image,
-                  ),
-                  tooltip: l10n.timelineAddImageTooltip,
-                ),
-                IconButton(
-                  icon: Icon(Icons.videocam, size: 18),
-                  onPressed: () => _showAddClipDialog(
-                    l10n.projectListMaterialVideo,
-                    _videoClips,
-                    ThemeService.activeColorScheme.primary,
-                    _ClipTrackType.video,
-                  ),
-                  tooltip: l10n.timelineAddVideoTooltip,
-                ),
-                IconButton(
-                  icon: Icon(Icons.audiotrack, size: 18),
-                  onPressed: () => _showAddClipDialog(
-                    l10n.projectListMaterialAudio,
-                    _audioClips,
-                    ThemeService.activeColorScheme.tertiary,
-                    _ClipTrackType.audio,
-                  ),
-                  tooltip: l10n.timelineAddAudioTooltip,
+                // 素材（テキスト・画像・動画・音声）の追加は1つのボタンの
+                // メニューにまとめる。種類ごとにボタンを並べると10個になり、
+                // 420px幅でも書き出しボタンが画面外へ押し出された。
+                PopupMenuButton<_ClipTrackType>(
+                  icon: const Icon(Icons.add_circle_outline, size: 18),
+                  tooltip: l10n.timelineAddMaterialTooltip,
+                  onSelected: _addMaterialOfType,
+                  itemBuilder: (_) => [
+                    for (final (type, icon, label) in [
+                      (
+                        _ClipTrackType.text,
+                        Icons.text_fields,
+                        l10n.timelineAddTextTooltip,
+                      ),
+                      (
+                        _ClipTrackType.image,
+                        Icons.image,
+                        l10n.timelineAddImageTooltip,
+                      ),
+                      (
+                        _ClipTrackType.video,
+                        Icons.videocam,
+                        l10n.timelineAddVideoTooltip,
+                      ),
+                      (
+                        _ClipTrackType.audio,
+                        Icons.audiotrack,
+                        l10n.timelineAddAudioTooltip,
+                      ),
+                    ])
+                      PopupMenuItem(
+                        value: type,
+                        child: Row(
+                          children: [
+                            Icon(icon, size: 20),
+                            const SizedBox(width: 12),
+                            Text(label),
+                          ],
+                        ),
+                      ),
+                  ],
                 ),
                 // ウォーターマーク：無料会員はlockアイコン付き表示、タップで共通Premiumバナー
                 _buildWatermarkButton(canUseWatermark),
@@ -1904,6 +1913,37 @@ class _TimelineScreenState extends State<TimelineScreen> {
         ),
       ),
     );
+  }
+
+  /// Adds a material of [type] from the toolbar's 素材を追加 menu.
+  void _addMaterialOfType(_ClipTrackType type) {
+    final l10n = AppLocalizations.of(context)!;
+    final scheme = ThemeService.activeColorScheme;
+    switch (type) {
+      case _ClipTrackType.text:
+        _showAddTextDialog();
+      case _ClipTrackType.image:
+        _showAddClipDialog(
+          l10n.projectListMaterialImage,
+          _imageClips,
+          scheme.secondary,
+          type,
+        );
+      case _ClipTrackType.video:
+        _showAddClipDialog(
+          l10n.projectListMaterialVideo,
+          _videoClips,
+          scheme.primary,
+          type,
+        );
+      case _ClipTrackType.audio:
+        _showAddClipDialog(
+          l10n.projectListMaterialAudio,
+          _audioClips,
+          scheme.tertiary,
+          type,
+        );
+    }
   }
 
   Widget _buildWatermarkButton(bool canUseWatermark) {

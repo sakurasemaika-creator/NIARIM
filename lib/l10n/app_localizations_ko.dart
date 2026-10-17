@@ -4652,6 +4652,9 @@ class AppLocalizationsKo extends AppLocalizations {
   String get timelineAddWatermarkTooltip => '＋워터마크';
 
   @override
+  String get timelineAddMaterialTooltip => '소재 추가';
+
+  @override
   String get timelineMaterialRowLabel => '배치할 줄';
 
   @override

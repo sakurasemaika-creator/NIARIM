@@ -1974,6 +1974,7 @@
   "timelineEffectFilterLabel": "연출 필터",
   "timelineAddCameraKfTooltip": "카메라 키프레임 추가",
   "timelineAddWatermarkTooltip": "＋워터마크",
+  "timelineAddMaterialTooltip": "소재 추가",
   "timelineMaterialRowLabel": "배치할 줄",
   "timelineMaterialNewRow": "새 줄",
   "timelineAddTextTooltip": "＋텍스트",

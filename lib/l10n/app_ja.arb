@@ -2282,6 +2282,7 @@
   "timelineEffectFilterLabel": "演出フィルター",
   "timelineAddCameraKfTooltip": "カメラキーフレーム追加",
   "timelineAddWatermarkTooltip": "＋ウォーターマーク",
+  "timelineAddMaterialTooltip": "素材を追加",
   "timelineMaterialRowLabel": "置く列",
   "timelineMaterialNewRow": "新しい列",
   "timelineAddTextTooltip": "＋テキスト",

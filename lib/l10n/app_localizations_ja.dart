@@ -4628,6 +4628,9 @@ class AppLocalizationsJa extends AppLocalizations {
   String get timelineAddWatermarkTooltip => '＋ウォーターマーク';
 
   @override
+  String get timelineAddMaterialTooltip => '素材を追加';
+
+  @override
   String get timelineMaterialRowLabel => '置く列';
 
   @override

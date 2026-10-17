@@ -1974,6 +1974,7 @@
   "timelineEffectFilterLabel": "Effect filters",
   "timelineAddCameraKfTooltip": "Add camera keyframe",
   "timelineAddWatermarkTooltip": "+ Watermark",
+  "timelineAddMaterialTooltip": "Add material",
   "timelineMaterialRowLabel": "Row",
   "timelineMaterialNewRow": "New row",
   "timelineAddTextTooltip": "+ Text",
