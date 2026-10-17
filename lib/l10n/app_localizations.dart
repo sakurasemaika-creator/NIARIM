@@ -2600,7 +2600,7 @@ abstract class AppLocalizations {
   /// No description provided for @helpTimelineDesc.
   ///
   /// In ja, this message translates to:
-  /// **'アニメーションの時間軸を管理する画面です。フレーム（静止画1コマ）を並べてパラパラ漫画のように再生することでアニメーションになります。テキスト・画像・動画・音声の素材トラック、共通レイヤートラック、カメラキーフレームも同じタイムライン上で管理します。テキスト・画像・動画とフレームのイラストの前後関係は「重なり順」で、シーン全体またはフレームごとに並べ替えられます。'**
+  /// **'アニメーションの時間軸を管理する画面です。フレーム（静止画1コマ）を並べてパラパラ漫画のように再生することでアニメーションになります。テキスト・画像・動画・音声の素材トラック、共通レイヤートラック、カメラキーフレームも同じタイムライン上で管理します。テキスト・画像・動画とフレームのイラストの前後関係は「重なり順」で、シーン全体、または指定したフレームの範囲ごとに並べ替えられます。'**
   String get helpTimelineDesc;
 
   /// No description provided for @helpSceneTitle.
@@ -8507,6 +8507,84 @@ abstract class AppLocalizations {
   /// **'＋ウォーターマーク'**
   String get timelineAddWatermarkTooltip;
 
+  /// No description provided for @timelineStackScopeRange.
+  ///
+  /// In ja, this message translates to:
+  /// **'フレーム範囲'**
+  String get timelineStackScopeRange;
+
+  /// No description provided for @timelineStackTargetLabel.
+  ///
+  /// In ja, this message translates to:
+  /// **'この重なり順を使う所'**
+  String get timelineStackTargetLabel;
+
+  /// No description provided for @timelineStackTargetScenes.
+  ///
+  /// In ja, this message translates to:
+  /// **'シーン複数選択'**
+  String get timelineStackTargetScenes;
+
+  /// No description provided for @timelineStackTargetAllFrames.
+  ///
+  /// In ja, this message translates to:
+  /// **'全てのフレーム'**
+  String get timelineStackTargetAllFrames;
+
+  /// No description provided for @timelineStackScenesHint.
+  ///
+  /// In ja, this message translates to:
+  /// **'選んだシーンの全てのフレームに同じ順番を使います。並べ替えると、選んだシーンすべてがこの順番になります。'**
+  String get timelineStackScenesHint;
+
+  /// No description provided for @timelineStackAllFramesHint.
+  ///
+  /// In ja, this message translates to:
+  /// **'全てのシーンの全てのフレームに同じ順番を使います。並べ替えると、全てのシーンがこの順番になります。'**
+  String get timelineStackAllFramesHint;
+
+  /// No description provided for @timelineStackRangesTakePriority.
+  ///
+  /// In ja, this message translates to:
+  /// **'フレーム範囲を指定したフレームは、その範囲の順番が優先されます。'**
+  String get timelineStackRangesTakePriority;
+
+  /// No description provided for @timelineStackRangeLabel.
+  ///
+  /// In ja, this message translates to:
+  /// **'F{start}〜F{end}'**
+  String timelineStackRangeLabel(int start, int end);
+
+  /// No description provided for @timelineStackRangeAdd.
+  ///
+  /// In ja, this message translates to:
+  /// **'F{n}に範囲を追加'**
+  String timelineStackRangeAdd(int n);
+
+  /// No description provided for @timelineStackRangeHint.
+  ///
+  /// In ja, this message translates to:
+  /// **'指定した範囲のフレームだけ、ここで並べた順番になります。範囲の外はシーン全体の順番です。'**
+  String get timelineStackRangeHint;
+
+  /// No description provided for @timelineStackRangeEmpty.
+  ///
+  /// In ja, this message translates to:
+  /// **'範囲がありません。上のボタンで今のフレームに作れます。'**
+  String get timelineStackRangeEmpty;
+
+  /// No description provided for @timelineStackRangeOrderHint.
+  ///
+  /// In ja, this message translates to:
+  /// **'{range}の重なり順（上ほど手前）。つまみのドラッグか矢印で並べ替えます。'**
+  String timelineStackRangeOrderHint(String range);
+
+  /// No description provided for @timelineStackRangeDelete.
+  ///
+  /// In ja, this message translates to:
+  /// **'この範囲を削除'**
+  String get timelineStackRangeDelete;
+
   /// No description provided for @timelineAddMaterialTooltip.
   ///
   /// In ja, this message translates to:
@@ -8702,14 +8780,8 @@ abstract class AppLocalizations {
   /// No description provided for @timelineStackScopeScene.
   ///
   /// In ja, this message translates to:
-  /// **'シーン全体'**
+  /// **'現在のシーン全体'**
   String get timelineStackScopeScene;
-
-  /// No description provided for @timelineStackScopeFromFrame.
-  ///
-  /// In ja, this message translates to:
-  /// **'F{n}から'**
-  String timelineStackScopeFromFrame(int n);
 
   /// No description provided for @timelineStackFrameUnit.
   ///
@@ -8717,23 +8789,11 @@ abstract class AppLocalizations {
   /// **'フレーム（イラスト）'**
   String get timelineStackFrameUnit;
 
-  /// No description provided for @timelineStackChangesLabel.
-  ///
-  /// In ja, this message translates to:
-  /// **'途中から順番を変えたフレーム'**
-  String get timelineStackChangesLabel;
-
   /// No description provided for @timelineStackResetScene.
   ///
   /// In ja, this message translates to:
   /// **'既定の順番に戻す'**
   String get timelineStackResetScene;
-
-  /// No description provided for @timelineStackRemoveChange.
-  ///
-  /// In ja, this message translates to:
-  /// **'この変更を取り消す'**
-  String get timelineStackRemoveChange;
 
   /// No description provided for @timelineStackFrameMaskTitle.
   ///

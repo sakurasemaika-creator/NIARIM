@@ -1389,7 +1389,7 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get helpTimelineDesc =>
-      'La pantalla para gestionar el eje temporal de tu animación. Organizar fotogramas (imágenes fijas individuales) y reproducirlos como un flipbook crea la animación. Las pistas de material de texto, imagen, vídeo y audio, las pistas de capas comunes y los fotogramas clave de cámara se gestionan todos en la misma línea de tiempo. Qué se muestra delante entre los textos, imágenes, vídeos y el dibujo del fotograma se ajusta en «Orden de apilado», para toda la escena o desde cualquier fotograma.';
+      'La pantalla para gestionar el eje temporal de tu animación. Organizar fotogramas (imágenes fijas individuales) y reproducirlos como un flipbook crea la animación. Las pistas de material de texto, imagen, vídeo y audio, las pistas de capas comunes y los fotogramas clave de cámara se gestionan todos en la misma línea de tiempo. Qué se muestra delante entre los textos, imágenes, vídeos y el dibujo del fotograma se ajusta en «Orden de apilado», para toda la escena o para un rango de fotogramas.';
 
   @override
   String get helpSceneTitle => 'Escena';
@@ -4854,6 +4854,56 @@ class AppLocalizationsEs extends AppLocalizations {
   String get timelineAddWatermarkTooltip => '+ Marca de agua';
 
   @override
+  String get timelineStackScopeRange => 'Rango de fotogramas';
+
+  @override
+  String get timelineStackTargetLabel => 'Usar este orden en';
+
+  @override
+  String get timelineStackTargetScenes => 'Elegir escenas';
+
+  @override
+  String get timelineStackTargetAllFrames => 'Todos los fotogramas';
+
+  @override
+  String get timelineStackScenesHint =>
+      'Todos los fotogramas de las escenas elegidas usan el mismo orden. Al reordenar aquí, se aplica a todas ellas.';
+
+  @override
+  String get timelineStackAllFramesHint =>
+      'Todos los fotogramas de todas las escenas usan el mismo orden. Al reordenar aquí, se aplica a todas las escenas.';
+
+  @override
+  String get timelineStackRangesTakePriority =>
+      'Los fotogramas dentro de un rango mantienen el orden de ese rango.';
+
+  @override
+  String timelineStackRangeLabel(int start, int end) {
+    return 'F$start–F$end';
+  }
+
+  @override
+  String timelineStackRangeAdd(int n) {
+    return 'Añadir un rango en F$n';
+  }
+
+  @override
+  String get timelineStackRangeHint =>
+      'Solo los fotogramas de un rango usan el orden definido aquí; fuera de los rangos se usa el orden de toda la escena.';
+
+  @override
+  String get timelineStackRangeEmpty =>
+      'Aún no hay rangos. Usa el botón de arriba para crear uno en el fotograma actual.';
+
+  @override
+  String timelineStackRangeOrderHint(String range) {
+    return 'Orden de apilado de $range (más arriba, más delante). Arrastra el asa o usa las flechas para reordenar.';
+  }
+
+  @override
+  String get timelineStackRangeDelete => 'Eliminar este rango';
+
+  @override
   String get timelineAddMaterialTooltip => 'Añadir material';
 
   @override
@@ -4962,24 +5012,13 @@ class AppLocalizationsEs extends AppLocalizations {
       'Los elementos más arriba se muestran delante. Arrastra el asa o usa las flechas para reordenar.';
 
   @override
-  String get timelineStackScopeScene => 'Toda la escena';
-
-  @override
-  String timelineStackScopeFromFrame(int n) {
-    return 'Desde F$n';
-  }
+  String get timelineStackScopeScene => 'Toda la escena actual';
 
   @override
   String get timelineStackFrameUnit => 'Fotograma (dibujo)';
 
   @override
-  String get timelineStackChangesLabel => 'Fotogramas donde cambia el orden';
-
-  @override
   String get timelineStackResetScene => 'Volver al orden predeterminado';
-
-  @override
-  String get timelineStackRemoveChange => 'Quitar este cambio';
 
   @override
   String get timelineStackFrameMaskTitle => 'Máscara del fotograma (dibujo)';

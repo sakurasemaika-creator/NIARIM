@@ -467,7 +467,7 @@
   "helpPressureCurveTitle": "Pressure Curve",
   "helpPressureCurveDesc": "A feature in the pen input settings that lets you freely adjust, via a graph, the relationship between actual pen pressure and how it affects brush size and opacity. Whether you want thick lines even with light pressure, or the opposite — needing firm pressure to get thick lines — you can finely customize the feel to match your habits. You can try drawing right there to check the effect after changing the settings.",
   "helpTimelineTitle": "Timeline",
-  "helpTimelineDesc": "The screen for managing the time axis of your animation. Arranging frames (individual still images) and playing them back like a flipbook creates the animation. Text, image, video and audio material tracks, common layer tracks and camera keyframes are all managed on the same timeline. Which of the texts, images, videos and the frame's drawing is in front is set in \"Stacking order\", for the whole scene or from any frame on.",
+  "helpTimelineDesc": "The screen for managing the time axis of your animation. Arranging frames (individual still images) and playing them back like a flipbook creates the animation. Text, image, video and audio material tracks, common layer tracks and camera keyframes are all managed on the same timeline. Which of the texts, images, videos and the frame's drawing is in front is set in \"Stacking order\", for the whole scene or for a range of frames.",
   "helpSceneTitle": "Scene",
   "helpSceneDesc": "Splits the inside of a single project (one video) into scenes (cuts) to manage them separately. While folders organize things at the project level, scenes represent scene changes within a single video. In the timeline’s scene tab you can add, duplicate, delete, rename, and reorder scenes. Switching to multi-select mode lets you move, duplicate, or delete multiple scenes at once.",
   "helpCameraKeyframeTitle": "Camera Keyframe",
@@ -1974,6 +1974,43 @@
   "timelineEffectFilterLabel": "Effect filters",
   "timelineAddCameraKfTooltip": "Add camera keyframe",
   "timelineAddWatermarkTooltip": "+ Watermark",
+  "timelineStackScopeRange": "Frame range",
+  "timelineStackTargetLabel": "Use this order for",
+  "timelineStackTargetScenes": "Choose scenes",
+  "timelineStackTargetAllFrames": "All frames",
+  "timelineStackScenesHint": "Every frame of the chosen scenes uses the same order. Reordering here sets it in all the chosen scenes.",
+  "timelineStackAllFramesHint": "Every frame of every scene uses the same order. Reordering here sets it in all scenes.",
+  "timelineStackRangesTakePriority": "Frames in a frame range keep that range's order.",
+  "timelineStackRangeLabel": "F{start}–F{end}",
+  "@timelineStackRangeLabel": {
+    "placeholders": {
+      "start": {
+        "type": "int"
+      },
+      "end": {
+        "type": "int"
+      }
+    }
+  },
+  "timelineStackRangeAdd": "Add a range at F{n}",
+  "@timelineStackRangeAdd": {
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
+  },
+  "timelineStackRangeHint": "Only the frames in a range use the order set here; outside the ranges, the whole scene's order is used.",
+  "timelineStackRangeEmpty": "No ranges yet. Use the button above to make one at the current frame.",
+  "timelineStackRangeOrderHint": "Stacking order for {range} (higher is in front). Drag a handle or use the arrows to reorder.",
+  "@timelineStackRangeOrderHint": {
+    "placeholders": {
+      "range": {
+        "type": "String"
+      }
+    }
+  },
+  "timelineStackRangeDelete": "Delete this range",
   "timelineAddMaterialTooltip": "Add material",
   "timelineMaterialRowLabel": "Row",
   "timelineMaterialNewRow": "New row",
@@ -2040,19 +2077,9 @@
   "timelineMaskInvert": "Invert (hide the inside)",
   "timelineMaskHint": "Shows only what is inside the mask. Invert it to hide the inside instead.",
   "timelineStackOrderHint": "Items higher in the list appear in front. Drag a handle or use the arrows to reorder.",
-  "timelineStackScopeScene": "Whole scene",
-  "timelineStackScopeFromFrame": "From F{n}",
-  "@timelineStackScopeFromFrame": {
-    "placeholders": {
-      "n": {
-        "type": "int"
-      }
-    }
-  },
+  "timelineStackScopeScene": "The whole current scene",
   "timelineStackFrameUnit": "Frame (drawing)",
-  "timelineStackChangesLabel": "Frames where the order changes",
   "timelineStackResetScene": "Back to the default order",
-  "timelineStackRemoveChange": "Remove this change",
   "timelineStackFrameMaskTitle": "Frame (drawing) mask",
   "timelineStackFrameMaskHint": "Crops only the drawing; text, images and video are not affected. The drawing is not hidden while you draw on the canvas.",
   "timelineStackMoveUp": "Bring forward",

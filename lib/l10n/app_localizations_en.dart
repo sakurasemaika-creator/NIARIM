@@ -1365,7 +1365,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get helpTimelineDesc =>
-      'The screen for managing the time axis of your animation. Arranging frames (individual still images) and playing them back like a flipbook creates the animation. Text, image, video and audio material tracks, common layer tracks and camera keyframes are all managed on the same timeline. Which of the texts, images, videos and the frame\'s drawing is in front is set in \"Stacking order\", for the whole scene or from any frame on.';
+      'The screen for managing the time axis of your animation. Arranging frames (individual still images) and playing them back like a flipbook creates the animation. Text, image, video and audio material tracks, common layer tracks and camera keyframes are all managed on the same timeline. Which of the texts, images, videos and the frame\'s drawing is in front is set in \"Stacking order\", for the whole scene or for a range of frames.';
 
   @override
   String get helpSceneTitle => 'Scene';
@@ -4790,6 +4790,56 @@ class AppLocalizationsEn extends AppLocalizations {
   String get timelineAddWatermarkTooltip => '+ Watermark';
 
   @override
+  String get timelineStackScopeRange => 'Frame range';
+
+  @override
+  String get timelineStackTargetLabel => 'Use this order for';
+
+  @override
+  String get timelineStackTargetScenes => 'Choose scenes';
+
+  @override
+  String get timelineStackTargetAllFrames => 'All frames';
+
+  @override
+  String get timelineStackScenesHint =>
+      'Every frame of the chosen scenes uses the same order. Reordering here sets it in all the chosen scenes.';
+
+  @override
+  String get timelineStackAllFramesHint =>
+      'Every frame of every scene uses the same order. Reordering here sets it in all scenes.';
+
+  @override
+  String get timelineStackRangesTakePriority =>
+      'Frames in a frame range keep that range\'s order.';
+
+  @override
+  String timelineStackRangeLabel(int start, int end) {
+    return 'F$start–F$end';
+  }
+
+  @override
+  String timelineStackRangeAdd(int n) {
+    return 'Add a range at F$n';
+  }
+
+  @override
+  String get timelineStackRangeHint =>
+      'Only the frames in a range use the order set here; outside the ranges, the whole scene\'s order is used.';
+
+  @override
+  String get timelineStackRangeEmpty =>
+      'No ranges yet. Use the button above to make one at the current frame.';
+
+  @override
+  String timelineStackRangeOrderHint(String range) {
+    return 'Stacking order for $range (higher is in front). Drag a handle or use the arrows to reorder.';
+  }
+
+  @override
+  String get timelineStackRangeDelete => 'Delete this range';
+
+  @override
   String get timelineAddMaterialTooltip => 'Add material';
 
   @override
@@ -4898,24 +4948,13 @@ class AppLocalizationsEn extends AppLocalizations {
       'Items higher in the list appear in front. Drag a handle or use the arrows to reorder.';
 
   @override
-  String get timelineStackScopeScene => 'Whole scene';
-
-  @override
-  String timelineStackScopeFromFrame(int n) {
-    return 'From F$n';
-  }
+  String get timelineStackScopeScene => 'The whole current scene';
 
   @override
   String get timelineStackFrameUnit => 'Frame (drawing)';
 
   @override
-  String get timelineStackChangesLabel => 'Frames where the order changes';
-
-  @override
   String get timelineStackResetScene => 'Back to the default order';
-
-  @override
-  String get timelineStackRemoveChange => 'Remove this change';
 
   @override
   String get timelineStackFrameMaskTitle => 'Frame (drawing) mask';

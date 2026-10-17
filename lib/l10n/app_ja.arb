@@ -575,7 +575,7 @@
   "helpPressureCurveTitle": "筆圧カーブ",
   "helpPressureCurveDesc": "ペン入力設定にある機能で、実際の筆圧の強さと、ブラシの太さ・不透明度への反映のされ方の関係をグラフで自由に調整できます。弱い筆圧でも太く出したい人、逆に強く押さないと太くならないようにしたい人など、手癖に合わせて描き心地を細かくカスタマイズできます。設定変更後はその場で試し書きしながら確認できます。",
   "helpTimelineTitle": "タイムライン",
-  "helpTimelineDesc": "アニメーションの時間軸を管理する画面です。フレーム（静止画1コマ）を並べてパラパラ漫画のように再生することでアニメーションになります。テキスト・画像・動画・音声の素材トラック、共通レイヤートラック、カメラキーフレームも同じタイムライン上で管理します。テキスト・画像・動画とフレームのイラストの前後関係は「重なり順」で、シーン全体またはフレームごとに並べ替えられます。",
+  "helpTimelineDesc": "アニメーションの時間軸を管理する画面です。フレーム（静止画1コマ）を並べてパラパラ漫画のように再生することでアニメーションになります。テキスト・画像・動画・音声の素材トラック、共通レイヤートラック、カメラキーフレームも同じタイムライン上で管理します。テキスト・画像・動画とフレームのイラストの前後関係は「重なり順」で、シーン全体、または指定したフレームの範囲ごとに並べ替えられます。",
   "helpSceneTitle": "シーン",
   "helpSceneDesc": "1つのプロジェクト（1本の動画）の中を、場面（カット）ごとに分割して管理する機能です。フォルダがプロジェクト単位の整理なのに対し、シーンは1本の動画の中の場面転換を表現するために使います。タイムラインのシーンタブでは、シーンの追加・複製・削除・名前変更・並び替えができます。複数選択モードにすると複数シーンをまとめて移動・複製・削除することも可能です。",
   "helpCameraKeyframeTitle": "カメラキーフレーム",
@@ -2282,6 +2282,43 @@
   "timelineEffectFilterLabel": "演出フィルター",
   "timelineAddCameraKfTooltip": "カメラキーフレーム追加",
   "timelineAddWatermarkTooltip": "＋ウォーターマーク",
+  "timelineStackScopeRange": "フレーム範囲",
+  "timelineStackTargetLabel": "この重なり順を使う所",
+  "timelineStackTargetScenes": "シーン複数選択",
+  "timelineStackTargetAllFrames": "全てのフレーム",
+  "timelineStackScenesHint": "選んだシーンの全てのフレームに同じ順番を使います。並べ替えると、選んだシーンすべてがこの順番になります。",
+  "timelineStackAllFramesHint": "全てのシーンの全てのフレームに同じ順番を使います。並べ替えると、全てのシーンがこの順番になります。",
+  "timelineStackRangesTakePriority": "フレーム範囲を指定したフレームは、その範囲の順番が優先されます。",
+  "timelineStackRangeLabel": "F{start}〜F{end}",
+  "@timelineStackRangeLabel": {
+    "placeholders": {
+      "start": {
+        "type": "int"
+      },
+      "end": {
+        "type": "int"
+      }
+    }
+  },
+  "timelineStackRangeAdd": "F{n}に範囲を追加",
+  "@timelineStackRangeAdd": {
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
+  },
+  "timelineStackRangeHint": "指定した範囲のフレームだけ、ここで並べた順番になります。範囲の外はシーン全体の順番です。",
+  "timelineStackRangeEmpty": "範囲がありません。上のボタンで今のフレームに作れます。",
+  "timelineStackRangeOrderHint": "{range}の重なり順（上ほど手前）。つまみのドラッグか矢印で並べ替えます。",
+  "@timelineStackRangeOrderHint": {
+    "placeholders": {
+      "range": {
+        "type": "String"
+      }
+    }
+  },
+  "timelineStackRangeDelete": "この範囲を削除",
   "timelineAddMaterialTooltip": "素材を追加",
   "timelineMaterialRowLabel": "置く列",
   "timelineMaterialNewRow": "新しい列",
@@ -2348,19 +2385,9 @@
   "timelineMaskInvert": "反転（内側を隠す）",
   "timelineMaskHint": "マスクの内側だけを見せます。反転すると内側を隠します。",
   "timelineStackOrderHint": "上にあるものほど手前に表示されます。つまみをドラッグするか矢印で並べ替えます。",
-  "timelineStackScopeScene": "シーン全体",
-  "timelineStackScopeFromFrame": "F{n}から",
-  "@timelineStackScopeFromFrame": {
-    "placeholders": {
-      "n": {
-        "type": "int"
-      }
-    }
-  },
+  "timelineStackScopeScene": "現在のシーン全体",
   "timelineStackFrameUnit": "フレーム（イラスト）",
-  "timelineStackChangesLabel": "途中から順番を変えたフレーム",
   "timelineStackResetScene": "既定の順番に戻す",
-  "timelineStackRemoveChange": "この変更を取り消す",
   "timelineStackFrameMaskTitle": "フレーム（イラスト）のマスク",
   "timelineStackFrameMaskHint": "描いた絵だけを切り抜きます。テキスト・画像・動画には効きません。キャンバスで描いている間は隠れません。",
   "timelineStackMoveUp": "手前へ",

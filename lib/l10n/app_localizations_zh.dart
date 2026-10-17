@@ -1331,7 +1331,7 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get helpTimelineDesc =>
-      '管理动画时间轴的画面。将帧（单张静止图像）排列并像翻页动画一样播放，就形成了动画。文字・图片・视频・音频素材轨道、公共图层轨道、摄像机关键帧也都在同一条时间轴上管理。文字・图片・视频与帧插画之间的前后关系可在「叠放顺序」中按整个场景或从任意帧开始调整。';
+      '管理动画时间轴的画面。将帧（单张静止图像）排列并像翻页动画一样播放，就形成了动画。文字・图片・视频・音频素材轨道、公共图层轨道、摄像机关键帧也都在同一条时间轴上管理。文字・图片・视频与帧插画之间的前后关系可在「叠放顺序」中按整个场景或指定的帧范围调整。';
 
   @override
   String get helpSceneTitle => '场景';
@@ -4596,6 +4596,53 @@ class AppLocalizationsZh extends AppLocalizations {
   String get timelineAddWatermarkTooltip => '＋水印';
 
   @override
+  String get timelineStackScopeRange => '帧范围';
+
+  @override
+  String get timelineStackTargetLabel => '此叠放顺序用于';
+
+  @override
+  String get timelineStackTargetScenes => '多选场景';
+
+  @override
+  String get timelineStackTargetAllFrames => '所有帧';
+
+  @override
+  String get timelineStackScenesHint =>
+      '所选场景的所有帧使用相同的顺序。在这里调整后，所选的全部场景都会使用该顺序。';
+
+  @override
+  String get timelineStackAllFramesHint =>
+      '所有场景的所有帧使用相同的顺序。在这里调整后，所有场景都会使用该顺序。';
+
+  @override
+  String get timelineStackRangesTakePriority => '指定了帧范围的帧优先使用该范围的顺序。';
+
+  @override
+  String timelineStackRangeLabel(int start, int end) {
+    return 'F$start～F$end';
+  }
+
+  @override
+  String timelineStackRangeAdd(int n) {
+    return '在F$n添加范围';
+  }
+
+  @override
+  String get timelineStackRangeHint => '只有指定范围内的帧使用这里排列的顺序，范围外使用整个场景的顺序。';
+
+  @override
+  String get timelineStackRangeEmpty => '还没有范围。用上面的按钮可在当前帧创建。';
+
+  @override
+  String timelineStackRangeOrderHint(String range) {
+    return '$range的叠放顺序（越靠上越在前）。拖动手柄或使用箭头调整顺序。';
+  }
+
+  @override
+  String get timelineStackRangeDelete => '删除此范围';
+
+  @override
   String get timelineAddMaterialTooltip => '添加素材';
 
   @override
@@ -4700,24 +4747,13 @@ class AppLocalizationsZh extends AppLocalizations {
   String get timelineStackOrderHint => '越靠上越显示在前面。拖动手柄或使用箭头调整顺序。';
 
   @override
-  String get timelineStackScopeScene => '整个场景';
-
-  @override
-  String timelineStackScopeFromFrame(int n) {
-    return '从F$n开始';
-  }
+  String get timelineStackScopeScene => '当前整个场景';
 
   @override
   String get timelineStackFrameUnit => '帧（插画）';
 
   @override
-  String get timelineStackChangesLabel => '中途改变顺序的帧';
-
-  @override
   String get timelineStackResetScene => '恢复默认顺序';
-
-  @override
-  String get timelineStackRemoveChange => '取消此更改';
 
   @override
   String get timelineStackFrameMaskTitle => '帧（插画）蒙版';
@@ -8622,7 +8658,7 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get helpTimelineDesc =>
-      '管理動畫時間軸的畫面。將影格（單張靜止影像）排列並像翻頁動畫一樣播放，就形成了動畫。文字・圖片・影片・音訊素材軌道、共用圖層軌道、攝影機關鍵影格也都在同一條時間軸上管理。文字・圖片・影片與影格插畫之間的前後關係可在「疊放順序」中依整個場景或從任意影格開始調整。';
+      '管理動畫時間軸的畫面。將影格（單張靜止影像）排列並像翻頁動畫一樣播放，就形成了動畫。文字・圖片・影片・音訊素材軌道、共用圖層軌道、攝影機關鍵影格也都在同一條時間軸上管理。文字・圖片・影片與影格插畫之間的前後關係可在「疊放順序」中依整個場景或指定的影格範圍調整。';
 
   @override
   String get helpSceneTitle => '場景';
@@ -11887,6 +11923,53 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get timelineAddWatermarkTooltip => '＋浮水印';
 
   @override
+  String get timelineStackScopeRange => '影格範圍';
+
+  @override
+  String get timelineStackTargetLabel => '此疊放順序用於';
+
+  @override
+  String get timelineStackTargetScenes => '多選場景';
+
+  @override
+  String get timelineStackTargetAllFrames => '所有影格';
+
+  @override
+  String get timelineStackScenesHint =>
+      '所選場景的所有影格使用相同的順序。在這裡調整後，所選的全部場景都會使用該順序。';
+
+  @override
+  String get timelineStackAllFramesHint =>
+      '所有場景的所有影格使用相同的順序。在這裡調整後，所有場景都會使用該順序。';
+
+  @override
+  String get timelineStackRangesTakePriority => '指定了影格範圍的影格優先使用該範圍的順序。';
+
+  @override
+  String timelineStackRangeLabel(int start, int end) {
+    return 'F$start～F$end';
+  }
+
+  @override
+  String timelineStackRangeAdd(int n) {
+    return '在F$n新增範圍';
+  }
+
+  @override
+  String get timelineStackRangeHint => '只有指定範圍內的影格使用這裡排列的順序，範圍外使用整個場景的順序。';
+
+  @override
+  String get timelineStackRangeEmpty => '還沒有範圍。用上面的按鈕可在目前影格建立。';
+
+  @override
+  String timelineStackRangeOrderHint(String range) {
+    return '$range的疊放順序（越靠上越在前）。拖曳把手或使用箭頭調整順序。';
+  }
+
+  @override
+  String get timelineStackRangeDelete => '刪除此範圍';
+
+  @override
   String get timelineAddMaterialTooltip => '新增素材';
 
   @override
@@ -11991,24 +12074,13 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get timelineStackOrderHint => '越靠上越顯示在前面。拖曳把手或使用箭頭調整順序。';
 
   @override
-  String get timelineStackScopeScene => '整個場景';
-
-  @override
-  String timelineStackScopeFromFrame(int n) {
-    return '從F$n開始';
-  }
+  String get timelineStackScopeScene => '目前整個場景';
 
   @override
   String get timelineStackFrameUnit => '影格（插畫）';
 
   @override
-  String get timelineStackChangesLabel => '中途改變順序的影格';
-
-  @override
   String get timelineStackResetScene => '恢復預設順序';
-
-  @override
-  String get timelineStackRemoveChange => '取消此變更';
 
   @override
   String get timelineStackFrameMaskTitle => '影格（插畫）遮罩';

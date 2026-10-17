@@ -77,9 +77,10 @@ void main() {
         kStackFrame,
         stackTrackKey(StackTrackKind.text, 1),
       ],
-      changes: [
-        StackChange(
-          frameIndex: 3,
+      ranges: [
+        StackRange(
+          start: 3,
+          end: 6,
           order: [kStackFrame, stackTrackKey(StackTrackKind.text, 1)],
         ),
       ],
@@ -127,8 +128,9 @@ void main() {
     final scene = loaded.scenes.first;
     expect(scene.textRowNames, [null, 'サブタイトル']);
     expect(scene.stack.order, stack.order);
-    expect(scene.stack.changes.single.frameIndex, 3);
-    expect(scene.stack.changes.single.order, stack.changes.single.order);
+    expect(scene.stack.ranges.single.start, 3);
+    expect(scene.stack.ranges.single.end, 6);
+    expect(scene.stack.ranges.single.order, stack.ranges.single.order);
     expect(scene.stack.frameMask, const LayerMask(feather: 2));
 
     final back = scene.frames[1].layers.firstWhere((l) => l.id == 'Layer0002');

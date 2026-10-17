@@ -116,12 +116,9 @@ void main() {
         exportHeight: 180,
       ),
     ))!;
-    // A sky-blue band on the frame's drawing, across the left 62% of the
-    // middle, so the preview shows which texts are in front of it.
+    // A sky-blue band on the drawing of F1 and F8, across the left 62% of
+    // the middle, so the preview shows which texts are in front of it.
     final drawingScene = ps.scenesOf(project.id).first.id;
-    final drawingLayer = ps
-        .layersOf(project.id, drawingScene, 0)
-        .firstWhere((l) => l.type == LayerType.normal);
     final canvas = ps.tileManagerOf(project.id);
     final band = Uint8List(canvas.canvasWidth * canvas.canvasHeight * 4);
     for (
@@ -138,10 +135,15 @@ void main() {
           ..[i + 3] = 0xFF;
       }
     }
-    canvas.replaceLayerPixels(
-      ps.tileKeyFor(project.id, drawingScene, 0, drawingLayer.id),
-      band,
-    );
+    for (final frame in [0, 7]) {
+      final drawingLayer = ps
+          .layersOf(project.id, drawingScene, frame)
+          .firstWhere((l) => l.type == LayerType.normal);
+      canvas.replaceLayerPixels(
+        ps.tileKeyFor(project.id, drawingScene, frame, drawingLayer.id),
+        band,
+      );
+    }
     appRouter.go('/timeline/${project.id}');
     await tester.pump();
     await tester.pump(const Duration(milliseconds: 900));
@@ -270,12 +272,12 @@ void main() {
       of: find.text(l10n.timelineStackFrameUnit),
       matching: find.byType(ListTile),
     );
-    await tester.tap(
-      find.descendant(
-        of: frameRow,
-        matching: find.byTooltip(l10n.timelineStackMoveUp),
-      ),
+    final frameUp = find.descendant(
+      of: frameRow,
+      matching: find.byTooltip(l10n.timelineStackMoveUp),
     );
+    await tester.ensureVisible(frameUp);
+    await tester.tap(frameUp);
     await tester.pump();
     await capture('06_drawing_between_texts');
     final scene = ps.sceneOf(project.id, sceneId)!;
@@ -289,6 +291,118 @@ void main() {
     expect(stacked.indexWhere((l) => l.id == title.id), lessThan(drawing));
     expect(stacked.indexWhere((l) => l.id == sub.id), greaterThan(drawing));
 
+    // ── フレーム範囲: F1〜F6 typed by hand, text 2 in front of everything ──
+    final rangeRadio = find.text(l10n.timelineStackScopeRange);
+    await tester.ensureVisible(rangeRadio);
+    await tester.tap(rangeRadio);
+    await tester.pump();
+    expect(find.text(l10n.timelineStackRangeEmpty), findsOneWidget);
+    final addRange = find.text(l10n.timelineStackRangeAdd(1));
+    await tester.ensureVisible(addRange);
+    await tester.tap(addRange);
+    await tester.pump();
+    final endField = find.widgetWithText(
+      TextField,
+      l10n.layerPanelRangeEndFrameLabel,
+    );
+    await tester.ensureVisible(endField);
+    await tester.enterText(endField, '6');
+    await tester.testTextInput.receiveAction(TextInputAction.done);
+    await tester.pump();
+    // Back to F1, where the range starts (typing the end showed F6).
+    final rangeChip = find.widgetWithText(
+      ChoiceChip,
+      l10n.timelineStackRangeLabel(1, 6),
+    );
+    await tester.ensureVisible(rangeChip);
+    await tester.tap(rangeChip);
+    await tester.pump();
+    final subRow = find.ancestor(
+      of: find.text('${l10n.timelineMaterialText}2'),
+      matching: find.byType(ListTile),
+    );
+    for (var i = 0; i < 2; i++) {
+      final up = find.descendant(
+        of: subRow,
+        matching: find.byTooltip(l10n.timelineStackMoveUp),
+      );
+      await tester.ensureVisible(up);
+      await tester.tap(up);
+      await tester.pump();
+    }
+    final range = ps.sceneOf(project.id, sceneId)!.stack.ranges.single;
+    expect([range.start, range.end], [0, 5]);
+    expect(range.order, [
+      stackTrackKey(StackTrackKind.text, 1),
+      stackTrackKey(StackTrackKind.text, 0),
+      kStackFrame,
+    ]);
+    expect(find.text(l10n.timelineStackRangeLabel(1, 6)), findsOneWidget);
+    // In the range text 2 is in front; after it (F8) the scene's order again.
+    List<String> idsAt(int frame) => [
+      for (final l in ps.stackedLayersOf(project.id, sceneId, frame).layers)
+        l.id,
+    ];
+    expect(idsAt(0).first, sub.id);
+    expect(idsAt(5).first, sub.id);
+    expect(idsAt(7).first, title.id);
+    // The range's chip and its start and end in view.
+    await tester.ensureVisible(find.text(l10n.timelineStackRangeLabel(1, 6)));
+    await tester.pump();
+    await capture('07_frame_range');
+
+    // ── 全てのフレーム: every scene gets the order (the drawing in front) ──
+    final second = ps.addScene(project.id);
+    await tester.pump();
+    final allRadio = find.text(l10n.timelineStackTargetAllFrames);
+    await tester.ensureVisible(allRadio);
+    await tester.tap(allRadio);
+    await tester.pump();
+    // The range set above still wins in its frames.
+    expect(find.text(l10n.timelineStackRangesTakePriority), findsOneWidget);
+    Future<void> raise(String label) async {
+      final up = find.descendant(
+        of: find.ancestor(
+          of: find.text(label),
+          matching: find.byType(ListTile),
+        ),
+        matching: find.byTooltip(l10n.timelineStackMoveUp),
+      );
+      await tester.ensureVisible(up);
+      await tester.tap(up);
+      await tester.pump();
+    }
+
+    await raise(l10n.timelineStackFrameUnit);
+    for (final id in [sceneId, second.id]) {
+      expect(ps.sceneOf(project.id, id)!.stack.order.first, kStackFrame);
+    }
+    // F8, after the range: the drawing in front of both texts there.
+    tester
+        .widget<TimelineStackOrderPanel>(find.byType(TimelineStackOrderPanel))
+        .onSeek(7);
+    await pumpRealAsync(tester, const Duration(milliseconds: 600));
+    await tester.ensureVisible(allRadio);
+    await tester.pump();
+    await capture('08_all_frames');
+
+    // ── シーン複数選択: this scene and the new one, text 1 back in front ──
+    final scenesRadio = find.text(l10n.timelineStackTargetScenes);
+    await tester.ensureVisible(scenesRadio);
+    await tester.tap(scenesRadio);
+    await tester.pump();
+    final secondChip = find.widgetWithText(FilterChip, second.displayName);
+    expect(tester.widget<FilterChip>(secondChip).selected, isFalse);
+    await tester.tap(secondChip);
+    await tester.pump();
+    await raise('${l10n.timelineMaterialText}1');
+    for (final id in [sceneId, second.id]) {
+      expect(ps.sceneOf(project.id, id)!.stack.order.first, 'text:0');
+    }
+    await tester.ensureVisible(secondChip);
+    await tester.pump();
+    await capture('09_choose_scenes');
+
     // The drawing can be masked too (the frame mask).
     final frameEllipse = find.text(l10n.timelineMaskEllipse);
     await tester.ensureVisible(frameEllipse);
@@ -299,7 +413,47 @@ void main() {
       LayerMaskShape.ellipse,
     );
     expect(ps.stackedLayersOf(project.id, sceneId, 0).maskGroups, hasLength(1));
-    await capture('07_frame_mask');
+    await capture('10_frame_mask');
+    expect(tester.takeException(), isNull);
+
+    // A range left past the last frame (frames deleted after it was set)
+    // shows clamped to the scene and can still be edited.
+    final frames = ps.frameCount(project.id, sceneId);
+    final stack = ps.sceneOf(project.id, sceneId)!.stack;
+    ps.updateSceneStack(
+      project.id,
+      sceneId,
+      stack.copyWith(
+        ranges: [
+          ...stack.ranges,
+          StackRange(start: frames + 4, end: frames + 9, order: const []),
+        ],
+      ),
+    );
+    final rangeAgain = find.text(l10n.timelineStackScopeRange);
+    await tester.ensureVisible(rangeAgain);
+    await tester.tap(rangeAgain);
+    await tester.pump();
+    final pastEnd = find.widgetWithText(
+      ChoiceChip,
+      l10n.timelineStackRangeLabel(frames, frames),
+    );
+    await tester.ensureVisible(pastEnd);
+    await tester.tap(pastEnd);
+    await tester.pump();
+    expect(tester.takeException(), isNull);
+    final startField = find.widgetWithText(
+      TextField,
+      l10n.layerPanelRangeStartFrameLabel,
+    );
+    await tester.ensureVisible(startField);
+    await tester.enterText(startField, '1');
+    await tester.testTextInput.receiveAction(TextInputAction.done);
+    await tester.pump();
+    // Kept clear of the F1〜F6 range before it.
+    final pulled = ps.sceneOf(project.id, sceneId)!.stack.ranges.last;
+    expect(pulled.start, 6);
+    expect(pulled.end, frames - 1);
     expect(tester.takeException(), isNull);
   }, timeout: const Timeout(Duration(seconds: 180)));
 }

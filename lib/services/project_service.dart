@@ -2172,9 +2172,8 @@ class ProjectService extends ChangeNotifier {
     ];
     return stack.copyWith(
       order: renumber(stack.order),
-      changes: [
-        for (final c in stack.changes)
-          StackChange(frameIndex: c.frameIndex, order: renumber(c.order)),
+      ranges: [
+        for (final r in stack.ranges) r.copyWith(order: renumber(r.order)),
       ],
     );
   }

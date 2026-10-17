@@ -1339,7 +1339,7 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get helpTimelineDesc =>
-      'アニメーションの時間軸を管理する画面です。フレーム（静止画1コマ）を並べてパラパラ漫画のように再生することでアニメーションになります。テキスト・画像・動画・音声の素材トラック、共通レイヤートラック、カメラキーフレームも同じタイムライン上で管理します。テキスト・画像・動画とフレームのイラストの前後関係は「重なり順」で、シーン全体またはフレームごとに並べ替えられます。';
+      'アニメーションの時間軸を管理する画面です。フレーム（静止画1コマ）を並べてパラパラ漫画のように再生することでアニメーションになります。テキスト・画像・動画・音声の素材トラック、共通レイヤートラック、カメラキーフレームも同じタイムライン上で管理します。テキスト・画像・動画とフレームのイラストの前後関係は「重なり順」で、シーン全体、または指定したフレームの範囲ごとに並べ替えられます。';
 
   @override
   String get helpSceneTitle => 'シーン';
@@ -4628,6 +4628,55 @@ class AppLocalizationsJa extends AppLocalizations {
   String get timelineAddWatermarkTooltip => '＋ウォーターマーク';
 
   @override
+  String get timelineStackScopeRange => 'フレーム範囲';
+
+  @override
+  String get timelineStackTargetLabel => 'この重なり順を使う所';
+
+  @override
+  String get timelineStackTargetScenes => 'シーン複数選択';
+
+  @override
+  String get timelineStackTargetAllFrames => '全てのフレーム';
+
+  @override
+  String get timelineStackScenesHint =>
+      '選んだシーンの全てのフレームに同じ順番を使います。並べ替えると、選んだシーンすべてがこの順番になります。';
+
+  @override
+  String get timelineStackAllFramesHint =>
+      '全てのシーンの全てのフレームに同じ順番を使います。並べ替えると、全てのシーンがこの順番になります。';
+
+  @override
+  String get timelineStackRangesTakePriority =>
+      'フレーム範囲を指定したフレームは、その範囲の順番が優先されます。';
+
+  @override
+  String timelineStackRangeLabel(int start, int end) {
+    return 'F$start〜F$end';
+  }
+
+  @override
+  String timelineStackRangeAdd(int n) {
+    return 'F$nに範囲を追加';
+  }
+
+  @override
+  String get timelineStackRangeHint =>
+      '指定した範囲のフレームだけ、ここで並べた順番になります。範囲の外はシーン全体の順番です。';
+
+  @override
+  String get timelineStackRangeEmpty => '範囲がありません。上のボタンで今のフレームに作れます。';
+
+  @override
+  String timelineStackRangeOrderHint(String range) {
+    return '$rangeの重なり順（上ほど手前）。つまみのドラッグか矢印で並べ替えます。';
+  }
+
+  @override
+  String get timelineStackRangeDelete => 'この範囲を削除';
+
+  @override
   String get timelineAddMaterialTooltip => '素材を追加';
 
   @override
@@ -4735,24 +4784,13 @@ class AppLocalizationsJa extends AppLocalizations {
       '上にあるものほど手前に表示されます。つまみをドラッグするか矢印で並べ替えます。';
 
   @override
-  String get timelineStackScopeScene => 'シーン全体';
-
-  @override
-  String timelineStackScopeFromFrame(int n) {
-    return 'F$nから';
-  }
+  String get timelineStackScopeScene => '現在のシーン全体';
 
   @override
   String get timelineStackFrameUnit => 'フレーム（イラスト）';
 
   @override
-  String get timelineStackChangesLabel => '途中から順番を変えたフレーム';
-
-  @override
   String get timelineStackResetScene => '既定の順番に戻す';
-
-  @override
-  String get timelineStackRemoveChange => 'この変更を取り消す';
 
   @override
   String get timelineStackFrameMaskTitle => 'フレーム（イラスト）のマスク';

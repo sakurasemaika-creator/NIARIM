@@ -1,6 +1,6 @@
 // タイムラインの重なり順（ユーザー指定「テキスト1とテキスト2の間にフレームの
 // イラストを表示させる」「レイヤー順を細かくフレームごと、シーンごとに
-// 変えられる」）：既定の順番、シーンの順番、「このフレームから」の変更、
+// 変えられる」）：既定の順番、シーンの順番、「フレーム指定」の範囲、
 // 素材は表示範囲のフレームにだけ出ること、フレーム（イラスト）のマスク。
 import 'package:flutter_test/flutter_test.dart';
 import 'package:niarim/engine/timeline_stack.dart';
@@ -74,17 +74,17 @@ void main() {
     ]);
   });
 
-  test('a change from a frame on lasts until the next change', () {
+  test('a frame range (F4〜F5) has its own order, the rest the scene\'s', () {
     final scene = Scene(
       id: 's',
       index: 0,
       stack: SceneStack(
-        changes: [
-          StackChange(
-            frameIndex: 3,
+        ranges: [
+          StackRange(
+            start: 3,
+            end: 4,
             order: [stackTrackKey(StackTrackKind.video, 0), kStackFrame],
           ),
-          const StackChange(frameIndex: 5, order: []),
         ],
       ),
     );
@@ -94,8 +94,31 @@ void main() {
     expect(at(3).first, 'text1');
     expect(at(3).indexOf('video'), lessThan(at(3).indexOf('lines')));
     expect(at(4).indexOf('video'), lessThan(at(4).indexOf('lines')));
-    // An empty change goes back to the scene's (default) order.
+    // After the range, the scene's (default) order again.
     expect(at(5).last, 'video');
+  });
+
+  test('saved 「このフレームから」 changes are read as frame ranges', () {
+    final stack = SceneStack.fromJson({
+      'changes': [
+        {
+          'frameIndex': 3,
+          'order': ['video:0', 'frame'],
+        },
+        {'frameIndex': 5, 'order': <String>[]},
+        {
+          'frameIndex': 8,
+          'order': ['frame', 'text:0'],
+        },
+      ],
+    });
+    expect(stack.ranges, hasLength(2));
+    expect([stack.ranges[0].start, stack.ranges[0].end], [3, 4]);
+    expect(stack.ranges[0].order, ['video:0', 'frame']);
+    // The last change lasted to the end of the scene.
+    expect(stack.ranges[1].start, 8);
+    expect(stack.ranges[1].contains(500), isTrue);
+    expect(stack.chosenOrderAt(6), isEmpty);
   });
 
   test('a material shows only within its frame range', () {
@@ -134,9 +157,10 @@ void main() {
   test('the order and changes are saved and read back', () {
     final stack = SceneStack(
       order: [kStackFrame, stackTrackKey(StackTrackKind.image, 2)],
-      changes: [
-        StackChange(
-          frameIndex: 7,
+      ranges: [
+        StackRange(
+          start: 7,
+          end: 9,
           order: [stackTrackKey(StackTrackKind.text, 0), kStackFrame],
         ),
       ],
@@ -149,8 +173,9 @@ void main() {
     );
     final back = SceneStack.fromJson(stack.toJson());
     expect(back.order, stack.order);
-    expect(back.changes.single.frameIndex, 7);
-    expect(back.changes.single.order, stack.changes.single.order);
+    expect(back.ranges.single.start, 7);
+    expect(back.ranges.single.end, 9);
+    expect(back.ranges.single.order, stack.ranges.single.order);
     expect(back.frameMask, stack.frameMask);
     expect(SceneStack.fromJson(null).isEmpty, isTrue);
   });

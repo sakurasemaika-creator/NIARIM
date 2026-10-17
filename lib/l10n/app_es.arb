@@ -467,7 +467,7 @@
   "helpPressureCurveTitle": "Curva de presión",
   "helpPressureCurveDesc": "Una función en los ajustes de entrada de lápiz que permite ajustar libremente, mediante un gráfico, la relación entre la presión real del lápiz y cómo afecta al tamaño y la opacidad del pincel. Ya sea que quieras líneas gruesas incluso con poca presión, o lo contrario —necesitando presión firme para obtener líneas gruesas—, puedes personalizar finamente la sensación para adaptarla a tus hábitos. Puedes probar a dibujar en el momento para comprobar el efecto tras cambiar los ajustes.",
   "helpTimelineTitle": "Línea de tiempo",
-  "helpTimelineDesc": "La pantalla para gestionar el eje temporal de tu animación. Organizar fotogramas (imágenes fijas individuales) y reproducirlos como un flipbook crea la animación. Las pistas de material de texto, imagen, vídeo y audio, las pistas de capas comunes y los fotogramas clave de cámara se gestionan todos en la misma línea de tiempo. Qué se muestra delante entre los textos, imágenes, vídeos y el dibujo del fotograma se ajusta en «Orden de apilado», para toda la escena o desde cualquier fotograma.",
+  "helpTimelineDesc": "La pantalla para gestionar el eje temporal de tu animación. Organizar fotogramas (imágenes fijas individuales) y reproducirlos como un flipbook crea la animación. Las pistas de material de texto, imagen, vídeo y audio, las pistas de capas comunes y los fotogramas clave de cámara se gestionan todos en la misma línea de tiempo. Qué se muestra delante entre los textos, imágenes, vídeos y el dibujo del fotograma se ajusta en «Orden de apilado», para toda la escena o para un rango de fotogramas.",
   "helpSceneTitle": "Escena",
   "helpSceneDesc": "Divide el interior de un proyecto (un vídeo) en escenas (cortes) para gestionarlas por separado. Mientras que las carpetas organizan a nivel de proyecto, las escenas representan cambios de escena dentro de un mismo vídeo. En la pestaña de escenas de la línea de tiempo puedes añadir, duplicar, eliminar, renombrar y reordenar escenas. Al cambiar al modo de selección múltiple puedes mover, duplicar o eliminar varias escenas a la vez.",
   "helpCameraKeyframeTitle": "Fotograma clave de cámara",
@@ -1974,6 +1974,43 @@
   "timelineEffectFilterLabel": "Filtros de efecto",
   "timelineAddCameraKfTooltip": "Añadir fotograma clave de cámara",
   "timelineAddWatermarkTooltip": "+ Marca de agua",
+  "timelineStackScopeRange": "Rango de fotogramas",
+  "timelineStackTargetLabel": "Usar este orden en",
+  "timelineStackTargetScenes": "Elegir escenas",
+  "timelineStackTargetAllFrames": "Todos los fotogramas",
+  "timelineStackScenesHint": "Todos los fotogramas de las escenas elegidas usan el mismo orden. Al reordenar aquí, se aplica a todas ellas.",
+  "timelineStackAllFramesHint": "Todos los fotogramas de todas las escenas usan el mismo orden. Al reordenar aquí, se aplica a todas las escenas.",
+  "timelineStackRangesTakePriority": "Los fotogramas dentro de un rango mantienen el orden de ese rango.",
+  "timelineStackRangeLabel": "F{start}–F{end}",
+  "@timelineStackRangeLabel": {
+    "placeholders": {
+      "start": {
+        "type": "int"
+      },
+      "end": {
+        "type": "int"
+      }
+    }
+  },
+  "timelineStackRangeAdd": "Añadir un rango en F{n}",
+  "@timelineStackRangeAdd": {
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
+  },
+  "timelineStackRangeHint": "Solo los fotogramas de un rango usan el orden definido aquí; fuera de los rangos se usa el orden de toda la escena.",
+  "timelineStackRangeEmpty": "Aún no hay rangos. Usa el botón de arriba para crear uno en el fotograma actual.",
+  "timelineStackRangeOrderHint": "Orden de apilado de {range} (más arriba, más delante). Arrastra el asa o usa las flechas para reordenar.",
+  "@timelineStackRangeOrderHint": {
+    "placeholders": {
+      "range": {
+        "type": "String"
+      }
+    }
+  },
+  "timelineStackRangeDelete": "Eliminar este rango",
   "timelineAddMaterialTooltip": "Añadir material",
   "timelineMaterialRowLabel": "Fila",
   "timelineMaterialNewRow": "Nueva fila",
@@ -2040,19 +2077,9 @@
   "timelineMaskInvert": "Invertir (ocultar el interior)",
   "timelineMaskHint": "Muestra solo lo que está dentro de la máscara. Inviértela para ocultar el interior.",
   "timelineStackOrderHint": "Los elementos más arriba se muestran delante. Arrastra el asa o usa las flechas para reordenar.",
-  "timelineStackScopeScene": "Toda la escena",
-  "timelineStackScopeFromFrame": "Desde F{n}",
-  "@timelineStackScopeFromFrame": {
-    "placeholders": {
-      "n": {
-        "type": "int"
-      }
-    }
-  },
+  "timelineStackScopeScene": "Toda la escena actual",
   "timelineStackFrameUnit": "Fotograma (dibujo)",
-  "timelineStackChangesLabel": "Fotogramas donde cambia el orden",
   "timelineStackResetScene": "Volver al orden predeterminado",
-  "timelineStackRemoveChange": "Quitar este cambio",
   "timelineStackFrameMaskTitle": "Máscara del fotograma (dibujo)",
   "timelineStackFrameMaskHint": "Recorta solo el dibujo; no afecta al texto, las imágenes ni el vídeo. El dibujo no se oculta mientras dibujas en el lienzo.",
   "timelineStackMoveUp": "Traer adelante",

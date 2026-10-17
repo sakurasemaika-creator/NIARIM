@@ -467,7 +467,7 @@
   "helpPressureCurveTitle": "笔压曲线",
   "helpPressureCurveDesc": "笔输入设置中的功能，可通过图表自由调整实际笔压强度与画笔粗细・不透明度反映方式之间的关系。无论是希望轻压也能画出粗线的人，还是相反希望必须用力按压才会变粗的人，都能根据自己的用笔习惯细致自定义画感。更改设置后可当场试写确认效果。",
   "helpTimelineTitle": "时间轴",
-  "helpTimelineDesc": "管理动画时间轴的画面。将帧（单张静止图像）排列并像翻页动画一样播放，就形成了动画。文字・图片・视频・音频素材轨道、公共图层轨道、摄像机关键帧也都在同一条时间轴上管理。文字・图片・视频与帧插画之间的前后关系可在「叠放顺序」中按整个场景或从任意帧开始调整。",
+  "helpTimelineDesc": "管理动画时间轴的画面。将帧（单张静止图像）排列并像翻页动画一样播放，就形成了动画。文字・图片・视频・音频素材轨道、公共图层轨道、摄像机关键帧也都在同一条时间轴上管理。文字・图片・视频与帧插画之间的前后关系可在「叠放顺序」中按整个场景或指定的帧范围调整。",
   "helpSceneTitle": "场景",
   "helpSceneDesc": "将一个项目（一段视频）内部按场景（分镜）划分管理的功能。文件夹是以项目为单位进行整理，而场景则用于表现一段视频内部的场景转换。在时间轴的场景标签中可以新增、复制、删除、重命名、重新排序场景。切换到多选模式后，还可以一次性移动、复制或删除多个场景。",
   "helpCameraKeyframeTitle": "摄像机关键帧",
@@ -1974,6 +1974,43 @@
   "timelineEffectFilterLabel": "演出滤镜",
   "timelineAddCameraKfTooltip": "添加相机关键帧",
   "timelineAddWatermarkTooltip": "＋水印",
+  "timelineStackScopeRange": "帧范围",
+  "timelineStackTargetLabel": "此叠放顺序用于",
+  "timelineStackTargetScenes": "多选场景",
+  "timelineStackTargetAllFrames": "所有帧",
+  "timelineStackScenesHint": "所选场景的所有帧使用相同的顺序。在这里调整后，所选的全部场景都会使用该顺序。",
+  "timelineStackAllFramesHint": "所有场景的所有帧使用相同的顺序。在这里调整后，所有场景都会使用该顺序。",
+  "timelineStackRangesTakePriority": "指定了帧范围的帧优先使用该范围的顺序。",
+  "timelineStackRangeLabel": "F{start}～F{end}",
+  "@timelineStackRangeLabel": {
+    "placeholders": {
+      "start": {
+        "type": "int"
+      },
+      "end": {
+        "type": "int"
+      }
+    }
+  },
+  "timelineStackRangeAdd": "在F{n}添加范围",
+  "@timelineStackRangeAdd": {
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
+  },
+  "timelineStackRangeHint": "只有指定范围内的帧使用这里排列的顺序，范围外使用整个场景的顺序。",
+  "timelineStackRangeEmpty": "还没有范围。用上面的按钮可在当前帧创建。",
+  "timelineStackRangeOrderHint": "{range}的叠放顺序（越靠上越在前）。拖动手柄或使用箭头调整顺序。",
+  "@timelineStackRangeOrderHint": {
+    "placeholders": {
+      "range": {
+        "type": "String"
+      }
+    }
+  },
+  "timelineStackRangeDelete": "删除此范围",
   "timelineAddMaterialTooltip": "添加素材",
   "timelineMaterialRowLabel": "所在行",
   "timelineMaterialNewRow": "新行",
@@ -2040,19 +2077,9 @@
   "timelineMaskInvert": "反转（隐藏内侧）",
   "timelineMaskHint": "只显示蒙版内侧。反转后改为隐藏内侧。",
   "timelineStackOrderHint": "越靠上越显示在前面。拖动手柄或使用箭头调整顺序。",
-  "timelineStackScopeScene": "整个场景",
-  "timelineStackScopeFromFrame": "从F{n}开始",
-  "@timelineStackScopeFromFrame": {
-    "placeholders": {
-      "n": {
-        "type": "int"
-      }
-    }
-  },
+  "timelineStackScopeScene": "当前整个场景",
   "timelineStackFrameUnit": "帧（插画）",
-  "timelineStackChangesLabel": "中途改变顺序的帧",
   "timelineStackResetScene": "恢复默认顺序",
-  "timelineStackRemoveChange": "取消此更改",
   "timelineStackFrameMaskTitle": "帧（插画）蒙版",
   "timelineStackFrameMaskHint": "只裁切绘制的画面，不影响文字、图片和视频。在画布上绘制时不会被隐藏。",
   "timelineStackMoveUp": "上移一层",

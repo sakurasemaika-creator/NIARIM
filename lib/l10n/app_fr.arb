@@ -467,7 +467,7 @@
   "helpPressureCurveTitle": "Courbe de pression",
   "helpPressureCurveDesc": "Une fonctionnalité des réglages de saisie au stylet qui permet d'ajuster librement, via un graphique, la relation entre la pression réelle du stylet et son effet sur la taille et l'opacité du pinceau. Que vous vouliez des lignes épaisses même avec une légère pression, ou l'inverse — nécessitant une pression ferme pour obtenir des lignes épaisses —, vous pouvez personnaliser finement la sensation pour l'adapter à vos habitudes. Vous pouvez essayer de dessiner directement pour vérifier l'effet après avoir modifié les réglages.",
   "helpTimelineTitle": "Chronologie",
-  "helpTimelineDesc": "L'écran de gestion de l'axe temporel de votre animation. Organiser des images (des images fixes individuelles) et les lire comme un folioscope crée l'animation. Les pistes de matériaux texte, image, vidéo et audio, les pistes de calques communs et les images clés de caméra sont toutes gérées sur la même chronologie. Ce qui passe devant parmi les textes, les images, les vidéos et le dessin de l'image se règle dans « Ordre d'empilement », pour toute la scène ou à partir de n'importe quelle image.",
+  "helpTimelineDesc": "L'écran de gestion de l'axe temporel de votre animation. Organiser des images (des images fixes individuelles) et les lire comme un folioscope crée l'animation. Les pistes de matériaux texte, image, vidéo et audio, les pistes de calques communs et les images clés de caméra sont toutes gérées sur la même chronologie. Ce qui passe devant parmi les textes, les images, les vidéos et le dessin de l'image se règle dans « Ordre d'empilement », pour toute la scène ou pour une plage d'images.",
   "helpSceneTitle": "Scène",
   "helpSceneDesc": "Divise l'intérieur d'un projet (une vidéo) en scènes (plans) pour les gérer séparément. Alors que les dossiers organisent au niveau du projet, les scènes représentent des changements de scène au sein d'une même vidéo. Dans l'onglet des scènes de la timeline, vous pouvez ajouter, dupliquer, supprimer, renommer et réorganiser les scènes. Passer en mode de sélection multiple permet de déplacer, dupliquer ou supprimer plusieurs scènes à la fois.",
   "helpCameraKeyframeTitle": "Image clé de caméra",
@@ -1974,6 +1974,43 @@
   "timelineEffectFilterLabel": "Filtres d'effet",
   "timelineAddCameraKfTooltip": "Ajouter une image clé de caméra",
   "timelineAddWatermarkTooltip": "+ Filigrane",
+  "timelineStackScopeRange": "Plage d'images",
+  "timelineStackTargetLabel": "Utiliser cet ordre pour",
+  "timelineStackTargetScenes": "Choisir des scènes",
+  "timelineStackTargetAllFrames": "Toutes les images",
+  "timelineStackScenesHint": "Toutes les images des scènes choisies utilisent le même ordre. Réorganiser ici l'applique à toutes.",
+  "timelineStackAllFramesHint": "Toutes les images de toutes les scènes utilisent le même ordre. Réorganiser ici l'applique à toutes les scènes.",
+  "timelineStackRangesTakePriority": "Les images d'une plage gardent l'ordre de cette plage.",
+  "timelineStackRangeLabel": "F{start}–F{end}",
+  "@timelineStackRangeLabel": {
+    "placeholders": {
+      "start": {
+        "type": "int"
+      },
+      "end": {
+        "type": "int"
+      }
+    }
+  },
+  "timelineStackRangeAdd": "Ajouter une plage à F{n}",
+  "@timelineStackRangeAdd": {
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
+  },
+  "timelineStackRangeHint": "Seules les images d'une plage utilisent l'ordre défini ici ; en dehors des plages, c'est l'ordre de toute la scène.",
+  "timelineStackRangeEmpty": "Aucune plage pour l'instant. Utilisez le bouton ci-dessus pour en créer une à l'image actuelle.",
+  "timelineStackRangeOrderHint": "Ordre d'empilement pour {range} (plus haut = devant). Faites glisser la poignée ou utilisez les flèches pour réorganiser.",
+  "@timelineStackRangeOrderHint": {
+    "placeholders": {
+      "range": {
+        "type": "String"
+      }
+    }
+  },
+  "timelineStackRangeDelete": "Supprimer cette plage",
   "timelineAddMaterialTooltip": "Ajouter un matériau",
   "timelineMaterialRowLabel": "Piste",
   "timelineMaterialNewRow": "Nouvelle piste",
@@ -2040,19 +2077,9 @@
   "timelineMaskInvert": "Inverser (masquer l'intérieur)",
   "timelineMaskHint": "N'affiche que ce qui est à l'intérieur du masque. Inversez-le pour masquer l'intérieur.",
   "timelineStackOrderHint": "Les éléments en haut de la liste passent devant. Faites glisser la poignée ou utilisez les flèches pour réorganiser.",
-  "timelineStackScopeScene": "Toute la scène",
-  "timelineStackScopeFromFrame": "À partir de F{n}",
-  "@timelineStackScopeFromFrame": {
-    "placeholders": {
-      "n": {
-        "type": "int"
-      }
-    }
-  },
+  "timelineStackScopeScene": "Toute la scène actuelle",
   "timelineStackFrameUnit": "Image (dessin)",
-  "timelineStackChangesLabel": "Images où l'ordre change",
   "timelineStackResetScene": "Revenir à l'ordre par défaut",
-  "timelineStackRemoveChange": "Supprimer ce changement",
   "timelineStackFrameMaskTitle": "Masque de l'image (dessin)",
   "timelineStackFrameMaskHint": "Ne recadre que le dessin ; le texte, les images et la vidéo ne sont pas affectés. Le dessin n'est pas masqué pendant que vous dessinez sur le canevas.",
   "timelineStackMoveUp": "Avancer",

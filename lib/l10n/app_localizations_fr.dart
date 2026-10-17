@@ -1384,7 +1384,7 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get helpTimelineDesc =>
-      'L\'écran de gestion de l\'axe temporel de votre animation. Organiser des images (des images fixes individuelles) et les lire comme un folioscope crée l\'animation. Les pistes de matériaux texte, image, vidéo et audio, les pistes de calques communs et les images clés de caméra sont toutes gérées sur la même chronologie. Ce qui passe devant parmi les textes, les images, les vidéos et le dessin de l\'image se règle dans « Ordre d\'empilement », pour toute la scène ou à partir de n\'importe quelle image.';
+      'L\'écran de gestion de l\'axe temporel de votre animation. Organiser des images (des images fixes individuelles) et les lire comme un folioscope crée l\'animation. Les pistes de matériaux texte, image, vidéo et audio, les pistes de calques communs et les images clés de caméra sont toutes gérées sur la même chronologie. Ce qui passe devant parmi les textes, les images, les vidéos et le dessin de l\'image se règle dans « Ordre d\'empilement », pour toute la scène ou pour une plage d\'images.';
 
   @override
   String get helpSceneTitle => 'Scène';
@@ -4865,6 +4865,56 @@ class AppLocalizationsFr extends AppLocalizations {
   String get timelineAddWatermarkTooltip => '+ Filigrane';
 
   @override
+  String get timelineStackScopeRange => 'Plage d\'images';
+
+  @override
+  String get timelineStackTargetLabel => 'Utiliser cet ordre pour';
+
+  @override
+  String get timelineStackTargetScenes => 'Choisir des scènes';
+
+  @override
+  String get timelineStackTargetAllFrames => 'Toutes les images';
+
+  @override
+  String get timelineStackScenesHint =>
+      'Toutes les images des scènes choisies utilisent le même ordre. Réorganiser ici l\'applique à toutes.';
+
+  @override
+  String get timelineStackAllFramesHint =>
+      'Toutes les images de toutes les scènes utilisent le même ordre. Réorganiser ici l\'applique à toutes les scènes.';
+
+  @override
+  String get timelineStackRangesTakePriority =>
+      'Les images d\'une plage gardent l\'ordre de cette plage.';
+
+  @override
+  String timelineStackRangeLabel(int start, int end) {
+    return 'F$start–F$end';
+  }
+
+  @override
+  String timelineStackRangeAdd(int n) {
+    return 'Ajouter une plage à F$n';
+  }
+
+  @override
+  String get timelineStackRangeHint =>
+      'Seules les images d\'une plage utilisent l\'ordre défini ici ; en dehors des plages, c\'est l\'ordre de toute la scène.';
+
+  @override
+  String get timelineStackRangeEmpty =>
+      'Aucune plage pour l\'instant. Utilisez le bouton ci-dessus pour en créer une à l\'image actuelle.';
+
+  @override
+  String timelineStackRangeOrderHint(String range) {
+    return 'Ordre d\'empilement pour $range (plus haut = devant). Faites glisser la poignée ou utilisez les flèches pour réorganiser.';
+  }
+
+  @override
+  String get timelineStackRangeDelete => 'Supprimer cette plage';
+
+  @override
   String get timelineAddMaterialTooltip => 'Ajouter un matériau';
 
   @override
@@ -4973,24 +5023,13 @@ class AppLocalizationsFr extends AppLocalizations {
       'Les éléments en haut de la liste passent devant. Faites glisser la poignée ou utilisez les flèches pour réorganiser.';
 
   @override
-  String get timelineStackScopeScene => 'Toute la scène';
-
-  @override
-  String timelineStackScopeFromFrame(int n) {
-    return 'À partir de F$n';
-  }
+  String get timelineStackScopeScene => 'Toute la scène actuelle';
 
   @override
   String get timelineStackFrameUnit => 'Image (dessin)';
 
   @override
-  String get timelineStackChangesLabel => 'Images où l\'ordre change';
-
-  @override
   String get timelineStackResetScene => 'Revenir à l\'ordre par défaut';
-
-  @override
-  String get timelineStackRemoveChange => 'Supprimer ce changement';
 
   @override
   String get timelineStackFrameMaskTitle => 'Masque de l\'image (dessin)';

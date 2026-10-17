@@ -1343,7 +1343,7 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get helpTimelineDesc =>
-      '애니메이션의 시간축을 관리하는 화면입니다. 프레임（정지 화면 1컷）을 나열하여 플립북처럼 재생하면 애니메이션이 됩니다. 텍스트・이미지・동영상・오디오 소재 트랙, 공통 레이어 트랙, 카메라 키프레임도 같은 타임라인에서 관리합니다. 텍스트・이미지・동영상과 프레임 일러스트의 앞뒤 관계는 「겹침 순서」에서 장면 전체 또는 프레임별로 바꿀 수 있습니다.';
+      '애니메이션의 시간축을 관리하는 화면입니다. 프레임（정지 화면 1컷）을 나열하여 플립북처럼 재생하면 애니메이션이 됩니다. 텍스트・이미지・동영상・오디오 소재 트랙, 공통 레이어 트랙, 카메라 키프레임도 같은 타임라인에서 관리합니다. 텍스트・이미지・동영상과 프레임 일러스트의 앞뒤 관계는 「겹침 순서」에서 장면 전체 또는 지정한 프레임 범위별로 바꿀 수 있습니다.';
 
   @override
   String get helpSceneTitle => '씬';
@@ -4652,6 +4652,55 @@ class AppLocalizationsKo extends AppLocalizations {
   String get timelineAddWatermarkTooltip => '＋워터마크';
 
   @override
+  String get timelineStackScopeRange => '프레임 범위';
+
+  @override
+  String get timelineStackTargetLabel => '이 겹침 순서를 쓸 곳';
+
+  @override
+  String get timelineStackTargetScenes => '장면 여러 개 선택';
+
+  @override
+  String get timelineStackTargetAllFrames => '모든 프레임';
+
+  @override
+  String get timelineStackScenesHint =>
+      '선택한 장면의 모든 프레임에 같은 순서를 씁니다. 여기서 순서를 바꾸면 선택한 장면 모두에 적용됩니다.';
+
+  @override
+  String get timelineStackAllFramesHint =>
+      '모든 장면의 모든 프레임에 같은 순서를 씁니다. 여기서 순서를 바꾸면 모든 장면에 적용됩니다.';
+
+  @override
+  String get timelineStackRangesTakePriority =>
+      '프레임 범위를 지정한 프레임은 그 범위의 순서가 우선합니다.';
+
+  @override
+  String timelineStackRangeLabel(int start, int end) {
+    return 'F$start~F$end';
+  }
+
+  @override
+  String timelineStackRangeAdd(int n) {
+    return 'F$n에 범위 추가';
+  }
+
+  @override
+  String get timelineStackRangeHint =>
+      '지정한 범위의 프레임만 여기서 정한 순서가 됩니다. 범위 밖은 장면 전체의 순서입니다.';
+
+  @override
+  String get timelineStackRangeEmpty => '범위가 없습니다. 위의 버튼으로 현재 프레임에 만들 수 있습니다.';
+
+  @override
+  String timelineStackRangeOrderHint(String range) {
+    return '$range의 겹침 순서（위일수록 앞）. 손잡이를 드래그하거나 화살표로 순서를 바꿉니다.';
+  }
+
+  @override
+  String get timelineStackRangeDelete => '이 범위 삭제';
+
+  @override
   String get timelineAddMaterialTooltip => '소재 추가';
 
   @override
@@ -4759,24 +4808,13 @@ class AppLocalizationsKo extends AppLocalizations {
       '위에 있을수록 앞에 표시됩니다. 손잡이를 드래그하거나 화살표로 순서를 바꿉니다.';
 
   @override
-  String get timelineStackScopeScene => '장면 전체';
-
-  @override
-  String timelineStackScopeFromFrame(int n) {
-    return 'F$n부터';
-  }
+  String get timelineStackScopeScene => '현재 장면 전체';
 
   @override
   String get timelineStackFrameUnit => '프레임 (일러스트)';
 
   @override
-  String get timelineStackChangesLabel => '도중에 순서를 바꾼 프레임';
-
-  @override
   String get timelineStackResetScene => '기본 순서로 되돌리기';
-
-  @override
-  String get timelineStackRemoveChange => '이 변경 취소';
 
   @override
   String get timelineStackFrameMaskTitle => '프레임 (일러스트) 마스크';

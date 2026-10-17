@@ -467,7 +467,7 @@
   "helpPressureCurveTitle": "筆壓曲線",
   "helpPressureCurveDesc": "筆輸入設定中的功能，可透過圖表自由調整實際筆壓強度與筆刷粗細・不透明度反映方式之間的關係。無論是希望輕壓也能畫出粗線的人，還是相反希望必須用力按壓才會變粗的人，都能依自己的用筆習慣細緻自訂畫感。變更設定後可當場試畫確認效果。",
   "helpTimelineTitle": "時間軸",
-  "helpTimelineDesc": "管理動畫時間軸的畫面。將影格（單張靜止影像）排列並像翻頁動畫一樣播放，就形成了動畫。文字・圖片・影片・音訊素材軌道、共用圖層軌道、攝影機關鍵影格也都在同一條時間軸上管理。文字・圖片・影片與影格插畫之間的前後關係可在「疊放順序」中依整個場景或從任意影格開始調整。",
+  "helpTimelineDesc": "管理動畫時間軸的畫面。將影格（單張靜止影像）排列並像翻頁動畫一樣播放，就形成了動畫。文字・圖片・影片・音訊素材軌道、共用圖層軌道、攝影機關鍵影格也都在同一條時間軸上管理。文字・圖片・影片與影格插畫之間的前後關係可在「疊放順序」中依整個場景或指定的影格範圍調整。",
   "helpSceneTitle": "場景",
   "helpSceneDesc": "將一個專案（一段影片）內部按場景（分鏡）劃分管理的功能。資料夾是以專案為單位進行整理，而場景則用於表現一段影片內部的場景轉換。在時間軸的場景標籤中可以新增、複製、刪除、重新命名、重新排序場景。切換到多選模式後，還可以一次性移動、複製或刪除多個場景。",
   "helpCameraKeyframeTitle": "攝影機關鍵影格",
@@ -1974,6 +1974,43 @@
   "timelineEffectFilterLabel": "演出濾鏡",
   "timelineAddCameraKfTooltip": "新增相機關鍵影格",
   "timelineAddWatermarkTooltip": "＋浮水印",
+  "timelineStackScopeRange": "影格範圍",
+  "timelineStackTargetLabel": "此疊放順序用於",
+  "timelineStackTargetScenes": "多選場景",
+  "timelineStackTargetAllFrames": "所有影格",
+  "timelineStackScenesHint": "所選場景的所有影格使用相同的順序。在這裡調整後，所選的全部場景都會使用該順序。",
+  "timelineStackAllFramesHint": "所有場景的所有影格使用相同的順序。在這裡調整後，所有場景都會使用該順序。",
+  "timelineStackRangesTakePriority": "指定了影格範圍的影格優先使用該範圍的順序。",
+  "timelineStackRangeLabel": "F{start}～F{end}",
+  "@timelineStackRangeLabel": {
+    "placeholders": {
+      "start": {
+        "type": "int"
+      },
+      "end": {
+        "type": "int"
+      }
+    }
+  },
+  "timelineStackRangeAdd": "在F{n}新增範圍",
+  "@timelineStackRangeAdd": {
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
+  },
+  "timelineStackRangeHint": "只有指定範圍內的影格使用這裡排列的順序，範圍外使用整個場景的順序。",
+  "timelineStackRangeEmpty": "還沒有範圍。用上面的按鈕可在目前影格建立。",
+  "timelineStackRangeOrderHint": "{range}的疊放順序（越靠上越在前）。拖曳把手或使用箭頭調整順序。",
+  "@timelineStackRangeOrderHint": {
+    "placeholders": {
+      "range": {
+        "type": "String"
+      }
+    }
+  },
+  "timelineStackRangeDelete": "刪除此範圍",
   "timelineAddMaterialTooltip": "新增素材",
   "timelineMaterialRowLabel": "所在列",
   "timelineMaterialNewRow": "新列",
@@ -2040,19 +2077,9 @@
   "timelineMaskInvert": "反轉（隱藏內側）",
   "timelineMaskHint": "只顯示遮罩內側。反轉後改為隱藏內側。",
   "timelineStackOrderHint": "越靠上越顯示在前面。拖曳把手或使用箭頭調整順序。",
-  "timelineStackScopeScene": "整個場景",
-  "timelineStackScopeFromFrame": "從F{n}開始",
-  "@timelineStackScopeFromFrame": {
-    "placeholders": {
-      "n": {
-        "type": "int"
-      }
-    }
-  },
+  "timelineStackScopeScene": "目前整個場景",
   "timelineStackFrameUnit": "影格（插畫）",
-  "timelineStackChangesLabel": "中途改變順序的影格",
   "timelineStackResetScene": "恢復預設順序",
-  "timelineStackRemoveChange": "取消此變更",
   "timelineStackFrameMaskTitle": "影格（插畫）遮罩",
   "timelineStackFrameMaskHint": "只裁切繪製的畫面，不影響文字、圖片和影片。在畫布上繪製時不會被隱藏。",
   "timelineStackMoveUp": "上移一層",
