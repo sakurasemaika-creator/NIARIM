@@ -2,10 +2,10 @@
 
 route_version: 2026-09-09-initial-v1
 route_state: locked
-current_id: A003
+current_id: A004
 current_status: todo
-last_completed_id: A002
-next_id: A003
+last_completed_id: A003
+next_id: A004
 discovery_current_id: DISC001
 delta_current_id: not_started
 app_baseline: 46949156156850f8e49dcd9919ca6a7eeaf3bfac
@@ -18,8 +18,9 @@ web_baseline: 2a44dd9007e4a764e489a42a70f96ac5da6b3b8a
 - 開始SHA: App `bbcb4293c37df925c15c98eaee90fafe0c58fd15`（dev_branch先端は監査stateのみの `f97451054c6b0284944f4f96154682c58646a0f1`）/ Web `ed8e5ceda0833c69d3838c3ca6bbbd8f456658a8`（同 `31042310306f7aaa15c5f85f68daa7ae74687027`）。
 - 作業branch: 両repoとも `ccr-f56ee68e-77ag7y`（このセッションのgit指示による）。dev_branchへの取り込みは人間のmerge/PR判断に委ねる。
 - 実行環境: Flutter 3.47.7 stable、Linux desktop debug build＋Xvfb＋openbox＋xdotool（実操作・実画面キャプチャ）。Android実機/エミュレータ無し（NATIVEはblocked扱い）。タッチ・マルチタッチ・筆圧の実入力は不可。
-- A001 done（製品修正 App `35d229e`）。A002 done（同 `35d229e`）。詳細はASTRA_AUDIT_STATE.md。
-- Discovery登録: DISC001（初回起動の表示言語）、DISC002（エラー記録の閲覧手段）。Baseline完了後にDISC001から消化する。
+- A001 done（製品修正 App `35d229e`）。A002 done（同 `35d229e`、2026-10-16・17にユーザー指摘で釣り合いを再調整 `7c96013`・`b928b22`）。A003 done（`d83cbe4`）。詳細はASTRA_AUDIT_STATE.md。
+- Discovery登録: DISC001（初回起動の表示言語）、DISC002（エラー記録の閲覧手段）、DISC003（オンボーディング・初回説明の再表示）。Baseline完了後にDISC001から消化する。
+- ユーザー指定（2026-10-16）：全画面で、機能・表示崩れだけでなく大きさの比率・余白の釣り合いまで評価・調整する（`docs/product-audit/HANDS_ON_UI_STANDARD.md`「画面ごとの大きさの比率・余白の釣り合い」）。各IDの表示マトリクスはPCの行をPCモードで描き、全画像を目視して釣り合いも判定する。
 - 証跡画像: 監査証跡Artifact（ASTRA_AUDIT_STATE.mdにURL）。Google Driveへのバイナリ保存は、接続ツールがbase64本文の手入力しか受け付けず実用にならないため `backup-pending`。テキストの索引のみDriveへ置く。
 
 completed_substeps:
@@ -27,18 +28,19 @@ completed_substeps:
 - A001/S5d partial-bootstrap cleanup + failure surface/retry: verified（全28段階の失敗注入テスト、実画面で失敗→再試行）。
 - A001/S5e remaining startup side effects: verified（Google SDK初期化の1回化、共有チャンネルのハンドラー所有、型の違う設定で起動不能になる不具合の修正）。
 - A001/S6 fresh/warm/corrupt real startup: verified。
-- A002 全操作・336表示マトリクス・修正・再検証: done。
+- A002 全操作・336表示マトリクス・修正・再検証: done（釣り合いの再調整を含む）。
+- A003 全操作・336表示マトリクス・独立レビュー・修正・再検証: done。
 
-current_substep: none（A003未着手）
+current_substep: none（A004未着手）
 
 remaining_substeps:
-- A003 ホーム /home・初回案内・ドロワー（申し送り：初回案内「手描きアニメーションを制作できます」は「はじめる」を押すまで再起動のたびに出る。仕様どおりか判定する）。
+- A004 プロジェクト一覧・検索・表示・ソート（申し送り：黒い背景色のカード名が読めない、詳細表示の透明な背景の市松模様、表示サイズ・並び順のメニューに今の選択が出ない、ルートのフォルダの見え方、簡体字の「收藏」の重複、空の一覧の文言、表示サイズ・並び順の保存、仏語の並び替え表示の省略、320pxの並び替えの読み上げ名）。
 
 blockers:
 - advisor blocker: none。
 - NATIVE（Android実機・低性能端末）: 実行環境なし。該当IDでblockedとして記録する。
 
-next_action: A003をRoute定義どおり実操作で監査する（初回/既訪、一覧の空/大量、PC/SP、3タブ、ドロワー全リンク、検索、起動画面へ戻る、336表示マトリクス）。
+next_action: A004をRoute定義どおり実操作で監査する（名前/タグ検索、絞込解除、名前/日時と昇降順、大/中/小/詳細表示、空結果、サムネイル失敗、同名・長名・タグ付き・お気に入り、複数階層、336表示マトリクスと釣り合い）。
 
 ## 前セッションまでのA001 substep記録（履歴）
 
