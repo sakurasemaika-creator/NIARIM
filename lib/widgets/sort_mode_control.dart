@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../l10n/app_localizations.dart';
 import '../config/font_fallback.dart';
+import 'checked_menu_item.dart';
 
 /// 「名前／更新日時」の並び替え基準プルダウンと、昇順・降順を切り替える
 /// 矢印ボタンを横に並べた共通コントロール。プロジェクト一覧・共有一覧・
@@ -38,12 +39,26 @@ class SortModeControl extends StatelessWidget {
         final compact =
             constraints.hasBoundedWidth && constraints.maxWidth < 132;
 
+        // 今の基準にチェックを付け、ボタンを覆わないよう下に開く（以前は
+        // ボタンの上に重なって開き、どちらを選んでいるかも出なかった）。
         final fieldControl = PopupMenuButton<bool>(
           tooltip: fieldLabel,
+          initialValue: sortByName,
+          position: PopupMenuPosition.under,
           onSelected: onSortByNameChanged,
           itemBuilder: (_) => [
-            PopupMenuItem(value: true, child: Text(l10n.homeSortFieldName)),
-            PopupMenuItem(value: false, child: Text(l10n.homeSortFieldUpdated)),
+            checkedMenuItem(
+              context,
+              value: true,
+              checked: sortByName,
+              label: l10n.homeSortFieldName,
+            ),
+            checkedMenuItem(
+              context,
+              value: false,
+              checked: !sortByName,
+              label: l10n.homeSortFieldUpdated,
+            ),
           ],
           child: compact
               ? SizedBox(

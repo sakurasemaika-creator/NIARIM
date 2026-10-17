@@ -6425,6 +6425,66 @@ abstract class AppLocalizations {
   /// **'＋ ボタンから新規作成'**
   String get projectListEmptyHint;
 
+  /// No description provided for @projectListNoMatchTitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'「{query}」に一致する作品はありません'**
+  String projectListNoMatchTitle(String query);
+
+  /// No description provided for @projectListNoMatchNameHint.
+  ///
+  /// In ja, this message translates to:
+  /// **'フォルダの中も含めて、名前の一部で探しています。大文字と小文字、全角と半角、カタカナとひらがなは区別しません。'**
+  String get projectListNoMatchNameHint;
+
+  /// No description provided for @projectListNoMatchTagHint.
+  ///
+  /// In ja, this message translates to:
+  /// **'フォルダの中も含めて、作品に付けたタグの一部で探しています。'**
+  String get projectListNoMatchTagHint;
+
+  /// No description provided for @projectListClearSearch.
+  ///
+  /// In ja, this message translates to:
+  /// **'検索をやめる'**
+  String get projectListClearSearch;
+
+  /// No description provided for @projectListNoFavoritesTitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'お気に入りの作品はありません'**
+  String get projectListNoFavoritesTitle;
+
+  /// No description provided for @projectListNoFavoritesHint.
+  ///
+  /// In ja, this message translates to:
+  /// **'作品やフォルダのメニューで「お気に入り登録」を選ぶと、ここに表示されます。'**
+  String get projectListNoFavoritesHint;
+
+  /// No description provided for @projectListShowAll.
+  ///
+  /// In ja, this message translates to:
+  /// **'すべて表示'**
+  String get projectListShowAll;
+
+  /// No description provided for @projectListEmptyFolderTitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'このフォルダは空です'**
+  String get projectListEmptyFolderTitle;
+
+  /// Detail row: the date the work was last changed.
+  ///
+  /// In ja, this message translates to:
+  /// **'{date}更新'**
+  String projectListUpdatedOn(String date);
+
+  /// Search results: the folder a work is in (folder names joined by " / ").
+  ///
+  /// In ja, this message translates to:
+  /// **'フォルダ：{path}'**
+  String projectListInFolder(String path);
+
   /// No description provided for @projectListOpenAction.
   ///
   /// In ja, this message translates to:

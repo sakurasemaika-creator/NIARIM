@@ -3459,6 +3459,44 @@ class AppLocalizationsJa extends AppLocalizations {
   String get projectListEmptyHint => '＋ ボタンから新規作成';
 
   @override
+  String projectListNoMatchTitle(String query) {
+    return '「$query」に一致する作品はありません';
+  }
+
+  @override
+  String get projectListNoMatchNameHint =>
+      'フォルダの中も含めて、名前の一部で探しています。大文字と小文字、全角と半角、カタカナとひらがなは区別しません。';
+
+  @override
+  String get projectListNoMatchTagHint => 'フォルダの中も含めて、作品に付けたタグの一部で探しています。';
+
+  @override
+  String get projectListClearSearch => '検索をやめる';
+
+  @override
+  String get projectListNoFavoritesTitle => 'お気に入りの作品はありません';
+
+  @override
+  String get projectListNoFavoritesHint =>
+      '作品やフォルダのメニューで「お気に入り登録」を選ぶと、ここに表示されます。';
+
+  @override
+  String get projectListShowAll => 'すべて表示';
+
+  @override
+  String get projectListEmptyFolderTitle => 'このフォルダは空です';
+
+  @override
+  String projectListUpdatedOn(String date) {
+    return '$date更新';
+  }
+
+  @override
+  String projectListInFolder(String path) {
+    return 'フォルダ：$path';
+  }
+
+  @override
   String get projectListOpenAction => '開く';
 
   @override

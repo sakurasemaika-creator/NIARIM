@@ -3475,6 +3475,44 @@ class AppLocalizationsKo extends AppLocalizations {
   String get projectListEmptyHint => '＋ 버튼으로 새로 만들기';
 
   @override
+  String projectListNoMatchTitle(String query) {
+    return '“$query”에 해당하는 작품이 없습니다';
+  }
+
+  @override
+  String get projectListNoMatchNameHint =>
+      '모든 폴더에서 이름으로 찾습니다. 대문자와 소문자, 전각과 반각은 구별하지 않습니다.';
+
+  @override
+  String get projectListNoMatchTagHint => '모든 폴더에서 작품의 태그로 찾습니다.';
+
+  @override
+  String get projectListClearSearch => '검색 지우기';
+
+  @override
+  String get projectListNoFavoritesTitle => '즐겨찾기한 작품이 없습니다';
+
+  @override
+  String get projectListNoFavoritesHint =>
+      '작품이나 폴더 메뉴에서 “즐겨찾기 등록”을 선택하면 여기에 표시됩니다.';
+
+  @override
+  String get projectListShowAll => '모두 보기';
+
+  @override
+  String get projectListEmptyFolderTitle => '이 폴더는 비어 있습니다';
+
+  @override
+  String projectListUpdatedOn(String date) {
+    return '$date 수정';
+  }
+
+  @override
+  String projectListInFolder(String path) {
+    return '폴더: $path';
+  }
+
+  @override
   String get projectListOpenAction => '열기';
 
   @override

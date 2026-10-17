@@ -166,7 +166,8 @@ void main() {
     expectNoFlutterException(tester, '名前順へ変更');
     await capture(tester, '06_home_sort_by_name');
 
-    final viewMode = find.byIcon(Icons.view_module);
+    // ボタンのアイコンは今の表示サイズを表すので、読み上げ名で探す。
+    final viewMode = find.byTooltip('表示の大きさ');
     expect(viewMode, findsOneWidget);
     await tester.tap(viewMode);
     await tester.pump(const Duration(milliseconds: 250));
@@ -190,7 +191,11 @@ void main() {
     expectNoFlutterException(tester, '検索文字入力');
     await capture(tester, '09_home_search_long_text');
 
-    final closeSearch = find.byIcon(Icons.close);
+    // 一致する作品が無いときは、空の表示にも「検索をやめる」がある。
+    final closeSearch = find.descendant(
+      of: find.byType(AppBar),
+      matching: find.byIcon(Icons.close),
+    );
     expect(closeSearch, findsOneWidget);
     await tester.tap(closeSearch);
     await tester.pump(const Duration(milliseconds: 250));

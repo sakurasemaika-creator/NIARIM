@@ -192,27 +192,9 @@ class _WidgetArtworkPickerScreenState extends State<WidgetArtworkPickerScreen> {
               }),
             )
           else ...[
-            PopupMenuButton<ProjectViewMode>(
-              icon: const Icon(Icons.view_module),
-              onSelected: (mode) => setState(() => _viewMode = mode),
-              itemBuilder: (_) => [
-                PopupMenuItem(
-                  value: ProjectViewMode.large,
-                  child: Text(l10n.homeViewModeLarge),
-                ),
-                PopupMenuItem(
-                  value: ProjectViewMode.medium,
-                  child: Text(l10n.homeViewModeMedium),
-                ),
-                PopupMenuItem(
-                  value: ProjectViewMode.small,
-                  child: Text(l10n.homeViewModeSmall),
-                ),
-                PopupMenuItem(
-                  value: ProjectViewMode.detail,
-                  child: Text(l10n.homeViewModeDetail),
-                ),
-              ],
+            ProjectViewModeMenu(
+              value: _viewMode,
+              onChanged: (mode) => setState(() => _viewMode = mode),
             ),
             IconButton(
               icon: const Icon(Icons.search),
@@ -291,6 +273,13 @@ class _WidgetArtworkPickerScreenState extends State<WidgetArtworkPickerScreen> {
                       showFavoritesOnly: _showFavoritesOnly,
                       searchQuery: _searchQuery,
                       showEmptyCreateHint: false,
+                      onClearSearch: () => setState(() {
+                        _isSearching = false;
+                        _searchQuery = '';
+                        _searchController.clear();
+                      }),
+                      onShowAll: () =>
+                          setState(() => _showFavoritesOnly = false),
                       onPickProject: (id) =>
                           context.push('/settings/widget/artwork/$id'),
                     ),

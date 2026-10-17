@@ -11,6 +11,7 @@ import 'package:niarim/app_bootstrap.dart';
 import 'package:niarim/engine/tile_manager.dart';
 import 'package:niarim/l10n/app_localizations.dart';
 import 'package:niarim/router.dart';
+import 'package:niarim/screens/home/widgets/project_list_widget.dart';
 import 'package:niarim/services/frame_thumbnail_renderer.dart';
 import 'package:niarim/services/home_widget_service.dart';
 import 'package:niarim/services/project_service.dart';
@@ -254,7 +255,7 @@ void main() {
     // 並び替え・表示方法・検索・お気に入り絞込のコントロールが
     // ここでも使えることを確認する（プロジェクトタブからの流用）。
     expect(find.byType(SortModeControl), findsOneWidget);
-    expect(find.byIcon(Icons.view_module), findsOneWidget);
+    expect(find.byType(ProjectViewModeMenu), findsOneWidget);
     expect(find.byIcon(Icons.search), findsOneWidget);
     expect(find.text(l10n.homeFavoritesOnly), findsOneWidget);
     expect(find.text('ウィジェットテスト用作品'), findsOneWidget);

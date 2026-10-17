@@ -10,11 +10,15 @@ class EmptyStatePlaceholder extends StatelessWidget {
   final String title;
   final String? hint;
 
+  /// 次にできること（絞り込みを外す等）のボタン。
+  final Widget? action;
+
   const EmptyStatePlaceholder({
     super.key,
     required this.icon,
     required this.title,
     this.hint,
+    this.action,
   });
 
   @override
@@ -57,6 +61,7 @@ class EmptyStatePlaceholder extends StatelessWidget {
                 style: TextStyle(color: scheme.onSurfaceVariant, fontSize: 14),
               ),
             ],
+            if (action != null) ...[const SizedBox(height: 16), action!],
           ],
         ),
       ),

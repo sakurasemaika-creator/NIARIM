@@ -124,6 +124,30 @@ class SettingsService extends ChangeNotifier {
     notifyListeners();
   }
 
+  // ─── ホームの作品一覧の表示サイズ・並び順 ─────────────────────────────
+  // 最後に選んだ表示サイズ（large/medium/small/detail）と並び順
+  // （nameAsc/nameDesc/updatedAsc/updatedDesc）。起動し直しても引き継ぐ
+  // （以前は毎回「中・更新日時の新しい順」に戻っていた）。未選択ならnull。
+  String? _homeViewMode;
+  String? _homeSortMode;
+
+  String? get homeViewMode => _homeViewMode;
+  String? get homeSortMode => _homeSortMode;
+
+  Future<void> setHomeViewMode(String value) async {
+    _homeViewMode = value;
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString('home_view_mode', value);
+    notifyListeners();
+  }
+
+  Future<void> setHomeSortMode(String value) async {
+    _homeSortMode = value;
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString('home_sort_mode', value);
+    notifyListeners();
+  }
+
   // ─── タイムラインモードのプレビュー欄の高さ ───────────────────────────
   // プレビュー下端のドラッグハンドルで変更できる、プレビュー欄が占める
   // 縦方向の割合（0.0〜1.0）。プロジェクトごとではなくアプリ全体で共通の
@@ -552,6 +576,8 @@ class SettingsService extends ChangeNotifier {
     _bucketFillUnderLine = prefs.readBool('bucket_fill_under_line') ?? false;
     _holdEyedropperEnabled = prefs.readBool('hold_eyedropper_enabled') ?? true;
     _holdEyedropperSeconds = prefs.readDouble('hold_eyedropper_seconds') ?? 0.5;
+    _homeViewMode = prefs.readString('home_view_mode');
+    _homeSortMode = prefs.readString('home_sort_mode');
     _timelinePreviewHeightFraction =
         prefs.readDouble('timeline_preview_height_fraction') ?? 0.42;
     _timelineTrackHeightLevel =

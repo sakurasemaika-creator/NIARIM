@@ -305,7 +305,10 @@ class NiaproSerializer {
     Uint8List pngBytes,
   ) async {
     final dir = await _projectDir(projectId);
-    final path = '${dir.path}/thumbnail.png';
+    // 作り直すたびに別の名前で保存する。画像はパスごとにキャッシュされる
+    // ので、同じ名前へ上書きすると一覧には古い絵が出続けた。
+    final path =
+        '${dir.path}/thumbnail_${DateTime.now().microsecondsSinceEpoch}.png';
     await File(path).writeAsBytes(pngBytes);
     return path;
   }

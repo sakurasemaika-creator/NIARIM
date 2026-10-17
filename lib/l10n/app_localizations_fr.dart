@@ -134,7 +134,7 @@ class AppLocalizationsFr extends AppLocalizations {
   String get homeSortFieldName => 'Nom';
 
   @override
-  String get homeSortFieldUpdated => 'Mis à jour';
+  String get homeSortFieldUpdated => 'Modifié';
 
   @override
   String get homeSortDirectionAscTooltip =>
@@ -3626,6 +3626,45 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get projectListEmptyHint => 'Appuyez sur + pour en créer un';
+
+  @override
+  String projectListNoMatchTitle(String query) {
+    return 'Aucun résultat pour « $query »';
+  }
+
+  @override
+  String get projectListNoMatchNameHint =>
+      'Recherche dans les noms de tous les dossiers, sans distinguer majuscules et minuscules ni caractères pleine et demi-chasse.';
+
+  @override
+  String get projectListNoMatchTagHint =>
+      'Recherche dans les étiquettes des œuvres de tous les dossiers.';
+
+  @override
+  String get projectListClearSearch => 'Effacer la recherche';
+
+  @override
+  String get projectListNoFavoritesTitle => 'Aucun favori ici';
+
+  @override
+  String get projectListNoFavoritesHint =>
+      'Choisissez « Ajouter aux favoris » dans le menu d’une œuvre ou d’un dossier pour l’afficher ici.';
+
+  @override
+  String get projectListShowAll => 'Tout afficher';
+
+  @override
+  String get projectListEmptyFolderTitle => 'Ce dossier est vide';
+
+  @override
+  String projectListUpdatedOn(String date) {
+    return 'Modifié le $date';
+  }
+
+  @override
+  String projectListInFolder(String path) {
+    return 'Dans $path';
+  }
 
   @override
   String get projectListOpenAction => 'Ouvrir';

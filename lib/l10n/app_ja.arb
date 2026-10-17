@@ -1587,6 +1587,39 @@
   "projectListFolderHint": "同じ作品の複数話数やシリーズをまとめる場合にも使えます",
   "projectListEmptyTitle": "プロジェクトがありません",
   "projectListEmptyHint": "＋ ボタンから新規作成",
+  "projectListNoMatchTitle": "「{query}」に一致する作品はありません",
+  "@projectListNoMatchTitle": {
+    "placeholders": {
+      "query": {
+        "type": "String"
+      }
+    }
+  },
+  "projectListNoMatchNameHint": "フォルダの中も含めて、名前の一部で探しています。大文字と小文字、全角と半角、カタカナとひらがなは区別しません。",
+  "projectListNoMatchTagHint": "フォルダの中も含めて、作品に付けたタグの一部で探しています。",
+  "projectListClearSearch": "検索をやめる",
+  "projectListNoFavoritesTitle": "お気に入りの作品はありません",
+  "projectListNoFavoritesHint": "作品やフォルダのメニューで「お気に入り登録」を選ぶと、ここに表示されます。",
+  "projectListShowAll": "すべて表示",
+  "projectListEmptyFolderTitle": "このフォルダは空です",
+  "projectListUpdatedOn": "{date}更新",
+  "@projectListUpdatedOn": {
+    "description": "Detail row: the date the work was last changed.",
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "projectListInFolder": "フォルダ：{path}",
+  "@projectListInFolder": {
+    "description": "Search results: the folder a work is in (folder names joined by \" / \").",
+    "placeholders": {
+      "path": {
+        "type": "String"
+      }
+    }
+  },
   "projectListOpenAction": "開く",
   "projectListCreateShareAction": ".niashareを作成",
   "projectListEditFolderAction": "名前・色を編集",

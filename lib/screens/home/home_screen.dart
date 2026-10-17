@@ -23,6 +23,7 @@ import '../../services/font_service.dart';
 import '../../services/performance_service.dart';
 import '../../services/project_service.dart';
 import '../../services/settings_service.dart';
+import '../../utils/name_collation.dart';
 import '../../services/share_intent_service.dart';
 import '../../services/shortcut_service.dart';
 import '../../services/work_folder_service.dart';
@@ -119,11 +120,18 @@ class _HomeScreenState extends State<HomeScreen>
         });
       }
     });
-    // 低スペック端末では小表示を自動推奨する。ユーザーが表示切替
-    // メニューからいつでも変更できる初期値としてのみ適用する。
-    if (context.read<PerformanceService>().qualityLevel == QualityLevel.low) {
+    // 最後に選んだ表示サイズ・並び順を引き継ぐ。表示サイズを選んだことが
+    // 無ければ、低スペック端末では小表示を初期値にする。
+    final settings = context.read<SettingsService>();
+    final savedView = ProjectViewMode.values.asNameMap()[settings.homeViewMode];
+    if (savedView != null) {
+      _viewMode = savedView;
+    } else if (context.read<PerformanceService>().qualityLevel ==
+        QualityLevel.low) {
       _viewMode = ProjectViewMode.small;
     }
+    _sortMode =
+        ProjectSortMode.values.asNameMap()[settings.homeSortMode] ?? _sortMode;
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _checkFirstLaunch();
       _initShareIntentHandling();
@@ -257,26 +265,29 @@ class _HomeScreenState extends State<HomeScreen>
       _sortMode == ProjectSortMode.nameAsc ||
       _sortMode == ProjectSortMode.updatedAsc;
 
+  void _setSortMode(ProjectSortMode mode) {
+    setState(() => _sortMode = mode);
+    context.read<SettingsService>().setHomeSortMode(mode.name);
+  }
+
   void _setSortByName(bool byName) {
-    setState(() {
-      _sortMode = byName
+    _setSortMode(
+      byName
           ? (_sortAscending
                 ? ProjectSortMode.nameAsc
                 : ProjectSortMode.nameDesc)
           : (_sortAscending
                 ? ProjectSortMode.updatedAsc
-                : ProjectSortMode.updatedDesc);
-    });
+                : ProjectSortMode.updatedDesc),
+    );
   }
 
   void _toggleSortDirection() {
-    setState(() {
-      _sortMode = switch (_sortMode) {
-        ProjectSortMode.nameAsc => ProjectSortMode.nameDesc,
-        ProjectSortMode.nameDesc => ProjectSortMode.nameAsc,
-        ProjectSortMode.updatedAsc => ProjectSortMode.updatedDesc,
-        ProjectSortMode.updatedDesc => ProjectSortMode.updatedAsc,
-      };
+    _setSortMode(switch (_sortMode) {
+      ProjectSortMode.nameAsc => ProjectSortMode.nameDesc,
+      ProjectSortMode.nameDesc => ProjectSortMode.nameAsc,
+      ProjectSortMode.updatedAsc => ProjectSortMode.updatedDesc,
+      ProjectSortMode.updatedDesc => ProjectSortMode.updatedAsc,
     });
   }
 
@@ -537,28 +548,14 @@ class _HomeScreenState extends State<HomeScreen>
                           ),
                           onPressed: _pasteClipboard,
                         ),
-                      PopupMenuButton<ProjectViewMode>(
-                        icon: const Icon(Icons.view_module),
-                        tooltip: l10n.homeViewModeTooltip,
-                        onSelected: (mode) => setState(() => _viewMode = mode),
-                        itemBuilder: (_) => [
-                          PopupMenuItem(
-                            value: ProjectViewMode.large,
-                            child: Text(l10n.homeViewModeLarge),
-                          ),
-                          PopupMenuItem(
-                            value: ProjectViewMode.medium,
-                            child: Text(l10n.homeViewModeMedium),
-                          ),
-                          PopupMenuItem(
-                            value: ProjectViewMode.small,
-                            child: Text(l10n.homeViewModeSmall),
-                          ),
-                          PopupMenuItem(
-                            value: ProjectViewMode.detail,
-                            child: Text(l10n.homeViewModeDetail),
-                          ),
-                        ],
+                      ProjectViewModeMenu(
+                        value: _viewMode,
+                        onChanged: (mode) {
+                          setState(() => _viewMode = mode);
+                          context.read<SettingsService>().setHomeViewMode(
+                            mode.name,
+                          );
+                        },
                       ),
                       IconButton(
                         icon: const Icon(Icons.search),
@@ -726,6 +723,10 @@ class _HomeScreenState extends State<HomeScreen>
                                   currentFolderId: _currentFolderId,
                                   onOpenFolder: (id) =>
                                       setState(() => _currentFolderId = id),
+                                  onClearSearch: _closeSearch,
+                                  onShowAll: () => setState(
+                                    () => _showFavoritesOnly = false,
+                                  ),
                                 ),
                               ),
                             ],
@@ -870,7 +871,9 @@ class _HomeScreenState extends State<HomeScreen>
   void _selectAllInCurrentFolder() {
     final service = context.read<ProjectService>();
     final visible = ProjectListWidget.visibleEntryIds(
-      projects: service.projects,
+      // 一覧と同じく、「共有」から取り込んだ作品は含めない（含めていたため、
+      // 全選択→削除で見えていない共有の作品までゴミ箱へ移っていた）。
+      projects: service.projects.where((p) => !p.isSharedImport).toList(),
       folders: service.folders,
       currentFolderId: _currentFolderId,
       searchQuery: _isSearching ? _searchQuery : '',
@@ -1390,11 +1393,14 @@ class _TrashScreenState extends State<TrashScreen> {
 /// ・プロジェクト一覧のいずれでも同じ基準（名前／更新日時）で並び替える。
 List<Project> _sortProjects(List<Project> projects, ProjectSortMode mode) {
   final list = List<Project>.from(projects);
+  // 名前は1件につき1回だけそろえる。
+  final keys = <String, NameSortKey>{};
+  NameSortKey key(Project p) => keys[p.id] ??= NameSortKey(p.name);
   switch (mode) {
     case ProjectSortMode.nameAsc:
-      list.sort((a, b) => a.name.compareTo(b.name));
+      list.sort((a, b) => compareNameKeys(key(a), key(b)));
     case ProjectSortMode.nameDesc:
-      list.sort((a, b) => b.name.compareTo(a.name));
+      list.sort((a, b) => compareNameKeys(key(b), key(a)));
     case ProjectSortMode.updatedAsc:
       list.sort((a, b) => a.updatedAt.compareTo(b.updatedAt));
     case ProjectSortMode.updatedDesc:

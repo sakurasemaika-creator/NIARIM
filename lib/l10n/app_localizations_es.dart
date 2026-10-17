@@ -3631,6 +3631,45 @@ class AppLocalizationsEs extends AppLocalizations {
   String get projectListEmptyHint => 'Toca + para crear uno nuevo';
 
   @override
+  String projectListNoMatchTitle(String query) {
+    return 'Nada coincide con «$query»';
+  }
+
+  @override
+  String get projectListNoMatchNameHint =>
+      'Se buscan los nombres en todas las carpetas. No se distinguen mayúsculas de minúsculas ni caracteres de ancho completo de los de medio ancho.';
+
+  @override
+  String get projectListNoMatchTagHint =>
+      'Se buscan las etiquetas de las obras en todas las carpetas.';
+
+  @override
+  String get projectListClearSearch => 'Borrar búsqueda';
+
+  @override
+  String get projectListNoFavoritesTitle => 'No hay favoritos aquí';
+
+  @override
+  String get projectListNoFavoritesHint =>
+      'Elige «Añadir a favoritos» en el menú de una obra o carpeta para verla aquí.';
+
+  @override
+  String get projectListShowAll => 'Mostrar todo';
+
+  @override
+  String get projectListEmptyFolderTitle => 'Esta carpeta está vacía';
+
+  @override
+  String projectListUpdatedOn(String date) {
+    return 'Actualizado: $date';
+  }
+
+  @override
+  String projectListInFolder(String path) {
+    return 'En $path';
+  }
+
+  @override
   String get projectListOpenAction => 'Abrir';
 
   @override

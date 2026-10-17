@@ -5,6 +5,8 @@ import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:niarim/app.dart';
 import 'package:niarim/app_bootstrap.dart';
+import 'package:niarim/engine/niapro_serializer.dart';
+import 'package:niarim/models/project.dart';
 import 'package:niarim/router.dart';
 import 'package:niarim/screens/home/widgets/home_drawer.dart';
 import 'package:niarim/screens/home/widgets/project_list_widget.dart';
@@ -152,6 +154,38 @@ void main() {
     expect(find.byType(TextField), findsOneWidget);
     await ctrlA(tester);
     expect(find.text('1件選択中'), findsOneWidget, reason: '隠れたP1は選ばない');
+  });
+
+  testWidgets('select-all leaves out works received through Share', (
+    tester,
+  ) async {
+    await boot(tester, projects: 2, size: selectionSize);
+    // 「共有」から取り込んだ作品はプロジェクト一覧に出ないので、全選択でも
+    // 選ばない（選ぶと、見えていない作品まで一括削除の対象になる）。
+    final service = tester
+        .element(find.byType(ProjectListWidget))
+        .read<ProjectService>();
+    await tester.runAsync(
+      () => service.importSharedProject(
+        NiaproData(
+          project: Project(
+            id: 'ignored',
+            name: '受け取った作品',
+            fps: 12,
+            durationSeconds: 1,
+            backgroundColor: 0xFFFFFFFF,
+            createdAt: DateTime(2026),
+            updatedAt: DateTime(2026),
+            totalWorkSeconds: 0,
+          ),
+          scenes: const [],
+          tileData: const {},
+        ),
+      ),
+    );
+    await settle(tester);
+    await ctrlA(tester);
+    expect(find.text('2件選択中'), findsOneWidget);
   });
 
   for (final close in ['close button', 'Escape']) {
@@ -308,7 +342,7 @@ void main() {
     await settle(tester);
     expect(find.byIcon(Icons.delete), findsNothing, reason: 'selection ended');
     expect(find.byIcon(Icons.search), findsNothing, reason: 'project search');
-    expect(find.byIcon(Icons.view_module), findsNothing);
+    expect(find.byType(ProjectViewModeMenu), findsNothing);
     expect(find.byType(TextField), findsNothing, reason: 'search closed');
     await tester.tap(find.text('プロジェクト'));
     await settle(tester);

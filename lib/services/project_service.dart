@@ -2350,15 +2350,22 @@ class ProjectService extends ChangeNotifier {
 
   /// 非同期保存（エラーはサイレントに無視）
   void _saveAsync(String projectId) {
+    _saveReportingSuccess(projectId);
+  }
+
+  /// [_saveAsync]と同じ保存。保存できたかを返す（失敗しても例外にしない）。
+  Future<bool> _saveReportingSuccess(String projectId) {
     final project = _projects.where((p) => p.id == projectId).firstOrNull;
     final scenes = _scenes[projectId];
     final tm = _tileManagers[projectId];
-    if (project == null || scenes == null || tm == null) return;
-    NiaproSerializer.save(
+    if (project == null || scenes == null || tm == null) {
+      return Future.value(false);
+    }
+    return NiaproSerializer.save(
       project: project,
       scenes: scenes,
       tileManager: tm,
-    ).catchError((_) => File(''));
+    ).then((_) => true, onError: (Object _) => false);
   }
 
   /// 明示的保存（タイムライン・セーブツリーから呼び出す）
@@ -2659,20 +2666,28 @@ class ProjectService extends ChangeNotifier {
     final tw = (w * scale).round().clamp(1, thumbMax);
     final th = (h * scale).round().clamp(1, thumbMax);
 
+    final layers = layersOf(projectId, scene.id, frame.index);
     final fullImage = await LayerCompositor.composite(
       tm,
-      layersOf(projectId, scene.id, frame.index),
+      layers,
       (l) => tileKeyFor(projectId, scene.id, frame.index, l.id),
       w,
       h,
+      // 加算・スクリーン等のレイヤーは用紙（背景色）にも効くので、そのときは
+      // 背景色を敷いてから合成する（キャンバスと同じ見え方にする）。
+      paperColor: LayerCompositor.paperForBlendModes(
+        layers,
+        _projects[idx].backgroundColor,
+      ),
     );
     final recorder = ui.PictureRecorder();
     final canvas = ui.Canvas(recorder);
+    // 補間して縮める（補間しないと細い線が点線になった）。
     canvas.drawImageRect(
       fullImage,
       ui.Rect.fromLTWH(0, 0, w.toDouble(), h.toDouble()),
       ui.Rect.fromLTWH(0, 0, tw.toDouble(), th.toDouble()),
-      ui.Paint(),
+      ui.Paint()..filterQuality = ui.FilterQuality.medium,
     );
     fullImage.dispose();
     final picture = recorder.endRecording();
@@ -2691,9 +2706,24 @@ class ProjectService extends ChangeNotifier {
     );
     final curIdx = _projects.indexWhere((p) => p.id == projectId);
     if (curIdx < 0) return;
+    final previous = _projects[curIdx].thumbnailPath;
     _projects[curIdx] = _projects[curIdx].copyWith(thumbnailPath: path);
-    _saveAsync(projectId);
+    final saved = _saveReportingSuccess(projectId);
     notifyListeners();
+    // 前のサムネイルは、新しいパスを保存し終えてから、ほかの作品（複製した
+    // 作品はサムネイルを共有する）が使っていなければ消す（保存の前に消すと、
+    // 保存が終わる前にアプリを閉じたとき、保存済みのデータが消えたファイルを
+    // 指したままになる）。
+    if (await saved &&
+        previous != null &&
+        previous != path &&
+        ![..._projects, ..._trash].any((p) => p.thumbnailPath == previous)) {
+      try {
+        await File(previous).delete();
+      } on FileSystemException {
+        // 既に無い。
+      }
+    }
   }
 
   /// [parentFolderId]を指定すると、そのフォルダの子フォルダとして作成する

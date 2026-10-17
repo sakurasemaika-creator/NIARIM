@@ -24,19 +24,19 @@ class AppLocalizationsZh extends AppLocalizations {
   String get homeTabWorks => '作品列表';
 
   @override
-  String get homeTabBookmarked => '已收藏';
+  String get homeTabBookmarked => '书签';
 
   @override
-  String get homeBookmarkedEmptyTitle => '还没有收藏的作品';
+  String get homeBookmarkedEmptyTitle => '还没有加入书签的作品';
 
   @override
-  String get homeBookmarkedEmptyBody => '在作品广场收藏的作品会显示在这里。';
+  String get homeBookmarkedEmptyBody => '在作品广场加入书签的作品会显示在这里。';
 
   @override
-  String get homeBookmarkedHiddenTitle => '收藏的作品目前未显示';
+  String get homeBookmarkedHiddenTitle => '加入书签的作品目前未显示';
 
   @override
-  String get homeBookmarkedHiddenBody => '这些作品被作品广场的显示筛选隐藏了，或已不再公开。收藏仍然保留。';
+  String get homeBookmarkedHiddenBody => '这些作品被作品广场的显示筛选隐藏了，或已不再公开。书签仍然保留。';
 
   @override
   String get homeBookmarkedOpenPlaza => '查看作品广场';
@@ -1442,7 +1442,7 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get helpCommunityDesc =>
-      '可以将动画・插画作品以YouTube视频的形式发布到社区，并浏览其他用户的作品。可以切换「最新」「排行榜」「关注」三个标签页，也可以按作品标题或投稿者名称搜索。切换到标签搜索模式后可按标签筛选作品，标签不仅投稿者本人，其他用户也可以自由添加或删除（投稿者锁定的标签只能由投稿者本人解锁），点击标签即可筛选出相同标签的作品。点击作品卡片会打开可拖动、可调整大小的悬浮预览窗口，可以在继续操作其他画面的同时观看。点击「查看详情」按钮可打开作品详情画面（投稿者、发布日期、标签编辑、收藏、转发等）。点击投稿者名称旁的「关注」按钮即可将其加入关注列表，「关注」标签页会按时间顺序汇总显示该作者的作品。有人关注你时，会显示在画面右上角铃铛图标的通知列表中。你可以分别设置自己的关注列表/粉丝列表是否对所有用户公开（默认非公开），也可以查看已公开的其他用户的列表。除自己发布的作品外，都可以用「转发」按钮转发；当关注的作者转发了他人的作品时，该作品也会以「发布日期」和「转发日期」中较新的一方为基准，混入「关注」标签页中显示（卡片上会显示「○○转发了」）。收藏的作品会汇总显示在主页的「已收藏」标签页中，也可以在投稿者作品列表画面的「收藏」标签页中查看。可以设置自己的收藏列表是否对其他用户公开（默认不公开），也可以查看已设为公开的其他用户的收藏列表。对不当作品可以附上理由进行举报，举报提交后会询问你是否要屏蔽该投稿者。竖屏视频可以在「竖屏模式」中连续播放观看。每日可发布的作品数量有上限，免费会员每天1个，高级会员每天3个。点击画面右上角的显示筛选按钮（带斜线的眼睛图标），可以隐藏不想看到的作品。除了可以隐藏「包含生成式 AI 图像或视频」的作品外，还可以用逗号、顿号或换行分隔，登记只匹配作品标题的静音标题，以及只匹配作品在作品广场中所设标签的静音标签（开头的 # 会被忽略）。这些筛选适用于「最新」「排行榜」「关注」（含转发）、竖屏模式、投稿者页面、作品详情和收藏。「包含生成式 AI 图像或视频」由投稿者在发布时自行声明，发布后也只有投稿者本人可以更改（可在「我的投稿」或作品详情画面中更改）。';
+      '可以将动画・插画作品以YouTube视频的形式发布到社区，并浏览其他用户的作品。可以切换「最新」「排行榜」「关注」三个标签页，也可以按作品标题或投稿者名称搜索。切换到标签搜索模式后可按标签筛选作品，标签不仅投稿者本人，其他用户也可以自由添加或删除（投稿者锁定的标签只能由投稿者本人解锁），点击标签即可筛选出相同标签的作品。点击作品卡片会打开可拖动、可调整大小的悬浮预览窗口，可以在继续操作其他画面的同时观看。点击「查看详情」按钮可打开作品详情画面（投稿者、发布日期、标签编辑、书签、转发等）。点击投稿者名称旁的「关注」按钮即可将其加入关注列表，「关注」标签页会按时间顺序汇总显示该作者的作品。有人关注你时，会显示在画面右上角铃铛图标的通知列表中。你可以分别设置自己的关注列表/粉丝列表是否对所有用户公开（默认非公开），也可以查看已公开的其他用户的列表。除自己发布的作品外，都可以用「转发」按钮转发；当关注的作者转发了他人的作品时，该作品也会以「发布日期」和「转发日期」中较新的一方为基准，混入「关注」标签页中显示（卡片上会显示「○○转发了」）。加入书签的作品会汇总显示在主页的「书签」标签页中，也可以在投稿者作品列表画面的「书签」标签页中查看。可以设置自己的书签列表是否对其他用户公开（默认不公开），也可以查看已设为公开的其他用户的书签列表。对不当作品可以附上理由进行举报，举报提交后会询问你是否要屏蔽该投稿者。竖屏视频可以在「竖屏模式」中连续播放观看。每日可发布的作品数量有上限，免费会员每天1个，高级会员每天3个。点击画面右上角的显示筛选按钮（带斜线的眼睛图标），可以隐藏不想看到的作品。除了可以隐藏「包含生成式 AI 图像或视频」的作品外，还可以用逗号、顿号或换行分隔，登记只匹配作品标题的静音标题，以及只匹配作品在作品广场中所设标签的静音标签（开头的 # 会被忽略）。这些筛选适用于「最新」「排行榜」「关注」（含转发）、竖屏模式、投稿者页面、作品详情和书签。「包含生成式 AI 图像或视频」由投稿者在发布时自行声明，发布后也只有投稿者本人可以更改（可在「我的投稿」或作品详情画面中更改）。';
 
   @override
   String get helpWatermarkEntryTitle => '水印';
@@ -3442,6 +3442,42 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get projectListEmptyHint => '点击「＋」新建';
+
+  @override
+  String projectListNoMatchTitle(String query) {
+    return '没有与“$query”匹配的作品';
+  }
+
+  @override
+  String get projectListNoMatchNameHint => '正在所有文件夹中按名称搜索，不区分大小写和全角半角。';
+
+  @override
+  String get projectListNoMatchTagHint => '正在所有文件夹中按作品标签搜索。';
+
+  @override
+  String get projectListClearSearch => '清除搜索';
+
+  @override
+  String get projectListNoFavoritesTitle => '这里没有收藏的作品';
+
+  @override
+  String get projectListNoFavoritesHint => '在作品或文件夹的菜单中选择“加入收藏”，即可显示在这里。';
+
+  @override
+  String get projectListShowAll => '显示全部';
+
+  @override
+  String get projectListEmptyFolderTitle => '此文件夹为空';
+
+  @override
+  String projectListUpdatedOn(String date) {
+    return '$date更新';
+  }
+
+  @override
+  String projectListInFolder(String path) {
+    return '位于：$path';
+  }
 
   @override
   String get projectListOpenAction => '打开';
@@ -5714,7 +5750,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get communityRankingSortViews => '播放量';
 
   @override
-  String get communityRankingSortBookmarks => '收藏数';
+  String get communityRankingSortBookmarks => '书签数';
 
   @override
   String get communityRankingSortAscendingTooltip => '升序（从少到多）';
@@ -5735,10 +5771,10 @@ class AppLocalizationsZh extends AppLocalizations {
       'YouTube联动功能正在开发中';
 
   @override
-  String get communityWorkDetailBookmarkAdd => '收藏';
+  String get communityWorkDetailBookmarkAdd => '加入书签';
 
   @override
-  String get communityWorkDetailBookmarkRemove => '已收藏';
+  String get communityWorkDetailBookmarkRemove => '已加书签';
 
   @override
   String get communityWorkDetailReportButton => '举报';
@@ -5911,20 +5947,20 @@ class AppLocalizationsZh extends AppLocalizations {
   String get communityAuthorTabWorks => '作品';
 
   @override
-  String get communityAuthorTabBookmarks => '收藏';
+  String get communityAuthorTabBookmarks => '书签';
 
   @override
-  String get communityBookmarksPublicToggleTitle => '公开收藏列表';
+  String get communityBookmarksPublicToggleTitle => '公开书签列表';
 
   @override
   String get communityBookmarksPublicToggleDesc =>
-      '开启后，其他用户可以在此页面看到你的收藏列表。默认不公开。';
+      '开启后，其他用户可以在此页面看到你的书签列表。默认不公开。';
 
   @override
-  String get communityBookmarksPrivateNotice => '该用户已将收藏列表设为不公开。';
+  String get communityBookmarksPrivateNotice => '该用户已将书签列表设为不公开。';
 
   @override
-  String get communityBookmarksEmptyMessage => '暂无收藏的作品';
+  String get communityBookmarksEmptyMessage => '暂无加入书签的作品';
 
   @override
   String get communityShortsBadge => '竖屏';
@@ -10563,6 +10599,42 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get projectListEmptyHint => '點擊「＋」新增';
+
+  @override
+  String projectListNoMatchTitle(String query) {
+    return '沒有與「$query」相符的作品';
+  }
+
+  @override
+  String get projectListNoMatchNameHint => '正在所有資料夾中依名稱搜尋，不區分大小寫與全形半形。';
+
+  @override
+  String get projectListNoMatchTagHint => '正在所有資料夾中依作品標籤搜尋。';
+
+  @override
+  String get projectListClearSearch => '清除搜尋';
+
+  @override
+  String get projectListNoFavoritesTitle => '這裡沒有我的最愛';
+
+  @override
+  String get projectListNoFavoritesHint => '在作品或資料夾的選單中選擇「加入最愛」，即可顯示在這裡。';
+
+  @override
+  String get projectListShowAll => '顯示全部';
+
+  @override
+  String get projectListEmptyFolderTitle => '此資料夾是空的';
+
+  @override
+  String projectListUpdatedOn(String date) {
+    return '$date更新';
+  }
+
+  @override
+  String projectListInFolder(String path) {
+    return '位於：$path';
+  }
 
   @override
   String get projectListOpenAction => '開啟';

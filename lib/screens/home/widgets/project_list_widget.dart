@@ -18,6 +18,10 @@ import '../../../services/material_service.dart';
 import '../../../services/project_service.dart';
 import '../home_screen.dart';
 import '../../../config/font_fallback.dart';
+import '../../../utils/name_collation.dart';
+import '../../../widgets/frame_preview_background.dart';
+import '../../../widgets/checked_menu_item.dart';
+import '../../../widgets/empty_state_placeholder.dart';
 import '../../../widgets/scrollable_sheet_body.dart';
 
 /// 新規フォルダ作成ダイアログ（フォルダ名入力）。プロジェクト一覧画面の
@@ -76,18 +80,76 @@ void showCreateFolderNameDialog(
   );
 }
 
+/// 一覧の表示サイズ（大・中・小・詳細）を選ぶメニュー。ボタンのアイコンが
+/// 今の表示を表し、開くと今の表示にチェックが付いている（以前はどれを
+/// 選んでいるか分からなかった）。ボタンを覆わないよう、下に開く。
+class ProjectViewModeMenu extends StatelessWidget {
+  const ProjectViewModeMenu({
+    super.key,
+    required this.value,
+    required this.onChanged,
+  });
+
+  final ProjectViewMode value;
+  final ValueChanged<ProjectViewMode> onChanged;
+
+  static IconData iconFor(ProjectViewMode mode) => switch (mode) {
+    ProjectViewMode.large => Icons.grid_view,
+    ProjectViewMode.medium => Icons.view_module,
+    ProjectViewMode.small => Icons.apps,
+    ProjectViewMode.detail => Icons.view_list,
+  };
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    String label(ProjectViewMode mode) => switch (mode) {
+      ProjectViewMode.large => l10n.homeViewModeLarge,
+      ProjectViewMode.medium => l10n.homeViewModeMedium,
+      ProjectViewMode.small => l10n.homeViewModeSmall,
+      ProjectViewMode.detail => l10n.homeViewModeDetail,
+    };
+    return PopupMenuButton<ProjectViewMode>(
+      icon: Icon(iconFor(value)),
+      tooltip: l10n.homeViewModeTooltip,
+      initialValue: value,
+      position: PopupMenuPosition.under,
+      onSelected: onChanged,
+      itemBuilder: (_) => [
+        for (final mode in ProjectViewMode.values)
+          checkedMenuItem(
+            context,
+            value: mode,
+            checked: mode == value,
+            icon: iconFor(mode),
+            label: label(mode),
+          ),
+      ],
+    );
+  }
+}
+
 /// フォルダ・プロジェクトを同一一覧内で扱うための表示用ラッパー
 /// （フォルダとプロジェクトを同一一覧内で並び替え可能にする）。
 class _Entry {
   final ProjectFolder? folder;
   final Project? project;
-  const _Entry.folder(ProjectFolder f) : folder = f, project = null;
-  const _Entry.project(Project p) : project = p, folder = null;
+  // フォルダの「更新日時」：作成日時と、中（下の階層を含む）の作品の
+  // 最後の更新のうち新しい方。
+  final DateTime? _folderDate;
+  const _Entry.folder(ProjectFolder f, DateTime date)
+    : folder = f,
+      project = null,
+      _folderDate = date;
+  const _Entry.project(Project p)
+    : project = p,
+      folder = null,
+      _folderDate = null;
 
   bool get isFolder => folder != null;
   String get id => isFolder ? folder!.id : project!.id;
   String get name => isFolder ? folder!.name : project!.name;
-  DateTime get sortDate => isFolder ? folder!.createdAt : project!.updatedAt;
+  DateTime get sortDate => isFolder ? _folderDate! : project!.updatedAt;
   bool get isFavorite => isFolder ? folder!.isFavorite : project!.isFavorite;
 }
 
@@ -123,6 +185,10 @@ class ProjectListWidget extends StatelessWidget {
   // 選ぶ専用画面（[onPickProject]使用時）には＋ボタンが無いため、
   // 存在しないボタンを指す文言を隠せるようにする。
   final bool showEmptyCreateHint;
+  // 検索・お気に入りの絞り込みで何も出ないときの「検索をやめる」
+  // 「すべて表示」ボタン。nullならボタンを出さない。
+  final VoidCallback? onClearSearch;
+  final VoidCallback? onShowAll;
 
   const ProjectListWidget({
     super.key,
@@ -140,21 +206,33 @@ class ProjectListWidget extends StatelessWidget {
     this.searchByTag = false,
     this.onPickProject,
     this.showEmptyCreateHint = true,
+    this.onClearSearch,
+    this.onShowAll,
   });
 
+  /// フォルダを作品より前にまとめ、それぞれの中を[sortMode]で並べる。
+  /// 名前は人が読む順（数字は数として、大文字・小文字や全角・半角、
+  /// カタカナ・ひらがなの違いは区別しない）。
   List<_Entry> _sorted(List<_Entry> src) {
-    final list = List<_Entry>.from(src);
-    switch (sortMode) {
-      case ProjectSortMode.nameAsc:
-        list.sort((a, b) => a.name.compareTo(b.name));
-      case ProjectSortMode.nameDesc:
-        list.sort((a, b) => b.name.compareTo(a.name));
-      case ProjectSortMode.updatedAsc:
-        list.sort((a, b) => a.sortDate.compareTo(b.sortDate));
-      case ProjectSortMode.updatedDesc:
-        list.sort((a, b) => b.sortDate.compareTo(a.sortDate));
-    }
-    return list;
+    // 名前は1件につき1回だけそろえる。
+    final keys = Map<_Entry, NameSortKey>.identity();
+    NameSortKey key(_Entry e) => keys[e] ??= NameSortKey(e.name);
+    int byMode(_Entry a, _Entry b) => switch (sortMode) {
+      ProjectSortMode.nameAsc => compareNameKeys(key(a), key(b)),
+      ProjectSortMode.nameDesc => compareNameKeys(key(b), key(a)),
+      ProjectSortMode.updatedAsc => a.sortDate.compareTo(b.sortDate),
+      ProjectSortMode.updatedDesc => b.sortDate.compareTo(a.sortDate),
+    };
+    return List<_Entry>.from(src)..sort((a, b) {
+      if (a.isFolder != b.isFolder) return a.isFolder ? -1 : 1;
+      final order = byMode(a, b);
+      if (order != 0) return order;
+      // 同名・同時刻は、もう一方の基準で決める（並びが毎回変わらないように）。
+      return sortMode == ProjectSortMode.nameAsc ||
+              sortMode == ProjectSortMode.nameDesc
+          ? b.sortDate.compareTo(a.sortDate)
+          : compareNameKeys(key(a), key(b));
+    });
   }
 
   /// 一覧に実際に出ている項目のID（検索・お気に入りの絞り込み後）。
@@ -179,6 +257,29 @@ class ProjectListWidget extends StatelessWidget {
       e.id,
   };
 
+  /// フォルダごとの「更新日時」：作成日時と、中（下の階層を含む）の作品の
+  /// 最後の更新のうち新しい方。
+  static Map<String, DateTime> _folderDates(
+    List<Project> projects,
+    List<ProjectFolder> folders,
+  ) {
+    final parentOf = {for (final f in folders) f.id: f.parentFolderId};
+    final latest = {for (final f in folders) f.id: f.createdAt};
+    for (final p in projects) {
+      var id = p.folderId;
+      // 壊れたデータで親子が輪になっていても止まるように、たどったフォルダを
+      // 覚えておく。
+      final seen = <String>{};
+      while (id != null && seen.add(id)) {
+        final current = latest[id];
+        if (current == null) break;
+        if (p.updatedAt.isAfter(current)) latest[id] = p.updatedAt;
+        id = parentOf[id];
+      }
+    }
+    return latest;
+  }
+
   static List<_Entry> _visibleEntries({
     required List<Project> projects,
     required List<ProjectFolder> folders,
@@ -187,11 +288,14 @@ class ProjectListWidget extends StatelessWidget {
     required bool searchByTag,
     required bool showFavoritesOnly,
   }) {
-    final rawQuery = searchQuery.trim().toLowerCase();
+    // 大文字・小文字、全角・半角、カタカナ・ひらがなの違いを区別せずに探す。
+    final rawQuery = foldName(searchQuery).trim();
     // Accept both `tag` and `#tag` input in tag mode.
     final query = searchByTag && rawQuery.startsWith('#')
         ? rawQuery.substring(1).trimLeft()
         : rawQuery;
+    late final latest = _folderDates(projects, folders);
+    DateTime folderDate(ProjectFolder f) => latest[f.id] ?? f.createdAt;
 
     List<_Entry> entries;
     if (query.isNotEmpty) {
@@ -200,19 +304,16 @@ class ProjectListWidget extends StatelessWidget {
       // projects whose saved tags contain the query.
       if (searchByTag) {
         entries = projects
-            .where(
-              (p) =>
-                  p.tags.any((tag) => tag.trim().toLowerCase().contains(query)),
-            )
+            .where((p) => p.tags.any((tag) => nameMatches(tag.trim(), query)))
             .map((p) => _Entry.project(p))
             .toList();
       } else {
         entries = [
           ...folders
-              .where((f) => f.name.toLowerCase().contains(query))
-              .map((f) => _Entry.folder(f)),
+              .where((f) => nameMatches(f.name, query))
+              .map((f) => _Entry.folder(f, folderDate(f))),
           ...projects
-              .where((p) => p.name.toLowerCase().contains(query))
+              .where((p) => nameMatches(p.name, query))
               .map((p) => _Entry.project(p)),
         ];
       }
@@ -220,7 +321,7 @@ class ProjectListWidget extends StatelessWidget {
       entries = [
         ...folders
             .where((f) => f.parentFolderId == currentFolderId)
-            .map((f) => _Entry.folder(f)),
+            .map((f) => _Entry.folder(f, folderDate(f))),
         ...projects
             .where((p) => p.folderId == currentFolderId)
             .map((p) => _Entry.project(p)),
@@ -249,46 +350,30 @@ class ProjectListWidget extends StatelessWidget {
     final sorted = _sorted(entries);
 
     if (sorted.isEmpty) {
-      final scheme = Theme.of(context).colorScheme;
-      return Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Container(
-              width: 96,
-              height: 96,
-              decoration: BoxDecoration(
-                color: scheme.primaryContainer,
-                shape: BoxShape.circle,
-              ),
-              child: Icon(
-                Icons.movie_creation_outlined,
-                size: 44,
-                color: scheme.primary,
-              ),
-            ),
-            const SizedBox(height: 20),
-            Text(
-              l10n.projectListEmptyTitle,
-              style: TextStyle(
-                color: scheme.onSurface,
-                fontSize: 16,
-                fontWeight: FontWeight.w600,
-                fontFamily: 'Kuramubon',
-                fontFamilyFallback: kHeadingFontFallback,
-              ),
-            ),
-            if (showEmptyCreateHint) ...[
-              const SizedBox(height: 8),
-              Text(
-                l10n.projectListEmptyHint,
-                style: TextStyle(color: scheme.onSurfaceVariant, fontSize: 14),
-              ),
-            ],
-          ],
-        ),
-      );
+      // 検索とお気に入りの絞り込みを両方かけているとき、検索には当たって
+      // いてお気に入りで隠れているだけなら、お気に入りの説明を出す。
+      final hiddenByFavorites =
+          showFavoritesOnly &&
+          searchQuery.trim().isNotEmpty &&
+          _visibleEntries(
+            projects: source,
+            folders: allFolders,
+            currentFolderId: currentFolderId,
+            searchQuery: searchQuery,
+            searchByTag: searchByTag,
+            showFavoritesOnly: false,
+          ).isNotEmpty;
+      return _emptyState(l10n, hiddenByFavorites: hiddenByFavorites);
     }
+
+    final searching = searchQuery.trim().isNotEmpty;
+    final folderById = {for (final f in allFolders) f.id: f};
+    String? locationOf(_Entry e) => searching
+        ? _locationOf(
+            e.isFolder ? e.folder!.parentFolderId : e.project!.folderId,
+            folderById,
+          )
+        : null;
 
     // タブを切り替えて戻ったとき・フォルダから戻ったときに、一覧の
     // スクロール位置を元に戻す（TabBarViewは見えないタブの一覧を破棄する
@@ -301,8 +386,12 @@ class ProjectListWidget extends StatelessWidget {
       return ListView.builder(
         key: scrollKey,
         itemCount: sorted.length,
-        itemBuilder: (context, index) =>
-            _detailTile(context, l10n, sorted[index]),
+        itemBuilder: (context, index) => _detailTile(
+          context,
+          l10n,
+          sorted[index],
+          locationOf(sorted[index]),
+        ),
       );
     }
 
@@ -325,73 +414,172 @@ class ProjectListWidget extends StatelessWidget {
         childAspectRatio: 16 / 12,
       ),
       itemCount: sorted.length,
-      itemBuilder: (context, index) => _gridCard(context, sorted[index]),
+      itemBuilder: (context, index) =>
+          _gridCard(context, sorted[index], locationOf(sorted[index])),
     );
   }
 
-  /// プロジェクトカードのサムネイル。生成済みのPNGがあればそれを表示し、
-  /// 未生成・読み込み失敗の場合は背景色のプレースホルダーへフォールバックする。
+  /// 一覧が空のときの表示。検索・お気に入りの絞り込みで隠れているだけの
+  /// ときは「作品がありません」と言わず、絞り込みを外す操作を出す
+  /// （以前は検索で見つからないときも「プロジェクトがありません／＋ボタンから
+  /// 新規作成」と出ていた）。
+  Widget _emptyState(AppLocalizations l10n, {bool hiddenByFavorites = false}) {
+    final query = searchQuery.trim();
+    if (query.isNotEmpty && !hiddenByFavorites) {
+      return EmptyStatePlaceholder(
+        icon: Icons.search_off,
+        title: l10n.projectListNoMatchTitle(query),
+        hint: searchByTag
+            ? l10n.projectListNoMatchTagHint
+            : l10n.projectListNoMatchNameHint,
+        action: onClearSearch == null
+            ? null
+            : OutlinedButton.icon(
+                onPressed: onClearSearch,
+                icon: const Icon(Icons.close),
+                label: Text(l10n.projectListClearSearch),
+              ),
+      );
+    }
+    if (showFavoritesOnly) {
+      return EmptyStatePlaceholder(
+        icon: Icons.star_border,
+        title: l10n.projectListNoFavoritesTitle,
+        hint: l10n.projectListNoFavoritesHint,
+        action: onShowAll == null
+            ? null
+            : OutlinedButton(
+                onPressed: onShowAll,
+                child: Text(l10n.projectListShowAll),
+              ),
+      );
+    }
+    return EmptyStatePlaceholder(
+      icon: currentFolderId == null
+          ? Icons.movie_creation_outlined
+          : Icons.folder_open,
+      title: currentFolderId == null
+          ? l10n.projectListEmptyTitle
+          : l10n.projectListEmptyFolderTitle,
+      hint: showEmptyCreateHint ? l10n.projectListEmptyHint : null,
+    );
+  }
+
+  /// 作品の絵（一覧のカード・行）。キャンバスと同じく、絵の後ろに作品の
+  /// 背景色（透明なら市松模様）を敷き、絵全体を縦横比のまま見せる
+  /// （以前は背景を敷かずに切り抜いて出していたため、黒い背景の作品が
+  /// 白く見え、縦長の絵は上下が切れていた）。サムネイルが未生成・
+  /// 読めないときは背景色の上にアイコンを出す。
   /// [displayWidth]は表示上の論理幅。指定するとその画素数へ落として
   /// デコードする（一覧行の48px表示で、保存されている長辺200pxのまま
-  /// 画像キャッシュへ載せないため）。カード表示のように表示側の方が
-  /// 大きくなる場合は指定しない。
+  /// 画像キャッシュへ載せないため）。
   Widget _thumbnail(
     BuildContext context,
     Project project, {
     double? displayWidth,
+    double checkerSize = 6,
   }) {
-    final placeholder = Container(
-      color: Color(project.backgroundColor),
-      child: Center(
-        child: Icon(
-          Icons.image,
-          color: ThemeService.activeColorScheme.onSurface.withValues(
-            alpha: 0.38,
-          ),
-        ),
+    final background = Color(project.backgroundColor);
+    final darkPaper = background.a > 0.5 && background.computeLuminance() < 0.3;
+    final placeholder = Center(
+      child: Icon(
+        Icons.image_outlined,
+        color: darkPaper
+            ? Colors.white.withValues(alpha: 0.6)
+            : Colors.black.withValues(alpha: 0.38),
       ),
     );
     final path = project.thumbnailPath;
-    if (path == null) return placeholder;
-    return Image.file(
-      File(path),
-      fit: BoxFit.cover,
-      cacheWidth: displayWidth == null
-          ? null
-          : (displayWidth * MediaQuery.devicePixelRatioOf(context)).round(),
-      errorBuilder: (context, error, stackTrace) => placeholder,
+    return ColoredBox(
+      color: Theme.of(context).colorScheme.surfaceContainerHighest,
+      child: FramePreviewBackground(
+        backgroundColor: project.backgroundColor,
+        aspectRatio: project.exportHeight > 0
+            ? project.exportWidth / project.exportHeight
+            : null,
+        checkerSize: checkerSize,
+        child: path == null
+            ? placeholder
+            : Image.file(
+                File(path),
+                fit: BoxFit.cover,
+                cacheWidth: displayWidth == null
+                    ? null
+                    : (displayWidth * MediaQuery.devicePixelRatioOf(context))
+                          .round(),
+                errorBuilder: (context, error, stackTrace) => placeholder,
+              ),
+      ),
     );
+  }
+
+  /// 検索の結果は階層をまたぐので、どのフォルダの中にあるかを添える
+  /// （同じ名前の作品が別々のフォルダにあると見分けられなかった）。
+  static String? _locationOf(
+    String? folderId,
+    Map<String, ProjectFolder> folders,
+  ) {
+    final names = <String>[];
+    final seen = <String>{};
+    var id = folderId;
+    while (id != null && seen.add(id)) {
+      final folder = folders[id];
+      if (folder == null) break;
+      names.insert(0, folder.name);
+      id = folder.parentFolderId;
+    }
+    return names.isEmpty ? null : names.join(' / ');
   }
 
   Widget _detailTile(
     BuildContext context,
     AppLocalizations l10n,
     _Entry entry,
+    String? location,
   ) {
-    if (entry.isFolder) return _folderDetailTile(context, entry.folder!);
+    if (entry.isFolder) {
+      return _folderDetailTile(context, l10n, entry, location);
+    }
     final project = entry.project!;
     final isSelected = selectedIds.contains(project.id);
+    // 更新日は別の行に置く（同じ行だと狭い画面で日付が語の途中で折れた）。
+    final meta = [
+      l10n.homeProjectMeta(project.fps, project.durationSeconds),
+      l10n.projectListUpdatedOn(
+        MaterialLocalizations.of(context).formatCompactDate(project.updatedAt),
+      ),
+    ].join('\n');
     return ListTile(
       leading: isSelectionMode
-          ? Checkbox(
-              value: isSelected,
-              onChanged: (_) => onSelectionChanged(project.id),
+          ? _detailLeading(
+              Checkbox(
+                value: isSelected,
+                onChanged: (_) => onSelectionChanged(project.id),
+              ),
             )
-          : SizedBox(
-              width: 48,
-              height: 48,
-              child: ClipRRect(
+          : _detailLeading(
+              ClipRRect(
                 borderRadius: BorderRadius.circular(10),
-                child: _thumbnail(context, project, displayWidth: 48),
+                child: _thumbnail(
+                  context,
+                  project,
+                  displayWidth: _detailArtSize,
+                  checkerSize: 4,
+                ),
               ),
             ),
       title: Text(project.name),
       subtitle: Text(
-        l10n.homeProjectMeta(project.fps, project.durationSeconds),
+        location == null
+            ? meta
+            : '$meta\n${l10n.projectListInFolder(location)}',
       ),
-      trailing: (isSelectionMode || onPickProject != null)
-          ? null
-          : _projectMenu(context, project),
+      trailing: _detailTrailing(
+        entry.isFavorite,
+        (isSelectionMode || onPickProject != null)
+            ? null
+            : _projectMenu(context, project),
+      ),
       onTap: isSelectionMode
           ? () => onSelectionChanged(project.id)
           : onPickProject != null
@@ -401,16 +589,50 @@ class ProjectListWidget extends StatelessWidget {
     );
   }
 
-  Widget _folderDetailTile(BuildContext context, ProjectFolder folder) {
+  static const double _detailArtSize = 48;
+
+  // 行の左端。作品の絵・フォルダのアイコン・チェックボックスを同じ幅に
+  // そろえ、名前の書き出し位置が行ごとにずれないようにする。
+  static Widget _detailLeading(Widget child) => SizedBox.square(
+    dimension: _detailArtSize,
+    child: Center(child: child),
+  );
+
+  // 行の右端。お気に入りの星（作品・フォルダとも）とメニュー。
+  static Widget? _detailTrailing(bool favorite, Widget? menu) {
+    if (!favorite && menu == null) return null;
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        if (favorite)
+          Icon(
+            Icons.star,
+            color: ThemeService.activeColorScheme.tertiary,
+            size: 18,
+          ),
+        ?menu,
+      ],
+    );
+  }
+
+  Widget _folderDetailTile(
+    BuildContext context,
+    AppLocalizations l10n,
+    _Entry entry,
+    String? location,
+  ) {
+    final folder = entry.folder!;
     final isSelected = selectedIds.contains(folder.id);
     final color = folder.color != null ? Color(folder.color!) : null;
     return ListTile(
-      leading: isSelectionMode
-          ? Checkbox(
-              value: isSelected,
-              onChanged: (_) => onSelectionChanged(folder.id),
-            )
-          : Icon(Icons.folder, color: color, size: 32),
+      leading: _detailLeading(
+        isSelectionMode
+            ? Checkbox(
+                value: isSelected,
+                onChanged: (_) => onSelectionChanged(folder.id),
+              )
+            : Icon(Icons.folder, color: color, size: 36),
+      ),
       title: Text(
         folder.name,
         style: const TextStyle(
@@ -419,18 +641,14 @@ class ProjectListWidget extends StatelessWidget {
           fontFamilyFallback: kHeadingFontFallback,
         ),
       ),
-      trailing: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          if (folder.isFavorite)
-            Icon(
-              Icons.star,
-              color: ThemeService.activeColorScheme.tertiary,
-              size: 18,
-            ),
-          if (!isSelectionMode && onPickProject == null)
-            _folderMenu(context, folder),
-        ],
+      subtitle: location == null
+          ? null
+          : Text(l10n.projectListInFolder(location)),
+      trailing: _detailTrailing(
+        folder.isFavorite,
+        (isSelectionMode || onPickProject != null)
+            ? null
+            : _folderMenu(context, folder),
       ),
       // フォルダは選ぶ専用画面でも通常どおり潜れる（[onPickProject]は
       // 作品タップ時のみに関わる）。
@@ -441,13 +659,42 @@ class ProjectListWidget extends StatelessWidget {
     );
   }
 
-  Widget _gridCard(BuildContext context, _Entry entry) {
-    if (entry.isFolder) return _folderGridCard(context, entry.folder!);
-    final project = entry.project!;
-    final isSelected = selectedIds.contains(project.id);
+  Widget _gridCard(BuildContext context, _Entry entry, String? location) {
     final scheme = Theme.of(context).colorScheme;
-    final primary = scheme.primary;
-    return GestureDetector(
+    if (entry.isFolder) {
+      final folder = entry.folder!;
+      final color = folder.color != null
+          ? Color(folder.color!)
+          : scheme.primary;
+      return _card(
+        context,
+        entry: entry,
+        location: location,
+        onTap: isSelectionMode
+            ? () => onSelectionChanged(folder.id)
+            : () => onOpenFolder(folder.id),
+        art: DecoratedBox(
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: [
+                color.withValues(alpha: 0.22),
+                color.withValues(alpha: 0.1),
+              ],
+            ),
+          ),
+          child: Center(
+            child: Icon(Icons.folder_rounded, color: color, size: 46),
+          ),
+        ),
+      );
+    }
+    final project = entry.project!;
+    return _card(
+      context,
+      entry: entry,
+      location: location,
       onTap: isSelectionMode
           ? () => onSelectionChanged(project.id)
           : onPickProject != null
@@ -458,9 +705,29 @@ class ProjectListWidget extends StatelessWidget {
       onDoubleTap: (isSelectionMode || onPickProject != null)
           ? null
           : () => context.push('/canvas/${project.id}'),
-      onLongPress: () => onLongPress(project.id),
+      art: _thumbnail(context, project),
+    );
+  }
+
+  /// 作品・フォルダ共通のカード。絵の下に名前の帯を置く（以前は作品だけ
+  /// 絵の上に名前を重ねていて、黒い絵の上では名前が読めなかった）。
+  Widget _card(
+    BuildContext context, {
+    required _Entry entry,
+    required String? location,
+    required VoidCallback onTap,
+    VoidCallback? onDoubleTap,
+    required Widget art,
+  }) {
+    final isSelected = selectedIds.contains(entry.id);
+    final scheme = Theme.of(context).colorScheme;
+    final primary = scheme.primary;
+    return GestureDetector(
+      onTap: onTap,
+      onDoubleTap: onDoubleTap,
+      onLongPress: () => onLongPress(entry.id),
       child: AnimatedContainer(
-        duration: Duration(milliseconds: 150),
+        duration: const Duration(milliseconds: 150),
         curve: Curves.easeOut,
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(14),
@@ -494,53 +761,15 @@ class ProjectListWidget extends StatelessWidget {
                 child: Stack(
                   fit: StackFit.expand,
                   children: [
-                    _thumbnail(context, project),
-                    // サムネイル下端に淡いグラデーションの帯を敷き、どんな絵柄の
-                    // 上でもプロジェクト名が読みやすくなるようにする。
-                    Positioned(
-                      left: 0,
-                      right: 0,
-                      bottom: 0,
-                      height: 30,
-                      child: DecoratedBox(
-                        decoration: BoxDecoration(
-                          gradient: LinearGradient(
-                            begin: Alignment.topCenter,
-                            end: Alignment.bottomCenter,
-                            colors: [
-                              Colors.transparent,
-                              ThemeService.activeColorScheme.onSurface
-                                  .withValues(alpha: 0.55),
-                            ],
-                          ),
-                        ),
-                      ),
-                    ),
-                    Positioned(
-                      left: 6,
-                      right: 6,
-                      bottom: 4,
-                      child: Text(
-                        project.name,
-                        overflow: TextOverflow.ellipsis,
-                        style: TextStyle(
-                          fontSize: 12,
-                          color: ThemeService.activeColorScheme.onSurface,
-                          fontWeight: FontWeight.w600,
-                          fontFamily: 'Kuramubon',
-                          fontFamilyFallback: kHeadingFontFallback,
-                        ),
-                      ),
-                    ),
-                    if (project.isFavorite)
+                    art,
+                    if (entry.isFavorite)
                       Positioned(
                         top: 4,
                         right: 4,
                         child: Container(
-                          padding: EdgeInsets.all(3),
+                          padding: const EdgeInsets.all(3),
                           decoration: BoxDecoration(
-                            color: ThemeService.activeColorScheme.onSurface
-                                .withValues(alpha: 0.4),
+                            color: scheme.surface.withValues(alpha: 0.85),
                             shape: BoxShape.circle,
                           ),
                           child: Icon(
@@ -563,13 +792,6 @@ class ProjectListWidget extends StatelessWidget {
                                 : scheme.surface.withValues(alpha: 0.9),
                             shape: BoxShape.circle,
                             border: Border.all(color: primary, width: 1.5),
-                            boxShadow: [
-                              BoxShadow(
-                                color: ThemeService.activeColorScheme.onSurface
-                                    .withValues(alpha: 0.2),
-                                blurRadius: 3,
-                              ),
-                            ],
                           ),
                           child: Icon(
                             isSelected ? Icons.check : null,
@@ -581,127 +803,40 @@ class ProjectListWidget extends StatelessWidget {
                   ],
                 ),
               ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _folderGridCard(BuildContext context, ProjectFolder folder) {
-    final isSelected = selectedIds.contains(folder.id);
-    final scheme = Theme.of(context).colorScheme;
-    final primary = scheme.primary;
-    final color = folder.color != null ? Color(folder.color!) : primary;
-    return GestureDetector(
-      onTap: isSelectionMode
-          ? () => onSelectionChanged(folder.id)
-          : () => onOpenFolder(folder.id),
-      onLongPress: () => onLongPress(folder.id),
-      child: AnimatedContainer(
-        duration: Duration(milliseconds: 150),
-        curve: Curves.easeOut,
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(14),
-          boxShadow: [
-            BoxShadow(
-              color:
-                  (isSelected
-                          ? primary
-                          : ThemeService.activeColorScheme.onSurface)
-                      .withValues(alpha: isSelected ? 0.28 : 0.12),
-              blurRadius: isSelected ? 14 : 8,
-              offset: const Offset(0, 3),
-            ),
-          ],
-        ),
-        child: Card(
-          clipBehavior: Clip.antiAlias,
-          elevation: 0,
-          margin: EdgeInsets.zero,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(14),
-            side: BorderSide(
-              color: isSelected ? primary : Colors.transparent,
-              width: 2,
-            ),
-          ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              Expanded(
-                child: Stack(
-                  fit: StackFit.expand,
-                  children: [
-                    DecoratedBox(
-                      decoration: BoxDecoration(
-                        gradient: LinearGradient(
-                          begin: Alignment.topLeft,
-                          end: Alignment.bottomRight,
-                          colors: [
-                            color.withValues(alpha: 0.22),
-                            color.withValues(alpha: 0.1),
-                          ],
+              // カードの高さは決まっているので、名前の帯の文字は1.5倍までに
+              // とどめる（文字を大きくした小さなカードで帯が絵を押しつぶし、
+              // はみ出していた）。全文は詳細表示で大きな文字のまま読める。
+              MediaQuery.withClampedTextScaling(
+                maxScaleFactor: 1.5,
+                child: Padding(
+                  padding: const EdgeInsets.fromLTRB(6, 4, 6, 6),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(
+                        entry.name,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: const TextStyle(
+                          fontSize: 12,
+                          fontWeight: FontWeight.w600,
+                          fontFamily: 'Kuramubon',
+                          fontFamilyFallback: kHeadingFontFallback,
                         ),
                       ),
-                      child: Center(
-                        child: Icon(
-                          Icons.folder_rounded,
-                          color: color,
-                          size: 46,
-                        ),
-                      ),
-                    ),
-                    if (folder.isFavorite)
-                      Positioned(
-                        top: 4,
-                        right: 4,
-                        child: Container(
-                          padding: const EdgeInsets.all(3),
-                          decoration: BoxDecoration(
-                            color: scheme.surface.withValues(alpha: 0.75),
-                            shape: BoxShape.circle,
-                          ),
-                          child: Icon(
-                            Icons.star,
-                            color: ThemeService.activeColorScheme.tertiary,
-                            size: 14,
+                      // 小表示のカードには場所まで入らない（詳細表示で出る）。
+                      if (location != null && viewMode != ProjectViewMode.small)
+                        Text(
+                          location,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: TextStyle(
+                            fontSize: 10,
+                            color: scheme.onSurfaceVariant,
                           ),
                         ),
-                      ),
-                    if (isSelectionMode)
-                      Positioned(
-                        top: 4,
-                        left: 4,
-                        child: Container(
-                          padding: const EdgeInsets.all(1),
-                          decoration: BoxDecoration(
-                            color: isSelected
-                                ? primary
-                                : scheme.surface.withValues(alpha: 0.9),
-                            shape: BoxShape.circle,
-                            border: Border.all(color: primary, width: 1.5),
-                          ),
-                          child: Icon(
-                            isSelected ? Icons.check : null,
-                            size: 16,
-                            color: scheme.onPrimary,
-                          ),
-                        ),
-                      ),
-                  ],
-                ),
-              ),
-              Padding(
-                padding: const EdgeInsets.fromLTRB(6, 4, 6, 6),
-                child: Text(
-                  folder.name,
-                  overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(
-                    fontSize: 12,
-                    fontWeight: FontWeight.w600,
-                    fontFamily: 'Kuramubon',
-                    fontFamilyFallback: kHeadingFontFallback,
+                    ],
                   ),
                 ),
               ),

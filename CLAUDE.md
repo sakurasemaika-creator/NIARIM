@@ -56,7 +56,7 @@
    `test/helpers/color_channels.dart`の`.red8`/`.green8`/`.blue8`/
    `.alpha8`を使う。テスト内のデバッグ出力は`print`ではなく
    `debugPrint`を使う）
-3. `flutter test`（ベースライン：2026-10-17時点で**成功1952・スキップ8・
+3. `flutter test`（ベースライン：2026-10-17時点で**成功1973・スキップ8・
    失敗4**。失敗は監査担当の`test/app_web_reference_*`3件と、別セッション
    （質感変更フィルターの名前変更）の`test/texture_filter_gold_palette_test.dart`
    1件で、通常タスクでは直さない。スキップのうち3件は
@@ -683,6 +683,17 @@ onTap: ...)`だったために
   200pxで保存しているが、一覧での表示は40〜58px。`cacheWidth:
 (size * MediaQuery.devicePixelRatioOf(context)).round()`のように
   表示画素数へ落とすこと。
+  また**画像はパスごとにキャッシュされる**ので、作り直す画像を同じファイル名へ
+  上書きすると、一覧には古い絵が出続ける（作品一覧のサムネイルが実際にそう
+  だった）。作るたびに別の名前で保存し、前のファイルは保存し終えてから、
+  ほかから参照されていなければ消すこと（`generateAndSaveThumbnail`が実例。
+  複製した作品は複製元とサムネイルのファイルを共有している）。
+- **作品・フォルダの名前で並べる・探すときは`lib/utils/name_collation.dart`**：
+  `String.compareTo`だと「作品10」が「作品2」より前、大文字が小文字より前、
+  全角英字・半角カナが最後になる。並べるときは`NameSortKey`で名前ごとに
+  1回だけそろえてから`compareNameKeys`で比べ（比べるたびにそろえると数百件で
+  数十ミリ秒かかり、一覧の再描画のたびに走る）、探すときは`nameMatches`
+  （全角/半角・カタカナ/ひらがな・大文字/小文字を区別しない）を使う。
 - **`SliverMultiBoxAdaptorElement`の「見えている子」は描画範囲ぶんだけ**：
   `ListView.builder`はcacheExtent（既定250px）ぶん先の子も**生成・レイアウト
   する**が、`debugVisitOnstageChildren`が返すのは**実際に描画される範囲の

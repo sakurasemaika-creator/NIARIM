@@ -9,7 +9,9 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:niarim/app.dart';
 import 'package:niarim/app_bootstrap.dart';
 import 'package:niarim/router.dart';
+import 'package:niarim/screens/home/home_screen.dart';
 import 'package:niarim/screens/home/widgets/home_drawer.dart';
+import 'package:niarim/screens/home/widgets/project_list_widget.dart';
 import 'package:niarim/services/project_service.dart';
 import 'package:niarim/services/settings_service.dart';
 import 'package:provider/provider.dart';
@@ -21,7 +23,8 @@ import 'helpers/load_app_fonts.dart';
 /// ホーム画面の表示マトリクス（24幅 × スマホ/PC × 7言語 = 336通り）。
 /// 各セルで例外・タブ名の省略・画面外の操作・PCの側面パネルの有無を確かめ、
 /// 目視用に全セルの画像と一覧（manifest.json）を build/home-matrix へ出す。
-/// 「作品一覧」「ブクマ済み」タブは境目の幅（320/559/560/760/1280）で撮る。
+/// 「作品一覧」「ブクマ済み」タブ、作品の詳細表示、検索で何も見つからない
+/// ときは境目の幅（320/559/560/760/1280）で撮る。
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
@@ -73,21 +76,33 @@ void main() {
     final settings = splash.read<SettingsService>();
     final projects = splash.read<ProjectService>();
     await tester.runAsync(() async {
-      for (final name in const [
-        '夕暮れの街を歩く猫と少女の長い長いアニメーション（第二部・完結編）',
-        'Walk cycle',
-        'ポーズ集',
-        'Une très longue séquence d’animation pour le festival',
-        '표정 연습',
-        '背景动画',
+      // 一覧の見え方が変わる組み合わせ：黒・透明・ベージュの背景、縦長の
+      // 作品、お気に入り、フォルダ（お気に入り付き）。
+      for (final (name, paper, portrait, favorite) in const [
+        ('夕暮れの街を歩く猫と少女の長い長いアニメーション（第二部・完結編）', 0xFF000000, false, true),
+        ('Walk cycle', 0xFFFFFFFF, false, false),
+        ('ポーズ集', 0x00000000, true, false),
+        (
+          'Une très longue séquence d’animation pour le festival',
+          0xFFF3EAD6,
+          false,
+          false,
+        ),
+        ('표정 연습', 0xFF000000, true, false),
+        ('背景动画', 0xFFFFFFFF, false, true),
       ]) {
-        await projects.createProject(
+        final project = await projects.createProject(
           name: name,
           fps: 12,
           durationSeconds: 1,
-          backgroundColor: 0xFFFFFFFF,
+          backgroundColor: paper,
+          exportWidth: portrait ? 1080 : 1920,
+          exportHeight: portrait ? 1920 : 1080,
         );
+        if (favorite) await projects.toggleFavorite(project.id);
       }
+      final folder = await projects.createFolder('シリーズ');
+      await projects.toggleFolderFavorite(folder.id);
     });
     appRouter.go('/home');
     await tester.pump(const Duration(seconds: 1));
@@ -184,6 +199,48 @@ void main() {
               shots.add('${cell}_tab$tab.png');
             }
             await selectTab(0);
+            // 詳細表示と、検索で何も見つからないとき。
+            await tester.tap(find.byType(ProjectViewModeMenu));
+            // メニューが開き終わるまで待つ（開く途中のタップは届かない）。
+            await tester.pump();
+            await tester.pump(const Duration(milliseconds: 400));
+            await tester.tap(find.byType(PopupMenuItem<ProjectViewMode>).last);
+            await tester.pump(const Duration(milliseconds: 400));
+            await tester.pump(const Duration(milliseconds: 400));
+            problems.addAll(
+              inspect(size, pc: mode.key == 'pc').map((p) => 'detail: $p'),
+            );
+            if (find.byType(ListTile).evaluate().isEmpty) {
+              problems.add('detail view not shown');
+            }
+            await capture('${cell}_detail');
+            shots.add('${cell}_detail.png');
+            await tester.tap(find.byType(ProjectViewModeMenu));
+            // メニューが開き終わるまで待つ（開く途中のタップは届かない）。
+            await tester.pump();
+            await tester.pump(const Duration(milliseconds: 400));
+            await tester.tap(find.byType(PopupMenuItem<ProjectViewMode>).at(1));
+            await tester.pump(const Duration(milliseconds: 400));
+            await tester.tap(find.byIcon(Icons.search));
+            await tester.pump(const Duration(milliseconds: 400));
+            await tester.enterText(find.byType(TextField), 'zzz');
+            await tester.pump(const Duration(milliseconds: 400));
+            if (find.byIcon(Icons.search_off).evaluate().isEmpty) {
+              problems.add('no-match state not shown');
+            }
+            problems.addAll(
+              inspect(size, pc: mode.key == 'pc').map((p) => 'no match: $p'),
+            );
+            await capture('${cell}_nomatch');
+            shots.add('${cell}_nomatch.png');
+            await tester.tap(
+              find.descendant(
+                of: find.byType(AppBar),
+                matching: find.byIcon(Icons.close),
+              ),
+            );
+            await tester.pump(const Duration(milliseconds: 400));
+            await tester.pump(const Duration(milliseconds: 400));
           }
           manifest.add({
             'cell': cell,
