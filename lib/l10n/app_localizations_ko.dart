@@ -27,11 +27,20 @@ class AppLocalizationsKo extends AppLocalizations {
   String get homeTabBookmarked => '북마크됨';
 
   @override
-  String get homeBookmarkedComingSoonTitle => '준비 중입니다';
+  String get homeBookmarkedEmptyTitle => '아직 북마크한 작품이 없습니다';
 
   @override
-  String get homeBookmarkedComingSoonBody =>
-      '\"모두의 애니메이션 보기\" 기능이 구현되면, 다른 사용자의 공개 작품 중 북마크한 작품이 여기에 표시됩니다.';
+  String get homeBookmarkedEmptyBody => '작품 광장에서 북마크한 작품이 여기에 표시됩니다.';
+
+  @override
+  String get homeBookmarkedHiddenTitle => '북마크한 작품이 지금은 표시되지 않습니다';
+
+  @override
+  String get homeBookmarkedHiddenBody =>
+      '작품 광장의 표시 필터로 숨겨졌거나 더 이상 공개되지 않습니다. 북마크는 그대로 남아 있습니다.';
+
+  @override
+  String get homeBookmarkedOpenPlaza => '작품 광장 보기';
 
   @override
   String get homeSearchHint => '프로젝트 이름으로 검색';
@@ -47,6 +56,12 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get homeAddSheetNewFolder => '새 폴더';
+
+  @override
+  String get homeAddTooltip => '새로 만들기';
+
+  @override
+  String get commonShowExplanation => '설명 보기';
 
   @override
   String get homeSelectionAllSelect => '전체 선택';
@@ -106,6 +121,9 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get homeViewModeDetail => '상세';
+
+  @override
+  String get homeViewModeTooltip => '표시 크기';
 
   @override
   String get homeSortFieldName => '이름';

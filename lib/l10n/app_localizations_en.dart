@@ -28,11 +28,22 @@ class AppLocalizationsEn extends AppLocalizations {
   String get homeTabBookmarked => 'Bookmarked';
 
   @override
-  String get homeBookmarkedComingSoonTitle => 'Coming soon';
+  String get homeBookmarkedEmptyTitle => 'No bookmarked works yet';
 
   @override
-  String get homeBookmarkedComingSoonBody =>
-      'Once the \"Watch everyone\'s animations\" feature is available, works you\'ve bookmarked from other users will be listed here.';
+  String get homeBookmarkedEmptyBody =>
+      'Works you bookmark in Work Plaza appear here.';
+
+  @override
+  String get homeBookmarkedHiddenTitle =>
+      'Your bookmarked works are hidden right now';
+
+  @override
+  String get homeBookmarkedHiddenBody =>
+      'They are hidden by the Work Plaza display filters, or are no longer public. Your bookmarks are still kept.';
+
+  @override
+  String get homeBookmarkedOpenPlaza => 'Open Work Plaza';
 
   @override
   String get homeSearchHint => 'Search by project name';
@@ -48,6 +59,12 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get homeAddSheetNewFolder => 'New Folder';
+
+  @override
+  String get homeAddTooltip => 'Create new';
+
+  @override
+  String get commonShowExplanation => 'Show explanation';
 
   @override
   String get homeSelectionAllSelect => 'Select All';
@@ -108,6 +125,9 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get homeViewModeDetail => 'Detail';
+
+  @override
+  String get homeViewModeTooltip => 'Display size';
 
   @override
   String get homeSortFieldName => 'Name';

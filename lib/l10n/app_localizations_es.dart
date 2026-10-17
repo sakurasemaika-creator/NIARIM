@@ -28,11 +28,22 @@ class AppLocalizationsEs extends AppLocalizations {
   String get homeTabBookmarked => 'Guardados';
 
   @override
-  String get homeBookmarkedComingSoonTitle => 'Próximamente';
+  String get homeBookmarkedEmptyTitle => 'Aún no tienes obras guardadas';
 
   @override
-  String get homeBookmarkedComingSoonBody =>
-      'Cuando esté disponible la función «Ver las animaciones de todos», aquí aparecerán las obras de otros usuarios que hayas guardado.';
+  String get homeBookmarkedEmptyBody =>
+      'Las obras que marques en la Plaza de Obras aparecerán aquí.';
+
+  @override
+  String get homeBookmarkedHiddenTitle =>
+      'Tus obras marcadas no se muestran ahora';
+
+  @override
+  String get homeBookmarkedHiddenBody =>
+      'Están ocultas por los filtros de visualización de la Plaza de Obras o ya no son públicas. Tus marcadores se conservan.';
+
+  @override
+  String get homeBookmarkedOpenPlaza => 'Abrir la Plaza de Obras';
 
   @override
   String get homeSearchHint => 'Buscar por nombre de proyecto';
@@ -48,6 +59,12 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get homeAddSheetNewFolder => 'Nueva carpeta';
+
+  @override
+  String get homeAddTooltip => 'Crear nuevo';
+
+  @override
+  String get commonShowExplanation => 'Mostrar explicación';
 
   @override
   String get homeSelectionAllSelect => 'Seleccionar todo';
@@ -108,6 +125,9 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get homeViewModeDetail => 'Detalle';
+
+  @override
+  String get homeViewModeTooltip => 'Tamaño de visualización';
 
   @override
   String get homeSortFieldName => 'Nombre';

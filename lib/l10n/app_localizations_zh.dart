@@ -27,11 +27,19 @@ class AppLocalizationsZh extends AppLocalizations {
   String get homeTabBookmarked => '已收藏';
 
   @override
-  String get homeBookmarkedComingSoonTitle => '敬请期待';
+  String get homeBookmarkedEmptyTitle => '还没有收藏的作品';
 
   @override
-  String get homeBookmarkedComingSoonBody =>
-      '「查看大家的动画」功能上线后，你收藏的其他用户公开作品会显示在这里。';
+  String get homeBookmarkedEmptyBody => '在作品广场收藏的作品会显示在这里。';
+
+  @override
+  String get homeBookmarkedHiddenTitle => '收藏的作品目前未显示';
+
+  @override
+  String get homeBookmarkedHiddenBody => '这些作品被作品广场的显示筛选隐藏了，或已不再公开。收藏仍然保留。';
+
+  @override
+  String get homeBookmarkedOpenPlaza => '查看作品广场';
 
   @override
   String get homeSearchHint => '按项目名称搜索';
@@ -47,6 +55,12 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get homeAddSheetNewFolder => '新建文件夹';
+
+  @override
+  String get homeAddTooltip => '新建';
+
+  @override
+  String get commonShowExplanation => '显示说明';
 
   @override
   String get homeSelectionAllSelect => '全选';
@@ -106,6 +120,9 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get homeViewModeDetail => '详情';
+
+  @override
+  String get homeViewModeTooltip => '显示大小';
 
   @override
   String get homeSortFieldName => '名称';
@@ -7132,11 +7149,19 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get homeTabBookmarked => '已收藏';
 
   @override
-  String get homeBookmarkedComingSoonTitle => '敬請期待';
+  String get homeBookmarkedEmptyTitle => '還沒有收藏的作品';
 
   @override
-  String get homeBookmarkedComingSoonBody =>
-      '「觀看大家的動畫」功能上線後，您收藏的其他使用者公開作品會顯示在這裡。';
+  String get homeBookmarkedEmptyBody => '在作品廣場收藏的作品會顯示在這裡。';
+
+  @override
+  String get homeBookmarkedHiddenTitle => '收藏的作品目前未顯示';
+
+  @override
+  String get homeBookmarkedHiddenBody => '這些作品被作品廣場的顯示篩選隱藏了，或已不再公開。收藏仍然保留。';
+
+  @override
+  String get homeBookmarkedOpenPlaza => '查看作品廣場';
 
   @override
   String get homeSearchHint => '依專案名稱搜尋';
@@ -7152,6 +7177,12 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get homeAddSheetNewFolder => '新增資料夾';
+
+  @override
+  String get homeAddTooltip => '新增';
+
+  @override
+  String get commonShowExplanation => '顯示說明';
 
   @override
   String get homeSelectionAllSelect => '全選';
@@ -7211,6 +7242,9 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get homeViewModeDetail => '詳細';
+
+  @override
+  String get homeViewModeTooltip => '顯示大小';
 
   @override
   String get homeSortFieldName => '名稱';

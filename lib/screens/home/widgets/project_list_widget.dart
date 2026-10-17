@@ -157,12 +157,36 @@ class ProjectListWidget extends StatelessWidget {
     return list;
   }
 
-  @override
-  Widget build(BuildContext context) {
-    final l10n = AppLocalizations.of(context)!;
-    final projectService = context.watch<ProjectService>();
-    final source = projects ?? projectService.projects;
-    final allFolders = projectService.folders;
+  /// 一覧に実際に出ている項目のID（検索・お気に入りの絞り込み後）。
+  /// 全選択はこれと同じ範囲だけを選ぶ（検索で隠れている作品まで選ばれ、
+  /// そのまま削除すると見えていない作品までゴミ箱へ移っていた）。
+  static Set<String> visibleEntryIds({
+    required List<Project> projects,
+    required List<ProjectFolder> folders,
+    required String? currentFolderId,
+    required String searchQuery,
+    required bool searchByTag,
+    required bool showFavoritesOnly,
+  }) => {
+    for (final e in _visibleEntries(
+      projects: projects,
+      folders: folders,
+      currentFolderId: currentFolderId,
+      searchQuery: searchQuery,
+      searchByTag: searchByTag,
+      showFavoritesOnly: showFavoritesOnly,
+    ))
+      e.id,
+  };
+
+  static List<_Entry> _visibleEntries({
+    required List<Project> projects,
+    required List<ProjectFolder> folders,
+    required String? currentFolderId,
+    required String searchQuery,
+    required bool searchByTag,
+    required bool showFavoritesOnly,
+  }) {
     final rawQuery = searchQuery.trim().toLowerCase();
     // Accept both `tag` and `#tag` input in tag mode.
     final query = searchByTag && rawQuery.startsWith('#')
@@ -175,7 +199,7 @@ class ProjectListWidget extends StatelessWidget {
       // keeps the existing project/folder-name behavior; tag mode returns only
       // projects whose saved tags contain the query.
       if (searchByTag) {
-        entries = source
+        entries = projects
             .where(
               (p) =>
                   p.tags.any((tag) => tag.trim().toLowerCase().contains(query)),
@@ -184,20 +208,20 @@ class ProjectListWidget extends StatelessWidget {
             .toList();
       } else {
         entries = [
-          ...allFolders
+          ...folders
               .where((f) => f.name.toLowerCase().contains(query))
               .map((f) => _Entry.folder(f)),
-          ...source
+          ...projects
               .where((p) => p.name.toLowerCase().contains(query))
               .map((p) => _Entry.project(p)),
         ];
       }
     } else {
       entries = [
-        ...allFolders
+        ...folders
             .where((f) => f.parentFolderId == currentFolderId)
             .map((f) => _Entry.folder(f)),
-        ...source
+        ...projects
             .where((p) => p.folderId == currentFolderId)
             .map((p) => _Entry.project(p)),
       ];
@@ -205,6 +229,23 @@ class ProjectListWidget extends StatelessWidget {
     if (showFavoritesOnly) {
       entries = entries.where((e) => e.isFavorite).toList();
     }
+    return entries;
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    final projectService = context.watch<ProjectService>();
+    final source = projects ?? projectService.projects;
+    final allFolders = projectService.folders;
+    final entries = _visibleEntries(
+      projects: source,
+      folders: allFolders,
+      currentFolderId: currentFolderId,
+      searchQuery: searchQuery,
+      searchByTag: searchByTag,
+      showFavoritesOnly: showFavoritesOnly,
+    );
     final sorted = _sorted(entries);
 
     if (sorted.isEmpty) {
@@ -249,8 +290,16 @@ class ProjectListWidget extends StatelessWidget {
       );
     }
 
+    // タブを切り替えて戻ったとき・フォルダから戻ったときに、一覧の
+    // スクロール位置を元に戻す（TabBarViewは見えないタブの一覧を破棄する
+    // ため、キーが無いと毎回先頭へ戻っていた）。フォルダと表示の大きさ
+    // ごとに覚える。
+    final scrollKey = PageStorageKey<String>(
+      'projects/${currentFolderId ?? '-'}/${viewMode.name}',
+    );
     if (viewMode == ProjectViewMode.detail) {
       return ListView.builder(
+        key: scrollKey,
         itemCount: sorted.length,
         itemBuilder: (context, index) =>
             _detailTile(context, l10n, sorted[index]),
@@ -267,6 +316,7 @@ class ProjectListWidget extends StatelessWidget {
     };
 
     return GridView.builder(
+      key: scrollKey,
       padding: const EdgeInsets.all(8),
       gridDelegate: SliverGridDelegateWithMaxCrossAxisExtent(
         maxCrossAxisExtent: targetExtent,

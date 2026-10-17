@@ -8,6 +8,9 @@ import '../utils/tolerant_preferences.dart';
 class FirstUseTooltipService extends ChangeNotifier {
   static const _prefsKey = 'first_use_tooltips_seen';
   final Set<String> _seen = {};
+  // 画面の破棄の後に遅れて届く記録（吹き出しを出したまま閉じられた場合）は、
+  // 起動のやり直し等でこのServiceが先に破棄されていれば捨てる。
+  bool _disposed = false;
 
   Future<void> init() async {
     try {
@@ -21,7 +24,7 @@ class FirstUseTooltipService extends ChangeNotifier {
   bool hasSeen(String key) => _seen.contains(key);
 
   Future<void> markSeen(String key) async {
-    if (_seen.contains(key)) return;
+    if (_disposed || _seen.contains(key)) return;
     _seen.add(key);
     notifyListeners();
     try {
@@ -30,6 +33,12 @@ class FirstUseTooltipService extends ChangeNotifier {
     } catch (_) {
       // 保存失敗時も続行（次回起動時にまた表示される程度の影響に留まる）
     }
+  }
+
+  @override
+  void dispose() {
+    _disposed = true;
+    super.dispose();
   }
 
   /// デバッグ・テスト用：全ての表示済み状態をリセットする。

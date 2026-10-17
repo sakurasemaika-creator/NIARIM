@@ -28,11 +28,23 @@ class AppLocalizationsFr extends AppLocalizations {
   String get homeTabBookmarked => 'Enregistrées';
 
   @override
-  String get homeBookmarkedComingSoonTitle => 'Bientôt disponible';
+  String get homeBookmarkedEmptyTitle =>
+      'Aucune œuvre enregistrée pour l’instant';
 
   @override
-  String get homeBookmarkedComingSoonBody =>
-      'Une fois la fonctionnalité « Voir les animations de tous » disponible, les œuvres d\'autres utilisateurs que vous avez enregistrées apparaîtront ici.';
+  String get homeBookmarkedEmptyBody =>
+      'Les œuvres ajoutées aux favoris dans la Place des œuvres apparaissent ici.';
+
+  @override
+  String get homeBookmarkedHiddenTitle =>
+      'Vos œuvres enregistrées sont masquées pour le moment';
+
+  @override
+  String get homeBookmarkedHiddenBody =>
+      'Elles sont masquées par les filtres d’affichage de la Place des œuvres ou ne sont plus publiques. Vos enregistrements sont conservés.';
+
+  @override
+  String get homeBookmarkedOpenPlaza => 'Ouvrir la Place des œuvres';
 
   @override
   String get homeSearchHint => 'Rechercher par nom de projet';
@@ -48,6 +60,12 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get homeAddSheetNewFolder => 'Nouveau dossier';
+
+  @override
+  String get homeAddTooltip => 'Créer';
+
+  @override
+  String get commonShowExplanation => 'Afficher l’explication';
 
   @override
   String get homeSelectionAllSelect => 'Tout sélectionner';
@@ -108,6 +126,9 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get homeViewModeDetail => 'Détails';
+
+  @override
+  String get homeViewModeTooltip => 'Taille d’affichage';
 
   @override
   String get homeSortFieldName => 'Nom';

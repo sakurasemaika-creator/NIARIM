@@ -1,6 +1,5 @@
 import 'dart:async';
 
-import 'package:niarim/services/theme_service.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -43,7 +42,6 @@ class FirstUseTooltip extends StatefulWidget {
 
 class _FirstUseTooltipState extends State<FirstUseTooltip> {
   final GlobalKey _anchorKey = GlobalKey();
-  OverlayEntry? _entry;
   // タップ判定用（Listenerでポインターを直接観測する。理由はbuild参照）。
   int? _pointer;
   Offset? _downPosition;
@@ -54,150 +52,78 @@ class _FirstUseTooltipState extends State<FirstUseTooltip> {
   // 同じ判定になる。
   Timer? _longPressTimer;
   bool _longPressElapsed = false;
+  // 表示中・表示待ちの説明（同じ説明を二重に出さない。ボタンが作り直されて
+  // 別のStateになっても効くよう、Stateではなく説明のキーで覚える）。
+  // 表示待ちはrouteがnull。画面ごと破棄されると閉じた通知が来ないことが
+  // あるので、Navigatorや画面がもう無ければ表示中とは見なさない。
+  static final Map<String, ({NavigatorState navigator, Route<void>? route})>
+  _showing = {};
+
+  static bool _isShowing(String key) {
+    final entry = _showing[key];
+    if (entry == null) return false;
+    final route = entry.route;
+    final live = route == null ? entry.navigator.mounted : route.isActive;
+    if (!live) _showing.remove(key);
+    return live;
+  }
 
   void _maybeShow() {
     if (!mounted) return;
-    // 既に表示中の吹き出しがある間は再表示しない。ここをガードしないと、
-    // 吹き出し表示中に同じボタンをもう一度タップした際、古いOverlayEntryを
-    // 参照ごと上書きしてしまい、古い方が二度と閉じられずに残り続ける
-    // （タップしても消えないように見える）不具合になっていた。
-    if (_entry != null) return;
+    final key = widget.tooltipKey;
+    // 既に表示中・表示待ちの間は重ねて出さない。
+    if (_isShowing(key)) return;
     final service = context.read<FirstUseTooltipService>();
-    if (service.hasSeen(widget.tooltipKey)) return;
+    if (service.hasSeen(key)) return;
     // 中央表示になったので位置決めには使わないが、「対象ウィジェットが
     // 実際にレイアウトされている（＝画面に出ている）」ことの確認には
     // 引き続き使う。剥がれかけの要素に対して説明を出さないためのガード。
     final renderObject = _anchorKey.currentContext?.findRenderObject();
     if (renderObject is! RenderBox || !renderObject.attached) return;
-    final overlayState = Overlay.maybeOf(context);
-    if (overlayState == null) return;
-
-    final l10n = AppLocalizations.of(context)!;
-    final screen = MediaQuery.sizeOf(context);
-    // 画面幅いっぱいまでは広げず、読みやすい行長（最大460px）に収める。
-    final cardWidth = (screen.width - 40).clamp(240.0, 460.0);
-
-    _entry = OverlayEntry(
-      builder: (ctx) => Stack(
-        children: [
-          // カードの外側をタップしても閉じられるようにする全画面のバリア。
-          // 中央表示にしたことで背面の面積が増えたため、以前より「どこでも
-          // 閉じられる」ことの意味が大きい。うっすら暗くして、背面の操作が
-          // 効かないこと・読むべき対象がカードであることを示す。
-          Positioned.fill(
-            child: GestureDetector(
-              behavior: HitTestBehavior.opaque,
-              onTap: _dismiss,
-              child: ColoredBox(
-                color: ThemeService.activeColorScheme.onSurface.withValues(
-                  alpha: 0.45,
-                ),
-              ),
-            ),
-          ),
-          Center(
-            child: Material(
-              color: Colors.transparent,
-              child: GestureDetector(
-                onTap: _dismiss,
-                child: Container(
-                  width: cardWidth,
-                  constraints: BoxConstraints(maxHeight: screen.height - 80),
-                  padding: const EdgeInsets.fromLTRB(20, 18, 20, 14),
-                  decoration: BoxDecoration(
-                    color: Theme.of(ctx).colorScheme.primary,
-                    borderRadius: BorderRadius.circular(16),
-                    boxShadow: [
-                      BoxShadow(
-                        color: ThemeService.activeColorScheme.onSurface
-                            .withValues(alpha: 0.45),
-                        blurRadius: 18,
-                        offset: Offset(0, 4),
-                      ),
-                    ],
-                  ),
-                  child: SingleChildScrollView(
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          widget.message,
-                          // 説明文は本文フォント（白光明朝）。くらむぼんは
-                          // 見出し・項目名など大きく目立たせたい文字に限定する。
-                          style: TextStyle(
-                            color: Theme.of(ctx).colorScheme.onPrimary,
-                            fontSize: 17,
-                            height: 1.5,
-                            fontFamily: 'HakkouMincho',
-                            fontFamilyFallback: kBodyFontFallback,
-                          ),
-                        ),
-                        const SizedBox(height: 14),
-                        Divider(
-                          height: 1,
-                          color: Theme.of(
-                            ctx,
-                          ).colorScheme.onPrimary.withValues(alpha: 0.35),
-                        ),
-                        const SizedBox(height: 12),
-                        Text(
-                          l10n.firstUseTipOperationGuideTitle,
-                          style: TextStyle(
-                            color: Theme.of(ctx).colorScheme.onPrimary,
-                            fontSize: 14,
-                            fontFamily: 'Kuramubon',
-                            fontFamilyFallback: kHeadingFontFallback,
-                          ),
-                        ),
-                        const SizedBox(height: 6),
-                        Text(
-                          l10n.firstUseTipOperationGuideBody,
-                          style: TextStyle(
-                            color: Theme.of(
-                              ctx,
-                            ).colorScheme.onPrimary.withValues(alpha: 0.92),
-                            fontSize: 15,
-                            height: 1.5,
-                            fontFamily: 'HakkouMincho',
-                            fontFamilyFallback: kBodyFontFallback,
-                          ),
-                        ),
-                        const SizedBox(height: 14),
-                        Align(
-                          alignment: Alignment.centerRight,
-                          child: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Icon(
-                                Icons.close,
-                                size: 18,
-                                color: Theme.of(ctx).colorScheme.onPrimary,
-                              ),
-                              const SizedBox(width: 4),
-                              Text(
-                                l10n.commonClose,
-                                style: TextStyle(
-                                  color: Theme.of(ctx).colorScheme.onPrimary,
-                                  fontSize: 15,
-                                  fontFamily: 'HakkouMincho',
-                                  fontFamilyFallback: kBodyFontFallback,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-    overlayState.insert(_entry!);
+    final navigator = Navigator.maybeOf(context);
+    if (navigator == null) return;
+    // カードに要るものは押した時点で取っておく。押したボタンの画面が
+    // 次のフレームまでに作り直されると（タイムラインの全画面表示の
+    // ボタン等）このウィジェットは無くなるが、説明はそれでも出す
+    // （以前は出せずに終わり、表示済みにもならなかった）。
+    final message = widget.message;
+    final barrierColor = Theme.of(
+      context,
+    ).colorScheme.scrim.withValues(alpha: 0.45);
+    final barrierLabel = MaterialLocalizations.of(
+      context,
+    ).modalBarrierDismissLabel;
+    _showing[key] = (navigator: navigator, route: null);
+    // 同じタップで子がダイアログ等を開いた場合も、その上にカードを出す
+    // （次のフレームまで待つ）。カードは専用の画面として積むので、戻る操作・
+    // Esc・カードの外のタップで閉じ、キーボードのフォーカスもカードに移り
+    // （背面の画面のショートカットは効かない）、閉じれば元へ戻る。
+    // 以前は画面の上へOverlayで重ねていたため、戻る操作は下の画面
+    // （PopScopeで戻る操作を受ける画面）やダイアログへ届き、Escも効かず、
+    // Android 16の予測型「戻る」ではアプリごと閉じていた。
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!navigator.mounted) {
+        _showing.remove(key);
+        return;
+      }
+      final route = RawDialogRoute<void>(
+        barrierDismissible: true,
+        // ダークテーマでも暗く見えるよう、テーマの文字色ではなく
+        // 幕（scrim）の色を使う（文字色だと白っぽい幕になっていた）。
+        barrierColor: barrierColor,
+        barrierLabel: barrierLabel,
+        transitionDuration: const Duration(milliseconds: 150),
+        transitionBuilder: (context, animation, _, child) =>
+            FadeTransition(opacity: animation, child: child),
+        pageBuilder: (context, _, _) => _FirstUseCard(message: message),
+      );
+      _showing[key] = (navigator: navigator, route: route);
+      navigator.push(route).whenComplete(() {
+        if (_showing[key]?.route == route) _showing.remove(key);
+        // 閉じ方（カード・外側・戻る・Esc）に関わらず、読んだものとして扱う。
+        service.markSeen(key);
+      });
+    });
   }
 
   void _resetPointer() {
@@ -206,18 +132,9 @@ class _FirstUseTooltipState extends State<FirstUseTooltip> {
     _longPressTimer = null;
   }
 
-  void _dismiss() {
-    _entry?.remove();
-    _entry = null;
-    if (mounted) {
-      context.read<FirstUseTooltipService>().markSeen(widget.tooltipKey);
-    }
-  }
-
   @override
   void dispose() {
     _longPressTimer?.cancel();
-    _entry?.remove();
     super.dispose();
   }
 
@@ -266,6 +183,128 @@ class _FirstUseTooltipState extends State<FirstUseTooltip> {
         if (event.pointer == _pointer) _resetPointer();
       },
       child: KeyedSubtree(key: _anchorKey, child: widget.child),
+    );
+  }
+}
+
+/// 初回の説明カード。カード自体・右下の「閉じる」・カードの外のタップ・
+/// 戻る操作・Escで閉じる。
+class _FirstUseCard extends StatelessWidget {
+  const _FirstUseCard({required this.message});
+
+  final String message;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    final scheme = Theme.of(context).colorScheme;
+    final screen = MediaQuery.sizeOf(context);
+    // 画面幅いっぱいまでは広げず、読みやすい行長（最大460px）に収める。
+    final cardWidth = (screen.width - 40).clamp(240.0, 460.0);
+    void close() => Navigator.of(context).maybePop();
+    return Center(
+      child: Semantics(
+        scopesRoute: true,
+        namesRoute: true,
+        explicitChildNodes: true,
+        label: l10n.firstUseTipOperationGuideTitle,
+        child: Material(
+          color: Colors.transparent,
+          child: GestureDetector(
+            onTap: close,
+            child: Container(
+              width: cardWidth,
+              constraints: BoxConstraints(maxHeight: screen.height - 80),
+              padding: const EdgeInsets.fromLTRB(20, 18, 20, 14),
+              decoration: BoxDecoration(
+                color: scheme.primary,
+                borderRadius: BorderRadius.circular(16),
+                boxShadow: [
+                  BoxShadow(
+                    color: scheme.shadow.withValues(alpha: 0.45),
+                    blurRadius: 18,
+                    offset: const Offset(0, 4),
+                  ),
+                ],
+              ),
+              child: SingleChildScrollView(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      message,
+                      // 説明文は本文フォント（白光明朝）。くらむぼんは
+                      // 見出し・項目名など大きく目立たせたい文字に限定する。
+                      style: TextStyle(
+                        color: scheme.onPrimary,
+                        fontSize: 17,
+                        height: 1.5,
+                        fontFamily: 'HakkouMincho',
+                        fontFamilyFallback: kBodyFontFallback,
+                      ),
+                    ),
+                    const SizedBox(height: 14),
+                    Divider(
+                      height: 1,
+                      color: scheme.onPrimary.withValues(alpha: 0.35),
+                    ),
+                    const SizedBox(height: 12),
+                    Text(
+                      l10n.firstUseTipOperationGuideTitle,
+                      style: TextStyle(
+                        color: scheme.onPrimary,
+                        fontSize: 14,
+                        fontFamily: 'Kuramubon',
+                        fontFamilyFallback: kHeadingFontFallback,
+                      ),
+                    ),
+                    const SizedBox(height: 6),
+                    Text(
+                      l10n.firstUseTipOperationGuideBody,
+                      style: TextStyle(
+                        color: scheme.onPrimary.withValues(alpha: 0.92),
+                        fontSize: 15,
+                        height: 1.5,
+                        fontFamily: 'HakkouMincho',
+                        fontFamilyFallback: kBodyFontFallback,
+                      ),
+                    ),
+                    const SizedBox(height: 14),
+                    Align(
+                      alignment: Alignment.centerRight,
+                      child: Semantics(
+                        button: true,
+                        onTap: close,
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(
+                              Icons.close,
+                              size: 18,
+                              color: scheme.onPrimary,
+                            ),
+                            const SizedBox(width: 4),
+                            Text(
+                              l10n.commonClose,
+                              style: TextStyle(
+                                color: scheme.onPrimary,
+                                fontSize: 15,
+                                fontFamily: 'HakkouMincho',
+                                fontFamilyFallback: kBodyFontFallback,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        ),
+      ),
     );
   }
 }

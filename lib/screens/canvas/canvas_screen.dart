@@ -71,6 +71,7 @@ import '../../widgets/scrollable_sheet_body.dart';
 import '../../widgets/custom_automation_manager_sheet.dart';
 import '../../widgets/custom_automation_draft_sheet.dart';
 import '../../widgets/premium_lock_widget.dart';
+import '../../widgets/typing_aware_shortcuts.dart';
 
 class CanvasScreen extends StatefulWidget {
   final String projectId;
@@ -81,6 +82,11 @@ class CanvasScreen extends StatefulWidget {
 }
 
 class _CanvasScreenState extends State<CanvasScreen> {
+  // 画面全体のショートカット（取り消し・ツール切替等）を受けるフォーカス。
+  // パネルの入力欄（レイヤー検索・色のコード等）に入力したままキャンバスへ
+  // 描き始めたら、入力を終えてここへ戻す（戻さないとCtrl+Zが入力欄の
+  // 文字の取り消しになる、またはどこにも届かない）。
+  final FocusNode _screenFocus = FocusNode(debugLabel: 'Canvas');
   DrawingTool _currentTool = DrawingTool.pen;
   // ジェスチャー／ペンボタンでの消しゴム切替・ブラシ切替・手のひらツール
   // トグル用に、切替前のツールを一時的に覚えておく。
@@ -1051,6 +1057,7 @@ class _CanvasScreenState extends State<CanvasScreen> {
 
   @override
   void dispose() {
+    _screenFocus.dispose();
     _filterCanvasPreview?.dispose();
     _filterLensMask.dispose();
     _customAutomationRecordingOverlay?.remove();
@@ -1175,9 +1182,11 @@ class _CanvasScreenState extends State<CanvasScreen> {
     // DeXモード・マウス/キーボード入力・左手デバイス：設定画面
     // 「ショートカット設定」で割り当てたキーで、ツール切替やUndo/Redo
     // などの主要操作を行えるようにする。
-    return CallbackShortcuts(
+    return TypingAwareShortcuts(
       bindings: _buildShortcutBindings(context),
+      screenFocus: _screenFocus,
       child: Focus(
+        focusNode: _screenFocus,
         autofocus: true,
         child: Scaffold(
           // キャンバスモードのバー類（上部バー・太さ/不透明度スライダー・
@@ -1264,100 +1273,121 @@ class _CanvasScreenState extends State<CanvasScreen> {
                                 // いたため、縮小時に背景まで一緒に縮んで見た目が
                                 // ちぐはぐになる不具合があった）。
                                 Container(color: kCanvasOutsideColor),
-                                CanvasArea(
-                                  onTapForText: _currentTool == DrawingTool.text
-                                      ? onCanvasTapForText
-                                      : null,
-                                  onEyedropper: _handleCanvasEyedropper,
-                                  autofillCheckMode: _autofillCheckMode,
-                                  filterEyedropperActive:
-                                      _filterColorEyedropperTarget != null ||
-                                      _textColorEyedropperTarget != null ||
-                                      _brushOutlineEyedropperActive,
-                                  filterGizmo: _filterCanvasGizmo(project),
-                                  currentLayerPreview:
-                                      _filterCanvasPreviewShown(),
-                                  currentLayerPreviewBlendMode:
-                                      _filterCanvasPreviewBlendMode(),
-                                  lockToolInput: selectionEditingHidden,
-                                  onFilterGizmoChanged: (gizmo) =>
-                                      _moveFilterGizmo(project, gizmo),
-                                  onFilterGizmoDragStart: () => context
-                                      .read<FilterService>()
-                                      .beginFilterEditGroup(),
-                                  onFilterGizmoDragEnd: () => context
-                                      .read<FilterService>()
-                                      .endFilterEditGroup(),
-                                  project: project,
-                                  background: _canvasBackground,
-                                  currentLayerId: _currentLayerId,
-                                  isEraser: _currentTool == DrawingTool.eraser,
-                                  currentTool: _currentTool,
-                                  currentSubTool: _currentSubTool,
-                                  lassoFillEnclosedMode: _lassoFillEnclosedMode,
-                                  onionSkinSettings: _onionSkinSettings,
-                                  currentFrame: _currentFrame,
-                                  sceneId: _currentSceneId,
-                                  activeRuler: _activeRuler,
-                                  onRulerChanged: _setActiveRulerLive,
-                                  shapeKind: _shapeKind,
-                                  onGestureToolChange: (tool) =>
-                                      setState(() => _currentTool = tool),
-                                  onGestureToggleTool: _handleGestureToggleTool,
-                                  onNextQuickTool: _applyNextQuickTool,
-                                  onToggleOnionSkin: () => setState(
-                                    () => _onionSkinSettings =
-                                        _onionSkinSettings.copyWith(
-                                          enabled: !_onionSkinSettings.enabled,
-                                        ),
-                                  ),
-                                  meshDensity: _meshDensity,
-                                  meshRotateDeg: _meshRotateDeg,
-                                  meshScaleValue: _meshScaleValue,
-                                  meshCommitToken: _meshCommitToken,
-                                  meshCancelToken: _meshCancelToken,
-                                  onNextFrame: _goToNextFrame,
-                                  onPreviousFrame: _goToPreviousFrame,
-                                  invertSelectionToken: _invertSelectionToken,
-                                  selectAllSelectionToken:
-                                      _selectAllSelectionToken,
-                                  clearSelectionToken: _clearSelectionToken,
-                                  selectionReferenceAllVisible: context
-                                      .watch<SettingsService>()
-                                      .selectionReferenceAllVisible,
-                                  lassoSnapToLines: context
-                                      .watch<SettingsService>()
-                                      .lassoSnapToLines,
-                                  lassoGapTolerancePx: context
-                                      .watch<SettingsService>()
-                                      .lassoGapTolerancePx,
-                                  onSelectionActiveChanged: (v) {
-                                    if (_hasActiveSelection == v) return;
-                                    setState(() {
-                                      _hasActiveSelection = v;
-                                      // 選択範囲を作り直した／解除したら、
-                                      // 「変更キャンセル」で戻せる範囲も
-                                      // そこで区切る。
-                                      _selectionTransformSteps = 0;
-                                      _resetSelectionSliders();
-                                    });
-                                  },
-                                  onSelectionMaskChanged: (mask) {
-                                    if (identical(_canvasSelectionMask, mask)) {
-                                      return;
+                                Listener(
+                                  // 入力欄はマウス・ペンで外を押されると自分で
+                                  // フォーカスを手放す（同じ押下の処理の中で、
+                                  // ここより後に動く）。その後で戻す。
+                                  onPointerDown: (_) => scheduleMicrotask(() {
+                                    if (mounted &&
+                                        !_screenFocus.hasPrimaryFocus) {
+                                      _screenFocus.requestFocus();
                                     }
-                                    setState(() => _canvasSelectionMask = mask);
-                                  },
-                                  filterLensMask: _filterLensMaskShown(),
-                                  onUndoGesture: _undo,
-                                  onRedoGesture: _redo,
-                                  onFilterLensMaskEdited: _editFilterLensMask,
-                                  selectionMoveX: _selectionMoveX,
-                                  selectionMoveY: _selectionMoveY,
-                                  selectionScale: _selectionScale,
-                                  selectionRotateDeg: _selectionRotateDeg,
-                                  selectionTransformCommitToken:
-                                      _selectionTransformCommitToken,
+                                  }),
+                                  child: CanvasArea(
+                                    onTapForText:
+                                        _currentTool == DrawingTool.text
+                                        ? onCanvasTapForText
+                                        : null,
+                                    onEyedropper: _handleCanvasEyedropper,
+                                    autofillCheckMode: _autofillCheckMode,
+                                    filterEyedropperActive:
+                                        _filterColorEyedropperTarget != null ||
+                                        _textColorEyedropperTarget != null ||
+                                        _brushOutlineEyedropperActive,
+                                    filterGizmo: _filterCanvasGizmo(project),
+                                    currentLayerPreview:
+                                        _filterCanvasPreviewShown(),
+                                    currentLayerPreviewBlendMode:
+                                        _filterCanvasPreviewBlendMode(),
+                                    lockToolInput: selectionEditingHidden,
+                                    onFilterGizmoChanged: (gizmo) =>
+                                        _moveFilterGizmo(project, gizmo),
+                                    onFilterGizmoDragStart: () => context
+                                        .read<FilterService>()
+                                        .beginFilterEditGroup(),
+                                    onFilterGizmoDragEnd: () => context
+                                        .read<FilterService>()
+                                        .endFilterEditGroup(),
+                                    project: project,
+                                    background: _canvasBackground,
+                                    currentLayerId: _currentLayerId,
+                                    isEraser:
+                                        _currentTool == DrawingTool.eraser,
+                                    currentTool: _currentTool,
+                                    currentSubTool: _currentSubTool,
+                                    lassoFillEnclosedMode:
+                                        _lassoFillEnclosedMode,
+                                    onionSkinSettings: _onionSkinSettings,
+                                    currentFrame: _currentFrame,
+                                    sceneId: _currentSceneId,
+                                    activeRuler: _activeRuler,
+                                    onRulerChanged: _setActiveRulerLive,
+                                    shapeKind: _shapeKind,
+                                    onGestureToolChange: (tool) =>
+                                        setState(() => _currentTool = tool),
+                                    onGestureToggleTool:
+                                        _handleGestureToggleTool,
+                                    onNextQuickTool: _applyNextQuickTool,
+                                    onToggleOnionSkin: () => setState(
+                                      () => _onionSkinSettings =
+                                          _onionSkinSettings.copyWith(
+                                            enabled:
+                                                !_onionSkinSettings.enabled,
+                                          ),
+                                    ),
+                                    meshDensity: _meshDensity,
+                                    meshRotateDeg: _meshRotateDeg,
+                                    meshScaleValue: _meshScaleValue,
+                                    meshCommitToken: _meshCommitToken,
+                                    meshCancelToken: _meshCancelToken,
+                                    onNextFrame: _goToNextFrame,
+                                    onPreviousFrame: _goToPreviousFrame,
+                                    invertSelectionToken: _invertSelectionToken,
+                                    selectAllSelectionToken:
+                                        _selectAllSelectionToken,
+                                    clearSelectionToken: _clearSelectionToken,
+                                    selectionReferenceAllVisible: context
+                                        .watch<SettingsService>()
+                                        .selectionReferenceAllVisible,
+                                    lassoSnapToLines: context
+                                        .watch<SettingsService>()
+                                        .lassoSnapToLines,
+                                    lassoGapTolerancePx: context
+                                        .watch<SettingsService>()
+                                        .lassoGapTolerancePx,
+                                    onSelectionActiveChanged: (v) {
+                                      if (_hasActiveSelection == v) return;
+                                      setState(() {
+                                        _hasActiveSelection = v;
+                                        // 選択範囲を作り直した／解除したら、
+                                        // 「変更キャンセル」で戻せる範囲も
+                                        // そこで区切る。
+                                        _selectionTransformSteps = 0;
+                                        _resetSelectionSliders();
+                                      });
+                                    },
+                                    onSelectionMaskChanged: (mask) {
+                                      if (identical(
+                                        _canvasSelectionMask,
+                                        mask,
+                                      )) {
+                                        return;
+                                      }
+                                      setState(
+                                        () => _canvasSelectionMask = mask,
+                                      );
+                                    },
+                                    filterLensMask: _filterLensMaskShown(),
+                                    onUndoGesture: _undo,
+                                    onRedoGesture: _redo,
+                                    onFilterLensMaskEdited: _editFilterLensMask,
+                                    selectionMoveX: _selectionMoveX,
+                                    selectionMoveY: _selectionMoveY,
+                                    selectionScale: _selectionScale,
+                                    selectionRotateDeg: _selectionRotateDeg,
+                                    selectionTransformCommitToken:
+                                        _selectionTransformCommitToken,
+                                  ),
                                 ),
                                 if (_filterColorEyedropperTarget != null ||
                                     _textColorEyedropperTarget != null ||

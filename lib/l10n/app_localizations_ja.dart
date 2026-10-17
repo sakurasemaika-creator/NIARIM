@@ -27,11 +27,20 @@ class AppLocalizationsJa extends AppLocalizations {
   String get homeTabBookmarked => 'ブクマ済み';
 
   @override
-  String get homeBookmarkedComingSoonTitle => '近日公開';
+  String get homeBookmarkedEmptyTitle => 'ブックマークした作品はまだありません';
 
   @override
-  String get homeBookmarkedComingSoonBody =>
-      '「みんなのアニメを見る」機能の実装後、ブックマークした他ユーザーの公開作品をここに一覧表示できるようになります。';
+  String get homeBookmarkedEmptyBody => '作品広場でブックマークした作品が、ここに表示されます。';
+
+  @override
+  String get homeBookmarkedHiddenTitle => 'ブックマークした作品は、いまは表示されていません';
+
+  @override
+  String get homeBookmarkedHiddenBody =>
+      '作品広場の表示フィルターで非表示になっているか、公開が終わっています。ブックマークは残っています。';
+
+  @override
+  String get homeBookmarkedOpenPlaza => '作品広場を見る';
 
   @override
   String get homeSearchHint => 'プロジェクト名で検索';
@@ -47,6 +56,12 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get homeAddSheetNewFolder => '新規フォルダ';
+
+  @override
+  String get homeAddTooltip => '新規作成';
+
+  @override
+  String get commonShowExplanation => '説明を表示';
 
   @override
   String get homeSelectionAllSelect => '全選択';
@@ -106,6 +121,9 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get homeViewModeDetail => '詳細';
+
+  @override
+  String get homeViewModeTooltip => '表示の大きさ';
 
   @override
   String get homeSortFieldName => '名前';

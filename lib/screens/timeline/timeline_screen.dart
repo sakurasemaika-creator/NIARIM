@@ -73,6 +73,7 @@ import '../../utils/reorder_index.dart';
 import '../../widgets/scrollable_sheet_body.dart';
 import '../../widgets/custom_automation_manager_sheet.dart';
 import '../../widgets/custom_automation_draft_sheet.dart';
+import '../../widgets/typing_aware_shortcuts.dart';
 
 // タイムライントラッククリップ
 enum _ClipTrackType { audio, video, image }
@@ -186,6 +187,8 @@ class TimelineScreen extends StatefulWidget {
 
 class _TimelineScreenState extends State<TimelineScreen> {
   OverlayEntry? _customAutomationRecordingOverlay;
+  // 画面のショートカットを受けるフォーカス。入力欄から抜けたら戻す。
+  final FocusNode _screenFocus = FocusNode(debugLabel: 'Timeline');
   // 再生位置。再生タイマーはfps間隔（24fpsなら約41ms）でこれを進めるため、
   // ここをただのフィールドにして`setState`で更新すると、そのたびに
   // タイムライン画面のウィジェットツリー全体（フレーム一覧・各トラック・
@@ -556,6 +559,7 @@ class _TimelineScreenState extends State<TimelineScreen> {
     _currentFrameNotifier.removeListener(_onCurrentFrameChanged);
     _currentFrameNotifier.dispose();
     _projectService.endWorkTracking();
+    _screenFocus.dispose();
     super.dispose();
   }
 
@@ -948,9 +952,11 @@ class _TimelineScreenState extends State<TimelineScreen> {
     // マウス/キーボード入力・左手デバイス：設定画面「ショートカット設定」
     // で割り当てたキーで、Undo/Redo・再生/一時停止・フレーム送りなどの
     // 操作を行えるようにする。
-    return CallbackShortcuts(
+    return TypingAwareShortcuts(
       bindings: _buildShortcutBindings(context),
+      screenFocus: _screenFocus,
       child: Focus(
+        focusNode: _screenFocus,
         autofocus: true,
         child: Scaffold(
           body: Listener(

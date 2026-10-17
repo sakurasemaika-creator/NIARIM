@@ -143,17 +143,35 @@ abstract class AppLocalizations {
   /// **'ブクマ済み'**
   String get homeTabBookmarked;
 
-  /// No description provided for @homeBookmarkedComingSoonTitle.
+  /// No description provided for @homeBookmarkedEmptyTitle.
   ///
   /// In ja, this message translates to:
-  /// **'近日公開'**
-  String get homeBookmarkedComingSoonTitle;
+  /// **'ブックマークした作品はまだありません'**
+  String get homeBookmarkedEmptyTitle;
 
-  /// No description provided for @homeBookmarkedComingSoonBody.
+  /// No description provided for @homeBookmarkedEmptyBody.
   ///
   /// In ja, this message translates to:
-  /// **'「みんなのアニメを見る」機能の実装後、ブックマークした他ユーザーの公開作品をここに一覧表示できるようになります。'**
-  String get homeBookmarkedComingSoonBody;
+  /// **'作品広場でブックマークした作品が、ここに表示されます。'**
+  String get homeBookmarkedEmptyBody;
+
+  /// No description provided for @homeBookmarkedHiddenTitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'ブックマークした作品は、いまは表示されていません'**
+  String get homeBookmarkedHiddenTitle;
+
+  /// No description provided for @homeBookmarkedHiddenBody.
+  ///
+  /// In ja, this message translates to:
+  /// **'作品広場の表示フィルターで非表示になっているか、公開が終わっています。ブックマークは残っています。'**
+  String get homeBookmarkedHiddenBody;
+
+  /// No description provided for @homeBookmarkedOpenPlaza.
+  ///
+  /// In ja, this message translates to:
+  /// **'作品広場を見る'**
+  String get homeBookmarkedOpenPlaza;
 
   /// No description provided for @homeSearchHint.
   ///
@@ -184,6 +202,18 @@ abstract class AppLocalizations {
   /// In ja, this message translates to:
   /// **'新規フォルダ'**
   String get homeAddSheetNewFolder;
+
+  /// No description provided for @homeAddTooltip.
+  ///
+  /// In ja, this message translates to:
+  /// **'新規作成'**
+  String get homeAddTooltip;
+
+  /// No description provided for @commonShowExplanation.
+  ///
+  /// In ja, this message translates to:
+  /// **'説明を表示'**
+  String get commonShowExplanation;
 
   /// No description provided for @homeSelectionAllSelect.
   ///
@@ -286,6 +316,12 @@ abstract class AppLocalizations {
   /// In ja, this message translates to:
   /// **'詳細'**
   String get homeViewModeDetail;
+
+  /// No description provided for @homeViewModeTooltip.
+  ///
+  /// In ja, this message translates to:
+  /// **'表示の大きさ'**
+  String get homeViewModeTooltip;
 
   /// No description provided for @homeSortFieldName.
   ///

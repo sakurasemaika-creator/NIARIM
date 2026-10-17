@@ -56,7 +56,7 @@
    `test/helpers/color_channels.dart`の`.red8`/`.green8`/`.blue8`/
    `.alpha8`を使う。テスト内のデバッグ出力は`print`ではなく
    `debugPrint`を使う）
-3. `flutter test`（ベースライン：2026-10-10時点で**成功1910・スキップ8・
+3. `flutter test`（ベースライン：2026-10-17時点で**成功1952・スキップ8・
    失敗4**。失敗は監査担当の`test/app_web_reference_*`3件と、別セッション
    （質感変更フィルターの名前変更）の`test/texture_filter_gold_palette_test.dart`
    1件で、通常タスクでは直さない。スキップのうち3件は
@@ -137,6 +137,34 @@
   して使う。実際に`premium_lock_widget.dart`と`community_work_detail_screen.dart`
   の2箇所でこの誤用によるバグを発見・修正した。新規に`go()`を追加する際は
   「この画面から戻れなくなって困る人がいないか」を必ず自問すること。
+- **go_router 13.2.5では、戻れる画面が無いと`PopScope`は呼ばれない**：
+  `GoRouterDelegate.popRoute`は`NavigatorState.canPop()`がfalseだと
+  `maybePop`を呼ばずにfalseを返し、アプリが閉じる。キャンバスや書き出しから
+  `go('/home')`で戻ったホームがこの状態（履歴がホーム1枚）。ホームは
+  `BackButtonListener`（`_handleRootBack`）で先に受け、検索・選択・フォルダを
+  閉じてから`go('/')`している。ダイアログが上にあるときは
+  `ModalRoute.isCurrent`がfalseなので横取りしない。
+  あわせて、**`PopScope(canPop: false)`の画面では、Navigatorは引き出し
+  （ドロワー）等のLocalHistoryEntryを自分では閉じない**（`popDisposition`が
+  `doNotPop`になり、`onPopInvokedWithResult`だけが呼ばれる）。戻る処理の
+  先頭で`willHandlePopInternally`なら`Navigator.pop()`で閉じること
+  （ホームでは引き出しを開いたまま裏で選択が解除されていた）。
+- **画面全体のキーボードショートカットは`TypingAwareShortcuts`で、入力が
+  終わったらフォーカスを画面へ戻す**：`CallbackShortcuts`で画面を包むと
+  入力欄より先にキーを取る（検索欄のCtrl+Aが作品の全選択になり、検索で
+  隠れた作品まで選ばれていた）。`TypingAwareShortcuts`は入力欄にフォーカスが
+  ある間は何もしない。その代わり、入力欄からEnterや欄の外のクリックで抜けると
+  Flutterはフォーカスを画面のスコープそのもの（ショートカットより上）へ
+  落とすので、画面の`Focus`に`FocusNode`を持たせ、それを
+  `TypingAwareShortcuts(screenFocus:)`にも渡すこと（フォーカスがスコープへ
+  落ちたら画面へ戻す。キャンバスの色コード欄・レイヤーの検索欄でEnterを
+  押すと、画面を一度押すまでショートカットが効かなかった）。ホームの
+  `onEditingComplete`・`onTapOutside`とキャンバスへの押下（マイクロタスクで
+  遅らせる。入力欄自身のフォーカス解除が同じ押下の処理の後で動くため）でも
+  戻している。
+  キーを押し続けたときの繰り返しは`ShortcutBinding.repeatableCommands`
+  （取り消し・やり直し・コマ送り）だけ。貼り付け等を繰り返すと、Ctrl+Vを
+  押し続けただけで作品の複製が次々にできた。
 - **Material3のTheme個別スタイル未設定でフォントが化ける**：
   `ListTileThemeData.titleTextStyle`・`DialogThemeData.titleTextStyle`・
   `AppBarTheme.titleTextStyle`は、`textTheme`から自動継承されず、明示的に
@@ -551,15 +579,29 @@ replaceLayerPixels`はタイル差分のUndo（プリズムの合成モード変
   起きない」形の失敗になる。`tester.ensureVisible()`を挟むこと。
   併せて、キャンバスのオーバーレイパネルは画面左側へ縦いっぱいに開いて
   **ツールバーを覆う**ため、次のツールバー操作の前に閉じる必要がある。
-- **`FirstUseTooltip`の吹き出しは画面全体の透明バリアを敷く**：吹き出しが
-  出ている間はどこをタップしても閉じられるよう`Positioned.fill`の
-  `GestureDetector`をOverlayへ置いている。そのため、吹き出しが出た直後の
-  操作はバリアに吸われて何も起きない。ツールバーを操作するテストでは
-  `SharedPreferences.setMockInitialValues({firstUseTooltipsSeenKey:
+- **`FirstUseTooltip`の説明カードは専用の画面（`RawDialogRoute`）として積む**：
+  カードの外側はルートのバリア（幕）で、どこをタップしても閉じる。そのため、
+  カードが出た直後の操作はバリアに吸われて何も起きない。ツールバーを操作する
+  テストでは`SharedPreferences.setMockInitialValues({firstUseTooltipsSeenKey:
 kAllFirstUseTooltipKeys})`で全キーを表示済みにしておくこと（一覧は
   `test/helpers/first_use_tooltips.dart`。lib配下の実際の`tooltipKey:`と
   一致していることを`test/first_use_tooltip_keys_test.dart`が見張っている
   ので、吹き出しを増やしたらこのファイルにも足す）。
+  以前は`OverlayEntry`で画面の上へ重ねていたが、（1）戻る操作は下の画面
+  （`PopScope`で戻る操作を受けるホーム等）や同じタップで開いたダイアログへ
+  届いてカードが残る、（2）画面側が既にフォーカスを持っているので
+  `autofocus`が効かずEscも効かない・背面の画面のCtrl+Z等が動く、
+  （3）Android 16の予測型「戻る」はNavigatorが戻れないとOSへ渡すので
+  アプリごと閉じる、の3つを同時に踏んでいた。画面の上に重ねて「読んだら
+  閉じる」ものはOverlayではなくルートにすること（戻る・Esc・フォーカス・
+  予測型「戻る」がすべて標準の仕組みで揃う）。カードは次のフレームで積む
+  （同じタップで子がダイアログを開いた場合もその上に出る）。積むのに要る
+  もの（Navigator・色・文言）は**押した時点で取っておく**こと：押すと画面ごと
+  作り変わるボタン（タイムラインの全画面表示）では、次のフレームには説明の
+  ウィジェットが無く、カードが一度も出ていなかった。位置を画面の座標で
+  決める吹き出し（`InfoIconTooltip`）は`RawDialogRoute`ではなく`PopupRoute`
+  にする（`RawDialogRoute`は折りたたみ端末のヒンジで画面を分けて片側に
+  置くため、もう片側のアイコンの吹き出しが切れる）。
 - **`Table`のセルは既定（`top`）だと自分の中身ぶんの高さしか持たない**：
   1つのセルが2行に折り返すと行だけが高くなり、他の列の
   `Container(color: ...)`は**行の下端まで届かず背景に白い帯が残る**
@@ -670,6 +712,11 @@ onTap: ...)`だったために
   `startGesture`＋`moveBy`を自分で書く場合はスロップぶんが丸ごと捨てられ、
   **1回のmoveByだけだとスクロール量が0になる**。スロップ用と本番用の
   2回に分けること。
+- **画像を焼くマトリクステストでは影を本物にする**：`flutter test`は既定で
+  `debugDisableShadows = true`（影が黒い縁取りで描かれ、FABが黒い輪に見える）。
+  `test/home_display_matrix_test.dart`のように`false`にして撮り、**テスト本体の
+  最後で`true`へ戻す**こと（`addTearDown`では終了時の検査の後になり
+  「debug variable was changed」で落ちる）。
 - **`flutter test`環境での既知の制約**：
   - `path_provider`はデフォルトで未登録。ディスクI/Oを伴うテストは
     `test/app_smoke_test.dart`の`mockPathProvider`ヘルパーを使うこと。
@@ -777,6 +824,11 @@ onTap: ...)`だったために
   なお文言もこの画像に焼き込まれるため、Androidの文字列リソースではなく
   **アプリ内の表示言語設定に追従する**（`app.dart`の`_syncHomeWidgets`が
   テーマ色と言語の両方をキーにして焼き直す）。
+  起動画面の釣り合いはユーザー指定：**どの画面比率でも導線のボタンを
+  アプリアイコン・アプリ名より大きく**（モノグラムはボタンの基準幅の0.6倍、
+  PC・タブレットは0.55倍、アプリ名は0.9倍）、PC（DeX）とタブレット（短辺
+  600dp以上）は並び全体を画面幅の約8割まで拡大、スマホはボタン150pxのまま
+  間隔を最大64px。`test/splash_layout_test.dart`が336通りの全セルで見張る。
 - **ポップアップ・トーストの下地は必ず不透明にする**：テーマの色は
   カラーピッカーで透明度まで選べるため、メニュー背景色をそのまま
   ダイアログ等の下地に使うと後ろの画面が透ける。`theme_service.dart`は
