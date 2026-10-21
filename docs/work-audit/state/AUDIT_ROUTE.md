@@ -727,6 +727,13 @@ Baseline監査中に、既存A/W IDの意味へ無理に押し込めない新し
 
 | DISC003 | A003 | 書き出し済み作品一覧の取得失敗と起動画面先読みの未処理例外 | App ec93d84、Linux production UIでdocuments保存先を取得できない状態。起動画面で未処理例外、作品一覧で無期限loading。home_export_list_failure_testでも再現 | 先読み失敗の非致命化、一覧/フォルダのerror→retry、失敗継続/復旧、再訪、7言語、PC/SP、表示matrix、A002/A064回帰。A003で修正・限定検証中、全条件完了までdone不可 | todo |
 | DISC004 | A003 | 新規プロジェクトの初回保存失敗が利用者に通知されず再起動で消失する | 同じ保存先取得失敗状態でUIから新規作品作成→canvas→ホームに表示→再起動で消失。ProjectService.createProjectの_saveAsyncが保存例外をFile空値へ変換している | 初回保存成功前に作成完了/編集開始としないこと、失敗時の資産/メモリ整合、error/retry/二重操作、正常保存→再起動、容量/権限失敗、7言語、A007/A061回帰。data-lossのため現在IDから優先対応 | todo |
+| DISC005 | A003 | 実際のaccent/selection背景とseed由来onPrimary/onSecondaryの低コントラスト | App b6cd7e2で既定accent/onPrimary比2.97。S5保存済みnative drawerの白文字と共通テーマ実装を照合。任意の異なるprimary/secondaryを同じforegroundで描くgradientにも注意 | 実背景へ合成したprimary/secondaryと前景の4.5以上、28presetと透明/相反custom色、drawer/初回案内/tooltip/FAB/起動画面等の実画面、7言語PC/SP、保存色不変と関連回帰。現在IDから修正するが全callerのclosureまでdone不可 | todo |
+| DISC006 | A003 | 共通empty stateとproject一覧のshort-height/文字拡大overflow | App b6cd7e2の固定Columnが640×220 nativeで89px、640×360文字2倍のmatrixで16px overflow。S5保存済みbefore/afterと現行sourceを照合 | 共通EmptyStatePlaceholderと重複project emptyを修正し、全callerでshort-height/文字拡大/7言語PC/SPの情報・scroll・refresh・再訪を確認。警告をclipで隠さず操作可能性を維持。全caller完了までdone不可 | todo |
+| DISC007 | A003 | 大量project一覧のタブ往復でスクロール位置が先頭へ戻る | 120件の実保存fixture、SP390/PC1440で1180pxスクロール→Bookmarks→Projectsが0pxへ戻る（home_scroll_continuity_test両modeでFAIL）。TabBarViewによる破棄後にProjectListの位置を識別するPageStorageKeyがない | 同一一覧のタブ/Drawer/再訪で位置保持、folder・検索・favorites・表示mode間で位置を誤共有しないこと、Works/Bookmarks等の関連一覧、7言語/PC-SP/大量データ・resize・回帰とnative before/after画像。現在IDのcontinuityを妨げるため優先対応 | todo |
+| DISC008 | A003 | Bookmarks空表示の理由分岐（未登録/閲覧フィルター/未取得・取得失敗）の識別 | source確認: _BookmarkedTabはbookmarkedWorksForViewer.isEmptyだけを判定し、Serviceは保存済みIDに対して存在する作品と閲覧条件を適用する。IDsありでも全非表示/未取得になり得る。実データ再現と表示要否判断は未実施の品質リスク | 0 bookmarks、all AI/muted/private/deleted、backend loading/error/offline/retry/refreshの成立条件を隔離データで再現し、存在しないと誤認させない文言/状態/導線、7言語PC-SP、保存ID不変と関連回帰を確認する。sourceだけで機能不具合確定/PASSとしない | todo |
+
+
+
 
 Discoveryは発見した順ではなく安定した番号で追跡し、重複IDを作らない。重大security/data-loss/privacyや現在IDの完了を直接妨げるものは優先処理し、それ以外はBaseline順を壊さずbacklogとして残す。Baseline完了後にDISC-IDを番号順で消化する。
 

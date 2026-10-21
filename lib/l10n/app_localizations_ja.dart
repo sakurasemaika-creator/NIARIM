@@ -27,11 +27,10 @@ class AppLocalizationsJa extends AppLocalizations {
   String get homeTabBookmarked => 'ブクマ済み';
 
   @override
-  String get homeBookmarkedComingSoonTitle => '近日公開';
+  String get homeBookmarkedEmptyTitle => 'ブックマークした作品はありません';
 
   @override
-  String get homeBookmarkedComingSoonBody =>
-      '「みんなのアニメを見る」機能の実装後、ブックマークした他ユーザーの公開作品をここに一覧表示できるようになります。';
+  String get homeBookmarkedEmptyBody => '作品広場で気に入った公開作品をブックマークすると、ここに表示されます。';
 
   @override
   String get homeSearchHint => 'プロジェクト名で検索';

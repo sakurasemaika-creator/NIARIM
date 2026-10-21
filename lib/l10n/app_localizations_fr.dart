@@ -28,11 +28,11 @@ class AppLocalizationsFr extends AppLocalizations {
   String get homeTabBookmarked => 'Enregistrées';
 
   @override
-  String get homeBookmarkedComingSoonTitle => 'Bientôt disponible';
+  String get homeBookmarkedEmptyTitle => 'Aucune œuvre enregistrée';
 
   @override
-  String get homeBookmarkedComingSoonBody =>
-      'Une fois la fonctionnalité « Voir les animations de tous » disponible, les œuvres d\'autres utilisateurs que vous avez enregistrées apparaîtront ici.';
+  String get homeBookmarkedEmptyBody =>
+      'Enregistrez les œuvres publiques qui vous plaisent sur la Place des œuvres pour les retrouver ici.';
 
   @override
   String get homeSearchHint => 'Rechercher par nom de projet';

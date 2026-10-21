@@ -489,20 +489,26 @@ class ThemeService extends ChangeNotifier {
     final popupColor = opaqueOver(preset.menuBgColor, panelColor);
     // 初回の吹き出し・説明の吹き出しはアクセント色を下地にするので同様。
     final accentColor = opaqueOver(preset.accentColor, panelColor);
+    final selectionColor = opaqueOver(preset.selectionColor, panelColor);
     // 「文字色」（UI全体の文字色）はonSurface系にも反映し、
     // ColorScheme.fromSeedが自動算出する既定の文字色（accentColorから
     // 逆算される、ユーザーが選んだtextColorとは無関係の値）で上書きされて
     // しまわないようにする。
-    final scheme =
-        ColorScheme.fromSeed(
-          seedColor: preset.accentColor,
-          brightness: brightness,
-        ).copyWith(
-          primary: accentColor,
-          secondary: preset.selectionColor,
-          onSurface: preset.textColor,
-          onSurfaceVariant: preset.textColor.withValues(alpha: 0.7),
-        );
+    final seedScheme = ColorScheme.fromSeed(
+      seedColor: preset.accentColor,
+      brightness: brightness,
+    );
+    final scheme = seedScheme.copyWith(
+      primary: accentColor,
+      onPrimary: contrastingForeground(accentColor, seedScheme.onPrimary),
+      secondary: selectionColor,
+      onSecondary: contrastingForeground(
+        selectionColor,
+        seedScheme.onSecondary,
+      ),
+      onSurface: preset.textColor,
+      onSurfaceVariant: preset.textColor.withValues(alpha: 0.7),
+    );
     // 角丸を大きめにし、Google Material標準の角丸14pxよりも柔らかい印象にする
     // （LINE・メルカリ等、日本の人気アプリに共通するポップで丸みの強い形状）。
     const radius = 18.0;

@@ -28,11 +28,11 @@ class AppLocalizationsEs extends AppLocalizations {
   String get homeTabBookmarked => 'Guardados';
 
   @override
-  String get homeBookmarkedComingSoonTitle => 'Próximamente';
+  String get homeBookmarkedEmptyTitle => 'Aún no hay obras guardadas';
 
   @override
-  String get homeBookmarkedComingSoonBody =>
-      'Cuando esté disponible la función «Ver las animaciones de todos», aquí aparecerán las obras de otros usuarios que hayas guardado.';
+  String get homeBookmarkedEmptyBody =>
+      'Guarda las obras públicas que te gusten en la Plaza de Obras para verlas aquí.';
 
   @override
   String get homeSearchHint => 'Buscar por nombre de proyecto';

@@ -164,3 +164,28 @@ status: done（2026-10-10、製品修正 App `35d229e`、証跡 https://claude.a
 - User explicitly authorized saving the evidence ZIP to the previously identified audit Drive folder. Upload succeeded and connector metadata readback verified the returned file and destination.
 - Product fix was published at App `41413d5951835be21e11957ad42b0f869b900ecb`; mirrored State at Web `b8cc30ed9bca0516efd5c9fc9d440232a94e9866`. Re-fetched both dev_branch heads before this State-only update; both matched. No product or audit-completion status changed.
 - Remaining work stays at A003 in_progress and the previously recorded Discovery/Delta/Visual requirements.
+
+### 2026-10-21 S5復元・S6 current-source checkpoint — A003は未完了
+
+- 再開時に両dev_branchをfetch/fast-forwardし、App `b6cd7e28abd97c9536ae562be2edbc14bd402de8` / Web `a217e33bca378dc8bf36a5c13d1d95c36acc0e1f` を一次事実として再確認。S5の未pushローカルcommitは今回の環境には無かった。過去の完了申告をremote反映済みと扱わず、保存済みDrive ZIPから復旧し、現在sourceで再検証した。
+- 旧S5 main ZIPはDriveから再取得し、64,559,011 bytes / 2,388 entries、SHA256 `25e868a789e53118a6a9715a2eb2205e54d3a0a100409f19f5d38f17efa7b26d` と全entry CRC一致。ZIP内の20製品source中18件をbyte-identicalに復元（ARB/generated全14件、theme_service、color_contrast、ProjectList、共通empty）。Home/Drawerとtestは再構成して今回のテスト・native実画面で検証。旧S5の全証拠を現在の全面完了へ昇格させていない。
+- S5修正を復元: 実accent/selectionを不透明な背景へ合成し、その実色に対してonPrimary/onSecondaryを4.5以上へ選ぶ。28 built-in＋透明/相反customのテスト、保存preset値不変を確認。Drawer headerは単色＋不透明な前景、共通emptyはshort-heightで情報を切らずscroll可能、ProjectListの重複emptyを統合。Bookmarksの未実装扱いを7言語で実際のempty文言へ改め、作品広場への明示導線を追加。French Startの語中改行をdialog幅/paddingで防ぐ。これらはDISC005/006の全caller closureを意味しない。
+- 追加の実画像検査で、白accent時のBookmark icon/CTA不可視化と既定Home selected tab比2.787を発見。再現test FAIL→背景とのcontrastから前景を選び、tab文字/indicator、Bookmark icon/CTAを修正→targeted PASS。保存色や収益化gateは変更していない。カスタム配色の起動画面ではlogo/tilesの低contrastをnativeで観察しており、DISC005の残るA002関連確認として保持する。
+- DISC007再現: production serializerで120件の実ファイルfixture（32x32、fps1、duration1、Unicode名）を生成。SP390/PC1440のwidget実行で1180px→Bookmarks→Projectsが0pxへ戻り、両case FAIL。Homeの各tabとprojectの有限な閲覧scope（folder/view/favorites/search mode）へPageStorageKeyを付け、任意のquery文字列ごとの無制限なoffset保存を避けた。修正後、Project tab往復とDrawer→Settings→backをSP/PCでテストPASS。Works/Bookmarks非emptyやfolder/search/view/filter全相互作用は未完了。
+- native Linux debug/Xvfb/xdotool（mouse/keyboard）で修正前後を直接操作・画像目視。SP390×844/forcePC=0: wheel後先頭project092→Bookmarks往復が修正前119、修正後092。PC1440×900/forcePC=1: 同079→往復が修正前119、修正後079、Settings往復後も079。Empty Bookmarks→実Community grid→native back→同Bookmarks tabも確認。native既定文字倍率であり、Android/DeX/touch/stylus確認の代用ではない。
+- French320のnative custom fixtureはaccent白/selection黒/panel FAF7F5/menu CCCCCC/text2B2730。Bookmarksのselected tab/icon/CTAが読めることを実画像で確認。first_launch=falseの保存を確認したが、first-guidance名のcaptureは古いSplash frameであり、案内のnative Visual evidenceとして使わない。全captureの成功を一括申告せず、初期resolver未準備のempty/no-op画像もmanifestで区別した。
+- 現在の自動回帰: 14 files / 実test69件 PASS（loading14 events除外、最終done.success=true）、tap miss warning0。S6反例3件も修正後PASS。表示matrixは6主要状態×336=2016＋7言語×6状態×7mutation=294、計2310 PNGとmanifest、layout例外0。tab切替はensureVisible＋selected assertionで検証し、単なるmiss tapで緑にしない。全2310画像を個別目視した意味ではない。320の7言語×6状態のdefault/dark-scale2 contact、French scale2原寸、白accent原寸、上記native結果を開いて確認。
+- full flutter analyze: No issues found。Linux debug build成功。69-test実行後の変更は古いcomment削除とfixtureのif bracesのみで、analyze/buildを再実行。app_smokeは全caseに実隔離保存先を用意し初回saveの完了を待つ（既存drawing/timeline等のassertionは維持）。保存済み旧S5の12 FAILと今回のfixture修正を区別し、今回の69 PASSを一次結果とする。
+- DISC005/006/007/008を登録。DISC008は保存済みbookmarked IDsに対する未取得/閲覧フィルター/取得失敗と0 bookmarksのempty表示理由を区別できるかというsource由来の品質リスクで、実データ再現・判断待ち。sourceだけで不具合確定/PASSとはしていない。
+- Tutorial判定: Bookmarksの新しい明示ラベル付き1-step CTAはinline説明で目的が分かるため、独立tutorial不要。初回案内の目的/acknowledgment仕様は維持。後続の隠れgestureや多手順機能のtutorial判定を代替しない。
+
+#### 今回の永続証跡（Drive readback＋実bytes再取得検証済み）
+
+| ZIP | size / entries | SHA256 |
+| --- | --- | --- |
+| [A003 S5-S6 main](https://drive.google.com/file/d/1ASxcsh5ABYTvYXUYxVA6RSjN_c_EgFFa/view?usp=drivesdk) | 65,020,718 bytes / 2,482 | `f567a166fa3650c43fe65554db8fd2f3bb7af65e0f5da03589c95dfa32b8d91f` |
+| [A003 S5-S6 intermediate](https://drive.google.com/file/d/1QqQp-hLw-qka_quhnyEa14_5ru0goLk1/view?usp=drivesdk) | 79,931,037 bytes / 3,016 | `386d55b9c2199d543a49ffb57f1dd4eb6b38f8ad1716b565565c8e764a5e4c9f` |
+
+- 保存先は承認済み `1fiZEjCVqLtNVk_mkNIOUC3MWn6ys6e8q`。両file IDのname/MIME(application/zip)/size/parentをmetadataで照合した後、Driveからraw ZIPを再取得して上記SHA256・size・全entry CRCを独立検証。ローカルhashだけをremote検証済みと呼んでいない。
+- ZIPは全writer停止後にtemp→close/fsync→atomic replaceで作成し、別execでも整合性を検証してupload。Mainにはcurrent matrix/native before-after/serializer fixture/設定/ログ/source hashes/再適用可能なproduct-source.patch/reproduction scriptsを含め、raw VM service URL入りrunner.logは除外してredact版のみ保存。Intermediateは復元時のmatrixと未採用の試行を保持する。Gitをsource/State正本とし、Drive ZIPでの未完了状態を最終closureと呼ばない。
+- 残り: 通常/大量/error等の全主要状態matrix、Works/Bookmarks非emptyとfilter/取得状態、検索・folder・view・resizeのcontinuity、free/paid/current campaign、DISC003–008全条件、後続Baseline/Discovery/Deltaと最新HEAD最終Visual。Android/DeX実機・touch/multitouch/筆圧は未用意、Linux FFmpeg dlopenも未成立でcodec/exportをPASSにしない。Baseline done2/628、current A003/in_progress、DISC001–008 todo、Delta not_startedを維持する。

@@ -28,17 +28,26 @@ web_baseline: 2a44dd9007e4a764e489a42a70f96ac5da6b3b8a
 - 検証: 初回保存/再起動復元、documents取得失敗、実FS blocker保持と復旧、二重送信/離脱の新規testsとhome/folder回帰は19 PASS。createProject利用79file回帰は182 PASS/slot fixture 4 FAIL；修正前checkpointでも同じ4 FAILを再現。host CPU依存のslot fixtureを明示presetにし、4/4 PASSへ修正。full analyze 0件、Linux debug build成功。
 - DISC004実画面: 保存先resolverを隔離runtime内で一時無効→作成で遷移せずerror・既存保存作品のみ→resolverを復旧→同じ入力で再試行しcanvas→runner終了/再起動→新作品と既存作品がhomeに復元。保存ZIPのmanifestでも名前/fps/sizeを確認。元resolverは復旧済み。
 
-current_substep: A003/S5 初回案内・drawer・全主要状態と表示matrixの残項目
+current_substep: A003/S6 通常/大量データ・継続性・残る状態/P条件
+completed_substeps:
+- S5未push分を保存済みDrive ZIPから復元。製品source18/20件のhash一致、残りを再構成して現在sourceで検証。旧S5 main再取得のSHA256/CRC一致。
+- Themeの実accent/selection前景、short-height empty、7言語Bookmarks empty/作品広場導線、French Start折返しを修正・再検証。
+- 追加のHome前景contrast反例と、大量一覧の1180px→0px反例を修正。S6 targeted3 PASS。native PC/SPでtab往復の位置保持、PC Settings往復、SP gallery往復を目視確認。
+- 14 files/実69 tests PASS、2310状態matrix layout PASS、full analyze 0件、Linux debug build PASS。自動matrixと直接目視を区別し、全画像目視や全監査完了を申告していない。
+- 今回ZIP2本はDriveへ保存しmetadataと再取得SHA256/全CRCを確認。main 1ASxcsh5ABYTvYXUYxVA6RSjN_c_EgFFa / intermediate 1QqQp-hLw-qka_quhnyEa14_5ru0goLk1。正確なURL/hash/size/留保はASTRA_AUDIT_STATE.mdの最新checkpoint参照。
 remaining_substeps:
-- project選択/search→tab切替の修正後実操作はSP390×844・PC1440×900 jaで確認済み。7言語/他状態は残る。
-- 初回案内/再表示、drawer8導線、全主要状態、7言語/336表示matrix、theme/textScale、continuityの未確認を埋める。
-- DISC004は初回保存のawait・失敗時非公開・入力保持・再試行・実画面の復旧/再起動を検証済み。7言語・残るstorage/device分岐のclosureは未完了。
-- このcheckpointの証跡ZIP backup完了（ユーザー明示許可後）: [audit-evidence-2026-10-21-A003-DISC004.zip](https://drive.google.com/file/d/1V357zq7uAQmhZt7wBaPRKj0NPnlaBlvr/view?usp=drivesdk)。Drive readbackでname・MIME `application/zip`・size 862508 bytes・保存先folder 1fiZEjCVqLtNVk_mkNIOUC3MWn6ys6e8qを確認。ローカルSHA256 `02fe5c2c7390f8839ccc8152422770234b7b1680eab94b8eb360ac0c8d592f19`、ZIP検査済み。過去A001/A002の証跡backupや最終coverageまで完了した意味ではない。
+- 通常3件/大量120件、Works/Bookmarks非empty/error/loading等の全主要表示状態×336、7言語、theme/textScale/short-height/continuous resizeを埋める。
+- Projectのroot tab往復/Drawer往復はPC/SPで検証。folder/search/view/favoritesとWorks/Bookmarksの残るcontinuityは未完了。
+- DISC003/004の残るstorage/device/language、DISC005の全caller（native custom Splash低contrastを含む）、DISC006共通empty全caller、DISC007関連一覧/条件、DISC008のempty理由分岐を再現・修正・検証する。
+- free/paid/current campaignのP条件を区別し、収益化gateを変更せず隔離設定で検証する。
 blockers:
-- Android/DeX実機・touch/multi-touch/筆圧入力は未用意。該当NATIVE IDをPASSにしない。
-- Linux補助環境のFFmpeg native dependency `libvpx.so.7` は未用意。codec/exportはこのUI確認でPASSにしない。
+- Android/DeX実機、touch/multi-touch/筆圧入力が未用意。該当NATIVEはPASSにしない。
+- Linux補助環境はFFmpeg libffmpegkit.soのdlopenが未成立。codec/exportをこのUI checkpointでPASSにしない。
 - advisor-pending: none。
-next_action: A003初回案内/drawer8導線/全主要状態/7言語336表示matrixを継続する。DISC003/004の残る分岐・言語確認も必要。A003はin_progress、DISC/Deltaのcursorは変更しない。
+next_action: A003/S6の通常/大量/非empty/取得失敗・filter状態とcontinuity/P条件を継続。DISC008を実データで再現し、現在IDの完了を妨げる問題を先に修正する。A003/Discovery/Delta cursorを推測で進めない。
+
+前checkpointの保存記録（保持）:
+- このcheckpointの証跡ZIP backup完了（ユーザー明示許可後）: [audit-evidence-2026-10-21-A003-DISC004.zip](https://drive.google.com/file/d/1V357zq7uAQmhZt7wBaPRKj0NPnlaBlvr/view?usp=drivesdk)。Drive readbackでname・MIME `application/zip`・size 862508 bytes・保存先folder 1fiZEjCVqLtNVk_mkNIOUC3MWn6ys6e8qを確認。ローカルSHA256 `02fe5c2c7390f8839ccc8152422770234b7b1680eab94b8eb360ac0c8d592f19`、ZIP検査済み。過去A001/A002の証跡backupや最終coverageまで完了した意味ではない。
 
 以下は以前のセッションの履歴であり、上記の現在substepを上書きしない。
 

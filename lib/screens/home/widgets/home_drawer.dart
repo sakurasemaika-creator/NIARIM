@@ -14,17 +14,9 @@ class HomeDrawer extends StatelessWidget {
       child: ListView(
         padding: EdgeInsets.zero,
         children: [
-          // テーマの差し色を使ったグラデーションヘッダー（固定の濃紺ではなく
-          // 選択中テーマに追従する）。
           Container(
             padding: const EdgeInsets.fromLTRB(20, 56, 20, 20),
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-                colors: [scheme.primary, scheme.secondary],
-              ),
-            ),
+            decoration: BoxDecoration(color: scheme.primary),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -32,7 +24,7 @@ class HomeDrawer extends StatelessWidget {
                   width: 48,
                   height: 48,
                   decoration: BoxDecoration(
-                    color: scheme.onPrimary.withValues(alpha: 0.25),
+                    color: scheme.onPrimary.withValues(alpha: 0.12),
                     shape: BoxShape.circle,
                   ),
                   child: Icon(
@@ -42,10 +34,6 @@ class HomeDrawer extends StatelessWidget {
                   ),
                 ),
                 const SizedBox(height: 12),
-                // ホーム画面AppBarのNIARIMと同じく、明朝を明示指定し太字・
-                // 文字間広めで可読性を上げる。文字色はテーマの差し色（背景の
-                // グラデーション）に対して自動でコントラストが確保される
-                // onPrimaryを使う（差し色が明るいテーマでも視認性を保つ）。
                 Text(
                   'NIARIM',
                   style: TextStyle(
@@ -61,10 +49,7 @@ class HomeDrawer extends StatelessWidget {
                 const SizedBox(height: 2),
                 Text(
                   l10n.homeDrawerAppTagline,
-                  style: TextStyle(
-                    color: scheme.onPrimary.withValues(alpha: 0.85),
-                    fontSize: 12,
-                  ),
+                  style: TextStyle(color: scheme.onPrimary, fontSize: 12),
                 ),
               ],
             ),

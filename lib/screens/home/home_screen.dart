@@ -34,6 +34,7 @@ import '../../config/font_fallback.dart';
 import '../../widgets/scrollable_sheet_body.dart';
 import '../community/community_edit_feedback.dart';
 import '../../utils/app_error_reporter.dart';
+import '../../utils/color_contrast.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -570,6 +571,15 @@ class _HomeScreenState extends State<HomeScreen>
                         if (!_isSearching) _buildBreadcrumb(),
                         Expanded(
                           child: ProjectListWidget(
+                            // Keep bounded browsing scopes rather than every typed query.
+                            key: PageStorageKey((
+                              'home-projects',
+                              _viewMode,
+                              _currentFolderId,
+                              _showFavoritesOnly,
+                              _isSearching,
+                              _searchByTag,
+                            )),
                             // 「共有」タブ（.niashareインポート由来）は別枠の
                             // 一覧のため、プロジェクトタブには表示しない。
                             projects: context
@@ -611,8 +621,8 @@ class _HomeScreenState extends State<HomeScreen>
                         ),
                       ],
                     ),
-                    const _WorksTab(),
-                    const _BookmarkedTab(),
+                    const _WorksTab(key: PageStorageKey('home-works')),
+                    const _BookmarkedTab(key: PageStorageKey('home-bookmarks')),
                   ],
                 ),
               ),
@@ -922,6 +932,11 @@ class _HomeTabBar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
+    final background = opaqueOver(
+      Theme.of(context).scaffoldBackgroundColor,
+      Colors.black,
+    );
+    final selectedColor = contrastingForeground(background, scheme.primary);
     final textStyle = const TextStyle(
       fontSize: 14,
       fontWeight: FontWeight.w600,
@@ -953,7 +968,7 @@ class _HomeTabBar extends StatelessWidget {
           decoration: BoxDecoration(
             border: Border(
               bottom: BorderSide(
-                color: currentIndex == i ? scheme.primary : Colors.transparent,
+                color: currentIndex == i ? selectedColor : Colors.transparent,
                 width: 2,
               ),
             ),
@@ -964,7 +979,7 @@ class _HomeTabBar extends StatelessWidget {
             softWrap: false,
             style: textStyle.copyWith(
               color: currentIndex == i
-                  ? scheme.primary
+                  ? selectedColor
                   : scheme.onSurfaceVariant,
             ),
           ),
@@ -1664,46 +1679,35 @@ class _TrashTab extends StatelessWidget {
   }
 }
 
-/// 「作品一覧」タブ：書き出し済みの動画・GIF
-/// ファイルをアプリ内保存先（ExportEngine.exportsDir、
-/// getApplicationDocumentsDirectory()/exports）から一覧表示する。
-/// タップでアプリ内プレビュー、共有ボタンでOSの共有シートから写真アプリ等へ
-/// 「開く」ことができる（share_plusは書き出し完了ダイアログで既に使用している
-/// 実績のある仕組みのため、新規ネイティブ依存を追加せずに実現できる）。
-/// 「ブクマ済みの作品」タブ。「作品広場」画面
-/// （`CommunityService`）でブックマークした他ユーザーの公開作品を一覧
-/// 表示する。ダウンロードはせず、あくまで一覧表示のみ（バックエンド
-/// 未実装のため現状はダミーデータ上のブックマーク状態を参照する）。
-/// 1件もブックマークしていない場合は従来どおりの案内表示のままにする。
+/// 閲覧フィルターとブックマーク日時順を反映する公開作品一覧。
 class _BookmarkedTab extends StatelessWidget {
-  const _BookmarkedTab();
+  const _BookmarkedTab({super.key});
 
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     final scheme = Theme.of(context).colorScheme;
+    final background = opaqueOver(
+      Theme.of(context).scaffoldBackgroundColor,
+      Colors.black,
+    );
+    final foreground = contrastingForeground(background, scheme.primary);
     final communityService = context.watch<CommunityService>();
-    // 新しくブックマークした順に並べる。communityService.worksの並び
-    // （ダミーデータの生成順）のままだと、たった今ブックマークした作品が
-    // 一覧のどこに現れるか分からず、操作の結果が確認できない。
-    // 作品広場の表示フィルター（AI非表示・ミュート）もここに効かせる。
+    // 閲覧フィルターを適用し、新しくブックマークした順に表示する。
     final bookmarkedWorks = communityService.bookmarkedWorksForViewer;
 
     if (bookmarkedWorks.isEmpty) {
       return Center(
-        child: Padding(
+        child: SingleChildScrollView(
           padding: const EdgeInsets.all(24),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Icon(
-                Icons.bookmark_border,
-                size: 64,
-                color: scheme.primary.withValues(alpha: 0.6),
-              ),
+              Icon(Icons.bookmark_border, size: 64, color: foreground),
               const SizedBox(height: 16),
               Text(
-                l10n.homeBookmarkedComingSoonTitle,
+                l10n.homeBookmarkedEmptyTitle,
+                textAlign: TextAlign.center,
                 style: const TextStyle(
                   fontSize: 18,
                   fontWeight: FontWeight.bold,
@@ -1713,9 +1717,16 @@ class _BookmarkedTab extends StatelessWidget {
               ),
               const SizedBox(height: 8),
               Text(
-                l10n.homeBookmarkedComingSoonBody,
+                l10n.homeBookmarkedEmptyBody,
                 textAlign: TextAlign.center,
                 style: TextStyle(color: scheme.onSurfaceVariant),
+              ),
+              const SizedBox(height: 16),
+              OutlinedButton.icon(
+                style: OutlinedButton.styleFrom(foregroundColor: foreground),
+                onPressed: () => context.push('/community'),
+                icon: const Icon(Icons.explore_outlined),
+                label: Text(l10n.communityScreenTitle),
               ),
             ],
           ),
@@ -1739,7 +1750,7 @@ class _BookmarkedTab extends StatelessWidget {
 }
 
 class _WorksTab extends StatefulWidget {
-  const _WorksTab();
+  const _WorksTab({super.key});
 
   @override
   State<_WorksTab> createState() => _WorksTabState();
@@ -2216,12 +2227,18 @@ class _FirstLaunchDialog extends StatelessWidget {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     return AlertDialog(
+      insetPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
+      constraints: const BoxConstraints(minWidth: 280, maxWidth: 560),
+      scrollable: true,
       content: Text(l10n.homeFirstLaunchMessage),
       actions: [
         // 「はじめる」ボタンの文字はくらむぼんを明示指定する
         // （通常のボタン文字は白光明朝のため、ここだけ差し替える）。
         FilledButton(
           onPressed: onDone,
+          style: FilledButton.styleFrom(
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+          ),
           child: Text(
             l10n.homeFirstLaunchStart,
             style: const TextStyle(

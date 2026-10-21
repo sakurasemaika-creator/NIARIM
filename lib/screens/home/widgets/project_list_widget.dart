@@ -19,6 +19,7 @@ import '../../../services/project_service.dart';
 import '../home_screen.dart';
 import '../../../config/font_fallback.dart';
 import '../../../widgets/scrollable_sheet_body.dart';
+import '../../../widgets/empty_state_placeholder.dart';
 
 /// 新規フォルダ作成ダイアログ（フォルダ名入力）。プロジェクト一覧画面の
 /// ＋ボタン（新規プロジェクト/新規フォルダ選択）・フォルダ移動ピッカーの
@@ -208,44 +209,10 @@ class ProjectListWidget extends StatelessWidget {
     final sorted = _sorted(entries);
 
     if (sorted.isEmpty) {
-      final scheme = Theme.of(context).colorScheme;
-      return Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Container(
-              width: 96,
-              height: 96,
-              decoration: BoxDecoration(
-                color: scheme.primaryContainer,
-                shape: BoxShape.circle,
-              ),
-              child: Icon(
-                Icons.movie_creation_outlined,
-                size: 44,
-                color: scheme.primary,
-              ),
-            ),
-            const SizedBox(height: 20),
-            Text(
-              l10n.projectListEmptyTitle,
-              style: TextStyle(
-                color: scheme.onSurface,
-                fontSize: 16,
-                fontWeight: FontWeight.w600,
-                fontFamily: 'Kuramubon',
-                fontFamilyFallback: kHeadingFontFallback,
-              ),
-            ),
-            if (showEmptyCreateHint) ...[
-              const SizedBox(height: 8),
-              Text(
-                l10n.projectListEmptyHint,
-                style: TextStyle(color: scheme.onSurfaceVariant, fontSize: 14),
-              ),
-            ],
-          ],
-        ),
+      return EmptyStatePlaceholder(
+        icon: Icons.movie_creation_outlined,
+        title: l10n.projectListEmptyTitle,
+        hint: showEmptyCreateHint ? l10n.projectListEmptyHint : null,
       );
     }
 

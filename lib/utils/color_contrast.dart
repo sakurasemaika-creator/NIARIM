@@ -55,6 +55,18 @@ double contrastRatio(Color a, Color b) {
   return (lighter + 0.05) / (darker + 0.05);
 }
 
+/// Keeps the preferred foreground when it meets normal-text contrast on the
+/// actual opaque background, otherwise chooses the more legible neutral.
+Color contrastingForeground(Color background, Color preferred) {
+  if (preferred.a == 1 && contrastRatio(background, preferred) >= 4.5) {
+    return preferred;
+  }
+  return contrastRatio(background, Colors.black) >=
+          contrastRatio(background, Colors.white)
+      ? Colors.black
+      : Colors.white;
+}
+
 /// [preset]の中で「これが潰れると操作不能になる」色の組み合わせ。
 ///
 /// - 本文の文字色 × パネル背景色（一覧・設定画面の本文）

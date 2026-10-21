@@ -143,17 +143,17 @@ abstract class AppLocalizations {
   /// **'ブクマ済み'**
   String get homeTabBookmarked;
 
-  /// No description provided for @homeBookmarkedComingSoonTitle.
+  /// No description provided for @homeBookmarkedEmptyTitle.
   ///
   /// In ja, this message translates to:
-  /// **'近日公開'**
-  String get homeBookmarkedComingSoonTitle;
+  /// **'ブックマークした作品はありません'**
+  String get homeBookmarkedEmptyTitle;
 
-  /// No description provided for @homeBookmarkedComingSoonBody.
+  /// No description provided for @homeBookmarkedEmptyBody.
   ///
   /// In ja, this message translates to:
-  /// **'「みんなのアニメを見る」機能の実装後、ブックマークした他ユーザーの公開作品をここに一覧表示できるようになります。'**
-  String get homeBookmarkedComingSoonBody;
+  /// **'作品広場で気に入った公開作品をブックマークすると、ここに表示されます。'**
+  String get homeBookmarkedEmptyBody;
 
   /// No description provided for @homeSearchHint.
   ///

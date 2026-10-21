@@ -27,11 +27,11 @@ class AppLocalizationsKo extends AppLocalizations {
   String get homeTabBookmarked => '북마크됨';
 
   @override
-  String get homeBookmarkedComingSoonTitle => '준비 중입니다';
+  String get homeBookmarkedEmptyTitle => '북마크한 작품이 없습니다';
 
   @override
-  String get homeBookmarkedComingSoonBody =>
-      '\"모두의 애니메이션 보기\" 기능이 구현되면, 다른 사용자의 공개 작품 중 북마크한 작품이 여기에 표시됩니다.';
+  String get homeBookmarkedEmptyBody =>
+      '작품 광장에서 마음에 드는 공개 작품을 북마크하면 여기에 표시됩니다.';
 
   @override
   String get homeSearchHint => '프로젝트 이름으로 검색';

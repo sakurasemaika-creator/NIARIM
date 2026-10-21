@@ -28,11 +28,11 @@ class AppLocalizationsEn extends AppLocalizations {
   String get homeTabBookmarked => 'Bookmarked';
 
   @override
-  String get homeBookmarkedComingSoonTitle => 'Coming soon';
+  String get homeBookmarkedEmptyTitle => 'No bookmarked works yet';
 
   @override
-  String get homeBookmarkedComingSoonBody =>
-      'Once the \"Watch everyone\'s animations\" feature is available, works you\'ve bookmarked from other users will be listed here.';
+  String get homeBookmarkedEmptyBody =>
+      'Bookmark public works you like in Work Plaza to find them here.';
 
   @override
   String get homeSearchHint => 'Search by project name';

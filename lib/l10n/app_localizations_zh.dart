@@ -27,11 +27,10 @@ class AppLocalizationsZh extends AppLocalizations {
   String get homeTabBookmarked => '已收藏';
 
   @override
-  String get homeBookmarkedComingSoonTitle => '敬请期待';
+  String get homeBookmarkedEmptyTitle => '暂无收藏作品';
 
   @override
-  String get homeBookmarkedComingSoonBody =>
-      '「查看大家的动画」功能上线后，你收藏的其他用户公开作品会显示在这里。';
+  String get homeBookmarkedEmptyBody => '在作品广场收藏喜欢的公开作品，即可在这里查看。';
 
   @override
   String get homeSearchHint => '按项目名称搜索';
@@ -7390,11 +7389,10 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get homeTabBookmarked => '已收藏';
 
   @override
-  String get homeBookmarkedComingSoonTitle => '敬請期待';
+  String get homeBookmarkedEmptyTitle => '尚無收藏作品';
 
   @override
-  String get homeBookmarkedComingSoonBody =>
-      '「觀看大家的動畫」功能上線後，您收藏的其他使用者公開作品會顯示在這裡。';
+  String get homeBookmarkedEmptyBody => '在作品廣場收藏喜歡的公開作品，即可在這裡查看。';
 
   @override
   String get homeSearchHint => '依專案名稱搜尋';
