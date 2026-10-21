@@ -410,40 +410,77 @@ class _HomeScreenState extends State<HomeScreen>
             children: [
               if (_isSelectionMode)
                 Container(
+                  width: double.infinity,
                   padding: const EdgeInsets.symmetric(
-                    horizontal: 16,
+                    horizontal: 8,
                     vertical: 8,
                   ),
                   color: Theme.of(context).colorScheme.surfaceContainerHighest,
                   child: Row(
                     children: [
-                      TextButton(
-                        onPressed: _selectAllInCurrentFolder,
-                        child: Text(l10n.homeSelectionAllSelect),
+                      // 文字領域を可変にし、狭い画面や大きな文字でも
+                      // 切り取り・コピー・削除を1行のまま表示する。
+                      Expanded(
+                        child: Row(
+                          children: [
+                            Expanded(
+                              child: Tooltip(
+                                message: l10n.homeSelectionAllSelect,
+                                child: TextButton(
+                                  style: TextButton.styleFrom(
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: 4,
+                                    ),
+                                    minimumSize: const Size(48, 48),
+                                  ),
+                                  onPressed: _selectAllInCurrentFolder,
+                                  child: Text(
+                                    l10n.homeSelectionAllSelect,
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                ),
+                              ),
+                            ),
+                            Expanded(
+                              child: Tooltip(
+                                message: l10n.homeSelectionAllDeselect,
+                                child: TextButton(
+                                  style: TextButton.styleFrom(
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: 4,
+                                    ),
+                                    minimumSize: const Size(48, 48),
+                                  ),
+                                  onPressed: () => setState(() {
+                                    _selectedIds.clear();
+                                    _isSelectionMode = false;
+                                  }),
+                                  child: Text(
+                                    l10n.homeSelectionAllDeselect,
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                ),
+                              ),
+                            ),
+                            Expanded(
+                              child: Tooltip(
+                                message: l10n.homeSelectionCount(
+                                  _selectedIds.length,
+                                ),
+                                child: Text(
+                                  l10n.homeSelectionCount(_selectedIds.length),
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                  textAlign: TextAlign.center,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
                       ),
-                      TextButton(
-                        onPressed: () => setState(() {
-                          _selectedIds.clear();
-                          _isSelectionMode = false;
-                        }),
-                        child: Text(l10n.homeSelectionAllDeselect),
-                      ),
-                      Spacer(),
-                      Text(l10n.homeSelectionCount(_selectedIds.length)),
                       if (_selectedIds.isNotEmpty) ...[
-                        IconButton(
-                          icon: Icon(
-                            Icons.star,
-                            color: ThemeService.activeColorScheme.tertiary,
-                          ),
-                          onPressed: () => _bulkSetFavorite(true),
-                          tooltip: l10n.homeSelectionAddFavorite,
-                        ),
-                        IconButton(
-                          icon: const Icon(Icons.star_border),
-                          onPressed: () => _bulkSetFavorite(false),
-                          tooltip: l10n.homeSelectionRemoveFavorite,
-                        ),
                         IconButton(
                           icon: const Icon(Icons.content_cut),
                           onPressed: _cutSelected,
@@ -617,24 +654,6 @@ class _HomeScreenState extends State<HomeScreen>
         ),
       ),
     );
-  }
-
-  /// 選択中のプロジェクト・フォルダのお気に入り状態をまとめて[favorite]へ
-  /// 揃える（toggleFavorite系は反転のみのため、既に望む状態のものは
-  /// スキップする）。
-  void _bulkSetFavorite(bool favorite) {
-    final service = context.read<ProjectService>();
-    for (final id in _selectedIds) {
-      final project = service.projects.where((p) => p.id == id).firstOrNull;
-      if (project != null) {
-        if (project.isFavorite != favorite) service.toggleFavorite(id);
-        continue;
-      }
-      final folder = service.folders.where((f) => f.id == id).firstOrNull;
-      if (folder != null && folder.isFavorite != favorite) {
-        service.toggleFolderFavorite(id);
-      }
-    }
   }
 
   void _deleteSelected() {
