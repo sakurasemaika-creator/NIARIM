@@ -1,3 +1,5 @@
+import 'helpers/project_storage.dart';
+
 import 'dart:typed_data';
 
 import 'package:flutter/gestures.dart';
@@ -12,6 +14,7 @@ import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 void main() {
+  useTemporaryProjectStorage();
   TestWidgetsFlutterBinding.ensureInitialized();
   setUp(() => SharedPreferences.setMockInitialValues({}));
 

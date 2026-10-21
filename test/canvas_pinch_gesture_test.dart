@@ -1,3 +1,5 @@
+import 'helpers/project_storage.dart';
+
 import 'dart:math' as math;
 
 import 'package:flutter/gestures.dart';
@@ -18,6 +20,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 /// 実装であるぶん壊れても気付きにくいため、倍率境界と最小倍率時の回転を
 /// 実ポインター入力で固定する。
 void main() {
+  useTemporaryProjectStorage();
   TestWidgetsFlutterBinding.ensureInitialized();
   setUp(() => SharedPreferences.setMockInitialValues({}));
 

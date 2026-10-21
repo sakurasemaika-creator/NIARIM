@@ -22,17 +22,23 @@ web_baseline: 2a44dd9007e4a764e489a42a70f96ac5da6b3b8a
 - A003/S3 / DISC003: documents取得不能で未処理prefetch error＋作品一覧永久loadingを実画面再現。先読みのerror記録、一覧/フォルダのerror/retry UI、reloadのFutureを返すsetStateを修正。実画面でerror→失敗継続→保存先復旧→再試行成功を確認。
 - 新規targeted tests＋既存home responsive/tag search: 11/11 PASS。touched analyze: No issues found。Linux debug build成功。全監査完了・A003 doneの意味ではない。
 
-current_substep: A003/S4 production UI再操作とDISC004初回保存失敗対策
+- 追加checkpoint: ユーザーの明示許可でホーム修正 App `184ef3d743650f2d44ad926d7fa9447954dfda75` / State mirror Web `7d021c84fc9e3884acfc7ef27018fef87c932741` をdev_branchへ反映。API作成treeと検証済みlocal treeの一致、fetch後tree一致を確認。force pushなし。
+- A003/S4: 修正後production runnerでSP/PCの選択→作品一覧、query→作品一覧を再操作。選択action/queryは残らず、tabの題名・選択表示が正しい。実画面を開いて確認。
+- DISC004優先対策: createProjectは初回niapro保存完了後にpublishする。失敗時はTileManagerを破棄してthrow、フォームはgeneric errorをliveRegionで表示・入力保持・再試行可。保存中は二重送信を防止。
+- 検証: 初回保存/再起動復元、documents取得失敗、実FS blocker保持と復旧、二重送信/離脱の新規testsとhome/folder回帰は19 PASS。createProject利用79file回帰は182 PASS/slot fixture 4 FAIL；修正前checkpointでも同じ4 FAILを再現。host CPU依存のslot fixtureを明示presetにし、4/4 PASSへ修正。full analyze 0件、Linux debug build成功。
+- DISC004実画面: 保存先resolverを隔離runtime内で一時無効→作成で遷移せずerror・既存保存作品のみ→resolverを復旧→同じ入力で再試行しcanvas→runner終了/再起動→新作品と既存作品がhomeに復元。保存ZIPのmanifestでも名前/fps/sizeを確認。元resolverは復旧済み。
+
+current_substep: A003/S5 初回案内・drawer・全主要状態と表示matrixの残項目
 remaining_substeps:
-- 修正版でproject選択→tab切替、search→tab切替、PC/SPを直接再操作。
+- project選択/search→tab切替の修正後実操作はSP390×844・PC1440×900 jaで確認済み。7言語/他状態は残る。
 - 初回案内/再表示、drawer8導線、全主要状態、7言語/336表示matrix、theme/textScale、continuityの未確認を埋める。
-- DISC004の初回保存失敗による消失をroot cause→fix→test→実画面→再起動で閉じる。
-- 証跡manifest/Drive backupを確定し、必要なVisual/回帰を確認。
+- DISC004は初回保存のawait・失敗時非公開・入力保持・再試行・実画面の復旧/再起動を検証済み。7言語・残るstorage/device分岐のclosureは未完了。
+- 証跡ZIP/manifest作成・ZIP検査済み: 02fe5c2c7390f8839ccc8152422770234b7b1680eab94b8eb360ac0c8d592f19。Drive backupは自動承認レビュー拒否でbackup-pending（ZIP内容と宛先の明示許可が必要と判定）。
 blockers:
 - Android/DeX実機・touch/multi-touch/筆圧入力は未用意。該当NATIVE IDをPASSにしない。
 - Linux補助環境のFFmpeg native dependency `libvpx.so.7` は未用意。codec/exportはこのUI確認でPASSにしない。
 - advisor-pending: none。
-next_action: A003の修正後操作証拠を保存し、data-lossのDISC004を優先修正する。A003はin_progress、DISC/Deltaのcursorは変更しない。
+next_action: A003初回案内/drawer8導線/全主要状態/7言語336表示matrixを継続する。DISC003/004の残る分岐・言語確認も必要。A003はin_progress、DISC/Deltaのcursorは変更しない。
 
 以下は以前のセッションの履歴であり、上記の現在substepを上書きしない。
 

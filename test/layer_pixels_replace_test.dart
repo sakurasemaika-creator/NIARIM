@@ -1,3 +1,5 @@
+import 'helpers/project_storage.dart';
+
 import 'dart:typed_data';
 import 'dart:ui' as ui;
 
@@ -20,6 +22,7 @@ const _w = 120, _h = 80;
 /// canvas) is one Undo step, and the canvas shows it at once — and shows the
 /// original again after Undo.
 void main() {
+  useTemporaryProjectStorage();
   TestWidgetsFlutterBinding.ensureInitialized();
   setUp(() => SharedPreferences.setMockInitialValues({}));
 

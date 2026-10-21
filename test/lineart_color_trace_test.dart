@@ -1,3 +1,5 @@
+import 'helpers/project_storage.dart';
+
 import 'dart:io';
 import 'dart:typed_data';
 import 'dart:ui' as ui;
@@ -18,6 +20,7 @@ const _size = 96;
 /// blue over blue), on a layer clipped to the line art, so nothing off the
 /// lines changes and the line's own black is never sampled.
 void main() {
+  useTemporaryProjectStorage();
   TestWidgetsFlutterBinding.ensureInitialized();
 
   test('lines take a deeper tone of the colours beside them', () async {

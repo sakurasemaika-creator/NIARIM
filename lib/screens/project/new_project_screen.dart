@@ -15,6 +15,7 @@ import '../../widgets/help_button.dart';
 import '../../widgets/ad_banner_mock_widget.dart';
 import 'canvas_size_preset_manage_screen.dart';
 import '../../config/font_fallback.dart';
+import '../../utils/app_error_reporter.dart';
 
 class NewProjectScreen extends StatefulWidget {
   const NewProjectScreen({super.key});
@@ -28,6 +29,8 @@ class _NewProjectScreenState extends State<NewProjectScreen> {
   // プロジェクト名の初期値はローカライズが必要なため、didChangeDependencies内で
   // 一度だけ設定する（initStateの時点ではAppLocalizationsの参照が確定しない）。
   bool _nameInitialized = false;
+  bool _creating = false;
+  bool _creationFailed = false;
   int _fps = 12;
   int _durationSeconds = 10;
   Color _backgroundColor = Colors.white;
@@ -696,10 +699,30 @@ class _NewProjectScreenState extends State<NewProjectScreen> {
                 ),
               ),
               const SizedBox(height: 32),
+              if (_creationFailed)
+                Padding(
+                  padding: const EdgeInsets.only(bottom: 16),
+                  child: Semantics(
+                    liveRegion: true,
+                    child: Text(
+                      l10n.newProjectCreateFailed,
+                      style: TextStyle(
+                        color: Theme.of(context).colorScheme.error,
+                      ),
+                    ),
+                  ),
+                ),
               FilledButton.icon(
-                onPressed: _createProject,
-                icon: const Icon(Icons.add),
-                label: Text(l10n.commonCreate),
+                onPressed: _creating ? null : _createProject,
+                icon: _creating
+                    ? const SizedBox.square(
+                        dimension: 18,
+                        child: CircularProgressIndicator(strokeWidth: 2),
+                      )
+                    : const Icon(Icons.add),
+                label: Text(
+                  _creating ? l10n.newProjectCreating : l10n.commonCreate,
+                ),
                 style: FilledButton.styleFrom(
                   minimumSize: const Size.fromHeight(48),
                 ),
@@ -712,20 +735,34 @@ class _NewProjectScreenState extends State<NewProjectScreen> {
   }
 
   Future<void> _createProject() async {
+    if (_creating) return;
+    setState(() {
+      _creating = true;
+      _creationFailed = false;
+    });
     final projectService = context.read<ProjectService>();
-    final defaultName = AppLocalizations.of(context)!.newProjectDefaultName;
-    final project = await projectService.createProject(
-      name: _nameController.text.trim().isEmpty
-          ? defaultName
-          : _nameController.text.trim(),
-      fps: _fps,
-      durationSeconds: _durationSeconds,
-      backgroundColor: _backgroundColor.toARGB32(),
-      exportWidth: _exportWidth,
-      exportHeight: _exportHeight,
-      drawingAreaScale: _drawingAreaEnabled ? _drawingAreaScale : 1.0,
-      enabledAutofillPresetIds: _enabledPresetIds,
-    );
-    if (mounted) context.go('/canvas/${project.id}');
+    final l10n = AppLocalizations.of(context)!;
+    final defaultName = l10n.newProjectDefaultName;
+    try {
+      final project = await projectService.createProject(
+        name: _nameController.text.trim().isEmpty
+            ? defaultName
+            : _nameController.text.trim(),
+        fps: _fps,
+        durationSeconds: _durationSeconds,
+        backgroundColor: _backgroundColor.toARGB32(),
+        exportWidth: _exportWidth,
+        exportHeight: _exportHeight,
+        drawingAreaScale: _drawingAreaEnabled ? _drawingAreaScale : 1.0,
+        enabledAutofillPresetIds: _enabledPresetIds,
+      );
+      if (mounted) context.go('/canvas/${project.id}');
+    } catch (error, stackTrace) {
+      AppErrorReporter.record(error, stackTrace);
+      if (!mounted) return;
+      setState(() => _creationFailed = true);
+    } finally {
+      if (mounted) setState(() => _creating = false);
+    }
   }
 }

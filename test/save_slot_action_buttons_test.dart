@@ -25,6 +25,8 @@ void main() {
 
   testWidgets('全セーブスロットに書き込み・読み込み・削除の3ボタンが並ぶ', (tester) async {
     SharedPreferences.setMockInitialValues({
+      // This scenario tests slots independently of the host CPU core count.
+      'quality_level': 'medium',
       firstUseTooltipsSeenKey: kAllFirstUseTooltipKeys,
     });
     final tempDir = Directory.systemTemp.createTempSync('niarim_save_slot_');

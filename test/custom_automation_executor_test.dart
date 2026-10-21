@@ -1,3 +1,5 @@
+import 'helpers/project_storage.dart';
+
 import 'dart:typed_data';
 import 'dart:ui' as ui;
 
@@ -39,6 +41,7 @@ final _inPlaceBlur = CustomAutomation(
 );
 
 void main() {
+  useTemporaryProjectStorage();
   TestWidgetsFlutterBinding.ensureInitialized();
   late ProjectService service;
   late String projectId;

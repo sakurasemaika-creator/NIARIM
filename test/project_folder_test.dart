@@ -1,3 +1,5 @@
+import 'helpers/project_storage.dart';
+
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:niarim/engine/niapro_serializer.dart';
@@ -7,11 +9,9 @@ import 'package:niarim/services/project_service.dart';
 /// 仕様書19：プロジェクト管理仕様「フォルダ管理」を検証する。
 /// フォルダの永続化・複数階層対応・お気に入り・移動時の循環防止・
 /// 削除時の子フォルダ/プロジェクトのルートへの復帰を確認する。
-/// ProjectService.init()はストレージアクセス失敗時に空状態でも安全に
-/// 起動する設計（try/catchで全体を包む）ため、path_providerのプラット
-/// フォームチャンネルが無いテスト環境でも、SharedPreferencesベースの
-/// フォルダ読み込み（_loadFolders）は正常に完了する。
+/// プロジェクトの初回保存には、テストごとの隔離ディレクトリを使う。
 void main() {
+  useTemporaryProjectStorage();
   TestWidgetsFlutterBinding.ensureInitialized();
 
   setUp(() {

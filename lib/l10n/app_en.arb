@@ -3133,5 +3133,7 @@
   "startupFailedDetails": "Details",
   "errorViewTitle": "Something went wrong while showing this part",
   "errorViewBody": "Your work in progress is kept. Go back to the previous screen and try again. Sending us the text below helps us find the cause.",
-  "homeWorksLoadFailed": "Could not load your exported works"
+  "homeWorksLoadFailed": "Could not load your exported works",
+  "newProjectCreating": "Creating…",
+  "newProjectCreateFailed": "Could not save the project. Check your storage space and save location, then try again."
 }

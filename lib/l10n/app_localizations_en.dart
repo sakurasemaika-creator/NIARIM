@@ -7680,4 +7680,11 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get homeWorksLoadFailed => 'Could not load your exported works';
+
+  @override
+  String get newProjectCreating => 'Creating…';
+
+  @override
+  String get newProjectCreateFailed =>
+      'Could not save the project. Check your storage space and save location, then try again.';
 }

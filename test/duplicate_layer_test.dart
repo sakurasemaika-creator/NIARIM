@@ -1,3 +1,5 @@
+import 'helpers/project_storage.dart';
+
 import 'dart:ui' as ui;
 
 import 'package:flutter_test/flutter_test.dart';
@@ -13,6 +15,7 @@ import 'package:niarim/services/project_service.dart';
 /// 空の複製になってしまう不具合が過去にあったため、その再発を防ぐための
 /// 回帰テスト。
 void main() {
+  useTemporaryProjectStorage();
   TestWidgetsFlutterBinding.ensureInitialized();
 
   setUp(() {

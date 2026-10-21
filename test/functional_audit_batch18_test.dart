@@ -1,3 +1,5 @@
+import 'helpers/project_storage.dart';
+
 import 'dart:io';
 import 'dart:typed_data';
 import 'dart:ui' as ui;
@@ -14,6 +16,7 @@ import 'package:niarim/services/project_service.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 void main() {
+  useTemporaryProjectStorage();
   TestWidgetsFlutterBinding.ensureInitialized();
   final out = Directory('build/functional-visual');
 

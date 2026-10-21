@@ -2399,13 +2399,9 @@ class ProjectService extends ChangeNotifier {
       drawingAreaScale: drawingAreaScale.clamp(1.0, 10.0),
       enabledAutofillPresetIds: enabledAutofillPresetIds,
     );
-    _projects.add(project);
-
     // 初期シーン・フレーム・レイヤーを生成（Scene0001/Frame0/Layer0001）
-    _layerIdCounters[projectId] = 1;
-    final initialLayerId = _nextLayerId(projectId); // → 'Layer0001'、以降は2から採番
     final initialLayer = Layer(
-      id: initialLayerId,
+      id: 'Layer0001',
       name: 'レイヤー1',
       type: LayerType.normal,
     );
@@ -2415,17 +2411,31 @@ class ProjectService extends ChangeNotifier {
       totalFrames,
       (i) => i == 0 ? initialFrame : Frame(index: i, layers: [initialLayer]),
     );
-    _scenes[projectId] = [Scene(id: 'Scene0001', index: 0, frames: frames)];
+    final scenes = [Scene(id: 'Scene0001', index: 0, frames: frames)];
 
     // TileManager 初期化
-    _tileManagers[projectId] = TileManager(
+    final tileManager = TileManager(
       canvasWidth: project.drawingWidth,
       canvasHeight: project.drawingHeight,
       compositeCacheMax: _tileCacheBudget,
     );
 
-    // 初回保存
-    _saveAsync(projectId);
+    // 編集へ進める前に、再起動後も復元できる初回保存を完了する。
+    try {
+      await NiaproSerializer.save(
+        project: project,
+        scenes: scenes,
+        tileManager: tileManager,
+      );
+    } catch (_) {
+      tileManager.dispose();
+      rethrow;
+    }
+
+    _projects.add(project);
+    _scenes[projectId] = scenes;
+    _tileManagers[projectId] = tileManager;
+    _layerIdCounters[projectId] = 2;
 
     notifyListeners();
     return project;

@@ -7818,4 +7818,11 @@ class AppLocalizationsFr extends AppLocalizations {
   @override
   String get homeWorksLoadFailed =>
       'Impossible de charger vos créations exportées';
+
+  @override
+  String get newProjectCreating => 'Création en cours…';
+
+  @override
+  String get newProjectCreateFailed =>
+      'Impossible d’enregistrer le projet. Vérifiez l’espace de stockage et l’emplacement d’enregistrement, puis réessayez.';
 }

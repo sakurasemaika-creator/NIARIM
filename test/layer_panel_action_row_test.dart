@@ -1,3 +1,5 @@
+import 'helpers/project_storage.dart';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:niarim/app_bootstrap.dart';
@@ -18,6 +20,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 /// `build/visual-reaudit/canvas-panels/03_layer_panel.png`にも同じ状態が
 /// 写っていたが気付かれていなかった）。
 void main() {
+  useTemporaryProjectStorage();
   testWidgets('レイヤーパネル上部のボタンラベルが1行に収まる', (tester) async {
     SharedPreferences.setMockInitialValues({});
     tester.view.physicalSize = const Size(1080, 2280);

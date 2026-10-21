@@ -1,3 +1,5 @@
+import 'helpers/project_storage.dart';
+
 import 'dart:io';
 import 'dart:typed_data';
 import 'dart:ui' as ui;
@@ -15,6 +17,7 @@ import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 void main() {
+  useTemporaryProjectStorage();
   TestWidgetsFlutterBinding.ensureInitialized();
 
   testWidgets('CanvasAreaのオニオンスキンを固定1点ではなく描画領域全体の色分布で検証する', (tester) async {

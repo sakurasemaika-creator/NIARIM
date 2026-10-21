@@ -7459,4 +7459,11 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get homeWorksLoadFailed => '내보낸 작품 목록을 불러오지 못했습니다';
+
+  @override
+  String get newProjectCreating => '만드는 중…';
+
+  @override
+  String get newProjectCreateFailed =>
+      '프로젝트를 저장하지 못했습니다. 저장 공간과 저장 위치를 확인한 후 다시 시도해 주세요.';
 }

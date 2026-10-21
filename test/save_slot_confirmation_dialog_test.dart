@@ -21,6 +21,8 @@ void main() {
 
   testWidgets('既存スロットの書き込み・読み込み確認にサムネイルと保存日時が表示される', (tester) async {
     SharedPreferences.setMockInitialValues({
+      // This scenario tests slots independently of the host CPU core count.
+      'quality_level': 'medium',
       firstUseTooltipsSeenKey: kAllFirstUseTooltipKeys,
     });
 

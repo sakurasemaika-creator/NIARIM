@@ -13606,6 +13606,18 @@ abstract class AppLocalizations {
   /// In ja, this message translates to:
   /// **'作品一覧を読み込めませんでした'**
   String get homeWorksLoadFailed;
+
+  /// No description provided for @newProjectCreating.
+  ///
+  /// In ja, this message translates to:
+  /// **'作成しています…'**
+  String get newProjectCreating;
+
+  /// No description provided for @newProjectCreateFailed.
+  ///
+  /// In ja, this message translates to:
+  /// **'プロジェクトを保存できませんでした。空き容量や保存先を確認して、もう一度お試しください。'**
+  String get newProjectCreateFailed;
 }
 
 class _AppLocalizationsDelegate

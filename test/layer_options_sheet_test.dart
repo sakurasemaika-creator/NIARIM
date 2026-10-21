@@ -1,3 +1,5 @@
+import 'helpers/project_storage.dart';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:niarim/app_bootstrap.dart';
@@ -13,6 +15,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 /// （以前は開いた時点のレイヤーを元に更新していたため、不透明度を変えてから
 /// ロックすると不透明度が元に戻り、スライダーのつまみも動かなかった）。
 void main() {
+  useTemporaryProjectStorage();
   testWidgets('不透明度を変えてからロックしても不透明度が残る', (tester) async {
     SharedPreferences.setMockInitialValues({});
     tester.view.physicalSize = const Size(1080, 2280);

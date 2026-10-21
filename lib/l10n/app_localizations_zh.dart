@@ -7359,6 +7359,12 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get homeWorksLoadFailed => '无法加载导出的作品';
+
+  @override
+  String get newProjectCreating => '正在创建…';
+
+  @override
+  String get newProjectCreateFailed => '无法保存项目。请检查存储空间和保存位置，然后重试。';
 }
 
 /// The translations for Chinese, using the Han script (`zh_Hant`).
@@ -14717,4 +14723,10 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get homeWorksLoadFailed => '無法載入匯出的作品';
+
+  @override
+  String get newProjectCreating => '正在建立…';
+
+  @override
+  String get newProjectCreateFailed => '無法儲存專案。請檢查儲存空間與儲存位置，然後再試一次。';
 }

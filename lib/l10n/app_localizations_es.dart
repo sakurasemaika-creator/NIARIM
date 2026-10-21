@@ -7801,4 +7801,11 @@ class AppLocalizationsEs extends AppLocalizations {
   @override
   String get homeWorksLoadFailed =>
       'No se pudieron cargar tus obras exportadas';
+
+  @override
+  String get newProjectCreating => 'Creando…';
+
+  @override
+  String get newProjectCreateFailed =>
+      'No se pudo guardar el proyecto. Comprueba el espacio de almacenamiento y la ubicación de guardado e inténtalo de nuevo.';
 }

@@ -25,6 +25,8 @@ void main() {
 
   testWidgets('セーブスロットの確定操作をSP/PCで実データ完走する', (tester) async {
     SharedPreferences.setMockInitialValues({
+      // This scenario tests slots independently of the host CPU core count.
+      'quality_level': 'medium',
       firstUseTooltipsSeenKey: kAllFirstUseTooltipKeys,
     });
     final tempDir = Directory.systemTemp.createTempSync(
