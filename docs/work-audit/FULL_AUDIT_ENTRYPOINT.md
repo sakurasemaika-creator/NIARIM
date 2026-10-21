@@ -4,12 +4,14 @@
 
 ユーザーが「NIARIMの全面監査をしてください」「NIARIMを全面監査して」「前回のNIARIM全面監査を再開してください」等、製品全体を対象とする依頼を明示した場合、追加質問なしで全面監査モードへ入る。
 
+進行中の全面監査への補足・許可・進捗質問・継続指示は、`AGENTS.md` Section 0に従って同じ作業を継続する。既に承認されたGitHub/Drive操作は、承認済みの対象・用途の範囲で追加確認せず実行する。
+
 ## 開始時に必ず読む正本
 
 1. 最新 `dev_branch` のApp/Web HEADと開始SHA
 2. `AGENTS.md`
 3. `docs/work-audit/README.md`
-4. `docs/work-audit/policy/ASTRA_WORK.md`
+4. `docs/work-audit/policy/ASTRA_WORK.md` と `docs/work-audit/policy/AUDIT_REMOTE_OPERATIONS.md`
 5. `docs/work-audit/state/AUDIT_ROUTE.md`
 6. `docs/work-audit/state/AUDIT_DELTA_ROUTE.md`
 7. `docs/work-audit/state/FULL_AUDIT_EXECUTION_STANDARD.md`
