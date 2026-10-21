@@ -33,7 +33,7 @@ remaining_substeps:
 - project選択/search→tab切替の修正後実操作はSP390×844・PC1440×900 jaで確認済み。7言語/他状態は残る。
 - 初回案内/再表示、drawer8導線、全主要状態、7言語/336表示matrix、theme/textScale、continuityの未確認を埋める。
 - DISC004は初回保存のawait・失敗時非公開・入力保持・再試行・実画面の復旧/再起動を検証済み。7言語・残るstorage/device分岐のclosureは未完了。
-- 証跡ZIP/manifest作成・ZIP検査済み: 02fe5c2c7390f8839ccc8152422770234b7b1680eab94b8eb360ac0c8d592f19。Drive backupは自動承認レビュー拒否でbackup-pending（ZIP内容と宛先の明示許可が必要と判定）。
+- このcheckpointの証跡ZIP backup完了（ユーザー明示許可後）: [audit-evidence-2026-10-21-A003-DISC004.zip](https://drive.google.com/file/d/1V357zq7uAQmhZt7wBaPRKj0NPnlaBlvr/view?usp=drivesdk)。Drive readbackでname・MIME `application/zip`・size 862508 bytes・保存先folder 1fiZEjCVqLtNVk_mkNIOUC3MWn6ys6e8qを確認。ローカルSHA256 `02fe5c2c7390f8839ccc8152422770234b7b1680eab94b8eb360ac0c8d592f19`、ZIP検査済み。過去A001/A002の証跡backupや最終coverageまで完了した意味ではない。
 blockers:
 - Android/DeX実機・touch/multi-touch/筆圧入力は未用意。該当NATIVE IDをPASSにしない。
 - Linux補助環境のFFmpeg native dependency `libvpx.so.7` は未用意。codec/exportはこのUI確認でPASSにしない。
