@@ -3,7 +3,7 @@
 route_version: 2026-09-09-initial-v1
 route_state: locked
 current_id: A003
-current_status: todo
+current_status: in_progress
 last_completed_id: A002
 next_id: A003
 discovery_current_id: DISC001
@@ -12,6 +12,29 @@ app_baseline: 46949156156850f8e49dcd9919ca6a7eeaf3bfac
 web_baseline: 2a44dd9007e4a764e489a42a70f96ac5da6b3b8a
 
 今回の新規Routeから開始。旧進捗の転記なし。
+
+## 2026-10-21 full-audit session progress
+
+- 開始/再取得HEAD: App `ec93d84c8156bdeb12573e3821a685ef2ed4e6cd` / Web `de017642ba6f1c642e3e26c242695b9755286eda`。再開時の再fetchでも一致。正本は現在dev_branchの監査入口/Policy/Route/Standard/State/inventory/verifier。
+- 開始preflight: full/route/deltaともPASS。Baseline628件中done2件、current=A003。既存DISC001/002とD001–D037は未完了のまま保持。
+- A003/S1: current inventory/sourceとの照合、ホームの初回案内、3タブ、検索、8 drawer linksを対象化。
+- A003/S2: hidden project selection、別タブのproject search、tab selected semanticsの3件をreproduce→fix。修正前3テストFAIL。修正前production UIでもhidden selectionとquery残存を直接操作・画像確認。
+- A003/S3 / DISC003: documents取得不能で未処理prefetch error＋作品一覧永久loadingを実画面再現。先読みのerror記録、一覧/フォルダのerror/retry UI、reloadのFutureを返すsetStateを修正。実画面でerror→失敗継続→保存先復旧→再試行成功を確認。
+- 新規targeted tests＋既存home responsive/tag search: 11/11 PASS。touched analyze: No issues found。Linux debug build成功。全監査完了・A003 doneの意味ではない。
+
+current_substep: A003/S4 production UI再操作とDISC004初回保存失敗対策
+remaining_substeps:
+- 修正版でproject選択→tab切替、search→tab切替、PC/SPを直接再操作。
+- 初回案内/再表示、drawer8導線、全主要状態、7言語/336表示matrix、theme/textScale、continuityの未確認を埋める。
+- DISC004の初回保存失敗による消失をroot cause→fix→test→実画面→再起動で閉じる。
+- 証跡manifest/Drive backupを確定し、必要なVisual/回帰を確認。
+blockers:
+- Android/DeX実機・touch/multi-touch/筆圧入力は未用意。該当NATIVE IDをPASSにしない。
+- Linux補助環境のFFmpeg native dependency `libvpx.so.7` は未用意。codec/exportはこのUI確認でPASSにしない。
+- advisor-pending: none。
+next_action: A003の修正後操作証拠を保存し、data-lossのDISC004を優先修正する。A003はin_progress、DISC/Deltaのcursorは変更しない。
+
+以下は以前のセッションの履歴であり、上記の現在substepを上書きしない。
 
 ## 2026-10-10 session progress (Baseline)
 

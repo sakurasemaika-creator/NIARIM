@@ -33,6 +33,7 @@ import 'widgets/home_drawer.dart';
 import '../../config/font_fallback.dart';
 import '../../widgets/scrollable_sheet_body.dart';
 import '../community/community_edit_feedback.dart';
+import '../../utils/app_error_reporter.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -86,7 +87,21 @@ class _HomeScreenState extends State<HomeScreen>
     _tabController = TabController(length: 3, vsync: this);
     _tabController.addListener(() {
       if (_tabController.index != _currentTabIndex) {
-        setState(() => _currentTabIndex = _tabController.index);
+        final wasSearching = _isSearching;
+        setState(() {
+          _currentTabIndex = _tabController.index;
+          if (_currentTabIndex != 0) {
+            _selectedIds.clear();
+            _isSelectionMode = false;
+            _isSearching = false;
+            _searchByTag = false;
+            _searchQuery = '';
+            _searchController.clear();
+          }
+        });
+        if (wasSearching && _currentTabIndex != 0) {
+          FocusManager.instance.primaryFocus?.unfocus();
+        }
       }
     });
     // 低スペック端末では小表示を自動推奨する。ユーザーが表示切替
@@ -291,7 +306,13 @@ class _HomeScreenState extends State<HomeScreen>
                   ),
               ],
             ),
-            title: _isSearching
+            title: _currentTabIndex != 0
+                ? Text(
+                    _currentTabIndex == 1
+                        ? l10n.homeTabWorks
+                        : l10n.homeTabBookmarked,
+                  )
+                : _isSearching
                 ? Row(
                     children: [
                       // The icon always represents the mode we can switch TO:
@@ -332,58 +353,61 @@ class _HomeScreenState extends State<HomeScreen>
                     onToggleDirection: _toggleSortDirection,
                   ),
             actions: [
-              // ヘルプ・設定は左側ハンバーガーメニュー（HomeDrawer）に既に存在するため、
-              // トップ画面右上からは重複表示を削除した。
-              if (_isSearching)
-                IconButton(
-                  icon: const Icon(Icons.close),
-                  tooltip: l10n.commonClose,
-                  onPressed: () => setState(() {
-                    _isSearching = false;
-                    _searchByTag = false;
-                    _searchQuery = '';
-                    _searchController.clear();
-                  }),
-                )
-              else ...[
-                if (_hasClipboard)
+              if (_currentTabIndex == 0) ...[
+                // ヘルプ・設定は左側ハンバーガーメニュー（HomeDrawer）に既に存在するため、
+                // トップ画面右上からは重複表示を削除した。
+                if (_isSearching)
                   IconButton(
-                    icon: const Icon(Icons.content_paste),
-                    tooltip: l10n.homePasteTooltip(
-                      _clipboardProjectIds.length + _clipboardFolderIds.length,
+                    icon: const Icon(Icons.close),
+                    tooltip: l10n.commonClose,
+                    onPressed: () => setState(() {
+                      _isSearching = false;
+                      _searchByTag = false;
+                      _searchQuery = '';
+                      _searchController.clear();
+                    }),
+                  )
+                else ...[
+                  if (_hasClipboard)
+                    IconButton(
+                      icon: const Icon(Icons.content_paste),
+                      tooltip: l10n.homePasteTooltip(
+                        _clipboardProjectIds.length +
+                            _clipboardFolderIds.length,
+                      ),
+                      onPressed: _pasteClipboard,
                     ),
-                    onPressed: _pasteClipboard,
+                  PopupMenuButton<ProjectViewMode>(
+                    icon: const Icon(Icons.view_module),
+                    onSelected: (mode) => setState(() => _viewMode = mode),
+                    itemBuilder: (_) => [
+                      PopupMenuItem(
+                        value: ProjectViewMode.large,
+                        child: Text(l10n.homeViewModeLarge),
+                      ),
+                      PopupMenuItem(
+                        value: ProjectViewMode.medium,
+                        child: Text(l10n.homeViewModeMedium),
+                      ),
+                      PopupMenuItem(
+                        value: ProjectViewMode.small,
+                        child: Text(l10n.homeViewModeSmall),
+                      ),
+                      PopupMenuItem(
+                        value: ProjectViewMode.detail,
+                        child: Text(l10n.homeViewModeDetail),
+                      ),
+                    ],
                   ),
-                PopupMenuButton<ProjectViewMode>(
-                  icon: const Icon(Icons.view_module),
-                  onSelected: (mode) => setState(() => _viewMode = mode),
-                  itemBuilder: (_) => [
-                    PopupMenuItem(
-                      value: ProjectViewMode.large,
-                      child: Text(l10n.homeViewModeLarge),
-                    ),
-                    PopupMenuItem(
-                      value: ProjectViewMode.medium,
-                      child: Text(l10n.homeViewModeMedium),
-                    ),
-                    PopupMenuItem(
-                      value: ProjectViewMode.small,
-                      child: Text(l10n.homeViewModeSmall),
-                    ),
-                    PopupMenuItem(
-                      value: ProjectViewMode.detail,
-                      child: Text(l10n.homeViewModeDetail),
-                    ),
-                  ],
-                ),
-                IconButton(
-                  icon: const Icon(Icons.search),
-                  tooltip: l10n.commonSearch,
-                  onPressed: () => setState(() {
-                    _isSearching = true;
-                    _searchByTag = false;
-                  }),
-                ),
+                  IconButton(
+                    icon: const Icon(Icons.search),
+                    tooltip: l10n.commonSearch,
+                    onPressed: () => setState(() {
+                      _isSearching = true;
+                      _searchByTag = false;
+                    }),
+                  ),
+                ],
               ],
             ],
             // 標準のTabBarは項目名の文字数に関わらず均等4分割になるため、
@@ -720,6 +744,7 @@ class _HomeScreenState extends State<HomeScreen>
     BuildContext context,
   ) {
     final bindings = context.watch<ShortcutService>().bindings;
+    if (_currentTabIndex != 0 || _isSearching) return {};
     final result = <ShortcutActivator, VoidCallback>{};
     for (final b in bindings) {
       if (b.isToolAction) continue;
@@ -916,25 +941,32 @@ class _HomeTabBar extends StatelessWidget {
       return width;
     }).toList();
 
-    Widget tabItem(int i) => InkWell(
-      onTap: () => controller.animateTo(i),
-      child: Container(
-        height: 46,
-        alignment: Alignment.center,
-        decoration: BoxDecoration(
-          border: Border(
-            bottom: BorderSide(
-              color: currentIndex == i ? scheme.primary : Colors.transparent,
-              width: 2,
+    Widget tabItem(int i) => Semantics(
+      key: ValueKey('home_tab_$i'),
+      selected: currentIndex == i,
+      button: true,
+      child: InkWell(
+        onTap: () => controller.animateTo(i),
+        child: Container(
+          height: 46,
+          alignment: Alignment.center,
+          decoration: BoxDecoration(
+            border: Border(
+              bottom: BorderSide(
+                color: currentIndex == i ? scheme.primary : Colors.transparent,
+                width: 2,
+              ),
             ),
           ),
-        ),
-        child: Text(
-          labels[i],
-          maxLines: 1,
-          softWrap: false,
-          style: textStyle.copyWith(
-            color: currentIndex == i ? scheme.primary : scheme.onSurfaceVariant,
+          child: Text(
+            labels[i],
+            maxLines: 1,
+            softWrap: false,
+            style: textStyle.copyWith(
+              color: currentIndex == i
+                  ? scheme.primary
+                  : scheme.onSurfaceVariant,
+            ),
           ),
         ),
       ),
@@ -1723,10 +1755,14 @@ class _WorksTabState extends State<_WorksTab> {
   }
 
   Future<void> _reload() async {
-    setState(
-      () => _future = ExportEngine.listExportedFiles(forceRefresh: true),
-    );
-    await _future;
+    setState(() {
+      _future = ExportEngine.listExportedFiles(forceRefresh: true);
+    });
+    try {
+      await _future;
+    } catch (error, stackTrace) {
+      AppErrorReporter.record(error, stackTrace);
+    }
   }
 
   @override
@@ -1735,6 +1771,9 @@ class _WorksTabState extends State<_WorksTab> {
     return FutureBuilder<List<File>>(
       future: _future,
       builder: (context, snapshot) {
+        if (snapshot.hasError) {
+          return _WorksLoadFailure(onRetry: _reload);
+        }
         if (!snapshot.hasData) {
           return const Center(child: CircularProgressIndicator());
         }
@@ -1785,6 +1824,40 @@ class _WorksTabState extends State<_WorksTab> {
   }
 }
 
+class _WorksLoadFailure extends StatelessWidget {
+  const _WorksLoadFailure({required this.onRetry});
+
+  final VoidCallback onRetry;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    return Center(
+      child: SingleChildScrollView(
+        padding: const EdgeInsets.all(24),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(
+              Icons.folder_off_outlined,
+              size: 48,
+              color: Theme.of(context).colorScheme.onSurfaceVariant,
+            ),
+            const SizedBox(height: 16),
+            Text(l10n.homeWorksLoadFailed, textAlign: TextAlign.center),
+            const SizedBox(height: 16),
+            FilledButton.icon(
+              onPressed: onRetry,
+              icon: const Icon(Icons.refresh),
+              label: Text(l10n.communityRetry),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
 /// 作品一覧タブのフォルダ内表示。
 class _WorksFolderScreen extends StatefulWidget {
   final String folderId;
@@ -1818,6 +1891,13 @@ class _WorksFolderScreenState extends State<_WorksFolderScreen> {
       body: FutureBuilder<List<File>>(
         future: _future,
         builder: (context, snapshot) {
+          if (snapshot.hasError) {
+            return _WorksLoadFailure(
+              onRetry: () => setState(() {
+                _future = ExportEngine.listExportedFiles(forceRefresh: true);
+              }),
+            );
+          }
           if (!snapshot.hasData) {
             return const Center(child: CircularProgressIndicator());
           }
@@ -1845,11 +1925,9 @@ class _WorksFolderScreenState extends State<_WorksFolderScreen> {
             itemBuilder: (context, index) => _WorkListItem(
               file: items[index],
               onDeleted: () {
-                setState(
-                  () => _future = ExportEngine.listExportedFiles(
-                    forceRefresh: true,
-                  ),
-                );
+                setState(() {
+                  _future = ExportEngine.listExportedFiles(forceRefresh: true);
+                });
                 widget.onDeleted();
               },
             ),

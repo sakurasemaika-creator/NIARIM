@@ -3125,5 +3125,6 @@
   "startupFailedDetailsCopied": "Détails copiés",
   "startupFailedDetails": "Détails",
   "errorViewTitle": "Une erreur s’est produite lors de l’affichage de cette partie",
-  "errorViewBody": "Votre travail en cours est conservé. Revenez à l’écran précédent et réessayez. Nous envoyer le texte ci-dessous nous aidera à en trouver la cause."
+  "errorViewBody": "Votre travail en cours est conservé. Revenez à l’écran précédent et réessayez. Nous envoyer le texte ci-dessous nous aidera à en trouver la cause.",
+  "homeWorksLoadFailed": "Impossible de charger vos créations exportées"
 }

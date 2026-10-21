@@ -3125,5 +3125,6 @@
   "startupFailedDetailsCopied": "已複製詳細資訊",
   "startupFailedDetails": "詳細資訊",
   "errorViewTitle": "顯示此部分時發生錯誤",
-  "errorViewBody": "編輯中的資料已保留。請返回上一個畫面後再試一次。將以下內容告知開發者，有助於找出原因。"
+  "errorViewBody": "編輯中的資料已保留。請返回上一個畫面後再試一次。將以下內容告知開發者，有助於找出原因。",
+  "homeWorksLoadFailed": "無法載入匯出的作品"
 }

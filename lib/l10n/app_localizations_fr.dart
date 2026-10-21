@@ -7814,4 +7814,8 @@ class AppLocalizationsFr extends AppLocalizations {
   @override
   String get errorViewBody =>
       'Votre travail en cours est conservé. Revenez à l’écran précédent et réessayez. Nous envoyer le texte ci-dessous nous aidera à en trouver la cause.';
+
+  @override
+  String get homeWorksLoadFailed =>
+      'Impossible de charger vos créations exportées';
 }

@@ -7,10 +7,10 @@
     "NIARIM-web": "2a44dd9007e4a764e489a42a70f96ac5da6b3b8a"
   },
   "todo_count": 628,
-  "done_count": 0,
-  "current_id": "A001",
-  "source_snapshot_checked": true,
-  "mirror_checked": true,
+  "done_count": 2,
+  "current_id": "A003",
+  "source_snapshot_checked": false,
+  "mirror_checked": false,
   "counts": {
     "source_files": 1115,
     "unassigned_source_files": 0,

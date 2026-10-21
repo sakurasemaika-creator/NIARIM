@@ -7418,4 +7418,7 @@ class AppLocalizationsJa extends AppLocalizations {
   @override
   String get errorViewBody =>
       '作業中のデータは保持されています。前の画面へ戻ってからもう一度お試しください。以下の内容を開発元へお知らせいただけると原因の特定に役立ちます。';
+
+  @override
+  String get homeWorksLoadFailed => '作品一覧を読み込めませんでした';
 }

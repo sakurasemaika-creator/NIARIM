@@ -7797,4 +7797,8 @@ class AppLocalizationsEs extends AppLocalizations {
   @override
   String get errorViewBody =>
       'Tu trabajo en curso se conserva. Vuelve a la pantalla anterior e inténtalo de nuevo. Si nos envías el texto de abajo, nos ayudarás a encontrar la causa.';
+
+  @override
+  String get homeWorksLoadFailed =>
+      'No se pudieron cargar tus obras exportadas';
 }

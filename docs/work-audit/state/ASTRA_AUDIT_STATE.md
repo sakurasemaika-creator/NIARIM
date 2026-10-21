@@ -111,3 +111,35 @@ status: done（2026-10-10、製品修正 App `35d229e`、証跡 https://claude.a
 - その後の `dev_branch` の先端には監査Policy/Route/Progress/Evidence/Verifierだけを変更する `[audit-*]` commit が積まれている。したがってbranchの最新SHAと製品実装snapshot SHAは同一とは限らない。
 - 監査開始時は必ず現在の `dev_branch` HEADを取得し、開始時点以降の変更について監査対象コードが変わっていないか確認する。
 - 以前の `770e2c57...` を現在製品HEADとして扱わない。A001は依然 `in_progress` であり、過去のEvidenceから完了を推定しない。
+
+
+## 2026-10-21 / A003 — current-head execution checkpoint (not done)
+
+- Start/re-fetched HEAD: App `ec93d84c8156bdeb12573e3821a685ef2ed4e6cd`, Web `de017642ba6f1c642e3e26c242695b9755286eda`.
+- Full state / baseline / delta preflight: PASS, mirrors consistent, locked definition/inventory unchanged. Baseline done2/628, current A003; Delta todo37.
+- Environment: Flutter 3.47.7 stable / Dart 3.13.5; Linux debug production runner, software GL, Xvfb TCP local display, xdotool mouse/keyboard; isolated XDG paths. Flutter metadata probe was rejected by automatic approval review. SDK BotDetector source confirmed CI short-circuits that probe; subsequent commands use CI=true/BOT=true and FLUTTER_SUPPRESS_ANALYTICS=true. No metadata endpoint is used by the safe configuration.
+
+### A003/S2 — tab scope and selected semantics
+
+- Before: home_navigation_contract_test 3/3 FAIL on the current product. Hidden project selection remains actionable on Works; project search input remains on unrelated tabs; selected semantics absent.
+- Direct production UI before: created `A003 protected project` via new-project form, returned to home, long-pressed the project, switched to Works. Selection count and cut/copy/trash remain while the target is offscreen. Project search `query` also remains on Works. Actual captures opened and inspected.
+- Fix: leaving Projects clears selection/search/query and unfocuses search. Project sort/view/search/paste controls and edit shortcuts apply only to Projects; works/bookmarks show their own title. Tabs expose selected state and button semantics.
+- Targeted regression: home navigation, export failure/retry, existing home favorites responsive, project tag search: 11/11 PASS. Touched analyze: No issues found. Linux debug build PASS. These are automation/build evidence, separate from direct UI verification.
+
+### A003/S3 / DISC003 — exported-list failure recovery
+
+- Direct production reproduction: absent documents directory resolver produced an uncaught splash prefetch MissingPlatformDirectoryException; Works remained a spinner. This is an actual error path, not a declared success/empty state.
+- Root cause: splash unawaited prefetch has no error handler; FutureBuilder conflates error with waiting. Existing reload returns a Future from a setState arrow callback.
+- Fix: record failed optional prefetch; explicit translated load-failure message and Retry on Works and folder view; synchronous setState callback and caught refresh failure.
+- Direct post-fix: opened Works→read error message/Retry→retried while unavailable→same recoverable error→restored real xdg-user-dir/documents configuration→Retry→empty exported-works state. Inspected actual screenshots; post-fix app log has no uncaught directory exception. Full 7-language/matrix/folder conditions remain open.
+
+### DISC004 — observed initial-save data loss, priority follow-up
+
+- Under the same missing documents directory condition, new-project creation still navigated to a usable canvas and the home list contained the project. It was absent after restarting the runner.
+- Source confirms createProject calls _saveAsync; that catches serializer errors and substitutes an empty File. Initial persistence is neither awaited nor surfaced. This is a data-loss risk and is registered for immediate treatment before A003 can close.
+
+### Evidence and incomplete work
+
+- Local execution logs: a003-contract-before.log, a003-export-failure-before.log, a003-regression.log, a003-analysis.log, linux-build-before/after.log. Production captures under native-evidence/A003-*. Full-root originals retained; cropped derivatives must use the actual client origin, not the erroneous doubled xdotool geometry reported by this WM.
+- Drive binary backup/manifest: pending at this checkpoint; no upload claimed yet.
+- Required next: direct post-fix selected-project/search PC/SP operations, full home/drawer/first-use/state and display matrix, DISC004 fix/regression/persistence. Neither A003 nor the comprehensive audit is complete.

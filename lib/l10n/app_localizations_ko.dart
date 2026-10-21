@@ -7456,4 +7456,7 @@ class AppLocalizationsKo extends AppLocalizations {
   @override
   String get errorViewBody =>
       '작업 중인 데이터는 보존되어 있습니다. 이전 화면으로 돌아가 다시 시도해 주세요. 아래 내용을 개발자에게 알려 주시면 원인을 찾는 데 도움이 됩니다.';
+
+  @override
+  String get homeWorksLoadFailed => '내보낸 작품 목록을 불러오지 못했습니다';
 }

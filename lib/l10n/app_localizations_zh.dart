@@ -7356,6 +7356,9 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get errorViewBody => '正在编辑的数据已保留。请返回上一个画面后重试。将以下内容告知开发者，有助于查明原因。';
+
+  @override
+  String get homeWorksLoadFailed => '无法加载导出的作品';
 }
 
 /// The translations for Chinese, using the Han script (`zh_Hant`).
@@ -14711,4 +14714,7 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get errorViewBody => '編輯中的資料已保留。請返回上一個畫面後再試一次。將以下內容告知開發者，有助於找出原因。';
+
+  @override
+  String get homeWorksLoadFailed => '無法載入匯出的作品';
 }

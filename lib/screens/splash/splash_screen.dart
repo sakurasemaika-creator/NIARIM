@@ -13,6 +13,7 @@ import '../../config/font_fallback.dart';
 import '../../models/app_theme_preset.dart';
 import '../../utils/color_contrast.dart';
 import '../../utils/line_break.dart';
+import '../../utils/app_error_reporter.dart';
 
 /// 起動画面。ロゴを中央に表示し、その上に「作品広場」（コミュニティ
 /// 画面への導線。1行目に大きく「作品広場」、2行目にやや小さく
@@ -51,7 +52,14 @@ class _SplashScreenState extends State<SplashScreen> {
   /// main()内で既に読み込み済みのため、ここでの対象はディスクI/O・画像
   /// デコードが必要なものに限られる。
   Future<void> _preloadHomeData() async {
-    unawaited(ExportEngine.listExportedFiles());
+    unawaited(
+      ExportEngine.listExportedFiles().then<void>(
+        (_) {},
+        onError: (Object error, StackTrace stackTrace) {
+          AppErrorReporter.record(error, stackTrace);
+        },
+      ),
+    );
 
     if (!mounted) return;
     final projectService = context.read<ProjectService>();

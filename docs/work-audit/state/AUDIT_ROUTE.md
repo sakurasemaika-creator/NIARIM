@@ -88,7 +88,7 @@ lock integrityは`AUDIT_ROUTE_LOCK.json`の本文定義SHA256/順序/coverage ha
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | A001 | 起動サービス・初期化契約（非UI） | 空の隔離保存領域／保存済み設定／壊れた設定／初期化例外 | main→buildAppProvidersの順序と依存を追跡；fresh/warm起動・初期化失敗・再試行を再現；設定・プロジェクト・ライセンス登録・広告/課金/認証の起動副作用を検査 | 保存資産を上書きせず初期化完了または回復可能な失敗；失敗を握り潰さず二重初期化なし | CORE | lib/main.dart; lib/app_bootstrap.dart; lib/app.dart; lib/utils/app_error_reporter.dart; lib/config/monetization_gate.dart | done |
 | A002 | 起動画面 /・2導線・テーマ救済 | 初回／再起動／読めるテーマ・読めないテーマ | 作品をつくる→戻る；作品広場→戻る；連打；先読み中遷移；テーマ救済→再起動；縦横切替；Tab/Enter | 自動遷移せず両導線を選べる；履歴が二重化しない；小幅横画面も欠けず救済が読める | UA | lib/screens/splash/splash_screen.dart; lib/app.dart; lib/router.dart | done |
-| A003 | ホーム /home・初回案内・ドロワー | 初回・既訪／一覧空・大量／PC-SP | 初回案内の開始・再表示判定；3タブ切替；ドロワー開閉と全リンク；検索の開閉；起動画面へ戻る | 案内は正しいタイミング；状態・スクロール・選択が導線ごとに保持/解除される | UA | lib/screens/home/home_screen.dart; lib/screens/home/widgets/home_drawer.dart; lib/widgets/first_use_tooltip.dart; lib/services/first_use_tooltip_service.dart; lib/widgets/empty_state_placeholder.dart; lib/widgets/info_icon_tooltip.dart | todo |
+| A003 | ホーム /home・初回案内・ドロワー | 初回・既訪／一覧空・大量／PC-SP | 初回案内の開始・再表示判定；3タブ切替；ドロワー開閉と全リンク；検索の開閉；起動画面へ戻る | 案内は正しいタイミング；状態・スクロール・選択が導線ごとに保持/解除される | UA | lib/screens/home/home_screen.dart; lib/screens/home/widgets/home_drawer.dart; lib/widgets/first_use_tooltip.dart; lib/services/first_use_tooltip_service.dart; lib/widgets/empty_state_placeholder.dart; lib/widgets/info_icon_tooltip.dart | in_progress |
 | A004 | プロジェクト一覧・検索・表示・ソート | 複数階層／同名・長名・タグ付き・お気に入り | 名前/タグ検索；絞込解除；名前/日時と昇降順；大/中/小/詳細表示；空結果；サムネイル失敗 | 検索・順序・件数と実データ一致；全表示で選択可能 | UA | lib/screens/home/home_screen.dart; lib/screens/home/widgets/project_list_widget.dart; lib/widgets/sort_mode_control.dart | todo |
 | A005 | プロジェクト単体・複数選択・クリップボード | 複数プロジェクト・フォルダ／お気に入り／対象削除後 | 長押し/右クリック；全選択/解除；お気に入り付外し；切取/コピー/貼付；フォルダ移動；削除確認/取消 | 対象外・お気に入り保護を守る；複製ID/参照安全；二重操作・貼付失敗で資産を失わない | UA | lib/screens/home/home_screen.dart; lib/screens/home/widgets/project_list_widget.dart; lib/services/project_service.dart; lib/widgets/confirm_delete.dart; lib/utils/reorder_index.dart | todo |
 | A006 | プロジェクトフォルダ・パンくず | 空・入れ子・同名・循環候補／内容あり | 新規名前/色；名称変更；移動；コピー；お気に入り；削除と取消；パンくずで戻る | 循環禁止；削除の影響明示；階層とプロジェクト参照維持 | UA | lib/screens/home/widgets/project_list_widget.dart; lib/screens/home/home_screen.dart; lib/services/project_service.dart | todo |
@@ -724,6 +724,9 @@ Baseline監査中に、既存A/W IDの意味へ無理に押し込めない新し
 |---|---|---|---|---|---|
 | DISC001 | A001 | 初回起動時の表示言語が端末の言語に関係なく日本語になる | 保存済みの言語設定が無い新規インストール（端末言語en/ko/fr/es/zh等）で起動 → `SettingsService.language`の既定値`'ja'`により全画面が日本語。2026-10-10 App 35d229eで確認 | 端末の言語→対応7言語への解決（台湾・香港の繁体字、未対応言語の既定）、既存ユーザーの保存済み言語を変えないこと、起動画面・初回案内・設定画面の言語変更/保存/復元、7言語の実画面 | todo |
 | DISC002 | A001 | `AppErrorReporter.recentErrors`が記録されるだけで、利用者が見る・報告する手段が無い | 描画中の例外・非致命の保存/読込エラー・読めなかった設定は記録されるが、設定等から内容を確認・コピーする画面が無い（起動失敗画面だけは詳細のコピーあり）。2026-10-10 App 35d229eで確認 | 閲覧/コピー導線の要否と配置、記録内容に個人情報・トークンを含まないこと、7言語、PC/SP | todo |
+
+| DISC003 | A003 | 書き出し済み作品一覧の取得失敗と起動画面先読みの未処理例外 | App ec93d84、Linux production UIでdocuments保存先を取得できない状態。起動画面で未処理例外、作品一覧で無期限loading。home_export_list_failure_testでも再現 | 先読み失敗の非致命化、一覧/フォルダのerror→retry、失敗継続/復旧、再訪、7言語、PC/SP、表示matrix、A002/A064回帰。A003で修正・限定検証中、全条件完了までdone不可 | todo |
+| DISC004 | A003 | 新規プロジェクトの初回保存失敗が利用者に通知されず再起動で消失する | 同じ保存先取得失敗状態でUIから新規作品作成→canvas→ホームに表示→再起動で消失。ProjectService.createProjectの_saveAsyncが保存例外をFile空値へ変換している | 初回保存成功前に作成完了/編集開始としないこと、失敗時の資産/メモリ整合、error/retry/二重操作、正常保存→再起動、容量/権限失敗、7言語、A007/A061回帰。data-lossのため現在IDから優先対応 | todo |
 
 Discoveryは発見した順ではなく安定した番号で追跡し、重複IDを作らない。重大security/data-loss/privacyや現在IDの完了を直接妨げるものは優先処理し、それ以外はBaseline順を壊さずbacklogとして残す。Baseline完了後にDISC-IDを番号順で消化する。
 
