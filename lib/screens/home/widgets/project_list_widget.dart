@@ -669,11 +669,12 @@ class ProjectListWidget extends StatelessWidget {
               clipBehavior: Clip.antiAlias,
               child: SizedBox.square(dimension: 32, child: menu),
             )
-          else
+          else if (!isSelectionMode)
             const SizedBox.square(dimension: 32),
           if (isFavorite)
             Padding(
-              padding: const EdgeInsets.only(top: 4),
+              // 選択中はメニューの空き枠を残さず、星をタイル右上へ寄せる。
+              padding: EdgeInsets.only(top: isSelectionMode ? 0 : 4),
               child: Container(
                 padding: const EdgeInsets.all(3),
                 decoration: BoxDecoration(

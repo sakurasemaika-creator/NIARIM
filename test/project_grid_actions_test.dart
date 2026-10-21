@@ -165,31 +165,79 @@ void main() {
     );
   }
 
-  testWidgets('selection mode keeps card taps dedicated to selection', (
-    tester,
-  ) async {
-    final service = _GridProjects()..favoriteIds.addAll(['project', 'folder']);
-    addTearDown(service.dispose);
-    final selected = <String>[];
-    await tester.pumpWidget(
-      _host(
-        service,
-        ProjectViewMode.small,
-        isSelectionMode: true,
-        onOpenFolder: (_) => fail('Folder should not open while selecting'),
-        onSelectionChanged: selected.add,
-      ),
-    );
-    await tester.pumpAndSettle();
-    expect(find.byType(PopupMenuButton<String>), findsNothing);
-    expect(find.byIcon(Icons.star), findsNWidgets(2));
-    await tester.tap(find.text('Folder'));
-    await tester.tap(find.text('Project'));
-    await tester.pumpAndSettle();
-    expect(selected, ['folder', 'project']);
-    expect(service.favoriteCalls, isEmpty);
-    expect(tester.takeException(), isNull);
-  });
+  for (final mode in [
+    ProjectViewMode.large,
+    ProjectViewMode.medium,
+    ProjectViewMode.small,
+  ]) {
+    testWidgets('${mode.name}: selection stars stay at the top right', (
+      tester,
+    ) async {
+      tester.view.devicePixelRatio = 1;
+      addTearDown(tester.view.resetDevicePixelRatio);
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.platformDispatcher.clearTextScaleFactorTestValue);
+      final service = _GridProjects()
+        ..favoriteIds.addAll(['project', 'folder']);
+      addTearDown(service.dispose);
+      final selected = <String>[];
+      for (final size in [
+        const Size(240, 844),
+        const Size(320, 844),
+        const Size(390, 844),
+        const Size(640, 360),
+        const Size(1280, 720),
+        const Size(2560, 900),
+      ]) {
+        for (final scale in [1.0, 2.0]) {
+          tester.view.physicalSize = size;
+          tester.platformDispatcher.textScaleFactorTestValue = scale;
+          await tester.pumpWidget(
+            _host(
+              service,
+              mode,
+              isSelectionMode: true,
+              onOpenFolder: (_) =>
+                  fail('Folder should not open while selecting'),
+              onSelectionChanged: selected.add,
+            ),
+          );
+          await tester.pumpAndSettle();
+          expect(find.byType(PopupMenuButton<String>), findsNothing);
+          expect(find.byIcon(Icons.star), findsNWidgets(2));
+          selected.clear();
+          for (final name in ['Folder', 'Project']) {
+            final star = find.descendant(
+              of: _card(name),
+              matching: find.byIcon(Icons.star),
+            );
+            final cardRect = tester.getRect(_card(name));
+            final starRect = tester.getRect(star);
+            expect(
+              starRect.top - cardRect.top,
+              lessThan(16),
+              reason: '$name at $size / $scale',
+            );
+            expect(
+              cardRect.right - starRect.right,
+              lessThan(16),
+              reason: '$name at $size / $scale',
+            );
+            expect(
+              cardRect.contains(starRect.topLeft) &&
+                  cardRect.contains(starRect.bottomRight),
+              isTrue,
+            );
+            await tester.tap(star);
+          }
+          await tester.pumpAndSettle();
+          expect(selected, ['folder', 'project']);
+          expect(service.favoriteCalls, isEmpty);
+          expect(tester.takeException(), isNull, reason: '$size / $scale');
+        }
+      }
+    });
+  }
 
   testWidgets('project picker keeps editing menus hidden', (tester) async {
     final service = _GridProjects();
