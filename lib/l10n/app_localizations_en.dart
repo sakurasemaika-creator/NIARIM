@@ -3216,6 +3216,12 @@ class AppLocalizationsEn extends AppLocalizations {
   String get projectDetailShareQuickAction => 'Share';
 
   @override
+  String get projectDetailFavoriteRegistered => 'Favorited';
+
+  @override
+  String get projectDetailFavoriteUnregistered => 'Not favorited';
+
+  @override
   String get projectDetailInfoSectionTitle => 'Project info';
 
   @override

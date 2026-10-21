@@ -1135,6 +1135,8 @@
   "projectDetailStartEditButton": "開始編輯",
   "projectDetailTagsQuickAction": "標籤",
   "projectDetailShareQuickAction": "分享",
+  "projectDetailFavoriteRegistered": "已加入我的最愛",
+  "projectDetailFavoriteUnregistered": "未加入我的最愛",
   "projectDetailInfoSectionTitle": "專案資訊",
   "projectDetailInfoExportSize": "匯出尺寸",
   "projectDetailInfoDrawingArea": "繪圖區域",

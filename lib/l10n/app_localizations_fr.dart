@@ -3253,6 +3253,12 @@ class AppLocalizationsFr extends AppLocalizations {
   String get projectDetailShareQuickAction => 'Partager';
 
   @override
+  String get projectDetailFavoriteRegistered => 'Dans les favoris';
+
+  @override
+  String get projectDetailFavoriteUnregistered => 'Pas dans les favoris';
+
+  @override
   String get projectDetailInfoSectionTitle => 'Infos du projet';
 
   @override

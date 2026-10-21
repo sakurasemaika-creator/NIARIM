@@ -262,6 +262,7 @@ class _ProjectDetailScreenState extends State<ProjectDetailScreen> {
               const SizedBox(height: 16),
               // フォルダ・タグ・お気に入り・共有のクイックアクセス
               Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Expanded(
                     child: _quickAction(
@@ -282,7 +283,9 @@ class _ProjectDetailScreenState extends State<ProjectDetailScreen> {
                   Expanded(
                     child: _quickAction(
                       icon: project.isFavorite ? Icons.star : Icons.star_border,
-                      label: l10n.homeFavoritesOnly,
+                      label: project.isFavorite
+                          ? l10n.projectDetailFavoriteRegistered
+                          : l10n.projectDetailFavoriteUnregistered,
                       iconColor: project.isFavorite
                           ? ThemeService.activeColorScheme.tertiary
                           : null,
@@ -610,7 +613,11 @@ class _ProjectDetailScreenState extends State<ProjectDetailScreen> {
                   iconColor ?? Theme.of(context).colorScheme.onSurfaceVariant,
             ),
             const SizedBox(height: 4),
-            Text(label, style: const TextStyle(fontSize: 12)),
+            Text(
+              label,
+              textAlign: TextAlign.center,
+              style: const TextStyle(fontSize: 12),
+            ),
           ],
         ),
       ),

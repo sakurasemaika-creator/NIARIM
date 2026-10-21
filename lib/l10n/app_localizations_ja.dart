@@ -3106,6 +3106,12 @@ class AppLocalizationsJa extends AppLocalizations {
   String get projectDetailShareQuickAction => '共有';
 
   @override
+  String get projectDetailFavoriteRegistered => 'お気に入り\n登録済み';
+
+  @override
+  String get projectDetailFavoriteUnregistered => 'お気に入り\n未登録';
+
+  @override
   String get projectDetailInfoSectionTitle => 'プロジェクト情報';
 
   @override

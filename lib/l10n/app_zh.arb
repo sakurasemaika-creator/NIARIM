@@ -1135,6 +1135,8 @@
   "projectDetailStartEditButton": "开始编辑",
   "projectDetailTagsQuickAction": "标签",
   "projectDetailShareQuickAction": "分享",
+  "projectDetailFavoriteRegistered": "已收藏",
+  "projectDetailFavoriteUnregistered": "未收藏",
   "projectDetailInfoSectionTitle": "项目信息",
   "projectDetailInfoExportSize": "导出尺寸",
   "projectDetailInfoDrawingArea": "绘图区域",

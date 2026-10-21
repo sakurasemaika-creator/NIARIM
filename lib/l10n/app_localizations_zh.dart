@@ -3092,6 +3092,12 @@ class AppLocalizationsZh extends AppLocalizations {
   String get projectDetailShareQuickAction => '分享';
 
   @override
+  String get projectDetailFavoriteRegistered => '已收藏';
+
+  @override
+  String get projectDetailFavoriteUnregistered => '未收藏';
+
+  @override
   String get projectDetailInfoSectionTitle => '项目信息';
 
   @override
@@ -10437,6 +10443,12 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get projectDetailShareQuickAction => '分享';
+
+  @override
+  String get projectDetailFavoriteRegistered => '已加入我的最愛';
+
+  @override
+  String get projectDetailFavoriteUnregistered => '未加入我的最愛';
 
   @override
   String get projectDetailInfoSectionTitle => '專案資訊';

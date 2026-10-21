@@ -1394,6 +1394,8 @@
   "projectDetailStartEditButton": "編集開始",
   "projectDetailTagsQuickAction": "タグ",
   "projectDetailShareQuickAction": "共有",
+  "projectDetailFavoriteRegistered": "お気に入り\n登録済み",
+  "projectDetailFavoriteUnregistered": "お気に入り\n未登録",
   "projectDetailInfoSectionTitle": "プロジェクト情報",
   "projectDetailInfoExportSize": "書き出しサイズ",
   "projectDetailInfoDrawingArea": "描画領域",

@@ -3118,6 +3118,12 @@ class AppLocalizationsKo extends AppLocalizations {
   String get projectDetailShareQuickAction => '공유';
 
   @override
+  String get projectDetailFavoriteRegistered => '즐겨찾기 등록됨';
+
+  @override
+  String get projectDetailFavoriteUnregistered => '즐겨찾기 미등록';
+
+  @override
   String get projectDetailInfoSectionTitle => '프로젝트 정보';
 
   @override

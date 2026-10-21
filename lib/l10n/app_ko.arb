@@ -1135,6 +1135,8 @@
   "projectDetailStartEditButton": "편집 시작",
   "projectDetailTagsQuickAction": "태그",
   "projectDetailShareQuickAction": "공유",
+  "projectDetailFavoriteRegistered": "즐겨찾기 등록됨",
+  "projectDetailFavoriteUnregistered": "즐겨찾기 미등록",
   "projectDetailInfoSectionTitle": "프로젝트 정보",
   "projectDetailInfoExportSize": "내보내기 크기",
   "projectDetailInfoDrawingArea": "그리기 영역",

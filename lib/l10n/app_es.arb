@@ -1135,6 +1135,8 @@
   "projectDetailStartEditButton": "Empezar a editar",
   "projectDetailTagsQuickAction": "Etiquetas",
   "projectDetailShareQuickAction": "Compartir",
+  "projectDetailFavoriteRegistered": "En favoritos",
+  "projectDetailFavoriteUnregistered": "Sin añadir a favoritos",
   "projectDetailInfoSectionTitle": "Información del proyecto",
   "projectDetailInfoExportSize": "Tamaño de exportación",
   "projectDetailInfoDrawingArea": "Área de dibujo",

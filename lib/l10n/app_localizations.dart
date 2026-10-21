@@ -5765,6 +5765,18 @@ abstract class AppLocalizations {
   /// **'共有'**
   String get projectDetailShareQuickAction;
 
+  /// No description provided for @projectDetailFavoriteRegistered.
+  ///
+  /// In ja, this message translates to:
+  /// **'お気に入り\n登録済み'**
+  String get projectDetailFavoriteRegistered;
+
+  /// No description provided for @projectDetailFavoriteUnregistered.
+  ///
+  /// In ja, this message translates to:
+  /// **'お気に入り\n未登録'**
+  String get projectDetailFavoriteUnregistered;
+
   /// No description provided for @projectDetailInfoSectionTitle.
   ///
   /// In ja, this message translates to:

@@ -1135,6 +1135,8 @@
   "projectDetailStartEditButton": "Start editing",
   "projectDetailTagsQuickAction": "Tags",
   "projectDetailShareQuickAction": "Share",
+  "projectDetailFavoriteRegistered": "Favorited",
+  "projectDetailFavoriteUnregistered": "Not favorited",
   "projectDetailInfoSectionTitle": "Project info",
   "projectDetailInfoExportSize": "Export size",
   "projectDetailInfoDrawingArea": "Drawing area",
