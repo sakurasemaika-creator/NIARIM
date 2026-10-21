@@ -468,10 +468,11 @@ class ProjectListWidget extends StatelessWidget {
                     ),
                     Positioned(
                       left: 6,
-                      right: 6,
+                      right: project.isFavorite ? 40 : 6,
                       bottom: 4,
                       child: Text(
                         project.name,
+                        maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                         style: TextStyle(
                           fontSize: 12,
@@ -482,24 +483,11 @@ class ProjectListWidget extends StatelessWidget {
                         ),
                       ),
                     ),
-                    if (project.isFavorite)
-                      Positioned(
-                        top: 4,
-                        right: 4,
-                        child: Container(
-                          padding: EdgeInsets.all(3),
-                          decoration: BoxDecoration(
-                            color: ThemeService.activeColorScheme.onSurface
-                                .withValues(alpha: 0.4),
-                            shape: BoxShape.circle,
-                          ),
-                          child: Icon(
-                            Icons.star,
-                            color: ThemeService.activeColorScheme.tertiary,
-                            size: 14,
-                          ),
-                        ),
-                      ),
+                    _gridCardActions(
+                      context,
+                      menu: _projectMenu(context, project),
+                      isFavorite: project.isFavorite,
+                    ),
                     if (isSelectionMode)
                       Positioned(
                         top: 4,
@@ -576,84 +564,83 @@ class ProjectListWidget extends StatelessWidget {
               width: 2,
             ),
           ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
+          child: Stack(
+            fit: StackFit.expand,
             children: [
-              Expanded(
-                child: Stack(
-                  fit: StackFit.expand,
-                  children: [
-                    DecoratedBox(
-                      decoration: BoxDecoration(
-                        gradient: LinearGradient(
-                          begin: Alignment.topLeft,
-                          end: Alignment.bottomRight,
-                          colors: [
-                            color.withValues(alpha: 0.22),
-                            color.withValues(alpha: 0.1),
-                          ],
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  Expanded(
+                    child: Stack(
+                      fit: StackFit.expand,
+                      children: [
+                        DecoratedBox(
+                          decoration: BoxDecoration(
+                            gradient: LinearGradient(
+                              begin: Alignment.topLeft,
+                              end: Alignment.bottomRight,
+                              colors: [
+                                color.withValues(alpha: 0.22),
+                                color.withValues(alpha: 0.1),
+                              ],
+                            ),
+                          ),
+                          child: Center(
+                            child: Icon(
+                              Icons.folder_rounded,
+                              color: color,
+                              size: 46,
+                            ),
+                          ),
                         ),
-                      ),
-                      child: Center(
-                        child: Icon(
-                          Icons.folder_rounded,
-                          color: color,
-                          size: 46,
-                        ),
+                        if (isSelectionMode)
+                          Positioned(
+                            top: 4,
+                            left: 4,
+                            child: Container(
+                              padding: const EdgeInsets.all(1),
+                              decoration: BoxDecoration(
+                                color: isSelected
+                                    ? primary
+                                    : scheme.surface.withValues(alpha: 0.9),
+                                shape: BoxShape.circle,
+                                border: Border.all(color: primary, width: 1.5),
+                              ),
+                              child: Icon(
+                                isSelected ? Icons.check : null,
+                                size: 16,
+                                color: scheme.onPrimary,
+                              ),
+                            ),
+                          ),
+                      ],
+                    ),
+                  ),
+                  Padding(
+                    padding: EdgeInsets.fromLTRB(
+                      6,
+                      4,
+                      folder.isFavorite ? 40 : 6,
+                      6,
+                    ),
+                    child: Text(
+                      folder.name,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: const TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w600,
+                        fontFamily: 'Kuramubon',
+                        fontFamilyFallback: kHeadingFontFallback,
                       ),
                     ),
-                    if (folder.isFavorite)
-                      Positioned(
-                        top: 4,
-                        right: 4,
-                        child: Container(
-                          padding: const EdgeInsets.all(3),
-                          decoration: BoxDecoration(
-                            color: scheme.surface.withValues(alpha: 0.75),
-                            shape: BoxShape.circle,
-                          ),
-                          child: Icon(
-                            Icons.star,
-                            color: ThemeService.activeColorScheme.tertiary,
-                            size: 14,
-                          ),
-                        ),
-                      ),
-                    if (isSelectionMode)
-                      Positioned(
-                        top: 4,
-                        left: 4,
-                        child: Container(
-                          padding: const EdgeInsets.all(1),
-                          decoration: BoxDecoration(
-                            color: isSelected
-                                ? primary
-                                : scheme.surface.withValues(alpha: 0.9),
-                            shape: BoxShape.circle,
-                            border: Border.all(color: primary, width: 1.5),
-                          ),
-                          child: Icon(
-                            isSelected ? Icons.check : null,
-                            size: 16,
-                            color: scheme.onPrimary,
-                          ),
-                        ),
-                      ),
-                  ],
-                ),
-              ),
-              Padding(
-                padding: const EdgeInsets.fromLTRB(6, 4, 6, 6),
-                child: Text(
-                  folder.name,
-                  overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(
-                    fontSize: 12,
-                    fontWeight: FontWeight.w600,
-                    fontFamily: 'Kuramubon',
-                    fontFamilyFallback: kHeadingFontFallback,
                   ),
-                ),
+                ],
+              ),
+              _gridCardActions(
+                context,
+                menu: _folderMenu(context, folder),
+                isFavorite: folder.isFavorite,
               ),
             ],
           ),
@@ -662,9 +649,53 @@ class ProjectListWidget extends StatelessWidget {
     );
   }
 
+  Widget _gridCardActions(
+    BuildContext context, {
+    required Widget menu,
+    required bool isFavorite,
+  }) {
+    final scheme = Theme.of(context).colorScheme;
+    final showMenu = !isSelectionMode && onPickProject == null;
+    return Positioned(
+      top: 4,
+      right: 4,
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          if (showMenu)
+            Material(
+              color: scheme.surface.withValues(alpha: 0.9),
+              shape: const CircleBorder(),
+              clipBehavior: Clip.antiAlias,
+              child: SizedBox.square(dimension: 32, child: menu),
+            )
+          else
+            const SizedBox.square(dimension: 32),
+          if (isFavorite)
+            Padding(
+              padding: const EdgeInsets.only(top: 4),
+              child: Container(
+                padding: const EdgeInsets.all(3),
+                decoration: BoxDecoration(
+                  color: scheme.surface.withValues(alpha: 0.9),
+                  shape: BoxShape.circle,
+                ),
+                child: Icon(
+                  Icons.star,
+                  color: ThemeService.activeColorScheme.tertiary,
+                  size: 14,
+                ),
+              ),
+            ),
+        ],
+      ),
+    );
+  }
+
   Widget _projectMenu(BuildContext context, Project project) {
     final l10n = AppLocalizations.of(context)!;
     return PopupMenuButton<String>(
+      padding: EdgeInsets.zero,
       icon: const Icon(Icons.more_vert, size: 18),
       onSelected: (action) => _handleAction(context, action, project),
       itemBuilder: (_) => [
@@ -701,6 +732,7 @@ class ProjectListWidget extends StatelessWidget {
   Widget _folderMenu(BuildContext context, ProjectFolder folder) {
     final l10n = AppLocalizations.of(context)!;
     return PopupMenuButton<String>(
+      padding: EdgeInsets.zero,
       icon: const Icon(Icons.more_vert, size: 18),
       onSelected: (action) => _handleFolderAction(context, action, folder),
       itemBuilder: (_) => [
