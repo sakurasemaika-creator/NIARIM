@@ -256,7 +256,9 @@ Future<List<SingleChildWidget>> _buildAppProviders(
   Future<void> learnPoster(String accountId) async {
     try {
       await communityService.restoreOwner(accountId);
-      await communityService.loadOwnWorks(accountKey: accountId);
+      if (googleAuthService.account?.id != accountId) return;
+      final page = await communityService.loadOwnWorks(accountKey: accountId);
+      if (page == null || googleAuthService.account?.id != accountId) return;
       await communityService.loadSocial();
     } catch (error) {
       debugPrint('Could not load the poster\'s community data: $error');

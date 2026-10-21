@@ -9,7 +9,10 @@ import 'package:niarim/models/layer.dart';
 import 'package:niarim/services/project_service.dart';
 import 'package:niarim/services/recorded_filter_apply_service.dart';
 
+import '../helpers/project_storage.dart';
+
 void main() {
+  useTemporaryProjectStorage();
   TestWidgetsFlutterBinding.ensureInitialized();
   for (final legacy in [false, true]) {
     test(

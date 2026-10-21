@@ -13,9 +13,11 @@ Future<void> reportFailedCommunityEdit(
   CommunityService service,
   Future<bool?> edit,
 ) async {
+  final revision = service.accountRevision;
   final messenger = ScaffoldMessenger.maybeOf(context);
   final l10n = AppLocalizations.of(context)!;
   if (await edit != false) return;
+  if (!context.mounted || service.accountRevision != revision) return;
   final error = service.lastError;
   messenger?.showSnackBar(
     SnackBar(

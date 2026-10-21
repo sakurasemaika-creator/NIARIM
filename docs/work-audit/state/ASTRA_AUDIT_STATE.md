@@ -189,3 +189,24 @@ status: done（2026-10-10、製品修正 App `35d229e`、証跡 https://claude.a
 - 保存先は承認済み `1fiZEjCVqLtNVk_mkNIOUC3MWn6ys6e8q`。両file IDのname/MIME(application/zip)/size/parentをmetadataで照合した後、Driveからraw ZIPを再取得して上記SHA256・size・全entry CRCを独立検証。ローカルhashだけをremote検証済みと呼んでいない。
 - ZIPは全writer停止後にtemp→close/fsync→atomic replaceで作成し、別execでも整合性を検証してupload。Mainにはcurrent matrix/native before-after/serializer fixture/設定/ログ/source hashes/再適用可能なproduct-source.patch/reproduction scriptsを含め、raw VM service URL入りrunner.logは除外してredact版のみ保存。Intermediateは復元時のmatrixと未採用の試行を保持する。Gitをsource/State正本とし、Drive ZIPでの未完了状態を最終closureと呼ばない。
 - 残り: 通常/大量/error等の全主要状態matrix、Works/Bookmarks非emptyとfilter/取得状態、検索・folder・view・resizeのcontinuity、free/paid/current campaign、DISC003–008全条件、後続Baseline/Discovery/Deltaと最新HEAD最終Visual。Android/DeX実機・touch/multitouch/筆圧は未用意、Linux FFmpeg dlopenも未成立でcodec/exportをPASSにしない。Baseline done2/628、current A003/in_progress、DISC001–008 todo、Delta not_startedを維持する。
+
+
+### 2026-10-22 A003/S7 — DISC009 account boundaryの優先修正（全面監査は未完了）
+
+- 再取得した最新HEADはApp `f6acd1a80e423012ac8a747c5dad0944ac8c6930` / Web `4509c0fba504c23253bad12a027a341ce433f180`。S5/S6のremote反映は保持されていた。一方で作業環境が初期snapshotへ戻り、直前の未push S7 source/log/native画像が残っていなかった。未保存の過去観察を今回の一次証跡へ使わず、修正を再構成し、before/afterとnative操作をfreshに再実行した。既存S5/S6 mainもDriveから再取得して65,020,718B、SHA256/全CRC一致を確認。
+- fresh before（上記App HEADの独立worktree）: owner応答を待機→forgetOwner/new-owner→旧private応答で旧owner/作品が復元、旧social応答でbookmarks復元、旧toggle成功でsignout後のbookmark復元、の3testがFAIL。MockClient・example.invalidの合成token/データのみ。DISC009として登録、privacy上の優先修正を現在A003から行った。
+- CommunityServiceはaccount revisionとdisposeで旧応答を無効にし、owner/social/following/author/toggle/edit/AI/visibilityの成功・失敗・rollbackが次accountへ適用されないようにした。unknown ownerでもforgetOwnerでrevisionが進む。signoutでprivate store/owner author-page cache/social/errorを消す。bootstrapのlearnPoster連鎖と投稿復旧時のowner設定もaccount確認後へ置いた。owner画面はaccount変更時にcached private rows/error/busyを破棄し、reload世代とaccount一致で結果を扱う。取消を別accountの失敗toastにしない。
+- 追加発見: 同じownerへ再ログインした後のedit2が処理中でも、古いedit1のfinallyがbusyを解除できる。AI/visibilityの2widget反例が最初FAIL。callerの成功/error/finallyにもrevisionを適用し、旧処理が新処理のbusyを解除しないよう修正。busyの2反例を含め最終回帰へ収録。
+- 検証: 27files / 実174tests PASS（hidden loading eventsを除外、最終done.success=true）。新規はunit13＋owner/feedback/busy widget5。full flutter analyze指摘0。最終busy guard後のdefault Linux debug build成功。native harness buildも同じ製品sourceで成功。ZIP source hashesはpublishするproduct/test全9fileと照合する。初回の一時harnessを含むanalyze指摘は、製品へ入れずscratchを除去してfull analyze再実行後0件。
+- 旧HEADのHair Fold Production Green run `39638288550` はfailureを確認。その2件のfilter_custom_replay_testもbeforeでMissingPluginExceptionをfresh再現。DISC004の初回save awaitに必要な実隔離保存先fixtureを加えて2件ともPASSにした。Prism/Linear Dodge/pixelsの既存assertionは変更していない。このCI fixture対処をHair Fold機能の全面監査完了とはしない。新HEAD CIは反映後に確認する。
+- fresh直接操作: production CommunityMyWorksScreen、CommunityService、CommunityApi/NiarimApiClientを明示ラベル付き隔離harnessで実行。native Linux debug＋Xvfb＋mouse、forced SP390×844とPC1440×900、en/light/textScale1。両modeで旧private表示→旧応答をhold→新accountの応答もholdして切替（旧行が消える）→旧応答をrelease（旧行は戻らず取消）→新応答をrelease（new privateだけ）→signout（privateなし）。5状態ずつの原本10枚をすべて開き目視し、action history・harness source・設定/再現方法を保存した。合成auth/APIなのでlive Google OAuth、YouTube、実backendの合格ではない。
+- 留保: owner loading時はspinnerと一時的な0 worksが並ぶため、全状態polish時に表記も確認する。Android/DeX/touch/stylus/multitouch未用意、Linux FFmpeg dlopen失敗は継続。全7言語/336matrix、全caller・実auth/backend・private/deleted/offline等のDISC009残条件、DISC008のempty理由分岐は未完了。Baseline done2/628、current A003 in_progress、discovery_current_id DISC001、DISC001–DISC009 todo、Delta not_startedを保持する。
+
+#### S7証跡保存（両ZIPのDrive metadata＋raw bytes再取得で検証）
+
+| ZIP | bytes / entries | SHA256 |
+| --- | --- | --- |
+| [S7 core recovery checkpoint](https://drive.google.com/file/d/1ZTrSTaVsPKMYcuJlFt0nz0JQKYvlPEH8/view?usp=drivesdk) | 85,961 / 22 | `479ae79512c0854c287b708ea48cb07c109edd2bf2f220b90cdbec59b7be18d3` |
+| [S7 final priority-fix checkpoint](https://drive.google.com/file/d/1cjryM9pqobXiiRLjkzY2LHoe1yUwxkIy/view?usp=drivesdk) | 473,236 / 38 | `4c15e5a3b8c5c05be3e3644e4fa73d2d4cde395f5e13b4cbd6b7e5ca543cdfc4` |
+
+- 承認済みfolder `1fiZEjCVqLtNVk_mkNIOUC3MWn6ys6e8q`、file name/MIME(application/zip)/size/parent一致。両ZIPをDriveから実再取得しSHA256・bytes・全entry CRC一致を検証した。coreはbusy追加修正前の中間checkpoint、finalが現在の174testと10native画像・最終source/patch/reproductionを含む。raw runnerのVM service URLは除外しredact版のみ収録。finalというファイル名はS7優先対策のcheckpoint名であり、全面監査最終Visual closureを意味しない。
