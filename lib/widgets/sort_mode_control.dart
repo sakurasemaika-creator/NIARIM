@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import '../l10n/app_localizations.dart';
 import '../config/font_fallback.dart';
 
+enum _SortMenuAction { name, updated, direction }
+
 /// 「名前／更新日時」の並び替え基準プルダウンと、昇順・降順を切り替える
 /// 矢印ボタンを横に並べた共通コントロール。プロジェクト一覧・共有一覧・
 /// ゴミ箱一覧など、名前と更新日時で並び替えられる一覧画面すべてで
@@ -29,6 +31,53 @@ class SortModeControl extends StatelessWidget {
 
     return LayoutBuilder(
       builder: (context, constraints) {
+        // 極端に狭いタイトル枠では2つのボタンを並べられないため、
+        // 並び順の切り替えも同じメニューから操作できるようにする。
+        if (constraints.hasBoundedWidth && constraints.maxWidth < 64) {
+          return PopupMenuButton<_SortMenuAction>(
+            tooltip: fieldLabel,
+            onSelected: (action) {
+              switch (action) {
+                case _SortMenuAction.name:
+                  onSortByNameChanged(true);
+                case _SortMenuAction.updated:
+                  onSortByNameChanged(false);
+                case _SortMenuAction.direction:
+                  onToggleDirection();
+              }
+            },
+            itemBuilder: (_) => [
+              PopupMenuItem(
+                value: _SortMenuAction.name,
+                child: Text(l10n.homeSortFieldName),
+              ),
+              PopupMenuItem(
+                value: _SortMenuAction.updated,
+                child: Text(l10n.homeSortFieldUpdated),
+              ),
+              const PopupMenuDivider(),
+              PopupMenuItem(
+                value: _SortMenuAction.direction,
+                child: Text(
+                  sortAscending
+                      ? l10n.homeSortDirectionAscTooltip
+                      : l10n.homeSortDirectionDescTooltip,
+                ),
+              ),
+            ],
+            child: SizedBox(
+              width: 32,
+              height: 40,
+              child: FittedBox(
+                fit: BoxFit.scaleDown,
+                child: Icon(
+                  sortByName ? Icons.sort_by_alpha : Icons.update,
+                  size: 20,
+                ),
+              ),
+            ),
+          );
+        }
         // AppBarは端末幅・文字サイズ・左右のaction数によってタイトル領域が
         // かなり狭くなる。従来は「項目名 + ▼ + 48px IconButton」を常に
         // 横並びにしていたため、狭い端末でRenderFlexがほんの僅かにはみ出し

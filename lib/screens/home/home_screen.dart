@@ -908,8 +908,12 @@ class _HomeTabBar extends StatelessWidget {
       final tp = TextPainter(
         text: TextSpan(text: label, style: textStyle),
         textDirection: TextDirection.ltr,
+        textScaler: MediaQuery.textScalerOf(context),
+        maxLines: 1,
       )..layout();
-      return tp.width + 32;
+      final width = tp.width + 32;
+      tp.dispose();
+      return width;
     }).toList();
 
     Widget tabItem(int i) => InkWell(
@@ -927,6 +931,8 @@ class _HomeTabBar extends StatelessWidget {
         ),
         child: Text(
           labels[i],
+          maxLines: 1,
+          softWrap: false,
           style: textStyle.copyWith(
             color: currentIndex == i ? scheme.primary : scheme.onSurfaceVariant,
           ),

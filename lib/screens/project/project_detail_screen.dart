@@ -524,53 +524,63 @@ class _ProjectDetailScreenState extends State<ProjectDetailScreen> {
     return Row(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
-        IconButton(
-          onPressed: flat.isEmpty
-              ? null
-              : () => _seekTo(projectService, flat, 0),
-          icon: const Icon(Icons.skip_previous),
-          tooltip: l10n.projectDetailFirstFrameTooltip,
-        ),
-        IconButton(
-          onPressed: flat.isEmpty
-              ? null
-              : () => _seekTo(projectService, flat, _frameIndex - 1),
-          icon: const Icon(Icons.fast_rewind),
-          tooltip: l10n.projectDetailPrevFrameTooltip,
-        ),
-        const SizedBox(width: 4),
-        Container(
-          decoration: BoxDecoration(
-            color: Theme.of(context).colorScheme.primary,
-            shape: BoxShape.circle,
-          ),
+        Flexible(
           child: IconButton(
             onPressed: flat.isEmpty
                 ? null
-                : () => _togglePlay(projectService, flat, project.fps),
-            icon: Icon(
-              _isPlaying ? Icons.pause : Icons.play_arrow,
-              color: Theme.of(context).colorScheme.onPrimary,
-            ),
-            tooltip: _isPlaying
-                ? l10n.projectDetailPauseTooltip
-                : l10n.projectDetailPlayTooltip,
+                : () => _seekTo(projectService, flat, 0),
+            icon: const Icon(Icons.skip_previous),
+            tooltip: l10n.projectDetailFirstFrameTooltip,
+          ),
+        ),
+        Flexible(
+          child: IconButton(
+            onPressed: flat.isEmpty
+                ? null
+                : () => _seekTo(projectService, flat, _frameIndex - 1),
+            icon: const Icon(Icons.fast_rewind),
+            tooltip: l10n.projectDetailPrevFrameTooltip,
           ),
         ),
         const SizedBox(width: 4),
-        IconButton(
-          onPressed: flat.isEmpty
-              ? null
-              : () => _seekTo(projectService, flat, _frameIndex + 1),
-          icon: const Icon(Icons.fast_forward),
-          tooltip: l10n.projectDetailNextFrameTooltip,
+        Flexible(
+          child: Container(
+            decoration: BoxDecoration(
+              color: Theme.of(context).colorScheme.primary,
+              shape: BoxShape.circle,
+            ),
+            child: IconButton(
+              onPressed: flat.isEmpty
+                  ? null
+                  : () => _togglePlay(projectService, flat, project.fps),
+              icon: Icon(
+                _isPlaying ? Icons.pause : Icons.play_arrow,
+                color: Theme.of(context).colorScheme.onPrimary,
+              ),
+              tooltip: _isPlaying
+                  ? l10n.projectDetailPauseTooltip
+                  : l10n.projectDetailPlayTooltip,
+            ),
+          ),
         ),
-        IconButton(
-          onPressed: flat.isEmpty
-              ? null
-              : () => _seekTo(projectService, flat, flat.length - 1),
-          icon: const Icon(Icons.skip_next),
-          tooltip: l10n.projectDetailLastFrameTooltip,
+        const SizedBox(width: 4),
+        Flexible(
+          child: IconButton(
+            onPressed: flat.isEmpty
+                ? null
+                : () => _seekTo(projectService, flat, _frameIndex + 1),
+            icon: const Icon(Icons.fast_forward),
+            tooltip: l10n.projectDetailNextFrameTooltip,
+          ),
+        ),
+        Flexible(
+          child: IconButton(
+            onPressed: flat.isEmpty
+                ? null
+                : () => _seekTo(projectService, flat, flat.length - 1),
+            icon: const Icon(Icons.skip_next),
+            tooltip: l10n.projectDetailLastFrameTooltip,
+          ),
         ),
       ],
     );
