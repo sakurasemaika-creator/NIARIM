@@ -328,8 +328,8 @@ class _ThemeSampleScreen extends StatelessWidget {
 
 
   Widget _splash(BuildContext context, ColorScheme c) {
-    // Mirror splash_screen.dart: the icon/label foreground is exactly the
-    // user-selected menu background, NOT auto-generated onPrimary/onSecondary.
+    // Match splash_screen.dart: the user's explicit button foreground is
+    // used for button labels/icons. The app-logo foreground uses it too.
     final preset = context.read<ThemeService>().current;
     final foreground = preset.buttonTextColor;
     Widget action(IconData icon, String title, String? subtitle,
@@ -357,7 +357,7 @@ class _ThemeSampleScreen extends StatelessWidget {
         decoration: BoxDecoration(color: c.primary,
           borderRadius: BorderRadius.circular(24.2)),
         child: SvgPicture.asset('assets/logo/app_logo.svg',
-          colorFilter: ColorFilter.mode(preset.menuBgColor, BlendMode.srcIn))),
+          colorFilter: ColorFilter.mode(preset.buttonTextColor, BlendMode.srcIn))),
       const SizedBox(height: 10),
       SvgPicture.asset('assets/logo/title_logo.svg',
         width: 220, height: 220 * 690 / 3470,
@@ -612,19 +612,20 @@ class _ThemeSampleScreen extends StatelessWidget {
     _cta(c, t('投稿する', 'Post'), icon: Icons.cloud_upload),
   ]);
 
-  Widget _theme(BuildContext context, ColorScheme c) => _list([
+  Widget _theme(BuildContext context, ColorScheme c) {
+    final preset = context.read<ThemeService>().current;
+    return _list([
     _heading(t('カラーカスタマイズ', 'Color customization')),
     ...[
       (t('アクセント', 'Accent'), c.primary),
       (t('本文文字色', 'Body text'), c.onSurface),
       (t('ボタン内の文字色', 'Button text'), c.onPrimary),
-      (t('メニューの文字色', 'Menu text'),
-        context.read<ThemeService>().current.menuTextColor),
+      (t('メニューの文字色', 'Menu text'), preset.menuTextColor),
       (t('選択中の文字色', 'Selected text'), c.onSecondary),
-      (t('パネル背景', 'Panel background'), c.surface),
-      (t('メニュー背景', 'Menu background'), c.surfaceContainer),
+      (t('パネル背景', 'Panel background'), preset.panelBgColor),
+      (t('メニュー背景', 'Menu background'), preset.menuBgColor),
       (t('選択色', 'Selection'), c.secondary),
-      (t('更新マーク', 'Update mark'), c.tertiary),
+      (t('更新マーク', 'Update mark'), preset.updateMarkColor),
     ].map((e) => _card(Row(children: [
       CircleAvatar(radius: 16, backgroundColor: e.$2),
       const SizedBox(width: 14),
@@ -635,6 +636,7 @@ class _ThemeSampleScreen extends StatelessWidget {
     _card(_row(Icons.palette, t('レッド（ライト）', 'Red (Light)'))),
     _card(_row(Icons.palette, t('ブルー（ダーク）', 'Blue (Dark)'))),
   ]);
+  }
 
   Widget _settings(ColorScheme c) => _list([
     ...[
