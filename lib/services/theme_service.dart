@@ -28,6 +28,19 @@ class ThemeService extends ChangeNotifier {
     seedColor: const Color(0xFFFF5C7A),
   );
 
+  /// 復旧確認ダイアログ専用。現在のテーマから独立している。
+  /// プリセットの色をここで複製せず、正式なレッド（ライト）を利用する。
+  static ThemeData get rescueThemeData =>
+      ThemeService()._buildTheme(AppThemePreset.defaultLight);
+
+  /// 利用者が確認した場合のみ、現在の配色を既定に戻して永続化する。
+  /// 保存済みのユーザープリセット自体は削除・書き換えない。
+  Future<void> resetToDefault() async {
+    _current = AppThemePreset.defaultLight;
+    notifyListeners();
+    await _persist();
+  }
+
   ThemeData get themeData {
     final data = _buildTheme(_current);
     activeColorScheme = data.colorScheme;
