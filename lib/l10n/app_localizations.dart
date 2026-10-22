@@ -4739,23 +4739,23 @@ abstract class AppLocalizations {
   /// **'更新マーク色'**
   String get themeColorUpdateMark;
 
-  /// テーマ設定で文字色と背景色が近すぎるときのエラーダイアログの見出し
-  ///
-  /// In ja, this message translates to:
-  /// **'この色では文字が読めなくなります'**
-  String get themeContrastErrorTitle;
-
-  /// 同エラーの本文
-  ///
-  /// In ja, this message translates to:
-  /// **'文字の色と背景の色が近すぎるため、画面の文字がほとんど見えなくなります。設定画面自体も読めなくなり元に戻せなくなるので、この組み合わせは保存できません。どちらかの明るさを変えてください。'**
-  String get themeContrastErrorBody;
-
   /// 読めないテーマになったとき起動画面に出る固定色のリセットボタン
   ///
   /// In ja, this message translates to:
   /// **'テーマをもとに戻す'**
   String get themeUnreadableResetButton;
+  
+  /// テーマのリセット確認ダイアログ
+  ///
+  /// In ja, this message translates to:
+  /// **'テーマカラーをリセットしますか？'**
+  String get themeResetConfirmTitle;
+
+  /// テーマのリセット確定操作
+  ///
+  /// In ja, this message translates to:
+  /// **'リセット'**
+  String get themeResetConfirmAction;
 
   /// テーマをリセットしたときの通知
   ///
