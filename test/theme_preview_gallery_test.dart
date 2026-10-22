@@ -1,5 +1,7 @@
 import 'dart:io';
+import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:provider/provider.dart';
@@ -75,30 +77,75 @@ void main() {
     await tester.pumpAndSettle();
   });
 
-  testWidgets('theme settings opens the full-screen gallery and returns', (tester) async {
+  testWidgets('theme settings shows live scaled preview and opens gallery', (tester) async {
+    // Capture the actual Flutter rendering at a representative phone size.
+    tester.view.physicalSize = const Size(1080, 2280);
+    tester.view.devicePixelRatio = 3;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
     SharedPreferences.setMockInitialValues({});
     mockPathProvider();
     final providers = await tester.runAsync(buildAppProviders);
-    await tester.pumpWidget(MultiProvider(
-      providers: providers!,
-      child: Builder(
-        builder: (context) => MaterialApp(
-          locale: const Locale('ja'),
-          supportedLocales: AppLocalizations.supportedLocales,
-          localizationsDelegates: AppLocalizations.localizationsDelegates,
-          theme: context.watch<ThemeService>().themeData,
-          home: const ThemeSettingsScreen(),
+    final themeService = ThemeService();
+    await themeService.init();
+    final screenshot = GlobalKey();
+    await tester.pumpWidget(RepaintBoundary(
+      key: screenshot,
+      child: MultiProvider(
+        providers: [
+          ...providers!,
+          ChangeNotifierProvider<ThemeService>.value(value: themeService),
+        ],
+        child: Builder(
+          builder: (context) => MaterialApp(
+            locale: const Locale('ja'),
+            supportedLocales: AppLocalizations.supportedLocales,
+            localizationsDelegates: AppLocalizations.localizationsDelegates,
+            theme: context.watch<ThemeService>().themeData,
+            home: const ThemeSettingsScreen(),
+          ),
         ),
       ),
     ));
     await tester.pumpAndSettle();
     expect(find.byKey(const Key('themePreviewOpen')), findsOneWidget);
+    expect(find.byKey(const Key('themeInlinePreview')), findsOneWidget);
+    // The miniature is real Flutter content, not a fixed picture.
+    expect(find.text('練習作品'), findsOneWidget);
+    expect(tester.takeException(), isNull);
+
+    final before = Theme.of(tester.element(
+      find.byKey(const Key('themeInlinePreview')))).colorScheme.primary;
+    themeService.previewCurrent(themeService.current.copyWith(
+      accentColor: const Color(0xFF008B79),
+    ));
+    await tester.pumpAndSettle();
+    final after = Theme.of(tester.element(
+      find.byKey(const Key('themeInlinePreview')))).colorScheme.primary;
+    expect(after, isNot(before));
+    expect(find.byKey(const Key('themeInlinePreview')), findsOneWidget);
+    expect(tester.takeException(), isNull);
+
+    final boundary = screenshot.currentContext!.findRenderObject()
+        as RenderRepaintBoundary;
+    final bytes = await tester.runAsync(() async {
+      final image = await boundary.toImage(pixelRatio: 1);
+      final data = await image.toByteData(format: ui.ImageByteFormat.png);
+      image.dispose();
+      return data!.buffer.asUint8List();
+    });
+    final output = Directory('build/theme-inline-preview')
+      ..createSync(recursive: true);
+    await tester.runAsync(() => File(
+      '${output.path}/theme_settings_inline.png',
+    ).writeAsBytes(bytes!));
+
     await tester.tap(find.byKey(const Key('themePreviewOpen')));
     await tester.pumpAndSettle();
     expect(find.byKey(const Key('themePreviewPager')), findsOneWidget);
     await tester.tap(find.byKey(const Key('themePreviewClose')));
     await tester.pumpAndSettle();
-    expect(find.byKey(const Key('themePreviewOpen')), findsOneWidget);
+    expect(find.byKey(const Key('themeInlinePreview')), findsOneWidget);
   });
 
   testWidgets('gallery works at narrow 320px portrait width', (tester) async {
