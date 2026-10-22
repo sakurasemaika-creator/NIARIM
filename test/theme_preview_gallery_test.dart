@@ -28,8 +28,8 @@ void main() {
     final ids = themePreviewEntries.map((e) => e.id).toList();
     expect(ids.toSet().length, ids.length);
     expect(ids, containsAll([
-      'splash', 'projects', 'canvas', 'timeline', 'export',
-      'complete', 'community', 'settings', 'theme',
+      'splash', 'projects', 'shared', 'trash', 'canvas', 'timeline', 'export',
+      'complete', 'community', 'settings', 'theme', 'widget_frame',
     ]));
     expect(ids, isNot(contains('folder')));
     expect(ids, isNot(contains('works_tab')));
@@ -112,9 +112,13 @@ void main() {
       ),
     ));
     await tester.pumpAndSettle();
-    for (var i = 0; i < 13; i++) {
+    // Cover every registered independent screen, not only the first dozen.
+    for (var i = 1; i < themePreviewEntries.length; i++) {
       await tester.tap(find.byKey(const Key('themePreviewNext')));
       await tester.pumpAndSettle();
+      expect(tester.widget<Text>(
+        find.byKey(const Key('themePreviewTitle'))).data,
+        themePreviewEntries[i].ja);
       expect(tester.takeException(), isNull);
     }
   });
