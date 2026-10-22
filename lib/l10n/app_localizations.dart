@@ -4714,6 +4714,15 @@ abstract class AppLocalizations {
   /// In ja, this message translates to:
   /// **'文字色'**
   String get themeColorText;
+  
+  /// Button text and icon color.
+  String get themeColorButtonText;
+
+  /// Menu and app bar text and icon color.
+  String get themeColorMenuText;
+
+  /// Text and icon color on selected surfaces.
+  String get themeColorSelectionText;
 
   /// No description provided for @themeColorPanelBg.
   ///
