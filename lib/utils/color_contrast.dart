@@ -267,6 +267,8 @@ List<({Color a, Color b})> readabilityCriticalPairs(AppThemePreset preset) {
     (a: opaqueOver(preset.textColor, panel), b: panel),
     // 上部バー・メニューの文字と、メニュー背景
     (a: opaqueOver(menuForeground, menu), b: menu),
+    // ダイアログ本文や入力欄など、本文文字がメニュー色の面に載る場合
+    (a: opaqueOver(preset.textColor, menu), b: menu),
     // 起動画面「作品をつくる」の文字・アイコン/アクセント色
     (a: opaqueOver(splashForeground, accent), b: accent),
     // 起動画面「作品広場」の文字・アイコン/選択色
