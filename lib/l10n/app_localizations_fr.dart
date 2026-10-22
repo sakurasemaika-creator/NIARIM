@@ -2649,7 +2649,16 @@ class AppLocalizationsFr extends AppLocalizations {
   String get themeColorAccent => 'Couleur d\'accent';
 
   @override
-  String get themeColorText => 'Couleur du texte';
+  String get themeColorText => 'Couleur du texte courant';
+
+  @override
+  String get themeColorButtonText => 'Couleur du texte et des icônes des boutons';
+
+  @override
+  String get themeColorMenuText => 'Couleur du texte des menus et de la barre supérieure';
+
+  @override
+  String get themeColorSelectionText => 'Couleur du texte et des icônes sélectionnés';
 
   @override
   String get themeColorPanelBg => 'Couleur de fond des panneaux';
