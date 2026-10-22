@@ -2,11 +2,13 @@ import 'dart:io';
 import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:niarim/services/theme_service.dart';
+import 'package:niarim/models/app_theme_preset.dart';
 import 'package:niarim/app_bootstrap.dart';
 import 'package:niarim/l10n/app_localizations.dart';
 import 'package:niarim/screens/settings/theme_preview_gallery_screen.dart';
@@ -76,6 +78,74 @@ void main() {
     expect(find.byKey(const Key('themePreviewNext')), findsOneWidget);
     await tester.tap(find.byKey(const Key('themePreviewClose')));
     await tester.pumpAndSettle();
+  });
+
+  testWidgets('gallery reflects actual button, text and custom surface colors',
+      (tester) async {
+    SharedPreferences.setMockInitialValues({});
+    final service = ThemeService();
+    await service.init();
+    final preset = AppThemePreset.defaultLight.copyWith(
+      textColor: const Color(0xFF112233),
+      buttonTextColor: const Color(0xFF00CC11),
+      menuTextColor: const Color(0xFFCC11BB),
+      selectionTextColor: const Color(0xFF2255CC),
+      panelBgColor: const Color(0xFFEEBBCC),
+      menuBgColor: const Color(0xFFBBFFDD),
+      updateMarkColor: const Color(0xFF667788),
+    );
+    service.previewCurrent(preset);
+    await tester.pumpWidget(ChangeNotifierProvider<ThemeService>.value(
+      value: service,
+      child: Builder(builder: (context) => MaterialApp(
+        locale: const Locale('ja'),
+        supportedLocales: const [Locale('ja'), Locale('en')],
+        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        theme: context.watch<ThemeService>().themeData,
+        home: const ThemePreviewGalleryScreen(),
+      )),
+    ));
+    await tester.pumpAndSettle();
+
+    // Splash tiles and the app-logo foreground follow the explicit
+    // button text color, not the unrelated menu-background swatch.
+    final logo = tester.widget<SvgPicture>(
+      find.byKey(const Key('themePreviewSplashAppLogo')),
+    );
+    expect(logo.colorFilter,
+      const ColorFilter.mode(Color(0xFF00CC11), BlendMode.srcIn));
+
+    // The theme sample must show raw user-set colors, not seed-scheme
+    // approximations (especially for the panel, menu and update mark).
+    final pager = tester.widget<PageView>(
+      find.byKey(const Key('themePreviewPager')));
+    final themeIndex = themePreviewEntries.indexWhere((e) => e.id == 'theme');
+    expect(themeIndex, greaterThan(0));
+    pager.controller!.jumpToPage(themeIndex);
+    await tester.pumpAndSettle();
+    expect(tester.widget<Text>(
+      find.byKey(const Key('themePreviewTitle'))).data, 'テーマ・外観');
+
+    Future<void> checkSwatch(String label, Color expected) async {
+      final list = find.byType(ListView).last;
+      await tester.scrollUntilVisible(
+        find.text(label), 90, scrollable: list);
+      await tester.pumpAndSettle();
+      final containingRow = find.ancestor(
+        of: find.text(label), matching: find.byType(Row)).first;
+      final avatar = tester.widget<CircleAvatar>(
+        find.descendant(of: containingRow,
+          matching: find.byType(CircleAvatar)));
+      expect(avatar.backgroundColor, expected, reason: label);
+    }
+    await checkSwatch('本文文字色', const Color(0xFF112233));
+    await checkSwatch('ボタン内の文字色', const Color(0xFF00CC11));
+    await checkSwatch('メニューの文字色', const Color(0xFFCC11BB));
+    await checkSwatch('選択中の文字色', const Color(0xFF2255CC));
+    await checkSwatch('パネル背景', const Color(0xFFEEBBCC));
+    await checkSwatch('メニュー背景', const Color(0xFFBBFFDD));
+    await checkSwatch('更新マーク', const Color(0xFF667788));
+    expect(tester.takeException(), isNull);
   });
 
   testWidgets('theme settings shows live scaled preview and opens gallery', (tester) async {
