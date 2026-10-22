@@ -258,15 +258,22 @@ List<({Color a, Color b})> readabilityCriticalPairs(AppThemePreset preset) {
   final menu = opaqueOver(preset.menuBgColor, panel);
   final accent = opaqueOver(preset.accentColor, panel);
   final selection = opaqueOver(preset.selectionColor, panel);
+  // Splash uses the menu background as its legacy button foreground.
+  // An explicit button foreground overrides that legacy behavior.
+  final splashForeground = preset.buttonTextColor ?? preset.menuBgColor;
+  final menuForeground = preset.menuTextColor ?? preset.textColor;
   return [
     // 一般的な一覧・設定項目の本文/パネル背景
     (a: opaqueOver(preset.textColor, panel), b: panel),
-    // メニュー・ダイアログの本文/メニュー背景
-    (a: opaqueOver(preset.textColor, menu), b: menu),
+    // 上部バー・メニューの文字と、メニュー背景
+    (a: opaqueOver(menuForeground, menu), b: menu),
     // 起動画面「作品をつくる」の文字・アイコン/アクセント色
-    (a: opaqueOver(preset.menuBgColor, accent), b: accent),
+    (a: opaqueOver(splashForeground, accent), b: accent),
     // 起動画面「作品広場」の文字・アイコン/選択色
-    (a: opaqueOver(preset.menuBgColor, selection), b: selection),
+    (a: opaqueOver(splashForeground, selection), b: selection),
+    // 明示的にカスタマイズした「選択中」ラベルが選択色に埋もれる場合
+    if (preset.selectionTextColor != null)
+      (a: opaqueOver(preset.selectionTextColor!, selection), b: selection),
   ];
 }
 
