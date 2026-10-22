@@ -257,7 +257,7 @@ class _SplashScreenState extends State<SplashScreen> {
             // なりかねない場合は、発生経路（手動設定・プリセット・import・
             // .niatra等）を問わず右上に復旧ボタンを表示する。
             // 通常UIとは異なり、テーマに依存しない黒文字＋白縁取りの固定色を使う。
-            if (!isThemeReadable(context.watch<ThemeService>().current))
+            if (isThemeAtLockoutRisk(context.watch<ThemeService>().current))
               const Positioned(top: 8, right: 8, child: _ThemeRescueButton()),
           ],
         ),
