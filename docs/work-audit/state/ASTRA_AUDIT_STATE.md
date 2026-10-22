@@ -210,3 +210,20 @@ status: done（2026-10-10、製品修正 App `35d229e`、証跡 https://claude.a
 | [S7 final priority-fix checkpoint](https://drive.google.com/file/d/1cjryM9pqobXiiRLjkzY2LHoe1yUwxkIy/view?usp=drivesdk) | 473,236 / 38 | `4c15e5a3b8c5c05be3e3644e4fa73d2d4cde395f5e13b4cbd6b7e5ca543cdfc4` |
 
 - 承認済みfolder `1fiZEjCVqLtNVk_mkNIOUC3MWn6ys6e8q`、file name/MIME(application/zip)/size/parent一致。両ZIPをDriveから実再取得しSHA256・bytes・全entry CRC一致を検証した。coreはbusy追加修正前の中間checkpoint、finalが現在の174testと10native画像・最終source/patch/reproductionを含む。raw runnerのVM service URLは除外しredact版のみ収録。finalというファイル名はS7優先対策のcheckpoint名であり、全面監査最終Visual closureを意味しない。
+
+
+### 2026-10-22 A003/S8 — 再開時の復元と中断前保存checkpoint
+
+- 再開時にscratchが初期snapshot（App ec93d84）へ戻っていた。最新dev_branchを取得してApp `7e44c07e98688a21f03227eff652e9625b5f2aa6` / Web `292316f3aa6649717b271f68a8017ffadfc6be53` までfast-forward。未pushの直前S8最終matrix/native原本は保持されていなかった。過去の207/195件や5901画像を、今回保存済みの一次証跡として扱わない。
+- 保存済みS8 progress ZIP（Drive [1KqZV8_oVaGJCO6KWdvSp6BOIJxN0rWIR](https://drive.google.com/file/d/1KqZV8_oVaGJCO6KWdvSp6BOIJxN0rWIR/view?usp=drivesdk)）を再取得し77,337,683 bytes /2893 entries、SHA256 `0363406303392f885fad5e4ef0189bfca791e7ab3e511265e73f44fd09b92687` と全CRCを照合。21source/testのhashも照合して復元。旧checkpointはHome理由分岐の修正前8 FAIL・184 PASS・拡張12 PASS、card/dialog2 FAIL、7状態完了後のnonempty文字2倍9.8px overflowという部分証拠でありfull matrix PASSではない。
+- DISC010/011を上記保存済みRouteから復元。DISC012は選択中tabが拡大/resizeで画面外へ残る観察に基づく継続対象。未保存原本を失ったことを明記し、fresh再現・修正後実画面を必要条件とした。全DiscoveryのstatusとBaseline/Delta cursorは進めていない。
+- ユーザーから、利用上限前に未保存内容を確実に保存し、再開ごとの復元・再実行を減らすよう明示指示。今回、検証完了を待たずpending sourceを独立checkpointへ保存した。今後は作業単位ごと・長い検証/captureの前後、節目のない連続作業では30〜45分を目安に短く外部保存する。再開はbase/現在HEADとsource hashを照合し、引継ぎ可能な保存済み証拠を無駄に再生成しない。環境初期化自体を防ぐとは保証しない。
+- [A003-S8 recovery checkpoint 01](https://drive.google.com/file/d/1qmboL2voMdTrOmYY9Wa1CYo0IuwnzRIc/view?usp=drivesdk): **1,310,156 bytes /39 entries**、SHA256 `8495cd2cd07ad235483067207ba9d2c1dfaac577ad01765ba6094e2362c09afa`。26変更ファイル（未追跡test含む）、tracked patch、全source hash、MANIFEST/RESUME、構築script/logを収録。承認済みfolder `1fiZEjCVqLtNVk_mkNIOUC3MWn6ys6e8q`。保存後name/MIME(application/zip)/size/parentを照合し、Drive raw bytes再取得でSHA256と全CRC一致を確認済み。
+- checkpoint01には再構成途中のcard/grid・Home social状態・accountの追加guard・tab追従等を含むが、現在sourceでの再検証は未完了。生成l10n/環境scriptの修正もpendingとして記録した。製品sourceをPASSやpush済みとしない。修正は検証・native・証跡保存後に通常pushする。
+- 現在A003 in_progress、Baseline done2/628、discovery_current_id DISC001、DISC001–012 todo、Delta not_started。後続全Baseline/Discovery/Delta・最新HEADの最終Visualを継続する。
+
+- 復元後のfresh検証: `flutter test --no-pub test/home_bookmark_states_test.dart test/community*_test.dart test/services/filter_custom_replay_test.dart --concurrency=2 --machine` は実197件/32files PASS（hidden loading除外、done.success=true、85.538s）。Cardは7言語×6variants×14幅×3倍率=1764組合せでlayout・48px target・bookmarkのactual semantic label・独立callbackを確認。Homeはreason/retry/pullの16件にtab resize2件を含む。これはnative/全監査PASSの代用ではない。
+- full analyzeはtestのif braces13 infoを検出。3test fileへ機械的なbraces修正を行い、`flutter analyze --no-pub` 再実行はNo issues found。製品sourceは197件実行後に変更なし。Home/social/accountの21件を機械修正後に再確認し21 PASS。matrix testはanimation静止待機・rendered action contrast・選択tab可視性・bookmarks別outputを追加したがopt-in実行はこの時点で未実施。
+- State保存前に最新remoteがApp `9259de657d87fdef500909d679d8a19ac33c0758` / Web `4e641080ace3a434b3ecb9bd50bccbb14677b6eb` へ進んだことを確認。5監査資料の追加保存ルール（シナリオ単位、節目なし時30〜45分）を読み、local State commitをその後へrebaseして保持。これらの追加変更は監査文書のみで、197件検証の製品sourceに変更はない。
+
+- 追加永続保存 [recovery checkpoint 02](https://drive.google.com/file/d/1MUptn_C42U5HpeUVIchh0Esyvh-s6fhY/view?usp=drivesdk) は1,403,254 bytes /49 entries、SHA256 `ec94fa4986daf900d1bc71f78d2563424696d272dfcf0434f5c56b1bc257341d`。最新source/patch/State/hash、197件log、style修正と0件analyze、21件再確認、再開手順とclean環境scriptを保存。Drive metadata name/MIME/size/parentとraw bytes再取得hash/全CRC一致。197件時点の製品sourceは不変、3testsのbracesと未実施opt-in matrix検査の追加は区別する。native/build/matrix/最終Visual・製品pushは未完了。

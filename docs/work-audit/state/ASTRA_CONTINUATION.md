@@ -13,6 +13,17 @@ web_baseline: 2a44dd9007e4a764e489a42a70f96ac5da6b3b8a
 
 今回の新規Routeから開始。旧進捗の転記なし。
 
+## 2026-10-22 中断前保存・再開の運用（ユーザー指示）
+
+- 作業単位ごと、および長い検証/captureの前後に外部checkpointを保存する。関連する操作・結果をシナリオ単位でまとめ、節目のない長時間作業だけ30〜45分を目安に短い進捗を保存する。利用上限の残時間は取得できないため、終了直前の保存を前提にしない。
+- 検証済みの製品修正は意味のある単位でcommit/dev_branchへ通常pushする。検証途中のsourceも、pendingを明示したZIP・patch・全変更ファイルのhashとともに承認済みDriveへ保存する。未検証の製品変更を検証済みとしてpushしない。
+- 保存するもの: base/remote HEAD、変更sourceとuntracked test、source hash、完了したtestログ/画像/設定、失敗と未実施の区別、環境構築/再現手順、次の具体的操作。writerを止めたsnapshotを閉じ、Drive metadataとraw再取得のSHA256/CRCを確認する。
+- 同一source hashの保存済み結果は再開時に引き継ぎ、未保存結果・変更影響・未解決の懸念に必要な範囲だけ再実行する。環境の初期化自体を防げるとは保証しない。Git/Driveへの既存承認を取り直さない。
+- 最新の復元用checkpoint: [A003-S8 recovery checkpoint 01](https://drive.google.com/file/d/1qmboL2voMdTrOmYY9Wa1CYo0IuwnzRIc/view?usp=drivesdk)。1,310,156 bytes /39 entries、SHA256 `8495cd2cd07ad235483067207ba9d2c1dfaac577ad01765ba6094e2362c09afa`。26変更ファイル、tracked patch、MANIFEST/RESUME、再構築script/log。Drive name/MIME/size/parentとraw再取得hash/全CRC一致。
+- checkpoint01は製品修正の再構成途中であり、現在sourceのtest/analyze/build/nativeをPASSとしない。旧S8 progress（Drive `1KqZV8_oVaGJCO6KWdvSp6BOIJxN0rWIR`、77,337,683 bytes、SHA256 `0363406303392f885fad5e4ef0189bfca791e7ab3e511265e73f44fd09b92687`）も今回再取得検証済み。失われた未uploadの207/195件結果や5901画像を今回の保存済み証拠としない。
+- 最新の追加checkpoint: [A003-S8 recovery checkpoint 02](https://drive.google.com/file/d/1MUptn_C42U5HpeUVIchh0Esyvh-s6fhY/view?usp=drivesdk)。1,403,254 bytes /49 entries、SHA256 `ec94fa4986daf900d1bc71f78d2563424696d272dfcf0434f5c56b1bc257341d`。復元後197 PASS、style修正後21 PASS、full analyze0、現在source/patch/State/hash/RESUMEとclean環境scriptを保存し、metadataとraw再取得SHA256/全CRC一致。matrix/native/buildは未実施なのでPASSを引き継がない。
+- 次の操作: State-only checkpointをfresh leaseでpublish→最新sourceのLinux build/native・opt-in静止matrix→目視→証跡保存→検証済み製品差分をpush。現在A003 in_progress、Baseline done2/628、Discovery cursorDISC001、Delta not_startedを維持。
+
 ## 2026-10-21 full-audit session progress
 
 - 開始/再取得HEAD: App `ec93d84c8156bdeb12573e3821a685ef2ed4e6cd` / Web `de017642ba6f1c642e3e26c242695b9755286eda`。再開時の再fetchでも一致。正本は現在dev_branchの監査入口/Policy/Route/Standard/State/inventory/verifier。
@@ -28,7 +39,7 @@ web_baseline: 2a44dd9007e4a764e489a42a70f96ac5da6b3b8a
 - 検証: 初回保存/再起動復元、documents取得失敗、実FS blocker保持と復旧、二重送信/離脱の新規testsとhome/folder回帰は19 PASS。createProject利用79file回帰は182 PASS/slot fixture 4 FAIL；修正前checkpointでも同じ4 FAILを再現。host CPU依存のslot fixtureを明示presetにし、4/4 PASSへ修正。full analyze 0件、Linux debug build成功。
 - DISC004実画面: 保存先resolverを隔離runtime内で一時無効→作成で遷移せずerror・既存保存作品のみ→resolverを復旧→同じ入力で再試行しcanvas→runner終了/再起動→新作品と既存作品がhomeに復元。保存ZIPのmanifestでも名前/fps/sizeを確認。元resolverは復旧済み。
 
-current_substep: A003/S7 DISC009優先修正・再検証checkpoint後、DISC008のempty理由分岐へ戻る
+current_substep: A003/S8 復元後の197件回帰とfull analyze完了、最新sourceのnative/表示matrix検証待ち
 completed_substeps:
 - S5未push分を保存済みDrive ZIPから復元。製品source18/20件のhash一致、残りを再構成して現在sourceで検証。旧S5 main再取得のSHA256/CRC一致。
 - Themeの実accent/selection前景、short-height empty、7言語Bookmarks empty/作品広場導線、French Start折返しを修正・再検証。
@@ -48,7 +59,7 @@ blockers:
 - Android/DeX実機、touch/multi-touch/筆圧入力が未用意。該当NATIVEはPASSにしない。
 - Linux補助環境はFFmpeg libffmpegkit.soのdlopenが未成立。codec/exportをこのUI checkpointでPASSにしない。
 - advisor-pending: none。
-next_action: DISC009 priority fixの反映/CIを確認し、A003のDISC008 bookmarked IDsあり・全filter非表示と0 bookmarks/未取得/errorを隔離データで実再現する。通常/大量・continuity/P条件も継続し、A003/Discovery/Delta cursorを推測で進めない。
+next_action: 復元後の197件回帰・full analyzeのlog/sourceを外部checkpointへ保存→最新sourceでLinux build/nativeと静止後matrixを検証。保存済み旧progressの証拠は前提変更がない限り再生成せず、現在変更箇所・未保存結果・未解決事項に必要な回帰だけを行う。A003/Discovery/Delta cursorを推測で進めない。
 
 前checkpointの保存記録（保持）:
 - このcheckpointの証跡ZIP backup完了（ユーザー明示許可後）: [audit-evidence-2026-10-21-A003-DISC004.zip](https://drive.google.com/file/d/1V357zq7uAQmhZt7wBaPRKj0NPnlaBlvr/view?usp=drivesdk)。Drive readbackでname・MIME `application/zip`・size 862508 bytes・保存先folder 1fiZEjCVqLtNVk_mkNIOUC3MWn6ys6e8qを確認。ローカルSHA256 `02fe5c2c7390f8839ccc8152422770234b7b1680eab94b8eb360ac0c8d592f19`、ZIP検査済み。過去A001/A002の証跡backupや最終coverageまで完了した意味ではない。
