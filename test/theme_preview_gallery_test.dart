@@ -27,6 +27,7 @@ void main() {
       value: themeService,
       child: MaterialApp(
         locale: const Locale('ja'),
+        supportedLocales: const [Locale('ja'), Locale('en')],
         theme: themeService.themeData,
         home: const ThemePreviewGalleryScreen(),
       ),
@@ -59,6 +60,7 @@ void main() {
       value: themeService,
       child: MaterialApp(
         locale: const Locale('ja'),
+        supportedLocales: const [Locale('ja'), Locale('en')],
         theme: themeService.themeData,
         home: const ThemePreviewGalleryScreen(),
       ),
