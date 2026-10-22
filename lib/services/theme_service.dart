@@ -24,6 +24,21 @@ class ThemeService extends ChangeNotifier {
   List<AppThemePreset> get presets => List.unmodifiable(_presets);
   AppThemePreset get current => _current;
 
+  /// 色リセットの表示判定は現在のテーマオブジェクトにつき一度だけ。
+  /// 色変更（プレビュー/適用/復元）の時だけオブジェクトが変わる。
+  /// 毎フレームのbuildでは計算を行わずキャッシュを返す。
+  AppThemePreset? _rescueCheckedPreset;
+  bool _rescueCachedResult = false;
+
+  bool get needsThemeRescue {
+    if (!identical(_rescueCheckedPreset, _current)) {
+      _rescueCachedResult = isThemeAtLockoutRisk(_current);
+      _rescueCheckedPreset = _current;
+    }
+    return _rescueCachedResult;
+  }
+
+
   static ColorScheme activeColorScheme = ColorScheme.fromSeed(
     seedColor: const Color(0xFFFF5C7A),
   );
