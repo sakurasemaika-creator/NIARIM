@@ -389,7 +389,9 @@ class _SplashActionButtonState extends State<_SplashActionButton> {
   @override
   Widget build(BuildContext context) {
     final theme = context.watch<ThemeService>().current;
-    final foreground = theme.menuBgColor;
+    // Preserve the historical splash foreground until the user explicitly
+    // chooses an independent button label color.
+    final foreground = theme.buttonTextColor ?? theme.menuBgColor;
     const radius = BorderRadius.all(
       Radius.circular(_SplashActionButton._radius),
     );
