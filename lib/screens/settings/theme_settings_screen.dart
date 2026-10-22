@@ -618,6 +618,7 @@ class _ColorCustomizeTile extends StatelessWidget {
   final VoidCallback onTap;
 
   const _ColorCustomizeTile({
+    super.key,
     required this.label,
     required this.color,
     required this.onTap,
