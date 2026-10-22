@@ -2532,7 +2532,16 @@ class AppLocalizationsKo extends AppLocalizations {
   String get themeColorAccent => '강조 색상';
 
   @override
-  String get themeColorText => '글자 색';
+  String get themeColorText => '본문 및 일반 글자 색';
+
+  @override
+  String get themeColorButtonText => '버튼 글자·아이콘 색';
+
+  @override
+  String get themeColorMenuText => '메뉴·상단 바 글자 색';
+
+  @override
+  String get themeColorSelectionText => '선택 항목 글자·아이콘 색';
 
   @override
   String get themeColorPanelBg => '패널 배경색';
