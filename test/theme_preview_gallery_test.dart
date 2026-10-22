@@ -109,6 +109,24 @@ void main() {
     expect(find.text('練習作品'), findsOneWidget);
     expect(tester.takeException(), isNull);
 
+    Future<void> saveCapture(String name) async {
+      final boundary = screenshot.currentContext!.findRenderObject()
+          as RenderRepaintBoundary;
+      final bytes = await tester.runAsync(() async {
+        final image = await boundary.toImage(pixelRatio: 1);
+        final data = await image.toByteData(format: ui.ImageByteFormat.png);
+        image.dispose();
+        return data!.buffer.asUint8List();
+      });
+      final output = Directory('build/theme-inline-preview')
+        ..createSync(recursive: true);
+      await tester.runAsync(() => File(
+        '${output.path}/$name',
+      ).writeAsBytes(bytes!));
+    }
+
+    await saveCapture('theme_settings_default.png');
+
     final themeService = Provider.of<ThemeService>(
       tester.element(find.byKey(const Key('themeInlinePreview'))),
       listen: false,
@@ -125,19 +143,7 @@ void main() {
     expect(find.byKey(const Key('themeInlinePreview')), findsOneWidget);
     expect(tester.takeException(), isNull);
 
-    final boundary = screenshot.currentContext!.findRenderObject()
-        as RenderRepaintBoundary;
-    final bytes = await tester.runAsync(() async {
-      final image = await boundary.toImage(pixelRatio: 1);
-      final data = await image.toByteData(format: ui.ImageByteFormat.png);
-      image.dispose();
-      return data!.buffer.asUint8List();
-    });
-    final output = Directory('build/theme-inline-preview')
-      ..createSync(recursive: true);
-    await tester.runAsync(() => File(
-      '${output.path}/theme_settings_inline.png',
-    ).writeAsBytes(bytes!));
+    await saveCapture('theme_settings_accent_changed.png');
 
     await tester.tap(find.byKey(const Key('themePreviewOpen')));
     await tester.pumpAndSettle();
