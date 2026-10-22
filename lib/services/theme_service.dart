@@ -855,6 +855,40 @@ class ThemeService extends ChangeNotifier {
               : null,
         ),
       ),
+      // Selected labels/icons use a separate foreground *only* when their
+      // background is the user's selected-surface color. Unselected content
+      // continues to use the normal text token.
+      segmentedButtonTheme: SegmentedButtonThemeData(
+        style: ButtonStyle(
+          backgroundColor: WidgetStateProperty.resolveWith<Color?>(
+            (states) => states.contains(WidgetState.selected)
+                ? selectionColor : preset.menuBgColor,
+          ),
+          foregroundColor: WidgetStateProperty.resolveWith<Color?>(
+            (states) => states.contains(WidgetState.selected)
+                ? preset.selectionTextColor : preset.textColor,
+          ),
+          iconColor: WidgetStateProperty.resolveWith<Color?>(
+            (states) => states.contains(WidgetState.selected)
+                ? preset.selectionTextColor : preset.textColor,
+          ),
+        ),
+      ),
+      navigationBarTheme: NavigationBarThemeData(
+        indicatorColor: selectionColor,
+        iconTheme: WidgetStateProperty.resolveWith<IconThemeData?>(
+          (states) => IconThemeData(
+            color: states.contains(WidgetState.selected)
+                ? preset.selectionTextColor : preset.textColor,
+          ),
+        ),
+        labelTextStyle: WidgetStateProperty.resolveWith<TextStyle?>(
+          (states) => textTheme.labelMedium?.copyWith(
+            color: states.contains(WidgetState.selected)
+                ? preset.selectionTextColor : preset.textColor,
+          ),
+        ),
+      ),
       floatingActionButtonTheme: FloatingActionButtonThemeData(
         backgroundColor: scheme.primary,
         foregroundColor: scheme.onPrimary,
