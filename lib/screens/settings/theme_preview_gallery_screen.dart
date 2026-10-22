@@ -358,7 +358,7 @@ class _ThemeSampleScreen extends StatelessWidget {
         decoration: BoxDecoration(color: c.primary,
           borderRadius: BorderRadius.circular(24.2)),
         child: SvgPicture.asset('assets/logo/app_logo.svg',
-          colorFilter: ColorFilter.mode(foreground, BlendMode.srcIn))),
+          colorFilter: ColorFilter.mode(preset.menuBgColor, BlendMode.srcIn))),
       const SizedBox(height: 10),
       SvgPicture.asset('assets/logo/title_logo.svg',
         width: 220, height: 220 * 690 / 3470,
