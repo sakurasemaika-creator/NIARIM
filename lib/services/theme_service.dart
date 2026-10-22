@@ -528,15 +528,17 @@ class ThemeService extends ChangeNotifier {
     );
     final scheme = seedScheme.copyWith(
       primary: accentColor,
-      onPrimary: contrastingForeground(accentColor, seedScheme.onPrimary),
+      onPrimary: preset.buttonTextColor ??
+          contrastingForeground(accentColor, seedScheme.onPrimary),
       secondary: selectionColor,
-      onSecondary: contrastingForeground(
-        selectionColor,
-        seedScheme.onSecondary,
-      ),
+      onSecondary: preset.selectionTextColor ??
+          contrastingForeground(selectionColor, seedScheme.onSecondary),
       onSurface: preset.textColor,
       onSurfaceVariant: preset.textColor.withValues(alpha: 0.7),
     );
+    // メニュー・上部バーには本文とは独立した前景色を使用できる。
+    // 未指定の既存プリセットでは従来通り本文色を利用する。
+    final menuForeground = preset.menuTextColor ?? preset.textColor;
     // 角丸を大きめにし、Google Material標準の角丸14pxよりも柔らかい印象にする
     // （LINE・メルカリ等、日本の人気アプリに共通するポップで丸みの強い形状）。
     const radius = 18.0;
@@ -588,7 +590,7 @@ class ThemeService extends ChangeNotifier {
       splashFactory: InkRipple.splashFactory,
       appBarTheme: AppBarTheme(
         backgroundColor: preset.menuBgColor,
-        foregroundColor: preset.textColor,
+        foregroundColor: menuForeground,
         elevation: 0,
         scrolledUnderElevation: 0,
         centerTitle: false,
@@ -601,17 +603,23 @@ class ThemeService extends ChangeNotifier {
         // 適用されるようにした。
         titleTextStyle:
             textTheme.titleLarge?.copyWith(
-              color: preset.textColor,
+              color: menuForeground,
               fontSize: 18,
               fontWeight: FontWeight.w700,
             ) ??
             TextStyle(
               fontFamily: 'Kuramubon',
               fontFamilyFallback: kHeadingFontFallback,
-              color: preset.textColor,
+              color: menuForeground,
               fontSize: 18,
               fontWeight: FontWeight.w700,
             ),
+      ),
+      // PopupMenuItem labels do not automatically use AppBar foreground.
+      // Match text/icon foreground to the same menu token as the top bar.
+      popupMenuTheme: PopupMenuThemeData(
+        color: popupColor,
+        textStyle: textTheme.bodyMedium?.copyWith(color: menuForeground),
       ),
       // カードはカラーピッカー等のダイアログの本体にも使う（Dialog側は透明に
       // してカードの角丸を見せている）ので、下地はポップアップと同じ不透明色。
@@ -625,6 +633,9 @@ class ThemeService extends ChangeNotifier {
       ),
       filledButtonTheme: FilledButtonThemeData(
         style: FilledButton.styleFrom(
+          // Applies to text AND icons. User-defined values are never
+          // corrected for contrast or silently replaced.
+          foregroundColor: scheme.onPrimary,
           minimumSize: const Size(64, 48),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(radius),
