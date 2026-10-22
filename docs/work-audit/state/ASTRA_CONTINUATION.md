@@ -22,7 +22,8 @@ web_baseline: 2a44dd9007e4a764e489a42a70f96ac5da6b3b8a
 - 最新の復元用checkpoint: [A003-S8 recovery checkpoint 01](https://drive.google.com/file/d/1qmboL2voMdTrOmYY9Wa1CYo0IuwnzRIc/view?usp=drivesdk)。1,310,156 bytes /39 entries、SHA256 `8495cd2cd07ad235483067207ba9d2c1dfaac577ad01765ba6094e2362c09afa`。26変更ファイル、tracked patch、MANIFEST/RESUME、再構築script/log。Drive name/MIME/size/parentとraw再取得hash/全CRC一致。
 - checkpoint01は製品修正の再構成途中であり、現在sourceのtest/analyze/build/nativeをPASSとしない。旧S8 progress（Drive `1KqZV8_oVaGJCO6KWdvSp6BOIJxN0rWIR`、77,337,683 bytes、SHA256 `0363406303392f885fad5e4ef0189bfca791e7ab3e511265e73f44fd09b92687`）も今回再取得検証済み。失われた未uploadの207/195件結果や5901画像を今回の保存済み証拠としない。
 - 最新の追加checkpoint: [A003-S8 recovery checkpoint 02](https://drive.google.com/file/d/1MUptn_C42U5HpeUVIchh0Esyvh-s6fhY/view?usp=drivesdk)。1,403,254 bytes /49 entries、SHA256 `ec94fa4986daf900d1bc71f78d2563424696d272dfcf0434f5c56b1bc257341d`。復元後197 PASS、style修正後21 PASS、full analyze0、現在source/patch/State/hash/RESUMEとclean環境scriptを保存し、metadataとraw再取得SHA256/全CRC一致。matrix/native/buildは未実施なのでPASSを引き継がない。
-- 次の操作: State-only checkpointをfresh leaseでpublish→最新sourceのLinux build/native・opt-in静止matrix→目視→証跡保存→検証済み製品差分をpush。現在A003 in_progress、Baseline done2/628、Discovery cursorDISC001、Delta not_startedを維持。
+- S8 current追加: 13 real matrix tests/5901 PNG、42 real controls regressions、full analyze0、最終default Linux debug build成功。matrix4 ZIPとcontrols WIPは全てDrive metadata/raw SHA256/CRC検証済み（正確なID/hashはEvidence末尾）。nativeで状態回復/カード/作者/順位/repostを実操作。全原本個別目視やlive backend/Android/codec合格とはしない。
+- 次の操作: S8最終native/source/patch/log/再開手順をcore保存/readback→検証済み差分を通常push→S9 Community heading/tab contrast・密度/preview/continuity。初回native本文/画面名不整合はDISC012で未解決。現在A003 in_progress、Baseline done2/628、Discovery cursorDISC001、Delta not_startedを維持。
 
 ## 2026-10-21 full-audit session progress
 
@@ -39,7 +40,7 @@ web_baseline: 2a44dd9007e4a764e489a42a70f96ac5da6b3b8a
 - 検証: 初回保存/再起動復元、documents取得失敗、実FS blocker保持と復旧、二重送信/離脱の新規testsとhome/folder回帰は19 PASS。createProject利用79file回帰は182 PASS/slot fixture 4 FAIL；修正前checkpointでも同じ4 FAILを再現。host CPU依存のslot fixtureを明示presetにし、4/4 PASSへ修正。full analyze 0件、Linux debug build成功。
 - DISC004実画面: 保存先resolverを隔離runtime内で一時無効→作成で遷移せずerror・既存保存作品のみ→resolverを復旧→同じ入力で再試行しcanvas→runner終了/再起動→新作品と既存作品がhomeに復元。保存ZIPのmanifestでも名前/fps/sizeを確認。元resolverは復旧済み。
 
-current_substep: A003/S8 復元後の197件回帰とfull analyze完了、最新sourceのnative/表示matrix検証待ち
+current_substep: A003/S8 current sourceの状態分岐・Card・switch優先修正、5901 PNGとnative検証完了、checkpoint保存/readback完了、検証済み差分push中
 completed_substeps:
 - S5未push分を保存済みDrive ZIPから復元。製品source18/20件のhash一致、残りを再構成して現在sourceで検証。旧S5 main再取得のSHA256/CRC一致。
 - Themeの実accent/selection前景、short-height empty、7言語Bookmarks empty/作品広場導線、French Start折返しを修正・再検証。
@@ -59,7 +60,7 @@ blockers:
 - Android/DeX実機、touch/multi-touch/筆圧入力が未用意。該当NATIVEはPASSにしない。
 - Linux補助環境はFFmpeg libffmpegkit.soのdlopenが未成立。codec/exportをこのUI checkpointでPASSにしない。
 - advisor-pending: none。
-next_action: 復元後の197件回帰・full analyzeのlog/sourceを外部checkpointへ保存→最新sourceでLinux build/nativeと静止後matrixを検証。保存済み旧progressの証拠は前提変更がない限り再生成せず、現在変更箇所・未保存結果・未解決事項に必要な回帰だけを行う。A003/Discovery/Delta cursorを推測で進めない。
+next_action: S8最終coreをDrive保存/readback検証済み（1cIujXWuS6HUuCpo1WbwQ3w7gK3yJXT0d）→fresh leaseで検証済み製品/Stateをpush→A003/S9のCommunity heading/tab contrastと密度、preview操作bar、Works/大量Bookmarks・continuityへ進む。保存済み5901 PNG/197件/42件結果はsource影響とhashを照合して引継ぎ、無変更部分を再生成しない。初回native header/body不整合は未解決として保持する。A003/Discovery/Delta cursorは進めない。
 
 前checkpointの保存記録（保持）:
 - このcheckpointの証跡ZIP backup完了（ユーザー明示許可後）: [audit-evidence-2026-10-21-A003-DISC004.zip](https://drive.google.com/file/d/1V357zq7uAQmhZt7wBaPRKj0NPnlaBlvr/view?usp=drivesdk)。Drive readbackでname・MIME `application/zip`・size 862508 bytes・保存先folder 1fiZEjCVqLtNVk_mkNIOUC3MWn6ys6e8qを確認。ローカルSHA256 `02fe5c2c7390f8839ccc8152422770234b7b1680eab94b8eb360ac0c8d592f19`、ZIP検査済み。過去A001/A002の証跡backupや最終coverageまで完了した意味ではない。
@@ -205,3 +206,5 @@ lock後の追加監査対象は A105 等のBaseline IDではなく、docs/work-a
 - state構造修正: verifierのdelta範囲をD001–D037へ、AUDIT_DELTA_ROUTE.mdのエスケープ混入を除去、App側stateをWebへmirror。修正後に3 verifierとも ok を確認してから製品監査を再開。
 - 実行環境: Flutter 3.47.7 stable（CIのstable channelと同版）、Linux desktop debug buildをXvfb上で起動し実操作する。Android実機/エミュレータ（KVMなし）は本環境に無いため `NATIVE` 条件はblockedとして別記する。
 
+
+- S8最終core保存/readback完了: [A003-S8-final-core](https://drive.google.com/file/d/1cIujXWuS6HUuCpo1WbwQ3w7gK3yJXT0d/view?usp=drivesdk)、3,733,807 bytes /118 entries、SHA256 `1665c54099ab5d25711cb39abb4f2c7576d0a09b7d04d2b807e41b4b067ce677`。全writer停止後のsource30files/patch/hash、5901matrix参照、最終native原本・action log・redacted runner、197/42件と失敗を含むlog、最終default build、再現環境/次操作を収録。metadata name/MIME/size/parentとraw再取得hash/全CRC一致。ZIP内Stateは自己参照追加前であり、本receiptはGit Stateに保持する。S8の局所checkpointであって全面Visual closureではない。

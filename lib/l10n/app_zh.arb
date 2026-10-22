@@ -6,8 +6,14 @@
   "homeTabTrash": "回收站",
   "homeTabWorks": "作品列表",
   "homeTabBookmarked": "已收藏",
-  "homeBookmarkedEmptyTitle": "暂无收藏作品",
+  "homeBookmarkedEmptyTitle": "没有可显示的收藏作品",
   "homeBookmarkedEmptyBody": "在作品广场收藏喜欢的公开作品，即可在这里查看。",
+  "homeBookmarkedHiddenTitle": "收藏仍然保留",
+  "homeBookmarkedHiddenBody": "显示筛选条件或作品的公开状态可能使作品无法显示。可在作品广场检查显示筛选条件。",
+  "homeBookmarkedLoading": "正在加载收藏…",
+  "homeBookmarkedLoadFailed": "无法加载收藏",
+  "homeBookmarkedLoadPrompt": "加载已保存的收藏",
+  "homeBookmarkedSignInBody": "请在作品广场连接 Google 账号，以加载已保存的收藏。",
   "homeSearchHint": "按项目名称搜索",
   "homeBackToSplashTooltip": "返回启动画面",
   "homeFavoritesOnly": "收藏",
@@ -3128,5 +3134,6 @@
   "errorViewBody": "正在编辑的数据已保留。请返回上一个画面后重试。将以下内容告知开发者，有助于查明原因。",
   "homeWorksLoadFailed": "无法加载导出的作品",
   "newProjectCreating": "正在创建…",
-  "newProjectCreateFailed": "无法保存项目。请检查存储空间和保存位置，然后重试。"
+  "newProjectCreateFailed": "无法保存项目。请检查存储空间和保存位置，然后重试。",
+  "communityCreatorLabel": "作者"
 }

@@ -28,11 +28,31 @@ class AppLocalizationsEn extends AppLocalizations {
   String get homeTabBookmarked => 'Bookmarked';
 
   @override
-  String get homeBookmarkedEmptyTitle => 'No bookmarked works yet';
+  String get homeBookmarkedEmptyTitle => 'No bookmarked works to display';
 
   @override
   String get homeBookmarkedEmptyBody =>
       'Bookmark public works you like in Work Plaza to find them here.';
+
+  @override
+  String get homeBookmarkedHiddenTitle => 'Your bookmarks are still saved';
+
+  @override
+  String get homeBookmarkedHiddenBody =>
+      'Display filters or changes to a work’s public availability may hide it. Review your display filters in Work Plaza.';
+
+  @override
+  String get homeBookmarkedLoading => 'Loading your bookmarks…';
+
+  @override
+  String get homeBookmarkedLoadFailed => 'Couldn’t load your bookmarks';
+
+  @override
+  String get homeBookmarkedLoadPrompt => 'Load your saved bookmarks';
+
+  @override
+  String get homeBookmarkedSignInBody =>
+      'Connect your Google account in Work Plaza to load saved bookmarks.';
 
   @override
   String get homeSearchHint => 'Search by project name';
@@ -7687,4 +7707,7 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get newProjectCreateFailed =>
       'Could not save the project. Check your storage space and save location, then try again.';
+
+  @override
+  String get communityCreatorLabel => 'Creator';
 }

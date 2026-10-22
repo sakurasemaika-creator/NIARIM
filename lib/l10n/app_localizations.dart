@@ -146,7 +146,7 @@ abstract class AppLocalizations {
   /// No description provided for @homeBookmarkedEmptyTitle.
   ///
   /// In ja, this message translates to:
-  /// **'ブックマークした作品はありません'**
+  /// **'表示できるブックマーク作品がありません'**
   String get homeBookmarkedEmptyTitle;
 
   /// No description provided for @homeBookmarkedEmptyBody.
@@ -154,6 +154,42 @@ abstract class AppLocalizations {
   /// In ja, this message translates to:
   /// **'作品広場で気に入った公開作品をブックマークすると、ここに表示されます。'**
   String get homeBookmarkedEmptyBody;
+
+  /// No description provided for @homeBookmarkedHiddenTitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'ブックマークは保存されています'**
+  String get homeBookmarkedHiddenTitle;
+
+  /// No description provided for @homeBookmarkedHiddenBody.
+  ///
+  /// In ja, this message translates to:
+  /// **'表示フィルターや作品の公開状態により表示できない場合があります。作品広場で表示フィルターを確認できます。'**
+  String get homeBookmarkedHiddenBody;
+
+  /// No description provided for @homeBookmarkedLoading.
+  ///
+  /// In ja, this message translates to:
+  /// **'ブックマークを読み込み中…'**
+  String get homeBookmarkedLoading;
+
+  /// No description provided for @homeBookmarkedLoadFailed.
+  ///
+  /// In ja, this message translates to:
+  /// **'ブックマークを読み込めませんでした'**
+  String get homeBookmarkedLoadFailed;
+
+  /// No description provided for @homeBookmarkedLoadPrompt.
+  ///
+  /// In ja, this message translates to:
+  /// **'保存したブックマークを読み込む'**
+  String get homeBookmarkedLoadPrompt;
+
+  /// No description provided for @homeBookmarkedSignInBody.
+  ///
+  /// In ja, this message translates to:
+  /// **'保存したブックマークを読み込むには、作品広場でGoogleアカウントを接続してください。'**
+  String get homeBookmarkedSignInBody;
 
   /// No description provided for @homeSearchHint.
   ///
@@ -13618,6 +13654,12 @@ abstract class AppLocalizations {
   /// In ja, this message translates to:
   /// **'プロジェクトを保存できませんでした。空き容量や保存先を確認して、もう一度お試しください。'**
   String get newProjectCreateFailed;
+
+  /// No description provided for @communityCreatorLabel.
+  ///
+  /// In ja, this message translates to:
+  /// **'作者'**
+  String get communityCreatorLabel;
 }
 
 class _AppLocalizationsDelegate

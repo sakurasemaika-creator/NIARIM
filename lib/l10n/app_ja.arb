@@ -6,8 +6,14 @@
   "homeTabTrash": "ゴミ箱",
   "homeTabWorks": "作品一覧",
   "homeTabBookmarked": "ブクマ済み",
-  "homeBookmarkedEmptyTitle": "ブックマークした作品はありません",
+  "homeBookmarkedEmptyTitle": "表示できるブックマーク作品がありません",
   "homeBookmarkedEmptyBody": "作品広場で気に入った公開作品をブックマークすると、ここに表示されます。",
+  "homeBookmarkedHiddenTitle": "ブックマークは保存されています",
+  "homeBookmarkedHiddenBody": "表示フィルターや作品の公開状態により表示できない場合があります。作品広場で表示フィルターを確認できます。",
+  "homeBookmarkedLoading": "ブックマークを読み込み中…",
+  "homeBookmarkedLoadFailed": "ブックマークを読み込めませんでした",
+  "homeBookmarkedLoadPrompt": "保存したブックマークを読み込む",
+  "homeBookmarkedSignInBody": "保存したブックマークを読み込むには、作品広場でGoogleアカウントを接続してください。",
   "homeSearchHint": "プロジェクト名で検索",
   "homeBackToSplashTooltip": "起動画面に戻る",
   "homeFavoritesOnly": "お気に入り",
@@ -3585,5 +3591,6 @@
   "errorViewBody": "作業中のデータは保持されています。前の画面へ戻ってからもう一度お試しください。以下の内容を開発元へお知らせいただけると原因の特定に役立ちます。",
   "homeWorksLoadFailed": "作品一覧を読み込めませんでした",
   "newProjectCreating": "作成しています…",
-  "newProjectCreateFailed": "プロジェクトを保存できませんでした。空き容量や保存先を確認して、もう一度お試しください。"
+  "newProjectCreateFailed": "プロジェクトを保存できませんでした。空き容量や保存先を確認して、もう一度お試しください。",
+  "communityCreatorLabel": "作者"
 }

@@ -28,11 +28,32 @@ class AppLocalizationsEs extends AppLocalizations {
   String get homeTabBookmarked => 'Guardados';
 
   @override
-  String get homeBookmarkedEmptyTitle => 'Aún no hay obras guardadas';
+  String get homeBookmarkedEmptyTitle => 'No hay obras guardadas para mostrar';
 
   @override
   String get homeBookmarkedEmptyBody =>
       'Guarda las obras públicas que te gusten en la Plaza de Obras para verlas aquí.';
+
+  @override
+  String get homeBookmarkedHiddenTitle => 'Tus obras siguen guardadas';
+
+  @override
+  String get homeBookmarkedHiddenBody =>
+      'Los filtros de visualización o los cambios de visibilidad pueden ocultarlas. Revisa los filtros en la Plaza de Obras.';
+
+  @override
+  String get homeBookmarkedLoading => 'Cargando tus obras guardadas…';
+
+  @override
+  String get homeBookmarkedLoadFailed =>
+      'No se pudieron cargar tus obras guardadas';
+
+  @override
+  String get homeBookmarkedLoadPrompt => 'Cargar tus obras guardadas';
+
+  @override
+  String get homeBookmarkedSignInBody =>
+      'Conecta tu cuenta de Google en la Plaza de Obras para cargar tus obras guardadas.';
 
   @override
   String get homeSearchHint => 'Buscar por nombre de proyecto';
@@ -7808,4 +7829,7 @@ class AppLocalizationsEs extends AppLocalizations {
   @override
   String get newProjectCreateFailed =>
       'No se pudo guardar el proyecto. Comprueba el espacio de almacenamiento y la ubicación de guardado e inténtalo de nuevo.';
+
+  @override
+  String get communityCreatorLabel => 'Creador';
 }

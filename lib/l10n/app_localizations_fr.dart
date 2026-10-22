@@ -28,11 +28,32 @@ class AppLocalizationsFr extends AppLocalizations {
   String get homeTabBookmarked => 'Enregistrées';
 
   @override
-  String get homeBookmarkedEmptyTitle => 'Aucune œuvre enregistrée';
+  String get homeBookmarkedEmptyTitle => 'Aucune œuvre enregistrée à afficher';
 
   @override
   String get homeBookmarkedEmptyBody =>
       'Enregistrez les œuvres publiques qui vous plaisent sur la Place des œuvres pour les retrouver ici.';
+
+  @override
+  String get homeBookmarkedHiddenTitle => 'Vos œuvres restent enregistrées';
+
+  @override
+  String get homeBookmarkedHiddenBody =>
+      'Les filtres d’affichage ou le statut public des œuvres peuvent les masquer. Vérifiez les filtres sur la Place des œuvres.';
+
+  @override
+  String get homeBookmarkedLoading => 'Chargement des œuvres enregistrées…';
+
+  @override
+  String get homeBookmarkedLoadFailed =>
+      'Impossible de charger vos œuvres enregistrées';
+
+  @override
+  String get homeBookmarkedLoadPrompt => 'Charger vos œuvres enregistrées';
+
+  @override
+  String get homeBookmarkedSignInBody =>
+      'Connectez votre compte Google sur la Place des œuvres pour charger vos œuvres enregistrées.';
 
   @override
   String get homeSearchHint => 'Rechercher par nom de projet';
@@ -7825,4 +7846,7 @@ class AppLocalizationsFr extends AppLocalizations {
   @override
   String get newProjectCreateFailed =>
       'Impossible d’enregistrer le projet. Vérifiez l’espace de stockage et l’emplacement d’enregistrement, puis réessayez.';
+
+  @override
+  String get communityCreatorLabel => 'Créateur';
 }

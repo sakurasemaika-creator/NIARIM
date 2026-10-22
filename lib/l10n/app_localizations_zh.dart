@@ -27,10 +27,29 @@ class AppLocalizationsZh extends AppLocalizations {
   String get homeTabBookmarked => '已收藏';
 
   @override
-  String get homeBookmarkedEmptyTitle => '暂无收藏作品';
+  String get homeBookmarkedEmptyTitle => '没有可显示的收藏作品';
 
   @override
   String get homeBookmarkedEmptyBody => '在作品广场收藏喜欢的公开作品，即可在这里查看。';
+
+  @override
+  String get homeBookmarkedHiddenTitle => '收藏仍然保留';
+
+  @override
+  String get homeBookmarkedHiddenBody =>
+      '显示筛选条件或作品的公开状态可能使作品无法显示。可在作品广场检查显示筛选条件。';
+
+  @override
+  String get homeBookmarkedLoading => '正在加载收藏…';
+
+  @override
+  String get homeBookmarkedLoadFailed => '无法加载收藏';
+
+  @override
+  String get homeBookmarkedLoadPrompt => '加载已保存的收藏';
+
+  @override
+  String get homeBookmarkedSignInBody => '请在作品广场连接 Google 账号，以加载已保存的收藏。';
 
   @override
   String get homeSearchHint => '按项目名称搜索';
@@ -7364,6 +7383,9 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get newProjectCreateFailed => '无法保存项目。请检查存储空间和保存位置，然后重试。';
+
+  @override
+  String get communityCreatorLabel => '作者';
 }
 
 /// The translations for Chinese, using the Han script (`zh_Hant`).
@@ -7389,10 +7411,29 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get homeTabBookmarked => '已收藏';
 
   @override
-  String get homeBookmarkedEmptyTitle => '尚無收藏作品';
+  String get homeBookmarkedEmptyTitle => '沒有可顯示的收藏作品';
 
   @override
   String get homeBookmarkedEmptyBody => '在作品廣場收藏喜歡的公開作品，即可在這裡查看。';
+
+  @override
+  String get homeBookmarkedHiddenTitle => '收藏仍然保留';
+
+  @override
+  String get homeBookmarkedHiddenBody =>
+      '顯示篩選條件或作品的公開狀態可能使作品無法顯示。可在作品廣場檢查顯示篩選條件。';
+
+  @override
+  String get homeBookmarkedLoading => '正在載入收藏…';
+
+  @override
+  String get homeBookmarkedLoadFailed => '無法載入收藏';
+
+  @override
+  String get homeBookmarkedLoadPrompt => '載入已儲存的收藏';
+
+  @override
+  String get homeBookmarkedSignInBody => '請在作品廣場連結 Google 帳戶，以載入已儲存的收藏。';
 
   @override
   String get homeSearchHint => '依專案名稱搜尋';
@@ -14727,4 +14768,7 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get newProjectCreateFailed => '無法儲存專案。請檢查儲存空間與儲存位置，然後再試一次。';
+
+  @override
+  String get communityCreatorLabel => '作者';
 }

@@ -17,6 +17,7 @@ import 'widgets/community_shorts_viewer.dart';
 import 'widgets/community_work_card.dart';
 import 'widgets/video_type_filter.dart';
 import '../../config/font_fallback.dart';
+import '../../utils/color_contrast.dart';
 
 enum _RankingPeriod { allTime, yearly, monthly, weekly, daily }
 
@@ -24,10 +25,8 @@ enum _RankingSort { views, bookmarks }
 
 /// 作品広場画面。
 ///
-/// `29_動画投稿・ランキング機能仕様.md`のバックエンド（YouTube投稿・
-/// DynamoDB・ランキング集計）は未実装のため、この画面は表示確認用の
-/// ダミーデータ（`CommunityService`）のみで動作するUI・デザインの
-/// 作り込みに限定している。作品カードをタップするとフローティング動画
+/// 設定済みのCommunity backendから一覧を取得し、未設定時はdemo dataを使う。
+/// 作品カードをタップするとフローティング動画
 /// プレビューウィンドウ（`CommunityFloatingPreview`）が開き、そこから
 /// 「詳細へ」ボタンで作品詳細画面（別ルート、`CommunityWorkDetailScreen`）
 /// へ遷移する。
@@ -125,12 +124,15 @@ class _CommunityScreenState extends State<CommunityScreen>
     );
   }
 
-  /// An empty state that can still be pulled down.
-  Widget _scrollableEmptyState(Widget child) => LayoutBuilder(
+  /// Content that fills the refresh viewport even when the list is short.
+  Widget _scrollableContent(Widget child) => LayoutBuilder(
     builder: (context, constraints) => SingleChildScrollView(
       physics: const AlwaysScrollableScrollPhysics(),
       child: ConstrainedBox(
-        constraints: BoxConstraints(minHeight: constraints.maxHeight),
+        constraints: BoxConstraints(
+          minWidth: constraints.maxWidth,
+          minHeight: constraints.maxHeight,
+        ),
         child: child,
       ),
     ),
@@ -251,6 +253,21 @@ class _CommunityScreenState extends State<CommunityScreen>
     final words = TextEditingController(text: service.mutedWords.join(', '));
     final tags = TextEditingController(text: service.mutedTags.join(', '));
     var hideAi = service.hideGenerativeAiImageVideo;
+    final theme = Theme.of(context);
+    final scheme = theme.colorScheme;
+    final dialogBackground = opaqueOver(
+      theme.dialogTheme.backgroundColor ?? scheme.surfaceContainerHigh,
+      theme.scaffoldBackgroundColor,
+    );
+    final activeTrack = opaqueOver(scheme.primary, dialogBackground);
+    final inactiveTrack = opaqueOver(
+      scheme.surfaceContainerHighest,
+      dialogBackground,
+    );
+    final trackOutline = contrastingForeground(
+      dialogBackground,
+      scheme.outline,
+    );
     final result = await showDialog<_ContentFilterInput>(
       context: context,
       builder: (context) => DisposeOnUnmount(
@@ -264,11 +281,27 @@ class _CommunityScreenState extends State<CommunityScreen>
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    SwitchListTile(
-                      contentPadding: EdgeInsets.zero,
-                      value: hideAi,
-                      onChanged: (v) => setDialogState(() => hideAi = v),
-                      title: Text(l10n.communityHideGenerativeAiImageVideo),
+                    SwitchTheme(
+                      data: SwitchTheme.of(context).copyWith(
+                        trackOutlineWidth: const WidgetStatePropertyAll(2),
+                      ),
+                      child: SwitchListTile(
+                        contentPadding: EdgeInsets.zero,
+                        activeTrackColor: activeTrack,
+                        activeThumbColor: contrastingForeground(
+                          activeTrack,
+                          scheme.onPrimary,
+                        ),
+                        inactiveTrackColor: inactiveTrack,
+                        inactiveThumbColor: contrastingForeground(
+                          inactiveTrack,
+                          scheme.onSurfaceVariant,
+                        ),
+                        trackOutlineColor: WidgetStatePropertyAll(trackOutline),
+                        value: hideAi,
+                        onChanged: (v) => setDialogState(() => hideAi = v),
+                        title: Text(l10n.communityHideGenerativeAiImageVideo),
+                      ),
                     ),
                     TextField(
                       key: const Key('communityMutedWordsField'),
@@ -300,6 +333,16 @@ class _CommunityScreenState extends State<CommunityScreen>
               ),
               actions: [
                 TextButton(
+                  style: TextButton.styleFrom(
+                    foregroundColor: contrastingForeground(
+                      opaqueOver(
+                        Theme.of(context).dialogTheme.backgroundColor ??
+                            Theme.of(context).colorScheme.surfaceContainerHigh,
+                        Theme.of(context).scaffoldBackgroundColor,
+                      ),
+                      Theme.of(context).colorScheme.primary,
+                    ),
+                  ),
                   onPressed: () => Navigator.pop(context),
                   child: Text(l10n.commonCancel),
                 ),
@@ -518,14 +561,13 @@ class _CommunityScreenState extends State<CommunityScreen>
                 if (works.isEmpty) {
                   return _pullToRefresh(
                     communityService,
-                    _scrollableEmptyState(_buildSearchEmptyState(l10n)),
+                    _scrollableContent(_buildSearchEmptyState(l10n)),
                   );
                 }
                 return _pullToRefresh(
                   communityService,
-                  SingleChildScrollView(
-                    physics: const AlwaysScrollableScrollPhysics(),
-                    child: CommunityWorkGrid(
+                  _scrollableContent(
+                    CommunityWorkGrid(
                       works: works,
                       bookmarkedIds: bookmarkedIds,
                       onTapWork: _openFloatingPreview,
@@ -543,9 +585,8 @@ class _CommunityScreenState extends State<CommunityScreen>
             ),
             _pullToRefresh(
               communityService,
-              SingleChildScrollView(
-                physics: const AlwaysScrollableScrollPhysics(),
-                child: Column(
+              _scrollableContent(
+                Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
                     Padding(
@@ -648,20 +689,19 @@ class _CommunityScreenState extends State<CommunityScreen>
                 if (communityService.favoriteAuthorIds.isEmpty) {
                   return _pullToRefresh(
                     communityService,
-                    _scrollableEmptyState(_buildNoFavoriteAuthorsState(l10n)),
+                    _scrollableContent(_buildNoFavoriteAuthorsState(l10n)),
                   );
                 }
                 if (works.isEmpty) {
                   return _pullToRefresh(
                     communityService,
-                    _scrollableEmptyState(_buildSearchEmptyState(l10n)),
+                    _scrollableContent(_buildSearchEmptyState(l10n)),
                   );
                 }
                 return _pullToRefresh(
                   communityService,
-                  SingleChildScrollView(
-                    physics: const AlwaysScrollableScrollPhysics(),
-                    child: CommunityWorkGrid(
+                  _scrollableContent(
+                    CommunityWorkGrid(
                       works: works,
                       bookmarkedIds: bookmarkedIds,
                       onTapWork: _openFloatingPreview,

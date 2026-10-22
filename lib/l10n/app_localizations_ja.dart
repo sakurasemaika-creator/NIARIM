@@ -27,10 +27,30 @@ class AppLocalizationsJa extends AppLocalizations {
   String get homeTabBookmarked => 'ブクマ済み';
 
   @override
-  String get homeBookmarkedEmptyTitle => 'ブックマークした作品はありません';
+  String get homeBookmarkedEmptyTitle => '表示できるブックマーク作品がありません';
 
   @override
   String get homeBookmarkedEmptyBody => '作品広場で気に入った公開作品をブックマークすると、ここに表示されます。';
+
+  @override
+  String get homeBookmarkedHiddenTitle => 'ブックマークは保存されています';
+
+  @override
+  String get homeBookmarkedHiddenBody =>
+      '表示フィルターや作品の公開状態により表示できない場合があります。作品広場で表示フィルターを確認できます。';
+
+  @override
+  String get homeBookmarkedLoading => 'ブックマークを読み込み中…';
+
+  @override
+  String get homeBookmarkedLoadFailed => 'ブックマークを読み込めませんでした';
+
+  @override
+  String get homeBookmarkedLoadPrompt => '保存したブックマークを読み込む';
+
+  @override
+  String get homeBookmarkedSignInBody =>
+      '保存したブックマークを読み込むには、作品広場でGoogleアカウントを接続してください。';
 
   @override
   String get homeSearchHint => 'プロジェクト名で検索';
@@ -7427,4 +7447,7 @@ class AppLocalizationsJa extends AppLocalizations {
   @override
   String get newProjectCreateFailed =>
       'プロジェクトを保存できませんでした。空き容量や保存先を確認して、もう一度お試しください。';
+
+  @override
+  String get communityCreatorLabel => '作者';
 }

@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:math';
 import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -115,6 +116,17 @@ class CommunityService extends ChangeNotifier {
   /// バックエンドから一覧を取得中かどうか。
   bool get isLoading => _isLoading;
   bool _isLoading = false;
+
+  bool _isSocialLoading = false;
+  bool _hasLoadedSocial = false;
+  NiarimApiException? _socialError;
+  Future<bool>? _socialRequest;
+
+  /// Initial account lists are independent of public discovery/ranking and
+  /// following-feed failures, which remain available through [lastError].
+  bool get isSocialLoading => _isSocialLoading;
+  bool get hasLoadedSocial => _hasLoadedSocial;
+  NiarimApiException? get socialError => _socialError;
 
   /// バックエンドから新着一覧を取り直して[works]へ反映する。
   ///
@@ -473,6 +485,7 @@ class CommunityService extends ChangeNotifier {
     } on CommunityAccountChangedException {
       return null;
     }
+    if (!_isCurrentAccount(revision)) return null;
     setCurrentUserId(page.authorId);
     _ownIds.clear();
     for (final apiWork in page.works) {
@@ -497,43 +510,71 @@ class CommunityService extends ChangeNotifier {
   /// With a backend and a known poster, takes in the viewer's bookmarks and
   /// follows from the server, then the following feed ([refreshFollowingFeed]).
   /// Returns false when there is nothing to load or it failed ([lastError]).
-  Future<bool> loadSocial() async {
+  Future<bool> loadSocial() {
+    if (api == null || _currentUserId == null) return Future.value(false);
+    if (_socialRequest case final pending?) return pending;
+    final completer = Completer<bool>();
+    final request = completer.future;
+    _socialRequest = request;
+    _loadSocial().then(
+      (value) {
+        if (identical(_socialRequest, request)) _socialRequest = null;
+        completer.complete(value);
+      },
+      onError: (Object error, StackTrace stack) {
+        if (identical(_socialRequest, request)) _socialRequest = null;
+        completer.completeError(error, stack);
+      },
+    );
+    return request;
+  }
+
+  Future<bool> _loadSocial() async {
     final client = api;
     final me = _currentUserId;
     if (client == null || me == null) return false;
     final revision = _accountRevision;
-    final List<ApiWork> bookmarks;
-    final List<ApiUserRef> following;
+    _isSocialLoading = true;
+    _socialError = null;
+    notifyListeners();
     try {
       final results = await Future.wait<Object>([
         client.bookmarksOf(me, asOwner: true),
         client.following(me, asOwner: true),
       ]);
-      bookmarks = results[0] as List<ApiWork>;
-      following = results[1] as List<ApiUserRef>;
+      if (!_isCurrentAccount(revision)) return false;
+      final bookmarks = results[0] as List<ApiWork>;
+      final following = results[1] as List<ApiUserRef>;
+      final bookmarked = [for (final w in bookmarks) _plazaCopy(w)];
+      for (final work in bookmarked) {
+        _upsert(work);
+      }
+      _bookmarkWorkIds = {for (final w in bookmarked) w.id};
+      // The server lists newest first; the set keeps oldest first.
+      _bookmarkedIds
+        ..clear()
+        ..addAll(bookmarked.reversed.map((w) => w.id));
+      _favoriteAuthorIds
+        ..clear()
+        ..addAll(following.map((u) => u.niarimUserId));
+      _followedNames
+        ..clear()
+        ..addAll({for (final u in following) u.niarimUserId: ?u.channelName});
+      _hasLoadedSocial = true;
+      final loaded = await refreshFollowingFeed();
+      if (!_isCurrentAccount(revision)) return false;
+      return loaded;
     } on NiarimApiException catch (error) {
       if (!_isCurrentAccount(revision)) return false;
       _lastError = error;
-      notifyListeners();
+      _socialError = error;
       return false;
+    } finally {
+      if (_isCurrentAccount(revision)) {
+        _isSocialLoading = false;
+        notifyListeners();
+      }
     }
-    if (!_isCurrentAccount(revision)) return false;
-    final bookmarked = [for (final w in bookmarks) _plazaCopy(w)];
-    for (final work in bookmarked) {
-      _upsert(work);
-    }
-    _bookmarkWorkIds = {for (final w in bookmarked) w.id};
-    // The server lists newest first; the set keeps oldest first.
-    _bookmarkedIds
-      ..clear()
-      ..addAll(bookmarked.reversed.map((w) => w.id));
-    _favoriteAuthorIds
-      ..clear()
-      ..addAll(following.map((u) => u.niarimUserId));
-    _followedNames
-      ..clear()
-      ..addAll({for (final u in following) u.niarimUserId: ?u.channelName});
-    return refreshFollowingFeed();
   }
 
   /// The following feed from the server: the followed authors' works and
@@ -631,6 +672,10 @@ class CommunityService extends ChangeNotifier {
     _accountRevision++;
     _currentUserId = null;
     _lastError = null;
+    _isSocialLoading = false;
+    _hasLoadedSocial = false;
+    _socialError = null;
+    _socialRequest = null;
     _ownIds.clear();
     if (api != null) {
       // The signed-out viewer has no bookmarks, follows or reposts.
@@ -719,13 +764,17 @@ class CommunityService extends ChangeNotifier {
     }
     final client = api;
     if (client != null) {
+      final revision = _accountRevision;
       final reply = await _awaitInAccount(
         client.updateWorkAiImageVideoDisclosure(
           workId,
           containsGenerativeAiImageOrVideo: value,
         ),
-        _accountRevision,
+        revision,
       );
+      if (!_isCurrentAccount(revision)) {
+        throw const CommunityAccountChangedException();
+      }
       _ownIds.add(workId);
       applyServerWork(_plazaCopy(reply));
       return reply.toCommunityWork();
@@ -749,10 +798,14 @@ class CommunityService extends ChangeNotifier {
       }
       return byId(workId)!;
     }
+    final revision = _accountRevision;
     final reply = await _awaitInAccount(
       client.updateWorkVisibility(workId, isNiarimPublished: value),
-      _accountRevision,
+      revision,
     );
+    if (!_isCurrentAccount(revision)) {
+      throw const CommunityAccountChangedException();
+    }
     _ownIds.add(workId);
     applyServerWork(_plazaCopy(reply));
     return reply.toCommunityWork();

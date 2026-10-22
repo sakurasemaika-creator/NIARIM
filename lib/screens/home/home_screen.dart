@@ -33,6 +33,7 @@ import 'widgets/home_drawer.dart';
 import '../../config/font_fallback.dart';
 import '../../widgets/scrollable_sheet_body.dart';
 import '../community/community_edit_feedback.dart';
+import '../community/community_error_text.dart';
 import '../../utils/app_error_reporter.dart';
 import '../../utils/color_contrast.dart';
 
@@ -918,7 +919,7 @@ class _HomeScreenState extends State<HomeScreen>
 /// 長い項目名が「共有」等より窮屈になり、文字が見切れてしまうため）。
 /// TabControllerを共有しているため、TabBarViewとのスワイプ連動・タップでの
 /// 切り替えはそのまま機能する。
-class _HomeTabBar extends StatelessWidget {
+class _HomeTabBar extends StatefulWidget {
   final TabController controller;
   final int currentIndex;
   final List<String> labels;
@@ -930,7 +931,24 @@ class _HomeTabBar extends StatelessWidget {
   });
 
   @override
+  State<_HomeTabBar> createState() => _HomeTabBarState();
+}
+
+class _HomeTabBarState extends State<_HomeTabBar> {
+  final _scrollController = ScrollController();
+  Object? _lastLayout;
+
+  @override
+  void dispose() {
+    _scrollController.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
+    final labels = widget.labels;
+    final currentIndex = widget.currentIndex;
+    final controller = widget.controller;
     final scheme = Theme.of(context).colorScheme;
     final background = opaqueOver(
       Theme.of(context).scaffoldBackgroundColor,
@@ -1002,6 +1020,31 @@ class _HomeTabBar extends StatelessWidget {
       child: LayoutBuilder(
         builder: (context, constraints) {
           final totalNatural = naturalWidths.fold<double>(0, (a, b) => a + b);
+          final layout = (
+            constraints.maxWidth,
+            currentIndex,
+            labels.join('\u0000'),
+            totalNatural,
+          );
+          if (_lastLayout != layout) {
+            _lastLayout = layout;
+            WidgetsBinding.instance.addPostFrameCallback((_) {
+              if (!mounted ||
+                  _lastLayout != layout ||
+                  !_scrollController.hasClients) {
+                return;
+              }
+              final before = naturalWidths
+                  .take(currentIndex)
+                  .fold<double>(0, (a, b) => a + b);
+              final target =
+                  (before +
+                          naturalWidths[currentIndex] / 2 -
+                          constraints.maxWidth / 2)
+                      .clamp(0.0, _scrollController.position.maxScrollExtent);
+              _scrollController.jumpTo(target);
+            });
+          }
           if (totalNatural <= constraints.maxWidth) {
             final weights = naturalWidths.map((w) => w.round()).toList();
             return Row(
@@ -1012,6 +1055,7 @@ class _HomeTabBar extends StatelessWidget {
             );
           }
           return SingleChildScrollView(
+            controller: _scrollController,
             scrollDirection: Axis.horizontal,
             child: Row(
               children: [
@@ -1686,66 +1730,186 @@ class _BookmarkedTab extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
-    final scheme = Theme.of(context).colorScheme;
-    final background = opaqueOver(
-      Theme.of(context).scaffoldBackgroundColor,
-      Colors.black,
-    );
+    final theme = Theme.of(context);
+    final scheme = theme.colorScheme;
+    final background = opaqueOver(theme.scaffoldBackgroundColor, Colors.black);
     final foreground = contrastingForeground(background, scheme.primary);
-    final communityService = context.watch<CommunityService>();
-    // 閲覧フィルターを適用し、新しくブックマークした順に表示する。
-    final bookmarkedWorks = communityService.bookmarkedWorksForViewer;
+    final textForeground = contrastingForeground(
+      background,
+      opaqueOver(scheme.onSurface, background),
+    );
+    final bodyForeground = contrastingForeground(
+      background,
+      opaqueOver(scheme.onSurfaceVariant, background),
+    );
+    final service = context.watch<CommunityService>();
+    final works = service.bookmarkedWorksForViewer;
+    final canReload =
+        service.isBackendConnected && service.currentUserId != null;
+    final loading = canReload && service.isSocialLoading;
+    final error = canReload ? service.socialError : null;
+    final needsLoad = canReload && !service.hasLoadedSocial && error == null;
+    final hidden = service.bookmarkedIds.isNotEmpty;
+    final title = loading
+        ? l10n.homeBookmarkedLoading
+        : error != null
+        ? l10n.homeBookmarkedLoadFailed
+        : needsLoad
+        ? l10n.homeBookmarkedLoadPrompt
+        : hidden
+        ? l10n.homeBookmarkedHiddenTitle
+        : l10n.homeBookmarkedEmptyTitle;
+    final String? body = loading || needsLoad
+        ? null
+        : error != null
+        ? communityErrorText(l10n, error)
+        : hidden
+        ? l10n.homeBookmarkedHiddenBody
+        : service.isBackendConnected && service.currentUserId == null
+        ? l10n.homeBookmarkedSignInBody
+        : l10n.homeBookmarkedEmptyBody;
 
-    if (bookmarkedWorks.isEmpty) {
-      return Center(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.all(24),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Icon(Icons.bookmark_border, size: 64, color: foreground),
-              const SizedBox(height: 16),
-              Text(
-                l10n.homeBookmarkedEmptyTitle,
-                textAlign: TextAlign.center,
-                style: const TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                  fontFamily: 'Kuramubon',
-                  fontFamilyFallback: kHeadingFontFallback,
-                ),
-              ),
-              const SizedBox(height: 8),
-              Text(
-                l10n.homeBookmarkedEmptyBody,
-                textAlign: TextAlign.center,
-                style: TextStyle(color: scheme.onSurfaceVariant),
-              ),
-              const SizedBox(height: 16),
-              OutlinedButton.icon(
-                style: OutlinedButton.styleFrom(foregroundColor: foreground),
-                onPressed: () => context.push('/community'),
-                icon: const Icon(Icons.explore_outlined),
-                label: Text(l10n.communityScreenTitle),
-              ),
-            ],
-          ),
-        ),
-      );
+    Future<void> reload() async {
+      await service.loadSocial();
     }
 
-    return SingleChildScrollView(
-      child: CommunityWorkGrid(
-        works: bookmarkedWorks,
-        bookmarkedIds: communityService.bookmarkedIds,
-        onTapWork: (work) => context.read<CommunityPreviewService>().show(work),
-        onToggleBookmark: (work) => reportFailedCommunityEdit(
-          context,
-          communityService,
-          communityService.toggleBookmark(work.id),
+    final scroll = LayoutBuilder(
+      builder: (context, constraints) => SingleChildScrollView(
+        physics: canReload ? const AlwaysScrollableScrollPhysics() : null,
+        child: ConstrainedBox(
+          constraints: BoxConstraints(
+            minWidth: constraints.hasBoundedWidth ? constraints.maxWidth : 0,
+            minHeight: constraints.hasBoundedHeight ? constraints.maxHeight : 0,
+          ),
+          child: Padding(
+            padding: works.isEmpty ? const EdgeInsets.all(24) : EdgeInsets.zero,
+            child: Column(
+              mainAxisAlignment: works.isEmpty
+                  ? MainAxisAlignment.center
+                  : MainAxisAlignment.start,
+              children: [
+                if (works.isEmpty) ...[
+                  if (loading)
+                    CircularProgressIndicator(color: foreground)
+                  else
+                    Icon(
+                      error != null
+                          ? Icons.cloud_off_outlined
+                          : Icons.bookmark_border,
+                      size: 64,
+                      color: foreground,
+                    ),
+                  const SizedBox(height: 16),
+                  Semantics(
+                    liveRegion: true,
+                    header: true,
+                    child: Text(
+                      title,
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        color: textForeground,
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                        fontFamily: 'Kuramubon',
+                        fontFamilyFallback: kHeadingFontFallback,
+                      ),
+                    ),
+                  ),
+                  if (body != null) ...[
+                    const SizedBox(height: 8),
+                    Text(
+                      body,
+                      textAlign: TextAlign.center,
+                      style: TextStyle(color: bodyForeground),
+                    ),
+                  ],
+                  const SizedBox(height: 16),
+                  Wrap(
+                    alignment: WrapAlignment.center,
+                    spacing: 12,
+                    runSpacing: 8,
+                    children: [
+                      if (canReload && !loading)
+                        OutlinedButton.icon(
+                          style: OutlinedButton.styleFrom(
+                            foregroundColor: foreground,
+                          ),
+                          onPressed: reload,
+                          icon: const Icon(Icons.refresh),
+                          label: Text(
+                            error != null
+                                ? l10n.communityRetry
+                                : l10n.communityReloadTooltip,
+                          ),
+                        ),
+                      OutlinedButton.icon(
+                        style: OutlinedButton.styleFrom(
+                          foregroundColor: foreground,
+                        ),
+                        onPressed: () => context.push('/community'),
+                        icon: const Icon(Icons.explore_outlined),
+                        label: Text(l10n.communityScreenTitle),
+                      ),
+                    ],
+                  ),
+                ] else ...[
+                  if (loading)
+                    LinearProgressIndicator(
+                      color: foreground,
+                      backgroundColor: Color.alphaBlend(
+                        foreground.withValues(alpha: 0.15),
+                        background,
+                      ),
+                      semanticsLabel: l10n.homeBookmarkedLoading,
+                    ),
+                  if (canReload)
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 16),
+                      child: Row(
+                        children: [
+                          if (error != null)
+                            Expanded(
+                              child: Semantics(
+                                liveRegion: true,
+                                child: Text(
+                                  l10n.homeBookmarkedLoadFailed,
+                                  style: TextStyle(color: textForeground),
+                                ),
+                              ),
+                            )
+                          else
+                            const Spacer(),
+                          IconButton(
+                            onPressed: loading ? null : reload,
+                            tooltip: error != null
+                                ? l10n.communityRetry
+                                : l10n.communityReloadTooltip,
+                            icon: const Icon(Icons.refresh),
+                          ),
+                        ],
+                      ),
+                    ),
+                  CommunityWorkGrid(
+                    works: works,
+                    bookmarkedIds: service.bookmarkedIds,
+                    onTapWork: (work) =>
+                        context.read<CommunityPreviewService>().show(work),
+                    onToggleBookmark: (work) => reportFailedCommunityEdit(
+                      context,
+                      service,
+                      service.toggleBookmark(work.id),
+                    ),
+                  ),
+                ],
+              ],
+            ),
+          ),
         ),
       ),
     );
+    return canReload
+        ? RefreshIndicator(onRefresh: reload, child: scroll)
+        : scroll;
   }
 }
 

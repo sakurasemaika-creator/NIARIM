@@ -227,3 +227,32 @@ status: done（2026-10-10、製品修正 App `35d229e`、証跡 https://claude.a
 - State保存前に最新remoteがApp `9259de657d87fdef500909d679d8a19ac33c0758` / Web `4e641080ace3a434b3ecb9bd50bccbb14677b6eb` へ進んだことを確認。5監査資料の追加保存ルール（シナリオ単位、節目なし時30〜45分）を読み、local State commitをその後へrebaseして保持。これらの追加変更は監査文書のみで、197件検証の製品sourceに変更はない。
 
 - 追加永続保存 [recovery checkpoint 02](https://drive.google.com/file/d/1MUptn_C42U5HpeUVIchh0Esyvh-s6fhY/view?usp=drivesdk) は1,403,254 bytes /49 entries、SHA256 `ec94fa4986daf900d1bc71f78d2563424696d272dfcf0434f5c56b1bc257341d`。最新source/patch/State/hash、197件log、style修正と0件analyze、21件再確認、再開手順とclean環境scriptを保存。Drive metadata name/MIME/size/parentとraw bytes再取得hash/全CRC一致。197件時点の製品sourceは不変、3testsのbracesと未実施opt-in matrix検査の追加は区別する。native/build/matrix/最終Visual・製品pushは未完了。
+
+
+### 2026-10-22 A003/S8 — current source・表示状態・操作の優先修正 checkpoint（全面監査は未完了）
+
+- 最新取得HEADはApp `f989fc39501eb34b348c3eb9151557a01232d999` / Web `2f8bfbc3a10b91b0dd48c35a36572f2f1d619abe`。この先端からの製品差分を対象とし、承認済みdev_branchへ通常pushする。State-only履歴と製品sourceのhashを区別した。
+- Home Bookmarks: 初回loading/取得失敗/Retry/未取得/guest/保存IDが表示filterで隠れる/未解決ID/neutral empty/cached contentを区別。取得はaccount-scopedかつ重複抑止、失敗時はcache保持。APIがprivate/deleted IDを返さないため、0件を「一度も保存していない」と断定しない7言語表現へ修正した。既存保存値・収益化gateは維持。
+- Card/Grid: text scaleに応じた列数と自然高で固定aspect-ratio由来のoverflowを修正。実背景に対する文字色、黒overlay/白icon、rank/private/short/duration/repost、48px bookmark/author target、独立callbackとsemantic labelを確認。Communityの短い一覧でもpull-to-refresh領域を全viewportへ広げた。Home選択tabはindex/幅/label/文字倍率の変化で可視範囲へ追従し、無関係なrebuildで手動scrollを戻さない。
+- DISC009追加反例: 正確な旧remote Serviceだけへ一時復元したfresh counterは1 FAIL（AI/visibilityのAPI呼出中・microtask境界でaccountが変わり旧privateが再適用）。現在sourceへbyte-identicalに復旧し1 PASS、24 interleavingsを検査。API呼出前のrevision captureとcaller適用前の再確認を追加。保存済み197件との単純合算はしない。
+- 自動検証: 復元後197 real tests/32files PASS、style修正後21 PASS。静止後matrixは13 real tests PASS / 5901 PNG（Home6状態×385=2310、Bookmarks9状態×399=3591、7言語・PC/SP・24幅・theme/text scale/short-height mutation）。source309hash snapshot保存。6contact sheetsを開いて9状態×7言語の320 dark2と640 short2 controlsを確認し、全5901原本の個別目視は申告しない。
+- native Linux実操作: error→Retry/loading→success、cached loading/error→Retry/success→unbookmark/neutral empty、640×360文字2倍でscrollして操作へ到達。French/white custom/文字1.3のhidden bookmark→作品広場→表示filter OFF→保存→実Back→同じ作品がHomeに表示されることを原本で確認。Back hover tooltipがheaderを覆う画像はclean Visual closureにしない。private/short/plain card、bookmarkだけの独立削除、preview、作者route、Followingのrepost、Rankingの順位badgeもPC1440で実操作・原本目視。最初のranking名画像は実際にはNewであり、settled画像でRanking選択を確認した。
+- 表示filter ONswitchが白custom popupで消えるfresh native反例を観察。29profile（28preset+white custom）×ON/OFFのthumb/track・track/popup境界testがbefore FAIL→after PASS。実popupを基準に前景/2px outlineを選び、native ON/OFF→Save→再表示も確認。関連filter+Homeの最終42 real tests/6files PASS、full analyze0。最終修正後のdefault Linux debug buildと隔離native harness build成功。最終build後generated l10nのformatは0変更、git diff --check成功。
+- 検証の失敗も保存: 最初のtransition fixtureはAppBar ancestor finder重複で無効、最初のSwitch修正は未対応Tile parameterでcompile失敗、別runは存在しない推測test pathがあり23 PASSでもgreenとはしない。修正後の有効42件runを一次結果とする。生成l10nのformat-only差分とcompiled時raw生成ファイルを保存し、同一UIに影響しないdialog局所変更のため静的Home5901画像を無駄に再生成していない。
+- DISC012未解決観察: 初回nativeではbody Bookmarksに対しheader/selected Works+folder FABが残った。原本2枚を保持し、環境のGLib静的link不整合を修復後にfull harness rebuild。通常/即時resizeと1764card render-load下の再現probe、0/10/50/100/200/300/500ms移動中resizeの2widget testsでは再現しない。初回episodeを環境原因と断定せず、未解決のまま全3tab/continuityを継続する。
+- 次単位: French white customの作品広場heading/selected tab不可視、SPの画面名省略とcontrol密度（DISC005/010）、preview操作bar低contrast、Works/大量Bookmarks120件・folder/search/view/favorites・全continuity・free/paid/campaign条件。初回案内/各caller/全preset実操作も残る。合成HTTP/auth/dataはlive OAuth/backend/mediaの合格ではない。Android/DeX/touch/multitouch/筆圧未用意、Linux FFmpeg dlopen未成立。
+- Baseline done2/628、A003 in_progress、Discovery cursorDISC001/全DISC001–012 todo、Delta not_startedを維持。これはS8優先修正のcheckpointであり、最新HEADの全面Visual closureではない。
+
+#### S8 current static matrix — Drive metadataとraw再取得bytes/SHA256/全CRC一致
+
+| ZIP | bytes / entries | SHA256 |
+| --- | --- | --- |
+| [S8 home](https://drive.google.com/file/d/1Owj-3Tz2Md-RZeKhQfAn1TnNE2aBlaMG/view?usp=drivesdk) | 62,357,237 / 2,333 | `aef92b455f66d4c7fbd1c0ef63c76cf2cf26b653f02b7b8c7ad5424b8fb3be7c` |
+| [S8 bookmarks-A](https://drive.google.com/file/d/1UCWisshiOYRdOTev_ywzgECIgWDkMxdS/view?usp=drivesdk) | 35,805,048 / 1,203 | `a16e3104b8ef09aa78e41a964b827c2682756b0a6f3d73b6a3f2483fc8373a6c` |
+| [S8 bookmarks-B](https://drive.google.com/file/d/1Dny4cfIAGE3myMwDAdwn-pakh5uudBTS/view?usp=drivesdk) | 27,958,626 / 1,203 | `d824f16a87144b8920e2a0bb7b867fc64c73b4a616403066088d8c0bc8f19882` |
+| [S8 bookmarks-C](https://drive.google.com/file/d/1FeF5LS1rdFwyDklaBhQ9lhdlHz0hntxU/view?usp=drivesdk) | 40,228,309 / 1,203 | `a4ae8e11b158775091288209adcd26781a23c62c8228055cd985c621211e2be7` |
+
+- 承認済みfolder `1fiZEjCVqLtNVk_mkNIOUC3MWn6ys6e8q`。各ZIPは100MiB未満で分割、すべてmetadata name/MIME/size/parentと実再取得hash/全entry CRC確認済み。nativeの初回不整合も隠さず保存。
+- 追加controls WIP backup: [1IncGukiWsmKGrLG70uNufCEGEebpPEOE](https://drive.google.com/file/d/1IncGukiWsmKGrLG70uNufCEGEebpPEOE/view?usp=drivesdk)、3,117,706 bytes /105 entries、SHA256 `640b2f3ad2ec71bd0a4aaa840d34a53ff214a483197e435eb16cd2a0566ccca5`、metadata/raw hash/CRC一致。この時点後の最終native操作・default buildは別coreへ保存する。
+
+- S8最終core保存/readback完了: [A003-S8-final-core](https://drive.google.com/file/d/1cIujXWuS6HUuCpo1WbwQ3w7gK3yJXT0d/view?usp=drivesdk)、3,733,807 bytes /118 entries、SHA256 `1665c54099ab5d25711cb39abb4f2c7576d0a09b7d04d2b807e41b4b067ce677`。全writer停止後のsource30files/patch/hash、5901matrix参照、最終native原本・action log・redacted runner、197/42件と失敗を含むlog、最終default build、再現環境/次操作を収録。metadata name/MIME/size/parentとraw再取得hash/全CRC一致。ZIP内Stateは自己参照追加前であり、本receiptはGit Stateに保持する。S8の局所checkpointであって全面Visual closureではない。

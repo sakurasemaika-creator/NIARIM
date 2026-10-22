@@ -6,8 +6,14 @@
   "homeTabTrash": "Papelera",
   "homeTabWorks": "Obras",
   "homeTabBookmarked": "Guardados",
-  "homeBookmarkedEmptyTitle": "Aún no hay obras guardadas",
+  "homeBookmarkedEmptyTitle": "No hay obras guardadas para mostrar",
   "homeBookmarkedEmptyBody": "Guarda las obras públicas que te gusten en la Plaza de Obras para verlas aquí.",
+  "homeBookmarkedHiddenTitle": "Tus obras siguen guardadas",
+  "homeBookmarkedHiddenBody": "Los filtros de visualización o los cambios de visibilidad pueden ocultarlas. Revisa los filtros en la Plaza de Obras.",
+  "homeBookmarkedLoading": "Cargando tus obras guardadas…",
+  "homeBookmarkedLoadFailed": "No se pudieron cargar tus obras guardadas",
+  "homeBookmarkedLoadPrompt": "Cargar tus obras guardadas",
+  "homeBookmarkedSignInBody": "Conecta tu cuenta de Google en la Plaza de Obras para cargar tus obras guardadas.",
   "homeSearchHint": "Buscar por nombre de proyecto",
   "homeBackToSplashTooltip": "Volver a la pantalla de inicio",
   "homeFavoritesOnly": "Favoritos",
@@ -3128,5 +3134,6 @@
   "errorViewBody": "Tu trabajo en curso se conserva. Vuelve a la pantalla anterior e inténtalo de nuevo. Si nos envías el texto de abajo, nos ayudarás a encontrar la causa.",
   "homeWorksLoadFailed": "No se pudieron cargar tus obras exportadas",
   "newProjectCreating": "Creando…",
-  "newProjectCreateFailed": "No se pudo guardar el proyecto. Comprueba el espacio de almacenamiento y la ubicación de guardado e inténtalo de nuevo."
+  "newProjectCreateFailed": "No se pudo guardar el proyecto. Comprueba el espacio de almacenamiento y la ubicación de guardado e inténtalo de nuevo.",
+  "communityCreatorLabel": "Creador"
 }

@@ -6,8 +6,14 @@
   "homeTabTrash": "Trash",
   "homeTabWorks": "Works",
   "homeTabBookmarked": "Bookmarked",
-  "homeBookmarkedEmptyTitle": "No bookmarked works yet",
+  "homeBookmarkedEmptyTitle": "No bookmarked works to display",
   "homeBookmarkedEmptyBody": "Bookmark public works you like in Work Plaza to find them here.",
+  "homeBookmarkedHiddenTitle": "Your bookmarks are still saved",
+  "homeBookmarkedHiddenBody": "Display filters or changes to a work’s public availability may hide it. Review your display filters in Work Plaza.",
+  "homeBookmarkedLoading": "Loading your bookmarks…",
+  "homeBookmarkedLoadFailed": "Couldn’t load your bookmarks",
+  "homeBookmarkedLoadPrompt": "Load your saved bookmarks",
+  "homeBookmarkedSignInBody": "Connect your Google account in Work Plaza to load saved bookmarks.",
   "homeSearchHint": "Search by project name",
   "homeBackToSplashTooltip": "Back to launch screen",
   "homeFavoritesOnly": "Favorites",
@@ -3135,5 +3141,6 @@
   "errorViewBody": "Your work in progress is kept. Go back to the previous screen and try again. Sending us the text below helps us find the cause.",
   "homeWorksLoadFailed": "Could not load your exported works",
   "newProjectCreating": "Creating…",
-  "newProjectCreateFailed": "Could not save the project. Check your storage space and save location, then try again."
+  "newProjectCreateFailed": "Could not save the project. Check your storage space and save location, then try again.",
+  "communityCreatorLabel": "Creator"
 }

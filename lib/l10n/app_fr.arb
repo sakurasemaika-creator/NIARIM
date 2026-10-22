@@ -6,8 +6,14 @@
   "homeTabTrash": "Corbeille",
   "homeTabWorks": "Œuvres",
   "homeTabBookmarked": "Enregistrées",
-  "homeBookmarkedEmptyTitle": "Aucune œuvre enregistrée",
+  "homeBookmarkedEmptyTitle": "Aucune œuvre enregistrée à afficher",
   "homeBookmarkedEmptyBody": "Enregistrez les œuvres publiques qui vous plaisent sur la Place des œuvres pour les retrouver ici.",
+  "homeBookmarkedHiddenTitle": "Vos œuvres restent enregistrées",
+  "homeBookmarkedHiddenBody": "Les filtres d’affichage ou le statut public des œuvres peuvent les masquer. Vérifiez les filtres sur la Place des œuvres.",
+  "homeBookmarkedLoading": "Chargement des œuvres enregistrées…",
+  "homeBookmarkedLoadFailed": "Impossible de charger vos œuvres enregistrées",
+  "homeBookmarkedLoadPrompt": "Charger vos œuvres enregistrées",
+  "homeBookmarkedSignInBody": "Connectez votre compte Google sur la Place des œuvres pour charger vos œuvres enregistrées.",
   "homeSearchHint": "Rechercher par nom de projet",
   "homeBackToSplashTooltip": "Retour à l'écran de lancement",
   "homeFavoritesOnly": "Favoris",
@@ -3128,5 +3134,6 @@
   "errorViewBody": "Votre travail en cours est conservé. Revenez à l’écran précédent et réessayez. Nous envoyer le texte ci-dessous nous aidera à en trouver la cause.",
   "homeWorksLoadFailed": "Impossible de charger vos créations exportées",
   "newProjectCreating": "Création en cours…",
-  "newProjectCreateFailed": "Impossible d’enregistrer le projet. Vérifiez l’espace de stockage et l’emplacement d’enregistrement, puis réessayez."
+  "newProjectCreateFailed": "Impossible d’enregistrer le projet. Vérifiez l’espace de stockage et l’emplacement d’enregistrement, puis réessayez.",
+  "communityCreatorLabel": "Créateur"
 }

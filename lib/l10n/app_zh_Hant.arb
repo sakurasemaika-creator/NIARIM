@@ -6,8 +6,14 @@
   "homeTabTrash": "垃圾桶",
   "homeTabWorks": "作品列表",
   "homeTabBookmarked": "已收藏",
-  "homeBookmarkedEmptyTitle": "尚無收藏作品",
+  "homeBookmarkedEmptyTitle": "沒有可顯示的收藏作品",
   "homeBookmarkedEmptyBody": "在作品廣場收藏喜歡的公開作品，即可在這裡查看。",
+  "homeBookmarkedHiddenTitle": "收藏仍然保留",
+  "homeBookmarkedHiddenBody": "顯示篩選條件或作品的公開狀態可能使作品無法顯示。可在作品廣場檢查顯示篩選條件。",
+  "homeBookmarkedLoading": "正在載入收藏…",
+  "homeBookmarkedLoadFailed": "無法載入收藏",
+  "homeBookmarkedLoadPrompt": "載入已儲存的收藏",
+  "homeBookmarkedSignInBody": "請在作品廣場連結 Google 帳戶，以載入已儲存的收藏。",
   "homeSearchHint": "依專案名稱搜尋",
   "homeBackToSplashTooltip": "返回啟動畫面",
   "homeFavoritesOnly": "我的最愛",
@@ -3128,5 +3134,6 @@
   "errorViewBody": "編輯中的資料已保留。請返回上一個畫面後再試一次。將以下內容告知開發者，有助於找出原因。",
   "homeWorksLoadFailed": "無法載入匯出的作品",
   "newProjectCreating": "正在建立…",
-  "newProjectCreateFailed": "無法儲存專案。請檢查儲存空間與儲存位置，然後再試一次。"
+  "newProjectCreateFailed": "無法儲存專案。請檢查儲存空間與儲存位置，然後再試一次。",
+  "communityCreatorLabel": "作者"
 }

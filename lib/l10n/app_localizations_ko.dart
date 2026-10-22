@@ -27,11 +27,31 @@ class AppLocalizationsKo extends AppLocalizations {
   String get homeTabBookmarked => '북마크됨';
 
   @override
-  String get homeBookmarkedEmptyTitle => '북마크한 작품이 없습니다';
+  String get homeBookmarkedEmptyTitle => '표시할 수 있는 북마크 작품이 없습니다';
 
   @override
   String get homeBookmarkedEmptyBody =>
       '작품 광장에서 마음에 드는 공개 작품을 북마크하면 여기에 표시됩니다.';
+
+  @override
+  String get homeBookmarkedHiddenTitle => '북마크는 저장되어 있습니다';
+
+  @override
+  String get homeBookmarkedHiddenBody =>
+      '표시 필터 또는 작품 공개 상태로 인해 작품이 보이지 않을 수 있습니다. 작품 광장에서 표시 필터를 확인하세요.';
+
+  @override
+  String get homeBookmarkedLoading => '북마크를 불러오는 중…';
+
+  @override
+  String get homeBookmarkedLoadFailed => '북마크를 불러오지 못했습니다';
+
+  @override
+  String get homeBookmarkedLoadPrompt => '저장된 북마크 불러오기';
+
+  @override
+  String get homeBookmarkedSignInBody =>
+      '저장된 북마크를 불러오려면 작품 광장에서 Google 계정을 연결하세요.';
 
   @override
   String get homeSearchHint => '프로젝트 이름으로 검색';
@@ -7466,4 +7486,7 @@ class AppLocalizationsKo extends AppLocalizations {
   @override
   String get newProjectCreateFailed =>
       '프로젝트를 저장하지 못했습니다. 저장 공간과 저장 위치를 확인한 후 다시 시도해 주세요.';
+
+  @override
+  String get communityCreatorLabel => '작성자';
 }
