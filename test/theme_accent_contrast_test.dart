@@ -14,8 +14,8 @@ void main() {
     final scheme = service.themeData.colorScheme;
     expect(scheme.onPrimary, preset.buttonTextColor);
     expect(scheme.onSecondary, preset.selectionTextColor);
-    expect(scheme.onPrimaryContainer, preset.buttonTextColor);
-    expect(scheme.onSecondaryContainer, preset.buttonTextColor);
+    expect(scheme.onPrimaryContainer, preset.textColor);
+    expect(scheme.onSecondaryContainer, preset.textColor);
     expect(service.themeData.listTileTheme.selectedColor, preset.selectionTextColor);
     expect(scheme.onSurface, preset.textColor);
     expect(service.themeData.appBarTheme.foregroundColor, preset.menuTextColor);
