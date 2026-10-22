@@ -8,7 +8,11 @@ import '../services/theme_service.dart';
 /// 通常UIと違い、復旧経路だけ黒・白の固定色を使う。
 /// テーマの変更は確認ダイアログ内のリセット確定時だけ行う。
 class ThemeRescueButton extends StatelessWidget {
-  const ThemeRescueButton({super.key});
+  const ThemeRescueButton({super.key, this.iconOnly = false});
+
+  /// 設定画面の狭いAppBarではアイコンだけにして操作領域を確保する。
+  /// その場合もスクリーンリーダー用のラベルと確認動作は変えない。
+  final bool iconOnly;
 
   Future<void> _confirmReset(BuildContext context) async {
     final l10n = AppLocalizations.of(context)!;
@@ -123,11 +127,12 @@ class ThemeRescueButton extends StatelessWidget {
                             ],
                           ),
                         ),
-                        const SizedBox(width: 4),
-                        Stack(
-                          children: [
-                            Text(
-                              l10n.themeUnreadableResetButton,
+                        if (!iconOnly) ...[
+                          const SizedBox(width: 4),
+                          Stack(
+                            children: [
+                              Text(
+                                l10n.themeUnreadableResetButton,
                               style: TextStyle(
                                 foreground: Paint()
                                   ..style = PaintingStyle.stroke
@@ -148,6 +153,7 @@ class ThemeRescueButton extends StatelessWidget {
                             ),
                           ],
                         ),
+                        ],
                       ],
                     ),
                   ),
