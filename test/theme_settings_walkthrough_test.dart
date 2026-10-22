@@ -72,7 +72,14 @@ void main() {
 
     // 縮小プレビューが設定画面の上部にあるため、テーマ一覧のチェックは
     // 最初のスクリーン内とは限らない。カードへスクロールしてから検証。
-    await tester.ensureVisible(find.text(service.current.name).first);
+    // The preset list is lazily built below the inline preview and color
+    // controls, so its first row may not even exist in the widget tree yet.
+    await tester.scrollUntilVisible(
+      find.text(service.current.name),
+      110,
+      scrollable: find.byType(Scrollable).first,
+      maxScrolls: 60,
+    );
     await tester.pump(const Duration(milliseconds: 250));
     expect(service.isEditingPreset, isTrue);
     expect(find.byIcon(Icons.check), findsOneWidget);
