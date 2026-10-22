@@ -3,6 +3,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:niarim/l10n/app_localizations.dart';
 import 'package:niarim/screens/settings/widget_settings_screen.dart';
 import 'package:niarim/services/home_widget_service.dart';
+import 'package:niarim/services/settings_service.dart';
 import 'package:niarim/services/theme_service.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -23,6 +24,7 @@ void main() {
         menuBgColor: differentMenuBackground,
       ));
 
+      final settings = SettingsService();
       final widgets = HomeWidgetService();
       await widgets.setBackgroundColor(
         HomeWidgetKind.create,
@@ -32,6 +34,7 @@ void main() {
         providers: [
           ChangeNotifierProvider<ThemeService>.value(value: theme),
           ChangeNotifierProvider<HomeWidgetService>.value(value: widgets),
+          ChangeNotifierProvider<SettingsService>.value(value: settings),
         ],
         child: MaterialApp(
           locale: const Locale('ja'),
@@ -67,6 +70,7 @@ void main() {
 
       await tester.pumpWidget(const SizedBox.shrink());
       widgets.dispose();
+      settings.dispose();
       theme.dispose();
     },
   );
