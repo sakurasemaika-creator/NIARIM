@@ -14,6 +14,7 @@ import '../../widgets/help_button.dart';
 import '../../config/font_fallback.dart';
 import '../../utils/reorder_index.dart';
 import '../../widgets/theme_rescue_button.dart';
+import 'theme_preview_gallery_screen.dart';
 
 class ThemeSettingsScreen extends StatelessWidget {
   const ThemeSettingsScreen({super.key});
@@ -41,6 +42,23 @@ class ThemeSettingsScreen extends StatelessWidget {
         context,
         ListView(
           children: [
+            Padding(
+              padding: const EdgeInsets.fromLTRB(12, 12, 12, 8),
+              child: OutlinedButton.icon(
+                key: const Key('themePreviewOpen'),
+                icon: const Icon(Icons.preview_outlined),
+                label: Text(
+                  Localizations.localeOf(context).languageCode == 'ja'
+                      ? '画面プレビューを見る'
+                      : 'Preview app screens',
+                ),
+                onPressed: () => Navigator.of(context).push(
+                  MaterialPageRoute<void>(
+                    builder: (_) => const ThemePreviewGalleryScreen(),
+                  ),
+                ),
+              ),
+            ),
             // カラーカスタマイズ：すべてカラーピッカー（HSV/RGB/HEX）で
             // 自由に設定できる。変更は即座にアプリ全体（現在のプリセット）へ
             // 反映される。
