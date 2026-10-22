@@ -1002,14 +1002,10 @@
   "themeColorMenuBg": "メニュー背景色",
   "themeColorSelection": "選択色",
   "themeColorUpdateMark": "更新マーク色",
-  "themeContrastErrorTitle": "この色では文字が読めなくなります",
-  "@themeContrastErrorTitle": {
-    "description": "テーマ設定で文字色と背景色が近すぎるときのエラーダイアログの見出し"
-  },
-  "themeContrastErrorBody": "文字の色と背景の色が近すぎるため、画面の文字がほとんど見えなくなります。設定画面自体も読めなくなり元に戻せなくなるので、この組み合わせは保存できません。どちらかの明るさを変えてください。",
-  "@themeContrastErrorBody": {
-    "description": "同エラーの本文"
-  },
+  "themeResetConfirmTitle": "テーマカラーをリセットしますか？",
+  "@themeResetConfirmTitle": {"description": "テーマのリセット前に表示する確認ダイアログ"},
+  "themeResetConfirmAction": "リセット",
+  "@themeResetConfirmAction": {"description": "テーマのリセットを確定するボタン"},
   "themeUnreadableResetButton": "テーマをもとに戻す",
   "@themeUnreadableResetButton": {
     "description": "読めないテーマになったとき起動画面に出る固定色のリセットボタン"
