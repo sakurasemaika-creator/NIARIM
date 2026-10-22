@@ -256,3 +256,14 @@ status: done（2026-10-10、製品修正 App `35d229e`、証跡 https://claude.a
 - 追加controls WIP backup: [1IncGukiWsmKGrLG70uNufCEGEebpPEOE](https://drive.google.com/file/d/1IncGukiWsmKGrLG70uNufCEGEebpPEOE/view?usp=drivesdk)、3,117,706 bytes /105 entries、SHA256 `640b2f3ad2ec71bd0a4aaa840d34a53ff214a483197e435eb16cd2a0566ccca5`、metadata/raw hash/CRC一致。この時点後の最終native操作・default buildは別coreへ保存する。
 
 - S8最終core保存/readback完了: [A003-S8-final-core](https://drive.google.com/file/d/1cIujXWuS6HUuCpo1WbwQ3w7gK3yJXT0d/view?usp=drivesdk)、3,733,807 bytes /118 entries、SHA256 `1665c54099ab5d25711cb39abb4f2c7576d0a09b7d04d2b807e41b4b067ce677`。全writer停止後のsource30files/patch/hash、5901matrix参照、最終native原本・action log・redacted runner、197/42件と失敗を含むlog、最終default build、再現環境/次操作を収録。metadata name/MIME/size/parentとraw再取得hash/全CRC一致。ZIP内Stateは自己参照追加前であり、本receiptはGit Stateに保持する。S8の局所checkpointであって全面Visual closureではない。
+
+
+### 2026-10-22 A003/S9 — 最新正本同期・ユーザーのテーマ色方針を優先（WIP）
+
+- 最新取得: App `042f9921ce02d87bfec54ed68bc77ce521483480` / Web `aac9e1e1447483333d89578a48f9872bf9723200`。S8製品push後に通常UI色のtoken対応・自由な配色・復旧専用判定の変更が入ったため、現在HEADのPolicy/Quality/Hands-on/実行標準とテーマ仕様を再確認した。新規APCA/CVD判定・memoized cache・確認付きreset・7言語・唯一の固定色復旧ボタンを旧checkpointで上書きしない。
+- ユーザーは、通常UIをテーマ・外観の正式色から取得し、見やすさのために固定黒白/任意RGBへ自動置換する変更を認めないと明示した。assistantは撮影用ではなく製品UIの自動補正を追加していた事実を説明し、誤りとして取り下げる。保存済みS5/S8/S9の固定neutral表示を、現方針に対するVisual合格としない。機能/layout等の無変更部分の証拠はscopeを限定して保持する。
+- S9復元ZIP [before-matrix](https://drive.google.com/file/d/1ovtX7I89CnS-yVhZeoigK5plVgqORU5R/view?usp=drivesdk) は291,778B/67entries、SHA256 `14acf5475c3e7ad02c474c0846a86c5bbe068e8428d09292a54e19ce09397936`。今回もmetadataとraw再取得SHA256/全CRC/MANIFEST各hash一致を確認。これは方針訂正前のWIPであり、自動黒白化を再導入してよい証拠ではない。
+- 再開環境が初期ec93へ戻ったため、最新remoteへfast-forwardした。S9の未push layout3製品/2testだけは2805親と最新HEADが同一であることを確認し復元。最新ThemeService/color_contrast/rescue/翻訳/Policyは保持。前回palette訂正途中の未保存変更・analyze結果は残っておらず、PASSを引き継がない。
+- 維持するS9 layout: 狭幅で画面名と操作列を分離、自然幅tab、48px video filter、ranking sort chips折返し、検索modeのbounded label/角丸shape。以前の180画像smoke成功でも、実原本でStadium clipの文字欠けを発見し、actual renderer clip counterで1 FAIL→修正後1 PASS。これらは配色修正後の最新sourceで関連再確認が必要。
+- 次の具体操作: 現在HEADの正式色マッピングを表に記録→通常UIのcontrastingForeground/固定badge/preview/tooltipを正式tokenへ修正→設定色を反映するregressionと既存APCA/rescue回帰→実製品でテーマ変更/保存復元/PC-SP導線・原本目視→証跡をDrive保存/readback→検証済み差分を通常push。復旧専用ボタンの固定色・APCA閾値20/CVD/cacheを一般UIの配色補正へ流用しない。
+- Baseline2/628、A003 in_progress、DISC001–013 todo/cursorDISC001、Delta not_startedを維持。全面監査/最新HEAD Visual closureは未完了。

@@ -40,7 +40,7 @@ web_baseline: 2a44dd9007e4a764e489a42a70f96ac5da6b3b8a
 - 検証: 初回保存/再起動復元、documents取得失敗、実FS blocker保持と復旧、二重送信/離脱の新規testsとhome/folder回帰は19 PASS。createProject利用79file回帰は182 PASS/slot fixture 4 FAIL；修正前checkpointでも同じ4 FAILを再現。host CPU依存のslot fixtureを明示presetにし、4/4 PASSへ修正。full analyze 0件、Linux debug build成功。
 - DISC004実画面: 保存先resolverを隔離runtime内で一時無効→作成で遷移せずerror・既存保存作品のみ→resolverを復旧→同じ入力で再試行しcanvas→runner終了/再起動→新作品と既存作品がhomeに復元。保存ZIPのmanifestでも名前/fps/sizeを確認。元resolverは復旧済み。
 
-current_substep: A003/S8 current sourceの状態分岐・Card・switch優先修正、5901 PNGとnative検証完了、checkpoint保存/readback完了、検証済み差分push中
+current_substep: A003/S9 最新HEAD/テーマ色方針へ同期、保存済みlayout差分復元・固定neutral配色の訂正中
 completed_substeps:
 - S5未push分を保存済みDrive ZIPから復元。製品source18/20件のhash一致、残りを再構成して現在sourceで検証。旧S5 main再取得のSHA256/CRC一致。
 - Themeの実accent/selection前景、short-height empty、7言語Bookmarks empty/作品広場導線、French Start折返しを修正・再検証。
@@ -60,7 +60,7 @@ blockers:
 - Android/DeX実機、touch/multi-touch/筆圧入力が未用意。該当NATIVEはPASSにしない。
 - Linux補助環境はFFmpeg libffmpegkit.soのdlopenが未成立。codec/exportをこのUI checkpointでPASSにしない。
 - advisor-pending: none。
-next_action: S8最終coreをDrive保存/readback検証済み（1cIujXWuS6HUuCpo1WbwQ3w7gK3yJXT0d）→fresh leaseで検証済み製品/Stateをpush→A003/S9のCommunity heading/tab contrastと密度、preview操作bar、Works/大量Bookmarks・continuityへ進む。保存済み5901 PNG/197件/42件結果はsource影響とhashを照合して引継ぎ、無変更部分を再生成しない。初回native header/body不整合は未解決として保持する。A003/Discovery/Delta cursorは進めない。
+next_action: 042f992のAPCA/rescue変更を保持し、正式token対応表を作成。固定黒白/自動neutral置換を通常UIから除去→色設定propagation+rescue回帰→native/保存復元/目視→証跡・検証済み製品push。旧配色画像を最新Visual合格へ流用しない。
 
 前checkpointの保存記録（保持）:
 - このcheckpointの証跡ZIP backup完了（ユーザー明示許可後）: [audit-evidence-2026-10-21-A003-DISC004.zip](https://drive.google.com/file/d/1V357zq7uAQmhZt7wBaPRKj0NPnlaBlvr/view?usp=drivesdk)。Drive readbackでname・MIME `application/zip`・size 862508 bytes・保存先folder 1fiZEjCVqLtNVk_mkNIOUC3MWn6ys6e8qを確認。ローカルSHA256 `02fe5c2c7390f8839ccc8152422770234b7b1680eab94b8eb360ac0c8d592f19`、ZIP検査済み。過去A001/A002の証跡backupや最終coverageまで完了した意味ではない。
@@ -208,3 +208,14 @@ lock後の追加監査対象は A105 等のBaseline IDではなく、docs/work-a
 
 
 - S8最終core保存/readback完了: [A003-S8-final-core](https://drive.google.com/file/d/1cIujXWuS6HUuCpo1WbwQ3w7gK3yJXT0d/view?usp=drivesdk)、3,733,807 bytes /118 entries、SHA256 `1665c54099ab5d25711cb39abb4f2c7576d0a09b7d04d2b807e41b4b067ce677`。全writer停止後のsource30files/patch/hash、5901matrix参照、最終native原本・action log・redacted runner、197/42件と失敗を含むlog、最終default build、再現環境/次操作を収録。metadata name/MIME/size/parentとraw再取得hash/全CRC一致。ZIP内Stateは自己参照追加前であり、本receiptはGit Stateに保持する。S8の局所checkpointであって全面Visual closureではない。
+
+
+### 2026-10-22 A003/S9 — 最新正本同期・ユーザーのテーマ色方針を優先（WIP）
+
+- 最新取得: App `042f9921ce02d87bfec54ed68bc77ce521483480` / Web `aac9e1e1447483333d89578a48f9872bf9723200`。S8製品push後に通常UI色のtoken対応・自由な配色・復旧専用判定の変更が入ったため、現在HEADのPolicy/Quality/Hands-on/実行標準とテーマ仕様を再確認した。新規APCA/CVD判定・memoized cache・確認付きreset・7言語・唯一の固定色復旧ボタンを旧checkpointで上書きしない。
+- ユーザーは、通常UIをテーマ・外観の正式色から取得し、見やすさのために固定黒白/任意RGBへ自動置換する変更を認めないと明示した。assistantは撮影用ではなく製品UIの自動補正を追加していた事実を説明し、誤りとして取り下げる。保存済みS5/S8/S9の固定neutral表示を、現方針に対するVisual合格としない。機能/layout等の無変更部分の証拠はscopeを限定して保持する。
+- S9復元ZIP [before-matrix](https://drive.google.com/file/d/1ovtX7I89CnS-yVhZeoigK5plVgqORU5R/view?usp=drivesdk) は291,778B/67entries、SHA256 `14acf5475c3e7ad02c474c0846a86c5bbe068e8428d09292a54e19ce09397936`。今回もmetadataとraw再取得SHA256/全CRC/MANIFEST各hash一致を確認。これは方針訂正前のWIPであり、自動黒白化を再導入してよい証拠ではない。
+- 再開環境が初期ec93へ戻ったため、最新remoteへfast-forwardした。S9の未push layout3製品/2testだけは2805親と最新HEADが同一であることを確認し復元。最新ThemeService/color_contrast/rescue/翻訳/Policyは保持。前回palette訂正途中の未保存変更・analyze結果は残っておらず、PASSを引き継がない。
+- 維持するS9 layout: 狭幅で画面名と操作列を分離、自然幅tab、48px video filter、ranking sort chips折返し、検索modeのbounded label/角丸shape。以前の180画像smoke成功でも、実原本でStadium clipの文字欠けを発見し、actual renderer clip counterで1 FAIL→修正後1 PASS。これらは配色修正後の最新sourceで関連再確認が必要。
+- 次の具体操作: 現在HEADの正式色マッピングを表に記録→通常UIのcontrastingForeground/固定badge/preview/tooltipを正式tokenへ修正→設定色を反映するregressionと既存APCA/rescue回帰→実製品でテーマ変更/保存復元/PC-SP導線・原本目視→証跡をDrive保存/readback→検証済み差分を通常push。復旧専用ボタンの固定色・APCA閾値20/CVD/cacheを一般UIの配色補正へ流用しない。
+- Baseline2/628、A003 in_progress、DISC001–013 todo/cursorDISC001、Delta not_startedを維持。全面監査/最新HEAD Visual closureは未完了。
