@@ -44,11 +44,85 @@ void main() {
     name: '詰みテーマ',
     accentColor: Color(0xFF336699),
     textColor: Color(0xFF336699),
+    buttonTextColor: Color(0xFF336699),
+    menuTextColor: Color(0xFF336699),
+    selectionTextColor: Color(0xFF336699),
     panelBgColor: Color(0xFF336699),
     menuBgColor: Color(0xFF336699),
     selectionColor: Color(0xFF336699),
     updateMarkColor: Color(0xFF336699),
   );
+
+  group('新しいテーマ文字色の独立性', () {
+    test('すべての組み込みプリセットに4種類の文字色が明示されている', () async {
+      SharedPreferences.setMockInitialValues({});
+      final service = ThemeService();
+      await service.init();
+      expect(service.presets.length, 28);
+      for (final preset in service.presets) {
+        final encoded = preset.toJson();
+        for (final field in const [
+          'textColor', 'buttonTextColor',
+          'menuTextColor', 'selectionTextColor',
+        ]) {
+          expect(encoded[field], isA<int>(),
+            reason: '${preset.id} must define $field explicitly');
+        }
+      }
+    });
+
+    test('4種類の文字色はJSON書き出し・読み込みで独立して保持', () {
+      final custom = AppThemePreset.defaultLight.copyWith(
+        textColor: const Color(0xFF111111),
+        buttonTextColor: const Color(0xFFFFFFFF),
+        menuTextColor: const Color(0xFF993366),
+        selectionTextColor: const Color(0xFF00FF00),
+      );
+      final restored = AppThemePreset.fromJson(
+        jsonDecode(jsonEncode(custom.toJson())) as Map<String, dynamic>);
+      expect(restored.textColor, const Color(0xFF111111));
+      expect(restored.buttonTextColor, Colors.white);
+      expect(restored.menuTextColor, const Color(0xFF993366));
+      expect(restored.selectionTextColor, const Color(0xFF00FF00));
+    });
+
+    test('新形式に足りない文字色があるプリセットは不完全として読み込まない', () {
+      final old = Map<String, dynamic>.from(AppThemePreset.defaultLight.toJson());
+      old.remove('buttonTextColor');
+      expect(() => AppThemePreset.fromJson(old), throwsA(isA<TypeError>()));
+    });
+
+    test('本文が黒・塗りつぶしボタンが白・メニューが紫もそのまま適用', () async {
+      SharedPreferences.setMockInitialValues({});
+      final service = ThemeService();
+      await service.init();
+      service.previewCurrent(AppThemePreset.defaultLight.copyWith(
+        textColor: const Color(0xFF111111),
+        buttonTextColor: Colors.white,
+        menuTextColor: const Color(0xFF8844CC),
+        selectionTextColor: const Color(0xFF44EE55),
+      ));
+      final data = service.themeData;
+      expect(data.colorScheme.onSurface, const Color(0xFF111111));
+      expect(data.colorScheme.onPrimary, Colors.white);
+      expect(data.colorScheme.onSecondary, const Color(0xFF44EE55));
+      expect(data.colorScheme.onPrimaryContainer, const Color(0xFF44EE55));
+      expect(data.appBarTheme.foregroundColor, const Color(0xFF8844CC));
+      expect(data.popupMenuTheme.textStyle!.color, const Color(0xFF8844CC));
+      expect(service.current.textColor, const Color(0xFF111111));
+    });
+
+    test('復旧リスクも各新しい文字色と実際の背景を参照する', () {
+      final base = AppThemePreset.defaultLight;
+      expect(isThemeAtLockoutRisk(base), isFalse);
+      expect(isThemeAtLockoutRisk(base.copyWith(
+        buttonTextColor: base.accentColor)), isTrue);
+      expect(isThemeAtLockoutRisk(base.copyWith(
+        menuTextColor: base.menuBgColor)), isTrue);
+      expect(isThemeAtLockoutRisk(base.copyWith(
+        selectionTextColor: base.selectionColor)), isTrue);
+    });
+  });
 
   group('リセットボタン用の操作不能リスク判定', () {
     test('同じ色は1.0、白と黒は21.0', () {
