@@ -246,8 +246,10 @@ bool isColorVisionPairConfusable(Color a, Color b) {
 /// [preset]の重要な操作において、実際に重なる文字・アイコンと背景を判定する。
 ///
 /// - 本文の文字色 × パネル背景色（一覧・設定画面の本文）
-/// - 本文の文字色 × メニュー背景色（メニュー・ダイアログの文字）
-/// - メニュー背景色 × アクセント色（起動画面の導線ボタン等の文字/背景）
+/// - メニュー文字色 × メニュー背景色（メニュー・上部バー）
+/// - 本文文字色 × メニュー背景色（ダイアログ本文）
+/// - ボタン文字色 × アクセント色・選択色（起動画面の導線）
+/// - 選択中文字色 × 選択色（選択背景上のラベル）
 ///
 /// 色面を区別できるかではなく、小さな文字・アイコンを視認できるかの目安。
 /// ユーザーの色選択を拒否したり、自動で別の色に差し替えてはならない。
@@ -258,8 +260,7 @@ List<({Color a, Color b})> readabilityCriticalPairs(AppThemePreset preset) {
   final menu = opaqueOver(preset.menuBgColor, panel);
   final accent = opaqueOver(preset.accentColor, panel);
   final selection = opaqueOver(preset.selectionColor, panel);
-  // Splash uses the menu background as its legacy button foreground.
-  // An explicit button foreground overrides that legacy behavior.
+  // 起動画面の主要ボタンは独立したbuttonTextColorで描画する。
   final splashForeground = preset.buttonTextColor;
   final menuForeground = preset.menuTextColor;
   return [
@@ -273,7 +274,7 @@ List<({Color a, Color b})> readabilityCriticalPairs(AppThemePreset preset) {
     (a: opaqueOver(splashForeground, accent), b: accent),
     // 起動画面「作品広場」の文字・アイコン/選択色
     (a: opaqueOver(splashForeground, selection), b: selection),
-    // 明示的にカスタマイズした「選択中」ラベルが選択色に埋もれる場合
+    // 「選択中」ラベルが選択色に埋もれる場合
     (a: opaqueOver(preset.selectionTextColor, selection), b: selection),
   ];
 }
