@@ -13,7 +13,6 @@ import '../canvas/widgets/color_picker_panel.dart';
 import '../../widgets/help_button.dart';
 import '../../config/font_fallback.dart';
 import '../../utils/reorder_index.dart';
-import '../../utils/color_contrast.dart';
 import '../../widgets/theme_rescue_button.dart';
 
 class ThemeSettingsScreen extends StatelessWidget {
@@ -31,7 +30,7 @@ class ThemeSettingsScreen extends StatelessWidget {
         title: Text(l10n.themeSettingsTitle),
         actions: [
           const HelpButton(topic: 'テーマ設定'),
-          if (isThemeAtLockoutRisk(current))
+          if (themeService.needsThemeRescue)
             ThemeRescueButton(
               iconOnly: MediaQuery.sizeOf(context).width < 520 ||
                   MediaQuery.textScalerOf(context).scale(1) > 1.4,
