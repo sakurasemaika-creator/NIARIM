@@ -264,10 +264,9 @@ class _CommunityScreenState extends State<CommunityScreen>
       scheme.surfaceContainerHighest,
       dialogBackground,
     );
-    final trackOutline = contrastingForeground(
-      dialogBackground,
-      scheme.outline,
-    );
+    // Use the user's theme foreground roles directly. A content-filter
+    // switch must not silently substitute a different color for readability.
+    final trackOutline = scheme.outline;
     final result = await showDialog<_ContentFilterInput>(
       context: context,
       builder: (context) => DisposeOnUnmount(
@@ -288,15 +287,9 @@ class _CommunityScreenState extends State<CommunityScreen>
                       child: SwitchListTile(
                         contentPadding: EdgeInsets.zero,
                         activeTrackColor: activeTrack,
-                        activeThumbColor: contrastingForeground(
-                          activeTrack,
-                          scheme.onPrimary,
-                        ),
+                        activeThumbColor: scheme.onPrimary,
                         inactiveTrackColor: inactiveTrack,
-                        inactiveThumbColor: contrastingForeground(
-                          inactiveTrack,
-                          scheme.onSurfaceVariant,
-                        ),
+                        inactiveThumbColor: scheme.onSurfaceVariant,
                         trackOutlineColor: WidgetStatePropertyAll(trackOutline),
                         value: hideAi,
                         onChanged: (v) => setDialogState(() => hideAi = v),
