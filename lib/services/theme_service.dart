@@ -844,6 +844,17 @@ class ThemeService extends ChangeNotifier {
         shape: const StadiumBorder(),
         side: BorderSide.none,
       ),
+      // All selected check marks share the explicit selection background and
+      // selected foreground from Theme & Appearance. Unselected states keep
+      // Flutter's normal themed fill (no forced contrast correction).
+      checkboxTheme: CheckboxThemeData(
+        fillColor: WidgetStateProperty.resolveWith<Color?>(
+          (states) => states.contains(WidgetState.selected)
+              ? selectionColor
+              : null,
+        ),
+        checkColor: WidgetStatePropertyAll(preset.selectionTextColor),
+      ),
       switchTheme: SwitchThemeData(
         thumbColor: WidgetStateProperty.resolveWith(
           (states) =>
