@@ -10,10 +10,10 @@ import '../../engine/export_engine.dart';
 import '../../l10n/app_localizations.dart';
 import '../../services/project_service.dart';
 import '../../config/font_fallback.dart';
-import '../../models/app_theme_preset.dart';
 import '../../utils/color_contrast.dart';
 import '../../utils/line_break.dart';
 import '../../utils/app_error_reporter.dart';
+import '../../widgets/theme_rescue_button.dart';
 
 /// 起動画面。ロゴを中央に表示し、その上に「作品広場」（コミュニティ
 /// 画面への導線。1行目に大きく「作品広場」、2行目にやや小さく
@@ -258,109 +258,8 @@ class _SplashScreenState extends State<SplashScreen> {
             // .niatra等）を問わず右上に復旧ボタンを表示する。
             // 通常UIとは異なり、テーマに依存しない黒文字＋白縁取りの固定色を使う。
             if (isThemeAtLockoutRisk(context.watch<ThemeService>().current))
-              const Positioned(top: 8, right: 8, child: _ThemeRescueButton()),
+              const Positioned(top: 8, right: 8, child: ThemeRescueButton()),
           ],
-        ),
-      ),
-    );
-  }
-}
-
-/// テーマの配色で起動画面の操作が難しくなりうる場合に表示する復旧ボタン。
-/// ユーザーがどの経路で設定したテーマでも動作するよう、テーマ色を一切参照しない。
-/// 黒文字の白縁取りに加えて外枠を黒/白の二重線にし、明るい背景・暗い背景の
-/// どちらでも位置とラベルを見つけられるようにする。
-class _ThemeRescueButton extends StatelessWidget {
-  const _ThemeRescueButton();
-
-  @override
-  Widget build(BuildContext context) {
-    final l10n = AppLocalizations.of(context)!;
-    return DecoratedBox(
-      decoration: const ShapeDecoration(
-        shape: StadiumBorder(
-          side: BorderSide(color: Color(0xFF000000), width: 1.5),
-        ),
-      ),
-      child: Padding(
-        padding: const EdgeInsets.all(1),
-        child: DecoratedBox(
-          decoration: const ShapeDecoration(
-            shape: StadiumBorder(
-              side: BorderSide(color: Color(0xFFFFFFFF), width: 2),
-            ),
-          ),
-          child: Material(
-            color: Colors.transparent,
-            shape: const StadiumBorder(),
-            child: InkWell(
-              customBorder: const StadiumBorder(),
-              onTap: () {
-                final service = context.read<ThemeService>();
-                service.previewCurrent(AppThemePreset.defaultLight);
-                service.commitCurrent();
-                service.applyPreset(AppThemePreset.defaultLight.id);
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(content: Text(l10n.themeUnreadableResetDone)),
-                );
-              },
-              child: Padding(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 12,
-                  vertical: 8,
-                ),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    const Stack(
-                      alignment: Alignment.center,
-                      children: [
-                        ExcludeSemantics(
-                          child: Icon(
-                            Icons.restart_alt,
-                            size: 23,
-                            color: Color(0xFFFFFFFF),
-                          ),
-                        ),
-                        Icon(
-                          Icons.restart_alt,
-                          size: 18,
-                          color: Color(0xFF000000),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(width: 6),
-                    Stack(
-                      children: [
-                        ExcludeSemantics(
-                          child: Text(
-                            l10n.themeUnreadableResetButton,
-                            style: TextStyle(
-                              foreground: Paint()
-                                ..style = PaintingStyle.stroke
-                                ..strokeWidth = 3.5
-                                ..strokeJoin = StrokeJoin.round
-                                ..color = const Color(0xFFFFFFFF),
-                              fontSize: 13,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                        ),
-                        Text(
-                          l10n.themeUnreadableResetButton,
-                          style: const TextStyle(
-                            color: Color(0xFF000000),
-                            fontSize: 13,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          ),
         ),
       ),
     );
