@@ -288,6 +288,10 @@ void main() {
   });
 
   testWidgets('外観・テーマ：右上に同じ復旧ボタンを置き、確認で標準へ戻す', (tester) async {
+    tester.view.physicalSize = const Size(390, 844);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
     SharedPreferences.setMockInitialValues({});
     mockPathProvider();
     final providers = await tester.runAsync(buildAppProviders);
