@@ -106,7 +106,10 @@ void main() {
       expect(data.colorScheme.onSurface, const Color(0xFF111111));
       expect(data.colorScheme.onPrimary, Colors.white);
       expect(data.colorScheme.onSecondary, const Color(0xFF44EE55));
-      expect(data.colorScheme.onPrimaryContainer, const Color(0xFF44EE55));
+      expect(data.colorScheme.onPrimaryContainer, Colors.white);
+      expect(data.colorScheme.onSecondaryContainer, Colors.white);
+      expect(data.listTileTheme.selectedColor, const Color(0xFF44EE55));
+      expect(data.listTileTheme.selectedTileColor, service.current.selectionColor);
       expect(data.appBarTheme.foregroundColor, const Color(0xFF8844CC));
       expect(data.popupMenuTheme.textStyle!.color, const Color(0xFF8844CC));
       expect(service.current.textColor, const Color(0xFF111111));
