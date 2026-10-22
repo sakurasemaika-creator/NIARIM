@@ -253,12 +253,10 @@ class _SplashScreenState extends State<SplashScreen> {
                   child: content,
                 ),
               ),
-            // テーマの文字色と背景色が潰れていて画面が読めない状態のときだけ、
-            // 固定色（白地・黒文字・黒枠）のリセットボタンを右上に出す。
-            // テーマ・外観設定側でこの組み合わせは弾いているが、引き継ぎ
-            // ファイル（.niatra）の取り込みでは他人の端末で作られたテーマが
-            // そのまま入ってくるため、最後の逃げ道として用意している。
-            // ふだんは出ないので、起動画面の見た目を汚さない。
+            // テーマ色の組み合わせによって、設定や主要導線が操作不能に
+            // なりかねない場合は、発生経路（手動設定・プリセット・import・
+            // .niatra等）を問わず右上に復旧ボタンを表示する。
+            // 通常UIとは異なり、テーマに依存しない黒文字＋白縁取りの固定色を使う。
             if (!isThemeReadable(context.watch<ThemeService>().current))
               const Positioned(top: 8, right: 8, child: _ThemeRescueButton()),
           ],
@@ -268,48 +266,100 @@ class _SplashScreenState extends State<SplashScreen> {
   }
 }
 
-/// テーマが読めない状態になったときだけ起動画面に出る、テーマを既定へ
-/// 戻すボタン。**テーマ色を一切使わない固定色**で描くのが要件
-/// （テーマが壊れているからこそ出るボタンなので、テーマ色を使うと
-/// このボタン自体が読めなくなる）。
+/// テーマの配色で起動画面の操作が難しくなりうる場合に表示する復旧ボタン。
+/// ユーザーがどの経路で設定したテーマでも動作するよう、テーマ色を一切参照しない。
+/// 黒文字の白縁取りに加えて外枠を黒/白の二重線にし、明るい背景・暗い背景の
+/// どちらでも位置とラベルを見つけられるようにする。
 class _ThemeRescueButton extends StatelessWidget {
   const _ThemeRescueButton();
 
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
-    return Material(
-      color: const Color(0xFFFFFFFF),
-      shape: const StadiumBorder(
-        side: BorderSide(color: Color(0xFF000000), width: 1.5),
+    return DecoratedBox(
+      decoration: const ShapeDecoration(
+        shape: StadiumBorder(
+          side: BorderSide(color: Color(0xFF000000), width: 1.5),
+        ),
       ),
-      child: InkWell(
-        customBorder: const StadiumBorder(),
-        onTap: () {
-          final service = context.read<ThemeService>();
-          service.previewCurrent(AppThemePreset.defaultLight);
-          service.commitCurrent();
-          service.applyPreset(AppThemePreset.defaultLight.id);
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text(l10n.themeUnreadableResetDone)),
-          );
-        },
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              const Icon(Icons.restart_alt, size: 18, color: Color(0xFF000000)),
-              const SizedBox(width: 6),
-              Text(
-                l10n.themeUnreadableResetButton,
-                style: const TextStyle(
-                  color: Color(0xFF000000),
-                  fontSize: 13,
-                  fontWeight: FontWeight.bold,
+      child: Padding(
+        padding: const EdgeInsets.all(1),
+        child: DecoratedBox(
+          decoration: const ShapeDecoration(
+            shape: StadiumBorder(
+              side: BorderSide(color: Color(0xFFFFFFFF), width: 2),
+            ),
+          ),
+          child: Material(
+            color: Colors.transparent,
+            shape: const StadiumBorder(),
+            child: InkWell(
+              customBorder: const StadiumBorder(),
+              onTap: () {
+                final service = context.read<ThemeService>();
+                service.previewCurrent(AppThemePreset.defaultLight);
+                service.commitCurrent();
+                service.applyPreset(AppThemePreset.defaultLight.id);
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(content: Text(l10n.themeUnreadableResetDone)),
+                );
+              },
+              child: Padding(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 12,
+                  vertical: 8,
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    const Stack(
+                      alignment: Alignment.center,
+                      children: [
+                        ExcludeSemantics(
+                          child: Icon(
+                            Icons.restart_alt,
+                            size: 23,
+                            color: Color(0xFFFFFFFF),
+                          ),
+                        ),
+                        Icon(
+                          Icons.restart_alt,
+                          size: 18,
+                          color: Color(0xFF000000),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(width: 6),
+                    Stack(
+                      children: [
+                        ExcludeSemantics(
+                          child: Text(
+                            l10n.themeUnreadableResetButton,
+                            style: TextStyle(
+                              foreground: Paint()
+                                ..style = PaintingStyle.stroke
+                                ..strokeWidth = 3.5
+                                ..strokeJoin = StrokeJoin.round
+                                ..color = const Color(0xFFFFFFFF),
+                              fontSize: 13,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ),
+                        Text(
+                          l10n.themeUnreadableResetButton,
+                          style: const TextStyle(
+                            color: Color(0xFF000000),
+                            fontSize: 13,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
                 ),
               ),
-            ],
+            ),
           ),
         ),
       ),
