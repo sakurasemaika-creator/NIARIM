@@ -14,6 +14,8 @@ class ThemePreviewEntry {
 const List<ThemePreviewEntry> themePreviewEntries = [
   ThemePreviewEntry('splash','起動画面','Splash','splash'),
   ThemePreviewEntry('projects','プロジェクト一覧','Projects','projects'),
+  ThemePreviewEntry('shared','共有一覧','Shared projects','shared'),
+  ThemePreviewEntry('trash','ゴミ箱','Trash','trash'),
   ThemePreviewEntry('new','新規プロジェクト','New project','form'),
   ThemePreviewEntry('detail','プロジェクト詳細','Project details','detail'),
   ThemePreviewEntry('canvas','キャンバスモード','Canvas mode','canvas'),
@@ -40,6 +42,7 @@ const List<ThemePreviewEntry> themePreviewEntries = [
   ThemePreviewEntry('transfer','引き継ぎ','Transfer','transfer'),
   ThemePreviewEntry('widgets','ウィジェット','Widgets','widgets'),
   ThemePreviewEntry('widget_art','ウィジェット作品選択','Widget artwork','materials'),
+  ThemePreviewEntry('widget_frame','ウィジェットのフレーム選択','Widget frame picker','widget_frame'),
   ThemePreviewEntry('watermark','ウォーターマーク','Watermark','watermark'),
   ThemePreviewEntry('fonts','フォント管理','Fonts','fonts'),
   ThemePreviewEntry('storage','ストレージ','Storage','storage'),
@@ -165,6 +168,9 @@ class _ThemeSampleScreen extends StatelessWidget {
   Widget _body(ColorScheme c) {
     switch(entry.layout) {
       case 'projects': return _projects(c);
+      case 'shared': return _shared(c);
+      case 'trash': return _trash(c);
+      case 'widget_frame': return _widgetFrame(c);
       case 'community': return _community(c);
       case 'form': return _form(c);
       case 'detail': return _detail(c);
@@ -668,6 +674,55 @@ class _ThemeSampleScreen extends StatelessWidget {
       subtitle: t('公開中', 'Published'))),
     const SizedBox(height: 18),
     _cta(c, t('新しく投稿', 'Post new work'), icon: Icons.add),
+  ]);
+
+  Widget _shared(ColorScheme c) => Column(children: [
+    Padding(padding: const EdgeInsets.all(10), child: Row(children: [
+      const Icon(Icons.sort), const SizedBox(width: 8),
+      Expanded(child: Text(t('更新日時順', 'Last updated'))),
+      Icon(Icons.star_border, color: c.primary),
+    ])),
+    Expanded(child: GridView.count(
+      padding: const EdgeInsets.all(12), crossAxisCount: 2,
+      childAspectRatio: .85, children: [
+        _projectTile(c, t('共有アニメ', 'Shared animation')),
+        _projectTile(c, t('共有フォルダ', 'Shared folder')),
+      ])),
+    Padding(padding: const EdgeInsets.all(12),
+      child: _cta(c, t('共有フォルダを作る', 'Create shared folder'),
+        icon: Icons.create_new_folder_outlined)),
+  ]);
+
+  Widget _trash(ColorScheme c) => _list([
+    _heading(t('削除した作品', 'Deleted projects')),
+    _card(_row(Icons.delete_outline, t('削除された作品', 'Deleted artwork'),
+      subtitle: t('復元できます', 'Can be restored'))),
+    _card(_row(Icons.restore_from_trash, t('復元', 'Restore'))),
+  ]);
+
+  Widget _widgetFrame(ColorScheme c) => Column(children: [
+    const SizedBox(height: 14),
+    Text(t('表示するフレームを選んでください', 'Choose frame to display'),
+      style: TextStyle(color: c.onSurfaceVariant, fontSize: 12)),
+    Expanded(child: Center(child: AspectRatio(
+      aspectRatio: 16 / 9, child: _art(c, height: 180)))),
+    const Text('1 / 24', style: TextStyle(fontWeight: FontWeight.bold)),
+    Padding(padding: const EdgeInsets.symmetric(horizontal: 12),
+      child: Slider(value: .14, onChanged: null)),
+    const Padding(padding: EdgeInsets.symmetric(horizontal: 24),
+      child: Row(mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [Icon(Icons.skip_previous), Icon(Icons.play_arrow),
+          Icon(Icons.skip_next)])),
+    SizedBox(height: 76, child: ListView(
+      scrollDirection: Axis.horizontal,
+      children: List.generate(7, (i) => Container(
+        width: 60, margin: const EdgeInsets.all(5),
+        alignment: Alignment.center,
+        color: i == 0 ? c.primaryContainer : c.surfaceContainer,
+        child: Text((i + 1).toString()),
+      )))),
+    Padding(padding: const EdgeInsets.all(12),
+      child: _cta(c, t('このフレームを選択', 'Select this frame'))),
   ]);
 
   // SCREEN_LAYOUTS
