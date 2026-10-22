@@ -326,6 +326,7 @@ class ThemeSettingsScreen extends StatelessWidget {
                                   padding: const EdgeInsets.only(right: 4),
                                   child: Icon(
                                     Icons.check,
+                                    key: const Key('themePresetEditingCheck'),
                                     color: Theme.of(
                                       context,
                                     ).colorScheme.primary,
