@@ -9,6 +9,10 @@ class AppThemePreset {
   final String name;
   final Color accentColor;
   final Color textColor;
+  /// Independent foreground tokens. Null means legacy (pre-migration) behavior.
+  final Color? buttonTextColor;
+  final Color? menuTextColor;
+  final Color? selectionTextColor;
   final Color panelBgColor;
   final Color menuBgColor;
   final Color selectionColor;
@@ -20,6 +24,9 @@ class AppThemePreset {
     required this.name,
     required this.accentColor,
     required this.textColor,
+    this.buttonTextColor,
+    this.menuTextColor,
+    this.selectionTextColor,
     required this.panelBgColor,
     required this.menuBgColor,
     required this.selectionColor,
@@ -32,6 +39,9 @@ class AppThemePreset {
     String? name,
     Color? accentColor,
     Color? textColor,
+    Color? buttonTextColor,
+    Color? menuTextColor,
+    Color? selectionTextColor,
     Color? panelBgColor,
     Color? menuBgColor,
     Color? selectionColor,
@@ -43,6 +53,9 @@ class AppThemePreset {
       name: name ?? this.name,
       accentColor: accentColor ?? this.accentColor,
       textColor: textColor ?? this.textColor,
+      buttonTextColor: buttonTextColor ?? this.buttonTextColor,
+      menuTextColor: menuTextColor ?? this.menuTextColor,
+      selectionTextColor: selectionTextColor ?? this.selectionTextColor,
       panelBgColor: panelBgColor ?? this.panelBgColor,
       menuBgColor: menuBgColor ?? this.menuBgColor,
       selectionColor: selectionColor ?? this.selectionColor,
@@ -84,6 +97,9 @@ class AppThemePreset {
     'name': name,
     'accentColor': accentColor.toARGB32(),
     'textColor': textColor.toARGB32(),
+    if (buttonTextColor != null) 'buttonTextColor': buttonTextColor!.toARGB32(),
+    if (menuTextColor != null) 'menuTextColor': menuTextColor!.toARGB32(),
+    if (selectionTextColor != null) 'selectionTextColor': selectionTextColor!.toARGB32(),
     'panelBgColor': panelBgColor.toARGB32(),
     'menuBgColor': menuBgColor.toARGB32(),
     'selectionColor': selectionColor.toARGB32(),
@@ -99,6 +115,12 @@ class AppThemePreset {
     // あるため、存在しても単に無視する（読み込みエラーにしない）。
     accentColor: Color(json['accentColor'] as int),
     textColor: Color(json['textColor'] as int),
+    buttonTextColor: json['buttonTextColor'] is int
+        ? Color(json['buttonTextColor'] as int) : null,
+    menuTextColor: json['menuTextColor'] is int
+        ? Color(json['menuTextColor'] as int) : null,
+    selectionTextColor: json['selectionTextColor'] is int
+        ? Color(json['selectionTextColor'] as int) : null,
     panelBgColor: Color(json['panelBgColor'] as int),
     menuBgColor: Color(json['menuBgColor'] as int),
     selectionColor: Color(json['selectionColor'] as int),
