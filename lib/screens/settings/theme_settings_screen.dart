@@ -163,7 +163,7 @@ class ThemeSettingsScreen extends StatelessWidget {
             ),
             // 文字の役割別指定。各前景色を分けることで、本文を暗色、
             // 塗りつぶしボタンの文字だけ白にする設定が可能。
-            // 未設定の旧テーマはこれまでの計算値を色チップに表示する。
+            // すべてのプリセットで4つの文字色を必ず明示的に保持する。
             _ColorCustomizeTile(
               key: const Key('themeButtonTextColorTile'),
               label: l10n.themeColorButtonText,
