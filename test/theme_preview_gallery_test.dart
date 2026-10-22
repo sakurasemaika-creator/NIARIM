@@ -3,6 +3,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:niarim/services/theme_service.dart';
+import 'package:niarim/l10n/app_localizations.dart';
 import 'package:niarim/screens/settings/theme_preview_gallery_screen.dart';
 
 void main() {
@@ -28,6 +29,7 @@ void main() {
       child: MaterialApp(
         locale: const Locale('ja'),
         supportedLocales: const [Locale('ja'), Locale('en')],
+        localizationsDelegates: AppLocalizations.localizationsDelegates,
         theme: themeService.themeData,
         home: const ThemePreviewGalleryScreen(),
       ),
@@ -61,6 +63,7 @@ void main() {
       child: MaterialApp(
         locale: const Locale('ja'),
         supportedLocales: const [Locale('ja'), Locale('en')],
+        localizationsDelegates: AppLocalizations.localizationsDelegates,
         theme: themeService.themeData,
         home: const ThemePreviewGalleryScreen(),
       ),
