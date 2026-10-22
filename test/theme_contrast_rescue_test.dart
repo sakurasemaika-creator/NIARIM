@@ -62,6 +62,58 @@ void main() {
       );
     });
 
+    test('実際の文字・背景：画像1は危険、画像2は復旧不要', () {
+      const red = Color(0xFFFF0000);
+      const darkRed = Color(0xFFB24545);
+      const pink = Color(0xFFFFAFAF);
+      expect(apcaContrast(red, darkRed), closeTo(-11.6, 0.5));
+      expect(apcaContrast(pink, Colors.white), closeTo(31.8, 0.5));
+      expect(isEssentialTextNearlyInvisible(red, darkRed), isTrue);
+      expect(isEssentialTextNearlyInvisible(pink, Colors.white), isFalse);
+      expect(isEssentialTextNearlyInvisible(Colors.black, Colors.white), isFalse);
+      expect(isEssentialTextNearlyInvisible(Colors.white, Colors.white), isTrue);
+    });
+
+    test('スマホの小さな文字：水色文字とピンク背景は色面が違っても復旧対象', () {
+      const blue = Color(0xFFA3D9F4);
+      const pink = Color(0xFFFFBDCE);
+      expect(apcaContrast(blue, pink).abs(), lessThan(20));
+      expect(isEssentialTextNearlyInvisible(blue, pink), isTrue);
+    });
+
+    test('正常色覚は読めても1型色覚で文字の判読が困難になる場合を検出', () {
+      const foreground = Color(0xFF200020);
+      const background = Color(0xFFC02040);
+      expect(apcaContrast(foreground, background).abs(), greaterThan(20));
+      expect(
+        apcaContrast(
+          simulateColorVision(foreground, ColorVisionType.protanopia),
+          simulateColorVision(background, ColorVisionType.protanopia),
+        ).abs(),
+        lessThan(kThemeRescueUnusableTextLc),
+      );
+      expect(isEssentialTextNearlyInvisible(foreground, background), isTrue);
+    });
+
+    test('透過色は実際の下地と合成して文字として判定する', () {
+      const panel = Color(0xFFF9F9F9);
+      final color = opaqueOver(const Color(0x00FF0000), panel);
+      expect(isEssentialTextNearlyInvisible(color, panel), isTrue);
+    });
+
+    test('テーマの変更時だけリセット判定キャッシュを更新する', () async {
+      SharedPreferences.setMockInitialValues({});
+      final service = ThemeService();
+      await service.init();
+      expect(service.needsThemeRescue, isFalse);
+      expect(service.needsThemeRescue, isFalse);
+      service.previewCurrent(unreadable);
+      expect(service.needsThemeRescue, isTrue);
+      expect(service.needsThemeRescue, isTrue);
+      await service.resetToDefault();
+      expect(service.needsThemeRescue, isFalse);
+    });
+
     test('組み込みプリセットでは復旧ボタンのリスク判定に該当しない', () async {
       SharedPreferences.setMockInitialValues({});
       final service = ThemeService();
@@ -73,7 +125,7 @@ void main() {
           isFalse,
           reason:
               '組み込みテーマ「${preset.name}」にリセットボタンが誤表示される。'
-              'リスク目安$kMinReadableContrastの確認が必要',
+              'APCA復旧判定に誤検知がないか確認すること',
         );
       }
     });
@@ -115,13 +167,13 @@ void main() {
       expect(isThemeAtLockoutRisk(light), isTrue);
     });
 
-    test('パステル調の色相差がある配色・白黒モノクロは判定で排除しない', () {
+    test('パステル配色・白黒モノクロは、重要な文字が読める限り排除しない', () {
       final pastel = AppThemePreset.defaultLight.copyWith(
-        textColor: const Color(0xFFA3D9F4),
+        textColor: const Color(0xFF2B2730),
         panelBgColor: const Color(0xFFFFBDCE),
+        accentColor: const Color(0xFFFF7EB3),
+        selectionColor: const Color(0xFFFF7EB3),
       );
-      expect(contrastRatio(pastel.textColor, pastel.panelBgColor),
-          lessThan(1.2));
       expect(isThemeAtLockoutRisk(pastel), isFalse);
       final monochrome = AppThemePreset.defaultLight.copyWith(
         textColor: const Color(0xFF000000),
@@ -145,7 +197,6 @@ void main() {
     test('通常の色覚では区別できても2型色覚でほぼ区別できない配色', () {
       const red = Color(0xFFDC0F0F);
       const green = Color(0xFF0FA00F);
-      expect(contrastRatio(red, green), greaterThan(kMinReadableContrast));
       expect(okLabDistance(red, green), greaterThan(0.3));
       expect(
         okLabDistance(
