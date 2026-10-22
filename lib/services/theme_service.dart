@@ -609,8 +609,11 @@ class ThemeService extends ChangeNotifier {
       onPrimary: preset.buttonTextColor,
       secondary: selectionColor,
       onSecondary: preset.selectionTextColor,
-      onPrimaryContainer: preset.selectionTextColor,
-      onSecondaryContainer: preset.selectionTextColor,
+      // Container shades continue to derive from the accent/selection
+      // palettes; don't replace splash gradients with the selected color.
+      // A label on a gradient button uses the *button* foreground.
+      onPrimaryContainer: preset.buttonTextColor,
+      onSecondaryContainer: preset.buttonTextColor,
       onSurface: preset.textColor,
       onSurfaceVariant: preset.textColor.withValues(alpha: 0.7),
     );
@@ -697,6 +700,7 @@ class ThemeService extends ChangeNotifier {
       popupMenuTheme: PopupMenuThemeData(
         color: popupColor,
         textStyle: textTheme.bodyMedium?.copyWith(color: menuForeground),
+        iconColor: menuForeground,
       ),
       // カードはカラーピッカー等のダイアログの本体にも使う（Dialog側は透明に
       // してカードの角丸を見せている）ので、下地はポップアップと同じ不透明色。
@@ -763,6 +767,8 @@ class ThemeService extends ChangeNotifier {
       listTileTheme: ListTileThemeData(
         minVerticalPadding: 12,
         iconColor: scheme.primary,
+        selectedColor: preset.selectionTextColor,
+        selectedTileColor: selectionColor,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(radius),
         ),
@@ -829,6 +835,10 @@ class ThemeService extends ChangeNotifier {
       ),
       chipTheme: ChipThemeData(
         backgroundColor: preset.menuBgColor,
+        selectedColor: selectionColor,
+        secondaryLabelStyle: textTheme.labelLarge?.copyWith(
+          color: preset.selectionTextColor,
+        ),
         // 完全な丸み（ピル型）：日本のアプリでよく使われる柔らかいタグ・
         // フィルターチップの形状。
         shape: const StadiumBorder(),
