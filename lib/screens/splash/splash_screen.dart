@@ -274,9 +274,8 @@ class _SplashScreenState extends State<SplashScreen> {
 /// 「投稿作品をみる」）。省略時は[label]のみの構成。どちらも長い言語では
 /// 折り返し、タイルは[height]まで縦に伸びる（文言を省略記号で切らない）。
 ///
-/// アイコン・文字の色はテーマの「メニュー背景色」
-/// （[AppThemePreset.menuBgColor]）。既定テーマでは白で、アクセント色の
-/// グラデーション上でいちばん読みやすい。`ColorScheme.onSurface`は
+/// アイコン・文字の色はテーマの「ボタン内の文字・アイコン色」
+/// （[AppThemePreset.buttonTextColor]）。既定テーマでは白。`ColorScheme.onSurface`は
 /// `ColorScheme.fromSeed`の自動算出値でユーザーが選んだ配色との対応が
 /// 分かりにくいため使わない。この色は
 /// `shortcut_widget_renderer.dart`が焼くホーム画面ウィジェットの意匠とも
@@ -389,8 +388,7 @@ class _SplashActionButtonState extends State<_SplashActionButton> {
   @override
   Widget build(BuildContext context) {
     final theme = context.watch<ThemeService>().current;
-    // Preserve the historical splash foreground until the user explicitly
-    // chooses an independent button label color.
+    // ユーザー指定のボタン文字色。明暗差による自動変更は行わない。
     final foreground = theme.buttonTextColor;
     const radius = BorderRadius.all(
       Radius.circular(_SplashActionButton._radius),
