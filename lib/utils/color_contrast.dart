@@ -17,11 +17,12 @@ import '../models/app_theme_preset.dart';
 ///
 /// ## 判定方針
 ///
-/// 同じ明度でも水色とピンク等がはっきり区別できる場合があるため、
-/// コントラスト比だけが低くても復旧ボタンを表示しない。
-/// 文字・操作要素と実際の背景が「ほとんど同色」であることを、
-/// 相対輝度比と知覚的色差の**両方**が小さいかで判断する。
-/// 各値は復旧導線の経験的な目安で、WCAGの合格/不合格ではない。
+/// 正常色覚（変換なし）、1型、2型、3型の色覚模擬後、それぞれで
+/// OKLab色差を計算する。どれか1つでも実際に重なる重要な色の
+/// 組み合わせがほぼ同色になれば復旧ボタンを表示する。
+/// 明暗コントラスト比のみを理由に表示しないため、パステルカラーや
+/// 色相差のある配色の自由度を保つ。閾値は人間の見え方を保証する
+/// 医学的基準ではなく、復旧UIの表示にだけ使う経験的な目安。
 const double kMinReadableContrast = 1.2;
 
 /// sRGBの相対輝度（WCAG 2.1の定義）。
@@ -164,18 +165,30 @@ double okLabDistance(Color a, Color b) {
   );
 }
 
-/// 復旧ボタン表示に限って使用する経験的な目安。WCAGの保存可否基準ではない。
+/// OKLab(0〜1近辺)でほぼ同じ色とみなす、復旧ボタン表示専用の厳しい
+/// 経験的閾値。厳密な識別限界は文字サイズ・周辺色・観察条件等で異なる。
 const double kMaxConfusableOkLabDistance = 0.045;
-const double kMaxConfusableContrast = 1.2;
 
-/// 1/2/3型の二色覚と異常三色覚の例を調べ、模擬後にほぼ同じ色に
-/// 見える可能性のある重要ペアを検出する。テーマの保存は絶対に拒否しない。
+/// 色覚種別ごとの知覚色差。nullは正常色覚（色覚変換なし）。
+/// 正常色覚、1型、2型（加えて3型）の結果を個別に計算して判定する。
+double perceivedColorDistance(
+  Color first,
+  Color second, {
+  ColorVisionType? visionType,
+}) {
+  if (visionType == null) return okLabDistance(first, second);
+  return okLabDistance(
+    simulateColorVision(first, visionType),
+    simulateColorVision(second, visionType),
+  );
+}
+
+/// 通常と色覚特性の例のうち、いずれかでほぼ区別できない色ペアか。
+/// 結果は表示判定のみに使い、ユーザーの配色を変更しない。
 bool isColorVisionPairConfusable(Color a, Color b) {
   for (final type in ColorVisionType.values) {
-    final first = simulateColorVision(a, type);
-    final second = simulateColorVision(b, type);
-    if (okLabDistance(first, second) < kMaxConfusableOkLabDistance &&
-        contrastRatio(first, second) < kMaxConfusableContrast) {
+    if (perceivedColorDistance(a, b, visionType: type) <
+        kMaxConfusableOkLabDistance) {
       return true;
     }
   }
@@ -214,8 +227,8 @@ List<({Color a, Color b})> readabilityCriticalPairs(AppThemePreset preset) {
 bool isThemeAtLockoutRisk(AppThemePreset preset) =>
     readabilityCriticalPairs(preset).any(
       (p) =>
-          (contrastRatio(p.a, p.b) < kMinReadableContrast &&
-              okLabDistance(p.a, p.b) < kMaxConfusableOkLabDistance) ||
+          perceivedColorDistance(p.a, p.b) <
+              kMaxConfusableOkLabDistance ||
           isColorVisionPairConfusable(p.a, p.b),
     );
 
