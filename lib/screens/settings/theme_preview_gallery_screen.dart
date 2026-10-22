@@ -311,7 +311,7 @@ class _ThemeSampleScreen extends StatelessWidget {
       case 'mine': return _myWorks(c);
       case 'export': return _export(c);
       case 'post': return _post(c);
-      case 'theme': return _theme(c);
+      case 'theme': return _theme(context, c);
       case 'settings': return _settings(c);
       case 'workspace': return _workspace(c);
       case 'premium': return _premium(c);
@@ -331,7 +331,8 @@ class _ThemeSampleScreen extends StatelessWidget {
   Widget _splash(BuildContext context, ColorScheme c) {
     // Mirror splash_screen.dart: the icon/label foreground is exactly the
     // user-selected menu background, NOT auto-generated onPrimary/onSecondary.
-    final foreground = context.read<ThemeService>().current.menuBgColor;
+    final preset = context.read<ThemeService>().current;
+    final foreground = preset.buttonTextColor ?? preset.menuBgColor;
     Widget action(IconData icon, String title, String? subtitle,
         Color first, Color second) => Container(
       width: 150, height: 166,
@@ -610,11 +611,16 @@ class _ThemeSampleScreen extends StatelessWidget {
     _cta(c, t('投稿する', 'Post'), icon: Icons.cloud_upload),
   ]);
 
-  Widget _theme(ColorScheme c) => _list([
+  Widget _theme(BuildContext context, ColorScheme c) => _list([
     _heading(t('カラーカスタマイズ', 'Color customization')),
     ...[
       (t('アクセント', 'Accent'), c.primary),
-      (t('文字色', 'Text'), c.onSurface),
+      (t('本文文字色', 'Body text'), c.onSurface),
+      (t('ボタン内の文字色', 'Button text'), c.onPrimary),
+      (t('メニューの文字色', 'Menu text'),
+        context.read<ThemeService>().current.menuTextColor ??
+            context.read<ThemeService>().current.textColor),
+      (t('選択中の文字色', 'Selected text'), c.onSecondary),
       (t('パネル背景', 'Panel background'), c.surface),
       (t('メニュー背景', 'Menu background'), c.surfaceContainer),
       (t('選択色', 'Selection'), c.primaryContainer),
