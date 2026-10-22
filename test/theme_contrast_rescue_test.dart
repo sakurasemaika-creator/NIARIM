@@ -74,23 +74,100 @@ void main() {
       expect(isEssentialTextNearlyInvisible(Colors.white, Colors.white), isTrue);
     });
 
-    test('スマホの小さな文字：水色文字とピンク背景は色面が違っても復旧対象', () {
+    test('スマホの小さな文字：水色とピンクも実文字のLcで判定', () {
       const blue = Color(0xFFA3D9F4);
       const pink = Color(0xFFFFBDCE);
-      expect(apcaContrast(blue, pink).abs(), lessThan(20));
+      expect(apcaContrast(blue, pink).abs(), lessThan(10));
       expect(isEssentialTextNearlyInvisible(blue, pink), isTrue);
     });
 
-    test('正常色覚は読めても1型色覚で文字の判読が困難になる場合を検出', () {
+    test('軽度の読みにくさでは常駐リセットボタンを表示しない', () {
       const foreground = Color(0xFF200020);
       const background = Color(0xFFC02040);
       expect(apcaContrast(foreground, background).abs(), greaterThan(20));
+      // 1型の模擬後も Lc約14.9。旧閾値20では表示されていた。
+      final simulatedLc = apcaContrast(
+        simulateColorVision(foreground, ColorVisionType.protanopia),
+        simulateColorVision(background, ColorVisionType.protanopia),
+      ).abs();
+      expect(simulatedLc, greaterThanOrEqualTo(kThemeRescueUnusableTextLc));
+      expect(isEssentialTextNearlyInvisible(foreground, background), isFalse);
+    });
+
+    test('復旧の境界値：プラス・マイナスとも |Lc| 10未満のみ表示', () {
+      const background = Color(0xFF777777);
+      const plusBelow = Color(0xFF5C5C5C); // Lc 約+9.97
+      const plusAbove = Color(0xFF5B5B5B); // Lc 約+10.39
+      const minusBelow = Color(0xFF8D8D8D); // Lc 約-9.79
+      const minusAbove = Color(0xFF8E8E8E); // Lc 約-10.29
+      expect(kThemeRescueUnusableTextLc, 10.0);
+      expect(apcaContrast(plusBelow, background), closeTo(9.97, 0.1));
+      expect(apcaContrast(plusAbove, background), closeTo(10.39, 0.1));
+      expect(apcaContrast(minusBelow, background), closeTo(-9.79, 0.1));
+      expect(apcaContrast(minusAbove, background), closeTo(-10.29, 0.1));
+      expect(isEssentialTextNearlyInvisible(plusBelow, background), isTrue);
+      expect(isEssentialTextNearlyInvisible(plusAbove, background), isFalse);
+      expect(isEssentialTextNearlyInvisible(minusBelow, background), isTrue);
+      expect(isEssentialTextNearlyInvisible(minusAbove, background), isFalse);
+    });
+
+    test('正常ではLc約-11.6でも、1型では0に埋もれる赤系は復旧対象', () {
+      const foreground = Color(0xFFFF0000);
+      const background = Color(0xFFB24545);
+      expect(apcaContrast(foreground, background).abs(), greaterThan(10));
+      expect(
+        apcaContrast(
+          simulateColorVision(foreground, ColorVisionType.protanopia),
+          simulateColorVision(background, ColorVisionType.protanopia),
+        ),
+        0,
+      );
+      expect(isEssentialTextNearlyInvisible(foreground, background), isTrue);
+    });
+
+    test('正常・1型ではLc 10以上でも2型で埋もれたら復旧対象', () {
+      const foreground = Color(0xFFA00F0F);
+      const background = Color(0xFF0F820F);
+      expect(apcaContrast(foreground, background).abs(), greaterThan(10));
       expect(
         apcaContrast(
           simulateColorVision(foreground, ColorVisionType.protanopia),
           simulateColorVision(background, ColorVisionType.protanopia),
         ).abs(),
-        lessThan(kThemeRescueUnusableTextLc),
+        greaterThan(10),
+      );
+      expect(
+        apcaContrast(
+          simulateColorVision(foreground, ColorVisionType.deuteranopia),
+          simulateColorVision(background, ColorVisionType.deuteranopia),
+        ).abs(),
+        lessThan(10),
+      );
+      expect(isEssentialTextNearlyInvisible(foreground, background), isTrue);
+    });
+
+    test('正常・1型・2型が読めても3型で埋もれたら復旧対象', () {
+      const foreground = Color(0xFFFE8923);
+      const background = Color(0xFFF251AF);
+      for (final vision in const [
+        ColorVisionType.protanopia,
+        ColorVisionType.deuteranopia,
+      ]) {
+        expect(
+          apcaContrast(
+            simulateColorVision(foreground, vision),
+            simulateColorVision(background, vision),
+          ).abs(),
+          greaterThan(10),
+        );
+      }
+      expect(apcaContrast(foreground, background).abs(), greaterThan(10));
+      expect(
+        apcaContrast(
+          simulateColorVision(foreground, ColorVisionType.tritanopia),
+          simulateColorVision(background, ColorVisionType.tritanopia),
+        ).abs(),
+        lessThan(10),
       );
       expect(isEssentialTextNearlyInvisible(foreground, background), isTrue);
     });
