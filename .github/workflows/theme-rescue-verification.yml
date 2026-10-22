@@ -12,6 +12,8 @@ on:
       - 'lib/screens/settings/theme_settings_screen.dart'
       - 'lib/screens/settings/theme_preview_gallery_screen.dart'
       - 'lib/services/theme_service.dart'
+      - 'lib/models/app_theme_preset.dart'
+      - 'lib/services/home_widget_refresh.dart'
       - 'lib/l10n/**'
       - 'test/theme_contrast_rescue_test.dart'
       - 'test/theme_preview_gallery_test.dart'
@@ -39,8 +41,8 @@ jobs:
           flutter test test/theme_preview_gallery_test.dart --reporter expanded
           flutter test test/theme_accent_contrast_test.dart --reporter expanded
           flutter test test/theme_preset_adopt_test.dart --reporter expanded
-      - name: Theme static analysis
-        run: flutter analyze lib/utils/color_contrast.dart lib/widgets/theme_rescue_button.dart lib/screens/splash/splash_screen.dart lib/screens/settings/theme_settings_screen.dart lib/screens/settings/theme_preview_gallery_screen.dart lib/services/theme_service.dart test/theme_contrast_rescue_test.dart --no-fatal-infos --no-fatal-warnings
+      - name: Theme and app static analysis
+        run: flutter analyze lib test --no-fatal-infos --no-fatal-warnings
       - name: Upload inline preview Flutter screenshot
         if: always()
         uses: actions/upload-artifact@v4
