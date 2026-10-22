@@ -2618,7 +2618,16 @@ class AppLocalizationsEn extends AppLocalizations {
   String get themeColorAccent => 'Accent Color';
 
   @override
-  String get themeColorText => 'Text Color';
+  String get themeColorText => 'Body & regular text color';
+
+  @override
+  String get themeColorButtonText => 'Button text & icon color';
+
+  @override
+  String get themeColorMenuText => 'Menu & app bar text color';
+
+  @override
+  String get themeColorSelectionText => 'Selected text & icon color';
 
   @override
   String get themeColorPanelBg => 'Panel Background Color';
