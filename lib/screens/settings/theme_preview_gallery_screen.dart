@@ -78,7 +78,7 @@ class _ThemePreviewGalleryScreenState extends State<ThemePreviewGalleryScreen> {
           icon: const Icon(Icons.close),
           tooltip: ja ? 'プレビューを閉じる' : 'Close preview'),
         title: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-          Text(themePreviewEntries[_index].label(ja), maxLines: 1,
+          Text(themePreviewEntries[_index].label(ja), key: const Key('themePreviewTitle'), maxLines: 1,
             overflow: TextOverflow.ellipsis, style: const TextStyle(fontSize: 16)),
           Text(ja ? 'テーマ配色の見本・サンプルデータ' : 'Theme colors · sample data',
             maxLines: 1, overflow: TextOverflow.ellipsis,
