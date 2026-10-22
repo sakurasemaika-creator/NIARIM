@@ -110,6 +110,24 @@ void main() {
       expect(data.colorScheme.onSecondaryContainer, Colors.white);
       expect(data.listTileTheme.selectedColor, const Color(0xFF44EE55));
       expect(data.listTileTheme.selectedTileColor, service.current.selectionColor);
+      final selected = <WidgetState>{WidgetState.selected};
+      final unselected = <WidgetState>{};
+      expect(
+        data.segmentedButtonTheme.style!.foregroundColor!.resolve(selected),
+        const Color(0xFF44EE55),
+      );
+      expect(
+        data.segmentedButtonTheme.style!.foregroundColor!.resolve(unselected),
+        const Color(0xFF111111),
+      );
+      expect(
+        data.segmentedButtonTheme.style!.backgroundColor!.resolve(selected),
+        service.current.selectionColor,
+      );
+      expect(
+        data.navigationBarTheme.iconTheme!.resolve(selected)!.color,
+        const Color(0xFF44EE55),
+      );
       expect(data.appBarTheme.foregroundColor, const Color(0xFF8844CC));
       expect(data.popupMenuTheme.textStyle!.color, const Color(0xFF8844CC));
       expect(service.current.textColor, const Color(0xFF111111));
