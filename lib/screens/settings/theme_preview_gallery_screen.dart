@@ -179,6 +179,70 @@ class _ThemePreviewGalleryScreenState extends State<ThemePreviewGalleryScreen> {
   }
 }
 
+/// A miniature *live* Flutter render of one existing gallery screen.
+/// It is not a screenshot or a second copy of the screen layout:
+/// both the inline sample and full-screen gallery use [_ThemeSampleScreen].
+///
+/// Render the real logical device viewport first, then uniformly scale the
+/// result into this small frame. Ignore touches so the only operation on the
+/// appearance page is opening the gallery. No project data is loaded.
+class ThemePreviewThumbnail extends StatelessWidget {
+  final double height;
+  const ThemePreviewThumbnail({super.key, this.height = 184});
+
+  @override
+  Widget build(BuildContext context) {
+    final viewport = MediaQuery.sizeOf(context);
+    final width = viewport.width <= 0 ? 360.0 : viewport.width;
+    final fullHeight = viewport.height <= 0 ? 760.0 : viewport.height;
+    final japanese = Localizations.localeOf(context).languageCode == 'ja';
+    final scheme = Theme.of(context).colorScheme;
+    final miniatureWidth = height * width / fullHeight;
+    return RepaintBoundary(
+      child: Semantics(
+        label: japanese
+            ? '現在のテーマで描画したプロジェクト一覧の縮小見本'
+            : 'Miniature project list rendered with current theme',
+        image: true,
+        child: IgnorePointer(
+          child: ExcludeSemantics(
+            child: Container(
+              width: miniatureWidth,
+              height: height,
+              clipBehavior: Clip.antiAlias,
+              decoration: BoxDecoration(
+                color: scheme.surface,
+                border: Border.all(color: scheme.outlineVariant),
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: FittedBox(
+                fit: BoxFit.contain,
+                alignment: Alignment.topCenter,
+                child: SizedBox(
+                  width: width,
+                  height: fullHeight,
+                  child: MediaQuery(
+                    data: MediaQuery.of(context).copyWith(
+                      size: Size(width, fullHeight),
+                      padding: EdgeInsets.zero,
+                      viewPadding: EdgeInsets.zero,
+                      viewInsets: EdgeInsets.zero,
+                    ),
+                    child: _ThemeSampleScreen(
+                      entry: themePreviewEntries[1], // Projects screen.
+                      ja: japanese,
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
 /// The previews use real Flutter Material widgets and current theme tokens.
 /// The screen data and icons are static examples and do not respond to taps.
 class _ThemeSampleScreen extends StatelessWidget {
