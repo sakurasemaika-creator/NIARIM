@@ -49,7 +49,7 @@ void main() {
     updateMarkColor: Color(0xFF336699),
   );
 
-  group('コントラスト判定', () {
+  group('リセットボタン用の操作不能リスク判定', () {
     test('同じ色は1.0、白と黒は21.0', () {
       expect(
         contrastRatio(const Color(0xFF336699), const Color(0xFF336699)),
@@ -68,22 +68,22 @@ void main() {
       expect(service.presets, isNotEmpty);
       for (final preset in service.presets) {
         expect(
-          isThemeReadable(preset),
-          isTrue,
+          isThemeAtLockoutRisk(preset),
+          isFalse,
           reason:
-              '組み込みテーマ「${preset.name}」が弾かれている。'
-              'しきい値$kMinReadableContrastが厳しすぎる',
+              '組み込みテーマ「${preset.name}」にリセットボタンが誤表示される。'
+              'リスク目安$kMinReadableContrastの確認が必要',
         );
       }
     });
 
     test('同じ色・ほとんど同じ色のテーマは弾かれる', () {
-      expect(isThemeReadable(unreadable), isFalse);
+      expect(isThemeAtLockoutRisk(unreadable), isTrue);
       expect(
-        isThemeReadable(
+        isThemeAtLockoutRisk(
           unreadable.copyWith(textColor: const Color(0xFF3A6FA0)),
         ),
-        isFalse,
+        isTrue,
         reason: '見分けがつかないほど近い色も弾く',
       );
     });
@@ -126,7 +126,7 @@ void main() {
 
     expect(find.text(l10n.themeContrastErrorTitle), findsNothing);
     expect(service.current.textColor, before.panelBgColor);
-    expect(isThemeReadable(service.current), isFalse);
+    expect(isThemeAtLockoutRisk(service.current), isTrue);
 
     final prefs = await SharedPreferences.getInstance();
     final persistedJson = prefs.getString('theme_current_json');
@@ -176,7 +176,7 @@ void main() {
     await tester.tap(resetButton.last);
     await tester.pumpAndSettle();
 
-    expect(isThemeReadable(service.current), isTrue);
+    expect(isThemeAtLockoutRisk(service.current), isFalse);
     expect(service.current.id, AppThemePreset.defaultLight.id);
     // 戻ったのでボタン自体も消える。
     expect(find.text(l10n.themeUnreadableResetButton), findsNothing);
