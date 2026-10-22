@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
+import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:niarim/engine/niatra_serializer.dart';
@@ -63,6 +64,65 @@ void main() {
 
   setUp(() {
     SharedPreferences.setMockInitialValues({});
+  });
+
+  test('UIテーマの本文・ボタン・メニュー・選択文字色を.niatraで引き継ぐ', () async {
+    final source = await _buildServices();
+    const body = Color(0xFF121212);
+    const button = Color(0xFFFEFFFF);
+    const menu = Color(0xFF123477);
+    const selected = Color(0xFFEEFF11);
+
+    source.theme.previewCurrent(source.theme.current.copyWith(
+      textColor: body,
+      buttonTextColor: button,
+      menuTextColor: menu,
+      selectionTextColor: selected,
+    ));
+    final bytes = await NiatraSerializer.export(
+      selectedItems: const {'UIテーマ': true},
+      settings: source.settings,
+      brush: source.brush,
+      tone: source.tone,
+      stamp: source.stamp,
+      autofillPresets: source.autofillPresets,
+      theme: source.theme,
+      palette: source.palette,
+      pixelArtPalette: source.pixelArtPalette,
+    );
+    final data = NiatraSerializer.loadFromBytes(bytes);
+    final exported = data.raw['currentTheme'] as Map<String, dynamic>;
+    expect(exported['textColor'], body.toARGB32());
+    expect(exported['buttonTextColor'], button.toARGB32());
+    expect(exported['menuTextColor'], menu.toARGB32());
+    expect(exported['selectionTextColor'], selected.toARGB32());
+    final allPresets = data.raw['themePresets'] as List<dynamic>;
+    expect(allPresets, hasLength(28));
+    for (final preset in allPresets) {
+      expect((preset as Map<String, dynamic>)['buttonTextColor'], isA<int>());
+      expect(preset['menuTextColor'], isA<int>());
+      expect(preset['selectionTextColor'], isA<int>());
+    }
+
+    SharedPreferences.setMockInitialValues({});
+    final destination = await _buildServices();
+    NiatraSerializer.applyTo(
+      data,
+      settings: destination.settings,
+      brush: destination.brush,
+      tone: destination.tone,
+      stamp: destination.stamp,
+      autofillPresets: destination.autofillPresets,
+      theme: destination.theme,
+      palette: destination.palette,
+      pixelArtPalette: destination.pixelArtPalette,
+    );
+    expect(destination.theme.current.textColor, body);
+    expect(destination.theme.current.buttonTextColor, button);
+    expect(destination.theme.current.menuTextColor, menu);
+    expect(destination.theme.current.selectionTextColor, selected);
+    expect(destination.theme.themeData.colorScheme.onPrimary, button);
+    expect(destination.theme.themeData.appBarTheme.foregroundColor, menu);
   });
 
   test('「パレット」カテゴリでカラーパレット・ドット絵専用パレットの両方が引き継がれる（Task#155）', () async {
