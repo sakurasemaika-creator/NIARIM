@@ -11,6 +11,7 @@ import 'package:niarim/app_bootstrap.dart';
 import 'package:niarim/l10n/app_localizations.dart';
 import 'package:niarim/screens/settings/theme_preview_gallery_screen.dart';
 import 'package:niarim/screens/settings/theme_settings_screen.dart';
+import 'helpers/load_app_fonts.dart';
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
@@ -85,6 +86,7 @@ void main() {
     addTearDown(tester.view.resetDevicePixelRatio);
     SharedPreferences.setMockInitialValues({});
     mockPathProvider();
+    await loadAppFonts(tester);
     final providers = await tester.runAsync(buildAppProviders);
     final screenshot = GlobalKey();
     await tester.pumpWidget(RepaintBoundary(
