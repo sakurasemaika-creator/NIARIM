@@ -2633,14 +2633,13 @@ class AppLocalizationsEn extends AppLocalizations {
   String get themeColorUpdateMark => 'Update Mark Color';
 
   @override
-  String get themeContrastErrorTitle => 'Text would be unreadable';
-
-  @override
-  String get themeContrastErrorBody =>
-      'The text color and the background color are too close, so text would be almost invisible. The settings screen itself would become unreadable and you could not undo it, so this combination cannot be saved. Please change the brightness of one of them.';
-
-  @override
   String get themeUnreadableResetButton => 'Reset theme';
+
+  @override
+  String get themeResetConfirmTitle => 'Reset the theme colors?';
+
+  @override
+  String get themeResetConfirmAction => 'Reset';
 
   @override
   String get themeUnreadableResetDone =>
