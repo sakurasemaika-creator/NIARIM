@@ -152,9 +152,7 @@ class ThemeSettingsScreen extends StatelessWidget {
               ),
             ),
             _ColorCustomizeTile(
-              label: Localizations.localeOf(context).languageCode == 'ja'
-                  ? '本文・通常の文字色'
-                  : 'Body & regular text color',
+              label: l10n.themeColorText,
               color: current.textColor,
               onTap: () => _showColorPickerDialog(
                 context,
@@ -168,9 +166,7 @@ class ThemeSettingsScreen extends StatelessWidget {
             // 未設定の旧テーマはこれまでの計算値を色チップに表示する。
             _ColorCustomizeTile(
               key: const Key('themeButtonTextColorTile'),
-              label: Localizations.localeOf(context).languageCode == 'ja'
-                  ? 'ボタン内の文字・アイコン色'
-                  : 'Button text & icon color',
+              label: l10n.themeColorButtonText,
               color: current.buttonTextColor,
               onTap: () => _showColorPickerDialog(
                 context,
@@ -181,9 +177,7 @@ class ThemeSettingsScreen extends StatelessWidget {
             ),
             _ColorCustomizeTile(
               key: const Key('themeMenuTextColorTile'),
-              label: Localizations.localeOf(context).languageCode == 'ja'
-                  ? 'メニュー・上部バーの文字色'
-                  : 'Menu & app bar text color',
+              label: l10n.themeColorMenuText,
               color: current.menuTextColor,
               onTap: () => _showColorPickerDialog(
                 context,
@@ -194,9 +188,7 @@ class ThemeSettingsScreen extends StatelessWidget {
             ),
             _ColorCustomizeTile(
               key: const Key('themeSelectionTextColorTile'),
-              label: Localizations.localeOf(context).languageCode == 'ja'
-                  ? '選択中の文字・アイコン色'
-                  : 'Selected text & icon color',
+              label: l10n.themeColorSelectionText,
               color: current.selectionTextColor,
               onTap: () => _showColorPickerDialog(
                 context,
