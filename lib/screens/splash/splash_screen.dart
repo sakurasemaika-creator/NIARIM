@@ -157,10 +157,10 @@ class _SplashScreenState extends State<SplashScreen> {
           padding: EdgeInsets.all(logoSize * 0.08),
           child: SvgPicture.asset(
             'assets/logo/app_logo.svg',
-            // 導線ボタンのアイコン・文字と同じテーマの「メニュー背景色」で
+            // 導線ボタンのアイコン・文字と同じテーマの「ボタン内の文字色」で
             // 白抜きにする（アクセント色の背景に載るのが同じ条件のため）。
             colorFilter: ColorFilter.mode(
-              context.watch<ThemeService>().current.menuBgColor,
+              context.watch<ThemeService>().current.buttonTextColor,
               BlendMode.srcIn,
             ),
           ),
