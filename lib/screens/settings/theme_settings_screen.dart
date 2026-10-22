@@ -171,14 +171,12 @@ class ThemeSettingsScreen extends StatelessWidget {
               label: Localizations.localeOf(context).languageCode == 'ja'
                   ? 'ボタン内の文字・アイコン色'
                   : 'Button text & icon color',
-              color: current.buttonTextColor ??
-                  Theme.of(context).colorScheme.onPrimary,
+              color: current.buttonTextColor,
               onTap: () => _showColorPickerDialog(
                 context,
                 themeService,
                 (p, c) => p.copyWith(buttonTextColor: c),
-                current.buttonTextColor ??
-                    Theme.of(context).colorScheme.onPrimary,
+                current.buttonTextColor,
               ),
             ),
             _ColorCustomizeTile(
@@ -186,12 +184,12 @@ class ThemeSettingsScreen extends StatelessWidget {
               label: Localizations.localeOf(context).languageCode == 'ja'
                   ? 'メニュー・上部バーの文字色'
                   : 'Menu & app bar text color',
-              color: current.menuTextColor ?? current.textColor,
+              color: current.menuTextColor,
               onTap: () => _showColorPickerDialog(
                 context,
                 themeService,
                 (p, c) => p.copyWith(menuTextColor: c),
-                current.menuTextColor ?? current.textColor,
+                current.menuTextColor,
               ),
             ),
             _ColorCustomizeTile(
@@ -199,14 +197,12 @@ class ThemeSettingsScreen extends StatelessWidget {
               label: Localizations.localeOf(context).languageCode == 'ja'
                   ? '選択中の文字・アイコン色'
                   : 'Selected text & icon color',
-              color: current.selectionTextColor ??
-                  Theme.of(context).colorScheme.onSecondary,
+              color: current.selectionTextColor,
               onTap: () => _showColorPickerDialog(
                 context,
                 themeService,
                 (p, c) => p.copyWith(selectionTextColor: c),
-                current.selectionTextColor ??
-                    Theme.of(context).colorScheme.onSecondary,
+                current.selectionTextColor,
               ),
             ),
             _ColorCustomizeTile(
