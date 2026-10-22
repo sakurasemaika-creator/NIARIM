@@ -31,7 +31,11 @@ class ThemeSettingsScreen extends StatelessWidget {
         title: Text(l10n.themeSettingsTitle),
         actions: [
           const HelpButton(topic: 'テーマ設定'),
-          if (isThemeAtLockoutRisk(current)) const ThemeRescueButton(),
+          if (isThemeAtLockoutRisk(current))
+            ThemeRescueButton(
+              iconOnly: MediaQuery.sizeOf(context).width < 520 ||
+                  MediaQuery.textScalerOf(context).scale(1) > 1.4,
+            ),
         ],
       ),
       body: desktopCentered(
