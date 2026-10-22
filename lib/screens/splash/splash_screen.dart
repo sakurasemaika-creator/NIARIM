@@ -10,7 +10,6 @@ import '../../engine/export_engine.dart';
 import '../../l10n/app_localizations.dart';
 import '../../services/project_service.dart';
 import '../../config/font_fallback.dart';
-import '../../utils/color_contrast.dart';
 import '../../utils/line_break.dart';
 import '../../utils/app_error_reporter.dart';
 import '../../widgets/theme_rescue_button.dart';
@@ -257,7 +256,7 @@ class _SplashScreenState extends State<SplashScreen> {
             // なりかねない場合は、発生経路（手動設定・プリセット・import・
             // .niatra等）を問わず右上に復旧ボタンを表示する。
             // 通常UIとは異なり、テーマに依存しない黒文字＋白縁取りの固定色を使う。
-            if (isThemeAtLockoutRisk(context.watch<ThemeService>().current))
+            if (context.watch<ThemeService>().needsThemeRescue)
               const Positioned(top: 8, right: 8, child: ThemeRescueButton()),
           ],
         ),
