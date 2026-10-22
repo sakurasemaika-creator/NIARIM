@@ -61,7 +61,7 @@ void main() {
       );
     });
 
-    test('組み込みプリセットは全て「読める」判定を通る', () async {
+    test('組み込みプリセットでは復旧ボタンのリスク判定に該当しない', () async {
       SharedPreferences.setMockInitialValues({});
       final service = ThemeService();
       await service.init();
@@ -77,7 +77,7 @@ void main() {
       }
     });
 
-    test('同じ色・ほとんど同じ色のテーマは弾かれる', () {
+    test('同じ色・ほとんど同じ色のテーマは復旧ボタンの表示対象になる', () {
       expect(isThemeAtLockoutRisk(unreadable), isTrue);
       expect(
         isThemeAtLockoutRisk(
