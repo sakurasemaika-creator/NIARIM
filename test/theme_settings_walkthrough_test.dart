@@ -70,7 +70,10 @@ void main() {
     final service = context.read<ThemeService>();
     final l10n = AppLocalizations.of(context)!;
 
-    // 起動直後は既定テーマが編集対象（＝チェックが1つ付いている）。
+    // 縮小プレビューが設定画面の上部にあるため、テーマ一覧のチェックは
+    // 最初のスクリーン内とは限らない。カードへスクロールしてから検証。
+    await tester.ensureVisible(find.text(service.current.name).first);
+    await tester.pump(const Duration(milliseconds: 250));
     expect(service.isEditingPreset, isTrue);
     expect(find.byIcon(Icons.check), findsOneWidget);
     await capture('theme_list_initial');
