@@ -62,7 +62,7 @@ void main() {
     expect(find.text('NIARIM'), findsNothing);
     await tester.drag(find.byKey(const Key('themePreviewPager')), const Offset(-450, 0));
     await tester.pumpAndSettle();
-    expect(tester.widget<Text>(find.byKey(const Key('themePreviewTitle'))).data, '新規プロジェクト');
+    expect(tester.widget<Text>(find.byKey(const Key('themePreviewTitle'))).data, themePreviewEntries[2].ja);
     await tester.tap(find.byKey(const Key('themePreviewClose')));
     await tester.pumpAndSettle();
   });
