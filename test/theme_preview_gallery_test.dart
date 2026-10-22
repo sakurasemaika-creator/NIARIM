@@ -1,13 +1,29 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:niarim/services/theme_service.dart';
+import 'package:niarim/app_bootstrap.dart';
 import 'package:niarim/l10n/app_localizations.dart';
 import 'package:niarim/screens/settings/theme_preview_gallery_screen.dart';
 import 'package:niarim/screens/settings/theme_settings_screen.dart';
 
 void main() {
+  TestWidgetsFlutterBinding.ensureInitialized();
+  void mockPathProvider() {
+    const channel = MethodChannel('plugins.flutter.io/path_provider');
+    final dir = Directory.systemTemp.createTempSync('niarim_preview_');
+    TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
+        .setMockMethodCallHandler(channel, (call) async => dir.path);
+    addTearDown(() {
+      TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
+          .setMockMethodCallHandler(channel, null);
+      if (dir.existsSync()) dir.deleteSync(recursive: true);
+    });
+  }
+
   test('gallery contains each independent screen once, no folder/tab variants', () {
     final ids = themePreviewEntries.map((e) => e.id).toList();
     expect(ids.toSet().length, ids.length);
@@ -38,31 +54,33 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.byKey(const Key('themePreviewPager')), findsOneWidget);
-    expect(find.text('起動画面'), findsOneWidget);
+    expect(tester.widget<Text>(find.byKey(const Key('themePreviewTitle'))).data, '起動画面');
     expect(find.text('NIARIM'), findsOneWidget);
     await tester.tap(find.byKey(const Key('themePreviewNext')));
     await tester.pumpAndSettle();
-    expect(find.text('プロジェクト一覧'), findsOneWidget);
+    expect(tester.widget<Text>(find.byKey(const Key('themePreviewTitle'))).data, 'プロジェクト一覧');
     expect(find.text('NIARIM'), findsNothing);
     await tester.drag(find.byKey(const Key('themePreviewPager')), const Offset(-450, 0));
     await tester.pumpAndSettle();
-    expect(find.text('新規プロジェクト'), findsOneWidget);
+    expect(tester.widget<Text>(find.byKey(const Key('themePreviewTitle'))).data, '新規プロジェクト');
     await tester.tap(find.byKey(const Key('themePreviewClose')));
     await tester.pumpAndSettle();
   });
 
-  testWidgets('theme settings opens an on-demand full-screen gallery and returns', (tester) async {
+  testWidgets('theme settings opens the full-screen gallery and returns', (tester) async {
     SharedPreferences.setMockInitialValues({});
-    final themeService = ThemeService();
-    await themeService.init();
-    await tester.pumpWidget(ChangeNotifierProvider<ThemeService>.value(
-      value: themeService,
-      child: MaterialApp(
-        locale: const Locale('ja'),
-        supportedLocales: const [Locale('ja'), Locale('en')],
-        localizationsDelegates: AppLocalizations.localizationsDelegates,
-        theme: themeService.themeData,
-        home: const ThemeSettingsScreen(),
+    mockPathProvider();
+    final providers = await tester.runAsync(buildAppProviders);
+    await tester.pumpWidget(MultiProvider(
+      providers: providers!,
+      child: Builder(
+        builder: (context) => MaterialApp(
+          locale: const Locale('ja'),
+          supportedLocales: AppLocalizations.supportedLocales,
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          theme: context.watch<ThemeService>().themeData,
+          home: const ThemeSettingsScreen(),
+        ),
       ),
     ));
     await tester.pumpAndSettle();
