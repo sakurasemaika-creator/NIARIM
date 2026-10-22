@@ -42,19 +42,87 @@ class ThemeSettingsScreen extends StatelessWidget {
         context,
         ListView(
           children: [
+            // 現在の配色をそのまま縮小表示する。描画の見本は全画面の
+            // 41画面ギャラリーと共通で、固定画像・固定配色ではない。
+            // タップで全画面に移動する。カラーピッカーの変更結果は
+            // ThemeServiceの再描画によって即座にこの見本にも反映される。
             Padding(
               padding: const EdgeInsets.fromLTRB(12, 12, 12, 8),
-              child: OutlinedButton.icon(
-                key: const Key('themePreviewOpen'),
-                icon: const Icon(Icons.preview_outlined),
-                label: Text(
-                  Localizations.localeOf(context).languageCode == 'ja'
-                      ? '画面プレビューを見る'
-                      : 'Preview app screens',
-                ),
-                onPressed: () => Navigator.of(context).push(
-                  MaterialPageRoute<void>(
-                    builder: (_) => const ThemePreviewGalleryScreen(),
+              child: Material(
+                color: Theme.of(context).colorScheme.surfaceContainerLow,
+                borderRadius: BorderRadius.circular(16),
+                child: InkWell(
+                  key: const Key('themePreviewOpen'),
+                  borderRadius: BorderRadius.circular(16),
+                  onTap: () => Navigator.of(context).push(
+                    MaterialPageRoute<void>(
+                      builder: (_) => const ThemePreviewGalleryScreen(),
+                    ),
+                  ),
+                  child: Padding(
+                    padding: const EdgeInsets.all(12),
+                    child: Row(
+                      children: [
+                        const ThemePreviewThumbnail(
+                          key: Key('themeInlinePreview'),
+                          height: 184,
+                        ),
+                        const SizedBox(width: 14),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Text(
+                                Localizations.localeOf(context).languageCode == 'ja'
+                                    ? '画面プレビュー'
+                                    : 'Screen preview',
+                                style: const TextStyle(
+                                  fontSize: 15,
+                                  fontWeight: FontWeight.bold,
+                                  fontFamily: 'Kuramubon',
+                                  fontFamilyFallback: kHeadingFontFallback,
+                                ),
+                              ),
+                              const SizedBox(height: 8),
+                              Text(
+                                Localizations.localeOf(context).languageCode == 'ja'
+                                    ? 'プロジェクト一覧の見本'
+                                    : 'Project list sample',
+                                style: TextStyle(
+                                  fontSize: 12,
+                                  color: Theme.of(context).colorScheme.onSurfaceVariant,
+                                ),
+                              ),
+                              const SizedBox(height: 12),
+                              Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Flexible(
+                                    child: Text(
+                                      Localizations.localeOf(context).languageCode == 'ja'
+                                          ? 'タップして全41画面を見る'
+                                          : 'Tap to view all 41 screens',
+                                      style: TextStyle(
+                                        fontSize: 12,
+                                        fontWeight: FontWeight.w700,
+                                        color: Theme.of(context).colorScheme.primary,
+                                      ),
+                                    ),
+                                  ),
+                                  const SizedBox(width: 4),
+                                  Icon(
+                                    Icons.open_in_full,
+                                    size: 17,
+                                    color: Theme.of(context).colorScheme.primary,
+                                  ),
+                                ],
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
                 ),
               ),
