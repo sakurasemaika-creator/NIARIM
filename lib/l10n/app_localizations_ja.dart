@@ -2537,14 +2537,13 @@ class AppLocalizationsJa extends AppLocalizations {
   String get themeColorUpdateMark => '更新マーク色';
 
   @override
-  String get themeContrastErrorTitle => 'この色では文字が読めなくなります';
-
-  @override
-  String get themeContrastErrorBody =>
-      '文字の色と背景の色が近すぎるため、画面の文字がほとんど見えなくなります。設定画面自体も読めなくなり元に戻せなくなるので、この組み合わせは保存できません。どちらかの明るさを変えてください。';
-
-  @override
   String get themeUnreadableResetButton => 'テーマをもとに戻す';
+
+  @override
+  String get themeResetConfirmTitle => 'テーマカラーをリセットしますか？';
+
+  @override
+  String get themeResetConfirmAction => 'リセット';
 
   @override
   String get themeUnreadableResetDone => 'テーマを既定の配色に戻しました。';
