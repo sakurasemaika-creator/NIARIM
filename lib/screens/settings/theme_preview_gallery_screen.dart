@@ -23,10 +23,10 @@ const List<ThemePreviewEntry> themePreviewEntries = [
   ThemePreviewEntry('save','セーブ管理','Save management','save'),
   ThemePreviewEntry('materials','素材管理','Materials','materials'),
   ThemePreviewEntry('community','作品広場','Community','community'),
-  ThemePreviewEntry('work','作品広場・作品詳細','Community work detail','detail'),
+  ThemePreviewEntry('work','作品広場・作品詳細','Community work detail','work'),
   ThemePreviewEntry('post','作品広場・投稿','Community post','post'),
-  ThemePreviewEntry('author','投稿者の作品','Author works','community'),
-  ThemePreviewEntry('mine','自分の投稿','My posts','community'),
+  ThemePreviewEntry('author','投稿者の作品','Author works','author'),
+  ThemePreviewEntry('mine','自分の投稿','My posts','mine'),
   ThemePreviewEntry('notifications','フォロー通知','Follow notifications','notifications'),
   ThemePreviewEntry('settings','設定','Settings','settings'),
   ThemePreviewEntry('theme','テーマ・外観','Theme & appearance','theme'),
@@ -168,6 +168,9 @@ class _ThemeSampleScreen extends StatelessWidget {
       case 'community': return _community(c);
       case 'form': return _form(c);
       case 'detail': return _detail(c);
+      case 'work': return _communityWork(c);
+      case 'author': return _author(c);
+      case 'mine': return _myWorks(c);
       case 'export': return _export(c);
       case 'post': return _post(c);
       case 'theme': return _theme(c);
@@ -557,7 +560,55 @@ class _ThemeSampleScreen extends StatelessWidget {
     _card(Text(t('プレビュー用の見本です。', 'This is a read-only preview.'))),
   ]);
 
+
+  Widget _communityWork(ColorScheme c) => _list([
+    _art(c, height: 200),
+    _heading(t('サンプル作品', 'Sample artwork')),
+    _card(_row(Icons.person, t('作者の名前', 'Creator name'))),
+    _card(Row(mainAxisAlignment: MainAxisAlignment.spaceAround,
+      children: const [
+        Icon(Icons.favorite_border),
+        Icon(Icons.bookmark_border),
+        Icon(Icons.share),
+        Icon(Icons.more_horiz),
+      ])),
+    _heading(t('作品について', 'About this work')),
+    _card(Text(t('手描きアニメーションです。', 'Hand-drawn animation.'))),
+    _card(Text('#animation   #illustration',
+      style: TextStyle(color: c.primary))),
+  ]);
+
+  Widget _author(ColorScheme c) => Column(children: [
+    SizedBox(height: 128, child: Column(
+      mainAxisAlignment: MainAxisAlignment.center, children: [
+        Icon(Icons.account_circle, size: 52, color: c.primary),
+        Text(t('作者の名前', 'Creator name'),
+          style: const TextStyle(fontWeight: FontWeight.bold)),
+      ])),
+    Padding(padding: const EdgeInsets.symmetric(horizontal: 12),
+      child: _cta(c, t('フォローする', 'Follow'), icon: Icons.person_add_alt_1)),
+    const SizedBox(height: 12),
+    Expanded(child: GridView.count(crossAxisCount: 2, childAspectRatio: .9,
+      padding: const EdgeInsets.all(12),
+      children: [
+        _projectTile(c, t('作品 1', 'Work 1')),
+        _projectTile(c, t('作品 2', 'Work 2')),
+        _projectTile(c, t('作品 3', 'Work 3')),
+      ])),
+  ]);
+
+  Widget _myWorks(ColorScheme c) => _list([
+    _heading(t('自分の投稿', 'My posts')),
+    _card(_row(Icons.upload_file, t('投稿した作品 1', 'Posted work 1'),
+      subtitle: t('公開中', 'Published'))),
+    _card(_row(Icons.upload_file, t('投稿した作品 2', 'Posted work 2'),
+      subtitle: t('公開中', 'Published'))),
+    const SizedBox(height: 18),
+    _cta(c, t('新しく投稿', 'Post new work'), icon: Icons.add),
+  ]);
+
   // SCREEN_LAYOUTS
+
 
 
 }
