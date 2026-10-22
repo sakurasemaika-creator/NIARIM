@@ -13,6 +13,7 @@ on:
       - 'lib/screens/settings/theme_preview_gallery_screen.dart'
       - 'lib/services/theme_service.dart'
       - 'lib/models/app_theme_preset.dart'
+      - 'lib/screens/home/widgets/project_list_widget.dart'
       - 'lib/services/home_widget_refresh.dart'
       - 'lib/screens/timeline/timeline_screen.dart'
       - 'lib/engine/niatra_serializer.dart'
@@ -20,6 +21,7 @@ on:
       - 'test/theme_contrast_rescue_test.dart'
       - 'test/theme_preview_gallery_test.dart'
       - 'test/theme_accent_contrast_test.dart'
+      - 'test/project_grid_actions_test.dart'
       - 'test/theme_preset_adopt_test.dart'
       - 'test/niatra_serializer_test.dart'
       - 'test/home_widget_shortcut_design_test.dart'
@@ -47,6 +49,7 @@ jobs:
           flutter test test/theme_contrast_rescue_test.dart --reporter expanded
           flutter test test/theme_preview_gallery_test.dart --reporter expanded
           flutter test test/theme_accent_contrast_test.dart --reporter expanded
+          flutter test test/project_grid_actions_test.dart --reporter expanded
           flutter test test/theme_preset_adopt_test.dart --reporter expanded
           flutter test test/niatra_serializer_test.dart --reporter expanded
           flutter test test/home_widget_shortcut_design_test.dart --reporter expanded
