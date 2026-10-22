@@ -332,7 +332,7 @@ class _ThemeSampleScreen extends StatelessWidget {
     // Mirror splash_screen.dart: the icon/label foreground is exactly the
     // user-selected menu background, NOT auto-generated onPrimary/onSecondary.
     final preset = context.read<ThemeService>().current;
-    final foreground = preset.buttonTextColor ?? preset.menuBgColor;
+    final foreground = preset.buttonTextColor;
     Widget action(IconData icon, String title, String? subtitle,
         Color first, Color second) => Container(
       width: 150, height: 166,
@@ -618,8 +618,7 @@ class _ThemeSampleScreen extends StatelessWidget {
       (t('本文文字色', 'Body text'), c.onSurface),
       (t('ボタン内の文字色', 'Button text'), c.onPrimary),
       (t('メニューの文字色', 'Menu text'),
-        context.read<ThemeService>().current.menuTextColor ??
-            context.read<ThemeService>().current.textColor),
+        context.read<ThemeService>().current.menuTextColor),
       (t('選択中の文字色', 'Selected text'), c.onSecondary),
       (t('パネル背景', 'Panel background'), c.surface),
       (t('メニュー背景', 'Menu background'), c.surfaceContainer),
