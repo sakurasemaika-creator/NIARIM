@@ -65,6 +65,7 @@ class ThemePreviewGalleryScreen extends StatefulWidget {
 class _ThemePreviewGalleryScreenState extends State<ThemePreviewGalleryScreen> {
   final PageController _pages = PageController();
   int _index = 0;
+  bool _controlsVisible = true;
   @override
   void dispose() { _pages.dispose(); super.dispose(); }
 
@@ -74,44 +75,105 @@ class _ThemePreviewGalleryScreenState extends State<ThemePreviewGalleryScreen> {
     final ja = Localizations.localeOf(context).languageCode == 'ja';
     final c = Theme.of(context).colorScheme;
     return Scaffold(
-      appBar: AppBar(
-        leading: IconButton(
-          key: const Key('themePreviewClose'),
-          onPressed: () => Navigator.of(context).pop(),
-          icon: const Icon(Icons.close),
-          tooltip: ja ? 'プレビューを閉じる' : 'Close preview'),
-        title: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-          Text(themePreviewEntries[_index].label(ja), key: const Key('themePreviewTitle'), maxLines: 1,
-            overflow: TextOverflow.ellipsis, style: const TextStyle(fontSize: 16)),
-          Text(ja ? 'テーマ配色の見本・サンプルデータ' : 'Theme colors · sample data',
-            maxLines: 1, overflow: TextOverflow.ellipsis,
-            style: TextStyle(color: c.onSurfaceVariant, fontSize: 10)),
-        ]),
-        actions: [
-          Center(child: Text((_index+1).toString()+'/'+themePreviewEntries.length.toString(),
-            style: const TextStyle(fontSize: 12))),
-          IconButton(
-            key: const Key('themePreviewNext'),
-            onPressed: _index == themePreviewEntries.length - 1
-                ? null : () => _pages.nextPage(
-                    duration: const Duration(milliseconds: 180),
-                    curve: Curves.easeOut),
-            icon: const Icon(Icons.chevron_right)),
-        ],
-      ),
-      body: PageView.builder(
-        key: const Key('themePreviewPager'),
-        controller: _pages,
-        itemCount: themePreviewEntries.length,
-        onPageChanged: (index) => setState(() => _index = index),
-        itemBuilder: (_, i) => RepaintBoundary(
-          child: _ThemeSampleScreen(entry: themePreviewEntries[i], ja: ja)),
-      ),
-      bottomNavigationBar: SafeArea(top: false, child: SizedBox(
-        height: 30, child: Center(child: Text(
-          ja ? '左右にスワイプして画面を切り替え' : 'Swipe sideways to view screens',
-          style: TextStyle(fontSize: 11, color: c.onSurfaceVariant))),
-      )),
+      body: Stack(children: [
+        Positioned.fill(
+          child: PageView.builder(
+            key: const Key('themePreviewPager'),
+            controller: _pages,
+            itemCount: themePreviewEntries.length,
+            onPageChanged: (i) => setState(() => _index = i),
+            itemBuilder: (_, i) => RepaintBoundary(
+              child: _ThemeSampleScreen(entry: themePreviewEntries[i], ja: ja),
+            ),
+          ),
+        ),
+        Positioned(
+          bottom: 0, left: 0, right: 0,
+          child: SafeArea(
+            top: false,
+            child: Align(
+              alignment: Alignment.bottomCenter,
+              child: _controlsVisible
+                  ? Container(
+                      margin: const EdgeInsets.fromLTRB(6, 0, 6, 6),
+                      padding: const EdgeInsets.symmetric(horizontal: 3),
+                      decoration: BoxDecoration(
+                        color: c.surface.withValues(alpha: .94),
+                        border: Border.all(color: c.outlineVariant),
+                        borderRadius: BorderRadius.circular(14),
+                      ),
+                      height: 54,
+                      child: Row(children: [
+                        IconButton(
+                          key: const Key('themePreviewClose'),
+                          tooltip: ja ? 'プレビューを閉じる' : 'Close preview',
+                          icon: const Icon(Icons.close, size: 20),
+                          onPressed: () => Navigator.of(context).pop(),
+                        ),
+                        Expanded(child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(themePreviewEntries[_index].label(ja),
+                              key: const Key('themePreviewTitle'),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: const TextStyle(
+                                fontSize: 13, fontWeight: FontWeight.bold)),
+                            Text(
+                              ja ? '配色見本' : 'Theme sample',
+                              style: TextStyle(
+                                fontSize: 10, color: c.onSurfaceVariant)),
+                          ],
+                        )),
+                        Text((_index + 1).toString() + '/' +
+                          themePreviewEntries.length.toString(),
+                          style: const TextStyle(fontSize: 11)),
+                        IconButton(
+                          tooltip: ja ? '前の画面' : 'Previous screen',
+                          icon: const Icon(Icons.chevron_left, size: 21),
+                          onPressed: _index == 0 ? null
+                            : () => _pages.previousPage(
+                              duration: const Duration(milliseconds: 180),
+                              curve: Curves.easeOut),
+                        ),
+                        IconButton(
+                          key: const Key('themePreviewNext'),
+                          tooltip: ja ? '次の画面' : 'Next screen',
+                          icon: const Icon(Icons.chevron_right, size: 21),
+                          onPressed: _index == themePreviewEntries.length - 1
+                              ? null : () => _pages.nextPage(
+                                  duration: const Duration(milliseconds: 180),
+                                  curve: Curves.easeOut),
+                        ),
+                        IconButton(
+                          key: const Key('themePreviewHideControls'),
+                          tooltip: ja ? '操作バーを隠す' : 'Hide controls',
+                          icon: const Icon(Icons.visibility_off_outlined, size: 19),
+                          onPressed: () => setState(() => _controlsVisible = false),
+                        ),
+                      ]),
+                    )
+                  : Padding(
+                      padding: const EdgeInsets.all(6),
+                      child: Align(
+                        alignment: Alignment.bottomRight,
+                        child: Material(
+                          color: c.surface.withValues(alpha: .94),
+                          shape: const CircleBorder(),
+                          child: IconButton(
+                            key: const Key('themePreviewShowControls'),
+                            tooltip: ja ? '操作バーを表示' : 'Show controls',
+                            icon: const Icon(Icons.visibility_outlined),
+                            onPressed: () => setState(() => _controlsVisible = true),
+                          ),
+                        ),
+                      ),
+                    ),
+            ),
+          ),
+        ),
+      ]),
     );
   }
 }
