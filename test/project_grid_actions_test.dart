@@ -3,10 +3,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:niarim/l10n/app_localizations.dart';
 import 'package:niarim/models/project.dart';
+import 'package:niarim/models/app_theme_preset.dart';
 import 'package:niarim/screens/home/home_screen.dart';
 import 'package:niarim/screens/home/widgets/project_list_widget.dart';
 import 'package:niarim/services/project_service.dart';
+import 'package:niarim/services/theme_service.dart';
 import 'package:provider/provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class _GridProjects extends ProjectService {
   final favoriteIds = <String>{};
@@ -55,11 +58,14 @@ Widget _host(
   required ValueChanged<String> onOpenFolder,
   required ValueChanged<String> onSelectionChanged,
   bool isSelectionMode = false,
+  Set<String> selectedIds = const {},
+  ThemeData? theme,
   ValueChanged<String>? onPickProject,
 }) => ChangeNotifierProvider<ProjectService>.value(
   value: service,
   child: MaterialApp(
     locale: const Locale('ja'),
+    theme: theme,
     localizationsDelegates: AppLocalizations.localizationsDelegates,
     supportedLocales: AppLocalizations.supportedLocales,
     home: Scaffold(
@@ -67,7 +73,7 @@ Widget _host(
         viewMode: mode,
         sortMode: ProjectSortMode.nameAsc,
         isSelectionMode: isSelectionMode,
-        selectedIds: const {},
+        selectedIds: selectedIds,
         onLongPress: (_) {},
         onSelectionChanged: onSelectionChanged,
         currentFolderId: null,
@@ -238,6 +244,63 @@ void main() {
       }
     });
   }
+
+  testWidgets('selected project and folder checks follow custom selection colors', (
+    tester,
+  ) async {
+    tester.view.physicalSize = const Size(390, 844);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+    SharedPreferences.setMockInitialValues({});
+    const selectedBg = Color(0xFF334455);
+    const selectedForeground = Color(0xFFF1B777);
+    final themeService = ThemeService();
+    addTearDown(themeService.dispose);
+    await themeService.init();
+    themeService.previewCurrent(AppThemePreset.defaultLight.copyWith(
+      accentColor: const Color(0xFFEE5577),
+      buttonTextColor: Colors.white,
+      selectionColor: selectedBg,
+      selectionTextColor: selectedForeground,
+    ));
+    final projectService = _GridProjects();
+    addTearDown(projectService.dispose);
+    await tester.pumpWidget(_host(
+      projectService,
+      ProjectViewMode.medium,
+      isSelectionMode: true,
+      selectedIds: const {'project', 'folder'},
+      theme: themeService.themeData,
+      onOpenFolder: (_) {},
+      onSelectionChanged: (_) {},
+    ));
+    await tester.pumpAndSettle();
+    for (final name in ['Project', 'Folder']) {
+      final check = find.descendant(
+        of: _card(name), matching: find.byIcon(Icons.check));
+      expect(check, findsOneWidget);
+      expect(tester.widget<Icon>(check).color, selectedForeground);
+      // Project badge uses AnimatedContainer, folder badge uses Container.
+      final anim = tester.widgetList<AnimatedContainer>(
+        find.ancestor(of: check, matching: find.byType(AnimatedContainer)));
+      final containers = tester.widgetList<Container>(
+        find.ancestor(of: check, matching: find.byType(Container)));
+      final hasSelectedFill = [
+        ...anim.map((w) => w.decoration),
+        ...containers.map((w) => w.decoration),
+      ].any((decoration) =>
+          decoration is BoxDecoration && decoration.color == selectedBg);
+      expect(hasSelectedFill, isTrue, reason: '$name selection background');
+    }
+    final checkboxTheme = themeService.themeData.checkboxTheme;
+    expect(
+      checkboxTheme.fillColor!.resolve({WidgetState.selected}), selectedBg);
+    expect(
+      checkboxTheme.checkColor!.resolve({WidgetState.selected}),
+      selectedForeground);
+    expect(tester.takeException(), isNull);
+  });
 
   testWidgets('project picker keeps editing menus hidden', (tester) async {
     final service = _GridProjects();
