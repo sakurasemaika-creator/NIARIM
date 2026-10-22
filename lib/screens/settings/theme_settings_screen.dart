@@ -675,17 +675,46 @@ class _PresetColorSwatch extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // Compact swatch samples all four actual foreground roles; colors come
+    // solely from the preset. It is not a substitute for the full preview.
     return Container(
-      width: 40,
-      height: 40,
+      width: 72,
+      height: 48,
       clipBehavior: Clip.antiAlias,
-      decoration: const BoxDecoration(shape: BoxShape.circle),
-      child: Row(
-        children: [
-          Expanded(child: Container(color: preset.panelBgColor)),
-          Expanded(child: Container(color: preset.accentColor)),
-        ],
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(9),
+        border: Border.all(color: Theme.of(context).colorScheme.outlineVariant),
       ),
+      child: Column(children: [
+        Expanded(flex: 3, child: Row(children: [
+          Expanded(child: Container(
+            alignment: Alignment.center,
+            color: preset.panelBgColor,
+            child: Text('Aa', style: TextStyle(
+              color: preset.textColor,
+              fontSize: 13, fontWeight: FontWeight.bold)),
+          )),
+          Expanded(child: Container(
+            alignment: Alignment.center,
+            color: preset.accentColor,
+            child: Icon(Icons.check, color: preset.buttonTextColor, size: 18),
+          )),
+        ])),
+        Expanded(flex: 2, child: Row(children: [
+          Expanded(child: Container(
+            alignment: Alignment.center,
+            color: preset.menuBgColor,
+            child: Icon(Icons.menu, color: preset.menuTextColor, size: 16),
+          )),
+          Expanded(child: Container(
+            alignment: Alignment.center,
+            color: preset.selectionColor,
+            child: Text('Aa', style: TextStyle(
+              color: preset.selectionTextColor,
+              fontSize: 11, fontWeight: FontWeight.bold)),
+          )),
+        ])),
+      ]),
     );
   }
 }
