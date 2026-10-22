@@ -127,14 +127,14 @@ void main() {
       find.byKey(const Key('themePreviewTitle'))).data, 'テーマ・外観');
 
     Future<void> checkSwatch(String label, Color expected) async {
-      final list = find.byType(ListView).last;
+      final list = find.byType(Scrollable).last;
       await tester.scrollUntilVisible(
         find.text(label), 90, scrollable: list);
       await tester.pumpAndSettle();
-      final containingRow = find.ancestor(
-        of: find.text(label), matching: find.byType(Row)).first;
+      final containingCard = find.ancestor(
+        of: find.text(label), matching: find.byType(Card)).first;
       final avatar = tester.widget<CircleAvatar>(
-        find.descendant(of: containingRow,
+        find.descendant(of: containingCard,
           matching: find.byType(CircleAvatar)));
       expect(avatar.backgroundColor, expected, reason: label);
     }
