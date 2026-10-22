@@ -82,7 +82,7 @@ void main() {
     );
     await tester.pump(const Duration(milliseconds: 250));
     expect(service.isEditingPreset, isTrue);
-    expect(find.byIcon(Icons.check), findsOneWidget);
+    expect(find.byKey(const Key('themePresetEditingCheck')), findsOneWidget);
     await capture('theme_list_initial');
 
     // 別のテーマのカードをタップする＝配色の取り込みだけ。
@@ -101,7 +101,7 @@ void main() {
     );
     expect(service.isEditingPreset, isFalse, reason: 'タップではテーマの編集対象にならないこと');
     expect(
-      find.byIcon(Icons.check),
+      find.byKey(const Key('themePresetEditingCheck')),
       findsNothing,
       reason: 'タップではどのテーマにもチェックが付かないこと',
     );
@@ -150,7 +150,7 @@ void main() {
     expect(service.isEditingPreset, isTrue);
     expect(service.current.id, target.id);
     expect(
-      find.byIcon(Icons.check),
+      find.byKey(const Key('themePresetEditingCheck')),
       findsOneWidget,
       reason: '編集対象にしたテーマにだけチェックが付くこと',
     );
