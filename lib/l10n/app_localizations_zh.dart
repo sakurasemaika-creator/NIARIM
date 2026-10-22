@@ -2523,14 +2523,13 @@ class AppLocalizationsZh extends AppLocalizations {
   String get themeColorUpdateMark => '更新标记颜色';
 
   @override
-  String get themeContrastErrorTitle => '这个颜色会让文字无法辨认';
-
-  @override
-  String get themeContrastErrorBody =>
-      '文字颜色和背景颜色太接近，画面上的文字会几乎看不见。设置画面本身也会看不清而无法还原，因此无法保存这个组合。请更改其中一方的明暗。';
-
-  @override
   String get themeUnreadableResetButton => '还原主题';
+
+  @override
+  String get themeResetConfirmTitle => '要重置主题颜色吗？';
+
+  @override
+  String get themeResetConfirmAction => '重置';
 
   @override
   String get themeUnreadableResetDone => '已将主题还原为默认配色。';
@@ -9907,14 +9906,13 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get themeColorUpdateMark => '更新標記顏色';
 
   @override
-  String get themeContrastErrorTitle => '這個顏色會讓文字無法辨認';
-
-  @override
-  String get themeContrastErrorBody =>
-      '文字顏色和背景顏色太接近，畫面上的文字會幾乎看不見。設定畫面本身也會看不清而無法還原，因此無法儲存這個組合。請更改其中一方的明暗。';
-
-  @override
   String get themeUnreadableResetButton => '還原主題';
+
+  @override
+  String get themeResetConfirmTitle => '要重設主題顏色嗎？';
+
+  @override
+  String get themeResetConfirmAction => '重設';
 
   @override
   String get themeUnreadableResetDone => '已將主題還原為預設配色。';
