@@ -609,11 +609,13 @@ class ThemeService extends ChangeNotifier {
       onPrimary: preset.buttonTextColor,
       secondary: selectionColor,
       onSecondary: preset.selectionTextColor,
-      // Container shades continue to derive from the accent/selection
-      // palettes; don't replace splash gradients with the selected color.
-      // A label on a gradient button uses the *button* foreground.
-      onPrimaryContainer: preset.buttonTextColor,
-      onSecondaryContainer: preset.buttonTextColor,
+      // Material container shades are subtle surfaces, NOT primary
+      // filled buttons. Text shown on them (e.g. creator avatar labels)
+      // follows the normal text token, not the button foreground.
+      // In particular, a light container must not acquire white labels
+      // merely because button text is configured white.
+      onPrimaryContainer: preset.textColor,
+      onSecondaryContainer: preset.textColor,
       onSurface: preset.textColor,
       onSurfaceVariant: preset.textColor.withValues(alpha: 0.7),
     );
