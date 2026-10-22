@@ -99,6 +99,7 @@ void main() {
             supportedLocales: AppLocalizations.supportedLocales,
             localizationsDelegates: AppLocalizations.localizationsDelegates,
             theme: context.watch<ThemeService>().themeData,
+            debugShowCheckedModeBanner: false,
             home: const ThemeSettingsScreen(),
           ),
         ),
