@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import '../../services/theme_service.dart';
 
 /// One preview per distinct standalone app screen. Excludes folder contents,
@@ -213,7 +214,7 @@ class _ThemeSampleScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final c = Theme.of(context).colorScheme;
-    if (entry.layout == 'splash') return _splash(c);
+    if (entry.layout == 'splash') return _splash(context, c);
     if (entry.layout == 'canvas') return _canvas(c);
     if (entry.layout == 'timeline') return _timeline(c);
     if (entry.layout == 'complete') return _complete(c);
@@ -258,26 +259,67 @@ class _ThemeSampleScreen extends StatelessWidget {
   }
 
 
-  Widget _splash(ColorScheme c) => Scaffold(body: SafeArea(child: Column(children: [
-    const Spacer(),
-    Icon(Icons.auto_awesome, size: 70, color: c.primary),
-    const SizedBox(height: 8),
-    Text('NIARIM', style: TextStyle(color: c.onSurface,
-      fontSize: 32, fontWeight: FontWeight.w800, letterSpacing: 2)),
-    const Spacer(),
-    Padding(padding: const EdgeInsets.all(20), child: Column(children: [
-      Container(height: 96, alignment: Alignment.center,
-        decoration: BoxDecoration(color: c.primary, borderRadius: BorderRadius.circular(16)),
-        child: Text(t('作品をつくる', 'Create artwork'),
-          style: TextStyle(color: c.onPrimary, fontSize: 22, fontWeight: FontWeight.bold))),
-      const SizedBox(height: 18),
-      Container(height: 96, alignment: Alignment.center,
-        decoration: BoxDecoration(color: c.secondary, borderRadius: BorderRadius.circular(16)),
-        child: Text(t('作品広場', 'Community'),
-          style: TextStyle(color: c.onSecondary, fontSize: 22, fontWeight: FontWeight.bold))),
-    ])),
-    const Spacer(),
-  ])));
+  Widget _splash(BuildContext context, ColorScheme c) {
+    // Mirror splash_screen.dart: the icon/label foreground is exactly the
+    // user-selected menu background, NOT auto-generated onPrimary/onSecondary.
+    final foreground = context.read<ThemeService>().current.menuBgColor;
+    Widget action(IconData icon, String title, String? subtitle,
+        Color first, Color second) => Container(
+      width: 150, height: 166,
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(24),
+        gradient: LinearGradient(colors: [first, second],
+          begin: Alignment.topLeft, end: Alignment.bottomRight),
+      ),
+      child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [
+        Icon(icon, size: 60, color: foreground),
+        const SizedBox(height: 10),
+        Text(title, maxLines: 3, textAlign: TextAlign.center,
+          style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold,
+            color: foreground)),
+        if (subtitle != null)
+          Text(subtitle, textAlign: TextAlign.center,
+            style: TextStyle(fontSize: 12, color: foreground)),
+      ]),
+    );
+    final logo = Column(mainAxisSize: MainAxisSize.min, children: [
+      Container(width: 110, height: 110, padding: const EdgeInsets.all(8.8),
+        decoration: BoxDecoration(color: c.primary,
+          borderRadius: BorderRadius.circular(24.2)),
+        child: SvgPicture.asset('assets/logo/app_logo.svg',
+          colorFilter: ColorFilter.mode(foreground, BlendMode.srcIn))),
+      const SizedBox(height: 10),
+      SvgPicture.asset('assets/logo/title_logo.svg',
+        width: 220, height: 220 * 690 / 3470,
+        colorFilter: ColorFilter.mode(c.primary, BlendMode.srcIn)),
+    ]);
+    final community = action(Icons.movie_filter_outlined,
+      t('作品広場', 'Community'), t('投稿作品をみる', 'Browse works'),
+      c.secondary, c.secondaryContainer);
+    final create = action(Icons.brush_outlined,
+      t('作品をつくる', 'Create artwork'), null,
+      c.primary, c.primaryContainer);
+    final landscape = MediaQuery.orientationOf(context) == Orientation.landscape;
+    final arrangement = landscape
+        ? Row(mainAxisSize: MainAxisSize.min, children: [
+            community, const SizedBox(width: 40), logo,
+            const SizedBox(width: 40), create,
+          ])
+        : Column(mainAxisSize: MainAxisSize.min, children: [
+            community, const SizedBox(height: 32), logo,
+            const SizedBox(height: 32), create,
+          ]);
+    return Scaffold(
+      backgroundColor: c.surface,
+      body: SafeArea(child: Center(
+        child: Padding(
+          padding: const EdgeInsets.all(16),
+          child: FittedBox(fit: BoxFit.scaleDown, child: arrangement),
+        ),
+      )),
+    );
+  }
 
   Widget _projects(ColorScheme c) => Column(children: [
     Container(height: 44, color: c.surfaceContainer, child: Row(
