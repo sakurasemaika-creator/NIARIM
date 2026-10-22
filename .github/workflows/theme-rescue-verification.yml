@@ -14,6 +14,7 @@ on:
       - 'lib/services/theme_service.dart'
       - 'lib/models/app_theme_preset.dart'
       - 'lib/services/home_widget_refresh.dart'
+      - 'lib/screens/timeline/timeline_screen.dart'
       - 'lib/engine/niatra_serializer.dart'
       - 'lib/l10n/**'
       - 'test/theme_contrast_rescue_test.dart'
