@@ -2522,7 +2522,16 @@ class AppLocalizationsJa extends AppLocalizations {
   String get themeColorAccent => 'アクセントカラー';
 
   @override
-  String get themeColorText => '文字色';
+  String get themeColorText => '本文・通常の文字色';
+
+  @override
+  String get themeColorButtonText => 'ボタン内の文字・アイコン色';
+
+  @override
+  String get themeColorMenuText => 'メニュー・上部バーの文字色';
+
+  @override
+  String get themeColorSelectionText => '選択中の文字・アイコン色';
 
   @override
   String get themeColorPanelBg => 'パネル背景色';
