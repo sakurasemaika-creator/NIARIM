@@ -378,6 +378,186 @@ class _ThemeSampleScreen extends StatelessWidget {
     )),
   ));
 
+
+  Widget _form(ColorScheme c) => _list([
+    _heading(t('プロジェクト名', 'Project name')),
+    _card(Text(t('新しい作品', 'New project'))),
+    _heading(t('キャンバスサイズ', 'Canvas size')),
+    _card(const Text('1920 × 1080   ·   16:9')),
+    _card(_row(Icons.color_lens_outlined, t('背景色', 'Background'))),
+    _card(_row(Icons.speed, t('フレームレート', 'Frame rate'), subtitle: '24 fps')),
+    const SizedBox(height: 18),
+    _cta(c, t('作成', 'Create'), icon: Icons.add),
+  ]);
+
+  Widget _detail(ColorScheme c) => _list([
+    _art(c, height: 200),
+    _card(Row(mainAxisAlignment: MainAxisAlignment.spaceAround, children: const [
+      Icon(Icons.skip_previous), Icon(Icons.play_arrow), Icon(Icons.skip_next),
+    ])),
+    _cta(c, t('編集開始', 'Start editing'), icon: Icons.brush),
+    _heading(t('プロジェクト情報', 'Project information')),
+    _row(Icons.aspect_ratio, t('描画領域', 'Canvas'), subtitle: '1920 × 1080'),
+    _row(Icons.movie_filter, t('総フレーム数', 'Frames'), subtitle: '48'),
+    _row(Icons.schedule, t('制作時間', 'Work time'), subtitle: '1h 20m'),
+  ]);
+
+  Widget _export(ColorScheme c) => _list([
+    _heading(t('品質プリセット', 'Quality preset')),
+    _card(Text(t('標準       高画質       カスタム',
+      'Standard      High       Custom'))),
+    const SizedBox(height: 12),
+    _heading(t('書き出し形式', 'Export format')),
+    _row(Icons.radio_button_checked, 'MP4', subtitle: 'H.264'),
+    _row(Icons.radio_button_unchecked, 'GIF'),
+    _row(Icons.radio_button_unchecked, 'WebM',
+      subtitle: t('透過に対応', 'Supports transparency')),
+    _row(Icons.radio_button_unchecked, 'AVI'),
+    const SizedBox(height: 20),
+    _cta(c, t('書き出し開始', 'Start export'), icon: Icons.download),
+  ]);
+
+  Widget _post(ColorScheme c) => _list([
+    _heading(t('作品を投稿', 'Post artwork')),
+    _card(Text(t('作品タイトル', 'Artwork title'))),
+    _card(Text(t('作品の説明', 'Description'))),
+    _row(Icons.movie, t('投稿する動画', 'Video')),
+    _row(Icons.sell_outlined, t('タグ', 'Tags')),
+    _row(Icons.toggle_on, t('作品広場に表示', 'Show in community')),
+    const SizedBox(height: 20),
+    _cta(c, t('投稿する', 'Post'), icon: Icons.cloud_upload),
+  ]);
+
+  Widget _theme(ColorScheme c) => _list([
+    _heading(t('カラーカスタマイズ', 'Color customization')),
+    ...[
+      (t('アクセント', 'Accent'), c.primary),
+      (t('文字色', 'Text'), c.onSurface),
+      (t('パネル背景', 'Panel background'), c.surface),
+      (t('メニュー背景', 'Menu background'), c.surfaceContainer),
+      (t('選択色', 'Selection'), c.primaryContainer),
+      (t('更新マーク', 'Update mark'), c.tertiary),
+    ].map((e) => _card(Row(children: [
+      CircleAvatar(radius: 16, backgroundColor: e.$2),
+      const SizedBox(width: 14),
+      Expanded(child: Text(e.$1)),
+      const Icon(Icons.chevron_right),
+    ]))),
+    _heading(t('プリセット', 'Presets')),
+    _card(_row(Icons.palette, t('レッド（ライト）', 'Red (Light)'))),
+    _card(_row(Icons.palette, t('ブルー（ダーク）', 'Blue (Dark)'))),
+  ]);
+
+  Widget _settings(ColorScheme c) => _list([
+    ...[
+      (Icons.tune, t('基本', 'Basic')),
+      (Icons.speed, t('パフォーマンス', 'Performance')),
+      (Icons.gesture, t('ジェスチャー', 'Gestures')),
+      (Icons.edit, t('ペン入力', 'Pen input')),
+      (Icons.dashboard_customize, t('ワークスペース', 'Workspace')),
+      (Icons.palette, t('テーマ・外観', 'Theme & appearance')),
+      (Icons.font_download, t('フォント管理', 'Fonts')),
+      (Icons.help_outline, t('ヘルプ', 'Help')),
+    ].map((e) => _card(_row(e.$1, e.$2))),
+  ]);
+
+  Widget _preferences(ColorScheme c) => _list([
+    _heading(entry.label(ja)),
+    _card(_row(Icons.tune, t('設定項目', 'Setting'),
+      subtitle: t('有効', 'Enabled'))),
+    _card(_row(Icons.settings, t('標準', 'Standard'))),
+    _card(Column(children: [
+      _heading(t('強さ', 'Strength')),
+      Slider(value: .6, onChanged: null),
+    ])),
+    _card(_row(Icons.touch_app, t('操作方法', 'Controls'))),
+  ]);
+
+  Widget _workspace(ColorScheme c) => _list([
+    _heading(t('ツールバー', 'Toolbar')),
+    _card(Row(mainAxisAlignment: MainAxisAlignment.spaceAround,
+      children: const [Icon(Icons.brush), Icon(Icons.colorize),
+        Icon(Icons.layers), Icon(Icons.pan_tool)])),
+    _card(_row(Icons.back_hand_outlined, t('左利きモード', 'Left-handed mode'))),
+    _card(_row(Icons.desktop_windows, t('PCモード', 'PC mode'))),
+    _card(_row(Icons.dashboard, t('パネル配置', 'Panel layout'))),
+    _cta(c, t('適用', 'Apply')),
+  ]);
+
+  Widget _premium(ColorScheme c) => _list([
+    Center(child: Icon(Icons.auto_awesome, size: 70, color: c.primary)),
+    _heading(t('プレミアムでもっと自由に', 'Create more with Premium')),
+    _card(_row(Icons.check, t('ウォーターマークなし', 'No watermark'))),
+    _card(_row(Icons.check, t('長尺アニメーション', 'Longer animations'))),
+    _card(_row(Icons.check, t('多彩な補正', 'More effects'))),
+    const SizedBox(height: 12),
+    _cta(c, t('プランを見る', 'View plans')),
+  ]);
+
+  Widget _storage(ColorScheme c) => _list([
+    _heading(t('ストレージ使用量', 'Storage use')),
+    _card(Column(children: [
+      const Text('380 MB / 2 GB'),
+      const SizedBox(height: 10),
+      LinearProgressIndicator(value: .19, color: c.primary),
+    ])),
+    _row(Icons.folder, t('プロジェクト', 'Projects'), subtitle: '240 MB'),
+    _row(Icons.delete_outline, t('ゴミ箱', 'Trash'), subtitle: '36 MB'),
+  ]);
+
+  Widget _watermark(ColorScheme c) => _list([
+    _heading(t('ウォーターマーク', 'Watermark')),
+    _art(c, height: 180),
+    _card(_row(Icons.text_fields, t('テキストを追加', 'Add text'))),
+    _card(_row(Icons.add_photo_alternate, t('画像を追加', 'Add image'))),
+  ]);
+
+  Widget _transfer(ColorScheme c) => _list([
+    _heading(t('引き継ぎデータ', 'Transfer data')),
+    ...[t('設定', 'Settings'), t('ブラシ', 'Brushes'), t('素材', 'Materials')]
+      .map((item) => _card(_row(Icons.check_box_outline_blank, item))),
+    const SizedBox(height: 14),
+    _cta(c, t('書き出し', 'Export'), icon: Icons.file_upload),
+  ]);
+
+  Widget _widgets(ColorScheme c) => _list([
+    _heading(t('ホーム画面ウィジェット', 'Home screen widgets')),
+    _card(_row(Icons.image, t('表示する作品', 'Artwork'))),
+    _card(_row(Icons.color_lens, t('テーマ色に合わせる', 'Follow theme colors'))),
+    _art(c, height: 160),
+  ]);
+
+  Widget _notifications(ColorScheme c) => _list([
+    _card(_row(Icons.person_add, t('新しいフォロワー', 'New follower'))),
+    _card(_row(Icons.notifications_outlined, t('お知らせ', 'Notification'))),
+  ]);
+
+  Widget _save(ColorScheme c) => _list([
+    _heading(t('セーブ管理', 'Save management')),
+    ...List.generate(4, (i) => _card(_row(
+      i == 0 ? Icons.save : Icons.add_box_outlined,
+      i == 0 ? t('クイックセーブ', 'Quick save')
+        : t('セーブスロット', 'Save slot') + ' ' + i.toString()))),
+  ]);
+
+  Widget _catalog(ColorScheme c) => _list([
+    _heading(entry.label(ja)),
+    _card(_row(Icons.search, t('検索', 'Search'))),
+    ...List.generate(3, (i) => _card(_row(
+      i.isEven ? Icons.folder_outlined : Icons.description_outlined,
+      t('サンプル項目', 'Sample item') + ' ' + (i + 1).toString()))),
+    const SizedBox(height: 12),
+    _cta(c, t('追加', 'Add'), icon: Icons.add),
+  ]);
+
+  Widget _legal(ColorScheme c) => _list([
+    _heading(entry.label(ja)),
+    _card(Text(t('アプリの利用条件やデータの取扱いについて表示します。',
+      'Terms and data handling information appear here.'))),
+    _card(Text(t('プレビュー用の見本です。', 'This is a read-only preview.'))),
+  ]);
+
   // SCREEN_LAYOUTS
+
 
 }
