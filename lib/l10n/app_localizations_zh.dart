@@ -2508,7 +2508,16 @@ class AppLocalizationsZh extends AppLocalizations {
   String get themeColorAccent => '强调色';
 
   @override
-  String get themeColorText => '文字颜色';
+  String get themeColorText => '正文及普通文字颜色';
+
+  @override
+  String get themeColorButtonText => '按钮文字与图标颜色';
+
+  @override
+  String get themeColorMenuText => '菜单和顶部栏文字颜色';
+
+  @override
+  String get themeColorSelectionText => '选中项文字与图标颜色';
 
   @override
   String get themeColorPanelBg => '面板背景色';
@@ -9891,7 +9900,16 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get themeColorAccent => '強調色';
 
   @override
-  String get themeColorText => '文字顏色';
+  String get themeColorText => '內文及一般文字顏色';
+
+  @override
+  String get themeColorButtonText => '按鈕文字與圖示顏色';
+
+  @override
+  String get themeColorMenuText => '選單與頂端列文字顏色';
+
+  @override
+  String get themeColorSelectionText => '選取項文字與圖示顏色';
 
   @override
   String get themeColorPanelBg => '面板背景色';
