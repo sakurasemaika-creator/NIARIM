@@ -464,17 +464,51 @@ class _ThemeSampleScreen extends StatelessWidget {
     ].map((e) => _card(_row(e.$1, e.$2))),
   ]);
 
-  Widget _preferences(ColorScheme c) => _list([
-    _heading(entry.label(ja)),
-    _card(_row(Icons.tune, t('設定項目', 'Setting'),
-      subtitle: t('有効', 'Enabled'))),
-    _card(_row(Icons.settings, t('標準', 'Standard'))),
-    _card(Column(children: [
-      _heading(t('強さ', 'Strength')),
-      Slider(value: .6, onChanged: null),
-    ])),
-    _card(_row(Icons.touch_app, t('操作方法', 'Controls'))),
-  ]);
+  Widget _preferences(ColorScheme c) {
+    final labels = switch (entry.id) {
+      'performance' => [
+        t('描画品質', 'Rendering quality'),
+        t('Undoの回数', 'Undo limit'),
+        t('ゴミ箱の自動削除', 'Trash cleanup'),
+        t('低負荷モード', 'Low power mode'),
+      ],
+      'gestures' => [
+        t('2本指タップ', 'Two-finger tap'),
+        t('長押し操作', 'Long press'),
+        t('ピンチ操作', 'Pinch gesture'),
+        t('回転操作', 'Rotation'),
+      ],
+      'shortcuts' => [
+        t('取り消し', 'Undo'),
+        t('やり直し', 'Redo'),
+        t('ツール切り替え', 'Tool switch'),
+        t('キャンバス移動', 'Pan canvas'),
+      ],
+      'pen' => [
+        t('手のひら誤反応防止', 'Palm rejection'),
+        t('筆圧カーブ', 'Pressure curve'),
+        t('傾き検知', 'Tilt detection'),
+        t('ペンボタン割り当て', 'Pen buttons'),
+      ],
+      'bucket' => [
+        t('許容誤差', 'Tolerance'),
+        t('隙間を閉じる', 'Close gaps'),
+        t('線の下に拡張', 'Expand under lines'),
+        t('アンチエイリアス', 'Anti-aliasing'),
+      ],
+      _ => [t('設定項目', 'Setting'), t('標準', 'Standard')],
+    };
+    return _list([
+      _heading(entry.label(ja)),
+      ...labels.map((label) => _card(_row(
+        Icons.tune, label,
+        subtitle: t('設定値', 'Setting value')))),
+      _card(Column(children: [
+        _heading(t('調整', 'Adjustment')),
+        Slider(value: .6, onChanged: null),
+      ])),
+    ]);
+  }
 
   Widget _workspace(ColorScheme c) => _list([
     _heading(t('ツールバー', 'Toolbar')),
@@ -543,15 +577,44 @@ class _ThemeSampleScreen extends StatelessWidget {
         : t('セーブスロット', 'Save slot') + ' ' + i.toString()))),
   ]);
 
-  Widget _catalog(ColorScheme c) => _list([
-    _heading(entry.label(ja)),
-    _card(_row(Icons.search, t('検索', 'Search'))),
-    ...List.generate(3, (i) => _card(_row(
-      i.isEven ? Icons.folder_outlined : Icons.description_outlined,
-      t('サンプル項目', 'Sample item') + ' ' + (i + 1).toString()))),
-    const SizedBox(height: 12),
-    _cta(c, t('追加', 'Add'), icon: Icons.add),
-  ]);
+  Widget _catalog(ColorScheme c) {
+    final rows = switch (entry.id) {
+      'materials' || 'widget_art' => [
+        (Icons.image, 'image.png'),
+        (Icons.movie, 'clip.mp4'),
+        (Icons.audiotrack, 'sound.wav'),
+      ],
+      'fonts' => [
+        (Icons.text_fields, '白光明朝'),
+        (Icons.text_fields, 'くらむぼん'),
+        (Icons.text_fields, 'Noto Serif JP'),
+      ],
+      'help' || 'tips' => [
+        (Icons.brush, t('描画', 'Drawing')),
+        (Icons.layers, t('レイヤー', 'Layers')),
+        (Icons.movie_filter, t('アニメーション', 'Animation')),
+        (Icons.file_download, t('書き出し', 'Export')),
+      ],
+      'autofill' => [
+        (Icons.palette_outlined, t('キャラクター A', 'Character A')),
+        (Icons.palette_outlined, t('キャラクター B', 'Character B')),
+        (Icons.palette_outlined, t('背景', 'Background')),
+      ],
+      'sizes' => [
+        (Icons.crop_16_9, '1920 × 1080'),
+        (Icons.crop_square, '1080 × 1080'),
+        (Icons.crop_portrait, '1080 × 1920'),
+      ],
+      _ => [(Icons.folder_outlined, t('サンプル', 'Sample'))],
+    };
+    return _list([
+      _heading(entry.label(ja)),
+      if (entry.id != 'sizes') _card(_row(Icons.search, t('検索', 'Search'))),
+      ...rows.map((row) => _card(_row(row.$1, row.$2))),
+      const SizedBox(height: 12),
+      _cta(c, t('追加', 'Add'), icon: Icons.add),
+    ]);
+  }
 
   Widget _legal(ColorScheme c) => _list([
     _heading(entry.label(ja)),
