@@ -326,33 +326,18 @@ class NiatraSerializer {
 
   // ─── ThemePreset ──────────────────────────────────────────────────────
 
-  static Map<String, dynamic> _serializeThemePreset(AppThemePreset t) => {
-    'id': t.id,
-    'name': t.name,
-    'accentColor': t.accentColor.toARGB32(),
-    'textColor': t.textColor.toARGB32(),
-    'panelBgColor': t.panelBgColor.toARGB32(),
-    'menuBgColor': t.menuBgColor.toARGB32(),
-    'selectionColor': t.selectionColor.toARGB32(),
-    'updateMarkColor': t.updateMarkColor.toARGB32(),
-    'isFavorite': t.isFavorite,
-  };
+  // Export/import the current mandatory theme schema as a single unit.
+  // All body/button/menu/selection foregrounds must survive transfer.
+  // We intentionally do not convert prerelease obsolete schemas.
+  static Map<String, dynamic> _serializeThemePreset(AppThemePreset theme) =>
+      theme.toJson();
 
-  // 'baseTheme'キーは廃止済みだが、旧バージョンで書き出された.niatraファイル
-  // に含まれている場合があるため、jにあっても単に無視する（読み込みエラー
-  // にしない）。
-  static AppThemePreset _deserializeThemePreset(Map<String, dynamic> j) =>
-      AppThemePreset(
-        id: 'theme_${DateTime.now().microsecondsSinceEpoch}_${j['id']}',
-        name: j['name'] as String,
-        accentColor: Color(j['accentColor'] as int),
-        textColor: Color(j['textColor'] as int),
-        panelBgColor: Color(j['panelBgColor'] as int),
-        menuBgColor: Color(j['menuBgColor'] as int),
-        selectionColor: Color(j['selectionColor'] as int),
-        updateMarkColor: Color(j['updateMarkColor'] as int),
-        isFavorite: j['isFavorite'] as bool? ?? false,
-      );
+  static AppThemePreset _deserializeThemePreset(Map<String, dynamic> json) {
+    final imported = AppThemePreset.fromJson(json);
+    return imported.copyWith(
+      id: 'theme_${DateTime.now().microsecondsSinceEpoch}_${imported.id}',
+    );
+  }
 }
 
 class NiatraData {
