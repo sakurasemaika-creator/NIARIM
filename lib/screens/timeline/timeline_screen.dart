@@ -1592,7 +1592,7 @@ class _TimelineScreenState extends State<TimelineScreen> {
                 child: IconButton(
                   icon: Icon(
                     Icons.fullscreen,
-                    color: context.watch<ThemeService>().current.textColor,
+                    color: context.watch<ThemeService>().current.menuTextColor,
                     size: 20,
                   ),
                   tooltip: l10n.timelinePreviewFullscreenTooltip,
