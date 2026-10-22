@@ -2664,14 +2664,13 @@ class AppLocalizationsFr extends AppLocalizations {
   String get themeColorUpdateMark => 'Couleur de la marque de mise à jour';
 
   @override
-  String get themeContrastErrorTitle => 'Le texte deviendrait illisible';
-
-  @override
-  String get themeContrastErrorBody =>
-      'La couleur du texte et celle du fond sont trop proches : le texte serait presque invisible. L’écran des réglages lui-même deviendrait illisible et vous ne pourriez plus revenir en arrière, cette combinaison ne peut donc pas être enregistrée. Modifiez la luminosité de l’une des deux.';
-
-  @override
   String get themeUnreadableResetButton => 'Réinitialiser le thème';
+
+  @override
+  String get themeResetConfirmTitle => 'Réinitialiser les couleurs du thème ?';
+
+  @override
+  String get themeResetConfirmAction => 'Réinitialiser';
 
   @override
   String get themeUnreadableResetDone =>
