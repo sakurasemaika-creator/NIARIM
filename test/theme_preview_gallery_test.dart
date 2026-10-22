@@ -86,16 +86,11 @@ void main() {
     SharedPreferences.setMockInitialValues({});
     mockPathProvider();
     final providers = await tester.runAsync(buildAppProviders);
-    final themeService = ThemeService();
-    await themeService.init();
     final screenshot = GlobalKey();
     await tester.pumpWidget(RepaintBoundary(
       key: screenshot,
       child: MultiProvider(
-        providers: [
-          ...providers!,
-          ChangeNotifierProvider<ThemeService>.value(value: themeService),
-        ],
+        providers: providers!,
         child: Builder(
           builder: (context) => MaterialApp(
             locale: const Locale('ja'),
@@ -114,6 +109,10 @@ void main() {
     expect(find.text('練習作品'), findsOneWidget);
     expect(tester.takeException(), isNull);
 
+    final themeService = Provider.of<ThemeService>(
+      tester.element(find.byKey(const Key('themeInlinePreview'))),
+      listen: false,
+    );
     final before = Theme.of(tester.element(
       find.byKey(const Key('themeInlinePreview')))).colorScheme.primary;
     themeService.previewCurrent(themeService.current.copyWith(
