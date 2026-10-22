@@ -293,11 +293,11 @@ class _ThemeSampleScreen extends StatelessWidget {
         leading: const Icon(Icons.arrow_back),
         title: Text(entry.label(ja), overflow: TextOverflow.ellipsis),
         actions: const [Padding(padding: EdgeInsets.all(12), child: Icon(Icons.more_vert))]),
-      body: _body(c),
+      body: _body(context, c),
     );
   }
 
-  Widget _body(ColorScheme c) {
+  Widget _body(BuildContext context, ColorScheme c) {
     switch(entry.layout) {
       case 'projects': return _projects(c);
       case 'shared': return _shared(c);
