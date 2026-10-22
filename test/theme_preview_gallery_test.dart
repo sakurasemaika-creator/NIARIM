@@ -5,6 +5,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:niarim/services/theme_service.dart';
 import 'package:niarim/l10n/app_localizations.dart';
 import 'package:niarim/screens/settings/theme_preview_gallery_screen.dart';
+import 'package:niarim/screens/settings/theme_settings_screen.dart';
 
 void main() {
   test('gallery contains each independent screen once, no folder/tab variants', () {
@@ -48,6 +49,30 @@ void main() {
     expect(find.text('新規プロジェクト'), findsOneWidget);
     await tester.tap(find.byKey(const Key('themePreviewClose')));
     await tester.pumpAndSettle();
+  });
+
+  testWidgets('theme settings opens an on-demand full-screen gallery and returns', (tester) async {
+    SharedPreferences.setMockInitialValues({});
+    final themeService = ThemeService();
+    await themeService.init();
+    await tester.pumpWidget(ChangeNotifierProvider<ThemeService>.value(
+      value: themeService,
+      child: MaterialApp(
+        locale: const Locale('ja'),
+        supportedLocales: const [Locale('ja'), Locale('en')],
+        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        theme: themeService.themeData,
+        home: const ThemeSettingsScreen(),
+      ),
+    ));
+    await tester.pumpAndSettle();
+    expect(find.byKey(const Key('themePreviewOpen')), findsOneWidget);
+    await tester.tap(find.byKey(const Key('themePreviewOpen')));
+    await tester.pumpAndSettle();
+    expect(find.byKey(const Key('themePreviewPager')), findsOneWidget);
+    await tester.tap(find.byKey(const Key('themePreviewClose')));
+    await tester.pumpAndSettle();
+    expect(find.byKey(const Key('themePreviewOpen')), findsOneWidget);
   });
 
   testWidgets('gallery works at narrow 320px portrait width', (tester) async {
