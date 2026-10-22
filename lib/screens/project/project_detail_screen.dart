@@ -474,7 +474,7 @@ class _ProjectDetailScreenState extends State<ProjectDetailScreen> {
             color: theme.menuBgColor.withValues(alpha: 0.7),
             shape: const CircleBorder(),
             child: IconButton(
-              icon: Icon(Icons.fullscreen, color: theme.textColor, size: 20),
+              icon: Icon(Icons.fullscreen, color: theme.menuTextColor, size: 20),
               tooltip: l10n.projectDetailFullscreenTooltip,
               onPressed: () => setState(() => _isPreviewFullscreen = true),
             ),
