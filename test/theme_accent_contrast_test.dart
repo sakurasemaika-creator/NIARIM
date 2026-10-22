@@ -4,26 +4,23 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:niarim/models/app_theme_preset.dart';
 import 'package:niarim/services/theme_service.dart';
-import 'package:niarim/utils/color_contrast.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
-  void expectReadable(ThemeService service) {
+  void expectExactForegrounds(ThemeService service) {
+    final preset = service.current;
     final scheme = service.themeData.colorScheme;
-    for (final pair in [
-      (scheme.primary, scheme.onPrimary),
-      (scheme.secondary, scheme.onSecondary),
-    ]) {
-      expect(pair.$1.a, 1);
-      expect(pair.$2.a, 1);
-      expect(contrastRatio(pair.$1, pair.$2), greaterThanOrEqualTo(4.5));
-    }
+    expect(scheme.onPrimary, preset.buttonTextColor);
+    expect(scheme.onSecondary, preset.selectionTextColor);
+    expect(scheme.onPrimaryContainer, preset.selectionTextColor);
+    expect(scheme.onSurface, preset.textColor);
+    expect(service.themeData.appBarTheme.foregroundColor, preset.menuTextColor);
   }
 
   test(
-    'all built-in accents retain readable foregrounds on actual colors',
+    'all built-in themes use their expressly chosen foreground colors',
     () async {
       SharedPreferences.setMockInitialValues({});
       final service = ThemeService();
@@ -32,14 +29,14 @@ void main() {
       expect(service.presets.length, 28);
       for (final preset in service.presets) {
         service.applyPreset(preset.id);
-        expectReadable(service);
+        expectExactForegrounds(service);
         expect(service.current.toJson(), preset.toJson());
       }
     },
   );
 
   test(
-    'transparent and opposite accents compose without changing saved colors',
+    'extreme accents never overwrite chosen text and icon colors',
     () async {
       for (final preset in [
         AppThemePreset.defaultLight.copyWith(
@@ -56,7 +53,7 @@ void main() {
         });
         final service = ThemeService();
         await service.init();
-        expectReadable(service);
+        expectExactForegrounds(service);
         expect(service.current.toJson(), preset.toJson());
         final preferences = await SharedPreferences.getInstance();
         expect(
