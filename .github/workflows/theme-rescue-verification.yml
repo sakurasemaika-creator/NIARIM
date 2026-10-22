@@ -14,11 +14,14 @@ on:
       - 'lib/services/theme_service.dart'
       - 'lib/models/app_theme_preset.dart'
       - 'lib/services/home_widget_refresh.dart'
+      - 'lib/engine/niatra_serializer.dart'
       - 'lib/l10n/**'
       - 'test/theme_contrast_rescue_test.dart'
       - 'test/theme_preview_gallery_test.dart'
       - 'test/theme_accent_contrast_test.dart'
       - 'test/theme_preset_adopt_test.dart'
+      - 'test/niatra_serializer_test.dart'
+      - 'test/home_widget_shortcut_design_test.dart'
 
 jobs:
   verify:
@@ -41,6 +44,8 @@ jobs:
           flutter test test/theme_preview_gallery_test.dart --reporter expanded
           flutter test test/theme_accent_contrast_test.dart --reporter expanded
           flutter test test/theme_preset_adopt_test.dart --reporter expanded
+          flutter test test/niatra_serializer_test.dart --reporter expanded
+          flutter test test/home_widget_shortcut_design_test.dart --reporter expanded
       - name: Theme and app static analysis
         run: flutter analyze lib test --no-fatal-infos --no-fatal-warnings
       - name: Upload inline preview Flutter screenshot
