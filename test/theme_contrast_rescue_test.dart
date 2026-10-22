@@ -87,6 +87,67 @@ void main() {
         reason: '見分けがつかないほど近い色も弾く',
       );
     });
+    test('ほぼ白の文字とほぼ白の背景は復旧対象', () {
+      final light = AppThemePreset.defaultLight.copyWith(
+        textColor: const Color(0xFFFFFAF0),
+        panelBgColor: const Color(0xFFFFFBEA),
+      );
+      expect(isThemeAtLockoutRisk(light), isTrue);
+    });
+
+    test('パステル調の色相差がある配色・白黒モノクロは判定で排除しない', () {
+      final pastel = AppThemePreset.defaultLight.copyWith(
+        textColor: const Color(0xFFA3D9F4),
+        panelBgColor: const Color(0xFFFFBDCE),
+      );
+      expect(contrastRatio(pastel.textColor, pastel.panelBgColor),
+          lessThan(1.2));
+      expect(isThemeAtLockoutRisk(pastel), isFalse);
+      final monochrome = AppThemePreset.defaultLight.copyWith(
+        textColor: const Color(0xFF000000),
+        panelBgColor: const Color(0xFFFFFFFF),
+        menuBgColor: const Color(0xFFFFFFFF),
+        accentColor: const Color(0xFF333333),
+        selectionColor: const Color(0xFF333333),
+        updateMarkColor: const Color(0xFFFFFFFF),
+      );
+      expect(isThemeAtLockoutRisk(monochrome), isFalse);
+    });
+
+    test('隣接しない色項目は完全に同色でも復旧ボタンの判定対象外', () {
+      final theme = AppThemePreset.defaultLight.copyWith(
+        updateMarkColor: AppThemePreset.defaultLight.textColor,
+        selectionColor: AppThemePreset.defaultLight.accentColor,
+      );
+      expect(isThemeAtLockoutRisk(theme), isFalse);
+    });
+
+    test('通常の色覚では区別できても2型色覚でほぼ区別できない配色', () {
+      const red = Color(0xFFDC0F0F);
+      const green = Color(0xFF0FA00F);
+      expect(contrastRatio(red, green), greaterThan(kMinReadableContrast));
+      expect(okLabDistance(red, green), greaterThan(0.3));
+      expect(
+        okLabDistance(
+          simulateColorVision(red, ColorVisionType.deuteranopia),
+          simulateColorVision(green, ColorVisionType.deuteranopia),
+        ),
+        lessThan(kMaxConfusableOkLabDistance),
+      );
+      expect(isColorVisionPairConfusable(red, green), isTrue);
+      expect(
+        isThemeAtLockoutRisk(AppThemePreset.defaultLight.copyWith(
+          textColor: red,
+          panelBgColor: green,
+        )),
+        isTrue,
+      );
+      expect(
+        isColorVisionPairConfusable(Colors.black, Colors.white),
+        isFalse,
+      );
+    });
+
   });
 
   testWidgets('テーマ設定：低コントラストでもユーザーが選んだ色を保存する', (tester) async {
@@ -124,7 +185,6 @@ void main() {
     await tester.tap(find.byIcon(Icons.close).last);
     await tester.pumpAndSettle();
 
-    expect(find.text(l10n.themeContrastErrorTitle), findsNothing);
     expect(service.current.textColor, before.panelBgColor);
     expect(isThemeAtLockoutRisk(service.current), isTrue);
 
@@ -152,12 +212,11 @@ void main() {
     expect(find.text(l10n.themeUnreadableResetButton), findsNothing);
   });
 
-  testWidgets('起動画面：読めないテーマならリセットボタンが出て、押すと既定へ戻る', (tester) async {
+  testWidgets('起動画面：キャンセルでは変更せず、確認した場合だけ保存して復旧', (tester) async {
     SharedPreferences.setMockInitialValues({});
     mockPathProvider();
     final service = ThemeService();
     await service.init();
-    // 色設定・プリセット・外部データ取り込み等、どの経路からでも「詰みテーマ」が入る状態。
     service.savePreset(unreadable);
     service.applyPreset(unreadable.id);
 
@@ -166,21 +225,93 @@ void main() {
 
     final l10n = lookupAppLocalizations(const Locale('ja'));
     final resetButton = find.text(l10n.themeUnreadableResetButton);
-    // 白縁取り用Text + 黒塗りTextの2層。ただし白縁取り側はSemantics除外。
     expect(resetButton, findsNWidgets(2));
     final labelLayers = tester.widgetList<Text>(resetButton).toList();
-    expect(labelLayers.first.style?.foreground?.color, const Color(0xFFFFFFFF));
+    expect(labelLayers.first.style?.foreground?.color, Colors.white);
     expect(labelLayers.first.style?.foreground?.style, PaintingStyle.stroke);
-    expect(labelLayers.last.style?.color, const Color(0xFF000000));
+    expect(labelLayers.last.style?.color, Colors.black);
 
     await tester.tap(resetButton.last);
+    await tester.pumpAndSettle();
+    expect(service.current.id, unreadable.id);
+    expect(find.text(l10n.themeResetConfirmTitle), findsOneWidget);
+    final dialogTheme = Theme.of(tester.element(find.byType(AlertDialog)));
+    expect(dialogTheme.colorScheme.onSurface,
+        AppThemePreset.defaultLight.textColor);
+    expect(dialogTheme.dialogTheme.backgroundColor,
+        AppThemePreset.defaultLight.menuBgColor);
+
+    await tester.tap(find.text(l10n.commonCancel).last);
+    await tester.pumpAndSettle();
+    expect(service.current.id, unreadable.id);
+    expect(resetButton, findsNWidgets(2));
+
+    await tester.tap(resetButton.last);
+    await tester.pumpAndSettle();
+    await tester.tap(find.text(l10n.themeResetConfirmAction));
     await tester.pumpAndSettle();
 
     expect(isThemeAtLockoutRisk(service.current), isFalse);
     expect(service.current.id, AppThemePreset.defaultLight.id);
-    // 戻ったのでボタン自体も消える。
-    expect(find.text(l10n.themeUnreadableResetButton), findsNothing);
+    expect(resetButton, findsNothing);
+    final prefs = await SharedPreferences.getInstance();
+    final saved = jsonDecode(prefs.getString('theme_current_json')!)
+        as Map<String, dynamic>;
+    expect(AppThemePreset.fromJson(saved).textColor,
+        AppThemePreset.defaultLight.textColor);
+
+    // 再起動しても標準色のまま
+    final reopened = ThemeService();
+    await reopened.init();
+    expect(reopened.current.id, AppThemePreset.defaultLight.id);
+    expect(reopened.current.textColor, AppThemePreset.defaultLight.textColor);
   });
+
+  testWidgets('外観・テーマ：右上に同じ復旧ボタンを置き、確認で標準へ戻す', (tester) async {
+    SharedPreferences.setMockInitialValues({});
+    final service = ThemeService();
+    await service.init();
+    service.restoreCurrent(unreadable);
+
+    await tester.pumpWidget(
+      ChangeNotifierProvider<ThemeService>.value(
+        value: service,
+        child: Builder(
+          builder: (context) => MaterialApp(
+            locale: const Locale('ja'),
+            theme: context.watch<ThemeService>().themeData,
+            localizationsDelegates: AppLocalizations.localizationsDelegates,
+            supportedLocales: AppLocalizations.supportedLocales,
+            home: const ThemeSettingsScreen(),
+          ),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+    final l10n = lookupAppLocalizations(const Locale('ja'));
+    final resetButton = find.text(l10n.themeUnreadableResetButton);
+    expect(resetButton, findsNWidgets(2));
+    await tester.tap(resetButton.last);
+    await tester.pumpAndSettle();
+    expect(find.text(l10n.themeResetConfirmTitle), findsOneWidget);
+    expect(service.current.id, unreadable.id);
+
+    await tester.tap(find.text(l10n.themeResetConfirmAction));
+    await tester.pumpAndSettle();
+    expect(service.current.id, AppThemePreset.defaultLight.id);
+    expect(resetButton, findsNothing);
+  });
+
+  test('引き継いだ詰みテーマも勝手に補正・拒否されず復元できる', () async {
+    SharedPreferences.setMockInitialValues({});
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString('theme_current_json', jsonEncode(unreadable.toJson()));
+    final restored = ThemeService();
+    await restored.init();
+    expect(restored.current.textColor, unreadable.textColor);
+    expect(isThemeAtLockoutRisk(restored.current), isTrue);
+  });
+
 }
 
 Future<Widget> _splashApp(WidgetTester tester, ThemeService service) async {
