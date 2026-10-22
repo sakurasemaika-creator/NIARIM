@@ -55,11 +55,12 @@ void main() {
 
     expect(find.byKey(const Key('themePreviewPager')), findsOneWidget);
     expect(tester.widget<Text>(find.byKey(const Key('themePreviewTitle'))).data, '起動画面');
-    expect(find.text('NIARIM'), findsOneWidget);
+    expect(find.text('作品広場'), findsOneWidget);
+    expect(find.byIcon(Icons.movie_filter_outlined), findsOneWidget);
     await tester.tap(find.byKey(const Key('themePreviewNext')));
     await tester.pumpAndSettle();
     expect(tester.widget<Text>(find.byKey(const Key('themePreviewTitle'))).data, 'プロジェクト一覧');
-    expect(find.text('NIARIM'), findsNothing);
+    expect(find.text('作品広場'), findsNothing);
     await tester.drag(find.byKey(const Key('themePreviewPager')), const Offset(-450, 0));
     await tester.pumpAndSettle();
     expect(tester.widget<Text>(find.byKey(const Key('themePreviewTitle'))).data, themePreviewEntries[2].ja);
