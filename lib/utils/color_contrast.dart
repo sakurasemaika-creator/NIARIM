@@ -4,27 +4,13 @@ import 'package:flutter/material.dart';
 
 import '../models/app_theme_preset.dart';
 
-/// テーマの「操作不能リスク」を見つけるための保守的なヒューリスティック。
+/// テーマが操作不能になる場合の復旧導線を判定する。
 ///
-/// **この判定でユーザーの配色設定を拒否してはならない。** 色相の差などを
-/// 人間が識別できるかすべて判定できるわけではなく、低い値は「必ず読めない」
-/// ことを意味しない。ここでの目的は、ほぼ同色の文字/背景などで起動画面の
-/// 操作導線が埋もれる危険がありそうな場合に、復旧ボタンを表示することだけ。
-///
-/// - テーマ・外観設定では、選ばれた色をそのまま保存する。
-/// - 現在のテーマがリスク条件に該当すれば、起動画面とテーマ・外観画面の右上に固定色リセットボタンを表示する。
-/// - 判定は手動設定、プリセット適用、import、.niatra等の取り込み元を問わない。
-///
-/// ## 判定方針
-///
-/// 正常色覚（変換なし）、1型、2型、3型の色覚模擬後、それぞれで
-/// OKLab色差を計算する。どれか1つでも実際に重なる重要な色の
-/// 組み合わせがほぼ同色になれば復旧ボタンを表示する。
-/// 明暗コントラスト比のみを理由に表示しないため、パステルカラーや
-/// 色相差のある配色の自由度を保つ。閾値は人間の見え方を保証する
-/// 医学的基準ではなく、復旧UIの表示にだけ使う経験的な目安。
-const double kMinReadableContrast = 1.2;
-
+/// 色差ではなく「背景上の文字・主要アイコンがほとんど読めない」ことが対象。
+/// APCAの知覚的文字コントラストを正常・色覚模擬後の実表示色で求める。
+/// 文字色や背景色を自動補正したり、ユーザーの色設定を拒否しない。
+/// 判定はThemeService側で現在テーマごとにキャッシュし、
+/// 描画フレーム、スクロール、アニメーションでは再計算しない。
 /// sRGBの相対輝度（WCAG 2.1の定義）。
 double relativeLuminance(Color color) {
   double channel(double v) =>
@@ -41,6 +27,63 @@ double contrastRatio(Color a, Color b) {
   final lighter = la > lb ? la : lb;
   final darker = la > lb ? lb : la;
   return (lighter + 0.05) / (darker + 0.05);
+}
+
+/// APCA-W3 0.0.98G (sRGB)の背景上の文字コントラスト（Lc）。
+///
+/// foregroundは実際に描画する文字/アイコン、backgroundは直下の背景。
+/// 値の符号は文字と背景の明暗方向を表す。復旧リスクでは絶対値を使う。
+/// https://github.com/Myndex/SAPC-APCA/blob/master/documentation/README.md
+///
+/// APCAの一般的な合否を判定する関数ではなく、文字が消えかける
+/// 低コントラスト領域だけを検出する。色相の違いだけでは判定しない。
+double apcaContrast(Color foreground, Color background) {
+  double screenY(Color color) {
+    final y = 0.2126729 * math.pow(color.r, 2.4).toDouble() +
+        0.7151522 * math.pow(color.g, 2.4).toDouble() +
+        0.0721750 * math.pow(color.b, 2.4).toDouble();
+    return y < 0.022 ? y + math.pow(0.022 - y, 1.414) : y;
+  }
+
+  final textY = screenY(foreground);
+  final backgroundY = screenY(background);
+  if ((backgroundY - textY).abs() < 0.0005) return 0;
+
+  final raw = backgroundY > textY
+      ? 1.14 * (math.pow(backgroundY, 0.56) - math.pow(textY, 0.57))
+      : 1.14 * (math.pow(backgroundY, 0.65) - math.pow(textY, 0.62));
+  if (raw.abs() < 0.1) return 0;
+  return (raw - (raw > 0 ? 0.027 : -0.027)) * 100;
+}
+
+/// 「文字がほぼ消えて操作できない」を推定する復旧導線専用の暫定値。
+/// APCAの勧告で Lc15未満は実質不可視、Lc30未満は文字に不十分な領域。
+/// 中間の20を復旧表示用に採用。通常の可読性合格ラインではない。
+const double kThemeRescueUnusableTextLc = 20.0;
+
+/// 本当に重要なUI文字と背景だけをテストする。
+/// 正常色覚をまず判定し、読めるときだけ1/2/3型の模擬を実施。
+/// 文字サイズや字体、表示倍率そのものの推定は行わず、
+/// 低スペック端末でも短時間で済む一定個数の計算に限定する。
+bool isEssentialTextNearlyInvisible(Color foreground, Color background) {
+  if (apcaContrast(foreground, background).abs() <
+      kThemeRescueUnusableTextLc) {
+    return true;
+  }
+  for (final type in const [
+    ColorVisionType.protanopia,
+    ColorVisionType.deuteranopia,
+    ColorVisionType.tritanopia,
+  ]) {
+    if (apcaContrast(
+          simulateColorVision(foreground, type),
+          simulateColorVision(background, type),
+        ).abs() <
+        kThemeRescueUnusableTextLc) {
+      return true;
+    }
+  }
+  return false;
 }
 
 /// Keeps the preferred foreground when it meets normal-text contrast on the
@@ -195,14 +238,14 @@ bool isColorVisionPairConfusable(Color a, Color b) {
   return false;
 }
 
-/// [preset]で実際に描画が重なる文字・操作要素と背景のペアだけを判定する。
+/// [preset]の重要な操作において、実際に重なる文字・アイコンと背景を判定する。
 ///
 /// - 本文の文字色 × パネル背景色（一覧・設定画面の本文）
 /// - 本文の文字色 × メニュー背景色（メニュー・ダイアログの文字）
 /// - メニュー背景色 × アクセント色（起動画面の導線ボタン等の文字/背景）
 ///
-/// 色相によっては相対輝度が近くても人間には区別できるため、これは警告表示の目安であり、
-/// ユーザーの色選択を拒否したり、自動で別の色に差し替えたりする根拠にしてはならない。
+/// 色面を区別できるかではなく、小さな文字・アイコンを視認できるかの目安。
+/// ユーザーの色選択を拒否したり、自動で別の色に差し替えてはならない。
 List<({Color a, Color b})> readabilityCriticalPairs(AppThemePreset preset) {
   // 実描画に合わせ、透過カラーは使用面の背景へ合成してから比較する。
   // 異なる場所で使われる無関係な色は比較しない。
@@ -222,14 +265,12 @@ List<({Color a, Color b})> readabilityCriticalPairs(AppThemePreset preset) {
   ];
 }
 
-/// 重要な組み合わせのうち一組でも操作不能リスクがあれば救済導線を表示する。
-/// 色選択の拒否・自動補正・自動巻き戻しに使用してはならない。
+/// 実際に重なる操作に不可欠な文字・アイコンが、少なくとも1つの
+/// 視覚条件でほぼ識別不能になりそうな場合にだけ復旧ボタンを表示。
+/// 選んだテーマの保存、色の変更、その他のUI配色には一切影響させない。
 bool isThemeAtLockoutRisk(AppThemePreset preset) =>
     readabilityCriticalPairs(preset).any(
-      (p) =>
-          perceivedColorDistance(p.a, p.b) <
-              kMaxConfusableOkLabDistance ||
-          isColorVisionPairConfusable(p.a, p.b),
+      (pair) => isEssentialTextNearlyInvisible(pair.a, pair.b),
     );
 
 /// 既存テスト/呼び出しとの互換用の反転判定。
