@@ -63,6 +63,13 @@ void main() {
     await tester.drag(find.byKey(const Key('themePreviewPager')), const Offset(-450, 0));
     await tester.pumpAndSettle();
     expect(tester.widget<Text>(find.byKey(const Key('themePreviewTitle'))).data, themePreviewEntries[2].ja);
+    await tester.tap(find.byKey(const Key('themePreviewHideControls')));
+    await tester.pumpAndSettle();
+    expect(find.byKey(const Key('themePreviewNext')), findsNothing);
+    expect(find.byKey(const Key('themePreviewPager')), findsOneWidget);
+    await tester.tap(find.byKey(const Key('themePreviewShowControls')));
+    await tester.pumpAndSettle();
+    expect(find.byKey(const Key('themePreviewNext')), findsOneWidget);
     await tester.tap(find.byKey(const Key('themePreviewClose')));
     await tester.pumpAndSettle();
   });
