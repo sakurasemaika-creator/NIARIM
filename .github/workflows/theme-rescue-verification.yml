@@ -18,6 +18,7 @@ on:
       - 'lib/services/home_widget_service.dart'
       - 'lib/screens/settings/widget_settings_screen.dart'
       - 'lib/screens/project/project_detail_screen.dart'
+      - 'lib/screens/community/community_screen.dart'
       - 'lib/screens/timeline/timeline_screen.dart'
       - 'lib/engine/niatra_serializer.dart'
       - 'lib/l10n/**'
