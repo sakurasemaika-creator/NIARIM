@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'dart:io';
 
 import 'package:flutter/material.dart';
@@ -14,12 +15,11 @@ import 'package:niarim/utils/color_contrast.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-/// テーマ・外観設定で「文字色と背景色を同じ色にしてしまい、画面が読めなく
-/// なって元に戻せない」状態（詰み）を防ぐ2段構えの仕組みを検証する。
+/// テーマ設定ではユーザーの色選択を機械的に拒否せず、操作不能になりうる
+/// 配色の場合は起動画面右上の固定色リセットボタンから復旧できることを検証する。
 ///
-/// 1. テーマ・外観設定では、その組み合わせを保存させない
-/// 2. それでも読めないテーマになったときは、起動画面に固定色のリセット
-///    ボタンを出す（引き継ぎファイルの取り込み等、1をすり抜ける経路がある）
+/// リセットボタンはテーマの設定元（手動設定、プリセット、import、.niatra等）
+/// に依存せず、現在のテーマが操作不能リスクの条件に当てはまれば表示される。
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
@@ -89,11 +89,9 @@ void main() {
     });
   });
 
-  testWidgets('テーマ設定：読めなくなる色は保存されず、元の配色へ戻る', (tester) async {
+  testWidgets('テーマ設定：低コントラストでもユーザーが選んだ色を保存する', (tester) async {
     SharedPreferences.setMockInitialValues({});
     mockPathProvider();
-    // ThemeSettingsScreenはSettingsService等も読むので、本番と同じ
-    // Provider一式を立てる。
     final providers = await tester.runAsync(buildAppProviders);
     await tester.pumpWidget(
       MultiProvider(
@@ -112,25 +110,33 @@ void main() {
         .read<ThemeService>();
     final before = service.current;
 
-    // 「文字色」の行をタップしてカラーピッカーを開く。
+    // 「文字色」のピッカーを開き、文字色をパネル背景と同じ値にする。
     final l10n = lookupAppLocalizations(const Locale('ja'));
     await tester.tap(find.text(l10n.themeColorText));
     await tester.pumpAndSettle();
-
-    // ピッカーの中身を触る代わりに、ドラッグ中と同じ経路
-    // （previewCurrent）で背景と同じ色まで持っていく。
     service.previewCurrent(
       service.current.copyWith(textColor: before.panelBgColor),
     );
     await tester.pumpAndSettle();
 
-    // 閉じる＝確定。読めない組み合わせなので保存されず、理由が出る。
+    // 読みにくい配色でも保存を拒否しない。操作不能への対処は起動画面の
+    // 復旧ボタンに委ねる。
     await tester.tap(find.byIcon(Icons.close).last);
     await tester.pumpAndSettle();
 
-    expect(find.text(l10n.themeContrastErrorTitle), findsOneWidget);
-    expect(service.current.textColor, before.textColor, reason: '元の文字色へ戻る');
-    expect(isThemeReadable(service.current), isTrue);
+    expect(find.text(l10n.themeContrastErrorTitle), findsNothing);
+    expect(service.current.textColor, before.panelBgColor);
+    expect(isThemeReadable(service.current), isFalse);
+
+    final prefs = await SharedPreferences.getInstance();
+    final persistedJson = prefs.getString('theme_current_json');
+    expect(persistedJson, isNotNull);
+    expect(
+      AppThemePreset.fromJson(
+        jsonDecode(persistedJson!) as Map<String, dynamic>,
+      ).textColor,
+      before.panelBgColor,
+    );
   });
 
   testWidgets('起動画面：読めるテーマではリセットボタンを出さない', (tester) async {
@@ -151,7 +157,7 @@ void main() {
     mockPathProvider();
     final service = ThemeService();
     await service.init();
-    // 引き継ぎファイルの取り込み等で「詰みテーマ」が入ってしまった状態。
+    // 色設定・プリセット・外部データ取り込み等、どの経路からでも「詰みテーマ」が入る状態。
     service.savePreset(unreadable);
     service.applyPreset(unreadable.id);
 
@@ -160,9 +166,14 @@ void main() {
 
     final l10n = lookupAppLocalizations(const Locale('ja'));
     final resetButton = find.text(l10n.themeUnreadableResetButton);
-    expect(resetButton, findsOneWidget);
+    // 白縁取り用Text + 黒塗りTextの2層。ただし白縁取り側はSemantics除外。
+    expect(resetButton, findsNWidgets(2));
+    final labelLayers = tester.widgetList<Text>(resetButton).toList();
+    expect(labelLayers.first.style?.foreground?.color, const Color(0xFFFFFFFF));
+    expect(labelLayers.first.style?.foreground?.style, PaintingStyle.stroke);
+    expect(labelLayers.last.style?.color, const Color(0xFF000000));
 
-    await tester.tap(resetButton);
+    await tester.tap(resetButton.last);
     await tester.pumpAndSettle();
 
     expect(isThemeReadable(service.current), isTrue);
