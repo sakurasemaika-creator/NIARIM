@@ -12,16 +12,17 @@ import '../models/app_theme_preset.dart';
 /// 操作導線が埋もれる危険がありそうな場合に、復旧ボタンを表示することだけ。
 ///
 /// - テーマ・外観設定では、選ばれた色をそのまま保存する。
-/// - 現在のテーマがリスク条件に該当すれば、起動画面右上に固定色リセットボタンを表示する。
+/// - 現在のテーマがリスク条件に該当すれば、起動画面とテーマ・外観画面の右上に固定色リセットボタンを表示する。
 /// - 判定は手動設定、プリセット適用、import、.niatra等の取り込み元を問わない。
 ///
-/// ## 閾値
+/// ## 判定方針
 ///
-/// WCAGのコントラスト比（相対輝度比、1.0〜21.0）を、復旧ボタンを表示するか
-/// 判断するための保守的な手掛かりとしてのみ用いる。一般的なアクセシビリティ基準
-/// （通常文字4.5:1、大きな文字3:1等）を、ユーザー設定の保存条件として強制しない。
-/// 「読みにくいだけ」は拒否理由ではなく、設定を拒否する用途にこの値を流用しない。
-const double kMinReadableContrast = 1.4;
+/// 同じ明度でも水色とピンク等がはっきり区別できる場合があるため、
+/// コントラスト比だけが低くても復旧ボタンを表示しない。
+/// 文字・操作要素と実際の背景が「ほとんど同色」であることを、
+/// 相対輝度比と知覚的色差の**両方**が小さいかで判断する。
+/// 各値は復旧導線の経験的な目安で、WCAGの合格/不合格ではない。
+const double kMinReadableContrast = 1.2;
 
 /// sRGBの相対輝度（WCAG 2.1の定義）。
 double relativeLuminance(Color color) {
@@ -165,7 +166,7 @@ double okLabDistance(Color a, Color b) {
 
 /// 復旧ボタン表示に限って使用する経験的な目安。WCAGの保存可否基準ではない。
 const double kMaxConfusableOkLabDistance = 0.045;
-const double kMaxConfusableContrast = 1.6;
+const double kMaxConfusableContrast = 1.2;
 
 /// 1/2/3型の二色覚と異常三色覚の例を調べ、模擬後にほぼ同じ色に
 /// 見える可能性のある重要ペアを検出する。テーマの保存は絶対に拒否しない。
@@ -181,7 +182,7 @@ bool isColorVisionPairConfusable(Color a, Color b) {
   return false;
 }
 
-/// [preset]の中で、明るさの近さから操作不能リスクを保守的に検出する色の組み合わせ。
+/// [preset]で実際に描画が重なる文字・操作要素と背景のペアだけを判定する。
 ///
 /// - 本文の文字色 × パネル背景色（一覧・設定画面の本文）
 /// - 本文の文字色 × メニュー背景色（メニュー・ダイアログの文字）
@@ -213,7 +214,8 @@ List<({Color a, Color b})> readabilityCriticalPairs(AppThemePreset preset) {
 bool isThemeAtLockoutRisk(AppThemePreset preset) =>
     readabilityCriticalPairs(preset).any(
       (p) =>
-          contrastRatio(p.a, p.b) < kMinReadableContrast ||
+          (contrastRatio(p.a, p.b) < kMinReadableContrast &&
+              okLabDistance(p.a, p.b) < kMaxConfusableOkLabDistance) ||
           isColorVisionPairConfusable(p.a, p.b),
     );
 
