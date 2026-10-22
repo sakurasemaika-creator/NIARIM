@@ -391,7 +391,7 @@ class _SplashActionButtonState extends State<_SplashActionButton> {
     final theme = context.watch<ThemeService>().current;
     // Preserve the historical splash foreground until the user explicitly
     // chooses an independent button label color.
-    final foreground = theme.buttonTextColor ?? theme.menuBgColor;
+    final foreground = theme.buttonTextColor;
     const radius = BorderRadius.all(
       Radius.circular(_SplashActionButton._radius),
     );
