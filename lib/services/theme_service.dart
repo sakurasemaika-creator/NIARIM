@@ -609,7 +609,6 @@ class ThemeService extends ChangeNotifier {
       onPrimary: preset.buttonTextColor,
       secondary: selectionColor,
       onSecondary: preset.selectionTextColor,
-      primaryContainer: selectionColor,
       onPrimaryContainer: preset.selectionTextColor,
       onSecondaryContainer: preset.selectionTextColor,
       onSurface: preset.textColor,
