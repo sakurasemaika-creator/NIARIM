@@ -197,7 +197,12 @@ class ThemePreviewThumbnail extends StatelessWidget {
     final fullHeight = viewport.height <= 0 ? 760.0 : viewport.height;
     final japanese = Localizations.localeOf(context).languageCode == 'ja';
     final scheme = Theme.of(context).colorScheme;
-    final miniatureWidth = height * width / fullHeight;
+    // A landscape tablet preview must stay compact too, without stretching
+    // either axis. Scale the whole viewport by exactly one factor.
+    final miniatureHeight = width > fullHeight
+        ? height * fullHeight / width
+        : height;
+    final miniatureWidth = miniatureHeight * width / fullHeight;
     return RepaintBoundary(
       child: Semantics(
         label: japanese
@@ -208,7 +213,7 @@ class ThemePreviewThumbnail extends StatelessWidget {
           child: ExcludeSemantics(
             child: Container(
               width: miniatureWidth,
-              height: height,
+              height: miniatureHeight,
               clipBehavior: Clip.antiAlias,
               decoration: BoxDecoration(
                 color: scheme.surface,
