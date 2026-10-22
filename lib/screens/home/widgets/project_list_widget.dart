@@ -363,7 +363,8 @@ class ProjectListWidget extends StatelessWidget {
     final project = entry.project!;
     final isSelected = selectedIds.contains(project.id);
     final scheme = Theme.of(context).colorScheme;
-    final primary = scheme.primary;
+    final selectionColor = scheme.secondary;
+    final selectionForeground = scheme.onSecondary;
     return GestureDetector(
       onTap: isSelectionMode
           ? () => onSelectionChanged(project.id)
@@ -385,7 +386,7 @@ class ProjectListWidget extends StatelessWidget {
             BoxShadow(
               color:
                   (isSelected
-                          ? primary
+                          ? selectionColor
                           : ThemeService.activeColorScheme.onSurface)
                       .withValues(alpha: isSelected ? 0.28 : 0.12),
               blurRadius: isSelected ? 14 : 8,
@@ -400,7 +401,7 @@ class ProjectListWidget extends StatelessWidget {
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(14),
             side: BorderSide(
-              color: isSelected ? primary : Colors.transparent,
+              color: isSelected ? selectionColor : Colors.transparent,
               width: 2,
             ),
           ),
@@ -464,10 +465,10 @@ class ProjectListWidget extends StatelessWidget {
                           padding: const EdgeInsets.all(1),
                           decoration: BoxDecoration(
                             color: isSelected
-                                ? primary
+                                ? selectionColor
                                 : scheme.surface.withValues(alpha: 0.9),
                             shape: BoxShape.circle,
-                            border: Border.all(color: primary, width: 1.5),
+                            border: Border.all(color: selectionColor, width: 1.5),
                             boxShadow: [
                               BoxShadow(
                                 color: ThemeService.activeColorScheme.onSurface
@@ -479,7 +480,7 @@ class ProjectListWidget extends StatelessWidget {
                           child: Icon(
                             isSelected ? Icons.check : null,
                             size: 16,
-                            color: scheme.onPrimary,
+                            color: selectionForeground,
                           ),
                         ),
                       ),
@@ -497,6 +498,8 @@ class ProjectListWidget extends StatelessWidget {
     final isSelected = selectedIds.contains(folder.id);
     final scheme = Theme.of(context).colorScheme;
     final primary = scheme.primary;
+    final selectionColor = scheme.secondary;
+    final selectionForeground = scheme.onSecondary;
     final color = folder.color != null ? Color(folder.color!) : primary;
     return GestureDetector(
       onTap: isSelectionMode
@@ -512,7 +515,7 @@ class ProjectListWidget extends StatelessWidget {
             BoxShadow(
               color:
                   (isSelected
-                          ? primary
+                          ? selectionColor
                           : ThemeService.activeColorScheme.onSurface)
                       .withValues(alpha: isSelected ? 0.28 : 0.12),
               blurRadius: isSelected ? 14 : 8,
@@ -527,7 +530,7 @@ class ProjectListWidget extends StatelessWidget {
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(14),
             side: BorderSide(
-              color: isSelected ? primary : Colors.transparent,
+              color: isSelected ? selectionColor : Colors.transparent,
               width: 2,
             ),
           ),
@@ -568,15 +571,15 @@ class ProjectListWidget extends StatelessWidget {
                               padding: const EdgeInsets.all(1),
                               decoration: BoxDecoration(
                                 color: isSelected
-                                    ? primary
+                                    ? selectionColor
                                     : scheme.surface.withValues(alpha: 0.9),
                                 shape: BoxShape.circle,
-                                border: Border.all(color: primary, width: 1.5),
+                                border: Border.all(color: selectionColor, width: 1.5),
                               ),
                               child: Icon(
                                 isSelected ? Icons.check : null,
                                 size: 16,
-                                color: scheme.onPrimary,
+                                color: selectionForeground,
                               ),
                             ),
                           ),
