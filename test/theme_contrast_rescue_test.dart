@@ -12,6 +12,7 @@ import 'package:niarim/screens/splash/splash_screen.dart';
 import 'package:niarim/services/project_service.dart';
 import 'package:niarim/services/theme_service.dart';
 import 'package:niarim/utils/color_contrast.dart';
+import 'package:niarim/widgets/theme_rescue_button.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -87,6 +88,25 @@ void main() {
         reason: '見分けがつかないほど近い色も弾く',
       );
     });
+    test('正常・1型・2型それぞれに知覚色差を計算する', () {
+      const first = Color(0xFFDC0F0F);
+      const second = Color(0xFF0FA00F);
+      final normal = perceivedColorDistance(first, second);
+      final type1 = perceivedColorDistance(
+        first,
+        second,
+        visionType: ColorVisionType.protanopia,
+      );
+      final type2 = perceivedColorDistance(
+        first,
+        second,
+        visionType: ColorVisionType.deuteranopia,
+      );
+      expect(normal, greaterThan(0.30));
+      expect(type1, greaterThan(0.08));
+      expect(type2, lessThan(kMaxConfusableOkLabDistance));
+    });
+
     test('ほぼ白の文字とほぼ白の背景は復旧対象', () {
       final light = AppThemePreset.defaultLight.copyWith(
         textColor: const Color(0xFFFFFAF0),
@@ -269,13 +289,11 @@ void main() {
 
   testWidgets('外観・テーマ：右上に同じ復旧ボタンを置き、確認で標準へ戻す', (tester) async {
     SharedPreferences.setMockInitialValues({});
-    final service = ThemeService();
-    await service.init();
-    service.restoreCurrent(unreadable);
-
+    mockPathProvider();
+    final providers = await tester.runAsync(buildAppProviders);
     await tester.pumpWidget(
-      ChangeNotifierProvider<ThemeService>.value(
-        value: service,
+      MultiProvider(
+        providers: providers!,
         child: Builder(
           builder: (context) => MaterialApp(
             locale: const Locale('ja'),
@@ -288,10 +306,20 @@ void main() {
       ),
     );
     await tester.pumpAndSettle();
+    final service = tester
+        .element(find.byType(ThemeSettingsScreen))
+        .read<ThemeService>();
+    service.restoreCurrent(unreadable);
+    await tester.pumpAndSettle();
+
     final l10n = lookupAppLocalizations(const Locale('ja'));
-    final resetButton = find.text(l10n.themeUnreadableResetButton);
-    expect(resetButton, findsNWidgets(2));
-    await tester.tap(resetButton.last);
+    // 狭幅ではラベルを省いたアイコンのみのボタンになるが、
+    // ボタンとしてのSemantics、判定・確認・復旧の動作は同一。
+    final button = find.byType(ThemeRescueButton);
+    expect(button, findsOneWidget);
+    expect(tester.widget<ThemeRescueButton>(button).iconOnly, isTrue);
+
+    await tester.tap(button);
     await tester.pumpAndSettle();
     expect(find.text(l10n.themeResetConfirmTitle), findsOneWidget);
     expect(service.current.id, unreadable.id);
@@ -299,7 +327,7 @@ void main() {
     await tester.tap(find.text(l10n.themeResetConfirmAction));
     await tester.pumpAndSettle();
     expect(service.current.id, AppThemePreset.defaultLight.id);
-    expect(resetButton, findsNothing);
+    expect(button, findsNothing);
   });
 
   test('引き継いだ詰みテーマも勝手に補正・拒否されず復元できる', () async {
