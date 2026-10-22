@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:niarim/models/app_theme_preset.dart';
@@ -42,6 +43,9 @@ void main() {
         name: 'Direct Theme',
         accentColor: Color(0xFF00AACC),
         textColor: Color(0xFF202020),
+        buttonTextColor: Color(0xFFFFFFFF),
+        menuTextColor: Color(0xFF202020),
+        selectionTextColor: Color(0xFF17161C),
         panelBgColor: Color(0xFFFAFAFA),
         menuBgColor: Color(0xFFFFFFFF),
         selectionColor: Color(0xFF44BBCC),
@@ -92,16 +96,23 @@ void main() {
   );
 
   test(
-    'saved subset is merged with missing built-ins and invalid current id falls back',
+    'saved valid custom preset is merged with missing built-ins and remains selected',
     () async {
+      const custom = AppThemePreset(
+        id: 'only_custom',
+        name: 'Only',
+        accentColor: Color(0xFF0000FF),
+        textColor: Color(0xFF000080),
+        buttonTextColor: Color(0xFFFFFFFF),
+        menuTextColor: Color(0xFF000080),
+        selectionTextColor: Color(0xFF000000),
+        panelBgColor: Color(0xFFFFFFFF),
+        menuBgColor: Color(0xFFFFFFFF),
+        selectionColor: Color(0xFF00FF00),
+        updateMarkColor: Color(0xFFFF0000),
+      );
       SharedPreferences.setMockInitialValues({
-        'theme_presets': [
-          '{"id":"only_custom","name":"Only","accentColor":4278190335,'
-              '"textColor":4278190080,"panelBgColor":4294967295,'
-              '"menuBgColor":4294967295,"selectionColor":4278255360,'
-              '"updateMarkColor":4294901760,"isFavorite":false}',
-        ],
-        'theme_current_id': 'does-not-exist',
+        'theme_presets': [jsonEncode(custom.toJson())],
       });
 
       final service = ThemeService();
@@ -110,12 +121,12 @@ void main() {
       expect(
         service.presets.any((p) => p.id == 'default_light'),
         isTrue,
-        reason: 'new/missing built-ins are merged into old saved lists',
+        reason: 'built-in presets are merged into a saved custom list',
       );
       expect(
         service.current.id,
         'only_custom',
-        reason: 'unknown saved current id falls back to first saved preset',
+        reason: 'the first valid custom theme is selected when no current JSON is stored',
       );
 
       service.applyPreset('missing-id');
