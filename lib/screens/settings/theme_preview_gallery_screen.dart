@@ -492,11 +492,11 @@ class _ThemeSampleScreen extends StatelessWidget {
           width: 58, margin: const EdgeInsets.all(4),
           alignment: Alignment.center,
           decoration: BoxDecoration(
-            color: i == 0 ? c.primaryContainer : c.surfaceContainerHigh,
+            color: i == 0 ? c.secondary : c.surfaceContainerHigh,
             border: Border.all(color: c.outlineVariant),
             borderRadius: BorderRadius.circular(5)),
           child: Text((i + 1).toString(), style: TextStyle(
-            color: i == 0 ? c.onPrimaryContainer : c.onSurface)),
+            color: i == 0 ? c.onSecondary : c.onSurface)),
         )),
       )),
     ])),
@@ -537,10 +537,10 @@ class _ThemeSampleScreen extends StatelessWidget {
         child: Text(label, style: const TextStyle(fontSize: 11)))),
       ...List.generate(5, (i) => Expanded(child: Container(
         margin: const EdgeInsets.all(2),
-        color: i == 0 ? c.primaryContainer : c.surfaceContainerHigh,
+        color: i == 0 ? c.secondary : c.surfaceContainerHigh,
         alignment: Alignment.center,
         child: Text((i + 1).toString(), style: TextStyle(
-          fontSize: 10, color: i == 0 ? c.onPrimaryContainer : c.onSurface)),
+          fontSize: 10, color: i == 0 ? c.onSecondary : c.onSurface)),
       ))),
     ]),
   );
@@ -624,7 +624,7 @@ class _ThemeSampleScreen extends StatelessWidget {
       (t('選択中の文字色', 'Selected text'), c.onSecondary),
       (t('パネル背景', 'Panel background'), c.surface),
       (t('メニュー背景', 'Menu background'), c.surfaceContainer),
-      (t('選択色', 'Selection'), c.primaryContainer),
+      (t('選択色', 'Selection'), c.secondary),
       (t('更新マーク', 'Update mark'), c.tertiary),
     ].map((e) => _card(Row(children: [
       CircleAvatar(radius: 16, backgroundColor: e.$2),
@@ -898,8 +898,10 @@ class _ThemeSampleScreen extends StatelessWidget {
       children: List.generate(7, (i) => Container(
         width: 60, margin: const EdgeInsets.all(5),
         alignment: Alignment.center,
-        color: i == 0 ? c.primaryContainer : c.surfaceContainer,
-        child: Text((i + 1).toString()),
+        color: i == 0 ? c.secondary : c.surfaceContainer,
+        child: Text((i + 1).toString(), style: TextStyle(
+          color: i == 0 ? c.onSecondary : c.onSurface,
+        )),
       )))),
     Padding(padding: const EdgeInsets.all(12),
       child: _cta(c, t('このフレームを選択', 'Select this frame'))),
