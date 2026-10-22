@@ -127,8 +127,7 @@ class _ThemePreviewGalleryScreenState extends State<ThemePreviewGalleryScreen> {
                                 fontSize: 10, color: c.onSurfaceVariant)),
                           ],
                         )),
-                        Text((_index + 1).toString() + '/' +
-                          themePreviewEntries.length.toString(),
+                        Text('${_index + 1}/${themePreviewEntries.length}',
                           style: const TextStyle(fontSize: 11)),
                         IconButton(
                           tooltip: ja ? '前の画面' : 'Previous screen',
@@ -760,7 +759,7 @@ class _ThemeSampleScreen extends StatelessWidget {
     ...List.generate(4, (i) => _card(_row(
       i == 0 ? Icons.save : Icons.add_box_outlined,
       i == 0 ? t('クイックセーブ', 'Quick save')
-        : t('セーブスロット', 'Save slot') + ' ' + i.toString()))),
+        : '${t('セーブスロット', 'Save slot')} $i'))),
   ]);
 
   Widget _catalog(ColorScheme c) {
