@@ -495,7 +495,8 @@ class _ThemeSampleScreen extends StatelessWidget {
             color: i == 0 ? c.primaryContainer : c.surfaceContainerHigh,
             border: Border.all(color: c.outlineVariant),
             borderRadius: BorderRadius.circular(5)),
-          child: Text((i + 1).toString()),
+          child: Text((i + 1).toString(), style: TextStyle(
+            color: i == 0 ? c.onPrimaryContainer : c.onSurface)),
         )),
       )),
     ])),
@@ -538,7 +539,8 @@ class _ThemeSampleScreen extends StatelessWidget {
         margin: const EdgeInsets.all(2),
         color: i == 0 ? c.primaryContainer : c.surfaceContainerHigh,
         alignment: Alignment.center,
-        child: Text((i + 1).toString(), style: const TextStyle(fontSize: 10)),
+        child: Text((i + 1).toString(), style: TextStyle(
+          fontSize: 10, color: i == 0 ? c.onPrimaryContainer : c.onSurface)),
       ))),
     ]),
   );
