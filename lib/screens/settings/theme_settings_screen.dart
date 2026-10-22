@@ -152,13 +152,61 @@ class ThemeSettingsScreen extends StatelessWidget {
               ),
             ),
             _ColorCustomizeTile(
-              label: l10n.themeColorText,
+              label: Localizations.localeOf(context).languageCode == 'ja'
+                  ? '本文・通常の文字色'
+                  : 'Body & regular text color',
               color: current.textColor,
               onTap: () => _showColorPickerDialog(
                 context,
                 themeService,
                 (p, c) => p.copyWith(textColor: c),
                 current.textColor,
+              ),
+            ),
+            // 文字の役割別指定。各前景色を分けることで、本文を暗色、
+            // 塗りつぶしボタンの文字だけ白にする設定が可能。
+            // 未設定の旧テーマはこれまでの計算値を色チップに表示する。
+            _ColorCustomizeTile(
+              key: const Key('themeButtonTextColorTile'),
+              label: Localizations.localeOf(context).languageCode == 'ja'
+                  ? 'ボタン内の文字・アイコン色'
+                  : 'Button text & icon color',
+              color: current.buttonTextColor ??
+                  Theme.of(context).colorScheme.onPrimary,
+              onTap: () => _showColorPickerDialog(
+                context,
+                themeService,
+                (p, c) => p.copyWith(buttonTextColor: c),
+                current.buttonTextColor ??
+                    Theme.of(context).colorScheme.onPrimary,
+              ),
+            ),
+            _ColorCustomizeTile(
+              key: const Key('themeMenuTextColorTile'),
+              label: Localizations.localeOf(context).languageCode == 'ja'
+                  ? 'メニュー・上部バーの文字色'
+                  : 'Menu & app bar text color',
+              color: current.menuTextColor ?? current.textColor,
+              onTap: () => _showColorPickerDialog(
+                context,
+                themeService,
+                (p, c) => p.copyWith(menuTextColor: c),
+                current.menuTextColor ?? current.textColor,
+              ),
+            ),
+            _ColorCustomizeTile(
+              key: const Key('themeSelectionTextColorTile'),
+              label: Localizations.localeOf(context).languageCode == 'ja'
+                  ? '選択中の文字・アイコン色'
+                  : 'Selected text & icon color',
+              color: current.selectionTextColor ??
+                  Theme.of(context).colorScheme.onSecondary,
+              onTap: () => _showColorPickerDialog(
+                context,
+                themeService,
+                (p, c) => p.copyWith(selectionTextColor: c),
+                current.selectionTextColor ??
+                    Theme.of(context).colorScheme.onSecondary,
               ),
             ),
             _ColorCustomizeTile(
