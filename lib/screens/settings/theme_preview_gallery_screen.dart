@@ -305,6 +305,8 @@ class _ThemeSampleScreen extends StatelessWidget {
       'projects' => t('プロジェクト一覧', 'Projects'),
       'save' => t('セーブスロット', 'Save slots'),
       'new' => t('新規プロジェクト', 'New project'),
+      'tips' => t('活用Tips', 'Tips'),
+      'widget_art' => t('ウィジェット作品選択', 'Widget artwork'),
       'export' => t('書き出し', 'Export'),
       'theme' => t('テーマ・外観', 'Theme & appearance'),
       'gestures' => t('ジェスチャー設定', 'Gesture settings'),
@@ -1778,44 +1780,210 @@ class _ThemeSampleScreen extends StatelessWidget {
   );
 
   Widget _catalog(ColorScheme c) {
-    final rows = switch (entry.id) {
-      'materials' || 'widget_art' => [
-        (Icons.image, 'image.png'),
-        (Icons.movie, 'clip.mp4'),
-        (Icons.audiotrack, 'sound.wav'),
-      ],
-      'fonts' => [
-        (Icons.text_fields, '白光明朝'),
-        (Icons.text_fields, 'くらむぼん'),
-        (Icons.text_fields, 'Noto Serif JP'),
-      ],
-      'help' || 'tips' => [
-        (Icons.brush, t('描画', 'Drawing')),
-        (Icons.layers, t('レイヤー', 'Layers')),
-        (Icons.movie_filter, t('アニメーション', 'Animation')),
-        (Icons.file_download, t('書き出し', 'Export')),
-      ],
-      'autofill' => [
-        (Icons.palette_outlined, t('キャラクター A', 'Character A')),
-        (Icons.palette_outlined, t('キャラクター B', 'Character B')),
-        (Icons.palette_outlined, t('背景', 'Background')),
-      ],
-      'sizes' => [
+    Widget search(String hint) => Container(
+      height: 50,
+      padding: const EdgeInsets.symmetric(horizontal: 14),
+      decoration: BoxDecoration(
+        color: c.surfaceContainerLow,
+        borderRadius: BorderRadius.circular(12)),
+      child: Row(children: [
+        Icon(Icons.search, size: 20, color: c.onSurfaceVariant),
+        const SizedBox(width: 12),
+        Text(hint, style: TextStyle(color: c.onSurfaceVariant)),
+      ]),
+    );
+
+    if (entry.id == 'materials' || entry.id == 'widget_art') {
+      return Center(child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          CircleAvatar(
+            radius: 38, backgroundColor: c.primary.withValues(alpha: .16),
+            child: Icon(Icons.perm_media_outlined, size: 36,
+              color: c.primary)),
+          const SizedBox(height: 18),
+          Text(t('素材がありません', 'No materials yet'),
+            style: const TextStyle(fontWeight: FontWeight.w700)),
+          const SizedBox(height: 6),
+          Text(t('タイムラインから画像・動画・音声を追加すると\nここに表示されます',
+            'Images, videos and audio appear here after import.'),
+            textAlign: TextAlign.center,
+            style: TextStyle(fontSize: 11, color: c.onSurfaceVariant)),
+        ],
+      ));
+    }
+
+    if (entry.id == 'fonts') {
+      return Column(children: [
+        Container(
+          height: 48,
+          decoration: BoxDecoration(
+            border: Border(bottom: BorderSide(color: c.outlineVariant))),
+          child: Row(children: [
+            for (final item in [
+              t('ダウンロード', 'Download'),
+              t('探してDL', 'Browse'),
+              t('読み込み', 'Import'),
+            ]) Expanded(child: Center(child: Text(item,
+              style: TextStyle(fontSize: 12, fontWeight: FontWeight.w700,
+                color: c.primary)))),
+          ]),
+        ),
+        Padding(padding: const EdgeInsets.all(12), child: Row(children: [
+          Expanded(child: search(t('フォント名で検索...', 'Search fonts...'))),
+          const SizedBox(width: 8),
+          _mockChip(c, t('お気に入り', 'Favorites')),
+        ])),
+        Expanded(child: Center(child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            CircleAvatar(radius: 38,
+              backgroundColor: c.primary.withValues(alpha: .16),
+              child: Icon(Icons.font_download_outlined,
+                color: c.primary, size: 38)),
+            const SizedBox(height: 18),
+            Text(t('フォントがありません', 'No fonts'),
+              style: const TextStyle(fontWeight: FontWeight.w700)),
+            const SizedBox(height: 6),
+            Text(t('「探してDL」または「読み込み」から追加できます',
+              'Find or import fonts.'),
+              style: TextStyle(fontSize: 11, color: c.onSurfaceVariant),
+              textAlign: TextAlign.center),
+          ],
+        ))),
+      ]);
+    }
+
+    if (entry.id == 'help' || entry.id == 'tips') {
+      final isTips = entry.id == 'tips';
+      final titles = isTips
+        ? <String>[
+          t('タイムラインの素材は複製・移動・削除ができる',
+            'Duplicate, move and delete timeline items'),
+          t('テキストツールで字幕を入れる', 'Add subtitles'),
+          t('効果音はクリップ編集でフェードとリズムよく調整する',
+            'Adjust audio fades and rhythm'),
+          t('縦書き×ルビでタイトルロゴ風の演出',
+            'Create titles with vertical text'),
+          t('自分の署名はウォーターマーク、エンドカードは別物',
+            'Watermarks and end cards'),
+          t('実写動画×手描きを重ねてアニメを作る',
+            'Animate over video'),
+        ]
+        : <String>[
+          t('基本の操作（タップ・長押し・スワイプ）', 'Basic gestures'),
+          t('ペンツール', 'Pen tools'),
+          t('消しゴムツール', 'Eraser'),
+          t('バケツツール', 'Bucket fill'),
+          t('指移動塗り', 'Finger paint'),
+          t('スポイトツール', 'Eyedropper'),
+          t('選択ツール', 'Selection'),
+          t('指ツール', 'Pan'),
+        ];
+      return ListView(
+        key: const Key('themePreviewContentList'),
+        physics: const NeverScrollableScrollPhysics(),
+        padding: const EdgeInsets.all(10),
+        children: [
+          search(isTips
+            ? t('Tipsを検索...', 'Search tips...')
+            : t('検索...', 'Search...')),
+          const SizedBox(height: 12),
+          if (isTips) Text(t('動画制作のコツ', 'Video production tips'),
+            style: TextStyle(fontWeight: FontWeight.w700, color: c.primary)),
+          for (final title in titles)
+            Padding(padding: const EdgeInsets.only(top: 5),
+              child: Container(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 10, vertical: 13),
+                decoration: BoxDecoration(
+                  color: c.surfaceContainerLow,
+                  border: Border.all(color: c.outlineVariant),
+                  borderRadius: BorderRadius.circular(12)),
+                child: Row(children: [
+                  CircleAvatar(radius: 14,
+                    backgroundColor: c.primary.withValues(alpha: .12),
+                    child: Icon(isTips
+                      ? Icons.lightbulb_outline : Icons.help_outline,
+                      size: 17, color: c.primary)),
+                  const SizedBox(width: 12),
+                  Expanded(child: Text(title,
+                    maxLines: 2, overflow: TextOverflow.ellipsis,
+                    style: const TextStyle(fontSize: 12,
+                      fontWeight: FontWeight.w700))),
+                  Icon(isTips ? Icons.chevron_right
+                    : Icons.keyboard_arrow_down,
+                    size: 19, color: c.onSurfaceVariant),
+                ]),
+              )),
+        ],
+      );
+    }
+
+    if (entry.id == 'autofill') {
+      return Stack(children: [
+        ListView(
+          key: const Key('themePreviewContentList'),
+          physics: const NeverScrollableScrollPhysics(),
+          padding: const EdgeInsets.all(12),
+          children: [
+            _mockChip(c, t('お気に入り', 'Favorites')),
+            const SizedBox(height: 8),
+            for (final item in [
+              (t('グレー単色の下塗り', 'Grey base coat'), 1),
+              (t('主人公', 'Main character'), 25),
+              (t('ヒロイン', 'Heroine'), 24),
+            ]) Padding(
+              padding: const EdgeInsets.only(bottom: 9),
+              child: Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: c.surfaceContainerLowest,
+                  borderRadius: BorderRadius.circular(15)),
+                child: Row(children: [
+                  Container(width: 46, height: 46,
+                    decoration: BoxDecoration(
+                      color: c.primary.withValues(alpha: .12),
+                      borderRadius: BorderRadius.circular(10)),
+                    alignment: Alignment.center,
+                    child: const Icon(Icons.grid_view, size: 22)),
+                  const SizedBox(width: 12),
+                  Expanded(child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(item.$1, style: const TextStyle(
+                        fontWeight: FontWeight.w700)),
+                      Text(item.$2.toString() + t('パーツ', ' parts'),
+                        style: TextStyle(fontSize: 10,
+                          color: c.onSurfaceVariant)),
+                    ])),
+                  Icon(Icons.star_border, color: c.primary),
+                  const SizedBox(width: 14),
+                  Icon(Icons.more_vert, color: c.onSurfaceVariant),
+                ]),
+              ),
+            ),
+          ],
+        ),
+        Positioned(bottom: 24, right: 20,
+          child: Container(width: 58, height: 58,
+            alignment: Alignment.center,
+            decoration: BoxDecoration(color: c.primary,
+              border: Border.all(color: c.onSurface, width: 2),
+              shape: BoxShape.circle),
+            child: Icon(Icons.add, color: c.onPrimary, size: 32))),
+      ]);
+    }
+
+    return _list([
+      _heading(entry.label(ja)),
+      for (final row in [
         (Icons.crop_16_9, '1920 × 1080'),
         (Icons.crop_square, '1080 × 1080'),
         (Icons.crop_portrait, '1080 × 1920'),
-      ],
-      _ => [(Icons.folder_outlined, t('サンプル', 'Sample'))],
-    };
-    return _list([
-      _heading(entry.label(ja)),
-      if (entry.id != 'sizes') _card(_row(Icons.search, t('検索', 'Search'))),
-      ...rows.map((row) => _card(_row(row.$1, row.$2))),
-      const SizedBox(height: 12),
-      _cta(c, t('追加', 'Add'), icon: Icons.add),
+      ]) _card(_row(row.$1, row.$2)),
     ]);
   }
-
 
   Widget _legal(ColorScheme c) => _list([
     _heading(entry.label(ja)),
