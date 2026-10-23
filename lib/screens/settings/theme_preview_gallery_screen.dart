@@ -1054,44 +1054,88 @@ class _ThemeSampleScreen extends StatelessWidget {
 
   Widget _theme(BuildContext context, ColorScheme c) {
     final preset = context.read<ThemeService>().current;
-    return _list([
-      Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
-        const ThemePreviewThumbnail(height: 170),
-        const SizedBox(width: 14),
-        Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(t('画面プレビュー', 'Screen preview'),
-              style: const TextStyle(fontWeight: FontWeight.w700)),
-            const SizedBox(height: 8),
-            Text(t('プロジェクト一覧の縮小見本', 'Miniature projects view'),
-              style: TextStyle(fontSize: 11, color: c.onSurfaceVariant)),
-            const SizedBox(height: 7),
-            Text(t('タップで全画面', 'View full screen'),
-              style: TextStyle(fontSize: 11, color: c.primary)),
-          ])),
-      ]),
-      const SizedBox(height: 16),
-      _heading(t('カラーカスタマイズ', 'Color customization')),
-      ...[
-        (t('アクセント', 'Accent'), c.primary),
-        (t('本文文字色', 'Body text'), c.onSurface),
-        (t('ボタン内の文字色', 'Button text'), c.onPrimary),
-        (t('メニューの文字色', 'Menu text'), preset.menuTextColor),
-        (t('選択中の文字色', 'Selected text'), c.onSecondary),
-        (t('パネル背景', 'Panel background'), preset.panelBgColor),
-        (t('メニュー背景', 'Menu background'), preset.menuBgColor),
-        (t('選択色', 'Selection'), c.secondary),
-        (t('更新マーク', 'Update mark'), preset.updateMarkColor),
-      ].map((e) => _card(Row(children: [
-        CircleAvatar(radius: 16, backgroundColor: e.$2),
-        const SizedBox(width: 14),
-        Expanded(child: Text(e.$1, style: const TextStyle(fontSize: 12))),
-        const Icon(Icons.chevron_right, size: 18),
-      ]))),
-      _heading(t('プリセット', 'Presets')),
-      _mockSettingRow(c, Icons.palette_outlined, t('ライト', 'Light')),
-      _mockSettingRow(c, Icons.palette_outlined, t('ダーク', 'Dark')),
-    ]);
+    return ListView(
+      key: const Key('themePreviewContentList'),
+      physics: const NeverScrollableScrollPhysics(),
+      children: [
+        Padding(padding: const EdgeInsets.fromLTRB(12, 12, 12, 8),
+          child: Material(
+            color: c.surfaceContainerLow,
+            borderRadius: BorderRadius.circular(16),
+            child: Padding(
+              padding: const EdgeInsets.all(12),
+              child: Row(children: [
+                const ThemePreviewThumbnail(height: 184),
+                const SizedBox(width: 14),
+                Expanded(child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(t('画面プレビュー', 'Screen preview'),
+                      style: const TextStyle(
+                        fontWeight: FontWeight.bold, fontSize: 15)),
+                    const SizedBox(height: 8),
+                    Text(t('プロジェクト一覧の見本', 'Project list sample'),
+                      style: TextStyle(
+                        fontSize: 12, color: c.onSurfaceVariant)),
+                    const SizedBox(height: 12),
+                    Row(children: [
+                      Flexible(child: Text(
+                        t('タップして全41画面を見る', 'Tap to view 41 screens'),
+                        style: TextStyle(fontSize: 12,
+                          fontWeight: FontWeight.w700, color: c.primary))),
+                      const SizedBox(width: 4),
+                      Icon(Icons.open_in_full, size: 17, color: c.primary),
+                    ]),
+                  ],
+                )),
+              ]),
+            ),
+          )),
+        Padding(padding: const EdgeInsets.fromLTRB(16, 8, 16, 4),
+          child: Text(t('カラーカスタマイズ', 'Color customization'),
+            style: const TextStyle(fontWeight: FontWeight.bold))),
+        for (final item in [
+          (t('アクセントカラー', 'Accent'), preset.accentColor),
+          (t('本文・通常の文字色', 'Body text'), preset.textColor),
+          (t('ボタン内の文字・アイコン色', 'Button text'),
+            preset.buttonTextColor),
+          (t('メニュー・上部バーの文字色', 'Menu text'),
+            preset.menuTextColor),
+          (t('選択中の文字・アイコン色', 'Selection text'),
+            preset.selectionTextColor),
+          (t('パネル背景色', 'Panel background'), preset.panelBgColor),
+          (t('メニュー背景色', 'Menu background'), preset.menuBgColor),
+          (t('選択背景色', 'Selected background'), preset.selectionColor),
+          (t('更新マーク', 'Update mark'), preset.updateMarkColor),
+        ])
+          Padding(padding: const EdgeInsets.symmetric(
+            horizontal: 12, vertical: 4),
+            child: Material(
+              color: c.surfaceContainerLow,
+              borderRadius: BorderRadius.circular(14),
+              elevation: 1,
+              shadowColor: c.shadow.withValues(alpha: .15),
+              child: Padding(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 12, vertical: 10),
+                child: Row(children: [
+                  Container(width: 32, height: 32,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: item.$2,
+                      border: Border.all(color: c.outlineVariant))),
+                  const SizedBox(width: 14),
+                  Expanded(child: Text(item.$1,
+                    style: const TextStyle(
+                      fontWeight: FontWeight.w600, fontSize: 14))),
+                  Icon(Icons.chevron_right,
+                    size: 18, color: c.onSurfaceVariant),
+                ]),
+              ),
+            ),
+          ),
+      ],
+    );
   }
 
   Widget _settings(ColorScheme c) => ListView(
