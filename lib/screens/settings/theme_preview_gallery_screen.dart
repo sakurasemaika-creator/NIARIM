@@ -890,61 +890,224 @@ class _ThemeSampleScreen extends StatelessWidget {
 
   Widget _settings(ColorScheme c) => _list([
     ...[
-      (Icons.tune, t('基本', 'Basic')),
-      (Icons.speed, t('パフォーマンス', 'Performance')),
-      (Icons.gesture, t('ジェスチャー', 'Gestures')),
-      (Icons.edit, t('ペン入力', 'Pen input')),
-      (Icons.dashboard_customize, t('ワークスペース', 'Workspace')),
-      (Icons.palette, t('テーマ・外観', 'Theme & appearance')),
-      (Icons.font_download, t('フォント管理', 'Fonts')),
-      (Icons.help_outline, t('ヘルプ', 'Help')),
-    ].map((e) => _card(_row(e.$1, e.$2))),
+      (Icons.settings_outlined, t('基本', 'Basic'), t('FPS・言語・初期色', 'FPS, language and defaults')),
+      (Icons.speed_outlined, t('パフォーマンス', 'Performance'), t('描画品質・Undo回数・自動削除', 'Quality, undo and cleanup')),
+      (Icons.gesture_outlined, t('ジェスチャー', 'Gestures'), t('2本指タップ・長押し', 'Gestures')),
+      (Icons.keyboard_outlined, t('ショートカット設定', 'Shortcuts'), t('キー・操作を割り当て', 'Key bindings')),
+      (Icons.edit_outlined, t('ペン入力', 'Pen input'), t('筆圧・ペンボタン', 'Pressure and stylus')),
+      (Icons.dashboard_customize_outlined, t('ワークスペース', 'Workspace'), t('ツール・パネル配置', 'Toolbar and panel')),
+      (Icons.format_color_fill_outlined, t('バケツ塗り', 'Bucket fill'), t('許容誤差・隙間閉じ', 'Tolerance and gaps')),
+      (Icons.widgets_outlined, t('ホーム画面ウィジェット', 'Home widgets'), t('表示作品・タップ動作', 'Artwork and actions')),
+      (Icons.palette_outlined, t('テーマ・外観', 'Theme & appearance'), t('テーマ色・文字色・背景色', 'Theme and colors')),
+      (Icons.text_fields, t('フォント管理', 'Fonts'), t('文字入れフォント', 'Fonts')),
+      (Icons.help_outline, t('ヘルプ', 'Help'), t('使い方とヒント', 'Help and tips')),
+    ].map((e) => Container(
+      margin: const EdgeInsets.only(bottom: 8),
+      decoration: BoxDecoration(color: c.surfaceContainerLow,
+        borderRadius: BorderRadius.circular(14)),
+      child: Padding(padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 7),
+        child: Row(children: [
+          Container(width: 42, height: 42,
+            decoration: BoxDecoration(
+              color: c.primary.withValues(alpha: .14),
+              borderRadius: BorderRadius.circular(12)),
+            child: Icon(e.$1, color: c.primary, size: 22)),
+          const SizedBox(width: 12),
+          Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(e.$2, style: const TextStyle(fontSize: 13,
+                fontWeight: FontWeight.w700)),
+              Text(e.$3, style: TextStyle(fontSize: 10,
+                color: c.onSurfaceVariant), maxLines: 1,
+                overflow: TextOverflow.ellipsis),
+            ])),
+          Icon(Icons.chevron_right, color: c.onSurfaceVariant),
+        ])),
+    )),
   ]);
 
+  Widget _staticControl(ColorScheme c, String label, {
+    String? detail, bool selected = true,
+  }) => Container(
+    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+    decoration: BoxDecoration(color: c.surfaceContainerLow,
+      borderRadius: BorderRadius.circular(12)),
+    child: Row(children: [
+      Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(label, style: const TextStyle(fontSize: 12,
+            fontWeight: FontWeight.w600)),
+          if (detail != null) Text(detail, maxLines: 2,
+            overflow: TextOverflow.ellipsis,
+            style: TextStyle(fontSize: 10, color: c.onSurfaceVariant)),
+        ])),
+      Container(width: 30, height: 17,
+        padding: const EdgeInsets.all(2),
+        alignment: selected ? Alignment.centerRight : Alignment.centerLeft,
+        decoration: BoxDecoration(
+          color: selected ? c.primary : c.outlineVariant,
+          borderRadius: BorderRadius.circular(12)),
+        child: Container(width: 13, height: 13,
+          decoration: BoxDecoration(color: selected ? c.onPrimary : c.surface,
+            shape: BoxShape.circle))),
+    ]),
+  );
+
+  Widget _staticChoiceRow(ColorScheme c, List<String> choices, {
+      int active = 0}) => Row(children: [
+        for (var i = 0; i < choices.length; i++) Expanded(
+          child: Container(
+            margin: const EdgeInsets.symmetric(horizontal: 2),
+            padding: const EdgeInsets.symmetric(vertical: 10),
+            alignment: Alignment.center,
+            decoration: BoxDecoration(
+              color: i == active ? c.primary : c.surfaceContainerLow,
+              borderRadius: BorderRadius.circular(8),
+              border: Border.all(color: c.outlineVariant)),
+            child: Text(choices[i], maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: TextStyle(fontSize: 10,
+                color: i == active ? c.onPrimary : c.onSurface)),
+          )),
+      ]);
+
   Widget _preferences(ColorScheme c) {
-    final labels = switch (entry.id) {
-      'performance' => [
-        t('描画品質', 'Rendering quality'),
-        t('Undoの回数', 'Undo limit'),
-        t('ゴミ箱の自動削除', 'Trash cleanup'),
-        t('低負荷モード', 'Low power mode'),
-      ],
-      'gestures' => [
-        t('2本指タップ', 'Two-finger tap'),
-        t('長押し操作', 'Long press'),
-        t('ピンチ操作', 'Pinch gesture'),
-        t('回転操作', 'Rotation'),
-      ],
-      'shortcuts' => [
-        t('取り消し', 'Undo'),
-        t('やり直し', 'Redo'),
-        t('ツール切り替え', 'Tool switch'),
-        t('キャンバス移動', 'Pan canvas'),
-      ],
-      'pen' => [
-        t('手のひら誤反応防止', 'Palm rejection'),
-        t('筆圧カーブ', 'Pressure curve'),
-        t('傾き検知', 'Tilt detection'),
-        t('ペンボタン割り当て', 'Pen buttons'),
-      ],
-      'bucket' => [
-        t('許容誤差', 'Tolerance'),
-        t('隙間を閉じる', 'Close gaps'),
-        t('線の下に拡張', 'Expand under lines'),
-        t('アンチエイリアス', 'Anti-aliasing'),
-      ],
-      _ => [t('設定項目', 'Setting'), t('標準', 'Standard')],
-    };
-    return _list([
-      _heading(entry.label(ja)),
-      ...labels.map((label) => _card(_row(
-        Icons.tune, label,
-        subtitle: t('設定値', 'Setting value')))),
-      _card(Column(children: [
-        _heading(t('調整', 'Adjustment')),
-        Slider(value: .6, onChanged: null),
-      ])),
-    ]);
+    switch (entry.id) {
+      case 'performance':
+        return _list([
+          _mockSection(c, t('描画品質', 'Render quality'), [
+            ...[t('低品質', 'Low'), t('中品質', 'Medium'), t('高品質', 'High'),
+              t('カスタム', 'Custom')].asMap().entries.map((e) =>
+              ListTile(dense: true,
+                leading: Icon(e.key == 0
+                  ? Icons.radio_button_checked : Icons.radio_button_unchecked,
+                  color: e.key == 0 ? c.primary : c.onSurfaceVariant),
+                title: Text(e.value, style: const TextStyle(fontSize: 12)),
+                subtitle: e.key == 0
+                  ? Text(t('動作を軽くして快適に使う', 'Prioritize speed'),
+                    style: TextStyle(fontSize: 10, color: c.onSurfaceVariant))
+                  : null,
+              )),
+          ]),
+          _mockSection(c, t('容量・動作に関わる設定', 'Storage and behavior'), [
+            _mockSettingRow(c, Icons.undo, t('Undoの回数', 'Undo limit'),
+              subtitle: t('戻ることができる回数', 'Undo history')),
+            _mockSettingRow(c, Icons.delete_outline,
+              t('ゴミ箱の自動削除', 'Automatic trash cleanup')),
+          ]),
+          _mockSection(c, t('履歴の設定', 'History'), [
+            Text('OFF', style: TextStyle(fontSize: 11, color: c.onSurfaceVariant)),
+          ]),
+        ]);
+      case 'gestures':
+        return _list([
+          ...[
+            (t('2本指タップ', 'Two-finger tap'), t('取り消し（Undo）', 'Undo')),
+            (t('3本指タップ', 'Three-finger tap'), t('やり直し（Redo）', 'Redo')),
+            (t('4本指以上のタップ', 'Four-finger tap'), t('何もしない', 'No action')),
+            (t('2本指スワイプ左右', 'Two-finger swipe'), t('ツール切り替え', 'Tool change')),
+            (t('長押し', 'Long press'), t('スポイト', 'Eyedropper')),
+          ].map((e) => Container(
+            margin: const EdgeInsets.only(bottom: 7),
+            decoration: BoxDecoration(
+              color: c.surfaceContainerLow,
+              borderRadius: BorderRadius.circular(10)),
+            child: ListTile(dense: true,
+              title: Text(e.$1, style: const TextStyle(fontSize: 12,
+                fontWeight: FontWeight.w600)),
+              trailing: Row(mainAxisSize: MainAxisSize.min, children: [
+                Text(e.$2, style: TextStyle(fontSize: 10, color: c.primary)),
+                const SizedBox(width: 6), const Icon(Icons.chevron_right, size: 15),
+              ])))),
+          const SizedBox(height: 12),
+          _mockSection(c, t('長押しスポイト', 'Long press eyedropper'), [
+            _staticControl(c, t('長押しでスポイトを起動', 'Eyedropper on hold'),
+              detail: t('キャンバス上を長押し', 'Touch and hold on canvas')),
+            const SizedBox(height: 8),
+            Text(t('反応時間', 'Response time'),
+              style: const TextStyle(fontSize: 11)),
+            _mockSlider(c, position: .24),
+          ]),
+        ]);
+      case 'shortcuts':
+        return _list([
+          Text(t('ショートカットの一覧。タップするとキーを変更できます。',
+            'Shortcut key bindings.'),
+            style: TextStyle(fontSize: 10, color: c.onSurfaceVariant)),
+          const SizedBox(height: 12),
+          ...[
+            ('Ctrl+Z', t('取り消し（Undo）', 'Undo')),
+            ('Ctrl+Y', t('やり直し（Redo）', 'Redo')),
+            ('Ctrl+Shift+Z', t('やり直し（Redo）', 'Redo')),
+            ('Ctrl+A', t('全選択', 'Select all')),
+            ('Ctrl+C', t('コピー', 'Copy')),
+            ('Ctrl+V', t('貼り付け', 'Paste')),
+            ('Ctrl+S', t('保存', 'Save')),
+          ].map((e) => Container(
+            margin: const EdgeInsets.only(bottom: 8),
+            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
+            decoration: BoxDecoration(color: c.surfaceContainerLow,
+              borderRadius: BorderRadius.circular(10)),
+            child: Row(children: [
+              Container(padding: const EdgeInsets.all(5),
+                decoration: BoxDecoration(color: c.surfaceContainerHighest,
+                  borderRadius: BorderRadius.circular(5)),
+                child: Text(e.$1, style: const TextStyle(fontSize: 10))),
+              const SizedBox(width: 9),
+              Expanded(child: Text(e.$2,
+                style: const TextStyle(fontSize: 11))),
+              Icon(Icons.delete_outline, size: 17, color: c.primary),
+            ]))),
+        ]);
+      case 'pen':
+        return _list([
+          _staticControl(c, t('パームリジェクション', 'Palm rejection'),
+            detail: t('手のひらの誤操作を防止', 'Prevent palm input')),
+          const SizedBox(height: 22),
+          _mockSection(c, t('筆圧カーブ', 'Pressure curve'), [
+            Text(t('筆圧に合わせて線の太さが変わります。',
+              'Pressure changes stroke width.'),
+              style: TextStyle(fontSize: 10, color: c.onSurfaceVariant)),
+            const SizedBox(height: 9),
+            _staticChoiceRow(c, [
+              t('標準', 'Normal'), t('ソフト', 'Soft'),
+              t('強', 'Strong'), t('カスタム', 'Custom')], active: 1),
+            const SizedBox(height: 12),
+            Container(height: 148, decoration: BoxDecoration(
+              color: c.surfaceContainerHigh,
+              borderRadius: BorderRadius.circular(8),
+              border: Border.all(color: c.outlineVariant))),
+          ]),
+          const SizedBox(height: 22),
+          _mockSection(c, t('ペンボタン設定', 'Pen buttons'), [
+            _mockSettingRow(c, Icons.stylus, t('ボタン1', 'Button 1'),
+              subtitle: t('消しゴム', 'Eraser')),
+            _mockSettingRow(c, Icons.stylus, t('ボタン2', 'Button 2'),
+              subtitle: t('スポイト', 'Eyedropper')),
+          ]),
+        ]);
+      case 'bucket':
+        return _list([
+          _mockSection(c, t('許容誤差', 'Tolerance'), [
+            Text(t('タップした色の近さを調整します。',
+              'Adjust the acceptable color difference.'),
+              style: TextStyle(fontSize: 10, color: c.onSurfaceVariant)),
+            _mockSlider(c, position: .30),
+          ]),
+          _mockSection(c, t('隙間の許容', 'Gap tolerance'), [
+            Text(t('線の隙間を越えて塗りつぶす範囲', 'Fill beyond small gaps'),
+              style: TextStyle(fontSize: 10, color: c.onSurfaceVariant)),
+            _mockSlider(c, position: .04),
+          ]),
+          const SizedBox(height: 18),
+          _staticControl(c, t('線の下まで拡張', 'Expand beneath line'),
+            detail: t('塗りつぶし領域を線の下へ広げる', 'Expand under outline'),
+            selected: false),
+        ]);
+      default:
+        return _list([_mockSettingRow(c, Icons.tune,
+          entry.label(ja))]);
+    }
   }
 
   Widget _workspace(ColorScheme c) => _list([
