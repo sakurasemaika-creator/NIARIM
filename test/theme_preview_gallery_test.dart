@@ -147,20 +147,30 @@ void main() {
         await tester.pumpAndSettle();
       }
       expect(find.text(label), findsOneWidget);
-      final containingCard = find.ancestor(
-        of: find.text(label), matching: find.byType(Card)).first;
-      final avatar = tester.widget<CircleAvatar>(
-        find.descendant(of: containingCard,
-          matching: find.byType(CircleAvatar)));
-      expect(avatar.backgroundColor, expected, reason: label);
+      // The production ThemeSettingsScreen uses a Material color tile with
+      // a circular swatch Container, not a Card/CircleAvatar. Match its
+      // actual read-only preview structure rather than an obsolete mock.
+      final tile = find.ancestor(
+        of: find.text(label), matching: find.byType(Material)).first;
+      final colorSample = find.descendant(
+        of: tile,
+        matching: find.byWidgetPredicate((widget) {
+          if (widget is! Container) return false;
+          final decoration = widget.decoration;
+          return decoration is BoxDecoration &&
+              decoration.shape == BoxShape.circle &&
+              decoration.color == expected;
+        }),
+      );
+      expect(colorSample, findsOneWidget, reason: label);
     }
-    await checkSwatch('本文文字色', const Color(0xFF112233));
-    await checkSwatch('ボタン内の文字色', const Color(0xFF00CC11));
-    await checkSwatch('メニューの文字色', const Color(0xFFCC11BB));
-    await checkSwatch('選択中の文字色', const Color(0xFF2255CC));
-    await checkSwatch('パネル背景', const Color(0xFFEEBBCC));
-    await checkSwatch('メニュー背景', const Color(0xFFBBFFDD));
-    await checkSwatch('更新マーク', const Color(0xFF667788));
+    await checkSwatch('本文・通常の文字色', const Color(0xFF112233));
+    await checkSwatch('ボタン内の文字・アイコン色', const Color(0xFF00CC11));
+    await checkSwatch('メニュー・上部バーの文字色', const Color(0xFFCC11BB));
+    await checkSwatch('選択中の文字・アイコン色', const Color(0xFF2255CC));
+    await checkSwatch('パネル背景色', const Color(0xFFEEBBCC));
+    await checkSwatch('メニュー背景色', const Color(0xFFBBFFDD));
+    await checkSwatch('更新マーク色', const Color(0xFF667788));
     expect(tester.takeException(), isNull);
   });
 
