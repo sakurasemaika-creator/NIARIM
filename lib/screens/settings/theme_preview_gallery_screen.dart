@@ -979,37 +979,51 @@ class _ThemeSampleScreen extends StatelessWidget {
     ],
   );
 
-  Widget _export(ColorScheme c) => _list([
-    _heading(t('プリセット', 'Presets')),
-    _staticChoiceRow(c,
-      [t('標準', 'Standard'), t('高画質', 'High'),
-        t('カスタム', 'Custom')], active: 0),
-    const SizedBox(height: 18),
-    _heading(t('形式', 'Format')),
-    ...[
-      ('MP4', 'H.264'),
-      ('GIF', t('アニメーションGIF', 'Animation GIF')),
-      ('WebM', t('透過に対応', 'Supports transparency')),
-      ('AVI', t('高品質動画', 'Video')),
-    ].asMap().entries.map((e) => Container(
-      margin: const EdgeInsets.only(bottom: 4),
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 9),
-      child: Row(children: [
-        Icon(e.key == 0 ? Icons.radio_button_checked :
-          Icons.radio_button_unchecked,
-          color: e.key == 0 ? c.primary : c.onSurfaceVariant, size: 19),
-        const SizedBox(width: 12),
-        Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-          Text(e.value.$1, style: const TextStyle(fontSize: 13,
-            fontWeight: FontWeight.w600)),
-          Text(e.value.$2, style: TextStyle(fontSize: 10,
-            color: c.onSurfaceVariant)),
-        ]),
-      ]))),
-    const SizedBox(height: 15),
-    _cta(c, t('書き出し開始', 'Start export'), icon: Icons.file_download_outlined),
-  ]);
-
+  Widget _export(ColorScheme c) => ListView(
+    key: const Key('themePreviewContentList'),
+    physics: const NeverScrollableScrollPhysics(),
+    padding: const EdgeInsets.all(16),
+    children: [
+      Text(t('プリセット', 'Preset'),
+        style: const TextStyle(fontWeight: FontWeight.bold)),
+      const SizedBox(height: 8),
+      _staticChoiceRow(c,
+        [t('標準', 'Standard'), t('高画質', 'High quality'),
+          t('カスタム', 'Custom')], active: 0),
+      const SizedBox(height: 24),
+      Text(t('形式', 'Format'),
+        style: const TextStyle(fontWeight: FontWeight.bold)),
+      const SizedBox(height: 8),
+      for (final option in [
+        ('MP4', t('汎用動画形式', 'Universal video format')),
+        ('GIF', t('アニメーションGIF', 'Animated GIF')),
+        (t('透過WebM', 'Transparent WebM'),
+          t('透明背景動画', 'Transparent background video')),
+        ('AVI', t('高品質動画 (連番非対応)', 'High-quality AVI')),
+      ].asMap().entries)
+        SizedBox(height: 76, child: Row(children: [
+          Icon(option.key == 0
+            ? Icons.radio_button_checked : Icons.radio_button_unchecked,
+            color: option.key == 0 ? c.primary : c.onSurfaceVariant,
+            size: 21),
+          const SizedBox(width: 16),
+          Expanded(child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(option.value.$1, style: const TextStyle(
+                fontSize: 14, fontWeight: FontWeight.w700)),
+              const SizedBox(height: 3),
+              Text(option.value.$2, style: TextStyle(
+                fontSize: 11, color: c.onSurfaceVariant)),
+            ],
+          )),
+        ])),
+      const SizedBox(height: 24),
+      _cta(c, t('書き出し開始', 'Start export'),
+        icon: Icons.file_download),
+    ],
+  );
 
   Widget _post(ColorScheme c) => _list([
     _heading(t('作品を投稿', 'Post artwork')),
@@ -1599,39 +1613,59 @@ class _ThemeSampleScreen extends StatelessWidget {
   ]);
 
 
-  Widget _save(ColorScheme c) => _list([
-    ...List.generate(5, (i) => Container(
-      margin: const EdgeInsets.only(bottom: 12),
-      padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 11),
-      decoration: BoxDecoration(
-        color: c.surfaceContainerLow,
-        border: Border.all(color: c.outlineVariant),
-        borderRadius: BorderRadius.circular(14)),
-      child: Row(children: [
-        Container(width: 57, height: 57,
-          alignment: Alignment.center,
-          decoration: BoxDecoration(
-            color: c.primaryContainer,
-            borderRadius: BorderRadius.circular(9)),
-          child: Icon(Icons.add, color: c.onPrimaryContainer)),
-        const SizedBox(width: 12),
-        Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(i == 0
-                ? t('クイックセーブ', 'Quick save')
-                : '${t('スロット', 'Slot')} $i',
-              style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w700)),
-            const SizedBox(height: 3),
-            Text(t('保存データなし', 'Empty slot'),
-              style: TextStyle(fontSize: 10, color: c.onSurfaceVariant)),
-          ])),
-        Icon(Icons.save_outlined, size: 20, color: c.primary),
-        const SizedBox(width: 10),
-        Icon(Icons.copy_outlined, size: 20, color: c.onSurfaceVariant),
-        const SizedBox(width: 10),
-        Icon(Icons.delete_outline, size: 20, color: c.onSurfaceVariant),
-      ]))),
-  ]);
+  Widget _save(ColorScheme c) => ListView(
+    key: const Key('themePreviewContentList'),
+    physics: const NeverScrollableScrollPhysics(),
+    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 10),
+    children: [
+      for (var i = 0; i < 5; i++)
+        Padding(
+          padding: const EdgeInsets.symmetric(vertical: 5),
+          child: Material(
+            color: c.surfaceContainerLowest,
+            borderRadius: BorderRadius.circular(14),
+            child: Container(
+              constraints: const BoxConstraints(minHeight: 82),
+              decoration: BoxDecoration(
+                border: Border.all(
+                  color: c.outlineVariant.withValues(alpha: .65)),
+                borderRadius: BorderRadius.circular(14)),
+              padding: const EdgeInsets.symmetric(
+                horizontal: 14, vertical: 10),
+              child: Row(children: [
+                Container(
+                  height: 58, width: 58,
+                  decoration: BoxDecoration(
+                    color: c.surfaceContainerHighest,
+                    borderRadius: BorderRadius.circular(10)),
+                  alignment: Alignment.center,
+                  child: Icon(Icons.add, color: c.onSurfaceVariant)),
+                const SizedBox(width: 14),
+                Expanded(child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Text(t('スロット', 'Slot') + ' ' + (i + 1).toString(),
+                      style: const TextStyle(fontWeight: FontWeight.w700)),
+                    const SizedBox(height: 4),
+                    Text(t('保存データなし', 'No saved data'),
+                      maxLines: 1, overflow: TextOverflow.ellipsis,
+                      style: TextStyle(color: c.onSurfaceVariant)),
+                  ])),
+                const SizedBox(width: 4),
+                Icon(Icons.edit_note, color: c.primary),
+                const SizedBox(width: 18),
+                Icon(Icons.book_outlined,
+                  color: c.onSurfaceVariant.withValues(alpha: .6)),
+                const SizedBox(width: 18),
+                Icon(Icons.delete_outline,
+                  color: c.onSurfaceVariant.withValues(alpha: .6)),
+              ]),
+            ),
+          ),
+        ),
+    ],
+  );
 
   Widget _catalog(ColorScheme c) {
     final rows = switch (entry.id) {
