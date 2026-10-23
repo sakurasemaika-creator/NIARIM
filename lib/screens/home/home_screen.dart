@@ -625,6 +625,7 @@ class _HomeScreenState extends State<HomeScreen>
                 tooltip: l10n.homeBackToSplashTooltip,
                 backgroundColor: Theme.of(context).colorScheme.primary,
                 foregroundColor: Theme.of(context).colorScheme.onPrimary,
+                shape: const CircleBorder(side: BorderSide.none),
                 onPressed: () => context.go('/'),
                 child: const Icon(Icons.arrow_back),
               ),
@@ -633,6 +634,7 @@ class _HomeScreenState extends State<HomeScreen>
                   heroTag: 'home-add-project',
                   backgroundColor: Theme.of(context).colorScheme.primary,
                   foregroundColor: Theme.of(context).colorScheme.onPrimary,
+                shape: const CircleBorder(side: BorderSide.none),
                   onPressed: () => _showAddChoiceSheet(context),
                   child: const Icon(Icons.add),
                 )
@@ -642,6 +644,7 @@ class _HomeScreenState extends State<HomeScreen>
                   tooltip: l10n.homeAddSheetNewFolder,
                   backgroundColor: Theme.of(context).colorScheme.primary,
                   foregroundColor: Theme.of(context).colorScheme.onPrimary,
+                shape: const CircleBorder(side: BorderSide.none),
                   onPressed: () => showCreateFolderNameDialog(
                     context,
                     (name) => context.read<WorkFolderService>().createFolder(name),
