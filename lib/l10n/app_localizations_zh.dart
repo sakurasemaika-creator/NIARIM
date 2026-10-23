@@ -426,6 +426,11 @@ class AppLocalizationsZh extends AppLocalizations {
   }
 
   @override
+  String projectDuplicateNameNumbered(String name, int number) {
+    return '$name（副本 $number）';
+  }
+
+  @override
   String get commonOk => '确定';
 
   @override
@@ -7911,6 +7916,11 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   @override
   String projectDuplicateName(String name) {
     return '$name（副本）';
+  }
+
+  @override
+  String projectDuplicateNameNumbered(String name, int number) {
+    return '$name（副本 $number）';
   }
 
   @override

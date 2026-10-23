@@ -138,6 +138,7 @@
   "homeCutPendingHint": "Cut, waiting to be pasted",
   "homeCopyFoldersUnsupported": "Folders can’t be copied (select only works)",
   "projectDuplicateName": "{name} (copy)",
+  "projectDuplicateNameNumbered": "{name} (copy {number})",
   "commonPaste": "Paste",
   "commonDuplicate": "Duplicate",
   "commonOk": "OK",

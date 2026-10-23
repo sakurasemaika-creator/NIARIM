@@ -430,6 +430,11 @@ class AppLocalizationsKo extends AppLocalizations {
   }
 
   @override
+  String projectDuplicateNameNumbered(String name, int number) {
+    return '$name (사본 $number)';
+  }
+
+  @override
   String get commonOk => '확인';
 
   @override

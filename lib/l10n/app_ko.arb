@@ -138,6 +138,7 @@
   "homeCutPendingHint": "잘라냄(붙여넣기 대기 중)",
   "homeCopyFoldersUnsupported": "폴더는 복사할 수 없습니다(작품만 선택하세요)",
   "projectDuplicateName": "{name} (사본)",
+  "projectDuplicateNameNumbered": "{name} (사본 {number})",
   "commonPaste": "붙여넣기",
   "commonDuplicate": "복제",
   "commonOk": "확인",

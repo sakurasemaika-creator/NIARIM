@@ -442,6 +442,11 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
+  String projectDuplicateNameNumbered(String name, int number) {
+    return '$name (copy $number)';
+  }
+
+  @override
   String get commonOk => 'OK';
 
   @override

@@ -863,6 +863,12 @@ abstract class AppLocalizations {
   /// **'{name} (コピー)'**
   String projectDuplicateName(String name);
 
+  /// Name of a duplicated work when a copy with the plain duplicate name already exists in the same place; number starts at 2.
+  ///
+  /// In ja, this message translates to:
+  /// **'{name} (コピー {number})'**
+  String projectDuplicateNameNumbered(String name, int number);
+
   /// No description provided for @commonOk.
   ///
   /// In ja, this message translates to:

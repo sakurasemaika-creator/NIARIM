@@ -138,6 +138,7 @@
   "homeCutPendingHint": "Coupé, en attente de collage",
   "homeCopyFoldersUnsupported": "Les dossiers ne peuvent pas être copiés (sélectionnez seulement des œuvres)",
   "projectDuplicateName": "{name} (copie)",
+  "projectDuplicateNameNumbered": "{name} (copie {number})",
   "commonPaste": "Coller",
   "commonDuplicate": "Dupliquer",
   "commonOk": "OK",

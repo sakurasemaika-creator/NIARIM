@@ -289,6 +289,34 @@ void main() {
     expect(File(copy.thumbnailPath!).existsSync(), isTrue);
   });
 
+  testWidgets('pasting the same copy again numbers the new copies', (
+    tester,
+  ) async {
+    final service = await boot(
+      tester,
+      extra: (service) => service.createProject(
+        name: 'apple',
+        fps: 12,
+        durationSeconds: 1,
+        backgroundColor: 0xFFFFFFFF,
+      ),
+    );
+    await tester.longPress(card('apple'));
+    await settle(tester);
+    await tester.tap(find.byTooltip('コピー'));
+    await settle(tester);
+    for (var i = 0; i < 3; i++) {
+      await tester.tap(find.byTooltip('1件を貼り付け'));
+      await settleIo(tester);
+    }
+    expect(service.projects.map((p) => p.name).toSet(), {
+      'apple',
+      'apple (コピー)',
+      'apple (コピー 2)',
+      'apple (コピー 3)',
+    });
+  });
+
   testWidgets('right-clicking a card opens its menu', (tester) async {
     await boot(tester, names: ['apple']);
     await tester.tap(card('apple'), buttons: kSecondaryMouseButton);

@@ -138,6 +138,7 @@
   "homeCutPendingHint": "已剪切（等待粘贴）",
   "homeCopyFoldersUnsupported": "文件夹无法复制（请只选择作品）",
   "projectDuplicateName": "{name}（副本）",
+  "projectDuplicateNameNumbered": "{name}（副本 {number}）",
   "commonPaste": "粘贴",
   "commonDuplicate": "复制",
   "commonOk": "确定",

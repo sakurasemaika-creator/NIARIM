@@ -23,6 +23,7 @@ import '../../widgets/responsive.dart';
 import '../../widgets/help_button.dart';
 import '../../widgets/stepped_slider.dart';
 import '../../config/font_fallback.dart';
+import '../../utils/duplicate_name.dart';
 import '../home/widgets/project_list_widget.dart'
     show showMaterialIncludeDialog, buildFontShareBundle;
 
@@ -207,7 +208,12 @@ class _ProjectDetailScreenState extends State<ProjectDetailScreen> {
                 case 'duplicate':
                   projectService.duplicateProject(
                     widget.projectId,
-                    name: l10n.projectDuplicateName(project.name),
+                    name: duplicateProjectName(
+                      l10n,
+                      project.name,
+                      folderId: project.folderId,
+                      projects: projectService.projects,
+                    ),
                   );
                 case 'move':
                   _showMoveToFolderDialog(context, projectService);

@@ -263,6 +263,18 @@
       }
     }
   },
+  "projectDuplicateNameNumbered": "{name} (コピー {number})",
+  "@projectDuplicateNameNumbered": {
+    "description": "Name of a duplicated work when a copy with the plain duplicate name already exists in the same place; number starts at 2.",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      },
+      "number": {
+        "type": "int"
+      }
+    }
+  },
   "commonOk": "OK",
   "gestureSettingsTitle": "ジェスチャー設定",
   "gestureTwoFingerTap": "2本指タップ",

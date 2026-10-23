@@ -19,6 +19,7 @@ import '../../../services/material_service.dart';
 import '../../../services/project_service.dart';
 import '../home_screen.dart';
 import '../../../config/font_fallback.dart';
+import '../../../utils/duplicate_name.dart';
 import '../../../utils/name_collation.dart';
 import '../../../widgets/frame_preview_background.dart';
 import '../../../widgets/checked_menu_item.dart';
@@ -1064,9 +1065,12 @@ class ProjectListWidget extends StatelessWidget {
       case 'duplicate':
         service.duplicateProject(
           project.id,
-          name: AppLocalizations.of(
-            context,
-          )!.projectDuplicateName(project.name),
+          name: duplicateProjectName(
+            AppLocalizations.of(context)!,
+            project.name,
+            folderId: project.folderId,
+            projects: service.projects,
+          ),
         );
       case 'share':
         _createNiashare(context, project);

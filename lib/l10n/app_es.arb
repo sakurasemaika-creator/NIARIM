@@ -138,6 +138,7 @@
   "homeCutPendingHint": "Cortado, pendiente de pegar",
   "homeCopyFoldersUnsupported": "Las carpetas no se pueden copiar (selecciona solo obras)",
   "projectDuplicateName": "{name} (copia)",
+  "projectDuplicateNameNumbered": "{name} (copia {number})",
   "commonPaste": "Pegar",
   "commonDuplicate": "Duplicar",
   "commonOk": "Aceptar",

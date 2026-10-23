@@ -429,6 +429,11 @@ class AppLocalizationsJa extends AppLocalizations {
   }
 
   @override
+  String projectDuplicateNameNumbered(String name, int number) {
+    return '$name (コピー $number)';
+  }
+
+  @override
   String get commonOk => 'OK';
 
   @override

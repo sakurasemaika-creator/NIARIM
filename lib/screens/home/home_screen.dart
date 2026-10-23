@@ -42,6 +42,7 @@ import '../community/community_edit_feedback.dart';
 import '../../widgets/typing_aware_shortcuts.dart';
 import '../community/community_error_text.dart';
 import '../../utils/color_contrast.dart';
+import '../../utils/duplicate_name.dart';
 
 /// ホームの一覧の下端に足す余白：画面下の左右に浮くFAB（56）とその下の
 /// 余白（16）、さらに端末のナビゲーションバーぶん（FABはその上に置かれる）。
@@ -1239,7 +1240,12 @@ class _HomeScreenState extends State<HomeScreen>
           id,
           targetFolderId: target,
           useTargetFolder: true,
-          name: l10n.projectDuplicateName(project.name),
+          name: duplicateProjectName(
+            l10n,
+            project.name,
+            folderId: target,
+            projects: service.projects,
+          ),
         )) {
           pasted++;
         } else {
