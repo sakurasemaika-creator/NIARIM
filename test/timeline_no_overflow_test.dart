@@ -119,5 +119,27 @@ void main() {
           'Timeline must render without any Flutter layout/runtime exception at 320 logical px',
     );
     expect(find.text('timeline-overflow-probe'), findsOneWidget);
+    // Real timeline: the preview picture owns the loop toggle and
+    // 1-based frame counter. Current and total seconds flank the centered
+    // resize handle on the seekbar's left and right edges, respectively.
+    expect(find.byKey(const Key('timelinePreviewFrameCount')), findsOneWidget);
+    expect(find.text('1/12'), findsOneWidget);
+    final loop = find.byKey(const Key('timelinePreviewLoopButton'));
+    expect(loop, findsOneWidget);
+    final handle = tester.getCenter(
+      find.byKey(const Key('timelinePreviewResizeHandle')));
+    final current = tester.getCenter(
+      find.byKey(const Key('timelineCurrentSeconds')));
+    final total = tester.getCenter(
+      find.byKey(const Key('timelineTotalSeconds')));
+    expect(current.dx, lessThan(handle.dx));
+    expect(handle.dx, lessThan(total.dx));
+    expect((current.dy - handle.dy).abs(), lessThan(12));
+    expect((total.dy - handle.dy).abs(), lessThan(12));
+    expect(find.text('0.0s'), findsOneWidget);
+    expect(find.text('1.0s'), findsOneWidget);
+    // The loop icon is inside the picture, above the transport controls.
+    expect(tester.getCenter(loop).dy, lessThan(handle.dy));
+
   }, timeout: const Timeout(Duration(seconds: 120)));
 }
