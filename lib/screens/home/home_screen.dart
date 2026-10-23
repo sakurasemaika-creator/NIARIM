@@ -633,7 +633,7 @@ class _HomeScreenState extends State<HomeScreen>
                 hoverElevation: 0,
                 highlightElevation: 0,
                 disabledElevation: 0,
-                shadowColor: Colors.transparent,
+
                 onPressed: () => context.go('/'),
                 child: const Icon(Icons.arrow_back),
               ),
@@ -648,7 +648,7 @@ class _HomeScreenState extends State<HomeScreen>
                 hoverElevation: 0,
                 highlightElevation: 0,
                 disabledElevation: 0,
-                shadowColor: Colors.transparent,
+
                   onPressed: () => _showAddChoiceSheet(context),
                   child: const Icon(Icons.add),
                 )
@@ -664,7 +664,7 @@ class _HomeScreenState extends State<HomeScreen>
                 hoverElevation: 0,
                 highlightElevation: 0,
                 disabledElevation: 0,
-                shadowColor: Colors.transparent,
+
                   onPressed: () => showCreateFolderNameDialog(
                     context,
                     (name) => context.read<WorkFolderService>().createFolder(name),
