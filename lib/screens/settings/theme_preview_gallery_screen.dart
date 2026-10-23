@@ -2616,6 +2616,66 @@ class _ThemeSampleScreen extends StatelessWidget {
     ],
   );
 
+  Widget _mockCommunityCard(ColorScheme c, String title) => Container(
+    clipBehavior: Clip.antiAlias,
+    decoration: BoxDecoration(
+      color: c.surface,
+      borderRadius: BorderRadius.circular(16),
+      border: Border.all(color: c.onSurface)),
+    child: Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        Expanded(flex: 9, child: Stack(children: [
+          Positioned.fill(child: DecoratedBox(
+            decoration: BoxDecoration(
+              gradient: LinearGradient(colors: [
+                c.primary.withValues(alpha: .28),
+                c.primary.withValues(alpha: .82),
+              ], begin: Alignment.topLeft, end: Alignment.bottomRight)))),
+          Center(child: CircleAvatar(radius: 23,
+            backgroundColor: c.onSurface.withValues(alpha: .82),
+            child: Icon(Icons.play_arrow, color: c.surface, size: 25))),
+          Positioned(top: 4, right: 4, child: CircleAvatar(radius: 22,
+            backgroundColor: c.onSurface.withValues(alpha: .82),
+            child: Icon(Icons.bookmark_border,
+              color: c.surface, size: 23))),
+          Positioned(bottom: 4, right: 4, child: Container(
+            padding: const EdgeInsets.symmetric(
+              horizontal: 4, vertical: 2),
+            color: c.onSurface.withValues(alpha: .8),
+            child: Text('1:25', style: TextStyle(
+              fontSize: 9, color: c.surface)))),
+        ])),
+        Expanded(flex: 12, child: Padding(
+          padding: const EdgeInsets.all(9),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(title, style: const TextStyle(
+                fontWeight: FontWeight.w700, fontSize: 12),
+                maxLines: 1, overflow: TextOverflow.ellipsis),
+              const SizedBox(height: 9),
+              Text(t('サンプル作者', 'Sample artist'),
+                style: TextStyle(
+                  fontSize: 10, color: c.onSurfaceVariant)),
+              const Spacer(),
+              Row(children: [
+                Icon(Icons.play_arrow, size: 11,
+                  color: c.onSurfaceVariant),
+                Text('16,998', style: TextStyle(
+                  fontSize: 10, color: c.onSurfaceVariant)),
+                const SizedBox(width: 7),
+                Icon(Icons.bookmark, size: 10,
+                  color: c.onSurfaceVariant),
+                Text('278', style: TextStyle(
+                  fontSize: 10, color: c.onSurfaceVariant)),
+              ]),
+            ],
+          ),
+        )),
+      ]),
+  );
+
   Widget _author(ColorScheme c) => Scaffold(
     backgroundColor: c.surface,
     appBar: AppBar(
@@ -2681,9 +2741,9 @@ class _ThemeSampleScreen extends StatelessWidget {
         crossAxisCount: 2, crossAxisSpacing: 10,
         mainAxisSpacing: 10, childAspectRatio: .85,
         children: [
-          _projectTile(c, t('作品 1', 'Work 1')),
-          _projectTile(c, t('作品 2', 'Work 2')),
-          _projectTile(c, t('作品 3', 'Work 3')),
+          _mockCommunityCard(c, t('雨上がりの約束', 'After the rain')),
+          _mockCommunityCard(c, t('夜明けの冒険', 'Dawn adventure')),
+          _mockCommunityCard(c, t('最後のメロディ', 'Last melody')),
         ],
       )),
     ]),
