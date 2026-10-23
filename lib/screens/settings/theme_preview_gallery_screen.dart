@@ -1214,28 +1214,27 @@ class _ThemeSampleScreen extends StatelessWidget {
         padding: const EdgeInsets.symmetric(horizontal: 4),
         child: SizedBox(
           height: 34,
-          // Match the real player: fixed outer time labels, equal-width
-          // quarter cells for the counter and loop button in the middle.
-          child: Row(children: [
-            Expanded(child: Align(
-              alignment: Alignment.centerLeft,
-              child: Text('0.1s',
+          // Match the real player: the time labels stay at the two edges
+          // and the three intervening horizontal gaps are equal.
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text('0.1s',
                 key: const Key('themePreviewDetailCurrentSeconds'),
-                style: TextStyle(fontSize: 12, color: c.onSurfaceVariant)))),
-            Expanded(child: Center(child: Text('2/12',
-              key: const Key('themePreviewDetailFrameCounter'),
-              style: TextStyle(fontSize: 12, color: c.onSurfaceVariant)))),
-            Expanded(child: Center(child: SizedBox(
-              width: 34, height: 34,
-              child: Icon(Icons.repeat,
-                key: const Key('themePreviewDetailLoopButton'),
-                color: c.primary, size: 20)))),
-            Expanded(child: Align(
-              alignment: Alignment.centerRight,
-              child: Text('1.0s',
+                style: TextStyle(fontSize: 12, color: c.onSurfaceVariant)),
+              Text('2/12',
+                key: const Key('themePreviewDetailFrameCounter'),
+                style: TextStyle(fontSize: 12, color: c.onSurfaceVariant)),
+              SizedBox(
+                width: 34, height: 34,
+                child: Icon(Icons.repeat,
+                  key: const Key('themePreviewDetailLoopButton'),
+                  color: c.primary, size: 20)),
+              Text('1.0s',
                 key: const Key('themePreviewDetailTotalSeconds'),
-                style: TextStyle(fontSize: 12, color: c.onSurfaceVariant)))),
-          ]),
+                style: TextStyle(fontSize: 12, color: c.onSurfaceVariant)),
+            ],
+          ),
         ),
       ),
       KeyedSubtree(
