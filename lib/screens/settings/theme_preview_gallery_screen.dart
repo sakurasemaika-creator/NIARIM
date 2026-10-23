@@ -303,6 +303,7 @@ class _ThemeSampleScreen extends StatelessWidget {
     };
     final appTitle = switch (entry.id) {
       'detail' => t('練習作品', 'Practice'),
+      'work' => t('作品詳細', 'Work details'),
       'projects' => t('プロジェクト一覧', 'Projects'),
       'save' => t('セーブスロット', 'Save slots'),
       'new' => t('新規プロジェクト', 'New project'),
@@ -2263,39 +2264,180 @@ class _ThemeSampleScreen extends StatelessWidget {
     ]);
   }
 
-  Widget _legal(ColorScheme c) => _list([
-    _heading(entry.label(ja)),
-    ...List.generate(9, (i) => Padding(
-      padding: const EdgeInsets.only(bottom: 12),
-      child: Column(crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text('${i + 1}.  ${t('ご利用にあたっての案内', 'Usage information')}',
-            style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w700)),
-          const SizedBox(height: 4),
-          Text(t('本アプリの機能・保存データの取り扱いについて、'
-            '各項目に記載された条件をご確認ください。',
-            'Review the application terms and data handling information.'),
-            style: TextStyle(fontSize: 10,
-              color: c.onSurfaceVariant)),
-        ]))),
-  ]);
+  Widget _legal(ColorScheme c) => ListView(
+    key: const Key('themePreviewContentList'),
+    physics: const NeverScrollableScrollPhysics(),
+    padding: const EdgeInsets.all(16),
+    children: [
+      for (final section in entry.id == 'license'
+        ? <(String, String)>[
+          (t('利用規約', 'Terms of service'),
+           t('本アプリをご利用いただく前に、以下の条件をお読みください。'
+             'NIARIMはアニメーション制作を支援するアプリです。',
+             'Please review the conditions for using this app.')),
+          (t('第1条（適用）', 'Article 1 — Scope'),
+           t('この利用規約は、本アプリおよび関連する機能の利用に関する'
+             '基本的な条件について定めるものです。',
+             'These terms describe use of the application and its features.')),
+          (t('第2条（利用条件）', 'Article 2 — Conditions'),
+           t('ユーザーは本規約に従って、本アプリが提供する機能を'
+             '利用するものとします。',
+             'Users agree to follow the terms when using this application.')),
+          (t('第3条（禁止事項）', 'Article 3 — Prohibited actions'),
+           t('第三者の権利を侵害する行為、サービスの正常な運用を妨げる行為'
+             'および法令に反する行為を禁止します。',
+             'Do not infringe third-party rights or disrupt the service.')),
+        ]
+        : <(String, String)>[
+          (t('プライバシーポリシー', 'Privacy policy'),
+           t('このプライバシーポリシーでは、NIARIMをご利用いただく際の'
+             '情報の取り扱いと保護についてご説明します。',
+             'This policy describes the use and protection of information.')),
+          (t('第1条（収集する情報）', '1. Collected information'),
+           t('アプリ利用に必要な情報や、利用者が入力した情報について、'
+             '必要な範囲で取り扱います。',
+             'Information is processed only as needed for app functionality.')),
+          (t('第2条（利用目的）', '2. Purposes'),
+           t('取得した情報は、本アプリの提供や運営、'
+             'セキュリティ維持のために利用されます。',
+             'Information supports app services and security.')),
+          (t('第3条（データの保存）', '3. Data storage'),
+           t('制作データの管理については利用者の操作と設定に基づきます。',
+             'Project data is handled under the user settings.')),
+        ])
+        Padding(padding: const EdgeInsets.only(bottom: 18),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(section.$1, style: const TextStyle(
+                fontSize: 14, fontWeight: FontWeight.w800)),
+              const SizedBox(height: 8),
+              Text(section.$2, style: TextStyle(
+                fontSize: 12, height: 1.65, color: c.onSurface)),
+              const SizedBox(height: 8),
+              Text(section.$2, style: TextStyle(
+                fontSize: 12, height: 1.65, color: c.onSurface)),
+            ],
+          )),
+    ],
+  );
 
-  Widget _communityWork(ColorScheme c) => _list([
-    _art(c, height: 200),
-    _heading(t('サンプル作品', 'Sample artwork')),
-    _card(_row(Icons.person, t('作者の名前', 'Creator name'))),
-    _card(Row(mainAxisAlignment: MainAxisAlignment.spaceAround,
-      children: const [
-        Icon(Icons.favorite_border),
-        Icon(Icons.bookmark_border),
-        Icon(Icons.share),
-        Icon(Icons.more_horiz),
-      ])),
-    _heading(t('作品について', 'About this work')),
-    _card(Text(t('手描きアニメーションです。', 'Hand-drawn animation.'))),
-    _card(Text('#animation   #illustration',
-      style: TextStyle(color: c.primary))),
-  ]);
+  Widget _communityWork(ColorScheme c) => ListView(
+    key: const Key('themePreviewContentList'),
+    physics: const NeverScrollableScrollPhysics(),
+    padding: const EdgeInsets.fromLTRB(16, 16, 16, 12),
+    children: [
+      ClipRRect(borderRadius: BorderRadius.circular(16),
+        child: AspectRatio(aspectRatio: 1.5,
+          child: Container(
+            decoration: const BoxDecoration(
+              gradient: LinearGradient(
+                colors: [Color(0xFFFFB9C8), Color(0xFFFF6485)],
+                begin: Alignment.topLeft, end: Alignment.bottomRight)),
+            alignment: Alignment.center,
+            child: Container(
+              width: 48, height: 48,
+              decoration: BoxDecoration(shape: BoxShape.circle,
+                color: Colors.black.withValues(alpha: .58)),
+              child: const Icon(Icons.play_arrow, color: Colors.white,
+                size: 32)),
+          ))),
+      const SizedBox(height: 16),
+      Container(height: 4, width: 38,
+        alignment: Alignment.center,
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(5),
+          color: c.outlineVariant)),
+      const SizedBox(height: 14),
+      Text(t('夜明けの冒険', 'Dawn adventure'),
+        style: const TextStyle(fontSize: 19,
+          fontWeight: FontWeight.w800)),
+      const SizedBox(height: 12),
+      Row(children: [
+        CircleAvatar(radius: 14,
+          backgroundColor: c.primary.withValues(alpha: .18),
+          child: Text(t('あ', 'A'),
+            style: TextStyle(color: c.primary))),
+        const SizedBox(width: 8),
+        Text(t('あさかぜ工房', 'Asakaze Studio'),
+          style: TextStyle(color: c.primary, fontSize: 13)),
+      ]),
+      const SizedBox(height: 18),
+      Row(children: [
+        Icon(Icons.play_arrow, size: 14, color: c.onSurfaceVariant),
+        Text('9,637', style: TextStyle(
+          color: c.onSurfaceVariant, fontSize: 12)),
+        const SizedBox(width: 12),
+        Icon(Icons.thumb_up_alt_outlined,
+          size: 14, color: c.onSurfaceVariant),
+        Text('326', style: TextStyle(
+          color: c.onSurfaceVariant, fontSize: 12)),
+        const SizedBox(width: 12),
+        Icon(Icons.bookmark_border, size: 14, color: c.onSurfaceVariant),
+        Text('1,412', style: TextStyle(
+          color: c.onSurfaceVariant, fontSize: 12)),
+        const SizedBox(width: 12),
+        Icon(Icons.repeat, size: 14, color: c.onSurfaceVariant),
+        Text('0', style: TextStyle(
+          color: c.onSurfaceVariant, fontSize: 12)),
+      ]),
+      const SizedBox(height: 12),
+      Text(t('2026/10/14に投稿', 'Published 2026/10/14'),
+        style: TextStyle(fontSize: 11, color: c.onSurfaceVariant)),
+      const SizedBox(height: 12),
+      Container(
+        padding: const EdgeInsets.all(12),
+        decoration: BoxDecoration(
+          color: c.primary.withValues(alpha: .08),
+          borderRadius: BorderRadius.circular(14)),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text('NIARIM', style: TextStyle(
+              fontSize: 14, fontWeight: FontWeight.w800,
+              color: c.primary)),
+            const SizedBox(height: 8),
+            Wrap(spacing: 13, runSpacing: 9,
+              children: [
+                for (final x in [
+                  '2400f', '24fps', '1920×1080', '6h 40m', '2026/10/13',
+                ])
+                  Text(x, style: TextStyle(
+                    fontSize: 11, color: c.onSurfaceVariant)),
+              ]),
+          ]),
+      ),
+      const SizedBox(height: 12),
+      for (final item in [
+        (Icons.public, t('作品広場での公開状態',
+          'Public visibility'), t('公開中', 'Public'), true),
+        (Icons.auto_awesome, t('AI画像・AI動画使用',
+          'AI images or video'), t('未使用', 'Not used'), false),
+      ])
+        Container(
+          margin: const EdgeInsets.only(bottom: 10),
+          padding: const EdgeInsets.symmetric(
+            horizontal: 12, vertical: 14),
+          decoration: BoxDecoration(
+            color: c.primary.withValues(alpha: .055),
+            borderRadius: BorderRadius.circular(14)),
+          child: Row(children: [
+            Icon(item.$1, color: c.primary),
+            const SizedBox(width: 9),
+            Expanded(child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(item.$2, style: const TextStyle(
+                  fontWeight: FontWeight.w700, fontSize: 13)),
+                const SizedBox(height: 4),
+                Text(item.$3, style: TextStyle(
+                  fontSize: 11, color: c.onSurfaceVariant)),
+              ])),
+            Switch(value: item.$4, onChanged: null),
+          ]),
+        ),
+    ],
+  );
 
   Widget _author(ColorScheme c) => Column(children: [
     SizedBox(height: 128, child: Column(
