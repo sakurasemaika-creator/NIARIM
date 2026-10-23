@@ -59,7 +59,7 @@
    `lib/screens/settings/theme_preview_gallery_screen.dart`に未使用の宣言・
    文字列の連結の7件があり、dev_branch単体でも同じ。この7件は除いて数える）
 3. `flutter test`（ベースライン：2026-10-23、dev_branch `25723b3`を
-   取り込んだ`ccr-f56ee68e-77ag7y`の`4e3d4dd`で**成功2175・スキップ17・
+   取り込んだ`ccr-f56ee68e-77ag7y`の`6571623`で**成功2190・スキップ17・
    失敗3**。失敗はdev_branchでも落ちる
    `test/community_filter_dialog_contrast_test.dart`・
    `test/popup_opaque_background_test.dart`と、dev_branchがキャンバスの
