@@ -40,6 +40,7 @@ typedef _FlatFrame = ({String sceneId, int frameIndex});
 class _ProjectDetailScreenState extends State<ProjectDetailScreen> {
   int _frameIndex = 0;
   bool _isPlaying = false;
+  bool _loopPlayback = true;
   bool _rendering = false;
   Timer? _timer;
   ui.Image? _previewImage;
@@ -117,12 +118,25 @@ class _ProjectDetailScreenState extends State<ProjectDetailScreen> {
       setState(() => _isPlaying = false);
       return;
     }
+    // ループOFFで最終フレームから再生を押した場合は先頭から再開する。
+    if (!_loopPlayback && _frameIndex >= flat.length - 1) {
+      _seekTo(ps, flat, 0);
+    }
     setState(() => _isPlaying = true);
+    final safeFps = fps > 0 ? fps : 24;
     final interval = Duration(
-      milliseconds: (1000 / fps).round().clamp(16, 1000),
+      milliseconds: (1000 / safeFps).round().clamp(16, 1000),
     );
-    _timer = Timer.periodic(interval, (_) {
-      if (!mounted) return;
+    _timer = Timer.periodic(interval, (timer) {
+      if (!mounted) {
+        timer.cancel();
+        return;
+      }
+      if (!_loopPlayback && _frameIndex >= flat.length - 1) {
+        timer.cancel();
+        setState(() => _isPlaying = false);
+        return;
+      }
       setState(() => _frameIndex = (_frameIndex + 1) % flat.length);
       _renderFrame(ps, flat);
     });
@@ -170,6 +184,7 @@ class _ProjectDetailScreenState extends State<ProjectDetailScreen> {
               Expanded(
                 child: _buildPreviewImage(project, showOverlayButtons: false),
               ),
+              _buildPlaybackStatus(flat, project),
               _buildSeekBar(flat),
               _buildPlaybackBar(projectService, flat, project),
             ],
@@ -240,6 +255,7 @@ class _ProjectDetailScreenState extends State<ProjectDetailScreen> {
                 aspectRatio: 16 / 9,
                 child: _buildPreviewImage(project),
               ),
+              _buildPlaybackStatus(flat, project),
               _buildSeekBar(flat),
               // メディアプレイヤー風：中央の再生ボタンをテーマカラーの円で強調する
               Container(
@@ -481,6 +497,73 @@ class _ProjectDetailScreenState extends State<ProjectDetailScreen> {
           ),
         ),
       ],
+    );
+  }
+
+  /// プレビューとシークバーの間：左右に現在秒数／総秒数、中央に
+  /// 1始まりの現在フレームとループ切替を配置する。
+  /// 作品全シーンをフラット化したフレーム数を使い、再生・シークに追従する。
+  Widget _buildPlaybackStatus(List<_FlatFrame> flat, Project project) {
+    final fps = project.fps > 0 ? project.fps : 24;
+    final currentFrame = flat.isEmpty
+        ? 0
+        : _frameIndex.clamp(0, flat.length - 1) + 1;
+    final currentSeconds = currentFrame == 0 ? 0.0 : (currentFrame - 1) / fps;
+    final totalSeconds = flat.length / fps;
+    final colors = Theme.of(context).colorScheme;
+    final timeStyle = TextStyle(
+      fontSize: 12,
+      color: colors.onSurfaceVariant,
+    );
+    final l10n = AppLocalizations.of(context)!;
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16),
+      child: SizedBox(
+        height: 34,
+        child: Row(children: [
+          Expanded(
+            child: Align(
+              alignment: Alignment.centerLeft,
+              child: Text(
+                '${currentSeconds.toStringAsFixed(1)}s',
+                key: const Key('projectDetailCurrentSeconds'),
+                style: timeStyle,
+              ),
+            ),
+          ),
+          Text(
+            '$currentFrame/${flat.length}',
+            key: const Key('projectDetailFrameCounter'),
+            style: timeStyle,
+          ),
+          const SizedBox(width: 6),
+          IconButton(
+            key: const Key('projectDetailLoopButton'),
+            onPressed: () => setState(() => _loopPlayback = !_loopPlayback),
+            icon: Icon(
+              Icons.repeat,
+              color: _loopPlayback ? colors.primary : colors.onSurfaceVariant,
+            ),
+            tooltip: _loopPlayback
+                ? l10n.timelineLoopOnTooltip
+                : l10n.timelineLoopOffTooltip,
+            iconSize: 20,
+            padding: EdgeInsets.zero,
+            constraints: const BoxConstraints.tightFor(width: 34, height: 34),
+            visualDensity: VisualDensity.compact,
+          ),
+          Expanded(
+            child: Align(
+              alignment: Alignment.centerRight,
+              child: Text(
+                '${totalSeconds.toStringAsFixed(1)}s',
+                key: const Key('projectDetailTotalSeconds'),
+                style: timeStyle,
+              ),
+            ),
+          ),
+        ]),
+      ),
     );
   }
 
