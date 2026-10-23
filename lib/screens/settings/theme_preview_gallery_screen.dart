@@ -592,7 +592,7 @@ class _ThemeSampleScreen extends StatelessWidget {
         Padding(padding: const EdgeInsets.all(9), child: Row(children: [
           Expanded(child: Text(title, maxLines: 1,
             style: const TextStyle(fontSize: 12))),
-          Icon(Icons.star_border, color: c.tertiary, size: 16),
+          Icon(Icons.star_border, color: c.primary, size: 16),
           const Icon(Icons.more_vert, size: 16),
         ])),
       ]));
