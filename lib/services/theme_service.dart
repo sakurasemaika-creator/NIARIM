@@ -714,29 +714,34 @@ class ThemeService extends ChangeNotifier {
         ),
         margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
       ),
+      // All action-button labels are headings in the design system:
+      // Kuramubon for Filled / Elevated / Outlined / Text buttons.
+      // Keep the user's foreground tokens unchanged.
       filledButtonTheme: FilledButtonThemeData(
         style: FilledButton.styleFrom(
-          // Applies to text AND icons. User-defined values are never
-          // corrected for contrast or silently replaced.
           foregroundColor: scheme.onPrimary,
           minimumSize: const Size(64, 48),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(radius),
           ),
-          // AppBarのtitleTextStyleとまったく同じ罠。`styleFrom(textStyle:)`へ
-          // 素のTextStyle()を渡すと、それがラベル書式を丸ごと決めてしまい、
-          // ThemeData.fontFamily='HakkouMincho'は継承されない。その結果
-          // FilledButtonのラベルだけ端末標準フォント（Roboto等）で描かれ、
-          // 周囲の同梱フォントから明確に浮く。textTheme.labelLarge
-          // （本文フォント＋kBodyFontFallback適用済み）を土台にして、
-          // 太さだけ上書きする。
-          textStyle:
-              textTheme.labelLarge?.copyWith(fontWeight: FontWeight.w700) ??
-              const TextStyle(
-                fontFamily: 'HakkouMincho',
-                fontFamilyFallback: kBodyFontFallback,
-                fontWeight: FontWeight.w700,
-              ),
+          textStyle: textTheme.labelLarge?.copyWith(
+            fontFamily: 'Kuramubon',
+            fontFamilyFallback: kHeadingFontFallback,
+            fontWeight: FontWeight.w700,
+          ) ?? const TextStyle(
+            fontFamily: 'Kuramubon',
+            fontFamilyFallback: kHeadingFontFallback,
+            fontWeight: FontWeight.w700,
+          ),
+        ),
+      ),
+      elevatedButtonTheme: ElevatedButtonThemeData(
+        style: ElevatedButton.styleFrom(
+          textStyle: textTheme.labelLarge?.copyWith(
+            fontFamily: 'Kuramubon',
+            fontFamilyFallback: kHeadingFontFallback,
+            fontWeight: FontWeight.w700,
+          ),
         ),
       ),
       outlinedButtonTheme: OutlinedButtonThemeData(
@@ -745,6 +750,11 @@ class ThemeService extends ChangeNotifier {
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(radius),
           ),
+          textStyle: textTheme.labelLarge?.copyWith(
+            fontFamily: 'Kuramubon',
+            fontFamilyFallback: kHeadingFontFallback,
+            fontWeight: FontWeight.w700,
+          ),
         ),
       ),
       textButtonTheme: TextButtonThemeData(
@@ -752,6 +762,11 @@ class ThemeService extends ChangeNotifier {
           minimumSize: const Size(48, 44),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(radius),
+          ),
+          textStyle: textTheme.labelLarge?.copyWith(
+            fontFamily: 'Kuramubon',
+            fontFamilyFallback: kHeadingFontFallback,
+            fontWeight: FontWeight.w700,
           ),
         ),
       ),
