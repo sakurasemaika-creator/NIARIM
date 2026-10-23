@@ -3,20 +3,21 @@ import 'package:provider/provider.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import '../../services/theme_service.dart';
 
-/// One preview per distinct standalone app screen. Excludes folder contents,
-/// home/community tabs, menus and floating panels. Export completion is the
-/// specifically requested exception: the real app presents it as a dialog.
+/// Lightweight preview of main creation and community screens only.
+/// Tab variants, settings/management pages, menus and floating panels are
+/// excluded. Export completion is kept as a requested dialog exception.
 class ThemePreviewEntry {
   final String id, ja, en, layout;
   const ThemePreviewEntry(this.id, this.ja, this.en, this.layout);
   String label(bool japanese) => japanese ? ja : en;
 }
 
+/// Show only frequently used creation and community screens. Home tabs
+/// (Shared/Trash) are represented by Projects, and infrequent settings,
+/// help, legal and administration screens do not need theme samples.
 const List<ThemePreviewEntry> themePreviewEntries = [
   ThemePreviewEntry('splash','起動画面','Splash','splash'),
   ThemePreviewEntry('projects','プロジェクト一覧','Projects','projects'),
-  ThemePreviewEntry('shared','共有一覧','Shared projects','shared'),
-  ThemePreviewEntry('trash','ゴミ箱','Trash','trash'),
   ThemePreviewEntry('new','新規プロジェクト','New project','form'),
   ThemePreviewEntry('detail','プロジェクト詳細','Project details','detail'),
   ThemePreviewEntry('canvas','キャンバスモード','Canvas mode','canvas'),
@@ -31,28 +32,6 @@ const List<ThemePreviewEntry> themePreviewEntries = [
   ThemePreviewEntry('author','投稿者の作品','Author works','author'),
   ThemePreviewEntry('mine','自分の投稿','My posts','mine'),
   ThemePreviewEntry('notifications','フォロー通知','Follow notifications','notifications'),
-  ThemePreviewEntry('settings','設定','Settings','settings'),
-  ThemePreviewEntry('theme','テーマ・外観','Theme & appearance','theme'),
-  ThemePreviewEntry('performance','パフォーマンス','Performance','preferences'),
-  ThemePreviewEntry('gestures','ジェスチャー','Gestures','preferences'),
-  ThemePreviewEntry('shortcuts','ショートカット','Shortcuts','preferences'),
-  ThemePreviewEntry('pen','ペン入力','Pen input','preferences'),
-  ThemePreviewEntry('bucket','バケツ塗り','Bucket fill','preferences'),
-  ThemePreviewEntry('workspace','ワークスペース','Workspace','workspace'),
-  ThemePreviewEntry('pc_layout','PCワークスペース配置','PC workspace layout','workspace'),
-  ThemePreviewEntry('transfer','引き継ぎ','Transfer','transfer'),
-  ThemePreviewEntry('widgets','ウィジェット','Widgets','widgets'),
-  ThemePreviewEntry('widget_art','ウィジェット作品選択','Widget artwork','materials'),
-  ThemePreviewEntry('widget_frame','ウィジェットのフレーム選択','Widget frame picker','widget_frame'),
-  ThemePreviewEntry('watermark','ウォーターマーク','Watermark','watermark'),
-  ThemePreviewEntry('fonts','フォント管理','Fonts','fonts'),
-  ThemePreviewEntry('storage','ストレージ','Storage','storage'),
-  ThemePreviewEntry('help','ヘルプ','Help','help'),
-  ThemePreviewEntry('tips','使い方のヒント','Tips','help'),
-  ThemePreviewEntry('autofill','自動塗り設定','Auto-fill presets','autofill'),
-  ThemePreviewEntry('sizes','キャンバスサイズ管理','Canvas sizes','sizes'),
-  ThemePreviewEntry('license','ライセンス','Licenses','legal'),
-  ThemePreviewEntry('privacy','プライバシーポリシー','Privacy policy','legal'),
 ];
 
 /// Live themed, pure render-only widget. No project files, video, login,
@@ -290,14 +269,9 @@ class _ThemeSampleScreen extends StatelessWidget {
     if (entry.layout == 'canvas') return _canvas(c);
     if (entry.layout == 'timeline') return _timeline(c);
     if (entry.layout == 'complete') return _complete(c);
-    const helpScreens = <String>{
-      'new', 'theme', 'settings', 'performance', 'gestures',
-      'shortcuts', 'pen', 'bucket', 'workspace', 'transfer',
-      'widgets', 'watermark', 'fonts', 'storage', 'premium',
-      'help', 'tips', 'autofill', 'sizes', 'license', 'privacy',
-    };
+    const helpScreens = <String>{'new'};
     const menuScreens = <String>{
-      'projects', 'shared', 'trash', 'detail', 'community',
+      'projects', 'detail', 'community',
       'work', 'post', 'author', 'mine', 'notifications',
     };
     final appTitle = switch (entry.id) {
