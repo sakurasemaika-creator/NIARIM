@@ -520,65 +520,44 @@ class _ProjectDetailScreenState extends State<ProjectDetailScreen> {
       padding: const EdgeInsets.symmetric(horizontal: 16),
       child: SizedBox(
         height: 34,
-        // Four equal-width cells keep the time labels at the outer edges
-        // while spreading the frame counter and loop control evenly inside.
-        child: Row(children: [
-          Expanded(
-            child: Align(
-              alignment: Alignment.centerLeft,
-              child: Text(
-                '${currentSeconds.toStringAsFixed(1)}s',
-                key: const Key('projectDetailCurrentSeconds'),
-                style: timeStyle,
-              ),
+        // Keep the two time labels flush with their original outer edges.
+        // spaceBetween distributes the THREE intervening gaps equally,
+        // independent of frame digit count and icon size.
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Text(
+              '${currentSeconds.toStringAsFixed(1)}s',
+              key: const Key('projectDetailCurrentSeconds'),
+              style: timeStyle,
             ),
-          ),
-          Expanded(
-            child: Center(
-              child: FittedBox(
-                fit: BoxFit.scaleDown,
-                child: Text(
-                  '$currentFrame/${flat.length}',
-                  key: const Key('projectDetailFrameCounter'),
-                  style: timeStyle,
-                ),
-              ),
+            Text(
+              '$currentFrame/${flat.length}',
+              key: const Key('projectDetailFrameCounter'),
+              style: timeStyle,
             ),
-          ),
-          Expanded(
-            child: Center(
-              child: IconButton(
-                key: const Key('projectDetailLoopButton'),
-                onPressed: () => setState(() => _loopPlayback = !_loopPlayback),
-                icon: Icon(
-                  Icons.repeat,
-                  color: _loopPlayback
-                      ? colors.primary
-                      : colors.onSurfaceVariant,
-                ),
-                tooltip: _loopPlayback
-                    ? l10n.timelineLoopOnTooltip
-                    : l10n.timelineLoopOffTooltip,
-                iconSize: 20,
-                padding: EdgeInsets.zero,
-                constraints:
-                    const BoxConstraints.tightFor(width: 34, height: 34),
-                visualDensity: VisualDensity.compact,
+            IconButton(
+              key: const Key('projectDetailLoopButton'),
+              onPressed: () => setState(() => _loopPlayback = !_loopPlayback),
+              icon: Icon(
+                Icons.repeat,
+                color: _loopPlayback ? colors.primary : colors.onSurfaceVariant,
               ),
+              tooltip: _loopPlayback
+                  ? l10n.timelineLoopOnTooltip
+                  : l10n.timelineLoopOffTooltip,
+              iconSize: 20,
+              padding: EdgeInsets.zero,
+              constraints: const BoxConstraints.tightFor(width: 34, height: 34),
+              visualDensity: VisualDensity.compact,
             ),
-          ),
-          Expanded(
-            child: Align(
-              alignment: Alignment.centerRight,
-              child: Text(
-                '${totalSeconds.toStringAsFixed(1)}s',
-                key: const Key('projectDetailTotalSeconds'),
-                style: timeStyle,
-              ),
+            Text(
+              '${totalSeconds.toStringAsFixed(1)}s',
+              key: const Key('projectDetailTotalSeconds'),
+              style: timeStyle,
             ),
-          ),
-        ]),
-      ),
+          ],
+        ),      ),
     );
   }
 
