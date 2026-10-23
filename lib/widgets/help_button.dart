@@ -11,13 +11,26 @@ import '../l10n/app_localizations.dart';
 /// 表示する（各画面のトピック紐付けは順次対応中）。
 class HelpButton extends StatelessWidget {
   final String? topic;
-  const HelpButton({super.key, this.topic});
+  // Optional outline for icons floating over canvas artwork. Other screens
+  // keep their existing Material styling unless explicitly opted in.
+  final Color? iconColor;
+  final List<Shadow>? iconShadows;
+  const HelpButton({
+    super.key,
+    this.topic,
+    this.iconColor,
+    this.iconShadows,
+  });
 
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     return IconButton(
-      icon: const Icon(Icons.help_outline),
+      icon: Icon(
+        Icons.help_outline,
+        color: iconColor,
+        shadows: iconShadows,
+      ),
       tooltip: l10n.layerPanelHelpTooltip,
       onPressed: () => context.push(
         topic == null ? '/help' : '/help?topic=${Uri.encodeComponent(topic!)}',
