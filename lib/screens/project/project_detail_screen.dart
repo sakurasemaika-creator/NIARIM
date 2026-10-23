@@ -520,6 +520,8 @@ class _ProjectDetailScreenState extends State<ProjectDetailScreen> {
       padding: const EdgeInsets.symmetric(horizontal: 16),
       child: SizedBox(
         height: 34,
+        // Four equal-width cells keep the time labels at the outer edges
+        // while spreading the frame counter and loop control evenly inside.
         child: Row(children: [
           Expanded(
             child: Align(
@@ -531,26 +533,39 @@ class _ProjectDetailScreenState extends State<ProjectDetailScreen> {
               ),
             ),
           ),
-          Text(
-            '$currentFrame/${flat.length}',
-            key: const Key('projectDetailFrameCounter'),
-            style: timeStyle,
-          ),
-          const SizedBox(width: 6),
-          IconButton(
-            key: const Key('projectDetailLoopButton'),
-            onPressed: () => setState(() => _loopPlayback = !_loopPlayback),
-            icon: Icon(
-              Icons.repeat,
-              color: _loopPlayback ? colors.primary : colors.onSurfaceVariant,
+          Expanded(
+            child: Center(
+              child: FittedBox(
+                fit: BoxFit.scaleDown,
+                child: Text(
+                  '$currentFrame/${flat.length}',
+                  key: const Key('projectDetailFrameCounter'),
+                  style: timeStyle,
+                ),
+              ),
             ),
-            tooltip: _loopPlayback
-                ? l10n.timelineLoopOnTooltip
-                : l10n.timelineLoopOffTooltip,
-            iconSize: 20,
-            padding: EdgeInsets.zero,
-            constraints: const BoxConstraints.tightFor(width: 34, height: 34),
-            visualDensity: VisualDensity.compact,
+          ),
+          Expanded(
+            child: Center(
+              child: IconButton(
+                key: const Key('projectDetailLoopButton'),
+                onPressed: () => setState(() => _loopPlayback = !_loopPlayback),
+                icon: Icon(
+                  Icons.repeat,
+                  color: _loopPlayback
+                      ? colors.primary
+                      : colors.onSurfaceVariant,
+                ),
+                tooltip: _loopPlayback
+                    ? l10n.timelineLoopOnTooltip
+                    : l10n.timelineLoopOffTooltip,
+                iconSize: 20,
+                padding: EdgeInsets.zero,
+                constraints:
+                    const BoxConstraints.tightFor(width: 34, height: 34),
+                visualDensity: VisualDensity.compact,
+              ),
+            ),
           ),
           Expanded(
             child: Align(
