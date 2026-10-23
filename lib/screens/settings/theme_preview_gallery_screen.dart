@@ -272,10 +272,10 @@ class _ThemeSampleScreen extends StatelessWidget {
     if (entry.layout == 'canvas') return _canvas(c);
     if (entry.layout == 'timeline') return _timeline(c);
     if (entry.layout == 'complete') return _complete(c);
-    const helpScreens = <String>{'new'};
+    const helpScreens = <String>{'new', 'detail', 'export', 'materials', 'save'};
     const menuScreens = <String>{
       'projects', 'detail', 'community',
-      'work', 'author',
+      'author',
     };
     final appTitle = switch (entry.id) {
       'detail' => t('all-route-audit', 'all-route-audit'),
@@ -300,8 +300,9 @@ class _ThemeSampleScreen extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(
         automaticallyImplyLeading: false,
-        leading: entry.id == 'detail' || entry.id == 'settings' ? null
-            : const Icon(Icons.arrow_back),
+        leading: const <String>{
+          'new', 'detail', 'export', 'materials', 'save', 'work', 'settings',
+        }.contains(entry.id) ? null : const Icon(Icons.arrow_back),
         title: Text(appTitle, maxLines: 1, overflow: TextOverflow.ellipsis),
         actions: [
           if (helpScreens.contains(entry.id))
@@ -1167,9 +1168,18 @@ class _ThemeSampleScreen extends StatelessWidget {
       Text(t('プリセット', 'Preset'),
         style: const TextStyle(fontWeight: FontWeight.bold)),
       const SizedBox(height: 8),
-      _staticChoiceRow(c,
-        [t('標準', 'Standard'), t('高画質', 'High quality'),
-          t('カスタム', 'Custom')], active: 0),
+      SizedBox(width: double.infinity, child: SegmentedButton<String>(
+        segments: [
+          ButtonSegment<String>(
+            value: 'standard', label: Text(t('標準', 'Standard'))),
+          ButtonSegment<String>(
+            value: 'high', label: Text(t('高画質', 'High quality'))),
+          ButtonSegment<String>(
+            value: 'custom', label: Text(t('カスタム', 'Custom'))),
+        ],
+        selected: const {'standard'}, onSelectionChanged: (_) {},
+        showSelectedIcon: true,
+      )),
       const SizedBox(height: 24),
       Text(t('形式', 'Format'),
         style: const TextStyle(fontWeight: FontWeight.bold)),
@@ -2510,13 +2520,12 @@ class _ThemeSampleScreen extends StatelessWidget {
               child: const Icon(Icons.play_arrow, color: Colors.white,
                 size: 32)),
           ))),
-      const SizedBox(height: 16),
-      Container(height: 4, width: 38,
-        alignment: Alignment.center,
+      SizedBox(height: 20, child: Center(child: Container(
+        width: 40, height: 4,
         decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(5),
-          color: c.outlineVariant)),
-      const SizedBox(height: 14),
+          borderRadius: BorderRadius.circular(2),
+          color: c.outlineVariant)))),
+
       Text(t('夜明けの冒険', 'Dawn adventure'),
         style: const TextStyle(fontSize: 19,
           fontWeight: FontWeight.w800)),
@@ -2601,7 +2610,7 @@ class _ThemeSampleScreen extends StatelessWidget {
                 Text(item.$3, style: TextStyle(
                   fontSize: 11, color: c.onSurfaceVariant)),
               ])),
-            Switch(value: item.$4, onChanged: null),
+            Switch(value: item.$4, onChanged: (_) {}),
           ]),
         ),
     ],
