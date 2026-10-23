@@ -146,6 +146,19 @@ void main() {
     ).first);
     expect(help.shadows, hasLength(8));
 
+    final colorSwatchContainer = tester.widget<Container>(
+      find.descendant(
+        of: find.byKey(const ValueKey('canvasColorSwatch')),
+        matching: find.byType(Container),
+      ).first,
+    );
+    final swatchDecoration =
+        colorSwatchContainer.decoration! as BoxDecoration;
+    final swatchScheme = Theme.of(tester.element(
+      find.byType(ToolbarWidget))).colorScheme;
+    expect(swatchDecoration.border!.top.color,
+      CanvasIconButton.outlineColor(swatchDecoration.color!, swatchScheme));
+
     final brush = find.byType(BrushSizeSlider);
     expect(brush, findsOneWidget);
     final brushText = tester.widget<Text>(find.descendant(
