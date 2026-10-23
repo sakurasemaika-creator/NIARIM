@@ -392,12 +392,18 @@ class _ThemeSampleScreen extends StatelessWidget {
   // same outlined glyphs as the REAL transparent CanvasIconButton.
   Widget _mockTool(ColorScheme c, IconData icon,
       {bool active = false, bool canvasOutline = false}) {
-    final foreground = active ? c.onPrimaryContainer : c.onSurface;
+    // CanvasIconButton marks selection by recoloring the GLYPH, not by
+    // placing an opaque tile behind it. Other mock controls retain their
+    // existing selected-container styling.
+    final foreground = active
+        ? (canvasOutline ? c.primary : c.onPrimaryContainer)
+        : c.onSurface;
     return Container(
       constraints: const BoxConstraints(minWidth: 28, minHeight: 32),
       alignment: Alignment.center,
       decoration: BoxDecoration(
-        color: active ? c.primaryContainer : Colors.transparent,
+        color: active && !canvasOutline
+            ? c.primaryContainer : Colors.transparent,
         borderRadius: BorderRadius.circular(6)),
       child: Icon(icon, size: 18, color: foreground,
         shadows: canvasOutline
