@@ -286,6 +286,30 @@ void main() {
     expect(timelinePaper.width / timelinePaper.height, closeTo(16 / 9, 0.05));
     expect(find.byKey(const Key('themePreviewTimelineTracks')),
       findsOneWidget);
+    // Every material kind must be visible in the first static viewport,
+    // without creating a project or scrolling.
+    for (var i = 0; i < 9; i++) {
+      final kind = find.byKey(Key('themePreviewMaterialTrack$i'));
+      expect(kind, findsOneWidget);
+      expect(tester.getBottomLeft(kind).dy,
+        lessThan(tester.getTopLeft(
+          find.byKey(const Key('themePreviewClose'))).dy),
+        reason: 'Material $i must appear above gallery navigation');
+    }
+    expect(find.byKey(const Key('themePreviewLoopButton')), findsOneWidget);
+    expect(find.byKey(const Key('themePreviewFrameCounter')), findsOneWidget);
+    expect(find.text('10/100'), findsOneWidget);
+    final handle = tester.getCenter(
+      find.byKey(const Key('themePreviewResizeGrip')));
+    final current = tester.getCenter(
+      find.byKey(const Key('themePreviewCurrentSeconds')));
+    final total = tester.getCenter(
+      find.byKey(const Key('themePreviewTotalSeconds')));
+    expect(current.dx, lessThan(handle.dx));
+    expect(handle.dx, lessThan(total.dx));
+    expect((current.dy - handle.dy).abs(), lessThan(12));
+    expect((total.dy - handle.dy).abs(), lessThan(12));
+    expect(find.byIcon(Icons.repeat), findsOneWidget);
   });
 
   testWidgets('gallery works at narrow 320px portrait width', (tester) async {
