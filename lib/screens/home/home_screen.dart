@@ -817,22 +817,32 @@ class _HomeScreenState extends State<HomeScreen>
       return fits;
     }
 
-    Widget iconLabel(IconData icon, String text, VoidCallback onPressed) =>
-        Tooltip(
-          message: text,
-          child: TextButton(
-            style: TextButton.styleFrom(
-              padding: EdgeInsets.zero,
-              minimumSize: const Size(48, 48),
-              // 文字ボタンの既定（18）だと点線のアイコンが薄く見える。
-              // 隣の切り取り・コピー・ゴミ箱と同じ大きさにする。
-              iconSize: 24,
-            ),
-            onPressed: onPressed,
-            // 読み上げではツールチップの文が名前になる（IconButtonと同じ）。
-            child: Icon(icon),
+    // [width]は通常48。文字を2倍にした240px幅のように欄がとても狭いときは
+    // 3分の1まで縮める（48のままだと2つで欄からはみ出す）。
+    Widget iconLabel(
+      IconData icon,
+      String text,
+      VoidCallback onPressed,
+      double width,
+    ) => Tooltip(
+      message: text,
+      child: SizedBox(
+        width: width,
+        child: TextButton(
+          style: TextButton.styleFrom(
+            padding: EdgeInsets.zero,
+            minimumSize: Size(width, 48),
+            tapTargetSize: width < 48 ? MaterialTapTargetSize.shrinkWrap : null,
+            // 文字ボタンの既定（18）だと点線のアイコンが薄く見える。
+            // 隣の切り取り・コピー・ゴミ箱と同じ大きさにする。
+            iconSize: 24,
           ),
-        );
+          onPressed: onPressed,
+          // 読み上げではツールチップの文が名前になる（IconButtonと同じ）。
+          child: Icon(icon),
+        ),
+      ),
+    );
     Widget label(String text, {VoidCallback? onPressed}) => Expanded(
       child: Tooltip(
         message: text,
@@ -874,14 +884,22 @@ class _HomeScreenState extends State<HomeScreen>
                     ],
                   );
                 }
+                final third = constraints.maxWidth / 3;
+                final iconWidth = third < 48 ? third : 48.0;
                 return Row(
                   children: [
                     iconLabel(
                       Icons.select_all,
                       selectAll,
                       _selectAllInCurrentFolder,
+                      iconWidth,
                     ),
-                    iconLabel(Icons.deselect, deselectAll, _exitSelection),
+                    iconLabel(
+                      Icons.deselect,
+                      deselectAll,
+                      _exitSelection,
+                      iconWidth,
+                    ),
                     // アイコンのときは残りの幅の中央ではなく、アイコンの
                     // すぐ右に並べる（中央だと広い画面で離れて浮く）。
                     Expanded(

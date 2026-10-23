@@ -140,7 +140,9 @@ void main() {
           await tester.longPress(find.text('Layout'));
           await tester.pumpAndSettle();
           expect(find.text(l10n.homeSelectionCount(1)), findsOneWidget);
-          await tester.tap(find.text(l10n.homeSelectionAllDeselect));
+          // 全解除は、文字が収まらない幅ではアイコンになる（全文は
+          // ツールチップ）。どちらの形でもツールチップから押せる。
+          await tester.tap(find.byTooltip(l10n.homeSelectionAllDeselect));
           await tester.pumpAndSettle();
           expect(tester.takeException(), isNull, reason: '$size / $scale');
         }
