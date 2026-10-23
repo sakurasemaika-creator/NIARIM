@@ -1169,6 +1169,51 @@ class _ThemeSampleScreen extends StatelessWidget {
     ],
   );
 
+  Widget _staticControl(ColorScheme c, String label, {
+    String? detail, bool selected = true,
+  }) => Container(
+    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+    decoration: BoxDecoration(color: c.surfaceContainerLow,
+      borderRadius: BorderRadius.circular(12)),
+    child: Row(children: [
+      Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(label, style: const TextStyle(fontSize: 12,
+            fontWeight: FontWeight.w600)),
+          if (detail != null) Text(detail, maxLines: 2,
+            overflow: TextOverflow.ellipsis,
+            style: TextStyle(fontSize: 10, color: c.onSurfaceVariant)),
+        ])),
+      Container(width: 30, height: 17,
+        padding: const EdgeInsets.all(2),
+        alignment: selected ? Alignment.centerRight : Alignment.centerLeft,
+        decoration: BoxDecoration(
+          color: selected ? c.primary : c.outlineVariant,
+          borderRadius: BorderRadius.circular(12)),
+        child: Container(width: 13, height: 13,
+          decoration: BoxDecoration(color: selected ? c.onPrimary : c.surface,
+            shape: BoxShape.circle))),
+    ]),
+  );
+
+  Widget _staticChoiceRow(ColorScheme c, List<String> choices, {
+      int active = 0}) => Row(children: [
+        for (var i = 0; i < choices.length; i++) Expanded(
+          child: Container(
+            margin: const EdgeInsets.symmetric(horizontal: 2),
+            padding: const EdgeInsets.symmetric(vertical: 10),
+            alignment: Alignment.center,
+            decoration: BoxDecoration(
+              color: i == active ? c.primary : c.surfaceContainerLow,
+              borderRadius: BorderRadius.circular(8),
+              border: Border.all(color: c.outlineVariant)),
+            child: Text(choices[i], maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: TextStyle(fontSize: 10,
+                color: i == active ? c.onPrimary : c.onSurface)),
+          )),
+      ]);
+
   Widget _preferences(ColorScheme c) {
     switch (entry.id) {
       case 'performance':
