@@ -841,6 +841,7 @@
   "themeSettingsTitle": "Thème et apparence",
   "themeColorCustomizeSection": "Personnalisation des couleurs",
   "themeColorAccent": "Couleur d'accent",
+  "themeColorAccentText": "Couleur du texte et des icônes d'accent",
   "themeColorText": "Couleur du texte courant",
   "themeColorButtonText": "Couleur du texte et des icônes des boutons",
   "themeColorMenuText": "Couleur du texte des menus et de la barre supérieure",

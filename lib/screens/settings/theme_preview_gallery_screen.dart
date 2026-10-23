@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import '../../services/theme_service.dart';
+import '../../config/accent_text_theme.dart';
 import '../../config/font_fallback.dart';
 import '../canvas/widgets/canvas_icon_button.dart';
 
@@ -532,12 +533,13 @@ class _ThemeSampleScreen extends StatelessWidget {
             t('プロジェクト', 'Projects'), t('作品一覧', 'Works'),
             t('ブクマ済み', 'Bookmarks'),
           ]) Expanded(child: Column(children: [
-            Expanded(child: Center(child: Text(tab, style: TextStyle(
+            Expanded(child: Center(child: Builder(builder: (context) => Text(
+              tab, style: TextStyle(
               fontSize: 13, fontWeight: FontWeight.bold,
               fontFamily: 'Kuramubon',
               color: tab == t('プロジェクト', 'Projects')
-                ? c.primary
-                : c.onSurfaceVariant)))),
+                ? AccentTextTheme.of(context)
+                : c.onSurfaceVariant))))),
             Container(height: 2, color: tab == t('プロジェクト', 'Projects')
                 ? c.primary : Colors.transparent),
           ])),
@@ -1497,6 +1499,8 @@ class _ThemeSampleScreen extends StatelessWidget {
             style: const TextStyle(fontWeight: FontWeight.bold))),
         for (final item in [
           (t('アクセントカラー', 'Accent'), preset.accentColor),
+          (t('アクセントの文字・アイコン色', 'Accent text'),
+            preset.effectiveAccentTextColor),
           (t('本文・通常の文字色', 'Body text'), preset.textColor),
           (t('ボタン内の文字・アイコン色', 'Button text'),
             preset.buttonTextColor),

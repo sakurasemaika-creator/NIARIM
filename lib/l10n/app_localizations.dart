@@ -4799,6 +4799,12 @@ abstract class AppLocalizations {
   /// **'アクセントカラー'**
   String get themeColorAccent;
 
+  /// Theme color for accent-colored text and icons drawn directly on the background (selected tab label, outlined and text buttons, empty-state icons). Defaults to the accent color.
+  ///
+  /// In ja, this message translates to:
+  /// **'アクセントの文字・アイコン色'**
+  String get themeColorAccentText;
+
   /// No description provided for @themeColorText.
   ///
   /// In ja, this message translates to:

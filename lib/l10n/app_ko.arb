@@ -841,6 +841,7 @@
   "themeSettingsTitle": "테마・외관",
   "themeColorCustomizeSection": "색상 커스터마이즈",
   "themeColorAccent": "강조 색상",
+  "themeColorAccentText": "강조 글자·아이콘 색",
   "themeColorText": "본문 및 일반 글자 색",
   "themeColorButtonText": "버튼 글자·아이콘 색",
   "themeColorMenuText": "메뉴·상단 바 글자 색",

@@ -18,6 +18,7 @@ import '../../../services/font_service.dart';
 import '../../../services/material_service.dart';
 import '../../../services/project_service.dart';
 import '../home_screen.dart';
+import '../../../config/accent_text_theme.dart';
 import '../../../config/font_fallback.dart';
 import '../../../utils/duplicate_name.dart';
 import '../../../utils/folder_tree.dart';
@@ -621,7 +622,7 @@ class ProjectListWidget extends StatelessWidget {
           Builder(
             builder: (themeContext) => Icon(
               Icons.star,
-              color: Theme.of(themeContext).colorScheme.primary,
+              color: AccentTextTheme.of(themeContext),
               size: 18,
             ),
           ),
@@ -936,7 +937,7 @@ class ProjectListWidget extends StatelessWidget {
                   // depend on the live inherited Theme.
                   builder: (themeContext) => Icon(
                     Icons.star,
-                    color: Theme.of(themeContext).colorScheme.primary,
+                    color: AccentTextTheme.of(themeContext),
                     size: 14,
                   ),
                 ),

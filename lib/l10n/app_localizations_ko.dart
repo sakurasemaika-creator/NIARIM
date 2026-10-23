@@ -2598,6 +2598,9 @@ class AppLocalizationsKo extends AppLocalizations {
   String get themeColorAccent => '강조 색상';
 
   @override
+  String get themeColorAccentText => '강조 글자·아이콘 색';
+
+  @override
   String get themeColorText => '본문 및 일반 글자 색';
 
   @override

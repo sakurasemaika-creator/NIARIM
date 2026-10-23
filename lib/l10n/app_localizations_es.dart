@@ -2721,6 +2721,9 @@ class AppLocalizationsEs extends AppLocalizations {
   String get themeColorAccent => 'Color de acento';
 
   @override
+  String get themeColorAccentText => 'Color del texto y los iconos de acento';
+
+  @override
   String get themeColorText => 'Color del texto general';
 
   @override

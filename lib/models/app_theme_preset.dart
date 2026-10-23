@@ -17,6 +17,13 @@ class AppThemePreset {
   final Color menuBgColor;
   final Color selectionColor;
   final Color updateMarkColor;
+
+  /// 差し色で背景の上に直接描く文字・アイコン（選択中のタブ名・枠や文字の
+  /// ボタン・空の表示のアイコン等）の色。塗りの上の文字（[buttonTextColor]）
+  /// とは別に選べる。nullなら差し色と同じ（既存のテーマ・保存データの
+  /// 見た目を変えない）。明るい差し色を選んだときに、読める色を自分で
+  /// 指定するためのもので、自動では決めない。
+  final Color? accentTextColor;
   final bool isFavorite;
 
   const AppThemePreset({
@@ -31,8 +38,12 @@ class AppThemePreset {
     required this.menuBgColor,
     required this.selectionColor,
     required this.updateMarkColor,
+    this.accentTextColor,
     this.isFavorite = false,
   });
+
+  /// 実際に使う[accentTextColor]（未指定なら差し色）。
+  Color get effectiveAccentTextColor => accentTextColor ?? accentColor;
 
   AppThemePreset copyWith({
     String? id,
@@ -46,6 +57,7 @@ class AppThemePreset {
     Color? menuBgColor,
     Color? selectionColor,
     Color? updateMarkColor,
+    Object? accentTextColor = _unset,
     bool? isFavorite,
   }) {
     return AppThemePreset(
@@ -60,9 +72,14 @@ class AppThemePreset {
       menuBgColor: menuBgColor ?? this.menuBgColor,
       selectionColor: selectionColor ?? this.selectionColor,
       updateMarkColor: updateMarkColor ?? this.updateMarkColor,
+      accentTextColor: identical(accentTextColor, _unset)
+          ? this.accentTextColor
+          : accentTextColor as Color?,
       isFavorite: isFavorite ?? this.isFavorite,
     );
   }
+
+  static const Object _unset = Object();
 
   // 既定テーマ：珊瑚ピンク（虹7色の「赤」に相当）を差し色にしたポップな
   // フラットデザイン（Material標準色をそのまま使わず、暖色寄りの配色で
@@ -110,6 +127,8 @@ class AppThemePreset {
     'menuBgColor': menuBgColor.toARGB32(),
     'selectionColor': selectionColor.toARGB32(),
     'updateMarkColor': updateMarkColor.toARGB32(),
+    if (accentTextColor != null)
+      'accentTextColor': accentTextColor!.toARGB32(),
     'isFavorite': isFavorite,
   };
 
@@ -125,6 +144,10 @@ class AppThemePreset {
     menuBgColor: Color(json['menuBgColor'] as int),
     selectionColor: Color(json['selectionColor'] as int),
     updateMarkColor: Color(json['updateMarkColor'] as int),
+    accentTextColor: switch (json['accentTextColor']) {
+      final int value => Color(value),
+      _ => null,
+    },
     isFavorite: json['isFavorite'] as bool? ?? false,
   );
 }

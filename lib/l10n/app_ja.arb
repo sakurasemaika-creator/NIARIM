@@ -1087,6 +1087,10 @@
   "themeSettingsTitle": "テーマ・外観",
   "themeColorCustomizeSection": "カラーカスタマイズ",
   "themeColorAccent": "アクセントカラー",
+  "themeColorAccentText": "アクセントの文字・アイコン色",
+  "@themeColorAccentText": {
+    "description": "Theme color for accent-colored text and icons drawn directly on the background (selected tab label, outlined and text buttons, empty-state icons). Defaults to the accent color."
+  },
   "themeColorText": "本文・通常の文字色",
   "themeColorButtonText": "ボタン内の文字・アイコン色",
   "themeColorMenuText": "メニュー・上部バーの文字色",

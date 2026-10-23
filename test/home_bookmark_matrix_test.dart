@@ -10,6 +10,7 @@ import 'package:http/http.dart' as http;
 import 'package:http/testing.dart';
 import 'package:niarim/app.dart';
 import 'package:niarim/app_bootstrap.dart';
+import 'package:niarim/config/accent_text_theme.dart';
 import 'package:niarim/l10n/app_localizations.dart';
 import 'package:niarim/models/app_theme_preset.dart';
 import 'package:niarim/router.dart';
@@ -391,9 +392,10 @@ void main() {
               Colors.black,
             );
             // 「再読み込み」「作品広場」のボタンは他のボタンと同じテーマの
-            // 差し色（ユーザー指定。読みやすさのために黒や白へ自動で差し
-            // 替えない）。右上の再読み込みのアイコンは文字の色のまま。
-            final accent = Theme.of(home).colorScheme.primary;
+            // 「アクセントの文字・アイコン色」（未指定なら差し色。ユーザー
+            // 指定で、読みやすさのために黒や白へ自動で差し替えない）。
+            // 右上の再読み込みのアイコンは文字の色のまま。
+            final accent = AccentTextTheme.of(home);
             for (final paragraph in tester.renderObjectList<RenderParagraph>(
               find.descendant(
                 of: find.descendant(

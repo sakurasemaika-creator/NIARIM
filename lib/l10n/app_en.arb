@@ -841,6 +841,7 @@
   "themeSettingsTitle": "Theme & Appearance",
   "themeColorCustomizeSection": "Color Customization",
   "themeColorAccent": "Accent Color",
+  "themeColorAccentText": "Accent text & icon color",
   "themeColorText": "Body & regular text color",
   "themeColorButtonText": "Button text & icon color",
   "themeColorMenuText": "Menu & app bar text color",

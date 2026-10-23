@@ -37,6 +37,7 @@ import '../../widgets/sort_mode_control.dart';
 import 'widgets/project_list_widget.dart';
 import 'widgets/home_drawer.dart';
 import '../../config/font_fallback.dart';
+import '../../config/accent_text_theme.dart';
 import '../../widgets/scrollable_sheet_body.dart';
 import '../community/community_edit_feedback.dart';
 import '../../widgets/typing_aware_shortcuts.dart';
@@ -1384,10 +1385,11 @@ class _HomeTabBarState extends State<_HomeTabBar> {
     final currentIndex = widget.currentIndex;
     final controller = widget.controller;
     final scheme = Theme.of(context).colorScheme;
-    // 選ばれたタブは名前も下線もテーマの差し色（ユーザー指定。読みやすさの
-    // ために黒や白へ自動で差し替えない。読めない色の組み合わせは起動画面の
-    // リセットボタンで戻せる）。
+    // 選ばれたタブの下線は差し色、名前はテーマの「アクセントの文字・
+    // アイコン色」（未指定なら差し色。ユーザー指定で、読みやすさのために
+    // 黒や白へ自動で差し替えない）。
     final selectedColor = scheme.primary;
+    final selectedTextColor = AccentTextTheme.of(context);
     final textStyle = const TextStyle(
       fontSize: 14,
       fontWeight: FontWeight.w600,
@@ -1435,7 +1437,7 @@ class _HomeTabBarState extends State<_HomeTabBar> {
             softWrap: false,
             style: textStyle.copyWith(
               color: currentIndex == i
-                  ? selectedColor
+                  ? selectedTextColor
                   : scheme.onSurfaceVariant,
             ),
           ),
@@ -2218,7 +2220,8 @@ class _BookmarkedTab extends StatelessWidget {
                     CircularProgressIndicator(color: foreground)
                   else
                     // 作品一覧・プロジェクトの空の表示（EmptyStatePlaceholder）と
-                    // 同じ形と色：差し色の淡い円に差し色のアイコン（ユーザー指定）。
+                    // 同じ形と色：差し色の淡い円に、アクセントの文字・アイコン色の
+                    // アイコン（ユーザー指定）。
                     Container(
                       width: 88,
                       height: 88,
@@ -2231,7 +2234,7 @@ class _BookmarkedTab extends StatelessWidget {
                             ? Icons.cloud_off_outlined
                             : Icons.bookmark_border,
                         size: 40,
-                        color: scheme.primary,
+                        color: AccentTextTheme.of(context),
                       ),
                     ),
                   const SizedBox(height: 16),

@@ -2573,6 +2573,9 @@ class AppLocalizationsZh extends AppLocalizations {
   String get themeColorAccent => '强调色';
 
   @override
+  String get themeColorAccentText => '强调文字与图标颜色';
+
+  @override
   String get themeColorText => '正文及普通文字颜色';
 
   @override
@@ -10064,6 +10067,9 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get themeColorAccent => '強調色';
+
+  @override
+  String get themeColorAccentText => '強調文字與圖示顏色';
 
   @override
   String get themeColorText => '內文及一般文字顏色';

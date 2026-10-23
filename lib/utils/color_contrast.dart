@@ -250,6 +250,8 @@ bool isColorVisionPairConfusable(Color a, Color b) {
 /// - 本文文字色 × メニュー背景色（ダイアログ本文）
 /// - ボタン文字色 × アクセント色・選択色（起動画面の導線）
 /// - 選択中文字色 × 選択色（選択背景上のラベル）
+/// - アクセントの文字・アイコン色 × パネル背景色・メニュー背景色（選択中の
+///   タブ名・枠や文字のボタン・ダイアログの文字ボタン）
 ///
 /// 色面を区別できるかではなく、小さな文字・アイコンを視認できるかの目安。
 /// ユーザーの色選択を拒否したり、自動で別の色に差し替えてはならない。
@@ -276,6 +278,10 @@ List<({Color a, Color b})> readabilityCriticalPairs(AppThemePreset preset) {
     (a: opaqueOver(splashForeground, selection), b: selection),
     // 「選択中」ラベルが選択色に埋もれる場合
     (a: opaqueOver(preset.selectionTextColor, selection), b: selection),
+    // 差し色で背景の上に描く文字（選択中のタブ名・枠や文字のボタン等）と、
+    // ダイアログの文字ボタン
+    (a: opaqueOver(preset.effectiveAccentTextColor, panel), b: panel),
+    (a: opaqueOver(preset.effectiveAccentTextColor, menu), b: menu),
   ];
 }
 

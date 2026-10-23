@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../config/font_fallback.dart';
+import '../config/accent_text_theme.dart';
 
 /// 一覧画面が空のときに表示する共通プレースホルダー。円形の色付き
 /// アイコンバッジ・くらむぼんの太字タイトル・淡色の補足文という構成を、
@@ -48,7 +49,11 @@ class EmptyStatePlaceholder extends StatelessWidget {
                     color: scheme.primaryContainer,
                     shape: BoxShape.circle,
                   ),
-                  child: Icon(icon, size: 40, color: scheme.primary),
+                  child: Icon(
+                    icon,
+                    size: 40,
+                    color: AccentTextTheme.of(context),
+                  ),
                 ),
                 const SizedBox(height: 16),
                 Text(

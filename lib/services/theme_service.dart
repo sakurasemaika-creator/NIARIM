@@ -1,3 +1,4 @@
+import '../config/accent_text_theme.dart';
 import '../config/font_fallback.dart';
 import 'dart:convert';
 import 'package:flutter/material.dart';
@@ -596,6 +597,9 @@ class ThemeService extends ChangeNotifier {
     // 初回の吹き出し・説明の吹き出しはアクセント色を下地にするので同様。
     final accentColor = opaqueOver(preset.accentColor, panelColor);
     final selectionColor = opaqueOver(preset.selectionColor, panelColor);
+    // 差し色で背景の上に直接描く文字・アイコン（選択中のタブ名・枠や文字の
+    // ボタン等）の色。未指定なら差し色と同じ（AccentTextTheme参照）。
+    final accentText = opaqueOver(preset.effectiveAccentTextColor, panelColor);
     // 「本文・通常の文字色」はonSurface系にも反映し、
     // ColorScheme.fromSeedが自動算出する既定の文字色（accentColorから
     // 逆算される、ユーザーが選んだtextColorとは無関係の値）で上書きされて
@@ -664,6 +668,7 @@ class ThemeService extends ChangeNotifier {
       colorScheme: scheme,
       fontFamily: 'HakkouMincho',
       textTheme: textTheme,
+      extensions: [AccentTextTheme(accentText)],
       primaryTextTheme: textTheme,
       scaffoldBackgroundColor: preset.panelBgColor,
       // InkSparkle（Material Youの光るリップル）は「いかにも最新Android技術デモ」
@@ -737,6 +742,7 @@ class ThemeService extends ChangeNotifier {
       ),
       elevatedButtonTheme: ElevatedButtonThemeData(
         style: ElevatedButton.styleFrom(
+          foregroundColor: accentText,
           textStyle: textTheme.labelLarge?.copyWith(
             fontFamily: 'Kuramubon',
             fontFamilyFallback: kHeadingFontFallback,
@@ -746,6 +752,7 @@ class ThemeService extends ChangeNotifier {
       ),
       outlinedButtonTheme: OutlinedButtonThemeData(
         style: OutlinedButton.styleFrom(
+          foregroundColor: accentText,
           minimumSize: const Size(64, 48),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(radius),
@@ -759,6 +766,7 @@ class ThemeService extends ChangeNotifier {
       ),
       textButtonTheme: TextButtonThemeData(
         style: TextButton.styleFrom(
+          foregroundColor: accentText,
           minimumSize: const Size(48, 44),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(radius),
@@ -842,7 +850,7 @@ class ThemeService extends ChangeNotifier {
         // inversePrimaryで、このアプリのSnackBarは下地がポップアップの色
         // （明るいテーマでは白に近い）なので、ほとんど見えなかった。
         // ダイアログの文字ボタンと同じ色にする。
-        actionTextColor: scheme.primary,
+        actionTextColor: accentText,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(radius),
         ),
@@ -941,7 +949,7 @@ class ThemeService extends ChangeNotifier {
       ),
       tabBarTheme: TabBarThemeData(
         indicatorColor: scheme.primary,
-        labelColor: scheme.primary,
+        labelColor: accentText,
         unselectedLabelColor: preset.textColor.withValues(alpha: 0.6),
       ),
       dividerTheme: DividerThemeData(

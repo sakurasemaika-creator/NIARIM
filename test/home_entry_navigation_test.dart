@@ -8,6 +8,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:niarim/app.dart';
 import 'package:niarim/app_bootstrap.dart';
+import 'package:niarim/config/accent_text_theme.dart';
 import 'package:niarim/l10n/app_localizations.dart';
 import 'package:niarim/models/app_theme_preset.dart';
 import 'package:niarim/router.dart';
@@ -230,7 +231,7 @@ void main() {
   });
 
   testWidgets(
-    'home tabs and bookmark entry use the theme accent like the rest of Home',
+    'home tabs and bookmark entry use the theme accent text colour',
     (tester) async {
       for (final theme in [
         AppThemePreset.defaultLight,
@@ -238,14 +239,22 @@ void main() {
           accentColor: Colors.white,
           selectionColor: Colors.black,
         ),
+        // 明るい差し色でも、アクセントの文字・アイコン色を選べば読める。
+        AppThemePreset.defaultLight.copyWith(
+          accentColor: Colors.white,
+          selectionColor: Colors.black,
+          accentTextColor: const Color(0xFF8A1538),
+        ),
       ]) {
         final l10n = await open(tester, theme: theme);
-        final accent = Theme.of(
+        final accent = AccentTextTheme.of(
           tester.element(find.byType(HomeScreen)),
-        ).colorScheme.primary;
-        // 選ばれたタブの名前・作品広場へのボタンは、下線や他のボタンと同じ
-        // テーマの差し色（ユーザー指定。読みやすさのために黒や白へ自動で
-        // 差し替えない。読めない組み合わせは起動画面のリセットで戻せる）。
+        );
+        expect(accent, theme.effectiveAccentTextColor, reason: theme.id);
+        // 選ばれたタブの名前・作品広場へのボタンは、テーマの「アクセントの
+        // 文字・アイコン色」（未指定なら差し色。ユーザー指定で、読みやすさの
+        // ために黒や白へ自動で差し替えない。読めない組み合わせは起動画面の
+        // リセットで戻せる）。
         for (final index in [0, 1, 2]) {
           await switchTab(tester, index);
           final labels = tester.widgetList<Text>(
