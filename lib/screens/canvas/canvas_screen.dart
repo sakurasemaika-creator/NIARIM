@@ -2950,11 +2950,19 @@ class _CanvasScreenState extends State<CanvasScreen> {
             onPressed: _confirmBackToProjectList,
             tooltip: l10n.timelineBackToProjectListTooltip,
           ),
-          // Primary mode switch comes last: settings, home, timeline.
-          _topBarIconButton(
-            context,
-            Icons.movie_filter_outlined,
-            iconSize: 19,
+          // Direction cue beside the timeline symbol, sharing one hit target.
+          // CanvasIconButton keeps both glyphs transparent and theme-colored.
+          CanvasIconButton(
+            key: const Key('canvasTimelineModeButton'),
+            iconSize: 35,
+            iconBuilder: (color) => Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(Icons.movie_filter_outlined, size: 19, color: color),
+                const SizedBox(width: 2),
+                Icon(Icons.arrow_forward, size: 14, color: color),
+              ],
+            ),
             onPressed: () => _runAutomationBlockedAction(
               () => context.go('/timeline/${widget.projectId}'),
             ),
