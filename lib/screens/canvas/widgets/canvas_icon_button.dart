@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../../services/theme_service.dart';
+import '../../../utils/color_contrast.dart';
 
 /// キャンバスモード内の常設ボタン共通スタイル：
 /// 背景は一切持たせず、キャンバス上にアイコンだけが浮かんでいる状態にした
@@ -58,6 +59,24 @@ class CanvasIconButton extends StatelessWidget {
     for (final o in _offsets) Shadow(color: color, offset: o, blurRadius: 0),
   ];
 
+  /// Readable on either light or dark artwork: draw an opaque outline
+  /// chosen from the currently selected theme (never a hard-coded UI color).
+  /// The foreground itself remains exactly the user-configured theme color.
+  static Color outlineColor(Color foreground, ColorScheme scheme) {
+    final surface = scheme.surface;
+    final ink = scheme.onSurface;
+    return contrastRatio(foreground, surface) >=
+            contrastRatio(foreground, ink)
+        ? surface
+        : ink;
+  }
+
+  /// Shared by free-floating text, indicators and handles as well as icons.
+  static List<Shadow> foregroundShadows(
+    Color foreground,
+    ColorScheme scheme,
+  ) => outlineShadows(outlineColor(foreground, scheme));
+
   /// アイコン本体＋縁取りを描く。
   Widget _renderIcon(Color iconColor, Color outlineColor) {
     if (iconBuilder != null) {
@@ -85,8 +104,10 @@ class CanvasIconButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
-    final menuBg = context.watch<ThemeService>().current.menuBgColor;
+    // Subscribe so changing the appearance preset repaints the outline.
+    context.watch<ThemeService>();
     final iconColor = selected ? scheme.primary : scheme.onSurface;
+    final outline = outlineColor(iconColor, scheme);
     return Tooltip(
       message: tooltip,
       triggerMode: longPressTooltip
@@ -102,7 +123,7 @@ class CanvasIconButton extends StatelessWidget {
           child: SizedBox(
             width: iconSize,
             height: iconSize,
-            child: _renderIcon(iconColor, menuBg.withValues(alpha: 0.75)),
+            child: _renderIcon(iconColor, outline),
           ),
         ),
       ),
