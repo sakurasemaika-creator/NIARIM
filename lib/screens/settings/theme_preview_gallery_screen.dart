@@ -755,7 +755,9 @@ class _ThemeSampleScreen extends StatelessWidget {
   );
 
   Widget _canvas(ColorScheme c) => Scaffold(
-    backgroundColor: c.surface,
+    key: const Key('themePreviewCanvasScaffold'),
+    // Match the real canvas outer area. Bars have transparent backgrounds.
+    backgroundColor: c.surfaceContainerHighest,
     body: SafeArea(child: Column(children: [
       SizedBox(height: 43, child: Row(children: [
         const SizedBox(width: 8),
@@ -821,8 +823,10 @@ class _ThemeSampleScreen extends StatelessWidget {
         ])),
       SizedBox(height: 22, child: Center(child:
         Icon(Icons.keyboard_arrow_down, size: 19, color: c.onSurfaceVariant))),
-      Container(height: 58, padding: const EdgeInsets.symmetric(horizontal: 8),
-        color: c.surfaceContainerLow,
+      Container(
+        key: const Key('themePreviewCanvasFrameStrip'),
+        height: 58, padding: const EdgeInsets.symmetric(horizontal: 8),
+        color: Colors.transparent,
         child: Row(children: [
           ...List.generate(4, (i) => Container(
             width: 49, margin: const EdgeInsets.fromLTRB(1, 5, 0, 5),
@@ -1192,7 +1196,37 @@ class _ThemeSampleScreen extends StatelessWidget {
         ),
       ),
       const SizedBox(height: 10),
-      _mockSlider(c, position: .11, height: 28),
+      Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 4),
+        child: SizedBox(
+          height: 34,
+          child: Row(children: [
+            Expanded(child: Align(
+              alignment: Alignment.centerLeft,
+              child: Text('0.1s',
+                key: const Key('themePreviewDetailCurrentSeconds'),
+                style: TextStyle(fontSize: 12, color: c.onSurfaceVariant)))),
+            Text('2/12',
+              key: const Key('themePreviewDetailFrameCounter'),
+              style: TextStyle(fontSize: 12, color: c.onSurfaceVariant)),
+            const SizedBox(width: 6),
+            SizedBox(
+              width: 34, height: 34,
+              child: Icon(Icons.repeat,
+                key: const Key('themePreviewDetailLoopButton'),
+                color: c.primary, size: 20)),
+            Expanded(child: Align(
+              alignment: Alignment.centerRight,
+              child: Text('1.0s',
+                key: const Key('themePreviewDetailTotalSeconds'),
+                style: TextStyle(fontSize: 12, color: c.onSurfaceVariant)))),
+          ]),
+        ),
+      ),
+      KeyedSubtree(
+        key: const Key('themePreviewDetailSeekBar'),
+        child: _mockSlider(c, position: .11, height: 28),
+      ),
       Container(
         height: 60,
         decoration: BoxDecoration(
