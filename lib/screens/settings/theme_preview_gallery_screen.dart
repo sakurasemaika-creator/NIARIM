@@ -824,7 +824,7 @@ class _ThemeSampleScreen extends StatelessWidget {
           style: TextStyle(fontSize: 12,
             color: e.key == 0 ? c.onPrimary : c.onSurface)),
       )),
-    )),
+    ),
     Align(alignment: Alignment.centerLeft,
       child: _mockChip(c, t('カスタム', 'Custom'))),
     const SizedBox(height: 16),
