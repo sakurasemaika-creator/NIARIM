@@ -169,6 +169,10 @@ class ProjectListWidget extends StatelessWidget {
   // 切り取って貼り付け待ちの項目。薄く表示して、どれを移すところか分かる
   // ようにする。
   final Set<String> pendingCutIds;
+  // 一覧の下端に足す余白。画面下に浮くボタン（ホームのFAB）が最後の行の
+  // 名前やメニューを隠さないよう、一番下までスクロールしたときにその上へ
+  // 出せるようにする。
+  final double bottomPadding;
 
   const ProjectListWidget({
     super.key,
@@ -189,6 +193,7 @@ class ProjectListWidget extends StatelessWidget {
     this.onClearSearch,
     this.onShowAll,
     this.pendingCutIds = const {},
+    this.bottomPadding = 0,
   });
 
   /// フォルダを作品より前にまとめ、それぞれの中を[sortMode]で並べる。
@@ -366,6 +371,7 @@ class ProjectListWidget extends StatelessWidget {
     if (viewMode == ProjectViewMode.detail) {
       return ListView.builder(
         key: scrollKey,
+        padding: EdgeInsets.only(bottom: bottomPadding),
         itemCount: sorted.length,
         itemBuilder: (context, index) => _detailTile(
           context,
@@ -387,7 +393,7 @@ class ProjectListWidget extends StatelessWidget {
 
     return GridView.builder(
       key: scrollKey,
-      padding: const EdgeInsets.all(8),
+      padding: EdgeInsets.fromLTRB(8, 8, 8, 8 + bottomPadding),
       gridDelegate: SliverGridDelegateWithMaxCrossAxisExtent(
         maxCrossAxisExtent: targetExtent,
         crossAxisSpacing: 8,

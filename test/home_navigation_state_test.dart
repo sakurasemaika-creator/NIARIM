@@ -309,6 +309,27 @@ void main() {
     });
   }
 
+  // 画面下の左右にFABが浮くので、一番下までスクロールすれば最後の行の
+  // 名前がFABの上へ出ること（以前は一覧の下端の余白が8pxだけで、最後の
+  // 行の名前とメニューが左右のFABの下に隠れたままだった）。
+  testWidgets('scrolled to the end, the last row clears the bottom FABs', (
+    tester,
+  ) async {
+    await boot(tester, projects: 20);
+    await tester.drag(find.byType(GridView), const Offset(0, -4000));
+    await settle(tester);
+    final fabTop = tester
+        .getRect(find.byKey(const Key('homeBackToSplashFab')))
+        .top;
+    for (final name in ['P1', 'P2', 'P3']) {
+      expect(
+        tester.getRect(find.text(name)).bottom,
+        lessThanOrEqualTo(fabTop),
+        reason: name,
+      );
+    }
+  });
+
   // 起動画面へ戻るのは左下のFAB。
   testWidgets('the back FAB returns to splash even over another screen', (
     tester,

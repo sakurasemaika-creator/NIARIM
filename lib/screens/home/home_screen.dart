@@ -43,6 +43,12 @@ import '../../widgets/typing_aware_shortcuts.dart';
 import '../community/community_error_text.dart';
 import '../../utils/color_contrast.dart';
 
+/// ホームの一覧の下端に足す余白：画面下の左右に浮くFAB（56）とその下の
+/// 余白（16）、さらに端末のナビゲーションバーぶん（FABはその上に置かれる）。
+/// 一番下までスクロールすれば最後の行がFABの上へ出る。
+double _fabClearance(BuildContext context) =>
+    56 + 16 + MediaQuery.paddingOf(context).bottom;
+
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
 
@@ -610,6 +616,7 @@ class _HomeScreenState extends State<HomeScreen>
                                     .where((p) => !p.isSharedImport)
                                     .toList(),
                                 viewMode: _viewMode,
+                                bottomPadding: _fabClearance(context),
                                 sortMode: _sortMode,
                                 isSelectionMode: _isSelectionMode,
                                 selectedIds: _selectedIds,
@@ -1778,6 +1785,8 @@ class _FolderableList<T> extends StatelessWidget {
   final void Function(String id, String name) onRenameFolder;
   final void Function(String id) onDeleteFolder;
   final Widget Function(BuildContext, T) itemBuilder;
+  // 一覧の下端に足す余白（画面下のFABに最後の行が隠れないように）。
+  final double bottomPadding;
 
   const _FolderableList({
     required this.allItems,
@@ -1787,6 +1796,7 @@ class _FolderableList<T> extends StatelessWidget {
     required this.onRenameFolder,
     required this.onDeleteFolder,
     required this.itemBuilder,
+    this.bottomPadding = 0,
   });
 
   @override
@@ -1804,6 +1814,7 @@ class _FolderableList<T> extends StatelessWidget {
     // 描画されるのは画面内の行だけでも、全作品ぶんのカード（サムネイルの
     // Image.fileを含む）のウィジェットが毎buildで作られて捨てられる。
     return ListView.builder(
+      padding: EdgeInsets.only(bottom: bottomPadding),
       itemCount: rootItems.length + (hasHeader ? 2 : 0),
       itemBuilder: (context, index) {
         if (hasHeader && index == 0) {
@@ -2099,7 +2110,9 @@ class _BookmarkedTab extends StatelessWidget {
             minHeight: constraints.hasBoundedHeight ? constraints.maxHeight : 0,
           ),
           child: Padding(
-            padding: works.isEmpty ? const EdgeInsets.all(24) : EdgeInsets.zero,
+            padding: works.isEmpty
+                ? const EdgeInsets.all(24)
+                : EdgeInsets.only(bottom: _fabClearance(context)),
             child: Column(
               mainAxisAlignment: works.isEmpty
                   ? MainAxisAlignment.center
@@ -2297,6 +2310,7 @@ class _WorksTabState extends State<_WorksTab> {
         return RefreshIndicator(
           onRefresh: _reload,
           child: _FolderableList<File>(
+            bottomPadding: _fabClearance(context),
             allItems: files,
             folders: workFolders.folders,
             folderIdOf: (f) =>
