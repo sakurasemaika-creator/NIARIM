@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import '../../services/theme_service.dart';
 import '../../config/font_fallback.dart';
+import '../canvas/widgets/canvas_icon_button.dart';
 import '../../utils/color_contrast.dart';
 
 /// Lightweight preview of main creation and community screens only.
@@ -387,15 +388,21 @@ class _ThemeSampleScreen extends StatelessWidget {
           )),
         ]));
 
-  Widget _mockTool(ColorScheme c, IconData icon, {bool active = false}) =>
-    Container(
+  // Other previews use normal Material icons. Canvas previews use the
+  // same outlined glyphs as the REAL transparent CanvasIconButton.
+  Widget _mockTool(ColorScheme c, IconData icon,
+      {bool active = false, bool canvasOutline = false}) {
+    final foreground = active ? c.onPrimaryContainer : c.onSurface;
+    return Container(
       constraints: const BoxConstraints(minWidth: 28, minHeight: 32),
       alignment: Alignment.center,
       decoration: BoxDecoration(
         color: active ? c.primaryContainer : Colors.transparent,
         borderRadius: BorderRadius.circular(6)),
-      child: Icon(icon, size: 18,
-        color: active ? c.onPrimaryContainer : c.onSurface));
+      child: Icon(icon, size: 18, color: foreground,
+        shadows: canvasOutline
+          ? CanvasIconButton.foregroundShadows(foreground, c) : null));
+  }
 
   Widget _fakePaper(ColorScheme c, {double? height}) =>
     Container(height: height, color: Colors.white);
@@ -764,11 +771,11 @@ class _ThemeSampleScreen extends StatelessWidget {
     body: SafeArea(child: Column(children: [
       SizedBox(height: 43, child: Row(children: [
         const SizedBox(width: 8),
-        _mockTool(c, Icons.undo),
-        _mockTool(c, Icons.redo),
+        _mockTool(c, Icons.undo, canvasOutline: true),
+        _mockTool(c, Icons.redo, canvasOutline: true),
         const Spacer(),
-        _mockTool(c, Icons.settings),
-        _mockTool(c, Icons.home_outlined),
+        _mockTool(c, Icons.settings, canvasOutline: true),
+        _mockTool(c, Icons.home_outlined, canvasOutline: true),
         // Direction cue for the same timeline switch used in CanvasScreen.
         SizedBox(
           key: const Key('themePreviewCanvasTimelineButton'),
@@ -817,21 +824,21 @@ class _ThemeSampleScreen extends StatelessWidget {
       SizedBox(height: 50, child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
         children: [
-          _mockTool(c, Icons.brush, active: true),
-          _mockTool(c, Icons.auto_fix_off),
-          _mockTool(c, Icons.format_color_fill),
-          _mockTool(c, Icons.colorize),
-          _mockTool(c, Icons.pan_tool),
-          _mockTool(c, Icons.select_all),
-          _mockTool(c, Icons.text_fields),
-          _mockTool(c, Icons.category),
+          _mockTool(c, Icons.brush, active: true, canvasOutline: true),
+          _mockTool(c, Icons.auto_fix_off, canvasOutline: true),
+          _mockTool(c, Icons.format_color_fill, canvasOutline: true),
+          _mockTool(c, Icons.colorize, canvasOutline: true),
+          _mockTool(c, Icons.pan_tool, canvasOutline: true),
+          _mockTool(c, Icons.select_all, canvasOutline: true),
+          _mockTool(c, Icons.text_fields, canvasOutline: true),
+          _mockTool(c, Icons.category, canvasOutline: true),
           Container(height: 25, width: 25,
             decoration: BoxDecoration(
               shape: BoxShape.circle,
               color: Colors.black,
               border: Border.all(color: c.outlineVariant, width: 2))),
-          _mockTool(c, Icons.tune),
-          _mockTool(c, Icons.layers_outlined),
+          _mockTool(c, Icons.tune, canvasOutline: true),
+          _mockTool(c, Icons.layers_outlined, canvasOutline: true),
         ])),
       SizedBox(height: 22, child: Center(child:
         Icon(Icons.keyboard_arrow_down, size: 19, color: c.onSurfaceVariant))),
@@ -850,8 +857,8 @@ class _ThemeSampleScreen extends StatelessWidget {
                 width: i == 0 ? 2 : 1)),
           )),
           const Spacer(),
-          _mockTool(c, Icons.movie_filter_outlined),
-          _mockTool(c, Icons.chevron_right),
+          _mockTool(c, Icons.movie_filter_outlined, canvasOutline: true),
+          _mockTool(c, Icons.chevron_right, canvasOutline: true),
         ])),
     ])),
   );
