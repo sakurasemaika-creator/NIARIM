@@ -1097,9 +1097,9 @@ class _ThemeSampleScreen extends StatelessWidget {
           ]),
           const SizedBox(height: 22),
           _mockSection(c, t('ペンボタン設定', 'Pen buttons'), [
-            _mockSettingRow(c, Icons.stylus, t('ボタン1', 'Button 1'),
+            _mockSettingRow(c, Icons.edit_outlined, t('ボタン1', 'Button 1'),
               subtitle: t('消しゴム', 'Eraser')),
-            _mockSettingRow(c, Icons.stylus, t('ボタン2', 'Button 2'),
+            _mockSettingRow(c, Icons.edit_outlined, t('ボタン2', 'Button 2'),
               subtitle: t('スポイト', 'Eyedropper')),
           ]),
         ]);
