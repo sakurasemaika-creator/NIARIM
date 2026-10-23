@@ -266,16 +266,17 @@ class _ThemeSampleScreen extends StatelessWidget {
     final c = Theme.of(context).colorScheme;
     if (entry.layout == 'splash') return _splash(context, c);
     if (entry.layout == 'community') return _community(c);
+    if (entry.layout == 'projects') return _projects(c);
     if (entry.layout == 'canvas') return _canvas(c);
     if (entry.layout == 'timeline') return _timeline(c);
     if (entry.layout == 'complete') return _complete(c);
     const helpScreens = <String>{'new'};
     const menuScreens = <String>{
       'projects', 'detail', 'community',
-      'work', 'post', 'author', 'mine', 'notifications',
+      'work', 'author',
     };
     final appTitle = switch (entry.id) {
-      'detail' => t('練習作品', 'Practice'),
+      'detail' => t('all-route-audit', 'all-route-audit'),
       'work' => t('作品詳細', 'Work details'),
       'widget_frame' => t('練習作品', 'Practice'),
       'projects' => t('プロジェクト一覧', 'Projects'),
@@ -295,7 +296,7 @@ class _ThemeSampleScreen extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(
         automaticallyImplyLeading: false,
-        leading: entry.id == 'projects' || entry.id == 'settings' ? null
+        leading: entry.id == 'detail' || entry.id == 'settings' ? null
             : const Icon(Icons.arrow_back),
         title: Text(appTitle, maxLines: 1, overflow: TextOverflow.ellipsis),
         actions: [
@@ -482,44 +483,87 @@ class _ThemeSampleScreen extends StatelessWidget {
     );
   }
 
-  Widget _projects(ColorScheme c) => Column(children: [
-    Container(height: 44, color: c.surfaceContainer, child: Row(
-      mainAxisAlignment: MainAxisAlignment.spaceEvenly, children: [
-        Text(t('プロジェクト', 'Projects')),
-        Text(t('作品一覧', 'Works')),
-        Text(t('ブクマ済み', 'Saved')),
-      ])),
-    Padding(padding: const EdgeInsets.all(12), child: Row(children: [
-      const Icon(Icons.sort), const SizedBox(width: 10),
-      Expanded(child: Text(t('更新日時 ▼', 'Last updated ▼'))),
-      const Icon(Icons.grid_view), const SizedBox(width: 15), const Icon(Icons.search),
-    ])),
-    Expanded(child: GridView.count(
-      physics: const NeverScrollableScrollPhysics(),
-      padding: const EdgeInsets.all(10), crossAxisCount: 2, childAspectRatio: .88,
-      children: [
-        _projectTile(c, t('アニメーション', 'Animation')),
-        _projectTile(c, t('練習作品', 'Practice')),
-        _projectTile(c, t('ラフ', 'Sketch')),
-        _projectTile(c, t('新作', 'New work')),
-      ])),
-    Padding(padding: const EdgeInsets.all(12),
-      child: _cta(c, t('新しく作る', 'Create new'), icon: Icons.add)),
-  ]);
-
-  Widget _projectTile(ColorScheme c, String title) =>
-      Card(clipBehavior: Clip.antiAlias, child: Column(children: [
-        Expanded(child: Container(color: c.surfaceContainerHigh,
-          alignment: Alignment.center, child: Icon(Icons.movie_creation_outlined,
-          size: 42, color: c.primary))),
-        Padding(padding: const EdgeInsets.all(9), child: Row(children: [
-          Expanded(child: Text(title, maxLines: 1,
-            style: const TextStyle(fontSize: 12))),
-          Icon(Icons.star_border, color: c.tertiary, size: 16),
-          const Icon(Icons.more_vert, size: 16),
+  Widget _projects(ColorScheme c) => Scaffold(
+    backgroundColor: c.surface,
+    appBar: AppBar(
+      automaticallyImplyLeading: false,
+      leading: Icon(Icons.arrow_back, color: c.onSurface),
+      titleSpacing: 0,
+      title: Row(children: [
+        Icon(Icons.menu, size: 20, color: c.onSurface),
+        const SizedBox(width: 14),
+        Flexible(child: Text(t('更新日時', 'Modified'),
+          style: const TextStyle(fontSize: 13, fontWeight: FontWeight.bold),
+          maxLines: 1, overflow: TextOverflow.ellipsis)),
+        Icon(Icons.arrow_drop_down, color: c.onSurface, size: 20),
+        const SizedBox(width: 6),
+        Icon(Icons.arrow_downward, color: c.onSurface, size: 18),
+      ]),
+      actions: [
+        Icon(Icons.grid_view, color: c.onSurface, size: 21),
+        const SizedBox(width: 14),
+        Icon(Icons.search, color: c.onSurface, size: 22),
+        const SizedBox(width: 12),
+      ],
+      bottom: PreferredSize(
+        preferredSize: const Size.fromHeight(45),
+        child: SizedBox(height: 45, child: Row(children: [
+          for (final tab in [
+            t('プロジェクト', 'Projects'), t('作品一覧', 'Works'),
+            t('ブクマ済み', 'Bookmarks'),
+          ]) Expanded(child: Column(children: [
+            Expanded(child: Center(child: Text(tab, style: TextStyle(
+              fontSize: 13, fontWeight: FontWeight.bold,
+              color: tab == t('プロジェクト', 'Projects')
+                ? c.onSurface : c.onSurfaceVariant)))),
+            Container(height: 2, color: tab == t('プロジェクト', 'Projects')
+                ? c.onSurface : Colors.transparent),
+          ])),
         ])),
-      ]));
-
+      ),
+    ),
+    body: Stack(children: [
+      Column(children: [
+        Align(alignment: Alignment.topLeft, child: Padding(
+          padding: const EdgeInsets.fromLTRB(7, 9, 7, 0),
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 13, vertical: 9),
+            decoration: BoxDecoration(
+              color: c.surfaceContainerLow,
+              borderRadius: BorderRadius.circular(24)),
+            child: Text(t('お気に入り', 'Favorites'),
+              style: const TextStyle(fontSize: 11,
+                fontWeight: FontWeight.w700)),
+          ),
+        )),
+        Expanded(child: Center(child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            CircleAvatar(radius: 36,
+              backgroundColor: c.primary.withValues(alpha: .13),
+              child: Icon(Icons.movie_creation_outlined,
+                size: 31, color: c.primary)),
+            const SizedBox(height: 13),
+            Text(t('プロジェクトがありません', 'No projects'),
+              style: const TextStyle(
+                fontWeight: FontWeight.w800, fontSize: 14)),
+            const SizedBox(height: 6),
+            Text(t('＋ボタンから新規作成', 'Create with the + button'),
+              style: TextStyle(
+                fontSize: 11, color: c.onSurfaceVariant)),
+          ],
+        ))),
+      ]),
+      Positioned(right: 13, bottom: 20,
+        child: Container(
+          width: 58, height: 58,
+          alignment: Alignment.center,
+          decoration: BoxDecoration(
+            color: c.primary, shape: BoxShape.circle,
+            border: Border.all(color: c.onSurface, width: 3)),
+          child: Icon(Icons.add, color: c.onPrimary, size: 27))),
+    ]),
+  );
 
   Widget _community(ColorScheme c) => Scaffold(
     backgroundColor: c.surface,
@@ -897,25 +941,60 @@ class _ThemeSampleScreen extends StatelessWidget {
     ]),
   );
 
-  Widget _complete(ColorScheme c) => Scaffold(body: Center(
-    child: Padding(padding: const EdgeInsets.all(24), child: Column(
-      mainAxisSize: MainAxisSize.min, children: [
-        Icon(Icons.check_circle_outline, size: 80, color: c.primary),
-        const SizedBox(height: 12),
-        _heading(t('書き出し完了', 'Export complete')),
-        Text(t('48フレームを書き出しました', '48 frames exported')),
-        const SizedBox(height: 12),
-        _card(const Text('animation.mp4')),
-        const SizedBox(height: 12),
-        _cta(c, t('共有する', 'Share'), icon: Icons.share),
-        const SizedBox(height: 18),
-        Text(t('プロジェクト一覧に戻る', 'Return to projects'),
-          style: TextStyle(color: c.primary)),
-      ],
-    )),
-  ));
-
-
+  Widget _complete(ColorScheme c) => Scaffold(
+    backgroundColor: c.surface,
+    appBar: AppBar(
+      title: Text(t('書き出し', 'Export')),
+      actions: [Icon(Icons.help_outline, color: c.onSurface)]),
+    body: Stack(children: [
+      Positioned.fill(child: _export(c)),
+      Positioned.fill(child: ColoredBox(
+        color: Colors.black.withValues(alpha: .46))),
+      Center(child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 32),
+        child: Material(
+          elevation: 5,
+          color: c.surfaceContainerHigh,
+          borderRadius: BorderRadius.circular(28),
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(24, 24, 24, 20),
+            child: Column(mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(t('書き出し完了', 'Export complete'),
+                  style: const TextStyle(fontSize: 21,
+                    fontWeight: FontWeight.w700)),
+                const SizedBox(height: 18),
+                Text(t('48フレームを書き出しました', '48 frames exported'),
+                  style: const TextStyle(fontSize: 14)),
+                const SizedBox(height: 12),
+                Text(t('保存先: animation.mp4', 'Saved to animation.mp4'),
+                  style: const TextStyle(fontSize: 12,
+                    fontWeight: FontWeight.bold)),
+                const SizedBox(height: 5),
+                Text(t('ファイルを端末に保存する場合は「共有」から保存先を選択してください。',
+                  'Choose a destination from Share to save on your device.'),
+                  style: TextStyle(
+                    fontSize: 11, color: c.onSurfaceVariant)),
+                const SizedBox(height: 20),
+                Row(mainAxisAlignment: MainAxisAlignment.end, children: [
+                  Flexible(child: Text(t('プロジェクト一覧へ',
+                    'Back to projects'), style: TextStyle(
+                      fontSize: 12, color: c.primary))),
+                  const SizedBox(width: 14),
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 17, vertical: 10),
+                    decoration: BoxDecoration(color: c.primary,
+                      borderRadius: BorderRadius.circular(24)),
+                    child: Text(t('共有', 'Share'),
+                      style: TextStyle(color: c.onPrimary))),
+                ]),
+              ]),
+          ),
+        ))),
+    ]),
+  );
 
   Widget _form(ColorScheme c) => ListView(
     key: const Key('themePreviewContentList'),
