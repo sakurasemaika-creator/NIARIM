@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import '../../services/theme_service.dart';
+import '../../config/font_fallback.dart';
 import '../../utils/color_contrast.dart';
 
 /// Lightweight preview of main creation and community screens only.
@@ -714,6 +715,8 @@ class _ThemeSampleScreen extends StatelessWidget {
                         const SizedBox(height: 12),
                         Text(t('サンプル作者', 'Sample artist'),
                           style: TextStyle(fontSize: 10,
+                            fontFamily: 'Kuramubon',
+                            fontFamilyFallback: kHeadingFontFallback,
                             color: c.onSurfaceVariant)),
                         const Spacer(),
                         Row(children: [
@@ -766,7 +769,16 @@ class _ThemeSampleScreen extends StatelessWidget {
         const Spacer(),
         _mockTool(c, Icons.settings),
         _mockTool(c, Icons.home_outlined),
-        _mockTool(c, Icons.movie_filter_outlined),
+        // Direction cue for the same timeline switch used in CanvasScreen.
+        SizedBox(
+          key: const Key('themePreviewCanvasTimelineButton'),
+          width: 36, height: 32,
+          child: Row(mainAxisAlignment: MainAxisAlignment.center, children: [
+            Icon(Icons.movie_filter_outlined, size: 19, color: c.onSurface),
+            const SizedBox(width: 2),
+            Icon(Icons.arrow_forward, size: 13, color: c.onSurface),
+          ]),
+        ),
         const SizedBox(width: 8),
       ])),
       // No project instance, image decoding, or raster engine. The real
@@ -1011,7 +1023,9 @@ class _ThemeSampleScreen extends StatelessWidget {
         const SizedBox(width: 3),
         Expanded(child: Text(label, maxLines: 1,
           overflow: TextOverflow.ellipsis,
-          style: TextStyle(fontSize: 8, color: c.onSurface))),
+          style: TextStyle(fontSize: 8, fontFamily: 'Kuramubon',
+            fontFamilyFallback: kHeadingFontFallback,
+            color: c.onSurface))),
       ])),
       Expanded(child: Container(
         margin: const EdgeInsets.symmetric(vertical: 1, horizontal: 2),
@@ -1200,21 +1214,22 @@ class _ThemeSampleScreen extends StatelessWidget {
         padding: const EdgeInsets.symmetric(horizontal: 4),
         child: SizedBox(
           height: 34,
+          // Match the real player: fixed outer time labels, equal-width
+          // quarter cells for the counter and loop button in the middle.
           child: Row(children: [
             Expanded(child: Align(
               alignment: Alignment.centerLeft,
               child: Text('0.1s',
                 key: const Key('themePreviewDetailCurrentSeconds'),
                 style: TextStyle(fontSize: 12, color: c.onSurfaceVariant)))),
-            Text('2/12',
+            Expanded(child: Center(child: Text('2/12',
               key: const Key('themePreviewDetailFrameCounter'),
-              style: TextStyle(fontSize: 12, color: c.onSurfaceVariant)),
-            const SizedBox(width: 6),
-            SizedBox(
+              style: TextStyle(fontSize: 12, color: c.onSurfaceVariant)))),
+            Expanded(child: Center(child: SizedBox(
               width: 34, height: 34,
               child: Icon(Icons.repeat,
                 key: const Key('themePreviewDetailLoopButton'),
-                color: c.primary, size: 20)),
+                color: c.primary, size: 20)))),
             Expanded(child: Align(
               alignment: Alignment.centerRight,
               child: Text('1.0s',
@@ -1291,23 +1306,33 @@ class _ThemeSampleScreen extends StatelessWidget {
     padding: const EdgeInsets.all(16),
     children: [
       Text(t('プリセット', 'Preset'),
-        style: const TextStyle(fontWeight: FontWeight.bold)),
+        style: const TextStyle(fontWeight: FontWeight.bold,
+          fontFamily: 'Kuramubon',
+          fontFamilyFallback: kHeadingFontFallback)),
       const SizedBox(height: 8),
       SizedBox(width: double.infinity, child: SegmentedButton<String>(
         segments: [
           ButtonSegment<String>(
-            value: 'standard', label: Text(t('標準', 'Standard'))),
+            value: 'standard', label: Text(t('標準', 'Standard'),
+              style: const TextStyle(fontFamily: 'Kuramubon',
+                fontFamilyFallback: kHeadingFontFallback))),
           ButtonSegment<String>(
-            value: 'high', label: Text(t('高画質', 'High quality'))),
+            value: 'high', label: Text(t('高画質', 'High quality'),
+              style: const TextStyle(fontFamily: 'Kuramubon',
+                fontFamilyFallback: kHeadingFontFallback))),
           ButtonSegment<String>(
-            value: 'custom', label: Text(t('カスタム', 'Custom'))),
+            value: 'custom', label: Text(t('カスタム', 'Custom'),
+              style: const TextStyle(fontFamily: 'Kuramubon',
+                fontFamilyFallback: kHeadingFontFallback))),
         ],
         selected: const {'standard'}, onSelectionChanged: (_) {},
         showSelectedIcon: true,
       )),
       const SizedBox(height: 24),
       Text(t('形式', 'Format'),
-        style: const TextStyle(fontWeight: FontWeight.bold)),
+        style: const TextStyle(fontWeight: FontWeight.bold,
+          fontFamily: 'Kuramubon',
+          fontFamilyFallback: kHeadingFontFallback)),
       const SizedBox(height: 8),
       for (final option in [
         ('MP4', t('汎用動画形式', 'Universal video format')),
@@ -1327,10 +1352,14 @@ class _ThemeSampleScreen extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(option.value.$1, style: const TextStyle(
-                fontSize: 14, fontWeight: FontWeight.w700)),
+                fontSize: 14, fontWeight: FontWeight.w700,
+                fontFamily: 'Kuramubon',
+                fontFamilyFallback: kHeadingFontFallback)),
               const SizedBox(height: 3),
               Text(option.value.$2, style: TextStyle(
-                fontSize: 11, color: c.onSurfaceVariant)),
+                fontSize: 11, color: c.onSurfaceVariant,
+                fontFamily: 'Kuramubon',
+                fontFamilyFallback: kHeadingFontFallback)),
             ],
           )),
         ])),
@@ -2782,7 +2811,9 @@ class _ThemeSampleScreen extends StatelessWidget {
               const SizedBox(height: 9),
               Text(t('サンプル作者', 'Sample artist'),
                 style: TextStyle(
-                  fontSize: 10, color: c.onSurfaceVariant)),
+                  fontSize: 10, color: c.onSurfaceVariant,
+                  fontFamily: 'Kuramubon',
+                  fontFamilyFallback: kHeadingFontFallback)),
               const Spacer(),
               Row(children: [
                 Icon(Icons.play_arrow, size: 11,
@@ -2804,7 +2835,9 @@ class _ThemeSampleScreen extends StatelessWidget {
   Widget _author(ColorScheme c) => Scaffold(
     backgroundColor: c.surface,
     appBar: AppBar(
-      title: Text(t('サンプル作者', 'Sample artist')),
+      title: Text(t('サンプル作者', 'Sample artist'),
+        style: const TextStyle(fontFamily: 'Kuramubon',
+          fontFamilyFallback: kHeadingFontFallback)),
       actions: [
         Icon(Icons.filter_alt_outlined, color: c.onSurface),
         const SizedBox(width: 6),
@@ -2842,7 +2875,9 @@ class _ThemeSampleScreen extends StatelessWidget {
             children: [
               Text(t('サンプル作者', 'Sample artist'),
                 style: const TextStyle(fontSize: 16,
-                  fontWeight: FontWeight.bold)),
+                  fontWeight: FontWeight.bold,
+                  fontFamily: 'Kuramubon',
+                  fontFamilyFallback: kHeadingFontFallback)),
               const SizedBox(height: 4),
               Wrap(spacing: 7, runSpacing: 2, children: [
                 for (final label in [
