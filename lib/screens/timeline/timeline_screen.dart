@@ -1721,35 +1721,10 @@ class _TimelineScreenState extends State<TimelineScreen> {
             // ヒット領域はシークバー等の他の操作と混同しないよう、見た目の
             // グリップより広めに取っている（ドラッグ開始位置が少しずれても
             // 確実にリサイズとして認識されるようにするため）。
-            // Current seconds at the seekbar's left track edge; total
-            // seconds at its right edge, both level with the resize grip.
+            // Resize grip only; transport time labels live beside skip buttons.
             SizedBox(
               height: 22,
-              child: Stack(children: [
-                Positioned.fill(
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 36),
-                    child: Row(children: [
-                      ValueListenableBuilder<int>(
-                        key: const Key('timelineCurrentSeconds'),
-                        valueListenable: _currentFrameNotifier,
-                        builder: (_, frame, _) => Text(
-                          '${(frame / ((project?.fps ?? 0) > 0 ? project!.fps : 24)).toStringAsFixed(1)}s',
-                          style: TextStyle(fontSize: 11,
-                            color: Theme.of(context).colorScheme.onSurfaceVariant),
-                        ),
-                      ),
-                      const Spacer(),
-                      Text(
-                        '${(_totalFrames / ((project?.fps ?? 0) > 0 ? project!.fps : 24)).toStringAsFixed(1)}s',
-                        key: const Key('timelineTotalSeconds'),
-                        style: TextStyle(fontSize: 11,
-                          color: Theme.of(context).colorScheme.onSurfaceVariant),
-                      ),
-                    ]),
-                  ),
-                ),
-                Center(child: GestureDetector(
+              child: Center(child: GestureDetector(
                   key: const Key('timelinePreviewResizeHandle'),
                   behavior: HitTestBehavior.opaque,
                   dragStartBehavior: DragStartBehavior.down,
@@ -1780,7 +1755,6 @@ class _TimelineScreenState extends State<TimelineScreen> {
                     )),
                   ),
                 )),
-              ]),
             ),
           ],
         );
@@ -1823,38 +1797,100 @@ class _TimelineScreenState extends State<TimelineScreen> {
 
   Widget _buildPlaybackControls() {
     final l10n = AppLocalizations.of(context)!;
+    final ps = context.watch<ProjectService>();
+    final project = ps.projects
+        .where((p) => p.id == widget.projectId)
+        .firstOrNull;
+    final projectFps = project?.fps ?? 24;
+    final fps = projectFps > 0 ? projectFps : 24;
+    final timeColor = Theme.of(context).colorScheme.onSurfaceVariant;
+    final timeStyle = TextStyle(fontSize: 11, color: timeColor);
+
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 8),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          IconButton(
-            icon: const Icon(Icons.skip_previous),
-            tooltip: l10n.timelineSkipToStart,
-            onPressed: () => setState(() => _currentFrame = 0),
-          ),
-          IconButton(
-            icon: const Icon(Icons.fast_rewind),
-            tooltip: l10n.timelineStepBack,
-            onPressed: _stepFramePrevious,
-          ),
-          IconButton(
-            icon: Icon(_isPlaying ? Icons.pause : Icons.play_arrow),
-            tooltip: _isPlaying ? l10n.commonPause : l10n.commonPlay,
-            onPressed: _togglePlay,
-          ),
-          IconButton(
-            icon: const Icon(Icons.fast_forward),
-            tooltip: l10n.timelineStepForward,
-            onPressed: _stepFrameNext,
-          ),
-          IconButton(
-            icon: const Icon(Icons.skip_next),
-            tooltip: l10n.timelineSkipToEnd,
-            onPressed: () => setState(() => _currentFrame = _totalFrames - 1),
-          ),
-
-        ],
+      child: LayoutBuilder(
+        builder: (context, constraints) {
+          // Five transport buttons and two time labels must fit at 320px.
+          // Labels scale down only when the actual duration grows too long.
+          final buttonWidth = math.min(
+            48.0,
+            math.max(36.0, constraints.maxWidth / 7.0),
+          );
+          final buttonConstraints = BoxConstraints.tightFor(
+            width: buttonWidth,
+            height: buttonWidth,
+          );
+          Widget transportButton(
+            IconData icon,
+            String tooltip,
+            VoidCallback onPressed,
+          ) => IconButton(
+            icon: Icon(icon),
+            tooltip: tooltip,
+            padding: EdgeInsets.zero,
+            constraints: buttonConstraints,
+            onPressed: onPressed,
+          );
+          return Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Expanded(
+                child: Align(
+                  alignment: Alignment.centerRight,
+                  child: FittedBox(
+                    fit: BoxFit.scaleDown,
+                    child: ValueListenableBuilder<int>(
+                      valueListenable: _currentFrameNotifier,
+                      builder: (_, frame, _) => Text(
+                        '${(frame / fps).toStringAsFixed(1)}s',
+                        key: const Key('timelineCurrentSeconds'),
+                        style: timeStyle,
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+              transportButton(
+                Icons.skip_previous,
+                l10n.timelineSkipToStart,
+                () => setState(() => _currentFrame = 0),
+              ),
+              transportButton(
+                Icons.fast_rewind,
+                l10n.timelineStepBack,
+                _stepFramePrevious,
+              ),
+              transportButton(
+                _isPlaying ? Icons.pause : Icons.play_arrow,
+                _isPlaying ? l10n.commonPause : l10n.commonPlay,
+                _togglePlay,
+              ),
+              transportButton(
+                Icons.fast_forward,
+                l10n.timelineStepForward,
+                _stepFrameNext,
+              ),
+              transportButton(
+                Icons.skip_next,
+                l10n.timelineSkipToEnd,
+                () => setState(() => _currentFrame = _totalFrames - 1),
+              ),
+              Expanded(
+                child: Align(
+                  alignment: Alignment.centerLeft,
+                  child: FittedBox(
+                    fit: BoxFit.scaleDown,
+                    child: Text(
+                      '${(_totalFrames / fps).toStringAsFixed(1)}s',
+                      key: const Key('timelineTotalSeconds'),
+                      style: timeStyle,
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          );
+        },
       ),
     );
   }

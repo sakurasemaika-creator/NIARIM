@@ -35,6 +35,14 @@ void main() {
       ),
     };
 
+    for (final button in const [
+      'filledButtonTheme', 'elevatedButtonTheme',
+      'outlinedButtonTheme', 'textButtonTheme',
+    ]) {
+      expect(targets[button]?.fontFamily, 'Kuramubon',
+        reason: '$button must use the specified action-label font');
+    }
+
     // SnackBarの本文書式も同じ罠を踏む（ボタンと同じくThemeData.fontFamilyを
     // 継承しない）。アプリ中のSnackBarすべてに効くので一緒に見張る。
     targets['snackBarTheme'] = theme.snackBarTheme.contentTextStyle;

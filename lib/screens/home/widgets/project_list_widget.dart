@@ -604,10 +604,12 @@ class ProjectListWidget extends StatelessWidget {
       mainAxisSize: MainAxisSize.min,
       children: [
         if (favorite)
-          Icon(
-            Icons.star,
-            color: ThemeService.activeColorScheme.tertiary,
-            size: 18,
+          Builder(
+            builder: (themeContext) => Icon(
+              Icons.star,
+              color: Theme.of(themeContext).colorScheme.primary,
+              size: 18,
+            ),
           ),
         ?menu,
       ],
@@ -906,10 +908,15 @@ class ProjectListWidget extends StatelessWidget {
                   color: scheme.surface.withValues(alpha: 0.9),
                   shape: BoxShape.circle,
                 ),
-                child: Icon(
-                  Icons.star,
-                  color: ThemeService.activeColorScheme.tertiary,
-                  size: 14,
+                child: Builder(
+                  // SliverGrid delegates may reuse cached children when the
+                  // outer itemBuilder is unchanged. Let the badge itself
+                  // depend on the live inherited Theme.
+                  builder: (themeContext) => Icon(
+                    Icons.star,
+                    color: Theme.of(themeContext).colorScheme.primary,
+                    size: 14,
+                  ),
                 ),
               ),
             ),

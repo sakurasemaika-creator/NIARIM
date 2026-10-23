@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import '../../services/theme_service.dart';
+import '../../utils/color_contrast.dart';
 
 /// Lightweight preview of main creation and community screens only.
 /// Tab variants, settings/management pages, menus and floating panels are
@@ -254,7 +255,8 @@ class _ThemeSampleScreen extends StatelessWidget {
       color: c.primary, borderRadius: BorderRadius.circular(12)),
       child: Row(mainAxisAlignment: MainAxisAlignment.center, children: [
         Icon(icon, color: c.onPrimary, size: 20), const SizedBox(width: 8),
-        Text(label, style: TextStyle(color: c.onPrimary, fontWeight: FontWeight.bold)),
+        Text(label, style: TextStyle(color: c.onPrimary,
+          fontFamily: 'Kuramubon', fontWeight: FontWeight.bold)),
       ]));
   Widget _art(ColorScheme c, {double height = 150}) => Container(
     height: height, color: c.surfaceContainerHigh,
@@ -492,21 +494,22 @@ class _ThemeSampleScreen extends StatelessWidget {
     backgroundColor: c.surface,
     appBar: AppBar(
       automaticallyImplyLeading: false,
-      leading: Icon(Icons.menu, color: c.onSurface),
+      leading: const Icon(Icons.menu),
       titleSpacing: 0,
       title: Row(children: [
 
         Flexible(child: Text(t('更新日時', 'Modified'),
-          style: const TextStyle(fontSize: 13, fontWeight: FontWeight.bold),
+          style: const TextStyle(fontSize: 16,
+            fontFamily: 'Kuramubon', fontWeight: FontWeight.w500),
           maxLines: 1, overflow: TextOverflow.ellipsis)),
-        Icon(Icons.arrow_drop_down, color: c.onSurface, size: 20),
+        const Icon(Icons.arrow_drop_down, size: 20),
         const SizedBox(width: 6),
-        Icon(Icons.arrow_downward, color: c.onSurface, size: 18),
+        const Icon(Icons.arrow_downward, size: 20),
       ]),
       actions: [
-        Icon(Icons.grid_view, color: c.onSurface, size: 21),
+        const Icon(Icons.grid_view, size: 21),
         const SizedBox(width: 14),
-        Icon(Icons.search, color: c.onSurface, size: 22),
+        const Icon(Icons.search, size: 22),
         const SizedBox(width: 12),
       ],
       bottom: PreferredSize(
@@ -520,7 +523,8 @@ class _ThemeSampleScreen extends StatelessWidget {
               fontSize: 13, fontWeight: FontWeight.bold,
               fontFamily: 'Kuramubon',
               color: tab == t('プロジェクト', 'Projects')
-                ? c.primary : c.onSurfaceVariant)))),
+                ? contrastingForeground(opaqueOver(c.surface, Colors.black), c.primary)
+                : c.onSurfaceVariant)))),
             Container(height: 2, color: tab == t('プロジェクト', 'Projects')
                 ? c.primary : Colors.transparent),
           ])),
@@ -588,7 +592,7 @@ class _ThemeSampleScreen extends StatelessWidget {
         Padding(padding: const EdgeInsets.all(9), child: Row(children: [
           Expanded(child: Text(title, maxLines: 1,
             style: const TextStyle(fontSize: 12))),
-          Icon(Icons.star_border, color: c.tertiary, size: 16),
+          Icon(Icons.star_border, color: c.primary, size: 16),
           const Icon(Icons.more_vert, size: 16),
         ])),
       ]));
@@ -872,30 +876,45 @@ class _ThemeSampleScreen extends StatelessWidget {
                   size: 24, color: c.primary)),
             ]),
           ))),
-      SizedBox(height: 22, child: Stack(children: [
-        Padding(padding: const EdgeInsets.symmetric(horizontal: 36),
-          child: Row(children: [
-            Text('0.4s', key: const Key('themePreviewCurrentSeconds'),
-              style: TextStyle(fontSize: 11, color: c.onSurfaceVariant)),
-            const Spacer(),
-            Text('4.2s', key: const Key('themePreviewTotalSeconds'),
-              style: TextStyle(fontSize: 11, color: c.onSurfaceVariant)),
-          ])),
-        Center(child: Container(width: 40, height: 5,
-          decoration: BoxDecoration(color: c.outlineVariant,
-            borderRadius: BorderRadius.circular(3)))),
-      ])),
+      // The resize grip has no time labels beside it.
+      SizedBox(height: 22, child: Center(child: Container(
+        key: const Key('themePreviewResizeGrip'),
+        width: 40, height: 5,
+        decoration: BoxDecoration(color: c.outlineVariant,
+          borderRadius: BorderRadius.circular(3))))),
       Padding(padding: const EdgeInsets.symmetric(horizontal: 18),
         child: _mockSlider(c, position: .09, height: 43)),
-      SizedBox(height: 58, child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-        children: [
-          _mockTool(c, Icons.skip_previous),
-          _mockTool(c, Icons.fast_rewind),
-          _mockTool(c, Icons.play_arrow),
-          _mockTool(c, Icons.fast_forward),
-          _mockTool(c, Icons.skip_next),
-        ])),
+      SizedBox(height: 58, child: LayoutBuilder(
+        builder: (context, constraints) {
+          final buttonWidth = constraints.maxWidth / 7 < 48
+              ? constraints.maxWidth / 7 : 48.0;
+          Widget transport(IconData icon, String key) => SizedBox(
+            key: Key(key),
+            width: buttonWidth,
+            height: buttonWidth,
+            child: Center(child: _mockTool(c, icon)),
+          );
+          return Row(children: [
+            Expanded(child: Align(alignment: Alignment.centerRight,
+              child: FittedBox(fit: BoxFit.scaleDown,
+                child: Text('0.4s',
+                  key: const Key('themePreviewCurrentSeconds'),
+                  style: TextStyle(fontSize: 11,
+                    color: c.onSurfaceVariant))))),
+            transport(Icons.skip_previous, 'themePreviewSkipPrevious'),
+            transport(Icons.fast_rewind, 'themePreviewFastRewind'),
+            transport(Icons.play_arrow, 'themePreviewPlay'),
+            transport(Icons.fast_forward, 'themePreviewFastForward'),
+            transport(Icons.skip_next, 'themePreviewSkipNext'),
+            Expanded(child: Align(alignment: Alignment.centerLeft,
+              child: FittedBox(fit: BoxFit.scaleDown,
+                child: Text('4.2s',
+                  key: const Key('themePreviewTotalSeconds'),
+                  style: TextStyle(fontSize: 11,
+                    color: c.onSurfaceVariant))))),
+          ]);
+        },
+      )),
       Container(height: 1, color: c.outlineVariant),
       SizedBox(height: 40, child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceAround,

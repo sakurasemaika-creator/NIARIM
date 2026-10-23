@@ -657,21 +657,6 @@ class ThemeService extends ChangeNotifier {
     // という切り分けに変更した（従来はくらむぼんをチュートリアル説明の
     // 吹き出し専用にしていたが、それは廃止しこの規則へ統一する）。
     final textTheme = _applyHeadingFont(bodyTextTheme, 'Kuramubon');
-    // 書体の決まり（ユーザー指定）：見出し・タイトル・ボタンはくらむぼん、
-    // 説明文・本文・エラー文・注釈は白光明朝。ボタンのラベルは
-    // labelLarge（本文用）を土台に、くらむぼんと見出し用の代替列へ差し替える
-    // （素のTextStyle()を渡すと端末標準フォントになる）。labelLarge自体は
-    // 白光明朝のまま：SnackBarの「元に戻す」等の小さな操作ボタンは
-    // labelLargeで描かれ、くらむぼんの太字だと潰れるため（ユーザー指定）。
-    final buttonLabelStyle =
-        textTheme.labelLarge?.copyWith(
-          fontFamily: 'Kuramubon',
-          fontFamilyFallback: kHeadingFontFallback,
-        ) ??
-        const TextStyle(
-          fontFamily: 'Kuramubon',
-          fontFamilyFallback: kHeadingFontFallback,
-        );
 
     return ThemeData(
       useMaterial3: true,
@@ -729,40 +714,59 @@ class ThemeService extends ChangeNotifier {
         ),
         margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
       ),
+      // All action-button labels are headings in the design system:
+      // Kuramubon for Filled / Elevated / Outlined / Text buttons.
+      // Keep the user's foreground tokens unchanged.
       filledButtonTheme: FilledButtonThemeData(
         style: FilledButton.styleFrom(
-          // Applies to text AND icons. User-defined values are never
-          // corrected for contrast or silently replaced.
           foregroundColor: scheme.onPrimary,
           minimumSize: const Size(64, 48),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(radius),
           ),
-          // AppBarのtitleTextStyleとまったく同じ罠。`styleFrom(textStyle:)`へ
-          // 素のTextStyle()を渡すと、それがラベル書式を丸ごと決めてしまい、
-          // ThemeData.fontFamilyは継承されない（端末標準フォントになる）。
-          // ボタンのラベル（くらむぼん）を土台にして、太さだけ上書きする。
-          textStyle: buttonLabelStyle.copyWith(fontWeight: FontWeight.w700),
-        ),
-      ),
-      outlinedButtonTheme: OutlinedButtonThemeData(
-        style: OutlinedButton.styleFrom(
-          textStyle: buttonLabelStyle,
-          minimumSize: const Size(64, 48),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(radius),
+          textStyle: textTheme.labelLarge?.copyWith(
+            fontFamily: 'Kuramubon',
+            fontFamilyFallback: kHeadingFontFallback,
+            fontWeight: FontWeight.w700,
+          ) ?? const TextStyle(
+            fontFamily: 'Kuramubon',
+            fontFamilyFallback: kHeadingFontFallback,
+            fontWeight: FontWeight.w700,
           ),
         ),
       ),
       elevatedButtonTheme: ElevatedButtonThemeData(
-        style: ElevatedButton.styleFrom(textStyle: buttonLabelStyle),
+        style: ElevatedButton.styleFrom(
+          textStyle: textTheme.labelLarge?.copyWith(
+            fontFamily: 'Kuramubon',
+            fontFamilyFallback: kHeadingFontFallback,
+            fontWeight: FontWeight.w700,
+          ),
+        ),
+      ),
+      outlinedButtonTheme: OutlinedButtonThemeData(
+        style: OutlinedButton.styleFrom(
+          minimumSize: const Size(64, 48),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(radius),
+          ),
+          textStyle: textTheme.labelLarge?.copyWith(
+            fontFamily: 'Kuramubon',
+            fontFamilyFallback: kHeadingFontFallback,
+            fontWeight: FontWeight.w700,
+          ),
+        ),
       ),
       textButtonTheme: TextButtonThemeData(
         style: TextButton.styleFrom(
-          textStyle: buttonLabelStyle,
           minimumSize: const Size(48, 44),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(radius),
+          ),
+          textStyle: textTheme.labelLarge?.copyWith(
+            fontFamily: 'Kuramubon',
+            fontFamilyFallback: kHeadingFontFallback,
+            fontWeight: FontWeight.w700,
           ),
         ),
       ),
@@ -829,6 +833,8 @@ class ThemeService extends ChangeNotifier {
         // 描かれ、同梱フォントの周囲から明確に浮く（日本語以外の端末では
         // 字形が別物になる）。SnackBarの文は説明文なので本文の書体
         // （textTheme.bodyMedium＝白光明朝）を土台にして色だけ上書きする。
+        // 操作ボタン（「元に戻す」等）はlabelLargeで描かれ、小さく、
+        // くらむぼんの太字だと潰れるので白光明朝のまま（ユーザー指定）。
         contentTextStyle: textTheme.bodyMedium?.copyWith(
           color: preset.textColor,
         ),
@@ -889,7 +895,14 @@ class ThemeService extends ChangeNotifier {
       // continues to use the normal text token.
       segmentedButtonTheme: SegmentedButtonThemeData(
         style: ButtonStyle(
-          textStyle: WidgetStatePropertyAll(buttonLabelStyle),
+          // 切り替えボタンのラベルも他のボタンと同じくくらむぼん。
+          textStyle: WidgetStatePropertyAll(
+            textTheme.labelLarge?.copyWith(
+              fontFamily: 'Kuramubon',
+              fontFamilyFallback: kHeadingFontFallback,
+              fontWeight: FontWeight.w700,
+            ),
+          ),
           backgroundColor: WidgetStateProperty.resolveWith<Color?>(
             (states) => states.contains(WidgetState.selected)
                 ? selectionColor : preset.menuBgColor,

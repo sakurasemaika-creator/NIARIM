@@ -119,5 +119,59 @@ void main() {
           'Timeline must render without any Flutter layout/runtime exception at 320 logical px',
     );
     expect(find.text('timeline-overflow-probe'), findsOneWidget);
+    // The frame count and loop toggle remain within the picture.
+    expect(find.byKey(const Key('timelinePreviewFrameCount')), findsOneWidget);
+    expect(find.text('1/12'), findsOneWidget);
+    final loop = find.byKey(const Key('timelinePreviewLoopButton'));
+    expect(loop, findsOneWidget);
+    final handle = tester.getCenter(
+      find.byKey(const Key('timelinePreviewResizeHandle')));
+    final currentFinder = find.byKey(const Key('timelineCurrentSeconds'));
+    final totalFinder = find.byKey(const Key('timelineTotalSeconds'));
+    final first = find.byIcon(Icons.skip_previous);
+    final last = find.byIcon(Icons.skip_next);
+    expect(currentFinder, findsOneWidget);
+    expect(totalFinder, findsOneWidget);
+    expect(first, findsOneWidget);
+    expect(last, findsOneWidget);
+
+    void expectPlaybackPlacement() {
+      final currentRect = tester.getRect(currentFinder);
+      final firstRect = tester.getRect(first);
+      final lastRect = tester.getRect(last);
+      final totalRect = tester.getRect(totalFinder);
+      expect(currentRect.right, lessThanOrEqualTo(firstRect.left + 1));
+      expect(totalRect.left, greaterThanOrEqualTo(lastRect.right - 1));
+      expect((currentRect.center.dy - firstRect.center.dy).abs(), lessThan(12));
+      expect((totalRect.center.dy - lastRect.center.dy).abs(), lessThan(12));
+      expect(currentRect.center.dy, greaterThan(handle.dy + 10));
+      expect(totalRect.center.dy, greaterThan(handle.dy + 10));
+      expect(tester.getCenter(loop).dy, lessThan(handle.dy));
+    }
+
+    expectPlaybackPlacement();
+    expect(find.text('0.0s'), findsOneWidget);
+    expect(find.text('1.0s'), findsOneWidget);
+
+    // Moving one frame at 12fps updates time without rebuilding the tracks.
+    await tester.tap(find.byIcon(Icons.fast_forward));
+    await tester.pump();
+    expect(find.text('0.1s'), findsOneWidget);
+    expect(find.text('2/12'), findsOneWidget);
+    await tester.tap(last);
+    await tester.pump();
+    expect(find.text('0.9s'), findsOneWidget);
+    expect(find.text('12/12'), findsOneWidget);
+    await tester.tap(first);
+    await tester.pump();
+    expect(find.text('0.0s'), findsOneWidget);
+
+    for (final width in [360.0, 390.0]) {
+      tester.view.physicalSize = Size(width * 3, 1707);
+      await tester.pump(const Duration(milliseconds: 100));
+      expectPlaybackPlacement();
+      expect(tester.takeException(), isNull, reason: 'width $width');
+    }
+
   }, timeout: const Timeout(Duration(seconds: 120)));
 }

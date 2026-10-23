@@ -290,7 +290,7 @@ class _ProjectDetailScreenState extends State<ProjectDetailScreen> {
                           ? l10n.projectDetailFavoriteRegistered
                           : l10n.projectDetailFavoriteUnregistered,
                       iconColor: project.isFavorite
-                          ? ThemeService.activeColorScheme.tertiary
+                          ? Theme.of(context).colorScheme.primary
                           : null,
                       onTap: () =>
                           projectService.toggleFavorite(widget.projectId),
