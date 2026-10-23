@@ -161,7 +161,7 @@ void main() {
     expect(find.byKey(const Key('themePreviewOpen')), findsOneWidget);
     expect(find.byKey(const Key('themeInlinePreview')), findsOneWidget);
     // The miniature is real Flutter content, not a fixed picture.
-    expect(find.text('練習作品'), findsOneWidget);
+    expect(find.text('プロジェクトがありません'), findsOneWidget);
     expect(tester.takeException(), isNull);
 
     Future<void> saveCapture(String name) async {
