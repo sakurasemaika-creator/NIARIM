@@ -862,30 +862,47 @@ class _ThemeSampleScreen extends StatelessWidget {
     _cta(c, t('投稿する', 'Post'), icon: Icons.cloud_upload),
   ]);
 
+
   Widget _theme(BuildContext context, ColorScheme c) {
     final preset = context.read<ThemeService>().current;
     return _list([
-    _heading(t('カラーカスタマイズ', 'Color customization')),
-    ...[
-      (t('アクセント', 'Accent'), c.primary),
-      (t('本文文字色', 'Body text'), c.onSurface),
-      (t('ボタン内の文字色', 'Button text'), c.onPrimary),
-      (t('メニューの文字色', 'Menu text'), preset.menuTextColor),
-      (t('選択中の文字色', 'Selected text'), c.onSecondary),
-      (t('パネル背景', 'Panel background'), preset.panelBgColor),
-      (t('メニュー背景', 'Menu background'), preset.menuBgColor),
-      (t('選択色', 'Selection'), c.secondary),
-      (t('更新マーク', 'Update mark'), preset.updateMarkColor),
-    ].map((e) => _card(Row(children: [
-      CircleAvatar(radius: 16, backgroundColor: e.$2),
-      const SizedBox(width: 14),
-      Expanded(child: Text(e.$1)),
-      const Icon(Icons.chevron_right),
-    ]))),
-    _heading(t('プリセット', 'Presets')),
-    _card(_row(Icons.palette, t('レッド（ライト）', 'Red (Light)'))),
-    _card(_row(Icons.palette, t('ブルー（ダーク）', 'Blue (Dark)'))),
-  ]);
+      Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
+        const ThemePreviewThumbnail(height: 170),
+        const SizedBox(width: 14),
+        Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(t('画面プレビュー', 'Screen preview'),
+              style: const TextStyle(fontWeight: FontWeight.w700)),
+            const SizedBox(height: 8),
+            Text(t('プロジェクト一覧の縮小見本', 'Miniature projects view'),
+              style: TextStyle(fontSize: 11, color: c.onSurfaceVariant)),
+            const SizedBox(height: 7),
+            Text(t('タップで全画面', 'View full screen'),
+              style: TextStyle(fontSize: 11, color: c.primary)),
+          ])),
+      ]),
+      const SizedBox(height: 16),
+      _heading(t('カラーカスタマイズ', 'Color customization')),
+      ...[
+        (t('アクセント', 'Accent'), c.primary),
+        (t('本文文字色', 'Body text'), c.onSurface),
+        (t('ボタン内の文字色', 'Button text'), c.onPrimary),
+        (t('メニューの文字色', 'Menu text'), preset.menuTextColor),
+        (t('選択中の文字色', 'Selected text'), c.onSecondary),
+        (t('パネル背景', 'Panel background'), preset.panelBgColor),
+        (t('メニュー背景', 'Menu background'), preset.menuBgColor),
+        (t('選択色', 'Selection'), c.secondary),
+        (t('更新マーク', 'Update mark'), preset.updateMarkColor),
+      ].map((e) => _card(Row(children: [
+        CircleAvatar(radius: 16, backgroundColor: e.$2),
+        const SizedBox(width: 14),
+        Expanded(child: Text(e.$1, style: const TextStyle(fontSize: 12))),
+        const Icon(Icons.chevron_right, size: 18),
+      ]))),
+      _heading(t('プリセット', 'Presets')),
+      _mockSettingRow(c, Icons.palette_outlined, t('ライト', 'Light')),
+      _mockSettingRow(c, Icons.palette_outlined, t('ダーク', 'Dark')),
+    ]);
   }
 
   Widget _settings(ColorScheme c) => _list([
@@ -1110,58 +1127,167 @@ class _ThemeSampleScreen extends StatelessWidget {
     }
   }
 
+
   Widget _workspace(ColorScheme c) => _list([
-    _heading(t('ツールバー', 'Toolbar')),
-    _card(Row(mainAxisAlignment: MainAxisAlignment.spaceAround,
-      children: const [Icon(Icons.brush), Icon(Icons.colorize),
-        Icon(Icons.layers), Icon(Icons.pan_tool)])),
-    _card(_row(Icons.back_hand_outlined, t('左利きモード', 'Left-handed mode'))),
-    _card(_row(Icons.desktop_windows, t('PCモード', 'PC mode'))),
-    _card(_row(Icons.dashboard, t('パネル配置', 'Panel layout'))),
+    _mockSection(c, t('ツールバー編集', 'Toolbar editor'), [
+      Text(t('表示するツールの並びを設定できます。',
+        'Toolbar order and visibility.'),
+        style: TextStyle(fontSize: 10, color: c.onSurfaceVariant)),
+      const SizedBox(height: 10),
+      Container(
+        decoration: BoxDecoration(color: c.surfaceContainerLow,
+          borderRadius: BorderRadius.circular(10)),
+        padding: const EdgeInsets.all(8),
+        child: Row(mainAxisAlignment: MainAxisAlignment.spaceAround,
+          children: [
+            _mockTool(c, Icons.brush),
+            _mockTool(c, Icons.auto_fix_off),
+            _mockTool(c, Icons.colorize),
+            _mockTool(c, Icons.layers),
+            _mockTool(c, Icons.pan_tool),
+          ])),
+    ]),
+    const SizedBox(height: 7),
+    ...[
+      (Icons.brush, t('ペン', 'Pen')),
+      (Icons.auto_fix_off, t('消しゴム', 'Eraser')),
+      (Icons.format_color_fill, t('バケツ', 'Fill')),
+      (Icons.colorize, t('スポイト', 'Eyedropper')),
+      (Icons.pan_tool, t('手のひら', 'Hand')),
+      (Icons.select_all, t('選択', 'Select')),
+      (Icons.text_fields, t('テキスト', 'Text')),
+      (Icons.layers_outlined, t('レイヤー', 'Layers')),
+    ].map((e) => Container(
+      margin: const EdgeInsets.only(bottom: 4),
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
+      color: c.surfaceContainerLow,
+      child: Row(children: [
+        Icon(Icons.check_box, size: 19, color: c.primary),
+        const SizedBox(width: 8), Icon(e.$1, size: 18),
+        const SizedBox(width: 8), Expanded(child: Text(e.$2,
+          style: const TextStyle(fontSize: 12))),
+        Icon(Icons.drag_handle, size: 19, color: c.primary),
+      ]))),
+    const SizedBox(height: 9),
+    _mockSettingRow(c, Icons.back_hand_outlined,
+      t('左利きモード', 'Left-handed mode')),
+    _mockSettingRow(c, Icons.desktop_windows,
+      t('PCモード', 'PC mode')),
+    _mockSettingRow(c, Icons.dashboard_outlined,
+      t('パネル配置', 'Panel layout')),
+    const SizedBox(height: 5),
     _cta(c, t('適用', 'Apply')),
   ]);
 
   Widget _premium(ColorScheme c) => _list([
-    Center(child: Icon(Icons.auto_awesome, size: 70, color: c.primary)),
-    _heading(t('プレミアムでもっと自由に', 'Create more with Premium')),
-    _card(_row(Icons.check, t('ウォーターマークなし', 'No watermark'))),
-    _card(_row(Icons.check, t('長尺アニメーション', 'Longer animations'))),
-    _card(_row(Icons.check, t('多彩な補正', 'More effects'))),
+    Center(child: Icon(Icons.auto_awesome, size: 48, color: c.primary)),
+    const SizedBox(height: 8),
+    _heading(t('プレミアムでもっと自由に', 'Create with Premium')),
+    ...[
+      t('ウォーターマークなし', 'No watermark'),
+      t('長尺アニメーション', 'Longer animations'),
+      t('多彩な補正', 'More effects'),
+    ].map((label) => _mockSettingRow(c, Icons.check, label)),
     const SizedBox(height: 12),
     _cta(c, t('プランを見る', 'View plans')),
   ]);
 
   Widget _storage(ColorScheme c) => _list([
-    _heading(t('ストレージ使用量', 'Storage use')),
-    _card(Column(children: [
-      const Text('380 MB / 2 GB'),
-      const SizedBox(height: 10),
-      LinearProgressIndicator(value: .19, color: c.primary),
-    ])),
-    _row(Icons.folder, t('プロジェクト', 'Projects'), subtitle: '240 MB'),
-    _row(Icons.delete_outline, t('ゴミ箱', 'Trash'), subtitle: '36 MB'),
+    _heading(t('NIARIMの使用量', 'NIARIM storage')),
+    const SizedBox(height: 8),
+    Row(children: [
+      SizedBox(width: 120, height: 120,
+        child: Stack(alignment: Alignment.center, children: [
+          SizedBox(width: 120, height: 120,
+            child: CircularProgressIndicator(value: .32, strokeWidth: 23,
+              color: c.primary, backgroundColor: c.surfaceContainerHigh)),
+          Text('380 MB', style: TextStyle(fontSize: 12,
+            color: c.onSurface)),
+        ])),
+      const SizedBox(width: 16),
+      Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(t('プロジェクトデータ', 'Project data'),
+            style: const TextStyle(fontSize: 12)),
+          const Text('320 MB', style: TextStyle(fontSize: 11)),
+          const SizedBox(height: 8),
+          Text(t('キャッシュ', 'Cache'),
+            style: const TextStyle(fontSize: 12)),
+          const Text('60 MB', style: TextStyle(fontSize: 11)),
+        ])),
+    ]),
+    const SizedBox(height: 24),
+    _heading(t('容量を減らす', 'Free up space')),
+    ...[
+      (Icons.cleaning_services_outlined, t('キャッシュを削除', 'Clear cache')),
+      (Icons.delete_sweep_outlined, t('変更履歴を一時削除', 'Clear history cache')),
+      (Icons.folder_outlined, t('プロジェクトを整理する', 'Organize projects')),
+      (Icons.warning_amber_outlined, t('全データを削除', 'Delete all data')),
+    ].map((e) => _mockSettingRow(c, e.$1, e.$2)),
   ]);
 
-  Widget _watermark(ColorScheme c) => _list([
-    _heading(t('ウォーターマーク', 'Watermark')),
-    _art(c, height: 180),
-    _card(_row(Icons.text_fields, t('テキストを追加', 'Add text'))),
-    _card(_row(Icons.add_photo_alternate, t('画像を追加', 'Add image'))),
+  Widget _watermark(ColorScheme c) => Column(children: [
+    const SizedBox(height: 12),
+    Expanded(child: Center(child: Column(mainAxisSize: MainAxisSize.min,
+      children: [
+        Icon(Icons.wallpaper_outlined, size: 48, color: c.primary),
+        const SizedBox(height: 12),
+        Text(t('登録されたウォーターマークがありません',
+          'No saved watermarks'),
+          style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold)),
+        const SizedBox(height: 6),
+        Text(t('右下の＋から作成できます', 'Create one with +'),
+          style: TextStyle(fontSize: 10, color: c.onSurfaceVariant)),
+      ]))),
+    Padding(padding: const EdgeInsets.all(15),
+      child: Align(alignment: Alignment.bottomRight,
+        child: CircleAvatar(radius: 23, backgroundColor: c.primary,
+          child: Icon(Icons.add, color: c.onPrimary)))),
   ]);
 
   Widget _transfer(ColorScheme c) => _list([
     _heading(t('引き継ぎデータ', 'Transfer data')),
-    ...[t('設定', 'Settings'), t('ブラシ', 'Brushes'), t('素材', 'Materials')]
-      .map((item) => _card(_row(Icons.check_box_outline_blank, item))),
+    Text(t('新しい端末へ引き継ぐ項目を選んでください。',
+      'Choose data to transfer.'),
+      style: TextStyle(fontSize: 11, color: c.onSurfaceVariant)),
+    const SizedBox(height: 12),
+    ...[
+      t('設定', 'Settings'), t('素材', 'Materials'),
+      t('ブラシ', 'Brushes'), t('自動塗り設定', 'Autofill'),
+      t('テーマ', 'Themes'), t('パネル・ツールバーの設定', 'Tool layout'),
+    ].map((e) => Container(
+      margin: const EdgeInsets.symmetric(vertical: 2),
+      color: c.surfaceContainerLow,
+      child: ListTile(dense: true,
+        title: Text(e, style: const TextStyle(fontSize: 12)),
+        trailing: Icon(Icons.check_box, color: c.primary, size: 20)))),
     const SizedBox(height: 14),
-    _cta(c, t('書き出し', 'Export'), icon: Icons.file_upload),
+    _heading(t('保存中のプロジェクト（任意）', 'Saved projects')),
+    _mockSettingRow(c, Icons.check_box_outline_blank,
+      t('練習作品', 'Practice')),
+    const SizedBox(height: 20),
+    _cta(c, t('書き出し', 'Export'), icon: Icons.file_upload_outlined),
   ]);
 
   Widget _widgets(ColorScheme c) => _list([
-    _heading(t('ホーム画面ウィジェット', 'Home screen widgets')),
-    _card(_row(Icons.image, t('表示する作品', 'Artwork'))),
-    _card(_row(Icons.color_lens, t('テーマ色に合わせる', 'Follow theme colors'))),
-    _art(c, height: 160),
+    _heading(t('ホーム画面ウィジェット', 'Home widgets')),
+    Text(t('スマホのホーム画面に作品を表示します。',
+      'Display your artwork on your home screen.'),
+      style: TextStyle(fontSize: 11, color: c.onSurfaceVariant)),
+    const SizedBox(height: 22),
+    _heading(t('最新更新作品ウィジェット', 'Latest artwork')),
+    _mockSettingRow(c, Icons.image_outlined,
+      t('作品を選ぶ', 'Choose artwork')),
+    const SizedBox(height: 17),
+    _heading(t('作品をランダム表示する', 'Random artwork')),
+    _staticChoiceRow(c, [
+      t('アプリのテーマ色に合わせる', 'Use app theme'),
+      t('自動選択', 'Automatic')]),
+    const SizedBox(height: 16),
+    _heading(t('作品画像ウィジェット', 'Artwork widget')),
+    _staticChoiceRow(c, [
+      t('アプリのテーマ色に合わせる', 'Use app theme'),
+      t('自動選択', 'Automatic')]),
   ]);
 
   Widget _notifications(ColorScheme c) => _list([
@@ -1169,12 +1295,39 @@ class _ThemeSampleScreen extends StatelessWidget {
     _card(_row(Icons.notifications_outlined, t('お知らせ', 'Notification'))),
   ]);
 
+
   Widget _save(ColorScheme c) => _list([
-    _heading(t('セーブ管理', 'Save management')),
-    ...List.generate(4, (i) => _card(_row(
-      i == 0 ? Icons.save : Icons.add_box_outlined,
-      i == 0 ? t('クイックセーブ', 'Quick save')
-        : '${t('セーブスロット', 'Save slot')} $i'))),
+    ...List.generate(5, (i) => Container(
+      margin: const EdgeInsets.only(bottom: 12),
+      padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 11),
+      decoration: BoxDecoration(
+        color: c.surfaceContainerLow,
+        border: Border.all(color: c.outlineVariant),
+        borderRadius: BorderRadius.circular(14)),
+      child: Row(children: [
+        Container(width: 57, height: 57,
+          alignment: Alignment.center,
+          decoration: BoxDecoration(
+            color: c.primaryContainer,
+            borderRadius: BorderRadius.circular(9)),
+          child: Icon(Icons.add, color: c.onPrimaryContainer)),
+        const SizedBox(width: 12),
+        Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(i == 0
+                ? t('クイックセーブ', 'Quick save')
+                : '${t('スロット', 'Slot')} $i',
+              style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w700)),
+            const SizedBox(height: 3),
+            Text(t('保存データなし', 'Empty slot'),
+              style: TextStyle(fontSize: 10, color: c.onSurfaceVariant)),
+          ])),
+        Icon(Icons.save_outlined, size: 20, color: c.primary),
+        const SizedBox(width: 10),
+        Icon(Icons.copy_outlined, size: 20, color: c.onSurfaceVariant),
+        const SizedBox(width: 10),
+        Icon(Icons.delete_outline, size: 20, color: c.onSurfaceVariant),
+      ])),
   ]);
 
   Widget _catalog(ColorScheme c) {
