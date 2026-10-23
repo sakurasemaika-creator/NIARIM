@@ -84,7 +84,9 @@ class _ThemePreviewGalleryScreenState extends State<ThemePreviewGalleryScreen> {
             itemCount: themePreviewEntries.length,
             onPageChanged: (i) => setState(() => _index = i),
             itemBuilder: (_, i) => RepaintBoundary(
-              child: _ThemeSampleScreen(entry: themePreviewEntries[i], ja: ja),
+              child: IgnorePointer(
+                child: _ThemeSampleScreen(entry: themePreviewEntries[i], ja: ja),
+              ),
             ),
           ),
         ),
@@ -266,6 +268,7 @@ class _ThemeSampleScreen extends StatelessWidget {
   Widget _heading(String value) => Padding(padding: const EdgeInsets.symmetric(vertical: 12),
     child: Text(value, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)));
   Widget _list(List<Widget> children) => ListView(
+    physics: const NeverScrollableScrollPhysics(),
     padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10), children: children);
   Widget _cta(ColorScheme c, String label, {IconData icon = Icons.check}) =>
     Container(height: 48, alignment: Alignment.center, decoration: BoxDecoration(
@@ -286,12 +289,48 @@ class _ThemeSampleScreen extends StatelessWidget {
     if (entry.layout == 'canvas') return _canvas(c);
     if (entry.layout == 'timeline') return _timeline(c);
     if (entry.layout == 'complete') return _complete(c);
+    const helpScreens = <String>{
+      'new', 'theme', 'settings', 'performance', 'gestures',
+      'shortcuts', 'pen', 'bucket', 'workspace', 'transfer',
+      'widgets', 'watermark', 'fonts', 'storage', 'premium',
+      'help', 'tips', 'autofill', 'sizes', 'license', 'privacy',
+    };
+    const menuScreens = <String>{
+      'projects', 'shared', 'trash', 'detail', 'community',
+      'work', 'post', 'author', 'mine', 'notifications',
+    };
+    final appTitle = switch (entry.id) {
+      'detail' => t('練習作品', 'Practice'),
+      'projects' => t('プロジェクト一覧', 'Projects'),
+      'save' => t('セーブスロット', 'Save slots'),
+      'new' => t('新規プロジェクト', 'New project'),
+      'export' => t('書き出し', 'Export'),
+      'theme' => t('テーマ・外観', 'Theme & appearance'),
+      'gestures' => t('ジェスチャー設定', 'Gesture settings'),
+      'pen' => t('ペン入力設定', 'Pen input settings'),
+      'shortcuts' => t('ショートカット設定', 'Shortcut settings'),
+      'bucket' => t('バケツ塗り設定', 'Bucket fill settings'),
+      'performance' => t('パフォーマンス設定', 'Performance settings'),
+      _ => entry.label(ja),
+    };
     return Scaffold(
       appBar: AppBar(
         automaticallyImplyLeading: false,
-        leading: const Icon(Icons.arrow_back),
-        title: Text(entry.label(ja), overflow: TextOverflow.ellipsis),
-        actions: const [Padding(padding: EdgeInsets.all(12), child: Icon(Icons.more_vert))]),
+        leading: entry.id == 'projects' || entry.id == 'settings' ? null
+            : const Icon(Icons.arrow_back),
+        title: Text(appTitle, maxLines: 1, overflow: TextOverflow.ellipsis),
+        actions: [
+          if (helpScreens.contains(entry.id))
+            const Padding(padding: EdgeInsets.all(12),
+              child: Icon(Icons.help_outline, size: 21)),
+          if (entry.id == 'settings')
+            const Padding(padding: EdgeInsets.all(12),
+              child: Icon(Icons.search, size: 21)),
+          if (menuScreens.contains(entry.id))
+            const Padding(padding: EdgeInsets.all(12),
+              child: Icon(Icons.more_vert, size: 21)),
+        ],
+      ),
       body: _body(context, c),
     );
   }
@@ -326,6 +365,77 @@ class _ThemeSampleScreen extends StatelessWidget {
     }
   }
 
+
+
+  // Read-only, zero-data UI atoms shared by theme-preview layouts. All visible
+  // colors come from the active theme; sample project artwork is plain white.
+  Widget _mockChip(ColorScheme c, String text, {bool active = false}) =>
+      Container(
+        padding: const EdgeInsets.symmetric(horizontal: 13, vertical: 9),
+        decoration: BoxDecoration(
+          color: active ? c.primary : c.surfaceContainerLow,
+          borderRadius: BorderRadius.circular(22),
+          border: Border.all(color: active ? c.primary : c.outlineVariant),
+        ),
+        child: Text(text, style: TextStyle(
+          fontSize: 12, fontWeight: active ? FontWeight.w700 : FontWeight.normal,
+          color: active ? c.onPrimary : c.onSurface)),
+      );
+
+  Widget _mockSlider(ColorScheme c, {double position = .24, double height = 32}) =>
+      SizedBox(height: height,
+        child: Row(children: [
+          Expanded(child: LayoutBuilder(builder: (_, bounds) =>
+            Stack(alignment: Alignment.centerLeft, children: [
+              Container(height: 2, color: c.outlineVariant),
+              Container(height: 2, width: bounds.maxWidth * position,
+                color: c.primary),
+              Positioned(left: (bounds.maxWidth * position - 7).clamp(0.0, bounds.maxWidth - 14),
+                child: Container(width: 14, height: 14,
+                  decoration: BoxDecoration(shape: BoxShape.circle,
+                    color: c.primary, border: Border.all(color: c.outline))),
+            ]),
+          )),
+        ]));
+
+  Widget _mockTool(ColorScheme c, IconData icon, {bool active = false}) =>
+    Container(
+      constraints: const BoxConstraints(minWidth: 28, minHeight: 32),
+      alignment: Alignment.center,
+      decoration: BoxDecoration(
+        color: active ? c.primaryContainer : Colors.transparent,
+        borderRadius: BorderRadius.circular(6)),
+      child: Icon(icon, size: 18,
+        color: active ? c.onPrimaryContainer : c.onSurface));
+
+  Widget _fakePaper(ColorScheme c, {double? height}) =>
+    Container(height: height, color: Colors.white);
+
+  Widget _mockSection(ColorScheme c, String title, List<Widget> children) =>
+    Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+      Padding(padding: const EdgeInsets.only(top: 12, bottom: 8),
+        child: Text(title, style: const TextStyle(
+          fontSize: 14, fontWeight: FontWeight.w700))),
+      ...children,
+    ]);
+
+  Widget _mockSettingRow(ColorScheme c, IconData icon, String title,
+      {String? subtitle}) =>
+    Container(
+      margin: const EdgeInsets.only(bottom: 8),
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(13),
+        color: c.surfaceContainerLow),
+      child: ListTile(
+        dense: true,
+        leading: Icon(icon, color: c.primary, size: 22),
+        title: Text(title, style: const TextStyle(
+          fontSize: 13, fontWeight: FontWeight.w600)),
+        subtitle: subtitle == null ? null : Text(subtitle,
+          style: TextStyle(color: c.onSurfaceVariant, fontSize: 10)),
+        trailing: Icon(Icons.chevron_right, size: 18, color: c.onSurfaceVariant),
+      ),
+    );
 
   Widget _splash(BuildContext context, ColorScheme c) {
     // Match splash_screen.dart: the user's explicit button foreground is
@@ -404,6 +514,7 @@ class _ThemeSampleScreen extends StatelessWidget {
       const Icon(Icons.grid_view), const SizedBox(width: 15), const Icon(Icons.search),
     ])),
     Expanded(child: GridView.count(
+      physics: const NeverScrollableScrollPhysics(),
       padding: const EdgeInsets.all(10), crossAxisCount: 2, childAspectRatio: .88,
       children: [
         _projectTile(c, t('アニメーション', 'Animation')),
@@ -435,6 +546,7 @@ class _ThemeSampleScreen extends StatelessWidget {
         Text(t('フォロー中', 'Following')),
       ])),
     Expanded(child: ListView.builder(
+      physics: const NeverScrollableScrollPhysics(),
       padding: const EdgeInsets.all(12), itemCount: 4,
       itemBuilder: (_, i) => Card(child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -450,98 +562,166 @@ class _ThemeSampleScreen extends StatelessWidget {
     )),
   ]);
 
+
   Widget _canvas(ColorScheme c) => Scaffold(
+    backgroundColor: c.surface,
     body: SafeArea(child: Column(children: [
+      SizedBox(height: 43, child: Row(children: [
+        const SizedBox(width: 4),
+        _mockTool(c, Icons.undo),
+        _mockTool(c, Icons.redo),
+        const Spacer(),
+        _mockTool(c, Icons.settings_outlined),
+        _mockTool(c, Icons.home_outlined),
+        _mockTool(c, Icons.aspect_ratio_outlined),
+        const SizedBox(width: 6),
+      ])),
+      // Production canvas has a large centered paper over the workspace
+      // surface. No raster engine or project frames are initialized here.
+      Expanded(child: LayoutBuilder(builder: (_, bounds) {
+        final width = bounds.maxWidth;
+        final side = (width - 10).clamp(1.0, bounds.maxHeight);
+        return Container(
+          color: c.surfaceContainerHigh,
+          child: Center(child: SizedBox(width: side, height: side,
+            child: _fakePaper(c))),
+        );
+      })),
+      SizedBox(height: 25, child: Row(children: [
+        const SizedBox(width: 8),
+        Text('●  0%', style: TextStyle(fontSize: 10, color: c.onSurfaceVariant)),
+        const Spacer(),
+        Text('2D', style: TextStyle(fontSize: 10, color: c.onSurfaceVariant)),
+        const Icon(Icons.keyboard_arrow_down, size: 16),
+        const SizedBox(width: 8),
+      ])),
+      SizedBox(height: 40, child: Row(children: [
+        const SizedBox(width: 8),
+        _mockTool(c, Icons.brush, active: true),
+        const SizedBox(width: 5),
+        Expanded(child: _mockSlider(c, position: .45)),
+        Text('12', style: TextStyle(fontSize: 11, color: c.onSurfaceVariant)),
+        const SizedBox(width: 10),
+      ])),
+      SizedBox(height: 40, child: Row(children: [
+        const SizedBox(width: 8),
+        _mockTool(c, Icons.opacity),
+        const SizedBox(width: 5),
+        Expanded(child: _mockSlider(c, position: .85)),
+        Text('85%', style: TextStyle(fontSize: 11, color: c.onSurfaceVariant)),
+        const SizedBox(width: 10),
+      ])),
       SizedBox(height: 48, child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceAround,
-        children: const [
-          Icon(Icons.arrow_back), Icon(Icons.undo), Icon(Icons.redo),
-          Icon(Icons.layers_outlined), Icon(Icons.more_vert),
+        children: [
+          _mockTool(c, Icons.brush, active: true),
+          _mockTool(c, Icons.auto_fix_off),
+          _mockTool(c, Icons.format_color_fill),
+          _mockTool(c, Icons.colorize),
+          _mockTool(c, Icons.select_all),
+          _mockTool(c, Icons.pan_tool_outlined),
+          _mockTool(c, Icons.layers_outlined),
+          _mockTool(c, Icons.palette_outlined),
         ])),
-      Expanded(child: LayoutBuilder(builder: (_, bounds) {
-        final side = bounds.maxWidth < bounds.maxHeight
-            ? bounds.maxWidth - 24 : bounds.maxHeight - 24;
-        return Center(child: SizedBox(
-          width: side > 0 ? side : 1,
-          height: side > 0 ? side : 1,
-          child: Container(
-            // Paper is independent canvas content, never a UI theme color.
+      Container(height: 51, padding: const EdgeInsets.symmetric(horizontal: 9),
+        decoration: BoxDecoration(border: Border(top: BorderSide(
+          color: c.outlineVariant))),
+        child: Row(children: [
+          ...List.generate(5, (i) => Container(
+            width: 45, margin: const EdgeInsets.fromLTRB(1, 5, 3, 5),
             color: Colors.white,
-            child: const Center(child: Icon(Icons.edit_outlined,
-              size: 70, color: Color(0xFFDBAAAA))),
+            child: DecoratedBox(decoration: BoxDecoration(
+              border: Border.all(color: i == 0 ? c.primary : c.outlineVariant,
+                width: i == 0 ? 2 : 1)))),
           ),
-        ));
-      })),
-      SizedBox(height: 38, child: Row(children: [
-        const Icon(Icons.brush), Expanded(child: Slider(value: .4, onChanged: null)),
-        const Text('12'), const SizedBox(width: 12),
-      ])),
-      SizedBox(height: 38, child: Row(children: [
-        const Icon(Icons.opacity), Expanded(child: Slider(value: .85, onChanged: null)),
-        const Text('85%'), const SizedBox(width: 12),
-      ])),
-      SizedBox(height: 56, child: Row(mainAxisAlignment: MainAxisAlignment.spaceAround,
-        children: const [
-          Icon(Icons.brush), Icon(Icons.auto_fix_off),
-          Icon(Icons.format_color_fill), Icon(Icons.colorize),
-          Icon(Icons.select_all), Icon(Icons.pan_tool_outlined),
+          const Spacer(),
+          _mockTool(c, Icons.play_arrow_outlined),
         ])),
-      SizedBox(height: 70, child: ListView(
-        scrollDirection: Axis.horizontal,
-        children: List.generate(8, (i) => Container(
-          width: 58, margin: const EdgeInsets.all(4),
-          alignment: Alignment.center,
-          decoration: BoxDecoration(
-            color: i == 0 ? c.secondary : c.surfaceContainerHigh,
-            border: Border.all(color: c.outlineVariant),
-            borderRadius: BorderRadius.circular(5)),
-          child: Text((i + 1).toString(), style: TextStyle(
-            color: i == 0 ? c.onSecondary : c.onSurface)),
-        )),
-      )),
     ])),
   );
 
   Widget _timeline(ColorScheme c) => Scaffold(
+    backgroundColor: c.surface,
     body: SafeArea(child: Column(children: [
-      SizedBox(height: 48, child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceAround,
-        children: const [
-          Icon(Icons.arrow_back), Icon(Icons.undo), Icon(Icons.redo),
-          Icon(Icons.file_download_outlined), Icon(Icons.more_vert),
-        ])),
-      Expanded(flex: 3, child: Center(child: AspectRatio(
-        aspectRatio: 16/9, child: _art(c, height: 160)))),
-      Slider(value: .25, onChanged: null),
-      Row(mainAxisAlignment: MainAxisAlignment.spaceAround,
-        children: const [Icon(Icons.skip_previous), Icon(Icons.play_arrow),
-          Text('00:02 / 00:12'), Icon(Icons.skip_next)]),
-      SizedBox(height: 48, child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceAround,
-        children: const [Icon(Icons.movie), Icon(Icons.image),
-          Icon(Icons.text_fields), Icon(Icons.audiotrack),
-          Icon(Icons.camera_alt_outlined)])),
-      Expanded(flex: 3, child: ListView(children: [
-        _timelineTrack(c, t('フレーム', 'Frames')),
-        _timelineTrack(c, t('画像', 'Images')),
-        _timelineTrack(c, t('音声', 'Audio')),
-        _timelineTrack(c, t('テキスト', 'Text')),
+      SizedBox(height: 44, child: Row(children: [
+        _mockTool(c, Icons.arrow_back),
+        Expanded(child: Text(t('練習作品', 'Practice'), maxLines: 1,
+          overflow: TextOverflow.ellipsis, style: const TextStyle(fontSize: 12,
+          fontWeight: FontWeight.w600))),
+        _mockTool(c, Icons.home_outlined),
+        _mockTool(c, Icons.undo),
+        _mockTool(c, Icons.redo),
+        _mockTool(c, Icons.more_vert),
+        _mockTool(c, Icons.help_outline),
       ])),
+      Expanded(flex: 7, child: Column(children: [
+        Expanded(child: Center(
+          child: AspectRatio(aspectRatio: 16 / 9,
+            child: _fakePaper(c)))),
+        const SizedBox(height: 8),
+      ])),
+      Padding(padding: const EdgeInsets.symmetric(horizontal: 15),
+        child: _mockSlider(c, position: .05, height: 26)),
+      SizedBox(height: 46, child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+        children: [
+          _mockTool(c, Icons.skip_previous),
+          _mockTool(c, Icons.fast_rewind),
+          _mockTool(c, Icons.play_arrow),
+          _mockTool(c, Icons.fast_forward),
+          _mockTool(c, Icons.skip_next),
+          _mockTool(c, Icons.repeat),
+        ])),
+      Container(height: 2, color: c.outlineVariant),
+      SizedBox(height: 40, child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceAround,
+        children: [
+          _mockTool(c, Icons.access_time_outlined),
+          _mockTool(c, Icons.movie_outlined),
+          _mockTool(c, Icons.image_outlined),
+          _mockTool(c, Icons.music_note_outlined),
+          _mockTool(c, Icons.text_fields),
+          _mockTool(c, Icons.layers_outlined),
+          _mockTool(c, Icons.file_copy_outlined),
+        ])),
+      Container(height: 33, color: c.surfaceContainerHigh,
+        child: Row(children: [
+          Container(width: 98, alignment: Alignment.center,
+            color: c.primary, child: Text('Scene1',
+              style: TextStyle(fontSize: 12, color: c.onPrimary))),
+          Expanded(child: Row(mainAxisAlignment: MainAxisAlignment.spaceAround,
+            children: List.generate(6, (i) => Text('${i + 1}',
+              style: const TextStyle(fontSize: 10))))),
+        ])),
+      Expanded(flex: 5, child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          _timelineTrack(c, t('描画フレーム', 'Draw frames')),
+          _timelineTrack(c, t('画像', 'Images')),
+          _timelineTrack(c, t('動画', 'Video')),
+          _timelineTrack(c, t('テキスト', 'Text')),
+        ])),
     ])),
   );
 
+
   Widget _timelineTrack(ColorScheme c, String label) => SizedBox(
-    height: 46, child: Row(children: [
-      SizedBox(width: 80, child: Padding(
-        padding: const EdgeInsets.all(5),
-        child: Text(label, style: const TextStyle(fontSize: 11)))),
-      ...List.generate(5, (i) => Expanded(child: Container(
-        margin: const EdgeInsets.all(2),
-        color: i == 0 ? c.secondary : c.surfaceContainerHigh,
-        alignment: Alignment.center,
-        child: Text((i + 1).toString(), style: TextStyle(
-          fontSize: 10, color: i == 0 ? c.onSecondary : c.onSurface)),
-      ))),
+    height: 41, child: Row(children: [
+      Container(width: 98, padding: const EdgeInsets.symmetric(horizontal: 6),
+        alignment: Alignment.centerLeft, color: c.surfaceContainerLow,
+        child: Text(label, style: const TextStyle(fontSize: 11),
+          overflow: TextOverflow.ellipsis)),
+      Expanded(child: Row(
+        children: List.generate(5, (i) => Expanded(
+          child: Container(
+            margin: const EdgeInsets.all(1),
+            alignment: Alignment.center,
+            decoration: BoxDecoration(
+              color: i == 0 ? c.primary : c.surfaceContainerHigh,
+              border: Border.all(color: c.outlineVariant)),
+            child: Text('${i + 1}', style: TextStyle(
+              fontSize: 10, color: i == 0 ? c.onPrimary : c.onSurfaceVariant)),
+          )))),
     ]),
   );
 
@@ -564,27 +744,96 @@ class _ThemeSampleScreen extends StatelessWidget {
   ));
 
 
+
   Widget _form(ColorScheme c) => _list([
-    _heading(t('プロジェクト名', 'Project name')),
-    _card(Text(t('新しい作品', 'New project'))),
-    _heading(t('キャンバスサイズ', 'Canvas size')),
-    _card(const Text('1920 × 1080   ·   16:9')),
-    _card(_row(Icons.color_lens_outlined, t('背景色', 'Background'))),
-    _card(_row(Icons.speed, t('フレームレート', 'Frame rate'), subtitle: '24 fps')),
+    Container(
+      decoration: BoxDecoration(border: Border.all(color: c.outline),
+        borderRadius: BorderRadius.circular(4)),
+      padding: const EdgeInsets.fromLTRB(12, 7, 12, 9),
+      child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+        Text(t('プロジェクト名', 'Project name'),
+          style: TextStyle(fontSize: 11, color: c.onSurfaceVariant)),
+        const SizedBox(height: 3),
+        Text(t('新規プロジェクト', 'New project'),
+          style: const TextStyle(fontSize: 13)),
+      ]),
+    ),
+    const SizedBox(height: 22),
+    const Text('FPS', style: TextStyle(fontWeight: FontWeight.bold)),
+    const SizedBox(height: 8),
+    Wrap(spacing: 8, children: [
+      _mockChip(c, '8'), _mockChip(c, '12', active: true),
+      _mockChip(c, '24'),
+    ]),
+    const SizedBox(height: 22),
+    Row(children: [
+      Expanded(child: Text(t('サイズ', 'Canvas size'),
+        style: const TextStyle(fontWeight: FontWeight.bold))),
+      Icon(Icons.tune, size: 18, color: c.primary),
+      const SizedBox(width: 6),
+      Text(t('サイズ設定', 'Size settings'),
+        style: TextStyle(fontSize: 12, color: c.primary)),
+    ]),
+    const SizedBox(height: 8),
+    Wrap(spacing: 8, runSpacing: 9, children: [
+      _mockChip(c, 'HD (16:9) 1280×720'),
+      _mockChip(c, 'Full HD (16:9) 1920×1080', active: true),
+      _mockChip(c, 'HD (9:16) 720×1280'),
+      _mockChip(c, 'カスタム'),
+      _mockChip(c, 'SNS (1:1) 1080×1080'),
+    ]),
+    const SizedBox(height: 16),
+    Container(height: 64, margin: const EdgeInsets.symmetric(horizontal: 65),
+      alignment: Alignment.center, decoration: BoxDecoration(
+        color: c.surfaceContainerHigh, border: Border.all(color: c.outlineVariant)),
+      child: const Text('1920 × 1080', style: TextStyle(fontSize: 10))),
     const SizedBox(height: 18),
+    _mockSettingRow(c, Icons.palette_outlined, t('背景色', 'Background')),
+    _mockSettingRow(c, Icons.auto_awesome, t('自動塗り', 'Auto fill')),
+    const SizedBox(height: 12),
     _cta(c, t('作成', 'Create'), icon: Icons.add),
   ]);
 
   Widget _detail(ColorScheme c) => _list([
-    _art(c, height: 200),
-    _card(Row(mainAxisAlignment: MainAxisAlignment.spaceAround, children: const [
-      Icon(Icons.skip_previous), Icon(Icons.play_arrow), Icon(Icons.skip_next),
-    ])),
-    _cta(c, t('編集開始', 'Start editing'), icon: Icons.brush),
+    AspectRatio(aspectRatio: 16 / 9, child: _fakePaper(c)),
+    const SizedBox(height: 10),
+    _mockSlider(c, position: .07, height: 28),
+    Container(
+      height: 54,
+      decoration: BoxDecoration(color: c.surfaceContainerHighest,
+        borderRadius: BorderRadius.circular(28)),
+      child: Row(mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+        children: [
+          _mockTool(c, Icons.skip_previous),
+          _mockTool(c, Icons.fast_rewind),
+          Container(width: 36, height: 36,
+            decoration: BoxDecoration(color: c.primary, shape: BoxShape.circle),
+            child: Icon(Icons.play_arrow, color: c.onPrimary)),
+          _mockTool(c, Icons.fast_forward),
+          _mockTool(c, Icons.skip_next),
+        ])),
+    const SizedBox(height: 16),
+    _cta(c, t('編集開始', 'Start editing'), icon: Icons.edit),
+    const SizedBox(height: 16),
+    Row(mainAxisAlignment: MainAxisAlignment.spaceAround, children: [
+      _mockTool(c, Icons.folder_outlined),
+      _mockTool(c, Icons.sell_outlined),
+      _mockTool(c, Icons.star_border),
+      _mockTool(c, Icons.ios_share),
+    ]),
+    Row(mainAxisAlignment: MainAxisAlignment.spaceAround, children: [
+      Text(t('フォルダ', 'Folder'), style: const TextStyle(fontSize: 11)),
+      Text(t('タグ', 'Tags'), style: const TextStyle(fontSize: 11)),
+      Text(t('お気に入り', 'Favorite'), style: const TextStyle(fontSize: 11)),
+      Text(t('共有', 'Share'), style: const TextStyle(fontSize: 11)),
+    ]),
+    const SizedBox(height: 16),
     _heading(t('プロジェクト情報', 'Project information')),
-    _row(Icons.aspect_ratio, t('描画領域', 'Canvas'), subtitle: '1920 × 1080'),
-    _row(Icons.movie_filter, t('総フレーム数', 'Frames'), subtitle: '48'),
-    _row(Icons.schedule, t('制作時間', 'Work time'), subtitle: '1h 20m'),
+    _card(Column(children: [
+      _row(Icons.speed, 'FPS', subtitle: '12'),
+      _row(Icons.aspect_ratio, t('描画領域', 'Canvas'), subtitle: '320×180'),
+      _row(Icons.movie_filter, t('総フレーム数', 'Frames'), subtitle: '12'),
+    ])),
   ]);
 
   Widget _export(ColorScheme c) => _list([
