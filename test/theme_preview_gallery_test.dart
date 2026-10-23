@@ -294,13 +294,13 @@ void main() {
     expect(detailLoop.right, lessThan(detailTotal.left));
     expect(detailCurrent.top, greaterThan(detailImage.bottom));
     expect(detailCurrent.bottom, lessThanOrEqualTo(detailSeek.top));
-    // The first and last timestamps stay anchored at the content edges.
-    // The two middle controls use the centers of equal-width quarter cells.
-    final detailWidth = tester.getSize(
-      find.byKey(const Key('themePreviewDetailSeekBar'))).width;
-    final contentLeft = detailCurrent.left;
-    expect(detailCount.center.dx, closeTo(contentLeft + detailWidth * .375, 7));
-    expect(detailLoop.center.dx, closeTo(contentLeft + detailWidth * .625, 7));
+    // Seconds retain their edge positions; all three intervening gaps
+    // between the four items must be equal (not equal-sized cells).
+    final gap1 = detailCount.left - detailCurrent.right;
+    final gap2 = detailLoop.left - detailCount.right;
+    final gap3 = detailTotal.left - detailLoop.right;
+    expect(gap2, closeTo(gap1, 2));
+    expect(gap3, closeTo(gap1, 2));
 
     await visit('canvas');
     final canvasPaper = tester.getSize(
