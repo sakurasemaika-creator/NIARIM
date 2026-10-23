@@ -194,6 +194,12 @@
   `FloatingActionButton.extended`（アイコン+ラベル）にもそのまま適用され、
   ラベルがクリップ／オーバーフローする。`extended`なFABを新設する際は
   必ず`shape: const StadiumBorder()`を個別指定すること。
+  なお`FloatingActionButton`には`shadowColor`という引数は無い（渡すと
+  コンパイルできずアプリ全体が動かない。影を消すのは`elevation`系を0に
+  するだけで足りる）。ホームは左下・右下にFABが浮くので、タブの一覧の
+  下端へ`_fabClearance`（FAB＋余白＋ナビゲーションバー）を足してある。
+  一覧を新しく足すときも同じ余白を渡すこと（8pxだけだと最後の行の名前と
+  メニューがFABに隠れたままになる）。
 - **`Navigator`/`Overlay`の外側にいるウィジェットへの`tooltip:`指定は
   クラッシュする**：`MaterialApp.router`の`builder`層（画面遷移をまたいで
   常駐する`CommunityFloatingPreview`等）は`Overlay`の外側にいるため、
