@@ -376,7 +376,67 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String get homePasteSnackbar => 'Pasted';
+  String homeMoveToTrashSkipFavorites(int count) {
+    return '$count favorite item(s) will stay (remove them from favorites to move them).';
+  }
+
+  @override
+  String homeMoveToTrashSkipFolders(int count) {
+    return '$count folder(s) will stay (folders can’t be moved to the trash).';
+  }
+
+  @override
+  String get homeMoveToTrashNothing =>
+      'Nothing to move to the trash (favorites and folders are not moved).';
+
+  @override
+  String homeMovedToTrashSnackbar(int count) {
+    return 'Moved $count item(s) to the trash';
+  }
+
+  @override
+  String get homeUndoAction => 'Undo';
+
+  @override
+  String homeCutSnackbar(int count) {
+    return 'Cut $count item(s). Open the destination and tap Paste at the top right.';
+  }
+
+  @override
+  String homeCopiedSnackbar(int count) {
+    return 'Copied $count item(s). Open where you want them and tap Paste at the top right.';
+  }
+
+  @override
+  String homePastedSnackbar(int count) {
+    return 'Pasted $count item(s)';
+  }
+
+  @override
+  String homePasteSkippedIntoSelf(int count) {
+    return '$count folder(s) can’t move into themselves or their subfolders, so they are still cut and ready to paste elsewhere.';
+  }
+
+  @override
+  String homePasteSkippedMissing(int count) {
+    return '$count item(s) couldn’t be pasted because the original is gone (moved to the trash or deleted).';
+  }
+
+  @override
+  String get homePasteFailed =>
+      'Some items couldn’t be pasted. Please try again.';
+
+  @override
+  String get homeCutPendingHint => 'Cut, waiting to be pasted';
+
+  @override
+  String get homeCopyFoldersUnsupported =>
+      'Folders can’t be copied (select only works)';
+
+  @override
+  String projectDuplicateName(String name) {
+    return '$name (copy)';
+  }
 
   @override
   String get commonOk => 'OK';

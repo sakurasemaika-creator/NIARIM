@@ -190,7 +190,10 @@ class _ProjectDetailScreenState extends State<ProjectDetailScreen> {
                 case 'rename':
                   _showRenameDialog(context, project.name);
                 case 'duplicate':
-                  projectService.duplicateProject(widget.projectId);
+                  projectService.duplicateProject(
+                    widget.projectId,
+                    name: l10n.projectDuplicateName(project.name),
+                  );
                 case 'move':
                   _showMoveToFolderDialog(context, projectService);
                 case 'materials':

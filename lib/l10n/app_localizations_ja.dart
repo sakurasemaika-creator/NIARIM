@@ -364,7 +364,65 @@ class AppLocalizationsJa extends AppLocalizations {
   }
 
   @override
-  String get homePasteSnackbar => '貼り付けました';
+  String homeMoveToTrashSkipFavorites(int count) {
+    return 'お気に入りの$count件は移動しません（お気に入りを外すと移動できます）。';
+  }
+
+  @override
+  String homeMoveToTrashSkipFolders(int count) {
+    return 'フォルダ$count件は移動しません（フォルダはゴミ箱へ移せません）。';
+  }
+
+  @override
+  String get homeMoveToTrashNothing =>
+      'ゴミ箱へ移動できる作品がありません（お気に入りの作品とフォルダは移動しません）。';
+
+  @override
+  String homeMovedToTrashSnackbar(int count) {
+    return '$count件をゴミ箱へ移動しました';
+  }
+
+  @override
+  String get homeUndoAction => '元に戻す';
+
+  @override
+  String homeCutSnackbar(int count) {
+    return '$count件を切り取りました。移動先を開いて、右上の貼り付けを押してください。';
+  }
+
+  @override
+  String homeCopiedSnackbar(int count) {
+    return '$count件をコピーしました。貼り付けたい場所を開いて、右上の貼り付けを押してください。';
+  }
+
+  @override
+  String homePastedSnackbar(int count) {
+    return '$count件を貼り付けました';
+  }
+
+  @override
+  String homePasteSkippedIntoSelf(int count) {
+    return 'フォルダ$count件は、自分自身やその中へは移動できないため、切り取ったまま残しました。';
+  }
+
+  @override
+  String homePasteSkippedMissing(int count) {
+    return '$count件は元の作品が見つからないため、貼り付けられませんでした（ゴミ箱へ移動・削除済み）。';
+  }
+
+  @override
+  String get homePasteFailed => '一部を貼り付けられませんでした。もう一度お試しください。';
+
+  @override
+  String get homeCutPendingHint => '切り取り中（貼り付けを待っています）';
+
+  @override
+  String get homeCopyFoldersUnsupported => 'フォルダはコピーできません（作品だけを選んでください）';
+
+  @override
+  String projectDuplicateName(String name) {
+    return '$name (コピー)';
+  }
 
   @override
   String get commonOk => 'OK';

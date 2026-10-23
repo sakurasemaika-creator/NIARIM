@@ -381,7 +381,67 @@ class AppLocalizationsEs extends AppLocalizations {
   }
 
   @override
-  String get homePasteSnackbar => 'Pegado';
+  String homeMoveToTrashSkipFavorites(int count) {
+    return '$count elemento(s) favorito(s) se quedarán (quítalos de favoritos para moverlos).';
+  }
+
+  @override
+  String homeMoveToTrashSkipFolders(int count) {
+    return '$count carpeta(s) se quedarán (las carpetas no se pueden mover a la papelera).';
+  }
+
+  @override
+  String get homeMoveToTrashNothing =>
+      'No hay nada que mover a la papelera (los favoritos y las carpetas no se mueven).';
+
+  @override
+  String homeMovedToTrashSnackbar(int count) {
+    return '$count elemento(s) movido(s) a la papelera';
+  }
+
+  @override
+  String get homeUndoAction => 'Deshacer';
+
+  @override
+  String homeCutSnackbar(int count) {
+    return '$count elemento(s) cortado(s). Abre el destino y toca Pegar arriba a la derecha.';
+  }
+
+  @override
+  String homeCopiedSnackbar(int count) {
+    return '$count elemento(s) copiado(s). Abre el lugar de destino y toca Pegar arriba a la derecha.';
+  }
+
+  @override
+  String homePastedSnackbar(int count) {
+    return '$count elemento(s) pegado(s)';
+  }
+
+  @override
+  String homePasteSkippedIntoSelf(int count) {
+    return '$count carpeta(s) no pueden moverse dentro de sí mismas; siguen cortadas para pegarlas en otro lugar.';
+  }
+
+  @override
+  String homePasteSkippedMissing(int count) {
+    return 'No se pudieron pegar $count elemento(s) porque el original ya no está (en la papelera o eliminado).';
+  }
+
+  @override
+  String get homePasteFailed =>
+      'No se pudieron pegar algunos elementos. Inténtalo de nuevo.';
+
+  @override
+  String get homeCutPendingHint => 'Cortado, pendiente de pegar';
+
+  @override
+  String get homeCopyFoldersUnsupported =>
+      'Las carpetas no se pueden copiar (selecciona solo obras)';
+
+  @override
+  String projectDuplicateName(String name) {
+    return '$name (copia)';
+  }
 
   @override
   String get commonOk => 'Aceptar';

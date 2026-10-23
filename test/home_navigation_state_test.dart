@@ -89,8 +89,8 @@ void main() {
   String location() =>
       appRouter.routerDelegate.currentConfiguration.last.matchedLocation;
 
-  // 390px幅だと選択中の操作バーがはみ出す（A005で扱う）。選択を使う
-  // テストは操作バーが収まる幅で確かめる。
+  // 選択を使うテストは広い画面で確かめる（スマホ幅での操作バーの収まりは
+  // project_selection_clipboard_testが見張る）。
   const selectionSize = Size(800, 900);
 
   Future<void> settle(WidgetTester tester) async {

@@ -362,7 +362,64 @@ class AppLocalizationsZh extends AppLocalizations {
   }
 
   @override
-  String get homePasteSnackbar => '已粘贴';
+  String homeMoveToTrashSkipFavorites(int count) {
+    return '$count个已收藏的项目不会移动（取消收藏后即可移动）。';
+  }
+
+  @override
+  String homeMoveToTrashSkipFolders(int count) {
+    return '$count个文件夹不会移动（文件夹无法移至回收站）。';
+  }
+
+  @override
+  String get homeMoveToTrashNothing => '没有可移至回收站的作品（收藏的作品和文件夹不会移动）。';
+
+  @override
+  String homeMovedToTrashSnackbar(int count) {
+    return '已将$count项移至回收站';
+  }
+
+  @override
+  String get homeUndoAction => '撤销';
+
+  @override
+  String homeCutSnackbar(int count) {
+    return '已剪切$count项。打开目标位置后，点按右上角的粘贴。';
+  }
+
+  @override
+  String homeCopiedSnackbar(int count) {
+    return '已复制$count项。打开要粘贴的位置后，点按右上角的粘贴。';
+  }
+
+  @override
+  String homePastedSnackbar(int count) {
+    return '已粘贴$count项';
+  }
+
+  @override
+  String homePasteSkippedIntoSelf(int count) {
+    return '$count个文件夹无法移入自身或其子文件夹，已保留为剪切状态。';
+  }
+
+  @override
+  String homePasteSkippedMissing(int count) {
+    return '有$count项因原作品已不存在（已移至回收站或已删除）而无法粘贴。';
+  }
+
+  @override
+  String get homePasteFailed => '部分项目未能粘贴，请重试。';
+
+  @override
+  String get homeCutPendingHint => '已剪切（等待粘贴）';
+
+  @override
+  String get homeCopyFoldersUnsupported => '文件夹无法复制（请只选择作品）';
+
+  @override
+  String projectDuplicateName(String name) {
+    return '$name（副本）';
+  }
 
   @override
   String get commonOk => '确定';
@@ -7520,7 +7577,64 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   }
 
   @override
-  String get homePasteSnackbar => '已貼上';
+  String homeMoveToTrashSkipFavorites(int count) {
+    return '$count項我的最愛不會移動（取消我的最愛後即可移動）。';
+  }
+
+  @override
+  String homeMoveToTrashSkipFolders(int count) {
+    return '$count個資料夾不會移動（資料夾無法移至垃圾桶）。';
+  }
+
+  @override
+  String get homeMoveToTrashNothing => '沒有可移至垃圾桶的作品（我的最愛與資料夾不會移動）。';
+
+  @override
+  String homeMovedToTrashSnackbar(int count) {
+    return '已將$count項移至垃圾桶';
+  }
+
+  @override
+  String get homeUndoAction => '復原';
+
+  @override
+  String homeCutSnackbar(int count) {
+    return '已剪下$count項。開啟目標位置後，點按右上角的貼上。';
+  }
+
+  @override
+  String homeCopiedSnackbar(int count) {
+    return '已複製$count項。開啟要貼上的位置後，點按右上角的貼上。';
+  }
+
+  @override
+  String homePastedSnackbar(int count) {
+    return '已貼上$count項';
+  }
+
+  @override
+  String homePasteSkippedIntoSelf(int count) {
+    return '$count個資料夾無法移入自身或其子資料夾，已保留為剪下狀態。';
+  }
+
+  @override
+  String homePasteSkippedMissing(int count) {
+    return '有$count項因原作品已不存在（已移至垃圾桶或已刪除）而無法貼上。';
+  }
+
+  @override
+  String get homePasteFailed => '部分項目未能貼上，請再試一次。';
+
+  @override
+  String get homeCutPendingHint => '已剪下（等待貼上）';
+
+  @override
+  String get homeCopyFoldersUnsupported => '資料夾無法複製（請只選擇作品）';
+
+  @override
+  String projectDuplicateName(String name) {
+    return '$name（副本）';
+  }
 
   @override
   String get commonOk => '確定';

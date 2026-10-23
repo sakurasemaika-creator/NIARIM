@@ -23,7 +23,11 @@ import '../../services/font_service.dart';
 import '../../services/performance_service.dart';
 import '../../services/project_service.dart';
 import '../../services/settings_service.dart';
+import '../../utils/app_error_reporter.dart';
 import '../../utils/name_collation.dart';
+import '../../widgets/leading_trailing_bar.dart';
+import '../../widgets/moved_to_trash_snack_bar.dart';
+import '../../widgets/name_entry_dialog.dart';
 import '../../services/share_intent_service.dart';
 import '../../services/shortcut_service.dart';
 import '../../services/work_folder_service.dart';
@@ -586,71 +590,7 @@ class _HomeScreenState extends State<HomeScreen>
                 drawer: sideNavigation ? null : const HomeDrawer(),
                 body: Column(
                   children: [
-                    if (_isSelectionMode)
-                      Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 16,
-                          vertical: 8,
-                        ),
-                        color: Theme.of(
-                          context,
-                        ).colorScheme.surfaceContainerHighest,
-                        child: Row(
-                          children: [
-                            TextButton(
-                              onPressed: _selectAllInCurrentFolder,
-                              child: Text(l10n.homeSelectionAllSelect),
-                            ),
-                            TextButton(
-                              onPressed: () => setState(() {
-                                _selectedIds.clear();
-                                _isSelectionMode = false;
-                              }),
-                              child: Text(l10n.homeSelectionAllDeselect),
-                            ),
-                            Spacer(),
-                            Text(l10n.homeSelectionCount(_selectedIds.length)),
-                            if (_selectedIds.isNotEmpty) ...[
-                              IconButton(
-                                icon: Icon(
-                                  Icons.star,
-                                  color:
-                                      ThemeService.activeColorScheme.tertiary,
-                                ),
-                                onPressed: () => _bulkSetFavorite(true),
-                                tooltip: l10n.homeSelectionAddFavorite,
-                              ),
-                              IconButton(
-                                icon: const Icon(Icons.star_border),
-                                onPressed: () => _bulkSetFavorite(false),
-                                tooltip: l10n.homeSelectionRemoveFavorite,
-                              ),
-                              IconButton(
-                                icon: const Icon(Icons.content_cut),
-                                onPressed: _cutSelected,
-                                tooltip: l10n.commonCut,
-                              ),
-                              // フォルダの複製は未対応のため、選択にフォルダが1つでも
-                              // 含まれる場合はコピー操作自体を無効化する。
-                              IconButton(
-                                icon: const Icon(Icons.content_copy),
-                                onPressed: _selectionHasOnlyProjects()
-                                    ? _copySelected
-                                    : null,
-                                tooltip: l10n.commonCopy,
-                              ),
-                              IconButton(
-                                icon: Icon(
-                                  Icons.delete,
-                                  color: ThemeService.activeColorScheme.error,
-                                ),
-                                onPressed: _deleteSelected,
-                                tooltip: l10n.homeMoveToTrash,
-                              ),
-                            ],
-                          ],
-                        ),
-                      ),
+                    if (_isSelectionMode) _buildSelectionBar(l10n),
                     Expanded(
                       child: TabBarView(
                         controller: _tabController,
@@ -724,6 +664,12 @@ class _HomeScreenState extends State<HomeScreen>
                                   onOpenFolder: (id) =>
                                       setState(() => _currentFolderId = id),
                                   onClearSearch: _closeSearch,
+                                  pendingCutIds: _clipboardIsCut
+                                      ? {
+                                          ..._clipboardProjectIds,
+                                          ..._clipboardFolderIds,
+                                        }
+                                      : const {},
                                   onShowAll: () => setState(
                                     () => _showFavoritesOnly = false,
                                   ),
@@ -807,6 +753,83 @@ class _HomeScreenState extends State<HomeScreen>
     );
   }
 
+  /// 選択中の操作バー。収まる幅では1行、収まらない幅（スマホ・文字を
+  /// 大きくしたとき）は「全選択・全解除・件数」と操作のボタンを2行に分ける
+  /// （以前は1行に詰め込み、390px幅で86pxはみ出して削除ボタンが押せなかった）。
+  Widget _buildSelectionBar(AppLocalizations l10n) {
+    final onlyProjects = _selectionHasOnlyProjects();
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+      color: Theme.of(context).colorScheme.surfaceContainerHighest,
+      child: LeadingTrailingBar(
+        leading: Wrap(
+          crossAxisAlignment: WrapCrossAlignment.center,
+          children: [
+            TextButton(
+              onPressed: _selectAllInCurrentFolder,
+              child: Text(l10n.homeSelectionAllSelect),
+            ),
+            TextButton(
+              onPressed: _exitSelection,
+              child: Text(l10n.homeSelectionAllDeselect),
+            ),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 8),
+              child: Text(l10n.homeSelectionCount(_selectedIds.length)),
+            ),
+          ],
+        ),
+        trailing: _selectedIds.isEmpty
+            ? null
+            : Wrap(
+                children: [
+                  IconButton(
+                    icon: Icon(
+                      Icons.star,
+                      color: ThemeService.activeColorScheme.tertiary,
+                    ),
+                    onPressed: () => _bulkSetFavorite(true),
+                    tooltip: l10n.homeSelectionAddFavorite,
+                  ),
+                  IconButton(
+                    icon: const Icon(Icons.star_border),
+                    onPressed: () => _bulkSetFavorite(false),
+                    tooltip: l10n.homeSelectionRemoveFavorite,
+                  ),
+                  IconButton(
+                    icon: const Icon(Icons.content_cut),
+                    onPressed: _cutSelected,
+                    tooltip: l10n.commonCut,
+                  ),
+                  // フォルダの複製は未対応のため、選択にフォルダが1つでも
+                  // 含まれる場合はコピーできない（理由をツールチップで示す）。
+                  IconButton(
+                    icon: const Icon(Icons.content_copy),
+                    onPressed: onlyProjects ? _copySelected : null,
+                    tooltip: onlyProjects
+                        ? l10n.commonCopy
+                        : l10n.homeCopyFoldersUnsupported,
+                  ),
+                  IconButton(
+                    icon: Icon(
+                      Icons.delete,
+                      color: ThemeService.activeColorScheme.error,
+                    ),
+                    onPressed: _deleteSelected,
+                    tooltip: l10n.homeMoveToTrash,
+                  ),
+                ],
+              ),
+      ),
+    );
+  }
+
+  void _exitSelection() => setState(() {
+    _selectedIds.clear();
+    _isSelectionMode = false;
+  });
+
   /// 選択中のプロジェクト・フォルダのお気に入り状態をまとめて[favorite]へ
   /// 揃える（toggleFavorite系は反転のみのため、既に望む状態のものは
   /// スキップする）。
@@ -825,18 +848,49 @@ class _HomeScreenState extends State<HomeScreen>
     }
   }
 
+  /// 選択中の作品をゴミ箱へ移す。お気に入りの作品は1件ずつの削除と同じく
+  /// 移さず（以前は一括削除だけお気に入りもゴミ箱へ移していた）、フォルダも
+  /// 移さない。移さないものは確認の文に書く。移した後は「元に戻す」を出す。
   void _deleteSelected() {
-    // ゴミ箱はプロジェクトのみが対象（ゴミ箱＝「削除したプロジェクト」）。
-    // 選択にフォルダが含まれていても、フォルダ自体はここでは削除しない。
     final l10n = AppLocalizations.of(context)!;
     final service = context.read<ProjectService>();
-    final projectIds = service.projects.map((p) => p.id).toSet();
-    final targetIds = _selectedIds.where(projectIds.contains).toList();
+    final selected = service.projects
+        .where((p) => _selectedIds.contains(p.id))
+        .toList();
+    final targetIds = [
+      for (final p in selected)
+        if (!p.isFavorite) p.id,
+    ];
+    final skippedFavorites = selected.length - targetIds.length;
+    final skippedFolders = service.folders
+        .where((f) => _selectedIds.contains(f.id))
+        .length;
+    final messenger = ScaffoldMessenger.of(context);
+    if (targetIds.isEmpty) {
+      messenger
+        ..hideCurrentSnackBar()
+        ..showSnackBar(SnackBar(content: Text(l10n.homeMoveToTrashNothing)));
+      return;
+    }
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
         title: Text(l10n.homeMoveToTrash),
-        content: Text(l10n.homeMoveToTrashConfirm(targetIds.length)),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(l10n.homeMoveToTrashConfirm(targetIds.length)),
+            if (skippedFavorites > 0) ...[
+              const SizedBox(height: 8),
+              Text(l10n.homeMoveToTrashSkipFavorites(skippedFavorites)),
+            ],
+            if (skippedFolders > 0) ...[
+              const SizedBox(height: 8),
+              Text(l10n.homeMoveToTrashSkipFolders(skippedFolders)),
+            ],
+          ],
+        ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx),
@@ -847,14 +901,14 @@ class _HomeScreenState extends State<HomeScreen>
               backgroundColor: ThemeService.activeColorScheme.error,
             ),
             onPressed: () {
+              // 閉じる途中にもう一度押されても二重に動かさない。
+              if (!(ModalRoute.of(ctx)?.isCurrent ?? false)) return;
+              Navigator.pop(ctx);
               for (final id in targetIds) {
                 service.deleteProject(id);
               }
-              setState(() {
-                _selectedIds.clear();
-                _isSelectionMode = false;
-              });
-              Navigator.pop(ctx);
+              _exitSelection();
+              showMovedToTrashSnackBar(messenger, l10n, service, targetIds);
             },
             child: Text(l10n.commonMove),
           ),
@@ -897,6 +951,19 @@ class _HomeScreenState extends State<HomeScreen>
     final result = <ShortcutActivator, VoidCallback>{};
     // 全選択・コピー等はプロジェクトの一覧の操作なので、他のタブでは効かせない。
     if (_currentTabIndex != 0) return result;
+    // Escは引き出しが開いていれば引き出しを閉じ、次に選択を終え、
+    // 選択していなければ切り取りをやめる（検索欄のEscは欄の側で検索を
+    // 閉じる）。
+    if (_isSelectionMode || (_clipboardIsCut && _hasClipboard)) {
+      result[const SingleActivator(LogicalKeyboardKey.escape)] = () {
+        if (_closeLocalHistory()) return;
+        if (_isSelectionMode) {
+          _exitSelection();
+        } else {
+          _cancelCut();
+        }
+      };
+    }
     for (final b in bindings) {
       if (b.isToolAction) continue;
       switch (b.command) {
@@ -904,7 +971,22 @@ class _HomeScreenState extends State<HomeScreen>
           result[b.activator] = _selectAllInCurrentFolder;
         case ShortcutCommand.copy:
           result[b.activator] = () {
-            if (_selectedIds.isNotEmpty) _copySelected();
+            if (_selectedIds.isEmpty) return;
+            // ボタンと同じく、フォルダを含む選択はコピーしない（前の
+            // クリップボードも消さない）。
+            if (!_selectionHasOnlyProjects()) {
+              ScaffoldMessenger.of(context)
+                ..hideCurrentSnackBar()
+                ..showSnackBar(
+                  SnackBar(
+                    content: Text(
+                      AppLocalizations.of(context)!.homeCopyFoldersUnsupported,
+                    ),
+                  ),
+                );
+              return;
+            }
+            _copySelected();
           };
         case ShortcutCommand.cut:
           result[b.activator] = () {
@@ -929,8 +1011,8 @@ class _HomeScreenState extends State<HomeScreen>
   }
 
   /// 選択中のプロジェクト・フォルダを切り取り、内部クリップボードへ保持する。
-  /// 貼り付け時は[moveToFolder]/[moveFolderTo]で移動し、1回貼り付けると
-  /// クリップボードは空になる。
+  /// 貼り付け時は[moveToFolder]/[moveFolderTo]で移動し、貼り付けた分は
+  /// クリップボードから外す。切り取った項目は貼り付けるまで薄く表示する。
   void _cutSelected() {
     final service = context.read<ProjectService>();
     final projectIds = service.projects.map((p) => p.id).toSet();
@@ -946,11 +1028,19 @@ class _HomeScreenState extends State<HomeScreen>
       _selectedIds.clear();
       _isSelectionMode = false;
     });
+    _showClipboardHint(cut: true);
   }
 
+  /// 切り取りをやめ、薄く表示していた項目を元に戻す。
+  void _cancelCut() => setState(() {
+    _clipboardProjectIds.clear();
+    _clipboardFolderIds.clear();
+    _clipboardIsCut = false;
+  });
+
   /// 選択中のプロジェクトを内部クリップボードへコピーする。フォルダの
-  /// 複製は未対応のため、選択にフォルダが含まれる場合はプロジェクトのみを
-  /// 対象にする。貼り付けのたびに複製するため、クリップボードは
+  /// 複製は未対応のため、フォルダを含む選択ではボタン・ショートカットとも
+  /// 呼ばない。貼り付けのたびに複製するため、クリップボードは
   /// 貼り付け後も保持したままにする。
   void _copySelected() {
     final service = context.read<ProjectService>();
@@ -964,44 +1054,130 @@ class _HomeScreenState extends State<HomeScreen>
       _selectedIds.clear();
       _isSelectionMode = false;
     });
+    _showClipboardHint(cut: false);
+  }
+
+  // 切り取り・コピーしたことと、次にどこを押せばよいかを伝える（以前は
+  // 選択が消えるだけで、何が起きたか・どう貼り付けるかが分からなかった）。
+  void _showClipboardHint({required bool cut}) {
+    final l10n = AppLocalizations.of(context)!;
+    final count = _clipboardProjectIds.length + _clipboardFolderIds.length;
+    if (count == 0) return;
+    ScaffoldMessenger.of(context)
+      ..hideCurrentSnackBar()
+      ..showSnackBar(
+        SnackBar(
+          content: Text(
+            cut ? l10n.homeCutSnackbar(count) : l10n.homeCopiedSnackbar(count),
+          ),
+          // 切り取りはその場でやめられる（薄く表示したまま残ると、
+          // 使えなくなったように見えた）。Escでもやめられる。
+          persist: false,
+          duration: const Duration(seconds: 6),
+          action: cut
+              ? SnackBarAction(
+                  label: l10n.homeUndoAction,
+                  onPressed: () {
+                    if (mounted && _clipboardIsCut) _cancelCut();
+                  },
+                )
+              : null,
+        ),
+      );
   }
 
   bool get _hasClipboard =>
       _clipboardProjectIds.isNotEmpty || _clipboardFolderIds.isNotEmpty;
 
+  bool _pasting = false;
+
   /// クリップボードの内容を現在開いているフォルダ（[_currentFolderId]、
-  /// nullはルート直下）へ貼り付ける。切り取りの場合は移動して
-  /// クリップボードを空にし、コピーの場合は複製してクリップボードは
-  /// 保持したままにする。
-  void _pasteClipboard() {
+  /// nullはルート直下）へ貼り付ける。切り取りの場合は移動し、移せたものを
+  /// クリップボードから外す。コピーの場合は複製し、クリップボードは
+  /// 保持したままにする。貼り付けられなかったもの（フォルダを自分自身や
+  /// その中へ移す・元の作品がゴミ箱や削除で無くなった）は理由を伝える
+  /// （以前は何も起きなくても「貼り付けました」と出し、切り取ったフォルダは
+  /// クリップボードから消えていた）。
+  Future<void> _pasteClipboard() async {
+    // 押し続け・連打で同じ貼り付けを重ねない。
+    if (_pasting) return;
+    _pasting = true;
     final l10n = AppLocalizations.of(context)!;
+    final messenger = ScaffoldMessenger.of(context);
     final service = context.read<ProjectService>();
+    final target = _currentFolderId;
     final isCut = _clipboardIsCut;
-    for (final id in _clipboardProjectIds) {
-      if (isCut) {
-        service.moveToFolder(id, _currentFolderId);
-      } else {
-        service.duplicateProject(
+    final liveProjects = {for (final p in service.projects) p.id: p};
+    final liveFolders = {for (final f in service.folders) f.id};
+    var pasted = 0;
+    var missing = 0;
+    var intoSelf = 0;
+    final moved = <String>{};
+    var failed = false;
+    try {
+      for (final id in _clipboardProjectIds.toList()) {
+        final project = liveProjects[id];
+        if (project == null) {
+          missing++;
+          moved.add(id);
+          continue;
+        }
+        if (isCut) {
+          await service.moveToFolder(id, target);
+          moved.add(id);
+          pasted++;
+        } else if (await service.duplicateProject(
           id,
-          targetFolderId: _currentFolderId,
+          targetFolderId: target,
           useTargetFolder: true,
-        );
+          name: l10n.projectDuplicateName(project.name),
+        )) {
+          pasted++;
+        } else {
+          missing++;
+        }
       }
-    }
-    if (isCut) {
-      for (final id in _clipboardFolderIds) {
-        service.moveFolderTo(id, _currentFolderId);
+      if (isCut) {
+        for (final id in _clipboardFolderIds.toList()) {
+          if (!liveFolders.contains(id)) {
+            missing++;
+            moved.add(id);
+            continue;
+          }
+          if (target != null && service.isFolderWithin(target, id)) {
+            intoSelf++;
+            continue;
+          }
+          await service.moveFolderTo(id, target);
+          moved.add(id);
+          pasted++;
+        }
       }
+    } catch (error, stack) {
+      // 途中で失敗しても、移せた分はクリップボードから外して結果を伝える。
+      AppErrorReporter.record(error, stack);
+      failed = true;
+    } finally {
+      _pasting = false;
     }
-    if (isCut) {
-      setState(() {
-        _clipboardProjectIds.clear();
-        _clipboardFolderIds.clear();
-      });
-    }
-    ScaffoldMessenger.of(
-      context,
-    ).showSnackBar(SnackBar(content: Text(l10n.homePasteSnackbar)));
+    if (!mounted) return;
+    setState(() {
+      if (isCut) {
+        _clipboardProjectIds.removeAll(moved);
+        _clipboardFolderIds.removeAll(moved);
+      } else {
+        _clipboardProjectIds.removeWhere((id) => !liveProjects.containsKey(id));
+      }
+    });
+    final lines = [
+      if (pasted > 0) l10n.homePastedSnackbar(pasted),
+      if (intoSelf > 0) l10n.homePasteSkippedIntoSelf(intoSelf),
+      if (missing > 0) l10n.homePasteSkippedMissing(missing),
+      if (failed) l10n.homePasteFailed,
+    ];
+    messenger
+      ..hideCurrentSnackBar()
+      ..showSnackBar(SnackBar(content: Text(lines.join('\n'))));
   }
 
   /// フォルダ階層のパンくずリスト。フォルダ内移動時に現在位置を表示する。
@@ -1687,33 +1863,14 @@ class _FolderableList<T> extends StatelessWidget {
               title: Text(l10n.commonRename),
               onTap: () {
                 Navigator.pop(ctx);
-                final controller = TextEditingController(text: folder.name);
                 showDialog(
                   context: context,
-                  builder: (dctx) => AlertDialog(
-                    title: Text(l10n.commonRename),
-                    content: TextField(
-                      controller: controller,
-                      autofocus: true,
-                      decoration: const InputDecoration(
-                        border: OutlineInputBorder(),
-                      ),
-                    ),
-                    actions: [
-                      TextButton(
-                        onPressed: () => Navigator.pop(dctx),
-                        child: Text(l10n.commonCancel),
-                      ),
-                      FilledButton(
-                        onPressed: () {
-                          if (controller.text.trim().isNotEmpty) {
-                            onRenameFolder(folder.id, controller.text.trim());
-                          }
-                          Navigator.pop(dctx);
-                        },
-                        child: Text(l10n.commonChange),
-                      ),
-                    ],
+                  builder: (dctx) => NameEntryDialog(
+                    title: l10n.commonRename,
+                    initialName: folder.name,
+                    confirmLabel: l10n.commonChange,
+                    cancelLabel: l10n.commonCancel,
+                    onSubmit: (name) async => onRenameFolder(folder.id, name),
                   ),
                 );
               },

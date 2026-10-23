@@ -56,7 +56,7 @@
    `test/helpers/color_channels.dart`の`.red8`/`.green8`/`.blue8`/
    `.alpha8`を使う。テスト内のデバッグ出力は`print`ではなく
    `debugPrint`を使う）
-3. `flutter test`（ベースライン：2026-10-17時点で**成功1973・スキップ8・
+3. `flutter test`（ベースライン：2026-10-23時点で**成功1995・スキップ8・
    失敗4**。失敗は監査担当の`test/app_web_reference_*`3件と、別セッション
    （質感変更フィルターの名前変更）の`test/texture_filter_gold_palette_test.dart`
    1件で、通常タスクでは直さない。スキップのうち3件は
@@ -687,13 +687,35 @@ onTap: ...)`だったために
   上書きすると、一覧には古い絵が出続ける（作品一覧のサムネイルが実際にそう
   だった）。作るたびに別の名前で保存し、前のファイルは保存し終えてから、
   ほかから参照されていなければ消すこと（`generateAndSaveThumbnail`が実例。
-  複製した作品は複製元とサムネイルのファイルを共有している）。
+  以前の版で複製した作品は複製元とサムネイルのファイルを共有している。
+  今の`duplicateProject`は素材（`Materials/`）とサムネイルを複製先のフォルダへ
+  写し終えてから一覧に出し、`permanentDelete`は消す前に、共有している作品へ
+  サムネイルを写す）。
 - **作品・フォルダの名前で並べる・探すときは`lib/utils/name_collation.dart`**：
   `String.compareTo`だと「作品10」が「作品2」より前、大文字が小文字より前、
   全角英字・半角カナが最後になる。並べるときは`NameSortKey`で名前ごとに
   1回だけそろえてから`compareNameKeys`で比べ（比べるたびにそろえると数百件で
   数十ミリ秒かかり、一覧の再描画のたびに走る）、探すときは`nameMatches`
   （全角/半角・カタカナ/ひらがな・大文字/小文字を区別しない）を使う。
+- **操作ボタン（`action:`）の付いた`SnackBar`は、既定では時間で消えない**：
+  `SnackBar.persist`の既定値が`action != null`のため、`duration`を書いても
+  効かない。アプリにはScaffoldMessengerが1つしか無いので、消えないSnackBarは
+  次の画面（キャンバス等）まで付いてきて下のツールバーに重なり、後から出す
+  SnackBarもその後ろで待ち続けて表示されない（ゴミ箱の「元に戻す」で
+  踏んだ）。`persist: false`を付けること（ゴミ箱へ移した通知は
+  `lib/widgets/moved_to_trash_snack_bar.dart`）。キャンバスの「不足素材」の
+  SnackBarにも同じ問題が残っている（A010で扱う）。
+- **名前を1つ入力するダイアログは`lib/widgets/name_entry_dialog.dart`の
+  `NameEntryDialog`**：空白だけの名前を確定させない・前後の空白を除く・
+  Enterで確定・二度押しで2回動かない・失敗したら開いたまま・確定中は閉じない、
+  をまとめて持つ（ホームのフォルダ作成で二度押しすると2つでき、名前の変更で
+  空の名前にできた）。コントローラーもダイアログ自身が持って破棄する。
+- **`OverflowBar`の子を`Align`で包むと、どの幅でも必ず2行になる**：
+  `OverflowBar`は子を緩めた制約で測って合計幅を比べるが、`widthFactor`の無い
+  `Align`は幅いっぱいに広がるので、常に「収まらない」と判断される（ホームの
+  選択中の操作バーが、PCの広い画面でも左上と右下に分かれた）。「収まれば
+  1行の左右、収まらなければ2行（1つ目は左、2つ目は右）」は
+  `lib/widgets/leading_trailing_bar.dart`の`LeadingTrailingBar`を使う。
 - **`SliverMultiBoxAdaptorElement`の「見えている子」は描画範囲ぶんだけ**：
   `ListView.builder`はcacheExtent（既定250px）ぶん先の子も**生成・レイアウト
   する**が、`debugVisitOnstageChildren`が返すのは**実際に描画される範囲の

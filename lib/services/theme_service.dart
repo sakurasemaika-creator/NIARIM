@@ -691,6 +691,11 @@ class ThemeService extends ChangeNotifier {
         contentTextStyle: textTheme.titleMedium?.copyWith(
           color: preset.textColor,
         ),
+        // 操作ボタン（「元に戻す」等）の色。Material3の既定は暗い下地向けの
+        // inversePrimaryで、このアプリのSnackBarは下地がポップアップの色
+        // （明るいテーマでは白に近い）なので、ほとんど見えなかった。
+        // ダイアログの文字ボタンと同じ色にする。
+        actionTextColor: scheme.primary,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(radius),
         ),

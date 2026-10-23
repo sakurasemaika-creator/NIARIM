@@ -364,7 +364,65 @@ class AppLocalizationsKo extends AppLocalizations {
   }
 
   @override
-  String get homePasteSnackbar => '붙여넣었습니다';
+  String homeMoveToTrashSkipFavorites(int count) {
+    return '즐겨찾기한 $count개 항목은 이동하지 않습니다(즐겨찾기를 해제하면 이동할 수 있습니다).';
+  }
+
+  @override
+  String homeMoveToTrashSkipFolders(int count) {
+    return '폴더 $count개는 이동하지 않습니다(폴더는 휴지통으로 옮길 수 없습니다).';
+  }
+
+  @override
+  String get homeMoveToTrashNothing =>
+      '휴지통으로 이동할 작품이 없습니다(즐겨찾기한 작품과 폴더는 이동하지 않습니다).';
+
+  @override
+  String homeMovedToTrashSnackbar(int count) {
+    return '$count개 항목을 휴지통으로 이동했습니다';
+  }
+
+  @override
+  String get homeUndoAction => '실행 취소';
+
+  @override
+  String homeCutSnackbar(int count) {
+    return '$count개 항목을 잘라냈습니다. 옮길 곳을 열고 오른쪽 위의 붙여넣기를 누르세요.';
+  }
+
+  @override
+  String homeCopiedSnackbar(int count) {
+    return '$count개 항목을 복사했습니다. 붙여넣을 곳을 열고 오른쪽 위의 붙여넣기를 누르세요.';
+  }
+
+  @override
+  String homePastedSnackbar(int count) {
+    return '$count개 항목을 붙여넣었습니다';
+  }
+
+  @override
+  String homePasteSkippedIntoSelf(int count) {
+    return '폴더 $count개는 자기 자신이나 그 안으로 옮길 수 없어 잘라낸 상태로 남겨 두었습니다.';
+  }
+
+  @override
+  String homePasteSkippedMissing(int count) {
+    return '원본이 없어 $count개 항목을 붙여넣지 못했습니다(휴지통으로 이동했거나 삭제됨).';
+  }
+
+  @override
+  String get homePasteFailed => '일부 항목을 붙여넣지 못했습니다. 다시 시도해 주세요.';
+
+  @override
+  String get homeCutPendingHint => '잘라냄(붙여넣기 대기 중)';
+
+  @override
+  String get homeCopyFoldersUnsupported => '폴더는 복사할 수 없습니다(작품만 선택하세요)';
+
+  @override
+  String projectDuplicateName(String name) {
+    return '$name (사본)';
+  }
 
   @override
   String get commonOk => '확인';

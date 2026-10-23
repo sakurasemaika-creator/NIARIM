@@ -21,7 +21,10 @@ import '../../../config/font_fallback.dart';
 import '../../../utils/name_collation.dart';
 import '../../../widgets/frame_preview_background.dart';
 import '../../../widgets/checked_menu_item.dart';
+import '../../../widgets/dispose_on_unmount.dart';
 import '../../../widgets/empty_state_placeholder.dart';
+import '../../../widgets/moved_to_trash_snack_bar.dart';
+import '../../../widgets/name_entry_dialog.dart';
 import '../../../widgets/scrollable_sheet_body.dart';
 
 /// 新規フォルダ作成ダイアログ（フォルダ名入力）。プロジェクト一覧画面の
@@ -33,49 +36,23 @@ void showCreateFolderNameDialog(
   Future<void> Function(String name) onCreate,
 ) {
   final l10n = AppLocalizations.of(context)!;
-  final controller = TextEditingController();
   showDialog(
     context: context,
-    builder: (ctx) => AlertDialog(
-      title: Text(l10n.projectListNewFolderTitle),
-      content: Column(
-        mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          TextField(
-            controller: controller,
-            autofocus: true,
-            decoration: InputDecoration(
-              labelText: l10n.folderNameLabel,
-              border: const OutlineInputBorder(),
-            ),
-          ),
-          const SizedBox(height: 8),
-          // 同じ作品の複数話数・シリーズ物をまとめる使い方への気づきを促す
-          // ヒント（フォルダは複数階層に対応しているため実現可能）。
-          Text(
-            l10n.projectListFolderHint,
-            style: TextStyle(
-              fontSize: 11,
-              color: Theme.of(ctx).colorScheme.onSurfaceVariant,
-            ),
-          ),
-        ],
+    builder: (ctx) => NameEntryDialog(
+      title: l10n.projectListNewFolderTitle,
+      labelText: l10n.folderNameLabel,
+      confirmLabel: l10n.commonCreate,
+      cancelLabel: l10n.commonCancel,
+      // 同じ作品の複数話数・シリーズ物をまとめる使い方への気づきを促す
+      // ヒント（フォルダは複数階層に対応しているため実現可能）。
+      hint: Text(
+        l10n.projectListFolderHint,
+        style: TextStyle(
+          fontSize: 11,
+          color: Theme.of(ctx).colorScheme.onSurfaceVariant,
+        ),
       ),
-      actions: [
-        TextButton(
-          onPressed: () => Navigator.pop(ctx),
-          child: Text(l10n.commonCancel),
-        ),
-        FilledButton(
-          onPressed: () async {
-            if (controller.text.trim().isEmpty) return;
-            await onCreate(controller.text.trim());
-            if (ctx.mounted) Navigator.pop(ctx);
-          },
-          child: Text(l10n.commonCreate),
-        ),
-      ],
+      onSubmit: onCreate,
     ),
   );
 }
@@ -189,6 +166,9 @@ class ProjectListWidget extends StatelessWidget {
   // 「すべて表示」ボタン。nullならボタンを出さない。
   final VoidCallback? onClearSearch;
   final VoidCallback? onShowAll;
+  // 切り取って貼り付け待ちの項目。薄く表示して、どれを移すところか分かる
+  // ようにする。
+  final Set<String> pendingCutIds;
 
   const ProjectListWidget({
     super.key,
@@ -208,6 +188,7 @@ class ProjectListWidget extends StatelessWidget {
     this.showEmptyCreateHint = true,
     this.onClearSearch,
     this.onShowAll,
+    this.pendingCutIds = const {},
   });
 
   /// フォルダを作品より前にまとめ、それぞれの中を[sortMode]で並べる。
@@ -549,45 +530,57 @@ class ProjectListWidget extends StatelessWidget {
         MaterialLocalizations.of(context).formatCompactDate(project.updatedAt),
       ),
     ].join('\n');
-    return ListTile(
-      leading: isSelectionMode
-          ? _detailLeading(
-              Checkbox(
-                value: isSelected,
-                onChanged: (_) => onSelectionChanged(project.id),
-              ),
-            )
-          : _detailLeading(
-              ClipRRect(
-                borderRadius: BorderRadius.circular(10),
-                child: _thumbnail(
-                  context,
-                  project,
-                  displayWidth: _detailArtSize,
-                  checkerSize: 4,
+    return _detailRow(
+      context,
+      entry,
+      ListTile(
+        leading: isSelectionMode
+            ? _detailLeading(
+                Checkbox(
+                  value: isSelected,
+                  onChanged: (_) => onSelectionChanged(project.id),
+                ),
+              )
+            : _detailLeading(
+                ClipRRect(
+                  borderRadius: BorderRadius.circular(10),
+                  child: _thumbnail(
+                    context,
+                    project,
+                    displayWidth: _detailArtSize,
+                    checkerSize: 4,
+                  ),
                 ),
               ),
-            ),
-      title: Text(project.name),
-      subtitle: Text(
-        location == null
-            ? meta
-            : '$meta\n${l10n.projectListInFolder(location)}',
+        title: Text(project.name),
+        subtitle: Text(
+          location == null
+              ? meta
+              : '$meta\n${l10n.projectListInFolder(location)}',
+        ),
+        trailing: _detailTrailing(
+          entry.isFavorite,
+          (isSelectionMode || onPickProject != null)
+              ? null
+              : _projectMenu(context, project),
+        ),
+        onTap: isSelectionMode
+            ? () => onSelectionChanged(project.id)
+            : onPickProject != null
+            ? () => onPickProject!(project.id)
+            : () => context.push('/project/${project.id}'),
+        onLongPress: () => onLongPress(project.id),
       ),
-      trailing: _detailTrailing(
-        entry.isFavorite,
-        (isSelectionMode || onPickProject != null)
-            ? null
-            : _projectMenu(context, project),
-      ),
-      onTap: isSelectionMode
-          ? () => onSelectionChanged(project.id)
-          : onPickProject != null
-          ? () => onPickProject!(project.id)
-          : () => context.push('/project/${project.id}'),
-      onLongPress: () => onLongPress(project.id),
     );
   }
+
+  /// 詳細表示の1行：右クリックでメニュー、切り取り中は薄く。
+  Widget _detailRow(BuildContext context, _Entry entry, Widget tile) =>
+      GestureDetector(
+        onSecondaryTapUp: (details) =>
+            _showContextMenu(context, entry, details.globalPosition),
+        child: _dimIfCut(context, entry.id, tile),
+      );
 
   static const double _detailArtSize = 48;
 
@@ -624,38 +617,42 @@ class ProjectListWidget extends StatelessWidget {
     final folder = entry.folder!;
     final isSelected = selectedIds.contains(folder.id);
     final color = folder.color != null ? Color(folder.color!) : null;
-    return ListTile(
-      leading: _detailLeading(
-        isSelectionMode
-            ? Checkbox(
-                value: isSelected,
-                onChanged: (_) => onSelectionChanged(folder.id),
-              )
-            : Icon(Icons.folder, color: color, size: 36),
-      ),
-      title: Text(
-        folder.name,
-        style: const TextStyle(
-          fontWeight: FontWeight.w600,
-          fontFamily: 'Kuramubon',
-          fontFamilyFallback: kHeadingFontFallback,
+    return _detailRow(
+      context,
+      entry,
+      ListTile(
+        leading: _detailLeading(
+          isSelectionMode
+              ? Checkbox(
+                  value: isSelected,
+                  onChanged: (_) => onSelectionChanged(folder.id),
+                )
+              : Icon(Icons.folder, color: color, size: 36),
         ),
-      ),
-      subtitle: location == null
-          ? null
-          : Text(l10n.projectListInFolder(location)),
-      trailing: _detailTrailing(
-        folder.isFavorite,
-        (isSelectionMode || onPickProject != null)
+        title: Text(
+          folder.name,
+          style: const TextStyle(
+            fontWeight: FontWeight.w600,
+            fontFamily: 'Kuramubon',
+            fontFamilyFallback: kHeadingFontFallback,
+          ),
+        ),
+        subtitle: location == null
             ? null
-            : _folderMenu(context, folder),
+            : Text(l10n.projectListInFolder(location)),
+        trailing: _detailTrailing(
+          folder.isFavorite,
+          (isSelectionMode || onPickProject != null)
+              ? null
+              : _folderMenu(context, folder),
+        ),
+        // フォルダは選ぶ専用画面でも通常どおり潜れる（[onPickProject]は
+        // 作品タップ時のみに関わる）。
+        onTap: isSelectionMode
+            ? () => onSelectionChanged(folder.id)
+            : () => onOpenFolder(folder.id),
+        onLongPress: () => onLongPress(folder.id),
       ),
-      // フォルダは選ぶ専用画面でも通常どおり潜れる（[onPickProject]は
-      // 作品タップ時のみに関わる）。
-      onTap: isSelectionMode
-          ? () => onSelectionChanged(folder.id)
-          : () => onOpenFolder(folder.id),
-      onLongPress: () => onLongPress(folder.id),
     );
   }
 
@@ -726,192 +723,248 @@ class ProjectListWidget extends StatelessWidget {
       onTap: onTap,
       onDoubleTap: onDoubleTap,
       onLongPress: () => onLongPress(entry.id),
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 150),
-        curve: Curves.easeOut,
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(14),
-          boxShadow: [
-            BoxShadow(
-              color:
-                  (isSelected
-                          ? primary
-                          : ThemeService.activeColorScheme.onSurface)
-                      .withValues(alpha: isSelected ? 0.28 : 0.12),
-              blurRadius: isSelected ? 14 : 8,
-              offset: const Offset(0, 3),
-            ),
-          ],
-        ),
-        child: Card(
-          clipBehavior: Clip.antiAlias,
-          elevation: 0,
-          margin: EdgeInsets.zero,
-          shape: RoundedRectangleBorder(
+      onSecondaryTapUp: (details) =>
+          _showContextMenu(context, entry, details.globalPosition),
+      child: _dimIfCut(
+        context,
+        entry.id,
+        AnimatedContainer(
+          duration: const Duration(milliseconds: 150),
+          curve: Curves.easeOut,
+          decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(14),
-            side: BorderSide(
-              color: isSelected ? primary : Colors.transparent,
-              width: 2,
-            ),
-          ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              Expanded(
-                child: Stack(
-                  fit: StackFit.expand,
-                  children: [
-                    art,
-                    if (entry.isFavorite)
-                      Positioned(
-                        top: 4,
-                        right: 4,
-                        child: Container(
-                          padding: const EdgeInsets.all(3),
-                          decoration: BoxDecoration(
-                            color: scheme.surface.withValues(alpha: 0.85),
-                            shape: BoxShape.circle,
-                          ),
-                          child: Icon(
-                            Icons.star,
-                            color: ThemeService.activeColorScheme.tertiary,
-                            size: 14,
-                          ),
-                        ),
-                      ),
-                    if (isSelectionMode)
-                      Positioned(
-                        top: 4,
-                        left: 4,
-                        child: AnimatedContainer(
-                          duration: const Duration(milliseconds: 120),
-                          padding: const EdgeInsets.all(1),
-                          decoration: BoxDecoration(
-                            color: isSelected
-                                ? primary
-                                : scheme.surface.withValues(alpha: 0.9),
-                            shape: BoxShape.circle,
-                            border: Border.all(color: primary, width: 1.5),
-                          ),
-                          child: Icon(
-                            isSelected ? Icons.check : null,
-                            size: 16,
-                            color: scheme.onPrimary,
-                          ),
-                        ),
-                      ),
-                  ],
-                ),
+            boxShadow: [
+              BoxShadow(
+                color:
+                    (isSelected
+                            ? primary
+                            : ThemeService.activeColorScheme.onSurface)
+                        .withValues(alpha: isSelected ? 0.28 : 0.12),
+                blurRadius: isSelected ? 14 : 8,
+                offset: const Offset(0, 3),
               ),
-              // カードの高さは決まっているので、名前の帯の文字は1.5倍までに
-              // とどめる（文字を大きくした小さなカードで帯が絵を押しつぶし、
-              // はみ出していた）。全文は詳細表示で大きな文字のまま読める。
-              MediaQuery.withClampedTextScaling(
-                maxScaleFactor: 1.5,
-                child: Padding(
-                  padding: const EdgeInsets.fromLTRB(6, 4, 6, 6),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    mainAxisSize: MainAxisSize.min,
+            ],
+          ),
+          child: Card(
+            clipBehavior: Clip.antiAlias,
+            elevation: 0,
+            margin: EdgeInsets.zero,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(14),
+              side: BorderSide(
+                color: isSelected ? primary : Colors.transparent,
+                width: 2,
+              ),
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                Expanded(
+                  child: Stack(
+                    fit: StackFit.expand,
                     children: [
-                      Text(
-                        entry.name,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: const TextStyle(
-                          fontSize: 12,
-                          fontWeight: FontWeight.w600,
-                          fontFamily: 'Kuramubon',
-                          fontFamilyFallback: kHeadingFontFallback,
+                      art,
+                      if (entry.isFavorite)
+                        Positioned(
+                          top: 4,
+                          right: 4,
+                          child: Container(
+                            padding: const EdgeInsets.all(3),
+                            decoration: BoxDecoration(
+                              color: scheme.surface.withValues(alpha: 0.85),
+                              shape: BoxShape.circle,
+                            ),
+                            child: Icon(
+                              Icons.star,
+                              color: ThemeService.activeColorScheme.tertiary,
+                              size: 14,
+                            ),
+                          ),
                         ),
-                      ),
-                      // 小表示のカードには場所まで入らない（詳細表示で出る）。
-                      if (location != null && viewMode != ProjectViewMode.small)
-                        Text(
-                          location,
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                          style: TextStyle(
-                            fontSize: 10,
-                            color: scheme.onSurfaceVariant,
+                      if (isSelectionMode)
+                        Positioned(
+                          top: 4,
+                          left: 4,
+                          child: AnimatedContainer(
+                            duration: const Duration(milliseconds: 120),
+                            padding: const EdgeInsets.all(1),
+                            decoration: BoxDecoration(
+                              color: isSelected
+                                  ? primary
+                                  : scheme.surface.withValues(alpha: 0.9),
+                              shape: BoxShape.circle,
+                              border: Border.all(color: primary, width: 1.5),
+                            ),
+                            child: Icon(
+                              isSelected ? Icons.check : null,
+                              size: 16,
+                              color: scheme.onPrimary,
+                            ),
                           ),
                         ),
                     ],
                   ),
                 ),
-              ),
-            ],
+                // カードの高さは決まっているので、名前の帯の文字は1.5倍までに
+                // とどめる（文字を大きくした小さなカードで帯が絵を押しつぶし、
+                // はみ出していた）。全文は詳細表示で大きな文字のまま読める。
+                MediaQuery.withClampedTextScaling(
+                  maxScaleFactor: 1.5,
+                  child: Padding(
+                    padding: const EdgeInsets.fromLTRB(6, 4, 6, 6),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Text(
+                          entry.name,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: const TextStyle(
+                            fontSize: 12,
+                            fontWeight: FontWeight.w600,
+                            fontFamily: 'Kuramubon',
+                            fontFamilyFallback: kHeadingFontFallback,
+                          ),
+                        ),
+                        // 小表示のカードには場所まで入らない（詳細表示で出る）。
+                        if (location != null &&
+                            viewMode != ProjectViewMode.small)
+                          Text(
+                            location,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: TextStyle(
+                              fontSize: 10,
+                              color: scheme.onSurfaceVariant,
+                            ),
+                          ),
+                      ],
+                    ),
+                  ),
+                ),
+              ],
+            ),
           ),
         ),
       ),
     );
   }
 
-  Widget _projectMenu(BuildContext context, Project project) {
-    final l10n = AppLocalizations.of(context)!;
-    return PopupMenuButton<String>(
-      icon: const Icon(Icons.more_vert, size: 18),
-      onSelected: (action) => _handleAction(context, action, project),
-      itemBuilder: (_) => [
-        PopupMenuItem(value: 'open', child: Text(l10n.projectListOpenAction)),
-        PopupMenuItem(value: 'rename', child: Text(l10n.commonRename)),
-        PopupMenuItem(
-          value: 'duplicate',
-          child: Text(l10n.themeDuplicateAction),
-        ),
-        PopupMenuItem(
-          value: 'share',
-          child: Text(l10n.projectListCreateShareAction),
-        ),
-        PopupMenuItem(
-          value: 'favorite',
-          child: Text(
-            project.isFavorite
-                ? l10n.colorPickerFavoriteRemove
-                : l10n.colorPickerFavoriteAdd,
-          ),
-        ),
-        PopupMenuItem(value: 'move', child: Text(l10n.folderMoveToTitle)),
-        PopupMenuItem(
-          value: 'delete',
-          child: Text(
-            l10n.projectDetailTrashMenuItem,
-            style: TextStyle(color: ThemeService.activeColorScheme.error),
-          ),
-        ),
-      ],
+  /// 切り取って貼り付け待ちの項目を薄く表示する（読み上げでも伝える）。
+  Widget _dimIfCut(BuildContext context, String id, Widget child) {
+    if (!pendingCutIds.contains(id)) return child;
+    return Semantics(
+      hint: AppLocalizations.of(context)!.homeCutPendingHint,
+      child: Opacity(opacity: 0.45, child: child),
     );
   }
 
-  Widget _folderMenu(BuildContext context, ProjectFolder folder) {
+  Widget _projectMenu(BuildContext context, Project project) =>
+      PopupMenuButton<String>(
+        icon: const Icon(Icons.more_vert, size: 18),
+        onSelected: (action) => _handleAction(context, action, project),
+        itemBuilder: (_) => _projectMenuItems(context, project),
+      );
+
+  List<PopupMenuEntry<String>> _projectMenuItems(
+    BuildContext context,
+    Project project,
+  ) {
     final l10n = AppLocalizations.of(context)!;
-    return PopupMenuButton<String>(
-      icon: const Icon(Icons.more_vert, size: 18),
-      onSelected: (action) => _handleFolderAction(context, action, folder),
-      itemBuilder: (_) => [
-        PopupMenuItem(value: 'open', child: Text(l10n.projectListOpenAction)),
-        PopupMenuItem(
-          value: 'edit',
-          child: Text(l10n.projectListEditFolderAction),
+    return [
+      PopupMenuItem(value: 'open', child: Text(l10n.projectListOpenAction)),
+      PopupMenuItem(value: 'rename', child: Text(l10n.commonRename)),
+      PopupMenuItem(value: 'duplicate', child: Text(l10n.themeDuplicateAction)),
+      PopupMenuItem(
+        value: 'share',
+        child: Text(l10n.projectListCreateShareAction),
+      ),
+      PopupMenuItem(
+        value: 'favorite',
+        child: Text(
+          project.isFavorite
+              ? l10n.colorPickerFavoriteRemove
+              : l10n.colorPickerFavoriteAdd,
         ),
-        PopupMenuItem(
-          value: 'favorite',
-          child: Text(
-            folder.isFavorite
-                ? l10n.colorPickerFavoriteRemove
-                : l10n.colorPickerFavoriteAdd,
-          ),
+      ),
+      PopupMenuItem(value: 'move', child: Text(l10n.folderMoveToTitle)),
+      PopupMenuItem(
+        value: 'delete',
+        child: Text(
+          l10n.projectDetailTrashMenuItem,
+          style: TextStyle(color: ThemeService.activeColorScheme.error),
         ),
-        PopupMenuItem(value: 'move', child: Text(l10n.folderMoveToTitle)),
-        PopupMenuItem(
-          value: 'delete',
-          child: Text(
-            l10n.commonDelete,
-            style: TextStyle(color: ThemeService.activeColorScheme.error),
-          ),
+      ),
+    ];
+  }
+
+  Widget _folderMenu(BuildContext context, ProjectFolder folder) =>
+      PopupMenuButton<String>(
+        icon: const Icon(Icons.more_vert, size: 18),
+        onSelected: (action) => _handleFolderAction(context, action, folder),
+        itemBuilder: (_) => _folderMenuItems(context, folder),
+      );
+
+  List<PopupMenuEntry<String>> _folderMenuItems(
+    BuildContext context,
+    ProjectFolder folder,
+  ) {
+    final l10n = AppLocalizations.of(context)!;
+    return [
+      PopupMenuItem(value: 'open', child: Text(l10n.projectListOpenAction)),
+      PopupMenuItem(
+        value: 'edit',
+        child: Text(l10n.projectListEditFolderAction),
+      ),
+      PopupMenuItem(
+        value: 'favorite',
+        child: Text(
+          folder.isFavorite
+              ? l10n.colorPickerFavoriteRemove
+              : l10n.colorPickerFavoriteAdd,
         ),
-      ],
+      ),
+      PopupMenuItem(value: 'move', child: Text(l10n.folderMoveToTitle)),
+      PopupMenuItem(
+        value: 'delete',
+        child: Text(
+          l10n.commonDelete,
+          style: TextStyle(color: ThemeService.activeColorScheme.error),
+        ),
+      ),
+    ];
+  }
+
+  /// 右クリック（マウス・ペンの副ボタン）で、その作品・フォルダのメニューを
+  /// 押した所に開く。カード表示には「︙」のボタンが無いため、PC/DeXでは
+  /// 名前の変更・複製・移動等をここから行う（以前は右クリックしても何も
+  /// 起きなかった）。
+  Future<void> _showContextMenu(
+    BuildContext context,
+    _Entry entry,
+    Offset globalPosition,
+  ) async {
+    if (isSelectionMode || onPickProject != null) return;
+    final overlay =
+        Overlay.of(context).context.findRenderObject()! as RenderBox;
+    final position = RelativeRect.fromRect(
+      globalPosition & Size.zero,
+      Offset.zero & overlay.size,
     );
+    final action = await showMenu<String>(
+      context: context,
+      position: position,
+      items: entry.isFolder
+          ? _folderMenuItems(context, entry.folder!)
+          : _projectMenuItems(context, entry.project!),
+    );
+    if (action == null || !context.mounted) return;
+    if (entry.isFolder) {
+      _handleFolderAction(context, action, entry.folder!);
+    } else {
+      _handleAction(context, action, entry.project!);
+    }
   }
 
   void _handleAction(BuildContext context, String action, Project project) {
@@ -922,7 +975,12 @@ class ProjectListWidget extends StatelessWidget {
       case 'rename':
         _showRenameDialog(context, project);
       case 'duplicate':
-        service.duplicateProject(project.id);
+        service.duplicateProject(
+          project.id,
+          name: AppLocalizations.of(
+            context,
+          )!.projectDuplicateName(project.name),
+        );
       case 'share':
         _createNiashare(context, project);
       case 'favorite':
@@ -940,14 +998,18 @@ class ProjectListWidget extends StatelessWidget {
     ProjectService service,
     Project project,
   ) {
+    final l10n = AppLocalizations.of(context)!;
+    final messenger = ScaffoldMessenger.of(context);
     if (project.isFavorite) {
-      final l10n = AppLocalizations.of(context)!;
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text(l10n.commonFavoriteDeleteBlocked)));
+      messenger.showSnackBar(
+        SnackBar(content: Text(l10n.commonFavoriteDeleteBlocked)),
+      );
       return;
     }
     service.deleteProject(project.id);
+    // ゴミ箱へ移したことを伝え、その場で戻せるようにする（以前は何も
+    // 表示されず、一覧から消えるだけだった）。
+    showMovedToTrashSnackBar(messenger, l10n, service, [project.id]);
   }
 
   void _handleFolderAction(
@@ -1045,32 +1107,19 @@ class ProjectListWidget extends StatelessWidget {
 
   void _showRenameDialog(BuildContext context, Project project) {
     final l10n = AppLocalizations.of(context)!;
-    final controller = TextEditingController(text: project.name);
+    final service = context.read<ProjectService>();
     showDialog(
       context: context,
-      builder: (ctx) => AlertDialog(
-        title: Text(l10n.commonRename),
-        content: TextField(
-          controller: controller,
-          autofocus: true,
-          decoration: const InputDecoration(border: OutlineInputBorder()),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx),
-            child: Text(l10n.commonCancel),
-          ),
-          FilledButton(
-            onPressed: () {
-              context.read<ProjectService>().renameProject(
-                project.id,
-                controller.text,
-              );
-              Navigator.pop(ctx);
-            },
-            child: Text(l10n.commonChange),
-          ),
-        ],
+      builder: (ctx) => NameEntryDialog(
+        title: l10n.commonRename,
+        initialName: project.name,
+        confirmLabel: l10n.commonChange,
+        cancelLabel: l10n.commonCancel,
+        onSubmit: (name) async {
+          if (name != project.name) {
+            await service.renameProject(project.id, name);
+          }
+        },
       ),
     );
   }
@@ -1193,69 +1242,73 @@ class ProjectListWidget extends StatelessWidget {
     int? selectedColor = folder.color;
     showDialog(
       context: context,
-      builder: (ctx) => StatefulBuilder(
-        builder: (ctx, setS) => AlertDialog(
-          title: Text(l10n.projectListEditFolderTooltip),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              TextField(
-                controller: controller,
-                autofocus: true,
-                decoration: InputDecoration(
-                  labelText: l10n.folderNameLabel,
-                  border: const OutlineInputBorder(),
-                ),
-              ),
-              const SizedBox(height: 16),
-              Text(
-                l10n.projectListFolderColorLabel,
-                style: const TextStyle(fontSize: 12),
-              ),
-              const SizedBox(height: 8),
-              Wrap(
-                spacing: 8,
-                runSpacing: 8,
-                children: [
-                  _colorDot(
-                    ctx,
-                    null,
-                    selectedColor,
-                    (v) => setS(() => selectedColor = v),
+      builder: (ctx) => DisposeOnUnmount(
+        controller: controller,
+        builder: (_) => StatefulBuilder(
+          builder: (ctx, setS) => AlertDialog(
+            title: Text(l10n.projectListEditFolderTooltip),
+            content: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                TextField(
+                  controller: controller,
+                  autofocus: true,
+                  decoration: InputDecoration(
+                    labelText: l10n.folderNameLabel,
+                    border: const OutlineInputBorder(),
                   ),
-                  ..._folderColors.map(
-                    (c) => _colorDot(
+                ),
+                const SizedBox(height: 16),
+                Text(
+                  l10n.projectListFolderColorLabel,
+                  style: const TextStyle(fontSize: 12),
+                ),
+                const SizedBox(height: 8),
+                Wrap(
+                  spacing: 8,
+                  runSpacing: 8,
+                  children: [
+                    _colorDot(
                       ctx,
-                      c,
+                      null,
                       selectedColor,
                       (v) => setS(() => selectedColor = v),
                     ),
-                  ),
-                ],
+                    ..._folderColors.map(
+                      (c) => _colorDot(
+                        ctx,
+                        c,
+                        selectedColor,
+                        (v) => setS(() => selectedColor = v),
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(ctx),
+                child: Text(l10n.commonCancel),
+              ),
+              FilledButton(
+                onPressed: () {
+                  final service = context.read<ProjectService>();
+                  // 空白だけの名前にはしない。
+                  final name = controller.text.trim();
+                  if (name.isNotEmpty && name != folder.name) {
+                    service.renameFolder(folder.id, name);
+                  }
+                  if (selectedColor != folder.color) {
+                    service.setFolderColor(folder.id, selectedColor);
+                  }
+                  Navigator.pop(ctx);
+                },
+                child: Text(l10n.commonSave),
               ),
             ],
           ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(ctx),
-              child: Text(l10n.commonCancel),
-            ),
-            FilledButton(
-              onPressed: () {
-                final service = context.read<ProjectService>();
-                if (controller.text.isNotEmpty &&
-                    controller.text != folder.name) {
-                  service.renameFolder(folder.id, controller.text);
-                }
-                if (selectedColor != folder.color) {
-                  service.setFolderColor(folder.id, selectedColor);
-                }
-                Navigator.pop(ctx);
-              },
-              child: Text(l10n.commonSave),
-            ),
-          ],
         ),
       ),
     );

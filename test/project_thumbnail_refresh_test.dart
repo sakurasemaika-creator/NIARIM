@@ -11,7 +11,8 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 /// 一覧のサムネイルは、作り直すたびに別のファイルになる（画像はパスごとに
 /// キャッシュされるので、同じ名前へ上書きすると一覧に古い絵が出続けた）。
-/// 前のファイルは、複製した作品が使っていなければ消える。
+/// 前のファイルは、ほかの作品が使っていなければ消える（複製した作品は
+/// 自分のコピーを持つ）。
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
@@ -68,12 +69,47 @@ void main() {
       expect(File(second).existsSync(), isTrue);
       expect(File(first).existsSync(), isFalse);
 
-      // 複製した作品が同じサムネイルを使っている間は消さない。
+      // 複製した作品は自分のサムネイルのコピーを持つので、複製元を
+      // 作り直しても複製の絵は残る。
       await service.duplicateProject(project.id);
+      final copy = service.projects.firstWhere((p) => p.id != project.id);
+      expect(copy.thumbnailPath, isNot(second));
       await Future<void>.delayed(const Duration(milliseconds: 2));
       await service.generateAndSaveThumbnail(project.id);
-      expect(thumb(), isNot(second));
-      expect(File(second).existsSync(), isTrue);
+      final third = thumb()!;
+      expect(File(copy.thumbnailPath!).existsSync(), isTrue);
+      expect(File(second).existsSync(), isFalse);
+
+      // 以前の版で複製した作品のように、ほかの作品が同じファイルを指して
+      // いる間は消さない。
+      await service.importSharedProject(
+        NiaproData(
+          project: service.projects
+              .firstWhere((p) => p.id == project.id)
+              .copyWith(id: 'ignored', thumbnailPath: third),
+          scenes: const [],
+          tileData: const {},
+        ),
+      );
+      await Future<void>.delayed(const Duration(milliseconds: 2));
+      await service.generateAndSaveThumbnail(project.id);
+      expect(thumb(), isNot(third));
+      expect(File(third).existsSync(), isTrue);
+
+      // 複製元を完全に削除しても、同じファイルを指していた作品の絵は
+      // その作品のフォルダへ写して残す。
+      final sharer = service.projects.firstWhere(
+        (p) => p.thumbnailPath == third,
+      );
+      await service.deleteProject(project.id);
+      await service.permanentDelete(project.id);
+      final kept = service.projects
+          .firstWhere((p) => p.id == sharer.id)
+          .thumbnailPath;
+      expect(kept, isNotNull);
+      expect(kept, contains(sharer.id));
+      expect(File(kept!).existsSync(), isTrue);
+      expect(File(third).existsSync(), isFalse);
     });
   });
 }

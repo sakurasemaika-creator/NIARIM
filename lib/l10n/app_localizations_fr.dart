@@ -381,7 +381,67 @@ class AppLocalizationsFr extends AppLocalizations {
   }
 
   @override
-  String get homePasteSnackbar => 'Collé';
+  String homeMoveToTrashSkipFavorites(int count) {
+    return '$count élément(s) favori(s) resteront en place (retirez-les des favoris pour les déplacer).';
+  }
+
+  @override
+  String homeMoveToTrashSkipFolders(int count) {
+    return '$count dossier(s) resteront en place (les dossiers ne peuvent pas être mis à la corbeille).';
+  }
+
+  @override
+  String get homeMoveToTrashNothing =>
+      'Rien à mettre à la corbeille (les favoris et les dossiers ne sont pas déplacés).';
+
+  @override
+  String homeMovedToTrashSnackbar(int count) {
+    return '$count élément(s) mis à la corbeille';
+  }
+
+  @override
+  String get homeUndoAction => 'Annuler';
+
+  @override
+  String homeCutSnackbar(int count) {
+    return '$count élément(s) coupé(s). Ouvrez la destination et touchez Coller en haut à droite.';
+  }
+
+  @override
+  String homeCopiedSnackbar(int count) {
+    return '$count élément(s) copié(s). Ouvrez l’emplacement voulu et touchez Coller en haut à droite.';
+  }
+
+  @override
+  String homePastedSnackbar(int count) {
+    return '$count élément(s) collé(s)';
+  }
+
+  @override
+  String homePasteSkippedIntoSelf(int count) {
+    return '$count dossier(s) ne peuvent pas être déplacés dans eux-mêmes ou leurs sous-dossiers ; ils restent coupés pour être collés ailleurs.';
+  }
+
+  @override
+  String homePasteSkippedMissing(int count) {
+    return '$count élément(s) n’ont pas pu être collés car l’original n’existe plus (corbeille ou supprimé).';
+  }
+
+  @override
+  String get homePasteFailed =>
+      'Certains éléments n’ont pas pu être collés. Réessayez.';
+
+  @override
+  String get homeCutPendingHint => 'Coupé, en attente de collage';
+
+  @override
+  String get homeCopyFoldersUnsupported =>
+      'Les dossiers ne peuvent pas être copiés (sélectionnez seulement des œuvres)';
+
+  @override
+  String projectDuplicateName(String name) {
+    return '$name (copie)';
+  }
 
   @override
   String get commonOk => 'OK';

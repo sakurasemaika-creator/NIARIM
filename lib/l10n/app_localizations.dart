@@ -773,11 +773,89 @@ abstract class AppLocalizations {
   /// **'{count}件を貼り付け'**
   String homePasteTooltip(int count);
 
-  /// No description provided for @homePasteSnackbar.
+  /// No description provided for @homeMoveToTrashSkipFavorites.
   ///
   /// In ja, this message translates to:
-  /// **'貼り付けました'**
-  String get homePasteSnackbar;
+  /// **'お気に入りの{count}件は移動しません（お気に入りを外すと移動できます）。'**
+  String homeMoveToTrashSkipFavorites(int count);
+
+  /// No description provided for @homeMoveToTrashSkipFolders.
+  ///
+  /// In ja, this message translates to:
+  /// **'フォルダ{count}件は移動しません（フォルダはゴミ箱へ移せません）。'**
+  String homeMoveToTrashSkipFolders(int count);
+
+  /// No description provided for @homeMoveToTrashNothing.
+  ///
+  /// In ja, this message translates to:
+  /// **'ゴミ箱へ移動できる作品がありません（お気に入りの作品とフォルダは移動しません）。'**
+  String get homeMoveToTrashNothing;
+
+  /// No description provided for @homeMovedToTrashSnackbar.
+  ///
+  /// In ja, this message translates to:
+  /// **'{count}件をゴミ箱へ移動しました'**
+  String homeMovedToTrashSnackbar(int count);
+
+  /// No description provided for @homeUndoAction.
+  ///
+  /// In ja, this message translates to:
+  /// **'元に戻す'**
+  String get homeUndoAction;
+
+  /// No description provided for @homeCutSnackbar.
+  ///
+  /// In ja, this message translates to:
+  /// **'{count}件を切り取りました。移動先を開いて、右上の貼り付けを押してください。'**
+  String homeCutSnackbar(int count);
+
+  /// No description provided for @homeCopiedSnackbar.
+  ///
+  /// In ja, this message translates to:
+  /// **'{count}件をコピーしました。貼り付けたい場所を開いて、右上の貼り付けを押してください。'**
+  String homeCopiedSnackbar(int count);
+
+  /// No description provided for @homePastedSnackbar.
+  ///
+  /// In ja, this message translates to:
+  /// **'{count}件を貼り付けました'**
+  String homePastedSnackbar(int count);
+
+  /// No description provided for @homePasteSkippedIntoSelf.
+  ///
+  /// In ja, this message translates to:
+  /// **'フォルダ{count}件は、自分自身やその中へは移動できないため、切り取ったまま残しました。'**
+  String homePasteSkippedIntoSelf(int count);
+
+  /// No description provided for @homePasteSkippedMissing.
+  ///
+  /// In ja, this message translates to:
+  /// **'{count}件は元の作品が見つからないため、貼り付けられませんでした（ゴミ箱へ移動・削除済み）。'**
+  String homePasteSkippedMissing(int count);
+
+  /// No description provided for @homePasteFailed.
+  ///
+  /// In ja, this message translates to:
+  /// **'一部を貼り付けられませんでした。もう一度お試しください。'**
+  String get homePasteFailed;
+
+  /// No description provided for @homeCutPendingHint.
+  ///
+  /// In ja, this message translates to:
+  /// **'切り取り中（貼り付けを待っています）'**
+  String get homeCutPendingHint;
+
+  /// No description provided for @homeCopyFoldersUnsupported.
+  ///
+  /// In ja, this message translates to:
+  /// **'フォルダはコピーできません（作品だけを選んでください）'**
+  String get homeCopyFoldersUnsupported;
+
+  /// Name of a duplicated work.
+  ///
+  /// In ja, this message translates to:
+  /// **'{name} (コピー)'**
+  String projectDuplicateName(String name);
 
   /// No description provided for @commonOk.
   ///

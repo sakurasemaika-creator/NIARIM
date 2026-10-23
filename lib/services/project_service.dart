@@ -2398,7 +2398,14 @@ class ProjectService extends ChangeNotifier {
   Future<void> restoreProject(String id) async {
     final idx = _trash.indexWhere((p) => p.id == id);
     if (idx >= 0) {
-      final project = _trash.removeAt(idx);
+      var project = _trash.removeAt(idx);
+      // ゴミ箱にある間に入っていたフォルダが削除されていれば、一番上へ戻す
+      // （消えたフォルダを指したままだと一覧のどこにも出ず、検索でしか
+      // 見つからなかった）。
+      if (project.folderId != null &&
+          !_folders.any((f) => f.id == project.folderId)) {
+        project = project.copyWith(folderId: null);
+      }
       _projects.add(project);
       _trashDeletedAt.remove(id);
       await _persistTrashState();
@@ -2408,6 +2415,8 @@ class ProjectService extends ChangeNotifier {
       if (!_scenes.containsKey(id)) {
         await _reloadProjectDataFromDisk(id);
       }
+      // ゴミ箱にある間の変更（フォルダ・サムネイルの付け替え）も保存する。
+      _saveAsync(id);
       notifyListeners();
     }
   }
@@ -2424,12 +2433,39 @@ class ProjectService extends ChangeNotifier {
         final basePath = await NiaproSerializer.projectsBasePath();
         final dir = Directory('$basePath/$id');
         if (dir.existsSync()) {
+          await _keepSharedThumbnails(dir.path);
           await dir.delete(recursive: true);
         }
       } catch (_) {
         // 削除に失敗してもアプリ側の状態は既に消去済みのため続行する
       }
       notifyListeners();
+    }
+  }
+
+  /// 以前の版で複製した作品は、複製元のフォルダにあるサムネイルを指して
+  /// いる。複製元を完全に削除する前に、そのファイルを使っている作品へ
+  /// 写しておく（写さないと、複製の一覧の絵が消えた）。ゴミ箱の作品は
+  /// メモリ上だけ付け替え、戻したときに保存する。
+  Future<void> _keepSharedThumbnails(String dirPath) async {
+    final prefix = '$dirPath${Platform.pathSeparator}';
+    for (final list in [_projects, _trash]) {
+      final sharing = [
+        for (final p in list)
+          if (p.thumbnailPath?.startsWith(prefix) ?? false) p,
+      ];
+      for (final project in sharing) {
+        final copied = await NiaproSerializer.copyProjectFiles(
+          fromProjectId: project.id,
+          toProjectId: project.id,
+          thumbnailPath: project.thumbnailPath,
+          includeMaterials: false,
+        );
+        final i = list.indexWhere((p) => p.id == project.id);
+        if (i < 0) continue;
+        list[i] = list[i].copyWith(thumbnailPath: copied);
+        _saveAsync(project.id);
+      }
     }
   }
 
@@ -2454,57 +2490,82 @@ class ProjectService extends ChangeNotifier {
   /// [useTargetFolder]がtrueの場合、複製先のフォルダを[targetFolderId]
   /// （nullはルート直下）で明示的に上書きする。falseの場合（既定）は
   /// 複製元と同じフォルダのまま複製する。
-  Future<void> duplicateProject(
+  ///
+  /// [name]は複製の名前（画面の言語で「〇〇 (コピー)」を作って渡す）。
+  /// 省略すると日本語の「(コピー)」を付ける。複製したかどうかを返す
+  /// （元の作品が見つからなければfalse）。
+  Future<bool> duplicateProject(
     String id, {
     String? targetFolderId,
     bool useTargetFolder = false,
+    String? name,
   }) async {
     final idx = _projects.indexWhere((p) => p.id == id);
     if (idx >= 0) {
       final original = _projects[idx];
       final newId = _nextId('proj');
-      final copy = original.copyWith(
-        id: newId,
-        name: '${original.name} (コピー)',
-        createdAt: DateTime.now(),
-        updatedAt: DateTime.now(),
-        folderId: useTargetFolder ? targetFolderId : original.folderId,
-      );
-      _projects.add(copy);
 
       // シーンリストは複製先専用の新しいListにする（Scene/Frame/Layerはimmutableなため
       // 中身の値オブジェクト自体は共有してよいが、外側のListを共有すると片方への
       // 変更（scenes[i] = ...）がもう片方にも波及してしまうため独立させる）。
-      if (_scenes.containsKey(id)) {
-        _scenes[newId] = List<Scene>.from(_scenes[id]!);
-        _layerHomes[newId] = buildLayerHomeIndex(_scenes[newId]!);
-      }
-
+      // 素材を写している間に複製元が編集・削除されても、押した時点の内容を
+      // 複製するよう、ここで写し取っておく。
+      final scenes = _scenes[id] == null
+          ? null
+          : List<Scene>.from(_scenes[id]!);
       // レイヤーIDカウンターも引き継がないと、複製後に新規追加したレイヤーのIDが
       // 複製元から引き継いだ既存レイヤーIDと衝突する。
-      if (_layerIdCounters.containsKey(id)) {
-        _layerIdCounters[newId] = _layerIdCounters[id]!;
-      }
-
+      final layerIdCounter = _layerIdCounters[id];
       // 描画データ（タイル）も複製先IDへコピーする。TileManager.importAllは
       // ピクセルバッファをUint8List.fromListで複製するため、複製元・複製先は
       // 完全に独立したバッファになる。
       final sourceTm = _tileManagers[id];
       final newTm = TileManager(
-        canvasWidth: copy.drawingWidth,
-        canvasHeight: copy.drawingHeight,
+        canvasWidth: original.drawingWidth,
+        canvasHeight: original.drawingHeight,
         compositeCacheMax: _tileCacheBudget,
       );
       if (sourceTm != null) {
         newTm.importAll(sourceTm.exportAll());
       }
+
+      // 素材（画像・動画・音声）とサムネイルのファイルを先に複製先へ写す
+      // （写さないと、素材を使った作品の複製は素材が「不足」になった）。
+      // 写し終えるまで複製を一覧に出さない：途中で開くと素材が無いと
+      // 判断され、そこで足した素材が写している素材で上書きされた。
+      // 写している途中でアプリが終わっても、保存データ（.niapro）の無い
+      // フォルダは起動時に読み飛ばされる。
+      final thumbnail = await NiaproSerializer.copyProjectFiles(
+        fromProjectId: id,
+        toProjectId: newId,
+        thumbnailPath: original.thumbnailPath,
+      );
+
+      final copy = original.copyWith(
+        id: newId,
+        name: name ?? '${original.name} (コピー)',
+        createdAt: DateTime.now(),
+        updatedAt: DateTime.now(),
+        folderId: useTargetFolder ? targetFolderId : original.folderId,
+        // 複製元と同じファイルを指したままだと、複製元の削除で一緒に消えた。
+        thumbnailPath: thumbnail,
+      );
+      _projects.add(copy);
+      if (scenes != null) {
+        _scenes[newId] = scenes;
+        _layerHomes[newId] = buildLayerHomeIndex(scenes);
+      }
+      if (layerIdCounter != null) {
+        _layerIdCounters[newId] = layerIdCounter;
+      }
       _tileManagers[newId] = newTm;
 
       // 複製結果をディスクへ保存する（保存しないと再起動後に消えてしまう）。
       _saveAsync(newId);
-
       notifyListeners();
+      return true;
     }
+    return false;
   }
 
   /// キャンバスサイズを変更する（タイムライン三点メニュー「キャンバス
@@ -2710,8 +2771,8 @@ class ProjectService extends ChangeNotifier {
     _projects[curIdx] = _projects[curIdx].copyWith(thumbnailPath: path);
     final saved = _saveReportingSuccess(projectId);
     notifyListeners();
-    // 前のサムネイルは、新しいパスを保存し終えてから、ほかの作品（複製した
-    // 作品はサムネイルを共有する）が使っていなければ消す（保存の前に消すと、
+    // 前のサムネイルは、新しいパスを保存し終えてから、ほかの作品（以前の
+    // 版で複製した作品はサムネイルを共有している）が使っていなければ消す（保存の前に消すと、
     // 保存が終わる前にアプリを閉じたとき、保存済みのデータが消えたファイルを
     // 指したままになる）。
     if (await saved &&
@@ -2786,10 +2847,18 @@ class ProjectService extends ChangeNotifier {
     notifyListeners();
   }
 
+  /// [candidateId]が[ancestorId]そのもの、またはその中（下の階層を含む）の
+  /// フォルダかどうか。フォルダを自分自身やその中へは移せない。
+  bool isFolderWithin(String candidateId, String ancestorId) =>
+      _isDescendantFolder(candidateId, ancestorId);
+
   /// [candidateId]が[ancestorId]の子孫フォルダかどうかを判定する。
   bool _isDescendantFolder(String candidateId, String ancestorId) {
     String? current = candidateId;
-    while (current != null) {
+    // 壊れたデータで親子が輪になっていても止まるように、たどったフォルダを
+    // 覚えておく。
+    final seen = <String>{};
+    while (current != null && seen.add(current)) {
       if (current == ancestorId) return true;
       current = _folders
           .where((f) => f.id == current)

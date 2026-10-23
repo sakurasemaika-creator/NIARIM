@@ -313,6 +313,46 @@ class NiaproSerializer {
     return path;
   }
 
+  /// 作品の複製で、素材フォルダ（Materials/）とサムネイルを複製先の作品の
+  /// フォルダへ写す。写したサムネイルのパス（無ければnull）を返す。
+  /// 写せないファイルは飛ばす（複製そのものは続ける）。[includeMaterials]が
+  /// falseならサムネイルだけを写す。
+  static Future<String?> copyProjectFiles({
+    required String fromProjectId,
+    required String toProjectId,
+    String? thumbnailPath,
+    bool includeMaterials = true,
+  }) async {
+    try {
+      final from = await _projectDir(fromProjectId);
+      final to = await _projectDir(toProjectId);
+      final materials = Directory('${from.path}/Materials');
+      if (includeMaterials && materials.existsSync()) {
+        final target = Directory('${to.path}/Materials')
+          ..createSync(recursive: true);
+        for (final entity in materials.listSync()) {
+          if (entity is! File) continue;
+          final name = entity.uri.pathSegments.last;
+          try {
+            await entity.copy('${target.path}/$name');
+          } on FileSystemException {
+            // 読めない素材は飛ばす（素材一覧で「不足」と表示される）。
+          }
+        }
+      }
+      if (thumbnailPath == null || !File(thumbnailPath).existsSync()) {
+        return null;
+      }
+      final copied =
+          '${to.path}/thumbnail_${DateTime.now().microsecondsSinceEpoch}.png';
+      await File(thumbnailPath).copy(copied);
+      return copied;
+    } on FileSystemException {
+      // 写せなかったものは無いものとして続ける（作品自体の複製は止めない）。
+      return null;
+    }
+  }
+
   /// ノードの実データ（.niapro）とサムネイル画像を両方削除する。
   static Future<void> deleteSaveTreeNode(
     String projectId,

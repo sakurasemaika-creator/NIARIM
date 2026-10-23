@@ -184,7 +184,84 @@
       }
     }
   },
-  "homePasteSnackbar": "貼り付けました",
+  "homeMoveToTrashSkipFavorites": "お気に入りの{count}件は移動しません（お気に入りを外すと移動できます）。",
+  "@homeMoveToTrashSkipFavorites": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "homeMoveToTrashSkipFolders": "フォルダ{count}件は移動しません（フォルダはゴミ箱へ移せません）。",
+  "@homeMoveToTrashSkipFolders": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "homeMoveToTrashNothing": "ゴミ箱へ移動できる作品がありません（お気に入りの作品とフォルダは移動しません）。",
+  "homeMovedToTrashSnackbar": "{count}件をゴミ箱へ移動しました",
+  "@homeMovedToTrashSnackbar": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "homeUndoAction": "元に戻す",
+  "homeCutSnackbar": "{count}件を切り取りました。移動先を開いて、右上の貼り付けを押してください。",
+  "@homeCutSnackbar": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "homeCopiedSnackbar": "{count}件をコピーしました。貼り付けたい場所を開いて、右上の貼り付けを押してください。",
+  "@homeCopiedSnackbar": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "homePastedSnackbar": "{count}件を貼り付けました",
+  "@homePastedSnackbar": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "homePasteSkippedIntoSelf": "フォルダ{count}件は、自分自身やその中へは移動できないため、切り取ったまま残しました。",
+  "@homePasteSkippedIntoSelf": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "homePasteSkippedMissing": "{count}件は元の作品が見つからないため、貼り付けられませんでした（ゴミ箱へ移動・削除済み）。",
+  "homePasteFailed": "一部を貼り付けられませんでした。もう一度お試しください。",
+  "homeCutPendingHint": "切り取り中（貼り付けを待っています）",
+  "@homePasteSkippedMissing": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "homeCopyFoldersUnsupported": "フォルダはコピーできません（作品だけを選んでください）",
+  "projectDuplicateName": "{name} (コピー)",
+  "@projectDuplicateName": {
+    "description": "Name of a duplicated work.",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
   "commonOk": "OK",
   "gestureSettingsTitle": "ジェスチャー設定",
   "gestureTwoFingerTap": "2本指タップ",
