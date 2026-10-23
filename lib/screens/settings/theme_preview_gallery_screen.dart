@@ -255,7 +255,8 @@ class _ThemeSampleScreen extends StatelessWidget {
       color: c.primary, borderRadius: BorderRadius.circular(12)),
       child: Row(mainAxisAlignment: MainAxisAlignment.center, children: [
         Icon(icon, color: c.onPrimary, size: 20), const SizedBox(width: 8),
-        Text(label, style: TextStyle(color: c.onPrimary, fontWeight: FontWeight.bold)),
+        Text(label, style: TextStyle(color: c.onPrimary,
+          fontFamily: 'Kuramubon', fontWeight: FontWeight.bold)),
       ]));
   Widget _art(ColorScheme c, {double height = 150}) => Container(
     height: height, color: c.surfaceContainerHigh,
