@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -116,6 +117,31 @@ void main() {
     await settle(tester);
     expect(find.text('P2'), findsWidgets);
     expect(find.text('P1'), findsNothing);
+  });
+
+  testWidgets('switching to tag search with a mouse or pen keeps typing', (
+    tester,
+  ) async {
+    await boot(tester, projects: 3);
+    await tester.tap(find.byIcon(Icons.search));
+    await settle(tester);
+    bool fieldFocused() {
+      final focused = FocusManager.instance.primaryFocus?.context;
+      return focused?.widget is EditableText ||
+          focused?.findAncestorWidgetOfExactType<EditableText>() != null;
+    }
+
+    for (final (kind, icon) in [
+      (PointerDeviceKind.mouse, Icons.sell_outlined),
+      (PointerDeviceKind.stylus, Icons.search),
+    ]) {
+      await tester.tap(
+        find.ancestor(of: find.byIcon(icon), matching: find.byType(IconButton)),
+        kind: kind,
+      );
+      await settle(tester);
+      expect(fieldFocused(), isTrue, reason: '$kind');
+    }
   });
 
   testWidgets('Ctrl+A inside the search field does not select projects', (

@@ -2,6 +2,7 @@ import 'package:niarim/services/theme_service.dart';
 
 import 'dart:convert';
 import 'dart:io';
+import 'dart:math' as math;
 import 'dart:typed_data';
 
 import 'package:flutter/material.dart' hide MaterialType;
@@ -384,26 +385,37 @@ class ProjectListWidget extends StatelessWidget {
 
     // カード基準サイズ（大/中/小）を軸に、画面幅に応じて列数が自然に増減する
     // グリッドを使う（PC/DeXモードの広い画面でも余白だらけにならないように）。
-    final targetExtent = switch (viewMode) {
-      ProjectViewMode.large => 240.0,
-      ProjectViewMode.medium => 170.0,
-      ProjectViewMode.small => 130.0,
-      ProjectViewMode.detail => double.infinity,
-    };
-
-    return GridView.builder(
-      key: scrollKey,
-      padding: EdgeInsets.fromLTRB(8, 8, 8, 8 + bottomPadding),
-      gridDelegate: SliverGridDelegateWithMaxCrossAxisExtent(
-        maxCrossAxisExtent: targetExtent,
-        crossAxisSpacing: 8,
-        mainAxisSpacing: 8,
-        childAspectRatio: 16 / 12,
+    return LayoutBuilder(
+      builder: (context, constraints) => GridView.builder(
+        key: scrollKey,
+        padding: EdgeInsets.fromLTRB(8, 8, 8, 8 + bottomPadding),
+        gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+          crossAxisCount: gridColumnsFor(viewMode, constraints.maxWidth - 16),
+          crossAxisSpacing: 8,
+          mainAxisSpacing: 8,
+          childAspectRatio: 16 / 12,
+        ),
+        itemCount: sorted.length,
+        itemBuilder: (context, index) =>
+            _gridCard(context, sorted[index], locationOf(sorted[index])),
       ),
-      itemCount: sorted.length,
-      itemBuilder: (context, index) =>
-          _gridCard(context, sorted[index], locationOf(sorted[index])),
     );
+  }
+
+  /// 表示サイズごとの列数。基準の幅だけで決めると、スマホの幅では大と中
+  /// （360px）や中と小（390〜430px）が同じ列数になり、選んでも何も
+  /// 変わらなかった。小を基準に、中は小より、大は中より少なくとも1列
+  /// 少なくする（広い画面では基準の幅どおりで、もともと差がある）。
+  @visibleForTesting
+  static int gridColumnsFor(ProjectViewMode mode, double width) {
+    int fit(double extent) => math.max(1, (width / (extent + 8)).ceil());
+    final small = fit(130);
+    final medium = math.max(1, math.min(fit(170), small - 1));
+    return switch (mode) {
+      ProjectViewMode.small => small,
+      ProjectViewMode.medium => medium,
+      _ => math.max(1, math.min(fit(240), medium - 1)),
+    };
   }
 
   /// 一覧が空のときの表示。検索・お気に入りの絞り込みで隠れているだけの
@@ -689,8 +701,16 @@ class ProjectListWidget extends StatelessWidget {
               ],
             ),
           ),
-          child: Center(
-            child: Icon(Icons.folder_rounded, color: color, size: 46),
+          // 大表示の1列のカードでは46pxのままだと広い絵の中で小さく浮くので、
+          // 絵の短い辺に合わせて大きくする（中・小は46pxのまま）。
+          child: LayoutBuilder(
+            builder: (context, constraints) => Center(
+              child: Icon(
+                Icons.folder_rounded,
+                color: color,
+                size: math.max(46, constraints.biggest.shortestSide * 0.4),
+              ),
+            ),
           ),
         ),
       );

@@ -457,8 +457,13 @@ class _HomeScreenState extends State<HomeScreen>
                             tooltip: _searchByTag
                                 ? l10n.homeSearchHint
                                 : l10n.projectDetailTagsQuickAction,
-                            onPressed: () =>
-                                setState(() => _searchByTag = !_searchByTag),
+                            // マウス・ペンで押すと、欄の外を押したことに
+                            // なって入力が画面へ戻るので、欄へ戻して打ち
+                            // 続けられるようにする。
+                            onPressed: () {
+                              setState(() => _searchByTag = !_searchByTag);
+                              _searchFocusNode.requestFocus();
+                            },
                           ),
                           Expanded(
                             child: CallbackShortcuts(
