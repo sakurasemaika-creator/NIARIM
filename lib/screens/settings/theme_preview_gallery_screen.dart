@@ -845,7 +845,9 @@ class _ThemeSampleScreen extends StatelessWidget {
             decoration: BoxDecoration(
               shape: BoxShape.circle,
               color: Colors.black,
-              border: Border.all(color: c.outlineVariant, width: 2))),
+              border: Border.all(
+                color: CanvasIconButton.outlineColor(Colors.black, c),
+                width: 2))),
           _mockTool(c, Icons.tune, canvasOutline: true),
           _mockTool(c, Icons.layers_outlined, canvasOutline: true),
         ])),
