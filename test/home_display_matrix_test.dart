@@ -8,6 +8,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:niarim/app.dart';
 import 'package:niarim/app_bootstrap.dart';
+import 'package:niarim/l10n/app_localizations.dart';
 import 'package:niarim/router.dart';
 import 'package:niarim/screens/home/home_screen.dart';
 import 'package:niarim/screens/home/widgets/project_list_widget.dart';
@@ -172,6 +173,18 @@ void main() {
     // 省略したものは長押し・ホバーで全文が読める（Tooltipの中にある）こと。
     List<String> inspectSelectionBar(Size size) {
       final problems = <String>[];
+      final l10n = AppLocalizations.of(
+        tester.element(find.byType(HomeScreen)),
+      )!;
+      // 全選択・全解除は文字かアイコンのどちらか（全文はツールチップ）。
+      for (final text in [
+        l10n.homeSelectionAllSelect,
+        l10n.homeSelectionAllDeselect,
+      ]) {
+        if (find.byTooltip(text).evaluate().length != 1) {
+          problems.add('selection control "$text" missing');
+        }
+      }
       final screen = Offset.zero & size;
       bool onScreen(Rect r) =>
           screen.contains(r.topLeft) &&
@@ -200,6 +213,13 @@ void main() {
         if (r.top < barTop || r.bottom > barBottom) continue;
         final paragraph = e.renderObject! as RenderParagraph;
         if (!paragraph.didExceedMaxLines) continue;
+        // 省略すると同じに見える言語があるので、全選択・全解除は省略
+        // させない（収まらなければアイコン）。
+        final cutText = paragraph.text.toPlainText();
+        if (cutText == l10n.homeSelectionAllSelect ||
+            cutText == l10n.homeSelectionAllDeselect) {
+          problems.add('select/deselect label cut "$cutText"');
+        }
         final tooltip = find.ancestor(
           of: find.byWidget(e.widget),
           matching: find.byType(Tooltip),

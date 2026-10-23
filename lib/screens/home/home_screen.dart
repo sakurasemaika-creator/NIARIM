@@ -787,8 +787,52 @@ class _HomeScreenState extends State<HomeScreen>
   /// 大きな文字でも切り取り・コピー・ゴミ箱を1行のまま出す（省略した文字は
   /// 長押し・ホバーで全文が出る）。お気に入りは一括では付け外ししない
   /// （各項目のメニューから）。
+  /// 全選択・全解除の文字が省略されるほど狭いときは、2つともアイコンにする
+  /// （仏語の「Tout sélectionner」「Tout désélectionner」がどちらも
+  /// 「Tou…」になるように、省略すると見分けられない言語がある）。
   Widget _buildSelectionBar(AppLocalizations l10n) {
     final onlyProjects = _selectionHasOnlyProjects();
+    const labelPadding = 4.0;
+    final selectAll = l10n.homeSelectionAllSelect;
+    final deselectAll = l10n.homeSelectionAllDeselect;
+    final count = l10n.homeSelectionCount(_selectedIds.length);
+    // 文字のボタンと同じ書式で、[width]に1行で収まるか。
+    bool labelFits(BuildContext context, String text, double width) {
+      final painter = TextPainter(
+        text: TextSpan(
+          text: text,
+          style:
+              Theme.of(
+                context,
+              ).textButtonTheme.style?.textStyle?.resolve(const {}) ??
+              Theme.of(context).textTheme.labelLarge,
+        ),
+        maxLines: 1,
+        ellipsis: '…',
+        textDirection: Directionality.of(context),
+        textScaler: MediaQuery.textScalerOf(context),
+      )..layout(maxWidth: width < 0 ? 0 : width);
+      final fits = !painter.didExceedMaxLines;
+      painter.dispose();
+      return fits;
+    }
+
+    Widget iconLabel(IconData icon, String text, VoidCallback onPressed) =>
+        Tooltip(
+          message: text,
+          child: TextButton(
+            style: TextButton.styleFrom(
+              padding: EdgeInsets.zero,
+              minimumSize: const Size(48, 48),
+              // 文字ボタンの既定（18）だと点線のアイコンが薄く見える。
+              // 隣の切り取り・コピー・ゴミ箱と同じ大きさにする。
+              iconSize: 24,
+            ),
+            onPressed: onPressed,
+            // 読み上げではツールチップの文が名前になる（IconButtonと同じ）。
+            child: Icon(icon),
+          ),
+        );
     Widget label(String text, {VoidCallback? onPressed}) => Expanded(
       child: Tooltip(
         message: text,
@@ -801,7 +845,7 @@ class _HomeScreenState extends State<HomeScreen>
               )
             : TextButton(
                 style: TextButton.styleFrom(
-                  padding: const EdgeInsets.symmetric(horizontal: 4),
+                  padding: const EdgeInsets.symmetric(horizontal: labelPadding),
                   minimumSize: const Size(48, 48),
                 ),
                 onPressed: onPressed,
@@ -816,15 +860,46 @@ class _HomeScreenState extends State<HomeScreen>
       child: Row(
         children: [
           Expanded(
-            child: Row(
-              children: [
-                label(
-                  l10n.homeSelectionAllSelect,
-                  onPressed: _selectAllInCurrentFolder,
-                ),
-                label(l10n.homeSelectionAllDeselect, onPressed: _exitSelection),
-                label(l10n.homeSelectionCount(_selectedIds.length)),
-              ],
+            child: LayoutBuilder(
+              builder: (context, constraints) {
+                // 3つの欄は同じ幅。ボタンの文字は左右の余白の内側に入る。
+                final cell = constraints.maxWidth / 3 - labelPadding * 2;
+                if (labelFits(context, selectAll, cell) &&
+                    labelFits(context, deselectAll, cell)) {
+                  return Row(
+                    children: [
+                      label(selectAll, onPressed: _selectAllInCurrentFolder),
+                      label(deselectAll, onPressed: _exitSelection),
+                      label(count),
+                    ],
+                  );
+                }
+                return Row(
+                  children: [
+                    iconLabel(
+                      Icons.select_all,
+                      selectAll,
+                      _selectAllInCurrentFolder,
+                    ),
+                    iconLabel(Icons.deselect, deselectAll, _exitSelection),
+                    // アイコンのときは残りの幅の中央ではなく、アイコンの
+                    // すぐ右に並べる（中央だと広い画面で離れて浮く）。
+                    Expanded(
+                      child: Padding(
+                        padding: const EdgeInsetsDirectional.only(start: 8),
+                        child: Tooltip(
+                          message: count,
+                          child: Text(
+                            count,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                );
+              },
             ),
           ),
           if (_selectedIds.isNotEmpty) ...[

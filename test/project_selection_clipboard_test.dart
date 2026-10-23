@@ -6,6 +6,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:niarim/app.dart';
 import 'package:niarim/app_bootstrap.dart';
+import 'package:niarim/l10n/app_localizations.dart';
 import 'package:niarim/router.dart';
 import 'package:niarim/screens/home/widgets/project_list_widget.dart';
 import 'package:niarim/screens/splash/splash_screen.dart';
@@ -435,7 +436,51 @@ void main() {
     // お気に入りは一括では付け外ししない（各項目のメニューから）。
     expect(find.byTooltip('お気に入りに登録'), findsNothing);
     expect(find.byTooltip('お気に入りを解除'), findsNothing);
+    // 収まる幅では全選択・全解除は文字のまま。
+    expect(find.byIcon(Icons.select_all), findsNothing);
+    expect(find.byIcon(Icons.deselect), findsNothing);
   });
+
+  // 仏語の「Tout sélectionner」「Tout désélectionner」はどちらも「Tou…」、
+  // 韓国語の「전체 선택」「전체 선택 해제」はどちらも「전체 …」と同じに
+  // 省略され、2つのボタンを見分けられなかった。省略されるほど狭いときは
+  // 2つともアイコンにする（全文はツールチップ）。
+  for (final language in const ['fr', 'ko']) {
+    testWidgets('at 320px in $language, select and deselect become icons', (
+      tester,
+    ) async {
+      SharedPreferences.setMockInitialValues({
+        firstUseTooltipsSeenKey: kAllFirstUseTooltipKeys,
+        'first_launch': false,
+        'home_view_mode': 'medium',
+        'language': language,
+      });
+      final l10n = lookupAppLocalizations(Locale(language));
+      await boot(tester, size: const Size(320, 700), names: ['apple', 'pear']);
+      await tester.longPress(card('apple'));
+      await settle(tester);
+      expect(tester.takeException(), isNull);
+      expect(find.text(l10n.homeSelectionAllSelect), findsNothing);
+      expect(find.text(l10n.homeSelectionAllDeselect), findsNothing);
+      final selectAll = find.byTooltip(l10n.homeSelectionAllSelect);
+      final deselectAll = find.byTooltip(l10n.homeSelectionAllDeselect);
+      expect(
+        find.descendant(of: selectAll, matching: find.byIcon(Icons.select_all)),
+        findsOneWidget,
+      );
+      expect(
+        find.descendant(of: deselectAll, matching: find.byIcon(Icons.deselect)),
+        findsOneWidget,
+      );
+      // 押せば今までどおり全選択・全解除になる。
+      await tester.tap(selectAll);
+      await settle(tester);
+      expect(find.byTooltip(l10n.homeSelectionCount(2)), findsOneWidget);
+      await tester.tap(deselectAll);
+      await settle(tester);
+      expect(find.byIcon(Icons.content_cut), findsNothing);
+    });
+  }
 
   testWidgets('Ctrl+C with a folder selected keeps the clipboard', (
     tester,
