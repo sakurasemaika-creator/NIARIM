@@ -545,7 +545,11 @@ class _FrameStripWidgetState extends State<FrameStripWidget> {
                     key: const ValueKey('frameStripTimelineButton'),
                     tooltip: l10n.frameStripTimelineModeLabel,
                     onPressed: widget.onTimelineTap,
-                    icon: const Icon(Icons.movie_filter_outlined),
+                    icon: Icon(
+                      Icons.movie_filter_outlined,
+                      shadows: CanvasIconButton.foregroundShadows(
+                        scheme.onSurfaceVariant, scheme),
+                    ),
                     iconSize: 21,
                     style: IconButton.styleFrom(
                       fixedSize: const Size(42, 42),
