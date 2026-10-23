@@ -127,10 +127,23 @@ void main() {
       find.byKey(const Key('themePreviewTitle'))).data, 'テーマ・外観');
 
     Future<void> checkSwatch(String label, Color expected) async {
-      final list = find.byType(Scrollable).last;
-      await tester.scrollUntilVisible(
-        find.text(label), 90, scrollable: list);
-      await tester.pumpAndSettle();
+      // End users cannot scroll the preview content. For this color-token
+      // assertion only, jump the internal scroll position programmatically;
+      // the rendered screen remains top-aligned and noninteractive.
+      final scrollable = tester.state<ScrollableState>(
+        find.byType(Scrollable).last);
+      for (var attempt = 0;
+           attempt < 30 && find.text(label).evaluate().isEmpty;
+           attempt++) {
+        final position = scrollable.position;
+        final next = (position.pixels + 100)
+            .clamp(position.minScrollExtent, position.maxScrollExtent)
+            .toDouble();
+        if (next == position.pixels) break;
+        position.jumpTo(next);
+        await tester.pumpAndSettle();
+      }
+      expect(find.text(label), findsOneWidget);
       final containingCard = find.ancestor(
         of: find.text(label), matching: find.byType(Card)).first;
       final avatar = tester.widget<CircleAvatar>(
