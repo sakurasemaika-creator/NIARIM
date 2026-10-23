@@ -56,8 +56,8 @@
    `test/helpers/color_channels.dart`の`.red8`/`.green8`/`.blue8`/
    `.alpha8`を使う。テスト内のデバッグ出力は`print`ではなく
    `debugPrint`を使う）
-3. `flutter test`（ベースライン：2026-10-23、dev_branch `d9c9531`を
-   取り込んだ`ccr-f56ee68e-77ag7y`で**成功2165・スキップ17・失敗2**。
+3. `flutter test`（ベースライン：2026-10-23、dev_branch `e086838`を
+   取り込んだ`ccr-f56ee68e-77ag7y`で**成功2169・スキップ17・失敗2**。
    失敗はdev_branchでも落ちる`test/community_filter_dialog_contrast_test.dart`
    と`test/popup_opaque_background_test.dart`で、通常タスクでは直さない
    （以前の失敗4件〔`test/app_web_reference_*`3件・
