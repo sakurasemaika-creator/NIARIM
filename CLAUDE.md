@@ -735,6 +735,12 @@ onTap: ...)`だったために
   幅が足りなければ省略して（長押し・ホバーで全文）、切り取り・コピー・
   ゴミ箱を1行に並べる。お気に入りの一括の付け外しは置かない（各項目の
   メニューから）。2行に分ける案は採らない。
+  全選択・全解除の文字が欄に収まらないときは、2つとも省略せずアイコン
+  （select_all／deselect）にする（ユーザー指定。仏語の「Tout
+  sélectionner」「Tout désélectionner」がどちらも「Tou…」になるなど、
+  省略すると見分けられない言語がある）。収まるかは文字のボタンと同じ書式・
+  文字の大きさの設定で測る。`home_display_matrix_test`が全幅・全言語で
+  「全選択・全解除の文字が省略されていない」ことを見張る。
 - **`SliverMultiBoxAdaptorElement`の「見えている子」は描画範囲ぶんだけ**：
   `ListView.builder`はcacheExtent（既定250px）ぶん先の子も**生成・レイアウト
   する**が、`debugVisitOnstageChildren`が返すのは**実際に描画される範囲の
