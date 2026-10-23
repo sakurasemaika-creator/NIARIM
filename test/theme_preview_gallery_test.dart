@@ -186,6 +186,7 @@ void main() {
       tester.element(find.byKey(const Key('themeInlinePreview'))),
       listen: false,
     );
+    final captureDefaultTheme = themeService.current;
     final before = Theme.of(tester.element(
       find.byKey(const Key('themeInlinePreview')))).colorScheme.primary;
     themeService.previewCurrent(themeService.current.copyWith(
@@ -199,6 +200,12 @@ void main() {
     expect(tester.takeException(), isNull);
 
     await saveCapture('theme_settings_accent_changed.png');
+
+    // All-route screenshots use the default light theme. Reset the sample
+    // before gallery captures so comparisons reflect layout differences,
+    // rather than unrelated accent-color differences.
+    themeService.previewCurrent(captureDefaultTheme);
+    await tester.pumpAndSettle();
 
     await tester.tap(find.byKey(const Key('themePreviewOpen')));
     await tester.pumpAndSettle();
