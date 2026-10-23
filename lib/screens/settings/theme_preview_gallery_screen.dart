@@ -539,29 +539,58 @@ class _ThemeSampleScreen extends StatelessWidget {
         ])),
       ]));
 
-  Widget _community(ColorScheme c) => Column(children: [
-    Container(height: 44, color: c.surfaceContainer, child: Row(
-      mainAxisAlignment: MainAxisAlignment.spaceEvenly, children: [
-        Text(t('新着', 'New')), Text(t('ランキング', 'Ranking')),
-        Text(t('フォロー中', 'Following')),
-      ])),
-    Expanded(child: ListView.builder(
-      physics: const NeverScrollableScrollPhysics(),
-      padding: const EdgeInsets.all(12), itemCount: 4,
-      itemBuilder: (_, i) => Card(child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          _art(c, height: 142),
-          Padding(padding: const EdgeInsets.all(12), child: Row(children: [
-            const Icon(Icons.account_circle), const SizedBox(width: 9),
-            Expanded(child: Text(t('サンプル作品', 'Sample artwork'))),
-            const Icon(Icons.favorite_border), const SizedBox(width: 10),
-            const Icon(Icons.bookmark_border),
-          ])),
-        ])),
-    )),
-  ]);
 
+  Widget _community(ColorScheme c) => Column(children: [
+    Container(height: 38, color: c.surfaceContainerLow,
+      child: Row(mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+        children: [
+          Text(t('新着', 'Latest'), style: TextStyle(
+            color: c.primary, fontWeight: FontWeight.w700, fontSize: 12)),
+          Text(t('ランキング', 'Ranking'), style: const TextStyle(fontSize: 12)),
+          Text(t('フォロー中', 'Following'), style: const TextStyle(fontSize: 12)),
+        ])),
+    Expanded(child: GridView.count(
+      physics: const NeverScrollableScrollPhysics(),
+      crossAxisCount: 2, childAspectRatio: .66,
+      mainAxisSpacing: 8, crossAxisSpacing: 8,
+      padding: const EdgeInsets.all(8),
+      children: List.generate(6, (i) => Container(
+        clipBehavior: Clip.antiAlias,
+        decoration: BoxDecoration(
+          color: c.surfaceContainerLow,
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: c.outlineVariant)),
+        child: Column(children: [
+          Expanded(child: Container(
+            color: c.surfaceContainerHigh,
+            alignment: Alignment.center,
+            child: Icon(Icons.movie_creation_outlined,
+              size: 35, color: c.primary))),
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 6),
+            child: Column(crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(t('サンプル作品', 'Sample artwork'),
+                  style: const TextStyle(fontSize: 11,
+                    fontWeight: FontWeight.w600)),
+                const SizedBox(height: 5),
+                Row(children: [
+                  Icon(Icons.account_circle, size: 14,
+                    color: c.onSurfaceVariant),
+                  const SizedBox(width: 3),
+                  Expanded(child: Text(t('サンプル作者', 'Sample creator'),
+                    overflow: TextOverflow.ellipsis,
+                    style: const TextStyle(fontSize: 9))),
+                  const Icon(Icons.favorite_border, size: 15),
+                  const SizedBox(width: 4),
+                  const Icon(Icons.bookmark_border, size: 15),
+                ]),
+              ]),
+          ),
+        ]),
+      ))),
+    ),
+  ]);
 
   Widget _canvas(ColorScheme c) => Scaffold(
     backgroundColor: c.surface,
@@ -836,32 +865,63 @@ class _ThemeSampleScreen extends StatelessWidget {
     ])),
   ]);
 
+
   Widget _export(ColorScheme c) => _list([
-    _heading(t('品質プリセット', 'Quality preset')),
-    _card(Text(t('標準       高画質       カスタム',
-      'Standard      High       Custom'))),
-    const SizedBox(height: 12),
-    _heading(t('書き出し形式', 'Export format')),
-    _row(Icons.radio_button_checked, 'MP4', subtitle: 'H.264'),
-    _row(Icons.radio_button_unchecked, 'GIF'),
-    _row(Icons.radio_button_unchecked, 'WebM',
-      subtitle: t('透過に対応', 'Supports transparency')),
-    _row(Icons.radio_button_unchecked, 'AVI'),
-    const SizedBox(height: 20),
-    _cta(c, t('書き出し開始', 'Start export'), icon: Icons.download),
+    _heading(t('プリセット', 'Presets')),
+    _staticChoiceRow(c,
+      [t('標準', 'Standard'), t('高画質', 'High'),
+        t('カスタム', 'Custom')], active: 0),
+    const SizedBox(height: 18),
+    _heading(t('形式', 'Format')),
+    ...[
+      ('MP4', 'H.264'),
+      ('GIF', t('アニメーションGIF', 'Animation GIF')),
+      ('WebM', t('透過に対応', 'Supports transparency')),
+      ('AVI', t('高品質動画', 'Video')),
+    ].asMap().entries.map((e) => Container(
+      margin: const EdgeInsets.only(bottom: 4),
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 9),
+      child: Row(children: [
+        Icon(e.key == 0 ? Icons.radio_button_checked :
+          Icons.radio_button_unchecked,
+          color: e.key == 0 ? c.primary : c.onSurfaceVariant, size: 19),
+        const SizedBox(width: 12),
+        Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+          Text(e.value.$1, style: const TextStyle(fontSize: 13,
+            fontWeight: FontWeight.w600)),
+          Text(e.value.$2, style: TextStyle(fontSize: 10,
+            color: c.onSurfaceVariant)),
+        ]),
+      ]))),
+    const SizedBox(height: 15),
+    _cta(c, t('書き出し開始', 'Start export'), icon: Icons.file_download_outlined),
   ]);
+
 
   Widget _post(ColorScheme c) => _list([
     _heading(t('作品を投稿', 'Post artwork')),
-    _card(Text(t('作品タイトル', 'Artwork title'))),
-    _card(Text(t('作品の説明', 'Description'))),
-    _row(Icons.movie, t('投稿する動画', 'Video')),
-    _row(Icons.sell_outlined, t('タグ', 'Tags')),
-    _row(Icons.toggle_on, t('作品広場に表示', 'Show in community')),
+    Container(height: 58, padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        border: Border.all(color: c.outlineVariant),
+        borderRadius: BorderRadius.circular(8)),
+      alignment: Alignment.centerLeft,
+      child: Text(t('作品タイトル', 'Artwork title'),
+        style: TextStyle(color: c.onSurfaceVariant))),
+    const SizedBox(height: 12),
+    Container(height: 105, padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        border: Border.all(color: c.outlineVariant),
+        borderRadius: BorderRadius.circular(8)),
+      alignment: Alignment.topLeft,
+      child: Text(t('説明を入力', 'Description'),
+        style: TextStyle(color: c.onSurfaceVariant))),
+    const SizedBox(height: 15),
+    _mockSettingRow(c, Icons.movie_outlined, t('投稿する動画', 'Video')),
+    _mockSettingRow(c, Icons.sell_outlined, t('タグ', 'Tags')),
+    _staticControl(c, t('作品広場に表示', 'Publish in community')),
     const SizedBox(height: 20),
-    _cta(c, t('投稿する', 'Post'), icon: Icons.cloud_upload),
+    _cta(c, t('投稿する', 'Post'), icon: Icons.cloud_upload_outlined),
   ]);
-
 
   Widget _theme(BuildContext context, ColorScheme c) {
     final preset = context.read<ThemeService>().current;
@@ -1369,13 +1429,23 @@ class _ThemeSampleScreen extends StatelessWidget {
     ]);
   }
 
+
   Widget _legal(ColorScheme c) => _list([
     _heading(entry.label(ja)),
-    _card(Text(t('アプリの利用条件やデータの取扱いについて表示します。',
-      'Terms and data handling information appear here.'))),
-    _card(Text(t('プレビュー用の見本です。', 'This is a read-only preview.'))),
+    ...List.generate(9, (i) => Padding(
+      padding: const EdgeInsets.only(bottom: 12),
+      child: Column(crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text('${i + 1}.  ${t('ご利用にあたっての案内', 'Usage information')}',
+            style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w700)),
+          const SizedBox(height: 4),
+          Text(t('本アプリの機能・保存データの取り扱いについて、'
+            '各項目に記載された条件をご確認ください。',
+            'Review the application terms and data handling information.'),
+            style: TextStyle(fontSize: 10,
+              color: c.onSurfaceVariant)),
+        ]))),
   ]);
-
 
   Widget _communityWork(ColorScheme c) => _list([
     _art(c, height: 200),
@@ -1423,28 +1493,42 @@ class _ThemeSampleScreen extends StatelessWidget {
     _cta(c, t('新しく投稿', 'Post new work'), icon: Icons.add),
   ]);
 
+
   Widget _shared(ColorScheme c) => Column(children: [
-    Padding(padding: const EdgeInsets.all(10), child: Row(children: [
-      const Icon(Icons.sort), const SizedBox(width: 8),
-      Expanded(child: Text(t('更新日時順', 'Last updated'))),
-      Icon(Icons.star_border, color: c.primary),
-    ])),
-    Expanded(child: GridView.count(
-      padding: const EdgeInsets.all(12), crossAxisCount: 2,
-      childAspectRatio: .85, children: [
-        _projectTile(c, t('共有アニメ', 'Shared animation')),
-        _projectTile(c, t('共有フォルダ', 'Shared folder')),
+    Container(height: 45, padding: const EdgeInsets.symmetric(horizontal: 13),
+      child: Row(children: [
+        const Icon(Icons.sort, size: 17),
+        const SizedBox(width: 8),
+        Expanded(child: Text(t('更新日時順', 'Last updated'),
+          style: const TextStyle(fontSize: 12))),
+        Icon(Icons.star_border, size: 19, color: c.primary),
       ])),
-    Padding(padding: const EdgeInsets.all(12),
-      child: _cta(c, t('共有フォルダを作る', 'Create shared folder'),
-        icon: Icons.create_new_folder_outlined)),
+    Expanded(child: GridView.count(
+      physics: const NeverScrollableScrollPhysics(),
+      padding: const EdgeInsets.all(10), crossAxisCount: 2,
+      childAspectRatio: .9,
+      children: [
+        _projectTile(c, t('共有アニメ', 'Shared animation')),
+        _projectTile(c, t('練習作品', 'Practice')),
+      ])),
+    const SizedBox(height: 15),
   ]);
 
-  Widget _trash(ColorScheme c) => _list([
-    _heading(t('削除した作品', 'Deleted projects')),
-    _card(_row(Icons.delete_outline, t('削除された作品', 'Deleted artwork'),
-      subtitle: t('復元できます', 'Can be restored'))),
-    _card(_row(Icons.restore_from_trash, t('復元', 'Restore'))),
+  Widget _trash(ColorScheme c) => Column(children: [
+    Container(height: 36,
+      padding: const EdgeInsets.symmetric(horizontal: 12),
+      child: Row(children: [
+        Expanded(child: Text(t('更新日時順', 'Last updated'),
+          style: const TextStyle(fontSize: 11))),
+        const Icon(Icons.arrow_downward, size: 16),
+      ])),
+    Expanded(child: Center(child: Column(mainAxisSize: MainAxisSize.min,
+      children: [
+        Icon(Icons.delete_outline, size: 44, color: c.primary),
+        const SizedBox(height: 12),
+        Text(t('ゴミ箱は空です', 'Trash is empty'),
+          style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w700)),
+      ]))),
   ]);
 
   Widget _widgetFrame(ColorScheme c) => Column(children: [
