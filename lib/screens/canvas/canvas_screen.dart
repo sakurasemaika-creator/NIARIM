@@ -2904,7 +2904,13 @@ class _CanvasScreenState extends State<CanvasScreen> {
             const SizedBox(width: 8),
             Text(
               l10n.canvasLassoEnclosedLabel,
-              style: const TextStyle(fontSize: 12),
+              style: TextStyle(
+                fontSize: 12,
+                shadows: CanvasIconButton.foregroundShadows(
+                  Theme.of(context).colorScheme.onSurface,
+                  Theme.of(context).colorScheme,
+                ),
+              ),
             ),
             Switch(
               value: _lassoFillEnclosedMode,
@@ -2932,6 +2938,10 @@ class _CanvasScreenState extends State<CanvasScreen> {
                 style: TextStyle(
                   fontSize: 12,
                   color: Theme.of(context).colorScheme.primary,
+                  shadows: CanvasIconButton.foregroundShadows(
+                    Theme.of(context).colorScheme.primary,
+                    Theme.of(context).colorScheme,
+                  ),
                 ),
               ),
             ),
