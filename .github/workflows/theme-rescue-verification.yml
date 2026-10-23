@@ -20,10 +20,13 @@ on:
       - 'lib/screens/project/project_detail_screen.dart'
       - 'lib/screens/community/community_screen.dart'
       - 'lib/screens/timeline/timeline_screen.dart'
+      - 'lib/screens/home/home_screen.dart'
       - 'lib/engine/niatra_serializer.dart'
       - 'lib/l10n/**'
       - 'test/theme_contrast_rescue_test.dart'
       - 'test/theme_preview_gallery_test.dart'
+      - 'test/home_entry_navigation_test.dart'
+      - 'test/timeline_no_overflow_test.dart'
       - 'test/theme_accent_contrast_test.dart'
       - 'test/project_grid_actions_test.dart'
       - 'test/theme_preset_adopt_test.dart'
@@ -53,6 +56,8 @@ jobs:
         run: |
           flutter test test/theme_contrast_rescue_test.dart --reporter expanded
           flutter test test/theme_preview_gallery_test.dart --reporter expanded
+          flutter test test/home_entry_navigation_test.dart --reporter expanded
+          flutter test test/timeline_no_overflow_test.dart --reporter expanded
           flutter test test/theme_accent_contrast_test.dart --reporter expanded
           flutter test test/project_grid_actions_test.dart --reporter expanded
           flutter test test/theme_preset_adopt_test.dart --reporter expanded
