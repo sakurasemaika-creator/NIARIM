@@ -138,6 +138,14 @@ void main() {
       matching: find.byType(Icon)).first);
     expect(floatingIcon.shadows, hasLength(8));
 
+    // The help icon is a shared widget, but in the transparent canvas
+    // toolbar it also needs an outline rather than an unstyled Material icon.
+    final help = tester.widget<Icon>(find.descendant(
+      of: find.byType(ToolbarWidget),
+      matching: find.byIcon(Icons.help_outline),
+    ).first);
+    expect(help.shadows, hasLength(8));
+
     final brush = find.byType(BrushSizeSlider);
     expect(brush, findsOneWidget);
     final brushText = tester.widget<Text>(find.descendant(
