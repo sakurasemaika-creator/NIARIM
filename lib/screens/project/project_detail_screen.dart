@@ -24,6 +24,8 @@ import '../../widgets/help_button.dart';
 import '../../widgets/stepped_slider.dart';
 import '../../config/font_fallback.dart';
 import '../../utils/duplicate_name.dart';
+import '../../utils/folder_tree.dart';
+import '../../widgets/scrollable_sheet_body.dart';
 import '../home/widgets/project_list_widget.dart'
     show showMaterialIncludeDialog, buildFontShareBundle;
 
@@ -734,10 +736,10 @@ class _ProjectDetailScreenState extends State<ProjectDetailScreen> {
 
   void _showMoveToFolderDialog(BuildContext context, ProjectService service) {
     final l10n = AppLocalizations.of(context)!;
-    final folders = service.folders;
+    final folders = folderTree(service.folders);
     showModalBottomSheet(
       context: context,
-      builder: (ctx) => SafeArea(
+      builder: (ctx) => ScrollableSheetBody(
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
@@ -760,8 +762,9 @@ class _ProjectDetailScreenState extends State<ProjectDetailScreen> {
                 Navigator.pop(ctx);
               },
             ),
-            ...folders.map(
-              (folder) => ListTile(
+            for (final (:folder, :depth) in folders)
+              ListTile(
+                contentPadding: folderTreeTilePadding(depth),
                 leading: Icon(
                   Icons.folder,
                   color: folder.color != null ? Color(folder.color!) : null,
@@ -772,7 +775,6 @@ class _ProjectDetailScreenState extends State<ProjectDetailScreen> {
                   Navigator.pop(ctx);
                 },
               ),
-            ),
           ],
         ),
       ),

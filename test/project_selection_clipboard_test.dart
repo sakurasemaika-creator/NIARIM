@@ -9,6 +9,7 @@ import 'package:niarim/app_bootstrap.dart';
 import 'package:niarim/l10n/app_localizations.dart';
 import 'package:niarim/router.dart';
 import 'package:niarim/screens/home/widgets/project_list_widget.dart';
+import 'package:niarim/screens/project/project_detail_screen.dart';
 import 'package:niarim/screens/splash/splash_screen.dart';
 import 'package:niarim/services/project_service.dart';
 import 'package:niarim/widgets/name_entry_dialog.dart';
@@ -315,6 +316,102 @@ void main() {
       'apple (コピー 2)',
       'apple (コピー 3)',
     });
+  });
+
+  testWidgets('the move sheet nests folders and leaves out the moved one', (
+    tester,
+  ) async {
+    await boot(
+      tester,
+      names: ['apple'],
+      extra: (service) async {
+        final a = await service.createFolder('シリーズA');
+        final b = await service.createFolder('シリーズB');
+        final a1 = await service.createFolder('第1話', parentFolderId: a.id);
+        await service.createFolder('第1話', parentFolderId: b.id);
+        await service.createFolder('カット素材', parentFolderId: a1.id);
+      },
+    );
+    Finder inSheet(String name) => find.descendant(
+      of: find.byType(BottomSheet),
+      matching: find.text(name),
+    );
+    Future<void> openMoveSheet(String name) async {
+      await tester.tap(card(name), buttons: kSecondaryButton);
+      await settle(tester);
+      await tester.tap(find.text('フォルダへ移動').last);
+      await settle(tester);
+    }
+
+    await openMoveSheet('apple');
+    final rows = [
+      inSheet('シリーズA'),
+      inSheet('第1話').first,
+      inSheet('カット素材'),
+      inSheet('シリーズB'),
+      inSheet('第1話').last,
+    ].map(tester.getTopLeft).toList();
+    for (var i = 1; i < rows.length; i++) {
+      expect(rows[i].dy, greaterThan(rows[i - 1].dy), reason: 'row $i');
+    }
+    // 中のフォルダは親より字下げする。
+    expect(rows[1].dx, greaterThan(rows[0].dx));
+    expect(rows[2].dx, greaterThan(rows[1].dx));
+    expect(rows[3].dx, rows[0].dx);
+    expect(rows[4].dx, rows[1].dx);
+    await tester.tapAt(const Offset(400, 20));
+    await settle(tester);
+
+    // フォルダを動かすときは、それ自身と中のフォルダを移動先に出さない。
+    await openMoveSheet('シリーズA');
+    expect(inSheet('シリーズA'), findsNothing);
+    expect(inSheet('カット素材'), findsNothing);
+    expect(inSheet('第1話'), findsOneWidget);
+    expect(inSheet('シリーズB'), findsOneWidget);
+  });
+
+  testWidgets('the detail screen move sheet scrolls to every folder', (
+    tester,
+  ) async {
+    final service = await boot(
+      tester,
+      names: ['apple'],
+      size: const Size(360, 760),
+      extra: (service) async {
+        final parent = await service.createFolder('まとめ');
+        for (var i = 1; i <= 30; i++) {
+          await service.createFolder('F$i', parentFolderId: parent.id);
+        }
+      },
+    );
+    await tester.tap(card('apple'));
+    await settle(tester);
+    await tester.tap(
+      find.descendant(
+        of: find.byType(ProjectDetailScreen),
+        matching: find.byIcon(Icons.more_vert),
+      ),
+    );
+    await settle(tester);
+    await tester.tap(find.text('フォルダへ移動').last);
+    await settle(tester);
+    expect(tester.takeException(), isNull);
+    final last = find.descendant(
+      of: find.byType(BottomSheet),
+      matching: find.text('F30'),
+    );
+    await tester.scrollUntilVisible(
+      last,
+      200,
+      scrollable: find.descendant(
+        of: find.byType(BottomSheet),
+        matching: find.byType(Scrollable),
+      ),
+    );
+    await tester.tap(last);
+    await settleIo(tester);
+    final folder = service.folders.firstWhere((f) => f.name == 'F30');
+    expect(service.projects.single.folderId, folder.id);
   });
 
   testWidgets('right-clicking a card opens its menu', (tester) async {

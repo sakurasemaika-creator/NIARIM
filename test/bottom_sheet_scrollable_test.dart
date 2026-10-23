@@ -45,8 +45,12 @@ void main() {
             : (next < start + 4000 ? next : start + 4000);
         final body = source.substring(start, end);
 
-        // 件数が可変＝コレクションをforで展開している、かどうか。
-        final hasDynamicList = RegExp(r'for \(final \w+ in ').hasMatch(body);
+        // 件数が可変＝コレクションをforで展開している（分解する形も含む）か、
+        // `...list.map(`で並べている、かどうか（後者を見ていなかったため、
+        // フォルダへ移動のシートの包み忘れを見逃していた）。
+        final hasDynamicList =
+            RegExp(r'for \(final (\w+|\([^)]*\)) in ').hasMatch(body) ||
+            RegExp(r'\.\.\.[\w.!?()]+\.map\(').hasMatch(body);
         if (!hasDynamicList) continue;
 
         // スクロールできる形になっているか。

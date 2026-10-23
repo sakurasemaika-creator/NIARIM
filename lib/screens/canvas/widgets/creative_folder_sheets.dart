@@ -5,6 +5,7 @@ import '../../../widgets/confirm_delete.dart';
 import '../../../widgets/dispose_on_unmount.dart';
 import '../../../config/font_fallback.dart';
 import '../../../utils/reorder_index.dart';
+import '../../../widgets/scrollable_sheet_body.dart';
 
 /// ブラシ・トーン・スタンプで共通のフォルダ管理UI。
 /// 各サービス（BrushService/ToneService/StampService）の型が異なるため、
@@ -214,7 +215,7 @@ void showMoveToCreativeFolderSheet(
     context: context,
     builder: (ctx) {
       final l10n = AppLocalizations.of(ctx)!;
-      return SafeArea(
+      return ScrollableSheetBody(
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [

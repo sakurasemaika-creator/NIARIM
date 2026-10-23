@@ -20,6 +20,7 @@ import '../../../services/project_service.dart';
 import '../home_screen.dart';
 import '../../../config/font_fallback.dart';
 import '../../../utils/duplicate_name.dart';
+import '../../../utils/folder_tree.dart';
 import '../../../utils/name_collation.dart';
 import '../../../widgets/frame_preview_background.dart';
 import '../../../widgets/checked_menu_item.dart';
@@ -1254,11 +1255,10 @@ class ProjectListWidget extends StatelessWidget {
     required Future<void> Function(String name) onCreateAndSelect,
   }) {
     final l10n = AppLocalizations.of(context)!;
-    final folders = context
-        .read<ProjectService>()
-        .folders
-        .where((f) => f.id != excludeFolderId)
-        .toList();
+    final folders = folderTree(
+      context.read<ProjectService>().folders,
+      excluding: excludeFolderId,
+    );
     showModalBottomSheet(
       context: context,
       builder: (ctx) => ScrollableSheetBody(
@@ -1284,8 +1284,9 @@ class ProjectListWidget extends StatelessWidget {
                 Navigator.pop(ctx);
               },
             ),
-            ...folders.map(
-              (folder) => ListTile(
+            for (final (:folder, :depth) in folders)
+              ListTile(
+                contentPadding: folderTreeTilePadding(depth),
                 leading: Icon(
                   Icons.folder,
                   color: folder.color != null ? Color(folder.color!) : null,
@@ -1301,7 +1302,6 @@ class ProjectListWidget extends StatelessWidget {
                   Navigator.pop(ctx);
                 },
               ),
-            ),
             ListTile(
               leading: const Icon(Icons.create_new_folder),
               title: Text(l10n.projectListCreateFolderAction),
