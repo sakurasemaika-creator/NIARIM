@@ -215,6 +215,10 @@ class ToolbarWidget extends StatelessWidget {
                   Icons.block,
                   color: ThemeService.activeColorScheme.error,
                   size: 20,
+                  shadows: CanvasIconButton.foregroundShadows(
+                    Theme.of(context).colorScheme.error,
+                    Theme.of(context).colorScheme,
+                  ),
                 ),
               ),
           ],
