@@ -274,11 +274,35 @@ void main() {
           greaterThanOrEqualTo(4.5),
           reason: 'bookmark gallery action',
         );
+        // 空のときのアイコンは作品一覧の空の表示と同じ色・同じ下地の円
+        // （ユーザー指定。読みやすさのために黒や白へ自動で差し替えない）。
         final icon = tester.widget<Icon>(find.byIcon(Icons.bookmark_border));
+        final circle = tester.widget<Container>(
+          find
+              .ancestor(
+                of: find.byIcon(Icons.bookmark_border),
+                matching: find.byType(Container),
+              )
+              .first,
+        );
+        await switchTab(tester, 1);
+        final worksIcon = tester.widget<Icon>(
+          find.byIcon(Icons.video_library_outlined),
+        );
+        final worksCircle = tester.widget<Container>(
+          find
+              .ancestor(
+                of: find.byIcon(Icons.video_library_outlined),
+                matching: find.byType(Container),
+              )
+              .first,
+        );
+        expect(icon.color, worksIcon.color, reason: 'bookmark icon colour');
+        expect(icon.size, worksIcon.size, reason: 'bookmark icon size');
         expect(
-          contrastRatio(background, opaqueOver(icon.color!, background)),
-          greaterThanOrEqualTo(3),
-          reason: 'bookmark empty-state icon',
+          (circle.decoration! as BoxDecoration).color,
+          (worksCircle.decoration! as BoxDecoration).color,
+          reason: 'bookmark icon circle',
         );
       }
       await tester.pumpWidget(const SizedBox.shrink());

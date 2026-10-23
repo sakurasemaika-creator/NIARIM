@@ -29,7 +29,11 @@ class EmptyStatePlaceholder extends StatelessWidget {
     return LayoutBuilder(
       builder: (context, constraints) => SingleChildScrollView(
         child: ConstrainedBox(
+          // 幅も使える分いっぱいに取る。Scaffoldのbodyは幅を「最大まで」
+          // としか渡さないので、取らないと中身の幅に縮んで左へ寄る
+          // （ゴミ箱の「ゴミ箱は空です」が左に寄っていた）。
           constraints: BoxConstraints(
+            minWidth: constraints.hasBoundedWidth ? constraints.maxWidth : 0,
             minHeight: constraints.hasBoundedHeight ? constraints.maxHeight : 0,
           ),
           child: Padding(

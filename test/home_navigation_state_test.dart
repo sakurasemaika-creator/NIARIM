@@ -12,6 +12,7 @@ import 'package:niarim/screens/home/widgets/home_drawer.dart';
 import 'package:niarim/screens/home/widgets/project_list_widget.dart';
 import 'package:niarim/screens/splash/splash_screen.dart';
 import 'package:niarim/services/project_service.dart';
+import 'package:niarim/widgets/empty_state_placeholder.dart';
 import 'package:niarim/services/community_service.dart';
 import 'package:provider/provider.dart';
 import 'package:provider/single_child_widget.dart';
@@ -328,6 +329,25 @@ void main() {
         reason: name,
       );
     }
+  });
+
+  // 作品一覧が空のときの表示は、他のタブと同じくタブの高さいっぱいの
+  // 上下中央に出ること（以前は高さ400pxに固定され、上に寄っていた）。
+  testWidgets('the empty works tab is centred in the whole tab', (
+    tester,
+  ) async {
+    await boot(tester);
+    await tester.tap(find.text('作品一覧').first);
+    await settle(tester);
+    // 書き出した作品の一覧（ファイルの読み込み）を実時間で待つ。
+    await tester.runAsync(
+      () => Future<void>.delayed(const Duration(milliseconds: 200)),
+    );
+    await settle(tester);
+    final view = tester.getRect(find.byType(TabBarView));
+    final empty = tester.getRect(find.byType(EmptyStatePlaceholder));
+    expect(empty.height, moreOrLessEquals(view.height, epsilon: 1));
+    expect(empty.center.dy, moreOrLessEquals(view.center.dy, epsilon: 1));
   });
 
   // 起動画面へ戻るのは左下のFAB。

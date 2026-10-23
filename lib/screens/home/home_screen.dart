@@ -2215,12 +2215,22 @@ class _BookmarkedTab extends StatelessWidget {
                   if (loading)
                     CircularProgressIndicator(color: foreground)
                   else
-                    Icon(
-                      error != null
-                          ? Icons.cloud_off_outlined
-                          : Icons.bookmark_border,
-                      size: 64,
-                      color: foreground,
+                    // 作品一覧・プロジェクトの空の表示（EmptyStatePlaceholder）と
+                    // 同じ形と色：差し色の淡い円に差し色のアイコン（ユーザー指定）。
+                    Container(
+                      width: 88,
+                      height: 88,
+                      decoration: BoxDecoration(
+                        color: scheme.primaryContainer,
+                        shape: BoxShape.circle,
+                      ),
+                      child: Icon(
+                        error != null
+                            ? Icons.cloud_off_outlined
+                            : Icons.bookmark_border,
+                        size: 40,
+                        color: scheme.primary,
+                      ),
                     ),
                   const SizedBox(height: 16),
                   Semantics(
@@ -2229,10 +2239,12 @@ class _BookmarkedTab extends StatelessWidget {
                     child: Text(
                       title,
                       textAlign: TextAlign.center,
+                      // 文字の大きさも他の空の表示（EmptyStatePlaceholder）と
+                      // そろえる（18だと390px幅で最後の1字だけ次の行へ落ちた）。
                       style: TextStyle(
                         color: textForeground,
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
+                        fontSize: 16,
+                        fontWeight: FontWeight.w600,
                         fontFamily: 'Kuramubon',
                         fontFamilyFallback: kHeadingFontFallback,
                       ),
@@ -2385,17 +2397,23 @@ class _WorksTabState extends State<_WorksTab> {
         if (files.isEmpty) {
           return RefreshIndicator(
             onRefresh: _reload,
-            child: ListView(
-              children: [
-                SizedBox(
-                  height: 400,
-                  child: EmptyStatePlaceholder(
-                    icon: Icons.video_library_outlined,
-                    title: l10n.homeWorksEmpty,
-                    hint: l10n.homeWorksEmptyHint,
+            child: LayoutBuilder(
+              builder: (context, constraints) => ListView(
+                physics: const AlwaysScrollableScrollPhysics(),
+                children: [
+                  SizedBox(
+                    // 一覧の高さいっぱいに取り、他のタブの空の表示と同じく
+                    // 上下の中央に出す（固定の400だと上に寄っていた）。
+                    // 引っ張って読み直す操作のため、一覧のまま置く。
+                    height: constraints.maxHeight,
+                    child: EmptyStatePlaceholder(
+                      icon: Icons.video_library_outlined,
+                      title: l10n.homeWorksEmpty,
+                      hint: l10n.homeWorksEmptyHint,
+                    ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
           );
         }
