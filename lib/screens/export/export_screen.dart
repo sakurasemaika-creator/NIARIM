@@ -86,15 +86,24 @@ class _ExportScreenState extends State<ExportScreen> {
               segments: [
                 ButtonSegment(
                   value: ExportPreset.standard,
-                  label: Text(l10n.exportPresetStandard),
+                  label: Text(l10n.exportPresetStandard, style: const TextStyle(
+                    fontFamily: 'Kuramubon',
+                    fontFamilyFallback: kHeadingFontFallback,
+                  )),
                 ),
                 ButtonSegment(
                   value: ExportPreset.highQuality,
-                  label: Text(l10n.exportPresetHighQuality),
+                  label: Text(l10n.exportPresetHighQuality, style: const TextStyle(
+                    fontFamily: 'Kuramubon',
+                    fontFamilyFallback: kHeadingFontFallback,
+                  )),
                 ),
                 ButtonSegment(
                   value: ExportPreset.custom,
-                  label: Text(l10n.exportPresetCustom),
+                  label: Text(l10n.exportPresetCustom, style: const TextStyle(
+                    fontFamily: 'Kuramubon',
+                    fontFamilyFallback: kHeadingFontFallback,
+                  )),
                 ),
               ],
               selected: {_preset},
@@ -157,23 +166,47 @@ class _ExportScreenState extends State<ExportScreen> {
               child: Column(
                 children: [
                   RadioListTile(
-                    title: Text(l10n.exportFormatMp4),
-                    subtitle: Text(l10n.exportFormatMp4Subtitle),
+                    title: Text(l10n.exportFormatMp4, style: const TextStyle(
+                    fontFamily: 'Kuramubon',
+                    fontFamilyFallback: kHeadingFontFallback,
+                  )),
+                    subtitle: Text(l10n.exportFormatMp4Subtitle, style: const TextStyle(
+                    fontFamily: 'Kuramubon',
+                    fontFamilyFallback: kHeadingFontFallback,
+                  )),
                     value: ExportFormat.mp4,
                   ),
                   RadioListTile(
-                    title: Text(l10n.exportFormatGif),
-                    subtitle: Text(l10n.exportFormatGifSubtitle),
+                    title: Text(l10n.exportFormatGif, style: const TextStyle(
+                    fontFamily: 'Kuramubon',
+                    fontFamilyFallback: kHeadingFontFallback,
+                  )),
+                    subtitle: Text(l10n.exportFormatGifSubtitle, style: const TextStyle(
+                    fontFamily: 'Kuramubon',
+                    fontFamilyFallback: kHeadingFontFallback,
+                  )),
                     value: ExportFormat.gif,
                   ),
                   RadioListTile(
-                    title: Text(l10n.helpTransparentWebmTitle),
-                    subtitle: Text(l10n.exportFormatWebmSubtitle),
+                    title: Text(l10n.helpTransparentWebmTitle, style: const TextStyle(
+                    fontFamily: 'Kuramubon',
+                    fontFamilyFallback: kHeadingFontFallback,
+                  )),
+                    subtitle: Text(l10n.exportFormatWebmSubtitle, style: const TextStyle(
+                    fontFamily: 'Kuramubon',
+                    fontFamilyFallback: kHeadingFontFallback,
+                  )),
                     value: ExportFormat.webm,
                   ),
                   RadioListTile(
-                    title: Text(l10n.exportFormatAvi),
-                    subtitle: Text(l10n.exportFormatAviSubtitle),
+                    title: Text(l10n.exportFormatAvi, style: const TextStyle(
+                    fontFamily: 'Kuramubon',
+                    fontFamilyFallback: kHeadingFontFallback,
+                  )),
+                    subtitle: Text(l10n.exportFormatAviSubtitle, style: const TextStyle(
+                    fontFamily: 'Kuramubon',
+                    fontFamilyFallback: kHeadingFontFallback,
+                  )),
                     value: ExportFormat.avi,
                   ),
                 ],
