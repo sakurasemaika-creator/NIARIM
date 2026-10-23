@@ -557,7 +557,8 @@ class _ProjectDetailScreenState extends State<ProjectDetailScreen> {
               style: timeStyle,
             ),
           ],
-        ),      ),
+        ),
+      ),
     );
   }
 
