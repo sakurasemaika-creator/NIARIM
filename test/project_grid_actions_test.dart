@@ -245,6 +245,48 @@ void main() {
     });
   }
 
+  testWidgets('favorite stars use the theme accent, never a fixed yellow',
+      (tester) async {
+    tester.view.physicalSize = const Size(390, 844);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+    SharedPreferences.setMockInitialValues({});
+
+    final themeService = ThemeService();
+    addTearDown(themeService.dispose);
+    await themeService.init();
+    final projects = _GridProjects()
+      ..favoriteIds.addAll(['project', 'folder']);
+    addTearDown(projects.dispose);
+
+    // Switching from red to blue must recolor both folder/project badges.
+    for (final accent in [
+      const Color(0xFFE53935),
+      const Color(0xFF2867DA),
+    ]) {
+      themeService.previewCurrent(
+        AppThemePreset.defaultLight.copyWith(accentColor: accent),
+      );
+      await tester.pumpWidget(_host(
+        projects,
+        ProjectViewMode.medium,
+        theme: themeService.themeData,
+        onOpenFolder: (_) {},
+        onSelectionChanged: (_) {},
+      ));
+      await tester.pumpAndSettle();
+      for (final name in ['Project', 'Folder']) {
+        final star = find.descendant(
+          of: _card(name), matching: find.byIcon(Icons.star));
+        expect(star, findsOneWidget, reason: '$name with $accent');
+        expect(tester.widget<Icon>(star).color, accent,
+          reason: '$name must use the selected accent');
+      }
+      expect(tester.takeException(), isNull);
+    }
+  });
+
   testWidgets('selected project and folder checks follow custom selection colors', (
     tester,
   ) async {
