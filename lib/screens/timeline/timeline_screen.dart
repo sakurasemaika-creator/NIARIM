@@ -1578,7 +1578,7 @@ class _TimelineScreenState extends State<TimelineScreen> {
             child: IgnorePointer(child: ValueListenableBuilder<int>(
               valueListenable: _currentFrameNotifier,
               builder: (_, frame, _) => Text(
-                '${frame.clamp(0, _totalFrames > 0 ? _totalFrames - 1 : 0) + 1}/\$_totalFrames',
+                '${frame.clamp(0, _totalFrames > 0 ? _totalFrames - 1 : 0) + 1}/$_totalFrames',
                 key: const Key('timelinePreviewFrameCount'),
                 style: TextStyle(
                   fontSize: 11, fontWeight: FontWeight.w700,
