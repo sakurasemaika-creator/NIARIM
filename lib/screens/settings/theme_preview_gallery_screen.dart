@@ -47,7 +47,6 @@ const List<ThemePreviewEntry> themePreviewEntries = [
   ThemePreviewEntry('watermark','ウォーターマーク','Watermark','watermark'),
   ThemePreviewEntry('fonts','フォント管理','Fonts','fonts'),
   ThemePreviewEntry('storage','ストレージ','Storage','storage'),
-  ThemePreviewEntry('premium','プレミアム','Premium','premium'),
   ThemePreviewEntry('help','ヘルプ','Help','help'),
   ThemePreviewEntry('tips','使い方のヒント','Tips','help'),
   ThemePreviewEntry('autofill','自動塗り設定','Auto-fill presets','autofill'),
@@ -360,7 +359,6 @@ class _ThemeSampleScreen extends StatelessWidget {
       case 'theme': return _theme(context, c);
       case 'settings': return _settings(c);
       case 'workspace': return entry.id == 'pc_layout' ? _pcLayout(c) : _workspace(c);
-      case 'premium': return _premium(c);
       case 'storage': return _storage(c);
       case 'watermark': return _watermark(c);
       case 'preferences': return _preferences(c);
@@ -1189,7 +1187,8 @@ class _ThemeSampleScreen extends StatelessWidget {
                     const SizedBox(height: 12),
                     Row(children: [
                       Flexible(child: Text(
-                        t('タップして全41画面を見る', 'Tap to view 41 screens'),
+                        t('タップして全${themePreviewEntries.length}画面を見る',
+                          'Tap to view ${themePreviewEntries.length} screens'),
                         style: TextStyle(fontSize: 12,
                           fontWeight: FontWeight.w700, color: c.primary))),
                       const SizedBox(width: 4),
@@ -1838,84 +1837,6 @@ class _ThemeSampleScreen extends StatelessWidget {
         t('PCモード', 'PC mode')),
       _mockSettingRow(c, Icons.dashboard_outlined,
         t('パネル配置', 'Panel placement')),
-    ],
-  );
-
-  Widget _premium(ColorScheme c) => ListView(
-    key: const Key('themePreviewContentList'),
-    physics: const NeverScrollableScrollPhysics(),
-    padding: const EdgeInsets.all(16),
-    children: [
-      Container(
-        padding: const EdgeInsets.all(12),
-        decoration: BoxDecoration(
-          color: c.primary.withValues(alpha: .10),
-          borderRadius: BorderRadius.circular(12)),
-        child: Row(children: [
-          Icon(Icons.diamond_outlined, color: c.primary, size: 22),
-          const SizedBox(width: 10),
-          Expanded(child: Text(
-            t('プレミアムでもっと自由にアニメ制作を楽しもう',
-              'Unlock more ways to create animations'),
-            style: const TextStyle(fontSize: 12,
-              fontWeight: FontWeight.w700))),
-        ]),
-      ),
-      const SizedBox(height: 22),
-      Text(t('無料版とプレミアム版', 'Free vs Premium'),
-        style: const TextStyle(
-          fontSize: 16, fontWeight: FontWeight.w700)),
-      const SizedBox(height: 12),
-      Table(
-        border: TableBorder.all(color: c.outlineVariant, width: .5),
-        columnWidths: const {
-          0: FlexColumnWidth(2.4),
-          1: FlexColumnWidth(1.05),
-          2: FlexColumnWidth(1.05),
-        },
-        children: [
-          TableRow(children: [
-            const SizedBox(height: 45),
-            Container(height: 45, color: c.surfaceContainerHigh,
-              alignment: Alignment.center,
-              child: Text(t('無料', 'Free'),
-                style: const TextStyle(fontWeight: FontWeight.bold))),
-            Container(height: 45, color: c.primary,
-              alignment: Alignment.center,
-              child: Text(t('プレミアム', 'Premium'),
-                style: TextStyle(color: c.onPrimary,
-                  fontWeight: FontWeight.bold, fontSize: 11))),
-          ]),
-          for (final item in [
-            (t('アニメーション制作', 'Animation'), true, true),
-            (t('広告の削除', 'No ads'), false, true),
-            (t('ウォーターマークなし', 'No watermark'), false, true),
-            (t('エンドカード設定', 'End-card options'), false, true),
-            (t('作品の書き出し', 'Export'), true, true),
-            (t('作品広場', 'Community'), true, true),
-            (t('データ引き継ぎ', 'Transfer'), true, true),
-            (t('長時間動画', 'Long videos'), false, true),
-          ])
-            TableRow(children: [
-              Padding(
-                padding: const EdgeInsets.all(11),
-                child: Text(item.$1,
-                  style: const TextStyle(fontSize: 11))),
-              Padding(padding: const EdgeInsets.all(11),
-                child: Icon(item.$2 ? Icons.check : Icons.close,
-                  color: item.$2 ? c.onSurfaceVariant : c.error,
-                  size: 17)),
-              Container(
-                color: c.primary.withValues(alpha: .14),
-                height: 42,
-                alignment: Alignment.center,
-                child: Icon(item.$3 ? Icons.check : Icons.close,
-                  color: c.primary, size: 18)),
-            ]),
-        ],
-      ),
-      const SizedBox(height: 18),
-      _cta(c, t('プランを見る', 'View plans')),
     ],
   );
 
