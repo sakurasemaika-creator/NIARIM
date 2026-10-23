@@ -1078,88 +1078,82 @@ class _ThemeSampleScreen extends StatelessWidget {
     ]);
   }
 
-  Widget _settings(ColorScheme c) => _list([
-    ...[
-      (Icons.settings_outlined, t('基本', 'Basic'), t('FPS・言語・初期色', 'FPS, language and defaults')),
-      (Icons.speed_outlined, t('パフォーマンス', 'Performance'), t('描画品質・Undo回数・自動削除', 'Quality, undo and cleanup')),
-      (Icons.gesture_outlined, t('ジェスチャー', 'Gestures'), t('2本指タップ・長押し', 'Gestures')),
-      (Icons.keyboard_outlined, t('ショートカット設定', 'Shortcuts'), t('キー・操作を割り当て', 'Key bindings')),
-      (Icons.edit_outlined, t('ペン入力', 'Pen input'), t('筆圧・ペンボタン', 'Pressure and stylus')),
-      (Icons.dashboard_customize_outlined, t('ワークスペース', 'Workspace'), t('ツール・パネル配置', 'Toolbar and panel')),
-      (Icons.format_color_fill_outlined, t('バケツ塗り', 'Bucket fill'), t('許容誤差・隙間閉じ', 'Tolerance and gaps')),
-      (Icons.widgets_outlined, t('ホーム画面ウィジェット', 'Home widgets'), t('表示作品・タップ動作', 'Artwork and actions')),
-      (Icons.palette_outlined, t('テーマ・外観', 'Theme & appearance'), t('テーマ色・文字色・背景色', 'Theme and colors')),
-      (Icons.text_fields, t('フォント管理', 'Fonts'), t('文字入れフォント', 'Fonts')),
-      (Icons.help_outline, t('ヘルプ', 'Help'), t('使い方とヒント', 'Help and tips')),
-    ].map((e) => Container(
-      margin: const EdgeInsets.only(bottom: 8),
-      decoration: BoxDecoration(color: c.surfaceContainerLow,
-        borderRadius: BorderRadius.circular(14)),
-      child: Padding(padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 7),
-        child: Row(children: [
-          Container(width: 42, height: 42,
-            decoration: BoxDecoration(
-              color: c.primary.withValues(alpha: .14),
-              borderRadius: BorderRadius.circular(12)),
-            child: Icon(e.$1, color: c.primary, size: 22)),
-          const SizedBox(width: 12),
-          Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(e.$2, style: const TextStyle(fontSize: 13,
-                fontWeight: FontWeight.w700)),
-              Text(e.$3, style: TextStyle(fontSize: 10,
-                color: c.onSurfaceVariant), maxLines: 1,
-                overflow: TextOverflow.ellipsis),
-            ])),
-          Icon(Icons.chevron_right, color: c.onSurfaceVariant),
-        ])),
-    )),
-  ]);
-
-  Widget _staticControl(ColorScheme c, String label, {
-    String? detail, bool selected = true,
-  }) => Container(
-    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-    decoration: BoxDecoration(color: c.surfaceContainerLow,
-      borderRadius: BorderRadius.circular(12)),
-    child: Row(children: [
-      Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(label, style: const TextStyle(fontSize: 12,
-            fontWeight: FontWeight.w600)),
-          if (detail != null) Text(detail, maxLines: 2,
-            overflow: TextOverflow.ellipsis,
-            style: TextStyle(fontSize: 10, color: c.onSurfaceVariant)),
-        ])),
-      Container(width: 30, height: 17,
-        padding: const EdgeInsets.all(2),
-        alignment: selected ? Alignment.centerRight : Alignment.centerLeft,
-        decoration: BoxDecoration(
-          color: selected ? c.primary : c.outlineVariant,
-          borderRadius: BorderRadius.circular(12)),
-        child: Container(width: 13, height: 13,
-          decoration: BoxDecoration(color: selected ? c.onPrimary : c.surface,
-            shape: BoxShape.circle))),
-    ]),
+  Widget _settings(ColorScheme c) => ListView(
+    key: const Key('themePreviewContentList'),
+    physics: const NeverScrollableScrollPhysics(),
+    padding: const EdgeInsets.symmetric(vertical: 8),
+    children: [
+      for (final item in [
+        (Icons.settings, t('基本', 'Basic'),
+          t('FPS・背景色・言語', 'FPS, background and language')),
+        (Icons.speed, t('パフォーマンス', 'Performance'),
+          t('画質設定・Undo回数・ゴミ箱・動作の軽さ', 'Quality, undo, trash and speed')),
+        (Icons.touch_app, t('ジェスチャー', 'Gestures'),
+          t('2本指タップ・長押し', 'Multi-touch and long press')),
+        (Icons.keyboard, t('ショートカット設定', 'Shortcuts'),
+          t('キーボード・左手デバイスにツールや操作を割り当て', 'Keyboard bindings')),
+        (Icons.edit, t('ペン入力', 'Pen input'),
+          t('筆圧・傾き・ペンボタン', 'Pressure, tilt and buttons')),
+        (Icons.desktop_windows, t('ワークスペース', 'Workspace'),
+          t('ツールバー配置・パネル配置', 'Toolbar and panels')),
+        (Icons.format_color_fill, t('バケツ塗り', 'Bucket fill'),
+          t('許容誤差・拡張・線の下まで塗る', 'Tolerance and gap closure')),
+        (Icons.widgets_outlined, t('ホーム画面ウィジェット', 'Home widgets'),
+          t('表示作品・タップ動作', 'Artwork and actions')),
+        (Icons.palette, t('テーマ・外観', 'Theme & appearance'),
+          t('テーマ配色・文字色・背景色', 'Theme colors and backgrounds')),
+        (Icons.lock_outline, t('ウォーターマーク', 'Watermark'),
+          t('カスタムウォーターマーク', 'Custom watermark')),
+        (Icons.import_export, t('引き継ぎ', 'Transfer'),
+          t('プロジェクトのエクスポート・インポート', 'Export and import')),
+        (Icons.font_download_outlined, t('フォント管理', 'Font management'),
+          t('文字入れフォント', 'Text fonts')),
+      ])
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+          child: Material(
+            color: c.surfaceContainerLow,
+            borderRadius: BorderRadius.circular(14),
+            elevation: 1,
+            shadowColor: c.shadow.withValues(alpha: 0.15),
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+              child: Row(children: [
+                Container(
+                  width: 42, height: 42,
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(12),
+                    gradient: LinearGradient(
+                      colors: [
+                        c.primary.withValues(alpha: 0.22),
+                        c.primary.withValues(alpha: 0.10),
+                      ],
+                    ),
+                  ),
+                  child: Icon(item.$1, color: c.primary, size: 22),
+                ),
+                const SizedBox(width: 14),
+                Expanded(child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(item.$2, style: const TextStyle(
+                      fontSize: 14, fontWeight: FontWeight.w700)),
+                    const SizedBox(height: 2),
+                    Text(item.$3, style: TextStyle(
+                      fontSize: 12, color: c.onSurfaceVariant),
+                      maxLines: 2, overflow: TextOverflow.ellipsis),
+                  ],
+                )),
+                Icon(Icons.chevron_right, color: c.onSurfaceVariant),
+              ]),
+            ),
+          ),
+        ),
+      const Divider(height: 24),
+      Center(child: Text(t('利用規約・ライセンス', 'Terms and licenses'),
+        style: TextStyle(fontSize: 12, color: c.onSurfaceVariant))),
+    ],
   );
-
-  Widget _staticChoiceRow(ColorScheme c, List<String> choices, {
-      int active = 0}) => Row(children: [
-        for (var i = 0; i < choices.length; i++) Expanded(
-          child: Container(
-            margin: const EdgeInsets.symmetric(horizontal: 2),
-            padding: const EdgeInsets.symmetric(vertical: 10),
-            alignment: Alignment.center,
-            decoration: BoxDecoration(
-              color: i == active ? c.primary : c.surfaceContainerLow,
-              borderRadius: BorderRadius.circular(8),
-              border: Border.all(color: c.outlineVariant)),
-            child: Text(choices[i], maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-              style: TextStyle(fontSize: 10,
-                color: i == active ? c.onPrimary : c.onSurface)),
-          )),
-      ]);
 
   Widget _preferences(ColorScheme c) {
     switch (entry.id) {
