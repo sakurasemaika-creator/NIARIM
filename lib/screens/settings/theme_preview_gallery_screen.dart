@@ -492,11 +492,10 @@ class _ThemeSampleScreen extends StatelessWidget {
     backgroundColor: c.surface,
     appBar: AppBar(
       automaticallyImplyLeading: false,
-      leading: Icon(Icons.arrow_back, color: c.onSurface),
+      leading: Icon(Icons.menu, color: c.onSurface),
       titleSpacing: 0,
       title: Row(children: [
-        Icon(Icons.menu, size: 20, color: c.onSurface),
-        const SizedBox(width: 14),
+
         Flexible(child: Text(t('更新日時', 'Modified'),
           style: const TextStyle(fontSize: 13, fontWeight: FontWeight.bold),
           maxLines: 1, overflow: TextOverflow.ellipsis)),
@@ -519,10 +518,11 @@ class _ThemeSampleScreen extends StatelessWidget {
           ]) Expanded(child: Column(children: [
             Expanded(child: Center(child: Text(tab, style: TextStyle(
               fontSize: 13, fontWeight: FontWeight.bold,
+              fontFamily: 'Kuramubon',
               color: tab == t('プロジェクト', 'Projects')
-                ? c.onSurface : c.onSurfaceVariant)))),
+                ? c.primary : c.onSurfaceVariant)))),
             Container(height: 2, color: tab == t('プロジェクト', 'Projects')
-                ? c.onSurface : Colors.transparent),
+                ? c.primary : Colors.transparent),
           ])),
         ])),
       ),
@@ -537,7 +537,7 @@ class _ThemeSampleScreen extends StatelessWidget {
               color: c.surfaceContainerLow,
               borderRadius: BorderRadius.circular(24)),
             child: Text(t('お気に入り', 'Favorites'),
-              style: const TextStyle(fontSize: 11,
+              style: const TextStyle(fontFamily: 'Kuramubon', fontSize: 11,
                 fontWeight: FontWeight.w700)),
           ),
         )),
@@ -550,7 +550,7 @@ class _ThemeSampleScreen extends StatelessWidget {
                 size: 31, color: c.primary)),
             const SizedBox(height: 13),
             Text(t('プロジェクトがありません', 'No projects'),
-              style: const TextStyle(
+              style: const TextStyle(fontFamily: 'Kuramubon',
                 fontWeight: FontWeight.w800, fontSize: 14)),
             const SizedBox(height: 6),
             Text(t('＋ボタンから新規作成', 'Create with the + button'),
@@ -559,13 +559,23 @@ class _ThemeSampleScreen extends StatelessWidget {
           ],
         ))),
       ]),
+      Positioned(left: 13, bottom: 20,
+        child: Container(
+          key: const Key('themePreviewHomeBackFab'),
+          width: 56, height: 56,
+          alignment: Alignment.center,
+          decoration: const BoxDecoration(shape: BoxShape.circle),
+          child: DecoratedBox(decoration: BoxDecoration(
+            color: c.primary, shape: BoxShape.circle),
+            child: SizedBox(width: 56, height: 56,
+              child: Icon(Icons.arrow_back, color: c.onPrimary)))),
+      ),
       Positioned(right: 13, bottom: 20,
         child: Container(
           width: 58, height: 58,
           alignment: Alignment.center,
           decoration: BoxDecoration(
-            color: c.primary, shape: BoxShape.circle,
-            border: Border.all(color: c.onSurface, width: 3)),
+            color: c.primary, shape: BoxShape.circle),
           child: Icon(Icons.add, color: c.onPrimary, size: 27))),
     ]),
   );
@@ -590,7 +600,7 @@ class _ThemeSampleScreen extends StatelessWidget {
       SizedBox(height: 57, child: Row(children: [
         const SizedBox(width: 14),
         Expanded(child: Text(t('作品広場', 'Community'),
-          style: const TextStyle(
+          style: const TextStyle(fontFamily: 'Kuramubon',
             fontSize: 20, fontWeight: FontWeight.w800))),
         Stack(clipBehavior: Clip.none, children: [
           Icon(Icons.notifications_none, size: 25, color: c.onSurface),
@@ -834,7 +844,8 @@ class _ThemeSampleScreen extends StatelessWidget {
         _mockTool(c, Icons.palette_outlined),
         Expanded(child: Text('all-route-audit',
           maxLines: 1, overflow: TextOverflow.ellipsis,
-          style: const TextStyle(fontSize: 15, fontWeight: FontWeight.bold))),
+          style: const TextStyle(fontSize: 15,
+            fontFamily: 'Kuramubon', fontWeight: FontWeight.bold))),
         _mockTool(c, Icons.home_outlined),
         _mockTool(c, Icons.undo),
         _mockTool(c, Icons.redo),
@@ -846,20 +857,37 @@ class _ThemeSampleScreen extends StatelessWidget {
           child: AspectRatio(
             key: const Key('themePreviewTimelinePaper'),
             aspectRatio: 16 / 9,
-            child: Container(color: Colors.white,
-              alignment: Alignment.topRight,
-              child: Padding(padding: const EdgeInsets.all(10),
-                child: Icon(Icons.fullscreen, size: 16,
+            child: Stack(children: [
+              const Positioned.fill(child: ColoredBox(color: Colors.white)),
+              Positioned(top: 4, right: 4,
+                child: Icon(Icons.fullscreen, size: 18,
                   color: c.onSurfaceVariant)),
-            ),
+              Positioned(bottom: 6, left: 8,
+                child: Text('10/100', key: const Key('themePreviewFrameCounter'),
+                  style: TextStyle(color: c.onSurface, fontSize: 11,
+                    fontWeight: FontWeight.w700))),
+              Positioned(bottom: 2, right: 4,
+                child: Icon(Icons.repeat,
+                  key: const Key('themePreviewLoopButton'),
+                  size: 24, color: c.primary)),
+            ]),
           ))),
-      Container(height: 25, alignment: Alignment.center,
-        child: Container(width: 38, height: 4,
+      SizedBox(height: 22, child: Stack(children: [
+        Padding(padding: const EdgeInsets.symmetric(horizontal: 36),
+          child: Row(children: [
+            Text('0.4s', key: const Key('themePreviewCurrentSeconds'),
+              style: TextStyle(fontSize: 11, color: c.onSurfaceVariant)),
+            const Spacer(),
+            Text('4.2s', key: const Key('themePreviewTotalSeconds'),
+              style: TextStyle(fontSize: 11, color: c.onSurfaceVariant)),
+          ])),
+        Center(child: Container(width: 40, height: 5,
           decoration: BoxDecoration(color: c.outlineVariant,
-            borderRadius: BorderRadius.circular(4)))),
+            borderRadius: BorderRadius.circular(3)))),
+      ])),
       Padding(padding: const EdgeInsets.symmetric(horizontal: 18),
-        child: _mockSlider(c, position: .08, height: 43)),
-      SizedBox(height: 68, child: Row(
+        child: _mockSlider(c, position: .09, height: 43)),
+      SizedBox(height: 58, child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
         children: [
           _mockTool(c, Icons.skip_previous),
@@ -867,7 +895,6 @@ class _ThemeSampleScreen extends StatelessWidget {
           _mockTool(c, Icons.play_arrow),
           _mockTool(c, Icons.fast_forward),
           _mockTool(c, Icons.skip_next),
-          _mockTool(c, Icons.repeat),
         ])),
       Container(height: 1, color: c.outlineVariant),
       SizedBox(height: 40, child: Row(
@@ -894,26 +921,24 @@ class _ThemeSampleScreen extends StatelessWidget {
               Icon(Icons.check, size: 12, color: c.onPrimary),
               const SizedBox(width: 5),
               Text('Scene1', style: TextStyle(fontSize: 11,
-                color: c.onPrimary, fontWeight: FontWeight.bold)),
+                color: c.onPrimary, fontFamily: 'Kuramubon',
+                fontWeight: FontWeight.bold)),
             ])),
           const SizedBox(width: 12),
           _mockTool(c, Icons.more_vert),
           _mockTool(c, Icons.add),
         ])),
-      Container(
-        key: const Key('themePreviewTimelineTracks'),
+      Container(key: const Key('themePreviewTimelineTracks'),
         height: 44, color: c.surface,
         child: Row(children: [
-          SizedBox(width: 105, child: Row(children: [
+          SizedBox(width: 100, child: Row(children: [
             _mockTool(c, Icons.movie_filter_outlined),
-            Text(t('フレーム', 'Frames'), style: const TextStyle(fontSize: 10)),
+            Expanded(child: Text(t('フレーム', 'Frames'),
+              style: const TextStyle(fontSize: 10,
+                fontFamily: 'Kuramubon'))),
           ])),
-          const Spacer(),
-          Text(t('選択', 'Select'), style: TextStyle(
-            fontSize: 10, color: c.primary)),
-          const SizedBox(width: 18),
-          ...List.generate(4, (i) => Container(
-            width: 36, height: 38,
+          ...List.generate(5, (i) => Expanded(child: Container(
+            height: 34,
             margin: const EdgeInsets.symmetric(horizontal: 1),
             alignment: Alignment.bottomLeft,
             decoration: BoxDecoration(
@@ -922,22 +947,67 @@ class _ThemeSampleScreen extends StatelessWidget {
                 color: i == 0 ? c.primary : c.outlineVariant,
                 width: i == 0 ? 2 : 1),
               borderRadius: BorderRadius.circular(3)),
-            child: Text((i + 1).toString(), style: const TextStyle(fontSize: 8)),
-          )),
+            child: Text((i + 1).toString(),
+              style: const TextStyle(fontSize: 8)),
+          ))),
         ])),
-      Container(height: 32, color: c.surfaceContainerLow,
-        child: Row(children: [
-          _mockTool(c, Icons.movie_filter_outlined),
-          Expanded(child: Text(t('エンドカードトラック', 'End-card track'),
-            style: const TextStyle(fontSize: 9))),
-          Text('NIARIM', style: TextStyle(fontSize: 9,
-            color: c.onSurfaceVariant)),
-          const SizedBox(width: 18),
-          Icon(Icons.delete, size: 13, color: c.primary),
-          const SizedBox(width: 70),
+      Expanded(child: ClipRect(child: SingleChildScrollView(
+        physics: const NeverScrollableScrollPhysics(),
+        child: Column(children: [
+          _previewMaterialTrack(c, Icons.layers_outlined,
+            t('共通レイヤー', 'Shared layer'), 0),
+          _previewMaterialTrack(c, Icons.text_fields,
+            t('テキスト', 'Text'), 1),
+          _previewMaterialTrack(c, Icons.image_outlined,
+            t('画像', 'Image'), 2),
+          _previewMaterialTrack(c, Icons.movie_outlined,
+            t('動画', 'Video'), 3),
+          _previewMaterialTrack(c, Icons.music_note,
+            t('音声', 'Audio'), 4),
+          _previewMaterialTrack(c, Icons.camera_outlined,
+            t('カメラ', 'Camera'), 5),
+          _previewMaterialTrack(c, Icons.more_time,
+            t('タイムスタンプ', 'Timestamp'), 6),
+          _previewMaterialTrack(c, Icons.auto_fix_high,
+            t('演出フィルター', 'Effects'), 7),
+          _previewMaterialTrack(c, Icons.movie_filter_outlined,
+            t('エンドカード', 'End card'), 8),
         ])),
-      const Expanded(child: SizedBox.shrink()),
+      )),
     ])),
+  );
+
+  Widget _previewMaterialTrack(ColorScheme c, IconData icon,
+      String label, int index) => SizedBox(
+    key: Key('themePreviewMaterialTrack$index'),
+    height: 18,
+    child: Row(children: [
+      SizedBox(width: 112, child: Row(children: [
+        const SizedBox(width: 6),
+        Icon(icon, size: 11, color: c.onSurfaceVariant),
+        const SizedBox(width: 3),
+        Expanded(child: Text(label, maxLines: 1,
+          overflow: TextOverflow.ellipsis,
+          style: TextStyle(fontSize: 8, color: c.onSurface))),
+      ])),
+      Expanded(child: Container(
+        margin: const EdgeInsets.symmetric(vertical: 1, horizontal: 2),
+        decoration: BoxDecoration(
+          color: index.isEven ? c.primaryContainer : c.tertiaryContainer,
+          borderRadius: BorderRadius.circular(3),
+          border: Border.all(color: c.outlineVariant)),
+        alignment: Alignment.centerLeft,
+        padding: const EdgeInsets.only(left: 5),
+        child: Text(index == 4 ? '♪ sample.wav'
+          : index == 2 ? 'sample.png'
+          : index == 3 ? 'sample.mp4'
+          : label, maxLines: 1,
+          overflow: TextOverflow.ellipsis,
+          style: TextStyle(fontSize: 8,
+            color: index.isEven ? c.onPrimaryContainer
+              : c.onTertiaryContainer)),
+      )),
+    ]),
   );
 
   Widget _timelineTrack(ColorScheme c, String label) => SizedBox(
@@ -972,9 +1042,11 @@ class _ThemeSampleScreen extends StatelessWidget {
       Center(child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 32),
         child: Material(
-          elevation: 5,
+          elevation: 0,
           color: c.surfaceContainerHigh,
-          borderRadius: BorderRadius.circular(28),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(28),
+            side: BorderSide.none),
           child: Padding(
             padding: const EdgeInsets.fromLTRB(24, 24, 24, 20),
             child: Column(mainAxisSize: MainAxisSize.min,
@@ -982,7 +1054,7 @@ class _ThemeSampleScreen extends StatelessWidget {
               children: [
                 Text(t('書き出し完了', 'Export complete'),
                   style: const TextStyle(fontSize: 21,
-                    fontWeight: FontWeight.w700)),
+                    fontFamily: 'Kuramubon', fontWeight: FontWeight.w700)),
                 const SizedBox(height: 18),
                 Text(t('48フレームを書き出しました', '48 frames exported'),
                   style: const TextStyle(fontSize: 14)),
@@ -999,7 +1071,7 @@ class _ThemeSampleScreen extends StatelessWidget {
                 Row(mainAxisAlignment: MainAxisAlignment.end, children: [
                   Flexible(child: Text(t('プロジェクト一覧へ',
                     'Back to projects'), style: TextStyle(
-                      fontSize: 12, color: c.primary))),
+                      fontSize: 12, fontFamily: 'Kuramubon', color: c.primary))),
                   const SizedBox(width: 14),
                   Container(
                     padding: const EdgeInsets.symmetric(
@@ -1007,7 +1079,7 @@ class _ThemeSampleScreen extends StatelessWidget {
                     decoration: BoxDecoration(color: c.primary,
                       borderRadius: BorderRadius.circular(24)),
                     child: Text(t('共有', 'Share'),
-                      style: TextStyle(color: c.onPrimary))),
+                      style: TextStyle(fontFamily: 'Kuramubon', color: c.onPrimary))),
                 ]),
               ]),
           ),

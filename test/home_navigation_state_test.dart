@@ -235,13 +235,15 @@ void main() {
     expect(find.byType(SplashScreen), findsOneWidget);
   });
 
-  testWidgets('the app-bar arrow closes search instead of leaving Home', (
+  // 検索中の左上はハンバーガーごと隠れ、検索は右上の×で閉じる。
+  testWidgets('the close button ends search without leaving Home', (
     tester,
   ) async {
     await boot(tester, projects: 1);
     await tester.tap(find.byIcon(Icons.search));
     await settle(tester);
-    await tester.tap(find.byIcon(Icons.arrow_back));
+    expect(find.byIcon(Icons.menu), findsNothing);
+    await tester.tap(find.byIcon(Icons.close));
     await settle(tester);
     expect(find.byType(TextField), findsNothing);
     expect(find.byType(SplashScreen), findsNothing);
@@ -307,7 +309,8 @@ void main() {
     });
   }
 
-  testWidgets('the arrow returns to splash even over another screen', (
+  // 起動画面へ戻るのは左下のFAB。
+  testWidgets('the back FAB returns to splash even over another screen', (
     tester,
   ) async {
     await boot(tester);
@@ -315,7 +318,7 @@ void main() {
     appRouter.push('/home');
     await settle(tester);
     await tester.pump(const Duration(seconds: 1));
-    await tester.tap(find.byIcon(Icons.arrow_back));
+    await tester.tap(find.byKey(const Key('homeBackToSplashFab')));
     await settle(tester);
     await tester.pump(const Duration(seconds: 1));
     expect(location(), '/');

@@ -417,31 +417,13 @@ class _HomeScreenState extends State<HomeScreen>
             child: Scaffold(
               key: _scaffoldKey,
               appBar: AppBar(
-                // 左上に「起動画面へ戻る」矢印と、ハンバーガーメニュー（設定・
-                // ヘルプ等への導線）の2つを並べる。作品広場画面には元々戻る
-                // 矢印がある（プッシュ遷移のため自動表示）。ホーム画面も起動
-                // 画面からpush()で遷移するが、既にドロワーでleadingが埋まるため、
-                // 両方を明示的に並べる形にしている。
-                // While searching, temporarily hide the hamburger button and shrink
-                // the leading area to the back button only.
-                leadingWidth: _isSearching ? 48 : 96,
-                leading: Row(
-                  mainAxisAlignment: MainAxisAlignment.start,
-                  children: [
-                    IconButton(
-                      icon: const Icon(Icons.arrow_back),
-                      // 検索中の矢印は検索を閉じる（画面ごと離れない）。
-                      tooltip: _isSearching
-                          ? MaterialLocalizations.of(context).backButtonTooltip
-                          : l10n.homeBackToSplashTooltip,
-                      // 「起動画面へ戻る」の矢印なので、保存容量の画面等から
-                      // 来たホームでも起動画面へ戻る（端末の戻るは前の画面へ）。
-                      onPressed: () {
-                        if (_closeTransientState()) context.go('/');
-                      },
-                    ),
-                    if (!_isSearching)
-                      IconButton(
+                // 起動画面に戻るボタンは左下のFABへ移動する。左上は
+                // ドロワー用ハンバーガーメニューのみとし、お気に入りは変更しない。
+                automaticallyImplyLeading: false,
+                leadingWidth: _isSearching ? 0 : 56,
+                leading: _isSearching
+                    ? null
+                    : IconButton(
                         icon: const Icon(Icons.menu),
                         tooltip: MaterialLocalizations.of(
                           context,
@@ -449,8 +431,6 @@ class _HomeScreenState extends State<HomeScreen>
                         onPressed: () =>
                             _scaffoldKey.currentState?.openDrawer(),
                       ),
-                  ],
-                ),
                 // 作品一覧・ブクマ済みのタブでは、そのタブの名前を出す
                 // （並び替え・検索はプロジェクトの一覧にだけ効く）。
                 title: _currentTabIndex != 0
@@ -684,23 +664,72 @@ class _HomeScreenState extends State<HomeScreen>
               // プロジェクトタブ：新規プロジェクト／新規フォルダを選べるFAB。
               // 作品一覧タブ：新規プロジェクト作成の導線は不要なため、フォルダの
               // 新規作成のみをワンタップ・選択肢なしで直接行えるFABにする。
-              floatingActionButton: switch (_currentTabIndex) {
-                0 => FloatingActionButton(
-                  tooltip: AppLocalizations.of(context)!.homeAddTooltip,
-                  onPressed: () => _showAddChoiceSheet(context),
-                  child: const Icon(Icons.add),
+              floatingActionButtonLocation:
+                  FloatingActionButtonLocation.centerFloat,
+              floatingActionButton: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    FloatingActionButton(
+                      key: const Key('homeBackToSplashFab'),
+                      heroTag: 'home-back-to-splash',
+                      tooltip: l10n.homeBackToSplashTooltip,
+                      backgroundColor: Theme.of(context).colorScheme.primary,
+                      foregroundColor: Theme.of(context).colorScheme.onPrimary,
+                      shape: const CircleBorder(side: BorderSide.none),
+                      elevation: 0,
+                      focusElevation: 0,
+                      hoverElevation: 0,
+                      highlightElevation: 0,
+                      disabledElevation: 0,
+                      onPressed: () => context.go('/'),
+                      child: const Icon(Icons.arrow_back),
+                    ),
+                    if (_currentTabIndex == 0)
+                      FloatingActionButton(
+                        heroTag: 'home-add-project',
+                        tooltip: l10n.homeAddTooltip,
+                        backgroundColor: Theme.of(context).colorScheme.primary,
+                        foregroundColor: Theme.of(
+                          context,
+                        ).colorScheme.onPrimary,
+                        shape: const CircleBorder(side: BorderSide.none),
+                        elevation: 0,
+                        focusElevation: 0,
+                        hoverElevation: 0,
+                        highlightElevation: 0,
+                        disabledElevation: 0,
+                        onPressed: () => _showAddChoiceSheet(context),
+                        child: const Icon(Icons.add),
+                      )
+                    else if (_currentTabIndex == 1)
+                      FloatingActionButton(
+                        heroTag: 'home-add-work-folder',
+                        tooltip: l10n.homeAddSheetNewFolder,
+                        backgroundColor: Theme.of(context).colorScheme.primary,
+                        foregroundColor: Theme.of(
+                          context,
+                        ).colorScheme.onPrimary,
+                        shape: const CircleBorder(side: BorderSide.none),
+                        elevation: 0,
+                        focusElevation: 0,
+                        hoverElevation: 0,
+                        highlightElevation: 0,
+                        disabledElevation: 0,
+                        onPressed: () => showCreateFolderNameDialog(
+                          context,
+                          (name) => context
+                              .read<WorkFolderService>()
+                              .createFolder(name),
+                        ),
+                        child: const Icon(Icons.create_new_folder_outlined),
+                      )
+                    else
+                      const SizedBox(width: 56),
+                  ],
                 ),
-                1 => FloatingActionButton(
-                  tooltip: AppLocalizations.of(context)!.homeAddSheetNewFolder,
-                  onPressed: () => showCreateFolderNameDialog(
-                    context,
-                    (name) =>
-                        context.read<WorkFolderService>().createFolder(name),
-                  ),
-                  child: const Icon(Icons.create_new_folder_outlined),
-                ),
-                _ => null,
-              },
+              ),
             ),
           ),
         ),
@@ -1248,7 +1277,10 @@ class _HomeTabBarState extends State<_HomeTabBar> {
       Theme.of(context).scaffoldBackgroundColor,
       Colors.black,
     );
-    final selectedColor = contrastingForeground(background, scheme.primary);
+    // Preserve the selected accent as the indicator itself (red stays red),
+    // but protect tab-label readability on extreme custom accents.
+    final selectedTextColor = contrastingForeground(background, scheme.primary);
+    final selectedIndicatorColor = scheme.primary;
     final textStyle = const TextStyle(
       fontSize: 14,
       fontWeight: FontWeight.w600,
@@ -1285,7 +1317,9 @@ class _HomeTabBarState extends State<_HomeTabBar> {
           decoration: BoxDecoration(
             border: Border(
               bottom: BorderSide(
-                color: currentIndex == i ? selectedColor : Colors.transparent,
+                color: currentIndex == i
+                    ? selectedIndicatorColor
+                    : Colors.transparent,
                 width: 2,
               ),
             ),
@@ -1296,7 +1330,7 @@ class _HomeTabBarState extends State<_HomeTabBar> {
             softWrap: false,
             style: textStyle.copyWith(
               color: currentIndex == i
-                  ? selectedColor
+                  ? selectedTextColor
                   : scheme.onSurfaceVariant,
             ),
           ),
