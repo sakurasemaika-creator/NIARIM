@@ -1537,56 +1537,74 @@ class _ThemeSampleScreen extends StatelessWidget {
   }
 
 
-  Widget _workspace(ColorScheme c) => _list([
-    _mockSection(c, t('ツールバー編集', 'Toolbar editor'), [
-      Text(t('表示するツールの並びを設定できます。',
-        'Toolbar order and visibility.'),
-        style: TextStyle(fontSize: 10, color: c.onSurfaceVariant)),
+  Widget _workspace(ColorScheme c) => ListView(
+    key: const Key('themePreviewContentList'),
+    physics: const NeverScrollableScrollPhysics(),
+    padding: const EdgeInsets.all(16),
+    children: [
+      Text(t('ツールバー編集', 'Toolbar editor'),
+        style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 13)),
+      const SizedBox(height: 4),
+      Text(t('表示するツールをチェックでオンオフし、ドラッグで並び替えできます。',
+        'Toggle and reorder visible tools.'),
+        style: TextStyle(fontSize: 11, color: c.onSurfaceVariant)),
       const SizedBox(height: 10),
       Container(
-        decoration: BoxDecoration(color: c.surfaceContainerLow,
+        height: 45, padding: const EdgeInsets.symmetric(horizontal: 6),
+        decoration: BoxDecoration(
+          color: c.surfaceContainerLow,
+          border: Border.all(color: c.outlineVariant),
           borderRadius: BorderRadius.circular(10)),
-        padding: const EdgeInsets.all(8),
         child: Row(mainAxisAlignment: MainAxisAlignment.spaceAround,
           children: [
-            _mockTool(c, Icons.brush),
-            _mockTool(c, Icons.auto_fix_off),
-            _mockTool(c, Icons.colorize),
-            _mockTool(c, Icons.layers),
-            _mockTool(c, Icons.pan_tool),
-          ])),
-    ]),
-    const SizedBox(height: 7),
-    ...[
-      (Icons.brush, t('ペン', 'Pen')),
-      (Icons.auto_fix_off, t('消しゴム', 'Eraser')),
-      (Icons.format_color_fill, t('バケツ', 'Fill')),
-      (Icons.colorize, t('スポイト', 'Eyedropper')),
-      (Icons.pan_tool, t('手のひら', 'Hand')),
-      (Icons.select_all, t('選択', 'Select')),
-      (Icons.text_fields, t('テキスト', 'Text')),
-      (Icons.layers_outlined, t('レイヤー', 'Layers')),
-    ].map((e) => Container(
-      margin: const EdgeInsets.only(bottom: 4),
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
-      color: c.surfaceContainerLow,
-      child: Row(children: [
-        Icon(Icons.check_box, size: 19, color: c.primary),
-        const SizedBox(width: 8), Icon(e.$1, size: 18),
-        const SizedBox(width: 8), Expanded(child: Text(e.$2,
-          style: const TextStyle(fontSize: 12))),
-        Icon(Icons.drag_handle, size: 19, color: c.primary),
-      ]))),
-    const SizedBox(height: 9),
-    _mockSettingRow(c, Icons.back_hand_outlined,
-      t('左利きモード', 'Left-handed mode')),
-    _mockSettingRow(c, Icons.desktop_windows,
-      t('PCモード', 'PC mode')),
-    _mockSettingRow(c, Icons.dashboard_outlined,
-      t('パネル配置', 'Panel layout')),
-    const SizedBox(height: 5),
-    _cta(c, t('適用', 'Apply')),
-  ]);
+            for (final icon in [
+              Icons.brush, Icons.auto_fix_off, Icons.format_color_fill,
+              Icons.colorize, Icons.back_hand_outlined,
+              Icons.select_all, Icons.text_fields, Icons.category,
+            ]) Icon(icon, size: 22, color: c.onSurface),
+          ]),
+      ),
+      const SizedBox(height: 8),
+      Container(
+        decoration: BoxDecoration(
+          color: c.surfaceContainerLow,
+          border: Border.all(color: c.outlineVariant),
+          borderRadius: BorderRadius.circular(14)),
+        child: Column(children: [
+          for (final item in [
+            (Icons.brush, t('Gペン', 'G pen')),
+            (Icons.auto_fix_off, t('消しゴム', 'Eraser')),
+            (Icons.format_color_fill, t('バケツ', 'Bucket')),
+            (Icons.colorize, t('スポイト', 'Eyedropper')),
+            (Icons.back_hand_outlined, t('指', 'Finger')),
+            (Icons.pan_tool, t('手のひら', 'Pan hand')),
+            (Icons.select_all, t('選択', 'Selection')),
+            (Icons.text_fields, t('テキスト', 'Text')),
+            (Icons.category, t('図形', 'Shapes')),
+          ]) Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 1),
+            child: SizedBox(height: 46, child: Row(children: [
+              Icon(Icons.check_box, size: 20, color: c.primary),
+              const SizedBox(width: 12),
+              Icon(item.$1, color: c.onSurface, size: 18),
+              const SizedBox(width: 12),
+              Expanded(child: Text(item.$2,
+                style: const TextStyle(
+                  fontSize: 13, fontWeight: FontWeight.w700))),
+              Icon(Icons.drag_handle, color: c.primary, size: 20),
+            ])),
+          ),
+        ]),
+      ),
+      const SizedBox(height: 18),
+      _mockSettingRow(c, Icons.back_hand_outlined,
+        t('左利きモード', 'Left-handed mode')),
+      _mockSettingRow(c, Icons.desktop_windows,
+        t('PCモード', 'PC mode')),
+      _mockSettingRow(c, Icons.dashboard_outlined,
+        t('パネル配置', 'Panel placement')),
+    ],
+  );
 
   Widget _premium(ColorScheme c) => _list([
     Center(child: Icon(Icons.auto_awesome, size: 48, color: c.primary)),
@@ -1742,26 +1760,72 @@ class _ThemeSampleScreen extends StatelessWidget {
     _cta(c, t('書き出し', 'Export'), icon: Icons.file_upload_outlined),
   ]);
 
-  Widget _widgets(ColorScheme c) => _list([
-    _heading(t('ホーム画面ウィジェット', 'Home widgets')),
-    Text(t('スマホのホーム画面に作品を表示します。',
-      'Display your artwork on your home screen.'),
-      style: TextStyle(fontSize: 11, color: c.onSurfaceVariant)),
-    const SizedBox(height: 22),
-    _heading(t('最新更新作品ウィジェット', 'Latest artwork')),
-    _mockSettingRow(c, Icons.image_outlined,
-      t('作品を選ぶ', 'Choose artwork')),
-    const SizedBox(height: 17),
-    _heading(t('作品をランダム表示する', 'Random artwork')),
-    _staticChoiceRow(c, [
-      t('アプリのテーマ色に合わせる', 'Use app theme'),
-      t('自動選択', 'Automatic')]),
-    const SizedBox(height: 16),
-    _heading(t('作品画像ウィジェット', 'Artwork widget')),
-    _staticChoiceRow(c, [
-      t('アプリのテーマ色に合わせる', 'Use app theme'),
-      t('自動選択', 'Automatic')]),
-  ]);
+  Widget _widgets(ColorScheme c) => ListView(
+    key: const Key('themePreviewContentList'),
+    physics: const NeverScrollableScrollPhysics(),
+    padding: const EdgeInsets.all(16),
+    children: [
+      Text(t('スマホのホーム画面へ、好きな作品のフレームを'
+        '「作品をつくる」「作品広場」の種類のウィジェットを置けます。',
+        'Place artwork widgets on your home screen.'),
+        style: TextStyle(fontSize: 11, color: c.onSurfaceVariant)),
+      const SizedBox(height: 8),
+      Text(t('ホーム画面ウィジェットから作品を開いたときも、'
+        '選んだ作品のコマを静止画として表示します。',
+        'Widgets display your selected frame.'),
+        style: TextStyle(fontSize: 11, color: c.onSurfaceVariant)),
+      const SizedBox(height: 20),
+      Text(t('起動画面ウィジェット', 'Startup widget'),
+        style: const TextStyle(fontWeight: FontWeight.w700)),
+      const SizedBox(height: 5),
+      Text(t('選んだ作品のフレームを表示します。',
+        'Display one selected project frame.'),
+        style: TextStyle(fontSize: 11, color: c.onSurfaceVariant)),
+      const SizedBox(height: 10),
+      Padding(padding: const EdgeInsets.only(bottom: 12),
+        child: Material(
+          color: c.surfaceContainerLow,
+          borderRadius: BorderRadius.circular(14),
+          child: ListTile(
+            leading: Icon(Icons.add_photo_alternate_outlined,
+              color: c.primary),
+            title: Text(t('作品を選ぶ', 'Choose artwork')),
+            trailing: Icon(Icons.chevron_right, color: c.primary),
+          )),
+      ),
+      Text(t('作品をつくるウィジェット', 'Create artwork widget'),
+        style: const TextStyle(fontWeight: FontWeight.w700)),
+      const SizedBox(height: 5),
+      Text(t('タップすると「新規作成」を開きます。',
+        'Open project creation on tap.'),
+        style: TextStyle(fontSize: 11, color: c.onSurfaceVariant)),
+      const SizedBox(height: 14),
+      for (final title in [
+        t('アプリのテーマに合わせる', 'Follow app theme'),
+        t('色を選ぶ', 'Choose color'),
+      ])
+        ListTile(
+          leading: Icon(title == t('アプリのテーマに合わせる', 'Follow app theme')
+            ? Icons.radio_button_checked : Icons.radio_button_unchecked,
+            color: c.primary),
+          title: Text(title),
+        ),
+      const SizedBox(height: 18),
+      Text(t('作品広場ウィジェット', 'Community widget'),
+        style: const TextStyle(fontWeight: FontWeight.w700)),
+      const SizedBox(height: 6),
+      Text(t('タップすると「作品広場」を開きます。',
+        'Open the community when tapped.'),
+        style: TextStyle(fontSize: 11, color: c.onSurfaceVariant)),
+      const SizedBox(height: 10),
+      ListTile(
+        leading: Icon(Icons.radio_button_checked, color: c.primary),
+        title: Text(t('アプリのテーマに合わせる', 'Follow app theme'))),
+      ListTile(
+        leading: Icon(Icons.radio_button_unchecked, color: c.onSurfaceVariant),
+        title: Text(t('色を選ぶ', 'Choose color'))),
+    ],
+  );
 
   Widget _notifications(ColorScheme c) => _list([
     _card(_row(Icons.person_add, t('新しいフォロワー', 'New follower'))),
