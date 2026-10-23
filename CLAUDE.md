@@ -56,10 +56,13 @@
    `test/helpers/color_channels.dart`の`.red8`/`.green8`/`.blue8`/
    `.alpha8`を使う。テスト内のデバッグ出力は`print`ではなく
    `debugPrint`を使う）
-3. `flutter test`（ベースライン：2026-10-23時点で**成功1995・スキップ8・
-   失敗4**。失敗は監査担当の`test/app_web_reference_*`3件と、別セッション
-   （質感変更フィルターの名前変更）の`test/texture_filter_gold_palette_test.dart`
-   1件で、通常タスクでは直さない。スキップのうち3件は
+3. `flutter test`（ベースライン：2026-10-23、dev_branch `d9c9531`を
+   取り込んだ`ccr-f56ee68e-77ag7y`で**成功2165・スキップ17・失敗2**。
+   失敗はdev_branchでも落ちる`test/community_filter_dialog_contrast_test.dart`
+   と`test/popup_opaque_background_test.dart`で、通常タスクでは直さない
+   （以前の失敗4件〔`test/app_web_reference_*`3件・
+   `test/texture_filter_gold_palette_test.dart`〕は通るようになった）。
+   スキップのうち3件は
    `test/google_auth_init_once_test.dart`で、
    `--dart-define=NIARIM_GOOGLE_CLIENT_ID=test`を付けたときだけ動く。
    全件で約15〜25分かかるので、変更に関係するテストを先に流し、最後に
