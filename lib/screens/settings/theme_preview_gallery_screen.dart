@@ -1476,6 +1476,7 @@ class _ThemeSampleScreen extends StatelessWidget {
       child: _cta(c, t('フォローする', 'Follow'), icon: Icons.person_add_alt_1)),
     const SizedBox(height: 12),
     Expanded(child: GridView.count(crossAxisCount: 2, childAspectRatio: .9,
+      physics: const NeverScrollableScrollPhysics(),
       padding: const EdgeInsets.all(12),
       children: [
         _projectTile(c, t('作品 1', 'Work 1')),
@@ -1546,6 +1547,7 @@ class _ThemeSampleScreen extends StatelessWidget {
         children: [Icon(Icons.skip_previous), Icon(Icons.play_arrow),
           Icon(Icons.skip_next)])),
     SizedBox(height: 76, child: ListView(
+      physics: const NeverScrollableScrollPhysics(),
       scrollDirection: Axis.horizontal,
       children: List.generate(7, (i) => Container(
         width: 60, margin: const EdgeInsets.all(5),
