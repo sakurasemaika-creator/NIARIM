@@ -29,6 +29,7 @@ web_baseline: 2a44dd9007e4a764e489a42a70f96ac5da6b3b8a
 - A003の現在HEADでの再確認とユーザー指摘の空の表示3件の修正（App `63d6ee8`）。証跡・判断待ち・申し送りはASTRA_AUDIT_STATE.mdのA003節。Route状態はdev_branchのまま（A003 in_progress）。
 - A004の現在HEADでの再確認（A003の判断待ちの間に並行して実施）と、表示サイズの列数（スマホで大と中・中と小が同じ列数）・タグ検索の切り替えで入力が途切れる件の修正（App `4e3d4dd`）。詳細はASTRA_AUDIT_STATE.mdのA004節。Route状態はdev_branchのまま（A004 todo。current_idのA003を閉じた後にdoneへ）。
 - A005の現在HEADでの再確認（同じく並行して実施）と、複製の名前の番号（App `b1c32eb`）・「フォルダへ移動」のシートの階層と動かすフォルダの中の除外・詳細画面とキャンバスのシートのスクロール（App `765086a`）。詳細はASTRA_AUDIT_STATE.mdのA005節。Route状態はdev_branchのまま（A005 todo。A003を閉じた後、A004に続けてdoneへ）。
+- A003のユーザーの判断（ホームのタブの選択中の文字・ブクマ済みのボタンを差し色に揃える）を反映（App `7e7b9d8`）。A003はdev_branchの残りのsubstepのためin_progressのまま。
 
 ## 2026-10-22 中断前保存・再開の運用（ユーザー指示）
 

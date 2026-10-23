@@ -1041,6 +1041,12 @@ onSelectionMaskChanged`→`canvas_screen`→`FilterPanel.selectionMask`と渡り
   （`ThemeService`が判定結果を覚えておく）。判定は救済ボタンを出す目安で、
   文字が読めることの保証ではない。組み込みテーマで救済ボタンが出ないことは
   `test/theme_contrast_rescue_test.dart`が見張っている。
+  画面側で`contrastingForeground`を使い、差し色を読みやすさのために黒・白へ
+  差し替えることもしない（ユーザー指定、2026-10-23）。ホームのタブの選択中の
+  文字とブクマ済みのボタン・読み込み中の表示が差し替えていて、ライトでは
+  黒になり、同じ画面の他の差し色（下線・アイコン・他のボタン）と揃って
+  いなかったので差し色へ戻した。作品広場（`community_screen.dart`の
+  ダイアログのボタン、`community_work_card.dart`の文字）にはまだ残っている。
 - **ホーム画面ウィジェットのPendingIntentは`requestCode`を必ず変えること**：
   `NiarimWidgetProviders.kt`の3種のウィジェット（作品／作品をつくる／
   作品広場）は同じ`MainActivity`を起動するIntentを使うため、
