@@ -844,7 +844,8 @@ class _ThemeSampleScreen extends StatelessWidget {
         _mockTool(c, Icons.palette_outlined),
         Expanded(child: Text('all-route-audit',
           maxLines: 1, overflow: TextOverflow.ellipsis,
-          style: const TextStyle(fontSize: 15, fontWeight: FontWeight.bold))),
+          style: const TextStyle(fontSize: 15,
+            fontFamily: 'Kuramubon', fontWeight: FontWeight.bold))),
         _mockTool(c, Icons.home_outlined),
         _mockTool(c, Icons.undo),
         _mockTool(c, Icons.redo),
@@ -856,20 +857,37 @@ class _ThemeSampleScreen extends StatelessWidget {
           child: AspectRatio(
             key: const Key('themePreviewTimelinePaper'),
             aspectRatio: 16 / 9,
-            child: Container(color: Colors.white,
-              alignment: Alignment.topRight,
-              child: Padding(padding: const EdgeInsets.all(10),
-                child: Icon(Icons.fullscreen, size: 16,
+            child: Stack(children: [
+              const Positioned.fill(child: ColoredBox(color: Colors.white)),
+              Positioned(top: 4, right: 4,
+                child: Icon(Icons.fullscreen, size: 18,
                   color: c.onSurfaceVariant)),
-            ),
+              Positioned(bottom: 6, left: 8,
+                child: Text('10/100', key: const Key('themePreviewFrameCounter'),
+                  style: TextStyle(color: c.onSurface, fontSize: 11,
+                    fontWeight: FontWeight.w700))),
+              Positioned(bottom: 2, right: 4,
+                child: Icon(Icons.repeat,
+                  key: const Key('themePreviewLoopButton'),
+                  size: 24, color: c.primary)),
+            ]),
           ))),
-      Container(height: 25, alignment: Alignment.center,
-        child: Container(width: 38, height: 4,
+      SizedBox(height: 22, child: Stack(children: [
+        Padding(padding: const EdgeInsets.symmetric(horizontal: 36),
+          child: Row(children: [
+            Text('0.4s', key: const Key('themePreviewCurrentSeconds'),
+              style: TextStyle(fontSize: 11, color: c.onSurfaceVariant)),
+            const Spacer(),
+            Text('4.2s', key: const Key('themePreviewTotalSeconds'),
+              style: TextStyle(fontSize: 11, color: c.onSurfaceVariant)),
+          ])),
+        Center(child: Container(width: 40, height: 5,
           decoration: BoxDecoration(color: c.outlineVariant,
-            borderRadius: BorderRadius.circular(4)))),
+            borderRadius: BorderRadius.circular(3)))),
+      ])),
       Padding(padding: const EdgeInsets.symmetric(horizontal: 18),
-        child: _mockSlider(c, position: .08, height: 43)),
-      SizedBox(height: 68, child: Row(
+        child: _mockSlider(c, position: .09, height: 43)),
+      SizedBox(height: 58, child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
         children: [
           _mockTool(c, Icons.skip_previous),
@@ -877,7 +895,6 @@ class _ThemeSampleScreen extends StatelessWidget {
           _mockTool(c, Icons.play_arrow),
           _mockTool(c, Icons.fast_forward),
           _mockTool(c, Icons.skip_next),
-          _mockTool(c, Icons.repeat),
         ])),
       Container(height: 1, color: c.outlineVariant),
       SizedBox(height: 40, child: Row(
@@ -904,26 +921,24 @@ class _ThemeSampleScreen extends StatelessWidget {
               Icon(Icons.check, size: 12, color: c.onPrimary),
               const SizedBox(width: 5),
               Text('Scene1', style: TextStyle(fontSize: 11,
-                color: c.onPrimary, fontWeight: FontWeight.bold)),
+                color: c.onPrimary, fontFamily: 'Kuramubon',
+                fontWeight: FontWeight.bold)),
             ])),
           const SizedBox(width: 12),
           _mockTool(c, Icons.more_vert),
           _mockTool(c, Icons.add),
         ])),
-      Container(
-        key: const Key('themePreviewTimelineTracks'),
+      Container(key: const Key('themePreviewTimelineTracks'),
         height: 44, color: c.surface,
         child: Row(children: [
-          SizedBox(width: 105, child: Row(children: [
+          SizedBox(width: 100, child: Row(children: [
             _mockTool(c, Icons.movie_filter_outlined),
-            Text(t('フレーム', 'Frames'), style: const TextStyle(fontSize: 10)),
+            Expanded(child: Text(t('フレーム', 'Frames'),
+              style: const TextStyle(fontSize: 10,
+                fontFamily: 'Kuramubon'))),
           ])),
-          const Spacer(),
-          Text(t('選択', 'Select'), style: TextStyle(
-            fontSize: 10, color: c.primary)),
-          const SizedBox(width: 18),
-          ...List.generate(4, (i) => Container(
-            width: 36, height: 38,
+          ...List.generate(5, (i) => Expanded(child: Container(
+            height: 34,
             margin: const EdgeInsets.symmetric(horizontal: 1),
             alignment: Alignment.bottomLeft,
             decoration: BoxDecoration(
@@ -932,22 +947,67 @@ class _ThemeSampleScreen extends StatelessWidget {
                 color: i == 0 ? c.primary : c.outlineVariant,
                 width: i == 0 ? 2 : 1),
               borderRadius: BorderRadius.circular(3)),
-            child: Text((i + 1).toString(), style: const TextStyle(fontSize: 8)),
-          )),
+            child: Text((i + 1).toString(),
+              style: const TextStyle(fontSize: 8)),
+          ))),
         ])),
-      Container(height: 32, color: c.surfaceContainerLow,
-        child: Row(children: [
-          _mockTool(c, Icons.movie_filter_outlined),
-          Expanded(child: Text(t('エンドカードトラック', 'End-card track'),
-            style: const TextStyle(fontSize: 9))),
-          Text('NIARIM', style: TextStyle(fontSize: 9,
-            color: c.onSurfaceVariant)),
-          const SizedBox(width: 18),
-          Icon(Icons.delete, size: 13, color: c.primary),
-          const SizedBox(width: 70),
+      Expanded(child: ClipRect(child: SingleChildScrollView(
+        physics: const NeverScrollableScrollPhysics(),
+        child: Column(children: [
+          _previewMaterialTrack(c, Icons.layers_outlined,
+            t('共通レイヤー', 'Shared layer'), 0),
+          _previewMaterialTrack(c, Icons.text_fields,
+            t('テキスト', 'Text'), 1),
+          _previewMaterialTrack(c, Icons.image_outlined,
+            t('画像', 'Image'), 2),
+          _previewMaterialTrack(c, Icons.movie_outlined,
+            t('動画', 'Video'), 3),
+          _previewMaterialTrack(c, Icons.music_note,
+            t('音声', 'Audio'), 4),
+          _previewMaterialTrack(c, Icons.camera_outlined,
+            t('カメラ', 'Camera'), 5),
+          _previewMaterialTrack(c, Icons.more_time,
+            t('タイムスタンプ', 'Timestamp'), 6),
+          _previewMaterialTrack(c, Icons.auto_fix_high,
+            t('演出フィルター', 'Effects'), 7),
+          _previewMaterialTrack(c, Icons.movie_filter_outlined,
+            t('エンドカード', 'End card'), 8),
         ])),
-      const Expanded(child: SizedBox.shrink()),
+      ))),
     ])),
+  );
+
+  Widget _previewMaterialTrack(ColorScheme c, IconData icon,
+      String label, int index) => SizedBox(
+    key: Key('themePreviewMaterialTrack$index'),
+    height: 29,
+    child: Row(children: [
+      SizedBox(width: 112, child: Row(children: [
+        const SizedBox(width: 6),
+        Icon(icon, size: 13, color: c.onSurfaceVariant),
+        const SizedBox(width: 5),
+        Expanded(child: Text(label, maxLines: 1,
+          overflow: TextOverflow.ellipsis,
+          style: TextStyle(fontSize: 9, color: c.onSurface))),
+      ])),
+      Expanded(child: Container(
+        margin: const EdgeInsets.symmetric(vertical: 3, horizontal: 2),
+        decoration: BoxDecoration(
+          color: index.isEven ? c.primaryContainer : c.tertiaryContainer,
+          borderRadius: BorderRadius.circular(3),
+          border: Border.all(color: c.outlineVariant)),
+        alignment: Alignment.centerLeft,
+        padding: const EdgeInsets.only(left: 7),
+        child: Text(index == 4 ? '♪ sample.wav'
+          : index == 2 ? 'sample.png'
+          : index == 3 ? 'sample.mp4'
+          : label, maxLines: 1,
+          overflow: TextOverflow.ellipsis,
+          style: TextStyle(fontSize: 8,
+            color: index.isEven ? c.onPrimaryContainer
+              : c.onTertiaryContainer)),
+      )),
+    ]),
   );
 
   Widget _timelineTrack(ColorScheme c, String label) => SizedBox(
