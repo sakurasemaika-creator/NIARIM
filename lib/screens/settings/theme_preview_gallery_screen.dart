@@ -304,6 +304,7 @@ class _ThemeSampleScreen extends StatelessWidget {
     final appTitle = switch (entry.id) {
       'detail' => t('練習作品', 'Practice'),
       'work' => t('作品詳細', 'Work details'),
+      'widget_frame' => t('練習作品', 'Practice'),
       'projects' => t('プロジェクト一覧', 'Projects'),
       'save' => t('セーブスロット', 'Save slots'),
       'new' => t('新規プロジェクト', 'New project'),
@@ -2640,10 +2641,10 @@ class _ThemeSampleScreen extends StatelessWidget {
     Text(t('表示するフレームを選んでください', 'Choose frame to display'),
       style: TextStyle(color: c.onSurfaceVariant, fontSize: 12)),
     Expanded(child: Center(child: AspectRatio(
-      aspectRatio: 16 / 9, child: _art(c, height: 180)))),
+      aspectRatio: 16 / 9, child: const ColoredBox(color: Colors.white)))),
     const Text('1 / 24', style: TextStyle(fontWeight: FontWeight.bold)),
     Padding(padding: const EdgeInsets.symmetric(horizontal: 12),
-      child: Slider(value: .14, onChanged: null)),
+      child: Slider(value: .14, onChanged: (_) {})),
     const Padding(padding: EdgeInsets.symmetric(horizontal: 24),
       child: Row(mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [Icon(Icons.skip_previous), Icon(Icons.play_arrow),
