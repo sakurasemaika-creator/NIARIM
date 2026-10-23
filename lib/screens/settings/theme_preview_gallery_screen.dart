@@ -287,6 +287,7 @@ class _ThemeSampleScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final c = Theme.of(context).colorScheme;
     if (entry.layout == 'splash') return _splash(context, c);
+    if (entry.layout == 'community') return _community(c);
     if (entry.layout == 'canvas') return _canvas(c);
     if (entry.layout == 'timeline') return _timeline(c);
     if (entry.layout == 'complete') return _complete(c);
@@ -544,57 +545,161 @@ class _ThemeSampleScreen extends StatelessWidget {
       ]));
 
 
-  Widget _community(ColorScheme c) => Column(children: [
-    Container(height: 38, color: c.surfaceContainerLow,
-      child: Row(mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-        children: [
-          Text(t('新着', 'Latest'), style: TextStyle(
-            color: c.primary, fontWeight: FontWeight.w700, fontSize: 12)),
-          Text(t('ランキング', 'Ranking'), style: const TextStyle(fontSize: 12)),
-          Text(t('フォロー中', 'Following'), style: const TextStyle(fontSize: 12)),
-        ])),
-    Expanded(child: GridView.count(
-      physics: const NeverScrollableScrollPhysics(),
-      crossAxisCount: 2, childAspectRatio: .66,
-      mainAxisSpacing: 8, crossAxisSpacing: 8,
-      padding: const EdgeInsets.all(8),
-      children: List.generate(6, (i) => Container(
-        clipBehavior: Clip.antiAlias,
-        decoration: BoxDecoration(
-          color: c.surfaceContainerLow,
-          borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: c.outlineVariant)),
-        child: Column(children: [
-          Expanded(child: Container(
-            color: c.surfaceContainerHigh,
-            alignment: Alignment.center,
-            child: Icon(Icons.movie_creation_outlined,
-              size: 35, color: c.primary))),
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 6),
-            child: Column(crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(t('サンプル作品', 'Sample artwork'),
-                  style: const TextStyle(fontSize: 11,
-                    fontWeight: FontWeight.w600)),
-                const SizedBox(height: 5),
-                Row(children: [
-                  Icon(Icons.account_circle, size: 14,
-                    color: c.onSurfaceVariant),
-                  const SizedBox(width: 3),
-                  Expanded(child: Text(t('サンプル作者', 'Sample creator'),
-                    overflow: TextOverflow.ellipsis,
-                    style: const TextStyle(fontSize: 9))),
-                  const Icon(Icons.favorite_border, size: 15),
-                  const SizedBox(width: 4),
-                  const Icon(Icons.bookmark_border, size: 15),
-                ]),
-              ]),
-          ),
+  Widget _community(ColorScheme c) => Scaffold(
+    backgroundColor: c.surface,
+    body: SafeArea(child: Column(children: [
+      SizedBox(height: 57, child: Row(children: [
+        const SizedBox(width: 14),
+        Expanded(child: Text(t('作品広場', 'Community'),
+          style: const TextStyle(
+            fontSize: 20, fontWeight: FontWeight.w800))),
+        Stack(clipBehavior: Clip.none, children: [
+          Icon(Icons.notifications_none, size: 25, color: c.onSurface),
+          Positioned(right: -4, top: -8,
+            child: Container(width: 18, height: 18,
+              decoration: BoxDecoration(
+                color: c.error, shape: BoxShape.circle),
+              alignment: Alignment.center,
+              child: Text('4', style: TextStyle(
+                fontSize: 10, fontWeight: FontWeight.w700,
+                color: c.onError)))),
         ]),
-      ))),
-    ),
-  ]);
+        const SizedBox(width: 18),
+        Icon(Icons.filter_alt_outlined, color: c.onSurface, size: 23),
+        const SizedBox(width: 3),
+        Text(t('総合', 'All'), style: const TextStyle(fontSize: 12)),
+        Icon(Icons.arrow_drop_down, color: c.onSurface, size: 19),
+        const SizedBox(width: 16),
+        Icon(Icons.visibility_off_outlined, color: c.onSurface, size: 23),
+        const SizedBox(width: 18),
+        Icon(Icons.search, color: c.onSurface, size: 23),
+        const SizedBox(width: 16),
+        Icon(Icons.help_outline, color: c.onSurface, size: 23),
+        const SizedBox(width: 12),
+      ])),
+      SizedBox(height: 44, child: Row(children: [
+        for (final tab in [
+          t('新着', 'New'),
+          t('ランキング', 'Ranking'),
+          t('フォロー中', 'Following'),
+        ])
+          Expanded(child: Column(children: [
+            Expanded(child: Center(child: Text(tab,
+              style: TextStyle(fontSize: 14, fontWeight: FontWeight.w800,
+                color: tab == t('新着', 'New')
+                  ? c.primary : c.onSurfaceVariant)))),
+            Container(width: 30, height: 3,
+              decoration: BoxDecoration(
+                color: tab == t('新着', 'New')
+                  ? c.primary : Colors.transparent,
+                borderRadius: BorderRadius.circular(3))),
+          ])),
+      ])),
+      Divider(height: 1, thickness: .5, color: c.outlineVariant),
+      Expanded(child: Stack(children: [
+        GridView.count(
+          key: const Key('themePreviewCommunityWorks'),
+          physics: const NeverScrollableScrollPhysics(),
+          padding: const EdgeInsets.fromLTRB(18, 16, 18, 12),
+          crossAxisCount: 2, mainAxisSpacing: 18,
+          crossAxisSpacing: 20, childAspectRatio: .75,
+          children: List.generate(8, (i) {
+            final label = [
+              t('雨上がりの約束', 'After the rain'),
+              t('夜明けの冒険', 'Dawn adventure'),
+              t('雨上がりの約束', 'After the rain'),
+              t('最後のメロディ', 'Last melody'),
+            ][i % 4];
+            final accent = i.isEven
+              ? const Color(0xFFFF8BA7) : const Color(0xFFD0A875);
+            return Container(
+              clipBehavior: Clip.antiAlias,
+              decoration: BoxDecoration(
+                color: c.surface, borderRadius: BorderRadius.circular(16),
+                border: Border.all(color: c.onSurface, width: 1)),
+              child: Column(crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  Expanded(flex: 9, child: Stack(children: [
+                    Positioned.fill(child: DecoratedBox(
+                      decoration: BoxDecoration(
+                        gradient: LinearGradient(colors: [
+                          accent.withValues(alpha: .55), accent,
+                        ], begin: Alignment.topLeft,
+                          end: Alignment.bottomRight)))),
+                    Center(child: Container(
+                      height: 40, width: 40,
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        color: c.onSurface.withValues(alpha: .9)),
+                      child: Icon(Icons.play_arrow,
+                        size: 25, color: c.surface))),
+                    Positioned(right: 5, top: 5,
+                      child: Container(
+                        width: 43, height: 43,
+                        decoration: BoxDecoration(
+                          color: c.onSurface.withValues(alpha: .9),
+                          shape: BoxShape.circle),
+                        child: Icon(Icons.bookmark_border,
+                          size: 25, color: c.surface))),
+                    Positioned(right: 5, bottom: 6,
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 5, vertical: 2),
+                        color: c.onSurface.withValues(alpha: .85),
+                        child: Text(i.isEven ? '1:25' : '1:40',
+                          style: TextStyle(color: c.surface, fontSize: 9)))),
+                  ])),
+                  Expanded(flex: 12, child: Padding(
+                    padding: const EdgeInsets.fromLTRB(10, 10, 8, 8),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(label, maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: const TextStyle(
+                            fontWeight: FontWeight.w800, fontSize: 13)),
+                        const SizedBox(height: 12),
+                        Text(t('サンプル作者', 'Sample artist'),
+                          style: TextStyle(fontSize: 10,
+                            color: c.onSurfaceVariant)),
+                        const Spacer(),
+                        Row(children: [
+                          Icon(Icons.play_arrow, size: 11,
+                            color: c.onSurfaceVariant),
+                          Text('16,998', style: TextStyle(
+                            fontSize: 10, color: c.onSurfaceVariant)),
+                          const SizedBox(width: 9),
+                          Icon(Icons.bookmark, size: 10,
+                            color: c.onSurfaceVariant),
+                          Text('278', style: TextStyle(
+                            fontSize: 10, color: c.onSurfaceVariant)),
+                        ]),
+                      ],
+                    )),
+                  ),
+                ]),
+            );
+          }),
+        ),
+        Positioned(bottom: 18, right: 8,
+          child: Container(
+            padding: const EdgeInsets.symmetric(
+              horizontal: 17, vertical: 14),
+            decoration: BoxDecoration(
+              color: c.primary, borderRadius: BorderRadius.circular(36),
+              border: Border.all(color: c.onSurface, width: 3)),
+            child: Row(children: [
+              Icon(Icons.video_library_outlined,
+                size: 22, color: c.onPrimary),
+              const SizedBox(width: 8),
+              Text(t('自分の投稿', 'My posts'),
+                style: TextStyle(color: c.onPrimary,
+                  fontWeight: FontWeight.w700)),
+            ]),
+          )),
+      ])),
+    ])),
+  );
 
   Widget _canvas(ColorScheme c) => Scaffold(
     backgroundColor: c.surface,
@@ -1606,18 +1711,83 @@ class _ThemeSampleScreen extends StatelessWidget {
     ],
   );
 
-  Widget _premium(ColorScheme c) => _list([
-    Center(child: Icon(Icons.auto_awesome, size: 48, color: c.primary)),
-    const SizedBox(height: 8),
-    _heading(t('プレミアムでもっと自由に', 'Create with Premium')),
-    ...[
-      t('ウォーターマークなし', 'No watermark'),
-      t('長尺アニメーション', 'Longer animations'),
-      t('多彩な補正', 'More effects'),
-    ].map((label) => _mockSettingRow(c, Icons.check, label)),
-    const SizedBox(height: 12),
-    _cta(c, t('プランを見る', 'View plans')),
-  ]);
+  Widget _premium(ColorScheme c) => ListView(
+    key: const Key('themePreviewContentList'),
+    physics: const NeverScrollableScrollPhysics(),
+    padding: const EdgeInsets.all(16),
+    children: [
+      Container(
+        padding: const EdgeInsets.all(12),
+        decoration: BoxDecoration(
+          color: c.primary.withValues(alpha: .10),
+          borderRadius: BorderRadius.circular(12)),
+        child: Row(children: [
+          Icon(Icons.diamond_outlined, color: c.primary, size: 22),
+          const SizedBox(width: 10),
+          Expanded(child: Text(
+            t('プレミアムでもっと自由にアニメ制作を楽しもう',
+              'Unlock more ways to create animations'),
+            style: const TextStyle(fontSize: 12,
+              fontWeight: FontWeight.w700))),
+        ]),
+      ),
+      const SizedBox(height: 22),
+      Text(t('無料版とプレミアム版', 'Free vs Premium'),
+        style: const TextStyle(
+          fontSize: 16, fontWeight: FontWeight.w700)),
+      const SizedBox(height: 12),
+      Table(
+        border: TableBorder.all(color: c.outlineVariant, width: .5),
+        columnWidths: const {
+          0: FlexColumnWidth(2.4),
+          1: FlexColumnWidth(1.05),
+          2: FlexColumnWidth(1.05),
+        },
+        children: [
+          TableRow(children: [
+            const SizedBox(height: 45),
+            Container(height: 45, color: c.surfaceContainerHigh,
+              alignment: Alignment.center,
+              child: Text(t('無料', 'Free'),
+                style: const TextStyle(fontWeight: FontWeight.bold))),
+            Container(height: 45, color: c.primary,
+              alignment: Alignment.center,
+              child: Text(t('プレミアム', 'Premium'),
+                style: TextStyle(color: c.onPrimary,
+                  fontWeight: FontWeight.bold, fontSize: 11))),
+          ]),
+          for (final item in [
+            (t('アニメーション制作', 'Animation'), true, true),
+            (t('広告の削除', 'No ads'), false, true),
+            (t('ウォーターマークなし', 'No watermark'), false, true),
+            (t('エンドカード設定', 'End-card options'), false, true),
+            (t('作品の書き出し', 'Export'), true, true),
+            (t('作品広場', 'Community'), true, true),
+            (t('データ引き継ぎ', 'Transfer'), true, true),
+            (t('長時間動画', 'Long videos'), false, true),
+          ])
+            TableRow(children: [
+              Padding(
+                padding: const EdgeInsets.all(11),
+                child: Text(item.$1,
+                  style: const TextStyle(fontSize: 11))),
+              Padding(padding: const EdgeInsets.all(11),
+                child: Icon(item.$2 ? Icons.check : Icons.close,
+                  color: item.$2 ? c.onSurfaceVariant : c.error,
+                  size: 17)),
+              Container(
+                color: c.primary.withValues(alpha: .14),
+                height: 42,
+                alignment: Alignment.center,
+                child: Icon(item.$3 ? Icons.check : Icons.close,
+                  color: c.primary, size: 18)),
+            ]),
+        ],
+      ),
+      const SizedBox(height: 18),
+      _cta(c, t('プランを見る', 'View plans')),
+    ],
+  );
 
   Widget _storage(ColorScheme c) {
     Widget action(IconData icon, String title, {
