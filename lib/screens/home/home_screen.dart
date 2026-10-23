@@ -616,7 +616,9 @@ class _HomeScreenState extends State<HomeScreen>
           // 作品一覧タブ：新規プロジェクト作成の導線は不要なため、フォルダの
           // 新規作成のみをワンタップ・選択肢なしで直接行えるFABにする。
           floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
-          floatingActionButton: Row(
+          floatingActionButton: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               FloatingActionButton(
@@ -654,6 +656,7 @@ class _HomeScreenState extends State<HomeScreen>
               else
                 const SizedBox(width: 56),
             ],
+            ),
           ),
         ),
       ),
