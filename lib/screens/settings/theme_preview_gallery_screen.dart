@@ -569,6 +569,20 @@ class _ThemeSampleScreen extends StatelessWidget {
     ]),
   );
 
+  Widget _projectTile(ColorScheme c, String title) =>
+      Card(clipBehavior: Clip.antiAlias, child: Column(children: [
+        Expanded(child: Container(color: c.surfaceContainerHigh,
+          alignment: Alignment.center, child: Icon(Icons.movie_creation_outlined,
+          size: 42, color: c.primary))),
+        Padding(padding: const EdgeInsets.all(9), child: Row(children: [
+          Expanded(child: Text(title, maxLines: 1,
+            style: const TextStyle(fontSize: 12))),
+          Icon(Icons.star_border, color: c.tertiary, size: 16),
+          const Icon(Icons.more_vert, size: 16),
+        ])),
+      ]));
+
+
   Widget _community(ColorScheme c) => Scaffold(
     backgroundColor: c.surface,
     body: SafeArea(child: Column(children: [
