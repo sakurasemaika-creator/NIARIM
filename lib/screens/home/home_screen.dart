@@ -2685,8 +2685,7 @@ class _FirstLaunchDialog extends StatelessWidget {
       scrollable: true,
       content: Text(l10n.homeFirstLaunchMessage),
       actions: [
-        // 「はじめる」ボタンの文字はくらむぼんを明示指定する
-        // （通常のボタン文字は白光明朝のため、ここだけ差し替える）。
+        // 「はじめる」ボタンの文字はくらむぼんの太字（ボタンの書体）。
         FilledButton(
           onPressed: onDone,
           style: FilledButton.styleFrom(

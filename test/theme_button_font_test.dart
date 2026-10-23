@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:niarim/config/font_fallback.dart';
 import 'package:niarim/services/theme_service.dart';
 
 /// テーマが各ボタンへ与えるラベル書式に、**必ずアプリ同梱フォントが
@@ -64,38 +65,77 @@ void main() {
     }
   });
 
-  testWidgets('FilledButtonのラベルが実際に同梱フォントで描かれる', (tester) async {
+  // 書体の決まり（2026-10-23 ユーザー指定）：見出し・タイトル・ボタンは
+  // くらむぼん、説明文・本文・エラー文・注釈は白光明朝。実際に描かれる
+  // TextSpanの書体で確かめる（ThemeDataの値ではなく、ウィジェットツリーで
+  // 解決された最終形）。
+  testWidgets('ボタンはくらむぼん、SnackBarとダイアログの本文は白光明朝', (tester) async {
     final theme = ThemeService().themeData;
+    late BuildContext ctx;
     await tester.pumpWidget(
       MaterialApp(
         theme: theme,
         home: Scaffold(
-          body: Center(
-            child: FilledButton(onPressed: () {}, child: const Text('OK')),
+          body: Builder(
+            builder: (context) {
+              ctx = context;
+              return Center(
+                child: Wrap(
+                  children: [
+                    FilledButton(onPressed: () {}, child: const Text('塗り')),
+                    TextButton(onPressed: () {}, child: const Text('文字')),
+                    OutlinedButton(onPressed: () {}, child: const Text('枠')),
+                    ElevatedButton(onPressed: () {}, child: const Text('浮き')),
+                  ],
+                ),
+              );
+            },
           ),
         ),
       ),
     );
     await tester.pumpAndSettle();
 
-    // 実際にレンダリングへ渡るTextSpanのfontFamilyを見る
-    // （ThemeDataの値ではなく、ウィジェットツリーで解決された最終形）。
-    TextStyle? resolved;
-    for (final element in tester.allElements) {
-      final widget = element.widget;
-      if (widget is RichText) {
-        final span = widget.text;
-        if (span is TextSpan && span.toPlainText() == 'OK') {
-          resolved = span.style;
+    TextStyle? spanStyle(String text) {
+      for (final element in tester.allElements) {
+        final widget = element.widget;
+        if (widget is RichText) {
+          final span = widget.text;
+          if (span is TextSpan && span.toPlainText() == text) {
+            return span.style;
+          }
         }
       }
+      return null;
     }
-    expect(resolved, isNotNull, reason: 'ラベルのTextSpanが見つからない');
-    expect(
-      resolved!.fontFamily,
-      'HakkouMincho',
-      reason: 'FilledButtonのラベルが端末標準フォントで描かれている',
+
+    for (final label in ['塗り', '文字', '枠', '浮き']) {
+      final style = spanStyle(label);
+      expect(style, isNotNull, reason: '$labelのラベルが見つからない');
+      expect(style!.fontFamily, 'Kuramubon', reason: '$labelのボタン');
+      // 見出し用の代替列（明朝を含まない）。
+      expect(style.fontFamilyFallback, kHeadingFontFallback, reason: label);
+    }
+
+    ScaffoldMessenger.of(ctx).showSnackBar(
+      SnackBar(
+        content: const Text('ゴミ箱へ移動しました'),
+        action: SnackBarAction(label: '元に戻す', onPressed: () {}),
+      ),
     );
-    expect(resolved.fontFamilyFallback, isNotEmpty);
+    await tester.pumpAndSettle();
+    expect(spanStyle('ゴミ箱へ移動しました')?.fontFamily, 'HakkouMincho');
+    // SnackBarの操作ボタンは小さく、くらむぼんの太字だと潰れるので
+    // 白光明朝のまま（ユーザー指定）。
+    expect(spanStyle('元に戻す')?.fontFamily, 'HakkouMincho');
+
+    showDialog<void>(
+      context: ctx,
+      builder: (_) =>
+          const AlertDialog(title: Text('ダイアログの題'), content: Text('ダイアログの説明文')),
+    );
+    await tester.pumpAndSettle();
+    expect(spanStyle('ダイアログの題')?.fontFamily, 'Kuramubon');
+    expect(spanStyle('ダイアログの説明文')?.fontFamily, 'HakkouMincho');
   });
 }

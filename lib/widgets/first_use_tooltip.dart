@@ -285,13 +285,14 @@ class _FirstUseCard extends StatelessWidget {
                               color: scheme.onPrimary,
                             ),
                             const SizedBox(width: 4),
+                            // ボタンのラベルはくらむぼん（説明文は白光明朝）。
                             Text(
                               l10n.commonClose,
                               style: TextStyle(
                                 color: scheme.onPrimary,
                                 fontSize: 15,
-                                fontFamily: 'HakkouMincho',
-                                fontFamilyFallback: kBodyFontFallback,
+                                fontFamily: 'Kuramubon',
+                                fontFamilyFallback: kHeadingFontFallback,
                               ),
                             ),
                           ],
