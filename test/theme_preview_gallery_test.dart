@@ -318,6 +318,16 @@ void main() {
           .colorScheme.surfaceContainerHighest);
     expect(canvasViewport.color, canvasScaffold.backgroundColor);
     expect(canvasStrip.color, Colors.transparent);
+    // Background remains clear, but text and icons keep their actual
+    // eight-direction glyph outlines, including non-tool status controls.
+    final undoIcon = tester.widget<Icon>(find.byIcon(Icons.undo));
+    expect(undoIcon.shadows, hasLength(8));
+    final opacityLabel = tester.widget<Text>(find.text('100%'));
+    expect(opacityLabel.style?.shadows, hasLength(8));
+    final gripIcons = tester.widgetList<Icon>(
+      find.byIcon(Icons.keyboard_arrow_down)).toList();
+    expect(gripIcons.length, greaterThanOrEqualTo(2));
+    expect(gripIcons.every((icon) => icon.shadows?.length == 8), isTrue);
     final timelineSwitch = find.byKey(
       const Key('themePreviewCanvasTimelineButton'));
     expect(timelineSwitch, findsOneWidget);
@@ -325,6 +335,9 @@ void main() {
       matching: find.byIcon(Icons.movie_filter_outlined)), findsOneWidget);
     expect(find.descendant(of: timelineSwitch,
       matching: find.byIcon(Icons.arrow_forward)), findsOneWidget);
+    final timelineArrow = tester.widget<Icon>(find.descendant(
+      of: timelineSwitch, matching: find.byIcon(Icons.arrow_forward)));
+    expect(timelineArrow.shadows, hasLength(8));
 
     await visit('timeline');
     final timelinePaper = tester.getSize(
