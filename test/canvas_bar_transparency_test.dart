@@ -156,7 +156,7 @@ void main() {
         colorSwatchContainer.decoration! as BoxDecoration;
     final swatchScheme = Theme.of(tester.element(
       find.byType(ToolbarWidget))).colorScheme;
-    expect(swatchDecoration.border!.top.color,
+    expect((swatchDecoration.border! as Border).top.color,
       CanvasIconButton.outlineColor(swatchDecoration.color!, swatchScheme));
 
     final brush = find.byType(BrushSizeSlider);
