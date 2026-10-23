@@ -241,6 +241,14 @@ void main() {
           expect(current.right, lessThan(counter.left));
           expect(counter.right, lessThan(loop.left));
           expect(loop.right, lessThan(total.left));
+          final screenWidth = tester.view.physicalSize.width /
+              tester.view.devicePixelRatio;
+          final statusLeft = 16.0;
+          final statusWidth = screenWidth - statusLeft * 2;
+          expect(counter.center.dx,
+              closeTo(statusLeft + statusWidth * .375, 5));
+          expect(loop.center.dx,
+              closeTo(statusLeft + statusWidth * .625, 5));
           final loopButton = find.byKey(const Key('projectDetailLoopButton'));
           final activeIcon = tester.widget<Icon>(
             find.descendant(of: loopButton, matching: find.byIcon(Icons.repeat)));
@@ -251,6 +259,14 @@ void main() {
           expect(inactiveIcon.color, isNot(activeIcon.color));
           await tester.tap(loopButton);
           await settleRoute();
+        }
+        if (entry.name == '04_canvas') {
+          final switchButton = find.byKey(const Key('canvasTimelineModeButton'));
+          expect(switchButton, findsOneWidget);
+          expect(find.descendant(of: switchButton,
+            matching: find.byIcon(Icons.movie_filter_outlined)), findsWidgets);
+          expect(find.descendant(of: switchButton,
+            matching: find.byIcon(Icons.arrow_forward)), findsWidgets);
         }
         await capture(entry.name);
       } catch (e) {
