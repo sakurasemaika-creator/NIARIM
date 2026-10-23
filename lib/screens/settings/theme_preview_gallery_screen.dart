@@ -1769,7 +1769,7 @@ class _ThemeSampleScreen extends StatelessWidget {
             ]),
           ),
       ]),
-    )),
+    ),
   ]);
 
   Widget _workspace(ColorScheme c) => ListView(
