@@ -1617,8 +1617,11 @@ class _CanvasScreenState extends State<CanvasScreen> {
                                 ? Icons.keyboard_arrow_down
                                 : Icons.keyboard_arrow_up,
                             size: 22,
-                            color: ThemeService.activeColorScheme.onSurface
-                                .withValues(alpha: 0.70),
+                            color: Theme.of(context).colorScheme.onSurface,
+                            shadows: CanvasIconButton.foregroundShadows(
+                              Theme.of(context).colorScheme.onSurface,
+                              Theme.of(context).colorScheme,
+                            ),
                           ),
                         ),
                       ),
@@ -1654,9 +1657,11 @@ class _CanvasScreenState extends State<CanvasScreen> {
                             size: 22,
                             // 色固定をやめ、テーマの文字色と連動させる（CanvasIconButton・
                             // ToolbarWidgetの色連動と同じ方針）。
-                            color: Theme.of(
-                              context,
-                            ).colorScheme.onSurface.withValues(alpha: 0.7),
+                            color: Theme.of(context).colorScheme.onSurface,
+                            shadows: CanvasIconButton.foregroundShadows(
+                              Theme.of(context).colorScheme.onSurface,
+                              Theme.of(context).colorScheme,
+                            ),
                           ),
                         ),
                       ),
