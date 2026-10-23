@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import '../../services/theme_service.dart';
+import '../../utils/color_contrast.dart';
 
 /// Lightweight preview of main creation and community screens only.
 /// Tab variants, settings/management pages, menus and floating panels are
@@ -492,21 +493,22 @@ class _ThemeSampleScreen extends StatelessWidget {
     backgroundColor: c.surface,
     appBar: AppBar(
       automaticallyImplyLeading: false,
-      leading: Icon(Icons.menu, color: c.onSurface),
+      leading: const Icon(Icons.menu),
       titleSpacing: 0,
       title: Row(children: [
 
         Flexible(child: Text(t('更新日時', 'Modified'),
-          style: const TextStyle(fontSize: 13, fontWeight: FontWeight.bold),
+          style: const TextStyle(fontSize: 16,
+            fontFamily: 'Kuramubon', fontWeight: FontWeight.w500),
           maxLines: 1, overflow: TextOverflow.ellipsis)),
-        Icon(Icons.arrow_drop_down, color: c.onSurface, size: 20),
+        const Icon(Icons.arrow_drop_down, size: 20),
         const SizedBox(width: 6),
-        Icon(Icons.arrow_downward, color: c.onSurface, size: 18),
+        const Icon(Icons.arrow_downward, size: 20),
       ]),
       actions: [
-        Icon(Icons.grid_view, color: c.onSurface, size: 21),
+        const Icon(Icons.grid_view, size: 21),
         const SizedBox(width: 14),
-        Icon(Icons.search, color: c.onSurface, size: 22),
+        const Icon(Icons.search, size: 22),
         const SizedBox(width: 12),
       ],
       bottom: PreferredSize(
@@ -520,7 +522,8 @@ class _ThemeSampleScreen extends StatelessWidget {
               fontSize: 13, fontWeight: FontWeight.bold,
               fontFamily: 'Kuramubon',
               color: tab == t('プロジェクト', 'Projects')
-                ? c.primary : c.onSurfaceVariant)))),
+                ? contrastingForeground(opaqueOver(c.surface, Colors.black), c.primary)
+                : c.onSurfaceVariant)))),
             Container(height: 2, color: tab == t('プロジェクト', 'Projects')
                 ? c.primary : Colors.transparent),
           ])),
