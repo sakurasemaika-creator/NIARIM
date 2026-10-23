@@ -32,6 +32,8 @@ void main() {
   test('gallery contains each independent screen once, no folder/tab variants', () {
     final ids = themePreviewEntries.map((e) => e.id).toList();
     expect(ids.toSet().length, ids.length);
+    expect(ids.length, 40);
+    expect(ids, isNot(contains('premium')));
     expect(ids, containsAll([
       'splash', 'projects', 'shared', 'trash', 'canvas', 'timeline', 'export',
       'complete', 'community', 'settings', 'theme', 'widget_frame',
