@@ -242,30 +242,43 @@ class QuickToolPanel extends StatelessWidget {
       context: context,
       builder: (ctx) => StatefulBuilder(
         builder: (ctx, setS) => AlertDialog(
+          // 値は上の行の右端へ出し、スライダーは［－］［＋］の間で
+          // ダイアログの横幅いっぱいに広げる。ダイアログ自体も既定
+          // （左右40px空け、内容が狭ければ幅280）より広く取る。
+          insetPadding: const EdgeInsets.symmetric(
+            horizontal: 16,
+            vertical: 24,
+          ),
           title: Text(l10n.quickToolSizeDialogTitle(brushName)),
-          content: Row(
-            children: [
-              Expanded(
-                child: SteppedSlider(
+          content: SizedBox(
+            width: 480,
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                Align(
+                  alignment: AlignmentDirectional.centerEnd,
+                  child: Padding(
+                    padding: const EdgeInsetsDirectional.only(end: 14),
+                    child: EditableSliderValue(
+                      text: '${size.round()}px',
+                      textAlign: TextAlign.right,
+                      value: size,
+                      min: 1,
+                      max: 200,
+                      onChanged: (v) => setS(() => size = v.toDouble()),
+                    ),
+                  ),
+                ),
+                SteppedSlider(
                   value: size.clamp(1, 200),
                   min: 1,
                   max: 200,
                   label: '${size.round()}px',
                   onChanged: (v) => setS(() => size = v),
                 ),
-              ),
-              SizedBox(
-                width: 48,
-                child: EditableSliderValue(
-                  text: '${size.round()}px',
-                  textAlign: TextAlign.center,
-                  value: size,
-                  min: 1,
-                  max: 200,
-                  onChanged: (v) => setS(() => size = v.toDouble()),
-                ),
-              ),
-            ],
+              ],
+            ),
           ),
           actions: [
             TextButton(

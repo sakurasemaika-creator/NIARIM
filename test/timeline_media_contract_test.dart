@@ -24,7 +24,13 @@ void main() {
       s,
       contains('await controller.setVolume(clip.volume.clamp(0.0, 1.0));'),
     );
-    expect(s, contains('videoVolume: clip.trackType == _ClipTrackType.video'));
+    // The video's own sound is set in the material edit panel, straight on
+    // its layer, and a duplicate copies the whole layer (its sound with it).
+    final panel = File(
+      'lib/screens/timeline/widgets/material_edit_panel.dart',
+    ).readAsStringSync();
+    expect(panel, contains('videoVolume: v.round() / 100'));
+    expect(s, contains('layer: sourceLayer.copyWith('));
   });
   test('audio and video clip editor exposes play pause', () {
     final s = File(

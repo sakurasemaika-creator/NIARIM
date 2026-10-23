@@ -70,9 +70,19 @@ void main() {
     final service = context.read<ThemeService>();
     final l10n = AppLocalizations.of(context)!;
 
-    // 起動直後は既定テーマが編集対象（＝チェックが1つ付いている）。
+    // 縮小プレビューが設定画面の上部にあるため、テーマ一覧のチェックは
+    // 最初のスクリーン内とは限らない。カードへスクロールしてから検証。
+    // The preset list is lazily built below the inline preview and color
+    // controls, so its first row may not even exist in the widget tree yet.
+    await tester.scrollUntilVisible(
+      find.text(service.current.name),
+      110,
+      scrollable: find.byType(Scrollable).first,
+      maxScrolls: 60,
+    );
+    await tester.pump(const Duration(milliseconds: 250));
     expect(service.isEditingPreset, isTrue);
-    expect(find.byIcon(Icons.check), findsOneWidget);
+    expect(find.byKey(const Key('themePresetEditingCheck')), findsOneWidget);
     await capture('theme_list_initial');
 
     // 別のテーマのカードをタップする＝配色の取り込みだけ。
@@ -91,7 +101,7 @@ void main() {
     );
     expect(service.isEditingPreset, isFalse, reason: 'タップではテーマの編集対象にならないこと');
     expect(
-      find.byIcon(Icons.check),
+      find.byKey(const Key('themePresetEditingCheck')),
       findsNothing,
       reason: 'タップではどのテーマにもチェックが付かないこと',
     );
@@ -140,7 +150,7 @@ void main() {
     expect(service.isEditingPreset, isTrue);
     expect(service.current.id, target.id);
     expect(
-      find.byIcon(Icons.check),
+      find.byKey(const Key('themePresetEditingCheck')),
       findsOneWidget,
       reason: '編集対象にしたテーマにだけチェックが付くこと',
     );

@@ -2,7 +2,6 @@ import 'package:niarim/services/theme_service.dart';
 
 import 'dart:async';
 import 'dart:io';
-import 'dart:math' as math;
 
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
@@ -25,7 +24,6 @@ import '../../services/project_service.dart';
 import '../../services/settings_service.dart';
 import '../../utils/app_error_reporter.dart';
 import '../../utils/name_collation.dart';
-import '../../widgets/leading_trailing_bar.dart';
 import '../../widgets/moved_to_trash_snack_bar.dart';
 import '../../widgets/name_entry_dialog.dart';
 import '../../services/share_intent_service.dart';
@@ -42,7 +40,8 @@ import '../../config/font_fallback.dart';
 import '../../widgets/scrollable_sheet_body.dart';
 import '../community/community_edit_feedback.dart';
 import '../../widgets/typing_aware_shortcuts.dart';
-import '../../widgets/responsive.dart';
+import '../community/community_error_text.dart';
+import '../../utils/color_contrast.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -106,6 +105,7 @@ class _HomeScreenState extends State<HomeScreen>
     _tabController = TabController(length: 3, vsync: this);
     _tabController.addListener(() {
       if (_tabController.index != _currentTabIndex) {
+        final wasSearching = _isSearching;
         setState(() {
           _currentTabIndex = _tabController.index;
           // 複数選択・検索・並び替え・表示の大きさはプロジェクトの一覧に
@@ -114,14 +114,16 @@ class _HomeScreenState extends State<HomeScreen>
           if (_currentTabIndex != 0) {
             _selectedIds.clear();
             _isSelectionMode = false;
-            if (_isSearching) {
-              _isSearching = false;
-              _searchByTag = false;
-              _searchQuery = '';
-              _searchController.clear();
-            }
+            _isSearching = false;
+            _searchByTag = false;
+            _searchQuery = '';
+            _searchController.clear();
           }
         });
+        // 検索欄にフォーカスが残ると、隠れた入力欄へ打ち続けられた。
+        if (wasSearching && _currentTabIndex != 0) {
+          FocusManager.instance.primaryFocus?.unfocus();
+        }
       }
     });
     // 最後に選んだ表示サイズ・並び順を引き継ぐ。表示サイズを選んだことが
@@ -250,13 +252,16 @@ class _HomeScreenState extends State<HomeScreen>
   void _checkFirstLaunch() {
     final settings = context.read<SettingsService>();
     if (!settings.isFirstLaunch) return;
-    // 「はじめる」だけでなく、戻る操作・Escape・外側のタップで閉じた
-    // 場合も表示済みにする（以前は「はじめる」以外で閉じるとホームを
-    // 開くたびに出続けた）。
-    showDialog<void>(
+    showDialog(
       context: context,
-      builder: (ctx) => _FirstLaunchDialog(onDone: () => Navigator.pop(ctx)),
-    ).whenComplete(settings.markFirstLaunchDone);
+      barrierDismissible: false,
+      builder: (ctx) => _FirstLaunchDialog(
+        onDone: () {
+          Navigator.pop(ctx);
+          settings.markFirstLaunchDone();
+        },
+      ),
+    );
   }
 
   // 現在の並び替えが名前基準かどうか（項目自体はProjectSortMode
@@ -343,19 +348,6 @@ class _HomeScreenState extends State<HomeScreen>
     return true;
   }
 
-  /// 広いPC画面では、引き出しの中身を画面の左端に上から下まで常に出し、
-  /// 上部バー・タブ・一覧はその右側に置く。
-  Widget _withSideNavigation(bool enabled, Widget scaffold) {
-    if (!enabled) return scaffold;
-    return Row(
-      children: [
-        const SizedBox(width: 248, child: HomeDrawer(permanent: true)),
-        const VerticalDivider(width: 1),
-        Expanded(child: scaffold),
-      ],
-    );
-  }
-
   /// 選択がプロジェクトだけか（フォルダが混ざっていればコピーできない）。
   /// プロジェクト一覧は呼ぶたびに複製されるので、ID集合を1回だけ作る。
   bool _selectionHasOnlyProjects() {
@@ -402,10 +394,6 @@ class _HomeScreenState extends State<HomeScreen>
     // マウス/キーボード入力・左手デバイス：設定画面「ショートカット設定」
     // で割り当てたキーで、全選択・コピー・切り取り・貼り付けを
     // 行えるようにする。
-    // 広いPC画面では、引き出し（ハンバーガー）の中身を左側へ常に出す。
-    // 共有・ゴミ箱・設定・ヘルプ等へマウスで1回で行ける。
-    final sideNavigation =
-        isWideScreen(context) && MediaQuery.sizeOf(context).width >= 1000;
     // 戻る操作は常にここで受ける。検索・複数選択・フォルダを順に閉じ、
     // 何も開いていなければ起動画面へ戻る。キャンバスや書き出しから
     // `go('/home')`で戻ると履歴はホーム1枚だけになり、そのまま戻すと
@@ -426,287 +414,293 @@ class _HomeScreenState extends State<HomeScreen>
           child: Focus(
             focusNode: _homeFocusNode,
             autofocus: true,
-            child: _withSideNavigation(
-              sideNavigation,
-              Scaffold(
-                key: _scaffoldKey,
-                appBar: AppBar(
-                  // 左上に「起動画面へ戻る」矢印と、ハンバーガーメニュー（設定・
-                  // ヘルプ等への導線）の2つを並べる。作品広場画面には元々戻る
-                  // 矢印がある（プッシュ遷移のため自動表示）。ホーム画面も起動
-                  // 画面からpush()で遷移するが、既にドロワーでleadingが埋まるため、
-                  // 両方を明示的に並べる形にしている。
-                  // While searching, temporarily hide the hamburger button and shrink
-                  // the leading area to the back button only.
-                  leadingWidth: _isSearching || sideNavigation ? 48 : 96,
-                  leading: Row(
-                    mainAxisAlignment: MainAxisAlignment.start,
-                    children: [
+            child: Scaffold(
+              key: _scaffoldKey,
+              appBar: AppBar(
+                // 左上に「起動画面へ戻る」矢印と、ハンバーガーメニュー（設定・
+                // ヘルプ等への導線）の2つを並べる。作品広場画面には元々戻る
+                // 矢印がある（プッシュ遷移のため自動表示）。ホーム画面も起動
+                // 画面からpush()で遷移するが、既にドロワーでleadingが埋まるため、
+                // 両方を明示的に並べる形にしている。
+                // While searching, temporarily hide the hamburger button and shrink
+                // the leading area to the back button only.
+                leadingWidth: _isSearching ? 48 : 96,
+                leading: Row(
+                  mainAxisAlignment: MainAxisAlignment.start,
+                  children: [
+                    IconButton(
+                      icon: const Icon(Icons.arrow_back),
+                      // 検索中の矢印は検索を閉じる（画面ごと離れない）。
+                      tooltip: _isSearching
+                          ? MaterialLocalizations.of(context).backButtonTooltip
+                          : l10n.homeBackToSplashTooltip,
+                      // 「起動画面へ戻る」の矢印なので、保存容量の画面等から
+                      // 来たホームでも起動画面へ戻る（端末の戻るは前の画面へ）。
+                      onPressed: () {
+                        if (_closeTransientState()) context.go('/');
+                      },
+                    ),
+                    if (!_isSearching)
                       IconButton(
-                        icon: const Icon(Icons.arrow_back),
-                        // 検索中の矢印は検索を閉じる（画面ごと離れない）。
-                        tooltip: _isSearching
-                            ? MaterialLocalizations.of(
-                                context,
-                              ).backButtonTooltip
-                            : l10n.homeBackToSplashTooltip,
-                        // 「起動画面へ戻る」の矢印なので、保存容量の画面等から
-                        // 来たホームでも起動画面へ戻る（端末の戻るは前の画面へ）。
-                        onPressed: () {
-                          if (_closeTransientState()) context.go('/');
-                        },
+                        icon: const Icon(Icons.menu),
+                        tooltip: MaterialLocalizations.of(
+                          context,
+                        ).openAppDrawerTooltip,
+                        onPressed: () =>
+                            _scaffoldKey.currentState?.openDrawer(),
                       ),
-                      if (!_isSearching && !sideNavigation)
-                        IconButton(
-                          icon: const Icon(Icons.menu),
-                          tooltip: MaterialLocalizations.of(
-                            context,
-                          ).openAppDrawerTooltip,
-                          onPressed: () =>
-                              _scaffoldKey.currentState?.openDrawer(),
+                  ],
+                ),
+                // 作品一覧・ブクマ済みのタブでは、そのタブの名前を出す
+                // （並び替え・検索はプロジェクトの一覧にだけ効く）。
+                title: _currentTabIndex != 0
+                    ? Text(
+                        _currentTabIndex == 1
+                            ? l10n.homeTabWorks
+                            : l10n.homeTabBookmarked,
+                      )
+                    : _isSearching
+                    ? Row(
+                        children: [
+                          // The icon always represents the mode we can switch TO:
+                          // keyword mode -> tag icon, tag mode -> search icon.
+                          IconButton(
+                            icon: Icon(
+                              _searchByTag ? Icons.search : Icons.sell_outlined,
+                            ),
+                            tooltip: _searchByTag
+                                ? l10n.homeSearchHint
+                                : l10n.projectDetailTagsQuickAction,
+                            onPressed: () =>
+                                setState(() => _searchByTag = !_searchByTag),
+                          ),
+                          Expanded(
+                            child: CallbackShortcuts(
+                              bindings: {
+                                const SingleActivator(
+                                  LogicalKeyboardKey.escape,
+                                ): _closeSearch,
+                              },
+                              child: TextField(
+                                controller: _searchController,
+                                focusNode: _searchFocusNode,
+                                autofocus: true,
+                                decoration: InputDecoration(
+                                  hintText: _searchByTag
+                                      ? l10n.projectDetailTagsQuickAction
+                                      : l10n.homeSearchHint,
+                                  border: InputBorder.none,
+                                ),
+                                onChanged: (v) =>
+                                    setState(() => _searchQuery = v),
+                                // Enterで確定したら、入力を終えて画面の
+                                // ショートカットへ戻す（検索は開いたまま）。
+                                onEditingComplete: _homeFocusNode.requestFocus,
+                                // マウス・ペンで欄の外を押したときも同じ。
+                                // 指で外を触っただけでは入力を続ける
+                                // （Androidの標準の振る舞い）。
+                                onTapOutside: (event) {
+                                  if (event.kind != PointerDeviceKind.touch &&
+                                      _searchFocusNode.hasFocus) {
+                                    _homeFocusNode.requestFocus();
+                                  }
+                                },
+                              ),
+                            ),
+                          ),
+                        ],
+                      )
+                    // アプリ名の代わりに、現在の並び替え基準（名前／更新日時）を
+                    // 常に表示するプルダウンと、昇順・降順をワンタップで切り替える
+                    // 矢印ボタンを置く。並び替え状態が常に一目でわかるようにする
+                    // ための変更。
+                    : SortModeControl(
+                        sortByName: _sortByName,
+                        sortAscending: _sortAscending,
+                        onSortByNameChanged: _setSortByName,
+                        onToggleDirection: _toggleSortDirection,
+                      ),
+                actions: [
+                  // ヘルプ・設定は左側ハンバーガーメニュー（HomeDrawer）に既に存在するため、
+                  // トップ画面右上からは重複表示を削除した。
+                  if (_isSearching)
+                    IconButton(
+                      icon: const Icon(Icons.close),
+                      tooltip: l10n.commonClose,
+                      onPressed: _closeSearch,
+                    )
+                  else if (_currentTabIndex == 0) ...[
+                    if (_hasClipboard)
+                      IconButton(
+                        icon: const Icon(Icons.content_paste),
+                        tooltip: l10n.homePasteTooltip(
+                          _clipboardProjectIds.length +
+                              _clipboardFolderIds.length,
                         ),
+                        onPressed: _pasteClipboard,
+                      ),
+                    ProjectViewModeMenu(
+                      value: _viewMode,
+                      onChanged: (mode) {
+                        setState(() => _viewMode = mode);
+                        context.read<SettingsService>().setHomeViewMode(
+                          mode.name,
+                        );
+                      },
+                    ),
+                    IconButton(
+                      icon: const Icon(Icons.search),
+                      tooltip: l10n.commonSearch,
+                      onPressed: _openSearch,
+                    ),
+                  ],
+                ],
+                // 標準のTabBarは項目名の文字数に関わらず均等4分割になるため、
+                // 「プロジェクト」のように長い項目名が「共有」等の短い項目名と
+                // 同じ幅しか確保できず、文字が見切れてしまっていた。各項目名の
+                // 実際の描画幅を計測し、その比率でタブ幅を配分する独自実装へ
+                // 差し替える（TabControllerは共通のまま、TabBarViewとの
+                // スワイプ連動はそのまま維持される）。
+                bottom: PreferredSize(
+                  preferredSize: const Size.fromHeight(_homeTabBarHeight),
+                  child: _HomeTabBar(
+                    controller: _tabController,
+                    currentIndex: _currentTabIndex,
+                    labels: [
+                      l10n.homeTabProjects,
+                      l10n.homeTabWorks,
+                      l10n.homeTabBookmarked,
                     ],
                   ),
-                  title: _isSearching
-                      ? Row(
+                ),
+              ),
+              drawer: const HomeDrawer(),
+              body: Column(
+                children: [
+                  if (_isSelectionMode) _buildSelectionBar(l10n),
+                  Expanded(
+                    child: TabBarView(
+                      controller: _tabController,
+                      children: [
+                        Column(
                           children: [
-                            // The icon always represents the mode we can switch TO:
-                            // keyword mode -> tag icon, tag mode -> search icon.
-                            IconButton(
-                              icon: Icon(
-                                _searchByTag
-                                    ? Icons.search
-                                    : Icons.sell_outlined,
+                            Padding(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 8,
+                                vertical: 4,
                               ),
-                              tooltip: _searchByTag
-                                  ? l10n.homeSearchHint
-                                  : l10n.projectDetailTagsQuickAction,
-                              onPressed: () =>
-                                  setState(() => _searchByTag = !_searchByTag),
-                            ),
-                            Expanded(
-                              child: CallbackShortcuts(
-                                bindings: {
-                                  const SingleActivator(
-                                    LogicalKeyboardKey.escape,
-                                  ): _closeSearch,
-                                },
-                                child: TextField(
-                                  controller: _searchController,
-                                  focusNode: _searchFocusNode,
-                                  autofocus: true,
-                                  decoration: InputDecoration(
-                                    hintText: _searchByTag
-                                        ? l10n.projectDetailTagsQuickAction
-                                        : l10n.homeSearchHint,
-                                    border: InputBorder.none,
+                              child: Row(
+                                children: [
+                                  FilterChip(
+                                    label: Text(
+                                      l10n.homeFavoritesOnly,
+                                      style: const TextStyle(
+                                        fontFamily: 'Kuramubon',
+                                        fontFamilyFallback:
+                                            kHeadingFontFallback,
+                                      ),
+                                    ),
+                                    selected: _showFavoritesOnly,
+                                    onSelected: (v) =>
+                                        setState(() => _showFavoritesOnly = v),
                                   ),
-                                  onChanged: (v) =>
-                                      setState(() => _searchQuery = v),
-                                  // Enterで確定したら、入力を終えて画面の
-                                  // ショートカットへ戻す（検索は開いたまま）。
-                                  onEditingComplete:
-                                      _homeFocusNode.requestFocus,
-                                  // マウス・ペンで欄の外を押したときも同じ。
-                                  // 指で外を触っただけでは入力を続ける
-                                  // （Androidの標準の振る舞い）。
-                                  onTapOutside: (event) {
-                                    if (event.kind != PointerDeviceKind.touch &&
-                                        _searchFocusNode.hasFocus) {
-                                      _homeFocusNode.requestFocus();
-                                    }
-                                  },
-                                ),
+                                ],
+                              ),
+                            ),
+                            // フォルダ内移動時のパンくずリスト。検索中は
+                            // 全体から検索するため非表示にする。
+                            if (!_isSearching) _buildBreadcrumb(),
+                            Expanded(
+                              child: ProjectListWidget(
+                                // 開いているフォルダ・表示ごとにスクロール位置を
+                                // 覚える（入力中の検索語ごとには覚えない）。
+                                key: PageStorageKey((
+                                  'home-projects',
+                                  _viewMode,
+                                  _currentFolderId,
+                                  _showFavoritesOnly,
+                                  _isSearching,
+                                  _searchByTag,
+                                )),
+                                // 「共有」タブ（.niashareインポート由来）は別枠の
+                                // 一覧のため、プロジェクトタブには表示しない。
+                                projects: context
+                                    .watch<ProjectService>()
+                                    .projects
+                                    .where((p) => !p.isSharedImport)
+                                    .toList(),
+                                viewMode: _viewMode,
+                                sortMode: _sortMode,
+                                isSelectionMode: _isSelectionMode,
+                                selectedIds: _selectedIds,
+                                // 長押しモードへ入ると同時に、長押しした項目自体も
+                                // 選択状態にする（複数選択モードに入っただけで
+                                // 何も選ばれていない状態を避ける）。
+                                onLongPress: (id) => setState(() {
+                                  _isSelectionMode = true;
+                                  _selectedIds.add(id);
+                                }),
+                                onSelectionChanged: (id) => setState(() {
+                                  if (_selectedIds.contains(id)) {
+                                    _selectedIds.remove(id);
+                                  } else {
+                                    _selectedIds.add(id);
+                                  }
+                                  // 手動でのタップ操作によって選択が0件になった場合も、
+                                  // 「全解除」ボタンを押した時と同様に複数選択モードを
+                                  // 自動終了する。
+                                  if (_selectedIds.isEmpty) {
+                                    _isSelectionMode = false;
+                                  }
+                                }),
+                                showFavoritesOnly: _showFavoritesOnly,
+                                searchQuery: _searchQuery,
+                                searchByTag: _searchByTag,
+                                currentFolderId: _currentFolderId,
+                                onOpenFolder: (id) =>
+                                    setState(() => _currentFolderId = id),
+                                onClearSearch: _closeSearch,
+                                pendingCutIds: _clipboardIsCut
+                                    ? {
+                                        ..._clipboardProjectIds,
+                                        ..._clipboardFolderIds,
+                                      }
+                                    : const {},
+                                onShowAll: () =>
+                                    setState(() => _showFavoritesOnly = false),
                               ),
                             ),
                           ],
-                        )
-                      // アプリ名の代わりに、現在の並び替え基準（名前／更新日時）を
-                      // 常に表示するプルダウンと、昇順・降順をワンタップで切り替える
-                      // 矢印ボタンを置く。並び替え状態が常に一目でわかるようにする
-                      // ための変更。
-                      : _currentTabIndex != 0
-                      ? null
-                      : SortModeControl(
-                          sortByName: _sortByName,
-                          sortAscending: _sortAscending,
-                          onSortByNameChanged: _setSortByName,
-                          onToggleDirection: _toggleSortDirection,
                         ),
-                  actions: [
-                    // ヘルプ・設定は左側ハンバーガーメニュー（HomeDrawer）に既に存在するため、
-                    // トップ画面右上からは重複表示を削除した。
-                    if (_isSearching)
-                      IconButton(
-                        icon: const Icon(Icons.close),
-                        tooltip: l10n.commonClose,
-                        onPressed: _closeSearch,
-                      )
-                    else if (_currentTabIndex == 0) ...[
-                      if (_hasClipboard)
-                        IconButton(
-                          icon: const Icon(Icons.content_paste),
-                          tooltip: l10n.homePasteTooltip(
-                            _clipboardProjectIds.length +
-                                _clipboardFolderIds.length,
-                          ),
-                          onPressed: _pasteClipboard,
+                        const _WorksTab(key: PageStorageKey('home-works')),
+                        const _BookmarkedTab(
+                          key: PageStorageKey('home-bookmarks'),
                         ),
-                      ProjectViewModeMenu(
-                        value: _viewMode,
-                        onChanged: (mode) {
-                          setState(() => _viewMode = mode);
-                          context.read<SettingsService>().setHomeViewMode(
-                            mode.name,
-                          );
-                        },
-                      ),
-                      IconButton(
-                        icon: const Icon(Icons.search),
-                        tooltip: l10n.commonSearch,
-                        onPressed: _openSearch,
-                      ),
-                    ],
-                  ],
-                  // 標準のTabBarは項目名の文字数に関わらず均等4分割になるため、
-                  // 「プロジェクト」のように長い項目名が「共有」等の短い項目名と
-                  // 同じ幅しか確保できず、文字が見切れてしまっていた。各項目名の
-                  // 実際の描画幅を計測し、その比率でタブ幅を配分する独自実装へ
-                  // 差し替える（TabControllerは共通のまま、TabBarViewとの
-                  // スワイプ連動はそのまま維持される）。
-                  bottom: PreferredSize(
-                    preferredSize: const Size.fromHeight(_homeTabBarHeight),
-                    child: _HomeTabBar(
-                      controller: _tabController,
-                      currentIndex: _currentTabIndex,
-                      labels: [
-                        l10n.homeTabProjects,
-                        l10n.homeTabWorks,
-                        l10n.homeTabBookmarked,
                       ],
                     ),
                   ),
-                ),
-                drawer: sideNavigation ? null : const HomeDrawer(),
-                body: Column(
-                  children: [
-                    if (_isSelectionMode) _buildSelectionBar(l10n),
-                    Expanded(
-                      child: TabBarView(
-                        controller: _tabController,
-                        children: [
-                          Column(
-                            children: [
-                              Padding(
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: 8,
-                                  vertical: 4,
-                                ),
-                                child: Row(
-                                  children: [
-                                    FilterChip(
-                                      label: Text(
-                                        l10n.homeFavoritesOnly,
-                                        style: const TextStyle(
-                                          fontFamily: 'Kuramubon',
-                                          fontFamilyFallback:
-                                              kHeadingFontFallback,
-                                        ),
-                                      ),
-                                      selected: _showFavoritesOnly,
-                                      onSelected: (v) => setState(
-                                        () => _showFavoritesOnly = v,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                              // フォルダ内移動時のパンくずリスト。検索中は
-                              // 全体から検索するため非表示にする。
-                              if (!_isSearching) _buildBreadcrumb(),
-                              Expanded(
-                                child: ProjectListWidget(
-                                  // 「共有」タブ（.niashareインポート由来）は別枠の
-                                  // 一覧のため、プロジェクトタブには表示しない。
-                                  projects: context
-                                      .watch<ProjectService>()
-                                      .projects
-                                      .where((p) => !p.isSharedImport)
-                                      .toList(),
-                                  viewMode: _viewMode,
-                                  sortMode: _sortMode,
-                                  isSelectionMode: _isSelectionMode,
-                                  selectedIds: _selectedIds,
-                                  // 長押しモードへ入ると同時に、長押しした項目自体も
-                                  // 選択状態にする（複数選択モードに入っただけで
-                                  // 何も選ばれていない状態を避ける）。
-                                  onLongPress: (id) => setState(() {
-                                    _isSelectionMode = true;
-                                    _selectedIds.add(id);
-                                  }),
-                                  onSelectionChanged: (id) => setState(() {
-                                    if (_selectedIds.contains(id)) {
-                                      _selectedIds.remove(id);
-                                    } else {
-                                      _selectedIds.add(id);
-                                    }
-                                    // 手動でのタップ操作によって選択が0件になった場合も、
-                                    // 「全解除」ボタンを押した時と同様に複数選択モードを
-                                    // 自動終了する。
-                                    if (_selectedIds.isEmpty) {
-                                      _isSelectionMode = false;
-                                    }
-                                  }),
-                                  showFavoritesOnly: _showFavoritesOnly,
-                                  searchQuery: _searchQuery,
-                                  searchByTag: _searchByTag,
-                                  currentFolderId: _currentFolderId,
-                                  onOpenFolder: (id) =>
-                                      setState(() => _currentFolderId = id),
-                                  onClearSearch: _closeSearch,
-                                  pendingCutIds: _clipboardIsCut
-                                      ? {
-                                          ..._clipboardProjectIds,
-                                          ..._clipboardFolderIds,
-                                        }
-                                      : const {},
-                                  onShowAll: () => setState(
-                                    () => _showFavoritesOnly = false,
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ),
-                          const _WorksTab(),
-                          const _BookmarkedTab(),
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
-                // プロジェクトタブ：新規プロジェクト／新規フォルダを選べるFAB。
-                // 作品一覧タブ：新規プロジェクト作成の導線は不要なため、フォルダの
-                // 新規作成のみをワンタップ・選択肢なしで直接行えるFABにする。
-                floatingActionButton: switch (_currentTabIndex) {
-                  0 => FloatingActionButton(
-                    tooltip: AppLocalizations.of(context)!.homeAddTooltip,
-                    onPressed: () => _showAddChoiceSheet(context),
-                    child: const Icon(Icons.add),
-                  ),
-                  1 => FloatingActionButton(
-                    tooltip: AppLocalizations.of(
-                      context,
-                    )!.homeAddSheetNewFolder,
-                    onPressed: () => showCreateFolderNameDialog(
-                      context,
-                      (name) =>
-                          context.read<WorkFolderService>().createFolder(name),
-                    ),
-                    child: const Icon(Icons.create_new_folder_outlined),
-                  ),
-                  _ => null,
-                },
+                ],
               ),
+              // プロジェクトタブ：新規プロジェクト／新規フォルダを選べるFAB。
+              // 作品一覧タブ：新規プロジェクト作成の導線は不要なため、フォルダの
+              // 新規作成のみをワンタップ・選択肢なしで直接行えるFABにする。
+              floatingActionButton: switch (_currentTabIndex) {
+                0 => FloatingActionButton(
+                  tooltip: AppLocalizations.of(context)!.homeAddTooltip,
+                  onPressed: () => _showAddChoiceSheet(context),
+                  child: const Icon(Icons.add),
+                ),
+                1 => FloatingActionButton(
+                  tooltip: AppLocalizations.of(context)!.homeAddSheetNewFolder,
+                  onPressed: () => showCreateFolderNameDialog(
+                    context,
+                    (name) =>
+                        context.read<WorkFolderService>().createFolder(name),
+                  ),
+                  child: const Icon(Icons.create_new_folder_outlined),
+                ),
+                _ => null,
+              },
             ),
           ),
         ),
@@ -753,74 +747,75 @@ class _HomeScreenState extends State<HomeScreen>
     );
   }
 
-  /// 選択中の操作バー。収まる幅では1行、収まらない幅（スマホ・文字を
-  /// 大きくしたとき）は「全選択・全解除・件数」と操作のボタンを2行に分ける
-  /// （以前は1行に詰め込み、390px幅で86pxはみ出して削除ボタンが押せなかった）。
+  /// 選択中の操作バー。全選択・全解除・件数の文字の幅を詰め、狭い画面や
+  /// 大きな文字でも切り取り・コピー・ゴミ箱を1行のまま出す（省略した文字は
+  /// 長押し・ホバーで全文が出る）。お気に入りは一括では付け外ししない
+  /// （各項目のメニューから）。
   Widget _buildSelectionBar(AppLocalizations l10n) {
     final onlyProjects = _selectionHasOnlyProjects();
+    Widget label(String text, {VoidCallback? onPressed}) => Expanded(
+      child: Tooltip(
+        message: text,
+        child: onPressed == null
+            ? Text(
+                text,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                textAlign: TextAlign.center,
+              )
+            : TextButton(
+                style: TextButton.styleFrom(
+                  padding: const EdgeInsets.symmetric(horizontal: 4),
+                  minimumSize: const Size(48, 48),
+                ),
+                onPressed: onPressed,
+                child: Text(text, maxLines: 1, overflow: TextOverflow.ellipsis),
+              ),
+      ),
+    );
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
       color: Theme.of(context).colorScheme.surfaceContainerHighest,
-      child: LeadingTrailingBar(
-        leading: Wrap(
-          crossAxisAlignment: WrapCrossAlignment.center,
-          children: [
-            TextButton(
-              onPressed: _selectAllInCurrentFolder,
-              child: Text(l10n.homeSelectionAllSelect),
+      child: Row(
+        children: [
+          Expanded(
+            child: Row(
+              children: [
+                label(
+                  l10n.homeSelectionAllSelect,
+                  onPressed: _selectAllInCurrentFolder,
+                ),
+                label(l10n.homeSelectionAllDeselect, onPressed: _exitSelection),
+                label(l10n.homeSelectionCount(_selectedIds.length)),
+              ],
             ),
-            TextButton(
-              onPressed: _exitSelection,
-              child: Text(l10n.homeSelectionAllDeselect),
+          ),
+          if (_selectedIds.isNotEmpty) ...[
+            IconButton(
+              icon: const Icon(Icons.content_cut),
+              onPressed: _cutSelected,
+              tooltip: l10n.commonCut,
             ),
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 8),
-              child: Text(l10n.homeSelectionCount(_selectedIds.length)),
+            // フォルダの複製は未対応のため、選択にフォルダが1つでも
+            // 含まれる場合はコピーできない（理由をツールチップで示す）。
+            IconButton(
+              icon: const Icon(Icons.content_copy),
+              onPressed: onlyProjects ? _copySelected : null,
+              tooltip: onlyProjects
+                  ? l10n.commonCopy
+                  : l10n.homeCopyFoldersUnsupported,
+            ),
+            IconButton(
+              icon: Icon(
+                Icons.delete,
+                color: ThemeService.activeColorScheme.error,
+              ),
+              onPressed: _deleteSelected,
+              tooltip: l10n.homeMoveToTrash,
             ),
           ],
-        ),
-        trailing: _selectedIds.isEmpty
-            ? null
-            : Wrap(
-                children: [
-                  IconButton(
-                    icon: Icon(
-                      Icons.star,
-                      color: ThemeService.activeColorScheme.tertiary,
-                    ),
-                    onPressed: () => _bulkSetFavorite(true),
-                    tooltip: l10n.homeSelectionAddFavorite,
-                  ),
-                  IconButton(
-                    icon: const Icon(Icons.star_border),
-                    onPressed: () => _bulkSetFavorite(false),
-                    tooltip: l10n.homeSelectionRemoveFavorite,
-                  ),
-                  IconButton(
-                    icon: const Icon(Icons.content_cut),
-                    onPressed: _cutSelected,
-                    tooltip: l10n.commonCut,
-                  ),
-                  // フォルダの複製は未対応のため、選択にフォルダが1つでも
-                  // 含まれる場合はコピーできない（理由をツールチップで示す）。
-                  IconButton(
-                    icon: const Icon(Icons.content_copy),
-                    onPressed: onlyProjects ? _copySelected : null,
-                    tooltip: onlyProjects
-                        ? l10n.commonCopy
-                        : l10n.homeCopyFoldersUnsupported,
-                  ),
-                  IconButton(
-                    icon: Icon(
-                      Icons.delete,
-                      color: ThemeService.activeColorScheme.error,
-                    ),
-                    onPressed: _deleteSelected,
-                    tooltip: l10n.homeMoveToTrash,
-                  ),
-                ],
-              ),
+        ],
       ),
     );
   }
@@ -830,27 +825,6 @@ class _HomeScreenState extends State<HomeScreen>
     _isSelectionMode = false;
   });
 
-  /// 選択中のプロジェクト・フォルダのお気に入り状態をまとめて[favorite]へ
-  /// 揃える（toggleFavorite系は反転のみのため、既に望む状態のものは
-  /// スキップする）。
-  void _bulkSetFavorite(bool favorite) {
-    final service = context.read<ProjectService>();
-    for (final id in _selectedIds) {
-      final project = service.projects.where((p) => p.id == id).firstOrNull;
-      if (project != null) {
-        if (project.isFavorite != favorite) service.toggleFavorite(id);
-        continue;
-      }
-      final folder = service.folders.where((f) => f.id == id).firstOrNull;
-      if (folder != null && folder.isFavorite != favorite) {
-        service.toggleFolderFavorite(id);
-      }
-    }
-  }
-
-  /// 選択中の作品をゴミ箱へ移す。お気に入りの作品は1件ずつの削除と同じく
-  /// 移さず（以前は一括削除だけお気に入りもゴミ箱へ移していた）、フォルダも
-  /// 移さない。移さないものは確認の文に書く。移した後は「元に戻す」を出す。
   void _deleteSelected() {
     final l10n = AppLocalizations.of(context)!;
     final service = context.read<ProjectService>();
@@ -949,8 +923,9 @@ class _HomeScreenState extends State<HomeScreen>
   ) {
     final bindings = context.watch<ShortcutService>().bindings;
     final result = <ShortcutActivator, VoidCallback>{};
-    // 全選択・コピー等はプロジェクトの一覧の操作なので、他のタブでは効かせない。
-    if (_currentTabIndex != 0) return result;
+    // 全選択・コピー等はプロジェクトの一覧の操作なので、他のタブと検索中は
+    // 効かせない。
+    if (_currentTabIndex != 0 || _isSearching) return result;
     // Escは引き出しが開いていれば引き出しを閉じ、次に選択を終え、
     // 選択していなければ切り取りをやめる（検索欄のEscは欄の側で検索を
     // 閉じる）。
@@ -1230,14 +1205,14 @@ class _HomeScreenState extends State<HomeScreen>
   }
 }
 
+/// ホームのタブの高さ（指で押しやすい48px）。
+const double _homeTabBarHeight = 48;
+
 /// ホーム画面のタブバー。標準のTabBarと異なり、各タブ名の実際の描画幅を
 /// 計測してその比率で幅を配分する（均等4分割だと「プロジェクト」のような
 /// 長い項目名が「共有」等より窮屈になり、文字が見切れてしまうため）。
 /// TabControllerを共有しているため、TabBarViewとのスワイプ連動・タップでの
 /// 切り替えはそのまま機能する。
-/// ホームのタブの高さ（指で押しやすい48px）。
-const double _homeTabBarHeight = 48;
-
 class _HomeTabBar extends StatefulWidget {
   final TabController controller;
   final int currentIndex;
@@ -1254,39 +1229,26 @@ class _HomeTabBar extends StatefulWidget {
 }
 
 class _HomeTabBarState extends State<_HomeTabBar> {
-  // 横スクロールになったとき（文字を大きくした狭い画面）に、選ばれたタブを
-  // 画面内へ寄せるための目印。寄せないと、横へ送った先のタブが選ばれても
-  // タブ名も下線も画面外のままだった。
-  late List<GlobalKey> _tabKeys = _newKeys();
-
-  List<GlobalKey> _newKeys() => [for (final _ in widget.labels) GlobalKey()];
+  final _scrollController = ScrollController();
+  Object? _lastLayout;
 
   @override
-  void didUpdateWidget(_HomeTabBar oldWidget) {
-    super.didUpdateWidget(oldWidget);
-    if (oldWidget.labels.length != widget.labels.length) _tabKeys = _newKeys();
-    if (oldWidget.currentIndex != widget.currentIndex) _revealSelected();
-  }
-
-  void _revealSelected() {
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (!mounted) return;
-      final tab = _tabKeys[widget.currentIndex].currentContext;
-      if (tab == null) return;
-      Scrollable.ensureVisible(
-        tab,
-        alignment: 0.5,
-        duration: const Duration(milliseconds: 200),
-      );
-    });
+  void dispose() {
+    _scrollController.dispose();
+    super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    final controller = widget.controller;
-    final currentIndex = widget.currentIndex;
     final labels = widget.labels;
+    final currentIndex = widget.currentIndex;
+    final controller = widget.controller;
     final scheme = Theme.of(context).colorScheme;
+    final background = opaqueOver(
+      Theme.of(context).scaffoldBackgroundColor,
+      Colors.black,
+    );
+    final selectedColor = contrastingForeground(background, scheme.primary);
     final textStyle = const TextStyle(
       fontSize: 14,
       fontWeight: FontWeight.w600,
@@ -1294,24 +1256,23 @@ class _HomeTabBarState extends State<_HomeTabBar> {
       fontFamilyFallback: kHeadingFontFallback,
     );
     // 左右の余白（タップ領域確保）込みで、各タブ名の実際の描画幅を計測する。
-    // OSの文字サイズの倍率も含めて測る（含めないと、文字を大きくした端末で
-    // 「入りきる」と誤判定し、タブ名が折り返して欠けていた）。
-    final scaler = MediaQuery.textScalerOf(context);
     final naturalWidths = labels.map((label) {
       final tp = TextPainter(
         text: TextSpan(text: label, style: textStyle),
         textDirection: TextDirection.ltr,
-        textScaler: scaler,
+        textScaler: MediaQuery.textScalerOf(context),
         maxLines: 1,
       )..layout();
       final width = tp.width + 32;
       tp.dispose();
       return width;
     }).toList();
+
     final localizations = MaterialLocalizations.of(context);
 
     // 標準のTabBarと同じく、選ばれているか・何番目のタブかを読み上げる。
     Widget tabItem(int i) => Semantics(
+      key: ValueKey('home_tab_$i'),
       selected: currentIndex == i,
       button: true,
       inMutuallyExclusiveGroup: true,
@@ -1324,24 +1285,19 @@ class _HomeTabBarState extends State<_HomeTabBar> {
           decoration: BoxDecoration(
             border: Border(
               bottom: BorderSide(
-                color: currentIndex == i ? scheme.primary : Colors.transparent,
+                color: currentIndex == i ? selectedColor : Colors.transparent,
                 width: 2,
               ),
             ),
           ),
-          // 1つのタブ名だけで画面幅を超える（文字を大きくした狭い画面の
-          // 長い訳語）ときだけ縮めて、全体を見せる。
-          child: FittedBox(
-            fit: BoxFit.scaleDown,
-            child: Text(
-              labels[i],
-              maxLines: 1,
-              softWrap: false,
-              style: textStyle.copyWith(
-                color: currentIndex == i
-                    ? scheme.primary
-                    : scheme.onSurfaceVariant,
-              ),
+          child: Text(
+            labels[i],
+            maxLines: 1,
+            softWrap: false,
+            style: textStyle.copyWith(
+              color: currentIndex == i
+                  ? selectedColor
+                  : scheme.onSurfaceVariant,
             ),
           ),
         ),
@@ -1363,6 +1319,31 @@ class _HomeTabBarState extends State<_HomeTabBar> {
       child: LayoutBuilder(
         builder: (context, constraints) {
           final totalNatural = naturalWidths.fold<double>(0, (a, b) => a + b);
+          final layout = (
+            constraints.maxWidth,
+            currentIndex,
+            labels.join('\u0000'),
+            totalNatural,
+          );
+          if (_lastLayout != layout) {
+            _lastLayout = layout;
+            WidgetsBinding.instance.addPostFrameCallback((_) {
+              if (!mounted ||
+                  _lastLayout != layout ||
+                  !_scrollController.hasClients) {
+                return;
+              }
+              final before = naturalWidths
+                  .take(currentIndex)
+                  .fold<double>(0, (a, b) => a + b);
+              final target =
+                  (before +
+                          naturalWidths[currentIndex] / 2 -
+                          constraints.maxWidth / 2)
+                      .clamp(0.0, _scrollController.position.maxScrollExtent);
+              _scrollController.jumpTo(target);
+            });
+          }
           if (totalNatural <= constraints.maxWidth) {
             final weights = naturalWidths.map((w) => w.round()).toList();
             return Row(
@@ -1373,15 +1354,12 @@ class _HomeTabBarState extends State<_HomeTabBar> {
             );
           }
           return SingleChildScrollView(
+            controller: _scrollController,
             scrollDirection: Axis.horizontal,
             child: Row(
               children: [
                 for (int i = 0; i < labels.length; i++)
-                  SizedBox(
-                    key: _tabKeys[i],
-                    width: math.min(naturalWidths[i], constraints.maxWidth),
-                    child: tabItem(i),
-                  ),
+                  SizedBox(width: naturalWidths[i], child: tabItem(i)),
               ],
             ),
           );
@@ -2028,99 +2006,204 @@ class _TrashTab extends StatelessWidget {
   }
 }
 
+/// 閲覧フィルターとブックマーク日時順を反映する公開作品一覧。
+class _BookmarkedTab extends StatelessWidget {
+  const _BookmarkedTab({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    final theme = Theme.of(context);
+    final scheme = theme.colorScheme;
+    final background = opaqueOver(theme.scaffoldBackgroundColor, Colors.black);
+    final foreground = contrastingForeground(background, scheme.primary);
+    final textForeground = contrastingForeground(
+      background,
+      opaqueOver(scheme.onSurface, background),
+    );
+    final bodyForeground = contrastingForeground(
+      background,
+      opaqueOver(scheme.onSurfaceVariant, background),
+    );
+    final service = context.watch<CommunityService>();
+    final works = service.bookmarkedWorksForViewer;
+    final canReload =
+        service.isBackendConnected && service.currentUserId != null;
+    final loading = canReload && service.isSocialLoading;
+    final error = canReload ? service.socialError : null;
+    final needsLoad = canReload && !service.hasLoadedSocial && error == null;
+    final hidden = service.bookmarkedIds.isNotEmpty;
+    final title = loading
+        ? l10n.homeBookmarkedLoading
+        : error != null
+        ? l10n.homeBookmarkedLoadFailed
+        : needsLoad
+        ? l10n.homeBookmarkedLoadPrompt
+        : hidden
+        ? l10n.homeBookmarkedHiddenTitle
+        : l10n.homeBookmarkedEmptyTitle;
+    final String? body = loading || needsLoad
+        ? null
+        : error != null
+        ? communityErrorText(l10n, error)
+        : hidden
+        ? l10n.homeBookmarkedHiddenBody
+        : service.isBackendConnected && service.currentUserId == null
+        ? l10n.homeBookmarkedSignInBody
+        : l10n.homeBookmarkedEmptyBody;
+
+    Future<void> reload() async {
+      await service.loadSocial();
+    }
+
+    final scroll = LayoutBuilder(
+      builder: (context, constraints) => SingleChildScrollView(
+        physics: canReload ? const AlwaysScrollableScrollPhysics() : null,
+        child: ConstrainedBox(
+          constraints: BoxConstraints(
+            minWidth: constraints.hasBoundedWidth ? constraints.maxWidth : 0,
+            minHeight: constraints.hasBoundedHeight ? constraints.maxHeight : 0,
+          ),
+          child: Padding(
+            padding: works.isEmpty ? const EdgeInsets.all(24) : EdgeInsets.zero,
+            child: Column(
+              mainAxisAlignment: works.isEmpty
+                  ? MainAxisAlignment.center
+                  : MainAxisAlignment.start,
+              children: [
+                if (works.isEmpty) ...[
+                  if (loading)
+                    CircularProgressIndicator(color: foreground)
+                  else
+                    Icon(
+                      error != null
+                          ? Icons.cloud_off_outlined
+                          : Icons.bookmark_border,
+                      size: 64,
+                      color: foreground,
+                    ),
+                  const SizedBox(height: 16),
+                  Semantics(
+                    liveRegion: true,
+                    header: true,
+                    child: Text(
+                      title,
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        color: textForeground,
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                        fontFamily: 'Kuramubon',
+                        fontFamilyFallback: kHeadingFontFallback,
+                      ),
+                    ),
+                  ),
+                  if (body != null) ...[
+                    const SizedBox(height: 8),
+                    Text(
+                      body,
+                      textAlign: TextAlign.center,
+                      style: TextStyle(color: bodyForeground),
+                    ),
+                  ],
+                  const SizedBox(height: 16),
+                  Wrap(
+                    alignment: WrapAlignment.center,
+                    spacing: 12,
+                    runSpacing: 8,
+                    children: [
+                      if (canReload && !loading)
+                        OutlinedButton.icon(
+                          style: OutlinedButton.styleFrom(
+                            foregroundColor: foreground,
+                          ),
+                          onPressed: reload,
+                          icon: const Icon(Icons.refresh),
+                          label: Text(
+                            error != null
+                                ? l10n.communityRetry
+                                : l10n.communityReloadTooltip,
+                          ),
+                        ),
+                      OutlinedButton.icon(
+                        style: OutlinedButton.styleFrom(
+                          foregroundColor: foreground,
+                        ),
+                        onPressed: () => context.push('/community'),
+                        icon: const Icon(Icons.explore_outlined),
+                        label: Text(l10n.communityScreenTitle),
+                      ),
+                    ],
+                  ),
+                ] else ...[
+                  if (loading)
+                    LinearProgressIndicator(
+                      color: foreground,
+                      backgroundColor: Color.alphaBlend(
+                        foreground.withValues(alpha: 0.15),
+                        background,
+                      ),
+                      semanticsLabel: l10n.homeBookmarkedLoading,
+                    ),
+                  if (canReload)
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 16),
+                      child: Row(
+                        children: [
+                          if (error != null)
+                            Expanded(
+                              child: Semantics(
+                                liveRegion: true,
+                                child: Text(
+                                  l10n.homeBookmarkedLoadFailed,
+                                  style: TextStyle(color: textForeground),
+                                ),
+                              ),
+                            )
+                          else
+                            const Spacer(),
+                          IconButton(
+                            onPressed: loading ? null : reload,
+                            tooltip: error != null
+                                ? l10n.communityRetry
+                                : l10n.communityReloadTooltip,
+                            icon: const Icon(Icons.refresh),
+                          ),
+                        ],
+                      ),
+                    ),
+                  CommunityWorkGrid(
+                    works: works,
+                    bookmarkedIds: service.bookmarkedIds,
+                    onTapWork: (work) =>
+                        context.read<CommunityPreviewService>().show(work),
+                    onToggleBookmark: (work) => reportFailedCommunityEdit(
+                      context,
+                      service,
+                      service.toggleBookmark(work.id),
+                    ),
+                  ),
+                ],
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+    return canReload
+        ? RefreshIndicator(onRefresh: reload, child: scroll)
+        : scroll;
+  }
+}
+
 /// 「作品一覧」タブ：書き出し済みの動画・GIF
 /// ファイルをアプリ内保存先（ExportEngine.exportsDir、
 /// getApplicationDocumentsDirectory()/exports）から一覧表示する。
 /// タップでアプリ内プレビュー、共有ボタンでOSの共有シートから写真アプリ等へ
 /// 「開く」ことができる（share_plusは書き出し完了ダイアログで既に使用している
 /// 実績のある仕組みのため、新規ネイティブ依存を追加せずに実現できる）。
-/// 「ブクマ済みの作品」タブ。「作品広場」画面
-/// （`CommunityService`）でブックマークした他ユーザーの公開作品を一覧
-/// 表示する。ダウンロードはせず、あくまで一覧表示のみ（バックエンド
-/// 未実装のため現状はダミーデータ上のブックマーク状態を参照する）。
-/// 1件もブックマークしていない場合は従来どおりの案内表示のままにする。
-class _BookmarkedTab extends StatelessWidget {
-  const _BookmarkedTab();
-
-  @override
-  Widget build(BuildContext context) {
-    final l10n = AppLocalizations.of(context)!;
-    final scheme = Theme.of(context).colorScheme;
-    final communityService = context.watch<CommunityService>();
-    // 新しくブックマークした順に並べる。communityService.worksの並び
-    // （ダミーデータの生成順）のままだと、たった今ブックマークした作品が
-    // 一覧のどこに現れるか分からず、操作の結果が確認できない。
-    // 作品広場の表示フィルター（AI非表示・ミュート）もここに効かせる。
-    final bookmarkedWorks = communityService.bookmarkedWorksForViewer;
-
-    if (bookmarkedWorks.isEmpty) {
-      // ブックマーク自体はあるのに、表示フィルター（AI作品の非表示・
-      // ミュート）や公開終了で全部隠れているときは「まだありません」と
-      // 言わない（消えたと思われる）。
-      final hidden = communityService.bookmarkedIds.isNotEmpty;
-      return Center(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.all(24),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Icon(
-                Icons.bookmark_border,
-                size: 64,
-                color: scheme.primary.withValues(alpha: 0.6),
-              ),
-              const SizedBox(height: 16),
-              Text(
-                hidden
-                    ? l10n.homeBookmarkedHiddenTitle
-                    : l10n.homeBookmarkedEmptyTitle,
-                textAlign: TextAlign.center,
-                style: const TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                  fontFamily: 'Kuramubon',
-                  fontFamilyFallback: kHeadingFontFallback,
-                ),
-              ),
-              const SizedBox(height: 8),
-              Text(
-                hidden
-                    ? l10n.homeBookmarkedHiddenBody
-                    : l10n.homeBookmarkedEmptyBody,
-                textAlign: TextAlign.center,
-                style: TextStyle(color: scheme.onSurfaceVariant),
-              ),
-              const SizedBox(height: 16),
-              // 作品広場への導線（ホームから作品広場へは起動画面へ戻るしか
-              // なかったため、ブックマークを集める場所へ直接行けるようにする）。
-              FilledButton.icon(
-                onPressed: () => context.push('/community'),
-                icon: const Icon(Icons.movie_filter_outlined),
-                label: Text(l10n.homeBookmarkedOpenPlaza),
-              ),
-            ],
-          ),
-        ),
-      );
-    }
-
-    return SingleChildScrollView(
-      child: CommunityWorkGrid(
-        works: bookmarkedWorks,
-        bookmarkedIds: communityService.bookmarkedIds,
-        onTapWork: (work) => context.read<CommunityPreviewService>().show(work),
-        onToggleBookmark: (work) => reportFailedCommunityEdit(
-          context,
-          communityService,
-          communityService.toggleBookmark(work.id),
-        ),
-      ),
-    );
-  }
-}
-
 class _WorksTab extends StatefulWidget {
-  const _WorksTab();
+  const _WorksTab({super.key});
 
   @override
   State<_WorksTab> createState() => _WorksTabState();
@@ -2136,10 +2219,14 @@ class _WorksTabState extends State<_WorksTab> {
   }
 
   Future<void> _reload() async {
-    setState(
-      () => _future = ExportEngine.listExportedFiles(forceRefresh: true),
-    );
-    await _future;
+    setState(() {
+      _future = ExportEngine.listExportedFiles(forceRefresh: true);
+    });
+    try {
+      await _future;
+    } catch (error, stackTrace) {
+      AppErrorReporter.record(error, stackTrace);
+    }
   }
 
   @override
@@ -2148,6 +2235,9 @@ class _WorksTabState extends State<_WorksTab> {
     return FutureBuilder<List<File>>(
       future: _future,
       builder: (context, snapshot) {
+        if (snapshot.hasError) {
+          return _WorksLoadFailure(onRetry: _reload);
+        }
         if (!snapshot.hasData) {
           return const Center(child: CircularProgressIndicator());
         }
@@ -2198,6 +2288,40 @@ class _WorksTabState extends State<_WorksTab> {
   }
 }
 
+class _WorksLoadFailure extends StatelessWidget {
+  const _WorksLoadFailure({required this.onRetry});
+
+  final VoidCallback onRetry;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    return Center(
+      child: SingleChildScrollView(
+        padding: const EdgeInsets.all(24),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(
+              Icons.folder_off_outlined,
+              size: 48,
+              color: Theme.of(context).colorScheme.onSurfaceVariant,
+            ),
+            const SizedBox(height: 16),
+            Text(l10n.homeWorksLoadFailed, textAlign: TextAlign.center),
+            const SizedBox(height: 16),
+            FilledButton.icon(
+              onPressed: onRetry,
+              icon: const Icon(Icons.refresh),
+              label: Text(l10n.communityRetry),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
 /// 作品一覧タブのフォルダ内表示。
 class _WorksFolderScreen extends StatefulWidget {
   final String folderId;
@@ -2231,6 +2355,13 @@ class _WorksFolderScreenState extends State<_WorksFolderScreen> {
       body: FutureBuilder<List<File>>(
         future: _future,
         builder: (context, snapshot) {
+          if (snapshot.hasError) {
+            return _WorksLoadFailure(
+              onRetry: () => setState(() {
+                _future = ExportEngine.listExportedFiles(forceRefresh: true);
+              }),
+            );
+          }
           if (!snapshot.hasData) {
             return const Center(child: CircularProgressIndicator());
           }
@@ -2258,11 +2389,9 @@ class _WorksFolderScreenState extends State<_WorksFolderScreen> {
             itemBuilder: (context, index) => _WorkListItem(
               file: items[index],
               onDeleted: () {
-                setState(
-                  () => _future = ExportEngine.listExportedFiles(
-                    forceRefresh: true,
-                  ),
-                );
+                setState(() {
+                  _future = ExportEngine.listExportedFiles(forceRefresh: true);
+                });
                 widget.onDeleted();
               },
             ),
@@ -2551,12 +2680,18 @@ class _FirstLaunchDialog extends StatelessWidget {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     return AlertDialog(
+      insetPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
+      constraints: const BoxConstraints(minWidth: 280, maxWidth: 560),
+      scrollable: true,
       content: Text(l10n.homeFirstLaunchMessage),
       actions: [
         // 「はじめる」ボタンの文字はくらむぼんを明示指定する
         // （通常のボタン文字は白光明朝のため、ここだけ差し替える）。
         FilledButton(
           onPressed: onDone,
+          style: FilledButton.styleFrom(
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+          ),
           child: Text(
             l10n.homeFirstLaunchStart,
             style: const TextStyle(

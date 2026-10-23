@@ -2897,7 +2897,8 @@ class _CanvasAreaState extends State<CanvasArea> {
     final h = _tileManager.canvasHeight;
     final project = widget.project;
     if (project == null) return Uint8List(w * h * 4);
-    final layers = context.read<ProjectService>().layersOf(
+    // What the canvas shows: in the scene's 重なり順.
+    final layers = context.read<ProjectService>().displayLayersOf(
       project.id,
       widget.sceneId,
       widget.currentFrame,
@@ -3905,7 +3906,13 @@ class _CanvasAreaState extends State<CanvasArea> {
     if (project == null) return;
     if (_isComposingSurroundings) return;
     final ps = context.read<ProjectService>();
-    final layers = ps.layersOf(project.id, widget.sceneId, widget.currentFrame);
+    // Drawn in the scene's 重なり順 (a timeline text in front of the
+    // drawing, a video behind it), as in the timeline and the export.
+    final layers = ps.displayLayersOf(
+      project.id,
+      widget.sceneId,
+      widget.currentFrame,
+    );
     if (!force && _sameLayerList(_layers, layers)) return;
     _layers = layers;
     _isComposingSurroundings = true;
@@ -3973,7 +3980,11 @@ class _CanvasAreaState extends State<CanvasArea> {
     // 選択レイヤーのオーバーレイも合わせて確認し直す。
     _refreshSelectionLayerOverlay();
     // 合成中にさらに変更があった場合に備えて再チェック
-    final latest = ps.layersOf(project.id, widget.sceneId, widget.currentFrame);
+    final latest = ps.displayLayersOf(
+      project.id,
+      widget.sceneId,
+      widget.currentFrame,
+    );
     if (!_sameLayerList(_layers, latest)) _recomposeSurroundings();
   }
 
@@ -4106,7 +4117,7 @@ class _CanvasAreaState extends State<CanvasArea> {
     for (final offset in offsets) {
       final frameIdx = widget.currentFrame + offset;
       if (frameIdx < 0) continue;
-      final layers = ps.layersOf(project.id, widget.sceneId, frameIdx);
+      final layers = ps.displayLayersOf(project.id, widget.sceneId, frameIdx);
       if (layers.isEmpty) continue;
       newImages[offset] = await LayerCompositor.composite(
         _tileManager,

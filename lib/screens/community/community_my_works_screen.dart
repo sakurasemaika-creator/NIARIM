@@ -29,6 +29,10 @@ class _CommunityMyWorksScreenState extends State<CommunityMyWorksScreen> {
   bool _loadingWorks = false;
   Object? _worksError;
   List<CommunityWork>? _ownerWorks;
+  String? _ownerStateAccountId;
+  String? _observedAccountId;
+  bool _observingAccount = false;
+  int _ownerLoadGeneration = 0;
   Map<String, String> _youtubePrivacyById = const <String, String>{};
   final Set<String> _visibilityBusy = <String>{};
 
@@ -38,14 +42,39 @@ class _CommunityMyWorksScreenState extends State<CommunityMyWorksScreen> {
     WidgetsBinding.instance.addPostFrameCallback((_) => _reloadOwnerWorks());
   }
 
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    final accountId = context.watch<GoogleAuthService>().account?.id;
+    if (!_observingAccount) {
+      _observingAccount = true;
+      _observedAccountId = accountId;
+      return;
+    }
+    if (_observedAccountId == accountId) return;
+    _observedAccountId = accountId;
+    _ownerLoadGeneration++;
+    _ownerStateAccountId = accountId;
+    _ownerWorks = null;
+    _youtubePrivacyById = const <String, String>{};
+    _worksError = null;
+    _visibilityBusy.clear();
+    _loadingWorks = accountId != null;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted && _observedAccountId == accountId) _reloadOwnerWorks();
+    });
+  }
+
   Future<void> _reloadOwnerWorks() async {
     if (!mounted) return;
     final auth = context.read<GoogleAuthService>();
     final community = context.read<CommunityService>();
     final api = community.api;
+    final generation = ++_ownerLoadGeneration;
     if (api == null || !auth.isSignedIn) {
       community.forgetOwner();
       setState(() {
+        _ownerStateAccountId = null;
         _ownerWorks = null;
         _youtubePrivacyById = const <String, String>{};
         _worksError = null;
@@ -54,14 +83,22 @@ class _CommunityMyWorksScreenState extends State<CommunityMyWorksScreen> {
       return;
     }
 
+    final requestedAccountId = auth.account?.id;
     setState(() {
+      _ownerStateAccountId = requestedAccountId;
       _loadingWorks = true;
       _worksError = null;
     });
     try {
       // Also tells the service who the poster is and keeps their works,
       // hidden ones included, in its store.
-      final page = (await community.loadOwnWorks())!;
+      final page = await community.loadOwnWorks();
+      if (!mounted ||
+          generation != _ownerLoadGeneration ||
+          auth.account?.id != requestedAccountId ||
+          page == null) {
+        return;
+      }
       final works = page.works;
       final converted = works.map((w) => w.toCommunityWork()).toList()
         ..sort((a, b) => b.postedAt.compareTo(a.postedAt));
@@ -77,10 +114,18 @@ class _CommunityMyWorksScreenState extends State<CommunityMyWorksScreen> {
       });
     } catch (error) {
       debugPrint('Own works could not be loaded: $error');
-      if (!mounted) return;
+      if (!mounted ||
+          generation != _ownerLoadGeneration ||
+          auth.account?.id != requestedAccountId) {
+        return;
+      }
       setState(() => _worksError = error);
     } finally {
-      if (mounted) setState(() => _loadingWorks = false);
+      if (mounted &&
+          generation == _ownerLoadGeneration &&
+          auth.account?.id == requestedAccountId) {
+        setState(() => _loadingWorks = false);
+      }
     }
   }
 
@@ -179,27 +224,32 @@ class _CommunityMyWorksScreenState extends State<CommunityMyWorksScreen> {
   ) async {
     if (_visibilityBusy.contains(work.id)) return;
     final community = context.read<CommunityService>();
+    final revision = community.accountRevision;
     final l10n = AppLocalizations.of(context)!;
     setState(() => _visibilityBusy.add(work.id));
     try {
       // The service applies the server's reply, so every browsing surface
       // reflects it at once.
       final next = await community.setAiImageVideoDisclosure(work.id, value);
-      if (!mounted) return;
+      if (!mounted || community.accountRevision != revision) return;
       setState(() {
         final works = _ownerWorks;
         if (works == null) return;
         final i = works.indexWhere((w) => w.id == next.id);
         if (i >= 0) works[i] = next;
       });
+    } on CommunityAccountChangedException {
+      return;
     } catch (error) {
       debugPrint('AI image/video disclosure update failed: $error');
-      if (!mounted) return;
+      if (!mounted || community.accountRevision != revision) return;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text(l10n.communityAiImageVideoUpdateFailed)),
       );
     } finally {
-      if (mounted) setState(() => _visibilityBusy.remove(work.id));
+      if (mounted && community.accountRevision == revision) {
+        setState(() => _visibilityBusy.remove(work.id));
+      }
     }
   }
 
@@ -212,26 +262,31 @@ class _CommunityMyWorksScreenState extends State<CommunityMyWorksScreen> {
     }
 
     final community = context.read<CommunityService>();
+    final revision = community.accountRevision;
     if (community.api == null || _visibilityBusy.contains(work.id)) return;
     setState(() => _visibilityBusy.add(work.id));
     try {
       // The service applies the reply, so every surface follows at once.
       final next = await community.setNiarimVisibility(work.id, published);
-      if (!mounted) return;
+      if (!mounted || community.accountRevision != revision) return;
       setState(() {
         final works = _ownerWorks;
         if (works == null) return;
         final i = works.indexWhere((w) => w.id == next.id);
         if (i >= 0) works[i] = next;
       });
+    } on CommunityAccountChangedException {
+      return;
     } catch (error) {
       debugPrint('Visibility update failed: $error');
-      if (!mounted) return;
+      if (!mounted || community.accountRevision != revision) return;
       _showSnackBar(
         l10n.communityVisibilityChangeFailed(communityErrorText(l10n, error)),
       );
     } finally {
-      if (mounted) setState(() => _visibilityBusy.remove(work.id));
+      if (mounted && community.accountRevision == revision) {
+        setState(() => _visibilityBusy.remove(work.id));
+      }
     }
   }
 
@@ -277,9 +332,12 @@ class _CommunityMyWorksScreenState extends State<CommunityMyWorksScreen> {
     // The owner list keeps its own order and the works hidden from others,
     // but each row shows the store's copy, so an edit made anywhere (a
     // tag, the AI image/video flag, the visibility) shows here too.
+    final hasCurrentOwnerState = _ownerStateAccountId == account?.id;
     final works = usingBackendOwnerList
         ? [
-            for (final w in _ownerWorks ?? const <CommunityWork>[])
+            for (final w
+                in (hasCurrentOwnerState ? _ownerWorks : null) ??
+                    const <CommunityWork>[])
               communityService.byId(w.id) ?? w,
           ]
         : (communityService.worksByAuthor(
@@ -416,7 +474,9 @@ class _CommunityMyWorksScreenState extends State<CommunityMyWorksScreen> {
                 ],
               ),
             ),
-            if (_worksError != null && usingBackendOwnerList)
+            if (_worksError != null &&
+                usingBackendOwnerList &&
+                hasCurrentOwnerState)
               Padding(
                 padding: const EdgeInsets.symmetric(
                   horizontal: 16,

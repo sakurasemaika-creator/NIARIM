@@ -44,7 +44,7 @@ void main() {
         edgeJitter: PressureRangeSetting(enabled: false, weak: 50, strong: 50),
         mixing: PressureMixingOnSetting(
           enabled: false,
-          mode: BrushMixingMode.simple,
+          mode: BrushMixingMode.oil,
           weakRate: 0,
           strongRate: 0,
         ),
@@ -54,7 +54,7 @@ void main() {
         edgeJitter: FixedBrushSetting(enabled: false, value: 50),
         mixing: PressureMixingOffSetting(
           enabled: false,
-          mode: BrushMixingMode.simple,
+          mode: BrushMixingMode.oil,
           rate: 0,
         ),
       ),

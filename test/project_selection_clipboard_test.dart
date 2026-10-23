@@ -420,17 +420,21 @@ void main() {
     expect(delete.dx, greaterThan(1100));
   });
 
-  testWidgets('on a phone the actions sit on their own line at the right', (
+  testWidgets('on a phone the bar stays on one line without bulk favorites', (
     tester,
   ) async {
     await boot(tester, size: const Size(390, 844), names: ['apple']);
     await tester.longPress(card('apple'));
     await settle(tester);
-    final selectAll = tester.getRect(find.text('全選択'));
-    final delete = tester.getRect(find.byTooltip('ゴミ箱へ移動'));
-    expect(delete.top, greaterThan(selectAll.bottom));
-    expect(selectAll.left, lessThan(40));
-    expect(delete.right, greaterThan(350));
+    final selectAll = tester.getCenter(find.text('全選択'));
+    final delete = tester.getCenter(find.byTooltip('ゴミ箱へ移動'));
+    // 1行のまま、全選択は左、ゴミ箱は右。
+    expect(delete.dy, moreOrLessEquals(selectAll.dy, epsilon: 1));
+    expect(selectAll.dx, lessThan(80));
+    expect(delete.dx, greaterThan(330));
+    // お気に入りは一括では付け外ししない（各項目のメニューから）。
+    expect(find.byTooltip('お気に入りに登録'), findsNothing);
+    expect(find.byTooltip('お気に入りを解除'), findsNothing);
   });
 
   testWidgets('Ctrl+C with a folder selected keeps the clipboard', (
@@ -489,7 +493,7 @@ void main() {
     // 読み上げが止まる、押せるカードの節に付く。
     expect(
       tester.getSemantics(card('apple')).parent,
-      containsSemantics(hint: '切り取り中（貼り付けを待っています）', hasTapAction: true),
+      isSemantics(hint: '切り取り中（貼り付けを待っています）', hasTapAction: true),
     );
     // SnackBarの「元に戻す」でやめられる。
     await tester.tap(find.text('元に戻す'));

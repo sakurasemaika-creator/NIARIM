@@ -1,3 +1,5 @@
+import 'helpers/project_storage.dart';
+
 import 'dart:io';
 import 'dart:math' as math;
 import 'dart:typed_data';
@@ -23,6 +25,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 /// 本体のTransformに含まれるためキャンバスと一緒に回転し、そのさらに外側の
 /// 安全背景はTransform外の固定レイヤーとして画面を覆い続ける。
 void main() {
+  useTemporaryProjectStorage();
   TestWidgetsFlutterBinding.ensureInitialized();
 
   final out = Directory('build/visual-reaudit/canvas-angle-boundary');
@@ -92,9 +95,9 @@ void main() {
                   child: Builder(
                     builder: (context) => ColoredBox(
                       // CanvasScreenと同じ、Transform外の固定安全背景。
-                      color: Theme.of(context)
-                          .colorScheme
-                          .surfaceContainerHighest,
+                      color: Theme.of(
+                        context,
+                      ).colorScheme.surfaceContainerHighest,
                       child: SizedBox(
                         width: 420,
                         height: 520,
@@ -187,9 +190,9 @@ void main() {
 
       final sign = testCase.degrees < 0 ? 'm' : 'p';
       final angle = testCase.degrees.abs().toString().padLeft(2, '0');
-      final safeColor = Theme.of(rootKey.currentContext!)
-          .colorScheme
-          .surfaceContainerHighest;
+      final safeColor = Theme.of(
+        rootKey.currentContext!,
+      ).colorScheme.surfaceContainerHighest;
       await tester.runAsync(
         () => _captureAndAssertSafety(
           rootKey,

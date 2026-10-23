@@ -12,8 +12,7 @@ import '../../widgets/responsive.dart';
 import '../../widgets/help_button.dart';
 import '../../widgets/confirm_delete.dart';
 import '../../widgets/dispose_on_unmount.dart';
-import '../../widgets/editable_slider_value.dart';
-import '../../widgets/stepped_slider.dart';
+import '../../widgets/labeled_slider.dart';
 import '../canvas/widgets/color_picker_panel.dart';
 import '../../config/font_fallback.dart';
 
@@ -536,32 +535,14 @@ class WatermarkSettingsScreen extends StatelessWidget {
     double max,
     ValueChanged<double> onChanged,
   ) {
-    return Row(
-      children: [
-        SizedBox(
-          width: 90,
-          child: Text(label, style: const TextStyle(fontSize: 12)),
-        ),
-        Expanded(
-          child: SteppedSlider(
-            value: value,
-            min: min,
-            max: max,
-            onChanged: onChanged,
-          ),
-        ),
-        SizedBox(
-          width: 32,
-          child: EditableSliderValue(
-            text: value.round().toString(),
-            style: const TextStyle(fontSize: 11),
-            value: value,
-            min: min,
-            max: max,
-            onChanged: (v) => onChanged(v.toDouble()),
-          ),
-        ),
-      ],
+    return LabeledSlider(
+      label: label,
+      value: value,
+      min: min,
+      max: max,
+      valueText: value.round().toString(),
+      valueStyle: const TextStyle(fontSize: 11),
+      onChanged: onChanged,
     );
   }
 }

@@ -69,7 +69,7 @@ Future<void> refreshHomeWidgets({
   await HomeWidgetBridge().update(
     widgets,
     themeColor: theme.current.accentColor.toARGB32(),
-    themeForegroundColor: theme.current.menuBgColor.toARGB32(),
+    themeForegroundColor: theme.current.buttonTextColor.toARGB32(),
     thumbnailPath: thumbnailPath,
     projectName: project?.name,
     shortcutImagePaths: shortcutImagePaths,
@@ -128,5 +128,5 @@ Color shortcutWidgetForeground(
   HomeWidgetKind kind,
 ) {
   final custom = widgets.foregroundColorOf(kind);
-  return custom != null ? Color(custom) : theme.current.menuBgColor;
+  return custom != null ? Color(custom) : theme.current.buttonTextColor;
 }

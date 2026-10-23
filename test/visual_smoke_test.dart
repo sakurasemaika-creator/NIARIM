@@ -215,7 +215,8 @@ void main() {
     final homeScaffold = Scaffold.of(tester.element(drawer));
     expect(homeScaffold.isDrawerOpen, isTrue);
     homeScaffold.closeDrawer();
-    await tester.pump(const Duration(milliseconds: 500));
+    await tester.pumpAndSettle();
+    expect(find.byType(Drawer).hitTestable(), findsNothing);
     expect(homeScaffold.isDrawerOpen, isFalse);
     expectNoFlutterException(tester, 'ホームドロワーを閉じる');
 
@@ -225,6 +226,13 @@ void main() {
     await tester.pump(const Duration(milliseconds: 300));
     await tester.pump(const Duration(milliseconds: 300));
     expectNoFlutterException(tester, '作品一覧タブ切り替え');
+    expect(
+      tester
+          .widget<Semantics>(find.byKey(const ValueKey('home_tab_1')))
+          .properties
+          .selected,
+      isTrue,
+    );
     await capture(tester, '11_home_works_tab');
 
     final scaffoldContext = tester.element(find.byType(Scaffold).first);

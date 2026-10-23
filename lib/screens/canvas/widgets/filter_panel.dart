@@ -104,7 +104,7 @@ const int kFilterPreviewMaxSide = 640;
 /// preview (the analysis is the slow part; the lines render at any size).
 const int _kLineartAnalysisMaxSide = 150;
 
-/// The width of a setting's name (and value) in front of its slider when
+/// The width of a colour setting's name in front of its colour chip when
 /// the panel runs along the bottom of the screen.
 const double _kBottomLabelWidth = 112;
 
@@ -1941,6 +1941,68 @@ class _FilterPanelState extends State<FilterPanel> {
             ),
           ],
         );
+      case FilterKind.watercolorBorder:
+        return Column(
+          children: [
+            _hint(l10n.filterWatercolorBorderHint),
+            _paramSlider(
+              l10n.filterWatercolorBorderRange,
+              current.watercolorBorderRange,
+              1,
+              50,
+              (v) => service.updateFilterParams(
+                current.id,
+                watercolorBorderRange: v.roundToDouble(),
+              ),
+            ),
+            _paramSlider(
+              l10n.filterWatercolorBorderDarken,
+              current.watercolorBorderDarken,
+              0,
+              100,
+              (v) => service.updateFilterParams(
+                current.id,
+                watercolorBorderDarken: v,
+              ),
+            ),
+            _paramSlider(
+              l10n.filterWatercolorBorderOpacity,
+              current.watercolorBorderOpacity,
+              0,
+              100,
+              (v) => service.updateFilterParams(
+                current.id,
+                watercolorBorderOpacity: v,
+              ),
+            ),
+            _paramSlider(
+              l10n.filterWatercolorBorderBlur,
+              current.watercolorBorderBlur,
+              0,
+              20,
+              (v) => service.updateFilterParams(
+                current.id,
+                watercolorBorderBlur: v.roundToDouble(),
+              ),
+            ),
+            SwitchListTile(
+              dense: true,
+              contentPadding: EdgeInsets.zero,
+              title: Text(
+                l10n.filterWatercolorBorderColorEdges,
+                style: const TextStyle(fontSize: 11),
+              ),
+              value: current.watercolorBorderColorEdges,
+              onChanged: (v) {
+                service.updateFilterParams(
+                  current.id,
+                  watercolorBorderColorEdges: v,
+                );
+                _updatePreview();
+              },
+            ),
+          ],
+        );
       case FilterKind.vignette:
         return Column(
           children: [
@@ -2657,47 +2719,9 @@ class _FilterPanelState extends State<FilterPanel> {
         : shownValue != null && shown != shown.roundToDouble()
         ? shown.toStringAsFixed(1)
         : shown.round().toString();
-    if (widget.bottomBar) {
-      // One row per setting along the bottom of the screen: the name and
-      // value (tap to type it) beside the slider and its −/+ buttons.
-      return Row(
-        children: [
-          SizedBox(
-            width: _kBottomLabelWidth,
-            // Room on the right for the value's pencil mark, which sits
-            // just past the text.
-            child: Padding(
-              padding: const EdgeInsets.only(right: 12),
-              child: EditableSliderValue(
-                text: '$label: $valueLabel',
-                style: const TextStyle(fontSize: 11),
-                value: safeValue,
-                min: min,
-                max: max,
-                isInt: decimals == 0,
-                onChanged: (v) {
-                  onChanged(v.toDouble());
-                  _updatePreview();
-                },
-              ),
-            ),
-          ),
-          Expanded(
-            child: SteppedSlider(
-              value: safeValue,
-              min: min,
-              max: max,
-              step: decimals > 0 ? 0.1 : 1,
-              compact: true,
-              onChanged: (v) {
-                onChanged(v);
-                _updatePreview();
-              },
-            ),
-          ),
-        ],
-      );
-    }
+    // The name and value (tap to type it) on a line of their own, along the
+    // bottom of the screen too, so the slider spans the whole row between
+    // its −/+ buttons (beside the name it was left a sliver on a phone).
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 2),
       child: Column(
@@ -2720,6 +2744,7 @@ class _FilterPanelState extends State<FilterPanel> {
             min: min,
             max: max,
             step: decimals > 0 ? 0.1 : 1,
+            compact: widget.bottomBar,
             onChanged: (v) {
               onChanged(v);
               _updatePreview();
@@ -2752,39 +2777,8 @@ class _FilterPanelState extends State<FilterPanel> {
     }
 
     final shown = normalize(value);
-    if (widget.bottomBar) {
-      return Row(
-        key: key,
-        children: [
-          SizedBox(
-            width: _kBottomLabelWidth,
-            child: Text(
-              '$label: $shown$suffix',
-              style: const TextStyle(fontSize: 11),
-            ),
-          ),
-          IconButton(
-            visualDensity: VisualDensity.compact,
-            icon: const Icon(Icons.remove_rounded, size: 18),
-            onPressed: wrap || shown > min ? () => change(shown - 1) : null,
-          ),
-          Expanded(
-            child: SteppedSlider(
-              value: shown.toDouble(),
-              min: min.toDouble(),
-              max: max.toDouble(),
-              step: 1,
-              onChanged: (v) => change(v.round()),
-            ),
-          ),
-          IconButton(
-            visualDensity: VisualDensity.compact,
-            icon: const Icon(Icons.add_rounded, size: 18),
-            onPressed: wrap || shown < max ? () => change(shown + 1) : null,
-          ),
-        ],
-      );
-    }
+    // The name on a line of its own, along the bottom of the screen too, so
+    // the slider spans the whole row between the −/+ buttons.
     return Padding(
       key: key,
       padding: const EdgeInsets.symmetric(vertical: 2),
@@ -2862,6 +2856,7 @@ class _FilterPanelState extends State<FilterPanel> {
       FilterKind.sharpen => Icons.filter_center_focus,
       FilterKind.unsharpMask => Icons.blur_off,
       FilterKind.vignette => Icons.vignette,
+      FilterKind.watercolorBorder => Icons.water_drop_outlined,
       FilterKind.noise => Icons.grain,
       FilterKind.retroAnime => Icons.movie_filter,
       FilterKind.crt => Icons.tv,

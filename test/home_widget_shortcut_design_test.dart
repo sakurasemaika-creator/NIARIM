@@ -192,10 +192,10 @@ void main() {
         );
       }
 
-      // 中央付近にアイコン・文字が、テーマの「メニュー背景色」
+      // 中央付近にアイコン・文字が、テーマの「ボタン内の文字・アイコン色」
       // （＝起動画面の導線ボタンと同じ前景色）で実際に描かれている。
       final fg = shortcutWidgetForeground(widgets, theme, kind);
-      expect(fg, theme.current.menuBgColor);
+      expect(fg, theme.current.buttonTextColor);
       var foregroundHits = 0;
       for (var y = px(margin + 30); y < px(margin + tile - 20); y++) {
         for (var x = px(margin + 20); x < px(margin + tile - 20); x++) {

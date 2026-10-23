@@ -138,7 +138,8 @@ class NiatraAssetBundle {
   }) async {
     if (data.raw[_versionKey] != _version) return;
 
-    final String? basePath = restoreBasePath ??
+    final String? basePath =
+        restoreBasePath ??
         (kIsWeb ? null : (await getApplicationDocumentsDirectory()).path);
     final importNonce = DateTime.now().microsecondsSinceEpoch;
 
@@ -158,8 +159,9 @@ class NiatraAssetBundle {
           id: id,
         );
         if (restoredImages.isNotEmpty) {
-          json['customImagePath'] =
-              restoredImages.length == 1 ? restoredImages.first : null;
+          json['customImagePath'] = restoredImages.length == 1
+              ? restoredImages.first
+              : null;
           json['customImagePaths'] = restoredImages;
         } else {
           json['customImagePath'] = await _restoreImage(

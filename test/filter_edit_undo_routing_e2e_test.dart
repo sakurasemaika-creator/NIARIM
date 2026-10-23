@@ -226,10 +226,11 @@ void main() {
 
     // ── One drag of a slider is one step, taken back by a two-finger tap ──
     final beforeDrag = sphere().sphereLightBlur;
+    // The setting's name sits on its own line above its slider.
     final blurRow = find
         .ancestor(
           of: find.textContaining(l10n.filterSphereLightBlur),
-          matching: find.byType(Row),
+          matching: find.byType(Column),
         )
         .first;
     final slider = find.descendant(of: blurRow, matching: find.byType(Slider));

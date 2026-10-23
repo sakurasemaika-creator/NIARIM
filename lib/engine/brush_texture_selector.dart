@@ -6,7 +6,7 @@ import '../models/brush.dart';
 /// selection stable until the stroke ends.
 class BrushTextureSelector {
   BrushTextureSelector({int? randomSeed})
-      : _random = randomSeed == null ? math.Random() : math.Random(randomSeed);
+    : _random = randomSeed == null ? math.Random() : math.Random(randomSeed);
 
   final math.Random _random;
   final Map<String, int> _sequentialCursorByBrush = <String, int>{};

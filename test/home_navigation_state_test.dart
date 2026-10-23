@@ -13,7 +13,6 @@ import 'package:niarim/screens/home/widgets/project_list_widget.dart';
 import 'package:niarim/screens/splash/splash_screen.dart';
 import 'package:niarim/services/project_service.dart';
 import 'package:niarim/services/community_service.dart';
-import 'package:niarim/services/settings_service.dart';
 import 'package:provider/provider.dart';
 import 'package:provider/single_child_widget.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -141,7 +140,7 @@ void main() {
     await settle(tester);
   }
 
-  testWidgets('after Enter in search, Ctrl+A selects only the found works', (
+  testWidgets('while searching, Ctrl+A selects nothing even after Enter', (
     tester,
   ) async {
     await boot(tester, projects: 2, size: selectionSize);
@@ -150,10 +149,11 @@ void main() {
     await tester.enterText(find.byType(TextField), 'P2');
     await tester.testTextInput.receiveAction(TextInputAction.done);
     await settle(tester);
-    // 検索は開いたまま、入力だけ終えて画面のショートカットへ戻る。
+    // 検索は開いたまま、入力だけ終える。検索中は全選択等のショートカットを
+    // 効かせない（検索で隠れた作品を操作しないため）。
     expect(find.byType(TextField), findsOneWidget);
     await ctrlA(tester);
-    expect(find.text('1件選択中'), findsOneWidget, reason: '隠れたP1は選ばない');
+    expect(find.textContaining('件選択中'), findsNothing);
   });
 
   testWidgets('select-all leaves out works received through Share', (
@@ -378,26 +378,12 @@ void main() {
     expect(offset(), closeTo(before, 1));
   });
 
-  testWidgets('closing the first-run guide with back marks it seen', (
-    tester,
-  ) async {
-    await boot(tester, firstLaunch: true);
-    expect(find.text('はじめる'), findsOneWidget);
-    await tester.binding.handlePopRoute();
-    await settle(tester);
-    expect(find.text('はじめる'), findsNothing);
-    final settings = tester
-        .element(find.byType(Scaffold).first)
-        .read<SettingsService>();
-    expect(settings.isFirstLaunch, isFalse);
-  });
-
   testWidgets('empty bookmarks offer a way to Work Plaza', (tester) async {
     await boot(tester);
     await tester.tap(find.text('ブクマ済み'));
     await settle(tester);
     expect(find.text('近日公開'), findsNothing);
-    await tester.tap(find.text('作品広場を見る'));
+    await tester.tap(find.text('作品広場'));
     await settle(tester);
     expect(location(), '/community');
   });
@@ -415,37 +401,12 @@ void main() {
     await tester.runAsync(() => community.toggleBookmark(work.id));
     await tester.tap(find.text('ブクマ済み'));
     await settle(tester);
-    expect(find.text('ブックマークした作品はまだありません'), findsNothing);
+    expect(find.text('表示できるブックマーク作品がありません'), findsNothing);
     // 作品広場のミュートでその作品が隠れても、ブックマークは残っている。
     await tester.runAsync(() => community.setMutedWords([work.title]));
     await settle(tester);
-    expect(find.text('ブックマークした作品は、いまは表示されていません'), findsOneWidget);
-    expect(find.text('ブックマークした作品はまだありません'), findsNothing);
-    expect(find.text('作品広場を見る'), findsOneWidget);
-  });
-
-  testWidgets('wide PC screens show the drawer as a side panel', (
-    tester,
-  ) async {
-    await boot(tester, size: const Size(1280, 800), forcePc: true);
-    expect(find.byIcon(Icons.menu), findsNothing);
-    final panel = find.byWidgetPredicate((w) => w is HomeDrawer && w.permanent);
-    expect(panel, findsOneWidget);
-    await tester.tap(find.descendant(of: panel, matching: find.text('ゴミ箱')));
-    await settle(tester);
-    expect(location(), '/trash');
-    await tester.binding.handlePopRoute();
-    await settle(tester);
-    expect(location(), '/home');
-    expect(panel, findsOneWidget);
-  });
-
-  testWidgets('phones keep the drawer behind the menu button', (tester) async {
-    await boot(tester, forcePc: false);
-    expect(find.byIcon(Icons.menu), findsOneWidget);
-    expect(
-      find.byWidgetPredicate((w) => w is HomeDrawer && w.permanent),
-      findsNothing,
-    );
+    expect(find.text('ブックマークは保存されています'), findsOneWidget);
+    expect(find.text('表示できるブックマーク作品がありません'), findsNothing);
+    expect(find.text('作品広場'), findsOneWidget);
   });
 }

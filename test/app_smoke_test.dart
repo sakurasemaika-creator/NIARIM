@@ -10,6 +10,7 @@ import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'helpers/first_use_tooltips.dart';
+import 'helpers/project_storage.dart';
 
 import 'package:niarim/app.dart';
 import 'package:niarim/app_bootstrap.dart';
@@ -45,16 +46,8 @@ import 'package:niarim/services/settings_service.dart';
 /// ファイル選択ダイアログを介さずに以降の分岐（何もしない）を検証できる。
 ///
 /// 【Task#128調査メモ】素材追加ボタン（file_picker経由）のonPressedは
-/// MaterialService.addMaterialの実ファイルI/O（readAsBytes/writeAsBytes）
-/// を伴うが、tester.tap()経由でトリガーされたウィジェットのonPressed内で
-/// 開始された本物のdart:io I/Oは、tester.runAsync()でtap自体を包んでも
-/// テスト関数の実行中には完了しない（本物のI/O完了がテスト関数return
-/// "後"にしか届かない）ことを実際に確認した。そのためタイムラインの
-/// クリップ移動・トリムハンドルのテストでは、file_picker経由のUI操作
-/// 自体は検証対象に含めず、ProjectService/MaterialServiceへテスト
-/// コードから直接（tester.runAsync経由で）クリップ相当のレイヤーを
-/// 登録する方式にした（テストコードから直接awaitする通常の非同期
-/// 呼び出しは、上記の制約とは無関係に問題なく完了する）。
+/// File selection is cancelled in these navigation tests. Timeline gesture
+/// cases prepare persisted clip fixtures through MaterialService instead.
 class _FakeFilePicker extends FilePicker {
   @override
   Future<FilePickerResult?> pickFiles({
@@ -110,6 +103,7 @@ class _FakeFilePicker extends FilePicker {
 /// ドキュメントコメントを参照）。
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
+  useTemporaryProjectStorage();
 
   setUp(() {
     // 初回吹き出しは画面全体に透明バリアを敷き、直後の操作を吸ってしまう。
@@ -124,25 +118,6 @@ void main() {
     appRouter.go('/');
     FilePicker.platform = _FakeFilePicker();
   });
-
-  /// path_providerのメソッドチャンネルをモックし、実際のファイル
-  /// システム上の一時ディレクトリを返すようにする。テスト実行環境には
-  /// path_providerの実装が登録されておらず未モック状態では
-  /// MissingPluginExceptionになるため、保存データ変更画面・作品一覧タブ
-  /// のように実際にディスクへ書き込む処理を経由しないと到達できない
-  /// 画面のテストでのみ使う（他のテストへ影響しないよう、テスト終了時に
-  /// 必ずモックを解除する）。
-  void mockPathProvider(WidgetTester tester) {
-    const channel = MethodChannel('plugins.flutter.io/path_provider');
-    final tempDir = Directory.systemTemp.createTempSync('niarim_smoke_test_');
-    TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
-        .setMockMethodCallHandler(channel, (call) async => tempDir.path);
-    addTearDown(() {
-      TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
-          .setMockMethodCallHandler(channel, null);
-      if (tempDir.existsSync()) tempDir.deleteSync(recursive: true);
-    });
-  }
 
   /// テスト用の描画領域を、既定の800x600（デスクトップブラウザ相当の
   /// 横長サイズ）からスマートフォン相当の縦長サイズへ広げる。既定サイズ
@@ -197,6 +172,19 @@ void main() {
       await tester.pump(const Duration(milliseconds: 300));
       await tester.pump(const Duration(milliseconds: 300));
       expect(tester.takeException(), isNull, reason: '初回起動ダイアログを閉じる際に例外');
+    }
+  }
+
+  Future<void> finishInitialSave(WidgetTester tester) async {
+    final deadline = DateTime.now().add(const Duration(seconds: 10));
+    while (find.byType(CanvasArea).evaluate().isEmpty) {
+      if (DateTime.now().isAfter(deadline)) {
+        fail('Initial project save did not finish before opening canvas');
+      }
+      await tester.runAsync(
+        () => Future<void>.delayed(const Duration(milliseconds: 20)),
+      );
+      await tester.pump(const Duration(milliseconds: 100));
     }
   }
 
@@ -635,6 +623,7 @@ void main() {
     final createFinder = find.text('作成');
     expect(createFinder, findsOneWidget);
     await tester.tap(createFinder);
+    await finishInitialSave(tester);
     await tester.pump(const Duration(milliseconds: 300));
     await tester.pump(const Duration(milliseconds: 500));
     expect(tester.takeException(), isNull, reason: 'キャンバスモードへの遷移で例外');
@@ -678,6 +667,7 @@ void main() {
     final createFinder = find.text('作成');
     expect(createFinder, findsOneWidget);
     await tester.tap(createFinder);
+    await finishInitialSave(tester);
     await tester.pump(const Duration(milliseconds: 300));
     await tester.pump(const Duration(milliseconds: 500));
     expect(tester.takeException(), isNull, reason: 'キャンバスモードへの遷移で例外');
@@ -722,6 +712,7 @@ void main() {
     final createFinder = find.text('作成');
     expect(createFinder, findsOneWidget);
     await tester.tap(createFinder);
+    await finishInitialSave(tester);
     await tester.pump(const Duration(milliseconds: 300));
     await tester.pump(const Duration(milliseconds: 500));
     expect(tester.takeException(), isNull, reason: 'キャンバスモードへの遷移で例外');
@@ -822,6 +813,7 @@ void main() {
     final createFinder = find.text('作成');
     expect(createFinder, findsOneWidget);
     await tester.tap(createFinder);
+    await finishInitialSave(tester);
     await tester.pump(const Duration(milliseconds: 300));
     await tester.pump(const Duration(milliseconds: 500));
     expect(tester.takeException(), isNull, reason: 'キャンバスモードへの遷移で例外');
@@ -877,6 +869,7 @@ void main() {
     final createFinder = find.text('作成');
     expect(createFinder, findsOneWidget);
     await tester.tap(createFinder);
+    await finishInitialSave(tester);
     await tester.pump(const Duration(milliseconds: 300));
     await tester.pump(const Duration(milliseconds: 500));
     expect(tester.takeException(), isNull, reason: 'キャンバスモードへの遷移で例外');
@@ -949,6 +942,7 @@ void main() {
     final createFinder = find.text('作成');
     expect(createFinder, findsOneWidget);
     await tester.tap(createFinder);
+    await finishInitialSave(tester);
     await tester.pump(const Duration(milliseconds: 300));
     await tester.pump(const Duration(milliseconds: 500));
     expect(tester.takeException(), isNull, reason: 'キャンバスモードへの遷移で例外');
@@ -1028,6 +1022,7 @@ void main() {
     final createFinder = find.text('作成');
     expect(createFinder, findsOneWidget);
     await tester.tap(createFinder);
+    await finishInitialSave(tester);
     await tester.pump(const Duration(milliseconds: 300));
     await tester.pump(const Duration(milliseconds: 500));
     expect(tester.takeException(), isNull, reason: 'キャンバスモードへの遷移で例外');
@@ -1100,6 +1095,7 @@ void main() {
     final createFinder = find.text('作成');
     expect(createFinder, findsOneWidget);
     await tester.tap(createFinder);
+    await finishInitialSave(tester);
     await tester.pump(const Duration(milliseconds: 300));
     await tester.pump(const Duration(milliseconds: 500));
     expect(tester.takeException(), isNull, reason: 'キャンバスモードへの遷移で例外');
@@ -1192,6 +1188,7 @@ void main() {
     final createFinder = find.text('作成');
     expect(createFinder, findsOneWidget);
     await tester.tap(createFinder);
+    await finishInitialSave(tester);
     await tester.pump(const Duration(milliseconds: 300));
     await tester.pump(const Duration(milliseconds: 500));
     expect(tester.takeException(), isNull, reason: 'キャンバスモード（PC/DeX）への遷移で例外');
@@ -1243,6 +1240,7 @@ void main() {
     final createFinder = find.text('作成');
     expect(createFinder, findsOneWidget);
     await tester.tap(createFinder);
+    await finishInitialSave(tester);
     await tester.pump(const Duration(milliseconds: 300));
     await tester.pump(const Duration(milliseconds: 500));
     expect(tester.takeException(), isNull, reason: 'キャンバスモードへの遷移で例外');
@@ -1299,7 +1297,6 @@ void main() {
       '（Task#128）', (WidgetTester tester) async {
     // MaterialService.addMaterialが素材保存先を解決するのに
     // path_providerを使うため必要（mockPathProvider参照）。
-    mockPathProvider(tester);
     await bootToHome(tester);
 
     final routerContext1 = tester.element(find.byType(Scaffold).first);
@@ -1310,6 +1307,7 @@ void main() {
     final createFinder = find.text('作成');
     expect(createFinder, findsOneWidget);
     await tester.tap(createFinder);
+    await finishInitialSave(tester);
     await tester.pump(const Duration(milliseconds: 300));
     await tester.pump(const Duration(milliseconds: 500));
     expect(tester.takeException(), isNull, reason: 'キャンバスモードへの遷移で例外');
@@ -1323,21 +1321,8 @@ void main() {
     final projectId = ps.projects.first.id;
     final sceneId = ps.scenesOf(projectId).first.id;
 
-    // タイムライン画面を開く前に、動画クリップを1件、直接
-    // ProjectService/MaterialServiceへ登録しておく。実際の「＋動画」
-    // ボタンはFilePicker→MaterialService.addMaterialという実ファイル
-    // I/O（readAsBytes/writeAsBytes）をボタンのonPressed内で行うが、
-    // flutter_testの仮想時計（fake async zone）はTimer/Future.delayed
-    // は制御できてもボタンのonPressed内で開始された本物のdart:io I/O
-    // の完了までは（tester.runAsyncでtap自体を包んでも）テスト本体の
-    // 実行中に driveできない、というテストハーネス側の制約に
-    // 実際に突き当たった（本物のI/O完了はテスト関数がreturnした
-    // "後"にしか届かなかった）。そのためこのテストでは「＋動画」
-    // ボタンのUI操作自体は検証対象に含めず、その代わりに
-    // 移動・トリムハンドルという独自ジェスチャー自体の検証に
-    // 専念する（ProjectService/MaterialServiceへの直接呼び出しは
-    // テストコードから直接awaitする通常の非同期呼び出しであり、
-    // 上記の制約とは無関係にtester.runAsyncで問題なく完了する）。
+    // 移動・トリム操作用の動画クリップを、画面を開く前に実保存する。
+    // FilePickerの選択操作はこのgesture caseの対象外。
     // _TimelineScreenState._loadClipsFromProjectはシーンの
     // LayerType.timelineVideo/timelineImageレイヤーから_videoClips
     // 等を再構築する仕組みのため、ここで登録したレイヤーは実際の
@@ -1474,6 +1459,7 @@ void main() {
     final createFinder = find.text('作成');
     expect(createFinder, findsOneWidget);
     await tester.tap(createFinder);
+    await finishInitialSave(tester);
     await tester.pump(const Duration(milliseconds: 300));
     await tester.pump(const Duration(milliseconds: 500));
     expect(tester.takeException(), isNull, reason: 'キャンバスモードへの遷移で例外');
@@ -2174,6 +2160,7 @@ void main() {
     final createFinder = find.text('作成');
     expect(createFinder, findsOneWidget);
     await tester.tap(createFinder);
+    await finishInitialSave(tester);
     await tester.pump(const Duration(milliseconds: 300));
     await tester.pump(const Duration(milliseconds: 500));
     expect(tester.takeException(), isNull, reason: 'キャンバスモードへの遷移で例外');
@@ -2336,7 +2323,6 @@ void main() {
 
   testWidgets('起動→ホーム→作品一覧タブ→フォルダ作成→フォルダ内画面（別ルート）を'
       '例外なく表示できる', (WidgetTester tester) async {
-    mockPathProvider(tester);
     await bootToHome(tester);
 
     // フォルダ一覧の表示条件（書き出し済みファイルが1件以上ある）を
@@ -2400,7 +2386,6 @@ void main() {
   testWidgets('起動→保存データ超過状態→保存方式変更（別ルート）を例外なく表示できる', (
     WidgetTester tester,
   ) async {
-    mockPathProvider(tester);
     await bootToHome(tester);
 
     final routerContext1 = tester.element(find.byType(Scaffold).first);
@@ -2412,6 +2397,7 @@ void main() {
     final createFinder = find.text('作成');
     expect(createFinder, findsOneWidget);
     await tester.tap(createFinder);
+    await finishInitialSave(tester);
     await tester.pump(const Duration(milliseconds: 300));
     await tester.pump(const Duration(milliseconds: 500));
     expect(tester.takeException(), isNull, reason: 'キャンバスモードへの遷移で例外');

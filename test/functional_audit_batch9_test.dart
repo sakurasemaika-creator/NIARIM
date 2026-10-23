@@ -168,7 +168,7 @@ void main() {
     tm.dispose();
   });
 
-  test('混色：青い下地へ赤50%混色ブラシを置くと中間色になり不透明度は維持', () async {
+  test('混色：青い下地へ赤50%の油彩風混色ブラシを置くと紫になり不透明度は維持', () async {
     final tm = TileManager(canvasWidth: 80, canvasHeight: 80);
     final tile = tm.getOrCreateTile('mix', 0, 0);
     for (var y = 16; y < 64; y++) {
@@ -182,7 +182,7 @@ void main() {
       ..currentBrush = _brush(
         size: 20,
         opacity: 100,
-        mixingMode: BrushMixingMode.simple,
+        mixingMode: BrushMixingMode.oil,
         mixingRate: 50,
       )
       ..currentColor = const ui.Color(0xFFDC2814);
@@ -193,9 +193,12 @@ void main() {
     await _save(image, '${out.path}/brush_mixing_50.png');
     final p = _pixel(await _rgba(image), 80, 40, 40);
     expect(p[3], 255);
-    expect(p[0], inInclusiveRange(115, 125));
-    expect(p[1], inInclusiveRange(45, 55));
-    expect(p[2], inInclusiveRange(115, 125));
+    // 油彩風混色は絵の具のように混ざる：赤と青の中間は紫（赤・青が強く、
+    // 緑が弱い）。RGBの単純平均（灰色寄りの120,50,120）ではない。
+    expect(p[0], greaterThan(90));
+    expect(p[2], greaterThan(90));
+    expect(p[1], lessThan(p[0] - 50));
+    expect(p[1], lessThan(p[2] - 50));
     image.dispose();
     tm.dispose();
   });
@@ -302,7 +305,7 @@ Brush _brush({
     mixing: PressureMixingOnSetting(
       enabled: mixingMode != BrushMixingMode.off,
       mode: mixingMode == BrushMixingMode.off
-          ? BrushMixingMode.simple
+          ? BrushMixingMode.oil
           : mixingMode,
       weakRate: mixingRate,
       strongRate: mixingRate,
@@ -312,7 +315,7 @@ Brush _brush({
     mixing: PressureMixingOffSetting(
       enabled: mixingMode != BrushMixingMode.off,
       mode: mixingMode == BrushMixingMode.off
-          ? BrushMixingMode.simple
+          ? BrushMixingMode.oil
           : mixingMode,
       rate: mixingRate,
     ),

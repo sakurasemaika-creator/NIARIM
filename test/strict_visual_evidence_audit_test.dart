@@ -78,7 +78,7 @@ void main() {
     );
   });
 
-  test('混色0/20/40/60/80/100: 同一背景と同一ストロークで色が設定率へ段階追従する', () async {
+  test('混色0/20/40/60/80/100: 同一背景と同一ストロークで色が設定率へ段階追従する（油彩風混色）', () async {
     final rates = [0, 20, 40, 60, 80, 100];
     final centers = <int, List<int>>{};
 
@@ -88,7 +88,7 @@ void main() {
       final engine = DrawingEngine(tileManager: tm)
         ..currentBrush = _brush(
           size: 24,
-          mixingMode: BrushMixingMode.simple,
+          mixingMode: BrushMixingMode.oil,
           mixingRate: rate,
         )
         ..currentColor = _red;
@@ -102,13 +102,26 @@ void main() {
       final rgba = await _rgba(image);
       final p = _pixel(rgba, _w, 128, 128);
       centers[rate] = p;
-      final t = rate / 100.0;
-      final expected = [
-        (_red.red8 * (1 - t) + _blue.red8 * t).round(),
-        (_red.green8 * (1 - t) + _blue.green8 * t).round(),
-        (_red.blue8 * (1 - t) + _blue.blue8 * t).round(),
-      ];
-      _near(p, expected, 'mix rate=$rate', tolerance: 5);
+      // 油彩風混色は絵の具のように混ざる（赤と青の間は紫を通る）ので、
+      // RGBの直線補間とは一致しない。端点は元の色のまま、途中は紫。
+      if (rate == 0) {
+        _near(
+          p,
+          [_red.red8, _red.green8, _red.blue8],
+          'mix rate=0',
+          tolerance: 1,
+        );
+      } else if (rate == 100) {
+        _near(
+          p,
+          [_blue.red8, _blue.green8, _blue.blue8],
+          'mix rate=100',
+          tolerance: 1,
+        );
+      } else {
+        expect(p[1], lessThan(p[0]), reason: '紫：緑は赤より弱い rate=$rate');
+        expect(p[1], lessThan(p[2]), reason: '紫：緑は青より弱い rate=$rate');
+      }
       await _save(
         image,
         '${out.path}/mix_${rate.toString().padLeft(3, '0')}.png',
@@ -125,19 +138,31 @@ void main() {
     }
   });
 
-  test('色伸び20/60/100: 高い率ほど既存色を強く拾い、ストローク進行で拾い量が変わる', () async {
-    final rates = [20, 60, 100];
-    final early = <int, List<int>>{};
-    final late = <int, List<int>>{};
+  test('色延び20/60/100: 青い絵の具を出た後も、色延びが長いほど拾った青を遠くまで運ぶ', () async {
+    final stretches = [20, 60, 100];
+    final near = <int, List<int>>{};
+    final far = <int, List<int>>{};
 
-    for (final rate in rates) {
+    for (final stretch in stretches) {
       final tm = TileManager(canvasWidth: _w, canvasHeight: _h);
-      _fillLayer(tm, _layer, _blue);
+      // 左側だけ青い絵の具、右側は何もない紙。
+      final rgba = Uint8List(_w * _h * 4);
+      for (var y = 0; y < _h; y++) {
+        for (var x = 0; x < 80; x++) {
+          final i = (y * _w + x) * 4;
+          rgba[i] = _blue.red8;
+          rgba[i + 1] = _blue.green8;
+          rgba[i + 2] = _blue.blue8;
+          rgba[i + 3] = 255;
+        }
+      }
+      tm.replaceLayerPixels(_layer, rgba);
       final engine = DrawingEngine(tileManager: tm)
         ..currentBrush = _brush(
           size: 20,
-          mixingMode: BrushMixingMode.bleed,
-          mixingRate: rate,
+          mixingMode: BrushMixingMode.oil,
+          mixingRate: 80,
+          mixingStretch: stretch,
         )
         ..currentColor = _red;
 
@@ -152,32 +177,32 @@ void main() {
       engine.endStroke();
 
       final image = await tm.compositeLayerToImage(_layer);
-      final rgba = await _rgba(image);
-      early[rate] = _pixel(rgba, _w, 48, 128);
-      late[rate] = _pixel(rgba, _w, 208, 128);
+      final rgba2 = await _rgba(image);
+      near[stretch] = _pixel(rgba2, _w, 104, 128);
+      far[stretch] = _pixel(rgba2, _w, 220, 128);
       await _save(
         image,
-        '${out.path}/color_extension_${rate.toString().padLeft(3, '0')}.png',
+        '${out.path}/color_stretch_${stretch.toString().padLeft(3, '0')}.png',
       );
       image.dispose();
       tm.dispose();
     }
 
-    expect(early[100]![2], greaterThan(early[60]![2]));
-    expect(early[60]![2], greaterThan(early[20]![2]));
-    expect(early[100]![0], lessThan(early[60]![0]));
-    expect(early[60]![0], lessThan(early[20]![0]));
-
-    for (final rate in rates) {
+    // 青を出た直後：色延びが長いほど青が多い。
+    expect(near[100]![2], greaterThan(near[60]![2]));
+    expect(near[60]![2], greaterThan(near[20]![2]));
+    expect(near[100]![0], lessThan(near[20]![0]));
+    for (final stretch in stretches) {
+      // 遠くでは新しい絵の具が戻り、赤へ近づく。
       expect(
-        late[rate]![0],
-        greaterThanOrEqualTo(early[rate]![0] - 3),
-        reason: '色伸びはストローク進行に伴い選択色へ戻る方向であること rate=$rate',
+        far[stretch]![0],
+        greaterThanOrEqualTo(near[stretch]![0] - 3),
+        reason: '色延びの先では選択色へ戻ること stretch=$stretch',
       );
       expect(
-        late[rate]![2],
-        lessThanOrEqualTo(early[rate]![2] + 3),
-        reason: '色伸びはストローク進行に伴い既存色の拾いが弱くなること rate=$rate',
+        far[stretch]![2],
+        lessThanOrEqualTo(near[stretch]![2] + 3),
+        reason: '色延びの先では拾った青が薄れること stretch=$stretch',
       );
     }
   });
@@ -316,6 +341,7 @@ Brush _brush({
   int stabilizationStrength = 0,
   BrushMixingMode mixingMode = BrushMixingMode.off,
   int mixingRate = 0,
+  int mixingStretch = 0,
 }) => Brush(
   id: 'strict',
   name: 'strict',
@@ -331,19 +357,21 @@ Brush _brush({
     mixing: PressureMixingOnSetting(
       enabled: mixingMode != BrushMixingMode.off,
       mode: mixingMode == BrushMixingMode.off
-          ? BrushMixingMode.simple
+          ? BrushMixingMode.oil
           : mixingMode,
       weakRate: mixingRate,
       strongRate: mixingRate,
+      stretch: mixingStretch,
     ),
   ),
   pressureOff: BrushPressureOffSettings.defaults.copyWith(
     mixing: PressureMixingOffSetting(
       enabled: mixingMode != BrushMixingMode.off,
       mode: mixingMode == BrushMixingMode.off
-          ? BrushMixingMode.simple
+          ? BrushMixingMode.oil
           : mixingMode,
       rate: mixingRate,
+      stretch: mixingStretch,
     ),
   ),
   fadeMode: FadeMode.off,

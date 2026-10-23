@@ -30,10 +30,22 @@ void main() {
   group('PixelColorMode.count', () {
     test('指定色数以内の共通PixelArt paletteへ減色される', () {
       final data = Uint8List.fromList([
-        12, 12, 12, 255,
-        80, 80, 80, 255,
-        170, 170, 170, 255,
-        245, 245, 245, 255,
+        12,
+        12,
+        12,
+        255,
+        80,
+        80,
+        80,
+        255,
+        170,
+        170,
+        170,
+        255,
+        245,
+        245,
+        245,
+        255,
       ]);
       final result = quantizeColors(
         data,

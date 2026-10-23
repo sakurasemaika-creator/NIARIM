@@ -25,6 +25,9 @@ void main() {
 
   testWidgets('セーブスロット全主要操作をSP/PCで実キャプチャ監査する', (tester) async {
     SharedPreferences.setMockInitialValues({
+      // Keep the complete five-slot layout visible in SP, independently
+      // of the host CPU core count. Other slot tests use the medium preset.
+      'quality_level': 'low',
       firstUseTooltipsSeenKey: kAllFirstUseTooltipKeys,
     });
     final tempDir = Directory.systemTemp.createTempSync(

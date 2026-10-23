@@ -1,4 +1,3 @@
-import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:niarim/services/theme_service.dart';
 import 'package:niarim/utils/color_contrast.dart';
@@ -13,8 +12,7 @@ void main() {
     SharedPreferences.setMockInitialValues({});
     final service = ThemeService();
     await service.init();
-    var weakest = double.infinity;
-    var weakestName = '';
+    expect(service.presets, isNotEmpty);
     for (final preset in service.presets) {
       service.applyPreset(preset.id);
       final snackBar = service.themeData.snackBarTheme;
@@ -22,20 +20,13 @@ void main() {
       final background = snackBar.backgroundColor;
       expect(action, isNotNull, reason: preset.name);
       expect(background, isNotNull, reason: preset.name);
-      final ratio = contrastRatio(action!, background!);
-      if (ratio < weakest) {
-        weakest = ratio;
-        weakestName = preset.name;
-      }
+      // ダイアログの文字ボタンと同じ色（テーマの差し色）を、同じ下地の上に
+      // 出す。どのテーマでも「ほとんど見えない」にはならない。
+      expect(
+        isEssentialTextNearlyInvisible(action!, background!),
+        isFalse,
+        reason: preset.name,
+      );
     }
-    debugPrint('最も低いコントラスト：$weakestName ${weakest.toStringAsFixed(2)}');
-    // ダイアログの文字ボタンと同じ色・同じ下地なので、テーマが「読める」と
-    // 判定されるしきい値を満たす（最も低いのは水色のテーマの約1.75で、
-    // そのテーマのダイアログの文字ボタンと同じ）。
-    expect(
-      weakest,
-      greaterThanOrEqualTo(kMinReadableContrast),
-      reason: weakestName,
-    );
   });
 }

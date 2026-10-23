@@ -111,7 +111,8 @@ void main() {
     expect(
       cross[3],
       inInclusiveRange(188, 196),
-      reason: 'only the intersection of two 50% strokes should become about 75% alpha',
+      reason:
+          'only the intersection of two 50% strokes should become about 75% alpha',
     );
     expect(cross[3], greaterThan(single[3]));
     tm.dispose();
@@ -156,7 +157,8 @@ void main() {
     expect(
       leaked,
       0,
-      reason: 'lasso fill must not paint any pixel whose center is outside the polygon',
+      reason:
+          'lasso fill must not paint any pixel whose center is outside the polygon',
     );
     expect(paintedInside, greaterThan(1000));
   });
@@ -386,9 +388,9 @@ void _fillLayer(
   }
 }
 
-Future<Uint8List> _rgba(ui.Image image) async =>
-    (await image.toByteData(format: ui.ImageByteFormat.rawRgba))!.buffer
-        .asUint8List();
+Future<Uint8List> _rgba(ui.Image image) async => (await image.toByteData(
+  format: ui.ImageByteFormat.rawRgba,
+))!.buffer.asUint8List();
 
 List<int> _pixel(List<int> rgba, int width, int x, int y) {
   final i = (y * width + x) * 4;
@@ -524,7 +526,10 @@ List<int> _blend(LayerBlendMode mode, ui.Color backdrop, ui.Color source) {
     case LayerBlendMode.exclusion:
       o = List.generate(3, (i) => cb[i] + cs[i] - 2 * cb[i] * cs[i]);
     case LayerBlendMode.divide:
-      o = List.generate(3, (i) => cs[i] <= 0 ? 1.0 : math.min(1.0, cb[i] / cs[i]));
+      o = List.generate(
+        3,
+        (i) => cs[i] <= 0 ? 1.0 : math.min(1.0, cb[i] / cs[i]),
+      );
   }
   return o.map((v) => (v.clamp(0.0, 1.0) * 255).round()).toList();
 }

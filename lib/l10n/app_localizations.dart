@@ -146,32 +146,50 @@ abstract class AppLocalizations {
   /// No description provided for @homeBookmarkedEmptyTitle.
   ///
   /// In ja, this message translates to:
-  /// **'ブックマークした作品はまだありません'**
+  /// **'表示できるブックマーク作品がありません'**
   String get homeBookmarkedEmptyTitle;
 
   /// No description provided for @homeBookmarkedEmptyBody.
   ///
   /// In ja, this message translates to:
-  /// **'作品広場でブックマークした作品が、ここに表示されます。'**
+  /// **'作品広場で気に入った公開作品をブックマークすると、ここに表示されます。'**
   String get homeBookmarkedEmptyBody;
 
   /// No description provided for @homeBookmarkedHiddenTitle.
   ///
   /// In ja, this message translates to:
-  /// **'ブックマークした作品は、いまは表示されていません'**
+  /// **'ブックマークは保存されています'**
   String get homeBookmarkedHiddenTitle;
 
   /// No description provided for @homeBookmarkedHiddenBody.
   ///
   /// In ja, this message translates to:
-  /// **'作品広場の表示フィルターで非表示になっているか、公開が終わっています。ブックマークは残っています。'**
+  /// **'表示フィルターや作品の公開状態により表示できない場合があります。作品広場で表示フィルターを確認できます。'**
   String get homeBookmarkedHiddenBody;
 
-  /// No description provided for @homeBookmarkedOpenPlaza.
+  /// No description provided for @homeBookmarkedLoading.
   ///
   /// In ja, this message translates to:
-  /// **'作品広場を見る'**
-  String get homeBookmarkedOpenPlaza;
+  /// **'ブックマークを読み込み中…'**
+  String get homeBookmarkedLoading;
+
+  /// No description provided for @homeBookmarkedLoadFailed.
+  ///
+  /// In ja, this message translates to:
+  /// **'ブックマークを読み込めませんでした'**
+  String get homeBookmarkedLoadFailed;
+
+  /// No description provided for @homeBookmarkedLoadPrompt.
+  ///
+  /// In ja, this message translates to:
+  /// **'保存したブックマークを読み込む'**
+  String get homeBookmarkedLoadPrompt;
+
+  /// No description provided for @homeBookmarkedSignInBody.
+  ///
+  /// In ja, this message translates to:
+  /// **'保存したブックマークを読み込むには、作品広場でGoogleアカウントを接続してください。'**
+  String get homeBookmarkedSignInBody;
 
   /// No description provided for @homeSearchHint.
   ///
@@ -226,18 +244,6 @@ abstract class AppLocalizations {
   /// In ja, this message translates to:
   /// **'全解除'**
   String get homeSelectionAllDeselect;
-
-  /// No description provided for @homeSelectionAddFavorite.
-  ///
-  /// In ja, this message translates to:
-  /// **'お気に入りに登録'**
-  String get homeSelectionAddFavorite;
-
-  /// No description provided for @homeSelectionRemoveFavorite.
-  ///
-  /// In ja, this message translates to:
-  /// **'お気に入りを解除'**
-  String get homeSelectionRemoveFavorite;
 
   /// No description provided for @homeSelectionCount.
   ///
@@ -2690,7 +2696,7 @@ abstract class AppLocalizations {
   /// No description provided for @helpColorMixingDesc.
   ///
   /// In ja, this message translates to:
-  /// **'ブラシで塗る際、ブラシの直下にすでにある色と、これから塗ろうとしている選択色を混ぜ合わせながら描画する機能です。水彩や油彩のように、既存の色に新しい色をなじませたい時に使います。'**
+  /// **'ブラシで塗る際、ブラシの直下にすでにある色と、これから塗ろうとしている選択色を混ぜ合わせながら描画する機能です。ブラシ設定の「混色モード」で、混ぜずに塗る「デジタル」、絵の具のように混ざり拾った色を引きずって伸ばす「油彩風混色」、透明な絵の具を重ねて乾くと縁に色が溜まる「水彩風混色」を選べます。'**
   String get helpColorMixingDesc;
 
   /// No description provided for @helpPressureCurveTitle.
@@ -2714,7 +2720,7 @@ abstract class AppLocalizations {
   /// No description provided for @helpTimelineDesc.
   ///
   /// In ja, this message translates to:
-  /// **'アニメーションの時間軸を管理する画面です。フレーム（静止画1コマ）を並べてパラパラ漫画のように再生することでアニメーションになります。画像・動画・音声などの素材トラック、共通レイヤートラック、カメラキーフレームも同じタイムライン上で管理します。'**
+  /// **'アニメーションの時間軸を管理する画面です。フレーム（静止画1コマ）を並べてパラパラ漫画のように再生することでアニメーションになります。テキスト・画像・動画・音声の素材トラック、共通レイヤートラック、カメラキーフレームも同じタイムライン上で管理します。テキスト・画像・動画とフレームのイラストの前後関係は「重なり順」で、シーン全体、または指定したフレームの範囲ごとに並べ替えられます。項目を長押しして複数選択し、まとめて動かすこともできます。'**
   String get helpTimelineDesc;
 
   /// No description provided for @helpSceneTitle.
@@ -2750,7 +2756,7 @@ abstract class AppLocalizations {
   /// No description provided for @helpEffectFilterDesc.
   ///
   /// In ja, this message translates to:
-  /// **'シーンやフレームに適用できる映像効果（ぼかし・色調補正・グロー・ドット絵等）です。手描きの絵そのものを変えずに、演出として画面全体の見た目を調整したい時に使います。描画フィルターのうち、トーンカーブ（プリセットと強さ）・レベル補正・シャープ・アンシャープマスク・周辺減光（色・範囲・濃さ）も、複数のフレームへ同じ効果を一度にかけられるよう演出フィルターに入っています。ドット絵は配色方式（色を指定しない・色を指定する・色数を指定する・パレットから選ぶ）も選べます。色を限るときは、1色では元の色から遠い所を、使える色のうち2〜3色を規則正しく並べて（ディザリング）元の色に近づけます。輪郭の所は混ぜずにくっきり保ちます。色数を指定すると、絵の多くを占める色から選ばれます。ディザリングはスイッチでオン・オフでき、オフにすると最も近い1色で塗ります。 演出フィルターは複数重ねて適用でき、その適用順はタイムライン上での並び順に従います。フィルター一覧をドラッグで並び替えると、実際に画面へ反映される順序も変わります。 フィルムの粒状感のようなノイズをフレームごとに変化させながら適用する演出フィルターです。強度・量（ノイズが乗る密度）・粒の大きさをスライダーで調整できます。同じフレームに戻ると同じ粒状になるため、スクラブ中にちらつかず、再生すると粒が動いて見えます。 画面に降る雨を表現する演出フィルターです。降り方（本数）・速さ・粒の大きさ・風向きの角度をスライダーで調整できます。各雨粒はフレームが進むごとに一定の速度で降り続けるため、自然な雨の動きになります。'**
+  /// **'シーンやフレームに適用できる映像効果（ぼかし・色調補正・グロー・ドット絵等）です。手描きの絵そのものを変えずに、演出として画面全体の見た目を調整したい時に使います。描画フィルターのうち、トーンカーブ（プリセットと強さ）・レベル補正・シャープ・アンシャープマスク・周辺減光（色・範囲・濃さ）・水彩境界も、複数のフレームへ同じ効果を一度にかけられるよう演出フィルターに入っています。ドット絵は配色方式（色を指定しない・色を指定する・色数を指定する・パレットから選ぶ）も選べます。色を限るときは、1色では元の色から遠い所を、使える色のうち2〜3色を規則正しく並べて（ディザリング）元の色に近づけます。輪郭の所は混ぜずにくっきり保ちます。色数を指定すると、絵の多くを占める色から選ばれます。ディザリングはスイッチでオン・オフでき、オフにすると最も近い1色で塗ります。 演出フィルターは複数重ねて適用でき、その適用順はタイムライン上での並び順に従います。フィルター一覧をドラッグで並び替えると、実際に画面へ反映される順序も変わります。 フィルムの粒状感のようなノイズをフレームごとに変化させながら適用する演出フィルターです。強度・量（ノイズが乗る密度）・粒の大きさをスライダーで調整できます。同じフレームに戻ると同じ粒状になるため、スクラブ中にちらつかず、再生すると粒が動いて見えます。 画面に降る雨を表現する演出フィルターです。降り方（本数）・速さ・粒の大きさ・風向きの角度をスライダーで調整できます。各雨粒はフレームが進むごとに一定の速度で降り続けるため、自然な雨の動きになります。'**
   String get helpEffectFilterDesc;
 
   /// No description provided for @helpEndCardTitle.
@@ -2918,13 +2924,13 @@ abstract class AppLocalizations {
   /// No description provided for @helpMaterialClipTitle.
   ///
   /// In ja, this message translates to:
-  /// **'素材クリップ（画像・動画・音声）'**
+  /// **'素材クリップ（テキスト・画像・動画・音声）'**
   String get helpMaterialClipTitle;
 
   /// No description provided for @helpMaterialClipDesc.
   ///
   /// In ja, this message translates to:
-  /// **'タイムラインの画像・動画・音声トラックに配置したクリップです。クリップ本体を長押しドラッグすると表示開始位置を移動でき、左右端のハンドルをドラッグすると使用範囲（長さ）を変更できます。タップすると開く詳細シートのコピーアイコンから複製、ゴミ箱アイコンから削除もできます。画像・動画は内部的にはレイヤーとして扱われており、音声はシーンに直接紐づくクリップとして管理されます。'**
+  /// **'タイムラインのテキスト・画像・動画・音声トラックに配置したクリップです。クリップ本体を長押しドラッグすると表示開始位置を移動でき、左右端のハンドルをドラッグすると使用範囲（長さ）を変更できます。同じ時間に重なる素材は自動で別の列に置かれます。テキスト・画像・動画のクリップをタップすると、プレビューの下に編集パネルが開きます。文字の内容・フォント・色・縁取り、位置・拡大縮小・X軸／Y軸／Z軸回転・不透明度（プレビュー上のドラッグでも動かせます。キーフレームを追加すると動きになります）、マスク（四角・楕円・ぼかし・反転）、置く列を変えられ、複製・削除もここから行えます。音声クリップは詳細シートで音量・フェードを調整します。'**
   String get helpMaterialClipDesc;
 
   /// No description provided for @helpGestureSettingsTitle.
@@ -3308,7 +3314,7 @@ abstract class AppLocalizations {
   /// No description provided for @helpDrawingFilterDesc.
   ///
   /// In ja, this message translates to:
-  /// **'選択中のレイヤーに直接適用するフィルターです（演出フィルターがタイムライン全体・シーン単位に適用されるのに対し、描画フィルターはレイヤー単位）。ガウスぼかし・レンズぼかし・アニメ風加工・トーンカーブ・レベル補正・縁取り・シャープ・アンシャープマスク・周辺減光・フィルムグレイン・レトロアニメ・ブラウン管・二値化・魚眼レンズ・色収差・眼鏡断層・ドット絵・質感変更フィルター・背景馴染ませ・墨溜まり・自動線画・プリズム・VHSノイズ・色反転・モザイク・ノイズ・球体陰影の27種類が用意されています。アニメ風加工は色数を減らし、隣どうしの色の差が「色の違いの閾値」以上の境目に「境界線の太さ」の線を暗い側へ引きます（線画の線は太りません）。プリズムは、レイヤーに描いた形ごとに虹の6色（赤・緑・水色・青・紫・赤）で塗ってぼかし、合成モードを「覆い焼き（リニア）」にします。暗い色の細い葉のような形を別のレイヤーに描いてから使うと、絵の上に淡い虹の光の筋が入ります（「ぼかし量」は一般的なガウスぼかしと同じ尺度）。球体陰影は、楕円の光の内側を光色、外側を影色で、描いてあるところにだけ重ねます（光の位置・大きさはキャンバス上でもドラッグできます）。縁取りは元のレイヤーを書き換えず、縁どった内容だけを新規レイヤーへ描画します。眼鏡断層フィルターは、パネルの「ペン」「バケツ」でキャンバスに塗った範囲（「消しゴム」で修正）だけに、強い眼鏡レンズのような局所的な歪みをかけられます（選択範囲・選択レイヤーがあればその範囲から始まります）。キャンバスで選択範囲を作ってあると、描画フィルターはその中だけに適用されます。ドット絵は配色方式（色を指定しない・色を指定する・色数を指定する・パレットから選ぶ）も選べます。色を限るときは、1色では元の色から遠い所を、使える色のうち2〜3色を規則正しく並べて（ディザリング）元の色に近づけます。輪郭の所は混ぜずにくっきり保ちます。色数を指定すると、絵の多くを占める色から選ばれます。ディザリングはスイッチでオン・オフでき、オフにすると最も近い1色で塗ります。大きさは「ブロックサイズを指定」（1〜100の100段階）と「ドット数を指定」（横・縦のドット数のスライダー。左端で1、右端でキャンバスの画素数）を切り替えられ、縦横比を保ったまま横と縦が一緒に変わります。どちらの指定も連動します。どちらも正方形のドットのまま半透明の縁を作りません。 自動線画では適用前の一時Vector制御点を直接編集できます。点をドラッグするとその点だけを移動します。「適用」の右の「制御点追加」を選んで線をタップすると制御点を追加、「制御点削除」を選んで点をタップすると削除できます（どちらも選んでいないときに点をタップすると、確認してから削除します）。編集した形状がそのまま適用結果になり、制御点の移動・追加・削除もフィルター編集の元に戻す・やり直すで1つずつ戻せます。 トーンカーブは曲線の何もない所をタップすると点を追加、点をドラッグで移動、長押しで削除でき、R・G・Bの色ごとのカーブはRGBのカーブの後にかかります。レベル補正もR・G・Bごとに調整でき、ガンマで中間の明るさを変えられます。縁取りは「内側への食い込み」で元の輪郭の内側まで縁を広げられ、縁取りの新規レイヤーは元のレイヤーの直下に作られます。色収差は、ずれをX（横）・Y（縦）・Z（中心から外向き）へどれだけ振り分けるかを指定できます。魚眼レンズの中心と半径は、キャンバス上の＋と円のつまみをドラッグしても変えられます。周辺減光はキャンバス全体の四隅をぼんやり暗くします（描いていない透明な所にも影がかかります）。「範囲」で四隅から中心へ向かってどこまで暗くするか、「濃さ」で四隅の暗さを調整できます。眼鏡断層は本物の度の強い眼鏡のように、レンズ越しの景色をレンズの中心へ向かって一様に縮め（負の値・近視用）、または広げ（正の値・遠視用）、レンズの縁で輪郭が段になってずれます。墨溜まりは線が「最大角度」以下で出会う所（初期値の90°では鋭角と直角：V字・交差の狭い側・T字・四角い角など）の角の内側にだけ溜まり、それより広い角には溜まりません。出会う点で線の縁から「中央の太さ」、そこから「範囲」の端に向かってまっすぐ細くなって、端で0pxになり、なめらかにとがって消えます。「中央の太さ」を大きくしても、両側の墨溜まりの端どうしを結ぶ直線より外へはふくらまず、いちばん太くても中央は平らになります。範囲の途中で線が途切れているときは、その線ではそこを終点として0pxまで細くなります（線ごとに長さが変わります）。そのときも2つの墨溜まりは角の真ん中で、どちらの線からも同じ太さで出会います（長い方の線の墨溜まりは、そこから範囲の端まで細くなります）。自動線画は下描きの線の中心をなぞって細い線にします。近くに並んだ線も間が少しでも空いていれば2本のまま描き、線の中の小さな白い点（かすれ）だけを埋めます。2本の線が近づいてくっついている所は、真ん中に1本の線を引くのではなく、下描きと同じように2本の線が徐々に近づいて合わさります。線が交差したり重なったりしている所も、下描きのとおりにそれぞれの線がそのまま続きます（交点で折れ曲がったり、重なった2本が1本に融けたりしません）。斜めに浅く交わる線もまっすぐ交差したまま続き、触れ合うだけの線（頭に沿って描いた髪の輪郭など）は、それぞれ自分の側を通る別々の線のままです。目のような点は塗りつぶした点のまま描きます。「対象ラフ線幅」より短い枝分かれは描きません。「入り抜き」はスイッチでオン・オフでき、オフにすると線の端まで同じ太さになります。背景馴染ませは、背景の光と影を合成モード「ハードライト」で重ねます（影の色は黒や灰色ではなく、背景の影の部分の色を暗くしたもの）。周りの色は「オーバーレイ」で全体に重ねて色の方向を合わせ、下からの照り返しや周りからの反射は「スクリーン」で、ネオンのような強い有色光は「加算・発光」で輪郭に入れます。「明るさ・色みを背景に合わせる」は、描いた色が背景より明るすぎたり鮮やかすぎたりする所を背景の範囲へ寄せ、暗い所・中間・明るい所をそれぞれ背景の同じ明るさの色みへ寄せます（線画の黒はそのまま）。「ぼかし具合」は色を拾う背景をぼかす量です。'**
+  /// **'選択中のレイヤーに直接適用するフィルターです（演出フィルターがタイムライン全体・シーン単位に適用されるのに対し、描画フィルターはレイヤー単位）。ガウスぼかし・レンズぼかし・アニメ風加工・トーンカーブ・レベル補正・縁取り・シャープ・アンシャープマスク・周辺減光・フィルムグレイン・レトロアニメ・ブラウン管・二値化・魚眼レンズ・色収差・眼鏡断層・ドット絵・質感変更フィルター・背景馴染ませ・墨溜まり・自動線画・プリズム・VHSノイズ・色反転・モザイク・ノイズ・球体陰影・水彩境界の28種類が用意されています。水彩境界は、作業レイヤーの塗った所の縁に色を溜め、内側を透けさせて、乾いた水彩のようにします（「色の境目にも付ける」で、隣り合う色の境目にも縁が付きます）。アニメ風加工は色数を減らし、隣どうしの色の差が「色の違いの閾値」以上の境目に「境界線の太さ」の線を暗い側へ引きます（線画の線は太りません）。プリズムは、レイヤーに描いた形ごとに虹の6色（赤・緑・水色・青・紫・赤）で塗ってぼかし、合成モードを「覆い焼き（リニア）」にします。暗い色の細い葉のような形を別のレイヤーに描いてから使うと、絵の上に淡い虹の光の筋が入ります（「ぼかし量」は一般的なガウスぼかしと同じ尺度）。球体陰影は、楕円の光の内側を光色、外側を影色で、描いてあるところにだけ重ねます（光の位置・大きさはキャンバス上でもドラッグできます）。縁取りは元のレイヤーを書き換えず、縁どった内容だけを新規レイヤーへ描画します。眼鏡断層フィルターは、パネルの「ペン」「バケツ」でキャンバスに塗った範囲（「消しゴム」で修正）だけに、強い眼鏡レンズのような局所的な歪みをかけられます（選択範囲・選択レイヤーがあればその範囲から始まります）。キャンバスで選択範囲を作ってあると、描画フィルターはその中だけに適用されます。ドット絵は配色方式（色を指定しない・色を指定する・色数を指定する・パレットから選ぶ）も選べます。色を限るときは、1色では元の色から遠い所を、使える色のうち2〜3色を規則正しく並べて（ディザリング）元の色に近づけます。輪郭の所は混ぜずにくっきり保ちます。色数を指定すると、絵の多くを占める色から選ばれます。ディザリングはスイッチでオン・オフでき、オフにすると最も近い1色で塗ります。大きさは「ブロックサイズを指定」（1〜100の100段階）と「ドット数を指定」（横・縦のドット数のスライダー。左端で1、右端でキャンバスの画素数）を切り替えられ、縦横比を保ったまま横と縦が一緒に変わります。どちらの指定も連動します。どちらも正方形のドットのまま半透明の縁を作りません。 自動線画では適用前の一時Vector制御点を直接編集できます。点をドラッグするとその点だけを移動します。「適用」の右の「制御点追加」を選んで線をタップすると制御点を追加、「制御点削除」を選んで点をタップすると削除できます（どちらも選んでいないときに点をタップすると、確認してから削除します）。編集した形状がそのまま適用結果になり、制御点の移動・追加・削除もフィルター編集の元に戻す・やり直すで1つずつ戻せます。 トーンカーブは曲線の何もない所をタップすると点を追加、点をドラッグで移動、長押しで削除でき、R・G・Bの色ごとのカーブはRGBのカーブの後にかかります。レベル補正もR・G・Bごとに調整でき、ガンマで中間の明るさを変えられます。縁取りは「内側への食い込み」で元の輪郭の内側まで縁を広げられ、縁取りの新規レイヤーは元のレイヤーの直下に作られます。色収差は、ずれをX（横）・Y（縦）・Z（中心から外向き）へどれだけ振り分けるかを指定できます。魚眼レンズの中心と半径は、キャンバス上の＋と円のつまみをドラッグしても変えられます。周辺減光はキャンバス全体の四隅をぼんやり暗くします（描いていない透明な所にも影がかかります）。「範囲」で四隅から中心へ向かってどこまで暗くするか、「濃さ」で四隅の暗さを調整できます。眼鏡断層は本物の度の強い眼鏡のように、レンズ越しの景色をレンズの中心へ向かって一様に縮め（負の値・近視用）、または広げ（正の値・遠視用）、レンズの縁で輪郭が段になってずれます。墨溜まりは線が「最大角度」以下で出会う所（初期値の90°では鋭角と直角：V字・交差の狭い側・T字・四角い角など）の角の内側にだけ溜まり、それより広い角には溜まりません。出会う点で線の縁から「中央の太さ」、そこから「範囲」の端に向かってまっすぐ細くなって、端で0pxになり、なめらかにとがって消えます。「中央の太さ」を大きくしても、両側の墨溜まりの端どうしを結ぶ直線より外へはふくらまず、いちばん太くても中央は平らになります。範囲の途中で線が途切れているときは、その線ではそこを終点として0pxまで細くなります（線ごとに長さが変わります）。そのときも2つの墨溜まりは角の真ん中で、どちらの線からも同じ太さで出会います（長い方の線の墨溜まりは、そこから範囲の端まで細くなります）。自動線画は下描きの線の中心をなぞって細い線にします。近くに並んだ線も間が少しでも空いていれば2本のまま描き、線の中の小さな白い点（かすれ）だけを埋めます。2本の線が近づいてくっついている所は、真ん中に1本の線を引くのではなく、下描きと同じように2本の線が徐々に近づいて合わさります。線が交差したり重なったりしている所も、下描きのとおりにそれぞれの線がそのまま続きます（交点で折れ曲がったり、重なった2本が1本に融けたりしません）。斜めに浅く交わる線もまっすぐ交差したまま続き、触れ合うだけの線（頭に沿って描いた髪の輪郭など）は、それぞれ自分の側を通る別々の線のままです。目のような点は塗りつぶした点のまま描きます。「対象ラフ線幅」より短い枝分かれは描きません。「入り抜き」はスイッチでオン・オフでき、オフにすると線の端まで同じ太さになります。背景馴染ませは、背景の光と影を合成モード「ハードライト」で重ねます（影の色は黒や灰色ではなく、背景の影の部分の色を暗くしたもの）。周りの色は「オーバーレイ」で全体に重ねて色の方向を合わせ、下からの照り返しや周りからの反射は「スクリーン」で、ネオンのような強い有色光は「加算・発光」で輪郭に入れます。「明るさ・色みを背景に合わせる」は、描いた色が背景より明るすぎたり鮮やかすぎたりする所を背景の範囲へ寄せ、暗い所・中間・明るい所をそれぞれ背景の同じ明るさの色みへ寄せます（線画の黒はそのまま）。「ぼかし具合」は色を拾う背景をぼかす量です。'**
   String get helpDrawingFilterDesc;
 
   /// No description provided for @helpLayerKeyframeTitle.
@@ -4790,8 +4796,26 @@ abstract class AppLocalizations {
   /// No description provided for @themeColorText.
   ///
   /// In ja, this message translates to:
-  /// **'文字色'**
+  /// **'本文・通常の文字色'**
   String get themeColorText;
+
+  /// No description provided for @themeColorButtonText.
+  ///
+  /// In ja, this message translates to:
+  /// **'ボタン内の文字・アイコン色'**
+  String get themeColorButtonText;
+
+  /// No description provided for @themeColorMenuText.
+  ///
+  /// In ja, this message translates to:
+  /// **'メニュー・上部バーの文字色'**
+  String get themeColorMenuText;
+
+  /// No description provided for @themeColorSelectionText.
+  ///
+  /// In ja, this message translates to:
+  /// **'選択中の文字・アイコン色'**
+  String get themeColorSelectionText;
 
   /// No description provided for @themeColorPanelBg.
   ///
@@ -4817,17 +4841,17 @@ abstract class AppLocalizations {
   /// **'更新マーク色'**
   String get themeColorUpdateMark;
 
-  /// テーマ設定で文字色と背景色が近すぎるときのエラーダイアログの見出し
+  /// テーマのリセット前に表示する確認ダイアログ
   ///
   /// In ja, this message translates to:
-  /// **'この色では文字が読めなくなります'**
-  String get themeContrastErrorTitle;
+  /// **'テーマカラーをリセットしますか？'**
+  String get themeResetConfirmTitle;
 
-  /// 同エラーの本文
+  /// テーマのリセットを確定するボタン
   ///
   /// In ja, this message translates to:
-  /// **'文字の色と背景の色が近すぎるため、画面の文字がほとんど見えなくなります。設定画面自体も読めなくなり元に戻せなくなるので、この組み合わせは保存できません。どちらかの明るさを変えてください。'**
-  String get themeContrastErrorBody;
+  /// **'リセット'**
+  String get themeResetConfirmAction;
 
   /// 読めないテーマになったとき起動画面に出る固定色のリセットボタン
   ///
@@ -5720,26 +5744,86 @@ abstract class AppLocalizations {
   /// No description provided for @brushSettingsMixingTitle.
   ///
   /// In ja, this message translates to:
-  /// **'混色'**
+  /// **'混色モード'**
   String get brushSettingsMixingTitle;
 
   /// No description provided for @brushSettingsMixingOff.
   ///
   /// In ja, this message translates to:
-  /// **'OFF'**
+  /// **'デジタル'**
   String get brushSettingsMixingOff;
 
-  /// No description provided for @brushSettingsMixingSimple.
+  /// No description provided for @brushSettingsMixingOil.
   ///
   /// In ja, this message translates to:
-  /// **'簡易混色'**
-  String get brushSettingsMixingSimple;
+  /// **'油彩風混色'**
+  String get brushSettingsMixingOil;
+
+  /// No description provided for @brushSettingsMixingWatercolor.
+  ///
+  /// In ja, this message translates to:
+  /// **'水彩風混色'**
+  String get brushSettingsMixingWatercolor;
+
+  /// No description provided for @brushSettingsMixingBrightnessCorrection.
+  ///
+  /// In ja, this message translates to:
+  /// **'輝度の補正'**
+  String get brushSettingsMixingBrightnessCorrection;
+
+  /// No description provided for @brushSettingsMixingAmount.
+  ///
+  /// In ja, this message translates to:
+  /// **'混色度合い'**
+  String get brushSettingsMixingAmount;
+
+  /// No description provided for @brushSettingsMixingStretch.
+  ///
+  /// In ja, this message translates to:
+  /// **'色延び'**
+  String get brushSettingsMixingStretch;
+
+  /// No description provided for @brushSettingsMixingWater.
+  ///
+  /// In ja, this message translates to:
+  /// **'水分量'**
+  String get brushSettingsMixingWater;
+
+  /// No description provided for @brushSettingsMixingPigment.
+  ///
+  /// In ja, this message translates to:
+  /// **'絵具量'**
+  String get brushSettingsMixingPigment;
 
   /// No description provided for @brushSettingsMixingBleed.
   ///
   /// In ja, this message translates to:
   /// **'にじみ'**
   String get brushSettingsMixingBleed;
+
+  /// No description provided for @brushSettingsMixingTexture.
+  ///
+  /// In ja, this message translates to:
+  /// **'むら'**
+  String get brushSettingsMixingTexture;
+
+  /// No description provided for @brushSettingsMixingSoftEdge.
+  ///
+  /// In ja, this message translates to:
+  /// **'境界のぼかし'**
+  String get brushSettingsMixingSoftEdge;
+
+  /// No description provided for @brushSettingsMixingOilHint.
+  ///
+  /// In ja, this message translates to:
+  /// **'下の色と絵の具のように混ざり、拾った色を引きずって伸ばします。'**
+  String get brushSettingsMixingOilHint;
+
+  /// No description provided for @brushSettingsMixingWatercolorHint.
+  ///
+  /// In ja, this message translates to:
+  /// **'透明な絵の具を重ねて塗ります。ペンを離すと乾いて、筆の外へ少しにじみ、縁に色が溜まります。'**
+  String get brushSettingsMixingWatercolorHint;
 
   /// No description provided for @projectDetailNotFoundTitle.
   ///
@@ -5818,6 +5902,18 @@ abstract class AppLocalizations {
   /// In ja, this message translates to:
   /// **'共有'**
   String get projectDetailShareQuickAction;
+
+  /// No description provided for @projectDetailFavoriteRegistered.
+  ///
+  /// In ja, this message translates to:
+  /// **'お気に入り\n登録済み'**
+  String get projectDetailFavoriteRegistered;
+
+  /// No description provided for @projectDetailFavoriteUnregistered.
+  ///
+  /// In ja, this message translates to:
+  /// **'お気に入り\n未登録'**
+  String get projectDetailFavoriteUnregistered;
 
   /// No description provided for @projectDetailInfoSectionTitle.
   ///
@@ -8621,6 +8717,354 @@ abstract class AppLocalizations {
   /// **'＋ウォーターマーク'**
   String get timelineAddWatermarkTooltip;
 
+  /// No description provided for @timelineStackScopeRange.
+  ///
+  /// In ja, this message translates to:
+  /// **'フレーム範囲'**
+  String get timelineStackScopeRange;
+
+  /// No description provided for @timelineStackTargetLabel.
+  ///
+  /// In ja, this message translates to:
+  /// **'この重なり順を使う所'**
+  String get timelineStackTargetLabel;
+
+  /// No description provided for @timelineStackTargetScenes.
+  ///
+  /// In ja, this message translates to:
+  /// **'シーン複数選択'**
+  String get timelineStackTargetScenes;
+
+  /// No description provided for @timelineStackTargetAllFrames.
+  ///
+  /// In ja, this message translates to:
+  /// **'全てのフレーム'**
+  String get timelineStackTargetAllFrames;
+
+  /// No description provided for @timelineStackScenesHint.
+  ///
+  /// In ja, this message translates to:
+  /// **'選んだシーンの全てのフレームに同じ順番を使います。並べ替えると、選んだシーンすべてがこの順番になります。'**
+  String get timelineStackScenesHint;
+
+  /// No description provided for @timelineStackAllFramesHint.
+  ///
+  /// In ja, this message translates to:
+  /// **'全てのシーンの全てのフレームに同じ順番を使います。並べ替えると、全てのシーンがこの順番になります。'**
+  String get timelineStackAllFramesHint;
+
+  /// No description provided for @timelineStackRangesTakePriority.
+  ///
+  /// In ja, this message translates to:
+  /// **'フレーム範囲を指定したフレームは、その範囲の順番が優先されます。'**
+  String get timelineStackRangesTakePriority;
+
+  /// No description provided for @timelineStackRangeLabel.
+  ///
+  /// In ja, this message translates to:
+  /// **'F{start}〜F{end}'**
+  String timelineStackRangeLabel(int start, int end);
+
+  /// No description provided for @timelineStackRangeAdd.
+  ///
+  /// In ja, this message translates to:
+  /// **'F{n}に範囲を追加'**
+  String timelineStackRangeAdd(int n);
+
+  /// No description provided for @timelineStackRangeHint.
+  ///
+  /// In ja, this message translates to:
+  /// **'指定した範囲のフレームだけ、ここで並べた順番になります。範囲の外はシーン全体の順番です。'**
+  String get timelineStackRangeHint;
+
+  /// No description provided for @timelineStackRangeEmpty.
+  ///
+  /// In ja, this message translates to:
+  /// **'範囲がありません。上のボタンで今のフレームに作れます。'**
+  String get timelineStackRangeEmpty;
+
+  /// No description provided for @timelineStackRangeOrderHint.
+  ///
+  /// In ja, this message translates to:
+  /// **'{range}の重なり順（上ほど手前）。つまみのドラッグか矢印で並べ替えます。'**
+  String timelineStackRangeOrderHint(String range);
+
+  /// No description provided for @timelineStackRangeDelete.
+  ///
+  /// In ja, this message translates to:
+  /// **'この範囲を削除'**
+  String get timelineStackRangeDelete;
+
+  /// No description provided for @timelineAddMaterialTooltip.
+  ///
+  /// In ja, this message translates to:
+  /// **'素材を追加'**
+  String get timelineAddMaterialTooltip;
+
+  /// No description provided for @timelineMaterialRowLabel.
+  ///
+  /// In ja, this message translates to:
+  /// **'置く列'**
+  String get timelineMaterialRowLabel;
+
+  /// No description provided for @timelineMaterialNewRow.
+  ///
+  /// In ja, this message translates to:
+  /// **'新しい列'**
+  String get timelineMaterialNewRow;
+
+  /// No description provided for @timelineAddTextTooltip.
+  ///
+  /// In ja, this message translates to:
+  /// **'＋テキスト'**
+  String get timelineAddTextTooltip;
+
+  /// No description provided for @timelineAddImageTooltip.
+  ///
+  /// In ja, this message translates to:
+  /// **'＋画像'**
+  String get timelineAddImageTooltip;
+
+  /// No description provided for @timelineStackOrderTitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'重なり順'**
+  String get timelineStackOrderTitle;
+
+  /// No description provided for @timelineMaterialText.
+  ///
+  /// In ja, this message translates to:
+  /// **'テキスト'**
+  String get timelineMaterialText;
+
+  /// No description provided for @timelineAddTextDialogTitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'テキストを追加'**
+  String get timelineAddTextDialogTitle;
+
+  /// No description provided for @timelineEditSectionText.
+  ///
+  /// In ja, this message translates to:
+  /// **'文字'**
+  String get timelineEditSectionText;
+
+  /// No description provided for @timelineEditSectionTransform.
+  ///
+  /// In ja, this message translates to:
+  /// **'配置'**
+  String get timelineEditSectionTransform;
+
+  /// No description provided for @timelineEditSectionMask.
+  ///
+  /// In ja, this message translates to:
+  /// **'マスク'**
+  String get timelineEditSectionMask;
+
+  /// No description provided for @timelineTransformRotationX.
+  ///
+  /// In ja, this message translates to:
+  /// **'X軸回転'**
+  String get timelineTransformRotationX;
+
+  /// No description provided for @timelineTransformRotationY.
+  ///
+  /// In ja, this message translates to:
+  /// **'Y軸回転'**
+  String get timelineTransformRotationY;
+
+  /// No description provided for @timelineTransformRotationZ.
+  ///
+  /// In ja, this message translates to:
+  /// **'Z軸回転'**
+  String get timelineTransformRotationZ;
+
+  /// No description provided for @timelineTransformReset.
+  ///
+  /// In ja, this message translates to:
+  /// **'配置をリセット'**
+  String get timelineTransformReset;
+
+  /// No description provided for @timelineKeyframeAddHere.
+  ///
+  /// In ja, this message translates to:
+  /// **'F{n}にキーフレームを追加'**
+  String timelineKeyframeAddHere(int n);
+
+  /// No description provided for @timelineKeyframeRemoveHere.
+  ///
+  /// In ja, this message translates to:
+  /// **'F{n}のキーフレームを削除'**
+  String timelineKeyframeRemoveHere(int n);
+
+  /// No description provided for @timelineKeyframeWholeHint.
+  ///
+  /// In ja, this message translates to:
+  /// **'素材全体に同じ配置が使われます。動かすときは、フレームを移動してキーフレームを追加してください。'**
+  String get timelineKeyframeWholeHint;
+
+  /// No description provided for @timelineKeyframeAnimHint.
+  ///
+  /// In ja, this message translates to:
+  /// **'キーフレーム{count}個：F{n}の値として記録し、間は自動でつなぎます。'**
+  String timelineKeyframeAnimHint(int count, int n);
+
+  /// No description provided for @timelineGizmoHint.
+  ///
+  /// In ja, this message translates to:
+  /// **'プレビュー上でドラッグすると移動、角の丸で拡大縮小、上の丸で回転できます。2本指でも操作できます。'**
+  String get timelineGizmoHint;
+
+  /// No description provided for @timelineMaterialOutOfRange.
+  ///
+  /// In ja, this message translates to:
+  /// **'このフレームには表示されていません（F{start}〜F{end}に表示）'**
+  String timelineMaterialOutOfRange(int start, int end);
+
+  /// No description provided for @timelineMaskNone.
+  ///
+  /// In ja, this message translates to:
+  /// **'なし'**
+  String get timelineMaskNone;
+
+  /// No description provided for @timelineMaskRectangle.
+  ///
+  /// In ja, this message translates to:
+  /// **'四角'**
+  String get timelineMaskRectangle;
+
+  /// No description provided for @timelineMaskEllipse.
+  ///
+  /// In ja, this message translates to:
+  /// **'楕円'**
+  String get timelineMaskEllipse;
+
+  /// No description provided for @timelineMaskCenterX.
+  ///
+  /// In ja, this message translates to:
+  /// **'中心 X'**
+  String get timelineMaskCenterX;
+
+  /// No description provided for @timelineMaskCenterY.
+  ///
+  /// In ja, this message translates to:
+  /// **'中心 Y'**
+  String get timelineMaskCenterY;
+
+  /// No description provided for @timelineMaskWidth.
+  ///
+  /// In ja, this message translates to:
+  /// **'幅'**
+  String get timelineMaskWidth;
+
+  /// No description provided for @timelineMaskHeight.
+  ///
+  /// In ja, this message translates to:
+  /// **'高さ'**
+  String get timelineMaskHeight;
+
+  /// No description provided for @timelineMaskFeather.
+  ///
+  /// In ja, this message translates to:
+  /// **'ぼかし'**
+  String get timelineMaskFeather;
+
+  /// No description provided for @timelineMaskInvert.
+  ///
+  /// In ja, this message translates to:
+  /// **'反転（内側を隠す）'**
+  String get timelineMaskInvert;
+
+  /// No description provided for @timelineMaskHint.
+  ///
+  /// In ja, this message translates to:
+  /// **'マスクの内側だけを見せます。反転すると内側を隠します。'**
+  String get timelineMaskHint;
+
+  /// No description provided for @timelineStackOrderHint.
+  ///
+  /// In ja, this message translates to:
+  /// **'上にあるものほど手前に表示されます。つまみをドラッグするか矢印で並べ替えます。'**
+  String get timelineStackOrderHint;
+
+  /// No description provided for @timelineStackScopeScene.
+  ///
+  /// In ja, this message translates to:
+  /// **'現在のシーン全体'**
+  String get timelineStackScopeScene;
+
+  /// No description provided for @timelineStackFrameUnit.
+  ///
+  /// In ja, this message translates to:
+  /// **'フレーム（イラスト）'**
+  String get timelineStackFrameUnit;
+
+  /// No description provided for @timelineStackResetScene.
+  ///
+  /// In ja, this message translates to:
+  /// **'既定の順番に戻す'**
+  String get timelineStackResetScene;
+
+  /// No description provided for @timelineStackFrameMaskTitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'フレーム（イラスト）のマスク'**
+  String get timelineStackFrameMaskTitle;
+
+  /// No description provided for @timelineStackFrameMaskHint.
+  ///
+  /// In ja, this message translates to:
+  /// **'描いた絵だけを切り抜きます。テキスト・画像・動画には効きません。キャンバスで描いている間は隠れません。'**
+  String get timelineStackFrameMaskHint;
+
+  /// No description provided for @timelineStackMoveUp.
+  ///
+  /// In ja, this message translates to:
+  /// **'手前へ'**
+  String get timelineStackMoveUp;
+
+  /// No description provided for @timelineStackMoveDown.
+  ///
+  /// In ja, this message translates to:
+  /// **'奥へ'**
+  String get timelineStackMoveDown;
+
+  /// No description provided for @timelineStackSelectedCount.
+  ///
+  /// In ja, this message translates to:
+  /// **'{count}件選択中'**
+  String timelineStackSelectedCount(int count);
+
+  /// No description provided for @timelineStackBringToFront.
+  ///
+  /// In ja, this message translates to:
+  /// **'最前面へ'**
+  String get timelineStackBringToFront;
+
+  /// No description provided for @timelineStackSendToBack.
+  ///
+  /// In ja, this message translates to:
+  /// **'最背面へ'**
+  String get timelineStackSendToBack;
+
+  /// No description provided for @timelineStackDeselectAll.
+  ///
+  /// In ja, this message translates to:
+  /// **'全解除'**
+  String get timelineStackDeselectAll;
+
+  /// No description provided for @timelineStackSelectAll.
+  ///
+  /// In ja, this message translates to:
+  /// **'全選択'**
+  String get timelineStackSelectAll;
+
+  /// No description provided for @timelineStackMultiSelectHint.
+  ///
+  /// In ja, this message translates to:
+  /// **'項目を長押しすると複数選択できます。選んだ項目は矢印・ドラッグ・下のボタンでまとめて動かせます。'**
+  String get timelineStackMultiSelectHint;
+
   /// No description provided for @timelineWatermarkNotRegisteredTitle.
   ///
   /// In ja, this message translates to:
@@ -8768,7 +9212,7 @@ abstract class AppLocalizations {
   /// No description provided for @timelineSceneDeleteConfirmBody.
   ///
   /// In ja, this message translates to:
-  /// **'シーン内の全フレーム・共通レイヤー・動画素材・画像素材・ウォーターマークを含むすべてのデータが削除されます。'**
+  /// **'シーン内の全フレーム・共通レイヤー・テキスト素材・動画素材・画像素材・ウォーターマークを含むすべてのデータが削除されます。'**
   String get timelineSceneDeleteConfirmBody;
 
   /// No description provided for @timelineSceneMultiDeleteConfirmTitle.
@@ -11891,12 +12335,6 @@ abstract class AppLocalizations {
   /// **'強'**
   String get brushSettingsStrongPressureLabel;
 
-  /// No description provided for @brushSettingsValueLabel.
-  ///
-  /// In ja, this message translates to:
-  /// **'値'**
-  String get brushSettingsValueLabel;
-
   /// No description provided for @helpCustomAutomationTitle.
   ///
   /// In ja, this message translates to:
@@ -13121,6 +13559,48 @@ abstract class AppLocalizations {
   /// **'キャンバス上の＋で光を動かし、丸いつまみで大きさを変えられます。影と光は描いてあるところにだけ付きます。'**
   String get filterSphereCanvasHint;
 
+  /// No description provided for @filterNameWatercolorBorder.
+  ///
+  /// In ja, this message translates to:
+  /// **'水彩境界'**
+  String get filterNameWatercolorBorder;
+
+  /// No description provided for @filterWatercolorBorderRange.
+  ///
+  /// In ja, this message translates to:
+  /// **'範囲'**
+  String get filterWatercolorBorderRange;
+
+  /// No description provided for @filterWatercolorBorderBlur.
+  ///
+  /// In ja, this message translates to:
+  /// **'ぼかし幅'**
+  String get filterWatercolorBorderBlur;
+
+  /// No description provided for @filterWatercolorBorderOpacity.
+  ///
+  /// In ja, this message translates to:
+  /// **'透明度の影響'**
+  String get filterWatercolorBorderOpacity;
+
+  /// No description provided for @filterWatercolorBorderDarken.
+  ///
+  /// In ja, this message translates to:
+  /// **'縁の濃さ'**
+  String get filterWatercolorBorderDarken;
+
+  /// No description provided for @filterWatercolorBorderColorEdges.
+  ///
+  /// In ja, this message translates to:
+  /// **'色の境目にも付ける'**
+  String get filterWatercolorBorderColorEdges;
+
+  /// No description provided for @filterWatercolorBorderHint.
+  ///
+  /// In ja, this message translates to:
+  /// **'塗った所の縁に色が溜まり、内側が透けて、乾いた水彩のようになります（作業レイヤーに直接描きます）。範囲：縁から内側へどこまで濃くするか。縁の濃さ：縁に溜まる色の濃さ。透明度の影響：内側をどれだけ透けさせるか。ぼかし幅：濃さの移り変わりのなめらかさ。'**
+  String get filterWatercolorBorderHint;
+
   /// No description provided for @filterFisheyeCanvasHint.
   ///
   /// In ja, this message translates to:
@@ -13318,6 +13798,30 @@ abstract class AppLocalizations {
   /// In ja, this message translates to:
   /// **'作業中のデータは保持されています。前の画面へ戻ってからもう一度お試しください。以下の内容を開発元へお知らせいただけると原因の特定に役立ちます。'**
   String get errorViewBody;
+
+  /// No description provided for @homeWorksLoadFailed.
+  ///
+  /// In ja, this message translates to:
+  /// **'作品一覧を読み込めませんでした'**
+  String get homeWorksLoadFailed;
+
+  /// No description provided for @newProjectCreating.
+  ///
+  /// In ja, this message translates to:
+  /// **'作成しています…'**
+  String get newProjectCreating;
+
+  /// No description provided for @newProjectCreateFailed.
+  ///
+  /// In ja, this message translates to:
+  /// **'プロジェクトを保存できませんでした。空き容量や保存先を確認して、もう一度お試しください。'**
+  String get newProjectCreateFailed;
+
+  /// No description provided for @communityCreatorLabel.
+  ///
+  /// In ja, this message translates to:
+  /// **'作者'**
+  String get communityCreatorLabel;
 }
 
 class _AppLocalizationsDelegate

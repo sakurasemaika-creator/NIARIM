@@ -6,11 +6,14 @@
   "homeTabTrash": "Trash",
   "homeTabWorks": "Works",
   "homeTabBookmarked": "Bookmarked",
-  "homeBookmarkedEmptyTitle": "No bookmarked works yet",
-  "homeBookmarkedEmptyBody": "Works you bookmark in Work Plaza appear here.",
-  "homeBookmarkedHiddenTitle": "Your bookmarked works are hidden right now",
-  "homeBookmarkedHiddenBody": "They are hidden by the Work Plaza display filters, or are no longer public. Your bookmarks are still kept.",
-  "homeBookmarkedOpenPlaza": "Open Work Plaza",
+  "homeBookmarkedEmptyTitle": "No bookmarked works to display",
+  "homeBookmarkedEmptyBody": "Bookmark public works you like in Work Plaza to find them here.",
+  "homeBookmarkedHiddenTitle": "Your bookmarks are still saved",
+  "homeBookmarkedHiddenBody": "Display filters or changes to a work’s public availability may hide it. Review your display filters in Work Plaza.",
+  "homeBookmarkedLoading": "Loading your bookmarks…",
+  "homeBookmarkedLoadFailed": "Couldn’t load your bookmarks",
+  "homeBookmarkedLoadPrompt": "Load your saved bookmarks",
+  "homeBookmarkedSignInBody": "Connect your Google account in Work Plaza to load saved bookmarks.",
   "homeSearchHint": "Search by project name",
   "homeBackToSplashTooltip": "Back to launch screen",
   "homeFavoritesOnly": "Favorites",
@@ -20,8 +23,6 @@
   "commonShowExplanation": "Show explanation",
   "homeSelectionAllSelect": "Select All",
   "homeSelectionAllDeselect": "Deselect All",
-  "homeSelectionAddFavorite": "Add to favorites",
-  "homeSelectionRemoveFavorite": "Remove from favorites",
   "homeSelectionCount": "{count} selected",
   "homeMoveToTrash": "Move to Trash",
   "homeMoveToTrashConfirm": "Move {count} item(s) to trash?",
@@ -482,17 +483,17 @@
   "helpStrokeDecayTitle": "Stroke Decay",
   "helpStrokeDecayDesc": "Similar to fade, but closer to the effect of \"ink running out\" — the color fades or gets patchy the longer you keep drawing. It reproduces the texture of a brush or marker running dry as you keep using it.",
   "helpColorMixingTitle": "Color Mixing",
-  "helpColorMixingDesc": "While painting with a brush, blends the color already under the brush with the color you're about to apply. Use it when you want new colors to blend into existing ones, like watercolor or oil paint.",
+  "helpColorMixingDesc": "While painting with a brush, blends the color already under the brush with the color you're about to apply. In the brush settings' mixing mode, choose Digital to paint without mixing, Oil-style mixing to mix like paint and drag the picked-up color along, or Watercolor-style mixing to layer transparent washes that gather color at their edges as they dry.",
   "helpPressureCurveTitle": "Pressure Curve",
   "helpPressureCurveDesc": "A feature in the pen input settings that lets you freely adjust, via a graph, the relationship between actual pen pressure and how it affects brush size and opacity. Whether you want thick lines even with light pressure, or the opposite — needing firm pressure to get thick lines — you can finely customize the feel to match your habits. You can try drawing right there to check the effect after changing the settings.",
   "helpTimelineTitle": "Timeline",
-  "helpTimelineDesc": "The screen for managing the time axis of your animation. Arranging frames (individual still images) and playing them back like a flipbook creates the animation. Image, video, and audio material tracks, common layer tracks, and camera keyframes are all managed on the same timeline.",
+  "helpTimelineDesc": "The screen for managing the time axis of your animation. Arranging frames (individual still images) and playing them back like a flipbook creates the animation. Text, image, video and audio material tracks, common layer tracks and camera keyframes are all managed on the same timeline. Which of the texts, images, videos and the frame's drawing is in front is set in \"Stacking order\", for the whole scene or for a range of frames. You can also long-press an item to select several and move them together.",
   "helpSceneTitle": "Scene",
   "helpSceneDesc": "Splits the inside of a single project (one video) into scenes (cuts) to manage them separately. While folders organize things at the project level, scenes represent scene changes within a single video. In the timeline’s scene tab you can add, duplicate, delete, rename, and reorder scenes. Switching to multi-select mode lets you move, duplicate, or delete multiple scenes at once.",
   "helpCameraKeyframeTitle": "Camera Keyframe",
   "helpCameraKeyframeDesc": "Records the camera's position, zoom level, and rotation at a specific point on the timeline. Since the values are automatically interpolated smoothly between keyframes, you can easily add camera work such as panning or zooming in/out.",
   "helpEffectFilterTitle": "Effect Filter",
-  "helpEffectFilterDesc": "A visual effect (blur, color correction, glow, pixel art, etc.) you can apply to a scene or frame. Use it when you want to adjust the overall look of the screen as a directorial touch, without changing the hand-drawn artwork itself. Of the drawing filters, Tone Curve (a preset and its strength), Levels, Sharpen, Unsharp Mask and Vignette (color, range and density) are effect filters too, so the same effect can be applied to many frames at once. Pixel art also lets you choose a color mode (no limit, specify colors, specify color count, or choose from a palette). When colors are limited, areas no single allowed color comes close to are made of two or three allowed colors in a regular pattern (dithering) that stays in place from frame to frame; edges stay crisp. Dithering can be switched off, to fill each dot with the nearest single color. Multiple effect filters can be stacked, and they're applied in the order they appear on the timeline. Dragging to reorder the filter list also changes the order they're actually applied on screen. An effect filter that applies film-grain-like noise, changing it frame by frame. Strength, amount (how dense the noise is), and grain size can all be adjusted with sliders. Returning to the same frame reproduces the same grain (no flicker while scrubbing), while playback makes the grain appear to move. An effect filter that renders rain falling across the screen. Intensity (drop count), speed, drop size, and wind angle can all be adjusted with sliders. Each drop keeps falling at a steady speed as the frame advances, giving natural-looking rain motion.",
+  "helpEffectFilterDesc": "A visual effect (blur, color correction, glow, pixel art, etc.) you can apply to a scene or frame. Use it when you want to adjust the overall look of the screen as a directorial touch, without changing the hand-drawn artwork itself. Of the drawing filters, Tone Curve (a preset and its strength), Levels, Sharpen, Unsharp Mask, Vignette (color, range and density) and Watercolor Edge are effect filters too, so the same effect can be applied to many frames at once. Pixel art also lets you choose a color mode (no limit, specify colors, specify color count, or choose from a palette). When colors are limited, areas no single allowed color comes close to are made of two or three allowed colors in a regular pattern (dithering) that stays in place from frame to frame; edges stay crisp. Dithering can be switched off, to fill each dot with the nearest single color. Multiple effect filters can be stacked, and they're applied in the order they appear on the timeline. Dragging to reorder the filter list also changes the order they're actually applied on screen. An effect filter that applies film-grain-like noise, changing it frame by frame. Strength, amount (how dense the noise is), and grain size can all be adjusted with sliders. Returning to the same frame reproduces the same grain (no flicker while scrubbing), while playback makes the grain appear to move. An effect filter that renders rain falling across the screen. Intensity (drop count), speed, drop size, and wind angle can all be adjusted with sliders. Each drop keeps falling at a steady speed as the frame advances, giving natural-looking rain motion.",
   "helpEndCardTitle": "End Card (End Logo)",
   "helpEndCardDesc": "A short video (about 5 seconds) with the NIARIM logo, automatically added to the end of the main content when exporting a video. The free version cannot hide or remove it, but Premium members can turn it on/off, change its length, or replace it.",
   "helpAutoSaveTitle": "Auto Save",
@@ -520,8 +521,8 @@
   "helpPremiumEntryDesc": "Premium membership extends the 90-second video length limit of the free version up to 2 hours and lets you remove the end card (app logo) automatically added at the end of every video. Ads are also hidden, and you gain access to the watermark, tone curve, and level correction features.",
   "helpPerformanceSettingsTitle": "Performance Settings",
   "helpPerformanceSettingsDesc": "Choose from low, medium, or high quality presets based on your device's capability, or configure each item individually (custom). In addition to save method, performance, onion skin, and tilt detection, settings that affect app size and how heavy it runs — such as undo history length and automatic trash deletion — are also gathered here.",
-  "helpMaterialClipTitle": "Material clips (image / video / audio)",
-  "helpMaterialClipDesc": "Clips placed on the timeline's image, video, and audio tracks. Long-press-drag a clip's body to move its start position, or drag the handles at either end to change how much of it is used. Tap a clip to open its detail sheet, where the copy icon duplicates it and the trash icon deletes it. Image and video clips are internally handled as layers, while audio clips are managed as clips attached directly to the scene.",
+  "helpMaterialClipTitle": "Material clips (text / image / video / audio)",
+  "helpMaterialClipDesc": "Clips placed on the timeline's text, image, video and audio tracks. Long-press-drag a clip's body to move its start position, or drag the handles at either end to change how much of it is used. Materials shown at the same time go on rows of their own automatically. Tapping a text, image or video clip opens its edit panel below the preview: the text, font, colour and outline; the position, scale, X/Y/Z-axis rotation and opacity (you can also drag it on the preview, and adding keyframes makes it move); its mask (rectangle or ellipse, feathered, inverted); and the row it sits on. It can be duplicated or deleted there too. An audio clip's volume and fades are set in its detail sheet.",
   "helpGestureSettingsTitle": "Gesture settings",
   "helpGestureSettingsDesc": "Lets you assign actions — undo/redo, frame move, eyedropper, and more — to a two-finger tap, three-finger tap, two-finger swipe, or long press. Pen buttons (on supported styluses) can also be assigned separately. Handy for triggering frequent actions with one touch instead of switching tools.",
   "helpBucketDetailSettingsTitle": "Bucket fill detail settings",
@@ -585,7 +586,7 @@
   "helpExportScreenTitle": "Export screen",
   "helpExportScreenDesc": "Shows progress while exporting a video or image, and lets you cancel partway through. How long it takes depends on your device's performance.",
   "helpDrawingFilterTitle": "Draw filters",
-  "helpDrawingFilterDesc": "Filters applied directly to the selected layer (as opposed to effect filters, which apply across the whole timeline or a scene, draw filters work per layer). The 27 included filters are Gaussian Blur, Lens Blur, Anime Style, Tone Curve, Levels, Outline, Sharpen, Unsharp Mask, Vignette, Film Grain, Retro Anime, CRT, Threshold, Fisheye Lens, Chromatic Aberration, Lens Distortion, Pixel Art, Texture, Background Blend, Ink Pool, Auto Line Art, Prism, VHS Noise, Invert colors, Mosaic, Noise, and Sphere Shading. Anime Style reduces the colors and draws a line of the \"Border width\" on the darker side of every border where neighboring colors differ by at least the \"Color difference threshold\" (line art doesn't get thicker). Prism paints each shape on the layer with the six rainbow colors (red, green, cyan, blue, purple, red), blurs it and sets the layer to Linear Dodge. Draw small, slender leaf-like shapes in a dark color on their own layer first, and you get soft rainbow streaks of light over your picture (Blur amount is measured like an ordinary Gaussian blur). Sphere Shading lays a light color inside an elliptical light and a shadow color outside it, only where something is drawn (the light can also be dragged on the canvas). Outline does not rewrite the original layer — it draws just the outlined result onto a new layer. Lens Distortion applies a localized warp, like looking through a strong eyeglass lens, only to the area painted on the canvas with the panel's \"Pen\" and \"Bucket\" (corrected with \"Eraser\"; it starts from the selection or Selection layer if there is one). When the canvas has a selection, drawing filters apply only inside it. Pixel Art also lets you choose a color mode (no limit, specify colors, specify color count, or choose from a palette). When colors are limited, areas no single allowed color comes close to are made of two or three allowed colors laid out in a regular pattern (dithering) that looks closer to the original; edges stay crisp. With a color count, the colors are taken from what most of the picture is made of. Dithering can be switched off, to fill each dot with the nearest single color. Its size can be set with the block size (100 steps, 1 to 100) or with sliders for the dots across and down (1 at the left end, the canvas size at the right); moving one moves the other, keeping the picture’s proportions, and the two ways of setting it stay in step. Either way the dots stay square, with no semi-transparent edge. Auto Line Art lets you edit temporary vector control points before applying the filter. Drag a point to move only that point. Choose \"Add control point\" next to Apply and tap a line to add a point, or choose \"Delete control point\" and tap a point to delete it (with neither chosen, tapping a point asks before deleting it). The edited geometry is used directly for the applied result, and moving, adding or deleting points can be undone and redone one at a time with the filter editor's Undo and Redo. On the Tone Curve, tap an empty spot to add a point, drag a point to move it and long-press it to delete it; the R, G and B curves apply after the RGB curve. Levels can also be set for R, G and B on their own, and Gamma changes the midtones. The Outline's \"Reach inside\" widens the edge into the original shape, and the outline's new layer is placed right below the original layer. Chromatic Aberration lets you share the shift between X (sideways), Y (up and down) and Z (outward from the centre). The Fisheye's centre and radius can also be dragged on the canvas, with the + and the knob on the circle. Vignette softly darkens the four corners of the whole canvas (transparent, undrawn areas get the shadow too). \"Range\" sets how far in from the corners it reaches, and \"Density\" how dark the corners get. Lens Distortion works like real strong glasses: what is seen through the lens shrinks evenly towards the lens centre (negative values, for short sight) or grows (positive values, for long sight), and the outline steps out of line at the lens rim. Ink Pooling collects only inside corners where lines meet at the \"Max angle\" or less (at the default 90°, acute and right angles: a V, the narrow side of a crossing, a T-junction, a square corner), never in wider ones: at the meeting point it is the \"Center width\" beyond the line's edge, and it thins in a straight slope to nothing, a smooth point, at the end of the \"Range\" (however large the \"Center width\", it never bulges past the straight line between the two pools' ends: at its widest the middle is flat); where a line ends sooner, the pool along that line thins to nothing where the line ends, so each line can have its own length, and the two pools still meet in the middle of the corner, as thick from either line (the longer line's pool thins on from there to the end of the range). Auto line art traces the centre of the rough lines and draws them thin. Lines running close together stay separate lines as long as any gap shows between them; only tiny specks of paper inside a stroke are filled. Where two lines run into each other, they come together gradually as in the rough, rather than turning into one line down the middle. Where lines cross or lie over each other, each line carries on as drawn in the rough (it does not bend into the crossing, and two overlapping lines do not melt into one). Lines crossing at a shallow slant carry straight on through the crossing, and lines that only touch (such as a hair outline drawn along the head) stay separate lines, each on its own side. Dots such as eyes stay filled dots. Branches shorter than the \"Rough line width\" are left out. \"Taper the ends\" can be switched on or off; when off, lines keep the same width right to their ends. Background Blend lays the background’s light and shadow over the picture in the \"Hard Light\" blend mode (the shadow colour is not black or grey but the colour of the background’s own shadows, darkened). The surroundings’ colour goes over the whole picture in \"Overlay\" to set its overall colour, light bouncing up from below and reflected from around goes on in \"Screen\", and a strong coloured light such as neon glows along the outline in \"Addition (Glow)\". \"Match the background’s tones\" brings colours brighter or more vivid than the background back into its range, and gives the dark, middle and light tones the colour cast of the background’s tones of the same brightness (black line art stays as it is). \"Blur amount\" is how much the background is blurred before its colours are taken.",
+  "helpDrawingFilterDesc": "Filters applied directly to the selected layer (as opposed to effect filters, which apply across the whole timeline or a scene, draw filters work per layer). The 28 included filters are Gaussian Blur, Lens Blur, Anime Style, Tone Curve, Levels, Outline, Sharpen, Unsharp Mask, Vignette, Film Grain, Retro Anime, CRT, Threshold, Fisheye Lens, Chromatic Aberration, Lens Distortion, Pixel Art, Texture, Background Blend, Ink Pool, Auto Line Art, Prism, VHS Noise, Invert colors, Mosaic, Noise, Sphere Shading, and Watercolor Edge. Watercolor Edge gathers color along the edges of what is painted on the working layer and makes the inside sheer, like dried watercolor (with \"Also at color borders\", borders between neighboring colors get an edge too). Anime Style reduces the colors and draws a line of the \"Border width\" on the darker side of every border where neighboring colors differ by at least the \"Color difference threshold\" (line art doesn't get thicker). Prism paints each shape on the layer with the six rainbow colors (red, green, cyan, blue, purple, red), blurs it and sets the layer to Linear Dodge. Draw small, slender leaf-like shapes in a dark color on their own layer first, and you get soft rainbow streaks of light over your picture (Blur amount is measured like an ordinary Gaussian blur). Sphere Shading lays a light color inside an elliptical light and a shadow color outside it, only where something is drawn (the light can also be dragged on the canvas). Outline does not rewrite the original layer — it draws just the outlined result onto a new layer. Lens Distortion applies a localized warp, like looking through a strong eyeglass lens, only to the area painted on the canvas with the panel's \"Pen\" and \"Bucket\" (corrected with \"Eraser\"; it starts from the selection or Selection layer if there is one). When the canvas has a selection, drawing filters apply only inside it. Pixel Art also lets you choose a color mode (no limit, specify colors, specify color count, or choose from a palette). When colors are limited, areas no single allowed color comes close to are made of two or three allowed colors laid out in a regular pattern (dithering) that looks closer to the original; edges stay crisp. With a color count, the colors are taken from what most of the picture is made of. Dithering can be switched off, to fill each dot with the nearest single color. Its size can be set with the block size (100 steps, 1 to 100) or with sliders for the dots across and down (1 at the left end, the canvas size at the right); moving one moves the other, keeping the picture’s proportions, and the two ways of setting it stay in step. Either way the dots stay square, with no semi-transparent edge. Auto Line Art lets you edit temporary vector control points before applying the filter. Drag a point to move only that point. Choose \"Add control point\" next to Apply and tap a line to add a point, or choose \"Delete control point\" and tap a point to delete it (with neither chosen, tapping a point asks before deleting it). The edited geometry is used directly for the applied result, and moving, adding or deleting points can be undone and redone one at a time with the filter editor's Undo and Redo. On the Tone Curve, tap an empty spot to add a point, drag a point to move it and long-press it to delete it; the R, G and B curves apply after the RGB curve. Levels can also be set for R, G and B on their own, and Gamma changes the midtones. The Outline's \"Reach inside\" widens the edge into the original shape, and the outline's new layer is placed right below the original layer. Chromatic Aberration lets you share the shift between X (sideways), Y (up and down) and Z (outward from the centre). The Fisheye's centre and radius can also be dragged on the canvas, with the + and the knob on the circle. Vignette softly darkens the four corners of the whole canvas (transparent, undrawn areas get the shadow too). \"Range\" sets how far in from the corners it reaches, and \"Density\" how dark the corners get. Lens Distortion works like real strong glasses: what is seen through the lens shrinks evenly towards the lens centre (negative values, for short sight) or grows (positive values, for long sight), and the outline steps out of line at the lens rim. Ink Pooling collects only inside corners where lines meet at the \"Max angle\" or less (at the default 90°, acute and right angles: a V, the narrow side of a crossing, a T-junction, a square corner), never in wider ones: at the meeting point it is the \"Center width\" beyond the line's edge, and it thins in a straight slope to nothing, a smooth point, at the end of the \"Range\" (however large the \"Center width\", it never bulges past the straight line between the two pools' ends: at its widest the middle is flat); where a line ends sooner, the pool along that line thins to nothing where the line ends, so each line can have its own length, and the two pools still meet in the middle of the corner, as thick from either line (the longer line's pool thins on from there to the end of the range). Auto line art traces the centre of the rough lines and draws them thin. Lines running close together stay separate lines as long as any gap shows between them; only tiny specks of paper inside a stroke are filled. Where two lines run into each other, they come together gradually as in the rough, rather than turning into one line down the middle. Where lines cross or lie over each other, each line carries on as drawn in the rough (it does not bend into the crossing, and two overlapping lines do not melt into one). Lines crossing at a shallow slant carry straight on through the crossing, and lines that only touch (such as a hair outline drawn along the head) stay separate lines, each on its own side. Dots such as eyes stay filled dots. Branches shorter than the \"Rough line width\" are left out. \"Taper the ends\" can be switched on or off; when off, lines keep the same width right to their ends. Background Blend lays the background’s light and shadow over the picture in the \"Hard Light\" blend mode (the shadow colour is not black or grey but the colour of the background’s own shadows, darkened). The surroundings’ colour goes over the whole picture in \"Overlay\" to set its overall colour, light bouncing up from below and reflected from around goes on in \"Screen\", and a strong coloured light such as neon glows along the outline in \"Addition (Glow)\". \"Match the background’s tones\" brings colours brighter or more vivid than the background back into its range, and gives the dark, middle and light tones the colour cast of the background’s tones of the same brightness (black line art stays as it is). \"Blur amount\" is how much the background is blurred before its colours are taken.",
   "helpLayerKeyframeTitle": "Layer keyframes (per-part animation)",
   "helpLayerKeyframeDesc": "Set each layer's position, scale, and rotation per frame, with the keyframes interpolated automatically. Where camera keyframes move the whole screen, this moves an individual layer only. Since each autofill part is generated as its own separate layer, this works directly for per-part animation — moving just an arm, opening and closing just a mouth, and so on. Each keyframe can also be given its own easing — Linear, Ease in, Ease out, Ease in and out, or Bounce — controlling how it transitions into the next keyframe, so motion doesn't have to stay at a flat, constant speed. Set it up from the \"Animation (keyframes)\" entry in each layer's three-dot menu in the layer panel. The layer's artwork itself doesn't change — it's a non-destructive transform of where it's displayed. This only affects the timeline's display (preview / export) and has no effect on actual drawing in canvas mode.",
   "helpLayerGroupTitle": "Layer groups (moving multiple parts together)",
@@ -839,13 +840,16 @@
   "themeSettingsTitle": "Theme & Appearance",
   "themeColorCustomizeSection": "Color Customization",
   "themeColorAccent": "Accent Color",
-  "themeColorText": "Text Color",
+  "themeColorText": "Body & regular text color",
+  "themeColorButtonText": "Button text & icon color",
+  "themeColorMenuText": "Menu & app bar text color",
+  "themeColorSelectionText": "Selected text & icon color",
   "themeColorPanelBg": "Panel Background Color",
   "themeColorMenuBg": "Menu Background Color",
   "themeColorSelection": "Selection Color",
   "themeColorUpdateMark": "Update Mark Color",
-  "themeContrastErrorTitle": "Text would be unreadable",
-  "themeContrastErrorBody": "The text color and the background color are too close, so text would be almost invisible. The settings screen itself would become unreadable and you could not undo it, so this combination cannot be saved. Please change the brightness of one of them.",
+  "themeResetConfirmTitle": "Reset the theme colors?",
+  "themeResetConfirmAction": "Reset",
   "themeUnreadableResetButton": "Reset theme",
   "themeUnreadableResetDone": "The theme has been reset to the default colors.",
   "themePresetSection": "Themes",
@@ -1127,10 +1131,20 @@
   "brushSettingsFadeDistanceLabel": "Distance (px)",
   "brushSettingsStrokeDecayTitle": "Stroke decay",
   "brushSettingsStrokeDecaySubtitle": "Opacity decreases the longer you keep drawing",
-  "brushSettingsMixingTitle": "Color mixing",
-  "brushSettingsMixingOff": "OFF",
-  "brushSettingsMixingSimple": "Simple mixing",
+  "brushSettingsMixingTitle": "Mixing mode",
+  "brushSettingsMixingOff": "Digital",
+  "brushSettingsMixingOil": "Oil-style mixing",
+  "brushSettingsMixingWatercolor": "Watercolor-style mixing",
+  "brushSettingsMixingBrightnessCorrection": "Brightness correction",
+  "brushSettingsMixingAmount": "Mixing amount",
+  "brushSettingsMixingStretch": "Color stretch",
+  "brushSettingsMixingWater": "Water",
+  "brushSettingsMixingPigment": "Pigment",
   "brushSettingsMixingBleed": "Bleed",
+  "brushSettingsMixingTexture": "Texture",
+  "brushSettingsMixingSoftEdge": "Soft edge",
+  "brushSettingsMixingOilHint": "Mixes with the colors below like paint and drags the picked-up color along the stroke.",
+  "brushSettingsMixingWatercolorHint": "Lays transparent washes. When you lift the pen the wash dries, bleeds a little past the brush, and color gathers at its edge.",
   "projectDetailNotFoundTitle": "Project",
   "projectDetailNotFoundBody": "Project not found",
   "projectDetailFirstFrameTooltip": "First frame",
@@ -1144,6 +1158,8 @@
   "projectDetailStartEditButton": "Start editing",
   "projectDetailTagsQuickAction": "Tags",
   "projectDetailShareQuickAction": "Share",
+  "projectDetailFavoriteRegistered": "Favorited",
+  "projectDetailFavoriteUnregistered": "Not favorited",
   "projectDetailInfoSectionTitle": "Project info",
   "projectDetailInfoExportSize": "Export size",
   "projectDetailInfoDrawingArea": "Drawing area",
@@ -1993,6 +2009,129 @@
   "timelineEffectFilterLabel": "Effect filters",
   "timelineAddCameraKfTooltip": "Add camera keyframe",
   "timelineAddWatermarkTooltip": "+ Watermark",
+  "timelineStackScopeRange": "Frame range",
+  "timelineStackTargetLabel": "Use this order for",
+  "timelineStackTargetScenes": "Choose scenes",
+  "timelineStackTargetAllFrames": "All frames",
+  "timelineStackScenesHint": "Every frame of the chosen scenes uses the same order. Reordering here sets it in all the chosen scenes.",
+  "timelineStackAllFramesHint": "Every frame of every scene uses the same order. Reordering here sets it in all scenes.",
+  "timelineStackRangesTakePriority": "Frames in a frame range keep that range's order.",
+  "timelineStackRangeLabel": "F{start}–F{end}",
+  "@timelineStackRangeLabel": {
+    "placeholders": {
+      "start": {
+        "type": "int"
+      },
+      "end": {
+        "type": "int"
+      }
+    }
+  },
+  "timelineStackRangeAdd": "Add a range at F{n}",
+  "@timelineStackRangeAdd": {
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
+  },
+  "timelineStackRangeHint": "Only the frames in a range use the order set here; outside the ranges, the whole scene's order is used.",
+  "timelineStackRangeEmpty": "No ranges yet. Use the button above to make one at the current frame.",
+  "timelineStackRangeOrderHint": "Stacking order for {range} (higher is in front). Drag a handle or use the arrows to reorder.",
+  "@timelineStackRangeOrderHint": {
+    "placeholders": {
+      "range": {
+        "type": "String"
+      }
+    }
+  },
+  "timelineStackRangeDelete": "Delete this range",
+  "timelineAddMaterialTooltip": "Add material",
+  "timelineMaterialRowLabel": "Row",
+  "timelineMaterialNewRow": "New row",
+  "timelineAddTextTooltip": "+ Text",
+  "timelineAddImageTooltip": "+ Image",
+  "timelineStackOrderTitle": "Stacking order",
+  "timelineMaterialText": "Text",
+  "timelineAddTextDialogTitle": "Add text",
+  "timelineEditSectionText": "Text",
+  "timelineEditSectionTransform": "Position",
+  "timelineEditSectionMask": "Mask",
+  "timelineTransformRotationX": "X-axis rotation",
+  "timelineTransformRotationY": "Y-axis rotation",
+  "timelineTransformRotationZ": "Z-axis rotation",
+  "timelineTransformReset": "Reset position",
+  "timelineKeyframeAddHere": "Add keyframe at F{n}",
+  "@timelineKeyframeAddHere": {
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
+  },
+  "timelineKeyframeRemoveHere": "Remove keyframe at F{n}",
+  "@timelineKeyframeRemoveHere": {
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
+  },
+  "timelineKeyframeWholeHint": "The same position is used throughout. To animate it, go to another frame and add a keyframe.",
+  "timelineKeyframeAnimHint": "{count} keyframes: changes are recorded at F{n}, and the frames in between are filled in automatically.",
+  "@timelineKeyframeAnimHint": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      },
+      "n": {
+        "type": "int"
+      }
+    }
+  },
+  "timelineGizmoHint": "Drag on the preview to move it, a corner dot to resize and the top dot to rotate. Two fingers work too.",
+  "timelineMaterialOutOfRange": "Not shown at this frame (shown from F{start} to F{end})",
+  "@timelineMaterialOutOfRange": {
+    "placeholders": {
+      "start": {
+        "type": "int"
+      },
+      "end": {
+        "type": "int"
+      }
+    }
+  },
+  "timelineMaskNone": "None",
+  "timelineMaskRectangle": "Rectangle",
+  "timelineMaskEllipse": "Ellipse",
+  "timelineMaskCenterX": "Center X",
+  "timelineMaskCenterY": "Center Y",
+  "timelineMaskWidth": "Width",
+  "timelineMaskHeight": "Height",
+  "timelineMaskFeather": "Feather",
+  "timelineMaskInvert": "Invert (hide the inside)",
+  "timelineMaskHint": "Shows only what is inside the mask. Invert it to hide the inside instead.",
+  "timelineStackOrderHint": "Items higher in the list appear in front. Drag a handle or use the arrows to reorder.",
+  "timelineStackScopeScene": "The whole current scene",
+  "timelineStackFrameUnit": "Frame (drawing)",
+  "timelineStackResetScene": "Back to the default order",
+  "timelineStackFrameMaskTitle": "Frame (drawing) mask",
+  "timelineStackFrameMaskHint": "Crops only the drawing; text, images and video are not affected. The drawing is not hidden while you draw on the canvas.",
+  "timelineStackMoveUp": "Bring forward",
+  "timelineStackMoveDown": "Send backward",
+  "timelineStackSelectedCount": "{count} selected",
+  "@timelineStackSelectedCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "timelineStackBringToFront": "Bring to front",
+  "timelineStackSendToBack": "Send to back",
+  "timelineStackDeselectAll": "Deselect all",
+  "timelineStackSelectAll": "Select all",
+  "timelineStackMultiSelectHint": "Long-press an item to select several. The selected items move together with the arrows, by dragging or with the buttons below.",
   "timelineWatermarkNotRegisteredTitle": "No watermark registered",
   "timelineWatermarkNotRegisteredBody": "Register an image or text watermark in advance from \"Watermark\" in Settings.",
   "timelineOpenSettingsButton": "Open settings",
@@ -2031,7 +2170,7 @@
       }
     }
   },
-  "timelineSceneDeleteConfirmBody": "All data in the scene will be deleted, including every frame, common layers, video materials, image materials, and watermarks.",
+  "timelineSceneDeleteConfirmBody": "All data in the scene will be deleted, including every frame, common layers, text, video and image materials, and watermarks.",
   "timelineSceneMultiDeleteConfirmTitle": "Delete the {count} selected scenes?",
   "@timelineSceneMultiDeleteConfirmTitle": {
     "placeholders": {
@@ -2783,7 +2922,6 @@
   "brushSettingsPressureOffSection": "Pressure OFF",
   "brushSettingsWeakPressureLabel": "Weak",
   "brushSettingsStrongPressureLabel": "Strong",
-  "brushSettingsValueLabel": "Value",
   "helpCustomAutomationTitle": "Custom automations (action recording)",
   "helpCustomAutomationDesc": "Record supported actions on the canvas or timeline as a named sequence that you can run again. Add a new item from Automations to start recording, then reorder or remove steps on the review screen before saving. You can rename, re-record, delete, filter to favorites, export, and import saved automations as JSON files. For a canvas-only automation recorded entirely within one frame, you can run it on the current frame, a specified frame range, or all frames. Frame-range choices are not shown for timeline automations or recordings that span multiple frames.",
   "tipsOfficialAutomationPresetsTitle": "Tune the official automation presets to your artwork",
@@ -2988,6 +3126,13 @@
   "filterSphereLightBlur": "Blur into light",
   "filterSphereShadowBlur": "Blur into shadow",
   "filterSphereCanvasHint": "Drag the + on the canvas to move the light and the round handles to resize it. Shadow and light go only where something is drawn.",
+  "filterNameWatercolorBorder": "Watercolor Edge",
+  "filterWatercolorBorderRange": "Range",
+  "filterWatercolorBorderBlur": "Blur width",
+  "filterWatercolorBorderOpacity": "Transparency effect",
+  "filterWatercolorBorderDarken": "Edge depth",
+  "filterWatercolorBorderColorEdges": "Also at color borders",
+  "filterWatercolorBorderHint": "Color gathers at the edges of painted areas and the inside turns sheer, like dried watercolor (drawn straight onto the working layer). Range: how far in from the edge it deepens. Edge depth: how deep the gathered color is. Transparency effect: how sheer the inside becomes. Blur width: how smoothly the depth fades.",
   "filterFisheyeCanvasHint": "Drag the + on the canvas to move the center and the round handle on the circle to change the radius.",
   "filterCenterX": "Center X",
   "filterCenterY": "Center Y",
@@ -3020,5 +3165,9 @@
   "startupFailedDetailsCopied": "Details copied",
   "startupFailedDetails": "Details",
   "errorViewTitle": "Something went wrong while showing this part",
-  "errorViewBody": "Your work in progress is kept. Go back to the previous screen and try again. Sending us the text below helps us find the cause."
+  "errorViewBody": "Your work in progress is kept. Go back to the previous screen and try again. Sending us the text below helps us find the cause.",
+  "homeWorksLoadFailed": "Could not load your exported works",
+  "newProjectCreating": "Creating…",
+  "newProjectCreateFailed": "Could not save the project. Check your storage space and save location, then try again.",
+  "communityCreatorLabel": "Creator"
 }

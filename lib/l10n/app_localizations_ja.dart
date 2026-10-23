@@ -27,20 +27,30 @@ class AppLocalizationsJa extends AppLocalizations {
   String get homeTabBookmarked => 'ブクマ済み';
 
   @override
-  String get homeBookmarkedEmptyTitle => 'ブックマークした作品はまだありません';
+  String get homeBookmarkedEmptyTitle => '表示できるブックマーク作品がありません';
 
   @override
-  String get homeBookmarkedEmptyBody => '作品広場でブックマークした作品が、ここに表示されます。';
+  String get homeBookmarkedEmptyBody => '作品広場で気に入った公開作品をブックマークすると、ここに表示されます。';
 
   @override
-  String get homeBookmarkedHiddenTitle => 'ブックマークした作品は、いまは表示されていません';
+  String get homeBookmarkedHiddenTitle => 'ブックマークは保存されています';
 
   @override
   String get homeBookmarkedHiddenBody =>
-      '作品広場の表示フィルターで非表示になっているか、公開が終わっています。ブックマークは残っています。';
+      '表示フィルターや作品の公開状態により表示できない場合があります。作品広場で表示フィルターを確認できます。';
 
   @override
-  String get homeBookmarkedOpenPlaza => '作品広場を見る';
+  String get homeBookmarkedLoading => 'ブックマークを読み込み中…';
+
+  @override
+  String get homeBookmarkedLoadFailed => 'ブックマークを読み込めませんでした';
+
+  @override
+  String get homeBookmarkedLoadPrompt => '保存したブックマークを読み込む';
+
+  @override
+  String get homeBookmarkedSignInBody =>
+      '保存したブックマークを読み込むには、作品広場でGoogleアカウントを接続してください。';
 
   @override
   String get homeSearchHint => 'プロジェクト名で検索';
@@ -68,12 +78,6 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get homeSelectionAllDeselect => '全解除';
-
-  @override
-  String get homeSelectionAddFavorite => 'お気に入りに登録';
-
-  @override
-  String get homeSelectionRemoveFavorite => 'お気に入りを解除';
 
   @override
   String homeSelectionCount(int count) {
@@ -1401,7 +1405,7 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get helpColorMixingDesc =>
-      'ブラシで塗る際、ブラシの直下にすでにある色と、これから塗ろうとしている選択色を混ぜ合わせながら描画する機能です。水彩や油彩のように、既存の色に新しい色をなじませたい時に使います。';
+      'ブラシで塗る際、ブラシの直下にすでにある色と、これから塗ろうとしている選択色を混ぜ合わせながら描画する機能です。ブラシ設定の「混色モード」で、混ぜずに塗る「デジタル」、絵の具のように混ざり拾った色を引きずって伸ばす「油彩風混色」、透明な絵の具を重ねて乾くと縁に色が溜まる「水彩風混色」を選べます。';
 
   @override
   String get helpPressureCurveTitle => '筆圧カーブ';
@@ -1415,7 +1419,7 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get helpTimelineDesc =>
-      'アニメーションの時間軸を管理する画面です。フレーム（静止画1コマ）を並べてパラパラ漫画のように再生することでアニメーションになります。画像・動画・音声などの素材トラック、共通レイヤートラック、カメラキーフレームも同じタイムライン上で管理します。';
+      'アニメーションの時間軸を管理する画面です。フレーム（静止画1コマ）を並べてパラパラ漫画のように再生することでアニメーションになります。テキスト・画像・動画・音声の素材トラック、共通レイヤートラック、カメラキーフレームも同じタイムライン上で管理します。テキスト・画像・動画とフレームのイラストの前後関係は「重なり順」で、シーン全体、または指定したフレームの範囲ごとに並べ替えられます。項目を長押しして複数選択し、まとめて動かすこともできます。';
 
   @override
   String get helpSceneTitle => 'シーン';
@@ -1436,7 +1440,7 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get helpEffectFilterDesc =>
-      'シーンやフレームに適用できる映像効果（ぼかし・色調補正・グロー・ドット絵等）です。手描きの絵そのものを変えずに、演出として画面全体の見た目を調整したい時に使います。描画フィルターのうち、トーンカーブ（プリセットと強さ）・レベル補正・シャープ・アンシャープマスク・周辺減光（色・範囲・濃さ）も、複数のフレームへ同じ効果を一度にかけられるよう演出フィルターに入っています。ドット絵は配色方式（色を指定しない・色を指定する・色数を指定する・パレットから選ぶ）も選べます。色を限るときは、1色では元の色から遠い所を、使える色のうち2〜3色を規則正しく並べて（ディザリング）元の色に近づけます。輪郭の所は混ぜずにくっきり保ちます。色数を指定すると、絵の多くを占める色から選ばれます。ディザリングはスイッチでオン・オフでき、オフにすると最も近い1色で塗ります。 演出フィルターは複数重ねて適用でき、その適用順はタイムライン上での並び順に従います。フィルター一覧をドラッグで並び替えると、実際に画面へ反映される順序も変わります。 フィルムの粒状感のようなノイズをフレームごとに変化させながら適用する演出フィルターです。強度・量（ノイズが乗る密度）・粒の大きさをスライダーで調整できます。同じフレームに戻ると同じ粒状になるため、スクラブ中にちらつかず、再生すると粒が動いて見えます。 画面に降る雨を表現する演出フィルターです。降り方（本数）・速さ・粒の大きさ・風向きの角度をスライダーで調整できます。各雨粒はフレームが進むごとに一定の速度で降り続けるため、自然な雨の動きになります。';
+      'シーンやフレームに適用できる映像効果（ぼかし・色調補正・グロー・ドット絵等）です。手描きの絵そのものを変えずに、演出として画面全体の見た目を調整したい時に使います。描画フィルターのうち、トーンカーブ（プリセットと強さ）・レベル補正・シャープ・アンシャープマスク・周辺減光（色・範囲・濃さ）・水彩境界も、複数のフレームへ同じ効果を一度にかけられるよう演出フィルターに入っています。ドット絵は配色方式（色を指定しない・色を指定する・色数を指定する・パレットから選ぶ）も選べます。色を限るときは、1色では元の色から遠い所を、使える色のうち2〜3色を規則正しく並べて（ディザリング）元の色に近づけます。輪郭の所は混ぜずにくっきり保ちます。色数を指定すると、絵の多くを占める色から選ばれます。ディザリングはスイッチでオン・オフでき、オフにすると最も近い1色で塗ります。 演出フィルターは複数重ねて適用でき、その適用順はタイムライン上での並び順に従います。フィルター一覧をドラッグで並び替えると、実際に画面へ反映される順序も変わります。 フィルムの粒状感のようなノイズをフレームごとに変化させながら適用する演出フィルターです。強度・量（ノイズが乗る密度）・粒の大きさをスライダーで調整できます。同じフレームに戻ると同じ粒状になるため、スクラブ中にちらつかず、再生すると粒が動いて見えます。 画面に降る雨を表現する演出フィルターです。降り方（本数）・速さ・粒の大きさ・風向きの角度をスライダーで調整できます。各雨粒はフレームが進むごとに一定の速度で降り続けるため、自然な雨の動きになります。';
 
   @override
   String get helpEndCardTitle => 'エンドカード';
@@ -1533,11 +1537,11 @@ class AppLocalizationsJa extends AppLocalizations {
       '端末の性能に応じて、低品質・中品質・高品質のプリセットから選ぶか、各項目を個別に設定（カスタム）できます。保存方式・動作の軽さ・オニオンスキン・傾き検知に加えて、Undo回数やゴミ箱の自動削除などアプリの容量・動作の重さに影響する設定もここにまとまっています。';
 
   @override
-  String get helpMaterialClipTitle => '素材クリップ（画像・動画・音声）';
+  String get helpMaterialClipTitle => '素材クリップ（テキスト・画像・動画・音声）';
 
   @override
   String get helpMaterialClipDesc =>
-      'タイムラインの画像・動画・音声トラックに配置したクリップです。クリップ本体を長押しドラッグすると表示開始位置を移動でき、左右端のハンドルをドラッグすると使用範囲（長さ）を変更できます。タップすると開く詳細シートのコピーアイコンから複製、ゴミ箱アイコンから削除もできます。画像・動画は内部的にはレイヤーとして扱われており、音声はシーンに直接紐づくクリップとして管理されます。';
+      'タイムラインのテキスト・画像・動画・音声トラックに配置したクリップです。クリップ本体を長押しドラッグすると表示開始位置を移動でき、左右端のハンドルをドラッグすると使用範囲（長さ）を変更できます。同じ時間に重なる素材は自動で別の列に置かれます。テキスト・画像・動画のクリップをタップすると、プレビューの下に編集パネルが開きます。文字の内容・フォント・色・縁取り、位置・拡大縮小・X軸／Y軸／Z軸回転・不透明度（プレビュー上のドラッグでも動かせます。キーフレームを追加すると動きになります）、マスク（四角・楕円・ぼかし・反転）、置く列を変えられ、複製・削除もここから行えます。音声クリップは詳細シートで音量・フェードを調整します。';
 
   @override
   String get helpGestureSettingsTitle => 'ジェスチャー設定';
@@ -1761,7 +1765,7 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get helpDrawingFilterDesc =>
-      '選択中のレイヤーに直接適用するフィルターです（演出フィルターがタイムライン全体・シーン単位に適用されるのに対し、描画フィルターはレイヤー単位）。ガウスぼかし・レンズぼかし・アニメ風加工・トーンカーブ・レベル補正・縁取り・シャープ・アンシャープマスク・周辺減光・フィルムグレイン・レトロアニメ・ブラウン管・二値化・魚眼レンズ・色収差・眼鏡断層・ドット絵・質感変更フィルター・背景馴染ませ・墨溜まり・自動線画・プリズム・VHSノイズ・色反転・モザイク・ノイズ・球体陰影の27種類が用意されています。アニメ風加工は色数を減らし、隣どうしの色の差が「色の違いの閾値」以上の境目に「境界線の太さ」の線を暗い側へ引きます（線画の線は太りません）。プリズムは、レイヤーに描いた形ごとに虹の6色（赤・緑・水色・青・紫・赤）で塗ってぼかし、合成モードを「覆い焼き（リニア）」にします。暗い色の細い葉のような形を別のレイヤーに描いてから使うと、絵の上に淡い虹の光の筋が入ります（「ぼかし量」は一般的なガウスぼかしと同じ尺度）。球体陰影は、楕円の光の内側を光色、外側を影色で、描いてあるところにだけ重ねます（光の位置・大きさはキャンバス上でもドラッグできます）。縁取りは元のレイヤーを書き換えず、縁どった内容だけを新規レイヤーへ描画します。眼鏡断層フィルターは、パネルの「ペン」「バケツ」でキャンバスに塗った範囲（「消しゴム」で修正）だけに、強い眼鏡レンズのような局所的な歪みをかけられます（選択範囲・選択レイヤーがあればその範囲から始まります）。キャンバスで選択範囲を作ってあると、描画フィルターはその中だけに適用されます。ドット絵は配色方式（色を指定しない・色を指定する・色数を指定する・パレットから選ぶ）も選べます。色を限るときは、1色では元の色から遠い所を、使える色のうち2〜3色を規則正しく並べて（ディザリング）元の色に近づけます。輪郭の所は混ぜずにくっきり保ちます。色数を指定すると、絵の多くを占める色から選ばれます。ディザリングはスイッチでオン・オフでき、オフにすると最も近い1色で塗ります。大きさは「ブロックサイズを指定」（1〜100の100段階）と「ドット数を指定」（横・縦のドット数のスライダー。左端で1、右端でキャンバスの画素数）を切り替えられ、縦横比を保ったまま横と縦が一緒に変わります。どちらの指定も連動します。どちらも正方形のドットのまま半透明の縁を作りません。 自動線画では適用前の一時Vector制御点を直接編集できます。点をドラッグするとその点だけを移動します。「適用」の右の「制御点追加」を選んで線をタップすると制御点を追加、「制御点削除」を選んで点をタップすると削除できます（どちらも選んでいないときに点をタップすると、確認してから削除します）。編集した形状がそのまま適用結果になり、制御点の移動・追加・削除もフィルター編集の元に戻す・やり直すで1つずつ戻せます。 トーンカーブは曲線の何もない所をタップすると点を追加、点をドラッグで移動、長押しで削除でき、R・G・Bの色ごとのカーブはRGBのカーブの後にかかります。レベル補正もR・G・Bごとに調整でき、ガンマで中間の明るさを変えられます。縁取りは「内側への食い込み」で元の輪郭の内側まで縁を広げられ、縁取りの新規レイヤーは元のレイヤーの直下に作られます。色収差は、ずれをX（横）・Y（縦）・Z（中心から外向き）へどれだけ振り分けるかを指定できます。魚眼レンズの中心と半径は、キャンバス上の＋と円のつまみをドラッグしても変えられます。周辺減光はキャンバス全体の四隅をぼんやり暗くします（描いていない透明な所にも影がかかります）。「範囲」で四隅から中心へ向かってどこまで暗くするか、「濃さ」で四隅の暗さを調整できます。眼鏡断層は本物の度の強い眼鏡のように、レンズ越しの景色をレンズの中心へ向かって一様に縮め（負の値・近視用）、または広げ（正の値・遠視用）、レンズの縁で輪郭が段になってずれます。墨溜まりは線が「最大角度」以下で出会う所（初期値の90°では鋭角と直角：V字・交差の狭い側・T字・四角い角など）の角の内側にだけ溜まり、それより広い角には溜まりません。出会う点で線の縁から「中央の太さ」、そこから「範囲」の端に向かってまっすぐ細くなって、端で0pxになり、なめらかにとがって消えます。「中央の太さ」を大きくしても、両側の墨溜まりの端どうしを結ぶ直線より外へはふくらまず、いちばん太くても中央は平らになります。範囲の途中で線が途切れているときは、その線ではそこを終点として0pxまで細くなります（線ごとに長さが変わります）。そのときも2つの墨溜まりは角の真ん中で、どちらの線からも同じ太さで出会います（長い方の線の墨溜まりは、そこから範囲の端まで細くなります）。自動線画は下描きの線の中心をなぞって細い線にします。近くに並んだ線も間が少しでも空いていれば2本のまま描き、線の中の小さな白い点（かすれ）だけを埋めます。2本の線が近づいてくっついている所は、真ん中に1本の線を引くのではなく、下描きと同じように2本の線が徐々に近づいて合わさります。線が交差したり重なったりしている所も、下描きのとおりにそれぞれの線がそのまま続きます（交点で折れ曲がったり、重なった2本が1本に融けたりしません）。斜めに浅く交わる線もまっすぐ交差したまま続き、触れ合うだけの線（頭に沿って描いた髪の輪郭など）は、それぞれ自分の側を通る別々の線のままです。目のような点は塗りつぶした点のまま描きます。「対象ラフ線幅」より短い枝分かれは描きません。「入り抜き」はスイッチでオン・オフでき、オフにすると線の端まで同じ太さになります。背景馴染ませは、背景の光と影を合成モード「ハードライト」で重ねます（影の色は黒や灰色ではなく、背景の影の部分の色を暗くしたもの）。周りの色は「オーバーレイ」で全体に重ねて色の方向を合わせ、下からの照り返しや周りからの反射は「スクリーン」で、ネオンのような強い有色光は「加算・発光」で輪郭に入れます。「明るさ・色みを背景に合わせる」は、描いた色が背景より明るすぎたり鮮やかすぎたりする所を背景の範囲へ寄せ、暗い所・中間・明るい所をそれぞれ背景の同じ明るさの色みへ寄せます（線画の黒はそのまま）。「ぼかし具合」は色を拾う背景をぼかす量です。';
+      '選択中のレイヤーに直接適用するフィルターです（演出フィルターがタイムライン全体・シーン単位に適用されるのに対し、描画フィルターはレイヤー単位）。ガウスぼかし・レンズぼかし・アニメ風加工・トーンカーブ・レベル補正・縁取り・シャープ・アンシャープマスク・周辺減光・フィルムグレイン・レトロアニメ・ブラウン管・二値化・魚眼レンズ・色収差・眼鏡断層・ドット絵・質感変更フィルター・背景馴染ませ・墨溜まり・自動線画・プリズム・VHSノイズ・色反転・モザイク・ノイズ・球体陰影・水彩境界の28種類が用意されています。水彩境界は、作業レイヤーの塗った所の縁に色を溜め、内側を透けさせて、乾いた水彩のようにします（「色の境目にも付ける」で、隣り合う色の境目にも縁が付きます）。アニメ風加工は色数を減らし、隣どうしの色の差が「色の違いの閾値」以上の境目に「境界線の太さ」の線を暗い側へ引きます（線画の線は太りません）。プリズムは、レイヤーに描いた形ごとに虹の6色（赤・緑・水色・青・紫・赤）で塗ってぼかし、合成モードを「覆い焼き（リニア）」にします。暗い色の細い葉のような形を別のレイヤーに描いてから使うと、絵の上に淡い虹の光の筋が入ります（「ぼかし量」は一般的なガウスぼかしと同じ尺度）。球体陰影は、楕円の光の内側を光色、外側を影色で、描いてあるところにだけ重ねます（光の位置・大きさはキャンバス上でもドラッグできます）。縁取りは元のレイヤーを書き換えず、縁どった内容だけを新規レイヤーへ描画します。眼鏡断層フィルターは、パネルの「ペン」「バケツ」でキャンバスに塗った範囲（「消しゴム」で修正）だけに、強い眼鏡レンズのような局所的な歪みをかけられます（選択範囲・選択レイヤーがあればその範囲から始まります）。キャンバスで選択範囲を作ってあると、描画フィルターはその中だけに適用されます。ドット絵は配色方式（色を指定しない・色を指定する・色数を指定する・パレットから選ぶ）も選べます。色を限るときは、1色では元の色から遠い所を、使える色のうち2〜3色を規則正しく並べて（ディザリング）元の色に近づけます。輪郭の所は混ぜずにくっきり保ちます。色数を指定すると、絵の多くを占める色から選ばれます。ディザリングはスイッチでオン・オフでき、オフにすると最も近い1色で塗ります。大きさは「ブロックサイズを指定」（1〜100の100段階）と「ドット数を指定」（横・縦のドット数のスライダー。左端で1、右端でキャンバスの画素数）を切り替えられ、縦横比を保ったまま横と縦が一緒に変わります。どちらの指定も連動します。どちらも正方形のドットのまま半透明の縁を作りません。 自動線画では適用前の一時Vector制御点を直接編集できます。点をドラッグするとその点だけを移動します。「適用」の右の「制御点追加」を選んで線をタップすると制御点を追加、「制御点削除」を選んで点をタップすると削除できます（どちらも選んでいないときに点をタップすると、確認してから削除します）。編集した形状がそのまま適用結果になり、制御点の移動・追加・削除もフィルター編集の元に戻す・やり直すで1つずつ戻せます。 トーンカーブは曲線の何もない所をタップすると点を追加、点をドラッグで移動、長押しで削除でき、R・G・Bの色ごとのカーブはRGBのカーブの後にかかります。レベル補正もR・G・Bごとに調整でき、ガンマで中間の明るさを変えられます。縁取りは「内側への食い込み」で元の輪郭の内側まで縁を広げられ、縁取りの新規レイヤーは元のレイヤーの直下に作られます。色収差は、ずれをX（横）・Y（縦）・Z（中心から外向き）へどれだけ振り分けるかを指定できます。魚眼レンズの中心と半径は、キャンバス上の＋と円のつまみをドラッグしても変えられます。周辺減光はキャンバス全体の四隅をぼんやり暗くします（描いていない透明な所にも影がかかります）。「範囲」で四隅から中心へ向かってどこまで暗くするか、「濃さ」で四隅の暗さを調整できます。眼鏡断層は本物の度の強い眼鏡のように、レンズ越しの景色をレンズの中心へ向かって一様に縮め（負の値・近視用）、または広げ（正の値・遠視用）、レンズの縁で輪郭が段になってずれます。墨溜まりは線が「最大角度」以下で出会う所（初期値の90°では鋭角と直角：V字・交差の狭い側・T字・四角い角など）の角の内側にだけ溜まり、それより広い角には溜まりません。出会う点で線の縁から「中央の太さ」、そこから「範囲」の端に向かってまっすぐ細くなって、端で0pxになり、なめらかにとがって消えます。「中央の太さ」を大きくしても、両側の墨溜まりの端どうしを結ぶ直線より外へはふくらまず、いちばん太くても中央は平らになります。範囲の途中で線が途切れているときは、その線ではそこを終点として0pxまで細くなります（線ごとに長さが変わります）。そのときも2つの墨溜まりは角の真ん中で、どちらの線からも同じ太さで出会います（長い方の線の墨溜まりは、そこから範囲の端まで細くなります）。自動線画は下描きの線の中心をなぞって細い線にします。近くに並んだ線も間が少しでも空いていれば2本のまま描き、線の中の小さな白い点（かすれ）だけを埋めます。2本の線が近づいてくっついている所は、真ん中に1本の線を引くのではなく、下描きと同じように2本の線が徐々に近づいて合わさります。線が交差したり重なったりしている所も、下描きのとおりにそれぞれの線がそのまま続きます（交点で折れ曲がったり、重なった2本が1本に融けたりしません）。斜めに浅く交わる線もまっすぐ交差したまま続き、触れ合うだけの線（頭に沿って描いた髪の輪郭など）は、それぞれ自分の側を通る別々の線のままです。目のような点は塗りつぶした点のまま描きます。「対象ラフ線幅」より短い枝分かれは描きません。「入り抜き」はスイッチでオン・オフでき、オフにすると線の端まで同じ太さになります。背景馴染ませは、背景の光と影を合成モード「ハードライト」で重ねます（影の色は黒や灰色ではなく、背景の影の部分の色を暗くしたもの）。周りの色は「オーバーレイ」で全体に重ねて色の方向を合わせ、下からの照り返しや周りからの反射は「スクリーン」で、ネオンのような強い有色光は「加算・発光」で輪郭に入れます。「明るさ・色みを背景に合わせる」は、描いた色が背景より明るすぎたり鮮やかすぎたりする所を背景の範囲へ寄せ、暗い所・中間・明るい所をそれぞれ背景の同じ明るさの色みへ寄せます（線画の黒はそのまま）。「ぼかし具合」は色を拾う背景をぼかす量です。';
 
   @override
   String get helpLayerKeyframeTitle => 'レイヤーキーフレーム（パーツ単位アニメーション）';
@@ -2579,7 +2583,16 @@ class AppLocalizationsJa extends AppLocalizations {
   String get themeColorAccent => 'アクセントカラー';
 
   @override
-  String get themeColorText => '文字色';
+  String get themeColorText => '本文・通常の文字色';
+
+  @override
+  String get themeColorButtonText => 'ボタン内の文字・アイコン色';
+
+  @override
+  String get themeColorMenuText => 'メニュー・上部バーの文字色';
+
+  @override
+  String get themeColorSelectionText => '選択中の文字・アイコン色';
 
   @override
   String get themeColorPanelBg => 'パネル背景色';
@@ -2594,11 +2607,10 @@ class AppLocalizationsJa extends AppLocalizations {
   String get themeColorUpdateMark => '更新マーク色';
 
   @override
-  String get themeContrastErrorTitle => 'この色では文字が読めなくなります';
+  String get themeResetConfirmTitle => 'テーマカラーをリセットしますか？';
 
   @override
-  String get themeContrastErrorBody =>
-      '文字の色と背景の色が近すぎるため、画面の文字がほとんど見えなくなります。設定画面自体も読めなくなり元に戻せなくなるので、この組み合わせは保存できません。どちらかの明るさを変えてください。';
+  String get themeResetConfirmAction => 'リセット';
 
   @override
   String get themeUnreadableResetButton => 'テーマをもとに戻す';
@@ -3100,16 +3112,47 @@ class AppLocalizationsJa extends AppLocalizations {
   String get brushSettingsStrokeDecaySubtitle => '描き続けるほど不透明度が下がる';
 
   @override
-  String get brushSettingsMixingTitle => '混色';
+  String get brushSettingsMixingTitle => '混色モード';
 
   @override
-  String get brushSettingsMixingOff => 'OFF';
+  String get brushSettingsMixingOff => 'デジタル';
 
   @override
-  String get brushSettingsMixingSimple => '簡易混色';
+  String get brushSettingsMixingOil => '油彩風混色';
+
+  @override
+  String get brushSettingsMixingWatercolor => '水彩風混色';
+
+  @override
+  String get brushSettingsMixingBrightnessCorrection => '輝度の補正';
+
+  @override
+  String get brushSettingsMixingAmount => '混色度合い';
+
+  @override
+  String get brushSettingsMixingStretch => '色延び';
+
+  @override
+  String get brushSettingsMixingWater => '水分量';
+
+  @override
+  String get brushSettingsMixingPigment => '絵具量';
 
   @override
   String get brushSettingsMixingBleed => 'にじみ';
+
+  @override
+  String get brushSettingsMixingTexture => 'むら';
+
+  @override
+  String get brushSettingsMixingSoftEdge => '境界のぼかし';
+
+  @override
+  String get brushSettingsMixingOilHint => '下の色と絵の具のように混ざり、拾った色を引きずって伸ばします。';
+
+  @override
+  String get brushSettingsMixingWatercolorHint =>
+      '透明な絵の具を重ねて塗ります。ペンを離すと乾いて、筆の外へ少しにじみ、縁に色が溜まります。';
 
   @override
   String get projectDetailNotFoundTitle => 'プロジェクト';
@@ -3149,6 +3192,12 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get projectDetailShareQuickAction => '共有';
+
+  @override
+  String get projectDetailFavoriteRegistered => 'お気に入り\n登録済み';
+
+  @override
+  String get projectDetailFavoriteUnregistered => 'お気に入り\n未登録';
 
   @override
   String get projectDetailInfoSectionTitle => 'プロジェクト情報';
@@ -4711,6 +4760,205 @@ class AppLocalizationsJa extends AppLocalizations {
   String get timelineAddWatermarkTooltip => '＋ウォーターマーク';
 
   @override
+  String get timelineStackScopeRange => 'フレーム範囲';
+
+  @override
+  String get timelineStackTargetLabel => 'この重なり順を使う所';
+
+  @override
+  String get timelineStackTargetScenes => 'シーン複数選択';
+
+  @override
+  String get timelineStackTargetAllFrames => '全てのフレーム';
+
+  @override
+  String get timelineStackScenesHint =>
+      '選んだシーンの全てのフレームに同じ順番を使います。並べ替えると、選んだシーンすべてがこの順番になります。';
+
+  @override
+  String get timelineStackAllFramesHint =>
+      '全てのシーンの全てのフレームに同じ順番を使います。並べ替えると、全てのシーンがこの順番になります。';
+
+  @override
+  String get timelineStackRangesTakePriority =>
+      'フレーム範囲を指定したフレームは、その範囲の順番が優先されます。';
+
+  @override
+  String timelineStackRangeLabel(int start, int end) {
+    return 'F$start〜F$end';
+  }
+
+  @override
+  String timelineStackRangeAdd(int n) {
+    return 'F$nに範囲を追加';
+  }
+
+  @override
+  String get timelineStackRangeHint =>
+      '指定した範囲のフレームだけ、ここで並べた順番になります。範囲の外はシーン全体の順番です。';
+
+  @override
+  String get timelineStackRangeEmpty => '範囲がありません。上のボタンで今のフレームに作れます。';
+
+  @override
+  String timelineStackRangeOrderHint(String range) {
+    return '$rangeの重なり順（上ほど手前）。つまみのドラッグか矢印で並べ替えます。';
+  }
+
+  @override
+  String get timelineStackRangeDelete => 'この範囲を削除';
+
+  @override
+  String get timelineAddMaterialTooltip => '素材を追加';
+
+  @override
+  String get timelineMaterialRowLabel => '置く列';
+
+  @override
+  String get timelineMaterialNewRow => '新しい列';
+
+  @override
+  String get timelineAddTextTooltip => '＋テキスト';
+
+  @override
+  String get timelineAddImageTooltip => '＋画像';
+
+  @override
+  String get timelineStackOrderTitle => '重なり順';
+
+  @override
+  String get timelineMaterialText => 'テキスト';
+
+  @override
+  String get timelineAddTextDialogTitle => 'テキストを追加';
+
+  @override
+  String get timelineEditSectionText => '文字';
+
+  @override
+  String get timelineEditSectionTransform => '配置';
+
+  @override
+  String get timelineEditSectionMask => 'マスク';
+
+  @override
+  String get timelineTransformRotationX => 'X軸回転';
+
+  @override
+  String get timelineTransformRotationY => 'Y軸回転';
+
+  @override
+  String get timelineTransformRotationZ => 'Z軸回転';
+
+  @override
+  String get timelineTransformReset => '配置をリセット';
+
+  @override
+  String timelineKeyframeAddHere(int n) {
+    return 'F$nにキーフレームを追加';
+  }
+
+  @override
+  String timelineKeyframeRemoveHere(int n) {
+    return 'F$nのキーフレームを削除';
+  }
+
+  @override
+  String get timelineKeyframeWholeHint =>
+      '素材全体に同じ配置が使われます。動かすときは、フレームを移動してキーフレームを追加してください。';
+
+  @override
+  String timelineKeyframeAnimHint(int count, int n) {
+    return 'キーフレーム$count個：F$nの値として記録し、間は自動でつなぎます。';
+  }
+
+  @override
+  String get timelineGizmoHint =>
+      'プレビュー上でドラッグすると移動、角の丸で拡大縮小、上の丸で回転できます。2本指でも操作できます。';
+
+  @override
+  String timelineMaterialOutOfRange(int start, int end) {
+    return 'このフレームには表示されていません（F$start〜F$endに表示）';
+  }
+
+  @override
+  String get timelineMaskNone => 'なし';
+
+  @override
+  String get timelineMaskRectangle => '四角';
+
+  @override
+  String get timelineMaskEllipse => '楕円';
+
+  @override
+  String get timelineMaskCenterX => '中心 X';
+
+  @override
+  String get timelineMaskCenterY => '中心 Y';
+
+  @override
+  String get timelineMaskWidth => '幅';
+
+  @override
+  String get timelineMaskHeight => '高さ';
+
+  @override
+  String get timelineMaskFeather => 'ぼかし';
+
+  @override
+  String get timelineMaskInvert => '反転（内側を隠す）';
+
+  @override
+  String get timelineMaskHint => 'マスクの内側だけを見せます。反転すると内側を隠します。';
+
+  @override
+  String get timelineStackOrderHint =>
+      '上にあるものほど手前に表示されます。つまみをドラッグするか矢印で並べ替えます。';
+
+  @override
+  String get timelineStackScopeScene => '現在のシーン全体';
+
+  @override
+  String get timelineStackFrameUnit => 'フレーム（イラスト）';
+
+  @override
+  String get timelineStackResetScene => '既定の順番に戻す';
+
+  @override
+  String get timelineStackFrameMaskTitle => 'フレーム（イラスト）のマスク';
+
+  @override
+  String get timelineStackFrameMaskHint =>
+      '描いた絵だけを切り抜きます。テキスト・画像・動画には効きません。キャンバスで描いている間は隠れません。';
+
+  @override
+  String get timelineStackMoveUp => '手前へ';
+
+  @override
+  String get timelineStackMoveDown => '奥へ';
+
+  @override
+  String timelineStackSelectedCount(int count) {
+    return '$count件選択中';
+  }
+
+  @override
+  String get timelineStackBringToFront => '最前面へ';
+
+  @override
+  String get timelineStackSendToBack => '最背面へ';
+
+  @override
+  String get timelineStackDeselectAll => '全解除';
+
+  @override
+  String get timelineStackSelectAll => '全選択';
+
+  @override
+  String get timelineStackMultiSelectHint =>
+      '項目を長押しすると複数選択できます。選んだ項目は矢印・ドラッグ・下のボタンでまとめて動かせます。';
+
+  @override
   String get timelineWatermarkNotRegisteredTitle => 'ウォーターマーク未登録';
 
   @override
@@ -4792,7 +5040,7 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get timelineSceneDeleteConfirmBody =>
-      'シーン内の全フレーム・共通レイヤー・動画素材・画像素材・ウォーターマークを含むすべてのデータが削除されます。';
+      'シーン内の全フレーム・共通レイヤー・テキスト素材・動画素材・画像素材・ウォーターマークを含むすべてのデータが削除されます。';
 
   @override
   String timelineSceneMultiDeleteConfirmTitle(int count) {
@@ -6487,9 +6735,6 @@ class AppLocalizationsJa extends AppLocalizations {
   String get brushSettingsStrongPressureLabel => '強';
 
   @override
-  String get brushSettingsValueLabel => '値';
-
-  @override
   String get helpCustomAutomationTitle => '自動操作（操作記録）';
 
   @override
@@ -7178,6 +7423,28 @@ class AppLocalizationsJa extends AppLocalizations {
       'キャンバス上の＋で光を動かし、丸いつまみで大きさを変えられます。影と光は描いてあるところにだけ付きます。';
 
   @override
+  String get filterNameWatercolorBorder => '水彩境界';
+
+  @override
+  String get filterWatercolorBorderRange => '範囲';
+
+  @override
+  String get filterWatercolorBorderBlur => 'ぼかし幅';
+
+  @override
+  String get filterWatercolorBorderOpacity => '透明度の影響';
+
+  @override
+  String get filterWatercolorBorderDarken => '縁の濃さ';
+
+  @override
+  String get filterWatercolorBorderColorEdges => '色の境目にも付ける';
+
+  @override
+  String get filterWatercolorBorderHint =>
+      '塗った所の縁に色が溜まり、内側が透けて、乾いた水彩のようになります（作業レイヤーに直接描きます）。範囲：縁から内側へどこまで濃くするか。縁の濃さ：縁に溜まる色の濃さ。透明度の影響：内側をどれだけ透けさせるか。ぼかし幅：濃さの移り変わりのなめらかさ。';
+
+  @override
   String get filterFisheyeCanvasHint => 'キャンバス上の＋で中心を、円の上の丸いつまみで半径を動かせます。';
 
   @override
@@ -7277,4 +7544,17 @@ class AppLocalizationsJa extends AppLocalizations {
   @override
   String get errorViewBody =>
       '作業中のデータは保持されています。前の画面へ戻ってからもう一度お試しください。以下の内容を開発元へお知らせいただけると原因の特定に役立ちます。';
+
+  @override
+  String get homeWorksLoadFailed => '作品一覧を読み込めませんでした';
+
+  @override
+  String get newProjectCreating => '作成しています…';
+
+  @override
+  String get newProjectCreateFailed =>
+      'プロジェクトを保存できませんでした。空き容量や保存先を確認して、もう一度お試しください。';
+
+  @override
+  String get communityCreatorLabel => '作者';
 }

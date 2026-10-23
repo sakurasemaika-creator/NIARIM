@@ -24,7 +24,7 @@ Brush _profiledBrush(String id) => Brush(
     edgeJitter: const PressureRangeSetting(enabled: true, weak: 64, strong: 8),
     mixing: const PressureMixingOnSetting(
       enabled: true,
-      mode: BrushMixingMode.bleed,
+      mode: BrushMixingMode.watercolor,
       weakRate: 79,
       strongRate: 17,
     ),
@@ -34,7 +34,7 @@ Brush _profiledBrush(String id) => Brush(
     edgeJitter: const FixedBrushSetting(enabled: true, value: 34),
     mixing: const PressureMixingOffSetting(
       enabled: true,
-      mode: BrushMixingMode.simple,
+      mode: BrushMixingMode.oil,
       rate: 45,
     ),
   ),
@@ -119,9 +119,9 @@ void main() {
         final archive = ZipDecoder().decodeBytes(await exported.readAsBytes());
         final dataFile = archive.findFile('data.json');
         expect(dataFile, isNotNull);
-        final json = jsonDecode(
-          utf8.decode(dataFile!.content as List<int>),
-        ) as Map<String, dynamic>;
+        final json =
+            jsonDecode(utf8.decode(dataFile!.content as List<int>))
+                as Map<String, dynamic>;
         final restored = Brush.fromJson(json);
 
         _expectProfilesPreserved(restored, original);

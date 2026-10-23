@@ -28,23 +28,32 @@ class AppLocalizationsFr extends AppLocalizations {
   String get homeTabBookmarked => 'Enregistrées';
 
   @override
-  String get homeBookmarkedEmptyTitle =>
-      'Aucune œuvre enregistrée pour l’instant';
+  String get homeBookmarkedEmptyTitle => 'Aucune œuvre enregistrée à afficher';
 
   @override
   String get homeBookmarkedEmptyBody =>
-      'Les œuvres ajoutées aux favoris dans la Place des œuvres apparaissent ici.';
+      'Enregistrez les œuvres publiques qui vous plaisent sur la Place des œuvres pour les retrouver ici.';
 
   @override
-  String get homeBookmarkedHiddenTitle =>
-      'Vos œuvres enregistrées sont masquées pour le moment';
+  String get homeBookmarkedHiddenTitle => 'Vos œuvres restent enregistrées';
 
   @override
   String get homeBookmarkedHiddenBody =>
-      'Elles sont masquées par les filtres d’affichage de la Place des œuvres ou ne sont plus publiques. Vos enregistrements sont conservés.';
+      'Les filtres d’affichage ou le statut public des œuvres peuvent les masquer. Vérifiez les filtres sur la Place des œuvres.';
 
   @override
-  String get homeBookmarkedOpenPlaza => 'Ouvrir la Place des œuvres';
+  String get homeBookmarkedLoading => 'Chargement des œuvres enregistrées…';
+
+  @override
+  String get homeBookmarkedLoadFailed =>
+      'Impossible de charger vos œuvres enregistrées';
+
+  @override
+  String get homeBookmarkedLoadPrompt => 'Charger vos œuvres enregistrées';
+
+  @override
+  String get homeBookmarkedSignInBody =>
+      'Connectez votre compte Google sur la Place des œuvres pour charger vos œuvres enregistrées.';
 
   @override
   String get homeSearchHint => 'Rechercher par nom de projet';
@@ -72,12 +81,6 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get homeSelectionAllDeselect => 'Tout désélectionner';
-
-  @override
-  String get homeSelectionAddFavorite => 'Ajouter aux favoris';
-
-  @override
-  String get homeSelectionRemoveFavorite => 'Retirer des favoris';
 
   @override
   String homeSelectionCount(int count) {
@@ -1451,7 +1454,7 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get helpColorMixingDesc =>
-      'En peignant avec un pinceau, mélange la couleur déjà présente sous le pinceau avec la couleur que vous êtes sur le point d\'appliquer. Utilisez-le lorsque vous voulez que de nouvelles couleurs se fondent dans les couleurs existantes, comme à l\'aquarelle ou à l\'huile.';
+      'En peignant avec un pinceau, mélange la couleur déjà présente sous le pinceau avec la couleur que vous êtes sur le point d\'appliquer. Dans le mode de mélange des réglages du pinceau, choisissez Numérique pour peindre sans mélanger, Mélange façon huile pour mélanger comme de la peinture et étirer la couleur ramassée, ou Mélange façon aquarelle pour superposer des lavis transparents dont la couleur s\'accumule sur le bord en séchant.';
 
   @override
   String get helpPressureCurveTitle => 'Courbe de pression';
@@ -1465,7 +1468,7 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get helpTimelineDesc =>
-      'L\'écran de gestion de l\'axe temporel de votre animation. Organiser des images (des images fixes individuelles) et les lire comme un folioscope crée l\'animation. Les pistes de matériaux image, vidéo et audio, les pistes de calques communs et les images clés de caméra sont tous gérés sur la même chronologie.';
+      'L\'écran de gestion de l\'axe temporel de votre animation. Organiser des images (des images fixes individuelles) et les lire comme un folioscope crée l\'animation. Les pistes de matériaux texte, image, vidéo et audio, les pistes de calques communs et les images clés de caméra sont toutes gérées sur la même chronologie. Ce qui passe devant parmi les textes, les images, les vidéos et le dessin de l\'image se règle dans « Ordre d\'empilement », pour toute la scène ou pour une plage d\'images. Vous pouvez aussi appuyer longuement sur un élément pour en sélectionner plusieurs et les déplacer ensemble.';
 
   @override
   String get helpSceneTitle => 'Scène';
@@ -1486,7 +1489,7 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get helpEffectFilterDesc =>
-      'Un effet visuel (flou, correction des couleurs, lueur, pixellisation, etc.) que vous pouvez appliquer à une scène ou une image. Utilisez-le lorsque vous voulez ajuster l\'apparence globale de l\'écran comme une touche de mise en scène, sans changer le dessin fait main lui-même. Parmi les filtres de dessin, Courbe de tons (un préréglage et son intensité), Niveaux, Netteté, Masque flou et Vignettage (couleur, étendue et densité) existent aussi en filtres d’effet, pour appliquer le même effet à plusieurs images d’un coup. Le filtre pixel art permet aussi de choisir un mode de couleur (sans limite, couleurs spécifiées, nombre de couleurs spécifié, ou choix depuis une palette). Quand les couleurs sont limitées, les zones dont aucune couleur permise n’est proche sont faites de deux ou trois couleurs permises selon un motif régulier (tramage) qui reste en place d’une image à l’autre ; les contours restent nets. Le tramage peut être désactivé pour remplir chaque point de la couleur la plus proche. Plusieurs filtres d\'effet peuvent être superposés, et ils s\'appliquent dans l\'ordre où ils apparaissent sur la timeline. Glisser pour réorganiser la liste des filtres change aussi l\'ordre réellement appliqué à l\'écran. Un filtre d\'effet qui applique un bruit façon grain de pellicule, en le faisant changer image par image. Intensité, quantité (densité du bruit) et taille du grain se règlent avec des curseurs. Revenir à la même image reproduit le même grain (pas de scintillement en scrubbing), tandis que la lecture donne l\'impression que le grain bouge. Un filtre d\'effet qui fait tomber de la pluie à l\'écran. Intensité (nombre de gouttes), vitesse, taille des gouttes et angle du vent se règlent avec des curseurs. Chaque goutte continue de tomber à une vitesse constante à mesure que l\'image avance, pour un mouvement de pluie naturel.';
+      'Un effet visuel (flou, correction des couleurs, lueur, pixellisation, etc.) que vous pouvez appliquer à une scène ou une image. Utilisez-le lorsque vous voulez ajuster l\'apparence globale de l\'écran comme une touche de mise en scène, sans changer le dessin fait main lui-même. Parmi les filtres de dessin, Courbe de tons (un préréglage et son intensité), Niveaux, Netteté, Masque flou, Vignettage (couleur, étendue et densité) et Bord aquarelle existent aussi en filtres d’effet, pour appliquer le même effet à plusieurs images d’un coup. Le filtre pixel art permet aussi de choisir un mode de couleur (sans limite, couleurs spécifiées, nombre de couleurs spécifié, ou choix depuis une palette). Quand les couleurs sont limitées, les zones dont aucune couleur permise n’est proche sont faites de deux ou trois couleurs permises selon un motif régulier (tramage) qui reste en place d’une image à l’autre ; les contours restent nets. Le tramage peut être désactivé pour remplir chaque point de la couleur la plus proche. Plusieurs filtres d\'effet peuvent être superposés, et ils s\'appliquent dans l\'ordre où ils apparaissent sur la timeline. Glisser pour réorganiser la liste des filtres change aussi l\'ordre réellement appliqué à l\'écran. Un filtre d\'effet qui applique un bruit façon grain de pellicule, en le faisant changer image par image. Intensité, quantité (densité du bruit) et taille du grain se règlent avec des curseurs. Revenir à la même image reproduit le même grain (pas de scintillement en scrubbing), tandis que la lecture donne l\'impression que le grain bouge. Un filtre d\'effet qui fait tomber de la pluie à l\'écran. Intensité (nombre de gouttes), vitesse, taille des gouttes et angle du vent se règlent avec des curseurs. Chaque goutte continue de tomber à une vitesse constante à mesure que l\'image avance, pour un mouvement de pluie naturel.';
 
   @override
   String get helpEndCardTitle => 'EndCard (logo de fin)';
@@ -1584,11 +1587,11 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get helpMaterialClipTitle =>
-      'Clips de matériel (image / vidéo / audio)';
+      'Clips de matériel (texte / image / vidéo / audio)';
 
   @override
   String get helpMaterialClipDesc =>
-      'Clips placés sur les pistes image, vidéo et audio de la timeline. Un appui long avec glisser sur le corps du clip déplace sa position de départ, et glisser les poignées à chaque extrémité change la portion utilisée. Toucher un clip ouvre sa fiche détaillée, où l\'icône de copie le duplique et l\'icône de corbeille le supprime. Les clips image et vidéo sont gérés en interne comme des calques, tandis que l\'audio est géré comme un clip rattaché directement à la scène.';
+      'Clips placés sur les pistes texte, image, vidéo et audio de la timeline. Un appui long avec glisser sur le corps du clip déplace sa position de départ, et glisser les poignées à chaque extrémité change la portion utilisée. Les matériaux affichés en même temps sont placés automatiquement sur des pistes distinctes. Toucher un clip texte, image ou vidéo ouvre son panneau d\'édition sous l\'aperçu : le texte, la police, la couleur et le contour ; la position, l\'échelle, la rotation sur les axes X/Y/Z et l\'opacité (on peut aussi le faire glisser sur l\'aperçu, et ajouter des images clés le fait bouger) ; son masque (rectangle ou ellipse, adouci, inversé) ; et la piste où il se trouve. On peut aussi le dupliquer ou le supprimer. Le volume et les fondus d\'un clip audio se règlent dans sa fiche détaillée.';
 
   @override
   String get helpGestureSettingsTitle => 'Réglages des gestes';
@@ -1815,7 +1818,7 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get helpDrawingFilterDesc =>
-      'Filtres appliqués directement au calque sélectionné (contrairement aux filtres d’effet, qui s’appliquent à toute la timeline ou à une scène, les filtres de dessin agissent par calque). Les 27 filtres inclus sont Flou gaussien, Flou d\'objectif, Style anime, Courbe de tons, Niveaux, Contour, Netteté, Masque flou, Vignettage, Grain de film, Anime rétro, Tube cathodique, Seuil, Œil de poisson, Aberration chromatique, Distorsion optique, Pixel art, Changement de texture, Fondu d\'arrière-plan, Accumulation d’encre, Trait automatique, Prisme, Bruit VHS, Inverser les couleurs, Mosaïque, Bruit et Ombrage sphérique. Style anime réduit les couleurs et trace un trait de l’« Épaisseur de bordure » du côté le plus sombre de chaque limite où les couleurs voisines diffèrent d’au moins le « Seuil de différence de couleur » (les traits du dessin ne s’épaississent pas). Prisme peint chaque forme du calque avec les six couleurs de l’arc-en-ciel (rouge, vert, cyan, bleu, violet, rouge), la floute et passe le calque en mode Densité linéaire -. Dessinez d’abord sur leur propre calque de petites formes fines comme des feuilles, d’une couleur sombre : vous obtenez de doux reflets arc-en-ciel sur votre dessin (l’Intensité du flou se mesure comme un flou gaussien ordinaire). L’Ombrage sphérique applique une couleur de lumière à l’intérieur d’une lumière elliptique et une couleur d’ombre à l’extérieur, uniquement sur le dessin (la lumière peut aussi être déplacée sur le canevas). Contour ne réécrit pas le calque d’origine : il dessine seulement le résultat sur un nouveau calque. Distorsion optique applique une déformation localisée, comme à travers un verre de lunettes puissant, uniquement sur la zone peinte sur le canevas avec le « Pinceau » et le « Pot de peinture » du panneau (corrigée avec la « Gomme » ; elle part de la sélection ou du calque de sélection s’il y en a un). Lorsque le canevas comporte une sélection, les filtres de dessin ne s’appliquent qu’à l’intérieur. Pixel art permet aussi de choisir un mode de couleur (sans limite, couleurs définies, nombre de couleurs ou palette). Quand les couleurs sont limitées, les zones dont aucune couleur permise n’est proche sont faites de deux ou trois couleurs permises disposées selon un motif régulier (tramage) qui se rapproche davantage de l’original ; les contours restent nets. Avec un nombre de couleurs, celles-ci sont prises parmi ce qui compose la plus grande partie de l’image. Le tramage peut être désactivé pour remplir chaque point de la couleur la plus proche. Sa taille se règle par la taille des blocs (100 crans, de 1 à 100) ou par des curseurs de points en largeur et en hauteur (1 tout à gauche, la taille du canevas tout à droite) ; déplacer l’un déplace l’autre en gardant les proportions du dessin, et les deux réglages restent liés. Dans les deux cas, les points restent carrés, sans bord semi-transparent. Le Trait automatique permet de modifier les points de contrôle vectoriels temporaires avant d’appliquer le filtre. Faites glisser un point pour déplacer uniquement ce point. Choisissez « Ajouter un point de contrôle » à côté d’Appliquer et touchez une ligne pour ajouter un point, ou choisissez « Supprimer un point de contrôle » et touchez un point pour le supprimer (sans aucun des deux choisi, toucher un point demande confirmation avant de le supprimer). La géométrie modifiée est utilisée directement dans le résultat appliqué, et le déplacement, l’ajout ou la suppression de points peuvent être annulés et rétablis un par un avec Annuler et Rétablir de l’éditeur de filtres. Sur la Courbe de tons, touchez une zone vide pour ajouter un point, faites glisser un point pour le déplacer et appuyez longuement dessus pour le supprimer ; les courbes R, G et B s’appliquent après la courbe RGB. Les Niveaux se règlent aussi séparément pour R, G et B, et le Gamma modifie les tons moyens. L’« Empiètement vers l’intérieur » du contour élargit le bord vers l’intérieur de la forme d’origine, et le nouveau calque du contour est placé juste sous le calque d’origine. L’aberration chromatique permet de répartir le décalage entre X (horizontal), Y (vertical) et Z (vers l’extérieur depuis le centre). Le centre et le rayon de l’œil de poisson se déplacent aussi sur le canevas, avec le + et la poignée du cercle. Vignettage assombrit doucement les quatre coins de toute la toile (les zones transparentes non dessinées reçoivent aussi l’ombre). La « Portée » règle jusqu’où il s’étend des coins vers le centre, et l’« Intensité » à quel point les coins s’assombrissent. Distorsion de lentille fonctionne comme de vraies lunettes à forte correction : ce que l’on voit à travers le verre rétrécit uniformément vers son centre (valeurs négatives, pour la myopie) ou s’agrandit (valeurs positives, pour l’hypermétropie), et le contour se décale en marche au bord du verre. Accumulation d’encre ne se forme qu’à l’intérieur des angles où les traits se rejoignent à l’« Angle maximal » ou moins (à 90°, la valeur initiale, les angles aigus et droits : un V, le côté étroit d’un croisement, une jonction en T, un coin carré), jamais dans les angles plus ouverts : au point de rencontre elle a l’« Épaisseur centrale » depuis le bord du trait, puis s’affine en ligne droite jusqu’à disparaître en une pointe douce au bout de la « Plage » (même avec une grande « Épaisseur centrale », elle ne bombe jamais au-delà de la droite qui relie les extrémités des deux accumulations : au maximum, le milieu reste plat) ; si un trait s’arrête avant, l’accumulation le long de ce trait s’affine jusqu’à disparaître là où il s’arrête, si bien que chaque trait peut avoir sa propre longueur, et les deux accumulations se rejoignent tout de même au milieu de l’angle, aussi épaisses depuis l’un que depuis l’autre trait (celle du trait le plus long continue ensuite de s’affiner jusqu’au bout de la plage). Encrage automatique suit le milieu des traits du brouillon et les dessine fins. Les traits proches l’un de l’autre restent des traits distincts tant qu’un espace les sépare ; seules les petites taches de papier à l’intérieur d’un trait sont comblées. Là où deux traits se rejoignent, ils se rapprochent peu à peu comme dans le brouillon, au lieu de devenir un seul trait au milieu. Là où des traits se croisent ou se superposent, chacun continue comme dans le brouillon (il ne se plie pas vers le croisement et deux traits superposés ne se fondent pas en un seul). Les traits qui se croisent en biais continuent tout droit à travers le croisement, et ceux qui ne font que se toucher (comme le contour des cheveux tracé le long de la tête) restent des traits distincts, chacun de son côté. Les points, comme les yeux, restent des points pleins. Les branches plus courtes que l’« Épaisseur du brouillon » ne sont pas dessinées. « Effiler les extrémités » peut être activé ou désactivé ; désactivé, les traits gardent la même épaisseur jusqu’à leurs extrémités. Fondu d’arrière-plan superpose la lumière et l’ombre de l’arrière-plan avec le mode de fusion « Lumière crue » (la couleur de l’ombre n’est ni noire ni grise, mais celle des ombres de l’arrière-plan lui-même, assombrie). La couleur de l’environnement est superposée à tout le dessin en « Incrustation » pour en fixer la teinte générale, la lumière renvoyée par le sol et par les alentours s’ajoute en « Écran », et une lumière colorée intense comme un néon brille le long du contour en « Addition (lueur) ». « Accorder aux tons de l’arrière-plan » ramène dans sa plage les couleurs plus claires ou plus vives que l’arrière-plan, et donne aux tons sombres, moyens et clairs la dominante des tons de l’arrière-plan de même luminosité (le noir du trait ne change pas). « Intensité du flou » indique combien l’arrière-plan est flouté avant d’en prendre les couleurs.';
+      'Filtres appliqués directement au calque sélectionné (contrairement aux filtres d’effet, qui s’appliquent à toute la timeline ou à une scène, les filtres de dessin agissent par calque). Les 28 filtres inclus sont Flou gaussien, Flou d\'objectif, Style anime, Courbe de tons, Niveaux, Contour, Netteté, Masque flou, Vignettage, Grain de film, Anime rétro, Tube cathodique, Seuil, Œil de poisson, Aberration chromatique, Distorsion optique, Pixel art, Changement de texture, Fondu d\'arrière-plan, Accumulation d’encre, Trait automatique, Prisme, Bruit VHS, Inverser les couleurs, Mosaïque, Bruit, Ombrage sphérique et Bord aquarelle. Bord aquarelle accumule la couleur sur les bords de ce qui est peint sur le calque de travail et rend l\'intérieur translucide, comme une aquarelle sèche (avec « Aussi aux limites de couleur », les limites entre couleurs voisines reçoivent aussi un bord). Style anime réduit les couleurs et trace un trait de l’« Épaisseur de bordure » du côté le plus sombre de chaque limite où les couleurs voisines diffèrent d’au moins le « Seuil de différence de couleur » (les traits du dessin ne s’épaississent pas). Prisme peint chaque forme du calque avec les six couleurs de l’arc-en-ciel (rouge, vert, cyan, bleu, violet, rouge), la floute et passe le calque en mode Densité linéaire -. Dessinez d’abord sur leur propre calque de petites formes fines comme des feuilles, d’une couleur sombre : vous obtenez de doux reflets arc-en-ciel sur votre dessin (l’Intensité du flou se mesure comme un flou gaussien ordinaire). L’Ombrage sphérique applique une couleur de lumière à l’intérieur d’une lumière elliptique et une couleur d’ombre à l’extérieur, uniquement sur le dessin (la lumière peut aussi être déplacée sur le canevas). Contour ne réécrit pas le calque d’origine : il dessine seulement le résultat sur un nouveau calque. Distorsion optique applique une déformation localisée, comme à travers un verre de lunettes puissant, uniquement sur la zone peinte sur le canevas avec le « Pinceau » et le « Pot de peinture » du panneau (corrigée avec la « Gomme » ; elle part de la sélection ou du calque de sélection s’il y en a un). Lorsque le canevas comporte une sélection, les filtres de dessin ne s’appliquent qu’à l’intérieur. Pixel art permet aussi de choisir un mode de couleur (sans limite, couleurs définies, nombre de couleurs ou palette). Quand les couleurs sont limitées, les zones dont aucune couleur permise n’est proche sont faites de deux ou trois couleurs permises disposées selon un motif régulier (tramage) qui se rapproche davantage de l’original ; les contours restent nets. Avec un nombre de couleurs, celles-ci sont prises parmi ce qui compose la plus grande partie de l’image. Le tramage peut être désactivé pour remplir chaque point de la couleur la plus proche. Sa taille se règle par la taille des blocs (100 crans, de 1 à 100) ou par des curseurs de points en largeur et en hauteur (1 tout à gauche, la taille du canevas tout à droite) ; déplacer l’un déplace l’autre en gardant les proportions du dessin, et les deux réglages restent liés. Dans les deux cas, les points restent carrés, sans bord semi-transparent. Le Trait automatique permet de modifier les points de contrôle vectoriels temporaires avant d’appliquer le filtre. Faites glisser un point pour déplacer uniquement ce point. Choisissez « Ajouter un point de contrôle » à côté d’Appliquer et touchez une ligne pour ajouter un point, ou choisissez « Supprimer un point de contrôle » et touchez un point pour le supprimer (sans aucun des deux choisi, toucher un point demande confirmation avant de le supprimer). La géométrie modifiée est utilisée directement dans le résultat appliqué, et le déplacement, l’ajout ou la suppression de points peuvent être annulés et rétablis un par un avec Annuler et Rétablir de l’éditeur de filtres. Sur la Courbe de tons, touchez une zone vide pour ajouter un point, faites glisser un point pour le déplacer et appuyez longuement dessus pour le supprimer ; les courbes R, G et B s’appliquent après la courbe RGB. Les Niveaux se règlent aussi séparément pour R, G et B, et le Gamma modifie les tons moyens. L’« Empiètement vers l’intérieur » du contour élargit le bord vers l’intérieur de la forme d’origine, et le nouveau calque du contour est placé juste sous le calque d’origine. L’aberration chromatique permet de répartir le décalage entre X (horizontal), Y (vertical) et Z (vers l’extérieur depuis le centre). Le centre et le rayon de l’œil de poisson se déplacent aussi sur le canevas, avec le + et la poignée du cercle. Vignettage assombrit doucement les quatre coins de toute la toile (les zones transparentes non dessinées reçoivent aussi l’ombre). La « Portée » règle jusqu’où il s’étend des coins vers le centre, et l’« Intensité » à quel point les coins s’assombrissent. Distorsion de lentille fonctionne comme de vraies lunettes à forte correction : ce que l’on voit à travers le verre rétrécit uniformément vers son centre (valeurs négatives, pour la myopie) ou s’agrandit (valeurs positives, pour l’hypermétropie), et le contour se décale en marche au bord du verre. Accumulation d’encre ne se forme qu’à l’intérieur des angles où les traits se rejoignent à l’« Angle maximal » ou moins (à 90°, la valeur initiale, les angles aigus et droits : un V, le côté étroit d’un croisement, une jonction en T, un coin carré), jamais dans les angles plus ouverts : au point de rencontre elle a l’« Épaisseur centrale » depuis le bord du trait, puis s’affine en ligne droite jusqu’à disparaître en une pointe douce au bout de la « Plage » (même avec une grande « Épaisseur centrale », elle ne bombe jamais au-delà de la droite qui relie les extrémités des deux accumulations : au maximum, le milieu reste plat) ; si un trait s’arrête avant, l’accumulation le long de ce trait s’affine jusqu’à disparaître là où il s’arrête, si bien que chaque trait peut avoir sa propre longueur, et les deux accumulations se rejoignent tout de même au milieu de l’angle, aussi épaisses depuis l’un que depuis l’autre trait (celle du trait le plus long continue ensuite de s’affiner jusqu’au bout de la plage). Encrage automatique suit le milieu des traits du brouillon et les dessine fins. Les traits proches l’un de l’autre restent des traits distincts tant qu’un espace les sépare ; seules les petites taches de papier à l’intérieur d’un trait sont comblées. Là où deux traits se rejoignent, ils se rapprochent peu à peu comme dans le brouillon, au lieu de devenir un seul trait au milieu. Là où des traits se croisent ou se superposent, chacun continue comme dans le brouillon (il ne se plie pas vers le croisement et deux traits superposés ne se fondent pas en un seul). Les traits qui se croisent en biais continuent tout droit à travers le croisement, et ceux qui ne font que se toucher (comme le contour des cheveux tracé le long de la tête) restent des traits distincts, chacun de son côté. Les points, comme les yeux, restent des points pleins. Les branches plus courtes que l’« Épaisseur du brouillon » ne sont pas dessinées. « Effiler les extrémités » peut être activé ou désactivé ; désactivé, les traits gardent la même épaisseur jusqu’à leurs extrémités. Fondu d’arrière-plan superpose la lumière et l’ombre de l’arrière-plan avec le mode de fusion « Lumière crue » (la couleur de l’ombre n’est ni noire ni grise, mais celle des ombres de l’arrière-plan lui-même, assombrie). La couleur de l’environnement est superposée à tout le dessin en « Incrustation » pour en fixer la teinte générale, la lumière renvoyée par le sol et par les alentours s’ajoute en « Écran », et une lumière colorée intense comme un néon brille le long du contour en « Addition (lueur) ». « Accorder aux tons de l’arrière-plan » ramène dans sa plage les couleurs plus claires ou plus vives que l’arrière-plan, et donne aux tons sombres, moyens et clairs la dominante des tons de l’arrière-plan de même luminosité (le noir du trait ne change pas). « Intensité du flou » indique combien l’arrière-plan est flouté avant d’en prendre les couleurs.';
 
   @override
   String get helpLayerKeyframeTitle =>
@@ -2709,7 +2712,19 @@ class AppLocalizationsFr extends AppLocalizations {
   String get themeColorAccent => 'Couleur d\'accent';
 
   @override
-  String get themeColorText => 'Couleur du texte';
+  String get themeColorText => 'Couleur du texte courant';
+
+  @override
+  String get themeColorButtonText =>
+      'Couleur du texte et des icônes des boutons';
+
+  @override
+  String get themeColorMenuText =>
+      'Couleur du texte des menus et de la barre supérieure';
+
+  @override
+  String get themeColorSelectionText =>
+      'Couleur du texte et des icônes sélectionnés';
 
   @override
   String get themeColorPanelBg => 'Couleur de fond des panneaux';
@@ -2724,11 +2739,10 @@ class AppLocalizationsFr extends AppLocalizations {
   String get themeColorUpdateMark => 'Couleur de la marque de mise à jour';
 
   @override
-  String get themeContrastErrorTitle => 'Le texte deviendrait illisible';
+  String get themeResetConfirmTitle => 'Réinitialiser les couleurs du thème ?';
 
   @override
-  String get themeContrastErrorBody =>
-      'La couleur du texte et celle du fond sont trop proches : le texte serait presque invisible. L’écran des réglages lui-même deviendrait illisible et vous ne pourriez plus revenir en arrière, cette combinaison ne peut donc pas être enregistrée. Modifiez la luminosité de l’une des deux.';
+  String get themeResetConfirmAction => 'Réinitialiser';
 
   @override
   String get themeUnreadableResetButton => 'Réinitialiser le thème';
@@ -3248,16 +3262,49 @@ class AppLocalizationsFr extends AppLocalizations {
       'L\'opacité diminue plus vous dessinez longtemps';
 
   @override
-  String get brushSettingsMixingTitle => 'Mélange des couleurs';
+  String get brushSettingsMixingTitle => 'Mode de mélange';
 
   @override
-  String get brushSettingsMixingOff => 'OFF';
+  String get brushSettingsMixingOff => 'Numérique';
 
   @override
-  String get brushSettingsMixingSimple => 'Mélange simple';
+  String get brushSettingsMixingOil => 'Mélange façon huile';
 
   @override
-  String get brushSettingsMixingBleed => 'Effet de bavure';
+  String get brushSettingsMixingWatercolor => 'Mélange façon aquarelle';
+
+  @override
+  String get brushSettingsMixingBrightnessCorrection =>
+      'Correction de luminosité';
+
+  @override
+  String get brushSettingsMixingAmount => 'Degré de mélange';
+
+  @override
+  String get brushSettingsMixingStretch => 'Étirement de la couleur';
+
+  @override
+  String get brushSettingsMixingWater => 'Quantité d\'eau';
+
+  @override
+  String get brushSettingsMixingPigment => 'Quantité de pigment';
+
+  @override
+  String get brushSettingsMixingBleed => 'Diffusion';
+
+  @override
+  String get brushSettingsMixingTexture => 'Texture';
+
+  @override
+  String get brushSettingsMixingSoftEdge => 'Bord doux';
+
+  @override
+  String get brushSettingsMixingOilHint =>
+      'Se mélange aux couleurs du dessous comme de la peinture et étire la couleur ramassée le long du trait.';
+
+  @override
+  String get brushSettingsMixingWatercolorHint =>
+      'Pose des lavis transparents. Quand vous levez le stylet, le lavis sèche, se diffuse un peu au-delà du pinceau et la couleur s\'accumule sur son bord.';
 
   @override
   String get projectDetailNotFoundTitle => 'Projet';
@@ -3299,6 +3346,12 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get projectDetailShareQuickAction => 'Partager';
+
+  @override
+  String get projectDetailFavoriteRegistered => 'Dans les favoris';
+
+  @override
+  String get projectDetailFavoriteUnregistered => 'Pas dans les favoris';
 
   @override
   String get projectDetailInfoSectionTitle => 'Infos du projet';
@@ -4952,6 +5005,207 @@ class AppLocalizationsFr extends AppLocalizations {
   String get timelineAddWatermarkTooltip => '+ Filigrane';
 
   @override
+  String get timelineStackScopeRange => 'Plage d\'images';
+
+  @override
+  String get timelineStackTargetLabel => 'Utiliser cet ordre pour';
+
+  @override
+  String get timelineStackTargetScenes => 'Choisir des scènes';
+
+  @override
+  String get timelineStackTargetAllFrames => 'Toutes les images';
+
+  @override
+  String get timelineStackScenesHint =>
+      'Toutes les images des scènes choisies utilisent le même ordre. Réorganiser ici l\'applique à toutes.';
+
+  @override
+  String get timelineStackAllFramesHint =>
+      'Toutes les images de toutes les scènes utilisent le même ordre. Réorganiser ici l\'applique à toutes les scènes.';
+
+  @override
+  String get timelineStackRangesTakePriority =>
+      'Les images d\'une plage gardent l\'ordre de cette plage.';
+
+  @override
+  String timelineStackRangeLabel(int start, int end) {
+    return 'F$start–F$end';
+  }
+
+  @override
+  String timelineStackRangeAdd(int n) {
+    return 'Ajouter une plage à F$n';
+  }
+
+  @override
+  String get timelineStackRangeHint =>
+      'Seules les images d\'une plage utilisent l\'ordre défini ici ; en dehors des plages, c\'est l\'ordre de toute la scène.';
+
+  @override
+  String get timelineStackRangeEmpty =>
+      'Aucune plage pour l\'instant. Utilisez le bouton ci-dessus pour en créer une à l\'image actuelle.';
+
+  @override
+  String timelineStackRangeOrderHint(String range) {
+    return 'Ordre d\'empilement pour $range (plus haut = devant). Faites glisser la poignée ou utilisez les flèches pour réorganiser.';
+  }
+
+  @override
+  String get timelineStackRangeDelete => 'Supprimer cette plage';
+
+  @override
+  String get timelineAddMaterialTooltip => 'Ajouter un matériau';
+
+  @override
+  String get timelineMaterialRowLabel => 'Piste';
+
+  @override
+  String get timelineMaterialNewRow => 'Nouvelle piste';
+
+  @override
+  String get timelineAddTextTooltip => '+ Texte';
+
+  @override
+  String get timelineAddImageTooltip => '+ Image';
+
+  @override
+  String get timelineStackOrderTitle => 'Ordre d\'empilement';
+
+  @override
+  String get timelineMaterialText => 'Texte';
+
+  @override
+  String get timelineAddTextDialogTitle => 'Ajouter du texte';
+
+  @override
+  String get timelineEditSectionText => 'Texte';
+
+  @override
+  String get timelineEditSectionTransform => 'Position';
+
+  @override
+  String get timelineEditSectionMask => 'Masque';
+
+  @override
+  String get timelineTransformRotationX => 'Rotation X';
+
+  @override
+  String get timelineTransformRotationY => 'Rotation Y';
+
+  @override
+  String get timelineTransformRotationZ => 'Rotation Z';
+
+  @override
+  String get timelineTransformReset => 'Réinitialiser la position';
+
+  @override
+  String timelineKeyframeAddHere(int n) {
+    return 'Ajouter une image clé à F$n';
+  }
+
+  @override
+  String timelineKeyframeRemoveHere(int n) {
+    return 'Supprimer l\'image clé de F$n';
+  }
+
+  @override
+  String get timelineKeyframeWholeHint =>
+      'La même position est utilisée partout. Pour l\'animer, allez à une autre image et ajoutez une image clé.';
+
+  @override
+  String timelineKeyframeAnimHint(int count, int n) {
+    return '$count images clés : les modifications sont enregistrées à F$n et les images intermédiaires sont calculées automatiquement.';
+  }
+
+  @override
+  String get timelineGizmoHint =>
+      'Faites glisser sur l\'aperçu pour le déplacer, un point d\'angle pour le redimensionner et le point du haut pour le faire pivoter. Deux doigts fonctionnent aussi.';
+
+  @override
+  String timelineMaterialOutOfRange(int start, int end) {
+    return 'Non affiché à cette image (affiché de F$start à F$end)';
+  }
+
+  @override
+  String get timelineMaskNone => 'Aucun';
+
+  @override
+  String get timelineMaskRectangle => 'Rectangle';
+
+  @override
+  String get timelineMaskEllipse => 'Ellipse';
+
+  @override
+  String get timelineMaskCenterX => 'Centre X';
+
+  @override
+  String get timelineMaskCenterY => 'Centre Y';
+
+  @override
+  String get timelineMaskWidth => 'Largeur';
+
+  @override
+  String get timelineMaskHeight => 'Hauteur';
+
+  @override
+  String get timelineMaskFeather => 'Contour progressif';
+
+  @override
+  String get timelineMaskInvert => 'Inverser (masquer l\'intérieur)';
+
+  @override
+  String get timelineMaskHint =>
+      'N\'affiche que ce qui est à l\'intérieur du masque. Inversez-le pour masquer l\'intérieur.';
+
+  @override
+  String get timelineStackOrderHint =>
+      'Les éléments en haut de la liste passent devant. Faites glisser la poignée ou utilisez les flèches pour réorganiser.';
+
+  @override
+  String get timelineStackScopeScene => 'Toute la scène actuelle';
+
+  @override
+  String get timelineStackFrameUnit => 'Image (dessin)';
+
+  @override
+  String get timelineStackResetScene => 'Revenir à l\'ordre par défaut';
+
+  @override
+  String get timelineStackFrameMaskTitle => 'Masque de l\'image (dessin)';
+
+  @override
+  String get timelineStackFrameMaskHint =>
+      'Ne recadre que le dessin ; le texte, les images et la vidéo ne sont pas affectés. Le dessin n\'est pas masqué pendant que vous dessinez sur le canevas.';
+
+  @override
+  String get timelineStackMoveUp => 'Avancer';
+
+  @override
+  String get timelineStackMoveDown => 'Reculer';
+
+  @override
+  String timelineStackSelectedCount(int count) {
+    return '$count sélectionné(s)';
+  }
+
+  @override
+  String get timelineStackBringToFront => 'Premier plan';
+
+  @override
+  String get timelineStackSendToBack => 'Arrière-plan';
+
+  @override
+  String get timelineStackDeselectAll => 'Tout désélectionner';
+
+  @override
+  String get timelineStackSelectAll => 'Tout sélectionner';
+
+  @override
+  String get timelineStackMultiSelectHint =>
+      'Appuyez longuement sur un élément pour en sélectionner plusieurs. Les éléments sélectionnés se déplacent ensemble avec les flèches, en les faisant glisser ou avec les boutons ci-dessous.';
+
+  @override
   String get timelineWatermarkNotRegisteredTitle =>
       'Aucun filigrane enregistré';
 
@@ -5036,7 +5290,7 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get timelineSceneDeleteConfirmBody =>
-      'Toutes les données de la scène seront supprimées : images, calques communs, matériaux vidéo, matériaux image et filigranes inclus.';
+      'Toutes les données de la scène seront supprimées : images, calques communs, matériaux texte, vidéo et image, et filigranes inclus.';
 
   @override
   String timelineSceneMultiDeleteConfirmTitle(int count) {
@@ -6833,9 +7087,6 @@ class AppLocalizationsFr extends AppLocalizations {
   String get brushSettingsStrongPressureLabel => 'Forte';
 
   @override
-  String get brushSettingsValueLabel => 'Valeur';
-
-  @override
   String get helpCustomAutomationTitle =>
       'Automatisations personnalisées (enregistrement d’actions)';
 
@@ -7570,6 +7821,28 @@ class AppLocalizationsFr extends AppLocalizations {
       'Faites glisser le + sur le canevas pour déplacer la lumière et les poignées rondes pour la redimensionner. L’ombre et la lumière ne s’appliquent qu’au dessin.';
 
   @override
+  String get filterNameWatercolorBorder => 'Bord aquarelle';
+
+  @override
+  String get filterWatercolorBorderRange => 'Portée';
+
+  @override
+  String get filterWatercolorBorderBlur => 'Largeur du flou';
+
+  @override
+  String get filterWatercolorBorderOpacity => 'Effet sur la transparence';
+
+  @override
+  String get filterWatercolorBorderDarken => 'Intensité du bord';
+
+  @override
+  String get filterWatercolorBorderColorEdges => 'Aussi aux limites de couleur';
+
+  @override
+  String get filterWatercolorBorderHint =>
+      'La couleur s\'accumule sur les bords des zones peintes et l\'intérieur devient translucide, comme une aquarelle sèche (dessiné directement sur le calque de travail). Portée : jusqu\'où le bord s\'intensifie vers l\'intérieur. Intensité du bord : la quantité de couleur accumulée sur le bord. Effet sur la transparence : à quel point l\'intérieur devient translucide. Largeur du flou : la douceur de la transition.';
+
+  @override
   String get filterFisheyeCanvasHint =>
       'Faites glisser le + sur le canevas pour déplacer le centre et la poignée ronde du cercle pour changer le rayon.';
 
@@ -7675,4 +7948,18 @@ class AppLocalizationsFr extends AppLocalizations {
   @override
   String get errorViewBody =>
       'Votre travail en cours est conservé. Revenez à l’écran précédent et réessayez. Nous envoyer le texte ci-dessous nous aidera à en trouver la cause.';
+
+  @override
+  String get homeWorksLoadFailed =>
+      'Impossible de charger vos créations exportées';
+
+  @override
+  String get newProjectCreating => 'Création en cours…';
+
+  @override
+  String get newProjectCreateFailed =>
+      'Impossible d’enregistrer le projet. Vérifiez l’espace de stockage et l’emplacement d’enregistrement, puis réessayez.';
+
+  @override
+  String get communityCreatorLabel => 'Créateur';
 }

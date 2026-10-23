@@ -9,6 +9,10 @@ class AppThemePreset {
   final String name;
   final Color accentColor;
   final Color textColor;
+  /// These are first-class user-defined foreground colors, never auto-corrected.
+  final Color buttonTextColor;
+  final Color menuTextColor;
+  final Color selectionTextColor;
   final Color panelBgColor;
   final Color menuBgColor;
   final Color selectionColor;
@@ -20,6 +24,9 @@ class AppThemePreset {
     required this.name,
     required this.accentColor,
     required this.textColor,
+    required this.buttonTextColor,
+    required this.menuTextColor,
+    required this.selectionTextColor,
     required this.panelBgColor,
     required this.menuBgColor,
     required this.selectionColor,
@@ -32,6 +39,9 @@ class AppThemePreset {
     String? name,
     Color? accentColor,
     Color? textColor,
+    Color? buttonTextColor,
+    Color? menuTextColor,
+    Color? selectionTextColor,
     Color? panelBgColor,
     Color? menuBgColor,
     Color? selectionColor,
@@ -43,6 +53,9 @@ class AppThemePreset {
       name: name ?? this.name,
       accentColor: accentColor ?? this.accentColor,
       textColor: textColor ?? this.textColor,
+      buttonTextColor: buttonTextColor ?? this.buttonTextColor,
+      menuTextColor: menuTextColor ?? this.menuTextColor,
+      selectionTextColor: selectionTextColor ?? this.selectionTextColor,
       panelBgColor: panelBgColor ?? this.panelBgColor,
       menuBgColor: menuBgColor ?? this.menuBgColor,
       selectionColor: selectionColor ?? this.selectionColor,
@@ -62,6 +75,9 @@ class AppThemePreset {
     name: 'レッド（ダーク）',
     accentColor: Color(0xFFFF5C7A),
     textColor: Color(0xFFF5F1F0),
+    buttonTextColor: Color(0xFFFFFFFF),
+    menuTextColor: Color(0xFFF5F1F0),
+    selectionTextColor: Color(0xFFFFFFFF),
     panelBgColor: Color(0xFF17161C),
     menuBgColor: Color(0xFF201F27),
     selectionColor: Color(0xFFFF5C7A),
@@ -73,6 +89,9 @@ class AppThemePreset {
     name: 'レッド（ライト）',
     accentColor: Color(0xFFFF5C7A),
     textColor: Color(0xFF2B2730),
+    buttonTextColor: Color(0xFFFFFFFF),
+    menuTextColor: Color(0xFF2B2730),
+    selectionTextColor: Color(0xFFFFFFFF),
     panelBgColor: Color(0xFFFAF7F5),
     menuBgColor: Color(0xFFFFFFFF),
     selectionColor: Color(0xFFFF5C7A),
@@ -84,6 +103,9 @@ class AppThemePreset {
     'name': name,
     'accentColor': accentColor.toARGB32(),
     'textColor': textColor.toARGB32(),
+    'buttonTextColor': buttonTextColor.toARGB32(),
+    'menuTextColor': menuTextColor.toARGB32(),
+    'selectionTextColor': selectionTextColor.toARGB32(),
     'panelBgColor': panelBgColor.toARGB32(),
     'menuBgColor': menuBgColor.toARGB32(),
     'selectionColor': selectionColor.toARGB32(),
@@ -94,11 +116,11 @@ class AppThemePreset {
   factory AppThemePreset.fromJson(Map<String, dynamic> json) => AppThemePreset(
     id: json['id'] as String,
     name: json['name'] as String,
-    // 'baseTheme'キーは廃止済みだが、旧バージョンで保存されたデータ
-    // （プリセット・.niatra引き継ぎファイル等）に含まれている場合が
-    // あるため、存在しても単に無視する（読み込みエラーにしない）。
     accentColor: Color(json['accentColor'] as int),
     textColor: Color(json['textColor'] as int),
+    buttonTextColor: Color(json['buttonTextColor'] as int),
+    menuTextColor: Color(json['menuTextColor'] as int),
+    selectionTextColor: Color(json['selectionTextColor'] as int),
     panelBgColor: Color(json['panelBgColor'] as int),
     menuBgColor: Color(json['menuBgColor'] as int),
     selectionColor: Color(json['selectionColor'] as int),

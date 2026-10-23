@@ -10,10 +10,10 @@ void main() {
     final en = File('lib/l10n/app_en.arb').readAsStringSync();
     final service = File('lib/services/filter_service.dart').readAsStringSync();
 
-    expect(ja, contains('"filterNameAuroraHologram": "質感変更フィルター"'));
-    expect(en, contains('"filterNameAuroraHologram": "Texture Filter"'));
+    expect(ja, contains('"filterNameAuroraHologram": "質感変更"'));
+    expect(en, contains('"filterNameAuroraHologram": "Texture"'));
     expect(service, contains("id: 'Filter0019'"));
-    expect(service, contains("name: '質感変更フィルター'"));
+    expect(service, contains("name: '質感変更'"));
 
     final stops = auroraHologramStops(AuroraHologramPreset.sampledGold);
     expect(stops.first, equals((0.00, 70, 50, 31)));

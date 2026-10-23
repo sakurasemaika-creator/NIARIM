@@ -11,10 +11,12 @@ import '../models/effect_filter_instance.dart';
 import '../models/layer.dart';
 import '../models/layer_group.dart';
 import '../models/layer_keyframe.dart';
+import '../models/layer_mask.dart';
 import '../models/pixel_color_mode.dart';
 import '../models/project.dart';
 import '../models/timeline_marker.dart';
 import '../models/scene.dart';
+import '../models/scene_stack.dart';
 import '../models/text_object.dart';
 import 'filter_engine.dart' show EffectFilterType;
 import 'tile_manager.dart';
@@ -618,10 +620,13 @@ class NiaproSerializer {
       );
       final sceneIndex =
           int.tryParse(sceneId.replaceAll(RegExp(r'[^0-9]'), '')) ?? 1;
+      final sceneJson = decoded is Map<String, dynamic>
+          ? decoded
+          : const <String, dynamic>{};
       scenes.add(
         Scene(
           id: sceneId,
-          index: sceneIndex - 1,
+          index: sceneJson['index'] as int? ?? sceneIndex - 1,
           frames: frames,
           name: name,
           cameraKeyframes: cameraKeyframes,
@@ -632,6 +637,10 @@ class NiaproSerializer {
           imageRowNames: imageRowNames,
           videoRowNames: videoRowNames,
           audioRowNames: audioRowNames,
+          textRowNames: (sceneJson['textRowNames'] as List<dynamic>? ?? const [])
+              .map((e) => e as String?)
+              .toList(),
+          stack: SceneStack.fromJson(sceneJson['stack']),
         ),
       );
     }
@@ -843,6 +852,11 @@ class NiaproSerializer {
     'imageRowNames': scene.imageRowNames,
     'videoRowNames': scene.videoRowNames,
     'audioRowNames': scene.audioRowNames,
+    if (scene.textRowNames.isNotEmpty) 'textRowNames': scene.textRowNames,
+    if (!scene.stack.isEmpty) 'stack': scene.stack.toJson(),
+    // The scene's place in the project (moving a scene changes it; the id
+    // keeps the number it was made with).
+    'index': scene.index,
     'groups': scene.groups.map((g) => g.toJson()).toList(),
     'markers': scene.markers.map((m) => m.toJson()).toList(),
   };
@@ -885,6 +899,7 @@ class NiaproSerializer {
     if (l.keyframes.isNotEmpty)
       'keyframes': l.keyframes.map((k) => k.toJson()).toList(),
     if (l.textObject != null) 'textObject': _serializeTextObject(l.textObject!),
+    if (l.mask != null) 'mask': l.mask!.toJson(),
   };
 
   static Map<String, dynamic> _serializeTextObject(TextObject t) => {
@@ -1112,6 +1127,7 @@ class NiaproSerializer {
     textObject: j['textObject'] != null
         ? _deserializeTextObject(j['textObject'] as Map<String, dynamic>)
         : null,
+    mask: LayerMask.fromJson(j['mask']),
   );
 
   static TextObject _deserializeTextObject(Map<String, dynamic> j) {

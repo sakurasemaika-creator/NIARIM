@@ -80,12 +80,13 @@ void main() {
       final original = FlutterError.onError;
       FlutterError.onError = (d) {
         final s = d.toString();
-        final loc = RegExp(r'file:///[^\s:]*/(lib/[^\s:]+:\d+:\d+)')
-            .firstMatch(s);
+        final loc = RegExp(
+          r'file:///[^\s:]*/(lib/[^\s:]+:\d+:\d+)',
+        ).firstMatch(s);
         final what =
-            RegExp(r'(overflowed by [\d.]+ pixels on the \w+)')
-                .firstMatch(s)
-                ?.group(1) ??
+            RegExp(
+              r'(overflowed by [\d.]+ pixels on the \w+)',
+            ).firstMatch(s)?.group(1) ??
             s
                 .split('\n')
                 .firstWhere((l) => l.contains('thrown'), orElse: () => '?');

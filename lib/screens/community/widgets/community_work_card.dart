@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../../models/community_work.dart';
 import '../../../config/font_fallback.dart';
+import '../../../utils/color_contrast.dart';
 
 String formatDurationLabel(int seconds) {
   final m = seconds ~/ 60;
@@ -52,279 +53,320 @@ class CommunityWorkCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final scheme = Theme.of(context).colorScheme;
-    final placeholderGradients = communityThumbnailGradients(scheme);
-    final gradient =
-        placeholderGradients[work.thumbnailColorIndex %
-            placeholderGradients.length];
-    return Card(
-      clipBehavior: Clip.antiAlias,
-      elevation: 1,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-      child: InkWell(
-        onTap: onTap,
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
+    final theme = Theme.of(context);
+    final scheme = theme.colorScheme;
+    final l10n = AppLocalizations.of(context)!;
+    final cardColor = opaqueOver(
+      theme.cardTheme.color ?? scheme.surfaceContainerLow,
+      opaqueOver(theme.scaffoldBackgroundColor, Colors.black),
+    );
+    final textColor = contrastingForeground(
+      cardColor,
+      opaqueOver(scheme.onSurface, cardColor),
+    );
+    final detailColor = contrastingForeground(
+      cardColor,
+      opaqueOver(scheme.onSurfaceVariant, cardColor),
+    );
+    final author = work.authorName.trim().isEmpty
+        ? l10n.communityCreatorLabel
+        : work.authorName;
+    final language = Localizations.localeOf(context).languageCode;
+    final views = formatCompactCount(work.viewCount, language);
+    final bookmarks = formatCompactCount(work.bookmarkCount, language);
+    const overlay = Color(0xB8000000);
+    Widget badge(
+      String label, {
+      IconData? icon,
+      bool iconOnly = false,
+      double fontSize = 10,
+    }) => Tooltip(
+      message: label,
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
+        decoration: BoxDecoration(
+          color: overlay,
+          borderRadius: BorderRadius.circular(5),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
           children: [
-            AspectRatio(
-              aspectRatio: 16 / 9,
-              child: Stack(
-                children: [
-                  Positioned.fill(
-                    child: DecoratedBox(
-                      decoration: BoxDecoration(
-                        gradient: LinearGradient(
-                          begin: Alignment.topLeft,
-                          end: Alignment.bottomRight,
-                          colors: gradient,
-                        ),
-                      ),
-                      child: Center(
-                        child: Icon(
-                          Icons.play_circle_fill_rounded,
-                          color: ThemeService.activeColorScheme.onSurface
-                              .withValues(alpha: 0.70),
-                          size: 40,
-                        ),
-                      ),
-                    ),
+            if (icon != null)
+              Icon(icon, size: iconOnly ? 18 : 12, color: Colors.white),
+            if (!iconOnly) ...[
+              if (icon != null) const SizedBox(width: 3),
+              Flexible(
+                child: Text(
+                  label,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: fontSize,
+                    fontWeight: FontWeight.w600,
                   ),
-                  if (rankNumber != null)
-                    Positioned(
-                      left: 6,
-                      top: 6,
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 10,
-                          vertical: 4,
-                        ),
-                        decoration: BoxDecoration(
-                          color: ThemeService.activeColorScheme.onSurface
-                              .withValues(alpha: 0.55),
-                          borderRadius: BorderRadius.circular(20),
-                        ),
-                        child: Text(
-                          '#$rankNumber',
-                          style: TextStyle(
-                            color: ThemeService.activeColorScheme.onSurface,
-                            fontSize: 16,
-                            fontWeight: FontWeight.bold,
-                            fontFamily: 'Kuramubon',
-                            fontFamilyFallback: kHeadingFontFallback,
-                          ),
-                        ),
-                      ),
-                    ),
-                  if (!work.isNiarimPublished)
-                    Positioned(
-                      left: 6,
-                      top: 6,
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 8,
-                          vertical: 3,
-                        ),
-                        decoration: BoxDecoration(
-                          color: ThemeService.activeColorScheme.onSurface
-                              .withValues(alpha: 0.55),
-                          borderRadius: BorderRadius.circular(20),
-                        ),
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Icon(
-                              Icons.lock_outline,
-                              color: ThemeService.activeColorScheme.onSurface,
-                              size: 11,
+                ),
+              ),
+            ],
+          ],
+        ),
+      ),
+    );
+    Widget count(String label, String value) => Flexible(
+      child: Semantics(
+        label: '$label: $value',
+        child: ExcludeSemantics(
+          child: Text(
+            value,
+            overflow: TextOverflow.ellipsis,
+            style: TextStyle(fontSize: 11, color: detailColor),
+          ),
+        ),
+      ),
+    );
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final compact = constraints.maxWidth < 200;
+        return Card(
+          color: cardColor,
+          surfaceTintColor: Colors.transparent,
+          clipBehavior: Clip.antiAlias,
+          elevation: 1,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(14),
+          ),
+          child: InkWell(
+            onTap: onTap,
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                AspectRatio(
+                  aspectRatio: 16 / 9,
+                  child: LayoutBuilder(
+                    builder: (context, thumbnail) {
+                      final maxBadgeWidth = (thumbnail.maxWidth - 66).clamp(
+                        1.0,
+                        double.infinity,
+                      );
+                      return Stack(
+                        children: [
+                          Positioned.fill(
+                            child: DecoratedBox(
+                              decoration: BoxDecoration(
+                                gradient: LinearGradient(
+                                  begin: Alignment.topLeft,
+                                  end: Alignment.bottomRight,
+                                  colors: communityThumbnailGradient(
+                                    scheme,
+                                    work.thumbnailColorIndex,
+                                  ),
+                                ),
+                              ),
+                              child: Center(
+                                child: ExcludeSemantics(
+                                  child: Container(
+                                    width: 40,
+                                    height: 40,
+                                    decoration: const BoxDecoration(
+                                      color: overlay,
+                                      shape: BoxShape.circle,
+                                    ),
+                                    child: const Icon(
+                                      Icons.play_arrow_rounded,
+                                      color: Colors.white,
+                                      size: 28,
+                                    ),
+                                  ),
+                                ),
+                              ),
                             ),
+                          ),
+                          if (!work.isNiarimPublished)
+                            Positioned(
+                              left: 6,
+                              top: 6,
+                              child: ConstrainedBox(
+                                constraints: BoxConstraints(
+                                  maxWidth: maxBadgeWidth,
+                                ),
+                                child: badge(
+                                  l10n.communityVisibilityHiddenBadge,
+                                  icon: Icons.lock_outline,
+                                  iconOnly: compact,
+                                ),
+                              ),
+                            )
+                          else if (rankNumber != null)
+                            Positioned(
+                              left: 6,
+                              top: 6,
+                              child: ConstrainedBox(
+                                constraints: BoxConstraints(
+                                  maxWidth: maxBadgeWidth,
+                                ),
+                                child: badge('#$rankNumber', fontSize: 16),
+                              ),
+                            ),
+                          Positioned(
+                            right: 6,
+                            bottom: 6,
+                            child: ConstrainedBox(
+                              constraints: BoxConstraints(
+                                maxWidth: (thumbnail.maxWidth - 18) * .48,
+                              ),
+                              child: badge(
+                                formatDurationLabel(work.durationSeconds),
+                              ),
+                            ),
+                          ),
+                          if (work.isShort)
+                            Positioned(
+                              left: 6,
+                              bottom: 6,
+                              child: ConstrainedBox(
+                                constraints: BoxConstraints(
+                                  maxWidth: (thumbnail.maxWidth - 18) * .48,
+                                ),
+                                child: badge(l10n.communityShortsBadge),
+                              ),
+                            ),
+                          Positioned(
+                            right: 4,
+                            top: 4,
+                            child: MergeSemantics(
+                              child: Semantics(
+                                button: true,
+                                label: isBookmarked
+                                    ? l10n.communityWorkDetailBookmarkRemove
+                                    : l10n.communityWorkDetailBookmarkAdd,
+                                toggled: isBookmarked,
+                                child: Material(
+                                  color: overlay,
+                                  shape: const CircleBorder(),
+                                  child: IconButton(
+                                    key: ValueKey(
+                                      'community-bookmark-${work.id}',
+                                    ),
+                                    tooltip: isBookmarked
+                                        ? l10n.communityWorkDetailBookmarkRemove
+                                        : l10n.communityWorkDetailBookmarkAdd,
+                                    constraints: const BoxConstraints.tightFor(
+                                      width: 48,
+                                      height: 48,
+                                    ),
+                                    visualDensity: VisualDensity.standard,
+                                    onPressed: onBookmarkToggle,
+                                    icon: Icon(
+                                      isBookmarked
+                                          ? Icons.bookmark
+                                          : Icons.bookmark_border,
+                                      color: Colors.white,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ),
+                        ],
+                      );
+                    },
+                  ),
+                ),
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(10, 8, 10, 10),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      if (repostedByAuthorName != null) ...[
+                        Row(
+                          children: [
+                            Icon(Icons.repeat, size: 12, color: detailColor),
                             const SizedBox(width: 3),
-                            Text(
-                              AppLocalizations.of(
-                                context,
-                              )!.communityVisibilityHiddenBadge,
-                              style: TextStyle(
-                                color: ThemeService.activeColorScheme.onSurface,
-                                fontSize: 11,
-                                fontWeight: FontWeight.bold,
+                            Expanded(
+                              child: Text(
+                                l10n.communityRepostedByBadge(
+                                  repostedByAuthorName!,
+                                ),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                                style: TextStyle(
+                                  fontSize: 10,
+                                  color: detailColor,
+                                  fontWeight: FontWeight.w600,
+                                ),
                               ),
                             ),
                           ],
                         ),
-                      ),
-                    ),
-                  Positioned(
-                    right: 6,
-                    bottom: 6,
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 6,
-                        vertical: 2,
-                      ),
-                      decoration: BoxDecoration(
-                        color: ThemeService.activeColorScheme.onSurface
-                            .withValues(alpha: 0.6),
-                        borderRadius: BorderRadius.circular(4),
-                      ),
-                      child: Text(
-                        formatDurationLabel(work.durationSeconds),
-                        style: TextStyle(
-                          color: ThemeService.activeColorScheme.onSurface,
-                          fontSize: 10,
-                        ),
-                      ),
-                    ),
-                  ),
-                  if (work.isShort)
-                    Positioned(
-                      left: 6,
-                      bottom: 6,
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 6,
-                          vertical: 2,
-                        ),
-                        decoration: BoxDecoration(
-                          color: ThemeService.activeColorScheme.onSurface
-                              .withValues(alpha: 0.6),
-                          borderRadius: BorderRadius.circular(4),
-                        ),
-                        child: Text(
-                          AppLocalizations.of(context)!.communityShortsBadge,
-                          style: TextStyle(
-                            color: ThemeService.activeColorScheme.onSurface,
-                            fontSize: 10,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                      ),
-                    ),
-                  Positioned(
-                    right: 4,
-                    top: 4,
-                    child: Material(
-                      color: Colors.transparent,
-                      child: IconButton(
-                        visualDensity: VisualDensity.compact,
-                        onPressed: onBookmarkToggle,
-                        icon: Icon(
-                          isBookmarked ? Icons.bookmark : Icons.bookmark_border,
-                          color: ThemeService.activeColorScheme.onSurface,
-                          shadows: [
-                            Shadow(
-                              color: ThemeService.activeColorScheme.onSurface
-                                  .withValues(alpha: 0.54),
-                              blurRadius: 4,
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            Padding(
-              padding: const EdgeInsets.fromLTRB(10, 8, 10, 10),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  if (repostedByAuthorName != null) ...[
-                    Row(
-                      children: [
-                        Icon(Icons.repeat, size: 12, color: scheme.primary),
-                        const SizedBox(width: 3),
-                        Expanded(
-                          child: Text(
-                            AppLocalizations.of(
-                              context,
-                            )!.communityRepostedByBadge(repostedByAuthorName!),
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                            style: TextStyle(
-                              fontSize: 10,
-                              color: scheme.primary,
-                              fontWeight: FontWeight.w600,
-                            ),
-                          ),
-                        ),
+                        const SizedBox(height: 3),
                       ],
-                    ),
-                    const SizedBox(height: 3),
-                  ],
-                  Text(
-                    work.title,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: const TextStyle(
-                      fontSize: 13,
-                      fontWeight: FontWeight.w600,
-                      fontFamily: 'Kuramubon',
-                      fontFamilyFallback: kHeadingFontFallback,
-                    ),
-                  ),
-                  const SizedBox(height: 4),
-                  GestureDetector(
-                    onTap: onAuthorTap,
-                    child: Text(
-                      work.authorName,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: TextStyle(
-                        fontSize: 11,
-                        color: scheme.onSurfaceVariant,
+                      Text(
+                        work.title,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(
+                          fontSize: 13,
+                          fontWeight: FontWeight.w600,
+                          fontFamily: 'Kuramubon',
+                          fontFamilyFallback: kHeadingFontFallback,
+                          color: textColor,
+                        ),
                       ),
-                    ),
-                  ),
-                  const SizedBox(height: 4),
-                  Row(
-                    children: [
-                      Icon(
-                        Icons.play_arrow_rounded,
-                        size: 13,
-                        color: scheme.onSurfaceVariant,
-                      ),
-                      const SizedBox(width: 2),
-                      Flexible(
-                        child: Text(
-                          formatCompactCount(
-                            work.viewCount,
-                            Localizations.localeOf(context).languageCode,
-                          ),
-                          overflow: TextOverflow.ellipsis,
-                          style: TextStyle(
-                            fontSize: 11,
-                            color: scheme.onSurfaceVariant,
+                      const SizedBox(height: 4),
+                      Semantics(
+                        button: onAuthorTap != null,
+                        label: author,
+                        child: GestureDetector(
+                          key: ValueKey('community-author-${work.id}'),
+                          onTap: onAuthorTap,
+                          behavior: HitTestBehavior.opaque,
+                          child: ConstrainedBox(
+                            constraints: BoxConstraints(
+                              minHeight: onAuthorTap == null ? 0 : 48,
+                            ),
+                            child: Align(
+                              alignment: Alignment.centerLeft,
+                              child: ExcludeSemantics(
+                                child: Text(
+                                  author,
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                  style: TextStyle(
+                                    fontSize: 11,
+                                    color: detailColor,
+                                  ),
+                                ),
+                              ),
+                            ),
                           ),
                         ),
                       ),
-                      const SizedBox(width: 8),
-                      Icon(
-                        Icons.bookmark,
-                        size: 13,
-                        color: scheme.onSurfaceVariant,
-                      ),
-                      const SizedBox(width: 2),
-                      Flexible(
-                        child: Text(
-                          formatCompactCount(
-                            work.bookmarkCount,
-                            Localizations.localeOf(context).languageCode,
+                      const SizedBox(height: 4),
+                      Row(
+                        children: [
+                          Icon(
+                            Icons.play_arrow_rounded,
+                            size: 13,
+                            color: detailColor,
                           ),
-                          overflow: TextOverflow.ellipsis,
-                          style: TextStyle(
-                            fontSize: 11,
-                            color: scheme.onSurfaceVariant,
-                          ),
-                        ),
+                          const SizedBox(width: 2),
+                          count(l10n.communityRankingSortViews, views),
+                          const SizedBox(width: 8),
+                          Icon(Icons.bookmark, size: 13, color: detailColor),
+                          const SizedBox(width: 2),
+                          count(l10n.communityRankingSortBookmarks, bookmarks),
+                        ],
                       ),
                     ],
                   ),
-                ],
-              ),
+                ),
+              ],
             ),
-          ],
-        ),
-      ),
+          ),
+        );
+      },
     );
   }
 }
@@ -356,37 +398,41 @@ class CommunityWorkGrid extends StatelessWidget {
   });
 
   @override
-  Widget build(BuildContext context) {
-    return LayoutBuilder(
-      builder: (context, constraints) {
-        final columns = (constraints.maxWidth / 200).floor().clamp(2, 6);
-        return GridView.builder(
+  Widget build(BuildContext context) => LayoutBuilder(
+    builder: (context, constraints) {
+      final scale = MediaQuery.textScalerOf(context).scale(13) / 13;
+      final minimumWidth = 160 * (scale < 1 ? 1 : scale);
+      final columns = ((constraints.maxWidth - 24 + 10) / (minimumWidth + 10))
+          .floor()
+          .clamp(1, 6);
+      final width = (constraints.maxWidth - 24 - 10 * (columns - 1)) / columns;
+      return SizedBox(
+        width: constraints.maxWidth,
+        child: Padding(
           padding: EdgeInsets.fromLTRB(12, 12, 12, bottomPadding),
-          shrinkWrap: true,
-          physics: const NeverScrollableScrollPhysics(),
-          gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-            crossAxisCount: columns,
-            mainAxisSpacing: 10,
-            crossAxisSpacing: 10,
-            childAspectRatio: 0.72,
+          child: Wrap(
+            spacing: 10,
+            runSpacing: 10,
+            children: [
+              for (final work in works)
+                SizedBox(
+                  width: width,
+                  child: CommunityWorkCard(
+                    work: work,
+                    isBookmarked: bookmarkedIds.contains(work.id),
+                    onTap: () => onTapWork(work),
+                    onBookmarkToggle: () => onToggleBookmark(work),
+                    onAuthorTap: onTapAuthor == null
+                        ? null
+                        : () => onTapAuthor!(work),
+                    rankNumber: rankNumbers?[work.id],
+                    repostedByAuthorName: repostedByNames?[work.id],
+                  ),
+                ),
+            ],
           ),
-          itemCount: works.length,
-          itemBuilder: (context, index) {
-            final work = works[index];
-            return CommunityWorkCard(
-              work: work,
-              isBookmarked: bookmarkedIds.contains(work.id),
-              onTap: () => onTapWork(work),
-              onBookmarkToggle: () => onToggleBookmark(work),
-              onAuthorTap: onTapAuthor == null
-                  ? null
-                  : () => onTapAuthor!(work),
-              rankNumber: rankNumbers?[work.id],
-              repostedByAuthorName: repostedByNames?[work.id],
-            );
-          },
-        );
-      },
-    );
-  }
+        ),
+      );
+    },
+  );
 }

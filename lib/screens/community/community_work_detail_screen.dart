@@ -53,6 +53,8 @@ class _CommunityWorkDetailScreenState extends State<CommunityWorkDetailScreen> {
     setState(() => _aiDisclosureBusy = true);
     try {
       await service.setAiImageVideoDisclosure(workId, value);
+    } on CommunityAccountChangedException {
+      return;
     } catch (error) {
       debugPrint('AI image/video disclosure update failed: $error');
       messenger.showSnackBar(SnackBar(content: Text(failed)));

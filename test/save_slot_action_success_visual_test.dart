@@ -25,6 +25,8 @@ void main() {
 
   testWidgets('セーブスロットの確定操作をSP/PCで実データ完走する', (tester) async {
     SharedPreferences.setMockInitialValues({
+      // This scenario tests slots independently of the host CPU core count.
+      'quality_level': 'medium',
       firstUseTooltipsSeenKey: kAllFirstUseTooltipKeys,
     });
     final tempDir = Directory.systemTemp.createTempSync(
@@ -197,8 +199,9 @@ void main() {
       await capture('${prefix}_11_after_restore_success');
 
       // Snackbarが次の削除確認を覆わないよう閉じる。
-      ScaffoldMessenger.of(tester.element(find.byType(Scaffold).first))
-          .hideCurrentSnackBar();
+      ScaffoldMessenger.of(
+        tester.element(find.byType(Scaffold).first),
+      ).hideCurrentSnackBar();
       await settle(rounds: 3);
 
       // 4) スロット2をUIから削除確定し、一覧から消えるところまで確認する。

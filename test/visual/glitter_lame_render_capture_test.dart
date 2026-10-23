@@ -23,7 +23,7 @@ const _glitter = Brush(
     edgeJitter: PressureRangeSetting(enabled: false, weak: 0, strong: 0),
     mixing: PressureMixingOnSetting(
       enabled: false,
-      mode: BrushMixingMode.simple,
+      mode: BrushMixingMode.oil,
       weakRate: 0,
       strongRate: 0,
     ),
@@ -33,7 +33,7 @@ const _glitter = Brush(
     edgeJitter: FixedBrushSetting(enabled: false, value: 0),
     mixing: PressureMixingOffSetting(
       enabled: false,
-      mode: BrushMixingMode.simple,
+      mode: BrushMixingMode.oil,
       rate: 0,
     ),
   ),
@@ -59,7 +59,7 @@ const _lame = Brush(
     edgeJitter: PressureRangeSetting(enabled: true, weak: 30, strong: 30),
     mixing: PressureMixingOnSetting(
       enabled: false,
-      mode: BrushMixingMode.simple,
+      mode: BrushMixingMode.oil,
       weakRate: 0,
       strongRate: 0,
     ),
@@ -69,7 +69,7 @@ const _lame = Brush(
     edgeJitter: FixedBrushSetting(enabled: true, value: 30),
     mixing: PressureMixingOffSetting(
       enabled: false,
-      mode: BrushMixingMode.simple,
+      mode: BrushMixingMode.oil,
       rate: 0,
     ),
   ),

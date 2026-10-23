@@ -308,10 +308,10 @@ class _CommunityPostScreenState extends State<CommunityPostScreen> {
       // upload scopeを要求しないので、既に登録済みなら不要な再認可を出さない。
       if (videoId != null) {
         final ownWorks = await api.myWorks();
-        community.setCurrentUserId(ownWorks.authorId);
         if (auth.account?.id != uploadAccountId) {
           throw _PostFailure.accountChanged(uploadAccountEmail);
         }
+        community.setCurrentUserId(ownWorks.authorId);
         for (final work in ownWorks.works) {
           if (work.workId != videoId) continue;
           // 既にNIARIM登録済みでも、同期バッチがYouTube削除を検知している

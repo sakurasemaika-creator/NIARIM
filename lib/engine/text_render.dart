@@ -17,15 +17,20 @@ final RegExp _rubyPattern = RegExp(r'\{([^{}|]+)\|([^{}|]+)\}');
 /// （呼び出し元でFontService.pixelModeForFamily(text.fontFamily)の結果を
 /// 渡す想定。ドットフォントをにじませずくっきり表示するための設定で、
 /// ブラシのdotPenModeと同じ考え方）。
+///
+/// [center]を渡すと、[TextObject.position]（左上）の代わりに文字の塊の
+/// 中心をその点へ置く（タイムラインのテキスト素材はキャンバスの中心に
+/// 置き、移動・回転はキーフレームで行う）。
 Future<Uint8List?> rasterizeTextObject(
   TextObject text,
   int canvasWidth,
   int canvasHeight, {
   bool pixelMode = false,
+  ui.Offset? center,
 }) async {
   final data = text.direction == TextWritingDirection.vertical
-      ? await _rasterizeVertical(text, canvasWidth, canvasHeight)
-      : await _rasterizeHorizontal(text, canvasWidth, canvasHeight);
+      ? await _rasterizeVertical(text, canvasWidth, canvasHeight, center)
+      : await _rasterizeHorizontal(text, canvasWidth, canvasHeight, center);
   if (data == null || !pixelMode) return data;
   return _applyPixelModeThreshold(data, text);
 }
@@ -51,11 +56,17 @@ Future<Uint8List?> _rasterizeHorizontal(
   TextObject text,
   int canvasWidth,
   int canvasHeight,
+  ui.Offset? center,
 ) {
   if (_rubyPattern.hasMatch(text.text)) {
-    return _rasterizeHorizontalWithRuby(text, canvasWidth, canvasHeight);
+    return _rasterizeHorizontalWithRuby(
+      text,
+      canvasWidth,
+      canvasHeight,
+      center,
+    );
   }
-  return _rasterizeHorizontalSimple(text, canvasWidth, canvasHeight);
+  return _rasterizeHorizontalSimple(text, canvasWidth, canvasHeight, center);
 }
 
 /// ルビを含まない横書き（従来実装）。ParagraphBuilder一括レイアウトのため
@@ -64,6 +75,7 @@ Future<Uint8List?> _rasterizeHorizontalSimple(
   TextObject text,
   int canvasWidth,
   int canvasHeight,
+  ui.Offset? center,
 ) async {
   final fontStyle = text.isItalic ? ui.FontStyle.italic : ui.FontStyle.normal;
   final fontWeight = text.isBold ? ui.FontWeight.bold : ui.FontWeight.normal;
@@ -84,6 +96,11 @@ Future<Uint8List?> _rasterizeHorizontalSimple(
     ..addText(text.text);
   final paragraph = builder.build()
     ..layout(const ui.ParagraphConstraints(width: 2000));
+  // Lay out again as wide as the longest line: centred and right-aligned
+  // lines then line up inside the text block, not across the 2000 px box
+  // (which put them far to the right of where the text was placed).
+  final blockWidth = paragraph.longestLine.ceilToDouble() + 1;
+  paragraph.layout(ui.ParagraphConstraints(width: blockWidth));
 
   final textWidth = paragraph.longestLine;
   final textHeight = paragraph.height;
@@ -92,8 +109,8 @@ Future<Uint8List?> _rasterizeHorizontalSimple(
   final canvas = ui.Canvas(recorder);
   canvas.save();
   // position（レイヤー上の配置基準点）を中心に回転・拡大を適用する
-  final centerX = text.position.dx + textWidth / 2;
-  final centerY = text.position.dy + textHeight / 2;
+  final centerX = center?.dx ?? text.position.dx + textWidth / 2;
+  final centerY = center?.dy ?? text.position.dy + textHeight / 2;
   canvas.translate(centerX, centerY);
   canvas.rotate(text.rotation * math.pi / 180);
   canvas.scale(text.scale);
@@ -116,7 +133,7 @@ Future<Uint8List?> _rasterizeHorizontalSimple(
       ..pushStyle(outlineStyle)
       ..addText(text.text);
     final outlineParagraph = outlineBuilder.build()
-      ..layout(const ui.ParagraphConstraints(width: 2000));
+      ..layout(ui.ParagraphConstraints(width: blockWidth));
     const steps = 8;
     for (int i = 0; i < steps; i++) {
       final angle = (i / steps) * 2 * math.pi;
@@ -170,6 +187,7 @@ Future<Uint8List?> _rasterizeHorizontalWithRuby(
   TextObject text,
   int canvasWidth,
   int canvasHeight,
+  ui.Offset? center,
 ) async {
   final fontStyle = text.isItalic ? ui.FontStyle.italic : ui.FontStyle.normal;
   final fontWeight = text.isBold ? ui.FontWeight.bold : ui.FontWeight.normal;
@@ -219,8 +237,8 @@ Future<Uint8List?> _rasterizeHorizontalWithRuby(
   final recorder = ui.PictureRecorder();
   final canvas = ui.Canvas(recorder);
   canvas.save();
-  final centerX = text.position.dx + totalWidth / 2;
-  final centerY = text.position.dy + totalHeight / 2;
+  final centerX = center?.dx ?? text.position.dx + totalWidth / 2;
+  final centerY = center?.dy ?? text.position.dy + totalHeight / 2;
   canvas.translate(centerX, centerY);
   canvas.rotate(text.rotation * math.pi / 180);
   canvas.scale(text.scale);
@@ -389,6 +407,7 @@ Future<Uint8List?> _rasterizeVertical(
   TextObject text,
   int canvasWidth,
   int canvasHeight,
+  ui.Offset? center,
 ) async {
   final fontStyle = text.isItalic ? ui.FontStyle.italic : ui.FontStyle.normal;
   final fontWeight = text.isBold ? ui.FontWeight.bold : ui.FontWeight.normal;
@@ -419,8 +438,8 @@ Future<Uint8List?> _rasterizeVertical(
   final recorder = ui.PictureRecorder();
   final canvas = ui.Canvas(recorder);
   canvas.save();
-  final centerX = text.position.dx + totalWidth / 2;
-  final centerY = text.position.dy + totalHeight / 2;
+  final centerX = center?.dx ?? text.position.dx + totalWidth / 2;
+  final centerY = center?.dy ?? text.position.dy + totalHeight / 2;
   canvas.translate(centerX, centerY);
   canvas.rotate(text.rotation * math.pi / 180);
   canvas.scale(text.scale);

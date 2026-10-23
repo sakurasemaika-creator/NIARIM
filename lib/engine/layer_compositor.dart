@@ -1,8 +1,11 @@
+import 'dart:math' as math;
 import 'dart:typed_data';
 import 'dart:ui' as ui;
 import '../models/layer.dart';
 import '../models/layer_keyframe.dart';
+import '../models/layer_mask.dart';
 import 'layer_keyframe_engine.dart';
+import 'timeline_stack.dart';
 import 'tile_manager.dart';
 
 final _layerKeyframeEngine = LayerKeyframeEngine();
@@ -23,6 +26,7 @@ const Set<LayerType> pixelLayerTypes = {
   LayerType.timelineVideo,
   LayerType.watermark,
   LayerType.text,
+  LayerType.timelineText,
 };
 
 /// dart:uiで直接表現できるLayerBlendModeをBlendModeへ変換する。
@@ -127,9 +131,11 @@ class LayerCompositor {
     LayerKeyframe? Function(Layer layer)? keyframeOf,
     LayerKeyframe? Function(Layer layer)? groupKeyframeOf,
     int? paperColor,
+    List<LayerMaskGroup> maskGroups = const [],
   }) async {
     var recorder = ui.PictureRecorder();
     var canvas = ui.Canvas(recorder);
+    final masking = _MaskGroupDrawer(maskGroups, width, height);
     if (paperColor != null && (paperColor >>> 24) == 0xFF) {
       canvas.drawRect(
         ui.Rect.fromLTWH(0, 0, width.toDouble(), height.toDouble()),
@@ -142,8 +148,9 @@ class LayerCompositor {
       if (!layer.isVisible) continue;
       if (!pixelLayerTypes.contains(layer.type)) continue;
       if (shouldRender != null && !shouldRender(layer, i)) continue;
+      masking.enter(canvas, layer);
 
-      if (_requiresCpuBlend(layer.blendMode)) {
+      if (_requiresCpuBlend(layer.blendMode) && !masking.isOpen) {
         // Skia/dart:uiには「減算」BlendModeが無い。difference（差の絶対値）
         // で代用すると、backdrop < source のチャンネルが本来0になるところ
         // 正の値へ反転してしまうため、ここだけ現在までの合成結果と対象レイヤー
@@ -191,8 +198,14 @@ class LayerCompositor {
         height,
         keyframeOf,
         groupKeyframeOf,
+        // Inside a masked group the layers are drawn on one GPU layer, so
+        // a mode only the CPU can blend takes its nearest GPU mode.
+        blendModeOverride: masking.isOpen && _requiresCpuBlend(layer.blendMode)
+            ? displayBlendMode(layer.blendMode)
+            : null,
       );
     }
+    masking.close(canvas);
 
     final picture = recorder.endRecording();
     final image = await picture.toImage(width, height);
@@ -214,14 +227,17 @@ class LayerCompositor {
     bool Function(Layer layer, int index)? shouldRender,
     LayerKeyframe? Function(Layer layer)? keyframeOf,
     LayerKeyframe? Function(Layer layer)? groupKeyframeOf,
+    List<LayerMaskGroup> maskGroups = const [],
   }) async {
     final recorder = ui.PictureRecorder();
     final canvas = ui.Canvas(recorder);
+    final masking = _MaskGroupDrawer(maskGroups, width, height);
     for (int i = layers.length - 1; i >= 0; i--) {
       final layer = layers[i];
       if (!layer.isVisible) continue;
       if (!pixelLayerTypes.contains(layer.type)) continue;
       if (shouldRender != null && !shouldRender(layer, i)) continue;
+      masking.enter(canvas, layer);
       await _drawLayer(
         canvas,
         tileManager,
@@ -236,6 +252,7 @@ class LayerCompositor {
         blendModeOverride: displayBlendMode(layer.blendMode),
       );
     }
+    masking.close(canvas);
     return recorder.endRecording();
   }
 
@@ -387,18 +404,13 @@ class LayerCompositor {
       }
     }
 
+    final rect = ui.Rect.fromLTWH(0, 0, width.toDouble(), height.toDouble());
     if (layer.hasClipping) {
       final clipSourceId = findClipSourceLayerId(layers, index);
       if (clipSourceId != null) {
         final clipSourceLayer = layers.firstWhere((l) => l.id == clipSourceId);
         final clipImg = await tileManager.compositeLayerToImage(
           keyOf(clipSourceLayer),
-        );
-        final rect = ui.Rect.fromLTWH(
-          0,
-          0,
-          width.toDouble(),
-          height.toDouble(),
         );
         canvas.saveLayer(rect, layerPaint);
         canvas.drawImage(clipImg, ui.Offset.zero, ui.Paint());
@@ -407,12 +419,27 @@ class LayerCompositor {
           ui.Offset.zero,
           ui.Paint()..blendMode = ui.BlendMode.srcIn,
         );
+        final mask = layer.mask;
+        if (mask != null) drawLayerMask(canvas, mask, width, height);
         canvas.restore();
         if (hasTransform) canvas.restore();
         clipImg.dispose();
         img.dispose();
         return;
       }
+    }
+
+    final mask = layer.mask;
+    if (mask != null) {
+      // The mask moves with the layer: it is drawn inside the layer's own
+      // transform, then the masked layer blends as one.
+      canvas.saveLayer(rect, layerPaint);
+      canvas.drawImage(img, ui.Offset.zero, ui.Paint());
+      drawLayerMask(canvas, mask, width, height);
+      canvas.restore();
+      if (hasTransform) canvas.restore();
+      img.dispose();
+      return;
     }
 
     canvas.drawImage(img, ui.Offset.zero, layerPaint);
@@ -513,5 +540,81 @@ class LayerCompositor {
     final frame = await codec.getNextFrame();
     codec.dispose();
     return frame.image;
+  }
+}
+
+/// Keeps only what lies inside [mask] (outside it, when inverted) of what
+/// was drawn since the enclosing `saveLayer`, on a [width]×[height] canvas.
+void drawLayerMask(ui.Canvas canvas, LayerMask mask, int width, int height) {
+  final rect = ui.Rect.fromLTWH(0, 0, width.toDouble(), height.toDouble());
+  canvas.saveLayer(
+    rect,
+    ui.Paint()
+      ..blendMode = mask.invert ? ui.BlendMode.dstOut : ui.BlendMode.dstIn,
+  );
+  final shortSide = width < height ? width : height;
+  final feather = mask.feather.clamp(0.0, 100.0) / 100 * shortSide;
+  final paint = ui.Paint()..color = const ui.Color(0xFFFFFFFF);
+  if (feather > 0) {
+    // A Gaussian of σ = feather / 2 fades the edge over about the feather.
+    paint.maskFilter = ui.MaskFilter.blur(ui.BlurStyle.normal, feather / 2);
+  }
+  final shape = ui.Rect.fromCenter(
+    center: ui.Offset.zero,
+    width: mask.width.clamp(0.0, 400.0) / 100 * width,
+    height: mask.height.clamp(0.0, 400.0) / 100 * height,
+  );
+  canvas.save();
+  canvas.translate(mask.centerX / 100 * width, mask.centerY / 100 * height);
+  canvas.rotate(mask.rotation * math.pi / 180);
+  switch (mask.shape) {
+    case LayerMaskShape.rectangle:
+      canvas.drawRect(shape, paint);
+    case LayerMaskShape.ellipse:
+      canvas.drawOval(shape, paint);
+  }
+  canvas.restore();
+  canvas.restore();
+}
+
+/// Draws runs of layers that share a mask ([LayerMaskGroup]) onto their own
+/// GPU layer and masks them as one when the run ends.
+class _MaskGroupDrawer {
+  _MaskGroupDrawer(this.groups, this.width, this.height);
+
+  final List<LayerMaskGroup> groups;
+  final int width;
+  final int height;
+  LayerMaskGroup? _open;
+
+  bool get isOpen => _open != null;
+
+  /// Opens or closes a group as drawing reaches [layer].
+  void enter(ui.Canvas canvas, Layer layer) {
+    if (groups.isEmpty) return;
+    LayerMaskGroup? group;
+    for (final g in groups) {
+      if (g.layerIds.contains(layer.id)) {
+        group = g;
+        break;
+      }
+    }
+    if (identical(group, _open)) return;
+    close(canvas);
+    if (group != null) {
+      canvas.saveLayer(
+        ui.Rect.fromLTWH(0, 0, width.toDouble(), height.toDouble()),
+        ui.Paint(),
+      );
+      _open = group;
+    }
+  }
+
+  void close(ui.Canvas canvas) {
+    final open = _open;
+    if (open == null) return;
+    drawLayerMask(canvas, open.mask, width, height);
+    canvas.restore();
+    _open = null;
   }
 }

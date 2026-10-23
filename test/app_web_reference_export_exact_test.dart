@@ -12,6 +12,9 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:niarim/app.dart';
 import 'package:niarim/app_bootstrap.dart';
 import 'package:niarim/router.dart';
+import 'package:niarim/screens/canvas/canvas_screen.dart';
+import 'package:niarim/screens/canvas/widgets/canvas_icon_button.dart';
+import 'package:niarim/services/project_service.dart';
 import 'package:niarim/widgets/ad_banner_widget.dart';
 import 'package:niarim/screens/export/export_screen.dart';
 import 'package:niarim/screens/timeline/timeline_screen.dart';
@@ -146,8 +149,9 @@ void main() {
       await tester.pump(const Duration(milliseconds: 500));
     }
 
-    GoRouter.of(tester.element(find.byType(Scaffold).first))
-        .push('/new-project');
+    GoRouter.of(
+      tester.element(find.byType(Scaffold).first),
+    ).push('/new-project');
     await tester.pump(const Duration(milliseconds: 600));
     final create = find.widgetWithText(FilledButton, '作成', skipOffstage: false);
     await tester.dragUntilVisible(
@@ -159,16 +163,27 @@ void main() {
     await tester.tap(create.first, warnIfMissed: false);
     await tester.pump(const Duration(milliseconds: 900));
 
-    final modeSwitch = find.byWidgetPredicate((widget) {
-      if (widget is! SegmentedButton<String>) return false;
-      return widget.segments.any((segment) => segment.value == 'timeline');
-    }, skipOffstage: false);
-    expect(modeSwitch, findsWidgets);
-    final switchWidget = tester.widget<SegmentedButton<String>>(
-      modeSwitch.last,
+    final projectService = tester
+        .element(find.byType(Scaffold).first)
+        .read<ProjectService>();
+    final project = projectService.projects.first;
+    GoRouter.of(
+      tester.element(find.byType(Scaffold).first),
+    ).go('/canvas/${project.id}');
+    await tester.pump(const Duration(milliseconds: 700));
+
+    final canvas = find.byType(CanvasScreen);
+    expect(canvas, findsOneWidget);
+    final timelineModeButton = find.descendant(
+      of: canvas,
+      matching: find.byWidgetPredicate(
+        (widget) =>
+            widget is CanvasIconButton &&
+            widget.icon == Icons.movie_filter_outlined,
+      ),
     );
-    expect(switchWidget.onSelectionChanged, isNotNull);
-    switchWidget.onSelectionChanged!.call({'timeline'});
+    expect(timelineModeButton, findsOneWidget);
+    await tester.tap(timelineModeButton);
     await tester.pump(const Duration(milliseconds: 700));
     consumeOnlyKnownTimelineOverflow(tester, 'timeline');
 

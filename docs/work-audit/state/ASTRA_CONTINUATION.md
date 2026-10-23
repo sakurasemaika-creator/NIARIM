@@ -2,10 +2,10 @@
 
 route_version: 2026-09-09-initial-v1
 route_state: locked
-current_id: A005
-current_status: todo
-last_completed_id: A004
-next_id: A005
+current_id: A003
+current_status: in_progress
+last_completed_id: A002
+next_id: A003
 discovery_current_id: DISC001
 delta_current_id: not_started
 app_baseline: 46949156156850f8e49dcd9919ca6a7eeaf3bfac
@@ -13,14 +13,76 @@ web_baseline: 2a44dd9007e4a764e489a42a70f96ac5da6b3b8a
 
 今回の新規Routeから開始。旧進捗の転記なし。
 
+## 2026-10-23 別ブランチ（Opus・`ccr-f56ee68e-77ag7y`）の成果の統合
+
+- ユーザー指示（2026-10-23）：dev_branch（ChatGPT Workで継続開発した最新版）を正とし、競合はdev_branchを優先。Opusのブランチの成果のうち、dev_branchに無いものだけを最小の差分で足す。監査状態もdev_branchの最新を維持し、新しく得た情報だけを追記する。
+- Route状態はdev_branchのまま：Baseline done 2/628、current A003 in_progress、Discovery cursor DISC001、Delta not_started。Opusのブランチで「A003・A004 done」「A005 done」とした判定は引き継がない。その記録はASTRA_AUDIT_STATE.mdの「Opusブランチの証跡」節（A003・A004・A005）に残し、該当IDの監査で現在のHEADで再確認してから再利用する。
+- 統合した製品修正（dev_branchに無かったもの）：起動画面の釣り合い（ユーザー指摘、`7c96013`・`b928b22`）／A003相当（`d83cbe4`：ホームの戻る操作、`TypingAwareShortcuts`〔ホーム・キャンバス・タイムライン〕、検索の開閉とフォーカス、初回の説明カードのルート化）／A004相当（`adf4176`：名前の並び・検索のそろえ方、空の表示の分岐、カードの名前を絵の下へ・背景色と縦横比、詳細表示、表示サイズ・並び順の保存とメニューのチェック、サムネイルの別名保存）／A005相当（`14c53d7`：一括のゴミ箱でお気に入りを守る・元に戻す、貼り付けの検証、切り取りの取り消しと読み上げ、複製で素材とサムネイルを写す、右クリックのメニュー、`NameEntryDialog`、SnackBarの操作ボタンの色）。
+- dev_branchを優先したもの：選択中の操作バー（1行・一括お気に入りの撤去、ユーザー指定）、ホームのタブバー、ブクマ済みタブの状態表示、作品一覧の取得失敗と再試行、引き出しの見出し、カードのメニューと選択色、空の表示のスクロール、初回案内は「はじめる」で表示済み、検索中はショートカットを効かせない、テーマの明示色とAPCAの救済判定。OpusのPCの側面パネルは、PCでも引き出しを使うdev_branchの仕様（テスト）と食い違うため取り下げた。
+- Discovery：Opusのブランチで登録した「オンボーディング・初回説明の再表示」は、dev_branchのDISC003（書き出し済み作品一覧の取得失敗）と番号が重なるため、DISC014として登録し直した。
+- ユーザー指定（2026-10-23）：書体は、見出し・タイトル・ボタンはくらむぼん、説明文・本文・エラー文・注釈は白光明朝。
+
+## 2026-10-22 中断前保存・再開の運用（ユーザー指示）
+
+- 作業単位ごと、および長い検証/captureの前後に外部checkpointを保存する。関連する操作・結果をシナリオ単位でまとめ、節目のない長時間作業だけ30〜45分を目安に短い進捗を保存する。利用上限の残時間は取得できないため、終了直前の保存を前提にしない。
+- 検証済みの製品修正は意味のある単位でcommit/dev_branchへ通常pushする。検証途中のsourceも、pendingを明示したZIP・patch・全変更ファイルのhashとともに承認済みDriveへ保存する。未検証の製品変更を検証済みとしてpushしない。
+- 保存するもの: base/remote HEAD、変更sourceとuntracked test、source hash、完了したtestログ/画像/設定、失敗と未実施の区別、環境構築/再現手順、次の具体的操作。writerを止めたsnapshotを閉じ、Drive metadataとraw再取得のSHA256/CRCを確認する。
+- 同一source hashの保存済み結果は再開時に引き継ぎ、未保存結果・変更影響・未解決の懸念に必要な範囲だけ再実行する。環境の初期化自体を防げるとは保証しない。Git/Driveへの既存承認を取り直さない。
+- 最新の復元用checkpoint: [A003-S8 recovery checkpoint 01](https://drive.google.com/file/d/1qmboL2voMdTrOmYY9Wa1CYo0IuwnzRIc/view?usp=drivesdk)。1,310,156 bytes /39 entries、SHA256 `8495cd2cd07ad235483067207ba9d2c1dfaac577ad01765ba6094e2362c09afa`。26変更ファイル、tracked patch、MANIFEST/RESUME、再構築script/log。Drive name/MIME/size/parentとraw再取得hash/全CRC一致。
+- checkpoint01は製品修正の再構成途中であり、現在sourceのtest/analyze/build/nativeをPASSとしない。旧S8 progress（Drive `1KqZV8_oVaGJCO6KWdvSp6BOIJxN0rWIR`、77,337,683 bytes、SHA256 `0363406303392f885fad5e4ef0189bfca791e7ab3e511265e73f44fd09b92687`）も今回再取得検証済み。失われた未uploadの207/195件結果や5901画像を今回の保存済み証拠としない。
+- 最新の追加checkpoint: [A003-S8 recovery checkpoint 02](https://drive.google.com/file/d/1MUptn_C42U5HpeUVIchh0Esyvh-s6fhY/view?usp=drivesdk)。1,403,254 bytes /49 entries、SHA256 `ec94fa4986daf900d1bc71f78d2563424696d272dfcf0434f5c56b1bc257341d`。復元後197 PASS、style修正後21 PASS、full analyze0、現在source/patch/State/hash/RESUMEとclean環境scriptを保存し、metadataとraw再取得SHA256/全CRC一致。matrix/native/buildは未実施なのでPASSを引き継がない。
+- S8 current追加: 13 real matrix tests/5901 PNG、42 real controls regressions、full analyze0、最終default Linux debug build成功。matrix4 ZIPとcontrols WIPは全てDrive metadata/raw SHA256/CRC検証済み（正確なID/hashはEvidence末尾）。nativeで状態回復/カード/作者/順位/repostを実操作。全原本個別目視やlive backend/Android/codec合格とはしない。
+- 次の操作: S8最終native/source/patch/log/再開手順をcore保存/readback→検証済み差分を通常push→S9 Community heading/tab contrast・密度/preview/continuity。初回native本文/画面名不整合はDISC012で未解決。現在A003 in_progress、Baseline done2/628、Discovery cursorDISC001、Delta not_startedを維持。
+
+## 2026-10-21 full-audit session progress
+
+- 開始/再取得HEAD: App `ec93d84c8156bdeb12573e3821a685ef2ed4e6cd` / Web `de017642ba6f1c642e3e26c242695b9755286eda`。再開時の再fetchでも一致。正本は現在dev_branchの監査入口/Policy/Route/Standard/State/inventory/verifier。
+- 開始preflight: full/route/deltaともPASS。Baseline628件中done2件、current=A003。既存DISC001/002とD001–D037は未完了のまま保持。
+- A003/S1: current inventory/sourceとの照合、ホームの初回案内、3タブ、検索、8 drawer linksを対象化。
+- A003/S2: hidden project selection、別タブのproject search、tab selected semanticsの3件をreproduce→fix。修正前3テストFAIL。修正前production UIでもhidden selectionとquery残存を直接操作・画像確認。
+- A003/S3 / DISC003: documents取得不能で未処理prefetch error＋作品一覧永久loadingを実画面再現。先読みのerror記録、一覧/フォルダのerror/retry UI、reloadのFutureを返すsetStateを修正。実画面でerror→失敗継続→保存先復旧→再試行成功を確認。
+- 新規targeted tests＋既存home responsive/tag search: 11/11 PASS。touched analyze: No issues found。Linux debug build成功。全監査完了・A003 doneの意味ではない。
+
+- 追加checkpoint: ユーザーの明示許可でホーム修正 App `184ef3d743650f2d44ad926d7fa9447954dfda75` / State mirror Web `7d021c84fc9e3884acfc7ef27018fef87c932741` をdev_branchへ反映。API作成treeと検証済みlocal treeの一致、fetch後tree一致を確認。force pushなし。
+- A003/S4: 修正後production runnerでSP/PCの選択→作品一覧、query→作品一覧を再操作。選択action/queryは残らず、tabの題名・選択表示が正しい。実画面を開いて確認。
+- DISC004優先対策: createProjectは初回niapro保存完了後にpublishする。失敗時はTileManagerを破棄してthrow、フォームはgeneric errorをliveRegionで表示・入力保持・再試行可。保存中は二重送信を防止。
+- 検証: 初回保存/再起動復元、documents取得失敗、実FS blocker保持と復旧、二重送信/離脱の新規testsとhome/folder回帰は19 PASS。createProject利用79file回帰は182 PASS/slot fixture 4 FAIL；修正前checkpointでも同じ4 FAILを再現。host CPU依存のslot fixtureを明示presetにし、4/4 PASSへ修正。full analyze 0件、Linux debug build成功。
+- DISC004実画面: 保存先resolverを隔離runtime内で一時無効→作成で遷移せずerror・既存保存作品のみ→resolverを復旧→同じ入力で再試行しcanvas→runner終了/再起動→新作品と既存作品がhomeに復元。保存ZIPのmanifestでも名前/fps/sizeを確認。元resolverは復旧済み。
+
+current_substep: A003/S9 最新HEAD/テーマ色方針へ同期、保存済みlayout差分復元・固定neutral配色の訂正中
+completed_substeps:
+- S5未push分を保存済みDrive ZIPから復元。製品source18/20件のhash一致、残りを再構成して現在sourceで検証。旧S5 main再取得のSHA256/CRC一致。
+- Themeの実accent/selection前景、short-height empty、7言語Bookmarks empty/作品広場導線、French Start折返しを修正・再検証。
+- 追加のHome前景contrast反例と、大量一覧の1180px→0px反例を修正。S6 targeted3 PASS。native PC/SPでtab往復の位置保持、PC Settings往復、SP gallery往復を目視確認。
+- 14 files/実69 tests PASS、2310状態matrix layout PASS、full analyze 0件、Linux debug build PASS。自動matrixと直接目視を区別し、全画像目視や全監査完了を申告していない。
+- 今回ZIP2本はDriveへ保存しmetadataと再取得SHA256/全CRCを確認。main 1ASxcsh5ABYTvYXUYxVA6RSjN_c_EgFFa / intermediate 1QqQp-hLw-qka_quhnyEa14_5ru0goLk1。正確なURL/hash/size/留保はASTRA_AUDIT_STATE.mdの最新checkpoint参照。
+- S7: DISC009のowner/private/social非同期境界とABA busy解除を修正。before反例3 FAIL＋busy2 FAIL、最終27file/実174 tests PASS、full analyze指摘0、最新修正のdefault Linux debug build成功。
+- S7 native: 英語/light/標準文字倍率、強制SP390×844/PC1440×900の5状態ずつ10原本を直接mouse操作して開き目視。production owner画面/service/API clientを合成auth/HTTPで動かす明示ラベル付きharnessであり、実OAuth/実backendの合格ではない。
+- S7 core ZIP（85,961B）とfinal ZIP（473,236B）は承認済みDrive folderへ保存し、metadataと再取得bytes/SHA256/全CRC一致。最新証跡の正確なURL/hashはEvidence末尾。
+remaining_substeps:
+- DISC009の実auth/backend/7言語/全状態のclosure、他のaccount-scoped caller、owner loadingの0件表記も残る。priority fix済みをDiscovery doneへ昇格させない。
+- 通常3件/大量120件、Works/Bookmarks非empty/error/loading等の全主要表示状態×336、7言語、theme/textScale/short-height/continuous resizeを埋める。
+- Projectのroot tab往復/Drawer往復はPC/SPで検証。folder/search/view/favoritesとWorks/Bookmarksの残るcontinuityは未完了。
+- DISC003/004の残るstorage/device/language、DISC005の全caller（native custom Splash低contrastを含む）、DISC006共通empty全caller、DISC007関連一覧/条件、DISC008のempty理由分岐、DISC009の残条件を再現・修正・検証する。
+- free/paid/current campaignのP条件を区別し、収益化gateを変更せず隔離設定で検証する。
+blockers:
+- Android/DeX実機、touch/multi-touch/筆圧入力が未用意。該当NATIVEはPASSにしない。
+- Linux補助環境はFFmpeg libffmpegkit.soのdlopenが未成立。codec/exportをこのUI checkpointでPASSにしない。
+- advisor-pending: none。
+next_action: 042f992のAPCA/rescue変更を保持し、正式token対応表を作成。固定黒白/自動neutral置換を通常UIから除去→色設定propagation+rescue回帰→native/保存復元/目視→証跡・検証済み製品push。旧配色画像を最新Visual合格へ流用しない。
+
+前checkpointの保存記録（保持）:
+- このcheckpointの証跡ZIP backup完了（ユーザー明示許可後）: [audit-evidence-2026-10-21-A003-DISC004.zip](https://drive.google.com/file/d/1V357zq7uAQmhZt7wBaPRKj0NPnlaBlvr/view?usp=drivesdk)。Drive readbackでname・MIME `application/zip`・size 862508 bytes・保存先folder 1fiZEjCVqLtNVk_mkNIOUC3MWn6ys6e8qを確認。ローカルSHA256 `02fe5c2c7390f8839ccc8152422770234b7b1680eab94b8eb360ac0c8d592f19`、ZIP検査済み。過去A001/A002の証跡backupや最終coverageまで完了した意味ではない。
+
+以下は以前のセッションの履歴であり、上記の現在substepを上書きしない。
+
 ## 2026-10-10 session progress (Baseline)
 
 - 開始SHA: App `bbcb4293c37df925c15c98eaee90fafe0c58fd15`（dev_branch先端は監査stateのみの `f97451054c6b0284944f4f96154682c58646a0f1`）/ Web `ed8e5ceda0833c69d3838c3ca6bbbd8f456658a8`（同 `31042310306f7aaa15c5f85f68daa7ae74687027`）。
 - 作業branch: 両repoとも `ccr-f56ee68e-77ag7y`（このセッションのgit指示による）。dev_branchへの取り込みは人間のmerge/PR判断に委ねる。
 - 実行環境: Flutter 3.47.7 stable、Linux desktop debug build＋Xvfb＋openbox＋xdotool（実操作・実画面キャプチャ）。Android実機/エミュレータ無し（NATIVEはblocked扱い）。タッチ・マルチタッチ・筆圧の実入力は不可。
-- A001 done（製品修正 App `35d229e`）。A002 done（同 `35d229e`、2026-10-16・17にユーザー指摘で釣り合いを再調整 `7c96013`・`b928b22`）。A003 done（`d83cbe4`）。A004 done（`adf4176`）。詳細はASTRA_AUDIT_STATE.md。
-- Discovery登録: DISC001（初回起動の表示言語）、DISC002（エラー記録の閲覧手段）、DISC003（オンボーディング・初回説明の再表示）。Baseline完了後にDISC001から消化する。
-- ユーザー指定（2026-10-16）：全画面で、機能・表示崩れだけでなく大きさの比率・余白の釣り合いまで評価・調整する（`docs/product-audit/HANDS_ON_UI_STANDARD.md`「画面ごとの大きさの比率・余白の釣り合い」）。各IDの表示マトリクスはPCの行をPCモードで描き、全画像を目視して釣り合いも判定する。
+- A001 done（製品修正 App `35d229e`）。A002 done（同 `35d229e`）。詳細はASTRA_AUDIT_STATE.md。
+- Discovery登録: DISC001（初回起動の表示言語）、DISC002（エラー記録の閲覧手段）。Baseline完了後にDISC001から消化する。
 - 証跡画像: 監査証跡Artifact（ASTRA_AUDIT_STATE.mdにURL）。Google Driveへのバイナリ保存は、接続ツールがbase64本文の手入力しか受け付けず実用にならないため `backup-pending`。テキストの索引のみDriveへ置く。
 
 completed_substeps:
@@ -28,20 +90,18 @@ completed_substeps:
 - A001/S5d partial-bootstrap cleanup + failure surface/retry: verified（全28段階の失敗注入テスト、実画面で失敗→再試行）。
 - A001/S5e remaining startup side effects: verified（Google SDK初期化の1回化、共有チャンネルのハンドラー所有、型の違う設定で起動不能になる不具合の修正）。
 - A001/S6 fresh/warm/corrupt real startup: verified。
-- A002 全操作・336表示マトリクス・修正・再検証: done（釣り合いの再調整を含む）。
-- A003 全操作・336表示マトリクス・独立レビュー・修正・再検証: done。
-- A004 全操作・336表示マトリクス（詳細表示・一致なしを追加）・独立レビュー・修正・再検証: done。
+- A002 全操作・336表示マトリクス・修正・再検証: done。
 
-current_substep: none（A005未着手）
+current_substep: none（A003未着手）
 
 remaining_substeps:
-- A005 プロジェクト単体・複数選択・クリップボード（申し送り：390px幅で選択中の操作バーが86pxはみ出す、一括削除がお気に入りを無視、貼り付けの完了表示、フォルダ名ダイアログの入力欄が`DisposeOnUnmount`を使っていない、複製した作品はサムネイルのファイルを複製元と共有する）。
+- A003 ホーム /home・初回案内・ドロワー（申し送り：初回案内「手描きアニメーションを制作できます」は「はじめる」を押すまで再起動のたびに出る。仕様どおりか判定する）。
 
 blockers:
 - advisor blocker: none。
 - NATIVE（Android実機・低性能端末）: 実行環境なし。該当IDでblockedとして記録する。
 
-next_action: A005をRoute定義どおり実操作で監査する（長押し/右クリック、全選択/解除、お気に入り付外し、切取/コピー/貼付、フォルダ移動、削除確認/取消、お気に入り保護、二重操作・貼付失敗、336表示マトリクスと釣り合い）。
+next_action: A003をRoute定義どおり実操作で監査する（初回/既訪、一覧の空/大量、PC/SP、3タブ、ドロワー全リンク、検索、起動画面へ戻る、336表示マトリクス）。
 
 ## 前セッションまでのA001 substep記録（履歴）
 
@@ -155,3 +215,16 @@ lock後の追加監査対象は A105 等のBaseline IDではなく、docs/work-a
 - state構造修正: verifierのdelta範囲をD001–D037へ、AUDIT_DELTA_ROUTE.mdのエスケープ混入を除去、App側stateをWebへmirror。修正後に3 verifierとも ok を確認してから製品監査を再開。
 - 実行環境: Flutter 3.47.7 stable（CIのstable channelと同版）、Linux desktop debug buildをXvfb上で起動し実操作する。Android実機/エミュレータ（KVMなし）は本環境に無いため `NATIVE` 条件はblockedとして別記する。
 
+
+- S8最終core保存/readback完了: [A003-S8-final-core](https://drive.google.com/file/d/1cIujXWuS6HUuCpo1WbwQ3w7gK3yJXT0d/view?usp=drivesdk)、3,733,807 bytes /118 entries、SHA256 `1665c54099ab5d25711cb39abb4f2c7576d0a09b7d04d2b807e41b4b067ce677`。全writer停止後のsource30files/patch/hash、5901matrix参照、最終native原本・action log・redacted runner、197/42件と失敗を含むlog、最終default build、再現環境/次操作を収録。metadata name/MIME/size/parentとraw再取得hash/全CRC一致。ZIP内Stateは自己参照追加前であり、本receiptはGit Stateに保持する。S8の局所checkpointであって全面Visual closureではない。
+
+
+### 2026-10-22 A003/S9 — 最新正本同期・ユーザーのテーマ色方針を優先（WIP）
+
+- 最新取得: App `042f9921ce02d87bfec54ed68bc77ce521483480` / Web `aac9e1e1447483333d89578a48f9872bf9723200`。S8製品push後に通常UI色のtoken対応・自由な配色・復旧専用判定の変更が入ったため、現在HEADのPolicy/Quality/Hands-on/実行標準とテーマ仕様を再確認した。新規APCA/CVD判定・memoized cache・確認付きreset・7言語・唯一の固定色復旧ボタンを旧checkpointで上書きしない。
+- ユーザーは、通常UIをテーマ・外観の正式色から取得し、見やすさのために固定黒白/任意RGBへ自動置換する変更を認めないと明示した。assistantは撮影用ではなく製品UIの自動補正を追加していた事実を説明し、誤りとして取り下げる。保存済みS5/S8/S9の固定neutral表示を、現方針に対するVisual合格としない。機能/layout等の無変更部分の証拠はscopeを限定して保持する。
+- S9復元ZIP [before-matrix](https://drive.google.com/file/d/1ovtX7I89CnS-yVhZeoigK5plVgqORU5R/view?usp=drivesdk) は291,778B/67entries、SHA256 `14acf5475c3e7ad02c474c0846a86c5bbe068e8428d09292a54e19ce09397936`。今回もmetadataとraw再取得SHA256/全CRC/MANIFEST各hash一致を確認。これは方針訂正前のWIPであり、自動黒白化を再導入してよい証拠ではない。
+- 再開環境が初期ec93へ戻ったため、最新remoteへfast-forwardした。S9の未push layout3製品/2testだけは2805親と最新HEADが同一であることを確認し復元。最新ThemeService/color_contrast/rescue/翻訳/Policyは保持。前回palette訂正途中の未保存変更・analyze結果は残っておらず、PASSを引き継がない。
+- 維持するS9 layout: 狭幅で画面名と操作列を分離、自然幅tab、48px video filter、ranking sort chips折返し、検索modeのbounded label/角丸shape。以前の180画像smoke成功でも、実原本でStadium clipの文字欠けを発見し、actual renderer clip counterで1 FAIL→修正後1 PASS。これらは配色修正後の最新sourceで関連再確認が必要。
+- 次の具体操作: 現在HEADの正式色マッピングを表に記録→通常UIのcontrastingForeground/固定badge/preview/tooltipを正式tokenへ修正→設定色を反映するregressionと既存APCA/rescue回帰→実製品でテーマ変更/保存復元/PC-SP導線・原本目視→証跡をDrive保存/readback→検証済み差分を通常push。復旧専用ボタンの固定色・APCA閾値20/CVD/cacheを一般UIの配色補正へ流用しない。
+- Baseline2/628、A003 in_progress、DISC001–013 todo/cursorDISC001、Delta not_startedを維持。全面監査/最新HEAD Visual closureは未完了。

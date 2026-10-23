@@ -10,7 +10,6 @@ import 'package:niarim/app.dart';
 import 'package:niarim/app_bootstrap.dart';
 import 'package:niarim/router.dart';
 import 'package:niarim/screens/home/home_screen.dart';
-import 'package:niarim/screens/home/widgets/home_drawer.dart';
 import 'package:niarim/screens/home/widgets/project_list_widget.dart';
 import 'package:niarim/services/project_service.dart';
 import 'package:niarim/services/settings_service.dart';
@@ -24,7 +23,7 @@ import 'helpers/load_app_fonts.dart';
 /// 各セルで例外・タブ名の省略・画面外の操作・PCの側面パネルの有無を確かめ、
 /// 目視用に全セルの画像と一覧（manifest.json）を build/home-matrix へ出す。
 /// 「作品一覧」「ブクマ済み」タブ、作品の詳細表示、検索で何も見つからない
-/// ときは境目の幅（320/559/560/760/1280）で撮る。
+/// とき、選択中の操作バーは境目の幅（320/559/560/760/1280）で撮る。
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
@@ -165,12 +164,50 @@ void main() {
         final r = tester.getRect(find.byWidget(e.widget));
         if (!onScreen(r)) problems.add('FAB off screen $r');
       }
-      final side = find
-          .byWidgetPredicate((w) => w is HomeDrawer && w.permanent)
-          .evaluate()
-          .isNotEmpty;
-      final wantSide = pc && size.width >= 1000;
-      if (side != wantSide) problems.add('side panel=$side want=$wantSide');
+      return problems;
+    }
+
+    // 選択中の操作バー（1行）の操作ボタンがすべて画面内にあること。
+    // 全選択・全解除・件数は幅が足りなければ省略して1行に収めるので、
+    // 省略したものは長押し・ホバーで全文が読める（Tooltipの中にある）こと。
+    List<String> inspectSelectionBar(Size size) {
+      final problems = <String>[];
+      final screen = Offset.zero & size;
+      bool onScreen(Rect r) =>
+          screen.contains(r.topLeft) &&
+          screen.contains(r.bottomRight - const Offset(1, 1));
+      for (final icon in const [
+        Icons.content_cut,
+        Icons.content_copy,
+        Icons.delete,
+      ]) {
+        final button = find.ancestor(
+          of: find.byIcon(icon),
+          matching: find.byType(IconButton),
+        );
+        if (button.evaluate().length != 1) {
+          problems.add('selection button $icon=${button.evaluate().length}');
+          continue;
+        }
+        final r = tester.getRect(button);
+        if (!onScreen(r)) problems.add('selection button off screen $icon $r');
+      }
+      final cut = find.byIcon(Icons.content_cut);
+      final barTop = tester.getRect(cut).top - 24;
+      final barBottom = tester.getRect(cut).bottom + 24;
+      for (final e in find.byType(RichText).hitTestable().evaluate()) {
+        final r = tester.getRect(find.byWidget(e.widget));
+        if (r.top < barTop || r.bottom > barBottom) continue;
+        final paragraph = e.renderObject! as RenderParagraph;
+        if (!paragraph.didExceedMaxLines) continue;
+        final tooltip = find.ancestor(
+          of: find.byWidget(e.widget),
+          matching: find.byType(Tooltip),
+        );
+        if (tooltip.evaluate().isEmpty) {
+          problems.add('selection text cut "${paragraph.text.toPlainText()}"');
+        }
+      }
       return problems;
     }
 
@@ -241,6 +278,22 @@ void main() {
             );
             await tester.pump(const Duration(milliseconds: 400));
             await tester.pump(const Duration(milliseconds: 400));
+            // 選択中の操作バー（フォルダと作品を選ぶ。コピーは押せない）。
+            await tester.longPress(find.text('シリーズ'));
+            await tester.pump(const Duration(milliseconds: 400));
+            await tester.tap(find.text('背景动画'));
+            await tester.pump(const Duration(milliseconds: 400));
+            problems.addAll(
+              inspect(size, pc: mode.key == 'pc').map((p) => 'select: $p'),
+            );
+            problems.addAll(inspectSelectionBar(size));
+            await capture('${cell}_select');
+            shots.add('${cell}_select.png');
+            await tester.sendKeyEvent(LogicalKeyboardKey.escape);
+            await tester.pump(const Duration(milliseconds: 400));
+            if (find.byIcon(Icons.content_cut).evaluate().isNotEmpty) {
+              problems.add('Escape did not end selection');
+            }
           }
           manifest.add({
             'cell': cell,
@@ -272,112 +325,73 @@ void main() {
   });
 
   // 文字を大きくした狭い画面：タブ名は切れず、横スクロールになっても
-  // 選んだタブが画面内に来る。PCの側面パネルは状態バー・ナビゲーション
-  // バーの下へ潜らない。
-  testWidgets(
-    'large text and system bars keep tabs and the side panel usable',
-    (tester) async {
-      SharedPreferences.setMockInitialValues({
-        firstUseTooltipsSeenKey: kAllFirstUseTooltipKeys,
-        'first_launch': false,
-      });
-      tester.view.devicePixelRatio = 1;
-      tester.view.physicalSize = const Size(360, 760);
-      addTearDown(tester.view.resetPhysicalSize);
-      addTearDown(tester.view.resetDevicePixelRatio);
-      addTearDown(tester.platformDispatcher.clearTextScaleFactorTestValue);
-      addTearDown(tester.view.resetPadding);
-      addTearDown(tester.view.resetViewPadding);
-      final providers = (await tester.runAsync(buildAppProviders))!;
-      await tester.pumpWidget(
-        MultiProvider(providers: providers, child: const NiarimApp()),
-      );
-      await tester.pump(const Duration(milliseconds: 300));
-      final settings = tester
-          .element(find.byType(Scaffold).first)
-          .read<SettingsService>();
-      appRouter.go('/home');
-      await tester.pump(const Duration(seconds: 1));
-      final tabItems = find.byWidgetPredicate(
-        (w) => w is Semantics && w.properties.inMutuallyExclusiveGroup == true,
-      );
-      final failures = <String>[];
-      for (final language in languages) {
-        await tester.runAsync(() => settings.setLanguage(language));
-        for (final scale in const [1.3, 2.0]) {
-          tester.platformDispatcher.textScaleFactorTestValue = scale;
-          for (final w in const [320.0, 360.0, 390.0]) {
-            final size = Size(w, 760);
-            tester.view.physicalSize = size;
-            await tester.pump(const Duration(milliseconds: 300));
-            for (final tab in const [1, 2, 0]) {
-              final where = '$language x$scale ${w.round()} tab$tab';
-              // 隣のタブへは一覧を横に送って移る（画面外のタブも押せるとは
-              // 限らないため、本文のスワイプと同じ経路で切り替える）。
-              tester
-                  .widget<TabBarView>(find.byType(TabBarView))
-                  .controller!
-                  .animateTo(tab);
-              for (var i = 0; i < 4; i++) {
-                await tester.pump(const Duration(milliseconds: 150));
-              }
-              final error = tester.takeException();
-              if (error != null) failures.add('$where: $error');
-              final selected = tester.getRect(tabItems.at(tab));
-              if (selected.left < -0.5 || selected.right > w + 0.5) {
-                failures.add('$where: selected tab off screen $selected');
-              }
-              for (final e
-                  in find
-                      .descendant(of: tabItems, matching: find.byType(RichText))
-                      .evaluate()) {
-                final p = e.renderObject! as RenderParagraph;
-                if (p.getMaxIntrinsicWidth(double.infinity) >
-                    p.size.width + 0.5) {
-                  failures.add('$where: label cut "${p.text.toPlainText()}"');
-                }
+  // 選んだタブが画面内に来る。
+  testWidgets('large text keeps tabs usable', (tester) async {
+    SharedPreferences.setMockInitialValues({
+      firstUseTooltipsSeenKey: kAllFirstUseTooltipKeys,
+      'first_launch': false,
+    });
+    tester.view.devicePixelRatio = 1;
+    tester.view.physicalSize = const Size(360, 760);
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+    addTearDown(tester.platformDispatcher.clearTextScaleFactorTestValue);
+    addTearDown(tester.view.resetPadding);
+    addTearDown(tester.view.resetViewPadding);
+    final providers = (await tester.runAsync(buildAppProviders))!;
+    await tester.pumpWidget(
+      MultiProvider(providers: providers, child: const NiarimApp()),
+    );
+    await tester.pump(const Duration(milliseconds: 300));
+    final settings = tester
+        .element(find.byType(Scaffold).first)
+        .read<SettingsService>();
+    appRouter.go('/home');
+    await tester.pump(const Duration(seconds: 1));
+    final tabItems = find.byWidgetPredicate(
+      (w) => w is Semantics && w.properties.inMutuallyExclusiveGroup == true,
+    );
+    final failures = <String>[];
+    for (final language in languages) {
+      await tester.runAsync(() => settings.setLanguage(language));
+      for (final scale in const [1.3, 2.0]) {
+        tester.platformDispatcher.textScaleFactorTestValue = scale;
+        for (final w in const [320.0, 360.0, 390.0]) {
+          final size = Size(w, 760);
+          tester.view.physicalSize = size;
+          await tester.pump(const Duration(milliseconds: 300));
+          for (final tab in const [1, 2, 0]) {
+            final where = '$language x$scale ${w.round()} tab$tab';
+            // 隣のタブへは一覧を横に送って移る（画面外のタブも押せるとは
+            // 限らないため、本文のスワイプと同じ経路で切り替える）。
+            tester
+                .widget<TabBarView>(find.byType(TabBarView))
+                .controller!
+                .animateTo(tab);
+            for (var i = 0; i < 4; i++) {
+              await tester.pump(const Duration(milliseconds: 150));
+            }
+            final error = tester.takeException();
+            if (error != null) failures.add('$where: $error');
+            final selected = tester.getRect(tabItems.at(tab));
+            if (selected.left < -0.5 || selected.right > w + 0.5) {
+              failures.add('$where: selected tab off screen $selected');
+            }
+            for (final e
+                in find
+                    .descendant(of: tabItems, matching: find.byType(RichText))
+                    .evaluate()) {
+              final p = e.renderObject! as RenderParagraph;
+              if (p.getMaxIntrinsicWidth(double.infinity) >
+                  p.size.width + 0.5) {
+                failures.add('$where: label cut "${p.text.toPlainText()}"');
               }
             }
           }
         }
       }
-      tester.platformDispatcher.clearTextScaleFactorTestValue();
-
-      // PC（DeX）の側面パネル：状態バー24px・ナビゲーションバー48px。
-      await tester.runAsync(() => settings.setLanguage('ja'));
-      await tester.runAsync(() => settings.setForcePcMode(true));
-      const pcSize = Size(1005, 600);
-      tester.view.physicalSize = pcSize;
-      tester.view.padding = const FakeViewPadding(top: 24, bottom: 48);
-      tester.view.viewPadding = const FakeViewPadding(top: 24, bottom: 48);
-      await tester.pump(const Duration(seconds: 1));
-      final panel = find.byWidgetPredicate(
-        (w) => w is HomeDrawer && w.permanent,
-      );
-      expect(panel, findsOneWidget);
-      final header = tester.getRect(
-        find.descendant(
-          of: panel,
-          matching: find.byIcon(Icons.movie_creation_outlined),
-        ),
-      );
-      if (header.top < 24 - 0.5) {
-        failures.add('side panel: header icon under the status bar $header');
-      }
-      final list = find.descendant(
-        of: panel,
-        matching: find.byType(Scrollable),
-      );
-      await tester.drag(list.first, const Offset(0, -2000));
-      await tester.pump(const Duration(milliseconds: 500));
-      final last = tester.getRect(
-        find.descendant(of: panel, matching: find.byType(ListTile)).last,
-      );
-      if (last.bottom > pcSize.height - 48 + 0.5) {
-        failures.add('side panel: last item under the navigation bar $last');
-      }
-      await tester.runAsync(() => settings.setForcePcMode(null));
-      expect(failures, isEmpty, reason: failures.join('\n'));
-    },
-  );
+    }
+    tester.platformDispatcher.clearTextScaleFactorTestValue();
+    expect(failures, isEmpty, reason: failures.join('\n'));
+  });
 }

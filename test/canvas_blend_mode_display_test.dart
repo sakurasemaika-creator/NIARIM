@@ -1,3 +1,5 @@
+import 'helpers/project_storage.dart';
+
 import 'dart:io';
 import 'dart:typed_data';
 import 'dart:ui' as ui;
@@ -23,6 +25,7 @@ const _h = 48;
 /// than showing its own dark colours), a CPU-only mode on the layer being
 /// edited is shown exactly, and a Multiply layer above it darkens it.
 void main() {
+  useTemporaryProjectStorage();
   TestWidgetsFlutterBinding.ensureInitialized();
   setUp(() => SharedPreferences.setMockInitialValues({}));
 

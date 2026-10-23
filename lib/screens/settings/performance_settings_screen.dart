@@ -8,9 +8,8 @@ import '../../services/performance_service.dart';
 import '../../services/project_service.dart';
 import '../../services/save_tree_service.dart';
 import '../../services/settings_service.dart';
-import '../../widgets/editable_slider_value.dart';
+import '../../widgets/labeled_slider.dart';
 import '../../widgets/responsive.dart';
-import '../../widgets/stepped_slider.dart';
 import '../save_tree/save_tree_screen.dart';
 import '../../widgets/help_button.dart';
 import '../../config/font_fallback.dart';
@@ -349,16 +348,9 @@ class _PerformanceSettingsScreenState extends State<PerformanceSettingsScreen> {
                 dense: true,
               ),
               if (perf.showPrevOnion) ...[
-                Text(
-                  l10n.perfSettingsOnionCountPrevLabel,
-                  style: const TextStyle(
-                    fontWeight: FontWeight.bold,
-                    fontFamily: 'Kuramubon',
-                    fontFamilyFallback: kHeadingFontFallback,
-                  ),
-                ),
                 _onionSlider(
                   l10n: l10n,
+                  label: l10n.perfSettingsOnionCountPrevLabel,
                   value: perf.prevOnionSkinFrames,
                   onChanged: (v) => perf.setCustomOnionSkinPrev(v),
                 ),
@@ -371,16 +363,9 @@ class _PerformanceSettingsScreenState extends State<PerformanceSettingsScreen> {
                 dense: true,
               ),
               if (perf.showNextOnion) ...[
-                Text(
-                  l10n.perfSettingsOnionCountNextLabel,
-                  style: const TextStyle(
-                    fontWeight: FontWeight.bold,
-                    fontFamily: 'Kuramubon',
-                    fontFamilyFallback: kHeadingFontFallback,
-                  ),
-                ),
                 _onionSlider(
                   l10n: l10n,
+                  label: l10n.perfSettingsOnionCountNextLabel,
                   value: perf.nextOnionSkinFrames,
                   onChanged: (v) => perf.setCustomOnionSkinNext(v),
                 ),
@@ -416,15 +401,8 @@ class _PerformanceSettingsScreenState extends State<PerformanceSettingsScreen> {
               ),
               if (perf.saveMode == SaveMode.slot) ...[
                 const SizedBox(height: 8),
-                Text(
-                  l10n.perfSettingsSlotCountLabel,
-                  style: const TextStyle(
-                    fontWeight: FontWeight.bold,
-                    fontFamily: 'Kuramubon',
-                    fontFamilyFallback: kHeadingFontFallback,
-                  ),
-                ),
                 _SlotCountSlider(
+                  label: l10n.perfSettingsSlotCountLabel,
                   value: perf.slotCount,
                   onChangeEnd: (newCount) =>
                       _onCustomSlotCountChanged(context, newCount, perf),
@@ -653,34 +631,20 @@ class _PerformanceSettingsScreenState extends State<PerformanceSettingsScreen> {
 
   Widget _onionSlider({
     required AppLocalizations l10n,
+    required String label,
     required int value,
     required ValueChanged<int> onChanged,
   }) {
-    return Row(
-      children: [
-        const SizedBox(width: 16),
-        Expanded(
-          child: SteppedSlider(
-            min: 1,
-            max: 10,
-            divisions: 9,
-            value: value.toDouble(),
-            label: l10n.perfSettingsOnionFrameCountValue(value),
-            onChanged: (v) => onChanged(v.round()),
-          ),
-        ),
-        SizedBox(
-          width: 40,
-          child: EditableSliderValue(
-            text: l10n.perfSettingsOnionFrameCountValue(value),
-            style: const TextStyle(fontSize: 12),
-            value: value,
-            min: 1,
-            max: 10,
-            onChanged: (v) => onChanged(v.round()),
-          ),
-        ),
-      ],
+    return LabeledSlider(
+      label: label,
+      labelStyle: _sliderHeadingStyle,
+      min: 1,
+      max: 10,
+      divisions: 9,
+      value: value.toDouble(),
+      sliderLabel: l10n.perfSettingsOnionFrameCountValue(value),
+      valueText: l10n.perfSettingsOnionFrameCountValue(value),
+      onChanged: (v) => onChanged(v.round()),
     );
   }
 
@@ -726,12 +690,25 @@ class _PerformanceSettingsScreenState extends State<PerformanceSettingsScreen> {
   };
 }
 
+/// スライダーの項目名（オニオンスキン枚数・スロット数）。他の小見出しと
+/// 同じ太字の見出しフォント。
+const _sliderHeadingStyle = TextStyle(
+  fontWeight: FontWeight.bold,
+  fontFamily: 'Kuramubon',
+  fontFamilyFallback: kHeadingFontFallback,
+);
+
 /// スロット数スライダー：ドラッグ中はプレビュー表示のみ、指を離した時点で変更フローを起動
 class _SlotCountSlider extends StatefulWidget {
+  final String label;
   final int value;
   final ValueChanged<int> onChangeEnd;
 
-  const _SlotCountSlider({required this.value, required this.onChangeEnd});
+  const _SlotCountSlider({
+    required this.label,
+    required this.value,
+    required this.onChangeEnd,
+  });
 
   @override
   State<_SlotCountSlider> createState() => _SlotCountSliderState();
@@ -755,35 +732,17 @@ class _SlotCountSliderState extends State<_SlotCountSlider> {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
-    return Row(
-      children: [
-        const SizedBox(width: 16),
-        Expanded(
-          child: SteppedSlider(
-            min: 1,
-            max: 20,
-            divisions: 19,
-            value: _draft,
-            label: l10n.perfSettingsSlotCountValue(_draft.round()),
-            onChanged: (v) => setState(() => _draft = v),
-            onChangeEnd: (v) => widget.onChangeEnd(v.round()),
-          ),
-        ),
-        SizedBox(
-          width: 40,
-          child: EditableSliderValue(
-            text: l10n.perfSettingsSlotCountValue(_draft.round()),
-            style: const TextStyle(fontSize: 12),
-            value: _draft.round(),
-            min: 1,
-            max: 20,
-            onChanged: (v) {
-              setState(() => _draft = v.toDouble());
-              widget.onChangeEnd(v.round());
-            },
-          ),
-        ),
-      ],
+    return LabeledSlider(
+      label: widget.label,
+      labelStyle: _sliderHeadingStyle,
+      min: 1,
+      max: 20,
+      divisions: 19,
+      value: _draft,
+      sliderLabel: l10n.perfSettingsSlotCountValue(_draft.round()),
+      valueText: l10n.perfSettingsSlotCountValue(_draft.round()),
+      onChanged: (v) => setState(() => _draft = v),
+      onChangeEnd: (v) => widget.onChangeEnd(v.round()),
     );
   }
 }

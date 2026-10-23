@@ -12,8 +12,9 @@ import '../../widgets/responsive.dart';
 import '../canvas/widgets/color_picker_panel.dart';
 import '../../widgets/help_button.dart';
 import '../../config/font_fallback.dart';
-import '../../utils/color_contrast.dart';
 import '../../utils/reorder_index.dart';
+import '../../widgets/theme_rescue_button.dart';
+import 'theme_preview_gallery_screen.dart';
 
 class ThemeSettingsScreen extends StatelessWidget {
   const ThemeSettingsScreen({super.key});
@@ -28,12 +29,104 @@ class ThemeSettingsScreen extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(
         title: Text(l10n.themeSettingsTitle),
-        actions: const [HelpButton(topic: 'テーマ設定')],
+        actions: [
+          const HelpButton(topic: 'テーマ設定'),
+          if (themeService.needsThemeRescue)
+            ThemeRescueButton(
+              iconOnly: MediaQuery.sizeOf(context).width < 520 ||
+                  MediaQuery.textScalerOf(context).scale(1) > 1.4,
+            ),
+        ],
       ),
       body: desktopCentered(
         context,
         ListView(
           children: [
+            // 現在の配色をそのまま縮小表示する。描画の見本は全画面の
+            // 41画面ギャラリーと共通で、固定画像・固定配色ではない。
+            // タップで全画面に移動する。カラーピッカーの変更結果は
+            // ThemeServiceの再描画によって即座にこの見本にも反映される。
+            Padding(
+              padding: const EdgeInsets.fromLTRB(12, 12, 12, 8),
+              child: Material(
+                color: Theme.of(context).colorScheme.surfaceContainerLow,
+                borderRadius: BorderRadius.circular(16),
+                child: InkWell(
+                  key: const Key('themePreviewOpen'),
+                  borderRadius: BorderRadius.circular(16),
+                  onTap: () => Navigator.of(context).push(
+                    MaterialPageRoute<void>(
+                      builder: (_) => const ThemePreviewGalleryScreen(),
+                    ),
+                  ),
+                  child: Padding(
+                    padding: const EdgeInsets.all(12),
+                    child: Row(
+                      children: [
+                        const ThemePreviewThumbnail(
+                          key: Key('themeInlinePreview'),
+                          height: 184,
+                        ),
+                        const SizedBox(width: 14),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Text(
+                                Localizations.localeOf(context).languageCode == 'ja'
+                                    ? '画面プレビュー'
+                                    : 'Screen preview',
+                                style: const TextStyle(
+                                  fontSize: 15,
+                                  fontWeight: FontWeight.bold,
+                                  fontFamily: 'Kuramubon',
+                                  fontFamilyFallback: kHeadingFontFallback,
+                                ),
+                              ),
+                              const SizedBox(height: 8),
+                              Text(
+                                Localizations.localeOf(context).languageCode == 'ja'
+                                    ? 'プロジェクト一覧の見本'
+                                    : 'Project list sample',
+                                style: TextStyle(
+                                  fontSize: 12,
+                                  color: Theme.of(context).colorScheme.onSurfaceVariant,
+                                ),
+                              ),
+                              const SizedBox(height: 12),
+                              Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Flexible(
+                                    child: Text(
+                                      Localizations.localeOf(context).languageCode == 'ja'
+                                          ? 'タップして全41画面を見る'
+                                          : 'Tap to view all 41 screens',
+                                      style: TextStyle(
+                                        fontSize: 12,
+                                        fontWeight: FontWeight.w700,
+                                        color: Theme.of(context).colorScheme.primary,
+                                      ),
+                                    ),
+                                  ),
+                                  const SizedBox(width: 4),
+                                  Icon(
+                                    Icons.open_in_full,
+                                    size: 17,
+                                    color: Theme.of(context).colorScheme.primary,
+                                  ),
+                                ],
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+            ),
             // カラーカスタマイズ：すべてカラーピッカー（HSV/RGB/HEX）で
             // 自由に設定できる。変更は即座にアプリ全体（現在のプリセット）へ
             // 反映される。
@@ -66,6 +159,42 @@ class ThemeSettingsScreen extends StatelessWidget {
                 themeService,
                 (p, c) => p.copyWith(textColor: c),
                 current.textColor,
+              ),
+            ),
+            // 文字の役割別指定。各前景色を分けることで、本文を暗色、
+            // 塗りつぶしボタンの文字だけ白にする設定が可能。
+            // すべてのプリセットで4つの文字色を必ず明示的に保持する。
+            _ColorCustomizeTile(
+              key: const Key('themeButtonTextColorTile'),
+              label: l10n.themeColorButtonText,
+              color: current.buttonTextColor,
+              onTap: () => _showColorPickerDialog(
+                context,
+                themeService,
+                (p, c) => p.copyWith(buttonTextColor: c),
+                current.buttonTextColor,
+              ),
+            ),
+            _ColorCustomizeTile(
+              key: const Key('themeMenuTextColorTile'),
+              label: l10n.themeColorMenuText,
+              color: current.menuTextColor,
+              onTap: () => _showColorPickerDialog(
+                context,
+                themeService,
+                (p, c) => p.copyWith(menuTextColor: c),
+                current.menuTextColor,
+              ),
+            ),
+            _ColorCustomizeTile(
+              key: const Key('themeSelectionTextColorTile'),
+              label: l10n.themeColorSelectionText,
+              color: current.selectionTextColor,
+              onTap: () => _showColorPickerDialog(
+                context,
+                themeService,
+                (p, c) => p.copyWith(selectionTextColor: c),
+                current.selectionTextColor,
               ),
             ),
             _ColorCustomizeTile(
@@ -197,6 +326,7 @@ class ThemeSettingsScreen extends StatelessWidget {
                                   padding: const EdgeInsets.only(right: 4),
                                   child: Icon(
                                     Icons.check,
+                                    key: const Key('themePresetEditingCheck'),
                                     color: Theme.of(
                                       context,
                                     ).colorScheme.primary,
@@ -293,20 +423,18 @@ class ThemeSettingsScreen extends StatelessWidget {
   }
 
   /// カラーピッカーダイアログを表示する（カラーカスタマイズ）。
-  /// ドラッグ中は`ThemeService.previewCurrent()`でアプリ全体へ即時反映し
-  /// （見た目確認用、未保存）、ダイアログを閉じた時点で確定保存する。
+  /// ドラッグ中は `ThemeService.previewCurrent()` でアプリ全体へ即時反映し、
+  /// 閉じた時点でユーザーが選んだ色をそのまま保存する。
   ///
-  /// ただし、**文字と背景が同じ（ごく近い）色になる組み合わせは保存
-  /// させない**。保存してしまうとこの設定画面の文字まで読めなくなり、
-  /// 自力で元に戻せなくなるため（判定は`color_contrast.dart`）。その場合は
-  /// 開く前の配色へ戻したうえで理由を出す。
+  /// 読みにくさを理由にユーザーの色選択を拒否しない。操作不能になる
+  /// ほど色が近いテーマからの復旧は、起動画面右上のテーマ非依存の
+  /// リセットボタンで行う（判定は `color_contrast.dart`）。
   void _showColorPickerDialog(
     BuildContext context,
     ThemeService service,
     AppThemePreset Function(AppThemePreset preset, Color color) update,
     Color initialColor,
   ) {
-    final before = service.current;
     showDialog(
       context: context,
       builder: (ctx) => Dialog(
@@ -317,33 +445,10 @@ class ThemeSettingsScreen extends StatelessWidget {
           onColorChanged: (c) =>
               service.previewCurrent(update(service.current, c)),
           onClose: () {
-            final rejected = !isThemeReadable(service.current);
-            if (rejected) {
-              service.previewCurrent(before);
-            } else {
-              service.commitCurrent();
-            }
+            service.commitCurrent();
             Navigator.pop(ctx);
-            if (rejected && context.mounted) _showContrastError(context);
           },
         ),
-      ),
-    );
-  }
-
-  void _showContrastError(BuildContext context) {
-    final l10n = AppLocalizations.of(context)!;
-    showDialog<void>(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        title: Text(l10n.themeContrastErrorTitle),
-        content: Text(l10n.themeContrastErrorBody),
-        actions: [
-          FilledButton(
-            onPressed: () => Navigator.pop(ctx),
-            child: Text(l10n.commonOk),
-          ),
-        ],
       ),
     );
   }
@@ -502,6 +607,7 @@ class _ColorCustomizeTile extends StatelessWidget {
   final VoidCallback onTap;
 
   const _ColorCustomizeTile({
+    super.key,
     required this.label,
     required this.color,
     required this.onTap,
@@ -570,17 +676,46 @@ class _PresetColorSwatch extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // Compact swatch samples all four actual foreground roles; colors come
+    // solely from the preset. It is not a substitute for the full preview.
     return Container(
-      width: 40,
-      height: 40,
+      width: 72,
+      height: 48,
       clipBehavior: Clip.antiAlias,
-      decoration: const BoxDecoration(shape: BoxShape.circle),
-      child: Row(
-        children: [
-          Expanded(child: Container(color: preset.panelBgColor)),
-          Expanded(child: Container(color: preset.accentColor)),
-        ],
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(9),
+        border: Border.all(color: Theme.of(context).colorScheme.outlineVariant),
       ),
+      child: Column(children: [
+        Expanded(flex: 3, child: Row(children: [
+          Expanded(child: Container(
+            alignment: Alignment.center,
+            color: preset.panelBgColor,
+            child: Text('Aa', style: TextStyle(
+              color: preset.textColor,
+              fontSize: 13, fontWeight: FontWeight.bold)),
+          )),
+          Expanded(child: Container(
+            alignment: Alignment.center,
+            color: preset.accentColor,
+            child: Icon(Icons.check, color: preset.buttonTextColor, size: 18),
+          )),
+        ])),
+        Expanded(flex: 2, child: Row(children: [
+          Expanded(child: Container(
+            alignment: Alignment.center,
+            color: preset.menuBgColor,
+            child: Icon(Icons.menu, color: preset.menuTextColor, size: 16),
+          )),
+          Expanded(child: Container(
+            alignment: Alignment.center,
+            color: preset.selectionColor,
+            child: Text('Aa', style: TextStyle(
+              color: preset.selectionTextColor,
+              fontSize: 11, fontWeight: FontWeight.bold)),
+          )),
+        ])),
+      ]),
     );
   }
 }

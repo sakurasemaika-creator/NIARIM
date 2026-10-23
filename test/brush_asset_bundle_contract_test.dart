@@ -11,8 +11,9 @@ void main() {
       reason: 'Flutter must package the bundled brush image directory',
     );
 
-    final presets =
-        File('lib/models/brush_presets_extension.dart').readAsStringSync();
+    final presets = File(
+      'lib/models/brush_presets_extension.dart',
+    ).readAsStringSync();
     for (var i = 1; i <= 5; i++) {
       final name = 'bangs_${i.toString().padLeft(2, '0')}.png';
       final assetPath = 'assets/brushes/$name';

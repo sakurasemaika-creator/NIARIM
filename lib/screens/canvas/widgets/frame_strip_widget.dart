@@ -9,6 +9,7 @@ import '../../../l10n/app_localizations.dart';
 import '../../../services/premium_service.dart';
 import '../../../services/project_service.dart';
 import '../../../services/theme_service.dart';
+import '../../../widgets/dispose_on_unmount.dart';
 import '../../../widgets/frame_preview_background.dart';
 
 class FrameStripWidget extends StatefulWidget {
@@ -162,97 +163,115 @@ class _FrameStripWidgetState extends State<FrameStripWidget> {
 
     showDialog<void>(
       context: context,
-      builder: (ctx) => StatefulBuilder(
-        builder: (ctx, setS) {
-          void setCount(int value) {
-            setS(() {
-              count = value.clamp(1, 100);
-              syncController();
-            });
-          }
+      // 閉じるアニメーション中もTextFieldがcontrollerを使うので、ダイアログが
+      // 外れるまで破棄を待つ。
+      builder: (ctx) => DisposeOnUnmount(
+        controller: controller,
+        builder: (ctx) => StatefulBuilder(
+          builder: (ctx, setS) {
+            void setCount(int value) {
+              setS(() {
+                count = value.clamp(1, 100);
+                syncController();
+              });
+            }
 
-          return AlertDialog(
-            title: Row(
-              children: [
-                Icon(
-                  Icons.library_add_rounded,
-                  color: Theme.of(ctx).colorScheme.primary,
-                ),
-                const SizedBox(width: 8),
-                Expanded(child: Text(l10n.frameStripBulkAddTitle)),
-              ],
-            ),
-            content: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Slider(
-                  value: count.toDouble(),
-                  min: 1,
-                  max: 100,
-                  divisions: 99,
-                  label: '$count',
-                  onChanged: (v) => setCount(v.round()),
-                ),
-                Row(
+            return AlertDialog(
+              // スライダーを画面の横幅いっぱいに使えるよう、ダイアログを
+              // 既定（左右40px空け、内容が狭ければ幅280）より広く取る。
+              insetPadding: const EdgeInsets.symmetric(
+                horizontal: 16,
+                vertical: 24,
+              ),
+              title: Row(
+                children: [
+                  Icon(
+                    Icons.library_add_rounded,
+                    color: Theme.of(ctx).colorScheme.primary,
+                  ),
+                  const SizedBox(width: 8),
+                  Expanded(child: Text(l10n.frameStripBulkAddTitle)),
+                ],
+              ),
+              content: SizedBox(
+                width: 480,
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
                   children: [
-                    IconButton(
-                      icon: const Icon(Icons.remove_rounded),
-                      tooltip: l10n.commonDecrease,
-                      onPressed: count > 1 ? () => setCount(count - 1) : null,
+                    Slider(
+                      value: count.toDouble(),
+                      min: 1,
+                      max: 100,
+                      divisions: 99,
+                      label: '$count',
+                      onChanged: (v) => setCount(v.round()),
                     ),
-                    Expanded(
-                      child: TextField(
-                        controller: controller,
-                        textAlign: TextAlign.center,
-                        keyboardType: TextInputType.number,
-                        inputFormatters: [
-                          FilteringTextInputFormatter.digitsOnly,
-                        ],
-                        decoration: InputDecoration(
-                          suffixText: l10n.frameStripBulkAddUnit,
-                          isDense: true,
+                    Row(
+                      children: [
+                        IconButton(
+                          icon: const Icon(Icons.remove_rounded),
+                          tooltip: l10n.commonDecrease,
+                          onPressed: count > 1
+                              ? () => setCount(count - 1)
+                              : null,
                         ),
-                        onChanged: (value) {
-                          final parsed = int.tryParse(value);
-                          if (parsed != null) {
-                            setS(() => count = parsed.clamp(1, 100));
-                          }
-                        },
-                        onSubmitted: (_) => syncController(),
-                      ),
-                    ),
-                    IconButton(
-                      icon: const Icon(Icons.add_rounded),
-                      tooltip: l10n.commonIncrease,
-                      onPressed: count < 100 ? () => setCount(count + 1) : null,
+                        Expanded(
+                          child: TextField(
+                            controller: controller,
+                            textAlign: TextAlign.center,
+                            keyboardType: TextInputType.number,
+                            inputFormatters: [
+                              FilteringTextInputFormatter.digitsOnly,
+                            ],
+                            decoration: InputDecoration(
+                              suffixText: l10n.frameStripBulkAddUnit,
+                              isDense: true,
+                            ),
+                            onChanged: (value) {
+                              final parsed = int.tryParse(value);
+                              if (parsed != null) {
+                                setS(() => count = parsed.clamp(1, 100));
+                              }
+                            },
+                            onSubmitted: (_) => syncController(),
+                          ),
+                        ),
+                        IconButton(
+                          icon: const Icon(Icons.add_rounded),
+                          tooltip: l10n.commonIncrease,
+                          onPressed: count < 100
+                              ? () => setCount(count + 1)
+                              : null,
+                        ),
+                      ],
                     ),
                   ],
                 ),
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.pop(ctx),
+                  child: Text(l10n.commonCancel),
+                ),
+                FilledButton.icon(
+                  icon: const Icon(Icons.add_rounded),
+                  onPressed: () {
+                    final parsed = int.tryParse(controller.text);
+                    final addCount = (parsed ?? count).clamp(1, 100);
+                    if (!_canAddFrames(context, service, addCount)) return;
+                    for (var i = 0; i < addCount; i++) {
+                      service.addFrame(widget.projectId, widget.sceneId);
+                    }
+                    Navigator.pop(ctx);
+                  },
+                  label: Text(l10n.commonOk),
+                ),
               ],
-            ),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.pop(ctx),
-                child: Text(l10n.commonCancel),
-              ),
-              FilledButton.icon(
-                icon: const Icon(Icons.add_rounded),
-                onPressed: () {
-                  final parsed = int.tryParse(controller.text);
-                  final addCount = (parsed ?? count).clamp(1, 100);
-                  if (!_canAddFrames(context, service, addCount)) return;
-                  for (var i = 0; i < addCount; i++) {
-                    service.addFrame(widget.projectId, widget.sceneId);
-                  }
-                  Navigator.pop(ctx);
-                },
-                label: Text(l10n.commonOk),
-              ),
-            ],
-          );
-        },
+            );
+          },
+        ),
       ),
-    ).whenComplete(controller.dispose);
+    );
   }
 
   void _showHoldDialog(

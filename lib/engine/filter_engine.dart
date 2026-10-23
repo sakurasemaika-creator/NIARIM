@@ -13,6 +13,7 @@ import 'prism_filter_engine.dart';
 import 'pixel_art_engine.dart';
 import 'sphere_shading_engine.dart';
 import 'vhs_noise_engine.dart';
+import 'watercolor_border_engine.dart';
 import 'premultiplied.dart';
 import 'tone_curve.dart';
 
@@ -289,6 +290,16 @@ Uint8List applyDrawFilterForFrameInIsolate(
       height,
       filter,
       maskData,
+    ),
+    FilterKind.watercolorBorder => applyWatercolorBorder(
+      data,
+      width,
+      height,
+      range: filter.watercolorBorderRange,
+      blur: filter.watercolorBorderBlur,
+      opacityEffect: filter.watercolorBorderOpacity,
+      darkenEffect: filter.watercolorBorderDarken,
+      colorEdges: filter.watercolorBorderColorEdges,
     ),
     FilterKind.chromaticAberration => engine.applyChromaticShift(
       data,
@@ -887,9 +898,32 @@ class FilterEngine {
           color: e.fadeColor.toARGB32(),
           range: e.param1,
         ),
+        // 水彩境界：param1=範囲（px）、param2=縁の濃さ、param3=透明度の影響、
+        // param4=ぼかし幅（px）、param5=色の境目にも付ける（0.5以上で入）。
+        // 背景まで描いた不透明なフレームでは、透けさせる代わりに紙（白）へ
+        // 寄せる。
+        EffectFilterType.watercolorBorder => applyWatercolorBorder(
+          result,
+          width,
+          height,
+          range: e.param1,
+          darkenEffect: e.param2,
+          opacityEffect: e.param3,
+          blur: e.param4,
+          colorEdges: e.param5 >= 0.5,
+          onPaper: _isOpaque(result),
+        ),
       };
     }
     return result;
+  }
+
+  /// Whether every pixel of [data] (RGBA) is fully opaque.
+  static bool _isOpaque(Uint8List data) {
+    for (var i = 3; i < data.length; i += 4) {
+      if (data[i] != 255) return false;
+    }
+    return true;
   }
 
   /// [filtered] mixed back towards [original] so only [amount] (0 to 1) of
@@ -3154,4 +3188,5 @@ enum EffectFilterType {
   sharpen,
   unsharpMask,
   vignette,
+  watercolorBorder,
 }

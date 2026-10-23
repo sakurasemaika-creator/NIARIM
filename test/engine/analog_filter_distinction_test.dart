@@ -48,13 +48,32 @@ void main() {
         input[i + 3] = 255;
       }
     }
-    expect(engine.applyCrt(input, w, h, 80), equals(engine.applyCrt(input, w, h, 80)));
-    final a = VhsNoiseEngine.apply(input, w, h,
-      noiseStrength: 0, scanlineStrength: 0, colorBleed: 0,
-      tracking: 100, seed: 1984, frameIndex: 0);
-    final b = VhsNoiseEngine.apply(input, w, h,
-      noiseStrength: 0, scanlineStrength: 0, colorBleed: 0,
-      tracking: 100, seed: 1984, frameIndex: 1);
+    expect(
+      engine.applyCrt(input, w, h, 80),
+      equals(engine.applyCrt(input, w, h, 80)),
+    );
+    final a = VhsNoiseEngine.apply(
+      input,
+      w,
+      h,
+      noiseStrength: 0,
+      scanlineStrength: 0,
+      colorBleed: 0,
+      tracking: 100,
+      seed: 1984,
+      frameIndex: 0,
+    );
+    final b = VhsNoiseEngine.apply(
+      input,
+      w,
+      h,
+      noiseStrength: 0,
+      scanlineStrength: 0,
+      colorBleed: 0,
+      tracking: 100,
+      seed: 1984,
+      frameIndex: 1,
+    );
     expect(a, isNot(equals(b)));
     for (var i = 3; i < a.length; i += 4) {
       expect(a[i], 255);

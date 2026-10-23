@@ -22,7 +22,9 @@ void main() {
 
   for (final mode in LayerBlendMode.values) {
     for (final fixture in fixtures) {
-      testWidgets('${mode.name} matches reference math for ${fixture.name}', (tester) async {
+      testWidgets('${mode.name} matches reference math for ${fixture.name}', (
+        tester,
+      ) async {
         final actual = await tester.runAsync(
           () => _compositePixel(mode, fixture.backdrop, fixture.source),
         );
@@ -66,17 +68,15 @@ Future<List<int>> _compositePixel(
         type: LayerType.normal,
         blendMode: mode,
       ),
-      const Layer(
-        id: 'backdrop',
-        name: 'Backdrop',
-        type: LayerType.normal,
-      ),
+      const Layer(id: 'backdrop', name: 'Backdrop', type: LayerType.normal),
     ],
     (layer) => 'scene#0#${layer.id}',
     1,
     1,
   );
-  final data = await image.toByteData(format: ui.ImageByteFormat.rawStraightRgba);
+  final data = await image.toByteData(
+    format: ui.ImageByteFormat.rawStraightRgba,
+  );
   image.dispose();
   tm.dispose();
   return data!.buffer.asUint8List().take(4).toList();
@@ -118,20 +118,14 @@ List<int> _reference(
   final out = <int>[];
   for (var c = 0; c < 3; c++) {
     final premultiplied =
-        as * (1 - ab) * cs[c] +
-        as * ab * blended[c] +
-        (1 - as) * ab * cb[c];
+        as * (1 - ab) * cs[c] + as * ab * blended[c] + (1 - as) * ab * cb[c];
     out.add((premultiplied / ao * 255).round().clamp(0, 255));
   }
   out.add((ao * 255).round().clamp(0, 255));
   return out;
 }
 
-List<double> _blendRgb(
-  LayerBlendMode mode,
-  List<double> b,
-  List<double> s,
-) {
+List<double> _blendRgb(LayerBlendMode mode, List<double> b, List<double> s) {
   switch (mode) {
     case LayerBlendMode.hue:
       return _setLum(_setSat(List<double>.from(s), _sat(b)), _lum(b));
@@ -170,9 +164,7 @@ double _blend(LayerBlendMode mode, double b, double s) {
       return s <= 0.5 ? 2 * b * s : 1 - 2 * (1 - b) * (1 - s);
     case LayerBlendMode.softLight:
       if (s <= 0.5) return b - (1 - 2 * s) * b * (1 - b);
-      final d = b <= 0.25
-          ? ((16 * b - 12) * b + 4) * b
-          : _sqrt(b);
+      final d = b <= 0.25 ? ((16 * b - 12) * b + 4) * b : _sqrt(b);
       return b + (2 * s - 1) * (d - b);
     case LayerBlendMode.difference:
       return (b - s).abs();

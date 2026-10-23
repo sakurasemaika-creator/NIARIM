@@ -276,7 +276,7 @@ class HomeWidgetService extends ChangeNotifier {
   ///
   /// [themeColor]はアプリの現在のテーマカラー。テーマ追従の種類はこれを
   /// そのまま背景色として使う。[themeForegroundColor]は同じくテーマ追従の
-  /// ときのアイコン・文字色（テーマの「メニュー背景色」）。[thumbnailPath]は選んだフレームを実際に
+  /// ときのアイコン・文字色（テーマの「ボタン内の文字・アイコン色」）。[thumbnailPath]は選んだフレームを実際に
   /// 描画したPNGのパス（呼び出し側で`frame_thumbnail_renderer.dart`を
   /// 使って用意する。このサービス自体はDartの`dart:ui`合成処理へ依存させ
   /// たくないため関与しない）。

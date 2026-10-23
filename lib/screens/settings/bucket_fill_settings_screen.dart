@@ -32,7 +32,18 @@ class BucketFillSettingsScreen extends StatelessWidget {
         ListView(
           padding: const EdgeInsets.all(16),
           children: [
-            _sectionLabel(context, l10n.bucketSettingsToleranceSection),
+            _sectionLabel(
+              context,
+              l10n.bucketSettingsToleranceSection,
+              value: EditableSliderValue(
+                text: settings.bucketTolerance.round().toString(),
+                value: settings.bucketTolerance,
+                min: 0,
+                max: 100,
+                title: l10n.bucketSettingsToleranceSection,
+                onChanged: (v) => settings.setBucketTolerance(v.toDouble()),
+              ),
+            ),
             Text(
               l10n.bucketSettingsToleranceHint,
               style: TextStyle(
@@ -41,32 +52,27 @@ class BucketFillSettingsScreen extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 8),
-            Row(
-              children: [
-                Expanded(
-                  child: SteppedSlider(
-                    value: settings.bucketTolerance,
-                    min: 0,
-                    max: 100,
-                    divisions: 100,
-                    onChanged: (v) => settings.setBucketTolerance(v),
-                  ),
-                ),
-                SizedBox(
-                  width: 32,
-                  child: EditableSliderValue(
-                    text: settings.bucketTolerance.round().toString(),
-                    value: settings.bucketTolerance,
-                    min: 0,
-                    max: 100,
-                    title: l10n.bucketSettingsToleranceSection,
-                    onChanged: (v) => settings.setBucketTolerance(v.toDouble()),
-                  ),
-                ),
-              ],
+            SteppedSlider(
+              value: settings.bucketTolerance,
+              min: 0,
+              max: 100,
+              divisions: 100,
+              compact: true,
+              onChanged: (v) => settings.setBucketTolerance(v),
             ),
             const SizedBox(height: 20),
-            _sectionLabel(context, l10n.bucketSettingsExpandSection),
+            _sectionLabel(
+              context,
+              l10n.bucketSettingsExpandSection,
+              value: EditableSliderValue(
+                text: '${settings.bucketExpandPx}',
+                value: settings.bucketExpandPx,
+                min: 0,
+                max: 10,
+                title: l10n.bucketSettingsExpandSection,
+                onChanged: (v) => settings.setBucketExpandPx(v.round()),
+              ),
+            ),
             Text(
               l10n.bucketSettingsExpandHint,
               style: TextStyle(
@@ -75,29 +81,13 @@ class BucketFillSettingsScreen extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 8),
-            Row(
-              children: [
-                Expanded(
-                  child: SteppedSlider(
-                    value: settings.bucketExpandPx.toDouble(),
-                    min: 0,
-                    max: 10,
-                    divisions: 10,
-                    onChanged: (v) => settings.setBucketExpandPx(v.round()),
-                  ),
-                ),
-                SizedBox(
-                  width: 32,
-                  child: EditableSliderValue(
-                    text: '${settings.bucketExpandPx}',
-                    value: settings.bucketExpandPx,
-                    min: 0,
-                    max: 10,
-                    title: l10n.bucketSettingsExpandSection,
-                    onChanged: (v) => settings.setBucketExpandPx(v.round()),
-                  ),
-                ),
-              ],
+            SteppedSlider(
+              value: settings.bucketExpandPx.toDouble(),
+              min: 0,
+              max: 10,
+              divisions: 10,
+              compact: true,
+              onChanged: (v) => settings.setBucketExpandPx(v.round()),
             ),
             SizedBox(height: 8),
             Card(
@@ -127,18 +117,33 @@ class BucketFillSettingsScreen extends StatelessWidget {
     );
   }
 
-  Widget _sectionLabel(BuildContext context, String text) {
+  /// 見出しと、その行の右端に置くスライダーの値。スライダー本体は下の行で
+  /// 横幅いっぱいを使う。
+  Widget _sectionLabel(
+    BuildContext context,
+    String text, {
+    required Widget value,
+  }) {
     return Padding(
-      padding: const EdgeInsets.only(left: 4, bottom: 8),
-      child: Text(
-        text,
-        style: TextStyle(
-          fontSize: 13,
-          fontWeight: FontWeight.w700,
-          fontFamily: 'Kuramubon',
-          fontFamilyFallback: kHeadingFontFallback,
-          color: Theme.of(context).colorScheme.onSurfaceVariant,
-        ),
+      // 値の右の鉛筆マークは右へはみ出して描かれるので、そのぶん空ける。
+      padding: const EdgeInsets.only(left: 4, right: 14, bottom: 8),
+      child: Row(
+        children: [
+          Expanded(
+            child: Text(
+              text,
+              style: TextStyle(
+                fontSize: 13,
+                fontWeight: FontWeight.w700,
+                fontFamily: 'Kuramubon',
+                fontFamilyFallback: kHeadingFontFallback,
+                color: Theme.of(context).colorScheme.onSurfaceVariant,
+              ),
+            ),
+          ),
+          const SizedBox(width: 8),
+          value,
+        ],
       ),
     );
   }

@@ -1,0 +1,74 @@
+name: Theme Rescue Verification
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [dev_branch]
+    paths:
+      - '.github/workflows/theme-rescue-verification.yml'
+      - 'lib/utils/color_contrast.dart'
+      - 'lib/widgets/theme_rescue_button.dart'
+      - 'lib/screens/splash/splash_screen.dart'
+      - 'lib/screens/settings/theme_settings_screen.dart'
+      - 'lib/screens/settings/theme_preview_gallery_screen.dart'
+      - 'lib/services/theme_service.dart'
+      - 'lib/models/app_theme_preset.dart'
+      - 'lib/screens/home/widgets/project_list_widget.dart'
+      - 'lib/services/home_widget_refresh.dart'
+      - 'lib/services/home_widget_service.dart'
+      - 'lib/screens/settings/widget_settings_screen.dart'
+      - 'lib/screens/project/project_detail_screen.dart'
+      - 'lib/screens/community/community_screen.dart'
+      - 'lib/screens/timeline/timeline_screen.dart'
+      - 'lib/engine/niatra_serializer.dart'
+      - 'lib/l10n/**'
+      - 'test/theme_contrast_rescue_test.dart'
+      - 'test/theme_preview_gallery_test.dart'
+      - 'test/theme_accent_contrast_test.dart'
+      - 'test/project_grid_actions_test.dart'
+      - 'test/theme_preset_adopt_test.dart'
+      - 'test/niatra_serializer_test.dart'
+      - 'test/home_widget_shortcut_design_test.dart'
+      - 'test/widget_settings_theme_foreground_test.dart'
+      - 'test/theme_button_font_test.dart'
+      - 'test/theme_settings_walkthrough_test.dart'
+      - 'test/splash_layout_test.dart'
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+      - name: Dependencies
+        run: flutter pub get
+      - name: Generate localizations
+        run: flutter gen-l10n
+      - name: Theme unit and widget tests
+        run: |
+          flutter test test/theme_contrast_rescue_test.dart --reporter expanded
+          flutter test test/theme_preview_gallery_test.dart --reporter expanded
+          flutter test test/theme_accent_contrast_test.dart --reporter expanded
+          flutter test test/project_grid_actions_test.dart --reporter expanded
+          flutter test test/theme_preset_adopt_test.dart --reporter expanded
+          flutter test test/niatra_serializer_test.dart --reporter expanded
+          flutter test test/home_widget_shortcut_design_test.dart --reporter expanded
+          flutter test test/widget_settings_theme_foreground_test.dart --reporter expanded
+          flutter test test/theme_button_font_test.dart --reporter expanded
+          flutter test test/theme_settings_walkthrough_test.dart --reporter expanded
+          flutter test test/splash_layout_test.dart --reporter expanded
+      - name: Theme and app static analysis
+        run: flutter analyze lib test --no-fatal-infos --no-fatal-warnings
+      - name: Upload inline preview Flutter screenshot
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: theme-settings-inline-preview
+          path: build/theme-inline-preview/*.png
+          if-no-files-found: warn
+          retention-days: 14

@@ -6,11 +6,14 @@
   "homeTabTrash": "Corbeille",
   "homeTabWorks": "Œuvres",
   "homeTabBookmarked": "Enregistrées",
-  "homeBookmarkedEmptyTitle": "Aucune œuvre enregistrée pour l’instant",
-  "homeBookmarkedEmptyBody": "Les œuvres ajoutées aux favoris dans la Place des œuvres apparaissent ici.",
-  "homeBookmarkedHiddenTitle": "Vos œuvres enregistrées sont masquées pour le moment",
-  "homeBookmarkedHiddenBody": "Elles sont masquées par les filtres d’affichage de la Place des œuvres ou ne sont plus publiques. Vos enregistrements sont conservés.",
-  "homeBookmarkedOpenPlaza": "Ouvrir la Place des œuvres",
+  "homeBookmarkedEmptyTitle": "Aucune œuvre enregistrée à afficher",
+  "homeBookmarkedEmptyBody": "Enregistrez les œuvres publiques qui vous plaisent sur la Place des œuvres pour les retrouver ici.",
+  "homeBookmarkedHiddenTitle": "Vos œuvres restent enregistrées",
+  "homeBookmarkedHiddenBody": "Les filtres d’affichage ou le statut public des œuvres peuvent les masquer. Vérifiez les filtres sur la Place des œuvres.",
+  "homeBookmarkedLoading": "Chargement des œuvres enregistrées…",
+  "homeBookmarkedLoadFailed": "Impossible de charger vos œuvres enregistrées",
+  "homeBookmarkedLoadPrompt": "Charger vos œuvres enregistrées",
+  "homeBookmarkedSignInBody": "Connectez votre compte Google sur la Place des œuvres pour charger vos œuvres enregistrées.",
   "homeSearchHint": "Rechercher par nom de projet",
   "homeBackToSplashTooltip": "Retour à l'écran de lancement",
   "homeFavoritesOnly": "Favoris",
@@ -20,8 +23,6 @@
   "commonShowExplanation": "Afficher l’explication",
   "homeSelectionAllSelect": "Tout sélectionner",
   "homeSelectionAllDeselect": "Tout désélectionner",
-  "homeSelectionAddFavorite": "Ajouter aux favoris",
-  "homeSelectionRemoveFavorite": "Retirer des favoris",
   "homeSelectionCount": "{count} sélectionné(s)",
   "homeMoveToTrash": "Mettre à la corbeille",
   "homeMoveToTrashConfirm": "Mettre {count} élément(s) à la corbeille ?",
@@ -482,17 +483,17 @@
   "helpStrokeDecayTitle": "Atténuation de trait",
   "helpStrokeDecayDesc": "Similaire au fondu, mais plus proche de l'effet d'un « encre qui s'épuise » — la couleur s'estompe ou devient irrégulière plus vous continuez à dessiner. Il reproduit la texture d'un pinceau ou d'un marqueur qui manque d'encre à mesure que vous l'utilisez.",
   "helpColorMixingTitle": "Mélange de couleurs",
-  "helpColorMixingDesc": "En peignant avec un pinceau, mélange la couleur déjà présente sous le pinceau avec la couleur que vous êtes sur le point d'appliquer. Utilisez-le lorsque vous voulez que de nouvelles couleurs se fondent dans les couleurs existantes, comme à l'aquarelle ou à l'huile.",
+  "helpColorMixingDesc": "En peignant avec un pinceau, mélange la couleur déjà présente sous le pinceau avec la couleur que vous êtes sur le point d'appliquer. Dans le mode de mélange des réglages du pinceau, choisissez Numérique pour peindre sans mélanger, Mélange façon huile pour mélanger comme de la peinture et étirer la couleur ramassée, ou Mélange façon aquarelle pour superposer des lavis transparents dont la couleur s'accumule sur le bord en séchant.",
   "helpPressureCurveTitle": "Courbe de pression",
   "helpPressureCurveDesc": "Une fonctionnalité des réglages de saisie au stylet qui permet d'ajuster librement, via un graphique, la relation entre la pression réelle du stylet et son effet sur la taille et l'opacité du pinceau. Que vous vouliez des lignes épaisses même avec une légère pression, ou l'inverse — nécessitant une pression ferme pour obtenir des lignes épaisses —, vous pouvez personnaliser finement la sensation pour l'adapter à vos habitudes. Vous pouvez essayer de dessiner directement pour vérifier l'effet après avoir modifié les réglages.",
   "helpTimelineTitle": "Chronologie",
-  "helpTimelineDesc": "L'écran de gestion de l'axe temporel de votre animation. Organiser des images (des images fixes individuelles) et les lire comme un folioscope crée l'animation. Les pistes de matériaux image, vidéo et audio, les pistes de calques communs et les images clés de caméra sont tous gérés sur la même chronologie.",
+  "helpTimelineDesc": "L'écran de gestion de l'axe temporel de votre animation. Organiser des images (des images fixes individuelles) et les lire comme un folioscope crée l'animation. Les pistes de matériaux texte, image, vidéo et audio, les pistes de calques communs et les images clés de caméra sont toutes gérées sur la même chronologie. Ce qui passe devant parmi les textes, les images, les vidéos et le dessin de l'image se règle dans « Ordre d'empilement », pour toute la scène ou pour une plage d'images. Vous pouvez aussi appuyer longuement sur un élément pour en sélectionner plusieurs et les déplacer ensemble.",
   "helpSceneTitle": "Scène",
   "helpSceneDesc": "Divise l'intérieur d'un projet (une vidéo) en scènes (plans) pour les gérer séparément. Alors que les dossiers organisent au niveau du projet, les scènes représentent des changements de scène au sein d'une même vidéo. Dans l'onglet des scènes de la timeline, vous pouvez ajouter, dupliquer, supprimer, renommer et réorganiser les scènes. Passer en mode de sélection multiple permet de déplacer, dupliquer ou supprimer plusieurs scènes à la fois.",
   "helpCameraKeyframeTitle": "Image clé de caméra",
   "helpCameraKeyframeDesc": "Enregistre la position, le niveau de zoom et la rotation de la caméra à un point précis de la chronologie. Comme les valeurs sont automatiquement interpolées en douceur entre les images clés, vous pouvez facilement ajouter des mouvements de caméra tels que des panoramiques ou des zooms avant/arrière.",
   "helpEffectFilterTitle": "Filtre d'effet",
-  "helpEffectFilterDesc": "Un effet visuel (flou, correction des couleurs, lueur, pixellisation, etc.) que vous pouvez appliquer à une scène ou une image. Utilisez-le lorsque vous voulez ajuster l'apparence globale de l'écran comme une touche de mise en scène, sans changer le dessin fait main lui-même. Parmi les filtres de dessin, Courbe de tons (un préréglage et son intensité), Niveaux, Netteté, Masque flou et Vignettage (couleur, étendue et densité) existent aussi en filtres d’effet, pour appliquer le même effet à plusieurs images d’un coup. Le filtre pixel art permet aussi de choisir un mode de couleur (sans limite, couleurs spécifiées, nombre de couleurs spécifié, ou choix depuis une palette). Quand les couleurs sont limitées, les zones dont aucune couleur permise n’est proche sont faites de deux ou trois couleurs permises selon un motif régulier (tramage) qui reste en place d’une image à l’autre ; les contours restent nets. Le tramage peut être désactivé pour remplir chaque point de la couleur la plus proche. Plusieurs filtres d'effet peuvent être superposés, et ils s'appliquent dans l'ordre où ils apparaissent sur la timeline. Glisser pour réorganiser la liste des filtres change aussi l'ordre réellement appliqué à l'écran. Un filtre d'effet qui applique un bruit façon grain de pellicule, en le faisant changer image par image. Intensité, quantité (densité du bruit) et taille du grain se règlent avec des curseurs. Revenir à la même image reproduit le même grain (pas de scintillement en scrubbing), tandis que la lecture donne l'impression que le grain bouge. Un filtre d'effet qui fait tomber de la pluie à l'écran. Intensité (nombre de gouttes), vitesse, taille des gouttes et angle du vent se règlent avec des curseurs. Chaque goutte continue de tomber à une vitesse constante à mesure que l'image avance, pour un mouvement de pluie naturel.",
+  "helpEffectFilterDesc": "Un effet visuel (flou, correction des couleurs, lueur, pixellisation, etc.) que vous pouvez appliquer à une scène ou une image. Utilisez-le lorsque vous voulez ajuster l'apparence globale de l'écran comme une touche de mise en scène, sans changer le dessin fait main lui-même. Parmi les filtres de dessin, Courbe de tons (un préréglage et son intensité), Niveaux, Netteté, Masque flou, Vignettage (couleur, étendue et densité) et Bord aquarelle existent aussi en filtres d’effet, pour appliquer le même effet à plusieurs images d’un coup. Le filtre pixel art permet aussi de choisir un mode de couleur (sans limite, couleurs spécifiées, nombre de couleurs spécifié, ou choix depuis une palette). Quand les couleurs sont limitées, les zones dont aucune couleur permise n’est proche sont faites de deux ou trois couleurs permises selon un motif régulier (tramage) qui reste en place d’une image à l’autre ; les contours restent nets. Le tramage peut être désactivé pour remplir chaque point de la couleur la plus proche. Plusieurs filtres d'effet peuvent être superposés, et ils s'appliquent dans l'ordre où ils apparaissent sur la timeline. Glisser pour réorganiser la liste des filtres change aussi l'ordre réellement appliqué à l'écran. Un filtre d'effet qui applique un bruit façon grain de pellicule, en le faisant changer image par image. Intensité, quantité (densité du bruit) et taille du grain se règlent avec des curseurs. Revenir à la même image reproduit le même grain (pas de scintillement en scrubbing), tandis que la lecture donne l'impression que le grain bouge. Un filtre d'effet qui fait tomber de la pluie à l'écran. Intensité (nombre de gouttes), vitesse, taille des gouttes et angle du vent se règlent avec des curseurs. Chaque goutte continue de tomber à une vitesse constante à mesure que l'image avance, pour un mouvement de pluie naturel.",
   "helpEndCardTitle": "EndCard (logo de fin)",
   "helpEndCardDesc": "Une courte vidéo (environ 5 secondes) avec le logo NIARIM, ajoutée automatiquement à la fin du contenu principal lors de l'export d'une vidéo. La version gratuite ne peut pas le masquer ni le supprimer, mais les membres Premium peuvent l'activer/le désactiver, changer sa durée ou le remplacer.",
   "helpAutoSaveTitle": "Enregistrement automatique",
@@ -520,8 +521,8 @@
   "helpPremiumEntryDesc": "L'abonnement premium porte a 2 heures maximum la limite de 90 secondes de la version gratuite et permet de retirer la carte de fin (logo de l'application) ajoutee automatiquement a la fin de chaque video. Les publicites sont egalement masquees, et vous accedez au filigrane, a la courbe de tons et a la correction des niveaux.",
   "helpPerformanceSettingsTitle": "Réglages de performance",
   "helpPerformanceSettingsDesc": "Choisissez parmi les préréglages de qualité basse, moyenne ou haute selon les capacités de votre appareil, ou configurez chaque élément individuellement (personnalisé). En plus de la méthode d'enregistrement, des performances, du papier calque et de la détection d'inclinaison, les réglages qui affectent la taille de l'application et sa fluidité — comme la longueur de l'historique d'annulation et la suppression automatique de la corbeille — sont également regroupés ici.",
-  "helpMaterialClipTitle": "Clips de matériel (image / vidéo / audio)",
-  "helpMaterialClipDesc": "Clips placés sur les pistes image, vidéo et audio de la timeline. Un appui long avec glisser sur le corps du clip déplace sa position de départ, et glisser les poignées à chaque extrémité change la portion utilisée. Toucher un clip ouvre sa fiche détaillée, où l'icône de copie le duplique et l'icône de corbeille le supprime. Les clips image et vidéo sont gérés en interne comme des calques, tandis que l'audio est géré comme un clip rattaché directement à la scène.",
+  "helpMaterialClipTitle": "Clips de matériel (texte / image / vidéo / audio)",
+  "helpMaterialClipDesc": "Clips placés sur les pistes texte, image, vidéo et audio de la timeline. Un appui long avec glisser sur le corps du clip déplace sa position de départ, et glisser les poignées à chaque extrémité change la portion utilisée. Les matériaux affichés en même temps sont placés automatiquement sur des pistes distinctes. Toucher un clip texte, image ou vidéo ouvre son panneau d'édition sous l'aperçu : le texte, la police, la couleur et le contour ; la position, l'échelle, la rotation sur les axes X/Y/Z et l'opacité (on peut aussi le faire glisser sur l'aperçu, et ajouter des images clés le fait bouger) ; son masque (rectangle ou ellipse, adouci, inversé) ; et la piste où il se trouve. On peut aussi le dupliquer ou le supprimer. Le volume et les fondus d'un clip audio se règlent dans sa fiche détaillée.",
   "helpGestureSettingsTitle": "Réglages des gestes",
   "helpGestureSettingsDesc": "Permet d'associer des actions — annuler/rétablir, déplacement de fotogramme, pipette et plus — à un appui à deux doigts, un appui à trois doigts, un glissement à deux doigts ou un appui long. Les boutons du stylet (sur les modèles compatibles) peuvent aussi être associés séparément. Pratique pour déclencher des actions fréquentes d'un seul geste sans changer d'outil.",
   "helpBucketDetailSettingsTitle": "Réglages détaillés du seau de peinture",
@@ -585,7 +586,7 @@
   "helpExportScreenTitle": "Écran d'export",
   "helpExportScreenDesc": "Affiche la progression pendant l'export d'une vidéo ou d'une image, et permet d'annuler en cours de route. Le temps nécessaire dépend des performances de l'appareil.",
   "helpDrawingFilterTitle": "Filtres de dessin",
-  "helpDrawingFilterDesc": "Filtres appliqués directement au calque sélectionné (contrairement aux filtres d’effet, qui s’appliquent à toute la timeline ou à une scène, les filtres de dessin agissent par calque). Les 27 filtres inclus sont Flou gaussien, Flou d'objectif, Style anime, Courbe de tons, Niveaux, Contour, Netteté, Masque flou, Vignettage, Grain de film, Anime rétro, Tube cathodique, Seuil, Œil de poisson, Aberration chromatique, Distorsion optique, Pixel art, Changement de texture, Fondu d'arrière-plan, Accumulation d’encre, Trait automatique, Prisme, Bruit VHS, Inverser les couleurs, Mosaïque, Bruit et Ombrage sphérique. Style anime réduit les couleurs et trace un trait de l’« Épaisseur de bordure » du côté le plus sombre de chaque limite où les couleurs voisines diffèrent d’au moins le « Seuil de différence de couleur » (les traits du dessin ne s’épaississent pas). Prisme peint chaque forme du calque avec les six couleurs de l’arc-en-ciel (rouge, vert, cyan, bleu, violet, rouge), la floute et passe le calque en mode Densité linéaire -. Dessinez d’abord sur leur propre calque de petites formes fines comme des feuilles, d’une couleur sombre : vous obtenez de doux reflets arc-en-ciel sur votre dessin (l’Intensité du flou se mesure comme un flou gaussien ordinaire). L’Ombrage sphérique applique une couleur de lumière à l’intérieur d’une lumière elliptique et une couleur d’ombre à l’extérieur, uniquement sur le dessin (la lumière peut aussi être déplacée sur le canevas). Contour ne réécrit pas le calque d’origine : il dessine seulement le résultat sur un nouveau calque. Distorsion optique applique une déformation localisée, comme à travers un verre de lunettes puissant, uniquement sur la zone peinte sur le canevas avec le « Pinceau » et le « Pot de peinture » du panneau (corrigée avec la « Gomme » ; elle part de la sélection ou du calque de sélection s’il y en a un). Lorsque le canevas comporte une sélection, les filtres de dessin ne s’appliquent qu’à l’intérieur. Pixel art permet aussi de choisir un mode de couleur (sans limite, couleurs définies, nombre de couleurs ou palette). Quand les couleurs sont limitées, les zones dont aucune couleur permise n’est proche sont faites de deux ou trois couleurs permises disposées selon un motif régulier (tramage) qui se rapproche davantage de l’original ; les contours restent nets. Avec un nombre de couleurs, celles-ci sont prises parmi ce qui compose la plus grande partie de l’image. Le tramage peut être désactivé pour remplir chaque point de la couleur la plus proche. Sa taille se règle par la taille des blocs (100 crans, de 1 à 100) ou par des curseurs de points en largeur et en hauteur (1 tout à gauche, la taille du canevas tout à droite) ; déplacer l’un déplace l’autre en gardant les proportions du dessin, et les deux réglages restent liés. Dans les deux cas, les points restent carrés, sans bord semi-transparent. Le Trait automatique permet de modifier les points de contrôle vectoriels temporaires avant d’appliquer le filtre. Faites glisser un point pour déplacer uniquement ce point. Choisissez « Ajouter un point de contrôle » à côté d’Appliquer et touchez une ligne pour ajouter un point, ou choisissez « Supprimer un point de contrôle » et touchez un point pour le supprimer (sans aucun des deux choisi, toucher un point demande confirmation avant de le supprimer). La géométrie modifiée est utilisée directement dans le résultat appliqué, et le déplacement, l’ajout ou la suppression de points peuvent être annulés et rétablis un par un avec Annuler et Rétablir de l’éditeur de filtres. Sur la Courbe de tons, touchez une zone vide pour ajouter un point, faites glisser un point pour le déplacer et appuyez longuement dessus pour le supprimer ; les courbes R, G et B s’appliquent après la courbe RGB. Les Niveaux se règlent aussi séparément pour R, G et B, et le Gamma modifie les tons moyens. L’« Empiètement vers l’intérieur » du contour élargit le bord vers l’intérieur de la forme d’origine, et le nouveau calque du contour est placé juste sous le calque d’origine. L’aberration chromatique permet de répartir le décalage entre X (horizontal), Y (vertical) et Z (vers l’extérieur depuis le centre). Le centre et le rayon de l’œil de poisson se déplacent aussi sur le canevas, avec le + et la poignée du cercle. Vignettage assombrit doucement les quatre coins de toute la toile (les zones transparentes non dessinées reçoivent aussi l’ombre). La « Portée » règle jusqu’où il s’étend des coins vers le centre, et l’« Intensité » à quel point les coins s’assombrissent. Distorsion de lentille fonctionne comme de vraies lunettes à forte correction : ce que l’on voit à travers le verre rétrécit uniformément vers son centre (valeurs négatives, pour la myopie) ou s’agrandit (valeurs positives, pour l’hypermétropie), et le contour se décale en marche au bord du verre. Accumulation d’encre ne se forme qu’à l’intérieur des angles où les traits se rejoignent à l’« Angle maximal » ou moins (à 90°, la valeur initiale, les angles aigus et droits : un V, le côté étroit d’un croisement, une jonction en T, un coin carré), jamais dans les angles plus ouverts : au point de rencontre elle a l’« Épaisseur centrale » depuis le bord du trait, puis s’affine en ligne droite jusqu’à disparaître en une pointe douce au bout de la « Plage » (même avec une grande « Épaisseur centrale », elle ne bombe jamais au-delà de la droite qui relie les extrémités des deux accumulations : au maximum, le milieu reste plat) ; si un trait s’arrête avant, l’accumulation le long de ce trait s’affine jusqu’à disparaître là où il s’arrête, si bien que chaque trait peut avoir sa propre longueur, et les deux accumulations se rejoignent tout de même au milieu de l’angle, aussi épaisses depuis l’un que depuis l’autre trait (celle du trait le plus long continue ensuite de s’affiner jusqu’au bout de la plage). Encrage automatique suit le milieu des traits du brouillon et les dessine fins. Les traits proches l’un de l’autre restent des traits distincts tant qu’un espace les sépare ; seules les petites taches de papier à l’intérieur d’un trait sont comblées. Là où deux traits se rejoignent, ils se rapprochent peu à peu comme dans le brouillon, au lieu de devenir un seul trait au milieu. Là où des traits se croisent ou se superposent, chacun continue comme dans le brouillon (il ne se plie pas vers le croisement et deux traits superposés ne se fondent pas en un seul). Les traits qui se croisent en biais continuent tout droit à travers le croisement, et ceux qui ne font que se toucher (comme le contour des cheveux tracé le long de la tête) restent des traits distincts, chacun de son côté. Les points, comme les yeux, restent des points pleins. Les branches plus courtes que l’« Épaisseur du brouillon » ne sont pas dessinées. « Effiler les extrémités » peut être activé ou désactivé ; désactivé, les traits gardent la même épaisseur jusqu’à leurs extrémités. Fondu d’arrière-plan superpose la lumière et l’ombre de l’arrière-plan avec le mode de fusion « Lumière crue » (la couleur de l’ombre n’est ni noire ni grise, mais celle des ombres de l’arrière-plan lui-même, assombrie). La couleur de l’environnement est superposée à tout le dessin en « Incrustation » pour en fixer la teinte générale, la lumière renvoyée par le sol et par les alentours s’ajoute en « Écran », et une lumière colorée intense comme un néon brille le long du contour en « Addition (lueur) ». « Accorder aux tons de l’arrière-plan » ramène dans sa plage les couleurs plus claires ou plus vives que l’arrière-plan, et donne aux tons sombres, moyens et clairs la dominante des tons de l’arrière-plan de même luminosité (le noir du trait ne change pas). « Intensité du flou » indique combien l’arrière-plan est flouté avant d’en prendre les couleurs.",
+  "helpDrawingFilterDesc": "Filtres appliqués directement au calque sélectionné (contrairement aux filtres d’effet, qui s’appliquent à toute la timeline ou à une scène, les filtres de dessin agissent par calque). Les 28 filtres inclus sont Flou gaussien, Flou d'objectif, Style anime, Courbe de tons, Niveaux, Contour, Netteté, Masque flou, Vignettage, Grain de film, Anime rétro, Tube cathodique, Seuil, Œil de poisson, Aberration chromatique, Distorsion optique, Pixel art, Changement de texture, Fondu d'arrière-plan, Accumulation d’encre, Trait automatique, Prisme, Bruit VHS, Inverser les couleurs, Mosaïque, Bruit, Ombrage sphérique et Bord aquarelle. Bord aquarelle accumule la couleur sur les bords de ce qui est peint sur le calque de travail et rend l'intérieur translucide, comme une aquarelle sèche (avec « Aussi aux limites de couleur », les limites entre couleurs voisines reçoivent aussi un bord). Style anime réduit les couleurs et trace un trait de l’« Épaisseur de bordure » du côté le plus sombre de chaque limite où les couleurs voisines diffèrent d’au moins le « Seuil de différence de couleur » (les traits du dessin ne s’épaississent pas). Prisme peint chaque forme du calque avec les six couleurs de l’arc-en-ciel (rouge, vert, cyan, bleu, violet, rouge), la floute et passe le calque en mode Densité linéaire -. Dessinez d’abord sur leur propre calque de petites formes fines comme des feuilles, d’une couleur sombre : vous obtenez de doux reflets arc-en-ciel sur votre dessin (l’Intensité du flou se mesure comme un flou gaussien ordinaire). L’Ombrage sphérique applique une couleur de lumière à l’intérieur d’une lumière elliptique et une couleur d’ombre à l’extérieur, uniquement sur le dessin (la lumière peut aussi être déplacée sur le canevas). Contour ne réécrit pas le calque d’origine : il dessine seulement le résultat sur un nouveau calque. Distorsion optique applique une déformation localisée, comme à travers un verre de lunettes puissant, uniquement sur la zone peinte sur le canevas avec le « Pinceau » et le « Pot de peinture » du panneau (corrigée avec la « Gomme » ; elle part de la sélection ou du calque de sélection s’il y en a un). Lorsque le canevas comporte une sélection, les filtres de dessin ne s’appliquent qu’à l’intérieur. Pixel art permet aussi de choisir un mode de couleur (sans limite, couleurs définies, nombre de couleurs ou palette). Quand les couleurs sont limitées, les zones dont aucune couleur permise n’est proche sont faites de deux ou trois couleurs permises disposées selon un motif régulier (tramage) qui se rapproche davantage de l’original ; les contours restent nets. Avec un nombre de couleurs, celles-ci sont prises parmi ce qui compose la plus grande partie de l’image. Le tramage peut être désactivé pour remplir chaque point de la couleur la plus proche. Sa taille se règle par la taille des blocs (100 crans, de 1 à 100) ou par des curseurs de points en largeur et en hauteur (1 tout à gauche, la taille du canevas tout à droite) ; déplacer l’un déplace l’autre en gardant les proportions du dessin, et les deux réglages restent liés. Dans les deux cas, les points restent carrés, sans bord semi-transparent. Le Trait automatique permet de modifier les points de contrôle vectoriels temporaires avant d’appliquer le filtre. Faites glisser un point pour déplacer uniquement ce point. Choisissez « Ajouter un point de contrôle » à côté d’Appliquer et touchez une ligne pour ajouter un point, ou choisissez « Supprimer un point de contrôle » et touchez un point pour le supprimer (sans aucun des deux choisi, toucher un point demande confirmation avant de le supprimer). La géométrie modifiée est utilisée directement dans le résultat appliqué, et le déplacement, l’ajout ou la suppression de points peuvent être annulés et rétablis un par un avec Annuler et Rétablir de l’éditeur de filtres. Sur la Courbe de tons, touchez une zone vide pour ajouter un point, faites glisser un point pour le déplacer et appuyez longuement dessus pour le supprimer ; les courbes R, G et B s’appliquent après la courbe RGB. Les Niveaux se règlent aussi séparément pour R, G et B, et le Gamma modifie les tons moyens. L’« Empiètement vers l’intérieur » du contour élargit le bord vers l’intérieur de la forme d’origine, et le nouveau calque du contour est placé juste sous le calque d’origine. L’aberration chromatique permet de répartir le décalage entre X (horizontal), Y (vertical) et Z (vers l’extérieur depuis le centre). Le centre et le rayon de l’œil de poisson se déplacent aussi sur le canevas, avec le + et la poignée du cercle. Vignettage assombrit doucement les quatre coins de toute la toile (les zones transparentes non dessinées reçoivent aussi l’ombre). La « Portée » règle jusqu’où il s’étend des coins vers le centre, et l’« Intensité » à quel point les coins s’assombrissent. Distorsion de lentille fonctionne comme de vraies lunettes à forte correction : ce que l’on voit à travers le verre rétrécit uniformément vers son centre (valeurs négatives, pour la myopie) ou s’agrandit (valeurs positives, pour l’hypermétropie), et le contour se décale en marche au bord du verre. Accumulation d’encre ne se forme qu’à l’intérieur des angles où les traits se rejoignent à l’« Angle maximal » ou moins (à 90°, la valeur initiale, les angles aigus et droits : un V, le côté étroit d’un croisement, une jonction en T, un coin carré), jamais dans les angles plus ouverts : au point de rencontre elle a l’« Épaisseur centrale » depuis le bord du trait, puis s’affine en ligne droite jusqu’à disparaître en une pointe douce au bout de la « Plage » (même avec une grande « Épaisseur centrale », elle ne bombe jamais au-delà de la droite qui relie les extrémités des deux accumulations : au maximum, le milieu reste plat) ; si un trait s’arrête avant, l’accumulation le long de ce trait s’affine jusqu’à disparaître là où il s’arrête, si bien que chaque trait peut avoir sa propre longueur, et les deux accumulations se rejoignent tout de même au milieu de l’angle, aussi épaisses depuis l’un que depuis l’autre trait (celle du trait le plus long continue ensuite de s’affiner jusqu’au bout de la plage). Encrage automatique suit le milieu des traits du brouillon et les dessine fins. Les traits proches l’un de l’autre restent des traits distincts tant qu’un espace les sépare ; seules les petites taches de papier à l’intérieur d’un trait sont comblées. Là où deux traits se rejoignent, ils se rapprochent peu à peu comme dans le brouillon, au lieu de devenir un seul trait au milieu. Là où des traits se croisent ou se superposent, chacun continue comme dans le brouillon (il ne se plie pas vers le croisement et deux traits superposés ne se fondent pas en un seul). Les traits qui se croisent en biais continuent tout droit à travers le croisement, et ceux qui ne font que se toucher (comme le contour des cheveux tracé le long de la tête) restent des traits distincts, chacun de son côté. Les points, comme les yeux, restent des points pleins. Les branches plus courtes que l’« Épaisseur du brouillon » ne sont pas dessinées. « Effiler les extrémités » peut être activé ou désactivé ; désactivé, les traits gardent la même épaisseur jusqu’à leurs extrémités. Fondu d’arrière-plan superpose la lumière et l’ombre de l’arrière-plan avec le mode de fusion « Lumière crue » (la couleur de l’ombre n’est ni noire ni grise, mais celle des ombres de l’arrière-plan lui-même, assombrie). La couleur de l’environnement est superposée à tout le dessin en « Incrustation » pour en fixer la teinte générale, la lumière renvoyée par le sol et par les alentours s’ajoute en « Écran », et une lumière colorée intense comme un néon brille le long du contour en « Addition (lueur) ». « Accorder aux tons de l’arrière-plan » ramène dans sa plage les couleurs plus claires ou plus vives que l’arrière-plan, et donne aux tons sombres, moyens et clairs la dominante des tons de l’arrière-plan de même luminosité (le noir du trait ne change pas). « Intensité du flou » indique combien l’arrière-plan est flouté avant d’en prendre les couleurs.",
   "helpLayerKeyframeTitle": "Images clés de calque (animation par partie)",
   "helpLayerKeyframeDesc": "Définissez la position, l'échelle et la rotation de chaque calque par image ; les images clés sont interpolées automatiquement. Là où les images clés de caméra déplacent tout l'écran, celles-ci ne déplacent qu'un seul calque. Comme chaque partie du remplissage automatique est générée comme un calque distinct, cela fonctionne directement pour l'animation par partie — bouger seulement un bras, ouvrir et fermer seulement une bouche, etc. Chaque image clé peut aussi avoir son propre easing (uniforme, entrée douce, sortie douce, entrée et sortie douces, ou rebond) qui détermine comment elle se raccorde à l'image clé suivante, pour que le mouvement ne soit pas toujours à vitesse constante. Se configure depuis « Animation (images clés) » dans le menu à trois points de chaque calque, dans le panneau des calques. Le dessin du calque lui-même ne change pas : c'est une transformation non destructive de son emplacement d'affichage. Cela n'affecte que l'affichage de la timeline (aperçu / export) et n'a aucun effet sur le dessin réel en mode canevas.",
   "helpLayerGroupTitle": "Groupes de calques (déplacer plusieurs parties ensemble)",
@@ -839,13 +840,16 @@
   "themeSettingsTitle": "Thème et apparence",
   "themeColorCustomizeSection": "Personnalisation des couleurs",
   "themeColorAccent": "Couleur d'accent",
-  "themeColorText": "Couleur du texte",
+  "themeColorText": "Couleur du texte courant",
+  "themeColorButtonText": "Couleur du texte et des icônes des boutons",
+  "themeColorMenuText": "Couleur du texte des menus et de la barre supérieure",
+  "themeColorSelectionText": "Couleur du texte et des icônes sélectionnés",
   "themeColorPanelBg": "Couleur de fond des panneaux",
   "themeColorMenuBg": "Couleur de fond des menus",
   "themeColorSelection": "Couleur de sélection",
   "themeColorUpdateMark": "Couleur de la marque de mise à jour",
-  "themeContrastErrorTitle": "Le texte deviendrait illisible",
-  "themeContrastErrorBody": "La couleur du texte et celle du fond sont trop proches : le texte serait presque invisible. L’écran des réglages lui-même deviendrait illisible et vous ne pourriez plus revenir en arrière, cette combinaison ne peut donc pas être enregistrée. Modifiez la luminosité de l’une des deux.",
+  "themeResetConfirmTitle": "Réinitialiser les couleurs du thème ?",
+  "themeResetConfirmAction": "Réinitialiser",
   "themeUnreadableResetButton": "Réinitialiser le thème",
   "themeUnreadableResetDone": "Le thème est revenu aux couleurs par défaut.",
   "themePresetSection": "Thèmes",
@@ -1127,10 +1131,20 @@
   "brushSettingsFadeDistanceLabel": "Distance (px)",
   "brushSettingsStrokeDecayTitle": "Atténuation du trait",
   "brushSettingsStrokeDecaySubtitle": "L'opacité diminue plus vous dessinez longtemps",
-  "brushSettingsMixingTitle": "Mélange des couleurs",
-  "brushSettingsMixingOff": "OFF",
-  "brushSettingsMixingSimple": "Mélange simple",
-  "brushSettingsMixingBleed": "Effet de bavure",
+  "brushSettingsMixingTitle": "Mode de mélange",
+  "brushSettingsMixingOff": "Numérique",
+  "brushSettingsMixingOil": "Mélange façon huile",
+  "brushSettingsMixingWatercolor": "Mélange façon aquarelle",
+  "brushSettingsMixingBrightnessCorrection": "Correction de luminosité",
+  "brushSettingsMixingAmount": "Degré de mélange",
+  "brushSettingsMixingStretch": "Étirement de la couleur",
+  "brushSettingsMixingWater": "Quantité d'eau",
+  "brushSettingsMixingPigment": "Quantité de pigment",
+  "brushSettingsMixingBleed": "Diffusion",
+  "brushSettingsMixingTexture": "Texture",
+  "brushSettingsMixingSoftEdge": "Bord doux",
+  "brushSettingsMixingOilHint": "Se mélange aux couleurs du dessous comme de la peinture et étire la couleur ramassée le long du trait.",
+  "brushSettingsMixingWatercolorHint": "Pose des lavis transparents. Quand vous levez le stylet, le lavis sèche, se diffuse un peu au-delà du pinceau et la couleur s'accumule sur son bord.",
   "projectDetailNotFoundTitle": "Projet",
   "projectDetailNotFoundBody": "Projet introuvable",
   "projectDetailFirstFrameTooltip": "Première image",
@@ -1144,6 +1158,8 @@
   "projectDetailStartEditButton": "Commencer l'édition",
   "projectDetailTagsQuickAction": "Étiquettes",
   "projectDetailShareQuickAction": "Partager",
+  "projectDetailFavoriteRegistered": "Dans les favoris",
+  "projectDetailFavoriteUnregistered": "Pas dans les favoris",
   "projectDetailInfoSectionTitle": "Infos du projet",
   "projectDetailInfoExportSize": "Taille d'exportation",
   "projectDetailInfoDrawingArea": "Zone de dessin",
@@ -1993,6 +2009,129 @@
   "timelineEffectFilterLabel": "Filtres d'effet",
   "timelineAddCameraKfTooltip": "Ajouter une image clé de caméra",
   "timelineAddWatermarkTooltip": "+ Filigrane",
+  "timelineStackScopeRange": "Plage d'images",
+  "timelineStackTargetLabel": "Utiliser cet ordre pour",
+  "timelineStackTargetScenes": "Choisir des scènes",
+  "timelineStackTargetAllFrames": "Toutes les images",
+  "timelineStackScenesHint": "Toutes les images des scènes choisies utilisent le même ordre. Réorganiser ici l'applique à toutes.",
+  "timelineStackAllFramesHint": "Toutes les images de toutes les scènes utilisent le même ordre. Réorganiser ici l'applique à toutes les scènes.",
+  "timelineStackRangesTakePriority": "Les images d'une plage gardent l'ordre de cette plage.",
+  "timelineStackRangeLabel": "F{start}–F{end}",
+  "@timelineStackRangeLabel": {
+    "placeholders": {
+      "start": {
+        "type": "int"
+      },
+      "end": {
+        "type": "int"
+      }
+    }
+  },
+  "timelineStackRangeAdd": "Ajouter une plage à F{n}",
+  "@timelineStackRangeAdd": {
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
+  },
+  "timelineStackRangeHint": "Seules les images d'une plage utilisent l'ordre défini ici ; en dehors des plages, c'est l'ordre de toute la scène.",
+  "timelineStackRangeEmpty": "Aucune plage pour l'instant. Utilisez le bouton ci-dessus pour en créer une à l'image actuelle.",
+  "timelineStackRangeOrderHint": "Ordre d'empilement pour {range} (plus haut = devant). Faites glisser la poignée ou utilisez les flèches pour réorganiser.",
+  "@timelineStackRangeOrderHint": {
+    "placeholders": {
+      "range": {
+        "type": "String"
+      }
+    }
+  },
+  "timelineStackRangeDelete": "Supprimer cette plage",
+  "timelineAddMaterialTooltip": "Ajouter un matériau",
+  "timelineMaterialRowLabel": "Piste",
+  "timelineMaterialNewRow": "Nouvelle piste",
+  "timelineAddTextTooltip": "+ Texte",
+  "timelineAddImageTooltip": "+ Image",
+  "timelineStackOrderTitle": "Ordre d'empilement",
+  "timelineMaterialText": "Texte",
+  "timelineAddTextDialogTitle": "Ajouter du texte",
+  "timelineEditSectionText": "Texte",
+  "timelineEditSectionTransform": "Position",
+  "timelineEditSectionMask": "Masque",
+  "timelineTransformRotationX": "Rotation X",
+  "timelineTransformRotationY": "Rotation Y",
+  "timelineTransformRotationZ": "Rotation Z",
+  "timelineTransformReset": "Réinitialiser la position",
+  "timelineKeyframeAddHere": "Ajouter une image clé à F{n}",
+  "@timelineKeyframeAddHere": {
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
+  },
+  "timelineKeyframeRemoveHere": "Supprimer l'image clé de F{n}",
+  "@timelineKeyframeRemoveHere": {
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
+  },
+  "timelineKeyframeWholeHint": "La même position est utilisée partout. Pour l'animer, allez à une autre image et ajoutez une image clé.",
+  "timelineKeyframeAnimHint": "{count} images clés : les modifications sont enregistrées à F{n} et les images intermédiaires sont calculées automatiquement.",
+  "@timelineKeyframeAnimHint": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      },
+      "n": {
+        "type": "int"
+      }
+    }
+  },
+  "timelineGizmoHint": "Faites glisser sur l'aperçu pour le déplacer, un point d'angle pour le redimensionner et le point du haut pour le faire pivoter. Deux doigts fonctionnent aussi.",
+  "timelineMaterialOutOfRange": "Non affiché à cette image (affiché de F{start} à F{end})",
+  "@timelineMaterialOutOfRange": {
+    "placeholders": {
+      "start": {
+        "type": "int"
+      },
+      "end": {
+        "type": "int"
+      }
+    }
+  },
+  "timelineMaskNone": "Aucun",
+  "timelineMaskRectangle": "Rectangle",
+  "timelineMaskEllipse": "Ellipse",
+  "timelineMaskCenterX": "Centre X",
+  "timelineMaskCenterY": "Centre Y",
+  "timelineMaskWidth": "Largeur",
+  "timelineMaskHeight": "Hauteur",
+  "timelineMaskFeather": "Contour progressif",
+  "timelineMaskInvert": "Inverser (masquer l'intérieur)",
+  "timelineMaskHint": "N'affiche que ce qui est à l'intérieur du masque. Inversez-le pour masquer l'intérieur.",
+  "timelineStackOrderHint": "Les éléments en haut de la liste passent devant. Faites glisser la poignée ou utilisez les flèches pour réorganiser.",
+  "timelineStackScopeScene": "Toute la scène actuelle",
+  "timelineStackFrameUnit": "Image (dessin)",
+  "timelineStackResetScene": "Revenir à l'ordre par défaut",
+  "timelineStackFrameMaskTitle": "Masque de l'image (dessin)",
+  "timelineStackFrameMaskHint": "Ne recadre que le dessin ; le texte, les images et la vidéo ne sont pas affectés. Le dessin n'est pas masqué pendant que vous dessinez sur le canevas.",
+  "timelineStackMoveUp": "Avancer",
+  "timelineStackMoveDown": "Reculer",
+  "timelineStackSelectedCount": "{count} sélectionné(s)",
+  "@timelineStackSelectedCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "timelineStackBringToFront": "Premier plan",
+  "timelineStackSendToBack": "Arrière-plan",
+  "timelineStackDeselectAll": "Tout désélectionner",
+  "timelineStackSelectAll": "Tout sélectionner",
+  "timelineStackMultiSelectHint": "Appuyez longuement sur un élément pour en sélectionner plusieurs. Les éléments sélectionnés se déplacent ensemble avec les flèches, en les faisant glisser ou avec les boutons ci-dessous.",
   "timelineWatermarkNotRegisteredTitle": "Aucun filigrane enregistré",
   "timelineWatermarkNotRegisteredBody": "Enregistrez d'abord une image ou un filigrane texte depuis « Filigrane » dans les réglages.",
   "timelineOpenSettingsButton": "Ouvrir les réglages",
@@ -2031,7 +2170,7 @@
       }
     }
   },
-  "timelineSceneDeleteConfirmBody": "Toutes les données de la scène seront supprimées : images, calques communs, matériaux vidéo, matériaux image et filigranes inclus.",
+  "timelineSceneDeleteConfirmBody": "Toutes les données de la scène seront supprimées : images, calques communs, matériaux texte, vidéo et image, et filigranes inclus.",
   "timelineSceneMultiDeleteConfirmTitle": "Supprimer les {count} scènes sélectionnées ?",
   "@timelineSceneMultiDeleteConfirmTitle": {
     "placeholders": {
@@ -2776,7 +2915,6 @@
   "brushSettingsPressureOffSection": "Pression désactivée",
   "brushSettingsWeakPressureLabel": "Faible",
   "brushSettingsStrongPressureLabel": "Forte",
-  "brushSettingsValueLabel": "Valeur",
   "helpCustomAutomationTitle": "Automatisations personnalisées (enregistrement d’actions)",
   "helpCustomAutomationDesc": "Enregistrez les actions prises en charge sur le canevas ou la timeline sous forme de séquence nommée à réexécuter. Ajoutez un élément depuis Automatisations pour lancer l’enregistrement, puis réordonnez ou supprimez des étapes dans l’écran de vérification avant de sauvegarder. Vous pouvez renommer, réenregistrer, supprimer, filtrer par favoris, exporter et importer les automatisations enregistrées sous forme de fichiers JSON. Pour une automatisation limitée au canevas et entièrement enregistrée dans une seule image, vous pouvez l’exécuter sur l’image actuelle, une plage précise ou toutes les images. Le choix de la plage n’apparaît pas pour les automatisations de timeline ni pour les enregistrements couvrant plusieurs images.",
   "tipsOfficialAutomationPresetsTitle": "Adaptez les automatisations officielles à votre dessin",
@@ -2981,6 +3119,13 @@
   "filterSphereLightBlur": "Flou côté lumière",
   "filterSphereShadowBlur": "Flou côté ombre",
   "filterSphereCanvasHint": "Faites glisser le + sur le canevas pour déplacer la lumière et les poignées rondes pour la redimensionner. L’ombre et la lumière ne s’appliquent qu’au dessin.",
+  "filterNameWatercolorBorder": "Bord aquarelle",
+  "filterWatercolorBorderRange": "Portée",
+  "filterWatercolorBorderBlur": "Largeur du flou",
+  "filterWatercolorBorderOpacity": "Effet sur la transparence",
+  "filterWatercolorBorderDarken": "Intensité du bord",
+  "filterWatercolorBorderColorEdges": "Aussi aux limites de couleur",
+  "filterWatercolorBorderHint": "La couleur s'accumule sur les bords des zones peintes et l'intérieur devient translucide, comme une aquarelle sèche (dessiné directement sur le calque de travail). Portée : jusqu'où le bord s'intensifie vers l'intérieur. Intensité du bord : la quantité de couleur accumulée sur le bord. Effet sur la transparence : à quel point l'intérieur devient translucide. Largeur du flou : la douceur de la transition.",
   "filterFisheyeCanvasHint": "Faites glisser le + sur le canevas pour déplacer le centre et la poignée ronde du cercle pour changer le rayon.",
   "filterCenterX": "Centre X",
   "filterCenterY": "Centre Y",
@@ -3013,5 +3158,9 @@
   "startupFailedDetailsCopied": "Détails copiés",
   "startupFailedDetails": "Détails",
   "errorViewTitle": "Une erreur s’est produite lors de l’affichage de cette partie",
-  "errorViewBody": "Votre travail en cours est conservé. Revenez à l’écran précédent et réessayez. Nous envoyer le texte ci-dessous nous aidera à en trouver la cause."
+  "errorViewBody": "Votre travail en cours est conservé. Revenez à l’écran précédent et réessayez. Nous envoyer le texte ci-dessous nous aidera à en trouver la cause.",
+  "homeWorksLoadFailed": "Impossible de charger vos créations exportées",
+  "newProjectCreating": "Création en cours…",
+  "newProjectCreateFailed": "Impossible d’enregistrer le projet. Vérifiez l’espace de stockage et l’emplacement d’enregistrement, puis réessayez.",
+  "communityCreatorLabel": "Créateur"
 }

@@ -1,3 +1,5 @@
+import 'helpers/project_storage.dart';
+
 import 'dart:io';
 import 'dart:math' as math;
 import 'dart:typed_data';
@@ -29,6 +31,7 @@ const _radius = 70.0;
 /// it, a stroke drawn straight across bends onto the lens's arc, and its
 /// handles move the centre, change the radius and tilt it.
 void main() {
+  useTemporaryProjectStorage();
   TestWidgetsFlutterBinding.ensureInitialized();
   setUp(() => SharedPreferences.setMockInitialValues({}));
 

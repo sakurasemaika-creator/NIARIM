@@ -71,7 +71,7 @@ void main() {
           ),
           mixing: const PressureMixingOnSetting(
             enabled: true,
-            mode: BrushMixingMode.bleed,
+            mode: BrushMixingMode.watercolor,
             weakRate: 75,
             strongRate: 15,
           ),
@@ -81,7 +81,7 @@ void main() {
           edgeJitter: const FixedBrushSetting(enabled: true, value: 34),
           mixing: const PressureMixingOffSetting(
             enabled: true,
-            mode: BrushMixingMode.simple,
+            mode: BrushMixingMode.oil,
             rate: 45,
           ),
         ),

@@ -10,6 +10,7 @@
 
 ### 実行Policy
 - `docs/work-audit/policy/ASTRA_WORK.md`
+- `docs/work-audit/policy/AUDIT_REMOTE_OPERATIONS.md` — 承認の継続、GitHub/Driveの操作範囲、確認・拒否時の扱い
 
 ### 固定Baseline / Delta
 - `docs/work-audit/state/AUDIT_ROUTE.md`

@@ -17,6 +17,7 @@ class FilterService extends ChangeNotifier {
   static const mosaicFilterId = 'Filter0026';
   static const genericNoiseFilterId = 'Filter0027';
   static const sphereShadingFilterId = 'Filter0028';
+  static const watercolorBorderFilterId = 'Filter0029';
 
   final List<FilterDef> _filters = [];
   String? _currentFilterId;
@@ -222,6 +223,11 @@ class FilterService extends ChangeNotifier {
       name: '球体陰影',
       kind: FilterKind.sphereShading,
     ),
+    FilterDef(
+      id: watercolorBorderFilterId,
+      name: '水彩境界',
+      kind: FilterKind.watercolorBorder,
+    ),
   ];
 
   Future<void> init() async {
@@ -394,6 +400,11 @@ class FilterService extends ChangeNotifier {
     double? sphereLightHeight,
     double? sphereLightBlur,
     double? sphereShadowBlur,
+    double? watercolorBorderRange,
+    double? watercolorBorderBlur,
+    double? watercolorBorderOpacity,
+    double? watercolorBorderDarken,
+    bool? watercolorBorderColorEdges,
   }) {
     final idx = _filters.indexWhere((f) => f.id == id);
     if (idx < 0) return;
@@ -491,6 +502,11 @@ class FilterService extends ChangeNotifier {
       sphereLightHeight: sphereLightHeight,
       sphereLightBlur: sphereLightBlur,
       sphereShadowBlur: sphereShadowBlur,
+      watercolorBorderRange: watercolorBorderRange,
+      watercolorBorderBlur: watercolorBorderBlur,
+      watercolorBorderOpacity: watercolorBorderOpacity,
+      watercolorBorderDarken: watercolorBorderDarken,
+      watercolorBorderColorEdges: watercolorBorderColorEdges,
     );
     if (jsonEncode(after.toJson()) == jsonEncode(before.toJson())) return;
     // Inside an edit group (one drag) only the first change is recorded, so

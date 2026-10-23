@@ -9,6 +9,8 @@ on:
       - "lib/engine/niapro_serializer.dart"
       - "lib/engine/tile_manager.dart"
       - "lib/services/project_service.dart"
+      - "lib/services/brush_service.dart"
+      - "test/functional_audit_batch12_test.dart"
       - "lib/services/recorded_filter_apply_service.dart"
       - "lib/services/autosave_service.dart"
       - "test/project_save_safety_test.dart"
@@ -33,6 +35,19 @@ on:
       - "test/custom_automation_draft_reorder_test.dart"
       - "test/canvas_mesh_handle_scale_contract_test.dart"
       - "test/canvas_angle_boundary_visual_audit_test.dart"
+      - "lib/engine/drawing_engine.dart"
+      - "lib/engine/perceptual_color_mixer.dart"
+      - "test/perceptual_color_mixer_test.dart"
+      - "lib/l10n/app_*.arb"
+      - "lib/l10n/app_localizations_*.dart"
+      - "test/app_web_reference_capture_test.dart"
+      - "test/app_web_reference_export_exact_test.dart"
+      - "test/texture_filter_gold_palette_test.dart"
+      - "test/filter_engine_aurora_hologram_test.dart"
+      - "test/visual/glitter_lame_render_capture_test.dart"
+      - "tool/patch_glitter_hexagon.py"
+      - ".github/workflows/one-shot-glitter-actual-capture.yml"
+      - ".github/workflows/texture-filter-captures.yml"
 
 permissions:
   contents: read
@@ -164,13 +179,6 @@ jobs:
     timeout-minutes: 45
     steps:
       - uses: actions/checkout@v6
-      - name: Apply pending audit candidate when present
-        shell: bash
-        run: |
-          if [ -f docs/product-audit/pending/auto-lineart-repairs.patch ]; then
-            git apply --check docs/product-audit/pending/auto-lineart-repairs.patch
-            git apply docs/product-audit/pending/auto-lineart-repairs.patch
-          fi
       - uses: subosito/flutter-action@v2
         with:
           flutter-version: "3.47.2"
@@ -180,17 +188,56 @@ jobs:
         run: |
           mkdir -p artifacts/save-safety
           flutter pub get --enforce-lockfile
+      # Check committed source formatting before applying a pending, uncommitted audit candidate.
       - name: Global format gate
         shell: bash
         run: |
           set -o pipefail
           dart format --output=none --set-exit-if-changed lib test tool 2>&1 | tee artifacts/save-safety/format.log
+      - name: Export committed-tree format differences immediately
+        if: always()
+        shell: bash
+        run: |
+          set -e
+          dart format lib test tool
+          git diff --name-only -- lib test tool > artifacts/save-safety/format-changed-files.txt
+          git diff --binary -- lib test tool > artifacts/save-safety/canonical-format.patch
+          git checkout -- lib test tool
+      - name: Upload format diagnostics immediately
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: global-format-diagnostics-${{ github.sha }}
+          path: |
+            artifacts/save-safety/format.log
+            artifacts/save-safety/format-changed-files.txt
+            artifacts/save-safety/canonical-format.patch
+          if-no-files-found: error
+          retention-days: 3
+      - name: Apply pending audit candidate when present
+        shell: bash
+        run: |
+          if [ -f docs/product-audit/pending/auto-lineart-repairs.patch ]; then
+            git apply --check docs/product-audit/pending/auto-lineart-repairs.patch
+            git apply docs/product-audit/pending/auto-lineart-repairs.patch
+          fi
+      # Normalize only the temporary candidate after proving the committed tree is formatted.
+      - name: Format pending audit candidate
+        run: dart format lib test tool
       - name: Full analyzer gate
         if: always()
         shell: bash
         run: |
           set -o pipefail
           flutter analyze --no-pub 2>&1 | tee artifacts/save-safety/analyze.log
+      - name: Upload full analyzer diagnostics immediately
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: full-analyzer-diagnostics-${{ github.sha }}
+          path: artifacts/save-safety/analyze.log
+          if-no-files-found: error
+          retention-days: 3
       - name: Full Flutter test gate
         if: always()
         shell: bash
@@ -276,7 +323,8 @@ jobs:
       - name: Format checkpoint documents with the repository formatter
         run: |
           mkdir -p artifacts/save-safety-format
-          npx --yes prettier@3.8.1 --write .github/workflows/save-safety-audit.yml docs/work-audit/state/ASTRA_CONTINUATION.md docs/work-audit/state/ASTRA_AUDIT_STATE.md 'docs/AI設計書/12_実装チェックリスト.md'
+          # Prettier rewrites technical underscores in audit-state Markdown as emphasis; keep those source-of-truth records out of this formatter gate.
+          npx --yes prettier@3.8.1 --write .github/workflows/save-safety-audit.yml 'docs/AI設計書/12_実装チェックリスト.md'
           git diff --binary > artifacts/save-safety-format/format.patch
           git diff --exit-code
       - uses: actions/upload-artifact@v4

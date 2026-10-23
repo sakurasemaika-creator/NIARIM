@@ -27,20 +27,31 @@ class AppLocalizationsKo extends AppLocalizations {
   String get homeTabBookmarked => '북마크됨';
 
   @override
-  String get homeBookmarkedEmptyTitle => '아직 북마크한 작품이 없습니다';
+  String get homeBookmarkedEmptyTitle => '표시할 수 있는 북마크 작품이 없습니다';
 
   @override
-  String get homeBookmarkedEmptyBody => '작품 광장에서 북마크한 작품이 여기에 표시됩니다.';
+  String get homeBookmarkedEmptyBody =>
+      '작품 광장에서 마음에 드는 공개 작품을 북마크하면 여기에 표시됩니다.';
 
   @override
-  String get homeBookmarkedHiddenTitle => '북마크한 작품이 지금은 표시되지 않습니다';
+  String get homeBookmarkedHiddenTitle => '북마크는 저장되어 있습니다';
 
   @override
   String get homeBookmarkedHiddenBody =>
-      '작품 광장의 표시 필터로 숨겨졌거나 더 이상 공개되지 않습니다. 북마크는 그대로 남아 있습니다.';
+      '표시 필터 또는 작품 공개 상태로 인해 작품이 보이지 않을 수 있습니다. 작품 광장에서 표시 필터를 확인하세요.';
 
   @override
-  String get homeBookmarkedOpenPlaza => '작품 광장 보기';
+  String get homeBookmarkedLoading => '북마크를 불러오는 중…';
+
+  @override
+  String get homeBookmarkedLoadFailed => '북마크를 불러오지 못했습니다';
+
+  @override
+  String get homeBookmarkedLoadPrompt => '저장된 북마크 불러오기';
+
+  @override
+  String get homeBookmarkedSignInBody =>
+      '저장된 북마크를 불러오려면 작품 광장에서 Google 계정을 연결하세요.';
 
   @override
   String get homeSearchHint => '프로젝트 이름으로 검색';
@@ -68,12 +79,6 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get homeSelectionAllDeselect => '전체 선택 해제';
-
-  @override
-  String get homeSelectionAddFavorite => '즐겨찾기에 추가';
-
-  @override
-  String get homeSelectionRemoveFavorite => '즐겨찾기 해제';
 
   @override
   String homeSelectionCount(int count) {
@@ -1405,7 +1410,7 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get helpColorMixingDesc =>
-      '브러시로 칠할 때, 브러시 바로 아래에 이미 있는 색과 지금 칠하려는 선택 색을 섞으면서 그리는 기능입니다. 수채화나 유화처럼 기존 색에 새로운 색을 자연스럽게 섞고 싶을 때 사용합니다.';
+      '브러시로 칠할 때, 브러시 바로 아래에 이미 있는 색과 지금 칠하려는 선택 색을 섞으면서 그리는 기능입니다. 브러시 설정의 혼색 모드에서 섞지 않고 칠하는 디지털, 물감처럼 섞이며 묻어난 색을 끌어서 늘이는 유화풍 혼색, 투명한 물감을 겹치고 마르면 가장자리에 색이 고이는 수채화풍 혼색을 고를 수 있습니다.';
 
   @override
   String get helpPressureCurveTitle => '필압 곡선';
@@ -1419,7 +1424,7 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get helpTimelineDesc =>
-      '애니메이션의 시간축을 관리하는 화면입니다. 프레임（정지 화면 1컷）을 나열하여 플립북처럼 재생하면 애니메이션이 됩니다. 이미지・동영상・오디오 등의 소재 트랙, 공통 레이어 트랙, 카메라 키프레임도 같은 타임라인에서 관리합니다.';
+      '애니메이션의 시간축을 관리하는 화면입니다. 프레임（정지 화면 1컷）을 나열하여 플립북처럼 재생하면 애니메이션이 됩니다. 텍스트・이미지・동영상・오디오 소재 트랙, 공통 레이어 트랙, 카메라 키프레임도 같은 타임라인에서 관리합니다. 텍스트・이미지・동영상과 프레임 일러스트의 앞뒤 관계는 「겹침 순서」에서 장면 전체 또는 지정한 프레임 범위별로 바꿀 수 있습니다. 항목을 길게 눌러 여러 개를 선택하고 한꺼번에 옮길 수도 있습니다.';
 
   @override
   String get helpSceneTitle => '씬';
@@ -1440,7 +1445,7 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get helpEffectFilterDesc =>
-      '씬이나 프레임에 적용할 수 있는 영상 효과（블러・색조 보정・글로우・픽셀 아트 등）입니다. 손그림 자체는 바꾸지 않고, 연출로서 화면 전체의 느낌을 조정하고 싶을 때 사용합니다. 그리기 필터 중 톤 커브(프리셋과 강도)・레벨 보정・선명하게・언샤프 마스크・비네트(색・범위・농도)도 여러 프레임에 같은 효과를 한 번에 줄 수 있도록 연출 필터에 들어 있습니다. 픽셀 아트는 배색 방식（색을 지정하지 않음・색을 지정함・색 수를 지정함・팔레트에서 선택）도 고를 수 있습니다. 색을 제한하면, 한 가지 색으로는 원래 색과 먼 곳을 사용할 수 있는 색 중 두세 가지를 규칙적으로 배치해(디더링) 원래 색에 가깝게 하며, 이 배치는 프레임이 바뀌어도 움직이지 않습니다. 윤곽 부분은 또렷하게 유지합니다. 디더링은 스위치로 켜고 끌 수 있으며, 끄면 가장 가까운 한 가지 색으로 칠합니다. 연출 필터는 여러 개를 겹쳐서 적용할 수 있으며, 그 적용 순서는 타임라인상의 배열 순서를 따릅니다. 필터 목록을 드래그로 재배열하면 실제로 화면에 반영되는 순서도 바뀝니다. 필름의 입자감 같은 노이즈를 프레임마다 변화시키며 적용하는 연출 필터입니다. 강도・양（노이즈가 올라가는 밀도）・입자 크기를 슬라이더로 조정할 수 있습니다. 같은 프레임으로 돌아오면 같은 입자 모양이 되므로 스크러빙 중에는 깜빡이지 않고, 재생하면 입자가 움직이는 것처럼 보입니다. 화면에 내리는 비를 표현하는 연출 필터입니다. 내리는 정도（빗방울 수）・속도・빗방울 크기・바람 방향 각도를 슬라이더로 조정할 수 있습니다. 각 빗방울은 프레임이 진행될수록 일정한 속도로 계속 내리므로 자연스러운 비의 움직임이 됩니다.';
+      '씬이나 프레임에 적용할 수 있는 영상 효과（블러・색조 보정・글로우・픽셀 아트 등）입니다. 손그림 자체는 바꾸지 않고, 연출로서 화면 전체의 느낌을 조정하고 싶을 때 사용합니다. 그리기 필터 중 톤 커브(프리셋과 강도)・레벨 보정・선명하게・언샤프 마스크・비네트(색・범위・농도)・수채 경계도 여러 프레임에 같은 효과를 한 번에 줄 수 있도록 연출 필터에 들어 있습니다. 픽셀 아트는 배색 방식（색을 지정하지 않음・색을 지정함・색 수를 지정함・팔레트에서 선택）도 고를 수 있습니다. 색을 제한하면, 한 가지 색으로는 원래 색과 먼 곳을 사용할 수 있는 색 중 두세 가지를 규칙적으로 배치해(디더링) 원래 색에 가깝게 하며, 이 배치는 프레임이 바뀌어도 움직이지 않습니다. 윤곽 부분은 또렷하게 유지합니다. 디더링은 스위치로 켜고 끌 수 있으며, 끄면 가장 가까운 한 가지 색으로 칠합니다. 연출 필터는 여러 개를 겹쳐서 적용할 수 있으며, 그 적용 순서는 타임라인상의 배열 순서를 따릅니다. 필터 목록을 드래그로 재배열하면 실제로 화면에 반영되는 순서도 바뀝니다. 필름의 입자감 같은 노이즈를 프레임마다 변화시키며 적용하는 연출 필터입니다. 강도・양（노이즈가 올라가는 밀도）・입자 크기를 슬라이더로 조정할 수 있습니다. 같은 프레임으로 돌아오면 같은 입자 모양이 되므로 스크러빙 중에는 깜빡이지 않고, 재생하면 입자가 움직이는 것처럼 보입니다. 화면에 내리는 비를 표현하는 연출 필터입니다. 내리는 정도（빗방울 수）・속도・빗방울 크기・바람 방향 각도를 슬라이더로 조정할 수 있습니다. 각 빗방울은 프레임이 진행될수록 일정한 속도로 계속 내리므로 자연스러운 비의 움직임이 됩니다.';
 
   @override
   String get helpEndCardTitle => 'EndCard（엔드 로고）';
@@ -1537,11 +1542,11 @@ class AppLocalizationsKo extends AppLocalizations {
       '기기 성능에 따라 저품질・중품질・고품질 프리셋 중에서 선택하거나, 각 항목을 개별로 설정（커스텀）할 수 있습니다. 저장 방식・동작 속도・어니언 스킨・기울기 감지 외에도, 실행 취소 횟수나 휴지통 자동 삭제 등 앱의 용량・동작 부담에 영향을 주는 설정도 여기에 모여 있습니다.';
 
   @override
-  String get helpMaterialClipTitle => '소재 클립（이미지・동영상・오디오）';
+  String get helpMaterialClipTitle => '소재 클립（텍스트・이미지・동영상・오디오）';
 
   @override
   String get helpMaterialClipDesc =>
-      '타임라인의 이미지・동영상・오디오 트랙에 배치한 클립입니다. 클립 본체를 길게 눌러 드래그하면 표시 시작 위치를 옮길 수 있고, 좌우 끝의 손잡이를 드래그하면 사용 범위（길이）를 바꿀 수 있습니다. 클립을 탭하면 열리는 상세 시트의 복사 아이콘으로 복제, 휴지통 아이콘으로 삭제도 가능합니다. 이미지・동영상은 내부적으로 레이어로 취급되며, 오디오는 장면에 직접 연결된 클립으로 관리됩니다.';
+      '타임라인의 텍스트・이미지・동영상・오디오 트랙에 배치한 클립입니다. 클립 본체를 길게 눌러 드래그하면 표시 시작 위치를 옮길 수 있고, 좌우 끝의 손잡이를 드래그하면 사용 범위（길이）를 바꿀 수 있습니다. 같은 시간에 겹치는 소재는 자동으로 다른 줄에 놓입니다. 텍스트・이미지・동영상 클립을 탭하면 미리보기 아래에 편집 패널이 열립니다. 글자 내용・글꼴・색・외곽선, 위치・크기・X축／Y축／Z축 회전・불투명도（미리보기에서 드래그해도 움직일 수 있고, 키프레임을 추가하면 움직임이 됩니다）, 마스크（사각형・타원・흐림・반전）, 배치할 줄을 바꿀 수 있으며 복제・삭제도 여기서 할 수 있습니다. 오디오 클립은 상세 시트에서 음량・페이드를 조정합니다.';
 
   @override
   String get helpGestureSettingsTitle => '제스처 설정';
@@ -1765,7 +1770,7 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get helpDrawingFilterDesc =>
-      '선택한 레이어에 직접 적용하는 필터입니다(연출 필터가 타임라인 전체나 장면 단위로 적용되는 것과 달리 그리기 필터는 레이어 단위로 작동합니다). 제공되는 27종은 가우시안 흐림, 렌즈 흐림, 애니메이션풍, 톤 커브, 레벨 보정, 윤곽선, 선명하게, 언샤프 마스크, 비네트, 필름 그레인, 레트로 애니메이션, 브라운관, 이진화, 어안 렌즈, 색수차, 안경 단면, 도트 그림, 질감 변경, 배경 어우러짐, 먹물 고임, 자동 선화, 프리즘, VHS 노이즈, 색상 반전, 모자이크, 노이즈, 구체 음영입니다. 애니메 스타일은 색 수를 줄이고, 이웃한 색의 차이가 「색 차이 임계값」 이상인 경계에 「경계선 굵기」의 선을 어두운 쪽으로 긋습니다(선화의 선은 굵어지지 않습니다). 프리즘은 레이어에 그린 모양마다 무지개 6색(빨강·초록·하늘색·파랑·보라·빨강)으로 칠해 흐리게 하고, 레이어를 선형 닷지로 바꿉니다. 어두운 색의 가늘고 작은 잎 같은 모양을 별도의 레이어에 먼저 그린 뒤 사용하면 그림 위에 은은한 무지갯빛 줄기가 들어갑니다(블러 양은 일반적인 가우스 블러와 같은 기준). 구체 음영은 타원형 빛의 안쪽에 빛 색을, 바깥쪽에 그림자 색을 그려진 곳에만 겹칩니다(빛은 캔버스 위에서도 드래그할 수 있습니다). 윤곽선은 원본 레이어를 다시 쓰지 않고 결과만 새 레이어에 그립니다. 안경 단면은 패널의「펜」「페인트통」으로 캔버스에 칠한 범위（「지우개」로 수정）에만 강한 안경 렌즈 같은 국소 왜곡을 적용합니다（선택 범위나 선택 레이어가 있으면 그 범위에서 시작합니다）. 캔버스에 선택 범위가 있으면 그리기 필터는 그 안에만 적용됩니다. 픽셀 아트는 배색 방식(제한 없음, 색 지정, 색 수 지정, 팔레트 선택)도 고를 수 있습니다. 색을 제한하면, 한 가지 색으로는 원래 색과 먼 곳을 사용할 수 있는 색 중 두세 가지를 규칙적으로 배치해(디더링) 원래 색에 가깝게 합니다. 윤곽 부분은 섞지 않고 또렷하게 유지합니다. 색 수를 지정하면 그림의 많은 부분을 차지하는 색에서 고릅니다. 디더링은 스위치로 켜고 끌 수 있으며, 끄면 가장 가까운 한 가지 색으로 칠합니다. 크기는 「블록 크기 지정」(1~100의 100단계)과 「도트 수 지정」(가로・세로 도트 수 슬라이더. 왼쪽 끝은 1, 오른쪽 끝은 캔버스 크기) 중에서 바꿀 수 있으며, 그림의 가로세로 비율을 유지한 채 가로와 세로가 함께 바뀝니다. 두 지정 방식도 서로 연동됩니다. 어느 쪽이든 도트는 정사각형 그대로이고 반투명한 테두리가 생기지 않습니다. 자동 선화에서는 필터를 적용하기 전에 임시 Vector 제어점을 직접 편집할 수 있습니다. 점을 드래그하면 해당 점만 이동합니다. 「적용」 오른쪽의 「제어점 추가」를 고르고 선을 탭하면 제어점을 추가하고, 「제어점 삭제」를 고르고 점을 탭하면 삭제할 수 있습니다(둘 다 고르지 않았을 때 점을 탭하면 확인한 뒤 삭제합니다). 편집한 형상이 그대로 적용 결과에 사용되며, 제어점의 이동・추가・삭제도 필터 편집의 실행 취소・다시 실행으로 하나씩 되돌릴 수 있습니다. 톤 커브는 곡선의 빈 곳을 탭하면 점을 추가하고, 점을 드래그하면 이동하며, 길게 누르면 삭제할 수 있습니다. R·G·B 색마다의 곡선은 RGB 곡선 다음에 적용됩니다. 레벨 보정도 R·G·B마다 따로 조정할 수 있고, 감마로 중간 밝기를 바꿀 수 있습니다. 테두리의 「안쪽으로 파고들기」로 원래 윤곽의 안쪽까지 테두리를 넓힐 수 있으며, 테두리의 새 레이어는 원래 레이어 바로 아래에 만들어집니다. 색수차는 어긋남을 X(가로)·Y(세로)·Z(중심에서 바깥쪽)에 얼마나 나눌지 지정할 수 있습니다. 어안 렌즈의 중심과 반지름은 캔버스 위의 ＋와 원의 손잡이를 드래그해서도 바꿀 수 있습니다. 비네트는 캔버스 전체의 네 모서리를 부드럽게 어둡게 합니다(그리지 않은 투명한 곳에도 그림자가 집니다). 「범위」로 네 모서리에서 중심 쪽으로 어디까지 어둡게 할지, 「농도」로 네 모서리의 어두운 정도를 조정할 수 있습니다. 안경 렌즈 왜곡은 실제 도수가 높은 안경처럼, 렌즈 너머의 풍경을 렌즈 중심 쪽으로 고르게 줄이거나(음수 값, 근시용) 넓히며(양수 값, 원시용), 렌즈 가장자리에서 윤곽이 계단처럼 어긋납니다. 먹물 고임은 선이 「최대 각도」 이하로 만나는 곳(초기값 90°에서는 예각과 직각: V자, 교차의 좁은 쪽, T자, 네모난 모서리)의 각 안쪽에만 고이며, 그보다 넓은 각에는 고이지 않습니다. 만나는 점에서 선의 가장자리로부터 「중앙 두께」, 그로부터 「범위」 끝을 향해 곧게 가늘어져 끝에서 0px이 되며 매끄럽게 뾰족해집니다. 「중앙 두께」를 크게 해도 양쪽 먹물 고임의 끝을 잇는 직선 바깥으로는 부풀지 않으며, 가장 두꺼워도 가운데는 평평합니다. 범위 도중에 선이 끊기면 그 선에서는 끊긴 곳을 끝으로 삼아 0px까지 가늘어집니다(선마다 길이가 달라집니다). 이때도 두 먹물 고임은 각의 한가운데에서 어느 선으로부터나 같은 두께로 만납니다(긴 쪽 선의 먹물 고임은 거기서부터 범위 끝까지 가늘어집니다). 자동 선화는 밑그림 선의 중심을 따라 가는 선으로 그립니다. 가까이 붙은 선도 사이가 조금이라도 비어 있으면 두 줄 그대로 그리고, 선 안의 작은 흰 점만 메웁니다. 두 선이 가까워져 붙는 곳은 가운데에 한 줄을 긋지 않고, 밑그림처럼 두 선이 서서히 가까워지며 합쳐집니다. 선이 교차하거나 겹친 곳도 밑그림 그대로 각 선이 이어집니다(교차점으로 꺾이거나, 겹친 두 선이 한 줄로 녹아들지 않습니다). 비스듬히 얕게 교차하는 선도 교차한 채 곧게 이어지며, 맞닿기만 하는 선(머리를 따라 그린 머리카락 윤곽 등)은 각자 자기 쪽을 지나는 별개의 선으로 남습니다. 눈 같은 점은 채운 점 그대로 그립니다. 「러프 선 굵기」보다 짧은 가지는 그리지 않습니다. 「선 끝 테이퍼」는 스위치로 켜고 끌 수 있으며, 끄면 선 끝까지 같은 굵기가 됩니다. 배경 어우러짐은 배경의 빛과 그림자를 블렌드 모드 「하드 라이트」로 겹칩니다(그림자 색은 검정이나 회색이 아니라 배경의 그림자 부분 색을 어둡게 한 것). 주변의 색은 「오버레이」로 전체에 겹쳐 색의 방향을 맞추고, 아래에서 올라오는 반사광과 주변의 반사는 「스크린」으로, 네온 같은 강한 색광은 「더하기(발광)」로 윤곽에 넣습니다. 「배경의 밝기·색감에 맞추기」는 배경보다 너무 밝거나 선명한 색을 배경의 범위로 가져오고, 어두운 곳·중간·밝은 곳을 각각 같은 밝기의 배경 색감 쪽으로 맞춥니다(선화의 검정은 그대로). 「흐림 정도」는 색을 가져올 배경을 흐리게 하는 양입니다.';
+      '선택한 레이어에 직접 적용하는 필터입니다(연출 필터가 타임라인 전체나 장면 단위로 적용되는 것과 달리 그리기 필터는 레이어 단위로 작동합니다). 제공되는 28종은 가우시안 흐림, 렌즈 흐림, 애니메이션풍, 톤 커브, 레벨 보정, 윤곽선, 선명하게, 언샤프 마스크, 비네트, 필름 그레인, 레트로 애니메이션, 브라운관, 이진화, 어안 렌즈, 색수차, 안경 단면, 도트 그림, 질감 변경, 배경 어우러짐, 먹물 고임, 자동 선화, 프리즘, VHS 노이즈, 색상 반전, 모자이크, 노이즈, 구체 음영, 수채 경계입니다. 수채 경계는 작업 레이어에 칠한 부분의 가장자리에 색을 고이게 하고 안쪽을 비치게 하여, 마른 수채화처럼 만듭니다(「색 경계에도 적용」을 켜면 이웃한 색의 경계에도 가장자리가 생깁니다). 애니메 스타일은 색 수를 줄이고, 이웃한 색의 차이가 「색 차이 임계값」 이상인 경계에 「경계선 굵기」의 선을 어두운 쪽으로 긋습니다(선화의 선은 굵어지지 않습니다). 프리즘은 레이어에 그린 모양마다 무지개 6색(빨강·초록·하늘색·파랑·보라·빨강)으로 칠해 흐리게 하고, 레이어를 선형 닷지로 바꿉니다. 어두운 색의 가늘고 작은 잎 같은 모양을 별도의 레이어에 먼저 그린 뒤 사용하면 그림 위에 은은한 무지갯빛 줄기가 들어갑니다(블러 양은 일반적인 가우스 블러와 같은 기준). 구체 음영은 타원형 빛의 안쪽에 빛 색을, 바깥쪽에 그림자 색을 그려진 곳에만 겹칩니다(빛은 캔버스 위에서도 드래그할 수 있습니다). 윤곽선은 원본 레이어를 다시 쓰지 않고 결과만 새 레이어에 그립니다. 안경 단면은 패널의「펜」「페인트통」으로 캔버스에 칠한 범위（「지우개」로 수정）에만 강한 안경 렌즈 같은 국소 왜곡을 적용합니다（선택 범위나 선택 레이어가 있으면 그 범위에서 시작합니다）. 캔버스에 선택 범위가 있으면 그리기 필터는 그 안에만 적용됩니다. 픽셀 아트는 배색 방식(제한 없음, 색 지정, 색 수 지정, 팔레트 선택)도 고를 수 있습니다. 색을 제한하면, 한 가지 색으로는 원래 색과 먼 곳을 사용할 수 있는 색 중 두세 가지를 규칙적으로 배치해(디더링) 원래 색에 가깝게 합니다. 윤곽 부분은 섞지 않고 또렷하게 유지합니다. 색 수를 지정하면 그림의 많은 부분을 차지하는 색에서 고릅니다. 디더링은 스위치로 켜고 끌 수 있으며, 끄면 가장 가까운 한 가지 색으로 칠합니다. 크기는 「블록 크기 지정」(1~100의 100단계)과 「도트 수 지정」(가로・세로 도트 수 슬라이더. 왼쪽 끝은 1, 오른쪽 끝은 캔버스 크기) 중에서 바꿀 수 있으며, 그림의 가로세로 비율을 유지한 채 가로와 세로가 함께 바뀝니다. 두 지정 방식도 서로 연동됩니다. 어느 쪽이든 도트는 정사각형 그대로이고 반투명한 테두리가 생기지 않습니다. 자동 선화에서는 필터를 적용하기 전에 임시 Vector 제어점을 직접 편집할 수 있습니다. 점을 드래그하면 해당 점만 이동합니다. 「적용」 오른쪽의 「제어점 추가」를 고르고 선을 탭하면 제어점을 추가하고, 「제어점 삭제」를 고르고 점을 탭하면 삭제할 수 있습니다(둘 다 고르지 않았을 때 점을 탭하면 확인한 뒤 삭제합니다). 편집한 형상이 그대로 적용 결과에 사용되며, 제어점의 이동・추가・삭제도 필터 편집의 실행 취소・다시 실행으로 하나씩 되돌릴 수 있습니다. 톤 커브는 곡선의 빈 곳을 탭하면 점을 추가하고, 점을 드래그하면 이동하며, 길게 누르면 삭제할 수 있습니다. R·G·B 색마다의 곡선은 RGB 곡선 다음에 적용됩니다. 레벨 보정도 R·G·B마다 따로 조정할 수 있고, 감마로 중간 밝기를 바꿀 수 있습니다. 테두리의 「안쪽으로 파고들기」로 원래 윤곽의 안쪽까지 테두리를 넓힐 수 있으며, 테두리의 새 레이어는 원래 레이어 바로 아래에 만들어집니다. 색수차는 어긋남을 X(가로)·Y(세로)·Z(중심에서 바깥쪽)에 얼마나 나눌지 지정할 수 있습니다. 어안 렌즈의 중심과 반지름은 캔버스 위의 ＋와 원의 손잡이를 드래그해서도 바꿀 수 있습니다. 비네트는 캔버스 전체의 네 모서리를 부드럽게 어둡게 합니다(그리지 않은 투명한 곳에도 그림자가 집니다). 「범위」로 네 모서리에서 중심 쪽으로 어디까지 어둡게 할지, 「농도」로 네 모서리의 어두운 정도를 조정할 수 있습니다. 안경 렌즈 왜곡은 실제 도수가 높은 안경처럼, 렌즈 너머의 풍경을 렌즈 중심 쪽으로 고르게 줄이거나(음수 값, 근시용) 넓히며(양수 값, 원시용), 렌즈 가장자리에서 윤곽이 계단처럼 어긋납니다. 먹물 고임은 선이 「최대 각도」 이하로 만나는 곳(초기값 90°에서는 예각과 직각: V자, 교차의 좁은 쪽, T자, 네모난 모서리)의 각 안쪽에만 고이며, 그보다 넓은 각에는 고이지 않습니다. 만나는 점에서 선의 가장자리로부터 「중앙 두께」, 그로부터 「범위」 끝을 향해 곧게 가늘어져 끝에서 0px이 되며 매끄럽게 뾰족해집니다. 「중앙 두께」를 크게 해도 양쪽 먹물 고임의 끝을 잇는 직선 바깥으로는 부풀지 않으며, 가장 두꺼워도 가운데는 평평합니다. 범위 도중에 선이 끊기면 그 선에서는 끊긴 곳을 끝으로 삼아 0px까지 가늘어집니다(선마다 길이가 달라집니다). 이때도 두 먹물 고임은 각의 한가운데에서 어느 선으로부터나 같은 두께로 만납니다(긴 쪽 선의 먹물 고임은 거기서부터 범위 끝까지 가늘어집니다). 자동 선화는 밑그림 선의 중심을 따라 가는 선으로 그립니다. 가까이 붙은 선도 사이가 조금이라도 비어 있으면 두 줄 그대로 그리고, 선 안의 작은 흰 점만 메웁니다. 두 선이 가까워져 붙는 곳은 가운데에 한 줄을 긋지 않고, 밑그림처럼 두 선이 서서히 가까워지며 합쳐집니다. 선이 교차하거나 겹친 곳도 밑그림 그대로 각 선이 이어집니다(교차점으로 꺾이거나, 겹친 두 선이 한 줄로 녹아들지 않습니다). 비스듬히 얕게 교차하는 선도 교차한 채 곧게 이어지며, 맞닿기만 하는 선(머리를 따라 그린 머리카락 윤곽 등)은 각자 자기 쪽을 지나는 별개의 선으로 남습니다. 눈 같은 점은 채운 점 그대로 그립니다. 「러프 선 굵기」보다 짧은 가지는 그리지 않습니다. 「선 끝 테이퍼」는 스위치로 켜고 끌 수 있으며, 끄면 선 끝까지 같은 굵기가 됩니다. 배경 어우러짐은 배경의 빛과 그림자를 블렌드 모드 「하드 라이트」로 겹칩니다(그림자 색은 검정이나 회색이 아니라 배경의 그림자 부분 색을 어둡게 한 것). 주변의 색은 「오버레이」로 전체에 겹쳐 색의 방향을 맞추고, 아래에서 올라오는 반사광과 주변의 반사는 「스크린」으로, 네온 같은 강한 색광은 「더하기(발광)」로 윤곽에 넣습니다. 「배경의 밝기·색감에 맞추기」는 배경보다 너무 밝거나 선명한 색을 배경의 범위로 가져오고, 어두운 곳·중간·밝은 곳을 각각 같은 밝기의 배경 색감 쪽으로 맞춥니다(선화의 검정은 그대로). 「흐림 정도」는 색을 가져올 배경을 흐리게 하는 양입니다.';
 
   @override
   String get helpLayerKeyframeTitle => '레이어 키프레임（파츠 단위 애니메이션）';
@@ -2588,7 +2593,16 @@ class AppLocalizationsKo extends AppLocalizations {
   String get themeColorAccent => '강조 색상';
 
   @override
-  String get themeColorText => '글자 색';
+  String get themeColorText => '본문 및 일반 글자 색';
+
+  @override
+  String get themeColorButtonText => '버튼 글자·아이콘 색';
+
+  @override
+  String get themeColorMenuText => '메뉴·상단 바 글자 색';
+
+  @override
+  String get themeColorSelectionText => '선택 항목 글자·아이콘 색';
 
   @override
   String get themeColorPanelBg => '패널 배경색';
@@ -2603,11 +2617,10 @@ class AppLocalizationsKo extends AppLocalizations {
   String get themeColorUpdateMark => '업데이트 표시 색상';
 
   @override
-  String get themeContrastErrorTitle => '이 색으로는 글자가 보이지 않습니다';
+  String get themeResetConfirmTitle => '테마 색상을 초기화하시겠습니까?';
 
   @override
-  String get themeContrastErrorBody =>
-      '글자색과 배경색이 너무 비슷해서 화면의 글자가 거의 보이지 않게 됩니다. 설정 화면 자체도 읽을 수 없게 되어 되돌릴 수 없으므로 이 조합은 저장할 수 없습니다. 둘 중 하나의 밝기를 바꿔 주세요.';
+  String get themeResetConfirmAction => '초기화';
 
   @override
   String get themeUnreadableResetButton => '테마 되돌리기';
@@ -3112,16 +3125,47 @@ class AppLocalizationsKo extends AppLocalizations {
   String get brushSettingsStrokeDecaySubtitle => '계속 그릴수록 불투명도가 낮아집니다';
 
   @override
-  String get brushSettingsMixingTitle => '혼색';
+  String get brushSettingsMixingTitle => '혼색 모드';
 
   @override
-  String get brushSettingsMixingOff => 'OFF';
+  String get brushSettingsMixingOff => '디지털';
 
   @override
-  String get brushSettingsMixingSimple => '간이 혼색';
+  String get brushSettingsMixingOil => '유화풍 혼색';
+
+  @override
+  String get brushSettingsMixingWatercolor => '수채화풍 혼색';
+
+  @override
+  String get brushSettingsMixingBrightnessCorrection => '밝기 보정';
+
+  @override
+  String get brushSettingsMixingAmount => '혼색 정도';
+
+  @override
+  String get brushSettingsMixingStretch => '색 늘이기';
+
+  @override
+  String get brushSettingsMixingWater => '수분량';
+
+  @override
+  String get brushSettingsMixingPigment => '물감량';
 
   @override
   String get brushSettingsMixingBleed => '번짐';
+
+  @override
+  String get brushSettingsMixingTexture => '얼룩';
+
+  @override
+  String get brushSettingsMixingSoftEdge => '경계 흐림';
+
+  @override
+  String get brushSettingsMixingOilHint => '아래 색과 물감처럼 섞이고, 묻어난 색을 끌어서 늘입니다.';
+
+  @override
+  String get brushSettingsMixingWatercolorHint =>
+      '투명한 물감을 겹쳐 칠합니다. 펜을 떼면 마르면서 붓 바깥으로 조금 번지고 가장자리에 색이 고입니다.';
 
   @override
   String get projectDetailNotFoundTitle => '프로젝트';
@@ -3161,6 +3205,12 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get projectDetailShareQuickAction => '공유';
+
+  @override
+  String get projectDetailFavoriteRegistered => '즐겨찾기 등록됨';
+
+  @override
+  String get projectDetailFavoriteUnregistered => '즐겨찾기 미등록';
 
   @override
   String get projectDetailInfoSectionTitle => '프로젝트 정보';
@@ -4735,6 +4785,205 @@ class AppLocalizationsKo extends AppLocalizations {
   String get timelineAddWatermarkTooltip => '＋워터마크';
 
   @override
+  String get timelineStackScopeRange => '프레임 범위';
+
+  @override
+  String get timelineStackTargetLabel => '이 겹침 순서를 쓸 곳';
+
+  @override
+  String get timelineStackTargetScenes => '장면 여러 개 선택';
+
+  @override
+  String get timelineStackTargetAllFrames => '모든 프레임';
+
+  @override
+  String get timelineStackScenesHint =>
+      '선택한 장면의 모든 프레임에 같은 순서를 씁니다. 여기서 순서를 바꾸면 선택한 장면 모두에 적용됩니다.';
+
+  @override
+  String get timelineStackAllFramesHint =>
+      '모든 장면의 모든 프레임에 같은 순서를 씁니다. 여기서 순서를 바꾸면 모든 장면에 적용됩니다.';
+
+  @override
+  String get timelineStackRangesTakePriority =>
+      '프레임 범위를 지정한 프레임은 그 범위의 순서가 우선합니다.';
+
+  @override
+  String timelineStackRangeLabel(int start, int end) {
+    return 'F$start~F$end';
+  }
+
+  @override
+  String timelineStackRangeAdd(int n) {
+    return 'F$n에 범위 추가';
+  }
+
+  @override
+  String get timelineStackRangeHint =>
+      '지정한 범위의 프레임만 여기서 정한 순서가 됩니다. 범위 밖은 장면 전체의 순서입니다.';
+
+  @override
+  String get timelineStackRangeEmpty => '범위가 없습니다. 위의 버튼으로 현재 프레임에 만들 수 있습니다.';
+
+  @override
+  String timelineStackRangeOrderHint(String range) {
+    return '$range의 겹침 순서（위일수록 앞）. 손잡이를 드래그하거나 화살표로 순서를 바꿉니다.';
+  }
+
+  @override
+  String get timelineStackRangeDelete => '이 범위 삭제';
+
+  @override
+  String get timelineAddMaterialTooltip => '소재 추가';
+
+  @override
+  String get timelineMaterialRowLabel => '배치할 줄';
+
+  @override
+  String get timelineMaterialNewRow => '새 줄';
+
+  @override
+  String get timelineAddTextTooltip => '＋텍스트';
+
+  @override
+  String get timelineAddImageTooltip => '＋이미지';
+
+  @override
+  String get timelineStackOrderTitle => '겹침 순서';
+
+  @override
+  String get timelineMaterialText => '텍스트';
+
+  @override
+  String get timelineAddTextDialogTitle => '텍스트 추가';
+
+  @override
+  String get timelineEditSectionText => '글자';
+
+  @override
+  String get timelineEditSectionTransform => '배치';
+
+  @override
+  String get timelineEditSectionMask => '마스크';
+
+  @override
+  String get timelineTransformRotationX => 'X축 회전';
+
+  @override
+  String get timelineTransformRotationY => 'Y축 회전';
+
+  @override
+  String get timelineTransformRotationZ => 'Z축 회전';
+
+  @override
+  String get timelineTransformReset => '배치 초기화';
+
+  @override
+  String timelineKeyframeAddHere(int n) {
+    return 'F$n에 키프레임 추가';
+  }
+
+  @override
+  String timelineKeyframeRemoveHere(int n) {
+    return 'F$n의 키프레임 삭제';
+  }
+
+  @override
+  String get timelineKeyframeWholeHint =>
+      '소재 전체에 같은 배치가 쓰입니다. 움직이려면 다른 프레임으로 이동해 키프레임을 추가하세요.';
+
+  @override
+  String timelineKeyframeAnimHint(int count, int n) {
+    return '키프레임 $count개: F$n의 값으로 기록하고, 사이는 자동으로 이어집니다.';
+  }
+
+  @override
+  String get timelineGizmoHint =>
+      '미리보기에서 드래그하면 이동, 모서리 점으로 크기 조절, 위쪽 점으로 회전합니다. 두 손가락으로도 조작할 수 있습니다.';
+
+  @override
+  String timelineMaterialOutOfRange(int start, int end) {
+    return '이 프레임에는 표시되지 않습니다 (F$start~F$end에 표시)';
+  }
+
+  @override
+  String get timelineMaskNone => '없음';
+
+  @override
+  String get timelineMaskRectangle => '사각형';
+
+  @override
+  String get timelineMaskEllipse => '타원';
+
+  @override
+  String get timelineMaskCenterX => '중심 X';
+
+  @override
+  String get timelineMaskCenterY => '중심 Y';
+
+  @override
+  String get timelineMaskWidth => '너비';
+
+  @override
+  String get timelineMaskHeight => '높이';
+
+  @override
+  String get timelineMaskFeather => '흐림';
+
+  @override
+  String get timelineMaskInvert => '반전 (안쪽 숨기기)';
+
+  @override
+  String get timelineMaskHint => '마스크 안쪽만 보여 줍니다. 반전하면 안쪽을 숨깁니다.';
+
+  @override
+  String get timelineStackOrderHint =>
+      '위에 있을수록 앞에 표시됩니다. 손잡이를 드래그하거나 화살표로 순서를 바꿉니다.';
+
+  @override
+  String get timelineStackScopeScene => '현재 장면 전체';
+
+  @override
+  String get timelineStackFrameUnit => '프레임 (일러스트)';
+
+  @override
+  String get timelineStackResetScene => '기본 순서로 되돌리기';
+
+  @override
+  String get timelineStackFrameMaskTitle => '프레임 (일러스트) 마스크';
+
+  @override
+  String get timelineStackFrameMaskHint =>
+      '그린 그림만 잘라 냅니다. 텍스트·이미지·동영상에는 적용되지 않습니다. 캔버스에서 그리는 동안에는 숨겨지지 않습니다.';
+
+  @override
+  String get timelineStackMoveUp => '앞으로';
+
+  @override
+  String get timelineStackMoveDown => '뒤로';
+
+  @override
+  String timelineStackSelectedCount(int count) {
+    return '$count개 선택됨';
+  }
+
+  @override
+  String get timelineStackBringToFront => '맨 앞으로';
+
+  @override
+  String get timelineStackSendToBack => '맨 뒤로';
+
+  @override
+  String get timelineStackDeselectAll => '전체 해제';
+
+  @override
+  String get timelineStackSelectAll => '전체 선택';
+
+  @override
+  String get timelineStackMultiSelectHint =>
+      '항목을 길게 누르면 여러 개를 선택할 수 있습니다. 선택한 항목은 화살표, 드래그, 아래 버튼으로 한꺼번에 옮길 수 있습니다.';
+
+  @override
   String get timelineWatermarkNotRegisteredTitle => '등록된 워터마크 없음';
 
   @override
@@ -4816,7 +5065,7 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get timelineSceneDeleteConfirmBody =>
-      '씬 내의 모든 프레임・공통 레이어・동영상 소재・이미지 소재・워터마크를 포함한 모든 데이터가 삭제됩니다.';
+      '씬 내의 모든 프레임・공통 레이어・텍스트 소재・동영상 소재・이미지 소재・워터마크를 포함한 모든 데이터가 삭제됩니다.';
 
   @override
   String timelineSceneMultiDeleteConfirmTitle(int count) {
@@ -6520,9 +6769,6 @@ class AppLocalizationsKo extends AppLocalizations {
   String get brushSettingsStrongPressureLabel => '강';
 
   @override
-  String get brushSettingsValueLabel => '값';
-
-  @override
   String get helpCustomAutomationTitle => '사용자 지정 자동 작업(동작 기록)';
 
   @override
@@ -7215,6 +7461,28 @@ class AppLocalizationsKo extends AppLocalizations {
       '캔버스 위의 +로 빛을 옮기고, 둥근 손잡이로 크기를 바꿀 수 있습니다. 그림자와 빛은 그려진 곳에만 들어갑니다.';
 
   @override
+  String get filterNameWatercolorBorder => '수채 경계';
+
+  @override
+  String get filterWatercolorBorderRange => '범위';
+
+  @override
+  String get filterWatercolorBorderBlur => '흐림 폭';
+
+  @override
+  String get filterWatercolorBorderOpacity => '투명도 영향';
+
+  @override
+  String get filterWatercolorBorderDarken => '가장자리 농도';
+
+  @override
+  String get filterWatercolorBorderColorEdges => '색 경계에도 적용';
+
+  @override
+  String get filterWatercolorBorderHint =>
+      '칠한 부분의 가장자리에 색이 고이고 안쪽은 비쳐 보여, 마른 수채화처럼 됩니다(작업 레이어에 바로 그립니다). 범위: 가장자리에서 안쪽으로 어디까지 진하게 할지. 가장자리 농도: 가장자리에 고이는 색의 농도. 투명도 영향: 안쪽을 얼마나 비치게 할지. 흐림 폭: 농도가 얼마나 부드럽게 바뀔지.';
+
+  @override
   String get filterFisheyeCanvasHint =>
       '캔버스 위의 +로 중심을, 원 위의 둥근 손잡이로 반경을 바꿀 수 있습니다.';
 
@@ -7315,4 +7583,17 @@ class AppLocalizationsKo extends AppLocalizations {
   @override
   String get errorViewBody =>
       '작업 중인 데이터는 보존되어 있습니다. 이전 화면으로 돌아가 다시 시도해 주세요. 아래 내용을 개발자에게 알려 주시면 원인을 찾는 데 도움이 됩니다.';
+
+  @override
+  String get homeWorksLoadFailed => '내보낸 작품 목록을 불러오지 못했습니다';
+
+  @override
+  String get newProjectCreating => '만드는 중…';
+
+  @override
+  String get newProjectCreateFailed =>
+      '프로젝트를 저장하지 못했습니다. 저장 공간과 저장 위치를 확인한 후 다시 시도해 주세요.';
+
+  @override
+  String get communityCreatorLabel => '작성자';
 }

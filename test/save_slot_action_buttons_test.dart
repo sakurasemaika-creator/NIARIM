@@ -25,6 +25,8 @@ void main() {
 
   testWidgets('全セーブスロットに書き込み・読み込み・削除の3ボタンが並ぶ', (tester) async {
     SharedPreferences.setMockInitialValues({
+      // This scenario tests slots independently of the host CPU core count.
+      'quality_level': 'medium',
       firstUseTooltipsSeenKey: kAllFirstUseTooltipKeys,
     });
     final tempDir = Directory.systemTemp.createTempSync('niarim_save_slot_');
@@ -108,8 +110,9 @@ void main() {
     expect(iconOf(loads), Icons.book_outlined, reason: '読み込みはノートのアイコン');
     expect(iconOf(deletes), Icons.delete_outline, reason: '削除はゴミ箱のアイコン');
 
-    final source = File('lib/screens/save_tree/save_management_screen.dart')
-        .readAsStringSync();
+    final source = File(
+      'lib/screens/save_tree/save_management_screen.dart',
+    ).readAsStringSync();
     expect(
       source.contains('showModalBottomSheet'),
       isFalse,

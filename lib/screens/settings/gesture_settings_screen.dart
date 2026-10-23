@@ -5,10 +5,9 @@ import '../../widgets/scrollable_sheet_body.dart';
 import 'package:provider/provider.dart';
 import '../../l10n/app_localizations.dart';
 import '../../services/settings_service.dart';
-import '../../widgets/editable_slider_value.dart';
+import '../../widgets/labeled_slider.dart';
 import '../../widgets/responsive.dart';
 import '../../widgets/help_button.dart';
-import '../../widgets/stepped_slider.dart';
 import '../../config/font_fallback.dart';
 
 class GestureSettingsScreen extends StatelessWidget {
@@ -116,49 +115,22 @@ class GestureSettingsScreen extends StatelessWidget {
                   ),
                   if (settings.holdEyedropperEnabled) ...[
                     const Divider(height: 1),
-                    Padding(
+                    LabeledSlider(
                       padding: const EdgeInsets.symmetric(
-                        horizontal: 16,
+                        horizontal: 12,
                         vertical: 4,
                       ),
-                      child: Row(
-                        children: [
-                          Expanded(
-                            child: Text(
-                              l10n.gestureHoldEyedropperDurationLabel,
-                            ),
-                          ),
-                          SizedBox(
-                            width: 180,
-                            child: SteppedSlider(
-                              value: settings.holdEyedropperSeconds,
-                              min: 0.2,
-                              max: 3.0,
-                              divisions: 28,
-                              step: 0.1,
-                              onChanged: (v) =>
-                                  settings.setHoldEyedropperSeconds(v),
-                            ),
-                          ),
-                          SizedBox(
-                            width: 44,
-                            child: EditableSliderValue(
-                              text: l10n.gestureHoldEyedropperSecondsValue(
-                                settings.holdEyedropperSeconds.toStringAsFixed(
-                                  1,
-                                ),
-                              ),
-                              value: settings.holdEyedropperSeconds,
-                              min: 0.2,
-                              max: 3.0,
-                              isInt: false,
-                              title: l10n.gestureHoldEyedropperDurationLabel,
-                              onChanged: (v) => settings
-                                  .setHoldEyedropperSeconds(v.toDouble()),
-                            ),
-                          ),
-                        ],
+                      label: l10n.gestureHoldEyedropperDurationLabel,
+                      value: settings.holdEyedropperSeconds,
+                      min: 0.2,
+                      max: 3.0,
+                      divisions: 28,
+                      step: 0.1,
+                      isInt: false,
+                      valueText: l10n.gestureHoldEyedropperSecondsValue(
+                        settings.holdEyedropperSeconds.toStringAsFixed(1),
                       ),
+                      onChanged: (v) => settings.setHoldEyedropperSeconds(v),
                     ),
                   ],
                 ],

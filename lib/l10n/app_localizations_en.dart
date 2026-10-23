@@ -28,22 +28,31 @@ class AppLocalizationsEn extends AppLocalizations {
   String get homeTabBookmarked => 'Bookmarked';
 
   @override
-  String get homeBookmarkedEmptyTitle => 'No bookmarked works yet';
+  String get homeBookmarkedEmptyTitle => 'No bookmarked works to display';
 
   @override
   String get homeBookmarkedEmptyBody =>
-      'Works you bookmark in Work Plaza appear here.';
+      'Bookmark public works you like in Work Plaza to find them here.';
 
   @override
-  String get homeBookmarkedHiddenTitle =>
-      'Your bookmarked works are hidden right now';
+  String get homeBookmarkedHiddenTitle => 'Your bookmarks are still saved';
 
   @override
   String get homeBookmarkedHiddenBody =>
-      'They are hidden by the Work Plaza display filters, or are no longer public. Your bookmarks are still kept.';
+      'Display filters or changes to a work’s public availability may hide it. Review your display filters in Work Plaza.';
 
   @override
-  String get homeBookmarkedOpenPlaza => 'Open Work Plaza';
+  String get homeBookmarkedLoading => 'Loading your bookmarks…';
+
+  @override
+  String get homeBookmarkedLoadFailed => 'Couldn’t load your bookmarks';
+
+  @override
+  String get homeBookmarkedLoadPrompt => 'Load your saved bookmarks';
+
+  @override
+  String get homeBookmarkedSignInBody =>
+      'Connect your Google account in Work Plaza to load saved bookmarks.';
 
   @override
   String get homeSearchHint => 'Search by project name';
@@ -71,12 +80,6 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get homeSelectionAllDeselect => 'Deselect All';
-
-  @override
-  String get homeSelectionAddFavorite => 'Add to favorites';
-
-  @override
-  String get homeSelectionRemoveFavorite => 'Remove from favorites';
 
   @override
   String homeSelectionCount(int count) {
@@ -1431,7 +1434,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get helpColorMixingDesc =>
-      'While painting with a brush, blends the color already under the brush with the color you\'re about to apply. Use it when you want new colors to blend into existing ones, like watercolor or oil paint.';
+      'While painting with a brush, blends the color already under the brush with the color you\'re about to apply. In the brush settings\' mixing mode, choose Digital to paint without mixing, Oil-style mixing to mix like paint and drag the picked-up color along, or Watercolor-style mixing to layer transparent washes that gather color at their edges as they dry.';
 
   @override
   String get helpPressureCurveTitle => 'Pressure Curve';
@@ -1445,7 +1448,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get helpTimelineDesc =>
-      'The screen for managing the time axis of your animation. Arranging frames (individual still images) and playing them back like a flipbook creates the animation. Image, video, and audio material tracks, common layer tracks, and camera keyframes are all managed on the same timeline.';
+      'The screen for managing the time axis of your animation. Arranging frames (individual still images) and playing them back like a flipbook creates the animation. Text, image, video and audio material tracks, common layer tracks and camera keyframes are all managed on the same timeline. Which of the texts, images, videos and the frame\'s drawing is in front is set in \"Stacking order\", for the whole scene or for a range of frames. You can also long-press an item to select several and move them together.';
 
   @override
   String get helpSceneTitle => 'Scene';
@@ -1466,7 +1469,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get helpEffectFilterDesc =>
-      'A visual effect (blur, color correction, glow, pixel art, etc.) you can apply to a scene or frame. Use it when you want to adjust the overall look of the screen as a directorial touch, without changing the hand-drawn artwork itself. Of the drawing filters, Tone Curve (a preset and its strength), Levels, Sharpen, Unsharp Mask and Vignette (color, range and density) are effect filters too, so the same effect can be applied to many frames at once. Pixel art also lets you choose a color mode (no limit, specify colors, specify color count, or choose from a palette). When colors are limited, areas no single allowed color comes close to are made of two or three allowed colors in a regular pattern (dithering) that stays in place from frame to frame; edges stay crisp. Dithering can be switched off, to fill each dot with the nearest single color. Multiple effect filters can be stacked, and they\'re applied in the order they appear on the timeline. Dragging to reorder the filter list also changes the order they\'re actually applied on screen. An effect filter that applies film-grain-like noise, changing it frame by frame. Strength, amount (how dense the noise is), and grain size can all be adjusted with sliders. Returning to the same frame reproduces the same grain (no flicker while scrubbing), while playback makes the grain appear to move. An effect filter that renders rain falling across the screen. Intensity (drop count), speed, drop size, and wind angle can all be adjusted with sliders. Each drop keeps falling at a steady speed as the frame advances, giving natural-looking rain motion.';
+      'A visual effect (blur, color correction, glow, pixel art, etc.) you can apply to a scene or frame. Use it when you want to adjust the overall look of the screen as a directorial touch, without changing the hand-drawn artwork itself. Of the drawing filters, Tone Curve (a preset and its strength), Levels, Sharpen, Unsharp Mask, Vignette (color, range and density) and Watercolor Edge are effect filters too, so the same effect can be applied to many frames at once. Pixel art also lets you choose a color mode (no limit, specify colors, specify color count, or choose from a palette). When colors are limited, areas no single allowed color comes close to are made of two or three allowed colors in a regular pattern (dithering) that stays in place from frame to frame; edges stay crisp. Dithering can be switched off, to fill each dot with the nearest single color. Multiple effect filters can be stacked, and they\'re applied in the order they appear on the timeline. Dragging to reorder the filter list also changes the order they\'re actually applied on screen. An effect filter that applies film-grain-like noise, changing it frame by frame. Strength, amount (how dense the noise is), and grain size can all be adjusted with sliders. Returning to the same frame reproduces the same grain (no flicker while scrubbing), while playback makes the grain appear to move. An effect filter that renders rain falling across the screen. Intensity (drop count), speed, drop size, and wind angle can all be adjusted with sliders. Each drop keeps falling at a steady speed as the frame advances, giving natural-looking rain motion.';
 
   @override
   String get helpEndCardTitle => 'End Card (End Logo)';
@@ -1563,11 +1566,12 @@ class AppLocalizationsEn extends AppLocalizations {
       'Choose from low, medium, or high quality presets based on your device\'s capability, or configure each item individually (custom). In addition to save method, performance, onion skin, and tilt detection, settings that affect app size and how heavy it runs — such as undo history length and automatic trash deletion — are also gathered here.';
 
   @override
-  String get helpMaterialClipTitle => 'Material clips (image / video / audio)';
+  String get helpMaterialClipTitle =>
+      'Material clips (text / image / video / audio)';
 
   @override
   String get helpMaterialClipDesc =>
-      'Clips placed on the timeline\'s image, video, and audio tracks. Long-press-drag a clip\'s body to move its start position, or drag the handles at either end to change how much of it is used. Tap a clip to open its detail sheet, where the copy icon duplicates it and the trash icon deletes it. Image and video clips are internally handled as layers, while audio clips are managed as clips attached directly to the scene.';
+      'Clips placed on the timeline\'s text, image, video and audio tracks. Long-press-drag a clip\'s body to move its start position, or drag the handles at either end to change how much of it is used. Materials shown at the same time go on rows of their own automatically. Tapping a text, image or video clip opens its edit panel below the preview: the text, font, colour and outline; the position, scale, X/Y/Z-axis rotation and opacity (you can also drag it on the preview, and adding keyframes makes it move); its mask (rectangle or ellipse, feathered, inverted); and the row it sits on. It can be duplicated or deleted there too. An audio clip\'s volume and fades are set in its detail sheet.';
 
   @override
   String get helpGestureSettingsTitle => 'Gesture settings';
@@ -1792,7 +1796,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get helpDrawingFilterDesc =>
-      'Filters applied directly to the selected layer (as opposed to effect filters, which apply across the whole timeline or a scene, draw filters work per layer). The 27 included filters are Gaussian Blur, Lens Blur, Anime Style, Tone Curve, Levels, Outline, Sharpen, Unsharp Mask, Vignette, Film Grain, Retro Anime, CRT, Threshold, Fisheye Lens, Chromatic Aberration, Lens Distortion, Pixel Art, Texture, Background Blend, Ink Pool, Auto Line Art, Prism, VHS Noise, Invert colors, Mosaic, Noise, and Sphere Shading. Anime Style reduces the colors and draws a line of the \"Border width\" on the darker side of every border where neighboring colors differ by at least the \"Color difference threshold\" (line art doesn\'t get thicker). Prism paints each shape on the layer with the six rainbow colors (red, green, cyan, blue, purple, red), blurs it and sets the layer to Linear Dodge. Draw small, slender leaf-like shapes in a dark color on their own layer first, and you get soft rainbow streaks of light over your picture (Blur amount is measured like an ordinary Gaussian blur). Sphere Shading lays a light color inside an elliptical light and a shadow color outside it, only where something is drawn (the light can also be dragged on the canvas). Outline does not rewrite the original layer — it draws just the outlined result onto a new layer. Lens Distortion applies a localized warp, like looking through a strong eyeglass lens, only to the area painted on the canvas with the panel\'s \"Pen\" and \"Bucket\" (corrected with \"Eraser\"; it starts from the selection or Selection layer if there is one). When the canvas has a selection, drawing filters apply only inside it. Pixel Art also lets you choose a color mode (no limit, specify colors, specify color count, or choose from a palette). When colors are limited, areas no single allowed color comes close to are made of two or three allowed colors laid out in a regular pattern (dithering) that looks closer to the original; edges stay crisp. With a color count, the colors are taken from what most of the picture is made of. Dithering can be switched off, to fill each dot with the nearest single color. Its size can be set with the block size (100 steps, 1 to 100) or with sliders for the dots across and down (1 at the left end, the canvas size at the right); moving one moves the other, keeping the picture’s proportions, and the two ways of setting it stay in step. Either way the dots stay square, with no semi-transparent edge. Auto Line Art lets you edit temporary vector control points before applying the filter. Drag a point to move only that point. Choose \"Add control point\" next to Apply and tap a line to add a point, or choose \"Delete control point\" and tap a point to delete it (with neither chosen, tapping a point asks before deleting it). The edited geometry is used directly for the applied result, and moving, adding or deleting points can be undone and redone one at a time with the filter editor\'s Undo and Redo. On the Tone Curve, tap an empty spot to add a point, drag a point to move it and long-press it to delete it; the R, G and B curves apply after the RGB curve. Levels can also be set for R, G and B on their own, and Gamma changes the midtones. The Outline\'s \"Reach inside\" widens the edge into the original shape, and the outline\'s new layer is placed right below the original layer. Chromatic Aberration lets you share the shift between X (sideways), Y (up and down) and Z (outward from the centre). The Fisheye\'s centre and radius can also be dragged on the canvas, with the + and the knob on the circle. Vignette softly darkens the four corners of the whole canvas (transparent, undrawn areas get the shadow too). \"Range\" sets how far in from the corners it reaches, and \"Density\" how dark the corners get. Lens Distortion works like real strong glasses: what is seen through the lens shrinks evenly towards the lens centre (negative values, for short sight) or grows (positive values, for long sight), and the outline steps out of line at the lens rim. Ink Pooling collects only inside corners where lines meet at the \"Max angle\" or less (at the default 90°, acute and right angles: a V, the narrow side of a crossing, a T-junction, a square corner), never in wider ones: at the meeting point it is the \"Center width\" beyond the line\'s edge, and it thins in a straight slope to nothing, a smooth point, at the end of the \"Range\" (however large the \"Center width\", it never bulges past the straight line between the two pools\' ends: at its widest the middle is flat); where a line ends sooner, the pool along that line thins to nothing where the line ends, so each line can have its own length, and the two pools still meet in the middle of the corner, as thick from either line (the longer line\'s pool thins on from there to the end of the range). Auto line art traces the centre of the rough lines and draws them thin. Lines running close together stay separate lines as long as any gap shows between them; only tiny specks of paper inside a stroke are filled. Where two lines run into each other, they come together gradually as in the rough, rather than turning into one line down the middle. Where lines cross or lie over each other, each line carries on as drawn in the rough (it does not bend into the crossing, and two overlapping lines do not melt into one). Lines crossing at a shallow slant carry straight on through the crossing, and lines that only touch (such as a hair outline drawn along the head) stay separate lines, each on its own side. Dots such as eyes stay filled dots. Branches shorter than the \"Rough line width\" are left out. \"Taper the ends\" can be switched on or off; when off, lines keep the same width right to their ends. Background Blend lays the background’s light and shadow over the picture in the \"Hard Light\" blend mode (the shadow colour is not black or grey but the colour of the background’s own shadows, darkened). The surroundings’ colour goes over the whole picture in \"Overlay\" to set its overall colour, light bouncing up from below and reflected from around goes on in \"Screen\", and a strong coloured light such as neon glows along the outline in \"Addition (Glow)\". \"Match the background’s tones\" brings colours brighter or more vivid than the background back into its range, and gives the dark, middle and light tones the colour cast of the background’s tones of the same brightness (black line art stays as it is). \"Blur amount\" is how much the background is blurred before its colours are taken.';
+      'Filters applied directly to the selected layer (as opposed to effect filters, which apply across the whole timeline or a scene, draw filters work per layer). The 28 included filters are Gaussian Blur, Lens Blur, Anime Style, Tone Curve, Levels, Outline, Sharpen, Unsharp Mask, Vignette, Film Grain, Retro Anime, CRT, Threshold, Fisheye Lens, Chromatic Aberration, Lens Distortion, Pixel Art, Texture, Background Blend, Ink Pool, Auto Line Art, Prism, VHS Noise, Invert colors, Mosaic, Noise, Sphere Shading, and Watercolor Edge. Watercolor Edge gathers color along the edges of what is painted on the working layer and makes the inside sheer, like dried watercolor (with \"Also at color borders\", borders between neighboring colors get an edge too). Anime Style reduces the colors and draws a line of the \"Border width\" on the darker side of every border where neighboring colors differ by at least the \"Color difference threshold\" (line art doesn\'t get thicker). Prism paints each shape on the layer with the six rainbow colors (red, green, cyan, blue, purple, red), blurs it and sets the layer to Linear Dodge. Draw small, slender leaf-like shapes in a dark color on their own layer first, and you get soft rainbow streaks of light over your picture (Blur amount is measured like an ordinary Gaussian blur). Sphere Shading lays a light color inside an elliptical light and a shadow color outside it, only where something is drawn (the light can also be dragged on the canvas). Outline does not rewrite the original layer — it draws just the outlined result onto a new layer. Lens Distortion applies a localized warp, like looking through a strong eyeglass lens, only to the area painted on the canvas with the panel\'s \"Pen\" and \"Bucket\" (corrected with \"Eraser\"; it starts from the selection or Selection layer if there is one). When the canvas has a selection, drawing filters apply only inside it. Pixel Art also lets you choose a color mode (no limit, specify colors, specify color count, or choose from a palette). When colors are limited, areas no single allowed color comes close to are made of two or three allowed colors laid out in a regular pattern (dithering) that looks closer to the original; edges stay crisp. With a color count, the colors are taken from what most of the picture is made of. Dithering can be switched off, to fill each dot with the nearest single color. Its size can be set with the block size (100 steps, 1 to 100) or with sliders for the dots across and down (1 at the left end, the canvas size at the right); moving one moves the other, keeping the picture’s proportions, and the two ways of setting it stay in step. Either way the dots stay square, with no semi-transparent edge. Auto Line Art lets you edit temporary vector control points before applying the filter. Drag a point to move only that point. Choose \"Add control point\" next to Apply and tap a line to add a point, or choose \"Delete control point\" and tap a point to delete it (with neither chosen, tapping a point asks before deleting it). The edited geometry is used directly for the applied result, and moving, adding or deleting points can be undone and redone one at a time with the filter editor\'s Undo and Redo. On the Tone Curve, tap an empty spot to add a point, drag a point to move it and long-press it to delete it; the R, G and B curves apply after the RGB curve. Levels can also be set for R, G and B on their own, and Gamma changes the midtones. The Outline\'s \"Reach inside\" widens the edge into the original shape, and the outline\'s new layer is placed right below the original layer. Chromatic Aberration lets you share the shift between X (sideways), Y (up and down) and Z (outward from the centre). The Fisheye\'s centre and radius can also be dragged on the canvas, with the + and the knob on the circle. Vignette softly darkens the four corners of the whole canvas (transparent, undrawn areas get the shadow too). \"Range\" sets how far in from the corners it reaches, and \"Density\" how dark the corners get. Lens Distortion works like real strong glasses: what is seen through the lens shrinks evenly towards the lens centre (negative values, for short sight) or grows (positive values, for long sight), and the outline steps out of line at the lens rim. Ink Pooling collects only inside corners where lines meet at the \"Max angle\" or less (at the default 90°, acute and right angles: a V, the narrow side of a crossing, a T-junction, a square corner), never in wider ones: at the meeting point it is the \"Center width\" beyond the line\'s edge, and it thins in a straight slope to nothing, a smooth point, at the end of the \"Range\" (however large the \"Center width\", it never bulges past the straight line between the two pools\' ends: at its widest the middle is flat); where a line ends sooner, the pool along that line thins to nothing where the line ends, so each line can have its own length, and the two pools still meet in the middle of the corner, as thick from either line (the longer line\'s pool thins on from there to the end of the range). Auto line art traces the centre of the rough lines and draws them thin. Lines running close together stay separate lines as long as any gap shows between them; only tiny specks of paper inside a stroke are filled. Where two lines run into each other, they come together gradually as in the rough, rather than turning into one line down the middle. Where lines cross or lie over each other, each line carries on as drawn in the rough (it does not bend into the crossing, and two overlapping lines do not melt into one). Lines crossing at a shallow slant carry straight on through the crossing, and lines that only touch (such as a hair outline drawn along the head) stay separate lines, each on its own side. Dots such as eyes stay filled dots. Branches shorter than the \"Rough line width\" are left out. \"Taper the ends\" can be switched on or off; when off, lines keep the same width right to their ends. Background Blend lays the background’s light and shadow over the picture in the \"Hard Light\" blend mode (the shadow colour is not black or grey but the colour of the background’s own shadows, darkened). The surroundings’ colour goes over the whole picture in \"Overlay\" to set its overall colour, light bouncing up from below and reflected from around goes on in \"Screen\", and a strong coloured light such as neon glows along the outline in \"Addition (Glow)\". \"Match the background’s tones\" brings colours brighter or more vivid than the background back into its range, and gives the dark, middle and light tones the colour cast of the background’s tones of the same brightness (black line art stays as it is). \"Blur amount\" is how much the background is blurred before its colours are taken.';
 
   @override
   String get helpLayerKeyframeTitle => 'Layer keyframes (per-part animation)';
@@ -2677,7 +2681,16 @@ class AppLocalizationsEn extends AppLocalizations {
   String get themeColorAccent => 'Accent Color';
 
   @override
-  String get themeColorText => 'Text Color';
+  String get themeColorText => 'Body & regular text color';
+
+  @override
+  String get themeColorButtonText => 'Button text & icon color';
+
+  @override
+  String get themeColorMenuText => 'Menu & app bar text color';
+
+  @override
+  String get themeColorSelectionText => 'Selected text & icon color';
 
   @override
   String get themeColorPanelBg => 'Panel Background Color';
@@ -2692,11 +2705,10 @@ class AppLocalizationsEn extends AppLocalizations {
   String get themeColorUpdateMark => 'Update Mark Color';
 
   @override
-  String get themeContrastErrorTitle => 'Text would be unreadable';
+  String get themeResetConfirmTitle => 'Reset the theme colors?';
 
   @override
-  String get themeContrastErrorBody =>
-      'The text color and the background color are too close, so text would be almost invisible. The settings screen itself would become unreadable and you could not undo it, so this combination cannot be saved. Please change the brightness of one of them.';
+  String get themeResetConfirmAction => 'Reset';
 
   @override
   String get themeUnreadableResetButton => 'Reset theme';
@@ -3212,16 +3224,48 @@ class AppLocalizationsEn extends AppLocalizations {
       'Opacity decreases the longer you keep drawing';
 
   @override
-  String get brushSettingsMixingTitle => 'Color mixing';
+  String get brushSettingsMixingTitle => 'Mixing mode';
 
   @override
-  String get brushSettingsMixingOff => 'OFF';
+  String get brushSettingsMixingOff => 'Digital';
 
   @override
-  String get brushSettingsMixingSimple => 'Simple mixing';
+  String get brushSettingsMixingOil => 'Oil-style mixing';
+
+  @override
+  String get brushSettingsMixingWatercolor => 'Watercolor-style mixing';
+
+  @override
+  String get brushSettingsMixingBrightnessCorrection => 'Brightness correction';
+
+  @override
+  String get brushSettingsMixingAmount => 'Mixing amount';
+
+  @override
+  String get brushSettingsMixingStretch => 'Color stretch';
+
+  @override
+  String get brushSettingsMixingWater => 'Water';
+
+  @override
+  String get brushSettingsMixingPigment => 'Pigment';
 
   @override
   String get brushSettingsMixingBleed => 'Bleed';
+
+  @override
+  String get brushSettingsMixingTexture => 'Texture';
+
+  @override
+  String get brushSettingsMixingSoftEdge => 'Soft edge';
+
+  @override
+  String get brushSettingsMixingOilHint =>
+      'Mixes with the colors below like paint and drags the picked-up color along the stroke.';
+
+  @override
+  String get brushSettingsMixingWatercolorHint =>
+      'Lays transparent washes. When you lift the pen the wash dries, bleeds a little past the brush, and color gathers at its edge.';
 
   @override
   String get projectDetailNotFoundTitle => 'Project';
@@ -3261,6 +3305,12 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get projectDetailShareQuickAction => 'Share';
+
+  @override
+  String get projectDetailFavoriteRegistered => 'Favorited';
+
+  @override
+  String get projectDetailFavoriteUnregistered => 'Not favorited';
 
   @override
   String get projectDetailInfoSectionTitle => 'Project info';
@@ -4876,6 +4926,207 @@ class AppLocalizationsEn extends AppLocalizations {
   String get timelineAddWatermarkTooltip => '+ Watermark';
 
   @override
+  String get timelineStackScopeRange => 'Frame range';
+
+  @override
+  String get timelineStackTargetLabel => 'Use this order for';
+
+  @override
+  String get timelineStackTargetScenes => 'Choose scenes';
+
+  @override
+  String get timelineStackTargetAllFrames => 'All frames';
+
+  @override
+  String get timelineStackScenesHint =>
+      'Every frame of the chosen scenes uses the same order. Reordering here sets it in all the chosen scenes.';
+
+  @override
+  String get timelineStackAllFramesHint =>
+      'Every frame of every scene uses the same order. Reordering here sets it in all scenes.';
+
+  @override
+  String get timelineStackRangesTakePriority =>
+      'Frames in a frame range keep that range\'s order.';
+
+  @override
+  String timelineStackRangeLabel(int start, int end) {
+    return 'F$start–F$end';
+  }
+
+  @override
+  String timelineStackRangeAdd(int n) {
+    return 'Add a range at F$n';
+  }
+
+  @override
+  String get timelineStackRangeHint =>
+      'Only the frames in a range use the order set here; outside the ranges, the whole scene\'s order is used.';
+
+  @override
+  String get timelineStackRangeEmpty =>
+      'No ranges yet. Use the button above to make one at the current frame.';
+
+  @override
+  String timelineStackRangeOrderHint(String range) {
+    return 'Stacking order for $range (higher is in front). Drag a handle or use the arrows to reorder.';
+  }
+
+  @override
+  String get timelineStackRangeDelete => 'Delete this range';
+
+  @override
+  String get timelineAddMaterialTooltip => 'Add material';
+
+  @override
+  String get timelineMaterialRowLabel => 'Row';
+
+  @override
+  String get timelineMaterialNewRow => 'New row';
+
+  @override
+  String get timelineAddTextTooltip => '+ Text';
+
+  @override
+  String get timelineAddImageTooltip => '+ Image';
+
+  @override
+  String get timelineStackOrderTitle => 'Stacking order';
+
+  @override
+  String get timelineMaterialText => 'Text';
+
+  @override
+  String get timelineAddTextDialogTitle => 'Add text';
+
+  @override
+  String get timelineEditSectionText => 'Text';
+
+  @override
+  String get timelineEditSectionTransform => 'Position';
+
+  @override
+  String get timelineEditSectionMask => 'Mask';
+
+  @override
+  String get timelineTransformRotationX => 'X-axis rotation';
+
+  @override
+  String get timelineTransformRotationY => 'Y-axis rotation';
+
+  @override
+  String get timelineTransformRotationZ => 'Z-axis rotation';
+
+  @override
+  String get timelineTransformReset => 'Reset position';
+
+  @override
+  String timelineKeyframeAddHere(int n) {
+    return 'Add keyframe at F$n';
+  }
+
+  @override
+  String timelineKeyframeRemoveHere(int n) {
+    return 'Remove keyframe at F$n';
+  }
+
+  @override
+  String get timelineKeyframeWholeHint =>
+      'The same position is used throughout. To animate it, go to another frame and add a keyframe.';
+
+  @override
+  String timelineKeyframeAnimHint(int count, int n) {
+    return '$count keyframes: changes are recorded at F$n, and the frames in between are filled in automatically.';
+  }
+
+  @override
+  String get timelineGizmoHint =>
+      'Drag on the preview to move it, a corner dot to resize and the top dot to rotate. Two fingers work too.';
+
+  @override
+  String timelineMaterialOutOfRange(int start, int end) {
+    return 'Not shown at this frame (shown from F$start to F$end)';
+  }
+
+  @override
+  String get timelineMaskNone => 'None';
+
+  @override
+  String get timelineMaskRectangle => 'Rectangle';
+
+  @override
+  String get timelineMaskEllipse => 'Ellipse';
+
+  @override
+  String get timelineMaskCenterX => 'Center X';
+
+  @override
+  String get timelineMaskCenterY => 'Center Y';
+
+  @override
+  String get timelineMaskWidth => 'Width';
+
+  @override
+  String get timelineMaskHeight => 'Height';
+
+  @override
+  String get timelineMaskFeather => 'Feather';
+
+  @override
+  String get timelineMaskInvert => 'Invert (hide the inside)';
+
+  @override
+  String get timelineMaskHint =>
+      'Shows only what is inside the mask. Invert it to hide the inside instead.';
+
+  @override
+  String get timelineStackOrderHint =>
+      'Items higher in the list appear in front. Drag a handle or use the arrows to reorder.';
+
+  @override
+  String get timelineStackScopeScene => 'The whole current scene';
+
+  @override
+  String get timelineStackFrameUnit => 'Frame (drawing)';
+
+  @override
+  String get timelineStackResetScene => 'Back to the default order';
+
+  @override
+  String get timelineStackFrameMaskTitle => 'Frame (drawing) mask';
+
+  @override
+  String get timelineStackFrameMaskHint =>
+      'Crops only the drawing; text, images and video are not affected. The drawing is not hidden while you draw on the canvas.';
+
+  @override
+  String get timelineStackMoveUp => 'Bring forward';
+
+  @override
+  String get timelineStackMoveDown => 'Send backward';
+
+  @override
+  String timelineStackSelectedCount(int count) {
+    return '$count selected';
+  }
+
+  @override
+  String get timelineStackBringToFront => 'Bring to front';
+
+  @override
+  String get timelineStackSendToBack => 'Send to back';
+
+  @override
+  String get timelineStackDeselectAll => 'Deselect all';
+
+  @override
+  String get timelineStackSelectAll => 'Select all';
+
+  @override
+  String get timelineStackMultiSelectHint =>
+      'Long-press an item to select several. The selected items move together with the arrows, by dragging or with the buttons below.';
+
+  @override
   String get timelineWatermarkNotRegisteredTitle => 'No watermark registered';
 
   @override
@@ -4958,7 +5209,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get timelineSceneDeleteConfirmBody =>
-      'All data in the scene will be deleted, including every frame, common layers, video materials, image materials, and watermarks.';
+      'All data in the scene will be deleted, including every frame, common layers, text, video and image materials, and watermarks.';
 
   @override
   String timelineSceneMultiDeleteConfirmTitle(int count) {
@@ -6714,9 +6965,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get brushSettingsStrongPressureLabel => 'Strong';
 
   @override
-  String get brushSettingsValueLabel => 'Value';
-
-  @override
   String get helpCustomAutomationTitle =>
       'Custom automations (action recording)';
 
@@ -7436,6 +7684,28 @@ class AppLocalizationsEn extends AppLocalizations {
       'Drag the + on the canvas to move the light and the round handles to resize it. Shadow and light go only where something is drawn.';
 
   @override
+  String get filterNameWatercolorBorder => 'Watercolor Edge';
+
+  @override
+  String get filterWatercolorBorderRange => 'Range';
+
+  @override
+  String get filterWatercolorBorderBlur => 'Blur width';
+
+  @override
+  String get filterWatercolorBorderOpacity => 'Transparency effect';
+
+  @override
+  String get filterWatercolorBorderDarken => 'Edge depth';
+
+  @override
+  String get filterWatercolorBorderColorEdges => 'Also at color borders';
+
+  @override
+  String get filterWatercolorBorderHint =>
+      'Color gathers at the edges of painted areas and the inside turns sheer, like dried watercolor (drawn straight onto the working layer). Range: how far in from the edge it deepens. Edge depth: how deep the gathered color is. Transparency effect: how sheer the inside becomes. Blur width: how smoothly the depth fades.';
+
+  @override
   String get filterFisheyeCanvasHint =>
       'Drag the + on the canvas to move the center and the round handle on the circle to change the radius.';
 
@@ -7537,4 +7807,17 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get errorViewBody =>
       'Your work in progress is kept. Go back to the previous screen and try again. Sending us the text below helps us find the cause.';
+
+  @override
+  String get homeWorksLoadFailed => 'Could not load your exported works';
+
+  @override
+  String get newProjectCreating => 'Creating…';
+
+  @override
+  String get newProjectCreateFailed =>
+      'Could not save the project. Check your storage space and save location, then try again.';
+
+  @override
+  String get communityCreatorLabel => 'Creator';
 }

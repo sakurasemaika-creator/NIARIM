@@ -57,52 +57,62 @@ class SelectionTransformSliders extends StatelessWidget {
       required double max,
       required ValueChanged<double> onSlide,
     }) {
-      // 4本ぶんの縦幅を抑える。既定のSliderは1本48px近くあり、そのまま4本
-      // 並べるとキャンバスを圧迫して画面下端からはみ出す。
-      return SizedBox(
-        height: 30,
-        child: Row(
-          children: [
-            SizedBox(
-              width: 62,
-              child: Text(
-                label,
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                style: TextStyle(fontSize: 11, color: scheme.onSurface),
-              ),
-            ),
-            Expanded(
-              child: SliderTheme(
-                data: SliderTheme.of(context).copyWith(
-                  trackHeight: 2,
-                  thumbShape: const RoundSliderThumbShape(
-                    enabledThumbRadius: 6,
-                  ),
-                  overlayShape: const RoundSliderOverlayShape(
-                    overlayRadius: 12,
+      // 1行目に項目名と値、2行目にスライダーだけを置き、スライダー本体を
+      // 横幅いっぱいに広げる（項目名や値と同じ行に置くと、狭い画面では
+      // そのぶんスライダーが縮む）。4本ぶんの縦幅は抑える。既定のSliderは
+      // 1本48px近くあり、そのまま4本並べるとキャンバスを圧迫して画面下端から
+      // はみ出す。
+      return Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Padding(
+            padding: const EdgeInsetsDirectional.only(start: 4, end: 4),
+            child: Row(
+              children: [
+                Expanded(
+                  child: Text(
+                    label,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(
+                      fontSize: 11,
+                      height: 1.2,
+                      color: scheme.onSurface,
+                    ),
                   ),
                 ),
-                child: Slider(
-                  value: value.clamp(min, max),
-                  min: min,
-                  max: max,
-                  onChanged: onSlide,
-                  onChangeEnd: (_) => onCommit(),
+                Text(
+                  valueText,
+                  textAlign: TextAlign.right,
+                  maxLines: 1,
+                  style: TextStyle(
+                    fontSize: 11,
+                    height: 1.2,
+                    color: scheme.onSurfaceVariant,
+                  ),
                 ),
+              ],
+            ),
+          ),
+          SizedBox(
+            height: 28,
+            child: SliderTheme(
+              data: SliderTheme.of(context).copyWith(
+                trackHeight: 2,
+                thumbShape: const RoundSliderThumbShape(enabledThumbRadius: 6),
+                overlayShape: const RoundSliderOverlayShape(overlayRadius: 12),
+              ),
+              child: Slider(
+                value: value.clamp(min, max),
+                min: min,
+                max: max,
+                onChanged: onSlide,
+                onChangeEnd: (_) => onCommit(),
               ),
             ),
-            SizedBox(
-              width: 46,
-              child: Text(
-                valueText,
-                textAlign: TextAlign.right,
-                maxLines: 1,
-                style: TextStyle(fontSize: 11, color: scheme.onSurfaceVariant),
-              ),
-            ),
-          ],
-        ),
+          ),
+        ],
       );
     }
 

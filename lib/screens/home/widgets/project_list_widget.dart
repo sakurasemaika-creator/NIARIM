@@ -718,7 +718,9 @@ class ProjectListWidget extends StatelessWidget {
   }) {
     final isSelected = selectedIds.contains(entry.id);
     final scheme = Theme.of(context).colorScheme;
-    final primary = scheme.primary;
+    // 選択の色はテーマの「選択」の色（secondary）と、その上の文字色。
+    final selectionColor = scheme.secondary;
+    final selectionForeground = scheme.onSecondary;
     return GestureDetector(
       onTap: onTap,
       onDoubleTap: onDoubleTap,
@@ -737,7 +739,7 @@ class ProjectListWidget extends StatelessWidget {
               BoxShadow(
                 color:
                     (isSelected
-                            ? primary
+                            ? selectionColor
                             : ThemeService.activeColorScheme.onSurface)
                         .withValues(alpha: isSelected ? 0.28 : 0.12),
                 blurRadius: isSelected ? 14 : 8,
@@ -752,96 +754,102 @@ class ProjectListWidget extends StatelessWidget {
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(14),
               side: BorderSide(
-                color: isSelected ? primary : Colors.transparent,
+                color: isSelected ? selectionColor : Colors.transparent,
                 width: 2,
               ),
             ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
+            child: Stack(
+              fit: StackFit.expand,
               children: [
-                Expanded(
-                  child: Stack(
-                    fit: StackFit.expand,
-                    children: [
-                      art,
-                      if (entry.isFavorite)
-                        Positioned(
-                          top: 4,
-                          right: 4,
-                          child: Container(
-                            padding: const EdgeInsets.all(3),
-                            decoration: BoxDecoration(
-                              color: scheme.surface.withValues(alpha: 0.85),
-                              shape: BoxShape.circle,
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    Expanded(
+                      child: Stack(
+                        fit: StackFit.expand,
+                        children: [
+                          art,
+                          if (isSelectionMode)
+                            Positioned(
+                              top: 4,
+                              left: 4,
+                              child: AnimatedContainer(
+                                duration: const Duration(milliseconds: 120),
+                                padding: const EdgeInsets.all(1),
+                                decoration: BoxDecoration(
+                                  color: isSelected
+                                      ? selectionColor
+                                      : scheme.surface.withValues(alpha: 0.9),
+                                  shape: BoxShape.circle,
+                                  border: Border.all(
+                                    color: selectionColor,
+                                    width: 1.5,
+                                  ),
+                                ),
+                                child: Icon(
+                                  isSelected ? Icons.check : null,
+                                  size: 16,
+                                  color: selectionForeground,
+                                ),
+                              ),
                             ),
-                            child: Icon(
-                              Icons.star,
-                              color: ThemeService.activeColorScheme.tertiary,
-                              size: 14,
-                            ),
-                          ),
-                        ),
-                      if (isSelectionMode)
-                        Positioned(
-                          top: 4,
-                          left: 4,
-                          child: AnimatedContainer(
-                            duration: const Duration(milliseconds: 120),
-                            padding: const EdgeInsets.all(1),
-                            decoration: BoxDecoration(
-                              color: isSelected
-                                  ? primary
-                                  : scheme.surface.withValues(alpha: 0.9),
-                              shape: BoxShape.circle,
-                              border: Border.all(color: primary, width: 1.5),
-                            ),
-                            child: Icon(
-                              isSelected ? Icons.check : null,
-                              size: 16,
-                              color: scheme.onPrimary,
-                            ),
-                          ),
-                        ),
-                    ],
-                  ),
-                ),
-                // カードの高さは決まっているので、名前の帯の文字は1.5倍までに
-                // とどめる（文字を大きくした小さなカードで帯が絵を押しつぶし、
-                // はみ出していた）。全文は詳細表示で大きな文字のまま読める。
-                MediaQuery.withClampedTextScaling(
-                  maxScaleFactor: 1.5,
-                  child: Padding(
-                    padding: const EdgeInsets.fromLTRB(6, 4, 6, 6),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Text(
-                          entry.name,
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                          style: const TextStyle(
-                            fontSize: 12,
-                            fontWeight: FontWeight.w600,
-                            fontFamily: 'Kuramubon',
-                            fontFamilyFallback: kHeadingFontFallback,
-                          ),
-                        ),
-                        // 小表示のカードには場所まで入らない（詳細表示で出る）。
-                        if (location != null &&
-                            viewMode != ProjectViewMode.small)
-                          Text(
-                            location,
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                            style: TextStyle(
-                              fontSize: 10,
-                              color: scheme.onSurfaceVariant,
-                            ),
-                          ),
-                      ],
+                        ],
+                      ),
                     ),
-                  ),
+                    // カードの高さは決まっているので、名前の帯の文字は1.5倍までに
+                    // とどめる（文字を大きくした小さなカードで帯が絵を押しつぶし、
+                    // はみ出していた）。全文は詳細表示で大きな文字のまま読める。
+                    MediaQuery.withClampedTextScaling(
+                      maxScaleFactor: 1.5,
+                      child: Padding(
+                        // 小さなカードではお気に入りの星が名前の帯まで届くので、
+                        // そのぶん空ける。
+                        padding: EdgeInsets.fromLTRB(
+                          6,
+                          4,
+                          entry.isFavorite ? 40 : 6,
+                          6,
+                        ),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Text(
+                              entry.name,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: const TextStyle(
+                                fontSize: 12,
+                                fontWeight: FontWeight.w600,
+                                fontFamily: 'Kuramubon',
+                                fontFamilyFallback: kHeadingFontFallback,
+                              ),
+                            ),
+                            // 小表示のカードには場所まで入らない（詳細表示で出る）。
+                            if (location != null &&
+                                viewMode != ProjectViewMode.small)
+                              Text(
+                                location,
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                                style: TextStyle(
+                                  fontSize: 10,
+                                  color: scheme.onSurfaceVariant,
+                                ),
+                              ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+                // メニュー（選択中・選ぶ画面では出さない）と、その下にお気に入り。
+                _gridCardActions(
+                  context,
+                  menu: entry.isFolder
+                      ? _folderMenu(context, entry.folder!)
+                      : _projectMenu(context, entry.project!),
+                  isFavorite: entry.isFavorite,
                 ),
               ],
             ),
@@ -860,8 +868,53 @@ class ProjectListWidget extends StatelessWidget {
     );
   }
 
+  Widget _gridCardActions(
+    BuildContext context, {
+    required Widget menu,
+    required bool isFavorite,
+  }) {
+    final scheme = Theme.of(context).colorScheme;
+    final showMenu = !isSelectionMode && onPickProject == null;
+    return Positioned(
+      top: 4,
+      right: 4,
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          if (showMenu)
+            Material(
+              color: scheme.surface.withValues(alpha: 0.9),
+              shape: const CircleBorder(),
+              clipBehavior: Clip.antiAlias,
+              child: SizedBox.square(dimension: 32, child: menu),
+            )
+          else if (!isSelectionMode)
+            const SizedBox.square(dimension: 32),
+          if (isFavorite)
+            Padding(
+              // 選択中はメニューの空き枠を残さず、星をタイル右上へ寄せる。
+              padding: EdgeInsets.only(top: isSelectionMode ? 0 : 4),
+              child: Container(
+                padding: const EdgeInsets.all(3),
+                decoration: BoxDecoration(
+                  color: scheme.surface.withValues(alpha: 0.9),
+                  shape: BoxShape.circle,
+                ),
+                child: Icon(
+                  Icons.star,
+                  color: ThemeService.activeColorScheme.tertiary,
+                  size: 14,
+                ),
+              ),
+            ),
+        ],
+      ),
+    );
+  }
+
   Widget _projectMenu(BuildContext context, Project project) =>
       PopupMenuButton<String>(
+        padding: EdgeInsets.zero,
         icon: const Icon(Icons.more_vert, size: 18),
         onSelected: (action) => _handleAction(context, action, project),
         itemBuilder: (_) => _projectMenuItems(context, project),
@@ -901,6 +954,7 @@ class ProjectListWidget extends StatelessWidget {
 
   Widget _folderMenu(BuildContext context, ProjectFolder folder) =>
       PopupMenuButton<String>(
+        padding: EdgeInsets.zero,
         icon: const Icon(Icons.more_vert, size: 18),
         onSelected: (action) => _handleFolderAction(context, action, folder),
         itemBuilder: (_) => _folderMenuItems(context, folder),

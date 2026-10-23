@@ -68,9 +68,9 @@ class SteppedSlider extends StatelessWidget {
         _isIconButton(outerRow.children.last, Icons.add_rounded);
     final sliderWidget = compact
         ? SliderTheme(
-            data: SliderTheme.of(context).copyWith(
-              overlayShape: SliderComponentShape.noOverlay,
-            ),
+            data: SliderTheme.of(
+              context,
+            ).copyWith(overlayShape: SliderComponentShape.noOverlay),
             child: slider,
           )
         : slider;

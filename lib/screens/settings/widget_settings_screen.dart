@@ -265,10 +265,10 @@ class WidgetSettingsScreen extends StatelessWidget {
   static int _themeColor(BuildContext context) =>
       Theme.of(context).colorScheme.primary.toARGB32();
 
-  /// テーマ追従時のアイコン・文字色（テーマの「メニュー背景色」。
-  /// 起動画面の導線ボタンと同じ色）。
+  /// テーマ追従時のアイコン・文字色。起動画面の導線ボタンと
+  /// 同じ「ボタン内の文字・アイコン色」を使用する。
   static int _themeForegroundColor(BuildContext context) =>
-      context.read<ThemeService>().current.menuBgColor.toARGB32();
+      context.read<ThemeService>().current.buttonTextColor.toARGB32();
 
   /// 設定変更のたびにウィジェットへ反映する。
   static Future<void> _push(BuildContext context) async {

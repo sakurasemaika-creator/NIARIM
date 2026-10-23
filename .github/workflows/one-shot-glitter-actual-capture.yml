@@ -7,10 +7,11 @@ on:
       - 'lib/services/brush_service.dart'
       - 'test/visual/glitter_lame_render_capture_test.dart'
       - 'tool/patch_glitter_hexagon.py'
+      - 'test/texture_filter_gold_palette_test.dart'
       - '.github/workflows/one-shot-glitter-actual-capture.yml'
   workflow_dispatch:
 permissions:
-  contents: write
+  contents: read
 jobs:
   capture:
     runs-on: ubuntu-latest
@@ -18,13 +19,44 @@ jobs:
       - uses: actions/checkout@v6
       - uses: subosito/flutter-action@v2
         with:
+          flutter-version: "3.47.2"
           channel: stable
           cache: true
-      - name: Apply glitter hexagon implementation and preset tuning
-        run: python3 tool/patch_glitter_hexagon.py
-      - name: Format focused files
-        run: dart format lib/engine/drawing_engine.dart lib/services/brush_service.dart test/visual/glitter_lame_render_capture_test.dart
-      - run: flutter pub get
+      - name: Verify committed glitter implementation and preset contract
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+
+          engine = Path('lib/engine/drawing_engine.dart').read_text(encoding='utf-8')
+          brushes = Path('lib/services/brush_service.dart').read_text(encoding='utf-8')
+          capture_test = Path('test/visual/glitter_lame_render_capture_test.dart').read_text(encoding='utf-8')
+
+          required_engine = [
+              'final isGlitterHexagon = brush.tipShape == BrushTipShape.hexagon;',
+              'hexagon: isGlitterHexagon,',
+              'particleRotation: particleRotation,',
+          ]
+          for contract in required_engine:
+              if contract not in engine:
+                  raise SystemExit(f'Missing committed drawing contract: {contract}')
+
+          preset = brushes.split("id: 'Brush0016',", 1)
+          if len(preset) != 2:
+              raise SystemExit('Missing Brush0016 Glitter preset')
+          preset = preset[1].split('),', 1)[0]
+          for setting in ["tipShape: BrushTipShape.hexagon", "size: 14", "spacing: 18"]:
+              if setting not in preset:
+                  raise SystemExit(f'Missing committed Glitter preset setting: {setting}')
+
+          if "Brush0016" not in capture_test or "DrawingEngine" not in capture_test:
+              raise SystemExit('Actual DrawingEngine capture test is not bound to Brush0016')
+          print('Committed Glitter hexagon implementation and preset contract verified.')
+          PY
+      - name: Restore locked dependencies for repository formatter settings
+        run: flutter pub get --enforce-lockfile
+      - name: Verify canonical formatting without mutating source
+        run: dart format --output=none --set-exit-if-changed lib/engine/drawing_engine.dart lib/services/brush_service.dart test/visual/glitter_lame_render_capture_test.dart
       - name: Static analysis
         run: flutter analyze lib/engine/drawing_engine.dart lib/services/brush_service.dart test/visual/glitter_lame_render_capture_test.dart
       - name: Execute actual DrawingEngine capture
@@ -34,14 +66,3 @@ jobs:
           name: glitter-lame-captures
           path: build/glitter_visual/*.png
           if-no-files-found: error
-      - name: Commit implementation and preset tuning
-        run: |
-          if git diff --quiet -- lib/engine/drawing_engine.dart lib/services/brush_service.dart test/visual/glitter_lame_render_capture_test.dart; then
-            echo 'No implementation diff to commit.'
-            exit 0
-          fi
-          git config user.name 'github-actions[bot]'
-          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          git add lib/engine/drawing_engine.dart lib/services/brush_service.dart test/visual/glitter_lame_render_capture_test.dart
-          git commit -m 'fix: sharpen glitter hexagonal flakes'
-          git push origin HEAD:dev_branch

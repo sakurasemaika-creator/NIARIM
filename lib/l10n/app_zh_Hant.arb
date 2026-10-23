@@ -6,11 +6,14 @@
   "homeTabTrash": "垃圾桶",
   "homeTabWorks": "作品列表",
   "homeTabBookmarked": "已收藏",
-  "homeBookmarkedEmptyTitle": "還沒有收藏的作品",
-  "homeBookmarkedEmptyBody": "在作品廣場收藏的作品會顯示在這裡。",
-  "homeBookmarkedHiddenTitle": "收藏的作品目前未顯示",
-  "homeBookmarkedHiddenBody": "這些作品被作品廣場的顯示篩選隱藏了，或已不再公開。收藏仍然保留。",
-  "homeBookmarkedOpenPlaza": "查看作品廣場",
+  "homeBookmarkedEmptyTitle": "沒有可顯示的收藏作品",
+  "homeBookmarkedEmptyBody": "在作品廣場收藏喜歡的公開作品，即可在這裡查看。",
+  "homeBookmarkedHiddenTitle": "收藏仍然保留",
+  "homeBookmarkedHiddenBody": "顯示篩選條件或作品的公開狀態可能使作品無法顯示。可在作品廣場檢查顯示篩選條件。",
+  "homeBookmarkedLoading": "正在載入收藏…",
+  "homeBookmarkedLoadFailed": "無法載入收藏",
+  "homeBookmarkedLoadPrompt": "載入已儲存的收藏",
+  "homeBookmarkedSignInBody": "請在作品廣場連結 Google 帳戶，以載入已儲存的收藏。",
   "homeSearchHint": "依專案名稱搜尋",
   "homeBackToSplashTooltip": "返回啟動畫面",
   "homeFavoritesOnly": "我的最愛",
@@ -20,8 +23,6 @@
   "commonShowExplanation": "顯示說明",
   "homeSelectionAllSelect": "全選",
   "homeSelectionAllDeselect": "取消全選",
-  "homeSelectionAddFavorite": "加入收藏",
-  "homeSelectionRemoveFavorite": "取消收藏",
   "homeSelectionCount": "已選擇{count}項",
   "homeMoveToTrash": "移至垃圾桶",
   "homeMoveToTrashConfirm": "要將{count}項移至垃圾桶嗎？",
@@ -482,17 +483,17 @@
   "helpStrokeDecayTitle": "筆畫衰減",
   "helpStrokeDecayDesc": "與淡出類似，但更接近「墨水逐漸用盡」的表現，繪製越久顏色越淡或越乾澀的效果。可重現毛筆或麥克筆持續書寫時墨水耗盡般的質感。",
   "helpColorMixingTitle": "混色",
-  "helpColorMixingDesc": "使用筆刷上色時，將筆刷正下方已有的顏色與即將塗上的選定顏色混合後再繪製的功能。適合想讓新顏色與既有顏色自然融合時使用，如水彩或油畫般的效果。",
+  "helpColorMixingDesc": "使用筆刷上色時，將筆刷正下方已有的顏色與即將塗上的選定顏色混合後再繪製的功能。可在筆刷設定的混色模式中選擇：不混合直接上色的「數位」、像顏料一樣混合並把沾到的顏色拖開的「油畫風混色」、疊加透明顏料且乾後顏色聚集在邊緣的「水彩風混色」。",
   "helpPressureCurveTitle": "筆壓曲線",
   "helpPressureCurveDesc": "筆輸入設定中的功能，可透過圖表自由調整實際筆壓強度與筆刷粗細・不透明度反映方式之間的關係。無論是希望輕壓也能畫出粗線的人，還是相反希望必須用力按壓才會變粗的人，都能依自己的用筆習慣細緻自訂畫感。變更設定後可當場試畫確認效果。",
   "helpTimelineTitle": "時間軸",
-  "helpTimelineDesc": "管理動畫時間軸的畫面。將影格（單張靜止影像）排列並像翻頁動畫一樣播放，就形成了動畫。圖片・影片・音訊等素材軌道、共用圖層軌道、攝影機關鍵影格也都在同一條時間軸上管理。",
+  "helpTimelineDesc": "管理動畫時間軸的畫面。將影格（單張靜止影像）排列並像翻頁動畫一樣播放，就形成了動畫。文字・圖片・影片・音訊素材軌道、共用圖層軌道、攝影機關鍵影格也都在同一條時間軸上管理。文字・圖片・影片與影格插畫之間的前後關係可在「疊放順序」中依整個場景或指定的影格範圍調整。也可以長按項目進行多選，一起移動。",
   "helpSceneTitle": "場景",
   "helpSceneDesc": "將一個專案（一段影片）內部按場景（分鏡）劃分管理的功能。資料夾是以專案為單位進行整理，而場景則用於表現一段影片內部的場景轉換。在時間軸的場景標籤中可以新增、複製、刪除、重新命名、重新排序場景。切換到多選模式後，還可以一次性移動、複製或刪除多個場景。",
   "helpCameraKeyframeTitle": "攝影機關鍵影格",
   "helpCameraKeyframeDesc": "在時間軸上的特定位置記錄攝影機的位置・縮放比例・旋轉角度的功能。關鍵影格之間會自動平滑內插，因此可以輕鬆加入平移（橫向移動）或拉近拉遠等鏡頭運動。",
   "helpEffectFilterTitle": "演出濾鏡",
-  "helpEffectFilterDesc": "可套用於場景或影格的畫面效果（模糊・色調校正・光暈・像素畫等）。在不改變手繪畫面本身的前提下，作為演出手段調整整個畫面觀感時使用。繪畫濾鏡中的色調曲線（預設與強度）・色階・銳化・USM銳化・暗角（顏色・範圍・濃度）也收錄在演出濾鏡中，可以一次對多個影格套用相同的效果。像素畫也可以選擇配色方式（不指定顏色・指定顏色・指定顏色數・從調色盤選擇）。限制顏色時，單用一種顏色與原色相差較遠的地方，會用可用顏色中的兩到三種按規則排列（混色抖動）來接近原色，這種排列在影格之間不會移動；輪廓處保持清晰。混色抖動可以用開關開啟或關閉，關閉後用最接近的一種顏色填色。 演出濾鏡可以疊加套用多個，其套用順序依照時間軸上的排列順序。拖曳濾鏡清單重新排序後，實際反映到畫面上的順序也會隨之改變。 一種演出濾鏡，會逐影格改變類似膠片顆粒感的雜訊。可以用滑桿調整強度、數量（雜訊出現的密度）和顆粒大小。回到同一影格時雜訊形態相同（拖曳時不會閃爍），播放時顆粒則會呈現出跳動的效果。 用來表現畫面中降雨的演出濾鏡。可以用滑桿調整降雨強度（雨滴數量）、速度、雨滴大小和風向角度。每滴雨都會隨著影格數推進以固定速度持續落下，呈現自然的降雨效果。",
+  "helpEffectFilterDesc": "可套用於場景或影格的畫面效果（模糊・色調校正・光暈・像素畫等）。在不改變手繪畫面本身的前提下，作為演出手段調整整個畫面觀感時使用。繪畫濾鏡中的色調曲線（預設與強度）・色階・銳化・USM銳化・暗角（顏色・範圍・濃度）・水彩邊界也收錄在演出濾鏡中，可以一次對多個影格套用相同的效果。像素畫也可以選擇配色方式（不指定顏色・指定顏色・指定顏色數・從調色盤選擇）。限制顏色時，單用一種顏色與原色相差較遠的地方，會用可用顏色中的兩到三種按規則排列（混色抖動）來接近原色，這種排列在影格之間不會移動；輪廓處保持清晰。混色抖動可以用開關開啟或關閉，關閉後用最接近的一種顏色填色。 演出濾鏡可以疊加套用多個，其套用順序依照時間軸上的排列順序。拖曳濾鏡清單重新排序後，實際反映到畫面上的順序也會隨之改變。 一種演出濾鏡，會逐影格改變類似膠片顆粒感的雜訊。可以用滑桿調整強度、數量（雜訊出現的密度）和顆粒大小。回到同一影格時雜訊形態相同（拖曳時不會閃爍），播放時顆粒則會呈現出跳動的效果。 用來表現畫面中降雨的演出濾鏡。可以用滑桿調整降雨強度（雨滴數量）、速度、雨滴大小和風向角度。每滴雨都會隨著影格數推進以固定速度持續落下，呈現自然的降雨效果。",
   "helpEndCardTitle": "EndCard（片尾標誌）",
   "helpEndCardDesc": "匯出影片時，會在正片結尾自動加入的NIARIM標誌短片（約5秒）。免費版無法隱藏或刪除，但成為Premium會員後可以開關顯示・變更長度・進行替換。",
   "helpAutoSaveTitle": "自動儲存",
@@ -520,8 +521,8 @@
   "helpPremiumEntryDesc": "成為進階會員後，免費版限制的90秒影片長度將延長至最長2小時，並可移除每支影片結尾自動加入的片尾卡（應用程式Logo）。同時廣告也會隱藏，還可使用浮水印、色調曲線、色階校正功能。",
   "helpPerformanceSettingsTitle": "效能設定",
   "helpPerformanceSettingsDesc": "可依裝置效能從低畫質・中畫質・高畫質預設中選擇，也可逐項單獨設定（自訂）。除儲存方式・運作速度・洋蔥皮・傾斜偵測外，復原次數、垃圾桶自動刪除等影響App容量與運作負擔的設定也都集中在這裡。",
-  "helpMaterialClipTitle": "素材片段（圖片・影片・音訊）",
-  "helpMaterialClipDesc": "放置在時間軸圖片、影片、音訊軌道上的片段。長按拖曳片段本身可移動其起始位置，拖曳兩端的把手可改變使用範圍（長度）。點擊片段會開啟詳細面板，其中的複製圖示用於複製、垃圾桶圖示用於刪除。圖片・影片在內部作為圖層處理，音訊則作為直接掛在場景上的片段管理。",
+  "helpMaterialClipTitle": "素材片段（文字・圖片・影片・音訊）",
+  "helpMaterialClipDesc": "放置在時間軸文字、圖片、影片、音訊軌道上的片段。長按拖曳片段本身可移動其起始位置，拖曳兩端的把手可改變使用範圍（長度）。同一時間重疊的素材會自動放到其他列。點擊文字・圖片・影片片段，會在預覽下方開啟編輯面板：可修改文字內容・字型・顏色・描邊，位置・縮放・X軸／Y軸／Z軸旋轉・不透明度（也可在預覽上拖曳，新增關鍵影格即可產生動畫），遮罩（矩形・橢圓・羽化・反轉）以及所在列，也可在此複製或刪除。音訊片段在詳細面板中調整音量和淡入淡出。",
   "helpGestureSettingsTitle": "手勢設定",
   "helpGestureSettingsDesc": "可以將復原/重做、跳至影格、取色器等操作指派給雙指點擊、三指點擊、雙指滑動或長按。觸控筆按鍵（在支援的觸控筆上）也可以單獨指派操作。想不切換工具就用一個動作觸發常用操作時很方便。",
   "helpBucketDetailSettingsTitle": "填色工具詳細設定",
@@ -585,7 +586,7 @@
   "helpExportScreenTitle": "匯出畫面",
   "helpExportScreenDesc": "匯出影片、圖片期間會顯示進度，也可以中途取消。所需時間會依裝置效能而異。",
   "helpDrawingFilterTitle": "繪圖濾鏡",
-  "helpDrawingFilterDesc": "直接套用於所選圖層的濾鏡（演出濾鏡作用於整條時間軸或整個場景，而繪圖濾鏡按圖層生效）。內建27種濾鏡：高斯模糊、鏡頭模糊、動畫風、色調曲線、色階、外框、銳化、USM銳化、暗角、膠片顆粒、復古動漫、老電視、二值化、魚眼鏡頭、色差、眼鏡斷層、像素畫、質感變換、背景融合、積墨、自動線稿、稜鏡、VHS 雜訊、色彩反轉、馬賽克、雜訊和球體陰影。動漫風格會減少顏色數，並在相鄰顏色之差達到「顏色差閾值」以上的邊界上，於較暗的一側畫出「邊界線粗細」的線（線稿的線條不會變粗）。稜鏡會把圖層上每個形狀分別塗上彩虹六色（紅、綠、青色、藍、紫、紅）並模糊，再把圖層設為線性減淡。先在單獨的圖層上用深色畫出細小的葉片狀形狀再使用，畫面上就會出現柔和的彩虹光痕（模糊量與一般的高斯模糊採用相同標準）。球體陰影會在橢圓形光的內側疊加光色、外側疊加陰影色，且只加在已繪製的地方（也可以在畫布上拖曳光）。外框不會改寫原圖層，只會把結果繪製到新圖層。眼鏡斷層只對用面板的「畫筆」「油漆桶」在畫布上塗抹的範圍（可用「橡皮擦」修改）套用類似強力眼鏡鏡片的局部變形（如果有選取範圍或選取圖層，會從該範圍開始）。畫布上有選取範圍時，繪圖濾鏡只套用於選取範圍內。像素畫還可選擇配色方式（不限制、指定顏色、指定顏色數或從調色盤選擇）。限制顏色時，單用一種顏色與原色相差較遠的地方，會用可用顏色中的兩到三種按規則排列（混色抖動），使其更接近原色；輪廓處不混色，保持清晰。指定顏色數時，會從佔畫面大部分的顏色中選取。混色抖動可以用開關開啟或關閉，關閉後用最接近的一種顏色填色。大小可在「指定色塊大小」（1～100共100級）和「指定點數」（橫向・縱向點數滑桿，最左為1，最右為畫布尺寸）之間切換，橫向和縱向會在維持畫面長寬比的同時一起變化，兩種指定方式也會連動。兩種方式下點都維持正方形，不會產生半透明的邊緣。 自動線稿可在套用濾鏡前直接編輯暫時Vector控制點。拖曳控制點時只移動該點。選擇「套用」右側的「新增控制點」後點擊線條可新增控制點，選擇「刪除控制點」後點擊控制點可將其刪除（兩者都未選擇時點擊控制點，會先確認再刪除）。編輯後的形狀會直接用於最終套用結果，控制點的移動、新增和刪除也可以用濾鏡編輯的復原・重做逐一還原。 色調曲線中，輕點曲線上的空白處可新增點，拖曳點可移動，長按可刪除；R、G、B 各顏色的曲線在 RGB 曲線之後套用。色階也可按 R、G、B 分別調整，伽瑪可改變中間調的亮度。描邊的「向內延伸」可將邊緣擴展到原輪廓內側，描邊的新圖層會放在原圖層的正下方。色差可指定將偏移分配到 X（橫向）、Y（縱向）、Z（從中心向外）各多少。魚眼鏡頭的中心和半徑也可以在畫布上拖曳 ＋ 和圓上的控點來變更。暗角會柔和地壓暗整個畫布的四個角（沒有繪畫的透明處也會有陰影）。可用「範圍」調整從四角向中心壓暗到多遠，用「濃度」調整四角的暗度。眼鏡斷層像真正的高度數眼鏡一樣，讓透過鏡片看到的景物朝鏡片中心均勻縮小（負值，近視用）或放大（正值，遠視用），並在鏡片邊緣使輪廓錯開成台階狀。積墨只積在線條以「最大角度」或更小角度相交處（初始值90°時為銳角和直角：V字、交叉的窄側、T字、方角）的夾角內側，更寬的角不積：在相交點從線條邊緣起為「中央寬度」，再朝「範圍」的末端筆直變細，末端為0px，平滑地收成尖端（即使加大「中央寬度」，也不會鼓出連接兩側積墨末端的直線之外，最寬時中間也是平的）；若線條在範圍內中斷，該線條上的積墨會以中斷處為終點細到0px（每條線的長度可以不同），此時兩處積墨仍會在夾角的正中相接，距兩條線的寬度相同（較長線條的積墨從那裡再細到範圍的末端）。自動線稿沿草稿線條的中心描出細線。靠得很近的線條只要中間有一點空隙，就仍畫成兩條線，只填補線條內部的小白點。兩條線靠攏並貼在一起的地方，不會在中間畫成一條線，而是像草稿一樣兩條線逐漸靠近並合在一起。線條交叉或重疊的地方，也會像草稿一樣讓每條線照原樣延續（不會在交點處折彎，重疊的兩條線也不會融成一條）。以較淺角度斜向交叉的線也會筆直地穿過交叉處，僅相互接觸的線（例如沿著頭部畫的頭髮輪廓）則各自留在自己的一側，仍是分開的線。眼睛之類的點會畫成實心的點。比「草稿線寬」短的分岔不繪製。「起筆收筆」可以用開關開啟或關閉，關閉後線條直到末端都保持相同粗細。背景融入以混合模式「實光」疊加背景的光與影（影子的顏色不是黑色或灰色，而是把背景中陰影部分的顏色壓暗後的顏色）。周圍的顏色以「覆蓋」疊在整幅畫上來統一色彩方向，從下方反上來的光和周圍的反射光以「濾色」加入，霓虹燈之類的強烈有色光以「相加（發光）」加在輪廓上。「匹配背景的明暗與色調」會把比背景過亮或過於鮮豔的顏色拉回背景的範圍，並讓暗部、中間調、亮部分別帶上背景中相同明度的色調（線稿的黑色保持不變）。「模糊程度」是取色前模糊背景的程度。",
+  "helpDrawingFilterDesc": "直接套用於所選圖層的濾鏡（演出濾鏡作用於整條時間軸或整個場景，而繪圖濾鏡按圖層生效）。內建28種濾鏡：高斯模糊、鏡頭模糊、動畫風、色調曲線、色階、外框、銳化、USM銳化、暗角、膠片顆粒、復古動漫、老電視、二值化、魚眼鏡頭、色差、眼鏡斷層、像素畫、質感變換、背景融合、積墨、自動線稿、稜鏡、VHS 雜訊、色彩反轉、馬賽克、雜訊、球體陰影和水彩邊界。水彩邊界會讓作業圖層上塗色部分的邊緣聚集顏色、內側變得通透，就像乾了的水彩（開啟「顏色交界處也添加」後，相鄰顏色的交界處也會出現邊緣）。動漫風格會減少顏色數，並在相鄰顏色之差達到「顏色差閾值」以上的邊界上，於較暗的一側畫出「邊界線粗細」的線（線稿的線條不會變粗）。稜鏡會把圖層上每個形狀分別塗上彩虹六色（紅、綠、青色、藍、紫、紅）並模糊，再把圖層設為線性減淡。先在單獨的圖層上用深色畫出細小的葉片狀形狀再使用，畫面上就會出現柔和的彩虹光痕（模糊量與一般的高斯模糊採用相同標準）。球體陰影會在橢圓形光的內側疊加光色、外側疊加陰影色，且只加在已繪製的地方（也可以在畫布上拖曳光）。外框不會改寫原圖層，只會把結果繪製到新圖層。眼鏡斷層只對用面板的「畫筆」「油漆桶」在畫布上塗抹的範圍（可用「橡皮擦」修改）套用類似強力眼鏡鏡片的局部變形（如果有選取範圍或選取圖層，會從該範圍開始）。畫布上有選取範圍時，繪圖濾鏡只套用於選取範圍內。像素畫還可選擇配色方式（不限制、指定顏色、指定顏色數或從調色盤選擇）。限制顏色時，單用一種顏色與原色相差較遠的地方，會用可用顏色中的兩到三種按規則排列（混色抖動），使其更接近原色；輪廓處不混色，保持清晰。指定顏色數時，會從佔畫面大部分的顏色中選取。混色抖動可以用開關開啟或關閉，關閉後用最接近的一種顏色填色。大小可在「指定色塊大小」（1～100共100級）和「指定點數」（橫向・縱向點數滑桿，最左為1，最右為畫布尺寸）之間切換，橫向和縱向會在維持畫面長寬比的同時一起變化，兩種指定方式也會連動。兩種方式下點都維持正方形，不會產生半透明的邊緣。 自動線稿可在套用濾鏡前直接編輯暫時Vector控制點。拖曳控制點時只移動該點。選擇「套用」右側的「新增控制點」後點擊線條可新增控制點，選擇「刪除控制點」後點擊控制點可將其刪除（兩者都未選擇時點擊控制點，會先確認再刪除）。編輯後的形狀會直接用於最終套用結果，控制點的移動、新增和刪除也可以用濾鏡編輯的復原・重做逐一還原。 色調曲線中，輕點曲線上的空白處可新增點，拖曳點可移動，長按可刪除；R、G、B 各顏色的曲線在 RGB 曲線之後套用。色階也可按 R、G、B 分別調整，伽瑪可改變中間調的亮度。描邊的「向內延伸」可將邊緣擴展到原輪廓內側，描邊的新圖層會放在原圖層的正下方。色差可指定將偏移分配到 X（橫向）、Y（縱向）、Z（從中心向外）各多少。魚眼鏡頭的中心和半徑也可以在畫布上拖曳 ＋ 和圓上的控點來變更。暗角會柔和地壓暗整個畫布的四個角（沒有繪畫的透明處也會有陰影）。可用「範圍」調整從四角向中心壓暗到多遠，用「濃度」調整四角的暗度。眼鏡斷層像真正的高度數眼鏡一樣，讓透過鏡片看到的景物朝鏡片中心均勻縮小（負值，近視用）或放大（正值，遠視用），並在鏡片邊緣使輪廓錯開成台階狀。積墨只積在線條以「最大角度」或更小角度相交處（初始值90°時為銳角和直角：V字、交叉的窄側、T字、方角）的夾角內側，更寬的角不積：在相交點從線條邊緣起為「中央寬度」，再朝「範圍」的末端筆直變細，末端為0px，平滑地收成尖端（即使加大「中央寬度」，也不會鼓出連接兩側積墨末端的直線之外，最寬時中間也是平的）；若線條在範圍內中斷，該線條上的積墨會以中斷處為終點細到0px（每條線的長度可以不同），此時兩處積墨仍會在夾角的正中相接，距兩條線的寬度相同（較長線條的積墨從那裡再細到範圍的末端）。自動線稿沿草稿線條的中心描出細線。靠得很近的線條只要中間有一點空隙，就仍畫成兩條線，只填補線條內部的小白點。兩條線靠攏並貼在一起的地方，不會在中間畫成一條線，而是像草稿一樣兩條線逐漸靠近並合在一起。線條交叉或重疊的地方，也會像草稿一樣讓每條線照原樣延續（不會在交點處折彎，重疊的兩條線也不會融成一條）。以較淺角度斜向交叉的線也會筆直地穿過交叉處，僅相互接觸的線（例如沿著頭部畫的頭髮輪廓）則各自留在自己的一側，仍是分開的線。眼睛之類的點會畫成實心的點。比「草稿線寬」短的分岔不繪製。「起筆收筆」可以用開關開啟或關閉，關閉後線條直到末端都保持相同粗細。背景融入以混合模式「實光」疊加背景的光與影（影子的顏色不是黑色或灰色，而是把背景中陰影部分的顏色壓暗後的顏色）。周圍的顏色以「覆蓋」疊在整幅畫上來統一色彩方向，從下方反上來的光和周圍的反射光以「濾色」加入，霓虹燈之類的強烈有色光以「相加（發光）」加在輪廓上。「匹配背景的明暗與色調」會把比背景過亮或過於鮮豔的顏色拉回背景的範圍，並讓暗部、中間調、亮部分別帶上背景中相同明度的色調（線稿的黑色保持不變）。「模糊程度」是取色前模糊背景的程度。",
   "helpLayerKeyframeTitle": "圖層關鍵影格（分部件動畫）",
   "helpLayerKeyframeDesc": "依影格設定每個圖層的位置・縮放・旋轉，關鍵影格之間會自動內插。攝影機關鍵影格移動的是整個畫面，而這個功能只移動單一圖層。由於自動上色的每個部件都會生成為獨立的圖層，因此可以直接用它來做分部件動畫（只動一隻手臂、只讓嘴巴開合等）。每個關鍵影格還可以單獨設定「等速」「緩入」「緩出」「緩入緩出」「彈跳」這類緩動（與下一個關鍵影格的銜接方式），不僅限於單調的等速移動，還能表現出彈跳般的動作。在圖層面板的三點選單「動畫（關鍵影格）」中設定。圖層本身的畫面內容不會改變，只是顯示位置改變的非破壞性變形。這個功能只影響時間軸的顯示（預覽・匯出），不會影響畫布模式下的實際作畫。",
   "helpLayerGroupTitle": "圖層群組（把多個部件一起移動）",
@@ -839,13 +840,16 @@
   "themeSettingsTitle": "主題・外觀",
   "themeColorCustomizeSection": "顏色自訂",
   "themeColorAccent": "強調色",
-  "themeColorText": "文字顏色",
+  "themeColorText": "內文及一般文字顏色",
+  "themeColorButtonText": "按鈕文字與圖示顏色",
+  "themeColorMenuText": "選單與頂端列文字顏色",
+  "themeColorSelectionText": "選取項文字與圖示顏色",
   "themeColorPanelBg": "面板背景色",
   "themeColorMenuBg": "選單背景色",
   "themeColorSelection": "選取色",
   "themeColorUpdateMark": "更新標記顏色",
-  "themeContrastErrorTitle": "這個顏色會讓文字無法辨認",
-  "themeContrastErrorBody": "文字顏色和背景顏色太接近，畫面上的文字會幾乎看不見。設定畫面本身也會看不清而無法還原，因此無法儲存這個組合。請更改其中一方的明暗。",
+  "themeResetConfirmTitle": "要重設主題顏色嗎？",
+  "themeResetConfirmAction": "重設",
   "themeUnreadableResetButton": "還原主題",
   "themeUnreadableResetDone": "已將主題還原為預設配色。",
   "themePresetSection": "主題清單",
@@ -1127,10 +1131,20 @@
   "brushSettingsFadeDistanceLabel": "距離(px)",
   "brushSettingsStrokeDecayTitle": "筆畫衰減",
   "brushSettingsStrokeDecaySubtitle": "持續繪製不透明度會降低",
-  "brushSettingsMixingTitle": "混色",
-  "brushSettingsMixingOff": "OFF",
-  "brushSettingsMixingSimple": "簡易混色",
+  "brushSettingsMixingTitle": "混色模式",
+  "brushSettingsMixingOff": "數位",
+  "brushSettingsMixingOil": "油畫風混色",
+  "brushSettingsMixingWatercolor": "水彩風混色",
+  "brushSettingsMixingBrightnessCorrection": "亮度校正",
+  "brushSettingsMixingAmount": "混色程度",
+  "brushSettingsMixingStretch": "顏色延展",
+  "brushSettingsMixingWater": "水分量",
+  "brushSettingsMixingPigment": "顏料量",
   "brushSettingsMixingBleed": "暈染",
+  "brushSettingsMixingTexture": "斑駁",
+  "brushSettingsMixingSoftEdge": "邊界柔化",
+  "brushSettingsMixingOilHint": "像顏料一樣與下方的顏色混合，並把沾到的顏色沿筆畫拖開。",
+  "brushSettingsMixingWatercolorHint": "疊加透明的顏料。抬筆後顏料變乾，向筆刷外稍微暈開，顏色聚集在邊緣。",
   "projectDetailNotFoundTitle": "專案",
   "projectDetailNotFoundBody": "找不到專案",
   "projectDetailFirstFrameTooltip": "第一格",
@@ -1144,6 +1158,8 @@
   "projectDetailStartEditButton": "開始編輯",
   "projectDetailTagsQuickAction": "標籤",
   "projectDetailShareQuickAction": "分享",
+  "projectDetailFavoriteRegistered": "已加入我的最愛",
+  "projectDetailFavoriteUnregistered": "未加入我的最愛",
   "projectDetailInfoSectionTitle": "專案資訊",
   "projectDetailInfoExportSize": "匯出尺寸",
   "projectDetailInfoDrawingArea": "繪圖區域",
@@ -1993,6 +2009,129 @@
   "timelineEffectFilterLabel": "演出濾鏡",
   "timelineAddCameraKfTooltip": "新增相機關鍵影格",
   "timelineAddWatermarkTooltip": "＋浮水印",
+  "timelineStackScopeRange": "影格範圍",
+  "timelineStackTargetLabel": "此疊放順序用於",
+  "timelineStackTargetScenes": "多選場景",
+  "timelineStackTargetAllFrames": "所有影格",
+  "timelineStackScenesHint": "所選場景的所有影格使用相同的順序。在這裡調整後，所選的全部場景都會使用該順序。",
+  "timelineStackAllFramesHint": "所有場景的所有影格使用相同的順序。在這裡調整後，所有場景都會使用該順序。",
+  "timelineStackRangesTakePriority": "指定了影格範圍的影格優先使用該範圍的順序。",
+  "timelineStackRangeLabel": "F{start}～F{end}",
+  "@timelineStackRangeLabel": {
+    "placeholders": {
+      "start": {
+        "type": "int"
+      },
+      "end": {
+        "type": "int"
+      }
+    }
+  },
+  "timelineStackRangeAdd": "在F{n}新增範圍",
+  "@timelineStackRangeAdd": {
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
+  },
+  "timelineStackRangeHint": "只有指定範圍內的影格使用這裡排列的順序，範圍外使用整個場景的順序。",
+  "timelineStackRangeEmpty": "還沒有範圍。用上面的按鈕可在目前影格建立。",
+  "timelineStackRangeOrderHint": "{range}的疊放順序（越靠上越在前）。拖曳把手或使用箭頭調整順序。",
+  "@timelineStackRangeOrderHint": {
+    "placeholders": {
+      "range": {
+        "type": "String"
+      }
+    }
+  },
+  "timelineStackRangeDelete": "刪除此範圍",
+  "timelineAddMaterialTooltip": "新增素材",
+  "timelineMaterialRowLabel": "所在列",
+  "timelineMaterialNewRow": "新列",
+  "timelineAddTextTooltip": "＋文字",
+  "timelineAddImageTooltip": "＋圖片",
+  "timelineStackOrderTitle": "疊放順序",
+  "timelineMaterialText": "文字",
+  "timelineAddTextDialogTitle": "新增文字",
+  "timelineEditSectionText": "文字",
+  "timelineEditSectionTransform": "位置",
+  "timelineEditSectionMask": "遮罩",
+  "timelineTransformRotationX": "X軸旋轉",
+  "timelineTransformRotationY": "Y軸旋轉",
+  "timelineTransformRotationZ": "Z軸旋轉",
+  "timelineTransformReset": "重設位置",
+  "timelineKeyframeAddHere": "在F{n}新增關鍵影格",
+  "@timelineKeyframeAddHere": {
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
+  },
+  "timelineKeyframeRemoveHere": "刪除F{n}的關鍵影格",
+  "@timelineKeyframeRemoveHere": {
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
+  },
+  "timelineKeyframeWholeHint": "整個素材使用相同的位置。要讓它動起來，請移到其他影格並新增關鍵影格。",
+  "timelineKeyframeAnimHint": "{count}個關鍵影格：修改會記錄在F{n}，中間的影格自動補間。",
+  "@timelineKeyframeAnimHint": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      },
+      "n": {
+        "type": "int"
+      }
+    }
+  },
+  "timelineGizmoHint": "在預覽上拖曳可移動，拖曳角落的圓點可縮放，拖曳上方的圓點可旋轉。也可以用兩指操作。",
+  "timelineMaterialOutOfRange": "此影格不顯示（在F{start}～F{end}顯示）",
+  "@timelineMaterialOutOfRange": {
+    "placeholders": {
+      "start": {
+        "type": "int"
+      },
+      "end": {
+        "type": "int"
+      }
+    }
+  },
+  "timelineMaskNone": "無",
+  "timelineMaskRectangle": "矩形",
+  "timelineMaskEllipse": "橢圓",
+  "timelineMaskCenterX": "中心 X",
+  "timelineMaskCenterY": "中心 Y",
+  "timelineMaskWidth": "寬度",
+  "timelineMaskHeight": "高度",
+  "timelineMaskFeather": "羽化",
+  "timelineMaskInvert": "反轉（隱藏內側）",
+  "timelineMaskHint": "只顯示遮罩內側。反轉後改為隱藏內側。",
+  "timelineStackOrderHint": "越靠上越顯示在前面。拖曳把手或使用箭頭調整順序。",
+  "timelineStackScopeScene": "目前整個場景",
+  "timelineStackFrameUnit": "影格（插畫）",
+  "timelineStackResetScene": "恢復預設順序",
+  "timelineStackFrameMaskTitle": "影格（插畫）遮罩",
+  "timelineStackFrameMaskHint": "只裁切繪製的畫面，不影響文字、圖片和影片。在畫布上繪製時不會被隱藏。",
+  "timelineStackMoveUp": "上移一層",
+  "timelineStackMoveDown": "下移一層",
+  "timelineStackSelectedCount": "已選擇{count}項",
+  "@timelineStackSelectedCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "timelineStackBringToFront": "移到最前",
+  "timelineStackSendToBack": "移到最後",
+  "timelineStackDeselectAll": "取消全選",
+  "timelineStackSelectAll": "全選",
+  "timelineStackMultiSelectHint": "長按項目即可多選。選取的項目可以用箭頭、拖曳或下方的按鈕一起移動。",
   "timelineWatermarkNotRegisteredTitle": "尚未註冊浮水印",
   "timelineWatermarkNotRegisteredBody": "請先在設定畫面的「浮水印」中註冊圖片或文字。",
   "timelineOpenSettingsButton": "開啟設定",
@@ -2031,7 +2170,7 @@
       }
     }
   },
-  "timelineSceneDeleteConfirmBody": "場景內的全部影格、共用圖層、影片素材、圖片素材、浮水印等全部資料都將被刪除。",
+  "timelineSceneDeleteConfirmBody": "場景內的全部影格、共用圖層、文字素材、影片素材、圖片素材、浮水印等全部資料都將被刪除。",
   "timelineSceneMultiDeleteConfirmTitle": "要刪除已選取的{count}個場景嗎？",
   "@timelineSceneMultiDeleteConfirmTitle": {
     "placeholders": {
@@ -2771,7 +2910,6 @@
   "brushSettingsPressureOffSection": "筆壓關閉",
   "brushSettingsWeakPressureLabel": "弱",
   "brushSettingsStrongPressureLabel": "強",
-  "brushSettingsValueLabel": "值",
   "customAutomationSpecifiedFrames": "在指定影格執行",
   "customAutomationFrameFrom": "開始影格",
   "customAutomationFrameTo": "結束影格",
@@ -2981,6 +3119,13 @@
   "filterSphereLightBlur": "光側模糊",
   "filterSphereShadowBlur": "陰影側模糊",
   "filterSphereCanvasHint": "拖曳畫布上的＋可移動光，拖曳圓形控點可改變大小。陰影和光只會加在已繪製的地方。",
+  "filterNameWatercolorBorder": "水彩邊界",
+  "filterWatercolorBorderRange": "範圍",
+  "filterWatercolorBorderBlur": "模糊寬度",
+  "filterWatercolorBorderOpacity": "透明度影響",
+  "filterWatercolorBorderDarken": "邊緣濃度",
+  "filterWatercolorBorderColorEdges": "顏色交界處也添加",
+  "filterWatercolorBorderHint": "顏色聚集在塗色區域的邊緣，內側變得通透，就像乾了的水彩（直接繪製在作業圖層上）。範圍：從邊緣向內加深到哪裡。邊緣濃度：邊緣聚集的顏色有多濃。透明度影響：內側變得多通透。模糊寬度：濃淡過渡有多平滑。",
   "filterFisheyeCanvasHint": "拖曳畫布上的＋可移動中心，拖曳圓上的圓形控點可改變半徑。",
   "filterCenterX": "中心 X",
   "filterCenterY": "中心 Y",
@@ -3013,5 +3158,9 @@
   "startupFailedDetailsCopied": "已複製詳細資訊",
   "startupFailedDetails": "詳細資訊",
   "errorViewTitle": "顯示此部分時發生錯誤",
-  "errorViewBody": "編輯中的資料已保留。請返回上一個畫面後再試一次。將以下內容告知開發者，有助於找出原因。"
+  "errorViewBody": "編輯中的資料已保留。請返回上一個畫面後再試一次。將以下內容告知開發者，有助於找出原因。",
+  "homeWorksLoadFailed": "無法載入匯出的作品",
+  "newProjectCreating": "正在建立…",
+  "newProjectCreateFailed": "無法儲存專案。請檢查儲存空間與儲存位置，然後再試一次。",
+  "communityCreatorLabel": "作者"
 }

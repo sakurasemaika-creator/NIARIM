@@ -24,22 +24,32 @@ class AppLocalizationsZh extends AppLocalizations {
   String get homeTabWorks => '作品列表';
 
   @override
-  String get homeTabBookmarked => '书签';
+  String get homeTabBookmarked => '已收藏';
 
   @override
-  String get homeBookmarkedEmptyTitle => '还没有加入书签的作品';
+  String get homeBookmarkedEmptyTitle => '没有可显示的收藏作品';
 
   @override
-  String get homeBookmarkedEmptyBody => '在作品广场加入书签的作品会显示在这里。';
+  String get homeBookmarkedEmptyBody => '在作品广场收藏喜欢的公开作品，即可在这里查看。';
 
   @override
-  String get homeBookmarkedHiddenTitle => '加入书签的作品目前未显示';
+  String get homeBookmarkedHiddenTitle => '收藏仍然保留';
 
   @override
-  String get homeBookmarkedHiddenBody => '这些作品被作品广场的显示筛选隐藏了，或已不再公开。书签仍然保留。';
+  String get homeBookmarkedHiddenBody =>
+      '显示筛选条件或作品的公开状态可能使作品无法显示。可在作品广场检查显示筛选条件。';
 
   @override
-  String get homeBookmarkedOpenPlaza => '查看作品广场';
+  String get homeBookmarkedLoading => '正在加载收藏…';
+
+  @override
+  String get homeBookmarkedLoadFailed => '无法加载收藏';
+
+  @override
+  String get homeBookmarkedLoadPrompt => '加载已保存的收藏';
+
+  @override
+  String get homeBookmarkedSignInBody => '请在作品广场连接 Google 账号，以加载已保存的收藏。';
 
   @override
   String get homeSearchHint => '按项目名称搜索';
@@ -67,12 +77,6 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get homeSelectionAllDeselect => '取消全选';
-
-  @override
-  String get homeSelectionAddFavorite => '加入收藏';
-
-  @override
-  String get homeSelectionRemoveFavorite => '取消收藏';
 
   @override
   String homeSelectionCount(int count) {
@@ -1391,7 +1395,7 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get helpColorMixingDesc =>
-      '使用画笔上色时，将画笔正下方已有的颜色与即将涂上的选定颜色混合后再绘制的功能。适合想让新颜色与已有颜色自然融合时使用，如水彩或油画般的效果。';
+      '使用画笔上色时，将画笔正下方已有的颜色与即将涂上的选定颜色混合后再绘制的功能。可在画笔设置的混色模式中选择：不混合直接上色的“数字”、像颜料一样混合并把沾到的颜色拖开的“油画风混色”、叠加透明颜料且干后颜色聚集在边缘的“水彩风混色”。';
 
   @override
   String get helpPressureCurveTitle => '笔压曲线';
@@ -1405,7 +1409,7 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get helpTimelineDesc =>
-      '管理动画时间轴的画面。将帧（单张静止图像）排列并像翻页动画一样播放，就形成了动画。图片・视频・音频等素材轨道、公共图层轨道、摄像机关键帧也都在同一条时间轴上管理。';
+      '管理动画时间轴的画面。将帧（单张静止图像）排列并像翻页动画一样播放，就形成了动画。文字・图片・视频・音频素材轨道、公共图层轨道、摄像机关键帧也都在同一条时间轴上管理。文字・图片・视频与帧插画之间的前后关系可在「叠放顺序」中按整个场景或指定的帧范围调整。也可以长按项目进行多选，一起移动。';
 
   @override
   String get helpSceneTitle => '场景';
@@ -1426,7 +1430,7 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get helpEffectFilterDesc =>
-      '可应用于场景或帧的画面效果（模糊・色调校正・辉光・像素画等）。在不改变手绘画面本身的前提下，作为演出手段调整整个画面观感时使用。绘画滤镜中的色调曲线（预设与强度）・色阶・锐化・USM锐化・暗角（颜色・范围・浓度）也收录在演出滤镜中，可以一次对多个帧施加相同的效果。像素画也可以选择配色方式（不指定颜色・指定颜色・指定颜色数・从调色板选择）。限制颜色时，单用一种颜色与原色相差较远的地方，会用可用颜色中的两到三种按规则排列（抖动）来接近原色，这种排列在帧与帧之间不会移动；轮廓处保持清晰。抖动可以用开关打开或关闭，关闭后用最接近的一种颜色填充。 演出滤镜可以叠加应用多个，其应用顺序依照时间轴上的排列顺序。拖动滤镜列表重新排序后，实际反映到画面上的顺序也会随之改变。 一种演出滤镜，会逐帧改变类似胶片颗粒感的噪点。可以用滑块调整强度、数量（噪点出现的密度）和颗粒大小。回到同一帧时噪点形态相同（拖动时不会闪烁），播放时颗粒则会呈现出跳动的效果。 用来表现画面中降雨的演出滤镜。可以用滑块调整降雨强度（雨滴数量）、速度、雨滴大小和风向角度。每滴雨都会随着帧数推进以恒定速度持续下落，呈现自然的降雨效果。';
+      '可应用于场景或帧的画面效果（模糊・色调校正・辉光・像素画等）。在不改变手绘画面本身的前提下，作为演出手段调整整个画面观感时使用。绘画滤镜中的色调曲线（预设与强度）・色阶・锐化・USM锐化・暗角（颜色・范围・浓度）・水彩边界也收录在演出滤镜中，可以一次对多个帧施加相同的效果。像素画也可以选择配色方式（不指定颜色・指定颜色・指定颜色数・从调色板选择）。限制颜色时，单用一种颜色与原色相差较远的地方，会用可用颜色中的两到三种按规则排列（抖动）来接近原色，这种排列在帧与帧之间不会移动；轮廓处保持清晰。抖动可以用开关打开或关闭，关闭后用最接近的一种颜色填充。 演出滤镜可以叠加应用多个，其应用顺序依照时间轴上的排列顺序。拖动滤镜列表重新排序后，实际反映到画面上的顺序也会随之改变。 一种演出滤镜，会逐帧改变类似胶片颗粒感的噪点。可以用滑块调整强度、数量（噪点出现的密度）和颗粒大小。回到同一帧时噪点形态相同（拖动时不会闪烁），播放时颗粒则会呈现出跳动的效果。 用来表现画面中降雨的演出滤镜。可以用滑块调整降雨强度（雨滴数量）、速度、雨滴大小和风向角度。每滴雨都会随着帧数推进以恒定速度持续下落，呈现自然的降雨效果。';
 
   @override
   String get helpEndCardTitle => 'EndCard（片尾标志）';
@@ -1523,11 +1527,11 @@ class AppLocalizationsZh extends AppLocalizations {
       '可根据设备性能从低画质・中画质・高画质预设中选择，也可逐项单独设置（自定义）。除保存方式・运行速度・洋葱皮・倾斜检测外，撤销次数、回收站自动删除等影响应用容量与运行负载的设置也都集中在这里。';
 
   @override
-  String get helpMaterialClipTitle => '素材片段（图片・视频・音频）';
+  String get helpMaterialClipTitle => '素材片段（文字・图片・视频・音频）';
 
   @override
   String get helpMaterialClipDesc =>
-      '放置在时间轴图片、视频、音频轨道上的片段。长按拖动片段本身可移动其起始位置，拖动两端的手柄可改变使用范围（长度）。点击片段会打开详情面板，其中的复制图标用于复制、垃圾桶图标用于删除。图片・视频在内部作为图层处理，音频则作为直接挂在场景上的片段管理。';
+      '放置在时间轴文字、图片、视频、音频轨道上的片段。长按拖动片段本身可移动其起始位置，拖动两端的手柄可改变使用范围（长度）。同一时间重叠的素材会自动放到其他行。点击文字・图片・视频片段，会在预览下方打开编辑面板：可修改文字内容・字体・颜色・描边，位置・缩放・X轴／Y轴／Z轴旋转・不透明度（也可在预览上拖动，添加关键帧即可产生动画），蒙版（矩形・椭圆・羽化・反转）以及所在行，也可在此复制或删除。音频片段在详情面板中调整音量和淡入淡出。';
 
   @override
   String get helpGestureSettingsTitle => '手势设置';
@@ -1750,7 +1754,7 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get helpDrawingFilterDesc =>
-      '直接应用于所选图层的滤镜（演出滤镜作用于整条时间线或整个场景，而绘图滤镜按图层生效）。内置27种滤镜：高斯模糊、镜头模糊、动画风、色调曲线、色阶、描边、锐化、USM锐化、暗角、胶片颗粒、复古动漫、老电视、二值化、鱼眼镜头、色差、眼镜断层、像素画、质感变换、背景融合、积墨、自动线稿、棱镜、VHS 噪点、反色、马赛克、噪点和球体阴影。动漫风格会减少颜色数，并在相邻颜色之差达到“颜色差阈值”以上的边界上，于较暗的一侧画出“边界线粗细”的线（线稿的线条不会变粗）。棱镜会把图层上每个形状分别涂上彩虹六色（红、绿、青色、蓝、紫、红）并模糊，再把图层设为线性减淡。先在单独的图层上用深色画出细小的叶片状形状再使用，画面上就会出现柔和的彩虹光痕（模糊量与一般的高斯模糊采用相同标准）。球体阴影会在椭圆形光的内侧叠加光色、外侧叠加阴影色，且只加在已绘制的地方（也可以在画布上拖动光）。描边不会改写原图层，只会把结果绘制到新图层。眼镜断层只对用面板的「画笔」「填充桶」在画布上涂抹的范围（可用「橡皮擦」修改）施加类似强力眼镜镜片的局部变形（如果有选区或选区图层，会从该范围开始）。画布上有选区时，绘图滤镜只应用于选区内。像素画还可选择配色方式（不限制、指定颜色、指定颜色数或从调色板选择）。限制颜色时，单用一种颜色与原色相差较远的地方，会用可用颜色中的两到三种按规则排列（抖动），使其更接近原色；轮廓处不混色，保持清晰。指定颜色数时，会从占画面大部分的颜色中选取。抖动可以用开关打开或关闭，关闭后用最接近的一种颜色填充。大小可在“指定色块大小”（1～100共100级）和“指定点数”（横向・纵向点数滑块，最左为1，最右为画布尺寸）之间切换，横向和纵向会在保持画面宽高比的同时一起变化，两种指定方式也会联动。两种方式下点都保持正方形，不会产生半透明的边缘。 自动线稿可在应用滤镜前直接编辑临时Vector控制点。拖动控制点时只移动该点。选择“应用”右侧的“添加控制点”后点击线条可添加控制点，选择“删除控制点”后点击控制点可将其删除（两者都未选择时点击控制点，会先确认再删除）。编辑后的形状会直接用于最终应用结果，控制点的移动、添加和删除也可以用滤镜编辑的撤销・重做逐一恢复。 色调曲线中，轻点曲线上的空白处可添加点，拖动点可移动，长按可删除；R、G、B 各颜色的曲线在 RGB 曲线之后生效。色阶也可按 R、G、B 分别调整，伽马可改变中间调的亮度。描边的“向内延伸”可将边缘扩展到原轮廓内侧，描边的新图层会放在原图层的正下方。色差可指定将偏移分配到 X（横向）、Y（纵向）、Z（从中心向外）各多少。鱼眼镜头的中心和半径也可以在画布上拖动 ＋ 和圆上的手柄来更改。暗角会柔和地压暗整个画布的四个角（没有绘画的透明处也会有阴影）。可用“范围”调整从四角向中心压暗到多远，用“浓度”调整四角的暗度。眼镜断层像真正的高度数眼镜一样，让透过镜片看到的景物朝镜片中心均匀缩小（负值，近视用）或放大（正值，远视用），并在镜片边缘使轮廓错开成台阶状。积墨只积在线条以“最大角度”或更小角度相交处（初始值90°时为锐角和直角：V字、交叉的窄侧、T字、方角）的夹角内侧，更宽的角不积：在相交点从线条边缘起为“中央宽度”，再朝“范围”的末端笔直变细，末端为0px，平滑地收成尖端（即使加大“中央宽度”，也不会鼓出连接两侧积墨末端的直线之外，最宽时中间也是平的）；若线条在范围内中断，该线条上的积墨会以中断处为终点细到0px（每条线的长度可以不同），此时两处积墨仍会在夹角的正中相接，距两条线的宽度相同（较长线条的积墨从那里再细到范围的末端）。自动线稿沿草稿线条的中心描出细线。靠得很近的线条只要中间有一点空隙，就仍画成两条线，只填补线条内部的小白点。两条线靠拢并贴在一起的地方，不会在中间画成一条线，而是像草稿一样两条线逐渐靠近并合在一起。线条交叉或重叠的地方，也会像草稿一样让每条线照原样延续（不会在交点处折弯，重叠的两条线也不会融成一条）。以较浅角度斜向交叉的线也会笔直地穿过交叉处，仅相互接触的线（例如沿着头部画的头发轮廓）则各自留在自己的一侧，仍是分开的线。眼睛之类的点会画成实心的点。比“草稿线宽”短的分叉不绘制。“起笔收笔”可以用开关打开或关闭，关闭后线条直到末端都保持相同粗细。背景融入以混合模式“强光”叠加背景的光与影（影子的颜色不是黑色或灰色，而是把背景中阴影部分的颜色压暗后的颜色）。周围的颜色以“叠加”覆盖整幅画来统一色彩方向，从下方反上来的光和周围的反射光以“滤色”加入，霓虹灯之类的强烈有色光以“相加（发光）”加在轮廓上。“匹配背景的明暗与色调”会把比背景过亮或过于鲜艳的颜色拉回背景的范围，并让暗部、中间调、亮部分别带上背景中相同明度的色调（线稿的黑色保持不变）。“模糊程度”是取色前模糊背景的程度。';
+      '直接应用于所选图层的滤镜（演出滤镜作用于整条时间线或整个场景，而绘图滤镜按图层生效）。内置28种滤镜：高斯模糊、镜头模糊、动画风、色调曲线、色阶、描边、锐化、USM锐化、暗角、胶片颗粒、复古动漫、老电视、二值化、鱼眼镜头、色差、眼镜断层、像素画、质感变换、背景融合、积墨、自动线稿、棱镜、VHS 噪点、反色、马赛克、噪点、球体阴影和水彩边界。水彩边界会让作业图层上涂色部分的边缘聚集颜色、内侧变得通透，就像干了的水彩（开启“颜色交界处也添加”后，相邻颜色的交界处也会出现边缘）。动漫风格会减少颜色数，并在相邻颜色之差达到“颜色差阈值”以上的边界上，于较暗的一侧画出“边界线粗细”的线（线稿的线条不会变粗）。棱镜会把图层上每个形状分别涂上彩虹六色（红、绿、青色、蓝、紫、红）并模糊，再把图层设为线性减淡。先在单独的图层上用深色画出细小的叶片状形状再使用，画面上就会出现柔和的彩虹光痕（模糊量与一般的高斯模糊采用相同标准）。球体阴影会在椭圆形光的内侧叠加光色、外侧叠加阴影色，且只加在已绘制的地方（也可以在画布上拖动光）。描边不会改写原图层，只会把结果绘制到新图层。眼镜断层只对用面板的「画笔」「填充桶」在画布上涂抹的范围（可用「橡皮擦」修改）施加类似强力眼镜镜片的局部变形（如果有选区或选区图层，会从该范围开始）。画布上有选区时，绘图滤镜只应用于选区内。像素画还可选择配色方式（不限制、指定颜色、指定颜色数或从调色板选择）。限制颜色时，单用一种颜色与原色相差较远的地方，会用可用颜色中的两到三种按规则排列（抖动），使其更接近原色；轮廓处不混色，保持清晰。指定颜色数时，会从占画面大部分的颜色中选取。抖动可以用开关打开或关闭，关闭后用最接近的一种颜色填充。大小可在“指定色块大小”（1～100共100级）和“指定点数”（横向・纵向点数滑块，最左为1，最右为画布尺寸）之间切换，横向和纵向会在保持画面宽高比的同时一起变化，两种指定方式也会联动。两种方式下点都保持正方形，不会产生半透明的边缘。 自动线稿可在应用滤镜前直接编辑临时Vector控制点。拖动控制点时只移动该点。选择“应用”右侧的“添加控制点”后点击线条可添加控制点，选择“删除控制点”后点击控制点可将其删除（两者都未选择时点击控制点，会先确认再删除）。编辑后的形状会直接用于最终应用结果，控制点的移动、添加和删除也可以用滤镜编辑的撤销・重做逐一恢复。 色调曲线中，轻点曲线上的空白处可添加点，拖动点可移动，长按可删除；R、G、B 各颜色的曲线在 RGB 曲线之后生效。色阶也可按 R、G、B 分别调整，伽马可改变中间调的亮度。描边的“向内延伸”可将边缘扩展到原轮廓内侧，描边的新图层会放在原图层的正下方。色差可指定将偏移分配到 X（横向）、Y（纵向）、Z（从中心向外）各多少。鱼眼镜头的中心和半径也可以在画布上拖动 ＋ 和圆上的手柄来更改。暗角会柔和地压暗整个画布的四个角（没有绘画的透明处也会有阴影）。可用“范围”调整从四角向中心压暗到多远，用“浓度”调整四角的暗度。眼镜断层像真正的高度数眼镜一样，让透过镜片看到的景物朝镜片中心均匀缩小（负值，近视用）或放大（正值，远视用），并在镜片边缘使轮廓错开成台阶状。积墨只积在线条以“最大角度”或更小角度相交处（初始值90°时为锐角和直角：V字、交叉的窄侧、T字、方角）的夹角内侧，更宽的角不积：在相交点从线条边缘起为“中央宽度”，再朝“范围”的末端笔直变细，末端为0px，平滑地收成尖端（即使加大“中央宽度”，也不会鼓出连接两侧积墨末端的直线之外，最宽时中间也是平的）；若线条在范围内中断，该线条上的积墨会以中断处为终点细到0px（每条线的长度可以不同），此时两处积墨仍会在夹角的正中相接，距两条线的宽度相同（较长线条的积墨从那里再细到范围的末端）。自动线稿沿草稿线条的中心描出细线。靠得很近的线条只要中间有一点空隙，就仍画成两条线，只填补线条内部的小白点。两条线靠拢并贴在一起的地方，不会在中间画成一条线，而是像草稿一样两条线逐渐靠近并合在一起。线条交叉或重叠的地方，也会像草稿一样让每条线照原样延续（不会在交点处折弯，重叠的两条线也不会融成一条）。以较浅角度斜向交叉的线也会笔直地穿过交叉处，仅相互接触的线（例如沿着头部画的头发轮廓）则各自留在自己的一侧，仍是分开的线。眼睛之类的点会画成实心的点。比“草稿线宽”短的分叉不绘制。“起笔收笔”可以用开关打开或关闭，关闭后线条直到末端都保持相同粗细。背景融入以混合模式“强光”叠加背景的光与影（影子的颜色不是黑色或灰色，而是把背景中阴影部分的颜色压暗后的颜色）。周围的颜色以“叠加”覆盖整幅画来统一色彩方向，从下方反上来的光和周围的反射光以“滤色”加入，霓虹灯之类的强烈有色光以“相加（发光）”加在轮廓上。“匹配背景的明暗与色调”会把比背景过亮或过于鲜艳的颜色拉回背景的范围，并让暗部、中间调、亮部分别带上背景中相同明度的色调（线稿的黑色保持不变）。“模糊程度”是取色前模糊背景的程度。';
 
   @override
   String get helpLayerKeyframeTitle => '图层关键帧（分部件动画）';
@@ -2564,7 +2568,16 @@ class AppLocalizationsZh extends AppLocalizations {
   String get themeColorAccent => '强调色';
 
   @override
-  String get themeColorText => '文字颜色';
+  String get themeColorText => '正文及普通文字颜色';
+
+  @override
+  String get themeColorButtonText => '按钮文字与图标颜色';
+
+  @override
+  String get themeColorMenuText => '菜单和顶部栏文字颜色';
+
+  @override
+  String get themeColorSelectionText => '选中项文字与图标颜色';
 
   @override
   String get themeColorPanelBg => '面板背景色';
@@ -2579,11 +2592,10 @@ class AppLocalizationsZh extends AppLocalizations {
   String get themeColorUpdateMark => '更新标记颜色';
 
   @override
-  String get themeContrastErrorTitle => '这个颜色会让文字无法辨认';
+  String get themeResetConfirmTitle => '要重置主题颜色吗？';
 
   @override
-  String get themeContrastErrorBody =>
-      '文字颜色和背景颜色太接近，画面上的文字会几乎看不见。设置画面本身也会看不清而无法还原，因此无法保存这个组合。请更改其中一方的明暗。';
+  String get themeResetConfirmAction => '重置';
 
   @override
   String get themeUnreadableResetButton => '还原主题';
@@ -3084,16 +3096,47 @@ class AppLocalizationsZh extends AppLocalizations {
   String get brushSettingsStrokeDecaySubtitle => '持续绘制不透明度会降低';
 
   @override
-  String get brushSettingsMixingTitle => '混色';
+  String get brushSettingsMixingTitle => '混色模式';
 
   @override
-  String get brushSettingsMixingOff => 'OFF';
+  String get brushSettingsMixingOff => '数字';
 
   @override
-  String get brushSettingsMixingSimple => '简易混色';
+  String get brushSettingsMixingOil => '油画风混色';
+
+  @override
+  String get brushSettingsMixingWatercolor => '水彩风混色';
+
+  @override
+  String get brushSettingsMixingBrightnessCorrection => '亮度校正';
+
+  @override
+  String get brushSettingsMixingAmount => '混色程度';
+
+  @override
+  String get brushSettingsMixingStretch => '颜色延展';
+
+  @override
+  String get brushSettingsMixingWater => '水分量';
+
+  @override
+  String get brushSettingsMixingPigment => '颜料量';
 
   @override
   String get brushSettingsMixingBleed => '晕染';
+
+  @override
+  String get brushSettingsMixingTexture => '斑驳';
+
+  @override
+  String get brushSettingsMixingSoftEdge => '边界柔化';
+
+  @override
+  String get brushSettingsMixingOilHint => '像颜料一样与下方的颜色混合，并把沾到的颜色沿笔画拖开。';
+
+  @override
+  String get brushSettingsMixingWatercolorHint =>
+      '叠加透明的颜料。抬笔后颜料变干，向笔刷外稍微晕开，颜色聚集在边缘。';
 
   @override
   String get projectDetailNotFoundTitle => '项目';
@@ -3133,6 +3176,12 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get projectDetailShareQuickAction => '分享';
+
+  @override
+  String get projectDetailFavoriteRegistered => '已收藏';
+
+  @override
+  String get projectDetailFavoriteUnregistered => '未收藏';
 
   @override
   String get projectDetailInfoSectionTitle => '项目信息';
@@ -4675,6 +4724,199 @@ class AppLocalizationsZh extends AppLocalizations {
   String get timelineAddWatermarkTooltip => '＋水印';
 
   @override
+  String get timelineStackScopeRange => '帧范围';
+
+  @override
+  String get timelineStackTargetLabel => '此叠放顺序用于';
+
+  @override
+  String get timelineStackTargetScenes => '多选场景';
+
+  @override
+  String get timelineStackTargetAllFrames => '所有帧';
+
+  @override
+  String get timelineStackScenesHint =>
+      '所选场景的所有帧使用相同的顺序。在这里调整后，所选的全部场景都会使用该顺序。';
+
+  @override
+  String get timelineStackAllFramesHint =>
+      '所有场景的所有帧使用相同的顺序。在这里调整后，所有场景都会使用该顺序。';
+
+  @override
+  String get timelineStackRangesTakePriority => '指定了帧范围的帧优先使用该范围的顺序。';
+
+  @override
+  String timelineStackRangeLabel(int start, int end) {
+    return 'F$start～F$end';
+  }
+
+  @override
+  String timelineStackRangeAdd(int n) {
+    return '在F$n添加范围';
+  }
+
+  @override
+  String get timelineStackRangeHint => '只有指定范围内的帧使用这里排列的顺序，范围外使用整个场景的顺序。';
+
+  @override
+  String get timelineStackRangeEmpty => '还没有范围。用上面的按钮可在当前帧创建。';
+
+  @override
+  String timelineStackRangeOrderHint(String range) {
+    return '$range的叠放顺序（越靠上越在前）。拖动手柄或使用箭头调整顺序。';
+  }
+
+  @override
+  String get timelineStackRangeDelete => '删除此范围';
+
+  @override
+  String get timelineAddMaterialTooltip => '添加素材';
+
+  @override
+  String get timelineMaterialRowLabel => '所在行';
+
+  @override
+  String get timelineMaterialNewRow => '新行';
+
+  @override
+  String get timelineAddTextTooltip => '＋文字';
+
+  @override
+  String get timelineAddImageTooltip => '＋图片';
+
+  @override
+  String get timelineStackOrderTitle => '叠放顺序';
+
+  @override
+  String get timelineMaterialText => '文字';
+
+  @override
+  String get timelineAddTextDialogTitle => '添加文字';
+
+  @override
+  String get timelineEditSectionText => '文字';
+
+  @override
+  String get timelineEditSectionTransform => '位置';
+
+  @override
+  String get timelineEditSectionMask => '蒙版';
+
+  @override
+  String get timelineTransformRotationX => 'X轴旋转';
+
+  @override
+  String get timelineTransformRotationY => 'Y轴旋转';
+
+  @override
+  String get timelineTransformRotationZ => 'Z轴旋转';
+
+  @override
+  String get timelineTransformReset => '重置位置';
+
+  @override
+  String timelineKeyframeAddHere(int n) {
+    return '在F$n添加关键帧';
+  }
+
+  @override
+  String timelineKeyframeRemoveHere(int n) {
+    return '删除F$n的关键帧';
+  }
+
+  @override
+  String get timelineKeyframeWholeHint => '整个素材使用相同的位置。要让它动起来，请移到其他帧并添加关键帧。';
+
+  @override
+  String timelineKeyframeAnimHint(int count, int n) {
+    return '$count个关键帧：修改会记录在F$n，中间的帧自动补间。';
+  }
+
+  @override
+  String get timelineGizmoHint => '在预览上拖动可移动，拖动角上的圆点可缩放，拖动上方的圆点可旋转。也可以用两指操作。';
+
+  @override
+  String timelineMaterialOutOfRange(int start, int end) {
+    return '此帧不显示（在F$start～F$end显示）';
+  }
+
+  @override
+  String get timelineMaskNone => '无';
+
+  @override
+  String get timelineMaskRectangle => '矩形';
+
+  @override
+  String get timelineMaskEllipse => '椭圆';
+
+  @override
+  String get timelineMaskCenterX => '中心 X';
+
+  @override
+  String get timelineMaskCenterY => '中心 Y';
+
+  @override
+  String get timelineMaskWidth => '宽度';
+
+  @override
+  String get timelineMaskHeight => '高度';
+
+  @override
+  String get timelineMaskFeather => '羽化';
+
+  @override
+  String get timelineMaskInvert => '反转（隐藏内侧）';
+
+  @override
+  String get timelineMaskHint => '只显示蒙版内侧。反转后改为隐藏内侧。';
+
+  @override
+  String get timelineStackOrderHint => '越靠上越显示在前面。拖动手柄或使用箭头调整顺序。';
+
+  @override
+  String get timelineStackScopeScene => '当前整个场景';
+
+  @override
+  String get timelineStackFrameUnit => '帧（插画）';
+
+  @override
+  String get timelineStackResetScene => '恢复默认顺序';
+
+  @override
+  String get timelineStackFrameMaskTitle => '帧（插画）蒙版';
+
+  @override
+  String get timelineStackFrameMaskHint => '只裁切绘制的画面，不影响文字、图片和视频。在画布上绘制时不会被隐藏。';
+
+  @override
+  String get timelineStackMoveUp => '上移一层';
+
+  @override
+  String get timelineStackMoveDown => '下移一层';
+
+  @override
+  String timelineStackSelectedCount(int count) {
+    return '已选择$count项';
+  }
+
+  @override
+  String get timelineStackBringToFront => '移到最前';
+
+  @override
+  String get timelineStackSendToBack => '移到最后';
+
+  @override
+  String get timelineStackDeselectAll => '取消全选';
+
+  @override
+  String get timelineStackSelectAll => '全选';
+
+  @override
+  String get timelineStackMultiSelectHint =>
+      '长按项目即可多选。选中的项目可以用箭头、拖动或下方的按钮一起移动。';
+
+  @override
   String get timelineWatermarkNotRegisteredTitle => '尚未注册水印';
 
   @override
@@ -4754,7 +4996,7 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get timelineSceneDeleteConfirmBody =>
-      '场景内的全部帧、公共图层、视频素材、图片素材、水印等全部数据都将被删除。';
+      '场景内的全部帧、公共图层、文字素材、视频素材、图片素材、水印等全部数据都将被删除。';
 
   @override
   String timelineSceneMultiDeleteConfirmTitle(int count) {
@@ -6443,9 +6685,6 @@ class AppLocalizationsZh extends AppLocalizations {
   String get brushSettingsStrongPressureLabel => '强';
 
   @override
-  String get brushSettingsValueLabel => '值';
-
-  @override
   String get helpCustomAutomationTitle => '自定义自动操作（操作录制）';
 
   @override
@@ -7120,6 +7359,28 @@ class AppLocalizationsZh extends AppLocalizations {
       '拖动画布上的＋可移动光，拖动圆形手柄可改变大小。阴影和光只会加在已绘制的地方。';
 
   @override
+  String get filterNameWatercolorBorder => '水彩边界';
+
+  @override
+  String get filterWatercolorBorderRange => '范围';
+
+  @override
+  String get filterWatercolorBorderBlur => '模糊宽度';
+
+  @override
+  String get filterWatercolorBorderOpacity => '透明度影响';
+
+  @override
+  String get filterWatercolorBorderDarken => '边缘浓度';
+
+  @override
+  String get filterWatercolorBorderColorEdges => '颜色交界处也添加';
+
+  @override
+  String get filterWatercolorBorderHint =>
+      '颜色聚集在涂色区域的边缘，内侧变得通透，就像干了的水彩（直接绘制在作业图层上）。范围：从边缘向内加深到哪里。边缘浓度：边缘聚集的颜色有多浓。透明度影响：内侧变得多通透。模糊宽度：浓淡过渡有多平滑。';
+
+  @override
   String get filterFisheyeCanvasHint => '拖动画布上的＋可移动中心，拖动圆上的圆形手柄可改变半径。';
 
   @override
@@ -7217,6 +7478,18 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get errorViewBody => '正在编辑的数据已保留。请返回上一个画面后重试。将以下内容告知开发者，有助于查明原因。';
+
+  @override
+  String get homeWorksLoadFailed => '无法加载导出的作品';
+
+  @override
+  String get newProjectCreating => '正在创建…';
+
+  @override
+  String get newProjectCreateFailed => '无法保存项目。请检查存储空间和保存位置，然后重试。';
+
+  @override
+  String get communityCreatorLabel => '作者';
 }
 
 /// The translations for Chinese, using the Han script (`zh_Hant`).
@@ -7242,19 +7515,29 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get homeTabBookmarked => '已收藏';
 
   @override
-  String get homeBookmarkedEmptyTitle => '還沒有收藏的作品';
+  String get homeBookmarkedEmptyTitle => '沒有可顯示的收藏作品';
 
   @override
-  String get homeBookmarkedEmptyBody => '在作品廣場收藏的作品會顯示在這裡。';
+  String get homeBookmarkedEmptyBody => '在作品廣場收藏喜歡的公開作品，即可在這裡查看。';
 
   @override
-  String get homeBookmarkedHiddenTitle => '收藏的作品目前未顯示';
+  String get homeBookmarkedHiddenTitle => '收藏仍然保留';
 
   @override
-  String get homeBookmarkedHiddenBody => '這些作品被作品廣場的顯示篩選隱藏了，或已不再公開。收藏仍然保留。';
+  String get homeBookmarkedHiddenBody =>
+      '顯示篩選條件或作品的公開狀態可能使作品無法顯示。可在作品廣場檢查顯示篩選條件。';
 
   @override
-  String get homeBookmarkedOpenPlaza => '查看作品廣場';
+  String get homeBookmarkedLoading => '正在載入收藏…';
+
+  @override
+  String get homeBookmarkedLoadFailed => '無法載入收藏';
+
+  @override
+  String get homeBookmarkedLoadPrompt => '載入已儲存的收藏';
+
+  @override
+  String get homeBookmarkedSignInBody => '請在作品廣場連結 Google 帳戶，以載入已儲存的收藏。';
 
   @override
   String get homeSearchHint => '依專案名稱搜尋';
@@ -7282,12 +7565,6 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get homeSelectionAllDeselect => '取消全選';
-
-  @override
-  String get homeSelectionAddFavorite => '加入收藏';
-
-  @override
-  String get homeSelectionRemoveFavorite => '取消收藏';
 
   @override
   String homeSelectionCount(int count) {
@@ -8606,7 +8883,7 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get helpColorMixingDesc =>
-      '使用筆刷上色時，將筆刷正下方已有的顏色與即將塗上的選定顏色混合後再繪製的功能。適合想讓新顏色與既有顏色自然融合時使用，如水彩或油畫般的效果。';
+      '使用筆刷上色時，將筆刷正下方已有的顏色與即將塗上的選定顏色混合後再繪製的功能。可在筆刷設定的混色模式中選擇：不混合直接上色的「數位」、像顏料一樣混合並把沾到的顏色拖開的「油畫風混色」、疊加透明顏料且乾後顏色聚集在邊緣的「水彩風混色」。';
 
   @override
   String get helpPressureCurveTitle => '筆壓曲線';
@@ -8620,7 +8897,7 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get helpTimelineDesc =>
-      '管理動畫時間軸的畫面。將影格（單張靜止影像）排列並像翻頁動畫一樣播放，就形成了動畫。圖片・影片・音訊等素材軌道、共用圖層軌道、攝影機關鍵影格也都在同一條時間軸上管理。';
+      '管理動畫時間軸的畫面。將影格（單張靜止影像）排列並像翻頁動畫一樣播放，就形成了動畫。文字・圖片・影片・音訊素材軌道、共用圖層軌道、攝影機關鍵影格也都在同一條時間軸上管理。文字・圖片・影片與影格插畫之間的前後關係可在「疊放順序」中依整個場景或指定的影格範圍調整。也可以長按項目進行多選，一起移動。';
 
   @override
   String get helpSceneTitle => '場景';
@@ -8641,7 +8918,7 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get helpEffectFilterDesc =>
-      '可套用於場景或影格的畫面效果（模糊・色調校正・光暈・像素畫等）。在不改變手繪畫面本身的前提下，作為演出手段調整整個畫面觀感時使用。繪畫濾鏡中的色調曲線（預設與強度）・色階・銳化・USM銳化・暗角（顏色・範圍・濃度）也收錄在演出濾鏡中，可以一次對多個影格套用相同的效果。像素畫也可以選擇配色方式（不指定顏色・指定顏色・指定顏色數・從調色盤選擇）。限制顏色時，單用一種顏色與原色相差較遠的地方，會用可用顏色中的兩到三種按規則排列（混色抖動）來接近原色，這種排列在影格之間不會移動；輪廓處保持清晰。混色抖動可以用開關開啟或關閉，關閉後用最接近的一種顏色填色。 演出濾鏡可以疊加套用多個，其套用順序依照時間軸上的排列順序。拖曳濾鏡清單重新排序後，實際反映到畫面上的順序也會隨之改變。 一種演出濾鏡，會逐影格改變類似膠片顆粒感的雜訊。可以用滑桿調整強度、數量（雜訊出現的密度）和顆粒大小。回到同一影格時雜訊形態相同（拖曳時不會閃爍），播放時顆粒則會呈現出跳動的效果。 用來表現畫面中降雨的演出濾鏡。可以用滑桿調整降雨強度（雨滴數量）、速度、雨滴大小和風向角度。每滴雨都會隨著影格數推進以固定速度持續落下，呈現自然的降雨效果。';
+      '可套用於場景或影格的畫面效果（模糊・色調校正・光暈・像素畫等）。在不改變手繪畫面本身的前提下，作為演出手段調整整個畫面觀感時使用。繪畫濾鏡中的色調曲線（預設與強度）・色階・銳化・USM銳化・暗角（顏色・範圍・濃度）・水彩邊界也收錄在演出濾鏡中，可以一次對多個影格套用相同的效果。像素畫也可以選擇配色方式（不指定顏色・指定顏色・指定顏色數・從調色盤選擇）。限制顏色時，單用一種顏色與原色相差較遠的地方，會用可用顏色中的兩到三種按規則排列（混色抖動）來接近原色，這種排列在影格之間不會移動；輪廓處保持清晰。混色抖動可以用開關開啟或關閉，關閉後用最接近的一種顏色填色。 演出濾鏡可以疊加套用多個，其套用順序依照時間軸上的排列順序。拖曳濾鏡清單重新排序後，實際反映到畫面上的順序也會隨之改變。 一種演出濾鏡，會逐影格改變類似膠片顆粒感的雜訊。可以用滑桿調整強度、數量（雜訊出現的密度）和顆粒大小。回到同一影格時雜訊形態相同（拖曳時不會閃爍），播放時顆粒則會呈現出跳動的效果。 用來表現畫面中降雨的演出濾鏡。可以用滑桿調整降雨強度（雨滴數量）、速度、雨滴大小和風向角度。每滴雨都會隨著影格數推進以固定速度持續落下，呈現自然的降雨效果。';
 
   @override
   String get helpEndCardTitle => 'EndCard（片尾標誌）';
@@ -8738,11 +9015,11 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
       '可依裝置效能從低畫質・中畫質・高畫質預設中選擇，也可逐項單獨設定（自訂）。除儲存方式・運作速度・洋蔥皮・傾斜偵測外，復原次數、垃圾桶自動刪除等影響App容量與運作負擔的設定也都集中在這裡。';
 
   @override
-  String get helpMaterialClipTitle => '素材片段（圖片・影片・音訊）';
+  String get helpMaterialClipTitle => '素材片段（文字・圖片・影片・音訊）';
 
   @override
   String get helpMaterialClipDesc =>
-      '放置在時間軸圖片、影片、音訊軌道上的片段。長按拖曳片段本身可移動其起始位置，拖曳兩端的把手可改變使用範圍（長度）。點擊片段會開啟詳細面板，其中的複製圖示用於複製、垃圾桶圖示用於刪除。圖片・影片在內部作為圖層處理，音訊則作為直接掛在場景上的片段管理。';
+      '放置在時間軸文字、圖片、影片、音訊軌道上的片段。長按拖曳片段本身可移動其起始位置，拖曳兩端的把手可改變使用範圍（長度）。同一時間重疊的素材會自動放到其他列。點擊文字・圖片・影片片段，會在預覽下方開啟編輯面板：可修改文字內容・字型・顏色・描邊，位置・縮放・X軸／Y軸／Z軸旋轉・不透明度（也可在預覽上拖曳，新增關鍵影格即可產生動畫），遮罩（矩形・橢圓・羽化・反轉）以及所在列，也可在此複製或刪除。音訊片段在詳細面板中調整音量和淡入淡出。';
 
   @override
   String get helpGestureSettingsTitle => '手勢設定';
@@ -8965,7 +9242,7 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get helpDrawingFilterDesc =>
-      '直接套用於所選圖層的濾鏡（演出濾鏡作用於整條時間軸或整個場景，而繪圖濾鏡按圖層生效）。內建27種濾鏡：高斯模糊、鏡頭模糊、動畫風、色調曲線、色階、外框、銳化、USM銳化、暗角、膠片顆粒、復古動漫、老電視、二值化、魚眼鏡頭、色差、眼鏡斷層、像素畫、質感變換、背景融合、積墨、自動線稿、稜鏡、VHS 雜訊、色彩反轉、馬賽克、雜訊和球體陰影。動漫風格會減少顏色數，並在相鄰顏色之差達到「顏色差閾值」以上的邊界上，於較暗的一側畫出「邊界線粗細」的線（線稿的線條不會變粗）。稜鏡會把圖層上每個形狀分別塗上彩虹六色（紅、綠、青色、藍、紫、紅）並模糊，再把圖層設為線性減淡。先在單獨的圖層上用深色畫出細小的葉片狀形狀再使用，畫面上就會出現柔和的彩虹光痕（模糊量與一般的高斯模糊採用相同標準）。球體陰影會在橢圓形光的內側疊加光色、外側疊加陰影色，且只加在已繪製的地方（也可以在畫布上拖曳光）。外框不會改寫原圖層，只會把結果繪製到新圖層。眼鏡斷層只對用面板的「畫筆」「油漆桶」在畫布上塗抹的範圍（可用「橡皮擦」修改）套用類似強力眼鏡鏡片的局部變形（如果有選取範圍或選取圖層，會從該範圍開始）。畫布上有選取範圍時，繪圖濾鏡只套用於選取範圍內。像素畫還可選擇配色方式（不限制、指定顏色、指定顏色數或從調色盤選擇）。限制顏色時，單用一種顏色與原色相差較遠的地方，會用可用顏色中的兩到三種按規則排列（混色抖動），使其更接近原色；輪廓處不混色，保持清晰。指定顏色數時，會從佔畫面大部分的顏色中選取。混色抖動可以用開關開啟或關閉，關閉後用最接近的一種顏色填色。大小可在「指定色塊大小」（1～100共100級）和「指定點數」（橫向・縱向點數滑桿，最左為1，最右為畫布尺寸）之間切換，橫向和縱向會在維持畫面長寬比的同時一起變化，兩種指定方式也會連動。兩種方式下點都維持正方形，不會產生半透明的邊緣。 自動線稿可在套用濾鏡前直接編輯暫時Vector控制點。拖曳控制點時只移動該點。選擇「套用」右側的「新增控制點」後點擊線條可新增控制點，選擇「刪除控制點」後點擊控制點可將其刪除（兩者都未選擇時點擊控制點，會先確認再刪除）。編輯後的形狀會直接用於最終套用結果，控制點的移動、新增和刪除也可以用濾鏡編輯的復原・重做逐一還原。 色調曲線中，輕點曲線上的空白處可新增點，拖曳點可移動，長按可刪除；R、G、B 各顏色的曲線在 RGB 曲線之後套用。色階也可按 R、G、B 分別調整，伽瑪可改變中間調的亮度。描邊的「向內延伸」可將邊緣擴展到原輪廓內側，描邊的新圖層會放在原圖層的正下方。色差可指定將偏移分配到 X（橫向）、Y（縱向）、Z（從中心向外）各多少。魚眼鏡頭的中心和半徑也可以在畫布上拖曳 ＋ 和圓上的控點來變更。暗角會柔和地壓暗整個畫布的四個角（沒有繪畫的透明處也會有陰影）。可用「範圍」調整從四角向中心壓暗到多遠，用「濃度」調整四角的暗度。眼鏡斷層像真正的高度數眼鏡一樣，讓透過鏡片看到的景物朝鏡片中心均勻縮小（負值，近視用）或放大（正值，遠視用），並在鏡片邊緣使輪廓錯開成台階狀。積墨只積在線條以「最大角度」或更小角度相交處（初始值90°時為銳角和直角：V字、交叉的窄側、T字、方角）的夾角內側，更寬的角不積：在相交點從線條邊緣起為「中央寬度」，再朝「範圍」的末端筆直變細，末端為0px，平滑地收成尖端（即使加大「中央寬度」，也不會鼓出連接兩側積墨末端的直線之外，最寬時中間也是平的）；若線條在範圍內中斷，該線條上的積墨會以中斷處為終點細到0px（每條線的長度可以不同），此時兩處積墨仍會在夾角的正中相接，距兩條線的寬度相同（較長線條的積墨從那裡再細到範圍的末端）。自動線稿沿草稿線條的中心描出細線。靠得很近的線條只要中間有一點空隙，就仍畫成兩條線，只填補線條內部的小白點。兩條線靠攏並貼在一起的地方，不會在中間畫成一條線，而是像草稿一樣兩條線逐漸靠近並合在一起。線條交叉或重疊的地方，也會像草稿一樣讓每條線照原樣延續（不會在交點處折彎，重疊的兩條線也不會融成一條）。以較淺角度斜向交叉的線也會筆直地穿過交叉處，僅相互接觸的線（例如沿著頭部畫的頭髮輪廓）則各自留在自己的一側，仍是分開的線。眼睛之類的點會畫成實心的點。比「草稿線寬」短的分岔不繪製。「起筆收筆」可以用開關開啟或關閉，關閉後線條直到末端都保持相同粗細。背景融入以混合模式「實光」疊加背景的光與影（影子的顏色不是黑色或灰色，而是把背景中陰影部分的顏色壓暗後的顏色）。周圍的顏色以「覆蓋」疊在整幅畫上來統一色彩方向，從下方反上來的光和周圍的反射光以「濾色」加入，霓虹燈之類的強烈有色光以「相加（發光）」加在輪廓上。「匹配背景的明暗與色調」會把比背景過亮或過於鮮豔的顏色拉回背景的範圍，並讓暗部、中間調、亮部分別帶上背景中相同明度的色調（線稿的黑色保持不變）。「模糊程度」是取色前模糊背景的程度。';
+      '直接套用於所選圖層的濾鏡（演出濾鏡作用於整條時間軸或整個場景，而繪圖濾鏡按圖層生效）。內建28種濾鏡：高斯模糊、鏡頭模糊、動畫風、色調曲線、色階、外框、銳化、USM銳化、暗角、膠片顆粒、復古動漫、老電視、二值化、魚眼鏡頭、色差、眼鏡斷層、像素畫、質感變換、背景融合、積墨、自動線稿、稜鏡、VHS 雜訊、色彩反轉、馬賽克、雜訊、球體陰影和水彩邊界。水彩邊界會讓作業圖層上塗色部分的邊緣聚集顏色、內側變得通透，就像乾了的水彩（開啟「顏色交界處也添加」後，相鄰顏色的交界處也會出現邊緣）。動漫風格會減少顏色數，並在相鄰顏色之差達到「顏色差閾值」以上的邊界上，於較暗的一側畫出「邊界線粗細」的線（線稿的線條不會變粗）。稜鏡會把圖層上每個形狀分別塗上彩虹六色（紅、綠、青色、藍、紫、紅）並模糊，再把圖層設為線性減淡。先在單獨的圖層上用深色畫出細小的葉片狀形狀再使用，畫面上就會出現柔和的彩虹光痕（模糊量與一般的高斯模糊採用相同標準）。球體陰影會在橢圓形光的內側疊加光色、外側疊加陰影色，且只加在已繪製的地方（也可以在畫布上拖曳光）。外框不會改寫原圖層，只會把結果繪製到新圖層。眼鏡斷層只對用面板的「畫筆」「油漆桶」在畫布上塗抹的範圍（可用「橡皮擦」修改）套用類似強力眼鏡鏡片的局部變形（如果有選取範圍或選取圖層，會從該範圍開始）。畫布上有選取範圍時，繪圖濾鏡只套用於選取範圍內。像素畫還可選擇配色方式（不限制、指定顏色、指定顏色數或從調色盤選擇）。限制顏色時，單用一種顏色與原色相差較遠的地方，會用可用顏色中的兩到三種按規則排列（混色抖動），使其更接近原色；輪廓處不混色，保持清晰。指定顏色數時，會從佔畫面大部分的顏色中選取。混色抖動可以用開關開啟或關閉，關閉後用最接近的一種顏色填色。大小可在「指定色塊大小」（1～100共100級）和「指定點數」（橫向・縱向點數滑桿，最左為1，最右為畫布尺寸）之間切換，橫向和縱向會在維持畫面長寬比的同時一起變化，兩種指定方式也會連動。兩種方式下點都維持正方形，不會產生半透明的邊緣。 自動線稿可在套用濾鏡前直接編輯暫時Vector控制點。拖曳控制點時只移動該點。選擇「套用」右側的「新增控制點」後點擊線條可新增控制點，選擇「刪除控制點」後點擊控制點可將其刪除（兩者都未選擇時點擊控制點，會先確認再刪除）。編輯後的形狀會直接用於最終套用結果，控制點的移動、新增和刪除也可以用濾鏡編輯的復原・重做逐一還原。 色調曲線中，輕點曲線上的空白處可新增點，拖曳點可移動，長按可刪除；R、G、B 各顏色的曲線在 RGB 曲線之後套用。色階也可按 R、G、B 分別調整，伽瑪可改變中間調的亮度。描邊的「向內延伸」可將邊緣擴展到原輪廓內側，描邊的新圖層會放在原圖層的正下方。色差可指定將偏移分配到 X（橫向）、Y（縱向）、Z（從中心向外）各多少。魚眼鏡頭的中心和半徑也可以在畫布上拖曳 ＋ 和圓上的控點來變更。暗角會柔和地壓暗整個畫布的四個角（沒有繪畫的透明處也會有陰影）。可用「範圍」調整從四角向中心壓暗到多遠，用「濃度」調整四角的暗度。眼鏡斷層像真正的高度數眼鏡一樣，讓透過鏡片看到的景物朝鏡片中心均勻縮小（負值，近視用）或放大（正值，遠視用），並在鏡片邊緣使輪廓錯開成台階狀。積墨只積在線條以「最大角度」或更小角度相交處（初始值90°時為銳角和直角：V字、交叉的窄側、T字、方角）的夾角內側，更寬的角不積：在相交點從線條邊緣起為「中央寬度」，再朝「範圍」的末端筆直變細，末端為0px，平滑地收成尖端（即使加大「中央寬度」，也不會鼓出連接兩側積墨末端的直線之外，最寬時中間也是平的）；若線條在範圍內中斷，該線條上的積墨會以中斷處為終點細到0px（每條線的長度可以不同），此時兩處積墨仍會在夾角的正中相接，距兩條線的寬度相同（較長線條的積墨從那裡再細到範圍的末端）。自動線稿沿草稿線條的中心描出細線。靠得很近的線條只要中間有一點空隙，就仍畫成兩條線，只填補線條內部的小白點。兩條線靠攏並貼在一起的地方，不會在中間畫成一條線，而是像草稿一樣兩條線逐漸靠近並合在一起。線條交叉或重疊的地方，也會像草稿一樣讓每條線照原樣延續（不會在交點處折彎，重疊的兩條線也不會融成一條）。以較淺角度斜向交叉的線也會筆直地穿過交叉處，僅相互接觸的線（例如沿著頭部畫的頭髮輪廓）則各自留在自己的一側，仍是分開的線。眼睛之類的點會畫成實心的點。比「草稿線寬」短的分岔不繪製。「起筆收筆」可以用開關開啟或關閉，關閉後線條直到末端都保持相同粗細。背景融入以混合模式「實光」疊加背景的光與影（影子的顏色不是黑色或灰色，而是把背景中陰影部分的顏色壓暗後的顏色）。周圍的顏色以「覆蓋」疊在整幅畫上來統一色彩方向，從下方反上來的光和周圍的反射光以「濾色」加入，霓虹燈之類的強烈有色光以「相加（發光）」加在輪廓上。「匹配背景的明暗與色調」會把比背景過亮或過於鮮豔的顏色拉回背景的範圍，並讓暗部、中間調、亮部分別帶上背景中相同明度的色調（線稿的黑色保持不變）。「模糊程度」是取色前模糊背景的程度。';
 
   @override
   String get helpLayerKeyframeTitle => '圖層關鍵影格（分部件動畫）';
@@ -9779,7 +10056,16 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get themeColorAccent => '強調色';
 
   @override
-  String get themeColorText => '文字顏色';
+  String get themeColorText => '內文及一般文字顏色';
+
+  @override
+  String get themeColorButtonText => '按鈕文字與圖示顏色';
+
+  @override
+  String get themeColorMenuText => '選單與頂端列文字顏色';
+
+  @override
+  String get themeColorSelectionText => '選取項文字與圖示顏色';
 
   @override
   String get themeColorPanelBg => '面板背景色';
@@ -9794,11 +10080,10 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get themeColorUpdateMark => '更新標記顏色';
 
   @override
-  String get themeContrastErrorTitle => '這個顏色會讓文字無法辨認';
+  String get themeResetConfirmTitle => '要重設主題顏色嗎？';
 
   @override
-  String get themeContrastErrorBody =>
-      '文字顏色和背景顏色太接近，畫面上的文字會幾乎看不見。設定畫面本身也會看不清而無法還原，因此無法儲存這個組合。請更改其中一方的明暗。';
+  String get themeResetConfirmAction => '重設';
 
   @override
   String get themeUnreadableResetButton => '還原主題';
@@ -10298,16 +10583,47 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get brushSettingsStrokeDecaySubtitle => '持續繪製不透明度會降低';
 
   @override
-  String get brushSettingsMixingTitle => '混色';
+  String get brushSettingsMixingTitle => '混色模式';
 
   @override
-  String get brushSettingsMixingOff => 'OFF';
+  String get brushSettingsMixingOff => '數位';
 
   @override
-  String get brushSettingsMixingSimple => '簡易混色';
+  String get brushSettingsMixingOil => '油畫風混色';
+
+  @override
+  String get brushSettingsMixingWatercolor => '水彩風混色';
+
+  @override
+  String get brushSettingsMixingBrightnessCorrection => '亮度校正';
+
+  @override
+  String get brushSettingsMixingAmount => '混色程度';
+
+  @override
+  String get brushSettingsMixingStretch => '顏色延展';
+
+  @override
+  String get brushSettingsMixingWater => '水分量';
+
+  @override
+  String get brushSettingsMixingPigment => '顏料量';
 
   @override
   String get brushSettingsMixingBleed => '暈染';
+
+  @override
+  String get brushSettingsMixingTexture => '斑駁';
+
+  @override
+  String get brushSettingsMixingSoftEdge => '邊界柔化';
+
+  @override
+  String get brushSettingsMixingOilHint => '像顏料一樣與下方的顏色混合，並把沾到的顏色沿筆畫拖開。';
+
+  @override
+  String get brushSettingsMixingWatercolorHint =>
+      '疊加透明的顏料。抬筆後顏料變乾，向筆刷外稍微暈開，顏色聚集在邊緣。';
 
   @override
   String get projectDetailNotFoundTitle => '專案';
@@ -10347,6 +10663,12 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get projectDetailShareQuickAction => '分享';
+
+  @override
+  String get projectDetailFavoriteRegistered => '已加入我的最愛';
+
+  @override
+  String get projectDetailFavoriteUnregistered => '未加入我的最愛';
 
   @override
   String get projectDetailInfoSectionTitle => '專案資訊';
@@ -11890,6 +12212,199 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get timelineAddWatermarkTooltip => '＋浮水印';
 
   @override
+  String get timelineStackScopeRange => '影格範圍';
+
+  @override
+  String get timelineStackTargetLabel => '此疊放順序用於';
+
+  @override
+  String get timelineStackTargetScenes => '多選場景';
+
+  @override
+  String get timelineStackTargetAllFrames => '所有影格';
+
+  @override
+  String get timelineStackScenesHint =>
+      '所選場景的所有影格使用相同的順序。在這裡調整後，所選的全部場景都會使用該順序。';
+
+  @override
+  String get timelineStackAllFramesHint =>
+      '所有場景的所有影格使用相同的順序。在這裡調整後，所有場景都會使用該順序。';
+
+  @override
+  String get timelineStackRangesTakePriority => '指定了影格範圍的影格優先使用該範圍的順序。';
+
+  @override
+  String timelineStackRangeLabel(int start, int end) {
+    return 'F$start～F$end';
+  }
+
+  @override
+  String timelineStackRangeAdd(int n) {
+    return '在F$n新增範圍';
+  }
+
+  @override
+  String get timelineStackRangeHint => '只有指定範圍內的影格使用這裡排列的順序，範圍外使用整個場景的順序。';
+
+  @override
+  String get timelineStackRangeEmpty => '還沒有範圍。用上面的按鈕可在目前影格建立。';
+
+  @override
+  String timelineStackRangeOrderHint(String range) {
+    return '$range的疊放順序（越靠上越在前）。拖曳把手或使用箭頭調整順序。';
+  }
+
+  @override
+  String get timelineStackRangeDelete => '刪除此範圍';
+
+  @override
+  String get timelineAddMaterialTooltip => '新增素材';
+
+  @override
+  String get timelineMaterialRowLabel => '所在列';
+
+  @override
+  String get timelineMaterialNewRow => '新列';
+
+  @override
+  String get timelineAddTextTooltip => '＋文字';
+
+  @override
+  String get timelineAddImageTooltip => '＋圖片';
+
+  @override
+  String get timelineStackOrderTitle => '疊放順序';
+
+  @override
+  String get timelineMaterialText => '文字';
+
+  @override
+  String get timelineAddTextDialogTitle => '新增文字';
+
+  @override
+  String get timelineEditSectionText => '文字';
+
+  @override
+  String get timelineEditSectionTransform => '位置';
+
+  @override
+  String get timelineEditSectionMask => '遮罩';
+
+  @override
+  String get timelineTransformRotationX => 'X軸旋轉';
+
+  @override
+  String get timelineTransformRotationY => 'Y軸旋轉';
+
+  @override
+  String get timelineTransformRotationZ => 'Z軸旋轉';
+
+  @override
+  String get timelineTransformReset => '重設位置';
+
+  @override
+  String timelineKeyframeAddHere(int n) {
+    return '在F$n新增關鍵影格';
+  }
+
+  @override
+  String timelineKeyframeRemoveHere(int n) {
+    return '刪除F$n的關鍵影格';
+  }
+
+  @override
+  String get timelineKeyframeWholeHint => '整個素材使用相同的位置。要讓它動起來，請移到其他影格並新增關鍵影格。';
+
+  @override
+  String timelineKeyframeAnimHint(int count, int n) {
+    return '$count個關鍵影格：修改會記錄在F$n，中間的影格自動補間。';
+  }
+
+  @override
+  String get timelineGizmoHint => '在預覽上拖曳可移動，拖曳角落的圓點可縮放，拖曳上方的圓點可旋轉。也可以用兩指操作。';
+
+  @override
+  String timelineMaterialOutOfRange(int start, int end) {
+    return '此影格不顯示（在F$start～F$end顯示）';
+  }
+
+  @override
+  String get timelineMaskNone => '無';
+
+  @override
+  String get timelineMaskRectangle => '矩形';
+
+  @override
+  String get timelineMaskEllipse => '橢圓';
+
+  @override
+  String get timelineMaskCenterX => '中心 X';
+
+  @override
+  String get timelineMaskCenterY => '中心 Y';
+
+  @override
+  String get timelineMaskWidth => '寬度';
+
+  @override
+  String get timelineMaskHeight => '高度';
+
+  @override
+  String get timelineMaskFeather => '羽化';
+
+  @override
+  String get timelineMaskInvert => '反轉（隱藏內側）';
+
+  @override
+  String get timelineMaskHint => '只顯示遮罩內側。反轉後改為隱藏內側。';
+
+  @override
+  String get timelineStackOrderHint => '越靠上越顯示在前面。拖曳把手或使用箭頭調整順序。';
+
+  @override
+  String get timelineStackScopeScene => '目前整個場景';
+
+  @override
+  String get timelineStackFrameUnit => '影格（插畫）';
+
+  @override
+  String get timelineStackResetScene => '恢復預設順序';
+
+  @override
+  String get timelineStackFrameMaskTitle => '影格（插畫）遮罩';
+
+  @override
+  String get timelineStackFrameMaskHint => '只裁切繪製的畫面，不影響文字、圖片和影片。在畫布上繪製時不會被隱藏。';
+
+  @override
+  String get timelineStackMoveUp => '上移一層';
+
+  @override
+  String get timelineStackMoveDown => '下移一層';
+
+  @override
+  String timelineStackSelectedCount(int count) {
+    return '已選擇$count項';
+  }
+
+  @override
+  String get timelineStackBringToFront => '移到最前';
+
+  @override
+  String get timelineStackSendToBack => '移到最後';
+
+  @override
+  String get timelineStackDeselectAll => '取消全選';
+
+  @override
+  String get timelineStackSelectAll => '全選';
+
+  @override
+  String get timelineStackMultiSelectHint =>
+      '長按項目即可多選。選取的項目可以用箭頭、拖曳或下方的按鈕一起移動。';
+
+  @override
   String get timelineWatermarkNotRegisteredTitle => '尚未註冊浮水印';
 
   @override
@@ -11969,7 +12484,7 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get timelineSceneDeleteConfirmBody =>
-      '場景內的全部影格、共用圖層、影片素材、圖片素材、浮水印等全部資料都將被刪除。';
+      '場景內的全部影格、共用圖層、文字素材、影片素材、圖片素材、浮水印等全部資料都將被刪除。';
 
   @override
   String timelineSceneMultiDeleteConfirmTitle(int count) {
@@ -13658,9 +14173,6 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get brushSettingsStrongPressureLabel => '強';
 
   @override
-  String get brushSettingsValueLabel => '值';
-
-  @override
   String get helpCustomAutomationTitle => '自訂自動操作（操作錄製）';
 
   @override
@@ -14335,6 +14847,28 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
       '拖曳畫布上的＋可移動光，拖曳圓形控點可改變大小。陰影和光只會加在已繪製的地方。';
 
   @override
+  String get filterNameWatercolorBorder => '水彩邊界';
+
+  @override
+  String get filterWatercolorBorderRange => '範圍';
+
+  @override
+  String get filterWatercolorBorderBlur => '模糊寬度';
+
+  @override
+  String get filterWatercolorBorderOpacity => '透明度影響';
+
+  @override
+  String get filterWatercolorBorderDarken => '邊緣濃度';
+
+  @override
+  String get filterWatercolorBorderColorEdges => '顏色交界處也添加';
+
+  @override
+  String get filterWatercolorBorderHint =>
+      '顏色聚集在塗色區域的邊緣，內側變得通透，就像乾了的水彩（直接繪製在作業圖層上）。範圍：從邊緣向內加深到哪裡。邊緣濃度：邊緣聚集的顏色有多濃。透明度影響：內側變得多通透。模糊寬度：濃淡過渡有多平滑。';
+
+  @override
   String get filterFisheyeCanvasHint => '拖曳畫布上的＋可移動中心，拖曳圓上的圓形控點可改變半徑。';
 
   @override
@@ -14433,4 +14967,16 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get errorViewBody => '編輯中的資料已保留。請返回上一個畫面後再試一次。將以下內容告知開發者，有助於找出原因。';
+
+  @override
+  String get homeWorksLoadFailed => '無法載入匯出的作品';
+
+  @override
+  String get newProjectCreating => '正在建立…';
+
+  @override
+  String get newProjectCreateFailed => '無法儲存專案。請檢查儲存空間與儲存位置，然後再試一次。';
+
+  @override
+  String get communityCreatorLabel => '作者';
 }

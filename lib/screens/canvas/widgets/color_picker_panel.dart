@@ -10,10 +10,9 @@ import '../../../models/color_palette.dart';
 import '../../../services/palette_service.dart';
 import '../../../widgets/confirm_delete.dart';
 import '../../../widgets/dispose_on_unmount.dart';
-import '../../../widgets/editable_slider_value.dart';
+import '../../../widgets/labeled_slider.dart';
 import '../../../widgets/qr_import_dialog.dart';
 import '../../../widgets/qr_share_dialog.dart';
-import '../../../widgets/stepped_slider.dart';
 import 'hsv_color_wheel.dart';
 import 'panel_close_bar.dart';
 import '../../../config/font_fallback.dart';
@@ -215,16 +214,17 @@ class _ColorPickerPanelState extends State<ColorPickerPanel> {
               // できるようにする）。チェッカー柄の上にプレビューを
               // 重ねて透明度が視覚的に分かるようにする。見出しラベルを添え、
               // 現在色プレビューは一目で分かるよう大きめに表示する。
-              Text(
-                l10n.colorPickerOpacityLabel,
-                style: TextStyle(
+              // 0〜1で持つが、直接入力と同じく百分率で動かす。
+              LabeledSlider(
+                padding: EdgeInsets.zero,
+                label: l10n.colorPickerOpacityLabel,
+                labelStyle: TextStyle(
                   fontSize: 10,
                   color: Theme.of(context).colorScheme.onSurfaceVariant,
                 ),
-              ),
-              Row(
-                children: [
-                  SizedBox(
+                labelTrailing: Padding(
+                  padding: const EdgeInsetsDirectional.only(start: 8),
+                  child: SizedBox(
                     width: 28,
                     height: 28,
                     child: CustomPaint(
@@ -232,37 +232,18 @@ class _ColorPickerPanelState extends State<ColorPickerPanel> {
                       child: ColoredBox(color: _currentColor),
                     ),
                   ),
-                  const SizedBox(width: 8),
-                  Expanded(
-                    child: SteppedSlider(
-                      min: 0,
-                      max: 1,
-                      value: _alpha,
-                      step: 0.01,
-                      label: '${(_alpha * 100).round()}%',
-                      onChanged: (v) {
-                        _alpha = v;
-                        _applyAlpha();
-                      },
-                      onChangeEnd: (_) => _commitToRecent(),
-                    ),
-                  ),
-                  SizedBox(
-                    width: 32,
-                    child: EditableSliderValue(
-                      text: '${(_alpha * 100).round()}%',
-                      style: const TextStyle(fontSize: 11),
-                      value: (_alpha * 100).round(),
-                      min: 0,
-                      max: 100,
-                      onChanged: (v) {
-                        _alpha = v / 100;
-                        _applyAlpha();
-                        _commitToRecent();
-                      },
-                    ),
-                  ),
-                ],
+                ),
+                value: _alpha * 100,
+                min: 0,
+                max: 100,
+                sliderLabel: '${(_alpha * 100).round()}%',
+                valueText: '${(_alpha * 100).round()}%',
+                valueStyle: const TextStyle(fontSize: 11),
+                onChanged: (v) {
+                  _alpha = v / 100;
+                  _applyAlpha();
+                },
+                onChangeEnd: (_) => _commitToRecent(),
               ),
               const SizedBox(height: 8),
               Row(
@@ -804,37 +785,17 @@ class _ColorPickerPanelState extends State<ColorPickerPanel> {
     ValueChanged<double> onChanged,
     ValueChanged<double>? onChangeEnd,
   ) {
-    return Row(
-      children: [
-        SizedBox(
-          width: 14,
-          child: Text(label, style: const TextStyle(fontSize: 12)),
-        ),
-        Expanded(
-          child: SteppedSlider(
-            min: min,
-            max: max,
-            value: value,
-            onChanged: onChanged,
-            onChangeEnd: onChangeEnd,
-          ),
-        ),
-        // 数値部分をタップすると直接入力できる。
-        SizedBox(
-          width: 32,
-          child: EditableSliderValue(
-            text: value.round().toString(),
-            style: const TextStyle(fontSize: 11),
-            value: value,
-            min: min,
-            max: max,
-            onChanged: (v) {
-              onChanged(v.toDouble());
-              onChangeEnd?.call(v.toDouble());
-            },
-          ),
-        ),
-      ],
+    // 数値部分をタップすると直接入力できる。
+    return LabeledSlider(
+      padding: EdgeInsets.zero,
+      label: label,
+      value: value,
+      min: min,
+      max: max,
+      valueText: value.round().toString(),
+      valueStyle: const TextStyle(fontSize: 11),
+      onChanged: onChanged,
+      onChangeEnd: onChangeEnd,
     );
   }
 

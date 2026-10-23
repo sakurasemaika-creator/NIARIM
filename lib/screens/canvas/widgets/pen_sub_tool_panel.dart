@@ -6,8 +6,7 @@ import '../../../services/brush_service.dart';
 import '../../../services/tone_service.dart';
 import '../../../services/stamp_service.dart';
 import '../../../models/stamp.dart';
-import '../../../widgets/editable_slider_value.dart';
-import '../../../widgets/stepped_slider.dart';
+import '../../../widgets/labeled_slider.dart';
 import '../../../widgets/first_use_tooltip.dart';
 import '../canvas_screen.dart';
 import '../../../config/font_fallback.dart';
@@ -364,84 +363,35 @@ class _StampTab extends StatelessWidget {
                 value: rotation,
                 onChanged: (v) => setS(() => rotation = v),
               ),
-              Row(
-                children: [
-                  Text(
-                    l10n.brushSettingsOpacityLabel,
-                    style: const TextStyle(fontSize: 12),
-                  ),
-                  Expanded(
-                    child: SteppedSlider(
-                      value: opacity.toDouble(),
-                      min: 1,
-                      max: 100,
-                      step: 1,
-                      label: '$opacity%',
-                      onChanged: (v) => setS(() => opacity = v.round()),
-                    ),
-                  ),
-                  EditableSliderValue(
-                    text: '$opacity%',
-                    style: const TextStyle(fontSize: 12),
-                    value: opacity.toDouble(),
-                    min: 1,
-                    max: 100,
-                    isInt: true,
-                    onChanged: (v) => setS(() => opacity = v.round()),
-                  ),
-                ],
+              LabeledSlider(
+                label: l10n.brushSettingsOpacityLabel,
+                value: opacity.toDouble(),
+                min: 1,
+                max: 100,
+                sliderLabel: '$opacity%',
+                valueText: '$opacity%',
+                onChanged: (v) => setS(() => opacity = v.round()),
               ),
-              Row(
-                children: [
-                  Text(
-                    l10n.stampDensityLabel,
-                    style: const TextStyle(fontSize: 12),
-                  ),
-                  Expanded(
-                    child: SteppedSlider(
-                      value: density.clamp(0.1, 5.0),
-                      min: 0.1,
-                      max: 5.0,
-                      step: 0.1,
-                      label: density.toStringAsFixed(1),
-                      onChanged: (v) => setS(() => density = v),
-                    ),
-                  ),
-                  EditableSliderValue(
-                    text: density.toStringAsFixed(1),
-                    style: const TextStyle(fontSize: 12),
-                    value: density,
-                    min: 0.1,
-                    max: 5.0,
-                    onChanged: (v) => setS(() => density = v.toDouble()),
-                  ),
-                ],
+              LabeledSlider(
+                label: l10n.stampDensityLabel,
+                value: density.clamp(0.1, 5.0),
+                min: 0.1,
+                max: 5.0,
+                step: 0.1,
+                isInt: false,
+                sliderLabel: density.toStringAsFixed(1),
+                valueText: density.toStringAsFixed(1),
+                onChanged: (v) => setS(() => density = v),
               ),
-              Row(
-                children: [
-                  Text(
-                    l10n.stampScatterLabel,
-                    style: const TextStyle(fontSize: 12),
-                  ),
-                  Expanded(
-                    child: SteppedSlider(
-                      value: scatter,
-                      min: 0,
-                      max: 1.0,
-                      step: 0.01,
-                      label: '${(scatter * 100).round()}%',
-                      onChanged: (v) => setS(() => scatter = v),
-                    ),
-                  ),
-                  EditableSliderValue(
-                    text: '${(scatter * 100).round()}%',
-                    style: const TextStyle(fontSize: 12),
-                    value: (scatter * 100).round(),
-                    min: 0,
-                    max: 100,
-                    onChanged: (v) => setS(() => scatter = v / 100.0),
-                  ),
-                ],
+              // 散布は0〜1で持つが、直接入力と同じく百分率で動かす。
+              LabeledSlider(
+                label: l10n.stampScatterLabel,
+                value: scatter * 100,
+                min: 0,
+                max: 100,
+                sliderLabel: '${(scatter * 100).round()}%',
+                valueText: '${(scatter * 100).round()}%',
+                onChanged: (v) => setS(() => scatter = v / 100.0),
               ),
             ],
           ),

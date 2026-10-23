@@ -24,9 +24,37 @@ class ThemeService extends ChangeNotifier {
   List<AppThemePreset> get presets => List.unmodifiable(_presets);
   AppThemePreset get current => _current;
 
+  /// 色リセットの表示判定は現在のテーマオブジェクトにつき一度だけ。
+  /// 色変更（プレビュー/適用/復元）の時だけオブジェクトが変わる。
+  /// 毎フレームのbuildでは計算を行わずキャッシュを返す。
+  AppThemePreset? _rescueCheckedPreset;
+  bool _rescueCachedResult = false;
+
+  bool get needsThemeRescue {
+    if (!identical(_rescueCheckedPreset, _current)) {
+      _rescueCachedResult = isThemeAtLockoutRisk(_current);
+      _rescueCheckedPreset = _current;
+    }
+    return _rescueCachedResult;
+  }
+
+
   static ColorScheme activeColorScheme = ColorScheme.fromSeed(
     seedColor: const Color(0xFFFF5C7A),
   );
+
+  /// 復旧確認ダイアログ専用。現在のテーマから独立している。
+  /// プリセットの色をここで複製せず、正式なレッド（ライト）を利用する。
+  static ThemeData get rescueThemeData =>
+      ThemeService()._buildTheme(AppThemePreset.defaultLight);
+
+  /// 利用者が確認した場合のみ、現在の配色を既定に戻して永続化する。
+  /// 保存済みのユーザープリセット自体は削除・書き換えない。
+  Future<void> resetToDefault() async {
+    _current = AppThemePreset.defaultLight;
+    notifyListeners();
+    await _persist();
+  }
 
   ThemeData get themeData {
     final data = _buildTheme(_current);
@@ -47,6 +75,9 @@ class ThemeService extends ChangeNotifier {
       name: 'オレンジ（ライト）',
       accentColor: Color(0xFFFF8A3D),
       textColor: Color(0xFF2E2013),
+      buttonTextColor: Color(0xFF17161C),
+      menuTextColor: Color(0xFF2E2013),
+      selectionTextColor: Color(0xFF17161C),
       panelBgColor: Color(0xFFFFF6EE),
       menuBgColor: Color(0xFFFFFFFF),
       selectionColor: Color(0xFFFF8A3D),
@@ -57,6 +88,9 @@ class ThemeService extends ChangeNotifier {
       name: 'オレンジ（ダーク）',
       accentColor: Color(0xFFFF8A3D),
       textColor: Color(0xFFFAF0E6),
+      buttonTextColor: Color(0xFF17161C),
+      menuTextColor: Color(0xFFFAF0E6),
+      selectionTextColor: Color(0xFF17161C),
       panelBgColor: Color(0xFF1F160E),
       menuBgColor: Color(0xFF2A1D12),
       selectionColor: Color(0xFFFF8A3D),
@@ -67,6 +101,9 @@ class ThemeService extends ChangeNotifier {
       name: 'イエロー（ライト）',
       accentColor: Color(0xFFF2B90F),
       textColor: Color(0xFF2E2A12),
+      buttonTextColor: Color(0xFF17161C),
+      menuTextColor: Color(0xFF2E2A12),
+      selectionTextColor: Color(0xFF17161C),
       panelBgColor: Color(0xFFFFFBEA),
       menuBgColor: Color(0xFFFFFFFF),
       selectionColor: Color(0xFFF2B90F),
@@ -77,6 +114,9 @@ class ThemeService extends ChangeNotifier {
       name: 'イエロー（ダーク）',
       accentColor: Color(0xFFF2B90F),
       textColor: Color(0xFFFAF6E6),
+      buttonTextColor: Color(0xFF17161C),
+      menuTextColor: Color(0xFFFAF6E6),
+      selectionTextColor: Color(0xFF17161C),
       panelBgColor: Color(0xFF1E1B0C),
       menuBgColor: Color(0xFF292410),
       selectionColor: Color(0xFFF2B90F),
@@ -87,6 +127,9 @@ class ThemeService extends ChangeNotifier {
       name: 'グリーン（ライト）',
       accentColor: Color(0xFF3DDC97),
       textColor: Color(0xFF16291F),
+      buttonTextColor: Color(0xFF17161C),
+      menuTextColor: Color(0xFF16291F),
+      selectionTextColor: Color(0xFF17161C),
       panelBgColor: Color(0xFFF1FBF6),
       menuBgColor: Color(0xFFFFFFFF),
       selectionColor: Color(0xFF3DDC97),
@@ -97,6 +140,9 @@ class ThemeService extends ChangeNotifier {
       name: 'グリーン（ダーク）',
       accentColor: Color(0xFF3DDC97),
       textColor: Color(0xFFF1FAF5),
+      buttonTextColor: Color(0xFF17161C),
+      menuTextColor: Color(0xFFF1FAF5),
+      selectionTextColor: Color(0xFF17161C),
       panelBgColor: Color(0xFF101A15),
       menuBgColor: Color(0xFF17251D),
       selectionColor: Color(0xFF3DDC97),
@@ -107,6 +153,9 @@ class ThemeService extends ChangeNotifier {
       name: 'ブルー（ライト）',
       accentColor: Color(0xFF3AA6FF),
       textColor: Color(0xFF16232E),
+      buttonTextColor: Color(0xFFFFFFFF),
+      menuTextColor: Color(0xFF16232E),
+      selectionTextColor: Color(0xFFFFFFFF),
       panelBgColor: Color(0xFFF1F7FC),
       menuBgColor: Color(0xFFFFFFFF),
       selectionColor: Color(0xFF3AA6FF),
@@ -117,6 +166,9 @@ class ThemeService extends ChangeNotifier {
       name: 'ブルー（ダーク）',
       accentColor: Color(0xFF3AA6FF),
       textColor: Color(0xFFF2F6FA),
+      buttonTextColor: Color(0xFFFFFFFF),
+      menuTextColor: Color(0xFFF2F6FA),
+      selectionTextColor: Color(0xFFFFFFFF),
       panelBgColor: Color(0xFF11181F),
       menuBgColor: Color(0xFF182430),
       selectionColor: Color(0xFF3AA6FF),
@@ -128,6 +180,9 @@ class ThemeService extends ChangeNotifier {
       name: '藍色（ライト）',
       accentColor: Color(0xFF5C6BFF),
       textColor: Color(0xFF1E2033),
+      buttonTextColor: Color(0xFFFFFFFF),
+      menuTextColor: Color(0xFF1E2033),
+      selectionTextColor: Color(0xFFFFFFFF),
       panelBgColor: Color(0xFFF3F3FC),
       menuBgColor: Color(0xFFFFFFFF),
       selectionColor: Color(0xFF5C6BFF),
@@ -138,6 +193,9 @@ class ThemeService extends ChangeNotifier {
       name: '藍色（ダーク）',
       accentColor: Color(0xFF5C6BFF),
       textColor: Color(0xFFF0F1FA),
+      buttonTextColor: Color(0xFFFFFFFF),
+      menuTextColor: Color(0xFFF0F1FA),
+      selectionTextColor: Color(0xFFFFFFFF),
       panelBgColor: Color(0xFF14151F),
       menuBgColor: Color(0xFF1C1E2D),
       selectionColor: Color(0xFF5C6BFF),
@@ -148,6 +206,9 @@ class ThemeService extends ChangeNotifier {
       name: 'パープル（ライト）',
       accentColor: Color(0xFFB15CFF),
       textColor: Color(0xFF2B2033),
+      buttonTextColor: Color(0xFFFFFFFF),
+      menuTextColor: Color(0xFF2B2033),
+      selectionTextColor: Color(0xFFFFFFFF),
       panelBgColor: Color(0xFFF8F1FC),
       menuBgColor: Color(0xFFFFFFFF),
       selectionColor: Color(0xFFB15CFF),
@@ -158,6 +219,9 @@ class ThemeService extends ChangeNotifier {
       name: 'パープル（ダーク）',
       accentColor: Color(0xFFB15CFF),
       textColor: Color(0xFFF6F1FA),
+      buttonTextColor: Color(0xFFFFFFFF),
+      menuTextColor: Color(0xFFF6F1FA),
+      selectionTextColor: Color(0xFFFFFFFF),
       panelBgColor: Color(0xFF19141F),
       menuBgColor: Color(0xFF241C2D),
       selectionColor: Color(0xFFB15CFF),
@@ -169,6 +233,9 @@ class ThemeService extends ChangeNotifier {
       name: 'ピンク（ライト）',
       accentColor: Color(0xFFFF7EB3),
       textColor: Color(0xFF33202A),
+      buttonTextColor: Color(0xFF17161C),
+      menuTextColor: Color(0xFF33202A),
+      selectionTextColor: Color(0xFF17161C),
       panelBgColor: Color(0xFFFFF1F6),
       menuBgColor: Color(0xFFFFFFFF),
       selectionColor: Color(0xFFFF7EB3),
@@ -179,6 +246,9 @@ class ThemeService extends ChangeNotifier {
       name: 'ピンク（ダーク）',
       accentColor: Color(0xFFFF7EB3),
       textColor: Color(0xFFFAEEF3),
+      buttonTextColor: Color(0xFF17161C),
+      menuTextColor: Color(0xFFFAEEF3),
+      selectionTextColor: Color(0xFF17161C),
       panelBgColor: Color(0xFF1F1418),
       menuBgColor: Color(0xFF2B1B22),
       selectionColor: Color(0xFFFF7EB3),
@@ -189,6 +259,9 @@ class ThemeService extends ChangeNotifier {
       name: 'ライトパープル（ライト）',
       accentColor: Color(0xFFB39DDB),
       textColor: Color(0xFF272233),
+      buttonTextColor: Color(0xFF17161C),
+      menuTextColor: Color(0xFF272233),
+      selectionTextColor: Color(0xFF17161C),
       panelBgColor: Color(0xFFF6F2FC),
       menuBgColor: Color(0xFFFFFFFF),
       selectionColor: Color(0xFFB39DDB),
@@ -199,6 +272,9 @@ class ThemeService extends ChangeNotifier {
       name: 'ライトパープル（ダーク）',
       accentColor: Color(0xFFB39DDB),
       textColor: Color(0xFFF2EFF9),
+      buttonTextColor: Color(0xFF17161C),
+      menuTextColor: Color(0xFFF2EFF9),
+      selectionTextColor: Color(0xFF17161C),
       panelBgColor: Color(0xFF19171F),
       menuBgColor: Color(0xFF211E2C),
       selectionColor: Color(0xFFB39DDB),
@@ -209,6 +285,9 @@ class ThemeService extends ChangeNotifier {
       name: 'ライトブルー（ライト）',
       accentColor: Color(0xFF90CAF9),
       textColor: Color(0xFF1D2733),
+      buttonTextColor: Color(0xFF17161C),
+      menuTextColor: Color(0xFF1D2733),
+      selectionTextColor: Color(0xFF17161C),
       panelBgColor: Color(0xFFF0F8FE),
       menuBgColor: Color(0xFFFFFFFF),
       selectionColor: Color(0xFF90CAF9),
@@ -219,6 +298,9 @@ class ThemeService extends ChangeNotifier {
       name: 'ライトブルー（ダーク）',
       accentColor: Color(0xFF90CAF9),
       textColor: Color(0xFFEDF5FB),
+      buttonTextColor: Color(0xFF17161C),
+      menuTextColor: Color(0xFFEDF5FB),
+      selectionTextColor: Color(0xFF17161C),
       panelBgColor: Color(0xFF141A1F),
       menuBgColor: Color(0xFF1C2530),
       selectionColor: Color(0xFF90CAF9),
@@ -229,6 +311,9 @@ class ThemeService extends ChangeNotifier {
       name: 'エメラルドグリーン（ライト）',
       accentColor: Color(0xFF10B981),
       textColor: Color(0xFF13291F),
+      buttonTextColor: Color(0xFFFFFFFF),
+      menuTextColor: Color(0xFF13291F),
+      selectionTextColor: Color(0xFFFFFFFF),
       panelBgColor: Color(0xFFECFAF4),
       menuBgColor: Color(0xFFFFFFFF),
       selectionColor: Color(0xFF10B981),
@@ -239,6 +324,9 @@ class ThemeService extends ChangeNotifier {
       name: 'エメラルドグリーン（ダーク）',
       accentColor: Color(0xFF10B981),
       textColor: Color(0xFFE9FAF3),
+      buttonTextColor: Color(0xFFFFFFFF),
+      menuTextColor: Color(0xFFE9FAF3),
+      selectionTextColor: Color(0xFFFFFFFF),
       panelBgColor: Color(0xFF0D1815),
       menuBgColor: Color(0xFF13221D),
       selectionColor: Color(0xFF10B981),
@@ -250,6 +338,9 @@ class ThemeService extends ChangeNotifier {
       name: 'くすみピンク（ライト）',
       accentColor: Color(0xFFD8A0A6),
       textColor: Color(0xFF2E2325),
+      buttonTextColor: Color(0xFF17161C),
+      menuTextColor: Color(0xFF2E2325),
+      selectionTextColor: Color(0xFF17161C),
       panelBgColor: Color(0xFFFAF2F2),
       menuBgColor: Color(0xFFFFFFFF),
       selectionColor: Color(0xFFD8A0A6),
@@ -260,6 +351,9 @@ class ThemeService extends ChangeNotifier {
       name: 'くすみピンク（ダーク）',
       accentColor: Color(0xFFD8A0A6),
       textColor: Color(0xFFF5ECED),
+      buttonTextColor: Color(0xFF17161C),
+      menuTextColor: Color(0xFFF5ECED),
+      selectionTextColor: Color(0xFF17161C),
       panelBgColor: Color(0xFF1C1516),
       menuBgColor: Color(0xFF261C1E),
       selectionColor: Color(0xFFD8A0A6),
@@ -270,6 +364,9 @@ class ThemeService extends ChangeNotifier {
       name: 'くすみブルー（ライト）',
       accentColor: Color(0xFF8DA9C4),
       textColor: Color(0xFF212B33),
+      buttonTextColor: Color(0xFF17161C),
+      menuTextColor: Color(0xFF212B33),
+      selectionTextColor: Color(0xFF17161C),
       panelBgColor: Color(0xFFF1F5F9),
       menuBgColor: Color(0xFFFFFFFF),
       selectionColor: Color(0xFF8DA9C4),
@@ -280,6 +377,9 @@ class ThemeService extends ChangeNotifier {
       name: 'くすみブルー（ダーク）',
       accentColor: Color(0xFF8DA9C4),
       textColor: Color(0xFFEDF1F5),
+      buttonTextColor: Color(0xFF17161C),
+      menuTextColor: Color(0xFFEDF1F5),
+      selectionTextColor: Color(0xFF17161C),
       panelBgColor: Color(0xFF151A1E),
       menuBgColor: Color(0xFF1C232B),
       selectionColor: Color(0xFF8DA9C4),
@@ -290,6 +390,9 @@ class ThemeService extends ChangeNotifier {
       name: 'くすみグリーン（ライト）',
       accentColor: Color(0xFF8FB89D),
       textColor: Color(0xFF20281F),
+      buttonTextColor: Color(0xFF17161C),
+      menuTextColor: Color(0xFF20281F),
+      selectionTextColor: Color(0xFF17161C),
       panelBgColor: Color(0xFFF2F8F3),
       menuBgColor: Color(0xFFFFFFFF),
       selectionColor: Color(0xFF8FB89D),
@@ -300,6 +403,9 @@ class ThemeService extends ChangeNotifier {
       name: 'くすみグリーン（ダーク）',
       accentColor: Color(0xFF8FB89D),
       textColor: Color(0xFFEEF4EF),
+      buttonTextColor: Color(0xFF17161C),
+      menuTextColor: Color(0xFFEEF4EF),
+      selectionTextColor: Color(0xFF17161C),
       panelBgColor: Color(0xFF151A16),
       menuBgColor: Color(0xFF1D251F),
       selectionColor: Color(0xFF8FB89D),
@@ -489,20 +595,32 @@ class ThemeService extends ChangeNotifier {
     final popupColor = opaqueOver(preset.menuBgColor, panelColor);
     // 初回の吹き出し・説明の吹き出しはアクセント色を下地にするので同様。
     final accentColor = opaqueOver(preset.accentColor, panelColor);
-    // 「文字色」（UI全体の文字色）はonSurface系にも反映し、
+    final selectionColor = opaqueOver(preset.selectionColor, panelColor);
+    // 「本文・通常の文字色」はonSurface系にも反映し、
     // ColorScheme.fromSeedが自動算出する既定の文字色（accentColorから
     // 逆算される、ユーザーが選んだtextColorとは無関係の値）で上書きされて
     // しまわないようにする。
-    final scheme =
-        ColorScheme.fromSeed(
-          seedColor: preset.accentColor,
-          brightness: brightness,
-        ).copyWith(
-          primary: accentColor,
-          secondary: preset.selectionColor,
-          onSurface: preset.textColor,
-          onSurfaceVariant: preset.textColor.withValues(alpha: 0.7),
-        );
+    final seedScheme = ColorScheme.fromSeed(
+      seedColor: preset.accentColor,
+      brightness: brightness,
+    );
+    final scheme = seedScheme.copyWith(
+      primary: accentColor,
+      onPrimary: preset.buttonTextColor,
+      secondary: selectionColor,
+      onSecondary: preset.selectionTextColor,
+      // Material container shades are subtle surfaces, NOT primary
+      // filled buttons. Text shown on them (e.g. creator avatar labels)
+      // follows the normal text token, not the button foreground.
+      // In particular, a light container must not acquire white labels
+      // merely because button text is configured white.
+      onPrimaryContainer: preset.textColor,
+      onSecondaryContainer: preset.textColor,
+      onSurface: preset.textColor,
+      onSurfaceVariant: preset.textColor.withValues(alpha: 0.7),
+    );
+    // ユーザーが選んだ上部バー/メニューの文字色をそのまま描画する。
+    final menuForeground = preset.menuTextColor;
     // 角丸を大きめにし、Google Material標準の角丸14pxよりも柔らかい印象にする
     // （LINE・メルカリ等、日本の人気アプリに共通するポップで丸みの強い形状）。
     const radius = 18.0;
@@ -554,7 +672,7 @@ class ThemeService extends ChangeNotifier {
       splashFactory: InkRipple.splashFactory,
       appBarTheme: AppBarTheme(
         backgroundColor: preset.menuBgColor,
-        foregroundColor: preset.textColor,
+        foregroundColor: menuForeground,
         elevation: 0,
         scrolledUnderElevation: 0,
         centerTitle: false,
@@ -567,17 +685,24 @@ class ThemeService extends ChangeNotifier {
         // 適用されるようにした。
         titleTextStyle:
             textTheme.titleLarge?.copyWith(
-              color: preset.textColor,
+              color: menuForeground,
               fontSize: 18,
               fontWeight: FontWeight.w700,
             ) ??
             TextStyle(
               fontFamily: 'Kuramubon',
               fontFamilyFallback: kHeadingFontFallback,
-              color: preset.textColor,
+              color: menuForeground,
               fontSize: 18,
               fontWeight: FontWeight.w700,
             ),
+      ),
+      // PopupMenuItem labels do not automatically use AppBar foreground.
+      // Match text/icon foreground to the same menu token as the top bar.
+      popupMenuTheme: PopupMenuThemeData(
+        color: popupColor,
+        textStyle: textTheme.bodyMedium?.copyWith(color: menuForeground),
+        iconColor: menuForeground,
       ),
       // カードはカラーピッカー等のダイアログの本体にも使う（Dialog側は透明に
       // してカードの角丸を見せている）ので、下地はポップアップと同じ不透明色。
@@ -591,6 +716,9 @@ class ThemeService extends ChangeNotifier {
       ),
       filledButtonTheme: FilledButtonThemeData(
         style: FilledButton.styleFrom(
+          // Applies to text AND icons. User-defined values are never
+          // corrected for contrast or silently replaced.
+          foregroundColor: scheme.onPrimary,
           minimumSize: const Size(64, 48),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(radius),
@@ -641,6 +769,8 @@ class ThemeService extends ChangeNotifier {
       listTileTheme: ListTileThemeData(
         minVerticalPadding: 12,
         iconColor: scheme.primary,
+        selectedColor: preset.selectionTextColor,
+        selectedTileColor: selectionColor,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(radius),
         ),
@@ -712,10 +842,25 @@ class ThemeService extends ChangeNotifier {
       ),
       chipTheme: ChipThemeData(
         backgroundColor: preset.menuBgColor,
+        selectedColor: selectionColor,
+        secondaryLabelStyle: textTheme.labelLarge?.copyWith(
+          color: preset.selectionTextColor,
+        ),
         // 完全な丸み（ピル型）：日本のアプリでよく使われる柔らかいタグ・
         // フィルターチップの形状。
         shape: const StadiumBorder(),
         side: BorderSide.none,
+      ),
+      // All selected check marks share the explicit selection background and
+      // selected foreground from Theme & Appearance. Unselected states keep
+      // Flutter's normal themed fill (no forced contrast correction).
+      checkboxTheme: CheckboxThemeData(
+        fillColor: WidgetStateProperty.resolveWith<Color?>(
+          (states) => states.contains(WidgetState.selected)
+              ? selectionColor
+              : null,
+        ),
+        checkColor: WidgetStatePropertyAll(preset.selectionTextColor),
       ),
       switchTheme: SwitchThemeData(
         thumbColor: WidgetStateProperty.resolveWith(
@@ -726,6 +871,40 @@ class ThemeService extends ChangeNotifier {
           (states) => states.contains(WidgetState.selected)
               ? scheme.primary.withValues(alpha: 0.5)
               : null,
+        ),
+      ),
+      // Selected labels/icons use a separate foreground *only* when their
+      // background is the user's selected-surface color. Unselected content
+      // continues to use the normal text token.
+      segmentedButtonTheme: SegmentedButtonThemeData(
+        style: ButtonStyle(
+          backgroundColor: WidgetStateProperty.resolveWith<Color?>(
+            (states) => states.contains(WidgetState.selected)
+                ? selectionColor : preset.menuBgColor,
+          ),
+          foregroundColor: WidgetStateProperty.resolveWith<Color?>(
+            (states) => states.contains(WidgetState.selected)
+                ? preset.selectionTextColor : preset.textColor,
+          ),
+          iconColor: WidgetStateProperty.resolveWith<Color?>(
+            (states) => states.contains(WidgetState.selected)
+                ? preset.selectionTextColor : preset.textColor,
+          ),
+        ),
+      ),
+      navigationBarTheme: NavigationBarThemeData(
+        indicatorColor: selectionColor,
+        iconTheme: WidgetStateProperty.resolveWith<IconThemeData?>(
+          (states) => IconThemeData(
+            color: states.contains(WidgetState.selected)
+                ? preset.selectionTextColor : preset.textColor,
+          ),
+        ),
+        labelTextStyle: WidgetStateProperty.resolveWith<TextStyle?>(
+          (states) => textTheme.labelMedium?.copyWith(
+            color: states.contains(WidgetState.selected)
+                ? preset.selectionTextColor : preset.textColor,
+          ),
         ),
       ),
       floatingActionButtonTheme: FloatingActionButtonThemeData(

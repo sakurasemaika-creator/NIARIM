@@ -1,3 +1,5 @@
+import 'helpers/project_storage.dart';
+
 import 'dart:typed_data';
 
 import 'package:flutter_test/flutter_test.dart';
@@ -5,6 +7,7 @@ import 'package:niarim/services/project_service.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 void main() {
+  useTemporaryProjectStorage();
   TestWidgetsFlutterBinding.ensureInitialized();
   setUp(() => SharedPreferences.setMockInitialValues({}));
 

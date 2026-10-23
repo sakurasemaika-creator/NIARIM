@@ -11,7 +11,9 @@ void main() {
     final service = FilterService();
     await service.init();
 
-    final filter = service.filters.singleWhere((item) => item.id == 'Filter0025');
+    final filter = service.filters.singleWhere(
+      (item) => item.id == 'Filter0025',
+    );
     expect(filter.name, '色反転');
     expect(filter.kind, FilterKind.toneCurve);
     expect(filter.toneCurvePreset, ToneCurvePreset.invert);

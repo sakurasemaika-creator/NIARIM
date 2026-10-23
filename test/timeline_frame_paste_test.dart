@@ -1,3 +1,5 @@
+import 'helpers/project_storage.dart';
+
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:niarim/models/layer.dart';
@@ -8,6 +10,7 @@ import 'package:niarim/services/project_service.dart';
 /// 後ろへずれることを補正する）を、ProjectService.insertDuplicatedFrameを
 /// 実際に呼び出して検証する。各フレームの識別にはレイヤー名を使う。
 void main() {
+  useTemporaryProjectStorage();
   TestWidgetsFlutterBinding.ensureInitialized();
 
   setUp(() {

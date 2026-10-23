@@ -10,10 +10,10 @@ import '../../engine/export_engine.dart';
 import '../../l10n/app_localizations.dart';
 import '../../services/project_service.dart';
 import '../../config/font_fallback.dart';
-import '../../models/app_theme_preset.dart';
-import '../../utils/color_contrast.dart';
 import '../../utils/line_break.dart';
 import '../../widgets/responsive.dart';
+import '../../utils/app_error_reporter.dart';
+import '../../widgets/theme_rescue_button.dart';
 
 /// 起動画面。ロゴを中央に表示し、その上に「作品広場」（コミュニティ
 /// 画面への導線。1行目に大きく「作品広場」、2行目にやや小さく
@@ -52,7 +52,14 @@ class _SplashScreenState extends State<SplashScreen> {
   /// main()内で既に読み込み済みのため、ここでの対象はディスクI/O・画像
   /// デコードが必要なものに限られる。
   Future<void> _preloadHomeData() async {
-    unawaited(ExportEngine.listExportedFiles());
+    unawaited(
+      ExportEngine.listExportedFiles().then<void>(
+        (_) {},
+        onError: (Object error, StackTrace stackTrace) {
+          AppErrorReporter.record(error, stackTrace);
+        },
+      ),
+    );
 
     if (!mounted) return;
     final projectService = context.read<ProjectService>();
@@ -163,10 +170,10 @@ class _SplashScreenState extends State<SplashScreen> {
           padding: EdgeInsets.all(logoSize * 0.08),
           child: SvgPicture.asset(
             'assets/logo/app_logo.svg',
-            // 導線ボタンのアイコン・文字と同じテーマの「メニュー背景色」で
+            // 導線ボタンのアイコン・文字と同じテーマの「ボタン内の文字色」で
             // 白抜きにする（アクセント色の背景に載るのが同じ条件のため）。
             colorFilter: ColorFilter.mode(
-              context.watch<ThemeService>().current.menuBgColor,
+              context.watch<ThemeService>().current.buttonTextColor,
               BlendMode.srcIn,
             ),
           ),
@@ -305,64 +312,13 @@ class _SplashScreenState extends State<SplashScreen> {
                   child: content,
                 ),
               ),
-            // テーマの文字色と背景色が潰れていて画面が読めない状態のときだけ、
-            // 固定色（白地・黒文字・黒枠）のリセットボタンを右上に出す。
-            // テーマ・外観設定側でこの組み合わせは弾いているが、引き継ぎ
-            // ファイル（.niatra）の取り込みでは他人の端末で作られたテーマが
-            // そのまま入ってくるため、最後の逃げ道として用意している。
-            // ふだんは出ないので、起動画面の見た目を汚さない。
-            if (!isThemeReadable(context.watch<ThemeService>().current))
-              const Positioned(top: 8, right: 8, child: _ThemeRescueButton()),
+            // テーマ色の組み合わせによって、設定や主要導線が操作不能に
+            // なりかねない場合は、発生経路（手動設定・プリセット・import・
+            // .niatra等）を問わず右上に復旧ボタンを表示する。
+            // 通常UIとは異なり、テーマに依存しない黒文字＋白縁取りの固定色を使う。
+            if (context.watch<ThemeService>().needsThemeRescue)
+              const Positioned(top: 8, right: 8, child: ThemeRescueButton()),
           ],
-        ),
-      ),
-    );
-  }
-}
-
-/// テーマが読めない状態になったときだけ起動画面に出る、テーマを既定へ
-/// 戻すボタン。**テーマ色を一切使わない固定色**で描くのが要件
-/// （テーマが壊れているからこそ出るボタンなので、テーマ色を使うと
-/// このボタン自体が読めなくなる）。
-class _ThemeRescueButton extends StatelessWidget {
-  const _ThemeRescueButton();
-
-  @override
-  Widget build(BuildContext context) {
-    final l10n = AppLocalizations.of(context)!;
-    return Material(
-      color: const Color(0xFFFFFFFF),
-      shape: const StadiumBorder(
-        side: BorderSide(color: Color(0xFF000000), width: 1.5),
-      ),
-      child: InkWell(
-        customBorder: const StadiumBorder(),
-        onTap: () {
-          final service = context.read<ThemeService>();
-          service.previewCurrent(AppThemePreset.defaultLight);
-          service.commitCurrent();
-          service.applyPreset(AppThemePreset.defaultLight.id);
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text(l10n.themeUnreadableResetDone)),
-          );
-        },
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              const Icon(Icons.restart_alt, size: 18, color: Color(0xFF000000)),
-              const SizedBox(width: 6),
-              Text(
-                l10n.themeUnreadableResetButton,
-                style: const TextStyle(
-                  color: Color(0xFF000000),
-                  fontSize: 13,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-            ],
-          ),
         ),
       ),
     );
@@ -378,9 +334,8 @@ class _ThemeRescueButton extends StatelessWidget {
 /// 「投稿作品をみる」）。省略時は[label]のみの構成。どちらも長い言語では
 /// 折り返し、タイルは[height]まで縦に伸びる（文言を省略記号で切らない）。
 ///
-/// アイコン・文字の色はテーマの「メニュー背景色」
-/// （[AppThemePreset.menuBgColor]）。既定テーマでは白で、アクセント色の
-/// グラデーション上でいちばん読みやすい。`ColorScheme.onSurface`は
+/// アイコン・文字の色はテーマの「ボタン内の文字・アイコン色」
+/// （[AppThemePreset.buttonTextColor]）。既定テーマでは白。`ColorScheme.onSurface`は
 /// `ColorScheme.fromSeed`の自動算出値でユーザーが選んだ配色との対応が
 /// 分かりにくいため使わない。この色は
 /// `shortcut_widget_renderer.dart`が焼くホーム画面ウィジェットの意匠とも
@@ -493,7 +448,8 @@ class _SplashActionButtonState extends State<_SplashActionButton> {
   @override
   Widget build(BuildContext context) {
     final theme = context.watch<ThemeService>().current;
-    final foreground = theme.menuBgColor;
+    // ユーザー指定のボタン文字色。明暗差による自動変更は行わない。
+    final foreground = theme.buttonTextColor;
     const radius = BorderRadius.all(
       Radius.circular(_SplashActionButton._radius),
     );

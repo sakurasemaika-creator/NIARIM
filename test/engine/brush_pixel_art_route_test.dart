@@ -4,8 +4,9 @@ import 'package:flutter_test/flutter_test.dart';
 
 void main() {
   test('brush pixel mode routes through the shared PixelArtEngine', () {
-    final source =
-        File('lib/screens/canvas/widgets/canvas_area.dart').readAsStringSync();
+    final source = File(
+      'lib/screens/canvas/widgets/canvas_area.dart',
+    ).readAsStringSync();
 
     expect(source, contains("import '../../../engine/pixel_art_engine.dart';"));
     expect(source, contains('const PixelArtEngine().convert('));

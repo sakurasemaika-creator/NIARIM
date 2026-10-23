@@ -1,3 +1,5 @@
+import 'helpers/project_storage.dart';
+
 import 'dart:io';
 import 'dart:typed_data';
 import 'dart:ui' as ui;
@@ -26,6 +28,7 @@ const _decoys = [(25, 49), (44, 26), (84, 50), (60, 72)];
 /// the outline is left out, while the inside is selected. (Without snapping
 /// the same lasso takes the dot.)
 void main() {
+  useTemporaryProjectStorage();
   TestWidgetsFlutterBinding.ensureInitialized();
   final out = Directory('build/lasso-snap');
   setUpAll(() => out.createSync(recursive: true));

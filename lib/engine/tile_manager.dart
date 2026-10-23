@@ -245,6 +245,28 @@ class TileManager {
   Uint8List? getTile(String layerId, int tx, int ty) =>
       _tiles[layerId]?[_tileKey(tx, ty)];
 
+  /// Reads a pixel by canvas coordinates without creating a tile or invalidating
+  /// drawing caches. Returns null when the pixel is outside the canvas or fully
+  /// transparent (油彩風混色 picks up the paint under the brush with it).
+  ui.Color? getPixelColorAt(String layerId, int x, int y) {
+    if (x < 0 || y < 0 || x >= canvasWidth || y >= canvasHeight) return null;
+    final tx = x ~/ tileSize;
+    final ty = y ~/ tileSize;
+    final tile = getTile(layerId, tx, ty);
+    if (tile == null) return null;
+    final localX = x % tileSize;
+    final localY = y % tileSize;
+    final index = (localY * tileSize + localX) * 4;
+    final alpha = tile[index + 3];
+    if (alpha == 0) return null;
+    return ui.Color.fromARGB(
+      alpha,
+      tile[index],
+      tile[index + 1],
+      tile[index + 2],
+    );
+  }
+
   /// [getTile]で得たバッファを直接書き換えたあとに呼び、そのタイルの
   /// キャッシュ（デコード済み画像とレイヤーの合成結果）を捨てる。
   void invalidateTile(String layerId, int tx, int ty) {
@@ -626,6 +648,40 @@ class TileManager {
   }
 
   bool hasLayer(String layerId) => _tiles.containsKey(layerId);
+
+  /// The smallest canvas rectangle holding every visible pixel of
+  /// [layerId], or null when the layer is empty (the timeline's handles go
+  /// around a material's drawn part, not the whole canvas).
+  ui.Rect? contentBounds(String layerId) {
+    final layerTiles = _tiles[layerId];
+    if (layerTiles == null) return null;
+    var left = canvasWidth, top = canvasHeight, right = -1, bottom = -1;
+    for (final entry in layerTiles.entries) {
+      final comma = entry.key.indexOf(',');
+      final tx = int.parse(entry.key.substring(0, comma));
+      final ty = int.parse(entry.key.substring(comma + 1));
+      final tile = entry.value;
+      for (var y = 0; y < tileSize; y++) {
+        final row = y * tileSize * 4;
+        for (var x = 0; x < tileSize; x++) {
+          if (tile[row + x * 4 + 3] == 0) continue;
+          final cx = tx * tileSize + x;
+          final cy = ty * tileSize + y;
+          if (cx < left) left = cx;
+          if (cx > right) right = cx;
+          if (cy < top) top = cy;
+          if (cy > bottom) bottom = cy;
+        }
+      }
+    }
+    if (right < 0) return null;
+    return ui.Rect.fromLTRB(
+      left.toDouble(),
+      top.toDouble(),
+      right + 1.0,
+      bottom + 1.0,
+    );
+  }
 
   Map<String, Uint8List> getDirtyTilesForLayer(String layerId) {
     final result = <String, Uint8List>{};

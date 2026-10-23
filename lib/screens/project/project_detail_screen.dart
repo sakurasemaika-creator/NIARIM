@@ -265,6 +265,7 @@ class _ProjectDetailScreenState extends State<ProjectDetailScreen> {
               const SizedBox(height: 16),
               // フォルダ・タグ・お気に入り・共有のクイックアクセス
               Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Expanded(
                     child: _quickAction(
@@ -285,7 +286,9 @@ class _ProjectDetailScreenState extends State<ProjectDetailScreen> {
                   Expanded(
                     child: _quickAction(
                       icon: project.isFavorite ? Icons.star : Icons.star_border,
-                      label: l10n.homeFavoritesOnly,
+                      label: project.isFavorite
+                          ? l10n.projectDetailFavoriteRegistered
+                          : l10n.projectDetailFavoriteUnregistered,
                       iconColor: project.isFavorite
                           ? ThemeService.activeColorScheme.tertiary
                           : null,
@@ -474,7 +477,7 @@ class _ProjectDetailScreenState extends State<ProjectDetailScreen> {
             color: theme.menuBgColor.withValues(alpha: 0.7),
             shape: const CircleBorder(),
             child: IconButton(
-              icon: Icon(Icons.fullscreen, color: theme.textColor, size: 20),
+              icon: Icon(Icons.fullscreen, color: theme.menuTextColor, size: 20),
               tooltip: l10n.projectDetailFullscreenTooltip,
               onPressed: () => setState(() => _isPreviewFullscreen = true),
             ),
@@ -524,53 +527,63 @@ class _ProjectDetailScreenState extends State<ProjectDetailScreen> {
     return Row(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
-        IconButton(
-          onPressed: flat.isEmpty
-              ? null
-              : () => _seekTo(projectService, flat, 0),
-          icon: const Icon(Icons.skip_previous),
-          tooltip: l10n.projectDetailFirstFrameTooltip,
-        ),
-        IconButton(
-          onPressed: flat.isEmpty
-              ? null
-              : () => _seekTo(projectService, flat, _frameIndex - 1),
-          icon: const Icon(Icons.fast_rewind),
-          tooltip: l10n.projectDetailPrevFrameTooltip,
-        ),
-        const SizedBox(width: 4),
-        Container(
-          decoration: BoxDecoration(
-            color: Theme.of(context).colorScheme.primary,
-            shape: BoxShape.circle,
-          ),
+        Flexible(
           child: IconButton(
             onPressed: flat.isEmpty
                 ? null
-                : () => _togglePlay(projectService, flat, project.fps),
-            icon: Icon(
-              _isPlaying ? Icons.pause : Icons.play_arrow,
-              color: Theme.of(context).colorScheme.onPrimary,
-            ),
-            tooltip: _isPlaying
-                ? l10n.projectDetailPauseTooltip
-                : l10n.projectDetailPlayTooltip,
+                : () => _seekTo(projectService, flat, 0),
+            icon: const Icon(Icons.skip_previous),
+            tooltip: l10n.projectDetailFirstFrameTooltip,
+          ),
+        ),
+        Flexible(
+          child: IconButton(
+            onPressed: flat.isEmpty
+                ? null
+                : () => _seekTo(projectService, flat, _frameIndex - 1),
+            icon: const Icon(Icons.fast_rewind),
+            tooltip: l10n.projectDetailPrevFrameTooltip,
           ),
         ),
         const SizedBox(width: 4),
-        IconButton(
-          onPressed: flat.isEmpty
-              ? null
-              : () => _seekTo(projectService, flat, _frameIndex + 1),
-          icon: const Icon(Icons.fast_forward),
-          tooltip: l10n.projectDetailNextFrameTooltip,
+        Flexible(
+          child: Container(
+            decoration: BoxDecoration(
+              color: Theme.of(context).colorScheme.primary,
+              shape: BoxShape.circle,
+            ),
+            child: IconButton(
+              onPressed: flat.isEmpty
+                  ? null
+                  : () => _togglePlay(projectService, flat, project.fps),
+              icon: Icon(
+                _isPlaying ? Icons.pause : Icons.play_arrow,
+                color: Theme.of(context).colorScheme.onPrimary,
+              ),
+              tooltip: _isPlaying
+                  ? l10n.projectDetailPauseTooltip
+                  : l10n.projectDetailPlayTooltip,
+            ),
+          ),
         ),
-        IconButton(
-          onPressed: flat.isEmpty
-              ? null
-              : () => _seekTo(projectService, flat, flat.length - 1),
-          icon: const Icon(Icons.skip_next),
-          tooltip: l10n.projectDetailLastFrameTooltip,
+        const SizedBox(width: 4),
+        Flexible(
+          child: IconButton(
+            onPressed: flat.isEmpty
+                ? null
+                : () => _seekTo(projectService, flat, _frameIndex + 1),
+            icon: const Icon(Icons.fast_forward),
+            tooltip: l10n.projectDetailNextFrameTooltip,
+          ),
+        ),
+        Flexible(
+          child: IconButton(
+            onPressed: flat.isEmpty
+                ? null
+                : () => _seekTo(projectService, flat, flat.length - 1),
+            icon: const Icon(Icons.skip_next),
+            tooltip: l10n.projectDetailLastFrameTooltip,
+          ),
         ),
       ],
     );
@@ -613,7 +626,11 @@ class _ProjectDetailScreenState extends State<ProjectDetailScreen> {
                   iconColor ?? Theme.of(context).colorScheme.onSurfaceVariant,
             ),
             const SizedBox(height: 4),
-            Text(label, style: const TextStyle(fontSize: 12)),
+            Text(
+              label,
+              textAlign: TextAlign.center,
+              style: const TextStyle(fontSize: 12),
+            ),
           ],
         ),
       ),

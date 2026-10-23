@@ -9,7 +9,9 @@ import 'brush_texture_selector.dart';
 import 'brush_render_plan.dart';
 import 'hair_fold_raster.dart';
 import 'outline_accent.dart';
+import 'perceptual_color_mixer.dart';
 import 'tile_manager.dart';
+import 'watercolor_wash.dart';
 
 final _jitterRng = math.Random();
 
@@ -49,6 +51,16 @@ class DrawingEngine {
   // 描き直し（replayCurrentStrokeWithFinalFade）でだけ設定する。
   OutlineAccent? _outlineAccent;
   final List<ui.Offset> _strokeScreenPositions = [];
+  // 油彩風の混色は絵の具の色ごとに、下の色ごとの混ざり方を覚えておく
+  // （同じ色の上を塗る間は1画素1回の参照で済む）。拾った色で絵の具の色が
+  // 少しずつ変わるので、近い色（各チャンネル4段）は同じものを使う。
+  final Map<int, AnalogPaintMixer> _oilMixers = {};
+  // 油彩風：筆に含まれた絵の具の色（拾った色が混ざっていく）と、前回の
+  // スタンプの位置。ストロークごとに選択色から始まる。
+  int? _oilPaint;
+  ui.Offset? _lastOilStamp;
+  // 水彩風：このストロークの水彩の状態（ペンを離すと乾かす）。
+  WatercolorStroke? _watercolor;
 
   String? get debugActiveBrushTexturePath => _brushTextureSelector.activePath;
 
@@ -75,6 +87,9 @@ class DrawingEngine {
     _strokeCoverageByTile.clear();
     _strokeBaseAlpha.clear();
     _foldRaster = null;
+    _oilPaint = null;
+    _lastOilStamp = null;
+    _watercolor = null;
     _smoothed = point;
     final effective = _applyPointConstraint(point);
     _activeLayerId = layerId;
@@ -217,6 +232,10 @@ class DrawingEngine {
         applyScatter: false,
       );
     }
+    if (!cancel) _watercolor?.finish(tileManager);
+    _watercolor = null;
+    _oilPaint = null;
+    _lastOilStamp = null;
     _currentStroke.clear();
     _strokeCoverageByTile.clear();
     _strokeBaseAlpha.clear();
@@ -437,6 +456,7 @@ class DrawingEngine {
         layerId,
         strokeLengthOverride: baseStrokeLength,
         pathAngle: pathAngle,
+        hasPathDirection: true,
       );
       _hasStampedCurrentStroke = true;
       _distanceSinceLastBrushStamp = 0.0;
@@ -462,6 +482,7 @@ class DrawingEngine {
         layerId,
         strokeLengthOverride: baseStrokeLength + consumed,
         pathAngle: pathAngle,
+        hasPathDirection: true,
       );
       _distanceSinceLastBrushStamp = 0.0;
     }
@@ -492,6 +513,7 @@ class DrawingEngine {
     String layerId, {
     double? strokeLengthOverride,
     double pathAngle = 0.0,
+    bool hasPathDirection = false,
     bool applyScatter = true,
   }) {
     if (currentBrush == null) return;
@@ -556,6 +578,28 @@ class DrawingEngine {
 
     final alphaInt = (opacity * 255).round().clamp(0, 255);
     if (alphaInt == 0) return;
+
+    // 油彩風：このスタンプが置く前に、筆の下の絵の具を拾う。
+    final oilPaint =
+        resolvedPressure.mixingMode == BrushMixingMode.oil && !isEraser
+        ? _carryOilPaint(layerId, stampX, stampY, size, resolvedPressure)
+        : null;
+    if (resolvedPressure.mixingMode == BrushMixingMode.watercolor &&
+        !isEraser &&
+        _watercolor == null) {
+      _watercolor = WatercolorStroke(
+        layerId: layerId,
+        paint: _rgb24(currentColor),
+        brushSize: brush.size.toDouble(),
+        water: resolvedPressure.mixingWater,
+        pigment: resolvedPressure.mixingPigment,
+        bleed: resolvedPressure.mixingBleed,
+        texture: resolvedPressure.mixingTexture,
+        softEdge: resolvedPressure.mixingSoftEdge,
+        brightnessCorrection: resolvedPressure.mixingBrightnessCorrection,
+        seed: (stampX * 7919 + stampY * 104729).round(),
+      );
+    }
 
     // グリッターペンは大きな六角形フレークとして描画する。粒ごとに向きを
     // ランダム化し、同じ向きの六角形が機械的に並ぶ見た目を避ける。
@@ -641,6 +685,8 @@ class DrawingEngine {
           edgeJitterStrength: resolvedPressure.edgeJitterStrength,
           mixingMode: resolvedPressure.mixingMode,
           mixingRate: resolvedPressure.mixingRate,
+          mixingBrightnessCorrection:
+              resolvedPressure.mixingBrightnessCorrection,
           hexagon: isGlitterHexagon,
           particleRotation: particleRotation,
           chainLink: isChainLink,
@@ -673,6 +719,9 @@ class DrawingEngine {
           edgeJitterStrength: resolvedPressure.edgeJitterStrength,
           mixingMode: resolvedPressure.mixingMode,
           mixingRate: resolvedPressure.mixingRate,
+          mixingBrightnessCorrection:
+              resolvedPressure.mixingBrightnessCorrection,
+          oilPaint: oilPaint,
           hexagon: isGlitterHexagon,
           particleRotation: particleRotation,
           chainLink: isChainLink,
@@ -702,6 +751,8 @@ class DrawingEngine {
     int edgeJitterStrength = 50,
     BrushMixingMode mixingMode = BrushMixingMode.off,
     int mixingRate = 0,
+    int mixingBrightnessCorrection = 3,
+    int? oilPaint,
     bool hexagon = false,
     double particleRotation = 0.0,
     bool chainLink = false,
@@ -738,6 +789,14 @@ class DrawingEngine {
         if (tx < 0 || ty < 0) continue;
         _foldRaster?.rememberTile(tx, ty);
         final tile = tileManager.getOrCreateTile(layerId, tx, ty);
+        // 水彩風は塗る前のタイルを覚え、そこへ透明な絵の具を重ねて描く。
+        final watercolor =
+            mixingMode == BrushMixingMode.watercolor &&
+                colorOverride == null &&
+                !isEraser
+            ? _watercolor
+            : null;
+        watercolor?.touchTile(tx, ty, tile);
         final tileOriginX = tx * TileManager.tileSize;
         final tileOriginY = ty * TileManager.tileSize;
         final coverageKey = '$coverageNamespace:$layerId:$tx:$ty';
@@ -944,6 +1003,19 @@ class DrawingEngine {
                       .round()
                       .clamp(0, 255);
             coverage[coveragePos] = desiredAlpha;
+            if (watercolor != null) {
+              watercolor.cover(
+                tile,
+                tx,
+                ty,
+                px,
+                py,
+                desiredAlpha,
+                mixingRate,
+                opacity: alpha,
+              );
+              continue;
+            }
             if (base != null && !isEraser) {
               // Behind what the layer already showed before this stroke.
               incrementalAlpha =
@@ -953,40 +1025,27 @@ class DrawingEngine {
 
             if (isEraser) {
               tileManager.erasePixel(tile, px, py, incrementalAlpha);
-            } else if (mixingMode != BrushMixingMode.off) {
+            } else if (mixingMode == BrushMixingMode.oil) {
+              final paint = oilPaint ?? (ri << 16 | gi << 8 | bi);
               final idx = (py * TileManager.tileSize + px) * 4;
-              if (tile[idx + 3] > 0) {
-                final below = ui.Color.fromARGB(
-                  tile[idx + 3],
-                  tile[idx],
-                  tile[idx + 1],
-                  tile[idx + 2],
-                );
-                final selected = ui.Color.fromARGB(255, ri, gi, bi);
-                final rate = mixingRate / 100.0;
-                final mixed = mixingMode == BrushMixingMode.bleed
-                    ? bleedColor(below, selected, rate, _currentStroke.length)
-                    : mixColor(below, selected, rate);
-                tileManager.blendPixel(
-                  tile,
-                  px,
-                  py,
-                  (mixed.r * 255).round(),
-                  (mixed.g * 255).round(),
-                  (mixed.b * 255).round(),
-                  incrementalAlpha,
-                );
-              } else {
-                tileManager.blendPixel(
-                  tile,
-                  px,
-                  py,
-                  ri,
-                  gi,
-                  bi,
-                  incrementalAlpha,
-                );
-              }
+              final belowAlpha = tile[idx + 3];
+              // A faint edge holds less paint to pick up than a solid area.
+              final mixed = belowAlpha > 0
+                  ? _oilMixerFor(paint, mixingBrightnessCorrection).mixNear(
+                      tile[idx] << 16 | tile[idx + 1] << 8 | tile[idx + 2],
+                      mixingRate / 100.0 * belowAlpha / 255.0,
+                      paint,
+                    )
+                  : paint;
+              tileManager.blendPixel(
+                tile,
+                px,
+                py,
+                mixed >> 16 & 0xFF,
+                mixed >> 8 & 0xFF,
+                mixed & 0xFF,
+                incrementalAlpha,
+              );
             } else {
               tileManager.blendPixel(
                 tile,
@@ -1065,22 +1124,108 @@ class DrawingEngine {
   double _calculateDecay(double strokeLength) =>
       (1.0 - strokeLength / 2000).clamp(0.05, 1.0);
 
-  ui.Color mixColor(ui.Color below, ui.Color selected, double rate) {
-    final r = (below.r * rate + selected.r * (1 - rate)).clamp(0.0, 1.0);
-    final g = (below.g * rate + selected.g * (1 - rate)).clamp(0.0, 1.0);
-    final b = (below.b * rate + selected.b * (1 - rate)).clamp(0.0, 1.0);
-    return ui.Color.from(alpha: 1.0, red: r, green: g, blue: b);
+  /// The cached mixer for paint near [paint] (each channel to 4 levels).
+  AnalogPaintMixer _oilMixerFor(int paint, int brightnessCorrection) {
+    final near = paint & 0xFCFCFC;
+    final correction = brightnessCorrection.clamp(1, 5).toInt();
+    final key = near << 3 | correction;
+    final cached = _oilMixers.remove(key);
+    if (cached != null) return _oilMixers[key] = cached;
+    if (_oilMixers.length >= 24) _oilMixers.remove(_oilMixers.keys.first);
+    return _oilMixers[key] = AnalogPaintMixer(
+      selected: near,
+      brightnessCorrection: correction,
+    );
   }
 
-  ui.Color bleedColor(
+  /// 油彩風：the colour of the paint on the brush for the stamp at ([x],
+  /// [y]). Before the stamp is laid, the brush picks up some of the paint
+  /// under it (混色度合い) and carries it on; fresh paint keeps coming from
+  /// the brush, and 色延び sets how far the picked-up colour lasts (up to six
+  /// brush widths). At 色延び 0 the brush stays its own colour.
+  int _carryOilPaint(
+    String layerId,
+    double x,
+    double y,
+    double size,
+    ResolvedBrushPressure pressure,
+  ) {
+    final own = _rgb24(currentColor);
+    final last = _lastOilStamp;
+    _lastOilStamp = ui.Offset(x, y);
+    final stretch = pressure.mixingStretch;
+    if (stretch <= 0 || pressure.mixingRate <= 0) return _oilPaint = own;
+    var paint = _oilPaint ?? own;
+    final width = math.max(1.0, size);
+    // How much of the brush's footprint is new since the last stamp.
+    final step = last == null
+        ? 0.25
+        : (math.sqrt(
+                    (x - last.dx) * (x - last.dx) +
+                        (y - last.dy) * (y - last.dy),
+                  ) /
+                  width)
+              .clamp(0.02, 1.0);
+
+    var r = 0.0;
+    var g = 0.0;
+    var b = 0.0;
+    var alpha = 0.0;
+    final reach = width * 0.3;
+    for (var k = 0; k < 9; k++) {
+      final angle = k * math.pi / 4;
+      final sx = k == 8 ? x : x + math.cos(angle) * reach;
+      final sy = k == 8 ? y : y + math.sin(angle) * reach;
+      final c = tileManager.getPixelColorAt(layerId, sx.floor(), sy.floor());
+      if (c == null) continue;
+      final a = c.a;
+      r += linearFromSrgb8((c.r * 255).round()) * a;
+      g += linearFromSrgb8((c.g * 255).round()) * a;
+      b += linearFromSrgb8((c.b * 255).round()) * a;
+      alpha += a;
+    }
+    if (alpha > 0) {
+      final picked =
+          srgb8FromLinear(r / alpha) << 16 |
+          srgb8FromLinear(g / alpha) << 8 |
+          srgb8FromLinear(b / alpha);
+      final take =
+          (pressure.mixingRate / 100 * (alpha / 9) * math.min(1.0, step * 2))
+              .clamp(0.0, 1.0)
+              .toDouble();
+      paint = _oilMixerFor(
+        paint,
+        pressure.mixingBrightnessCorrection,
+      ).mixNear(picked, take, paint);
+    }
+    final carry = stretch / 100 * 6;
+    final refill = 1 - math.exp(-step / carry);
+    paint = _oilMixerFor(
+      own,
+      pressure.mixingBrightnessCorrection,
+    ).mixNear(paint, 1 - refill, own);
+    return _oilPaint = paint;
+  }
+
+  static int _rgb24(ui.Color color) =>
+      (color.r * 255).round() << 16 |
+      (color.g * 255).round() << 8 |
+      (color.b * 255).round();
+
+  /// 油彩風 brush mixing of [selected] into [below] like paint, keeping the
+  /// colours vivid (see [AnalogPaintMixer]). [rate] is the contribution of
+  /// the colour below.
+  ui.Color mixColor(
     ui.Color below,
     ui.Color selected,
-    double rate,
-    int strokeStep,
-  ) {
-    final decay = (1.0 - strokeStep * 0.01).clamp(0.0, 1.0);
-    return mixColor(below, selected, rate * decay);
-  }
+    double rate, {
+    int brightnessCorrection = 3,
+  }) => mixPerceptualColor(
+    below,
+    selected,
+    rate,
+    brightnessCorrection: brightnessCorrection,
+  );
 
   ({double scaleX, double scaleY, double angle}) calcTiltTransform(
     double tiltX,

@@ -11,7 +11,7 @@ import '../../../models/effect_filter_instance.dart';
 import '../../../models/filter_def.dart';
 import '../../../services/filter_service.dart';
 import '../../../services/project_service.dart';
-import '../../../widgets/stepped_slider.dart';
+import '../../../widgets/labeled_slider.dart';
 import 'panel_close_bar.dart';
 import '../../../config/font_fallback.dart';
 
@@ -313,29 +313,16 @@ class _ColorAdjustSheetState extends State<ColorAdjustSheet> {
   }
 
   Widget _slider(String label, double value, ValueChanged<double> onChanged) {
-    return Padding(
+    return LabeledSlider(
       padding: const EdgeInsets.symmetric(vertical: 2),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            '$label: ${value.round()}',
-            style: const TextStyle(fontSize: 11),
-          ),
-          SliderTheme(
-            data: SliderTheme.of(context).copyWith(
-              trackHeight: 2,
-              thumbShape: const RoundSliderThumbShape(enabledThumbRadius: 6),
-            ),
-            child: SteppedSlider(
-              value: value,
-              min: -100,
-              max: 100,
-              onChanged: onChanged,
-            ),
-          ),
-        ],
-      ),
+      label: label,
+      labelStyle: const TextStyle(fontSize: 11),
+      value: value,
+      min: -100,
+      max: 100,
+      valueText: '${value.round()}',
+      valueStyle: const TextStyle(fontSize: 11),
+      onChanged: onChanged,
     );
   }
 }

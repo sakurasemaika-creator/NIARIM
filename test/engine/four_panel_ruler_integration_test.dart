@@ -15,8 +15,9 @@ void main() {
   }
 
   test('four-panel preset follows a snapped straight-ruler path', () {
-    final preset =
-        brushExtensionPresets().singleWhere((b) => b.id == 'Brush0025');
+    final preset = brushExtensionPresets().singleWhere(
+      (b) => b.id == 'Brush0025',
+    );
     final ruler = RulerEngine()
       ..setActiveRuler(
         const Ruler(
@@ -28,22 +29,17 @@ void main() {
         ),
       )
       ..beginStroke();
-    final engine = DrawingEngine(
-      tileManager: TileManager(canvasWidth: 512, canvasHeight: 256),
-    )
-      ..currentBrush = preset
-      ..currentColor = const Color(0xFF000000);
+    final engine =
+        DrawingEngine(
+            tileManager: TileManager(canvasWidth: 512, canvasHeight: 256),
+          )
+          ..currentBrush = preset
+          ..currentColor = const Color(0xFF000000);
 
     Offset snapped(double x, double y) => ruler.snapToRuler(Offset(x, y));
     final start = snapped(80, 92);
     engine.beginStroke(
-      StrokePoint(
-        x: start.dx,
-        y: start.dy,
-        pressure: 1,
-        tiltX: 0,
-        tiltY: 0,
-      ),
+      StrokePoint(x: start.dx, y: start.dy, pressure: 1, tiltX: 0, tiltY: 0),
       'layer',
     );
     for (var x = 100.0; x <= 420; x += 20) {
