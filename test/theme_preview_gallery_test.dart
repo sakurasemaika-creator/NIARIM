@@ -12,6 +12,7 @@ import 'package:niarim/models/app_theme_preset.dart';
 import 'package:niarim/app_bootstrap.dart';
 import 'package:niarim/l10n/app_localizations.dart';
 import 'package:niarim/screens/settings/theme_preview_gallery_screen.dart';
+import 'package:niarim/screens/canvas/widgets/canvas_icon_button.dart';
 import 'package:niarim/screens/settings/theme_settings_screen.dart';
 import 'helpers/load_app_fonts.dart';
 
