@@ -160,6 +160,18 @@ status: Opusのブランチ（`ccr-f56ee68e-77ag7y`）で2026-10-17にdoneと判
 - ホームのタブバーはdev_branchの実装（画面の大きさが変わっても選んだタブを画面内へ寄せる）に、読み上げの「何番目のタブか」と48pxの高さだけを足した。ブクマ済みタブはdev_branchの状態別の表示（読み込み中・取得失敗・未ログイン・表示フィルター）。検索中はホームのショートカットを効かせない（dev_branch）。
 - 引き出しの見出しはdev_branchの単色（グラデーションではなく差し色1色）。
 
+### 2026-10-23 統合後の現在HEADでの再確認（Opus・`ccr-f56ee68e-77ag7y`）
+
+- 対象：dev_branch `25723b3`を取り込んだApp `6028253`（ホーム・引き出し・初回案内・空の表示のファイルは`7a33039`と同一であることを確認し、そのビルドで操作）→修正後の`63d6ee8`で再撮影。Linux debug/Xvfb、390×844・1280×800、ライト（既定）・ダーク（レッド（ダーク））。
+- 実操作：新規の状態で初回案内（外側タップ・Escでは閉じず「はじめる」で閉じる＝dev_branchの仕様、再起動で出ない・`first_launch=false`保存）、空の一覧の表示、引き出し8項目（共有・ゴミ箱・自動塗り設定・容量削減・設定・ヘルプ・活用Tips・プレミアム）へそれぞれ遷移→戻る、120件で下までスクロール→作品一覧・ブクマ済み→プロジェクトへ戻ると位置を保持、検索（「11」で10件、検索欄のCtrl+Aは文字だけ選び作品は選ばない、Escで閉じ元の位置へ）、左下のFABで起動画面、PCで10列・引き出しのEsc、ダークで各タブ・引き出し・ゴミ箱。いずれも期待どおり。
+- ユーザー指摘で直したもの（App `63d6ee8`）：ゴミ箱の「ゴミ箱は空です」が左に寄る（共通の空の表示が幅を取っていなかった、Scaffoldのbodyに置く画面で発生）→幅いっぱいに取る。ブクマ済みの空のアイコンだけ黒（`contrastingForeground`で差し色を黒へ差し替え）→作品一覧と同じ差し色の淡い円に差し色のアイコン、見出しも同じ大きさ（18では390pxで最後の1字だけ改行）。作品一覧の空の表示が上に寄る（高さ400pxの固定の箱）→一覧の高さいっぱい。テスト：`empty_state_placeholder_test`（修正前はx=80.9で失敗）、`home_navigation_state_test`の作品一覧の空の表示（修正前は高さ400で失敗）、`home_entry_navigation_test`のブクマ済みのアイコンは「作品一覧と同じ色・大きさ・下地の円」を見る形へ（ユーザー指定。dev_branchは背景との差3以上を見ていた）。
+- 引き出しの見出し「NIARIM」は白光明朝（dev_branch、起動画面の「N-I-A-R-I-M」と同じロゴの書体）。見出しの書体の決まりの対象外（ロゴ）として変えていない。
+- ユーザーの判断待ち：ホームのタブの選択中の文字（`selectedTextColor`、ライトでは黒）と、ブクマ済みの読み込み中の表示・ボタン（「作品広場」等、ライトでは黒）は、まだ`contrastingForeground`で差し色を黒へ差し替えている（dev_branchの`28823bd`「contrast-safe selected tabs」の意図的な実装）。ブクマ済みのアイコンと同じく差し色に戻すかはユーザーに確認する。
+- 申し送り：
+  - A069：容量削減の画面は`_reload`に例外処理が無く、集計（`computeBreakdown`）が失敗すると読み込み中のまま止まる（Linuxでは一時フォルダ＝/tmp全体を数えるため実際に10秒以上止まった。Androidの一時フォルダはアプリ専用で小さいので製品で同じ遅さにはならない）。
+  - 監査担当のテスト：`app_web_reference_export_exact_test`は、dev_branchがキャンバスのタイムラインのボタンを`iconBuilder`（矢印つき、Key `canvasTimelineModeButton`）に変えたため、`icon == Icons.movie_filter_outlined`で探せず失敗（dev_branch `25723b3`単体でも同じ）。
+- 判定：A003の機能・挙動・継続性はこのHEADでPASS。見た目はユーザー指摘の3件を直したうえで、上の`contrastingForeground`の2か所がユーザーの判断待ちのため、A003はdev_branchのRoute状態どおりin_progressのまま（dev_branchのS9の正式色の対応表とあわせて閉じる）。証跡 https://claude.ai/artifact/C6t3uteANocXs9nTLizazi#A003 （A003_recheck）。
+
 ## A004 — プロジェクト一覧・検索・表示・ソート（Opusブランチの証跡）
 
 status: Opusのブランチで2026-10-17にdoneと判定した記録。統合後のRoute状態はAUDIT_ROUTE.mdに従う（A004 todo。A004の監査で現在のHEADで再確認してから再利用する）。製品修正 App（`adf4176`）、証跡 https://claude.ai/artifact/C6t3uteANocXs9nTLizazi#A004）
