@@ -241,14 +241,13 @@ void main() {
           expect(current.right, lessThan(counter.left));
           expect(counter.right, lessThan(loop.left));
           expect(loop.right, lessThan(total.left));
-          final screenWidth = tester.view.physicalSize.width /
-              tester.view.devicePixelRatio;
-          final statusLeft = 16.0;
-          final statusWidth = screenWidth - statusLeft * 2;
-          expect(counter.center.dx,
-              closeTo(statusLeft + statusWidth * .375, 5));
-          expect(loop.center.dx,
-              closeTo(statusLeft + statusWidth * .625, 5));
+          // Gaps remain equal while current/total seconds stay at the
+          // outside edges. The loop icon gets no special fixed offset.
+          final gap1 = counter.left - current.right;
+          final gap2 = loop.left - counter.right;
+          final gap3 = total.left - loop.right;
+          expect(gap2, closeTo(gap1, 2));
+          expect(gap3, closeTo(gap1, 2));
           final loopButton = find.byKey(const Key('projectDetailLoopButton'));
           final activeIcon = tester.widget<Icon>(
             find.descendant(of: loopButton, matching: find.byIcon(Icons.repeat)));
