@@ -881,7 +881,9 @@ class _ThemeSampleScreen extends StatelessWidget {
             Text('4.2s', key: const Key('themePreviewTotalSeconds'),
               style: TextStyle(fontSize: 11, color: c.onSurfaceVariant)),
           ])),
-        Center(child: Container(width: 40, height: 5,
+        Center(child: Container(
+          key: const Key('themePreviewResizeGrip'),
+          width: 40, height: 5,
           decoration: BoxDecoration(color: c.outlineVariant,
             borderRadius: BorderRadius.circular(3)))),
       ])),
