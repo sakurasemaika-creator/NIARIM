@@ -328,6 +328,13 @@ void main() {
       find.byIcon(Icons.keyboard_arrow_down)).toList();
     expect(gripIcons.length, greaterThanOrEqualTo(2));
     expect(gripIcons.every((icon) => icon.shadows?.length == 8), isTrue);
+    final canvasSwatch = tester.widget<Container>(
+      find.byKey(const Key('themePreviewCanvasColorSwatch')));
+    final swatchDecoration = canvasSwatch.decoration! as BoxDecoration;
+    final colorScheme = Theme.of(tester.element(
+      find.byKey(const Key('themePreviewCanvasScaffold')))).colorScheme;
+    expect(swatchDecoration.border!.top.color,
+      CanvasIconButton.outlineColor(Colors.black, colorScheme));
     final timelineSwitch = find.byKey(
       const Key('themePreviewCanvasTimelineButton'));
     expect(timelineSwitch, findsOneWidget);
