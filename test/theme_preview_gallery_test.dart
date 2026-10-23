@@ -260,6 +260,61 @@ void main() {
     expect(find.byKey(const Key('themeInlinePreview')), findsOneWidget);
   });
 
+  testWidgets('static gallery uses landscape paper and no scrollable mock data',
+      (tester) async {
+    tester.view.physicalSize = const Size(360, 760);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+    SharedPreferences.setMockInitialValues({});
+    final service = ThemeService();
+    await service.init();
+    await tester.pumpWidget(ChangeNotifierProvider<ThemeService>.value(
+      value: service,
+      child: MaterialApp(
+        locale: const Locale('ja'),
+        supportedLocales: const [Locale('ja'), Locale('en')],
+        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        theme: service.themeData,
+        home: const ThemePreviewGalleryScreen(),
+      ),
+    ));
+    await tester.pumpAndSettle();
+    final pages = tester.widget<PageView>(find.byKey(
+      const Key('themePreviewPager')));
+    Future<void> visit(String id) async {
+      final index = themePreviewEntries.indexWhere((e) => e.id == id);
+      expect(index, greaterThanOrEqualTo(0));
+      pages.controller!.jumpToPage(index);
+      await tester.pumpAndSettle();
+      expect(tester.takeException(), isNull, reason: id);
+    }
+
+    await visit('new');
+    final mockList = tester.widget<ListView>(
+      find.byKey(const Key('themePreviewContentList')));
+    expect(mockList.physics, isA<NeverScrollableScrollPhysics>());
+    expect(find.byKey(const Key('themePreviewMockName')), findsOneWidget);
+    expect(find.byKey(const Key('themePreviewMockSizes')), findsOneWidget);
+
+    await visit('detail');
+    final detailPaper = tester.getSize(
+      find.byKey(const Key('themePreviewFakeProjectCanvas')));
+    expect(detailPaper.width / detailPaper.height, closeTo(16 / 9, 0.05));
+
+    await visit('canvas');
+    final canvasPaper = tester.getSize(
+      find.byKey(const Key('themePreviewCanvasPaper')));
+    expect(canvasPaper.width / canvasPaper.height, closeTo(16 / 9, 0.05));
+
+    await visit('timeline');
+    final timelinePaper = tester.getSize(
+      find.byKey(const Key('themePreviewTimelinePaper')));
+    expect(timelinePaper.width / timelinePaper.height, closeTo(16 / 9, 0.05));
+    expect(find.byKey(const Key('themePreviewTimelineTracks')),
+      findsOneWidget);
+  });
+
   testWidgets('gallery works at narrow 320px portrait width', (tester) async {
     tester.view.physicalSize = const Size(320, 720);
     tester.view.devicePixelRatio = 1;
