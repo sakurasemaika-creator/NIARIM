@@ -336,6 +336,8 @@ class CommunityWorkCard extends StatelessWidget {
                                   style: TextStyle(
                                     fontSize: 11,
                                     color: detailColor,
+                                    fontFamily: 'Kuramubon',
+                                    fontFamilyFallback: kHeadingFontFallback,
                                   ),
                                 ),
                               ),
