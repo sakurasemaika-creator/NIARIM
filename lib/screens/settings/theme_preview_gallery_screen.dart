@@ -393,7 +393,7 @@ class _ThemeSampleScreen extends StatelessWidget {
               Positioned(left: (bounds.maxWidth * position - 7).clamp(0.0, bounds.maxWidth - 14),
                 child: Container(width: 14, height: 14,
                   decoration: BoxDecoration(shape: BoxShape.circle,
-                    color: c.primary, border: Border.all(color: c.outline))),
+                    color: c.primary, border: Border.all(color: c.outline)))),
             ]),
           )),
         ]));
@@ -721,7 +721,7 @@ class _ThemeSampleScreen extends StatelessWidget {
               border: Border.all(color: c.outlineVariant)),
             child: Text('${i + 1}', style: TextStyle(
               fontSize: 10, color: i == 0 ? c.onPrimary : c.onSurfaceVariant)),
-          )))),
+          ))))),
     ]),
   );
 
