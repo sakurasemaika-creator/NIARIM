@@ -973,7 +973,7 @@ class _ThemeSampleScreen extends StatelessWidget {
           _previewMaterialTrack(c, Icons.movie_filter_outlined,
             t('エンドカード', 'End card'), 8),
         ])),
-      ))),
+      )),
     ])),
   );
 
