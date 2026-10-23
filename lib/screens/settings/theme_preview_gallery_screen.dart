@@ -1105,8 +1105,8 @@ class _ThemeSampleScreen extends StatelessWidget {
             preset.selectionTextColor),
           (t('パネル背景色', 'Panel background'), preset.panelBgColor),
           (t('メニュー背景色', 'Menu background'), preset.menuBgColor),
-          (t('選択背景色', 'Selected background'), preset.selectionColor),
-          (t('更新マーク', 'Update mark'), preset.updateMarkColor),
+          (t('選択色', 'Selection color'), preset.selectionColor),
+          (t('更新マーク色', 'Update mark'), preset.updateMarkColor),
         ])
           Padding(padding: const EdgeInsets.symmetric(
             horizontal: 12, vertical: 4),
