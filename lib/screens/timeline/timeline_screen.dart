@@ -1572,6 +1572,38 @@ class _TimelineScreenState extends State<TimelineScreen> {
                     },
                   ),
           ),
+          // Keep live frame counter and loop toggle inside the picture.
+          Positioned(
+            left: 8, bottom: 6,
+            child: IgnorePointer(child: ValueListenableBuilder<int>(
+              valueListenable: _currentFrameNotifier,
+              builder: (_, frame, _) => Text(
+                '${frame.clamp(0, _totalFrames > 0 ? _totalFrames - 1 : 0) + 1}/\$_totalFrames',
+                key: const Key('timelinePreviewFrameCount'),
+                style: TextStyle(
+                  fontSize: 11, fontWeight: FontWeight.w700,
+                  color: ThemeService.activeColorScheme.onSurface,
+                  shadows: [
+                    Shadow(color: ThemeService.activeColorScheme.surface,
+                      blurRadius: 4),
+                  ],
+                ),
+              ),
+            )),
+          ),
+          Positioned(
+            right: 5, bottom: 3,
+            child: IconButton(
+              key: const Key('timelinePreviewLoopButton'),
+              icon: Icon(Icons.repeat,
+                color: _loopEnabled
+                  ? Theme.of(context).colorScheme.primary
+                  : Theme.of(context).colorScheme.onSurfaceVariant),
+              tooltip: _loopEnabled
+                  ? l10n.timelineLoopOnTooltip : l10n.timelineLoopOffTooltip,
+              onPressed: () => setState(() => _loopEnabled = !_loopEnabled),
+            ),
+          ),
           // プレビュー全画面化ボタン（確認・仕上がり
           // チェックに集中できるよう、プレビューのみを拡大表示する導線）。
           // 全画面表示中は_buildPreviewContent()自体が呼ばれないため、ここには
@@ -1683,41 +1715,66 @@ class _TimelineScreenState extends State<TimelineScreen> {
             // ヒット領域はシークバー等の他の操作と混同しないよう、見た目の
             // グリップより広めに取っている（ドラッグ開始位置が少しずれても
             // 確実にリサイズとして認識されるようにするため）。
-            GestureDetector(
-              behavior: HitTestBehavior.opaque,
-              dragStartBehavior: DragStartBehavior.down,
-              onVerticalDragUpdate: (d) {
-                setState(() {
-                  final current =
-                      (_previewHeightDragOverride ?? baseHeight) + d.delta.dy;
-                  _previewHeightDragOverride = current.clamp(
-                    0.0,
-                    maxPreviewHeight,
-                  );
-                });
-              },
-              onVerticalDragEnd: (_) {
-                final h = _previewHeightDragOverride;
-                if (h != null) {
-                  context
-                      .read<SettingsService>()
-                      .setTimelinePreviewHeightFraction(h / maxH);
-                }
-              },
-              child: Container(
-                color: Colors.transparent,
-                height: 22,
-                child: Center(
-                  child: Container(
-                    width: 40,
-                    height: 5,
-                    decoration: BoxDecoration(
-                      color: Theme.of(context).colorScheme.outlineVariant,
-                      borderRadius: BorderRadius.circular(3),
-                    ),
+            // Current seconds at the seekbar's left track edge; total
+            // seconds at its right edge, both level with the resize grip.
+            SizedBox(
+              height: 22,
+              child: Stack(children: [
+                Positioned.fill(
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 36),
+                    child: Row(children: [
+                      ValueListenableBuilder<int>(
+                        key: const Key('timelineCurrentSeconds'),
+                        valueListenable: _currentFrameNotifier,
+                        builder: (_, frame, _) => Text(
+                          '${(frame / ((project?.fps ?? 24) > 0 ? project!.fps : 24)).toStringAsFixed(1)}s',
+                          style: TextStyle(fontSize: 11,
+                            color: Theme.of(context).colorScheme.onSurfaceVariant),
+                        ),
+                      ),
+                      const Spacer(),
+                      Text(
+                        '${(_totalFrames / ((project?.fps ?? 24) > 0 ? project!.fps : 24)).toStringAsFixed(1)}s',
+                        key: const Key('timelineTotalSeconds'),
+                        style: TextStyle(fontSize: 11,
+                          color: Theme.of(context).colorScheme.onSurfaceVariant),
+                      ),
+                    ]),
                   ),
                 ),
-              ),
+                Center(child: GestureDetector(
+                  key: const Key('timelinePreviewResizeHandle'),
+                  behavior: HitTestBehavior.opaque,
+                  dragStartBehavior: DragStartBehavior.down,
+                  onVerticalDragUpdate: (d) {
+                    setState(() {
+                      final current =
+                          (_previewHeightDragOverride ?? baseHeight) + d.delta.dy;
+                      _previewHeightDragOverride = current.clamp(
+                        0.0, maxPreviewHeight,
+                      );
+                    });
+                  },
+                  onVerticalDragEnd: (_) {
+                    final h = _previewHeightDragOverride;
+                    if (h != null) {
+                      context.read<SettingsService>()
+                          .setTimelinePreviewHeightFraction(h / maxH);
+                    }
+                  },
+                  child: SizedBox(
+                    width: 80, height: 22,
+                    child: Center(child: Container(
+                      width: 40, height: 5,
+                      decoration: BoxDecoration(
+                        color: Theme.of(context).colorScheme.outlineVariant,
+                        borderRadius: BorderRadius.circular(3),
+                      ),
+                    )),
+                  ),
+                )),
+              ]),
             ),
           ],
         );
@@ -1790,18 +1847,7 @@ class _TimelineScreenState extends State<TimelineScreen> {
             tooltip: l10n.timelineSkipToEnd,
             onPressed: () => setState(() => _currentFrame = _totalFrames - 1),
           ),
-          IconButton(
-            icon: Icon(
-              Icons.repeat,
-              color: _loopEnabled
-                  ? Theme.of(context).colorScheme.primary
-                  : null,
-            ),
-            tooltip: _loopEnabled
-                ? l10n.timelineLoopOnTooltip
-                : l10n.timelineLoopOffTooltip,
-            onPressed: () => setState(() => _loopEnabled = !_loopEnabled),
-          ),
+
         ],
       ),
     );
