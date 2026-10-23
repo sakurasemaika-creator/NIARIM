@@ -686,9 +686,8 @@ class _ThemeSampleScreen extends StatelessWidget {
         _mockTool(c, Icons.help_outline),
       ])),
       Expanded(flex: 7, child: Column(children: [
-        Expanded(child: Center(
-          child: AspectRatio(aspectRatio: 16 / 9,
-            child: _fakePaper(c)))),
+        AspectRatio(aspectRatio: 16 / 9, child: _fakePaper(c)),
+        const Spacer(),
         const SizedBox(height: 8),
       ])),
       Padding(padding: const EdgeInsets.symmetric(horizontal: 15),
@@ -806,13 +805,28 @@ class _ThemeSampleScreen extends StatelessWidget {
         style: TextStyle(fontSize: 12, color: c.primary)),
     ]),
     const SizedBox(height: 8),
-    Wrap(spacing: 8, runSpacing: 9, children: [
-      _mockChip(c, 'HD (16:9) 1280×720'),
-      _mockChip(c, 'Full HD (16:9) 1920×1080', active: true),
-      _mockChip(c, 'HD (9:16) 720×1280'),
-      _mockChip(c, 'カスタム'),
-      _mockChip(c, 'SNS (1:1) 1080×1080'),
-    ]),
+    ...[
+      'Full HD (16:9) 1920×1080',
+      'HD (16:9) 1280×720',
+      'SNS (1:1) 1080×1080',
+      '縦型 (9:16) 1080×1920',
+      '縦型 (4:5) 1080×1350',
+    ].asMap().entries.map((e) => Align(
+      alignment: Alignment.centerLeft,
+      child: Container(
+        margin: const EdgeInsets.only(bottom: 6),
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 9),
+        decoration: BoxDecoration(
+          color: e.key == 0 ? c.primary : c.surfaceContainerLow,
+          borderRadius: BorderRadius.circular(22)),
+        child: Text('${e.key == 0 ? '✓ ' : ''}${e.value}',
+          maxLines: 1, overflow: TextOverflow.ellipsis,
+          style: TextStyle(fontSize: 12,
+            color: e.key == 0 ? c.onPrimary : c.onSurface)),
+      )),
+    )),
+    Align(alignment: Alignment.centerLeft,
+      child: _mockChip(c, t('カスタム', 'Custom'))),
     const SizedBox(height: 16),
     Container(height: 64, margin: const EdgeInsets.symmetric(horizontal: 65),
       alignment: Alignment.center, decoration: BoxDecoration(
