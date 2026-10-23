@@ -1226,10 +1226,9 @@ class _ThemeSampleScreen extends StatelessWidget {
                 key: const Key('themePreviewDetailFrameCounter'),
                 style: TextStyle(fontSize: 12, color: c.onSurfaceVariant)),
               SizedBox(
+                key: const Key('themePreviewDetailLoopButton'),
                 width: 34, height: 34,
-                child: Icon(Icons.repeat,
-                  key: const Key('themePreviewDetailLoopButton'),
-                  color: c.primary, size: 20)),
+                child: Icon(Icons.repeat, color: c.primary, size: 20)),
               Text('1.0s',
                 key: const Key('themePreviewDetailTotalSeconds'),
                 style: TextStyle(fontSize: 12, color: c.onSurfaceVariant)),
