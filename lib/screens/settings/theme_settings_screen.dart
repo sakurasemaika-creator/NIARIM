@@ -43,7 +43,7 @@ class ThemeSettingsScreen extends StatelessWidget {
         ListView(
           children: [
             // 現在の配色をそのまま縮小表示する。描画の見本は全画面の
-            // 40画面ギャラリーと共通で、固定画像・固定配色ではない。
+            // 画面ギャラリーと共通で、固定画像・固定配色ではない。
             // タップで全画面に移動する。カラーピッカーの変更結果は
             // ThemeServiceの再描画によって即座にこの見本にも反映される。
             Padding(
