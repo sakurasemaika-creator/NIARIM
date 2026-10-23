@@ -333,7 +333,7 @@ void main() {
     final swatchDecoration = canvasSwatch.decoration! as BoxDecoration;
     final colorScheme = Theme.of(tester.element(
       find.byKey(const Key('themePreviewCanvasScaffold')))).colorScheme;
-    expect(swatchDecoration.border!.top.color,
+    expect((swatchDecoration.border! as Border).top.color,
       CanvasIconButton.outlineColor(Colors.black, colorScheme));
     final timelineSwitch = find.byKey(
       const Key('themePreviewCanvasTimelineButton'));
