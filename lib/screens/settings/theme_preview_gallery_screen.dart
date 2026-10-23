@@ -346,6 +346,8 @@ class _ThemeSampleScreen extends StatelessWidget {
       case 'shared': return _shared(c);
       case 'trash': return _trash(c);
       case 'widget_frame': return _widgetFrame(c);
+      case 'materials': return _catalog(c);
+      case 'widget_art': return _widgetArtwork(c);
       case 'community': return _community(c);
       case 'form': return _form(c);
       case 'detail': return _detail(c);
@@ -356,7 +358,7 @@ class _ThemeSampleScreen extends StatelessWidget {
       case 'post': return _post(c);
       case 'theme': return _theme(context, c);
       case 'settings': return _settings(c);
-      case 'workspace': return _workspace(c);
+      case 'workspace': return entry.id == 'pc_layout' ? _pcLayout(c) : _workspace(c);
       case 'premium': return _premium(c);
       case 'storage': return _storage(c);
       case 'watermark': return _watermark(c);
@@ -1642,6 +1644,132 @@ class _ThemeSampleScreen extends StatelessWidget {
     }
   }
 
+
+  Widget _pcLayout(ColorScheme c) {
+    Widget orderPanel(String title, String hint, List<String> labels) =>
+      Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+        Text(title, style: TextStyle(
+          fontSize: 13, fontWeight: FontWeight.w700,
+          color: c.onSurfaceVariant)),
+        const SizedBox(height: 8),
+        Text(hint, style: TextStyle(
+          fontSize: 11, color: c.onSurfaceVariant)),
+        const SizedBox(height: 8),
+        Card(
+          color: c.surfaceContainerLow,
+          elevation: 1,
+          child: Column(children: [
+            for (final label in labels)
+              ListTile(
+                title: Text(label),
+                trailing: Icon(Icons.drag_handle,
+                  color: c.onSurfaceVariant)),
+            Align(alignment: Alignment.centerRight,
+              child: Padding(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 10, vertical: 7),
+                child: Text(t('順序をリセット', 'Reset order'),
+                  style: TextStyle(
+                    fontSize: 12, color: c.primary)))),
+          ]),
+        ),
+      ]);
+    return ListView(
+      key: const Key('themePreviewContentList'),
+      physics: const NeverScrollableScrollPhysics(),
+      padding: const EdgeInsets.all(16),
+      children: [
+        Text(t('PCモードのパネルをドラッグして順番を変更できます。',
+          'Change the order of desktop panels.'),
+          style: TextStyle(
+            fontSize: 12, color: c.onSurfaceVariant)),
+        const SizedBox(height: 20),
+        orderPanel(
+          t('ツールオプション配置', 'Tool options'),
+          t('左側に並ぶツールオプションの順番', 'Left dock order'),
+          [t('ブラシ', 'Brush'), t('消しゴム', 'Eraser'),
+           t('バケツ', 'Bucket'), t('選択', 'Selection')]),
+        const SizedBox(height: 20),
+        orderPanel(
+          t('右パネル配置', 'Right dock'),
+          t('右側のパネルをドラッグして並べ替え', 'Right dock order'),
+          [t('レイヤー', 'Layers'), t('カラー', 'Colors'),
+           t('履歴', 'History')]),
+        const SizedBox(height: 20),
+        Text(t('パネル幅', 'Panel width'),
+          style: TextStyle(
+            fontSize: 13, fontWeight: FontWeight.w700,
+            color: c.onSurfaceVariant)),
+        Card(
+          color: c.surfaceContainerLow,
+          child: Column(children: [
+            ListTile(title: Text(t('ツールパネル幅', 'Tool dock width')),
+              trailing: const Text('280px')),
+            ListTile(title: Text(t('右パネル幅', 'Right dock width')),
+              trailing: const Text('280px')),
+            Align(alignment: Alignment.centerRight,
+              child: Padding(padding: const EdgeInsets.all(10),
+                child: Text(t('幅をリセット', 'Reset width'),
+                  style: TextStyle(color: c.primary)))),
+          ]),
+        ),
+      ],
+    );
+  }
+
+  Widget _widgetArtwork(ColorScheme c) => Column(children: [
+    Padding(padding: const EdgeInsets.all(8),
+      child: Card(
+        color: c.surfaceContainerHigh,
+        child: ListTile(
+          leading: Icon(Icons.block_outlined, color: c.onSurfaceVariant),
+          title: Text(t('選ばない', 'Do not select')),
+        )),
+    ),
+    Padding(padding: const EdgeInsets.fromLTRB(12, 4, 12, 8),
+      child: Row(children: [
+        _mockChip(c, t('お気に入りのみ', 'Favorites only')),
+        const Spacer(),
+        Text(t('プロジェクト', 'Projects'),
+          style: TextStyle(fontSize: 11,
+            color: c.onSurfaceVariant)),
+        const Icon(Icons.chevron_right, size: 18),
+      ])),
+    Expanded(child: GridView.count(
+      key: const Key('themePreviewWidgetArtworkProjects'),
+      physics: const NeverScrollableScrollPhysics(),
+      crossAxisCount: 2,
+      padding: const EdgeInsets.all(12),
+      mainAxisSpacing: 12, crossAxisSpacing: 12,
+      childAspectRatio: .90,
+      children: [
+        for (final text in [
+          t('練習作品', 'Practice'), t('新作', 'New work'),
+        ])
+          Container(
+            clipBehavior: Clip.antiAlias,
+            decoration: BoxDecoration(
+              color: c.surfaceContainerLow,
+              border: Border.all(color: c.outlineVariant),
+              borderRadius: BorderRadius.circular(10)),
+            child: Column(children: [
+              const Expanded(
+                child: ColoredBox(color: Colors.white,
+                  child: SizedBox.expand())),
+              Padding(
+                padding: const EdgeInsets.all(8),
+                child: Row(children: [
+                  Expanded(child: Text(text,
+                    maxLines: 1, overflow: TextOverflow.ellipsis,
+                    style: const TextStyle(fontSize: 11))),
+                  Icon(Icons.more_vert, size: 16,
+                    color: c.onSurfaceVariant),
+                ])),
+            ]),
+          ),
+      ]),
+    )),
+  ]);
 
   Widget _workspace(ColorScheme c) => ListView(
     key: const Key('themePreviewContentList'),
