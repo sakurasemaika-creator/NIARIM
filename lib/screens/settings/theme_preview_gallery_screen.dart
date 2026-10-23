@@ -876,32 +876,45 @@ class _ThemeSampleScreen extends StatelessWidget {
                   size: 24, color: c.primary)),
             ]),
           ))),
-      SizedBox(height: 22, child: Stack(children: [
-        Padding(padding: const EdgeInsets.symmetric(horizontal: 36),
-          child: Row(children: [
-            Text('0.4s', key: const Key('themePreviewCurrentSeconds'),
-              style: TextStyle(fontSize: 11, color: c.onSurfaceVariant)),
-            const Spacer(),
-            Text('4.2s', key: const Key('themePreviewTotalSeconds'),
-              style: TextStyle(fontSize: 11, color: c.onSurfaceVariant)),
-          ])),
-        Center(child: Container(
-          key: const Key('themePreviewResizeGrip'),
-          width: 40, height: 5,
-          decoration: BoxDecoration(color: c.outlineVariant,
-            borderRadius: BorderRadius.circular(3)))),
-      ])),
+      // The resize grip has no time labels beside it.
+      SizedBox(height: 22, child: Center(child: Container(
+        key: const Key('themePreviewResizeGrip'),
+        width: 40, height: 5,
+        decoration: BoxDecoration(color: c.outlineVariant,
+          borderRadius: BorderRadius.circular(3))))),
       Padding(padding: const EdgeInsets.symmetric(horizontal: 18),
         child: _mockSlider(c, position: .09, height: 43)),
-      SizedBox(height: 58, child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-        children: [
-          _mockTool(c, Icons.skip_previous),
-          _mockTool(c, Icons.fast_rewind),
-          _mockTool(c, Icons.play_arrow),
-          _mockTool(c, Icons.fast_forward),
-          _mockTool(c, Icons.skip_next),
-        ])),
+      SizedBox(height: 58, child: LayoutBuilder(
+        builder: (context, constraints) {
+          final buttonWidth = constraints.maxWidth / 7 < 48
+              ? constraints.maxWidth / 7 : 48.0;
+          Widget transport(IconData icon, String key) => SizedBox(
+            key: Key(key),
+            width: buttonWidth,
+            height: buttonWidth,
+            child: Center(child: _mockTool(c, icon)),
+          );
+          return Row(children: [
+            Expanded(child: Align(alignment: Alignment.centerRight,
+              child: FittedBox(fit: BoxFit.scaleDown,
+                child: Text('0.4s',
+                  key: const Key('themePreviewCurrentSeconds'),
+                  style: TextStyle(fontSize: 11,
+                    color: c.onSurfaceVariant))))),
+            transport(Icons.skip_previous, 'themePreviewSkipPrevious'),
+            transport(Icons.fast_rewind, 'themePreviewFastRewind'),
+            transport(Icons.play_arrow, 'themePreviewPlay'),
+            transport(Icons.fast_forward, 'themePreviewFastForward'),
+            transport(Icons.skip_next, 'themePreviewSkipNext'),
+            Expanded(child: Align(alignment: Alignment.centerLeft,
+              child: FittedBox(fit: BoxFit.scaleDown,
+                child: Text('4.2s',
+                  key: const Key('themePreviewTotalSeconds'),
+                  style: TextStyle(fontSize: 11,
+                    color: c.onSurfaceVariant))))),
+          ]);
+        },
+      )),
       Container(height: 1, color: c.outlineVariant),
       SizedBox(height: 40, child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceAround,

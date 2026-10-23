@@ -301,14 +301,20 @@ void main() {
     expect(find.text('10/100'), findsOneWidget);
     final handle = tester.getCenter(
       find.byKey(const Key('themePreviewResizeGrip')));
-    final current = tester.getCenter(
+    final currentRect = tester.getRect(
       find.byKey(const Key('themePreviewCurrentSeconds')));
-    final total = tester.getCenter(
+    final totalRect = tester.getRect(
       find.byKey(const Key('themePreviewTotalSeconds')));
-    expect(current.dx, lessThan(handle.dx));
-    expect(handle.dx, lessThan(total.dx));
-    expect((current.dy - handle.dy).abs(), lessThan(12));
-    expect((total.dy - handle.dy).abs(), lessThan(12));
+    final firstRect = tester.getRect(
+      find.byKey(const Key('themePreviewSkipPrevious')));
+    final lastRect = tester.getRect(
+      find.byKey(const Key('themePreviewSkipNext')));
+    expect(currentRect.right, lessThanOrEqualTo(firstRect.left + 1));
+    expect(totalRect.left, greaterThanOrEqualTo(lastRect.right - 1));
+    expect((currentRect.center.dy - firstRect.center.dy).abs(), lessThan(12));
+    expect((totalRect.center.dy - lastRect.center.dy).abs(), lessThan(12));
+    expect(currentRect.center.dy, greaterThan(handle.dy + 10));
+    expect(totalRect.center.dy, greaterThan(handle.dy + 10));
     expect(find.byIcon(Icons.repeat), findsOneWidget);
   });
 

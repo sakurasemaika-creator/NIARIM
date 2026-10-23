@@ -260,7 +260,20 @@ void main() {
       ..favoriteIds.addAll(['project', 'folder']);
     addTearDown(projects.dispose);
 
-    // Switching from red to blue must recolor both folder/project badges.
+    // Match NiarimApp: ThemeService notifies a listener which rebuilds
+    // MaterialApp, rather than substituting an independent static theme.
+    await tester.pumpWidget(AnimatedBuilder(
+      animation: themeService,
+      builder: (context, _) => _host(
+        projects,
+        ProjectViewMode.medium,
+        theme: themeService.themeData,
+        onOpenFolder: (_) {},
+        onSelectionChanged: (_) {},
+      ),
+    ));
+    await tester.pumpAndSettle();
+
     for (final accent in [
       const Color(0xFFE53935),
       const Color(0xFF2867DA),
@@ -268,18 +281,16 @@ void main() {
       themeService.previewCurrent(
         AppThemePreset.defaultLight.copyWith(accentColor: accent),
       );
-      await tester.pumpWidget(_host(
-        projects,
-        ProjectViewMode.medium,
-        theme: themeService.themeData,
-        onOpenFolder: (_) {},
-        onSelectionChanged: (_) {},
-      ));
       await tester.pumpAndSettle();
+      // Check both the service's source-of-truth theme and actual widget tree.
+      expect(themeService.current.accentColor, accent);
+      expect(themeService.themeData.colorScheme.primary, accent);
       for (final name in ['Project', 'Folder']) {
         final star = find.descendant(
           of: _card(name), matching: find.byIcon(Icons.star));
         expect(star, findsOneWidget, reason: '$name with $accent');
+        expect(Theme.of(tester.element(star)).colorScheme.primary, accent,
+          reason: '$name must receive the active ThemeData');
         expect(tester.widget<Icon>(star).color, accent,
           reason: '$name must use the selected accent');
       }
